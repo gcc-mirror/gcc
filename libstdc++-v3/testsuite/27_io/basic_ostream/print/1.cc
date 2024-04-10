@@ -1,4 +1,4 @@
-// { dg-options "-lstdc++exp" }
+// { dg-additional-options "-lstdc++exp" { target { *-*-mingw* } } }
 // { dg-do run { target c++23 } }
 // { dg-require-fileio "" }
 
@@ -103,6 +103,40 @@ test_locale()
   }
 }
 
+void
+test_errors()
+{
+  // Failure to generate output is reported by setting badbit.
+  std::stringstream in(std::ios::in);
+  std::print(in, "{}", "nope"); // No exception here.
+  VERIFY(in.bad());
+#ifdef __cpp_exceptions
+  in.clear();
+  in.exceptions(std::ios::badbit);
+  try
+  {
+    std::print(in, "{}", "nope"); // Should throw now.
+    VERIFY(false);
+  }
+  catch (const std::ios::failure&)
+  {
+  }
+
+  // An exception thrown when formatting the string is propagated
+  // without setting badbit.
+  std::ostringstream out;
+  try
+  {
+    std::vprint_nonunicode(out, "{}", std::make_format_args());
+    VERIFY(false);
+  }
+  catch (const std::format_error&)
+  {
+  }
+  VERIFY(out.good());
+#endif
+}
+
 int main()
 {
   test_print_ostream();
@@ -111,4 +145,5 @@ int main()
   test_print_no_padding();
   test_vprint_nonunicode();
   test_locale();
+  test_errors();
 }

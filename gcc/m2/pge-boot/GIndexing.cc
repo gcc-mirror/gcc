@@ -59,13 +59,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef struct Indexing_IndexProcedure_p Indexing_IndexProcedure;
 
 #   define MinSize 128
+#   define DefaultGrowFactor 2
 typedef struct Indexing__T2_r Indexing__T2;
 
 typedef void * *Indexing_PtrToAddress;
 
-typedef Indexing__T2 *Indexing_Index;
-
 typedef unsigned char *Indexing_PtrToByte;
+
+typedef Indexing__T2 *Indexing_Index;
 
 typedef void (*Indexing_IndexProcedure_t) (void *);
 struct Indexing_IndexProcedure_p { Indexing_IndexProcedure_t proc; };
@@ -78,8 +79,18 @@ struct Indexing__T2_r {
                         unsigned int High;
                         bool Debug;
                         unsigned int Map;
+                        unsigned int GrowFactor;
                       };
 
+
+/*
+   InitIndexTuned - creates a dynamic array with low indice.
+                    The minsize is the initial number of elements the
+                    array is allocated and growfactor determines how
+                    it will be resized once it becomes full.
+*/
+
+extern "C" Indexing_Index Indexing_InitIndexTuned (unsigned int low, unsigned int minsize, unsigned int growfactor);
 
 /*
    InitIndex - creates and returns an Index.
@@ -161,6 +172,39 @@ extern "C" void Indexing_IncludeIndiceIntoIndex (Indexing_Index i, void * a);
 
 extern "C" void Indexing_ForeachIndiceInIndexDo (Indexing_Index i, Indexing_IndexProcedure p);
 
+/*
+   IsEmpty - return TRUE if the array has no entries it.
+*/
+
+extern "C" bool Indexing_IsEmpty (Indexing_Index i);
+
+
+/*
+   InitIndexTuned - creates a dynamic array with low indice.
+                    The minsize is the initial number of elements the
+                    array is allocated and growfactor determines how
+                    it will be resized once it becomes full.
+*/
+
+extern "C" Indexing_Index Indexing_InitIndexTuned (unsigned int low, unsigned int minsize, unsigned int growfactor)
+{
+  Indexing_Index i;
+
+  Storage_ALLOCATE ((void **) &i, sizeof (Indexing__T2));
+  i->Low = low;
+  i->High = 0;
+  i->ArraySize = minsize*sizeof (void *);
+  Storage_ALLOCATE (&i->ArrayStart, i->ArraySize);
+  i->ArrayStart = libc_memset (i->ArrayStart, 0, static_cast<size_t> (i->ArraySize));
+  i->Debug = false;
+  i->Used = 0;
+  i->Map = (unsigned int) 0;
+  i->GrowFactor = growfactor;
+  return i;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
 
 /*
    InitIndex - creates and returns an Index.
@@ -168,18 +212,7 @@ extern "C" void Indexing_ForeachIndiceInIndexDo (Indexing_Index i, Indexing_Inde
 
 extern "C" Indexing_Index Indexing_InitIndex (unsigned int low)
 {
-  Indexing_Index i;
-
-  Storage_ALLOCATE ((void **) &i, sizeof (Indexing__T2));
-  i->Low = low;
-  i->High = 0;
-  i->ArraySize = MinSize;
-  Storage_ALLOCATE (&i->ArrayStart, MinSize);
-  i->ArrayStart = libc_memset (i->ArrayStart, 0, static_cast<size_t> (i->ArraySize));
-  i->Debug = false;
-  i->Used = 0;
-  i->Map = (unsigned int) 0;
-  return i;
+  return Indexing_InitIndexTuned (low, MinSize, DefaultGrowFactor);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -228,7 +261,7 @@ extern "C" bool Indexing_InBounds (Indexing_Index i, unsigned int n)
     {
       return (n >= i->Low) && (n <= i->High);
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/Indexing.def", 25, 1);
+  ReturnException ("../../gcc/m2/gm2-libs/Indexing.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -248,7 +281,7 @@ extern "C" unsigned int Indexing_HighIndice (Indexing_Index i)
     {
       return i->High;
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/Indexing.def", 25, 1);
+  ReturnException ("../../gcc/m2/gm2-libs/Indexing.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -268,7 +301,7 @@ extern "C" unsigned int Indexing_LowIndice (Indexing_Index i)
     {
       return i->Low;
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/Indexing.def", 25, 1);
+  ReturnException ("../../gcc/m2/gm2-libs/Indexing.def", 25, 1);
   __builtin_unreachable ();
 }
 
@@ -298,7 +331,7 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
           oldSize = i->ArraySize;
           while (((n-i->Low)*sizeof (void *)) >= i->ArraySize)
             {
-              i->ArraySize = i->ArraySize*2;
+              i->ArraySize = i->ArraySize*i->GrowFactor;
             }
           if (oldSize != i->ArraySize)
             {
@@ -482,6 +515,18 @@ extern "C" void Indexing_ForeachIndiceInIndexDo (Indexing_Index i, Indexing_Inde
       (*p.proc) (Indexing_GetIndice (i, j));
       j += 1;
     }
+}
+
+
+/*
+   IsEmpty - return TRUE if the array has no entries it.
+*/
+
+extern "C" bool Indexing_IsEmpty (Indexing_Index i)
+{
+  return i->Used == 0;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
 }
 
 extern "C" void _M2_Indexing_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])

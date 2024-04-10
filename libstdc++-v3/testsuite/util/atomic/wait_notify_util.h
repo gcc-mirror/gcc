@@ -21,10 +21,9 @@
 #include <concepts>
 #include <mutex>
 #include <thread>
+#include <cstring>
 
 #include <testsuite_hooks.h>
-
-#include <iostream>
 
 template<typename Tp>
 Tp check_wait_notify(Tp val1, Tp val2)
@@ -76,7 +75,7 @@ Tp check_wait_notify(Tp val1, Tp val2)
 		  a.wait(val1);
 		  auto v = a.load();
 		  // TODO this needs to zero padding bits when we can do that
-		  if (__builtin_memcmp(&v, &val2, sizeof(Tp)) != 0)
+		  if (std::memcmp(&v, &val2, sizeof(Tp)) != 0)
 		    a = val1;
 		});
   cv.wait(l);
@@ -137,7 +136,7 @@ Tp check_atomic_wait_notify(Tp val1, Tp val2)
 		  std::atomic_wait(&a, val1);
 		  auto v = a.load();
 		  // TODO this needs to zero padding bits when we can do that
-		  if (__builtin_memcmp(&v, &val2, sizeof(Tp)) != 0)
+		  if (std::memcmp(&v, &val2, sizeof(Tp)) != 0)
 		    a = val1;
 		});
   cv.wait(l);
@@ -163,13 +162,13 @@ struct check
       {
 	// TODO this needs to zero padding bits when we can do that
 	auto v = check_wait_notify(a, b);
-	VERIFY( __builtin_memcmp(&v, &b, sizeof(Tp)) == 0 );
+	VERIFY( std::memcmp(&v, &b, sizeof(Tp)) == 0 );
       }
 
       {
 	// TODO this needs to zero padding bits when we can do that
 	auto v = check_atomic_wait_notify(a, b);
-	VERIFY( __builtin_memcmp(&v, &b, sizeof(Tp)) == 0);
+	VERIFY( std::memcmp(&v, &b, sizeof(Tp)) == 0);
       }
     }
   }

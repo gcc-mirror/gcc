@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d --param=riscv-autovec-lmul=m8 --param=riscv-autovec-preference=fixed-vlmax  -fno-vect-cost-model -O3 -fdump-tree-optimized" } */
+/* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d --param=riscv-autovec-lmul=m8 -mrvv-vector-bits=zvl  -fno-vect-cost-model -O3 -fdump-tree-optimized" } */
 
 #include <assert.h>
 

@@ -4210,6 +4210,16 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 				     " supported for mismatched vector sizes.\n");
 		  return false;
 		}
+	      if (!expand_vec_cond_expr_p (clone_arg_vectype,
+					   arginfo[i].vectype, ERROR_MARK))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				     vect_location,
+				     "cannot compute mask argument for"
+				     " in-branch vector clones.\n");
+		  return false;
+		}
 	    }
 	  else if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
 	    {
@@ -6756,7 +6766,8 @@ vectorizable_operation (vec_info *vinfo,
 	 those through even when the mode isn't word_mode.  For
 	 ops we have to lower the lowering code assumes we are
 	 dealing with word_mode.  */
-      if ((((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (vectype))
+	  || (((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
 	    || !target_support_p)
 	   && maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD))
 	  /* Check only during analysis.  */

@@ -1,3 +1,233 @@
+2024-03-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2Quads.mod (Init): Use InitIndexTuned with
+	default size 65K.
+	* gm2-compiler/SymbolConversion.mod (Init): Ditto.
+	* gm2-compiler/SymbolTable.mod (BEGIN):	Ditto.
+	* mc-boot/GM2Dependent.cc: Rebuild.
+	* mc-boot/GM2Dependent.h: Rebuild.
+	* mc-boot/GM2RTS.cc: Rebuild.
+	* pge-boot/GIndexing.cc: Rebuild.
+	* pge-boot/GIndexing.h: Rebuild.
+	* pge-boot/GM2Dependent.cc: Rebuild.
+	* pge-boot/GM2Dependent.h: Rebuild.
+	* pge-boot/GM2RTS.cc: Rebuild.
+
+2024-03-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109969
+	* gm2-compiler/M2LexBuf.def (TokenToLineNo): Rename parameter.
+	(TokenToColumnNo): Rename parameter.
+	(TokenToLocation): Rename parameter.
+	(FindFileNameFromToken): Rename parameter.
+	(DumpTokens): Rewrite comment.
+	* gm2-compiler/M2LexBuf.mod: Rewrite.
+	* gm2-compiler/P0SyntaxCheck.bnf (CheckInsertCandidate):
+	DumpTokens before and after inserting recovery token.
+	* gm2-gcc/m2builtins.cc (do_target_support_exists): Add
+	bf_c99_compl case.
+	* gm2-libs/Indexing.def (InitIndexTuned): New procedure
+	function.
+	(IsEmpty): New procedure function.
+	* gm2-libs/Indexing.mod (InitIndexTuned): New procedure
+	function.
+	(IsEmpty): New procedure function.
+	(Index): New field GrowFactor.
+	(PutIndice): Use GrowFactor to extend dynamic array.
+
+2024-03-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114227
+	* gm2-libs-iso/M2RTS.mod (ProcedureChain): Remove.
+	(ProcedureList): Remove.
+	(ExecuteReverse): Remove.
+	(ExecuteTerminationProcedures): Rewrite.
+	(ExecuteInitialProcedures): Rewrite.
+	(AppendProc): Remove.
+	(InstallTerminationProcedure): Rewrite.
+	(InstallInitialProcedure): Rewrite.
+	(InitProcList): Remove.
+	* gm2-libs/M2Dependent.def (InstallTerminationProcedure):
+	New procedure.
+	(ExecuteTerminationProcedures): New procedure.
+	(InstallInitialProcedure): New procedure.
+	(ExecuteInitialProcedures): New procedure.
+	* gm2-libs/M2Dependent.mod (ProcedureChain): New type.
+	(ProcedureList): New type.
+	(ExecuteReverse): New procedure.
+	(ExecuteTerminationProcedures): New procedure.
+	(ExecuteInitialProcedures): New procedure.
+	(AppendProc): New procedure.
+	(InstallTerminationProcedure): New procedure.
+	(InstallInitialProcedure): New procedure.
+	(InitProcList): New procedure.
+	* gm2-libs/M2RTS.mod (ProcedureChain): Remove.
+	(ProcedureList): Remove.
+	(ExecuteReverse): Remove.
+	(ExecuteTerminationProcedures): Rewrite.
+	(ExecuteInitialProcedures): Rewrite.
+	(AppendProc): Remove.
+	(InstallTerminationProcedure): Rewrite.
+	(InstallInitialProcedure): Rewrite.
+	(InitProcList): Remove.
+
+2024-02-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113749
+	* Make-lang.in (BUILD-PGE-O): Add m2/pge-boot/Gwrapc.o.
+	* gm2-libs-ch/wrapc.c (wrapc_SeekSet): New function.
+	(wrapc_SeekEnd): Ditto.
+	(wrapc_ReadOnly): Ditto.
+	(wrapc_WriteOnly): Ditto.
+	* gm2-libs/FIO.mod (SEEK_SET): Remove.
+	(SEEK_END): Remove.
+	(UNIXREADONLY): Remove.
+	(UNIXWRITEONLY): Remove.
+	(ConnectToUnix): Replace UNIXWRITEONLY with a call to WriteOnly.
+	Replace UNIXREADONLY with a call to ReadOnly.
+	(SetPositionFromBeginning): Replace SEEK_SET with a call to
+	SeekSet.
+	(SetPositionFromEnd): Replace SEEK_END with a call to
+	SeekEnd.
+	* gm2-libs/wrapc.def (SeekSet): New procedure function.
+	(SeekEnd): New procedure function.
+	(ReadOnly): New procedure function.
+	(WriteOnly): New procedure function.
+	* mc-boot-ch/Glibc.c (BUILD_MC_LIBC_TRACE): Undef.
+	(check_init): New function.
+	(tracedb): Ditto.
+	(tracedb_open): Ditto.
+	(tracedb_result): Ditto.
+	(libc_read): Ditto.
+	(libc_write): Ditto.
+	(libc_close): Ditto.
+	(libc_creat): Ditto.
+	(libc_open): Ditto.
+	(libc_lseek): Ditto.
+	* mc-boot-ch/Gwrapc.c (wrapc_SeekSet): New function.
+	(wrapc_SeekEnd): Ditto.
+	(wrapc_ReadOnly): Ditto.
+	(wrapc_WriteOnly): Ditto.
+	* mc-boot/GDynamicStrings.cc: Rebuilt.
+	* mc-boot/GFIO.cc: Ditto.
+	* mc-boot/GIndexing.cc: Ditto.
+	* mc-boot/GM2Dependent.cc: Ditto.
+	* mc-boot/GM2EXCEPTION.cc: Ditto.
+	* mc-boot/GPushBackInput.cc: Ditto.
+	* mc-boot/GRTExceptions.cc: Ditto.
+	* mc-boot/GRTint.cc: Ditto.
+	* mc-boot/GSArgs.cc: Ditto.
+	* mc-boot/GStdIO.cc: Ditto.
+	* mc-boot/GStringConvert.cc: Ditto.
+	* mc-boot/GSysStorage.cc: Ditto.
+	* mc-boot/Gdecl.cc: Ditto.
+	* mc-boot/Gkeyc.cc: Ditto.
+	* mc-boot/Glibc.h: Ditto.
+	* mc-boot/GmcComment.cc: Ditto.
+	* mc-boot/GmcComp.cc: Ditto.
+	* mc-boot/GmcDebug.cc: Ditto.
+	* mc-boot/GmcMetaError.cc: Ditto.
+	* mc-boot/GmcStack.cc: Ditto.
+	* mc-boot/GmcStream.cc: Ditto.
+	* mc-boot/GnameKey.cc: Ditto.
+	* mc-boot/GsymbolKey.cc: Ditto.
+	* mc-boot/Gvarargs.cc: Ditto.
+	* mc-boot/Gwrapc.h: Ditto.
+	* mc/decl.mod (getSymName): Add pointerref clause.
+	* mc/mcStream.mod (copy): Check for an error after every read.
+	* mc/varargs.mod (copy): Rewrite pointer arithmetic using INC to
+	avoid type incompatibility.
+	* pge-boot/GDynamicStrings.cc: Rebuilt.
+	* pge-boot/GDynamicStrings.h: Ditto.
+	* pge-boot/GFIO.cc: Ditto.
+	* pge-boot/GFIO.h: Ditto.
+	* pge-boot/GIO.cc: Ditto.
+	* pge-boot/GIndexing.cc: Ditto.
+	* pge-boot/GM2Dependent.cc: Ditto.
+	* pge-boot/GM2EXCEPTION.cc: Ditto.
+	* pge-boot/GNameKey.cc: Ditto.
+	* pge-boot/GPushBackInput.cc: Ditto.
+	* pge-boot/GRTExceptions.cc: Ditto.
+	* pge-boot/GStdIO.cc: Ditto.
+	* pge-boot/GSymbolKey.cc: Ditto.
+	* pge-boot/GSysStorage.cc: Ditto.
+	* pge-boot/Glibc.h: Ditto.
+	* pge-boot/Gwrapc.cc: Ditto.
+	* pge-boot/Gwrapc.h: Ditto.
+
+2024-02-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114055
+	* gm2-compiler/M2Check.mod (Import): IsConstLitInternal and
+	IsConstLit.
+	(isInternal): New procedure function.
+	(doCheck): Test for isInternal in either operand and early
+	return true.
+	* gm2-compiler/M2Quads.mod (PushOne): Rewrite with extra
+	parameter internal.
+	(BuildPseudoBy): Add TRUE parameter to PushOne call.
+	(BuildIncProcedure): Add FALSE parameter to PushOne call.
+	(BuildDecProcedure): Add FALSE parameter to PushOne call.
+	* gm2-compiler/M2Range.mod (ForLoopBeginTypeCompatible):
+	Uncomment code and tidy up error string.
+	* gm2-compiler/SymbolTable.def (PutConstLitInternal):
+	New procedure.
+	(IsConstLitInternal): New procedure function.
+	* gm2-compiler/SymbolTable.mod (PutConstLitInternal):
+	New procedure.
+	(IsConstLitInternal): New procedure function.
+	(SymConstLit): New field IsInternal.
+	(CreateConstLit): Initialize IsInternal to FALSE.
+
+2024-02-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114026
+	* gm2-compiler/M2GenGCC.mod (Import): Remove DisplayQuadruples.
+	Remove DisplayQuadList.
+	(MixTypesBinary): Replace check with overflowCheck.
+	New variable typeChecking.
+	Use GenQuadOTypetok to retrieve typeChecking.
+	Use typeChecking to suppress error message.
+	* gm2-compiler/M2LexBuf.def (MakeVirtual2Tok): New procedure
+	function.
+	* gm2-compiler/M2LexBuf.mod (MakeVirtualTok): Improve comment.
+	(MakeVirtual2Tok): New procedure function.
+	* gm2-compiler/M2Quads.def (GetQuadOTypetok): New procedure.
+	* gm2-compiler/M2Quads.mod (QuadFrame): New field CheckType.
+	(PutQuadO): Rewrite using PutQuadOType.
+	(PutQuadOType): New procedure.
+	(GetQuadOTypetok): New procedure.
+	(BuildPseudoBy): Rewrite.
+	(BuildForToByDo): Remove type checking.
+	Add parameters e2, e2tok, BySym, bytok to
+	InitForLoopBeginRange.
+	Push the RangeId.
+	(BuildEndFor): Pop the RangeId.
+	Use GenQuadOTypetok to generate AddOp without type checking.
+	Call PutRangeForIncrement with the RangeId and IncQuad.
+	(GenQuadOtok): Rewrite using GenQuadOTypetok.
+	(GenQuadOTypetok): New procedure.
+	* gm2-compiler/M2Range.def (InitForLoopBeginRangeCheck):
+	Rename d as des, e as expr.
+	Add expr1, expr1tok, expr2, expr2tok, byconst, byconsttok
+	parameters.
+	(PutRangeForIncrement): New procedure.
+	* gm2-compiler/M2Range.mod (Import): MakeVirtual2Tok.
+	(Range): Add expr2, byconst, destok, exprtok, expr2tok,
+	incrementquad.
+	(InitRange): Initialize expr2 to NulSym.
+	Initialize byconst to NulSym.
+	Initialize tokenNo, destok, exprtok, expr2tok, byconst to
+	UnknownTokenNo.
+	Initialize incrementquad to 0.
+	(PutRangeForIncrement): New procedure.
+	(PutRangeDesExpr2): New procedure.
+	(InitForLoopBeginRangeCheck): Rewrite.
+	(ForLoopBeginTypeCompatible): New procedure function.
+	(CodeForLoopBegin): Call ForLoopBeginTypeCompatible and
+	only code the for loop assignment if all the type checks
+	succeed.
+
 2024-02-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/113889

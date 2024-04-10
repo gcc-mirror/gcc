@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic --param riscv-autovec-preference=fixed-vlmax -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic -mrvv-vector-bits=zvl -fno-schedule-insns -fno-schedule-insns2" } */
 
 typedef struct {
   int iatom[3];

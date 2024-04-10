@@ -651,7 +651,7 @@ namespace std::chrono
     template<typename _Tp> requires _Tp::is_always_lock_free
       struct RulesCounter<_Tp>
       {
-	atomic_signed_lock_free counter{0};
+	_Tp counter{0};
 
 	void
 	increment()
@@ -703,7 +703,12 @@ namespace std::chrono
       };
 #endif // __GTHREADS && __cpp_lib_atomic_wait
 
+#if __cpp_lib_atomic_lock_free_type_aliases
     RulesCounter<atomic_signed_lock_free> rules_counter;
+#else
+    RulesCounter<void> rules_counter;
+#endif
+
 #else // TZDB_DISABLED
     _Impl(weak_ptr<tzdb_list::_Node>) { }
     struct {

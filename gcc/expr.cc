@@ -7879,8 +7879,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    auto nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
 	    if (maybe_ne (GET_MODE_PRECISION (mode), nunits))
 	      tmp = expand_binop (mode, and_optab, tmp,
-				  GEN_INT ((1 << nunits) - 1), target,
-				  true, OPTAB_WIDEN);
+				  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+				  target, true, OPTAB_WIDEN);
 	    if (tmp != target)
 	      emit_move_insn (target, tmp);
 	    break;
@@ -10259,12 +10259,12 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 					  &algorithm, &variant, cost)
 		  : cost < mul_cost (speed, mode))
 		{
-		  target = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
-						op1, target)
-				  : expand_and (mode, op0,
-						negate_rtx (mode, op1),
-						target);
-		  return REDUCE_BIT_FIELD (target);
+		  temp = bit0_p ? expand_and (mode, negate_rtx (mode, op0),
+					      op1, target)
+				: expand_and (mode, op0,
+					      negate_rtx (mode, op1),
+					      target);
+		  return REDUCE_BIT_FIELD (temp);
 		}
 	    }
 	}
@@ -13707,11 +13707,11 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
     {
       gcc_assert (code == EQ || code == NE);
       op0 = expand_binop (mode, and_optab, op0,
-			  GEN_INT ((1 << nunits) - 1), NULL_RTX,
-			  true, OPTAB_WIDEN);
+			  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+			  NULL_RTX, true, OPTAB_WIDEN);
       op1 = expand_binop (mode, and_optab, op1,
-			  GEN_INT ((1 << nunits) - 1), NULL_RTX,
-			  true, OPTAB_WIDEN);
+			  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
+			  NULL_RTX, true, OPTAB_WIDEN);
     }
 
   if (target == 0)

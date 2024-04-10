@@ -99,9 +99,9 @@ main ()
   *((unsigned long *)&__m256i_op1[2]) = 0x7ff0000000000000;
   *((unsigned long *)&__m256i_op1[1]) = 0x7ff0000000000000;
   *((unsigned long *)&__m256i_op1[0]) = 0x7ff0000000000000;
-  *((unsigned long *)&__m256i_op2[3]) = 0x3ff0010000000000;
+  *((unsigned long *)&__m256i_op2[3]) = 0x3f11010000000000;
   *((unsigned long *)&__m256i_op2[2]) = 0x0000000000000000;
-  *((unsigned long *)&__m256i_op2[1]) = 0x3ff0010000000000;
+  *((unsigned long *)&__m256i_op2[1]) = 0x3f11010000000000;
   *((unsigned long *)&__m256i_op2[0]) = 0x0000000000000000;
   *((unsigned long *)&__m256i_result[3]) = 0x0000000000000000;
   *((unsigned long *)&__m256i_result[2]) = 0x0000000000000000;
@@ -200,7 +200,7 @@ main ()
   *((unsigned long *)&__m256i_op2[0]) = 0x0000000000000000;
   *((unsigned long *)&__m256i_result[3]) = 0x0000000000000000;
   *((unsigned long *)&__m256i_result[2]) = 0x0000000000000000;
-  *((unsigned long *)&__m256i_result[1]) = 0x0000000000000000;
+  *((unsigned long *)&__m256i_result[1]) = 0xffffffff00000000;
   *((unsigned long *)&__m256i_result[0]) = 0x0000000000000000;
   __m256i_out = __lasx_xvshuf_h (__m256i_op0, __m256i_op1, __m256i_op2);
   ASSERTEQ_64 (__LINE__, __m256i_result, __m256i_out);
@@ -351,7 +351,7 @@ main ()
   *((unsigned long *)&__m256i_op2[1]) = 0x0000000000000001;
   *((unsigned long *)&__m256i_op2[0]) = 0x00000000012e2110;
   *((unsigned long *)&__m256i_result[3]) = 0x0000000000000001;
-  *((unsigned long *)&__m256i_result[2]) = 0x0000000200000000;
+  *((unsigned long *)&__m256i_result[2]) = 0x0000000000000000;
   *((unsigned long *)&__m256i_result[1]) = 0x00000000012e2110;
   *((unsigned long *)&__m256i_result[0]) = 0x0000000000000000;
   __m256i_out = __lasx_xvshuf_w (__m256i_op0, __m256i_op1, __m256i_op2);
@@ -426,10 +426,10 @@ main ()
   *((unsigned long *)&__m256i_op2[2]) = 0x8000000080000000;
   *((unsigned long *)&__m256i_op2[1]) = 0xdfffffffdfffffff;
   *((unsigned long *)&__m256i_op2[0]) = 0x8000000080000000;
-  *((unsigned long *)&__m256i_result[3]) = 0x8000000080000000;
+  *((unsigned long *)&__m256i_result[3]) = 0xdfffffff80000000;
   *((unsigned long *)&__m256i_result[2]) = 0x7fc00000dfffffff;
-  *((unsigned long *)&__m256i_result[1]) = 0x8000000080000000;
-  *((unsigned long *)&__m256i_result[0]) = 0x8000000080000000;
+  *((unsigned long *)&__m256i_result[1]) = 0x7fc0000000000000;
+  *((unsigned long *)&__m256i_result[0]) = 0x8000000000000000;
   __m256i_out = __lasx_xvshuf_w (__m256i_op0, __m256i_op1, __m256i_op2);
   ASSERTEQ_64 (__LINE__, __m256i_result, __m256i_out);
 

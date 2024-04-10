@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "tree-data-ref.h"
 #include "tree-ssa-loop-niter.h"
+#include "tree-hash-traits.h"
 
 /* This file should be included last.  */
 #include "riscv-vector-costs.h"
@@ -413,6 +414,8 @@ compute_local_live_ranges (
 				  auto *r = get_live_range (live_ranges, arg);
 				  gcc_assert (r);
 				  (*r).second = MAX (point, (*r).second);
+				  biggest_mode = get_biggest_mode (
+				    biggest_mode, TYPE_MODE (TREE_TYPE (arg)));
 				}
 			    }
 			  else
@@ -1047,18 +1050,81 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
    top of riscv_builtin_vectorization_cost handling which doesn't have any
    information on statement operation codes etc.  */
 
-static unsigned
-adjust_stmt_cost (enum vect_cost_for_stmt kind, tree vectype, int stmt_cost)
+unsigned
+costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
+			 stmt_vec_info stmt_info,
+			 slp_tree, tree vectype, int stmt_cost)
 {
   const cpu_vector_cost *costs = get_vector_costs ();
   switch (kind)
     {
     case scalar_to_vec:
-      return stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->FR2VR
-						  : costs->regmove->GR2VR);
+      stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->FR2VR
+		    : costs->regmove->GR2VR);
+      break;
     case vec_to_scalar:
-      return stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->VR2FR
-						  : costs->regmove->VR2GR);
+      stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->VR2FR
+		    : costs->regmove->VR2GR);
+      break;
+    case vector_load:
+    case vector_store:
+	{
+	  /* Unit-stride vector loads and stores do not have offset addressing
+	     as opposed to scalar loads and stores.
+	     If the address depends on a variable we need an additional
+	     add/sub for each load/store in the worst case.  */
+	  if (stmt_info && stmt_info->stmt)
+	    {
+	      data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
+	      class loop *father = stmt_info->stmt->bb->loop_father;
+	      if (!loop && father && !father->inner && father->superloops)
+		{
+		  tree ref;
+		  if (TREE_CODE (dr->ref) != MEM_REF
+		      || !(ref = TREE_OPERAND (dr->ref, 0))
+		      || TREE_CODE (ref) != SSA_NAME)
+		    break;
+
+		  if (SSA_NAME_IS_DEFAULT_DEF (ref))
+		    break;
+
+		  if (memrefs.contains ({ref, cst0}))
+		    break;
+
+		  memrefs.add ({ref, cst0});
+
+		  /* In case we have not seen REF before and the base address
+		     is a pointer operation try a bit harder.  */
+		  tree base = DR_BASE_ADDRESS (dr);
+		  if (TREE_CODE (base) == POINTER_PLUS_EXPR
+		      || TREE_CODE (base) == POINTER_DIFF_EXPR)
+		    {
+		      /* Deconstruct BASE's first operand.  If it is a binary
+			 operation, i.e. a base and an "offset" store this
+			 pair.  Only increase the stmt_cost if we haven't seen
+			 it before.  */
+		      tree argp = TREE_OPERAND (base, 1);
+		      typedef std::pair<tree, tree> addr_pair;
+		      addr_pair pair;
+		      if (TREE_CODE_CLASS (TREE_CODE (argp)) == tcc_binary)
+			{
+			  tree argp0 = tree_strip_nop_conversions
+			    (TREE_OPERAND (argp, 0));
+			  tree argp1 = TREE_OPERAND (argp, 1);
+			  pair = addr_pair (argp0, argp1);
+			  if (memrefs.contains (pair))
+			    break;
+
+			  memrefs.add (pair);
+			  stmt_cost += builtin_vectorization_cost (scalar_stmt,
+								   NULL_TREE, 0);
+			}
+		    }
+		}
+	    }
+	  break;
+	}
+
     default:
       break;
     }
@@ -1067,7 +1133,7 @@ adjust_stmt_cost (enum vect_cost_for_stmt kind, tree vectype, int stmt_cost)
 
 unsigned
 costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
-		      stmt_vec_info stmt_info, slp_tree, tree vectype,
+		      stmt_vec_info stmt_info, slp_tree node, tree vectype,
 		      int misalign, vect_cost_model_location where)
 {
   int stmt_cost
@@ -1080,6 +1146,7 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       if (loop_vinfo)
 	analyze_loop_vinfo (loop_vinfo);
 
+      memrefs.empty ();
       m_analyzed_vinfo = true;
     }
 
@@ -1092,10 +1159,11 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	 as one iteration of the VLA loop.  */
       if (where == vect_body && m_unrolled_vls_niters)
 	m_unrolled_vls_stmts += count * m_unrolled_vls_niters;
-
-      if (vectype)
-	stmt_cost = adjust_stmt_cost (kind, vectype, stmt_cost);
     }
+
+  if (vectype)
+    stmt_cost = adjust_stmt_cost (kind, loop_vinfo, stmt_info, node, vectype,
+				  stmt_cost);
 
   return record_stmt_cost (stmt_info, where, count * stmt_cost);
 }

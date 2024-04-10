@@ -3243,7 +3243,7 @@ namespace __detail
       };
       // The list above is known to be valid until (at least) this date
       // and only contains positive leap seconds.
-      const sys_seconds __expires(1703721600s); // 2023-12-28 00:00:00 UTC
+      const sys_seconds __expires(1735344000s); // 2024-12-28 00:00:00 UTC
 
 #if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
       if (__ss > __expires)

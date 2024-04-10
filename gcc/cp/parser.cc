@@ -5253,9 +5253,9 @@ cp_parser_translation_unit (cp_parser* parser)
 	      if (!warned)
 		{
 		  warned = true;
-		  error_at (token->location,
-			    "global module fragment contents must be"
-			    " from preprocessor inclusion");
+		  pedwarn (token->location, OPT_Wglobal_module,
+			   "global module fragment contents must be"
+			   " from preprocessor inclusion");
 		}
 	    }
 	}
@@ -25734,22 +25734,6 @@ cp_parser_parameter_declaration (cp_parser *parser,
       decl_specifiers.locations[ds_this] = 0;
     }
 
-  if (xobj_param_p
-      && ((declarator && declarator->parameter_pack_p)
-	  || cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS)))
-    {
-      location_t xobj_param
-	= make_location (decl_specifiers.locations[ds_this],
-			 decl_spec_token_start->location,
-			 input_location);
-      error_at (xobj_param,
-		"an explicit object parameter cannot "
-		"be a function parameter pack");
-      /* Suppress errors that occur down the line.  */
-      if (declarator)
-	declarator->parameter_pack_p = false;
-    }
-
   /* If a function parameter pack was specified and an implicit template
      parameter was introduced during cp_parser_parameter_declaration,
      change any implicit parameters introduced into packs.  */
@@ -25762,9 +25746,10 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	(INNERMOST_TEMPLATE_PARMS (current_template_parms));
 
       if (latest_template_parm_idx != template_parm_idx)
-	decl_specifiers.type = convert_generic_types_to_packs
-	  (decl_specifiers.type,
-	   template_parm_idx, latest_template_parm_idx);
+	decl_specifiers.type
+	  = convert_generic_types_to_packs (decl_specifiers.type,
+					    template_parm_idx,
+					    latest_template_parm_idx);
     }
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
@@ -25792,6 +25777,21 @@ cp_parser_parameter_declaration (cp_parser *parser,
 	  else
 	    decl_specifiers.type = make_pack_expansion (type);
 	}
+    }
+
+  if (xobj_param_p
+      && (declarator ? declarator->parameter_pack_p
+		     : PACK_EXPANSION_P (decl_specifiers.type)))
+    {
+      location_t xobj_param
+	= make_location (decl_specifiers.locations[ds_this],
+			 decl_spec_token_start->location,
+			 input_location);
+      error_at (xobj_param,
+		"an explicit object parameter cannot "
+		"be a function parameter pack");
+      xobj_param_p = false;
+      decl_specifiers.locations[ds_this] = 0;
     }
 
   /* The restriction on defining new types applies only to the type
@@ -27678,10 +27678,16 @@ cp_parser_class_head (cp_parser* parser,
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
     {
       if (type)
-	pushclass (type);
+	{
+	  pushclass (type);
+	  start_lambda_scope (TYPE_NAME (type));
+	}
       bases = cp_parser_base_clause (parser);
       if (type)
-	popclass ();
+	{
+	  finish_lambda_scope ();
+	  popclass ();
+	}
     }
   else
     bases = NULL_TREE;
@@ -33307,6 +33313,17 @@ cp_parser_functional_cast (cp_parser* parser, tree type)
 
   if (!type)
     type = error_mark_node;
+
+  if (TREE_CODE (type) == TYPE_DECL
+      && is_auto (TREE_TYPE (type)))
+    type = TREE_TYPE (type);
+
+  if (is_auto (type)
+      && !AUTO_IS_DECLTYPE (type)
+      && !PLACEHOLDER_TYPE_CONSTRAINTS (type)
+      && !CLASS_PLACEHOLDER_TEMPLATE (type))
+    /* auto(x) and auto{x} need to use a level-less auto.  */
+    type = make_cast_auto ();
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {

@@ -89,7 +89,10 @@ GCC_METHOD5 (int /* bool */, build_add_field,
 
 /* After all the fields have been added to a struct or union, the
    struct or union type must be "finished".  This does some final
-   cleanups in GCC.  */
+   cleanups in GCC.
+
+   Note that when using GCC_C_FE_VERSION_2, it is preferable to call
+   finish_record_with_alignment instead.  */
 
 GCC_METHOD2 (int /* bool */, finish_record_or_union,
 	     gcc_type,			   /* Argument RECORD_OR_UNION_TYPE. */
@@ -220,3 +223,11 @@ GCC_METHOD2 (gcc_type, float_type,
 	     unsigned long,                /* Argument SIZE_IN_BYTES.  */
 	     const char *)		   /* Argument BUILTIN_NAME.  */
 
+/* New in GCC_FE_VERSION_2.  Like finish_record_or_union but the caller also
+   supplies the alignment.  If the alignment is 0, this acts identically to
+   finish_record_or_union.  */
+
+GCC_METHOD3 (int /* bool */, finish_record_with_alignment,
+	     gcc_type,			   /* Argument RECORD_OR_UNION_TYPE. */
+	     unsigned long,		   /* Argument SIZE_IN_BYTES.  */
+	     unsigned long)		   /* Argument ALIGNMENT.  */

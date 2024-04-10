@@ -8,7 +8,7 @@ int d;
 void bar25_(void);
 void foo(void);
 int main() {
-  int e[][1] = {0, 0, 0, 0, 0, 1};
+  int __attribute__((aligned(sizeof(int)))) e[][1] = {0, 0, 0, 0, 0, 1};
   for (;;) {
     bar25_();
     /* We should optimistically treat a == 0 because of the bounds of
@@ -21,4 +21,4 @@ int main() {
   *c = &d;
 }
 
-/* { dg-final { scan-tree-dump-not "foo" "fre1" } } */
+/* { dg-final { scan-tree-dump-not "foo" "fre1" { xfail *-*-* } } } */

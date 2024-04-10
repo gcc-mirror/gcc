@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zve32f -mabi=lp64d -O3 --param=riscv-autovec-lmul=m8 --param=riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-march=rv64gc_zve32f -mabi=lp64d -O3 --param=riscv-autovec-lmul=m8 -mrvv-vector-bits=zvl" } */
 
 typedef struct {
   short a;

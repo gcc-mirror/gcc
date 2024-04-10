@@ -400,7 +400,7 @@ rename to gcc/ipa-icf2.c
 EXPECTED8 = '''\
 gcc/ChangeLog:
 
-	* ipa-icf.c: Moved to...
+	* ipa-icf.c: Move to...
 	* ipa-icf2.c: ...here.
 
 '''

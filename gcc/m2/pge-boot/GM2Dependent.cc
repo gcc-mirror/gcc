@@ -58,7 +58,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "GSYSTEM.h"
 #   include "GStorage.h"
 #   include "GStrLib.h"
-#   include "GM2RTS.h"
 
 typedef struct M2Dependent_ArgCVEnvP_p M2Dependent_ArgCVEnvP;
 
@@ -66,11 +65,17 @@ typedef struct M2Dependent_DependencyList_r M2Dependent_DependencyList;
 
 typedef char *M2Dependent_PtrToChar;
 
+typedef struct M2Dependent_ProcedureList_r M2Dependent_ProcedureList;
+
 typedef struct M2Dependent__T2_r M2Dependent__T2;
 
 typedef M2Dependent__T2 *M2Dependent_ModuleChain;
 
-typedef struct M2Dependent__T3_a M2Dependent__T3;
+typedef struct M2Dependent__T3_r M2Dependent__T3;
+
+typedef M2Dependent__T3 *M2Dependent_ProcedureChain;
+
+typedef struct M2Dependent__T4_a M2Dependent__T4;
 
 typedef enum {M2Dependent_unregistered, M2Dependent_unordered, M2Dependent_started, M2Dependent_ordered, M2Dependent_user} M2Dependent_DependencyState;
 
@@ -85,7 +90,18 @@ struct M2Dependent_DependencyList_r {
                                       M2Dependent_DependencyState state;
                                     };
 
-struct M2Dependent__T3_a { M2Dependent_ModuleChain array[M2Dependent_user-M2Dependent_unregistered+1]; };
+struct M2Dependent_ProcedureList_r {
+                                     M2Dependent_ProcedureChain head;
+                                     M2Dependent_ProcedureChain tail;
+                                   };
+
+struct M2Dependent__T3_r {
+                           PROC p;
+                           M2Dependent_ProcedureChain prev;
+                           M2Dependent_ProcedureChain next;
+                         };
+
+struct M2Dependent__T4_a { M2Dependent_ModuleChain array[M2Dependent_user-M2Dependent_unregistered+1]; };
 struct M2Dependent__T2_r {
                            void *name;
                            void *libname;
@@ -96,7 +112,7 @@ struct M2Dependent__T2_r {
                            M2Dependent_ModuleChain next;
                          };
 
-static M2Dependent__T3 Modules;
+static M2Dependent__T4 Modules;
 static bool DynamicInitialization;
 static bool Initialized;
 static bool WarningTrace;
@@ -106,6 +122,8 @@ static bool DependencyTrace;
 static bool PreTrace;
 static bool PostTrace;
 static bool ForceTrace;
+static M2Dependent_ProcedureList InitialProc;
+static M2Dependent_ProcedureList TerminateProc;
 
 /*
    ConstructModules - resolve dependencies and then call each
@@ -136,6 +154,44 @@ extern "C" void M2Dependent_RegisterModule (void * modulename, void * libname, M
 */
 
 extern "C" void M2Dependent_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname);
+
+/*
+   InstallTerminationProcedure - installs a procedure, p, which will
+                                 be called when the procedure
+                                 ExecuteTerminationProcedures
+                                 is invoked.  It returns TRUE if the
+                                 procedure is installed.
+*/
+
+extern "C" bool M2Dependent_InstallTerminationProcedure (PROC p);
+
+/*
+   ExecuteInitialProcedures - executes the initial procedures installed by
+                              InstallInitialProcedure.
+*/
+
+extern "C" void M2Dependent_ExecuteInitialProcedures (void);
+
+/*
+   InstallInitialProcedure - installs a procedure to be executed just
+                             before the BEGIN code section of the
+                             main program module.
+*/
+
+extern "C" bool M2Dependent_InstallInitialProcedure (PROC p);
+
+/*
+   ExecuteTerminationProcedures - calls each installed termination procedure
+                                  in reverse order.
+*/
+
+extern "C" void M2Dependent_ExecuteTerminationProcedures (void);
+
+/*
+   InitDependencyList - initialize all fields of DependencyList.
+*/
+
+static void InitDependencyList (M2Dependent_DependencyList *depList, PROC proc, M2Dependent_DependencyState state);
 
 /*
    CreateModule - creates a new module entry and returns the
@@ -356,6 +412,41 @@ static void Init (void);
 
 static void CheckInitialized (void);
 
+/*
+   ExecuteReverse - execute the procedure associated with procptr
+                    and then proceed to try and execute all previous
+                    procedures in the chain.
+*/
+
+static void ExecuteReverse (M2Dependent_ProcedureChain procptr);
+
+/*
+   AppendProc - append proc to the end of the procedure list
+                defined by proclist.
+*/
+
+static bool AppendProc (M2Dependent_ProcedureList *proclist, PROC proc);
+
+/*
+   InitProcList - initialize the head and tail pointers to NIL.
+*/
+
+static void InitProcList (M2Dependent_ProcedureList *p);
+
+
+/*
+   InitDependencyList - initialize all fields of DependencyList.
+*/
+
+static void InitDependencyList (M2Dependent_DependencyList *depList, PROC proc, M2Dependent_DependencyState state)
+{
+  (*depList).proc = proc;
+  (*depList).forced = false;
+  (*depList).forc = false;
+  (*depList).appl = false;
+  (*depList).state = state;
+}
+
 
 /*
    CreateModule - creates a new module entry and returns the
@@ -371,8 +462,7 @@ static M2Dependent_ModuleChain CreateModule (void * name, void * libname, M2Depe
   mptr->libname = libname;
   mptr->init = init;
   mptr->fini = fini;
-  mptr->dependency.proc = dependencies;
-  mptr->dependency.state = M2Dependent_unregistered;
+  InitDependencyList (&mptr->dependency, dependencies, M2Dependent_unregistered);
   mptr->prev = NULL;
   mptr->next = NULL;
   if (HexTrace)
@@ -949,10 +1039,10 @@ static void combine (M2Dependent_DependencyState src, M2Dependent_DependencyStat
 
 static void tracemodule (bool flag, void * modname, unsigned int modlen, void * libname, unsigned int liblen)
 {
-  typedef struct tracemodule__T4_a tracemodule__T4;
+  typedef struct tracemodule__T5_a tracemodule__T5;
 
-  struct tracemodule__T4_a { char array[100+1]; };
-  tracemodule__T4 buffer;
+  struct tracemodule__T5_a { char array[100+1]; };
+  tracemodule__T5 buffer;
   unsigned int len;
 
   if (flag)
@@ -1093,10 +1183,10 @@ static void CheckApplication (void)
 
 static void warning3 (const char *format_, unsigned int _format_high, void * arg1, void * arg2)
 {
-  typedef struct warning3__T5_a warning3__T5;
+  typedef struct warning3__T6_a warning3__T6;
 
-  struct warning3__T5_a { char array[4096+1]; };
-  warning3__T5 buffer;
+  struct warning3__T6_a { char array[4096+1]; };
+  warning3__T6 buffer;
   int len;
   char format[_format_high+1];
 
@@ -1235,6 +1325,8 @@ static void Init (void)
 {
   M2Dependent_DependencyState state;
 
+  InitProcList (&InitialProc);
+  InitProcList (&TerminateProc);
   SetupDebugFlags ();
   for (state=M2Dependent_unregistered; state<=M2Dependent_user; state= static_cast<M2Dependent_DependencyState>(static_cast<int>(state+1)))
     {
@@ -1258,6 +1350,57 @@ static void CheckInitialized (void)
       Initialized = true;
       Init ();
     }
+}
+
+
+/*
+   ExecuteReverse - execute the procedure associated with procptr
+                    and then proceed to try and execute all previous
+                    procedures in the chain.
+*/
+
+static void ExecuteReverse (M2Dependent_ProcedureChain procptr)
+{
+  while (procptr != NULL)
+    {
+      (*procptr->p.proc) ();  /* Invoke the procedure.  */
+      procptr = procptr->prev;  /* Invoke the procedure.  */
+    }
+}
+
+
+/*
+   AppendProc - append proc to the end of the procedure list
+                defined by proclist.
+*/
+
+static bool AppendProc (M2Dependent_ProcedureList *proclist, PROC proc)
+{
+  M2Dependent_ProcedureChain pdes;
+
+  Storage_ALLOCATE ((void **) &pdes, sizeof (M2Dependent__T3));
+  pdes->p = proc;
+  pdes->prev = (*proclist).tail;
+  pdes->next = NULL;
+  if ((*proclist).head == NULL)
+    {
+      (*proclist).head = pdes;
+    }
+  (*proclist).tail = pdes;
+  return true;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   InitProcList - initialize the head and tail pointers to NIL.
+*/
+
+static void InitProcList (M2Dependent_ProcedureList *p)
+{
+  (*p).head = NULL;
+  (*p).tail = NULL;
 }
 
 
@@ -1310,8 +1453,8 @@ extern "C" void M2Dependent_ConstructModules (void * applicationmodule, void * l
         if (mptr->dependency.appl)
           {
             traceprintf3 (ModuleTrace, (const char *) "application module: %s [%s]\\n", 29, mptr->name, mptr->libname);
-            traceprintf (ModuleTrace, (const char *) "  calling M2RTS_ExecuteInitialProcedures\\n", 42);
-            M2RTS_ExecuteInitialProcedures ();
+            traceprintf (ModuleTrace, (const char *) "  calling ExecuteInitialProcedures\\n", 36);
+            M2Dependent_ExecuteInitialProcedures ();
             traceprintf (ModuleTrace, (const char *) "  calling application module\\n", 30);
           }
         (*mptr->init.proc) (argc, argv, envp);
@@ -1338,7 +1481,7 @@ extern "C" void M2Dependent_DeconstructModules (void * applicationmodule, void *
   else
     {
       traceprintf (ModuleTrace, (const char *) "ExecuteTerminationProcedures\\n", 30);
-      M2RTS_ExecuteTerminationProcedures ();
+      M2Dependent_ExecuteTerminationProcedures ();
       traceprintf (ModuleTrace, (const char *) "terminating modules in sequence\\n", 33);
       mptr = Modules.array[M2Dependent_ordered-M2Dependent_unregistered]->prev;
       do {
@@ -1392,6 +1535,58 @@ extern "C" void M2Dependent_RequestDependant (void * modulename, void * libname,
 {
   CheckInitialized ();
   PerformRequestDependant (modulename, libname, dependantmodule, dependantlibname);
+}
+
+
+/*
+   InstallTerminationProcedure - installs a procedure, p, which will
+                                 be called when the procedure
+                                 ExecuteTerminationProcedures
+                                 is invoked.  It returns TRUE if the
+                                 procedure is installed.
+*/
+
+extern "C" bool M2Dependent_InstallTerminationProcedure (PROC p)
+{
+  return AppendProc (&TerminateProc, p);
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   ExecuteInitialProcedures - executes the initial procedures installed by
+                              InstallInitialProcedure.
+*/
+
+extern "C" void M2Dependent_ExecuteInitialProcedures (void)
+{
+  ExecuteReverse (InitialProc.tail);
+}
+
+
+/*
+   InstallInitialProcedure - installs a procedure to be executed just
+                             before the BEGIN code section of the
+                             main program module.
+*/
+
+extern "C" bool M2Dependent_InstallInitialProcedure (PROC p)
+{
+  return AppendProc (&InitialProc, p);
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   ExecuteTerminationProcedures - calls each installed termination procedure
+                                  in reverse order.
+*/
+
+extern "C" void M2Dependent_ExecuteTerminationProcedures (void)
+{
+  ExecuteReverse (TerminateProc.tail);
 }
 
 extern "C" void _M2_M2Dependent_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])

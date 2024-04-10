@@ -1,4 +1,4 @@
-/* coreout.h - Declarations and definitions related to
+/* btfext-out.h - Declarations and definitions related to
    BPF Compile Once - Run Everywhere (CO-RE) support.
    Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
@@ -36,22 +36,6 @@ struct btf_ext_section_header
 {
   uint32_t sec_name_off;
   uint32_t num_records;
-};
-
-/* A funcinfo record, in the .BTF.ext funcinfo section.  */
-struct btf_ext_funcinfo
-{
-  uint32_t insn_off; /* Offset of the first instruction of the function.  */
-  uint32_t type;     /* Type ID of a BTF_KIND_FUNC type.  */
-};
-
-/* A lineinfo record, in the .BTF.ext lineinfo section.  */
-struct btf_ext_lineinfo
-{
-  uint32_t insn_off;      /* Offset of the instruction.  */
-  uint32_t file_name_off; /* Offset of file name in BTF string table.  */
-  uint32_t line_off;      /* Offset of source line in BTF string table.  */
-  uint32_t line_col;      /* Line number (bits 31-11) and column (11-0).  */
 };
 
 enum btf_core_reloc_kind
@@ -112,6 +96,10 @@ bpf_core_reloc_add (const tree type, const char * section_name,
 		    enum btf_core_reloc_kind kind);
 
 extern int bpf_core_get_sou_member_index (ctf_container_ref, const tree);
+
+struct btf_ext_funcinfo *btf_add_func_info_for (tree decl,
+						const char *label);
+unsigned int btf_ext_add_string (const char *str);
 
 #ifdef	__cplusplus
 }

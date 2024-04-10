@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "dwarf2.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool, bool *, const char **);
@@ -445,4 +446,26 @@ bool
 instantiation_dependent_expression_p (tree)
 {
   return false;
+}
+
+/* Return -1 if dwarf ATTR shouldn't be added for TYPE, or the attribute
+   value otherwise.  */
+int
+c_type_dwarf_attribute (const_tree type, int attr)
+{
+  if (type == NULL_TREE)
+    return -1;
+
+  switch (attr)
+    {
+    case DW_AT_export_symbols:
+      if (RECORD_OR_UNION_TYPE_P (type) && TYPE_NAME (type) == NULL_TREE)
+	return 1;
+      break;
+
+    default:
+      break;
+    }
+
+  return -1;
 }

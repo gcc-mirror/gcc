@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -mtune-ctrl=^prologue_using_move,^epilogue_using_move" } */
+/* { dg-options "-O0 -mtune-ctrl=^prologue_using_move,^epilogue_using_move -mnoreturn-no-callee-saved-registers" } */
 
 #define ARRAY_SIZE 256
 

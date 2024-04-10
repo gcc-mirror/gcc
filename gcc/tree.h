@@ -3020,7 +3020,7 @@ extern void decl_value_expr_insert (tree, tree);
    DECL_OFFSET_ALIGN thus returns the alignment that DECL_FIELD_OFFSET
    has.  */
 #define DECL_OFFSET_ALIGN(NODE) \
-  (((unsigned HOST_WIDE_INT)1) << FIELD_DECL_CHECK (NODE)->decl_common.off_align)
+  (HOST_WIDE_INT_1U << FIELD_DECL_CHECK (NODE)->decl_common.off_align)
 
 /* Specify that DECL_OFFSET_ALIGN(NODE) is X.  */
 #define SET_DECL_OFFSET_ALIGN(NODE, X) \

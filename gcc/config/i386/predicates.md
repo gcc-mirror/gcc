@@ -309,7 +309,7 @@
   switch (GET_CODE (op))
     {
     case CONST_INT:
-      return !(INTVAL (op) & ~(HOST_WIDE_INT) 0xffffffff);
+      return !(INTVAL (op) & ~HOST_WIDE_INT_C (0xffffffff));
 
     case SYMBOL_REF:
       /* TLS symbols are not constant.  */
@@ -839,7 +839,7 @@
 (define_predicate "const_32bit_mask"
   (and (match_code "const_int")
        (match_test "trunc_int_for_mode (INTVAL (op), DImode)
-		    == (HOST_WIDE_INT) 0xffffffff")))
+		    == HOST_WIDE_INT_C (0xffffffff)")))
 
 ;; Match 2, 4, or 8.  Used for leal multiplicands.
 (define_predicate "const248_operand"
@@ -2299,10 +2299,14 @@
 
 ;; Return true if OP is a memory operand which can be used in APX NDD
 ;; ADD with register source operand.  UNSPEC_GOTNTPOFF memory operand
-;; isn't allowed with APX NDD ADD.
+;; is allowed with APX NDD ADD only if R_X86_64_CODE_6_GOTTPOFF works.
 (define_predicate "apx_ndd_add_memory_operand"
   (match_operand 0 "memory_operand")
 {
+  /* OK if "add %reg1, name@gottpoff(%rip), %reg2" is supported.  */
+  if (HAVE_AS_R_X86_64_CODE_6_GOTTPOFF)
+    return true;
+
   op = XEXP (op, 0);
 
   /* Disallow APX NDD ADD with UNSPEC_GOTNTPOFF.  */

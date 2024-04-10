@@ -1,3 +1,69 @@
+2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_can_run): Don't consider
+	'GCN_SUPPRESS_HOST_FALLBACK' anymore (assume always-'true').
+	(init_hsa_context): Adjust 'GCN_SUPPRESS_HOST_FALLBACK' error
+	message.
+
+2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-nvptx.c (nvptx_get_num_devices):
+	'cuDeviceGetCount' failure is fatal.
+
+2024-03-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-gcn.c (init_hsa_runtime_functions): Fatal error
+	for missing symbols.
+	* plugin/plugin-nvptx.c (init_cuda_lib): Likewise.
+
+2024-03-06  John David Anglin  <danglin@gcc.gnu.org>
+
+	Revert:
+	2024-02-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.c++/loop-3.C: Set num_threads to 50
+	on 32-bit hppa.
+	* testsuite/libgomp.c/omp-loop03.c: Likewise.
+
+2024-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/114216
+	* target.c (gomp_target_rev): Change host_fn type and corresponding
+	cast from void (*)() to void (*) (void *).
+
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/110347
+	* testsuite/libgomp.c++/target-lambda-3.C: Moved from
+	gcc/testsuite/g++.dg/gomp/ and fixed is-mapped handling.
+	* testsuite/libgomp.c++/target-lambda-1.C: Modify to also
+	also work without offloading.
+	* testsuite/libgomp.c++/firstprivate-1.C: New test.
+	* testsuite/libgomp.c++/firstprivate-2.C: New test.
+	* testsuite/libgomp.c++/private-1.C: New test.
+	* testsuite/libgomp.c++/private-2.C: New test.
+	* testsuite/libgomp.c++/target-lambda-4.C: New test.
+	* testsuite/libgomp.c++/use_device_ptr-1.C: New test.
+
+2024-02-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenACC Runtime Library Routines): Document new 3.3
+	routines that simply map to their C counterpart.
+	* openacc.f90 (openacc): Add them.
+	* openacc_lib.h: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_host_device_ptr.f90: New test.
+	* testsuite/libgomp.oacc-fortran/acc-memcpy.f90: New test.
+	* testsuite/libgomp.oacc-fortran/acc-memcpy-2.f90: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-59.c: Crossref to f90 test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-60.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-95.c: Likewise.
+
+2024-02-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Context Selectors): Add 'nvptx64' as additional
+	'arch' value for nvptx.
+
 2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* libgomp.texi (OpenMP 5.1): Mark indirect call support as fully

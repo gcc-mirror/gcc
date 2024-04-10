@@ -54,6 +54,7 @@ proc libstdc++-dg-prune { system text } {
     regsub -all "(^|\n)\[^\n\]*:   . skipping \[0-9\]* instantiation contexts \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   in .constexpr. expansion \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   in requirements  .with\[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   in requirements with\[^\n\]*" $text "" text
     regsub -all "(^|\n)    inlined from \[^\n\]*" $text "" text
     # Why doesn't GCC need these to strip header context?
     regsub -all "(^|\n)In file included from \[^\n\]*" $text "" text

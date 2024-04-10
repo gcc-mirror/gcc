@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power9 -O2 -mfloat128" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2 -mfloat128" } */
 
 #ifndef TYPE
 #define TYPE _Float128

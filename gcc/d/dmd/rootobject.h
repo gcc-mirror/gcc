@@ -4,13 +4,13 @@
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * https://www.boost.org/LICENSE_1_0.txt
- * https://github.com/dlang/dmd/blob/master/src/dmd/root/object.h
+ * https://github.com/dlang/dmd/blob/master/src/dmd/rootobject.h
  */
 
 #pragma once
 
-#include "dsystem.h"
-#include "dcompat.h"
+#include "root/dsystem.h"
+#include "root/dcompat.h"
 
 typedef size_t hash_t;
 

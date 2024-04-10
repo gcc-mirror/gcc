@@ -1,3 +1,225 @@
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* pt.cc (tsubst_expr): Handle MEM_REF.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/113918
+	* cp-objcp-common.cc (cp_type_dwarf_attribute): Return 1
+	for DW_AT_export_symbols on anonymous structs or unions.
+
+2024-03-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113802
+	* parser.cc (cp_parser_parameter_declaration): Move the xobj_param_p
+	pack diagnostics after ellipsis handling and if an error is reported,
+	pretend this specifier didn't appear.  Formatting fix.
+
+2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114229
+	* module.cc (trees_out::core_bools): Redetermine
+	DECL_INTERFACE_KNOWN on stream-in for vtables and tinfo.
+	* decl2.cc (import_export_decl): Add fixme for ABI changes with
+	module vtables and tinfo.
+
+2024-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103994
+	* cp-tree.h (add_mergeable_specialization): Remove second
+	parameter.
+	* module.cc (depset::disc_bits::DB_ALIAS_TMPL_INST_BIT): Remove.
+	(depset::disc_bits::DB_ALIAS_SPEC_BIT): Remove.
+	(depset::is_alias_tmpl_inst): Remove.
+	(depset::is_alias): Remove.
+	(merge_kind::MK_tmpl_alias_mask): Remove.
+	(merge_kind::MK_alias_spec): Remove.
+	(merge_kind_name): Remove entries for alias specializations.
+	(trees_out::core_vals) <case TEMPLATE_DECL>: Adjust after
+	removing is_alias_tmpl_inst.
+	(trees_in::decl_value): Adjust add_mergeable_specialization
+	calls.
+	(trees_out::get_merge_kind) <case depset::EK_SPECIALIZATION>:
+	Use MK_decl_spec for alias template specializations.
+	(trees_out::key_mergeable): Simplify after MK_tmpl_alias_mask
+	removal.
+	(depset::hash::make_dependency): Adjust after removing
+	DB_ALIAS_TMPL_INST_BIT.
+	(specialization_add): Don't allow alias templates when !decl_p.
+	(depset::hash::add_specializations): Remove now-dead code
+	accomodating alias template specializations in the type table.
+	* pt.cc (lookup_template_class): Dispatch early to
+	instantiate_alias_template for alias templates.  Simplify
+	accordingly.
+	(add_mergeable_specialization): Remove alias_p parameter and
+	simplify accordingly.
+
+2024-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110730
+	PR c++/105512
+	* module.cc (module_state::write_namespaces): Stream the
+	abi_tag attribute of an inline namespace.
+	(module_state::read_namespaces): Likewise.
+
+2024-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110031
+	* pt.cc (lookup_and_finish_template_variable): Pass complain to
+	mark_used.
+
+2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98356
+	* typeck2.cc (cxx_incomplete_type_diagnostic): Don't assume
+	'member' will be a FUNCTION_DECL (or something like it).
+
+2024-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98881
+	* module.cc (trees_out::tpl_parms_fini): Stream out DECL_CONTEXT
+	for template template parameters.
+	(trees_in::tpl_parms_fini): Read it.
+
+2024-03-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114114
+	* pt.cc (maybe_instantiate_noexcept): Save/restore
+	cp_unevaluated_operand, c_inhibit_evaluation_warnings, and
+	cp_noexcept_operand around the tsubst_expr call.
+
+2024-03-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113629
+	* pt.cc (type_unification_real): Only use DEDUCE_CONV for the
+	return type of a conversion function.
+
+2024-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (trees_out::get_merge_kind) <case depset::EK_DECL>:
+	Accomodate class-scope DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P
+	TEMPLATE_DECL.  Consolidate IDENTIFIER_ANON_P cases.
+
+2024-03-05  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.cc (cp_parser_translation_unit): Relax GMF contents
+	error into a pedwarn.
+
+2024-03-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (walk_module_binding): Remove completed FIXME.
+	(do_nonmember_using_decl): Mark redeclared entities as exported
+	when needed. Check for re-exporting internal linkage types.
+
+2024-03-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/104919
+	PR c++/106009
+	* module.cc (depset::hash::sneakoscope): Remove.
+	(trees_out::decl_node): Always add a dependency on a local type.
+	(depset::hash::find_dependencies): Remove sneakoscope stuff.
+
+2024-03-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114170
+	* module.cc (has_definition): Fall back to DECL_INITIALIZED_P
+	when DECL_INITIAL is not set on a template.
+	(module_state::write_inits): Only increment count when
+	initializers are actually written.
+
+2024-03-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114005
+	* init.cc (create_temporary_var): Use current_scope instead of
+	current_function_decl.
+
+2024-03-01  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (maybe_register_incomplete_var): Restrict second
+	branch to static data members from a not-yet-complete class.
+
+2024-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/110358
+	PR c++/109642
+	* call.cc (no_dangling_p): New.
+	(reference_like_class_p): Use it.
+	(do_warn_dangling_reference): Use it.  Don't warn when the function
+	or its enclosing class has attribute gnu::no_dangling.
+	* tree.cc (cxx_gnu_attributes): Add gnu::no_dangling.
+	(handle_no_dangling_attribute): New.
+
+2024-03-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110025
+	PR c++/114138
+	* cp-tree.h (make_cast_auto): Declare.
+	* parser.cc (cp_parser_functional_cast): If the type is an auto,
+	replace it with a level-less one via make_cast_auto.
+	* pt.cc (find_parameter_packs_r): Don't treat level-less auto
+	as a type parameter pack.
+	(tsubst) <case TEMPLATE_TYPE_PARM>: Generalize CTAD placeholder
+	auto handling to all level-less autos.
+	(make_cast_auto): Define.
+	(do_auto_deduction): Handle replacement of a level-less auto.
+
+2024-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/92687
+	* decl.cc (lookup_decomp_type): Return NULL_TREE if decomp_type_table
+	doesn't have entry for V.
+	* semantics.cc (finish_decltype_type): If ptds.saved, assert
+	DECL_HAS_VALUE_EXPR_P is true and decide on tuple vs. non-tuple based
+	on if lookup_decomp_type is NULL or not.
+
+2024-02-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113987
+	* call.cc (conv_binds_to_reference_parm_p): New.
+	* cp-tree.h (conv_binds_to_reference_parm_p): Declare.
+	* init.cc (find_uninit_fields_r): Call it.
+
+2024-02-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/111710
+	* cp-tree.h (DECL_MODULE_KEYED_DECLS_P): Remove tree checking.
+	(struct lang_decl_base): Update comments and fix whitespace.
+	* module.cc (trees_out::lang_decl_bools): Always write
+	module_keyed_decls_p flag...
+	(trees_in::lang_decl_bools): ...and always read it.
+	(trees_out::decl_value): Handle all kinds of keyed decls.
+	(trees_in::decl_value): Likewise.
+	(trees_in::tree_value): Deduplicate LAMBDA_EXPRs.
+	(maybe_key_decl): Also support lambdas attached to fields,
+	parameters, and types. Key lambdas attached to fields to their
+	class.
+	(trees_out::get_merge_kind): Likewise.
+	(trees_out::key_mergeable): Likewise.
+	(trees_in::key_mergeable): Support keyed decls in a TYPE_DECL
+	container.
+	* parser.cc (cp_parser_class_head): Start a lambda scope when
+	parsing base classes.
+
+2024-02-28  Jakub Jelinek  <jakub@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113976
+	* decl.cc (grokdeclarator): Don't call cp_apply_type_quals_to_decl
+	on DECL_TEMPLATE_INSTANTIATED VAR_DECLs.
+
+2024-02-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/113970
+	PR c++/114013
+	* decl.cc (make_rtl_for_nonlocal_decl): Don't defer inline
+	variables.
+
+2024-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113083
+	* cp-gimplify.cc (cp_fold): For targetm.cxx.cdtor_returns_this ()
+	wrap r into a COMPOUND_EXPR and return folded CALL_EXPR_ARG (x, 0).
+
 2024-02-19  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/113966

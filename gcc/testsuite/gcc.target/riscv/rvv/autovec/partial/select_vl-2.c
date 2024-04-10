@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d --param riscv-autovec-preference=scalable -fno-schedule-insns --param riscv-autovec-lmul=m1 -O3 -ftree-vectorize" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -mrvv-vector-bits=scalable -fno-schedule-insns --param riscv-autovec-lmul=m1 -O3 -ftree-vectorize" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include <stdint-gcc.h>

@@ -47,6 +47,7 @@ static tree verify_stmt_tree_r (tree *, int *, void *);
 static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 static tree handle_abi_tag_attribute (tree *, tree, tree, int, bool *);
 static tree handle_contract_attribute (tree *, tree, tree, int, bool *);
+static tree handle_no_dangling_attribute (tree *, tree, tree, int, bool *);
 
 /* If REF is an lvalue, returns the kind of lvalue that REF is.
    Otherwise, returns clk_none.  */
@@ -5102,6 +5103,8 @@ static const attribute_spec cxx_gnu_attributes[] =
     handle_init_priority_attribute, NULL },
   { "abi_tag", 1, -1, false, false, false, true,
     handle_abi_tag_attribute, NULL },
+  { "no_dangling", 0, 1, false, true, false, false,
+    handle_no_dangling_attribute, NULL },
 };
 
 const scoped_attribute_specs cxx_gnu_attribute_table =
@@ -5388,6 +5391,29 @@ handle_contract_attribute (tree *ARG_UNUSED (node), tree ARG_UNUSED (name),
 			   bool *ARG_UNUSED (no_add_attrs))
 {
   /* TODO: Is there any checking we could do here?  */
+  return NULL_TREE;
+}
+
+/* Handle a "no_dangling" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_no_dangling_attribute (tree *node, tree name, tree args, int,
+			      bool *no_add_attrs)
+{
+  if (args && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
+    {
+      error ("%qE attribute argument must be an expression that evaluates "
+	     "to true or false", name);
+      *no_add_attrs = true;
+    }
+  else if (!FUNC_OR_METHOD_TYPE_P (*node)
+	   && !RECORD_OR_UNION_TYPE_P (*node))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
 

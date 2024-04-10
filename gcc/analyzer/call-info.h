@@ -44,6 +44,7 @@ public:
 
 protected:
   call_info (const call_details &cd);
+  call_info (const call_details &cd, const function &called_fn);
 
 private:
   const gcall *m_call_stmt;

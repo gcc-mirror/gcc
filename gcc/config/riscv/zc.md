@@ -27,7 +27,7 @@
                        (const_int <slot0_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s0_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -41,7 +41,7 @@
                        (const_int <slot1_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s1_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -58,7 +58,7 @@
                        (const_int <slot2_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s1}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s2_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -78,7 +78,7 @@
                        (const_int <slot3_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s2}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s3_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -101,7 +101,7 @@
                        (const_int <slot4_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s3}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s4_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -127,7 +127,7 @@
                        (const_int <slot5_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s4}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s5_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -156,7 +156,7 @@
                        (const_int <slot6_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s5}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s6_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -188,7 +188,7 @@
                        (const_int <slot7_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s6}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s7_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -223,7 +223,7 @@
                       (const_int <slot8_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s7}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s8_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -261,7 +261,7 @@
                        (const_int <slot9_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s8}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s9_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -302,7 +302,7 @@
                        (const_int <slot10_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s9}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_pop_up_to_s11_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -349,7 +349,7 @@
                        (const_int <slot12_offset>))))]
   "TARGET_ZCMP"
   "cm.pop	{ra, s0-s11}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_ra_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -362,7 +362,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s0_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -378,7 +378,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s1_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -397,7 +397,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s1}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s2_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -419,7 +419,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s2}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s3_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -444,7 +444,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s3}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s4_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -472,7 +472,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s4}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s5_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -503,7 +503,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s5}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s6_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -537,7 +537,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s6}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s7_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -574,7 +574,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s7}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s8_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -614,7 +614,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s8}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s9_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -657,7 +657,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s9}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popret_up_to_s11_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -706,7 +706,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popret	{ra, s0-s11}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_ra_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -722,7 +722,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s0_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -741,7 +741,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s1_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -763,7 +763,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s1}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s2_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -788,7 +788,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s2}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s3_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -816,7 +816,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s3}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s4_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -847,7 +847,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s4}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s5_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -881,7 +881,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s5}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s6_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -918,7 +918,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s6}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s7_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -958,7 +958,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s7}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s8_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -1001,7 +1001,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s8}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s9_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -1047,7 +1047,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s9}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_popretz_up_to_s11_<mode>"
   [(set (reg:X SP_REGNUM)
@@ -1099,7 +1099,7 @@
    (use (reg:SI RETURN_ADDR_REGNUM))]
   "TARGET_ZCMP"
   "cm.popretz	{ra, s0-s11}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "load")])
 
 (define_insn "@gpr_multi_push_up_to_ra_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1110,7 +1110,7 @@
                  (match_operand 0 "stack_push_up_to_ra_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s0_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1124,7 +1124,7 @@
                  (match_operand 0 "stack_push_up_to_s0_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s1_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1141,7 +1141,7 @@
                  (match_operand 0 "stack_push_up_to_s1_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s1}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s2_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1161,7 +1161,7 @@
                  (match_operand 0 "stack_push_up_to_s2_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s2}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s3_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1184,7 +1184,7 @@
                  (match_operand 0 "stack_push_up_to_s3_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s3}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s4_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1210,7 +1210,7 @@
                  (match_operand 0 "stack_push_up_to_s4_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s4}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s5_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1239,7 +1239,7 @@
                  (match_operand 0 "stack_push_up_to_s5_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s5}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s6_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1271,7 +1271,7 @@
                  (match_operand 0 "stack_push_up_to_s6_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s6}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s7_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1306,7 +1306,7 @@
                  (match_operand 0 "stack_push_up_to_s7_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s7}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s8_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1344,7 +1344,7 @@
                  (match_operand 0 "stack_push_up_to_s8_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s8}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s9_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1385,7 +1385,7 @@
                  (match_operand 0 "stack_push_up_to_s9_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s9}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 (define_insn "@gpr_multi_push_up_to_s11_<mode>"
   [(set (mem:X (plus:X (reg:X SP_REGNUM)
@@ -1432,7 +1432,7 @@
                  (match_operand 0 "stack_push_up_to_s11_operand" "I")))]
   "TARGET_ZCMP"
   "cm.push	{ra, s0-s11}, %0"
-[(set_attr "type" "pushpop")])
+[(set_attr "type" "store")])
 
 ;; ZCMP mv
 (define_insn "*mva01s<X:mode>"

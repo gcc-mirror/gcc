@@ -10,7 +10,7 @@
 </h1></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="section"><a href="appendix_contributing.html#contrib.list">Contributor Checklist</a></span></dt><dd><dl><dt><span class="section"><a href="appendix_contributing.html#list.reading">Reading</a></span></dt><dt><span class="section"><a href="appendix_contributing.html#list.copyright">Assignment</a></span></dt><dt><span class="section"><a href="appendix_contributing.html#list.getting">Getting Sources</a></span></dt><dt><span class="section"><a href="appendix_contributing.html#list.patches">Submitting Patches</a></span></dt></dl></dd><dt><span class="section"><a href="source_organization.html">Directory Layout and Source Conventions</a></span></dt><dt><span class="section"><a href="source_code_style.html">Coding Style</a></span></dt><dd><dl><dt><span class="section"><a href="source_code_style.html#coding_style.bad_identifiers">Bad Identifiers</a></span></dt><dt><span class="section"><a href="source_code_style.html#coding_style.example">By Example</a></span></dt></dl></dd><dt><span class="section"><a href="source_design_notes.html">Design Notes</a></span></dt></dl></div><p>
   The GNU C++ Library is part of GCC and follows the same development model,
   so the general rules for
-  <a class="link" href="http://gcc.gnu.org/contribute.html" target="_top">contributing
+  <a class="link" href="https://gcc.gnu.org/contribute.html" target="_top">contributing
   to GCC</a> apply. Active
   contributors are assigned maintainership responsibility, and given
   write access to the source repository. First-time contributors
@@ -34,7 +34,7 @@
 	  <a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/" target="_top">https://www.open-std.org/jtc1/sc22/wg21</a>
 	</p></li><li class="listitem"><p>
 	  Peruse
-	  the <a class="link" href="http://www.gnu.org/prep/standards/" target="_top">GNU
+	  the <a class="link" href="https://www.gnu.org/prep/standards/" target="_top">GNU
 	  Coding Standards</a>, and chuckle when you hit the part
 	  about <span class="quote">“<span class="quote">Using Languages Other Than C</span>”</span>.
 	</p></li><li class="listitem"><p>
@@ -46,7 +46,7 @@
 	  library-specific information found in
           <a class="link" href="appendix_porting.html" title="Appendix B.  Porting and Maintenance">Porting and Maintenance</a>.
       </p></li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="list.copyright"></a>Assignment</h3></div></div></div><p>
-      See the <a class="link" href="http://gcc.gnu.org/contribute.html#legal" target="_top">legal prerequisites</a> for all GCC contributions.
+      See the <a class="link" href="https://gcc.gnu.org/contribute.html#legal" target="_top">legal prerequisites</a> for all GCC contributions.
     </p><p>
       Historically, the libstdc++ assignment form added the following
       question:
@@ -79,19 +79,19 @@
 	  bug. For new features a description of the feature and your
 	  implementation.
 	</p></li><li class="listitem"><p>
-	  A ChangeLog entry as plain text; see the various
-	  ChangeLog files for format and content. If you are
-	  using emacs as your editor, simply position the insertion
-	  point at the beginning of your change and hit CX-4a to bring
-	  up the appropriate ChangeLog entry. See--magic! Similar
-	  functionality also exists for vi.
+	  A ChangeLog entry as part of the Git commit message. Check
+	  some recent commits for format and content. The
+	  <code class="filename">contrib/mklog.py</code> script can be used to
+	  generate a ChangeLog template for commit messages. See
+	  <a class="link" href="https://gcc.gnu.org/gitwrite.html" target="_top">Read-write Git access</a>
+	  for scripts and aliases that are useful here.
 	</p></li><li class="listitem"><p>
 	  A testsuite submission or sample program that will
 	  easily and simply show the existing error or test new
 	  functionality.
 	</p></li><li class="listitem"><p>
 	  The patch itself. If you are using the Git repository use
-	  <span class="command"><strong>git diff</strong></span> or <span class="command"><strong>git format-patch</strong></span>
+	  <span class="command"><strong>git show</strong></span> or <span class="command"><strong>git format-patch</strong></span>
 	  to produce a patch;
 	  otherwise, use <span class="command"><strong>diff -cp OLD NEW</strong></span>. If your
 	  version of diff does not support these options, then get the
@@ -102,6 +102,8 @@
 	  patches and related discussion should be sent to the
 	  libstdc++ mailing list. In common with the rest of GCC,
 	  patches should also be sent to the gcc-patches mailing list.
+	  So you could send your email To:libstdc++@gcc.gnu.org and
+	  Cc:gcc-patches@gcc.gnu.org for example.
 	</p></li></ul></div></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="appendix.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="source_organization.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Part IV. 
   Appendices
  </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Directory Layout and Source Conventions</td></tr></table></div></body></html>

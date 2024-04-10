@@ -33,7 +33,7 @@ main ()
   *((unsigned long *)&__m128i_op2[1]) = 0x0000000000000000;
   *((unsigned long *)&__m128i_op2[0]) = 0x3f2f1f0f00000000;
   *((unsigned long *)&__m128i_result[1]) = 0x0000000000000000;
-  *((unsigned long *)&__m128i_result[0]) = 0x0000000000000000;
+  *((unsigned long *)&__m128i_result[0]) = 0x00ff00ff00000000;
   __m128i_out = __lsx_vshuf_b (__m128i_op0, __m128i_op1, __m128i_op2);
   ASSERTEQ_64 (__LINE__, __m128i_result, __m128i_out);
 
@@ -153,7 +153,7 @@ main ()
   *((unsigned long *)&__m128i_op1[0]) = 0x000000002bfd9461;
   *((unsigned long *)&__m128i_op2[1]) = 0x00007fff00007fff;
   *((unsigned long *)&__m128i_op2[0]) = 0x0000000000000000;
-  *((unsigned long *)&__m128i_result[1]) = 0x0000000000000000;
+  *((unsigned long *)&__m128i_result[1]) = 0x00007fff00000000;
   *((unsigned long *)&__m128i_result[0]) = 0x0000000000000000;
   __m128i_out = __lsx_vshuf_h (__m128i_op0, __m128i_op1, __m128i_op2);
   ASSERTEQ_64 (__LINE__, __m128i_result, __m128i_out);
@@ -198,7 +198,7 @@ main ()
   *((unsigned long *)&__m128i_op2[1]) = 0x00000000000000c0;
   *((unsigned long *)&__m128i_op2[0]) = 0x00000001ffffff29;
   *((unsigned long *)&__m128i_result[1]) = 0xffffff29ffffff29;
-  *((unsigned long *)&__m128i_result[0]) = 0x0000000100000001;
+  *((unsigned long *)&__m128i_result[0]) = 0xffffff2900000001;
   __m128i_out = __lsx_vshuf_w (__m128i_op0, __m128i_op1, __m128i_op2);
   ASSERTEQ_64 (__LINE__, __m128i_result, __m128i_out);
 
@@ -219,7 +219,7 @@ main ()
   *((unsigned long *)&__m128i_op1[0]) = 0x0000000000000000;
   *((unsigned long *)&__m128i_op2[1]) = 0x0000000020000020;
   *((unsigned long *)&__m128i_op2[0]) = 0x0000000020000020;
-  *((unsigned long *)&__m128i_result[1]) = 0x2000002000000000;
+  *((unsigned long *)&__m128i_result[1]) = 0x0000000000000000;
   *((unsigned long *)&__m128i_result[0]) = 0x2000002020000020;
   __m128i_out = __lsx_vshuf_w (__m128i_op0, __m128i_op1, __m128i_op2);
   ASSERTEQ_64 (__LINE__, __m128i_result, __m128i_out);
@@ -241,7 +241,7 @@ main ()
   *((unsigned long *)&__m128i_op1[0]) = 0x0000001000000010;
   *((unsigned long *)&__m128i_op2[1]) = 0x8000000100000000;
   *((unsigned long *)&__m128i_op2[0]) = 0x8000000000000103;
-  *((unsigned long *)&__m128i_result[1]) = 0x0000010300000103;
+  *((unsigned long *)&__m128i_result[1]) = 0x8000000000000103;
   *((unsigned long *)&__m128i_result[0]) = 0x0000010380000001;
   __m128i_out = __lsx_vshuf_w (__m128i_op0, __m128i_op1, __m128i_op2);
   ASSERTEQ_64 (__LINE__, __m128i_result, __m128i_out);
@@ -252,7 +252,7 @@ main ()
   *((unsigned long *)&__m128i_op1[0]) = 0x0000000000000000;
   *((unsigned long *)&__m128i_op2[1]) = 0xffffffffffffffff;
   *((unsigned long *)&__m128i_op2[0]) = 0xffffffffffffffff;
-  *((unsigned long *)&__m128i_result[1]) = 0x0000000000000000;
+  *((unsigned long *)&__m128i_result[1]) = 0xffffffff00000000;
   *((unsigned long *)&__m128i_result[0]) = 0xffffffffffffffff;
   __m128i_out = __lsx_vshuf_w (__m128i_op0, __m128i_op1, __m128i_op2);
   ASSERTEQ_64 (__LINE__, __m128i_result, __m128i_out);

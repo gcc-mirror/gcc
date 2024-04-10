@@ -457,7 +457,8 @@ btf_collect_datasec (ctf_container_ref ctfc)
       func_dtd->dtd_data.ctti_type = dtd->dtd_type;
       func_dtd->linkage = dtd->linkage;
       func_dtd->dtd_name = dtd->dtd_name;
-      func_dtd->dtd_type = num_types_added + num_types_created;
+      /* +1 for the sentinel type not in the types map.  */
+      func_dtd->dtd_type = num_types_added + num_types_created + 1;
 
       /* Only the BTF_KIND_FUNC type actually references the name. The
 	 BTF_KIND_FUNC_PROTO is always anonymous.  */
@@ -480,8 +481,7 @@ btf_collect_datasec (ctf_container_ref ctfc)
 
 	  struct btf_var_secinfo info;
 
-	  /* +1 for the sentinel type not in the types map.  */
-	  info.type = func_dtd->dtd_type + 1;
+	  info.type = func_dtd->dtd_type;
 
 	  /* Both zero at compile time.  */
 	  info.size = 0;
@@ -1276,8 +1276,10 @@ output_btf_types (ctf_container_ref ctfc)
 static void
 output_btf_func_types (ctf_container_ref ctfc)
 {
-  for (size_t i = 0; i < vec_safe_length (funcs); i++)
-    btf_asm_func_type (ctfc, (*funcs)[i], i);
+  ctf_dtdef_ref ref;
+  unsigned i;
+  FOR_EACH_VEC_ELT (*funcs, i, ref)
+    btf_asm_func_type (ctfc, ref, i);
 }
 
 /* Output all BTF_KIND_DATASEC records.  */
@@ -1450,6 +1452,22 @@ btf_finalize (void)
   ctf_container_ref tu_ctfc = ctf_get_tu_ctfc ();
   ctfc_delete_container (tu_ctfc);
   tu_ctfc = NULL;
+}
+
+/* Traversal function for all BTF_KIND_FUNC type records.  */
+
+bool
+traverse_btf_func_types (funcs_traverse_callback callback, void *data)
+{
+  ctf_dtdef_ref ref;
+  unsigned i;
+  FOR_EACH_VEC_ELT (*funcs, i, ref)
+    {
+      bool stop = callback (ref, data);
+      if (stop == true)
+	return true;
+    }
+  return false;
 }
 
 #include "gt-btfout.h"

@@ -140,4 +140,32 @@ PROCEDURE isnanf (x: SHORTREAL) : INTEGER ;
 PROCEDURE isnanl (x: LONGREAL) : INTEGER ;
 
 
+(*
+   SeekSet - return the system libc SEEK_SET value.
+*)
+
+PROCEDURE SeekSet () : INTEGER ;
+
+
+(*
+    SeekEnd - return the system libc SEEK_END value.
+*)
+
+PROCEDURE SeekEnd () : INTEGER ;
+
+
+(*
+   ReadOnly - return the system value of O_RDONLY.
+*)
+
+PROCEDURE ReadOnly () : BITSET ;
+
+
+(*
+   WriteOnly - return the system value of O_WRONLY.
+*)
+
+PROCEDURE WriteOnly () : BITSET ;
+
+
 END wrapc.

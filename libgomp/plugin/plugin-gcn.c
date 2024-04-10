@@ -1382,9 +1382,10 @@ init_hsa_runtime_functions (void)
 #define DLSYM_FN(function) \
   hsa_fns.function##_fn = dlsym (handle, #function); \
   if (hsa_fns.function##_fn == NULL) \
-    return false;
+    GOMP_PLUGIN_fatal ("'%s' is missing '%s'", hsa_runtime_lib, #function);
 #define DLSYM_OPT_FN(function) \
   hsa_fns.function##_fn = dlsym (handle, #function);
+
   void *handle = dlopen (hsa_runtime_lib, RTLD_LAZY);
   if (handle == NULL)
     return false;
@@ -1523,9 +1524,11 @@ init_hsa_context (void)
   init_environment_variables ();
   if (!init_hsa_runtime_functions ())
     {
-      GCN_WARNING ("Run-time could not be dynamically opened\n");
+      const char *msg = "Run-time could not be dynamically opened";
       if (suppress_host_fallback)
-	GOMP_PLUGIN_fatal ("GCN host fallback has been suppressed");
+	GOMP_PLUGIN_fatal ("%s\n", msg);
+      else
+	GCN_WARNING ("%s\n", msg);
       return false;
     }
   status = hsa_fns.hsa_init_fn ();
@@ -3854,15 +3857,9 @@ GOMP_OFFLOAD_can_run (void *fn_ptr)
 
   init_kernel (kernel);
   if (kernel->initialization_failed)
-    goto failure;
+    GOMP_PLUGIN_fatal ("kernel initialization failed");
 
   return true;
-
-failure:
-  if (suppress_host_fallback)
-    GOMP_PLUGIN_fatal ("GCN host fallback has been suppressed");
-  GCN_WARNING ("GCN target cannot be launched, doing a host fallback\n");
-  return false;
 }
 
 /* Allocate memory on device N.  */

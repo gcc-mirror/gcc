@@ -83,6 +83,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm-constrs.h"
 #include "tree-vrp.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "sched-int.h"

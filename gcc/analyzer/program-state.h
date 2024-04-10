@@ -226,8 +226,8 @@ public:
 
   json::object *to_json (const extrinsic_state &ext_state) const;
 
-  void push_frame (const extrinsic_state &ext_state, function *fun);
-  function * get_current_function () const;
+  void push_frame (const extrinsic_state &ext_state, const function &fun);
+  const function * get_current_function () const;
 
   void push_call (exploded_graph &eg,
 		  exploded_node *enode,

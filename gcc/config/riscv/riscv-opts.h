@@ -72,13 +72,6 @@ enum stack_protector_guard {
   SSP_GLOBAL			/* global canary */
 };
 
-/* RISC-V auto-vectorization preference.  */
-enum riscv_autovec_preference_enum {
-  NO_AUTOVEC,
-  RVV_SCALABLE,
-  RVV_FIXED_VLMAX
-};
-
 /* RISC-V auto-vectorization RVV LMUL.  */
 enum riscv_autovec_lmul_enum {
   RVV_M1 = 1,
@@ -127,6 +120,14 @@ enum vsetvl_strategy_enum {
   VSETVL_SIMPLE,
   /* No fusion: Disable Phase 2 earliest global fusion.  */
   VSETVL_OPT_NO_FUSION,
+};
+
+/* RVV vector bits for option -mrvv-vector-bits, default is scalable.  */
+enum rvv_vector_bits_enum {
+  /* scalable indicates taking the value of zvl*b as the minimal vlen.  */
+  RVV_VECTOR_BITS_SCALABLE,
+  /* zvl indicates taking the value of zvl*b as the exactly vlen.  */
+  RVV_VECTOR_BITS_ZVL,
 };
 
 #define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))

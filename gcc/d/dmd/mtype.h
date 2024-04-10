@@ -257,7 +257,6 @@ public:
     Type *arrayOf();
     Type *sarrayOf(dinteger_t dim);
     bool hasDeprecatedAliasThis();
-    Type *aliasthisOf();
     virtual Type *makeConst();
     virtual Type *makeImmutable();
     virtual Type *makeShared();
@@ -271,11 +270,7 @@ public:
     virtual MATCH implicitConvTo(Type *to);
     virtual MATCH constConv(Type *to);
     virtual unsigned char deduceWild(Type *t, bool isRef);
-    virtual Type *substWildTo(unsigned mod);
 
-    Type *unqualify(unsigned m);
-
-    virtual Type *toHeadMutable();
     virtual ClassDeclaration *isClassHandle();
     virtual structalign_t alignment();
     virtual Expression *defaultInitLiteral(const Loc &loc);
@@ -580,7 +575,6 @@ public:
     bool hasLazyParameters();
     bool isDstyleVariadic() const;
 
-    Type *substWildTo(unsigned mod) override;
     MATCH constConv(Type *to) override;
 
     bool isnothrow() const;
@@ -751,7 +745,6 @@ public:
     MATCH implicitConvTo(Type *to) override;
     MATCH constConv(Type *to) override;
     unsigned char deduceWild(Type *t, bool isRef) override;
-    Type *toHeadMutable() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -804,7 +797,6 @@ public:
     MATCH implicitConvTo(Type *to) override;
     MATCH constConv(Type *to) override;
     unsigned char deduceWild(Type *t, bool isRef) override;
-    Type *toHeadMutable() override;
     bool isZeroInit(const Loc &loc) override;
     bool isscope() override;
     bool isBoolean() override;
@@ -892,6 +884,8 @@ namespace dmd
     Type *pointerTo(Type *type);
     Type *referenceTo(Type *type);
     Type *merge2(Type *type);
+    Type *sarrayOf(Type *type, dinteger_t dim);
+    Type *arrayOf(Type *type);
     Type *constOf(Type *type);
     Type *immutableOf(Type *type);
     Type *mutableOf(Type *type);
@@ -902,7 +896,11 @@ namespace dmd
     Type *wildConstOf(Type *type);
     Type *sharedWildOf(Type *type);
     Type *sharedWildConstOf(Type *type);
+    Type *unqualify(Type *type, unsigned m);
+    Type *toHeadMutable(Type *type);
+    Type *aliasthisOf(Type *type);
     Type *castMod(Type *type, MOD mod);
     Type *addMod(Type *type, MOD mod);
     Type *addStorageClass(Type *type, StorageClass stc);
+    Type *substWildTo(Type *type, unsigned mod);
 }

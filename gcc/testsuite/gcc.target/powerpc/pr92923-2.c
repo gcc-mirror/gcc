@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power8 -O2 -fdump-tree-gimple" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2 -fdump-tree-gimple" } */
 
 /* Verify that overloaded built-ins for "eqv", "nand" and "orc" do not
    produce VIEW_CONVERT_EXPR operations on their operands.  Like so:

@@ -90,6 +90,7 @@ public:
     Type *type;                 // !=NULL means that semantic() has been run
     Loc loc;                    // file location
     EXP op;                     // to minimize use of dynamic_cast
+    d_bool parens;              // if this is a parenthesized expression
 
     size_t size() const;
     static void _init();
@@ -300,7 +301,6 @@ class IdentifierExp : public Expression
 {
 public:
     Identifier *ident;
-    d_bool parens;
 
     static IdentifierExp *create(const Loc &loc, Identifier *ident);
     bool isLvalue() override final;

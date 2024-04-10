@@ -6314,6 +6314,16 @@ Permissible values for this parameter are @code{user}, @code{supervisor},
 and @code{machine}.  If there is no parameter, then it defaults to
 @code{machine}.
 
+@cindex @code{riscv_vector_cc} function attribute, RISC-V
+@item riscv_vector_cc
+Use this attribute to force the function to use the vector calling
+convention variant.
+
+@smallexample
+void foo() __attribute__((riscv_vector_cc));
+[[riscv::vector_cc]] void foo(); // For C++11 and C23
+@end smallexample
+
 @end table
 
 The following target-specific function attributes are available for the
@@ -12626,10 +12636,7 @@ In C, writing:
 @end smallexample
 
 suppresses warnings about using @samp{[[]]} attributes in C versions
-that predate C23@.  Since the scope token @samp{::} is not a single
-lexing token in earlier versions of C, this construct also allows two colons
-to be used in place of @code{::}.  GCC does not check whether the two
-colons are immediately adjacent.
+that predate C23@.
 @end itemize
 
 @code{__extension__} has no effect aside from this.
@@ -21381,8 +21388,8 @@ available on the PowerPC family of processors starting with ISA 2.07
 or later.  Unless specific options are explicitly disabled on the
 command line, specifying option @option{-mcpu=power8} has the effect of
 enabling all the same options as for @option{-mcpu=power7} in
-addition to the @option{-mpower8-fusion}, @option{-mpower8-vector},
-@option{-mcrypto}, @option{-mhtm}, @option{-mquad-memory}, and
+addition to the @option{-mpower8-fusion}, @option{-mcrypto},
+@option{-mhtm}, @option{-mquad-memory}, and
 @option{-mquad-memory-atomic} options.
 
 This section intentionally empty.
@@ -29319,6 +29326,55 @@ Some_Class  B  __attribute__ ((init_priority (543)));
 @noindent
 Note that the particular values of @var{priority} do not matter; only their
 relative ordering.
+
+@cindex @code{no_dangling} type attribute
+@cindex @code{no_dangling} function attribute
+@item no_dangling
+
+This attribute can be applied on a class type, function, or member
+function.  Dangling references to classes marked with this attribute
+will have the @option{-Wdangling-reference} diagnostic suppressed; so
+will references returned from the @code{gnu::no_dangling}-marked
+functions.  For example:
+
+@smallexample
+class [[gnu::no_dangling]] S @{ @dots{} @};
+@end smallexample
+
+Or:
+
+@smallexample
+class A @{
+  int *p;
+  [[gnu::no_dangling]] int &foo() @{ return *p; @}
+@};
+
+[[gnu::no_dangling]] const int &
+foo (const int &i)
+@{
+  @dots{}
+@}
+@end smallexample
+
+This attribute takes an optional argument, which must be an expression that
+evaluates to true or false:
+
+@smallexample
+template <typename T>
+struct [[gnu::no_dangling(std::is_reference_v<T>)]] S @{
+  @dots{}
+@};
+@end smallexample
+
+Or:
+
+@smallexample
+template <typename T>
+[[gnu::no_dangling(std::is_lvalue_reference_v<T>)]]
+decltype(auto) foo(T&& t) @{
+  @dots{}
+@};
+@end smallexample
 
 @cindex @code{warn_unused} type attribute
 @item warn_unused

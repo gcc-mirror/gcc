@@ -31,7 +31,8 @@ FROM Storage IMPORT ALLOCATE, REALLOCATE, DEALLOCATE ;
 FROM SYSTEM IMPORT TSIZE, WORD, BYTE ;
 
 CONST
-   MinSize = 128 ;
+   MinSize           = 128 ;
+   DefaultGrowFactor = 2 ;
 
 TYPE
    PtrToAddress = POINTER TO ADDRESS ;
@@ -45,28 +46,43 @@ TYPE
                          High      : CARDINAL ;
                          Debug     : BOOLEAN ;
                          Map       : BITSET ;
+                         GrowFactor: CARDINAL ;
                       END ;
+
+(*
+   InitIndexTuned - creates a dynamic array with low indice.
+                    The minsize is the initial number of elements the
+                    array is allocated and growfactor determines how
+                    it will be resized once it becomes full.
+*)
+
+PROCEDURE InitIndexTuned (low, minsize, growfactor: CARDINAL) : Index ;
+VAR
+   i: Index ;
+BEGIN
+   NEW (i) ;
+   WITH i^ DO
+      Low := low ;
+      High := 0 ;
+      ArraySize := minsize * TSIZE (ADDRESS) ;
+      ALLOCATE (ArrayStart, ArraySize) ;
+      ArrayStart := memset (ArrayStart, 0, ArraySize) ;
+      Debug := FALSE ;
+      Used := 0 ;
+      Map := BITSET {} ;
+      GrowFactor := growfactor
+   END ;
+   RETURN i
+END InitIndexTuned ;
+
 
 (*
    InitIndex - creates and returns an Index.
 *)
 
 PROCEDURE InitIndex (low: CARDINAL) : Index ;
-VAR
-   i: Index ;
 BEGIN
-   NEW(i) ;
-   WITH i^ DO
-      Low := low ;
-      High := 0 ;
-      ArraySize := MinSize ;
-      ALLOCATE(ArrayStart, MinSize) ;
-      ArrayStart := memset(ArrayStart, 0, ArraySize) ;
-      Debug := FALSE ;
-      Used := 0 ;
-      Map := BITSET{}
-   END ;
-   RETURN( i )
+   RETURN InitIndexTuned (low, MinSize, DefaultGrowFactor)
 END InitIndex ;
 
 
@@ -162,7 +178,7 @@ BEGIN
          ELSE
             oldSize := ArraySize ;
             WHILE (n-Low)*TSIZE(ADDRESS)>=ArraySize DO
-               ArraySize := ArraySize * 2
+               ArraySize := ArraySize * GrowFactor
             END ;
             IF oldSize#ArraySize
             THEN
@@ -340,6 +356,16 @@ BEGIN
       INC(j)
    END
 END ForeachIndiceInIndexDo ;
+
+
+(*
+   IsEmpty - return TRUE if the array has no entries it.
+*)
+
+PROCEDURE IsEmpty (i: Index) : BOOLEAN ;
+BEGIN
+   RETURN i^.Used = 0
+END IsEmpty ;
 
 
 END Indexing.

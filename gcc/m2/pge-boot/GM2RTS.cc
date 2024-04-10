@@ -40,16 +40,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
-#   include "GStorage.h"
 #include <unistd.h>
-#if defined(__cplusplus)
-#   undef NULL
-#   define NULL 0
-#endif
 #define _M2RTS_H
 #define _M2RTS_C
 
@@ -66,30 +60,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef struct M2RTS_ArgCVEnvP_p M2RTS_ArgCVEnvP;
 
 #   define stderrFd 2
-typedef struct M2RTS_ProcedureList_r M2RTS_ProcedureList;
-
 typedef char *M2RTS_PtrToChar;
-
-typedef struct M2RTS__T1_r M2RTS__T1;
-
-typedef M2RTS__T1 *M2RTS_ProcedureChain;
 
 typedef void (*M2RTS_ArgCVEnvP_t) (int, void *, void *);
 struct M2RTS_ArgCVEnvP_p { M2RTS_ArgCVEnvP_t proc; };
 
-struct M2RTS_ProcedureList_r {
-                               M2RTS_ProcedureChain head;
-                               M2RTS_ProcedureChain tail;
-                             };
-
-struct M2RTS__T1_r {
-                     PROC p;
-                     M2RTS_ProcedureChain prev;
-                     M2RTS_ProcedureChain next;
-                   };
-
-static M2RTS_ProcedureList InitialProc;
-static M2RTS_ProcedureList TerminateProc;
 static int ExitValue;
 static bool isHalting;
 static bool CallExit;
@@ -239,21 +214,6 @@ extern "C" void M2RTS_ParameterException (void * filename, unsigned int line, un
 extern "C" void M2RTS_NoException (void * filename, unsigned int line, unsigned int column, void * scope, void * message);
 
 /*
-   ExecuteReverse - execute the procedure associated with procptr
-                    and then proceed to try and execute all previous
-                    procedures in the chain.
-*/
-
-static void ExecuteReverse (M2RTS_ProcedureChain procptr);
-
-/*
-   AppendProc - append proc to the end of the procedure list
-                defined by proclist.
-*/
-
-static bool AppendProc (M2RTS_ProcedureList *proclist, PROC proc);
-
-/*
    ErrorString - writes a string to stderr.
 */
 
@@ -272,12 +232,6 @@ static void ErrorStringC (void * str);
 static void ErrorMessageC (void * message, void * filename, unsigned int line, void * function);
 
 /*
-   InitProcList - initialize the head and tail pointers to NIL.
-*/
-
-static void InitProcList (M2RTS_ProcedureList *p);
-
-/*
    Init - initialize the initial, terminate procedure lists and booleans.
 */
 
@@ -291,46 +245,6 @@ static void Init (void);
 */
 
 static void CheckInitialized (void);
-
-
-/*
-   ExecuteReverse - execute the procedure associated with procptr
-                    and then proceed to try and execute all previous
-                    procedures in the chain.
-*/
-
-static void ExecuteReverse (M2RTS_ProcedureChain procptr)
-{
-  while (procptr != NULL)
-    {
-      (*procptr->p.proc) ();  /* Invoke the procedure.  */
-      procptr = procptr->prev;  /* Invoke the procedure.  */
-    }
-}
-
-
-/*
-   AppendProc - append proc to the end of the procedure list
-                defined by proclist.
-*/
-
-static bool AppendProc (M2RTS_ProcedureList *proclist, PROC proc)
-{
-  M2RTS_ProcedureChain pdes;
-
-  Storage_ALLOCATE ((void **) &pdes, sizeof (M2RTS__T1));
-  pdes->p = proc;
-  pdes->prev = (*proclist).tail;
-  pdes->next = NULL;
-  if ((*proclist).head == NULL)
-    {
-      (*proclist).head = pdes;
-    }
-  (*proclist).tail = pdes;
-  return true;
-  /* static analysis guarentees a RETURN statement will be used before here.  */
-  __builtin_unreachable ();
-}
 
 
 /*
@@ -367,10 +281,10 @@ static void ErrorStringC (void * str)
 
 static void ErrorMessageC (void * message, void * filename, unsigned int line, void * function)
 {
-  typedef struct ErrorMessageC__T2_a ErrorMessageC__T2;
+  typedef struct ErrorMessageC__T1_a ErrorMessageC__T1;
 
-  struct ErrorMessageC__T2_a { char array[10+1]; };
-  ErrorMessageC__T2 buffer;
+  struct ErrorMessageC__T1_a { char array[10+1]; };
+  ErrorMessageC__T1 buffer;
 
   ErrorStringC (filename);
   ErrorString ((const char *) ":", 1);
@@ -392,24 +306,11 @@ static void ErrorMessageC (void * message, void * filename, unsigned int line, v
 
 
 /*
-   InitProcList - initialize the head and tail pointers to NIL.
-*/
-
-static void InitProcList (M2RTS_ProcedureList *p)
-{
-  (*p).head = NULL;
-  (*p).tail = NULL;
-}
-
-
-/*
    Init - initialize the initial, terminate procedure lists and booleans.
 */
 
 static void Init (void)
 {
-  InitProcList (&InitialProc);
-  InitProcList (&TerminateProc);
   ExitValue = 0;
   isHalting = false;
   CallExit = false;  /* default by calling abort  */
@@ -488,7 +389,7 @@ extern "C" void M2RTS_RequestDependant (void * modulename, void * libname, void 
 
 extern "C" bool M2RTS_InstallTerminationProcedure (PROC p)
 {
-  return AppendProc (&TerminateProc, p);
+  return M2Dependent_InstallTerminationProcedure (p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -501,7 +402,7 @@ extern "C" bool M2RTS_InstallTerminationProcedure (PROC p)
 
 extern "C" void M2RTS_ExecuteInitialProcedures (void)
 {
-  ExecuteReverse (InitialProc.tail);
+  M2Dependent_ExecuteInitialProcedures ();
 }
 
 
@@ -513,7 +414,7 @@ extern "C" void M2RTS_ExecuteInitialProcedures (void)
 
 extern "C" bool M2RTS_InstallInitialProcedure (PROC p)
 {
-  return AppendProc (&InitialProc, p);
+  return M2Dependent_InstallInitialProcedure (p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -526,7 +427,7 @@ extern "C" bool M2RTS_InstallInitialProcedure (PROC p)
 
 extern "C" void M2RTS_ExecuteTerminationProcedures (void)
 {
-  ExecuteReverse (TerminateProc.tail);
+  M2Dependent_ExecuteTerminationProcedures ();
 }
 
 
@@ -632,10 +533,10 @@ extern "C" void M2RTS_ExitOnHalt (int e)
 
 extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high)
 {
-  typedef struct ErrorMessage__T3_a ErrorMessage__T3;
+  typedef struct ErrorMessage__T2_a ErrorMessage__T2;
 
-  struct ErrorMessage__T3_a { char array[10+1]; };
-  ErrorMessage__T3 buffer;
+  struct ErrorMessage__T2_a { char array[10+1]; };
+  ErrorMessage__T2 buffer;
   char message[_message_high+1];
   char filename[_filename_high+1];
   char function[_function_high+1];

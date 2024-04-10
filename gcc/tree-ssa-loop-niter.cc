@@ -2288,6 +2288,9 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
 	src = fold_convert (unsigned_type_node, src);
 
       call = build_call_expr (fn, 1, src);
+      if (leading && prec < i_prec)
+	call = fold_build2 (MINUS_EXPR, integer_type_node, call,
+			    build_int_cst (integer_type_node, i_prec - prec));
       if (define_at_zero)
 	{
 	  tree is_zero = fold_build2 (NE_EXPR, boolean_type_node, src,
@@ -2295,10 +2298,6 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
 	  call = fold_build3 (COND_EXPR, integer_type_node, is_zero, call,
 			      build_int_cst (integer_type_node, prec));
 	}
-
-      if (leading && prec < i_prec)
-	call = fold_build2 (MINUS_EXPR, integer_type_node, call,
-			    build_int_cst (integer_type_node, i_prec - prec));
     }
 
   return call;

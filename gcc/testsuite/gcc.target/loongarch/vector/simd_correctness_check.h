@@ -10,7 +10,7 @@
         {                                                                     \
           long long *temp_ref = (long long *)&ref[i],                         \
 		*temp_res = (long long *)&res[i];			      \
-          if (abs (*temp_ref - *temp_res) > 0)                                \
+          if (llabs (*temp_ref - *temp_res) > 0)                                \
             {                                                                 \
               printf (" error: %s at line %ld , expected " #ref               \
                       "[%ld]:0x%016lx, got: 0x%016lx\n",                      \

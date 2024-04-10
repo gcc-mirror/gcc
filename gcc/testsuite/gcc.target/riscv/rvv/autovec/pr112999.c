@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl512b -mabi=lp64d --param=riscv-autovec-lmul=m8 --param=riscv-autovec-preference=fixed-vlmax -O3 -fno-vect-cost-model -fno-tree-loop-distribute-patterns" } */
+/* { dg-options "-march=rv64gcv_zvl512b -mabi=lp64d --param=riscv-autovec-lmul=m8 -mrvv-vector-bits=zvl -O3 -fno-vect-cost-model -fno-tree-loop-distribute-patterns" } */
 
 int a[1024];
 int b[1024];

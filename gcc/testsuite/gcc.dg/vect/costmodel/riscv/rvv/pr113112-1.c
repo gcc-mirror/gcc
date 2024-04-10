@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic --param riscv-autovec-preference=fixed-vlmax -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -ftree-vectorize --param riscv-autovec-lmul=dynamic -mrvv-vector-bits=zvl -fdump-tree-vect-details" } */
 
 #define N 40
 

@@ -7954,10 +7954,6 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
       && DECL_IMPLICIT_INSTANTIATION (decl))
     defer_p = 1;
 
-  /* Defer vague-linkage variables.  */
-  if (DECL_INLINE_VAR_P (decl))
-    defer_p = 1;
-
   /* If we're not deferring, go ahead and assemble the variable.  */
   if (!defer_p)
     rest_of_decl_compilation (decl, toplev, at_eof);
@@ -9266,7 +9262,9 @@ static GTY((cache)) decl_tree_cache_map *decomp_type_table;
 tree
 lookup_decomp_type (tree v)
 {
-  return *decomp_type_table->get (v);
+  if (tree *slot = decomp_type_table->get (v))
+    return *slot;
+  return NULL_TREE;
 }
 
 /* Mangle a decomposition declaration if needed.  Arguments like
@@ -15263,7 +15261,12 @@ grokdeclarator (const cp_declarator *declarator,
     /* Record constancy and volatility on the DECL itself .  There's
        no need to do this when processing a template; we'll do this
        for the instantiated declaration based on the type of DECL.  */
-    if (!processing_template_decl)
+    if (!processing_template_decl
+	/* Don't do it for instantiated variable templates either,
+	   cp_apply_type_quals_to_decl should have been called on it
+	   already and might have been overridden in cp_finish_decl
+	   if initializer needs runtime initialization.  */
+	&& (!VAR_P (decl) || !DECL_TEMPLATE_INSTANTIATED (decl)))
       cp_apply_type_quals_to_decl (type_quals, decl);
 
     return decl;
@@ -18976,6 +18979,8 @@ maybe_register_incomplete_var (tree var)
 	  vec_safe_push (incomplete_vars, iv);
 	}
       else if (!(DECL_LANG_SPECIFIC (var) && DECL_TEMPLATE_INFO (var))
+	       && DECL_CLASS_SCOPE_P (var)
+	       && TYPE_BEING_DEFINED (DECL_CONTEXT (var))
 	       && decl_constant_var_p (var)
 	       && (TYPE_PTRMEM_P (inner_type) || CLASS_TYPE_P (inner_type)))
 	{

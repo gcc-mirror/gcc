@@ -25613,11 +25613,12 @@ arm_final_prescan_insn (rtx_insn *insn)
 	      break;
 
 	    case INSN:
-	      /* Instructions using or affecting the condition codes make it
-		 fail.  */
+	      /* Check the instruction is explicitly marked as predicable.
+		 Instructions using or affecting the condition codes are not.  */
 	      scanbody = PATTERN (this_insn);
 	      if (!(GET_CODE (scanbody) == SET
 		    || GET_CODE (scanbody) == PARALLEL)
+		  || get_attr_predicable (this_insn) != PREDICABLE_YES
 		  || get_attr_conds (this_insn) != CONDS_NOCOND)
 		fail = TRUE;
 	      break;

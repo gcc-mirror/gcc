@@ -537,24 +537,52 @@ static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
 
 /* Defining target-specific uses of __attribute__.  */
-TARGET_GNU_ATTRIBUTES (riscv_attribute_table,
+static const attribute_spec riscv_gnu_attributes[] =
 {
   /* Syntax: { name, min_len, max_len, decl_required, type_required,
 	       function_type_required, affects_type_identity, handler,
 	       exclude } */
 
   /* The attribute telling no prologue/epilogue.  */
-  { "naked",	0,  0, true, false, false, false,
-    riscv_handle_fndecl_attribute, NULL },
+  {"naked", 0, 0, true, false, false, false, riscv_handle_fndecl_attribute,
+   NULL},
   /* This attribute generates prologue/epilogue for interrupt handlers.  */
-  { "interrupt", 0, 1, false, true, true, false,
-    riscv_handle_type_attribute, NULL },
+  {"interrupt", 0, 1, false, true, true, false, riscv_handle_type_attribute,
+   NULL},
 
   /* The following two are used for the built-in properties of the Vector type
      and are not used externally */
   {"RVV sizeless type", 4, 4, false, true, false, true, NULL, NULL},
-  {"RVV type", 0, 0, false, true, false, true, NULL, NULL}
-});
+  {"RVV type", 0, 0, false, true, false, true, NULL, NULL},
+  /* This attribute is used to declare a function, forcing it to use the
+    standard vector calling convention variant. Syntax:
+    __attribute__((riscv_vector_cc)). */
+  {"riscv_vector_cc", 0, 0, false, true, true, true, NULL, NULL}
+};
+
+static const scoped_attribute_specs riscv_gnu_attribute_table  =
+{
+  "gnu", {riscv_gnu_attributes}
+};
+
+static const attribute_spec riscv_attributes[] =
+{
+  /* This attribute is used to declare a function, forcing it to use the
+     standard vector calling convention variant. Syntax:
+     [[riscv::vector_cc]]. */
+  {"vector_cc", 0, 0, false, true, true, true, NULL, NULL}
+};
+
+static const scoped_attribute_specs riscv_nongnu_attribute_table =
+{
+  "riscv", {riscv_attributes}
+};
+
+static const scoped_attribute_specs *const riscv_attribute_table[] =
+{
+  &riscv_gnu_attribute_table,
+  &riscv_nongnu_attribute_table
+};
 
 /* Order for the CLOBBERs/USEs of gpr_save.  */
 static const unsigned gpr_save_reg_order[] = {
@@ -1499,10 +1527,6 @@ riscv_v_adjust_bytesize (machine_mode mode, int scale)
 	return BYTES_PER_RISCV_VECTOR;
 
       poly_int64 nunits = GET_MODE_NUNITS (mode);
-      poly_int64 mode_size = GET_MODE_SIZE (mode);
-
-      if (maybe_eq (mode_size, (uint16_t) -1))
-	mode_size = riscv_vector_chunks * scale;
 
       if (nunits.coeffs[0] > 8)
 	return exact_div (nunits, 8);
@@ -4609,8 +4633,6 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	       || (code == NE && rtx_equal_p (alt, op0)))
 	    {
 	      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
-	      if (!rtx_equal_p (cons, op0))
-		std::swap (alt, cons);
 	      alt = force_reg (mode, alt);
 	      emit_insn (gen_rtx_SET (dest,
 				      gen_rtx_IF_THEN_ELSE (mode, cond,
@@ -5425,6 +5447,16 @@ riscv_arguments_is_vector_type_p (const_tree fntype)
   return false;
 }
 
+/* Return true if FUNC is a riscv_vector_cc function.
+   For more details please reference the below link.
+   https://github.com/riscv-non-isa/riscv-c-api-doc/pull/67 */
+static bool
+riscv_vector_cc_function_p (const_tree fntype)
+{
+  return lookup_attribute ("vector_cc", TYPE_ATTRIBUTES (fntype)) != NULL_TREE
+	 || lookup_attribute ("riscv_vector_cc", TYPE_ATTRIBUTES (fntype)) != NULL_TREE;
+}
+
 /* Implement TARGET_FNTYPE_ABI.  */
 
 static const predefined_function_abi &
@@ -5434,7 +5466,8 @@ riscv_fntype_abi (const_tree fntype)
      reference the below link.
      https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389  */
   if (riscv_return_value_is_vector_type_p (fntype)
-	  || riscv_arguments_is_vector_type_p (fntype))
+	  || riscv_arguments_is_vector_type_p (fntype)
+	  || riscv_vector_cc_function_p (fntype))
     return riscv_v_abi ();
 
   return default_function_abi;
@@ -8269,9 +8302,7 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
 
   /* If we ever encounter an insn without an insn reservation, trip
      an assert so we can find and fix this problem.  */
-#if 0
   gcc_assert (insn_has_dfa_reservation_p (insn));
-#endif
 
   return more - 1;
 }
@@ -8803,10 +8834,10 @@ riscv_init_machine_status (void)
   return ggc_cleared_alloc<machine_function> ();
 }
 
-/* Return the VLEN value associated with -march.
+/* Return the VLEN value associated with -march and -mwrvv-vector-bits.
    TODO: So far we only support length-agnostic value. */
 static poly_uint16
-riscv_convert_vector_bits (struct gcc_options *opts)
+riscv_convert_vector_chunks (struct gcc_options *opts)
 {
   int chunk_num;
   int min_vlen = TARGET_MIN_VLEN_OPTS (opts);
@@ -8849,10 +8880,15 @@ riscv_convert_vector_bits (struct gcc_options *opts)
      compile-time constant if TARGET_VECTOR is disabled.  */
   if (TARGET_VECTOR_OPTS_P (opts))
     {
-      if (opts->x_riscv_autovec_preference == RVV_FIXED_VLMAX)
-	return (int) min_vlen / (riscv_bytes_per_vector_chunk * 8);
-      else
-	return poly_uint16 (chunk_num, chunk_num);
+      switch (opts->x_rvv_vector_bits)
+	{
+	case RVV_VECTOR_BITS_SCALABLE:
+	  return poly_uint16 (chunk_num, chunk_num);
+	case RVV_VECTOR_BITS_ZVL:
+	  return (int) min_vlen / (riscv_bytes_per_vector_chunk * 8);
+	default:
+	  gcc_unreachable ();
+	}
     }
   else
     return 1;
@@ -8922,8 +8958,8 @@ riscv_override_options_internal (struct gcc_options *opts)
   if (TARGET_VECTOR && TARGET_BIG_ENDIAN)
     sorry ("Current RISC-V GCC does not support RVV in big-endian mode");
 
-  /* Convert -march to a chunks count.  */
-  riscv_vector_chunks = riscv_convert_vector_bits (opts);
+  /* Convert -march and -mrvv-vector-bits to a chunks count.  */
+  riscv_vector_chunks = riscv_convert_vector_chunks (opts);
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */

@@ -314,6 +314,7 @@ extern (C++) abstract class Expression : ASTNode
     Type type;      // !=null means that semantic() has been run
     Loc loc;        // file location
     const EXP op;   // to minimize use of dynamic_cast
+    bool parens;    // if this is a parenthesized expression
 
     extern (D) this(const ref Loc loc, EXP op) scope @safe
     {
@@ -1310,7 +1311,6 @@ extern (C++) final class ComplexExp : Expression
 extern (C++) class IdentifierExp : Expression
 {
     Identifier ident;
-    bool parens;        // if it appears as (identifier)
 
     extern (D) this(const ref Loc loc, Identifier ident) scope @safe
     {
@@ -2432,8 +2432,6 @@ extern (C++) final class CompoundLiteralExp : Expression
  */
 extern (C++) final class TypeExp : Expression
 {
-    bool parens;    // if this is a parenthesized expression
-
     extern (D) this(const ref Loc loc, Type type) @safe
     {
         super(loc, EXP.type);

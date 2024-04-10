@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mpower8-vector -Wno-psabi" } */
+/* { dg-options "-O2 -mvsx -Wno-psabi" } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
 /* { dg-require-effective-target p8vector_hw } */
 
 #define NO_WARN_X86_INTRINSICS 1

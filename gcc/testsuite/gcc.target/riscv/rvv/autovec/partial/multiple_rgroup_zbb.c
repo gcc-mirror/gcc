@@ -1,5 +1,5 @@
 /* { dg-do compile } *.
-/* { dg-options "-march=rv64gcv_zbb -mabi=lp64d -O2 --param riscv-autovec-preference=fixed-vlmax -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-options "-march=rv64gcv_zbb -mabi=lp64d -O2 -mrvv-vector-bits=zvl -fno-schedule-insns -fno-schedule-insns2" } */
 
 #include <stdint-gcc.h>
 

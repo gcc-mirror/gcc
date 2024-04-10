@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl512b -mabi=lp64d --param=riscv-autovec-lmul=m8 --param=riscv-autovec-preference=scalable -fno-vect-cost-model -O2 -ffast-math" } */
+/* { dg-options "-march=rv64gcv_zvl512b -mabi=lp64d --param=riscv-autovec-lmul=m8 -mrvv-vector-bits=scalable -fno-vect-cost-model -O2 -ffast-math" } */
 
 #define N 16
 

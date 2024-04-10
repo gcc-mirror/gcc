@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-O3 -mdejagnu-cpu=power9" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-O3 -mdejagnu-cpu=power9 -mvsx" } */
 
 /* Verify that we vectorize this SAD loop using vabsduh. */
 

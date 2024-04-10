@@ -22,6 +22,7 @@
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 
+#include <cstring>
 #include <ext/aligned_buffer.h>
 
 using T = int;
@@ -34,7 +35,7 @@ void test01()
   typedef std::list<T, alloc_type> test_type;
 
   __gnu_cxx::__aligned_buffer<test_type> buf;
-  __builtin_memset(buf._M_addr(), ~0, sizeof(test_type));
+  std::memset(buf._M_addr(), ~0, sizeof(test_type));
 
   VERIFY( buf._M_ptr()->get_allocator().state != 0 );
 
@@ -51,7 +52,7 @@ void test02()
   typedef std::list<T, alloc_type> test_type;
 
   __gnu_cxx::__aligned_buffer<test_type> buf;
-  __builtin_memset(buf._M_addr(), ~0, sizeof(test_type));
+  std::memset(buf._M_addr(), ~0, sizeof(test_type));
 
   VERIFY( buf._M_ptr()->get_allocator().state != 0 );
 

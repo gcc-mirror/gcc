@@ -3425,8 +3425,8 @@ Any condition register field, @code{cr0}@dots{}@code{cr7}.
 The carry bit, @code{XER[CA]}.
 
 @item we
-Like @code{wa}, if @option{-mpower9-vector} and @option{-m64} are used;
-otherwise, @code{NO_REGS}.
+Like @code{wa}, if this is a POWER9 or later and @option{-mvsx}
+and @option{-m64} are used; otherwise, @code{NO_REGS}.
 
 @item wn
 No register (@code{NO_REGS}).

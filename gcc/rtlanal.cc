@@ -5184,7 +5184,7 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
     case FFS:
     case POPCOUNT:
       /* This is at most the number of bits in the mode.  */
-      nonzero = ((unsigned HOST_WIDE_INT) 2 << (floor_log2 (mode_width))) - 1;
+      nonzero = (HOST_WIDE_INT_UC (2) << (floor_log2 (mode_width))) - 1;
       break;
 
     case CLZ:

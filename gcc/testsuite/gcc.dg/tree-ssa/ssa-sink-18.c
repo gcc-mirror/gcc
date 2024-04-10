@@ -213,6 +213,6 @@ compute_on_bytes (uint8_t *in_data, int in_len, uint8_t *out_data, int out_len)
     expected, so this case is restricted to lp64 only so far.  This different
     ivopts choice affects riscv64 as well, probably because it also lacks
     base+index addressing modes, so the ip[len] address computation can't be
-    made from the IV computation above.  powerpc64le similarly is affected.  */
+    made from the IV computation above.  powerpc64{,le} similarly is affected.  */
 
- /* { dg-final { scan-tree-dump-times "Sunk statements: 5" 1 "sink2" { target lp64 xfail { riscv64-*-* powerpc64le-*-* hppa*64*-*-* } } } } */
+ /* { dg-final { scan-tree-dump-times "Sunk statements: 5" 1 "sink2" { target lp64 xfail { riscv64-*-* powerpc64*-*-* hppa*64*-*-* } } } } */

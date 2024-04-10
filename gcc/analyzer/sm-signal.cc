@@ -146,7 +146,8 @@ public:
     if (change.is_global_p ()
 	&& change.m_new_state == m_sm.m_in_signal_handler)
       {
-	function *handler = change.m_event.get_dest_function ();
+	const function *handler = change.m_event.get_dest_function ();
+	gcc_assert (handler);
 	return change.formatted_print ("registering %qD as signal handler",
 				       handler->decl);
       }
@@ -193,7 +194,7 @@ signal_state_machine::signal_state_machine (logger *logger)
 
 static void
 update_model_for_signal_handler (region_model *model,
-				 function *handler_fun)
+				 const function &handler_fun)
 {
   gcc_assert (model);
   /* Purge all state within MODEL.  */
@@ -222,7 +223,9 @@ public:
 		     region_model_context *) const final override
   {
     gcc_assert (eedge);
-    update_model_for_signal_handler (model, eedge->m_dest->get_function ());
+    gcc_assert (eedge->m_dest->get_function ());
+    update_model_for_signal_handler (model,
+				     *eedge->m_dest->get_function ());
     return true;
   }
 
@@ -263,11 +266,11 @@ public:
     program_point entering_handler
       = program_point::from_function_entry (*ext_state.get_model_manager (),
 					    eg->get_supergraph (),
-					    handler_fun);
+					    *handler_fun);
 
     program_state state_entering_handler (ext_state);
     update_model_for_signal_handler (state_entering_handler.m_region_model,
-				     handler_fun);
+				     *handler_fun);
     state_entering_handler.m_checker_states[sm_idx]->set_global_state
       (m_sm.m_in_signal_handler);
 

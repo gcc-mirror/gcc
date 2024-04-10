@@ -1,4 +1,4 @@
-/* { dg-additional-options "-std=c99 -fno-vect-cost-model -march=rv32gcv -mabi=ilp32d --param=riscv-autovec-preference=fixed-vlmax -fdump-tree-optimized-details" } */
+/* { dg-additional-options "-std=c99 -fno-vect-cost-model -march=rv32gcv -mabi=ilp32d -mrvv-vector-bits=zvl -fdump-tree-optimized-details" } */
 
 #include "vrem-template.h"
 

@@ -1991,7 +1991,20 @@ list_formatted_write_scalar (st_parameter_dt *dtp, bt type, void *p, int kind,
 	  dtp->u.p.fdtio_ptr (p, &unit, iotype, &vlist,
 			      child_iostat, child_iomsg,
 			      iotype_len, child_iomsg_len);
+	  dtp->u.p.child_saved_iostat = *child_iostat;
 	  dtp->u.p.current_unit->child_dtio--;
+
+	  if ((dtp->u.p.child_saved_iostat != 0) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+	      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+	    {
+	      char message[IOMSG_LEN + 1];
+	      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+	      message[child_iomsg_len] = '\0';
+	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+			      message);
+	    }
       }
       break;
     default:
@@ -2330,7 +2343,22 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 				child_iostat, child_iomsg,
 				iotype_len, child_iomsg_len);
 		    }
+		  dtp->u.p.child_saved_iostat = *child_iostat;
 		  dtp->u.p.current_unit->child_dtio--;
+
+		  if ((dtp->u.p.child_saved_iostat != 0) &&
+		      !(dtp->common.flags & IOPARM_HAS_IOMSG) &&
+		      !(dtp->common.flags & IOPARM_HAS_IOSTAT))
+		    {
+		      char message[IOMSG_LEN + 1];
+
+		      /* Trim trailing spaces from the message.  */
+		      child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
+		      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
+		      message[child_iomsg_len] = '\0';
+		      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
+				      message);
+		    }
 
 		  goto obj_loop;
 		}

@@ -52,9 +52,18 @@ unsigned int foo (struct T *t)
 /* { dg-final { scan-assembler-times "ascii \"0:1:0:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:1:0:4.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:1:1:0.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
-/* { dg-final { scan-assembler-times "ascii \"0:1:1:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 2 } } */
+/* { dg-final { scan-assembler-times "ascii \"0:1:1:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:1:1:4.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:2.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
-/* { dg-final { scan-assembler-times "ascii \"0:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 2 } } */
+/* { dg-final { scan-assembler-times "ascii \"0:3.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
+
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:0:0\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:0:3\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:0:4\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:1:0\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:1:3\"\\)" 2 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:1:1:4\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:2\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:3\"\\)" 2 } } */
 
 /* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bpfcr_kind" 10 } } */

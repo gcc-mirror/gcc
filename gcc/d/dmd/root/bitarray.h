@@ -9,7 +9,6 @@
 #pragma once
 
 #include "dsystem.h"
-#include "object.h"
 #include "rmem.h"
 
 struct BitArray

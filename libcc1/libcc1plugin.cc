@@ -387,9 +387,10 @@ plugin_build_add_field (cc1_plugin::connection *,
 }
 
 int
-plugin_finish_record_or_union (cc1_plugin::connection *,
-			       gcc_type record_or_union_type_in,
-			       unsigned long size_in_bytes)
+plugin_finish_record_with_alignment (cc1_plugin::connection *,
+				     gcc_type record_or_union_type_in,
+				     unsigned long size_in_bytes,
+				     unsigned long align)
 {
   tree record_or_union_type = convert_in (record_or_union_type_in);
 
@@ -407,10 +408,10 @@ plugin_finish_record_or_union (cc1_plugin::connection *,
     }
   else
     {
-      // FIXME there's no way to get this from DWARF,
-      // or even, it seems, a particularly good way to deduce it.
-      SET_TYPE_ALIGN (record_or_union_type,
-		      TYPE_PRECISION (pointer_sized_int_node));
+      if (align == 0)
+	align = TYPE_PRECISION (pointer_sized_int_node);
+
+      SET_TYPE_ALIGN (record_or_union_type, align);
 
       TYPE_SIZE (record_or_union_type) = bitsize_int (size_in_bytes
 						      * BITS_PER_UNIT);
@@ -439,6 +440,15 @@ plugin_finish_record_or_union (cc1_plugin::connection *,
     }
 
   return 1;
+}
+
+int
+plugin_finish_record_or_union (cc1_plugin::connection *conn,
+			       gcc_type record_or_union_type_in,
+			       unsigned long size_in_bytes)
+{
+  return plugin_finish_record_with_alignment (conn, record_or_union_type_in,
+					      size_in_bytes, 0);
 }
 
 gcc_type
@@ -555,7 +565,7 @@ safe_lookup_builtin_type (const char *builtin_name)
 
   gcc_assert (TREE_CODE (result) == TYPE_DECL);
   result = TREE_TYPE (result);
-  return result;
+  return TREE_CODE (result) == ERROR_MARK ? nullptr : result;
 }
 
 static gcc_type
@@ -592,13 +602,14 @@ plugin_int_type (cc1_plugin::connection *self,
 		 int is_unsigned, unsigned long size_in_bytes,
 		 const char *builtin_name)
 {
-  if (!builtin_name)
-    return plugin_int_type_v0 (self, is_unsigned, size_in_bytes);
-
-  tree result = safe_lookup_builtin_type (builtin_name);
-  gcc_assert (!result || TREE_CODE (result) == INTEGER_TYPE);
-
-  return plugin_int_check (self, is_unsigned, size_in_bytes, result);
+  if (builtin_name != nullptr)
+    {
+      tree result = safe_lookup_builtin_type (builtin_name);
+      gcc_assert (!result || TREE_CODE (result) == INTEGER_TYPE);
+      if (result != nullptr)
+	return plugin_int_check (self, is_unsigned, size_in_bytes, result);
+    }
+  return plugin_int_type_v0 (self, is_unsigned, size_in_bytes);
 }
 
 gcc_type
@@ -631,7 +642,7 @@ plugin_float_type (cc1_plugin::connection *self,
   tree result = safe_lookup_builtin_type (builtin_name);
 
   if (!result)
-    return convert_out (error_mark_node);
+    return plugin_float_type_v0 (self, size_in_bytes);
 
   gcc_assert (SCALAR_FLOAT_TYPE_P (result));
   gcc_assert (BITS_PER_UNIT * size_in_bytes == TYPE_PRECISION (result));
@@ -754,7 +765,7 @@ int
 plugin_init (struct plugin_name_args *plugin_info,
 	     struct plugin_gcc_version *)
 {
-  generic_plugin_init (plugin_info, GCC_C_FE_VERSION_1);
+  generic_plugin_init (plugin_info, GCC_C_FE_VERSION_2);
 
   register_callback (plugin_info->base_name, PLUGIN_PRAGMAS,
 		     plugin_init_extra_pragmas, NULL);

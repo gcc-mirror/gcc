@@ -17,6 +17,15 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* A post reload optimization pass that fuses PLUS insns with CONST_INT
+   addend with a load or store insn to get POST_INC or PRE_DEC addressing.
+   It can also fuse two PLUSes to a single one, which may occur due to
+   splits from `avr_split_tiny_move'.  We do this in an own pass because
+   it can find more cases than peephole2, for example when there are
+   unrelated insns between the interesting ones.  */
+
+INSERT_PASS_BEFORE (pass_peephole2, 1, avr_pass_fuse_add);
+
 /* An analysis pass that runs prior to prologue / epilogue generation.
    Computes cfun->machine->gasisr.maybe which is used in prologue and
    epilogue generation provided -mgas-isr-prologues is on.  */

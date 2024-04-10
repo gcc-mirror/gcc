@@ -115,15 +115,7 @@ nothrow:
             //printf("setting %s\n", name);
             filenames.push(name);
             fileIndex = cast(uint)filenames.length;
-            if (!fileIndex)
-            {
-                import dmd.globals : global;
-                import dmd.errors : error, fatal;
-
-                global.gag = 0; // ensure error message gets printed
-                error(Loc.initial, "internal compiler error: file name index overflow!");
-                fatal();
-            }
+            assert(fileIndex, "internal compiler error: file name index overflow");
         }
         else
             fileIndex = 0;

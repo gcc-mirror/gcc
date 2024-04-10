@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=rv64gcv -mabi=lp64d --param riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-O3 -march=rv64gcv -mabi=lp64d -mrvv-vector-bits=zvl" } */
 
 void foo (int *src, int *dst, int size) {
  int i;

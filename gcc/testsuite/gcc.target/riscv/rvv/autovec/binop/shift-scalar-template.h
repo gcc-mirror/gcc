@@ -1,6 +1,6 @@
 /* Test shifts by scalar (immediate or register) amount.  */
 /* { dg-do run } */
-/* { dg-additional-options "-std=c99 --param=riscv-autovec-preference=scalable -fno-vect-cost-model --save-temps" } */
+/* { dg-additional-options "-std=c99 -mrvv-vector-bits=scalable -fno-vect-cost-model --save-temps" } */
 
 #include <stdint-gcc.h>
 

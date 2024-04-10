@@ -86,6 +86,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "ifcvt.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "wide-int-bitmask.h"
@@ -982,8 +984,9 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 
   /* Sibling call isn't OK if callee has no callee-saved registers
      and the calling function has callee-saved registers.  */
-  if ((cfun->machine->call_saved_registers
-       != TYPE_NO_CALLEE_SAVED_REGISTERS)
+  if (cfun->machine->call_saved_registers != TYPE_NO_CALLEE_SAVED_REGISTERS
+      && (cfun->machine->call_saved_registers
+	  != TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP)
       && lookup_attribute ("no_callee_saved_registers",
 			   TYPE_ATTRIBUTES (type)))
     return false;
@@ -6647,6 +6650,11 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 
     case TYPE_NO_CALLEE_SAVED_REGISTERS:
       return false;
+
+    case TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP:
+      if (regno != HARD_FRAME_POINTER_REGNUM)
+	return false;
+      break;
     }
 
   if (regno == REAL_PIC_OFFSET_TABLE_REGNUM
@@ -22907,7 +22915,7 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	      if (!ix86_direct_extern_access)
 		{
 		  if (ASSEMBLER_DIALECT == ASM_INTEL)
-		    fprintf (file, "1:\tcall\t[QWORD PTR %s@GOTPCREL[rip]]",
+		    fprintf (file, "1:\tcall\t[QWORD PTR %s@GOTPCREL[rip]]\n",
 			     mcount_name);
 		  else
 		    fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n",
@@ -25775,13 +25783,11 @@ ix86_get_excess_precision (enum excess_precision_type type)
 bool
 ix86_bitint_type_info (int n, struct bitint_info *info)
 {
-  if (!TARGET_64BIT)
-    return false;
   if (n <= 8)
     info->limb_mode = QImode;
   else if (n <= 16)
     info->limb_mode = HImode;
-  else if (n <= 32)
+  else if (n <= 32 || (!TARGET_64BIT && n > 64))
     info->limb_mode = SImode;
   else
     info->limb_mode = DImode;

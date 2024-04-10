@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv32gcv -mabi=ilp32 -fno-tree-vectorize" } */
+/* { dg-options "-mrvv-vector-bits=scalable -march=rv32gcv -mabi=ilp32 -fno-tree-vectorize" } */
 
 #include "riscv_vector.h"
 
@@ -38,4 +38,4 @@ foo (int vl, int n, int m, int32_t *in, int32_t *out)
 }
 
 /* { dg-final { scan-assembler-times {vsetvli} 4 { target { { any-opts "-O2" "-O3" } && { no-opts "-g" "-funroll-loops" } } } } } */
-/* { dg-final { scan-assembler-times {vsetvli\tzero,zero,e32,m1,t[au],m[au]} 1 { target { { any-opts "-O2" "-O3" } && { no-opts "-g" "-funroll-loops" } } } } } */
+/* { dg-final { scan-assembler-times {vsetvli\tzero,a0,e32,m1,t[au],m[au]} 1 { target { { any-opts "-O2" "-O3" } && { no-opts "-g" "-funroll-loops" } } } } } */

@@ -26,7 +26,7 @@ import dmd.identifier;
 import dmd.mtype;
 import dmd.target;
 import dmd.tokens;
-import dmd.typesem : hasPointers;
+import dmd.typesem : hasPointers, arrayOf;
 import dmd.func : setUnsafe, setUnsafePreview;
 
 /*************************************************************

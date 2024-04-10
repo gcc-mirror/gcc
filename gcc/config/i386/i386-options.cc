@@ -82,6 +82,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "ifcvt.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "wide-int-bitmask.h"
@@ -3382,23 +3384,34 @@ ix86_set_func_type (tree fndecl)
 {
   /* No need to save and restore callee-saved registers for a noreturn
      function with nothrow or compiled with -fno-exceptions unless when
-     compiling with -O0 or -Og.
+     compiling with -O0 or -Og, except that it interferes with debugging
+     of callers.  So that backtrace works for those at least
+     in most cases, save the bp register if it is used, because it often
+     is used in callers to compute CFA.
 
      NB: Can't use just TREE_THIS_VOLATILE to check if this is a noreturn
      function.  The local-pure-const pass turns an interrupt function
      into a noreturn function by setting TREE_THIS_VOLATILE.  Normally
      the local-pure-const pass is run after ix86_set_func_type is called.
      When the local-pure-const pass is enabled for LTO, the interrupt
-     function is marked as noreturn in the IR output, which leads the
-     incompatible attribute error in LTO1.  */
-  bool has_no_callee_saved_registers
-    = ((TREE_THIS_VOLATILE (fndecl)
-	&& lookup_attribute ("noreturn", DECL_ATTRIBUTES (fndecl))
-	&& optimize
-	&& !optimize_debug
-	&& (TREE_NOTHROW (fndecl) || !flag_exceptions))
-       || lookup_attribute ("no_callee_saved_registers",
-			    TYPE_ATTRIBUTES (TREE_TYPE (fndecl))));
+     function is marked with TREE_THIS_VOLATILE in the IR output, which
+     leads to the incompatible attribute error in LTO1.  Ignore the
+     interrupt function in this case.  */
+  enum call_saved_registers_type no_callee_saved_registers
+    = TYPE_DEFAULT_CALL_SAVED_REGISTERS;
+  if (lookup_attribute ("no_callee_saved_registers",
+			TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+    no_callee_saved_registers = TYPE_NO_CALLEE_SAVED_REGISTERS;
+  else if (ix86_noreturn_no_callee_saved_registers
+	   && TREE_THIS_VOLATILE (fndecl)
+	   && optimize
+	   && !optimize_debug
+	   && (TREE_NOTHROW (fndecl) || !flag_exceptions)
+	   && !lookup_attribute ("interrupt",
+				 TYPE_ATTRIBUTES (TREE_TYPE (fndecl)))
+	   && !lookup_attribute ("no_caller_saved_registers",
+				 TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+    no_callee_saved_registers = TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP;
 
   if (cfun->machine->func_type == TYPE_UNKNOWN)
     {
@@ -3409,7 +3422,7 @@ ix86_set_func_type (tree fndecl)
 	    error_at (DECL_SOURCE_LOCATION (fndecl),
 		      "interrupt and naked attributes are not compatible");
 
-	  if (has_no_callee_saved_registers)
+	  if (no_callee_saved_registers)
 	    error_at (DECL_SOURCE_LOCATION (fndecl),
 		      "%qs and %qs attributes are not compatible",
 		      "interrupt", "no_callee_saved_registers");
@@ -3438,7 +3451,7 @@ ix86_set_func_type (tree fndecl)
 				TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
 	    cfun->machine->call_saved_registers
 	      = TYPE_NO_CALLER_SAVED_REGISTERS;
-	  if (has_no_callee_saved_registers)
+	  if (no_callee_saved_registers)
 	    {
 	      if (cfun->machine->call_saved_registers
 		  == TYPE_NO_CALLER_SAVED_REGISTERS)
@@ -3447,7 +3460,7 @@ ix86_set_func_type (tree fndecl)
 			  "no_caller_saved_registers",
 			  "no_callee_saved_registers");
 	      cfun->machine->call_saved_registers
-		= TYPE_NO_CALLEE_SAVED_REGISTERS;
+		= no_callee_saved_registers;
 	    }
 	}
     }

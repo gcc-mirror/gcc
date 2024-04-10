@@ -866,7 +866,7 @@ namespace __debug
     };
 
   template<typename _Tp, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     operator==(const vector<_Tp, _Alloc>& __lhs,
 	       const vector<_Tp, _Alloc>& __rhs)
@@ -874,35 +874,41 @@ namespace __debug
 
 #if __cpp_lib_three_way_comparison
   template<typename _Tp, typename _Alloc>
+    [[nodiscard]]
     constexpr __detail::__synth3way_t<_Tp>
     operator<=>(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     { return __x._M_base() <=> __y._M_base(); }
 #else
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator!=(const vector<_Tp, _Alloc>& __lhs,
 	       const vector<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() != __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<(const vector<_Tp, _Alloc>& __lhs,
 	      const vector<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() < __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator<=(const vector<_Tp, _Alloc>& __lhs,
 	       const vector<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() <= __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>=(const vector<_Tp, _Alloc>& __lhs,
 	       const vector<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() >= __rhs._M_base(); }
 
   template<typename _Tp, typename _Alloc>
+    _GLIBCXX_NODISCARD
     inline bool
     operator>(const vector<_Tp, _Alloc>& __lhs,
 	      const vector<_Tp, _Alloc>& __rhs)

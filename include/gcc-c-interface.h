@@ -45,7 +45,10 @@ enum gcc_c_api_version
 
   /* Added char_type.  Added new version of int_type and float_type,
      deprecated int_type_v0 and float_type_v0.  */
-  GCC_C_FE_VERSION_1 = 1
+  GCC_C_FE_VERSION_1 = 1,
+
+  /* Added finish_record_with_alignment method.  */
+  GCC_C_FE_VERSION_2 = 2,
 };
 
 /* Qualifiers.  */
@@ -198,7 +201,11 @@ struct gcc_c_context
 /* The type of the initialization function.  The caller passes in the
    desired base version and desired C-specific version.  If the
    request can be satisfied, a compatible gcc_context object will be
-   returned.  Otherwise, the function returns NULL.  */
+   returned.  In particular, this may return a context object with a higher
+   actual version number than was requested, provided the higher version is
+   fully compatible.  (As of GCC_C_FE_VERSION_2, this is always true.)
+
+   Otherwise, the function returns NULL.  */
 
 typedef struct gcc_c_context *gcc_c_fe_context_function
     (enum gcc_base_api_version,

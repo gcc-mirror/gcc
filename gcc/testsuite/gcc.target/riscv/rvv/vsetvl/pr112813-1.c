@@ -1,6 +1,6 @@
 /* Test that we do not have ice when compile */
 /* { dg-do compile } */
-/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv32gcv_zvl256b -mabi=ilp32d -O3" } */
+/* { dg-options "-mrvv-vector-bits=scalable -march=rv32gcv_zvl256b -mabi=ilp32d -O3" } */
 
 int a, c, d, f, j;
 int b[7];

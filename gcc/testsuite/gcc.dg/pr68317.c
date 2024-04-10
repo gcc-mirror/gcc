@@ -12,8 +12,8 @@ foo ()
 {
  int32_t index = 0;
 
- for (index; index <= 10; index--) // expected warning here
+ for (index; index <= 10; index--) /* { dg-warning "iteration \[0-9\]+ invokes undefined behavior" } */
    /* Result of the following multiply will overflow
       when converted to signed int32_t.  */
-   bar ((0xcafe + index) * 0xdead);  /* { dg-warning "iteration \[0-9\]+ invokes undefined behavior" } */
+   bar ((0xcafe + index) * 0xdead);
 }

@@ -256,7 +256,7 @@ in the following sections.
 -Wdeprecated-copy -Wdeprecated-copy-dtor
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion
 -Weffc++ -Wno-elaborated-enum-base
--Wno-exceptions -Wextra-semi  -Wno-inaccessible-base
+-Wno-exceptions -Wextra-semi -Wno-global-module -Wno-inaccessible-base
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime
 -Winvalid-constexpr -Winvalid-imported-macros
 -Wno-invalid-offsetof  -Wno-literal-suffix
@@ -884,7 +884,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args
--mbranch-cost=@var{cost}
+-mbranch-cost=@var{cost}  -mfuse-add=@var{level}
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}
 -mn_flash=@var{size}  -mno-interrupts
@@ -971,7 +971,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mbig-endian -mlittle-endian
 -mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re -mjmpext
 -mjmp32 -malu32 -mv3-atomics -mbswap -msdiv -msmov -mcpu=@var{version}
--masm=@var{dialect}}
+-masm=@var{dialect} -minline-memops-threshold=@var{bytes}}
 
 @emph{FR30 Options}
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -1317,7 +1317,7 @@ See RS/6000 and PowerPC Options.
 -mveclibabi=@var{type}  -mfriz  -mno-friz
 -mpointers-to-nested-functions  -mno-pointers-to-nested-functions
 -msave-toc-indirect  -mno-save-toc-indirect
--mpower8-fusion  -mno-mpower8-fusion  -mpower8-vector  -mno-power8-vector
+-mpower8-fusion  -mno-mpower8-fusion
 -mcrypto  -mno-crypto  -mhtm  -mno-htm
 -mquad-memory  -mno-quad-memory
 -mquad-memory-atomic  -mno-quad-memory-atomic
@@ -1450,6 +1450,7 @@ See RS/6000 and PowerPC Options.
 -mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt}
 -mpartial-vector-fp-math
 -mmove-max=@var{bits} -mstore-max=@var{bits}
+-mnoreturn-no-callee-saved-registers
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes
@@ -3908,6 +3909,9 @@ const T& foo (const T&) @{ @dots{} @}
 #pragma GCC diagnostic pop
 @end smallexample
 
+The @code{#pragma} can also surround the class; in that case, the warning
+will be disabled for all the member functions.
+
 @option{-Wdangling-reference} also warns about code like
 
 @smallexample
@@ -3931,6 +3935,9 @@ struct Span @{
 
 as @code{std::span}-like; that is, the class is a non-union class
 that has a pointer data member and a trivial destructor.
+
+The warning can be disabled by using the @code{gnu::no_dangling} attribute
+(@pxref{C++ Attributes}).
 
 This warning is enabled by @option{-Wall}.
 
@@ -4767,6 +4774,12 @@ undefined behavior at runtime.  This warning is enabled by default.
 @opindex Wno-extra-semi
 @item -Wextra-semi @r{(C++, Objective-C++ only)}
 Warn about redundant semicolons after in-class function definitions.
+
+@opindex Wno-global-module
+@opindex Wglobal-module
+@item -Wno-global-module @r{(C++ and Objective-C++ only)}
+Disable the diagnostic for when the global module fragment of a module
+unit does not consist only of preprocessor directives.
 
 @opindex Winaccessible-base
 @opindex Wno-inaccessible-base
@@ -7262,7 +7275,7 @@ when non-existent profile data is justified.
 @item -Wmismatched-dealloc
 
 Warn for calls to deallocation functions with pointer arguments returned
-from from allocations functions for which the former isn't a suitable
+from allocation functions for which the former isn't a suitable
 deallocator.  A pair of functions can be associated as matching allocators
 and deallocators by use of attribute @code{malloc}.  Unless disabled by
 the @option{-fno-builtin} option the standard functions @code{calloc},
@@ -23785,6 +23798,15 @@ integers. The default branch cost is 0.
 Functions prologues/epilogues are expanded as calls to appropriate
 subroutines.  Code size is smaller.
 
+@opindex mfuse-add
+@item -mfuse-add
+@itemx -mno-fuse-add
+@itemx -mfuse-add=@var{level}
+Optimize indirect memory accesses on reduced Tiny devices.
+The default uses @code{@var{level}=1} for optimizations @option{-Og}
+and @option{-O1}, and @code{@var{level}=2} for higher optimizations.
+Valid values for @var{level} are @code{0}, @code{1} and @code{2}.
+
 @opindex mdouble
 @opindex mlong-double
 @item -mdouble=@var{bits}
@@ -25678,6 +25700,15 @@ Outputs normal assembly dialect.
 Outputs pseudo-c assembly dialect.
 
 @end table
+
+@opindex -minline-memops-threshold
+@item -minline-memops-threshold=@var{bytes}
+Specifies a size threshold in bytes at or below which memmove, memcpy
+and memset shall always be expanded inline.  Operations dealing with
+sizes larger than this threshold would have to be be implemented using
+a library call instead of being expanded inline, but since BPF doesn't
+allow libcalls, exceeding this threshold results in a compile-time
+error.  The default is @samp{1024} bytes.
 
 @end table
 
@@ -27995,11 +28026,7 @@ Aliases of @option{-minterlink-compressed} and
 @option{-mno-interlink-compressed}.  These options predate the microMIPS ASE
 and are retained for backwards compatibility.
 
-@opindex mabi=32
-@opindex mabi=o64
-@opindex mabi=n32
-@opindex mabi=64
-@opindex mabi=eabi
+@opindex mabi
 @item -mabi=32
 @itemx -mabi=o64
 @itemx -mabi=n32
@@ -28486,9 +28513,8 @@ Enable (disable) use of the @code{%hi()} and @code{%lo()} assembler
 relocation operators.  This option has been superseded by
 @option{-mexplicit-relocs} but is retained for backwards compatibility.
 
-@opindex mexplicit-relocs=none
-@opindex mexplicit-relocs=base
-@opindex mexplicit-relocs=pcrel
+@opindex mexplicit-relocs
+@opindex mno-explicit-relocs
 @item -mexplicit-relocs=none
 @itemx -mexplicit-relocs=base
 @itemx -mexplicit-relocs=pcrel
@@ -28767,6 +28793,7 @@ Disable the insertion of cache barriers.  This is the default setting.
 @end table
 
 @opindex mflush-func
+@opindex mno-flush-func
 @item -mflush-func=@var{func}
 @itemx -mno-flush-func
 Specifies the function to call to flush the I and D caches, or to not
@@ -28778,7 +28805,7 @@ depends on the target GCC was configured for, but commonly is either
 @code{_flush_func} or @code{__cpu_flush}.
 
 @opindex mbranch-cost
-@item mbranch-cost=@var{num}
+@item -mbranch-cost=@var{num}
 Set the cost of branches to roughly @var{num} ``simple'' instructions.
 This cost is only a heuristic and is not guaranteed to produce
 consistent results across releases.  A zero cost redundantly selects
@@ -30754,6 +30781,8 @@ Permissible values for this option are: @samp{sifive-e20}, @samp{sifive-e21},
 @samp{sifive-u54}, @samp{sifive-u74}, @samp{sifive-x280}, @samp{sifive-xp450},
 @samp{sifive-x670}.
 
+Note that @option{-mcpu} does not override @option{-march} or @option{-mtune}.
+
 @opindex mtune
 @item -mtune=@var{processor-string}
 Optimize the output for the given processor, specified by microarchitecture or
@@ -31160,7 +31189,7 @@ following options:
 -mpopcntb  -mpopcntd  -mpowerpc64
 -mpowerpc-gpopt  -mpowerpc-gfxopt
 -mmulhw  -mdlmzb  -mmfpgpr  -mvsx
--mcrypto  -mhtm  -mpower8-fusion  -mpower8-vector
+-mcrypto  -mhtm  -mpower8-fusion
 -mquad-memory  -mquad-memory-atomic  -mfloat128
 -mfloat128-hardware -mprefixed -mpcrel -mmma
 -mrop-protect}
@@ -31283,15 +31312,6 @@ Generate code that keeps (does not keeps) some integer operations
 adjacent so that the instructions can be fused together on power8 and
 later processors.
 
-@opindex mpower8-vector
-@opindex mno-power8-vector
-@item -mpower8-vector
-@itemx -mno-power8-vector
-Generate code that uses (does not use) the vector and scalar
-instructions that were added in version 2.07 of the PowerPC ISA.  Also
-enable the use of built-in functions that allow more direct access to
-the vector instructions.
-
 @opindex mquad-memory
 @opindex mno-quad-memory
 @item -mquad-memory
@@ -31323,13 +31343,12 @@ supported on Linux.
 The default for @option{-mfloat128} is enabled on PowerPC Linux
 systems using the VSX instruction set, and disabled on other systems.
 
-If you use the ISA 3.0 instruction set (@option{-mpower9-vector} or
-@option{-mcpu=power9}) on a 64-bit system, the IEEE 128-bit floating
-point support will also enable the generation of ISA 3.0 IEEE 128-bit
-floating point instructions.  Otherwise, if you do not specify to
-generate ISA 3.0 instructions or you are targeting a 32-bit big endian
-system, IEEE 128-bit floating point will be done with software
-emulation.
+If you use the ISA 3.0 instruction set (@option{-mcpu=power9}) on a
+64-bit system, the IEEE 128-bit floating point support will also enable
+the generation of ISA 3.0 IEEE 128-bit floating point instructions.
+Otherwise, if you do not specify to generate ISA 3.0 instructions or you
+are targeting a 32-bit big endian system, IEEE 128-bit floating point
+will be done with software emulation.
 
 @opindex mfloat128-hardware
 @opindex mno-float128-hardware
@@ -35387,6 +35406,15 @@ Prefer 256-bit vector width for instructions.
 @item 512
 Prefer 512-bit vector width for instructions.
 @end table
+
+@opindex mnoreturn-no-callee-saved-registers
+@item -mnoreturn-no-callee-saved-registers
+This option optimizes functions with @code{noreturn} attribute or
+@code{_Noreturn} specifier by not saving in the function prologue callee-saved
+registers which are used in the function (except for the @code{BP}
+register).  This option can interfere with debugging of the caller of the
+@code{noreturn} function or any function further up in the call stack, so it
+is not enabled by default.
 
 @opindex mcx16
 @item -mcx16

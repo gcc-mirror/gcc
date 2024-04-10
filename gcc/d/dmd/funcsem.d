@@ -60,9 +60,94 @@ import dmd.statement_rewrite_walker;
 import dmd.statement;
 import dmd.statementsem;
 import dmd.target;
+import dmd.templatesem;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
+
+/* Tweak all return statements and dtor call for nrvo_var, for correct NRVO.
+ */
+extern (C++) final class NrvoWalker : StatementRewriteWalker
+{
+    alias visit = typeof(super).visit;
+public:
+    FuncDeclaration fd;
+    Scope* sc;
+
+    override void visit(ReturnStatement s)
+    {
+        // See if all returns are instead to be replaced with a goto returnLabel;
+        if (fd.returnLabel)
+        {
+            /* Rewrite:
+             *  return exp;
+             * as:
+             *  vresult = exp; goto Lresult;
+             */
+            auto gs = new GotoStatement(s.loc, Id.returnLabel);
+            gs.label = fd.returnLabel;
+
+            Statement s1 = gs;
+            if (s.exp)
+                s1 = new CompoundStatement(s.loc, new ExpStatement(s.loc, s.exp), gs);
+
+            replaceCurrent(s1);
+        }
+    }
+
+    override void visit(TryFinallyStatement s)
+    {
+        DtorExpStatement des;
+        if (fd.isNRVO() && s.finalbody && (des = s.finalbody.isDtorExpStatement()) !is null &&
+            fd.nrvo_var == des.var)
+        {
+            if (!(global.params.useExceptions && ClassDeclaration.throwable))
+            {
+                /* Don't need to call destructor at all, since it is nrvo
+                 */
+                replaceCurrent(s._body);
+                s._body.accept(this);
+                return;
+            }
+
+            /* Normally local variable dtors are called regardless exceptions.
+             * But for nrvo_var, its dtor should be called only when exception is thrown.
+             *
+             * Rewrite:
+             *      try { s.body; } finally { nrvo_var.edtor; }
+             *      // equivalent with:
+             *      //    s.body; scope(exit) nrvo_var.edtor;
+             * as:
+             *      try { s.body; } catch(Throwable __o) { nrvo_var.edtor; throw __o; }
+             *      // equivalent with:
+             *      //    s.body; scope(failure) nrvo_var.edtor;
+             */
+            Statement sexception = new DtorExpStatement(Loc.initial, fd.nrvo_var.edtor, fd.nrvo_var);
+            Identifier id = Identifier.generateId("__o");
+
+            Statement handler = new PeelStatement(sexception);
+            if (sexception.blockExit(fd, null) & BE.fallthru)
+            {
+                auto ts = new ThrowStatement(Loc.initial, new IdentifierExp(Loc.initial, id));
+                ts.internalThrow = true;
+                handler = new CompoundStatement(Loc.initial, handler, ts);
+            }
+
+            auto catches = new Catches();
+            auto ctch = new Catch(Loc.initial, getThrowable(), id, handler);
+            ctch.internalCatch = true;
+            ctch.catchSemantic(sc); // Run semantic to resolve identifier '__o'
+            catches.push(ctch);
+
+            Statement s2 = new TryCatchStatement(Loc.initial, s._body, catches);
+            fd.hasNoEH = false;
+            replaceCurrent(s2);
+            s2.accept(this);
+        }
+        else
+            StatementRewriteWalker.visit(s);
+    }
+}
 
 /**********************************
  * Main semantic routine for functions.
@@ -1364,4 +1449,477 @@ BaseClass* overrideInterface(FuncDeclaration fd)
         }
     }
     return null;
+}
+
+/// Flag used by $(LREF resolveFuncCall).
+enum FuncResolveFlag : ubyte
+{
+    standard = 0,       /// issue error messages, solve the call.
+    quiet = 1,          /// do not issue error message on no match, just return `null`.
+    overloadOnly = 2,   /// only resolve overloads, i.e. do not issue error on ambiguous
+                        /// matches and need explicit this.
+    ufcs = 4,           /// trying to resolve UFCS call
+}
+
+/*******************************************
+ * Given a symbol that could be either a FuncDeclaration or
+ * a function template, resolve it to a function symbol.
+ * Params:
+ *      loc =           instantiation location
+ *      sc =            instantiation scope
+ *      s =             instantiation symbol
+ *      tiargs =        initial list of template arguments
+ *      tthis =         if !NULL, the `this` argument type
+ *      argumentList =  arguments to function
+ *      flags =         see $(LREF FuncResolveFlag).
+ * Returns:
+ *      if match is found, then function symbol, else null
+ */
+FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
+    Objects* tiargs, Type tthis, ArgumentList argumentList, FuncResolveFlag flags)
+{
+    auto fargs = argumentList.arguments;
+    if (!s)
+        return null; // no match
+
+    version (none)
+    {
+        printf("resolveFuncCall('%s')\n", s.toChars());
+        if (tthis)
+            printf("\tthis: %s\n", tthis.toChars());
+        if (fargs)
+        {
+            for (size_t i = 0; i < fargs.length; i++)
+            {
+                Expression arg = (*fargs)[i];
+                assert(arg.type);
+                printf("\t%s: %s\n", arg.toChars(), arg.type.toChars());
+            }
+        }
+        printf("\tfnames: %s\n", fnames ? fnames.toChars() : "null");
+    }
+
+    if (tiargs && arrayObjectIsError(*tiargs))
+        return null;
+    if (fargs !is null)
+        foreach (arg; *fargs)
+            if (isError(arg))
+                return null;
+
+    MatchAccumulator m;
+    functionResolve(m, s, loc, sc, tiargs, tthis, argumentList);
+    auto orig_s = s;
+
+    if (m.last > MATCH.nomatch && m.lastf)
+    {
+        if (m.count == 1) // exactly one match
+        {
+            if (!(flags & FuncResolveFlag.quiet))
+                functionSemantic(m.lastf);
+            return m.lastf;
+        }
+        if ((flags & FuncResolveFlag.overloadOnly) && !tthis && m.lastf.needThis())
+        {
+            return m.lastf;
+        }
+    }
+
+    /* Failed to find a best match.
+     * Do nothing or print error.
+     */
+    if (m.last == MATCH.nomatch)
+    {
+        // error was caused on matched function, not on the matching itself,
+        // so return the function to produce a better diagnostic
+        if (m.count == 1)
+            return m.lastf;
+    }
+
+    // We are done at this point, as the rest of this function generate
+    // a diagnostic on invalid match
+    if (flags & FuncResolveFlag.quiet)
+        return null;
+
+    auto fd = s.isFuncDeclaration();
+    auto od = s.isOverDeclaration();
+    auto td = s.isTemplateDeclaration();
+    if (td && td.funcroot)
+        s = fd = td.funcroot;
+
+    OutBuffer tiargsBuf;
+    arrayObjectsToBuffer(tiargsBuf, tiargs);
+
+    OutBuffer fargsBuf;
+    fargsBuf.writeByte('(');
+    argExpTypesToCBuffer(fargsBuf, fargs);
+    fargsBuf.writeByte(')');
+    if (tthis)
+        tthis.modToBuffer(fargsBuf);
+
+    // The call is ambiguous
+    if (m.lastf && m.nextf)
+    {
+        TypeFunction tf1 = m.lastf.type.toTypeFunction();
+        TypeFunction tf2 = m.nextf.type.toTypeFunction();
+        const(char)* lastprms = parametersTypeToChars(tf1.parameterList);
+        const(char)* nextprms = parametersTypeToChars(tf2.parameterList);
+
+        .error(loc, "`%s.%s` called with argument types `%s` matches both:\n%s:     `%s%s%s`\nand:\n%s:     `%s%s%s`",
+            s.parent.toPrettyChars(), s.ident.toChars(),
+            fargsBuf.peekChars(),
+            m.lastf.loc.toChars(), m.lastf.toPrettyChars(), lastprms, tf1.modToChars(),
+            m.nextf.loc.toChars(), m.nextf.toPrettyChars(), nextprms, tf2.modToChars());
+        return null;
+    }
+
+    // no match, generate an error messages
+    if (flags & FuncResolveFlag.ufcs)
+    {
+        auto arg = (*fargs)[0];
+        .error(loc, "no property `%s` for `%s` of type `%s`", s.ident.toChars(), arg.toChars(), arg.type.toChars());
+        .errorSupplemental(loc, "the following error occured while looking for a UFCS match");
+    }
+
+    if (!fd)
+    {
+        // all of overloads are templates
+        if (td)
+        {
+            if (!od && !td.overnext)
+            {
+                .error(loc, "%s `%s` is not callable using argument types `!(%s)%s`",
+                   td.kind(), td.ident.toChars(), tiargsBuf.peekChars(), fargsBuf.peekChars());
+            }
+            else
+            {
+                .error(loc, "none of the overloads of %s `%s.%s` are callable using argument types `!(%s)%s`",
+                   td.kind(), td.parent.toPrettyChars(), td.ident.toChars(),
+                   tiargsBuf.peekChars(), fargsBuf.peekChars());
+            }
+
+
+            if (!global.gag || global.params.v.showGaggedErrors)
+                printCandidates(loc, td, sc.isDeprecated());
+            return null;
+        }
+        /* This case used to happen when several ctors are mixed in an agregate.
+           A (bad) error message is already generated in overloadApply().
+           see https://issues.dlang.org/show_bug.cgi?id=19729
+           and https://issues.dlang.org/show_bug.cgi?id=17259
+        */
+        if (!od)
+            return null;
+    }
+
+    if (od)
+    {
+        .error(loc, "none of the overloads of `%s` are callable using argument types `!(%s)%s`",
+               od.ident.toChars(), tiargsBuf.peekChars(), fargsBuf.peekChars());
+        return null;
+    }
+
+    // remove when deprecation period of class allocators and deallocators is over
+    if (fd.isNewDeclaration() && fd.checkDisabled(loc, sc))
+        return null;
+
+    bool hasOverloads = fd.overnext !is null;
+    auto tf = fd.type.isTypeFunction();
+    // if type is an error, the original type should be there for better diagnostics
+    if (!tf)
+        tf = fd.originalType.toTypeFunction();
+
+    // modifier mismatch
+    if (tthis && (fd.isCtorDeclaration() ?
+        !MODimplicitConv(tf.mod, tthis.mod) :
+        !MODimplicitConv(tthis.mod, tf.mod)))
+    {
+        OutBuffer thisBuf, funcBuf;
+        MODMatchToBuffer(&thisBuf, tthis.mod, tf.mod);
+        auto mismatches = MODMatchToBuffer(&funcBuf, tf.mod, tthis.mod);
+        if (hasOverloads)
+        {
+            OutBuffer buf;
+            buf.argExpTypesToCBuffer(fargs);
+            if (fd.isCtorDeclaration())
+                .error(loc, "none of the overloads of `%s` can construct a %sobject with argument types `(%s)`",
+                    fd.toChars(), thisBuf.peekChars(), buf.peekChars());
+            else
+                .error(loc, "none of the overloads of `%s` are callable using a %sobject with argument types `(%s)`",
+                    fd.toChars(), thisBuf.peekChars(), buf.peekChars());
+
+            if (!global.gag || global.params.v.showGaggedErrors)
+                printCandidates(loc, fd, sc.isDeprecated());
+            return null;
+        }
+
+        bool calledHelper;
+        void errorHelper(const(char)* failMessage) scope
+        {
+            .error(loc, "%s `%s%s%s` is not callable using argument types `%s`",
+                   fd.kind(), fd.toPrettyChars(), parametersTypeToChars(tf.parameterList),
+                   tf.modToChars(), fargsBuf.peekChars());
+            errorSupplemental(loc, failMessage);
+            calledHelper = true;
+        }
+
+        functionResolve(m, orig_s, loc, sc, tiargs, tthis, argumentList, &errorHelper);
+        if (calledHelper)
+            return null;
+
+        if (fd.isCtorDeclaration())
+            .error(loc, "%s%s `%s` cannot construct a %sobject",
+                   funcBuf.peekChars(), fd.kind(), fd.toPrettyChars(), thisBuf.peekChars());
+        else
+            .error(loc, "%smethod `%s` is not callable using a %sobject",
+                   funcBuf.peekChars(), fd.toPrettyChars(), thisBuf.peekChars());
+
+        if (mismatches.isNotShared)
+            .errorSupplemental(fd.loc, "Consider adding `shared` here");
+        else if (mismatches.isMutable)
+            .errorSupplemental(fd.loc, "Consider adding `const` or `inout` here");
+        return null;
+    }
+
+    //printf("tf = %s, args = %s\n", tf.deco, (*fargs)[0].type.deco);
+    if (hasOverloads)
+    {
+        .error(loc, "none of the overloads of `%s` are callable using argument types `%s`",
+               fd.toChars(), fargsBuf.peekChars());
+        if (!global.gag || global.params.v.showGaggedErrors)
+            printCandidates(loc, fd, sc.isDeprecated());
+        return null;
+    }
+
+    .error(loc, "%s `%s%s%s` is not callable using argument types `%s`",
+           fd.kind(), fd.toPrettyChars(), parametersTypeToChars(tf.parameterList),
+           tf.modToChars(), fargsBuf.peekChars());
+
+    // re-resolve to check for supplemental message
+    if (!global.gag || global.params.v.showGaggedErrors)
+    {
+        if (tthis)
+        {
+            if (auto classType = tthis.isTypeClass())
+            {
+                if (auto baseClass = classType.sym.baseClass)
+                {
+                    if (auto baseFunction = baseClass.search(baseClass.loc, fd.ident))
+                    {
+                        MatchAccumulator mErr;
+                        functionResolve(mErr, baseFunction, loc, sc, tiargs, baseClass.type, argumentList);
+                        if (mErr.last > MATCH.nomatch && mErr.lastf)
+                        {
+                            errorSupplemental(loc, "%s `%s` hides base class function `%s`",
+                                    fd.kind, fd.toPrettyChars(), mErr.lastf.toPrettyChars());
+                            errorSupplemental(loc, "add `alias %s = %s` to `%s`'s body to merge the overload sets",
+                                    fd.toChars(), mErr.lastf.toPrettyChars(), tthis.toChars());
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+
+        void errorHelper2(const(char)* failMessage) scope
+        {
+            errorSupplemental(loc, failMessage);
+        }
+
+        functionResolve(m, orig_s, loc, sc, tiargs, tthis, argumentList, &errorHelper2);
+    }
+    return null;
+}
+
+/*******************************************
+ * Prints template and function overload candidates as supplemental errors.
+ * Params:
+ *      loc =            instantiation location
+ *      declaration =    the declaration to print overload candidates for
+ *      showDeprecated = If `false`, `deprecated` function won't be shown
+ */
+private void printCandidates(Decl)(const ref Loc loc, Decl declaration, bool showDeprecated)
+if (is(Decl == TemplateDeclaration) || is(Decl == FuncDeclaration))
+{
+    // max num of overloads to print (-v or -verror-supplements overrides this).
+    const uint DisplayLimit = global.params.v.errorSupplementCount();
+    const(char)* constraintsTip;
+    // determine if the first candidate was printed
+    int printed;
+
+    bool matchSymbol(Dsymbol s, bool print, bool single_candidate = false)
+    {
+        if (auto fd = s.isFuncDeclaration())
+        {
+            // Don't print overloads which have errors.
+            // Not that if the whole overload set has errors, we'll never reach
+            // this point so there's no risk of printing no candidate
+            if (fd.errors || fd.type.ty == Terror)
+                return false;
+            // Don't print disabled functions, or `deprecated` outside of deprecated scope
+            if (fd.storage_class & STC.disable || (fd.isDeprecated() && !showDeprecated))
+                return false;
+            if (!print)
+                return true;
+            auto tf = cast(TypeFunction) fd.type;
+            OutBuffer buf;
+            buf.writestring(fd.toPrettyChars());
+            buf.writestring(parametersTypeToChars(tf.parameterList));
+            if (tf.mod)
+            {
+                buf.writeByte(' ');
+                buf.MODtoBuffer(tf.mod);
+            }
+            .errorSupplemental(fd.loc,
+                printed ? "                `%s`" :
+                single_candidate ? "Candidate is: `%s`" : "Candidates are: `%s`", buf.peekChars());
+        }
+        else if (auto td = s.isTemplateDeclaration())
+        {
+            import dmd.staticcond;
+
+            if (!print)
+                return true;
+            OutBuffer buf;
+            HdrGenState hgs;
+            hgs.skipConstraints = true;
+            toCharsMaybeConstraints(td, buf, hgs);
+            const tmsg = buf.peekChars();
+            const cmsg = td.getConstraintEvalError(constraintsTip);
+
+            // add blank space if there are multiple candidates
+            // the length of the blank space is `strlen("Candidates are: ")`
+
+            if (cmsg)
+            {
+                .errorSupplemental(td.loc,
+                        printed ? "                `%s`\n%s" :
+                        single_candidate ? "Candidate is: `%s`\n%s" : "Candidates are: `%s`\n%s",
+                        tmsg, cmsg);
+            }
+            else
+            {
+                .errorSupplemental(td.loc,
+                        printed ? "                `%s`" :
+                        single_candidate ? "Candidate is: `%s`" : "Candidates are: `%s`",
+                        tmsg);
+            }
+        }
+        return true;
+    }
+    // determine if there's > 1 candidate
+    int count = 0;
+    overloadApply(declaration, (s) {
+        if (matchSymbol(s, false))
+            count++;
+        return count > 1;
+    });
+    int skipped = 0;
+    overloadApply(declaration, (s) {
+        if (global.params.v.verbose || printed < DisplayLimit)
+        {
+            if (matchSymbol(s, true, count == 1))
+                printed++;
+        }
+        else
+        {
+            // Too many overloads to sensibly display.
+            // Just show count of remaining overloads.
+            if (matchSymbol(s, false))
+                skipped++;
+        }
+        return 0;
+    });
+    if (skipped > 0)
+        .errorSupplemental(loc, "... (%d more, -v to show) ...", skipped);
+
+    // Nothing was displayed, all overloads are either disabled or deprecated
+    if (!printed)
+        .errorSupplemental(loc, "All possible candidates are marked as `deprecated` or `@disable`");
+    // should be only in verbose mode
+    if (constraintsTip)
+        .tip(constraintsTip);
+}
+
+/********************************************************
+ * Generate Expression to call the invariant.
+ * Input:
+ *      ad      aggregate with the invariant
+ *      vthis   variable with 'this'
+ * Returns:
+ *      void expression that calls the invariant
+ */
+Expression addInvariant(AggregateDeclaration ad, VarDeclaration vthis)
+{
+    Expression e = null;
+    // Call invariant directly only if it exists
+    FuncDeclaration inv = ad.inv;
+    ClassDeclaration cd = ad.isClassDeclaration();
+
+    while (!inv && cd)
+    {
+        cd = cd.baseClass;
+        if (!cd)
+            break;
+        inv = cd.inv;
+    }
+    if (inv)
+    {
+        version (all)
+        {
+            // Workaround for https://issues.dlang.org/show_bug.cgi?id=13394
+            // For the correct mangling,
+            // run attribute inference on inv if needed.
+            functionSemantic(inv);
+        }
+
+        //e = new DsymbolExp(Loc.initial, inv);
+        //e = new CallExp(Loc.initial, e);
+        //e = e.semantic(sc2);
+
+        /* https://issues.dlang.org/show_bug.cgi?id=13113
+         * Currently virtual invariant calls completely
+         * bypass attribute enforcement.
+         * Change the behavior of pre-invariant call by following it.
+         */
+        e = new ThisExp(Loc.initial);
+        e.type = ad.type.addMod(vthis.type.mod);
+        e = new DotVarExp(Loc.initial, e, inv, false);
+        e.type = inv.type;
+        e = new CallExp(Loc.initial, e);
+        e.type = Type.tvoid;
+    }
+    return e;
+}
+
+/****************************************************
+ * Declare result variable lazily.
+ */
+void buildResultVar(FuncDeclaration fd, Scope* sc, Type tret)
+{
+    if (!fd.vresult)
+    {
+        Loc loc = fd.fensure ? fd.fensure.loc : fd.loc;
+        /* If inferRetType is true, tret may not be a correct return type yet.
+         * So, in here it may be a temporary type for vresult, and after
+         * fbody.dsymbolSemantic() running, vresult.type might be modified.
+         */
+        fd.vresult = new VarDeclaration(loc, tret, Id.result, null);
+        fd.vresult.storage_class |= STC.nodtor | STC.temp;
+        if (!fd.isVirtual())
+            fd.vresult.storage_class |= STC.const_;
+        fd.vresult.storage_class |= STC.result;
+        // set before the semantic() for checkNestedReference()
+        fd.vresult.parent = fd;
+    }
+    if (sc && fd.vresult.semanticRun == PASS.initial)
+    {
+        TypeFunction tf = fd.type.toTypeFunction();
+        if (tf.isref)
+            fd.vresult.storage_class |= STC.ref_;
+        fd.vresult.type = tret;
+        fd.vresult.dsymbolSemantic(sc);
+        if (!sc.insert(fd.vresult))
+            .error(fd.loc, "%s `%s` out result %s is already defined", fd.kind, fd.toPrettyChars, fd.vresult.toChars());
+        assert(fd.vresult.parent == fd);
+    }
 }

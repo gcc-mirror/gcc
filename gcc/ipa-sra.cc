@@ -84,6 +84,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "symtab-clones.h"
 #include "attribs.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 
 static void ipa_sra_summarize_function (cgraph_node *);

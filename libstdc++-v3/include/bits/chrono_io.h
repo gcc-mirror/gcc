@@ -37,6 +37,7 @@
 #include <sstream> // ostringstream
 #include <iomanip> // setw, setfill
 #include <format>
+#include <charconv> // from_chars
 
 #include <bits/streambuf_iterator.h>
 
@@ -2163,6 +2164,8 @@ namespace __detail
       year_month_day _M_ymd{};
       weekday _M_wd{};
       __format::_ChronoParts _M_need;
+      unsigned _M_is_leap_second : 1 {};
+      unsigned _M_reserved : 15 {};
 
       template<typename _CharT, typename _Traits, typename _Alloc>
 	basic_istream<_CharT, _Traits>&
@@ -2741,8 +2744,13 @@ namespace __detail
       __detail::_Parser_t<_Duration> __p(__need);
       if (__p(__is, __fmt, __abbrev, __offset))
 	{
-	  auto __st = __p._M_sys_days + __p._M_time - *__offset;
-	  __tp = chrono::time_point_cast<_Duration>(__st);
+	  if (__p._M_is_leap_second)
+	    __is.setstate(ios_base::failbit);
+	  else
+	    {
+	      auto __st = __p._M_sys_days + __p._M_time - *__offset;
+	      __tp = chrono::time_point_cast<_Duration>(__st);
+	    }
 	}
       return __is;
     }
@@ -2764,9 +2772,21 @@ namespace __detail
 		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
 		minutes* __offset = nullptr)
     {
-      sys_time<_Duration> __st;
-      if (chrono::from_stream(__is, __fmt, __st, __abbrev, __offset))
-	__tp = utc_clock::from_sys(__st);
+      minutes __off{};
+      if (!__offset)
+	__offset = &__off;
+      using __format::_ChronoParts;
+      auto __need = _ChronoParts::_Year | _ChronoParts::_Month
+		    | _ChronoParts::_Day | _ChronoParts::_TimeOfDay;
+      __detail::_Parser_t<_Duration> __p(__need);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	{
+	  // Converting to utc_time before adding _M_time is necessary for
+	  // "23:59:60" to correctly produce a time within a leap second.
+	  auto __ut = utc_clock::from_sys(__p._M_sys_days) + __p._M_time
+			- *__offset;
+	  __tp = chrono::time_point_cast<_Duration>(__ut);
+	}
       return __is;
     }
 
@@ -2787,9 +2807,24 @@ namespace __detail
 		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
 		minutes* __offset = nullptr)
     {
-      utc_time<_Duration> __ut;
-      if (chrono::from_stream(__is, __fmt, __ut, __abbrev, __offset))
-	__tp = tai_clock::from_utc(__ut);
+      minutes __off{};
+      if (!__offset)
+	__offset = &__off;
+      using __format::_ChronoParts;
+      auto __need = _ChronoParts::_Year | _ChronoParts::_Month
+		    | _ChronoParts::_Day | _ChronoParts::_TimeOfDay;
+      __detail::_Parser_t<_Duration> __p(__need);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	{
+	  if (__p._M_is_leap_second)
+	    __is.setstate(ios_base::failbit);
+	  else
+	    {
+	      auto __st = __p._M_sys_days + __p._M_time - *__offset;
+	      auto __tt = tai_clock::from_utc(utc_clock::from_sys(__st));
+	      __tp = chrono::time_point_cast<_Duration>(__tt);
+	    }
+	}
       return __is;
     }
 
@@ -2810,9 +2845,24 @@ namespace __detail
 		basic_string<_CharT, _Traits, _Alloc>* __abbrev = nullptr,
 		minutes* __offset = nullptr)
     {
-      utc_time<_Duration> __ut;
-      if (chrono::from_stream(__is, __fmt, __ut, __abbrev, __offset))
-	__tp = gps_clock::from_utc(__ut);
+      minutes __off{};
+      if (!__offset)
+	__offset = &__off;
+      using __format::_ChronoParts;
+      auto __need = _ChronoParts::_Year | _ChronoParts::_Month
+		    | _ChronoParts::_Day | _ChronoParts::_TimeOfDay;
+      __detail::_Parser_t<_Duration> __p(__need);
+      if (__p(__is, __fmt, __abbrev, __offset))
+	{
+	  if (__p._M_is_leap_second)
+	    __is.setstate(ios_base::failbit);
+	  else
+	    {
+	      auto __st = __p._M_sys_days + __p._M_time - *__offset;
+	      auto __tt = gps_clock::from_utc(utc_clock::from_sys(__st));
+	      __tp = chrono::time_point_cast<_Duration>(__tt);
+	    }
+	}
       return __is;
     }
 
@@ -2835,7 +2885,7 @@ namespace __detail
     {
       sys_time<_Duration> __st;
       if (chrono::from_stream(__is, __fmt, __st, __abbrev, __offset))
-	__tp = file_clock::from_sys(__st);
+	__tp = chrono::time_point_cast<_Duration>(file_clock::from_sys(__st));
       return __is;
     }
 
@@ -3107,11 +3157,24 @@ namespace __detail
 	  minutes __tz_offset = __bad_min;
 	  basic_string<_CharT, _Traits> __tz_abbr;
 
+	  if ((_M_need & _ChronoParts::_TimeOfDay)
+		&& (_M_need & _ChronoParts::_Year))
+	    {
+	      // For time_points assume "00:00:00" is implicitly present,
+	      // so we don't fail to parse if it's not (PR libstdc++/114240).
+	      // We will still fail to parse if there's no year+month+day.
+	      __h = hours(0);
+	      __parts = _ChronoParts::_TimeOfDay;
+	    }
+
 	  // bool __is_neg = false; // TODO: how is this handled for parsing?
 
 	  _CharT __mod{}; // One of 'E' or 'O' or nul.
 	  unsigned __num = 0; // Non-zero for N modifier.
 	  bool __is_flag = false; // True if we're processing a % flag.
+
+	  constexpr bool __is_floating
+	    = treat_as_floating_point_v<typename _Duration::rep>;
 
 	  // If an out-of-range value is extracted (e.g. 61min for %M),
 	  // do not set failbit immediately because we might not need it
@@ -3195,7 +3258,7 @@ namespace __detail
 			  __d = day(__tm.tm_mday);
 			  __h = hours(__tm.tm_hour);
 			  __min = minutes(__tm.tm_min);
-			  __s = duration_cast<_Duration>(seconds(__tm.tm_sec));
+			  __s = seconds(__tm.tm_sec);
 			}
 		    }
 		  __parts |= _ChronoParts::_DateTime;
@@ -3564,8 +3627,8 @@ namespace __detail
 		      if (!__is_failed(__err))
 			__s = seconds(__tm.tm_sec);
 		    }
-		  else if constexpr (ratio_equal_v<typename _Duration::period,
-						   ratio<1>>)
+		  else if constexpr (_Duration::period::den == 1
+				       && !__is_floating)
 		    {
 		      auto __val = __read_unsigned(__num ? __num : 2);
 		      if (0 <= __val && __val <= 59) [[likely]]
@@ -3577,7 +3640,7 @@ namespace __detail
 			  break;
 			}
 		    }
-		  else
+		  else // Read fractional seconds
 		    {
 		      basic_stringstream<_CharT> __buf;
 		      auto __digit = _S_try_read_digit(__is, __err);
@@ -3594,13 +3657,17 @@ namespace __detail
 			__err |= ios_base::eofbit;
 		      else
 			{
-			  auto& __np = use_facet<numpunct<_CharT>>(__loc);
-			  auto __dp = __np.decimal_point();
+			  _CharT __dp = '.';
+			  if (__loc != locale::classic())
+			    {
+			      auto& __np = use_facet<numpunct<_CharT>>(__loc);
+			      __dp = __np.decimal_point();
+			    }
 			  _CharT __c = _Traits::to_char_type(__i);
 			  if (__c == __dp)
 			    {
 			      (void) __is.get();
-			      __buf.put(__c);
+			      __buf.put('.');
 			      int __prec
 				= hh_mm_ss<_Duration>::fractional_width;
 			      do
@@ -3615,18 +3682,24 @@ namespace __detail
 			    }
 			}
 
-		      if (!__is_failed(__err))
+		      if (!__is_failed(__err)) [[likely]]
 			{
-			  auto& __ng = use_facet<num_get<_CharT>>(__loc);
-			  long double __val;
-			  ios_base::iostate __err2{};
-			  __ng.get(__buf, {}, __buf, __err2, __val);
-			  if (__is_failed(__err2)) [[unlikely]]
-			    __err |= __err2;
+			  long double __val{};
+			  string __str = std::move(__buf).str();
+			  auto __first = __str.data();
+			  auto __last = __first + __str.size();
+			  using enum chars_format;
+			  auto [ptr, ec] = std::from_chars(__first, __last,
+							   __val, fixed);
+			  if ((bool)ec || ptr != __last) [[unlikely]]
+			    __err |= ios_base::failbit;
 			  else
 			    {
 			      duration<long double> __fs(__val);
-			      __s = duration_cast<_Duration>(__fs);
+			      if constexpr (__is_floating)
+				__s = __fs;
+			      else
+				__s = chrono::round<_Duration>(__fs);
 			    }
 			}
 		    }
@@ -3737,7 +3810,7 @@ namespace __detail
 			{
 			  __h = hours(__tm.tm_hour);
 			  __min = minutes(__tm.tm_min);
-			  __s = duration_cast<_Duration>(seconds(__tm.tm_sec));
+			  __s = seconds(__tm.tm_sec);
 			}
 		    }
 		  __parts |= _ChronoParts::_TimeOfDay;
@@ -4035,7 +4108,7 @@ namespace __detail
 	      const bool __need_wday = _M_need & _ChronoParts::_Weekday;
 
 	      // Whether the caller wants _M_sys_days and _M_time.
-	      // Only true for time_points.
+	      // Only true for durations and time_points.
 	      const bool __need_time = _M_need & _ChronoParts::_TimeOfDay;
 
 	      if (__need_wday && __wday != __bad_wday)
@@ -4195,6 +4268,7 @@ namespace __detail
 		    {
 		      __ok = true;
 		      __t += __s;
+		      _M_is_leap_second = __s >= seconds(60);
 		    }
 
 		  if (__ok)

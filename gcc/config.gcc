@@ -273,6 +273,7 @@ esac
 # Obsolete configurations.
 case ${target}${target_min} in
     *-*-solaris2.11.[0-3]*		\
+   | ia64*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target}${target_min} is obsolete." >&2
@@ -1653,8 +1654,8 @@ bpf-*-*)
         tmake_file="${tmake_file} bpf/t-bpf"
         use_collect2=no
         use_gcc_stdint=provide
-        extra_objs="coreout.o core-builtins.o"
-        target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/coreout.cc \$(srcdir)/config/bpf/core-builtins.cc"
+        extra_objs="btfext-out.o core-builtins.o"
+        target_gtfiles="$target_gtfiles \$(srcdir)/config/bpf/btfext-out.cc \$(srcdir)/config/bpf/core-builtins.cc"
         ;;
 cris-*-elf | cris-*-none)
 	tm_file="elfos.h newlib-stdint.h ${tm_file}"
@@ -2537,6 +2538,9 @@ riscv*-*-freebsd*)
 
 loongarch*-*-linux*)
 	tm_file="elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h ${tm_file}"
+	case ${target} in
+	  *-linux-musl*) tm_file="${tm_file} loongarch/musl.h"
+	esac
 	tm_file="${tm_file} loongarch/gnu-user.h loongarch/linux.h loongarch/loongarch-driver.h"
 	extra_options="${extra_options} linux-android.opt"
 	tmake_file="${tmake_file} loongarch/t-multilib loongarch/t-linux"

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c++03 -march=rv64gcv -mabi=lp64d -Ofast -ftree-vectorize --param=riscv-autovec-preference=scalable" } */
+/* { dg-options "-std=c++03 -march=rv64gcv -mabi=lp64d -Ofast -ftree-vectorize -mrvv-vector-bits=scalable" } */
 
 struct a
 {

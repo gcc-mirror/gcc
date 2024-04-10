@@ -28,6 +28,9 @@
 #error mmintrin.h included without enabling WMMX/WMMX2 instructions (e.g. -march=iwmmxt or -march=iwmmxt2)
 #endif
 
+#ifndef __ENABLE_DEPRECATED_IWMMXT
+#warning support for WMMX/WMMX2 is deprecated and will be removed in GCC 15.  Define __ENABLE_DEPRECATED_IWMMXT to suppress this warning
+#endif
 
 #if defined __cplusplus
 extern "C" {

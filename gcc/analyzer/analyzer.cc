@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer.h"
 #include "tree-pretty-print.h"
 #include "diagnostic-event-id.h"
+#include "tree-dfa.h"
 
 #if ENABLE_ANALYZER
 
@@ -273,6 +274,14 @@ byte_offset_to_json (const byte_offset_t &offset)
   pretty_printer pp;
   pp_wide_int_large (&pp, offset, SIGNED);
   return new json::string (pp_formatted_text (&pp));
+}
+
+/* Workaround for lack of const-correctness of ssa_default_def.  */
+
+tree
+get_ssa_default_def (const function &fun, tree var)
+{
+  return ssa_default_def (const_cast <function *> (&fun), var);
 }
 
 } // namespace ana

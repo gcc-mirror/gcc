@@ -31,10 +31,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "lto-partition.h"
-#include "sreal.h"
 
 vec<ltrans_partition> ltrans_partitions;
 

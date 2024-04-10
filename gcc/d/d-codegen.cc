@@ -1006,6 +1006,7 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
 	      if (tmode == NULL_TREE)
 		tmode = make_unsigned_type (GET_MODE_BITSIZE (mode.require ()));
 
+	      tmode = build_aligned_type (tmode, TYPE_ALIGN (stype));
 	      t1ref = build_vconvert (tmode, t1ref);
 	      t2ref = build_vconvert (tmode, t2ref);
 
@@ -1905,7 +1906,7 @@ build_assert_call (const Loc &loc, libcall_fn libcall, tree msg)
 	  tree str = build_string (len, filename);
 	  TREE_TYPE (str) = make_array_type (Type::tchar, len);
 
-	  file = d_array_value (build_ctype (Type::tchar->arrayOf ()),
+	  file = d_array_value (build_ctype (dmd::arrayOf (Type::tchar)),
 				size_int (len), build_address (str));
 	}
       else

@@ -22,7 +22,7 @@ BUILD_TEST (uint16x4_t, uint16x4_t, , , u16, 3, 2)
 BUILD_TEST (float32x2_t, float32x2_t, , , f32, 1, 0)
 BUILD_TEST (int32x2_t,   int32x2_t,   , , s32, 1, 0)
 BUILD_TEST (uint32x2_t,  uint32x2_t,  , , u32, 1, 0)
-/* { dg-final { scan-assembler-times "ins\\tv0.s\\\[1\\\], v1.s\\\[0\\\]" 3 } } */
+/* { dg-final { scan-assembler-times "zip1\\tv0.2s, v0.2s, v1.2s" 3 } } */
 
 BUILD_TEST (poly8x8_t, poly8x16_t, , q, p8, 7, 15)
 BUILD_TEST (int8x8_t,  int8x16_t,  , q, s8, 7, 15)

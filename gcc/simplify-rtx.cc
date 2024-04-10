@@ -7846,7 +7846,7 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
     {
       rtx tem = simplify_subreg (int_outermode, op, innermode, byte);
       if (tem)
-	return simplify_gen_subreg (outermode, tem, int_outermode, byte);
+	return lowpart_subreg (outermode, tem, int_outermode);
     }
 
   /* If OP is a vector comparison and the subreg is not changing the

@@ -39,10 +39,17 @@ struct ifaddrs
     union
     {
         /// Broadcast address of the interface
-        sockaddr* ifu_broadaddr;
+        sockaddr* ifa_broadaddr;
+
         /// Point-to-point destination addresss
-        sockaddr* if_dstaddr;
+        sockaddr* ifa_dstaddr;
     }
+
+    deprecated("druntime declared this incorrectly before. The correct name is ifa_broadaddr.")
+    alias ifu_broadaddr = ifa_broadaddr;
+
+    deprecated("druntime declared this incorrectly before. The correct name is ifa_dstaddr.")
+    alias if_dstaddr = ifa_dstaddr;
 
     /// Address specific data
     void* ifa_data;

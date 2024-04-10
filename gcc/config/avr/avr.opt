@@ -19,28 +19,28 @@
 ; <http://www.gnu.org/licenses/>.
 
 mcall-prologues
-Target Mask(CALL_PROLOGUES)
-Use subroutines for function prologues and epilogues.
+Target Mask(CALL_PROLOGUES) Optimization
+Optimization. Use subroutines for function prologues and epilogues.
 
 mmcu=
 Target RejectNegative Joined Var(avr_mmcu) MissingArgError(missing device or architecture after %qs)
--mmcu=MCU	Select the target MCU.
+-mmcu=<MCU>	Select the target MCU.
 
 mgas-isr-prologues
 Target Var(avr_gasisr_prologues) UInteger Init(0) Optimization
-Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues.
+Optimization. Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues.
 
 mn-flash=
 Target RejectNegative Joined Var(avr_n_flash) UInteger Init(-1)
-Set the number of 64 KiB flash segments.
+This option is used internally. Set the number of 64 KiB flash segments.
 
 mskip-bug
 Target Mask(SKIP_BUG)
-Indicate presence of a processor erratum.
+This option is used internally. Indicate presence of a processor erratum.  Do not skip 32-bit instructions.
 
 mrmw
 Target Mask(RMW)
-Enable Read-Modify-Write (RMW) instructions support/use.
+This option is used internally. Enable Read-Modify-Write (RMW) instructions support/use.
 
 mdeb
 Target Undocumented Mask(ALL_DEBUG)
@@ -50,7 +50,7 @@ Target RejectNegative Joined Undocumented Var(avr_log_details)
 
 mshort-calls
 Target RejectNegative Mask(SHORT_CALLS)
-Use RJMP / RCALL even though CALL / JMP are available.
+This option is used internally for multilib generation and selection.  Assume RJMP / RCALL can target all program memory.
 
 mint8
 Target Mask(INT8)
@@ -62,11 +62,11 @@ Change the stack pointer without disabling interrupts.
 
 mbranch-cost=
 Target Joined RejectNegative UInteger Var(avr_branch_cost) Init(0) Optimization
-Set the branch costs for conditional branch instructions.  Reasonable values are small, non-negative integers.  The default branch cost is 0.
+-mbranch-cost=<cost>	Optimization. Set the branch costs for conditional branch instructions.  Reasonable values are small, non-negative integers.  The default branch cost is 0.
 
 mmain-is-OS_task
 Target Mask(MAIN_IS_OS_TASK) Optimization
-Treat main as if it had attribute OS_task.
+Optimization. Treat main as if it had attribute OS_task.
 
 morder1
 Target Undocumented Mask(ORDER_1)
@@ -79,24 +79,24 @@ Target Mask(TINY_STACK)
 Change only the low 8 bits of the stack pointer.
 
 mrelax
-Target
-Relax branches.
+Target Optimization
+Optimization. Relax branches.
 
 mpmem-wrap-around
 Target
 Make the linker relaxation machine assume that a program counter wrap-around occurs.
 
 maccumulate-args
-Target Mask(ACCUMULATE_OUTGOING_ARGS)
-Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf.
+Target Mask(ACCUMULATE_OUTGOING_ARGS) Optimization
+Optimization. Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf.
 
 mstrict-X
-Target Var(avr_strict_X) Init(0)
-When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.
+Target Var(avr_strict_X) Init(0) Optimization
+Optimization. When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.
 
 mflmap
 Target Var(avr_flmap) Init(0)
-The device has the bitfield NVMCTRL_CTRLB.FLMAP.  This option is used internally.
+This option is used internally. The device has the bitfield NVMCTRL_CTRLB.FLMAP.
 
 mrodata-in-ram
 Target Var(avr_rodata_in_ram) Init(-1)
@@ -105,7 +105,15 @@ The device has the .rodata section located in the RAM area.
 ;; For rationale behind -msp8 see explanation in avr.h.
 msp8
 Target RejectNegative Var(avr_sp8) Init(0)
-The device has no SPH special function register. This option will be overridden by the compiler driver with the correct setting if presence/absence of SPH can be deduced from -mmcu=MCU.
+This option is used internally for multilib generation and selection. The device has no SPH special function register.
+
+mfuse-add
+Target Alias(mfuse-add=, 2, 0) Optimization
+Optimization. Split register additions from load/store instructions. Most useful on Reduced Tiny.
+
+mfuse-add=
+Target Joined RejectNegative UInteger Var(avr_fuse_add) Init(0) Optimization IntegerRange(0, 3)
+-mfuse-add=<0,2>	Optimization. Split register additions from load/store instructions. Most useful on Reduced Tiny.
 
 Waddr-space-convert
 Warning C Var(avr_warn_addr_space_convert) Init(0)
@@ -121,7 +129,7 @@ Allow to use truncation instead of rounding towards zero for fractional fixed-po
 
 mabsdata
 Target Mask(ABSDATA)
-Assume that all data in static storage can be accessed by LDS / STS.  This option is only useful for reduced Tiny devices.
+Assume that all data in static storage can be accessed by LDS / STS instructions.  This option is only useful for reduced Tiny devices like ATtiny40.
 
 mdouble=
 Target Joined RejectNegative Var(avr_double) Init(0) Enum(avr_bits_e) Save

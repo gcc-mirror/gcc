@@ -11804,6 +11804,15 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	 access expression).  */
       if (DECL_DECOMPOSITION_P (expr))
 	{
+	  if (ptds.saved)
+	    {
+	      gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (expr));
+	      /* DECL_HAS_VALUE_EXPR_P is always set if
+		 processing_template_decl.  If lookup_decomp_type
+		 returns non-NULL, it is the tuple case.  */
+	      if (tree ret = lookup_decomp_type (expr))
+		return ret;
+	    }
 	  if (DECL_HAS_VALUE_EXPR_P (expr))
 	    /* Expr is an array or struct subobject proxy, handle
 	       bit-fields properly.  */

@@ -1,3 +1,48 @@
+2024-03-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/list_read.c (list_formatted_read_scalar): Use fstrcpy
+	from libgfortran/runtime/string.c to replace snprintf.
+	(nml_read_obj): Likewise.
+	* io/transfer.c (unformatted_read): Likewise.
+	(unformatted_write): Likewise.
+	(formatted_transfer_scalar_read): Likewise.
+	(formatted_transfer_scalar_write): Likewise.
+	* io/write.c (list_formatted_write_scalar): Likewise.
+	(nml_write_obj): Likewise.
+
+2024-03-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/io.h (IOMSG_LEN): Moved to here.
+	* io/list_read.c (MSGLEN): Removed MSGLEN.
+	(convert_integer): Changed MSGLEN to IOMSG_LEN.
+	(parse_repeat): Likewise.
+	(read_logical): Likewise.
+	(read_integer): Likewise.
+	(read_character): Likewise.
+	(parse_real): Likewise.
+	(read_complex): Likewise.
+	(read_real): Likewise.
+	(check_type): Likewise.
+	(list_formatted_read_scalar): Adjust to IOMSG_LEN.
+	(nml_read_obj): Add user defined error message.
+	* io/transfer.c (unformatted_read): Add user defined error
+	message.
+	(unformatted_write): Add user defined error message.
+	(formatted_transfer_scalar_read): Add user defined error message.
+	(formatted_transfer_scalar_write): Add user defined error message.
+	* io/write.c (list_formatted_write_scalar): Add user defined error message.
+	(nml_write_obj): Add user defined error message.
+
+2024-02-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105456
+	* io/list_read.c (list_formatted_read_scalar): Add checks
+	for the case where a user defines their own error codes
+	and error messages and generate the runtime error.
+	* io/transfer.c (st_read_done): Whitespace.
+
 2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/105473

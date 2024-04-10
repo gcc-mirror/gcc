@@ -158,31 +158,31 @@ get_libcall_type (d_libcall_type type)
       break;
 
     case LCT_ARRAY_VOID:
-      libcall_types[type] = Type::tvoid->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tvoid);
       break;
 
     case LCT_ARRAY_SIZE_T:
-      libcall_types[type] = Type::tsize_t->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tsize_t);
       break;
 
     case LCT_ARRAY_BYTE:
-      libcall_types[type] = Type::tint8->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tint8);
       break;
 
     case LCT_ARRAY_STRING:
-      libcall_types[type] = Type::tstring->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tstring);
       break;
 
     case LCT_ARRAY_WSTRING:
-      libcall_types[type] = Type::twstring->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::twstring);
       break;
 
     case LCT_ARRAY_DSTRING:
-      libcall_types[type] = Type::tdstring->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tdstring);
       break;
 
     case LCT_ARRAYARRAY_BYTE:
-      libcall_types[type] = Type::tint8->arrayOf ()->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tint8);
       break;
 
     case LCT_POINTER_ASSOCARRAY:
@@ -190,15 +190,15 @@ get_libcall_type (d_libcall_type type)
       break;
 
     case LCT_POINTER_VOIDPTR:
-      libcall_types[type] = Type::tvoidptr->arrayOf ();
+      libcall_types[type] = dmd::arrayOf (Type::tvoidptr);
       break;
 
     case LCT_ARRAYPTR_VOID:
-      libcall_types[type] = dmd::pointerTo (Type::tvoid->arrayOf ());
+      libcall_types[type] = dmd::pointerTo (dmd::arrayOf (Type::tvoid));
       break;
 
     case LCT_ARRAYPTR_BYTE:
-      libcall_types[type] = dmd::pointerTo (Type::tint8->arrayOf ());
+      libcall_types[type] = dmd::pointerTo (dmd::arrayOf (Type::tint8));
       break;
 
     case LCT_IMMUTABLE_CHARPTR:

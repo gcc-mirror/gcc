@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d --param=riscv-autovec-preference=scalable -ffast-math -fno-vect-cost-model -fdump-tree-optimized-details" } */
+/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d -mrvv-vector-bits=scalable -ffast-math -fno-vect-cost-model -fdump-tree-optimized-details" } */
 
 void __attribute__((noipa))
 add_loop (unsigned int *x, int n, unsigned int *res)

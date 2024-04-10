@@ -95,6 +95,10 @@ public:
   void execute ();
 
 private:
+  // Whether to test only things that are required for correctness,
+  // or whether to take optimization heuristics into account as well.
+  enum test_strictness { CORRECTNESS_ONLY, ALL_REASONS };
+
   static_assert (MAX_RECOG_OPERANDS <= 32, "Operand mask is 32 bits");
   using operand_mask = uint32_t;
 
@@ -440,6 +444,7 @@ private:
   void record_allocno_use (allocno_info *);
   void record_allocno_def (allocno_info *);
   allocno_info *find_related_start (allocno_info *, allocno_info *, bool);
+  void accumulate_defs (allocno_info *, allocno_info *);
   void record_copy (rtx, rtx, bool = false);
   void record_constraints (rtx_insn *);
   void record_artificial_refs (unsigned int);
@@ -451,7 +456,7 @@ private:
 
   template<unsigned int allocno_info::*field>
   static int cmp_increasing (const void *, const void *);
-  bool is_chain_candidate (allocno_info *, allocno_info *);
+  bool is_chain_candidate (allocno_info *, allocno_info *, test_strictness);
   int rate_chain (allocno_info *, allocno_info *);
   static int cmp_chain_candidates (const void *, const void *);
   void chain_allocnos (unsigned int &, unsigned int &);
@@ -526,6 +531,12 @@ private:
 
   // The set of FPRs that are currently live.
   unsigned int m_live_fprs;
+
+  // A unique one-based identifier for the current region.
+  unsigned int m_current_region;
+
+  // The region in which each FPR was last used, or 0 if none.
+  unsigned int m_fpr_recency[32];
 
   // ----------------------------------------------------------------------
 
@@ -1049,8 +1060,7 @@ is_stride_candidate (rtx_insn *insn)
     return false;
 
   auto stride_type = get_attr_stride_type (insn);
-  return (stride_type == STRIDE_TYPE_LUTI_CONSECUTIVE
-	  || stride_type == STRIDE_TYPE_LD1_CONSECUTIVE
+  return (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE
 	  || stride_type == STRIDE_TYPE_ST1_CONSECUTIVE);
 }
 
@@ -1300,6 +1310,7 @@ early_ra::start_new_region ()
   m_allocated_fprs = 0;
   m_call_preserved_fprs = 0;
   m_allocation_successful = true;
+  m_current_region += 1;
 }
 
 // Create and return an allocno group of size SIZE for register REGNO.
@@ -1569,6 +1580,8 @@ early_ra::find_related_start (allocno_info *dest_allocno,
 	}
 
       if (dest_allocno->group_size != 1
+	  // Account for definitions by shared registers.
+	  || dest_allocno->num_defs > 1
 	  || DF_REG_DEF_COUNT (dest_allocno->group ()->regno) != 1)
 	// Currently only single allocnos that are defined once can
 	// share registers with non-equivalent allocnos.  This could be
@@ -1585,11 +1598,25 @@ early_ra::find_related_start (allocno_info *dest_allocno,
 	return res;
 
       auto *next_allocno = m_allocnos[dest_allocno->copy_dest];
-      if (!is_chain_candidate (dest_allocno, next_allocno))
+      if (!is_chain_candidate (dest_allocno, next_allocno, ALL_REASONS))
 	return res;
 
       dest_allocno = next_allocno;
       is_equiv = false;
+    }
+}
+
+// Add FROM_ALLOCNO's definition information to TO_ALLOCNO's.
+void
+early_ra::accumulate_defs (allocno_info *to_allocno,
+			   allocno_info *from_allocno)
+{
+  if (from_allocno->num_defs > 0)
+    {
+      to_allocno->num_defs = MIN (from_allocno->num_defs
+				  + to_allocno->num_defs, 2);
+      to_allocno->last_def_point = MAX (to_allocno->last_def_point,
+					from_allocno->last_def_point);
     }
 }
 
@@ -1687,6 +1714,16 @@ early_ra::record_copy (rtx dest, rtx src, bool from_move_p)
 		  next_allocno->related_allocno = src_allocno->id;
 		  next_allocno->is_equiv = (start_allocno == dest_allocno
 					    && from_move_p);
+		  // If we're sharing two allocnos that are not equivalent,
+		  // carry across the definition information.  This is needed
+		  // to prevent multiple incompatible attempts to share with
+		  // the same register.
+		  if (next_allocno->is_shared ())
+		    accumulate_defs (src_allocno, next_allocno);
+		  src_allocno->last_use_point
+		    = MAX (src_allocno->last_use_point,
+			   next_allocno->last_use_point);
+
 		  if (next_allocno == start_allocno)
 		    break;
 		  next_allocno = m_allocnos[next_allocno->copy_dest];
@@ -1984,7 +2021,7 @@ early_ra::strided_polarity_pref (allocno_info *allocno1,
   if (allocno1->offset + 1 < allocno1->group_size
       && allocno2->offset + 1 < allocno2->group_size)
     {
-      if (is_chain_candidate (allocno1 + 1, allocno2 + 1))
+      if (is_chain_candidate (allocno1 + 1, allocno2 + 1, ALL_REASONS))
 	return 1;
       else
 	return -1;
@@ -1992,7 +2029,7 @@ early_ra::strided_polarity_pref (allocno_info *allocno1,
 
   if (allocno1->offset > 0 && allocno2->offset > 0)
     {
-      if (is_chain_candidate (allocno1 - 1, allocno2 - 1))
+      if (is_chain_candidate (allocno1 - 1, allocno2 - 1, ALL_REASONS))
 	return 1;
       else
 	return -1;
@@ -2188,38 +2225,37 @@ early_ra::cmp_increasing (const void *allocno1_ptr, const void *allocno2_ptr)
 }
 
 // Return true if we should consider chaining ALLOCNO1 onto the head
-// of ALLOCNO2.  This is just a local test of the two allocnos; it doesn't
-// guarantee that chaining them would give a self-consistent system.
+// of ALLOCNO2.  STRICTNESS says whether we should take copy-elision
+// heuristics into account, or whether we should just consider things
+// that matter for correctness.
+//
+// This is just a local test of the two allocnos; it doesn't guarantee
+// that chaining them would give a self-consistent system.
 bool
-early_ra::is_chain_candidate (allocno_info *allocno1, allocno_info *allocno2)
+early_ra::is_chain_candidate (allocno_info *allocno1, allocno_info *allocno2,
+			      test_strictness strictness)
 {
   if (allocno2->is_shared ())
     return false;
 
-  if (allocno1->is_equiv)
+  while (allocno1->is_equiv)
     allocno1 = m_allocnos[allocno1->related_allocno];
 
   if (allocno2->start_point >= allocno1->end_point
       && !allocno2->is_equiv_to (allocno1->id))
     return false;
 
-  if (allocno2->is_strong_copy_dest)
-    {
-      if (!allocno1->is_strong_copy_src
-	  || allocno1->copy_dest != allocno2->id)
-	return false;
-    }
-  else if (allocno2->is_copy_dest)
+  if (allocno1->is_earlyclobbered
+      && allocno1->end_point == allocno2->start_point + 1)
+    return false;
+
+  if (strictness == ALL_REASONS && allocno2->is_copy_dest)
     {
       if (allocno1->copy_dest != allocno2->id)
 	return false;
-    }
-  else if (allocno1->is_earlyclobbered)
-    {
-      if (allocno1->end_point == allocno2->start_point + 1)
+      if (allocno2->is_strong_copy_dest && !allocno1->is_strong_copy_src)
 	return false;
     }
-
   return true;
 }
 
@@ -2443,8 +2479,7 @@ early_ra::try_to_chain_allocnos (allocno_info *allocno1,
 	  auto *head2 = m_allocnos[headi2];
 	  if (head1->chain_next != INVALID_ALLOCNO)
 	    return false;
-	  if (!head2->is_equiv_to (head1->id)
-	      && head1->end_point <= head2->start_point)
+	  if (!is_chain_candidate (head1, head2, CORRECTNESS_ONLY))
 	    return false;
 	}
     }
@@ -2593,7 +2628,7 @@ early_ra::form_chains ()
 	  auto *allocno2 = m_sorted_allocnos[sci];
 	  if (allocno2->chain_prev == INVALID_ALLOCNO)
 	    {
-	      if (!is_chain_candidate (allocno1, allocno2))
+	      if (!is_chain_candidate (allocno1, allocno2, ALL_REASONS))
 		continue;
 	      chain_candidate_info candidate;
 	      candidate.allocno = allocno2;
@@ -2790,19 +2825,30 @@ early_ra::allocate_colors ()
 	candidates &= ~(m_allocated_fprs >> i);
       unsigned int best = INVALID_REGNUM;
       int best_weight = 0;
+      unsigned int best_recency = 0;
       for (unsigned int fpr = 0; fpr <= 32U - color->group->size; ++fpr)
 	{
 	  if ((candidates & (1U << fpr)) == 0)
 	    continue;
 	  int weight = color->fpr_preferences[fpr];
+	  unsigned int recency = 0;
 	  // Account for registers that the current function must preserve.
 	  for (unsigned int i = 0; i < color->group->size; ++i)
-	    if (m_call_preserved_fprs & (1U << (fpr + i)))
-	      weight -= 1;
-	  if (best == INVALID_REGNUM || best_weight <= weight)
+	    {
+	      if (m_call_preserved_fprs & (1U << (fpr + i)))
+		weight -= 1;
+	      recency = MAX (recency, m_fpr_recency[fpr + i]);
+	    }
+	  // Prefer higher-numbered registers in the event of a tie.
+	  // This should tend to keep lower-numbered registers free
+	  // for allocnos that require V0-V7 or V0-V15.
+	  if (best == INVALID_REGNUM
+	      || best_weight < weight
+	      || (best_weight == weight && recency <= best_recency))
 	    {
 	      best = fpr;
 	      best_weight = weight;
+	      best_recency = recency;
 	    }
 	}
 
@@ -2859,19 +2905,27 @@ early_ra::find_oldest_color (unsigned int first_color,
 {
   color_info *best = nullptr;
   unsigned int best_start_point = ~0U;
+  unsigned int best_recency = 0;
   for (unsigned int ci = first_color; ci < m_colors.length (); ++ci)
     {
       auto *color = m_colors[ci];
-      if (fpr_conflicts & (1U << (color->hard_regno - V0_REGNUM)))
+      unsigned int fpr = color->hard_regno - V0_REGNUM;
+      if (fpr_conflicts & (1U << fpr))
 	continue;
-      if (!color->group)
-	return color;
-      auto chain_head = color->group->chain_heads ()[0];
-      auto start_point = m_allocnos[chain_head]->start_point;
-      if (!best || best_start_point > start_point)
+      unsigned int start_point = 0;
+      if (color->group)
+	{
+	  auto chain_head = color->group->chain_heads ()[0];
+	  start_point = m_allocnos[chain_head]->start_point;
+	}
+      unsigned int recency = m_fpr_recency[fpr];
+      if (!best
+	  || best_start_point > start_point
+	  || (best_start_point == start_point && recency < best_recency))
 	{
 	  best = color;
 	  best_start_point = start_point;
+	  best_recency = recency;
 	}
     }
   return best;
@@ -2975,6 +3029,13 @@ early_ra::broaden_colors ()
 void
 early_ra::finalize_allocation ()
 {
+  for (auto *color : m_colors)
+    if (color->group)
+      {
+	unsigned int fpr = color->hard_regno - V0_REGNUM;
+	for (unsigned int i = 0; i < color->group->size; ++i)
+	  m_fpr_recency[fpr + i] = m_current_region;
+      }
   for (auto *allocno : m_allocnos)
     {
       if (allocno->is_shared ())
@@ -3150,8 +3211,7 @@ early_ra::maybe_convert_to_strided_access (rtx_insn *insn)
   auto stride_type = get_attr_stride_type (insn);
   rtx pat = PATTERN (insn);
   rtx op;
-  if (stride_type == STRIDE_TYPE_LUTI_CONSECUTIVE
-      || stride_type == STRIDE_TYPE_LD1_CONSECUTIVE)
+  if (stride_type == STRIDE_TYPE_LD1_CONSECUTIVE)
     op = SET_DEST (pat);
   else if (stride_type == STRIDE_TYPE_ST1_CONSECUTIVE)
     op = XVECEXP (SET_SRC (pat), 0, 1);
@@ -3200,20 +3260,6 @@ early_ra::maybe_convert_to_strided_access (rtx_insn *insn)
       // ??? Why doesn't the generator get this right?
       XVECEXP (SET_SRC (pat), 0, XVECLEN (SET_SRC (pat), 0) - 1)
 	= *recog_data.dup_loc[0];
-    }
-  else if (stride_type == STRIDE_TYPE_LUTI_CONSECUTIVE)
-    {
-      auto bits = INTVAL (XVECEXP (SET_SRC (pat), 0, 4));
-      if (range.count == 2)
-	pat = gen_aarch64_sme_lut_strided2 (bits, single_mode,
-					    regs[0], regs[1],
-					    recog_data.operand[1],
-					    recog_data.operand[2]);
-      else
-	pat = gen_aarch64_sme_lut_strided4 (bits, single_mode,
-					    regs[0], regs[1], regs[2], regs[3],
-					    recog_data.operand[1],
-					    recog_data.operand[2]);
     }
   else
     gcc_unreachable ();
@@ -3491,6 +3537,10 @@ early_ra::process_blocks ()
       if (bitmap_intersect_p (df_get_live_in (bb), m_fpr_pseudos))
 	bitmap_set_bit (fpr_pseudos_live_in, bb->index);
     }
+
+  // This is incremented by 1 at the start of each region.
+  m_current_region = 0;
+  memset (m_fpr_recency, 0, sizeof (m_fpr_recency));
 
   struct stack_node { edge_iterator ei; basic_block bb; };
 

@@ -1,7 +1,8 @@
 /* { dg-do compile { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mpower8-vector -O2" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mvsx -O2" } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
 
 /* Test that we generate XSCVDPSP instead of FRSP and XSCVDPSPN when we combine
    a round from double to float and moving the float value to a GPR.  */

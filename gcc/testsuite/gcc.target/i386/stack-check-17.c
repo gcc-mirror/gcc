@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fstack-clash-protection -mtune=generic -fomit-frame-pointer" } */
+/* { dg-options "-O2 -fstack-clash-protection -mtune=generic -fomit-frame-pointer -mnoreturn-no-callee-saved-registers" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
 /* { dg-skip-if "" { *-*-* } { "-fstack-protector*" } { "" } } */
 
@@ -32,5 +32,5 @@ f3 (void)
    register on ia32 for a noreturn function.  */
 /* { dg-final { scan-assembler-times "push\[ql\]" 1 { target { ! ia32 } } } }  */
 /* { dg-final { scan-assembler-times "push\[ql\]" 3 { target ia32 } } }  */
-/* { dg-final { scan-assembler-times "pop" 1 } } */
-
+/* { dg-final { scan-assembler-not "pop" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "pop" 1 { target ia32 } } } */

@@ -85,6 +85,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         PutPriority, GetPriority,
                         PutProcedureBegin, PutProcedureEnd,
                         PutVarConst, IsVarConst,
+                        PutConstLitInternal,
                         PutVarHeap,
                         IsVarParam, IsProcedure, IsPointer, IsParameter,
                         IsUnboundedParam, IsEnumeration, IsDefinitionForC,
@@ -229,7 +230,8 @@ FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord,
                         PushWord, PopWord, PeepWord, RemoveTop,
                         IsEmptyWord, NoOfItemsInStackWord ;
 
-FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, InBounds, HighIndice, IncludeIndiceIntoIndex ;
+FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, InBounds, HighIndice,
+                     IncludeIndiceIntoIndex, InitIndexTuned ;
 
 FROM M2Range IMPORT InitAssignmentRangeCheck,
                     InitReturnRangeCheck,
@@ -255,6 +257,7 @@ FROM M2Range IMPORT InitAssignmentRangeCheck,
                     InitWholeZeroDivisionCheck,
                     InitWholeZeroRemainderCheck,
                     InitParameterRangeCheck,
+                    PutRangeForIncrement,
                     WriteRangeCheck ;
 
 FROM M2CaseList IMPORT PushCase, PopCase, AddRange, BeginCaseList, EndCaseList, ElseCase ;
@@ -298,6 +301,7 @@ TYPE
                              LineNo             : CARDINAL ;     (* Line No of source text.         *)
                              TokenNo            : CARDINAL ;     (* Token No of source text.        *)
                              NoOfTimesReferenced: CARDINAL ;     (* No of times quad is referenced. *)
+                             CheckType,
                              CheckOverflow      : BOOLEAN ;      (* should backend check overflow   *)
                              op1pos,
                              op2pos,
@@ -1343,6 +1347,19 @@ PROCEDURE PutQuadO (QuadNo: CARDINAL;
                     Op: QuadOperator;
                     Oper1, Oper2, Oper3: CARDINAL;
                     overflow: BOOLEAN) ;
+BEGIN
+   PutQuadOType (QuadNo, Op, Oper1, Oper2, Oper3, overflow, TRUE)
+END PutQuadO ;
+
+
+(*
+   PutQuadOType -
+*)
+
+PROCEDURE PutQuadOType (QuadNo: CARDINAL;
+                        Op: QuadOperator;
+                        Oper1, Oper2, Oper3: CARDINAL;
+                        overflow, checktype: BOOLEAN) ;
 VAR
    f: QuadFrame ;
 BEGIN
@@ -1360,10 +1377,11 @@ BEGIN
          Operand1      := Oper1 ;
          Operand2      := Oper2 ;
          Operand3      := Oper3 ;
-         CheckOverflow := overflow
+         CheckOverflow := overflow ;
+         CheckType     := checktype
       END
    END
-END PutQuadO ;
+END PutQuadOType ;
 
 
 (*
@@ -1376,6 +1394,36 @@ PROCEDURE PutQuad (QuadNo: CARDINAL;
 BEGIN
    PutQuadO (QuadNo, Op, Oper1, Oper2, Oper3, TRUE)
 END PutQuad ;
+
+
+(*
+   GetQuadOtok - returns the fields associated with quadruple QuadNo.
+*)
+
+PROCEDURE GetQuadOTypetok (QuadNo: CARDINAL;
+                           VAR tok: CARDINAL;
+                           VAR Op: QuadOperator;
+                           VAR Oper1, Oper2, Oper3: CARDINAL;
+                           VAR overflowChecking, typeChecking: BOOLEAN ;
+                           VAR Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (QuadNo) ;
+   LastQuadNo := QuadNo ;
+   WITH f^ DO
+      Op := Operator ;
+      Oper1 := Operand1 ;
+      Oper2 := Operand2 ;
+      Oper3 := Operand3 ;
+      Op1Pos := op1pos ;
+      Op2Pos := op2pos ;
+      Op3Pos := op3pos ;
+      tok := TokenNo ;
+      overflowChecking := CheckOverflow ;
+      typeChecking := CheckType
+   END
+END GetQuadOTypetok ;
 
 
 (*
@@ -4301,11 +4349,16 @@ END BuildElsif2 ;
                                             |------------|
 *)
 
-PROCEDURE PushOne (tok: CARDINAL; type: CARDINAL; message: ARRAY OF CHAR) ;
+PROCEDURE PushOne (tok: CARDINAL; type: CARDINAL;
+                   message: ARRAY OF CHAR; internal: BOOLEAN) ;
+VAR
+   const: CARDINAL ;
 BEGIN
    IF type = NulSym
    THEN
-      PushTF (MakeConstLit (tok, MakeKey('1'), NulSym), NulSym)
+      const := MakeConstLit (tok, MakeKey('1'), NulSym) ;
+      PutConstLitInternal (const, TRUE) ;
+      PushTFtok (const, NulSym, tok)
    ELSIF IsEnumeration (type)
    THEN
       IF NoOfElements (type) = 0
@@ -4315,14 +4368,16 @@ BEGIN
                            type) ;
          PushZero (tok, type)
       ELSE
-         PushTF (Convert, NulSym) ;
+         PushTFtok (Convert, NulSym, tok) ;
          PushT (type) ;
-         PushT (MakeConstLit (tok, MakeKey ('1'), ZType)) ;
+         PushTFtok (MakeConstLit (tok, MakeKey ('1'), ZType), ZType, tok) ;
          PushT (2) ;          (* Two parameters *)
          BuildConvertFunction
       END
    ELSE
-      PushTF (MakeConstLit (tok, MakeKey ('1'), type), type)
+      const := MakeConstLit (tok, MakeKey ('1'), type) ;
+      PutConstLitInternal (const, TRUE) ;
+      PushTFtok (const, type, tok)
    END
 END PushOne ;
 
@@ -4379,15 +4434,23 @@ END PushZero ;
 
 PROCEDURE BuildPseudoBy ;
 VAR
-   e, t, dotok: CARDINAL ;
+   expr, type, dotok: CARDINAL ;
 BEGIN
-   PopTFtok (e, t, dotok) ;  (* as there is no BY token this position is the DO at the end of the last expression.  *)
-   PushTFtok (e, t, dotok) ;
-   IF t=NulSym
+   (* As there is no BY token this position is the DO at the end of the last expression.  *)
+   PopTFtok (expr, type, dotok) ;
+   PushTFtok (expr, type, dotok) ;
+   IF type = NulSym
    THEN
-      t := GetSType (e)
+      (* type := ZType *)
+   ELSIF IsEnumeration (SkipType (type)) OR (SkipType (type) = Char)
+   THEN
+      (* Use type.  *)
+   ELSIF IsOrdinalType (SkipType (type))
+   THEN
+      type := ZType
    END ;
-   PushOne (dotok, t, 'the implied FOR loop increment will cause an overflow {%1ad}')
+   PushOne (dotok, type,
+            'the implied {%kFOR} loop increment will cause an overflow {%1ad}', TRUE)
 END BuildPseudoBy ;
 
 
@@ -4418,8 +4481,9 @@ END BuildForLoopToRangeCheck ;
                     Entry                   Exit
                     =====                   ====
 
-
-             Ptr ->                                           <- Ptr
+                                                               <- Ptr
+                                            +----------------+
+             Ptr ->                         | RangeId        |
                     +----------------+      |----------------|
                     | BySym | ByType |      | ForQuad        |
                     |----------------|      |----------------|
@@ -4490,6 +4554,7 @@ VAR
    BySym,
    ByType,
    ForLoop,
+   RangeId,
    t, f      : CARDINAL ;
    etype,
    t1        : CARDINAL ;
@@ -4503,24 +4568,8 @@ BEGIN
    PopTtok (e1, e1tok) ;
    PopTtok (Id, idtok) ;
    IdSym := RequestSym (idtok, Id) ;
-   IF NOT IsExpressionCompatible (GetSType (e1), GetSType (e2))
-   THEN
-      MetaError2 ('incompatible types found in {%EkFOR} loop header, initial expression {%1tsad} and final expression {%2tsad}',
-                 e1, e2) ;
-      CheckExpressionCompatible (idtok, GetSType (e1), GetSType (e2))
-   END ;
-   IF NOT IsExpressionCompatible( GetSType (e1), ByType)
-   THEN
-      MetaError2 ('incompatible types found in {%EkFOR} loop header, initial expression {%1tsad} and {%kBY} {%2tsad}',
-                  e2, BySym) ;
-      CheckExpressionCompatible (e1tok, GetSType (e1), ByType)
-   ELSIF NOT IsExpressionCompatible (GetSType (e2), ByType)
-   THEN
-      MetaError2 ('incompatible types found in {%EkFOR} loop header, final expression {%1tsad} and {%kBY} {%2tsad}',
-                  e2, BySym) ;
-      CheckExpressionCompatible (e1tok, GetSType (e2), ByType)
-   END ;
-   BuildRange (InitForLoopBeginRangeCheck (IdSym, e1)) ;
+   RangeId := InitForLoopBeginRangeCheck (IdSym, idtok, e1, e1tok, e2, e2tok, BySym, bytok) ;
+   BuildRange (RangeId) ;
    PushTtok (IdSym, idtok) ;
    PushTtok (e1, e1tok) ;
    BuildAssignmentWithoutBounds (idtok, TRUE, TRUE) ;
@@ -4593,7 +4642,8 @@ BEGIN
    PushTFtok (IdSym, GetSym (IdSym), idtok) ;
    PushTFtok (BySym, ByType, bytok) ;
    PushTFtok (FinalValue, GetSType (FinalValue), e2tok) ;
-   PushT (ForLoop)
+   PushT (ForLoop) ;
+   PushT (RangeId)
 END BuildForToByDo ;
 
 
@@ -4608,6 +4658,8 @@ END BuildForToByDo ;
 
          Ptr ->
                  +----------------+
+                 | RangeId        |
+                 |----------------|
                  | ForQuad        |
                  |----------------|
                  | LastValue      |
@@ -4622,6 +4674,7 @@ PROCEDURE BuildEndFor (endpostok: CARDINAL) ;
 VAR
    t, f,
    tsym,
+   RangeId,
    IncQuad,
    ForQuad: CARDINAL ;
    LastSym,
@@ -4631,6 +4684,7 @@ VAR
    IdSym,
    idtok  : CARDINAL ;
 BEGIN
+   PopT (RangeId) ;
    PopT (ForQuad) ;
    PopT (LastSym) ;
    PopTFtok (BySym, ByType, bytok) ;
@@ -4661,10 +4715,11 @@ BEGIN
          is counting down.  The above test will generate a more
          precise error message, so we suppress overflow detection
          here.  *)
-      GenQuadOtok (bytok, AddOp, tsym, tsym, BySym, FALSE,
-                   bytok, bytok, bytok) ;
+      GenQuadOTypetok (bytok, AddOp, tsym, tsym, BySym, FALSE, FALSE,
+                       idtok, idtok, bytok) ;
       CheckPointerThroughNil (idtok, IdSym) ;
-      GenQuadOtok (idtok, XIndrOp, IdSym, GetSType (IdSym), tsym, FALSE,
+      GenQuadOtok (idtok, XIndrOp, IdSym, GetSType (IdSym),
+                   tsym, FALSE,
                    idtok, idtok, idtok)
    ELSE
       BuildRange (InitForLoopEndRangeCheck (IdSym, BySym)) ;
@@ -4673,13 +4728,20 @@ BEGIN
          this addition can legitimately overflow if a cardinal type
          is counting down.  The above test will generate a more
          precise error message, so we suppress overflow detection
-         here.  *)
-      GenQuadOtok (idtok, AddOp, IdSym, IdSym, BySym, FALSE,
-                   bytok, bytok, bytok)
+         here.
+
+         This quadruple suppresses the generic binary op type
+         check (performed in M2GenGCC.mod) as there
+         will be a more informative/exhaustive check performed by the
+         InitForLoopBeginRangeCheck setup in BuildForToByDo and
+         performed by M2Range.mod.  *)
+      GenQuadOTypetok (idtok, AddOp, IdSym, IdSym, BySym, FALSE, FALSE,
+                       idtok, idtok, bytok)
    END ;
    GenQuadO (endpostok, GotoOp, NulSym, NulSym, ForQuad, FALSE) ;
    BackPatch (PopFor (), NextQuad) ;
-   AddForInfo (ForQuad, NextQuad-1, IncQuad, IdSym, idtok)
+   AddForInfo (ForQuad, NextQuad-1, IncQuad, IdSym, idtok) ;
+   PutRangeForIncrement (RangeId, IncQuad)
 END BuildEndFor ;
 
 
@@ -7244,7 +7306,8 @@ BEGIN
          THEN
             OperandSym := DereferenceLValue (OperandTok (1), OperandT (1))
          ELSE
-            PushOne (proctok, dtype, 'the {%EkINC} will cause an overflow {%1ad}') ;
+            PushOne (proctok, dtype,
+                     'the {%EkINC} will cause an overflow {%1ad}', FALSE) ;
 	    PopT (OperandSym)
          END ;
 
@@ -7316,7 +7379,8 @@ BEGIN
          THEN
             OperandSym := DereferenceLValue (OperandTok (1), OperandT (1))
          ELSE
-            PushOne (proctok, dtype, 'the {%EkDEC} will cause an overflow {%1ad}') ;
+            PushOne (proctok, dtype,
+                     'the {%EkDEC} will cause an overflow {%1ad}', FALSE) ;
 	    PopT (OperandSym)
          END ;
 
@@ -13188,6 +13252,22 @@ PROCEDURE GenQuadOtok (TokPos: CARDINAL;
                        Operation: QuadOperator;
                        Op1, Op2, Op3: CARDINAL; overflow: BOOLEAN;
                        Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
+BEGIN
+   GenQuadOTypetok (TokPos, Operation, Op1, Op2, Op3, overflow, TRUE,
+                    Op1Pos, Op2Pos, Op3Pos)
+END GenQuadOtok ;
+
+
+(*
+   GenQuadOTypetok - assigns the fields of the quadruple with
+                     the parameters.
+*)
+
+PROCEDURE GenQuadOTypetok (TokPos: CARDINAL;
+                           Operation: QuadOperator;
+                           Op1, Op2, Op3: CARDINAL;
+                           overflow, typecheck: BOOLEAN;
+                           Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
 VAR
    f: QuadFrame ;
 BEGIN
@@ -13199,7 +13279,7 @@ BEGIN
          f := GetQF (NextQuad-1) ;
          f^.Next := NextQuad
       END ;
-      PutQuadO (NextQuad, Operation, Op1, Op2, Op3, overflow) ;
+      PutQuadOType (NextQuad, Operation, Op1, Op2, Op3, overflow, typecheck) ;
       f := GetQF (NextQuad) ;
       WITH f^ DO
          Next := 0 ;
@@ -13221,7 +13301,7 @@ BEGIN
       (* DisplayQuad(NextQuad) ; *)
       NewQuad (NextQuad)
    END
-END GenQuadOtok ;
+END GenQuadOTypetok ;
 
 
 (*
@@ -15372,7 +15452,7 @@ BEGIN
    LogicalXorTok := MakeKey('_LXOR') ;
    LogicalDifferenceTok := MakeKey('_LDIFF') ;
    ArithPlusTok := MakeKey ('_ARITH_+') ;
-   QuadArray := InitIndex (1) ;
+   QuadArray := InitIndexTuned (1, 1024*1024 DIV 16, 16) ;
    FreeList := 1 ;
    NewQuad(NextQuad) ;
    Assert(NextQuad=1) ;

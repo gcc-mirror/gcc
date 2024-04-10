@@ -3,7 +3,7 @@
 /++
     D header file for FreeBSD's ifaddrs.h.
 
-    Copyright: Copyright 2023
+    Copyright: Copyright 2023 - 2024
     License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
     Authors:   $(HTTP jmdavisprog.com, Jonathan M Davis)
  +/
@@ -23,6 +23,7 @@ struct ifaddrs
     uint      ifa_flags;
     sockaddr* ifa_addr;
     sockaddr* ifa_netmask;
+    alias ifa_broadaddr = ifa_dstaddr;
     sockaddr* ifa_dstaddr;
     void*     ifa_data;
 }

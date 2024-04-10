@@ -84,32 +84,22 @@ const char *profile_quality_display_names[] =
   "precise"
 };
 
-/* Dump THIS to BUFFER.  */
-
-void
-profile_count::dump (char *buffer, struct function *fun) const
-{
-  if (!initialized_p ())
-    sprintf (buffer, "uninitialized");
-  else if (fun && initialized_p ()
-	   && fun->cfg
-	   && ENTRY_BLOCK_PTR_FOR_FN (fun)->count.initialized_p ())
-    sprintf (buffer, "%" PRId64 " (%s, freq %.4f)", m_val,
-	     profile_quality_display_names[m_quality],
-	     to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (fun)->count).to_double ());
-  else
-    sprintf (buffer, "%" PRId64 " (%s)", m_val,
-	     profile_quality_display_names[m_quality]);
-}
-
 /* Dump THIS to F.  */
 
 void
 profile_count::dump (FILE *f, struct function *fun) const
 {
-  char buffer[64];
-  dump (buffer, fun);
-  fputs (buffer, f);
+  if (!initialized_p ())
+    fprintf (f, "uninitialized");
+  else if (fun && initialized_p ()
+	   && fun->cfg
+	   && ENTRY_BLOCK_PTR_FOR_FN (fun)->count.initialized_p ())
+    fprintf (f, "%" PRId64 " (%s, freq %.4f)", m_val,
+	     profile_quality_display_names[m_quality],
+	     to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (fun)->count).to_double ());
+  else
+    fprintf (f, "%" PRId64 " (%s)", m_val,
+	     profile_quality_display_names[m_quality]);
 }
 
 /* Dump THIS to stderr.  */

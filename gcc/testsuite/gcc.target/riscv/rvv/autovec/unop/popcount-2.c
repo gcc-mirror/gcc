@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=scalable -fno-vect-cost-model -fdump-tree-slp-details" } */
+/* { dg-additional-options "-march=rv64gcv -mabi=lp64d -mrvv-vector-bits=scalable -fno-vect-cost-model -fdump-tree-slp-details" } */
 
 int x[8];
 int y[8];

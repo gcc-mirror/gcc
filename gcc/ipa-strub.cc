@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "gimple-fold.h"
@@ -938,7 +940,7 @@ can_strub_internally_p (cgraph_node *node, bool report = false)
     }
 
   if (list_length (TYPE_ARG_TYPES (TREE_TYPE (node->decl)))
-      >= (((HOST_WIDE_INT) 1 << IPA_PARAM_MAX_INDEX_BITS)
+      >= ((HOST_WIDE_INT_1 << IPA_PARAM_MAX_INDEX_BITS)
 	  - STRUB_INTERNAL_MAX_EXTRA_ARGS))
     {
       result = false;

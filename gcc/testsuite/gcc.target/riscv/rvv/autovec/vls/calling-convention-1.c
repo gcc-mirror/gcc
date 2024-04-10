@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl4096b --param riscv-autovec-preference=scalable -mabi=lp64d -O3" } */
+/* { dg-options "-march=rv64gcv_zvl4096b -mrvv-vector-bits=scalable -mabi=lp64d -O3 -fno-schedule-insns2" } */
 
 #include "def.h"
 
@@ -143,12 +143,33 @@ DEF_RET1_ARG9 (v1024qi)
 DEF_RET1_ARG9 (v2048qi)
 DEF_RET1_ARG9 (v4096qi)
 
+// RET1_ARG0 tests
 /* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 9 } } */
+/* { dg-final { scan-assembler-times {mv\s+s0,a0\s+call\s+memset\s+mv\s+a0,s0} 3 } } */
+
+// v1qi tests: return value (lbu) and function prologue (sb)
+// 1 lbu per test, argnum sb's when args > 1
 /* { dg-final { scan-assembler-times {lbu\s+a0,\s*[0-9]+\(sp\)} 8 } } */
-/* { dg-final { scan-assembler-times {lhu\s+a0,\s*[0-9]+\(sp\)} 8 } } */
-/* { dg-final { scan-assembler-times {lw\s+a0,\s*[0-9]+\(sp\)} 8 } } */
-/* { dg-final { scan-assembler-times {ld\s+a[0-1],\s*[0-9]+\(sp\)} 35 } } */
 /* { dg-final { scan-assembler-times {sb\s+a[0-7],\s*[0-9]+\(sp\)} 43 } } */
+
+// v2qi test: return value (lhu) and function prologue (sh)
+// 1 lhu per test, argnum sh's when args > 1
+/* { dg-final { scan-assembler-times {lhu\s+a0,\s*[0-9]+\(sp\)} 8 } } */
 /* { dg-final { scan-assembler-times {sh\s+a[0-7],\s*[0-9]+\(sp\)} 43 } } */
+
+// v4qi tests: return value (lw) and function prologue (sw)
+// 1 lw per test, argnum sw's when args > 1
+/* { dg-final { scan-assembler-times {lw\s+a0,\s*[0-9]+\(sp\)} 8 } } */
 /* { dg-final { scan-assembler-times {sw\s+a[0-7],\s*[0-9]+\(sp\)} 43 } } */
+
+// v8qi and v16qi tests: return value (ld) and function prologue (sd)
+//   - 1 ld per v8qi and 2 ld per v16qi with args > 1
+//   - 2 * argnum sd's per v8qi and 3 * argnum sd's per v16qi when argnum > 1
+/* { dg-final { scan-assembler-times {ld\s+a[0-1],\s*[0-9]+\(sp\)} 24 } } */
 /* { dg-final { scan-assembler-times {sd\s+a[0-7],\s*[0-9]+\(sp\)} 103 } } */
+
+// v32-4096qi tests: return value (vse8.v)
+/* { dg-final { scan-assembler-times {vse8.v\s+v[0-9],\s*[0-9]+\(a0\)} 74 } } */
+// v1024-4096qi_ARG1 tests: return value (vse64.v)
+// for some reason ARG1 returns using vse64 instead of vse8
+/* { dg-final { scan-assembler-times {vse64.v\s+v[0-9],\s*[0-9]+\(a0\)\s+ret} 3 } } */

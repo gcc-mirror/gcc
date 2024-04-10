@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "-std=gnu99 -O3 --param=riscv-autovec-preference=scalable" } */
+/* { dg-additional-options "-std=gnu99 -O3 -mrvv-vector-bits=scalable" } */
 
 #include <malloc.h>
 #include <stdio.h>

@@ -93,7 +93,7 @@ FROM M2Error IMPORT InternalError, WriteFormat0, WriteFormat1, WriteFormat2, War
 FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3,
                         MetaError1, MetaError2, MetaErrorStringT1 ;
 
-FROM M2Options IMPORT DisplayQuadruples, UnboundedByReference, PedanticCast,
+FROM M2Options IMPORT UnboundedByReference, PedanticCast,
                       VerboseUnbounded, Iso, Pim, DebugBuiltins, WholeProgram,
                       StrictTypeChecking, AutoInit, cflag, ScaffoldMain,
                       ScaffoldDynamic, ScaffoldStatic,
@@ -256,9 +256,9 @@ FROM m2except IMPORT BuildThrow, BuildTryBegin, BuildTryEnd,
 
 FROM M2Quads IMPORT QuadOperator, GetQuad, IsReferenced, GetNextQuad,
                     SubQuad, PutQuad, MustCheckOverflow, GetQuadOtok,
+                    GetQuadOTypetok,
                     QuadToTokenNo, DisplayQuad, GetQuadtok,
-                    GetM2OperatorDesc, GetQuadOp,
-                    DisplayQuadList ;
+                    GetM2OperatorDesc, GetQuadOp ;
 
 FROM M2Check IMPORT ParameterTypeCompatible, AssignmentTypeCompatible,  ExpressionTypeCompatible ;
 FROM M2SSA IMPORT EnableSSA ;
@@ -644,11 +644,6 @@ BEGIN
          Changed := TRUE
       END
    UNTIL NoChange ;
-   IF Debugging AND DisplayQuadruples AND FALSE
-   THEN
-      printf0('after resolving expressions with gcc\n') ;
-      DisplayQuadList
-   END ;
    RETURN Changed
 END ResolveConstantExpressions ;
 
@@ -3660,13 +3655,13 @@ END CodeBinaryCheck ;
 
 
 (*
-   MixTypesBinary - depending upon check do not check pointer arithmetic.
+   MixTypesBinary - depending upon overflowCheck do not check pointer arithmetic.
 *)
 
 PROCEDURE MixTypesBinary (left, right: CARDINAL;
-                          tokpos: CARDINAL; check: BOOLEAN) : CARDINAL ;
+                          tokpos: CARDINAL; overflowCheck: BOOLEAN) : CARDINAL ;
 BEGIN
-   IF (NOT check) AND
+   IF (NOT overflowCheck) AND
       (IsPointer (GetTypeMode (left)) OR IsPointer (GetTypeMode (right)))
    THEN
       RETURN Address
@@ -3743,6 +3738,7 @@ VAR
    lefttype,
    righttype,
    des, left, right: CARDINAL ;
+   typeChecking,
    overflowChecking: BOOLEAN ;
    despos, leftpos,
    rightpos,
@@ -3750,10 +3746,10 @@ VAR
    subexprpos      : CARDINAL ;
    op              : QuadOperator ;
 BEGIN
-   GetQuadOtok (quad, operatorpos, op,
-                des, left, right, overflowChecking,
-                despos, leftpos, rightpos) ;
-   IF ((op # LogicalRotateOp) AND (op # LogicalShiftOp))
+   GetQuadOTypetok (quad, operatorpos, op,
+                    des, left, right, overflowChecking, typeChecking,
+                    despos, leftpos, rightpos) ;
+   IF typeChecking AND (op # LogicalRotateOp) AND (op # LogicalShiftOp)
    THEN
       subexprpos := MakeVirtualTok (operatorpos, leftpos, rightpos) ;
       lefttype := GetType (left) ;

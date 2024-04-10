@@ -1701,6 +1701,7 @@ new_delete_mismatch_p (const demangle_component &newc,
 
     case DEMANGLE_COMPONENT_FUNCTION_PARAM:
     case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
+    case DEMANGLE_COMPONENT_UNNAMED_TYPE:
       return newc.u.s_number.number != delc.u.s_number.number;
 
     case DEMANGLE_COMPONENT_CHARACTER:

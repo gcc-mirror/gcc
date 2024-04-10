@@ -1,5 +1,5 @@
 ;; RISC-V generic out-of-order core scheduling model.
-;; Copyright (C) 2017-2024 Free Software Foundation, Inc.
+;; Copyright (C) 2023-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -48,21 +48,12 @@
 ;; Integer/float issue queues.
 (define_cpu_unit "issue0,issue1,issue2,issue3,issue4" "generic_ooo")
 
-;; Separate issue queue for vector instructions.
-(define_cpu_unit "generic_ooo_vxu_issue" "generic_ooo")
-
 ;; Integer/float execution units.
 (define_cpu_unit "ixu0,ixu1,ixu2,ixu3" "generic_ooo")
 (define_cpu_unit "fxu0,fxu1" "generic_ooo")
 
 ;; Integer subunit for division.
 (define_cpu_unit "generic_ooo_div" "generic_ooo")
-
-;; Vector execution unit.
-(define_cpu_unit "generic_ooo_vxu_alu" "generic_ooo")
-
-;; Vector subunit that does mult/div/sqrt.
-(define_cpu_unit "generic_ooo_vxu_multicycle" "generic_ooo")
 
 ;; Shortcuts
 (define_reservation "generic_ooo_issue" "issue0|issue1|issue2|issue3|issue4")
@@ -92,32 +83,24 @@
        (eq_attr "type" "fpstore"))
   "generic_ooo_issue,generic_ooo_fxu")
 
-;; Vector load/store
-(define_insn_reservation "generic_ooo_vec_load" 6
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vlde,vldm,vlds,vldux,vldox,vldff,vldr"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-(define_insn_reservation "generic_ooo_vec_store" 6
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vste,vstm,vsts,vstux,vstox,vstr"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-;; Vector segment loads/stores.
-(define_insn_reservation "generic_ooo_vec_loadstore_seg" 10
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vlsegde,vlsegds,vlsegdux,vlsegdox,vlsegdff,\
-			vssegte,vssegts,vssegtux,vssegtox"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-
 ;; Generic integer instructions.
 (define_insn_reservation "generic_ooo_alu" 1
   (and (eq_attr "tune" "generic_ooo")
        (eq_attr "type" "unknown,const,arith,shift,slt,multi,auipc,nop,logical,\
-			move,bitmanip,min,max,minu,maxu,clz,ctz"))
+			move,bitmanip,rotate,min,max,minu,maxu,clz,ctz,atomic,\
+			condmove,mvpair,zicond"))
   "generic_ooo_issue,generic_ooo_ixu_alu")
 
+(define_insn_reservation "generic_ooo_sfb_alu" 2
+  (and (eq_attr "tune" "generic_ooo")
+       (eq_attr "type" "sfb_alu"))
+  "generic_ooo_issue,generic_ooo_ixu_alu")
+
+;; Branch instructions
+(define_insn_reservation "generic_ooo_branch" 1
+  (and (eq_attr "tune" "generic_ooo")
+       (eq_attr "type" "branch,jump,call,jalr,ret,trap"))
+  "generic_ooo_issue,generic_ooo_ixu_alu")
 
 ;; Float move, convert and compare.
 (define_insn_reservation "generic_ooo_float_move" 3
@@ -179,103 +162,6 @@
   (and (eq_attr "tune" "generic_ooo")
        (eq_attr "type" "cpop,clmul"))
   "generic_ooo_issue,generic_ooo_ixu_alu")
-
-;; Regular vector operations and integer comparisons.
-(define_insn_reservation "generic_ooo_vec_alu" 3
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vialu,viwalu,vext,vicalu,vshift,vnshift,viminmax,vicmp,\
-		        vimov,vsalu,vaalu,vsshift,vnclip,vmov,vfmov"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-;; Vector float comparison, conversion etc.
-(define_insn_reservation "generic_ooo_vec_fcmp" 3
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vfrecp,vfminmax,vfcmp,vfsgnj,vfclass,vfcvtitof,\
-			vfcvtftoi,vfwcvtitof,vfwcvtftoi,vfwcvtftof,vfncvtitof,\
-			vfncvtftoi,vfncvtftof"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-;; Vector integer multiplication.
-(define_insn_reservation "generic_ooo_vec_imul" 4
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vimul,viwmul,vimuladd,viwmuladd,vsmul"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-;; Vector float addition.
-(define_insn_reservation "generic_ooo_vec_fadd" 4
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vfalu,vfwalu"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-;; Vector float multiplication and FMA.
-(define_insn_reservation "generic_ooo_vec_fmul" 6
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vfmul,vfwmul,vfmuladd,vfwmuladd"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-;; Vector crypto, assumed to be a generic operation for now.
-(define_insn_reservation "generic_ooo_crypto" 4
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "crypto"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-;; Vector permute.
-(define_insn_reservation "generic_ooo_perm" 3
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vimerge,vfmerge,vslideup,vslidedown,vislide1up,\
-			vislide1down,vfslide1up,vfslide1down,vgather,vcompress"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-;; Vector reduction.
-(define_insn_reservation "generic_ooo_vec_reduction" 8
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vired,viwred,vfredu,vfwredu"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_multicycle")
-
-;; Vector ordered reduction, assume the latency number is for
-;; a 128-bit vector.  It is scaled in riscv_sched_adjust_cost
-;; for larger vectors.
-(define_insn_reservation "generic_ooo_vec_ordered_reduction" 10
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vfredo,vfwredo"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_multicycle*3")
-
-;; Vector integer division, assume not pipelined.
-(define_insn_reservation "generic_ooo_vec_idiv" 16
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vidiv"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_multicycle*3")
-
-;; Vector float divisions and sqrt, assume not pipelined.
-(define_insn_reservation "generic_ooo_vec_float_divsqrt" 16
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vfdiv,vfsqrt"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_multicycle*3")
-
-;; Vector mask operations.
-(define_insn_reservation "generic_ooo_vec_mask" 2
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,\
-			vfmovvf,vfmovfv"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_alu")
-
-;; Vector vsetvl.
-(define_insn_reservation "generic_ooo_vec_vesetvl" 1
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "vsetvl,vsetvl_pre"))
-  "generic_ooo_vxu_issue")
-
-;; Vector rounding mode setters, assume pipeline barrier.
-(define_insn_reservation "generic_ooo_vec_setrm" 20
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "wrvxrm,wrfrm"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_issue*3")
-
-;; Vector read vlen/vlenb.
-(define_insn_reservation "generic_ooo_vec_readlen" 4
-  (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "rdvlenb,rdvl"))
-  "generic_ooo_vxu_issue,generic_ooo_vxu_issue")
 
 ;; Transfer from/to coprocessor.  Assume not pipelined.
 (define_insn_reservation "generic_ooo_xfer" 4

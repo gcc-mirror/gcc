@@ -7130,7 +7130,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
     private void checkParens(TOK value, AST.Expression e)
     {
-        if (precedence[e.op] == PREC.rel)
+        if (precedence[e.op] == PREC.rel && !e.parens)
             error(e.loc, "`%s` must be surrounded by parentheses when next to operator `%s`", e.toChars(), Token.toChars(value));
     }
 
@@ -8550,6 +8550,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 // ( expression )
                 nextToken();
                 e = parseExpression();
+                e.parens = true;
                 check(loc, TOK.rightParenthesis);
                 break;
             }
@@ -8874,9 +8875,9 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                                         nextToken();
                                         return AST.ErrorExp.get();
                                     }
-                                    auto te = new AST.TypeExp(loc, t);
-                                    te.parens = true;
-                                    e = parsePostExp(te);
+                                    e = new AST.TypeExp(loc, t);
+                                    e.parens = true;
+                                    e = parsePostExp(e);
                                 }
                                 else if (token.value == TOK.leftParenthesis ||
                                     token.value == TOK.plusPlus || token.value == TOK.minusMinus)
@@ -9193,18 +9194,14 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
     private AST.Expression parseAndExp()
     {
         Loc loc = token.loc;
-        bool parens = token.value == TOK.leftParenthesis;
         auto e = parseCmpExp();
         while (token.value == TOK.and)
         {
-            if (!parens)
-                checkParens(TOK.and, e);
-            parens = nextToken() == TOK.leftParenthesis;
+            checkParens(TOK.and, e);
+            nextToken();
             auto e2 = parseCmpExp();
-            if (!parens)
-                checkParens(TOK.and, e2);
+            checkParens(TOK.and, e2);
             e = new AST.AndExp(loc, e, e2);
-            parens = true;              // don't call checkParens() for And
             loc = token.loc;
         }
         return e;
@@ -9212,42 +9209,32 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
     private AST.Expression parseXorExp()
     {
-        Loc loc = token.loc;
+        const loc = token.loc;
 
-        bool parens = token.value == TOK.leftParenthesis;
         auto e = parseAndExp();
         while (token.value == TOK.xor)
         {
-            if (!parens)
-                checkParens(TOK.xor, e);
-            parens = nextToken() == TOK.leftParenthesis;
+            checkParens(TOK.xor, e);
+            nextToken();
             auto e2 = parseAndExp();
-            if (!parens)
-                checkParens(TOK.xor, e2);
+            checkParens(TOK.xor, e2);
             e = new AST.XorExp(loc, e, e2);
-            parens = true;
-            loc = token.loc;
         }
         return e;
     }
 
     private AST.Expression parseOrExp()
     {
-        Loc loc = token.loc;
+        const loc = token.loc;
 
-        bool parens = token.value == TOK.leftParenthesis;
         auto e = parseXorExp();
         while (token.value == TOK.or)
         {
-            if (!parens)
-                checkParens(TOK.or, e);
-            parens = nextToken() == TOK.leftParenthesis;
+            checkParens(TOK.or, e);
+            nextToken();
             auto e2 = parseXorExp();
-            if (!parens)
-                checkParens(TOK.or, e2);
+            checkParens(TOK.or, e2);
             e = new AST.OrExp(loc, e, e2);
-            parens = true;
-            loc = token.loc;
         }
         return e;
     }
@@ -9298,7 +9285,6 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
     AST.Expression parseAssignExp()
     {
-        bool parens = token.value == TOK.leftParenthesis;
         AST.Expression e;
         e = parseCondExp();
         if (e is null)
@@ -9307,7 +9293,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         // require parens for e.g. `t ? a = 1 : b = 2`
         void checkRequiredParens()
         {
-            if (e.op == EXP.question && !parens)
+            if (e.op == EXP.question && !e.parens)
                 eSink.error(e.loc, "`%s` must be surrounded by parentheses when next to operator `%s`",
                     e.toChars(), Token.toChars(token.value));
         }

@@ -2,8 +2,8 @@
    inputs produce the right code with a P9 (LE) target.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power9 -O2 " } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2 " } */
 
 // Targeting P9 (LE).  6 tests total.
 // P9 constant:   li, vextuwrx, (1:extsw)

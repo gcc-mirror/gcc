@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fno-vect-cost-model --param=riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fno-vect-cost-model -mrvv-vector-bits=zvl" } */
 
 void
 f (int *__restrict y, int *__restrict x, int *__restrict z, int n)

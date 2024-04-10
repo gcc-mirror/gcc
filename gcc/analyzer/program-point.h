@@ -112,7 +112,7 @@ public:
   /* Factory functions for making various kinds of program_point.  */
 
   static function_point from_function_entry (const supergraph &sg,
-					     function *fun);
+					     const function &fun);
 
   static function_point before_supernode (const supernode *supernode,
 					  const superedge *from_edge);
@@ -252,7 +252,7 @@ public:
   static program_point origin (const region_model_manager &mgr);
   static program_point from_function_entry (const region_model_manager &mgr,
 					    const supergraph &sg,
-					    function *fun);
+					    const function &fun);
 
   static program_point before_supernode (const supernode *supernode,
 					 const superedge *from_edge,

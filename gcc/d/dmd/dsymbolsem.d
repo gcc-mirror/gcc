@@ -6916,6 +6916,103 @@ extern(C++) class ImportAllVisitor : Visitor
     override void visit(StaticForeachDeclaration _) {}
 }
 
+/*******************************
+    * Load module.
+    * Returns:
+    *  true for errors, false for success
+    */
+extern (D) bool load(Import imp, Scope* sc)
+{
+    // See if existing module
+    const errors = global.errors;
+    DsymbolTable dst = Package.resolve(imp.packages, null, &imp.pkg);
+    version (none)
+    {
+        if (pkg && pkg.isModule())
+        {
+            .error(loc, "can only import from a module, not from a member of module `%s`. Did you mean `import %s : %s`?", pkg.toChars(), pkg.toPrettyChars(), id.toChars());
+            mod = pkg.isModule(); // Error recovery - treat as import of that module
+            return true;
+        }
+    }
+    Dsymbol s = dst.lookup(imp.id);
+    if (s)
+    {
+        if (s.isModule())
+            imp.mod = cast(Module)s;
+        else
+        {
+            if (s.isAliasDeclaration())
+            {
+                .error(imp.loc, "%s `%s` conflicts with `%s`", s.kind(), s.toPrettyChars(), imp.id.toChars());
+            }
+            else if (Package p = s.isPackage())
+            {
+                if (p.isPkgMod == PKG.unknown)
+                {
+                    uint preverrors = global.errors;
+                    imp.mod = Module.load(imp.loc, imp.packages, imp.id);
+                    if (!imp.mod)
+                        p.isPkgMod = PKG.package_;
+                    else
+                    {
+                        // imp.mod is a package.d, or a normal module which conflicts with the package name.
+                        if (imp.mod.isPackageFile)
+                            imp.mod.tag = p.tag; // reuse the same package tag
+                        else
+                        {
+                            // show error if Module.load does not
+                            if (preverrors == global.errors)
+                                .error(imp.loc, "%s `%s` from file %s conflicts with %s `%s`", imp.mod.kind(), imp.mod.toPrettyChars(), imp.mod.srcfile.toChars, p.kind(), p.toPrettyChars());
+                            return true;
+                        }
+                    }
+                }
+                else
+                {
+                    imp.mod = p.isPackageMod();
+                }
+                if (!imp.mod)
+                {
+                    .error(imp.loc, "can only import from a module, not from package `%s.%s`", p.toPrettyChars(), imp.id.toChars());
+                }
+            }
+            else if (imp.pkg)
+            {
+                .error(imp.loc, "can only import from a module, not from package `%s.%s`", imp.pkg.toPrettyChars(), imp.id.toChars());
+            }
+            else
+            {
+                .error(imp.loc, "can only import from a module, not from package `%s`", imp.id.toChars());
+            }
+        }
+    }
+    if (!imp.mod)
+    {
+        // Load module
+        imp.mod = Module.load(imp.loc, imp.packages, imp.id);
+        if (imp.mod)
+        {
+            // imp.id may be different from mod.ident, if so then insert alias
+            dst.insert(imp.id, imp.mod);
+        }
+    }
+    if (imp.mod && !imp.mod.importedFrom)
+        imp.mod.importedFrom = sc ? sc._module.importedFrom : Module.rootModule;
+    if (!imp.pkg)
+    {
+        if (imp.mod && imp.mod.isPackageFile)
+        {
+            // one level depth package.d file (import pkg; ./pkg/package.d)
+            // it's necessary to use the wrapping Package already created
+            imp.pkg = imp.mod.pkg;
+        }
+        else
+            imp.pkg = imp.mod;
+    }
+    return global.errors != errors;
+}
+
 void setFieldOffset(Dsymbol d, AggregateDeclaration ad, FieldState* fieldState, bool isunion)
 {
     scope v = new SetFieldOffsetVisitor(ad, fieldState, isunion);

@@ -253,12 +253,14 @@ BEGIN
          IF DebugRecover
          THEN
             printf0 ('buffer before\n') ;
-            DumpTokens ;
-            printf0 ('inserting token: buffer after\n') ;
-            DumpTokens ;
-            printf0 ('inserting token\n')
+            DumpTokens
          END ;
          InsertTokenAndRewind (t) ;
+         IF DebugRecover
+         THEN
+            printf0 ('inserting token: buffer after insertion\n') ;
+            DumpTokens
+         END ;
          RETURN TRUE
       END
    END ;

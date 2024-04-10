@@ -2691,7 +2691,7 @@ build_replicated_int_cst (tree type, unsigned int width, HOST_WIDE_INT value)
     low = value;
   else
     {
-      mask = ((HOST_WIDE_INT)1 << width) - 1;
+      mask = (HOST_WIDE_INT_1U << width) - 1;
       low = (unsigned HOST_WIDE_INT) ~0 / mask * (value & mask);
     }
 

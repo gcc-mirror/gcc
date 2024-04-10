@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mtune-ctrl=^prologue_using_move,^epilogue_using_move -fomit-frame-pointer" } */
+/* { dg-options "-O2 -mtune-ctrl=^prologue_using_move,^epilogue_using_move -fomit-frame-pointer -mnoreturn-no-callee-saved-registers" } */
 
 #define ARRAY_SIZE 256
 
@@ -22,5 +22,5 @@ no_return_to_caller (void)
   while (1);
 }
 
-/* { dg-final { scan-assembler-not "push" } } */
-/* { dg-final { scan-assembler-not "pop" } } */
+/* { dg-final { scan-assembler-not "push\[^\n\r\]*(?:\[abcd\]x|\[sd\]i|sp|r\[0-9\]|\[xyz\]mm)" } } */
+/* { dg-final { scan-assembler-not "pop\[^\n\r\]*(?:\[abcd\]x|\[sd\]i|sp|r\[0-9\]|\[xyz\]mm)" } } */

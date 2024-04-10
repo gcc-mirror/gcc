@@ -451,6 +451,7 @@ try_fwprop_subst_pattern (obstack_watermark &attempt, insn_change &use_change,
 
   if (!prop.likely_profitable_p ()
       && (prop.changed_mem_p ()
+	  || contains_mem_rtx_p (src)
 	  || use_insn->is_asm ()
 	  || !single_set (use_rtl)))
     {
@@ -854,6 +855,8 @@ forward_propagate_into (use_info *use, bool reg_prop_only = false)
 
   rtx dest = SET_DEST (def_set);
   rtx src = SET_SRC (def_set);
+  if (volatile_refs_p (src))
+    return false;
 
   /* Allow propagations into a loop only for reg-to-reg copies, since
      replacing one register by another shouldn't increase the cost.

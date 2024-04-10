@@ -331,7 +331,7 @@ extern "C" NameKey_Name NameKey_MakeKey (const char *a_, unsigned int _a_high)
       (*p) = ASCII_nul;
       return DoMakeKey (n, higha);
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-compiler/NameKey.def", 20, 1);
+  ReturnException ("../../gcc/m2/gm2-compiler/NameKey.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -381,7 +381,7 @@ extern "C" NameKey_Name NameKey_makekey (void * a)
           return DoMakeKey (n, higha);
         }
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-compiler/NameKey.def", 20, 1);
+  ReturnException ("../../gcc/m2/gm2-compiler/NameKey.def", 20, 1);
   __builtin_unreachable ();
 }
 
@@ -421,12 +421,15 @@ extern "C" unsigned int NameKey_LengthKey (NameKey_Name Key)
   unsigned int i;
   NameKey_PtrToChar p;
 
-  p = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (Key));
   i = 0;
-  while ((*p) != ASCII_nul)
+  if (Key != NameKey_NulName)
     {
-      i += 1;
-      p += 1;
+      p = static_cast<NameKey_PtrToChar> (NameKey_KeyToCharStar (Key));
+      while ((*p) != ASCII_nul)
+        {
+          i += 1;
+          p += 1;
+        }
     }
   return i;
   /* static analysis guarentees a RETURN statement will be used before here.  */

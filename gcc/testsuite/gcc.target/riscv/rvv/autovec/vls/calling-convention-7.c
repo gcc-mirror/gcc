@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl4096b --param riscv-autovec-preference=scalable -mabi=lp64d -O3" } */
+/* { dg-options "-march=rv64gcv_zvl4096b -mrvv-vector-bits=scalable -mabi=lp64d -O3 -fno-schedule-insns2" } */
 
 #include "def.h"
 
@@ -113,6 +113,16 @@ DEF_RET1_ARG9 (v128df)
 DEF_RET1_ARG9 (v256df)
 DEF_RET1_ARG9 (v512df)
 
+// RET1_ARG0 tests
 /* { dg-final { scan-assembler-times {li\s+a[0-1],\s*0} 6 } } */
-/* { dg-final { scan-assembler-times {ld\s+a[0-1],\s*[0-9]+\(sp\)} 29 } } */
+/* { dg-final { scan-assembler-times {mv\s+s0,a0\s+call\s+memset\s+mv\s+a0,s0} 3 } } */
+
+// v1df and v2df tests: return value (ld) and function prologue (sd)
+//   - 1 ld per v1df and 2 ld per v2df with args > 1
+//   - argnum sd's per v1df when argnum > 1 
+//   - 2 * argnum sd's per v2df when argnum > 0
+/* { dg-final { scan-assembler-times {ld\s+a[0-1],\s*[0-9]+\(sp\)} 24 } } */
 /* { dg-final { scan-assembler-times {sd\s+a[0-7],\s*[0-9]+\(sp\)} 103 } } */
+
+// v4-512df tests: return value (vse64.v)
+/* { dg-final { scan-assembler-times {vse64.v\s+v[0-9],\s*[0-9]+\(a0\)} 77 } } */

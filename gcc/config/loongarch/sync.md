@@ -245,18 +245,42 @@
    (clobber (match_scratch:GPR 5 "=&r"))]
   ""
 {
-  return "1:\\n\\t"
-	 "ll.<amo>\\t%0,%1\\n\\t"
-	 "bne\\t%0,%z2,2f\\n\\t"
-	 "or%i3\\t%5,$zero,%3\\n\\t"
-	 "sc.<amo>\\t%5,%1\\n\\t"
-	 "beqz\\t%5,1b\\n\\t"
-	 "b\\t3f\\n\\t"
-	 "2:\\n\\t"
-	 "%G4\\n\\t"
-	 "3:\\n\\t";
+  output_asm_insn ("1:", operands);
+  output_asm_insn ("ll.<amo>\t%0,%1", operands);
+
+  /* Like the test case atomic-cas-int.C, in loongarch64, O1 and higher, the
+     return value of the val_without_const_folding will not be truncated and
+     will be passed directly to the function compare_exchange_strong.
+     However, the instruction 'bne' does not distinguish between 32-bit and
+     64-bit operations.  so if the upper 32 bits of the register are not
+     extended by the 32nd bit symbol, then the comparison may not be valid
+     here.  This will affect the result of the operation.  */
+
+  if (TARGET_64BIT && REG_P (operands[2])
+      && GET_MODE (operands[2]) == SImode)
+    {
+      output_asm_insn ("addi.w\t%5,%2,0", operands);
+      output_asm_insn ("bne\t%0,%5,2f", operands);
+    }
+  else
+    output_asm_insn ("bne\t%0,%z2,2f", operands);
+
+  output_asm_insn ("or%i3\t%5,$zero,%3", operands);
+  output_asm_insn ("sc.<amo>\t%5,%1", operands);
+  output_asm_insn ("beqz\t%5,1b", operands);
+  output_asm_insn ("b\t3f", operands);
+  output_asm_insn ("2:", operands);
+  output_asm_insn ("%G4", operands);
+  output_asm_insn ("3:", operands);
+
+  return "";
 }
-  [(set (attr "length") (const_int 28))])
+  [(set (attr "length")
+     (if_then_else
+	(and (match_test "GET_MODE (operands[2]) == SImode")
+	     (match_test "REG_P (operands[2])"))
+	(const_int 32)
+	(const_int 28)))])
 
 (define_insn "atomic_cas_value_strong<mode>_amcas"
   [(set (match_operand:QHWD 0 "register_operand" "=&r")

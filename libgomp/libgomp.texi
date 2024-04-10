@@ -2157,8 +2157,6 @@ dimensions.
 Running this routine in a @code{target} region is not supported except on
 the initial device.
 
-
-
 @item @emph{C/C++}
 @multitable @columnfractions .20 .80
 @item @emph{Prototype}: @tab @code{int omp_target_memcpy_rect_async(void *dst,}
@@ -4684,7 +4682,6 @@ returns @code{false}.
 @item                   @tab @code{logical acc_on_device}
 @end multitable
 
-
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.17.
@@ -4696,17 +4693,24 @@ returns @code{false}.
 @section @code{acc_malloc} -- Allocate device memory.
 @table @asis
 @item @emph{Description}
-This function allocates @var{len} bytes of device memory. It returns
+This function allocates @var{bytes} bytes of device memory. It returns
 the device address of the allocated memory.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{d_void* acc_malloc(size_t len);}
+@item @emph{Prototype}: @tab @code{d_void* acc_malloc(size_t bytes);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function acc_malloc(bytes)}
+@item                   @tab @code{integer(c_size_t), value :: bytes}
 @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
-3.2.18.
+3.2.18.  @uref{https://www.openacc.org, openacc specification v3.3}, section
+3.2.16.
 @end table
 
 
@@ -4715,16 +4719,23 @@ the device address of the allocated memory.
 @section @code{acc_free} -- Free device memory.
 @table @asis
 @item @emph{Description}
-Free previously allocated device memory at the device address @code{a}.
+Free previously allocated device memory at the device address @code{data_dev}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_free(d_void *a);}
+@item @emph{Prototype}: @tab @code{void acc_free(d_void *data_dev);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine acc_free(data_dev)}
+@item                   @tab @code{type(c_ptr), value :: data_dev}
 @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
-3.2.19.
+3.2.19.  @uref{https://www.openacc.org, openacc specification v3.3}, section
+3.2.17.
 @end table
 
 
@@ -5092,17 +5103,26 @@ array element and @var{len} specifies the length in bytes.
 @table @asis
 @item @emph{Description}
 This function maps previously allocated device and host memory. The device
-memory is specified with the device address @var{d}. The host memory is
-specified with the host address @var{h} and a length of @var{len}.
+memory is specified with the device address @var{data_dev}. The host memory is
+specified with the host address @var{data_arg} and a length of @var{bytes}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_map_data(h_void *h, d_void *d, size_t len);}
+@item @emph{Prototype}: @tab @code{void acc_map_data(h_void *data_arg, d_void *data_dev, size_t bytes);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine acc_map_data(data_arg, data_dev, bytes)}
+@item                   @tab @code{type(*), dimension(*) :: data_arg}
+@item                   @tab @code{type(c_ptr), value :: data_dev}
+@item                   @tab @code{integer(c_size_t), value :: bytes}
 @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
-3.2.26.
+3.2.26.  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+3.2.21.
 @end table
 
 
@@ -5112,16 +5132,23 @@ specified with the host address @var{h} and a length of @var{len}.
 @table @asis
 @item @emph{Description}
 This function unmaps previously mapped device and host memory. The latter
-specified by @var{h}.
+specified by @var{data_arg}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_unmap_data(h_void *h);}
+@item @emph{Prototype}: @tab @code{void acc_unmap_data(h_void *data_arg);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine acc_unmap_data(data_arg)}
+@item                   @tab @code{type(*), dimension(*) :: data_arg}
 @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
-3.2.27.
+3.2.27. @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+3.2.22.
 @end table
 
 
@@ -5131,16 +5158,23 @@ specified by @var{h}.
 @table @asis
 @item @emph{Description}
 This function returns the device address that has been mapped to the
-host address specified by @var{h}.
+host address specified by @var{data_arg}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void *acc_deviceptr(h_void *h);}
+@item @emph{Prototype}: @tab @code{void *acc_deviceptr(h_void *data_arg);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function acc_deviceptr(data_arg)}
+@item                   @tab @code{type(*), dimension(*) :: data_arg}
 @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
-3.2.28.
+3.2.28.  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+3.2.23.
 @end table
 
 
@@ -5150,16 +5184,23 @@ host address specified by @var{h}.
 @table @asis
 @item @emph{Description}
 This function returns the host address that has been mapped to the
-device address specified by @var{d}.
+device address specified by @var{data_dev}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{void *acc_hostptr(d_void *d);}
+@item @emph{Prototype}: @tab @code{void *acc_hostptr(d_void *data_dev);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{type(c_ptr) function acc_hostptr(data_dev)}
+@item                   @tab @code{type(c_ptr), value :: data_dev}
 @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
-3.2.29.
+3.2.29.  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+3.2.24.
 @end table
 
 
@@ -5207,18 +5248,34 @@ a @code{false} is return to indicate the mapped memory is not present.
 @section @code{acc_memcpy_to_device} -- Copy host memory to device memory.
 @table @asis
 @item @emph{Description}
-This function copies host memory specified by host address of @var{src} to
-device memory specified by the device address @var{dest} for a length of
-@var{bytes} bytes.
+This function copies host memory specified by host address of
+@var{data_host_src} to device memory specified by the device address
+@var{data_dev_dest} for a length of @var{bytes} bytes.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_memcpy_to_device(d_void *dest, h_void *src, size_t bytes);}
+@item @emph{Prototype}: @tab @code{void acc_memcpy_to_device(d_void* data_dev_dest,}
+@item                   @tab @code{h_void* data_host_src, size_t bytes);}
+@item @emph{Prototype}: @tab @code{void acc_memcpy_to_device_async(d_void* data_dev_dest,}
+@item                   @tab @code{h_void* data_host_src, size_t bytes, int async_arg);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine acc_memcpy_to_device(data_dev_dest, &}
+@item                   @tab @code{data_host_src, bytes)}
+@item @emph{Interface}: @tab @code{subroutine acc_memcpy_to_device_async(data_dev_dest, &}
+@item                   @tab @code{data_host_src, bytes, async_arg)}
+@item                   @tab @code{type(c_ptr), value :: data_dev_dest}
+@item                   @tab @code{type(*), dimension(*) :: data_host_src}
+@item                   @tab @code{integer(c_size_t), value :: bytes}
+@item                   @tab @code{integer(acc_handle_kind), value :: async_arg}
 @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
-3.2.31.
+3.2.31  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+3.2.26.
 @end table
 
 
@@ -5227,18 +5284,34 @@ device memory specified by the device address @var{dest} for a length of
 @section @code{acc_memcpy_from_device} -- Copy device memory to host memory.
 @table @asis
 @item @emph{Description}
-This function copies host memory specified by host address of @var{src} from
-device memory specified by the device address @var{dest} for a length of
-@var{bytes} bytes.
+This function copies device memory specified by device address of
+@var{data_dev_src} to host memory specified by the host address
+@var{data_host_dest} for a length of @var{bytes} bytes.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_memcpy_from_device(d_void *dest, h_void *src, size_t bytes);}
+@item @emph{Prototype}: @tab @code{void acc_memcpy_from_device(h_void* data_host_dest,}
+@item                   @tab @code{d_void* data_dev_src, size_t bytes);}
+@item @emph{Prototype}: @tab @code{void acc_memcpy_from_device_async(h_void* data_host_dest,}
+@item                   @tab @code{d_void* data_dev_src, size_t bytes, int async_arg);}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine acc_memcpy_from_device(data_host_dest, &}
+@item                   @tab @code{data_dev_src, bytes)}
+@item @emph{Interface}: @tab @code{subroutine acc_memcpy_from_device_async(data_host_dest, &}
+@item                   @tab @code{data_dev_src, bytes, async_arg)}
+@item                   @tab @code{type(*), dimension(*) :: data_host_dest}
+@item                   @tab @code{type(c_ptr), value :: data_dev_src}
+@item                   @tab @code{integer(c_size_t), value :: bytes}
+@item                   @tab @code{integer(acc_handle_kind), value :: async_arg}
 @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
-3.2.32.
+3.2.32.  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+3.2.27.
 @end table
 
 
@@ -5252,13 +5325,23 @@ address to pointing to the corresponding device data.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_attach(h_void **ptr);}
-@item @emph{Prototype}: @tab @code{acc_attach_async(h_void **ptr, int async);}
+@item @emph{Prototype}: @tab @code{void acc_attach(h_void **ptr_addr);}
+@item @emph{Prototype}: @tab @code{void acc_attach_async(h_void **ptr_addr, int async);}
 @end multitable
+
+@c @item @emph{Fortran}:
+@c @multitable @columnfractions .20 .80
+@c @item @emph{Interface}: @tab @code{subroutine acc_attach(ptr_addr)}
+@c @item @emph{Interface}: @tab @code{subroutine acc_attach_async(ptr_addr, async_arg)}
+@c @item                   @tab @code{type(*), dimension(..) :: ptr_addr}
+@c @item                   @tab @code{integer(acc_handle_kind), value :: async_arg}
+@c @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.34.
+@c  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+@c 3.2.29.
 @end table
 
 
@@ -5272,15 +5355,27 @@ address to pointing to the corresponding host data.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
-@item @emph{Prototype}: @tab @code{acc_detach(h_void **ptr);}
-@item @emph{Prototype}: @tab @code{acc_detach_async(h_void **ptr, int async);}
-@item @emph{Prototype}: @tab @code{acc_detach_finalize(h_void **ptr);}
-@item @emph{Prototype}: @tab @code{acc_detach_finalize_async(h_void **ptr, int async);}
+@item @emph{Prototype}: @tab @code{void acc_detach(h_void **ptr_addr);}
+@item @emph{Prototype}: @tab @code{void acc_detach_async(h_void **ptr_addr, int async);}
+@item @emph{Prototype}: @tab @code{void acc_detach_finalize(h_void **ptr_addr);}
+@item @emph{Prototype}: @tab @code{void acc_detach_finalize_async(h_void **ptr_addr, int async);}
 @end multitable
+
+@c @item @emph{Fortran}:
+@c @multitable @columnfractions .20 .80
+@c @item @emph{Interface}: @tab @code{subroutine acc_detach(ptr_addr)}
+@c @item @emph{Interface}: @tab @code{subroutine acc_detach_async(ptr_addr, async_arg)}
+@c @item @emph{Interface}: @tab @code{subroutine acc_detach_finalize(ptr_addr)}
+@c @item @emph{Interface}: @tab @code{subroutine acc_detach_finalize_async(ptr_addr, async_arg)}
+@c @item                   @tab @code{type(*), dimension(..) :: ptr_addr}
+@c @item                   @tab @code{integer(acc_handle_kind), value :: async_arg}
+@c @end multitable
 
 @item @emph{Reference}:
 @uref{https://www.openacc.org, OpenACC specification v2.6}, section
 3.2.35.
+@c  @uref{https://www.openacc.org, OpenACC specification v3.3}, section
+@c 3.2.29.
 @end table
 
 

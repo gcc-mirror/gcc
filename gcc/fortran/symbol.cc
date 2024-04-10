@@ -5172,6 +5172,33 @@ gfc_type_is_extension_of (gfc_symbol *t1, gfc_symbol *t2)
   return gfc_compare_derived_types (t1, t2);
 }
 
+/* Check if parameterized derived type t2 is an instance of pdt template t1
+
+   gfc_symbol *t1 -> pdt template to verify t2 against.
+   gfc_symbol *t2 -> pdt instance to be verified.
+
+   In decl.cc, gfc_get_pdt_instance, a pdt instance is given a 3 character
+   prefix "Pdt", followed by an underscore list of the kind parameters,
+   up to a maximum of 8 kind parameters.  To verify if a PDT Type corresponds
+   to the template, this functions extracts t2's derive_type name,
+   and compares it to the derive_type name of t1 for compatibility.
+
+   For example:
+
+   t2->name = Pdtf_2_2; extract out the 'f' and compare with t1->name.  */
+
+bool
+gfc_pdt_is_instance_of (gfc_symbol *t1, gfc_symbol *t2)
+{
+  if ( !t1->attr.pdt_template || !t2->attr.pdt_type )
+    return false;
+
+  /* Limit comparison to length of t1->name to ignore new kind params.  */
+  if ( !(strncmp (&(t2->name[3]), t1->name, strlen (t1->name)) == 0) )
+    return false;
+
+  return true;
+}
 
 /* Check if two typespecs are type compatible (F03:5.1.1.2):
    If ts1 is nonpolymorphic, ts2 must be the same type.

@@ -1,4 +1,4 @@
-(* M2LexBuf.def provides a buffer for m2.lex.
+(* M2LexBuf.def provides a buffer for m2.flex.
 
 Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
@@ -35,17 +35,6 @@ FROM DynamicStrings IMPORT String ;
 FROM m2linemap IMPORT location_t ;
 FROM NameKey IMPORT Name ;
 
-EXPORT QUALIFIED OpenSource, CloseSource, ReInitialize, GetToken, InsertToken,
-                 InsertTokenAndRewind, GetPreviousTokenLineNo, GetLineNo,
-                 GetColumnNo, GetTokenNo, TokenToLineNo, TokenToColumnNo,
-                 TokenToLocation, GetTokenName,
-                 FindFileNameFromToken, GetFileName,
-                 ResetForNewPass,
-                 currenttoken, currentstring, currentinteger,
-                 AddTok, AddTokCharStar, AddTokInteger, MakeVirtualTok,
-                 SetFile, PushFile, PopFile,
-                 PrintTokenNo, DisplayToken, DumpTokens,
-                 BuiltinTokenNo, UnknownTokenNo ;
 
 CONST
    UnknownTokenNo = 0 ;
@@ -142,13 +131,13 @@ PROCEDURE GetTokenName (tokenno: CARDINAL) : Name ;
 
 (*
    TokenToLineNo - returns the line number of the current file for the
-                   TokenNo. The depth refers to the include depth.
+                   tokenno. The depth refers to the include depth.
                    A depth of 0 is the current file, depth of 1 is the file
                    which included the current file. Zero is returned if the
                    depth exceeds the file nesting level.
 *)
 
-PROCEDURE TokenToLineNo (TokenNo: CARDINAL; depth: CARDINAL) : CARDINAL ;
+PROCEDURE TokenToLineNo (tokenno: CARDINAL; depth: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -161,31 +150,31 @@ PROCEDURE GetColumnNo () : CARDINAL ;
 
 (*
    TokenToColumnNo - returns the column number of the current file for the
-                     TokenNo. The depth refers to the include depth.
+                     tokenno. The depth refers to the include depth.
                      A depth of 0 is the current file, depth of 1 is the file
                      which included the current file. Zero is returned if the
                      depth exceeds the file nesting level.
 *)
 
-PROCEDURE TokenToColumnNo (TokenNo: CARDINAL; depth: CARDINAL) : CARDINAL ;
+PROCEDURE TokenToColumnNo (tokenno: CARDINAL; depth: CARDINAL) : CARDINAL ;
 
 
 (*
-   TokenToLocation - returns the location_t corresponding to, TokenNo.
+   TokenToLocation - returns the location_t corresponding to tokenno.
 *)
 
-PROCEDURE TokenToLocation (TokenNo: CARDINAL) : location_t ;
+PROCEDURE TokenToLocation (tokenno: CARDINAL) : location_t ;
 
 
 (*
    FindFileNameFromToken - returns the complete FileName for the appropriate
-                           source file yields the token number, TokenNo.
+                           source file yields the token number tokenno.
                            The, Depth, indicates the include level: 0..n
                            Level 0 is the current. NIL is returned if n+1
                            is requested.
 *)
 
-PROCEDURE FindFileNameFromToken (TokenNo: CARDINAL; depth: CARDINAL) : String ;
+PROCEDURE FindFileNameFromToken (tokenno: CARDINAL; depth: CARDINAL) : String ;
 
 
 (*
@@ -197,10 +186,18 @@ PROCEDURE GetFileName () : String ;
 
 (*
    MakeVirtualTok - creates and return a new tokenno which is created from
-                    tokenno range1 and range2.
+                    tokenno caret, left and right.
 *)
 
 PROCEDURE MakeVirtualTok (caret, left, right: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeVirtual2Tok - creates and return a new tokenno which is created from
+                     two tokens left and right.
+*)
+
+PROCEDURE MakeVirtual2Tok (left, right: CARDINAL) : CARDINAL ;
 
 
 (* ***********************************************************************
@@ -268,7 +265,7 @@ PROCEDURE DisplayToken (tok: toktype) ;
 
 
 (*
-   DumpTokens - developer debugging aid.
+   DumpTokens - displays all tokens.
 *)
 
 PROCEDURE DumpTokens ;

@@ -1,3 +1,7 @@
+2024-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc-encoding.cc (encode_array): Use HOST_WIDE_INT_0 macros.
+
 2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-next-runtime-abi-02.cc (build_v2_address_table): Prevent

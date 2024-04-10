@@ -2,7 +2,8 @@
    For details read C23 Annex F.3 and LoongArch Vol. 1 section 3.2.2.1.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlsx -ffixed-f0 -ffixed-f1 -ffixed-f2 -fno-vect-cost-model" } */
+/* { dg-options "-O2 -mlsx -fno-vect-cost-model" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #ifndef F
 #define F float
@@ -19,160 +20,354 @@
 typedef F VF __attribute__ ((vector_size (VL)));
 typedef I VI __attribute__ ((vector_size (VL)));
 
-register VF a asm ("f0");
-register VF b asm ("f1");
-register VI c asm ("f2");
+#define ARGS const VF *a, const VF *b, VI *c
 
 void
-compare_quiet_equal (void)
+compare_quiet_equal (ARGS)
 {
-  c = (a == b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = (_a == *b);
 }
 
 void
-compare_quiet_not_equal (void)
+compare_quiet_not_equal (ARGS)
 {
-  c = (a != b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = (_a != *b);
 }
 
 void
-compare_signaling_greater (void)
+compare_signaling_greater (ARGS)
 {
-  c = (a > b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = (_a > *b);
 }
 
 void
-compare_signaling_greater_equal (void)
+compare_signaling_greater_equal (ARGS)
 {
-  c = (a >= b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = (_a >= *b);
 }
 
 void
-compare_signaling_less (void)
+compare_signaling_less (ARGS)
 {
-  c = (a < b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = (_a < *b);
 }
 
 void
-compare_signaling_less_equal (void)
+compare_signaling_less_equal (ARGS)
 {
-  c = (a <= b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = (_a <= *b);
 }
 
 void
-compare_signaling_not_greater (void)
+compare_signaling_not_greater (ARGS)
 {
-  c = ~(a > b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = ~(_a > *b);
 }
 
 void
-compare_signaling_less_unordered (void)
+compare_signaling_less_unordered (ARGS)
 {
-  c = ~(a >= b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = ~(_a >= *b);
 }
 
 void
-compare_signaling_not_less (void)
+compare_signaling_not_less (ARGS)
 {
-  c = ~(a < b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = ~(_a < *b);
 }
 
 void
-compare_signaling_greater_unordered (void)
+compare_signaling_greater_unordered (ARGS)
 {
-  c = ~(a <= b);
+  VF _a = *a;
+  asm("" ::: "memory");
+  *c = ~(_a <= *b);
 }
 
 void
-compare_quiet_less (void)
+compare_quiet_less (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_isless (a[i], b[i]) ? -1 : 0;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_isless (_a[i], (*b)[i]) ? -1 : 0;
 }
 
 void
-compare_quiet_less_equal (void)
+compare_quiet_less_equal (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_islessequal (a[i], b[i]) ? -1 : 0;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_islessequal (_a[i], (*b)[i]) ? -1 : 0;
 }
 
 void
-compare_quiet_greater (void)
+compare_quiet_greater (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_isgreater (a[i], b[i]) ? -1 : 0;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_isgreater (_a[i], (*b)[i]) ? -1 : 0;
 }
 
 void
-compare_quiet_greater_equal (void)
+compare_quiet_greater_equal (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_isgreaterequal (a[i], b[i]) ? -1 : 0;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_isgreaterequal (_a[i], (*b)[i]) ? -1 : 0;
 }
 
 void
-compare_quiet_not_less (void)
+compare_quiet_not_less (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_isless (a[i], b[i]) ? 0 : -1;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_isless (_a[i], (*b)[i]) ? 0 : -1;
 }
 
 void
-compare_quiet_greater_unordered (void)
+compare_quiet_greater_unordered (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_islessequal (a[i], b[i]) ? 0 : -1;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_islessequal (_a[i], (*b)[i]) ? 0 : -1;
 }
 
 void
-compare_quiet_not_greater (void)
+compare_quiet_not_greater (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_isgreater (a[i], b[i]) ? 0 : -1;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_isgreater (_a[i], (*b)[i]) ? 0 : -1;
 }
 
 void
-compare_quiet_less_unordered (void)
+compare_quiet_less_unordered (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_isgreaterequal (a[i], b[i]) ? 0 : -1;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_isgreaterequal (_a[i], (*b)[i]) ? 0 : -1;
 }
 
 void
-compare_quiet_unordered (void)
+compare_quiet_unordered (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_isunordered (a[i], b[i]) ? -1 : 0;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_isunordered (_a[i], (*b)[i]) ? -1 : 0;
 }
 
 void
-compare_quiet_ordered (void)
+compare_quiet_ordered (ARGS)
 {
-  for (int i = 0; i < sizeof (c) / sizeof (c[0]); i++)
-    c[i] = __builtin_isunordered (a[i], b[i]) ? 0 : -1;
+  VF _a = *a;
+  asm("" ::: "memory");
+  for (int i = 0; i < sizeof (*c) / sizeof ((*c)[0]); i++)
+    (*c)[i] = __builtin_isunordered (_a[i], (*b)[i]) ? 0 : -1;
 }
 
-/* The "-<function_name>" matches the .size directive after the function
-   body, so we can ensure the instruction is in the correct function.  */
+/*
+** compare_quiet_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.ceq.s	(\$vr[0-9]+),(\1,\2|\2,\1)
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
 
-/* { dg-final { scan-assembler "compare_quiet_equal:.*\tvfcmp\\.ceq\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_equal\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_not_equal:.*\tvfcmp\\.cune\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_not_equal\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_greater:.*\tvfcmp\\.slt\\.s\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_signaling_greater\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_greater_equal:.*\tvfcmp\\.sle\\.s\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_signaling_greater_equal\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_less:.*\tvfcmp\\.slt\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_signaling_less\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_less_equal:.*\tvfcmp\\.sle\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_signaling_less_equal\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_not_greater:.*\tvfcmp\\.sule\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_signaling_not_greater\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_less_unordered:.*\tvfcmp\\.sult\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_signaling_less_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_not_less:.*\tvfcmp\\.sule\\.s\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_signaling_not_less\n" } } */
-/* { dg-final { scan-assembler "compare_signaling_greater_unordered:.*\tvfcmp\\.sult\\.s\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_signaling_greater_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_less:.*\tvfcmp\\.clt\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_less\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_less_equal:.*\tvfcmp\\.cle\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_less_equal\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_greater:.*\tvfcmp\\.clt\\.s\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_quiet_greater\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_greater_equal:.*\tvfcmp\\.cle\\.s\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_quiet_greater_equal\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_not_less:.*\tvfcmp\\.cule\\.s\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_quiet_not_less\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_greater_unordered:.*\tvfcmp\\.cult\\.s\t\\\$vr2,\\\$vr1,\\\$vr0.*-compare_quiet_greater_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_not_greater:.*\tvfcmp\\.cule\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_not_greater\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_less_unordered:.*\tvfcmp\\.cult\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_less_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_unordered:.*\tvfcmp\\.cun\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_unordered\n" } } */
-/* { dg-final { scan-assembler "compare_quiet_ordered:.*\tvfcmp\\.cor\\.s\t\\\$vr2,\\\$vr0,\\\$vr1.*-compare_quiet_ordered\n" } } */
+/*
+** compare_quiet_not_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cune.s	(\$vr[0-9]+),(\1,\2|\2,\1)
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_greater:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.slt.s	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_greater_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sle.s	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_less:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.slt.s	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_less_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sle.s	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_not_greater:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sule.s	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_less_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sult.s	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_not_less:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sule.s	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_signaling_greater_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.sult.s	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_less:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.clt.s	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_less_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cle.s	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_greater:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.clt.s	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_greater_equal:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cle.s	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_not_less:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cule.s	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_greater_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cult.s	(\$vr[0-9]+),\2,\1
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_not_greater:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cule.s	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_less_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cult.s	(\$vr[0-9]+),\1,\2
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_unordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cun.s	(\$vr[0-9]+),(\1,\2|\2,\1)
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/
+
+/*
+** compare_quiet_ordered:
+** 	vld	(\$vr[0-9]+),\$r4,0
+** 	vld	(\$vr[0-9]+),\$r5,0
+** 	vfcmp.cor.s	(\$vr[0-9]+),(\1,\2|\2,\1)
+**	vst	\3,\$r6,0
+**	jr	\$r1
+*/

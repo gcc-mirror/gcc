@@ -1577,7 +1577,7 @@ implies_p (rtx a, rtx b)
       && CONST_INT_P (XEXP (opb0, 1))
       /* Avoid overflows.  */
       && ((unsigned HOST_WIDE_INT) INTVAL (XEXP (opb0, 1))
-	  != ((unsigned HOST_WIDE_INT)1
+	  != (HOST_WIDE_INT_1U
 	      << (HOST_BITS_PER_WIDE_INT - 1)) - 1)
       && INTVAL (XEXP (opb0, 1)) + 1 == -INTVAL (op1))
     return rtx_equal_p (op0, XEXP (opb0, 0));

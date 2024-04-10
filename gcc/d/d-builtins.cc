@@ -197,8 +197,8 @@ build_frontend_type (tree type)
 	  length = size_binop (PLUS_EXPR, size_one_node,
 			       convert (sizetype, length));
 
-	  dtype =
-	    dmd::addMod (dtype->sarrayOf (TREE_INT_CST_LOW (length)), mod);
+	  dtype = dmd::sarrayOf (dtype, TREE_INT_CST_LOW (length));
+	  dtype = dmd::addMod (dtype, mod);
 	  builtin_converted_decls.safe_push (builtin_data (dtype, type));
 	  return dtype;
 	}
@@ -214,7 +214,7 @@ build_frontend_type (tree type)
       if (!dtype)
 	break;
 
-      dtype = dmd::addMod (dtype->sarrayOf (nunits), mod);
+      dtype = dmd::addMod (dmd::sarrayOf (dtype, nunits), mod);
       if (target.isVectorTypeSupported (dtype->size (), dtype->nextOf ()))
 	break;
 

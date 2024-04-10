@@ -2,7 +2,8 @@
    for a doubleword vector works correctly after gimple folding.  */
 
 /* { dg-do run { target { p8vector_hw } } } */
-/* { dg-options "-O2 -mpower8-vector" } */
+/* { dg-options "-O2 -mvsx" } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
 
 #include <altivec.h>
 

@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=fixed-vlmax -fno-vect-cost-model -ffast-math" } */
+/* { dg-additional-options "-mrvv-vector-bits=zvl -fno-vect-cost-model -ffast-math" } */
 
 #include "cond_arith-9.c"
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv_zvfhmin -mabi=ilp32d --param riscv-autovec-preference=scalable -fdump-tree-vect-details" } */
+/* { dg-additional-options "-march=rv32gcv_zvfhmin -mabi=ilp32d -mrvv-vector-bits=scalable -fdump-tree-vect-details" } */
 
 #include "single_rgroup-3.h"
 

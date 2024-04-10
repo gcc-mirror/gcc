@@ -4768,8 +4768,8 @@ gfc_match_omp_depobj (void)
       if (gfc_match (" ( %v ) ", &destroyobj) == MATCH_YES)
 	{
 	  if (destroyobj->symtree != depobj->symtree)
-	    gfc_warning (0, "The same depend object should be used as DEPOBJ "
-			 "argument at %L and as DESTROY argument at %L",
+	    gfc_warning (OPT_Wopenmp, "The same depend object should be used as"
+			 " DEPOBJ argument at %L and as DESTROY argument at %L",
 			 &depobj->where, &destroyobj->where);
 	  gfc_free_expr (destroyobj);
 	}

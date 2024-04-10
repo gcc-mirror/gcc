@@ -2,8 +2,8 @@
    char inputs produce the right code when -mcpu=power8 is specified.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mpower8-vector -mdejagnu-cpu=power8 -O2" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2" } */
 
 #include "fold-vec-cmp-char.h"
 

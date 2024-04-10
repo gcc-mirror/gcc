@@ -1715,9 +1715,9 @@ open_base_files (void)
       "tree-dfa.h", "tree-ssa.h", "reload.h", "cpplib.h", "tree-chrec.h",
       "except.h", "output.h",  "cfgloop.h", "target.h", "lto-streamer.h",
       "target-globals.h", "ipa-ref.h", "cgraph.h", "symbol-summary.h",
-      "ipa-prop.h", "ipa-fnsummary.h", "dwarf2out.h", "omp-general.h",
-      "omp-offload.h", "ipa-modref-tree.h", "ipa-modref.h", "symtab-thunks.h",
-      "symtab-clones.h", "diagnostic-spec.h", "ctfc.h",
+      "sreal.h", "ipa-cp.h", "ipa-prop.h", "ipa-fnsummary.h", "dwarf2out.h",
+      "omp-general.h", "omp-offload.h", "ipa-modref-tree.h", "ipa-modref.h",
+      "symtab-thunks.h", "symtab-clones.h", "diagnostic-spec.h", "ctfc.h",
       NULL
     };
     const char *const *ifp;

@@ -30,3 +30,28 @@ _Static_assert(SSS[0] == 'h', "10");
 #define ABC 12
 #define GHI (size) abbadabba
 #define DEF (ABC + 5)
+
+#define ADD(a, b) a + b
+#define SUB() 3 - 2
+
+#define NO_BODY()
+#define NO_BODY_PARAMS(a, b)
+#define DO_WHILE() do { } while(0)
+
+#define pr16199_trigger(cond,func,args) _Generic (cond, default: func args)
+#define pr16199_skipped1(a) (1)
+#define pr16199_skipped2(b) (2)
+#define pr16199_ice         0x3
+
+#define M16199Ea(TYPE) (TYPE __x;)
+#define M16199E(X,S,M) ({ M16199Ea(S *); })
+
+#define M16199Da(TYPE,VAR) ((TYPE)(VAR))
+#define M16199D(X,S,M) ({ int *__x = (X); M16199Da(S *, __x); })
+int pr16199d() { return 7; }
+
+#define M16199C(X,S,M) ({ int __x; })
+int pr16199c()
+{
+    return 8;
+}

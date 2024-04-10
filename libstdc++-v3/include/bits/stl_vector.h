@@ -1172,7 +1172,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  is first checked that it is in the range of the vector.  The
        *  function throws out_of_range if the check fails.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       at(size_type __n)
       {
@@ -1191,7 +1191,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  is first checked that it is in the range of the vector.  The
        *  function throws out_of_range if the check fails.
        */
-      _GLIBCXX20_CONSTEXPR
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       at(size_type __n) const
       {
@@ -2042,7 +2042,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  and if corresponding elements compare equal.
   */
   template<typename _Tp, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
     inline bool
     operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     { return (__x.size() == __y.size()
@@ -2061,7 +2061,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  `<` and `>=` etc.
   */
   template<typename _Tp, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
+    [[nodiscard]] _GLIBCXX20_CONSTEXPR
     inline __detail::__synth3way_t<_Tp>
     operator<=>(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     {
@@ -2082,32 +2082,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  See std::lexicographical_compare() for how the determination is made.
   */
   template<typename _Tp, typename _Alloc>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     { return std::lexicographical_compare(__x.begin(), __x.end(),
 					  __y.begin(), __y.end()); }
 
   /// Based on operator==
   template<typename _Tp, typename _Alloc>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator!=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     { return !(__x == __y); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     { return __y < __x; }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator<=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     { return !(__y < __x); }
 
   /// Based on operator<
   template<typename _Tp, typename _Alloc>
-    inline bool
+    _GLIBCXX_NODISCARD inline bool
     operator>=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
     { return !(__x < __y); }
 #endif // three-way comparison

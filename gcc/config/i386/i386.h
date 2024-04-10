@@ -2730,9 +2730,12 @@ enum call_saved_registers_type
   /* The current function is a function specified with the "interrupt"
      or "no_caller_saved_registers" attribute.  */
   TYPE_NO_CALLER_SAVED_REGISTERS,
+  /* The current function is a function specified with the
+     "no_callee_saved_registers" attribute.  */
+  TYPE_NO_CALLEE_SAVED_REGISTERS,
   /* The current function is a function specified with the "noreturn"
-     or "no_callee_saved_registers" attribute.  */
-  TYPE_NO_CALLEE_SAVED_REGISTERS
+     attribute.  */
+  TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP,
 };
 
 enum queued_insn_type

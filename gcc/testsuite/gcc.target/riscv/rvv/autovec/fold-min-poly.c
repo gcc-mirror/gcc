@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options " -march=rv64gcv_zvl128b -mabi=lp64d -O3 --param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m1" } */
+/* { dg-options " -march=rv64gcv_zvl128b -mabi=lp64d -O3 -mrvv-vector-bits=scalable --param riscv-autovec-lmul=m1" } */
 
 void foo1 (int* restrict a, int* restrict b, int n)
 {

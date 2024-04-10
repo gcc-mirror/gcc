@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v && riscv_zvfh } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable -ffast-math" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -ffast-math" } */
 
 #include <assert.h>
 #include "widen-8.c"

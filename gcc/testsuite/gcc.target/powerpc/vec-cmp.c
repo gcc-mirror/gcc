@@ -1,7 +1,7 @@
 /* { dg-do compile { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-O2 -mdejagnu-cpu=power8" } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-options "-O2 -mdejagnu-cpu=power8 -mvsx" } */
 /* { dg-final { scan-assembler-times "vcmpgtsb" 4 } } */
 /* { dg-final { scan-assembler-times "vcmpgtub" 4 } } */
 /* { dg-final { scan-assembler-times "vcmpgtsh" 4 } } */

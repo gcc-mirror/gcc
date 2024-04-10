@@ -357,7 +357,27 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
       do
 	nxt_token = cpp_peek_token (pfile, idx++);
       while (nxt_token->type == CPP_PADDING);
-      if (nxt_token->type == CPP_SCOPE)
+      if (!c_dialect_cxx ()
+	  && nxt_token->type == CPP_COLON
+	  && (nxt_token->flags & COLON_SCOPE) != 0)
+	{
+	  const cpp_token *prev_token = nxt_token;
+	  do
+	    nxt_token = cpp_peek_token (pfile, idx++);
+	  while (nxt_token->type == CPP_PADDING);
+	  if (nxt_token->type == CPP_COLON)
+	    {
+	      /* __has_attribute (vendor::attr) in -std=c17 etc. modes.
+		 :: isn't CPP_SCOPE but 2 CPP_COLON tokens, where the
+		 first one should have COLON_SCOPE flag to distinguish
+		 it from : :.  */
+	      have_scope = true;
+	      get_token_no_padding (pfile); // Eat first colon.
+	    }
+	  else
+	    nxt_token = prev_token;
+	}
+      if (nxt_token->type == CPP_SCOPE || have_scope)
 	{
 	  have_scope = true;
 	  get_token_no_padding (pfile); // Eat scope.

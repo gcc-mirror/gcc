@@ -124,6 +124,18 @@
 ; and not all ARM insns do.
 (define_attr "predicated" "yes,no" (const_string "no"))
 
+; An attribute that encodes the CODE_FOR_<insn> of the MVE VPT unpredicated
+; version of a VPT-predicated instruction.  For unpredicated instructions
+; that are predicable, encode the same pattern's CODE_FOR_<insn> as a way to
+; encode that it is a predicable instruction.
+(define_attr "mve_unpredicated_insn" "" (symbol_ref "CODE_FOR_nothing"))
+
+; An attribute used by the loop-doloop pass when determining whether it is
+; safe to predicate a MVE instruction, that operates across lanes, and was
+; previously not predicated.  The pass will still check whether all inputs
+; are predicated by the VCTP predication mask.
+(define_attr "mve_safe_imp_xlane_pred" "yes,no" (const_string "no"))
+
 ; LENGTH of an instruction (in bytes)
 (define_attr "length" ""
   (const_int 4))
@@ -307,6 +319,8 @@
 ;
 ; NOCOND means that the instruction does not use or alter the condition
 ;   codes but can be converted into a conditionally exectuted instruction.
+;   Given that NOCOND is the default for most instructions if omitted,
+;   the attribute predicable must be set to yes as well.
 
 (define_attr "conds" "use,set,clob,unconditional,nocond"
 	(if_then_else
@@ -12547,6 +12561,7 @@
   revsh%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
@@ -12560,6 +12575,7 @@
    rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
@@ -12584,6 +12600,7 @@
    rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 
@@ -12604,6 +12621,7 @@
    rev16%?\t%0, %1"
   [(set_attr "arch" "t1,t2,32")
    (set_attr "length" "2,2,4")
+   (set_attr "predicable" "no,yes,yes")
    (set_attr "type" "rev")]
 )
 

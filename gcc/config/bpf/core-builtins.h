@@ -1,7 +1,7 @@
 #ifndef BPF_CORE_BUILTINS_H
 #define BPF_CORE_BUILTINS_H
 
-#include "coreout.h"
+#include "btfext-out.h"
 
 enum bpf_builtins
 {

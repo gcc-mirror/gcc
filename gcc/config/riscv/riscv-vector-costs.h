@@ -85,6 +85,12 @@ private:
   unsigned HOST_WIDE_INT m_unrolled_vls_niters = 0;
   unsigned HOST_WIDE_INT m_unrolled_vls_stmts = 0;
 
+  tree cst0 = build_int_cst (integer_type_node, 0);
+
+  /* Store the memory references already processed.  */
+  typedef pair_hash <tree_operand_hash, tree_operand_hash> tree_pair_hash;
+  hash_set <tree_pair_hash> memrefs;
+
   void analyze_loop_vinfo (loop_vec_info);
   void record_potential_vls_unrolling (loop_vec_info);
   bool prefer_unrolled_loop () const;
@@ -98,6 +104,10 @@ private:
   void record_potential_unexpected_spills (loop_vec_info);
 
   void adjust_vect_cost_per_loop (loop_vec_info);
+  unsigned adjust_stmt_cost (enum vect_cost_for_stmt kind,
+			     loop_vec_info,
+			     stmt_vec_info stmt_info, slp_tree,
+			     tree vectype, int stmt_cost);
 };
 
 } // namespace riscv_vector

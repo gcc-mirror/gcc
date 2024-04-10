@@ -1429,6 +1429,32 @@ vect_set_loop_condition (class loop *loop, edge loop_e, loop_vec_info loop_vinfo
 		     (gimple *) cond_stmt);
 }
 
+/* Get the virtual operand live on E.  The precondition on this is valid
+   immediate dominators and an actual virtual definition dominating E.  */
+/* ???  Costly band-aid.  For the use in question we can populate a
+   live-on-exit/end-of-BB virtual operand when copying stmts.  */
+
+static tree
+get_live_virtual_operand_on_edge (edge e)
+{
+  basic_block bb = e->src;
+  do
+    {
+      for (auto gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (gimple_vdef (stmt))
+	    return gimple_vdef (stmt);
+	  if (gimple_vuse (stmt))
+	    return gimple_vuse (stmt);
+	}
+      if (gphi *vphi = get_virtual_phi (bb))
+	return gimple_phi_result (vphi);
+      bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+    }
+  while (1);
+}
+
 /* Given LOOP this function generates a new copy of it and puts it
    on E which is either the entry or exit of LOOP.  If SCALAR_LOOP is
    non-NULL, assume LOOP and SCALAR_LOOP are equivalent and copy the
@@ -1568,7 +1594,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
   auto loop_exits = get_loop_exit_edges (loop);
   bool multiple_exits_p = loop_exits.length () > 1;
   auto_vec<basic_block> doms;
-  class loop *update_loop = NULL;
 
   if (at_exit) /* Add the loop copy at exit.  */
     {
@@ -1594,6 +1619,18 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       gcc_assert (e == loop_exit);
       flush_pending_stmts (loop_exit);
       set_immediate_dominator (CDI_DOMINATORS, new_preheader, loop_exit->src);
+
+      /* If we ended up choosing an exit leading to a path not using memory
+	 we can end up without a virtual LC PHI.  Create it when it is
+	 needed because of the epilog loop continuation.  */
+      if (need_virtual_phi && !get_virtual_phi (loop_exit->dest))
+	{
+	  tree header_def = gimple_phi_result (get_virtual_phi (loop->header));
+	  gphi *vphi = create_phi_node (copy_ssa_name (header_def),
+					new_preheader);
+	  add_phi_arg (vphi, get_live_virtual_operand_on_edge (loop_exit),
+		       loop_exit, UNKNOWN_LOCATION);
+	}
 
       bool multiple_exits_p = loop_exits.length () > 1;
       basic_block main_loop_exit_block = new_preheader;
@@ -1629,17 +1666,18 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		  alt_loop_exit_block = split_edge (exit);
 		if (!need_virtual_phi)
 		  continue;
-		if (vphi_def)
-		  {
-		    if (!vphi)
-		      vphi = create_phi_node (copy_ssa_name (vphi_def),
-					      alt_loop_exit_block);
-		    else
-		      /* Edge redirection might re-allocate the PHI node
-			 so we have to rediscover it.  */
-		      vphi = get_virtual_phi (alt_loop_exit_block);
-		    add_phi_arg (vphi, vphi_def, exit, UNKNOWN_LOCATION);
-		  }
+		/* When the edge has no virtual LC PHI get at the live
+		   virtual operand by other means.  */
+		if (!vphi_def)
+		  vphi_def = get_live_virtual_operand_on_edge (exit);
+		if (!vphi)
+		  vphi = create_phi_node (copy_ssa_name (vphi_def),
+					  alt_loop_exit_block);
+		else
+		  /* Edge redirection might re-allocate the PHI node
+		     so we have to rediscover it.  */
+		  vphi = get_virtual_phi (alt_loop_exit_block);
+		add_phi_arg (vphi, vphi_def, exit, UNKNOWN_LOCATION);
 	      }
 
 	  set_immediate_dominator (CDI_DOMINATORS, new_preheader,
@@ -1711,19 +1749,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		    {
 		      /* Use the existing virtual LC SSA from exit block.  */
 		      gphi *vphi = get_virtual_phi (main_loop_exit_block);
-		      /* ???  When the exit yields to a path without
-			 any virtual use we can miss a LC PHI for the
-			 live virtual operand.  Simply choosing the
-			 one live at the start of the loop header isn't
-			 correct, but we should get here only with
-			 early-exit vectorization which will move all
-			 defs after the main exit, so leave a temporarily
-			 wrong virtual operand in place.  This happens
-			 for gcc.dg/pr113659.c.  */
-		      if (vphi)
-			new_arg = gimple_phi_result (vphi);
-		      else
-			new_arg = gimple_phi_result (from_phi);
+		      new_arg = gimple_phi_result (vphi);
 		    }
 		  else if ((res = new_phi_args.get (new_arg)))
 		    new_arg = *res;
@@ -1763,17 +1789,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		  if (virtual_operand_p (alt_arg))
 		    {
 		      gphi *vphi = get_virtual_phi (alt_loop_exit_block);
-		      /* ???  When the exit yields to a path without
-			 any virtual use we can miss a LC PHI for the
-			 live virtual operand.  Simply choosing the
-			 one live at the start of the loop header isn't
-			 correct, but we should get here only with
-			 early-exit vectorization which will move all
-			 defs after the main exit, so leave a temporarily
-			 wrong virtual operand in place.  This happens
-			 for gcc.c-torture/execute/20150611-1.c  */
-		      if (vphi)
-			alt_arg = gimple_phi_result (vphi);
+		      alt_arg = gimple_phi_result (vphi);
 		    }
 		  /* For other live args we didn't create LC PHI nodes.
 		     Do so here.  */
@@ -1839,11 +1855,33 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	 correct.  */
       if (multiple_exits_p)
 	{
-	  update_loop = new_loop;
+	  class loop *update_loop = new_loop;
 	  doms = get_all_dominated_blocks (CDI_DOMINATORS, loop->header);
 	  for (unsigned i = 0; i < doms.length (); ++i)
 	    if (flow_bb_inside_loop_p (loop, doms[i]))
 	      doms.unordered_remove (i);
+
+	  for (edge e : get_loop_exit_edges (update_loop))
+	    {
+	      edge ex;
+	      edge_iterator ei;
+	      FOR_EACH_EDGE (ex, ei, e->dest->succs)
+		{
+		  /* Find the first non-fallthrough block as fall-throughs can't
+		     dominate other blocks.  */
+		  if (single_succ_p (ex->dest))
+		    {
+		      doms.safe_push (ex->dest);
+		      ex = single_succ_edge (ex->dest);
+		    }
+		  doms.safe_push (ex->dest);
+		}
+	      doms.safe_push (e->dest);
+	    }
+
+	  iterate_fix_dominators (CDI_DOMINATORS, doms, false);
+	  if (updated_doms)
+	    updated_doms->safe_splice (doms);
 	}
     }
   else /* Add the copy at entry.  */
@@ -1893,33 +1931,28 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       set_immediate_dominator (CDI_DOMINATORS, new_loop->header,
 			       loop_preheader_edge (new_loop)->src);
 
+      /* Update dominators for multiple exits.  */
       if (multiple_exits_p)
-	update_loop = loop;
-    }
-
-  if (multiple_exits_p)
-    {
-      for (edge e : get_loop_exit_edges (update_loop))
 	{
-	  edge ex;
-	  edge_iterator ei;
-	  FOR_EACH_EDGE (ex, ei, e->dest->succs)
+	  for (edge alt_e : loop_exits)
 	    {
-	      /* Find the first non-fallthrough block as fall-throughs can't
-		 dominate other blocks.  */
-	      if (single_succ_p (ex->dest))
+	      if (alt_e == loop_exit)
+		continue;
+	      basic_block old_dom
+		= get_immediate_dominator (CDI_DOMINATORS, alt_e->dest);
+	      if (flow_bb_inside_loop_p (loop, old_dom))
 		{
-		  doms.safe_push (ex->dest);
-		  ex = single_succ_edge (ex->dest);
+		  auto_vec<basic_block, 8> queue;
+		  for (auto son = first_dom_son (CDI_DOMINATORS, old_dom);
+		       son; son = next_dom_son (CDI_DOMINATORS, son))
+		    if (!flow_bb_inside_loop_p (loop, son))
+		      queue.safe_push (son);
+		  for (auto son : queue)
+		    set_immediate_dominator (CDI_DOMINATORS,
+					     son, get_bb_copy (old_dom));
 		}
-	      doms.safe_push (ex->dest);
 	    }
-	  doms.safe_push (e->dest);
 	}
-
-      iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-      if (updated_doms)
-	updated_doms->safe_splice (doms);
     }
 
   free (new_bbs);
@@ -2096,16 +2129,19 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
      For mult, don't known how to generate
      init_expr * pow (step, niters) for variable niters.
      For neg, it should be ok, since niters of vectorized main loop
-     will always be multiple of 2.  */
-  if ((!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-       || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ())
+     will always be multiple of 2.
+     See also PR113163 and PR114196.  */
+  if ((!LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()
+       || LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+       || !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
       && induction_type != vect_step_op_neg)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "Peeling for epilogue is not supported"
 			 " for nonlinear induction except neg"
-			 " when iteration count is unknown.\n");
+			 " when iteration count is unknown or"
+			 " when using partial vectorization.\n");
       return false;
     }
 
@@ -2142,25 +2178,6 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
 			 "Peeling for alignement is not supported"
 			 " for nonlinear induction when niters_skip"
 			 " is not constant.\n");
-      return false;
-    }
-
-  /* We can't support partial vectors and early breaks with an induction
-     type other than add or neg since we require the epilog and can't
-     perform the peeling.  The below condition mirrors that of
-     vect_gen_vector_loop_niters  where niters_vector_mult_vf_var then sets
-     step_vector to VF rather than 1.  This is what creates the nonlinear
-     IV.  PR113163.  */
-  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-      && LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()
-      && LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
-      && induction_type != vect_step_op_neg)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Peeling for epilogue is not supported"
-			 " for nonlinear induction except neg"
-			 " when VF is known and early breaks.\n");
       return false;
     }
 
@@ -3351,6 +3368,24 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 					   guard_to, guard_bb,
 					   prob_prolog.invert (),
 					   irred_flag);
+	  for (edge alt_e : get_loop_exit_edges (prolog))
+	    {
+	      if (alt_e == prolog_e)
+		continue;
+	      basic_block old_dom
+		= get_immediate_dominator (CDI_DOMINATORS, alt_e->dest);
+	      if (flow_bb_inside_loop_p (prolog, old_dom))
+		{
+		  auto_vec<basic_block, 8> queue;
+		  for (auto son = first_dom_son (CDI_DOMINATORS, old_dom);
+		       son; son = next_dom_son (CDI_DOMINATORS, son))
+		    if (!flow_bb_inside_loop_p (prolog, son))
+		      queue.safe_push (son);
+		  for (auto son : queue)
+		    set_immediate_dominator (CDI_DOMINATORS, son, guard_bb);
+		}
+	    }
+
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
 	  slpeel_update_phi_nodes_for_guard1 (prolog, loop, guard_e, e);

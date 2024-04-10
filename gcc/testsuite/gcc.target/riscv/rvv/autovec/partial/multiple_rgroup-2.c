@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d --param riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-additional-options "-march=rv32gcv -mabi=ilp32d -mrvv-vector-bits=zvl" } */
 
 #include "multiple_rgroup-2.h"
 

@@ -1393,7 +1393,7 @@ private:
             // At present, it is not safe to migrate fibers between threads, but if that
             // changes, then updating the value of R13 will also need to be handled.
             version (PPC64)
-              *cast(size_t*)(pstack + wsize) = cast(size_t) Thread.getThis().m_addr;
+              *cast(size_t*)(pstack + wsize) = cast(size_t) ThreadBase.getThis().m_addr;
             assert( (cast(size_t) pstack & 0x0f) == 0 );
         }
         else version (AsmMIPS_O32_Posix)

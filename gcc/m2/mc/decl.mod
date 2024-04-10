@@ -4243,6 +4243,7 @@ BEGIN
       im              :  RETURN makeKey ('IM') |
       max             :  RETURN makeKey ('MAX') |
       min             :  RETURN makeKey ('MIN') |
+      pointerref      :  RETURN NulName |
       funccall        :  RETURN NulName |
       identlist       :  RETURN NulName
 

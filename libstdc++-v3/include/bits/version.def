@@ -739,6 +739,7 @@ ftms = {
   values = {
     v = 201907;
     cxxmin = 20;
+    extra_cond = "(__GCC_ATOMIC_INT_LOCK_FREE | __GCC_ATOMIC_LONG_LOCK_FREE | __GCC_ATOMIC_CHAR_LOCK_FREE) & 2";
   };
 };
 

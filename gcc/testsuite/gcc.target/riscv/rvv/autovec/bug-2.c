@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target riscv_v } */
-/* { dg-options "--param=riscv-autovec-lmul=m8 --param=riscv-autovec-preference=scalable -ftree-vectorize -fno-tree-loop-distribute-patterns -fno-vect-cost-model -fno-common -O2" } */
+/* { dg-options "--param=riscv-autovec-lmul=m8 -mrvv-vector-bits=scalable -ftree-vectorize -fno-tree-loop-distribute-patterns -fno-vect-cost-model -fno-common -O2" } */
 
 #define N 128 
 

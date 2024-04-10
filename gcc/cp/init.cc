@@ -906,7 +906,8 @@ find_uninit_fields_r (tree *tp, int *walk_subtrees, void *data)
 	    warning_at (EXPR_LOCATION (init), OPT_Wuninitialized,
 			"reference %qD is not yet bound to a value when used "
 			"here", field);
-	  else if (!INDIRECT_TYPE_P (type) || is_this_parameter (d->member))
+	  else if ((!INDIRECT_TYPE_P (type) || is_this_parameter (d->member))
+		   && !conv_binds_to_reference_parm_p (type, init))
 	    warning_at (EXPR_LOCATION (init), OPT_Wuninitialized,
 			"member %qD is used uninitialized", field);
 	  *walk_subtrees = false;
@@ -4257,7 +4258,7 @@ create_temporary_var (tree type)
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
-  DECL_CONTEXT (decl) = current_function_decl;
+  DECL_CONTEXT (decl) = current_scope ();
 
   return decl;
 }

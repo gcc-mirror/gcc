@@ -200,6 +200,18 @@ test_parse()
   VERIFY( is >> parse("%S", us) );
   VERIFY( us == 976us );
   VERIFY( is.get() == '5' );
+
+  is.clear();
+  is.str("0.5");
+  std::chrono::duration<double> ds;
+  VERIFY( is >> parse("%S", ds) );
+  VERIFY( ds == 0.5s );
+
+  is.clear();
+  is.str("0.125");
+  std::chrono::duration<double, std::milli> dms;
+  VERIFY( is >> parse("%S", dms) );
+  VERIFY( dms == 0.125s );
 }
 
 int main()

@@ -328,9 +328,7 @@
 ;; rotate   rotation instructions
 ;; atomic   atomic instructions
 ;; condmove	conditional moves
-;; cbo    cache block instructions
 ;; crypto cryptography instructions
-;; pushpop    zc push and pop instructions
 ;; mvpair    zc move pair instructions
 ;; zicond    zicond instructions
 ;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
@@ -470,7 +468,7 @@
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fcvt_i2f,fcvt_f2i,fsqrt,multi,auipc,sfb_alu,nop,trap,
    ghost,bitmanip,rotate,clmul,min,max,minu,maxu,clz,ctz,cpop,
-   atomic,condmove,cbo,crypto,pushpop,mvpair,zicond,rdvlenb,rdvl,wrvxrm,wrfrm,
+   atomic,condmove,crypto,mvpair,zicond,rdvlenb,rdvl,wrvxrm,wrfrm,
    rdfrm,vsetvl,vsetvl_pre,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
@@ -1838,7 +1836,7 @@
    andi\t%0,%1,0xff
    lbu\t%0,%1"
   [(set_attr "move_type" "andi,load")
-   (set_attr "type" "multi")
+   (set_attr "type" "arith,load")
    (set_attr "mode" "<SUPERQI:MODE>")])
 
 ;;
@@ -1863,7 +1861,7 @@
    sext.w\t%0,%1
    lw\t%0,%1"
   [(set_attr "move_type" "move,load")
-   (set_attr "type" "multi")
+   (set_attr "type" "move,load")
    (set_attr "mode" "DI")])
 
 (define_expand "extend<SHORT:mode><SUPERQI:mode>2"
@@ -1940,7 +1938,7 @@
        || reg_or_0_operand (operands[1], HFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
-   (set_attr "type" "fmove")
+   (set_attr "type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "HF")])
 
 (define_insn "*movhf_softfloat"
@@ -1951,7 +1949,7 @@
        || reg_or_0_operand (operands[1], HFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,move,load,store,mtc,mfc")
-   (set_attr "type" "fmove")
+   (set_attr "type" "fmove,move,load,store,mtc,mfc")
    (set_attr "mode" "HF")])
 
 (define_insn "*movhf_softfloat_boxing"
@@ -2184,7 +2182,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore,rdvlenb")
    (set_attr "mode" "DI")
-   (set_attr "type" "move")
+   (set_attr "type" "move,move,load,store,move,fpload,move,fmove,fpstore,move")
    (set_attr "ext" "base,base,base,base,d,d,d,d,d,vector")])
 
 (define_insn "*movdi_64bit"
@@ -2196,7 +2194,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore,rdvlenb")
    (set_attr "mode" "DI")
-   (set_attr "type" "move")
+   (set_attr "type" "move,move,load,store,mtc,fpload,mfc,fmove,fpstore,move")
    (set_attr "ext" "base,base,base,base,d,d,d,d,d,vector")])
 
 ;; 32-bit Integer moves
@@ -2219,7 +2217,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fpstore,rdvlenb")
    (set_attr "mode" "SI")
-   (set_attr "type" "move")
+   (set_attr "type" "move,move,load,store,mtc,fpload,mfc,fpstore,move")
    (set_attr "ext" "base,base,base,base,f,f,f,f,vector")])
 
 ;; 16-bit Integer moves
@@ -2246,7 +2244,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,mfc,rdvlenb")
    (set_attr "mode" "HI")
-   (set_attr "type" "move")
+   (set_attr "type" "move,move,load,store,mtc,mfc,move")
    (set_attr "ext" "base,base,base,base,f,f,vector")])
 
 ;; HImode constant generation; see riscv_move_integer for details.
@@ -2290,7 +2288,7 @@
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,mfc,rdvlenb")
    (set_attr "mode" "QI")
-   (set_attr "type" "move")
+   (set_attr "type" "move,move,load,store,mtc,mfc,move")
    (set_attr "ext" "base,base,base,base,f,f,vector")])
 
 ;; 32-bit floating point moves
@@ -2312,7 +2310,7 @@
        || reg_or_0_operand (operands[1], SFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
-   (set_attr "type" "fmove")
+   (set_attr "type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "SF")])
 
 (define_insn "*movsf_softfloat"
@@ -2323,7 +2321,7 @@
        || reg_or_0_operand (operands[1], SFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,load,store")
-   (set_attr "type" "fmove")
+   (set_attr "type" "move,load,store")
    (set_attr "mode" "SF")])
 
 ;; 64-bit floating point moves
@@ -2348,7 +2346,7 @@
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
-   (set_attr "type" "fmove")
+   (set_attr "type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "DF")])
 
 (define_insn "*movdf_hardfloat_rv64"
@@ -2359,7 +2357,7 @@
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
-   (set_attr "type" "fmove")
+   (set_attr "type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "DF")])
 
 (define_insn "*movdf_softfloat"
@@ -2370,7 +2368,7 @@
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,load,store")
-   (set_attr "type" "fmove")
+   (set_attr "type" "fmove,fpload,fpstore")
    (set_attr "mode" "DF")])
 
 (define_insn "movsidf2_low_rv32"
@@ -3675,7 +3673,7 @@
     UNSPECV_CLEAN)]
   "TARGET_ZICBOM"
   "cbo.clean\t%a0"
-  [(set_attr "type" "cbo")]
+  [(set_attr "type" "store")]
 )
 
 (define_insn "riscv_flush_<mode>"
@@ -3683,7 +3681,7 @@
     UNSPECV_FLUSH)]
   "TARGET_ZICBOM"
   "cbo.flush\t%a0"
-  [(set_attr "type" "cbo")]
+  [(set_attr "type" "store")]
 )
 
 (define_insn "riscv_inval_<mode>"
@@ -3691,7 +3689,7 @@
     UNSPECV_INVAL)]
   "TARGET_ZICBOM"
   "cbo.inval\t%a0"
-  [(set_attr "type" "cbo")]
+  [(set_attr "type" "store")]
 )
 
 (define_insn "riscv_zero_<mode>"
@@ -3699,7 +3697,7 @@
     UNSPECV_ZERO)]
   "TARGET_ZICBOZ"
   "cbo.zero\t%a0"
-  [(set_attr "type" "cbo")]
+  [(set_attr "type" "store")]
 )
 
 (define_insn "prefetch"
@@ -3715,7 +3713,7 @@
     default: gcc_unreachable ();
   }
 }
-  [(set_attr "type" "cbo")])
+  [(set_attr "type" "store")])
 
 (define_insn "riscv_prefetchi_<mode>"
   [(unspec_volatile:X [(match_operand:X 0 "address_operand" "r")
@@ -3723,7 +3721,7 @@
               UNSPECV_PREI)]
   "TARGET_ZICBOP"
   "prefetch.i\t%a0"
-  [(set_attr "type" "cbo")])
+  [(set_attr "type" "store")])
 
 (define_expand "extv<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=r")
@@ -3853,6 +3851,7 @@
 (include "sifive-p400.md")
 (include "sifive-p600.md")
 (include "thead.md")
+(include "generic-vector-ooo.md")
 (include "generic-ooo.md")
 (include "vector.md")
 (include "vector-crypto.md")

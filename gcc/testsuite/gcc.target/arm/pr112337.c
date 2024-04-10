@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv8.1-m.main+fp.dp+mve.fp -mfloat-abi=hard" } */
+/* { dg-options "-O2" } */
+/* { dg-require-effective-target arm_v8_1m_mve_ok } */
+/* { dg-add-options arm_v8_1m_mve } */
 
 #pragma GCC arm "arm_mve_types.h"
 int32x4_t h(void *p) { return __builtin_mve_vldrwq_sv4si(p); }

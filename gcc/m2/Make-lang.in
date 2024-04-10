@@ -1786,6 +1786,7 @@ BUILD-PGE-O = \
    m2/pge-boot/GSymbolKey.o \
    m2/pge-boot/GSysStorage.o \
    m2/pge-boot/Glibc.o \
+   m2/pge-boot/Gwrapc.o \
    m2/pge-boot/Gerrno.o \
    m2/pge-boot/GUnixArgs.o \
    m2/pge-boot/Gtermios.o \

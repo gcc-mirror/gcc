@@ -11767,7 +11767,8 @@ sh_insn_operands_modified_between_p (rtx_insn* operands_insn,
 bool
 sh_is_nott_insn (const rtx_insn* i)
 {
-  return i != NULL && GET_CODE (PATTERN (i)) == SET
+  return i != NULL_RTX && PATTERN (i) != NULL_RTX
+	 && GET_CODE (PATTERN (i)) == SET
 	 && t_reg_operand (XEXP (PATTERN (i), 0), VOIDmode)
 	 && negt_reg_operand (XEXP (PATTERN (i), 1), VOIDmode);
 }

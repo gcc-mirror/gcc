@@ -871,6 +871,8 @@ do_target_support_exists (struct builtin_function_entry *fe)
       return targetm.libc_has_function (function_c99_misc, type);
     case bf_extension_lib_floatn:
       return true;
+    case bf_c99_compl:
+      return targetm.libc_has_function (function_c99_math_complex, type);
     default:
       gcc_unreachable ();
     }

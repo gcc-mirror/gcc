@@ -1,3 +1,13 @@
+2024-02-29  Tom Tromey  <tom@tromey.com>
+
+	* gcc-cp-interface.h (gcc_cp_fe_context_function): Update
+	comment.
+	* gcc-c-interface.h (enum gcc_c_api_version) <GCC_C_FE_VERSION_2>:
+	New constant.
+	(gcc_c_fe_context_function): Update comment.
+	* gcc-c-fe.def (finish_record_with_alignment): New method.
+	Update documentation.
+
 2024-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* demangle.h (enum demangle_component_type): Add

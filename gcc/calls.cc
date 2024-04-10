@@ -2938,7 +2938,7 @@ expand_call (tree exp, rtx target, int ignore)
 	 /* Count the struct value address, if it is passed as a parm.  */
 	 + structure_value_addr_parm);
   else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
-    n_named_args = 0;
+    n_named_args = structure_value_addr_parm;
   else
     /* If we know nothing, treat all args as named.  */
     n_named_args = num_actuals;
@@ -2970,14 +2970,15 @@ expand_call (tree exp, rtx target, int ignore)
      we do not have any reliable way to pass unnamed args in
      registers, so we must force them into memory.  */
 
-  if (type_arg_types != 0
+  if ((type_arg_types != 0 || TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
       && targetm.calls.strict_argument_naming (args_so_far))
     ;
   else if (type_arg_types != 0
 	   && ! targetm.calls.pretend_outgoing_varargs_named (args_so_far))
     /* Don't include the last named arg.  */
     --n_named_args;
-  else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
+  else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype)
+	   && ! targetm.calls.pretend_outgoing_varargs_named (args_so_far))
     n_named_args = 0;
   else
     /* Treat all args as named.  */

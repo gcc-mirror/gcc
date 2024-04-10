@@ -285,15 +285,15 @@ class exploded_node : public dnode<eg_traits>
 				       const gcall *call_stmt,
 				       program_state *state,
 				       path_context *path_ctxt,
-				       function *called_fn,
-				       per_function_data *called_fn_data,
+				       const function &called_fn,
+				       per_function_data &called_fn_data,
 				       region_model_context *ctxt);
   void replay_call_summary (exploded_graph &eg,
 			    const supernode *snode,
 			    const gcall *call_stmt,
 			    program_state *state,
 			    path_context *path_ctxt,
-			    function *called_fn,
+			    const function &called_fn,
 			    call_summary *summary,
 			    region_model_context *ctxt);
 
@@ -810,7 +810,7 @@ public:
 
   exploded_node *get_origin () const { return m_origin; }
 
-  exploded_node *add_function_entry (function *fun);
+  exploded_node *add_function_entry (const function &fun);
 
   void build_initial_worklist ();
   void process_worklist ();

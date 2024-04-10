@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gczve32x -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax" } */
+/* { dg-options "-march=rv64gczve32x -mabi=lp64d -mrvv-vector-bits=zvl" } */
 
 #include <stdint-gcc.h>
 #include "riscv_vector.h"

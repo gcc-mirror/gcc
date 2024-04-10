@@ -57,13 +57,13 @@ extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
   n = RTExceptions_GetNumber (e);
   if (n == (UINT_MAX))
     {
-      RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc-read-write/gcc/m2/gm2-libs/M2EXCEPTION.mod")), 47, 6, const_cast<void*> (reinterpret_cast<const void*>("M2Exception")), const_cast<void*> (reinterpret_cast<const void*>("current coroutine is not in the exceptional execution state")));
+      RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc/m2/gm2-libs/M2EXCEPTION.mod")), 47, 6, const_cast<void*> (reinterpret_cast<const void*>("M2Exception")), const_cast<void*> (reinterpret_cast<const void*>("current coroutine is not in the exceptional execution state")));
     }
   else
     {
       return (M2EXCEPTION_M2Exceptions) (n);
     }
-  ReturnException ("../../gcc-read-write/gcc/m2/gm2-libs/M2EXCEPTION.def", 25, 1);
+  ReturnException ("../../gcc/m2/gm2-libs/M2EXCEPTION.def", 25, 1);
   __builtin_unreachable ();
 }
 

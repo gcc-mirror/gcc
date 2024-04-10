@@ -453,8 +453,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* (x >= 0 ? x : 0) + (x <= 0 ? -x : 0) -> abs x.  */
 (simplify
-  (plus:c (max @0 integer_zerop) (max (negate @0) integer_zerop))
-  (abs @0))
+ (plus:c (max @0 integer_zerop) (max (negate @0) integer_zerop))
+ (if (ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_UNDEFINED (type))
+  (abs @0)))
 
 /* X * 1, X / 1 -> X.  */
 (for op (mult trunc_div ceil_div floor_div round_div exact_div)
@@ -1217,6 +1218,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (! FLOAT_TYPE_P (type)
        && tree_nop_conversion_p (type, TREE_TYPE (@1)))
    (lshift @0 @2)))
+
+/* Fold a * !a into 0.  */
+(simplify
+ (mult:c @0 (convert? (eq @0 integer_zerop)))
+  { build_zero_cst (type); })
+(simplify
+ (mult:c @0 (vec_cond (eq @0 integer_zerop) @1 integer_zerop))
+  { build_zero_cst (type); })
+(simplify
+ (mult:c @0 (vec_cond (ne @0 integer_zerop) integer_zerop @1))
+  { build_zero_cst (type); })
 
 /* Shifts by precision or greater result in zero.  */
 (for shift (lshift rshift)
@@ -4218,8 +4230,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* (x <= 0 ? -x : 0) -> max(-x, 0).  */
 (simplify
-  (cond (le @0 integer_zerop@1) (negate@2 @0) integer_zerop@1)
-  (max @2 @1))
+ (cond (le @0 integer_zerop@1) (negate@2 @0) integer_zerop@1)
+ (if (ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_UNDEFINED (type))
+  (max @2 @1)))
 
 /* (zero_one == 0) ? y : z <op> y -> ((typeof(y))zero_one * z) <op> y */
 (for op (bit_xor bit_ior plus)
@@ -5149,15 +5162,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (c ? a : b) op (c ? d : e)  -->  c ? (a op d) : (b op e) */
  (simplify
   (op (vec_cond:s @0 @1 @2) (vec_cond:s @0 @3 @4))
-  (vec_cond @0 (op! @1 @3) (op! @2 @4)))
+  (if (TREE_CODE_CLASS (op) != tcc_comparison
+       || types_match (type, TREE_TYPE (@1))
+       || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
+       || (optimize_vectors_before_lowering_p ()
+	   /* The following is optimistic on the side of non-support, we are
+	      missing the legacy vcond{,u,eq} cases.  Do this only when
+	      lowering will be able to fixup..  */
+	   && !expand_vec_cond_expr_p (TREE_TYPE (@1),
+				       TREE_TYPE (@0), ERROR_MARK)))
+   (vec_cond @0 (op! @1 @3) (op! @2 @4))))
 
 /* (c ? a : b) op d  -->  c ? (a op d) : (b op d) */
  (simplify
   (op (vec_cond:s @0 @1 @2) @3)
-  (vec_cond @0 (op! @1 @3) (op! @2 @3)))
+  (if (TREE_CODE_CLASS (op) != tcc_comparison
+       || types_match (type, TREE_TYPE (@1))
+       || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
+       || (optimize_vectors_before_lowering_p ()
+	   && !expand_vec_cond_expr_p (TREE_TYPE (@1),
+				       TREE_TYPE (@0), ERROR_MARK)))
+   (vec_cond @0 (op! @1 @3) (op! @2 @3))))
  (simplify
   (op @3 (vec_cond:s @0 @1 @2))
-  (vec_cond @0 (op! @3 @1) (op! @3 @2))))
+  (if (TREE_CODE_CLASS (op) != tcc_comparison
+       || types_match (type, TREE_TYPE (@1))
+       || expand_vec_cond_expr_p (type, TREE_TYPE (@0), ERROR_MARK)
+       || (optimize_vectors_before_lowering_p ()
+	   && !expand_vec_cond_expr_p (TREE_TYPE (@1),
+				       TREE_TYPE (@0), ERROR_MARK)))
+   (vec_cond @0 (op! @3 @1) (op! @3 @2)))))
 
 #if GIMPLE
 (match (nop_atomic_bit_test_and_p @0 @1 @4)

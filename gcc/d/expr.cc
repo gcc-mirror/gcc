@@ -464,7 +464,7 @@ public:
 	else
 	  {
 	    /* Use _adEq2() to compare each element.  */
-	    Type *t1array = t1elem->arrayOf ();
+	    Type *t1array = dmd::arrayOf (t1elem);
 	    tree result = build_libcall (LIBCALL_ADEQ2, e->type, 3,
 					 d_array_convert (e->e1),
 					 d_array_convert (e->e2),
@@ -2172,7 +2172,8 @@ public:
 	      {
 		/* Generate a slice for non-zero initialized aggregates,
 		   otherwise create an empty array.  */
-		gcc_assert (e->type == dmd::constOf (Type::tvoid->arrayOf ()));
+		gcc_assert (e->type->isConst ()
+			    && e->type->nextOf ()->ty == TY::Tvoid);
 
 		tree type = build_ctype (e->type);
 		tree length = size_int (sd->dsym->structsize);
@@ -2571,7 +2572,7 @@ public:
 
     /* Implicitly convert void[n] to ubyte[n].  */
     if (tb->ty == TY::Tsarray && tb->nextOf ()->toBasetype ()->ty == TY::Tvoid)
-      tb = Type::tuns8->sarrayOf (tb->isTypeSArray ()->dim->toUInteger ());
+      tb = dmd::sarrayOf (Type::tuns8, tb->isTypeSArray ()->dim->toUInteger ());
 
     gcc_assert (tb->ty == TY::Tarray || tb->ty == TY::Tsarray
 		|| tb->ty == TY::Tpointer);
@@ -2685,7 +2686,7 @@ public:
 	/* Allocate space on the memory managed heap.  */
 	tree mem = build_libcall (LIBCALL_ARRAYLITERALTX,
 				  dmd::pointerTo (etype), 2,
-				  build_typeinfo (e, etype->arrayOf ()),
+				  build_typeinfo (e, dmd::arrayOf (etype)),
 				  size_int (e->elements->length));
 	mem = d_save_expr (mem);
 
@@ -2732,20 +2733,20 @@ public:
 
     /* Build an expression that assigns all expressions in KEYS
        to a constructor.  */
-    tree akeys = build_array_from_exprs (ta->index->sarrayOf (e->keys->length),
-					 e->keys, this->constp_);
+    Type *tkarray = dmd::sarrayOf (ta->index, e->keys->length);
+    tree akeys = build_array_from_exprs (tkarray, e->keys, this->constp_);
     tree init = stabilize_expr (&akeys);
 
     /* Do the same with all expressions in VALUES.  */
-    tree avals = build_array_from_exprs (ta->next->sarrayOf (e->values->length),
-					 e->values, this->constp_);
+    Type *tvarray = dmd::sarrayOf (ta->next, e->values->length);
+    tree avals = build_array_from_exprs (tvarray, e->values, this->constp_);
     init = compound_expr (init, stabilize_expr (&avals));
 
     /* Generate: _d_assocarrayliteralTX (ti, keys, vals);  */
-    tree keys = d_array_value (build_ctype (ta->index->arrayOf ()),
+    tree keys = d_array_value (build_ctype (dmd::arrayOf (ta->index)),
 			       size_int (e->keys->length),
 			       build_address (akeys));
-    tree vals = d_array_value (build_ctype (ta->next->arrayOf ()),
+    tree vals = d_array_value (build_ctype (dmd::arrayOf (ta->next)),
 			       size_int (e->values->length),
 			       build_address (avals));
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "--param=riscv-autovec-preference=scalable -march=rv64gcv -mabi=lp64d -O3 -fdump-rtl-vsetvl-details" } */
+/* { dg-options "-mrvv-vector-bits=scalable -march=rv64gcv -mabi=lp64d -O3 -fdump-rtl-vsetvl-details" } */
 
 #include "riscv_vector.h"
 void
