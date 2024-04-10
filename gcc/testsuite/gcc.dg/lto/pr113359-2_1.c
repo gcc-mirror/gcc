@@ -5,15 +5,15 @@
 struct SA
 {
   unsigned int ax;
-  unsigned long ay;
-  unsigned long az;
+  unsigned long long ay;
+  unsigned long long az;
 };
 
 struct SB
 {
   unsigned int bx;
-  unsigned long by;
-  unsigned long bz;
+  unsigned long long by;
+  unsigned long long bz;
 };
 
 struct ZA
