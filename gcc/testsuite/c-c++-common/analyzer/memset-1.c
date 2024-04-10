@@ -58,7 +58,7 @@ void test_5 (int n)
   __analyzer_eval (buf[42] == 'A'); /* { dg-warning "TRUE" } */
   memset (buf, 0, n);
 
-  /* We can't know if buf[42] was written to or not.  */
+  /* We can't know if buf[42] was overwritten by the memset or not.  */
   __analyzer_eval (buf[42] == 'A'); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (buf[42] == '\0'); /* { dg-warning "UNKNOWN" } */
 }
@@ -72,7 +72,7 @@ void test_5a (int n)
   __analyzer_eval (buf[42] == 'A'); /* { dg-warning "TRUE" } */
   __builtin___memset_chk (buf, 0, n, __builtin_object_size (buf, 0));
 
-  /* We can't know if buf[42] was written to or not.  */
+  /* We can't know if buf[42] was overwritten by the memset or not.  */
   __analyzer_eval (buf[42] == 'A'); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (buf[42] == '\0'); /* { dg-warning "UNKNOWN" } */
 }
