@@ -12617,6 +12617,17 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
      not to split a CONST for some forms of address expression, otherwise
      it will generate sub-optimal code.  */
 
+  /* First split X + CONST (base, offset) into (base + X) + offset.  */
+  if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST)
+    {
+      poly_int64 offset;
+      rtx base = strip_offset (XEXP (x, 1), &offset);
+
+      base = expand_binop (Pmode, add_optab, base, XEXP (x, 0),
+			   NULL_RTX, true, OPTAB_DIRECT);
+      x = plus_constant (Pmode, base, offset);
+    }
+
   if (GET_CODE (x) == PLUS && CONST_INT_P (XEXP (x, 1)))
     {
       rtx base = XEXP (x, 0);
