@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "make-unique.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/feasible-graph.h"
+#include "diagnostic-format-sarif.h"
 
 /* A subclass of pending_diagnostic for complaining about suspected
    infinite recursion.  */
@@ -234,6 +235,18 @@ public:
     /* We shouldn't get here; if we do, reject the diagnostic.  */
     gcc_unreachable ();
     return false;
+  }
+
+  void maybe_add_sarif_properties (sarif_object &result_obj)
+    const final override
+  {
+    sarif_property_bag &props = result_obj.get_or_create_properties ();
+#define PROPERTY_PREFIX "gcc/analyzer/infinite_recursion_diagnostic/"
+    props.set_integer (PROPERTY_PREFIX "prev_entry_enode",
+		       m_prev_entry_enode->m_index);
+    props.set_integer (PROPERTY_PREFIX "new_entry_enode",
+		       m_new_entry_enode->m_index);
+#undef PROPERTY_PREFIX
   }
 
 private:
