@@ -39,3 +39,11 @@ GCC_13.0.0 {
   __trunctfbf2
   __trunchfbf2
 }
+
+%inherit GCC_14.0.0 GCC_13.0.0
+GCC_14.0.0 {
+  __fixtfbitint
+  __floatbitintbf
+  __floatbitinthf
+  __floatbitinttf
+}

@@ -4,7 +4,8 @@ softfp_extensions := sftf dftf hftf bfsf
 softfp_truncations := tfsf tfdf tfhf tfbf dfbf sfbf hfbf
 softfp_exclude_libgcc2 := n
 softfp_extras += fixhfti fixunshfti floattihf floatuntihf \
-		 floatdibf floatundibf floattibf floatuntibf
+		 floatdibf floatundibf floattibf floatuntibf \
+		 floatbitinthf floatbitintbf floatbitinttf fixtfbitint
 
 TARGET_LIBGCC2_CFLAGS += -Wno-missing-prototypes
 

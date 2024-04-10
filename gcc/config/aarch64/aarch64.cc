@@ -6583,6 +6583,7 @@ aarch64_return_in_memory_1 (const_tree type)
   int count;
 
   if (!AGGREGATE_TYPE_P (type)
+      && TREE_CODE (type) != BITINT_TYPE
       && TREE_CODE (type) != COMPLEX_TYPE
       && TREE_CODE (type) != VECTOR_TYPE)
     /* Simple scalar types always returned in registers.  */
@@ -21995,6 +21996,11 @@ aarch64_composite_type_p (const_tree type,
   if (type && (AGGREGATE_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE))
     return true;
 
+  if (type
+      && TREE_CODE (type) == BITINT_TYPE
+      && int_size_in_bytes (type) > 16)
+    return true;
+
   if (mode == BLKmode
       || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
       || GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
@@ -28476,6 +28482,42 @@ aarch64_excess_precision (enum excess_precision_type type)
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
 
+/* Implement TARGET_C_BITINT_TYPE_INFO.
+   Return true if _BitInt(N) is supported and fill its details into *INFO.  */
+bool
+aarch64_bitint_type_info (int n, struct bitint_info *info)
+{
+  if (TARGET_BIG_END)
+    return false;
+
+  if (n <= 8)
+    info->limb_mode = QImode;
+  else if (n <= 16)
+    info->limb_mode = HImode;
+  else if (n <= 32)
+    info->limb_mode = SImode;
+  else if (n <= 64)
+    info->limb_mode = DImode;
+  else if (n <= 128)
+    info->limb_mode = TImode;
+  else
+    /* The AAPCS for AArch64 defines _BitInt(N > 128) as an array with
+       type {signed,unsigned} __int128[M] where M*128 >= N.  However, to be
+       able to use libgcc's implementation to support large _BitInt's we need
+       to use a LIMB_MODE that is no larger than 'long long'.  This is why we
+       use DImode for our internal LIMB_MODE and we define the ABI_LIMB_MODE to
+       be TImode to ensure we are ABI compliant.  */
+    info->limb_mode = DImode;
+
+  if (n > 128)
+    info->abi_limb_mode = TImode;
+  else
+    info->abi_limb_mode = info->limb_mode;
+  info->big_endian = TARGET_BIG_END;
+  info->extended = false;
+  return true;
+}
+
 /* Implement TARGET_SCHED_CAN_SPECULATE_INSN.  Return true if INSN can be
    scheduled for speculative execution.  Reject the long-running division
    and square-root instructions.  */
@@ -30599,6 +30641,9 @@ aarch64_run_selftests (void)
 
 #undef TARGET_C_EXCESS_PRECISION
 #define TARGET_C_EXCESS_PRECISION aarch64_excess_precision
+
+#undef TARGET_C_BITINT_TYPE_INFO
+#define TARGET_C_BITINT_TYPE_INFO aarch64_bitint_type_info
 
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN aarch64_expand_builtin
