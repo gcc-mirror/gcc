@@ -207,6 +207,13 @@ public:
     add_input_operand (frm_rtx, Pmode);
   }
 
+  void
+  add_rounding_mode_operand (enum fixed_point_rounding_mode rounding_mode)
+  {
+    rtx frm_rtx = gen_int_mode (rounding_mode, Pmode);
+    add_input_operand (frm_rtx, Pmode);
+  }
+
   /* Return the vtype mode based on insn_flags.
      vtype mode mean the mode vsetvl insn set. */
   machine_mode
@@ -334,6 +341,10 @@ public:
       add_rounding_mode_operand (FRM_RMM);
     else if (m_insn_flags & FRM_RNE_P)
       add_rounding_mode_operand (FRM_RNE);
+    else if (m_insn_flags & VXRM_RNU_P)
+      add_rounding_mode_operand (VXRM_RNU);
+    else if (m_insn_flags & VXRM_RDN_P)
+      add_rounding_mode_operand (VXRM_RDN);
 
     gcc_assert (insn_data[(int) icode].n_operands == m_opno);
     expand (icode, any_mem_p);

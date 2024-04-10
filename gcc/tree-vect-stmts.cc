@@ -12870,13 +12870,18 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
      rewrite conditions to always be a comparison against 0.  To do this it
      sometimes flips the edges.  This is fine for scalar,  but for vector we
      then have to flip the test, as we're still assuming that if you take the
-     branch edge that we found the exit condition.  */
+     branch edge that we found the exit condition.  i.e. we need to know whether
+     we are generating a `forall` or an `exist` condition.  */
   auto new_code = NE_EXPR;
   auto reduc_optab = ior_optab;
   auto reduc_op = BIT_IOR_EXPR;
   tree cst = build_zero_cst (vectype);
+  edge exit_true_edge = EDGE_SUCC (gimple_bb (cond_stmt), 0);
+  if (exit_true_edge->flags & EDGE_FALSE_VALUE)
+    exit_true_edge = EDGE_SUCC (gimple_bb (cond_stmt), 1);
+  gcc_assert (exit_true_edge->flags & EDGE_TRUE_VALUE);
   if (flow_bb_inside_loop_p (LOOP_VINFO_LOOP (loop_vinfo),
-			     BRANCH_EDGE (gimple_bb (cond_stmt))->dest))
+			     exit_true_edge->dest))
     {
       new_code = EQ_EXPR;
       reduc_optab = and_optab;

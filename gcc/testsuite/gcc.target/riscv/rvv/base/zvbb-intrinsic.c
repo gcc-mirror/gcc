@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zvbb_zve64x -mabi=lp64d -Wno-psabi" } */
+/* { dg-options "-march=rv64gc_zvbb_zve64x -mabi=lp64d" } */
 #include "riscv_vector.h"
 
 vuint8mf8_t test_vandn_vv_u8mf8(vuint8mf8_t vs2, vuint8mf8_t vs1, size_t vl) {

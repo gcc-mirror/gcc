@@ -7330,7 +7330,8 @@ mips_start_unique_function (const char *name)
    function contains MIPS16 code.  */
 
 static void
-mips_start_function_definition (const char *name, bool mips16_p, tree decl)
+mips_start_function_definition (const char *name, bool mips16_p,
+				tree decl ATTRIBUTE_UNUSED)
 {
   if (mips16_p)
     fprintf (asm_out_file, "\t.set\tmips16\n");

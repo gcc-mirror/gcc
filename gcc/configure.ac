@@ -4549,6 +4549,7 @@ AS_HELP_STRING([--disable-fix-cortex-a53-843419],
       [AC_DEFINE(HAVE_AS_AVR_MGCCISR_OPTION, 1,
 		[Define if your avr assembler supports -mgcc-isr option.])])
 
+    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
     # Check how default linker description file implements .rodata for
     # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to
     # RAM so avr-gcc skips __do_copy_data for .rodata objects.
@@ -4574,7 +4575,6 @@ EOF
 	    AC_MSG_RESULT(no: avrxmega3 .rodata located in RAM)
 	    echo "$as_me: nm output was" >&AS_MESSAGE_LOG_FD
 	    cat conftest.nm >&AS_MESSAGE_LOG_FD
-	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
 	    AC_MSG_WARN([[support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)]])
 	fi
     else
@@ -4584,6 +4584,42 @@ EOF
 	AC_MSG_WARN([[see `config.log' for details]])
     fi
     rm -f conftest.s conftest.o conftest.elf conftest.nm
+
+    # Check for emulation avrxmega2_flmap.
+    AC_MSG_CHECKING(binutils for avrxmega2_flmap support (PR31124))
+    cat > conftest.s <<EOF
+        .section .text,"ax",@progbits
+        ldi r16, __flmap_value_with_lock
+EOF
+    AC_TRY_COMMAND([$gcc_cv_as -mmcu=avrxmega2 conftest.s -o conftest.o])
+    AC_TRY_COMMAND([$gcc_cv_ld -mavrxmega2_flmap conftest.o -o conftest.elf])
+    if test -s conftest.elf
+    then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(HAVE_LD_AVR_AVRXMEGA2_FLMAP, 1,
+	    [Define if your linker supports emulation avrxmega2_flmap.])
+    else
+	AC_MSG_RESULT(no)
+	AC_MSG_WARN([[support for avrxmega2_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)]])
+	AC_MSG_WARN([[see `config.log' for details]])
+    fi
+    rm -f conftest.o conftest.elf
+
+    # Check for emulation avrxmega4_flmap.
+    AC_MSG_CHECKING(binutils for avrxmega4_flmap support (PR31124))
+    AC_TRY_COMMAND([$gcc_cv_as -mmcu=avrxmega4 conftest.s -o conftest.o])
+    AC_TRY_COMMAND([$gcc_cv_ld -mavrxmega4_flmap conftest.o -o conftest.elf])
+    if test -s conftest.elf
+    then
+	AC_MSG_RESULT(yes)
+	AC_DEFINE(HAVE_LD_AVR_AVRXMEGA4_FLMAP, 1,
+	    [Define if your linker supports emulation avrxmega4_flmap.])
+    else
+	AC_MSG_RESULT(no)
+	AC_MSG_WARN([[support for avrxmega4_flmap requires Binutils 2.42 or higher (have $avr_ld_ver)]])
+	AC_MSG_WARN([[see `config.log' for details]])
+    fi
+    rm -f conftest.s conftest.o conftest.elf
     ;;
 
   cris-*-*)

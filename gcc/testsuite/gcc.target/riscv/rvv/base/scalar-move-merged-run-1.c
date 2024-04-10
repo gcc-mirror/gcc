@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-options "-O3 -Wno-psabi" } */
+/* { dg-options "-O3" } */
 
 #define TEST_VAL 2
 

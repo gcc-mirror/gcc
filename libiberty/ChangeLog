@@ -1,3 +1,16 @@
+2024-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-demangle.c (FNQUAL_COMPONENT_CASE): Add case for
+	DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+	(d_dump): Handle DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+	(d_nested_name): Parse H after N in nested name.
+	(d_count_templates_scopes): Handle
+	DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION.
+	(d_print_mod): Likewise.
+	(d_print_function_type): Likewise.
+	* testsuite/demangle-expected: Add tests for explicit object
+	member functions.
+
 2023-12-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac (HAVE_X86_SHA1_HW_SUPPORT): Verify __get_cpuid and

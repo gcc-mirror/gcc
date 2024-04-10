@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-save-temps -gdwarf-3 -dA" } */
+/* { dg-options "-gdwarf-3 -dA" } */
 
 struct foo {
         int field_number_1;

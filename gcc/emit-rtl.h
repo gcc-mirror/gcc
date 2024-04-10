@@ -141,6 +141,9 @@ struct GTY(()) rtl_data {
      If stack grows up, this is the address for the next slot.  */
   poly_int64 x_frame_offset;
 
+  /* The function's FUNCTION_BEG note.  */
+  rtx_insn *x_function_beg_insn;
+
   /* Insn after which register parms and SAVE_EXPRs are born, if nonopt.  */
   rtx_insn *x_parm_birth_insn;
 
@@ -323,6 +326,7 @@ struct GTY(()) rtl_data {
 #define return_label (crtl->x_return_label)
 #define naked_return_label (crtl->x_naked_return_label)
 #define stack_slot_list (crtl->x_stack_slot_list)
+#define function_beg_insn (crtl->x_function_beg_insn)
 #define parm_birth_insn (crtl->x_parm_birth_insn)
 #define frame_offset (crtl->x_frame_offset)
 #define stack_check_probe_note (crtl->x_stack_check_probe_note)

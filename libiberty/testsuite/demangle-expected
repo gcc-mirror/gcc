@@ -1700,3 +1700,12 @@ void f<int>() requires C<int>
 # requires after ()
 _Z1fIiEvvQ1CIT_E
 void f<int>() requires C<int>
+
+_ZNH1S3fooES_
+S::foo(this S)
+
+_ZNH1S3barILi5EiEEvS_T0_
+void S::bar<5, int>(this S, int)
+
+_ZNH1S3bazERKS_
+S::baz(this S const&)

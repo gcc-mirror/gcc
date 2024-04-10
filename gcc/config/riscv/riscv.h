@@ -634,6 +634,9 @@ enum reg_class
   (!SMALL_OPERAND (VALUE)						\
    && SMALL_OPERAND (VALUE & ~(HOST_WIDE_INT_1U << floor_log2 (VALUE))))
 
+/* True if bit BIT is set in VALUE.  */
+#define BITSET_P(VALUE, BIT) (((VALUE) & (1ULL << (BIT))) != 0)
+
 /* Stack layout; function entry, exit and calling.  */
 
 #define STACK_GROWS_DOWNWARD 1
@@ -732,8 +735,6 @@ typedef struct {
 
   /* Number of floating-point registers used so far, likewise.  */
   unsigned int num_fprs;
-
-  int rvv_psabi_warning;
 
   /* Number of mask registers used so far, up to MAX_ARGS_IN_MASK_REGISTERS.  */
   unsigned int num_mrs;

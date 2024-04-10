@@ -242,7 +242,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Discontiguous array section with @code{target update} construct
       @tab N @tab
 @item C/C++'s lvalue expressions in @code{to}, @code{from}
-      and @code{map} clauses @tab N @tab
+      and @code{map} clauses @tab Y @tab
 @item C/C++'s lvalue expressions in @code{depend} clauses @tab Y @tab
 @item Nested @code{declare target} directive @tab Y @tab
 @item Combined @code{master} constructs @tab Y @tab

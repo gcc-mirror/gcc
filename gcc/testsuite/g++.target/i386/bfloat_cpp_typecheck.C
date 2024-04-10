@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-msse2 -O3 --save-temps" } */
+/* { dg-options "-msse2 -O3" } */
 
 void foo (void)
 {

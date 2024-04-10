@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d -O3" } */
+/* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d -O3 -fno-vect-cost-model" } */
 
 int b, c, d, f, i, a;
 int e[1] = {0};

@@ -250,6 +250,15 @@ struct scalable_vector_cost : common_vector_cost
      E.g. fold_left reduction cost, lanes load/store cost, ..., etc.  */
 };
 
+/* Additional costs for register copies.  Cost is for one register.  */
+struct regmove_vector_cost
+{
+  const int GR2VR;
+  const int FR2VR;
+  const int VR2GR;
+  const int VR2FR;
+};
+
 /* Cost for vector insn classes.  */
 struct cpu_vector_cost
 {
@@ -276,6 +285,9 @@ struct cpu_vector_cost
 
   /* Cost of an VLA modes operations.  */
   const scalable_vector_cost *vla;
+
+  /* Cost of vector register move operations.  */
+  const regmove_vector_cost *regmove;
 };
 
 /* Routines implemented in riscv-selftests.cc.  */
@@ -366,6 +378,12 @@ enum insn_flags : unsigned int
 
   /* Means INSN has FRM operand and the value is FRM_RNE.  */
   FRM_RNE_P = 1 << 19,
+
+  /* Means INSN has VXRM operand and the value is VXRM_RNU.  */
+  VXRM_RNU_P = 1 << 20,
+
+  /* Means INSN has VXRM operand and the value is VXRM_RDN.  */
+  VXRM_RDN_P = 1 << 21,
 };
 
 enum insn_type : unsigned int
@@ -426,6 +444,8 @@ enum insn_type : unsigned int
   BINARY_OP_TAMU = __MASK_OP_TAMU | BINARY_OP_P,
   BINARY_OP_TUMA = __MASK_OP_TUMA | BINARY_OP_P,
   BINARY_OP_FRM_DYN = BINARY_OP | FRM_DYN_P,
+  BINARY_OP_VXRM_RNU = BINARY_OP | VXRM_RNU_P,
+  BINARY_OP_VXRM_RDN = BINARY_OP | VXRM_RDN_P,
 
   /* Ternary operator. Always have real merge operand.  */
   TERNARY_OP = HAS_DEST_P | HAS_MASK_P | USE_ALL_TRUES_MASK_P | HAS_MERGE_P
@@ -718,6 +738,9 @@ extern void th_mempair_prepare_save_restore_operands (rtx[4], bool,
 						      int, HOST_WIDE_INT,
 						      int, HOST_WIDE_INT);
 extern void th_mempair_save_restore_regs (rtx[4], bool, machine_mode);
+extern unsigned int th_int_get_mask (unsigned int);
+extern unsigned int th_int_get_save_adjustment (void);
+extern rtx th_int_adjust_cfi_prologue (unsigned int);
 #ifdef RTX_CODE
 extern const char*
 th_mempair_output_move (rtx[4], bool, machine_mode, RTX_CODE);
@@ -753,5 +776,6 @@ struct riscv_tune_info {
 
 const struct riscv_tune_info *
 riscv_parse_tune (const char *, bool);
+const cpu_vector_cost *get_vector_costs ();
 
 #endif /* ! GCC_RISCV_PROTOS_H */

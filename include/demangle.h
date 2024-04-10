@@ -314,6 +314,8 @@ enum demangle_component_type
   /* C++11: An rvalue reference modifying a member function.  The one
      subtree is the type which is being referenced.  */
   DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS,
+  /* C++23: A member function with explict object parameter.  */
+  DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION,
   /* A vendor qualifier.  The left subtree is the type which is being
      qualified, and the right subtree is the name of the
      qualifier.  */

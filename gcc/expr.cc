@@ -7841,10 +7841,12 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    break;
 	  }
 	/* Use sign-extension for uniform boolean vectors with
-	   integer modes.  Effectively "vec_duplicate" for bitmasks.  */
-	if (!TREE_SIDE_EFFECTS (exp)
+	   integer modes and single-bit mask entries.
+	   Effectively "vec_duplicate" for bitmasks.  */
+	if (elt_size == 1
+	    && !TREE_SIDE_EFFECTS (exp)
 	    && VECTOR_BOOLEAN_TYPE_P (type)
-	    && SCALAR_INT_MODE_P (mode)
+	    && SCALAR_INT_MODE_P (TYPE_MODE (type))
 	    && (elt = uniform_vector_p (exp))
 	    && !VECTOR_TYPE_P (TREE_TYPE (elt)))
 	  {
@@ -13619,6 +13621,8 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   if ((code == NE || code == EQ)
       && (integer_zerop (arg1)
 	  || integer_pow2p (arg1))
+      /* vector types are not handled here. */
+      && TREE_CODE (TREE_TYPE (arg1)) != VECTOR_TYPE
       && (TYPE_PRECISION (ops->type) != 1 || TYPE_UNSIGNED (ops->type)))
     {
       tree narg0 = arg0;

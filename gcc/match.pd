@@ -560,7 +560,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    1 / X -> X >= -1 && X <= 1 ? X : 0 for signed integer X.
    But not for 1 / 0 so that we can get proper warnings and errors,
    and not for 1-bit integers as they are edge cases better handled
-   elsewhere.  */
+   elsewhere.  Delay the conversion of the signed division until late
+   because `1 / X` is simplier to handle than the resulting COND_EXPR.  */
 (simplify
  (trunc_div integer_onep@0 @1)
  (if (INTEGRAL_TYPE_P (type)
@@ -569,10 +570,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && (!flag_non_call_exceptions || tree_expr_nonzero_p (@1)))
   (if (TYPE_UNSIGNED (type))
    (convert (eq:boolean_type_node @1 { build_one_cst (type); }))
-   (with { tree utype = unsigned_type_for (type); }
-    (cond (le (plus (convert:utype @1) { build_one_cst (utype); })
-	      { build_int_cst (utype, 2); })
-     @1 { build_zero_cst (type); })))))
+   (if (!canonicalize_math_p ())
+    (with { tree utype = unsigned_type_for (type); }
+     (cond (le (plus (convert:utype @1) { build_one_cst (utype); })
+		{ build_int_cst (utype, 2); })
+      @1 { build_zero_cst (type); }))))))
 
 /* Combine two successive divisions.  Note that combining ceil_div
    and floor_div is trickier and combining round_div even more so.  */
@@ -1160,18 +1162,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (hypots @0 (copysigns @1 @2))
    (hypots @0 @1))))
 
-/* copysign(x, CST) -> abs (x).  */
+/* copysign(x, CST) -> abs (x).  If the target does not
+   support the copysign optab then canonicalize
+   copysign(x, -CST) -> fneg (abs (x)).   */
 (for copysigns (COPYSIGN_ALL)
  (simplify
   (copysigns @0 REAL_CST@1)
   (if (!REAL_VALUE_NEGATIVE (TREE_REAL_CST (@1)))
-   (abs @0))))
+   (abs @0)
+#if GIMPLE
+   (if (!direct_internal_fn_supported_p (IFN_COPYSIGN, type,
+					 OPTIMIZE_FOR_BOTH))
+    (negate (abs @0)))
+#endif
+   )))
 
-/* Transform fneg (fabs (X)) -> copysign (X, -1).  */
+#if GIMPLE
+/* Transform fneg (fabs (X)) -> copysign (X, -1) as the canonical
+   representation if the target supports the copysign optab.  */
 (simplify
  (negate (abs @0))
- (IFN_COPYSIGN @0 { build_minus_one_cst (type); }))
-
+ (if (direct_internal_fn_supported_p (IFN_COPYSIGN, type,
+				      OPTIMIZE_FOR_BOTH))
+   (IFN_COPYSIGN @0 { build_minus_one_cst (type); })))
+#endif
 /* copysign(copysign(x, y), z) -> copysign(x, z).  */
 (for copysigns (COPYSIGN_ALL)
  (simplify
@@ -5672,6 +5686,27 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (VECTOR_TYPE_P (type))
        (view_convert @c0)
        (convert @c0))))))))
+
+/* This is for VEC_COND_EXPR
+   Optimize A < B ? A : B to MIN (A, B)
+	    A > B ? A : B to MAX (A, B).  */
+(for cmp (lt le ungt unge gt ge unlt unle)
+     minmax (min min min min max max max max)
+     MINMAX (MIN_EXPR MIN_EXPR MIN_EXPR MIN_EXPR MAX_EXPR MAX_EXPR MAX_EXPR MAX_EXPR)
+ (simplify
+  (vec_cond (cmp @0 @1) @0 @1)
+   (if (VECTOR_INTEGER_TYPE_P (type)
+       && target_supports_op_p (type, MINMAX, optab_vector))
+    (minmax @0 @1))))
+
+(for cmp (lt le ungt unge gt ge unlt unle)
+     minmax (max max max max min min min min)
+     MINMAX (MAX_EXPR MAX_EXPR MAX_EXPR MAX_EXPR MIN_EXPR MIN_EXPR MIN_EXPR MIN_EXPR)
+ (simplify
+  (vec_cond (cmp @0 @1) @1 @0)
+   (if (VECTOR_INTEGER_TYPE_P (type)
+       && target_supports_op_p (type, MINMAX, optab_vector))
+    (minmax @0 @1))))
 #endif
 
 (for cnd (cond vec_cond)
@@ -6759,11 +6794,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       && exact_real_truncate (TYPE_MODE (double_type_node), &orig))
 	     type1 = double_type_node;
 	 }
-      tree newtype
-        = (element_precision (TREE_TYPE (@00)) > element_precision (type1)
-	   ? TREE_TYPE (@00) : type1);
+       tree newtype
+	 = (element_precision (TREE_TYPE (@00)) > element_precision (type1)
+	    ? TREE_TYPE (@00) : type1);
      }
-     (if (element_precision (TREE_TYPE (@0)) > element_precision (newtype))
+     (if (element_precision (TREE_TYPE (@0)) > element_precision (newtype)
+	  && (!VECTOR_TYPE_P (type) || is_truth_type_for (newtype, type)))
       (cmp (convert:newtype @00) (convert:newtype @10))))))))
 
 

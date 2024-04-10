@@ -18,11 +18,6 @@ uint64_t foo3(uint16_t rs1, uint16_t rs2)
     return __builtin_riscv_packw(rs1, rs2);
 }
 
-uint64_t foo4(uint64_t rs1, uint64_t rs2)
-{
-    return __builtin_riscv_brev8(rs1);
-}
 /* { dg-final { scan-assembler-times "pack\t" 1 } } */
 /* { dg-final { scan-assembler-times {\mpackh} 1 } } */
 /* { dg-final { scan-assembler-times {\mpackw} 1 } } */
-/* { dg-final { scan-assembler-times {\mbrev8} 1 } } */

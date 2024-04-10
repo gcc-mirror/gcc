@@ -899,8 +899,41 @@ proc jit-verify-assembler-output { args } {
 	pass "${asm_filename} output pattern test, ${dg-output-text}"
 	verbose "Passed test for output pattern ${dg-output-text}" 3
     }
-
 }
+
+# Assuming that a .s file has been written out named
+# OUTPUT_FILENAME, check that the argument doesn't match
+# the output file.
+proc jit-verify-assembler-output-not { args } {
+    verbose "jit-verify-assembler: $args"
+
+    set dg-output-text [lindex $args 0]
+    verbose "dg-output-text: ${dg-output-text}"
+
+    upvar 2 name name
+    verbose "name: $name"
+
+    upvar 2 prog prog
+    verbose "prog: $prog"
+    set asm_filename [jit-get-output-filename $prog]
+    verbose "  asm_filename: ${asm_filename}"
+
+    # Read the assembly file.
+    set f [open $asm_filename r]
+    set content [read $f]
+    close $f
+
+    # Verify that the assembly matches the regex.
+    if { [regexp ${dg-output-text} $content] } {
+	fail "${asm_filename} output pattern test, is ${content}, should not match ${dg-output-text}"
+	verbose "Failed test for output pattern ${dg-output-text}" 3
+    } else {
+	pass "${asm_filename} output pattern test, ${dg-output-text}"
+	verbose "Passed test for output pattern ${dg-output-text}" 3
+    }
+}
+
+
 # Assuming that a .o file has been written out named
 # OUTPUT_FILENAME, invoke the driver to try to turn it into
 # an executable, and try to run the result.

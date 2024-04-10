@@ -1540,7 +1540,7 @@
   [(set (match_operand:FLASX 0 "register_operand" "=f")
     (unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
 		  UNSPEC_LASX_XVFRECIPE))]
-  "ISA_HAS_LASX && TARGET_FRECIPE"
+  "ISA_HAS_LASX && ISA_HAS_FRECIPE"
   "xvfrecipe.<flasxfmt>\t%u0,%u1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
@@ -1573,7 +1573,7 @@
   [(set (match_operand:FLASX 0 "register_operand" "=f")
     (unspec:FLASX [(match_operand:FLASX 1 "register_operand" "f")]
 		  UNSPEC_LASX_XVFRSQRTE))]
-  "ISA_HAS_LASX && TARGET_FRECIPE"
+  "ISA_HAS_LASX && ISA_HAS_FRECIPE"
   "xvfrsqrte.<flasxfmt>\t%u0,%u1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])

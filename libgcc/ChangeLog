@@ -1,3 +1,19 @@
+2024-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgcc2.h (UBILtype): New typedef with may_alias attribute.
+	(__mulbitint3, __divmodbitint4): Use UBILtype * instead of
+	UWtype * and const UBILtype * instead of const UWtype *.
+	* libgcc2.c (bitint_reduce_prec, bitint_mul_1, bitint_addmul_1,
+	__mulbitint3, bitint_negate, bitint_submul_1, __divmodbitint4):
+	Likewise.
+	* soft-fp/bitint.h (UBILtype): Change define into a typedef with
+	may_alias attribute.
+
+2024-01-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* unwind-dw2-fde-dip.c (_Unwind_Find_FDE): Do not try to use
+	_dl_find_object on nios2; it doesn't work.
+
 2023-12-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c++-minimal/README: New.

@@ -468,7 +468,7 @@ plugin_pragma_push_user_expression (cpp_reader *)
 	}
     }
 
-  if (unchanged_cfun || DECL_NONSTATIC_MEMBER_FUNCTION_P (changed_func_decl))
+  if (unchanged_cfun || DECL_OBJECT_MEMBER_FUNCTION_P (changed_func_decl))
     {
       /* Check whether the oracle supplies us with a "this", and if
 	 so, arrange for data members and this itself to be

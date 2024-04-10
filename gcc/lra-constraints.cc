@@ -261,6 +261,13 @@ enough_allocatable_hard_regs_p (enum reg_class reg_class,
   return false;
 }
 
+/* True if C is a non-empty register class that has too few registers
+   to be safely used as a reload target class.	*/
+#define SMALL_REGISTER_CLASS_P(C)		\
+  (ira_class_hard_regs_num [(C)] == 1		\
+   || (ira_class_hard_regs_num [(C)] >= 1	\
+       && targetm.class_likely_spilled_p (C)))
+
 /* Return true if REG satisfies (or will satisfy) reg class constraint
    CL.  Use elimination first if REG is a hard register.  If REG is a
    reload pseudo created by this constraints pass, assume that it will
@@ -318,7 +325,11 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class,
       common_class = ira_reg_class_subset[rclass][cl];
       if (new_class != NULL)
 	*new_class = common_class;
-      return enough_allocatable_hard_regs_p (common_class, reg_mode);
+      return (enough_allocatable_hard_regs_p (common_class, reg_mode)
+	      /* Do not permit reload insn operand matching (new_class == NULL
+		 case) if the new class is too small.  */
+	      && (new_class != NULL || common_class == rclass
+		  || !SMALL_REGISTER_CLASS_P (common_class)));
     }
 }
 
@@ -922,13 +933,6 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
    && GET_CODE (X) != HIGH			\
    && GET_MODE_SIZE (MODE).is_constant ()	\
    && !targetm.cannot_force_const_mem (MODE, X))
-
-/* True if C is a non-empty register class that has too few registers
-   to be safely used as a reload target class.	*/
-#define SMALL_REGISTER_CLASS_P(C)		\
-  (ira_class_hard_regs_num [(C)] == 1		\
-   || (ira_class_hard_regs_num [(C)] >= 1	\
-       && targetm.class_likely_spilled_p (C)))
 
 /* If REG is a reload pseudo, try to make its class satisfying CL.  */
 static void
@@ -2137,6 +2141,7 @@ process_alt_operands (int only_alternative)
   /* True if output stack pointer reload should be generated for the current
      alternative.  */
   bool curr_alt_out_sp_reload_p;
+  bool curr_alt_class_change_p;
   rtx op;
   /* The register when the operand is a subreg of register, otherwise the
      operand itself.  */
@@ -2223,6 +2228,7 @@ process_alt_operands (int only_alternative)
       early_clobbered_regs_num = 0;
       curr_alt_out_sp_reload_p = false;
       curr_reuse_alt_p = true;
+      curr_alt_class_change_p = false;
       
       for (nop = 0; nop < n_operands; nop++)
 	{
@@ -2247,6 +2253,7 @@ process_alt_operands (int only_alternative)
 	  bool scratch_p;
 	  machine_mode mode;
 	  enum constraint_num cn;
+	  bool class_change_p = false;
 
 	  opalt_num = nalt * n_operands + nop;
 	  if (curr_static_id->operand_alternative[opalt_num].anything_ok)
@@ -2630,9 +2637,16 @@ process_alt_operands (int only_alternative)
 				   (this_alternative_exclude_start_hard_regs,
 				    hard_regno[nop]))))
 			win = true;
-		      else if (hard_regno[nop] < 0
-			       && in_class_p (op, this_alternative, NULL))
-			win = true;
+		      else if (hard_regno[nop] < 0)
+			{
+			  if (in_class_p (op, this_alternative, NULL))
+			    win = true;
+			  else if (in_class_p (op, this_alternative, NULL, true))
+			    {
+			      class_change_p = true;
+			      win = true;
+			    }
+			}
 		    }
 		  break;
 		}
@@ -2647,6 +2661,15 @@ process_alt_operands (int only_alternative)
 	  if (win)
 	    {
 	      this_alternative_win = true;
+	      if (class_change_p)
+		{
+		  curr_alt_class_change_p = true;
+		  if (lra_dump_file != NULL)
+		    fprintf (lra_dump_file,
+			     "            %d Narrowing class: reject+=3\n",
+			     nop);
+		  reject += 3;
+		}
 	      if (operand_reg[nop] != NULL_RTX)
 		{
 		  if (hard_regno[nop] >= 0)
@@ -2675,7 +2698,7 @@ process_alt_operands (int only_alternative)
 			  reject++;
 			}
 		      if (in_class_p (operand_reg[nop],
-				      this_costly_alternative, NULL))
+				      this_costly_alternative, NULL, true))
 			{
 			  if (lra_dump_file != NULL)
 			    fprintf
@@ -3351,7 +3374,7 @@ process_alt_operands (int only_alternative)
 	  best_reload_sum = reload_sum;
 	  goal_alt_number = nalt;
 	}
-      if (losers == 0)
+      if (losers == 0 && !curr_alt_class_change_p)
 	/* Everything is satisfied.  Do not process alternatives
 	   anymore.  */
 	break;
@@ -4388,7 +4411,7 @@ curr_insn_transform (bool check_only_p)
 
 	if (REG_P (reg) && (regno = REGNO (reg)) >= FIRST_PSEUDO_REGISTER)
 	  {
-	    bool ok_p = in_class_p (reg, goal_alt[i], &new_class);
+	    bool ok_p = in_class_p (reg, goal_alt[i], &new_class, true);
 
 	    if (new_class != NO_REGS && get_reg_class (regno) != new_class)
 	      {
@@ -4468,23 +4491,18 @@ curr_insn_transform (bool check_only_p)
 	{
 	  if (goal_alt[i] == NO_REGS
 	      && REG_P (op)
-	      /* When we assign NO_REGS it means that we will not
-		 assign a hard register to the scratch pseudo by
-		 assigment pass and the scratch pseudo will be
-		 spilled.  Spilled scratch pseudos are transformed
-		 back to scratches at the LRA end.  */
-	      && ira_former_scratch_operand_p (curr_insn, i)
-	      && ira_former_scratch_p (REGNO (op)))
+	      && (regno = REGNO (op)) >= FIRST_PSEUDO_REGISTER
+	      /* We assigned a hard register to the pseudo in the past but now
+		 decided to spill it for the insn.  If the pseudo is used only
+		 in this insn, it is better to spill it here as we free hard
+		 registers for other pseudos referenced in the insn.  The most
+		 common case of this is a scratch register which will be
+		 transformed to scratch back at the end of LRA.  */
+	      && lra_get_regno_hard_regno (regno) >= 0
+	      && bitmap_single_bit_set_p (&lra_reg_info[regno].insn_bitmap))
 	    {
-	      int regno = REGNO (op);
 	      lra_change_class (regno, NO_REGS, "      Change to", true);
-	      if (lra_get_regno_hard_regno (regno) >= 0)
-		/* We don't have to mark all insn affected by the
-		   spilled pseudo as there is only one such insn, the
-		   current one.  */
-		reg_renumber[regno] = -1;
-	      lra_assert (bitmap_single_bit_set_p
-			  (&lra_reg_info[REGNO (op)].insn_bitmap));
+	      reg_renumber[regno] = -1;
 	    }
 	  /* We can do an optional reload.  If the pseudo got a hard
 	     reg, we might improve the code through inheritance.  If

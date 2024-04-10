@@ -8655,7 +8655,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
       && TREE_CODE (decl) == FUNCTION_DECL
       /* #pragma omp declare variant on methods handled in finish_struct
 	 instead.  */
-      && (!DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+      && (!DECL_OBJECT_MEMBER_FUNCTION_P (decl)
 	  || COMPLETE_TYPE_P (DECL_CONTEXT (decl))))
     if (tree attr = lookup_attribute ("omp declare variant base",
 				      DECL_ATTRIBUTES (decl)))
@@ -10516,6 +10516,7 @@ grokfndecl (tree ctype,
 	    int publicp,
 	    int inlinep,
 	    bool deletedp,
+	    bool xobj_func_p,
 	    special_function_kind sfk,
 	    bool funcdef_flag,
 	    bool late_return_type_p,
@@ -10525,7 +10526,6 @@ grokfndecl (tree ctype,
 	    location_t location)
 {
   tree decl;
-  int staticp = ctype && TREE_CODE (type) == FUNCTION_TYPE;
   tree t;
 
   if (location == UNKNOWN_LOCATION)
@@ -10723,12 +10723,9 @@ grokfndecl (tree ctype,
 		  (IDENTIFIER_POINTER (declarator))))))
     SET_DECL_LANGUAGE (decl, lang_c);
 
-  /* Should probably propagate const out from type to decl I bet (mrs).  */
-  if (staticp)
-    {
-      DECL_STATIC_FUNCTION_P (decl) = 1;
-      DECL_CONTEXT (decl) = ctype;
-    }
+  DECL_STATIC_FUNCTION_P (decl)
+    = !xobj_func_p && ctype && TREE_CODE (type) == FUNCTION_TYPE;
+  DECL_FUNCTION_XOBJ_FLAG (decl) = xobj_func_p;
 
   if (deletedp)
     DECL_DELETED_FN (decl) = 1;
@@ -10808,24 +10805,30 @@ grokfndecl (tree ctype,
 	TREE_TYPE (decl) = apply_memfn_quals (TREE_TYPE (decl),
 					      TYPE_UNQUALIFIED,
 					      REF_QUAL_NONE);
-
+      auto_diagnostic_group d;
       if (quals)
-	{
-	  error (ctype
+	error (!ctype
+	       ? G_("non-member function %qD cannot have cv-qualifier")
+	       : !xobj_func_p
 		 ? G_("static member function %qD cannot have cv-qualifier")
-		 : G_("non-member function %qD cannot have cv-qualifier"),
-		 decl);
-	  quals = TYPE_UNQUALIFIED;
-	}
-
+		 : G_("explicit object member function "
+		      "%qD cannot have cv-qualifier"),
+	       decl);
       if (rqual)
-	{
-	  error (ctype
+	error (!ctype
+	       ? G_("non-member function %qD cannot have ref-qualifier")
+	       : !xobj_func_p
 		 ? G_("static member function %qD cannot have ref-qualifier")
-		 : G_("non-member function %qD cannot have ref-qualifier"),
+		 : G_("explicit object member function "
+		      "%qD cannot have ref-qualifier"),
 		 decl);
-	  rqual = REF_QUAL_NONE;
-	}
+
+      if (xobj_func_p && (quals || rqual))
+	inform (DECL_SOURCE_LOCATION (DECL_ARGUMENTS (decl)),
+		"explicit object parameter declared here");
+      quals = TYPE_UNQUALIFIED;
+      rqual = REF_QUAL_NONE;
+
     }
 
   if (deduction_guide_p (decl))
@@ -13198,6 +13201,8 @@ grokdeclarator (const cp_declarator *declarator,
   if (attrlist)
     diagnose_misapplied_contracts (*attrlist);
 
+  /* Skip over build_memfn_type when a FUNCTION_DECL is an xobj memfn.  */
+  bool is_xobj_member_function = false;
   /* Determine the type of the entity declared by recurring on the
      declarator.  */
   for (; declarator; declarator = declarator->declarator)
@@ -13312,6 +13317,90 @@ grokdeclarator (const cp_declarator *declarator,
 	       there wasn't one.  */
 	    if (raises == error_mark_node)
 	      raises = NULL_TREE;
+
+	    auto find_xobj_parm = [](tree parm_list)
+	      {
+		/* There is no need to iterate over the list,
+		   only the first parm can be a valid xobj parm.  */
+		if (!parm_list || TREE_PURPOSE (parm_list) != this_identifier)
+		  return NULL_TREE;
+		/* If we make it here, we are looking at an xobj parm.
+
+		   Non-null 'purpose' usually means the parm has a default
+		   argument, we don't want to violate this assumption.  */
+		TREE_PURPOSE (parm_list) = NULL_TREE;
+		return TREE_VALUE (parm_list);
+	      };
+
+	    tree xobj_parm
+	      = find_xobj_parm (declarator->u.function.parameters);
+	    is_xobj_member_function = xobj_parm;
+
+	    if (xobj_parm && cxx_dialect < cxx23)
+	      pedwarn (DECL_SOURCE_LOCATION (xobj_parm), OPT_Wc__23_extensions,
+		       "explicit object member function only available "
+		       "with %<-std=c++23%> or %<-std=gnu++23%>");
+
+	    if (xobj_parm && decl_context == TYPENAME)
+	      {
+		/* We inform in every case, just differently depending on what
+		   case it is.  */
+		auto_diagnostic_group d;
+		bool ptr_type = true;
+		/* If declarator->kind is cdk_function and we are at the end of
+		   the declarator chain, we are looking at a function type.  */
+		if (!declarator->declarator)
+		  {
+		    error_at (DECL_SOURCE_LOCATION (xobj_parm),
+			      "a function type cannot "
+			      "have an explicit object parameter");
+		    ptr_type = false;
+		  }
+		else if (declarator->declarator->kind == cdk_pointer)
+		  error_at (DECL_SOURCE_LOCATION (xobj_parm),
+			    "a pointer to function type cannot "
+			    "have an explicit object parameter");
+		else if (declarator->declarator->kind == cdk_ptrmem)
+		  error_at (DECL_SOURCE_LOCATION (xobj_parm),
+			    "a pointer to member function type "
+			    "cannot have an explicit object parameter");
+		else
+		  gcc_unreachable ();
+
+		/* The locations being used here are probably not correct.  */
+		if (ptr_type)
+		  inform (DECL_SOURCE_LOCATION (xobj_parm),
+			  "the type of a pointer to explicit object member "
+			  "function is a regular pointer to function type");
+		else
+		  inform (DECL_SOURCE_LOCATION (xobj_parm),
+			  "the type of an explicit object "
+			  "member function is a regular function type");
+		/* Ideally we should synthesize the correct syntax
+		   for the user, perhaps this could be added later.  */
+	      }
+	    /* Since a valid xobj parm has its purpose cleared in find_xobj_parm
+	       the first parm node will never erroneously be detected here.  */
+	    {
+	      auto_diagnostic_group d;
+	      bool bad_xobj_parm_encountered = false;
+	      for (tree parm = declarator->u.function.parameters;
+		   parm && parm != void_list_node;
+		   parm = TREE_CHAIN (parm))
+		{
+		  if (TREE_PURPOSE (parm) != this_identifier)
+		    continue;
+		  bad_xobj_parm_encountered = true;
+		  gcc_rich_location bad_xobj_parm
+		    (DECL_SOURCE_LOCATION (TREE_VALUE (parm)));
+		  error_at (&bad_xobj_parm,
+			  "Only the first parameter of a member function "
+			  "can be declared as an explicit object parameter");
+		}
+	      if (bad_xobj_parm_encountered && xobj_parm)
+		inform (DECL_SOURCE_LOCATION (xobj_parm),
+			"Valid explicit object parameter declared here");
+	    }
 
 	    if (reqs)
 	      error_at (location_of (reqs), "requires-clause on return type");
@@ -13600,6 +13689,38 @@ grokdeclarator (const cp_declarator *declarator,
 		  explicitp = 2;
 	      }
 
+	    if (xobj_parm)
+	      {
+		if (!ctype
+		    && decl_context == NORMAL
+		    && (in_namespace
+			|| !declarator->declarator->u.id.qualifying_scope))
+		  error_at (DECL_SOURCE_LOCATION (xobj_parm),
+			    "a non-member function cannot have "
+			    "an explicit object parameter");
+		else
+		  {
+		    if (virtualp)
+		      {
+			auto_diagnostic_group d;
+			error_at (declspecs->locations[ds_virtual],
+				  "an explicit object member function cannot "
+				  "be %<virtual%>");
+			inform (DECL_SOURCE_LOCATION (xobj_parm),
+				"explicit object parameter declared here");
+			virtualp = false;
+		      }
+		    if (staticp >= 2)
+		      {
+			auto_diagnostic_group d;
+			error_at (declspecs->locations[ds_storage_class],
+				  "an explicit object member function cannot "
+				  "be %<static%>");
+			inform (DECL_SOURCE_LOCATION (xobj_parm),
+				"explicit object parameter declared here");
+		      }
+		  }
+	      }
 	    tree pushed_scope = NULL_TREE;
 	    if (funcdecl_p
 		&& decl_context != FIELD
@@ -14386,6 +14507,8 @@ grokdeclarator (const cp_declarator *declarator,
     }
 
   if (ctype && TREE_CODE (type) == FUNCTION_TYPE && staticp < 2
+      /* Don't convert xobj member functions to METHOD_TYPE.  */
+      && !is_xobj_member_function
       && !(unqualified_id
 	   && identifier_p (unqualified_id)
 	   && IDENTIFIER_NEWDEL_OP_P (unqualified_id)))
@@ -14607,7 +14730,8 @@ grokdeclarator (const cp_declarator *declarator,
 			       friendp ? -1 : 0, friendp, publicp,
 			       inlinep | (2 * constexpr_p) | (4 * concept_p)
 				       | (8 * consteval_p),
-			       initialized == SD_DELETED, sfk,
+			       initialized == SD_DELETED,
+			       is_xobj_member_function, sfk,
 			       funcdef_flag, late_return_type_p,
 			       template_count, in_namespace,
 			       attrlist, id_loc);
@@ -14942,8 +15066,8 @@ grokdeclarator (const cp_declarator *declarator,
 			   inlinep | (2 * constexpr_p) | (4 * concept_p)
 				   | (8 * consteval_p),
 			   initialized == SD_DELETED,
-                           sfk,
-                           funcdef_flag,
+			   is_xobj_member_function, sfk,
+			   funcdef_flag,
 			   late_return_type_p,
 			   template_count, in_namespace, attrlist,
 			   id_loc);
@@ -15539,7 +15663,19 @@ copy_fn_p (const_tree d)
       && DECL_NAME (d) != assign_op_identifier)
     return 0;
 
-  args = FUNCTION_FIRST_USER_PARMTYPE (d);
+  if (DECL_XOBJ_MEMBER_FUNCTION_P (d))
+    {
+      tree object_param = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (d)));
+      if (!TYPE_REF_P (object_param)
+	  || TYPE_REF_IS_RVALUE (object_param)
+	  /* Reject unrelated object parameters. */
+	  || TYPE_MAIN_VARIANT (TREE_TYPE (object_param)) != DECL_CONTEXT (d)
+	  || CP_TYPE_CONST_P (TREE_TYPE (object_param)))
+	return 0;
+      args = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (d)));
+    }
+  else
+    args = FUNCTION_FIRST_USER_PARMTYPE (d);
   if (!args)
     return 0;
 
@@ -15614,7 +15750,19 @@ move_signature_fn_p (const_tree d)
       && DECL_NAME (d) != assign_op_identifier)
     return 0;
 
-  args = FUNCTION_FIRST_USER_PARMTYPE (d);
+  if (DECL_XOBJ_MEMBER_FUNCTION_P (d))
+    {
+      tree object_param = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (d)));
+      if (!TYPE_REF_P (object_param)
+	  || TYPE_REF_IS_RVALUE (object_param)
+	  /* Reject unrelated object parameters. */
+	  || TYPE_MAIN_VARIANT (TREE_TYPE (object_param)) != DECL_CONTEXT (d)
+	  || CP_TYPE_CONST_P (TREE_TYPE (object_param)))
+	return 0;
+      args = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (d)));
+    }
+  else
+    args = FUNCTION_FIRST_USER_PARMTYPE (d);
   if (!args)
     return 0;
 
@@ -15645,7 +15793,7 @@ grok_special_member_properties (tree decl)
   tree class_type;
 
   if (TREE_CODE (decl) == USING_DECL
-      || !DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+      || !DECL_OBJECT_MEMBER_FUNCTION_P (decl))
     return;
 
   class_type = DECL_CONTEXT (decl);
@@ -15744,7 +15892,7 @@ bool
 grok_op_properties (tree decl, bool complain)
 {
   tree argtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
-  bool methodp = TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE;
+  bool const methodp = DECL_IOBJ_MEMBER_FUNCTION_P (decl);
   tree name = DECL_NAME (decl);
   location_t loc = DECL_SOURCE_LOCATION (decl);
 
@@ -15837,7 +15985,7 @@ grok_op_properties (tree decl, bool complain)
   /* An operator function must either be a non-static member function
      or have at least one parameter of a class, a reference to a class,
      an enumeration, or a reference to an enumeration.  13.4.0.6 */
-  if (! methodp || DECL_STATIC_FUNCTION_P (decl))
+  if (!DECL_OBJECT_MEMBER_FUNCTION_P (decl))
     {
       if (operator_code == TYPE_EXPR
 	  || operator_code == COMPONENT_REF
@@ -15926,7 +16074,7 @@ grok_op_properties (tree decl, bool complain)
 	}
       ++arity;
     }
-
+  /* FIXME: We need tests for these errors with xobj member functions.  */
   /* Verify correct number of arguments.  */
   switch (op_flags)
     {
@@ -17835,7 +17983,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   /* Start the statement-tree, start the tree now.  */
   DECL_SAVED_TREE (decl1) = push_stmt_list ();
 
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (decl1))
     {
       /* We know that this was set up by `grokclassfn'.  We do not
 	 wait until `store_parm_decls', since evil parse errors may
@@ -18304,7 +18452,7 @@ outer_curly_brace_block (tree fndecl)
 static void
 record_key_method_defined (tree fndecl)
 {
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+  if (DECL_OBJECT_MEMBER_FUNCTION_P (fndecl)
       && DECL_VIRTUAL_P (fndecl)
       && !processing_template_decl)
     {

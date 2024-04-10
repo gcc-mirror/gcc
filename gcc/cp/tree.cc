@@ -298,7 +298,7 @@ lvalue_kind (const_tree ref)
     case FUNCTION_DECL:
       /* All functions (except non-static-member functions) are
 	 lvalues.  */
-      return (DECL_NONSTATIC_MEMBER_FUNCTION_P (ref)
+      return (DECL_IOBJ_MEMBER_FUNCTION_P (ref)
 	      ? clk_none : clk_ordinary);
 
     case BASELINK:
@@ -3677,7 +3677,7 @@ build_min_non_dep_op_overload (enum tree_code op,
   nargs = call_expr_nargs (non_dep);
 
   expected_nargs = cp_tree_code_length (op);
-  if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE
+  if (DECL_OBJECT_MEMBER_FUNCTION_P (overload)
       /* For ARRAY_REF, operator[] is either a non-static member or newly
 	 static member, never out of class and for the static member case
 	 if user uses single index the operator[] needs to have a single
@@ -3695,7 +3695,7 @@ build_min_non_dep_op_overload (enum tree_code op,
   releasing_vec args;
   va_start (p, overload);
 
-  if (TREE_CODE (TREE_TYPE (overload)) == FUNCTION_TYPE)
+  if (!DECL_OBJECT_MEMBER_FUNCTION_P (overload))
     {
       fn = overload;
       if (op == ARRAY_REF)
@@ -3706,7 +3706,7 @@ build_min_non_dep_op_overload (enum tree_code op,
 	  vec_safe_push (args, arg);
 	}
     }
-  else if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE)
+  else
     {
       tree object = va_arg (p, tree);
       tree binfo = TYPE_BINFO (TREE_TYPE (object));
@@ -3719,8 +3719,6 @@ build_min_non_dep_op_overload (enum tree_code op,
 	  vec_safe_push (args, arg);
 	}
     }
-  else
-    gcc_unreachable ();
 
   va_end (p);
   call = build_min_non_dep_call_vec (non_dep, fn, args);
@@ -3747,7 +3745,7 @@ build_min_non_dep_op_overload (tree non_dep, tree overload, tree object,
 
   unsigned int nargs = call_expr_nargs (non_dep);
   tree fn = overload;
-  if (TREE_CODE (TREE_TYPE (overload)) == METHOD_TYPE)
+  if (DECL_OBJECT_MEMBER_FUNCTION_P (overload))
     {
       tree binfo = TYPE_BINFO (TREE_TYPE (object));
       tree method = build_baselink (binfo, binfo, overload, NULL_TREE);

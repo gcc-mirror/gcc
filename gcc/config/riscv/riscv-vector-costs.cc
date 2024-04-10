@@ -872,19 +872,6 @@ costs::costs (vec_info *vinfo, bool costing_for_scalar)
 void
 costs::analyze_loop_vinfo (loop_vec_info loop_vinfo)
 {
-  /* Record the number of times that the vector loop would execute,
-     if known.  */
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  auto scalar_niters = max_stmt_executions_int (loop);
-  if (scalar_niters >= 0)
-    {
-      unsigned int vf = vect_vf_for_cost (loop_vinfo);
-      if (LOOP_VINFO_LENS (loop_vinfo).is_empty ())
-	m_num_vector_iterations = scalar_niters / vf;
-      else
-	m_num_vector_iterations = CEIL (scalar_niters, vf);
-    }
-
   /* Detect whether we're vectorizing for VLA and should apply the unrolling
      heuristic described above m_unrolled_vls_niters.  */
   record_potential_vls_unrolling (loop_vinfo);
@@ -994,7 +981,8 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 		     vect_vf_for_cost (other_loop_vinfo));
 
   /* Apply the unrolling heuristic described above m_unrolled_vls_niters.  */
-  if (bool (m_unrolled_vls_stmts) != bool (other->m_unrolled_vls_stmts))
+  if (bool (m_unrolled_vls_stmts) != bool (other->m_unrolled_vls_stmts)
+      && m_cost_type != other->m_cost_type)
     {
       bool this_prefer_unrolled = this->prefer_unrolled_loop ();
       bool other_prefer_unrolled = other->prefer_unrolled_loop ();
@@ -1041,8 +1029,40 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 	    }
 	}
     }
+  /* If NITERS is unknown, we should not use VLS modes to vectorize
+     the loop since we don't support partial vectors for VLS modes,
+     that is, we will have full vectors (VLSmodes) on loop body
+     and partial vectors (VLAmodes) on loop epilogue which is very
+     inefficient.  Instead, we should apply partial vectors (VLAmodes)
+     on loop body without an epilogue on unknown NITERS loop.  */
+  else if (!LOOP_VINFO_NITERS_KNOWN_P (this_loop_vinfo)
+	   && m_cost_type == VLS_VECTOR_COST)
+    return false;
 
   return vector_costs::better_main_loop_than_p (other);
+}
+
+/* Adjust vectorization cost after calling riscv_builtin_vectorization_cost.
+   For some statement, we would like to further fine-grain tweak the cost on
+   top of riscv_builtin_vectorization_cost handling which doesn't have any
+   information on statement operation codes etc.  */
+
+static unsigned
+adjust_stmt_cost (enum vect_cost_for_stmt kind, tree vectype, int stmt_cost)
+{
+  const cpu_vector_cost *costs = get_vector_costs ();
+  switch (kind)
+    {
+    case scalar_to_vec:
+      return stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->FR2VR
+						  : costs->regmove->GR2VR);
+    case vec_to_scalar:
+      return stmt_cost += (FLOAT_TYPE_P (vectype) ? costs->regmove->VR2FR
+						  : costs->regmove->VR2GR);
+    default:
+      break;
+    }
+  return stmt_cost;
 }
 
 unsigned
@@ -1072,14 +1092,74 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	 as one iteration of the VLA loop.  */
       if (where == vect_body && m_unrolled_vls_niters)
 	m_unrolled_vls_stmts += count * m_unrolled_vls_niters;
+
+      if (vectype)
+	stmt_cost = adjust_stmt_cost (kind, vectype, stmt_cost);
     }
 
   return record_stmt_cost (stmt_info, where, count * stmt_cost);
 }
 
+/* For some target specific vectorization cost which can't be handled per stmt,
+   we check the requisite conditions and adjust the vectorization cost
+   accordingly if satisfied.  One typical example is to model model and adjust
+   loop_len cost for known_lt (NITERS, VF).  */
+
+void
+costs::adjust_vect_cost_per_loop (loop_vec_info loop_vinfo)
+{
+  if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo)
+      && !LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo))
+    {
+      /* In middle-end loop vectorizer, we don't count the loop_len cost in
+	 vect_estimate_min_profitable_iters when NITERS < VF, that is, we only
+	 count cost of len that we need to iterate loop more than once with VF.
+	 It's correct for most of the cases:
+
+	 E.g. VF = [4, 4]
+	   for (int i = 0; i < 3; i ++)
+	     a[i] += b[i];
+
+	 We don't need to cost MIN_EXPR or SELECT_VL for the case above.
+
+	 However, for some inefficient vectorized cases, it does use MIN_EXPR
+	 to generate len.
+
+	 E.g. VF = [256, 256]
+
+	 Loop body:
+	   # loop_len_110 = PHI <18(2), _119(11)>
+	   ...
+	   _117 = MIN_EXPR <ivtmp_114, 18>;
+	   _118 = 18 - _117;
+	   _119 = MIN_EXPR <_118, POLY_INT_CST [256, 256]>;
+	   ...
+
+	 Epilogue:
+	   ...
+	   _112 = .VEC_EXTRACT (vect_patt_27.14_109, _111);
+
+	 We cost 1 unconditionally for this situation like other targets which
+	 apply mask as the loop control.  */
+      rgroup_controls *rgc;
+      unsigned int num_vectors_m1;
+      unsigned int body_stmts = 0;
+      FOR_EACH_VEC_ELT (LOOP_VINFO_LENS (loop_vinfo), num_vectors_m1, rgc)
+	if (rgc->type)
+	  body_stmts += num_vectors_m1 + 1;
+
+      add_stmt_cost (body_stmts, scalar_stmt, NULL, NULL, NULL_TREE, 0,
+		     vect_body);
+    }
+}
+
 void
 costs::finish_cost (const vector_costs *scalar_costs)
 {
+  if (loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo))
+    {
+      adjust_vect_cost_per_loop (loop_vinfo);
+    }
   vector_costs::finish_cost (scalar_costs);
 }
 

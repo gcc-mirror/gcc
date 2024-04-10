@@ -120,9 +120,9 @@ struct loongarch_builtin_description
 AVAIL_ALL (hard_float, TARGET_HARD_FLOAT_ABI)
 AVAIL_ALL (lsx, ISA_HAS_LSX)
 AVAIL_ALL (lasx, ISA_HAS_LASX)
-AVAIL_ALL (frecipe, TARGET_FRECIPE && TARGET_HARD_FLOAT_ABI)
-AVAIL_ALL (lsx_frecipe, ISA_HAS_LSX && TARGET_FRECIPE)
-AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && TARGET_FRECIPE)
+AVAIL_ALL (frecipe, ISA_HAS_FRECIPE && TARGET_HARD_FLOAT_ABI)
+AVAIL_ALL (lsx_frecipe, ISA_HAS_LSX && ISA_HAS_FRECIPE)
+AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && ISA_HAS_FRECIPE)
 
 /* Construct a loongarch_builtin_description from the given arguments.
 

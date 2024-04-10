@@ -85,11 +85,6 @@ private:
   unsigned HOST_WIDE_INT m_unrolled_vls_niters = 0;
   unsigned HOST_WIDE_INT m_unrolled_vls_stmts = 0;
 
-  /* If we're vectorizing a loop that executes a constant number of times,
-     this variable gives the number of times that the vector loop would
-     iterate, otherwise it is zero.  */
-  uint64_t m_num_vector_iterations = 0;
-
   void analyze_loop_vinfo (loop_vec_info);
   void record_potential_vls_unrolling (loop_vec_info);
   bool prefer_unrolled_loop () const;
@@ -101,6 +96,8 @@ private:
      V_REGS spills according to the analysis.  */
   bool m_has_unexpected_spills_p = false;
   void record_potential_unexpected_spills (loop_vec_info);
+
+  void adjust_vect_cost_per_loop (loop_vec_info);
 };
 
 } // namespace riscv_vector

@@ -5307,27 +5307,51 @@ parse_do_block (void)
   do_op = new_st.op;
   s.ext.end_do_label = new_st.label1;
 
-  if (new_st.ext.iterator != NULL)
+  if (do_op == EXEC_DO_CONCURRENT)
+    {
+      gfc_forall_iterator *fa;
+      for (fa = new_st.ext.forall_iterator; fa; fa = fa->next)
+	{
+	  /* Apply unroll only to innermost loop (first control
+	     variable).  */
+	  if (directive_unroll != -1)
+	    {
+	      fa->annot.unroll = directive_unroll;
+	      directive_unroll = -1;
+	    }
+	  if (directive_ivdep)
+	    fa->annot.ivdep = directive_ivdep;
+	  if (directive_vector)
+	    fa->annot.vector = directive_vector;
+	  if (directive_novector)
+	    fa->annot.novector = directive_novector;
+	}
+      directive_ivdep = false;
+      directive_vector = false;
+      directive_novector = false;
+      stree = NULL;
+    }
+  else if (new_st.ext.iterator != NULL)
     {
       stree = new_st.ext.iterator->var->symtree;
       if (directive_unroll != -1)
 	{
-	  new_st.ext.iterator->unroll = directive_unroll;
+	  new_st.ext.iterator->annot.unroll = directive_unroll;
 	  directive_unroll = -1;
 	}
       if (directive_ivdep)
 	{
-	  new_st.ext.iterator->ivdep = directive_ivdep;
+	  new_st.ext.iterator->annot.ivdep = directive_ivdep;
 	  directive_ivdep = false;
 	}
       if (directive_vector)
 	{
-	  new_st.ext.iterator->vector = directive_vector;
+	  new_st.ext.iterator->annot.vector = directive_vector;
 	  directive_vector = false;
 	}
       if (directive_novector)
 	{
-	  new_st.ext.iterator->novector = directive_novector;
+	  new_st.ext.iterator->annot.novector = directive_novector;
 	  directive_novector = false;
 	}
     }

@@ -276,3 +276,11 @@ LIBGCCJIT_ABI_25 {
   global:
     gcc_jit_type_get_restrict;
 } LIBGCCJIT_ABI_24;
+
+LIBGCCJIT_ABI_26 {
+  global:
+    gcc_jit_function_add_attribute;
+    gcc_jit_function_add_string_attribute;
+    gcc_jit_lvalue_add_string_attribute;
+    gcc_jit_function_add_integer_array_attribute;
+} LIBGCCJIT_ABI_25;

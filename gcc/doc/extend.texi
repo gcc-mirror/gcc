@@ -1594,7 +1594,7 @@ from @w{@uref{https://www.nongnu.org/avr-libc/user-manual/,AVR-LibC}}
 together with attribute @code{progmem}.
 
 @noindent
-@b{Limitations and caveats}
+@b{Limitations and Caveats}
 
 @itemize
 @item
@@ -1608,6 +1608,8 @@ supports reading across the 64@tie{}KiB flash segment boundaries is
 If you use one of the @code{__flash@var{N}} address spaces
 you must arrange your linker script to locate the
 @code{.progmem@var{N}.data} sections according to your needs.
+For an example, see the
+@w{@uref{https://gcc.gnu.org/wiki/avr-gcc#Address_Spaces,avr-gcc wiki}}
 
 @item
 Any data or pointers to the non-generic address spaces must
@@ -8288,21 +8290,20 @@ at all.
 @item io
 @itemx io (@var{addr})
 Variables with the @code{io} attribute are used to address
-memory-mapped peripherals in the io address range.
+memory-mapped peripherals in the I/O address range.
+No memory is allocated.
 If an address is specified, the variable
 is assigned that address, and the value is interpreted as an
 address in the data address space.
 Example:
 
 @smallexample
-volatile int porta __attribute__((io (0x22)));
+volatile int porta __attribute__((io (__AVR_SFR_OFFSET__ + 0x2)));
 @end smallexample
 
-The address specified in the address in the data address range.
-
-Otherwise, the variable it is not assigned an address, but the
-compiler will still use in/out instructions where applicable,
-assuming some other module assigns an address in the io address range.
+Otherwise, the variable is not assigned an address, but the
+compiler will still use @code{in} and @code{out} instructions where applicable,
+assuming some other module assigns an address in the I/O address range.
 Example:
 
 @smallexample
@@ -8318,13 +8319,27 @@ allowing the use of @code{cbi}, @code{sbi}, @code{sbic} and @code{sbis}
 instructions.
 
 @cindex @code{address} variable attribute, AVR
-@item address
-@itemx address (@var{addr})
-Variables with the @code{address} attribute are used to address
-memory-mapped peripherals that may lie outside the io address range.
+@item address (@var{addr})
+Variables with the @code{address} attribute can be used to address
+memory-mapped peripherals that may lie outside the I/O address range.
+Just like with the @code{io} and @code{io_low} attributes, no memory is
+allocated.
 
 @smallexample
 volatile int porta __attribute__((address (0x600)));
+@end smallexample
+
+This attribute can also be used to define symbols in C/C++
+code which otherwise would require assembly, a linker description file
+or command line options like @code{-Wl,--defsym,a_symbol=@var{value}}.
+For example,
+@smallexample
+int a_symbol __attribute__((weak, address (1234)));
+@end smallexample
+will be compiled to
+@smallexample
+.weak a_symbol
+a_symbol = 1234
 @end smallexample
 
 @cindex @code{absdata} variable attribute, AVR

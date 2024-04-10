@@ -1008,7 +1008,7 @@ shared_member_p (tree t)
 	    /* Conservatively assume a dependent using-declaration
 	       might resolve to a non-static member.  */
 	    return false;
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	  if (DECL_OBJECT_MEMBER_FUNCTION_P (decl))
 	    return false;
 	}
       return true;
@@ -1264,7 +1264,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
       decl = strip_using_decl (decl);
       /* A dependent USING_DECL will be checked after tsubsting.  */
       if (TREE_CODE (decl) != USING_DECL
-	  && !DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
+	  && !DECL_IOBJ_MEMBER_FUNCTION_P (decl)
 	  && !perform_or_defer_access_check (basetype_path, decl, decl,
 					     complain, afi))
 	return error_mark_node;
@@ -1737,7 +1737,7 @@ field_access_p (tree component_ref, tree field_decl, tree field_type)
     return false;
 
   tree ptr = STRIP_NOPS (TREE_OPERAND (indirect_ref, 0));
-  if (!is_this_parameter (ptr))
+  if (!is_object_parameter (ptr))
     return false;
 
   /* Must access the correct field.  */
@@ -1817,6 +1817,17 @@ reference_accessor_p (tree init_expr, tree field_decl, tree field_type,
   return true;
 }
 
+/* Return the class of the `this' or explicit object parameter of FN.  */
+
+static tree
+class_of_object_parm (const_tree fn)
+{
+  tree fntype = TREE_TYPE (fn);
+  if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+    return non_reference (TREE_VALUE (TYPE_ARG_TYPES (fntype)));
+  return class_of_this_parm (fntype);
+}
+
 /* Return true if FN is an accessor method for FIELD_DECL.
    i.e. a method of the form { return FIELD; }, with no
    conversions.
@@ -1834,15 +1845,14 @@ field_accessor_p (tree fn, tree field_decl, bool const_p)
   if (TREE_CODE (field_decl) != FIELD_DECL)
     return false;
 
-  tree fntype = TREE_TYPE (fn);
-  if (TREE_CODE (fntype) != METHOD_TYPE)
+  if (!DECL_OBJECT_MEMBER_FUNCTION_P (fn))
     return false;
 
   /* If the field is accessed via a const "this" argument, verify
      that the "this" parameter is const.  */
   if (const_p)
     {
-      tree this_class = class_of_this_parm (fntype);
+      tree this_class = class_of_object_parm (fn);
       if (!TYPE_READONLY (this_class))
 	return false;
     }
@@ -2223,10 +2233,13 @@ look_for_overrides_here (tree type, tree fndecl)
 	/* Not a virtual.  */;
       else if (DECL_CONTEXT (fn) != type)
 	/* Introduced with a using declaration.  */;
-      else if (DECL_STATIC_FUNCTION_P (fndecl))
+      else if (DECL_STATIC_FUNCTION_P (fndecl)
+	       || DECL_XOBJ_MEMBER_FUNCTION_P (fndecl))
 	{
 	  tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	  tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	  dtypes = DECL_XOBJ_MEMBER_FUNCTION_P (fndecl) ? TREE_CHAIN (dtypes)
+							: dtypes;
 	  if (compparms (TREE_CHAIN (btypes), dtypes))
 	    return fn;
 	}
@@ -2253,6 +2266,15 @@ look_for_overrides_r (tree type, tree fndecl)
 	  auto_diagnostic_group d;
 	  error ("%q+#D cannot be declared", fndecl);
 	  error ("  since %q+#D declared in base class", fn);
+	}
+      else if (DECL_XOBJ_MEMBER_FUNCTION_P (fndecl))
+	{
+	  auto_diagnostic_group d;
+	  error_at (DECL_SOURCE_LOCATION (fndecl),
+		    "explicit object member function "
+		    "overrides virtual function");
+	  inform (DECL_SOURCE_LOCATION (fn),
+		  "virtual function declared here");
 	}
       else
 	{

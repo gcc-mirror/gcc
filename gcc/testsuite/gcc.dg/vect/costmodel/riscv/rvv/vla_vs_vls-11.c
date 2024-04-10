@@ -3,7 +3,7 @@
 
 #include <stdint-gcc.h>
 
-#define N 40
+#define N 64
 
 int a[N];
 
@@ -22,7 +22,6 @@ foo (){
   return 0;
 }
 
-/* { dg-final { scan-assembler-times {vsetivli\s+zero,\s*8,\s*e32,\s*m2,\s*t[au],\s*m[au]} 1 } } */
 /* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e32,\s*m8,\s*t[au],\s*m[au]} 1 } } */
-/* { dg-final { scan-assembler-times {vsetivli} 1 } } */
+/* { dg-final { scan-assembler-not {vsetivli} } } */
 /* { dg-final { scan-assembler-times {vsetvli} 1 } } */

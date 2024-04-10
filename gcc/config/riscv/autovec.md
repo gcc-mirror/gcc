@@ -2345,39 +2345,39 @@
 ;;  op[0] = (narrow) ((wide) op[1] + (wide) op[2] + 1)) >> 1;
 ;; -------------------------------------------------------------------------
 
-(define_expand "<u>avg<v_double_trunc>3_floor"
+(define_expand "avg<v_double_trunc>3_floor"
  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand")
    (truncate:<V_DOUBLE_TRUNC>
-    (<ext_to_rshift>:VWEXTI
+    (ashiftrt:VWEXTI
      (plus:VWEXTI
-      (any_extend:VWEXTI
+      (sign_extend:VWEXTI
        (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
-      (any_extend:VWEXTI
+      (sign_extend:VWEXTI
        (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))))))]
   "TARGET_VECTOR"
 {
   /* First emit a widening addition.  */
   rtx tmp1 = gen_reg_rtx (<MODE>mode);
   rtx ops1[] = {tmp1, operands[1], operands[2]};
-  insn_code icode = code_for_pred_dual_widen (PLUS, <CODE>, <MODE>mode);
+  insn_code icode = code_for_pred_dual_widen (PLUS, SIGN_EXTEND, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops1);
 
   /* Then a narrowing shift.  */
   rtx ops2[] = {operands[0], tmp1, const1_rtx};
-  icode = code_for_pred_narrow_scalar (<EXT_TO_RSHIFT>, <MODE>mode);
+  icode = code_for_pred_narrow_scalar (ASHIFTRT, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops2);
   DONE;
 })
 
-(define_expand "<u>avg<v_double_trunc>3_ceil"
+(define_expand "avg<v_double_trunc>3_ceil"
  [(set (match_operand:<V_DOUBLE_TRUNC> 0 "register_operand")
    (truncate:<V_DOUBLE_TRUNC>
-    (<ext_to_rshift>:VWEXTI
+    (ashiftrt:VWEXTI
      (plus:VWEXTI
       (plus:VWEXTI
-       (any_extend:VWEXTI
+       (sign_extend:VWEXTI
 	(match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
-       (any_extend:VWEXTI
+       (sign_extend:VWEXTI
 	(match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
       (const_int 1)))))]
   "TARGET_VECTOR"
@@ -2385,7 +2385,7 @@
   /* First emit a widening addition.  */
   rtx tmp1 = gen_reg_rtx (<MODE>mode);
   rtx ops1[] = {tmp1, operands[1], operands[2]};
-  insn_code icode = code_for_pred_dual_widen (PLUS, <CODE>, <MODE>mode);
+  insn_code icode = code_for_pred_dual_widen (PLUS, SIGN_EXTEND, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops1);
 
   /* Then add 1.  */
@@ -2396,8 +2396,34 @@
 
   /* Finally, a narrowing shift.  */
   rtx ops3[] = {operands[0], tmp2, const1_rtx};
-  icode = code_for_pred_narrow_scalar (<EXT_TO_RSHIFT>, <MODE>mode);
+  icode = code_for_pred_narrow_scalar (ASHIFTRT, <MODE>mode);
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops3);
+  DONE;
+})
+
+;; csrwi vxrm, 2
+;; vaaddu.vv vd, vs2, vs1
+(define_expand "uavg<mode>3_floor"
+ [(match_operand:V_VLSI 0 "register_operand")
+  (match_operand:V_VLSI 1 "register_operand")
+  (match_operand:V_VLSI 2 "register_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred (UNSPEC_VAADDU, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RDN, operands);
+  DONE;
+})
+
+;; csrwi vxrm, 0
+;; vaaddu.vv vd, vs2, vs1
+(define_expand "uavg<mode>3_ceil"
+ [(match_operand:V_VLSI 0 "register_operand")
+  (match_operand:V_VLSI 1 "register_operand")
+  (match_operand:V_VLSI 2 "register_operand")]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred (UNSPEC_VAADDU, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_VXRM_RNU, operands);
   DONE;
 })
 

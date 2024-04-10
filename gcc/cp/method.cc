@@ -795,13 +795,19 @@ do_build_copy_assign (tree fndecl)
   compound_stmt = begin_compound_stmt (0);
   parm = convert_from_reference (parm);
 
+  /* If we are building a defaulted xobj copy/move assignment operator then
+     current_class_ref will not have been set up.
+     Kind of an icky hack, but what can ya do?  */
+  tree const class_ref = DECL_XOBJ_MEMBER_FUNCTION_P (fndecl)
+    ? cp_build_fold_indirect_ref (DECL_ARGUMENTS (fndecl)) : current_class_ref;
+
   if (trivial
       && is_empty_class (current_class_type))
     /* Don't copy the padding byte; it might not have been allocated
        if *this is a base subobject.  */;
   else if (trivial)
     {
-      tree t = build2 (MODIFY_EXPR, void_type_node, current_class_ref, parm);
+      tree t = build2 (MODIFY_EXPR, void_type_node, class_ref, parm);
       finish_expr_stmt (t);
     }
   else
@@ -826,7 +832,7 @@ do_build_copy_assign (tree fndecl)
 	  /* Call the base class assignment operator.  */
 	  releasing_vec parmvec (make_tree_vector_single (converted_parm));
 	  finish_expr_stmt
-	    (build_special_member_call (current_class_ref,
+	    (build_special_member_call (class_ref,
 					assign_op_identifier,
 					&parmvec,
 					base_binfo,
@@ -839,7 +845,7 @@ do_build_copy_assign (tree fndecl)
 	   fields;
 	   fields = DECL_CHAIN (fields))
 	{
-	  tree comp = current_class_ref;
+	  tree comp = class_ref;
 	  tree init = parm;
 	  tree field = fields;
 	  tree expr_type;
@@ -898,7 +904,7 @@ do_build_copy_assign (tree fndecl)
 	  finish_expr_stmt (init);
 	}
     }
-  finish_return_stmt (current_class_ref);
+  finish_return_stmt (class_ref);
   finish_compound_stmt (compound_stmt);
 }
 
@@ -1187,7 +1193,7 @@ early_check_defaulted_comparison (tree fn)
 	ok = false;
     }
 
-  bool mem = DECL_NONSTATIC_MEMBER_FUNCTION_P (fn);
+  bool mem = DECL_IOBJ_MEMBER_FUNCTION_P (fn);
   if (mem && type_memfn_quals (TREE_TYPE (fn)) != TYPE_QUAL_CONST)
     {
       error_at (loc, "defaulted %qD must be %<const%>", fn);
@@ -1230,7 +1236,7 @@ early_check_defaulted_comparison (tree fn)
 
   if (saw_bad || (saw_byval && saw_byref))
     {
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+      if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
 	error_at (loc, "defaulted member %qD must have parameter type "
 		  "%<const %T&%>", fn, ctx);
       else if (saw_bad)
@@ -3380,10 +3386,32 @@ defaulted_late_check (tree fn)
 					    NULL, NULL);
   tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
 
+  /* Includes special handling for a default xobj operator.  */
+  auto compare_fn_params = [](tree fn, tree implicit_fn){
+    tree fn_parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
+    tree implicit_fn_parms = TYPE_ARG_TYPES (TREE_TYPE (implicit_fn));
+
+    if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+      {
+	tree fn_obj_ref_type = TREE_VALUE (fn_parms);
+	/* We can't default xobj operators with an xobj parameter that is not
+	   an lvalue reference, even if it would correspond.  */
+	if (!TYPE_REF_P (fn_obj_ref_type)
+	    || TYPE_REF_IS_RVALUE (fn_obj_ref_type)
+	    || !object_parms_correspond (fn, implicit_fn,
+					 DECL_CONTEXT (implicit_fn)))
+	  return false;
+	/* We just compared the object parameters, skip over them before
+	   passing to compparms.  */
+	fn_parms = TREE_CHAIN (fn_parms);
+	implicit_fn_parms = TREE_CHAIN (implicit_fn_parms);
+      }
+    return compparms (fn_parms, implicit_fn_parms);
+  };
+
   if (!same_type_p (TREE_TYPE (TREE_TYPE (fn)),
 		    TREE_TYPE (TREE_TYPE (implicit_fn)))
-      || !compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
-		     TYPE_ARG_TYPES (TREE_TYPE (implicit_fn))))
+      || !compare_fn_params (fn, implicit_fn))
     {
       error ("defaulted declaration %q+D does not match the "
 	     "expected signature", fn);
@@ -3472,6 +3500,10 @@ defaultable_fn_check (tree fn)
       if (!early_check_defaulted_comparison (fn))
 	return false;
     }
+
+  /* FIXME: We need to check for xobj member functions here to give better
+     diagnostics for weird cases where unrelated xobj parameters are given.
+     We just want to do better than 'cannot be defaulted'.  */
 
   if (kind == sfk_none)
     {
@@ -3606,7 +3638,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
 tree
 skip_artificial_parms_for (const_tree fn, tree list)
 {
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
     list = TREE_CHAIN (list);
   else
     return list;
@@ -3626,7 +3658,7 @@ num_artificial_parms_for (const_tree fn)
 {
   int count = 0;
 
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
     count++;
   else
     return 0;

@@ -3169,7 +3169,30 @@ finish_this_expr (void)
     return rvalue (result);
 
   tree fn = current_nonlambda_function ();
-  if (fn && DECL_STATIC_FUNCTION_P (fn))
+  if (fn && DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+    {
+      auto_diagnostic_group d;
+      error ("%<this%> is unavailable for explicit object member "
+	     "functions");
+      tree xobj_parm = DECL_ARGUMENTS (fn);
+      gcc_assert (xobj_parm);
+      tree parm_name = DECL_NAME (xobj_parm);
+
+      static tree remembered_fn = NULL_TREE;
+      /* Only output this diagnostic once per function.  */
+      if (remembered_fn == fn)
+	/* Early escape.  */;
+      else if (parm_name)
+	inform (DECL_SOURCE_LOCATION (xobj_parm),
+		"use explicit object parameter %qs instead",
+		IDENTIFIER_POINTER (parm_name));
+      else
+	inform (DECL_SOURCE_LOCATION (xobj_parm),
+		"name the explicit object parameter");
+
+      remembered_fn = fn;
+    }
+  else if (fn && DECL_STATIC_FUNCTION_P (fn))
     error ("%<this%> is unavailable for static member functions");
   else if (fn && processing_contract_condition && DECL_CONSTRUCTOR_P (fn))
     error ("invalid use of %<this%> before it is valid");
@@ -6727,7 +6750,7 @@ finish_omp_declare_simd_methods (tree t)
   for (tree x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
     {
       if (TREE_CODE (x) == USING_DECL
-	  || !DECL_NONSTATIC_MEMBER_FUNCTION_P (x))
+	  || !DECL_IOBJ_MEMBER_FUNCTION_P (x))
 	continue;
       tree ods = lookup_attribute ("omp declare simd", DECL_ATTRIBUTES (x));
       if (!ods || !TREE_VALUE (ods))
@@ -11910,9 +11933,13 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	      if (WILDCARD_TYPE_P (non_reference (obtype)))
 		/* We don't know what the eventual obtype quals will be.  */
 		goto dependent;
-	      int quals = cp_type_quals (type);
-	      if (INDIRECT_TYPE_P (obtype))
-		quals |= cp_type_quals (TREE_TYPE (obtype));
+	      auto direct_type = [](tree t){
+		  if (INDIRECT_TYPE_P (t))
+		    return TREE_TYPE (t);
+		  return t;
+	       };
+	      int const quals = cp_type_quals (type)
+			      | cp_type_quals (direct_type (obtype));
 	      type = cp_build_qualified_type (type, quals);
 	      type = build_reference_type (type);
 	    }
@@ -12803,6 +12830,20 @@ is_this_parameter (tree t)
 	      || (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t))
 	      || (cp_binding_oracle && VAR_P (t)));
   return true;
+}
+
+/* As above, or a C++23 explicit object parameter.  */
+
+bool
+is_object_parameter (tree t)
+{
+  if (is_this_parameter (t))
+    return true;
+  if (TREE_CODE (t) != PARM_DECL)
+    return false;
+  tree ctx = DECL_CONTEXT (t);
+  return (ctx && DECL_XOBJ_MEMBER_FUNCTION_P (ctx)
+	  && t == DECL_ARGUMENTS (ctx));
 }
 
 /* Insert the deduced return type for an auto function.  */

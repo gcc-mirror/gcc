@@ -308,7 +308,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       /// Constructor accepting two values of arbitrary types
+#if __cplusplus > 202002L
+      template<typename _U1 = _T1, typename _U2 = _T2>
+#else
       template<typename _U1, typename _U2>
+#endif
 	requires (_S_constructible<_U1, _U2>()) && (!_S_dangles<_U1, _U2>())
 	constexpr explicit(!_S_convertible<_U1, _U2>())
 	pair(_U1&& __x, _U2&& __y)
@@ -316,7 +320,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: first(std::forward<_U1>(__x)), second(std::forward<_U2>(__y))
 	{ }
 
+#if __cplusplus > 202002L
+      template<typename _U1 = _T1, typename _U2 = _T2>
+#else
       template<typename _U1, typename _U2>
+#endif
 	requires (_S_constructible<_U1, _U2>()) && (_S_dangles<_U1, _U2>())
 	constexpr explicit(!_S_convertible<_U1, _U2>())
 	pair(_U1&&, _U2&&) = delete;

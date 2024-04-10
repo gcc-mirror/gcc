@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 /* { dg-require-effective-target size20plus } */
+/* { dg-skip-if "no strndup" { hppa*-*-hpux* } } */
 
 #include "builtin-object-size-common.h"
 

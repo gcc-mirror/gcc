@@ -866,7 +866,7 @@ find_uninit_fields_r (tree *tp, int *walk_subtrees, void *data)
   else if (code == CALL_EXPR)
     {
       tree fn = get_callee_fndecl (init);
-      if (fn && DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+      if (fn && DECL_IOBJ_MEMBER_FUNCTION_P (fn))
 	{
 	  tree op = CALL_EXPR_ARG (init, 0);
 	  if (TREE_CODE (op) == ADDR_EXPR)
@@ -2477,7 +2477,7 @@ build_offset_ref (tree type, tree member, bool address_p,
 
 	   -- in a mem-initializer for a constructor for that class or for
 	   a class derived from that class (_class.base.init_).  */
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (member))
+      if (DECL_OBJECT_MEMBER_FUNCTION_P (member))
 	{
 	  /* Build a representation of the qualified name suitable
 	     for use as the operand to "&" -- even though the "&" is
@@ -4155,7 +4155,8 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 
   /* If one destructor throws, keep trying to clean up the rest, unless we're
      already in a build_vec_init cleanup.  */
-  if (flag_exceptions && !in_cleanup && !expr_noexcept_p (tmp, tf_none))
+  if (flag_exceptions && !in_cleanup && !processing_template_decl
+      && !expr_noexcept_p (tmp, tf_none))
     {
       loop = build2 (TRY_CATCH_EXPR, void_type_node, loop,
 		     unshare_expr (loop));

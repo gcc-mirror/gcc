@@ -1566,6 +1566,8 @@ check_type_name_conflict (pretty_printer *buffer, tree t)
 	s = "";
       else if (TREE_CODE (TYPE_NAME (tmp)) == IDENTIFIER_NODE)
 	s = IDENTIFIER_POINTER (TYPE_NAME (tmp));
+      else if (!DECL_NAME (TYPE_NAME (tmp)))
+	s = "";
       else
 	s = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (tmp)));
 

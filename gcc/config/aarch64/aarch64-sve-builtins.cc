@@ -882,23 +882,31 @@ static const predication_index preds_z[] = { PRED_z, NUM_PREDS };
 /* Used by SME instructions that always merge into ZA.  */
 static const predication_index preds_za_m[] = { PRED_za_m, NUM_PREDS };
 
-/* A list of all SVE ACLE functions.  */
+/* A list of all arm_sve.h functions.  */
 static CONSTEXPR const function_group_info function_groups[] = {
 #define DEF_SVE_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
     preds_##PREDS, REQUIRED_EXTENSIONS },
-#define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
-  { #NAME, &functions::NAME##_za, &shapes::SHAPE, types_##TYPES, \
-    groups_##GROUPS, preds_##PREDS, (REQUIRED_EXTENSIONS | AARCH64_FL_ZA_ON) },
 #include "aarch64-sve-builtins.def"
 };
 
-/* A list of all NEON-SVE-Bridge ACLE functions.  */
+/* A list of all arm_neon_sve_bridge.h ACLE functions.  */
 static CONSTEXPR const function_group_info neon_sve_function_groups[] = {
 #define DEF_NEON_SVE_FUNCTION(NAME, SHAPE, TYPES, GROUPS, PREDS) \
   { #NAME, &neon_sve_bridge_functions::NAME, &shapes::SHAPE, types_##TYPES, \
     groups_##GROUPS, preds_##PREDS, 0 },
 #include "aarch64-neon-sve-bridge-builtins.def"
+};
+
+/* A list of all arm_sme.h functions.  */
+static CONSTEXPR const function_group_info sme_function_groups[] = {
+#define DEF_SME_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+  { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
+    preds_##PREDS, REQUIRED_EXTENSIONS },
+#define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+  { #NAME, &functions::NAME##_za, &shapes::SHAPE, types_##TYPES, \
+    groups_##GROUPS, preds_##PREDS, (REQUIRED_EXTENSIONS | AARCH64_FL_ZA_ON) },
+#include "aarch64-sve-builtins-sme.def"
 };
 
 /* The scalar type associated with each vector type.  */
@@ -929,6 +937,10 @@ static GTY(()) vec<registered_function *, va_gc> *registered_functions;
    that they implement.  This is used for looking up implementations of
    overloaded functions.  */
 static hash_table<registered_function_hasher> *function_table;
+
+/* Maps all overloaded function names that we've registered so far to
+   their associated function_instances.  The map keys are IDENTIFIER_NODEs.  */
+static GTY(()) hash_map<tree, registered_function *> *overload_names;
 
 /* True if we've already complained about attempts to use functions
    when the required extension is disabled.  */
@@ -1577,21 +1589,23 @@ function_builder::
 add_overloaded_function (const function_instance &instance,
 			 aarch64_feature_flags required_extensions)
 {
+  if (!overload_names)
+    overload_names = hash_map<tree, registered_function *>::create_ggc ();
+
   char *name = get_name (instance, true);
-  if (registered_function **map_value = m_overload_names.get (name))
-    {
-      gcc_assert ((*map_value)->instance == instance
-		  && ((*map_value)->required_extensions
-		      & ~required_extensions) == 0);
-      obstack_free (&m_string_obstack, name);
-    }
+  tree id = get_identifier (name);
+  if (registered_function **map_value = overload_names->get (id))
+    gcc_assert ((*map_value)->instance == instance
+		&& ((*map_value)->required_extensions
+		    & ~required_extensions) == 0);
   else
     {
       registered_function &rfn
 	= add_function (instance, name, m_overload_type, NULL_TREE,
 			required_extensions, true, m_direct_overloads);
-      m_overload_names.put (name, &rfn);
+      overload_names->put (id, &rfn);
     }
+  obstack_free (&m_string_obstack, name);
 }
 
 /* If we are using manual overload resolution, add one function decl
@@ -4629,8 +4643,7 @@ handle_arm_sve_h ()
   function_table = new hash_table<registered_function_hasher> (1023);
   function_builder builder;
   for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
-    if (!(function_groups[i].required_extensions & AARCH64_FL_SME))
-      builder.register_function_group (function_groups[i]);
+    builder.register_function_group (function_groups[i]);
 }
 
 /* Implement #pragma GCC aarch64 "arm_neon_sve_bridge.h".  */
@@ -4675,9 +4688,8 @@ handle_arm_sme_h ()
   sme_switcher sme;
 
   function_builder builder;
-  for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
-    if (function_groups[i].required_extensions & AARCH64_FL_SME)
-      builder.register_function_group (function_groups[i]);
+  for (unsigned int i = 0; i < ARRAY_SIZE (sme_function_groups); ++i)
+    builder.register_function_group (sme_function_groups[i]);
 }
 
 /* If we're implementing manual overloading, check whether the SVE

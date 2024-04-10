@@ -1255,6 +1255,8 @@ tree ipcp_get_aggregate_const (struct function *func, tree parm, bool by_ref,
 bool unadjusted_ptr_and_unit_offset (tree op, tree *ret,
 				     poly_int64 *offset_ret);
 
+void ipa_prop_cc_finalize (void);
+
 /* From tree-sra.cc:  */
 tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 			   gimple_stmt_iterator *, bool);

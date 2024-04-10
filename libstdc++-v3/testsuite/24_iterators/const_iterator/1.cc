@@ -1,6 +1,7 @@
 // { dg-do run { target c++23 } }
 
 #include <iterator>
+#include <ranges>
 #include <array>
 #include <concepts>
 #include <string_view>
@@ -97,6 +98,26 @@ test03()
 			     std::unreachable_sentinel_t> );
 }
 
+void
+test04()
+{
+  // Example from P2836R1
+  auto f = [](std::vector<int>::const_iterator i) {};
+
+  auto v = std::vector<int>();
+  {
+    auto i1 = ranges::cbegin(v); // returns vector<T>::const_iterator
+    f(i1); // okay
+  }
+
+  auto t = v | std::views::take_while([](int const x) { return x < 100; });
+  {
+    auto i2 = ranges::cbegin(t); // returns basic_const_iterator<vector<T>::iterator>
+    f(i2); // was an error in C++23 before P2836R1
+    f(std::move(i2)); // same
+  }
+}
+
 int
 main()
 {
@@ -136,4 +157,5 @@ main()
   test02<const std::vector<bool>, true>();
 
   test03();
+  test04();
 }

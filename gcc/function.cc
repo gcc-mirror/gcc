@@ -5202,7 +5202,7 @@ expand_function_start (tree subr)
 
   gcc_assert (NOTE_P (get_last_insn ()));
 
-  parm_birth_insn = get_last_insn ();
+  function_beg_insn = parm_birth_insn = get_last_insn ();
 
   /* If the function receives a non-local goto, then store the
      bits we need to restore the frame pointer.  */

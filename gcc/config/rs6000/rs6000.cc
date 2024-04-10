@@ -21357,6 +21357,7 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
       ASM_DECLARE_RESULT (file, DECL_RESULT (decl));
       rs6000_output_function_entry (file, name);
       fputs (":\n", file);
+      assemble_function_label_final ();
       return;
     }
 

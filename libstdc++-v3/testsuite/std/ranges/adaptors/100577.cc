@@ -98,28 +98,28 @@ test02()
   (views::take_while(badarg) | views::all)(x); // { dg-error "no match" }
   (views::drop_while(badarg) | views::all)(x); // { dg-error "no match" }
 
-  // In practice, range adaptor closures with non-simple operator() are
+  // In C++20 mode, range adaptor closures with non-simple operator() are
   // implemented using a fallback deleted overload, so when a call is
   // ill-formed overload resolution succeeds but selects the deleted overload
   // (but only when the closure is invoked as an rvalue).
-  views::lazy_split(badarg)(x); // { dg-error "deleted function" }
-  (views::lazy_split(badarg) | views::all)(x); // { dg-error "deleted function" }
+  views::lazy_split(badarg)(x); // { dg-error "deleted function|no match" }
+  (views::lazy_split(badarg) | views::all)(x); // { dg-error "deleted function|no match" }
   auto a0 = views::lazy_split(badarg);
   a0(x); // { dg-error "no match" };
   auto a1 = a0 | views::all;
   a1(x); // { dg-error "no match" }
 
-  views::split(badarg)(x); // { dg-error "deleted function" }
-  (views::split(badarg) | views::all)(x); // { dg-error "deleted function" }
+  views::split(badarg)(x); // { dg-error "deleted function|no match" }
+  (views::split(badarg) | views::all)(x); // { dg-error "deleted function|no match" }
   auto a0a = views::split(badarg);
   a0a(x); // { dg-error "no match" };
   auto a1a = a0a | views::all;
   a1a(x); // { dg-error "no match" }
 
-  views::take(badarg)(x); // { dg-error "deleted" }
-  views::drop(badarg)(x); // { dg-error "deleted" }
-  (views::take(badarg) | views::all)(x); // { dg-error "deleted" }
-  (views::drop(badarg) | views::all)(x); // { dg-error "deleted" }
+  views::take(badarg)(x); // { dg-error "deleted|no match" }
+  views::drop(badarg)(x); // { dg-error "deleted|no match" }
+  (views::take(badarg) | views::all)(x); // { dg-error "deleted|no match" }
+  (views::drop(badarg) | views::all)(x); // { dg-error "deleted|no match" }
 }
 
 void

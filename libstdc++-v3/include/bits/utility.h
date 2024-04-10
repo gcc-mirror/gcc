@@ -225,7 +225,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++17
 
-#if __has_builtin(__type_pack_element)
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__type_pack_element)
   template<size_t _Np, typename... _Types>
     struct _Nth_type
     { using type = __type_pack_element<_Np, _Types...>; };

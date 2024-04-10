@@ -1479,7 +1479,7 @@
   [(set (match_operand:FLSX 0 "register_operand" "=f")
     (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
 		 UNSPEC_LSX_VFRECIPE))]
-  "ISA_HAS_LSX && TARGET_FRECIPE"
+  "ISA_HAS_LSX && ISA_HAS_FRECIPE"
   "vfrecipe.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
@@ -1512,7 +1512,7 @@
   [(set (match_operand:FLSX 0 "register_operand" "=f")
     (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
 		 UNSPEC_LSX_VFRSQRTE))]
-  "ISA_HAS_LSX && TARGET_FRECIPE"
+  "ISA_HAS_LSX && ISA_HAS_FRECIPE"
   "vfrsqrte.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])

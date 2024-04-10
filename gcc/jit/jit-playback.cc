@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MUTEX
+#include "libgccjit.h"
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -499,6 +500,54 @@ new_param (location *loc,
   return new param (this, inner);
 }
 
+const char* fn_attribute_to_string (gcc_jit_fn_attribute attr)
+{
+  switch (attr)
+  {
+    case GCC_JIT_FN_ATTRIBUTE_ALIAS:
+      return "alias";
+    case GCC_JIT_FN_ATTRIBUTE_ALWAYS_INLINE:
+      return "always_inline";
+    case GCC_JIT_FN_ATTRIBUTE_INLINE:
+      return NULL;
+    case GCC_JIT_FN_ATTRIBUTE_NOINLINE:
+      return "noinline";
+    case GCC_JIT_FN_ATTRIBUTE_TARGET:
+      return "target";
+    case GCC_JIT_FN_ATTRIBUTE_USED:
+      return "used";
+    case GCC_JIT_FN_ATTRIBUTE_VISIBILITY:
+      return "visibility";
+    case GCC_JIT_FN_ATTRIBUTE_COLD:
+      return "cold";
+    case GCC_JIT_FN_ATTRIBUTE_RETURNS_TWICE:
+      return "returns_twice";
+    case GCC_JIT_FN_ATTRIBUTE_PURE:
+      return "pure";
+    case GCC_JIT_FN_ATTRIBUTE_CONST:
+      return "const";
+    case GCC_JIT_FN_ATTRIBUTE_WEAK:
+      return "weak";
+    case GCC_JIT_FN_ATTRIBUTE_NONNULL:
+      return "nonnull";
+    case GCC_JIT_FN_ATTRIBUTE_MAX:
+      return NULL;
+  }
+  return NULL;
+}
+
+const char* variable_attribute_to_string (gcc_jit_variable_attribute attr)
+{
+  switch (attr)
+  {
+    case GCC_JIT_VARIABLE_ATTRIBUTE_VISIBILITY:
+      return "visibility";
+    case GCC_JIT_VARIABLE_ATTRIBUTE_MAX:
+      return NULL;
+  }
+  return NULL;
+}
+
 /* Construct a playback::function instance.  */
 
 playback::function *
@@ -509,7 +558,13 @@ new_function (location *loc,
 	      const char *name,
 	      const auto_vec<param *> *params,
 	      int is_variadic,
-	      enum built_in_function builtin_id)
+	      enum built_in_function builtin_id,
+	      const std::vector<gcc_jit_fn_attribute> &attributes,
+	      const std::vector<std::pair<gcc_jit_fn_attribute,
+					  std::string>> &string_attributes,
+	      const std::vector<std::pair<gcc_jit_fn_attribute,
+					  std::vector<int>>>
+					  &int_array_attributes)
 {
   int i;
   param *param;
@@ -542,6 +597,8 @@ new_function (location *loc,
   DECL_IGNORED_P (resdecl) = 1;
   DECL_RESULT (fndecl) = resdecl;
   DECL_CONTEXT (resdecl) = fndecl;
+
+  tree fn_attributes = NULL_TREE;
 
   if (builtin_id)
     {
@@ -588,12 +645,62 @@ new_function (location *loc,
       DECL_DECLARED_INLINE_P (fndecl) = 1;
 
       /* Add attribute "always_inline": */
-      DECL_ATTRIBUTES (fndecl) =
-	tree_cons (get_identifier ("always_inline"),
-		   NULL,
-		   DECL_ATTRIBUTES (fndecl));
+      fn_attributes = tree_cons (get_identifier ("always_inline"),
+				 NULL,
+				 fn_attributes);
     }
 
+  /* All attributes need to be declared in `dummy-frontend.cc` and more
+     specifically in `jit_attribute_table`. */
+  for (auto attr: attributes)
+  {
+    if (attr == GCC_JIT_FN_ATTRIBUTE_INLINE)
+      DECL_DECLARED_INLINE_P (fndecl) = 1;
+
+    const char* attribute = fn_attribute_to_string (attr);
+    if (attribute)
+    {
+      tree ident = get_identifier (attribute);
+      fn_attributes = tree_cons (ident, NULL_TREE, fn_attributes);
+    }
+  }
+
+  for (auto attr: string_attributes)
+  {
+    gcc_jit_fn_attribute& name = std::get<0>(attr);
+    std::string& value = std::get<1>(attr);
+    tree attribute_value = build_tree_list (NULL_TREE,
+	::build_string (value.length () + 1, value.c_str ()));
+    const char* attribute = fn_attribute_to_string (name);
+    tree ident = attribute ? get_identifier (attribute) : NULL;
+
+    if (ident)
+      fn_attributes = tree_cons (ident, attribute_value, fn_attributes);
+  }
+
+  for (auto attr: int_array_attributes)
+  {
+    gcc_jit_fn_attribute& name = std::get<0>(attr);
+    std::vector<int>& values = std::get<1>(attr);
+
+    const char* attribute = fn_attribute_to_string (name);
+    tree ident = attribute ? get_identifier (attribute) : NULL;
+
+    if (!ident)
+      continue;
+
+    tree tree_list = NULL_TREE;
+    tree *p_tree_list = &tree_list;
+    for (auto value : values)
+    {
+      tree int_value = build_int_cst (integer_type_node, value);
+      *p_tree_list = build_tree_list (NULL, int_value);
+      p_tree_list = &TREE_CHAIN (*p_tree_list);
+    }
+    fn_attributes = tree_cons (ident, tree_list, fn_attributes);
+  }
+
+  decl_attributes (&fndecl, fn_attributes, 0);
   function *func = new function (this, fndecl, kind);
   m_functions.safe_push (func);
   return func;
@@ -607,7 +714,9 @@ global_new_decl (location *loc,
 		 enum gcc_jit_global_kind kind,
 		 type *type,
 		 const char *name,
-		 enum global_var_flags flags)
+		 enum global_var_flags flags,
+		 const std::vector<std::pair<gcc_jit_variable_attribute,
+					     std::string>> &attributes)
 {
   gcc_assert (type);
   gcc_assert (name);
@@ -652,7 +761,30 @@ global_new_decl (location *loc,
   if (loc)
     set_tree_location (inner, loc);
 
+  set_variable_string_attribute (attributes, inner);
+
   return inner;
+}
+
+void
+playback::
+set_variable_string_attribute (
+  const std::vector<std::pair<gcc_jit_variable_attribute,
+			       std::string>> &string_attributes,
+  tree decl)
+{
+  tree var_attributes = NULL_TREE;
+  for (auto attr: string_attributes)
+  {
+    gcc_jit_variable_attribute& name = std::get<0>(attr);
+    std::string& value = std::get<1>(attr);
+    tree attribute_value = build_tree_list (NULL_TREE,
+	::build_string (value.length () + 1, value.c_str ()));
+    tree ident = get_identifier (variable_attribute_to_string (name));
+    if (ident)
+      var_attributes = tree_cons (ident, attribute_value, var_attributes);
+  }
+  decl_attributes (&decl, var_attributes, 0);
 }
 
 /* In use by new_global and new_global_initialized.  */
@@ -674,10 +806,12 @@ new_global (location *loc,
 	    enum gcc_jit_global_kind kind,
 	    type *type,
 	    const char *name,
-	    enum global_var_flags flags)
+	    enum global_var_flags flags,
+	    const std::vector<std::pair<gcc_jit_variable_attribute,
+					std::string>> &attributes)
 {
   tree inner =
-    global_new_decl (loc, kind, type, name, flags);
+    global_new_decl (loc, kind, type, name, flags, attributes);
 
   return global_finalize_lvalue (inner);
 }
@@ -818,13 +952,15 @@ playback::context::
 new_global_initialized (location *loc,
 			enum gcc_jit_global_kind kind,
 			type *type,
-                        size_t element_size,
+			size_t element_size,
 			size_t initializer_num_elem,
 			const void *initializer,
 			const char *name,
-			enum global_var_flags flags)
+			enum global_var_flags flags,
+			const std::vector<std::pair<gcc_jit_variable_attribute,
+						    std::string>> &attributes)
 {
-  tree inner = global_new_decl (loc, kind, type, name, flags);
+  tree inner = global_new_decl (loc, kind, type, name, flags, attributes);
 
   vec<constructor_elt, va_gc> *constructor_elements = NULL;
 
@@ -1812,7 +1948,9 @@ playback::lvalue *
 playback::function::
 new_local (location *loc,
 	   type *type,
-	   const char *name)
+	   const char *name,
+	   const std::vector<std::pair<gcc_jit_variable_attribute,
+				       std::string>> &attributes)
 {
   gcc_assert (type);
   gcc_assert (name);
@@ -1824,6 +1962,8 @@ new_local (location *loc,
   /* Prepend to BIND_EXPR_VARS: */
   DECL_CHAIN (inner) = BIND_EXPR_VARS (m_inner_bind_expr);
   BIND_EXPR_VARS (m_inner_bind_expr) = inner;
+
+  set_variable_string_attribute (attributes, inner);
 
   if (loc)
     set_tree_location (inner, loc);
@@ -1947,6 +2087,9 @@ postprocess ()
 
       current_function_decl = NULL;
     }
+    else
+      /* Add to cgraph to output aliases: */
+      rest_of_decl_compilation (m_inner_fndecl, true, 0);
 }
 
 /* Don't leak vec's internal buffer (in non-GC heap) when we are
@@ -3365,7 +3508,7 @@ void
 playback::context::
 init_types ()
 {
-  /* See lto_init() in lto-lang.cc or void visit (TypeBasic *t) in D's types.cc 
+  /* See lto_init () in lto-lang.cc or void visit (TypeBasic *t) in D's types.cc
      for reference. If TYPE_NAME is not set, debug info will not contain types */
 #define NAME_TYPE(t,n) \
 if (t) \

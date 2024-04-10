@@ -378,3 +378,15 @@ alignment of a variable:
 --------------------
 ``LIBGCCJIT_ABI_25`` covers the addition of
 :func:`gcc_jit_type_get_restrict`
+
+.. _LIBGCCJIT_ABI_26:
+
+``LIBGCCJIT_ABI_26``
+--------------------
+``LIBGCCJIT_ABI_26`` covers the addition of functions to set attributes
+on functions and variables:
+
+  * :func:`gcc_jit_function_add_attribute`
+  * :func:`gcc_jit_function_add_string_attribute`
+  * :func:`gcc_jit_function_add_integer_array_attribute`
+  * :func:`gcc_jit_lvalue_add_string_attribute`

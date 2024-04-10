@@ -2306,6 +2306,23 @@ class StdLocalePrinter(printer_base):
                     mod = ' with "{}={}"'.format(cat, other)
         return 'std::locale = "{}"{}'.format(name, mod)
 
+class StdIntegralConstantPrinter(printer_base):
+    """Print a std::true_type or std::false_type."""
+
+    def __init__(self, typename, val):
+        self._val = val
+        self._typename = typename
+
+    def to_string(self):
+        value_type = self._val.type.template_argument(0)
+        value = self._val.type.template_argument(1)
+        if value_type.code == gdb.TYPE_CODE_BOOL:
+            if value:
+                return "std::true_type"
+            else:
+                return "std::false_type"
+        typename = strip_versioned_namespace(self._typename)
+        return "{}<{}, {}>".format(typename, value_type, value)
 
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
@@ -2787,6 +2804,9 @@ def build_libstdcxx_dictionary():
     libstdcxx_printer.add_container('std::', 'vector', StdVectorPrinter)
     # vector<bool>
     libstdcxx_printer.add_version('std::', 'locale', StdLocalePrinter)
+
+    libstdcxx_printer.add_version('std::', 'integral_constant',
+                                  StdIntegralConstantPrinter)
 
     if hasattr(gdb.Value, 'dynamic_type'):
         libstdcxx_printer.add_version('std::', 'error_code',

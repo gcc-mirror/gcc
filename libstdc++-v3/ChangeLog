@@ -1,3 +1,224 @@
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/variant (__detail::__variant::_Variadic_union):
+	Add bool __trivially_destructible template parameter.
+	(__detail::__variant::_Variadic_union::~_Variadic_union):
+	Use __trivially_destructible in constraints instead.
+	(__detail::__variant::_Variant_storage): Pass
+	__trivially_destructible value to _Variadic_union.
+
+2024-01-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (const_iterator): Define conversion
+	operators as per P2836R1.
+	* include/bits/version.def (ranges_as_const): Update value.
+	* include/bits/version.h: Regenerate.
+	* testsuite/24_iterators/const_iterator/1.cc (test04): New test.
+	* testsuite/std/ranges/adaptors/as_const/1.cc: Adjust expected
+	value of __cpp_lib_ranges_as_const.
+	* testsuite/std/ranges/version_c++23.cc: Likewise.
+
+2024-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108822
+	* include/std/tuple (__assignable, __is_nothrow_assignable):
+	Move pre-C++20 definitions adjacent to their use.
+
+2024-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR testsuite/113366
+	* include/std/format (basic_format_arg): Use __formattable
+	variable template instead of __format::__formattable_with
+	concept.
+
+2024-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdata.zi: Import new file from 2023d release.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds)
+	Update expiry date for leap seconds list.
+
+2024-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108822
+	* include/std/tuple (tuple): Add checks for dangling references.
+	Reimplement constraints and constant expressions using C++20
+	features.
+	* include/std/type_traits [C++20]
+	(__is_implicitly_default_constructible_v): Define.
+	(__is_implicitly_default_constructible): Use variable template.
+	* testsuite/20_util/tuple/dangling_ref.cc: New test.
+
+2024-01-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/108827
+	PR libstdc++/111327
+	* include/bits/version.def (bind_back): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/functional (_Bind_back): Define for C++23.
+	(bind_back): Likewise.
+	* testsuite/20_util/function_objects/bind_back/1.cc: New test
+	(adapted from corresponding bind_front test).
+	* testsuite/20_util/function_objects/bind_back/111327.cc: Likewise.
+
+2024-01-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/functional (_Bind_front): Remove =default special
+	member function declarations.
+	(_Bind_front::operator()): Implement using C++23 deducing this
+	when available.
+	* testsuite/20_util/function_objects/bind_front/111327.cc:
+	Adjust testcase to expect better errors in C++23 mode.
+
+2024-01-13  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (views::__adaptor::operator|): Perform
+	perfect forwarding of arguments.
+	(views::__adaptor::_RangeAdaptor::operator()): Pass dummy
+	first argument to _Partial.
+	(views::__adaptor::_Partial::_Partial): Likewise.  Add dummy
+	first parameter.
+	(views::__adaptor::_Pipe::_Pipe): Perform perfect forwarding
+	of arguments.
+	(to): Pass dummy first argument to _Partial.
+
+2024-01-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107466
+	* include/bits/random.tcc (subtract_with_carry_engine::seed):
+	Implement proposed resolution of LWG 4014.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/lwg3809.cc:
+	Check for expected result of 64-bit engine with seed that
+	doesn't fit in 32-bits.
+
+2024-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113320
+	* include/std/format (__format::_Runtime_format_string): Add
+	constructor and disable copy operations.
+	(basic_format_string(_Runtime_format_string)): Add noexcept and
+	take parameter by value not rvalue reference.
+	(runtime_format): Add noexcept.
+	* testsuite/std/format/runtime_format.cc: Check noexcept. Check
+	that construction is only possible from prvalues, not xvalues.
+
+2024-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105505
+	* include/bits/stl_pair.h (pair::pair(U1&&, U2&&)) [C++23]: Add
+	default template arguments, as per P1951R1.
+	* testsuite/20_util/pair/cons/default_tmpl_args.cc: New test.
+
+2024-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Arg_store): Fix PR number in
+	comment. Simplify preprocessor code.
+
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Fix spelling.
+	* doc/html/manual/api.html: Regenerate.
+
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Document addition of
+	libstdc++exp.a.
+	* doc/html/*: Regenerate.
+
+2024-01-11  Marcus Haehnel  <marcus.haehnel@kernkonzept.com>
+
+	* libsupc++/eh_unex_handler.cc: Adjust definition type to
+	declaration.
+
+2024-01-11  Michael Levine  <mlevine55@bloomberg.net>
+
+	* include/std/ranges (__glibcxx_want_ranges_iota): Remove
+	duplicate definition.
+
+2024-01-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/112477
+	* src/c++11/debug.cc
+	(_Safe_iterator_base::_M_attach): Reset _M_version to 0 if attaching to null
+	sequence.
+	(_Safe_iterator_base::_M_attach_single): Likewise.
+	(_Safe_local_iterator_base::_M_attach): Likewise.
+	(_Safe_local_iterator_base::_M_attach_single): Likewise.
+	* testsuite/23_containers/map/debug/112477.cc: New test case.
+
+2024-01-11  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/move.h (__like_t): Define in C++23 mode.
+	* include/std/ranges (views::__adaptor::Partial::operator()):
+	Implement using C++23 deducing this when available.
+	(views::__adaptor::_Pipe::operator()): Likewise.
+	* testsuite/std/ranges/adaptors/100577.cc: Adjust testcase to
+	accept new "no match for call" errors issued in C++23 mode.
+	* testsuite/std/ranges/adaptors/lazy_split_neg.cc: Likewise.
+
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdIntegralConstantPrinter):
+	Add printer for std::integral_constant.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Test it.
+
+2024-01-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113258
+	* libsupc++/new_opa.cc: Prefer to use posix_memalign if
+	available.
+
+2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* src/filesystem/ops-common.h (stat_type): Use using.
+
+2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR libstdc++/113250
+	* src/c++17/fs_ops.cc (fs::equivalent): Use || instead of &&.
+	* src/filesystem/ops.cc (fs::equivalent): Likewise.
+	* testsuite/27_io/filesystem/operations/equivalent.cc: Handle
+	error codes.
+	* testsuite/experimental/filesystem/operations/equivalent.cc:
+	Likewise.
+
+2024-01-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_compound): Do not use __not_.
+	(is_compound_v): Use is_fundamental_v instead.
+
+2024-01-11  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/utility.h (_Nth_type): Use
+	_GLIBCXX_USE_BUILTIN_TRAIT instead of __has_builtin.
+
+2024-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode-data.h: Regenerate.
+	* include/bits/unicode.h (_Utf_iterator::operator++()): Fix off
+	by one error.
+	(__incb_property): Add missing check for values before the
+	first edge.
+	(__is_extended_pictographic): Invert return values to fix
+	copy&pasted logic.
+	(_Grapheme_cluster_view::_Iterator): Remove second iterator
+	member and find end of cluster lazily.
+	* testsuite/ext/unicode/grapheme_view.cc: New test.
+	* testsuite/ext/unicode/properties.cc: New test.
+	* testsuite/ext/unicode/view.cc: New test.
+
+2024-01-09  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* scripts/extract_symvers.in: Require final colon to only match
+	.dsynsym in the header of the dynamic symtab.
+
+2024-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_F): Simplify
+	handling of string returned from std::format.
+	(__formatter_chrono::_M_R_T): Likewise.
+
 2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unicode.h (__null_sentinel): Remove.

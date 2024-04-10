@@ -1958,7 +1958,7 @@
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
-(define_insn "aarch64_simd_vec_unpack<su>_hi_<mode>"
+(define_insn_and_split "aarch64_simd_vec_unpack<su>_hi_<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
 			       (match_operand:VQW 1 "register_operand" "w")
@@ -1966,63 +1966,42 @@
 			    )))]
   "TARGET_SIMD"
   "<su>xtl2\t%0.<Vwtype>, %1.<Vtype>"
+  "&& <CODE> == ZERO_EXTEND
+   && aarch64_split_simd_shift_p (insn)"
+  [(const_int 0)]
+  {
+    /* On many cores, it is cheaper to implement UXTL2 using a ZIP2 with zero,
+       provided that the cost of the zero can be amortized over several
+       operations.  We'll later recombine the zero and zip if there are
+       not sufficient uses of the zero to make the split worthwhile.  */
+    rtx res = simplify_gen_subreg (<MODE>mode, operands[0], <VWIDE>mode, 0);
+    rtx zero = aarch64_gen_shareable_zero (<MODE>mode);
+    emit_insn (gen_aarch64_zip2<mode> (res, operands[1], zero));
+    DONE;
+  }
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
-(define_expand "vec_unpacku_hi_<mode>"
+(define_expand "vec_unpack<su>_hi_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:VQW 1 "register_operand")]
-  "TARGET_SIMD"
-  {
-    rtx res = gen_reg_rtx (<MODE>mode);
-    rtx tmp = aarch64_gen_shareable_zero (<MODE>mode);
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_zip2<mode> (res, tmp, operands[1]));
-    else
-     emit_insn (gen_aarch64_zip2<mode> (res, operands[1], tmp));
-    emit_move_insn (operands[0],
-		   simplify_gen_subreg (<VWIDE>mode, res, <MODE>mode, 0));
-    DONE;
-  }
-)
-
-(define_expand "vec_unpacks_hi_<mode>"
-  [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:VQW 1 "register_operand")]
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))]
   "TARGET_SIMD"
   {
     rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-    emit_insn (gen_aarch64_simd_vec_unpacks_hi_<mode> (operands[0],
-						       operands[1], p));
+    emit_insn (gen_aarch64_simd_vec_unpack<su>_hi_<mode> (operands[0],
+							  operands[1], p));
     DONE;
   }
 )
 
-(define_expand "vec_unpacku_lo_<mode>"
+(define_expand "vec_unpack<su>_lo_<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:VQW 1 "register_operand")]
-  "TARGET_SIMD"
-  {
-    rtx res = gen_reg_rtx (<MODE>mode);
-    rtx tmp = aarch64_gen_shareable_zero (<MODE>mode);
-    if (BYTES_BIG_ENDIAN)
-	emit_insn (gen_aarch64_zip1<mode> (res, tmp, operands[1]));
-    else
-	emit_insn (gen_aarch64_zip1<mode> (res, operands[1], tmp));
-    emit_move_insn (operands[0],
-		   simplify_gen_subreg (<VWIDE>mode, res, <MODE>mode, 0));
-    DONE;
-  }
-)
-
-(define_expand "vec_unpacks_lo_<mode>"
-  [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:VQW 1 "register_operand")]
+   (ANY_EXTEND:<VWIDE> (match_operand:VQW 1 "register_operand"))]
   "TARGET_SIMD"
   {
     rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
-    emit_insn (gen_aarch64_simd_vec_unpacks_lo_<mode> (operands[0],
-						       operands[1], p));
+    emit_insn (gen_aarch64_simd_vec_unpack<su>_lo_<mode> (operands[0],
+							  operands[1], p));
     DONE;
   }
 )
@@ -4790,62 +4769,6 @@
   "TARGET_SIMD"
   "<ANY_EXTEND:su>subw2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
   [(set_attr "type" "neon_sub_widen")]
-)
-
-(define_insn "aarch64_usubw<mode>_lo_zip"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(minus:<VWIDE>
-	  (match_operand:<VWIDE> 1 "register_operand" "w")
-	  (subreg:<VWIDE>
-	    (unspec:<MODE> [
-		(match_operand:VQW 2 "register_operand" "w")
-		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] UNSPEC_ZIP1) 0)))]
-  "TARGET_SIMD"
-  "usubw\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
-  [(set_attr "type" "neon_sub_widen")]
-)
-
-(define_insn "aarch64_uaddw<mode>_lo_zip"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(plus:<VWIDE>
-	  (subreg:<VWIDE>
-	    (unspec:<MODE> [
-		(match_operand:VQW 2 "register_operand" "w")
-		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] UNSPEC_ZIP1) 0)
-	  (match_operand:<VWIDE> 1 "register_operand" "w")))]
-  "TARGET_SIMD"
-  "uaddw\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vhalftype>"
-  [(set_attr "type" "neon_add_widen")]
-)
-
-(define_insn "aarch64_usubw<mode>_hi_zip"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(minus:<VWIDE>
-	  (match_operand:<VWIDE> 1 "register_operand" "w")
-	  (subreg:<VWIDE>
-	    (unspec:<MODE> [
-		(match_operand:VQW 2 "register_operand" "w")
-		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] UNSPEC_ZIP2) 0)))]
-  "TARGET_SIMD"
-  "usubw2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
-  [(set_attr "type" "neon_sub_widen")]
-)
-
-(define_insn "aarch64_uaddw<mode>_hi_zip"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(plus:<VWIDE>
-	  (subreg:<VWIDE>
-	    (unspec:<MODE> [
-		(match_operand:VQW 2 "register_operand" "w")
-		(match_operand:VQW 3 "aarch64_simd_imm_zero")
-	       ] UNSPEC_ZIP2) 0)
-	  (match_operand:<VWIDE> 1 "register_operand" "w")))]
-  "TARGET_SIMD"
-  "uaddw2\\t%0.<Vwtype>, %1.<Vwtype>, %2.<Vtype>"
-  [(set_attr "type" "neon_add_widen")]
 )
 
 (define_insn "aarch64_<ANY_EXTEND:su>addw<mode>"
@@ -9788,11 +9711,26 @@
 )
 
 ;; Sign- or zero-extend a 64-bit integer vector to a 128-bit vector.
-(define_insn "<optab><Vnarrowq><mode>2"
+(define_insn_and_split "<optab><Vnarrowq><mode>2"
   [(set (match_operand:VQN 0 "register_operand" "=w")
 	(ANY_EXTEND:VQN (match_operand:<VNARROWQ> 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "<su>xtl\t%0.<Vtype>, %1.<Vntype>"
+  "&& <CODE> == ZERO_EXTEND
+   && aarch64_split_simd_shift_p (insn)"
+  [(const_int 0)]
+  {
+    /* On many cores, it is cheaper to implement UXTL using a ZIP1 with zero,
+       provided that the cost of the zero can be amortized over several
+       operations.  We'll later recombine the zero and zip if there are
+       not sufficient uses of the zero to make the split worthwhile.  */
+    rtx res = simplify_gen_subreg (<VNARROWQ2>mode, operands[0],
+				   <MODE>mode, 0);
+    rtx zero = aarch64_gen_shareable_zero (<VNARROWQ2>mode);
+    rtx op = lowpart_subreg (<VNARROWQ2>mode, operands[1], <VNARROWQ>mode);
+    emit_insn (gen_aarch64_zip1<Vnarrowq2> (res, op, zero));
+    DONE;
+  }
   [(set_attr "type" "neon_shift_imm_long")]
 )
 

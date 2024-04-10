@@ -1309,7 +1309,7 @@ __udivdi3 (UDWtype n, UDWtype d)
    some narrower _BitInt value, reduce precision.  */
 
 static inline __attribute__((__always_inline__)) SItype
-bitint_reduce_prec (const UWtype **p, SItype prec)
+bitint_reduce_prec (const UBILtype **p, SItype prec)
 {
   UWtype mslimb;
   SItype i;
@@ -1421,7 +1421,7 @@ bitint_reduce_prec (const UWtype **p, SItype prec)
 /* D = S * L.  */
 
 static UWtype
-bitint_mul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
+bitint_mul_1 (UBILtype *d, const UBILtype *s, UWtype l, SItype n)
 {
   UWtype sv, hi, lo, c = 0;
   do
@@ -1440,7 +1440,7 @@ bitint_mul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
 /* D += S * L.  */
 
 static UWtype
-bitint_addmul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
+bitint_addmul_1 (UBILtype *d, const UBILtype *s, UWtype l, SItype n)
 {
   UWtype sv, hi, lo, c = 0;
   do
@@ -1465,9 +1465,9 @@ bitint_addmul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
    positive.  */
 
 void
-__mulbitint3 (UWtype *ret, SItype retprec,
-	      const UWtype *u, SItype uprec,
-	      const UWtype *v, SItype vprec)
+__mulbitint3 (UBILtype *ret, SItype retprec,
+	      const UBILtype *u, SItype uprec,
+	      const UBILtype *v, SItype vprec)
 {
   uprec = bitint_reduce_prec (&u, uprec);
   vprec = bitint_reduce_prec (&v, vprec);
@@ -1480,7 +1480,7 @@ __mulbitint3 (UWtype *ret, SItype retprec,
       || (avprec > auprec && !(uprec >= 0 && vprec < 0)))
     {
       SItype p;
-      const UWtype *t;
+      const UBILtype *t;
       p = uprec; uprec = vprec; vprec = p;
       p = auprec; auprec = avprec; avprec = p;
       t = u; u = v; v = t;
@@ -1643,7 +1643,7 @@ __mulbitint3 (UWtype *ret, SItype retprec,
 /* D = -S.  */
 
 static void
-bitint_negate (UWtype *d, const UWtype *s, SItype n)
+bitint_negate (UBILtype *d, const UBILtype *s, SItype n)
 {
   UWtype c = 1;
   do
@@ -1660,7 +1660,7 @@ bitint_negate (UWtype *d, const UWtype *s, SItype n)
 /* D -= S * L.  */
 
 static UWtype
-bitint_submul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
+bitint_submul_1 (UBILtype *d, const UBILtype *s, UWtype l, SItype n)
 {
   UWtype sv, hi, lo, c = 0;
   do
@@ -1687,10 +1687,10 @@ bitint_submul_1 (UWtype *d, const UWtype *s, UWtype l, SItype n)
    should be 0.  */
 
 void
-__divmodbitint4 (UWtype *q, SItype qprec,
-		 UWtype *r, SItype rprec,
-		 const UWtype *u, SItype uprec,
-		 const UWtype *v, SItype vprec)
+__divmodbitint4 (UBILtype *q, SItype qprec,
+		 UBILtype *r, SItype rprec,
+		 const UBILtype *u, SItype uprec,
+		 const UBILtype *v, SItype vprec)
 {
   uprec = bitint_reduce_prec (&u, uprec);
   vprec = bitint_reduce_prec (&v, vprec);
@@ -1747,7 +1747,7 @@ __divmodbitint4 (UWtype *q, SItype qprec,
   if (qn >= qn2)
     qn2 = 0;
   USItype sz = un + 1 + vn + qn2;
-  UWtype *buf = __builtin_alloca (sz * sizeof (UWtype));
+  UBILtype *buf = __builtin_alloca (sz * sizeof (UWtype));
   USItype uidx, vidx;
 #if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
   uidx = un - 1;
@@ -1768,9 +1768,9 @@ __divmodbitint4 (UWtype *q, SItype qprec,
     __builtin_memcpy (buf + un + 1, v, vn * sizeof (UWtype));
   if (vp)
     buf[un + 1 + BITINT_END (0, vn - 1)] &= (((UWtype) 1 << vp) - 1);
-  UWtype *u2 = buf;
-  UWtype *v2 = u2 + un + 1;
-  UWtype *q2 = v2 + vn;
+  UBILtype *u2 = buf;
+  UBILtype *v2 = u2 + un + 1;
+  UBILtype *q2 = v2 + vn;
   if (!qn2)
     q2 = q + BITINT_END (qn - (un - vn + 1), 0);
 

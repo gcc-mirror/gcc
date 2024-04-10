@@ -33,19 +33,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if BIL_UNITS_PER_WORD == 8
 #define BIL_TYPE_SIZE (8 * __CHAR_BIT__)
 #define BILtype		DItype
-#define UBILtype	UDItype
+typedef UDItype __attribute__ ((__may_alias__)) UBILtype;
 #elif BIL_UNITS_PER_WORD == 4
 #define BIL_TYPE_SIZE (4 * __CHAR_BIT__)
 #define BILtype		SItype
-#define UBILtype	USItype
+typedef USItype __attribute__ ((__may_alias__)) UBILtype;
 #elif BIL_UNITS_PER_WORD == 2
 #define BIL_TYPE_SIZE (2 * __CHAR_BIT__)
 #define BILtype		HItype
-#define UBILtype	UHItype
+typedef UHItype __attribute__ ((__may_alias__)) UBILtype;
 #else
 #define BIL_TYPE_SIZE __CHAR_BIT__
 #define BILtype		QItype
-#define UBILtype	UQItype
+typedef UQItype __attribute__ ((__may_alias__)) UBILtype;
 #endif
 
 /* If *P is zero or sign extended (the latter only for PREC < 0) from

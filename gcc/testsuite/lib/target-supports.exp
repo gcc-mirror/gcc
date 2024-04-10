@@ -3858,6 +3858,15 @@ proc check_effective_target_bitint575 { } {
     } "-std=c23"]
 }
 
+# Return 1 if the target supports _BitInt(65535), 0 otherwise.
+
+proc check_effective_target_bitint65535 { } {
+    return [check_no_compiler_messages bitint65535 object {
+        _BitInt (2) a = 1wb;
+        unsigned _BitInt (65535) b = 0uwb;
+    } "-std=c23"]
+}
+
 # Return 1 if the target supports compiling decimal floating point,
 # 0 otherwise.
 
@@ -7926,6 +7935,30 @@ proc check_effective_target_xorsign { } {
 	     || [istarget aarch64*-*-*] || [istarget arm*-*-*] }}]
 }
 
+# Return 1 if the target plus current options supports folding of
+# copysign into IFN_COPYSIGN.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_ifn_copysign { } {
+    return [check_cached_effective_target_indexed ifn_copysign {
+      expr {
+	 (([istarget i?86-*-*] || [istarget x86_64-*-*])
+	   && [is-effective-target sse])
+	 || ([istarget loongarch*-*-*]
+	     && [check_effective_target_hard_float])
+	 || ([istarget powerpc*-*-*]
+	     && ![istarget powerpc-*-linux*paired*])
+	 || [istarget alpha*-*-*]
+	 || [istarget aarch64*-*-*]
+	 || [is-effective-target arm_neon]
+	 || ([istarget s390*-*-*]
+	     && [check_effective_target_s390_vx])
+	 || ([istarget riscv*-*-*]
+	     && [check_effective_target_hard_float])
+	}}]
+}
+
 # Return 1 if the target plus current options supports a vector
 # widening summation of *short* args into *int* result, 0 otherwise.
 #
@@ -8001,7 +8034,6 @@ proc check_effective_target_vect_widen_mult_qi_to_hi { } {
 		  || ([istarget aarch64*-*-*]
 		      && ![check_effective_target_aarch64_sve])
 		  || [is-effective-target arm_neon]
-		  || [is-effective-target loongarch*-*-*]
 		  || ([istarget s390*-*-*]
 		      && [check_effective_target_s390_vx])) 
 	      || [istarget amdgcn-*-*] }}]
@@ -8026,7 +8058,6 @@ proc check_effective_target_vect_widen_mult_hi_to_si { } {
 		     && ![check_effective_target_aarch64_sve])
 		 || [istarget i?86-*-*] || [istarget x86_64-*-*]
 		 || [is-effective-target arm_neon]
-		 || [is-effective-target loongarch*-*-*]
 		 || ([istarget s390*-*-*]
 		     && [check_effective_target_s390_vx]))
 	     || [istarget amdgcn-*-*] }}]
@@ -9042,9 +9073,9 @@ proc check_effective_target_vect_int_mult { } {
 
 proc check_effective_target_vect_long_mult { } {
     if { [istarget i?86-*-*] || [istarget x86_64-*-*]
-	 || (([istarget powerpc*-*-*]
-              && ![istarget powerpc-*-linux*paired*])
-              && [check_effective_target_ilp32])
+	 || ([istarget powerpc*-*-*]
+	      && [check_effective_target_powerpc_vsx_ok]
+	      && [check_effective_target_has_arch_pwr10])
 	 || [is-effective-target arm_neon]
 	 || ([istarget sparc*-*-*] && [check_effective_target_ilp32])
 	 || [istarget aarch64*-*-*]

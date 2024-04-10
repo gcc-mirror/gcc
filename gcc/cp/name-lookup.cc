@@ -8089,9 +8089,19 @@ lookup_elaborated_type (tree name, TAG_how how)
 	    {
 	      /* We're in the global module, perhaps there's a tag
 		 there?  */
-	      // FIXME: This isn't quite right, if we find something
-	      // here, from the language PoV we're not supposed to
-	      // know it?
+
+	      /* FIXME: In general we should probably merge global module
+		 classes in check_module_override rather than here, but for
+		 GCC14 let's just fix lazy declarations of __class_type_info in
+		 build_dynamic_cast_1.  */
+	      if (current_namespace == abi_node)
+		{
+		  tree g = (BINDING_VECTOR_CLUSTER (*slot, 0)
+			    .slots[BINDING_SLOT_GLOBAL]);
+		  for (ovl_iterator iter (g); iter; ++iter)
+		    if (qualify_lookup (*iter, LOOK_want::TYPE))
+		      return *iter;
+		}
 	    }
 	}
     }

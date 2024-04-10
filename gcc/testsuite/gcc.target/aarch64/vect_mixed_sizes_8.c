@@ -14,5 +14,5 @@ f (int64_t *x, int64_t *y, uint32_t *z, int n)
     }
 }
 
-/* { dg-final { scan-assembler-times {\tuxtl\tv[0-9]+\.2d, v[0-9]+\.2s\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tzip1\tv[0-9]+\.4s, v[0-9]+\.4s, v[0-9]+\.4s\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tadd\tv[0-9]+\.2d,} 1 } } */

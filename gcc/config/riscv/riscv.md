@@ -130,6 +130,10 @@
   ;; XTheadFmv unspec
   UNSPEC_XTHEADFMV
   UNSPEC_XTHEADFMV_HW
+
+  ;; XTheadInt unspec
+  UNSPECV_XTHEADINT_PUSH
+  UNSPECV_XTHEADINT_POP
 ])
 
 (define_constants

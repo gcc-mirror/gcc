@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax -Wno-psabi" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax" } */
 
 #include "riscv_vector.h"
 

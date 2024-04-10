@@ -4707,5 +4707,17 @@ make_pass_ipa_sra (gcc::context *ctxt)
   return new pass_ipa_sra (ctxt);
 }
 
+/* Reset all state within ipa-sra.cc so that we can rerun the compiler
+   within the same process.  For use by toplev::finalize.  */
+
+void
+ipa_sra_cc_finalize (void)
+{
+  if (func_sums)
+    ggc_delete (func_sums);
+  func_sums = NULL;
+  delete call_sums;
+  call_sums = NULL;
+}
 
 #include "gt-ipa-sra.h"

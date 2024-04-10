@@ -989,7 +989,11 @@ vec_init_loop_exit_info (class loop *loop)
       if (number_of_iterations_exit_assumptions (loop, exit, &niter_desc, NULL)
 	  && !chrec_contains_undetermined (niter_desc.niter))
 	{
-	  if (!niter_desc.may_be_zero || !candidate)
+	  tree may_be_zero = niter_desc.may_be_zero;
+	  if (integer_zerop (may_be_zero)
+	      && (!candidate
+		  || dominated_by_p (CDI_DOMINATORS, exit->src,
+				     candidate->src)))
 	    candidate = exit;
 	}
     }
@@ -4116,6 +4120,13 @@ pop:
 	  if (op.ops[1] == op.ops[opi])
 	    neg = ! neg;
 	}
+      else if (op.code == IFN_COND_SUB)
+	{
+	  op.code = IFN_COND_ADD;
+	  /* Track whether we negate the reduction value each iteration.  */
+	  if (op.ops[2] == op.ops[opi])
+	    neg = ! neg;
+	}
       if (CONVERT_EXPR_CODE_P (op.code)
 	  && tree_nop_conversion_p (op.type, TREE_TYPE (op.ops[0])))
 	;
@@ -6236,7 +6247,13 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  phi = create_phi_node (new_def, exit_bb);
 	  if (j)
 	    def = gimple_get_lhs (vec_stmts[j]);
-	  SET_PHI_ARG_DEF (phi, loop_exit->dest_idx, def);
+	  if (LOOP_VINFO_IV_EXIT (loop_vinfo) == loop_exit)
+	    SET_PHI_ARG_DEF (phi, loop_exit->dest_idx, def);
+	  else
+	    {
+	      for (unsigned k = 0; k < gimple_phi_num_args (phi); k++)
+		SET_PHI_ARG_DEF (phi, k, def);
+	    }
 	  new_def = gimple_convert (&stmts, vectype, new_def);
 	  reduc_inputs.quick_push (new_def);
 	}
@@ -10030,6 +10047,15 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 
   step_expr = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
   gcc_assert (step_expr != NULL_TREE);
+  if (INTEGRAL_TYPE_P (TREE_TYPE (step_expr))
+      && !type_has_mode_precision_p (TREE_TYPE (step_expr)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "bit-precision induction vectorization not "
+			 "supported.\n");
+      return false;
+    }
   tree step_vectype = get_same_sized_vectype (TREE_TYPE (step_expr), vectype);
 
   /* Check for backend support of PLUS/MINUS_EXPR. */
@@ -11917,8 +11943,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	      (LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
       scale_loop_frequencies (LOOP_VINFO_SCALAR_LOOP (loop_vinfo),
 			      LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo));
-      single_exit (LOOP_VINFO_SCALAR_LOOP (loop_vinfo))->dest->count
-	= preheader->count;
+      LOOP_VINFO_SCALAR_IV_EXIT (loop_vinfo)->dest->count = preheader->count;
     }
 
   if (niters_vector == NULL_TREE)

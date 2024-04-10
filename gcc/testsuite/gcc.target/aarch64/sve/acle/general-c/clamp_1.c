@@ -13,7 +13,7 @@ f1 (svcount_t pn, svfloat16_t f16, svint16_t s16, svfloat32_t f32,
   svclamp (f16, f16, f16, f16); /* { dg-error {too many arguments to function 'svclamp'} } */
   svclamp (0, f16, f16); /* { dg-error {passing 'int' to argument 1 of 'svclamp', which expects an SVE type rather than a scalar type} } */
   svclamp (f16, f16, f16);
-  svclamp (s16, s16, s16); /* { dg-error {'svclamp' has no form that takes 'svint16_t' arguments} } */
+  svclamp (s16, s16, s16);
   svclamp (pn, f16, f16); /* { dg-error {passing 'svfloat16_t' to argument 2 of 'svclamp', but argument 1 had type 'svcount_t'} } */
   svclamp (f16, s16, f16); /* { dg-error {passing 'svint16_t' to argument 2 of 'svclamp', but argument 1 had type 'svfloat16_t'} } */
   svclamp (f16, f32, f32); /* { dg-error {passing 'svfloat32_t' to argument 2 of 'svclamp', but argument 1 had type 'svfloat16_t'} } */

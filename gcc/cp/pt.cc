@@ -978,8 +978,7 @@ maybe_new_partial_specialization (tree& type)
       tree d = create_implicit_typedef (DECL_NAME (tmpl), t);
       DECL_CONTEXT (d) = TYPE_CONTEXT (t);
       DECL_SOURCE_LOCATION (d) = input_location;
-      TREE_PRIVATE (d) = (current_access_specifier == access_private_node);
-      TREE_PROTECTED (d) = (current_access_specifier == access_protected_node);
+      TREE_PUBLIC (d) = TREE_PUBLIC (DECL_TEMPLATE_RESULT (tmpl));
 
       set_instantiating_module (d);
       DECL_MODULE_EXPORT_P (d) = DECL_MODULE_EXPORT_P (tmpl);
@@ -1446,9 +1445,9 @@ is_specialization_of_friend (tree decl, tree friend_decl)
 	     `this' parameter.  */
 	  friend_args_type = TYPE_ARG_TYPES (friend_type);
 	  decl_args_type = TYPE_ARG_TYPES (decl_type);
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (friend_decl))
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (friend_decl))
 	    friend_args_type = TREE_CHAIN (friend_args_type);
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (decl))
 	    decl_args_type = TREE_CHAIN (decl_args_type);
 
 	  return compparms (decl_args_type, friend_args_type);
@@ -2236,7 +2235,7 @@ determine_specialization (tree template_id,
 	     that the const qualification is the same.  Since
 	     get_bindings does not try to merge the "this" parameter,
 	     we must do the comparison explicitly.  */
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
 	    {
 	      if (!same_type_p (TREE_VALUE (fn_arg_types),
 				TREE_VALUE (decl_arg_types)))
@@ -2359,14 +2358,14 @@ determine_specialization (tree template_id,
 	  /* Adjust the type of DECL in case FN is a static member.  */
 	  decl_arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
 	  if (DECL_STATIC_FUNCTION_P (fn)
-	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	      && DECL_IOBJ_MEMBER_FUNCTION_P (decl))
 	    decl_arg_types = TREE_CHAIN (decl_arg_types);
 
 	  if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
 			 decl_arg_types))
             continue;
 
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 	      && (type_memfn_rqual (TREE_TYPE (decl))
 		  != type_memfn_rqual (TREE_TYPE (fn))))
 	    continue;
@@ -2552,7 +2551,7 @@ copy_default_args_to_explicit_spec (tree decl)
   old_type = TREE_TYPE (decl);
   spec_types = TYPE_ARG_TYPES (old_type);
 
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (decl))
     {
       /* Remove the this pointer, but remember the object's type for
 	 CV quals.  */
@@ -3137,7 +3136,7 @@ check_explicit_specialization (tree declarator,
 	     make DECL a static member function as well.  */
 	  if (DECL_FUNCTION_TEMPLATE_P (tmpl)
 	      && DECL_STATIC_FUNCTION_P (tmpl)
-	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+	      && DECL_IOBJ_MEMBER_FUNCTION_P (decl))
 	    revert_static_member_fn (decl);
 
 	  /* If this is a specialization of a member template of a
@@ -11814,7 +11813,7 @@ tsubst_contract_attribute (tree decl, tree t, tree args,
   /* For member functions, make this available for semantic analysis.  */
   tree save_ccp = current_class_ptr;
   tree save_ccr = current_class_ref;
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (decl))
     {
       tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
       tree this_type = TREE_TYPE (TREE_VALUE (arg_types));
@@ -14490,9 +14489,9 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   tree ctx = closure ? closure : DECL_CONTEXT (t);
   bool member = ctx && TYPE_P (ctx);
 
-  /* If this is a static lambda, remove the 'this' pointer added in
+  /* If this is a static or xobj lambda, remove the 'this' pointer added in
      tsubst_lambda_expr now that we know the closure type.  */
-  if (lambda_fntype && DECL_STATIC_FUNCTION_P (t))
+  if (lambda_fntype && !DECL_IOBJ_MEMBER_FUNCTION_P (t))
     lambda_fntype = static_fn_type (lambda_fntype);
 
   if (member && !closure)
@@ -14567,12 +14566,12 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
     DECL_NAME (r) = make_conv_op_name (TREE_TYPE (type));
 
   tree parms = DECL_ARGUMENTS (t);
-  if (closure && !DECL_STATIC_FUNCTION_P (t))
+  if (closure && DECL_IOBJ_MEMBER_FUNCTION_P (t))
     parms = DECL_CHAIN (parms);
   parms = tsubst (parms, args, complain, t);
   for (tree parm = parms; parm; parm = DECL_CHAIN (parm))
     DECL_CONTEXT (parm) = r;
-  if (closure && !DECL_STATIC_FUNCTION_P (t))
+  if (closure && DECL_IOBJ_MEMBER_FUNCTION_P (t))
     {
       tree tparm = build_this_parm (r, closure, type_memfn_quals (type));
       DECL_NAME (tparm) = closure_identifier;
@@ -14607,6 +14606,66 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
       && IDENTIFIER_ANY_OP_P (DECL_NAME (r))
       && !grok_op_properties (r, /*complain=*/false))
     return error_mark_node;
+
+  /* If we are looking at an xobj lambda, we might need to check the type of
+     its xobj parameter.  */
+  if (LAMBDA_FUNCTION_P (r) && DECL_XOBJ_MEMBER_FUNCTION_P (r))
+    {
+      tree closure_obj = DECL_CONTEXT (r);
+      tree lambda_expr = CLASSTYPE_LAMBDA_EXPR (closure_obj);
+      tree obj_param = TREE_TYPE (DECL_ARGUMENTS (r));
+
+      if (!(LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr) != CPLD_NONE
+	    || LAMBDA_EXPR_CAPTURE_LIST (lambda_expr)))
+	/* If a lambda has an empty capture clause, an xobj parameter of
+	   unrelated type is not an error.  */;
+      else if (dependent_type_p (obj_param))
+	/* If we are coming from tsubst_lambda_expr we might not have
+	   substituted into our xobj parameter yet.  We can't error out until
+	   we know what the type really is so do nothing...
+	   ...but if we are instantiating the call op for real and we don't
+	   have a real type then something has gone incredibly wrong.  */
+	gcc_assert (lambda_fntype);
+      else
+	{
+	  /* We have a lambda with captures, and know the type of the xobj
+	     parameter, time to check it.  */
+	  tree obj_param_type = TYPE_MAIN_VARIANT (non_reference (obj_param));
+	  if (!same_or_base_type_p (closure_obj, obj_param_type))
+	    {
+	      /* This error does not emit when the lambda's call operator
+		 template is instantiated by taking its address, such as in
+		 the following case:
+
+		 auto f = [x = 0](this auto&&){};
+		 int (*fp)(int&) = &decltype(f)::operator();
+
+		 It only emits when explicitly calling the call operator with
+		 an explicit template parameter:
+
+		 template<typename T>
+		 struct S : T {
+		   using T::operator();
+		   operator int() const {return {};}
+		 };
+
+		 auto s = S{[x = 0](this auto&&) {}};
+		 s.operator()<int>();
+
+		 This is due to resolve_address_of_overloaded_function being
+		 deficient at reporting candidates when overload resolution
+		 fails.
+
+		 This diagnostic will be active in the first case if/when
+		 resolve_address_of_overloaded_function is fixed to properly
+		 emit candidates upon failure to resolve to an overload.  */
+	      if (complain & tf_error)
+		error ("a lambda with captures may not have an explicit "
+		       "object parameter of an unrelated type");
+	      return error_mark_node;
+	    }
+	}
+    }
 
   /* Associate the constraints directly with the instantiation. We
      don't substitute through the constraints; that's only done when
@@ -19595,7 +19654,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 which would be skipped if cp_unevaluated_operand.  */
       cp_evaluated ev;
 
-      /* Fix the type of 'this'.  */
+      /* Fix the type of 'this'.
+	 For static and xobj member functions we use this to transport the
+	 lambda's closure type.  It appears that in the regular case the
+	 object parameter is still pulled off, and then re-added again anyway.
+	 So perhaps we could do something better here?  */
       fntype = build_memfn_type (fntype, type,
 				 type_memfn_quals (fntype),
 				 type_memfn_rqual (fntype));
@@ -22130,7 +22193,7 @@ check_non_deducible_conversions (tree parms, const tree *args, unsigned nargs,
 {
   /* Non-constructor methods need to leave a conversion for 'this', which
      isn't included in nargs here.  */
-  unsigned offset = (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+  unsigned offset = (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 		     && !DECL_CONSTRUCTOR_P (fn));
 
   for (unsigned ia = 0;
@@ -25357,16 +25420,16 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 	 I think think the old G++ behavior of just skipping the object
 	 parameter when comparing to a static member function was better, so
 	 let's stick with that for now.  This is CWG2834.  --jason 2023-12 */
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1)) /* FIXME or explicit */
+      if (DECL_OBJECT_MEMBER_FUNCTION_P (decl1))
 	{
 	  len--; /* LEN is the number of significant arguments for DECL1 */
 	  args1 = TREE_CHAIN (args1);
 	}
-      else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2)) /* FIXME or explicit */
+      else if (DECL_OBJECT_MEMBER_FUNCTION_P (decl2))
 	args2 = TREE_CHAIN (args2);
     }
-  else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1) /* FIXME implicit only */
-	   && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2))
+  else if (DECL_IOBJ_MEMBER_FUNCTION_P (decl1)
+	   && DECL_IOBJ_MEMBER_FUNCTION_P (decl2))
     {
       /* Note DR2445 also (IMO wrongly) removed the "only one" above, which
 	 would break e.g.  cpp1y/lambda-generic-variadic5.C.  */
@@ -25374,12 +25437,12 @@ more_specialized_fn (tree pat1, tree pat2, int len)
       args1 = TREE_CHAIN (args1);
       args2 = TREE_CHAIN (args2);
     }
-  else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (decl1) /* FIXME implicit only */
-	   || DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2))
+  else if (DECL_IOBJ_MEMBER_FUNCTION_P (decl1)
+	   || DECL_IOBJ_MEMBER_FUNCTION_P (decl2))
     {
       /* The other is a non-member or explicit object member function;
 	 rewrite the implicit object parameter to a reference.  */
-      tree ns = DECL_NONSTATIC_MEMBER_FUNCTION_P (decl2) ? decl2 : decl1;
+      tree ns = DECL_IOBJ_MEMBER_FUNCTION_P (decl2) ? decl2 : decl1;
       tree &nsargs = ns == decl2 ? args2 : args1;
       tree obtype = TREE_TYPE (TREE_VALUE (nsargs));
 
@@ -26712,7 +26775,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	  push_deferring_access_checks (dk_no_deferred);
 	  input_location = DECL_SOURCE_LOCATION (fn);
 
-	  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+	  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 	      && !DECL_LOCAL_DECL_P (fn))
 	    {
 	      /* If needed, set current_class_ptr for the benefit of
@@ -26775,7 +26838,7 @@ register_parameter_specializations (tree pattern, tree inst)
 {
   tree tmpl_parm = DECL_ARGUMENTS (pattern);
   tree spec_parm = DECL_ARGUMENTS (inst);
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (inst))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (inst))
     {
       register_local_specialization (spec_parm, tmpl_parm);
       spec_parm = skip_artificial_parms_for (inst, spec_parm);
@@ -28118,7 +28181,7 @@ value_dependent_expression_p (tree expression)
 	       cause the call to be considered value-dependent.  We also
 	       look through it in potential_constant_expression.  */
 	    if (i == 0 && fn && DECL_DECLARED_CONSTEXPR_P (fn)
-		&& DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
+		&& DECL_IOBJ_MEMBER_FUNCTION_P (fn)
 		&& TREE_CODE (op) == ADDR_EXPR)
 	      op = TREE_OPERAND (op, 0);
 	    if (value_dependent_expression_p (op))
