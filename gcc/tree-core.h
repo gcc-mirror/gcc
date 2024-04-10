@@ -983,6 +983,7 @@ enum annot_expr_kind {
   annot_expr_no_vector_kind,
   annot_expr_vector_kind,
   annot_expr_parallel_kind,
+  annot_expr_maybe_infinite_kind,
   annot_expr_kind_last
 };
 

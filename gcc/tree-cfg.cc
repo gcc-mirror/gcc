@@ -297,6 +297,9 @@ replace_loop_annotate_in_block (basic_block bb, class loop *loop)
 	  loop->can_be_parallel = true;
 	  loop->safelen = INT_MAX;
 	  break;
+	case annot_expr_maybe_infinite_kind:
+	  loop->finite_p = false;
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -320,12 +323,12 @@ replace_loop_annotate (void)
 
   for (auto loop : loops_list (cfun, 0))
     {
+      /* Push the global flag_finite_loops state down to individual loops.  */
+      loop->finite_p = flag_finite_loops;
+
       /* Check all exit source blocks for annotations.  */
       for (auto e : get_loop_exit_edges (loop))
 	replace_loop_annotate_in_block (e->src, loop);
-
-      /* Push the global flag_finite_loops state down to individual loops.  */
-      loop->finite_p = flag_finite_loops;
     }
 
   /* Remove IFN_ANNOTATE.  Safeguard for the case loop->latch == NULL.  */
@@ -347,6 +350,7 @@ replace_loop_annotate (void)
 	    case annot_expr_no_vector_kind:
 	    case annot_expr_vector_kind:
 	    case annot_expr_parallel_kind:
+	    case annot_expr_maybe_infinite_kind:
 	      break;
 	    default:
 	      gcc_unreachable ();

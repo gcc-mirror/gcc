@@ -4584,6 +4584,7 @@ gimple_boolify (tree expr)
 	case annot_expr_no_vector_kind:
 	case annot_expr_vector_kind:
 	case annot_expr_parallel_kind:
+	case annot_expr_maybe_infinite_kind:
 	  TREE_OPERAND (expr, 0) = gimple_boolify (TREE_OPERAND (expr, 0));
 	  if (TREE_CODE (type) != BOOLEAN_TYPE)
 	    TREE_TYPE (expr) = boolean_type_node;
