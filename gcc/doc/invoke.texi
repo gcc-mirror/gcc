@@ -23732,12 +23732,22 @@ These options are defined for AVR implementations:
 @table @gcctabopt
 @opindex mmcu
 @item -mmcu=@var{mcu}
-Specify Atmel AVR instruction set architectures (ISA) or MCU type.
+Specify the AVR instruction set architecture (ISA) or device type.
+The default for this option is@tie{}@code{avr2}.
 
-The default for this option is@tie{}@samp{avr2}.
+The following AVR devices and ISAs are supported.
+@emph{Note:} A complete device support consists of
+startup code @code{crt@var{mcu}.o}, a device header @code{avr/io*.h},
+a device library @code{lib@var{mcu}.a} and a
+@uref{https://gcc.gnu.org/wiki/avr-gcc#spec-files,device-specs} file
+@code{specs-@var{mcu}}. Only the latter is provided by the compiler
+according the supported @code{@var{mcu}}s below.  The rest is supported
+by @w{@uref{https://www.nongnu.org/avr-libc/,AVR-LibC}}, or by means of
+@uref{https://gcc.gnu.org/wiki/avr-gcc#atpack,@code{atpack}} files
+from the hardware manufacturer.
 
-GCC supports the following AVR devices and ISAs:
-
+@c Auto-generated.  Re-build when new devices are added to avr-mcus.def
+@c by running "make avr-mcus" in $builddir/gcc.
 @include avr-mmcu.texi
 
 @opindex mabsdata
@@ -24146,6 +24156,9 @@ If @var{device} is not a device but only a core architecture like
 @item __AVR_XMEGA__
 The device / architecture belongs to the XMEGA family of devices.
 
+@item __AVR_HAVE_ADIW__
+The device has the @code{ADIW} and @code{SBIW} instructions.
+
 @item __AVR_HAVE_ELPM__
 The device has the @code{ELPM} instruction.
 
@@ -24153,13 +24166,13 @@ The device has the @code{ELPM} instruction.
 The device has the @code{ELPM R@var{n},Z} and @code{ELPM
 R@var{n},Z+} instructions.
 
-@item __AVR_HAVE_MOVW__
-The device has the @code{MOVW} instruction to perform 16-bit
-register-register moves.
-
 @item __AVR_HAVE_LPMX__
 The device has the @code{LPM R@var{n},Z} and
 @code{LPM R@var{n},Z+} instructions.
+
+@item __AVR_HAVE_MOVW__
+The device has the @code{MOVW} instruction to perform 16-bit
+register-register moves.
 
 @item __AVR_HAVE_MUL__
 The device has a hardware multiplier. 
@@ -30078,16 +30091,29 @@ These command-line options are defined for PRU target:
 @table @gcctabopt
 @opindex minrt
 @item -minrt
-Link with a minimum runtime environment, with no support for static
-initializers and constructors.  Using this option can significantly reduce
-the size of the final ELF binary.  Beware that the compiler could still
-generate code with static initializers and constructors.  It is up to the
-programmer to ensure that the source program will not use those features.
+Link with a minimum runtime environment.  This can significantly reduce
+the size of the final ELF binary, but some standard C runtime features
+are removed.
+
+This option disables support for static initializers and constructors.
+Beware that the compiler could still generate code with static initializers
+and constructors.  It is up to the programmer to ensure that the source
+program will not use those features.
+
+The minimal startup code would not pass @code{argc} and @code{argv} arguments
+to @code{main}, so the latter must be declared as @code{int main (void)}.
+This is already the norm for most firmware projects.
 
 @opindex mmcu
 @item -mmcu=@var{mcu}
-Specify the PRU MCU variant to use.  Check Newlib for the exact list of
-supported MCUs.
+Specify the PRU hardware variant to use.  A correspondingly named
+spec file would be loaded, passing the memory region sizes to
+the linker and defining hardware-specific C macros.
+
+Newlib provides only the @code{sim} spec, intended for running
+regression tests using a simulator.  Specs for real hardware can be
+obtained by installing the
+@w{@uref{https://github.com/dinuxbg/gnuprumcu/,GnuPruMcu}} package.
 
 @opindex mno-relax
 @item -mno-relax
@@ -30204,7 +30230,8 @@ with @option{--with-isa-spec=} specifying a different default version.
 @item -march=@var{ISA-string}
 Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
 lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
-@samp{rv32imaf}.
+@samp{rv32imaf}. Additionally, a special value @option{help}
+(@option{-march=help}) is accepted to list all supported extensions.
 
 The syntax of the ISA string is defined as follows:
 

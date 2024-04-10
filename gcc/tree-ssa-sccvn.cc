@@ -1107,9 +1107,29 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	 the vn_reference ops differ by adjusting those indexes to
 	 appropriate constants.  */
       poly_int64 off = 0;
+      bool oob_index = false;
       for (unsigned i = result->length (); i > start; --i)
 	{
 	  auto &op = (*result)[i-1];
+	  if (flag_checking
+	      && op.opcode == ARRAY_REF
+	      && TREE_CODE (op.op0) == INTEGER_CST)
+	    {
+	      /* The verifier below chokes on inconsistencies of handling
+		 out-of-bound accesses so disable it in that case.  */
+	      tree atype = (*result)[i].type;
+	      if (TREE_CODE (atype) == ARRAY_TYPE)
+		if (tree dom = TYPE_DOMAIN (atype))
+		  if ((TYPE_MIN_VALUE (dom)
+		       && TREE_CODE (TYPE_MIN_VALUE (dom)) == INTEGER_CST
+		       && (wi::to_widest (op.op0)
+			   < wi::to_widest (TYPE_MIN_VALUE (dom))))
+		      || (TYPE_MAX_VALUE (dom)
+			  && TREE_CODE (TYPE_MAX_VALUE (dom)) == INTEGER_CST
+			  && (wi::to_widest (op.op0)
+			      > wi::to_widest (TYPE_MAX_VALUE (dom)))))
+		    oob_index = true;
+	    }
 	  if ((op.opcode == ARRAY_REF
 	       || op.opcode == ARRAY_RANGE_REF)
 	      && TREE_CODE (op.op0) == SSA_NAME)
@@ -1162,12 +1182,19 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		}
 	      else
 		{
-		  gcc_assert (known_ne (op.off, -1));
+		  gcc_assert (known_ne (op.off, -1)
+			      /* Out-of-bound indices can compute to
+				 a known -1 offset.  */
+			      || ((op.opcode == ARRAY_REF
+				   || op.opcode == ARRAY_RANGE_REF)
+				  && poly_int_tree_p (op.op0)
+				  && poly_int_tree_p (op.op1)
+				  && TREE_CODE (op.op2) == INTEGER_CST));
 		  off += op.off * BITS_PER_UNIT;
 		}
 	    }
 	}
-      if (flag_checking)
+      if (flag_checking && !oob_index)
 	{
 	  ao_ref r;
 	  if (start != 0)

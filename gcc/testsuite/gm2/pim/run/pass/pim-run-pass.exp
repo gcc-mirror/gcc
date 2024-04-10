@@ -27,18 +27,20 @@ load_lib gm2-torture.exp
 set gm2src ${srcdir}/../m2
 
 gm2_init_pim "${srcdir}/gm2/pim/run/pass"
-gm2_link_obj "sys.o"
+gm2_link_obj "sys.o constdef.o"
 
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     set output [gm2_target_compile $srcdir/$subdir/sys.mod sys.o object "-g -I$srcdir/../m2/gm2-libs -I$srcdir/$subdir -I$srcdir/../m2/gm2-compiler -I../m2/gm2-libs -I../m2/gm2-compiler -fpim"]
+    set output [gm2_target_compile $srcdir/$subdir/constdef.mod constdef.o object "-g -I$srcdir/../m2/gm2-libs -I$srcdir/$subdir -I$srcdir/../m2/gm2-compiler -I../m2/gm2-libs -I../m2/gm2-compiler -fpim"]
 
     # If we're only testing specific files and this isn't one of them, skip it.
     if ![runtest_file_p $runtests $testcase] then {
 	continue
     }
 
-    if { $testcase != "$srcdir/$subdir/sys.mod" } {
+    if { $testcase != "$srcdir/$subdir/sys.mod"
+	 && $testcase != "$srcdir/$subdir/constdef.mod" } {
 	gm2-torture-execute $testcase "" "pass"
     }
 }

@@ -16,6 +16,7 @@ import core.stdc.string;
 import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.dscope;
+import dmd.dsymbol;
 import dmd.errors;
 import dmd.errorsink;
 import dmd.expression;
@@ -299,7 +300,7 @@ Ldone:
  * Returns:
  *      the completed gcc asm statement, or null if errors occurred
  */
-extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
+public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
 {
     //printf("GccAsmStatement.semantic()\n");
     const bool doUnittests = global.params.parsingUnittestsRequired();
@@ -380,6 +381,26 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
     }
 
     return s;
+}
+
+/***********************************
+ * Run semantic analysis on an CAsmDeclaration.
+ * Params:
+ *      ad  = asm declaration
+ *      sc = the scope where the asm declaration is located
+ */
+public void gccAsmSemantic(CAsmDeclaration ad, Scope *sc)
+{
+    import dmd.typesem : pointerTo;
+    ad.code = semanticString(sc, ad.code, "asm definition");
+    ad.code.type = ad.code.type.nextOf().pointerTo();
+
+    // Asm definition always needs emitting into the root module.
+    import dmd.dmodule : Module;
+    if (sc._module && sc._module.isRoot())
+        return;
+    if (Module m = Module.rootModule)
+        m.members.push(ad);
 }
 
 unittest

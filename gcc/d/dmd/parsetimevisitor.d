@@ -36,6 +36,7 @@ public:
     void visit(AST.DebugSymbol s) { visit(cast(AST.Dsymbol)s); }
     void visit(AST.VersionSymbol s) { visit(cast(AST.Dsymbol)s); }
     void visit(AST.AliasAssign s) { visit(cast(AST.Dsymbol)s); }
+    void visit(AST.CAsmDeclaration s) { visit(cast(AST.Dsymbol)s); }
 
     // ScopeDsymbols
     void visit(AST.Package s) { visit(cast(AST.ScopeDsymbol)s); }

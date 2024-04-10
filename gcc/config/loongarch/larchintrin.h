@@ -87,13 +87,13 @@ __rdtimel_w (void)
 /* Assembly instruction format:	fcsr, rj.  */
 /* Data types in instruction templates:  VOID, UQI, USI.  */
 #define __movgr2fcsr(/*ui5*/ _1, _2) \
-  __builtin_loongarch_movgr2fcsr ((_1), (unsigned int) _2);
+  __builtin_loongarch_movgr2fcsr ((_1), _2);
 
 #if defined __loongarch64
 /* Assembly instruction format:	ui5, rj, si12.  */
 /* Data types in instruction templates:  VOID, USI, UDI, SI.  */
 #define __cacop_d(/*ui5*/ _1, /*unsigned long int*/ _2, /*si12*/ _3) \
-  ((void) __builtin_loongarch_cacop_d ((_1), (unsigned long int) (_2), (_3)))
+  __builtin_loongarch_cacop_d ((_1), (_2), (_3))
 #else
 #error "Unsupported ABI."
 #endif
@@ -104,7 +104,7 @@ extern __inline unsigned int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __cpucfg (unsigned int _1)
 {
-  return (unsigned int) __builtin_loongarch_cpucfg ((unsigned int) _1);
+  return __builtin_loongarch_cpucfg (_1);
 }
 
 #ifdef __loongarch64
@@ -114,7 +114,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __asrtle_d (long int _1, long int _2)
 {
-  __builtin_loongarch_asrtle_d ((long int) _1, (long int) _2);
+  __builtin_loongarch_asrtle_d (_1, _2);
 }
 
 /* Assembly instruction format:	rj, rk.  */
@@ -123,7 +123,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __asrtgt_d (long int _1, long int _2)
 {
-  __builtin_loongarch_asrtgt_d ((long int) _1, (long int) _2);
+  __builtin_loongarch_asrtgt_d (_1, _2);
 }
 #endif
 
@@ -131,7 +131,7 @@ __asrtgt_d (long int _1, long int _2)
 /* Assembly instruction format:	rd, rj, ui5.  */
 /* Data types in instruction templates:  DI, DI, UQI.  */
 #define __lddir_d(/*long int*/ _1, /*ui5*/ _2) \
-  ((long int) __builtin_loongarch_lddir_d ((long int) (_1), (_2)))
+  __builtin_loongarch_lddir_d ((_1), (_2))
 #else
 #error "Unsupported ABI."
 #endif
@@ -140,7 +140,7 @@ __asrtgt_d (long int _1, long int _2)
 /* Assembly instruction format:	rj, ui5.  */
 /* Data types in instruction templates:  VOID, DI, UQI.  */
 #define __ldpte_d(/*long int*/ _1, /*ui5*/ _2) \
-  ((void) __builtin_loongarch_ldpte_d ((long int) (_1), (_2)))
+  __builtin_loongarch_ldpte_d ((_1), (_2))
 #else
 #error "Unsupported ABI."
 #endif
@@ -151,7 +151,7 @@ extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __crc_w_b_w (char _1, int _2)
 {
-  return (int) __builtin_loongarch_crc_w_b_w ((char) _1, (int) _2);
+  return __builtin_loongarch_crc_w_b_w (_1, _2);
 }
 
 /* Assembly instruction format:	rd, rj, rk.  */
@@ -160,7 +160,7 @@ extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __crc_w_h_w (short _1, int _2)
 {
-  return (int) __builtin_loongarch_crc_w_h_w ((short) _1, (int) _2);
+  return __builtin_loongarch_crc_w_h_w (_1, _2);
 }
 
 /* Assembly instruction format:	rd, rj, rk.  */
@@ -169,7 +169,7 @@ extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __crc_w_w_w (int _1, int _2)
 {
-  return (int) __builtin_loongarch_crc_w_w_w ((int) _1, (int) _2);
+  return __builtin_loongarch_crc_w_w_w (_1, _2);
 }
 
 #ifdef __loongarch64
@@ -179,7 +179,7 @@ extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __crc_w_d_w (long int _1, int _2)
 {
-  return (int) __builtin_loongarch_crc_w_d_w ((long int) _1, (int) _2);
+  return __builtin_loongarch_crc_w_d_w (_1, _2);
 }
 #endif
 
@@ -189,7 +189,7 @@ extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __crcc_w_b_w (char _1, int _2)
 {
-  return (int) __builtin_loongarch_crcc_w_b_w ((char) _1, (int) _2);
+  return __builtin_loongarch_crcc_w_b_w (_1, _2);
 }
 
 /* Assembly instruction format:	rd, rj, rk.  */
@@ -198,7 +198,7 @@ extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __crcc_w_h_w (short _1, int _2)
 {
-  return (int) __builtin_loongarch_crcc_w_h_w ((short) _1, (int) _2);
+  return __builtin_loongarch_crcc_w_h_w (_1, _2);
 }
 
 /* Assembly instruction format:	rd, rj, rk.  */
@@ -207,7 +207,7 @@ extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __crcc_w_w_w (int _1, int _2)
 {
-  return (int) __builtin_loongarch_crcc_w_w_w ((int) _1, (int) _2);
+  return __builtin_loongarch_crcc_w_w_w (_1, _2);
 }
 
 #ifdef __loongarch64
@@ -217,44 +217,41 @@ extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __crcc_w_d_w (long int _1, int _2)
 {
-  return (int) __builtin_loongarch_crcc_w_d_w ((long int) _1, (int) _2);
+  return __builtin_loongarch_crcc_w_d_w (_1, _2);
 }
 #endif
 
 /* Assembly instruction format:	rd, ui14.  */
 /* Data types in instruction templates:  USI, USI.  */
 #define __csrrd_w(/*ui14*/ _1) \
-  ((unsigned int) __builtin_loongarch_csrrd_w ((_1)))
+  __builtin_loongarch_csrrd_w ((_1))
 
 /* Assembly instruction format:	rd, ui14.  */
 /* Data types in instruction templates:  USI, USI, USI.  */
 #define __csrwr_w(/*unsigned int*/ _1, /*ui14*/ _2) \
-  ((unsigned int) __builtin_loongarch_csrwr_w ((unsigned int) (_1), (_2)))
+  __builtin_loongarch_csrwr_w ((_1), (_2))
 
 /* Assembly instruction format:	rd, rj, ui14.  */
 /* Data types in instruction templates:  USI, USI, USI, USI.  */
 #define __csrxchg_w(/*unsigned int*/ _1, /*unsigned int*/ _2, /*ui14*/ _3) \
-  ((unsigned int) __builtin_loongarch_csrxchg_w ((unsigned int) (_1), \
-					       (unsigned int) (_2), (_3)))
+  __builtin_loongarch_csrxchg_w ((_1), (_2), (_3))
 
 #ifdef __loongarch64
 /* Assembly instruction format:	rd, ui14.  */
 /* Data types in instruction templates:  UDI, USI.  */
 #define __csrrd_d(/*ui14*/ _1) \
-  ((unsigned long int) __builtin_loongarch_csrrd_d ((_1)))
+  __builtin_loongarch_csrrd_d ((_1))
 
 /* Assembly instruction format:	rd, ui14.  */
 /* Data types in instruction templates:  UDI, UDI, USI.  */
 #define __csrwr_d(/*unsigned long int*/ _1, /*ui14*/ _2) \
-  ((unsigned long int) __builtin_loongarch_csrwr_d ((unsigned long int) (_1), \
-						   (_2)))
+  __builtin_loongarch_csrwr_d ((_1), (_2))
 
 /* Assembly instruction format:	rd, rj, ui14.  */
 /* Data types in instruction templates:  UDI, UDI, UDI, USI.  */
 #define __csrxchg_d(/*unsigned long int*/ _1, /*unsigned long int*/ _2, \
 		   /*ui14*/ _3) \
-  ((unsigned long int) __builtin_loongarch_csrxchg_d ( \
-    (unsigned long int) (_1), (unsigned long int) (_2), (_3)))
+  __builtin_loongarch_csrxchg_d ((_1), (_2), (_3))
 #endif
 
 /* Assembly instruction format:	rd, rj.  */
@@ -263,16 +260,16 @@ extern __inline unsigned char
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrrd_b (unsigned int _1)
 {
-  return (unsigned char) __builtin_loongarch_iocsrrd_b ((unsigned int) _1);
+  return __builtin_loongarch_iocsrrd_b (_1);
 }
 
 /* Assembly instruction format:	rd, rj.  */
 /* Data types in instruction templates:  UHI, USI.  */
-extern __inline unsigned char
+extern __inline unsigned short
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrrd_h (unsigned int _1)
 {
-  return (unsigned short) __builtin_loongarch_iocsrrd_h ((unsigned int) _1);
+  return __builtin_loongarch_iocsrrd_h (_1);
 }
 
 /* Assembly instruction format:	rd, rj.  */
@@ -281,7 +278,7 @@ extern __inline unsigned int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrrd_w (unsigned int _1)
 {
-  return (unsigned int) __builtin_loongarch_iocsrrd_w ((unsigned int) _1);
+  return __builtin_loongarch_iocsrrd_w (_1);
 }
 
 #ifdef __loongarch64
@@ -291,7 +288,7 @@ extern __inline unsigned long int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrrd_d (unsigned int _1)
 {
-  return (unsigned long int) __builtin_loongarch_iocsrrd_d ((unsigned int) _1);
+  return __builtin_loongarch_iocsrrd_d (_1);
 }
 #endif
 
@@ -301,7 +298,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrwr_b (unsigned char _1, unsigned int _2)
 {
-  __builtin_loongarch_iocsrwr_b ((unsigned char) _1, (unsigned int) _2);
+  __builtin_loongarch_iocsrwr_b (_1, _2);
 }
 
 /* Assembly instruction format:	rd, rj.  */
@@ -310,7 +307,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrwr_h (unsigned short _1, unsigned int _2)
 {
-  __builtin_loongarch_iocsrwr_h ((unsigned short) _1, (unsigned int) _2);
+  __builtin_loongarch_iocsrwr_h (_1, _2);
 }
 
 /* Assembly instruction format:	rd, rj.  */
@@ -319,7 +316,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrwr_w (unsigned int _1, unsigned int _2)
 {
-  __builtin_loongarch_iocsrwr_w ((unsigned int) _1, (unsigned int) _2);
+  __builtin_loongarch_iocsrwr_w (_1, _2);
 }
 
 #ifdef __loongarch64
@@ -329,7 +326,7 @@ extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __iocsrwr_d (unsigned long int _1, unsigned int _2)
 {
-  __builtin_loongarch_iocsrwr_d ((unsigned long int) _1, (unsigned int) _2);
+  __builtin_loongarch_iocsrwr_d (_1, _2);
 }
 #endif
 
@@ -340,7 +337,7 @@ extern __inline float
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __frecipe_s (float _1)
 {
-  return (float) __builtin_loongarch_frecipe_s ((float) _1);
+  return __builtin_loongarch_frecipe_s (_1);
 }
 
 /* Assembly instruction format: fd, fj.  */
@@ -349,7 +346,7 @@ extern __inline double
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __frecipe_d (double _1)
 {
-  return (double) __builtin_loongarch_frecipe_d ((double) _1);
+  return __builtin_loongarch_frecipe_d (_1);
 }
 
 /* Assembly instruction format: fd, fj.  */
@@ -358,7 +355,7 @@ extern __inline float
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __frsqrte_s (float _1)
 {
-  return (float) __builtin_loongarch_frsqrte_s ((float) _1);
+  return __builtin_loongarch_frsqrte_s (_1);
 }
 
 /* Assembly instruction format: fd, fj.  */
@@ -367,7 +364,7 @@ extern __inline double
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 __frsqrte_d (double _1)
 {
-  return (double) __builtin_loongarch_frsqrte_d ((double) _1);
+  return __builtin_loongarch_frsqrte_d (_1);
 }
 #endif
 

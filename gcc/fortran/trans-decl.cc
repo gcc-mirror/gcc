@@ -1526,6 +1526,10 @@ add_attributes_to_decl (symbol_attribute sym_attr, tree list)
     list = tree_cons (get_identifier ("omp declare target"),
 		      clauses, list);
 
+  if (sym_attr.omp_declare_target_indirect)
+    list = tree_cons (get_identifier ("omp declare target indirect"),
+		      clauses, list);
+
   return list;
 }
 

@@ -1,3 +1,20 @@
+2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105473
+	* io/list_read.c (eat_separator): Reject comma as a
+	seprator when it is being used as a decimal point.
+	(parse_real): Reject a '.' when is should be a comma.
+	(read_real): Likewise.
+	* io/read.c (read_f): Add more checks for ',' and '.'
+	conditions.
+
+2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/107068
+	* io/list_read.c (read_logical): When looking for a possible
+	variable name, check for left paren, indicating a possible
+	array reference.
+
 2024-02-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/99210

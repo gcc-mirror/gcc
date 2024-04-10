@@ -4700,7 +4700,7 @@ BEGIN
    PushIntegerTree(BuildNumberOfArrayElements(location, Mod2Gcc(arrayType))) ;
    IF IsConstString(el)
    THEN
-      PushCard(GetStringLength(el))
+      PushCard(GetStringLength(tokenno, el))
    ELSIF IsConst(el) AND (SkipType(GetType(el))=Char) AND IsValueSolved(el)
    THEN
       PushCard(1)
@@ -4755,7 +4755,7 @@ BEGIN
    THEN
       isChar := FALSE ;
       s := InitStringCharStar(KeyToCharStar(GetString(el))) ;
-      l := GetStringLength(el)
+      l := GetStringLength(tokenno, el)
    ELSIF IsConst(el) AND (SkipType(GetType(el))=Char) AND IsValueSolved(el)
    THEN
       isChar := TRUE
@@ -4905,7 +4905,7 @@ BEGIN
       offset := totalLength ;
       IF IsConstString (element)
       THEN
-         INC (totalLength, GetStringLength (element)) ;
+         INC (totalLength, GetStringLength (tokenno, element)) ;
          IF totalLength > arrayIndex
          THEN
             key := GetString (element) ;

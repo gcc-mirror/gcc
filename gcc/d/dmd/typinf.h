@@ -16,7 +16,10 @@ class Expression;
 class Type;
 struct Scope;
 
-bool genTypeInfo(Expression *e, const Loc &loc, Type *torig, Scope *sc);
+namespace dmd
+{
+    bool genTypeInfo(Expression *e, const Loc &loc, Type *torig, Scope *sc);
+    bool isSpeculativeType(Type *t);
+    bool builtinTypeInfo(Type *t);
+}
 Type *getTypeInfoType(const Loc &loc, Type *t, Scope *sc, bool genObjCode = true);
-bool isSpeculativeType(Type *t);
-bool builtinTypeInfo(Type *t);

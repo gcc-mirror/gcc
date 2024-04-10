@@ -1042,7 +1042,6 @@ Ldone:
  *  false if any errors exist in the signature.
  */
 public
-extern (C++)
 bool functionSemantic(FuncDeclaration fd)
 {
     //printf("functionSemantic() %p %s\n", this, toChars());
@@ -1101,7 +1100,6 @@ bool functionSemantic(FuncDeclaration fd)
  * Returns false if any errors exist in the body.
  */
 public
-extern (C++)
 bool functionSemantic3(FuncDeclaration fd)
 {
     if (fd.semanticRun < PASS.semantic3 && fd._scope)

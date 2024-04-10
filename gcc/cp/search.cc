@@ -1949,7 +1949,11 @@ locate_field_accessor (tree basetype_path, tree field_decl, bool const_p)
 }
 
 /* Check throw specifier of OVERRIDER is at least as strict as
-   the one of BASEFN.  */
+   the one of BASEFN.  This is due to [except.spec]: "If a virtual function
+   has a non-throwing exception specification, all declarations, including
+   the definition, of any function that overrides that virtual function in
+   any derived class shall have a non-throwing exception specification,
+   unless the overriding function is defined as deleted."  */
 
 bool
 maybe_check_overriding_exception_spec (tree overrider, tree basefn)
@@ -1959,7 +1963,10 @@ maybe_check_overriding_exception_spec (tree overrider, tree basefn)
   tree base_throw = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (basefn));
   tree over_throw = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (overrider));
 
-  if (DECL_INVALID_OVERRIDER_P (overrider))
+  if (DECL_INVALID_OVERRIDER_P (overrider)
+      /* CWG 1351 added the "unless the overriding function is defined as
+	 deleted" wording.  */
+      || DECL_DELETED_FN (overrider))
     return true;
 
   /* Can't check this yet.  Pretend this is fine and let
@@ -1967,6 +1974,17 @@ maybe_check_overriding_exception_spec (tree overrider, tree basefn)
   if (UNPARSED_NOEXCEPT_SPEC_P (base_throw)
       || UNPARSED_NOEXCEPT_SPEC_P (over_throw))
     return true;
+
+  /* We also have to defer checking when we're in a template and couldn't
+     instantiate & evaluate the noexcept to true/false.  */
+  if (processing_template_decl)
+    if ((base_throw
+	 && base_throw != noexcept_true_spec
+	 && base_throw != noexcept_false_spec)
+	|| (over_throw
+	    && over_throw != noexcept_true_spec
+	    && over_throw != noexcept_false_spec))
+      return true;
 
   if (!comp_except_specs (base_throw, over_throw, ce_derived))
     {

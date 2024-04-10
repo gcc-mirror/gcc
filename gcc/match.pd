@@ -8586,7 +8586,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  || optimize_vectors_before_lowering_p ())
       && types_match (@0, @1)
       && types_match (TREE_TYPE (TREE_TYPE (@0)), TREE_TYPE (@2))
-      && TYPE_VECTOR_SUBPARTS (type).is_constant ())
+      && TYPE_VECTOR_SUBPARTS (type).is_constant ()
+      && multiple_p (wi::to_poly_offset (@rpos),
+		     wi::to_poly_offset (TYPE_SIZE (TREE_TYPE (type)))))
   (with
    {
      unsigned HOST_WIDE_INT elsz

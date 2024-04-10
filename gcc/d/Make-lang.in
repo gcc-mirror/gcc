@@ -104,6 +104,7 @@ D_FRONTEND_OBJS = \
 	d/cppmangle.o \
 	d/ctfeexpr.o \
 	d/ctorflow.o \
+	d/cxxfrontend.o \
 	d/dcast.o \
 	d/dclass.o \
 	d/declaration.o \

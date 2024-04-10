@@ -15,7 +15,7 @@ constexpr bool is_throwable(...) { return false; }
 
 constexpr bool b = is_throwable<moveonly>(moveonly{});
 #if __cplusplus >= 202002L
-static_assert (b, "move from the function parameter"); // { dg-bogus "" "PR113853" { xfail c++20 } }
+static_assert (b, "move from the function parameter");
 #else
 static_assert (!b, "no move from the function parameter");
 #endif

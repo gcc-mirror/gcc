@@ -1342,6 +1342,9 @@ BEGIN
    ElementSizeOp,
    BuiltinConstOp,  (* Nothing to do, it is assigning a constant to op1 (also a const).  *)
    BuiltinTypeInfoOp,  (* Likewise assigning op1 (const) with a type.  *)
+   StringConvertCnulOp,
+   StringConvertM2nulOp,
+   StringLengthOp,
    ProcedureScopeOp,
    InitEndOp,
    InitStartOp,

@@ -5356,6 +5356,7 @@ trees_out::core_bools (tree t)
       WB (t->base.u.bits.user_align);
       WB (t->base.u.bits.nameless_flag);
       WB (t->base.u.bits.atomic_flag);
+      WB (t->base.u.bits.unavailable_flag);
       break;
     }
 
@@ -5536,6 +5537,7 @@ trees_in::core_bools (tree t)
       RB (t->base.u.bits.user_align);
       RB (t->base.u.bits.nameless_flag);
       RB (t->base.u.bits.atomic_flag);
+      RB (t->base.u.bits.unavailable_flag);
       break;
     }
 
@@ -6315,6 +6317,7 @@ trees_out::core_vals (tree t)
       WT (((lang_tree_node *)t)->lambda_expression.capture_list);
       WT (((lang_tree_node *)t)->lambda_expression.this_capture);
       WT (((lang_tree_node *)t)->lambda_expression.extra_scope);
+      WT (((lang_tree_node *)t)->lambda_expression.regen_info);
       /* pending_proxies is a parse-time thing.  */
       gcc_assert (!((lang_tree_node *)t)->lambda_expression.pending_proxies);
       if (state)
@@ -6816,6 +6819,7 @@ trees_in::core_vals (tree t)
       RT (((lang_tree_node *)t)->lambda_expression.capture_list);
       RT (((lang_tree_node *)t)->lambda_expression.this_capture);
       RT (((lang_tree_node *)t)->lambda_expression.extra_scope);
+      RT (((lang_tree_node *)t)->lambda_expression.regen_info);
       /* lambda_expression.pending_proxies is NULL  */
       ((lang_tree_node *)t)->lambda_expression.locus
 	= state->read_location (*this);

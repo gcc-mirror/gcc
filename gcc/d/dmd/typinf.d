@@ -35,7 +35,7 @@ import core.stdc.stdio;
  * Returns:
  *      true if `TypeInfo` was generated and needs compiling to object file
  */
-extern (C++) bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
+bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
 {
     // printf("genTypeInfo() %s\n", torig.toChars());
 
@@ -147,7 +147,7 @@ private TypeInfoDeclaration getTypeInfoDeclaration(Type t)
  *      true if any part of type t is speculative.
  *      if t is null, returns false.
  */
-extern (C++) bool isSpeculativeType(Type t)
+bool isSpeculativeType(Type t)
 {
     static bool visitVector(TypeVector t)
     {
@@ -244,7 +244,7 @@ extern (C++) bool isSpeculativeType(Type t)
 /* Indicates whether druntime already contains an appropriate TypeInfo instance
  * for the specified type (in module rt.util.typeinfo).
  */
-extern (C++) bool builtinTypeInfo(Type t)
+bool builtinTypeInfo(Type t)
 {
     if (!t.mod) // unqualified types only
     {

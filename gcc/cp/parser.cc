@@ -25724,8 +25724,15 @@ cp_parser_parameter_declaration (cp_parser *parser,
      for a C-style variadic function. */
   token = cp_lexer_peek_token (parser->lexer);
 
-  bool const xobj_param_p
+  bool xobj_param_p
     = decl_spec_seq_has_spec_p (&decl_specifiers, ds_this);
+  if (xobj_param_p && template_parm_p)
+    {
+      error_at (decl_specifiers.locations[ds_this],
+		"%<this%> specifier in template parameter declaration");
+      xobj_param_p = false;
+      decl_specifiers.locations[ds_this] = 0;
+    }
 
   if (xobj_param_p
       && ((declarator && declarator->parameter_pack_p)

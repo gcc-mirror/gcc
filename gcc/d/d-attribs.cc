@@ -320,14 +320,14 @@ build_attributes (Expressions *eattrs)
   if (!eattrs)
     return NULL_TREE;
 
-  expandTuples (eattrs);
+  dmd::expandTuples (eattrs);
 
   tree attribs = NULL_TREE;
 
   for (size_t i = 0; i < eattrs->length; i++)
     {
       Expression *attr = (*eattrs)[i];
-      Dsymbol *sym = toDsymbol (attr->type, NULL);
+      Dsymbol *sym = dmd::toDsymbol (attr->type, NULL);
 
       if (!sym)
 	{
@@ -354,7 +354,7 @@ build_attributes (Expressions *eattrs)
 
       /* Get the result of the attribute if it hasn't already been folded.  */
       if (attr->op == EXP::call)
-	attr = ctfeInterpret (attr);
+	attr = dmd::ctfeInterpret (attr);
 
       if (attr->op != EXP::structLiteral)
 	{

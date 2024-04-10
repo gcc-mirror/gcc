@@ -150,14 +150,14 @@ declaration_type (Declaration *decl)
       TypeFunction *tf = TypeFunction::create (NULL, decl->type,
 					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
-      return build_ctype (merge2 (t));
+      return build_ctype (dmd::merge2 (t));
     }
 
   /* Static array va_list have array->pointer conversions applied.  */
   if (decl->isParameter () && valist_array_p (decl->type))
     {
-      Type *valist = decl->type->nextOf ()->pointerTo ();
-      valist = castMod (valist, decl->type->mod);
+      Type *valist = dmd::pointerTo (decl->type->nextOf ());
+      valist = dmd::castMod (valist, decl->type->mod);
       return build_ctype (valist);
     }
 
@@ -200,14 +200,14 @@ parameter_type (Parameter *arg)
       TypeFunction *tf = TypeFunction::create (NULL, arg->type,
 					       VARARGnone, LINK::d);
       TypeDelegate *t = TypeDelegate::create (tf);
-      return build_ctype (merge2 (t));
+      return build_ctype (dmd::merge2 (t));
     }
 
   /* Static array va_list have array->pointer conversions applied.  */
   if (valist_array_p (arg->type))
     {
-      Type *valist = arg->type->nextOf ()->pointerTo ();
-      valist = castMod (valist, arg->type->mod);
+      Type *valist = dmd::pointerTo (arg->type->nextOf ());
+      valist = dmd::castMod (valist, arg->type->mod);
       return build_ctype (valist);
     }
 
@@ -1089,7 +1089,7 @@ build_array_struct_comparison (tree_code code, StructDeclaration *sd,
   add_stmt (build_assign (INIT_EXPR, result, init));
 
   /* Cast pointer-to-array to pointer-to-struct.  */
-  tree ptrtype = build_ctype (sd->type->pointerTo ());
+  tree ptrtype = build_ctype (dmd::pointerTo (sd->type));
   tree lentype = TREE_TYPE (length);
 
   push_binding_level (level_block);
@@ -1859,7 +1859,7 @@ void_okay_p (tree t)
 
   if (VOID_TYPE_P (TREE_TYPE (type)))
     {
-      tree totype = build_ctype (Type::tuns8->pointerTo ());
+      tree totype = build_ctype (dmd::pointerTo (Type::tuns8));
       return fold_convert (totype, t);
     }
 

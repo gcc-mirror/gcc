@@ -3009,6 +3009,9 @@ Target supports @option{-mpe-aligned-commons}.
 @item pie
 Target supports @option{-pie}, @option{-fpie} and @option{-fPIE}.
 
+@item linker_plugin
+Target supports the linker plugin.
+
 @item rdynamic
 Target supports @option{-rdynamic}.
 
@@ -3337,6 +3340,10 @@ system.  Some tests are incompatible with DejaGnu's handling of remote
 hosts, which involves copying the source file to the host and compiling
 it with a relative path and "@code{-o a.out}".
 
+@item dg-require-linker-plugin ""
+Skip the test is the target does not support the linker plugin.
+This is equivalent to @code{dg-require-effective-target linker_plugin}.
+
 @item dg-require-mkfifo ""
 Skip the test if the target does not support @code{mkfifo}.
 
@@ -3395,6 +3402,10 @@ excluding LTO sections.
 @item scan-assembler-times @var{regex} @var{num} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} is matched exactly @var{num} times in the test's
 assembler output, excluding LTO sections.
+
+@item scan-assembler-bound @var{regex} @var{cmp} @var{num} [@{ target/xfail @var{selector} @}]
+Passes if @var{regex} is matched @var{cmp} @var{num} times in the test's
+assembler output, excluding LTO sections. @var{cmp} is a comparitor.
 
 @item scan-assembler-dem @var{regex} [@{ target/xfail @var{selector} @}]
 Passes if @var{regex} matches text in the test's demangled assembler output,

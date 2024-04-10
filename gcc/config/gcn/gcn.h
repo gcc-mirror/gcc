@@ -32,6 +32,8 @@
 	builtin_define ("__RDNA2__");                                          \
       else if (TARGET_RDNA3)                                                   \
 	builtin_define ("__RDNA3__");                                          \
+      else                                                                     \
+	gcc_unreachable ();                                                    \
       if (TARGET_FIJI)                                                         \
 	{                                                                      \
 	  builtin_define ("__fiji__");                                         \
@@ -43,10 +45,14 @@
 	builtin_define ("__gfx906__");                                         \
       else if (TARGET_GFX908)                                                  \
 	builtin_define ("__gfx908__");                                         \
+      else if (TARGET_GFX90a)                                                  \
+	builtin_define ("__gfx90a__");                                         \
       else if (TARGET_GFX1030)                                                 \
 	builtin_define ("__gfx1030");                                          \
       else if (TARGET_GFX1100)                                                 \
 	builtin_define ("__gfx1100__");                                        \
+      else                                                                     \
+	gcc_unreachable ();                                                    \
   } while (0)
 
 #define ASSEMBLER_DIALECT (TARGET_RDNA2_PLUS ? 1 : 0)

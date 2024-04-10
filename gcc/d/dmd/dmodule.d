@@ -1300,7 +1300,7 @@ extern (C++) struct ModuleDeclaration
  *      aclasses = array to fill in
  * Returns: array of local classes
  */
-extern (C++) void getLocalClasses(Module mod, ref ClassDeclarations aclasses)
+void getLocalClasses(Module mod, ref ClassDeclarations aclasses)
 {
     //printf("members.length = %d\n", mod.members.length);
     int pushAddClassDg(size_t n, Dsymbol sm)
@@ -1565,7 +1565,7 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
  *      const(MemberInfo)[] getMembers(string);
  * Returns NULL if not found
  */
-extern(C++) FuncDeclaration findGetMembers(ScopeDsymbol dsym)
+FuncDeclaration findGetMembers(ScopeDsymbol dsym)
 {
     import dmd.opover : search_function;
     Dsymbol s = search_function(dsym, Id.getmembers);

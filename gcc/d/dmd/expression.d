@@ -108,7 +108,7 @@ inout(Expression) lastComma(inout Expression e)
  *     exps  = array of Expressions
  *     names = optional array of names corresponding to Expressions
  */
-extern (C++) void expandTuples(Expressions* exps, Identifiers* names = null)
+void expandTuples(Expressions* exps, Identifiers* names = null)
 {
     //printf("expandTuples()\n");
     if (exps is null)

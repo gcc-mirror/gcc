@@ -5110,18 +5110,23 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   gcc_assert (nelt <= 64);
   gcc_assert (sel.length () == nelt);
 
-  if (!dst)
-    {
-      /* All vector permutations are possible on this architecture,
-         with varying degrees of efficiency depending on the permutation. */
-      return true;
-    }
-
   unsigned int perm[64];
   for (unsigned int i = 0; i < nelt; ++i)
     perm[i] = sel[i] & (2 * nelt - 1);
   for (unsigned int i = nelt; i < 64; ++i)
     perm[i] = 0;
+
+  /* RDNA devices can only do permutations within each group of 32-lanes.
+     Reject permutations that cross the boundary.  */
+  if (TARGET_RDNA2_PLUS)
+    for (unsigned int i = 0; i < nelt; i++)
+      if (i < 31 ? perm[i] > 31 : perm[i] < 32)
+	return false;
+
+  /* All vector permutations are possible on other architectures,
+     with varying degrees of efficiency depending on the permutation. */
+  if (!dst)
+    return true;
 
   src0 = force_reg (vmode, src0);
   src1 = force_reg (vmode, src1);
@@ -5443,6 +5448,8 @@ char *
 gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 			 int unspec, int shift)
 {
+  gcc_checking_assert (!TARGET_RDNA2_PLUS);
+
   static char buf[128];
   const char *dpp;
   const char *vcc_in = "";
@@ -5504,6 +5511,8 @@ gcn_expand_dpp_shr_insn (machine_mode mode, const char *insn,
 rtx
 gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 {
+  gcc_checking_assert (!TARGET_RDNA2_PLUS);
+
   machine_mode orig_mode = mode;
   machine_mode scalar_mode = GET_MODE_INNER (mode);
   int vf = GET_MODE_NUNITS (mode);

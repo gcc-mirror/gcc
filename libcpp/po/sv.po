@@ -1,17 +1,16 @@
 # Swedish messages for cpplib.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024.
 #
-# Remember: GCC team does not want RCS keywords in the header!
-#
+# Remember: The GCC team does not want RCS keywords in the header!
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 13.1-b20230212\n"
+"Project-Id-Version: cpplib 14.1-b20240218\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2023-02-10 22:39+0000\n"
-"PO-Revision-Date: 2023-02-26 17:10+0100\n"
+"POT-Creation-Date: 2024-02-16 21:34+0000\n"
+"PO-Revision-Date: 2024-02-20 09:31+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -20,231 +19,253 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
-#: charset.cc:683
+#: charset.cc:759
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "konvertering från %s till %s stödjs inte av iconv"
 
-#: charset.cc:686
+#: charset.cc:762
 msgid "iconv_open"
 msgstr "iconv_open"
 
-#: charset.cc:696
+#: charset.cc:772
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "ingen iconv-implementation, kan inte konvertera från %s till %s"
 
-#: charset.cc:794
+#: charset.cc:870
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "tecken 0x%lx finns inte i källkodens grundteckenuppsättning\n"
 
-#: charset.cc:811 charset.cc:2420
+#: charset.cc:887 charset.cc:2574
 msgid "converting to execution character set"
 msgstr "konverterar till teckenuppsättning för körning"
 
-#: charset.cc:817
+#: charset.cc:893
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr "tecken 0x%lx är inte en byte i teckenuppsättning för körning"
 
-#: charset.cc:1437
+#: charset.cc:1549
 msgid "universal character names are only valid in C++ and C99"
 msgstr "universella teckennamn är endast giltiga i C++ och C99"
 
-#: charset.cc:1441
+#: charset.cc:1553
 msgid "C99's universal character names are incompatible with C90"
 msgstr "C99:s universella teckennamn är inkompatibla med C90"
 
-#: charset.cc:1444
+#: charset.cc:1556
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "betydelsen av ”\\%c” är annorlunda i traditionell C"
 
-#: charset.cc:1483
+#: charset.cc:1595
 msgid "'\\N' not followed by '{'"
 msgstr "”\\N” inte följt av ”{”"
 
-#: charset.cc:1513
+#: charset.cc:1625
 msgid "empty named universal character escape sequence; treating it as separate tokens"
 msgstr "tomma namngivna universella teckenspecialsekvenser; behandlar det som separata symboler"
 
-#: charset.cc:1520
+#: charset.cc:1632
 msgid "empty named universal character escape sequence"
 msgstr "ofullständig namngiven universell teckenspecialsekvens"
 
-#: charset.cc:1525
+#: charset.cc:1637
 msgid "named universal character escapes are only valid in C++23"
 msgstr "namngivna universella teckenspecialsekvenser är endast giltiga i C++23"
 
-#: charset.cc:1545
+#: charset.cc:1657
 #, c-format
 msgid "\\N{%.*s} is not a valid universal character; treating it as separate tokens"
 msgstr "\\N{%.*s} är inte ett giltigt universellt tecken; behandlar det som separata symboler"
 
-#: charset.cc:1551
+#: charset.cc:1663
 #, c-format
 msgid "\\N{%.*s} is not a valid universal character"
 msgstr "\\N{%.*s} är inte ett giltigt universellt tecken"
 
-#: charset.cc:1561
+#: charset.cc:1673
 #, c-format
 msgid "did you mean \\N{%s}?"
 msgstr "menade du \\N{%s}?"
 
-#: charset.cc:1579
+#: charset.cc:1691
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr "”\\N{” inte avslutad med ”}” efter %.*s; behandlar det som separata symboler"
 
-#: charset.cc:1588
+#: charset.cc:1700
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s"
 msgstr "”\\N{” inte avslutad med ”}” efter %.*s"
 
-#: charset.cc:1596
+#: charset.cc:1708
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr "I _cpp_valid_ucn men inte en UCN"
 
-#: charset.cc:1638
+#: charset.cc:1750
 msgid "empty delimited escape sequence; treating it as separate tokens"
 msgstr "tom avgränsad specialsekvens; behandlar den som separata symboler"
 
-#: charset.cc:1645 charset.cc:1978 charset.cc:2081
+#: charset.cc:1757 charset.cc:2124 charset.cc:2227
 msgid "empty delimited escape sequence"
 msgstr "tom avgränsad specialsekvens"
 
-#: charset.cc:1649 charset.cc:1984 charset.cc:2087
+#: charset.cc:1761 charset.cc:2130 charset.cc:2233
 msgid "delimited escape sequences are only valid in C++23"
 msgstr "avgränsade specialsekvenser är endast giltiga i C++23"
 
-#: charset.cc:1663
+#: charset.cc:1775
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr "”\\u{” inte avslutad med ”}” efter %.*s; behandlar det som separata symboler"
 
-#: charset.cc:1675
+#: charset.cc:1787
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "ofullständigt universellt teckennamn %.*s"
 
-#: charset.cc:1679
+#: charset.cc:1791
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s"
 msgstr "”\\u{” inte avslutad med ”}” efter %.*s"
 
-#: charset.cc:1694
+#: charset.cc:1806
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s är inte ett giltigt universellt tecken"
 
-#: charset.cc:1704 lex.cc:2079
+#: charset.cc:1816 lex.cc:2082
 msgid "'$' in identifier or number"
 msgstr "”$” i identifierare eller tal"
 
-#: charset.cc:1714
+#: charset.cc:1826
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "universellt tecken %.*s är inte giltigt i en identifierare"
 
-#: charset.cc:1718
+#: charset.cc:1830
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "universellt tecken %.*s är inte giltigt vid början av en identifierare"
 
-#: charset.cc:1725
+#: charset.cc:1837
 #, c-format
 msgid "%.*s is outside the UCS codespace"
 msgstr "%.*s är utanför UCS-kodrymden"
 
-#: charset.cc:1769 charset.cc:2797
+#: charset.cc:1881 charset.cc:3037
 msgid "converting UCN to source character set"
 msgstr "vid konvertering av UCN källteckenuppsättning"
 
-#: charset.cc:1776
+#: charset.cc:1888
 msgid "converting UCN to execution character set"
 msgstr "vid konvertering av UCN till teckenuppsättning för körning"
 
-#: charset.cc:1840
+#: charset.cc:1952
 #, c-format
 msgid "extended character %.*s is not valid in an identifier"
 msgstr "utökat tecken %.*s är inte giltigt i en identifierare"
 
-#: charset.cc:1857
+#: charset.cc:1969
 #, c-format
 msgid "extended character %.*s is not valid at the start of an identifier"
 msgstr "utökat tecken %.*s är inte giltigt vid början av en identifierare"
 
-#: charset.cc:1945
+#: charset.cc:2091
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr "betydelsen av ”\\x” är annorlunda i traditionell C"
 
-#: charset.cc:1992
+#: charset.cc:2138
 msgid "\\x used with no following hex digits"
 msgstr "\\x använt utan några följande hexadecimala siffror"
 
-#: charset.cc:1998
+#: charset.cc:2144
 #, c-format
 msgid "'\\x{' not terminated with '}' after %.*s"
 msgstr "”\\x{” inte avslutad med ”}” efter %.*s"
 
-#: charset.cc:2006
+#: charset.cc:2152
 msgid "hex escape sequence out of range"
 msgstr "hexadecimal specialsekvens utanför intervallet"
 
-#: charset.cc:2049
+#: charset.cc:2195
 msgid "'\\o' not followed by '{'"
 msgstr "”\\o” inte följt av ”{”"
 
-#: charset.cc:2093
+#: charset.cc:2239
 #, c-format
 msgid "'\\o{' not terminated with '}' after %.*s"
 msgstr "”\\o{” inte avslutad med ”}” efter %.*s"
 
-#: charset.cc:2102
+#: charset.cc:2248
 msgid "octal escape sequence out of range"
 msgstr "oktal specialsekvens utanför intervallet"
 
-#: charset.cc:2184
+#: charset.cc:2300 charset.cc:2310
+#, c-format
+msgid "numeric escape sequence in unevaluated string: '\\%c'"
+msgstr "numerisk specialsekvens i oevaluerad sträng: ”\\%c”"
+
+#: charset.cc:2338
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr "betydelsen av ”\\a” är annorlunda i traditionell C"
 
-#: charset.cc:2191
+#: charset.cc:2345
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "icke-ISO-standardspecialsekvens, ”\\%c”"
 
-#: charset.cc:2199
+#: charset.cc:2353
 #, c-format
 msgid "unknown escape sequence: '\\%c'"
 msgstr "okänd specialsekvens: ”\\%c”"
 
-#: charset.cc:2209
+#: charset.cc:2363
 #, c-format
 msgid "unknown escape sequence: '\\%s'"
 msgstr "okänd specialsekvens: ”\\%s”"
 
-#: charset.cc:2217
+#: charset.cc:2371
 msgid "converting escape sequence to execution character set"
 msgstr "vid konvertering av specialsekvens till teckenuppsättning för körning"
 
-#: charset.cc:2357
+#: charset.cc:2511
 msgid "missing open quote"
 msgstr "inledande citationstecken saknas"
 
-#: charset.cc:2575 charset.cc:2658
-msgid "character constant too long for its type"
-msgstr "teckenkonstant för lång för sin typ"
+#: charset.cc:2772
+msgid "character not encodable in a single execution character code unit"
+msgstr "tecknet är inte kodbart i en ensam körtidsteckenskodenhet"
 
-#: charset.cc:2578
+#: charset.cc:2777
+msgid "at least one character in a multi-character literal not encodable in a single execution character code unit"
+msgstr "åtminstone ett tecken i en flerteckensliteral är inte kodbart i en ensam körtidsteckenskodenhet"
+
+#: charset.cc:2795
+#, c-format
+msgid "multi-character literal with %ld characters exceeds 'int' size of %ld bytes"
+msgstr "flerteckensliteral med %ld tecken överskrider storleken på ”int” på %ld byte"
+
+#: charset.cc:2799 charset.cc:2894
+msgid "multi-character literal cannot have an encoding prefix"
+msgstr "flerteckensliteraler kan inte ha ett kodningsprefix"
+
+#: charset.cc:2802 charset.cc:2897
+msgid "character not encodable in a single code unit"
+msgstr "tecknet är inte kodbart i en ensam kodenhet"
+
+#: charset.cc:2806
 msgid "multi-character character constant"
 msgstr "flerteckens teckenkonstant"
 
-#: charset.cc:2698
+#: charset.cc:2938
 msgid "empty character constant"
 msgstr "tom teckenkonstant"
 
-#: charset.cc:2882
+#: charset.cc:3122
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "misslyckades att konvertera %s till %s"
@@ -259,15 +280,15 @@ msgstr "extra symboler vid slutet av direktivet #%s"
 msgid "#%s is a GCC extension"
 msgstr "#%s är en GCC-utvidgning"
 
-#: directives.cc:394 directives.cc:2152 directives.cc:2191
+#: directives.cc:394 directives.cc:2163 directives.cc:2202
 #, c-format
 msgid "#%s before C++23 is a GCC extension"
 msgstr "#%s före C++23 är en GCC-utvidgning"
 
-#: directives.cc:397 directives.cc:401 directives.cc:2156 directives.cc:2195
+#: directives.cc:397 directives.cc:401 directives.cc:2167 directives.cc:2206
 #, c-format
-msgid "#%s before C2X is a GCC extension"
-msgstr "#%s före C2X är en GCC-utvidgning"
+msgid "#%s before C23 is a GCC extension"
+msgstr "#%s före C23 är en GCC-utvidgning"
 
 #: directives.cc:407
 #, c-format
@@ -325,202 +346,202 @@ msgstr "inget makronamn angivet i direktivet #%s"
 msgid "macro names must be identifiers"
 msgstr "makronamn måste vara identifierare"
 
-#: directives.cc:694 directives.cc:699
+#: directives.cc:698 directives.cc:702
 #, c-format
 msgid "undefining \"%s\""
 msgstr "avdefinierar ”%s”"
 
-#: directives.cc:756
+#: directives.cc:759
 msgid "missing terminating > character"
 msgstr "saknar avslutande tecken >"
 
-#: directives.cc:815
+#: directives.cc:818
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s förväntar ”FILNAMN” eller <FILNAMN>"
 
-#: directives.cc:861
+#: directives.cc:864
 #, c-format
 msgid "empty filename in #%s"
 msgstr "tomt filnamn i #%s"
 
-#: directives.cc:870
+#: directives.cc:873
 #, c-format
 msgid "#include nested depth %u exceeds maximum of %u (use -fmax-include-depth=DEPTH to increase the maximum)"
 msgstr "nästningsdjup %u av #include överskrider maximum på %u (använd -fmax-include-depth=DJUP för att öka maximumet)"
 
-#: directives.cc:915
+#: directives.cc:918
 msgid "#include_next in primary source file"
 msgstr "#include_next i primär källkodsfil"
 
-#: directives.cc:941
+#: directives.cc:944
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "ogiltig flagga ”%s” i line-direktiv"
 
-#: directives.cc:1008
+#: directives.cc:1011
 msgid "unexpected end of file after #line"
 msgstr "oväntat filslut efter #line"
 
-#: directives.cc:1011
+#: directives.cc:1014
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "”%s” efter #line är inte ett positivt heltal"
 
-#: directives.cc:1017 directives.cc:1019
+#: directives.cc:1020 directives.cc:1022
 msgid "line number out of range"
 msgstr "radnummer utanför möjligt intervall"
 
-#: directives.cc:1032 directives.cc:1113
+#: directives.cc:1035 directives.cc:1116
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "”%s” är inte ett giltigt filnamn"
 
-#: directives.cc:1073
+#: directives.cc:1076
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "”%s” efter # är inte ett positivt heltal"
 
-#: directives.cc:1140
+#: directives.cc:1143
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgstr "filen ”%s” linjemarkör ignoreras på grund av felaktig nästning"
 
-#: directives.cc:1218 directives.cc:1220 directives.cc:1222 directives.cc:1810
+#: directives.cc:1221 directives.cc:1223 directives.cc:1225 directives.cc:1816
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.cc:1246
+#: directives.cc:1249
 #, c-format
 msgid "invalid #%s directive"
 msgstr "ogiltigt #%s-direktiv"
 
-#: directives.cc:1309
+#: directives.cc:1312
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "registrerar pragman i namnrymden ”%s” med namnexpansion som inte passar ihop"
 
-#: directives.cc:1318
+#: directives.cc:1321
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "registrerar pragma ”%s” med namnexpansion och utan namnrymd"
 
-#: directives.cc:1336
+#: directives.cc:1339
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "registrerar ”%s” både som ett pragma och ett pragma namespace"
 
-#: directives.cc:1339
+#: directives.cc:1342
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s är redan registrerat"
 
-#: directives.cc:1342
+#: directives.cc:1345
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s är redan registrerat"
 
-#: directives.cc:1372
+#: directives.cc:1375
 msgid "registering pragma with NULL handler"
 msgstr "registrerar pragma med NULL-hanterare"
 
-#: directives.cc:1589
+#: directives.cc:1592
 msgid "#pragma once in main file"
 msgstr "#pragma once i huvudfil"
 
-#: directives.cc:1612
+#: directives.cc:1615
 msgid "invalid #pragma push_macro directive"
 msgstr "ogiltigt direktiv #pragma push_macro"
 
-#: directives.cc:1669
+#: directives.cc:1672
 msgid "invalid #pragma pop_macro directive"
 msgstr "ogiltigt direktiv #pragma pop_macro"
 
-#: directives.cc:1724
+#: directives.cc:1727
 msgid "invalid #pragma GCC poison directive"
 msgstr "ogiltigt direktiv #pragma GCC poison"
 
-#: directives.cc:1733
+#: directives.cc:1736
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "förgiftar existerande makro ”%s”"
 
-#: directives.cc:1752
+#: directives.cc:1758
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header ignorerat utanför huvudfil"
 
-#: directives.cc:1777
+#: directives.cc:1783
 #, c-format
 msgid "cannot find source file %s"
 msgstr "kan inte hitta källfil %s"
 
-#: directives.cc:1781
+#: directives.cc:1787
 #, c-format
 msgid "current file is older than %s"
 msgstr "aktuell fil är äldre än %s"
 
-#: directives.cc:1805
+#: directives.cc:1811
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "ogiltigt direktiv ”#pragma GCC %s”"
 
-#: directives.cc:2008
+#: directives.cc:2019
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma tar en strängkonstant inom parenteser"
 
-#: directives.cc:2091
+#: directives.cc:2102
 msgid "#else without #if"
 msgstr "#else utan #if"
 
-#: directives.cc:2096
+#: directives.cc:2107
 msgid "#else after #else"
 msgstr "#else efter #else"
 
-#: directives.cc:2098 directives.cc:2132
+#: directives.cc:2109 directives.cc:2143
 msgid "the conditional began here"
 msgstr "villkorssatsen började här"
 
-#: directives.cc:2124
+#: directives.cc:2135
 #, c-format
 msgid "#%s without #if"
 msgstr "#%s utan #if"
 
-#: directives.cc:2129
+#: directives.cc:2140
 #, c-format
 msgid "#%s after #else"
 msgstr "#%s efter #else"
 
-#: directives.cc:2231
+#: directives.cc:2242
 msgid "#endif without #if"
 msgstr "#endif utan #if"
 
-#: directives.cc:2307
+#: directives.cc:2318
 msgid "missing '(' after predicate"
 msgstr "saknas '(' efter predikat"
 
-#: directives.cc:2325
+#: directives.cc:2336
 msgid "missing ')' to complete answer"
 msgstr "saknas ')' för att avsluta svaret"
 
-#: directives.cc:2337
+#: directives.cc:2348
 msgid "predicate's answer is empty"
 msgstr "predikatets svar är tomt"
 
-#: directives.cc:2367
+#: directives.cc:2378
 msgid "assertion without predicate"
 msgstr "försäkran utan predikat"
 
-#: directives.cc:2370
+#: directives.cc:2381
 msgid "predicate must be an identifier"
 msgstr "predikat måste vara en identifierare"
 
-#: directives.cc:2452
+#: directives.cc:2463
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "”%s” omförsäkrat"
 
-#: directives.cc:2770
+#: directives.cc:2781
 #, c-format
 msgid "unterminated #%s"
 msgstr "oavslutad #%s"
@@ -534,246 +555,250 @@ msgstr "%s: %s"
 msgid "stdout"
 msgstr "standard ut"
 
-#: expr.cc:646 expr.cc:763
+#: expr.cc:667 expr.cc:784
 msgid "fixed-point constants are a GCC extension"
 msgstr "fastdecimalskonstanter är en GCC-utvidgning"
 
-#: expr.cc:671
+#: expr.cc:692
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "ogiltigt prefix ”0b” på flyttalskonstant"
 
-#: expr.cc:684
+#: expr.cc:705
 msgid "use of C++17 hexadecimal floating constant"
 msgstr "användning av hexadecimal flyttalskonstant enligt C++17"
 
-#: expr.cc:687
+#: expr.cc:708
 msgid "use of C99 hexadecimal floating constant"
 msgstr "användning av hexadecimal flyttalskonstant enligt C99"
 
-#: expr.cc:731
+#: expr.cc:752
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "ogiltigt suffix ”%.*s” på flyttalskonstant"
 
-#: expr.cc:742 expr.cc:809
+#: expr.cc:763 expr.cc:830
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "traditionell C tillåter inte suffixet ”%.*s”"
 
-#: expr.cc:750
+#: expr.cc:771
 msgid "suffix for double constant is a GCC extension"
 msgstr "suffix för double-konstanter är en GCC-utvidgning"
 
-#: expr.cc:756
+#: expr.cc:777
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "ogiltigt suffix ”%.*s” på hexadecimal flyttalskonstant"
 
-#: expr.cc:769 expr.cc:773
-msgid "decimal float constants are a C2X feature"
-msgstr "decimala flyttalskonstanter är en C2X-funktion"
+#: expr.cc:790 expr.cc:794
+msgid "decimal float constants are a C23 feature"
+msgstr "decimala flyttalskonstanter är en C23-funktion"
 
-#: expr.cc:792
+#: expr.cc:813
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "ogiltig ändelse ”%.*s” på heltalskonstant"
 
-#: expr.cc:817
+#: expr.cc:838
 msgid "use of C++11 long long integer constant"
 msgstr "användning av long long heltalskonstant enligt C++11"
 
-#: expr.cc:818
+#: expr.cc:839
 msgid "use of C99 long long integer constant"
 msgstr "användning av long long heltalskonstant enligt C99"
 
-#: expr.cc:832
+#: expr.cc:853
 msgid "use of C++23 %<size_t%> integer constant"
 msgstr "användning av %<size_t%> heltalskonstant enligt C++23"
 
-#: expr.cc:833
+#: expr.cc:854
 msgid "use of C++23 %<make_signed_t<size_t>%> integer constant"
 msgstr "användning av %<make_signed_t<size_t>%> heltalskonstant enligt C++23"
 
-#: expr.cc:844
+#: expr.cc:864 expr.cc:875
+msgid "ISO C does not support literal %<wb%> suffixes before C23"
+msgstr "ISO C stödjer inte literala suffix %<wb%> före C23"
+
+#: expr.cc:888
 msgid "imaginary constants are a GCC extension"
 msgstr "imaginära konstanter är en GCC-utvidgning"
 
-#: expr.cc:851
+#: expr.cc:895
 msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "binära konstanter är C++14-funktion eller GCC-utvidgning"
 
-#: expr.cc:853
-msgid "binary constants are a C2X feature or GCC extension"
-msgstr "binära konstanter är C2X-funktion eller GCC-utvidgning"
+#: expr.cc:897
+msgid "binary constants are a C23 feature or GCC extension"
+msgstr "binära konstanter är C23-funktion eller GCC-utvidgning"
 
-#: expr.cc:858
-msgid "binary constants are a C2X feature"
-msgstr "binära konstanter är en C2X-funktion"
+#: expr.cc:902
+msgid "binary constants are a C23 feature"
+msgstr "binära konstanter är en C23-funktion"
 
-#: expr.cc:954
+#: expr.cc:998
 msgid "integer constant is too large for its type"
 msgstr "heltalskonstant är för stor för sin typ"
 
-#: expr.cc:985
+#: expr.cc:1029
 msgid "integer constant is so large that it is unsigned"
 msgstr "heltalskonstant är så stor att den är teckenlös"
 
-#: expr.cc:1080
+#: expr.cc:1124
 msgid "missing ')' after \"defined\""
 msgstr "saknar ')' efter ”defined”"
 
-#: expr.cc:1087
+#: expr.cc:1131
 msgid "operator \"defined\" requires an identifier"
 msgstr "operatorn ”defined” måste ha en identifierare"
 
-#: expr.cc:1095
+#: expr.cc:1139
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(”%s” är en alternativ symbol för ”%s” i C++)"
 
-#: expr.cc:1108
+#: expr.cc:1152
 msgid "this use of \"defined\" may not be portable"
 msgstr "denna användning av ”defined” är kanske inte portabel"
 
-#: expr.cc:1153
+#: expr.cc:1197
 msgid "user-defined literal in preprocessor expression"
 msgstr "användardefinierad konstant i preprocessoruttryck"
 
-#: expr.cc:1158
+#: expr.cc:1202
 msgid "floating constant in preprocessor expression"
 msgstr "flyttalskonstant i preprocessoruttryck"
 
-#: expr.cc:1164
+#: expr.cc:1208
 msgid "imaginary number in preprocessor expression"
 msgstr "imaginärt tal i preprocessoruttryck"
 
-#: expr.cc:1213
+#: expr.cc:1257
 #, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
 msgstr "”%s” är inte definierad, beräknas till 0"
 
-#: expr.cc:1226
+#: expr.cc:1270
 msgid "assertions are a GCC extension"
 msgstr "försäkringar är en GCC-utvidgning"
 
-#: expr.cc:1229
+#: expr.cc:1273
 msgid "assertions are a deprecated extension"
 msgstr "försäkringar är en utvidgning som avrådes ifrån"
 
-#: expr.cc:1479
+#: expr.cc:1523
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "obalanserad stack i %s"
 
-#: expr.cc:1499
+#: expr.cc:1543
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "omöjlig operator ”%u”"
 
-#: expr.cc:1600
+#: expr.cc:1644
 msgid "missing ')' in expression"
 msgstr "saknad ”)” i uttryck"
 
-#: expr.cc:1629
+#: expr.cc:1673
 msgid "'?' without following ':'"
 msgstr "”?” utan följande ”:”"
 
-#: expr.cc:1639
+#: expr.cc:1683
 msgid "integer overflow in preprocessor expression"
 msgstr "heltalsspill i preprocessoruttryck"
 
-#: expr.cc:1644
+#: expr.cc:1688
 msgid "missing '(' in expression"
 msgstr "saknad ”(” i uttryck"
 
-#: expr.cc:1676
+#: expr.cc:1720
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "vänsteroperanden till ”%s” byter tecken vid befordran"
 
-#: expr.cc:1681
+#: expr.cc:1725
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "högeroperanden till ”%s” byter tecken vid befordran"
 
-#: expr.cc:1940
+#: expr.cc:1984
 msgid "traditional C rejects the unary plus operator"
 msgstr "traditionell C hanterar inte operatorn unärt plus"
 
-#: expr.cc:2038
+#: expr.cc:2082
 msgid "comma operator in operand of #if"
 msgstr "kommaoperator i operand till #if"
 
-#: expr.cc:2174
+#: expr.cc:2218
 msgid "division by zero in #if"
 msgstr "division med noll i #if"
 
-#: files.cc:516
+#: files.cc:520
 msgid "NULL directory in find_file"
 msgstr "NULL-katalog i find_file"
 
-#: files.cc:570
+#: files.cc:583
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "en eller flera PCH-filer hittades, men de var inte korrekta"
 
-#: files.cc:574
+#: files.cc:587
 msgid "use -Winvalid-pch for more information"
 msgstr "använd -Winvalid-pch för mer information"
 
-#: files.cc:688
+#: files.cc:703
 #, c-format
 msgid "%s is a block device"
 msgstr "%s är en blockenhet"
 
-#: files.cc:707
+#: files.cc:722
 #, c-format
 msgid "%s is too large"
 msgstr "%s är för stor"
 
-#: files.cc:748
+#: files.cc:763
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s är kortare än förväntat"
 
-#: files.cc:1060
+#: files.cc:1075
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "ingen huvudfilssökväg att leta efter %s i"
 
-#: files.cc:1578
+#: files.cc:1598
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Multipla inkluderingsvakter kan vara användbart för:\n"
 
-#: init.cc:631
+#: init.cc:638
 msgid "cppchar_t must be an unsigned type"
 msgstr "cppchar_t måste vare en teckenlös typ"
 
-#: init.cc:635
+#: init.cc:642
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "preprocessoraritmetik har en högsta precision på %lu bitar; målet kräver %lu bitar"
 
-#: init.cc:642
+#: init.cc:649
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "CPP-aritmetik måste vara åtminstone så precis som målets int"
 
-#: init.cc:645
+#: init.cc:652
 msgid "target char is less than 8 bits wide"
 msgstr "målets char är mindre än 8 bitar bred"
 
-#: init.cc:649
+#: init.cc:656
 msgid "target wchar_t is narrower than target char"
 msgstr "målets wchar_t är smalare än målets char"
 
-#: init.cc:653
+#: init.cc:660
 msgid "target int is narrower than target char"
 msgstr "målets int är smalare än målets char"
 
-#: init.cc:658
+#: init.cc:665
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP:s halva heltal är smalare än CPP:s tecken"
 
-#: init.cc:662
+#: init.cc:669
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP på denna värd kan inte hantera breda teckenkonstanter över %lu bitar, men målet kräver %lu bitar"
@@ -866,114 +891,118 @@ msgstr "”%.*s” är inte i NFKC"
 msgid "`%.*s' is not in NFC"
 msgstr "”%.*s” är inte i NFC"
 
-#: lex.cc:2141
+#: lex.cc:2144
 msgid "__VA_OPT__ is not available until C++20"
 msgstr "__VA_OPT__ är inte tillgängligt förrän C++20"
 
-#: lex.cc:2144
-msgid "__VA_OPT__ is not available until C2X"
-msgstr "__VA_OPT__ är inte tillgängligt förrän C2X"
+#: lex.cc:2147
+msgid "__VA_OPT__ is not available until C23"
+msgstr "__VA_OPT__ är inte tillgängligt förrän C23"
 
-#: lex.cc:2152
+#: lex.cc:2155
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
 msgstr "__VA_OPT__ kan endast dyka upp i expansionen av ett C++20-makro med variabelt argumentantal"
 
-#: lex.cc:2183 lex.cc:2279
+#: lex.cc:2172
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "försök att använda förgiftad ”%s”"
 
-#: lex.cc:2193 lex.cc:2289
+#: lex.cc:2177
+msgid "poisoned here"
+msgstr "förgiftad här"
+
+#: lex.cc:2187
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr "__VA_ARGS__ kan endast dyka upp i expansionen av ett C++11-makro med variabelt argumentantal"
 
-#: lex.cc:2197 lex.cc:2293
+#: lex.cc:2191
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ kan endast dyka upp i expansionen av ett C99-makro med variabelt argumentantal"
 
-#: lex.cc:2207 lex.cc:2305
+#: lex.cc:2203
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "identifieraren ”%s” är ett speciellt operatornamn i C++"
 
-#: lex.cc:2345
+#: lex.cc:2372
 msgid "adjacent digit separators"
 msgstr "intilliggande sifferseparatorer"
 
-#: lex.cc:2665
+#: lex.cc:2521
+msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
+msgstr "ogiltigt suffix på konstant; C++11 kräver ett mellanrum mellan konstant och strängmakro"
+
+#: lex.cc:2729
 msgid "raw string delimiter longer than 16 characters"
 msgstr "avgränsare för rå sträng längre än 16 tecken"
 
-#: lex.cc:2669
+#: lex.cc:2733
 msgid "invalid new-line in raw string delimiter"
 msgstr "felaktig nyrad i rå sträng-avgränsare"
 
-#: lex.cc:2673 lex.cc:5519
+#: lex.cc:2737 lex.cc:5576
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "ogiltigt tecken ”%c” i avgränsare för rå sträng"
 
-#: lex.cc:2711 lex.cc:2734
+#: lex.cc:2775 lex.cc:2798
 msgid "unterminated raw string"
 msgstr "oavslutad rå sträng"
 
-#: lex.cc:2770 lex.cc:2922
-msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
-msgstr "ogiltigt suffix på konstant; C++11 kräver ett mellanrum mellan konstant och strängmakro"
-
-#: lex.cc:2905
+#: lex.cc:2955
 msgid "null character(s) preserved in literal"
 msgstr "nolltecken bevarade i konstant"
 
-#: lex.cc:2908
+#: lex.cc:2958
 #, c-format
 msgid "missing terminating %c character"
 msgstr "avslutande %c-tecken saknas"
 
-#: lex.cc:2940
+#: lex.cc:2991
 msgid "C++11 requires a space between string literal and macro"
 msgstr "C++11 kräver ett mellanrum mellan en strängkonstant och ett makro"
 
-#: lex.cc:3533
+#: lex.cc:3584
 msgid "module control-line cannot be in included file"
 msgstr "modulstyrraden kan inte finnas i en inkluderad fil"
 
-#: lex.cc:3547
+#: lex.cc:3598
 #, c-format
 msgid "module control-line \"%s\" cannot be an object-like macro"
 msgstr "modulstyrraden ”%s” får inte vara ett objektlikt makro"
 
-#: lex.cc:3949 lex.cc:5352 traditional.cc:174
+#: lex.cc:4004 lex.cc:5409 traditional.cc:174
 msgid "unterminated comment"
 msgstr "ej avslutad kommentar"
 
-#: lex.cc:3963 lex.cc:3997
+#: lex.cc:4018 lex.cc:4052
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "C++ kommentarer tillåts inte i ISO C90"
 
-#: lex.cc:3965 lex.cc:3976 lex.cc:4000
+#: lex.cc:4020 lex.cc:4031 lex.cc:4055
 msgid "(this will be reported only once per input file)"
 msgstr "(detta rapporteras bara en gång per infil)"
 
-#: lex.cc:3974
+#: lex.cc:4029
 msgid "C++ style comments are incompatible with C90"
 msgstr "kommentarer i C++-stil är inkompatibla med C90"
 
-#: lex.cc:4006
+#: lex.cc:4061
 msgid "multi-line comment"
 msgstr "flerradskommentar"
 
-#: lex.cc:4427
+#: lex.cc:4484
 #, c-format
 msgid "unspellable token %s"
 msgstr "ostavbar symbol %s"
 
-#: lex.cc:5507
+#: lex.cc:5564
 #, c-format
 msgid "raw string delimiter longer than %d characters"
 msgstr "avgränsare för rå sträng längre än %d tecken"
 
-#: lex.cc:5577
+#: lex.cc:5634
 msgid "unterminated literal"
 msgstr "oavslutad konstant"
 
@@ -1018,7 +1047,7 @@ msgstr "”)” saknas efter operanden till ”%s”"
 msgid "macro \"%s\" is not used"
 msgstr "makrot ”%s” är inte använt"
 
-#: macro.cc:498 macro.cc:797
+#: macro.cc:498 macro.cc:803
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "ogiltigt inbyggt makro ”%s”"
@@ -1040,131 +1069,131 @@ msgstr "det gick inte att avgöra datum och tid"
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ expanderad inuti direktiv med -fdirectives-only"
 
-#: macro.cc:916
+#: macro.cc:922
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "ogiltig strängkonstant, ignorerar avslutande ”\\”"
 
-#: macro.cc:980
+#: macro.cc:986
 #, c-format
 msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
 msgstr "att sätta ihop ”%.*s” och ”%.*s” ger inte en giltig preprocessorsymbol"
 
-#: macro.cc:1112
+#: macro.cc:1118
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C++11 kräver åtminstone ett argument för ”...” i ett makro med variabelt antal argument"
 
-#: macro.cc:1116
+#: macro.cc:1122
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C99 kräver åtminstone ett argument för ”...” i ett makro med variabelt antal argument"
 
-#: macro.cc:1123
+#: macro.cc:1129
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "makrot ”%s” kräver %u argument, men endast %u anges"
 
-#: macro.cc:1128
+#: macro.cc:1134
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "makro ”%s” skickade %u argument, men det tar bara %u"
 
-#: macro.cc:1132
+#: macro.cc:1138
 #, c-format
 msgid "macro \"%s\" defined here"
 msgstr "makrot ”%s” är definierat här"
 
-#: macro.cc:1326 traditional.cc:822
+#: macro.cc:1332 traditional.cc:822
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "oavslutad argumentlista vid anrop av makrot ”%s”"
 
-#: macro.cc:1472
+#: macro.cc:1478
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "funktionsliknande makrot ”%s” måste användas med ett argument i traditionell C"
 
-#: macro.cc:2307
+#: macro.cc:2313
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "vid anrop av makro %s argument %d: tomma makroargument är odefinierade i ISO C++98"
 
-#: macro.cc:2315 macro.cc:2324
+#: macro.cc:2321 macro.cc:2330
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "vid anrop av makro %s argument %d: tomma makroargument är odefinierade i ISO C90"
 
-#: macro.cc:3375
+#: macro.cc:3381
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "dubblerad makroparameter ”%s”"
 
-#: macro.cc:3457
+#: macro.cc:3463
 #, c-format
 msgid "expected parameter name, found \"%s\""
 msgstr "parameternamn förväntades, ”%s” hittades"
 
-#: macro.cc:3458
+#: macro.cc:3464
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
 msgstr "”,” eller ”)” förväntades, ”%s” hittades"
 
-#: macro.cc:3459
+#: macro.cc:3465
 msgid "expected parameter name before end of line"
 msgstr "parameternamn förväntades före slutet på raden"
 
-#: macro.cc:3460
+#: macro.cc:3466
 msgid "expected ')' before end of line"
 msgstr "”)” förväntades före slutet på raden"
 
-#: macro.cc:3461
+#: macro.cc:3467
 msgid "expected ')' after \"...\""
 msgstr "”)” förväntades efter ”...”"
 
-#: macro.cc:3518
+#: macro.cc:3524
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "anonyma variabla makron introducerades i C++11"
 
-#: macro.cc:3519 macro.cc:3523
+#: macro.cc:3525 macro.cc:3529
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "anonyma variabla makron introducerades i C99"
 
-#: macro.cc:3529
+#: macro.cc:3535
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ tillåter inte namngivna variabla makron"
 
-#: macro.cc:3530
+#: macro.cc:3536
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C tillåter inte namngivna variabla makron"
 
-#: macro.cc:3576
+#: macro.cc:3582
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "”##” kan inte förekomma vid någon av ändarna av makroexpansionen"
 
-#: macro.cc:3614
+#: macro.cc:3620
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C++11 kräver mellanrum efter makronamnet"
 
-#: macro.cc:3615
+#: macro.cc:3621
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 kräver mellanrum efter makronamnet"
 
-#: macro.cc:3639
+#: macro.cc:3645
 msgid "missing whitespace after the macro name"
 msgstr "mellanrum saknas efter makronamn"
 
-#: macro.cc:3692
+#: macro.cc:3698
 msgid "'#' is not followed by a macro parameter"
 msgstr "”#” följs inte av en makroparameter"
 
-#: macro.cc:3848
+#: macro.cc:3862
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "”%s” omdefinierad"
 
-#: macro.cc:3853
+#: macro.cc:3867
 msgid "this is the location of the previous definition"
 msgstr "detta är platsen för den tidigare definitionen"
 
-#: macro.cc:3990
+#: macro.cc:4004
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "makroargumentet ”%s” skulle bli gjort till sträng i traditionell C"
@@ -1198,7 +1227,7 @@ msgstr "%s: inte använd för att ”%s” är definierad"
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: inte använd för att ”__COUNTER__” är ogiltig"
 
-#: pch.cc:720 pch.cc:876
+#: pch.cc:720 pch.cc:883
 msgid "while reading precompiled header"
 msgstr "vid läsning av förkompilerat huvud"
 

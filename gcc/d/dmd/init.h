@@ -124,5 +124,8 @@ public:
     void accept(Visitor *v) override { v->visit(this); }
 };
 
-Expression *initializerToExpression(Initializer *init, Type *t = NULL, const bool isCfile = false);
-Initializer *initializerSemantic(Initializer *init, Scope *sc, Type *&tx, NeedInterpret needInterpret);
+namespace dmd
+{
+    Expression *initializerToExpression(Initializer *init, Type *t = NULL, const bool isCfile = false);
+    Initializer *initializerSemantic(Initializer *init, Scope *sc, Type *&tx, NeedInterpret needInterpret);
+}

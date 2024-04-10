@@ -187,20 +187,28 @@ public:
 
   /* Attempt to get the size of this region as a concrete number of bytes.
      If successful, return true and write the size to *OUT.
-     Otherwise return false.  */
+     Otherwise return false.
+     This is the accessed size, not necessarily the size that's valid to
+     access.  */
   virtual bool get_byte_size (byte_size_t *out) const;
 
   /* Attempt to get the size of this region as a concrete number of bits.
      If successful, return true and write the size to *OUT.
-     Otherwise return false.  */
+     Otherwise return false.
+     This is the accessed size, not necessarily the size that's valid to
+     access.  */
   virtual bool get_bit_size (bit_size_t *out) const;
 
   /* Get a symbolic value describing the size of this region in bytes
-     (which could be "unknown").  */
+     (which could be "unknown").
+     This is the accessed size, not necessarily the size that's valid to
+     access.  */
   virtual const svalue *get_byte_size_sval (region_model_manager *mgr) const;
 
   /* Get a symbolic value describing the size of this region in bits
-     (which could be "unknown").  */
+     (which could be "unknown").
+     This is the accessed size, not necessarily the size that's valid to
+     access.  */
   virtual const svalue *get_bit_size_sval (region_model_manager *mgr) const;
 
   /* Attempt to get the offset in bits of this region relative to its parent.
@@ -977,10 +985,6 @@ public:
 
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
   const svalue *get_relative_symbolic_offset (region_model_manager *mgr)
-    const final override;
-  const svalue * get_byte_size_sval (region_model_manager *mgr)
-    const final override;
-  const svalue * get_bit_size_sval (region_model_manager *mgr)
     const final override;
 
 private:

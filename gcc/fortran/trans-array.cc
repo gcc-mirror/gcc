@@ -11531,7 +11531,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   if (sym->ts.type == BT_CHARACTER
       && !INTEGER_CST_P (sym->ts.u.cl->backend_decl))
     {
-      if (sym->ts.deferred && !sym->ts.u.cl->length)
+      if (sym->ts.deferred && !sym->ts.u.cl->length && !sym->attr.dummy)
 	gfc_add_modify (&init, sym->ts.u.cl->backend_decl,
 			build_zero_cst (TREE_TYPE (sym->ts.u.cl->backend_decl)));
       gfc_conv_string_length (sym->ts.u.cl, NULL, &init);

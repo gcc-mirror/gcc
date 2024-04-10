@@ -1,5 +1,5 @@
 /* { dg-do link { target aarch64_asm_ls64_ok } } */
-/* { dg-additional-options "-march=armv8.7-a -flto" } */
+/* { dg-additional-options "-march=armv8.7-a+ls64 -flto" } */
 #include <arm_acle.h>
 int main()
 {

@@ -5023,7 +5023,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     return setError();
 
                 checkFunctionAttributes(exp, sc, f);
-                checkAccess(cd, exp.loc, sc, f);
+                if (!checkSymbolAccess(sc, f))
+                {
+                    error(exp.loc, "%s `%s` is not accessible from module `%s`",
+                        f.kind(), f.toPrettyChars(), sc._module.toChars);
+                    return setError();
+                }
 
                 TypeFunction tf = f.type.isTypeFunction();
                 if (!exp.arguments)
@@ -6463,7 +6468,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 return setError();
 
             checkFunctionAttributes(exp, sc, exp.f);
-            checkAccess(exp.loc, sc, null, exp.f);
+            if (!checkSymbolAccess(sc, exp.f))
+            {
+                error(exp.loc, "%s `%s` is not accessible from module `%s`",
+                    exp.f.kind(), exp.f.toPrettyChars(), sc._module.toChars);
+                return setError();
+            }
 
             exp.e1 = new DotVarExp(exp.e1.loc, exp.e1, exp.f, false);
             exp.e1 = exp.e1.expressionSemantic(sc);
@@ -6649,7 +6659,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             assert(exp.f);
             tiargs = null;
 
-            if (exp.f.overnext)
+            if (ve.hasOverloads && exp.f.overnext)
                 exp.f = resolveFuncCall(exp.loc, sc, exp.f, tiargs, null, exp.argumentList, FuncResolveFlag.overloadOnly);
             else
             {
@@ -14193,7 +14203,7 @@ Expression binSemanticProp(BinExp e, Scope* sc)
 }
 
 // entrypoint for semantic ExpressionSemanticVisitor
-extern (C++) Expression expressionSemantic(Expression e, Scope* sc)
+Expression expressionSemantic(Expression e, Scope* sc)
 {
     scope v = new ExpressionSemanticVisitor(sc);
     e.accept(v);
@@ -14211,8 +14221,10 @@ private Expression dotIdSemanticPropX(DotIdExp exp, Scope* sc)
         // symbol.mangleof
 
         // return mangleof as an Expression
-        static Expression dotMangleof(const ref Loc loc, Scope* sc, Dsymbol ds)
+        static Expression dotMangleof(const ref Loc loc, Scope* sc, Dsymbol ds, bool hasOverloads)
         {
+            Expression e;
+
             assert(ds);
             if (auto f = ds.isFuncDeclaration())
             {
@@ -14224,24 +14236,40 @@ private Expression dotIdSemanticPropX(DotIdExp exp, Scope* sc)
                     error(loc, "%s `%s` cannot retrieve its `.mangleof` while inferring attributes", f.kind, f.toPrettyChars);
                     return ErrorExp.get();
                 }
+
+                if (!hasOverloads)
+                    e = StringExp.create(loc, mangleExact(f));
             }
-            OutBuffer buf;
-            mangleToBuffer(ds, buf);
-            Expression e = new StringExp(loc, buf.extractSlice());
+
+            if (!e)
+            {
+                OutBuffer buf;
+                mangleToBuffer(ds, buf);
+                e = new StringExp(loc, buf.extractSlice());
+            }
+
             return e.expressionSemantic(sc);
         }
 
         Dsymbol ds;
         switch (exp.e1.op)
         {
-            case EXP.scope_:      return dotMangleof(exp.loc, sc, exp.e1.isScopeExp().sds);
-            case EXP.variable:    return dotMangleof(exp.loc, sc, exp.e1.isVarExp().var);
-            case EXP.dotVariable: return dotMangleof(exp.loc, sc, exp.e1.isDotVarExp().var);
-            case EXP.overloadSet: return dotMangleof(exp.loc, sc, exp.e1.isOverExp().vars);
+            case EXP.scope_:      return dotMangleof(exp.loc, sc, exp.e1.isScopeExp().sds, false);
+            case EXP.overloadSet: return dotMangleof(exp.loc, sc, exp.e1.isOverExp().vars, false);
+            case EXP.variable:
+            {
+                VarExp ve = exp.e1.isVarExp();
+                return dotMangleof(exp.loc, sc, ve.var, ve.hasOverloads);
+            }
+            case EXP.dotVariable:
+            {
+                DotVarExp dve = exp.e1.isDotVarExp();
+                return dotMangleof(exp.loc, sc, dve.var, dve.hasOverloads);
+            }
             case EXP.template_:
             {
                 TemplateExp te = exp.e1.isTemplateExp();
-                return dotMangleof(exp.loc, sc, ds = te.fd ? te.fd.isDsymbol() : te.td);
+                return dotMangleof(exp.loc, sc, ds = te.fd ? te.fd.isDsymbol() : te.td, false);
             }
 
             default:

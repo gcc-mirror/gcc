@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
      - CFG-aware instruction chain manipulation
 	 delete_insn, delete_insn_chain
      - Edge splitting and committing to edges
-	 insert_insn_on_edge, commit_edge_insertions
+	 insert_insn_on_edge, prepend_insn_to_edge, commit_edge_insertions
      - CFG updating after insn simplification
 	 purge_dead_edges, purge_all_dead_edges
      - CFG fixing after coarse manipulation
@@ -1966,7 +1966,8 @@ rtl_split_edge (edge edge_in)
 
 /* Queue instructions for insertion on an edge between two basic blocks.
    The new instructions and basic blocks (if any) will not appear in the
-   CFG until commit_edge_insertions is called.  */
+   CFG until commit_edge_insertions is called.  If there are already
+   queued instructions on the edge, PATTERN is appended to them.  */
 
 void
 insert_insn_on_edge (rtx pattern, edge e)
@@ -1986,6 +1987,25 @@ insert_insn_on_edge (rtx pattern, edge e)
   end_sequence ();
 }
 
+/* Like insert_insn_on_edge, but if there are already queued instructions
+   on the edge, PATTERN is prepended to them.  */
+
+void
+prepend_insn_to_edge (rtx pattern, edge e)
+{
+  /* We cannot insert instructions on an abnormal critical edge.
+     It will be easier to find the culprit if we die now.  */
+  gcc_assert (!((e->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (e)));
+
+  start_sequence ();
+
+  emit_insn (pattern);
+  emit_insn (e->insns.r);
+
+  e->insns.r = get_insns ();
+  end_sequence ();
+}
+
 /* Update the CFG for the instructions queued on edge E.  */
 
 void
@@ -1997,6 +2017,21 @@ commit_one_edge_insertion (edge e)
   /* Pull the insns off the edge now since the edge might go away.  */
   insns = e->insns.r;
   e->insns.r = NULL;
+
+  /* Allow the sequence to contain internal jumps, such as a memcpy loop
+     or an allocation loop.  If such a sequence is emitted during RTL
+     expansion, we'll create the appropriate basic blocks later,
+     at the end of the pass.  But if such a sequence is emitted after
+     initial expansion, we'll need to find the subblocks ourselves.  */
+  bool contains_jump = false;
+  if (!currently_expanding_to_rtl)
+    for (rtx_insn *insn = insns; insn; insn = NEXT_INSN (insn))
+      if (JUMP_P (insn))
+	{
+	  rebuild_jump_labels_chain (insns);
+	  contains_jump = true;
+	  break;
+	}
 
   /* Figure out where to put these insns.  If the destination has
      one predecessor, insert there.  Except for the exit block.  */
@@ -2092,13 +2127,13 @@ commit_one_edge_insertion (edge e)
 	delete_insn (before);
     }
   else
-    /* Some builtin expanders, such as those for memset and memcpy,
-       may generate loops and conditionals, and those may get emitted
-       into edges.  That's ok while expanding to rtl, basic block
-       boundaries will be identified and split afterwards.  ???  Need
-       we check whether the destination labels of any inserted jumps
-       are also part of the inserted sequence?  */
+    /* Sequences inserted after RTL expansion are expected to be SESE,
+       with only internal branches allowed.  If the sequence jumps outside
+       itself then we do not know how to add the associated edges here.  */
     gcc_assert (!JUMP_P (last) || currently_expanding_to_rtl);
+
+  if (contains_jump)
+    find_sub_basic_blocks (bb);
 }
 
 /* Update the CFG for all queued instructions.  */

@@ -1,3 +1,263 @@
+2024-02-20  Peter Hill  <peter.hill@york.ac.uk>
+
+	PR fortran/105658
+	* gfortran.dg/PR105658.f90: New test.
+
+2024-02-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/112103
+	* gcc.target/powerpc/rlwinm-0.c: Adjust expected instruction counts.
+
+2024-02-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113805
+	* gcc.target/aarch64/sme/call_sm_switch_11.c: New test.
+
+2024-02-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR analyzer/113983
+	* gcc.dg/analyzer/torture/vector-extract-1.c: Add -Wno-psabi as
+	dg-additional-options.
+
+2024-02-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/113711
+	* gcc.target/i386/apx-ndd-x32-1.c: Adjust testcase.
+
+2024-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111289
+	* c-c++-common/analyzer/stdarg-pr111289-int.c: New test.
+	* c-c++-common/analyzer/stdarg-pr111289-ptr.c: New test.
+
+2024-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110520
+	* c-c++-common/analyzer/null-deref-pr110520.c: New test.
+
+2024-02-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR analyzer/113983
+	* gcc.dg/analyzer/torture/vector-extract-1.c: New test.
+
+2024-02-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113966
+	* g++.dg/cpp2a/concepts-friend17.C: New test.
+
+2024-02-19  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/bitint-86.c (__seg_gs): Replace with SEG MACRO.
+
+2024-02-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113889
+	* gm2/pim/run/pass/pim-run-pass.exp: Add filter for
+	constdef.mod.
+	* gm2/extensions/run/pass/callingc2.mod: New test.
+	* gm2/extensions/run/pass/callingc3.mod: New test.
+	* gm2/extensions/run/pass/callingc4.mod: New test.
+	* gm2/extensions/run/pass/callingc5.mod: New test.
+	* gm2/extensions/run/pass/callingc6.mod: New test.
+	* gm2/extensions/run/pass/callingc7.mod: New test.
+	* gm2/extensions/run/pass/callingc8.mod: New test.
+	* gm2/extensions/run/pass/fixedarray.mod: New test.
+	* gm2/extensions/run/pass/fixedarray2.mod: New test.
+	* gm2/pim/run/pass/constdef.def: New test.
+	* gm2/pim/run/pass/constdef.mod: New test.
+	* gm2/pim/run/pass/testimportconst.mod: New test.
+
+2024-02-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/bom_UTF16BE.d: New test.
+	* gdc.dg/bom_UTF16LE.d: New test.
+	* gdc.dg/bom_UTF32BE.d: New test.
+	* gdc.dg/bom_UTF32LE.d: New test.
+	* gdc.dg/bom_UTF8.d: New test.
+	* gdc.dg/bom_characters.d: New test.
+	* gdc.dg/bom_error_UTF8.d: New test.
+	* gdc.dg/bom_infer_UTF16BE.d: New test.
+	* gdc.dg/bom_infer_UTF16LE.d: New test.
+	* gdc.dg/bom_infer_UTF32BE.d: New test.
+	* gdc.dg/bom_infer_UTF32LE.d: New test.
+	* gdc.dg/bom_infer_UTF8.d: New test.
+
+2024-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113967
+	* gcc.dg/pr113967.c: New test.
+
+2024-02-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/113696
+	* gcc.target/riscv/rvv/vsetvl/pr113696.c: New test.
+
+2024-02-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/113912
+	* gcc.target/i386/apx-push2pop2-2.c: New test.
+
+2024-02-18  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR middle-end/112344
+	* gcc.dg/torture/pr112344.c: Run non-optimized variants only
+	if expensive tests are allowed.
+
+2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/105473
+	* gfortran.dg/pr105473.f90: New test.
+
+2024-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/113503
+	* gfortran.dg/pr113503_1.f90: New test.
+	* gfortran.dg/pr113503_2.f90: New test.
+
+2024-02-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/107068
+	* gfortran.dg/pr107068.f90: New test.
+
+2024-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113158
+	* g++.dg/cpp0x/noexcept83.C: New test.
+
+2024-02-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113911
+	* gfortran.dg/allocatable_length_2.f90: New test.
+	* gfortran.dg/bind_c_optional-2.f90: Enable deferred-length test.
+
+2024-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_lra): Rewrite
+	to list some heavily used always LRA targets and otherwise check the
+	-fdump-rtl-reload-details dump for messages specific to LRA.
+
+2024-02-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* g++.dg/torture/vector-struct-1.C: Add -Wstrict-aliasing.
+
+2024-02-16  Marek Polacek  <polacek@redhat.com>
+
+	DR 1351
+	* g++.dg/cpp0x/noexcept82.C: New test.
+
+2024-02-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/97990
+	* g++.dg/torture/vector-struct-1.C: New test.
+
+2024-02-16  Edwin Lu  <ewlu@rivosinc.com>
+
+	* lib/scanasm.exp: add scan-assembler-bound
+
+2024-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/111682
+	* g++.dg/cpp1y/var-templ86.C: New test.
+
+2024-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113789
+	PR c++/113853
+	* g++.dg/cpp0x/sfinae69.C: Remove dg-bogus.
+	* g++.dg/cpp0x/sfinae70.C: New test.
+	* g++.dg/cpp0x/sfinae71.C: New test.
+	* g++.dg/cpp0x/sfinae72.C: New test.
+	* g++.dg/cpp2a/implicit-move4.C: New test.
+
+2024-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/113929
+	* g++.dg/parse/pr113929.C: New test.
+
+2024-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113895
+	* gcc.dg/torture/pr113895-2.c: New testcase.
+	* gcc.dg/torture/pr113895-3.c: Likewise.
+	* gcc.dg/torture/pr113895-4.c: Likewise.
+
+2024-02-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ipa/98237
+	* lib/target-supports.exp (is-effective-target): Handle
+	linker_plugin.
+	* gcc.dg/lto/modref-3_0.c: Require linker_plugin support.
+	* gcc.dg/lto/modref-4_0.c: Likewise.
+
+2024-02-16  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR target/113780
+	* lib/target-supports.exp (v8_1m_main_pacbti): Add __ARM_FEATURE_PAUTH.
+	* gcc.target/arm/pac-sibcall.c: New.
+
+2024-02-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* gfortran.dg/gomp/declare-target-4.f90 (f1): Update expected warning.
+	* gfortran.dg/gomp/declare-target-indirect-1.f90: New.
+	* gfortran.dg/gomp/declare-target-indirect-2.f90: New.
+
+2024-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111266
+	* c-c++-common/analyzer/out-of-bounds-pr111266.c: New test.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107385
+	* gcc.dg/pr107385.c: Require lra effective target.
+
+2024-02-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.target/aarch64/vect_ctz_1.c (TEST): Use g form of the builtin and pass 32
+	as the value expected at 0.
+
+2024-02-15  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/113278
+	* c-c++-common/analyzer/fileno-1.c: Define _POSIX_SOURCE.
+	* c-c++-common/analyzer/flex-with-call-summaries.c: Same.
+	* c-c++-common/analyzer/flex-without-call-summaries.c: Same.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/107385
+	* gcc.dg/pr107385.c: New test.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113921
+	* gcc.target/i386/pr113921.c: New test.
+
+2024-02-15  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* gcc.target/arm/rev16_2.c: XFAIL when compiled with Thumb1.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* rust/compile/issue-1773.rs.bak: Rename to ...
+	* rust/compile/issue-1773.rs: ... this.  Add dg-skip-if directive.
+
+2024-02-15  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/guality/ipa-sra-1.c (get_val1): Move up in the file.
+	(get_val2): Likewise.
+	(bar): Do not return a constant.  Extend xfail exception for all
+	targets.
+
+2024-02-15  Andreas Schwab  <schwab@suse.de>
+
+	* gnat.dg/div_zero.adb: Skip on RISC-V.
+
+2024-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/113567
+	* gcc.dg/bitint-90.c: New test.
+
 2024-02-14  Steve Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/105847

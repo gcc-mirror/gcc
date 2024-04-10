@@ -30,8 +30,11 @@ class StructDeclaration;
 struct IntRange;
 struct AttributeViolation;
 
-bool functionSemantic(FuncDeclaration* fd);
-bool functionSemantic3(FuncDeclaration* fd);
+namespace dmd
+{
+    bool functionSemantic(FuncDeclaration* fd);
+    bool functionSemantic3(FuncDeclaration* fd);
+}
 
 //enum STC : ulong from astenums.d:
 

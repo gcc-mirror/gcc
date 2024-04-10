@@ -167,5 +167,8 @@ struct ModuleDeclaration
     const char *toChars() const;
 };
 
-extern void getLocalClasses(Module* mod, Array<ClassDeclaration* >& aclasses);
-FuncDeclaration *findGetMembers(ScopeDsymbol *dsym);
+namespace dmd
+{
+    void getLocalClasses(Module* mod, Array<ClassDeclaration* >& aclasses);
+    FuncDeclaration *findGetMembers(ScopeDsymbol *dsym);
+}

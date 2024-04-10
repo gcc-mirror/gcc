@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <vector>
 
 #define INCLUDE_STRING
+#define INCLUDE_SET
+#define INCLUDE_MAP
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2223,6 +2225,50 @@ riscv_get_valid_option_values (int option_code,
     }
 
   return v;
+}
+
+const char *
+riscv_arch_help (int, const char **)
+{
+  /* Collect all exts, and sort it in canonical order.  */
+  struct extension_comparator {
+    bool operator()(const std::string& a, const std::string& b) const {
+      return subset_cmp(a, b) >= 1;
+    }
+  };
+  std::map<std::string, std::set<unsigned>, extension_comparator> all_exts;
+  for (const riscv_ext_version &ext : riscv_ext_version_table)
+    {
+      if (!ext.name)
+	break;
+      if (ext.name[0] == 'g')
+	continue;
+      unsigned version_value = (ext.major_version * RISCV_MAJOR_VERSION_BASE)
+				+ (ext.minor_version
+				   * RISCV_MINOR_VERSION_BASE);
+      all_exts[ext.name].insert(version_value);
+    }
+
+  printf("All available -march extensions for RISC-V:\n");
+  printf("\t%-20sVersion\n", "Name");
+  for (auto const &ext_info : all_exts)
+    {
+      printf("\t%-20s\t", ext_info.first.c_str());
+      bool first = true;
+      for (auto version : ext_info.second)
+	{
+	  if (first)
+	    first = false;
+	  else
+	    printf(", ");
+	  unsigned major = version / RISCV_MAJOR_VERSION_BASE;
+	  unsigned minor = (version % RISCV_MAJOR_VERSION_BASE)
+			    / RISCV_MINOR_VERSION_BASE;
+	  printf("%u.%u", major, minor);
+	}
+      printf("\n");
+    }
+  exit (0);
 }
 
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */

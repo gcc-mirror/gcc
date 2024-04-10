@@ -982,7 +982,8 @@
    (match_operand:V_MOV 1 "register_operand")
    (match_operand 2 "immediate_operand")]
   "MODE_VF (<V_MOV_ALT:MODE>mode) < MODE_VF (<V_MOV:MODE>mode)
-   && <V_MOV_ALT:SCALAR_MODE>mode == <V_MOV:SCALAR_MODE>mode"
+   && <V_MOV_ALT:SCALAR_MODE>mode == <V_MOV:SCALAR_MODE>mode
+   && (!TARGET_RDNA2_PLUS || MODE_VF (<V_MOV:MODE>mode) <= 32)"
   {
     int numlanes = GET_MODE_NUNITS (<V_MOV_ALT:MODE>mode);
     int firstlane = INTVAL (operands[2]) * numlanes;
@@ -4260,7 +4261,7 @@
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
    (fminmaxop:V_FP
      (match_operand:V_FP 1 "register_operand"))]
-  ""
+  "!TARGET_RDNA2_PLUS"
   {
     /* fmin/fmax are identical to smin/smax.  */
     emit_insn (gen_reduc_<expander>_scal_<mode> (operands[0], operands[1]));

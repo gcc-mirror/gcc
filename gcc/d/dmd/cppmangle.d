@@ -65,7 +65,7 @@ package CppOperator isCppOperator(Identifier id)
 }
 
 ///
-extern(C++) const(char)* toCppMangleItanium(Dsymbol s)
+const(char)* toCppMangleItanium(Dsymbol s)
 {
     //printf("toCppMangleItanium(%s)\n", s.toChars());
     OutBuffer buf;
@@ -75,7 +75,7 @@ extern(C++) const(char)* toCppMangleItanium(Dsymbol s)
 }
 
 ///
-extern(C++) const(char)* cppTypeInfoMangleItanium(Dsymbol s)
+const(char)* cppTypeInfoMangleItanium(Dsymbol s)
 {
     //printf("cppTypeInfoMangle(%s)\n", s.toChars());
     OutBuffer buf;
@@ -86,7 +86,7 @@ extern(C++) const(char)* cppTypeInfoMangleItanium(Dsymbol s)
 }
 
 ///
-extern(C++) const(char)* cppThunkMangleItanium(FuncDeclaration fd, int offset)
+const(char)* cppThunkMangleItanium(FuncDeclaration fd, int offset)
 {
     //printf("cppThunkMangleItanium(%s)\n", fd.toChars());
     OutBuffer buf;

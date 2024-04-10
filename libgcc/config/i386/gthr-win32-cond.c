@@ -78,7 +78,7 @@ __gthr_win32_abs_to_rel_time (const __gthread_time_t *abs_time)
   if (abs_time_nsec100 < now.nsec100)
     return 0;
 
-  return (DWORD) CEIL_DIV (abs_time_nsec100 - now.nsec100, NSEC100_PER_SEC);
+  return (DWORD) CEIL_DIV (abs_time_nsec100 - now.nsec100, NSEC100_PER_MSEC);
 }
 
 /* Check the sizes of the local version of the Win32 types.  */

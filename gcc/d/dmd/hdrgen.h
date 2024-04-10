@@ -18,12 +18,15 @@ class Initializer;
 class Module;
 class Statement;
 
-void genhdrfile(Module *m, bool doFuncBodies, OutBuffer &buf);
-void genCppHdrFiles(Modules &ms);
-void moduleToBuffer(OutBuffer& buf, bool vcg_ast, Module *m);
-const char *parametersTypeToChars(ParameterList pl);
+namespace dmd
+{
+    void genhdrfile(Module *m, bool doFuncBodies, OutBuffer &buf);
+    void genCppHdrFiles(Modules &ms);
+    void moduleToBuffer(OutBuffer& buf, bool vcg_ast, Module *m);
+    const char *parametersTypeToChars(ParameterList pl);
 
-const char* toChars(const Expression* const e);
-const char* toChars(const Initializer* const i);
-const char* toChars(const Statement* const s);
-const char* toChars(const Type* const t);
+    const char* toChars(const Expression* const e);
+    const char* toChars(const Initializer* const i);
+    const char* toChars(const Statement* const s);
+    const char* toChars(const Type* const t);
+}

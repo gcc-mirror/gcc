@@ -98,7 +98,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsGnuAsm, IsGnuAsmVolatile, IsObject, IsTuple,
                         IsError, IsHiddenType, IsVarHeap,
                         IsComponent, IsPublic, IsExtern, IsCtor,
-                        IsImport, IsImportStatement,
+                        IsImport, IsImportStatement, IsConstStringKnown,
       	       	     	GetMainModule, GetBaseModule, GetModule, GetLocalSym,
                         PutModuleFinallyFunction,
                         GetProcedureScope, GetProcedureQuads,
@@ -1677,11 +1677,12 @@ END DeclareConstantFromTree ;
    DeclareCharConstant - declares a character constant.
 *)
 
-PROCEDURE DeclareCharConstant (sym: CARDINAL) ;
+PROCEDURE DeclareCharConstant (tokenno: CARDINAL; sym: CARDINAL) ;
 VAR
    location: location_t ;
 BEGIN
-   location := TokenToLocation(GetDeclaredMod(sym)) ;
+   Assert (IsConstStringKnown (sym)) ;
+   location := TokenToLocation(tokenno) ;
    PreAddModGcc(sym, BuildCharConstant(location, KeyToCharStar(GetString(sym)))) ;
    WatchRemoveList(sym, todolist) ;
    WatchIncludeList(sym, fullydeclared)
@@ -1689,23 +1690,24 @@ END DeclareCharConstant ;
 
 
 (*
-   DeclareStringConstant - declares a string constant.
+   DeclareStringConstant - declares a string constant the sym will be known.
 *)
 
-PROCEDURE DeclareStringConstant (sym: CARDINAL) ;
+PROCEDURE DeclareStringConstant (tokenno: CARDINAL; sym: CARDINAL) ;
 VAR
    symtree : Tree ;
 BEGIN
+   Assert (IsConstStringKnown (sym)) ;
    IF IsConstStringM2nul (sym) OR IsConstStringCnul (sym)
    THEN
       (* in either case the string needs a nul terminator.  If the string
          is a C variant it will already have had any escape characters applied.
          The BuildCStringConstant only adds the nul terminator.  *)
       symtree := BuildCStringConstant (KeyToCharStar (GetString (sym)),
-                                       GetStringLength (sym))
+                                       GetStringLength (tokenno, sym))
    ELSE
       symtree := BuildStringConstant (KeyToCharStar (GetString (sym)),
-                                      GetStringLength (sym))
+                                      GetStringLength (tokenno, sym))
    END ;
    PreAddModGcc (sym, symtree) ;
    WatchRemoveList (sym, todolist) ;
@@ -1733,14 +1735,15 @@ BEGIN
       ch := PopChar (tokenno) ;
       RETURN BuildCStringConstant (string (InitStringChar (ch)), 1)
    ELSE
-      size := GetStringLength (sym) ;
+      Assert (IsConstStringKnown (sym)) ;
+      size := GetStringLength (tokenno, sym) ;
       IF size > 1
       THEN
-         (* will be a string anyway *)
+         (* It will be already be declared as a string, so return it.  *)
          RETURN Tree (Mod2Gcc (sym))
       ELSE
          RETURN BuildStringConstant (KeyToCharStar (GetString (sym)),
-                                     GetStringLength (sym))
+                                     GetStringLength (tokenno, sym))
       END
    END
 END PromoteToString ;
@@ -1760,13 +1763,14 @@ VAR
    ch  : CHAR ;
 BEGIN
    DeclareConstant (tokenno, sym) ;
+   Assert (IsConstStringKnown (sym)) ;
    IF IsConst (sym) AND (GetSType (sym) = Char)
    THEN
       PushValue (sym) ;
       ch := PopChar (tokenno) ;
       RETURN BuildCStringConstant (string (InitStringChar (ch)), 1)
    ELSE
-      size := GetStringLength (sym) ;
+      size := GetStringLength (tokenno, sym) ;
       RETURN BuildCStringConstant (KeyToCharStar (GetString (sym)),
                                    size)
    END
@@ -1972,6 +1976,29 @@ END DeclareConstant ;
 
 
 (*
+   DeclareConstString -
+*)
+
+PROCEDURE DeclareConstString (tokenno: CARDINAL; sym: CARDINAL) : BOOLEAN ;
+VAR
+   size: CARDINAL ;
+BEGIN
+   IF IsConstStringKnown (sym)
+   THEN
+      size := GetStringLength (tokenno, sym) ;
+      IF size=1
+      THEN
+         DeclareCharConstant (tokenno, sym)
+      ELSE
+         DeclareStringConstant (tokenno, sym)
+      END ;
+      RETURN TRUE
+   END ;
+   RETURN FALSE
+END DeclareConstString ;
+
+
+(*
    TryDeclareConst - try to declare a const to gcc.  If it cannot
                      declare the symbol it places it into the
                      todolist.
@@ -1979,8 +2006,7 @@ END DeclareConstant ;
 
 PROCEDURE TryDeclareConst (tokenno: CARDINAL; sym: CARDINAL) ;
 VAR
-   type,
-   size: CARDINAL ;
+   type: CARDINAL ;
 BEGIN
    IF NOT GccKnowsAbout(sym)
    THEN
@@ -2001,14 +2027,10 @@ BEGIN
             RETURN
          END
       END ;
-      IF IsConstString(sym)
+      IF IsConstString(sym) AND IsConstStringKnown (sym)
       THEN
-         size := GetStringLength(sym) ;
-         IF size=1
+         IF DeclareConstString (tokenno, sym)
          THEN
-            DeclareCharConstant(sym)
-         ELSE
-            DeclareStringConstant (sym)
          END
       ELSIF IsValueSolved(sym)
       THEN
@@ -2050,7 +2072,6 @@ END TryDeclareConst ;
 PROCEDURE DeclareConst (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
 VAR
    type: CARDINAL ;
-   size: CARDINAL ;
 BEGIN
    IF GccKnowsAbout(sym)
    THEN
@@ -2062,12 +2083,8 @@ BEGIN
    END ;
    IF IsConstString(sym)
    THEN
-      size := GetStringLength(sym) ;
-      IF size=1
+      IF DeclareConstString (tokenno, sym)
       THEN
-         DeclareCharConstant(sym)
-      ELSE
-         DeclareStringConstant (sym)
       END
    ELSIF IsValueSolved(sym)
    THEN
@@ -4055,12 +4072,44 @@ END PrintProcedure ;
 
 
 (*
+   PrintString -
+*)
+
+PROCEDURE PrintString (sym: CARDINAL) ;
+VAR
+   len    : CARDINAL ;
+   tokenno: CARDINAL ;
+BEGIN
+   IF IsConstStringKnown (sym)
+   THEN
+      IF IsConstStringM2 (sym)
+      THEN
+         printf0 ('a Modula-2 string')
+      ELSIF IsConstStringC (sym)
+      THEN
+         printf0 (' a C string')
+      ELSIF IsConstStringM2nul (sym)
+      THEN
+         printf0 (' a nul terminated Modula-2 string')
+      ELSIF IsConstStringCnul (sym)
+      THEN
+         printf0 (' a nul terminated C string')
+      END ;
+      tokenno := GetDeclaredMod (sym) ;
+      len := GetStringLength (tokenno, sym) ;
+      printf1 (' length %d', len)
+   ELSE
+      printf0 ('is not currently known')
+   END
+END PrintString ;
+
+
+(*
    PrintVerboseFromList - prints the, i, th element in the list, l.
 *)
 
 PROCEDURE PrintVerboseFromList (l: List; i: CARDINAL) ;
 VAR
-   len,
    type,
    low,
    high,
@@ -4215,22 +4264,8 @@ BEGIN
       printf2('sym %d IsConst (%a)', sym, n) ;
       IF IsConstString(sym)
       THEN
-         printf1('  also IsConstString (%a)', n) ;
-         IF IsConstStringM2 (sym)
-         THEN
-            printf0(' a Modula-2 string')
-         ELSIF IsConstStringC (sym)
-         THEN
-            printf0(' a C string')
-         ELSIF IsConstStringM2nul (sym)
-         THEN
-            printf0(' a nul terminated Modula-2 string')
-         ELSIF IsConstStringCnul (sym)
-         THEN
-            printf0(' a nul terminated C string')
-         END ;
-         len := GetStringLength (sym) ;
-         printf1(' length %d', len)
+         printf1 (' also IsConstString (%a) ', n) ;
+         PrintString (sym)
       ELSIF IsConstructor(sym)
       THEN
          printf0(' constant constructor ') ;
@@ -5419,23 +5454,25 @@ END DeclareSet ;
 
 PROCEDURE CheckResolveSubrange (sym: CARDINAL) ;
 VAR
+   tokenno               : CARDINAL;
    size, high, low, type: CARDINAL ;
 BEGIN
    GetSubrange(sym, high, low) ;
+   tokenno := GetDeclaredMod (sym) ;
    type := GetSType(sym) ;
    IF type=NulSym
    THEN
       IF GccKnowsAbout(low) AND GccKnowsAbout(high)
       THEN
-         IF IsConstString(low)
+         IF IsConstString (low) AND IsConstStringKnown (low)
          THEN
-            size := GetStringLength(low) ;
+            size := GetStringLength (tokenno, low) ;
             IF size=1
             THEN
                PutSubrange(sym, low, high, Char)
             ELSE
-               MetaError1('cannot have a subrange of a string type {%1Uad}',
-                          sym)
+               MetaError1 ('cannot have a subrange of a string type {%1Uad}',
+                           sym)
             END
          ELSIF IsFieldEnumeration(low)
          THEN

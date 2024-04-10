@@ -1178,7 +1178,7 @@ public:
 	  {
 	    libcall = LIBCALL_AAGETY;
 	    ptr = build_address (build_expr (e->e1));
-	    tinfo = build_typeinfo (e, mutableOf (unSharedOf (tb1)));
+	    tinfo = build_typeinfo (e, dmd::mutableOf (dmd::unSharedOf (tb1)));
 	  }
 	else
 	  {
@@ -1188,7 +1188,7 @@ public:
 	  }
 
 	/* Index the associative array.  */
-	tree result = build_libcall (libcall, e->type->pointerTo (), 4,
+	tree result = build_libcall (libcall, dmd::pointerTo (e->type), 4,
 				     ptr, tinfo,
 				     size_int (tb1->nextOf ()->size ()),
 				     build_address (key));
@@ -1253,7 +1253,8 @@ public:
 	else
 	  {
 	    /* Generate `array.ptr[index]'.  */
-	    tree ptr = convert_expr (array, tb1, tb1->nextOf ()->pointerTo ());
+	    tree ptr = convert_expr (array, tb1,
+				     dmd::pointerTo (tb1->nextOf ()));
 	    ptr = void_okay_p (ptr);
 	    this->result_ = indirect_ref (TREE_TYPE (TREE_TYPE (ptr)),
 					  build_pointer_index (ptr, index));
@@ -1328,7 +1329,7 @@ public:
 
     /* Get the data pointer and length for static and dynamic arrays.  */
     tree array = d_save_expr (build_expr (e->e1));
-    tree ptr = convert_expr (array, tb1, tb1->nextOf ()->pointerTo ());
+    tree ptr = convert_expr (array, tb1, dmd::pointerTo (tb1->nextOf ()));
     tree length = NULL_TREE;
 
     /* Our array is already a SAVE_EXPR if necessary, so we don't make length
@@ -1994,7 +1995,7 @@ public:
 
   void visit (TypeidExp *e) final override
   {
-    if (Type *tid = isType (e->obj))
+    if (Type *tid = dmd::isType (e->obj))
       {
 	tree ti = build_typeinfo (e, tid);
 
@@ -2004,7 +2005,7 @@ public:
 
 	this->result_ = build_nop (build_ctype (e->type), ti);
       }
-    else if (Expression *tid = isExpression (e->obj))
+    else if (Expression *tid = dmd::isExpression (e->obj))
       {
 	Type *type = tid->type->toBasetype ();
 	assert (type->ty == TY::Tclass);
@@ -2136,7 +2137,8 @@ public:
 	    else
 	      {
 		var->inuse++;
-		init = build_expr (initializerToExpression (var->_init), true);
+		Expression *vinit = dmd::initializerToExpression (var->_init);
+		init = build_expr (vinit, true);
 		var->inuse--;
 	      }
 	  }
@@ -2170,7 +2172,7 @@ public:
 	      {
 		/* Generate a slice for non-zero initialized aggregates,
 		   otherwise create an empty array.  */
-		gcc_assert (e->type == constOf (Type::tvoid->arrayOf ()));
+		gcc_assert (e->type == dmd::constOf (Type::tvoid->arrayOf ()));
 
 		tree type = build_ctype (e->type);
 		tree length = size_int (sd->dsym->structsize);
@@ -2682,7 +2684,7 @@ public:
       {
 	/* Allocate space on the memory managed heap.  */
 	tree mem = build_libcall (LIBCALL_ARRAYLITERALTX,
-				  etype->pointerTo (), 2,
+				  dmd::pointerTo (etype), 2,
 				  build_typeinfo (e, etype->arrayOf ()),
 				  size_int (e->elements->length));
 	mem = d_save_expr (mem);
@@ -2718,7 +2720,7 @@ public:
       }
 
     /* Want the mutable type for typeinfo reference.  */
-    Type *tb = mutableOf (e->type->toBasetype ());
+    Type *tb = dmd::mutableOf (e->type->toBasetype ());
 
     /* Handle empty assoc array literals.  */
     TypeAArray *ta = tb->isTypeAArray ();

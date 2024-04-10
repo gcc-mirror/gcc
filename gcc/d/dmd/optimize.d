@@ -273,7 +273,7 @@ package void setLengthVarIfKnown(VarDeclaration lengthVar, Type type)
  * Returns:
  *      Constant folded version of `e`
  */
-extern (C++) Expression optimize(Expression e, int result, bool keepLvalue = false)
+Expression optimize(Expression e, int result, bool keepLvalue = false)
 {
     //printf("optimize() e: %s result: %d keepLvalue %d\n", e.toChars(), result, keepLvalue);
     Expression ret = e;

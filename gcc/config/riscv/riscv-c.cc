@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 static int
 riscv_ext_version_value (unsigned major, unsigned minor)
 {
-  return (major * 1000000) + (minor * 1000);
+  return (major * RISCV_MAJOR_VERSION_BASE) + (minor * RISCV_MINOR_VERSION_BASE);
 }
 
 /* Implement TARGET_CPU_CPP_BUILTINS.  */

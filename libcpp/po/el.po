@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.2\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2023-02-10 22:39+0000\n"
+"POT-Creation-Date: 2024-02-16 21:34+0000\n"
 "PO-Revision-Date: 2002-08-18 15:46+0100\n"
 "Last-Translator: Simos Xenitellis <simos@hellug.gr>\n"
 "Language-Team: Greek <nls@tux.hellug.gr>\n"
@@ -16,242 +16,263 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
-#: charset.cc:683
+#: charset.cc:759
 #, fuzzy, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "η μετατροπή από `%s' σε `%s' δεν υποστηρίζετε"
 
-#: charset.cc:686
+#: charset.cc:762
 msgid "iconv_open"
 msgstr ""
 
-#: charset.cc:696
+#: charset.cc:772
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr ""
 
-#: charset.cc:794
+#: charset.cc:870
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr ""
 
-#: charset.cc:811 charset.cc:2420
+#: charset.cc:887 charset.cc:2574
 msgid "converting to execution character set"
 msgstr ""
 
-#: charset.cc:817
+#: charset.cc:893
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr ""
 
-#: charset.cc:1437
+#: charset.cc:1549
 #, fuzzy
 msgid "universal character names are only valid in C++ and C99"
 msgstr "U+%04X: εκτός ορίων χαρακτήρας"
 
-#: charset.cc:1441
+#: charset.cc:1553
 msgid "C99's universal character names are incompatible with C90"
 msgstr ""
 
-#: charset.cc:1444
+#: charset.cc:1556
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr ""
 
-#: charset.cc:1483
+#: charset.cc:1595
 msgid "'\\N' not followed by '{'"
 msgstr ""
 
-#: charset.cc:1513
+#: charset.cc:1625
 msgid "empty named universal character escape sequence; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1520
+#: charset.cc:1632
 msgid "empty named universal character escape sequence"
 msgstr ""
 
-#: charset.cc:1525
+#: charset.cc:1637
 msgid "named universal character escapes are only valid in C++23"
 msgstr ""
 
-#: charset.cc:1545
+#: charset.cc:1657
 #, c-format
 msgid "\\N{%.*s} is not a valid universal character; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1551
+#: charset.cc:1663
 #, fuzzy, c-format
 msgid "\\N{%.*s} is not a valid universal character"
 msgstr "Το `%s' δεν είναι κατάλογος."
 
-#: charset.cc:1561
+#: charset.cc:1673
 #, c-format
 msgid "did you mean \\N{%s}?"
 msgstr ""
 
-#: charset.cc:1579
+#: charset.cc:1691
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1588
+#: charset.cc:1700
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:1596
+#: charset.cc:1708
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr ""
 
-#: charset.cc:1638
+#: charset.cc:1750
 msgid "empty delimited escape sequence; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1645 charset.cc:1978 charset.cc:2081
+#: charset.cc:1757 charset.cc:2124 charset.cc:2227
 #, fuzzy
 msgid "empty delimited escape sequence"
 msgstr "μη τερματιζόμενo αλφαριθμητικό"
 
-#: charset.cc:1649 charset.cc:1984 charset.cc:2087
+#: charset.cc:1761 charset.cc:2130 charset.cc:2233
 msgid "delimited escape sequences are only valid in C++23"
 msgstr ""
 
-#: charset.cc:1663
+#: charset.cc:1775
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1675
+#: charset.cc:1787
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr ""
 
-#: charset.cc:1679
+#: charset.cc:1791
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:1694
+#: charset.cc:1806
 #, fuzzy, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "Το `%s' δεν είναι κατάλογος."
 
-#: charset.cc:1704 lex.cc:2079
+#: charset.cc:1816 lex.cc:2082
 msgid "'$' in identifier or number"
 msgstr ""
 
-#: charset.cc:1714
+#: charset.cc:1826
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr ""
 
-#: charset.cc:1718
+#: charset.cc:1830
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr ""
 
-#: charset.cc:1725
+#: charset.cc:1837
 #, c-format
 msgid "%.*s is outside the UCS codespace"
 msgstr ""
 
-#: charset.cc:1769 charset.cc:2797
+#: charset.cc:1881 charset.cc:3037
 msgid "converting UCN to source character set"
 msgstr ""
 
-#: charset.cc:1776
+#: charset.cc:1888
 msgid "converting UCN to execution character set"
 msgstr ""
 
-#: charset.cc:1840
+#: charset.cc:1952
 #, fuzzy, c-format
 msgid "extended character %.*s is not valid in an identifier"
 msgstr "μη έγκυρος σταθερός χαρακτήρας στο αλφαριθμιτικό"
 
-#: charset.cc:1857
+#: charset.cc:1969
 #, c-format
 msgid "extended character %.*s is not valid at the start of an identifier"
 msgstr ""
 
-#: charset.cc:1945
+#: charset.cc:2091
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr ""
 
-#: charset.cc:1992
+#: charset.cc:2138
 msgid "\\x used with no following hex digits"
 msgstr ""
 
-#: charset.cc:1998
+#: charset.cc:2144
 #, c-format
 msgid "'\\x{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:2006
+#: charset.cc:2152
 #, fuzzy
 msgid "hex escape sequence out of range"
 msgstr "μη έγκυρη διαδικασία διαφυγής στο τέλος του αλφαριθμιτικού"
 
-#: charset.cc:2049
+#: charset.cc:2195
 msgid "'\\o' not followed by '{'"
 msgstr ""
 
-#: charset.cc:2093
+#: charset.cc:2239
 #, c-format
 msgid "'\\o{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:2102
+#: charset.cc:2248
 #, fuzzy
 msgid "octal escape sequence out of range"
 msgstr "μη έγκυρη διαδικασία διαφυγής στο τέλος του αλφαριθμιτικού"
 
-#: charset.cc:2184
+#: charset.cc:2300 charset.cc:2310
+#, c-format
+msgid "numeric escape sequence in unevaluated string: '\\%c'"
+msgstr ""
+
+#: charset.cc:2338
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr ""
 
-#: charset.cc:2191
+#: charset.cc:2345
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr ""
 
 # src/main.c:663
-#: charset.cc:2199
+#: charset.cc:2353
 #, fuzzy, c-format
 msgid "unknown escape sequence: '\\%c'"
 msgstr "Άγνωστη συμβολοσειρά `%s'"
 
 # src/main.c:663
-#: charset.cc:2209
+#: charset.cc:2363
 #, fuzzy, c-format
 msgid "unknown escape sequence: '\\%s'"
 msgstr "Άγνωστη συμβολοσειρά `%s'"
 
-#: charset.cc:2217
+#: charset.cc:2371
 #, fuzzy
 msgid "converting escape sequence to execution character set"
 msgstr "μη έγκυρη διαδικασία διαφυγής στο τέλος του αλφαριθμιτικού"
 
-#: charset.cc:2357
+#: charset.cc:2511
 #, fuzzy
 msgid "missing open quote"
 msgstr "Ελλιπής ή κακοσχηματισμένη ιδιότητα"
 
-#: charset.cc:2575 charset.cc:2658
-#, fuzzy
-msgid "character constant too long for its type"
-msgstr "μη έγκυρος σταθερός χαρακτήρας στο αλφαριθμιτικό"
+#: charset.cc:2772
+msgid "character not encodable in a single execution character code unit"
+msgstr ""
 
-#: charset.cc:2578
+#: charset.cc:2777
+msgid "at least one character in a multi-character literal not encodable in a single execution character code unit"
+msgstr ""
+
+#: charset.cc:2795
+#, c-format
+msgid "multi-character literal with %ld characters exceeds 'int' size of %ld bytes"
+msgstr ""
+
+#: charset.cc:2799 charset.cc:2894
+msgid "multi-character literal cannot have an encoding prefix"
+msgstr ""
+
+#: charset.cc:2802 charset.cc:2897
+msgid "character not encodable in a single code unit"
+msgstr ""
+
+#: charset.cc:2806
 #, fuzzy
 msgid "multi-character character constant"
 msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#: charset.cc:2698
+#: charset.cc:2938
 #, fuzzy
 msgid "empty character constant"
 msgstr "κενό αλφαριθμητικό"
 
-#: charset.cc:2882
+#: charset.cc:3122
 #, fuzzy, c-format
 msgid "failure to convert %s to %s"
 msgstr "δεν είναι δυνατό να δημιουργηθεί το %s `%s' στο `%s'"
@@ -266,14 +287,14 @@ msgstr ""
 msgid "#%s is a GCC extension"
 msgstr ""
 
-#: directives.cc:394 directives.cc:2152 directives.cc:2191
+#: directives.cc:394 directives.cc:2163 directives.cc:2202
 #, c-format
 msgid "#%s before C++23 is a GCC extension"
 msgstr ""
 
-#: directives.cc:397 directives.cc:401 directives.cc:2156 directives.cc:2195
+#: directives.cc:397 directives.cc:401 directives.cc:2167 directives.cc:2206
 #, c-format
-msgid "#%s before C2X is a GCC extension"
+msgid "#%s before C23 is a GCC extension"
 msgstr ""
 
 #: directives.cc:407
@@ -333,209 +354,209 @@ msgstr ""
 msgid "macro names must be identifiers"
 msgstr "διπλός προσδιοριστής μηνύματος"
 
-#: directives.cc:694 directives.cc:699
+#: directives.cc:698 directives.cc:702
 #, fuzzy, c-format
 msgid "undefining \"%s\""
 msgstr "Μη ορισμένο όνομα %s"
 
-#: directives.cc:756
+#: directives.cc:759
 #, fuzzy
 msgid "missing terminating > character"
 msgstr "έχει παραληφθεί το αρχείο προορισμού"
 
-#: directives.cc:815
+#: directives.cc:818
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr ""
 
-#: directives.cc:861
+#: directives.cc:864
 #, fuzzy, c-format
 msgid "empty filename in #%s"
 msgstr "Μη ορισμένο όνομα %s"
 
-#: directives.cc:870
+#: directives.cc:873
 #, c-format
 msgid "#include nested depth %u exceeds maximum of %u (use -fmax-include-depth=DEPTH to increase the maximum)"
 msgstr ""
 
-#: directives.cc:915
+#: directives.cc:918
 msgid "#include_next in primary source file"
 msgstr ""
 
-#: directives.cc:941
+#: directives.cc:944
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr ""
 
-#: directives.cc:1008
+#: directives.cc:1011
 msgid "unexpected end of file after #line"
 msgstr ""
 
-#: directives.cc:1011
+#: directives.cc:1014
 #, fuzzy, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#: directives.cc:1017 directives.cc:1019
+#: directives.cc:1020 directives.cc:1022
 #, fuzzy
 msgid "line number out of range"
 msgstr "%s: αριθμός γραμμής έξω από τα όρια"
 
-#: directives.cc:1032 directives.cc:1113
+#: directives.cc:1035 directives.cc:1116
 #, fuzzy, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#: directives.cc:1073
+#: directives.cc:1076
 #, fuzzy, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#: directives.cc:1140
+#: directives.cc:1143
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgstr ""
 
-#: directives.cc:1218 directives.cc:1220 directives.cc:1222 directives.cc:1810
+#: directives.cc:1221 directives.cc:1223 directives.cc:1225 directives.cc:1816
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.cc:1246
+#: directives.cc:1249
 #, fuzzy, c-format
 msgid "invalid #%s directive"
 msgstr "%%%c: κατευθυντήριος γραμμή μη έγκυρη."
 
-#: directives.cc:1309
+#: directives.cc:1312
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr ""
 
-#: directives.cc:1318
+#: directives.cc:1321
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr ""
 
-#: directives.cc:1336
+#: directives.cc:1339
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr ""
 
-#: directives.cc:1339
+#: directives.cc:1342
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr ""
 
-#: directives.cc:1342
+#: directives.cc:1345
 #, fuzzy, c-format
 msgid "#pragma %s is already registered"
 msgstr "ο χάρτης χαρακτήρων `%s' ορίστηκε ήδη"
 
-#: directives.cc:1372
+#: directives.cc:1375
 msgid "registering pragma with NULL handler"
 msgstr ""
 
-#: directives.cc:1589
+#: directives.cc:1592
 msgid "#pragma once in main file"
 msgstr ""
 
-#: directives.cc:1612
+#: directives.cc:1615
 #, fuzzy
 msgid "invalid #pragma push_macro directive"
 msgstr "%%%c: κατευθυντήριος γραμμή μη έγκυρη."
 
-#: directives.cc:1669
+#: directives.cc:1672
 #, fuzzy
 msgid "invalid #pragma pop_macro directive"
 msgstr "%%%c: κατευθυντήριος γραμμή μη έγκυρη."
 
-#: directives.cc:1724
+#: directives.cc:1727
 msgid "invalid #pragma GCC poison directive"
 msgstr ""
 
-#: directives.cc:1733
+#: directives.cc:1736
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr ""
 
-#: directives.cc:1752
+#: directives.cc:1758
 msgid "#pragma system_header ignored outside include file"
 msgstr ""
 
-#: directives.cc:1777
+#: directives.cc:1783
 #, fuzzy, c-format
 msgid "cannot find source file %s"
 msgstr "αδυναμία ανοίγματος υποδοχής: %s"
 
-#: directives.cc:1781
+#: directives.cc:1787
 #, c-format
 msgid "current file is older than %s"
 msgstr ""
 
-#: directives.cc:1805
+#: directives.cc:1811
 #, fuzzy, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "Η παράμετρος `%s' δεν είναι έγκυρη."
 
-#: directives.cc:2008
+#: directives.cc:2019
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.cc:2091
+#: directives.cc:2102
 msgid "#else without #if"
 msgstr ""
 
-#: directives.cc:2096
+#: directives.cc:2107
 msgid "#else after #else"
 msgstr "#else μετά από #else"
 
-#: directives.cc:2098 directives.cc:2132
+#: directives.cc:2109 directives.cc:2143
 msgid "the conditional began here"
 msgstr ""
 
-#: directives.cc:2124
+#: directives.cc:2135
 #, c-format
 msgid "#%s without #if"
 msgstr ""
 
-#: directives.cc:2129
+#: directives.cc:2140
 #, fuzzy, c-format
 #| msgid "#else after #else"
 msgid "#%s after #else"
 msgstr "#else μετά από #else"
 
-#: directives.cc:2231
+#: directives.cc:2242
 msgid "#endif without #if"
 msgstr ""
 
-#: directives.cc:2307
+#: directives.cc:2318
 msgid "missing '(' after predicate"
 msgstr ""
 
-#: directives.cc:2325
+#: directives.cc:2336
 msgid "missing ')' to complete answer"
 msgstr ""
 
-#: directives.cc:2337
+#: directives.cc:2348
 msgid "predicate's answer is empty"
 msgstr ""
 
-#: directives.cc:2367
+#: directives.cc:2378
 #, fuzzy
 msgid "assertion without predicate"
 msgstr "Η λειτουργία δεν επιτρέπεται"
 
-#: directives.cc:2370
+#: directives.cc:2381
 #, fuzzy
 msgid "predicate must be an identifier"
 msgstr "διπλός προσδιοριστής μηνύματος"
 
-#: directives.cc:2452
+#: directives.cc:2463
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.cc:2770
+#: directives.cc:2781
 #, fuzzy, c-format
 msgid "unterminated #%s"
 msgstr "μη τερματιζόμενo αλφαριθμητικό"
@@ -550,138 +571,142 @@ msgstr "%s: %s"
 msgid "stdout"
 msgstr ""
 
-#: expr.cc:646 expr.cc:763
+#: expr.cc:667 expr.cc:784
 msgid "fixed-point constants are a GCC extension"
 msgstr ""
 
-#: expr.cc:671
+#: expr.cc:692
 #, fuzzy
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "Η παράμετρος κινητής υποδιαστολής δεν είναι έγκυρη: %s"
 
-#: expr.cc:684
+#: expr.cc:705
 msgid "use of C++17 hexadecimal floating constant"
 msgstr ""
 
-#: expr.cc:687
+#: expr.cc:708
 msgid "use of C99 hexadecimal floating constant"
 msgstr ""
 
-#: expr.cc:731
+#: expr.cc:752
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "Η παράμετρος κινητής υποδιαστολής δεν είναι έγκυρη: %s"
 
-#: expr.cc:742 expr.cc:809
+#: expr.cc:763 expr.cc:830
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr ""
 
-#: expr.cc:750
+#: expr.cc:771
 msgid "suffix for double constant is a GCC extension"
 msgstr ""
 
-#: expr.cc:756
+#: expr.cc:777
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "Η παράμετρος κινητής υποδιαστολής δεν είναι έγκυρη: %s"
 
-#: expr.cc:769 expr.cc:773
+#: expr.cc:790 expr.cc:794
 #, fuzzy
-msgid "decimal float constants are a C2X feature"
+msgid "decimal float constants are a C23 feature"
 msgstr "%s: το %s είναι τόσο μεγάλο που δε μπορεί να αναπαρασταθεί"
 
-#: expr.cc:792
+#: expr.cc:813
 #, fuzzy, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "Μη έγκυρη ακέραια παράμετρος `%s'"
 
-#: expr.cc:817
+#: expr.cc:838
 #, fuzzy
 msgid "use of C++11 long long integer constant"
 msgstr "Μη έγκυρη ακέραια παράμετρος `%s'"
 
-#: expr.cc:818
+#: expr.cc:839
 #, fuzzy
 msgid "use of C99 long long integer constant"
 msgstr "Μη έγκυρη ακέραια παράμετρος `%s'"
 
-#: expr.cc:832
+#: expr.cc:853
 msgid "use of C++23 %<size_t%> integer constant"
 msgstr ""
 
-#: expr.cc:833
+#: expr.cc:854
 msgid "use of C++23 %<make_signed_t<size_t>%> integer constant"
 msgstr ""
 
-#: expr.cc:844
+#: expr.cc:864 expr.cc:875
+msgid "ISO C does not support literal %<wb%> suffixes before C23"
+msgstr ""
+
+#: expr.cc:888
 msgid "imaginary constants are a GCC extension"
 msgstr ""
 
-#: expr.cc:851
+#: expr.cc:895
 msgid "binary constants are a C++14 feature or GCC extension"
 msgstr ""
 
-#: expr.cc:853
-msgid "binary constants are a C2X feature or GCC extension"
+#: expr.cc:897
+msgid "binary constants are a C23 feature or GCC extension"
 msgstr ""
 
-#: expr.cc:858
-msgid "binary constants are a C2X feature"
+#: expr.cc:902
+msgid "binary constants are a C23 feature"
 msgstr ""
 
-#: expr.cc:954
+#: expr.cc:998
 #, fuzzy
 msgid "integer constant is too large for its type"
 msgstr "%s: το %s είναι τόσο μεγάλο που δε μπορεί να αναπαρασταθεί"
 
-#: expr.cc:985
+#: expr.cc:1029
 #, fuzzy
 msgid "integer constant is so large that it is unsigned"
 msgstr "%s: το %s είναι τόσο μεγάλο που δε μπορεί να αναπαρασταθεί"
 
-#: expr.cc:1080
+#: expr.cc:1124
 #, fuzzy
 msgid "missing ')' after \"defined\""
 msgstr "έχει παραληφθεί η λίστα με τα πεδία"
 
-#: expr.cc:1087
+#: expr.cc:1131
 msgid "operator \"defined\" requires an identifier"
 msgstr ""
 
-#: expr.cc:1095
+#: expr.cc:1139
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr ""
 
-#: expr.cc:1108
+#: expr.cc:1152
 msgid "this use of \"defined\" may not be portable"
 msgstr ""
 
-#: expr.cc:1153
+#: expr.cc:1197
 msgid "user-defined literal in preprocessor expression"
 msgstr ""
 
-#: expr.cc:1158
+#: expr.cc:1202
 #, fuzzy
 msgid "floating constant in preprocessor expression"
 msgstr "Εξαίρεση κινητής υποδιαστολής"
 
-#: expr.cc:1164
+#: expr.cc:1208
 #, fuzzy
 msgid "imaginary number in preprocessor expression"
 msgstr "μη έγκυρος αριθμός από γραμμές"
 
-#: expr.cc:1213
+#: expr.cc:1257
 #, fuzzy, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
 msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: expr.cc:1226
+#: expr.cc:1270
 msgid "assertions are a GCC extension"
 msgstr ""
 
-#: expr.cc:1229
+#: expr.cc:1273
 msgid "assertions are a deprecated extension"
 msgstr ""
 
@@ -689,126 +714,126 @@ msgstr ""
 # src/dfa.c:690 src/dfa.c:703 src/dfa.c:704
 # src/dfa.c:660 src/dfa.c:663 src/dfa.c:690 src/dfa.c:694 src/dfa.c:695
 # src/dfa.c:698 src/dfa.c:711 src/dfa.c:712
-#: expr.cc:1479
+#: expr.cc:1523
 #, fuzzy, c-format
 msgid "unbalanced stack in %s"
 msgstr "Μη ισσοροπημένο ["
 
-#: expr.cc:1499
+#: expr.cc:1543
 #, fuzzy, c-format
 msgid "impossible operator '%u'"
 msgstr "RPC: Μη συμβατές εκδόσεις του RPC"
 
-#: expr.cc:1600
+#: expr.cc:1644
 #, fuzzy
 msgid "missing ')' in expression"
 msgstr "έχει παραληφθεί η λίστα με τις θέσεις"
 
-#: expr.cc:1629
+#: expr.cc:1673
 #, fuzzy
 msgid "'?' without following ':'"
 msgstr "συντακτικό σφάλμα στον πρόλογο: %s"
 
-#: expr.cc:1639
+#: expr.cc:1683
 msgid "integer overflow in preprocessor expression"
 msgstr ""
 
-#: expr.cc:1644
+#: expr.cc:1688
 #, fuzzy
 msgid "missing '(' in expression"
 msgstr "έχει παραληφθεί η λίστα με τις θέσεις"
 
-#: expr.cc:1676
+#: expr.cc:1720
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.cc:1681
+#: expr.cc:1725
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.cc:1940
+#: expr.cc:1984
 msgid "traditional C rejects the unary plus operator"
 msgstr ""
 
-#: expr.cc:2038
+#: expr.cc:2082
 msgid "comma operator in operand of #if"
 msgstr ""
 
-#: expr.cc:2174
+#: expr.cc:2218
 #, fuzzy
 msgid "division by zero in #if"
 msgstr "Διαίρεση με μηδέν στην αποτίμηση: %s"
 
-#: files.cc:516
+#: files.cc:520
 msgid "NULL directory in find_file"
 msgstr ""
 
-#: files.cc:570
+#: files.cc:583
 msgid "one or more PCH files were found, but they were invalid"
 msgstr ""
 
-#: files.cc:574
+#: files.cc:587
 msgid "use -Winvalid-pch for more information"
 msgstr ""
 
-#: files.cc:688
+#: files.cc:703
 #, fuzzy, c-format
 msgid "%s is a block device"
 msgstr "Δεν έμεινε καθόλου χώρος στη συσκευή"
 
 # src/shred.c:1134
-#: files.cc:707
+#: files.cc:722
 #, fuzzy, c-format
 msgid "%s is too large"
 msgstr "%s: το αρχείο είναι πολύ μεγάλο"
 
-#: files.cc:748
+#: files.cc:763
 #, fuzzy, c-format
 msgid "%s is shorter than expected"
 msgstr "%s: Αναμενόταν δυαδικός χειριστής.\n"
 
-#: files.cc:1060
+#: files.cc:1075
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr ""
 
-#: files.cc:1578
+#: files.cc:1598
 msgid "Multiple include guards may be useful for:\n"
 msgstr ""
 
-#: init.cc:631
+#: init.cc:638
 #, fuzzy
 msgid "cppchar_t must be an unsigned type"
 msgstr "διπλός προσδιοριστής μηνύματος"
 
-#: init.cc:635
+#: init.cc:642
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr ""
 
-#: init.cc:642
+#: init.cc:649
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr ""
 
-#: init.cc:645
+#: init.cc:652
 msgid "target char is less than 8 bits wide"
 msgstr ""
 
-#: init.cc:649
+#: init.cc:656
 msgid "target wchar_t is narrower than target char"
 msgstr ""
 
-#: init.cc:653
+#: init.cc:660
 msgid "target int is narrower than target char"
 msgstr ""
 
-#: init.cc:658
+#: init.cc:665
 msgid "CPP half-integer narrower than CPP character"
 msgstr ""
 
-#: init.cc:662
+#: init.cc:669
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr ""
@@ -903,116 +928,120 @@ msgstr "το `%s' δεν είναι κανονικό αρχείο"
 msgid "`%.*s' is not in NFC"
 msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: lex.cc:2141
+#: lex.cc:2144
 msgid "__VA_OPT__ is not available until C++20"
 msgstr ""
 
-#: lex.cc:2144
-msgid "__VA_OPT__ is not available until C2X"
+#: lex.cc:2147
+msgid "__VA_OPT__ is not available until C23"
 msgstr ""
 
-#: lex.cc:2152
+#: lex.cc:2155
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
 msgstr ""
 
-#: lex.cc:2183 lex.cc:2279
+#: lex.cc:2172
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.cc:2193 lex.cc:2289
+#: lex.cc:2177
+msgid "poisoned here"
+msgstr ""
+
+#: lex.cc:2187
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr ""
 
-#: lex.cc:2197 lex.cc:2293
+#: lex.cc:2191
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.cc:2207 lex.cc:2305
+#: lex.cc:2203
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.cc:2345
+#: lex.cc:2372
 msgid "adjacent digit separators"
 msgstr ""
 
-#: lex.cc:2665
+#: lex.cc:2521
+msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
+msgstr ""
+
+#: lex.cc:2729
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.cc:2669
+#: lex.cc:2733
 msgid "invalid new-line in raw string delimiter"
 msgstr ""
 
-#: lex.cc:2673 lex.cc:5519
+#: lex.cc:2737 lex.cc:5576
 #, fuzzy, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "μη έγκυρος χαρακτήρας `%c' στο τύπο αλφαριθμητικού `%s'"
 
-#: lex.cc:2711 lex.cc:2734
+#: lex.cc:2775 lex.cc:2798
 #, fuzzy
 msgid "unterminated raw string"
 msgstr "μη τερματιζόμενo αλφαριθμητικό"
 
-#: lex.cc:2770 lex.cc:2922
-msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
-msgstr ""
-
-#: lex.cc:2905
+#: lex.cc:2955
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.cc:2908
+#: lex.cc:2958
 #, c-format
 msgid "missing terminating %c character"
 msgstr "έχει παραληφθεί τερματικός χαρακτήρας %c"
 
-#: lex.cc:2940
+#: lex.cc:2991
 msgid "C++11 requires a space between string literal and macro"
 msgstr ""
 
-#: lex.cc:3533
+#: lex.cc:3584
 msgid "module control-line cannot be in included file"
 msgstr ""
 
-#: lex.cc:3547
+#: lex.cc:3598
 #, c-format
 msgid "module control-line \"%s\" cannot be an object-like macro"
 msgstr ""
 
-#: lex.cc:3949 lex.cc:5352 traditional.cc:174
+#: lex.cc:4004 lex.cc:5409 traditional.cc:174
 #, fuzzy
 msgid "unterminated comment"
 msgstr "Μη τερματισμένη εντολή `s'"
 
-#: lex.cc:3963 lex.cc:3997
+#: lex.cc:4018 lex.cc:4052
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.cc:3965 lex.cc:3976 lex.cc:4000
+#: lex.cc:4020 lex.cc:4031 lex.cc:4055
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.cc:3974
+#: lex.cc:4029
 msgid "C++ style comments are incompatible with C90"
 msgstr ""
 
-#: lex.cc:4006
+#: lex.cc:4061
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.cc:4427
+#: lex.cc:4484
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "%s: αδύνατο το άνοιγμα του %s: %m\n"
 
-#: lex.cc:5507
+#: lex.cc:5564
 #, c-format
 msgid "raw string delimiter longer than %d characters"
 msgstr ""
 
-#: lex.cc:5577
+#: lex.cc:5634
 #, fuzzy
 msgid "unterminated literal"
 msgstr "μη τερματιζόμενo αλφαριθμητικό"
@@ -1059,7 +1088,7 @@ msgstr "έχει παραληφθεί η λίστα με τα πεδία"
 msgid "macro \"%s\" is not used"
 msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#: macro.cc:498 macro.cc:797
+#: macro.cc:498 macro.cc:803
 #, fuzzy, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "μη έγκυρο μήκος γραμμής: %s"
@@ -1083,136 +1112,136 @@ msgstr "Δεν μπόρεσα να ανοίξω το αρχείο %s"
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr ""
 
-#: macro.cc:916
+#: macro.cc:922
 #, fuzzy
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "μη έγκυρος αρχικός αριθμός γραμμής: `%s'"
 
-#: macro.cc:980
+#: macro.cc:986
 #, c-format
 msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
 msgstr ""
 
-#: macro.cc:1112
+#: macro.cc:1118
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr ""
 
-#: macro.cc:1116
+#: macro.cc:1122
 #, fuzzy
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "Κακή αίτηση παραμέτρων"
 
-#: macro.cc:1123
+#: macro.cc:1129
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr ""
 
-#: macro.cc:1128
+#: macro.cc:1134
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr ""
 
-#: macro.cc:1132
+#: macro.cc:1138
 #, fuzzy, c-format
 msgid "macro \"%s\" defined here"
 msgstr "αόριστο"
 
-#: macro.cc:1326 traditional.cc:822
+#: macro.cc:1332 traditional.cc:822
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr ""
 
-#: macro.cc:1472
+#: macro.cc:1478
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr ""
 
-#: macro.cc:2307
+#: macro.cc:2313
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr ""
 
-#: macro.cc:2315 macro.cc:2324
+#: macro.cc:2321 macro.cc:2330
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr ""
 
-#: macro.cc:3375
+#: macro.cc:3381
 #, fuzzy, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#: macro.cc:3457
+#: macro.cc:3463
 #, fuzzy, c-format
 msgid "expected parameter name, found \"%s\""
 msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#: macro.cc:3458
+#: macro.cc:3464
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
 msgstr ""
 
-#: macro.cc:3459
+#: macro.cc:3465
 #, fuzzy
 msgid "expected parameter name before end of line"
 msgstr "%s: αναμενόταν αριθμητική τιμή."
 
-#: macro.cc:3460
+#: macro.cc:3466
 msgid "expected ')' before end of line"
 msgstr ""
 
-#: macro.cc:3461
+#: macro.cc:3467
 msgid "expected ')' after \"...\""
 msgstr ""
 
-#: macro.cc:3518
+#: macro.cc:3524
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr ""
 
-#: macro.cc:3519 macro.cc:3523
+#: macro.cc:3525 macro.cc:3529
 msgid "anonymous variadic macros were introduced in C99"
 msgstr ""
 
-#: macro.cc:3529
+#: macro.cc:3535
 msgid "ISO C++ does not permit named variadic macros"
 msgstr ""
 
-#: macro.cc:3530
+#: macro.cc:3536
 msgid "ISO C does not permit named variadic macros"
 msgstr ""
 
-#: macro.cc:3576
+#: macro.cc:3582
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr ""
 
-#: macro.cc:3614
+#: macro.cc:3620
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr ""
 
-#: macro.cc:3615
+#: macro.cc:3621
 #, fuzzy
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "Κακή αίτηση παραμέτρων"
 
-#: macro.cc:3639
+#: macro.cc:3645
 msgid "missing whitespace after the macro name"
 msgstr ""
 
-#: macro.cc:3692
+#: macro.cc:3698
 msgid "'#' is not followed by a macro parameter"
 msgstr ""
 
-#: macro.cc:3848
+#: macro.cc:3862
 #, fuzzy, c-format
 msgid "\"%s\" redefined"
 msgstr "αόριστο"
 
-#: macro.cc:3853
+#: macro.cc:3867
 #, fuzzy
 msgid "this is the location of the previous definition"
 msgstr "αυτή είναι η θέση του πρώτου ορισμού"
 
-#: macro.cc:3990
+#: macro.cc:4004
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr ""
@@ -1246,7 +1275,7 @@ msgstr ""
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr ""
 
-#: pch.cc:720 pch.cc:876
+#: pch.cc:720 pch.cc:883
 msgid "while reading precompiled header"
 msgstr ""
 
@@ -1260,15 +1289,15 @@ msgstr ""
 msgid "syntax error in macro parameter list"
 msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "wrong number of arguments specified for `%s' attribute"
 #~ msgstr "λάθος αριθμός ορισμάτων"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown machine mode `%s'"
 #~ msgstr "άγνωστο σετ `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "no data type for mode `%s'"
 #~ msgstr "δεν ορίστηκε βαρύτητα για το σύμβολο `%s'"
 
@@ -1280,19 +1309,19 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "requested alignment is too large"
 #~ msgstr "Κακή αίτηση παραμέτρων"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "alignment may not be specified for `%s'"
 #~ msgstr "μόνο ένα όρισμα μπορεί να δηλωθεί"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't set `%s' attribute after definition"
 #~ msgstr "αυτός είναι ο πρώτος ορισμός"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' attribute ignored for `%s'"
 #~ msgstr "το `%s' είναι πρόγονος του `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid vector type for attribute `%s'"
 #~ msgstr "μη έγκυρο είδος αλφαριθμητικού `%s'"
 
@@ -1316,7 +1345,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid truth-value expression"
 #~ msgstr "Μη έγκυρη κανονική έκφραση"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operands to binary %s"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
@@ -1324,15 +1353,15 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid use of `restrict'"
 #~ msgstr "μη έγκυρος αριθμός από γραμμές"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot disable built-in function `%s'"
 #~ msgstr "αδυναμία εκτέλεσης ioctl στο `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "too few arguments to function `%s'"
 #~ msgstr "Προειδοποίηση: Πολύ λίγα ορίσματα στο εσωδομημένο `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "too many arguments to function `%s'"
 #~ msgstr "πάρα πολλά ορίσματα"
 
@@ -1352,23 +1381,23 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "this is the first default label"
 #~ msgstr "αυτός είναι ο πρώτος ορισμός"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown C standard `%s'"
 #~ msgstr "άγνωστο σετ `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "conflicting types for `%s'"
 #~ msgstr "μη έγκυρο είδος αλφαριθμητικού `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "redefinition of `%s'"
 #~ msgstr "κανένας ορισμός του `UNDEFINED'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "redeclaration of `%s'"
 #~ msgstr "δημιουργία αρχείου `%s'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' declared inline after its definition"
 #~ msgstr "%s: διπλός ορισμός έκδοσης κατηγορίας"
 
@@ -1379,13 +1408,15 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "type mismatch with previous implicit declaration"
 #~ msgstr "σφάλμα ταιριάσματος τύπου με προηγούμενη αυτονόητη διακύρηξη"
 
+#, c-format
 #~ msgid "previous implicit declaration of `%s'"
 #~ msgstr "προηγούμενη αυτονόητη διακύρηξη του `%s'"
 
+#, c-format
 #~ msgid "implicit declaration of function `%s'"
 #~ msgstr "αυτονόητη διακύρηξη της συνάρτησης `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate label declaration `%s'"
 #~ msgstr "διπλό όνομα χαρακτήρα `%s'"
 
@@ -1397,23 +1428,23 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "empty declaration"
 #~ msgstr "κενό αλφαριθμητικό"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "array size missing in `%s'"
 #~ msgstr "σφάλμα κατά το κλείσιμο της εισόδου `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "storage size of `%s' isn't known"
 #~ msgstr "Το όνομα `%s' είναι άγνωστο\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate `%s'"
 #~ msgstr "διπλό κλειδί"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "both signed and unsigned specified for `%s'"
 #~ msgstr "μη έγκυρος δηλωτής πεδίου: `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "complex invalid for `%s'"
 #~ msgstr "Μη έγκυρη προτεραιότητα `%s'"
 
@@ -1429,11 +1460,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "duplicate `volatile'"
 #~ msgstr "διπλό κλειδί"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "size of array `%s' is too large"
 #~ msgstr "Ο κατάλογος `%s' δεν είναι προσιτός."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid storage class for function `%s'"
 #~ msgstr "μη έγκυρη τάξη χαρακτήρων `%s'"
 
@@ -1445,11 +1476,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "parameter has incomplete type"
 #~ msgstr "μη πλήρης εγγραφή"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "redefinition of `union %s'"
 #~ msgstr "Οι ορισμοί πηγή βρίσκονται στο ΑΡΧΕΙΟ"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s defined inside parms"
 #~ msgstr "συνεχίζεται στο τμήμα"
 
@@ -1460,7 +1491,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgstr "δομή"
 
 # src/request.c:37
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s has no %s"
 #~ msgstr "%s σε %s"
 
@@ -1473,19 +1504,19 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "members"
 #~ msgstr "μέλη"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "nested redefinition of `%s'"
 #~ msgstr "αδυναμία ανοίγματος αρχείου ορισμού locale `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "negative width in bit-field `%s'"
 #~ msgstr "Αρνητικό πλάτος στην αποτίμηση"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' is narrower than values of its type"
 #~ msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate member `%s'"
 #~ msgstr "διπλό όνομα χαρακτήρα `%s'"
 
@@ -1496,32 +1527,38 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "return type defaults to `int'"
 #~ msgstr "ο επιστρεφόμενος τύπος προκαθορίζεται σε `int'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' was used with no declaration before its definition"
 #~ msgstr "αυτή είναι η θέση του πρώτου ορισμού"
 
+#, c-format
 #~ msgid "return type of `%s' is not `int'"
 #~ msgstr "η επιστρεφόμενη τιμή της `%s' δεν είναι `int'"
 
+#, c-format
 #~ msgid "first argument of `%s' should be `int'"
 #~ msgstr "το πρώτο όρισμα της `%s' πρέπει να είναι `int'"
 
+#, c-format
 #~ msgid "second argument of `%s' should be `char **'"
 #~ msgstr "το δεύτερο όρισμα της `%s' πρέπει να είναι `char **'"
 
+#, c-format
 #~ msgid "third argument of `%s' should probably be `char **'"
 #~ msgstr "το τρίτο όρισμα της `%s' πρέπει να είναι `char **'"
 
+#, c-format
 #~ msgid "`%s' takes only zero or two arguments"
 #~ msgstr "η `%s' παίρνει είτε κανένα είτε δύο ορίσματα"
 
+#, c-format
 #~ msgid "`%s' is normally a non-static function"
 #~ msgstr "η `%s' είναι συνήθως μη-στατική συνάρτηση"
 
 #~ msgid "parameter name omitted"
 #~ msgstr "έχει παραληφθεί το όνομα της παραμέτρου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "parameter `%s' declared void"
 #~ msgstr "ο χάρτης χαρακτήρων `%s' ορίστηκε ήδη"
 
@@ -1529,7 +1566,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "no return statement in function returning non-void"
 #~ msgstr "`return' χωρίς τιμή, σε συνάρτηση που επιστρέφει μη-κενό"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "size of return value of `%s' is larger than %d bytes"
 #~ msgstr "%s: οι τιμές του πεδίου `%s' δεν πρέπει να είναι μεγαλύτερες από %d"
 
@@ -1571,7 +1608,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "null format string"
 #~ msgstr "Η αλυσίδα μορφής δεν είναι έγκυρη: `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "repeated %s in format"
 #~ msgstr "repeated leap second moment"
 
@@ -1579,15 +1616,15 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "too few arguments for format"
 #~ msgstr "πολύ λίγα ορίσματα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "zero width in %s format"
 #~ msgstr "σφάλμα εγγραφής %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown conversion type character `%c' in format"
 #~ msgstr "άγνωστος χαρακτήρας `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s does not support %s"
 #~ msgstr "αρχεία fifo δεν υποστηρίζονται"
 
@@ -1624,7 +1661,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "parser stack overflow"
 #~ msgstr "Υπερχείλιση πίνακα αρχείου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' is not at beginning of declaration"
 #~ msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
@@ -1638,29 +1675,36 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "parse error"
 #~ msgstr "σφάλμα επεξεργασίας"
 
+#, c-format
 #~ msgid "%s at end of input"
 #~ msgstr "%s στο τέλος της εισόδου"
 
+#, c-format
 #~ msgid "%s before %s'%c'"
 #~ msgstr "%s πριν από %s'%c'"
 
+#, c-format
 #~ msgid "%s before %s'\\x%x'"
 #~ msgstr "%s πριν από %s'\\x%x'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s before string constant"
 #~ msgstr "μη τερματιζμένο αλφαριθμητικό σταθεράς"
 
+#, c-format
 #~ msgid "%s before numeric constant"
 #~ msgstr "%s πριν από αριθμητική σταθερά"
 
 # src/request.c:37
+#, c-format
 #~ msgid "%s before \"%s\""
 #~ msgstr "%s πριν από \"%s\""
 
+#, c-format
 #~ msgid "%s before '%s' token"
 #~ msgstr "%s πριν από το σύμβολο '%s'"
 
+#, c-format
 #~ msgid "syntax error at '%s' token"
 #~ msgstr "συντακτικό σφάλμα στο σύμβολο '%s'"
 
@@ -1704,15 +1748,15 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid use of flexible array member"
 #~ msgstr "μη έγκυρη ώρα της μέρας"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid use of undefined type `%s %s'"
 #~ msgstr "μη έγκυρος αριθμός από κενές γραμμές: `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid use of incomplete typedef `%s'"
 #~ msgstr "μη έγκυρος δεύτερος τελεστής σε κατάσταση συμβατότητας `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid type argument of `%s'"
 #~ msgstr "Η παράμετρος `%s' δεν είναι έγκυρη."
 
@@ -1743,11 +1787,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid lvalue in unary `&'"
 #~ msgstr "μη έγκυρος χρόνος αναπήδης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s of read-only variable `%s'"
 #~ msgstr "Μη αναγνωρίσιμη μεταβλητή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot take address of bit-field `%s'"
 #~ msgstr "δεν είναι δυνατό να δημιουργηθεί το αρχείο fifo `%s'"
 
@@ -1759,25 +1803,28 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "assignment"
 #~ msgstr "προσπέρασμα ορίσματος"
 
+#, c-format
 #~ msgid "%s makes pointer from integer without a cast"
 #~ msgstr "%s μετατρέπει ακέραιο σε δείκτη χωρίς μετατροπέα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "incompatible type for argument %d of `%s'"
 #~ msgstr "Μη έγκυρη ακέραια παράμετρος `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "incompatible types in %s"
 #~ msgstr "μη έγκυρο είδος αλφαριθμητικού `%s'"
 
+#, c-format
 #~ msgid "passing arg %d of `%s'"
 #~ msgstr "το πέρασμα του ορίσματος %d από `%s'"
 
+#, c-format
 #~ msgid "passing arg %d of pointer to function"
 #~ msgstr "το πέρασμα του ορίσματος %d του δείκτη στη συνάρτηση"
 
 # src/request.c:263
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "(near initialization for `%s')"
 #~ msgstr "Το βήμα αρχικοποίησης απέτυχε"
 
@@ -1815,7 +1862,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "return"
 #~ msgstr "επιστροφή"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't inline call to `%s'"
 #~ msgstr "αδυναμία εκτέλεσης ioctl στο `%s'"
 
@@ -1827,25 +1874,27 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 
 # src/getopt1.c:132
 # src/getopt1.c:132
+#, c-format
 #~ msgid "fopen %s"
 #~ msgstr "fopen %s"
 
+#, c-format
 #~ msgid "fclose %s"
 #~ msgstr "fclose %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s terminated with signal %d [%s]%s"
 #~ msgstr "%s: Ο προεπεξεργαστής C απέτυχε με σήμα %d\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "[cannot find %s]"
 #~ msgstr "Δεν είναι δυνατόν να εκτελεστεί το %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find `%s'"
 #~ msgstr "αδυναμία ανοίγματος του `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "[Leaving %s]\n"
 #~ msgstr "διαγραφή καταλόγου %s\n"
 
@@ -1859,34 +1908,37 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "fdopen"
 #~ msgstr "fdopen"
 
+#, c-format
 #~ msgid "dup2 %d 1"
 #~ msgstr "dup2 %d 1"
 
+#, c-format
 #~ msgid "close %d"
 #~ msgstr "close %d"
 
+#, c-format
 #~ msgid "execvp %s"
 #~ msgstr "execvp %s"
 
 #~ msgid "fclose"
 #~ msgstr "fclose"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unable to open file '%s'"
 #~ msgstr "Δεν μπόρεσα να ανοίξω το αρχείο %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unable to stat file '%s'"
 #~ msgstr "αδυναμία προσπέλασης(stat()) αρχείου `%s': %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unable to mmap file '%s'"
 #~ msgstr "Αδυναμία μεταφοράς στη μνήμη (mmap) του αρχείου %s.\n"
 
 #~ msgid "not found\n"
 #~ msgstr "δε βρέθηκε\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "bad magic number in file '%s'"
 #~ msgstr "μη έγκυρος αριθμός αρχείου στη δήλωση πεδίου: `%s'"
 
@@ -1897,23 +1949,25 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "cannot find `ldd'"
 #~ msgstr "αδυναμία ανοίγματος του `%s'"
 
+#, c-format
 #~ msgid "execv %s"
 #~ msgstr "execv %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: not a COFF file"
 #~ msgstr "%s: Δεν είναι κανονικό αρχείο"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: cannot open as COFF file"
 #~ msgstr "αδυναμία ανοίγματος αρχείου εξόδου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "library lib%s not found"
 #~ msgstr "Πιθανόν δε βρέθηκε"
 
 # src/getopt1.c:132
 # src/getopt1.c:132
+#, c-format
 #~ msgid "open %s"
 #~ msgstr "open %s"
 
@@ -1935,6 +1989,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ "\n"
 #~ msgstr "Έχει παραληφθεί εντολή"
 
+#, c-format
 #~ msgid "close %s"
 #~ msgstr "close %s"
 
@@ -1954,21 +2009,27 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgstr "Εμφάνιση έκδοσης προγράμματος"
 
 # src/request.c:37
+#, c-format
 #~ msgid "fstat %s"
 #~ msgstr "fstat %s"
 
+#, c-format
 #~ msgid "lseek %s 0"
 #~ msgstr "lseek %s 0"
 
+#, c-format
 #~ msgid "read %s"
 #~ msgstr "read %s"
 
+#, c-format
 #~ msgid "msync %s"
 #~ msgstr "msync %s"
 
+#, c-format
 #~ msgid "munmap %s"
 #~ msgstr "munmap %s"
 
+#, c-format
 #~ msgid "write %s"
 #~ msgstr "write %s"
 
@@ -1990,11 +2051,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "integer constant out of range"
 #~ msgstr "σχετική θέση αρχείου είναι εκτός ορίων"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid character '\\%03o' in #if"
 #~ msgstr "μη έγκυρος χαρακτήρας `%c' στο τύπο αλφαριθμητικού `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "\"%s\" is not valid in #if expressions"
 #~ msgstr "%s: μη έγκυρη κανονική έκφραση: %s"
 
@@ -2002,23 +2063,23 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "missing binary operator"
 #~ msgstr "Αγνωστος δυαδικός χειριστής."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "missing binary operator before '%s'"
 #~ msgstr "%s: Αναμενόταν δυαδικός χειριστής.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "ignoring nonexistent directory \"%s\"\n"
 #~ msgstr "διαγραφή μη-καταλόγου `%s'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: Not a directory"
 #~ msgstr "Δεν είναι κατάλογος"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "ignoring duplicate directory \"%s\"\n"
 #~ msgstr "αδυναμία αλλαγής στο κατάλογο \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "changing search order for system directory \"%s\""
 #~ msgstr "αδυναμία αλλαγής στο κατάλογο \"%s\""
 
@@ -2030,23 +2091,23 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "I/O error on output"
 #~ msgstr "Σφάλμα εισόδου/εξόδου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument missing after %s"
 #~ msgstr "έχουν παραληφθεί ορίσματα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "assertion missing after %s"
 #~ msgstr "ορισμός δικαιωμάτων στο %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "file name missing after %s"
 #~ msgstr "έχουν παραληφθεί ορίσματα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "number missing after %s"
 #~ msgstr "ορισμός δικαιωμάτων στο %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "target missing after %s"
 #~ msgstr "Αρχή αρχείου %s\n"
 
@@ -2065,31 +2126,38 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "no newline at end of file"
 #~ msgstr "%s: πρόωρο τέλος αρχείου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown string token %s\n"
 #~ msgstr "Άγνωστή επιλογή για το `s'"
 
 # src/main.c:663
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown escape sequence: '\\%03o'"
 #~ msgstr "Άγνωστη συμβολοσειρά `%s'"
+
+#, fuzzy
+#~ msgid "character constant too long"
+#~ msgstr "μη έγκυρος σταθερός χαρακτήρας στο αλφαριθμιτικό"
 
 #~ msgid "#elif after #else"
 #~ msgstr "#elif μετά από #else"
 
+#, c-format
 #~ msgid "invalid option %s"
 #~ msgstr "μη έγκυρη επιλογή %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "\"%s\" is not a valid option to the preprocessor"
 #~ msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
 #~ msgid "too many input files"
 #~ msgstr "υπερβολικά πολλά αρχεία εισόδου"
 
+#, c-format
 #~ msgid "%s:%d: warning: "
 #~ msgstr "%s:%d: προειδοποίηση: "
 
+#, c-format
 #~ msgid "%s: warning: "
 #~ msgstr "%s: προειδοποίηση: "
 
@@ -2097,21 +2165,26 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgstr "((ανώνυμο))"
 
 # src/request.c:37
+#, c-format
 #~ msgid "%s: %s: "
 #~ msgstr "%s: %s: "
 
 #~ msgid "sorry, not implemented: "
 #~ msgstr "συγγνώμη, η λειτουργία δεν έχει υλοποιηθεί: "
 
+#, c-format
 #~ msgid "%s "
 #~ msgstr "%s "
 
+#, c-format
 #~ msgid " %s"
 #~ msgstr " %s"
 
+#, c-format
 #~ msgid "In member function `%s':"
 #~ msgstr "Στη συνάρτηση μέλος `%s':"
 
+#, c-format
 #~ msgid "In function `%s':"
 #~ msgstr "Στη συνάρτηση `%s':"
 
@@ -2119,14 +2192,14 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "compilation terminated.\n"
 #~ msgstr "Η λειτουργία δεν επιτρέπεται"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "Internal compiler error in %s, at %s:%d"
 #~ msgstr "εσωτερικό σφάλμα στο %s, γραμμή %u"
 
 #~ msgid ":\n"
 #~ msgstr ":\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "DW_LOC_OP %s not implemented\n"
 #~ msgstr "Η λειτουργία δεν έχει υλοποιηθεί"
 
@@ -2154,7 +2227,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "unterminated assembly dialect alternative"
 #~ msgstr "μη τερματιζόμενο συμβολικό όνομα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "operand number missing after %%-letter"
 #~ msgstr "ορισμός δικαιωμάτων στο %s"
 
@@ -2162,7 +2235,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "operand number out of range"
 #~ msgstr "Ο αριθμός σύνδεσμου είναι έξω από το όριο"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%-code"
 #~ msgstr "μη έγκυρο δικαίωμα"
 
@@ -2174,38 +2247,38 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgstr "ο έλεγχος φθάνει στο τέλος μη-κενής συνάρτησης"
 
 # src/shred.c:1134
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "size of variable `%s' is too large"
 #~ msgstr "%s: το αρχείο είναι πολύ μεγάλο"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unused parameter `%s'"
 #~ msgstr "άγνωστος χαρακτήρας `%s'"
 
 # src/main.c:785
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "ambiguous abbreviation %s"
 #~ msgstr "Ασαφής μορφή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "missing argument to `%s' option"
 #~ msgstr "Λείπει παράμετρος για `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "extraneous argument to `%s' option"
 #~ msgstr "Λείπει παράμετρος για `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid ""
 #~ "Setting spec %s to '%s'\n"
 #~ "\n"
 #~ msgstr "δημιουργία %s %s στο %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "rename spec %s to %s\n"
 #~ msgstr "δημιουργία %s %s στο %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "specs unknown %% command after %ld characters"
 #~ msgstr "λίστα με όλα τα γνωστά σύνολα χαρακτήρων"
 
@@ -2219,9 +2292,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ "\n"
 #~ "Να συνεχίσετε; (y ή n) "
 
+#, c-format
 #~ msgid "# %s %.2f %.2f\n"
 #~ msgstr "# %s %.2f %.2f\n"
 
+#, c-format
 #~ msgid "Usage: %s [options] file...\n"
 #~ msgstr "χρήση: %s [επιλογές] αρχείο...\n"
 
@@ -2337,6 +2412,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ "                           συμπεριφορά εύρεσης της γλώσσας βάσει της επέκτασης\n"
 #~ "                           του αρχείου\n"
 
+#, c-format
 #~ msgid ""
 #~ "\n"
 #~ "Options starting with -g, -f, -m, -O, -W, or --param are automatically\n"
@@ -2349,6 +2425,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ " επιλογές σε αυτές τις διεργασίες, πρέπει να χρησιμοποιήσετε τις επιλογές\n"
 #~ " -W<γράμμα>.\n"
 
+#, c-format
 #~ msgid "%s (GCC) %s\n"
 #~ msgstr "%s (GCC) %s\n"
 
@@ -2402,7 +2479,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "argument to `-x' is missing"
 #~ msgstr "έχουν παραληφθεί ορίσματα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument to `-%s' is missing"
 #~ msgstr "έχουν παραληφθεί ορίσματα"
 
@@ -2410,19 +2487,23 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid specification!  Bug in cc"
 #~ msgstr "Μη έγκυρη ρύθμιση θύρας (port)"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "spec failure: unrecognized spec option '%c'"
 #~ msgstr "%s: μη αναγνωρίσιμη επιλογή `-%c'\n"
 
+#, c-format
 #~ msgid "unrecognized option `-%s'"
 #~ msgstr "μη αναγνωρίσημη επιλογή `-%s'"
 
+#, c-format
 #~ msgid "install: %s%s\n"
 #~ msgstr "εγκατάσταση: %s%s\n"
 
+#, c-format
 #~ msgid "programs: %s\n"
 #~ msgstr "προγράμματα: %s\n"
 
+#, c-format
 #~ msgid "libraries: %s\n"
 #~ msgstr "βιβλιοθήκες: %s\n"
 
@@ -2433,21 +2514,26 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ "\n"
 #~ "Για οδηγίες για αναφορές σφαλμάτων. παρακαλώ δείτε:\n"
 
+#, c-format
 #~ msgid "Configured with: %s\n"
 #~ msgstr "Έχει ρυθμιστεί με: %s\n"
 
+#, c-format
 #~ msgid "Thread model: %s\n"
 #~ msgstr "Μοντέλο νημάτων: %s\n"
 
+#, c-format
 #~ msgid "gcc version %s\n"
 #~ msgstr "έκδοση gcc %s\n"
 
+#, c-format
 #~ msgid "gcc driver version %s executing gcc version %s\n"
 #~ msgstr "έκδοση οδηγού gcc %s εκτελεί την έκδοση gcc %s\n"
 
 #~ msgid "no input files"
 #~ msgstr "δεν υπάρχουν αρχεία εισόδου"
 
+#, c-format
 #~ msgid "%s: %s compiler not installed on this system"
 #~ msgstr "%s: ο μεταγλωττιστής %s δεν έχει εγκατασταθεί στο σύστημα αυτό"
 
@@ -2479,6 +2565,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "  -v, --version                   Print version number, then exit\n"
 #~ msgstr "  -v, --version                   Εμφάνιση αριθμού έκδοσης, μετά έξοδος\n"
 
+#, c-format
 #~ msgid ""
 #~ "\n"
 #~ "For bug reporting instructions, please see:\n"
@@ -2488,58 +2575,60 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ "Για οδηγίες στις αναφορές σφαλμάτων, παρακαλώ δείτε:\n"
 #~ "%s.\n"
 
+#, c-format
 #~ msgid "gcov (GCC) %s\n"
 #~ msgstr "gcov (GCC) %s\n"
 
 #~ msgid "Copyright (C) 2001 Free Software Foundation, Inc.\n"
 #~ msgstr "Πνευματικά Δικαιώματα (C) 2001 Free Software Foundation, Inc.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "Could not open basic block file %s.\n"
 #~ msgstr "Δεν μπόρεσα να ανοίξω το αρχείο %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "Could not open program flow graph file %s.\n"
 #~ msgstr "Αδύνατη η δημιουργία αρχείου καταγραφών \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "No executable code associated with file %s.\n"
 #~ msgstr "Καμιά διεύθυνση δεν συνδέεται με το όνομα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "No branches in function %s\n"
 #~ msgstr "Δεν βρέθηκαν ταιριάσματα στη μορφή `%s'.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "No calls in function %s\n"
 #~ msgstr "Δεν βρέθηκαν URL στο %s.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "didn't use all bb entries of graph, function %s\n"
 #~ msgstr "διαγραφή όλων των εγγραφών του καταλόγου %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "No branches in file %s\n"
 #~ msgstr ""
 #~ "Δεν υπάρχει αρχείο `%s'.\n"
 #~ "\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "No calls in file %s\n"
 #~ msgstr "δημιουργία αρχείου `%s'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "Could not open source file %s.\n"
 #~ msgstr "Δεν μπόρεσα να ανοίξω το αρχείο %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "Could not open output file %s.\n"
 #~ msgstr "αδυναμία ανοίγματος αρχείου εξόδου `%s'"
 
+#, c-format
 #~ msgid "Creating %s.\n"
 #~ msgstr "Δημιουργία του %s.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't open %s"
 #~ msgstr "αδυναμία ανοίγματος του `%s'"
 
@@ -2547,153 +2636,153 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "function cannot be inline"
 #~ msgstr "Η λειτουργία δεν έχει υλοποιηθεί"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid parameter `%s'"
 #~ msgstr "Η παράμετρος `%s' δεν είναι έγκυρη."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: internal abort\n"
 #~ msgstr "Εσωτερικό σφάλμα του αναλυτή διευθύνσεων"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: error writing file `%s': %s\n"
 #~ msgstr "%s: Σφάλμα κατά την εγγραφή του %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ filename ... ]'\n"
 #~ msgstr "%s: η χρήση είναι %s [ -v ] [ -c διακοπή ] ονομασία ζώνης ...\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: usage '%s [ -VqfnkNlgC ] [ -B <dirname> ] [ filename ... ]'\n"
 #~ msgstr "%s: η χρήση είναι %s [ -v ] [ -c διακοπή ] ονομασία ζώνης ...\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: warning: no read access for file `%s'\n"
 #~ msgstr "%s: Προειδοποίηση: η uname απέτυχε: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: warning: no write access for file `%s'\n"
 #~ msgstr "%s: Προειδοποίηση: η uname απέτυχε: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: invalid file name: %s\n"
 #~ msgstr "%s: μη έγκυρο είδος αρχείου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: %s: can't get status: %s\n"
 #~ msgstr "%s: αδυναμία πρόσβασης στο %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: compiling `%s'\n"
 #~ msgstr "%s: Σφάλμα κατά την εγγραφή του %s\n"
 
 # src/request.c:37
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: wait: %s\n"
 #~ msgstr "%s σε %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: subprocess got fatal signal %d\n"
 #~ msgstr "%s: Ο προεπεξεργαστής C απέτυχε με σήμα %d\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: %s exited with status %d\n"
 #~ msgstr "%s: Ο προεπεξεργαστής C απέτυχε με σήμα %d\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: warning: missing SYSCALLS file `%s'\n"
 #~ msgstr "%s: Προειδοποίηση: η uname απέτυχε: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't read aux info file `%s': %s\n"
 #~ msgstr "%s: αδυναμία στην ανάγνωση %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't get status of aux info file `%s': %s\n"
 #~ msgstr "αδυναμία προσπέλασης(stat()) αρχείου `%s': %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't open aux info file `%s' for reading: %s\n"
 #~ msgstr "αδυναμία ανοίγματος αρχείου εξόδο `%s' για την κατηγορία `%s'"
 
 # src/shred.c:1103
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: error reading aux info file `%s': %s\n"
 #~ msgstr "%s: σφάλμα εγγραφής στη θέση %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: error closing aux info file `%s': %s\n"
 #~ msgstr "%s: Σφάλμα κατά το κλείσιμο του %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't delete aux info file `%s': %s\n"
 #~ msgstr "%s: Δε μπορεί να διαγραφεί το %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't delete file `%s': %s\n"
 #~ msgstr "%s: Δεν είναι δυνατόν να δημιουργηθεί %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: warning: can't rename file `%s' to `%s': %s\n"
 #~ msgstr "%s: Προειδοποίηση: η uname απέτυχε: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: %d: warning: no extern definition for `%s'\n"
 #~ msgstr "%s: προειδοποίηση: δε βρέθηκε αρχή κεφαλίδας"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid ""
 #~ "\n"
 #~ "%s: warning: too few parameter lists in declaration of `%s'\n"
 #~ msgstr "Προειδοποίηση: Πολύ λίγα ορίσματα στο εσωδομημένο `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: `%s' not converted\n"
 #~ msgstr "%s: `%s': δεν βρέθηκε ταίριασμα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: would convert file `%s'\n"
 #~ msgstr "%s: η έξοδος θα επικαλύψει το %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: converting file `%s'\n"
 #~ msgstr "δημιουργία αρχείου `%s'\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't get status for file `%s': %s\n"
 #~ msgstr "αδυναμία προσπέλασης(stat()) αρχείου `%s': %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't open file `%s' for reading: %s\n"
 #~ msgstr "%s: Δεν είναι δυνατόν να ανοιχτεί το %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid ""
 #~ "\n"
 #~ "%s: error reading input file `%s': %s\n"
 #~ msgstr "%s: Σφάλμα κατά την ανάγνωση του %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't create/open clean file `%s': %s\n"
 #~ msgstr "%s: Δεν είναι δυνατόν να δημιουργηθεί %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't link file `%s' to `%s': %s\n"
 #~ msgstr "%s: Δεν είναι δυνατόν να συνδεθεί το %s με το %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't create/open output file `%s': %s\n"
 #~ msgstr "αδυναμία ανοίγματος αρχείου εξόδου `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: can't change mode of file `%s': %s\n"
 #~ msgstr "%s: Δεν είναι δυνατόν να αφαιρεθεί το %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: cannot get working directory: %s\n"
 #~ msgstr "%s: δεν είναι δυνατό να γραφτεί πάνω σε κατάλογο"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: input file names must have .c suffixes: %s\n"
 #~ msgstr "%s: το αρχείο εισόδου είναι το αρχείο εξόδου"
 
@@ -2705,19 +2794,19 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "floating point overflow"
 #~ msgstr "Εξαίρεση κινητής υποδιαστολής"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: argument domain error"
 #~ msgstr "%s: σφάλμα ανάγνωσης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: overflow range error"
 #~ msgstr "%s: σφάλμα εγγραφής"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: underflow range error"
 #~ msgstr "%s: σφάλμα εγγραφής"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown register name: %s"
 #~ msgstr "άγνωστος χαρακτήρας `%s'"
 
@@ -2737,11 +2826,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "unrecognizable insn:"
 #~ msgstr "Μη αναγνωρίσιμη μεταβλητή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid punctuation `%c' in constraint"
 #~ msgstr "μη έγκυρη μέτρηση επανάληψης `%s' στη κατασκευή [c*n]"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown register name `%s' in `asm'"
 #~ msgstr "άγνωστος χαρακτήρας στο πεδίο `%s' της κατηγορίας `%s'"
 
@@ -2749,28 +2838,30 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "too many alternatives in `asm'"
 #~ msgstr "Υπερβολικα πολλά ανοικτά αρχεία στο σύστημα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate asm operand name '%s'"
 #~ msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "undefined named operand '%s'"
 #~ msgstr "Μη ορισμένο όνομα %s"
 
+#, c-format
 #~ msgid "unused variable `%s'"
 #~ msgstr "αχρησιμοποίητη μεταβλητή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "size of `%s' is larger than %d bytes"
 #~ msgstr "%s: οι τιμές του πεδίου `%s' δεν πρέπει να είναι μεγαλύτερες από %d"
 
 #~ msgid " TOTAL                 :"
 #~ msgstr " ΣΥΝΟΛΙΚΑ              :"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "collect: reading %s\n"
 #~ msgstr "σφάλμα ανάγνωσης %s"
 
+#, c-format
 #~ msgid "ld returned %d exit status"
 #~ msgstr "η ld επέστρεψε κατάσταση εξόδου %d"
 
@@ -2782,10 +2873,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Do not suppress warnings from system headers"
 #~ msgstr "Αποσιώπηση προηδοποιήσεων και μηνυμάτων πληροφόρησης"
 
+#, c-format
 #~ msgid "invalid option `%s'"
 #~ msgstr "μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "internal error: %s"
 #~ msgstr "σφάλμα στην ανάγνωση εισόδου: %s"
 
@@ -2795,20 +2887,20 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ "Target specific options:\n"
 #~ msgstr "δήλωση πλάτους"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unrecognized gcc debugging option: %c"
 #~ msgstr "μη αναγνωρίσημη επιλογή `-%c'"
 
 # src/request.c:806 src/request.c:912
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unrecognized register name `%s'"
 #~ msgstr "Μη αναγνωρίσημο όνομα επιφάνειας `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unrecognized option `%s'"
 #~ msgstr "μη αναγνωρίσημη επιλογή `-%c'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s': unknown or unsupported -g option"
 #~ msgstr "%s: άγνωστο/μη υποστηριζόμενο είδος αρχείου.\n"
 
@@ -2816,11 +2908,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "-param option missing argument"
 #~ msgstr "παράληψη ορίσματος αρχείου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid --param option: %s"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid parameter value `%s'"
 #~ msgstr "Μη έγκυρο διάστημα χρόνου `%s'"
 
@@ -2836,11 +2928,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "options enabled: "
 #~ msgstr "επιλογή α\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't open %s for writing"
 #~ msgstr "%s: Σφάλμα εγγραφής "
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "ignoring command line option '%s'"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
@@ -2848,7 +2940,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "instruction scheduling not supported on this target machine"
 #~ msgstr "συμβολικοί σύνδεσμοι δεν υποστηρίζονται στο σύστημα αυτό"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "-f%sleading-underscore not supported on this target machine"
 #~ msgstr "συμβολικοί σύνδεσμοι δεν υποστηρίζονται στο σύστημα αυτό"
 
@@ -2868,11 +2960,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "-fprefetch-loop-arrays is not supported with -Os"
 #~ msgstr "το --no-dereference (-h) δεν υποστηρίζεται σε αυτό το σύστημα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "error writing to %s"
 #~ msgstr "σφάλμα εγγραφής %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "error closing %s"
 #~ msgstr "σφάλμα ανάγνωσης %s"
 
@@ -2908,7 +3000,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "-trigraphs and -traditional are mutually exclusive"
 #~ msgstr "οι επιλογές --string και --check είναι αμοιβαίως αποκλειόμενες"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unterminated #%s conditional"
 #~ msgstr "μη τερματιζόμενo αλφαριθμητικό"
 
@@ -2920,7 +3012,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid macro name"
 #~ msgstr "μη έγκυρο όνομα μήνα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid macro name `%s'"
 #~ msgstr "Η παράμετρος `%s' δεν είναι έγκυρη."
 
@@ -2936,11 +3028,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "undefining `defined'"
 #~ msgstr "αόριστο"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "undefining `%s'"
 #~ msgstr "Άνοιγμα του `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "#warning%.*s"
 #~ msgstr "προειδοποίηση: "
 
@@ -2948,19 +3040,19 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "unterminated string or character constant"
 #~ msgstr "μη τερματιζμένο αλφαριθμητικό σταθεράς"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "arguments given to macro `%s'"
 #~ msgstr "Λείπει παράμετρος για `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "no args to macro `%s'"
 #~ msgstr "άγνωστος χαρακτήρας `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "could not open dump file `%s'"
 #~ msgstr "αδυναμία ανοίγματος αρχείου εξόδου `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "ignoring unknown option `%.*s' in `-f%s'"
 #~ msgstr "Άγνωστη επιλογή: %s %s %s"
 
@@ -2968,11 +3060,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid initializer for bit string"
 #~ msgstr "Η αλυσίδα μορφής δεν είναι έγκυρη: `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "register name not specified for `%s'"
 #~ msgstr "Εγγραφή ονομάτων των επιλεγμένων λέξεων-κλειδιών"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid register name for `%s'"
 #~ msgstr "μη έγκυρος αριθμός πεδίου: `%s'"
 
@@ -2980,15 +3072,15 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "unknown set constructor type"
 #~ msgstr "Δεν είναι δυνατόν να βρεθεί ο τύπος του επεξεργαστή."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid initial value for member `%s'"
 #~ msgstr "μη έγκυρος αριθμός πεδίου: `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "weak declaration of `%s' after first use results in unspecified behavior"
 #~ msgstr "Η λειτουργία δεν υποστηρίζεται"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "weak declaration of `%s' not supported"
 #~ msgstr "Η λειτουργία δεν υποστηρίζεται"
 
@@ -3000,43 +3092,43 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "malformed '#pragma options', ignoring"
 #~ msgstr "κακοδιαμορφωμένη γραμμή αγνοήθηκε"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%Q value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%C value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%N value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%M value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%m value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%L value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%O value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%P value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%V value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "-f%s ignored for Unicos/Mk (not supported)"
 #~ msgstr "αρχεία fifo δεν υποστηρίζονται"
 
@@ -3056,59 +3148,59 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "trap mode not supported for VAX floats"
 #~ msgstr "Το servname δεν υποστηρίζεται από το ai_socktype"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%H value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%J value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%r value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%R value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%h value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%U value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%s value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%E value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%xn code"
 #~ msgstr "μη έγκυρο δικαίωμα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument of `%s' attribute is not a string constant"
 #~ msgstr "Η παράμετρος στο `%s' πρέπει να είναι ένας απλός χαρακτήρας"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%R code"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%H/%%L code"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%U code"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%V code"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
@@ -3116,7 +3208,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid operand output code"
 #~ msgstr "Μη έγκυρος κώδικας αίτησης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid floating point emulation option: -mfpe-%s"
 #~ msgstr "Η παράμετρος κινητής υποδιαστολής δεν είναι έγκυρη: %s"
 
@@ -3124,7 +3216,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Don't do symbol renaming"
 #~ msgstr "δεν δώθηκε συμβολικό όνομα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "MCU `%s' not supported"
 #~ msgstr "αρχεία fifo δεν υποστηρίζονται"
 
@@ -3148,7 +3240,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "trampolines not supported"
 #~ msgstr "Η λειτουργία δεν υποστηρίζεται"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "malformed '#pragma %s' - ignored"
 #~ msgstr "κακοδιαμορφωμένη γραμμή αγνοήθηκε"
 
@@ -3224,7 +3316,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid operand modifier letter"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "internal error: bad register: %d"
 #~ msgstr "εσωτερικό σφάλμα στο %s, γραμμή %u"
 
@@ -3241,7 +3333,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "unrecognized supposed constant"
 #~ msgstr "άγνωστο πρόθεμα: %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown CRIS cpu version specification in -mtune= : %s"
 #~ msgstr "πάρα πολλές δηλώσεις μετατροπής στην κατάληξη"
 
@@ -3301,11 +3393,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "trampolines not yet implemented"
 #~ msgstr "Η λειτουργία δεν έχει υλοποιηθεί"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "fr30_print_operand: invalid operand to %%A code"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "fr30_print_operand: invalid %%x code"
 #~ msgstr "μη έγκυρο δικαίωμα"
 
@@ -3325,11 +3417,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "code model `large' not supported yet"
 #~ msgstr "ειδικά αρχεία μπλοκ δεν υποστηρίζονται"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%i-bit mode not compiled in"
 #~ msgstr "%s: η υποστήριξη εκσφαλμάτωσης δεν έχει συμπεριληφθεί στη μεταγλώττιση.\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument to `%s' attribute larger than %d"
 #~ msgstr "%s: οι τιμές του πεδίου `%s' δεν πρέπει να είναι μεγαλύτερες από %d"
 
@@ -3337,7 +3429,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid UNSPEC as operand"
 #~ msgstr "μη έγκυρη μετατόπιση UTC"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand code `%c'"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
@@ -3383,23 +3475,23 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Do not use complex addressing modes"
 #~ msgstr "Ακατάλληλη χρήση του διαμορφωτή διεύθυνσης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid argument of `%s' attribute"
 #~ msgstr "Η παράμετρος `%s' δεν είναι έγκυρη."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%s code"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%p code"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%T/%%B code"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%N code"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
@@ -3439,35 +3531,35 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Use unaligned memory references"
 #~ msgstr "Μη έγκυρη πισω-παραπομπή"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%x/X value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%q value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%o value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%p value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%s/S value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%P operand"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%B value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%D value"
 #~ msgstr "μη έγκυρος χρήστης"
 
@@ -3475,11 +3567,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid code"
 #~ msgstr "μη έγκυρο δικαίωμα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid option `-mshort-data-%s'"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid option `-mstack-increment=%s'"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
@@ -3487,15 +3579,15 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Emit call graph information"
 #~ msgstr "εμφάνιση πληροφοριών προόδου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "-mips%d not supported"
 #~ msgstr "Το ai_family δεν υποστηρίζεται"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "-mabi=%s does not support -mips%d"
 #~ msgstr "Το ai_socktype δεν υποστηρίζεται"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid option `entry%s'"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
@@ -3515,7 +3607,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "can't close temp file"
 #~ msgstr "αδυναμία ανοίγματος αρχείου εξόδου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can not handle inconsistent calls to `%s'"
 #~ msgstr "αδυναμία εκτέλεσης ioctl στο `%s'"
 
@@ -3523,11 +3615,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Use symbolic register names"
 #~ msgstr "δεν δώθηκε συμβολικό όνομα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "-f%s not supported: ignored"
 #~ msgstr "αρχεία fifo δεν υποστηρίζονται"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "stack frame not a multiple of 8 bytes: %d"
 #~ msgstr "ο ίδιος κανόνας σε πολλαπλά αρχεία"
 
@@ -3555,27 +3647,27 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Target does not have split I&D"
 #~ msgstr "-nt δεν δέχεται -l\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%S value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%b value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%z value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%Z value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%k value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%j value"
 #~ msgstr "μη έγκυρος χρήστης"
 
@@ -3591,47 +3683,47 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "-fdata-sections not supported on AIX"
 #~ msgstr "Η λειτουργία δεν υποστηρίζεται"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown ABI specified: '%s'"
 #~ msgstr "άγνωστο σετ `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument 3 of `%s' must be a 2-bit literal"
 #~ msgstr "Η παράμετρος στο `%s' πρέπει να είναι ένας απλός χαρακτήρας"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%f value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%F value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%G value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%j code"
 #~ msgstr "μη έγκυρο δικαίωμα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%J code"
 #~ msgstr "μη έγκυρο δικαίωμα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%K value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%T value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%u value"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%v value"
 #~ msgstr "μη έγκυρος χρήστης"
 
@@ -3655,11 +3747,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Use alternate register names"
 #~ msgstr "μη τερματιζόμενο όνομα βάρους"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "bad value for -mcall-%s"
 #~ msgstr "Ακατάλληλη τιμή στο ai_flags"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "bad value for -msdata=%s"
 #~ msgstr "Ακατάλληλη τιμή στο ai_flags"
 
@@ -3685,7 +3777,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "__builtin_saveregs not supported by this subtarget"
 #~ msgstr "συμβολικοί σύνδεσμοι δεν υποστηρίζονται στο σύστημα αυτό"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' attribute argument not a string constant"
 #~ msgstr "μη τερματιζμένο αλφαριθμητικό σταθεράς"
 
@@ -3693,7 +3785,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Profiling is not supported on this target."
 #~ msgstr "συμβολικοί σύνδεσμοι δεν υποστηρίζονται στο σύστημα αυτό"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s is not supported by this configuration"
 #~ msgstr "Η οικογένεια διευθύνσεων δεν υποστηρίζεται από την οικογένεια πρωτοκόλλου"
 
@@ -3701,35 +3793,35 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "-mcmodel= is not supported on 32 bit systems"
 #~ msgstr "συμβολικοί σύνδεσμοι δεν υποστηρίζονται στο σύστημα αυτό"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%Y operand"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%A operand"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%B operand"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%c operand"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%C operand"
 #~ msgstr "μη έγκυρη μετατόπιση UTC"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%d operand"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%D operand"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%f operand"
 #~ msgstr "μη έγκυρος χρήστης"
 
@@ -3744,7 +3836,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgstr "Χρήση ABI 64-bit"
 
 # src/request.c:806 src/request.c:912
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unrecognized section name \"%s\""
 #~ msgstr "Μη αναγνωρίσημο όνομα επιφάνειας `%s'"
 
@@ -3755,7 +3847,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgstr "κακοσχηματισμένος μετρητής επανάληψης"
 
 # src/shred.c:1134
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s=%s is too large"
 #~ msgstr "%s: το αρχείο είναι πολύ μεγάλο"
 
@@ -3948,7 +4040,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid catch parameter"
 #~ msgstr "Μη έγκυρος χαρακτήρας παραβολής"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "creating %s"
 #~ msgstr "δημιουργία αρχείου `%s'\n"
 
@@ -3968,7 +4060,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "multiple declarations `%T' and `%T'"
 #~ msgstr "πολλαπλός αριθμός επιλογών την εντολή `s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't initialize friend function `%s'"
 #~ msgstr "Δεν ήταν δυνατή η εύρεση ετικέττας για μεταγωγή στο `%s'"
 
@@ -3976,7 +4068,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "friend declaration not in class definition"
 #~ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot declare %s to references"
 #~ msgstr "αδυναμία αλλαγής στο κατάλογο %s"
 
@@ -3996,7 +4088,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid use of `::'"
 #~ msgstr "μη έγκυρος χρήστης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid string constant `%E'"
 #~ msgstr "μη τερματιζμένο αλφαριθμητικό σταθεράς"
 
@@ -4008,7 +4100,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "multiple definition of `%#T'"
 #~ msgstr "αδυναμία ανοίγματος αρχείου ορισμού locale `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "-f%s is no longer supported"
 #~ msgstr "αρχεία fifo δεν υποστηρίζονται"
 
@@ -4065,11 +4157,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "`%T' is not a class or union type"
 #~ msgstr "το `%s' δεν είναι κανονικό αρχείο"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' not supported by %s"
 #~ msgstr "Δεν υποστηρίζεται"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s: In instantiation of `%s':\n"
 #~ msgstr "%s: Μη έγκυρη ρύθμιση `%s'.\n"
 
@@ -4081,7 +4173,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "`%T' is already a friend of `%T'"
 #~ msgstr "το `%s' είναι πρόγονος του `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument to `%s' missing\n"
 #~ msgstr "έχουν παραληφθεί ορίσματα"
 
@@ -4129,7 +4221,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "`%D' not defined"
 #~ msgstr "αόριστο"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "name lookup of `%s' changed"
 #~ msgstr "η ομάδα του %s άλλαξε σε %s\n"
 
@@ -4184,6 +4276,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "template definition of non-template `%#D'"
 #~ msgstr "αδυναμία ανοίγματος αρχείου ορισμού locale `%s'"
 
+#, c-format
 #~ msgid "  but %d required"
 #~ msgstr "  αλλά %d απαιτούνται"
 
@@ -4195,11 +4288,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "template parameter `%#D'"
 #~ msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%E' is not a valid template argument"
 #~ msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "  expected a type, got `%E'"
 #~ msgstr "%s: αναμενόταν ακέραιος μετά το `%c'"
 
@@ -4207,11 +4300,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "  expected a type, got `%T'"
 #~ msgstr "%s: αναμενόταν ακέραιος μετά το `%c'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "wrong number of template arguments (%d, should be %d)"
 #~ msgstr "λάθος αριθμός ορισμάτων"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "template argument %d is invalid"
 #~ msgstr "έχουν παραληφθεί ορίσματα"
 
@@ -4251,7 +4344,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "`%#T' is not a valid type for a template constant parameter"
 #~ msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't create repository information file `%s'"
 #~ msgstr "αδυναμία ανοίγματος αρχείου ορισμού locale `%s'"
 
@@ -4275,7 +4368,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "  overriding `%#D'"
 #~ msgstr "αντιγράφεται από πάνω"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "  overriding `%#F'"
 #~ msgstr "αντιγράφεται από πάνω"
 
@@ -4299,16 +4392,19 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid type `%T' for default argument to `%T'"
 #~ msgstr "Μη έγκυρη ακέραια παράμετρος `%s'"
 
+#, c-format
 #~ msgid "%s before `%s'"
 #~ msgstr "%s πριν από `%s'"
 
+#, c-format
 #~ msgid "%s before `%c'"
 #~ msgstr "%s πριν από `%c'"
 
+#, c-format
 #~ msgid "%s before `\\%o'"
 #~ msgstr "%s πριν από `\\%o'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "%s before `%s' token"
 #~ msgstr "%s (για κανονική έκφραση `%s')"
 
@@ -4316,7 +4412,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "`%V' qualifiers cannot be applied to `%T'"
 #~ msgstr "το `%s' είναι πρόγονος του `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' attribute is not supported on this platform"
 #~ msgstr "προειδοποίηση: το --pid=PID δεν υποστηρίζεται σε αυτό το σύστημα"
 
@@ -4352,11 +4448,11 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "too few arguments to %s `%+#D'"
 #~ msgstr "πολύ λίγα ορίσματα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "division by zero in `%E %% 0'"
 #~ msgstr "Διαίρεση με μηδέν στην αποτίμηση: %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "division by zero in `%E %% 0.'"
 #~ msgstr "Διαίρεση με μηδέν στην αποτίμηση: %s"
 
@@ -4451,7 +4547,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "In statement function"
 #~ msgstr "πάρα πολλά ορίσματα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument to `%s' missing"
 #~ msgstr "έχουν παραληφθεί ορίσματα"
 
@@ -4459,25 +4555,25 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "no input files; unwilling to write output files"
 #~ msgstr "%s: το αρχείο εισόδου είναι το αρχείο εξόδου"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Implicit declaration of `%A' at %0"
 #~ msgstr "προηγούμενη αυτονόητη διακύρηξη του `%s'"
 
 # src/main.c:663
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Non-ISO-C-standard escape sequence `\\%A' at %0"
 #~ msgstr "Άγνωστη συμβολοσειρά `%s'"
 
 # src/main.c:663
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Unknown escape sequence `\\%A' at %0"
 #~ msgstr "Άγνωστη συμβολοσειρά `%s'"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Hex escape at %0 out of range"
 #~ msgstr "σχετική θέση αρχείου είναι εκτός ορίων"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Escape sequence at %0 out of range for character"
 #~ msgstr "μη έγκυρη διαδικασία διαφυγής στο τέλος του αλφαριθμιτικού"
 
@@ -4486,16 +4582,16 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgstr "σχετική θέση αρχείου είναι εκτός ορίων"
 
 # src/main.c:663
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "non-ISO escape sequence `\\%c'"
 #~ msgstr "Άγνωστη συμβολοσειρά `%s'"
 
 # src/main.c:663
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown escape sequence `\\%c'"
 #~ msgstr "Άγνωστη συμβολοσειρά `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "ignoring pragma: %s"
 #~ msgstr "αγνοούνται όλα τα ορίσματα"
 
@@ -4515,7 +4611,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "invalid #-line"
 #~ msgstr "μη έγκυρος αριθμός"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Null character at %0 -- line ignored"
 #~ msgstr "μη έγκυρος χαρακτήρας στο αρχείο: "
 
@@ -4523,51 +4619,51 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Set the maximum line length"
 #~ msgstr "ελάχιστο μέγεθος αλφαριθμητικού"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Missing first operand for binary operator at %0"
 #~ msgstr "Αγνωστος δυαδικός χειριστής."
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Zero-length character constant at %0"
 #~ msgstr "κενό αλφαριθμητικό"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Invalid token at %0 in expression or subexpression at %1"
 #~ msgstr "Μη έγκυρη κανονική έκφραση"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Character constant at %0 has no closing apostrophe at %1"
 #~ msgstr "μη έγκυρος σταθερός χαρακτήρας στο αλφαριθμιτικό"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Integer at %0 too large"
 #~ msgstr "σχετική θέση αρχείου είναι εκτός ορίων"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Unrecognized FORMAT specifier at %0"
 #~ msgstr "άγνωστο πρόθεμα: %s"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Zero-size specification invalid at %0"
 #~ msgstr "%s: Μη έγκυρη ρύθμιση `%s'.\n"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Unable to open INCLUDE file `%A' at %0"
 #~ msgstr "Δεν μπόρεσα να ανοίξω το αρχείο %s"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Truncating characters on right side of character constant at %0"
 #~ msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Typeless constant at %0 too large"
 #~ msgstr "σχετική θέση αρχείου είναι εκτός ορίων"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Array `%A' at %0 is too large to handle"
 #~ msgstr "Ο κατάλογος `%s' δεν είναι προσιτός."
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Internal compiler error -- cannot perform operation"
 #~ msgstr "εσωτερικό σφάλμα στο %s, γραμμή %u"
 
@@ -4595,7 +4691,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "internal error - too many interface type"
 #~ msgstr "εσωτερικό σφάλμα στο %s, γραμμή %u"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "field `%s' not found"
 #~ msgstr "το αρχείο χάρτη χαρακτήρων `%s' δεν βρέθηκε"
 
@@ -4603,7 +4699,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "ret instruction not implemented"
 #~ msgstr "Η λειτουργία δεν έχει υλοποιηθεί"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't expand %s"
 #~ msgstr "%s: αδυναμία στην ανάγνωση %s: %s\n"
 
@@ -4615,15 +4711,15 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "bad string constant"
 #~ msgstr "μη τερματιζμένο αλφαριθμητικό σταθεράς"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't reopen %s"
 #~ msgstr "αδυναμία ανοίγματος του `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't close %s"
 #~ msgstr "δεν είναι δυνατό να αλλαχτούν τα δικαιώματα του `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find file for class %s"
 #~ msgstr "δε βρέθηκε ο προεπεξεργαστής C: %s \n"
 
@@ -4651,7 +4747,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "no input file specified"
 #~ msgstr "Δεν υπάρχουν αρχεία εισόδου"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't close input file %s"
 #~ msgstr "αδυναμία ανοίγματος αρχείου εισόδου `%s'"
 
@@ -4659,23 +4755,23 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "field initializer type mismatch"
 #~ msgstr "Κακοσυνταίριασμα τύπων καταχώρησης/πίνακα"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't create directory %s"
 #~ msgstr "%s: Δεν είναι δυνατόν να δημιουργηθεί ο κατάλογος %s: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't create %s"
 #~ msgstr "αδυναμία ανοίγματος του `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't open output file `%s'"
 #~ msgstr "αδυναμία ανοίγματος αρχείου εξόδου `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "file not found `%s'"
 #~ msgstr "Μη έγκυρη επιλογή `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' is not a valid class name"
 #~ msgstr "%s' δεν είναι ισχύων θετικός ακέραιος."
 
@@ -4695,7 +4791,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "cannot specify `main' class when not linking"
 #~ msgstr "Δεν είναι δυνατό να δηλωθεί αριθμός στηλών στην παράλληλη εκτύπωση."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't mangle %s"
 #~ msgstr "Δεν είναι δυνατόν να εκτελεστεί το %s"
 
@@ -4819,6 +4915,7 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Invalid reference type"
 #~ msgstr "Μη έγκυρη πισω-παραπομπή"
 
+#, c-format
 #~ msgid ""
 #~ "%s.\n"
 #~ "%s"
@@ -4826,19 +4923,19 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ "%s.\n"
 #~ "%s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "missing static field `%s'"
 #~ msgstr "έχει παραληφθεί η λίστα με τα πεδία"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "not a static field `%s'"
 #~ msgstr "αδυναμία προσπέλασης(stat()) αρχείου `%s': %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "No case for %s"
 #~ msgstr "Σφάλμα επεξεργασίας: %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unregistered operator %s"
 #~ msgstr "ποτέ δεν δηλώθηκε το πρόγραμμα %d\n"
 
@@ -4858,23 +4955,23 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "Warn if modifiers are specified when not necessary"
 #~ msgstr "δε μπορούν να δηλώνονται αρχεία όταν γίνεται χρήση του --string"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find protocol declaration for `%s'"
 #~ msgstr "αδυναμία εισαγωγής στοιχείο παραβολής `%.*s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find interface declaration for `%s'"
 #~ msgstr "αδυναμία ανάγνωσης κεφαλίδας από το `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find reference tag for class `%s'"
 #~ msgstr "δε βρέθηκε ο προεπεξεργαστής C: %s \n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find class `%s'"
 #~ msgstr "αδυναμία εκτέλεσης ioctl στο `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "class `%s' already exists"
 #~ msgstr "(το αρχείο ήδη υπάρχει)"
 
@@ -4882,24 +4979,24 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "inconsistent instance variable specification"
 #~ msgstr "Μεταγλωττισμός προδιαγραφών τοπικών ρυθμίσεων"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "multiple declarations for method `%s'"
 #~ msgstr "πολλαπλός αριθμός επιλογών την εντολή `s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid receiver type `%s'"
 #~ msgstr "Μη έγκυρη προτεραιότητα `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' does not respond to `%s'"
 #~ msgstr "το `%s' είναι πρόγονος του `%s'"
 
 # src/outer.c:102
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "no super class declared in interface for `%s'"
 #~ msgstr "Ο αντιτοποθετητής επιφάνειας έχει τεθεί περισσότερο από μια φορά για το `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "method `%s' not implemented by protocol"
 #~ msgstr "Η λειτουργία δεν υποστηρίζεται από το πρωτόκολλο"
 
@@ -4908,36 +5005,36 @@ msgstr "συντακτικό σφάλμα στον ορισμό κλάσης χαρακτήρων"
 #~ msgid "cannot find method"
 #~ msgstr "αδυναμία δικράνωσης"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate definition of class method `%s'"
 #~ msgstr "αδυναμία ανοίγματος αρχείου ορισμού locale `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate declaration of class method `%s'"
 #~ msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate definition of instance method `%s'"
 #~ msgstr "αδυναμία ανοίγματος αρχείου ορισμού locale `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate declaration of instance method `%s'"
 #~ msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "incomplete implementation of category `%s'"
 #~ msgstr "αποτυχία κατά την εγγραφή δεδομένων για την κατηγορία `%s'"
 
 # src/request.c:806 src/request.c:912
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "conflicting super class name `%s'"
 #~ msgstr "Μη αναγνωρίσημο όνομα επιφάνειας `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate interface declaration for class `%s'"
 #~ msgstr "διπλό όνομα χαρακτήρα `%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate declaration for protocol `%s'"
 #~ msgstr "διπλό όνομα χαρακτήρα `%s'"
 

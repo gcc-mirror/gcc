@@ -382,7 +382,7 @@ immutable ddoc_decl_dd_e = ")\n";
  *      outbuf = append the Ddoc text to this
  */
 public
-extern(C++) void gendocfile(Module m, const char* ddoctext_ptr, size_t ddoctext_length, const char* datetime, ErrorSink eSink, ref OutBuffer outbuf)
+void gendocfile(Module m, const char* ddoctext_ptr, size_t ddoctext_length, const char* datetime, ErrorSink eSink, ref OutBuffer outbuf)
 {
     gendocfile(m, ddoctext_ptr[0 .. ddoctext_length], datetime, eSink, outbuf);
 }

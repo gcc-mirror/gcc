@@ -85,7 +85,7 @@ enum LOG = false;
 /*************************************
  * Does semantic analysis on the public face of declarations.
  */
-extern(C++) void dsymbolSemantic(Dsymbol dsym, Scope* sc)
+void dsymbolSemantic(Dsymbol dsym, Scope* sc)
 {
     scope v = new DsymbolSemanticVisitor(sc);
     dsym.accept(v);
@@ -1438,6 +1438,15 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
     override void visit(TypeInfoDeclaration dsym)
     {
         assert(dsym._linkage == LINK.c);
+    }
+
+    override void visit(CAsmDeclaration dsym)
+    {
+        if (dsym.semanticRun >= PASS.semanticdone)
+            return;
+        import dmd.iasm : asmSemantic;
+        asmSemantic(dsym, sc);
+        dsym.semanticRun = PASS.semanticdone;
     }
 
     override void visit(BitFieldDeclaration dsym)
@@ -4059,7 +4068,7 @@ Params:
     sc = scope where the dsymbol is declared
     sds = ScopeDsymbol where dsym is inserted
 */
-extern(C++) void addMember(Dsymbol dsym, Scope* sc, ScopeDsymbol sds)
+void addMember(Dsymbol dsym, Scope* sc, ScopeDsymbol sds)
 {
     auto addMemberVisitor = new AddMemberVisitor(sc, sds);
     dsym.accept(addMemberVisitor);
@@ -5979,7 +5988,7 @@ void checkPrintfScanfSignature(FuncDeclaration funcdecl, TypeFunction f, Scope* 
  * Returns:
  *  null if not found
  */
-extern(C++) Dsymbol search(Dsymbol d, const ref Loc loc, Identifier ident, SearchOptFlags flags = SearchOpt.all)
+Dsymbol search(Dsymbol d, const ref Loc loc, Identifier ident, SearchOptFlags flags = SearchOpt.all)
 {
     scope v = new SearchVisitor(loc, ident, flags);
     d.accept(v);
@@ -6621,7 +6630,7 @@ private extern(C++) class SearchVisitor : Visitor
  *   d = dsymbol for which the scope is set
  *   sc = scope that is used to set the value
  */
-extern(C++) void setScope(Dsymbol d, Scope* sc)
+void setScope(Dsymbol d, Scope* sc)
 {
     scope setScopeVisitor = new SetScopeVisitor(sc);
     d.accept(setScopeVisitor);
@@ -6764,7 +6773,7 @@ private extern(C++) class SetScopeVisitor : Visitor
     }
 }
 
-extern(C++) void importAll(Dsymbol d, Scope* sc)
+void importAll(Dsymbol d, Scope* sc)
 {
     scope iav = new ImportAllVisitor(sc);
     d.accept(iav);

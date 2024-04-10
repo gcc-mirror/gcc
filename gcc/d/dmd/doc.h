@@ -15,5 +15,8 @@
 class Module;
 class ErrorSink;
 
-void gendocfile(Module *m, const char *ddoctext_ptr, d_size_t ddoctext_length,
-                const char *datetime, ErrorSink *eSink, OutBuffer &outbuf);
+namespace dmd
+{
+    void gendocfile(Module *m, const char *ddoctext_ptr, d_size_t ddoctext_length,
+                    const char *datetime, ErrorSink *eSink, OutBuffer &outbuf);
+}

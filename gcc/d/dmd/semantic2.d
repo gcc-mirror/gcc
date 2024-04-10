@@ -73,7 +73,7 @@ enum LOG = false;
 /*************************************
  * Does semantic analysis on initializers and members of aggregates.
  */
-extern(C++) void semantic2(Dsymbol dsym, Scope* sc)
+void semantic2(Dsymbol dsym, Scope* sc)
 {
     scope v = new Semantic2Visitor(sc);
     dsym.accept(v);
@@ -876,7 +876,7 @@ private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
         hookFunc = new DotIdExp(aaExp.loc, hookFunc, Id.object);
         hookFunc = new DotIdExp(aaExp.loc, hookFunc, Id._aaAsStruct);
         auto arguments = new Expressions();
-        arguments.push(aaExp.syntaxCopy());
+        arguments.push(aaExp);
         Expression loweredExp = new CallExp(aaExp.loc, hookFunc, arguments);
 
         sc = sc.startCTFE();

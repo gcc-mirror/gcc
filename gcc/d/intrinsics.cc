@@ -126,7 +126,7 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 	    return;
 
 	  OutBuffer buf;
-	  mangleToBuffer (fd->type, buf);
+	  dmd::mangleToBuffer (fd->type, buf);
 	  tdeco = buf.extractChars ();
 	}
 
@@ -719,7 +719,7 @@ expand_intrinsic_rotate (intrinsic_code intrinsic, tree callexp)
       TemplateInstance *ti = DECL_LANG_FRONTEND (callee)->isInstantiated ();
       gcc_assert (ti && ti->tiargs && ti->tiargs->length == 2);
 
-      Expression *e = isExpression ((*ti->tiargs)[0]);
+      Expression *e = dmd::isExpression ((*ti->tiargs)[0]);
       gcc_assert (e && e->op == EXP::int64);
       count = build_expr (e, true);
     }

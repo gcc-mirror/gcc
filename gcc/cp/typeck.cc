@@ -10837,37 +10837,39 @@ treat_lvalue_as_rvalue_p (tree expr, bool return_p)
      parenthesized) id-expression that names an implicitly movable entity
      declared in the body or parameter-declaration-clause of the innermost
      enclosing function or lambda-expression, */
-  if (DECL_CONTEXT (retval) != current_function_decl)
-    return NULL_TREE;
   if (return_p)
     {
+      if (DECL_CONTEXT (retval) != current_function_decl)
+	return NULL_TREE;
       expr = move (expr);
       if (expr == error_mark_node)
 	return NULL_TREE;
       return set_implicit_rvalue_p (expr);
     }
 
-  /* if the operand of a throw-expression is a (possibly parenthesized)
-     id-expression that names an implicitly movable entity whose scope does not
-     extend beyond the compound-statement of the innermost try-block or
-     function-try-block (if any) whose compound-statement or ctor-initializer
-     encloses the throw-expression, */
+  /* if the id-expression (possibly parenthesized) is the operand of
+     a throw-expression, and names an implicitly movable entity that belongs
+     to a scope that does not contain the compound-statement of the innermost
+     lambda-expression, try-block, or function-try-block (if any) whose
+     compound-statement or ctor-initializer contains the throw-expression.  */
 
   /* C++20 added move on throw of parms.  */
   if (TREE_CODE (retval) == PARM_DECL && cxx_dialect < cxx20)
     return NULL_TREE;
 
+  /* We don't check for lambda-expression here, because we should not get past
+     the DECL_HAS_VALUE_EXPR_P check above.  */
   for (cp_binding_level *b = current_binding_level;
-       ; b = b->level_chain)
+       b->kind != sk_namespace; b = b->level_chain)
     {
       for (tree decl = b->names; decl; decl = TREE_CHAIN (decl))
 	if (decl == retval)
 	  return set_implicit_rvalue_p (move (expr));
-      if (b->kind == sk_function_parms
-	  || b->kind == sk_try
-	  || b->kind == sk_namespace)
+      if (b->kind == sk_try)
 	return NULL_TREE;
     }
+
+  return set_implicit_rvalue_p (move (expr));
 }
 
 /* Warn about dubious usage of std::move (in a return statement, if RETURN_P

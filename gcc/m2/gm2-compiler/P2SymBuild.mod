@@ -55,7 +55,7 @@ FROM SymbolTable IMPORT NulSym,
                         GetCurrentModule, GetMainModule,
                         MakeTemporary, CheckAnonymous, IsNameAnonymous,
                         MakeConstLit,
-                        MakeConstLitString,
+                        MakeConstString,
                         MakeSubrange,
                         MakeVar, MakeType, PutType,
                         MakeModuleCtor,
@@ -87,7 +87,7 @@ FROM SymbolTable IMPORT NulSym,
                         MakeVarient, MakeFieldVarient,
                         MakeArray, PutArraySubscript,
                         MakeSubscript, PutSubscript,
-                        PutConstString, GetString,
+                        PutConstStringKnown, GetString,
                         PutArray, IsArray,
                         GetType, SkipType,
                         IsProcType, MakeProcType,
@@ -790,7 +790,7 @@ BEGIN
    THEN
       stop
    END ;
-   Sym := MakeConstLitString (tok, makekey (string (Mark (Slice (Mark (InitStringCharStar (KeyToCharStar (name))), 1, -1))))) ;
+   Sym := MakeConstString (tok, makekey (string (Mark (Slice (Mark (InitStringCharStar (KeyToCharStar (name))), 1, -1))))) ;
    PushTFtok (Sym, NulSym, tok) ;
    Annotate ("%1s(%1d)|%3d||constant string")
 END BuildString ;
@@ -3050,7 +3050,7 @@ BEGIN
    CASE type OF
 
    set        :  PutConstSet(Sym) |
-   str        :  PutConstString(GetTokenNo(), Sym, MakeKey('')) |
+   str        :  PutConstStringKnown (GetTokenNo(), Sym, MakeKey(''), FALSE, FALSE) |
    array,
    constructor:  PutConstructor(Sym) |
    cast       :  PutConst(Sym, castType) |

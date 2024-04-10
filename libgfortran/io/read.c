@@ -1062,8 +1062,17 @@ read_f (st_parameter_dt *dtp, const fnode *f, char *dest, int length)
 	case ',':
 	  if (dtp->u.p.current_unit->decimal_status != DECIMAL_COMMA)
 	    goto bad_float;
-	  /* Fall through.  */
+	  if (seen_dp)
+	    goto bad_float;
+	  if (!seen_int_digit)
+	    *(out++) = '0';
+	  *(out++) = '.';
+	  seen_dp = 1;
+	  break;
+
 	case '.':
+	  if (dtp->u.p.current_unit->decimal_status != DECIMAL_POINT)
+	    goto bad_float;
 	  if (seen_dp)
 	    goto bad_float;
 	  if (!seen_int_digit)

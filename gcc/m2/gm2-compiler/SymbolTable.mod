@@ -112,7 +112,7 @@ CONST
    UnboundedAddressName = "_m2_contents" ;
    UnboundedHighName    = "_m2_high_%d" ;
 
-   BreakSym             = 5293 ;
+   BreakSym             = 8496 ;
 
 TYPE
    ConstLitPoolEntry = POINTER TO RECORD
@@ -475,11 +475,8 @@ TYPE
                                                   (* of const.                   *)
                     Contents       : Name ;       (* Contents of the string.     *)
                     Length         : CARDINAL ;   (* StrLen (Contents)           *)
-                    M2Variant,
-                    NulM2Variant,
-                    CVariant,
-                    NulCVariant    : CARDINAL ;   (* variants of the same string *)
                     StringVariant  : ConstStringVariant ;
+                    Known          : BOOLEAN ;    (* Is Contents known?          *)
                     Scope          : CARDINAL ;   (* Scope of declaration.       *)
                     At             : Where ;      (* Where was sym declared/used *)
                  END ;
@@ -875,9 +872,6 @@ VAR
    FreeSymbol    : CARDINAL ;         (* The next free symbol indice.       *)
    DefModuleTree : SymbolTree ;
    ModuleTree    : SymbolTree ;       (* Tree of all modules ever used.     *)
-   ConstLitStringTree
-                 : SymbolTree ;       (* String Literal Constants only need *)
-                                      (* to be declared once.               *)
    CurrentModule : CARDINAL ;         (* Index into symbols determining the *)
                                       (* current module being compiled.     *)
                                       (* This maybe an inner module.        *)
@@ -924,12 +918,12 @@ VAR
 
 PROCEDURE CheckAnonymous (name: Name) : Name ;
 BEGIN
-   IF name=NulName
+   IF name = NulName
    THEN
-      INC(AnonymousName) ;
-      name := makekey(string(Mark(Sprintf1(Mark(InitString('$$%d')), AnonymousName))))
+      INC (AnonymousName) ;
+      name := makekey (string (Mark (Sprintf1 (Mark (InitString ('__anon%d')), AnonymousName))))
    END ;
-   RETURN( name )
+   RETURN name
 END CheckAnonymous ;
 
 
@@ -940,7 +934,7 @@ END CheckAnonymous ;
 
 PROCEDURE IsNameAnonymous (sym: CARDINAL) : BOOLEAN ;
 VAR
-   a: ARRAY [0..1] OF CHAR ;
+   a: ARRAY [0..5] OF CHAR ;
    n: Name ;
 BEGIN
    n := GetSymName(sym) ;
@@ -949,7 +943,7 @@ BEGIN
       RETURN( TRUE )
    ELSE
       GetKey(n, a) ;
-      RETURN( StrEqual(a, '$$') )
+      RETURN( StrEqual(a, '__anon') )
    END
 END IsNameAnonymous ;
 
@@ -1647,7 +1641,6 @@ BEGIN
    AnonymousName := 0 ;
    CurrentError := NIL ;
    InitTree (ConstLitPoolTree) ;
-   InitTree (ConstLitStringTree) ;
    InitTree (DefModuleTree) ;
    InitTree (ModuleTree) ;
    Symbols := InitIndex (1) ;
@@ -4990,7 +4983,10 @@ PROCEDURE MakeConstVar (tok: CARDINAL; ConstVarName: Name) : CARDINAL ;
 VAR
    pSym: PtrToSymbol ;
    Sym : CARDINAL ;
+   temp: BOOLEAN ;
 BEGIN
+   temp := (ConstVarName = NulName) ;
+   ConstVarName := CheckAnonymous (ConstVarName) ;
    Sym := DeclareSym (tok, ConstVarName) ;
    IF NOT IsError(Sym)
    THEN
@@ -5005,7 +5001,7 @@ BEGIN
             IsConstructor := FALSE ;
             FromType := NulSym ;     (* type is determined FromType *)
             UnresFromType := FALSE ; (* is Type resolved?           *)
-            IsTemp := FALSE ;
+            IsTemp := temp ;
             Scope := GetCurrentScope () ;
             InitWhereDeclaredTok (tok, At)
          END
@@ -5018,82 +5014,11 @@ END MakeConstVar ;
 
 
 (*
-   MakeConstLitString - put a constant which has the string described by
-                        ConstName into the ConstantTree.
-                        The symbol number is returned.
-                        This symbol is known as a String Constant rather than a
-                        ConstLit which indicates a number.
-                        If the constant already exits
-                        then a duplicate constant is not entered in the tree.
-                        All values of constant strings
-                        are ignored in Pass 1 and evaluated in Pass 2 via
-                        character manipulation.
-                        In this procedure ConstName is the string.
-*)
-
-PROCEDURE MakeConstLitString (tok: CARDINAL; ConstName: Name) : CARDINAL ;
-VAR
-   pSym: PtrToSymbol ;
-   sym : CARDINAL ;
-BEGIN
-   sym := GetSymKey (ConstLitStringTree, ConstName) ;
-   IF sym=NulSym
-   THEN
-      NewSym (sym) ;
-      PutSymKey (ConstLitStringTree, ConstName, sym) ;
-      pSym := GetPsym (sym) ;
-      WITH pSym^ DO
-         SymbolType := ConstStringSym ;
-         CASE SymbolType OF
-
-         ConstStringSym: InitConstString (tok, sym, ConstName, ConstName,
-                                          m2str,
-                                          sym, NulSym, NulSym, NulSym)
-
-         ELSE
-            InternalError ('expecting ConstString symbol')
-         END
-      END
-   END ;
-   RETURN sym
-END MakeConstLitString ;
-
-
-(*
-   BackFillString -
-*)
-
-PROCEDURE BackFillString (sym, m2sym, m2nulsym, csym, cnulsym: CARDINAL) ;
-VAR
-   pSym: PtrToSymbol ;
-BEGIN
-   IF sym # NulSym
-   THEN
-      pSym := GetPsym (sym) ;
-      WITH pSym^ DO
-         CASE SymbolType OF
-
-         ConstStringSym:  ConstString.M2Variant := m2sym ;
-                          ConstString.NulM2Variant := m2nulsym ;
-                          ConstString.CVariant := csym ;
-                          ConstString.NulCVariant := cnulsym
-
-         ELSE
-            InternalError ('expecting ConstStringSym')
-         END
-      END
-   END
-END BackFillString ;
-
-
-(*
-   InitConstString - initialize the constant string and back fill any
-                     previous string variants.
+   InitConstString - initialize the constant string.
 *)
 
 PROCEDURE InitConstString (tok: CARDINAL; sym: CARDINAL; name, contents: Name;
-                           kind: ConstStringVariant;
-                           m2sym, m2nulsym, csym, cnulsym: CARDINAL) ;
+                           kind: ConstStringVariant; escape, known: BOOLEAN) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
@@ -5104,19 +5029,9 @@ BEGIN
 
       ConstStringSym:  ConstString.name := name ;
                        ConstString.StringVariant := kind ;
-                       PutConstString (tok, sym, contents) ;
-                       BackFillString (sym,
-                                       m2sym, m2nulsym, csym, cnulsym) ;
-                       BackFillString (m2sym,
-                                       m2sym, m2nulsym, csym, cnulsym) ;
-                       BackFillString (m2nulsym,
-                                       m2sym, m2nulsym, csym, cnulsym) ;
-                       BackFillString (csym,
-                                       m2sym, m2nulsym, csym, cnulsym) ;
-                       BackFillString (cnulsym,
-                                       m2sym, m2nulsym, csym, cnulsym) ;
                        ConstString.Scope := GetCurrentScope() ;
-                       InitWhereDeclaredTok (tok, ConstString.At)
+                       InitWhereDeclaredTok (tok, ConstString.At) ;
+                       PutConstStringKnown (tok, sym, contents, escape, known)
 
       ELSE
          InternalError ('expecting ConstStringSym')
@@ -5126,11 +5041,10 @@ END InitConstString ;
 
 
 (*
-   GetConstStringM2 - returns the Modula-2 variant of a string
-                      (with no added nul terminator).
+   GetConstString - returns the contents of a string constant.
 *)
 
-PROCEDURE GetConstStringM2 (sym: CARDINAL) : CARDINAL ;
+PROCEDURE GetConstStringContent (sym: CARDINAL) : Name ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
@@ -5138,79 +5052,13 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      ConstStringSym:  RETURN ConstString.M2Variant
+      ConstStringSym:  RETURN ConstString.Contents
 
       ELSE
          InternalError ('expecting ConstStringSym')
       END
    END
-END GetConstStringM2 ;
-
-
-(*
-   GetConstStringC - returns the C variant of a string
-                     (with no added nul terminator).
-*)
-
-PROCEDURE GetConstStringC (sym: CARDINAL) : CARDINAL ;
-VAR
-   pSym: PtrToSymbol ;
-BEGIN
-   pSym := GetPsym (sym) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym:  RETURN ConstString.CVariant
-
-      ELSE
-         InternalError ('expecting ConstStringSym')
-      END
-   END
-END GetConstStringC ;
-
-
-(*
-   GetConstStringM2nul - returns the Modula-2 variant of a string
-                         (with added nul terminator).
-*)
-
-PROCEDURE GetConstStringM2nul (sym: CARDINAL) : CARDINAL ;
-VAR
-   pSym: PtrToSymbol ;
-BEGIN
-   pSym := GetPsym (sym) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym:  RETURN ConstString.NulM2Variant
-
-      ELSE
-         InternalError ('expecting ConstStringSym')
-      END
-   END
-END GetConstStringM2nul ;
-
-
-(*
-   GetConstStringCnul - returns the C variant of a string
-                        (with no added nul terminator).
-*)
-
-PROCEDURE GetConstStringCnul (sym: CARDINAL) : CARDINAL ;
-VAR
-   pSym: PtrToSymbol ;
-BEGIN
-   pSym := GetPsym (sym) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym:  RETURN ConstString.NulCVariant
-
-      ELSE
-         InternalError ('expecting ConstStringSym')
-      END
-   END
-END GetConstStringCnul ;
+END GetConstStringContent ;
 
 
 (*
@@ -5238,189 +5086,157 @@ END IsConstStringNulTerminated ;
 
 (*
    MakeConstStringCnul - creates a constant string nul terminated string suitable for C.
-                         sym is a ConstString and a new symbol is returned
-                         with the escape sequences converted into characters.
+                         If known is TRUE then name is assigned to the contents
+                         and the escape sequences will be converted into characters.
 *)
 
-PROCEDURE MakeConstStringCnul (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
+PROCEDURE MakeConstStringCnul (tok: CARDINAL; name: Name; known: BOOLEAN) : CARDINAL ;
 VAR
-   pSym  : PtrToSymbol ;
    newstr: CARDINAL ;
 BEGIN
-   pSym := GetPsym (GetConstStringM2 (sym)) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym:  Assert (ConstString.StringVariant = m2str) ;
-                       ConstString.CVariant := MakeConstStringC (tok, sym) ;
-                       IF ConstString.NulCVariant = NulSym
-                       THEN
-                          NewSym (newstr) ;
-                          ConstString.NulCVariant := newstr ;
-                          InitConstString (tok, newstr, ConstString.name, GetString (ConstString.CVariant),
-                                           cnulstr,
-                                           ConstString.M2Variant, ConstString.NulM2Variant, ConstString.CVariant, ConstString.NulCVariant)
-                       END ;
-                       RETURN ConstString.NulCVariant
-
-      ELSE
-         InternalError ('expecting ConstStringSym')
-      END
-   END
+   NewSym (newstr) ;
+   InitConstString (tok, newstr, name, name, cnulstr, TRUE, known) ;
+   RETURN newstr
 END MakeConstStringCnul ;
 
 
 (*
-   MakeConstStringM2nul - creates a constant string nul terminated string.
-                          sym is a ConstString and a new symbol is returned.
+   MakeConstStringM2nul - creates a constant string nul terminated string suitable for M2.
+                          If known is TRUE then name is assigned to the contents
+                          however the escape sequences are not converted into characters.
 *)
 
-PROCEDURE MakeConstStringM2nul (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
+PROCEDURE MakeConstStringM2nul (tok: CARDINAL; name: Name; known: BOOLEAN) : CARDINAL ;
 VAR
-   pSym: PtrToSymbol ;
+   newstr: CARDINAL ;
 BEGIN
-   pSym := GetPsym (GetConstStringM2 (sym)) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym:  Assert (ConstString.StringVariant = m2str) ;
-                       IF ConstString.NulM2Variant = NulSym
-                       THEN
-                          NewSym (ConstString.NulM2Variant) ;
-                          InitConstString (tok, ConstString.NulM2Variant,
-                                           ConstString.name, ConstString.Contents,
-                                           m2nulstr,
-                                           ConstString.M2Variant, ConstString.NulM2Variant,
-                                           ConstString.CVariant, ConstString.NulCVariant)
-                       END ;
-                       RETURN ConstString.NulM2Variant
-
-      ELSE
-         InternalError ('expecting ConstStringSym')
-      END
-   END
+   NewSym (newstr) ;
+   InitConstString (tok, newstr, name, name, m2nulstr, FALSE, known) ;
+   RETURN newstr
 END MakeConstStringM2nul ;
 
 
 (*
-   MakeConstStringC - creates a constant string suitable for C.
-                      sym is a Modula-2 ConstString and a new symbol is returned
-                      with the escape sequences converted into characters.
-                      It is not nul terminated.
-*)
-
-PROCEDURE MakeConstStringC (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
-VAR
-   pSym  : PtrToSymbol ;
-   s     : String ;
-BEGIN
-   pSym := GetPsym (sym) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym:  IF ConstString.StringVariant = cstr
-                       THEN
-                          RETURN sym   (* this is already the C variant.  *)
-                       ELSIF ConstString.CVariant = NulSym
-                       THEN
-                          Assert (ConstString.StringVariant = m2str) ;  (* we can only derive string variants from Modula-2 strings.  *)
-                          Assert (sym = ConstString.M2Variant) ;
-                          (* we need to create a new one and return the new symbol.  *)
-                          s := HandleEscape (InitStringCharStar (KeyToCharStar (GetString (ConstString.M2Variant)))) ;
-                          NewSym (ConstString.CVariant) ;
-                          InitConstString (tok, ConstString.CVariant, ConstString.name, makekey (string (s)),
-                                           cstr,
-                                           ConstString.M2Variant, ConstString.NulM2Variant, ConstString.CVariant, ConstString.NulCVariant) ;
-                          s := KillString (s)
-                       END ;
-                       RETURN ConstString.CVariant
-
-      ELSE
-         InternalError ('expecting ConstStringSym')
-      END
-   END
-END MakeConstStringC ;
-
-
-(*
-   MakeConstString - puts a constant into the symboltable which is a string.
-                     The string value is unknown at this time and will be
-                     filled in later by PutString.
+   MakeConstString - create a string constant in the symboltable.
 *)
 
 PROCEDURE MakeConstString (tok: CARDINAL; ConstName: Name) : CARDINAL ;
 VAR
-   pSym: PtrToSymbol ;
-   sym : CARDINAL ;
+   newstr: CARDINAL ;
 BEGIN
-   NewSym (sym) ;
-   PutSymKey (ConstLitStringTree, ConstName, sym) ;
-   pSym := GetPsym (sym) ;
-   WITH pSym^ DO
-      SymbolType := ConstStringSym ;
-      CASE SymbolType OF
-
-      ConstStringSym :  InitConstString (tok, sym, ConstName, NulName,
-                                         m2str, sym, NulSym, NulSym, NulSym)
-
-      ELSE
-         InternalError ('expecting ConstString symbol')
-      END
-   END ;
-   RETURN sym
+   NewSym (newstr) ;
+   InitConstString (tok, newstr, ConstName, ConstName, m2nulstr, FALSE, TRUE) ;
+   RETURN newstr
 END MakeConstString ;
 
 
 (*
-   PutConstString - places a string, String, into a constant symbol, Sym.
-                    Sym maybe a ConstString or a ConstVar.  If the later is
-                    true then the ConstVar is converted to a ConstString.
+   PutConstStringKnown - if sym is a constvar then convert it into a conststring.
+                         If known is FALSE then contents is ignored and NulName is
+                         stored.  If escape is TRUE then the contents will have
+                         any escape sequences converted into single characters.
 *)
 
-PROCEDURE PutConstString (tok: CARDINAL; sym: CARDINAL; contents: Name) ;
+PROCEDURE PutConstStringKnown (tok: CARDINAL; sym: CARDINAL;
+                               contents: Name; escape, known: BOOLEAN) ;
 VAR
    pSym: PtrToSymbol ;
+   s   : String ;
 BEGIN
    pSym := GetPsym (sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
-      ConstStringSym: ConstString.Length := LengthKey (contents) ;
-                      ConstString.Contents := contents ;
+      ConstStringSym: IF known
+                      THEN
+                         IF escape
+                         THEN
+                            s := HandleEscape (InitStringCharStar (KeyToCharStar (contents))) ;
+                            contents := makekey (string (s)) ;
+                            s := KillString (s)
+                         END ;
+                         ConstString.Length := LengthKey (contents) ;
+                         ConstString.Contents := contents
+                      ELSE
+                         ConstString.Length := 0 ;
+                         ConstString.Contents := NulName
+                      END ;
+                      ConstString.Known := known ;
                       InitWhereDeclaredTok (tok, ConstString.At) ;
                       InitWhereFirstUsedTok (tok, ConstString.At) |
 
-      ConstVarSym   : (* ok altering this to ConstString *)
-                      (* copy name and alter symbol.     *)
+      ConstVarSym   : (* Change a ConstVar to a ConstString copy name
+                         and alter symboltype.  *)
                       InitConstString (tok, sym, ConstVar.name, contents,
-                                       m2str,
-                                       sym, NulSym, NulSym, NulSym)
-
-      ELSE
-         InternalError ('expecting ConstString or ConstVar symbol')
-      END
-   END
-END PutConstString ;
-
-
-(*
-   IsConstStringM2 - returns whether this conststring is an unaltered Modula-2 string.
-*)
-
-PROCEDURE IsConstStringM2 (sym: CARDINAL) : BOOLEAN ;
-VAR
-   pSym: PtrToSymbol ;
-BEGIN
-   pSym := GetPsym (sym) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym: RETURN ConstString.StringVariant = m2str
+                                       m2str, escape, known)
 
       ELSE
          InternalError ('expecting ConstString symbol')
       END
    END
+END PutConstStringKnown ;
+
+
+(*
+   CopyConstString - copies string contents from expr to des
+                     and retain the kind of string.
+*)
+
+PROCEDURE CopyConstString (tok: CARDINAL; des, expr: CARDINAL) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsConstStringKnown (expr)) ;
+   pSym := GetPsym (des) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ConstStringSym: InitConstString (tok, des, ConstString.name,
+                                       GetString (expr),
+                                       GetConstStringKind (expr), FALSE, TRUE) |
+      ConstVarSym   : (* Change a ConstVar to a ConstString copy name
+                         and alter symboltype.  *)
+                      InitConstString (tok, des, ConstVar.name,
+                                       GetString (expr),
+                                       GetConstStringKind (expr), FALSE, TRUE)
+
+      ELSE
+         InternalError ('expecting ConstString symbol')
+      END
+   END
+END CopyConstString ;
+
+
+(*
+   IsConstStringKnown - returns TRUE if sym is a const string
+                        and the contents are known.
+*)
+
+PROCEDURE IsConstStringKnown (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ConstStringSym: RETURN ConstString.Known
+
+      ELSE
+         RETURN FALSE
+      END
+   END
+END IsConstStringKnown ;
+
+
+(*
+   IsConstStringM2 - returns whether this conststring is a
+                     Modula-2 string.
+*)
+
+PROCEDURE IsConstStringM2 (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN GetConstStringKind (sym) = m2str
 END IsConstStringM2 ;
 
 
@@ -5430,19 +5246,8 @@ END IsConstStringM2 ;
 *)
 
 PROCEDURE IsConstStringC (sym: CARDINAL) : BOOLEAN ;
-VAR
-   pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym (sym) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym: RETURN ConstString.StringVariant = cstr
-
-      ELSE
-         InternalError ('expecting ConstString symbol')
-      END
-   END
+   RETURN GetConstStringKind (sym) = cstr
 END IsConstStringC ;
 
 
@@ -5452,19 +5257,8 @@ END IsConstStringC ;
 *)
 
 PROCEDURE IsConstStringM2nul (sym: CARDINAL) : BOOLEAN ;
-VAR
-   pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym (sym) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym: RETURN ConstString.StringVariant = m2nulstr
-
-      ELSE
-         InternalError ('expecting ConstString symbol')
-      END
-   END
+   RETURN GetConstStringKind (sym) = m2nulstr
 END IsConstStringM2nul ;
 
 
@@ -5475,6 +5269,16 @@ END IsConstStringM2nul ;
 *)
 
 PROCEDURE IsConstStringCnul (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN GetConstStringKind (sym) = cnulstr
+END IsConstStringCnul ;
+
+
+(*
+   GetConstStringKind - return the StringVariant field associated with sym.
+*)
+
+PROCEDURE GetConstStringKind (sym: CARDINAL) : ConstStringVariant ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
@@ -5482,13 +5286,14 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      ConstStringSym: RETURN ConstString.StringVariant = cnulstr
+      ConstStringSym: RETURN ConstString.StringVariant
 
       ELSE
          InternalError ('expecting ConstString symbol')
       END
    END
-END IsConstStringCnul ;
+END GetConstStringKind ;
+
 
 
 (*
@@ -5504,7 +5309,12 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      ConstStringSym: RETURN ConstString.Contents
+      ConstStringSym: IF ConstString.Known
+                      THEN
+                         RETURN ConstString.Contents
+                      ELSE
+                         InternalError ('const string contents are unknown')
+                      END
 
       ELSE
          InternalError ('expecting ConstString symbol')
@@ -5517,15 +5327,21 @@ END GetString ;
    GetStringLength - returns the length of the string symbol Sym.
 *)
 
-PROCEDURE GetStringLength (Sym: CARDINAL) : CARDINAL ;
+PROCEDURE GetStringLength (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym (Sym) ;
+   pSym := GetPsym (sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
-      ConstStringSym: RETURN ConstString.Length
+      ConstStringSym: IF ConstString.Known
+                      THEN
+                         RETURN ConstString.Length
+                      ELSE
+                         MetaErrorT0 (tok, 'const string contents are unknown') ;
+                         RETURN 0
+                      END
 
       ELSE
          InternalError ('expecting ConstString symbol')

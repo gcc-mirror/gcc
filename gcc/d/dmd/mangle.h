@@ -17,18 +17,21 @@ class TemplateInstance;
 class Type;
 struct OutBuffer;
 
-// In cppmangle.d
-const char *toCppMangleItanium(Dsymbol *s);
-const char *cppTypeInfoMangleItanium(Dsymbol *s);
-const char *cppThunkMangleItanium(FuncDeclaration *fd, int offset);
+namespace dmd
+{
+    // In cppmangle.d
+    const char *toCppMangleItanium(Dsymbol *s);
+    const char *cppTypeInfoMangleItanium(Dsymbol *s);
+    const char *cppThunkMangleItanium(FuncDeclaration *fd, int offset);
 
-// In cppmanglewin.d
-const char *toCppMangleMSVC(Dsymbol *s);
-const char *cppTypeInfoMangleMSVC(Dsymbol *s);
+    // In cppmanglewin.d
+    const char *toCppMangleMSVC(Dsymbol *s);
+    const char *cppTypeInfoMangleMSVC(Dsymbol *s);
 
-// In dmangle.d
-const char *mangleExact(FuncDeclaration *fd);
-void mangleToBuffer(Type *s, OutBuffer& buf);
-void mangleToBuffer(Expression *s, OutBuffer& buf);
-void mangleToBuffer(Dsymbol *s, OutBuffer& buf);
-void mangleToBuffer(TemplateInstance *s, OutBuffer& buf);
+    // In dmangle.d
+    const char *mangleExact(FuncDeclaration *fd);
+    void mangleToBuffer(Type *s, OutBuffer& buf);
+    void mangleToBuffer(Expression *s, OutBuffer& buf);
+    void mangleToBuffer(Dsymbol *s, OutBuffer& buf);
+    void mangleToBuffer(TemplateInstance *s, OutBuffer& buf);
+}

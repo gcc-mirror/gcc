@@ -41,8 +41,11 @@ enum class Baseok : uint8_t
     semanticdone  // all base classes semantic done
 };
 
-FuncDeclaration *search_toString(StructDeclaration *sd);
-void semanticTypeInfoMembers(StructDeclaration *sd);
+namespace dmd
+{
+    FuncDeclaration *search_toString(StructDeclaration *sd);
+    void semanticTypeInfoMembers(StructDeclaration *sd);
+}
 
 enum class ClassKind : uint8_t
 {

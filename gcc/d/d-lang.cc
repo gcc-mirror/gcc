@@ -1029,8 +1029,8 @@ d_generate_ddoc_file (Module *m, OutBuffer &ddocbuf)
   d_read_ddoc_files (global.params.ddoc.files, ddocbuf);
 
   OutBuffer ddocbuf_out;
-  gendocfile (m, ddocbuf.peekChars (), ddocbuf.length (), global.datetime,
-	      global.errorSink, ddocbuf_out);
+  dmd::gendocfile (m, ddocbuf.peekChars (), ddocbuf.length (), global.datetime,
+		   global.errorSink, ddocbuf_out);
 
   d_write_file (m->docfile.toChars (), ddocbuf_out.peekChars ());
 }
@@ -1205,7 +1205,7 @@ d_parse_file (void)
 	    message ("import    %s", m->toChars ());
 
 	  OutBuffer buf;
-	  genhdrfile (m, global.params.dihdr.fullOutput, buf);
+	  dmd::genhdrfile (m, global.params.dihdr.fullOutput, buf);
 	  d_write_file (m->hdrfile.toChars (), buf.peekChars ());
 	}
 
@@ -1223,7 +1223,7 @@ d_parse_file (void)
       if (global.params.v.verbose)
 	message ("importall %s", m->toChars ());
 
-      importAll (m, NULL);
+      dmd::importAll (m, NULL);
     }
 
   if (global.errors)
@@ -1247,7 +1247,7 @@ d_parse_file (void)
       if (global.params.v.verbose)
 	message ("semantic  %s", m->toChars ());
 
-      dsymbolSemantic (m, NULL);
+      dmd::dsymbolSemantic (m, NULL);
     }
 
   /* Do deferred semantic analysis.  */
@@ -1278,7 +1278,7 @@ d_parse_file (void)
       if (global.params.v.verbose)
 	message ("semantic2 %s", m->toChars ());
 
-      semantic2 (m, NULL);
+      dmd::semantic2 (m, NULL);
     }
 
   Module::runDeferredSemantic2 ();
@@ -1294,7 +1294,7 @@ d_parse_file (void)
       if (global.params.v.verbose)
 	message ("semantic3 %s", m->toChars ());
 
-      semantic3 (m, NULL);
+      dmd::semantic3 (m, NULL);
     }
 
   Module::runDeferredSemantic3 ();
@@ -1318,7 +1318,7 @@ d_parse_file (void)
       /* Declare the name of the root module as the first global name in order
 	 to make the middle-end fully deterministic.  */
       OutBuffer buf;
-      mangleToBuffer (Module::rootModule, buf);
+      dmd::mangleToBuffer (Module::rootModule, buf);
       first_global_object_name = buf.extractChars ();
     }
 
@@ -1341,15 +1341,15 @@ d_parse_file (void)
 
   if (global.params.v.templates)
     {
-      printTemplateStats (global.params.v.templatesListInstances,
-			  global.errorSink);
+      dmd::printTemplateStats (global.params.v.templatesListInstances,
+			       global.errorSink);
     }
 
   /* Generate JSON files.  */
   if (global.params.json.doOutput)
     {
       OutBuffer buf;
-      json_generate (modules, buf);
+      dmd::json_generate (modules, buf);
       d_write_file (global.params.json.name.ptr, buf.peekChars ());
     }
 
@@ -1372,14 +1372,14 @@ d_parse_file (void)
 	  OutBuffer buf;
 	  buf.doindent = 1;
 
-	  moduleToBuffer (buf, true, m);
+	  dmd::moduleToBuffer (buf, true, m);
 	  message ("%s", buf.peekChars ());
 	}
     }
 
   /* Generate C++ header files.  */
   if (global.params.cxxhdr.doOutput)
-    genCppHdrFiles (modules);
+    dmd::genCppHdrFiles (modules);
 
   if (global.errors)
     goto had_errors;

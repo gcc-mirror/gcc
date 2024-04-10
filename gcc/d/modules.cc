@@ -504,7 +504,7 @@ layout_moduleinfo_fields (Module *decl, tree type)
   if (decl->sshareddtor)
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
-  if (findGetMembers (decl))
+  if (dmd::findGetMembers (decl))
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
   if (decl->sictor)
@@ -532,7 +532,7 @@ layout_moduleinfo_fields (Module *decl, tree type)
 
   /* Array of local ClassInfo decls are laid out in the same way.  */
   ClassDeclarations aclasses;
-  getLocalClasses (decl, aclasses);
+  dmd::getLocalClasses (decl, aclasses);
 
   if (aclasses.length)
     {
@@ -562,7 +562,7 @@ layout_moduleinfo (Module *decl)
   ClassDeclarations aclasses;
   FuncDeclaration *sgetmembers;
 
-  getLocalClasses (decl, aclasses);
+  dmd::getLocalClasses (decl, aclasses);
 
   size_t aimports_dim = decl->aimports.length;
   for (size_t i = 0; i < decl->aimports.length; i++)
@@ -572,7 +572,7 @@ layout_moduleinfo (Module *decl)
 	aimports_dim--;
     }
 
-  sgetmembers = findGetMembers (decl);
+  sgetmembers = dmd::findGetMembers (decl);
 
   size_t flags = 0;
   if (decl->sctor)

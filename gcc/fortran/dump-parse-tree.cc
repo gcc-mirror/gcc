@@ -914,6 +914,8 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" OMP-DECLARE-TARGET", dumpfile);
   if (attr->omp_declare_target_link)
     fputs (" OMP-DECLARE-TARGET-LINK", dumpfile);
+  if (attr->omp_declare_target_indirect)
+    fputs (" OMP-DECLARE-TARGET-INDIRECT", dumpfile);
   if (attr->elemental)
     fputs (" ELEMENTAL", dumpfile);
   if (attr->pure)

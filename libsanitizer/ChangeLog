@@ -1,3 +1,9 @@
+2024-02-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/113785
+	* asan/asan_interceptors.cpp: Cherry-pick llvm-project revision
+	8c2033719a843a1880427a5e8caa5563248bce78.
+
 2024-02-06  chenguoqi  <chenguoqi@loongson.cn>
 
 	* configure.tgt: Enable tsan and lsan for loongarch64.

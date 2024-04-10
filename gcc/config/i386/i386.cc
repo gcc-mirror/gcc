@@ -6802,16 +6802,24 @@ get_probe_interval (void)
 
 #define SPLIT_STACK_AVAILABLE 256
 
-/* Helper function to determine whether push2/pop2 can be used in prologue or
-   epilogue for register save/restore.  */
+/* Return true if push2/pop2 can be generated.  */
+
 static bool
-ix86_pro_and_epilogue_can_use_push2pop2 (int nregs)
+ix86_can_use_push2pop2 (void)
 {
   /* Use push2/pop2 only if the incoming stack is 16-byte aligned.  */
   unsigned int incoming_stack_boundary
     = (crtl->parm_stack_boundary > ix86_incoming_stack_boundary
        ? crtl->parm_stack_boundary : ix86_incoming_stack_boundary);
-  if (incoming_stack_boundary % 128 != 0)
+  return incoming_stack_boundary % 128 == 0;
+}
+
+/* Helper function to determine whether push2/pop2 can be used in prologue or
+   epilogue for register save/restore.  */
+static bool
+ix86_pro_and_epilogue_can_use_push2pop2 (int nregs)
+{
+  if (!ix86_can_use_push2pop2 ())
     return false;
   int aligned = cfun->machine->fs.sp_offset % 16 == 0;
   return TARGET_APX_PUSH2POP2
@@ -7401,7 +7409,9 @@ ix86_emit_save_regs (void)
   int regno;
   rtx_insn *insn;
 
-  if (!TARGET_APX_PUSH2POP2 || cfun->machine->func_type != TYPE_NORMAL)
+  if (!TARGET_APX_PUSH2POP2
+      || !ix86_can_use_push2pop2 ()
+      || cfun->machine->func_type != TYPE_NORMAL)
     {
       for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
 	if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true, true))
@@ -10039,7 +10049,9 @@ ix86_expand_epilogue (int style)
 				     m->fs.cfa_reg == stack_pointer_rtx);
 	}
 
-      if (TARGET_APX_PUSH2POP2 && m->func_type == TYPE_NORMAL)
+      if (TARGET_APX_PUSH2POP2
+	  && ix86_can_use_push2pop2 ()
+	  && m->func_type == TYPE_NORMAL)
 	ix86_emit_restore_regs_using_pop2 ();
       else
 	ix86_emit_restore_regs_using_pop (TARGET_APX_PPX);

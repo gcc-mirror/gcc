@@ -39,10 +39,10 @@
 #include "insn-config.h"
 #include "recog.h"
 
-/* This pass scans the RTL just before the final branch
-   re-organisation pass.  The aim is to identify all places where
-   there is conditional control flow and to insert code that tracks
-   any speculative execution of a conditional branch.
+/* This pass scans the RTL insns late in the RTL pipeline.  The aim is
+   to identify all places where there is conditional control flow and
+   to insert code that tracks any speculative execution of a conditional
+   branch.
 
    To do this we reserve a call-clobbered register (so that it can be
    initialized very early in the function prologue) that can then be
@@ -131,11 +131,22 @@
    carry the tracking state in SP for this period of time unless the
    tracker value is needed at that point in time.
 
-   We run the pass just before the final branch reorganization pass so
-   that we can handle most of the conditional branch cases using the
-   standard edge insertion code.  The reorg pass will hopefully clean
-   things up for afterwards so that the results aren't too
-   horrible.  */
+   We run the pass while the CFG is still present so that we can handle
+   most of the conditional branch cases using the standard edge insertion
+   code.  Where possible, we prefer to run the pass just before the final
+   branch reorganization pass.  That pass will then hopefully clean things
+   up afterwards so that the results aren't too horrible.
+
+   However, we must run the pass after all conditional branches have
+   been inserted.  switch_pstate_sm inserts conditional branches for
+   streaming-compatible code, and so for streaming-compatible functions,
+   this pass must run after that one.
+
+   We handle this by having two copies of the pass: the normal one that
+   runs before branch reorganization, and a "late" one that runs just
+   before late_thread_prologue_and_epilogue.  The two passes have
+   mutually exclusive gates, with the normal pass being chosen wherever
+   possible.  */
 
 /* Generate a code sequence to clobber SP if speculating incorreclty.  */
 static rtx_insn *
@@ -315,11 +326,15 @@ aarch64_do_track_speculation ()
 	      needs_tracking = true;
 	    }
 
-	  if (CALL_P (insn))
+	  if (CALL_P (insn)
+	      || (NONDEBUG_INSN_P (insn)
+		  && recog_memoized (insn) >= 0
+		  && get_attr_is_call (insn) == IS_CALL_YES))
 	    {
 	      bool tailcall
-		= (SIBLING_CALL_P (insn)
-		   || find_reg_note (insn, REG_NORETURN, NULL_RTX));
+		= (CALL_P (insn)
+		   && (SIBLING_CALL_P (insn)
+		       || find_reg_note (insn, REG_NORETURN, NULL_RTX)));
 
 	      /* Tailcalls are like returns, we can eliminate the
 		 transfer between the tracker register and SP if we
@@ -461,21 +476,28 @@ const pass_data pass_data_aarch64_track_speculation =
 
 class pass_track_speculation : public rtl_opt_pass
 {
- public:
-  pass_track_speculation(gcc::context *ctxt)
-    : rtl_opt_pass(pass_data_aarch64_track_speculation, ctxt)
-    {}
+public:
+  pass_track_speculation(gcc::context *ctxt, bool is_late)
+    : rtl_opt_pass(pass_data_aarch64_track_speculation, ctxt),
+      is_late (is_late)
+  {}
 
   /* opt_pass methods:  */
   virtual bool gate (function *)
     {
-      return aarch64_track_speculation;
+      return (aarch64_track_speculation
+	      && (is_late == bool (TARGET_STREAMING_COMPATIBLE)));
     }
 
   virtual unsigned int execute (function *)
     {
       return aarch64_do_track_speculation ();
     }
+
+private:
+  /* Whether this is the late pass that runs before late prologue/epilogue
+     insertion, or the normal pass that runs before branch reorganization.  */
+  bool is_late;
 }; // class pass_track_speculation.
 } // anon namespace.
 
@@ -483,5 +505,11 @@ class pass_track_speculation : public rtl_opt_pass
 rtl_opt_pass *
 make_pass_track_speculation (gcc::context *ctxt)
 {
-  return new pass_track_speculation (ctxt);
+  return new pass_track_speculation (ctxt, /*is_late=*/false);
+}
+
+rtl_opt_pass *
+make_pass_late_track_speculation (gcc::context *ctxt)
+{
+  return new pass_track_speculation (ctxt, /*is_late=*/true);
 }

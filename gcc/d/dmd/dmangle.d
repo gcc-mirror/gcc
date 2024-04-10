@@ -18,7 +18,7 @@ module dmd.dmangle;
 /******************************************************************************
  * Returns exact mangled name of function.
  */
-extern (C++) const(char)* mangleExact(FuncDeclaration fd)
+const(char)* mangleExact(FuncDeclaration fd)
 {
     //printf("mangleExact()\n");
     if (!fd.mangleString)
@@ -32,7 +32,7 @@ extern (C++) const(char)* mangleExact(FuncDeclaration fd)
     return fd.mangleString;
 }
 
-extern (C++) void mangleToBuffer(Type t, ref OutBuffer buf)
+void mangleToBuffer(Type t, ref OutBuffer buf)
 {
     //printf("mangleToBuffer t()\n");
     if (t.deco)
@@ -45,7 +45,7 @@ extern (C++) void mangleToBuffer(Type t, ref OutBuffer buf)
     }
 }
 
-extern (C++) void mangleToBuffer(Expression e, ref OutBuffer buf)
+void mangleToBuffer(Expression e, ref OutBuffer buf)
 {
     //printf("mangleToBuffer e()\n");
     auto backref = Backref(null);
@@ -53,7 +53,7 @@ extern (C++) void mangleToBuffer(Expression e, ref OutBuffer buf)
     e.accept(v);
 }
 
-extern (C++) void mangleToBuffer(Dsymbol s, ref OutBuffer buf)
+void mangleToBuffer(Dsymbol s, ref OutBuffer buf)
 {
     //printf("mangleToBuffer s(%s)\n", s.toChars());
     auto backref = Backref(null);
@@ -61,7 +61,7 @@ extern (C++) void mangleToBuffer(Dsymbol s, ref OutBuffer buf)
     s.accept(v);
 }
 
-extern (C++) void mangleToBuffer(TemplateInstance ti, ref OutBuffer buf)
+void mangleToBuffer(TemplateInstance ti, ref OutBuffer buf)
 {
     //printf("mangleToBuffer ti()\n");
     auto backref = Backref(null);

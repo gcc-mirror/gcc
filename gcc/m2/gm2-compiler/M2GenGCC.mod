@@ -27,7 +27,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         PushVarSize,
                         PushSumOfLocalVarSize,
                         PushSumOfParamSize,
-                        MakeConstLit, MakeConstLitString,
+                        MakeConstLit,
                         RequestSym, FromModuleGetSym,
                         StartScope, EndScope, GetScope,
                         GetMainModule, GetModuleScope,
@@ -57,6 +57,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         IsValueSolved, IsSizeSolved,
                         IsProcedureNested, IsInnerModule, IsArrayLarge,
                         IsComposite, IsVariableSSA, IsPublic, IsCtor,
+                        IsConstStringKnown,
                         ForeachExportedDo,
                         ForeachImportedDo,
                         ForeachProcedureDo,
@@ -74,10 +75,10 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         GetProcedureQuads,
                         GetProcedureBuiltin,
                         GetPriority, GetNeedSavePriority,
-                        PutConstString,
+                        PutConstStringKnown,
                         PutConst, PutConstSet, PutConstructor,
 			GetSType, GetTypeMode,
-                        HasVarParameters,
+                        HasVarParameters, CopyConstString,
                         NulSym ;
 
 FROM M2Batch IMPORT MakeDefinitionSource ;
@@ -522,7 +523,7 @@ BEGIN
    CallOp             : CodeCall (CurrentQuadToken, op3) |
    ParamOp            : CodeParam (q) |
    FunctValueOp       : CodeFunctValue (location, op1) |
-   AddrOp             : CodeAddr (q, op1, op3) |
+   AddrOp             : CodeAddr (CurrentQuadToken, q, op1, op3) |
    SizeOp             : CodeSize (op1, op3) |
    UnboundedOp        : CodeUnbounded (op1, op3) |
    RecordFieldOp      : CodeRecordField (op1, op2, op3) |
@@ -628,7 +629,10 @@ BEGIN
          LogicalRotateOp    : FoldSetRotate (tokenno, p, quad, op1, op2, op3) |
          ParamOp            : FoldBuiltinFunction (tokenno, p, quad, op1, op2, op3) |
          RangeCheckOp       : FoldRange (tokenno, quad, op3) |
-         StatementNoteOp    : FoldStatementNote (op3)
+         StatementNoteOp    : FoldStatementNote (op3) |
+         StringLengthOp      : FoldStringLength (quad, p) |
+         StringConvertM2nulOp: FoldStringConvertM2nul (quad, p) |
+         StringConvertCnulOp : FoldStringConvertCnul (quad, p)
 
          ELSE
             (* ignore quadruple as it is not associated with a constant expression *)
@@ -650,8 +654,8 @@ END ResolveConstantExpressions ;
 
 
 (*
-   FindSize - given a Modula-2 symbol, sym, return the GCC Tree
-              (constant) representing the storage size in bytes.
+   FindSize - given a Modula-2 symbol sym return a gcc tree
+              constant representing the storage size in bytes.
 *)
 
 PROCEDURE FindSize (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
@@ -661,7 +665,8 @@ BEGIN
    location := TokenToLocation (tokenno) ;
    IF IsConstString (sym)
    THEN
-      PushCard (GetStringLength (sym)) ;
+      Assert (IsConstStringKnown (sym)) ;
+      PushCard (GetStringLength (tokenno, sym)) ;
       RETURN PopIntegerTree ()
    ELSIF IsSizeSolved (sym)
    THEN
@@ -2040,18 +2045,21 @@ PROCEDURE StringToChar (t: Tree; type, str: CARDINAL) : Tree ;
 VAR
    s: String ;
    n: Name ;
+   tokenno : CARDINAL ;
    location: location_t ;
 BEGIN
-   location := TokenToLocation(GetDeclaredMod(str)) ;
-   type := SkipType(type) ;
+   tokenno := GetDeclaredMod(str) ;
+   location := TokenToLocation(tokenno) ;
+   type := SkipType (type) ;
    IF (type=Char) AND IsConstString(str)
    THEN
-      IF GetStringLength(str)=0
+      Assert (IsConstStringKnown (str)) ;
+      IF GetStringLength (tokenno, str) = 0
       THEN
          s := InitString('') ;
          t := BuildCharConstant(location, s) ;
          s := KillString(s) ;
-      ELSIF GetStringLength(str)>1
+      ELSIF GetStringLength (tokenno, str)>1
       THEN
          n := GetSymName(str) ;
          WriteFormat1("type incompatibility, attempting to use a string ('%a') when a CHAR is expected", n) ;
@@ -2590,15 +2598,99 @@ END CodeFunctValue ;
 
 
 (*
-   Addr Operator  - contains the address of a variable.
-
-   Yields the address of a variable - need to add the frame pointer if
-   a variable is local to a procedure.
-
-   Sym1<X>   Addr   Sym2<X>     meaning     Mem[Sym1<I>] := Sym2<I>
+   FoldStringLength -
 *)
 
-PROCEDURE CodeAddr (quad: CARDINAL; op1, op3: CARDINAL) ;
+PROCEDURE FoldStringLength (quad: CARDINAL; p: WalkAction) ;
+VAR
+   op              : QuadOperator ;
+   des, none, expr : CARDINAL ;
+   stroppos,
+   despos, nonepos,
+   exprpos         : CARDINAL ;
+   overflowChecking: BOOLEAN ;
+   location        : location_t ;
+BEGIN
+   GetQuadOtok (quad, stroppos, op, des, none, expr, overflowChecking,
+                despos, nonepos, exprpos) ;
+   IF IsConstStr (expr) AND IsConstStrKnown (expr)
+   THEN
+      location := TokenToLocation (stroppos) ;
+      PushCard (GetStringLength (exprpos, expr)) ;
+      AddModGcc (des, BuildConvert (location, Mod2Gcc (GetType (des)), PopIntegerTree (), FALSE)) ;
+      RemoveQuad (p, des, quad)
+   END
+END FoldStringLength ;
+
+
+(*
+   FoldStringConvertM2nul - attempt to assign the des with the string contents from expr.
+                            It also marks the des as a m2 string which must be nul terminated.
+                            The front end uses double book keeping and it is easier to have
+                            different m2 string symbols each of which map onto a slightly different
+                            gcc string tree.
+*)
+
+PROCEDURE FoldStringConvertM2nul (quad: CARDINAL; p: WalkAction) ;
+VAR
+   op              : QuadOperator ;
+   des, none, expr : CARDINAL ;
+   stroppos,
+   despos, nonepos,
+   exprpos         : CARDINAL ;
+   s               : String ;
+   overflowChecking: BOOLEAN ;
+BEGIN
+   GetQuadOtok (quad, stroppos, op, des, none, expr, overflowChecking,
+                despos, nonepos, exprpos) ;
+   IF IsConstStr (expr) AND IsConstStrKnown (expr)
+   THEN
+      s := GetStr (exprpos, expr) ;
+      PutConstStringKnown (stroppos, des, makekey (string (s)), FALSE, TRUE) ;
+      TryDeclareConstant (despos, des) ;
+      p (des) ;
+      NoChange := FALSE ;
+      SubQuad (quad) ;
+      s := KillString (s)
+   END
+END FoldStringConvertM2nul ;
+
+
+(*
+   FoldStringConvertCnul -attempt to assign the des with the string contents from expr.
+                          It also marks the des as a C string which must be nul terminated.
+*)
+
+PROCEDURE FoldStringConvertCnul (quad: CARDINAL; p: WalkAction) ;
+VAR
+   op              : QuadOperator ;
+   des, none, expr : CARDINAL ;
+   stroppos,
+   despos, nonepos,
+   exprpos         : CARDINAL ;
+   s               : String ;
+   overflowChecking: BOOLEAN ;
+BEGIN
+   GetQuadOtok (quad, stroppos, op, des, none, expr, overflowChecking,
+                despos, nonepos, exprpos) ;
+   IF IsConstStr (expr) AND IsConstStrKnown (expr)
+   THEN
+      s := GetStr (exprpos, expr) ;
+      PutConstStringKnown (stroppos, des, makekey (string (s)), TRUE, TRUE) ;
+      TryDeclareConstant (despos, des) ;
+      p (des) ;
+      NoChange := FALSE ;
+      SubQuad (quad) ;
+      s := KillString (s)
+   END
+END FoldStringConvertCnul ;
+
+
+(*
+   Addr Operator - generates the address of a variable (op1 = &op3).
+*)
+
+PROCEDURE CodeAddr (tokenno: CARDINAL; quad: CARDINAL; op1, op3: CARDINAL) ;
 VAR
    value   : Tree ;
    type    : CARDINAL ;
@@ -2606,15 +2698,19 @@ VAR
 BEGIN
    IF IsConst(op3) AND (NOT IsConstString(op3))
    THEN
-      MetaErrorT1 (CurrentQuadToken, 'error in expression, trying to find the address of a constant {%1Ead}', op3)
+      MetaErrorT1 (tokenno, 'error in expression, trying to find the address of a constant {%1Ead}', op3)
    ELSE
-      location := TokenToLocation (CurrentQuadToken) ;
+      IF IsConstString (op3) AND (NOT IsConstStringKnown (op3))
+      THEN
+         printf1 ("failure in quad: %d\n", quad)
+      END ;
+      location := TokenToLocation (tokenno) ;
       type := SkipType (GetType (op3)) ;
-      DeclareConstant (CurrentQuadToken, op3) ;  (* we might be asked to find the address of a constant string *)
-      DeclareConstructor (CurrentQuadToken, quad, op3) ;
+      DeclareConstant (tokenno, op3) ;  (* we might be asked to find the address of a constant string *)
+      DeclareConstructor (tokenno, quad, op3) ;
       IF (IsConst (op3) AND (type=Char)) OR IsConstString (op3)
       THEN
-         value := BuildStringConstant (KeyToCharStar (GetString (op3)), GetStringLength (op3))
+         value := BuildStringConstant (KeyToCharStar (GetString (op3)), GetStringLength (tokenno, op3))
       ELSE
          value := Mod2Gcc (op3)
       END ;
@@ -2754,7 +2850,9 @@ END TypeCheckBecomes ;
 
 
 (*
-   PerformFoldBecomes -
+   PerformFoldBecomes - attempts to fold quad.  It propagates constant strings
+                        and attempts to declare des providing it is a constant
+                        and expr is resolved.
 *)
 
 PROCEDURE PerformFoldBecomes (p: WalkAction; quad: CARDINAL) ;
@@ -2770,9 +2868,12 @@ BEGIN
                 des, op2, expr, overflowChecking,
                 despos, op2pos, exprpos) ;
    Assert (op2pos = UnknownTokenNo) ;
-   IF IsConstString (expr)
+   IF IsConst (des) AND IsConstString (expr)
    THEN
-      PutConstString (exprpos, des, GetString (expr))
+      IF IsConstStringKnown (expr) AND (NOT IsConstStringKnown (des))
+      THEN
+         CopyConstString (exprpos, des, expr)
+      END
    ELSIF GetType (des) = NulSym
    THEN
       Assert (GetType (expr) # NulSym) ;
@@ -3033,32 +3134,47 @@ BEGIN
    THEN
       (*
        *  Create string from char and add nul to the end, nul is
-       *  added by BuildStringConstant
+       *  added by BuildStringConstant.  In modula-2 an array must
+       *  have at least one element.
        *)
-      srcTree := BuildStringConstant (KeyToCharStar (GetString (src)), 1)
-   ELSE
-      srcTree := Mod2Gcc (src)
-   END ;
-   srcTree := ConvertString (Mod2Gcc (destStrType), srcTree) ;
-   PushIntegerTree (FindSize (tokenno, src)) ;
-   PushIntegerTree (FindSize (tokenno, destStrType)) ;
-   IF Less (tokenno)
-   THEN
-      (* There is room for the extra <nul> character.  *)
-      length := BuildAdd (location, FindSize (tokenno, src),
-                          GetIntegerOne (location), FALSE)
-   ELSE
-      length := FindSize (tokenno, destStrType) ;
+      length := GetIntegerOne (location) ;
       PushIntegerTree (FindSize (tokenno, src)) ;
-      PushIntegerTree (length) ;
-      (* Greater or Equal so return max characters in the array.  *)
-      IF Gre (tokenno)
+      PushIntegerTree (FindSize (tokenno, destStrType)) ;
+      IF Less (tokenno)
       THEN
-         intLength := GetCstInteger (length) ;
-         srcTree := BuildStringConstant (KeyToCharStar (GetString (src)), intLength) ;
-         RETURN FALSE
+         (* There is room for the extra <nul> character.  *)
+         length := BuildAdd (location, length,
+                             GetIntegerOne (location), FALSE)
+      END
+   ELSE
+      PushIntegerTree (FindSize (tokenno, src)) ;
+      PushIntegerTree (FindSize (tokenno, destStrType)) ;
+      IF Less (tokenno)
+      THEN
+         (* There is room for the extra <nul> character.  *)
+         length := BuildAdd (location, FindSize (tokenno, src),
+                             GetIntegerOne (location), FALSE) ;
+         srcTree := Mod2Gcc (src)
+      ELSE
+         (* We need to truncate the <nul> at least.  *)
+         length := FindSize (tokenno, destStrType) ;
+         PushIntegerTree (FindSize (tokenno, src)) ;
+         PushIntegerTree (length) ;
+         (* Greater or Equal so return max characters in the array.  *)
+         IF Gre (tokenno)
+         THEN
+            (* Create a new string without non nul characters to be gimple safe.
+               But return FALSE indicating an overflow.  *)
+            intLength := GetCstInteger (length) ;
+            srcTree := BuildStringConstant (KeyToCharStar (GetString (src)), intLength) ;
+            srcTree := ConvertString (Mod2Gcc (destStrType), srcTree) ;
+            RETURN FALSE
+         END
       END
    END ;
+   intLength := GetCstInteger (length) ;
+   srcTree := BuildStringConstant (KeyToCharStar (GetString (src)), intLength) ;
+   srcTree := ConvertString (Mod2Gcc (destStrType), srcTree) ;
    RETURN TRUE
 END PrepareCopyString ;
 
@@ -3254,6 +3370,11 @@ BEGIN
       MetaErrorT2 (virtpos,
                    'assignment check caught mismatch between {%1Ead} and {%2ad}',
                    des, expr)
+   END ;
+   IF IsConstString (expr) AND (NOT IsConstStringKnown (expr))
+   THEN
+      MetaErrorT2 (virtpos,
+                   'internal error: CodeBecomes {%1Aad} in quad {%2n}', des, quad)
    END ;
    IF IsConst (des) AND (NOT GccKnowsAbout (des))
    THEN
@@ -3913,6 +4034,18 @@ END IsConstStr ;
 
 
 (*
+   IsConstStrKnown - returns TRUE if sym is a constant string or a char constant
+                     which is known.
+*)
+
+PROCEDURE IsConstStrKnown (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN (IsConstString (sym) AND IsConstStringKnown (sym)) OR
+          (IsConst (sym) AND (GetSType (sym) = Char))
+END IsConstStrKnown ;
+
+
+(*
    GetStr - return a string containing a constant string value associated with sym.
             A nul char constant will return an empty string.
 *)
@@ -3946,15 +4079,18 @@ VAR
 BEGIN
    IF IsConstStr (op2) AND IsConstStr (op3)
    THEN
-      (* Handle special addition for constant strings.  *)
-      s := Dup (GetStr (tokenno, op2)) ;
-      s := ConCat (s, GetStr (tokenno, op3)) ;
-      PutConstString (tokenno, op1, makekey (string (s))) ;
-      TryDeclareConstant (tokenno, op1) ;
-      p (op1) ;
-      NoChange := FALSE ;
-      SubQuad (quad) ;
-      s := KillString (s)
+      IF IsConstStrKnown (op2) AND IsConstStrKnown (op3)
+      THEN
+         (* Handle special addition for constant strings.  *)
+         s := Dup (GetStr (tokenno, op2)) ;
+         s := ConCat (s, GetStr (tokenno, op3)) ;
+         PutConstStringKnown (tokenno, op1, makekey (string (s)), FALSE, TRUE) ;
+         TryDeclareConstant (tokenno, op1) ;
+         p (op1) ;
+         NoChange := FALSE ;
+         SubQuad (quad) ;
+         s := KillString (s)
+      END
    ELSE
       FoldArithAdd (tokenno, p, quad, op1, op2, op3)
    END
@@ -4539,7 +4675,7 @@ BEGIN
             END
          ELSE
             (* rewrite the quad to use becomes.  *)
-            d := GetStringLength (op3) ;
+            d := GetStringLength (tokenno, op3) ;
             s := Sprintf1 (Mark (InitString ("%d")), d) ;
             result := MakeConstLit (tokenno, makekey (string (s)), Cardinal) ;
             s := KillString (s) ;
@@ -4555,7 +4691,7 @@ BEGIN
          (* fine, we can take advantage of this and fold constants *)
          IF IsConst(op1)
          THEN
-            IF (IsConstString(op3) AND (GetStringLength(op3)=1)) OR
+            IF (IsConstString(op3) AND (GetStringLength (tokenno, op3) = 1)) OR
                (GetType(op3)=Char)
             THEN
                AddModGcc(op1, BuildCap(location, Mod2Gcc(op3))) ;
@@ -7514,13 +7650,9 @@ END CodeIndrX ;
 
 
 (*
-------------------------------------------------------------------------------
-   XIndr Operator           *a = b
-------------------------------------------------------------------------------
-   Sym1<I>   XIndr   Sym2<X>     Meaning     Mem[constant]     := Mem[Sym3<I>]
-   Sym1<X>   XIndr   Sym2<X>     Meaning     Mem[Mem[Sym1<I>]] := Mem[Sym3<I>]
-
-   (op2 is the type of the data being indirectly copied)
+   CodeXIndr - operands for XIndrOp are: left type right.
+                *left = right.  The second operand is the type of the data being
+                indirectly copied.
 *)
 
 PROCEDURE CodeXIndr (quad: CARDINAL) ;
@@ -7528,34 +7660,29 @@ VAR
    overflowChecking: BOOLEAN ;
    op              : QuadOperator ;
    tokenno,
-   op1,
+   left,
    type,
-   op3,
-   op1pos,
-   op3pos,
+   right,
+   leftpos,
+   rightpos,
    typepos,
    xindrpos        : CARDINAL ;
    length,
    newstr          : Tree ;
    location        : location_t ;
 BEGIN
-   GetQuadOtok (quad, xindrpos, op, op1, type, op3, overflowChecking,
-                op1pos, typepos, op3pos) ;
-   tokenno := MakeVirtualTok (xindrpos, op1pos, op3pos) ;
+   GetQuadOtok (quad, xindrpos, op, left, type, right, overflowChecking,
+                leftpos, typepos, rightpos) ;
+   tokenno := MakeVirtualTok (xindrpos, leftpos, rightpos) ;
    location := TokenToLocation (tokenno) ;
 
    type := SkipType (type) ;
-   DeclareConstant (op3pos, op3) ;
-   DeclareConstructor (op3pos, quad, op3) ;
-   (*
-      Follow the Quadruple rule:
-
-      Mem[Mem[Op1]] := Mem[Op3]
-   *)
+   DeclareConstant (rightpos, right) ;
+   DeclareConstructor (rightpos, quad, right) ;
    IF IsProcType(SkipType(type))
    THEN
-      BuildAssignmentStatement (location, BuildIndirect (location, Mod2Gcc (op1), GetPointerType ()), Mod2Gcc (op3))
-   ELSIF IsConstString (op3) AND (GetStringLength (op3) = 0) AND (GetMode (op1) = LeftValue)
+      BuildAssignmentStatement (location, BuildIndirect (location, Mod2Gcc (left), GetPointerType ()), Mod2Gcc (right))
+   ELSIF IsConstString (right) AND (GetStringLength (rightpos, right) = 0) AND (GetMode (left) = LeftValue)
    THEN
       (*
          no need to check for type errors,
@@ -7564,25 +7691,25 @@ BEGIN
          contents.
       *)
       BuildAssignmentStatement (location,
-                                BuildIndirect (location, LValueToGenericPtr (location, op1), Mod2Gcc (Char)),
-                                StringToChar (Mod2Gcc (op3), Char, op3))
-   ELSIF IsConstString (op3) AND (SkipTypeAndSubrange (GetType (op1)) # Char)
+                                BuildIndirect (location, LValueToGenericPtr (location, left), Mod2Gcc (Char)),
+                                StringToChar (Mod2Gcc (right), Char, right))
+   ELSIF IsConstString (right) AND (SkipTypeAndSubrange (GetType (left)) # Char)
    THEN
-      IF NOT PrepareCopyString (tokenno, length, newstr, op3, type)
+      IF NOT PrepareCopyString (tokenno, length, newstr, right, type)
       THEN
-         MetaErrorT2 (MakeVirtualTok (xindrpos, op1pos, op3pos),
+         MetaErrorT2 (MakeVirtualTok (xindrpos, leftpos, rightpos),
                       'string constant {%1Ea} is too large to be assigned to the array {%2ad}',
-                      op3, op1)
+                      right, left)
       END ;
       AddStatement (location,
                     MaybeDebugBuiltinMemcpy (location,
-                                             Mod2Gcc (op1),
+                                             Mod2Gcc (left),
                                              BuildAddr (location, newstr, FALSE),
                                              length))
    ELSE
       BuildAssignmentStatement (location,
-                                BuildIndirect (location, Mod2Gcc (op1), Mod2Gcc (type)),
-                                ConvertRHS (Mod2Gcc (op3), type, op3))
+                                BuildIndirect (location, Mod2Gcc (left), Mod2Gcc (type)),
+                                ConvertRHS (Mod2Gcc (right), type, right))
    END
 END CodeXIndr ;
 

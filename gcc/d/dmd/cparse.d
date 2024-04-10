@@ -136,6 +136,23 @@ final class CParser(AST) : Parser!AST
                 return wrap;
             }
 
+            /* GNU Extensions
+             * external-declaration:
+             *    simple-asm-expr ;
+             */
+            if (token.value == TOK.asm_)
+            {
+                nextToken();     // move past asm
+                check(TOK.leftParenthesis);
+                if (token.value != TOK.string_)
+                    error("string literal expected for Asm Definition, not `%s`", token.toChars());
+                auto code = cparsePrimaryExp();
+                check(TOK.rightParenthesis);
+                symbols.push(new AST.CAsmDeclaration(code));
+                check(TOK.semicolon);
+                continue;
+            }
+
             cparseDeclaration(LVL.global);
         }
     }

@@ -1990,54 +1990,6 @@ offset_region::get_relative_symbolic_offset (region_model_manager *mgr
   return get_byte_offset ();
 }
 
-/* Implementation of region::get_byte_size_sval vfunc for offset_region.  */
-
-const svalue *
-offset_region::get_byte_size_sval (region_model_manager *mgr) const
-{
-  tree offset_cst = get_byte_offset ()->maybe_get_constant ();
-  byte_size_t byte_size;
-  /* If the offset points in the middle of the region,
-     return the remaining bytes.  */
-  if (get_byte_size (&byte_size) && offset_cst)
-    {
-      byte_size_t offset = wi::to_offset (offset_cst);
-      byte_range r (0, byte_size);
-      if (r.contains_p (offset))
-	{
-	  tree remaining_byte_size = wide_int_to_tree (size_type_node,
-						       byte_size - offset);
-	  return mgr->get_or_create_constant_svalue (remaining_byte_size);
-	}
-    }
-
-  return region::get_byte_size_sval (mgr);
-}
-
-/* Implementation of region::get_bit_size_sval vfunc for offset_region.  */
-
-const svalue *
-offset_region::get_bit_size_sval (region_model_manager *mgr) const
-{
-  tree offset_cst = get_bit_offset (mgr)->maybe_get_constant ();
-  bit_size_t bit_size;
-  /* If the offset points in the middle of the region,
-     return the remaining bits.  */
-  if (get_bit_size (&bit_size) && offset_cst)
-    {
-      bit_size_t offset = wi::to_offset (offset_cst);
-      bit_range r (0, bit_size);
-      if (r.contains_p (offset))
-	{
-	  tree remaining_bit_size = wide_int_to_tree (size_type_node,
-						       bit_size - offset);
-	  return mgr->get_or_create_constant_svalue (remaining_bit_size);
-	}
-    }
-
-  return region::get_bit_size_sval (mgr);
-}
-
 /* class sized_region : public region.  */
 
 /* Implementation of region::accept vfunc for sized_region.  */

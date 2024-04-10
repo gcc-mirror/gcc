@@ -430,6 +430,9 @@ byte_offset_to_json (const byte_offset_t &offset);
 extern tristate
 compare_constants (tree lhs_const, enum tree_code op, tree rhs_const);
 
+extern tree
+get_string_cst_size (const_tree string_cst);
+
 } // namespace ana
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,

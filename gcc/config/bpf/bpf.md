@@ -292,7 +292,7 @@
   "@
    {and\t%0,0xff|%0 &= 0xff}
    {mov\t%0,%1\;and\t%0,0xff|%0 = %1;%0 &= 0xff}
-   {ldxh\t%0,%1|%0 = *(u8 *) (%1)}"
+   {ldxb\t%0,%1|%0 = *(u8 *) (%1)}"
   [(set_attr "type" "alu,alu,ldx")])
 
 (define_insn "zero_extendsidi2"

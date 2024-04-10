@@ -3107,7 +3107,7 @@
 	(any_ge:GPR (match_operand:X 1 "register_operand" " r")
 		    (const_int 1)))]
   ""
-  "slt%i2<u>\t%0,zero,%1"
+  "slti<u>\t%0,zero,%1"
   [(set_attr "type" "slt")
    (set_attr "mode" "<X:MODE>")])
 

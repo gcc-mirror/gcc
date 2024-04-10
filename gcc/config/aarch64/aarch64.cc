@@ -2659,6 +2659,27 @@ aarch64_gen_compare_zero_and_branch (rtx_code code, rtx x,
   return gen_rtx_SET (pc_rtx, x);
 }
 
+/* Return an rtx that branches to LABEL based on the value of bit BITNUM of X.
+   If CODE is NE, it branches to LABEL when the bit is set; if CODE is EQ,
+   it branches to LABEL when the bit is clear.  */
+
+static rtx
+aarch64_gen_test_and_branch (rtx_code code, rtx x, int bitnum,
+			     rtx_code_label *label)
+{
+  auto mode = GET_MODE (x);
+  if (aarch64_track_speculation)
+    {
+      auto mask = gen_int_mode (HOST_WIDE_INT_1U << bitnum, mode);
+      emit_insn (gen_aarch64_and3nr_compare0 (mode, x, mask));
+      rtx cc_reg = gen_rtx_REG (CC_NZVmode, CC_REGNUM);
+      rtx x = gen_rtx_fmt_ee (code, CC_NZVmode, cc_reg, const0_rtx);
+      return gen_condjump (x, cc_reg, label);
+    }
+  return gen_aarch64_tb (code, mode, mode,
+			 x, gen_int_mode (bitnum, mode), label);
+}
+
 /* Consider the operation:
 
      OPERANDS[0] = CODE (OPERANDS[1], OPERANDS[2]) + OPERANDS[3]
@@ -4881,8 +4902,9 @@ aarch64_guard_switch_pstate_sm (rtx old_svcr, aarch64_feature_flags local_mode)
   gcc_assert (local_mode != 0);
   auto already_ok_cond = (local_mode & AARCH64_FL_SM_ON ? NE : EQ);
   auto *label = gen_label_rtx ();
-  auto *jump = emit_jump_insn (gen_aarch64_tb (already_ok_cond, DImode, DImode,
-					       old_svcr, const0_rtx, label));
+  auto branch = aarch64_gen_test_and_branch (already_ok_cond, old_svcr, 0,
+					     label);
+  auto *jump = emit_jump_insn (branch);
   JUMP_LABEL (jump) = label;
   return label;
 }
@@ -6312,8 +6334,10 @@ aarch64_function_ok_for_sibcall (tree, tree exp)
   tree fntype = TREE_TYPE (TREE_TYPE (CALL_EXPR_FN (exp)));
   if (aarch64_fntype_pstate_sm (fntype) & ~aarch64_cfun_incoming_pstate_sm ())
     return false;
-  if (aarch64_fntype_pstate_za (fntype) != aarch64_cfun_incoming_pstate_za ())
-    return false;
+  for (auto state : { "za", "zt0" })
+    if (bool (aarch64_cfun_shared_flags (state))
+	!= bool (aarch64_fntype_shared_flags (fntype, state)))
+      return false;
   return true;
 }
 
@@ -9501,7 +9525,9 @@ aarch64_expand_prologue (void)
   if (aarch64_cfun_enables_pstate_sm ())
     force_isa_mode = AARCH64_FL_SM_ON;
 
-  if (flag_stack_clash_protection && known_eq (callee_adjust, 0))
+  if (flag_stack_clash_protection
+      && known_eq (callee_adjust, 0)
+      && known_lt (frame.reg_offset[VG_REGNUM], 0))
     {
       /* Fold the SVE allocation into the initial allocation.
 	 We don't do this in aarch64_layout_arg to avoid pessimizing
@@ -9629,7 +9655,10 @@ aarch64_expand_prologue (void)
   if (maybe_ne (sve_callee_adjust, 0))
     {
       gcc_assert (!flag_stack_clash_protection
-		  || known_eq (initial_adjust, 0));
+		  || known_eq (initial_adjust, 0)
+		  /* The VG save isn't shrink-wrapped and so serves as
+		     a probe of the initial allocation.  */
+		  || known_eq (frame.reg_offset[VG_REGNUM], bytes_below_sp));
       aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx,
 					      sve_callee_adjust,
 					      force_isa_mode,
@@ -19514,7 +19543,6 @@ aarch64_option_valid_attribute_p (tree fndecl, tree, tree args, int)
 			      TREE_TARGET_OPTION (target_option_current_node));
 
   ret = aarch64_process_target_attr (args);
-  ret = aarch64_process_target_attr (args);
   if (ret)
     {
       tree version_attr = lookup_attribute ("target_version",
@@ -29311,13 +29339,25 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
 	     bl __arm_tpidr2_save
 	     msr tpidr2_el0, xzr
 	     zero { za }       // Only if ZA is live
+	     zero { zt0 }      // Only if ZT0 is live
 	 no_save:  */
-      bool is_active = (mode == aarch64_local_sme_state::ACTIVE_LIVE
-			|| mode == aarch64_local_sme_state::ACTIVE_DEAD);
       auto tmp_reg = gen_reg_rtx (DImode);
-      auto active_flag = gen_int_mode (is_active, DImode);
       emit_insn (gen_aarch64_read_tpidr2 (tmp_reg));
-      emit_insn (gen_aarch64_commit_lazy_save (tmp_reg, active_flag));
+      auto label = gen_label_rtx ();
+      rtx branch = aarch64_gen_compare_zero_and_branch (EQ, tmp_reg, label);
+      auto jump = emit_jump_insn (branch);
+      JUMP_LABEL (jump) = label;
+      emit_insn (gen_aarch64_tpidr2_save ());
+      emit_insn (gen_aarch64_clear_tpidr2 ());
+      if (mode == aarch64_local_sme_state::ACTIVE_LIVE
+	  || mode == aarch64_local_sme_state::ACTIVE_DEAD)
+	{
+	  if (aarch64_cfun_has_state ("za"))
+	    emit_insn (gen_aarch64_initial_zero_za ());
+	  if (aarch64_cfun_has_state ("zt0"))
+	    emit_insn (gen_aarch64_sme_zero_zt0 ());
+	}
+      emit_label (label);
     }
 
   if (mode == aarch64_local_sme_state::ACTIVE_LIVE
@@ -29491,6 +29531,8 @@ aarch64_mode_emit (int entity, int mode, int prev_mode, HARD_REG_SET live)
   HARD_REG_SET clobbers = {};
   for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
     {
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
       vec_rtx_properties properties;
       properties.add_insn (insn, false);
       for (rtx_obj_reference ref : properties.refs ())

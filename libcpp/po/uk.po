@@ -3,13 +3,13 @@
 # This file is distributed under the same license as the gcc package.
 #
 # Maxim V. Dziumanenko <dziumanenko@gmail.com>, 2007.
-# Yuri Chornoivan <yurchor@ukr.net>, 2012-2021, 2022, 2023.
+# Yuri Chornoivan <yurchor@ukr.net>, 2012-2021, 2022, 2023, 2024.
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 13.1-b20230212\n"
+"Project-Id-Version: cpplib 14.1-b20240218\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2023-02-10 22:39+0000\n"
-"PO-Revision-Date: 2023-02-22 12:54+0200\n"
+"POT-Creation-Date: 2024-02-16 21:34+0000\n"
+"PO-Revision-Date: 2024-02-19 18:51+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
@@ -18,233 +18,255 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Lokalize 20.12.0\n"
+"X-Generator: Lokalize 23.04.1\n"
 
-#: charset.cc:683
+#: charset.cc:759
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr "перетворення з %s у %s не підтримується iconv"
 
-#: charset.cc:686
+#: charset.cc:762
 msgid "iconv_open"
 msgstr "iconv_open"
 
-#: charset.cc:696
+#: charset.cc:772
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "не реалізовано у iconv, не вдається перетворити з %s на %s"
 
-#: charset.cc:794
+#: charset.cc:870
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr "символ 0x%lx відсутній у базовому первинному наборі символів\n"
 
-#: charset.cc:811 charset.cc:2420
+#: charset.cc:887 charset.cc:2574
 msgid "converting to execution character set"
 msgstr "перетворення на виконуваний набір символів"
 
-#: charset.cc:817
+#: charset.cc:893
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr "символ 0x%lx не однобайтовий у виконуваному наборі символів"
 
-#: charset.cc:1437
+#: charset.cc:1549
 msgid "universal character names are only valid in C++ and C99"
 msgstr "універсальні назви символів допустимі лише у C++ та C99"
 
-#: charset.cc:1441
+#: charset.cc:1553
 msgid "C99's universal character names are incompatible with C90"
 msgstr "універсальні назви символів C99 є несумісними із C90"
 
-#: charset.cc:1444
+#: charset.cc:1556
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr "сенс '\\%c' відрізняється від традиційної мови C"
 
-#: charset.cc:1483
+#: charset.cc:1595
 msgid "'\\N' not followed by '{'"
 msgstr "Після «\\N» немає «{»"
 
-#: charset.cc:1513
+#: charset.cc:1625
 msgid "empty named universal character escape sequence; treating it as separate tokens"
 msgstr "порожня іменована керівна послідовність універсальних символів; обробляємо її як окремі елементи"
 
-#: charset.cc:1520
+#: charset.cc:1632
 msgid "empty named universal character escape sequence"
 msgstr "порожня іменована керівна послідовність універсальних символів"
 
-#: charset.cc:1525
+#: charset.cc:1637
 msgid "named universal character escapes are only valid in C++23"
 msgstr "іменовані керівні послідовності універсальних символів є чинними лише у C++23"
 
-#: charset.cc:1545
+#: charset.cc:1657
 #, c-format
 msgid "\\N{%.*s} is not a valid universal character; treating it as separate tokens"
 msgstr "\\N{%.*s} не є допустимим універсальним символом; обробляємо його як окремі елементи"
 
-#: charset.cc:1551
+#: charset.cc:1663
 #, c-format
 msgid "\\N{%.*s} is not a valid universal character"
 msgstr "\\N{%.*s} не є допустимим універсальним символом"
 
-#: charset.cc:1561
+#: charset.cc:1673
 #, c-format
 msgid "did you mean \\N{%s}?"
 msgstr "ви мали на увазі \\N{%s}?"
 
-#: charset.cc:1579
+#: charset.cc:1691
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr "«\\N{» не завершено «}» після %.*s; обробляємо його як окремі елементи"
 
-#: charset.cc:1588
+#: charset.cc:1700
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s"
 msgstr "«\\N{» не завершено «}» після %.*s"
 
-#: charset.cc:1596
+#: charset.cc:1708
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr "У _cpp_valid_ucn але не UCN"
 
-#: charset.cc:1638
+#: charset.cc:1750
 msgid "empty delimited escape sequence; treating it as separate tokens"
 msgstr "порожня обмежена керівна послідовність; обробляємо її як окремі елементи"
 
-#: charset.cc:1645 charset.cc:1978 charset.cc:2081
+#: charset.cc:1757 charset.cc:2124 charset.cc:2227
 msgid "empty delimited escape sequence"
 msgstr "порожня обмежена керівна послідовність"
 
-#: charset.cc:1649 charset.cc:1984 charset.cc:2087
+#: charset.cc:1761 charset.cc:2130 charset.cc:2233
 msgid "delimited escape sequences are only valid in C++23"
 msgstr "обмежені керівні послідовності є коректними лише у C++23"
 
-#: charset.cc:1663
+#: charset.cc:1775
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr "«\\u{» не завершено «}» після %.*s; обробляємо його як окремі елементи"
 
-#: charset.cc:1675
+#: charset.cc:1787
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr "неповна універсальна назва символу %.*s"
 
-#: charset.cc:1679
+#: charset.cc:1791
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s"
 msgstr "«\\u{» не завершено «}» після %.*s"
 
-#: charset.cc:1694
+#: charset.cc:1806
 #, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "%.*s не є допустимим універсальним символом"
 
-#: charset.cc:1704 lex.cc:2079
+#: charset.cc:1816 lex.cc:2082
 msgid "'$' in identifier or number"
 msgstr "'$' у ідентифікаторі чи числі"
 
-#: charset.cc:1714
+#: charset.cc:1826
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "універсальний символ %.*s не є допустимим у ідентифікаторі"
 
-#: charset.cc:1718
+#: charset.cc:1830
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "універсальний символ %.*s не є допустимим на початку ідентифікатора"
 
-#: charset.cc:1725
+#: charset.cc:1837
 #, c-format
 msgid "%.*s is outside the UCS codespace"
 msgstr "%.*s поза простором кодування UCS"
 
-#: charset.cc:1769 charset.cc:2797
+#: charset.cc:1881 charset.cc:3037
 msgid "converting UCN to source character set"
 msgstr "перетворення UCN на первинний набір символів"
 
-#: charset.cc:1776
+#: charset.cc:1888
 msgid "converting UCN to execution character set"
 msgstr "перетворення UCN на виконуваний набір символів"
 
-#: charset.cc:1840
+#: charset.cc:1952
 #, c-format
 msgid "extended character %.*s is not valid in an identifier"
 msgstr "розширений символ %.*s не є допустимим у ідентифікаторі"
 
-#: charset.cc:1857
+#: charset.cc:1969
 #, c-format
 msgid "extended character %.*s is not valid at the start of an identifier"
 msgstr "розширений символ %.*s не є допустимим на початку ідентифікатора"
 
-#: charset.cc:1945
+#: charset.cc:2091
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr "сенс '\\x' відрізняється від традиційної мови C"
 
-#: charset.cc:1992
+#: charset.cc:2138
 msgid "\\x used with no following hex digits"
 msgstr "\\x використовується з наступними шістнадцятковими цифрами"
 
-#: charset.cc:1998
+#: charset.cc:2144
 #, c-format
 msgid "'\\x{' not terminated with '}' after %.*s"
 msgstr "«\\x{» не завершено «}» після %.*s"
 
-#: charset.cc:2006
+#: charset.cc:2152
 msgid "hex escape sequence out of range"
 msgstr "шістнадцяткова escape-послідовність поза межами діапазону"
 
-#: charset.cc:2049
+#: charset.cc:2195
 msgid "'\\o' not followed by '{'"
 msgstr "Після «\\o» немає «{»"
 
-#: charset.cc:2093
+#: charset.cc:2239
 #, c-format
 msgid "'\\o{' not terminated with '}' after %.*s"
 msgstr "«\\o{» не завершено «}» після %.*s"
 
-#: charset.cc:2102
+#: charset.cc:2248
 msgid "octal escape sequence out of range"
 msgstr "вісімкова escape-послідовність поза межами діапазону"
 
-#: charset.cc:2184
+#: charset.cc:2300 charset.cc:2310
+#, c-format
+msgid "numeric escape sequence in unevaluated string: '\\%c'"
+msgstr "числова екранована послідовність у необчисленому рядку: «\\%c»"
+
+#: charset.cc:2338
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr "сенс '\\a' відрізняється від традиційної мови C"
 
-#: charset.cc:2191
+#: charset.cc:2345
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr "escape-послідовність не за стандартом ISO, '\\%c'"
 
-#: charset.cc:2199
+#: charset.cc:2353
 #, c-format
 msgid "unknown escape sequence: '\\%c'"
 msgstr "невідома керівна послідовність: '\\%c'"
 
-#: charset.cc:2209
+#: charset.cc:2363
 #, c-format
 msgid "unknown escape sequence: '\\%s'"
 msgstr "Невідома escape-послідовність: '\\%s'"
 
-#: charset.cc:2217
+#: charset.cc:2371
 msgid "converting escape sequence to execution character set"
 msgstr "escape-послідовність перетворюється на виконуваний набір символів"
 
-#: charset.cc:2357
+#: charset.cc:2511
 msgid "missing open quote"
 msgstr "пропущено початкові лапки"
 
-#: charset.cc:2575 charset.cc:2658
-msgid "character constant too long for its type"
-msgstr "символьна константа надто довга для вказаного типу"
+#: charset.cc:2772
+msgid "character not encodable in a single execution character code unit"
+msgstr "символ не є кодованим у один виконуваний символьний модуль коду"
 
-#: charset.cc:2578
+#: charset.cc:2777
+msgid "at least one character in a multi-character literal not encodable in a single execution character code unit"
+msgstr "принаймні один символ у багатосимвольному літералі не є кодованим у один виконуваний символьний модуль коду"
+
+#: charset.cc:2795
+#, c-format
+msgid "multi-character literal with %ld characters exceeds 'int' size of %ld bytes"
+msgstr "багатосимвольний літерал з %ld символів перевищує розмір «int» у %ld байтів"
+
+#: charset.cc:2799 charset.cc:2894
+msgid "multi-character literal cannot have an encoding prefix"
+msgstr "багатосимвольний літерал не може мати префікса кодування"
+
+#: charset.cc:2802 charset.cc:2897
+msgid "character not encodable in a single code unit"
+msgstr "символ не можна закодувати до одного модуля коду"
+
+#: charset.cc:2806
 msgid "multi-character character constant"
 msgstr "багатосимвольна символьна константа"
 
-#: charset.cc:2698
+#: charset.cc:2938
 msgid "empty character constant"
 msgstr "порожня символьна константа"
 
-#: charset.cc:2882
+#: charset.cc:3122
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr "помилка при перетворені %s на %s"
@@ -259,15 +281,15 @@ msgstr "зайві лексеми наприкінці директиви #%s"
 msgid "#%s is a GCC extension"
 msgstr "#%s є розширенням GCC"
 
-#: directives.cc:394 directives.cc:2152 directives.cc:2191
+#: directives.cc:394 directives.cc:2163 directives.cc:2202
 #, c-format
 msgid "#%s before C++23 is a GCC extension"
 msgstr "#%s до C++23 є розширенням GCC"
 
-#: directives.cc:397 directives.cc:401 directives.cc:2156 directives.cc:2195
+#: directives.cc:397 directives.cc:401 directives.cc:2167 directives.cc:2206
 #, c-format
-msgid "#%s before C2X is a GCC extension"
-msgstr "#%s перед C2X є розширенням GCC"
+msgid "#%s before C23 is a GCC extension"
+msgstr "#%s до C23 є розширенням GCC"
 
 #: directives.cc:407
 #, c-format
@@ -325,202 +347,202 @@ msgstr "не вказаний макрос у директиві #%s"
 msgid "macro names must be identifiers"
 msgstr "назви макросів повинні бути ідентифікаторами"
 
-#: directives.cc:694 directives.cc:699
+#: directives.cc:698 directives.cc:702
 #, c-format
 msgid "undefining \"%s\""
 msgstr "скасовується визначення \"%s\""
 
-#: directives.cc:756
+#: directives.cc:759
 msgid "missing terminating > character"
 msgstr "відсутній завершальний символ >"
 
-#: directives.cc:815
+#: directives.cc:818
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr "#%s очікує \"FILENAME\" або <FILENAME>"
 
-#: directives.cc:861
+#: directives.cc:864
 #, c-format
 msgid "empty filename in #%s"
 msgstr "порожня назва файлу у #%s"
 
-#: directives.cc:870
+#: directives.cc:873
 #, c-format
 msgid "#include nested depth %u exceeds maximum of %u (use -fmax-include-depth=DEPTH to increase the maximum)"
 msgstr "глибина вкладеності #include, %u, перевищує максимальну дозволену — %u (скористайтеся -fmax-include-depth=ГЛИБИНА, щоб збільшити максимум)"
 
-#: directives.cc:915
+#: directives.cc:918
 msgid "#include_next in primary source file"
 msgstr "#include_next у первинному файлі тексту програми"
 
-#: directives.cc:941
+#: directives.cc:944
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr "некоректна ознака \"%s\" у директиві line"
 
-#: directives.cc:1008
+#: directives.cc:1011
 msgid "unexpected end of file after #line"
 msgstr "неочікуване завершення файла після #line"
 
-#: directives.cc:1011
+#: directives.cc:1014
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr "\"%s\" після #line не є додатнім цілим числом"
 
-#: directives.cc:1017 directives.cc:1019
+#: directives.cc:1020 directives.cc:1022
 msgid "line number out of range"
 msgstr "номер рядка за межами діапазону"
 
-#: directives.cc:1032 directives.cc:1113
+#: directives.cc:1035 directives.cc:1116
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr "\"%s\" не є коректною назвою файлу"
 
-#: directives.cc:1073
+#: directives.cc:1076
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr "\"%s\" після # не є додатнім цілим числом"
 
-#: directives.cc:1140
+#: directives.cc:1143
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgstr "засіб позначення рядків файла «%s» проігноровано через некоректну вкладеність"
 
-#: directives.cc:1218 directives.cc:1220 directives.cc:1222 directives.cc:1810
+#: directives.cc:1221 directives.cc:1223 directives.cc:1225 directives.cc:1816
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.cc:1246
+#: directives.cc:1249
 #, c-format
 msgid "invalid #%s directive"
 msgstr "некоректна директива #%s"
 
-#: directives.cc:1309
+#: directives.cc:1312
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr "прагми реєструються у просторі назв \"%s\" за відсутності розширення назв"
 
-#: directives.cc:1318
+#: directives.cc:1321
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr "прагма \"%s\" реєструється з розширенням назви але без простору назви"
 
-#: directives.cc:1336
+#: directives.cc:1339
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr "\"%s\" реєструється як прагма та як простір назв прагм"
 
-#: directives.cc:1339
+#: directives.cc:1342
 #, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "#pragma %s %s вже зареєстровано"
 
-#: directives.cc:1342
+#: directives.cc:1345
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr "#pragma %s вже зареєстровано"
 
-#: directives.cc:1372
+#: directives.cc:1375
 msgid "registering pragma with NULL handler"
 msgstr "реєструється pragma з NULL-обробником"
 
-#: directives.cc:1589
+#: directives.cc:1592
 msgid "#pragma once in main file"
 msgstr "#pragma один раз у головному файлі"
 
-#: directives.cc:1612
+#: directives.cc:1615
 msgid "invalid #pragma push_macro directive"
 msgstr "некоректна директива #pragma push_macro"
 
-#: directives.cc:1669
+#: directives.cc:1672
 msgid "invalid #pragma pop_macro directive"
 msgstr "некоректна директива #pragma pop_macro"
 
-#: directives.cc:1724
+#: directives.cc:1727
 msgid "invalid #pragma GCC poison directive"
 msgstr "некоректна директива #pragma GCC poison"
 
-#: directives.cc:1733
+#: directives.cc:1736
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr "використання отруєння (poisoning) вже створеного макроса \"%s\""
 
-#: directives.cc:1752
+#: directives.cc:1758
 msgid "#pragma system_header ignored outside include file"
 msgstr "#pragma system_header проігноровано за межами включеного файлу"
 
-#: directives.cc:1777
+#: directives.cc:1783
 #, c-format
 msgid "cannot find source file %s"
 msgstr "не вдається знайти первинний файл %s"
 
-#: directives.cc:1781
+#: directives.cc:1787
 #, c-format
 msgid "current file is older than %s"
 msgstr "поточний файл старіший ніж %s"
 
-#: directives.cc:1805
+#: directives.cc:1811
 #, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "некоректна директива «#pragma GCC %s»"
 
-#: directives.cc:2008
+#: directives.cc:2019
 msgid "_Pragma takes a parenthesized string literal"
 msgstr "_Pragma охоплює дужками символьний літерал"
 
-#: directives.cc:2091
+#: directives.cc:2102
 msgid "#else without #if"
 msgstr "#else без #if"
 
-#: directives.cc:2096
+#: directives.cc:2107
 msgid "#else after #else"
 msgstr "#else після #else"
 
-#: directives.cc:2098 directives.cc:2132
+#: directives.cc:2109 directives.cc:2143
 msgid "the conditional began here"
 msgstr "умова починається тут"
 
-#: directives.cc:2124
+#: directives.cc:2135
 #, c-format
 msgid "#%s without #if"
 msgstr "#%s без #if"
 
-#: directives.cc:2129
+#: directives.cc:2140
 #, c-format
 msgid "#%s after #else"
 msgstr "#%s після #else"
 
-#: directives.cc:2231
+#: directives.cc:2242
 msgid "#endif without #if"
 msgstr "#endif без #if"
 
-#: directives.cc:2307
+#: directives.cc:2318
 msgid "missing '(' after predicate"
 msgstr "відсутня '(' після предикату"
 
-#: directives.cc:2325
+#: directives.cc:2336
 msgid "missing ')' to complete answer"
 msgstr "відсутня ')' для завершення відповіді"
 
-#: directives.cc:2337
+#: directives.cc:2348
 msgid "predicate's answer is empty"
 msgstr "відповідь предиката порожня"
 
-#: directives.cc:2367
+#: directives.cc:2378
 msgid "assertion without predicate"
 msgstr "твердження без предиката"
 
-#: directives.cc:2370
+#: directives.cc:2381
 msgid "predicate must be an identifier"
 msgstr "предикат має бути ідентифікатором"
 
-#: directives.cc:2452
+#: directives.cc:2463
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr "\"%s\" повторне ствердження"
 
-#: directives.cc:2770
+#: directives.cc:2781
 #, c-format
 msgid "unterminated #%s"
 msgstr "незавершене #%s"
@@ -534,246 +556,250 @@ msgstr "%s: %s"
 msgid "stdout"
 msgstr "stdout"
 
-#: expr.cc:646 expr.cc:763
+#: expr.cc:667 expr.cc:784
 msgid "fixed-point constants are a GCC extension"
 msgstr "константи з фіксованим розташуванням крапки є розширенням GCC"
 
-#: expr.cc:671
+#: expr.cc:692
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "некоректний префікс \"0b\" для константи з рухомою крапкою"
 
-#: expr.cc:684
+#: expr.cc:705
 msgid "use of C++17 hexadecimal floating constant"
 msgstr "використовуйте десятково-шістнадцяткову константу із рухомою крапкою стандарту C++17"
 
-#: expr.cc:687
+#: expr.cc:708
 msgid "use of C99 hexadecimal floating constant"
 msgstr "використовуйте десятково-шістнадцяткову константу з рухомою крапкою мови C99"
 
-#: expr.cc:731
+#: expr.cc:752
 #, c-format
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "некоректний суфікс \"%.*s\" у константі з плаваючою комою"
 
-#: expr.cc:742 expr.cc:809
+#: expr.cc:763 expr.cc:830
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr "традиційною мовою C не сприймається суфікс \"%.*s\""
 
-#: expr.cc:750
+#: expr.cc:771
 msgid "suffix for double constant is a GCC extension"
 msgstr "суфікс для констант double є розширенням GCC"
 
-#: expr.cc:756
+#: expr.cc:777
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr "некоректний суфікс \"%.*s\" з десятково-шістнадцятковою константою з плаваючою комою"
 
-#: expr.cc:769 expr.cc:773
-msgid "decimal float constants are a C2X feature"
-msgstr "десяткові константи з рухомою крапкою є можливістю C2X"
+#: expr.cc:790 expr.cc:794
+msgid "decimal float constants are a C23 feature"
+msgstr "десяткові константи з рухомою крапкою є можливістю C23"
 
-#: expr.cc:792
+#: expr.cc:813
 #, c-format
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "некоректний суфікс \"%.*s\" у цілій константі"
 
-#: expr.cc:817
+#: expr.cc:838
 msgid "use of C++11 long long integer constant"
 msgstr "використання цілої константи long long C++11"
 
-#: expr.cc:818
+#: expr.cc:839
 msgid "use of C99 long long integer constant"
 msgstr "використання цілої константи long long з C99"
 
-#: expr.cc:832
+#: expr.cc:853
 msgid "use of C++23 %<size_t%> integer constant"
 msgstr "використання цілої сталої C++23 %<size_t%>"
 
-#: expr.cc:833
+#: expr.cc:854
 msgid "use of C++23 %<make_signed_t<size_t>%> integer constant"
 msgstr "використання цілої сталої C++23 %<make_signed_t<size_t>%>"
 
-#: expr.cc:844
+#: expr.cc:864 expr.cc:875
+msgid "ISO C does not support literal %<wb%> suffixes before C23"
+msgstr "У ISO C не передбачено підтримки суфіксів літералів %<wb%> до версії C23"
+
+#: expr.cc:888
 msgid "imaginary constants are a GCC extension"
 msgstr "уявні константи є розширенням GCC"
 
-#: expr.cc:851
+#: expr.cc:895
 msgid "binary constants are a C++14 feature or GCC extension"
 msgstr "бінарні константи є можливістю C++14 або розширенням GCC"
 
-#: expr.cc:853
-msgid "binary constants are a C2X feature or GCC extension"
-msgstr "бінарні константи є можливістю C2X або розширенням GCC"
+#: expr.cc:897
+msgid "binary constants are a C23 feature or GCC extension"
+msgstr "бінарні константи є можливістю C23 або розширенням GCC"
 
-#: expr.cc:858
-msgid "binary constants are a C2X feature"
-msgstr "двійкові константи є можливістю C2X"
+#: expr.cc:902
+msgid "binary constants are a C23 feature"
+msgstr "двійкові константи є можливістю C23"
 
-#: expr.cc:954
+#: expr.cc:998
 msgid "integer constant is too large for its type"
 msgstr "ціла константа надто велика для вказаного типу"
 
-#: expr.cc:985
+#: expr.cc:1029
 msgid "integer constant is so large that it is unsigned"
 msgstr "ціла константа така велика, що вона не матиме знаку"
 
-#: expr.cc:1080
+#: expr.cc:1124
 msgid "missing ')' after \"defined\""
 msgstr "відсутня ')' після \"defined\""
 
-#: expr.cc:1087
+#: expr.cc:1131
 msgid "operator \"defined\" requires an identifier"
 msgstr "для оператора \"defined\" потрібен ідентифікатор"
 
-#: expr.cc:1095
+#: expr.cc:1139
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr "(\"%s\" - альтернативна лексема для \"%s\" у C++)"
 
-#: expr.cc:1108
+#: expr.cc:1152
 msgid "this use of \"defined\" may not be portable"
 msgstr "використання \"defined\" може бути непереносимим"
 
-#: expr.cc:1153
+#: expr.cc:1197
 msgid "user-defined literal in preprocessor expression"
 msgstr "буквальне визначення користувача у виразі для препроцесора"
 
-#: expr.cc:1158
+#: expr.cc:1202
 msgid "floating constant in preprocessor expression"
 msgstr "константа з плаваючою комою у виразі препроцесора"
 
-#: expr.cc:1164
+#: expr.cc:1208
 msgid "imaginary number in preprocessor expression"
 msgstr "уявне число у виразі препроцесора"
 
-#: expr.cc:1213
+#: expr.cc:1257
 #, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
 msgstr "\"%s\" не визначено, приймаємо значення 0"
 
-#: expr.cc:1226
+#: expr.cc:1270
 msgid "assertions are a GCC extension"
 msgstr "assertions є розширенням GCC"
 
-#: expr.cc:1229
+#: expr.cc:1273
 msgid "assertions are a deprecated extension"
 msgstr "розширення assertions вважається застарілим"
 
-#: expr.cc:1479
+#: expr.cc:1523
 #, c-format
 msgid "unbalanced stack in %s"
 msgstr "незбалансований стек у %s"
 
-#: expr.cc:1499
+#: expr.cc:1543
 #, c-format
 msgid "impossible operator '%u'"
 msgstr "неможливий оператор '%u'"
 
-#: expr.cc:1600
+#: expr.cc:1644
 msgid "missing ')' in expression"
 msgstr "відсутня ')' у виразі"
 
-#: expr.cc:1629
+#: expr.cc:1673
 msgid "'?' without following ':'"
 msgstr "'?' без наступного ':'"
 
-#: expr.cc:1639
+#: expr.cc:1683
 msgid "integer overflow in preprocessor expression"
 msgstr "переповнення цілого числа у виразі препроцесора"
 
-#: expr.cc:1644
+#: expr.cc:1688
 msgid "missing '(' in expression"
 msgstr "відсутня '(' у виразі"
 
-#: expr.cc:1676
+#: expr.cc:1720
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr "лівий операнд \"%s\" змінює знак при підвищенні"
 
-#: expr.cc:1681
+#: expr.cc:1725
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr "правий оператор \"%s\" змінює знак при підвищенні"
 
-#: expr.cc:1940
+#: expr.cc:1984
 msgid "traditional C rejects the unary plus operator"
 msgstr "у традиційній мові C не допускається унарний оператор плюс"
 
-#: expr.cc:2038
+#: expr.cc:2082
 msgid "comma operator in operand of #if"
 msgstr "оператор кома у операнді #if"
 
-#: expr.cc:2174
+#: expr.cc:2218
 msgid "division by zero in #if"
 msgstr "ділення на нуль у #if"
 
-#: files.cc:516
+#: files.cc:520
 msgid "NULL directory in find_file"
 msgstr "значення каталогу NULL у find_file"
 
-#: files.cc:570
+#: files.cc:583
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "знайдено один або більше файлів PCH, але вони некоректні"
 
-#: files.cc:574
+#: files.cc:587
 msgid "use -Winvalid-pch for more information"
 msgstr "докладніша інформація виводиться, якщо вказати -Winvalid-pch"
 
-#: files.cc:688
+#: files.cc:703
 #, c-format
 msgid "%s is a block device"
 msgstr "%s є блочним пристроєм"
 
-#: files.cc:707
+#: files.cc:722
 #, c-format
 msgid "%s is too large"
 msgstr "%s надто великий"
 
-#: files.cc:748
+#: files.cc:763
 #, c-format
 msgid "%s is shorter than expected"
 msgstr "%s коротший ніж очікувалося"
 
-#: files.cc:1060
+#: files.cc:1075
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr "відсутні шлях включення у якому ведеться пошук для %s"
 
-#: files.cc:1578
+#: files.cc:1598
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Декілька include guards можуть бути корисні для:\n"
 
-#: init.cc:631
+#: init.cc:638
 msgid "cppchar_t must be an unsigned type"
 msgstr "cppchar_t має бути беззнакового типу"
 
-#: init.cc:635
+#: init.cc:642
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "арифметика препроцесора має максимальну точність %lu біт; ціль вимагає %lu біт"
 
-#: init.cc:642
+#: init.cc:649
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr "арифметика CPP повинна мати принаймні таку ж точність я у цільового цілого числа"
 
-#: init.cc:645
+#: init.cc:652
 msgid "target char is less than 8 bits wide"
 msgstr "ширина цільового типу char менша за 8 біт"
 
-#: init.cc:649
+#: init.cc:656
 msgid "target wchar_t is narrower than target char"
 msgstr "цільовий wchar_t є вужчим за цільовий char"
 
-#: init.cc:653
+#: init.cc:660
 msgid "target int is narrower than target char"
 msgstr "цільовий тип int є вужчим ніж цільовий char"
 
-#: init.cc:658
+#: init.cc:665
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP half-integer є вужчим за CPP character"
 
-#: init.cc:662
+#: init.cc:669
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP на цьому вузлі не може обробляти константи з символів шириною понад %lu біт, але для цілі вимагається %lu біт"
@@ -866,114 +892,118 @@ msgstr "`%.*s' не у NFKC"
 msgid "`%.*s' is not in NFC"
 msgstr "`%.*s' не у NFC"
 
-#: lex.cc:2141
+#: lex.cc:2144
 msgid "__VA_OPT__ is not available until C++20"
 msgstr "__VA_OPT__ є недоступним до C++20"
 
-#: lex.cc:2144
-msgid "__VA_OPT__ is not available until C2X"
-msgstr "__VA_OPT__ є недоступним до C2X"
+#: lex.cc:2147
+msgid "__VA_OPT__ is not available until C23"
+msgstr "__VA_OPT__ є недоступним до C23"
 
-#: lex.cc:2152
+#: lex.cc:2155
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
 msgstr "__VA_OPT__ може з'являтися лише у розширенні варіативних макросів зі стандарту C++20"
 
-#: lex.cc:2183 lex.cc:2279
+#: lex.cc:2172
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr "спроба використати отруєного (poisoned) \"%s\""
 
-#: lex.cc:2193 lex.cc:2289
+#: lex.cc:2177
+msgid "poisoned here"
+msgstr "отруєно тут"
+
+#: lex.cc:2187
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr "__VA_ARGS__ може з'являтися лише у розширенні варіативних макросів з мови C++11"
 
-#: lex.cc:2197 lex.cc:2293
+#: lex.cc:2191
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr "__VA_ARGS__ може з'являтися лише у розширенні варіативних макросів з мови C99"
 
-#: lex.cc:2207 lex.cc:2305
+#: lex.cc:2203
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr "ідентифікатор \"%s\" є особливою назвою оператора у C++"
 
-#: lex.cc:2345
+#: lex.cc:2372
 msgid "adjacent digit separators"
 msgstr "сусідні роздільники цифр"
 
-#: lex.cc:2665
+#: lex.cc:2521
+msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
+msgstr "некоректний суфікс у літералі; стандарт C++11 вимагає використання пробілу між літералом та рядком макроса"
+
+#: lex.cc:2729
 msgid "raw string delimiter longer than 16 characters"
 msgstr "роздільник необроблених рядків довжиною, що перевищує 16 символів"
 
-#: lex.cc:2669
+#: lex.cc:2733
 msgid "invalid new-line in raw string delimiter"
 msgstr "некоректний символ нового рядка у роздільнику простого рядка"
 
-#: lex.cc:2673 lex.cc:5519
+#: lex.cc:2737 lex.cc:5576
 #, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "некоректний символ, «%c», у роздільнику простого рядка"
 
-#: lex.cc:2711 lex.cc:2734
+#: lex.cc:2775 lex.cc:2798
 msgid "unterminated raw string"
 msgstr "незавершений простий рядок"
 
-#: lex.cc:2770 lex.cc:2922
-msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
-msgstr "некоректний суфікс у літералі; стандарт C++11 вимагає використання пробілу між літералом та рядком макроса"
-
-#: lex.cc:2905
+#: lex.cc:2955
 msgid "null character(s) preserved in literal"
 msgstr "null-символи збережені буквально"
 
-#: lex.cc:2908
+#: lex.cc:2958
 #, c-format
 msgid "missing terminating %c character"
 msgstr "відсутній завершальний символ %c"
 
-#: lex.cc:2940
+#: lex.cc:2991
 msgid "C++11 requires a space between string literal and macro"
 msgstr "стандарт C++11 вимагає використання пробілу між літералом та рядком макроса"
 
-#: lex.cc:3533
+#: lex.cc:3584
 msgid "module control-line cannot be in included file"
 msgstr "рядок керування модулем не може зберігатися у включеному файлі"
 
-#: lex.cc:3547
+#: lex.cc:3598
 #, c-format
 msgid "module control-line \"%s\" cannot be an object-like macro"
 msgstr "рядок керування модулем «%s» не може бути об'єктоподібним макросом"
 
-#: lex.cc:3949 lex.cc:5352 traditional.cc:174
+#: lex.cc:4004 lex.cc:5409 traditional.cc:174
 msgid "unterminated comment"
 msgstr "незавершений коментар"
 
-#: lex.cc:3963 lex.cc:3997
+#: lex.cc:4018 lex.cc:4052
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "Коментарі у стилі C++ неприпустимі згідно ISO C90"
 
-#: lex.cc:3965 lex.cc:3976 lex.cc:4000
+#: lex.cc:4020 lex.cc:4031 lex.cc:4055
 msgid "(this will be reported only once per input file)"
 msgstr "(повідомлення про це з'явиться лише один для вхідного файлу)"
 
-#: lex.cc:3974
+#: lex.cc:4029
 msgid "C++ style comments are incompatible with C90"
 msgstr "Коментарі у стилі C++ неприпустимі у C90"
 
-#: lex.cc:4006
+#: lex.cc:4061
 msgid "multi-line comment"
 msgstr "багаторядковий коментар"
 
-#: lex.cc:4427
+#: lex.cc:4484
 #, c-format
 msgid "unspellable token %s"
 msgstr "неможливо розібрати лексему %s"
 
-#: lex.cc:5507
+#: lex.cc:5564
 #, c-format
 msgid "raw string delimiter longer than %d characters"
 msgstr "роздільник необроблених рядків довжиною, що перевищує %d символів"
 
-#: lex.cc:5577
+#: lex.cc:5634
 msgid "unterminated literal"
 msgstr "незавершений літерал"
 
@@ -1018,7 +1048,7 @@ msgstr "пропущено «)» після операнда «%s»"
 msgid "macro \"%s\" is not used"
 msgstr "макрос \"%s\" не використовується"
 
-#: macro.cc:498 macro.cc:797
+#: macro.cc:498 macro.cc:803
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr "некоректний вбудований макрос \"%s\""
@@ -1040,131 +1070,131 @@ msgstr "не вдається визначити дату та час"
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr "__COUNTER__ розгорнуто всередині директиви з -fdirectives-only"
 
-#: macro.cc:916
+#: macro.cc:922
 msgid "invalid string literal, ignoring final '\\'"
 msgstr "некоректний символьний літерал, ігнорується завершальний символ '\\'"
 
-#: macro.cc:980
+#: macro.cc:986
 #, c-format
 msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
 msgstr "вставка \"%.*s\" та \"%.*s\" не призводить до коректної лексеми препроцесора"
 
-#: macro.cc:1112
+#: macro.cc:1118
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C++11 потребує принаймні одного аргументу для використання \"...\" у варіативному макросі"
 
-#: macro.cc:1116
+#: macro.cc:1122
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr "ISO C99 потребує принаймні одного аргументу для використання \"...\" у варіативному макросі"
 
-#: macro.cc:1123
+#: macro.cc:1129
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr "для макроса \"%s\" потрібно вказати %u аргументів, але вказано лише %u"
 
-#: macro.cc:1128
+#: macro.cc:1134
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr "макроса \"%s\" передано %u аргументів, але з них використано лише %u"
 
-#: macro.cc:1132
+#: macro.cc:1138
 #, c-format
 msgid "macro \"%s\" defined here"
 msgstr "макрос \"%s\" визначено тут"
 
-#: macro.cc:1326 traditional.cc:822
+#: macro.cc:1332 traditional.cc:822
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr "незавершений список аргументів у виклику макроса \"%s\""
 
-#: macro.cc:1472
+#: macro.cc:1478
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr "подібний до функції макрос \"%s\" має використовуватися з аргументами у традиційній мові C"
 
-#: macro.cc:2307
+#: macro.cc:2313
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "виклик макроса %s, аргумент %d: порожні аргументи макросів вважаються невизначеними у ISO C++98"
 
-#: macro.cc:2315 macro.cc:2324
+#: macro.cc:2321 macro.cc:2330
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "виклик макроса %s, аргумент %d: порожні аргументи макросів вважаються невизначеними у ISO C90"
 
-#: macro.cc:3375
+#: macro.cc:3381
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr "дублікат параметра макроса \"%s\""
 
-#: macro.cc:3457
+#: macro.cc:3463
 #, c-format
 msgid "expected parameter name, found \"%s\""
 msgstr "мала бути назва параметра, а маємо «%s»"
 
-#: macro.cc:3458
+#: macro.cc:3464
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
 msgstr "мало бути «,» або «)», втім, виявлено «%s»"
 
-#: macro.cc:3459
+#: macro.cc:3465
 msgid "expected parameter name before end of line"
 msgstr "мала бути назва параметра до кінця рядка"
 
-#: macro.cc:3460
+#: macro.cc:3466
 msgid "expected ')' before end of line"
 msgstr "мала бути «)» до кінця рядка"
 
-#: macro.cc:3461
+#: macro.cc:3467
 msgid "expected ')' after \"...\""
 msgstr "мала бути «)» після «...»"
 
-#: macro.cc:3518
+#: macro.cc:3524
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "анонімні варіативні макроси започатковані у C++11"
 
-#: macro.cc:3519 macro.cc:3523
+#: macro.cc:3525 macro.cc:3529
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "анонімні варіативні макроси впроваджено з версії C99"
 
-#: macro.cc:3529
+#: macro.cc:3535
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ не припускає іменовані варіативні макроси"
 
-#: macro.cc:3530
+#: macro.cc:3536
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C не припускає іменовані варіативні макроси"
 
-#: macro.cc:3576
+#: macro.cc:3582
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr "'##' не може з'являтися з обох кінців макророзширення"
 
-#: macro.cc:3614
+#: macro.cc:3620
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "у ISO C++11 після назви макроса має бути пробіл"
 
-#: macro.cc:3615
+#: macro.cc:3621
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "у ISO C99 має бути пробіл після назви макроса"
 
-#: macro.cc:3639
+#: macro.cc:3645
 msgid "missing whitespace after the macro name"
 msgstr "відсутні пробіл після назви макроса"
 
-#: macro.cc:3692
+#: macro.cc:3698
 msgid "'#' is not followed by a macro parameter"
 msgstr "'#' не супроводжується параметром макроса"
 
-#: macro.cc:3848
+#: macro.cc:3862
 #, c-format
 msgid "\"%s\" redefined"
 msgstr "повторне визначення \"%s\""
 
-#: macro.cc:3853
+#: macro.cc:3867
 msgid "this is the location of the previous definition"
 msgstr "...це місце першого визначення"
 
-#: macro.cc:3990
+#: macro.cc:4004
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr "аргумент макроса \"%s\" був би перетворений на рядок у традиційній мові C"
@@ -1198,7 +1228,7 @@ msgstr "%s: не використовується, оскільки визнач
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr "%s: не використовується через некоректність `__COUNTER__'"
 
-#: pch.cc:720 pch.cc:876
+#: pch.cc:720 pch.cc:883
 msgid "while reading precompiled header"
 msgstr "при читанні попередньо скомпільованого заголовка"
 
@@ -1210,6 +1240,13 @@ msgstr "при розширенні макроса \"%s\" виявлено ре�
 #: traditional.cc:1114
 msgid "syntax error in macro parameter list"
 msgstr "синтаксична помилка у списку параметрів макроса"
+
+#~ msgid "character constant too long for its type"
+#~ msgstr "символьна константа надто довга для вказаного типу"
+
+#, c-format
+#~ msgid "#%s before C2X is a GCC extension"
+#~ msgstr "#%s перед C2X є розширенням GCC"
 
 #~ msgid "#elif without #if"
 #~ msgstr "#elif без #if"
