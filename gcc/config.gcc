@@ -1272,6 +1272,7 @@ aarch64*-*-gnu*)
 	;;
 aarch64-*-mingw*)
 	tm_file="${tm_file} aarch64/aarch64-abi-ms.h"
+	tm_file="${tm_file} aarch64/aarch64-coff.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64"
 	case ${enable_threads} in
 	  "" | yes | win32)
