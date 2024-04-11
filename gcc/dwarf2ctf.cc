@@ -606,11 +606,16 @@ gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 	      if (attr)
 		bitpos += AT_unsigned (attr);
 
-	      field_type_id = ctf_add_slice (ctfc, CTF_ADD_NONROOT,
-					     field_type_id,
-					     bitpos - field_location,
-					     bitsize,
-					     c);
+	      /* This is not precisely a TBD_CTF_REPRESENTATION_LIMIT, but
+		 surely something to look at for the next format version bump
+		 for CTF.  */
+	      if (bitsize <= 255 && (bitpos - field_location) <= 255)
+		field_type_id = ctf_add_slice (ctfc, CTF_ADD_NONROOT,
+					       field_type_id,
+					       bitpos - field_location,
+					       bitsize, c);
+	      else
+		field_type_id = gen_ctf_unknown_type (ctfc);
 	    }
 
 	  /* Add the field type to the struct or union type.  */
