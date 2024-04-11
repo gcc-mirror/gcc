@@ -738,36 +738,22 @@ btf_dmd_representable_bitfield_p (ctf_container_ref ctfc, ctf_dmdef_t *dmd)
 /* Asm'out a reference to another BTF type.  */
 
 static void
-btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ref_id)
+btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ctf_id)
 {
-  if (ref_id == BTF_VOID_TYPEID || ref_id == BTF_INVALID_TYPEID)
+  ctf_id_t btf_id = get_btf_id (ctf_id);
+  if (btf_id == BTF_VOID_TYPEID || btf_id == BTF_INVALID_TYPEID)
     {
       /* There is no explicit void type.
 	 Also handle any invalid refs that made it this far, just in case.  */
-      dw2_asm_output_data (4, ref_id, "%s: void", prefix);
-    }
-  else if (ref_id >= num_types_added + 1
-	   && ref_id < num_types_added + num_vars_added + 1)
-    {
-      /* Ref to a variable.  Should only appear in DATASEC entries.  */
-      ctf_id_t var_id = btf_relative_var_id (ref_id);
-      ctf_dvdef_ref dvd = ctfc->ctfc_vars_list[var_id];
-      dw2_asm_output_data (4, ref_id, "%s: (BTF_KIND_VAR '%s')",
-			   prefix, dvd->dvd_name);
-
-    }
-  else if (ref_id >= num_types_added + num_vars_added + 1)
-    {
-      /* Ref to a FUNC record.  */
-      size_t func_id = btf_relative_func_id (ref_id);
-      ctf_dtdef_ref ref_type = (*funcs)[func_id];
-      dw2_asm_output_data (4, ref_id, "%s: (BTF_KIND_FUNC '%s')",
-			   prefix, get_btf_type_name (ref_type));
+      dw2_asm_output_data (4, btf_id, "%s: void", prefix);
     }
   else
     {
-      /* Ref to a standard type in the types list.  */
-      ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[ref_id];
+      gcc_assert (btf_id <= num_types_added);
+
+      /* Ref to a standard type in the types list.  Note: take care that we
+	 must index the type list by the original CTF id, not the BTF id.  */
+      ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[ctf_id];
       uint32_t ref_kind
 	= get_btf_kind (CTF_V2_INFO_KIND (ref_type->dtd_data.ctti_info));
 
@@ -775,10 +761,41 @@ btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ref_id)
 	? btf_kind_name (BTF_KIND_ENUM)
 	: btf_kind_name (ref_kind);
 
-      dw2_asm_output_data (4, ref_id, "%s: (BTF_KIND_%s '%s')",
+      dw2_asm_output_data (4, btf_id, "%s: (BTF_KIND_%s '%s')",
 			   prefix, kind_name,
 			   get_btf_type_name (ref_type));
     }
+}
+
+/* Asm'out a reference to a BTF_KIND_VAR or BTF_KIND_FUNC type.  These type
+   kinds are BTF-specific, and should only be referred to by entries in
+   BTF_KIND_DATASEC records.  */
+
+static void
+btf_asm_datasec_type_ref (const char *prefix, ctf_container_ref ctfc,
+			  ctf_id_t btf_id)
+{
+  if (btf_id >= num_types_added + 1
+      && btf_id < num_types_added + num_vars_added + 1)
+    {
+      /* Ref to a variable.  Should only appear in DATASEC entries.  */
+      ctf_id_t var_id = btf_relative_var_id (btf_id);
+      ctf_dvdef_ref dvd = ctfc->ctfc_vars_list[var_id];
+      dw2_asm_output_data (4, btf_id, "%s: (BTF_KIND_VAR '%s')",
+			   prefix, dvd->dvd_name);
+
+    }
+  else if (btf_id >= num_types_added + num_vars_added + 1)
+    {
+      /* Ref to a FUNC record.  */
+      size_t func_id = btf_relative_func_id (btf_id);
+      ctf_dtdef_ref ref_type = (*funcs)[func_id];
+      dw2_asm_output_data (4, btf_id, "%s: (BTF_KIND_FUNC '%s')",
+			   prefix, get_btf_type_name (ref_type));
+    }
+  else
+    /* The caller should not be calling this.  */
+    gcc_unreachable ();
 }
 
 /* Asm'out a BTF type. This routine is responsible for the bulk of the task
@@ -887,7 +904,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
       break;
     }
 
-  ctf_id_t ref_id = get_btf_id (dtd->dtd_data.ctti_type);
+  ctf_id_t ref_id = dtd->dtd_data.ctti_type;
   btf_asm_type_ref ("btt_type", ctfc, ref_id);
 }
 
@@ -896,8 +913,8 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 static void
 btf_asm_array (ctf_container_ref ctfc, ctf_arinfo_t arr)
 {
-  btf_asm_type_ref ("bta_elem_type", ctfc, get_btf_id (arr.ctr_contents));
-  btf_asm_type_ref ("bta_index_type", ctfc, get_btf_id (arr.ctr_index));
+  btf_asm_type_ref ("bta_elem_type", ctfc, arr.ctr_contents);
+  btf_asm_type_ref ("bta_index_type", ctfc, arr.ctr_index);
   dw2_asm_output_data (4, arr.ctr_nelems, "bta_nelems");
 }
 
@@ -906,12 +923,11 @@ btf_asm_array (ctf_container_ref ctfc, ctf_arinfo_t arr)
 static void
 btf_asm_varent (ctf_container_ref ctfc, ctf_dvdef_ref var)
 {
-  ctf_id_t ref_id = get_btf_id (var->dvd_type);
   dw2_asm_output_data (4, var->dvd_name_offset, "TYPE %u BTF_KIND_VAR '%s'",
 		       (*(btf_var_ids->get (var)) + num_types_added + 1),
 		       var->dvd_name);
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_VAR, 0, 0), "btv_info");
-  btf_asm_type_ref ("btv_type", ctfc, ref_id);
+  btf_asm_type_ref ("btv_type", ctfc, var->dvd_type);
   dw2_asm_output_data (4, var->dvd_visibility, "btv_linkage");
 }
 
@@ -922,7 +938,7 @@ static void
 btf_asm_sou_member (ctf_container_ref ctfc, ctf_dmdef_t * dmd, unsigned int idx)
 {
   ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[dmd->dmd_type];
-  ctf_id_t base_type = get_btf_id (dmd->dmd_type);
+  ctf_id_t base_type = dmd->dmd_type;
   uint64_t sou_offset = dmd->dmd_offset;
 
   dw2_asm_output_data (4, dmd->dmd_name_offset,
@@ -943,7 +959,7 @@ btf_asm_sou_member (ctf_container_ref ctfc, ctf_dmdef_t * dmd, unsigned int idx)
 	  sou_offset |= ((bits & 0xff) << 24);
 
 	  /* Refer to the base type of the slice.  */
-	  base_type = get_btf_id (ref_type->dtd_u.dtu_slice.cts_type);
+	  base_type = ref_type->dtd_u.dtu_slice.cts_type;
 	}
       else
 	{
@@ -989,7 +1005,7 @@ btf_asm_func_arg (ctf_container_ref ctfc, ctf_func_arg_t * farg,
 
   btf_asm_type_ref ("farg_type", ctfc, (btf_removed_type_p (farg->farg_type)
 					? BTF_VOID_TYPEID
-					: get_btf_id (farg->farg_type)));
+					: farg->farg_type));
 }
 
 /* Asm'out a BTF_KIND_FUNC type.  */
@@ -1004,7 +1020,7 @@ btf_asm_func_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd, ctf_id_t id)
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_FUNC, 0, dtd->linkage),
 		       "btt_info: kind=%u, kflag=%u, linkage=%u",
 		       BTF_KIND_FUNC, 0, dtd->linkage);
-  btf_asm_type_ref ("btt_type", ctfc, get_btf_id (ref_id));
+  btf_asm_type_ref ("btt_type", ctfc, ref_id);
 }
 
 /* Collect the name for the DATASEC reference required to be output as a
@@ -1037,7 +1053,7 @@ static void
 btf_asm_datasec_entry (ctf_container_ref ctfc, struct btf_var_secinfo info)
 {
   const char *symbol_name = get_name_for_datasec_entry (ctfc, info.type);
-  btf_asm_type_ref ("bts_type", ctfc, info.type);
+  btf_asm_datasec_type_ref ("bts_type", ctfc, info.type);
   if (!btf_with_core_debuginfo_p () || symbol_name == NULL)
     dw2_asm_output_data (4, info.offset, "bts_offset");
   else
