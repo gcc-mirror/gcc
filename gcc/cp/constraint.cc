@@ -2268,6 +2268,7 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
 	 checked out of order, so instead just remember the template
 	 arguments and wait until we can substitute them all at once.  */
       t = copy_node (t);
+      REQUIRES_EXPR_EXTRA_ARGS (t) = NULL_TREE;
       REQUIRES_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, info.complain);
       return t;
     }
