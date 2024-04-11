@@ -78,7 +78,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline constexpr memory_order memory_order_acq_rel = memory_order::acq_rel;
   inline constexpr memory_order memory_order_seq_cst = memory_order::seq_cst;
 #else
-  typedef enum memory_order
+  enum memory_order : int
     {
       memory_order_relaxed,
       memory_order_consume,
@@ -86,7 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       memory_order_release,
       memory_order_acq_rel,
       memory_order_seq_cst
-    } memory_order;
+    };
 #endif
 
   /// @cond undocumented
