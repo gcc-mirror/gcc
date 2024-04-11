@@ -6683,6 +6683,12 @@ package body Sem_Attr is
             elsif Depends_On_Private (P_Type) then
                Error_Attr_P ("prefix type of % is a private extension");
 
+            --  Disallow view conversions to interfaces in order to avoid
+            --  depending on whether an interface type is used as a parent
+            --  or progenitor type.
+
+            elsif Is_Interface (Node (First_Elmt (Parents))) then
+               Error_Attr_P ("type of % cannot be an interface");
             end if;
 
             --  Generate a view conversion and analyze it
