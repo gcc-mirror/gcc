@@ -4452,12 +4452,16 @@ package body Sem_Warn is
                  ("?u?literal & is not referenced!", E);
 
             when E_Function =>
-               Error_Msg_N -- CODEFIX
-                 ("?u?function & is not referenced!", E);
+               if not Is_Abstract_Subprogram (E) then
+                  Error_Msg_N -- CODEFIX
+                    ("?u?function & is not referenced!", E);
+               end if;
 
             when E_Procedure =>
-               Error_Msg_N -- CODEFIX
-                 ("?u?procedure & is not referenced!", E);
+               if not Is_Abstract_Subprogram (E) then
+                  Error_Msg_N -- CODEFIX
+                    ("?u?procedure & is not referenced!", E);
+               end if;
 
             when E_Package =>
                Error_Msg_N -- CODEFIX
