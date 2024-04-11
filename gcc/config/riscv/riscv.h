@@ -683,6 +683,12 @@ enum reg_class
 
 #define GP_RETURN GP_ARG_FIRST
 #define FP_RETURN (UNITS_PER_FP_ARG == 0 ? GP_RETURN : FP_ARG_FIRST)
+#define V_RETURN  V_REG_FIRST
+
+#define GP_RETURN_FIRST GP_ARG_FIRST
+#define GP_RETURN_LAST  GP_ARG_FIRST + 1
+#define FP_RETURN_FIRST FP_RETURN
+#define FP_RETURN_LAST  FP_RETURN + 1
 
 #define MAX_ARGS_IN_REGISTERS \
   (riscv_abi == ABI_ILP32E || riscv_abi == ABI_LP64E \
@@ -713,8 +719,6 @@ enum reg_class
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
   riscv_function_value (VALTYPE, FUNC, VOIDmode)
-
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN)
 
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  */

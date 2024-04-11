@@ -10997,6 +10997,34 @@ riscv_vector_mode_supported_any_target_p (machine_mode)
   return true;
 }
 
+/* Implements hook TARGET_FUNCTION_VALUE_REGNO_P.  */
+
+static bool
+riscv_function_value_regno_p (const unsigned regno)
+{
+  if (GP_RETURN_FIRST <= regno && regno <= GP_RETURN_LAST)
+    return true;
+
+  if (FP_RETURN_FIRST <= regno && regno <= FP_RETURN_LAST)
+    return true;
+
+  if (regno == V_RETURN)
+    return true;
+
+  return false;
+}
+
+/* Implements hook TARGET_GET_RAW_RESULT_MODE.  */
+
+static fixed_size_mode
+riscv_get_raw_result_mode (int regno)
+{
+  if (!is_a <fixed_size_mode> (reg_raw_mode[regno]))
+    return as_a <fixed_size_mode> (VOIDmode);
+
+  return default_get_reg_raw_mode (regno);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -11342,6 +11370,12 @@ riscv_vector_mode_supported_any_target_p (machine_mode)
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P
 #define TARGET_VECTOR_MODE_SUPPORTED_ANY_TARGET_P riscv_vector_mode_supported_any_target_p
+
+#undef TARGET_FUNCTION_VALUE_REGNO_P
+#define TARGET_FUNCTION_VALUE_REGNO_P riscv_function_value_regno_p
+
+#undef TARGET_GET_RAW_RESULT_MODE
+#define TARGET_GET_RAW_RESULT_MODE riscv_get_raw_result_mode
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
