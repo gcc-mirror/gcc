@@ -2227,7 +2227,7 @@ package body Accessibility is
                   --  that of the type.
 
                   elsif Ekind (Def_Ent) = E_Discriminant then
-                     return Scope_Depth (Scope (Def_Ent));
+                     return Scope_Depth (Get_Full_View (Scope (Def_Ent)));
                   end if;
                end if;
 
