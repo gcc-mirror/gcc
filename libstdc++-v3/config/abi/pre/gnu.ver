@@ -2516,12 +2516,17 @@ GLIBCXX_3.4.31 {
 
 } GLIBCXX_3.4.30;
 
+# GCC 13.2.0
 GLIBCXX_3.4.32 {
     _ZSt21ios_base_library_initv;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE11_S_allocateERS3_[jmy];
-    # std::basic_file<>::native_handle()
-    _ZNKSt12__basic_fileI[cw]E13native_handleEv;
 } GLIBCXX_3.4.31;
+
+# GCC 14.1.0
+GLIBCXX_3.4.33 {
+    # std::basic_file<char>::native_handle()
+    _ZNKSt12__basic_fileIcE13native_handleEv;
+} GLIBCXX_3.4.32;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
