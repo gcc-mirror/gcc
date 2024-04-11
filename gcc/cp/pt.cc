@@ -19433,6 +19433,23 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case PREDICT_EXPR:
       RETURN (add_stmt (copy_node (t)));
 
+    case ANNOTATE_EXPR:
+      {
+	/* Although ANNOTATE_EXPR is an expression, it can only appear in
+	   WHILE_COND, DO_COND or FOR_COND expressions, which are tsubsted
+	   using tsubst_stmt rather than tsubst_expr and can contain
+	   DECL_EXPRs.  */
+	tree op1 = RECUR (TREE_OPERAND (t, 0));
+	tree op2 = tsubst_expr (TREE_OPERAND (t, 1), args, complain, in_decl);
+	tree op3 = tsubst_expr (TREE_OPERAND (t, 2), args, complain, in_decl);
+	if (TREE_CODE (op2) == INTEGER_CST
+	    && wi::to_widest (op2) == (int) annot_expr_unroll_kind)
+	  op3 = cp_check_pragma_unroll (EXPR_LOCATION (TREE_OPERAND (t, 2)),
+					op3);
+	RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
+			    TREE_TYPE (op1), op1, op2, op3));
+      }
+
     default:
       gcc_assert (!STATEMENT_CODE_P (TREE_CODE (t)));
 
@@ -21770,19 +21787,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      op = build1 (VIEW_CONVERT_EXPR, type, op);
 	  }
 	RETURN (op);
-      }
-
-    case ANNOTATE_EXPR:
-      {
-	op1 = RECUR (TREE_OPERAND (t, 0));
-	tree op2 = RECUR (TREE_OPERAND (t, 1));
-	tree op3 = RECUR (TREE_OPERAND (t, 2));
-	if (TREE_CODE (op2) == INTEGER_CST
-	    && wi::to_widest (op2) == (int) annot_expr_unroll_kind)
-	  op3 = cp_check_pragma_unroll (EXPR_LOCATION (TREE_OPERAND (t, 2)),
-					op3);
-	RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
-			    TREE_TYPE (op1), op1, op2, op3));
       }
 
     default:
