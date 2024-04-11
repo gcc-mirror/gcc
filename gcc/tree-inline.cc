@@ -2090,7 +2090,7 @@ copy_bb (copy_body_data *id, basic_block bb,
 	  /* If -fcondition-coverage is used, register the inlined conditions
 	     in the cond->expression mapping of the caller.  The expression tag
 	     is shifted conditions from the two bodies are not mixed.  */
-	  if (id->src_cfun->cond_uids && is_a <gcond*> (orig_stmt))
+	  if (id->src_cfun->cond_uids && is_a <gcond*> (stmt))
 	    {
 	      gcond *orig_cond = as_a <gcond*> (orig_stmt);
 	      gcond *cond = as_a <gcond*> (stmt);
