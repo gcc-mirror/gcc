@@ -14,6 +14,8 @@
 
 /* Struct with 4 members and no bitfield (kind_flag not set).  */
 /* { dg-final { scan-assembler-times "\[\t \]0x4000004\[\t \]+\[^\n\]*btt_info" 1 } } */
+/* { dg-final { scan-assembler-times " MEMBER" 4 } } */
+/* { dg-final { scan-assembler-times " MEMBER 'unsup' idx=2\[\\r\\n\]+\[^\\r\\n\]*0\[\t \]+\[^\n\]*btm_type: void" 1 } } */
 
 struct bigly
 {

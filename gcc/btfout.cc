@@ -922,41 +922,39 @@ static void
 btf_asm_sou_member (ctf_container_ref ctfc, ctf_dmdef_t * dmd, unsigned int idx)
 {
   ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[dmd->dmd_type];
+  ctf_id_t base_type = get_btf_id (dmd->dmd_type);
+  uint64_t sou_offset = dmd->dmd_offset;
+
+  dw2_asm_output_data (4, dmd->dmd_name_offset,
+		       "MEMBER '%s' idx=%u",
+		       dmd->dmd_name, idx);
 
   /* Re-encode bitfields to BTF representation.  */
   if (CTF_V2_INFO_KIND (ref_type->dtd_data.ctti_info) == CTF_K_SLICE)
     {
-      ctf_id_t base_type = ref_type->dtd_u.dtu_slice.cts_type;
-      unsigned short word_offset = ref_type->dtd_u.dtu_slice.cts_offset;
-      unsigned short bits = ref_type->dtd_u.dtu_slice.cts_bits;
-      uint64_t sou_offset = dmd->dmd_offset;
+      if (btf_dmd_representable_bitfield_p (ctfc, dmd))
+	{
+	  unsigned short word_offset = ref_type->dtd_u.dtu_slice.cts_offset;
+	  unsigned short bits = ref_type->dtd_u.dtu_slice.cts_bits;
 
-      /* Pack the bit offset and bitfield size together.  */
-      sou_offset += word_offset;
+	  /* Pack the bit offset and bitfield size together.  */
+	  sou_offset += word_offset;
+	  sou_offset &= 0x00ffffff;
+	  sou_offset |= ((bits & 0xff) << 24);
 
-      /* If this bitfield cannot be represented, do not output anything.
-	 The parent struct/union 'vlen' field has already been updated.  */
-      if ((bits > 0xff) || (sou_offset > 0xffffff))
-	return;
-
-      sou_offset &= 0x00ffffff;
-      sou_offset |= ((bits & 0xff) << 24);
-
-      dw2_asm_output_data (4, dmd->dmd_name_offset,
-			   "MEMBER '%s' idx=%u",
-			   dmd->dmd_name, idx);
-      /* Refer to the base type of the slice.  */
-      btf_asm_type_ref ("btm_type", ctfc, get_btf_id (base_type));
-      dw2_asm_output_data (4, sou_offset, "btm_offset");
+	  /* Refer to the base type of the slice.  */
+	  base_type = get_btf_id (ref_type->dtd_u.dtu_slice.cts_type);
+	}
+      else
+	{
+	  /* Bitfield cannot be represented in BTF.  Emit the member as having
+	     'void' type.  */
+	  base_type = BTF_VOID_TYPEID;
+	}
     }
-  else
-    {
-      dw2_asm_output_data (4, dmd->dmd_name_offset,
-			   "MEMBER '%s' idx=%u",
-			   dmd->dmd_name, idx);
-      btf_asm_type_ref ("btm_type", ctfc, get_btf_id (dmd->dmd_type));
-      dw2_asm_output_data (4, dmd->dmd_offset, "btm_offset");
-    }
+
+  btf_asm_type_ref ("btm_type", ctfc, base_type);
+  dw2_asm_output_data (4, sou_offset, "btm_offset");
 }
 
 /* Asm'out an enum constant following a BTF_KIND_ENUM{,64}.  */
