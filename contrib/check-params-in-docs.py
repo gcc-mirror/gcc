@@ -45,7 +45,7 @@ parser.add_argument('params_output')
 
 args = parser.parse_args()
 
-ignored = {'logical-op-non-short-circuit'}
+ignored = {'logical-op-non-short-circuit', 'gcn-preferred-vectorization-factor'}
 params = {}
 
 for line in open(args.params_output).readlines():
