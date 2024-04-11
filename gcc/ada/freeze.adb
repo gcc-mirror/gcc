@@ -6963,7 +6963,7 @@ package body Freeze is
                if Is_Type (Comp) then
                   Freeze_And_Append (Comp, N, Result);
 
-               elsif (Ekind (Comp)) /= E_Function then
+               elsif Ekind (Comp) /= E_Function then
 
                   --  The guard on the presence of the Etype seems to be needed
                   --  for some CodePeer (-gnatcC) cases, but not clear why???

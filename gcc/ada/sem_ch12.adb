@@ -13228,7 +13228,7 @@ package body Sem_Ch12 is
             Abandon_Instantiation (Actual);
 
          elsif Nkind (Def) = N_Constrained_Array_Definition then
-            if not (Is_Constrained (Act_T)) then
+            if not Is_Constrained (Act_T) then
                Error_Msg_NE
                  ("expect constrained array in instantiation of &",
                   Actual, Gen_T);

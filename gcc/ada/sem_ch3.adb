@@ -1616,7 +1616,7 @@ package body Sem_Ch3 is
 
       Last_Tag := Empty;
 
-      if not (Present (Component_List (Ext))) then
+      if not Present (Component_List (Ext)) then
          Set_Null_Present (Ext, False);
          L := New_List;
          Set_Component_List (Ext,
@@ -12454,7 +12454,7 @@ package body Sem_Ch3 is
 
    procedure Check_Delta_Expression (E : Node_Id) is
    begin
-      if not (Is_Real_Type (Etype (E))) then
+      if not Is_Real_Type (Etype (E)) then
          Wrong_Type (E, Any_Real);
 
       elsif not Is_OK_Static_Expression (E) then
@@ -12482,7 +12482,7 @@ package body Sem_Ch3 is
 
    procedure Check_Digits_Expression (E : Node_Id) is
    begin
-      if not (Is_Integer_Type (Etype (E))) then
+      if not Is_Integer_Type (Etype (E)) then
          Wrong_Type (E, Any_Integer);
 
       elsif not Is_OK_Static_Expression (E) then

@@ -1351,7 +1351,7 @@ package body ALI is
          --  Check if we are on a number. In the case of bad ALI files, this
          --  may not be true.
 
-         if not (Nextc in '0' .. '9') then
+         if Nextc not in '0' .. '9' then
             Fatal_Error;
          end if;
 

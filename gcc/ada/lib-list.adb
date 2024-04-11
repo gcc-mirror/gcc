@@ -80,7 +80,7 @@ begin
       else
          Write_Unit_Name (Unit_Name (Sorted_Units (R)));
 
-         if Name_Len > (Unit_Length - 1) then
+         if Name_Len > Unit_Length - 1 then
             Write_Eol;
             Write_Str (Unit_Bln);
          else
@@ -91,7 +91,7 @@ begin
 
          Write_Name (Full_File_Name (Source_Index (Sorted_Units (R))));
 
-         if Name_Len > (File_Length - 1) then
+         if Name_Len > File_Length - 1 then
             Write_Eol;
             Write_Str (Unit_Bln);
             Write_Str (File_Bln);
