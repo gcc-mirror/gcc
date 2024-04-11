@@ -2370,6 +2370,7 @@ tsubst_requires_expr (tree t, tree args, sat_info info)
 	 matching or dguide constraint rewriting), in which case we need
 	 to partially substitute.  */
       t = copy_node (t);
+      REQUIRES_EXPR_EXTRA_ARGS (t) = NULL_TREE;
       REQUIRES_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, info.complain);
       return t;
     }

@@ -3861,6 +3861,24 @@ has_extra_args_mechanism_p (const_tree t)
 	      && IF_STMT_CONSTEXPR_P (t))); /* IF_STMT_EXTRA_ARGS  */
 }
 
+/* Return *_EXTRA_ARGS of the given supported tree T.  */
+
+static tree&
+tree_extra_args (tree t)
+{
+  gcc_checking_assert (has_extra_args_mechanism_p (t));
+
+  if (PACK_EXPANSION_P (t))
+    return PACK_EXPANSION_EXTRA_ARGS (t);
+  else if (TREE_CODE (t) == REQUIRES_EXPR)
+    return REQUIRES_EXPR_EXTRA_ARGS (t);
+  else if (TREE_CODE (t) == IF_STMT
+	   && IF_STMT_CONSTEXPR_P (t))
+    return IF_STMT_EXTRA_ARGS (t);
+
+  gcc_unreachable ();
+}
+
 /* Structure used to track the progress of find_parameter_packs_r.  */
 struct find_parameter_pack_data
 {
@@ -13185,6 +13203,16 @@ extract_locals_r (tree *tp, int *walk_subtrees, void *data_)
     /* Remember local typedefs (85214).  */
     tp = &TYPE_NAME (*tp);
 
+  if (has_extra_args_mechanism_p (*tp))
+    /* Assert *_EXTRA_ARGS is empty, because we don't want to walk it and
+       potentially see a previously captured local in an evaluated context
+       that's really only used in an unevaluated context (PR114303).  This
+       means callers of build_extra_args need to clear *_EXTRA_ARGS of the
+       outermost tree.  Nested *_EXTRA_ARGS should naturally be empty since
+       the outermost (extra-args) tree will intercept any substitution before
+       a nested tree can.  */
+    gcc_checking_assert (tree_extra_args (*tp) == NULL_TREE);
+
   if (TREE_CODE (*tp) == DECL_EXPR)
     {
       tree decl = DECL_EXPR_DECL (*tp);
@@ -19189,10 +19217,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     of the constexpr if is still dependent.  Don't substitute into the
 	     branches now, just remember the template arguments.  */
 	  do_poplevel (IF_SCOPE (stmt));
+	  IF_SCOPE (stmt) = NULL_TREE;
 	  IF_COND (stmt) = IF_COND (t);
 	  THEN_CLAUSE (stmt) = THEN_CLAUSE (t);
 	  ELSE_CLAUSE (stmt) = ELSE_CLAUSE (t);
-	  IF_STMT_EXTRA_ARGS (stmt) = build_extra_args (t, args, complain);
+	  IF_STMT_EXTRA_ARGS (stmt) = build_extra_args (stmt, args, complain);
 	  add_stmt (stmt);
 	  break;
 	}
