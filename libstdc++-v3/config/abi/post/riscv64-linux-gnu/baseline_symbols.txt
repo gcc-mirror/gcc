@@ -497,6 +497,7 @@ FUNC:_ZNKSt11__timepunctIwE7_M_daysEPPKw@@GLIBCXX_3.4
 FUNC:_ZNKSt11__timepunctIwE8_M_am_pmEPPKw@@GLIBCXX_3.4
 FUNC:_ZNKSt11__timepunctIwE9_M_monthsEPPKw@@GLIBCXX_3.4
 FUNC:_ZNKSt11logic_error4whatEv@@GLIBCXX_3.4
+FUNC:_ZNKSt12__basic_fileIcE13native_handleEv@@GLIBCXX_3.4.33
 FUNC:_ZNKSt12__basic_fileIcE7is_openEv@@GLIBCXX_3.4
 FUNC:_ZNKSt12bad_weak_ptr4whatEv@@GLIBCXX_3.4.15
 FUNC:_ZNKSt12future_error4whatEv@@GLIBCXX_3.4.14
@@ -4525,6 +4526,7 @@ FUNC:__cxa_allocate_exception@@CXXABI_1.3
 FUNC:__cxa_bad_cast@@CXXABI_1.3
 FUNC:__cxa_bad_typeid@@CXXABI_1.3
 FUNC:__cxa_begin_catch@@CXXABI_1.3
+FUNC:__cxa_call_terminate@@CXXABI_1.3.15
 FUNC:__cxa_call_unexpected@@CXXABI_1.3
 FUNC:__cxa_current_exception_type@@CXXABI_1.3
 FUNC:__cxa_deleted_virtual@@CXXABI_1.3.6
@@ -4568,6 +4570,7 @@ OBJECT:0:CXXABI_1.3.11
 OBJECT:0:CXXABI_1.3.12
 OBJECT:0:CXXABI_1.3.13
 OBJECT:0:CXXABI_1.3.14
+OBJECT:0:CXXABI_1.3.15
 OBJECT:0:CXXABI_1.3.2
 OBJECT:0:CXXABI_1.3.3
 OBJECT:0:CXXABI_1.3.4
@@ -4604,6 +4607,7 @@ OBJECT:0:GLIBCXX_3.4.3
 OBJECT:0:GLIBCXX_3.4.30
 OBJECT:0:GLIBCXX_3.4.31
 OBJECT:0:GLIBCXX_3.4.32
+OBJECT:0:GLIBCXX_3.4.33
 OBJECT:0:GLIBCXX_3.4.4
 OBJECT:0:GLIBCXX_3.4.5
 OBJECT:0:GLIBCXX_3.4.6
