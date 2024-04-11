@@ -332,6 +332,17 @@ GCC supports the D 2.0 programming language.  The D language itself is
 currently defined by its reference implementation and supporting language
 specification, described at @uref{https://dlang.org/spec/spec.html}.
 
+@section Modula-2 language
+
+GCC supports the Modula-2 language and is compliant with the PIM2,
+PIM3, PIM4 and ISO dialects.  Also implemented are a complete set of
+free ISO libraries.  It also contains a collection of PIM libraries
+and some Logitech compatible libraries.
+
+For more information on Modula-2 see
+@uref{https://gcc.gnu.org/readings.html}.  The online manual is
+available at @uref{https://gcc.gnu.org/onlinedocs/gm2/index.html}.
+
 @section References for Other Languages
 
 @xref{Top, GNAT Reference Manual, About This Guide, gnat_rm,
