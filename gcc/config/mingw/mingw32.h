@@ -19,7 +19,9 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #undef DEFAULT_ABI
-#define DEFAULT_ABI MS_ABI
+#if !defined (TARGET_AARCH64_MS_ABI)
+# define DEFAULT_ABI MS_ABI
+#endif
 
 /* By default, target has a 80387, uses IEEE compatible arithmetic,
    returns float values in the 387 and needs stack probes.

@@ -224,6 +224,8 @@ gen_stdcall_or_fastcall_suffix (tree decl, tree id, bool fastcall)
   return get_identifier (new_str);
 }
 
+#if !defined (TARGET_AARCH64_MS_ABI)
+
 /* Maybe decorate and get a new identifier for the DECL of a stdcall or
    fastcall function. The original identifier is supplied in ID. */
 
@@ -250,6 +252,8 @@ i386_pe_maybe_mangle_decl_assembler_name (tree decl, tree id)
   return new_id;
 }
 
+#endif
+
 /* Emit an assembler directive to set symbol for DECL visibility to
    the visibility type VIS, which must not be VISIBILITY_DEFAULT.
    As for PE there is no hidden support in gas, we just warn for
@@ -266,6 +270,8 @@ i386_pe_assemble_visibility (tree decl, int)
 			      "in this configuration; ignored");
 }
 
+#if !defined (TARGET_AARCH64_MS_ABI)
+
 /* This is used as a target hook to modify the DECL_ASSEMBLER_NAME
    in the language-independent default hook
    langhooks,c:lhd_set_decl_assembler_name ()
@@ -277,6 +283,8 @@ i386_pe_mangle_decl_assembler_name (tree decl, tree id)
 
   return (new_id ? new_id : id);
 }
+
+#endif
 
 /* This hook behaves the same as varasm.cc/assemble_name(), but
    generates the name into memory rather than outputting it to
