@@ -357,9 +357,13 @@ procedure Gnat1drv is
 
          Generate_SCIL := True;
 
-         --  Enable assertions, since they give CodePeer valuable extra info
+         --  Enable assertions, since they give CodePeer valuable extra info;
+         --  however, when switch -gnatd_k is active, then keep assertions
+         --  disabled by default and only enable them when explicitly
+         --  requested by pragma Assertion_Policy, just like in ordinary
+         --  compilation.
 
-         Assertions_Enabled := True;
+         Assertions_Enabled := not Debug_Flag_Underscore_K;
 
          --  Set normal RM validity checking and checking of copies (to catch
          --  e.g. wrong values used in unchecked conversions).
