@@ -1,3 +1,10 @@
+2024-04-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106500
+	* check.cc (is_c_interoperable): Fix checks for C_SIZEOF.
+	(gfc_check_c_f_pointer): Reject function returning a pointer as FPTR,
+	and improve an error message.
+
 2024-04-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/114535

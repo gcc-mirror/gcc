@@ -1,3 +1,17 @@
+2024-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/manipulators/extended/get_time/char/2.cc:
+	Adjust input string so that it matches %a with or without a
+	trailing period.
+	* testsuite/std/time/year_month_day/io.cc: Adjust expected
+	format for %x in the fr_FR locale.
+
+2024-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (remove_all) [__FreeBSD__ || __DragonFly__]:
+	Check for EMLINK as well as ELOOP.
+	[__NetBSD__]: Check for EFTYPE as well as ELOOP.
+
 2024-04-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/114633

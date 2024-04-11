@@ -1,3 +1,91 @@
+2024-04-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	Revert:
+	2024-04-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/pr93372-2.c: Tweak scan-assembler
+	checks to cover recent combine improvement.
+
+2024-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR target/114606
+	* gcc.target/i386/fhardened-1.c: New test.
+	* gcc.target/i386/fhardened-2.c: New test.
+
+2024-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/out-of-bounds-pr114472.c: New test.
+
+2024-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/memset-1.c: Clarify some comments.
+
+2024-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/copy_from_user-1.c: Add missing directives for an
+	analyzer test.
+	* gcc.dg/plugin/taint-CVE-2011-0521-1-fixed.c: Add missing
+	-fanalyzer to options.
+	* gcc.dg/plugin/taint-CVE-2011-0521-1.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-2-fixed.c: Likewise.
+	(dvb_usercopy): Add default case to avoid complaints about NULL
+	derefs.
+	* gcc.dg/plugin/taint-CVE-2011-0521-2.c: Likewise.
+	* gcc.dg/plugin/taint-CVE-2011-0521-3-fixed.c: Add missing
+	-fanalyzer to options.
+	* gcc.dg/plugin/taint-CVE-2011-0521-3.c: Likewise.  Drop
+	xfail.
+
+2024-04-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106500
+	* gfortran.dg/c_sizeof_6.f90: Remove wrong dg-error.
+	* gfortran.dg/sizeof_2.f90: Adjust pattern.
+	* gfortran.dg/c_f_pointer_tests_9.f90: New test.
+	* gfortran.dg/c_sizeof_7.f90: New test.
+
+2024-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114672
+	* gcc.dg/torture/pr114672.c: New testcase.
+
+2024-04-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/bitint-alignments.c: New test.
+	* gcc.target/aarch64/bitint-args.c: New test.
+	* gcc.target/aarch64/bitint-sizes.c: New test.
+	* gcc.target/aarch64/bitfield-bitint-abi.h: New header.
+	* gcc.target/aarch64/bitfield-bitint-abi-align16.c: New test.
+	* gcc.target/aarch64/bitfield-bitint-abi-align8.c: New test.
+
+2024-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114462
+	* g++.dg/cpp26/trivial-infinite-loop1.C: New test.
+	* g++.dg/cpp26/trivial-infinite-loop2.C: New test.
+	* g++.dg/cpp26/trivial-infinite-loop3.C: New test.
+
+2024-04-10  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/114662
+	* gcc.dg/lto/pr113359-2_0.c: Use unsigned long long instead of
+	unsigned long.
+	* gcc.dg/lto/pr113359-2_1.c: Likewise.
+
+2024-04-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/104040
+	* g++.dg/modules/pr104040_a.C: New test.
+	* g++.dg/modules/pr104040_b.C: New test.
+
+2024-04-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99377
+	* g++.dg/modules/pr99377-3_a.H: New test.
+	* g++.dg/modules/pr99377-3_b.C: New test.
+	* g++.dg/modules/pr99377-3_c.C: New test.
+	* g++.dg/modules/pr99377-3_d.C: New test.
+
 2024-04-09  David Faust  <david.faust@oracle.com>
 
 	PR testsuite/114642

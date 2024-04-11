@@ -1,3 +1,90 @@
+2024-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR target/114606
+	* config/i386/i386-options.cc (ix86_option_override_internal): Use
+	opts_set rather than checking == CF_NONE.
+
+2024-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi: Various tweaks.
+
+2024-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114672
+	* tree-ssa-math-opts.cc (convert_plusminus_to_widen): Only
+	allow mode-precision results.
+
+2024-04-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.cc (TARGET_C_BITINT_TYPE_INFO): Declare MACRO.
+	(aarch64_bitint_type_info): New function.
+	(aarch64_return_in_memory_1): Return large _BitInt's in memory.
+	(aarch64_function_arg_alignment): Adapt to correctly return the ABI
+	mandated alignment of _BitInt(N) where N > 128 as the alignment of
+	TImode.
+	(aarch64_composite_type_p): Return true for _BitInt(N), where N > 128.
+
+2024-04-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.cc (bitint_or_aggr_of_bitint_p): New function.
+	(aarch64_layout_arg): Don't emit diagnostics for types involving
+	_BitInt(N).
+
+2024-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114462
+	* tree-core.h (enum annot_expr_kind): Add
+	annot_expr_maybe_infinite_kind enumerator.
+	* gimplify.cc (gimple_boolify): Handle annot_expr_maybe_infinite_kind.
+	* tree-cfg.cc (replace_loop_annotate_in_block): Likewise.
+	(replace_loop_annotate): Likewise.  Move loop->finite_p initialization
+	before the replace_loop_annotate_in_block calls.
+	* tree-pretty-print.cc (dump_generic_node): Handle
+	annot_expr_maybe_infinite_kind.
+
+2024-04-10  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2024-03-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/101523
+	* combine.cc (try_combine): Don't do a 2-insn combination if
+	it does not in fact change I2.
+
+2024-04-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101865
+	* config/rs6000/rs6000.h (TARGET_DIRECT_MOVE): Define.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Replace
+	OPTION_MASK_DIRECT_MOVE with OPTION_MASK_P8_VECTOR.  Delete redundant
+	OPTION_MASK_DIRECT_MOVE usage.  Delete TARGET_DIRECT_MOVE dead code.
+	(rs6000_opt_masks): Neuter the "direct-move" option.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Replace
+	OPTION_MASK_DIRECT_MOVE with OPTION_MASK_P8_VECTOR.  Delete useless
+	comment.
+	* config/rs6000/rs6000-cpus.def (ISA_2_7_MASKS_SERVER): Delete
+	OPTION_MASK_DIRECT_MOVE.
+	(OTHER_VSX_VECTOR_MASKS): Likewise.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.opt (mdirect-move): Remove Mask and Var.
+
+2024-04-10  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/sse.md (sha1msg1): Use "ja" instead of "Bm" for
+	memory constraint.
+	(sha1msg2): Likewise.
+	(sha1nexte): Likewise.
+	(sha1rnds4): Likewise.
+	(sha256msg1): Likewise.
+	(sha256msg2): Likewise.
+	(sha256rnds2): Likewise.
+	(aes<aesklvariant>u8): Use "jm" instead of "m" for memory
+	constraint.
+	(*aes<aeswideklvariant>u8): Likewise.
+	(*encodekey128u32): Use "jr" instead of "r" for register
+	constraints.
+	(*encodekey256u32): Likewise.
+
 2024-04-09  Juergen Christ  <jchrist@linux.ibm.com>
 
 	* config/s390/s390.cc (expand_perm_as_replicate): Implement.

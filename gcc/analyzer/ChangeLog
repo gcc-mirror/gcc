@@ -1,3 +1,51 @@
+2024-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114472
+	* access-diagram.cc (bit_size_expr::maybe_get_formatted_str):
+	Reject attempts to print sizes that are too large.
+	* region.cc (region_offset::calc_symbolic_bit_offset): Use a
+	typeless svalue for the bit offset.
+	* store.cc (bit_range::intersects_p): Replace assertion with
+	test.
+	(bit_range::exceeds_p): Likewise.
+	(bit_range::falls_short_of_p): Likewise.
+
+2024-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* infinite-loop.cc: Include "diagnostic-format-sarif.h".
+	(infinite_loop::to_json): New.
+	(infinite_loop_diagnostic::maybe_add_sarif_properties): New.
+
+2024-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* infinite-recursion.cc: Include "diagnostic-format-sarif.h".
+	(infinite_recursion_diagnostic::maybe_add_sarif_properties): New.
+
+2024-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-details.cc: Include "diagnostic-format-sarif.h".
+	(overlapping_buffers::overlapping_buffers): Add params for new
+	fields.
+	(overlapping_buffers::maybe_add_sarif_properties): New.
+	(overlapping_buffers::m_byte_range_a): New field.
+	(overlapping_buffers::byte_range_b): New field.
+	(overlapping_buffers::m_num_bytes_read_sval): New field.
+	(call_details::complain_about_overlap): Pass new params to
+	overlapping_buffers ctor.
+	* ranges.cc (symbolic_byte_offset::to_json): New.
+	(symbolic_byte_range::to_json): New.
+	* ranges.h (symbolic_byte_offset::to_json): New decl.
+	(symbolic_byte_range::to_json): New decl.
+
+2024-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-taint.cc (tainted_allocation_size::tainted_allocation_size):
+	Add "size_in_bytes" param.
+	(tainted_allocation_size::maybe_add_sarif_properties): New.
+	(tainted_allocation_size::m_size_in_bytes): New field.
+	(region_model::check_dynamic_size_for_taint): Pass size_in_bytes
+	to tainted_allocation_size ctor.
+
 2024-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* analyzer.opt (Wanalyzer-undefined-behavior-strtok): Fix duplicated

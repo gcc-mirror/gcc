@@ -1,3 +1,28 @@
+2024-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114462
+	* semantics.cc: Implement C++26 P2809R3 - Trivial infinite
+	loops are not Undefined Behavior.
+	(maybe_warn_for_constant_evaluated): Add trivial_infinite argument
+	and emit special diagnostics for that case.
+	(finish_if_stmt_cond): Adjust caller.
+	(finish_loop_cond): New function.
+	(finish_while_stmt): Use it.
+	(finish_do_stmt): Likewise.
+	(finish_for_stmt): Likewise.
+
+2024-04-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/104040
+	* semantics.cc (expand_or_defer_fn_1): Keep DECL_SAVED_TREE for
+	all vague linkage cdtors with modules.
+
+2024-04-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99377
+	* module.cc (trees_in::install_entity): Overwrite entity map
+	index if installing from a partition.
+
 2024-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/114580

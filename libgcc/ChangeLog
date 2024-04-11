@@ -1,3 +1,10 @@
+2024-04-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/t-softfp (softfp_extras): Add floatbitinthf,
+	floatbitintbf, floatbitinttf and fixtfbitint.
+	* config/aarch64/libgcc-softfp.ver (GCC_14.0.0): Add __floatbitinthf,
+	__floatbitintbf, __floatbitinttf and __fixtfbitint.
+
 2024-04-09  Sergey Bugaev  <bugaevc@gmail.com>
 
 	* config.host: Recognize aarch64*-*-gnu* hosts.
