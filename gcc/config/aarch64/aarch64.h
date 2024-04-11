@@ -537,11 +537,14 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
    register.  GCC internally uses the poly_int variable aarch64_sve_vg
    instead.  */
 
+#define FIXED_X18 0
+#define CALL_USED_X18 1
+
 #define FIXED_REGISTERS					\
   {							\
     0, 0, 0, 0,   0, 0, 0, 0,	/* R0 - R7 */		\
     0, 0, 0, 0,   0, 0, 0, 0,	/* R8 - R15 */		\
-    0, 0, 0, 0,   0, 0, 0, 0,	/* R16 - R23 */		\
+    0, 0, FIXED_X18, 0,   0, 0, 0, 0,	/* R16 - R23.  */	\
     0, 0, 0, 0,   0, 1, 0, 1,	/* R24 - R30, SP */	\
     0, 0, 0, 0,   0, 0, 0, 0,   /* V0 - V7 */           \
     0, 0, 0, 0,   0, 0, 0, 0,   /* V8 - V15 */		\
@@ -565,7 +568,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
   {							\
     1, 1, 1, 1,   1, 1, 1, 1,	/* R0 - R7 */		\
     1, 1, 1, 1,   1, 1, 1, 1,	/* R8 - R15 */		\
-    1, 1, 1, 0,   0, 0, 0, 0,	/* R16 - R23 */		\
+    1, 1, CALL_USED_X18, 0, 0,   0, 0, 0, /* R16 - R23.  */   \
     0, 0, 0, 0,   0, 1, 1, 1,	/* R24 - R30, SP */	\
     1, 1, 1, 1,   1, 1, 1, 1,	/* V0 - V7 */		\
     0, 0, 0, 0,   0, 0, 0, 0,	/* V8 - V15 */		\
