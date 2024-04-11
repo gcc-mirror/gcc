@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-options "-mrvv-vector-bits=zvl -O0 -Wno-psabi" } */
+/* { dg-options "-mrvv-vector-bits=zvl -O0" } */
 
 #include "perm-7.c"
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -Wno-psabi" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3" } */
 
 typedef long size_t;
 typedef signed char int8_t;
