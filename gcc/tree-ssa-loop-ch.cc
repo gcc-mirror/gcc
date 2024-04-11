@@ -957,7 +957,7 @@ ch_base::copy_headers (function *fun)
 
       edge entry = loop_preheader_edge (loop);
 
-      propagate_threaded_block_debug_into (exit->dest, entry->dest);
+      propagate_threaded_block_debug_into (nonexit->dest, entry->dest);
       if (!gimple_duplicate_seme_region (entry, exit, bbs, n_bbs, copied_bbs,
 					 true))
 	{
