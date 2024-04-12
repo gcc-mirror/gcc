@@ -165,7 +165,7 @@ rs6000_builtin_is_supported (enum rs6000_gen_builtins fncode)
     case ENB_P7_64:
       return TARGET_POPCNTD && TARGET_POWERPC64;
     case ENB_P8:
-      return TARGET_DIRECT_MOVE;
+      return TARGET_POWER8;
     case ENB_P8V:
       return TARGET_P8_VECTOR;
     case ENB_P9:
