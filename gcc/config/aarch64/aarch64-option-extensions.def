@@ -153,7 +153,7 @@ AARCH64_FMV_FEATURE("fp16fml", FP16FML, (F16FML))
 
 AARCH64_OPT_FMV_EXTENSION("rcpc", RCPC, (), (), (), "lrcpc")
 
-AARCH64_OPT_FMV_EXTENSION("rcpc3", RCPC3, (), (), (), "lrcpc3")
+AARCH64_OPT_FMV_EXTENSION("rcpc3", RCPC3, (RCPC), (), (), "lrcpc3")
 
 AARCH64_OPT_FMV_EXTENSION("i8mm", I8MM, (SIMD), (), (), "i8mm")
 
