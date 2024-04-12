@@ -54,8 +54,6 @@ GCCRS_D_OBJS = \
    rust/rustspec.o \
    $(END)
 
-LIBS += -ldl -lpthread
-
 gccrs$(exeext): $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	  $(GCCRS_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
@@ -234,7 +232,7 @@ crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(LIBPROC_MACRO
 	@$(call LINK_PROGRESS,$(INDEX.rust),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) \
-	      $(LIBS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(LIBFFI_POLONIUS) \
+	      $(LIBS) $(CRAB1_LIBS) $(LIBPROC_MACRO_INTERNAL) $(LIBFORMAT_PARSER) $(LIBFFI_POLONIUS) \
  		  $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.rust),end)
 
