@@ -3855,7 +3855,8 @@ has_extra_args_mechanism_p (const_tree t)
   return (PACK_EXPANSION_P (t) /* PACK_EXPANSION_EXTRA_ARGS  */
 	  || TREE_CODE (t) == REQUIRES_EXPR /* REQUIRES_EXPR_EXTRA_ARGS  */
 	  || (TREE_CODE (t) == IF_STMT
-	      && IF_STMT_CONSTEXPR_P (t))); /* IF_STMT_EXTRA_ARGS  */
+	      && IF_STMT_CONSTEXPR_P (t)) /* IF_STMT_EXTRA_ARGS  */
+	  || TREE_CODE (t) == LAMBDA_EXPR); /* LAMBDA_EXPR_EXTRA_ARGS  */
 }
 
 /* Return *_EXTRA_ARGS of the given supported tree T.  */
@@ -3872,6 +3873,8 @@ tree_extra_args (tree t)
   else if (TREE_CODE (t) == IF_STMT
 	   && IF_STMT_CONSTEXPR_P (t))
     return IF_STMT_EXTRA_ARGS (t);
+  else if (TREE_CODE (t) == LAMBDA_EXPR)
+    return LAMBDA_EXPR_EXTRA_ARGS (t);
 
   gcc_unreachable ();
 }
@@ -19618,6 +19621,18 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   tree oldfn = lambda_function (t);
   in_decl = oldfn;
 
+  args = add_extra_args (LAMBDA_EXPR_EXTRA_ARGS (t), args, complain, in_decl);
+  if (processing_template_decl && !in_template_context)
+    {
+      /* Defer templated substitution into a lambda-expr if we lost the
+	 necessary template context.  This may happen for a lambda-expr
+	 used as a default template argument.  */
+      t = copy_node (t);
+      LAMBDA_EXPR_EXTRA_ARGS (t) = NULL_TREE;
+      LAMBDA_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, complain);
+      return t;
+    }
+
   tree r = build_lambda_expr ();
 
   LAMBDA_EXPR_LOCATION (r)
@@ -19709,7 +19724,10 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   tree type = begin_lambda_type (r);
   if (type == error_mark_node)
-    return error_mark_node;
+    {
+      gcc_checking_assert (!(complain & tf_error) || seen_error ());
+      return error_mark_node;
+    }
 
   if (LAMBDA_EXPR_EXTRA_SCOPE (t))
     record_lambda_scope (r);

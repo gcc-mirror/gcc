@@ -6312,6 +6312,7 @@ trees_out::core_vals (tree t)
       WT (((lang_tree_node *)t)->lambda_expression.this_capture);
       WT (((lang_tree_node *)t)->lambda_expression.extra_scope);
       WT (((lang_tree_node *)t)->lambda_expression.regen_info);
+      WT (((lang_tree_node *)t)->lambda_expression.extra_args);
       /* pending_proxies is a parse-time thing.  */
       gcc_assert (!((lang_tree_node *)t)->lambda_expression.pending_proxies);
       if (state)
@@ -6814,6 +6815,7 @@ trees_in::core_vals (tree t)
       RT (((lang_tree_node *)t)->lambda_expression.this_capture);
       RT (((lang_tree_node *)t)->lambda_expression.extra_scope);
       RT (((lang_tree_node *)t)->lambda_expression.regen_info);
+      RT (((lang_tree_node *)t)->lambda_expression.extra_args);
       /* lambda_expression.pending_proxies is NULL  */
       ((lang_tree_node *)t)->lambda_expression.locus
 	= state->read_location (*this);
