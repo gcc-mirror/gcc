@@ -103,21 +103,21 @@ PROTO (zero_mask_za_aa, void, ()) { svzero_mask_za (0xaa); }
 
 /*
 ** zero_mask_za_ab:
-**	zero	{ za1\.h, za0\.d }
+**	zero	{ za0\.d, za1\.d, za3\.d, za5\.d, za7\.d }
 **	ret
 */
 PROTO (zero_mask_za_ab, void, ()) { svzero_mask_za (0xab); }
 
 /*
 ** zero_mask_za_d7:
-**	zero	{ za0\.h, za1\.d, za7\.d }
+**	zero	{ za0\.d, za1\.d, za2\.d, za4\.d, za6\.d, za7\.d }
 **	ret
 */
 PROTO (zero_mask_za_d7, void, ()) { svzero_mask_za (0xd7); }
 
 /*
 ** zero_mask_za_bf:
-**	zero	{ za1\.h, za0\.s, za2\.d }
+**	zero	{ za0\.d, za1\.d, za2\.d, za3\.d, za4\.d, za5\.d, za7\.d }
 **	ret
 */
 PROTO (zero_mask_za_bf, void, ()) { svzero_mask_za (0xbf); }

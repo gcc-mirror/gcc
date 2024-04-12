@@ -13210,29 +13210,33 @@ aarch64_output_sme_zero_za (rtx mask)
   /* The last entry in the list has the form "za7.d }", but that's the
      same length as "za7.d, ".  */
   static char buffer[sizeof("zero\t{ ") + sizeof ("za7.d, ") * 8 + 1];
-  unsigned int i = 0;
-  i += snprintf (buffer + i, sizeof (buffer) - i, "zero\t");
-  const char *prefix = "{ ";
   for (auto &tile : tiles)
     {
       unsigned int tile_mask = tile.mask;
       unsigned int tile_index = 0;
+      unsigned int i = snprintf (buffer, sizeof (buffer), "zero\t");
+      const char *prefix = "{ ";
+      auto remaining_mask = mask_val;
       while (tile_mask < 0x100)
 	{
-	  if ((mask_val & tile_mask) == tile_mask)
+	  if ((remaining_mask & tile_mask) == tile_mask)
 	    {
 	      i += snprintf (buffer + i, sizeof (buffer) - i, "%sza%d.%c",
 			     prefix, tile_index, tile.letter);
 	      prefix = ", ";
-	      mask_val &= ~tile_mask;
+	      remaining_mask &= ~tile_mask;
 	    }
 	  tile_mask <<= 1;
 	  tile_index += 1;
 	}
+      if (remaining_mask == 0)
+	{
+	  gcc_assert (i + 3 <= sizeof (buffer));
+	  snprintf (buffer + i, sizeof (buffer) - i, " }");
+	  return buffer;
+	}
     }
-  gcc_assert (mask_val == 0 && i + 3 <= sizeof (buffer));
-  snprintf (buffer + i, sizeof (buffer) - i, " }");
-  return buffer;
+  gcc_unreachable ();
 }
 
 /* Return size in bits of an arithmetic operand which is shifted/scaled and
