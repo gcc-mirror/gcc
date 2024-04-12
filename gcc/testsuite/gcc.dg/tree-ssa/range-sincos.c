@@ -40,4 +40,4 @@ stool (double x)
     link_error ();
 }
 
-// { dg-final { scan-tree-dump-not "link_error" "evrp" { target { { *-*-linux* } && { glibc } } } } }
+// { dg-final { scan-tree-dump-not "link_error" "evrp" { target { { *-*-linux* } && { glibc } } xfail s390*-*-* } } } xfail: PR114678
