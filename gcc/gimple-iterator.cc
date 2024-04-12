@@ -1048,7 +1048,8 @@ gsi_safe_insert_before (gimple_stmt_iterator *iter, gimple *g)
   gimple *stmt = gsi_stmt (*iter);
   if (stmt
       && is_gimple_call (stmt)
-      && (gimple_call_flags (stmt) & ECF_RETURNS_TWICE) != 0)
+      && (gimple_call_flags (stmt) & ECF_RETURNS_TWICE) != 0
+      && bb_has_abnormal_pred (gsi_bb (*iter)))
     {
       edge e = edge_before_returns_twice_call (gsi_bb (*iter));
       basic_block new_bb = gsi_insert_on_edge_immediate (e, g);
@@ -1071,7 +1072,8 @@ gsi_safe_insert_seq_before (gimple_stmt_iterator *iter, gimple_seq seq)
   gimple *stmt = gsi_stmt (*iter);
   if (stmt
       && is_gimple_call (stmt)
-      && (gimple_call_flags (stmt) & ECF_RETURNS_TWICE) != 0)
+      && (gimple_call_flags (stmt) & ECF_RETURNS_TWICE) != 0
+      && bb_has_abnormal_pred (gsi_bb (*iter)))
     {
       edge e = edge_before_returns_twice_call (gsi_bb (*iter));
       gimple *f = gimple_seq_first_stmt (seq);
