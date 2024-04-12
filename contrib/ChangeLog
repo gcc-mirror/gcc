@@ -1,3 +1,8 @@
+2024-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	* check-params-in-docs.py (ignored): Add
+	gcn-preferred-vectorization-factor.
+
 2024-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-changelog/git_update_version.py: Add

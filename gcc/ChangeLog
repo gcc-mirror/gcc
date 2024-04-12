@@ -1,3 +1,104 @@
+2024-04-11  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (btf_asm_type_ref): Convert IDs to BTF internally and
+	fix potentially looking up wrong type for asm debug comment info.
+	Split into...
+	(btf_asm_datasec_type_ref): ... This. New.
+	(btf_asm_datasec_entry): Call it here, instead of btf_asm_type_ref.
+	(btf_asm_type, btf_asm_array, btf_asm_varent, btf_asm_sou_member)
+	(btf_asm_func_arg, btf_asm_func_type): Adapt btf_asm_type_ref call.
+
+2024-04-11  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (btf_asm_sou_member): Always emit non-representable
+	bitfield members as having 'void' type.  Refactor slightly.
+
+2024-04-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def:
+	Remove "memtag", "memtag2", "ssbs", "ssbs2", "ls64", "ls64_v"
+	and "ls64_accdata" FMV features.
+
+2024-04-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def:
+	Remove "flagm2", "sha1", "pmull", "dit", "dpb", "dpb2", "jscvt",
+	"fcma", "rcpc2", "frintts", "dgh", "ebf16", "sve-bf16",
+	"sve-ebf16", "sve-i8mm", "sve2-pmull128", "memtag3", "bti" and
+	"wfxt" entries.
+
+2024-04-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def:
+	Fix "rmd"->"rdm", and add FMV to "rdma".
+	* config/aarch64/aarch64.cc (FEAT_RDMA): Define as FEAT_RDM.
+
+2024-04-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc (compare_feature_masks):
+	Use ARRAY_SIZE and >=0 for iteration bounds.
+	(aarch64_mangle_decl_assembler_name): Use ARRAY_SIZE.
+
+2024-04-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: Reorder FMV entries.
+
+2024-04-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/standards.texi (Language Standards Supported by GCC):
+	Add Modula-2 language section.
+
+2024-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110027
+	* asan.cc (asan_emit_stack_protection): Assert offsets[0] is
+	zero if there is no stack protect guard, otherwise
+	-ASAN_RED_ZONE_SIZE.  If alignb > ASAN_RED_ZONE_SIZE and there is
+	stack pointer guard, take the ASAN_RED_ZONE_SIZE bytes allocated at
+	the top of the stack into account when computing base_align_bias.
+	Recompute use_after_return_class from asan_frame_size + base_align_bias
+	and set to -1 if that would overflow to 11.
+
+2024-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109596
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Propagate
+	debug stmts to nonexit->dest rather than exit->dest.
+
+2024-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114681
+	* tree-inline.cc (copy_bb): Key on the remapped stmt
+	to identify gconds to have condition coverage data remapped.
+
+2024-04-11  Pan Li  <pan2.li@intel.com>
+
+	PR target/114639
+	* config/riscv/riscv.cc (riscv_function_value_regno_p): New func
+	impl for hook TARGET_FUNCTION_VALUE_REGNO_P.
+	(riscv_get_raw_result_mode): New func imple for hook
+	TARGET_GET_RAW_RESULT_MODE.
+	(TARGET_FUNCTION_VALUE_REGNO_P): Impl the hook.
+	(TARGET_GET_RAW_RESULT_MODE): Ditto.
+	* config/riscv/riscv.h (V_RETURN): New macro for vector return.
+	(GP_RETURN_FIRST): New macro for the first GPR in return.
+	(GP_RETURN_LAST): New macro for the last GPR in return.
+	(FP_RETURN_FIRST): Diito but for FPR.
+	(FP_RETURN_LAST): Ditto.
+	(FUNCTION_VALUE_REGNO_P): Remove as deprecated and replace by
+	TARGET_FUNCTION_VALUE_REGNO_P.
+
+2024-04-11  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* btfout.cc (btf_asm_type): Do not skip emitting members of
+	unknown type.
+
+2024-04-11  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/112878
+	* dwarf2ctf.cc (gen_ctf_sou_type): Check for conditions before
+	call to ctf_add_slice.  Use CTF_K_UNKNOWN type if fail.
+
 2024-04-10  Marek Polacek  <polacek@redhat.com>
 
 	PR target/114606

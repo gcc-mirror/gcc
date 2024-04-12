@@ -1,3 +1,21 @@
+2024-04-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114303
+	* constraint.cc (tsubst_requires_expr): Clear
+	REQUIRES_EXPR_EXTRA_ARGS before calling build_extra_args.
+	* pt.cc (tree_extra_args): Define.
+	(extract_locals_r): Assert *_EXTRA_ARGS is empty.
+	(tsubst_stmt) <case IF_STMT>: Clear IF_SCOPE on the new
+	IF_STMT.  Call build_extra_args on the new IF_STMT instead
+	of t which might already have IF_STMT_EXTRA_ARGS.
+
+2024-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114409
+	* pt.cc (tsubst_expr) <case ANNOTATE_EXPR>: Move to ...
+	(tsubst_stmt) <case ANNOTATE_EXPR>: ... here.  Use tsubst_expr
+	instead of RECUR for the last 2 arguments.
+
 2024-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/114462

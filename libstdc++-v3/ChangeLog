@@ -1,3 +1,42 @@
+2024-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/xml/manual/abi.xml: Add latest library versions.
+	* doc/html/manual/abi.html: Regenerate.
+
+2024-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64le-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
+2024-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114692
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.32): Move new exports for
+	__basic_file::native_handle to ...
+	(GLIBCXX_3.4.33): ... here. Adjust to not match wchar_t
+	specialization, which isn't used.
+	* testsuite/util/testsuite_abi.cc: Add GLIBCXX_3.4.33 and update
+	latest version check.
+
+2024-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64le-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
 2024-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/manipulators/extended/get_time/char/2.cc:

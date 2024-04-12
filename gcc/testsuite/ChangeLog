@@ -1,3 +1,126 @@
+2024-04-11  David Faust  <david.faust@oracle.com>
+
+	* gcc.dg/debug/btf/btf-bitfields-4.c: Add two new checks.
+
+2024-04-11  Andre Vieira (lists)  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/bitfield-bitint-abi-align16.c (g1, g8, g16, g1p, g8p,
+	g16p): Remove unnecessary sbfx.
+	* gcc.target/aarch64/bitfield-bitint-abi-align8.c (g1, g8, g16, g1p, g8p,
+	g16p): Likewise.
+
+2024-04-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* g++.target/aarch64/mv-1.C: New test.
+
+2024-04-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_21.c: Reorder features.
+	* gcc.target/aarch64/cpunative/native_cpu_22.c: Ditto.
+
+2024-04-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114303
+	* g++.dg/cpp1z/constexpr-if-lambda6.C: New test.
+
+2024-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110027
+	* gcc.dg/asan/pr110027.c: New test.
+
+2024-04-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114681
+	* gcc.misc-tests/gcov-pr114681.c: New testcase.
+
+2024-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114409
+	* g++.dg/ext/pr114409-2.C: New test.
+
+2024-04-11  Pan Li  <pan2.li@intel.com>
+
+	* g++.target/riscv/rvv/base/pr109244.C: Remove deprecated
+	-Wno-psabi option.
+	* g++.target/riscv/rvv/base/pr109535.C: Ditto.
+	* gcc.target/riscv/rvv/autovec/fixed-vlmax-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/compress_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/consecutive-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/consecutive-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/consecutive_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/consecutive_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/perm_run-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-1u.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-2u.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-3u.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-4u.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_extract-runu.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/vec_set-run.c: Ditto.
+
+2024-04-11  Pan Li  <pan2.li@intel.com>
+
+	PR target/114639
+	* g++.target/riscv/rvv/base/pr114639-1.C: New test.
+	* gcc.target/riscv/rvv/base/pr114639-1.c: New test.
+
+2024-04-11  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* gcc.dg/debug/btf/btf-bitfields-4.c: Update the vlen check.
+	* gcc.dg/debug/btf/btf-struct-2.c: Check that member named 'f'
+	with void data type is emitted.
+
+2024-04-11  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR debug/112878
+	* gcc.dg/debug/ctf/ctf-bitfields-5.c: New test.
+
 2024-04-10  Hans-Peter Nilsson  <hp@axis.com>
 
 	Revert:
