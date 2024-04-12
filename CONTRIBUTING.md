@@ -4,7 +4,8 @@
 
 * **Ensure the bug was not already reported** by searching on GitHub under [Issues](https://github.com/Rust-GCC/gccrs/issues).
 
-* If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/Rust-GCC/gccrs/issues/new).
+* If you're unable to find an open issue addressing the problem,
+  [open a new one](https://github.com/Rust-GCC/gccrs/issues/new).
   Be sure to include a **title and clear description**, as much relevant information as possible, and a **code sample**
   or an **executable test case** demonstrating the expected behavior that is not occurring.
 
@@ -15,7 +16,8 @@
 * Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
 
 * Before submitting, GCC development requires copyright assignment or the Developer's Certificate of Origin sign-off.
-   Please see the [Contributing to GCC](https://gcc.gnu.org/contribute.html) guide or [Developer's Certificate of Origin (DCO) Sign-off](https://gcc.gnu.org/dco.html) guide.
+   Please see the [Contributing to GCC](https://gcc.gnu.org/contribute.html) guide or
+  [Developer's Certificate of Origin (DCO) Sign-off](https://gcc.gnu.org/dco.html) guide.
 
 * Patches sent to the [`gcc-rust` mailing list](https://gcc.gnu.org/mailman/listinfo/gcc-rust) are likewise welcome.
 These will be imported into a GitHub PR to follow the normal review process,

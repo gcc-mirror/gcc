@@ -217,7 +217,8 @@ If you want to contribute to GCC Rust, you can find more information in [CONTRIB
 
 Please be aware this project is designed to be pushed upstream to GCC when we reach some milestones,
 and this means we require copyright assignment or the Developer's Certificate of Origin sign-off.
-Please see the [Contributing to GCC](https://gcc.gnu.org/contribute.html) guide or [Developer's Certificate of Origin (DCO) Sign-off](https://gcc.gnu.org/dco.html) guide.
+Please see the [Contributing to GCC](https://gcc.gnu.org/contribute.html) guide or
+[Developer's Certificate of Origin (DCO) Sign-off](https://gcc.gnu.org/dco.html) guide.
 
 Not all contributions must be code; we would love to see new test cases or bugs and issues to be reported.
 Feel free to add any comments on open PRs
