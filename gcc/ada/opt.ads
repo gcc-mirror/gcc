@@ -816,10 +816,6 @@ package Opt is
    --  cause implicit packing instead of generating an error message. Set by
    --  use of pragma Implicit_Packing.
 
-   Include_Subprogram_In_Messages : Boolean := False;
-   --  GNAT
-   --  Set True to include the enclosing subprogram in compiler messages.
-
    Init_Or_Norm_Scalars : Boolean := False;
    --  GNAT, GNATBIND
    --  Set True if a pragma Initialize_Scalars applies to the current unit.

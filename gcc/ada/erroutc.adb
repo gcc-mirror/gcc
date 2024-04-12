@@ -339,7 +339,6 @@ package body Erroutc is
       w ("  Uncond             = ", E.Uncond);
       w ("  Msg_Cont           = ", E.Msg_Cont);
       w ("  Deleted            = ", E.Deleted);
-      w ("  Node               = ", Int (E.Node));
 
       Write_Eol;
    end dmsg;
@@ -698,20 +697,7 @@ package body Erroutc is
       --  Postfix warning tag to message if needed
 
       if Tag /= "" and then Warning_Doc_Switch then
-         if Include_Subprogram_In_Messages then
-            Txt :=
-              new String'
-                (Subprogram_Name_Ptr (E_Msg.Node) &
-                 ": " & Text.all & ' ' & Tag);
-         else
-            Txt := new String'(Text.all & ' ' & Tag);
-         end if;
-
-      elsif Include_Subprogram_In_Messages
-        and then (E_Msg.Warn or else E_Msg.Style)
-      then
-         Txt :=
-           new String'(Subprogram_Name_Ptr (E_Msg.Node) & ": " & Text.all);
+         Txt := new String'(Text.all & ' ' & Tag);
       else
          Txt := Text;
       end if;
@@ -744,8 +730,7 @@ package body Erroutc is
       elsif E_Msg.Warn then
          Txt := new String'(SGR_Warning & "warning: " & SGR_Reset & Txt.all);
 
-      --  No prefix needed for style message, "(style)" is there already,
-      --  although not necessarily in first position if -gnatdJ is used.
+      --  No prefix needed for style message, "(style)" is there already
 
       elsif E_Msg.Style then
          if Txt (Txt'First .. Txt'First + 6) = "(style)" then
@@ -1674,7 +1659,6 @@ package body Erroutc is
         ((Start      => Loc,
           Msg        => new String'(Msg),
           Stop       => Source_Last (Get_Source_File_Index (Loc)),
-          Node       => Node,
           Reason     => Reason,
           Open       => True,
           Used       => Used,

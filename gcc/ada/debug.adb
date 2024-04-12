@@ -67,7 +67,6 @@ package body Debug is
    --  dG   Generate all warnings including those normally suppressed
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
-   --  dJ   Prepend subprogram name in messages
    --  dK   Kill all error messages
    --  dL   Ignore external calls from instances for elaboration
    --  dM   Assume all variables are modified (no current values)
@@ -614,11 +613,6 @@ package body Debug is
    --       a name is replaced by <uppercase-letter>...<lowercase-letter>. This
    --       is used in the fixed bugs run to minimize system and version
    --       dependency in filed -gnatD or -gnatG output.
-
-   --  dJ   Prepend the name of the enclosing subprogram in compiler messages
-   --       (errors, warnings, style checks). This is useful in particular to
-   --       integrate compiler warnings in static analysis tools such as
-   --       CodePeer.
 
    --  dK   Kill all error messages. This debug flag suppresses the output
    --       of all error messages. It is used in regression tests where the

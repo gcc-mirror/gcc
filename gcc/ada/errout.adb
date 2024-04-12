@@ -100,8 +100,7 @@ package body Errout is
      (Msg      : String;
       Span     : Source_Span;
       Opan     : Source_Span;
-      Msg_Cont : Boolean;
-      Node     : Node_Id);
+      Msg_Cont : Boolean);
    --  This is the low-level routine used to post messages after dealing with
    --  the issue of messages placed on instantiations (which get broken up
    --  into separate calls in Error_Msg). Span is the location on which the
@@ -112,9 +111,7 @@ package body Errout is
    --  copy. So typically we can see Opan pointing to the template location
    --  in an instantiation copy when Span points to the source location of
    --  the actual instantiation (i.e the line with the new). Msg_Cont is
-   --  set true if this is a continuation message. Node is the relevant
-   --  Node_Id for this message, to be used to compute the enclosing entity if
-   --  Opt.Include_Subprogram_In_Messages is set.
+   --  set true if this is a continuation message.
 
    function No_Warnings (N : Node_Or_Entity_Id) return Boolean;
    --  Determines if warnings should be suppressed for the given node
@@ -475,7 +472,7 @@ package body Errout is
       --  Error_Msg_Internal to place the message in the requested location.
 
       if Instantiation (Sindex) = No_Location then
-         Error_Msg_Internal (Msg, Flag_Span, Flag_Span, False, N);
+         Error_Msg_Internal (Msg, Flag_Span, Flag_Span, False);
          return;
       end if;
 
@@ -573,32 +570,28 @@ package body Errout is
                        (Msg      => "info: in inlined body #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
-                        Msg_Cont => Msg_Cont_Status,
-                        Node     => N);
+                        Msg_Cont => Msg_Cont_Status);
 
                   elsif Is_Warning_Msg then
                      Error_Msg_Internal
                        (Msg      => Warn_Insertion & "in inlined body #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
-                        Msg_Cont => Msg_Cont_Status,
-                        Node     => N);
+                        Msg_Cont => Msg_Cont_Status);
 
                   elsif Is_Style_Msg then
                      Error_Msg_Internal
                        (Msg      => "style: in inlined body #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
-                        Msg_Cont => Msg_Cont_Status,
-                        Node     => N);
+                        Msg_Cont => Msg_Cont_Status);
 
                   else
                      Error_Msg_Internal
                        (Msg      => "error in inlined body #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
-                        Msg_Cont => Msg_Cont_Status,
-                        Node     => N);
+                        Msg_Cont => Msg_Cont_Status);
                   end if;
 
                --  Case of generic instantiation
@@ -609,32 +602,28 @@ package body Errout is
                        (Msg      => "info: in instantiation #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
-                        Msg_Cont => Msg_Cont_Status,
-                        Node     => N);
+                        Msg_Cont => Msg_Cont_Status);
 
                   elsif Is_Warning_Msg then
                      Error_Msg_Internal
                        (Msg      => Warn_Insertion & "in instantiation #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
-                        Msg_Cont => Msg_Cont_Status,
-                        Node     => N);
+                        Msg_Cont => Msg_Cont_Status);
 
                   elsif Is_Style_Msg then
                      Error_Msg_Internal
                        (Msg      => "style: in instantiation #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
-                        Msg_Cont => Msg_Cont_Status,
-                        Node     => N);
+                        Msg_Cont => Msg_Cont_Status);
 
                   else
                      Error_Msg_Internal
                        (Msg      => "instantiation error #",
                         Span     => To_Span (Actual_Error_Loc),
                         Opan     => Flag_Span,
-                        Msg_Cont => Msg_Cont_Status,
-                        Node     => N);
+                        Msg_Cont => Msg_Cont_Status);
                   end if;
                end if;
             end if;
@@ -653,8 +642,7 @@ package body Errout is
            (Msg      => Msg,
             Span     => To_Span (Actual_Error_Loc),
             Opan     => Flag_Span,
-            Msg_Cont => Msg_Cont_Status,
-            Node     => N);
+            Msg_Cont => Msg_Cont_Status);
       end;
    end Error_Msg;
 
@@ -944,8 +932,7 @@ package body Errout is
      (Msg      : String;
       Span     : Source_Span;
       Opan     : Source_Span;
-      Msg_Cont : Boolean;
-      Node     : Node_Id)
+      Msg_Cont : Boolean)
    is
       Sptr     : constant Source_Ptr := Span.Ptr;
       Optr     : constant Source_Ptr := Opan.Ptr;
@@ -1247,8 +1234,7 @@ package body Errout is
           Serious             => Is_Serious_Error,
           Uncond              => Is_Unconditional_Msg,
           Msg_Cont            => Continuation,
-          Deleted             => False,
-          Node                => Node));
+          Deleted             => False));
       Cur_Msg := Errors.Last;
 
       --  Test if warning to be treated as error
@@ -1471,8 +1457,7 @@ package body Errout is
               (Msg      => Msg,
                Span     => Span,
                Opan     => Opan,
-               Msg_Cont => True,
-               Node     => Node);
+               Msg_Cont => True);
          end;
       end if;
    end Error_Msg_Internal;
@@ -2026,9 +2011,9 @@ package body Errout is
                --  Warn for unmatched Warnings (Off, ...)
 
                if SWE.Open then
-                  Error_Msg_N
+                  Error_Msg
                     ("?.w?pragma Warnings Off with no matching Warnings On",
-                     SWE.Node);
+                     SWE.Start);
 
                --  Warn for ineffective Warnings (Off, ..)
 
@@ -2041,9 +2026,9 @@ package body Errout is
                  and then not
                    (SWE.Msg'Length > 3 and then SWE.Msg (2 .. 3) = "-W")
                then
-                  Error_Msg_N
+                  Error_Msg
                     ("?.w?no warning suppressed by this pragma",
-                     SWE.Node);
+                     SWE.Start);
                end if;
             end if;
          end;
@@ -2394,9 +2379,6 @@ package body Errout is
       --  whose value is the JSON location of Error.Sptr.Ptr. If Sptr.First and
       --  Sptr.Last are different from Sptr.Ptr, they will be printed as JSON
       --  locations under the names "start" and "finish".
-      --  When Include_Subprogram_In_Messages is true (-gnatdJ) an additional,
-      --  non-standard, attribute named "subprogram" will be added, allowing
-      --  precisely identifying the subprogram surrounding the span.
 
       -----------------------
       --  Is_Continuation  --
@@ -2471,12 +2453,6 @@ package body Errout is
          if Span.Ptr /= Span.Last then
             Write_Str (",""finish"":");
             Write_JSON_Location (Span.Last);
-         end if;
-
-         if Include_Subprogram_In_Messages then
-            Write_Str (",""subprogram"":""");
-            Write_JSON_Escaped_String (Subprogram_Name_Ptr (Error.Node));
-            Write_Str ("""");
          end if;
 
          Write_Str ("}");
