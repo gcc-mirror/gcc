@@ -1,3 +1,10 @@
+2024-04-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2024-02-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr114130.c: New.
+
 2024-04-08  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

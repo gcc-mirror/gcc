@@ -1,3 +1,12 @@
+2024-04-11  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2024-02-29  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/114130
+	* config/riscv/sync.md (atomic_compare_and_swap<mode>): Sign
+	extend the expected value if needed.
+
 2024-04-08  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
