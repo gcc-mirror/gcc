@@ -19622,11 +19622,16 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   in_decl = oldfn;
 
   args = add_extra_args (LAMBDA_EXPR_EXTRA_ARGS (t), args, complain, in_decl);
-  if (processing_template_decl && !in_template_context)
+  if (processing_template_decl
+      && (!in_template_context || any_dependent_template_arguments_p (args)))
     {
       /* Defer templated substitution into a lambda-expr if we lost the
 	 necessary template context.  This may happen for a lambda-expr
-	 used as a default template argument.  */
+	 used as a default template argument.
+
+	 Defer dependent substitution as well so that we don't prematurely
+	 lower the level of a deduced return type or any other auto or
+	 template parameter belonging to the lambda.  */
       t = copy_node (t);
       LAMBDA_EXPR_EXTRA_ARGS (t) = NULL_TREE;
       LAMBDA_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, complain);
