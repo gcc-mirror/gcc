@@ -3790,11 +3790,10 @@ rs6000_option_override_internal (bool global_init_p)
 		 "-mmultiple");
     }
 
-  /* If little-endian, default to -mstrict-align on older processors.
-     Testing for direct_move matches power8 and later.  */
+  /* If little-endian, default to -mstrict-align on older processors.  */
   if (!BYTES_BIG_ENDIAN
       && !(processor_target_table[tune_index].target_enable
-	   & OPTION_MASK_P8_VECTOR))
+	   & OPTION_MASK_POWER8))
     rs6000_isa_flags |= ~rs6000_isa_flags_explicit & OPTION_MASK_STRICT_ALIGN;
 
   /* Add some warnings for VSX.  */
@@ -3880,7 +3879,7 @@ rs6000_option_override_internal (bool global_init_p)
       else
 	rs6000_isa_flags |= ISA_3_0_MASKS_SERVER;
     }
-  else if (TARGET_P8_VECTOR || TARGET_DIRECT_MOVE || TARGET_CRYPTO)
+  else if (TARGET_P8_VECTOR || TARGET_POWER8 || TARGET_CRYPTO)
     rs6000_isa_flags |= (ISA_2_7_MASKS_SERVER & ~ignore_masks);
   else if (TARGET_VSX)
     rs6000_isa_flags |= (ISA_2_6_MASKS_SERVER & ~ignore_masks);

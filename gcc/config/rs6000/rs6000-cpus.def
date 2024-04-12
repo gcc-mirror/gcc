@@ -47,6 +47,7 @@
    fusion here, instead set it in rs6000.cc if we are tuning for a power8
    system.  */
 #define ISA_2_7_MASKS_SERVER	(ISA_2_6_MASKS_SERVER			\
+				 | OPTION_MASK_POWER8			\
 				 | OPTION_MASK_P8_VECTOR		\
 				 | OPTION_MASK_CRYPTO			\
 				 | OPTION_MASK_EFFICIENT_UNALIGNED_VSX	\
@@ -136,6 +137,7 @@
 				 | OPTION_MASK_MODULO			\
 				 | OPTION_MASK_MULHW			\
 				 | OPTION_MASK_NO_UPDATE		\
+				 | OPTION_MASK_POWER8			\
 				 | OPTION_MASK_P8_FUSION		\
 				 | OPTION_MASK_P8_VECTOR		\
 				 | OPTION_MASK_P9_MINMAX		\

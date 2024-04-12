@@ -470,6 +470,10 @@ Save the TOC in the prologue for indirect calls rather than inline.
 mvsx-timode
 Target RejectNegative Undocumented Ignore
 
+;; This option exists only to create its MASK.  It is not intended for users.
+mpower8-internal
+Target Undocumented Mask(POWER8) Var(rs6000_isa_flags) Warn(Do not use %<-mpower8-internal%>; use %<-mcpu=power8%> instead)
+
 mpower8-fusion
 Target Mask(P8_FUSION) Var(rs6000_isa_flags)
 Fuse certain integer operations together for better performance on power8.
