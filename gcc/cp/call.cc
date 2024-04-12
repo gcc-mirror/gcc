@@ -1596,7 +1596,9 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
   return conv;
 }
 
-/* Returns nonzero if T1 is reference-related to T2.  */
+/* Returns nonzero if T1 is reference-related to T2.
+
+   This is considered when a reference to T1 is initialized by a T2.  */
 
 bool
 reference_related_p (tree t1, tree t2)
@@ -1757,6 +1759,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
     }
 
   bool copy_list_init = false;
+  bool single_list_conv = false;
   if (expr && BRACE_ENCLOSED_INITIALIZER_P (expr))
     {
       maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
@@ -1783,6 +1786,11 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	      from = etype;
 	      goto skip;
 	    }
+	  else if (CLASS_TYPE_P (etype) && TYPE_HAS_CONVERSION (etype))
+	    /* CWG1996: jason's proposed drafting adds "or initializing T from E
+	       would bind directly".  We check that in the direct binding with
+	       conversion code below.  */
+	    single_list_conv = true;
 	}
       /* Otherwise, if T is a reference type, a prvalue temporary of the type
 	 referenced by T is copy-list-initialized, and the reference is bound
@@ -1907,9 +1915,14 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
      (possibly cv-qualified) object to the (possibly cv-qualified) same
      object type (or a reference to it), to a (possibly cv-qualified) base
      class of that type (or a reference to it).... */
-  else if (CLASS_TYPE_P (from) && !related_p
-	   && !(flags & LOOKUP_NO_CONVERSION))
+  else if (!related_p
+	   && !(flags & LOOKUP_NO_CONVERSION)
+	   && (CLASS_TYPE_P (from) || single_list_conv))
     {
+      tree rexpr = expr;
+      if (single_list_conv)
+	rexpr = CONSTRUCTOR_ELT (expr, 0)->value;
+
       /* [dcl.init.ref]
 
 	 If the initializer expression
@@ -1923,7 +1936,7 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 
 	the reference is bound to the lvalue result of the conversion
 	in the second case.  */
-      z_candidate *cand = build_user_type_conversion_1 (rto, expr, flags,
+      z_candidate *cand = build_user_type_conversion_1 (rto, rexpr, flags,
 							complain);
       if (cand)
 	{
