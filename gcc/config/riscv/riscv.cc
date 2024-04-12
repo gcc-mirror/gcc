@@ -5499,7 +5499,7 @@ riscv_vector_float_type_p (const_tree type)
   return strstr (name, "vfloat") != NULL;
 }
 
-static unsigned
+static int
 riscv_vector_element_bitsize (const_tree type)
 {
   machine_mode mode = TYPE_MODE (type);
@@ -5523,7 +5523,7 @@ riscv_vector_element_bitsize (const_tree type)
   gcc_unreachable ();
 }
 
-static unsigned
+static int
 riscv_vector_required_min_vlen (const_tree type)
 {
   machine_mode mode = TYPE_MODE (type);
@@ -5531,7 +5531,7 @@ riscv_vector_required_min_vlen (const_tree type)
   if (riscv_v_ext_mode_p (mode))
     return TARGET_MIN_VLEN;
 
-  unsigned element_bitsize = riscv_vector_element_bitsize (type);
+  int element_bitsize = riscv_vector_element_bitsize (type);
   const char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 
   if (strstr (name, "bool64") != NULL)
@@ -5569,7 +5569,7 @@ riscv_validate_vector_type (const_tree type, const char *hint)
       return;
     }
 
-  unsigned element_bitsize = riscv_vector_element_bitsize (type);
+  int element_bitsize = riscv_vector_element_bitsize (type);
   bool int_type_p = riscv_vector_int_type_p (type);
 
   if (int_type_p && element_bitsize == 64
@@ -5609,7 +5609,7 @@ riscv_validate_vector_type (const_tree type, const char *hint)
       return;
     }
 
-  unsigned required_min_vlen = riscv_vector_required_min_vlen (type);
+  int required_min_vlen = riscv_vector_required_min_vlen (type);
 
   if (TARGET_MIN_VLEN < required_min_vlen)
     {
