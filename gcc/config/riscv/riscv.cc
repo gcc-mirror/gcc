@@ -11008,7 +11008,7 @@ riscv_function_value_regno_p (const unsigned regno)
   if (FP_RETURN_FIRST <= regno && regno <= FP_RETURN_LAST)
     return true;
 
-  if (regno == V_RETURN)
+  if (TARGET_VECTOR && regno == V_RETURN)
     return true;
 
   return false;
