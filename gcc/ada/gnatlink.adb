@@ -42,6 +42,7 @@ with Types;
 
 with Ada.Command_Line; use Ada.Command_Line;
 with Ada.Exceptions;   use Ada.Exceptions;
+with Ada.Strings.Fixed;
 
 with System.OS_Lib; use System.OS_Lib;
 with System.CRTL;
@@ -1697,15 +1698,13 @@ begin
 
       procedure Check_File_Name (S : String) is
       begin
-         for J in 1 .. FN'Length - (S'Length - 1) loop
-            if FN (J .. J + (S'Length - 1)) = S then
-               Error_Msg
-                 ("warning: executable file name """ & Output_File_Name.all
-                  & """ contains substring """ & S & '"');
-               Error_Msg
-                 ("admin privileges may be required to run this file");
-            end if;
-         end loop;
+         if Ada.Strings.Fixed.Index (FN, S) /= 0 then
+            Error_Msg
+              ("warning: executable file name """ & Output_File_Name.all
+               & """ contains substring """ & S & '"');
+            Error_Msg
+              ("admin privileges may be required to run this file");
+         end if;
       end Check_File_Name;
 
    --  Start of processing for Bad_File_Names_On_Windows
