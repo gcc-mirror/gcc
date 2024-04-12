@@ -49,7 +49,6 @@ with Sem_Aux;        use Sem_Aux;
 with Sem_Case;       use Sem_Case;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Ch3;        use Sem_Ch3;
-with Sem_Ch5;        use Sem_Ch5;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Ch13;       use Sem_Ch13;
 with Sem_Dim;        use Sem_Dim;
@@ -3381,7 +3380,15 @@ package body Sem_Aggr is
 
             Key_Expr := Key_Expression (Comp);
             if Present (Key_Expr) then
-               Preanalyze_And_Resolve (New_Copy_Tree (Key_Expr), Key_Type);
+               if not Present (Add_Named_Subp) then
+                  Error_Msg_N
+                    ("iterated_element_association with key_expression only "
+                       & "allowed for container type with Add_Named operation "
+                       & "(RM22 4.3.5(24))",
+                     Comp);
+               else
+                  Preanalyze_And_Resolve (New_Copy_Tree (Key_Expr), Key_Type);
+               end if;
             end if;
             End_Scope;
 
@@ -3414,6 +3421,16 @@ package body Sem_Aggr is
          else
             Choice := First (Discrete_Choices (Comp));
 
+            --  A copy of Choice is made before it's analyzed, to preserve
+            --  prefixed calls in their original form, because otherwise the
+            --  analysis of Choice can transform such calls to normal form,
+            --  and the later analysis of an iterator_specification created
+            --  below in the case of a function-call choice may trigger an
+            --  error on the call (in the case where the function is not
+            --  directly visible).
+
+            Copy := Copy_Separate_Tree (Choice);
+
             --  This is an N_Component_Association with a Defining_Identifier
             --  and Discrete_Choice_List, but the latter can only have a single
             --  choice, as it's a stand-in for a Loop_Parameter_Specification
@@ -3437,16 +3454,13 @@ package body Sem_Aggr is
                     Make_Iterator_Specification (Sloc (N),
                       Defining_Identifier =>
                         Relocate_Node (Defining_Identifier (Comp)),
-                      Name                => New_Copy_Tree (Choice),
+                      Name                => Copy,
                       Reverse_Present     => False,
                       Iterator_Filter     => Empty,
                       Subtype_Indication  => Empty);
                begin
                   Set_Iterator_Specification (Comp, I_Spec);
                   Set_Defining_Identifier (Comp, Empty);
-
-                  Analyze_Iterator_Specification
-                    (Iterator_Specification (Comp));
 
                   Resolve_Iterated_Association (Comp, Key_Type, Elmt_Type);
                   --  Recursive call to expand association as iterator_spec
