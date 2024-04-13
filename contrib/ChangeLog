@@ -1,3 +1,7 @@
+2024-04-12  Filip Kastl  <fkastl@suse.cz>
+
+	* check-params-in-docs.py: Ignore target specific params.
+
 2024-04-11  Martin Jambor  <mjambor@suse.cz>
 
 	* check-params-in-docs.py (ignored): Add

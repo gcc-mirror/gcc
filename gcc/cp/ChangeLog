@@ -1,3 +1,85 @@
+2024-04-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109966
+	* typeck2.cc (potential_prvalue_result_of): Remove.
+	(replace_placeholders_for_class_temp_r): Check TARGET_EXPR_ELIDING_P.
+	Use a pset.  Don't replace_placeholders in TARGET_EXPRs that initialize
+	a function argument.
+
+2024-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99426
+	* module.cc (merge_kind::MK_local_type): New enumerator.
+	(merge_kind_name): Update.
+	(trees_out::chained_decls): Move BLOCK-specific handling
+	of DECL_LOCAL_DECL_P decls to ...
+	(trees_out::core_vals) <case BLOCK>: ... here.  Stream
+	BLOCK_VARS manually.
+	(trees_in::core_vals) <case BLOCK>: Stream BLOCK_VARS
+	manually.  Handle deduplicated local types..
+	(trees_out::key_local_type): Define.
+	(trees_in::key_local_type): Define.
+	(trees_out::get_merge_kind) <case FUNCTION_DECL>: Return
+	MK_local_type for a local type.
+	(trees_out::key_mergeable) <case FUNCTION_DECL>: Use
+	key_local_type.
+	(trees_in::key_mergeable) <case FUNCTION_DECL>: Likewise.
+	(trees_in::is_matching_decl): Be flexible with type mismatches
+	for local entities.
+	(trees_in::register_duplicate): Also register the
+	DECL_TEMPLATE_RESULT of a TEMPLATE_DECL as a duplicate.
+	(depset_cmp): Return 0 for equal IDENTIFIER_HASH_VALUEs.
+
+2024-04-12  Jason Merrill  <jason@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113141
+	* call.cc (reference_binding): For an invalid cast, warn and don't
+	recalculate.
+
+2024-04-12  Jason Merrill  <jason@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	DR 1996
+	PR c++/113141
+	* call.cc (reference_binding): Check direct binding from
+	a single-element list.
+
+2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114691
+	* semantics.cc (simplify_loop_decl_cond): Use cp_build_unary_op with
+	TRUTH_NOT_EXPR on ANNOTATE_EXPR argument (if any) rather than
+	ANNOTATE_EXPR itself.
+
+2024-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114393
+	* pt.cc (tsubst_lambda_expr): Also defer all dependent
+	substitution.
+
+2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114426
+	* constexpr.cc (is_valid_constexpr_fn): Return false/diagnose with
+	complain destructors in classes with virtual bases.
+
+2024-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114393
+	PR c++/107457
+	PR c++/93595
+	* cp-tree.h (LAMBDA_EXPR_EXTRA_ARGS): Define.
+	(tree_lambda_expr::extra_args): New field.
+	* module.cc (trees_out::core_vals) <case LAMBDA_EXPR>: Stream
+	LAMBDA_EXPR_EXTRA_ARGS.
+	(trees_in::core_vals) <case LAMBDA_EXPR>: Likewise.
+	* pt.cc (has_extra_args_mechanism_p): Return true for LAMBDA_EXPR.
+	(tree_extra_args): Handle LAMBDA_EXPR.
+	(tsubst_lambda_expr): Use LAMBDA_EXPR_EXTRA_ARGS to defer templated
+	substitution into a lambda-expr if we lost the template context.
+	Add sanity check for error_mark_node result from begin_lambda_type.
+
 2024-04-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/114303

@@ -1,3 +1,9 @@
+2024-04-12  Jason Merrill  <jason@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113141
+	* c.opt: Add -Wcast-user-defined.
+
 2024-04-05  Marek Polacek  <polacek@redhat.com>
 
 	* c-warn.cc (warn_about_parentheses): Remove an #undef.

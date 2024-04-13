@@ -1,3 +1,82 @@
+2024-04-12  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: Add RCPC to
+	RCPC3 dependencies.
+	* config/aarch64/aarch64.h (AARCH64_ISA_RCPC8_4): Add test for
+	RCPC3 bit
+
+2024-04-12  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def: Add CSSC to V8_9A
+	dependencies.
+
+2024-04-12  Will Schmidt  <will_schmidt@linux.ibm.com>
+	    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101865
+	* config/rs6000/rs6000-builtin.cc (rs6000_builtin_is_supported): Use
+	TARGET_POWER8.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Use
+	OPTION_MASK_POWER8.
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add OPTION_MASK_POWER8.
+	(ISA_2_7_MASKS_SERVER): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Update
+	comment.  Use OPTION_MASK_POWER8 and TARGET_POWER8.
+	* config/rs6000/rs6000.h (TARGET_SYNC_HI_QI): Use TARGET_POWER8.
+	* config/rs6000/rs6000.md (define_attr "isa"): Add p8.
+	(define_attr "enabled"): Handle it.
+	(define_insn "prefetch"): Use TARGET_POWER8.
+	* config/rs6000/rs6000.opt (mpower8-internal): New.
+
+2024-04-12  Jason Merrill  <jason@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113141
+	* doc/invoke.texi: Document -Wcast-user-defined.
+
+2024-04-12  Tatsuyuki Ishi  <ishitatsuyuki@gmail.com>
+
+	* config/riscv/riscv.opt.urls: Regenerated.
+
+2024-04-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/114666
+	* match.pd (`!a?b:c`): Reject signed types for the condition.
+	(`a?~t:t`): Likewise.
+
+2024-04-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_output_sme_zero_za): Require
+	all tiles to have the same suffix.
+
+2024-04-12  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_vector_float_type_p): Take int
+	as the return value instead of unsigned.
+	(riscv_vector_element_bitsize): Ditto.
+	(riscv_vector_required_min_vlen): Ditto.
+	(riscv_validate_vector_type): Take int type for local variable(s).
+
+2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-cfg.cc (gimple_verify_flow_info): Make the misplaced
+	returns_twice diagnostics translatable.
+
+2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114687
+	* gimple-iterator.cc (gsi_safe_insert_before): Only use
+	edge_before_returns_twice_call if bb_has_abnormal_pred.
+	(gsi_safe_insert_seq_before): Likewise.
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_call): Only
+	push to m_returns_twice_calls if bb_has_abnormal_pred.
+
+2024-04-12  Pan Li  <pan2.li@intel.com>
+
+	PR target/114639
+	* config/riscv/riscv.cc (riscv_function_value_regno_p): Add
+	TARGET_VECTOR predicate for V_RETURN regno.
+
 2024-04-11  David Faust  <david.faust@oracle.com>
 
 	* btfout.cc (btf_asm_type_ref): Convert IDs to BTF internally and

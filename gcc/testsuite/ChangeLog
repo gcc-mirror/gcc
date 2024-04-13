@@ -1,3 +1,107 @@
+2024-04-12  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/cpunative/info_24: Include lrcpc and ilrcpc.
+
+2024-04-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109966
+	* g++.dg/cpp1y/nsdmi-aggr20.C: New test.
+	* g++.dg/cpp1y/nsdmi-aggr21.C: New test.
+
+2024-04-12  Will Schmidt  <will_schmidt@linux.ibm.com>
+	    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101865
+	* gcc.target/powerpc/predefine-p7-novsx.c: New test.
+	* gcc.target/powerpc/predefine-p8-noaltivec-novsx.c: New test.
+	* gcc.target/powerpc/predefine-p8-noaltivec.c: New test.
+	* gcc.target/powerpc/predefine-p8-novsx.c: New test.
+	* gcc.target/powerpc/predefine-p8-pragma-vsx.c: New test.
+	* gcc.target/powerpc/predefine-p9-novsx.c: New test.
+
+2024-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99426
+	* g++.dg/modules/merge-17.h: New test.
+	* g++.dg/modules/merge-17_a.H: New test.
+	* g++.dg/modules/merge-17_b.C: New test.
+	* g++.dg/modules/xtreme-header-7_a.H: New test.
+	* g++.dg/modules/xtreme-header-7_b.C: New test.
+
+2024-04-12  Jason Merrill  <jason@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113141
+	* g++.dg/conversion/ref12.C: New test.
+
+2024-04-12  Jason Merrill  <jason@redhat.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	DR 1996
+	PR c++/113141
+	* g++.dg/cpp0x/initlist-ref1.C: New test.
+	* g++.dg/cpp0x/initlist-ref2.C: New test.
+	* g++.dg/cpp0x/initlist-ref3.C: New test.
+
+2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114691
+	* g++.dg/ext/pr114691.C: New test.
+
+2024-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114393
+	* g++.dg/cpp2a/lambda-targ2a.C: New test.
+
+2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114426
+	* g++.dg/cpp2a/pr114426.C: New test.
+	* g++.dg/cpp2a/constexpr-dtor16.C: New test.
+
+2024-04-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/114666
+	* gcc.c-torture/execute/bitfld-signed1-1.c: New test.
+
+2024-04-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sme/acle-asm/zero_mask_za.c (zero_mask_za_ab)
+	(zero_mask_za_d7, zero_mask_za_bf): Expect a list of .d tiles instead
+	of a mixture.
+
+2024-04-12  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/range-sincos.c: Xfail for s390.
+	* gcc.dg/tree-ssa/vrp-float-abs-1.c: Dito.
+
+2024-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114393
+	PR c++/107457
+	PR c++/93595
+	* g++.dg/cpp2a/lambda-targ2.C: New test.
+	* g++.dg/cpp2a/lambda-targ3.C: New test.
+	* g++.dg/cpp2a/lambda-targ4.C: New test.
+
+2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114687
+	* gcc.dg/asan/pr114687.c: New test.
+
+2024-04-12  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/loop-interchange-16.c: Prevent loop unrolling
+	of the innermost loop.
+
+2024-04-12  Pan Li  <pan2.li@intel.com>
+
+	PR target/114639
+	* gcc.target/riscv/pr114639-1.c: New test.
+	* gcc.target/riscv/pr114639-2.c: New test.
+	* gcc.target/riscv/pr114639-3.c: New test.
+	* gcc.target/riscv/pr114639-4.c: New test.
+
 2024-04-11  David Faust  <david.faust@oracle.com>
 
 	* gcc.dg/debug/btf/btf-bitfields-4.c: Add two new checks.

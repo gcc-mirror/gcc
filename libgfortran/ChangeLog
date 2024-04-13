@@ -1,3 +1,7 @@
+2024-04-12  Ian McInerney  <i.mcinerney17@imperial.ac.uk>
+
+	* runtime/error.c (gf_vsnprintf): Fix compilation
+
 2024-04-08  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR libfortran/114304

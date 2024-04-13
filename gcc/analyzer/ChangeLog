@@ -1,3 +1,8 @@
+2024-04-12  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* region-model.cc (region_model::check_region_size): Bail out
+	early on function pointers.
+
 2024-04-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114472
