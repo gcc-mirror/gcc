@@ -6829,10 +6829,26 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	     in the array is needed, which is the product of the len and
 	     esize for char arrays.  For unlimited polymorphics len can be
 	     zero, therefore take the maximum of len and one.  */
+	  tree lhs_len;
+
+	  /* If an allocatable character variable has fixed length, use it.
+	     Otherwise use source length.  As different lengths are not
+	     allowed by the standard, generate a runtime check.  */
+	  if (expr->ts.type == BT_CHARACTER && !expr->ts.deferred)
+	    {
+	      gfc_trans_same_strlen_check ("ALLOCATE with SOURCE= or MOLD=",
+					   &code->expr3->where,
+					   se.string_length, expr3_len,
+					   &block);
+	      lhs_len = fold_convert (TREE_TYPE (expr3_len), se.string_length);
+	    }
+	  else
+	    lhs_len = expr3_len;
+
 	  tmp = fold_build2_loc (input_location, MAX_EXPR,
 				 TREE_TYPE (expr3_len),
-				 expr3_len, fold_convert (TREE_TYPE (expr3_len),
-							  integer_one_node));
+				 lhs_len, fold_convert (TREE_TYPE (expr3_len),
+							integer_one_node));
 	  tmp = fold_build2_loc (input_location, MULT_EXPR,
 				 TREE_TYPE (expr3_esize), expr3_esize,
 				 fold_convert (TREE_TYPE (expr3_esize), tmp));
@@ -6877,10 +6893,22 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	     allocate.
 
 	     expr3_len is set when expr3 is an unlimited polymorphic
-	     object or a deferred length string.  */
+	     object or a deferred length string.
+
+	     If an allocatable character variable has fixed length, use it.
+	     Otherwise use source length.  As different lengths are not
+	     allowed by the standard, a runtime check was inserted
+	     above.  */
 	  if (expr3_len != NULL_TREE)
 	    {
-	      tmp = fold_convert (TREE_TYPE (expr3_esize), expr3_len);
+	      tree lhs_len;
+	      if (expr->ts.type == BT_CHARACTER && !expr->ts.deferred)
+		lhs_len = fold_convert (TREE_TYPE (expr3_len),
+					se.string_length);
+	      else
+		lhs_len = expr3_len;
+
+	      tmp = fold_convert (TREE_TYPE (expr3_esize), lhs_len);
 	      tmp = fold_build2_loc (input_location, MULT_EXPR,
 				     TREE_TYPE (expr3_esize),
 				      expr3_esize, tmp);

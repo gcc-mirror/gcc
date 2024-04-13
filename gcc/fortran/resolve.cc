@@ -8278,6 +8278,16 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	  goto failure;
 	}
 
+      /* Check F2008:C639: "Corresponding kind type parameters of
+	 allocate-object and source-expr shall have the same values."  */
+      if (e->ts.type == BT_CHARACTER
+	  && !e->ts.deferred
+	  && e->ts.u.cl->length
+	  && code->expr3->ts.type == BT_CHARACTER
+	  && !gfc_check_same_strlen (e, code->expr3, "ALLOCATE with "
+				     "SOURCE= or MOLD= specifier"))
+	    goto failure;
+
       /* Check TS18508, C702/C703.  */
       if (code->expr3->ts.type == BT_DERIVED
 	  && ((codimension && gfc_expr_attr (code->expr3).event_comp)
