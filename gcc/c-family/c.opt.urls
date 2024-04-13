@@ -208,6 +208,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wcast-function-type)
 Wcast-qual
 UrlSuffix(gcc/Warning-Options.html#index-Wcast-qual)
 
+Wcast-user-defined
+UrlSuffix(gcc/Warning-Options.html#index-Wcast-user-defined)
+
 Wcatch-value
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wcatch-value)
 
