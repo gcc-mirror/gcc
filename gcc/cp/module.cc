@@ -706,6 +706,7 @@ struct bytes_in::bits_in {
     bflush ();
   }
 
+  bits_in(bits_in&&) = default;
   bits_in(const bits_in&) = delete;
   bits_in& operator=(const bits_in&) = delete;
 
@@ -752,6 +753,7 @@ struct bytes_out::bits_out {
     bflush ();
   }
 
+  bits_out(bits_out&&) = default;
   bits_out(const bits_out&) = delete;
   bits_out& operator=(const bits_out&) = delete;
 
