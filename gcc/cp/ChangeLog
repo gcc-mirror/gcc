@@ -1,3 +1,50 @@
+2024-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc (struct bytes_in::bits_in): Define defaulted
+	move ctor.
+	(struct bytes_out::bits_out): Likewise.
+
+2024-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	* module.cc: Update comment about classes defined within.
+	(class data): Enclose in an anonymous namespace.
+	(data::calc_crc): Moved from bytes::calc_crc.
+	(class bytes): Remove.  Move bit_flush to namespace scope.
+	(class bytes_in): Enclose in an anonymous namespace.  Inherit
+	directly from data and adjust accordingly.  Move b and bflush
+	members to bits_in.
+	(class bytes_out): As above.  Remove is_set static data member.
+	(bit_flush): Moved from class bytes.
+	(struct bytes_in::bits_in): Define.
+	(struct bytes_out::bits_out): Define.
+	(bytes_in::stream_bits): Define.
+	(bytes_out::stream_bits): Define.
+	(bytes_out::bflush): Moved to bits_out/in.
+	(bytes_in::bflush): Likewise
+	(bytes_in::bfill): Removed.
+	(bytes_out::b): Moved to bits_out/in.
+	(bytes_in::b): Likewise.
+	(class trees_in): Enclose in an anonymous namespace.
+	(class trees_out): Enclose in an anonymous namespace.
+	(trees_out::core_bools): Add bits_out/in parameter and use it.
+	Unconditionally stream a bit for public_flag.  Add early exits
+	as appropriate.
+	(trees_out::core_bools): Likewise.
+	(trees_out::lang_decl_bools): Add bits_out/in parameter and use
+	it.  Flush the current bit buffer at the start.  Unconditionally
+	stream a bit for module_keyed_decls_p.
+	(trees_in::lang_decl_bools): Likewise.
+	(trees_out::lang_type_bools): Add bits_out/in parameter and use
+	it.  Flush the current bit buffer at the start.
+	(trees_in::lang_type_bools): Likewise.
+	(trees_out::tree_node_bools): Construct a bits_out object and
+	use/pass it.
+	(trees_in::tree_node_bools): Likewise.
+	(trees_out::decl_value): Likewise.
+	(trees_in::decl_value): Likewise.
+	(module_state::write_define): Likewise.
+	(module_state::read_define): Likewise.
+
 2024-04-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/109966

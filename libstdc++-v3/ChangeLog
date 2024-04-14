@@ -1,3 +1,8 @@
+2024-04-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt:
+	Updated.
+
 2024-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/xml/manual/abi.xml: Add latest library versions.

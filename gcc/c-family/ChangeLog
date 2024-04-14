@@ -1,3 +1,7 @@
+2024-04-13  Mark Wielaard  <mark@klomp.org>
+
+	* c.opt.urls: Regenerate.
+
 2024-04-12  Jason Merrill  <jason@redhat.com>
 	    Patrick Palka  <ppalka@redhat.com>
 
