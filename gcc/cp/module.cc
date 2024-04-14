@@ -19003,11 +19003,15 @@ get_importing_module (tree decl, bool flexible)
   return module->mod;
 }
 
-/* Is it permissible to redeclare DECL.  */
+/* Is it permissible to redeclare OLDDECL with NEWDECL.
+
+   If NEWDECL is NULL, assumes that OLDDECL will be redeclared using
+   the current scope's module and attachment.  */
 
 bool
-module_may_redeclare (tree decl)
+module_may_redeclare (tree olddecl, tree newdecl)
 {
+  tree decl = olddecl;
   for (;;)
     {
       tree ctx = CP_DECL_CONTEXT (decl);
@@ -19021,58 +19025,94 @@ module_may_redeclare (tree decl)
       decl = TYPE_NAME (ctx);
     }
 
-  tree not_tmpl = STRIP_TEMPLATE (decl);
-
   int use_tpl = 0;
-  if (node_template_info (not_tmpl, use_tpl) && use_tpl)
+  if (node_template_info (STRIP_TEMPLATE (decl), use_tpl) && use_tpl)
     // Specializations of any kind can be redeclared anywhere.
     // FIXME: Should we be checking this in more places on the scope chain?
     return true;
 
-  if (!DECL_LANG_SPECIFIC (not_tmpl) || !DECL_MODULE_ATTACH_P (not_tmpl))
-    // Decl is attached to global module.  Current scope needs to be too.
-    return !module_attach_p ();
+  module_state *old_mod = (*modules)[0];
+  module_state *new_mod = old_mod;
 
-  module_state *me = (*modules)[0];
-  module_state *them = me;
-
-  if (DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_IMPORT_P (not_tmpl))
+  tree old_origin = get_originating_module_decl (decl);
+  tree old_inner = STRIP_TEMPLATE (old_origin);
+  bool olddecl_attached_p = (DECL_LANG_SPECIFIC (old_inner)
+			     && DECL_MODULE_ATTACH_P (old_inner));
+  if (DECL_LANG_SPECIFIC (old_inner) && DECL_MODULE_IMPORT_P (old_inner))
     {
-      /* We can be given the TEMPLATE_RESULT.  We want the
-	 TEMPLATE_DECL.  */
-      int use_tpl = -1;
-      if (tree ti = node_template_info (decl, use_tpl))
-	{
-	  tree tmpl = TI_TEMPLATE (ti);
-	  if (use_tpl == 2)
-	    {
-	      /* A partial specialization.  Find that specialization's
-		 template_decl.  */
-	      for (tree list = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
-		   list; list = TREE_CHAIN (list))
-		if (DECL_TEMPLATE_RESULT (TREE_VALUE (list)) == decl)
-		  {
-		    decl = TREE_VALUE (list);
-		    break;
-		}
-	    }
-	  else if (DECL_TEMPLATE_RESULT (tmpl) == decl)
-	    decl = tmpl;
-	}
-      unsigned index = import_entity_index (decl);
-      them = import_entity_module (index);
+      unsigned index = import_entity_index (old_origin);
+      old_mod = import_entity_module (index);
     }
 
-  // Decl is attached to named module.  Current scope needs to be
-  // attaching to the same module.
-  if (!module_attach_p ())
-    return false;
+  bool newdecl_attached_p = module_attach_p ();
+  if (newdecl)
+    {
+      tree new_origin = get_originating_module_decl (newdecl);
+      tree new_inner = STRIP_TEMPLATE (new_origin);
+      newdecl_attached_p = (DECL_LANG_SPECIFIC (new_inner)
+			    && DECL_MODULE_ATTACH_P (new_inner));
+      if (DECL_LANG_SPECIFIC (new_inner) && DECL_MODULE_IMPORT_P (new_inner))
+	{
+	  unsigned index = import_entity_index (new_origin);
+	  new_mod = import_entity_module (index);
+	}
+    }
 
-  // Both attached to named module.
-  if (me == them)
-    return true;
+  /* Module attachment needs to match.  */
+  if (olddecl_attached_p == newdecl_attached_p)
+    {
+      if (!olddecl_attached_p)
+	/* Both are GM entities, OK.  */
+	return true;
 
-  return me && get_primary (them) == get_primary (me);
+      if (new_mod == old_mod
+	  || (new_mod && get_primary (new_mod) == get_primary (old_mod)))
+	/* Both attached to same named module, OK.  */
+	return true;
+    }
+
+  /* Attached to different modules, error.  */
+  decl = newdecl ? newdecl : olddecl;
+  location_t loc = newdecl ? DECL_SOURCE_LOCATION (newdecl) : input_location;
+  if (DECL_IS_UNDECLARED_BUILTIN (olddecl))
+    error_at (loc, "declaration %qD conflicts with builtin", decl);
+  else if (DECL_LANG_SPECIFIC (old_inner) && DECL_MODULE_IMPORT_P (old_inner))
+    {
+      auto_diagnostic_group d;
+      if (newdecl_attached_p)
+	error_at (loc, "redeclaring %qD in module %qs conflicts with import",
+		  decl, new_mod->get_flatname ());
+      else
+	error_at (loc, "redeclaring %qD in global module conflicts with import",
+		  decl);
+
+      if (olddecl_attached_p)
+	inform (DECL_SOURCE_LOCATION (olddecl),
+		"import declared attached to module %qs",
+		old_mod->get_flatname ());
+      else
+	inform (DECL_SOURCE_LOCATION (olddecl),
+		"import declared in global module");
+    }
+  else
+    {
+      auto_diagnostic_group d;
+      if (newdecl_attached_p)
+	error_at (loc, "conflicting declaration of %qD in module %qs",
+		  decl, new_mod->get_flatname ());
+      else
+	error_at (loc, "conflicting declaration of %qD in global module",
+		  decl);
+
+      if (olddecl_attached_p)
+	inform (DECL_SOURCE_LOCATION (olddecl),
+		"previously declared in module %qs",
+		old_mod->get_flatname ());
+      else
+	inform (DECL_SOURCE_LOCATION (olddecl),
+		"previously declared in global module");
+    }
+  return false;
 }
 
 /* DECL is being created by this TU.  Record it came from here.  We
