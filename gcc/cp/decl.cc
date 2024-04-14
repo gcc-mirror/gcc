@@ -2279,18 +2279,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       && TREE_CODE (olddecl) != NAMESPACE_DECL
       && !hiding)
     {
-      if (!module_may_redeclare (olddecl))
-	{
-	  if (DECL_ARTIFICIAL (olddecl))
-	    error ("declaration %qD conflicts with builtin", newdecl);
-	  else
-	    {
-	      error ("declaration %qD conflicts with import", newdecl);
-	      inform (olddecl_loc, "import declared %q#D here", olddecl);
-	    }
-
-	  return error_mark_node;
-	}
+      if (!module_may_redeclare (olddecl, newdecl))
+	return error_mark_node;
 
       tree not_tmpl = STRIP_TEMPLATE (olddecl);
       if (DECL_LANG_SPECIFIC (not_tmpl)
@@ -16633,12 +16623,7 @@ xref_tag (enum tag_types tag_code, tree name,
 	{
 	  tree decl = TYPE_NAME (t);
 	  if (!module_may_redeclare (decl))
-	    {
-	      auto_diagnostic_group d;
-	      error ("cannot declare %qD in a different module", decl);
-	      inform (DECL_SOURCE_LOCATION (decl), "previously declared here");
-	      return error_mark_node;
-	    }
+	    return error_mark_node;
 
 	  tree not_tmpl = STRIP_TEMPLATE (decl);
 	  if (DECL_LANG_SPECIFIC (not_tmpl)
@@ -16986,12 +16971,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	{
 	  tree decl = TYPE_NAME (enumtype);
 	  if (!module_may_redeclare (decl))
-	    {
-	      auto_diagnostic_group d;
-	      error ("cannot declare %qD in different module", decl);
-	      inform (DECL_SOURCE_LOCATION (decl), "previously declared here");
-	      enumtype = error_mark_node;
-	    }
+	    enumtype = error_mark_node;
 	  else
 	    set_instantiating_module (decl);
 	}
