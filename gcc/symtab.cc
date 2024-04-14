@@ -1369,6 +1369,95 @@ symtab_node::verify (void)
   timevar_pop (TV_CGRAPH_VERIFY);
 }
 
+/* Return true and set *DATA to true if NODE is an ifunc resolver.  */
+
+static bool
+check_ifunc_resolver (cgraph_node *node, void *data)
+{
+  if (node->ifunc_resolver)
+    {
+      bool *is_ifunc_resolver = (bool *) data;
+      *is_ifunc_resolver = true;
+      return true;
+    }
+  return false;
+}
+
+static auto_bitmap ifunc_ref_map;
+
+/* Return true if any caller of NODE is an ifunc resolver.  */
+
+static bool
+is_caller_ifunc_resolver (cgraph_node *node)
+{
+  bool is_ifunc_resolver = false;
+
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    {
+      /* Return true if caller is known to be an IFUNC resolver.  */
+      if (e->caller->called_by_ifunc_resolver)
+	return true;
+
+      /* Check for recursive call.  */
+      if (e->caller == node)
+	continue;
+
+      /* Skip if it has been visited.  */
+      unsigned int uid = e->caller->get_uid ();
+      if (bitmap_bit_p (ifunc_ref_map, uid))
+	continue;
+      bitmap_set_bit (ifunc_ref_map, uid);
+
+      if (is_caller_ifunc_resolver (e->caller))
+	{
+	  /* Return true if caller is an IFUNC resolver.  */
+	  e->caller->called_by_ifunc_resolver = true;
+	  return true;
+	}
+
+      /* Check if caller's alias is an IFUNC resolver.  */
+      e->caller->call_for_symbol_and_aliases (check_ifunc_resolver,
+					      &is_ifunc_resolver,
+					      true);
+      if (is_ifunc_resolver)
+	{
+	  /* Return true if caller's alias is an IFUNC resolver.  */
+	  e->caller->called_by_ifunc_resolver = true;
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+/* Check symbol table for callees of IFUNC resolvers.  */
+
+void
+symtab_node::check_ifunc_callee_symtab_nodes (void)
+{
+  symtab_node *node;
+
+  FOR_EACH_SYMBOL (node)
+    {
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+      if (!cnode)
+	continue;
+
+      unsigned int uid = cnode->get_uid ();
+      if (bitmap_bit_p (ifunc_ref_map, uid))
+	continue;
+      bitmap_set_bit (ifunc_ref_map, uid);
+
+      bool is_ifunc_resolver = false;
+      cnode->call_for_symbol_and_aliases (check_ifunc_resolver,
+					  &is_ifunc_resolver, true);
+      if (is_ifunc_resolver || is_caller_ifunc_resolver (cnode))
+	cnode->called_by_ifunc_resolver = true;
+    }
+
+  bitmap_clear (ifunc_ref_map);
+}
+
 /* Verify symbol table for internal consistency.  */
 
 DEBUG_FUNCTION void

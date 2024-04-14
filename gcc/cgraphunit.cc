@@ -2313,6 +2313,8 @@ symbol_table::compile (void)
 
   symtab_node::checking_verify_symtab_nodes ();
 
+  symtab_node::check_ifunc_callee_symtab_nodes ();
+
   timevar_push (TV_CGRAPHOPT);
   if (pre_ipa_mem_report)
     dump_memory_report ("Memory consumption before IPA");
