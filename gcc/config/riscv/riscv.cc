@@ -4709,7 +4709,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 				  gen_rtx_IF_THEN_ELSE (mode, cond1,
 							CONST0_RTX (mode),
 							alt)));
-	  riscv_emit_binary (IOR, dest, reg1, reg2);
+	  riscv_emit_binary (PLUS, dest, reg1, reg2);
 	  return true;
 	}
     }
