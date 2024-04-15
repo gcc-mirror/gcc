@@ -55,7 +55,7 @@ package System.Win32.Ext is
 
    function SetThreadAffinityMask
      (hThread              : HANDLE;
-      dwThreadAffinityMask : DWORD) return DWORD;
+      dwThreadAffinityMask : DWORD) return DWORD_PTR;
    pragma Import (Stdcall, SetThreadAffinityMask, "SetThreadAffinityMask");
 
    --------------

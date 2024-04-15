@@ -1340,7 +1340,7 @@ package body System.Task_Primitives.Operations is
       then
          declare
             CPU_Set : DWORD := 0;
-
+            Mask_Result : DWORD_PTR;
          begin
             for Proc in T.Common.Domain'Range loop
                if T.Common.Domain (Proc) then
@@ -1352,8 +1352,8 @@ package body System.Task_Primitives.Operations is
                end if;
             end loop;
 
-            Result := SetThreadAffinityMask (T.Common.LL.Thread, CPU_Set);
-            pragma Assert (Result = 1);
+            Mask_Result := SetThreadAffinityMask (T.Common.LL.Thread, CPU_Set);
+            pragma Assert (Mask_Result /= 0);
          end;
       end if;
    end Set_Task_Affinity;
