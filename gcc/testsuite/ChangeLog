@@ -1,3 +1,9 @@
+2024-04-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/106820
+	* g++.dg/modules/pr106820_a.H: New test.
+	* g++.dg/modules/pr106820_b.C: New test.
+
 2024-04-12  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* gcc.target/aarch64/cpunative/info_24: Include lrcpc and ilrcpc.
