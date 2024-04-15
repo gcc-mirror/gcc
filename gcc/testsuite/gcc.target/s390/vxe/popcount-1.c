@@ -21,7 +21,7 @@ vpopctb (uv16qi a)
 
   return r;
 }
-/* { dg-final { scan-assembler "vpopctb\t%v24,%v24" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "vpopctb\t%v24,%v24" } } */
 
 uv8hi __attribute__((noinline))
 vpopcth (uv8hi a)
@@ -34,7 +34,7 @@ vpopcth (uv8hi a)
 
   return r;
 }
-/* { dg-final { scan-assembler "vpopcth\t%v24,%v24" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "vpopcth\t%v24,%v24" } } */
 
 uv4si __attribute__((noinline))
 vpopctf (uv4si a)
