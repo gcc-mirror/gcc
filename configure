@@ -9148,6 +9148,19 @@ $as_echo "$as_me: WARNING: --enable-host-shared required to build $language" >&2
           ;;
         esac
 
+        # Pre-conditions to consider whether cargo being supported.
+        if test x"$have_cargo" = xyes \
+          && test x"$build" != x"$host"; then
+          # Until <https://github.com/Rust-GCC/gccrs/issues/2898>
+          # "'cargo' should build for the host system" is resolved:
+          { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: use of cargo not yet supported here in Canadian cross configurations" >&5
+$as_echo "$as_me: WARNING: use of cargo not yet supported here in Canadian cross configurations" >&2;}
+          have_cargo=no
+        else
+          # Assume that cargo-produced object files are compatible with what
+          # we're going to build here.
+          :
+        fi
         # Disable Rust if cargo is unavailable.
         case ${add_this_lang}:${language}:${have_cargo} in
           yes:rust:no)

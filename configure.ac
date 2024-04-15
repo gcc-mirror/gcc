@@ -2306,6 +2306,18 @@ directories, to avoid imposing the performance cost of
           ;;
         esac
 
+        # Pre-conditions to consider whether cargo being supported.
+        if test x"$have_cargo" = xyes \
+          && test x"$build" != x"$host"; then
+          # Until <https://github.com/Rust-GCC/gccrs/issues/2898>
+          # "'cargo' should build for the host system" is resolved:
+          AC_MSG_WARN([use of cargo not yet supported here in Canadian cross configurations])
+          have_cargo=no
+        else
+          # Assume that cargo-produced object files are compatible with what
+          # we're going to build here.
+          :
+        fi
         # Disable Rust if cargo is unavailable.
         case ${add_this_lang}:${language}:${have_cargo} in
           yes:rust:no)
