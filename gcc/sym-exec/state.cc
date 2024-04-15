@@ -43,19 +43,34 @@ state::is_declared (tree var)
 }
 
 
+/* Declares given variable if it has not been declared yet.  */
+
 void
 state::declare_if_needed (tree var, size_t size)
 {
   if (TREE_CODE (var) != INTEGER_CST && !is_declared (var))
-    make_symbolic (var, size);
+    {
+      make_symbolic (var, size);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file,
+		   "Declaring var ");
+	  print_generic_expr (dump_file, var, dump_flags);
+	  fprintf (dump_file,
+		   " with size %zd\n", size);
+	}
+    }
 }
 
+
+/* Get value of the given variable.  */
 
 value *
 state::get_value (tree var)
 {
   return var_states.get (var);
 }
+
 
 /* Get the value of the tree, which is in the beginning of the var_states.  */
 
@@ -64,6 +79,9 @@ state::get_first_value ()
 {
   return &(*(var_states.begin ())).second;
 }
+
+
+/* Returns the list of conditions in the state.  */
 
 const hash_set<bit_expression *> &
 state::get_conditions ()
@@ -112,6 +130,8 @@ state::create_val_for_const (tree var, size_t size)
 }
 
 
+/* Adds the given variable to state.  */
+
 bool
 state::add_var_state (tree var, value *vstate)
 {
@@ -124,12 +144,16 @@ state::add_var_state (tree var, value *vstate)
 }
 
 
+/* Adds the given condition to the state.  */
+
 bool
 state::add_condition (bit_expression *cond)
 {
   return conditions.add (as_a<bit_expression *> (cond->copy ()));
 }
 
+
+/* Bulk add the given conditions to the state.  */
 
 bool
 state::bulk_add_conditions (const hash_set<bit_expression *> &conds)
@@ -142,14 +166,25 @@ state::bulk_add_conditions (const hash_set<bit_expression *> &conds)
 }
 
 
+/* Remove all states from the states' vector.  */
+
 void
-state::clear_states (vec<state *> *states)
+state::remove_states (vec<state *> *states)
 {
   while (!states->is_empty ())
     {
       delete states->last ();
       states->pop ();
     }
+}
+
+
+/* Remove all states from the states' vector and release the vector.  */
+
+void
+state::clear_states (vec<state *> *states)
+{
+  remove_states (states);
   states->release ();
 }
 
@@ -283,7 +318,7 @@ state::make_symbolic (tree var, unsigned size)
 }
 
 
-/* Performs AND operation on two values.  */
+/* Performs AND operation on two bits.  */
 
 value_bit *
 state::and_two_bits (value_bit *arg1, value_bit *arg2)
@@ -308,13 +343,19 @@ state::and_two_bits (value_bit *arg1, value_bit *arg2)
 }
 
 
+/* A wrapper for operations on two bits.
+   Operation and operands are passed as arguments.  */
+
 value_bit *
 state::operate_bits (bit_func bit_op, value_bit *bit1, value_bit *bit2,
-		     value_bit **bit3)
+		     value_bit **)
 {
   return (bit_op) (bit1, bit2);
 }
 
+
+/* A wrapper for operations on three bits.
+   Operation and operands are passed as arguments.  */
 
 value_bit *
 state::operate_bits (bit_func3 bit_op, value_bit *bit1, value_bit *bit2,
@@ -371,6 +412,8 @@ state::do_and (tree arg1, tree arg2, tree dest)
 }
 
 
+/* Performs AND operation on given values.  The result is stored in dest.  */
+
 void
 state::do_and (value *arg1, value *arg2, tree dest)
 {
@@ -416,6 +459,8 @@ state::do_or (tree arg1, tree arg2, tree dest)
 }
 
 
+/* Performs OR operation on given values.  The result is stored in dest.  */
+
 void
 state::do_or (value *arg1, value *arg2, tree dest)
 {
@@ -459,6 +504,8 @@ state::do_xor (tree arg1, tree arg2, tree dest)
   return do_binary_operation (arg1, arg2, dest, &state::do_xor);
 }
 
+
+/* Performs XOR operation on given values.  The result is stored in dest.  */
 
 void
 state::do_xor (value *arg1, value *arg2, tree dest)
@@ -542,6 +589,9 @@ state::do_shift_left (tree arg1, tree arg2, tree dest)
 }
 
 
+/* Performs shift left operation on given values.
+   The result is stored in dest.  */
+
 void
 state::do_shift_left (value *arg1, value *arg2, tree dest)
 {
@@ -569,6 +619,9 @@ state::do_shift_right (tree arg1, tree arg2, tree dest)
   return do_binary_operation (arg1, arg2, dest, &state::do_shift_right);
 }
 
+
+/* Performs shift right operation on given values.
+   The result is stored in dest.  */
 
 void
 state::do_shift_right (value *arg1, value *arg2, tree dest)
@@ -623,6 +676,8 @@ state::do_add (tree arg1, tree arg2, tree dest)
 }
 
 
+/* Adds given values.  The result is stored in dest.  */
+
 void
 state::do_add (value *arg1, value *arg2, tree dest)
 {
@@ -671,6 +726,8 @@ state::do_sub (tree arg1, tree arg2, tree dest)
   return do_binary_operation (arg1, arg2, dest, &state::do_sub);
 }
 
+
+/* Subtracks second value from the first.  The result is stored in dest.  */
 
 void
 state::do_sub (value *arg1, value *arg2, tree dest)
@@ -735,11 +792,16 @@ state::do_complement (tree arg, tree dest)
 }
 
 
+/* Does Assignment.  */
+
 bool
 state::do_assign (tree arg, tree dest)
 {
   declare_if_needed (dest, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (dest))));
-  declare_if_needed (arg, var_states.get (dest)->allocated ());
+  if (TREE_CODE (arg) != INTEGER_CST)
+    declare_if_needed (arg, tree_to_uhwi (TYPE_SIZE (TREE_TYPE (arg))));
+  else
+    declare_if_needed (arg, var_states.get (dest)->allocated ());
 
   value *dest_val = var_states.get (dest);
 
@@ -815,6 +877,7 @@ state::do_assign_pow2 (tree dest, unsigned pow)
 	(*dest_val)[i] = new bit (0);
     }
 
+  print_value (dest_val);
   return true;
 }
 
@@ -1126,16 +1189,20 @@ state::do_mul (value *arg1, value *arg2, tree dest)
 }
 
 
+/* Checks whether the given two constant values are equal.  */
+
 bool
 state::check_const_value_equality (value *arg1, value *arg2)
 {
-  for (size_t i = 1; i < arg1->length (); i++)
+  for (size_t i = 0; i < arg1->length (); i++)
     if (as_a<bit *> ((*arg1)[i])->get_val ()
 	!= as_a<bit *> ((*arg2)[i])->get_val ())
       return false;
   return true;
 }
 
+
+/* Adds EQUAL condition of given variables to state.  */
 
 bool
 state::add_equal_cond (tree arg1, tree arg2)
@@ -1187,6 +1254,8 @@ state::add_equal_cond (value *arg1, value *arg2)
 }
 
 
+/* Checks whether the given two constant values are not equal.  */
+
 bool
 state::check_const_value_are_not_equal (value *arg1, value *arg2)
 {
@@ -1197,6 +1266,8 @@ state::check_const_value_are_not_equal (value *arg1, value *arg2)
   return false;
 }
 
+
+/* Adds NOT EQUAL condition of given variables to state.  */
 
 bool
 state::add_not_equal_cond (tree arg1, tree arg2)
@@ -1253,6 +1324,9 @@ state::add_not_equal_cond (value *arg1, value *arg2)
 }
 
 
+/* Checks whether the first given constant value
+   is greater than the second one.  */
+
 bool
 state::check_const_value_is_greater_than (value *arg1, value *arg2)
 {
@@ -1268,6 +1342,8 @@ state::check_const_value_is_greater_than (value *arg1, value *arg2)
   return false;
 }
 
+
+/* Adds GREATER THAN condition of given variables to state.  */
 
 bool
 state::add_greater_than_cond (tree arg1, tree arg2)
@@ -1378,6 +1454,9 @@ state::construct_great_than_cond (value *arg1, value *arg2)
 }
 
 
+/* Checks whether the first given constant value
+   is less than the second one.  */
+
 bool
 state::check_const_value_is_less_than (value *arg1, value *arg2)
 {
@@ -1393,6 +1472,8 @@ state::check_const_value_is_less_than (value *arg1, value *arg2)
   return false;
 }
 
+
+/* Adds LESS THAN condition of given variables to state.  */
 
 bool
 state::add_less_than_cond (tree arg1, tree arg2)
@@ -1501,6 +1582,8 @@ state::construct_less_than_cond (value *arg1, value *arg2)
 }
 
 
+/* Adds GREATER OR EQUAL condition of given variables to state.  */
+
 bool
 state::add_greater_or_equal_cond (tree arg1, tree arg2)
 {
@@ -1553,7 +1636,7 @@ state::add_greater_or_equal_cond (value *arg1, value *arg2)
 }
 
 
-/* Adds less or equal condition for two sequences of bits.  */
+/* Adds LESS OR EQUAL condition of given variables to state.  */
 
 bool
 state::add_less_or_equal_cond (tree arg1, tree arg2)
@@ -1588,6 +1671,8 @@ state::add_less_or_equal_cond (value *arg1, value *arg2)
     conditions.add (new bit_or_expression (eq_cond, lt_cond));
 }
 
+
+/* Adds a bool condition to state.  */
 
 bool
 state::add_bool_cond (tree arg)
@@ -1652,7 +1737,7 @@ state::add_binary_cond (tree arg1, tree arg2, binary_cond_func cond_func)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Sym-Exec: At least one of arguments must be"
-			    " declared for adding condition.\n");
+			    " declared for adding the condition.\n");
 
       return false;
     }
@@ -1702,8 +1787,8 @@ state::construct_equal_cond (value *arg1, value *arg2)
       return nullptr;
     }
 
-  /* When some of bits are constants and they differ by value,
-     then we can evalate it to be false.  */
+  /* When some bits are constants, and they differ by value,
+     then we can evaluate it to be false.  */
   for (size_t i = 0; i < arg1->length (); i++)
     {
       if (is_a<bit *> ((*arg1)[i]) && is_a<bit *> ((*arg2)[i])
@@ -1866,6 +1951,8 @@ value::last ()
 }
 
 
+/* Make a copy of given bits.  */
+
 vec<value_bit *> *
 state::make_copy (vec<value_bit *> *bits)
 {
@@ -1946,29 +2033,13 @@ state::do_cast (tree var, tree dest, size_t cast_size)
   return true;
 }
 
-/* Get the last 1 bit index.  */
-size_t
-last_set_bit (const value &polynomial)
-{
-  for (size_t i = 0; i < polynomial.length (); ++i)
-    {
-      if (as_a<bit *> (polynomial[polynomial.length () - i - 1])->get_val ())
-	return polynomial.length () - i - 1;
-    }
-    return 0;
-}
-
 /* Create LFSR value for the reversed CRC.  */
 
 void
 state::create_reversed_lfsr (value &lfsr, const value &crc,
 			     const value &polynomial)
 {
-  /* Get the minimal byte size to keep the polynomial.
-     Ie, if the last 1 bit of the polynomial is at 6 index, size will be 8.  */
-  size_t size = ((last_set_bit (polynomial)/8) + 1) * 8;
-  if (size == 0)
-    return;
+  size_t size = polynomial.length ();
 
   /* Determine values of all bits, except MSB.  */
   for (size_t i = 0; i < size - 1; i++)
@@ -1993,10 +2064,7 @@ void
 state::create_forward_lfsr (value &lfsr, const value &crc,
 			    const value &polynomial)
 {
-  size_t size = ((last_set_bit (polynomial)/8) + 1) * 8;
-  if (size == 0)
-    return;
-
+  size_t size = polynomial.length ();
   /* Determine value of LSB.  */
   if (as_a<bit *> (polynomial[0])->get_val ())
     lfsr.push (crc[size - 1]->copy ());
@@ -2014,15 +2082,29 @@ state::create_forward_lfsr (value &lfsr, const value &crc,
 }
 
 
+/* Get the last 1 bit index.  */
+
+size_t
+last_set_bit (const value &polynomial)
+{
+  for (size_t i = 0; i < polynomial.length (); ++i)
+    {
+      if (as_a<bit *> (polynomial[polynomial.length () - i - 1])->get_val ())
+	return polynomial.length () - i - 1;
+    }
+  return 0;
+}
+
+
 /* Create LFSR value.  */
 
 value *
 state::create_lfsr (tree crc, value *polynomial, bool is_bit_forward)
 {
   /* Check size compatibility․  */
-  unsigned HOST_WIDE_INT size = polynomial->length ();
+  unsigned HOST_WIDE_INT polynomial_length = polynomial->length ();
   unsigned HOST_WIDE_INT crc_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (crc)));
-  if (crc_size < size)
+  if (crc_size < polynomial_length)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "LFSR state creation: "
@@ -2031,14 +2113,30 @@ state::create_lfsr (tree crc, value *polynomial, bool is_bit_forward)
       return nullptr;
     }
 
-  /* Create vector of symbolic bits for crc.  */
-  value crc_value (size, TYPE_UNSIGNED (TREE_TYPE (crc)));
+  /* Get the minimal byte size to keep the polynomial.
+ Ie, if the last 1 bit of the polynomial is at 6 index, size will be 8.  */
+  size_t required_polynomial_size = ((last_set_bit (*polynomial)/8) + 1) * 8;
 
-  for (unsigned HOST_WIDE_INT i = 0; i < size; i++)
-    crc_value.push (new symbolic_bit (i, crc));
+  /* Polynomial's length actually equals to the CRC variable's size.
+ Now we detect only those CRC calculation algorithms, where leading 1 of the
+ polynomial isn't kept.  */
+  if (required_polynomial_size == 0
+      || required_polynomial_size != polynomial_length)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Polynomial's all bits are zeros "
+			    "or the size of the polynomial is uncertain.\n");
+      return nullptr;
+    }
+
+  /* Create vector of symbolic bits for crc.  */
+  value crc_value (polynomial_length, TYPE_UNSIGNED (TREE_TYPE (crc)));
+
+  for (unsigned HOST_WIDE_INT i = 0; i < polynomial_length; i++)
+  crc_value.push (new symbolic_bit (i, crc));
 
   /* create LFSR vector.  */
-  value *lfsr = new value (size, TYPE_UNSIGNED (TREE_TYPE (crc)));
+  value *lfsr = new value (polynomial_length, TYPE_UNSIGNED (TREE_TYPE (crc)));
 
   /* Calculate values for LFSR.  */
   if (is_bit_forward)

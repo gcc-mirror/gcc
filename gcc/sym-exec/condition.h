@@ -13,7 +13,7 @@ enum condition_status {
 
 class bit_condition : public bit_expression {
  private:
-  tree_code code;
+  tree_code m_code;
   void print_expr_sign ();
 
  public:

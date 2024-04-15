@@ -7,76 +7,76 @@
 value_type
 value_bit::get_type () const
 {
-  return type;
+  return m_type;
+}
+
+symbolic_bit::symbolic_bit (size_t i, tree orig)
+    : value_bit (i), m_origin (orig)
+{
+  m_type = SYMBOLIC_BIT;
 }
 
 
-symbolic_bit::symbolic_bit (size_t i, tree orig) : value_bit (i), origin (orig)
+bit::bit (unsigned char i) : m_val (i)
 {
-  type = SYMBOLIC_BIT;
-}
-
-
-bit::bit (unsigned char i) : val (i)
-{
-  type = BIT;
+  m_type = BIT;
 }
 
 
 value_bit *
 bit_expression::get_left ()
 {
-  return left;
+  return m_left;
 }
 
 
 value_bit *
 bit_expression::get_right ()
 {
-  return right;
+  return m_right;
 }
 
 
 void
 bit_expression::set_left (value_bit *expr)
 {
-  left = expr;
+  m_left = expr;
 }
 
 
 void
 bit_expression::set_right (value_bit *expr)
 {
-  right = expr;
+  m_right = expr;
 }
 
 
 size_t
 value_bit::get_index () const
 {
-  return index;
+  return m_index;
 }
 
 
 unsigned char
 bit::get_val () const
 {
-  return val;
+  return m_val;
 }
 
 
 void
 bit::set_val (unsigned char new_val)
 {
-  val = new_val;
+  m_val = new_val;
 }
 
 
 bit_complement_expression::bit_complement_expression (value_bit *right)
 {
-  this->left = nullptr;
-  this->right = right;
-  type = BIT_COMPLEMENT_EXPRESSION;
+  this->m_left = nullptr;
+  this->m_right = right;
+  m_type = BIT_COMPLEMENT_EXPRESSION;
 }
 
 
@@ -89,10 +89,10 @@ bit_complement_expression::bit_complement_expression (
 
 bit_expression::~bit_expression ()
 {
-  delete left;
-  left = nullptr;
-  delete right;
-  right = nullptr;
+  delete m_left;
+  m_left = nullptr;
+  delete m_right;
+  m_right = nullptr;
 }
 
 
@@ -113,13 +113,13 @@ bit::copy () const
 void
 bit_expression::copy (const bit_expression *expr)
 {
-  if (expr->left)
-    left = expr->left->copy ();
+  if (expr->m_left)
+    m_left = expr->m_left->copy ();
 
-  if (expr->right)
-    right = expr->right->copy ();
+  if (expr->m_right)
+    m_right = expr->m_right->copy ();
 
-  type = expr->type;
+  m_type = expr->m_type;
 }
 
 
@@ -181,9 +181,9 @@ bit_complement_expression::copy () const
 
 bit_xor_expression::bit_xor_expression (value_bit *left, value_bit *right)
 {
-  this->left = left;
-  this->right = right;
-  type = BIT_XOR_EXPRESSION;
+  this->m_left = left;
+  this->m_right = right;
+  m_type = BIT_XOR_EXPRESSION;
 }
 
 
@@ -195,9 +195,9 @@ bit_xor_expression::bit_xor_expression (const bit_xor_expression &expr)
 
 bit_and_expression::bit_and_expression (value_bit *left, value_bit *right)
 {
-  this->left = left;
-  this->right = right;
-  type = BIT_AND_EXPRESSION;
+  this->m_left = left;
+  this->m_right = right;
+  m_type = BIT_AND_EXPRESSION;
 }
 
 
@@ -209,9 +209,9 @@ bit_and_expression::bit_and_expression (const bit_and_expression &expr)
 
 bit_or_expression::bit_or_expression (value_bit *left, value_bit *right)
 {
-  this->left = left;
-  this->right = right;
-  type = BIT_OR_EXPRESSION;
+  this->m_left = left;
+  this->m_right = right;
+  m_type = BIT_OR_EXPRESSION;
 }
 
 
@@ -224,9 +224,9 @@ bit_or_expression::bit_or_expression (const bit_or_expression &expr)
 shift_right_expression::shift_right_expression (value_bit *left,
 						value_bit *right)
 {
-  this->left = left;
-  this->right = right;
-  type = SHIFT_RIGHT_EXPRESSION;
+  this->m_left = left;
+  this->m_right = right;
+  m_type = SHIFT_RIGHT_EXPRESSION;
 }
 
 
@@ -239,9 +239,9 @@ shift_right_expression::shift_right_expression (
 
 shift_left_expression::shift_left_expression (value_bit *left, value_bit *right)
 {
-  this->left = left;
-  this->right = right;
-  type = SHIFT_LEFT_EXPRESSION;
+  this->m_left = left;
+  this->m_right = right;
+  m_type = SHIFT_LEFT_EXPRESSION;
 }
 
 
@@ -253,9 +253,9 @@ shift_left_expression::shift_left_expression (const shift_left_expression &expr)
 
 add_expression::add_expression (value_bit *left, value_bit *right)
 {
-  this->left = left;
-  this->right = right;
-  type = ADD_EXPRESSION;
+  this->m_left = left;
+  this->m_right = right;
+  m_type = ADD_EXPRESSION;
 }
 
 
@@ -267,9 +267,9 @@ add_expression::add_expression (const add_expression &expr)
 
 sub_expression::sub_expression (value_bit *left, value_bit *right)
 {
-  this->left = left;
-  this->right = right;
-  type = SUB_EXPRESSION;
+  this->m_left = left;
+  this->m_right = right;
+  m_type = SUB_EXPRESSION;
 }
 
 
@@ -282,7 +282,7 @@ sub_expression::sub_expression (const sub_expression &expr)
 tree
 symbolic_bit::get_origin ()
 {
-  return origin;
+  return m_origin;
 }
 
 
@@ -291,8 +291,8 @@ symbolic_bit::print ()
 {
   if (dump_file)
     {
-      print_generic_expr (dump_file, origin, dump_flags);
-      fprintf (dump_file, "[%lu]", index);
+      print_generic_expr (dump_file, m_origin, dump_flags);
+      fprintf (dump_file, "[%zu]", m_index);
     }
 }
 
@@ -301,14 +301,14 @@ void
 bit::print ()
 {
   if (dump_file)
-    fprintf (dump_file, "%u", val);
+    fprintf (dump_file, "%u", m_val);
 }
 
 
 void
 bit_expression::print_expr_sign ()
 {
-  switch (type)
+  switch (m_type)
     {
       case BIT_XOR_EXPRESSION:
 	fprintf (dump_file, " ^ ");
@@ -343,15 +343,15 @@ bit_expression::print ()
   if (dump_file)
     {
       fprintf (dump_file, "(");
-      if (left)
-	left->print ();
+      if (m_left)
+	m_left->print ();
       else
 	fprintf (dump_file, "null");
 
       print_expr_sign ();
 
-      if (right)
-	right->print ();
+      if (m_right)
+	m_right->print ();
       else
 	fprintf (dump_file, "null");
 
@@ -366,8 +366,8 @@ bit_complement_expression::print ()
   if (dump_file)
     {
       fprintf (dump_file, "!");
-      if (right)
-	right->print ();
+      if (m_right)
+	m_right->print ();
       else
 	fprintf (dump_file, "null");
     }

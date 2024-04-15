@@ -90,12 +90,18 @@ class state {
   /* Constructs expression trees of equal condition for given values.  */
   bit_expression *construct_equal_cond (value *arg1, value *arg2);
 
+  /* A wrapper for operations on two bits.
+     Operation and operands are passed as arguments.  */
   static value_bit *operate_bits (bit_func bit_op, value_bit *bit1,
 				  value_bit *bit2, value_bit **bit3);
 
+  /* A wrapper for operations on three bits.
+     Operation and operands are passed as arguments.  */
   static value_bit *operate_bits (bit_func3 bit_op, value_bit *bit1,
 				  value_bit *bit2, value_bit **bit3);
 
+  /* Performs the given operation on passed arguments.
+     The result is stored in dest.  */
   template<class func>
   void operate (value *arg1, value *arg2, value_bit **bit_arg, tree dest,
 		func bit_op);
@@ -105,29 +111,39 @@ class state {
   bool do_binary_operation (tree arg1, tree arg2, tree dest,
 			    binary_func bin_func);
 
+  /* Performs AND operation on given values.  The result is stored in dest.  */
   void do_and (value *arg1, value *arg2, tree dest);
 
+  /* Performs OR operation on given values.  The result is stored in dest.  */
   void do_or (value *arg1, value *arg2, tree dest);
 
+  /* Performs XOR operation on given values.  The result is stored in dest.  */
   void do_xor (value *arg1, value *arg2, tree dest);
 
+  /* Performs shift right operation on given values.
+     The result is stored in dest.  */
   void do_shift_right (value *arg1, value *arg2, tree dest);
 
+  /* Performs shift left operation on given values.
+     The result is stored in dest.  */
   void do_shift_left (value *arg1, value *arg2, tree dest);
 
+  /* Adds given values.  The result is stored in dest.  */
   void do_add (value *arg1, value *arg2, tree dest);
 
+  /* Subtracks second value from the first.  The result is stored in dest.  */
   void do_sub (value *arg1, value *arg2, tree dest);
 
   /* Casts arg to cast_size size, stores value in dest.  */
   bool do_cast (tree arg, tree dest, size_t cast_size);
 
-  /* Performs AND operation on two values.  */
+  /* Performs AND operation on two bits.  */
   static value_bit *and_two_bits (value_bit *arg1, value_bit *arg2);
 
   /* ANDs every bit of the value with var_bit, stroes the result in var1.  */
   void and_number_bit (value *var1, value_bit *var_bit);
 
+  /* Multiplies given values.  The result is stored in dest.  */
   void do_mul (value *arg1, value *arg2, tree dest);
 
   /* Performs AND operation for 2 symbolic_bit operands.  */
@@ -197,13 +213,11 @@ class state {
      exists or not.  */
   bool is_declared (tree var);
 
+  /* Declares given variable if it has not been declared yet.  */
   void declare_if_needed (tree var, size_t size);
 
   /* Shifts number left by size of shift_value.  */
   value *shift_left_by_const (const value *number, size_t shift_value);
-
-  /* Checks if all bits of the given value have constant bit type.  */
-  bool is_bit_vector (const value *var);
 
   /* Adds two bits and carry value.
      Resturn result and stores new carry bit in "carry".  */
@@ -216,17 +230,16 @@ class state {
   /* Adds two values, stores the result in the first one.  */
   void add_numbers (value *var1, const value *var2);
 
+  /* Make a copy of given bits.  */
   static vec<value_bit *> *make_copy (vec<value_bit *> *bits);
 
   /* Create LFSR value for the reversed CRC.  */
-  static void
-  create_reversed_lfsr (value &lfsr, const value &crc,
-			const value &polynomial);
+  static void create_reversed_lfsr (value &lfsr, const value &crc,
+				    const value &polynomial);
 
   /* Create LFSR value for the forward CRC.  */
-  static void
-  create_forward_lfsr (value &lfsr, const value &crc,
-		       const value &polynomial);
+  static void create_forward_lfsr (value &lfsr, const value &crc,
+				   const value &polynomial);
 
  public:
   state () = default;
@@ -238,23 +251,32 @@ class state {
 
   state (const state &s);
 
+  /* Adds the given variable to state.  */
   bool add_var_state (tree var, value *state);
 
+  /* Remove all states from the states' vector.  */
+  static void remove_states (vec<state *> *states);
+
+  /* Remove all states from the states' vector and release the vector.  */
   static void clear_states (vec<state *> *states);
 
   void clear_var_states ();
 
   void clear_conditions ();
 
+  /* Adds the given condition to the state.  */
   bool add_condition (bit_expression *cond);
 
+  /* Bulk add the given conditions to the state.  */
   bool bulk_add_conditions (const hash_set<bit_expression *> &conds);
 
+  /* Get value of the given variable.  */
   value *get_value (tree var);
 
   /* Get the value of the tree, which is in the beginning of the var_states.  */
   value *get_first_value ();
 
+  /* Returns the list of conditions in the state.  */
   const hash_set<bit_expression *> &get_conditions ();
 
   /* Adds a variable with unknown value to state.  Such variables are
@@ -270,6 +292,9 @@ class state {
   /* Prints added conditions.  */
   void print_conditions ();
 
+  /* Checks if all bits of the given value have constant bit type.  */
+  static bool is_bit_vector (const value *var);
+
   /* Returns the number represented by the value.  */
   static unsigned HOST_WIDE_INT
   make_number (const value *var);
@@ -283,6 +308,7 @@ class state {
   /* Does bit-level OR operation for given variables.  */
   bool do_or (tree arg1, tree arg2, tree dest);
 
+  /* Does Assignment.  */
   bool do_assign (tree arg, tree dest);
 
   /* Assigns pow 2 value.  */
@@ -306,6 +332,7 @@ class state {
   /* Negates given variable.  */
   bool do_complement (tree arg, tree dest);
 
+  /* Adds EQUAL condition of given variables to state.  */
   bool add_equal_cond (tree arg1, tree arg2);
 
   /* Gets the value of *arg1 and stores it in dest.  */
@@ -317,24 +344,36 @@ class state {
   /* Perform subtractions on arg1 pointer.  */
   bool do_pointer_diff (tree arg1, tree arg2, tree dest);
 
+  /* Adds NOT EQUAL condition of given variables to state.  */
   bool add_not_equal_cond (tree arg1, tree arg2);
 
+  /* Adds GREATER THAN condition of given variables to state.  */
   bool add_greater_than_cond (tree arg1, tree arg2);
 
+  /* Adds LESS THAN condition of given variables to state.  */
   bool add_less_than_cond (tree arg1, tree arg2);
 
+  /* Adds GREATER OR EQUAL condition of given variables to state.  */
   bool add_greater_or_equal_cond (tree arg1, tree arg2);
 
+  /* Adds LESS OR EQUAL condition of given variables to state.  */
   bool add_less_or_equal_cond (tree arg1, tree arg2);
 
+  /* Adds a bool condition to state.  */
   bool add_bool_cond (tree arg);
 
+  /* Checks whether the given two constant values are equal.  */
   static bool check_const_value_equality (value *arg1, value *arg2);
 
+  /* Checks whether the given two constant values are not equal.  */
   static bool check_const_value_are_not_equal (value *arg1, value *arg2);
 
+  /* Checks whether the first given constant value
+     is greater than the second one.  */
   static bool check_const_value_is_greater_than (value *arg1, value *arg2);
 
+  /* Checks whether the first given constant value
+     is less than the second one.  */
   static bool check_const_value_is_less_than (value *arg1, value *arg2);
 
   static value_bit *complement_bits_with_origin (value_bit *root, tree origin);
@@ -357,6 +396,9 @@ class state {
 
 size_t min (size_t a, size_t b, size_t c);
 
+
+/* Performs the given operation on passed arguments.
+   The result is stored in dest.  */
 
 template<class func>
 void

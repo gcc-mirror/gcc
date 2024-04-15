@@ -38,15 +38,15 @@ class value_bit {
  protected:
   /* This will help us to understand where is moved the bit
      from its initial position.  */
-  const size_t index;
-  value_type type;
+  const size_t m_index;
+  value_type m_type;
 
  public:
-  value_bit () : index (0)
+  value_bit () : m_index (0)
   {};
-  value_bit (size_t i) : index (i)
+  value_bit (size_t i) : m_index (i)
   {};
-  value_bit (const value_bit &val) : index (val.index)
+  value_bit (const value_bit &val) : m_index (val.m_index)
   {};
   size_t get_index () const;
   value_type get_type () const;
@@ -60,12 +60,12 @@ class value_bit {
 /* Represents value of a single bit of symbolic marked variables.  */
 
 class symbolic_bit : public value_bit {
-  tree origin = nullptr;
+  tree m_origin = nullptr;
 
  public:
   symbolic_bit (size_t i, tree orig);
-  symbolic_bit (const symbolic_bit &sym_bit) : symbolic_bit (sym_bit.index,
-							     sym_bit.origin)
+  symbolic_bit (const symbolic_bit &sym_bit) : symbolic_bit (sym_bit.m_index,
+							     sym_bit.m_origin)
   {};
 
   value_bit *copy () const;
@@ -79,11 +79,11 @@ class symbolic_bit : public value_bit {
 class bit : public value_bit {
  private:
   /* This is the value of a bit.  It must be either 1 or 0.  */
-  unsigned char val = 0;
+  unsigned char m_val = 0;
 
  public:
   bit (unsigned char i);
-  bit (const bit &b) : bit (b.val)
+  bit (const bit &b) : bit (b.m_val)
   {};
   unsigned char get_val () const;
   void set_val (unsigned char new_val);
@@ -93,12 +93,12 @@ class bit : public value_bit {
 
 
 /* Bit-level base expression class.  In general expressions consist of
-   two operands.  Here we named them left and right.  */
+   two operands.  Here we named them m_left and right.  */
 
 class bit_expression : public value_bit {
  protected:
-  value_bit *left = nullptr;
-  value_bit *right = nullptr;
+  value_bit *m_left = nullptr;
+  value_bit *m_right = nullptr;
 
   void copy (const bit_expression *expr);
   virtual void print_expr_sign ();
