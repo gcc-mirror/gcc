@@ -1,4 +1,5 @@
 /* PR target/114606 */
+/* { dg-do compile { target *-*-linux* *-*-gnu* } } */
 /* { dg-options "-fhardened -O2 -fcf-protection=none" } */
 
 #ifdef __CET__
