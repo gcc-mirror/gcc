@@ -2764,6 +2764,7 @@ gimplify_switch_expr (tree *expr_p, gimple_seq *pre_p)
 
       switch_stmt = gimple_build_switch (SWITCH_COND (switch_expr),
 					 default_case, labels);
+      gimple_set_location (switch_stmt, EXPR_LOCATION (switch_expr));
       /* For the benefit of -Wimplicit-fallthrough, if switch_body_seq
 	 ends with a GIMPLE_LABEL holding SWITCH_BREAK_LABEL_P LABEL_DECL,
 	 wrap the GIMPLE_SWITCH up to that GIMPLE_LABEL into a GIMPLE_BIND,
