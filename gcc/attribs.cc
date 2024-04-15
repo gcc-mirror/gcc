@@ -480,7 +480,12 @@ diag_attr_exclusions (tree last_decl, tree node, tree attrname,
   if (DECL_P (node))
     {
       attrs[0] = DECL_ATTRIBUTES (node);
-      attrs[1] = TYPE_ATTRIBUTES (TREE_TYPE (node));
+      if (TREE_TYPE (node))
+	attrs[1] = TYPE_ATTRIBUTES (TREE_TYPE (node));
+      else
+	/* TREE_TYPE can be NULL e.g. while processing attributes on
+	   enumerators.  */
+	attrs[1] = NULL_TREE;
     }
   else
     {
