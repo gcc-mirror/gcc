@@ -427,8 +427,7 @@ fi
 # Test for Rust
 # We require cargo and rustc for some parts of the rust compiler.
 AC_DEFUN([ACX_PROG_CARGO],
-[AC_REQUIRE([AC_CHECK_TOOL_PREFIX])
-AC_CHECK_TOOL(CARGO, cargo, no)
+[AC_CHECK_PROGS(CARGO, cargo, no)
 if test "x$CARGO" != xno; then
   have_cargo=yes
 else
