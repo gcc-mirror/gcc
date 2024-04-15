@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=armv8.7-a" } */
+/* { dg-additional-options "-march=armv8.7-a+ls64" } */
 #include <arm_acle.h>
 int main()
 {
