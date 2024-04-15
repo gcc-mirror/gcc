@@ -27029,7 +27029,7 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					bool explicit_p)
 {
   tree t, ret_type;
-  unsigned int elt_bits, count;
+  unsigned int elt_bits, count = 0;
   unsigned HOST_WIDE_INT const_simdlen;
   poly_uint64 vec_bits;
 
@@ -27102,8 +27102,17 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   elt_bits = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
   if (known_eq (clonei->simdlen, 0U))
     {
-      count = 2;
-      vec_bits = (num == 0 ? 64 : 128);
+      /* We don't support simdlen == 1.  */
+      if (known_eq (elt_bits, 64))
+	{
+	  count = 1;
+	  vec_bits = 128;
+	}
+      else
+	{
+	  count = 2;
+	  vec_bits = (num == 0 ? 64 : 128);
+	}
       clonei->simdlen = exact_div (vec_bits, elt_bits);
     }
   else
@@ -27123,6 +27132,7 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  return 0;
 	}
     }
+
   clonei->vecsize_int = vec_bits;
   clonei->vecsize_float = vec_bits;
   return count;
