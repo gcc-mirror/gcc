@@ -1308,7 +1308,13 @@ package body System.Task_Primitives.Operations is
          Result :=
            SetThreadIdealProcessor
              (T.Common.LL.Thread, ProcessorId (T.Common.Base_CPU) - 1);
-         pragma Assert (Result = 1);
+
+         --  The documentation for SetThreadIdealProcessor states:
+         --
+         --      If the function fails, the return value is (DWORD) - 1.
+         --
+         --  That should map to DWORD'Last in Ada.
+         pragma Assert (Result /= DWORD'Last);
 
       --  Task_Info
 
@@ -1317,7 +1323,10 @@ package body System.Task_Primitives.Operations is
             Result :=
               SetThreadIdealProcessor
                 (T.Common.LL.Thread, T.Common.Task_Info.CPU);
-            pragma Assert (Result = 1);
+
+            --  See the comment above about the return value of
+            --  SetThreadIdealProcessor.
+            pragma Assert (Result /= DWORD'Last);
          end if;
 
       --  Dispatching domains
