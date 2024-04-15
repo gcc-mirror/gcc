@@ -1427,7 +1427,7 @@
 (define_expand "vec_extract<mode>qi"
   [(set (match_operand:QI	  0 "register_operand")
      (vec_select:QI
-       (match_operand:VB	  1 "register_operand")
+       (match_operand:VB_VLS	  1 "register_operand")
        (parallel
 	 [(match_operand	  2 "nonmemory_operand")])))]
   "TARGET_VECTOR"
@@ -1453,7 +1453,7 @@
 (define_expand "vec_extract<mode>bi"
   [(set (match_operand:QI	  0 "register_operand")
      (vec_select:QI
-       (match_operand:VB	  1 "register_operand")
+       (match_operand:VB_VLS	  1 "register_operand")
        (parallel
 	 [(match_operand	  2 "nonmemory_operand")])))]
   "TARGET_VECTOR"
