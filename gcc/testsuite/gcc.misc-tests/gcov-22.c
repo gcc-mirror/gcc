@@ -87,7 +87,19 @@ setdest ()
 void
 jump ()
 {
-    longjmp (dest, 1);
+    /* Protect the longjmp so it will only be done once.  The whole purpose of
+       this function is to help test conditions and instrumentation around
+       setjmp and its complex edges, as both branches should count towards
+       coverage, even when one is taken through longjmp.  If the jump is not
+       guarded it can cause an infinite loop as setdest returns to a point in
+       main before jump (), leading to an infinite loop.  See PR
+       gcov-profile/114720.  */
+    static int called_once = 0;
+    if (!called_once) /* conditions(suppress) */
+    {
+	called_once = 1;
+	longjmp (dest, 1);
+    }
 }
 
 int
