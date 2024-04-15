@@ -366,5 +366,7 @@ else
 # only do this if such a compiler is available.  We also need to get
 # the right values for GOARCH and GOOS in the default build context in
 # the go/build package.  Figure this out later.
+install-exec-local:
+uninstall-local:
 
 endif
