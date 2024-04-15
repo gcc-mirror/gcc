@@ -302,7 +302,7 @@ __truncdfsf2 (double a1)
   if (exp == EXPDMASK - EXCESSD + EXCESS)
     {
       exp = EXPMASK;
-      mant = mant >> 1 | (mant & 1) | !!sticky;
+      mant = (mant >> 1) | (mant & 1) | (!!sticky);
     }
   else
     {
