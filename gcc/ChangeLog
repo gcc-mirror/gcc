@@ -1,3 +1,53 @@
+2024-04-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-04-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add: avr16du14, avr16du20, avr16du28,
+	avr16du32, avr32du14, avr32du20, avr32du28,  avr32du32.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2024-04-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114599
+	PR gcov-profile/114115
+	* symtab.cc (ifunc_ref_map): Do not use auto_bitmap.
+	(is_caller_ifunc_resolver): Optimize bitmap_bit_p/bitmap_set_bit
+	pair.
+	(symtab_node::check_ifunc_callee_symtab_nodes): Properly
+	allocate ifunc_ref_map here.
+
+2024-04-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-04-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/114115
+	* cgraph.h (symtab_node): Add check_ifunc_callee_symtab_nodes.
+	(cgraph_node): Add called_by_ifunc_resolver.
+	* cgraphunit.cc (symbol_table::compile): Call
+	symtab_node::check_ifunc_callee_symtab_nodes.
+	* symtab.cc (check_ifunc_resolver): New.
+	(ifunc_ref_map): Likewise.
+	(is_caller_ifunc_resolver): Likewise.
+	(symtab_node::check_ifunc_callee_symtab_nodes): Likewise.
+	* tree-profile.cc (gimple_gen_ic_func_profiler): Disable indirect
+	call profiling for IFUNC resolvers and their callees.
+
+2024-04-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-arches.def (AARCH64_ARCH): Remove LS64 from
+	Armv8.7-a.
+
+2024-04-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113552
+	* config/aarch64/aarch64.cc
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): Block simdlen 1.
+
 2024-04-11  Kito Cheng  <kito.cheng@sifive.com>
 
 	Backported from master:

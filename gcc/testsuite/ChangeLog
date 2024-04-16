@@ -1,3 +1,44 @@
+2024-04-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-02-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113966
+	* g++.dg/cpp2a/concepts-friend17.C: New test.
+
+2024-04-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110006
+	PR c++/112769
+	* g++.dg/cpp2a/class-deduction-alias18.C: New test.
+	* g++.dg/cpp2a/concepts-friend16.C: New test.
+
+2024-04-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-04-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/114115
+	* gcc.dg/pr114115.c: New test.
+
+2024-04-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.target/aarch64/acle/ls64.C: Add +ls64.
+	* g++.target/aarch64/acle/ls64_lto.C: Likewise.
+	* gcc.target/aarch64/acle/ls64_lto.c: Likewise.
+	* gcc.target/aarch64/acle/pr110100.c: Likewise.
+	* gcc.target/aarch64/acle/pr110132.c: Likewise.
+	* gcc.target/aarch64/pragma_cpp_predefs_2.c: Correct header checks.
+
+2024-04-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/113552
+	* gcc.target/aarch64/pr113552.c: New test.
+	* gcc.target/aarch64/simd_pcs_attribute-3.c: Remove bogus check.
+
 2024-04-11  Kito Cheng  <kito.cheng@sifive.com>
 
 	Backported from master:

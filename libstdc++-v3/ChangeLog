@@ -1,3 +1,7 @@
+2024-04-15  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
 2024-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

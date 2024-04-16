@@ -1,3 +1,38 @@
+2024-04-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-02-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113966
+	* constraint.cc (tsubst_compound_requirement): Don't check
+	the noexcept condition or the return-type-requirement when
+	partially substituting.
+
+2024-04-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-02-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/110006
+	PR c++/112769
+	* constraint.cc (subst_info::quiet): Accomodate non-diagnostic
+	tsubst flags.
+	(tsubst_valid_expression_requirement): Likewise.
+	(tsubst_simple_requirement): Return a substituted _REQ node when
+	processing_template_decl.
+	(tsubst_type_requirement_1): Accomodate non-diagnostic tsubst
+	flags.
+	(tsubst_type_requirement): Return a substituted _REQ node when
+	processing_template_decl.
+	(tsubst_compound_requirement): Likewise.  Accomodate non-diagnostic
+	tsubst flags.
+	(tsubst_nested_requirement): Likewise.
+	(tsubst_requires_expr): Don't defer partial substitution when
+	processing_constraint_expression_p is true, in which case return
+	a substituted REQUIRES_EXPR.
+	* pt.cc (tsubst_expr) <case REQUIRES_EXPR>: Accomodate
+	non-diagnostic tsubst flags.
+
 2024-04-02  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
