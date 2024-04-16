@@ -8944,6 +8944,8 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
   switch (induction_type)
     {
     case vect_step_op_neg:
+      if (maybe_eq (TYPE_VECTOR_SUBPARTS (vectype), 1u))
+	return false;
       if (TREE_CODE (init_expr) != INTEGER_CST
 	  && TREE_CODE (init_expr) != REAL_CST)
 	{
