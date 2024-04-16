@@ -18481,7 +18481,13 @@ record_key_method_defined (tree fndecl)
     {
       tree fnclass = DECL_CONTEXT (fndecl);
       if (fndecl == CLASSTYPE_KEY_METHOD (fnclass))
-	vec_safe_push (keyed_classes, fnclass);
+	{
+	  tree classdecl = TYPE_NAME (fnclass);
+	  /* Classes attached to a named module are already handled.  */
+	  if (!DECL_LANG_SPECIFIC (classdecl)
+	      || !DECL_MODULE_ATTACH_P (classdecl))
+	    vec_safe_push (keyed_classes, fnclass);
+	}
     }
 }
 

@@ -7820,8 +7820,11 @@ finish_struct_1 (tree t)
       /* If a polymorphic class has no key method, we may emit the vtable
 	 in every translation unit where the class definition appears.  If
 	 we're devirtualizing, we can look into the vtable even if we
-	 aren't emitting it.  */
-      if (!CLASSTYPE_KEY_METHOD (t))
+	 aren't emitting it.
+
+	 Additionally, if the class is attached to a named module, make sure
+	 to always emit the vtable in this TU.  */
+      if (!CLASSTYPE_KEY_METHOD (t) || module_attach_p ())
 	vec_safe_push (keyed_classes, t);
     }
 

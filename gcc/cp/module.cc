@@ -12502,10 +12502,14 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 
 	  if (vtables)
 	    {
-	      if (!CLASSTYPE_KEY_METHOD (type)
-		  /* Sneaky user may have defined it inline
-		     out-of-class.  */
-		  || DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (type)))
+	      if ((!CLASSTYPE_KEY_METHOD (type)
+		   /* Sneaky user may have defined it inline
+		      out-of-class.  */
+		   || DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (type)))
+		  /* An imported non-template class attached to a module
+		     doesn't need to have its vtables emitted here.  */
+		  && (CLASSTYPE_USE_TEMPLATE (type)
+		      || !DECL_MODULE_ATTACH_P (defn)))
 		vec_safe_push (keyed_classes, type);
 	      unsigned len = vtables->length ();
 	      tree *chain = &CLASSTYPE_VTABLES (type);

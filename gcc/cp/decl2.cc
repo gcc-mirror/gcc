@@ -2422,17 +2422,26 @@ import_export_class (tree ctype)
       import_export = -1;
   else if (TYPE_POLYMORPHIC_P (ctype))
     {
-      /* The ABI specifies that the virtual table and associated
-	 information are emitted with the key method, if any.  */
-      tree method = CLASSTYPE_KEY_METHOD (ctype);
-      /* If weak symbol support is not available, then we must be
-	 careful not to emit the vtable when the key function is
-	 inline.  An inline function can be defined in multiple
-	 translation units.  If we were to emit the vtable in each
-	 translation unit containing a definition, we would get
-	 multiple definition errors at link-time.  */
-      if (method && (flag_weak || ! DECL_DECLARED_INLINE_P (method)))
-	import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
+      tree cdecl = TYPE_NAME (ctype);
+      if (DECL_LANG_SPECIFIC (cdecl) && DECL_MODULE_ATTACH_P (cdecl))
+	/* For class types attached to a named module, the ABI specifies
+	   that the tables are uniquely emitted in the object for the
+	   module unit in which it is defined.  */
+	import_export = (DECL_MODULE_IMPORT_P (cdecl) ? -1 : 1);
+      else
+	{
+	  /* The ABI specifies that the virtual table and associated
+	     information are emitted with the key method, if any.  */
+	  tree method = CLASSTYPE_KEY_METHOD (ctype);
+	  /* If weak symbol support is not available, then we must be
+	     careful not to emit the vtable when the key function is
+	     inline.  An inline function can be defined in multiple
+	     translation units.  If we were to emit the vtable in each
+	     translation unit containing a definition, we would get
+	     multiple definition errors at link-time.  */
+	  if (method && (flag_weak || ! DECL_DECLARED_INLINE_P (method)))
+	    import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
+	}
     }
 
   /* When MULTIPLE_SYMBOL_SPACES is set, we cannot count on seeing
@@ -3325,6 +3334,35 @@ tentative_decl_linkage (tree decl)
     }
 }
 
+/* For a polymorphic class type CTYPE, whether its vtables are emitted in a
+   unique object as per the ABI.  */
+
+static bool
+vtables_uniquely_emitted (tree ctype)
+{
+  /* If the class is templated, the tables are emitted in every object that
+     references any of them.  */
+  if (CLASSTYPE_USE_TEMPLATE (ctype))
+    return false;
+
+  /* Otherwise, if the class is attached to a module, the tables are uniquely
+     emitted in the object for the module unit in which it is defined.  */
+  tree cdecl = TYPE_NAME (ctype);
+  if (DECL_LANG_SPECIFIC (cdecl) && DECL_MODULE_ATTACH_P (cdecl))
+    return true;
+
+  /* Otherwise, if the class has a key function, the tables are emitted in the
+     object for the TU containing the definition of the key function.  This is
+     unique if the key function is not inline.  */
+  tree key_method = CLASSTYPE_KEY_METHOD (ctype);
+  if (key_method && !DECL_DECLARED_INLINE_P (key_method))
+    return true;
+
+  /* Otherwise, the tables are emitted in every object that references
+     any of them.  */
+  return false;
+}
+
 /* DECL is a FUNCTION_DECL or VAR_DECL.  If the object file linkage
    for DECL has not already been determined, do so now by setting
    DECL_EXTERNAL, DECL_COMDAT and other related flags.  Until this
@@ -3399,10 +3437,6 @@ import_export_decl (tree decl)
      unit.  */
   import_p = false;
 
-  /* FIXME: Since https://github.com/itanium-cxx-abi/cxx-abi/pull/171,
-     the ABI specifies that classes attached to named modules should
-     have their vtables uniquely emitted in the object for the module
-     unit in which it is defined.  And similarly for RTTI structures.  */
   if (VAR_P (decl) && DECL_VTABLE_OR_VTT_P (decl))
     {
       class_type = DECL_CONTEXT (decl);
@@ -3411,15 +3445,13 @@ import_export_decl (tree decl)
 	  && CLASSTYPE_INTERFACE_ONLY (class_type))
 	import_p = true;
       else if ((!flag_weak || TARGET_WEAK_NOT_IN_ARCHIVE_TOC)
-	       && !CLASSTYPE_USE_TEMPLATE (class_type)
-	       && CLASSTYPE_KEY_METHOD (class_type)
-	       && !DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (class_type)))
-	/* The ABI requires that all virtual tables be emitted with
-	   COMDAT linkage.  However, on systems where COMDAT symbols
-	   don't show up in the table of contents for a static
-	   archive, or on systems without weak symbols (where we
-	   approximate COMDAT linkage by using internal linkage), the
-	   linker will report errors about undefined symbols because
+	       && !vtables_uniquely_emitted (class_type))
+	/* The ABI historically required that all virtual tables be
+	   emitted with COMDAT linkage.  However, on systems where
+	   COMDAT symbols don't show up in the table of contents for
+	   a static archive, or on systems without weak symbols (where
+	   we approximate COMDAT linkage by using internal linkage),
+	   the linker will report errors about undefined symbols because
 	   it will not see the virtual table definition.  Therefore,
 	   in the case that we know that the virtual table will be
 	   emitted in only one translation unit, we make the virtual
@@ -3440,16 +3472,17 @@ import_export_decl (tree decl)
 	    DECL_EXTERNAL (decl) = 0;
 	  else
 	    {
-	      /* The generic C++ ABI says that class data is always
-		 COMDAT, even if there is a key function.  Some
-		 variants (e.g., the ARM EABI) says that class data
-		 only has COMDAT linkage if the class data might be
-		 emitted in more than one translation unit.  When the
-		 key method can be inline and is inline, we still have
-		 to arrange for comdat even though
+	      /* The generic C++ ABI used to say that class data is always
+		 COMDAT, even if emitted in a unique object.  This is no
+		 longer true, but for now we continue to do so for
+		 compatibility with programs that are not strictly valid.
+		 However, some variants (e.g., the ARM EABI) explicitly say
+		 that class data only has COMDAT linkage if the class data
+		 might be emitted in more than one translation unit.
+		 When the key method can be inline and is inline, we still
+		 have to arrange for comdat even though
 		 class_data_always_comdat is false.  */
-	      if (!CLASSTYPE_KEY_METHOD (class_type)
-		  || DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (class_type))
+	      if (!vtables_uniquely_emitted (class_type)
 		  || targetm.cxx.class_data_always_comdat ())
 		{
 		  /* The ABI requires COMDAT linkage.  Normally, we
@@ -3489,8 +3522,7 @@ import_export_decl (tree decl)
 		  && !CLASSTYPE_INTERFACE_ONLY (type))
 		{
 		  comdat_p = (targetm.cxx.class_data_always_comdat ()
-			      || (CLASSTYPE_KEY_METHOD (type)
-				  && DECL_DECLARED_INLINE_P (CLASSTYPE_KEY_METHOD (type))));
+			      || !vtables_uniquely_emitted (class_type));
 		  mark_needed (decl);
 		  if (!flag_weak)
 		    {
