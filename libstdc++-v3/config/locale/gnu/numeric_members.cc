@@ -159,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 
-      // NB: There is no way to extact this info from posix locales.
+      // NB: There is no way to extract this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);
       _M_data->_M_truename = "true";
       _M_data->_M_truename_size = 4;
@@ -251,7 +251,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 
-      // NB: There is no way to extact this info from posix locales.
+      // NB: There is no way to extract this info from posix locales.
       // _M_truename = __nl_langinfo_l(YESSTR, __cloc);
       _M_data->_M_truename = L"true";
       _M_data->_M_truename_size = 4;
