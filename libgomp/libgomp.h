@@ -1163,6 +1163,8 @@ struct target_mem_desc;
 /* Special value for refcount - tgt_offset contains target address of the
    artificial pointer to "omp declare target link" object.  */
 #define REFCOUNT_LINK     (REFCOUNT_SPECIAL | 1)
+/* Special value for refcount - created through acc_map_data.  */
+#define REFCOUNT_ACC_MAP_DATA (REFCOUNT_SPECIAL | 2)
 
 /* Special value for refcount - structure element sibling list items.
    All such key refounts have REFCOUNT_STRUCTELEM bits set, with _FLAG_FIRST

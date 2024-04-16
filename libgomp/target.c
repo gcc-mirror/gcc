@@ -476,7 +476,9 @@ gomp_free_device_memory (struct gomp_device_descr *devicep, void *devptr)
 static inline void
 gomp_increment_refcount (splay_tree_key k, htab_t *refcount_set)
 {
-  if (k == NULL || k->refcount == REFCOUNT_INFINITY)
+  if (k == NULL
+      || k->refcount == REFCOUNT_INFINITY
+      || k->refcount == REFCOUNT_ACC_MAP_DATA)
     return;
 
   uintptr_t *refcount_ptr = &k->refcount;
@@ -520,7 +522,9 @@ static inline void
 gomp_decrement_refcount (splay_tree_key k, htab_t *refcount_set, bool delete_p,
 			 bool *do_copy, bool *do_remove)
 {
-  if (k == NULL || k->refcount == REFCOUNT_INFINITY)
+  if (k == NULL
+      || k->refcount == REFCOUNT_INFINITY
+      || k->refcount == REFCOUNT_ACC_MAP_DATA)
     {
       *do_copy = *do_remove = false;
       return;
