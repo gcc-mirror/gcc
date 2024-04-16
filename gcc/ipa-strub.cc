@@ -1940,6 +1940,9 @@ maybe_make_indirect (indirect_parms_t &indirect_parms, tree op, int *rec)
 			  TREE_TYPE (TREE_TYPE (op)),
 			  op,
 			  build_int_cst (TREE_TYPE (op), 0));
+	  if (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (op)))
+	      && !TREE_THIS_VOLATILE (ret))
+	    TREE_SIDE_EFFECTS (ret) = TREE_THIS_VOLATILE (ret) = 1;
 	  return ret;
 	}
     }
@@ -2894,6 +2897,10 @@ pass_ipa_strub::execute (function *)
 	     probably drop the TREE_ADDRESSABLE and keep the TRUE.  */
 	  tree ref_type = build_ref_type_for (nparm);
 
+	  if (TREE_THIS_VOLATILE (nparm)
+	      && TYPE_VOLATILE (TREE_TYPE (nparm))
+	      && !TYPE_VOLATILE (ref_type))
+	    TREE_SIDE_EFFECTS (nparm) = TREE_THIS_VOLATILE (nparm) = 0;
 	  DECL_ARG_TYPE (nparm) = TREE_TYPE (nparm) = ref_type;
 	  relayout_decl (nparm);
 	  TREE_ADDRESSABLE (nparm) = 0;
