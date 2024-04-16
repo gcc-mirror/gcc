@@ -234,7 +234,7 @@ fld_decl_context (tree ctx)
   return ctx;
 }
 
-/* For T being aggregate type try to turn it into a incomplete variant.
+/* For T being aggregate type try to turn it into an incomplete variant.
    Return T if no simplification is possible.  */
 
 static tree

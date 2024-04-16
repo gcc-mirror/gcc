@@ -3689,7 +3689,7 @@ int_byte_position (const_tree field)
 }
 
 /* Return, as a tree node, the number of elements for TYPE (which is an
-   ARRAY_TYPE) minus one. This counts only elements of the top array.  */
+   ARRAY_TYPE) minus one.  This counts only elements of the top array.  */
 
 tree
 array_type_nelts (const_tree type)
@@ -5757,7 +5757,7 @@ build_variant_type_copy (tree type MEM_STAT_DECL)
   t = build_distinct_type_copy (type PASS_MEM_STAT);
 
   /* Since we're building a variant, assume that it is a non-semantic
-     variant. This also propagates TYPE_STRUCTURAL_EQUALITY_P. */
+     variant.  This also propagates TYPE_STRUCTURAL_EQUALITY_P. */
   TYPE_CANONICAL (t) = TYPE_CANONICAL (type);
   /* Type variants have no alias set defined.  */
   TYPE_ALIAS_SET (t) = -1;
@@ -8915,7 +8915,7 @@ get_file_function_name (const char *type)
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)
 
 /* Complain that the tree code of NODE does not match the expected 0
-   terminated list of trailing codes. The trailing code list can be
+   terminated list of trailing codes.  The trailing code list can be
    empty, for a more vague error message.  FILE, LINE, and FUNCTION
    are of the caller.  */
 
@@ -9332,7 +9332,7 @@ make_or_reuse_accum_type (unsigned size, int unsignedp, int satp)
 
 /* Create an atomic variant node for TYPE.  This routine is called
    during initialization of data types to create the 5 basic atomic
-   types. The generic build_variant_type function requires these to
+   types.  The generic build_variant_type function requires these to
    already be set up in order to function properly, so cannot be
    called from there.  If ALIGN is non-zero, then ensure alignment is
    overridden to this value.  */
