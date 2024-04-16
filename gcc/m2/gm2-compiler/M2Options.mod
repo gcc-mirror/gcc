@@ -57,9 +57,10 @@ CONST
    DefaultRuntimeModuleOverride = "m2iso:RTentity,m2iso:Storage,m2iso:SYSTEM,m2iso:M2RTS,m2iso:RTExceptions,m2iso:IOLink" ;
 
 VAR
-   DumpLangDeclFilename,
-   DumpLangQuadFilename,
-   DumpLangGimpleFilename,
+   DumpDeclFilename,
+   DumpQuadFilename,
+   DumpGimpleFilename,
+   M2Dump,
    M2DumpFilter,
    M2Prefix,
    M2PathName,
@@ -76,10 +77,13 @@ VAR
    RuntimeModuleOverride,
    CppArgs              : String ;
    DebugFunctionLineNumbers,
-   DebugTraceQuad,   (* -fdebug-trace-quad.  *)
-   DebugTraceTree,   (* -fdebug-trace-tree.  *)
-   DebugTraceLine,   (* -fdebug-trace-line.  *)
-   DebugTraceToken, (* -fdebug-trace-token.  *)
+   DebugTraceQuad,   (* -fm2-debug-trace=quad.  *)
+   DebugTraceLine,   (* -fm2-debug-trace=line.  *)
+   DebugTraceToken,  (* -fm2-debug-trace=token. *)
+   DebugTraceTree,   (* -fm2-debug-trace=tree.  (not yet implemented).  *)
+   DumpDecl,         (* -fm2-dump=decl.  *)
+   DumpGimple,       (* -fm2-dump=gimple.  *)
+   DumpQuad,         (* -fq, -fm2-dump=quad dump quadruples.  *)
    MFlag,
    MMFlag,
    MPFlag,
@@ -1085,9 +1089,9 @@ END SetSwig ;
 
 PROCEDURE SetQuadDebugging (value: BOOLEAN) ;
 BEGIN
-   DumpLangQuad := value ;
-   DumpLangQuadFilename := KillString (DumpLangQuadFilename) ;
-   DumpLangQuadFilename := InitString ('-')
+   DumpQuad := value ;
+   DumpQuadFilename := KillString (DumpQuadFilename) ;
+   DumpQuadFilename := InitString ('-')
 END SetQuadDebugging ;
 
 
@@ -1140,7 +1144,7 @@ PROCEDURE SetM2DebugTrace (word: String; value: BOOLEAN) ;
 BEGIN
    IF EqualArray (word, 'all')
    THEN
-      (* DebugTraceTree := value *)
+      (* DebugTraceTree := value ;  *)
       DebugTraceQuad := value ;
       DebugTraceToken := value ;
       DebugTraceLine := value
@@ -1796,83 +1800,84 @@ END InitializeLongDoubleFlags ;
 
 
 (*
-   GetDumpLangDeclFilename - returns the DumpLangDeclFilename.
+   GetDumpDeclFilename - returns the DumpDeclFilename.
 *)
 
-PROCEDURE GetDumpLangDeclFilename () : String ;
+PROCEDURE GetDumpDeclFilename () : String ;
 BEGIN
-   RETURN DumpLangDeclFilename
-END GetDumpLangDeclFilename ;
+   RETURN DumpDeclFilename
+END GetDumpDeclFilename ;
 
 
 (*
-   SetDumpLangDeclFilename -
+   SetDumpDeclFilename -
 *)
 
-PROCEDURE SetDumpLangDeclFilename (value: BOOLEAN; filename: ADDRESS) ;
+PROCEDURE SetDumpDeclFilename (value: BOOLEAN; filename: ADDRESS) ;
 BEGIN
-   DumpLangDecl := value ;
-   DumpLangDeclFilename := KillString (DumpLangDeclFilename) ;
+   DumpDecl := value ;
+   DumpDeclFilename := KillString (DumpDeclFilename) ;
    IF filename # NIL
    THEN
-      DumpLangDeclFilename := InitStringCharStar (filename)
+      DumpDeclFilename := InitStringCharStar (filename)
    END
-END SetDumpLangDeclFilename ;
+END SetDumpDeclFilename ;
 
 
 (*
-   GetDumpLangQuadFilename - returns the DumpLangQuadFilename.
+   GetDumpQuadFilename - returns the DumpQuadFilename.
 *)
 
-PROCEDURE GetDumpLangQuadFilename () : String ;
+PROCEDURE GetDumpQuadFilename () : String ;
 BEGIN
-   RETURN DumpLangQuadFilename
-END GetDumpLangQuadFilename ;
+   RETURN DumpQuadFilename
+END GetDumpQuadFilename ;
 
 
 (*
-   SetDumpLangQuadFilename -
+   SetDumpQuadFilename -
 *)
 
-PROCEDURE SetDumpLangQuadFilename (value: BOOLEAN; filename: ADDRESS) ;
+PROCEDURE SetDumpQuadFilename (value: BOOLEAN; filename: ADDRESS) ;
 BEGIN
-   DumpLangQuad := value ;
-   DumpLangQuadFilename := KillString (DumpLangQuadFilename) ;
+   DumpQuad := value ;
+   DumpQuadFilename := KillString (DumpQuadFilename) ;
    IF filename # NIL
    THEN
-      DumpLangQuadFilename := InitStringCharStar (filename)
+      DumpQuadFilename := InitStringCharStar (filename)
    END
-END SetDumpLangQuadFilename ;
+END SetDumpQuadFilename ;
 
 
 (*
-   GetDumpLangGimpleFilename - returns the DumpLangGimpleFilename.
+   GetDumpGimpleFilename - returns the DumpGimpleFilename.
 *)
 
-PROCEDURE GetDumpLangGimpleFilename () : String ;
+PROCEDURE GetDumpGimpleFilename () : String ;
 BEGIN
-   RETURN DumpLangGimpleFilename
-END GetDumpLangGimpleFilename ;
+   RETURN DumpGimpleFilename
+END GetDumpGimpleFilename ;
 
 
 (*
-   SetDumpLangGimpleFilename - set DumpLangGimpleFilename to filename.
+   SetDumpGimpleFilename - set DumpGimpleFilename to filename.
 *)
 
-PROCEDURE SetDumpLangGimpleFilename (value: BOOLEAN; filename: ADDRESS) ;
+PROCEDURE SetDumpGimpleFilename (value: BOOLEAN; filename: ADDRESS) ;
 BEGIN
-   DumpLangGimple := value ;
-   DumpLangGimpleFilename := KillString (DumpLangGimpleFilename) ;
+   DumpGimple := value ;
+   DumpGimpleFilename := KillString (DumpGimpleFilename) ;
    IF value AND (filename # NIL)
    THEN
-      DumpLangGimpleFilename := InitStringCharStar (filename)
+      DumpGimpleFilename := InitStringCharStar (filename)
    END
-END SetDumpLangGimpleFilename ;
+END SetDumpGimpleFilename ;
 
 
 (*
    SetM2DumpFilter - sets the filter to a comma separated list of procedures
-                     and modules.
+                     and modules.  Not to be confused with SetM2Dump below
+                     which enables the class of data structures to be dumped.
 *)
 
 PROCEDURE SetM2DumpFilter (value: BOOLEAN; filter: ADDRESS) ;
@@ -1901,13 +1906,115 @@ END GetM2DumpFilter ;
 
 
 (*
-   GetDumpLangGimple - return TRUE if -fdump-lang-gimple is set.
+   MatchDump - enable/disable dump using value.  It returns TRUE if dump
+               is valid.
 *)
 
-PROCEDURE GetDumpLangGimple () : BOOLEAN ;
+PROCEDURE MatchDump (dump: String; value: BOOLEAN) : BOOLEAN ;
 BEGIN
-   RETURN DumpLangGimple
-END GetDumpLangGimple ;
+   IF EqualArray (dump, 'all')
+   THEN
+      DumpDecl := value ;
+      DumpQuad := value ;
+      DumpGimple := value ;
+      RETURN TRUE
+   ELSIF EqualArray (dump, 'decl')
+   THEN
+      DumpDecl := value ;
+      RETURN TRUE
+   ELSIF EqualArray (dump, 'gimple')
+   THEN
+      DumpGimple := value ;
+      RETURN TRUE
+   ELSIF EqualArray (dump, 'quad')
+   THEN
+      DumpQuad := value ;
+      RETURN TRUE
+   END ;
+   RETURN FALSE
+END MatchDump ;
+
+
+(*
+   SetM2Dump - sets the dump via a comma separated list: quad,decl,gimple,all.
+               It returns TRUE if the comma separated list is valid.
+*)
+
+PROCEDURE SetM2Dump (value: BOOLEAN; filter: ADDRESS) : BOOLEAN ;
+VAR
+   result: BOOLEAN ;
+   dump  : String ;
+   start,
+   i     : INTEGER ;
+BEGIN
+   IF filter = NIL
+   THEN
+      RETURN FALSE
+   END ;
+   IF M2Dump # NIL
+   THEN
+      M2Dump := KillString (M2Dump)
+   END ;
+   M2Dump := InitStringCharStar (filter) ;
+   start := 0 ;
+   REPEAT
+      i := Index (M2Dump, ',', start) ;
+      IF i = -1
+      THEN
+         dump := Slice (M2Dump, start, 0)
+      ELSE
+         dump := Slice (M2Dump, start, i)
+      END ;
+      result := MatchDump (dump, value) ;
+      dump := KillString (dump) ;
+      IF NOT result
+      THEN
+         RETURN FALSE
+      END ;
+      start := i+1 ;
+   UNTIL i = -1 ;
+   RETURN TRUE
+END SetM2Dump ;
+
+
+(*
+   GetDumpGimple - return TRUE if the dump gimple flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpGimple () : BOOLEAN ;
+BEGIN
+   RETURN DumpGimple
+END GetDumpGimple ;
+
+
+(*
+   GetDumpQuad - return TRUE if the dump quad flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpQuad () : BOOLEAN ;
+BEGIN
+   RETURN DumpQuad
+END GetDumpQuad ;
+
+
+(*
+   GetDumpDecl - return TRUE if the dump decl flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpDecl () : BOOLEAN ;
+BEGIN
+   RETURN DumpDecl
+END GetDumpDecl ;
+
+
+(*
+   GetDumpLangGimple - return TRUE if the gimple flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpGimple () : BOOLEAN ;
+BEGIN
+   RETURN DumpGimple
+END GetDumpGimple ;
 
 
 BEGIN
@@ -1931,7 +2038,7 @@ BEGIN
    Quiet                             :=  TRUE ;
    CC1Quiet                          :=  TRUE ;
    Profiling                         := FALSE ;
-   DumpLangQuad                      := FALSE ;
+   DumpQuad                          := FALSE ;
    OptimizeBasicBlock                := FALSE ;
    OptimizeUncalledProcedures        := FALSE ;
    OptimizeCommonSubExpressions      := FALSE ;
@@ -1994,11 +2101,12 @@ BEGIN
    InitializeLongDoubleFlags ;
    M2Prefix                          := InitString ('') ;
    M2PathName                        := InitString ('') ;
-   DumpLangQuadFilename              := NIL ;
-   DumpLangGimpleFilename            := NIL ;
-   DumpLangDeclFilename              := NIL ;
-   DumpLangDecl                      := FALSE ;
-   DumpLangQuad                      := FALSE ;
-   DumpLangGimple                    := FALSE ;
+   DumpQuadFilename                  := NIL ;
+   DumpGimpleFilename                := NIL ;
+   DumpDeclFilename                  := NIL ;
+   DumpDecl                          := FALSE ;
+   DumpQuad                          := FALSE ;
+   DumpGimple                        := FALSE ;
+   M2Dump                            := NIL ;
    M2DumpFilter                      := NIL
 END M2Options.

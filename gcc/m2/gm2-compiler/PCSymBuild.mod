@@ -39,7 +39,7 @@ FROM M2Quads IMPORT PushT, PopT, OperandT, PopN, PopTF, PushTF, IsAutoPushOn,
 
 FROM M2Options IMPORT Iso ;
 FROM StdIO IMPORT Write ;
-FROM M2System IMPORT IsPseudoSystemFunctionConstExpression ;
+FROM M2System IMPORT Cast, IsPseudoSystemFunctionConstExpression ;
 
 FROM M2Base IMPORT MixTypes,
                    ZType, RType, Char, Boolean, Val, Max, Min, Convert,
@@ -1399,7 +1399,7 @@ BEGIN
       second := PopAddress (exprStack) ;
       first := PopAddress (exprStack)
    END ;
-   IF func=Val
+   IF (func=Val) OR (func=Cast)
    THEN
       InitConvert (cast, NulSym, first, second)
    ELSIF (func=Max) OR (func=Min)
@@ -1424,7 +1424,7 @@ BEGIN
       IF Iso
       THEN
          ErrorFormat0 (NewError (functok),
-                       'the only functions permissible in a constant expression are: CAP, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
+                       'the only functions permissible in a constant expression are: CAP, CAST, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
       ELSE
          ErrorFormat0 (NewError (functok),
                        'the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
@@ -1433,7 +1433,7 @@ BEGIN
       IF Iso
       THEN
          MetaErrorT1 (functok,
-                      'the only functions permissible in a constant expression are: CAP, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
+                      'the only functions permissible in a constant expression are: CAP, CAST, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
                       func)
       ELSE
          MetaErrorT1 (functok,

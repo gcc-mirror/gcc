@@ -5083,27 +5083,6 @@ END InitConstString ;
 
 
 (*
-   GetConstString - returns the contents of a string constant.
-*)
-
-PROCEDURE GetConstStringContent (sym: CARDINAL) : Name ;
-VAR
-   pSym: PtrToSymbol ;
-BEGIN
-   pSym := GetPsym (sym) ;
-   WITH pSym^ DO
-      CASE SymbolType OF
-
-      ConstStringSym:  RETURN ConstString.Contents
-
-      ELSE
-         InternalError ('expecting ConstStringSym')
-      END
-   END
-END GetConstStringContent ;
-
-
-(*
    IsConstStringNulTerminated - returns TRUE if the constant string, sym,
                                 should be created with a nul terminator.
 *)

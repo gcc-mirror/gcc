@@ -2950,9 +2950,11 @@ BEGIN
          virtpos := MakeVirtualTok (becomespos, despos, exprpos) ;
          CheckOrResetOverflow (exprpos, Mod2Gcc (des), MustCheckOverflow (quad)) ;
          AddModGcc (des,
-                    DeclareKnownConstant (TokenToLocation (virtpos),
-                                          Mod2Gcc (GetType (expr)),
-                                          Mod2Gcc (expr)))
+                    BuildConvert (TokenToLocation (virtpos),
+                                  Mod2Gcc (GetType (des)),
+                                  DeclareKnownConstant (TokenToLocation (virtpos),
+                                                        Mod2Gcc (GetType (expr)),
+                                                        Mod2Gcc (expr)), FALSE))
       END
    END ;
    RemoveQuad (p, des, quad) ;
@@ -5328,13 +5330,18 @@ BEGIN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
          (* We can take advantage of the known values and evaluate the condition.  *)
-         PushValue (left) ;
-         PushValue (right) ;
-         IF Less (tokenno)
+         IF IsBooleanRelOpPattern (quad)
          THEN
-            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
+            FoldBooleanRelopPattern (p, quad)
          ELSE
-            SubQuad (quad)
+            PushValue (left) ;
+            PushValue (right) ;
+            IF Less (tokenno)
+            THEN
+               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
+            ELSE
+               SubQuad (quad)
+            END
          END ;
          NoChange := FALSE
       END
@@ -7795,7 +7802,6 @@ PROCEDURE IsValidExpressionRelOp (quad: CARDINAL; isin: BOOLEAN) : BOOLEAN ;
 CONST
    Verbose = FALSE ;
 VAR
-   lefttype, righttype,
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
    constExpr, overflow        : BOOLEAN ;
@@ -7810,8 +7816,6 @@ BEGIN
    DeclareConstant (rightpos, right) ;
    DeclareConstructor (leftpos, quad, left) ;
    DeclareConstructor (rightpos, quad, right) ;
-   lefttype := GetType (left) ;
-   righttype := GetType (right) ;
    IF ExpressionTypeCompatible (combined, "", left, right,
                                 StrictTypeChecking, isin)
    THEN

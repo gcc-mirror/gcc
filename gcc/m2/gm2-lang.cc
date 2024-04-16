@@ -42,7 +42,7 @@ Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "convert.h"
 #include "rtegraph.h"
 
-#undef ENABLE_QUAD_DUMP_ALL
+#undef ENABLE_M2DUMP_ALL
 
 static void write_globals (void);
 
@@ -478,31 +478,6 @@ gm2_langhook_handle_option (
     case OPT_fdebug_function_line_numbers:
       M2Options_SetDebugFunctionLineNumbers (value);
       return 1;
-#ifdef ENABLE_QUAD_DUMP_ALL
-    case OPT_fdump_lang_all:
-      M2Options_SetDumpLangDeclFilename (value, NULL);
-      M2Options_SetDumpLangGimpleFilename (value, NULL);
-      M2Options_SetDumpLangQuadFilename (value, NULL);
-      return 1;
-    case OPT_fdump_lang_decl:
-      M2Options_SetDumpLangDeclFilename (value, NULL);
-      return 1;
-    case OPT_fdump_lang_decl_:
-      M2Options_SetDumpLangDeclFilename (value, arg);
-      return 1;
-    case OPT_fdump_lang_gimple:
-      M2Options_SetDumpLangGimpleFilename (value, NULL);
-      return 1;
-    case OPT_fdump_lang_gimple_:
-      M2Options_SetDumpLangGimpleFilename (value, arg);
-      return 1;
-    case OPT_fdump_lang_quad:
-      M2Options_SetDumpLangQuadFilename (value, NULL);
-      return 1;
-    case OPT_fdump_lang_quad_:
-      M2Options_SetDumpLangQuadFilename (value, arg);
-      return 1;
-#endif
     case OPT_fauto_init:
       M2Options_SetAutoInit (value);
       return 1;
@@ -546,7 +521,18 @@ gm2_langhook_handle_option (
     case OPT_fm2_debug_trace_:
       M2Options_SetM2DebugTraceFilter (value, arg);
       return 1;
-#ifdef ENABLE_QUAD_DUMP_ALL
+#ifdef ENABLE_M2DUMP_ALL
+    case OPT_fm2_dump_:
+      return M2Options_SetM2Dump (value, arg);
+    case OPT_fm2_dump_decl_:
+      M2Options_SetDumpDeclFilename (value, arg);
+      return 1;
+    case OPT_fm2_dump_gimple_:
+      M2Options_SetDumpGimpleFilename (value, arg);
+      return 1;
+    case OPT_fm2_dump_quad_:
+      M2Options_SetDumpQuadFilename (value, arg);
+      return 1;
     case OPT_fm2_dump_filter_:
       M2Options_SetM2DumpFilter (value, arg);
       return 1;

@@ -40,8 +40,8 @@ FROM SymbolTable IMPORT NulSym,
                         IsExported, IsPublic, IsExtern, IsMonoName,
                         IsDefinitionForC ;
 
-FROM M2Options IMPORT GetM2DumpFilter, GetDumpDir, GetDumpLangQuadFilename,
-                      GetDumpLangDeclFilename, GetDumpLangGimpleFilename ;
+FROM M2Options IMPORT GetM2DumpFilter, GetDumpDir, GetDumpQuadFilename,
+                      GetDumpDeclFilename, GetDumpGimpleFilename ;
 
 FROM M2GCCDeclare IMPORT IncludeDumpSymbol ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1 ;
@@ -751,7 +751,7 @@ END CreateTemplate ;
 
 PROCEDURE MakeQuadTemplate () : String ;
 BEGIN
-   RETURN CreateTemplate (GetDumpLangQuadFilename (), InitString ('quad'))
+   RETURN CreateTemplate (GetDumpQuadFilename (), InitString ('quad'))
 END MakeQuadTemplate ;
 
 
@@ -761,7 +761,7 @@ END MakeQuadTemplate ;
 
 PROCEDURE MakeDeclTemplate () : String ;
 BEGIN
-   RETURN CreateTemplate (GetDumpLangDeclFilename (), InitString ('decl'))
+   RETURN CreateTemplate (GetDumpDeclFilename (), InitString ('decl'))
 END MakeDeclTemplate ;
 
 
@@ -775,7 +775,7 @@ PROCEDURE MakeGimpleTemplate (VAR len: CARDINAL) : String ;
 VAR
    filename: String ;
 BEGIN
-   filename := CreateTemplate (GetDumpLangGimpleFilename (), InitString ('gimple')) ;
+   filename := CreateTemplate (GetDumpGimpleFilename (), InitString ('gimple')) ;
    len := Length (filename) ;  (* This is a short cut based on '%03d' format
                                   specifier used above.  *)
    RETURN filename

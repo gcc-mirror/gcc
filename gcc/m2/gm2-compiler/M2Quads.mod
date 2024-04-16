@@ -222,7 +222,7 @@ FROM M2Options IMPORT NilChecking,
                       ScaffoldMain, SharedFlag, WholeProgram,
                       GetDumpDir, GetM2DumpFilter,
                       GetRuntimeModuleOverride, GetDebugTraceQuad,
-                      DumpLangQuad ;
+                      GetDumpQuad ;
 
 FROM M2LangDump IMPORT CreateDumpQuad, CloseDumpQuad, GetDumpFile ;
 FROM M2Pass IMPORT IsPassCodeGeneration, IsNoPass ;
@@ -276,7 +276,7 @@ IMPORT M2Error, FIO, SFIO, DynamicStrings, StdIO ;
 CONST
    DebugStackOn = TRUE ;
    DebugVarients = FALSE ;
-   BreakAtQuad = 189 ;
+   BreakAtQuad = 140 ;
    DebugTokPos = FALSE ;
 
 TYPE
@@ -7794,7 +7794,7 @@ BEGIN
    ELSIF IsAModula2Type (ProcSym)
    THEN
       ManipulatePseudoCallParameters ;
-      BuildTypeCoercion
+      BuildTypeCoercion (ConstExpr)
    ELSIF IsPseudoSystemFunction (ProcSym) OR
          IsPseudoBaseFunction (ProcSym)
    THEN
@@ -7942,7 +7942,7 @@ END BuildConstFunctionCall ;
                        differ.
 *)
 
-PROCEDURE BuildTypeCoercion ;
+PROCEDURE BuildTypeCoercion (ConstExpr: BOOLEAN) ;
 VAR
    resulttok,
    proctok,
@@ -7964,18 +7964,24 @@ BEGIN
    THEN
       PopTrwtok (exp, r, exptok) ;
       MarkAsRead (r) ;
-      resulttok := MakeVirtualTok (proctok, proctok, exptok) ;
-      ReturnVar := MakeTemporary (resulttok, RightValue) ;
-      PutVar (ReturnVar, ProcSym) ;  (* Set ReturnVar's TYPE.  *)
+      resulttok := MakeVirtual2Tok (proctok, exptok) ;
       PopN (1) ;   (* Pop procedure.  *)
-      IF IsConst (exp) OR IsVar (exp)
+      IF ConstExprError (ProcSym, exp, exptok, ConstExpr)
       THEN
+         ReturnVar := MakeTemporary (resulttok, ImmediateValue) ;
+         PutVar (ReturnVar, ProcSym) ;  (* Set ReturnVar's TYPE.  *)
+      ELSIF IsConst (exp) OR IsVar (exp)
+      THEN
+         ReturnVar := MakeTemporary (resulttok, AreConstant (IsConst (exp))) ;
+         PutVar (ReturnVar, ProcSym) ;  (* Set ReturnVar's TYPE.  *)
          GenQuad (CoerceOp, ReturnVar, ProcSym, exp)
       ELSE
          MetaError2 ('trying to coerse {%1EMRad} which is not a variable or constant into {%2ad}',
                      exp, ProcSym) ;
          MetaError2 ('trying to coerse {%1ECad} which is not a variable or constant into {%2ad}',
-                     exp, ProcSym)
+                     exp, ProcSym) ;
+         ReturnVar := MakeTemporary (resulttok, RightValue) ;
+         PutVar (ReturnVar, ProcSym)   (* Set ReturnVar's TYPE.  *)
       END ;
       PushTFtok (ReturnVar, ProcSym, resulttok)
    ELSE
@@ -9632,7 +9638,7 @@ BEGIN
             PushTFtok (Type, NulSym, typetok) ;
             PushTtok (Exp, exptok) ;
             PushT (1) ;          (* one parameter *)
-            BuildTypeCoercion
+            BuildTypeCoercion (ConstExpr)
          ELSIF IsVar (Exp) OR IsProcedure (Exp)
          THEN
             PopN (NoOfParam + 1) ;
@@ -11737,7 +11743,7 @@ BEGIN
    Assert (GetSType (Sym) = Type) ;
    ti := calculateMultipicand (indexTok, Sym, Type, Dim) ;
    idx := OperandT (1) ;
-   IF IsConst (idx)
+   IF IsConst (idx) AND IsConst (ti)
    THEN
       (* tj has no type since constant *)
       tj := MakeTemporary (indexTok, ImmediateValue) ;
@@ -13708,7 +13714,7 @@ END DumpQuadrupleAll ;
 
 PROCEDURE DumpQuadruples (title: ARRAY OF CHAR) ;
 BEGIN
-   IF DumpLangQuad
+   IF GetDumpQuad ()
    THEN
       CreateDumpQuad (title) ;
       IF GetM2DumpFilter () = NIL

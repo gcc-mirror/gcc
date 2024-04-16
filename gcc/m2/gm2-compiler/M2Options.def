@@ -53,9 +53,6 @@ VAR
    PedanticCast,                 (* -Wpedantic-cast warns if sizes differ.   *)
    Statistics,                   (* -fstatistics information about code      *)
    StyleChecking,                (* -Wstudents checks for common student errs*)
-   DumpLangDecl,                 (* -fdump-lang-decl.                        *)
-   DumpLangGimple,               (* -fdump-lang-gimple.                      *)
-   DumpLangQuad,                 (* -fq, -fdump-lang-quad dump quadruples.   *)
    UnboundedByReference,         (* -funbounded-by-reference                 *)
    VerboseUnbounded,             (* -Wverbose-unbounded                      *)
    OptimizeUncalledProcedures,   (* -Ouncalled removes uncalled procedures   *)
@@ -1004,45 +1001,45 @@ PROCEDURE GetIEEELongDouble () : BOOLEAN ;
 
 
 (*
-   GetDumpLangDeclFilename - returns the DumpLangDeclFilename.
+   GetDumpDeclFilename - returns the DumpLangDeclFilename.
 *)
 
-PROCEDURE GetDumpLangDeclFilename () : String ;
+PROCEDURE GetDumpDeclFilename () : String ;
 
 
 (*
-   SetDumpLangDeclFilename - set DumpLangDeclFilename to filename.
+   SetDumpDeclFilename - set DumpDeclFilename to filename.
 *)
 
-PROCEDURE SetDumpLangDeclFilename (value: BOOLEAN; filename: ADDRESS) ;
+PROCEDURE SetDumpDeclFilename (value: BOOLEAN; filename: ADDRESS) ;
 
 
 (*
-   GetDumpLangQuadFilename - returns the DumpLangQuadFilename.
+   GetDumpQuadFilename - returns the DumpQuadFilename.
 *)
 
-PROCEDURE GetDumpLangQuadFilename () : String ;
+PROCEDURE GetDumpQuadFilename () : String ;
 
 
 (*
-   SetDumpLangQuadFilename - set DumpLangQuadFilename to filename.
+   SetDumpQuadFilename - set DumpQuadFilename to filename.
 *)
 
-PROCEDURE SetDumpLangQuadFilename (value: BOOLEAN; filename: ADDRESS) ;
+PROCEDURE SetDumpQuadFilename (value: BOOLEAN; filename: ADDRESS) ;
 
 
 (*
-   GetDumpLangGimpleFilename - returns the DumpLangGimpleFilename.
+   GetDumpGimpleFilename - returns the DumpGimpleFilename.
 *)
 
-PROCEDURE GetDumpLangGimpleFilename () : String ;
+PROCEDURE GetDumpGimpleFilename () : String ;
 
 
 (*
-   SetDumpLangGimpleFilename - set DumpLangGimpleFilename to filename.
+   SetDumpGimpleFilename - set DumpGimpleFilename to filename.
 *)
 
-PROCEDURE SetDumpLangGimpleFilename (value: BOOLEAN; filename: ADDRESS) ;
+PROCEDURE SetDumpGimpleFilename (value: BOOLEAN; filename: ADDRESS) ;
 
 
 (*
@@ -1061,10 +1058,31 @@ PROCEDURE GetM2DumpFilter () : ADDRESS ;
 
 
 (*
-   GetDumpLangGimple - return TRUE if -fdump-lang-gimple is set.
+   SetM2Dump - sets the dump via a comma separated list: quad,decl,gimple,all.
 *)
 
-PROCEDURE GetDumpLangGimple () : BOOLEAN ;
+PROCEDURE SetM2Dump (value: BOOLEAN; filter: ADDRESS) ;
+
+
+(*
+   GetDumpGimple - return TRUE if the dump gimple flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpGimple () : BOOLEAN ;
+
+
+(*
+   GetDumpQuad - return TRUE if the dump quad flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpQuad () : BOOLEAN ;
+
+
+(*
+   GetDumpDecl - return TRUE if the dump quad flag is set from SetM2Dump.
+*)
+
+PROCEDURE GetDumpDecl () : BOOLEAN ;
 
 
 (*
