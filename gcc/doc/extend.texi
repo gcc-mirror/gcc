@@ -12901,12 +12901,13 @@ typedef int v4si __attribute__ ((vector_size (16)));
 @end smallexample
 
 @noindent
-The @code{int} type specifies the @dfn{base type}, while the attribute specifies
-the vector size for the variable, measured in bytes.  For example, the
-declaration above causes the compiler to set the mode for the @code{v4si}
-type to be 16 bytes wide and divided into @code{int} sized units.  For
-a 32-bit @code{int} this means a vector of 4 units of 4 bytes, and the
-corresponding mode of @code{foo} is @acronym{V4SI}.
+The @code{int} type specifies the @dfn{base type} (which can be a
+@code{typedef}), while the attribute specifies the vector size for the
+variable, measured in bytes. For example, the declaration above causes
+the compiler to set the mode for the @code{v4si} type to be 16 bytes wide
+and divided into @code{int} sized units.  For a 32-bit @code{int} this
+means a vector of 4 units of 4 bytes, and the corresponding mode of
+@code{foo} is @acronym{V4SI}.
 
 The @code{vector_size} attribute is only applicable to integral and
 floating scalars, although arrays, pointers, and function return values
