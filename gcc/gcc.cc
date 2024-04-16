@@ -409,7 +409,7 @@ static int do_spec_2 (const char *, const char *);
 static void do_option_spec (const char *, const char *);
 static void do_self_spec (const char *);
 static const char *find_file (const char *);
-static int is_directory (const char *, bool);
+static int is_directory (const char *);
 static const char *validate_switches (const char *, bool, bool);
 static void validate_all_switches (void);
 static inline void validate_switches_from_spec (const char *, bool);
@@ -2941,7 +2941,7 @@ add_to_obstack (char *path, void *data)
 {
   struct add_to_obstack_info *info = (struct add_to_obstack_info *) data;
 
-  if (info->check_dir && !is_directory (path, false))
+  if (info->check_dir && !is_directory (path))
     return NULL;
 
   if (!info->first_time)
@@ -4577,7 +4577,7 @@ driver_handle_option (struct gcc_options *opts,
 	   if appending a directory separator actually makes a
 	   valid directory name.  */
 	if (!IS_DIR_SEPARATOR (arg[len - 1])
-	    && is_directory (arg, false))
+	    && is_directory (arg))
 	  {
 	    char *tmp = XNEWVEC (char, len + 2);
 	    strcpy (tmp, arg);
@@ -6020,7 +6020,7 @@ spec_path (char *path, void *data)
       memcpy (path + len, info->append, info->append_len + 1);
     }
 
-  if (!is_directory (path, true))
+  if (!is_directory (path))
     return NULL;
 
   do_spec_1 (info->option, 1, NULL);
@@ -8042,11 +8042,10 @@ find_file (const char *name)
   return newname ? newname : name;
 }
 
-/* Determine whether a directory exists.  If LINKER, return 0 for
-   certain fixed names not needed by the linker.  */
+/* Determine whether a directory exists.  */
 
 static int
-is_directory (const char *path1, bool linker)
+is_directory (const char *path1)
 {
   int len1;
   char *path;
@@ -8063,17 +8062,6 @@ is_directory (const char *path1, bool linker)
     *cp++ = DIR_SEPARATOR;
   *cp++ = '.';
   *cp = '\0';
-
-  /* Exclude directories that the linker is known to search.  */
-  if (linker
-      && IS_DIR_SEPARATOR (path[0])
-      && ((cp - path == 6
-	   && filename_ncmp (path + 1, "lib", 3) == 0)
-	  || (cp - path == 10
-	      && filename_ncmp (path + 1, "usr", 3) == 0
-	      && IS_DIR_SEPARATOR (path[4])
-	      && filename_ncmp (path + 5, "lib", 3) == 0)))
-    return 0;
 
   return (stat (path, &st) >= 0 && S_ISDIR (st.st_mode));
 }
