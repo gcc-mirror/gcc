@@ -4843,6 +4843,8 @@ check_bit_cast_type (const constexpr_ctx *ctx, location_t loc, tree type,
       if (TREE_CODE (field) == FIELD_DECL
 	  && check_bit_cast_type (ctx, loc, TREE_TYPE (field), orig_type))
 	return true;
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return check_bit_cast_type (ctx, loc, TREE_TYPE (type), orig_type);
   return false;
 }
 
