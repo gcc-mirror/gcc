@@ -222,7 +222,9 @@ package body Freeze is
                       = Scope (Typ)
          then
             return Abandon;
-         elsif Nkind (N) = N_Aggregate
+         elsif Nkind (N) in N_Aggregate
+                          | N_Extension_Aggregate
+                          | N_Delta_Aggregate
            and then Base_Type (Etype (N)) = Base_Type (Typ)
          then
             return Abandon;
