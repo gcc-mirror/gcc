@@ -135,6 +135,12 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     case MIN_EXPR:
       return TYPE_UNSIGNED (type) ? umin_optab : smin_optab;
 
+    case POINTER_PLUS_EXPR:
+      return add_optab;
+
+    case POINTER_DIFF_EXPR:
+      return sub_optab;
+
     case REALIGN_LOAD_EXPR:
       return vec_realign_load_optab;
 
@@ -249,13 +255,11 @@ optab_for_tree_code (enum tree_code code, const_tree type,
   trapv = INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_TRAPS (type);
   switch (code)
     {
-    case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
       if (TYPE_SATURATING (type))
 	return TYPE_UNSIGNED (type) ? usadd_optab : ssadd_optab;
       return trapv ? addv_optab : add_optab;
 
-    case POINTER_DIFF_EXPR:
     case MINUS_EXPR:
       if (TYPE_SATURATING (type))
 	return TYPE_UNSIGNED (type) ? ussub_optab : sssub_optab;
