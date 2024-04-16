@@ -1,3 +1,43 @@
+2024-04-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add: avr16du14, avr16du20, avr16du28,
+	avr16du32, avr32du14, avr32du20, avr32du28,  avr32du32.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2024-04-15  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/114668
+	* config/riscv/autovec.md: Add VLS.
+
+2024-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR gcov-profile/114715
+	* gimplify.cc (gimplify_switch_expr): Set the location of the
+	GIMPLE switch.
+
+2024-04-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114696
+	* config/i386/i386.md (isa): Add apx_ndd_64.
+	(enabled): Likewise.
+	(*add<dwi>3_doubleword): Change rjO to r,ro,jO with 8-bit
+	signed integer constant and enable jO only for apx_ndd_64.
+	(*add<dwi>3_doubleword_cc_overflow_1): Likewise.
+	(*and<dwi>3_doubleword): Likewise.
+	(*<code><dwi>3_doubleword): Likewise.
+
+2024-04-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/114403
+	* tree-vect-loop.cc (vect_transform_loop): Adjust upper bounds for when
+	peeling for gaps and early break.
+
+2024-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114634
+	* attribs.cc (diag_attr_exclusions): Set attrs[1] to NULL_TREE for
+	decls with NULL TREE_TYPE.
+
 2024-04-12  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* config/aarch64/aarch64-option-extensions.def: Add RCPC to

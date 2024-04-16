@@ -1,3 +1,47 @@
+2024-04-15  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/114720
+	* gcc.misc-tests/gcov-22.c: Guard longjmp to not loop.
+
+2024-04-15  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr114668.c: New test.
+
+2024-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR gcov-profile/114715
+	* gcc.misc-tests/gcov-24.c: New testcase.
+
+2024-04-15  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/114696
+	* gcc.target/i386/apx-ndd-x32-2a.c: New test.
+	* gcc.target/i386/apx-ndd-x32-2b.c: Likewise.
+	* gcc.target/i386/apx-ndd-x32-2c.c: Likewise.
+	* gcc.target/i386/apx-ndd-x32-2d.c: Likewise.
+
+2024-04-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/114403
+	* gcc.dg/vect/vect-early-break_124-pr114403.c: New test.
+	* gcc.dg/vect/vect-early-break_125-pr114403.c: New test.
+
+2024-04-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/fhardened-1.c: Restrict to Linux/GNU.
+	* gcc.target/i386/fhardened-2.c: Likewise.
+
+2024-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114634
+	* g++.dg/ext/attrib68.C: New test.
+
+2024-04-15  Nathaniel Shead  <nathanieloshead@gmail.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114600
+	* g++.dg/modules/using-14.C: New test.
+
 2024-04-14  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/106820

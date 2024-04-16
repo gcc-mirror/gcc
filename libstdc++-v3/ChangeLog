@@ -1,3 +1,38 @@
+2024-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Replace "<next>" with "14.1.0".
+	* doc/html/manual/abi.html: Regenerate.
+
+2024-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/refwrap.h (reference_wrapper): Add comparison
+	operators as proposed by P2944R3.
+	* include/bits/version.def (reference_wrapper): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/functional: Enable feature test macro.
+	* testsuite/20_util/reference_wrapper/compare.cc: New test.
+
+2024-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113386
+	* include/bits/stl_pair.h (operator==, operator<=>): Support
+	heterogeneous comparisons, as per LWG 3865.
+	* testsuite/20_util/pair/comparison_operators/lwg3865.cc: New
+	test.
+
+2024-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93672
+	* src/c++98/istream.cc (istream::ignore(streamsize, int_type)):
+	Treat all negative delimiter values as eof().
+	* testsuite/27_io/basic_istream/ignore/char/93672.cc: New test.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/93672.cc: New
+	test.
+
+2024-04-15  Andreas Schwab  <schwab@suse.de>
+
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
 2024-04-13  H.J. Lu  <hjl.tools@gmail.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt:

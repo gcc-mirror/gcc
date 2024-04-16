@@ -1,3 +1,10 @@
+2024-04-15  Nathaniel Shead  <nathanieloshead@gmail.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114600
+	* module.cc (depset::hash::add_binding_entity): Require both
+	WMB_Using and WMB_Export for GMF entities.
+
 2024-04-14  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/106820

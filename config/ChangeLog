@@ -1,3 +1,8 @@
+2024-04-15  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* acx.m4: Add a macro to check for rust
+	components.
+
 2024-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* lcmessage.m4: Fix duplicated words; can can -> can,

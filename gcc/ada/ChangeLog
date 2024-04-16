@@ -1,3 +1,12 @@
+2024-04-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_aspects.rst
+	(Exceptional_Cases): Add description for aspect.
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Exceptional_Cases): Add description for pragma.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
 2024-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/113979

@@ -1,3 +1,10 @@
+2024-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/114689
+	* config/m68k/fpgnulib.c (__truncdfsf2): Add parentheses around
+	!!sticky bitwise or operand to quiet up cppcheck.  Add parentheses
+	around mant >> 1 bitwise or operand.
+
 2024-04-10  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/aarch64/t-softfp (softfp_extras): Add floatbitinthf,

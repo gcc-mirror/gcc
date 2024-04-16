@@ -1,3 +1,9 @@
+2024-04-15  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* configure: Regenerate.
+	* configure.ac: Emit an error message when cargo
+	is missing.
+
 2024-04-04  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* MAINTAINERS: Update my email address.

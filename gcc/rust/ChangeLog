@@ -1,3 +1,21 @@
+2024-04-15  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (RUST_LIBDEPS): Inline into single user.
+
+2024-04-15  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (LIBPROC_MACRO_INTERNAL): New.
+	(RUST_LIBDEPS, crab1$(exeext)): Use it.
+
+2024-04-15  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (RUST_LDFLAGS): Inline into single user.
+
+2024-04-15  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* Make-lang.in (RUST_LDFLAGS): Remove
+	'libgrust/libproc_macro_internal'.
+
 2024-04-09  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* Make-lang.in (rust.install-dvi, rust.install-html): New rules.
