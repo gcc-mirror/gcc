@@ -1,3 +1,9 @@
+2024-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/dragonfly/numeric_members.cc: Fix typos in
+	comments.
+	* config/locale/gnu/numeric_members.cc: Likewise.
+
 2024-04-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml: Replace "<next>" with "14.1.0".

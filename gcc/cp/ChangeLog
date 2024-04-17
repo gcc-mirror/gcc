@@ -1,3 +1,8 @@
+2024-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114706
+	* constexpr.cc (check_bit_cast_type): Handle ARRAY_TYPE.
+
 2024-04-15  Nathaniel Shead  <nathanieloshead@gmail.com>
 	    Patrick Palka  <ppalka@redhat.com>
 

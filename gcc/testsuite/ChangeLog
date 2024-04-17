@@ -1,3 +1,46 @@
+2024-04-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114745
+	* gm2/iso/const/pass/constcast.mod: New test.
+	* gm2/iso/const/pass/constodd.mod: New test.
+	* gm2/pim/pass/tinyindr.mod: New test.
+
+2024-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/114403
+	* gcc.dg/vect/vect-early-break_124-pr114403.c: Fix check loop.
+
+2024-04-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113793
+	* gfortran.dg/allocate_with_source_29.f90: New test.
+	* gfortran.dg/allocate_with_source_30.f90: New test.
+	* gfortran.dg/allocate_with_source_31.f90: New test.
+
+2024-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114736
+	* gfortran.dg/vect/pr114736.f90: New testcase.
+
+2024-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114733
+	* gcc.dg/vect/pr114733.c: New testcase.
+
+2024-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114706
+	* g++.dg/cpp2a/bit-cast17.C: New test.
+
+2024-04-16  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/zicond-prefer-add-to-or.c: New test.
+
+2024-04-16  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112938
+	* g++.dg/strub-internal-pr112938.cc: New.
+
 2024-04-15  Jørgen Kvalsvik  <j@lambda.is>
 
 	PR gcov-profile/114720

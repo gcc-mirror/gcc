@@ -1,3 +1,21 @@
+2024-04-16  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* libgomp.h (REFCOUNT_ACC_MAP_DATA): Define as (REFCOUNT_SPECIAL | 2).
+	* oacc-mem.c (acc_map_data): Adjust to use REFCOUNT_ACC_MAP_DATA,
+	initialize dynamic_refcount as 1.
+	(acc_unmap_data): Adjust to use REFCOUNT_ACC_MAP_DATA,
+	(goacc_map_var_existing): Add REFCOUNT_ACC_MAP_DATA case.
+	(goacc_exit_datum_1): Add REFCOUNT_ACC_MAP_DATA case, respect
+	REFCOUNT_ACC_MAP_DATA when decrementing/finalizing. Force lowest
+	dynamic_refcount to be 1 for REFCOUNT_ACC_MAP_DATA.
+	(goacc_enter_data_internal): Add REFCOUNT_ACC_MAP_DATA case.
+	* target.c (gomp_increment_refcount): Return early for
+	REFCOUNT_ACC_MAP_DATA case.
+	(gomp_decrement_refcount): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-96.c: New testcase.
+	* testsuite/libgomp.oacc-c-c++-common/unmap-infinity-1.c: Adjust
+	testcase error output scan test.
+
 2024-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* plugin/plugin-gcn.c (init_hsa_context): Add and handle

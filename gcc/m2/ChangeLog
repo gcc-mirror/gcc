@@ -1,3 +1,100 @@
+2024-04-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114745
+	* gm2-compiler/M2Code.mod (DumpLangDecl): Replace with ...
+	(GetDumpDecl): ... this.
+	(DumpLangGimple): Replace with ...
+	(GetDumpGimple): ... this.
+	* gm2-compiler/M2GenGCC.mod:
+	* gm2-compiler/M2LangDump.mod (GetDumpLangQuadFilename): Replace with ...
+	(GetDumpQuadFilename): ... this.
+	(GetDumpLangDeclFilename): Replace with ...
+	(GetDumpDeclFilename): ... this.
+	(GetDumpLangGimpleFilename): Replace with ...
+	(GetDumpGimpleFilename): ... this.
+	* gm2-compiler/M2Options.def (GetDumpLangDeclFilename): New
+	procedure function.
+	(GetDumpDeclFilename): Ditto.
+	(SetDumpLangDeclFilename): New procedure.
+	(SetDumpDeclFilename): Ditto.
+	(GetDumpLangQuadFilename): New procedure function.
+	(GetDumpQuadFilename): Ditto
+	(SetDumpLangQuadFilename): New procedure.
+	(SetDumpQuadFilename): Ditto.
+	(GetDumpLangGimpleFilename): New procedure function.
+	(GetDumpGimpleFilename): Ditto.
+	(SetDumpLangGimpleFilename): New procedure.
+	(SetDumpGimpleFilename): Ditto.
+	(GetDumpLangGimple): New procedure function.
+	(SetM2Dump): New procedure.
+	(GetDumpGimple): New procedure function.
+	(GetDumpQuad): Ditto.
+	(GetDumpDecl): Ditto.
+	* gm2-compiler/M2Options.mod (DumpLangDeclFilename): Remove.
+	(DumpLangQuadFilename): Ditto.
+	(DumpLangGimpleFilename): Ditto.
+	(DumpDeclFilename): New variable.
+	(DumpQuadFilename): Ditto.
+	(DumpGimpleFilename): Ditto.
+	(DebugTraceTree): New variable.
+	(SetQuadDebugging): Rewrite.
+	(GetDumpLangDeclFilename): Replace with ...
+	(GetDumpDeclFilename): ... this.
+	(SetDumpLangQuadFilename): Replace with ...
+	(SetDumpQuadFilename): ... this.
+	(GetDumpLangGimpleFilename): Replace with ...
+	(GetDumpGimpleFilename): ... this.
+	(SetDumpLangGimpleFilename): Replace with ...
+	(SetDumpGimpleFilename): ... this.
+	(GetDumpLangGimple): Remove.
+	(MatchDump): New procedure function.
+	(SetM2Dump): New procedure.
+	(GetDumpGimple): New procedure function.
+	(GetDumpQuad): Ditto.
+	(GetDumpDecl): Ditto.
+	(GetDumpLangGimple): Ditto.
+	* gm2-compiler/M2Quads.mod (BreakAtQuad): Assigned to 140.
+	(BuildTypeCoercion): Add ConstExpr parameter.
+	Check for const parameter in a const expression.
+	Create a constant temporary if in a const expression.
+	(BuildCastFunction): Pass ConstExpr to BuildTypeCoercion.
+	(BuildFunctionCall): Pass ConstExpr to BuildTypeCoercion.
+	* gm2-compiler/PCSymBuild.mod (buildConstFunction): Test for Cast
+	and call InitConvert.
+	(ErrorConstFunction): Add CAST to the error message.
+	* gm2-compiler/SymbolTable.mod (GetConstStringContent): Remove
+	unused procedure.
+	* gm2-gcc/m2decl.cc (m2decl_DeclareKnownConstant): Copy value
+	and change type of value.
+	* gm2-gcc/m2options.h (M2Options_GetDumpLangDeclFilename): Remove.
+	(M2Options_SetDumpLangDeclFilename): Ditto.
+	(M2Options_GetDumpLangQuadFilename): Ditto.
+	(M2Options_SetDumpLangQuadFilename): Ditto.
+	(M2Options_GetDumpLangGimpleFilename): Ditto.
+	(M2Options_SetDumpLangGimpleFilename): Ditto.
+	(M2Options_GetDumpLangGimple): Ditto.
+	(M2Options_GetDumpDeclFilename): New function.
+	(M2Options_SetDumpDeclFilename): Ditto.
+	(M2Options_GetDumpQuadFilename): Ditto.
+	(M2Options_SetDumpQuadFilename): Ditto.
+	(M2Options_GetDumpGimpleFilename): Ditto.
+	(M2Options_SetDumpGimpleFilename): Ditto.
+	(M2Options_SetM2Dump): Ditto.
+	(M2Options_GetDumpGimple): Ditto.
+	* gm2-gcc/m2pp.cc (GM2): New define.
+	(m2pp_type_lowlevel): Remove linefeed.
+	(m2pp_identifier): Add type description for const.
+	(m2pp_assignment): Display lhs/rhs types.
+	(m2pp_dump_gimple): Replace GetDumpLangGimple with GetDumpGimple.
+	* gm2-lang.cc (ENABLE_QUAD_DUMP_ALL): Remove.
+	(ENABLE_M2DUMP_ALL): New define.
+	(gm2_langhook_handle_option): Remove commented options
+	OPT_fdump_lang_all, OPT_fdump_lang_decl_, OPT_fdump_lang_gimple,
+	OPT_fdump_lang_gimple_, OPT_fdump_lang_quad and
+	OPT_fdump_lang_quad_.
+	Add commented options OPT_fm2_dump_, OPT_fm2_dump_decl_,
+	OPT_fm2_dump_gimple_ and OPT_fm2_dump_quad_.
+
 2024-04-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* tools-src/makeSystem: Invoke ${COMPILER} once and adjust

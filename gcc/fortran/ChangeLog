@@ -1,3 +1,12 @@
+2024-04-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113793
+	* resolve.cc (resolve_allocate_expr): Reject ALLOCATE with SOURCE=
+	or MOLD= specifier for unequal length.
+	* trans-stmt.cc (gfc_trans_allocate): If an allocatable character
+	variable has fixed length, use it and do not use the source length.
+	With bounds-checking enabled, add a runtime check for same length.
+
 2024-04-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/106500

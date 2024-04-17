@@ -1,3 +1,58 @@
+2024-04-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/92880
+	* doc/extend.texi (Using Vector Instructions): Add that
+	the base_types could be a typedef of them.
+
+2024-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114736
+	* tree-vect-slp.cc (vect_optimize_slp_pass::is_cfg_latch_edge):
+	Do not consider VEC_PERM_EXPRs as PHI use.
+
+2024-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114733
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction): Reject
+	neg induction vectorization of single element vectors.
+
+2024-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.cc (array_type_nelts): Ensure 2 spaces after . in comment
+	instead of just one.
+	(build_variant_type_copy): Likewise.
+	(tree_check_failed): Likewise.
+	(build_atomic_base): Likewise.
+	* ipa-free-lang-data.cc (fld_incomplete_type_of): Use an indefinite
+	article rather than a.
+
+2024-04-16  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move):
+	replace or with add when expanding zicond if possible.
+
+2024-04-16  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/112938
+	* ipa-strub.cc (pass_ipa_strub::execute): Drop volatility from
+	indirected parm.
+	(maybe_make_indirect): Restore volatility in dereferences.
+
+2024-04-16  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.opt.urls: Regenerate.
+	* config/mn10300/mn10300.opt.urls: Likewise.
+	* config/msp430/msp430.opt.urls: Likewise.
+	* config/nds32/nds32-elf.opt.urls: Likewise.
+	* config/nds32/nds32-linux.opt.urls: Likewise.
+	* config/nds32/nds32.opt.urls: Likewise.
+	* config/pru/pru.opt.urls: Likewise.
+	* config/riscv/riscv.opt.urls: Likewise.
+	* config/rx/rx.opt.urls: Likewise.
+	* config/sh/sh.opt.urls: Likewise.
+	* config/sparc/sparc.opt.urls: Likewise.
+	* doc/invoke.texi: Add indexes for some compilation options.
+
 2024-04-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-mcus.def: Add: avr16du14, avr16du20, avr16du28,

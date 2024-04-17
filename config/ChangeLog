@@ -1,3 +1,7 @@
+2024-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* acx.m4 (ACX_PROG_CARGO): Use 'AC_CHECK_PROGS'.
+
 2024-04-15  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
 
 	* acx.m4: Add a macro to check for rust
