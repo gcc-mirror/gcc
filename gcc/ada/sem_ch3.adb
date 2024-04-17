@@ -1618,7 +1618,7 @@ package body Sem_Ch3 is
 
       Last_Tag := Empty;
 
-      if not Present (Component_List (Ext)) then
+      if No (Component_List (Ext)) then
          Set_Null_Present (Ext, False);
          L := New_List;
          Set_Component_List (Ext,
