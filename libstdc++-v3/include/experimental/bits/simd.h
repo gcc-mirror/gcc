@@ -43,7 +43,12 @@
 #if _GLIBCXX_SIMD_X86INTRIN
 #include <x86intrin.h>
 #elif _GLIBCXX_SIMD_HAVE_NEON
+#pragma GCC diagnostic push
+// narrowing conversion of '__a' from 'uint64_t' {aka 'long long unsigned int'} to
+//   'int64x1_t' {aka 'long long int'} [-Wnarrowing]
+#pragma GCC diagnostic ignored "-Wnarrowing"
 #include <arm_neon.h>
+#pragma GCC diagnostic pop
 #endif
 
 /** @ingroup ts_simd
@@ -576,6 +581,7 @@ template <size_t _Bytes>
   constexpr auto
   __int_for_sizeof()
   {
+    static_assert(_Bytes > 0);
     if constexpr (_Bytes == sizeof(int))
       return int();
   #ifdef __clang__
@@ -641,7 +647,7 @@ template <size_t _Bytes>
 	return _Ip{};
       }
     else
-      static_assert(_Bytes != _Bytes, "this should be unreachable");
+      static_assert(_Bytes == 0, "this should be unreachable");
   }
 #pragma GCC diagnostic pop
 
