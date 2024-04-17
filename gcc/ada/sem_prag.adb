@@ -8498,6 +8498,15 @@ package body Sem_Prag is
                end if;
             end if;
 
+            --  If the convention of a record type is changed (such as to C),
+            --  this must override C_Pass_By_Copy if that flag was inherited
+            --  from a parent type where the latter convention was specified,
+            --  so we force the flag to False.
+
+            if Cname /= Name_C_Pass_By_Copy and then Is_Record_Type (E) then
+               Set_C_Pass_By_Copy (Base_Type (E), False);
+            end if;
+
             --  If the entity is a derived boolean type, check for the special
             --  case of convention C, C++, or Fortran, where we consider any
             --  nonzero value to represent true.
