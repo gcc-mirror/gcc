@@ -1055,6 +1055,41 @@ c_parser_gimple_binary_expression (gimple_parser &parser, tree ret_type)
 	    code = LTGT_EXPR;
 	    break;
 	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__FLOOR_DIV") == 0)
+	  {
+	    code = FLOOR_DIV_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__ROUND_DIV") == 0)
+	  {
+	    code = ROUND_DIV_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__EXACT_DIV") == 0)
+	  {
+	    code = EXACT_DIV_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__CEIL_DIV") == 0)
+	  {
+	    code = CEIL_DIV_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__FLOOR_MOD") == 0)
+	  {
+	    code = FLOOR_MOD_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__ROUND_MOD") == 0)
+	  {
+	    code = ROUND_MOD_EXPR;
+	    break;
+	  }
+	else if (strcmp (IDENTIFIER_POINTER (id), "__CEIL_MOD") == 0)
+	  {
+	    code = CEIL_MOD_EXPR;
+	    break;
+	  }
       }
       /* Fallthru.  */
     default:
