@@ -2856,31 +2856,21 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  }
 
 	dump_generic_node (pp, TREE_OPERAND (node, 0),
-			   spc, flags, !(flags & TDF_SLIM));
-	if (flags & TDF_SLIM)
-	  newline_and_indent (pp, spc);
-	else
-	  {
-	    pp_comma (pp);
-	    pp_space (pp);
-	  }
+			   spc, flags, false);
+	pp_comma (pp);
+	pp_space (pp);
 
 	for (tp = &TREE_OPERAND (node, 1);
 	     TREE_CODE (*tp) == COMPOUND_EXPR;
 	     tp = &TREE_OPERAND (*tp, 1))
 	  {
 	    dump_generic_node (pp, TREE_OPERAND (*tp, 0),
-			       spc, flags, !(flags & TDF_SLIM));
-	    if (flags & TDF_SLIM)
-	      newline_and_indent (pp, spc);
-	    else
-	      {
-	        pp_comma (pp);
-	        pp_space (pp);
-	      }
+			       spc, flags, false);
+	    pp_comma (pp);
+	    pp_space (pp);
 	  }
 
-	dump_generic_node (pp, *tp, spc, flags, !(flags & TDF_SLIM));
+	dump_generic_node (pp, *tp, spc, flags, false);
       }
       break;
 
