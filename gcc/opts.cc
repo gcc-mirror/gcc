@@ -3761,7 +3761,19 @@ get_option_url (const diagnostic_context *,
     {
       label_text url_suffix = get_option_url_suffix (option_index, lang_mask);
       if (url_suffix.get ())
-	return concat (DOCUMENTATION_ROOT_URL, url_suffix.get (), nullptr);
+	{
+	  char infix[32];
+	  /* On release branches, append to DOCUMENTATION_ROOT_URL the
+	     subdirectory with documentation of the latest release made
+	     from the branch.  */
+	  if (BUILDING_GCC_MINOR != 0 && BUILDING_GCC_PATCHLEVEL <= 1U)
+	    sprintf (infix, "gcc-%u.%u.0/",
+		     BUILDING_GCC_MAJOR, BUILDING_GCC_MINOR);
+	  else
+	    infix[0] = '\0';
+	  return concat (DOCUMENTATION_ROOT_URL, infix, url_suffix.get (),
+			 nullptr);
+	}
     }
 
   return nullptr;

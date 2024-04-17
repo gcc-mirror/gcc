@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-urlifier.h"
 #include "opts.h"
 #include "options.h"
+#include "diagnostic-core.h"
 #include "selftest.h"
 
 namespace {
@@ -208,7 +209,16 @@ gcc_urlifier::make_doc_url (const char *doc_url_suffix)
   if (!doc_url_suffix)
     return nullptr;
 
-  return concat (DOCUMENTATION_ROOT_URL, doc_url_suffix, nullptr);
+  char infix[32];
+  /* On release branches, append to DOCUMENTATION_ROOT_URL the
+     subdirectory with documentation of the latest release made
+     from the branch.  */
+  if (BUILDING_GCC_MINOR != 0 && BUILDING_GCC_PATCHLEVEL <= 1U)
+    sprintf (infix, "gcc-%u.%u.0/",
+	     BUILDING_GCC_MAJOR, BUILDING_GCC_MINOR);
+  else
+    infix[0] = '\0';
+  return concat (DOCUMENTATION_ROOT_URL, infix, doc_url_suffix, nullptr);
 }
 
 } // anonymous namespace
