@@ -1,3 +1,10 @@
+2024-04-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/23872
+	* tree-pretty-print.cc (dump_generic_node <case COMPOUND_EXPR>): Fix
+	calls to dump_generic_node and also remove unreachable code that is testing
+	`flags & TDF_SLIM`.
+
 2024-06-03  Tobias Burnus  <tburnus@baylibre.com>
 
 	* doc/install.texi (gcn): Fix date of recommended newlib version.

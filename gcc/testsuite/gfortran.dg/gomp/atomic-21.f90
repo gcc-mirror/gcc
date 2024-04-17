@@ -56,7 +56,7 @@ subroutine foobar()
     endif
 
 !  TARGET_EXPR <D.4244, 0> = #pragma omp atomic capture acq_rel
-!    TARGET_EXPR <D.4242, &nn> = NON_LVALUE_EXPR <TARGET_EXPR <D.4243, 0> = *TARGET_EXPR <D.4242, &nn> == oo> ? pp : *TARGET_EXPR <D.4242, &nn>;, if (TARGET_EXPR <D.4243, 0>)
+!    TARGET_EXPR <D.4242, &nn> = NON_LVALUE_EXPR <TARGET_EXPR <D.4243, 0> = *TARGET_EXPR <D.4242, &nn> == oo> ? pp : *TARGET_EXPR <D.4242, &nn>, if (TARGET_EXPR <D.4243, 0>)
 !    {
 !      <<< Unknown tree: void_cst >>>
 !    }
@@ -66,7 +66,7 @@ subroutine foobar()
 !    };
 !
 ! { dg-final { scan-tree-dump-times "TARGET_EXPR <D.\[0-9\]+, 0> = #pragma omp atomic capture acq_rel" 1 "original" } }
-! { dg-final { scan-tree-dump-times "TARGET_EXPR <D.\[0-9\]+, &nn> = NON_LVALUE_EXPR <TARGET_EXPR <D.\[0-9\]+, 0> = \\*TARGET_EXPR <D.\[0-9\]+, &nn> == oo> \\? pp : \\*TARGET_EXPR <D.\[0-9\]+, &nn>;, if \\(TARGET_EXPR <D.\[0-9\]+, 0>\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "TARGET_EXPR <D.\[0-9\]+, &nn> = NON_LVALUE_EXPR <TARGET_EXPR <D.\[0-9\]+, 0> = \\*TARGET_EXPR <D.\[0-9\]+, &nn> == oo> \\? pp : \\*TARGET_EXPR <D.\[0-9\]+, &nn>, if \\(TARGET_EXPR <D.\[0-9\]+, 0>\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "<<< Unknown tree: void_cst >>>" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "qq = TARGET_EXPR <D.\[0-9\]+, 0>;" 1 "original" } }
 
