@@ -14349,10 +14349,24 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
       return false;
 
     case CTZ:
-      *cost = COSTS_N_INSNS (2);
-
-      if (speed)
-	*cost += extra_cost->alu.clz + extra_cost->alu.rev;
+      if (VECTOR_MODE_P (mode))
+	{
+	  *cost = COSTS_N_INSNS (3);
+	  if (speed)
+	    *cost += extra_cost->vect.alu * 3;
+	}
+      else if (TARGET_CSSC)
+	{
+	  *cost = COSTS_N_INSNS (1);
+	  if (speed)
+	    *cost += extra_cost->alu.clz;
+	}
+      else
+	{
+	  *cost = COSTS_N_INSNS (2);
+	  if (speed)
+	    *cost += extra_cost->alu.clz + extra_cost->alu.rev;
+	}
       return false;
 
     case COMPARE:
