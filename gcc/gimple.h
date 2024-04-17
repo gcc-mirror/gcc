@@ -236,7 +236,8 @@ struct GTY((desc ("gimple_statement_structure (&%h)"), tag ("GSS_BASE"),
      for clearing this bit before using it.  */
   unsigned int visited		: 1;
 
-  /* Nonzero if this tuple represents a non-temporal move.  */
+  /* Nonzero if this tuple represents a non-temporal move; currently
+     only stores are supported.  */
   unsigned int nontemporal_move	: 1;
 
   /* Pass local flags.  These flags are free for any pass to use as

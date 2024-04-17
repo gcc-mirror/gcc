@@ -4837,6 +4837,17 @@ verify_gimple_assign_single (gassign *stmt)
 static bool
 verify_gimple_assign (gassign *stmt)
 {
+  if (gimple_assign_nontemporal_move_p (stmt))
+    {
+      tree lhs = gimple_assign_lhs (stmt);
+      if (is_gimple_reg (lhs))
+	{
+	  error ("nontemporal store's lhs cannot be a gimple register");
+	  debug_generic_stmt (lhs);
+	  return true;
+	}
+    }
+
   switch (gimple_assign_rhs_class (stmt))
     {
     case GIMPLE_SINGLE_RHS:
