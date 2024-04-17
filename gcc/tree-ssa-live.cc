@@ -113,8 +113,10 @@ init_var_map (int size, class loop *loop, bitmap bitint)
       map->outofssa_p = bitint == NULL;
       map->bitint = bitint;
       basic_block bb;
+      map->vec_bbs.reserve_exact (n_basic_blocks_for_fn (cfun)
+				  - NUM_FIXED_BLOCKS);
       FOR_EACH_BB_FN (bb, cfun)
-	map->vec_bbs.safe_push (bb);
+	map->vec_bbs.quick_push (bb);
     }
   return map;
 }
