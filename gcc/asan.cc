@@ -3025,6 +3025,9 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
 	      break;
 	    }
 	}
+      if (gimple_call_internal_p (stmt, IFN_ABNORMAL_DISPATCHER))
+	/* Don't instrument this.  */
+	return false;
       /* If a function does not return, then we must handle clearing up the
 	 shadow stack accordingly.  For ASAN we can simply set the entire stack
 	 to "valid" for accesses by setting the shadow space to 0 and all

@@ -48,3 +48,15 @@ l3:
   if (x < 4)
     goto *q[x & 3];
 }
+
+void
+freddy (int x, int *y, struct S *p)
+{
+  bar (*p);
+  ++p;
+  if (x == 25)
+    x = foo (2);
+  else if (x == 42)
+    x = foo (foo (3));
+  *y = bar (*p);
+}
