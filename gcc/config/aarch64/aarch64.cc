@@ -349,9 +349,6 @@ static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = cortexa53;
 
-/* Mask to specify which instruction scheduling options should be used.  */
-uint64_t aarch64_tune_flags = 0;
-
 /* Global flag for PC relative loads.  */
 bool aarch64_pcrelative_literal_loads;
 
@@ -18273,7 +18270,6 @@ void
 aarch64_override_options_internal (struct gcc_options *opts)
 {
   const struct processor *tune = aarch64_get_tune_cpu (opts->x_selected_tune);
-  aarch64_tune_flags = tune->flags;
   aarch64_tune = tune->sched_core;
   /* Make a copy of the tuning parameters attached to the core, which
      we may later overwrite.  */
