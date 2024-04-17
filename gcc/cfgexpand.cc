@@ -4002,17 +4002,16 @@ expand_gimple_stmt_1 (gimple *stmt)
 	else
 	  {
 	    rtx target, temp;
-	    bool nontemporal = gimple_assign_nontemporal_move_p (assign_stmt);
+	    gcc_assert (!gimple_assign_nontemporal_move_p (assign_stmt));
 	    bool promoted = false;
 
 	    target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 	    if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
 	      promoted = true;
 
-	   /* If we want to use a nontemporal store, force the value to
-	      register first.  If we store into a promoted register,
-	      don't directly expand to target.  */
-	    temp = nontemporal || promoted ? NULL_RTX : target;
+	   /* If we store into a promoted register, don't directly
+	      expand to target.  */
+	    temp = promoted ? NULL_RTX : target;
 	    temp = expand_expr_real_gassign (assign_stmt, temp,
 					     GET_MODE (target), EXPAND_NORMAL);
 
@@ -4034,8 +4033,6 @@ expand_gimple_stmt_1 (gimple *stmt)
 
 		convert_move (SUBREG_REG (target), temp, unsignedp);
 	      }
-	    else if (nontemporal && emit_storent_insn (target, temp))
-	      ;
 	    else
 	      {
 		temp = force_operand (temp, target);
