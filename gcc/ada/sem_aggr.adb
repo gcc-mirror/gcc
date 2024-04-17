@@ -3380,7 +3380,7 @@ package body Sem_Aggr is
 
             Key_Expr := Key_Expression (Comp);
             if Present (Key_Expr) then
-               if not Present (Add_Named_Subp) then
+               if No (Add_Named_Subp) then
                   Error_Msg_N
                     ("iterated_element_association with key_expression only "
                        & "allowed for container type with Add_Named operation "
