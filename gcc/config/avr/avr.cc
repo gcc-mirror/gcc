@@ -3333,11 +3333,20 @@ avr_print_operand (FILE *file, rtx x, int code)
     }
   else if (CONST_DOUBLE_P (x))
     {
-      long val;
-      if (GET_MODE (x) != SFmode)
-        fatal_insn ("internal compiler error.  Unknown mode:", x);
-      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), val);
-      fprintf (file, "0x%lx", val);
+      if (GET_MODE (x) == SFmode)
+	{
+	  long val;
+	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), val);
+	  fprintf (file, "0x%lx", val);
+	}
+      else if (GET_MODE (x) == DFmode)
+	{
+	  long l[2];
+	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), l);
+	  fprintf (file, "0x%lx%08lx", l[1] & 0xffffffff, l[0] & 0xffffffff);
+	}
+      else
+	fatal_insn ("internal compiler error.  Unknown mode:", x);
     }
   else if (GET_CODE (x) == CONST_STRING)
     fputs (XSTR (x, 0), file);
