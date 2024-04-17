@@ -1460,7 +1460,7 @@ template <typename _Abi>
 		   [&](auto __i) constexpr {
 		     return static_cast<_Tp>(__i < _Np ? __mem[__i] : 0);
 		   });
-	else if constexpr (sizeof(_Up) > 8)
+	else if constexpr (sizeof(_Up) > 8 or __vectorized_sizeof<_Up>() <= sizeof(_Up))
 	  return __generate_vector<_Tp, _SimdMember<_Tp>::_S_full_size>(
 		   [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		     return static_cast<_Tp>(__i < _Np ? __mem[__i] : 0);
@@ -1532,7 +1532,7 @@ template <typename _Abi>
 	    for (size_t __i = 0; __i < _Np; ++__i)
 	      __mem[__i] = __v[__i];
 	  }
-	else if constexpr (sizeof(_Up) > 8)
+	else if constexpr (sizeof(_Up) > 8 or __vectorized_sizeof<_Up>() <= sizeof(_Up))
 	  __execute_n_times<_Np>([&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	    __mem[__i] = __v[__i];
 	  });
