@@ -22,6 +22,9 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef _GLIBCXX_EXPERIMENTAL_BITS_NUMERIC_TRAITS_H
+#define _GLIBCXX_EXPERIMENTAL_BITS_NUMERIC_TRAITS_H
+
 #include <type_traits>
 
 namespace std {
@@ -565,3 +568,4 @@ template <>
 #endif // __FINITE_MATH_ONLY__
 
 } // namespace std
+#endif  // _GLIBCXX_EXPERIMENTAL_BITS_NUMERIC_TRAITS_H
