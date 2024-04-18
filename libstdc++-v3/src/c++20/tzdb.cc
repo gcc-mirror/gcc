@@ -1599,7 +1599,7 @@ namespace std::chrono
     const time_zone*
     do_locate_zone(const vector<time_zone>& zones,
 		   const vector<time_zone_link>& links,
-		   string_view tz_name) noexcept
+		   string_view tz_name)
     {
       // Lambda mangling changed between -fabi-version=2 and -fabi-version=18
       auto search = []<class Vec>(const Vec& v, string_view name) {
@@ -1610,13 +1610,62 @@ namespace std::chrono
 	return ptr;
       };
 
+      // Search zones first.
       if (auto tz = search(zones, tz_name))
 	return tz;
 
+      // Search links second.
       if (auto tz_l = search(links, tz_name))
-	return search(zones, tz_l->target());
+	{
+	  // Handle the common case of a link that has a zone as the target.
+	  if (auto tz = search(zones, tz_l->target())) [[likely]]
+	    return tz;
 
-      return nullptr;
+	  // Either tz_l->target() doesn't exist, or we have a chain of links.
+	  // Use Floyd's cycle-finding algorithm to avoid infinite loops,
+	  // at the cost of extra lookups. In the common case we expect a
+	  // chain of links to be short so the loop won't run many times.
+	  // In particular, the duplicate lookups to move the tortoise
+	  // never happen unless the chain has four or more links.
+	  // When a chain contains a cycle we do multiple duplicate lookups,
+	  // but that case should never happen with correct tzdata.zi,
+	  // so there's no need to optimize cycle detection.
+
+	  const time_zone_link* tortoise = tz_l;
+	  const time_zone_link* hare = search(links, tz_l->target());
+	  while (hare)
+	    {
+	      // Chains should be short, so first check if it ends here:
+	      if (auto tz = search(zones, hare->target())) [[likely]]
+		return tz;
+
+	      // Otherwise follow the chain:
+	      hare = search(links, hare->target());
+	      if (!hare)
+		break;
+
+	      // Again, first check if the chain ends at a zone here:
+	      if (auto tz = search(zones, hare->target())) [[likely]]
+		return tz;
+
+	      // Follow the chain again:
+	      hare = search(links, hare->target());
+
+	      if (hare == tortoise)
+		{
+		  string_view err = "std::chrono::tzdb: link cycle: ";
+		  string str;
+		  str.reserve(err.size() + tz_name.size());
+		  str += err;
+		  str += tz_name;
+		  __throw_runtime_error(str.c_str());
+		}
+	      // Plod along the chain one step:
+	      tortoise = search(links, tortoise->target());
+	    }
+	}
+
+      return nullptr; // not found
     }
   } // namespace
 
@@ -1626,7 +1675,7 @@ namespace std::chrono
   {
     if (auto tz = do_locate_zone(zones, links, tz_name))
       return tz;
-    string_view err = "tzdb: cannot locate zone: ";
+    string_view err = "std::chrono::tzdb: cannot locate zone: ";
     string str;
     str.reserve(err.size() + tz_name.size());
     str += err;

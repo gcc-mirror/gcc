@@ -47,6 +47,18 @@ test_locate()
   VERIFY( db.locate_zone(db.current_zone()->name()) == db.current_zone() );
 }
 
+void
+test_all_zones()
+{
+  const tzdb& db = get_tzdb();
+
+  for (const auto& zone : db.zones)
+    VERIFY( locate_zone(zone.name())->name() == zone.name() );
+
+  for (const auto& link : db.links)
+    VERIFY( locate_zone(link.name()) == locate_zone(link.target()) );
+}
+
 int main()
 {
   test_version();
