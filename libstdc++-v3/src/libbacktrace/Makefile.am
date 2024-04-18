@@ -31,7 +31,7 @@
 
 include $(top_srcdir)/fragment.am
 
-toolexeclib_LTLIBRARIES = libstdc++_libbacktrace.la
+noinst_LTLIBRARIES = libstdc++_libbacktrace.la
 
 ACLOCAL_AMFLAGS = -I ../.. -I ../../config
 

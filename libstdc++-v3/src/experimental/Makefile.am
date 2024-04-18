@@ -66,6 +66,15 @@ AM_CXXFLAGS = \
 AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)"
 
+if ENABLE_BACKTRACE
+install-exec-local:
+	-cd '$(DESTDIR)$(toolexeclibdir)' && \
+	$(LN_S) libstdc++exp.a libstdc++_libbacktrace.a
+uninstall-local:
+	-cd '$(DESTDIR)$(toolexeclibdir)' && \
+	rm -f libstdc++_libbacktrace.a
+endif
+
 # Libtool notes
 
 # 1) In general, libtool expects an argument such as `--tag=CXX' when
