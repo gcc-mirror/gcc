@@ -11581,6 +11581,17 @@ proc check_effective_target_stpcpy {} {
     return [check_function_available "stpcpy"]
 }
 
+# Returns 1 if "strndup" is available on the target system.
+
+proc check_effective_target_strndup {} {
+    if { [istarget *-*-vxworks*] } {
+	# VxWorks doesn't have strndup but our way to test fails
+	# to detect as we're doing partial links for kernel modules.
+	return 0
+    }
+    return [check_function_available "strndup"]
+}
+
 # Returns 1 if "sigsetjmp" is available on the target system.
 # Also check if "__sigsetjmp" is defined since that's what glibc
 # uses.

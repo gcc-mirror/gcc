@@ -2837,6 +2837,9 @@ can be included without error when @option{-mbig-endian} is passed.
 @item stpcpy
 Target provides @code{stpcpy} function.
 
+@item strndup
+Target provides @code{strndup} function.
+
 @item sysconf
 Target supports @code{sysconf}.
 
