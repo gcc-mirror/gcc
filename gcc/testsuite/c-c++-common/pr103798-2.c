@@ -28,4 +28,4 @@ main ()
 }
 
 /* See PR c++/113706 for the xfail.  */
-/* { dg-final { scan-assembler-not "memchr" { xfail { c++ && *-*-solaris2* } } } } */
+/* { dg-final { scan-assembler-not "memchr" { xfail { c++ && { *-*-solaris2* *-*-vxworks* } } } } } */
