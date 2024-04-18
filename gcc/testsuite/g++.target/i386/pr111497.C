@@ -1,5 +1,6 @@
 // { dg-do compile { target ia32 } }
 // { dg-options "-march=i686 -mtune=generic -fPIC -O2 -g" }
+// { dg-require-effective-target fpic }
 
 class A;
 struct B { const char *b1; int b2; };
