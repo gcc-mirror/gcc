@@ -4811,7 +4811,7 @@
   ""
   {@ [ cons: =0 , 1  , 2        ; attrs: type , arch  ]
      [ r        , %r , r        ; logic_reg   , *     ] <logical>\t%<w>0, %<w>1, %<w>2
-     [ rk       , ^r , <lconst> ; logic_imm   , *     ] <logical>\t%<w>0, %<w>1, %2
+     [ rk       , r  , <lconst> ; logic_imm   , *     ] <logical>\t%<w>0, %<w>1, %2
      [ w        , 0  , <lconst> ; *           , sve   ] <logical>\t%Z0.<s>, %Z0.<s>, #%2
      [ w        , w  , w        ; neon_logic  , simd  ] <logical>\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
   }
@@ -7192,22 +7192,29 @@
    (match_operand:GPF 2 "nonmemory_operand")]
   "TARGET_SIMD"
 {
-  machine_mode int_mode = <V_INT_EQUIV>mode;
-  rtx bitmask = gen_reg_rtx (int_mode);
-  emit_move_insn (bitmask, GEN_INT (HOST_WIDE_INT_M1U
-				    << (GET_MODE_BITSIZE (<MODE>mode) - 1)));
+  rtx signbit_const = GEN_INT (HOST_WIDE_INT_M1U
+			       << (GET_MODE_BITSIZE (<MODE>mode) - 1));
   /* copysign (x, -1) should instead be expanded as orr with the sign
      bit.  */
   rtx op2_elt = unwrap_const_vec_duplicate (operands[2]);
   if (GET_CODE (op2_elt) == CONST_DOUBLE
       && real_isneg (CONST_DOUBLE_REAL_VALUE (op2_elt)))
     {
-      emit_insn (gen_ior<v_int_equiv>3 (
-	lowpart_subreg (int_mode, operands[0], <MODE>mode),
-	lowpart_subreg (int_mode, operands[1], <MODE>mode), bitmask));
+      rtx v_bitmask
+	= force_reg (V2<V_INT_EQUIV>mode,
+		     gen_const_vec_duplicate (V2<V_INT_EQUIV>mode,
+					      signbit_const));
+
+      emit_insn (gen_iorv2<v_int_equiv>3 (
+	lowpart_subreg (V2<V_INT_EQUIV>mode, operands[0], <MODE>mode),
+	lowpart_subreg (V2<V_INT_EQUIV>mode, operands[1], <MODE>mode),
+	v_bitmask));
       DONE;
     }
 
+  machine_mode int_mode = <V_INT_EQUIV>mode;
+  rtx bitmask = gen_reg_rtx (int_mode);
+  emit_move_insn (bitmask, signbit_const);
   operands[2] = force_reg (<MODE>mode, operands[2]);
   emit_insn (gen_copysign<mode>3_insn (operands[0], operands[1], operands[2],
 				       bitmask));

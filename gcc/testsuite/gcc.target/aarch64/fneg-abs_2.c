@@ -9,8 +9,7 @@
 
 /*
 ** f1:
-**	movi	v[0-9]+.2s, 0x80, lsl 24
-**	orr	v[0-9]+.8b, v[0-9]+.8b, v[0-9]+.8b
+**	orr	v[0-9]+.2s, #?128, lsl #?24
 **	ret
 */
 float32_t f1 (float32_t a)
@@ -22,7 +21,7 @@ float32_t f1 (float32_t a)
 ** f2:
 **	movi	v[0-9]+.4s, #?0
 **	fneg	v[0-9]+.2d, v[0-9]+.2d
-**	orr	v[0-9]+.8b, v[0-9]+.8b, v[0-9]+.8b
+**	orr	v[0-9]+.16b, v[0-9]+.16b, v[0-9]+.16b
 **	ret
 */
 float64_t f2 (float64_t a)

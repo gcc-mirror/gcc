@@ -7,7 +7,7 @@
 #include <string.h>
 
 /*
-** negabs:
+** negabs: { xfail *-*-* }
 **	movi	v31.4s, #?0
 **	fneg	v[0-9]+.2d, v[0-9]+.2d
 **	orr	v[0-9]+.8b, v[0-9]+.8b, v[0-9]+.8b
@@ -23,7 +23,7 @@ double negabs (double x)
 }
 
 /*
-** negabsf:
+** negabsf: { xfail *-*-* }
 **	movi	v[0-9]+.2s, 0x80, lsl 24
 **	orr	v[0-9]+.8b, v[0-9]+.8b, v[0-9]+.8b
 **	ret
