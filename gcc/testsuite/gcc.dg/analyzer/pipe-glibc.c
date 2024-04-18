@@ -1,6 +1,7 @@
-/* Example of pipe usage from glibc manual.  */
-
 /* { dg-skip-if "" { "avr-*-*" } } */
+/* { dg-require-fork "" } */
+
+/* Example of pipe usage from glibc manual.  */
 
 #include <sys/types.h>
 #include <unistd.h>
