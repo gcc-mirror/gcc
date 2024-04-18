@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-stack-protector" } */
+/* { dg-options "-O3 -fno-stack-protector -fomit-frame-pointer" } */
 
 static inline void memset_s(void* s, int n) {
   volatile unsigned char * p = s;
