@@ -42,7 +42,7 @@ bfloat16_t footest (bfloat16_t scalar0)
   short initi_1_4 = glob_bfloat; /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
   double initi_1_5 = glob_bfloat; /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
 
-  bfloat16_t scalar2_1 = {}; /* { dg-error {empty scalar initializer} } */
+  bfloat16_t scalar2_1 = {};
   bfloat16_t scalar2_2 = { glob_bfloat };
   bfloat16_t scalar2_3 = { 0 }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
   bfloat16_t scalar2_4 = { 0.1 }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
@@ -94,7 +94,7 @@ bfloat16_t footest (bfloat16_t scalar0)
 
   /* Compound literals.  */
 
-  (bfloat16_t) {}; /* { dg-error {empty scalar initializer} } */
+  (bfloat16_t) {};
   (bfloat16_t) { glob_bfloat };
   (bfloat16_t) { 0 }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
   (bfloat16_t) { 0.1 }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
