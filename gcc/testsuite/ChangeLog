@@ -1,3 +1,14 @@
+2024-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_long_long):
+	Enable for GCN.
+
+2024-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114743
+	* gcc.dg/asan/pr112709-2.c (freddy): New function from
+	gcc.dg/ubsan/pr112709-2.c version of the test.
+
 2024-04-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114745

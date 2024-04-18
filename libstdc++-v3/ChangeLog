@@ -1,3 +1,22 @@
+2024-04-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (println(ostream&)): Define new overload.
+	* include/std/print (println(FILE*), println()): Likewise.
+	* testsuite/27_io/basic_ostream/print/2.cc: New test.
+	* testsuite/27_io/print/1.cc: Remove unused header.
+	* testsuite/27_io/print/3.cc: New test.
+
+2024-04-17  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/numeric_traits.h: Add include guard.
+
+2024-04-17  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/114750
+	* include/experimental/bits/simd_builtin.h
+	(_SimdImplBuiltin::_S_load, _S_store): Fall back to copying
+	scalars if the memory type cannot be vectorized for the target.
+
 2024-04-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/locale/dragonfly/numeric_members.cc: Fix typos in

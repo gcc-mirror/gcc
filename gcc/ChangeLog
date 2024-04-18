@@ -1,3 +1,27 @@
+2024-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/114738
+	* opts.cc (get_option_url): On release branches append
+	gcc-MAJOR.MINOR.0/ after DOCUMENTATION_ROOT_URL.
+	* gcc-urlifier.cc (gcc_urlifier::make_doc_url): Likewise.
+
+2024-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114749
+	* tree-vect-loop.cc (vect_analyze_loop_2): Reset
+	LOOP_VINFO_USING_PARTIAL_VECTORS_P when re-trying without SLP.
+
+2024-04-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114752
+	* config/avr/avr.cc (avr_print_operand) [CONST_DOUBLE_P]: Handle DFmode.
+
+2024-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114743
+	* asan.cc (maybe_instrument_call): Don't instrument calls to
+	.ABNORMAL_DISPATCHER.
+
 2024-04-16  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR c/92880
