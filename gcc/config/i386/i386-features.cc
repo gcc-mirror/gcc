@@ -3259,6 +3259,169 @@ make_pass_remove_partial_avx_dependency (gcc::context *ctxt)
   return new pass_remove_partial_avx_dependency (ctxt);
 }
 
+/* Convert legacy instructions that clobbers EFLAGS to APX_NF
+   instructions when there are no flag set between a flag
+   producer and user.  */
+
+static unsigned int
+ix86_apx_nf_convert (void)
+{
+  timevar_push (TV_MACH_DEP);
+
+  basic_block bb;
+  rtx_insn *insn;
+  hash_map <rtx_insn *, rtx> converting_map;
+  auto_vec <rtx_insn *> current_convert_list;
+
+  bool converting_seq = false;
+  rtx cc = gen_rtx_REG (CCmode, FLAGS_REG);
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      /* Reset conversion for each bb.  */
+      converting_seq = false;
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+
+	  if (recog_memoized (insn) < 0)
+	    continue;
+
+	  /* Convert candidate insns after cstore, which should
+	     satisify the two conditions:
+	     1. Is not flag user or producer, only clobbers
+	     FLAGS_REG.
+	     2. Have corresponding nf pattern.  */
+
+	  rtx pat = PATTERN (insn);
+
+	  /* Starting convertion at first cstorecc.  */
+	  rtx set = NULL_RTX;
+	  if (!converting_seq
+	      && (set = single_set (insn))
+	      && ix86_comparison_operator (SET_SRC (set), VOIDmode)
+	      && reg_overlap_mentioned_p (cc, SET_SRC (set))
+	      && !reg_overlap_mentioned_p (cc, SET_DEST (set)))
+	    {
+	      converting_seq = true;
+	      current_convert_list.truncate (0);
+	    }
+	  /* Terminate at the next explicit flag set.  */
+	  else if (reg_set_p (cc, pat)
+		   && GET_CODE (set_of (cc, pat)) != CLOBBER)
+	    converting_seq = false;
+
+	  if (!converting_seq)
+	    continue;
+
+	  if (get_attr_has_nf (insn)
+	      && GET_CODE (pat) == PARALLEL)
+	    {
+	      /* Record the insn to candidate map.  */
+	      current_convert_list.safe_push (insn);
+	      converting_map.put (insn, pat);
+	    }
+	  /* If the insn clobbers flags but has no nf_attr,
+	     revoke all previous candidates.  */
+	  else if (!get_attr_has_nf (insn)
+		   && reg_set_p (cc, pat)
+		   && GET_CODE (set_of (cc, pat)) == CLOBBER)
+	    {
+	      for (auto item : current_convert_list)
+		converting_map.remove (item);
+	      converting_seq = false;
+	    }
+	}
+    }
+
+  if (!converting_map.is_empty ())
+    {
+      for (auto iter = converting_map.begin ();
+	   iter != converting_map.end (); ++iter)
+	{
+	  rtx_insn *replace = (*iter).first;
+	  rtx pat = (*iter).second;
+	  int i, n = 0, len = XVECLEN (pat, 0);
+	  rtx *new_elems = XALLOCAVEC (rtx, len);
+	  rtx new_pat;
+	  for (i = 0; i < len; i++)
+	    {
+	      rtx temp = XVECEXP (pat, 0, i);
+	      if (! (GET_CODE (temp) == CLOBBER
+		     && reg_overlap_mentioned_p (cc,
+						 XEXP (temp, 0))))
+		{
+		  new_elems[n] = temp;
+		  n++;
+		}
+	    }
+
+	  if (n == 1)
+	    new_pat = new_elems[0];
+	  else
+	    new_pat =
+	      gen_rtx_PARALLEL (VOIDmode,
+				gen_rtvec_v (n,
+					     new_elems));
+
+	  PATTERN (replace) = new_pat;
+	  INSN_CODE (replace) = -1;
+	  recog_memoized (replace);
+	  df_insn_rescan (replace);
+	}
+    }
+
+  timevar_pop (TV_MACH_DEP);
+  return 0;
+}
+
+
+namespace {
+
+const pass_data pass_data_apx_nf_convert =
+{
+  RTL_PASS, /* type */
+  "apx_nfcvt", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_apx_nf_convert : public rtl_opt_pass
+{
+public:
+  pass_apx_nf_convert (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_apx_nf_convert, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *) final override
+    {
+      return (TARGET_APX_NF
+	      && optimize
+	      && optimize_function_for_speed_p (cfun));
+    }
+
+  unsigned int execute (function *) final override
+    {
+      return ix86_apx_nf_convert ();
+    }
+}; // class pass_rpad
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_apx_nf_convert (gcc::context *ctxt)
+{
+  return new pass_apx_nf_convert (ctxt);
+}
+
+
 /* This compares the priority of target features in function DECL1
    and DECL2.  It returns positive value if DECL1 is higher priority,
    negative value if DECL2 is higher priority and 0 if they are the
