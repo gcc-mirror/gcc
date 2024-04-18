@@ -1,6 +1,7 @@
 // { dg-do run { target c++20 } }
 // { dg-require-atomic-cmpxchg-word "" }
 // { dg-add-options libatomic }
+// { dg-additional-options "-fno-tree-sra" }
 
 #include <atomic>
 #include <cstring>
@@ -26,10 +27,10 @@ main ()
   s.s = 42;
 
   std::atomic<S> as{ s };
-  auto ts = as.load();
+  auto ts = as.load(); // SRA might prevent copying of padding bits here.
   VERIFY( !compare_struct(s, ts) ); // padding cleared on construction
   as.exchange(s);
-  auto es = as.load();
+  auto es = as.load(); // SRA might prevent copying of padding bits here.
   VERIFY( compare_struct(ts, es) ); // padding cleared on exchange
 
   S n;
