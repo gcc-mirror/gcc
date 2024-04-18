@@ -1,5 +1,6 @@
 ! { dg-do compile }
 program p
+   implicit none
    type t
       character :: c = 'c'
    end type

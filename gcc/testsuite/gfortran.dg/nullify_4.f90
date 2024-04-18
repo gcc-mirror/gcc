@@ -3,6 +3,7 @@
 !
 ! Check error recovery; was crashing before.
 !
+implicit none
 real, pointer :: ptr
 nullify(ptr, mesh%coarser) ! { dg-error "Symbol 'mesh' at .1. has no IMPLICIT type" }
 end

@@ -2236,6 +2236,15 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       match mm;
       old_loc = gfc_current_locus;
       mm = gfc_match_name (name);
+
+      /* Check to see if this has a default complex.  */
+      if (sym->ts.type == BT_UNKNOWN && tgt_expr == NULL
+	  && gfc_get_default_type (sym->name, sym->ns)->type != BT_UNKNOWN)
+	{
+	  gfc_set_default_type (sym, 0, sym->ns);
+	  primary->ts = sym->ts;
+	}
+
       /* This is a usable inquiry reference, if the symbol is already known
 	 to have a type or no derived types with a component of this name
 	 can be found.  If this was an inquiry reference with the same name

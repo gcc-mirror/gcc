@@ -21,7 +21,7 @@ end module m1
 
 
 module m2
-
+ implicit none
  type :: t
    procedure(s), pointer, nopass :: ppc
  end type
