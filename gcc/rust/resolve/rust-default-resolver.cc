@@ -115,6 +115,7 @@ void
 DefaultResolver::visit (AST::InherentImpl &impl)
 {
   auto inner_fn = [this, &impl] () {
+    visit (impl.get_type ());
     for (auto &item : impl.get_impl_items ())
       item->accept_vis (*this);
   };
