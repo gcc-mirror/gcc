@@ -8660,9 +8660,12 @@ package body Sem_Ch6 is
       --  Determines if E has its extra formals
 
       function Might_Need_BIP_Task_Actuals (E : Entity_Id) return Boolean;
-      --  Determines if E is a dispatching primitive returning a limited tagged
-      --  type object since some descendant might return an object with tasks
-      --  (and therefore need the BIP task extra actuals).
+      --  Determines if E is a function or an access to a function returning a
+      --  limited tagged type object. On dispatching primitives this predicate
+      --  is used to determine if some descendant of the function might return
+      --  an object with tasks (and therefore need the BIP task extra actuals).
+      --  On access-to-subprogram types it is used to determine if the target
+      --  function might return an object with tasks.
 
       function Needs_Accessibility_Check_Extra
         (E      : Entity_Id;
@@ -8783,9 +8786,8 @@ package body Sem_Ch6 is
 
          Func_Typ := Root_Type (Underlying_Type (Etype (Subp_Id)));
 
-         return Ekind (Subp_Id) = E_Function
+         return Ekind (Subp_Id) in E_Function | E_Subprogram_Type
            and then not Has_Foreign_Convention (Func_Typ)
-           and then Is_Dispatching_Operation (Subp_Id)
            and then Is_Tagged_Type (Func_Typ)
            and then Is_Limited_Type (Func_Typ)
            and then not Has_Aspect (Func_Typ, Aspect_No_Task_Parts);

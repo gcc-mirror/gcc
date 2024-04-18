@@ -646,15 +646,20 @@ package body Exp_Ch6 is
       Master_Formal : Node_Id;
 
    begin
+      pragma Assert (Ekind (Function_Id) in E_Function
+                                          | E_Subprogram_Type);
+
       --  No such extra parameters are needed if there are no tasks
 
       if not Needs_BIP_Task_Actuals (Function_Id) then
 
          --  However we must add dummy extra actuals if the function is
-         --  a dispatching operation that inherited these extra formals.
+         --  a dispatching operation that inherited these extra formals
+         --  or an access-to-subprogram type that requires these extra
+         --  actuals.
 
-         if Is_Dispatching_Operation (Function_Id)
-           and then Has_BIP_Extra_Formal (Function_Id, BIP_Task_Master)
+         if Has_BIP_Extra_Formal (Function_Id, BIP_Task_Master,
+              Must_Be_Frozen => False)
          then
             Master_Formal :=
               Build_In_Place_Formal (Function_Id, BIP_Task_Master);
