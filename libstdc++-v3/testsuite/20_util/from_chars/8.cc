@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++23 } }
 // { dg-add-options ieee }
+// { dg-additional-options "-DSKIP_LONG_DOUBLE" { target aarch64-*-vxworks* } }
 
 #include <charconv>
 #include <string>
@@ -343,7 +344,7 @@ test06()
 #if defined(__STDCPP_FLOAT64_T__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
   test_max_mantissa<std::float64_t, unsigned long long>();
 #endif
-#if defined(__GLIBCXX_TYPE_INT_N_0) \
+#if defined(__GLIBCXX_TYPE_INT_N_0) && !defined SKIP_LONG_DOUBLE \
     && defined(__STDCPP_FLOAT128_T__) && defined(_GLIBCXX_LDOUBLE_IS_IEEE_BINARY128)
   test_max_mantissa<std::float128_t, unsigned __GLIBCXX_TYPE_INT_N_0>();
 #endif
