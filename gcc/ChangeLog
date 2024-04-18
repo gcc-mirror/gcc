@@ -1,3 +1,27 @@
+2024-04-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-04-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114752
+	* config/avr/avr.cc (avr_print_operand) [CONST_DOUBLE_P]: Handle DFmode.
+
+2024-04-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2024-04-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/rtems.h (OS_MISSING_POWERPC64): Define.
+
+2024-04-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2024-04-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (aarch64-*-rtems*): Add target makefile fragment
+	t-aarch64-rtems.
+	* config/aarch64/t-aarch64-rtems: New file.
+
 2024-04-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
