@@ -22191,6 +22191,19 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return true;
 
     case MEM:
+      /* CONST_VECTOR_DUPLICATE_P in constant_pool is just broadcast.
+	 or variants in ix86_vector_duplicate_simode_const.  */
+
+      if (GET_MODE_SIZE (mode) >= 16
+	  && VECTOR_MODE_P (mode)
+	  && SYMBOL_REF_P (XEXP (x, 0))
+	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0))
+	  && ix86_broadcast_from_constant (mode, x))
+	{
+	  *total = COSTS_N_INSNS (2) + speed;
+	  return true;
+	}
+
       /* An insn that accesses memory is slightly more expensive
          than one that does not.  */
       if (speed)

@@ -588,7 +588,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 
 /* OP is a memref of CONST_VECTOR, return scalar constant mem
    if CONST_VECTOR is a vec_duplicate, else return NULL.  */
-static rtx
+rtx
 ix86_broadcast_from_constant (machine_mode mode, rtx op)
 {
   int nunits = GET_MODE_NUNITS (mode);

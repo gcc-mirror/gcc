@@ -107,6 +107,7 @@ extern void ix86_expand_clear (rtx);
 extern void ix86_expand_move (machine_mode, rtx[]);
 extern void ix86_expand_vector_move (machine_mode, rtx[]);
 extern void ix86_expand_vector_move_misalign (machine_mode, rtx[]);
+extern rtx ix86_broadcast_from_constant (machine_mode, rtx);
 extern rtx ix86_fixup_binary_operands (enum rtx_code, machine_mode,
 				       rtx[], bool = false);
 extern void ix86_fixup_binary_operands_no_copy (enum rtx_code, machine_mode,
