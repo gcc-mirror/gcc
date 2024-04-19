@@ -2793,6 +2793,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
 	    case PLUS_EXPR:
 	      expand_addsub_overflow (loc, code, lhs, arg0, arg1, unsr_p,
 				      unsr_p, unsr_p, false, NULL);
+	      flag_trapv = save_flag_trapv;
 	      return;
 	    case MULT_EXPR:
 	      expand_mul_overflow (loc, lhs, arg0, arg1, unsr_p,
