@@ -738,6 +738,12 @@ ipa_param_adjustments::modify_call (cgraph_edge *cs,
 	  }
       if (repl)
 	{
+	  if (!useless_type_conversion_p(apm->type, repl->typed.type))
+	    {
+	      repl = force_value_to_type (apm->type, repl);
+	      repl = force_gimple_operand_gsi (&gsi, repl,
+					       true, NULL, true, GSI_SAME_STMT);
+	    }
 	  vargs.quick_push (repl);
 	  continue;
 	}
