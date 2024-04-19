@@ -797,8 +797,7 @@ vect_split_statement (vec_info *vinfo, stmt_vec_info stmt2_info, tree new_rhs,
    HALF_TYPE and UNPROM will be set should the statement be found to
    be a widened operation.
    DIFF_STMT will be set to the MINUS_EXPR
-   statement that precedes the ABS_STMT unless vect_widened_op_tree
-   succeeds.
+   statement that precedes the ABS_STMT if it is a MINUS_EXPR..
  */
 static bool
 vect_recog_absolute_difference (vec_info *vinfo, gassign *abs_stmt,
@@ -843,23 +842,18 @@ vect_recog_absolute_difference (vec_info *vinfo, gassign *abs_stmt,
   if (!diff_stmt_vinfo)
     return false;
 
+  gassign *diff = dyn_cast <gassign *> (STMT_VINFO_STMT (diff_stmt_vinfo));
+  if (diff_stmt && diff
+      && gimple_assign_rhs_code (diff) == MINUS_EXPR
+      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (abs_oprnd)))
+    *diff_stmt = diff;
+
   /* FORNOW.  Can continue analyzing the def-use chain when this stmt in a phi
      inside the loop (in case we are analyzing an outer-loop).  */
   if (vect_widened_op_tree (vinfo, diff_stmt_vinfo,
 			    MINUS_EXPR, IFN_VEC_WIDEN_MINUS,
 			    false, 2, unprom, half_type))
     return true;
-
-  /* Failed to find a widen operation so we check for a regular MINUS_EXPR.  */
-  gassign *diff = dyn_cast <gassign *> (STMT_VINFO_STMT (diff_stmt_vinfo));
-  if (diff_stmt && diff
-      && gimple_assign_rhs_code (diff) == MINUS_EXPR
-      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (abs_oprnd)))
-    {
-      *diff_stmt = diff;
-      *half_type = NULL_TREE;
-      return true;
-    }
 
   return false;
 }
@@ -1499,26 +1493,21 @@ vect_recog_abd_pattern (vec_info *vinfo,
   tree out_type = TREE_TYPE (gimple_assign_lhs (last_stmt));
 
   vect_unpromoted_value unprom[2];
-  gassign *diff_stmt;
-  tree half_type;
-  if (!vect_recog_absolute_difference (vinfo, last_stmt, &half_type,
+  gassign *diff_stmt = NULL;
+  tree abd_in_type;
+  if (!vect_recog_absolute_difference (vinfo, last_stmt, &abd_in_type,
 				       unprom, &diff_stmt))
-    return NULL;
-
-  tree abd_in_type, abd_out_type;
-
-  if (half_type)
     {
-      abd_in_type = half_type;
-      abd_out_type = abd_in_type;
-    }
-  else
-    {
+      /* We cannot try further without having a non-widening MINUS.  */
+      if (!diff_stmt)
+	return NULL;
+
       unprom[0].op = gimple_assign_rhs1 (diff_stmt);
       unprom[1].op = gimple_assign_rhs2 (diff_stmt);
       abd_in_type = signed_type_for (out_type);
-      abd_out_type = abd_in_type;
     }
+
+  tree abd_out_type = abd_in_type;
 
   tree vectype_in = get_vectype_for_scalar_type (vinfo, abd_in_type);
   if (!vectype_in)
