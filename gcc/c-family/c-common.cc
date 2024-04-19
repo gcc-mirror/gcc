@@ -5703,6 +5703,7 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
       sentinel = fold_for_warn (argarray[nargs - 1 - pos]);
       if ((!POINTER_TYPE_P (TREE_TYPE (sentinel))
 	   || !integer_zerop (sentinel))
+	  && TREE_CODE (TREE_TYPE (sentinel)) != NULLPTR_TYPE
 	  /* Although __null (in C++) is only an integer we allow it
 	     nevertheless, as we are guaranteed that it's exactly
 	     as wide as a pointer, and we don't want to force
