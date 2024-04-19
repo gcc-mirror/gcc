@@ -57,7 +57,7 @@ T_GLIMITS_H = vxw-glimits.h
 
 vxw-glimits.h: $(srcdir)/glimits.h
 	ID=`echo $(BASEVER_c) | sed -e 's/\./_/g'` && \
-	sed -e "s/_LIMITS_H__/_LIMITS_H__$${ID}_/" < $< > $@T
+	sed -e "s/_LIMITS_H___/_LIMITS_H__$${ID}_/" < $< > $@T
 	mv $@T $@
 
 # Arrange to "provide" a tailored version of stdint-gcc.h
