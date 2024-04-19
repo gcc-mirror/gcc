@@ -1,3 +1,74 @@
+2024-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.in: Regenerate.
+	* config/darwin.cc (darwin_file_start): Add assembler directives
+	for the target OS version, where these are supported by the
+	assembler.
+	(darwin_override_options): Check for building >= macOS 10.14.
+	* configure: Regenerate.
+	* configure.ac: Check for assembler support of .build_version
+	directives.
+
+2024-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_function_section): Place unlikely
+	executed global init code into the standard cold section.
+
+2024-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (static_init_section): Add the
+	__TEXT,__StaticInit section.
+	* config/darwin.cc (darwin_function_section): Use the static init
+	section for global initializers, to match other platform toolchains.
+
+2024-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (darwin_exception_section): Move to
+	the __TEXT segment.
+	* config/darwin.cc (darwin_emit_except_table_label): Align before
+	the exception table label.
+	* config/darwin.h (ASM_PREFERRED_EH_DATA_FORMAT): Use indirect PC-
+	relative 4byte relocs.
+
+2024-04-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2023-08-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld64_version): Allow for dyld in ld -v
+	output.
+	* configure: Regenerate.
+
+2024-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle explict disable of stdlib option, set
+	defaults for Darwin.
+
+2024-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h:
+	(SUBTARGET_DRIVER_SELF_SPECS): Move handling of 'shared' into the same
+	specs as 'dynamiclib'. (STARTFILE_SPEC): Handle 'shared'.
+
 2024-04-15  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
