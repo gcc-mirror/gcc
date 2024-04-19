@@ -532,6 +532,7 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	  /* Otherwise, create a new type node and link it into the cache.  */
 
 	  tree n = make_node (code1);
+	  SET_TYPE_STRUCTURAL_EQUALITY (n);
 	  TYPE_NAME (n) = TYPE_NAME (t1);
 
 	  struct composite_cache cache2 = { t1, t2, n, cache };
@@ -590,7 +591,8 @@ composite_type_internal (tree t1, tree t2, struct composite_cache* cache)
 	  TYPE_STUB_DECL (n) = pushdecl (build_decl (input_location, TYPE_DECL,
 						     NULL_TREE, n));
 
-	  n = finish_struct(input_location, n, fields, attributes, NULL, &expr);
+	  n = finish_struct (input_location, n, fields, attributes, NULL,
+			     &expr);
 
 	  n = qualify_type (n, t1);
 

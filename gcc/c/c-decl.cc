@@ -5051,6 +5051,8 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      if (t == NULL_TREE)
 		{
 		  t = make_node (code);
+		  if (flag_isoc23 && code != ENUMERAL_TYPE)
+		    SET_TYPE_STRUCTURAL_EQUALITY (t);
 		  pushtag (input_location, name, t);
 		}
 	    }
@@ -8809,6 +8811,8 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
      the forward-reference will be altered into a real type.  */
 
   ref = make_node (code);
+  if (flag_isoc23 && code != ENUMERAL_TYPE)
+    SET_TYPE_STRUCTURAL_EQUALITY (ref);
   if (code == ENUMERAL_TYPE)
     {
       /* Give the type a default layout like unsigned int
@@ -8910,6 +8914,8 @@ start_struct (location_t loc, enum tree_code code, tree name,
   if (ref == NULL_TREE || TREE_CODE (ref) != code)
     {
       ref = make_node (code);
+      if (flag_isoc23)
+	SET_TYPE_STRUCTURAL_EQUALITY (ref);
       pushtag (loc, name, ref);
     }
 
@@ -9347,6 +9353,45 @@ is_flexible_array_member_p (bool is_last_field,
   return false;
 }
 
+/* Recompute TYPE_CANONICAL for variants of the type including qualified
+   versions of the type and related pointer types after an aggregate type
+   has been finalized.
+   Will not update array types, pointers to array types, function
+   types and other derived types created while the type was still
+   incomplete, those will remain TYPE_STRUCTURAL_EQUALITY_P.  */
+
+static void
+c_update_type_canonical (tree t)
+{
+  for (tree x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
+    {
+      if (x != t && TYPE_STRUCTURAL_EQUALITY_P (x))
+	{
+	  if (TYPE_QUALS (x) == TYPE_QUALS (t))
+	    TYPE_CANONICAL (x) = TYPE_CANONICAL (t);
+	  else if (TYPE_CANONICAL (t) != t
+		   || check_qualified_type (x, t, TYPE_QUALS (x)))
+	    TYPE_CANONICAL (x)
+	      = build_qualified_type (TYPE_CANONICAL (t), TYPE_QUALS (x));
+	  else
+	    TYPE_CANONICAL (x) = x;
+	}
+      else if (x != t)
+	continue;
+      for (tree p = TYPE_POINTER_TO (x); p; p = TYPE_NEXT_PTR_TO (p))
+	{
+	  if (!TYPE_STRUCTURAL_EQUALITY_P (p))
+	    continue;
+	  if (TYPE_CANONICAL (x) != x || TYPE_REF_CAN_ALIAS_ALL (p))
+	    TYPE_CANONICAL (p)
+	      = build_pointer_type_for_mode (TYPE_CANONICAL (x), TYPE_MODE (p),
+					     false);
+	  else
+	    TYPE_CANONICAL (p) = p;
+	  c_update_type_canonical (p);
+	}
+    }
+}
 
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    LOC is the location of the RECORD_TYPE or UNION_TYPE's definition.
@@ -9695,11 +9740,12 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   /* Set type canonical based on equivalence class.  */
   if (flag_isoc23)
     {
-      if (NULL == c_struct_htab)
+      if (c_struct_htab == NULL)
 	c_struct_htab = hash_table<c_struct_hasher>::create_ggc (61);
 
       hashval_t hash = c_struct_hasher::hash (t);
 
+      gcc_checking_assert (TYPE_STRUCTURAL_EQUALITY_P (t));
       tree *e = c_struct_htab->find_slot_with_hash (t, hash, INSERT);
       if (*e)
 	TYPE_CANONICAL (t) = *e;
@@ -9708,6 +9754,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  TYPE_CANONICAL (t) = t;
 	  *e = t;
 	}
+      c_update_type_canonical (t);
     }
 
   tree incomplete_vars = C_TYPE_INCOMPLETE_VARS (TYPE_MAIN_VARIANT (t));
