@@ -4065,6 +4065,31 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	    return tem;
 	}
 
+      /* (and:v4si
+	   (ashiftrt:v4si A 16)
+	   (const_vector: 0xffff x4))
+	 is just (lshiftrt:v4si A 16).  */
+      if (VECTOR_MODE_P (mode) && GET_CODE (op0) == ASHIFTRT
+	  && (CONST_INT_P (XEXP (op0, 1))
+	      || (GET_CODE (XEXP (op0, 1)) == CONST_VECTOR
+		  && CONST_VECTOR_DUPLICATE_P (XEXP (op0, 1))))
+	  && GET_CODE (op1) == CONST_VECTOR
+	  && CONST_VECTOR_DUPLICATE_P (op1))
+	{
+	  unsigned HOST_WIDE_INT shift_count
+	    = (CONST_INT_P (XEXP (op0, 1))
+	       ? UINTVAL (XEXP (op0, 1))
+	       : UINTVAL (XVECEXP (XEXP (op0, 1), 0, 0)));
+	  unsigned HOST_WIDE_INT inner_prec
+	    = GET_MODE_PRECISION (GET_MODE_INNER (mode));
+
+	  /* Avoid UD shift count.  */
+	  if (shift_count < inner_prec
+	      && (UINTVAL (XVECEXP (op1, 0, 0))
+		  == (HOST_WIDE_INT_1U << (inner_prec - shift_count)) - 1))
+	    return simplify_gen_binary (LSHIFTRT, mode, XEXP (op0, 0), XEXP (op0, 1));
+	}
+
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
