@@ -384,23 +384,29 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
 	&& requires { { __x.get() == __y.get() } -> convertible_to<bool>; }
       { return __x.get() == __y.get(); }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4071. reference_wrapper comparisons are not SFINAE-friendly
+
       [[nodiscard]]
       friend constexpr auto
-      operator<=>(reference_wrapper __x, reference_wrapper<_Tp> __y)
-      requires requires { __detail::__synth3way(__x.get(), __y.get()); }
+      operator<=>(reference_wrapper __x, reference_wrapper __y)
+      requires requires (const _Tp __t) {
+	{ __t < __t } -> __detail::__boolean_testable;
+      }
       { return __detail::__synth3way(__x.get(), __y.get()); }
 
       [[nodiscard]]
       friend constexpr auto
       operator<=>(reference_wrapper __x, const _Tp& __y)
-      requires requires { __detail::__synth3way(__x.get(), __y); }
+      requires requires { { __y < __y } -> __detail::__boolean_testable; }
       { return __detail::__synth3way(__x.get(), __y); }
 
       [[nodiscard]]
       friend constexpr auto
       operator<=>(reference_wrapper __x, reference_wrapper<const _Tp> __y)
-      requires (!is_const_v<_Tp>)
-	&& requires { __detail::__synth3way(__x.get(), __y.get()); }
+      requires (!is_const_v<_Tp>) && requires (const _Tp __t) {
+	{ __t < __t } -> __detail::__boolean_testable;
+      }
       { return __detail::__synth3way(__x.get(), __y.get()); }
 #endif
     };
