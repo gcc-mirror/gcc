@@ -1484,6 +1484,22 @@ ipa_param_body_adjustments::common_initialization (tree old_fndecl,
 		     replacement with a constant (for split aggregates passed
 		     by value).  */
 
+		  if (split[parm_num])
+		    {
+		      /* We must be careful not to add a duplicate
+			 replacement. */
+		      sort_replacements ();
+		      ipa_param_body_replacement *pbr
+			= lookup_replacement_1 (m_oparms[parm_num],
+						av.unit_offset);
+		      if (pbr)
+			{
+			  /* Otherwise IPA-SRA should have bailed out.  */
+			  gcc_assert (AGGREGATE_TYPE_P (TREE_TYPE (pbr->repl)));
+			  continue;
+			}
+		    }
+
 		  tree repl;
 		  if (av.by_ref)
 		    repl = av.value;
