@@ -1239,7 +1239,7 @@ The ``Super`` attribute can be applied to objects of tagged types in order
 to obtain a view conversion to the most immediate specific parent type.
 
 It cannot be applied to objects of types without any ancestors, or types whose
-immediate parent is abstract.
+immediate parent is an interface type.
 
 .. code-block:: ada
 
