@@ -17029,7 +17029,7 @@
   [(set (match_operand:VI_256 0 "register_operand" "=x")
 	(eq:VI_256
 	  (match_operand:VI_256 1 "nonimmediate_operand" "%x")
-	  (match_operand:VI_256 2 "nonimmediate_operand" "jm")))]
+	  (match_operand:VI_256 2 "nonimmediate_operand" "xjm")))]
   "TARGET_AVX2 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "vpcmpeq<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "ssecmp")
