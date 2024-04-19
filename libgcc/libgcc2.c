@@ -1715,11 +1715,18 @@ __divmodbitint4 (UBILtype *q, SItype qprec,
       && vn > 1
       && (Wtype) v[BITINT_END (1, vn - 2)] >= 0)
     {
-      vp = 0;
-      --vn;
+      /* Unless all bits below the most significant limb are zero.  */
+      SItype vn2;
+      for (vn2 = vn - 2; vn2 >= 0; --vn2)
+	if (v[BITINT_END (vn - 1 - vn2, vn2)])
+	  {
+	    vp = 0;
+	    --vn;
 #if __LIBGCC_BITINT_ORDER__ == __ORDER_BIG_ENDIAN__
-      ++v;
+	    ++v;
 #endif
+	    break;
+	  }
     }
   if (__builtin_expect (un < vn, 0))
     {
