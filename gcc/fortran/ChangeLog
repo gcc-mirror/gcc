@@ -1,3 +1,9 @@
+2024-04-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114739
+	* primary.cc (gfc_match_varspec): Check for default type before
+	checking for derived types with the right component name.
+
 2024-04-16  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/113793

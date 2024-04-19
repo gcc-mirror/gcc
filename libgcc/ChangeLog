@@ -1,3 +1,11 @@
+2024-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/114755
+	* libgcc2.c (__divmodbitint4): Perform the decrement on negative
+	v with most significant limb all ones and the second least
+	significant limb with most significant bit clear always, regardless of
+	un < vn.
+
 2024-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/114689

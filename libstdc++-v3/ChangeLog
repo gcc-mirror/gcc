@@ -1,3 +1,20 @@
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/29_atomics/atomic/compare_exchange_padding.cc:
+	Disable SRA.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/20_util/from_chars/8.cc: Skip float128_t testing
+	on aarch64-vxworks.
+	* testsuite/20_util/to_chars/float128_c++23.cc: Xfail run on
+	aarch64-vxworks.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* src/c++20/tzdb.cc (__gnu_cxx::zoneinfo_dir_override): Define
+	on VxWorks non-RTP.
+
 2024-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ostream (println(ostream&)): Define new overload.

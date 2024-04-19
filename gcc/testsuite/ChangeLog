@@ -1,3 +1,113 @@
+2024-04-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114739
+	* gfortran.dg/pr114739.f90: New test.
+	* gfortran.dg/derived_comp_array_ref_8.f90: Add 'implicit none'
+	for consistency with expected error message.
+	* gfortran.dg/nullify_4.f90: ditto
+	* gfortran.dg/pointer_init_6.f90: ditto
+	* gfortran.dg/pr107397.f90: ditto
+	* gfortran.dg/pr88138.f90: ditto
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/bf16_short_warn.c: Add -msse2.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr107261.c: Add -fomit-frame-pointer.
+	* gcc.target/i386/pr69482-1.c: Likewise.
+	* gcc.target/i386/pr69482-2.c: Likewise.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/bfloat16_scalar_typecheck.c: Accept C23
+	empty initializers.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/contracts/contracts9.C: Don't assume string literals
+	have non-negative addresses.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.target/aarch64/pr94201.c: Add missing
+	dg-require-effective-target fpic.
+	* gcc.target/aarch64/pr103085.c: Likewise.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.target/i386/pr111497.C: Require fpic support.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	PR testsuite/113706
+	* c-c++-common/pr103798-2.c: XFAIL in C++ on vxworks too.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/fd-glibc-byte-stream-connection-server.c:
+	Include sys/select.h if present.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/pipe-glibc.c: Require fork.
+	* gcc.dg/analyzer/pipe-manpages.c: Likewise.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/fd-access-mode-target-headers.c: Skip on
+	vxworks as well.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/analyzer/fd-4.c: Define macro to avoid mode_t on
+	vxworks.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp (check_effective_target_strndup): New.
+	* gcc.dg/builtin-dynamic-object-size-0.c: Skip strndup tests
+	when the function is not available.
+	* gcc.dg/builtin-dynamic-object-size-1.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-2.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-3.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-4.c: Likewise.
+	* gcc.dg/builtin-object-size-1.c: Likewise.
+	* gcc.dg/builtin-object-size-2.c: Likewise.
+	* gcc.dg/builtin-object-size-3.c: Likewise.
+	* gcc.dg/builtin-object-size-4.c: Likewise.
+
+2024-04-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/114741
+	* gcc.target/aarch64/fneg-abs_2.c: Update codegen.
+	* gcc.target/aarch64/fneg-abs_4.c: xfail for now.
+	* gcc.target/aarch64/pr114741.c: New test.
+
+2024-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/114755
+	* gcc.dg/torture/bitint-69.c: New test.
+
+2024-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114753
+	* gcc.dg/pr114753.c: New test.
+
+2024-04-18  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/114744
+	* gcc.target/powerpc/builtins-6-p9-runnable.c: Adjust for BE by fixing
+	data_{u,}128, their uses and vec_uc_expected1, also adjust some formats.
+
+2024-04-18  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/bcd-4.c: Enable the case to be tested on P9.
+	Enable the case to be run on big endian.  Fix function maxbcd and
+	other misc. problems.
+
 2024-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* lib/target-supports.exp (check_effective_target_vect_long_long):

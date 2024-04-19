@@ -1,3 +1,7 @@
+2024-04-18  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config-list.mk (LIST): --enable-obsolete for nios2*-*-*.
+
 2024-04-12  Filip Kastl  <fkastl@suse.cz>
 
 	* check-params-in-docs.py: Ignore target specific params.

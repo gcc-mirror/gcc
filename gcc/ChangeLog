@@ -1,3 +1,26 @@
+2024-04-18  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config.gcc: Add nios2*-*-* to the list of obsoleted targets.
+
+2024-04-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (strndup): Add effective target.
+
+2024-04-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/114741
+	* config/aarch64/aarch64.md (<optab><mode>3): Remove ^ from alt 2.
+	(copysign<GPF:mode>3): Use SIMD version of IOR directly.
+
+2024-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114753
+	* internal-fn.cc (expand_mul_overflow): Save flag_trapv and
+	temporarily clear it for the duration of the function, then
+	restore previous value.
+	(expand_vector_ubsan_overflow): Likewise.
+	(expand_arith_overflow): Likewise.
+
 2024-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/114738
