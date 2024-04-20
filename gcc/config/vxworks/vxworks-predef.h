@@ -29,4 +29,25 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    that the OS actually defines it as.  */
 #define __STDC_ISO_10646__		200009L
 
+/* If we have a designated VSB configuration file, fetch the associated
+   auto configuration header from which we can infer the TOOL and TOOL_FAMILY
+   that other system headers expect.  */
+
+#if defined(_VSB_CONFIG_FILE)
+
+#undef TOOL
+#undef TOOL_FAMILY
+
+#include <config/autoconf.h>
+
+#if defined(_WRS_CONFIG_PRI_llvm)
+#define TOOL_FAMILY llvm
+#elif defined(_WRS_CONFIG_PRI_gnu)
+#define TOOL_FAMILY gnu
+#endif
+
+#define TOOL TOOL_FAMILY
+
+#endif /* _VSB_CONFIG_FILE */
+
 #endif

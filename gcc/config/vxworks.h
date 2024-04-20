@@ -365,9 +365,16 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 
 /* A VxWorks implementation of TARGET_OS_CPP_BUILTINS.  */
 
-/* The VxWorks personality we rely on, controlling which sections of system
-   headers files we trigger.  This might be redefined on targets where the
-   base VxWorks environment doesn't come with a GNU toolchain.  */
+/* The VxWorks personality we rely on for VxWorks prior to 7, controlling the
+   definition of TOOL and TOOL_FAMILY macros used within system headers and
+   expected to match the kind of system toolchain on which the OS instance is
+   based (typically, gnu or llvm).  This might be redefined on targets where
+   the base VxWorks environment doesn't come with a GNU toolchain.
+
+   From VxWorks 7 on, the actual personality might vary for different instances
+   for a given architecture.  The TOOL/TOOL_FAMILY definitions are infered at
+   run-time from vxworks-predef.h, which allows accommodating such variations
+   with a single toolchain.  */
 
 #define VXWORKS_PERSONALITY "gnu"
 
@@ -381,8 +388,6 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 	builtin_define ("__RTP__");					\
       else								\
 	builtin_define ("_WRS_KERNEL");					\
-      builtin_define ("TOOL_FAMILY=" VXWORKS_PERSONALITY);		\
-      builtin_define ("TOOL=" VXWORKS_PERSONALITY);			\
       if (TARGET_VXWORKS7)						\
         {								\
            builtin_define ("_VSB_CONFIG_FILE=<config/vsbConfig.h>");	\
@@ -394,6 +399,11 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 	   if (!flag_isoc99 && !c_dialect_cxx())			\
              builtin_define ("_ALLOW_KEYWORD_MACROS");			\
         }								\
+      else								\
+	{								\
+	  builtin_define ("TOOL_FAMILY=" VXWORKS_PERSONALITY);		\
+	  builtin_define ("TOOL=" VXWORKS_PERSONALITY);			\
+	}								\
       /* C++ support relies on C99 features from C++11, even C++98	\
          for listdc++ in particular, with corresponding checks at	\
          configure time.  Make sure C99 features are exposed by the	\

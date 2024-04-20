@@ -30,7 +30,7 @@ LIB2FUNCS_EXCLUDE += _clear_cache
 # paths differs between Windows and Linux hosts as the latter can perform
 # inode based checks while the former may only rely on name comparisons.
 
-LIBGCC2_INCLUDES = -nostdinc -I. \
+LIBGCC2_INCLUDES = -nostdinc -include vxworks-predef.h -I. \
   $(if $(findstring vxworks7, $(target_noncanonical)), \
     -I$(VSB_DIR)/h -I$(VSB_DIR)/share/h -I=/system -I=/public, \
     -I=/ -I=/wrn/coreip) \
