@@ -1395,6 +1395,13 @@ PROCEDURE IsProcedureNoReturn (Sym: CARDINAL) : BOOLEAN ;
 
 
 (*
+   GetProcedureProcType - returns the proctype matching procedure sym.
+*)
+
+PROCEDURE GetProcedureProcType (sym: CARDINAL) : CARDINAL ;
+
+
+(*
    PutModuleStartQuad - Places QuadNumber into the Module symbol, Sym.
                         QuadNumber is the start quad of Module,
                         Sym.

@@ -47,7 +47,7 @@ FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetSType, IsType,
                         IsReallyPointer, IsPointer, IsParameter, ModeOfAddr,
                         GetMode, GetType, IsUnbounded, IsComposite, IsConstructor,
                         IsParameter, IsConstString, IsConstLitInternal, IsConstLit,
-                        GetStringLength ;
+                        GetStringLength, GetProcedureProcType ;
 
 FROM M2GCCDeclare IMPORT GetTypeMin, GetTypeMax ;
 FROM M2System IMPORT Address ;
@@ -1397,7 +1397,7 @@ PROCEDURE getType (sym: CARDINAL) : CARDINAL ;
 BEGIN
    IF (sym # NulSym) AND IsProcedure (sym)
    THEN
-      RETURN Address
+      RETURN GetProcedureProcType (sym)
    ELSIF IsTyped (sym)
    THEN
       RETURN GetDType (sym)

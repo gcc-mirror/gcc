@@ -1,4 +1,4 @@
-MODULE another ;
+MODULE badproctype ;
 
 TYPE
    MYSHORTREAL = REAL;
@@ -28,10 +28,10 @@ BEGIN
    pa(y);
    pb(x);
    pb(y);
-   pa := ProcA;
-   pb := ProcB;
+   pa := ProcB;  (* proctype does not match.  *)
+   pb := ProcA;  (* proctype does not match.  *)
    pa(x);
    pa(y);
    pb(x);
    pb(y)
-END another.
+END badproctype.

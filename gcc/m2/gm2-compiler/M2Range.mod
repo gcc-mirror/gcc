@@ -1719,7 +1719,8 @@ BEGIN
                                    'expression of type {%1Etad} is incompatible with type {%2tad}',
                                    left, right, strict, isin)
       THEN
-         SubQuad(q) ;
+         SubQuad(q)
+      ELSE
          setReported (r)
       END
    END

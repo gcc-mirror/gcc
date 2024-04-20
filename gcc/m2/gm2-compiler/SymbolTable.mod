@@ -407,6 +407,7 @@ TYPE
                SavePriority  : BOOLEAN ;    (* Does procedure need to save   *)
                                             (* and restore interrupts?       *)
                ReturnType    : CARDINAL ;   (* Return type for function.     *)
+               ProcedureType : CARDINAL ;   (* Proc type for this procedure. *)
                Offset        : CARDINAL ;   (* Location of procedure used    *)
                                             (* in Pass 2 and if procedure    *)
                                             (* is a syscall.                 *)
@@ -3972,6 +3973,8 @@ BEGIN
             SavePriority := FALSE ;      (* Does procedure need to save   *)
                                          (* and restore interrupts?       *)
             ReturnType := NulSym ;       (* Not a function yet!           *)
+                                         (* The ProcType equivalent.      *)
+            ProcedureType := MakeProcType (tok, NulName) ;
             Offset := 0 ;                (* Location of procedure.        *)
             InitTree(LocalSymbols) ;
             InitList(EnumerationScopeList) ;
@@ -3993,7 +3996,7 @@ BEGIN
                        := InitValue() ;  (* size of all parameters.       *)
             Begin := 0 ;                 (* token number for BEGIN        *)
             End := 0 ;                   (* token number for END          *)
-            InitWhereDeclaredTok(tok, At) ;  (* Where symbol declared.        *)
+            InitWhereDeclaredTok(tok, At) ;  (* Where the symbol was declared.  *)
             errorScope := GetCurrentErrorScope () ; (* Title error scope. *)
          END
       END ;
@@ -10095,8 +10098,11 @@ BEGIN
       CASE SymbolType OF
 
       ErrorSym: |
-      ProcedureSym: CheckOptFunction(Sym, FALSE) ; Procedure.ReturnType := TypeSym |
-      ProcTypeSym : CheckOptFunction(Sym, FALSE) ; ProcType.ReturnType := TypeSym
+      ProcedureSym: CheckOptFunction(Sym, FALSE) ;
+                    Procedure.ReturnType := TypeSym ;
+                    PutFunction (Procedure.ProcedureType, TypeSym) |
+      ProcTypeSym : CheckOptFunction(Sym, FALSE) ;
+                    ProcType.ReturnType := TypeSym
 
       ELSE
          InternalError ('expecting a Procedure or ProcType symbol')
@@ -10113,13 +10119,16 @@ PROCEDURE PutOptFunction (Sym: CARDINAL; TypeSym: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(Sym) ;
+   pSym := GetPsym (Sym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
       ErrorSym: |
-      ProcedureSym: CheckOptFunction(Sym, TRUE) ; Procedure.ReturnType := TypeSym |
-      ProcTypeSym : CheckOptFunction(Sym, TRUE) ; ProcType.ReturnType := TypeSym
+      ProcedureSym: CheckOptFunction (Sym, TRUE) ;
+                    Procedure.ReturnType := TypeSym ;
+                    PutOptFunction (Procedure.ProcedureType, TypeSym) |
+      ProcTypeSym : CheckOptFunction (Sym, TRUE) ;
+                    ProcType.ReturnType := TypeSym
 
       ELSE
          InternalError ('expecting a Procedure or ProcType symbol')
@@ -10215,7 +10224,8 @@ BEGIN
             pSym := GetPsym(ParSym) ;
             pSym^.Param.ShadowVar := VariableSym
          END
-      END
+      END ;
+      AddProcedureProcTypeParam (Sym, ParamType, isUnbounded, FALSE)
    END ;
    RETURN( TRUE )
 END PutParam ;
@@ -10268,6 +10278,7 @@ BEGIN
             pSym^.VarParam.ShadowVar := VariableSym
          END
       END ;
+      AddProcedureProcTypeParam (Sym, ParamType, isUnbounded, TRUE) ;
       RETURN( TRUE )
    END
 END PutVarParam ;
@@ -10343,6 +10354,36 @@ BEGIN
       END
    END
 END AddParameter ;
+
+
+(*
+   AddProcedureProcTypeParam - adds ParamType to the parameter ProcType
+                               associated with procedure Sym.
+*)
+
+PROCEDURE AddProcedureProcTypeParam (Sym, ParamType: CARDINAL;
+                                     isUnbounded, isVarParam: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (Sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym: IF isVarParam
+                    THEN
+                       PutProcTypeVarParam (Procedure.ProcedureType,
+                                            ParamType, isUnbounded)
+                    ELSE
+                       PutProcTypeParam (Procedure.ProcedureType,
+                                         ParamType, isUnbounded)
+                    END
+
+      ELSE
+         InternalError ('expecting Sym to be a procedure')
+      END
+   END
+END AddProcedureProcTypeParam ;
 
 
 (*
@@ -12621,6 +12662,27 @@ BEGIN
    END ;
    AddParameter(Sym, ParSym)
 END PutProcTypeVarParam ;
+
+
+(*
+   GetProcedureProcType - returns the proctype matching procedure sym.
+*)
+
+PROCEDURE GetProcedureProcType (sym: CARDINAL) : CARDINAL ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym(sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym: RETURN Procedure.ProcedureType
+
+      ELSE
+         InternalError ('expecting Procedure symbol')
+      END
+   END
+END GetProcedureProcType ;
 
 
 (*

@@ -8,7 +8,6 @@ BEGIN
    RETURN 42
 END func ;
 
-
 BEGIN
-   WriteString ('the value is: ') ; WriteCard (func, 5) ; WriteLn
+   WriteString ('the value is: ') ; WriteCard (VAL (CARDINAL, func), 5) ; WriteLn
 END proccard.
