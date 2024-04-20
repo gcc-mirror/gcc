@@ -75,22 +75,27 @@ extern void vxworks_driver_init (unsigned int *, struct cl_decoded_option **);
 
 #if TARGET_VXWORKS7
 
-/* We arrange not rely on fixed includes for vx7 and the headers spread over
-   common kernel/rtp directories in addition to specific ones for each mode.
-   Setup sysroot_headers_suffix_spec to deal with kernel/rtp distinction.  */
+/* We arrange not to rely on fixed includes for vx7 and the headers spread
+   over common kernel/rtp directories in addition to specific ones for each
+   mode.  Setup sysroot_headers_suffix_spec to deal with the kernel/rtp
+   distinction.  */
 
 #undef SYSROOT_HEADERS_SUFFIX_SPEC
 #define SYSROOT_HEADERS_SUFFIX_SPEC "%{mrtp:/usr/h;:/krnl/h}"
 
+/* Now expand everything using sysroot(+suffix) relative references.  The
+   absence of %getenv(VSB_DIR) allows all-gcc builds with possible self-tests
+   to succeed without having to define the variable at all.  */
+
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
-#define VXWORKS_ADDITIONAL_CPP_SPEC                     \
- "%{!nostdinc:%{!fself-test=*:                          \
-    %{isystem*}                                         \
-    -idirafter %:getenv(VSB_DIR /h)  \
-    -idirafter %:getenv(VSB_DIR /share/h)  \
-    -idirafter =/system \
-    -idirafter =/public \
-  }}"
+#define VXWORKS_ADDITIONAL_CPP_SPEC	\
+  "%{!nostdinc:				\
+     %{isystem*}			\
+     -idirafter =/../../h		\
+     -idirafter =/../../share/h		\
+     -idirafter =/system		\
+     -idirafter =/public		\
+   }"
 
 #else /* TARGET_VXWORKS7 */
 
