@@ -1,3 +1,20 @@
+2024-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-04-05  Patrick O'Neill  <patrick@rivosinc.com>
+		    Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113964
+	* gcc.dg/ipa/pr114247.c: New test.
+
+2024-04-19  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-04-04  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/111571
+	* gcc.dg/ipa/pr111571.c: New test.
+
 2024-04-15  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
