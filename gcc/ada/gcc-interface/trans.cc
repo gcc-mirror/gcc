@@ -7323,7 +7323,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	     pair in the needed precision up to the word size.  But not when
 	     optimizing for size, because it will be longer than a div+mul+sub
 	     sequence.  */
-        else if (!optimize_size
+	else if (!optimize_size
 		 && (code == FLOOR_MOD_EXPR || code == TRUNC_MOD_EXPR)
 		 && TYPE_UNSIGNED (gnu_type)
 		 && TYPE_PRECISION (gnu_type) <= BITS_PER_WORD

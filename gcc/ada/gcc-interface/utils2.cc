@@ -35,6 +35,7 @@
 #include "builtins.h"
 #include "expmed.h"
 #include "fold-const.h"
+#include "optabs-query.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "varasm.h"
@@ -558,11 +559,11 @@ fast_modulo_reduction (tree op, tree modulus, unsigned int precision)
 
 	   op / d = (op * multiplier) >> shifter
 
-         But choose_multiplier provides a slightly different interface:
+	 But choose_multiplier provides a slightly different interface:
 
-           op / d = (op h* multiplier) >> reduced_shifter
+	  op / d = (op h* multiplier) >> reduced_shifter
 
-         that makes things easier by using a high-part multiplication.  */
+	 that makes things easier by using a high-part multiplication.  */
       mh = choose_multiplier (d, type_precision, precision, &ml, &post_shift);
 
       /* If the suggested multiplier is more than TYPE_PRECISION bits, we can
@@ -577,8 +578,9 @@ fast_modulo_reduction (tree op, tree modulus, unsigned int precision)
 	pre_shift = 0;
 
       /* If the suggested multiplier is still more than TYPE_PRECISION bits,
-	 try again with a larger type up to the word size.  */
-      if (mh != 0)
+	 or the TYPE_MODE does not have a high-part multiply, try again with
+	 a larger type up to the word size.  */
+      if (mh != 0 || !can_mult_highpart_p (TYPE_MODE (type), true))
 	{
 	  if (type_precision < BITS_PER_WORD)
 	    {
