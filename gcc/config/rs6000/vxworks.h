@@ -290,5 +290,21 @@ along with GCC; see the file COPYING3.  If not see
    trigger visible link errors (hence remain harmless) if the support isn't
    really there.  */
 
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.
+
+   This is essentially the linux64.h version with an extra guard on
+   TARGET_VXWORKS_RTP to avoid DW_EH_PE_indirect in 64bit DKMs as they
+   could result in references from one DKM to resolve to symbols exposed
+   by a previsouly loaded DKM even if the symbol is also provided by the
+   DKM where the reference takes place.  */
+#undef ASM_PREFERRED_EH_DATA_FORMAT
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
+  ((TARGET_64BIT && TARGET_VXWORKS_RTP) || flag_pic			\
+   ? (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel		\
+      | (TARGET_64BIT ? DW_EH_PE_udata8 : DW_EH_PE_sdata4))		\
+   : DW_EH_PE_absptr)
+
 #endif /* TARGET_VXWORKS7 */
 
