@@ -1,3 +1,35 @@
+2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObjCRuntime.h: Make
+	this header use pragma system_header.
+
+2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/encode-10.mm: Remove unneeded '-lobjc' option addition.
+	* obj-c++.dg/encode-9.mm: Likewise.
+
+2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105522
+	* gcc.dg/pr105522.c: New file.
+
+2024-04-19  Iain Sandoe  <iains.gcc@gmail.com>
+
+	Backported from master:
+	2023-11-29  Iain Sandoe  <iains.gcc@gmail.com>
+
+	* lib/target-supports.exp: Test an asm line that fails on broken
+	Darwin assembler versions.
+
 2024-04-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

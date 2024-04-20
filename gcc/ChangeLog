@@ -1,3 +1,58 @@
+2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_override_options): Handle fPIE.
+
+2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Handle weak crts
+	before other objects. (REAL_LIBGCC_SPEC): Remove weak crts
+	from here.  (DARWIN_WEAK_CRTS): New.
+
+2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_build_constant_cfstring): Prevent over-
+	alignment of CFString constants by setting DECL_USER_ALIGN.
+
+2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (darwin_objc1_section): Use the correct
+	meta-data version for constant strings.
+	(machopic_select_section): Assert if we fail to handle CFString
+	sections as Obejctive-C meta-data or drectly.
+
+2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105522
+	* config/darwin.cc (machopic_select_section): Handle C and C++
+	CFStrings.
+	(darwin_rename_builtins): Move this out of the CFString code.
+	(darwin_libc_has_function): Likewise.
+	(darwin_build_constant_cfstring): Create an anonymous var to
+	hold each CFString.
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Handle constant
+	CFstrings.
+
+2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h
+	(darwin_label_is_anonymous_local_objc_name): Make metadata names
+	linker-visibile for GNU objective C.
+
 2024-04-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
