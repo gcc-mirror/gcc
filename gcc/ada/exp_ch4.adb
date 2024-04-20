@@ -139,9 +139,10 @@ package body Exp_Ch4 is
    --  case of array type arguments.
 
    procedure Expand_Nonbinary_Modular_Op (N : Node_Id);
-   --  When generating C code, convert nonbinary modular arithmetic operations
-   --  into code that relies on the front-end expansion of operator Mod. No
-   --  expansion is performed if N is not a nonbinary modular operand.
+   --  When generating C code or if restriction No_Implicit_Conditionals is in
+   --  effect, convert most nonbinary modular arithmetic operations into code
+   --  that relies on the expansion of an explicit Mod operator. No expansion
+   --  is performed if N is not a nonbinary modular operation.
 
    procedure Expand_Short_Circuit_Operator (N : Node_Id);
    --  Common expansion processing for short-circuit boolean operators
@@ -3899,10 +3900,13 @@ package body Exp_Ch4 is
 
       procedure Expand_Modular_Addition is
       begin
-         --  If this is not the addition of a constant then compute it using
-         --  the general rule: (lhs + rhs) mod Modulus
+         --  If this is not the addition of a constant or else restriction
+         --  No_Implicit_Conditionals is in effect, then compute it using
+         --  the general rule: (lhs + rhs) mod Modulus.
 
-         if Nkind (Right_Opnd (N)) /= N_Integer_Literal then
+         if Nkind (Right_Opnd (N)) /= N_Integer_Literal
+           or else Restriction_Active (No_Implicit_Conditionals)
+         then
             Expand_Modular_Op;
 
          --  If this is an addition of a constant, convert it to a subtraction
@@ -3921,6 +3925,7 @@ package body Exp_Ch4 is
                Cond_Expr : Node_Id;
                Then_Expr : Node_Id;
                Else_Expr : Node_Id;
+
             begin
                --  To prevent spurious visibility issues, convert all
                --  operands to Standard.Unsigned.
@@ -3966,12 +3971,12 @@ package body Exp_Ch4 is
          --   We will convert to another type (not a nonbinary-modulus modular
          --   type), evaluate the op in that representation, reduce the result,
          --   and convert back to the original type. This means that the
-         --   backend does not have to deal with nonbinary-modulus ops.
+         --   back end does not have to deal with nonbinary-modulus ops.
 
-         Op_Expr  : constant Node_Id := New_Op_Node (Nkind (N), Loc);
-         Mod_Expr : Node_Id;
-
+         Mod_Expr    : Node_Id;
+         Op_Expr     : Node_Id;
          Target_Type : Entity_Id;
+
       begin
          --  Select a target type that is large enough to avoid spurious
          --  intermediate overflow on pre-reduction computation (for
@@ -3979,20 +3984,13 @@ package body Exp_Ch4 is
 
          declare
             Required_Size : Uint := RM_Size (Etype (N));
-            Use_Unsigned  : Boolean := True;
+
          begin
             case Nkind (N) is
-               when N_Op_Add =>
+               when N_Op_Add | N_Op_Subtract =>
                   --  For example, if modulus is 255 then RM_Size will be 8
                   --  and the range of possible values (before reduction) will
                   --  be 0 .. 508; that range requires 9 bits.
-                  Required_Size := Required_Size + 1;
-
-               when N_Op_Subtract =>
-                  --  For example, if modulus is 255 then RM_Size will be 8
-                  --  and the range of possible values (before reduction) will
-                  --  be -254 .. 254; that range requires 9 bits, signed.
-                  Use_Unsigned := False;
                   Required_Size := Required_Size + 1;
 
                when N_Op_Multiply =>
@@ -4005,37 +4003,15 @@ package body Exp_Ch4 is
                   null;
             end case;
 
-            if Use_Unsigned then
-               if Required_Size <= Standard_Short_Short_Integer_Size then
-                  Target_Type := Standard_Short_Short_Unsigned;
-               elsif Required_Size <= Standard_Short_Integer_Size then
-                  Target_Type := Standard_Short_Unsigned;
-               elsif Required_Size <= Standard_Integer_Size then
-                  Target_Type := Standard_Unsigned;
-               else
-                  pragma Assert (Required_Size <= 64);
-                  Target_Type := Standard_Unsigned_64;
-               end if;
-            elsif Required_Size <= 8 then
-               Target_Type := Standard_Integer_8;
-            elsif Required_Size <= 16 then
-               Target_Type := Standard_Integer_16;
-            elsif Required_Size <= 32 then
-               Target_Type := Standard_Integer_32;
-            else
-               pragma Assert (Required_Size <= 64);
-               Target_Type := Standard_Integer_64;
-            end if;
-
+            Target_Type := Small_Integer_Type_For (Required_Size, Uns => True);
             pragma Assert (Present (Target_Type));
          end;
 
+         Op_Expr := New_Op_Node (Nkind (N), Loc);
          Set_Left_Opnd (Op_Expr,
-           Unchecked_Convert_To (Target_Type,
-             New_Copy_Tree (Left_Opnd (N))));
+           Unchecked_Convert_To (Target_Type, New_Copy_Tree (Left_Opnd (N))));
          Set_Right_Opnd (Op_Expr,
-           Unchecked_Convert_To (Target_Type,
-             New_Copy_Tree (Right_Opnd (N))));
+           Unchecked_Convert_To (Target_Type, New_Copy_Tree (Right_Opnd (N))));
 
          --  ??? Why do this stuff for some ops and not others?
          if Nkind (N) not in N_Op_And | N_Op_Or | N_Op_Xor then
@@ -4064,13 +4040,24 @@ package body Exp_Ch4 is
             Force_Evaluation (Op_Expr, Mode => Strict);
          end if;
 
+         --  Unconditionally add the modulus to the result for a subtraction,
+         --  this gets rid of all its peculiarities by cancelling out the
+         --  addition of the binary modulus in the case where the subtraction
+         --  wraps around in Target_Type.
+
+         if Nkind (N) = N_Op_Subtract then
+            Op_Expr :=
+               Make_Op_Add (Loc,
+                 Left_Opnd  => Op_Expr,
+                 Right_Opnd => Make_Integer_Literal (Loc, Modulus (Typ)));
+         end if;
+
          Mod_Expr :=
            Make_Op_Mod (Loc,
              Left_Opnd  => Op_Expr,
              Right_Opnd => Make_Integer_Literal (Loc, Modulus (Typ)));
 
-         Rewrite (N,
-           Unchecked_Convert_To (Typ, Mod_Expr));
+         Rewrite (N, Unchecked_Convert_To (Typ, Mod_Expr));
       end Expand_Modular_Op;
 
       --------------------------------
@@ -4079,10 +4066,13 @@ package body Exp_Ch4 is
 
       procedure Expand_Modular_Subtraction is
       begin
-         --  If this is not the addition of a constant then compute it using
-         --  the general rule: (lhs + rhs) mod Modulus
+         --  If this is not the addition of a constant or else restriction
+         --  No_Implicit_Conditionals is in effect, then compute it using
+         --  the general rule: (lhs - rhs) mod Modulus.
 
-         if Nkind (Right_Opnd (N)) /= N_Integer_Literal then
+         if Nkind (Right_Opnd (N)) /= N_Integer_Literal
+           or else Restriction_Active (No_Implicit_Conditionals)
+         then
             Expand_Modular_Op;
 
          --  If this is an addition of a constant, convert it to a subtraction
@@ -4101,6 +4091,7 @@ package body Exp_Ch4 is
                Cond_Expr : Node_Id;
                Then_Expr : Node_Id;
                Else_Expr : Node_Id;
+
             begin
                Cond_Expr :=
                  Make_Op_Lt (Loc,
@@ -4139,23 +4130,46 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Nonbinary_Modular_Op
 
    begin
-      --  No action needed if front-end expansion is not required or if we
-      --  have a binary modular operand.
+      --  No action needed if we have a binary modular operand
 
-      if not Expand_Nonbinary_Modular_Ops
-        or else not Non_Binary_Modulus (Typ)
-      then
+      if not Non_Binary_Modulus (Typ) then
          return;
       end if;
 
       case Nkind (N) is
          when N_Op_Add =>
+            --  No action needed if front-end expansion is not required and
+            --  restriction No_Implicit_Conditionals is not in effect.
+
+            if not Expand_Nonbinary_Modular_Ops
+              and then not Restriction_Active (No_Implicit_Conditionals)
+            then
+               return;
+            end if;
+
             Expand_Modular_Addition;
 
          when N_Op_Subtract =>
+            --  No action needed if front-end expansion is not required and
+            --  restriction No_Implicit_Conditionals is not in effect.
+
+            if not Expand_Nonbinary_Modular_Ops
+              and then not Restriction_Active (No_Implicit_Conditionals)
+            then
+               return;
+            end if;
+
             Expand_Modular_Subtraction;
 
          when N_Op_Minus =>
+            --  No action needed if front-end expansion is not required and
+            --  restriction No_Implicit_Conditionals is not in effect.
+
+            if not Expand_Nonbinary_Modular_Ops
+              and then not Restriction_Active (No_Implicit_Conditionals)
+            then
+               return;
+            end if;
 
             --  Expand -expr into (0 - expr)
 
@@ -4166,6 +4180,14 @@ package body Exp_Ch4 is
             Analyze_And_Resolve (N, Typ);
 
          when others =>
+            --  No action needed only if front-end expansion is not required
+            --  because we assume that logical and multiplicative operations
+            --  do not involve implicit conditionals.
+
+            if not Expand_Nonbinary_Modular_Ops then
+               return;
+            end if;
+
             Expand_Modular_Op;
       end case;
 
