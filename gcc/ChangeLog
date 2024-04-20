@@ -1,3 +1,70 @@
+2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114783
+	* config/i386/sse.md (*avx2_eq<mode>3): Change last operand's
+	constraint from "jm" to "xjm".
+
+2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114753
+	* internal-fn.cc (expand_arith_overflow): Add one missing restore
+	of flag_trapv before return.
+
+2024-04-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/114769
+	* tree-vect-patterns.cc:
+	(vect_recog_absolute_difference): Have only one success condition.
+	(vect_recog_abd_pattern): Handle further checks if
+	vect_recog_absolute_difference fails.
+
+2024-04-19  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/core-builtins.cc (get_index_for_enum_value): Create
+	function.
+	(pack_enum_value): Check for enumerator and error out.
+	(process_enum_value): Correct string allocation.
+
+2024-04-19  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* config/bpf/bpf-protos.h (bpf_add_core_reloc): Renamed function
+	to bpf_output_move.
+	* config/bpf/bpf.cc (bpf_legitimate_address_p): Allow
+	UNSPEC_CORE_RELOC to match an address.
+	(bpf_insn_cost): Make UNSPEC_CORE_RELOC immediate moves
+	expensive to prioritize loads and stores.
+	(TARGET_INSN_COST): Add hook.
+	(bpf_output_move): Wrapper to call bpf_output_core_reloc.
+	(bpf_print_operand): Add support to print immediate operands
+	specified with the UNSPEC_CORE_RELOC.
+	(bpf_print_operand_address): Likewise, but to support
+	UNSPEC_CORE_RELOC in addresses.
+	(bpf_init_builtins): Flag BPF_BUILTIN_CORE_RELOC as NOTHROW.
+	* config/bpf/bpf.md: Wrap patterns for MOV, LD and ST
+	instruction with bpf_output_move call.
+	(mov_reloc_core<MM:mode>): Remove now spurious define_insn.
+	* config/bpf/constraints.md: Added "c" and "C" constraints to
+	match immediates represented with UNSPEC_CORE_RELOC.
+	* config/bpf/core-builtins.cc (bpf_add_core_reloc): Remove
+	(bpf_output_core_reloc): Add function to create the CO-RE
+	relocations based on new matching rules.
+	* config/bpf/core-builtins.h (bpf_output_core_reloc): Add
+	prototype.
+	* config/bpf/predicates.md (core_imm_operand) Add predicate.
+	(mov_src_operand): Add match for core_imm_operand.
+
+2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114768
+	* rtlanal.cc (set_noop_p): Don't return true for MEM <- MEM
+	sets if src has side-effects or for stores into ZERO_EXTRACT
+	if ZERO_EXTRACT operand has side-effects.
+
+2024-04-19  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/t-vxworks (vxw-glimits.h): Don't mangle c23-required
+	__STDC_VERSION_LIMITS_H__ define.
+
 2024-04-18  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* config.gcc: Add nios2*-*-* to the list of obsoleted targets.

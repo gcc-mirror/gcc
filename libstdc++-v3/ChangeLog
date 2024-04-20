@@ -1,3 +1,16 @@
+2024-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/refwrap.h (operator<=>): Simplify constraints.
+
+2024-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114770
+	* src/c++20/tzdb.cc (do_locate_zone): Support links that have
+	another link as their target.
+	* testsuite/std/time/tzdb/1.cc: Check that all zones and links
+	can be found by locate_zone.
+	* testsuite/std/time/tzdb/links.cc: New test.
+
 2024-04-18  Alexandre Oliva  <oliva@adacore.com>
 
 	* testsuite/29_atomics/atomic/compare_exchange_padding.cc:

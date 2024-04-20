@@ -1,3 +1,60 @@
+2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114783
+	* gcc.target/i386/avx2-pr114783.c: New test.
+
+2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114780
+	* gcc.dg/format/sentinel-2.c: New test.
+
+2024-04-19  Martin Uecker  <uecker@tugraz.at>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/114574
+	PR c/114361
+	* gcc.dg/pr114574-1.c: New test.
+	* gcc.dg/pr114574-2.c: New test.
+	* gcc.dg/pr114361.c: New test.
+	* gcc.dg/c23-tag-incomplete-1.c: New test.
+	* gcc.dg/c23-tag-incomplete-2.c: New test.
+
+2024-04-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR testsuite/114768
+	* gcc.dg/pr114768.c: Enable for nvptx target.
+
+2024-04-19  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.target/bpf/btfext-funcinfo.c: Updated to changes.
+	* gcc.target/bpf/core-builtin-fieldinfo-const-elimination.c:
+	Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-existence-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-1-be.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-1-le.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-offset-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-rshift-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-rshift-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-sign-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-sign-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-size-1.c: Likewise.
+
+2024-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/111650
+	* gdc.dg/pr111650.d: New test.
+
+2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114768
+	* gcc.dg/pr114768.c: New test.
+
+2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/114762
+	* gcc.dg/torture/bitint-70.c: New test.
+
 2024-04-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/114739

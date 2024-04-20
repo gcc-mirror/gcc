@@ -1,3 +1,9 @@
+2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114780
+	* c-common.cc (check_function_sentinel): Allow as sentinel any
+	argument of NULLPTR_TYPE.
+
 2024-04-13  Mark Wielaard  <mark@klomp.org>
 
 	* c.opt.urls: Regenerate.

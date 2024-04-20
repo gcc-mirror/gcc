@@ -1,3 +1,18 @@
+2024-04-19  Martin Uecker  <uecker@tugraz.at>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/114574
+	PR c/114361
+	* c-decl.cc (shadow_tag_warned): For flag_isoc23 and code not
+	ENUMERAL_TYPE use SET_TYPE_STRUCTURAL_EQUALITY.
+	(parser_xref_tag): Likewise.
+	(start_struct): For flag_isoc23 use SET_TYPE_STRUCTURAL_EQUALITY.
+	(c_update_type_canonical): New function.
+	(finish_struct): Put NULL as second == operand rather than first.
+	Assert TYPE_STRUCTURAL_EQUALITY_P.  Call c_update_type_canonical.
+	* c-typeck.cc (composite_type_internal): Use
+	SET_TYPE_STRUCTURAL_EQUALITY.  Formatting fix.
+
 2024-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.cc (previous_tag): Fix duplicated words in comment; the the
