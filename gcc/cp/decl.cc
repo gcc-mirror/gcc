@@ -13728,6 +13728,12 @@ grokdeclarator (const cp_declarator *declarator,
 			inform (DECL_SOURCE_LOCATION (xobj_parm),
 				"explicit object parameter declared here");
 		      }
+		    if (unqualified_id
+			&& identifier_p (unqualified_id)
+			&& IDENTIFIER_NEWDEL_OP_P (unqualified_id))
+		      error_at (DECL_SOURCE_LOCATION (xobj_parm),
+				"%qD cannot be an explicit object member "
+				"function", unqualified_id);
 		  }
 	      }
 	    tree pushed_scope = NULL_TREE;
