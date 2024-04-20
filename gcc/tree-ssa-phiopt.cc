@@ -220,13 +220,12 @@ static gphi *
 factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 				   tree arg0, tree arg1, gimple *cond_stmt)
 {
-  gimple *arg0_def_stmt = NULL, *arg1_def_stmt = NULL, *new_stmt;
-  tree new_arg0 = NULL_TREE, new_arg1 = NULL_TREE;
+  gimple *arg0_def_stmt = NULL, *arg1_def_stmt = NULL;
   tree temp, result;
   gphi *newphi;
   gimple_stmt_iterator gsi, gsi_for_def;
   location_t locus = gimple_location (phi);
-  enum tree_code op_code;
+  gimple_match_op arg0_op, arg1_op;
 
   /* Handle only PHI statements with two arguments.  TODO: If all
      other arguments to PHI are INTEGER_CST or if their defining
@@ -250,31 +249,31 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
   /* Check if arg0 is an SSA_NAME and the stmt which defines arg0 is
      an unary operation.  */
   arg0_def_stmt = SSA_NAME_DEF_STMT (arg0);
-  if (!is_gimple_assign (arg0_def_stmt)
-      || (gimple_assign_rhs_class (arg0_def_stmt) != GIMPLE_UNARY_RHS
-	  && gimple_assign_rhs_code (arg0_def_stmt) != VIEW_CONVERT_EXPR))
+  if (!gimple_extract_op (arg0_def_stmt, &arg0_op))
     return NULL;
 
-  /* Use the RHS as new_arg0.  */
-  op_code = gimple_assign_rhs_code (arg0_def_stmt);
-  new_arg0 = gimple_assign_rhs1 (arg0_def_stmt);
-  if (op_code == VIEW_CONVERT_EXPR)
-    {
-      new_arg0 = TREE_OPERAND (new_arg0, 0);
-      if (!is_gimple_reg_type (TREE_TYPE (new_arg0)))
-	return NULL;
-    }
-  if (TREE_CODE (new_arg0) == SSA_NAME
-      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_arg0))
+  /* Check to make sure none of the operands are in abnormal phis.  */
+  if (arg0_op.operands_occurs_in_abnormal_phi ())
+   return NULL;
+
+  /* Currently just support one operand expressions. */
+  if (arg0_op.num_ops != 1)
     return NULL;
+
+  tree new_arg0 = arg0_op.ops[0];
+  tree new_arg1;
 
   if (TREE_CODE (arg1) == SSA_NAME)
     {
-      /* Check if arg1 is an SSA_NAME and the stmt which defines arg1
-	 is an unary operation.  */
+      /* Check if arg1 is an SSA_NAME.  */
       arg1_def_stmt = SSA_NAME_DEF_STMT (arg1);
-       if (!is_gimple_assign (arg1_def_stmt)
-	   || gimple_assign_rhs_code (arg1_def_stmt) != op_code)
+      if (!gimple_extract_op (arg1_def_stmt, &arg1_op))
+	return NULL;
+      if (arg1_op.code != arg0_op.code)
+	return NULL;
+      if (arg1_op.num_ops != arg0_op.num_ops)
+	return NULL;
+      if (arg1_op.operands_occurs_in_abnormal_phi ())
 	return NULL;
 
       /* Either arg1_def_stmt or arg0_def_stmt should be conditional.  */
@@ -282,14 +281,7 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 	  && dominated_by_p (CDI_DOMINATORS,
 			     gimple_bb (phi), gimple_bb (arg1_def_stmt)))
 	return NULL;
-
-      /* Use the RHS as new_arg1.  */
-      new_arg1 = gimple_assign_rhs1 (arg1_def_stmt);
-      if (op_code == VIEW_CONVERT_EXPR)
-	new_arg1 = TREE_OPERAND (new_arg1, 0);
-      if (TREE_CODE (new_arg1) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_arg1))
-	return NULL;
+      new_arg1 = arg1_op.ops[0];
     }
   else
     {
@@ -300,6 +292,7 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
       /* arg0_def_stmt should be conditional.  */
       if (dominated_by_p (CDI_DOMINATORS, gimple_bb (phi), gimple_bb (arg0_def_stmt)))
 	return NULL;
+
       /* If arg1 is an INTEGER_CST, fold it to new type.  */
       if (INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
 	  && (int_fits_type_p (arg1, TREE_TYPE (new_arg0))
@@ -405,16 +398,15 @@ factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
   add_phi_arg (newphi, new_arg0, e0, locus);
   add_phi_arg (newphi, new_arg1, e1, locus);
 
+  gimple_match_op new_op = arg0_op;
+
   /* Create the operation stmt and insert it.  */
-  if (op_code == VIEW_CONVERT_EXPR)
-    {
-      temp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), temp);
-      new_stmt = gimple_build_assign (result, temp);
-    }
-  else
-    new_stmt = gimple_build_assign (result, op_code, temp);
+  new_op.ops[0] = temp;
+  gimple_seq seq = NULL;
+  result = maybe_push_res_to_seq (&new_op, &seq, result);
+  gcc_assert (result);
   gsi = gsi_after_labels (gimple_bb (phi));
-  gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
+  gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
 
   /* Remove the original PHI stmt.  */
   gsi = gsi_for_stmt (phi);

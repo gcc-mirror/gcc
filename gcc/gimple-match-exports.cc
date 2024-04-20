@@ -126,6 +126,20 @@ gimple_match_op::resimplify (gimple_seq *seq, tree (*valueize)(tree))
     }
 }
 
+/* Returns true if any of the operands of THIS occurs
+   in abnormal phis. */
+bool
+gimple_match_op::operands_occurs_in_abnormal_phi() const
+{
+  for (unsigned int i = 0; i < num_ops; i++)
+    {
+       if (TREE_CODE (ops[i]) == SSA_NAME
+	   && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ops[i]))
+	return true;
+    }
+  return false;
+}
+
 /* Return whether T is a constant that we'll dispatch to fold to
    evaluate fully constant expressions.  */
 
