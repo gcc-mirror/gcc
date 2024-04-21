@@ -1,3 +1,80 @@
+2024-04-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/pie-2.c: Skip test on darwin.
+
+2024-04-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/debug/dwarf2/pr85550.C: Skip for Darwin.
+
+2024-04-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-segaddr.c: Adjust for darwin linker warning.
+	* gcc.dg/pie-7.c: Likewise.
+
+2024-04-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-08-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-minversion-link.c: Account for macOS 13 and 14.
+
+2024-04-20  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	Backported from master:
+	2023-08-20  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/ipa/ipa-icf-38.c: Require alias support.
+
+2024-04-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-08-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR analyzer/104042
+	* gcc.dg/analyzer/analyzer.exp: Pass -D_FORTIFY_SOURCE=0 on Darwin.
+
+2024-04-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+		    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* lib/target-supports.exp (check_effective_target_shared):
+	Allow the external symbols referenced in the test to be undefined.
+
+2024-04-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-setting-alignment.c:  Handle Darwin in
+	jit-verify-assemble output.
+
+2024-04-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/jit.exp: Accept target clauses in jit-verify-assembler
+	handling.
+
+2024-04-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-link-section-assembler.c: Accept any whitespace
+	between the .section directive and its arguments.
+
 2024-04-19  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
