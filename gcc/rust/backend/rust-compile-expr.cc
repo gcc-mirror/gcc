@@ -954,8 +954,8 @@ check_match_scrutinee (HIR::MatchExpr &expr, Context *ctx)
       // this will need to change but for now the first pass implementation,
       // lets assert this is the case
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (scrutinee_expr_tyty);
-      rust_assert (adt->is_enum ());
-      rust_assert (adt->number_of_variants () > 0);
+      if (adt->is_enum ())
+	rust_assert (adt->number_of_variants () > 0);
     }
   else if (scrutinee_kind == TyTy::TypeKind::FLOAT)
     {
