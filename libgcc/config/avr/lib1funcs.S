@@ -1339,9 +1339,9 @@ ENDF __umulsidi3
 
 #if defined (L_udivmodqi4)
 DEFUN __udivmodqi4
-	sub	r_rem,r_rem	; clear remainder and carry
-	ldi	r_cnt,9		; init loop counter
-	rjmp	__udivmodqi4_ep	; jump to entry point
+	clr	r_rem		; clear remainder
+	ldi	r_cnt,8		; init loop counter
+	lsl	r_arg1		; shift dividend
 __udivmodqi4_loop:
 	rol	r_rem		; shift dividend into remainder
 	cp	r_rem,r_arg2	; compare remainder & divisor
