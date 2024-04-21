@@ -1797,7 +1797,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     }
 
   if (sym->ts.type == BT_UNKNOWN)
-    gfc_fatal_error ("%s at %C has no default type", sym->name);
+    gfc_fatal_error ("%s at %L has no default type", sym->name,
+		     &sym->declared_at);
 
   if (sym->attr.intrinsic)
     gfc_internal_error ("intrinsic variable which isn't a procedure");
@@ -5214,8 +5215,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	tree tmp = lookup_attribute ("omp allocate",
 				     DECL_ATTRIBUTES (n->sym->backend_decl));
 	tmp = TREE_VALUE (tmp);
-	TREE_PURPOSE (tmp) = se.expr;	
-	TREE_VALUE (tmp) = align;	
+	TREE_PURPOSE (tmp) = se.expr;
+	TREE_VALUE (tmp) = align;
 	TREE_PURPOSE (TREE_CHAIN (tmp)) = init_stmtlist;
 	TREE_VALUE (TREE_CHAIN (tmp)) = cleanup_stmtlist;
       }

@@ -2189,6 +2189,14 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 			    ? CLASS_DATA (sym)->as : sym->as;
 	}
 
+      /* These symbols are set untyped by calls to gfc_set_default_type
+	 with 'error_flag' = false.  Reset the untyped attribute so that
+	 the error will be generated in gfc_resolve_expr.  */
+      if (e->expr_type == EXPR_VARIABLE
+	  && sym->ts.type == BT_UNKNOWN
+	  && sym->attr.untyped)
+	sym->attr.untyped = 0;
+
       /* Expressions are assigned a default ts.type of BT_PROCEDURE in
 	 primary.cc (match_actual_arg). If above code determines that it
 	 is a  variable instead, it needs to be resolved as it was not
@@ -5001,7 +5009,8 @@ gfc_resolve_index_1 (gfc_expr *index, int check_scalar,
 
   if ((index->ts.kind != gfc_index_integer_kind
        && force_index_integer_kind)
-      || index->ts.type != BT_INTEGER)
+      || (index->ts.type != BT_INTEGER
+	  && index->ts.type != BT_UNKNOWN))
     {
       gfc_clear_ts (&ts);
       ts.type = BT_INTEGER;

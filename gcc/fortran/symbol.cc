@@ -320,7 +320,7 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
 		       "; did you mean %qs?",
 		       sym->name, &sym->declared_at, guessed);
 	  else
-	    gfc_error ("Symbol %qs at %L has no IMPLICIT type(symbol)",
+	    gfc_error ("Symbol %qs at %L has no IMPLICIT type",
 		       sym->name, &sym->declared_at);
 	  sym->attr.untyped = 1; /* Ensure we only give an error once.  */
 	}
