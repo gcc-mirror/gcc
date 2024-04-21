@@ -1,3 +1,20 @@
+2024-04-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112893
+	* gm2-compiler/M2Check.mod (GetProcedureProcType): Import.
+	(getType): Return value using GetProcedureProcType if sym is a
+	procedure.
+	* gm2-compiler/M2Range.mod (FoldTypeExpr): Remove quad if
+	expression is type compatible.
+	* gm2-compiler/SymbolTable.def (GetProcedureProcType): New
+	procedure function.
+	* gm2-compiler/SymbolTable.mod (Procedure): Add ProcedureType.
+	(MakeProcedure): Initialize ProcedureType.
+	(PutParam): Call AddProcedureProcTypeParam.
+	(PutVarParam): Call AddProcedureProcTypeParam.
+	(AddProcedureProcTypeParam): New procedure.
+	(GetProcedureProcType): New procedure function.
+
 2024-04-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114745

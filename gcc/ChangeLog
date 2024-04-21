@@ -1,3 +1,29 @@
+2024-04-20  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Fix incorrect overlap in v0.
+
+2024-04-20  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-12-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Support highest overlap for wv instructions.
+
+2024-04-20  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-12-18  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112432
+	* config/riscv/riscv.md (none,W21,W42,W84,W43,W86,W87): Add W0.
+	(none,W21,W42,W84,W43,W86,W87,W0): Ditto.
+	* config/riscv/vector.md: Ditto.
+
 2024-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/114783

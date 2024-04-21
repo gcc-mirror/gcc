@@ -1,3 +1,50 @@
+2024-04-20  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-34.c: New test.
+
+2024-04-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/112893
+	* gm2/pim/pass/another.mod: Correct bug exposed by type checker.
+	Swap ProcA and ProcB assignments.
+	* gm2/pim/pass/proccard.mod: Use VAL to convert procedure into a
+	cardinal.
+	* gm2/iso/const/fail/castproctype.mod: New test.
+	* gm2/pim/fail/badproctype.mod: New test.
+
+2024-04-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-11.c: Xfail csr check.
+	* gcc.target/riscv/rvv/base/pr112431-39.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-40.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-41.c: New test.
+
+2024-04-20  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-39.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-40.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-41.c: New test.
+
+2024-04-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-42.c: New test.
+
+2024-04-20  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112432
+	* gcc.target/riscv/rvv/base/pr112432-42.c: New test.
+
 2024-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/114783
