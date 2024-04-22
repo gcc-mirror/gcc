@@ -764,12 +764,10 @@ package Exp_Util is
    --    Rnn.all
 
    function Is_Finalizable_Transient
-     (Decl     : Node_Id;
-      Rel_Node : Node_Id) return Boolean;
-   --  Determine whether declaration Decl denotes a controlled transient which
-   --  should be finalized. Rel_Node is the related context. Even though some
-   --  transients are controlled, they may act as renamings of other objects or
-   --  function calls.
+     (Decl : Node_Id;
+      N    : Node_Id) return Boolean;
+   --  Determine whether declaration Decl denotes a controlled transient object
+   --  that must be finalized. N is the node serviced by the transient context.
 
    function Is_Fully_Repped_Tagged_Type (T : Entity_Id) return Boolean;
    --  Tests given type T, and returns True if T is a non-discriminated tagged

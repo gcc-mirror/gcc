@@ -2477,26 +2477,6 @@ package body Exp_Ch7 is
                   Processing_Actions (Decl, Is_Protected => True);
                end if;
 
-            --  Specific cases of object renamings
-
-            elsif Nkind (Decl) = N_Object_Renaming_Declaration then
-               Obj_Id  := Defining_Identifier (Decl);
-               Obj_Typ := Base_Type (Etype (Obj_Id));
-
-               --  Bypass any form of processing for objects which have their
-               --  finalization disabled. This applies only to objects at the
-               --  library level.
-
-               if For_Package and then Finalize_Storage_Only (Obj_Typ) then
-                  null;
-
-               --  Ignored Ghost object renamings do not need any cleanup
-               --  actions because they will not appear in the final tree.
-
-               elsif Is_Ignored_Ghost_Entity (Obj_Id) then
-                  null;
-               end if;
-
             --  Inspect the freeze node of an access-to-controlled type and
             --  look for a delayed finalization collection. This case arises
             --  when the freeze actions are inserted at a later time than the
