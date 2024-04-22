@@ -47,7 +47,8 @@ FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetSType, IsType,
                         IsReallyPointer, IsPointer, IsParameter, ModeOfAddr,
                         GetMode, GetType, IsUnbounded, IsComposite, IsConstructor,
                         IsParameter, IsConstString, IsConstLitInternal, IsConstLit,
-                        GetStringLength, GetProcedureProcType ;
+                        GetStringLength, GetProcedureProcType, IsHiddenType,
+                        IsHiddenReallyPointer ;
 
 FROM M2GCCDeclare IMPORT GetTypeMin, GetTypeMax ;
 FROM M2System IMPORT Address ;
@@ -264,9 +265,6 @@ END checkSubrange ;
 *)
 
 PROCEDURE checkUnbounded (result: status; tinfo: tInfo; unbounded, right: CARDINAL) : status ;
-VAR
-   lLow,  rLow,
-   lHigh, rHigh: CARDINAL ;
 BEGIN
    (* Firstly check to see if we have resolved this as false.  *)
    IF isFalse (result)
@@ -683,7 +681,8 @@ BEGIN
          THEN
             RETURN result
          ELSIF IsSet (typeRight) OR IsEnumeration (typeRight) OR
-               IsProcedure (typeRight) OR IsRecord (typeRight)
+               IsProcedure (typeRight) OR IsRecord (typeRight) OR
+               IsReallyPointer (typeRight)
          THEN
             RETURN false
          ELSIF IsArray (typeRight)

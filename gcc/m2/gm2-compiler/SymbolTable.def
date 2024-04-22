@@ -3037,6 +3037,14 @@ PROCEDURE IsHiddenTypeDeclared (Sym: CARDINAL) : BOOLEAN ;
 
 
 (*
+   IsHiddenReallyPointer - returns TRUE is sym is a pointer, address or a
+                           type declared as a pointer or address.
+*)
+
+PROCEDURE IsHiddenReallyPointer (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
    DisplayTrees - displays the SymbolTrees for Module symbol, ModSym.
 *)
 

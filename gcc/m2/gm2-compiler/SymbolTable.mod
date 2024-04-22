@@ -8014,34 +8014,13 @@ END CheckForHiddenType ;
 
 PROCEDURE IsReallyPointer (Sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   IF IsVar(Sym)
+   IF IsVar (Sym)
    THEN
-      Sym := GetType(Sym)
+      Sym := GetType (Sym)
    END ;
-   Sym := SkipType(Sym) ;
-   RETURN( IsPointer(Sym) OR (Sym=Address) )
+   Sym := SkipType (Sym) ;
+   RETURN IsPointer (Sym) OR (Sym = Address) OR IsHiddenReallyPointer (Sym)
 END IsReallyPointer ;
-
-
-(*
-   SkipHiddenType - if sym is a TYPE foo = bar
-                    then call SkipType(bar)
-                    else return sym
-
-                    it does skip over hidden type.
-*)
-
-(*
-PROCEDURE SkipHiddenType (Sym: CARDINAL) : CARDINAL ;
-BEGIN
-   IF (Sym#NulSym) AND IsType(Sym) AND (GetType(Sym)#NulSym)
-   THEN
-      RETURN( SkipType(GetType(Sym)) )
-   ELSE
-      RETURN( Sym )
-   END
-END SkipHiddenType ;
-*)
 
 
 (*

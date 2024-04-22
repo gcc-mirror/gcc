@@ -73,7 +73,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         GetModuleQuads, GetProcedureQuads,
                         GetModuleCtors,
                         MakeProcedure,
-                        CopyConstString, PutConstStringKnown,
+                        PutConstStringKnown,
                         PutModuleStartQuad, PutModuleEndQuad,
                         PutModuleFinallyStartQuad, PutModuleFinallyEndQuad,
                         PutProcedureStartQuad, PutProcedureEndQuad,
@@ -3454,7 +3454,6 @@ BEGIN
    THEN
       GenQuadOtok (tokno, BecomesOp, Des, NulSym, Exp, TRUE,
                    destok, UnknownTokenNo, exptok) ;
-      CopyConstString (tokno, Des, Exp)
    ELSE
       IF GetMode(Des)=RightValue
       THEN
