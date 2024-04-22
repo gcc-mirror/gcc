@@ -1,3 +1,8 @@
+2024-04-22  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* tree-nested.cc (convert_tramp_reference_stmt): Use the correct
+	accessor for GIMPLE_OMP_TARGET clauses.
+
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* omp-general.cc (omp_complete_construct_context): Check
