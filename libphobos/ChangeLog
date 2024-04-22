@@ -1,3 +1,7 @@
+2024-04-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Enable libphobos for Darwin >= 12.
+
 2024-04-04  Iain Sandoe  <iainsandoe@Apollo-3-VM-Lion-0-187.local>
 
 	Backported from master:

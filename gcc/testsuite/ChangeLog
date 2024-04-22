@@ -1,3 +1,60 @@
+2024-04-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/114036
+	* gcc.misc-tests/gcov-14.c: Allow for 'Foo' to be undefined
+	on Darwin link lines.
+
+2024-04-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-03-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/114049
+	* gcc.dg/framework-1.c: Use an IOKit header instead of a
+	Kernel one.
+
+2024-04-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/ssp-2.c: Ignore warning that
+	-multiply_defined is obsolete
+
+2024-04-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-ld-2.c: Ignore warning
+	that -bind_at_load is deprecated.
+
+2024-04-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-12-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR testsuite/112297
+	* gcc.target/i386/pr100936.c: Require nonpic target.
+
+2024-04-21  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr105554.c: Require ifunc.
+
+2024-04-21  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	Backported from master:
+	2023-09-29  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/debug/dwarf2/inline4.c: Ajdust regexp to match darwin
+	output.
+
 2024-04-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:
