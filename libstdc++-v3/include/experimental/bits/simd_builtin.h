@@ -841,7 +841,7 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
 
       _GLIBCXX_SIMD_ALWAYS_INLINE explicit
       operator __vector_type_t<_Tp, _Np>() const
-      { return static_cast<const simd<_Tp, _Abi>*>(this)->_M_data.__builtin(); }
+      { return __data(*static_cast<const simd<_Tp, _Abi>*>(this)); }
     };
 
     struct _SimdBase1
