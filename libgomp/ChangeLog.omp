@@ -1,5 +1,27 @@
 2023-08-23  Andrew Stubbs  <ams@codesourcery.com>
 
+	* Makefile.am (libgomp_la_SOURCES): Add usmpin-allocator.c.
+	* Makefile.in: Regenerate.
+	* config/linux/allocator.c: Include unistd.h.
+	(pin_ctx): New variable.
+	(ctxlock): New variable.
+	(linux_init_pin_ctx): New function.
+	(linux_memspace_alloc): Use usmpin-allocator for pinned memory.
+	(linux_memspace_free): Likewise.
+	(linux_memspace_realloc): Likewise.
+	* libgomp.h (usmpin_init_context): New prototype.
+	(usmpin_register_memory): New prototype.
+	(usmpin_alloc): New prototype.
+	(usmpin_free): New prototype.
+	(usmpin_realloc): New prototype.
+	* testsuite/libgomp.c/alloc-pinned-1.c: Adjust for new behaviour.
+	* testsuite/libgomp.c/alloc-pinned-2.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-5.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-8.c: New test.
+	* usmpin-allocator.c: New file.
+
+2023-08-23  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/linux/allocator.c: Include assert.h.
 	(using_device_for_page_locked): New variable.
 	(linux_memspace_alloc): Add init0 parameter. Support device pinning.
