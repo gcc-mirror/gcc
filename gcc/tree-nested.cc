@@ -2906,9 +2906,11 @@ convert_tramp_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	      continue;
 	    decl = i ? get_chain_decl (info) : info->frame_decl;
 	    /* Don't add CHAIN.* or FRAME.* twice.  */
-	    for (c = gimple_omp_taskreg_clauses (stmt);
-		 c;
-		 c = OMP_CLAUSE_CHAIN (c))
+	    if (gimple_code (stmt) == GIMPLE_OMP_TARGET)
+	      c = gimple_omp_target_clauses (stmt);
+	    else
+	      c = gimple_omp_taskreg_clauses (stmt);
+	    for (; c; c = OMP_CLAUSE_CHAIN (c))
 	      if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
 		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED)
 		  && OMP_CLAUSE_DECL (c) == decl)
