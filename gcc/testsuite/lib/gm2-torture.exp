@@ -138,7 +138,7 @@ proc gm2-torture-compile { src option } {
 
 proc gm2_check_compile_fail {testcase option objname gcc_output} {
     global tool;
-    set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
+    set fatal_signal "*nternal compiler error: program*got fatal signal"
 
     if [string match "$fatal_signal 6" $gcc_output] then {
 	${tool}_fail $testcase "Got Signal 6, $option"
@@ -170,8 +170,9 @@ proc gm2_check_compile_fail {testcase option objname gcc_output} {
     regsub -all -- "\[\r\n\]*" $gcc_output "" gcc_output
 
     # check for any internal error
-    if { [string match "internal error" $gcc_output] ||
-	 [string match "internal compiler error" $gcc_output] } then {
+    if { [string match "*internal error*" $gcc_output] ||
+	 [string match "*internal compiler error*" $gcc_output] } then {
+	puts stderr "ICE: "
 	${tool}_fail $testcase $option
 	return 0
     }

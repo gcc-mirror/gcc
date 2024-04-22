@@ -5000,29 +5000,32 @@ BEGIN
    TryDeclareConstant(tokenno, op3) ;
    location := TokenToLocation(tokenno) ;
 
-   IF CheckBinaryExpressionTypes (quad, p)
+   IF GccKnowsAbout(op2) AND GccKnowsAbout(op3)
    THEN
-      IF IsConst(op2) AND IsConstSet(op2) AND
-         IsConst(op3) AND IsConstSet(op3) AND
-         IsConst(op1)
+      IF CheckBinaryExpressionTypes (quad, p)
       THEN
-         IF IsValueSolved(op2) AND IsValueSolved(op3)
+         IF IsConst(op2) AND IsConstSet(op2) AND
+            IsConst(op3) AND IsConstSet(op3) AND
+            IsConst(op1)
          THEN
-            Assert(MixTypes(FindType(op3), FindType(op2), tokenno)#NulSym) ;
-            PutConst(op1, MixTypes(FindType(op3), FindType(op2), tokenno)) ;
-            PushValue(op2) ;
-            PushValue(op3) ;
-            op(tokenno) ;
-            PopValue(op1) ;
-            PushValue(op1) ;
-            PutConstSet(op1) ;
-            AddModGcc(op1,
-                      DeclareKnownConstant(location,
-                                           Mod2Gcc(GetType(op3)),
-                                           PopSetTree(tokenno))) ;
-            p(op1) ;
-            NoChange := FALSE ;
-            SubQuad(quad)
+            IF IsValueSolved(op2) AND IsValueSolved(op3)
+            THEN
+               Assert(MixTypes(FindType(op3), FindType(op2), tokenno)#NulSym) ;
+               PutConst(op1, MixTypes(FindType(op3), FindType(op2), tokenno)) ;
+               PushValue(op2) ;
+               PushValue(op3) ;
+               op(tokenno) ;
+               PopValue(op1) ;
+               PushValue(op1) ;
+               PutConstSet(op1) ;
+               AddModGcc(op1,
+                         DeclareKnownConstant(location,
+                                              Mod2Gcc(GetType(op3)),
+                                              PopSetTree(tokenno))) ;
+               p(op1) ;
+               NoChange := FALSE ;
+               SubQuad(quad)
+            END
          END
       END
    END
