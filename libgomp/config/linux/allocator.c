@@ -54,10 +54,27 @@
 # include <inttypes.h>  /* For PRIu64.  */
 #endif
 
+static bool always_pinned_mode = false;
+
+/* This function is called by the compiler when -foffload-memory=pinned
+   is used.  */
+
+void
+GOMP_enable_pinned_mode ()
+{
+  if (mlockall (MCL_CURRENT | MCL_FUTURE) != 0)
+    gomp_error ("failed to pin all memory (ulimit too low?)");
+  else
+    always_pinned_mode = true;
+}
+
 static void *
 linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
 {
   (void)memspace;
+
+  /* Explicit pinning may not be required.  */
+  pin = pin && !always_pinned_mode;
 
   if (pin)
     {
@@ -90,6 +107,9 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin)
 static void *
 linux_memspace_calloc (omp_memspace_handle_t memspace, size_t size, int pin)
 {
+  /* Explicit pinning may not be required.  */
+  pin = pin && !always_pinned_mode;
+
   if (pin)
     return linux_memspace_alloc (memspace, size, pin);
   else
@@ -102,6 +122,9 @@ linux_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size,
 {
   (void)memspace;
 
+  /* Explicit pinning may not be required.  */
+  pin = pin && !always_pinned_mode;
+
   if (pin)
     munmap (addr, size);
   else
@@ -112,6 +135,9 @@ static void *
 linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 			size_t oldsize, size_t size, int oldpin, int pin)
 {
+  /* Explicit pinning may not be required.  */
+  pin = pin && !always_pinned_mode;
+
   if (oldpin && pin)
     {
       void *newaddr = mremap (addr, oldsize, size, MREMAP_MAYMOVE);

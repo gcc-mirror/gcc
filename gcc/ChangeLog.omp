@@ -1,5 +1,11 @@
 2023-08-23  Andrew Stubbs  <ams@codesourcery.com>
 
+	* omp-builtins.def (BUILT_IN_GOMP_ENABLE_PINNED_MODE): New.
+	* omp-low.cc (omp_enable_pinned_mode): New function.
+	(execute_lower_omp): Call omp_enable_pinned_mode.
+
+2023-08-23  Andrew Stubbs  <ams@codesourcery.com>
+
 	* common.opt: Add -foffload-memory and its enum values.
 	* coretypes.h (enum offload_memory): New.
 	* doc/invoke.texi: Document -foffload-memory.
