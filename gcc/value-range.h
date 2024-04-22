@@ -96,6 +96,8 @@ public:
   virtual void set_nonnegative (tree type) = 0;
   virtual bool fits_p (const vrange &r) const = 0;
   virtual ~vrange () { }
+  virtual tree lbound () const = 0;
+  virtual tree ubound () const = 0;
 
   bool varying_p () const;
   bool undefined_p () const;
@@ -298,6 +300,8 @@ public:
   wide_int lower_bound (unsigned = 0) const;
   wide_int upper_bound (unsigned) const;
   wide_int upper_bound () const;
+  virtual tree lbound () const override;
+  virtual tree ubound () const override;
 
   // Predicates.
   virtual bool zero_p () const override;
@@ -419,6 +423,8 @@ public:
   void set_nonnegative (tree type) final override;
   bool fits_p (const vrange &) const final override;
   unsupported_range& operator= (const vrange &r);
+  tree lbound () const final override;
+  tree ubound () const final override;
 };
 
 // The NAN state as an opaque object.
@@ -526,6 +532,8 @@ public:
   bool operator!= (const frange &r) const { return !(*this == r); }
   const REAL_VALUE_TYPE &lower_bound () const;
   const REAL_VALUE_TYPE &upper_bound () const;
+  virtual tree lbound () const override;
+  virtual tree ubound () const override;
   nan_state get_nan_state () const;
   void update_nan ();
   void update_nan (bool sign);
@@ -710,7 +718,6 @@ public:
   void dump (FILE *) const;
   static bool supports_type_p (const_tree type);
 
-  // Convenience methods for vrange compatibility.
   tree type () { return m_vrange->type (); }
   bool varying_p () const { return m_vrange->varying_p (); }
   bool undefined_p () const { return m_vrange->undefined_p (); }
@@ -726,8 +733,8 @@ public:
     { init (type); return m_vrange->set_nonzero (type); }
   bool nonzero_p () const { return m_vrange->nonzero_p (); }
   bool zero_p () const { return m_vrange->zero_p (); }
-  wide_int lower_bound () const; // For irange/prange comparability.
-  wide_int upper_bound () const; // For irange/prange comparability.
+  tree lbound () const { return m_vrange->lbound (); }
+  tree ubound () const { return m_vrange->ubound (); }
   void accept (const vrange_visitor &v) const { m_vrange->accept (v); }
 private:
   void init (tree type);

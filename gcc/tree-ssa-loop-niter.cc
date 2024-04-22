@@ -4067,7 +4067,7 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
       Value_Range base_range (TREE_TYPE (orig_base));
       if (get_range_query (cfun)->range_of_expr (base_range, orig_base)
 	  && !base_range.undefined_p ())
-	max = base_range.upper_bound ();
+	max = wi::to_wide (base_range.ubound ());
       extreme = fold_convert (unsigned_type, low);
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (high) == INTEGER_CST
@@ -4090,7 +4090,7 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
       Value_Range base_range (TREE_TYPE (orig_base));
       if (get_range_query (cfun)->range_of_expr (base_range, orig_base)
 	  && !base_range.undefined_p ())
-	min = base_range.lower_bound ();
+	min = wi::to_wide (base_range.lbound ());
       extreme = fold_convert (unsigned_type, high);
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (low) == INTEGER_CST

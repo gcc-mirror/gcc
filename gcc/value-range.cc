@@ -37,26 +37,6 @@ irange::accept (const vrange_visitor &v) const
   v.visit (*this);
 }
 
-// Convenience function only available for integers and pointers.
-
-wide_int
-Value_Range::lower_bound () const
-{
-  if (is_a <irange> (*m_vrange))
-    return as_a <irange> (*m_vrange).lower_bound ();
-  gcc_unreachable ();
-}
-
-// Convenience function only available for integers and pointers.
-
-wide_int
-Value_Range::upper_bound () const
-{
-  if (is_a <irange> (*m_vrange))
-    return as_a <irange> (*m_vrange).upper_bound ();
-  gcc_unreachable ();
-}
-
 void
 Value_Range::dump (FILE *out) const
 {
@@ -209,6 +189,18 @@ unsupported_range::operator= (const vrange &r)
   else
     gcc_unreachable ();
   return *this;
+}
+
+tree
+unsupported_range::lbound () const
+{
+  return NULL;
+}
+
+tree
+unsupported_range::ubound () const
+{
+  return NULL;
 }
 
 // Assignment operator for generic ranges.  Copying incompatible types
@@ -955,6 +947,18 @@ void
 frange::set_nonnegative (tree type)
 {
   set (type, dconst0, frange_val_max (type));
+}
+
+tree
+frange::lbound () const
+{
+  return build_real (type (), lower_bound ());
+}
+
+tree
+frange::ubound () const
+{
+  return build_real (type (), upper_bound ());
 }
 
 // Here we copy between any two irange's.
@@ -2084,6 +2088,18 @@ irange::union_bitmask (const irange &r)
   // because of the union_ in set_range_from_mask.
   normalize_kind ();
   return true;
+}
+
+tree
+irange::lbound () const
+{
+  return wide_int_to_tree (type (), lower_bound ());
+}
+
+tree
+irange::ubound () const
+{
+  return wide_int_to_tree (type (), upper_bound ());
 }
 
 void
