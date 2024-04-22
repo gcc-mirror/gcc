@@ -12030,6 +12030,18 @@ package body Sem_Prag is
          Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
          Set_Is_Checked (N, Is_Checked (Original_Node (N)));
 
+      --  Skip querying the applicable policy at this point for dynamic
+      --  predicate checks since they rely on the policy applicable in
+      --  the context of their associated type declaration (and this
+      --  pragma check has been internally added by the frontend at the
+      --  point where the runtime check must be performed).
+
+      elsif not Comes_From_Source (N)
+        and then Chars (Pragma_Identifier (N)) = Name_Check
+        and then Pname = Name_Dynamic_Predicate
+      then
+         null;
+
       --  Otherwise query the applicable policy at this point
 
       else
@@ -14420,6 +14432,62 @@ package body Sem_Prag is
          --  restore the Ghost mode.
 
          when Pragma_Check => Check : declare
+
+            procedure Handle_Dynamic_Predicate_Check;
+            --  Enable or ignore the pragma depending on whether dynamic
+            --  checks are enabled in the context where the associated
+            --  type declaration is defined.
+
+            ------------------------------------
+            -- Handle_Dynamic_Predicate_Check --
+            ------------------------------------
+
+            procedure Handle_Dynamic_Predicate_Check is
+               Func_Call : constant Node_Id   := Expression (Arg2);
+               Func_Id   : constant Entity_Id := Entity (Name (Func_Call));
+               Typ       : Entity_Id;
+
+            begin
+               --  Locate the type declaration associated with this runtime
+               --  check. The 2nd parameter of this pragma is a call to an
+               --  internally built function that has a single parameter;
+               --  the type of that formal parameter is the type we are
+               --  searching for.
+
+               pragma Assert (Is_Predicate_Function (Func_Id));
+               Typ := Etype (First_Entity (Func_Id));
+
+               if not Has_Dynamic_Predicate_Aspect (Typ)
+                 and then Is_Private_Type (Typ)
+                 and then Present (Full_View (Typ))
+               then
+                  Typ := Full_View (Typ);
+               end if;
+
+               pragma Assert (Has_Dynamic_Predicate_Aspect (Typ));
+
+               if not Predicates_Ignored (Typ) then
+                  Set_Is_Checked (N, True);
+                  Set_Is_Ignored (N, False);
+
+               else
+                  --  In CodePeer mode and GNATprove mode, we need to
+                  --  consider all assertions, unless they are disabled,
+                  --  because transformations of the AST may depend on
+                  --  assertions being checked.
+
+                  if CodePeer_Mode or GNATprove_Mode then
+                     Set_Is_Checked (N, True);
+                     Set_Is_Ignored (N, False);
+                  else
+                     Set_Is_Checked (N, False);
+                     Set_Is_Ignored (N, True);
+                  end if;
+               end if;
+            end Handle_Dynamic_Predicate_Check;
+
+            --  Local variables
+
             Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
             Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
             --  Save the Ghost-related attributes to restore on exit
@@ -14429,6 +14497,8 @@ package body Sem_Prag is
             Expr  : Node_Id;
             Str   : Node_Id;
             pragma Warnings (Off, Str);
+
+         --  Start of processing for Pragma_Check
 
          begin
             --  Pragma Check is Ghost when it applies to a Ghost entity. Set
@@ -14483,6 +14553,16 @@ package body Sem_Prag is
             then
                Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
                Set_Is_Checked (N, Is_Checked (Original_Node (N)));
+
+            --  Internally added dynamic predicate checks require checking the
+            --  applicable policy at the point of the type declaration of their
+            --  corresponding entity.
+
+            elsif not Comes_From_Source (N)
+              and then Chars (Pragma_Identifier (N)) = Name_Check
+              and then Pname = Name_Dynamic_Predicate
+            then
+               Handle_Dynamic_Predicate_Check;
 
             --  Otherwise query the applicable policy at this point
 
@@ -22279,8 +22359,22 @@ package body Sem_Prag is
             Set_Has_Delayed_Aspects (Typ);
             Set_Has_Delayed_Freeze (Typ);
 
-            Set_Predicates_Ignored (Typ,
-              Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
+            --  Mark this aspect as ignored if the policy in effect is Ignore.
+
+            --  It is not done for the internally built pragma created as part
+            --  of processing aspect dynamic predicate because, in such case,
+            --  this was done when the aspect was processed (see subprogram
+            --  Analyze_One_Aspect).
+
+            if From_Aspect_Specification (N)
+              and then Pname = Name_Dynamic_Predicate
+            then
+               null;
+            else
+               Set_Predicates_Ignored (Typ,
+                 Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
+            end if;
+
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
          end Predicate;
 
