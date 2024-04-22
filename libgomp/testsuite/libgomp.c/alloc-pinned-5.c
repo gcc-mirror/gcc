@@ -2,6 +2,8 @@
 
 /* { dg-xfail-run-if "Pinning not implemented on this host" { ! *-*-linux-gnu } } */
 
+/* { dg-additional-options -DOFFLOAD_DEVICE_NVPTX { target offload_device_nvptx } } */
+
 /* Test that ompx_pinned_mem_alloc works.  */
 
 #include <stdio.h>
@@ -67,10 +69,15 @@ verify0 (char *p, size_t s)
 int
 main ()
 {
+#ifdef OFFLOAD_DEVICE_NVPTX
+  /* Go big or go home.  */
+  const int SIZE = 40 * 1024 * 1024;
+#else
   /* Allocate at least a page each time, allowing space for overhead,
      but stay within the ulimit.  */
   const int SIZE = PAGE_SIZE - 128;
   CHECK_SIZE (SIZE * 5);
+#endif
 
   // Sanity check
   if (get_pinned_mem () != 0)
@@ -81,21 +88,39 @@ main ()
     abort ();
 
   int amount = get_pinned_mem ();
+#ifdef OFFLOAD_DEVICE_NVPTX
+  /* This doesn't show up as process 'VmLck'ed memory.  */
+  if (amount != 0)
+    abort ();
+#else
   if (amount == 0)
     abort ();
+#endif
 
   p = omp_realloc (p, SIZE * 2, ompx_pinned_mem_alloc, ompx_pinned_mem_alloc);
 
   int amount2 = get_pinned_mem ();
+#ifdef OFFLOAD_DEVICE_NVPTX
+  /* This doesn't show up as process 'VmLck'ed memory.  */
+  if (amount2 != 0)
+    abort ();
+#else
   if (amount2 <= amount)
     abort ();
+#endif
 
   /* SIZE*2 ensures that it doesn't slot into the space possibly
      vacated by realloc.  */
   p = omp_calloc (1, SIZE * 2, ompx_pinned_mem_alloc);
 
+#ifdef OFFLOAD_DEVICE_NVPTX
+  /* This doesn't show up as process 'VmLck'ed memory.  */
+  if (get_pinned_mem () != 0)
+    abort ();
+#else
   if (get_pinned_mem () <= amount2)
     abort ();
+#endif
 
   verify0 (p, SIZE * 2);
 

@@ -1,5 +1,39 @@
 2023-08-23  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/linux/allocator.c: Include assert.h.
+	(using_device_for_page_locked): New variable.
+	(linux_memspace_alloc): Add init0 parameter. Support device pinning.
+	(linux_memspace_calloc): Set init0 to true.
+	(linux_memspace_free): Support device pinning.
+	(linux_memspace_realloc): Support device pinning.
+	(MEMSPACE_ALLOC): Set init0 to false.
+	* libgomp-plugin.h
+	(GOMP_OFFLOAD_page_locked_host_alloc): New prototype.
+	(GOMP_OFFLOAD_page_locked_host_free): Likewise.
+	* libgomp.h (gomp_page_locked_host_alloc): Likewise.
+	(gomp_page_locked_host_free): Likewise.
+	(struct gomp_device_descr): Add page_locked_host_alloc_func and
+	page_locked_host_free_func.
+	* libgomp_g.h (GOMP_enable_pinned_mode): New prototype.
+	* plugin/plugin-nvptx.c
+	(GOMP_OFFLOAD_page_locked_host_alloc): New function.
+	(GOMP_OFFLOAD_page_locked_host_free): Likewise.
+	* target.c (device_for_page_locked): New variable.
+	(get_device_for_page_locked): New function.
+	(gomp_page_locked_host_alloc): Likewise.
+	(gomp_page_locked_host_free): Likewise.
+	(gomp_load_plugin_for_device): Add page_locked_host_alloc and
+	page_locked_host_free.
+	* testsuite/libgomp.c/alloc-pinned-1.c: Change expectations for NVPTX
+	devices.
+	* testsuite/libgomp.c/alloc-pinned-2.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-3.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-4.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-5.c: Likewise.
+	* testsuite/libgomp.c/alloc-pinned-6.c: Likewise.
+
+2023-08-23  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/linux/allocator.c (always_pinned_mode): New variable.
 	(GOMP_enable_pinned_mode): New function.
 	(linux_memspace_alloc): Disable pinning when always_pinned_mode set.
