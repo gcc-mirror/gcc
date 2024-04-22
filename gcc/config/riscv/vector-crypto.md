@@ -322,7 +322,7 @@
   "vwsll.v%o4\t%0,%3,%4%p1"
   [(set_attr "type" "vwsll")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")
-   (set_attr "group_overlap" "W21,W21,W21,W21,W42,W42,W42,W42,W84,W84,W84,W84,none,none")])
+   (set_attr "vconstraint" "W21,W21,W21,W21,W42,W42,W42,W42,W84,W84,W84,W84,no,no")])
 
 ;; vbrev.v vbrev8.v vrev8.v
 (define_insn "@pred_v<rev><mode>"
