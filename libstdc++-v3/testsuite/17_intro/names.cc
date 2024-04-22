@@ -267,6 +267,12 @@
 #undef u
 #endif
 
+#if defined (__linux__) && defined (__s390__)
+// <sys/ucontext.h> defines fpreg_t::d and fpreg_t::f
+#undef d
+#undef f
+#endif
+
 #if defined (__linux__) && defined (__sparc__)
 #undef y
 #endif

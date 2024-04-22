@@ -27,7 +27,11 @@
 # define cold 1
 # define visibility 1
 #endif
+#ifndef __s390__
+// kernel-headers <asm/types.h> uses __attribute__((packed,aligned(4))) on
+// S390.
 #define packed 1
+#endif
 #define pure 1
 // glibc's sysdeps/unix/sysv/linux/arm/sys/ucontext.h uses this on ARM.
 #ifndef __arm__
