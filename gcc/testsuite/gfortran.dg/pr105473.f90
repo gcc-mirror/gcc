@@ -9,11 +9,11 @@
   n = 999; m = 777; r=1.2345
   z = cmplx(0.0,0.0)
 
-! Check that semi-colon is allowed as separator with decimal=point.
+! Check that semi-colon is not allowed as separator with decimal=point.
   ios=0
   testinput = '1;17;3.14159'
   read(testinput,*,decimal='point',iostat=ios) n, m, r
-  if (ios /= 0) stop 1
+  if (ios /= 5010) stop 1
 
 ! Check that semi-colon allowed as a separator with decimal=point.
   ios=0
