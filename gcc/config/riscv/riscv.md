@@ -538,25 +538,22 @@
   ]
   (const_string "no")))
 
-;; Widening instructions have group-overlap constraints.  Those are only
-;; valid for certain register-group sizes.  This attribute marks the
-;; alternatives not matching the required register-group size as disabled.
-(define_attr "group_overlap" "none,W21,W42,W84,W43,W86,W87"
-  (const_string "none"))
+(define_attr "vconstraint" "no,W21,W42,W84,W41,W81,W82"
+  (const_string "no"))
 
-(define_attr "group_overlap_valid" "no,yes"
-  (cond [(eq_attr "group_overlap" "none")
+(define_attr "vconstraint_enabled" "no,yes"
+  (cond [(eq_attr "vconstraint" "no")
          (const_string "yes")
 
-         (and (eq_attr "group_overlap" "W21")
+         (and (eq_attr "vconstraint" "W21")
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 2"))
 	 (const_string "no")
 
-         (and (eq_attr "group_overlap" "W42,W43")
+         (and (eq_attr "vconstraint" "W42,W41")
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 4"))
 	 (const_string "no")
 
-         (and (eq_attr "group_overlap" "W84,W86,W87")
+         (and (eq_attr "vconstraint" "W84,W81,W82")
 	      (match_test "riscv_get_v_regno_alignment (GET_MODE (operands[0])) != 8"))
 	 (const_string "no")
         ]
@@ -590,7 +587,7 @@
     (eq_attr "fp_vector_disabled" "yes")
     (const_string "no")
 
-    (eq_attr "group_overlap_valid" "no")
+    (eq_attr "vconstraint_enabled" "no")
     (const_string "no")
 
     (eq_attr "spec_restriction_disabled" "yes")
