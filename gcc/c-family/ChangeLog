@@ -1,3 +1,12 @@
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114780
+	* c-common.cc (check_function_sentinel): Allow as sentinel any
+	argument of NULLPTR_TYPE.
+
 2024-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

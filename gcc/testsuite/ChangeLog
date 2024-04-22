@@ -1,3 +1,100 @@
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114780
+	* gcc.dg/format/sentinel-2.c: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114768
+	* gcc.dg/pr114768.c: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114753
+	* gcc.dg/pr114753.c: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114743
+	* gcc.dg/asan/pr112709-2.c (freddy): New function from
+	gcc.dg/ubsan/pr112709-2.c version of the test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114634
+	* g++.dg/ext/attrib68.C: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114691
+	* g++.dg/ext/pr114691.C: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114687
+	* gcc.dg/asan/pr114687.c: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110027
+	* gcc.dg/asan/pr110027.c: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114580
+	* g++.dg/cpp2a/is-constant-evaluated15.C: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114566
+	* gcc.target/i386/avx512f-pr114566.c: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114537
+	* g++.dg/cpp2a/bit-cast16.C: New test.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114552
+	* gcc.c-torture/execute/pr114552.c: New test.
+
 2024-04-19  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

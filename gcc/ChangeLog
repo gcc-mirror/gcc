@@ -1,3 +1,94 @@
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114768
+	* rtlanal.cc (set_noop_p): Don't return true for MEM <- MEM
+	sets if src has side-effects or for stores into ZERO_EXTRACT
+	if ZERO_EXTRACT operand has side-effects.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114753
+	* internal-fn.cc (expand_mul_overflow): Save flag_trapv and
+	temporarily clear it for the duration of the function, then
+	restore previous value.
+	(expand_vector_ubsan_overflow): Likewise.
+	(expand_arith_overflow): Likewise.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114743
+	* asan.cc (maybe_instrument_call): Don't instrument calls to
+	.ABNORMAL_DISPATCHER.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114634
+	* attribs.cc (diag_attr_exclusions): Set attrs[1] to NULL_TREE for
+	decls with NULL TREE_TYPE.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114687
+	* gimple-iterator.cc (gsi_safe_insert_before): Only use
+	edge_before_returns_twice_call if bb_has_abnormal_pred.
+	(gsi_safe_insert_seq_before): Likewise.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/110027
+	* asan.cc (asan_emit_stack_protection): Assert offsets[0] is
+	zero if there is no stack protect guard, otherwise
+	-ASAN_RED_ZONE_SIZE.  If alignb > ASAN_RED_ZONE_SIZE and there is
+	stack pointer guard, take the ASAN_RED_ZONE_SIZE bytes allocated at
+	the top of the stack into account when computing base_align_bias.
+	Recompute use_after_return_class from asan_frame_size + base_align_bias
+	and set to -1 if that would overflow to 11.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114566
+	* tree-vect-loop.cc (update_epilogue_loop_vinfo): Don't clear
+	base_misaligned.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114537
+	* fold-const.cc (native_encode_initializer): Look through
+	NON_LVALUE_EXPR if val is INTEGER_CST.
+
+2024-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114552
+	* expr.cc (emit_push_insn): Only use store_constructor for
+	immediate_const_ctor_p if int_expr_size matches size.
+
 2024-04-19  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
