@@ -71,8 +71,7 @@ foo (char const *buf, size_t len)
       vint16m2_t vw12 = __riscv_vluxei8_v_i16m2 ((void *) it, v12, vl);
       vint16m2_t vw13 = __riscv_vluxei8_v_i16m2 ((void *) it, v13, vl);
       vint16m2_t vw14 = __riscv_vluxei8_v_i16m2 ((void *) it, v14, vl);
-      vbool8_t mask = *(vbool8_t*)it;
-      vint16m2_t vw15 = __riscv_vluxei8_v_i16m2_m (mask, (void *) it, v15, vl);
+      vint16m2_t vw15 = __riscv_vluxei8_v_i16m2 ((void *) it, v15, vl);
 
       asm volatile("nop" ::: "memory");
       size_t sum0 = __riscv_vmv_x_s_i16m2_i16 (vw0);
@@ -98,4 +97,8 @@ foo (char const *buf, size_t len)
   return sum;
 }
 
-/* { dg-final { scan-assembler-not {vluxei8\.v\tv0,\s*\([a-x0-9]+\),\s*v[0-9]+,\s*v0.t} } } */
+/* { dg-final { scan-assembler-not {vmv1r} } } */
+/* { dg-final { scan-assembler-not {vmv2r} } } */
+/* { dg-final { scan-assembler-not {vmv4r} } } */
+/* { dg-final { scan-assembler-not {vmv8r} } } */
+/* { dg-final { scan-assembler-not {csrr} { xfail riscv*-*-* } } } */
