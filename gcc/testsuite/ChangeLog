@@ -1,3 +1,25 @@
+2024-04-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103471
+	* gfortran.dg/pr103471.f90: New test.
+
+2024-04-21  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-22.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-23.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-24.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-25.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-26.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-27.c: New test.
+
+2024-04-21  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-34.c: New test.
+
 2024-04-20  Pan Li  <pan2.li@intel.com>
 
 	Revert:

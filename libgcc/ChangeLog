@@ -1,3 +1,8 @@
+2024-04-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114794
+	* config/avr/lib1funcs.S (__udivmodqi4): Tweak.
+
 2024-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/114762

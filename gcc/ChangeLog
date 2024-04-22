@@ -1,3 +1,11 @@
+2024-04-21  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Support highpart overlap for vx/vf.
+
 2024-04-20  Pan Li  <pan2.li@intel.com>
 
 	Revert:

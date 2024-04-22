@@ -1,3 +1,18 @@
+2024-04-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103471
+	* resolve.cc (resolve_actual_arglist): Catch variables silently
+	set as untyped, resetting the flag so that gfc_resolve_expr can
+	generate the no implicit type error.
+	(gfc_resolve_index_1): Block index expressions of unknown type
+	from being converted to default integer, avoiding the fatal
+	error in trans-decl.cc.
+	* symbol.cc (gfc_set_default_type): Remove '(symbol)' from the
+	'no IMPLICIT type' error message.
+	* trans-decl.cc (gfc_get_symbol_decl): Change fatal error locus
+	to that of the symbol declaration.
+	(gfc_trans_deferred_vars): Remove two trailing tabs.
+
 2024-04-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/114739
