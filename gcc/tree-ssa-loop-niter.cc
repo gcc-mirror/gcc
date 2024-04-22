@@ -214,7 +214,7 @@ refine_value_range_using_guard (tree type, tree var,
   get_type_static_bounds (type, mint, maxt);
   mpz_init (minc1);
   mpz_init (maxc1);
-  Value_Range r (TREE_TYPE (varc1));
+  int_range<2> r (TREE_TYPE (varc1));
   /* Setup range information for varc1.  */
   if (integer_zerop (varc1))
     {
@@ -368,7 +368,7 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
       gphi_iterator gsi;
 
       /* Either for VAR itself...  */
-      Value_Range var_range (TREE_TYPE (var));
+      int_range<2> var_range (TREE_TYPE (var));
       get_range_query (cfun)->range_of_expr (var_range, var);
       if (var_range.varying_p () || var_range.undefined_p ())
 	rtype = VR_VARYING;
@@ -382,7 +382,7 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 
       /* Or for PHI results in loop->header where VAR is used as
 	 PHI argument from the loop preheader edge.  */
-      Value_Range phi_range (TREE_TYPE (var));
+      int_range<2> phi_range (TREE_TYPE (var));
       for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gphi *phi = gsi.phi ();
@@ -408,7 +408,7 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 		     involved.  */
 		  if (wi::gt_p (minv, maxv, sgn))
 		    {
-		      Value_Range vr (TREE_TYPE (var));
+		      int_range<2> vr (TREE_TYPE (var));
 		      get_range_query (cfun)->range_of_expr (vr, var);
 		      if (vr.varying_p () || vr.undefined_p ())
 			rtype = VR_VARYING;
@@ -4367,7 +4367,7 @@ infer_loop_bounds_from_signedness (class loop *loop, gimple *stmt)
 
   low = lower_bound_in_type (type, type);
   high = upper_bound_in_type (type, type);
-  Value_Range r (TREE_TYPE (def));
+  int_range<2> r (TREE_TYPE (def));
   get_range_query (cfun)->range_of_expr (r, def);
   if (!r.varying_p () && !r.undefined_p ())
     {
@@ -5426,7 +5426,7 @@ scev_var_range_cant_overflow (tree var, tree step, class loop *loop)
   if (!def_bb || !dominated_by_p (CDI_DOMINATORS, loop->latch, def_bb))
     return false;
 
-  Value_Range r (TREE_TYPE (var));
+  int_range<2> r (TREE_TYPE (var));
   get_range_query (cfun)->range_of_expr (r, var);
   if (r.varying_p () || r.undefined_p ())
     return false;
