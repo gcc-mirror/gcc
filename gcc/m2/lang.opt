@@ -96,7 +96,7 @@ turn on tracing of procedure line numbers (internal switch)
 
 fdef=
 Modula-2 Joined
-recognise the specified suffix as a definition module filename
+recognize the specified suffix as a definition module filename
 
 fdump-system-exports
 Modula-2
@@ -172,7 +172,7 @@ compile all implementation modules and program module at once
 
 fmod=
 Modula-2 Joined
-recognise the specified suffix as implementation and module filenames
+recognize the specified suffix as implementation and module filenames
 
 fnil
 Modula-2
@@ -278,7 +278,7 @@ static-libgm2
 Driver
 Link the standard Modula-2 libraries statically in the compilation.
 
-; Here are C options that we also recognise, either within the compiler
+; Here are C options that we also recognize, either within the compiler
 ; or to build the preprocessor command lines.
 
 Wall

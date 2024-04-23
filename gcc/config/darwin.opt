@@ -211,7 +211,7 @@ Driver RejectNegative Separate
 
 init
 Driver RejectNegative Separate
--init <symbol_name>	The symbol <symbol_name> will be used as the first initialiser for a dylib.
+-init <symbol_name>	The symbol <symbol_name> will be used as the first initializer for a dylib.
 
 install_name
 Driver RejectNegative Separate

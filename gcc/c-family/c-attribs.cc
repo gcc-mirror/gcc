@@ -6244,7 +6244,7 @@ handle_objc_nullability_attribute (tree *node, tree name, tree args,
 	      || strcmp (TREE_STRING_POINTER (val), "resettable") == 0))
     *no_add_attrs = false; /* OK */
   else if (val != error_mark_node)
-    error ("%qE attribute argument %qE is not recognised", name, val);
+    error ("%qE attribute argument %qE is not recognized", name, val);
 
   return NULL_TREE;
 }
