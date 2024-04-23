@@ -607,8 +607,8 @@ package body Layout is
                Error_Msg_Uint_1 := RM_Size (E);
                Error_Msg_F
                  ("object size is too small, minimum allowed is ^",
-                  Expression (Get_Attribute_Definition_Clause
-                                             (E, Attribute_Object_Size)));
+                  Expression (Object_Size_Clause (E)));
+
             end if;
 
             --  Adjust Esize up to RM_Size value

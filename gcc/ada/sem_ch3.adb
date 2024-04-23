@@ -5246,8 +5246,7 @@ package body Sem_Ch3 is
                E := First_Entity (Etype (Id));
                while Present (E) loop
                   if Ekind (E) = E_Entry
-                    and then Present (Get_Attribute_Definition_Clause
-                                        (E, Attribute_Address))
+                    and then Present (Address_Clause (E))
                   then
                      Error_Msg_Warn := SPARK_Mode /= On;
                      Error_Msg_N
