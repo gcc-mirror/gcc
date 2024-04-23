@@ -5,11 +5,14 @@
 
 use std::ffi::CStr;
 
-// Local replacement for 1.72.0+ method 'leak' for struct 'std::string::String',
-// <https://doc.rust-lang.org/1.72.0/src/alloc/string.rs.html#1853>
-fn leak_string<'a>(s: String) -> &'a mut str {
-    let slice = s.into_bytes().leak();
-    unsafe { std::str::from_utf8_unchecked_mut(slice) }
+trait StringLeakExt {
+    fn leak<'a>(self) -> &'a mut str;
+}
+
+impl StringLeakExt for String {
+    fn leak<'a>(self) -> &'a mut str {
+        Box::leak(self.into_boxed_str())
+    }
 }
 
 trait IntoFFI<T> {
@@ -400,7 +403,7 @@ pub extern "C" fn collect_pieces(
     let rust_string = RustString {
         len: str.len(),
         cap: str.capacity(),
-        ptr: leak_string(str).as_ptr(),
+        ptr: str.leak().as_ptr(),
     };
 
     FormatArgsHandle(piece_slice, rust_string)
@@ -438,12 +441,12 @@ pub extern "C" fn clone_pieces(
     let cloned_s = s.clone();
 
     // FIXME: Documentation
-    leak_string(s);
+    s.leak();
 
     let rust_string = RustString {
         len: cloned_s.len(),
         cap: cloned_s.capacity(),
-        ptr: leak_string(cloned_s).as_ptr(),
+        ptr: cloned_s.leak().as_ptr(),
     };
 
     FormatArgsHandle(piece_slice, rust_string)
