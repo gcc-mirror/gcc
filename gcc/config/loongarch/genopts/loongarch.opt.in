@@ -95,30 +95,55 @@ Enable LoongArch Advanced SIMD Extension (LASX, 256-bit).
 
 ;; Base target models (implies ISA & tune parameters)
 Enum
-Name(cpu_type) Type(int)
-LoongArch CPU types:
+Name(arch_type) Type(int)
+LoongArch ARCH presets:
 
 EnumValue
-Enum(cpu_type) String(@@STR_CPU_NATIVE@@) Value(CPU_NATIVE)
+Enum(arch_type) String(@@STR_CPU_NATIVE@@) Value(ARCH_NATIVE)
 
 EnumValue
-Enum(cpu_type) String(@@STR_CPU_ABI_DEFAULT@@) Value(CPU_ABI_DEFAULT)
+Enum(arch_type) String(@@STR_ARCH_ABI_DEFAULT@@) Value(ARCH_ABI_DEFAULT)
 
 EnumValue
-Enum(cpu_type) String(@@STR_CPU_LOONGARCH64@@) Value(CPU_LOONGARCH64)
+Enum(arch_type) String(@@STR_CPU_LOONGARCH64@@) Value(ARCH_LOONGARCH64)
 
 EnumValue
-Enum(cpu_type) String(@@STR_CPU_LA464@@) Value(CPU_LA464)
+Enum(arch_type) String(@@STR_CPU_LA464@@) Value(ARCH_LA464)
 
 EnumValue
-Enum(cpu_type) String(@@STR_CPU_LA664@@) Value(CPU_LA664)
+Enum(arch_type) String(@@STR_CPU_LA664@@) Value(ARCH_LA664)
+
+EnumValue
+Enum(arch_type) String(@@STR_ARCH_LA64V1_0@@) Value(ARCH_LA64V1_0)
+
+EnumValue
+Enum(arch_type) String(@@STR_ARCH_LA64V1_1@@) Value(ARCH_LA64V1_1)
 
 m@@OPTSTR_ARCH@@=
-Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_arch) Init(M_OPT_UNSET) Save
+Target RejectNegative Joined Enum(arch_type) Var(la_opt_cpu_arch) Init(M_OPT_UNSET) Save
 -m@@OPTSTR_ARCH@@=PROCESSOR	Generate code for the given PROCESSOR ISA.
 
+Enum
+Name(tune_type) Type(int)
+LoongArch TUNE presets:
+
+EnumValue
+Enum(tune_type) String(@@STR_CPU_NATIVE@@) Value(TUNE_NATIVE)
+
+EnumValue
+Enum(tune_type) String(@@STR_TUNE_GENERIC@@) Value(TUNE_GENERIC)
+
+EnumValue
+Enum(tune_type) String(@@STR_CPU_LOONGARCH64@@) Value(TUNE_LOONGARCH64)
+
+EnumValue
+Enum(tune_type) String(@@STR_CPU_LA464@@) Value(TUNE_LA464)
+
+EnumValue
+Enum(tune_type) String(@@STR_CPU_LA664@@) Value(TUNE_LA664)
+
 m@@OPTSTR_TUNE@@=
-Target RejectNegative Joined Enum(cpu_type) Var(la_opt_cpu_tune) Init(M_OPT_UNSET) Save
+Target RejectNegative Joined Enum(tune_type) Var(la_opt_cpu_tune) Init(M_OPT_UNSET) Save
 -m@@OPTSTR_TUNE@@=PROCESSOR	Generate optimized code for PROCESSOR.
 
 

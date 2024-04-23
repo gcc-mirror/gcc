@@ -127,8 +127,8 @@ struct loongarch_flags {
   (la_target.isa.evolution & OPTION_MASK_ISA_LD_SEQ_SA)
 
 /* TARGET_ macros for use in *.md template conditionals */
-#define TARGET_uARCH_LA464	  (la_target.cpu_tune == CPU_LA464)
-#define TARGET_uARCH_LA664	  (la_target.cpu_tune == CPU_LA664)
+#define TARGET_uARCH_LA464	  (la_target.cpu_tune == TUNE_LA464)
+#define TARGET_uARCH_LA664	  (la_target.cpu_tune == TUNE_LA664)
 
 /* Note: optimize_size may vary across functions,
    while -m[no]-memcpy imposes a global constraint.  */

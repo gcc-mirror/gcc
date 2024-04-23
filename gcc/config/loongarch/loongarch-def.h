@@ -177,21 +177,32 @@ struct loongarch_target
 {
   struct loongarch_isa isa;
   struct loongarch_abi abi;
-  int cpu_arch;	    /* CPU_ */
-  int cpu_tune;	    /* same */
+  int cpu_arch;	    /* ARCH_ */
+  int cpu_tune;	    /* TUNE_ */
   int cmodel;	    /* CMODEL_ */
   int tls_dialect;  /* TLS_ */
 };
 
-/* CPU model */
+/* ISA target presets (-march=*) */
 enum {
-  CPU_NATIVE	    = 0,
-  CPU_ABI_DEFAULT   = 1,
-  CPU_LOONGARCH64   = 2,
-  CPU_LA464	    = 3,
-  CPU_LA664	    = 4,
-  N_ARCH_TYPES	    = 5,
-  N_TUNE_TYPES	    = 5
+  ARCH_NATIVE       = 0,
+  ARCH_ABI_DEFAULT  = 1,
+  ARCH_LOONGARCH64  = 2,
+  ARCH_LA464	    = 3,
+  ARCH_LA664	    = 4,
+  ARCH_LA64V1_0     = 5,
+  ARCH_LA64V1_1     = 6,
+  N_ARCH_TYPES      = 7,
+};
+
+/* Tune target presets (-mtune=*) */
+enum {
+  TUNE_NATIVE       = 0,
+  TUNE_GENERIC      = 1,
+  TUNE_LOONGARCH64  = 2,
+  TUNE_LA464	    = 3,
+  TUNE_LA664	    = 4,
+  N_TUNE_TYPES      = 5,
 };
 
 /* TLS types.  */
@@ -200,9 +211,11 @@ enum {
   TLS_DESCRIPTORS = 1
 };
 
-/* CPU model properties */
+/* Target preset properties */
 extern loongarch_def_array<const char *, N_ARCH_TYPES>
-  loongarch_cpu_strings;
+  loongarch_arch_strings;
+extern loongarch_def_array<const char *, N_TUNE_TYPES>
+  loongarch_tune_strings;
 extern loongarch_def_array<loongarch_isa, N_ARCH_TYPES>
   loongarch_cpu_default_isa;
 extern loongarch_def_array<int, N_TUNE_TYPES>

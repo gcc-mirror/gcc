@@ -85,10 +85,10 @@ driver_set_m_parm (int argc, const char **argv)
 			   loongarch_isa_ext_strings, 0, N_ISA_EXT_TYPES)
 
   LARCH_DRIVER_PARSE_PARM (la_target.cpu_arch, ARCH, \
-			   loongarch_cpu_strings, 0, N_ARCH_TYPES)
+			   loongarch_arch_strings, 0, N_ARCH_TYPES)
 
   LARCH_DRIVER_PARSE_PARM (la_target.cpu_tune, TUNE, \
-			   loongarch_cpu_strings, 0, N_TUNE_TYPES)
+			   loongarch_tune_strings, 0, N_TUNE_TYPES)
 
   LARCH_DRIVER_PARSE_PARM (la_target.cmodel, CMODEL, \
 			   loongarch_cmodel_strings, 0, N_CMODEL_TYPES)
@@ -190,7 +190,7 @@ driver_get_normalized_m_opts (int argc, const char **argv ATTRIBUTE_UNUSED)
   APPEND_VAL (loongarch_abi_base_strings[la_target.abi.base]);
 
   APPEND_OPT (ARCH);
-  APPEND_VAL (loongarch_cpu_strings[la_target.cpu_arch]);
+  APPEND_VAL (loongarch_arch_strings[la_target.cpu_arch]);
 
   APPEND_OPT (ISA_EXT_FPU);
   APPEND_VAL (loongarch_isa_ext_strings[la_target.isa.fpu]);
@@ -202,7 +202,7 @@ driver_get_normalized_m_opts (int argc, const char **argv ATTRIBUTE_UNUSED)
   APPEND_VAL (loongarch_cmodel_strings[la_target.cmodel]);
 
   APPEND_OPT (TUNE);
-  APPEND_VAL (loongarch_cpu_strings[la_target.cpu_tune]);
+  APPEND_VAL (loongarch_tune_strings[la_target.cpu_tune]);
 
   obstack_1grow (&opts_obstack, '\0');
 

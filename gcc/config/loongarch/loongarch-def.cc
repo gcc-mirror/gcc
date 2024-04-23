@@ -31,38 +31,63 @@ template <class T, int N>
 using array = loongarch_def_array<T, N>;
 
 template <class T>
-using array_tune = array<T, N_TUNE_TYPES>;
-
-template <class T>
 using array_arch = array<T, N_ARCH_TYPES>;
 
-/* CPU property tables.  */
-array_tune<const char *> loongarch_cpu_strings = array_tune<const char *> ()
-  .set (CPU_NATIVE, STR_CPU_NATIVE)
-  .set (CPU_ABI_DEFAULT, STR_CPU_ABI_DEFAULT)
-  .set (CPU_LOONGARCH64, STR_CPU_LOONGARCH64)
-  .set (CPU_LA464, STR_CPU_LA464)
-  .set (CPU_LA664, STR_CPU_LA664);
+template <class T>
+using array_tune = array<T, N_TUNE_TYPES>;
+
+array_arch<const char *> loongarch_arch_strings = array_arch<const char *> ()
+  .set (ARCH_NATIVE, STR_CPU_NATIVE)
+  .set (ARCH_ABI_DEFAULT, STR_ARCH_ABI_DEFAULT)
+  .set (ARCH_LOONGARCH64, STR_CPU_LOONGARCH64)
+  .set (ARCH_LA464, STR_CPU_LA464)
+  .set (ARCH_LA664, STR_CPU_LA664)
+  .set (ARCH_LA64V1_0, STR_ARCH_LA64V1_0)
+  .set (ARCH_LA64V1_1, STR_ARCH_LA64V1_1);
+
+array_tune<const char *> loongarch_tune_strings = array_tune<const char *> ()
+  .set (TUNE_NATIVE, STR_CPU_NATIVE)
+  .set (TUNE_GENERIC, STR_TUNE_GENERIC)
+  .set (TUNE_LOONGARCH64, STR_CPU_LOONGARCH64)
+  .set (TUNE_LA464, STR_CPU_LA464)
+  .set (TUNE_LA664, STR_CPU_LA664);
 
 array_arch<loongarch_isa> loongarch_cpu_default_isa =
   array_arch<loongarch_isa> ()
-    .set (CPU_LOONGARCH64,
+    .set (ARCH_LOONGARCH64,
 	  loongarch_isa ()
 	    .base_ (ISA_BASE_LA64)
 	    .fpu_ (ISA_EXT_FPU64))
-    .set (CPU_LA464,
+
+    .set (ARCH_LA464,
 	  loongarch_isa ()
 	    .base_ (ISA_BASE_LA64)
 	    .fpu_ (ISA_EXT_FPU64)
 	    .simd_ (ISA_EXT_SIMD_LASX))
-    .set (CPU_LA664,
+
+    .set (ARCH_LA664,
 	  loongarch_isa ()
 	    .base_ (ISA_BASE_LA64)
 	    .fpu_ (ISA_EXT_FPU64)
 	    .simd_ (ISA_EXT_SIMD_LASX)
 	    .evolution_ (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA
 			 | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS
+			 | OPTION_MASK_ISA_FRECIPE))
+    .set (ARCH_LA64V1_0,
+	  loongarch_isa ()
+	    .base_ (ISA_BASE_LA64)
+	    .fpu_ (ISA_EXT_FPU64)
+	    .simd_ (ISA_EXT_SIMD_LSX))
+
+    .set (ARCH_LA64V1_1,
+	  loongarch_isa ()
+	    .base_ (ISA_BASE_LA64)
+	    .fpu_ (ISA_EXT_FPU64)
+	    .simd_ (ISA_EXT_SIMD_LSX)
+	    .evolution_ (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA
+			 | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS
 			 | OPTION_MASK_ISA_FRECIPE));
+
 
 static inline loongarch_cache la464_cache ()
 {
@@ -75,9 +100,10 @@ static inline loongarch_cache la464_cache ()
 
 array_tune<loongarch_cache> loongarch_cpu_cache =
   array_tune<loongarch_cache> ()
-    .set (CPU_LOONGARCH64, la464_cache ())
-    .set (CPU_LA464, la464_cache ())
-    .set (CPU_LA664, la464_cache ());
+    .set (TUNE_GENERIC, la464_cache ())
+    .set (TUNE_LOONGARCH64, la464_cache ())
+    .set (TUNE_LA464, la464_cache ())
+    .set (TUNE_LA664, la464_cache ());
 
 static inline loongarch_align la464_align ()
 {
@@ -91,9 +117,10 @@ static inline loongarch_align la664_align ()
 
 array_tune<loongarch_align> loongarch_cpu_align =
   array_tune<loongarch_align> ()
-    .set (CPU_LOONGARCH64, la664_align ())
-    .set (CPU_LA464, la464_align ())
-    .set (CPU_LA664, la664_align ());
+    .set (TUNE_GENERIC, la664_align ())
+    .set (TUNE_LOONGARCH64, la664_align ())
+    .set (TUNE_LA464, la464_align ())
+    .set (TUNE_LA664, la664_align ());
 
 /* Default RTX cost initializer.  */
 loongarch_rtx_cost_data::loongarch_rtx_cost_data ()
@@ -117,7 +144,7 @@ loongarch_rtx_cost_data::loongarch_rtx_cost_data ()
  any known "-mtune" type).  */
 array_tune<loongarch_rtx_cost_data> loongarch_cpu_rtx_cost_data =
   array_tune<loongarch_rtx_cost_data> ()
-    .set (CPU_LA664,
+    .set (TUNE_LA664,
 	  loongarch_rtx_cost_data ()
 	    .movcf2gr_ (COSTS_N_INSNS (1))
 	    .movgr2cf_ (COSTS_N_INSNS (1)));
@@ -140,16 +167,18 @@ const loongarch_rtx_cost_data loongarch_rtx_cost_optimize_size =
     .movcf2gr_ (COST_COMPLEX_INSN);
 
 array_tune<int> loongarch_cpu_issue_rate = array_tune<int> ()
-  .set (CPU_NATIVE, 4)
-  .set (CPU_LOONGARCH64, 4)
-  .set (CPU_LA464, 4)
-  .set (CPU_LA664, 6);
+  .set (TUNE_NATIVE, 4)
+  .set (TUNE_GENERIC, 4)
+  .set (TUNE_LOONGARCH64, 4)
+  .set (TUNE_LA464, 4)
+  .set (TUNE_LA664, 6);
 
 array_tune<int> loongarch_cpu_multipass_dfa_lookahead = array_tune<int> ()
-  .set (CPU_NATIVE, 4)
-  .set (CPU_LOONGARCH64, 4)
-  .set (CPU_LA464, 4)
-  .set (CPU_LA664, 6);
+  .set (TUNE_NATIVE, 4)
+  .set (TUNE_GENERIC, 4)
+  .set (TUNE_LOONGARCH64, 4)
+  .set (TUNE_LA464, 4)
+  .set (TUNE_LA664, 6);
 
 /* Wiring string definitions from loongarch-str.h to global arrays
    with standard index values from loongarch-opts.h, so we can

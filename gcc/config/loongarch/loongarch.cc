@@ -9609,9 +9609,10 @@ loongarch_cpu_sched_reassociation_width (struct loongarch_target *target,
 
   switch (target->cpu_tune)
     {
-    case CPU_LOONGARCH64:
-    case CPU_LA464:
-    case CPU_LA664:
+    case TUNE_GENERIC:
+    case TUNE_LOONGARCH64:
+    case TUNE_LA464:
+    case TUNE_LA664:
       /* Vector part.  */
       if (LSX_SUPPORTED_MODE_P (mode) || LASX_SUPPORTED_MODE_P (mode))
 	{
@@ -10980,9 +10981,9 @@ loongarch_asm_code_end (void)
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\n%s CPU: %s\n", ASM_COMMENT_START,
-	       loongarch_cpu_strings [la_target.cpu_arch]);
+	       loongarch_arch_strings[la_target.cpu_arch]);
       fprintf (asm_out_file, "%s Tune: %s\n", ASM_COMMENT_START,
-	       loongarch_cpu_strings [la_target.cpu_tune]);
+	       loongarch_tune_strings[la_target.cpu_tune]);
       fprintf (asm_out_file, "%s Base ISA: %s\n", ASM_COMMENT_START,
 	       loongarch_isa_base_strings [la_target.isa.base]);
       DUMP_FEATURE (ISA_HAS_FRECIPE);

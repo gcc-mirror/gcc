@@ -27,10 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTSTR_TUNE "tune"
 
 #define STR_CPU_NATIVE "native"
-#define STR_CPU_ABI_DEFAULT "abi-default"
+#define STR_ARCH_ABI_DEFAULT "abi-default"
+#define STR_TUNE_GENERIC "generic"
 #define STR_CPU_LOONGARCH64 "loongarch64"
 #define STR_CPU_LA464 "la464"
 #define STR_CPU_LA664 "la664"
+#define STR_ARCH_LA64V1_0 "la64v1.0"
+#define STR_ARCH_LA64V1_1 "la64v1.1"
 
 #define STR_ISA_BASE_LA64 "la64"
 

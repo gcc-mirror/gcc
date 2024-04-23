@@ -62,7 +62,7 @@ cache_cpucfg (void)
 uint32_t
 get_native_prid (void)
 {
-  /* Fill loongarch_cpu_default_config[CPU_NATIVE] with cpucfg data,
+  /* Fill loongarch_cpu_default_config[ARCH_NATIVE] with cpucfg data,
      see "Loongson Architecture Reference Manual"
      (Volume 1, Section 2.2.10.5) */
   return cpucfg_cache[0];
@@ -76,13 +76,14 @@ get_native_prid_str (void)
   return (const char*) prid_str;
 }
 
-/* Fill property tables for CPU_NATIVE.  */
+/* Fill property tables for ARCH_NATIVE / TUNE_NATIVE.  */
 void
 fill_native_cpu_config (struct loongarch_target *tgt)
 {
-  int arch_native_p = tgt->cpu_arch == CPU_NATIVE;
-  int tune_native_p = tgt->cpu_tune == CPU_NATIVE;
-  int native_cpu_type = CPU_NATIVE;
+  int arch_native_p = tgt->cpu_arch == ARCH_NATIVE;
+  int tune_native_p = tgt->cpu_tune == TUNE_NATIVE;
+  int native_cpu_arch = ARCH_NATIVE;
+  int native_cpu_tune = TUNE_NATIVE;
 
   /* Nothing needs to be done unless "-march/tune=native"
      is given or implied.  */
@@ -99,11 +100,13 @@ fill_native_cpu_config (struct loongarch_target *tgt)
   switch (cpucfg_cache[0] & 0x00ffff00)
   {
     case 0x0014c000:   /* LA464 */
-      native_cpu_type = CPU_LA464;
+      native_cpu_arch = ARCH_LA464;
+      native_cpu_tune = TUNE_LA464;
       break;
 
     case 0x0014d000:   /* LA664 */
-      native_cpu_type = CPU_LA664;
+      native_cpu_arch = ARCH_LA664;
+      native_cpu_tune = TUNE_LA664;
       break;
 
     default:
@@ -119,7 +122,7 @@ fill_native_cpu_config (struct loongarch_target *tgt)
   if (arch_native_p)
     {
       int tmp;
-      tgt->cpu_arch = native_cpu_type;
+      tgt->cpu_arch = native_cpu_arch;
 
       auto &preset = loongarch_cpu_default_isa[tgt->cpu_arch];
 
@@ -127,8 +130,8 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 	 With: base architecture (ARCH)
 	 At:   cpucfg_words[1][1:0] */
 
-      if (native_cpu_type != CPU_NATIVE)
-	tmp = loongarch_cpu_default_isa[native_cpu_type].base;
+      if (native_cpu_arch != ARCH_NATIVE)
+	tmp = loongarch_cpu_default_isa[native_cpu_arch].base;
       else
 	switch (cpucfg_cache[1] & 0x3)
 	  {
@@ -173,7 +176,7 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 	}
 
       /* Check consistency with PRID presets.  */
-      if (native_cpu_type != CPU_NATIVE && tmp != preset.fpu)
+      if (native_cpu_arch != ARCH_NATIVE && tmp != preset.fpu)
 	warning (0, "floating-point unit %qs differs from PRID preset %qs",
 		 loongarch_isa_ext_strings[tmp],
 		 loongarch_isa_ext_strings[preset.fpu]);
@@ -182,7 +185,7 @@ fill_native_cpu_config (struct loongarch_target *tgt)
       preset.fpu = tmp;
 
 
-      /* Fill: loongarch_cpu_default_isa[CPU_NATIVE].simd
+      /* Fill: loongarch_cpu_default_isa[ARCH_NATIVE].simd
 	 With: SIMD extension type (LSX, LASX)
 	 At:   cpucfg_words[2][7:6] */
 
@@ -212,7 +215,7 @@ fill_native_cpu_config (struct loongarch_target *tgt)
       /* Check consistency with PRID presets.  */
 
       /*
-      if (native_cpu_type != CPU_NATIVE && tmp != preset.simd)
+      if (native_cpu_arch != ARCH_NATIVE && tmp != preset.simd)
 	warning (0, "SIMD extension %qs differs from PRID preset %qs",
 		 loongarch_isa_ext_strings[tmp],
 		 loongarch_isa_ext_strings[preset.simd]);
@@ -229,10 +232,10 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 	if (cpucfg_cache[entry.cpucfg_word] & entry.cpucfg_bit)
 	  hw_isa_evolution |= entry.isa_evolution_bit;
 
-      if (native_cpu_type != CPU_NATIVE)
+      if (native_cpu_arch != ARCH_NATIVE)
 	{
 	  /* Check if the local CPU really supports the features of the base
-	     ISA of probed native_cpu_type.  If any feature is not detected,
+	     ISA of probed native_cpu_arch.  If any feature is not detected,
 	     either GCC or the hardware is buggy.  */
 	  if ((preset.evolution & hw_isa_evolution) != hw_isa_evolution)
 	    warning (0,
@@ -247,7 +250,7 @@ fill_native_cpu_config (struct loongarch_target *tgt)
 
   if (tune_native_p)
     {
-      tgt->cpu_tune = native_cpu_type;
+      tgt->cpu_tune = native_cpu_tune;
 
       /* Fill: loongarch_cpu_cache[tgt->cpu_tune]
 	 With: cache size info

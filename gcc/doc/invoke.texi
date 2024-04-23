@@ -1049,7 +1049,7 @@ Objective-C and Objective-C++ Dialects}.
 -msign-extend-enabled  -muser-enabled}
 
 @emph{LoongArch Options}
-@gccoptlist{-march=@var{cpu-type}  -mtune=@var{cpu-type} -mabi=@var{base-abi-type}
+@gccoptlist{-march=@var{arch-type}  -mtune=@var{tune-type} -mabi=@var{base-abi-type}
 -mfpu=@var{fpu-type} -msimd=@var{simd-type}
 -msoft-float -msingle-float -mdouble-float -mlsx -mno-lsx -mlasx -mno-lasx
 -mbranch-cost=@var{n}  -mcheck-zero-division -mno-check-zero-division
@@ -26852,34 +26852,51 @@ These command-line options are defined for LoongArch targets:
 
 @table @gcctabopt
 @opindex march
-@item -march=@var{cpu-type}
-Generate instructions for the machine type @var{cpu-type}.  In contrast to
-@option{-mtune=@var{cpu-type}}, which merely tunes the generated code
-for the specified @var{cpu-type}, @option{-march=@var{cpu-type}} allows GCC
-to generate code that may not run at all on processors other than the one
-indicated.  Specifying @option{-march=@var{cpu-type}} implies
-@option{-mtune=@var{cpu-type}}, except where noted otherwise.
+@item -march=@var{arch-type}
+Generate instructions for the machine type @var{arch-type}.
+@option{-march=@var{arch-type}} allows GCC to generate code that
+may not run at all on processors other than the one indicated.
 
-The choices for @var{cpu-type} are:
+The choices for @var{arch-type} are:
 
 @table @samp
 @item native
-This selects the CPU to generate code for at compilation time by determining
-the processor type of the compiling machine.  Using @option{-march=native}
-enables all instruction subsets supported by the local machine (hence
-the result might not run on different machines).  Using @option{-mtune=native}
-produces code optimized for the local machine under the constraints
-of the selected instruction set.
+Local processor type detected by the native compiler.
 @item loongarch64
-A generic CPU with 64-bit extensions.
+Generic LoongArch 64-bit processor.
 @item la464
-LoongArch LA464 CPU with LBT, LSX, LASX, LVZ.
+LoongArch LA464-based processor with LSX, LASX.
+@item la664
+LoongArch LA664-based processor with LSX, LASX
+and all LoongArch v1.1 instructions.
+@item la64v1.0
+LoongArch64 ISA version 1.0.
+@item la64v1.1
+LoongArch64 ISA version 1.1.
 @end table
 
+More information about LoongArch ISA versions can be found at
+@uref{https://github.com/loongson/la-toolchain-conventions}.
+
 @opindex mtune
-@item -mtune=@var{cpu-type}
-Optimize the output for the given processor, specified by microarchitecture
-name.
+@item -mtune=@var{tune-type}
+Optimize the generated code for the given processor target.
+
+The choices for @var{tune-type} are:
+
+@table @samp
+@item native
+Local processor type detected by the native compiler.
+@item generic
+Generic LoongArch processor.
+@item loongarch64
+Generic LoongArch 64-bit processor.
+@item la464
+LoongArch LA464 core.
+@item la664
+LoongArch LA664 core.
+@end table
+
 
 @opindex mabi
 @item -mabi=@var{base-abi-type}

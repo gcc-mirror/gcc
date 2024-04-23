@@ -101,6 +101,7 @@ static int abi_compat_p (const struct loongarch_isa *isa,
 			 struct loongarch_abi abi);
 static int abi_default_cpu_arch (struct loongarch_abi abi,
 				 struct loongarch_isa *isa);
+static int default_tune_for_arch (int arch, int fallback);
 
 /* Mandatory configure-time defaults.  */
 #ifndef DEFAULT_ABI_BASE
@@ -259,35 +260,35 @@ loongarch_config_target (struct loongarch_target *target,
   /* If cpu_tune is not set using neither -mtune nor --with-tune,
      the current cpu_arch is used as its default.  */
   t.cpu_tune = constrained.tune ? target->cpu_tune
-    : (constrained.arch ? target->cpu_arch :
-       (with_default_tune ? DEFAULT_CPU_TUNE : DEFAULT_CPU_ARCH));
+    : (constrained.arch
+       ? default_tune_for_arch (target->cpu_arch, with_default_tune
+				? DEFAULT_CPU_TUNE : TUNE_GENERIC)
+       : (with_default_tune ? DEFAULT_CPU_TUNE
+	  : default_tune_for_arch (DEFAULT_CPU_ARCH, TUNE_GENERIC)));
 
 
   /* Handle -march/tune=native */
 #ifdef __loongarch__
   /* For native compilers, gather local CPU information
-     and fill the "CPU_NATIVE" index of arrays defined in
-     loongarch-cpu.c.  */
+     and fill the "ARCH_NATIVE/TUNE_NATIVE" index of arrays
+     defined in loongarch-cpu.c.  */
 
   fill_native_cpu_config (&t);
 
 #else
-  if (t.cpu_arch == CPU_NATIVE)
+  if (t.cpu_arch == ARCH_NATIVE)
     fatal_error (UNKNOWN_LOCATION,
 		 "%qs does not work on a cross compiler",
 		 "-m" OPTSTR_ARCH "=" STR_CPU_NATIVE);
 
-  else if (t.cpu_tune == CPU_NATIVE)
+  else if (t.cpu_tune == TUNE_NATIVE)
     fatal_error (UNKNOWN_LOCATION,
 		 "%qs does not work on a cross compiler",
 		 "-m" OPTSTR_TUNE "=" STR_CPU_NATIVE);
 #endif
 
-  /* Handle -march/tune=abi-default */
-  if (t.cpu_tune == CPU_ABI_DEFAULT)
-    t.cpu_tune = abi_default_cpu_arch (t.abi, NULL);
-
-  if (t.cpu_arch == CPU_ABI_DEFAULT)
+  /* Handle -march=abi-default */
+  if (t.cpu_arch == ARCH_ABI_DEFAULT)
     {
       t.cpu_arch = abi_default_cpu_arch (t.abi, &(t.isa));
       loongarch_cpu_default_isa[t.cpu_arch] = t.isa;
@@ -438,16 +439,16 @@ config_target_isa:
 	 so we adjust that first if it is not constrained.  */
       int fallback_arch = abi_default_cpu_arch (t.abi, NULL);
 
-      if (t.cpu_arch == CPU_NATIVE)
+      if (t.cpu_arch == ARCH_NATIVE)
 	warning (0, "your native CPU architecture (%qs) "
 		 "does not support %qs ABI, falling back to %<-m%s=%s%>",
 		 arch_str (&t), abi_str (t.abi), OPTSTR_ARCH,
-		 loongarch_cpu_strings[fallback_arch]);
+		 loongarch_arch_strings[fallback_arch]);
       else
 	warning (0, "default CPU architecture (%qs) "
 		 "does not support %qs ABI, falling back to %<-m%s=%s%>",
 		 arch_str (&t), abi_str (t.abi), OPTSTR_ARCH,
-		 loongarch_cpu_strings[fallback_arch]);
+		 loongarch_arch_strings[fallback_arch]);
 
       t.cpu_arch = fallback_arch;
       constrained.arch = 1;
@@ -664,9 +665,38 @@ abi_default_cpu_arch (struct loongarch_abi abi,
 	case ABI_BASE_LP64F:
 	case ABI_BASE_LP64S:
 	  *isa = isa_required (abi);
-	  return CPU_LOONGARCH64;
+	  return ARCH_LOONGARCH64;
       }
   gcc_unreachable ();
+}
+
+static inline int
+default_tune_for_arch (int arch, int fallback)
+{
+  int ret;
+  switch (arch)
+    {
+
+#define TUNE_FOR_ARCH(NAME) \
+    case ARCH_##NAME: \
+      ret = TUNE_##NAME; \
+      break;
+
+    TUNE_FOR_ARCH(NATIVE)
+    TUNE_FOR_ARCH(LOONGARCH64)
+    TUNE_FOR_ARCH(LA464)
+    TUNE_FOR_ARCH(LA664)
+
+#undef TUNE_FOR_ARCH
+
+    case ARCH_ABI_DEFAULT:
+    case ARCH_LA64V1_0:
+    case ARCH_LA64V1_1:
+      ret = fallback;
+    }
+
+  gcc_assert (0 <= ret && ret < N_TUNE_TYPES);
+  return ret;
 }
 
 static const char*
@@ -731,7 +761,7 @@ isa_str (const struct loongarch_isa *isa, char separator)
 static const char*
 arch_str (const struct loongarch_target *target)
 {
-  if (target->cpu_arch == CPU_NATIVE)
+  if (target->cpu_arch == ARCH_NATIVE)
     {
       /* Describe a native CPU with unknown PRID.  */
       const char* isa_string = isa_str (&target->isa, ',');
@@ -741,7 +771,7 @@ arch_str (const struct loongarch_target *target)
       APPEND_STRING (isa_string)
     }
   else
-    APPEND_STRING (loongarch_cpu_strings[target->cpu_arch]);
+    APPEND_STRING (loongarch_arch_strings[target->cpu_arch]);
 
   APPEND1 ('\0')
   return XOBFINISH (&msg_obstack, const char *);
@@ -956,7 +986,7 @@ loongarch_target_option_override (struct loongarch_target *target,
   /* Other arch-specific overrides.  */
   switch (target->cpu_arch)
     {
-      case CPU_LA664:
+      case ARCH_LA664:
 	/* Enable -mrecipe=all for LA664 by default.  */
 	if (!opts_set->x_recip_mask)
 	  {
