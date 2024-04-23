@@ -11537,6 +11537,15 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
       else if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
 	       && !comp_except_specs (d_spec, e_spec, ce_type))
 	goto mismatch;
+
+      /* Similarly if EXISTING has an undeduced return type, but DECL's
+	 is already deduced.  */
+      if (undeduced_auto_decl (existing) && !undeduced_auto_decl (decl))
+	{
+	  dump (dumper::MERGE)
+	    && dump ("Propagating deduced return type to %N", existing);
+	  TREE_TYPE (existing) = change_return_type (TREE_TYPE (d_type), e_type);
+	}
     }
   else if (is_typedef)
     {
