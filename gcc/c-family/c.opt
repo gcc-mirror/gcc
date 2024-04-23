@@ -1320,7 +1320,7 @@ C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall, 3, 0) IntegerRange(0, 3)
 
 Wstrict-flex-arrays
 C C++ Var(warn_strict_flex_arrays) Warning
-Warn about inproper usages of flexible array members
+Warn about improper usages of flexible array members
 according to the level of -fstrict-flex-arrays.
 
 Wstrict-null-sentinel

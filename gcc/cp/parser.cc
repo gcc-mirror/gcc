@@ -22406,7 +22406,7 @@ cp_parser_using_declaration (cp_parser* parser,
   if (access_declaration_p && errorcount == oldcount)
     warning_at (diag_token->location, OPT_Wdeprecated,
 		"access declarations are deprecated "
-		"in favour of using-declarations; "
+		"in favor of using-declarations; "
 		"suggestion: add the %<using%> keyword");
 
   return true;

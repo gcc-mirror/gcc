@@ -105,7 +105,7 @@ Enum(attr_fp_mode) String(int) Value(FP_MODE_INT)
 
 may-round-for-trunc
 Target Mask(MAY_ROUND_FOR_TRUNC)
-A floatig point to integer truncation may be replaced with rounding to save mode switching.
+A floating point to integer truncation may be replaced with rounding to save mode switching.
 
 mvect-double
 Target Mask(VECT_DOUBLE)

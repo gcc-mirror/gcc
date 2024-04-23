@@ -260,7 +260,7 @@ optimize non var unbounded parameters by passing it by reference, providing it i
 
 fuse-list=
 Modula-2 Joined
-orders the initialization/finalializations for scaffold-static or force linking of modules if scaffold-dynamic
+orders the initialization/finalizations for scaffold-static or force linking of modules if scaffold-dynamic
 
 fversion
 Modula-2

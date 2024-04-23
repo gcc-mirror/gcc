@@ -263,7 +263,7 @@ Maximum size of a list of values associated with each parameter for interprocedu
 
 -param=ipa-cp-profile-count-base=
 Common Joined UInteger Var(param_ipa_cp_profile_count_base) Init(10) IntegerRange(0, 100) Param Optimization
-When using profile feedback, use the edge at this percentage position in frequncy histogram as the bases for IPA-CP heuristics.
+When using profile feedback, use the edge at this percentage position in frequency histogram as the bases for IPA-CP heuristics.
 
 -param=ipa-jump-function-lookups=
 Common Joined UInteger Var(param_ipa_jump_function_lookups) Init(8) Param Optimization
