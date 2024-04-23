@@ -5311,10 +5311,11 @@ package body Exp_Ch6 is
          then
             Expand_Inlined_Call (Call_Node, Subp, Orig_Subp);
 
-         --  Back-end inlining either if optimization is enabled or the call is
-         --  required to be inlined.
+         --  Back-end inlining either if optimization is enabled, we're
+         --  generating C, or the call is required to be inlined.
 
          elsif Optimization_Level > 0
+           or else CCG_Mode
            or else Has_Pragma_Inline_Always (Subp)
          then
             Add_Inlined_Body (Subp, Call_Node);
