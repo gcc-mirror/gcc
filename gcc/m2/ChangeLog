@@ -1,3 +1,22 @@
+2024-04-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114811
+	* gm2-compiler/M2GenGCC.mod (FoldBinarySet): Add condition
+	checking to ensure op2 and op3 are fully resolved before
+	type checking is performed.
+
+2024-04-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114807
+	* gm2-compiler/M2Check.mod (checkUnbounded): Remove unused
+	local variables.
+	(constCheckMeta): Include check for IsReallyPointer in the
+	failure case.
+	* gm2-compiler/M2Quads.mod (MoveWithMode): Remove CopyConstString.
+	* gm2-compiler/SymbolTable.def (IsHiddenReallyPointer): Export.
+	* gm2-compiler/SymbolTable.mod (SkipHiddenType): Remove.
+	(IsReallyPointer): Include IsHiddenReallyPointer test.
+
 2024-04-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/112893

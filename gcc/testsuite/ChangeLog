@@ -1,3 +1,121 @@
+2024-04-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114811
+	* lib/gm2-torture.exp: Correct regexp checking for internal
+	compiler error strings in compiler output.
+
+2024-04-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114807
+	* gm2/pim/fail/badproctype.mod: Change MYSHORTREAL
+	to SHORTREAL.
+	* gm2/pim/fail/badprocbool.mod: New test.
+	* gm2/pim/fail/badproccard.mod: New test.
+	* gm2/pim/fail/badprocint.mod: New test.
+	* gm2/pim/fail/badprocint2.mod: New test.
+	* gm2/pim/pass/goodproccard2.mod: New test.
+	* gm2/pim/pass/goodprocint.mod: New test.
+	* gm2/pim/pass/goodprocint3.mod: New test.
+	* gm2/pim/run/pass/genconststr.mod: New test.
+
+2024-04-22  Marek Polacek  <polacek@redhat.com>
+
+	* lib/prune.exp (prune_gcc_output): Also prune -freport-bug output.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-10.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-11.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-12.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-13.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-14.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-15.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-7.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-8.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-9.c: New test.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-10.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-11.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-12.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-13.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-14.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-15.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-7.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-8.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-9.c: New test.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-34.c: Remove xfail for vluxei8 check.
+	* gcc.target/riscv/rvv/base/pr112431-28.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-29.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-30.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-31.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-32.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-33.c: New test.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-28.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-29.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-30.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-31.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-32.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-33.c: New test.
+
+2024-04-22  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/vxe/popcount-1.c: Remove xfail.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-37.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-38.c: New test.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-37.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-38.c: New test.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-16.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-17.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-18.c: New test.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-22  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-16.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-17.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-18.c: New test.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-22.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-23.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-24.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-25.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-26.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-27.c: New test.
+
 2024-04-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/103471

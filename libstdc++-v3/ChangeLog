@@ -1,3 +1,35 @@
+2024-04-22  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/114803
+	* include/experimental/bits/simd_builtin.h
+	(_SimdBase2::operator __vector_type_t): There is no __builtin()
+	function in _SimdWrapper, instead use its conversion operator.
+	* testsuite/experimental/simd/pr114803_vecbuiltin_cvt.cc: New
+	test.
+
+2024-04-22  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h: Ignore -Wnarrowing for
+	arm_neon.h.
+	(__int_for_sizeof): Replace tautological compare with checking
+	for invalid template parameter value.
+	* include/experimental/bits/simd_builtin.h (__extract_part):
+	Remove tautological compare by combining two static_assert.
+
+2024-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/17_intro/names.cc (d, f): Undefine on s390*-linux*.
+	* testsuite/17_intro/headers/c++1998/all_attributes.cc (packed): Don't
+	define on s390.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc (packed):
+	Likewise.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc (packed):
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc (packed):
+	Likewise.
+	* testsuite/17_intro/headers/c++2020/all_attributes.cc (packed):
+	Likewise.
+
 2024-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/refwrap.h (operator<=>): Simplify constraints.

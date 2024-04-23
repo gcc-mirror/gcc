@@ -1,3 +1,67 @@
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector-crypto.md:
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/constraints.md (TARGET_VECTOR ? V_REGS : NO_REGS): Fix constraint.
+	* config/riscv/riscv.md (no,W21,W42,W84,W41,W81,W82): Rename vconstraint into group_overlap.
+	(no,yes): Ditto.
+	(none,W21,W42,W84,W43,W86,W87): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.md: Rostify the constraints.
+
+2024-04-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc (processor_alias_table):
+	Let Sierra Forest map to CPU_TYPE enum.
+
+2024-04-22  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_option_override_internal): Check zarch
+	flag before enabling -mvx.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Add widenning overlap.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-12-01  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Support highpart overlap for indexed load.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-12-04  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Add highest-number overlap support.
+
+2024-04-22  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/112431
+	* config/riscv/vector.md: Add widening overlap of vf2/vf4.
+
 2024-04-21  Pan Li  <pan2.li@intel.com>
 
 	Revert:
