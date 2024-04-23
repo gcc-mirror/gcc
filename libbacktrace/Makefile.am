@@ -493,19 +493,37 @@ endif HAVE_OBJCOPY_DEBUGLINK
 	  $<
 	$(OBJCOPY) --strip-all $< $@
 
-if HAVE_COMPRESSED_DEBUG
+if HAVE_COMPRESSED_DEBUG_ZLIB_GNU
 
 ctestg_SOURCES = btest.c testlib.c
 ctestg_CFLAGS = $(libbacktrace_TEST_CFLAGS)
 ctestg_LDFLAGS = -Wl,--compress-debug-sections=zlib-gnu $(libbacktrace_testing_ldflags)
 ctestg_LDADD = libbacktrace.la
 
+ctestg_alloc_SOURCES = $(ctestg_SOURCES)
+ctestg_alloc_CFLAGS = $(ctestg_CFLAGS)
+ctestg_alloc_LDFLAGS = $(ctestg_LDFLAGS) $(libbacktrace_testing_ldflags)
+ctestg_alloc_LDADD = libbacktrace_alloc.la
+
+BUILDTESTS += ctestg ctestg_alloc
+
+endif
+
+if HAVE_COMPRESSED_DEBUG_ZLIB_GABI
+
 ctesta_SOURCES = btest.c testlib.c
 ctesta_CFLAGS = $(libbacktrace_TEST_CFLAGS)
 ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi $(libbacktrace_testing_ldflags)
 ctesta_LDADD = libbacktrace.la
 
-BUILDTESTS += ctestg ctesta
+ctesta_alloc_SOURCES = $(ctesta_SOURCES)
+ctesta_alloc_CFLAGS = $(ctesta_CFLAGS)
+ctesta_alloc_LDFLAGS = $(ctesta_LDFLAGS) $(libbacktrace_testing_ldflags)
+ctesta_alloc_LDADD = libbacktrace_alloc.la
+
+BUILDTESTS += ctesta ctesta_alloc
+
+endif
 
 if HAVE_COMPRESSED_DEBUG_ZSTD
 
@@ -514,21 +532,12 @@ ctestzstd_CFLAGS = $(libbacktrace_TEST_CFLAGS)
 ctestzstd_LDFLAGS = -Wl,--compress-debug-sections=zstd $(libbacktrace_testing_ldflags)
 ctestzstd_LDADD = libbacktrace.la
 
-BUILDTESTS += ctestzstd
+ctestzstd_alloc_SOURCES = $(ctestzstd_SOURCES)
+ctestzstd_alloc_CFLAGS = $(ctestzstd_CFLAGS)
+ctestzstd_alloc_LDFLAGS = $(ctestzstd_LDFLAGS) $(libbacktrace_testing_ldflags)
+ctestzstd_alloc_LDADD = libbacktrace_alloc.la
 
-endif
-
-ctestg_alloc_SOURCES = $(ctestg_SOURCES)
-ctestg_alloc_CFLAGS = $(ctestg_CFLAGS)
-ctestg_alloc_LDFLAGS = $(ctestg_LDFLAGS) $(libbacktrace_testing_ldflags)
-ctestg_alloc_LDADD = libbacktrace_alloc.la
-
-ctesta_alloc_SOURCES = $(ctesta_SOURCES)
-ctesta_alloc_CFLAGS = $(ctesta_CFLAGS)
-ctesta_alloc_LDFLAGS = $(ctesta_LDFLAGS) $(libbacktrace_testing_ldflags)
-ctesta_alloc_LDADD = libbacktrace_alloc.la
-
-BUILDTESTS += ctestg_alloc ctesta_alloc
+BUILDTESTS += ctestzstd ctestzstd_alloc
 
 endif
 

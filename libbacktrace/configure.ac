@@ -502,16 +502,27 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
 LDFLAGS=$LDFLAGS_hold])
 AM_CONDITIONAL(HAVE_BUILDID, test "$libbacktrace_cv_ld_buildid" = yes)
 
-dnl Test whether the linker supports the --compress-debug-sections option.
-AC_CACHE_CHECK([whether --compress-debug-sections is supported],
-[libgo_cv_ld_compress],
+dnl Test whether the linker supports the --compress-debug-sections=zlib-gnu
+dnl option.
+AC_CACHE_CHECK([whether --compress-debug-sections=zlib-gnu is supported],
+[libgo_cv_ld_compress_zlib_gnu],
 [LDFLAGS_hold=$LDFLAGS
 LDFLAGS="$LDFLAGS -Wl,--compress-debug-sections=zlib-gnu"
 AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
-[libgo_cv_ld_compress=yes],
-[libgo_cv_ld_compress=no])
+[libgo_cv_ld_compress_zlib_gnu=yes],
+[libgo_cv_ld_compress_zlib_gnu=no])
 LDFLAGS=$LDFLAGS_hold])
-AM_CONDITIONAL(HAVE_COMPRESSED_DEBUG, test "$libgo_cv_ld_compress" = yes)
+AM_CONDITIONAL(HAVE_COMPRESSED_DEBUG_ZLIB_GNU, test "$libgo_cv_ld_compress_zlib_gnu" = yes)
+
+AC_CACHE_CHECK([whether --compress-debug-sections=zlib-gabi is supported],
+[libgo_cv_ld_compress_zlib_gabi],
+[LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--compress-debug-sections=zlib-gabi"
+AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
+[libgo_cv_ld_compress_zlib_gabi=yes],
+[libgo_cv_ld_compress_zlib_gabi=no])
+LDFLAGS=$LDFLAGS_hold])
+AM_CONDITIONAL(HAVE_COMPRESSED_DEBUG_ZLIB_GABI, test "$libgo_cv_ld_compress_zlib_gabi" = yes)
 
 AC_CHECK_LIB([zstd], [ZSTD_compress],
     [AC_DEFINE(HAVE_ZSTD, 1, [Define if -lzstd is available.])])

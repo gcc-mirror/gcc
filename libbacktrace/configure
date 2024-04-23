@@ -655,8 +655,10 @@ HAVE_COMPRESSED_DEBUG_ZSTD_FALSE
 HAVE_COMPRESSED_DEBUG_ZSTD_TRUE
 HAVE_ZSTD_FALSE
 HAVE_ZSTD_TRUE
-HAVE_COMPRESSED_DEBUG_FALSE
-HAVE_COMPRESSED_DEBUG_TRUE
+HAVE_COMPRESSED_DEBUG_ZLIB_GABI_FALSE
+HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE
+HAVE_COMPRESSED_DEBUG_ZLIB_GNU_FALSE
+HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE
 HAVE_BUILDID_FALSE
 HAVE_BUILDID_TRUE
 HAVE_ZLIB_FALSE
@@ -11632,7 +11634,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11635 "configure"
+#line 11637 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11738,7 +11740,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11741 "configure"
+#line 11743 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13908,9 +13910,9 @@ else
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --compress-debug-sections is supported" >&5
-$as_echo_n "checking whether --compress-debug-sections is supported... " >&6; }
-if ${libgo_cv_ld_compress+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --compress-debug-sections=zlib-gnu is supported" >&5
+$as_echo_n "checking whether --compress-debug-sections=zlib-gnu is supported... " >&6; }
+if ${libgo_cv_ld_compress_zlib_gnu+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   LDFLAGS_hold=$LDFLAGS
@@ -13927,22 +13929,60 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  libgo_cv_ld_compress=yes
+  libgo_cv_ld_compress_zlib_gnu=yes
 else
-  libgo_cv_ld_compress=no
+  libgo_cv_ld_compress_zlib_gnu=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LDFLAGS=$LDFLAGS_hold
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_ld_compress" >&5
-$as_echo "$libgo_cv_ld_compress" >&6; }
- if test "$libgo_cv_ld_compress" = yes; then
-  HAVE_COMPRESSED_DEBUG_TRUE=
-  HAVE_COMPRESSED_DEBUG_FALSE='#'
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_ld_compress_zlib_gnu" >&5
+$as_echo "$libgo_cv_ld_compress_zlib_gnu" >&6; }
+ if test "$libgo_cv_ld_compress_zlib_gnu" = yes; then
+  HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE=
+  HAVE_COMPRESSED_DEBUG_ZLIB_GNU_FALSE='#'
 else
-  HAVE_COMPRESSED_DEBUG_TRUE='#'
-  HAVE_COMPRESSED_DEBUG_FALSE=
+  HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE='#'
+  HAVE_COMPRESSED_DEBUG_ZLIB_GNU_FALSE=
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --compress-debug-sections=zlib-gabi is supported" >&5
+$as_echo_n "checking whether --compress-debug-sections=zlib-gabi is supported... " >&6; }
+if ${libgo_cv_ld_compress_zlib_gabi+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--compress-debug-sections=zlib-gabi"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgo_cv_ld_compress_zlib_gabi=yes
+else
+  libgo_cv_ld_compress_zlib_gabi=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LDFLAGS=$LDFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_ld_compress_zlib_gabi" >&5
+$as_echo "$libgo_cv_ld_compress_zlib_gabi" >&6; }
+ if test "$libgo_cv_ld_compress_zlib_gabi" = yes; then
+  HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE=
+  HAVE_COMPRESSED_DEBUG_ZLIB_GABI_FALSE='#'
+else
+  HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE='#'
+  HAVE_COMPRESSED_DEBUG_ZLIB_GABI_FALSE=
 fi
 
 
@@ -14585,8 +14625,12 @@ if test -z "${HAVE_BUILDID_TRUE}" && test -z "${HAVE_BUILDID_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_BUILDID\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${HAVE_COMPRESSED_DEBUG_TRUE}" && test -z "${HAVE_COMPRESSED_DEBUG_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_COMPRESSED_DEBUG\" was never defined.
+if test -z "${HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE}" && test -z "${HAVE_COMPRESSED_DEBUG_ZLIB_GNU_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_COMPRESSED_DEBUG_ZLIB_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE}" && test -z "${HAVE_COMPRESSED_DEBUG_ZLIB_GABI_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_COMPRESSED_DEBUG_ZLIB_GABI\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_ZSTD_TRUE}" && test -z "${HAVE_ZSTD_FALSE}"; then
