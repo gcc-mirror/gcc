@@ -1,3 +1,36 @@
+2024-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2023-03-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (add_options_for_weak_undefined): Escape
+	brackets.
+	* gcc.dg/visibility-22.c: Add weak_undefined options.
+
+2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-02-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/proto-lossage-4.mm: Use uintptr_t for integral pointer
+	representations.
+
+2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-comm-1.c: Check for the correct error message for
+	Darwin <= 10.
+
+2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/g++.exp: Remove additional flag handled by Darwin specs.
+	* lib/obj-c++.exp: Likewise.
+
 2024-04-15  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/113552

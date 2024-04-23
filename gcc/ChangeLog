@@ -1,3 +1,28 @@
+2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-05-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_label_is_anonymous_local_objc_name): Make
+	protocol class methods linker-visible.
+
+2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-07-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h: Avoid duplicate multiply_defined specs on
+	earlier Darwin versions with shared libgcc.
+
+2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Handle explict disable of stdlib option, set
+	defaults for Darwin.
+
 2024-04-15  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/113552

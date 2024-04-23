@@ -1,3 +1,12 @@
+2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++spec.c (lang_specific_driver): Preserve -static-libstdc++ in
+	the driver command line for targets without -Bstatic/dynamic support
+	in their static linker.
+
 2024-01-24  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
