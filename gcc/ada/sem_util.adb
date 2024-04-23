@@ -25790,6 +25790,18 @@ package body Sem_Util is
       return Kind;
    end Policy_In_Effect;
 
+   -------------------------------------------
+   -- Preanalyze_And_Resolve_Without_Errors --
+   -------------------------------------------
+
+   procedure Preanalyze_And_Resolve_Without_Errors (N : Node_Id) is
+      Status : constant Boolean := Get_Ignore_Errors;
+   begin
+      Set_Ignore_Errors (True);
+      Preanalyze_And_Resolve (N);
+      Set_Ignore_Errors (Status);
+   end Preanalyze_And_Resolve_Without_Errors;
+
    -------------------------------
    -- Preanalyze_Without_Errors --
    -------------------------------

@@ -5534,7 +5534,42 @@ package body Sem_Attr is
          --  The prefix must be preanalyzed as the full analysis will take
          --  place during expansion.
 
-         Preanalyze_And_Resolve (P);
+         --  If the attribute reference has an expected type or shall resolve
+         --  to a given type, the same applies to the prefix; otherwise the
+         --  prefix shall be resolved independently of context (RM 6.1.1(8/5)).
+
+         if Nkind (Parent (N)) = N_Qualified_Expression then
+            Preanalyze_And_Resolve (P, Etype (Parent (N)));
+
+         --  An special case occurs when the prefix is an overloaded function
+         --  call without formals; in order to identify such case we preanalyze
+         --  a duplicate of the prefix ignoring errors.
+
+         else
+            declare
+               P_Copy : constant Node_Id := New_Copy_Tree (P);
+
+            begin
+               Set_Parent (P_Copy, Parent (P));
+
+               Preanalyze_And_Resolve_Without_Errors (P_Copy);
+
+               --  In the special case of a call to an overloaded function
+               --  without extra formals we resolve it using its returned
+               --  type (which is the unique valid call); if this not the
+               --  case we will report the error later, as part of the
+               --  regular analysis of the full expression.
+
+               if Nkind (P_Copy) = N_Function_Call
+                 and then Is_Overloaded (Name (P_Copy))
+                 and then No (First_Formal (Entity (Name (P_Copy))))
+               then
+                  Preanalyze_And_Resolve (P, Etype (Name (P_Copy)));
+               else
+                  Preanalyze_And_Resolve (P);
+               end if;
+            end;
+         end if;
 
          --  Ensure that the prefix does not contain attributes 'Old or 'Result
 
