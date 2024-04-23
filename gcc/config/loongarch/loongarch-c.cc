@@ -103,6 +103,29 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
       builtin_define ("__loongarch_simd_width=256");
     }
 
+  /* ISA evolution features */
+  int max_v_major = 1, max_v_minor = 0;
+
+  for (int i = 0; i < N_EVO_FEATURES; i++)
+    if (la_target.isa.evolution & la_evo_feature_masks[i])
+      {
+	builtin_define (la_evo_macro_name[i]);
+
+	int major = la_evo_version_major[i],
+	    minor = la_evo_version_minor[i];
+
+	max_v_major = major > max_v_major ? major : max_v_major;
+	max_v_minor = major == max_v_major
+	  ? (minor > max_v_minor ? minor : max_v_minor): max_v_minor;
+      }
+
+  /* Find the minimum ISA version required to run the target program.  */
+  if (!(max_v_major == 1 && max_v_minor <= 1 && ISA_HAS_LASX))
+    {
+      builtin_define_with_int_value ("__loongarch_version_major", max_v_major);
+      builtin_define_with_int_value ("__loongarch_version_minor", max_v_minor);
+    }
+
   /* Add support for FLOAT128_TYPE on the LoongArch architecture.  */
   builtin_define ("__FLOAT128_TYPE__");
 

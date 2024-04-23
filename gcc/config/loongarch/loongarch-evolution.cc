@@ -17,35 +17,44 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
-<http://www.gnu.org/licenses/>.  */
+<http://www.gnu.org/licenses/>.
+*/
 
-#ifndef LOONGARCH_CPUCFG_MAP_H
-#define LOONGARCH_CPUCFG_MAP_H
-
+#include "config.h"
+#include "system.h"
+#include "coretypes.h"
 #include "options.h"
 
-static constexpr struct {
-  int cpucfg_word;
-  unsigned int cpucfg_bit;
-  HOST_WIDE_INT isa_evolution_bit;
-} cpucfg_map[] = {
-  { 2, 1u << 25, OPTION_MASK_ISA_FRECIPE },
-  { 2, 1u << 26, OPTION_MASK_ISA_DIV32 },
-  { 2, 1u << 27, OPTION_MASK_ISA_LAM_BH },
-  { 2, 1u << 28, OPTION_MASK_ISA_LAMCAS },
-  { 3, 1u << 23, OPTION_MASK_ISA_LD_SEQ_SA },
+#include "loongarch-evolution.h"
+
+int la_evo_feature_masks[] = {
+  OPTION_MASK_ISA_FRECIPE,
+  OPTION_MASK_ISA_DIV32,
+  OPTION_MASK_ISA_LAM_BH,
+  OPTION_MASK_ISA_LAMCAS,
+  OPTION_MASK_ISA_LD_SEQ_SA,
 };
 
-static constexpr int cpucfg_useful_idx[] = {
-  0,
-  1,
-  2,
-  3,
-  16,
-  17,
-  18,
-  19,
+const char* la_evo_macro_name[] = {
+  "__loongarch_frecipe",
+  "__loongarch_div32",
+  "__loongarch_lam_bh",
+  "__loongarch_lamcas",
+  "__loongarch_ld_seq_sa",
 };
 
-static constexpr int N_CPUCFG_WORDS = 20;
-#endif /* LOONGARCH_CPUCFG_MAP_H */
+int la_evo_version_major[] = {
+  1,    /* FRECIPE */
+  1,    /* DIV32 */
+  1,    /* LAM_BH */
+  1,    /* LAMCAS */
+  1,    /* LD_SEQ_SA */
+};
+
+int la_evo_version_minor[] = {
+  1,    /* FRECIPE */
+  1,    /* DIV32 */
+  1,    /* LAM_BH */
+  1,    /* LAMCAS */
+  1,    /* LD_SEQ_SA */
+};

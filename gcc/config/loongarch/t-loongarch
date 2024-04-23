@@ -21,7 +21,7 @@ GTM_H += loongarch-multilib.h
 OPTIONS_H_EXTRA += $(srcdir)/config/loongarch/loongarch-def.h	    \
 		   $(srcdir)/config/loongarch/loongarch-def-array.h \
 		   $(srcdir)/config/loongarch/loongarch-tune.h	    \
-		   $(srcdir)/config/loongarch/loongarch-cpucfg-map.h
+		   $(srcdir)/config/loongarch/loongarch-evolution.h
 
 # Canonical target triplet from config.gcc
 LA_MULTIARCH_TRIPLET = $(patsubst LA_MULTIARCH_TRIPLET=%,%,$\
@@ -62,7 +62,11 @@ loongarch-opts.o: $(srcdir)/config/loongarch/loongarch-opts.cc $(LA_STR_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 loongarch-cpu.o: $(srcdir)/config/loongarch/loongarch-cpu.cc $(LA_STR_H) \
-		 $(srcdir)/config/loongarch/loongarch-cpucfg-map.h
+		 $(srcdir)/config/loongarch/loongarch-evolution.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+loongarch-evolution.o: $(srcdir)/config/loongarch/loongarch-evolution.cc $(LA_STR_H) \
+	$(srcdir)/config/loongarch/loongarch-evolution.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 loongarch-def.o: $(srcdir)/config/loongarch/loongarch-def.cc $(LA_STR_H)
@@ -84,11 +88,17 @@ s-loongarch-opt: $(srcdir)/config/loongarch/genopts/genstr.sh \
     $(srcdir)/config/loongarch/loongarch.opt
 	$(STAMP) s-loongarch-opt
 
-$(srcdir)/config/loongarch/loongarch-cpucfg-map.h: s-loongarch-cpucfg-map
+$(srcdir)/config/loongarch/loongarch-evolution.h: s-loongarch-evolution
 	@true
-s-loongarch-cpucfg-map: $(srcdir)/config/loongarch/genopts/genstr.sh \
-	$(srcdir)/config/loongarch/genopts/isa-evolution.in
-	$(SHELL) $< cpucfg-map > tmp-cpucfg.h
-	$(SHELL) $(srcdir)/../move-if-change tmp-cpucfg.h \
-	    $(srcdir)/config/loongarch/loongarch-cpucfg-map.h
+$(srcdir)/config/loongarch/loongarch-evolution.cc: s-loongarch-evolution
+	@true
+s-loongarch-evolution: $(srcdir)/config/loongarch/genopts/genstr.sh \
+	$(srcdir)/config/loongarch/genopts/isa-evolution.in \
+	$(srcdir)/config/loongarch/genopts/gen-evolution.awk
+	$(SHELL) $< evolution_h > tmp-isa-evo.h
+	$(SHELL) $< evolution_c > tmp-isa-evo.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-isa-evo.h \
+	    $(srcdir)/config/loongarch/loongarch-evolution.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-isa-evo.cc \
+	    $(srcdir)/config/loongarch/loongarch-evolution.cc
 	$(STAMP) $@

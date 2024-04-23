@@ -115,17 +115,6 @@ struct loongarch_flags {
 #define ISA_HAS_LASX \
   (la_target.isa.simd == ISA_EXT_SIMD_LASX)
 
-#define ISA_HAS_FRECIPE \
-  (la_target.isa.evolution & OPTION_MASK_ISA_FRECIPE)
-#define ISA_HAS_DIV32 \
-  (la_target.isa.evolution & OPTION_MASK_ISA_DIV32)
-#define ISA_HAS_LAM_BH \
-  (la_target.isa.evolution & OPTION_MASK_ISA_LAM_BH)
-#define ISA_HAS_LAMCAS \
-  (la_target.isa.evolution & OPTION_MASK_ISA_LAMCAS)
-#define ISA_HAS_LD_SEQ_SA \
-  (la_target.isa.evolution & OPTION_MASK_ISA_LD_SEQ_SA)
-
 /* TARGET_ macros for use in *.md template conditionals */
 #define TARGET_uARCH_LA464	  (la_target.cpu_tune == TUNE_LA464)
 #define TARGET_uARCH_LA664	  (la_target.cpu_tune == TUNE_LA664)

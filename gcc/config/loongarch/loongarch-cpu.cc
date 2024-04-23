@@ -28,8 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "loongarch-def.h"
 #include "loongarch-opts.h"
 #include "loongarch-cpu.h"
-#include "loongarch-cpucfg-map.h"
 #include "loongarch-str.h"
+#include "loongarch-evolution.h"
 
 
 /* Native CPU detection with "cpucfg" */
