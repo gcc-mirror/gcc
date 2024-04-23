@@ -1,3 +1,15 @@
+2024-04-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/114304
+	PR libfortran/105473
+	* io/list_read.c (eat_separator): Add logic to handle spaces
+	preceding a comma or semicolon such that that a 'null' read
+	occurs without error at the end of comma or semicolon
+	terminated input lines. Add check and error message for ';'.
+	Accept tab as alternative to space.
+	(list_formatted_read_scalar): Treat comma as a decimal point
+	when specified by the decimal mode on the first item.
+
 2024-03-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
