@@ -13852,8 +13852,6 @@ DO I = 1, N
 ENDDO
 @end smallexample
 and the initialization loop is transformed into a call to memset zero.
-This flag is enabled by default at @option{-O3}.
-It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex floop-interchange
 @item -floop-interchange
