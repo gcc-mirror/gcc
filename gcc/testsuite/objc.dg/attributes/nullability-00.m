@@ -8,7 +8,7 @@ __attribute__((objc_nullability("unspecified"))) id b;
 __attribute__((objc_nullability("nullable"))) id c;
 __attribute__((objc_nullability("nonnull"))) id d;
 __attribute__((objc_nullability("resettable"))) id e;
-__attribute__((objc_nullability("nonsense"))) id e_3; /* { dg-error {'objc_nullability' attribute argument '"nonsense"' is not recognised} } */
+__attribute__((objc_nullability("nonsense"))) id e_3; /* { dg-error {'objc_nullability' attribute argument '"nonsense"' is not recognized} } */
 __attribute__((objc_nullability(noGoingToWork))) id e_4; /* { dg-error {'noGoingToWork' undeclared here} } */
 
 @interface MyRoot
