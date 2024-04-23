@@ -1024,6 +1024,7 @@ ccp_finalize (bool nonzero_p)
 	  unsigned int precision = TYPE_PRECISION (TREE_TYPE (val->value));
 	  wide_int value = wi::to_wide (val->value);
 	  wide_int mask = wide_int::from (val->mask, precision, UNSIGNED);
+	  value = value & ~mask;
 	  set_bitmask (name, value, mask);
 	}
     }

@@ -2067,7 +2067,8 @@ irange::intersect_bitmask (const irange &r)
 
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
-  if (!bm.intersect (r.get_bitmask ()))
+  bm.intersect (r.get_bitmask ());
+  if (save == bm)
     return false;
 
   m_bitmask = bm;
@@ -2099,7 +2100,8 @@ irange::union_bitmask (const irange &r)
 
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
-  if (!bm.union_ (r.get_bitmask ()))
+  bm.union_ (r.get_bitmask ());
+  if (save == bm)
     return false;
 
   m_bitmask = bm;
@@ -2133,6 +2135,7 @@ void
 irange_bitmask::verify_mask () const
 {
   gcc_assert (m_value.get_precision () == m_mask.get_precision ());
+  gcc_checking_assert (wi::bit_and (m_mask, m_value) == 0);
 }
 
 void

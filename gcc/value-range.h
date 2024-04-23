@@ -139,8 +139,8 @@ public:
   void set_unknown (unsigned prec);
   bool unknown_p () const;
   unsigned get_precision () const;
-  bool union_ (const irange_bitmask &src);
-  bool intersect (const irange_bitmask &src);
+  void union_ (const irange_bitmask &src);
+  void intersect (const irange_bitmask &src);
   bool operator== (const irange_bitmask &src) const;
   bool operator!= (const irange_bitmask &src) const { return !(*this == src); }
   void verify_mask () const;
@@ -233,29 +233,18 @@ irange_bitmask::operator== (const irange_bitmask &src) const
   return m_value == src.m_value && m_mask == src.m_mask;
 }
 
-inline bool
-irange_bitmask::union_ (const irange_bitmask &orig_src)
+inline void
+irange_bitmask::union_ (const irange_bitmask &src)
 {
-  // Normalize mask.
-  irange_bitmask src (orig_src.m_value & ~orig_src.m_mask, orig_src.m_mask);
-  m_value &= ~m_mask;
-
-  irange_bitmask save (*this);
   m_mask = (m_mask | src.m_mask) | (m_value ^ src.m_value);
   m_value = m_value & src.m_value;
   if (flag_checking)
     verify_mask ();
-  return *this != save;
 }
 
-inline bool
-irange_bitmask::intersect (const irange_bitmask &orig_src)
+inline void
+irange_bitmask::intersect (const irange_bitmask &src)
 {
-  // Normalize mask.
-  irange_bitmask src (orig_src.m_value & ~orig_src.m_mask, orig_src.m_mask);
-  m_value &= ~m_mask;
-
-  irange_bitmask save (*this);
   // If we have two known bits that are incompatible, the resulting
   // bit is undefined.  It is unclear whether we should set the entire
   // range to UNDEFINED, or just a subset of it.  For now, set the
@@ -274,7 +263,6 @@ irange_bitmask::intersect (const irange_bitmask &orig_src)
     }
   if (flag_checking)
     verify_mask ();
-  return *this != save;
 }
 
 // An integer range without any storage.
