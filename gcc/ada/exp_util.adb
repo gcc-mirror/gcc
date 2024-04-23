@@ -8808,9 +8808,10 @@ package body Exp_Util is
          First_Stmt : Node_Id) return Boolean
       is
          function Find_Renamed_Object (Ren_Decl : Node_Id) return Entity_Id;
-         --  Given an object renaming declaration, retrieve the entity of the
-         --  renamed name. Return Empty if the renamed name is anything other
-         --  than a variable or a constant.
+         --  Given an object renaming declaration, retrieve the entity within
+         --  the renamed name, recursively if this entity is itself a renaming.
+         --  Return Empty if the renamed name contains anything other than a
+         --  variable or a constant.
 
          -------------------------
          -- Find_Renamed_Object --
@@ -8877,7 +8878,16 @@ package body Exp_Util is
                Search (Constant_Value (Ren_Obj));
             end if;
 
-            return Ren_Obj;
+            --  Recurse if Ren_Obj is itself a renaming
+
+            if Present (Ren_Obj)
+              and then Ekind (Ren_Obj) = E_Variable
+              and then Present (Renamed_Object (Ren_Obj))
+            then
+               return Find_Renamed_Object (Declaration_Node (Ren_Obj));
+            else
+               return Ren_Obj;
+            end if;
          end Find_Renamed_Object;
 
          --  Local variables
