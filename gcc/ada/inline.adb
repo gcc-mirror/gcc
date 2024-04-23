@@ -1094,7 +1094,6 @@ package body Inline is
       --  If the body of the subprogram includes a call that returns an
       --  unconstrained type, the secondary stack is involved, and it is
       --  not worth inlining.
-
       -------------------------
       -- Has_Extended_Return --
       -------------------------
@@ -1462,6 +1461,14 @@ package body Inline is
      (Spec_Id : Entity_Id;
       Body_Id : Entity_Id) return Boolean
    is
+      function Has_Constant_With_Address_Clause
+        (Body_Node : Node_Id)
+         return Boolean;
+      --  Returns true if the subprogram contains a declaration of a constant
+      --  with an address clause, which could become illegal in SPARK after
+      --  inlining, if the address clause mentions a constant view of a mutable
+      --  object at call site.
+
       function Has_Formal_Or_Result_Of_Deep_Type
         (Id : Entity_Id) return Boolean;
       --  Returns true if the subprogram has at least one formal parameter or
@@ -1501,6 +1508,70 @@ package body Inline is
       --  defined in SPARK RM 3.10. This is only a safe approximation, as the
       --  knowledge of the SPARK boundary is needed to determine exactly
       --  traversal functions.
+
+      --------------------------------------
+      -- Has_Constant_With_Address_Clause --
+      --------------------------------------
+
+      function Has_Constant_With_Address_Clause
+        (Body_Node : Node_Id)
+         return Boolean
+      is
+         function Check_Constant_With_Addresss_Clause
+           (N : Node_Id)
+            return Traverse_Result;
+         --  Returns Abandon on node N if this is a declaration of a constant
+         --  object with an address clause.
+
+         -----------------------------------------
+         -- Check_Constant_With_Addresss_Clause --
+         -----------------------------------------
+
+         function Check_Constant_With_Addresss_Clause
+           (N : Node_Id)
+            return Traverse_Result
+         is
+         begin
+            case Nkind (N) is
+               when N_Object_Declaration =>
+                  declare
+                     Obj : constant Entity_Id := Defining_Entity (N);
+                  begin
+                     if Constant_Present (N)
+                       and then
+                         (Present (Address_Clause (Obj))
+                            or else Has_Aspect (Obj, Aspect_Address))
+                     then
+                        return Abandon;
+                     else
+                        return OK;
+                     end if;
+                  end;
+
+               --  Skip locally declared subprogram bodies inside the body to
+               --  inline, as the declarations inside those do not count.
+
+               when N_Subprogram_Body =>
+                  if N = Body_Node then
+                     return OK;
+                  else
+                     return Skip;
+                  end if;
+
+               when others =>
+                  return OK;
+            end case;
+         end Check_Constant_With_Addresss_Clause;
+
+         function Check_All_Constants_With_Address_Clause is new
+           Traverse_Func (Check_Constant_With_Addresss_Clause);
+
+      --  Start of processing for Has_Constant_With_Address_Clause
+
+      begin
+         return Check_All_Constants_With_Address_Clause
+           (Body_Node) = Abandon;
+      end Has_Constant_With_Address_Clause;
 
       ---------------------------------------
       -- Has_Formal_Or_Result_Of_Deep_Type --
@@ -2007,6 +2078,16 @@ package body Inline is
       --  precise definition of some entities.
 
       elsif Has_Hide_Unhide_Annotation (Spec_Id, Body_Id) then
+         return False;
+
+      --  Do not inline subprograms containing constant declarations with an
+      --  address clause, as inlining could lead to a spurious violation of
+      --  SPARK rules.
+
+      elsif Present (Body_Id)
+        and then
+          Has_Constant_With_Address_Clause (Unit_Declaration_Node (Body_Id))
+      then
          return False;
 
       --  Otherwise, this is a subprogram declared inside the private part of a
