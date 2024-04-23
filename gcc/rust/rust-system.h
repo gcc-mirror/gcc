@@ -46,6 +46,7 @@
 #include <fstream>
 #include <array>
 #include <algorithm>
+#include <stack>
 #include <limits>
 #include <numeric>
 
