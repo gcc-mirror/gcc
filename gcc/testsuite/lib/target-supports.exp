@@ -12392,6 +12392,20 @@ proc check_effective_target_profile_update_atomic {} {
     } "-fprofile-update=atomic -fprofile-generate"]
 }
 
+# Return 1 if the target has a vector facility.
+proc check_effective_target_s390_mvx { } {
+    if ![istarget s390*-*-*] then {
+	return 0;
+    }
+
+    return [check_no_compiler_messages_nocache s390_mvx assembly {
+	#if !defined __VX__
+	#error no vector facility.
+	#endif
+	int dummy;
+    } [current_compiler_flags]]
+}
+
 # Return 1 if vector (va - vector add) instructions are understood by
 # the assembler and can be executed.  This also covers checking for
 # the VX kernel feature.  A kernel without that feature does not
