@@ -1,4 +1,5 @@
 /* { dg-do compile { target init_priority } } */
+/* Via the magic string "-std=*++" indicate that testing one (the default) C++ standard is sufficient.  */
 
 /* Priorities must be in the range [0, 65535].  */
 void c1()
