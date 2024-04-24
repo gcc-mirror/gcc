@@ -171,7 +171,7 @@ public:
 
   void insert_node_to_hir (NodeId id, HirId ref);
   tl::optional<HirId> lookup_node_to_hir (NodeId id);
-  bool lookup_hir_to_node (HirId id, NodeId *ref);
+  tl::optional<NodeId> lookup_hir_to_node (HirId id);
 
   void insert_location (HirId id, location_t locus);
   location_t lookup_location (HirId id);

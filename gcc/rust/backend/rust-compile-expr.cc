@@ -2216,10 +2216,12 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
 
   const Resolver::CanonicalPath &parent_canonical_path
     = closure_tyty.get_ident ().path;
-  NodeId node_id;
-  bool ok = ctx->get_mappings ().lookup_hir_to_node (
-    expr.get_mappings ().get_hirid (), &node_id);
-  rust_assert (ok);
+
+  tl::optional<NodeId> nid = ctx->get_mappings ().lookup_hir_to_node (
+    expr.get_mappings ().get_hirid ());
+  rust_assert (nid.has_value ());
+  auto node_id = nid.value ();
+
   Resolver::CanonicalPath path = parent_canonical_path.append (
     Resolver::CanonicalPath::new_seg (node_id, "{{closure}}"));
 
