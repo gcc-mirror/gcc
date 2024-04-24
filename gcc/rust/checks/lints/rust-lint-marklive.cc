@@ -24,6 +24,7 @@
 #include "rust-hir-full.h"
 #include "rust-name-resolver.h"
 #include "rust-immutable-name-resolution-context.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace Analysis {
@@ -118,9 +119,9 @@ MarkLive::visit (HIR::PathInExpression &expr)
   find_ref_node_id (ast_node_id, ref_node_id);
 
   // node back to HIR
-  HirId ref;
-  bool ok = mappings.lookup_node_to_hir (ref_node_id, &ref);
-  rust_assert (ok);
+  tl::optional<HirId> hid = mappings.lookup_node_to_hir (ref_node_id);
+  rust_assert (hid.has_value ());
+  auto ref = hid.value ();
 
   // it must resolve to some kind of HIR::Item or HIR::InheritImplItem
   HIR::Item *resolved_item = mappings.lookup_hir_item (ref);
@@ -154,10 +155,10 @@ MarkLive::visit (HIR::MethodCallExpr &expr)
   find_ref_node_id (ast_node_id, ref_node_id);
 
   // node back to HIR
-  HirId ref;
-  bool ok = mappings.lookup_node_to_hir (ref_node_id, &ref);
-  rust_assert (ok);
-  mark_hir_id (ref);
+  if (auto hid = mappings.lookup_node_to_hir (ref_node_id))
+    mark_hir_id (*hid);
+  else
+    rust_unreachable ();
 }
 
 bool
@@ -179,11 +180,12 @@ MarkLive::visit_path_segment (HIR::PathExprSegment seg)
       if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
 	return false;
     }
-  HirId ref;
-  bool ok = mappings.lookup_node_to_hir (ref_node_id, &ref);
-  rust_assert (ok);
-  mark_hir_id (ref);
-  return true;
+  if (auto hid = mappings.lookup_node_to_hir (ref_node_id))
+    {
+      mark_hir_id (*hid);
+      return true;
+    }
+  rust_unreachable ();
 }
 
 void
@@ -253,10 +255,10 @@ MarkLive::visit (HIR::TypeAlias &alias)
   NodeId ast_node_id;
   resolver->lookup_resolved_type (
     alias.get_type_aliased ()->get_mappings ().get_nodeid (), &ast_node_id);
-  HirId hir_id;
-  bool ok = mappings.lookup_node_to_hir (ast_node_id, &hir_id);
-  rust_assert (ok);
-  mark_hir_id (hir_id);
+  if (auto hid = mappings.lookup_node_to_hir (ast_node_id))
+    mark_hir_id (*hid);
+  else
+    rust_unreachable ();
 }
 
 void

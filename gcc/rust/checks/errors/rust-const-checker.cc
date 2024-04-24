@@ -21,6 +21,7 @@
 #include "rust-hir-expr.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace HIR {
@@ -352,18 +353,22 @@ ConstChecker::visit (CallExpr &expr)
 
   NodeId ast_node_id = expr.get_fnexpr ()->get_mappings ().get_nodeid ();
   NodeId ref_node_id;
-  HirId definition_id;
 
   // We don't care about types here
   if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
     return;
 
-  rust_assert (mappings.lookup_node_to_hir (ref_node_id, &definition_id));
+  if (auto definition_id = mappings.lookup_node_to_hir (ref_node_id))
+    {
+      check_function_call (*definition_id, expr.get_locus ());
 
-  check_function_call (definition_id, expr.get_locus ());
-
-  for (auto &arg : expr.get_arguments ())
-    arg->accept_vis (*this);
+      for (auto &arg : expr.get_arguments ())
+	arg->accept_vis (*this);
+    }
+  else
+    {
+      rust_unreachable ();
+    }
 }
 
 void

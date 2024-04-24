@@ -117,19 +117,18 @@ TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
       return false;
     }
 
-  HirId hir_node = UNKNOWN_HIRID;
-  if (!mappings.lookup_node_to_hir (ref, &hir_node))
+  if (auto hid = mappings.lookup_node_to_hir (ref))
     {
-      rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
-      return false;
+      HIR::Item *resolved_item = mappings.lookup_hir_item (hid.value ());
+      rust_assert (resolved_item != nullptr);
+      rust_assert (resolved_item->get_item_kind ()
+		   == HIR::Item::ItemKind::Trait);
+      *resolved = static_cast<HIR::Trait *> (resolved_item);
+
+      return true;
     }
-
-  HIR::Item *resolved_item = mappings.lookup_hir_item (hir_node);
-  rust_assert (resolved_item != nullptr);
-  rust_assert (resolved_item->get_item_kind () == HIR::Item::ItemKind::Trait);
-  *resolved = static_cast<HIR::Trait *> (resolved_item);
-
-  return true;
+  rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
+  return false;
 }
 
 TraitReference *

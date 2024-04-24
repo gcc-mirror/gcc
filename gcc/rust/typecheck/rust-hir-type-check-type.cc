@@ -372,8 +372,8 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	}
 
       // node back to HIR
-      HirId ref = UNKNOWN_HIRID;
-      if (!mappings.lookup_node_to_hir (ref_node_id, &ref))
+      tl::optional<HirId> hid = mappings.lookup_node_to_hir (ref_node_id);
+      if (!hid.has_value ())
 	{
 	  if (is_root)
 	    {
@@ -389,6 +389,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 
 	  return root_tyty;
 	}
+      auto ref = hid.value ();
 
       auto seg_is_module = (nullptr != mappings.lookup_module (ref));
       auto seg_is_crate = mappings.is_local_hirid_crate (ref);
@@ -997,27 +998,24 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
     }
 
   // node back to HIR
-  HirId ref;
-  if (!mappings.lookup_node_to_hir (ref_node_id, &ref))
+  if (auto hid = mappings.lookup_node_to_hir (ref_node_id))
     {
+      // the base reference for this name _must_ have a type set
+      TyTy::BaseType *lookup;
+      if (!context->lookup_type (*hid, &lookup))
+	{
+	  rust_error_at (mappings.lookup_location (*hid),
+			 "Failed to resolve where-clause binding type: %s",
+			 binding_type_path->as_string ().c_str ());
+	  return;
+	}
+
       // FIXME
-      rust_error_at (UNDEF_LOCATION, "where-clause reverse lookup failure");
+      // rust_assert (binding->is_equal (*lookup));
+      lookup->inherit_bounds (specified_bounds);
       return;
     }
-
-  // the base reference for this name _must_ have a type set
-  TyTy::BaseType *lookup;
-  if (!context->lookup_type (ref, &lookup))
-    {
-      rust_error_at (mappings.lookup_location (ref),
-		     "Failed to resolve where-clause binding type: %s",
-		     binding_type_path->as_string ().c_str ());
-      return;
-    }
-
-  // FIXME
-  // rust_assert (binding->is_equal (*lookup));
-  lookup->inherit_bounds (specified_bounds);
+  rust_error_at (UNDEF_LOCATION, "where-clause reverse lookup failure");
 }
 
 } // namespace Resolver

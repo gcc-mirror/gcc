@@ -155,9 +155,9 @@ TyTyResolveCompile::visit (const TyTy::ClosureType &type)
   for (const auto &capture : type.get_captures ())
     {
       // lookup the HirId
-      HirId ref = UNKNOWN_HIRID;
-      bool ok = mappings.lookup_node_to_hir (capture, &ref);
-      rust_assert (ok);
+      tl::optional<HirId> hid = mappings.lookup_node_to_hir (capture);
+      rust_assert (hid.has_value ());
+      auto ref = hid.value ();
 
       // lookup the var decl type
       TyTy::BaseType *lookup = nullptr;
