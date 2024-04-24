@@ -1,3 +1,20 @@
+2024-04-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-03-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_fold_builtin): Make fcode an int to
+	avoid a mismatch with DECL_MD_FUNCTION_CODE().
+
+2024-04-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-11-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Test ld64 for -platform-version support.
+
 2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

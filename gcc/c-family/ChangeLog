@@ -1,3 +1,11 @@
+2024-04-23  Matt Jacobson  <mhjacobson@me.com>
+
+	Backported from master:
+	2021-08-17  Matt Jacobson  <mhjacobson@me.com>
+
+	* c-opts.c (c_common_post_options): Default to
+	flag_objc_sjlj_exceptions = 1 only when flag_objc_abi < 2.
+
 2024-01-27  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/105608

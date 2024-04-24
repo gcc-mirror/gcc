@@ -1,3 +1,40 @@
+2024-04-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/memcpy-strategy-10.c: Account for
+	__USER_LABEL_PREFIX__.
+	* gcc.target/i386/memcpy-strategy-5.c: Likewise.
+	* gcc.target/i386/memset-strategy-5.c: Likewise.
+	* gcc.target/i386/memset-strategy-7.c: Likewise.
+
+2024-04-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-03-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr100786.c: Add dg-require alias.
+
+2024-04-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp: Exclude cctools assembler based on
+	GAS 1.38.
+
+2024-04-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+		    Matt Jacobson   <mhjacobson@me.com>
+
+	PR objc/101666
+	* obj-c++.dg/pr101666-0.mm: New test.
+	* obj-c++.dg/pr101666-1.mm: New test.
+	* obj-c++.dg/pr101666.inc: New.
+	* objc.dg/pr101666-0.m: New test.
+	* objc.dg/pr101666-1.m: New test.
+	* objc.dg/pr101666.inc: New.
+
 2024-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backported from master:
