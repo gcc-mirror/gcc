@@ -1,0 +1,20 @@
+2023-11-19  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang <cltang@codesourcery.com>
+
+	* c-omp.cc (c_omp_split_clauses): Hande uses_allocators.
+	* c-pragma.h (enum pragma_omp_clause): Add
+	PRAGMA_OMP_CLAUSE_USES_ALLOCATORS.
+
+2024-01-06  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-common.h (enum c_omp_directive_kind): Add C_OMP_DIR_META.
+	(c_omp_expand_metadirective): Declare.
+	* c-gimplify.cc: Include omp-general.h.
+	(genericize_omp_metadirective_stmt): New.
+	(c_genericize_control_stmt): Call it.
+	* c-omp.cc (c_omp_directives): Add "metadirective" and fix
+	commented-out stubs for the begin/end form.
+	(c_omp_expand_metadirective_r): New.
+	(c_omp_expand_metadirective): New.
+	* c-pragma.cc (omp_pragmas): Add "metadirective".
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_METADIRECTIVE.

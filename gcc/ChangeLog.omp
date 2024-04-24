@@ -1,3 +1,22 @@
+2023-11-19  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang <cltang@codesourcery.com>
+
+	* builtin-types.def (BT_FN_VOID_PTRMODE):
+	(BT_FN_PTRMODE_PTRMODE_INT_PTR): Add.
+	* gimplify.cc (gimplify_bind_expr): Diagnose missing
+	uses_allocators clause.
+	(gimplify_scan_omp_clauses, gimplify_adjust_omp_clauses,
+	gimplify_omp_workshare): Handle uses_allocators.
+	* omp-builtins.def (BUILT_IN_OMP_INIT_ALLOCATOR,
+	BUILT_IN_OMP_DESTROY_ALLOCATOR): Add.
+	* omp-low.cc (scan_sharing_clauses):
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_USES_ALLOCATORS.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Likewise.
+	* tree-pretty-print.cc (dump_omp_clause): Handle it.
+	* tree.h (OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR,
+	OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE,
+	OMP_CLAUSE_USES_ALLOCATORS_TRAITS): New.
+
 2022-10-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-oacc-kernels-decompose.cc (top_level_omp_for_in_stmt,

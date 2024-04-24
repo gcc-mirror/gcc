@@ -24,6 +24,10 @@ module omp_lib_kinds
      parameter :: omp_pteam_mem_alloc = 7
   integer (kind=omp_allocator_handle_kind), &
      parameter :: omp_thread_mem_alloc = 8
+
+  integer, parameter :: omp_memspace_handle_kind = c_intptr_t
+  integer (omp_memspace_handle_kind), &
+     parameter :: omp_default_mem_space = 0
 end module
 
 subroutine bar (a, b, c)
@@ -80,7 +84,8 @@ subroutine foo(x, y)
   
   !$omp target teams distribute parallel do private (x) firstprivate (y) &
   !$omp allocate ((omp_default_mem_alloc + 0):z) allocate &
-  !$omp (omp_default_mem_alloc: x, y) allocate (h: r) lastprivate (z) reduction(+:r)
+  !$omp (omp_default_mem_alloc: x, y) allocate (h: r) lastprivate (z) reduction(+:r) &
+  !$omp uses_allocators(memspace(omp_default_mem_space) : h)
   do i = 1, 10
     call bar (0, x, z);
     call bar2 (1, y, r);

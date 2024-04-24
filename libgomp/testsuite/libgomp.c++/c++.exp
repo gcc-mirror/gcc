@@ -1,6 +1,15 @@
 load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 
+proc check_effective_target_c { } {
+    return 0
+}
+
+proc check_effective_target_c++ { } {
+    return 1
+}
+
+
 if { $blddir != "" } {
     set libstdc++_library_path "../libstdc++-v3/src/.libs"
     set shlib_ext [get_shlib_extension]

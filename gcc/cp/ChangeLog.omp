@@ -1,3 +1,11 @@
+2023-11-19  Tobias Burnus  <tobias@codesourcery.com>
+	    Chung-Lin Tang <cltang@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_clause_uses_allocators): New.
+	(cp_parser_omp_clause_name, cp_parser_omp_all_clauses,
+	OMP_TARGET_CLAUSE_MASK): Handle uses_allocators.
+	* semantics.cc (finish_omp_clauses): Likewise.
+
 2022-03-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* semantics.cc (handle_omp_array_sections_1):  Add check to ensure
