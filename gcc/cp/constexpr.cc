@@ -5547,6 +5547,9 @@ cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
      more folding opportunities.  */
   auto canonicalize_obj_off = [] (tree& obj, tree& off) {
     while (TREE_CODE (obj) == COMPONENT_REF
+	   /* We need to preserve union member accesses so that we can
+	      later properly diagnose accessing the wrong member.  */
+	   && TREE_CODE (TREE_TYPE (TREE_OPERAND (obj, 0))) == RECORD_TYPE
 	   && (tree_int_cst_sign_bit (off) || integer_zerop (off)))
       {
 	tree field = TREE_OPERAND (obj, 1);
