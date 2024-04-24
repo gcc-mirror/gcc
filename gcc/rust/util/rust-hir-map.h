@@ -176,7 +176,7 @@ public:
   void insert_location (HirId id, location_t locus);
   location_t lookup_location (HirId id);
 
-  bool resolve_nodeid_to_stmt (NodeId id, HIR::Stmt **stmt);
+  tl::optional<HIR::Stmt *> resolve_nodeid_to_stmt (NodeId id);
 
   std::set<HirId> &get_hirids_within_crate (CrateNum crate)
   {

@@ -805,17 +805,15 @@ Mappings::lookup_location (HirId id)
   return it->second;
 }
 
-bool
-Mappings::resolve_nodeid_to_stmt (NodeId id, HIR::Stmt **stmt)
+tl::optional<HIR::Stmt *>
+Mappings::resolve_nodeid_to_stmt (NodeId id)
 {
   auto it = nodeIdToHirMappings.find (id);
   if (it == nodeIdToHirMappings.end ())
-    return false;
+    return tl::nullopt;
 
   HirId resolved = it->second;
-  auto resolved_stmt = lookup_hir_stmt (resolved);
-  *stmt = resolved_stmt;
-  return resolved_stmt != nullptr;
+  return {lookup_hir_stmt (resolved)};
 }
 
 void
