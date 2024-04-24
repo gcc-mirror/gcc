@@ -21844,6 +21844,9 @@ Compile for CDNA1 Instinct MI100 series devices (gfx908).
 @item gfx90a
 Compile for CDNA2 Instinct MI200 series devices (gfx90a).
 
+@item gfx90c
+Compile for GCN5 Vega 7 devices (gfx90c).
+
 @item gfx1030
 Compile for RDNA2 gfx1030 devices (GFX10 series).
 

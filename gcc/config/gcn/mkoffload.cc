@@ -59,6 +59,8 @@
 #define EF_AMDGPU_MACH_AMDGCN_GFX908 0x30
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX90a
 #define EF_AMDGPU_MACH_AMDGCN_GFX90a 0x3f
+#undef  EF_AMDGPU_MACH_AMDGCN_GFX90c
+#define EF_AMDGPU_MACH_AMDGCN_GFX90c 0x32
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX1030
 #define EF_AMDGPU_MACH_AMDGCN_GFX1030 0x36
 #undef  EF_AMDGPU_MACH_AMDGCN_GFX1036
@@ -861,6 +863,8 @@ get_arch (const char *str, const char *with_arch_str)
     return EF_AMDGPU_MACH_AMDGCN_GFX908;
   else if (strcmp (str, "gfx90a") == 0)
     return EF_AMDGPU_MACH_AMDGCN_GFX90a;
+  else if (strcmp (str, "gfx90c") == 0)
+    return EF_AMDGPU_MACH_AMDGCN_GFX90c;
   else if (strcmp (str, "gfx1030") == 0)
     return EF_AMDGPU_MACH_AMDGCN_GFX1030;
   else if (strcmp (str, "gfx1036") == 0)
@@ -1098,6 +1102,11 @@ main (int argc, char **argv)
 	SET_XNACK_ANY (elf_flags);
       if (TEST_SRAM_ECC_UNSET (elf_flags))
 	SET_SRAM_ECC_ANY (elf_flags);
+      break;
+    case EF_AMDGPU_MACH_AMDGCN_GFX90c:
+      if (TEST_XNACK_UNSET (elf_flags))
+	SET_XNACK_ANY (elf_flags);
+      SET_SRAM_ECC_UNSET (elf_flags);
       break;
     default:
       fatal_error (input_location, "unhandled architecture");

@@ -47,6 +47,8 @@
 	builtin_define ("__gfx908__");                                         \
       else if (TARGET_GFX90a)                                                  \
 	builtin_define ("__gfx90a__");                                         \
+      else if (TARGET_GFX90c)                                                  \
+	builtin_define ("__gfx90c__");                                         \
       else if (TARGET_GFX1030)                                                 \
 	builtin_define ("__gfx1030__");                                        \
       else if (TARGET_GFX1036)                                                 \

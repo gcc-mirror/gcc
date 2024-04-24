@@ -93,7 +93,7 @@ extern unsigned int gcn_local_sym_hash (const char *name);
 #define NO_XNACK "march=fiji:;march=gfx1030:;march=gfx1036:;march=gfx1100:;march=gfx1103:;" \
     /* These match the defaults set in gcn.cc.  */ \
     "!mxnack*|mxnack=default:%{march=gfx900|march=gfx906|march=gfx908:-mattr=-xnack};"
-#define NO_SRAM_ECC "!march=*:;march=fiji:;march=gfx900:;march=gfx906:;"
+#define NO_SRAM_ECC "!march=*:;march=fiji:;march=gfx900:;march=gfx906:;march=gfx90c:;"
 
 /* In HSACOv4 no attribute setting means the binary supports "any" hardware
    configuration.  The name of the attribute also changed.  */

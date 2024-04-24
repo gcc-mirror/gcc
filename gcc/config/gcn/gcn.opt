@@ -41,6 +41,9 @@ EnumValue
 Enum(gpu_type) String(gfx90a) Value(PROCESSOR_GFX90a)
 
 EnumValue
+Enum(gpu_type) String(gfx90c) Value(PROCESSOR_GFX90c)
+
+EnumValue
 Enum(gpu_type) String(gfx1030) Value(PROCESSOR_GFX1030)
 
 EnumValue
