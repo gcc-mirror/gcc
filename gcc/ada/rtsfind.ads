@@ -199,7 +199,6 @@ package Rtsfind is
 
       --  Children of System
 
-      System_Address_Image,
       System_Address_To_Access_Conversions,
       System_Arith_64,
       System_Arith_128,
@@ -263,6 +262,8 @@ package Rtsfind is
       System_Fore_Fixed_64,
       System_Fore_Fixed_128,
       System_Fore_Real,
+      System_Img_Address_32,
+      System_Img_Address_64,
       System_Img_Bool,
       System_Img_Char,
       System_Img_Decimal_32,
@@ -756,7 +757,8 @@ package Rtsfind is
      RE_Null_Address,                    -- System
      RE_Priority,                        -- System
 
-     RE_Address_Image,                   -- System.Address_Image
+     RE_Address_Image32,                 -- System.Img_Address_32
+     RE_Address_Image64,                 -- System.Img_Address_64
 
      RE_Add_With_Ovflo_Check64,          -- System.Arith_64
      RE_Double_Divide64,                 -- System.Arith_64
@@ -2401,7 +2403,8 @@ package Rtsfind is
      RE_Null_Address                     => System,
      RE_Priority                         => System,
 
-     RE_Address_Image                    => System_Address_Image,
+     RE_Address_Image32                  => System_Img_Address_32,
+     RE_Address_Image64                  => System_Img_Address_64,
 
      RE_Add_With_Ovflo_Check64           => System_Arith_64,
      RE_Double_Divide64                  => System_Arith_64,

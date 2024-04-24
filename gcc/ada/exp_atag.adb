@@ -36,6 +36,7 @@ with Opt;            use Opt;
 with Rtsfind;        use Rtsfind;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Disp;       use Sem_Disp;
 with Sem_Util;       use Sem_Util;
@@ -776,19 +777,45 @@ package body Exp_Atag is
 
    function Build_Set_Size_Function
      (Loc       : Source_Ptr;
-      Tag_Node  : Node_Id;
-      Size_Func : Entity_Id) return Node_Id is
+      Typ       : Entity_Id;
+      Size_Func : Entity_Id) return Node_Id
+   is
+      F_Nod : constant Node_Id := Freeze_Node (Typ);
+
+      Act : Node_Id;
+
    begin
       pragma Assert (Chars (Size_Func) = Name_uSize
-        and then RTE_Record_Component_Available (RE_Size_Func));
+        and then RTE_Record_Component_Available (RE_Size_Func)
+        and then Present (F_Nod));
+
+      --  Find the declaration of the TSD object in the freeze actions
+
+      Act := First (Actions (F_Nod));
+      while Present (Act) loop
+         if Nkind (Act) = N_Object_Declaration
+           and then Nkind (Object_Definition (Act)) = N_Subtype_Indication
+           and then Is_Entity_Name (Subtype_Mark (Object_Definition (Act)))
+           and then Is_RTE (Entity (Subtype_Mark (Object_Definition (Act))),
+                            RE_Type_Specific_Data)
+         then
+            exit;
+         end if;
+
+         Next (Act);
+      end loop;
+
+      pragma Assert (Present (Act));
+
+      --  Generate:
+      --    TSD.Size_Func := Size_Ptr!(Size_Func'Unrestricted_Access);
+
       return
         Make_Assignment_Statement (Loc,
           Name =>
             Make_Selected_Component (Loc,
-              Prefix =>
-                Make_Explicit_Dereference (Loc,
-                  Build_TSD (Loc,
-                    Unchecked_Convert_To (RTE (RE_Address), Tag_Node))),
+              Prefix        =>
+                New_Occurrence_Of (Defining_Identifier (Act), Loc),
               Selector_Name =>
                 New_Occurrence_Of
                   (RTE_Record_Component (RE_Size_Func), Loc)),

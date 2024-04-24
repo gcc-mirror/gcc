@@ -70,6 +70,7 @@ with Stringt;        use Stringt;
 with Strub;          use Strub;
 with SCIL_LL;        use SCIL_LL;
 with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
 
 package body Exp_Disp is
 
@@ -5217,8 +5218,10 @@ package body Exp_Disp is
                             Chars => New_External_Name (Tname, 'A'));
             Full_Name : constant String_Id :=
                             Fully_Qualified_Name_String (First_Subtype (Typ));
-            Str1_Id   : String_Id;
-            Str2_Id   : String_Id;
+
+            Address_Image : RE_Id;
+            Str1_Id       : String_Id;
+            Str2_Id       : String_Id;
 
          begin
             --  Generate:
@@ -5240,7 +5243,17 @@ package body Exp_Disp is
             --    Exname : constant String :=
             --               Str1 & Address_Image (Tag) & Str2;
 
-            if RTE_Available (RE_Address_Image) then
+            --  We use Address_Image64 for Morello because Integer_Address
+            --  is 64-bit large even though Address is 128-bit large.
+
+            case System_Address_Size is
+               when 32     => Address_Image := RE_Address_Image32;
+               when 64     => Address_Image := RE_Address_Image64;
+               when 128    => Address_Image := RE_Address_Image64;
+               when others => raise Program_Error;
+            end case;
+
+            if RTE_Available (Address_Image) then
                Append_To (Result,
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Exname,
@@ -5256,7 +5269,7 @@ package body Exp_Disp is
                              Make_Function_Call (Loc,
                                Name =>
                                  New_Occurrence_Of
-                                   (RTE (RE_Address_Image), Loc),
+                                   (RTE (Address_Image), Loc),
                                Parameter_Associations => New_List (
                                  Unchecked_Convert_To (RTE (RE_Address),
                                    New_Occurrence_Of (DT_Ptr, Loc)))),
@@ -7565,11 +7578,7 @@ package body Exp_Disp is
             if Chars (Prim) = Name_uSize
               and then RTE_Record_Component_Available (RE_Size_Func)
             then
-               DT_Ptr := Node (First_Elmt (Access_Disp_Table (Tag_Typ)));
-               Append_To (L,
-                 Build_Set_Size_Function (Loc,
-                   Tag_Node  => New_Occurrence_Of (DT_Ptr, Loc),
-                   Size_Func => Prim));
+               Append_To (L, Build_Set_Size_Function (Loc, Tag_Typ, Prim));
             end if;
 
          else

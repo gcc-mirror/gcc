@@ -528,6 +528,8 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/s-excmac.o	\
  ada/libgnat/s-exctab.o	\
  ada/libgnat/s-htable.o	\
+ ada/libgnat/s-imad32.o	\
+ ada/libgnat/s-imad64.o	\
  ada/libgnat/s-imgint.o	\
  ada/libgnat/s-mastop.o	\
  ada/libgnat/s-memory.o	\

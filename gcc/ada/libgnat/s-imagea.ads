@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  S Y S T E M . A D D R E S S _ I M A G E                 --
+--                       S Y S T E M . I M A G E _ A                        --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--             Copyright (C) 2024, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,18 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Img_Address_32;
-with System.Img_Address_64;
+generic
 
-function System.Address_Image (A : Address) return String is
-begin
-   --  We use Address_Image64 for Morello because Integer_Address is 64-bit
-   --  large even though Address is 128-bit large.
+   type Uns is mod <>;
 
-   case Address'Size is
-      when 32     => return String (System.Img_Address_32.Address_Image32 (A));
-      when 64     => return String (System.Img_Address_64.Address_Image64 (A));
-      when 128    => return String (System.Img_Address_64.Address_Image64 (A));
-      when others => raise Program_Error;
-   end case;
-end System.Address_Image;
+package System.Image_A is
+   pragma Pure;
+
+   subtype Address_String is String (1 .. 2 * Uns'Size / Storage_Unit);
+
+   function Address_Image (A : Address) return Address_String;
+   --  Return a string made up of hexadecimal digits with upper case letters
+   --  and without prefix representing the (lower part of) address A.
+
+end System.Image_A;

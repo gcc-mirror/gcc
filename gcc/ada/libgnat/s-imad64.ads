@@ -1,12 +1,12 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                         GNAT COMPILER COMPONENTS                         --
+--                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                  S Y S T E M . A D D R E S S _ I M A G E                 --
+--                S Y S T E M . I M G _ A D D R E S S _ 6 4                 --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
+--               Copyright (C) 2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,18 +29,15 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Img_Address_32;
-with System.Img_Address_64;
+with Interfaces;
+with System.Image_A;
 
-function System.Address_Image (A : Address) return String is
-begin
-   --  We use Address_Image64 for Morello because Integer_Address is 64-bit
-   --  large even though Address is 128-bit large.
+package System.Img_Address_64 is
+   pragma Pure;
 
-   case Address'Size is
-      when 32     => return String (System.Img_Address_32.Address_Image32 (A));
-      when 64     => return String (System.Img_Address_64.Address_Image64 (A));
-      when 128    => return String (System.Img_Address_64.Address_Image64 (A));
-      when others => raise Program_Error;
-   end case;
-end System.Address_Image;
+   package Impl is new Image_A (Interfaces.Unsigned_64);
+
+   function Address_Image64 (A : Address) return Impl.Address_String
+     renames Impl.Address_Image;
+
+end System.Img_Address_64;
