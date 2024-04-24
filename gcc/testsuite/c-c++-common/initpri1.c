@@ -1,61 +1,18 @@
 /* { dg-do run { target init_priority } } */
 /* Via the magic string "-std=*++" indicate that testing one (the default) C++ standard is sufficient.  */
 
-int i;
-int j;
+#include "initpri1_part_c1.c"
 
-void c1() __attribute__((constructor (500)));
-void c2() __attribute__((constructor (700)));
-void c3() __attribute__((constructor (600)));
+#include "initpri1_part_c2.c"
 
-void c1() {
-  if (i++ != 0)
-    __builtin_abort ();
-}
+#include "initpri1_part_c3.c"
 
-void c2() {
-  if (i++ != 2)
-    __builtin_abort ();
-}
+#include "initpri1_part_d1.c"
 
-void c3() {
-  if (i++ != 1)
-    __builtin_abort ();
-}
+#include "initpri1_part_d2.c"
 
-void d1() __attribute__((destructor (500)));
-void d2() __attribute__((destructor (700)));
-void d3() __attribute__((destructor (600)));
+#include "initpri1_part_d3.c"
 
-void d1() {
-  if (--i != 0)
-    __builtin_abort ();
-}
+#include "initpri1_part_cd4.c"
 
-void d2() {
-  if (--i != 2)
-    __builtin_abort ();
-}
-
-void d3() {
-  if (j != 2)
-    __builtin_abort ();
-  if (--i != 1)
-    __builtin_abort ();
-}
-
-void cd4() __attribute__((constructor (800), destructor (800)));
-
-void cd4() {
-  if (i != 3)
-    __builtin_abort ();
-  ++j;
-}
-
-int main () {
-  if (i != 3)
-    return 1;
-  if (j != 1)
-    __builtin_abort ();
-  return 0;
-}
+#include "initpri1_part_main.c"
