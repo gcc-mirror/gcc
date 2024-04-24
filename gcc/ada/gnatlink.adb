@@ -1885,6 +1885,24 @@ begin
          Shared_Libgcc_Seen : Boolean := False;
          Static_Libgcc_Seen : Boolean := False;
 
+         function Is_Prefix
+           (Complete_String : String; Prefix : String) return Boolean;
+         --  Returns whether Prefix is a prefix of Complete_String
+
+         ---------------
+         -- Is_Prefix --
+         ---------------
+
+         function Is_Prefix
+           (Complete_String : String; Prefix : String) return Boolean
+         is
+            S : String renames Complete_String;
+            P : String renames Prefix;
+         begin
+            return P'Length <= S'Length
+              and then S (S'First .. S'First + P'Length - 1) = P;
+         end Is_Prefix;
+
       begin
          J := Linker_Options.First;
          while J <= Linker_Options.Last loop
@@ -1936,13 +1954,12 @@ begin
             --  Here we just check for a canonical form that matches the
             --  pragma Linker_Options set in the NT runtime.
 
-            if (Linker_Options.Table (J)'Length > 17
-                and then Linker_Options.Table (J) (1 .. 17) =
-                  "-Xlinker --stack=")
-              or else
-                (Linker_Options.Table (J)'Length > 12
-                 and then Linker_Options.Table (J) (1 .. 12) =
-                       "-Wl,--stack=")
+            if Is_Prefix
+                 (Complete_String => Linker_Options.Table (J).all,
+                  Prefix => "-Xlinker --stack=")
+              or else Is_Prefix
+                        (Complete_String => Linker_Options.Table (J).all,
+                         Prefix => "-Wl,--stack=")
             then
                if Stack_Op then
                   Linker_Options.Table (J .. Linker_Options.Last - 1) :=
