@@ -237,7 +237,7 @@ ExprStmtBuilder::visit (HIR::ArrayIndexExpr &expr)
   auto lhs = visit_expr (*expr.get_array_expr ());
   auto rhs = visit_expr (*expr.get_index_expr ());
   // The index is not tracked in BIR.
-  (void) rhs;
+  std::ignore = rhs;
   return_place (
     ctx.place_db.lookup_or_add_path (Place::INDEX, lookup_type (expr), lhs));
 }
@@ -454,7 +454,7 @@ ExprStmtBuilder::visit (HIR::LoopExpr &expr)
 {
   auto loop = setup_loop (expr);
 
-  (void) visit_expr (*expr.get_loop_block ());
+  std::ignore = visit_expr (*expr.get_loop_block ());
   if (!ctx.get_current_bb ().is_terminated ())
     push_goto (loop.continue_bb);
 
@@ -471,7 +471,7 @@ ExprStmtBuilder::visit (HIR::WhileLoopExpr &expr)
   push_switch (cond_val, {body_bb, loop.break_bb});
 
   ctx.current_bb = body_bb;
-  (void) visit_expr (*expr.get_loop_block ());
+  std::ignore = visit_expr (*expr.get_loop_block ());
   push_goto (loop.continue_bb);
 
   ctx.current_bb = loop.break_bb;
@@ -497,7 +497,7 @@ ExprStmtBuilder::visit (HIR::IfExpr &expr)
 
   ctx.current_bb = new_bb ();
   BasicBlockId then_start_block = ctx.current_bb;
-  (void) visit_expr (*expr.get_if_block ());
+  std::ignore = visit_expr (*expr.get_if_block ());
   if (!ctx.get_current_bb ().is_terminated ())
     push_goto (INVALID_BB); // Resolved later.
   BasicBlockId then_end_block = ctx.current_bb;
@@ -525,14 +525,14 @@ ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
 
   ctx.current_bb = new_bb ();
   BasicBlockId then_start_bb = ctx.current_bb;
-  (void) visit_expr (*expr.get_if_block (), result);
+  std::ignore = visit_expr (*expr.get_if_block (), result);
   if (!ctx.get_current_bb ().is_terminated ())
     push_goto (INVALID_BB); // Resolved later.
   BasicBlockId then_end_bb = ctx.current_bb;
 
   ctx.current_bb = new_bb ();
   BasicBlockId else_start_bb = ctx.current_bb;
-  (void) visit_expr (*expr.get_else_block (), result);
+  std::ignore = visit_expr (*expr.get_else_block (), result);
   if (!ctx.get_current_bb ().is_terminated ())
     push_goto (INVALID_BB); // Resolved later.
   BasicBlockId else_end_bb = ctx.current_bb;
@@ -658,7 +658,7 @@ ExprStmtBuilder::visit (HIR::LetStmt &stmt)
 	push_user_type_ascription (var, lookup_type (*stmt.get_type ()));
 
       if (stmt.has_init_expr ())
-	(void) visit_expr (*stmt.get_init_expr (), var);
+	std::ignore = visit_expr (*stmt.get_init_expr (), var);
     }
   else
     {
