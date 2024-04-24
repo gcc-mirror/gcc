@@ -8232,7 +8232,13 @@ if test "${with_documentation_root_url+set}" = set; then :
       *)   as_fn_error $? "documentation root URL does not end with /" "$LINENO" 5 ;;
      esac
 else
-  DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/"
+
+     docroot_url_suffix=
+     case "$gcc_version" in
+       *.[123456].0) docroot_url_suffix="gcc-$gcc_version/";;
+       *.[123456].1) docroot_url_suffix="gcc-`echo $gcc_version | sed 's/1$/0/'`/";;
+     esac
+     DOCUMENTATION_ROOT_URL="https://gcc.gnu.org/onlinedocs/$docroot_url_suffix"
 
 fi
 
@@ -21569,7 +21575,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21572 "configure"
+#line 21578 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21675,7 +21681,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21678 "configure"
+#line 21684 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
