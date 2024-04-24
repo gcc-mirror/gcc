@@ -2827,13 +2827,14 @@ package body Sem_Ch7 is
       --  Otherwise test to see if entity requires a completion. Note that
       --  subprogram entities whose declaration does not come from source are
       --  ignored here on the basis that we assume the expander will provide an
-      --  implicit completion at some point.
+      --  implicit completion at some point. In particular, an inherited
+      --  subprogram of a derived type should not cause us to return True here.
 
       elsif (Is_Overloadable (Id)
               and then Ekind (Id) not in E_Enumeration_Literal | E_Operator
               and then not Is_Abstract_Subprogram (Id)
               and then not Has_Completion (Id)
-              and then Comes_From_Source (Parent (Id)))
+              and then Comes_From_Source (Id))
 
         or else
           (Ekind (Id) = E_Package
