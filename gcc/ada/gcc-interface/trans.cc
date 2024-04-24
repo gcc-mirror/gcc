@@ -237,6 +237,9 @@ static vec<Entity_Id> gnu_program_error_label_stack;
 /* Map GNAT tree codes to GCC tree codes for simple expressions.  */
 static enum tree_code gnu_codes[Number_Node_Kinds];
 
+/* Map from identifier nodes to namespace decls.  */
+static GTY(()) hash_map<tree, tree> *namespace_map;
+
 static void init_code_table (void);
 static tree get_elaboration_procedure (void);
 static void Compilation_Unit_to_gnu (Node_Id);
@@ -5929,7 +5932,9 @@ Compilation_Unit_to_gnu (Node_Id gnat_node)
   for (gnat_pragma = First (Context_Items (gnat_node));
        Present (gnat_pragma);
        gnat_pragma = Next (gnat_pragma))
-    if (Nkind (gnat_pragma) == N_Pragma)
+    if (Nkind (gnat_pragma) == N_Pragma
+	|| Nkind (gnat_pragma) == N_With_Clause
+	|| Nkind (gnat_pragma) == N_Use_Package_Clause)
       add_stmt (gnat_to_gnu (gnat_pragma));
   process_decls (Declarations (Aux_Decls_Node (gnat_node)), Empty,
 		 true, true);
@@ -6323,6 +6328,104 @@ statement_node_p (Node_Id gnat_node)
 
   return false;
 }
+
+/* Get or create the namespace NAME.  FULL_NAME is the full name of
+   the namespace, for instance "outer__inner" -- this is needed
+   because there's only a single level hash table storing all
+   namespaces.  GNAT_NODE is used for context and passed to
+   gnat_pushdecl.  GNU_CONTEXT is the outer namespace, or NULL_TREE if
+   there is not one.  */
+
+static tree
+get_or_create_namespace (const char *name, const char *full_name,
+			 Node_Id gnat_node, tree gnu_context)
+{
+  if (namespace_map == nullptr)
+    namespace_map = hash_map<tree, tree>::create_ggc ();
+  tree full_id = get_identifier (full_name);
+  tree *value = namespace_map->get (full_id);
+  if (value != nullptr)
+    return *value;
+
+  tree id = get_identifier (name);
+  tree result = build_decl (input_location, NAMESPACE_DECL, id,
+			    void_type_node);
+  namespace_map->put (full_id, result);
+  gnat_pushdecl (result, gnat_node);
+  DECL_CONTEXT (result) = gnu_context;
+  return result;
+}
+
+/* Create namespace decls from GNAT_NAME.  GNAT_NODE is used for
+   context and passed to gnat_pushdecl, if a new namespace decl is
+   created.  GNAT_NAME can be a fully-qualified series of namespaces
+   (e.g., "outer__inner"); the innermost decl is returned.
+
+   If GNU_ORIG is non-NULL, then the new namespace will be a renaming
+   of GNU_ORIG.  That is, the final "namespace" created will actually
+   be an IMPORTED_DECL rather than a NAMESPACE_DECL.  */
+
+static tree
+get_namespace (Node_Id gnat_name, Node_Id gnat_node, tree gnu_orig = NULL_TREE)
+{
+  if (Is_Entity_Name (gnat_name))
+    gnat_name = Entity (gnat_name);
+
+  gcc_assert (Nkind (gnat_name) == N_Defining_Identifier);
+
+  if (Ekind (gnat_name) == E_Void)
+    return NULL_TREE;
+
+  /* This loop takes an encoded name and then successively handles
+     prefixes, making a namespace decl for each one.  E.g., for
+     "outer__middle__inner", it will first handle "outer", then
+     "outer__middle" (creating the namespace "middle" with a
+     DECL_CONTEXT of "outer"), and then finally
+     "outer__middle__inner".  FULL_STR always points to the start of
+     the name, while STR points to just the final component.  */
+  char *str = Get_Name_String (Chars (gnat_name));
+  const char *full_str = str;
+  tree outer = NULL_TREE;
+  tree result = NULL_TREE;
+  while (str != nullptr)
+    {
+      char *delim = strstr (str, "__");
+      if (delim != nullptr)
+	*delim = '\0';
+
+      size_t len = strlen (str);
+      char *e_ptr = nullptr;
+      if (len > 2 && strcmp (str + len - 2, "_E") == 0)
+	{
+	  e_ptr = str + len - 2;
+	  *e_ptr = '\0';
+	}
+
+      outer = result;
+      if (delim == nullptr && gnu_orig != NULL_TREE)
+	{
+	  result = build_decl (input_location, IMPORTED_DECL,
+			       get_identifier (str), void_type_node);
+	  IMPORTED_DECL_ASSOCIATED_DECL (result) = gnu_orig;
+	}
+      else
+	result = get_or_create_namespace (str, full_str, gnat_node, outer);
+
+      /* Restore the text.  */
+      if (e_ptr != nullptr)
+	*e_ptr = '_';
+      if (delim == nullptr)
+	str = nullptr;
+      else
+	{
+	  *delim = '_';
+	  str = delim + 2;
+	}
+    }
+
+  return result;
+}
+
 
 /* This function is the driver of the GNAT to GCC tree transformation process.
    It is the entry point of the tree transformer.  GNAT_NODE is the root of
@@ -6758,10 +6861,17 @@ gnat_to_gnu (Node_Id gnat_node)
       break;
 
     case N_Package_Renaming_Declaration:
-      /* These are fully handled in the front end.  */
-      /* ??? For package renamings, find a way to use GENERIC namespaces so
-	 that we get proper debug information for them.  */
-      gnu_result = alloc_stmt_list ();
+      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
+	gnu_result = alloc_stmt_list ();
+      else
+	{
+	  tree orig_ns = get_namespace (Entity (Name (gnat_node)),
+					Name (gnat_node));
+	  Node_Id name = Defining_Unit_Name (gnat_node);
+	  if (Nkind (name) == N_Defining_Program_Unit_Name)
+	    name = Defining_Identifier (name);
+	  gnu_result = get_namespace (name, gnat_node, orig_ns);
+	}
       break;
 
     /*************************************/
@@ -8025,6 +8135,18 @@ gnat_to_gnu (Node_Id gnat_node)
     /********************************/
 
     case N_Use_Package_Clause:
+      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
+	gnu_result = alloc_stmt_list ();
+      else
+	{
+	  tree ns = get_namespace (Name (gnat_node), gnat_node);
+	  gnu_result = build_decl (input_location, IMPORTED_DECL,
+				   nullptr, void_type_node);
+	  IMPORTED_DECL_ASSOCIATED_DECL (gnu_result) = ns;
+	  gnat_pushdecl (gnu_result, gnat_node);
+	}
+      break;
+
     case N_Use_Type_Clause:
       /* Nothing to do here - but these may appear in list of declarations.  */
       gnu_result = alloc_stmt_list ();
@@ -8078,6 +8200,15 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gcc_assert (type_annotate_only);
 	  gnu_result = alloc_stmt_list ();
 	}
+      break;
+
+    case N_With_Clause:
+      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL
+	  || Implicit_With (gnat_node)
+	  || Limited_Present (gnat_node))
+	gnu_result = alloc_stmt_list ();
+      else
+	gnu_result = get_namespace (Name (gnat_node), gnat_node);
       break;
 
     /***************************/
