@@ -779,15 +779,14 @@ Mappings::lookup_node_to_hir (NodeId id)
   return {it->second};
 }
 
-bool
-Mappings::lookup_hir_to_node (HirId id, NodeId *ref)
+tl::optional<NodeId>
+Mappings::lookup_hir_to_node (HirId id)
 {
   auto it = hirIdToNodeMappings.find (id);
   if (it == hirIdToNodeMappings.end ())
-    return false;
+    return tl::nullopt;
 
-  *ref = it->second;
-  return true;
+  return {it->second};
 }
 
 void

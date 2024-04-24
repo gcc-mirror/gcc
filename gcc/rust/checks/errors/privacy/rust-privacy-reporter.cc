@@ -201,12 +201,9 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
     case TyTy::ADT:
       case TyTy::STR: {
 	auto ref_id = ty->get_ref ();
-	NodeId lookup_id;
-
-	bool ok = mappings.lookup_hir_to_node (ref_id, &lookup_id);
-	rust_assert (ok);
-
-	return check_for_privacy_violation (lookup_id, locus);
+	if (auto lookup_id = mappings.lookup_hir_to_node (ref_id))
+	  return check_for_privacy_violation (*lookup_id, locus);
+	rust_unreachable ();
       }
     case TyTy::REF:
       return recursive_check (
