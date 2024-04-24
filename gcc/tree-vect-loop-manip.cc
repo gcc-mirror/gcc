@@ -1523,7 +1523,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 
   exit_dest = exit->dest;
   was_imm_dom = (get_immediate_dominator (CDI_DOMINATORS,
-					  exit_dest) == loop->header ?
+					  exit_dest) == exit->src ?
 		 true : false);
 
   /* Also copy the pre-header, this avoids jumping through hoops to
