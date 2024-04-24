@@ -33,7 +33,7 @@ public:
     OverlappingImplItemPass pass;
 
     // generate mappings
-    pass.mappings->iterate_impl_items (
+    pass.mappings.iterate_impl_items (
       [&] (HirId id, HIR::ImplItem *impl_item, HIR::ImplBlock *impl) -> bool {
 	// ignoring trait-impls might need thought later on
 	if (impl->has_trait_ref ())

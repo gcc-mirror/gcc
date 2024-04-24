@@ -350,9 +350,9 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate,
 		  if (emit_error)
 		    {
 		      rich_location r (line_table,
-				       mappings->lookup_location (get_ref ()));
+				       mappings.lookup_location (get_ref ()));
 		      r.add_range (predicate.get_locus ());
-		      r.add_range (mappings->lookup_location (i.get_hirid ()));
+		      r.add_range (mappings.lookup_location (i.get_hirid ()));
 
 		      std::string rich_msg
 			= "expected " + bound_ty->destructure ()->get_name ()
@@ -960,20 +960,20 @@ InferType::clone () const
   // chain of references accordingly to ensure we don't loose the ability to
   // update the inference variables when we solve the type
 
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
 
   InferType *clone
-    = new InferType (mappings->get_next_hir_id (), get_infer_kind (),
+    = new InferType (mappings.get_next_hir_id (), get_infer_kind (),
 		     default_hint, get_ident ().locus, get_combined_refs ());
 
-  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
+  context->insert_type (Analysis::NodeMapping (mappings.get_current_crate (),
 					       UNKNOWN_NODEID,
 					       clone->get_ref (),
 					       UNKNOWN_LOCAL_DEFID),
 			clone);
-  mappings->insert_location (clone->get_ref (),
-			     mappings->lookup_location (get_ref ()));
+  mappings.insert_location (clone->get_ref (),
+			    mappings.lookup_location (get_ref ()));
 
   // setup the chain to reference this
   clone->append_reference (get_ref ());
@@ -1702,7 +1702,7 @@ ADTType *
 ADTType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 {
   auto adt = clone ()->as<ADTType> ();
-  adt->set_ty_ref (mappings->get_next_hir_id ());
+  adt->set_ty_ref (mappings.get_next_hir_id ());
   adt->used_arguments = subst_mappings;
 
   for (auto &sub : adt->get_substs ())
@@ -1851,11 +1851,11 @@ TupleType::clone () const
 TupleType *
 TupleType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
-  auto mappings_table = Analysis::Mappings::get ();
+  auto &mappings_table = Analysis::Mappings::get ();
 
   auto tuple = clone ()->as<TupleType> ();
-  tuple->set_ref (mappings_table->get_next_hir_id ());
-  tuple->set_ty_ref (mappings_table->get_next_hir_id ());
+  tuple->set_ref (mappings_table.get_next_hir_id ());
+  tuple->set_ty_ref (mappings_table.get_next_hir_id ());
 
   for (size_t i = 0; i < tuple->fields.size (); i++)
     {
@@ -1974,7 +1974,7 @@ FnType *
 FnType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 {
   FnType *fn = static_cast<FnType *> (clone ());
-  fn->set_ty_ref (mappings->get_next_hir_id ());
+  fn->set_ty_ref (mappings.get_next_hir_id ());
   fn->used_arguments = subst_mappings;
 
   for (auto &sub : fn->get_substs ())
@@ -2220,16 +2220,16 @@ ClosureType::setup_fn_once_output () const
 
   DefId trait_id = UNKNOWN_DEFID;
   bool trait_lang_item_defined
-    = mappings->lookup_lang_item (fn_once_lang_item, &trait_id);
+    = mappings.lookup_lang_item (fn_once_lang_item, &trait_id);
   rust_assert (trait_lang_item_defined);
 
   DefId trait_item_id = UNKNOWN_DEFID;
   bool trait_item_lang_item_defined
-    = mappings->lookup_lang_item (fn_once_output_lang_item, &trait_item_id);
+    = mappings.lookup_lang_item (fn_once_output_lang_item, &trait_item_id);
   rust_assert (trait_item_lang_item_defined);
 
   // resolve to the trait
-  HIR::Item *item = mappings->lookup_defid (trait_id);
+  HIR::Item *item = mappings.lookup_defid (trait_id);
   rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
   HIR::Trait *trait = static_cast<HIR::Trait *> (item);
 
@@ -2238,8 +2238,7 @@ ClosureType::setup_fn_once_output () const
   rust_assert (!trait_ref->is_error ());
 
   // resolve to trait item
-  HIR::TraitItem *trait_item
-    = mappings->lookup_trait_item_defid (trait_item_id);
+  HIR::TraitItem *trait_item = mappings.lookup_trait_item_defid (trait_item_id);
   rust_assert (trait_item != nullptr);
   rust_assert (trait_item->get_item_kind ()
 	       == HIR::TraitItem::TraitItemKind::TYPE);
@@ -2317,10 +2316,10 @@ ArrayType::clone () const
 ArrayType *
 ArrayType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
-  auto mappings_table = Analysis::Mappings::get ();
+  auto &mappings_table = Analysis::Mappings::get ();
 
   ArrayType *ref = static_cast<ArrayType *> (clone ());
-  ref->set_ty_ref (mappings_table->get_next_hir_id ());
+  ref->set_ty_ref (mappings_table.get_next_hir_id ());
 
   // might be &T or &ADT so this needs to be recursive
   auto base = ref->get_element_type ();
@@ -2391,10 +2390,10 @@ SliceType::clone () const
 SliceType *
 SliceType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
-  auto mappings_table = Analysis::Mappings::get ();
+  auto &mappings_table = Analysis::Mappings::get ();
 
   SliceType *ref = static_cast<SliceType *> (clone ());
-  ref->set_ty_ref (mappings_table->get_next_hir_id ());
+  ref->set_ty_ref (mappings_table.get_next_hir_id ());
 
   // might be &T or &ADT so this needs to be recursive
   auto base = ref->get_element_type ();
@@ -3005,10 +3004,10 @@ ReferenceType::clone () const
 ReferenceType *
 ReferenceType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
-  auto mappings_table = Analysis::Mappings::get ();
+  auto &mappings_table = Analysis::Mappings::get ();
 
   ReferenceType *ref = static_cast<ReferenceType *> (clone ());
-  ref->set_ty_ref (mappings_table->get_next_hir_id ());
+  ref->set_ty_ref (mappings_table.get_next_hir_id ());
 
   // might be &T or &ADT so this needs to be recursive
   auto base = ref->get_base ();
@@ -3167,10 +3166,10 @@ PointerType::clone () const
 PointerType *
 PointerType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
-  auto mappings_table = Analysis::Mappings::get ();
+  auto &mappings_table = Analysis::Mappings::get ();
 
   PointerType *ref = static_cast<PointerType *> (clone ());
-  ref->set_ty_ref (mappings_table->get_next_hir_id ());
+  ref->set_ty_ref (mappings_table.get_next_hir_id ());
 
   // might be &T or &ADT so this needs to be recursive
   auto base = ref->get_base ();
@@ -3339,7 +3338,7 @@ ParamType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
     }
 
   // this is the new subst that this needs to pass
-  p->set_ref (mappings->get_next_hir_id ());
+  p->set_ref (mappings.get_next_hir_id ());
   p->set_ty_ref (arg.get_tyty ()->get_ref ());
 
   return p;
@@ -3668,7 +3667,7 @@ ProjectionType::handle_substitions (
   //   }
 
   ProjectionType *projection = static_cast<ProjectionType *> (clone ());
-  projection->set_ty_ref (mappings->get_next_hir_id ());
+  projection->set_ty_ref (mappings.get_next_hir_id ());
   projection->used_arguments = subst_mappings;
 
   auto context = Resolver::TypeCheckContext::get ();

@@ -580,7 +580,7 @@ TypeCheckContext::regions_from_generic_args (const HIR::GenericArgs &args) const
 void
 TypeCheckContext::compute_inference_variables (bool error)
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
   // default inference variables if possible
   iterate ([&] (HirId id, TyTy::BaseType *ty) mutable -> bool {
@@ -591,14 +591,14 @@ TypeCheckContext::compute_inference_variables (bool error)
     TyTy::InferType *infer_var = static_cast<TyTy::InferType *> (ty);
     TyTy::BaseType *default_type;
 
-    rust_debug_loc (mappings->lookup_location (id),
+    rust_debug_loc (mappings.lookup_location (id),
 		    "trying to default infer-var: %s",
 		    infer_var->as_string ().c_str ());
     bool ok = infer_var->default_type (&default_type);
     if (!ok)
       {
 	if (error)
-	  rust_error_at (mappings->lookup_location (id), ErrorCode::E0282,
+	  rust_error_at (mappings.lookup_location (id), ErrorCode::E0282,
 			 "type annotations needed");
 	return true;
       }
@@ -609,7 +609,7 @@ TypeCheckContext::compute_inference_variables (bool error)
     rust_assert (result);
     rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
     result->set_ref (id);
-    insert_type (Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
+    insert_type (Analysis::NodeMapping (mappings.get_current_crate (), 0, id,
 					UNKNOWN_LOCAL_DEFID),
 		 result);
 

@@ -276,7 +276,7 @@ private:
   std::vector<HirId> worklist;
   std::set<HirId> liveSymbols;
   std::set<HirId> scannedSymbols;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
   Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
   MarkLive (std::vector<HirId> worklist)

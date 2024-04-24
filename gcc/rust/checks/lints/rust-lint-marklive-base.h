@@ -36,7 +36,7 @@ public:
 protected:
   MarkLiveBase () : mappings (Analysis::Mappings::get ()) {}
 
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 };
 
 } // namespace Analysis

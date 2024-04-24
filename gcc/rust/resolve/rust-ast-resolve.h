@@ -40,7 +40,7 @@ private:
   NameResolution ();
 
   Resolver *resolver;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 };
 
 } // namespace Resolver

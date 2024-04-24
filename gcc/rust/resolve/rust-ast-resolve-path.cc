@@ -165,8 +165,8 @@ ResolvePath::resolve_path (AST::PathInExpression &expr)
 	  && previous_resolved_node_id == module_scope_id)
 	{
 	  tl::optional<CanonicalPath &> resolved_child
-	    = mappings->lookup_module_child (module_scope_id,
-					     ident_seg.as_string ());
+	    = mappings.lookup_module_child (module_scope_id,
+					    ident_seg.as_string ());
 	  if (resolved_child.has_value ())
 	    {
 	      NodeId resolved_node = resolved_child->get_node_id ();
@@ -197,8 +197,8 @@ ResolvePath::resolve_path (AST::PathInExpression &expr)
       bool did_resolve_segment = resolved_node_id != UNKNOWN_NODEID;
       if (did_resolve_segment)
 	{
-	  if (mappings->node_is_module (resolved_node_id)
-	      || mappings->node_is_crate (resolved_node_id))
+	  if (mappings.node_is_module (resolved_node_id)
+	      || mappings.node_is_crate (resolved_node_id))
 	    {
 	      module_scope_id = resolved_node_id;
 	    }
@@ -304,8 +304,8 @@ ResolvePath::resolve_path (AST::SimplePath &expr)
 	}
 
       tl::optional<CanonicalPath &> resolved_child
-	= mappings->lookup_module_child (module_scope_id,
-					 segment.get_segment_name ());
+	= mappings.lookup_module_child (module_scope_id,
+					segment.get_segment_name ());
       if (resolved_child.has_value ())
 	{
 	  NodeId resolved_node = resolved_child->get_node_id ();
@@ -379,7 +379,7 @@ ResolvePath::resolve_path (AST::SimplePath &expr)
 	  return UNKNOWN_NODEID;
 	}
 
-      if (mappings->node_is_module (resolved_node_id))
+      if (mappings.node_is_module (resolved_node_id))
 	{
 	  module_scope_id = resolved_node_id;
 	}

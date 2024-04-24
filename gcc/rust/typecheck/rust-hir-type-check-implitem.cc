@@ -134,9 +134,9 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
       auto param_tyty = TypeCheckType::Resolve (param.get_type ().get ());
 
       // these are implicit mappings and not used
-      auto crate_num = mappings->get_current_crate ();
-      Analysis::NodeMapping mapping (crate_num, mappings->get_next_node_id (),
-				     mappings->get_next_hir_id (crate_num),
+      auto crate_num = mappings.get_current_crate ();
+      Analysis::NodeMapping mapping (crate_num, mappings.get_next_node_id (),
+				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       HIR::IdentifierPattern *param_pattern
@@ -377,9 +377,9 @@ TypeCheckImplItem::visit (HIR::Function &function)
   if (function.is_method ())
     {
       // these are implicit mappings and not used
-      auto crate_num = mappings->get_current_crate ();
-      Analysis::NodeMapping mapping (crate_num, mappings->get_next_node_id (),
-				     mappings->get_next_hir_id (crate_num),
+      auto crate_num = mappings.get_current_crate ();
+      Analysis::NodeMapping mapping (crate_num, mappings.get_next_node_id (),
+				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       // add the synthetic self param at the front, this is a placeholder for
@@ -463,8 +463,8 @@ TypeCheckImplItem::visit (HIR::Function &function)
 
   const CanonicalPath *canonical_path = nullptr;
   bool ok
-    = mappings->lookup_canonical_path (function.get_mappings ().get_nodeid (),
-				       &canonical_path);
+    = mappings.lookup_canonical_path (function.get_mappings ().get_nodeid (),
+				      &canonical_path);
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, function.get_locus ()};

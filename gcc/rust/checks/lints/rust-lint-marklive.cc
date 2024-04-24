@@ -85,7 +85,7 @@ MarkLive::go (HIR::Crate &)
       HirId hirId = worklist.back ();
       worklist.pop_back ();
       scannedSymbols.emplace (hirId);
-      HIR::Item *item = mappings->lookup_hir_item (hirId);
+      HIR::Item *item = mappings.lookup_hir_item (hirId);
       liveSymbols.emplace (hirId);
       if (item != nullptr)
 	{
@@ -95,7 +95,7 @@ MarkLive::go (HIR::Crate &)
 	{ // the item maybe inside a trait impl
 	  HirId parent_impl_id = UNKNOWN_HIRID;
 	  HIR::ImplItem *implItem
-	    = mappings->lookup_hir_implitem (hirId, &parent_impl_id);
+	    = mappings.lookup_hir_implitem (hirId, &parent_impl_id);
 	  if (implItem != nullptr)
 	    implItem->accept_vis (*this);
 	}
@@ -119,11 +119,11 @@ MarkLive::visit (HIR::PathInExpression &expr)
 
   // node back to HIR
   HirId ref;
-  bool ok = mappings->lookup_node_to_hir (ref_node_id, &ref);
+  bool ok = mappings.lookup_node_to_hir (ref_node_id, &ref);
   rust_assert (ok);
 
   // it must resolve to some kind of HIR::Item or HIR::InheritImplItem
-  HIR::Item *resolved_item = mappings->lookup_hir_item (ref);
+  HIR::Item *resolved_item = mappings.lookup_hir_item (ref);
   if (resolved_item != nullptr)
     {
       mark_hir_id (resolved_item->get_mappings ().get_hirid ());
@@ -132,7 +132,7 @@ MarkLive::visit (HIR::PathInExpression &expr)
     {
       HirId parent_impl_id = UNKNOWN_HIRID;
       HIR::ImplItem *resolved_item
-	= mappings->lookup_hir_implitem (ref, &parent_impl_id);
+	= mappings.lookup_hir_implitem (ref, &parent_impl_id);
       if (resolved_item != nullptr)
 	{
 	  mark_hir_id (resolved_item->get_impl_mappings ().get_hirid ());
@@ -155,7 +155,7 @@ MarkLive::visit (HIR::MethodCallExpr &expr)
 
   // node back to HIR
   HirId ref;
-  bool ok = mappings->lookup_node_to_hir (ref_node_id, &ref);
+  bool ok = mappings.lookup_node_to_hir (ref_node_id, &ref);
   rust_assert (ok);
   mark_hir_id (ref);
 }
@@ -180,7 +180,7 @@ MarkLive::visit_path_segment (HIR::PathExprSegment seg)
 	return false;
     }
   HirId ref;
-  bool ok = mappings->lookup_node_to_hir (ref_node_id, &ref);
+  bool ok = mappings.lookup_node_to_hir (ref_node_id, &ref);
   rust_assert (ok);
   mark_hir_id (ref);
   return true;
@@ -254,7 +254,7 @@ MarkLive::visit (HIR::TypeAlias &alias)
   resolver->lookup_resolved_type (
     alias.get_type_aliased ()->get_mappings ().get_nodeid (), &ast_node_id);
   HirId hir_id;
-  bool ok = mappings->lookup_node_to_hir (ast_node_id, &hir_id);
+  bool ok = mappings.lookup_node_to_hir (ast_node_id, &hir_id);
   rust_assert (ok);
   mark_hir_id (hir_id);
 }

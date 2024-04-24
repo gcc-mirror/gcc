@@ -273,7 +273,7 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
 
   // lookup the rules
   AST::MacroRulesDefinition *rules_def = nullptr;
-  bool ok = mappings->lookup_macro_invocation (invoc, &rules_def);
+  bool ok = mappings.lookup_macro_invocation (invoc, &rules_def);
 
   // If there's no rule associated with the invocation, we can simply return
   // early. The early name resolver will have already emitted an error.

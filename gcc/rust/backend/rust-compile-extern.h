@@ -135,7 +135,7 @@ public:
       {
 	// then we need to get the canonical path of it and mangle it
 	const Resolver::CanonicalPath *canonical_path = nullptr;
-	bool ok = ctx->get_mappings ()->lookup_canonical_path (
+	bool ok = ctx->get_mappings ().lookup_canonical_path (
 	  function.get_mappings ().get_nodeid (), &canonical_path);
 	rust_assert (ok);
 

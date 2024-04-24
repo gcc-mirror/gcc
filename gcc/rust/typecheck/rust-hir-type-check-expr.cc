@@ -630,7 +630,7 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
-    = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
 
   // we need to have it maybe
   if (!lang_item_defined)
@@ -642,7 +642,7 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings->lookup_defid (respective_lang_item_id);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
   rust_assert (item != nullptr);
 
   TyTy::BaseType *item_type = nullptr;
@@ -685,7 +685,7 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
-    = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
 
   // we need to have it maybe
   if (!lang_item_defined)
@@ -697,7 +697,7 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings->lookup_defid (respective_lang_item_id);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
   rust_assert (item != nullptr);
 
   TyTy::BaseType *item_type = nullptr;
@@ -733,7 +733,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
-    = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
 
   // we need to have it maybe
   if (!lang_item_defined)
@@ -745,7 +745,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings->lookup_defid (respective_lang_item_id);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
   rust_assert (item != nullptr);
 
   TyTy::BaseType *item_type = nullptr;
@@ -780,7 +780,7 @@ TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
-    = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
 
   // we need to have it maybe
   if (!lang_item_defined)
@@ -792,7 +792,7 @@ TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings->lookup_defid (respective_lang_item_id);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
   rust_assert (item != nullptr);
 
   TyTy::BaseType *item_type = nullptr;
@@ -811,7 +811,7 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
 
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
-    = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
 
   // we need to have it maybe
   if (!lang_item_defined)
@@ -823,7 +823,7 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings->lookup_defid (respective_lang_item_id);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
   rust_assert (item != nullptr);
 
   TyTy::BaseType *item_type = nullptr;
@@ -982,9 +982,9 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 			    expr.get_locus ());
 	  }
 
-	auto crate_num = mappings->get_current_crate ();
+	auto crate_num = mappings.get_current_crate ();
 	Analysis::NodeMapping mapping (crate_num, UNKNOWN_NODEID,
-				       mappings->get_next_hir_id (crate_num),
+				       mappings.get_next_hir_id (crate_num),
 				       UNKNOWN_LOCAL_DEFID);
 	std::string capacity_str = std::to_string (elems.get_num_elements ());
 	capacity_expr = new HIR::LiteralExpr (mapping, capacity_str,
@@ -1548,7 +1548,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
     }
 
   // we generate an implicit hirid for the closure args
-  HirId implicit_args_id = mappings->get_next_hir_id ();
+  HirId implicit_args_id = mappings.get_next_hir_id ();
   TyTy::TupleType *closure_args
     = new TyTy::TupleType (implicit_args_id, expr.get_locus (),
 			   parameter_types);
@@ -1587,7 +1587,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   LangItem::Kind lang_item_type = LangItem::Kind::FN_ONCE;
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
-    = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
   if (!lang_item_defined)
     {
       // FIXME
@@ -1599,7 +1599,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   rust_assert (lang_item_defined);
 
   // these lang items are always traits
-  HIR::Item *item = mappings->lookup_defid (respective_lang_item_id);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
   rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
   HIR::Trait *trait_item = static_cast<HIR::Trait *> (item);
 
@@ -1614,7 +1614,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 
   // lets generate an implicit Type so that it resolves to the implict tuple
   // type we have created
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_mappings ().get_nodeid (),
 				 implicit_args_id, UNKNOWN_LOCAL_DEFID);
   HIR::TupleType *implicit_tuple
@@ -1642,7 +1642,7 @@ TypeCheckExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
   std::string associated_item_name = LangItem::ToString (lang_item_type);
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
-    = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
 
   // probe for the lang-item
   if (!lang_item_defined)
@@ -1972,8 +1972,8 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
     }
 
   // crate implicit tuple
-  HirId implicit_arg_id = mappings->get_next_hir_id ();
-  Analysis::NodeMapping mapping (mappings->get_current_crate (), UNKNOWN_NODEID,
+  HirId implicit_arg_id = mappings.get_next_hir_id ();
+  Analysis::NodeMapping mapping (mappings.get_current_crate (), UNKNOWN_NODEID,
 				 implicit_arg_id, UNKNOWN_LOCAL_DEFID);
 
   TyTy::TupleType *tuple

@@ -61,7 +61,7 @@ TypeCheckEnumItem::visit (HIR::EnumItem &item)
 
   Analysis::NodeMapping mapping (item.get_mappings ().get_crate_num (),
 				 item.get_mappings ().get_nodeid (),
-				 mappings->get_next_hir_id (
+				 mappings.get_next_hir_id (
 				   item.get_mappings ().get_crate_num ()),
 				 item.get_mappings ().get_local_defid ());
   HIR::LiteralExpr *discim_expr
@@ -76,8 +76,8 @@ TypeCheckEnumItem::visit (HIR::EnumItem &item)
   context->insert_type (mapping, isize);
 
   const CanonicalPath *canonical_path = nullptr;
-  ok = mappings->lookup_canonical_path (item.get_mappings ().get_nodeid (),
-					&canonical_path);
+  ok = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid (),
+				       &canonical_path);
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, item.get_locus ()};
@@ -107,8 +107,8 @@ TypeCheckEnumItem::visit (HIR::EnumItemDiscriminant &item)
 	      TyTy::TyWithLocation (capacity_type), item.get_locus ());
 
   const CanonicalPath *canonical_path = nullptr;
-  bool ok = mappings->lookup_canonical_path (item.get_mappings ().get_nodeid (),
-					     &canonical_path);
+  bool ok = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid (),
+					    &canonical_path);
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, item.get_locus ()};
@@ -141,7 +141,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemTuple &item)
 
   Analysis::NodeMapping mapping (item.get_mappings ().get_crate_num (),
 				 item.get_mappings ().get_nodeid (),
-				 mappings->get_next_hir_id (
+				 mappings.get_next_hir_id (
 				   item.get_mappings ().get_crate_num ()),
 				 item.get_mappings ().get_local_defid ());
   HIR::LiteralExpr *discim_expr
@@ -156,8 +156,8 @@ TypeCheckEnumItem::visit (HIR::EnumItemTuple &item)
   context->insert_type (mapping, isize);
 
   const CanonicalPath *canonical_path = nullptr;
-  ok = mappings->lookup_canonical_path (item.get_mappings ().get_nodeid (),
-					&canonical_path);
+  ok = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid (),
+				       &canonical_path);
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, item.get_locus ()};
@@ -189,7 +189,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemStruct &item)
 
   Analysis::NodeMapping mapping (item.get_mappings ().get_crate_num (),
 				 item.get_mappings ().get_nodeid (),
-				 mappings->get_next_hir_id (
+				 mappings.get_next_hir_id (
 				   item.get_mappings ().get_crate_num ()),
 				 item.get_mappings ().get_local_defid ());
   HIR::LiteralExpr *discrim_expr
@@ -204,8 +204,8 @@ TypeCheckEnumItem::visit (HIR::EnumItemStruct &item)
   context->insert_type (mapping, isize);
 
   const CanonicalPath *canonical_path = nullptr;
-  ok = mappings->lookup_canonical_path (item.get_mappings ().get_nodeid (),
-					&canonical_path);
+  ok = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid (),
+				       &canonical_path);
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, item.get_locus ()};

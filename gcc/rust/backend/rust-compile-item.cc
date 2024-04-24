@@ -43,7 +43,7 @@ CompileItem::visit (HIR::StaticItem &var)
   tree type = TyTyResolveCompile::compile (ctx, resolved_type);
 
   const Resolver::CanonicalPath *canonical_path = nullptr;
-  ok = ctx->get_mappings ()->lookup_canonical_path (
+  ok = ctx->get_mappings ().lookup_canonical_path (
     var.get_mappings ().get_nodeid (), &canonical_path);
   rust_assert (ok);
 
@@ -103,8 +103,8 @@ CompileItem::visit (HIR::ConstantItem &constant)
   else
     {
       const Resolver::CanonicalPath *canonical_path_ptr = nullptr;
-      ok = ctx->get_mappings ()->lookup_canonical_path (mappings.get_nodeid (),
-							&canonical_path_ptr);
+      ok = ctx->get_mappings ().lookup_canonical_path (mappings.get_nodeid (),
+						       &canonical_path_ptr);
       rust_assert (ok);
       canonical_path = *canonical_path_ptr;
     }
@@ -155,7 +155,7 @@ CompileItem::visit (HIR::Function &function)
       HirId parent_impl_block = UNKNOWN_HIRID;
       HirId id = function.get_mappings ().get_hirid ();
       HIR::ImplItem *impl_item
-	= ctx->get_mappings ()->lookup_hir_implitem (id, &parent_impl_block);
+	= ctx->get_mappings ().lookup_hir_implitem (id, &parent_impl_block);
       if (impl_item != nullptr)
 	{
 	  Resolver::AssociatedImplTrait *impl = nullptr;
@@ -182,7 +182,7 @@ CompileItem::visit (HIR::Function &function)
   else
     {
       const Resolver::CanonicalPath *path = nullptr;
-      bool ok = ctx->get_mappings ()->lookup_canonical_path (
+      bool ok = ctx->get_mappings ().lookup_canonical_path (
 	function.get_mappings ().get_nodeid (), &path);
       rust_assert (ok);
 

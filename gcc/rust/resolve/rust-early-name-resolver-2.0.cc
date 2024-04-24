@@ -175,25 +175,25 @@ Early::visit (AST::MacroInvocation &invoc)
 
   // now do we need to keep mappings or something? or insert "uses" into our
   // ForeverStack? can we do that? are mappings simpler?
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   AST::MacroRulesDefinition *rules_def = nullptr;
-  if (!mappings->lookup_macro_def (definition->get_node_id (), &rules_def))
+  if (!mappings.lookup_macro_def (definition->get_node_id (), &rules_def))
     {
       // Macro definition not found, maybe it is not expanded yet.
       return;
     }
 
   AST::MacroRulesDefinition *tmp_def = nullptr;
-  if (mappings->lookup_macro_invocation (invoc, &tmp_def))
+  if (mappings.lookup_macro_invocation (invoc, &tmp_def))
     return;
 
-  mappings->insert_macro_invocation (invoc, rules_def);
+  mappings.insert_macro_invocation (invoc, rules_def);
 }
 
 void
 Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
   for (auto &attr : attrs)
     {
@@ -214,13 +214,13 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 		  continue;
 		}
 
-	      auto pm_def = mappings->lookup_derive_proc_macro_def (
+	      auto pm_def = mappings.lookup_derive_proc_macro_def (
 		definition->get_node_id ());
 
 	      rust_assert (pm_def.has_value ());
 
-	      mappings->insert_derive_proc_macro_invocation (trait,
-							     pm_def.value ());
+	      mappings.insert_derive_proc_macro_invocation (trait,
+							    pm_def.value ());
 	    }
 	}
       else if (Analysis::BuiltinAttributeMappings::get ()
@@ -236,13 +236,13 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 			     "could not resolve attribute macro invocation");
 	      return;
 	    }
-	  auto pm_def = mappings->lookup_attribute_proc_macro_def (
+	  auto pm_def = mappings.lookup_attribute_proc_macro_def (
 	    definition->get_node_id ());
 
 	  rust_assert (pm_def.has_value ());
 
-	  mappings->insert_attribute_proc_macro_invocation (attr.get_path (),
-							    pm_def.value ());
+	  mappings.insert_attribute_proc_macro_invocation (attr.get_path (),
+							   pm_def.value ());
 	}
     }
 }

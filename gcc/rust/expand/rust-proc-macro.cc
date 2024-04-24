@@ -29,21 +29,19 @@
 namespace Rust {
 
 BangProcMacro::BangProcMacro (ProcMacro::Bang macro)
-  : name (macro.name),
-    node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+  : name (macro.name), node_id (Analysis::Mappings::get ().get_next_node_id ()),
     macro (macro.macro)
 {}
 
 AttributeProcMacro::AttributeProcMacro (ProcMacro::Attribute macro)
-  : name (macro.name),
-    node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+  : name (macro.name), node_id (Analysis::Mappings::get ().get_next_node_id ()),
     macro (macro.macro)
 {}
 
 CustomDeriveProcMacro::CustomDeriveProcMacro (ProcMacro::CustomDerive macro)
   : trait_name (macro.trait_name),
     attributes (macro.attributes, macro.attributes + macro.attr_size),
-    node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+    node_id (Analysis::Mappings::get ().get_next_node_id ()),
     macro (macro.macro)
 {}
 

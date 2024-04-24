@@ -182,9 +182,9 @@ TopLevel::visit (AST::Module &module)
   ctx.scoped (Rib::Kind::Module, module.get_node_id (), sub_visitor,
 	      module.get_name ());
 
-  if (Analysis::Mappings::get ()->lookup_ast_module (module.get_node_id ())
+  if (Analysis::Mappings::get ().lookup_ast_module (module.get_node_id ())
       == tl::nullopt)
-    Analysis::Mappings::get ()->insert_ast_module (&module);
+    Analysis::Mappings::get ().insert_ast_module (&module);
 }
 
 void
@@ -230,17 +230,15 @@ insert_macros (std::vector<PROC_MACRO> &macros, NameResolutionContext &ctx)
 void
 TopLevel::visit (AST::ExternCrate &crate)
 {
+  auto &mappings = Analysis::Mappings::get ();
   CrateNum num;
-  rust_assert (Analysis::Mappings::get ()->lookup_crate_name (
-    crate.get_referenced_crate (), num));
+  rust_assert (mappings.lookup_crate_name (crate.get_referenced_crate (), num));
 
-  auto attribute_macros
-    = Analysis::Mappings::get ()->lookup_attribute_proc_macros (num);
+  auto attribute_macros = mappings.lookup_attribute_proc_macros (num);
 
-  auto bang_macros = Analysis::Mappings::get ()->lookup_bang_proc_macros (num);
+  auto bang_macros = mappings.lookup_bang_proc_macros (num);
 
-  auto derive_macros
-    = Analysis::Mappings::get ()->lookup_derive_proc_macros (num);
+  auto derive_macros = mappings.lookup_derive_proc_macros (num);
 
   auto sub_visitor = [&] () {
     // TODO: Find a way to keep this part clean without the double dispatch.
@@ -248,19 +246,19 @@ TopLevel::visit (AST::ExternCrate &crate)
       {
 	insert_macros (derive_macros.value (), ctx);
 	for (auto &macro : derive_macros.value ())
-	  Analysis::Mappings::get ()->insert_derive_proc_macro_def (macro);
+	  mappings.insert_derive_proc_macro_def (macro);
       }
     if (attribute_macros.has_value ())
       {
 	insert_macros (attribute_macros.value (), ctx);
 	for (auto &macro : attribute_macros.value ())
-	  Analysis::Mappings::get ()->insert_attribute_proc_macro_def (macro);
+	  mappings.insert_attribute_proc_macro_def (macro);
       }
     if (bang_macros.has_value ())
       {
 	insert_macros (bang_macros.value (), ctx);
 	for (auto &macro : bang_macros.value ())
-	  Analysis::Mappings::get ()->insert_bang_proc_macro_def (macro);
+	  mappings.insert_bang_proc_macro_def (macro);
       }
   };
 
@@ -309,12 +307,12 @@ TopLevel::visit (AST::MacroRulesDefinition &macro)
   if (macro.get_kind () == AST::MacroRulesDefinition::MacroKind::DeclMacro)
     insert_or_error_out (macro.get_rule_name (), macro, Namespace::Macros);
 
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   AST::MacroRulesDefinition *tmp = nullptr;
-  if (mappings->lookup_macro_def (macro.get_node_id (), &tmp))
+  if (mappings.lookup_macro_def (macro.get_node_id (), &tmp))
     return;
 
-  mappings->insert_macro_def (&macro);
+  mappings.insert_macro_def (&macro);
 }
 
 void
@@ -442,7 +440,7 @@ TopLevel::handle_use_glob (AST::SimplePath &glob)
     return false;
 
   auto result
-    = Analysis::Mappings::get ()->lookup_ast_module (resolved->get_node_id ());
+    = Analysis::Mappings::get ().lookup_ast_module (resolved->get_node_id ());
 
   if (!result.has_value ())
     return false;

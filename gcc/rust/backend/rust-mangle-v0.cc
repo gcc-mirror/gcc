@@ -369,13 +369,13 @@ static std::string
 v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	 const Resolver::CanonicalPath &cpath)
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
   V0Path v0path = {};
 
   cpath.iterate_segs ([&] (const Resolver::CanonicalPath &seg) {
     HirId hir_id;
-    bool ok = mappings->lookup_node_to_hir (seg.get_node_id (), &hir_id);
+    bool ok = mappings.lookup_node_to_hir (seg.get_node_id (), &hir_id);
     if (!ok)
       {
 	// FIXME: generic arg in canonical path? (e.g. <i32> in crate::S<i32>)
@@ -384,10 +384,10 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 
     HirId parent_impl_id = UNKNOWN_HIRID;
     HIR::ImplItem *impl_item
-      = mappings->lookup_hir_implitem (hir_id, &parent_impl_id);
-    HIR::TraitItem *trait_item = mappings->lookup_hir_trait_item (hir_id);
-    HIR::Item *item = mappings->lookup_hir_item (hir_id);
-    HIR::Expr *expr = mappings->lookup_hir_expr (hir_id);
+      = mappings.lookup_hir_implitem (hir_id, &parent_impl_id);
+    HIR::TraitItem *trait_item = mappings.lookup_hir_trait_item (hir_id);
+    HIR::Item *item = mappings.lookup_hir_item (hir_id);
+    HIR::Expr *expr = mappings.lookup_hir_expr (hir_id);
 
     if (impl_item != nullptr)
       {
@@ -490,7 +490,7 @@ v0_mangle_item (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
   rust_debug ("Start mangling: %s", path.get ().c_str ());
 
   // TODO: get Instanciating CrateNum
-  // auto mappings = Analysis::Mappings::get ();
+  // auto &mappings = Analysis::Mappings::get ();
   // std::string crate_name;
   // bool ok = mappings->get_crate_name (path.get_crate_num (), crate_name);
   // rust_assert (ok);

@@ -374,7 +374,7 @@ public:
   // TODO: put checks in constructor to enforce this rule?
   SimplePathSegment (std::string segment_name, location_t locus)
     : segment_name (std::move (segment_name)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   /* Returns whether simple path segment is in an invalid state (currently, if
@@ -425,14 +425,14 @@ public:
 	      location_t locus = UNDEF_LOCATION)
     : opening_scope_resolution (has_opening_scope_resolution),
       segments (std::move (path_segments)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   SimplePath (Identifier ident)
     : opening_scope_resolution (false),
       segments ({SimplePathSegment (ident.as_string (), ident.get_locus ())}),
       locus (ident.get_locus ()),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Creates an empty SimplePath.
@@ -1127,7 +1127,7 @@ public:
   virtual void add_semicolon () {}
 
 protected:
-  Stmt () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  Stmt () : node_id (Analysis::Mappings::get ().get_next_node_id ()) {}
 
   // Clone function implementation as pure virtual method
   virtual Stmt *clone_stmt_impl () const = 0;
@@ -1264,7 +1264,7 @@ public:
 
 protected:
   // Constructor
-  Expr () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  Expr () : node_id (Analysis::Mappings::get ().get_next_node_id ()) {}
 
   // Clone function implementation as pure virtual method
   virtual Expr *clone_expr_impl () const = 0;
@@ -1437,7 +1437,7 @@ public:
   NodeId get_node_id () const { return node_id; }
 
 protected:
-  Type () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  Type () : node_id (Analysis::Mappings::get ().get_next_node_id ()) {}
 
   // Clone function implementation as pure virtual method
   virtual Type *clone_type_impl () const = 0;
@@ -1519,7 +1519,7 @@ public:
   // Constructor
   Lifetime (LifetimeType type, std::string name = std::string (),
 	    location_t locus = UNDEF_LOCATION)
-    : TypeParamBound (Analysis::Mappings::get ()->get_next_node_id ()),
+    : TypeParamBound (Analysis::Mappings::get ().get_next_node_id ()),
       lifetime_type (type), lifetime_name (std::move (name)), locus (locus)
   {}
 
@@ -1588,7 +1588,7 @@ public:
   NodeId get_node_id () { return node_id; }
 
 protected:
-  GenericParam () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  GenericParam () : node_id (Analysis::Mappings::get ().get_next_node_id ()) {}
   GenericParam (NodeId node_id) : node_id (node_id) {}
 
   // Clone function implementation as pure virtual method
@@ -1682,12 +1682,12 @@ class TraitItem : public AssociatedItem
 {
 protected:
   TraitItem (location_t locus)
-    : node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+    : node_id (Analysis::Mappings::get ().get_next_node_id ()),
       vis (Visibility::create_private ()), locus (locus)
   {}
 
   TraitItem (Visibility vis, location_t locus)
-    : node_id (Analysis::Mappings::get ()->get_next_node_id ()), vis (vis),
+    : node_id (Analysis::Mappings::get ().get_next_node_id ()), vis (vis),
       locus (locus)
   {}
 
@@ -1713,7 +1713,7 @@ public:
 class ExternalItem : public Visitable
 {
 public:
-  ExternalItem () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  ExternalItem () : node_id (Analysis::Mappings::get ().get_next_node_id ()) {}
 
   ExternalItem (NodeId node_id) : node_id (node_id) {}
 
@@ -1987,7 +1987,7 @@ public:
   Crate (std::vector<std::unique_ptr<Item>> items,
 	 std::vector<Attribute> inner_attrs)
     : inner_attrs (std::move (inner_attrs)), items (std::move (items)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Copy constructor with vector clone

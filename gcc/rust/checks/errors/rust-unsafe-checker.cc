@@ -29,7 +29,7 @@ namespace HIR {
 UnsafeChecker::UnsafeChecker ()
   : context (*Resolver::TypeCheckContext::get ()),
     resolver (*Resolver::Resolver::get ()),
-    mappings (*Analysis::Mappings::get ())
+    mappings (Analysis::Mappings::get ())
 {}
 
 void

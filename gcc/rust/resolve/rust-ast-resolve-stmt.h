@@ -55,7 +55,7 @@ public:
 					constant.get_identifier ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (constant.get_node_id (), cpath);
+    mappings.insert_canonical_path (constant.get_node_id (), cpath);
 
     resolver->get_name_scope ().insert (
       path, constant.get_node_id (), constant.get_locus (), false,
@@ -89,7 +89,7 @@ public:
 				struct_decl.get_identifier ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
+    mappings.insert_canonical_path (struct_decl.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
@@ -122,7 +122,7 @@ public:
 				enum_decl.get_identifier ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (enum_decl.get_node_id (), cpath);
+    mappings.insert_canonical_path (enum_decl.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, enum_decl.get_node_id (), enum_decl.get_locus (), false,
@@ -155,7 +155,7 @@ public:
 			      item.get_identifier ().as_string ()));
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
@@ -175,7 +175,7 @@ public:
 			      item.get_identifier ().as_string ()));
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
@@ -201,7 +201,7 @@ public:
 			      item.get_identifier ().as_string ()));
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
@@ -227,7 +227,7 @@ public:
 			      item.get_identifier ().as_string ()));
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, item.get_node_id (), item.get_locus (), false, Rib::ItemType::Type,
@@ -247,7 +247,7 @@ public:
 				struct_decl.get_identifier ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
+    mappings.insert_canonical_path (struct_decl.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
@@ -285,7 +285,7 @@ public:
 				union_decl.get_identifier ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (union_decl.get_node_id (), cpath);
+    mappings.insert_canonical_path (union_decl.get_node_id (), cpath);
 
     resolver->get_type_scope ().insert (
       path, union_decl.get_node_id (), union_decl.get_locus (), false,
@@ -321,7 +321,7 @@ public:
 				function.get_function_name ().as_string ());
     auto path = decl; // this ensures we have the correct relative resolution
     auto cpath = canonical_prefix.append (decl);
-    mappings->insert_canonical_path (function.get_node_id (), cpath);
+    mappings.insert_canonical_path (function.get_node_id (), cpath);
 
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,

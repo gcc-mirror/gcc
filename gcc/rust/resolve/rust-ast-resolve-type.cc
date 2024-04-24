@@ -84,7 +84,7 @@ bool
 ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 {
   auto resolver = Resolver::get ();
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
   NodeId module_scope_id = resolver->peek_current_module_scope ();
   NodeId previous_resolved_node_id = module_scope_id;
@@ -199,8 +199,8 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	  && previous_resolved_node_id == module_scope_id)
 	{
 	  tl::optional<CanonicalPath &> resolved_child
-	    = mappings->lookup_module_child (module_scope_id,
-					     ident_seg.as_string ());
+	    = mappings.lookup_module_child (module_scope_id,
+					    ident_seg.as_string ());
 	  if (resolved_child.has_value ())
 	    {
 	      NodeId resolved_node = resolved_child->get_node_id ();
@@ -231,8 +231,8 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       bool did_resolve_segment = resolved_node_id != UNKNOWN_NODEID;
       if (did_resolve_segment)
 	{
-	  if (mappings->node_is_module (resolved_node_id)
-	      || mappings->node_is_crate (resolved_node_id))
+	  if (mappings.node_is_module (resolved_node_id)
+	      || mappings.node_is_crate (resolved_node_id))
 	    {
 	      module_scope_id = resolved_node_id;
 	    }
@@ -377,7 +377,7 @@ ResolveTypeToCanonicalPath::visit (AST::TypePath &path)
     return;
 
   const CanonicalPath *type_path = nullptr;
-  if (mappings->lookup_canonical_path (resolved_node, &type_path))
+  if (mappings.lookup_canonical_path (resolved_node, &type_path))
     {
       auto &final_seg = path.get_segments ().back ();
       switch (final_seg->get_type ())

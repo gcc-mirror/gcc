@@ -28,7 +28,7 @@ UnifyRules::UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 			std::vector<InferenceSite> &infers)
   : lhs (lhs), rhs (rhs), locus (locus), commit_flag (commit_flag),
     emit_error (emit_error), infer_flag (infer), commits (commits),
-    infers (infers), mappings (*Analysis::Mappings::get ()),
+    infers (infers), mappings (Analysis::Mappings::get ()),
     context (*TypeCheckContext::get ())
 {}
 
@@ -70,7 +70,7 @@ UnifyRules::commit (TyTy::BaseType *base, TyTy::BaseType *other,
 		    TyTy::BaseType *resolved)
 {
   TypeCheckContext &context = *TypeCheckContext::get ();
-  Analysis::Mappings &mappings = *Analysis::Mappings::get ();
+  Analysis::Mappings &mappings = Analysis::Mappings::get ();
 
   TyTy::BaseType *b = base->destructure ();
   TyTy::BaseType *o = other->destructure ();

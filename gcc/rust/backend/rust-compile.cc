@@ -189,7 +189,7 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 				      location_t locus)
 {
   // DST's get wrapped in a pseudo reference that doesnt exist...
-  const TyTy::ReferenceType r (ctx->get_mappings ()->get_next_hir_id (),
+  const TyTy::ReferenceType r (ctx->get_mappings ().get_next_hir_id (),
 			       TyTy::TyVar (ty->get_ref ()), Mutability::Imm);
 
   tree dynamic_object = TyTyResolveCompile::compile (ctx, &r);

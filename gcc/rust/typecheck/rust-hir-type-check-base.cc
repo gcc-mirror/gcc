@@ -238,9 +238,9 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 	auto ok = context->lookup_builtin ("u8", &u8);
 	rust_assert (ok);
 
-	auto crate_num = mappings->get_current_crate ();
+	auto crate_num = mappings.get_current_crate ();
 	Analysis::NodeMapping capacity_mapping (crate_num, UNKNOWN_NODEID,
-						mappings->get_next_hir_id (
+						mappings.get_next_hir_id (
 						  crate_num),
 						UNKNOWN_LOCAL_DEFID);
 
@@ -260,7 +260,7 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 	context->insert_type (capacity_mapping, expected_ty);
 
 	Analysis::NodeMapping array_mapping (crate_num, UNKNOWN_NODEID,
-					     mappings->get_next_hir_id (
+					     mappings.get_next_hir_id (
 					       crate_num),
 					     UNKNOWN_LOCAL_DEFID);
 
@@ -413,8 +413,8 @@ TypeCheckBase::resolve_generic_params (
 TyTy::TypeBoundPredicate
 TypeCheckBase::get_marker_predicate (LangItem::Kind item_type, location_t locus)
 {
-  DefId item_id = mappings->get_lang_item (item_type, locus);
-  HIR::Item *item = mappings->lookup_defid (item_id);
+  DefId item_id = mappings.get_lang_item (item_type, locus);
+  HIR::Item *item = mappings.lookup_defid (item_id);
   rust_assert (item != nullptr);
   rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
 

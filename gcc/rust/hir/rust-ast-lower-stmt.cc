@@ -35,10 +35,10 @@ ASTLoweringStmt::translate (AST::Stmt *stmt, bool *terminated)
     return nullptr;
 
   *terminated = resolver.terminated;
-  resolver.mappings->insert_location (
+  resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (),
     resolver.translated->get_locus ());
-  resolver.mappings->insert_hir_stmt (resolver.translated);
+  resolver.mappings.insert_hir_stmt (resolver.translated);
 
   return resolver.translated;
 }
@@ -48,9 +48,9 @@ ASTLoweringStmt::visit (AST::ExprStmt &stmt)
 {
   HIR::Expr *expr = ASTLoweringExpr::translate (stmt.get_expr (), &terminated);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
   translated
     = new HIR::ExprStmt (mapping, std::unique_ptr<HIR::Expr> (expr),
@@ -75,9 +75,9 @@ ASTLoweringStmt::visit (AST::LetStmt &stmt)
     = stmt.has_init_expr () ? ASTLoweringExpr::translate (stmt.get_init_expr ())
 			    : nullptr;
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
   translated
     = new HIR::LetStmt (mapping, std::unique_ptr<HIR::Pattern> (variables),
@@ -113,10 +113,10 @@ ASTLoweringStmt::visit (AST::Enum &enum_decl)
 void
 ASTLoweringStmt::visit (AST::EmptyStmt &empty)
 {
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, empty.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   translated = new HIR::EmptyStmt (mapping, empty.get_locus ());
 }

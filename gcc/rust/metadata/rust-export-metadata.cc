@@ -58,7 +58,7 @@ ExportContext::emit_trait (const HIR::Trait &trait)
   // lookup the AST node for this
   AST::Item *item = nullptr;
   bool ok
-    = mappings->lookup_ast_item (trait.get_mappings ().get_nodeid (), &item);
+    = mappings.lookup_ast_item (trait.get_mappings ().get_nodeid (), &item);
   rust_assert (ok);
 
   std::stringstream oss;
@@ -73,7 +73,7 @@ ExportContext::emit_function (const HIR::Function &fn)
 {
   // lookup the AST node for this
   AST::Item *item = nullptr;
-  bool ok = mappings->lookup_ast_item (fn.get_mappings ().get_nodeid (), &item);
+  bool ok = mappings.lookup_ast_item (fn.get_mappings ().get_nodeid (), &item);
   rust_assert (ok);
 
   // is this a CFG macro or not
@@ -120,7 +120,7 @@ ExportContext::emit_macro (NodeId macro)
   AST::Dump dumper (oss);
 
   AST::Item *item;
-  auto ok = mappings->lookup_ast_item (macro, &item);
+  auto ok = mappings.lookup_ast_item (macro, &item);
   rust_assert (ok);
 
   dumper.go (*item);
@@ -166,7 +166,7 @@ private:
 };
 
 PublicInterface::PublicInterface (HIR::Crate &crate)
-  : crate (crate), mappings (*Analysis::Mappings::get ()), context ()
+  : crate (crate), mappings (Analysis::Mappings::get ()), context ()
 {}
 
 void
@@ -363,9 +363,9 @@ PublicInterface::is_crate_public (const HIR::VisItem &item)
 std::string
 PublicInterface::expected_metadata_filename ()
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
-  const std::string current_crate_name = mappings->get_current_crate_name ();
+  const std::string current_crate_name = mappings.get_current_crate_name ();
   return current_crate_name + extension_path;
 }
 

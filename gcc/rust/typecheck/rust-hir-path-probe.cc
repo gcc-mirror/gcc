@@ -277,7 +277,7 @@ PathProbeType::process_enum_item_for_candiates (const TyTy::ADTType *adt)
   PathProbeCandidate::EnumItemCandidate enum_item_candidate{adt, v};
   PathProbeCandidate candidate{PathProbeCandidate::CandidateType::ENUM_VARIANT,
 			       receiver->clone (),
-			       mappings->lookup_location (adt->get_ty_ref ()),
+			       mappings.lookup_location (adt->get_ty_ref ()),
 			       enum_item_candidate};
   candidates.insert (std::move (candidate));
 }
@@ -285,7 +285,7 @@ PathProbeType::process_enum_item_for_candiates (const TyTy::ADTType *adt)
 void
 PathProbeType::process_impl_items_for_candidates ()
 {
-  mappings->iterate_impl_items (
+  mappings.iterate_impl_items (
     [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
       process_impl_item_candidate (id, item, impl);
       return true;
@@ -465,7 +465,7 @@ PathProbeImplTrait::Probe (const TyTy::BaseType *receiver,
 void
 PathProbeImplTrait::process_trait_impl_items_for_candidates ()
 {
-  mappings->iterate_impl_items (
+  mappings.iterate_impl_items (
     [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
       // just need to check if this is an impl block for this trait the next
       // function checks the receiver

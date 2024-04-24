@@ -46,7 +46,7 @@ NameResolution::NameResolution ()
   : resolver (Resolver::get ()), mappings (Analysis::Mappings::get ())
 {
   // these are global
-  resolver->get_type_scope ().push (mappings->get_next_node_id ());
+  resolver->get_type_scope ().push (mappings.get_next_node_id ());
   resolver->insert_builtin_types (resolver->get_type_scope ().peek ());
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
 }
@@ -62,9 +62,9 @@ void
 NameResolution::go (AST::Crate &crate)
 {
   // lookup current crate name
-  CrateNum cnum = mappings->get_current_crate ();
+  CrateNum cnum = mappings.get_current_crate ();
   std::string crate_name;
-  bool ok = mappings->get_crate_name (cnum, crate_name);
+  bool ok = mappings.get_crate_name (cnum, crate_name);
   rust_assert (ok);
 
   // setup the ribs

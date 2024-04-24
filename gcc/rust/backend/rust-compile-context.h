@@ -89,7 +89,7 @@ public:
 
   Resolver::Resolver *get_resolver () { return resolver; }
   Resolver::TypeCheckContext *get_tyctx () { return tyctx; }
-  Analysis::Mappings *get_mappings () { return mappings; }
+  Analysis::Mappings &get_mappings () { return mappings; }
 
   void push_block (tree scope)
   {
@@ -390,7 +390,7 @@ public:
 private:
   Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
   Mangler mangler;
 
   // state

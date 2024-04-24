@@ -222,10 +222,10 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   if (function.is_method ())
     {
       // these are implicit mappings and not used
-      auto mappings = Analysis::Mappings::get ();
-      auto crate_num = mappings->get_current_crate ();
-      Analysis::NodeMapping mapping (crate_num, mappings->get_next_node_id (),
-				     mappings->get_next_hir_id (crate_num),
+      auto &mappings = Analysis::Mappings::get ();
+      auto crate_num = mappings.get_current_crate ();
+      Analysis::NodeMapping mapping (crate_num, mappings.get_next_node_id (),
+				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       // add the synthetic self param at the front, this is a placeholder
@@ -298,10 +298,10 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
       TypeCheckPattern::Resolve (param.get_param_name ().get (), param_tyty);
     }
 
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   const CanonicalPath *canonical_path = nullptr;
-  bool ok = mappings->lookup_canonical_path (fn.get_mappings ().get_nodeid (),
-					     &canonical_path);
+  bool ok = mappings.lookup_canonical_path (fn.get_mappings ().get_nodeid (),
+					    &canonical_path);
   rust_assert (ok);
 
   RustIdent ident{*canonical_path, fn.get_locus ()};

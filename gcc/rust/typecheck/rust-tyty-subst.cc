@@ -157,10 +157,10 @@ SubstitutionParamMapping::override_context ()
   if (!param->can_resolve ())
     return;
 
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
 
-  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
+  context->insert_type (Analysis::NodeMapping (mappings.get_current_crate (),
 					       UNKNOWN_NODEID,
 					       param->get_ref (),
 					       UNKNOWN_LOCAL_DEFID),
@@ -940,7 +940,7 @@ SubstitutionRef::monomorphize ()
 	  if (associated == nullptr && ambigious)
 	    {
 	      // go for the first one? or error out?
-	      auto &mappings = *Analysis::Mappings::get ();
+	      auto &mappings = Analysis::Mappings::get ();
 	      const auto &type_param = subst.get_generic_param ();
 	      const auto *trait_ref = bound.get ();
 

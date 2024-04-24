@@ -127,7 +127,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (function.get_node_id (), cpath);
+    mappings.insert_canonical_path (function.get_node_id (), cpath);
   }
 
   void visit (AST::TraitItemConst &constant) override
@@ -147,7 +147,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (constant.get_node_id (), cpath);
+    mappings.insert_canonical_path (constant.get_node_id (), cpath);
   }
 
   void visit (AST::TraitItemType &type) override
@@ -165,7 +165,7 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (type.get_node_id (), cpath);
+    mappings.insert_canonical_path (type.get_node_id (), cpath);
   }
 
 private:
@@ -206,7 +206,7 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
+    mappings.insert_module_child_item (current_module, decl);
   }
 
   void visit (AST::ExternalStaticItem &item) override
@@ -225,7 +225,7 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
+    mappings.insert_module_child_item (current_module, decl);
   }
 
   void visit (AST::ExternalTypeItem &type) override
@@ -244,7 +244,7 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
+    mappings.insert_module_child_item (current_module, decl);
   }
 
 private:

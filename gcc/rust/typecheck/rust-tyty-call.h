@@ -81,7 +81,7 @@ private:
   HIR::CallExpr &call;
   TyTy::VariantDef &variant;
   Resolver::TypeCheckContext *context;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 };
 
 class Argument
@@ -131,7 +131,7 @@ protected:
   location_t receiver_locus;
   TyTy::BaseType *adjusted_self;
   Resolver::TypeCheckContext *context;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 };
 
 } // namespace TyTy

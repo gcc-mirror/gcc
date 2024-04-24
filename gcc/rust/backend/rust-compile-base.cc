@@ -877,7 +877,7 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
   // Now we can try and resolve the address since this might be a forward
   // declared function, generic function which has not be compiled yet or
   // its an not yet trait bound function
-  HIR::Item *resolved_item = ctx->get_mappings ()->lookup_defid (id);
+  HIR::Item *resolved_item = ctx->get_mappings ().lookup_defid (id);
   if (resolved_item != nullptr)
     {
       if (!fntype->has_substitutions_defined ())
@@ -888,8 +888,8 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
 
   // it might be resolved to a trait item
   HIR::TraitItem *trait_item
-    = ctx->get_mappings ()->lookup_trait_item_defid (id);
-  HIR::Trait *trait = ctx->get_mappings ()->lookup_trait_item_mapping (
+    = ctx->get_mappings ().lookup_trait_item_defid (id);
+  HIR::Trait *trait = ctx->get_mappings ().lookup_trait_item_mapping (
     trait_item->get_mappings ().get_hirid ());
 
   Resolver::TraitReference *trait_ref

@@ -157,7 +157,7 @@ TypeCheckCallExpr::visit (FnType &type)
 	  BaseType *param_ty = fnparam.second;
 	  location_t param_locus
 	    = fn_param_pattern == nullptr
-		? mappings->lookup_location (param_ty->get_ref ())
+		? mappings.lookup_location (param_ty->get_ref ())
 		: fn_param_pattern->get_locus ();
 
 	  HirId coercion_side_id = argument->get_mappings ().get_hirid ();
@@ -382,7 +382,7 @@ TypeCheckMethodCallExpr::check (FnType &type)
       BaseType *param_ty = fnparam.second;
       location_t param_locus
 	= fn_param_pattern == nullptr
-	    ? mappings->lookup_location (param_ty->get_ref ())
+	    ? mappings.lookup_location (param_ty->get_ref ())
 	    : fn_param_pattern->get_locus ();
 
       auto argument_expr_tyty = argument.get_argument_type ();

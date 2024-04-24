@@ -248,7 +248,7 @@ protected:
   std::set<HirId> combined;
   RustIdent ident;
 
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 };
 
 /** Unified interface for all function-like types. */

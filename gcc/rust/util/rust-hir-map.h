@@ -74,7 +74,7 @@ private:
 class Mappings
 {
 public:
-  static Mappings *get ();
+  static Mappings &get ();
   ~Mappings ();
 
   CrateNum get_next_crate_num (const std::string &name);
@@ -390,7 +390,7 @@ private:
   std::map<HirId, HIR::Trait *> hirTraitItemsToTraitMappings;
   std::map<HirId, HIR::Pattern *> hirPatternMappings;
   std::map<LangItem::Kind, DefId> lang_item_mappings;
-  std::map<NodeId, const Resolver::CanonicalPath> paths;
+  std::map<NodeId, Resolver::CanonicalPath> paths;
   std::map<NodeId, location_t> locations;
   std::map<NodeId, HirId> nodeIdToHirMappings;
   std::map<HirId, NodeId> hirIdToNodeMappings;
