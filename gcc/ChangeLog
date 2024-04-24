@@ -1,3 +1,40 @@
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* tsan.cc (instrument_expr): Punt on non-generic address space
+	accesses.
+
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/111736
+	* ubsan.cc (ubsan_expand_null_ifn, instrument_mem_ref): Avoid
+	SANITIZE_NULL instrumentation for non-generic address spaces
+	for which targetm.addr_space.zero_address_valid (as) is true.
+
+2024-04-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111736
+	* asan.cc (instrument_derefs): Do not instrument accesses
+	to non-generic address-spaces.
+
+2024-04-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR sanitizer/111736
+	* asan.cc (asan_protect_global): Do not protect globals
+	in non-generic address-space.
+
 2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
