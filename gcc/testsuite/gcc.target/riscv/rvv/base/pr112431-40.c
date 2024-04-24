@@ -91,4 +91,4 @@ foo2 (void *in, void *out, int n)
 /* { dg-final { scan-assembler-not {vmv2r} } } */
 /* { dg-final { scan-assembler-not {vmv4r} { xfail riscv*-*-* } } } */
 /* { dg-final { scan-assembler-not {vmv8r} } } */
-/* { dg-final { scan-assembler-not {csrr} } } */
+/* { dg-final { scan-assembler-not {csrr} { xfail riscv*-*-* } } } */

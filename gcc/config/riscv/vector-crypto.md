@@ -303,26 +303,25 @@
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
 
 (define_insn "@pred_vwsll<mode>_scalar"
-  [(set (match_operand:VWEXTI 0 "register_operand"    "=vd, vr, vd, vr, vd, vr, vd, vr, vd, vr, vd, vr, ?&vr, ?&vr")
+  [(set (match_operand:VWEXTI 0 "register_operand"              "=vr,     vr")
      (if_then_else:VWEXTI
        (unspec:<VM>
-         [(match_operand:<VM> 1 "vector_mask_operand" " vm,Wc1, vm,Wc1, vm,Wc1, vm,Wc1, vm,Wc1, vm,Wc1,vmWc1,vmWc1")
-          (match_operand 5 "vector_length_operand"    " rK, rK, rK, rK, rK, rK, rK, rK, rK, rK, rK, rK,   rK,   rK")
-          (match_operand 6 "const_int_operand"        "  i,  i,  i,  i,  i,  i,  i,  i,  i,  i,  i,  i,    i,    i")
-          (match_operand 7 "const_int_operand"        "  i,  i,  i,  i,  i,  i,  i,  i,  i,  i,  i,  i,    i,    i")
-          (match_operand 8 "const_int_operand"        "  i,  i,  i,  i,  i,  i,  i,  i,  i,  i,  i,  i,    i,    i")
+         [(match_operand:<VM> 1 "vector_mask_operand"           "vmWc1, vmWc1")
+          (match_operand 5 "vector_length_operand"              "   rK,    rK")
+          (match_operand 6 "const_int_operand"                  "    i,     i")
+          (match_operand 7 "const_int_operand"                  "    i,     i")
+          (match_operand 8 "const_int_operand"                  "    i,     i")
           (reg:SI VL_REGNUM)
           (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
        (ashift:VWEXTI
          (zero_extend:VWEXTI
-           (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"  "W21,W21,W21,W21,W42,W42,W42,W42,W84,W84,W84,W84,   vr,   vr"))
-         (match_operand:<VSUBEL> 4 "pmode_reg_or_uimm5_operand"  " rK, rK, rK, rK, rK, rK, rK, rK, rK, rK, rK, rK,   rK,   rK"))
-       (match_operand:VWEXTI 2 "vector_merge_operand"           " vu, vu,  0,  0, vu, vu,  0,  0, vu, vu,  0,  0,   vu,    0")))]
+           (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "   vr,    vr"))
+         (match_operand:<VSUBEL> 4 "pmode_reg_or_uimm5_operand" "   rK,    rK"))
+       (match_operand:VWEXTI 2 "vector_merge_operand"           "   vu,    0")))]
   "TARGET_ZVBB"
   "vwsll.v%o4\t%0,%3,%4%p1"
   [(set_attr "type" "vwsll")
-   (set_attr "mode" "<V_DOUBLE_TRUNC>")
-   (set_attr "vconstraint" "W21,W21,W21,W21,W42,W42,W42,W42,W84,W84,W84,W84,no,no")])
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
 
 ;; vbrev.v vbrev8.v vrev8.v
 (define_insn "@pred_v<rev><mode>"
