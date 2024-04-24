@@ -374,13 +374,14 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
   V0Path v0path = {};
 
   cpath.iterate_segs ([&] (const Resolver::CanonicalPath &seg) {
-    HirId hir_id;
-    bool ok = mappings.lookup_node_to_hir (seg.get_node_id (), &hir_id);
-    if (!ok)
+    tl::optional<HirId> hid = mappings.lookup_node_to_hir (seg.get_node_id ());
+    if (!hid.has_value ())
       {
 	// FIXME: generic arg in canonical path? (e.g. <i32> in crate::S<i32>)
 	rust_unreachable ();
       }
+
+    auto hir_id = hid.value ();
 
     HirId parent_impl_id = UNKNOWN_HIRID;
     HIR::ImplItem *impl_item

@@ -125,12 +125,14 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 						      expr_locus);
     }
 
-  HirId ref;
-  if (!ctx->get_mappings ().lookup_node_to_hir (ref_node_id, &ref))
+  tl::optional<HirId> hid
+    = ctx->get_mappings ().lookup_node_to_hir (ref_node_id);
+  if (!hid.has_value ())
     {
       rust_error_at (expr_locus, "reverse call path lookup failure");
       return error_mark_node;
     }
+  auto ref = hid.value ();
 
   // might be a constant
   tree constant_expr;

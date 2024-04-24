@@ -170,7 +170,7 @@ public:
 				    std::function<bool (HIR::Item *)> cb);
 
   void insert_node_to_hir (NodeId id, HirId ref);
-  bool lookup_node_to_hir (NodeId id, HirId *ref);
+  tl::optional<HirId> lookup_node_to_hir (NodeId id);
   bool lookup_hir_to_node (HirId id, NodeId *ref);
 
   void insert_location (HirId id, location_t locus);

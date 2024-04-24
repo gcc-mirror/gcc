@@ -30,6 +30,7 @@
 #include "realmpfr.h"
 #include "convert.h"
 #include "print-tree.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace Compile {
@@ -734,12 +735,14 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 	  return;
 	}
 
-      HirId ref = UNKNOWN_HIRID;
-      if (!ctx->get_mappings ().lookup_node_to_hir (resolved_node_id, &ref))
+      tl::optional<HirId> hid
+	= ctx->get_mappings ().lookup_node_to_hir (resolved_node_id);
+      if (!hid.has_value ())
 	{
 	  rust_fatal_error (expr.get_locus (), "reverse lookup label failure");
 	  return;
 	}
+      auto ref = hid.value ();
 
       tree label = NULL_TREE;
       if (!ctx->lookup_label_decl (ref, &label))
@@ -778,12 +781,14 @@ CompileExpr::visit (HIR::ContinueExpr &expr)
 	  return;
 	}
 
-      HirId ref = UNKNOWN_HIRID;
-      if (!ctx->get_mappings ().lookup_node_to_hir (resolved_node_id, &ref))
+      tl::optional<HirId> hid
+	= ctx->get_mappings ().lookup_node_to_hir (resolved_node_id);
+      if (!hid.has_value ())
 	{
 	  rust_fatal_error (expr.get_locus (), "reverse lookup label failure");
 	  return;
 	}
+      auto ref = hid.value ();
 
       if (!ctx->lookup_label_decl (ref, &label))
 	{
@@ -2176,20 +2181,21 @@ CompileExpr::visit (HIR::ClosureExpr &expr)
   for (const auto &capture : closure_tyty->get_captures ())
     {
       // lookup the HirId
-      HirId ref = UNKNOWN_HIRID;
-      bool ok = ctx->get_mappings ().lookup_node_to_hir (capture, &ref);
-      rust_assert (ok);
+      if (auto hid = ctx->get_mappings ().lookup_node_to_hir (capture))
+	{
+	  // lookup the var decl
+	  Bvariable *var = nullptr;
+	  bool found = ctx->lookup_var_decl (*hid, &var);
+	  rust_assert (found);
 
-      // lookup the var decl
-      Bvariable *var = nullptr;
-      bool found = ctx->lookup_var_decl (ref, &var);
-      rust_assert (found);
-
-      // FIXME
-      // this should bes based on the closure move-ability
-      tree var_expr = var->get_tree (expr.get_locus ());
-      tree val = address_expression (var_expr, expr.get_locus ());
-      vals.push_back (val);
+	  // FIXME
+	  // this should bes based on the closure move-ability
+	  tree var_expr = var->get_tree (expr.get_locus ());
+	  tree val = address_expression (var_expr, expr.get_locus ());
+	  vals.push_back (val);
+	}
+      else
+	rust_unreachable ();
     }
 
   translated = Backend::constructor_expression (compiled_closure_tyty, false,
@@ -2246,21 +2252,21 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   for (const auto &capture : closure_tyty.get_captures ())
     {
       // lookup the HirId
-      HirId ref = UNKNOWN_HIRID;
-      bool ok = ctx->get_mappings ().lookup_node_to_hir (capture, &ref);
-      rust_assert (ok);
+      if (auto hid = ctx->get_mappings ().lookup_node_to_hir (capture))
+	{
+	  // get the assessor
+	  tree binding = Backend::struct_field_expression (
+	    self_param->get_tree (expr.get_locus ()), idx, expr.get_locus ());
+	  tree indirection = indirect_expression (binding, expr.get_locus ());
 
-      // get the assessor
-      tree binding = Backend::struct_field_expression (self_param->get_tree (
-							 expr.get_locus ()),
-						       idx, expr.get_locus ());
-      tree indirection = indirect_expression (binding, expr.get_locus ());
+	  // insert bindings
+	  ctx->insert_closure_binding (*hid, indirection);
 
-      // insert bindings
-      ctx->insert_closure_binding (ref, indirection);
-
-      // continue
-      idx++;
+	  // continue
+	  idx++;
+	}
+      else
+	rust_unreachable ();
     }
 
   // args tuple

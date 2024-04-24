@@ -22,6 +22,7 @@
 #include "rust-hir-stmt.h"
 #include "rust-hir-item.h"
 #include "rust-attribute-values.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace HIR {
@@ -220,14 +221,18 @@ UnsafeChecker::visit (PathInExpression &path)
 {
   NodeId ast_node_id = path.get_mappings ().get_nodeid ();
   NodeId ref_node_id;
-  HirId definition_id;
 
   if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
     return;
 
-  rust_assert (mappings.lookup_node_to_hir (ref_node_id, &definition_id));
-
-  check_use_of_static (definition_id, path.get_locus ());
+  if (auto definition_id = mappings.lookup_node_to_hir (ref_node_id))
+    {
+      check_use_of_static (*definition_id, path.get_locus ());
+    }
+  else
+    {
+      rust_unreachable ();
+    }
 }
 
 void
@@ -415,7 +420,6 @@ UnsafeChecker::visit (CallExpr &expr)
 
   NodeId ast_node_id = expr.get_fnexpr ()->get_mappings ().get_nodeid ();
   NodeId ref_node_id;
-  HirId definition_id;
 
   // There are no unsafe types, and functions are defined in the name resolver.
   // If we can't find the name, then we're dealing with a type and should return
@@ -423,19 +427,24 @@ UnsafeChecker::visit (CallExpr &expr)
   if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
     return;
 
-  rust_assert (mappings.lookup_node_to_hir (ref_node_id, &definition_id));
+  if (auto definition_id = mappings.lookup_node_to_hir (ref_node_id))
+    {
+      // At this point we have the function's HIR Id. There are three checks we
+      // must perform:
+      //     1. The function is an unsafe one
+      //     2. The function is an extern one
+      //     3. The function is marked with a target_feature attribute
+      check_function_call (*definition_id, expr.get_locus ());
+      check_function_attr (*definition_id, expr.get_locus ());
 
-  // At this point we have the function's HIR Id. There are three checks we
-  // must perform:
-  //     1. The function is an unsafe one
-  //     2. The function is an extern one
-  //     3. The function is marked with a target_feature attribute
-  check_function_call (definition_id, expr.get_locus ());
-  check_function_attr (definition_id, expr.get_locus ());
-
-  if (expr.has_params ())
-    for (auto &arg : expr.get_arguments ())
-      arg->accept_vis (*this);
+      if (expr.has_params ())
+	for (auto &arg : expr.get_arguments ())
+	  arg->accept_vis (*this);
+    }
+  else
+    {
+      rust_unreachable ();
+    }
 }
 
 void

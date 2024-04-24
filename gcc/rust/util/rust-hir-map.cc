@@ -769,15 +769,14 @@ Mappings::insert_node_to_hir (NodeId id, HirId ref)
   hirIdToNodeMappings[ref] = id;
 }
 
-bool
-Mappings::lookup_node_to_hir (NodeId id, HirId *ref)
+tl::optional<HirId>
+Mappings::lookup_node_to_hir (NodeId id)
 {
   auto it = nodeIdToHirMappings.find (id);
   if (it == nodeIdToHirMappings.end ())
-    return false;
+    return tl::nullopt;
 
-  *ref = it->second;
-  return true;
+  return {it->second};
 }
 
 bool

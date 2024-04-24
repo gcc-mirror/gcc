@@ -229,8 +229,8 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	}
 
       // node back to HIR
-      HirId ref;
-      if (!mappings.lookup_node_to_hir (ref_node_id, &ref))
+      tl::optional<HirId> hid = mappings.lookup_node_to_hir (ref_node_id);
+      if (!hid.has_value ())
 	{
 	  rust_error_at (seg.get_locus (), "456 reverse lookup failure");
 	  rust_debug_loc (seg.get_locus (),
@@ -241,6 +241,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 
 	  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	}
+      auto ref = hid.value ();
 
       auto seg_is_module = (nullptr != mappings.lookup_module (ref));
       auto seg_is_crate = mappings.is_local_hirid_crate (ref);
