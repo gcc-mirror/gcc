@@ -1196,6 +1196,10 @@ extract_single_source (set_info *set)
     return nullptr;
   for (const set_info *set : sets)
     {
+      /* Skip first set, this can prevent us run into infinite recursive
+	 checking if first set is come from itself.  */
+      if (set == *sets.begin ())
+	continue;
       /* If there is a head or end insn, we conservative return
 	 NULL so that VSETVL PASS will insert vsetvl directly.  */
       if (set->insn ()->is_artificial ())
