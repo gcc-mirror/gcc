@@ -261,7 +261,7 @@ protected:
       attr_mappings (Analysis::BuiltinAttributeMappings::get ())
   {}
 
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
   Analysis::BuiltinAttributeMappings *attr_mappings;
 
   HIR::Lifetime lower_lifetime (AST::Lifetime &lifetime,

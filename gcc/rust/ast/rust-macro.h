@@ -720,7 +720,7 @@ private:
     location_t locus, bool is_semi_coloned,
     std::vector<std::unique_ptr<MacroInvocation>> &&pending_eager_invocs)
     : TraitItem (locus), outer_attrs (std::move (outer_attrs)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()),
+      node_id (Analysis::Mappings::get ().get_next_node_id ()),
       invoc_data (std::move (invoc_data)), is_semi_coloned (is_semi_coloned),
       kind (kind), builtin_kind (builtin_kind),
       pending_eager_invocs (std::move (pending_eager_invocs))

@@ -269,7 +269,7 @@ Intrinsics::compile (TyTy::FnType *fntype)
   if (it != generic_intrinsics.end ())
     return it->second (ctx, fntype);
 
-  location_t locus = ctx->get_mappings ()->lookup_location (fntype->get_ref ());
+  location_t locus = ctx->get_mappings ().lookup_location (fntype->get_ref ());
   rust_error_at (locus, ErrorCode::E0093,
 		 "unrecognized intrinsic function: %qs",
 		 fntype->get_identifier ().c_str ());

@@ -147,7 +147,7 @@ TyTyResolveCompile::visit (const TyTy::PlaceholderType &type)
 void
 TyTyResolveCompile::visit (const TyTy::ClosureType &type)
 {
-  auto mappings = ctx->get_mappings ();
+  auto &mappings = ctx->get_mappings ();
 
   std::vector<Backend::typed_identifier> fields;
 
@@ -156,7 +156,7 @@ TyTyResolveCompile::visit (const TyTy::ClosureType &type)
     {
       // lookup the HirId
       HirId ref = UNKNOWN_HIRID;
-      bool ok = mappings->lookup_node_to_hir (capture, &ref);
+      bool ok = mappings.lookup_node_to_hir (capture, &ref);
       rust_assert (ok);
 
       // lookup the var decl type
@@ -201,7 +201,7 @@ TyTyResolveCompile::visit (const TyTy::FnType &type)
     {
       auto ret = TyTyResolveCompile::compile (ctx, hir_type, trait_object_mode);
       location_t return_type_locus
-	= ctx->get_mappings ()->lookup_location (hir_type->get_ref ());
+	= ctx->get_mappings ().lookup_location (hir_type->get_ref ());
       results.push_back (
 	Backend::typed_identifier ("_", ret, return_type_locus));
     }
@@ -214,7 +214,7 @@ TyTyResolveCompile::visit (const TyTy::FnType &type)
 
       auto compiled_param = Backend::typed_identifier (
 	param_pair.first->as_string (), compiled_param_type,
-	ctx->get_mappings ()->lookup_location (param_tyty->get_ref ()));
+	ctx->get_mappings ().lookup_location (param_tyty->get_ref ()));
 
       parameters.push_back (compiled_param);
     }
@@ -263,7 +263,7 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	    = TyTyResolveCompile::compile (ctx, field->get_field_type ());
 
 	  Backend::typed_identifier f (field->get_name (), compiled_field_ty,
-				       ctx->get_mappings ()->lookup_location (
+				       ctx->get_mappings ().lookup_location (
 					 type.get_ty_ref ()));
 	  fields.push_back (std::move (f));
 	}
@@ -307,7 +307,7 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	  tree enumeral_type
 	    = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
 	  Backend::typed_identifier f (RUST_ENUM_DISR_FIELD_NAME, enumeral_type,
-				       ctx->get_mappings ()->lookup_location (
+				       ctx->get_mappings ().lookup_location (
 					 variant->get_id ()));
 	  fields.push_back (std::move (f));
 
@@ -326,7 +326,7 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 
 	      Backend::typed_identifier f (
 		field_name, compiled_field_ty,
-		ctx->get_mappings ()->lookup_location (type.get_ty_ref ()));
+		ctx->get_mappings ().lookup_location (type.get_ty_ref ()));
 	      fields.push_back (std::move (f));
 	    }
 
@@ -353,7 +353,7 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	  std::string implicit_variant_name = variant->get_identifier ();
 
 	  Backend::typed_identifier f (implicit_variant_name, variant_record,
-				       ctx->get_mappings ()->lookup_location (
+				       ctx->get_mappings ().lookup_location (
 					 type.get_ty_ref ()));
 	  enum_fields.push_back (std::move (f));
 	}
@@ -411,7 +411,7 @@ TyTyResolveCompile::visit (const TyTy::TupleType &type)
       // approach makes it simpler to use a C-only debugger, or
       // GDB's C mode, when debugging Rust.
       Backend::typed_identifier f ("__" + std::to_string (i), compiled_field_ty,
-				   ctx->get_mappings ()->lookup_location (
+				   ctx->get_mappings ().lookup_location (
 				     type.get_ty_ref ()));
       fields.push_back (std::move (f));
     }
@@ -714,14 +714,14 @@ TyTyResolveCompile::create_dyn_obj_record (const TyTy::DynamicObjectType &type)
   tree uintptr_ty = build_pointer_type (uint);
 
   Backend::typed_identifier f ("pointer", uintptr_ty,
-			       ctx->get_mappings ()->lookup_location (
+			       ctx->get_mappings ().lookup_location (
 				 type.get_ty_ref ()));
   fields.push_back (std::move (f));
 
   tree vtable_size = build_int_cst (size_type_node, items.size ());
   tree vtable_type = Backend::array_type (uintptr_ty, vtable_size);
   Backend::typed_identifier vtf ("vtable", vtable_type,
-				 ctx->get_mappings ()->lookup_location (
+				 ctx->get_mappings ().lookup_location (
 				   type.get_ty_ref ()));
   fields.push_back (std::move (vtf));
 

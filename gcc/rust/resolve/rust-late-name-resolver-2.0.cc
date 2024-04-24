@@ -34,13 +34,13 @@ Late::Late (NameResolutionContext &ctx) : DefaultResolver (ctx) {}
 static NodeId
 next_node_id ()
 {
-  return Analysis::Mappings::get ()->get_next_node_id ();
+  return Analysis::Mappings::get ().get_next_node_id ();
 };
 
 static HirId
 next_hir_id ()
 {
-  return Analysis::Mappings::get ()->get_next_hir_id ();
+  return Analysis::Mappings::get ().get_next_hir_id ();
 };
 
 void

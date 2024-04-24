@@ -212,7 +212,7 @@ protected:
   bool resolve_visibility (const AST::Visibility &vis);
 
   Resolver *resolver;
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
   NodeId resolved_node;
 };
 

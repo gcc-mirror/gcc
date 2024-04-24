@@ -74,7 +74,7 @@ EarlyNameResolver::accumulate_escaped_macros (AST::Module &module)
 
 EarlyNameResolver::EarlyNameResolver ()
   : current_scope (UNKNOWN_NODEID), resolver (*Resolver::get ()),
-    mappings (*Analysis::Mappings::get ())
+    mappings (Analysis::Mappings::get ())
 {}
 
 void

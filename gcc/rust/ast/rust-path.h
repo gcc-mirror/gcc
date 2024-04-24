@@ -506,7 +506,7 @@ public:
 		   GenericArgs generic_args = GenericArgs::create_empty ())
     : segment_name (std::move (segment_name)),
       generic_args (std::move (generic_args)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   /* Constructor for segment with generic arguments (from segment name and all
@@ -519,7 +519,7 @@ public:
       generic_args (GenericArgs (std::move (lifetime_args),
 				 std::move (generic_args),
 				 std::move (binding_args))),
-      locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      locus (locus), node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Returns whether path expression segment is in an error state.
@@ -621,7 +621,7 @@ public:
     : PathPattern (std::move (path_segments)),
       outer_attrs (std::move (outer_attrs)),
       has_opening_scope_resolution (has_opening_scope_resolution),
-      locus (locus), _node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      locus (locus), _node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Creates an error state path in expression.
@@ -743,7 +743,7 @@ public:
 		   bool has_separating_scope_resolution, location_t locus)
     : ident_segment (std::move (ident_segment)), locus (locus),
       has_separating_scope_resolution (has_separating_scope_resolution),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   TypePathSegment (std::string segment_name,
@@ -751,7 +751,7 @@ public:
     : ident_segment (PathIdentSegment (std::move (segment_name), locus)),
       locus (locus),
       has_separating_scope_resolution (has_separating_scope_resolution),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   TypePathSegment (TypePathSegment const &other)
@@ -1149,7 +1149,7 @@ public:
 		     TypePath trait_path = TypePath::create_error ())
     : type_to_invoke_on (std::move (invoke_on_type)),
       trait_path (std::move (trait_path)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Copy constructor uses custom deep copy for Type to preserve polymorphism
@@ -1243,7 +1243,7 @@ public:
     : PathPattern (std::move (path_segments)),
       outer_attrs (std::move (outer_attrs)),
       path_type (std::move (qual_path_type)), locus (locus),
-      _node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      _node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   /* TODO: maybe make a shortcut constructor that has QualifiedPathType

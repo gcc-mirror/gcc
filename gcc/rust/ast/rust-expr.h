@@ -26,7 +26,7 @@ public:
 
   LoopLabel (Lifetime loop_label, location_t locus = UNDEF_LOCATION)
     : label (std::move (loop_label)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // Returns whether the LoopLabel is in an error state.
@@ -1113,7 +1113,7 @@ public:
   NodeId get_node_id () const { return node_id; }
 
 protected:
-  ArrayElems () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+  ArrayElems () : node_id (Analysis::Mappings::get ().get_next_node_id ()) {}
 
   // pure virtual clone implementation
   virtual ArrayElems *clone_array_elems_impl () const = 0;
@@ -1762,7 +1762,7 @@ protected:
   // pure virtual clone implementation
   virtual StructExprField *clone_struct_expr_field_impl () const = 0;
 
-  StructExprField () : node_id (Analysis::Mappings::get ()->get_next_node_id ())
+  StructExprField () : node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   NodeId node_id;
@@ -4298,7 +4298,7 @@ private:
 public:
   MatchCase (MatchArm arm, std::unique_ptr<Expr> expr)
     : arm (std::move (arm)), expr (std::move (expr)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   MatchCase (const MatchCase &other)

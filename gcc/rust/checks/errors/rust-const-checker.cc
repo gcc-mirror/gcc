@@ -27,7 +27,7 @@ namespace HIR {
 
 ConstChecker::ConstChecker ()
   : resolver (*Resolver::Resolver::get ()),
-    mappings (*Analysis::Mappings::get ())
+    mappings (Analysis::Mappings::get ())
 {}
 
 void

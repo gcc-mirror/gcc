@@ -42,10 +42,10 @@ ASTLowerImplItem::translate (AST::AssociatedItem &item, HirId parent_impl_id)
       auto locus = resolver.translated->get_locus ();
 
       resolver.handle_outer_attributes (*resolver.item_cast);
-      resolver.mappings->insert_hir_implitem (parent_impl_id,
-					      resolver.translated);
-      resolver.mappings->insert_location (id, locus);
-      resolver.mappings->insert_defid_mapping (defid, resolver.item_cast);
+      resolver.mappings.insert_hir_implitem (parent_impl_id,
+					     resolver.translated);
+      resolver.mappings.insert_location (id, locus);
+      resolver.mappings.insert_defid_mapping (defid, resolver.item_cast);
     }
 
   return resolver.translated;
@@ -65,10 +65,10 @@ ASTLowerImplItem::visit (AST::TypeAlias &alias)
   HIR::Type *existing_type
     = ASTLoweringType::translate (alias.get_type_aliased ());
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, alias.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   auto type_alias
     = new HIR::TypeAlias (mapping, alias.get_new_type_name (),
@@ -89,10 +89,10 @@ ASTLowerImplItem::visit (AST::ConstantItem &constant)
   HIR::Type *type = ASTLoweringType::translate (constant.get_type (), true);
   HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ());
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   auto translated_constant
     = new HIR::ConstantItem (mapping, constant.get_identifier (), vis,
@@ -152,9 +152,9 @@ ASTLowerImplItem::visit (AST::Function &function)
       auto translated_type = std::unique_ptr<HIR::Type> (
 	ASTLoweringType::translate (param.get_type ()));
 
-      auto crate_num = mappings->get_current_crate ();
+      auto crate_num = mappings.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
-				     mappings->get_next_hir_id (crate_num),
+				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       auto hir_param
@@ -169,13 +169,13 @@ ASTLowerImplItem::visit (AST::Function &function)
       ASTLoweringBlock::translate (*function.get_definition ().value (),
 				   &terminated));
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, function.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
-  mappings->insert_location (function_body->get_mappings ().get_hirid (),
-			     function.get_locus ());
+  mappings.insert_location (function_body->get_mappings ().get_hirid (),
+			    function.get_locus ());
 
   auto fn
     = new HIR::Function (mapping, std::move (function_name),
@@ -188,8 +188,8 @@ ASTLowerImplItem::visit (AST::Function &function)
   if (!fn->get_self_param ().is_error ())
     {
       // insert mappings for self
-      mappings->insert_hir_self_param (&fn->get_self_param ());
-      mappings->insert_location (
+      mappings.insert_hir_self_param (&fn->get_self_param ());
+      mappings.insert_location (
 	fn->get_self_param ().get_mappings ().get_hirid (),
 	fn->get_self_param ().get_locus ());
     }
@@ -197,8 +197,8 @@ ASTLowerImplItem::visit (AST::Function &function)
   // add the mappings for the function params at the end
   for (auto &param : fn->get_function_params ())
     {
-      mappings->insert_hir_param (&param);
-      mappings->insert_location (mapping.get_hirid (), param.get_locus ());
+      mappings.insert_hir_param (&param);
+      mappings.insert_location (mapping.get_hirid (), param.get_locus ());
     }
 
   translated = fn;
@@ -218,9 +218,9 @@ ASTLowerTraitItem::translate (AST::AssociatedItem &item)
       auto locus = resolver.translated->get_trait_locus ();
 
       resolver.handle_outer_attributes (*resolver.translated);
-      resolver.mappings->insert_hir_trait_item (resolver.translated);
-      resolver.mappings->insert_location (id, locus);
-      resolver.mappings->insert_defid_mapping (defid, resolver.translated);
+      resolver.mappings.insert_hir_trait_item (resolver.translated);
+      resolver.mappings.insert_location (id, locus);
+      resolver.mappings.insert_defid_mapping (defid, resolver.translated);
     }
 
   return resolver.translated;
@@ -262,9 +262,9 @@ ASTLowerTraitItem::visit (AST::Function &func)
       auto translated_type = std::unique_ptr<HIR::Type> (
 	ASTLoweringType::translate (param.get_type ()));
 
-      auto crate_num = mappings->get_current_crate ();
+      auto crate_num = mappings.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
-				     mappings->get_next_hir_id (crate_num),
+				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       auto hir_param
@@ -287,10 +287,10 @@ ASTLowerTraitItem::visit (AST::Function &func)
 				     &terminated))
 		       : nullptr;
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, func.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   auto *trait_item
     = new HIR::TraitItemFunc (mapping, std::move (decl), std::move (block_expr),
@@ -299,16 +299,16 @@ ASTLowerTraitItem::visit (AST::Function &func)
   if (func.has_self_param ())
     {
       // insert mappings for self
-      mappings->insert_hir_self_param (&self_param);
-      mappings->insert_location (self_param.get_mappings ().get_hirid (),
-				 self_param.get_locus ());
+      mappings.insert_hir_self_param (&self_param);
+      mappings.insert_location (self_param.get_mappings ().get_hirid (),
+				self_param.get_locus ());
     }
 
   // add the mappings for the function params at the end
   for (auto &param : trait_item->get_decl ().get_function_params ())
     {
-      mappings->insert_hir_param (&param);
-      mappings->insert_location (mapping.get_hirid (), param.get_locus ());
+      mappings.insert_hir_param (&param);
+      mappings.insert_location (mapping.get_hirid (), param.get_locus ());
     }
 }
 
@@ -320,10 +320,10 @@ ASTLowerTraitItem::visit (AST::TraitItemConst &constant)
 		      ? ASTLoweringExpr::translate (constant.get_expr ())
 		      : nullptr;
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   HIR::TraitItemConst *trait_item
     = new HIR::TraitItemConst (mapping, constant.get_identifier (),
@@ -338,10 +338,10 @@ void
 ASTLowerTraitItem::visit (AST::TraitItemType &type)
 {
   std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   HIR::TraitItemType *trait_item
     = new HIR::TraitItemType (mapping, type.get_identifier (),

@@ -86,7 +86,7 @@ public:
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
 	     Attribute outer_attr = Attribute::create_empty ())
-    : GenericParam (Analysis::Mappings::get ()->get_next_node_id ()),
+    : GenericParam (Analysis::Mappings::get ().get_next_node_id ()),
       outer_attr (std::move (outer_attr)),
       type_representation (std::move (type_representation)),
       type_param_bounds (std::move (type_param_bounds)),
@@ -210,7 +210,7 @@ public:
 			   location_t locus)
     : lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   std::string as_string () const override;
@@ -258,7 +258,7 @@ public:
     : for_lifetimes (std::move (for_lifetimes)),
       bound_type (std::move (bound_type)),
       type_param_bounds (std::move (type_param_bounds)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
+      node_id (Analysis::Mappings::get ().get_next_node_id ()), locus (locus)
   {}
 
   // Copy constructor requires clone
@@ -339,7 +339,7 @@ class WhereClause
 public:
   WhereClause (std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items)
     : where_clause_items (std::move (where_clause_items)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   // copy constructor with vector clone
@@ -396,7 +396,7 @@ class Param : public Visitable
 public:
   Param (std::vector<Attribute> outer_attrs, location_t locus)
     : outer_attrs (std::move (outer_attrs)), locus (locus),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   virtual ~Param () = default;
@@ -1018,7 +1018,7 @@ protected:
   virtual UseTree *clone_use_tree_impl () const = 0;
 
   UseTree (location_t locus)
-    : locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
+    : locus (locus), node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 };
 
@@ -1718,7 +1718,7 @@ public:
 	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       field_name (std::move (field_name)), field_type (std::move (field_type)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
+      node_id (Analysis::Mappings::get ().get_next_node_id ()), locus (locus)
   {}
 
   // Copy constructor
@@ -1878,7 +1878,7 @@ public:
 	      std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       field_type (std::move (field_type)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus)
+      node_id (Analysis::Mappings::get ().get_next_node_id ()), locus (locus)
   {}
 
   // Copy constructor with clone
@@ -3573,7 +3573,7 @@ public:
 		      std::vector<Attribute> outer_attrs, location_t locus)
     : name (std::move (name)), param_type (std::move (param_type)),
       outer_attrs (std::move (outer_attrs)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus),
+      node_id (Analysis::Mappings::get ().get_next_node_id ()), locus (locus),
       variadic (false)
   {}
 
@@ -3581,13 +3581,13 @@ public:
 		      location_t locus)
     : name (std::move (name)), param_type (nullptr),
       outer_attrs (std::move (outer_attrs)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus),
+      node_id (Analysis::Mappings::get ().get_next_node_id ()), locus (locus),
       variadic (true)
   {}
 
   NamedFunctionParam (std::vector<Attribute> outer_attrs, location_t locus)
     : name (""), param_type (nullptr), outer_attrs (std::move (outer_attrs)),
-      node_id (Analysis::Mappings::get ()->get_next_node_id ()), locus (locus),
+      node_id (Analysis::Mappings::get ().get_next_node_id ()), locus (locus),
       variadic (true)
   {}
 

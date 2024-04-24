@@ -210,7 +210,7 @@ private:
   void generate_builtins ();
   void setup_builtin (const std::string &name, TyTy::BaseType *tyty);
 
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
   TypeCheckContext *tyctx;
 
   std::vector<AST::Type *> builtins;

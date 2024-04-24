@@ -87,7 +87,7 @@ TypeCheckType::visit (HIR::BareFunctionType &fntype)
   else
     {
       // needs a new implicit ID
-      HirId ref = mappings->get_next_hir_id ();
+      HirId ref = mappings.get_next_hir_id ();
       return_type = TyTy::TupleType::get_unit_type (ref);
       context->insert_implicit_type (ref, return_type);
     }
@@ -373,7 +373,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 
       // node back to HIR
       HirId ref = UNKNOWN_HIRID;
-      if (!mappings->lookup_node_to_hir (ref_node_id, &ref))
+      if (!mappings.lookup_node_to_hir (ref_node_id, &ref))
 	{
 	  if (is_root)
 	    {
@@ -390,8 +390,8 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	  return root_tyty;
 	}
 
-      auto seg_is_module = (nullptr != mappings->lookup_module (ref));
-      auto seg_is_crate = mappings->is_local_hirid_crate (ref);
+      auto seg_is_module = (nullptr != mappings.lookup_module (ref));
+      auto seg_is_crate = mappings.is_local_hirid_crate (ref);
       if (seg_is_module || seg_is_crate)
 	{
 	  // A::B::C::this_is_a_module::D::E::F
@@ -780,7 +780,7 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
       // We need two possible parameter types. One with no Bounds and one with
       // the bounds. the Self type for the bounds cannot itself contain the
       // bounds otherwise it will be a trait cycle
-      HirId implicit_id = mappings->get_next_hir_id ();
+      HirId implicit_id = mappings.get_next_hir_id ();
       TyTy::ParamType *p
 	= new TyTy::ParamType (param.get_type_representation ().as_string (),
 			       param.get_locus (), implicit_id, param,
@@ -998,7 +998,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 
   // node back to HIR
   HirId ref;
-  if (!mappings->lookup_node_to_hir (ref_node_id, &ref))
+  if (!mappings.lookup_node_to_hir (ref_node_id, &ref))
     {
       // FIXME
       rust_error_at (UNDEF_LOCATION, "where-clause reverse lookup failure");
@@ -1009,7 +1009,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
   TyTy::BaseType *lookup;
   if (!context->lookup_type (ref, &lookup))
     {
-      rust_error_at (mappings->lookup_location (ref),
+      rust_error_at (mappings.lookup_location (ref),
 		     "Failed to resolve where-clause binding type: %s",
 		     binding_type_path->as_string ().c_str ());
       return;

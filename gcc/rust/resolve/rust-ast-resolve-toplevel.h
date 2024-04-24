@@ -41,7 +41,7 @@ public:
     item.accept_vis (resolver);
 
     NodeId current_module = resolver.resolver->peek_current_module_scope ();
-    resolver.mappings->insert_child_item_to_parent_module_mapping (
+    resolver.mappings.insert_child_item_to_parent_module_mapping (
       item.get_node_id (), current_module);
   }
 
@@ -62,8 +62,8 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, mod);
-    mappings->insert_module_child (current_module, module.get_node_id ());
+    mappings.insert_module_child_item (current_module, mod);
+    mappings.insert_module_child (current_module, module.get_node_id ());
 
     resolver->push_new_module_scope (module.get_node_id ());
     for (auto &item : module.get_items ())
@@ -71,7 +71,7 @@ public:
 
     resolver->pop_module_scope ();
 
-    mappings->insert_canonical_path (module.get_node_id (), cpath);
+    mappings.insert_canonical_path (module.get_node_id (), cpath);
   }
 
   void visit (AST::TypeAlias &alias) override
@@ -92,8 +92,8 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, talias);
-    mappings->insert_canonical_path (alias.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, talias);
+    mappings.insert_canonical_path (alias.get_node_id (), cpath);
   }
 
   void visit (AST::TupleStruct &struct_decl) override
@@ -114,8 +114,8 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (struct_decl.get_node_id (), cpath);
   }
 
   void visit (AST::Enum &enum_decl) override
@@ -142,8 +142,8 @@ public:
     resolver->pop_module_scope ();
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (enum_decl.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (enum_decl.get_node_id (), cpath);
   }
 
   void visit (AST::EnumItem &item) override
@@ -161,11 +161,11 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_module_child (current_module, item.get_node_id ());
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_module_child (current_module, item.get_node_id ());
   }
 
   void visit (AST::EnumItemTuple &item) override
@@ -183,11 +183,11 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_module_child (current_module, item.get_node_id ());
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_module_child (current_module, item.get_node_id ());
   }
 
   void visit (AST::EnumItemStruct &item) override
@@ -205,11 +205,11 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_module_child (current_module, item.get_node_id ());
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_module_child (current_module, item.get_node_id ());
   }
 
   void visit (AST::EnumItemDiscriminant &item) override
@@ -227,11 +227,11 @@ public:
 	rust_error_at (r, "redefined multiple times");
       });
 
-    mappings->insert_canonical_path (item.get_node_id (), cpath);
+    mappings.insert_canonical_path (item.get_node_id (), cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_module_child (current_module, item.get_node_id ());
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_module_child (current_module, item.get_node_id ());
   }
 
   void visit (AST::StructStruct &struct_decl) override
@@ -252,8 +252,8 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (struct_decl.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (struct_decl.get_node_id (), cpath);
   }
 
   void visit (AST::Union &union_decl) override
@@ -274,8 +274,8 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (union_decl.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (union_decl.get_node_id (), cpath);
   }
 
   void visit (AST::StaticItem &var) override
@@ -294,8 +294,8 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (var.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (var.get_node_id (), cpath);
   }
 
   void visit (AST::ConstantItem &constant) override
@@ -315,8 +315,8 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (constant.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (constant.get_node_id (), cpath);
   }
 
   void visit (AST::Function &function) override
@@ -337,8 +337,8 @@ public:
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (function.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (function.get_node_id (), cpath);
   }
 
   void visit (AST::InherentImpl &impl_block) override
@@ -408,8 +408,8 @@ public:
       ResolveTopLevelTraitItems::go (item.get (), path, cpath);
 
     NodeId current_module = resolver->peek_current_module_scope ();
-    mappings->insert_module_child_item (current_module, decl);
-    mappings->insert_canonical_path (trait.get_node_id (), cpath);
+    mappings.insert_module_child_item (current_module, decl);
+    mappings.insert_canonical_path (trait.get_node_id (), cpath);
   }
 
   void visit (AST::ExternBlock &extern_block) override
@@ -428,16 +428,16 @@ public:
     NodeId resolved_crate = UNKNOWN_NODEID;
     if (extern_crate.references_self ())
       {
-	CrateNum crate_num = mappings->get_current_crate ();
-	bool ok = mappings->crate_num_to_nodeid (crate_num, resolved_crate);
+	CrateNum crate_num = mappings.get_current_crate ();
+	bool ok = mappings.crate_num_to_nodeid (crate_num, resolved_crate);
 	rust_assert (ok);
       }
     else
       {
 	CrateNum found_crate_num = UNKNOWN_CRATENUM;
 	bool found
-	  = mappings->lookup_crate_name (extern_crate.get_referenced_crate (),
-					 found_crate_num);
+	  = mappings.lookup_crate_name (extern_crate.get_referenced_crate (),
+					found_crate_num);
 	if (!found)
 	  {
 	    rust_error_at (extern_crate.get_locus (), "unknown crate %qs",
@@ -446,7 +446,7 @@ public:
 	  }
 
 	bool ok
-	  = mappings->crate_num_to_nodeid (found_crate_num, resolved_crate);
+	  = mappings.crate_num_to_nodeid (found_crate_num, resolved_crate);
 	if (!ok)
 	  {
 	    rust_internal_error_at (extern_crate.get_locus (),

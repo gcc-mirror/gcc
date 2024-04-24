@@ -64,7 +64,7 @@ TypeBoundsProbe::scan ()
 {
   std::vector<std::pair<HIR::TypePath *, HIR::ImplBlock *>>
     possible_trait_paths;
-  mappings->iterate_impl_blocks (
+  mappings.iterate_impl_blocks (
     [&] (HirId id, HIR::ImplBlock *impl) mutable -> bool {
       // we are filtering for trait-impl-blocks
       if (!impl->has_trait_ref ())
@@ -153,11 +153,11 @@ void
 TypeBoundsProbe::assemble_builtin_candidate (LangItem::Kind lang_item)
 {
   DefId id;
-  bool found_lang_item = mappings->lookup_lang_item (lang_item, &id);
+  bool found_lang_item = mappings.lookup_lang_item (lang_item, &id);
   if (!found_lang_item)
     return;
 
-  HIR::Item *item = mappings->lookup_defid (id);
+  HIR::Item *item = mappings.lookup_defid (id);
   if (item == nullptr)
     return;
 
@@ -167,7 +167,7 @@ TypeBoundsProbe::assemble_builtin_candidate (LangItem::Kind lang_item)
 
   // assemble the reference
   TraitReference *trait_ref = TraitResolver::Resolve (*trait);
-  trait_references.push_back ({trait_ref, mappings->lookup_builtin_marker ()});
+  trait_references.push_back ({trait_ref, mappings.lookup_builtin_marker ()});
 
   rust_debug ("Added builtin lang_item: %s for %s",
 	      LangItem::ToString (lang_item).c_str (),
@@ -220,8 +220,8 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
 
 	// we need to make implicit generic args which must be an implicit
 	// Tuple
-	auto crate_num = mappings->get_current_crate ();
-	HirId implicit_args_id = mappings->get_next_hir_id ();
+	auto crate_num = mappings.get_current_crate ();
+	HirId implicit_args_id = mappings.get_next_hir_id ();
 	Analysis::NodeMapping mapping (crate_num,
 				       final_seg->get_mappings ().get_nodeid (),
 				       implicit_args_id, UNKNOWN_LOCAL_DEFID);
@@ -244,7 +244,7 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
 	rust_assert (fn.has_return_type ());
 	TypeCheckType::Resolve (fn.get_return_type ().get ());
 
-	HIR::TraitItem *trait_item = mappings->lookup_trait_item_lang_item (
+	HIR::TraitItem *trait_item = mappings.lookup_trait_item_lang_item (
 	  LangItem::Kind::FN_ONCE_OUTPUT, final_seg->get_locus ());
 
 	std::vector<HIR::GenericArgsBinding> bindings;

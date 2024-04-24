@@ -118,13 +118,13 @@ TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
     }
 
   HirId hir_node = UNKNOWN_HIRID;
-  if (!mappings->lookup_node_to_hir (ref, &hir_node))
+  if (!mappings.lookup_node_to_hir (ref, &hir_node))
     {
       rust_error_at (path.get_locus (), "Failed to resolve path to hir-id");
       return false;
     }
 
-  HIR::Item *resolved_item = mappings->lookup_hir_item (hir_node);
+  HIR::Item *resolved_item = mappings.lookup_hir_item (hir_node);
   rust_assert (resolved_item != nullptr);
   rust_assert (resolved_item->get_item_kind () == HIR::Item::ItemKind::Trait);
   *resolved = static_cast<HIR::Trait *> (resolved_item);
@@ -665,10 +665,10 @@ AssociatedImplTrait::reset_associated_types ()
 Analysis::NodeMapping
 TraitItemReference::get_parent_trait_mappings () const
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
   HIR::Trait *trait
-    = mappings->lookup_trait_item_mapping (get_mappings ().get_hirid ());
+    = mappings.lookup_trait_item_mapping (get_mappings ().get_hirid ());
   rust_assert (trait != nullptr);
 
   return trait->get_mappings ();

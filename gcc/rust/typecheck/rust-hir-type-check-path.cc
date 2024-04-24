@@ -230,7 +230,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 
       // node back to HIR
       HirId ref;
-      if (!mappings->lookup_node_to_hir (ref_node_id, &ref))
+      if (!mappings.lookup_node_to_hir (ref_node_id, &ref))
 	{
 	  rust_error_at (seg.get_locus (), "456 reverse lookup failure");
 	  rust_debug_loc (seg.get_locus (),
@@ -242,8 +242,8 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	  return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	}
 
-      auto seg_is_module = (nullptr != mappings->lookup_module (ref));
-      auto seg_is_crate = mappings->is_local_hirid_crate (ref);
+      auto seg_is_module = (nullptr != mappings.lookup_module (ref));
+      auto seg_is_crate = mappings.is_local_hirid_crate (ref);
       if (seg_is_module || seg_is_crate)
 	{
 	  // A::B::C::this_is_a_module::D::E::F
@@ -279,7 +279,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 
       // is it an enum item?
       std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
-	= mappings->lookup_hir_enumitem (ref);
+	= mappings.lookup_hir_enumitem (ref);
       bool is_enum_item = enum_item_lookup.first != nullptr
 			  && enum_item_lookup.second != nullptr;
       if (is_enum_item)
@@ -389,7 +389,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 
 	  HirId variant_id = variant->get_id ();
 	  std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
-	    = mappings->lookup_hir_enumitem (variant_id);
+	    = mappings.lookup_hir_enumitem (variant_id);
 	  bool enum_item_ok = enum_item_lookup.first != nullptr
 			      && enum_item_lookup.second != nullptr;
 	  rust_assert (enum_item_ok);

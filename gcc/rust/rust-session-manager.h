@@ -354,13 +354,12 @@ struct Session
   Linemap *linemap;
 
   // mappings
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
 
 public:
   /* Get a reference to the static session instance */
   static Session &get_instance ();
 
-  Session () = default;
   ~Session () = default;
 
   /* This initializes the compiler session. Corresponds to langhook
@@ -391,6 +390,7 @@ public:
   NodeId load_extern_crate (const std::string &crate_name, location_t locus);
 
 private:
+  Session () : mappings (Analysis::Mappings::get ()) {}
   void compile_crate (const char *filename);
   bool enable_dump (std::string arg);
 

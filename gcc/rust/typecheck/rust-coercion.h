@@ -81,7 +81,7 @@ protected:
 
 private:
   // context info
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
   TypeCheckContext *context;
 
   // search

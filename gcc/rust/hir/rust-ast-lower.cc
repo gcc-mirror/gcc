@@ -81,10 +81,10 @@ ASTLowering::go ()
 	items.push_back (std::unique_ptr<HIR::Item> (translated));
     }
 
-  auto mappings = Analysis::Mappings::get ();
-  auto crate_num = mappings->get_current_crate ();
+  auto &mappings = Analysis::Mappings::get ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, astCrate.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   return std::unique_ptr<HIR::Crate> (
@@ -137,9 +137,9 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
     }
 
   bool tail_reachable = !block_did_terminate;
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
   translated
     = new HIR::BlockExpr (mapping, std::move (block_stmts),
@@ -160,9 +160,9 @@ ASTLoweringIfBlock::visit (AST::IfExpr &expr)
   HIR::BlockExpr *block
     = ASTLoweringBlock::translate (expr.get_if_block (), &ignored_terminated);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::IfExpr (mapping, std::unique_ptr<HIR::Expr> (condition),
@@ -187,9 +187,9 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqElse &expr)
 
   terminated = if_block_terminated && else_block_termianted;
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::IfExprConseqElse (
@@ -213,9 +213,9 @@ ASTLoweringIfLetBlock::visit (AST::IfLetExpr &expr)
   HIR::BlockExpr *block
     = ASTLoweringBlock::translate (expr.get_if_block (), &ignored_terminated);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::IfLetExpr (mapping, std::move (patterns),
@@ -245,9 +245,9 @@ ASTLoweringIfLetBlock::visit (AST::IfLetExprConseqElse &expr)
 
   rust_assert (else_block);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::IfLetExprConseqElse (
@@ -263,9 +263,9 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIdentifierValue &field)
 {
   HIR::Expr *value = ASTLoweringExpr::translate (field.get_value ());
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::StructExprFieldIdentifierValue (
@@ -278,9 +278,9 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIndexValue &field)
 {
   HIR::Expr *value = ASTLoweringExpr::translate (field.get_value ());
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated
@@ -292,9 +292,9 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIndexValue &field)
 void
 ASTLowerStructExprField::visit (AST::StructExprFieldIdentifier &field)
 {
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated
@@ -314,9 +314,9 @@ ASTLoweringExprWithBlock::visit (AST::WhileLoopExpr &expr)
   HIR::Expr *loop_condition
     = ASTLoweringExpr::translate (expr.get_predicate_expr (), &terminated);
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated
@@ -380,9 +380,9 @@ ASTLoweringExprWithBlock::visit (AST::MatchExpr &expr)
 			 std::unique_ptr<HIR::Expr> (kase_guard_expr),
 			 match_case.get_arm ().get_outer_attrs ());
 
-      auto crate_num = mappings->get_current_crate ();
+      auto crate_num = mappings.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				     mappings->get_next_hir_id (crate_num),
+				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       HIR::MatchCase kase (std::move (mapping), std::move (arm),
@@ -390,9 +390,9 @@ ASTLoweringExprWithBlock::visit (AST::MatchExpr &expr)
       match_arms.push_back (std::move (kase));
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated
@@ -414,11 +414,11 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
 
       // insert the mappings for the segment
       HIR::PathExprSegment *lowered_seg = &path_segments.back ();
-      mappings->insert_hir_path_expr_seg (lowered_seg);
+      mappings.insert_hir_path_expr_seg (lowered_seg);
     }
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::PathInExpression (mapping, std::move (path_segments),
@@ -435,9 +435,9 @@ ASTLoweringBase::lower_qual_path_type (AST::QualifiedPathType &qualified_type)
 	? ASTLowerTypePath::translate (qualified_type.get_as_type_path ())
 	: nullptr;
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, qualified_type.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   return HIR::QualifiedPathType (mapping, std::unique_ptr<HIR::Type> (type),
@@ -459,12 +459,12 @@ ASTLowerQualPathInExpression::visit (AST::QualifiedPathInExpression &expr)
 
       // insert the mappings for the segment
       HIR::PathExprSegment *lowered_seg = &path_segments.back ();
-      mappings->insert_hir_path_expr_seg (lowered_seg);
+      mappings.insert_hir_path_expr_seg (lowered_seg);
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::QualifiedPathInExpression (mapping, qual_path_type,

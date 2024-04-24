@@ -61,7 +61,7 @@ protected:
   TyTy::TypeBoundPredicate get_marker_predicate (LangItem::Kind item_type,
 						 location_t locus);
 
-  Analysis::Mappings *mappings;
+  Analysis::Mappings &mappings;
   Resolver *resolver;
   TypeCheckContext *context;
 };

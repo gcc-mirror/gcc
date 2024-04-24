@@ -184,7 +184,7 @@ public:
 	rust_error_at (locus, "was defined here");
       });
 
-    mappings->insert_canonical_path (param.get_node_id (), seg);
+    mappings.insert_canonical_path (param.get_node_id (), seg);
   }
 
 private:

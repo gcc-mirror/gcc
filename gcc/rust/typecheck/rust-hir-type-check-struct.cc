@@ -195,12 +195,12 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 	      HIR::StructExprField *implicit_field = nullptr;
 
 	      AST::AttrVec outer_attribs;
-	      auto crate_num = mappings->get_current_crate ();
+	      auto crate_num = mappings.get_current_crate ();
 	      Analysis::NodeMapping mapping (
 		crate_num,
 		struct_expr.struct_base->base_struct->get_mappings ()
 		  .get_nodeid (),
-		mappings->get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
+		mappings.get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
 
 	      HIR::Expr *field_value = new HIR::FieldAccessExpr (
 		mapping, std::unique_ptr<HIR::Expr> (receiver), missing,

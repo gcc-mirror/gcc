@@ -104,14 +104,14 @@ Adjuster::try_unsize_type (TyTy::BaseType *ty)
   if (!is_valid_type)
     return Adjustment::get_error ();
 
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   auto context = TypeCheckContext::get ();
 
   const auto ref_base = static_cast<const TyTy::ArrayType *> (ty);
   auto slice_elem = ref_base->get_element_type ();
 
   auto slice
-    = new TyTy::SliceType (mappings->get_next_hir_id (), ty->get_ident ().locus,
+    = new TyTy::SliceType (mappings.get_next_hir_id (), ty->get_ident ().locus,
 			   TyTy::TyVar (slice_elem->get_ref ()));
   context->insert_implicit_type (slice);
 
@@ -125,13 +125,13 @@ resolve_operator_overload_fn (
   Adjustment::AdjustmentType *requires_ref_adjustment)
 {
   auto context = TypeCheckContext::get ();
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
 
   // look up lang item for arithmetic type
   std::string associated_item_name = LangItem::ToString (lang_item_type);
   DefId respective_lang_item_id = UNKNOWN_DEFID;
   bool lang_item_defined
-    = mappings->lookup_lang_item (lang_item_type, &respective_lang_item_id);
+    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
 
   if (!lang_item_defined)
     return false;
@@ -293,7 +293,7 @@ resolve_operator_overload_fn (
 	  rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
 	  fn = static_cast<TyTy::FnType *> (lookup);
 
-	  location_t unify_locus = mappings->lookup_location (lhs->get_ref ());
+	  location_t unify_locus = mappings.lookup_location (lhs->get_ref ());
 	  unify_site (lhs->get_ref (),
 		      TyTy::TyWithLocation (fn->get_self_type ()),
 		      TyTy::TyWithLocation (adjusted_self), unify_locus);

@@ -120,7 +120,7 @@ CompileExpr::visit (HIR::ReturnExpr &expr)
 
       TyTy::BaseType *expected = fncontext.retty;
       location_t lvalue_locus
-	= ctx->get_mappings ()->lookup_location (expected->get_ref ());
+	= ctx->get_mappings ().lookup_location (expected->get_ref ());
 
       TyTy::BaseType *actual = nullptr;
       bool ok = ctx->get_tyctx ()->lookup_type (
@@ -456,7 +456,7 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
       // process arguments
       auto &argument = struct_expr.get_fields ().at (0);
       auto lvalue_locus
-	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+	= ctx->get_mappings ().lookup_location (expected->get_ty_ref ());
       auto rvalue_locus = argument->get_locus ();
       auto rvalue = CompileStructExprField::Compile (argument.get (), ctx);
 
@@ -488,7 +488,7 @@ CompileExpr::visit (HIR::StructExprStructFields &struct_expr)
 	  // process arguments
 	  auto &argument = struct_expr.get_fields ().at (i);
 	  auto lvalue_locus
-	    = ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+	    = ctx->get_mappings ().lookup_location (expected->get_ty_ref ());
 	  auto rvalue_locus = argument->get_locus ();
 	  auto rvalue = CompileStructExprField::Compile (argument.get (), ctx);
 
@@ -735,7 +735,7 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 	}
 
       HirId ref = UNKNOWN_HIRID;
-      if (!ctx->get_mappings ()->lookup_node_to_hir (resolved_node_id, &ref))
+      if (!ctx->get_mappings ().lookup_node_to_hir (resolved_node_id, &ref))
 	{
 	  rust_fatal_error (expr.get_locus (), "reverse lookup label failure");
 	  return;
@@ -779,7 +779,7 @@ CompileExpr::visit (HIR::ContinueExpr &expr)
 	}
 
       HirId ref = UNKNOWN_HIRID;
-      if (!ctx->get_mappings ()->lookup_node_to_hir (resolved_node_id, &ref))
+      if (!ctx->get_mappings ().lookup_node_to_hir (resolved_node_id, &ref))
 	{
 	  rust_fatal_error (expr.get_locus (), "reverse lookup label failure");
 	  return;
@@ -1153,7 +1153,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
 
 	  // coerce it if required
 	  location_t lvalue_locus
-	    = ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+	    = ctx->get_mappings ().lookup_location (expected->get_ty_ref ());
 	  location_t rvalue_locus = argument->get_locus ();
 	  rvalue
 	    = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
@@ -1257,7 +1257,7 @@ CompileExpr::visit (HIR::CallExpr &expr)
 
       // coerce it if required
       location_t lvalue_locus
-	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+	= ctx->get_mappings ().lookup_location (expected->get_ty_ref ());
       location_t rvalue_locus = argument->get_locus ();
       rvalue = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
 			      actual, expected, lvalue_locus, rvalue_locus);
@@ -1346,7 +1346,7 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 
       // coerce it if required
       location_t lvalue_locus
-	= ctx->get_mappings ()->lookup_location (expected->get_ty_ref ());
+	= ctx->get_mappings ().lookup_location (expected->get_ty_ref ());
       location_t rvalue_locus = argument->get_locus ();
       rvalue = coercion_site (argument->get_mappings ().get_hirid (), rvalue,
 			      actual, expected, lvalue_locus, rvalue_locus);
@@ -2175,7 +2175,7 @@ CompileExpr::visit (HIR::ClosureExpr &expr)
     {
       // lookup the HirId
       HirId ref = UNKNOWN_HIRID;
-      bool ok = ctx->get_mappings ()->lookup_node_to_hir (capture, &ref);
+      bool ok = ctx->get_mappings ().lookup_node_to_hir (capture, &ref);
       rust_assert (ok);
 
       // lookup the var decl
@@ -2209,7 +2209,7 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   const Resolver::CanonicalPath &parent_canonical_path
     = closure_tyty.get_ident ().path;
   NodeId node_id;
-  bool ok = ctx->get_mappings ()->lookup_hir_to_node (
+  bool ok = ctx->get_mappings ().lookup_hir_to_node (
     expr.get_mappings ().get_hirid (), &node_id);
   rust_assert (ok);
   Resolver::CanonicalPath path = parent_canonical_path.append (
@@ -2245,7 +2245,7 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
     {
       // lookup the HirId
       HirId ref = UNKNOWN_HIRID;
-      bool ok = ctx->get_mappings ()->lookup_node_to_hir (capture, &ref);
+      bool ok = ctx->get_mappings ().lookup_node_to_hir (capture, &ref);
       rust_assert (ok);
 
       // get the assessor

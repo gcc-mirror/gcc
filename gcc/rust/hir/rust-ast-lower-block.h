@@ -37,7 +37,7 @@ public:
     expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings->insert_hir_expr (resolver.translated);
+	resolver.mappings.insert_hir_expr (resolver.translated);
       }
 
     *terminated = resolver.terminated;
@@ -51,9 +51,9 @@ public:
 
     HIR::BlockExpr *block
       = ASTLoweringBlock::translate (expr.get_block_expr (), terminated);
-    auto crate_num = resolver.mappings->get_current_crate ();
+    auto crate_num = resolver.mappings.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				   resolver.mappings->get_next_hir_id (
+				   resolver.mappings.get_next_hir_id (
 				     crate_num),
 				   UNKNOWN_LOCAL_DEFID);
 
@@ -62,7 +62,7 @@ public:
 				  std::unique_ptr<HIR::BlockExpr> (block),
 				  expr.get_outer_attrs (), expr.get_locus ());
 
-    resolver.mappings->insert_hir_expr (translated);
+    resolver.mappings.insert_hir_expr (translated);
 
     return translated;
   }
@@ -89,7 +89,7 @@ public:
     expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings->insert_hir_expr (resolver.translated);
+	resolver.mappings.insert_hir_expr (resolver.translated);
       }
     *terminated = resolver.terminated;
     return resolver.translated;
@@ -121,7 +121,7 @@ public:
     expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings->insert_hir_expr (resolver.translated);
+	resolver.mappings.insert_hir_expr (resolver.translated);
       }
     return resolver.translated;
   }
@@ -150,7 +150,7 @@ public:
     expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings->insert_hir_expr (resolver.translated);
+	resolver.mappings.insert_hir_expr (resolver.translated);
       }
 
     *terminated = resolver.terminated;
@@ -196,9 +196,9 @@ public:
 
     HIR::LoopLabel loop_label = lower_loop_label (expr.get_loop_label ());
 
-    auto crate_num = mappings->get_current_crate ();
+    auto crate_num = mappings.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
+				   mappings.get_next_hir_id (crate_num),
 				   UNKNOWN_LOCAL_DEFID);
 
     translated

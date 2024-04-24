@@ -39,9 +39,9 @@ public:
     item->accept_vis (resolver);
 
     rust_assert (resolver.translated != nullptr);
-    resolver.mappings->insert_hir_extern_item (resolver.translated,
-					       parent_hirid);
-    resolver.mappings->insert_location (
+    resolver.mappings.insert_hir_extern_item (resolver.translated,
+					      parent_hirid);
+    resolver.mappings.insert_location (
       resolver.translated->get_mappings ().get_hirid (),
       resolver.translated->get_locus ());
 
@@ -53,10 +53,10 @@ public:
     HIR::Visibility vis = translate_visibility (item.get_visibility ());
     HIR::Type *static_type = ASTLoweringType::translate (item.get_type ());
 
-    auto crate_num = mappings->get_current_crate ();
+    auto crate_num = mappings.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   mappings->get_next_localdef_id (crate_num));
+				   mappings.get_next_hir_id (crate_num),
+				   mappings.get_next_localdef_id (crate_num));
 
     translated = new HIR::ExternalStaticItem (
       mapping, item.get_identifier (), std::unique_ptr<HIR::Type> (static_type),
@@ -103,10 +103,10 @@ public:
 
 	HIR::Type *param_type = ASTLoweringType::translate (param.get_type ());
 
-	auto crate_num = mappings->get_current_crate ();
+	auto crate_num = mappings.get_current_crate ();
 	Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
-				       mappings->get_next_hir_id (crate_num),
-				       mappings->get_next_localdef_id (
+				       mappings.get_next_hir_id (crate_num),
+				       mappings.get_next_localdef_id (
 					 crate_num));
 
 	function_params.push_back (
@@ -114,10 +114,10 @@ public:
 				   std::unique_ptr<HIR::Type> (param_type)));
       }
 
-    auto crate_num = mappings->get_current_crate ();
+    auto crate_num = mappings.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, function.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   mappings->get_next_localdef_id (crate_num));
+				   mappings.get_next_hir_id (crate_num),
+				   mappings.get_next_localdef_id (crate_num));
 
     translated = new HIR::ExternalFunctionItem (
       mapping, function.get_function_name (), std::move (generic_params),
@@ -128,10 +128,10 @@ public:
 
   void visit (AST::ExternalTypeItem &type) override
   {
-    auto crate_num = mappings->get_current_crate ();
+    auto crate_num = mappings.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   mappings->get_next_localdef_id (crate_num));
+				   mappings.get_next_hir_id (crate_num),
+				   mappings.get_next_localdef_id (crate_num));
 
     HIR::Visibility vis = translate_visibility (type.get_visibility ());
 

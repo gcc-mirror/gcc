@@ -206,7 +206,7 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
   else
     {
       const CanonicalPath *canonical_path = nullptr;
-      bool ok = mappings->lookup_canonical_path (
+      bool ok = mappings.lookup_canonical_path (
 	struct_decl.get_mappings ().get_nodeid (), &canonical_path);
       rust_assert (ok);
 
@@ -230,7 +230,7 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
     = parse_repr_options (attrs, struct_decl.get_locus ());
 
   auto *type = new TyTy::ADTType (
-    struct_decl.get_mappings ().get_hirid (), mappings->get_next_hir_id (),
+    struct_decl.get_mappings ().get_hirid (), mappings.get_next_hir_id (),
     struct_decl.get_identifier ().as_string (), ident,
     TyTy::ADTType::ADTKind::TUPLE_STRUCT, std::move (variants),
     std::move (substitutions), repr,
@@ -289,7 +289,7 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
   else
     {
       const CanonicalPath *canonical_path = nullptr;
-      bool ok = mappings->lookup_canonical_path (
+      bool ok = mappings.lookup_canonical_path (
 	struct_decl.get_mappings ().get_nodeid (), &canonical_path);
       rust_assert (ok);
 
@@ -313,7 +313,7 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
     = parse_repr_options (attrs, struct_decl.get_locus ());
 
   auto *type = new TyTy::ADTType (
-    struct_decl.get_mappings ().get_hirid (), mappings->get_next_hir_id (),
+    struct_decl.get_mappings ().get_hirid (), mappings.get_next_hir_id (),
     struct_decl.get_identifier ().as_string (), ident,
     TyTy::ADTType::ADTKind::STRUCT_STRUCT, std::move (variants),
     std::move (substitutions), repr,
@@ -349,15 +349,15 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
   // get the path
   const CanonicalPath *canonical_path = nullptr;
   bool ok
-    = mappings->lookup_canonical_path (enum_decl.get_mappings ().get_nodeid (),
-				       &canonical_path);
+    = mappings.lookup_canonical_path (enum_decl.get_mappings ().get_nodeid (),
+				      &canonical_path);
   rust_assert (ok);
   RustIdent ident{*canonical_path, enum_decl.get_locus ()};
 
   // multi variant ADT
   auto *type
     = new TyTy::ADTType (enum_decl.get_mappings ().get_hirid (),
-			 mappings->get_next_hir_id (),
+			 mappings.get_next_hir_id (),
 			 enum_decl.get_identifier ().as_string (), ident,
 			 TyTy::ADTType::ADTKind::ENUM, std::move (variants),
 			 std::move (substitutions));
@@ -399,8 +399,8 @@ TypeCheckItem::visit (HIR::Union &union_decl)
   // get the path
   const CanonicalPath *canonical_path = nullptr;
   bool ok
-    = mappings->lookup_canonical_path (union_decl.get_mappings ().get_nodeid (),
-				       &canonical_path);
+    = mappings.lookup_canonical_path (union_decl.get_mappings ().get_nodeid (),
+				      &canonical_path);
   rust_assert (ok);
   RustIdent ident{*canonical_path, union_decl.get_locus ()};
 
@@ -415,7 +415,7 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 
   auto *type
     = new TyTy::ADTType (union_decl.get_mappings ().get_hirid (),
-			 mappings->get_next_hir_id (),
+			 mappings.get_next_hir_id (),
 			 union_decl.get_identifier ().as_string (), ident,
 			 TyTy::ADTType::ADTKind::UNION, std::move (variants),
 			 std::move (substitutions));
@@ -568,7 +568,7 @@ TypeCheckItem::visit (HIR::Function &function)
   else
     {
       const CanonicalPath *canonical_path = nullptr;
-      bool ok = mappings->lookup_canonical_path (
+      bool ok = mappings.lookup_canonical_path (
 	function.get_mappings ().get_nodeid (), &canonical_path);
       rust_assert (ok);
 

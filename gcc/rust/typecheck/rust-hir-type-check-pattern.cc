@@ -421,7 +421,7 @@ TypeCheckPattern::emit_pattern_size_error (const HIR::Pattern &pattern,
 					   size_t got_field_count)
 {
   rich_location r (line_table, pattern.get_locus ());
-  r.add_range (mappings->lookup_location (parent->get_ref ()));
+  r.add_range (mappings.lookup_location (parent->get_ref ()));
   rust_error_at (r,
 		 "expected a tuple with %lu %s, found one "
 		 "with %lu %s",
@@ -505,8 +505,8 @@ ClosureParamInfer::Resolve (HIR::Pattern *pattern)
   if (resolver.infered->get_kind () != TyTy::TypeKind::ERROR)
     {
       resolver.context->insert_implicit_type (resolver.infered);
-      resolver.mappings->insert_location (resolver.infered->get_ref (),
-					  pattern->get_locus ());
+      resolver.mappings.insert_location (resolver.infered->get_ref (),
+					 pattern->get_locus ());
     }
   return resolver.infered;
 }

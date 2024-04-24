@@ -537,11 +537,11 @@ ASTLoweringBase::lower_lifetime (AST::Lifetime &lifetime,
       lifetime_type = AST::Lifetime::STATIC;
     }
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, lifetime.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
-  mappings->insert_node_to_hir (mapping.get_nodeid (), mapping.get_hirid ());
+  mappings.insert_node_to_hir (mapping.get_nodeid (), mapping.get_hirid ());
 
   return HIR::Lifetime (mapping, lifetime_type, lifetime.get_lifetime_name (),
 			lifetime.get_locus ());
@@ -552,11 +552,11 @@ ASTLoweringBase::lower_loop_label (AST::LoopLabel &loop_label)
 {
   HIR::Lifetime life = lower_lifetime (loop_label.get_lifetime ());
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, loop_label.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
-  mappings->insert_node_to_hir (mapping.get_nodeid (), mapping.get_hirid ());
+  mappings.insert_node_to_hir (mapping.get_nodeid (), mapping.get_hirid ());
 
   return HIR::LoopLabel (mapping, std::move (life), loop_label.get_locus ());
 }
@@ -578,9 +578,9 @@ ASTLoweringBase::lower_generic_params (
 HIR::PathExprSegment
 ASTLoweringBase::lower_path_expr_seg (AST::PathExprSegment &s)
 {
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, s.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
+				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   return HIR::PathExprSegment (
@@ -651,10 +651,10 @@ ASTLoweringBase::lower_self (AST::Param &param)
   rust_assert (param.is_self ());
 
   auto self = static_cast<AST::SelfParam &> (param);
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, self.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   if (self.has_type ())
     {
@@ -792,8 +792,8 @@ ASTLoweringBase::handle_lang_item_attribute (const ItemWrapper &item,
   auto lang_item_type = LangItem::Parse (lang_item_type_str);
 
   if (lang_item_type)
-    mappings->insert_lang_item (*lang_item_type,
-				item.get_mappings ().get_defid ());
+    mappings.insert_lang_item (*lang_item_type,
+			       item.get_mappings ().get_defid ());
   else
     rust_error_at (attr.get_locus (), "unknown lang item");
 }
@@ -940,10 +940,10 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
 {
   HIR::Visibility vis = translate_visibility (extern_block.get_visibility ());
 
-  auto crate_num = mappings->get_current_crate ();
+  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, extern_block.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 mappings->get_next_localdef_id (crate_num));
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
 
   std::vector<std::unique_ptr<HIR::ExternalItem>> extern_items;
   for (auto &item : extern_block.get_extern_items ())
@@ -972,7 +972,7 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
 			    extern_block.get_outer_attrs (),
 			    extern_block.get_locus ());
 
-  mappings->insert_hir_extern_block (hir_extern_block);
+  mappings.insert_hir_extern_block (hir_extern_block);
 
   return hir_extern_block;
 }
@@ -987,9 +987,9 @@ ASTLoweringBase::lower_macro_definition (AST::MacroRulesDefinition &def)
 
   if (is_export)
     {
-      mappings->insert_exported_macro (def);
-      mappings->insert_ast_item (&def);
-      mappings->insert_location (def.get_node_id (), def.get_locus ());
+      mappings.insert_exported_macro (def);
+      mappings.insert_ast_item (&def);
+      mappings.insert_location (def.get_node_id (), def.get_locus ());
     }
 }
 

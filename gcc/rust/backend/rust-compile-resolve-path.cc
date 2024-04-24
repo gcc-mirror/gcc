@@ -126,7 +126,7 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
     }
 
   HirId ref;
-  if (!ctx->get_mappings ()->lookup_node_to_hir (ref_node_id, &ref))
+  if (!ctx->get_mappings ().lookup_node_to_hir (ref_node_id, &ref))
     {
       rust_error_at (expr_locus, "reverse call path lookup failure");
       return error_mark_node;
@@ -199,10 +199,10 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 			       const Analysis::NodeMapping &mappings,
 			       location_t expr_locus, bool is_qualified_path)
 {
-  HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (ref);
+  HIR::Item *resolved_item = ctx->get_mappings ().lookup_hir_item (ref);
   HirId parent_block;
   HIR::ExternalItem *resolved_extern_item
-    = ctx->get_mappings ()->lookup_hir_extern_item (ref, &parent_block);
+    = ctx->get_mappings ().lookup_hir_extern_item (ref, &parent_block);
   bool is_hir_item = resolved_item != nullptr;
   bool is_hir_extern_item = resolved_extern_item != nullptr;
   bool is_fn = lookup->get_kind () == TyTy::TypeKind::FNDEF;
@@ -242,7 +242,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 
       HirId parent_impl_id = UNKNOWN_HIRID;
       HIR::ImplItem *resolved_item
-	= ctx->get_mappings ()->lookup_hir_implitem (ref, &parent_impl_id);
+	= ctx->get_mappings ().lookup_hir_implitem (ref, &parent_impl_id);
       bool is_impl_item = resolved_item != nullptr;
       if (is_impl_item)
 	{
@@ -257,8 +257,8 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	{
 	  // it might be resolved to a trait item
 	  HIR::TraitItem *trait_item
-	    = ctx->get_mappings ()->lookup_hir_trait_item (ref);
-	  HIR::Trait *trait = ctx->get_mappings ()->lookup_trait_item_mapping (
+	    = ctx->get_mappings ().lookup_hir_trait_item (ref);
+	  HIR::Trait *trait = ctx->get_mappings ().lookup_trait_item_mapping (
 	    trait_item->get_mappings ().get_hirid ());
 
 	  Resolver::TraitReference *trait_ref

@@ -85,7 +85,7 @@ const size_t kMaxNameLength = 64;
 Session &
 Session::get_instance ()
 {
-  static Session instance;
+  static Session instance{};
   return instance;
 }
 
@@ -409,8 +409,8 @@ Session::handle_input_files (int num_files, const char **files)
       options.set_crate_name (crate_name);
     }
 
-  CrateNum crate_num = mappings->get_next_crate_num (options.get_crate_name ());
-  mappings->set_current_crate (crate_num);
+  CrateNum crate_num = mappings.get_next_crate_num (options.get_crate_name ());
+  mappings.set_current_crate (crate_num);
 
   rust_debug ("Attempting to parse file: %s", file);
   compile_crate (file);
@@ -419,7 +419,7 @@ Session::handle_input_files (int num_files, const char **files)
 void
 Session::handle_crate_name (const AST::Crate &parsed_crate)
 {
-  auto mappings = Analysis::Mappings::get ();
+  auto &mappings = Analysis::Mappings::get ();
   auto crate_name_changed = false;
   auto error = Error (UNDEF_LOCATION, std::string ());
 
@@ -454,7 +454,7 @@ Session::handle_crate_name (const AST::Crate &parsed_crate)
 	}
       crate_name_changed = true;
       options.set_crate_name (msg_str);
-      mappings->set_crate_name (mappings->get_current_crate (), msg_str);
+      mappings.set_crate_name (mappings.get_current_crate (), msg_str);
     }
 
   options.crate_name_set_manually |= crate_name_changed;
@@ -549,9 +549,9 @@ Session::compile_crate (const char *filename)
     return;
 
   // setup the mappings for this AST
-  CrateNum current_crate = mappings->get_current_crate ();
+  CrateNum current_crate = mappings.get_current_crate ();
   AST::Crate &parsed_crate
-    = mappings->insert_ast_crate (std::move (ast_crate), current_crate);
+    = mappings.insert_ast_crate (std::move (ast_crate), current_crate);
 
   /* basic pipeline:
    *  - lex
@@ -647,7 +647,7 @@ Session::compile_crate (const char *filename)
     return;
 
   // add the mappings to it
-  HIR::Crate &hir = mappings->insert_hir_crate (std::move (lowered));
+  HIR::Crate &hir = mappings.insert_hir_crate (std::move (lowered));
   if (options.dump_option_enabled (CompileOptions::HIR_DUMP))
     {
       dump_hir (hir);
@@ -1049,12 +1049,12 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
 {
   // has it already been loaded?
   CrateNum found_crate_num = UNKNOWN_CRATENUM;
-  bool found = mappings->lookup_crate_name (crate_name, found_crate_num);
+  bool found = mappings.lookup_crate_name (crate_name, found_crate_num);
   if (found)
     {
       NodeId resolved_node_id = UNKNOWN_NODEID;
       bool resolved
-	= mappings->crate_num_to_nodeid (found_crate_num, resolved_node_id);
+	= mappings.crate_num_to_nodeid (found_crate_num, resolved_node_id);
       rust_assert (resolved);
 
       return resolved_node_id;
@@ -1107,7 +1107,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     }
 
   // ensure the current vs this crate name don't collide
-  const std::string current_crate_name = mappings->get_current_crate_name ();
+  const std::string current_crate_name = mappings.get_current_crate_name ();
   if (current_crate_name.compare (extern_crate.get_crate_name ()) == 0)
     {
       rust_error_at (locus, "current crate name %qs collides with this",
@@ -1116,10 +1116,10 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     }
 
   // setup mappings
-  CrateNum saved_crate_num = mappings->get_current_crate ();
+  CrateNum saved_crate_num = mappings.get_current_crate ();
   CrateNum crate_num
-    = mappings->get_next_crate_num (extern_crate.get_crate_name ());
-  mappings->set_current_crate (crate_num);
+    = mappings.get_next_crate_num (extern_crate.get_crate_name ());
+  mappings.set_current_crate (crate_num);
 
   // then lets parse this as a 2nd crate
   Lexer lex (extern_crate.get_metadata (), linemap);
@@ -1127,7 +1127,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   std::unique_ptr<AST::Crate> metadata_crate = parser.parse_crate ();
 
   AST::Crate &parsed_crate
-    = mappings->insert_ast_crate (std::move (metadata_crate), crate_num);
+    = mappings.insert_ast_crate (std::move (metadata_crate), crate_num);
 
   std::vector<AttributeProcMacro> attribute_macros;
   std::vector<CustomDeriveProcMacro> derive_macros;
@@ -1151,9 +1151,9 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
 	}
     }
 
-  mappings->insert_attribute_proc_macros (crate_num, attribute_macros);
-  mappings->insert_bang_proc_macros (crate_num, bang_macros);
-  mappings->insert_derive_proc_macros (crate_num, derive_macros);
+  mappings.insert_attribute_proc_macros (crate_num, attribute_macros);
+  mappings.insert_bang_proc_macros (crate_num, bang_macros);
+  mappings.insert_derive_proc_macros (crate_num, derive_macros);
 
   // name resolve it
   Resolver::NameResolution::Resolve (parsed_crate);
@@ -1161,13 +1161,13 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   // perform hir lowering
   std::unique_ptr<HIR::Crate> lowered
     = HIR::ASTLowering::Resolve (parsed_crate);
-  HIR::Crate &hir = mappings->insert_hir_crate (std::move (lowered));
+  HIR::Crate &hir = mappings.insert_hir_crate (std::move (lowered));
 
   // perform type resolution
   Resolver::TypeResolution::Resolve (hir);
 
   // always restore the crate_num
-  mappings->set_current_crate (saved_crate_num);
+  mappings.set_current_crate (saved_crate_num);
 
   return parsed_crate.get_node_id ();
 }
