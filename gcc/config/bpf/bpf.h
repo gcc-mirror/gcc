@@ -245,6 +245,11 @@ enum reg_class
 
 /**** Debugging Info ****/
 
+/* Use BTF debug info by default.  */
+
+#undef  PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE BTF_DEBUG
+
 /* In eBPF it is not possible to unwind frames. Disable CFA.  */
 
 #define DWARF2_FRAME_INFO 0
