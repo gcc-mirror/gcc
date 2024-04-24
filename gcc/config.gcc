@@ -394,6 +394,8 @@ bfin*-*)
 	;;
 bpf-*-*)
 	cpu_type=bpf
+	c_target_objs="bpf-c.o"
+	cxx_target_objs="bpf-c.o"
 	;;
 frv*)	cpu_type=frv
 	extra_options="${extra_options} g.opt"

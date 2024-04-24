@@ -284,23 +284,6 @@ bpf_file_end (void)
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END bpf_file_end
 
-/* Define target-specific CPP macros.  This function in used in the
-   definition of TARGET_CPU_CPP_BUILTINS in bpf.h */
-
-#define builtin_define(TXT) cpp_define (pfile, TXT)
-
-void
-bpf_target_macros (cpp_reader *pfile)
-{
-  builtin_define ("__BPF__");
-  builtin_define ("__bpf__");
-
-  if (TARGET_BIG_ENDIAN)
-    builtin_define ("__BPF_BIG_ENDIAN__");
-  else
-    builtin_define ("__BPF_LITTLE_ENDIAN__");
-}
-
 /* Return an RTX representing the place where a function returns or
    receives a value of data type RET_TYPE, a tree node representing a
    data type.  */

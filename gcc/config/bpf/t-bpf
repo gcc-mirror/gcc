@@ -1,6 +1,10 @@
 
 TM_H += $(srcdir)/config/bpf/btfext-out.h $(srcdir)/config/bpf/core-builtins.h
 
+bpf-c.o: $(srcdir)/config/bpf/bpf-c.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 btfext-out.o: $(srcdir)/config/bpf/btfext-out.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
