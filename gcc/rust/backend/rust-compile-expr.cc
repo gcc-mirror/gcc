@@ -1304,23 +1304,14 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
     {
       const TyTy::DynamicObjectType *dyn
 	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
-
-      std::vector<HIR::Expr *> arguments;
-      for (auto &arg : expr.get_arguments ())
-	arguments.push_back (arg.get ());
-
       fn_expr
 	= get_fn_addr_from_dyn (dyn, receiver, fntype, self, expr.get_locus ());
       self = get_receiver_from_dyn (dyn, receiver, fntype, self,
 				    expr.get_locus ());
     }
   else
-    {
-      // lookup compiled functions since it may have already been compiled
-      HIR::PathExprSegment method_name = expr.get_method_name ();
-      HIR::PathIdentSegment segment_name = method_name.get_segment ();
-      fn_expr = resolve_method_address (fntype, receiver, expr.get_locus ());
-    }
+    // lookup compiled functions since it may have already been compiled
+    fn_expr = resolve_method_address (fntype, receiver, expr.get_locus ());
 
   // lookup the autoderef mappings
   HirId autoderef_mappings_id
