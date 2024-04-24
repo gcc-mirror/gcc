@@ -1431,6 +1431,7 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
      scenario.  */
   if ((def->x_ix86_isa_flags2 & OPTION_MASK_ISA2_AVX10_1_256)
       && (opts->x_ix86_isa_flags & OPTION_MASK_ISA_AVX512F)
+      && (opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512F)
       && !(def->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_EVEX512)
       && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_EVEX512))
     opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_EVEX512;
