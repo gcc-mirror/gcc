@@ -3,8 +3,10 @@
 
 extern int i;
 
+CDTOR_LINKAGE
 void c3() __attribute__((constructor (600)));
 
+CDTOR_LINKAGE
 void c3() {
   if (i++ != 1)
     __builtin_abort ();

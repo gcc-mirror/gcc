@@ -3,8 +3,10 @@
 
 extern int i;
 
+CDTOR_LINKAGE
 void d2() __attribute__((destructor (700)));
 
+CDTOR_LINKAGE
 void d2() {
   if (--i != 2)
     __builtin_abort ();
