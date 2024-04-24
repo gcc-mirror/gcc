@@ -1,3 +1,60 @@
+2024-04-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp23/explicit-obj-basic7.C: New test.
+
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114810
+	* g++.target/i386/pr114810.C: New test.
+
+2024-04-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/103496
+	* gfortran.dg/c_sizeof_8.f90: New test.
+
+2024-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114795
+	* g++.dg/modules/auto-4_a.H: New test.
+	* g++.dg/modules/auto-4_b.C: New test.
+
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc.dg/attributes/nullability-00.m: Adjust expected diagnostic
+	spelling: recognised -> recognized.
+	* obj-c++.dg/attributes/nullability-00.mm: Likewise.
+
+2024-04-23  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/forwprop-40.c: Xfail for s390.
+	* gcc.dg/tree-ssa/forwprop-41.c: Xfail for s390.
+	* lib/target-supports.exp: Add target check s390_mvx.
+
+2024-04-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102597
+	* gfortran.dg/pr102597.f90: New test.
+
+2024-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114799
+	* gcc.dg/vect/bb-slp-pr114799.c: New testcase.
+
+2024-04-23  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/114676
+	* gcc.target/s390/zvector/pr114676.c: New test.
+
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114784
+	* g++.dg/cpp0x/inh-ctor39.C: New test.
+
+2024-04-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114078
+	* g++.dg/cpp23/explicit-obj-ops-alloc.C: New test.
+
 2024-04-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114811

@@ -1,3 +1,32 @@
+2024-04-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* parser.cc (cp_parser_parameter_declaration): Check if
+	decl_specifiers.type is null.
+
+2024-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114795
+	* module.cc (trees_in::is_matching_decl): Propagate deduced
+	function return type.
+
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_using_declaration): Spelling fix: favour
+	-> favor.
+
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114784
+	* method.cc (implicitly_declare_fn): Call clone_attrs
+	on DECL_ATTRIBUTES on STRIP_TEMPLATE (inherited_ctor) rather than
+	inherited_ctor.  Also copy DECL_DISREGARD_INLINE_LIMITS flag from it.
+
+2024-04-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114078
+	* decl.cc (grokdeclarator): Check allocation functions for xobj
+	parameters.
+
 2024-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/114706

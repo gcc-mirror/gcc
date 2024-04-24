@@ -1,3 +1,90 @@
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114810
+	* config/i386/i386.md (*andn<dwi>3_doubleword_bmi): Split the =&r,r,ro
+	alternative into =&r,r,r enabled only for x64 and =&r,r,o.
+
+2024-04-23  Jan Hubicka  <jh@suse.cz>
+
+	* doc/invoke.texi (-ftree-loop-distribute-patterns): Remove duplicated
+	sentence about optimization flags implying this.
+
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/darwin.opt (init): Spelling fix: initialiser -> initializer.
+
+2024-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/epiphany/epiphany.opt (may-round-for-trunc): Spelling fix:
+	floatig -> floating.
+	* config/riscv/riscv.opt (mcsr-check): Spelling fix: CRS -> CSR.
+	* params.opt (-param=ipa-cp-profile-count-base=): Spelling fix:
+	frequncy -> frequency.
+
+2024-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114799
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Properly
+	update ->any_pattern when swapping operands.
+
+2024-04-23  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/114676
+	* config/s390/s390-c.cc (s390_expand_overloaded_builtin): Use a
+	MEM_REF with an addend of type ptr_type_node.
+
+2024-04-23  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.gcc: Add loongarch-evolution.o.
+	* config/loongarch/genopts/genstr.sh: Enable generation of
+	loongarch-evolution.[cc,h].
+	* config/loongarch/t-loongarch: Likewise.
+	* config/loongarch/genopts/gen-evolution.awk: New file.
+	* config/loongarch/genopts/isa-evolution.in: Mark ISA version
+	of introduction for each ISA evolution feature.
+	* config/loongarch/loongarch-c.cc (loongarch_cpu_cpp_builtins):
+	Define builtin macros for enabled ISA evolutions and the ISA
+	version.
+	* config/loongarch/loongarch-cpu.cc: Use loongarch-evolution.h.
+	* config/loongarch/loongarch.h: Likewise.
+	* config/loongarch/loongarch-cpucfg-map.h: Delete.
+	* config/loongarch/loongarch-evolution.cc: New file.
+	* config/loongarch/loongarch-evolution.h: New file.
+	* config/loongarch/loongarch-opts.h (ISA_HAS_FRECIPE): Define.
+	(ISA_HAS_DIV32): Likewise.
+	(ISA_HAS_LAM_BH): Likewise.
+	(ISA_HAS_LAMCAS): Likewise.
+	(ISA_HAS_LD_SEQ_SA): Likewise.
+
+2024-04-23  Yang Yujie  <yangyujie@loongson.cn>
+
+	* config.gcc: Make la64v1.0 the default ISA preset of the lp64d ABI.
+	* config/loongarch/genopts/loongarch-strings: Define la64v1.0, la64v1.1.
+	* config/loongarch/genopts/loongarch.opt.in: Likewise.
+	* config/loongarch/loongarch-c.cc (LARCH_CPP_SET_PROCESSOR): Likewise.
+	(loongarch_cpu_cpp_builtins): Likewise.
+	* config/loongarch/loongarch-cpu.cc (get_native_prid): Likewise.
+	(fill_native_cpu_config): Likewise.
+	* config/loongarch/loongarch-def.cc (array_tune): Likewise.
+	* config/loongarch/loongarch-def.h: Likewise.
+	* config/loongarch/loongarch-driver.cc (driver_set_m_parm): Likewise.
+	(driver_get_normalized_m_opts): Likewise.
+	* config/loongarch/loongarch-opts.cc (default_tune_for_arch): Likewise.
+	(TUNE_FOR_ARCH): Likewise.
+	(arch_str): Likewise.
+	(loongarch_target_option_override): Likewise.
+	* config/loongarch/loongarch-opts.h (TARGET_uARCH_LA464): Likewise.
+	(TARGET_uARCH_LA664): Likewise.
+	* config/loongarch/loongarch-str.h (STR_CPU_ABI_DEFAULT): Likewise.
+	(STR_ARCH_ABI_DEFAULT): Likewise.
+	(STR_TUNE_GENERIC): Likewise.
+	(STR_ARCH_LA64V1_0): Likewise.
+	(STR_ARCH_LA64V1_1): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_cpu_sched_reassociation_width): Likewise.
+	(loongarch_asm_code_end): Likewise.
+	* config/loongarch/loongarch.opt: Likewise.
+	* doc/invoke.texi: Likewise.
+
 2024-04-22  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/vector-crypto.md:

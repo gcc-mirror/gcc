@@ -1,3 +1,15 @@
+2024-04-23  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Test --compress-debug-sections=zlib-gnu and
+	--compress-debug-sections=zlib-gabi separately, setting new
+	automake conditionals.
+	* Makefile.am (ctestg, ctestg_alloc): Only build if
+	HAVE_COMPRESSED_DEBUG_ZLIB_GNU.
+	(ctesta, ctesta_alloc): Only build if
+	HAVE_COMPRESSED_DEBUG_ZLIB_GABI.
+	(ctestzstd_alloc): New test if HAVE_COMPRESSED_DEBUG_ZSTD.
+	* configure, Makefile.in: Regenerate.
+
 2024-03-08  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_uncompress_chdr): Don't assume compressed section is
