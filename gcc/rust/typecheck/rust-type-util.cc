@@ -89,12 +89,10 @@ query_type (HirId reference, TyTy::BaseType **result)
     }
 
   // is it an impl_type?
-  HIR::ImplBlock *impl_block_by_type = nullptr;
-  bool found_impl_block_type
-    = mappings.lookup_impl_block_type (reference, &impl_block_by_type);
-  if (found_impl_block_type)
+  if (auto impl_block_by_type = mappings.lookup_impl_block_type (reference))
     {
-      *result = TypeCheckItem::ResolveImplBlockSelf (*impl_block_by_type);
+      *result
+	= TypeCheckItem::ResolveImplBlockSelf (*impl_block_by_type.value ());
       context->query_completed (reference);
       return true;
     }
