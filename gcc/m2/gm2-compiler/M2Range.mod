@@ -1706,20 +1706,17 @@ BEGIN
    THEN
       (* Expression type compatibility rules for pass by reference parameters.  *)
       compatible := ParameterTypeCompatible (tokenNo,
-                                             '{%4EN} parameter failure due to expression incompatibility ' +
-                                             'between actual parameter {%3ad} and the {%4N} formal {%2ad} parameter in procedure {%1ad}',
+                                             '{%4EN} parameter failure due to expression incompatibility between actual parameter {%3ad} and the {%4N} formal {%2ad} parameter in procedure {%1ad}',
                                              procedure, formal, actual, paramNo, TRUE)
    ELSIF GetPIM ()
    THEN
       (* Assignment type compatibility rules for pass by value PIM parameters.  *)
       compatible := ParameterTypeCompatible (tokenNo,
-                                             '{%4EN} parameter failure due to assignment incompatibility ' +
-                                             'between actual parameter {%3ad} and the {%4N} formal {%2ad} parameter in procedure {%1ad}',
+                                             '{%4EN} parameter failure due to assignment incompatibility between actual parameter {%3ad} and the {%4N} formal {%2ad} parameter in procedure {%1ad}',
                                              procedure, formal, actual, paramNo, FALSE)
    ELSE
       compatible := ParameterTypeCompatible (tokenNo,
-                                             '{%4EN} parameter failure due to parameter incompatibility ' +
-                                             'between actual parameter {%3ad} and the {%4N} formal {%2ad} parameter in procedure {%1ad}',
+                                             '{%4EN} parameter failure due to parameter incompatibility between actual parameter {%3ad} and the {%4N} formal {%2ad} parameter in procedure {%1ad}',
                                              procedure, formal, actual, paramNo, FALSE)
    END ;
    IF compatible
