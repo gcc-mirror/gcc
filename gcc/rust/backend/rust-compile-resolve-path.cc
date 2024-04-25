@@ -201,20 +201,18 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 			       const Analysis::NodeMapping &mappings,
 			       location_t expr_locus, bool is_qualified_path)
 {
-  HIR::Item *resolved_item = ctx->get_mappings ().lookup_hir_item (ref);
   HirId parent_block;
   HIR::ExternalItem *resolved_extern_item
     = ctx->get_mappings ().lookup_hir_extern_item (ref, &parent_block);
-  bool is_hir_item = resolved_item != nullptr;
   bool is_hir_extern_item = resolved_extern_item != nullptr;
   bool is_fn = lookup->get_kind () == TyTy::TypeKind::FNDEF;
-  if (is_hir_item)
+  if (auto resolved_item = ctx->get_mappings ().lookup_hir_item (ref))
     {
       if (!lookup->has_substitutions_defined ())
-	return CompileItem::compile (resolved_item, ctx, nullptr, true,
+	return CompileItem::compile (*resolved_item, ctx, nullptr, true,
 				     expr_locus);
       else
-	return CompileItem::compile (resolved_item, ctx, lookup, true,
+	return CompileItem::compile (*resolved_item, ctx, lookup, true,
 				     expr_locus);
     }
   else if (is_hir_extern_item)

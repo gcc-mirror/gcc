@@ -61,11 +61,11 @@ query_type (HirId reference, TyTy::BaseType **result)
       return true;
     }
 
-  HIR::Item *item = mappings.lookup_hir_item (reference);
-  if (item != nullptr)
+  if (auto item = mappings.lookup_hir_item (reference))
     {
-      rust_debug_loc (item->get_locus (), "resolved item {%u} to", reference);
-      *result = TypeCheckItem::Resolve (*item);
+      rust_debug_loc (item.value ()->get_locus (), "resolved item {%u} to",
+		      reference);
+      *result = TypeCheckItem::Resolve (*item.value ());
       context->query_completed (reference);
       return true;
     }

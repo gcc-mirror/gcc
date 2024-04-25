@@ -115,7 +115,7 @@ public:
   HIR::Item *lookup_local_defid (CrateNum crateNum, LocalDefId id);
 
   void insert_hir_item (HIR::Item *item);
-  HIR::Item *lookup_hir_item (HirId id);
+  tl::optional<HIR::Item *> lookup_hir_item (HirId id);
 
   void insert_hir_enumitem (HIR::Enum *parent, HIR::EnumItem *item);
   std::pair<HIR::Enum *, HIR::EnumItem *> lookup_hir_enumitem (HirId id);

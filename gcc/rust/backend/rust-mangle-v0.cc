@@ -387,7 +387,6 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
     HIR::ImplItem *impl_item
       = mappings.lookup_hir_implitem (hir_id, &parent_impl_id);
     HIR::TraitItem *trait_item = mappings.lookup_hir_trait_item (hir_id);
-    HIR::Item *item = mappings.lookup_hir_item (hir_id);
     HIR::Expr *expr = mappings.lookup_hir_expr (hir_id);
 
     if (impl_item != nullptr)
@@ -428,11 +427,11 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	    break;
 	  }
       }
-    else if (item != nullptr)
-      switch (item->get_item_kind ())
+    else if (auto item = mappings.lookup_hir_item (hir_id))
+      switch (item.value ()->get_item_kind ())
 	{
 	  case HIR::Item::ItemKind::Function: {
-	    HIR::Function *fn = static_cast<HIR::Function *> (item);
+	    HIR::Function *fn = static_cast<HIR::Function *> (*item);
 	    v0path = v0_function_path (v0path, ctx, ty, fn,
 				       v0_identifier (seg.get ()));
 	  }
@@ -453,7 +452,7 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	case HIR::Item::ItemKind::Impl:
 	  // Trait impl or inherent impl.
 	  {
-	    HIR::ImplBlock *impl_block = static_cast<HIR::ImplBlock *> (item);
+	    HIR::ImplBlock *impl_block = static_cast<HIR::ImplBlock *> (*item);
 	    v0path = v0_inherent_or_trait_impl_path (ctx, impl_block);
 	  }
 	  break;

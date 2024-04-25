@@ -86,11 +86,10 @@ MarkLive::go (HIR::Crate &)
       HirId hirId = worklist.back ();
       worklist.pop_back ();
       scannedSymbols.emplace (hirId);
-      HIR::Item *item = mappings.lookup_hir_item (hirId);
       liveSymbols.emplace (hirId);
-      if (item != nullptr)
+      if (auto item = mappings.lookup_hir_item (hirId))
 	{
-	  item->accept_vis (*this);
+	  item.value ()->accept_vis (*this);
 	}
       else
 	{ // the item maybe inside a trait impl
@@ -124,10 +123,10 @@ MarkLive::visit (HIR::PathInExpression &expr)
   auto ref = hid.value ();
 
   // it must resolve to some kind of HIR::Item or HIR::InheritImplItem
-  HIR::Item *resolved_item = mappings.lookup_hir_item (ref);
-  if (resolved_item != nullptr)
+  tl::optional<HIR::Item *> resolved_item = mappings.lookup_hir_item (ref);
+  if (resolved_item)
     {
-      mark_hir_id (resolved_item->get_mappings ().get_hirid ());
+      mark_hir_id (resolved_item.value ()->get_mappings ().get_hirid ());
     }
   else
     {

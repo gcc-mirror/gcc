@@ -366,19 +366,18 @@ void
 Mappings::insert_hir_item (HIR::Item *item)
 {
   auto id = item->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_item (id) == nullptr);
+  rust_assert (!lookup_hir_item (id).has_value ());
 
   hirItemMappings[id] = item;
   insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
 
-HIR::Item *
+tl::optional<HIR::Item *>
 Mappings::lookup_hir_item (HirId id)
 {
   auto it = hirItemMappings.find (id);
   if (it == hirItemMappings.end ())
-    return nullptr;
-
+    return tl::nullopt;
   return it->second;
 }
 
