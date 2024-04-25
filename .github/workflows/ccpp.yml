@@ -44,6 +44,9 @@ jobs:
           # install Rust directly using rustup
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
+    - name: Make Source Read-Only
+      run: chmod -R a-w ./*
+
     - name: Configure
       run: |
            mkdir -p gccrs-build;
@@ -124,6 +127,9 @@ jobs:
                   dejagnu;
           # install Rust directly using rustup
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
+
+    - name: Make Source Read-Only
+      run: chmod -R a-w ./*
 
     - name: Configure
       run: |
@@ -206,6 +212,9 @@ jobs:
                   dejagnu;
           # install Rust directly using rustup
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
+
+    - name: Make Source Read-Only
+      run: chmod -R a-w ./*
 
     - name: Configure
       run: |
@@ -290,6 +299,9 @@ jobs:
           # install Rust directly using rustup
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
 
+    - name: Make Source Read-Only
+      run: chmod -R a-w ./*
+
     - name: Configure
       run: |
            mkdir -p gccrs-build;
@@ -348,6 +360,9 @@ jobs:
           brew install dejagnu mpfr libmpc gmp;
           # install Rust directly using rustup
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
+
+    - name: Make Source Read-Only
+      run: chmod -R a-w ./*
 
     - name: Configure
       run: |
@@ -417,6 +432,9 @@ jobs:
                   dejagnu;
           # install Rust directly using rustup
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=1.72.0;
+
+    - name: Make Source Read-Only
+      run: chmod -R a-w ./*
 
     - name: Configure
       run: |
