@@ -415,8 +415,21 @@ for f in __cxxabiv1_*; do
     mv $f $newname
 done
 
+mv std::__unspecified___exception_ptr.3 std::exception_ptr.3
+
 # Then piecemeal nested classes
 
+for f in std*distribution_param_type.3; do
+    newname=`echo $f | sed 's/distribution_param_type/distribution::param_type/'`
+    mv $f $newname
+done
+
+for f in std*filesystem::path_iterator.3; do
+    newname=`echo $f | sed 's/path_iterator/path::iterator/'`
+    mv $f $newname
+done
+
+mv std::chrono::tzdb_list_const_iterator.3 std::chrono::tzdb_list::const_iterator.3
 
 # Generic removal bits, where there are things in the generated man
 # pages that need to be killed.
