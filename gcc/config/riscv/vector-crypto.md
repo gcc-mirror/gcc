@@ -303,7 +303,7 @@
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
 
 (define_insn "@pred_vwsll<mode>_scalar"
-  [(set (match_operand:VWEXTI 0 "register_operand"              "=vr,     vr")
+  [(set (match_operand:VWEXTI 0 "register_operand"              "=&vr,    &vr")
      (if_then_else:VWEXTI
        (unspec:<VM>
          [(match_operand:<VM> 1 "vector_mask_operand"           "vmWc1, vmWc1")
