@@ -279,16 +279,17 @@ v0_type_path (V0Path path, std::string ident)
 }
 
 static V0Path
-v0_function_path (V0Path path, Rust::Compile::Context *ctx,
-		  const TyTy::BaseType *ty, HIR::Function *fn,
-		  std::string ident)
+v0_function_path (
+  V0Path path, Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
+  const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+  std::string ident)
 {
   V0Path v0path;
   v0path.prefix = "N";
   v0path.ns = "v";
   v0path.path = path.as_string ();
   v0path.ident = ident;
-  if (!fn->get_generic_params ().empty ())
+  if (!generic_params.empty ())
     {
       v0path.generic_prefix = "I";
       v0path.generic_postfix = v0_generic_args (ctx, ty) + "E";
@@ -386,7 +387,6 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
     HirId parent_impl_id = UNKNOWN_HIRID;
     HIR::ImplItem *impl_item
       = mappings.lookup_hir_implitem (hir_id, &parent_impl_id);
-    HIR::TraitItem *trait_item = mappings.lookup_hir_trait_item (hir_id);
     HIR::Expr *expr = mappings.lookup_hir_expr (hir_id);
 
     if (impl_item != nullptr)
@@ -395,8 +395,9 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	  {
 	    case HIR::ImplItem::FUNCTION: {
 	      HIR::Function *fn = static_cast<HIR::Function *> (impl_item);
-	      v0path = v0_function_path (v0path, ctx, ty, fn,
-					 v0_identifier (seg.get ()));
+	      v0path
+		= v0_function_path (v0path, ctx, ty, fn->get_generic_params (),
+				    v0_identifier (seg.get ()));
 	    }
 	    break;
 	  case HIR::ImplItem::CONSTANT:
@@ -408,13 +409,15 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	    break;
 	  }
       }
-    else if (trait_item != nullptr)
+    else if (auto trait_item = mappings.lookup_hir_trait_item (hir_id))
       {
-	switch (trait_item->get_item_kind ())
+	switch (trait_item.value ()->get_item_kind ())
 	  {
 	    case HIR::TraitItem::FUNC: {
-	      HIR::Function *fn = static_cast<HIR::Function *> (impl_item);
-	      v0path = v0_function_path (v0path, ctx, ty, fn,
+	      auto fn = static_cast<HIR::TraitItemFunc *> (*trait_item);
+	      rust_unreachable ();
+	      v0path = v0_function_path (v0path, ctx, ty,
+					 fn->get_decl ().get_generic_params (),
 					 v0_identifier (seg.get ()));
 	    }
 	    break;
@@ -432,8 +435,9 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	{
 	  case HIR::Item::ItemKind::Function: {
 	    HIR::Function *fn = static_cast<HIR::Function *> (*item);
-	    v0path = v0_function_path (v0path, ctx, ty, fn,
-				       v0_identifier (seg.get ()));
+	    v0path
+	      = v0_function_path (v0path, ctx, ty, fn->get_generic_params (),
+				  v0_identifier (seg.get ()));
 	  }
 	  break;
 	case HIR::Item::ItemKind::Module:

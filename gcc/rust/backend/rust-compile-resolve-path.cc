@@ -256,10 +256,11 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
       else
 	{
 	  // it might be resolved to a trait item
-	  HIR::TraitItem *trait_item
+	  tl::optional<HIR::TraitItem *> trait_item
 	    = ctx->get_mappings ().lookup_hir_trait_item (ref);
+
 	  HIR::Trait *trait = ctx->get_mappings ().lookup_trait_item_mapping (
-	    trait_item->get_mappings ().get_hirid ());
+	    trait_item.value ()->get_mappings ().get_hirid ());
 
 	  Resolver::TraitReference *trait_ref
 	    = &Resolver::TraitReference::error_node ();
@@ -285,7 +286,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	      // this means we are defaulting back to the trait_item if
 	      // possible
 	      Resolver::TraitItemReference *trait_item_ref = nullptr;
-	      bool ok = trait_ref->lookup_hir_trait_item (*trait_item,
+	      bool ok = trait_ref->lookup_hir_trait_item (*trait_item.value (),
 							  &trait_item_ref);
 	      rust_assert (ok);				    // found
 	      rust_assert (trait_item_ref->is_optional ()); // has definition
