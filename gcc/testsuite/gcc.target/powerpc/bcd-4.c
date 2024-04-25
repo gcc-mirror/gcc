@@ -2,8 +2,8 @@
 /* { dg-require-effective-target int128 } */
 /* { dg-require-effective-target p9vector_hw } */
 /* { dg-options "-mdejagnu-cpu=power9 -O2 -save-temps" } */
-/* { dg-final { scan-assembler-times {\mbcdadd\M} 7 } } */
-/* { dg-final { scan-assembler-times {\mbcdsub\M} 18 } } */
+/* { dg-final { scan-assembler-times {\mbcdadd\M} 5 } } */
+/* { dg-final { scan-assembler-times {\mbcdsub\M} 20 } } */
 /* { dg-final { scan-assembler-times {\mbcds\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mdenbcdq\M} 1 } } */
 

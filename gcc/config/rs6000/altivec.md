@@ -4586,18 +4586,18 @@
   [(set (reg:CCFP CR6_REGNO)
 	(compare:CCFP
 	 (unspec:V2DF [(match_operand:VBCD 1 "register_operand" "v")]
-		      UNSPEC_BCDADD)
+		      UNSPEC_BCDSUB)
 	 (match_operand:V2DF 2 "zero_constant" "j")))
    (clobber (match_scratch:VBCD 0 "=v"))]
   "TARGET_P8_VECTOR"
-  "bcdadd. %0,%1,%1,0"
+  "bcdsub. %0,%1,%1,0"
   [(set_attr "type" "vecsimple")])
 
 (define_expand "bcdinvalid_<mode>"
   [(parallel [(set (reg:CCFP CR6_REGNO)
 		   (compare:CCFP
 		    (unspec:V2DF [(match_operand:VBCD 1 "register_operand")]
-				 UNSPEC_BCDADD)
+				 UNSPEC_BCDSUB)
 		    (match_dup 2)))
 	      (clobber (match_scratch:VBCD 3))])
    (set (match_operand:SI 0 "register_operand")
