@@ -294,7 +294,11 @@ $gxx $cppflags $cxxflags ${srcdir}/doc/doxygen/stdheader.cc -o ./stdheader || ex
 problematic=`grep -E -l '#include <.*h>' [a-z]*.3`
 for f in $problematic; do
     # this is also slow, but safe and easy to debug
-    oldh=`sed -n '/fC#include </s/.*<\(.*\)>.*/\1/p' $f`
+    oldh=`sed -n '/f[CR]#include </s/.*<\(.*\)>.*/\1/p' $f`
+    if [ "$oldh" == "" ]; then
+      echo "ERROR: Doxygen man page formatting changed" 2>&1
+      continue
+    fi
     newh=`echo $oldh | sed 's/\\\\&\\././g' | ./stdheader`
     sed "s=${oldh/\\/.}=${newh}=" $f > TEMP && mv TEMP $f
 done
