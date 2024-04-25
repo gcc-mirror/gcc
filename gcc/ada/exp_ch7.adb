@@ -1318,41 +1318,12 @@ package body Exp_Ch7 is
             Append_To (Stmts, Build_Runtime_Call (Loc, RE_Complete_Master));
          end if;
 
-      --  Add statements to unlock the protected object parameter and to
-      --  undefer abort. If the context is a protected procedure and the object
-      --  has entries, call the entry service routine.
-
-      --  NOTE: The generated code references _object, a parameter to the
-      --  procedure.
+      --  Add statements to undefer abort.
 
       elsif Is_Protected_Subp_Body then
-         declare
-            Spec      : constant Node_Id := Parent (Corresponding_Spec (N));
-            Conc_Typ  : Entity_Id := Empty;
-            Param     : Node_Id;
-            Param_Typ : Entity_Id;
-
-         begin
-            --  Find the _object parameter representing the protected object
-
-            Param := First (Parameter_Specifications (Spec));
-            loop
-               Param_Typ := Etype (Parameter_Type (Param));
-
-               if Ekind (Param_Typ) = E_Record_Type then
-                  Conc_Typ := Corresponding_Concurrent_Type (Param_Typ);
-               end if;
-
-               exit when No (Param) or else Present (Conc_Typ);
-               Next (Param);
-            end loop;
-
-            pragma Assert (Present (Param));
-            pragma Assert (Present (Conc_Typ));
-
-            Build_Protected_Subprogram_Call_Cleanup
-              (Specification (N), Conc_Typ, Loc, Stmts);
-         end;
+         if Abort_Allowed then
+            Append_To (Stmts, Build_Runtime_Call (Loc, RE_Abort_Undefer));
+         end if;
 
       --  Add a call to Expunge_Unactivated_Tasks for dynamically allocated
       --  tasks. Other unactivated tasks are completed by Complete_Task or
