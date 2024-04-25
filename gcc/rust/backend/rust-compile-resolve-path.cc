@@ -57,7 +57,7 @@ ResolvePathRef::attempt_constructor_expression_lookup (
 
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
   if (adt->is_unit ())
-    return unit_expression (ctx, expr_locus);
+    return unit_expression (expr_locus);
 
   if (!adt->is_enum ())
     return error_mark_node;

@@ -30,9 +30,9 @@ public:
   static tree compile (Context *ctx, const TyTy::BaseType *ty,
 		       bool trait_object_mode = false);
 
-  static tree get_implicit_enumeral_node_type (Context *ctx);
+  static tree get_implicit_enumeral_node_type ();
 
-  static tree get_unit_type (Context *ctx);
+  static tree get_unit_type ();
 
   void visit (const TyTy::InferType &) override;
   void visit (const TyTy::ADTType &) override;

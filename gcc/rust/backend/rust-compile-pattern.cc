@@ -627,7 +627,7 @@ CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
     {
       ctx->add_statement (init_expr);
 
-      auto unit_type_init_expr = unit_expression (ctx, rval_locus);
+      auto unit_type_init_expr = unit_expression (rval_locus);
       auto s = Backend::init_statement (fnctx.fndecl, var, unit_type_init_expr);
       ctx->add_statement (s);
     }
