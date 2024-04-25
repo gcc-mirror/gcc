@@ -1039,6 +1039,37 @@ get_frame_field (struct nesting_info *info, tree target_context,
 
 static void note_nonlocal_vla_type (struct nesting_info *info, tree type);
 
+/* Helper for get_nonlocal_debug_decl and get_local_debug_decl.  */
+
+static tree
+get_debug_decl (tree decl)
+{
+  tree new_decl
+    = build_decl (DECL_SOURCE_LOCATION (decl),
+		  VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
+  DECL_ARTIFICIAL (new_decl) = DECL_ARTIFICIAL (decl);
+  DECL_IGNORED_P (new_decl) = DECL_IGNORED_P (decl);
+  TREE_THIS_VOLATILE (new_decl) = TREE_THIS_VOLATILE (decl);
+  TREE_SIDE_EFFECTS (new_decl) = TREE_SIDE_EFFECTS (decl);
+  TREE_READONLY (new_decl) = TREE_READONLY (decl);
+  TREE_ADDRESSABLE (new_decl) = TREE_ADDRESSABLE (decl);
+  DECL_SEEN_IN_BIND_EXPR_P (new_decl) = 1;
+  if ((TREE_CODE (decl) == PARM_DECL
+       || TREE_CODE (decl) == RESULT_DECL
+       || VAR_P (decl))
+      && DECL_BY_REFERENCE (decl))
+    DECL_BY_REFERENCE (new_decl) = 1;
+  /* Copy DECL_LANG_SPECIFIC and DECL_LANG_FLAG_* for OpenMP langhook
+     purposes.  */
+  DECL_LANG_SPECIFIC (new_decl) = DECL_LANG_SPECIFIC (decl);
+#define COPY_DLF(n) DECL_LANG_FLAG_##n (new_decl) = DECL_LANG_FLAG_##n (decl)
+  COPY_DLF (0); COPY_DLF (1); COPY_DLF (2); COPY_DLF (3);
+  COPY_DLF (4); COPY_DLF (5); COPY_DLF (6); COPY_DLF (7);
+  COPY_DLF (8);
+#undef COPY_DLF
+  return new_decl;
+}
+
 /* A subroutine of convert_nonlocal_reference_op.  Create a local variable
    in the nested function with DECL_VALUE_EXPR set to reference the true
    variable in the parent function.  This is used both for debug info
@@ -1086,21 +1117,8 @@ get_nonlocal_debug_decl (struct nesting_info *info, tree decl)
     x = build_simple_mem_ref_notrap (x);
 
   /* ??? We should be remapping types as well, surely.  */
-  new_decl = build_decl (DECL_SOURCE_LOCATION (decl),
-			 VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
+  new_decl = get_debug_decl (decl);
   DECL_CONTEXT (new_decl) = info->context;
-  DECL_ARTIFICIAL (new_decl) = DECL_ARTIFICIAL (decl);
-  DECL_IGNORED_P (new_decl) = DECL_IGNORED_P (decl);
-  TREE_THIS_VOLATILE (new_decl) = TREE_THIS_VOLATILE (decl);
-  TREE_SIDE_EFFECTS (new_decl) = TREE_SIDE_EFFECTS (decl);
-  TREE_READONLY (new_decl) = TREE_READONLY (decl);
-  TREE_ADDRESSABLE (new_decl) = TREE_ADDRESSABLE (decl);
-  DECL_SEEN_IN_BIND_EXPR_P (new_decl) = 1;
-  if ((TREE_CODE (decl) == PARM_DECL
-       || TREE_CODE (decl) == RESULT_DECL
-       || VAR_P (decl))
-      && DECL_BY_REFERENCE (decl))
-    DECL_BY_REFERENCE (new_decl) = 1;
 
   SET_DECL_VALUE_EXPR (new_decl, x);
   DECL_HAS_VALUE_EXPR_P (new_decl) = 1;
@@ -1882,21 +1900,8 @@ get_local_debug_decl (struct nesting_info *info, tree decl, tree field)
   x = info->frame_decl;
   x = build3 (COMPONENT_REF, TREE_TYPE (field), x, field, NULL_TREE);
 
-  new_decl = build_decl (DECL_SOURCE_LOCATION (decl),
-			 VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
+  new_decl = get_debug_decl (decl);
   DECL_CONTEXT (new_decl) = info->context;
-  DECL_ARTIFICIAL (new_decl) = DECL_ARTIFICIAL (decl);
-  DECL_IGNORED_P (new_decl) = DECL_IGNORED_P (decl);
-  TREE_THIS_VOLATILE (new_decl) = TREE_THIS_VOLATILE (decl);
-  TREE_SIDE_EFFECTS (new_decl) = TREE_SIDE_EFFECTS (decl);
-  TREE_READONLY (new_decl) = TREE_READONLY (decl);
-  TREE_ADDRESSABLE (new_decl) = TREE_ADDRESSABLE (decl);
-  DECL_SEEN_IN_BIND_EXPR_P (new_decl) = 1;
-  if ((TREE_CODE (decl) == PARM_DECL
-       || TREE_CODE (decl) == RESULT_DECL
-       || VAR_P (decl))
-      && DECL_BY_REFERENCE (decl))
-    DECL_BY_REFERENCE (new_decl) = 1;
 
   SET_DECL_VALUE_EXPR (new_decl, x);
   DECL_HAS_VALUE_EXPR_P (new_decl) = 1;
