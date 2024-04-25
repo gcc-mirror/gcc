@@ -130,7 +130,7 @@ public:
   HIR::ExternalItem *lookup_hir_extern_item (HirId id, HirId *parent_block);
 
   void insert_hir_impl_block (HIR::ImplBlock *item);
-  HIR::ImplBlock *lookup_hir_impl_block (HirId id);
+  tl::optional<HIR::ImplBlock *> lookup_hir_impl_block (HirId id);
   bool lookup_impl_block_type (HirId id, HIR::ImplBlock **impl_block);
 
   void insert_module (HIR::Module *module);

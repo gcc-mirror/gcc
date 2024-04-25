@@ -468,7 +468,7 @@ void
 Mappings::insert_hir_impl_block (HIR::ImplBlock *item)
 {
   auto id = item->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_impl_block (id) == nullptr);
+  rust_assert (!lookup_hir_impl_block (id));
 
   HirId impl_type_id = item->get_type ()->get_mappings ().get_hirid ();
   hirImplBlockMappings[id] = item;
@@ -476,12 +476,12 @@ Mappings::insert_hir_impl_block (HIR::ImplBlock *item)
   insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
 
-HIR::ImplBlock *
+tl::optional<HIR::ImplBlock *>
 Mappings::lookup_hir_impl_block (HirId id)
 {
   auto it = hirImplBlockMappings.find (id);
   if (it == hirImplBlockMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }

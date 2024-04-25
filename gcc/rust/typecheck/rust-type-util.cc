@@ -75,15 +75,15 @@ query_type (HirId reference, TyTy::BaseType **result)
     = mappings.lookup_hir_implitem (reference, &parent_impl_id);
   if (impl_item != nullptr)
     {
-      HIR::ImplBlock *impl_block
-	= mappings.lookup_hir_impl_block (parent_impl_id);
-      rust_assert (impl_block != nullptr);
+      auto impl_block = mappings.lookup_hir_impl_block (parent_impl_id);
+      rust_assert (impl_block);
 
       // found an impl item
       rust_debug_loc (impl_item->get_locus (), "resolved impl-item {%u} to",
 		      reference);
 
-      *result = TypeCheckItem::ResolveImplItem (*impl_block, *impl_item);
+      *result
+	= TypeCheckItem::ResolveImplItem (*impl_block.value (), *impl_item);
       context->query_completed (reference);
       return true;
     }
