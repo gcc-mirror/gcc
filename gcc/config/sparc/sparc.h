@@ -1700,3 +1700,6 @@ extern int sparc_indent_opcode;
 #define SPARC_LOW_FE_EXCEPT_VALUES 0
 
 #define TARGET_SUPPORTS_WIDE_INT 1
+
+/* Define this to 1 to accept ABI changes to match the vendor compiler.  */
+#define SUN_V9_ABI_COMPATIBILITY 0

@@ -1,3 +1,6 @@
+/* PR target/105573 */
+/* Reported by Sam James <sjames@gcc.gnu.org> */
+
 /* { dg-do compile } */
 /* { dg-options "-O3 -mvis3" } */
 

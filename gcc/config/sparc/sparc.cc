@@ -6782,6 +6782,22 @@ sparc_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 	    || GET_MODE_SIZE (mode) > 16);
 }
 
+/* Return true if TYPE is considered as a floating-point type by the ABI.  */
+
+static bool
+fp_type_for_abi (const_tree type)
+{
+  /* This is the original GCC implementation.  */
+  if (FLOAT_TYPE_P (type) || VECTOR_TYPE_P (type))
+    return true;
+
+  /* This has been introduced in GCC 14 to match the vendor compiler.  */
+  if (SUN_V9_ABI_COMPATIBILITY && TREE_CODE (type) == ARRAY_TYPE)
+    return fp_type_for_abi (TREE_TYPE (type));
+
+  return false;
+}
+
 /* Traverse the record TYPE recursively and call FUNC on its fields.
    NAMED is true if this is for a named parameter.  DATA is passed
    to FUNC for each field.  OFFSET is the starting position and
@@ -6820,8 +6836,7 @@ traverse_record_type (const_tree type, bool named, T *data,
 					 packed);
 	else
 	  {
-	    const bool fp_type
-	      = FLOAT_TYPE_P (field_type) || VECTOR_TYPE_P (field_type);
+	    const bool fp_type = fp_type_for_abi (field_type);
 	    Func (field, bitpos, fp_type && named && !packed && TARGET_FPU,
 		  data);
 	  }
@@ -7071,6 +7086,13 @@ compute_fp_layout (const_tree field, int bitpos, assign_data_t *data,
     {
       mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (field)));
       nregs = 2;
+    }
+  else if (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE)
+    {
+      tree elt_type = strip_array_types (TREE_TYPE (field));
+      mode = TYPE_MODE (elt_type);
+      nregs
+	= int_size_in_bytes (TREE_TYPE (field)) / int_size_in_bytes (elt_type);
     }
   else
     nregs = 1;

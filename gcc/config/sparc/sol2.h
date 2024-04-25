@@ -456,3 +456,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #undef SPARC_LOW_FE_EXCEPT_VALUES
 #define SPARC_LOW_FE_EXCEPT_VALUES 1
+
+#undef SUN_V9_ABI_COMPATIBILITY
+#define SUN_V9_ABI_COMPATIBILITY 1

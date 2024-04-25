@@ -1,3 +1,6 @@
+/* PR target.109541 */
+/* Reported by Sam James <sjames@gcc.gnu.org> */
+
 /* { dg-do compile } */
 /* { dg-options "-O1 -mcpu=niagara4 -fpic -w" } */
 
