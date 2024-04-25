@@ -1,3 +1,12 @@
+2024-04-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-12-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/os/bsd/darwin/os_defines.h
+	(_GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC): Limit use of this macro
+	to OS versions that need it.
+
 2024-04-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

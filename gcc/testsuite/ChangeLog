@@ -1,3 +1,53 @@
+2024-04-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-08-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-minversion-link.c: Account for macOS 13 and 14.
+
+2024-04-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-06-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-obj-c++-shared/GNUStep/Foundation/NSObjCRuntime.h: Make
+	this header use pragma system_header.
+
+2024-04-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-02-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/proto-lossage-4.m: Amendn diagnostic matches for Windows.
+
+2024-04-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.target/i386/mv31.C: Add target supports guard for ifuncs.
+
+2024-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tsan/pr111736.c: New test.
+
+2024-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/ubsan/pr111736.c: New test.
+
+2024-04-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr111736.c: New testcase.
+
 2024-04-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/memcpy-strategy-10.c: Account for

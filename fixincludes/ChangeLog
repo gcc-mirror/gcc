@@ -1,3 +1,22 @@
+2024-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2023-08-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (darwin_flt_eval_method): Handle macOS 14 guard
+	variant.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h [DARWIN_FLT_EVAL_METHOD_CHECK]: Update test.
+
+2024-04-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2022-01-01  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* inclhack.def: Add new fix on darwin.
+	* fixincl.x: Regenerate.
+	* tests/base/math.h: Regenerate.
+
 2023-05-29  Release Manager
 
 	* GCC 11.4.0 released.
