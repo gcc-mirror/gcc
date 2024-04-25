@@ -1,3 +1,9 @@
+2024-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114709
+	* constexpr.cc (cxx_fold_indirect_ref): Restrict object/offset
+	canonicalization to RECORD_TYPE member accesses.
+
 2024-04-23  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* parser.cc (cp_parser_parameter_declaration): Check if

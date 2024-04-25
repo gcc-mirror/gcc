@@ -1,3 +1,62 @@
+2024-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/modules/pr99023_a.X: Run only in C++20 mode.
+	* g++.dg/modules/pr99023_b.X: Likewise.
+
+2024-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114709
+	* g++.dg/cpp0x/constexpr-union8.C: New test.
+
+2024-04-24  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+		    kito-cheng  <kito.cheng@sifive.com>
+		    kito-cheng  <kito.cheng@gmail.com>
+
+	PR target/112431
+	* gcc.target/riscv/rvv/base/pr112431-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-3.c: New test.
+
+2024-04-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/feature-macro-1.c: New test.
+	* gcc.target/bpf/feature-macro-2.c: Likewise.
+
+2024-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114787
+	* gcc.dg/torture/pr114787.c: New testcase.
+
+2024-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114832
+	* gcc.dg/vect/pr114832.c: New testcase.
+
+2024-04-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-24.c: New test.
+
+2024-04-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/unop_v_constraint-2.c: Adjust asm
+	check cond.
+	* gcc.target/riscv/rvv/base/pr112431-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-5.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-6.c: New test.
+
+2024-04-24  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2024-04-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/unop_v_constraint-2.c: Adapt test.
+	* gcc.target/riscv/rvv/base/pr112431-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-5.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-6.c: New test.
+
 2024-04-23  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* g++.dg/cpp23/explicit-obj-basic7.C: New test.

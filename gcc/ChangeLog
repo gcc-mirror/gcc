@@ -1,3 +1,62 @@
+2024-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/114738
+	* opts.cc (get_option_url): Revert 2024-04-17 changes.
+	* gcc-urlifier.cc: Don't include diagnostic-core.h.
+	(gcc_urlifier::make_doc_url): Revert 2024-04-17 changes.
+	* configure.ac (documentation-root-url): On release branches
+	append gcc-MAJOR.MINOR.0/ to the default DOCUMENTATION_ROOT_URL.
+	* doc/install.texi (--with-documentation-root-url=): Document
+	the change of the default.
+	* configure: Regenerate.
+
+2024-04-24  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-11-29  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+		    kito-cheng  <kito.cheng@sifive.com>
+		    kito-cheng  <kito.cheng@gmail.com>
+
+	PR target/112431
+	* config/riscv/constraints.md (TARGET_VECTOR ? V_REGS : NO_REGS): New register filters.
+	* config/riscv/riscv.md (no,W21,W42,W84,W41,W81,W82): Ditto.
+	(no,yes): Ditto.
+	* config/riscv/vector.md: Support highpart register overlap for vwcvt.
+
+2024-04-24  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config.gcc: Add bpf-c.o as a target object for C and C++.
+	* config/bpf/bpf.cc (bpf_target_macros): Move to bpf-c.cc.
+	* config/bpf/bpf-c.cc: New file.
+	(bpf_target_macros): Move from bpf.cc and define BPF CPU
+	feature	macros.
+	* config/bpf/t-bpf: Add rules to build bpf-c.o.
+
+2024-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114787
+	* tree-cfg.cc (remove_edge_and_dominated_blocks): When
+	removing a loop backedge clear niter info and when removing
+	the last backedge of a loop mark that loop for removal.
+
+2024-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114832
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Fix dominance check.
+
+2024-04-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_tree):
+	Check whether AVX512F is explicitly enabled.
+
+2024-04-24  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2023-11-30  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Support highpart overlap for vext.vf2
+
 2024-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/114810
