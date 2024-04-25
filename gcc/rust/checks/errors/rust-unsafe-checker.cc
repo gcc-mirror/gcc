@@ -177,7 +177,7 @@ UnsafeChecker::check_function_call (HirId node_id, location_t locus)
 
   if (maybe_extern)
     check_extern_call (static_cast<ExternalItem *> (maybe_extern),
-		       mappings.lookup_hir_extern_block (parent_extern_block),
+		       *mappings.lookup_hir_extern_block (parent_extern_block),
 		       locus);
 }
 
