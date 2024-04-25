@@ -124,7 +124,7 @@ public:
   tl::optional<HIR::TraitItem *> lookup_hir_trait_item (HirId id);
 
   void insert_hir_extern_block (HIR::ExternBlock *block);
-  HIR::ExternBlock *lookup_hir_extern_block (HirId id);
+  tl::optional<HIR::ExternBlock *> lookup_hir_extern_block (HirId id);
 
   void insert_hir_extern_item (HIR::ExternalItem *item, HirId parent_block);
   HIR::ExternalItem *lookup_hir_extern_item (HirId id, HirId *parent_block);

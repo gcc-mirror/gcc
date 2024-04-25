@@ -105,11 +105,11 @@ query_type (HirId reference, TyTy::BaseType **result)
     = mappings.lookup_hir_extern_item (reference, &parent_extern_block_id);
   if (extern_item != nullptr)
     {
-      HIR::ExternBlock *block
-	= mappings.lookup_hir_extern_block (parent_extern_block_id);
-      rust_assert (block != nullptr);
+      auto block = mappings.lookup_hir_extern_block (parent_extern_block_id);
+      rust_assert (block.has_value ());
 
-      *result = TypeCheckTopLevelExternItem::Resolve (extern_item, *block);
+      *result
+	= TypeCheckTopLevelExternItem::Resolve (extern_item, *block.value ());
       context->query_completed (reference);
       return true;
     }

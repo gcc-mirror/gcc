@@ -426,18 +426,18 @@ void
 Mappings::insert_hir_extern_block (HIR::ExternBlock *block)
 {
   auto id = block->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_extern_block (id) == nullptr);
+  rust_assert (!lookup_hir_extern_block (id).has_value ());
 
   hirExternBlockMappings[id] = block;
   insert_node_to_hir (block->get_mappings ().get_nodeid (), id);
 }
 
-HIR::ExternBlock *
+tl::optional<HIR::ExternBlock *>
 Mappings::lookup_hir_extern_block (HirId id)
 {
   auto it = hirExternBlockMappings.find (id);
   if (it == hirExternBlockMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }
