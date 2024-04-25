@@ -65,10 +65,8 @@ BorrowChecker::go (HIR::Crate &crate)
     {
       mkdir_wrapped ("bir_dump");
       auto &mappings = Analysis::Mappings::get ();
-      bool ok = mappings.get_crate_name (crate.get_mappings ().get_crate_num (),
-					 crate_name);
-      rust_assert (ok);
-
+      crate_name
+	= *mappings.get_crate_name (crate.get_mappings ().get_crate_num ());
       mkdir_wrapped ("nll_facts_gccrs");
     }
 
