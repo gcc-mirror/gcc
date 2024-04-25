@@ -87,7 +87,7 @@ constexpr bool n1 = test_access<NonTrivial>();        // { dg-message "in .const
 constexpr bool n2 = test_modification<NonTrivial>();  // { dg-message "in .constexpr." "" { target c++20 } }
 constexpr bool n3 = test_scope<NonTrivial>();         // { dg-message "in .constexpr." "" { target c++20 } }
 constexpr bool n4 = test_destroy_temp<NonTrivial>();  // { dg-message "in .constexpr." "" { target c++20 } }
-constexpr bool n5 = test_parameter(NonTrivial{});     // { dg-error "destroying" "" { target c++20 } }
+constexpr bool n5 = test_parameter(NonTrivial{});     // { dg-message "in .constexpr." "" { target c++20 } }
 constexpr bool n6 = test_bindings<NonTrivial>();
 #endif
 
