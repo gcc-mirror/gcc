@@ -429,8 +429,7 @@ public:
     if (extern_crate.references_self ())
       {
 	CrateNum crate_num = mappings.get_current_crate ();
-	bool ok = mappings.crate_num_to_nodeid (crate_num, resolved_crate);
-	rust_assert (ok);
+	resolved_crate = mappings.crate_num_to_nodeid (crate_num).value ();
       }
     else
       {
@@ -442,11 +441,9 @@ public:
 			   extern_crate.get_referenced_crate ().c_str ());
 	    return;
 	  }
-	auto found_crate_num = cnum.value ();
-
-	bool ok
-	  = mappings.crate_num_to_nodeid (found_crate_num, resolved_crate);
-	if (!ok)
+	if (auto resolved = mappings.crate_num_to_nodeid (*cnum))
+	  resolved_crate = resolved.value ();
+	else
 	  {
 	    rust_internal_error_at (extern_crate.get_locus (),
 				    "failed to resolve crate to nodeid");

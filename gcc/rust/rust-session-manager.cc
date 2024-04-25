@@ -1050,12 +1050,10 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   // has it already been loaded?
   if (auto crate_num = mappings.lookup_crate_name (crate_name))
     {
-      NodeId resolved_node_id = UNKNOWN_NODEID;
-      bool resolved
-	= mappings.crate_num_to_nodeid (*crate_num, resolved_node_id);
-      rust_assert (resolved);
+      auto resolved_node_id = mappings.crate_num_to_nodeid (*crate_num);
+      rust_assert (resolved_node_id);
 
-      return resolved_node_id;
+      return *resolved_node_id;
     }
 
   std::string relative_import_path = "";
