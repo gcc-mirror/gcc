@@ -83,8 +83,8 @@ public:
   bool get_crate_name (CrateNum crate_num, std::string &name) const;
   void set_crate_name (CrateNum crate_num, const std::string &name);
   std::string get_current_crate_name () const;
-  bool lookup_crate_name (const std::string &crate_name,
-			  CrateNum &resolved_crate_num) const;
+  tl::optional<CrateNum>
+  lookup_crate_name (const std::string &crate_name) const;
   bool crate_num_to_nodeid (const CrateNum &crate_num, NodeId &node_id) const;
   bool node_is_crate (NodeId node_id) const;
 

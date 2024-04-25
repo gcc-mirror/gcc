@@ -1048,13 +1048,11 @@ NodeId
 Session::load_extern_crate (const std::string &crate_name, location_t locus)
 {
   // has it already been loaded?
-  CrateNum found_crate_num = UNKNOWN_CRATENUM;
-  bool found = mappings.lookup_crate_name (crate_name, found_crate_num);
-  if (found)
+  if (auto crate_num = mappings.lookup_crate_name (crate_name))
     {
       NodeId resolved_node_id = UNKNOWN_NODEID;
       bool resolved
-	= mappings.crate_num_to_nodeid (found_crate_num, resolved_node_id);
+	= mappings.crate_num_to_nodeid (*crate_num, resolved_node_id);
       rust_assert (resolved);
 
       return resolved_node_id;
