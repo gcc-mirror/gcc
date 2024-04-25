@@ -8881,7 +8881,7 @@ package body Exp_Util is
             --  Recurse if Ren_Obj is itself a renaming
 
             if Present (Ren_Obj)
-              and then Ekind (Ren_Obj) = E_Variable
+              and then Ekind (Ren_Obj) in E_Constant | E_Variable
               and then Present (Renamed_Object (Ren_Obj))
             then
                return Find_Renamed_Object (Declaration_Node (Ren_Obj));
