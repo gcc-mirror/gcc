@@ -1664,7 +1664,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "Cache the hash code or qualify your functors involved"
 		    " in hash code and bucket index computation with noexcept");
 
-      clear();
+      this->_M_deallocate_nodes(_M_begin());
       _M_deallocate_buckets();
     }
 
