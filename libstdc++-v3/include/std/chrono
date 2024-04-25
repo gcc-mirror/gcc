@@ -2790,7 +2790,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /** Remove the tzdb object _after_ the one the iterator refers to.
        *
-       * Calling this function concurently with any of `front()`, `begin()`,
+       * Calling this function concurrently with any of `front()`, `begin()`,
        * or `end()` does not cause a data race, but in general this function
        * is not thread-safe. The behaviour may be undefined if erasing an
        * element from the list while another thread is calling the same
