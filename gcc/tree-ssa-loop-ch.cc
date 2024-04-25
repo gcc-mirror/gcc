@@ -759,6 +759,21 @@ protected:
   bool process_loop_p (class loop *loop) final override;
 }; // class pass_ch_vect
 
+/* Sort comparator to order loops after the specified order.  */
+
+static int
+ch_order_loops (const void *a_, const void *b_, void *order_)
+{
+  int *order = (int *)order_;
+  const class loop *a = *(const class loop * const *)a_;
+  const class loop *b = *(const class loop * const *)b_;
+  if (a->num == b->num)
+    return 0;
+  if (order[a->num] < order[b->num])
+    return -1;
+  return 1;
+}
+
 /* For all loops, copy the condition at the end of the loop body in front
    of the loop.  This is beneficial since it increases efficiency of
    code motion optimizations.  It also saves one jump on entry to the loop.  */
@@ -1152,6 +1167,16 @@ ch_base::copy_headers (function *fun)
     }
   if (!loops_to_unloop.is_empty ())
     {
+      /* Make sure loops are ordered inner to outer for unlooping.  */
+      if (loops_to_unloop.length () != 1)
+	{
+	  auto_vec<int, 8> order;
+	  order.safe_grow (number_of_loops (cfun), true);
+	  int i = 0;
+	  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
+	    order[loop->num] = i++;
+	  loops_to_unloop.sort (ch_order_loops, order.address ());
+	}
       bool irred_invalidated;
       auto_bitmap lc_invalidated;
       auto_vec<edge> edges_to_remove;
