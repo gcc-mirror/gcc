@@ -121,7 +121,7 @@ public:
   std::pair<HIR::Enum *, HIR::EnumItem *> lookup_hir_enumitem (HirId id);
 
   void insert_hir_trait_item (HIR::TraitItem *item);
-  HIR::TraitItem *lookup_hir_trait_item (HirId id);
+  tl::optional<HIR::TraitItem *> lookup_hir_trait_item (HirId id);
 
   void insert_hir_extern_block (HIR::ExternBlock *block);
   HIR::ExternBlock *lookup_hir_extern_block (HirId id);
