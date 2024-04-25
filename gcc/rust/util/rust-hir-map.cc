@@ -138,15 +138,14 @@ Mappings::get_current_crate () const
   return currentCrateNum;
 }
 
-bool
-Mappings::get_crate_name (CrateNum crate_num, std::string &name) const
+tl::optional<const std::string &>
+Mappings::get_crate_name (CrateNum crate_num) const
 {
   auto it = crate_names.find (crate_num);
   if (it == crate_names.end ())
-    return false;
+    return tl::nullopt;
 
-  name.assign (it->second);
-  return true;
+  return it->second;
 }
 
 void
@@ -155,13 +154,10 @@ Mappings::set_crate_name (CrateNum crate_num, const std::string &name)
   crate_names[crate_num] = name;
 }
 
-std::string
+const std::string &
 Mappings::get_current_crate_name () const
 {
-  std::string name;
-  bool ok = get_crate_name (get_current_crate (), name);
-  rust_assert (ok);
-  return name;
+  return get_crate_name (get_current_crate ()).value ();
 }
 
 tl::optional<CrateNum>

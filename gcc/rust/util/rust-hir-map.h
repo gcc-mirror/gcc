@@ -80,9 +80,9 @@ public:
   CrateNum get_next_crate_num (const std::string &name);
   void set_current_crate (CrateNum crateNum);
   CrateNum get_current_crate () const;
-  bool get_crate_name (CrateNum crate_num, std::string &name) const;
+  tl::optional<const std::string &> get_crate_name (CrateNum crate_num) const;
   void set_crate_name (CrateNum crate_num, const std::string &name);
-  std::string get_current_crate_name () const;
+  const std::string &get_current_crate_name () const;
   tl::optional<CrateNum>
   lookup_crate_name (const std::string &crate_name) const;
   tl::optional<NodeId> crate_num_to_nodeid (const CrateNum &crate_num) const;

@@ -63,9 +63,7 @@ NameResolution::go (AST::Crate &crate)
 {
   // lookup current crate name
   CrateNum cnum = mappings.get_current_crate ();
-  std::string crate_name;
-  bool ok = mappings.get_crate_name (cnum, crate_name);
-  rust_assert (ok);
+  const auto &crate_name = mappings.get_crate_name (cnum).value ();
 
   // setup the ribs
   NodeId scope_node_id = crate.get_node_id ();
