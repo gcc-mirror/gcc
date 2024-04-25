@@ -141,6 +141,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define GTHREAD_USE_WEAK 0
 #endif
 
+#ifdef __GLIBC_PREREQ
+#if __GLIBC_PREREQ(2, 34)
+/* glibc 2.34 and later has all pthread_* APIs inside of libc,
+   no need to link separately with -lpthread.  */
+#undef GTHREAD_USE_WEAK
+#define GTHREAD_USE_WEAK 0
+#endif
+#endif
+
 #ifndef GTHREAD_USE_WEAK
 #define GTHREAD_USE_WEAK 1
 #endif
