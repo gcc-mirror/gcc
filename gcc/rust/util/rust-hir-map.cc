@@ -486,15 +486,14 @@ Mappings::lookup_hir_impl_block (HirId id)
   return it->second;
 }
 
-bool
-Mappings::lookup_impl_block_type (HirId id, HIR::ImplBlock **impl_block)
+tl::optional<HIR::ImplBlock *>
+Mappings::lookup_impl_block_type (HirId id)
 {
   auto it = hirImplBlockTypeMappings.find (id);
   if (it == hirImplBlockTypeMappings.end ())
-    return false;
+    return tl::nullopt;
 
-  *impl_block = it->second;
-  return true;
+  return it->second;
 }
 
 void

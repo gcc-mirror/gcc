@@ -131,7 +131,7 @@ public:
 
   void insert_hir_impl_block (HIR::ImplBlock *item);
   tl::optional<HIR::ImplBlock *> lookup_hir_impl_block (HirId id);
-  bool lookup_impl_block_type (HirId id, HIR::ImplBlock **impl_block);
+  tl::optional<HIR::ImplBlock *> lookup_impl_block_type (HirId id);
 
   void insert_module (HIR::Module *module);
   HIR::Module *lookup_module (HirId id);
