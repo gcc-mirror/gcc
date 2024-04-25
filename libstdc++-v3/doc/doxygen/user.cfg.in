@@ -862,9 +862,11 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/expected \
                          include/filesystem \
                          include/forward_list \
+                         include/format \
                          include/fstream \
                          include/functional \
                          include/future \
+                         include/generator \
                          include/iomanip \
                          include/ios \
                          include/iosfwd \
@@ -883,6 +885,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/numbers \
                          include/optional \
                          include/ostream \
+                         include/print \
                          include/queue \
                          include/random \
                          include/ranges \
@@ -1093,6 +1096,9 @@ RECURSIVE              = NO
 # run.
 
 EXCLUDE                = Makefile \
+                         include/unicode-data.h \
+                         include/text_encoding-data.h \
+                         include/text_encoding-win32.h \
                          include/experimental/bits/net.h
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or

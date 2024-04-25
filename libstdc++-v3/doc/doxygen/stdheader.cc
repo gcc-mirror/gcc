@@ -40,19 +40,25 @@ void init_map()
     headers["ranges_algo.h"]            = "algorithm";
     headers["ranges_algobase.h"]        = "algorithm";
     headers["heap.h"]                   = "algorithm";
+    headers["chrono_io.h"]              = "chrono";
+    headers["parse_numbers.h"]          = "chrono";
     headers["exception_ptr.h"]          = "exception";
     headers["nested_exception.h"]       = "exception";
     headers["fs_dir.h"]                 = "filesystem";
     headers["fs_fwd.h"]                 = "filesystem";
     headers["fs_ops.h"]                 = "filesystem";
     headers["fs_path.h"]                = "filesystem";
+    headers["unicode.h"]                = "format";
+    headers["unicode-data.h"]           = "format";
     headers["binders.h"]                = "functional";
     headers["function.h"]               = "functional";
     headers["functional_hash.h"]        = "functional";
     headers["mofunc_impl.h"]            = "functional";
     headers["move_only_function.h"]     = "functional";
     headers["invoke.h"]                 = "functional";
+    headers["ranges_cmp.h"]             = "functional";
     headers["refwrap.h"]                = "functional";
+    headers["elements_of.h"]            = "generator";
     headers["quoted_string.h"]          = "iomanip";
     headers["ios_base.h"]               = "ios";
     headers["basic_ios.h"]              = "ios";
@@ -64,6 +70,7 @@ void init_map()
     headers["stream_iterator.h"]        = "iterator";
     headers["streambuf_iterator.h"]     = "iterator";
     headers["iterator_concepts.h"]      = "iterator";
+    headers["max_size_type.h"]          = "iterator";
     headers["range_access.h"]           = "iterator";
     headers["codecvt.h"]                = "locale";
     headers["c++locale.h"]              = "locale";
@@ -80,9 +87,11 @@ void init_map()
     headers["memoryfwd.h"]              = "memory";
     headers["align.h"]                  = "memory";
     headers["alloc_traits.h"]           = "memory";
+    headers["allocated_ptr.h"]          = "memory";
     headers["auto_ptr.h"]		= "memory";
     headers["construct.h"]              = "memory";
     headers["allocator.h"]              = "memory";
+    headers["new_allocator.h"]          = "memory";
     headers["raw_storage_iter.h"]       = "memory";
     headers["tempbuf.h"]                = "memory";
     headers["uninitialized.h"]          = "memory";
@@ -94,11 +103,15 @@ void init_map()
     headers["ptr_traits.h"]             = "memory";
     headers["uses_allocator.h"]         = "memory";
     headers["uses_allocator_args.h"]    = "memory";
+    headers["out_ptr.h"]                = "memory";
+    headers["memory_resource.h"]        = "memory_resource";
     headers["unique_lock.h"]            = "mutex";
+    headers["sat_arith.h"]              = "numeric";
+    headers["ostream_insert.h"]         = "ostream";
     headers["uniform_int_dist.h"]       = "random";
     headers["ranges_base.h"]            = "ranges";
+    headers["ranges_to.h"]              = "ranges";
     headers["ranges_util.h"]            = "ranges";
-    headers["ranges_cmp.h"]             = "functional";
     headers["regex_automaton.h"]        = "regex";
     headers["regex_automaton.tcc"]      = "regex";
     headers["regex_compiler.h"]         = "regex";
@@ -122,6 +135,9 @@ void init_map()
     headers["string_view.tcc"]          = "string_view";
     headers["this_thread_sleep.h"]      = "thread";
     headers["tree.h"]                   = "map";
+    headers["hashtable.h"]              = "unordered_map";
+    headers["hashtable_policy.h"]       = "unordered_map";
+    headers["move.h"]                   = "utility";
     headers["pair.h"]                   = "utility";
     headers["relops.h"]                 = "utility";
     headers["gslice.h"]                 = "valarray";
@@ -142,30 +158,34 @@ void init_map()
     headers["abs.h"]                    = "cstdlib";
     headers["specfun.h"]                = "cmath";
 
-    // This list is complete as of the October 2021 working draft.
+    // This list is complete as of the April 2024 working draft.
     std_headers = {
 	"algorithm", "any", "array", "atomic",
 	"barrier", "bit", "bitset",
 	"charconv", "chrono", "codecvt", "compare", "complex",
 	"concepts", "condition_variable", "coroutine",
-	"deque",
-	"exception", "execution",
-	"filesystem", "format", "forward_list", "fstream",
-	"functional", "future",
+	"debugging", "deque",
+	"exception", "execution", "expected",
+	"filesystem", "flat_set", "flat_map", "format", "forward_list",
+	"fstream", "functional", "future",
+	"generator",
+	"hazard_pointer",
 	"initializer_list", "iomanip", "ios", "iosfwd",
 	"iostream", "istream", "iterator",
-	"latch", "limits", "list", "locale",
-	"map", "memory", "memory_resource", "mutex",
+	"latch", "limits", "linalg", "list", "locale",
+	"map", "mdspan", "memory", "memory_resource", "mutex",
 	"new", "numbers", "numeric",
 	"optional", "ostream",
+	"print",
 	"queue",
-	"random", "ranges", "ratio", "regex",
+	"random", "ranges", "ratio", "rcu", "regex",
 	"scoped_allocator", "semaphore", "set", "shared_mutex",
 	"source_location", "span", "spanstream", "sstream",
-	"stack", "stacktrace", "stdexcept", "stop_token",
+	"stack", "stacktrace", "stdexcept", "stdfloat", "stop_token",
 	"streambuf", "string", "string_view", "strstream",
 	"syncstream", "system_error",
-	"thread", "tuple", "typeindex", "typeinfo", "type_traits",
+	"text_encoding", "thread", "tuple", "type_traits",
+	"typeindex", "typeinfo",
 	"unordered_map", "unordered_set", "utility",
 	"valarray", "variant", "vector", "version",
 
