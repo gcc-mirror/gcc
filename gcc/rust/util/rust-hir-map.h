@@ -85,7 +85,7 @@ public:
   std::string get_current_crate_name () const;
   tl::optional<CrateNum>
   lookup_crate_name (const std::string &crate_name) const;
-  bool crate_num_to_nodeid (const CrateNum &crate_num, NodeId &node_id) const;
+  tl::optional<NodeId> crate_num_to_nodeid (const CrateNum &crate_num) const;
   bool node_is_crate (NodeId node_id) const;
 
   NodeId get_next_node_id ();

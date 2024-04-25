@@ -175,15 +175,14 @@ Mappings::lookup_crate_name (const std::string &crate_name) const
   return tl::nullopt;
 }
 
-bool
-Mappings::crate_num_to_nodeid (const CrateNum &crate_num, NodeId &node_id) const
+tl::optional<NodeId>
+Mappings::crate_num_to_nodeid (const CrateNum &crate_num) const
 {
   auto it = ast_crate_mappings.find (crate_num);
   if (it == ast_crate_mappings.end ())
-    return false;
+    return tl::nullopt;
 
-  node_id = it->second->get_node_id ();
-  return true;
+  return it->second->get_node_id ();
 }
 
 bool
