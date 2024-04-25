@@ -56,7 +56,7 @@ FROM M2Debug IMPORT Assert ;
 FROM Indexing IMPORT Index, InitIndex, InBounds, PutIndice, GetIndice ;
 FROM Storage IMPORT ALLOCATE ;
 FROM M2ALU IMPORT PushIntegerTree, PushInt, ConvertToInt, Equ, Gre, Less, GreEqu ;
-FROM M2Options IMPORT VariantValueChecking, CaseEnumChecking ;
+FROM M2Options IMPORT VariantValueChecking, CaseEnumChecking, GetPIM ;
 
 FROM M2Error IMPORT Error, InternalError, ErrorFormat0, ErrorFormat1, ErrorFormat2, FlushErrors,
                     GetAnnounceScope ;
@@ -1693,14 +1693,36 @@ END FoldTypeAssign ;
 
 
 (*
-   FoldTypeParam -
+   FoldTypeParam - performs a parameter check between actual and formal.
+                   The quad is removed if the check succeeds.
 *)
 
 PROCEDURE FoldTypeParam (q: CARDINAL; tokenNo: CARDINAL; formal, actual, procedure: CARDINAL; paramNo: CARDINAL) ;
+VAR
+   compatible: BOOLEAN ;
 BEGIN
-   IF ParameterTypeCompatible (tokenNo,
-                               '{%4EN} parameter type failure between actual parameter type {%3ad} and the formal type {%2ad}',
-                               procedure, formal, actual, paramNo, IsVarParam (procedure, paramNo))
+   compatible := FALSE ;
+   IF IsVarParam (procedure, paramNo)
+   THEN
+      (* Expression type compatibility rules for pass by reference parameters.  *)
+      compatible := ParameterTypeCompatible (tokenNo,
+                                             '{%4EN} parameter failure due to expression incompatibility ' +
+                                             'between actual parameter {%3ad} and the {%4N} formal {%2ad} parameter in procedure {%1ad}',
+                                             procedure, formal, actual, paramNo, TRUE)
+   ELSIF GetPIM ()
+   THEN
+      (* Assignment type compatibility rules for pass by value PIM parameters.  *)
+      compatible := ParameterTypeCompatible (tokenNo,
+                                             '{%4EN} parameter failure due to assignment incompatibility ' +
+                                             'between actual parameter {%3ad} and the {%4N} formal {%2ad} parameter in procedure {%1ad}',
+                                             procedure, formal, actual, paramNo, FALSE)
+   ELSE
+      compatible := ParameterTypeCompatible (tokenNo,
+                                             '{%4EN} parameter failure due to parameter incompatibility ' +
+                                             'between actual parameter {%3ad} and the {%4N} formal {%2ad} parameter in procedure {%1ad}',
+                                             procedure, formal, actual, paramNo, FALSE)
+   END ;
+   IF compatible
    THEN
       SubQuad(q)
    END
