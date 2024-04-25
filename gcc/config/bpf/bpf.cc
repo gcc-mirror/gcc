@@ -192,7 +192,8 @@ bpf_option_override (void)
   init_machine_status = bpf_init_machine_status;
 
   /* BPF CO-RE support requires BTF debug info generation.  */
-  if (TARGET_BPF_CORE && !btf_debuginfo_p ())
+  if (TARGET_BPF_CORE
+      && (!btf_debuginfo_p () || (debug_info_level < DINFO_LEVEL_NORMAL)))
     error ("BPF CO-RE requires BTF debugging information, use %<-gbtf%>");
 
   /* BPF applications always generate .BTF.ext.  */
@@ -215,7 +216,9 @@ bpf_option_override (void)
 
   /* -gbtf implies -mcore when using the BPF backend, unless -mno-co-re
      is specified.  */
-  if (btf_debuginfo_p () && !(target_flags_explicit & MASK_BPF_CORE))
+  if (btf_debuginfo_p ()
+      && (debug_info_level >= DINFO_LEVEL_NORMAL)
+      && !(target_flags_explicit & MASK_BPF_CORE))
     target_flags |= MASK_BPF_CORE;
 
   /* Determine available features from ISA setting (-mcpu=).  */
