@@ -231,8 +231,7 @@ void
 TopLevel::visit (AST::ExternCrate &crate)
 {
   auto &mappings = Analysis::Mappings::get ();
-  CrateNum num;
-  rust_assert (mappings.lookup_crate_name (crate.get_referenced_crate (), num));
+  CrateNum num = *mappings.lookup_crate_name (crate.get_referenced_crate ());
 
   auto attribute_macros = mappings.lookup_attribute_proc_macros (num);
 

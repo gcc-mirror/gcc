@@ -434,16 +434,15 @@ public:
       }
     else
       {
-	CrateNum found_crate_num = UNKNOWN_CRATENUM;
-	bool found
-	  = mappings.lookup_crate_name (extern_crate.get_referenced_crate (),
-					found_crate_num);
-	if (!found)
+	auto cnum
+	  = mappings.lookup_crate_name (extern_crate.get_referenced_crate ());
+	if (!cnum)
 	  {
 	    rust_error_at (extern_crate.get_locus (), "unknown crate %qs",
 			   extern_crate.get_referenced_crate ().c_str ());
 	    return;
 	  }
+	auto found_crate_num = cnum.value ();
 
 	bool ok
 	  = mappings.crate_num_to_nodeid (found_crate_num, resolved_crate);

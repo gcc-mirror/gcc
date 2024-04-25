@@ -164,19 +164,15 @@ Mappings::get_current_crate_name () const
   return name;
 }
 
-bool
-Mappings::lookup_crate_name (const std::string &crate_name,
-			     CrateNum &resolved_crate_num) const
+tl::optional<CrateNum>
+Mappings::lookup_crate_name (const std::string &crate_name) const
 {
   for (const auto &it : crate_names)
     {
       if (it.second.compare (crate_name) == 0)
-	{
-	  resolved_crate_num = it.first;
-	  return true;
-	}
+	return it.first;
     }
-  return false;
+  return tl::nullopt;
 }
 
 bool
