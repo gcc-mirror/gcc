@@ -119,11 +119,12 @@ TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
 
   if (auto hid = mappings.lookup_node_to_hir (ref))
     {
-      HIR::Item *resolved_item = mappings.lookup_hir_item (hid.value ());
-      rust_assert (resolved_item != nullptr);
-      rust_assert (resolved_item->get_item_kind ()
+      tl::optional<HIR::Item *> resolved_item
+	= mappings.lookup_hir_item (hid.value ());
+      rust_assert (resolved_item.has_value ());
+      rust_assert (resolved_item.value ()->get_item_kind ()
 		   == HIR::Item::ItemKind::Trait);
-      *resolved = static_cast<HIR::Trait *> (resolved_item);
+      *resolved = static_cast<HIR::Trait *> (*resolved_item);
 
       return true;
     }

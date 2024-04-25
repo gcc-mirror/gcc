@@ -70,14 +70,12 @@ UnsafeChecker::check_use_of_static (HirId node_id, location_t locus)
   if (unsafe_context.is_in_context ())
     return;
 
-  auto maybe_static_mut = mappings.lookup_hir_item (node_id);
-
   HirId extern_block;
   auto maybe_extern_static
     = mappings.lookup_hir_extern_item (node_id, &extern_block);
 
-  if (maybe_static_mut)
-    check_static_mut (maybe_static_mut, locus);
+  if (auto maybe_static_mut = mappings.lookup_hir_item (node_id))
+    check_static_mut (*maybe_static_mut, locus);
 
   if (maybe_extern_static)
     check_extern_static (static_cast<ExternalItem *> (maybe_extern_static),
@@ -173,8 +171,9 @@ UnsafeChecker::check_function_call (HirId node_id, location_t locus)
   auto maybe_extern
     = mappings.lookup_hir_extern_item (node_id, &parent_extern_block);
 
-  if (maybe_fn && maybe_fn->get_item_kind () == Item::ItemKind::Function)
-    check_unsafe_call (static_cast<Function *> (maybe_fn), locus, "function");
+  if (maybe_fn
+      && maybe_fn.value ()->get_item_kind () == Item::ItemKind::Function)
+    check_unsafe_call (static_cast<Function *> (*maybe_fn), locus, "function");
 
   if (maybe_extern)
     check_extern_call (static_cast<ExternalItem *> (maybe_extern),
@@ -204,8 +203,9 @@ UnsafeChecker::check_function_attr (HirId node_id, location_t locus)
 
   auto maybe_fn = mappings.lookup_hir_item (node_id);
 
-  if (maybe_fn && maybe_fn->get_item_kind () == Item::ItemKind::Function)
-    check_target_attr (static_cast<Function *> (maybe_fn), locus);
+  if (maybe_fn
+      && maybe_fn.value ()->get_item_kind () == Item::ItemKind::Function)
+    check_target_attr (static_cast<Function *> (*maybe_fn), locus);
 }
 
 void

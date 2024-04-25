@@ -308,7 +308,8 @@ ConstChecker::check_function_call (HirId fn_id, location_t locus)
     return;
 
   auto maybe_fn = mappings.lookup_hir_item (fn_id);
-  if (maybe_fn && maybe_fn->get_item_kind () != Item::ItemKind::Function)
+  if (maybe_fn
+      && maybe_fn.value ()->get_item_kind () != Item::ItemKind::Function)
     return;
 
   // There are const extern functions (intrinsics)
@@ -325,7 +326,7 @@ ConstChecker::check_function_call (HirId fn_id, location_t locus)
   auto is_error = false;
   if (maybe_fn)
     {
-      auto fn = static_cast<Function *> (maybe_fn);
+      auto fn = static_cast<Function *> (*maybe_fn);
       if (!fn->get_qualifiers ().is_const ())
 	is_error = true;
     }
