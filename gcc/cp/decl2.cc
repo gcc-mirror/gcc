@@ -3568,6 +3568,9 @@ import_export_decl (tree decl)
     }
 
   DECL_INTERFACE_KNOWN (decl) = 1;
+
+  if (DECL_CLONED_FUNCTION_P (decl))
+    maybe_optimize_cdtor (decl);
 }
 
 /* Return an expression that performs the destruction of DECL, which
