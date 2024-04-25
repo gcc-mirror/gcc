@@ -76,7 +76,7 @@ CompileExpr::visit (HIR::TupleExpr &expr)
 {
   if (expr.is_unit ())
     {
-      translated = unit_expression (ctx, expr.get_locus ());
+      translated = unit_expression (expr.get_locus ());
       return;
     }
 
@@ -111,7 +111,7 @@ CompileExpr::visit (HIR::ReturnExpr &expr)
 
   tree return_value = expr.has_return_expr ()
 			? CompileExpr::Compile (expr.return_expr.get (), ctx)
-			: unit_expression (ctx, expr.get_locus ());
+			: unit_expression (expr.get_locus ());
 
   if (expr.has_return_expr ())
     {
@@ -401,7 +401,7 @@ CompileExpr::visit (HIR::StructExprStruct &struct_expr)
     }
 
   rust_assert (tyty->is_unit ());
-  translated = unit_expression (ctx, struct_expr.get_locus ());
+  translated = unit_expression (struct_expr.get_locus ());
 }
 
 void

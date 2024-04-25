@@ -54,7 +54,7 @@ TyTyResolveCompile::compile (Context *ctx, const TyTy::BaseType *ty,
 // see: gcc/c/c-decl.cc:8230-8241
 // https://github.com/Rust-GCC/gccrs/blob/0024bc2f028369b871a65ceb11b2fddfb0f9c3aa/gcc/c/c-decl.c#L8229-L8241
 tree
-TyTyResolveCompile::get_implicit_enumeral_node_type (Context *ctx)
+TyTyResolveCompile::get_implicit_enumeral_node_type ()
 {
   // static tree enum_node = NULL_TREE;
   // if (enum_node == NULL_TREE)
@@ -88,7 +88,7 @@ TyTyResolveCompile::get_implicit_enumeral_node_type (Context *ctx)
 }
 
 tree
-TyTyResolveCompile::get_unit_type (Context *ctx)
+TyTyResolveCompile::get_unit_type ()
 {
   static tree unit_type;
   if (unit_type == nullptr)
@@ -305,7 +305,7 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 
 	  // add in the qualifier field for the variant
 	  tree enumeral_type
-	    = TyTyResolveCompile::get_implicit_enumeral_node_type (ctx);
+	    = TyTyResolveCompile::get_implicit_enumeral_node_type ();
 	  Backend::typed_identifier f (RUST_ENUM_DISR_FIELD_NAME, enumeral_type,
 				       ctx->get_mappings ().lookup_location (
 					 variant->get_id ()));
@@ -393,7 +393,7 @@ TyTyResolveCompile::visit (const TyTy::TupleType &type)
 {
   if (type.num_fields () == 0)
     {
-      translated = get_unit_type (ctx);
+      translated = get_unit_type ();
       return;
     }
 
@@ -686,7 +686,7 @@ TyTyResolveCompile::visit (const TyTy::StrType &type)
 void
 TyTyResolveCompile::visit (const TyTy::NeverType &)
 {
-  translated = get_unit_type (ctx);
+  translated = get_unit_type ();
 }
 
 void

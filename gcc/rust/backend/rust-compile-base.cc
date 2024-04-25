@@ -611,7 +611,7 @@ HIRCompileBase::compile_function_body (tree fndecl,
 	  ctx->add_statement (return_value);
 
 	  // now just return unit expression
-	  tree unit_expr = unit_expression (ctx, locus);
+	  tree unit_expr = unit_expression (locus);
 	  tree return_stmt
 	    = Backend::return_statement (fndecl, unit_expr, locus);
 	  ctx->add_statement (return_stmt);
@@ -622,7 +622,7 @@ HIRCompileBase::compile_function_body (tree fndecl,
       // we can only do this if the function is of unit type otherwise other
       // errors should have occurred
       location_t locus = function_body.get_locus ();
-      tree return_value = unit_expression (ctx, locus);
+      tree return_value = unit_expression (locus);
       tree return_stmt
 	= Backend::return_statement (fndecl, return_value, locus);
       ctx->add_statement (return_stmt);
@@ -991,9 +991,9 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
 }
 
 tree
-HIRCompileBase::unit_expression (Context *ctx, location_t locus)
+HIRCompileBase::unit_expression (location_t locus)
 {
-  tree unit_type = TyTyResolveCompile::get_unit_type (ctx);
+  tree unit_type = TyTyResolveCompile::get_unit_type ();
   return Backend::constructor_expression (unit_type, false, {}, -1, locus);
 }
 

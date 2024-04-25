@@ -75,7 +75,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
   else if (result != nullptr)
     {
       location_t locus = expr.get_locus ();
-      tree compiled_expr = unit_expression (ctx, expr.get_locus ());
+      tree compiled_expr = unit_expression (expr.get_locus ());
       tree result_reference = Backend::var_expression (result, locus);
 
       tree assignment
