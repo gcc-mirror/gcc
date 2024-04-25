@@ -2,7 +2,7 @@
    LHS and both LHS and RHS of assignment.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -dA -gbtf -mco-re" } */
+/* { dg-options "-O2 -dA -gbtf -mco-re -masm=normal" } */
 
 struct U {
   int c;

@@ -1,6 +1,6 @@
 /* Verify that smod instruction is used for xBPF. */
 /* { dg-do compile } */
-/* { dg-options "-O0 -mcpu=v4" } */
+/* { dg-options "-O0 -mcpu=v4 -masm=normal" } */
 
 void
 foo ()

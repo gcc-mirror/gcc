@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mxbpf" } */
+/* { dg-options "-mxbpf -masm=normal" } */
 
 /* GCC should generate an indirect call instruction (call %REG)
    when targetting xBPF.  */

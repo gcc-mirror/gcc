@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-O2" "-minline-memops-threshold=256"} */
+/* { dg-options "-O2 -masm=normal -minline-memops-threshold=256" } */
 
 char buf[512];
 

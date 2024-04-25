@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -dA -gbtf -mco-re" } */
+/* { dg-options "-O2 -dA -gbtf -mco-re -masm=normal" } */
 
 #include "core-support.h"
 

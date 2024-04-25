@@ -1,6 +1,6 @@
 /* Check add and sub instructions.  */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-masm=normal" } */
 
 long foo (long x, long y)
 {

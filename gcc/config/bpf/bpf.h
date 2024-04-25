@@ -23,7 +23,9 @@
 /**** Controlling the Compilation Driver.  */
 
 #define ASM_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL} %{mxbpf:-mxbpf} " \
-  "%{masm=pseudoc:-mdialect=pseudoc}"
+  "%{masm=normal:-mdialect=normal} " \
+  "%{masm=pseudoc:-mdialect=pseudoc} " \
+  "%{!masm=normal:%{!masm=pseudoc:-mdialect=pseudoc}}"
 #define LINK_SPEC "%{mbig-endian:-EB} %{!mbig-endian:-EL}"
 #define LIB_SPEC ""
 #define STARTFILE_SPEC ""

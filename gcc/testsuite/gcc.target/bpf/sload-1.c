@@ -1,6 +1,6 @@
 /* Check ISA V4 signed load instructions.  */
 /* { dg-do compile } */
-/* { dg-options "-mcpu=v4 -O2" } */
+/* { dg-options "-mcpu=v4 -O2 -masm=normal" } */
 
 long foo (char *p1, short *p2, int *p3)
 {

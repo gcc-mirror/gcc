@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -dA -gbtf -mco-re" } */
+/* { dg-options "-O0 -dA -gbtf -mco-re -masm=normal" } */
 
 struct F {
   int bar;

@@ -1,6 +1,6 @@
 /* Check signed mov instructions.  */
 /* { dg-do compile } */
-/* { dg-options "-mcpu=v4 -O2" } */
+/* { dg-options "-mcpu=v4 -O2 -masm=normal" } */
 
 long
 foo (char a, short b, int c, unsigned long d)

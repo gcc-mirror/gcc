@@ -1,7 +1,7 @@
 /* Basic test for kernel_helper attribute BTF information.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O0 -dA -gbtf" } */
+/* { dg-options "-O0 -dA -gbtf -masm=normal" } */
 
 extern int foo_helper(int) __attribute((kernel_helper(42)));
 extern int foo_nohelper(int);

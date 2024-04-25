@@ -25753,7 +25753,7 @@ exit, respectively.
 @opindex masm=@var{dialect}
 @item -masm=@var{dialect}
 Outputs assembly instructions using eBPF selected @var{dialect}.  The default
-is @samp{normal}.
+is @samp{pseudoc}.
 
 Supported values for @var{dialect} are:
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -dA -gbtf -mco-re -mbig-endian" } */
+/* { dg-options "-O0 -dA -gbtf -mco-re -mbig-endian -masm=normal" } */
 
 struct S {
   int x1: 6;

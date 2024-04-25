@@ -1,6 +1,6 @@
 /* Test atomic exchange instruction is disabled with -mno-v3-atomics.  */
 /* { dg-do compile } */
-/* { dg-options "-mno-v3-atomics -O2" } */
+/* { dg-options "-mno-v3-atomics -O2 -masm=normal" } */
 
 int foo (int *p, int *new)
 {

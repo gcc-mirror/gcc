@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -dA -gbtf -mno-co-re" } */
+/* { dg-options "-O2 -dA -gbtf -mno-co-re -masm=normal" } */
 
 struct T {
   int a;

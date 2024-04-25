@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-options "-masm=normal" } */
 
 long delta;
 long *val;

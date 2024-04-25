@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99 --patchable-function-entry=2,1" } */
+/* { dg-options "-std=gnu99 --patchable-function-entry=2,1 -masm=normal" } */
 
 /* The purpose of this test is to make sure the right instruction is
    generated for NOPs.  See bpf.md for a description on why this is

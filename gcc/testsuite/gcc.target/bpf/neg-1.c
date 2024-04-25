@@ -1,7 +1,7 @@
 /* Check negr and negr32 instructions.  */
 
 /* { dg-do compile } */
-/* { dg-options "-malu32" } */
+/* { dg-options "-malu32 -masm=normal" } */
 
 long foo (long a, long b, int x, int y)
 {

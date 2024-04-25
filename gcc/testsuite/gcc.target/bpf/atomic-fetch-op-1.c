@@ -1,7 +1,7 @@
 /* Test 64-bit atomic-fetch-op instructions.  */
 
 /* { dg-do compile } */
-/* { dg-options "-mv3-atomics -O2" } */
+/* { dg-options "-mv3-atomics -O2 -masm=normal" } */
 
 long val;
 
