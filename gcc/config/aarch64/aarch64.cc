@@ -10400,9 +10400,7 @@ aarch64_mode_valid_for_sched_fusion_p (machine_mode mode)
 	 || mode == SDmode || mode == DDmode
 	 || (aarch64_vector_mode_supported_p (mode)
 	     && (known_eq (GET_MODE_SIZE (mode), 8)
-		 || (known_eq (GET_MODE_SIZE (mode), 16)
-		    && (aarch64_tune_params.extra_tuning_flags
-			& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0)));
+		 || known_eq (GET_MODE_SIZE (mode), 16)));
 }
 
 /* Return true if REGNO is a virtual pointer register, or an eliminable
@@ -16519,10 +16517,6 @@ aarch64_advsimd_ldp_stp_p (enum vect_cost_for_stmt kind,
       return false;
     }
 
-  if (aarch64_tune_params.extra_tuning_flags
-      & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
-    return false;
-
   return is_gimple_assign (stmt_info->stmt);
 }
 
@@ -17169,9 +17163,6 @@ aarch64_stp_sequence_cost (unsigned int count, vect_cost_for_stmt kind,
     case unaligned_store:
       /* Count 1 insn per vector if we can't form STP Q pairs.  */
       if (aarch64_sve_mode_p (TYPE_MODE (vectype)))
-	return count * 2;
-      if (aarch64_tune_params.extra_tuning_flags
-	  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
 	return count * 2;
 
       if (stmt_info)
@@ -26625,11 +26616,9 @@ aarch64_expand_cpymem (rtx *operands, bool is_memmove)
     return aarch64_expand_cpymem_mops (operands, is_memmove);
 
   unsigned HOST_WIDE_INT size = UINTVAL (operands[2]);
-  bool use_ldpq = TARGET_SIMD && !(aarch64_tune_params.extra_tuning_flags
-				   & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS);
 
   /* Set inline limits for memmove/memcpy.  MOPS has a separate threshold.  */
-  unsigned max_copy_size = use_ldpq ? 256 : 128;
+  unsigned max_copy_size = TARGET_SIMD ? 256 : 128;
   unsigned mops_threshold = is_memmove ? aarch64_mops_memmove_size_threshold
 				       : aarch64_mops_memcpy_size_threshold;
 
@@ -26834,11 +26823,8 @@ aarch64_expand_setmem (rtx *operands)
   /* Convert len to bits to make the rest of the code simpler.  */
   n = len * BITS_PER_UNIT;
 
-  /* Maximum amount to copy in one go.  We allow 256-bit chunks based on the
-     AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS tuning parameter.  */
-  const int copy_limit = (aarch64_tune_params.extra_tuning_flags
-			  & AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS)
-			  ? GET_MODE_BITSIZE (TImode) : 256;
+  /* Maximum amount to copy in one go.  We allow 256-bit chunks.  */
+  const int copy_limit = 256;
 
   while (n > 0)
     {

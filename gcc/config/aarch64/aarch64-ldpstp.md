@@ -96,9 +96,7 @@
    (set (match_operand:VQ2 2 "register_operand" "")
 	(match_operand:VQ2 3 "memory_operand" ""))]
   "TARGET_FLOAT
-   && aarch64_operands_ok_for_ldpstp (operands, true)
-   && (aarch64_tune_params.extra_tuning_flags
-	& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0"
+   && aarch64_operands_ok_for_ldpstp (operands, true)"
   [(const_int 0)]
 {
   aarch64_finish_ldpstp_peephole (operands, true);
@@ -111,9 +109,7 @@
    (set (match_operand:VQ2 2 "memory_operand" "")
 	(match_operand:VQ2 3 "register_operand" ""))]
   "TARGET_FLOAT
-   && aarch64_operands_ok_for_ldpstp (operands, false)
-   && (aarch64_tune_params.extra_tuning_flags
-	& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS) == 0"
+   && aarch64_operands_ok_for_ldpstp (operands, false)"
   [(const_int 0)]
 {
   aarch64_finish_ldpstp_peephole (operands, false);

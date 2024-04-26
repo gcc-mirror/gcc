@@ -315,15 +315,7 @@ any_post_modify_p (rtx x)
 static bool
 ldp_operand_mode_ok_p (machine_mode mode)
 {
-  const bool allow_qregs
-    = !(aarch64_tune_params.extra_tuning_flags
-	& AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS);
-
   if (!aarch64_ldpstp_operand_mode_p (mode))
-    return false;
-
-  const auto size = GET_MODE_SIZE (mode).to_constant ();
-  if (size == 16 && !allow_qregs)
     return false;
 
   // We don't pair up TImode accesses before RA because TImode is
