@@ -5351,10 +5351,16 @@ package body Exp_Ch5 is
 
             Ent := First_Entity (Cont_Type_Pack);
             while Present (Ent) loop
+
+               --  Ignore subprogram bodies
+
+               if Ekind (Ent) = E_Subprogram_Body then
+                  null;
+
                --  Get_Element_Access function with one parameter called
                --  Position.
 
-               if Chars (Ent) = Name_Get_Element_Access
+               elsif Chars (Ent) = Name_Get_Element_Access
                  and then Ekind (Ent) = E_Function
                  and then Present (First_Formal (Ent))
                  and then Chars (First_Formal (Ent)) = Name_Position

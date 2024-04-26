@@ -4083,6 +4083,15 @@ package body Sem_Ch6 is
          else
             Set_Corresponding_Spec (N, Spec_Id);
 
+            --  The body entity is not used for semantics or code generation,
+            --  but it is attached to the entity list of the enclosing scope
+            --  to allow listing its entities when outputting representation
+            --  information.
+
+            if Scope (Spec_Id) /= Standard_Standard then
+               Append_Entity (Body_Id, Scope (Spec_Id));
+            end if;
+
             --  Ada 2005 (AI-345): If the operation is a primitive operation
             --  of a concurrent type, the type of the first parameter has been
             --  replaced with the corresponding record, which is the proper

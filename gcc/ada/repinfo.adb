@@ -457,34 +457,7 @@ package body Repinfo is
       Bytes_Big_Endian : Boolean;
       In_Subprogram    : Boolean := False)
    is
-      Body_E : Entity_Id;
-      E      : Entity_Id;
-
-      function Find_Declaration (E : Entity_Id) return Node_Id;
-      --  Utility to retrieve declaration node for entity in the
-      --  case of package bodies and subprograms.
-
-      ----------------------
-      -- Find_Declaration --
-      ----------------------
-
-      function Find_Declaration (E : Entity_Id) return Node_Id is
-         Decl : Node_Id;
-
-      begin
-         Decl := Parent (E);
-         while Present (Decl)
-           and then Nkind (Decl) /= N_Package_Body
-           and then Nkind (Decl) /= N_Subprogram_Declaration
-           and then Nkind (Decl) /= N_Subprogram_Body
-         loop
-            Decl := Parent (Decl);
-         end loop;
-
-         return Decl;
-      end Find_Declaration;
-
-   --  Start of processing for List_Entities
+      E : Entity_Id;
 
    begin
       --  List entity if we have one, and it is not a renaming declaration.
@@ -609,34 +582,6 @@ package body Repinfo is
 
             Next_Entity (E);
          end loop;
-
-         --  For a package body, the entities of the visible subprograms are
-         --  declared in the corresponding spec. Iterate over its entities in
-         --  order to handle properly the subprogram bodies. Skip bodies in
-         --  subunits, which are listed independently.
-
-         if Ekind (Ent) = E_Package_Body
-           and then Present (Corresponding_Spec (Find_Declaration (Ent)))
-         then
-            E := First_Entity (Corresponding_Spec (Find_Declaration (Ent)));
-            while Present (E) loop
-               if Is_Subprogram (E)
-                 and then
-                   Nkind (Find_Declaration (E)) = N_Subprogram_Declaration
-               then
-                  Body_E := Corresponding_Body (Find_Declaration (E));
-
-                  if Present (Body_E)
-                    and then
-                      Nkind (Parent (Find_Declaration (Body_E))) /= N_Subunit
-                  then
-                     List_Entities (Body_E, Bytes_Big_Endian);
-                  end if;
-               end if;
-
-               Next_Entity (E);
-            end loop;
-         end if;
       end if;
    end List_Entities;
 
