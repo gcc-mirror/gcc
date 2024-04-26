@@ -1,3 +1,16 @@
+2024-04-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114836
+	* gm2-compiler/M2Range.mod (FoldTypeAssign): Avoid error
+	string concatenation.
+
+2024-04-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2FileName.def (CalculateFileName): Remove
+	quoted string in comment.
+	* gm2-compiler/M2Range.mod (FoldTypeParam): Generate dialect
+	specific parameter incompatibility error message.
+
 2024-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt (fdef=, fmod=): Spelling fix: recognise -> recognize.

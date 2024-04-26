@@ -1,3 +1,59 @@
+2024-04-25  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.h (PREFERRED_DEBUGGING_TYPE): Set to BTF_DEBUG.
+
+2024-04-25  David Faust  <david.faust@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_option_override): Improve handling of CO-RE
+	options to avoid issues with -gtoggle.
+
+2024-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/114825
+	* tree-nested.cc (get_debug_decl): New function.
+	(get_nonlocal_debug_decl): Use it.
+	(get_local_debug_decl): Likewise.
+
+2024-04-25  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.opt: Use ASM_PSEUDOC for the default value of
+	-masm.
+	* config/bpf/bpf.h (ASM_SPEC): Adapt accordingly.
+	* doc/invoke.texi (eBPF Options): Update.
+
+2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	PR target/114837
+	* config/arm/arm.cc (cmse_nonsecure_call_inline_register_clear):
+	Add zero/sign extend.
+	(arm_expand_prologue): Add zero/sign extend.
+
+2024-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114792
+	* tree-ssa-loop-ch.cc (ch_order_loops): New function.
+	(ch_base::copy_headers): Sort loops to unloop inner-to-outer.
+
+2024-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/114416
+	* config/sparc/sparc.h (SUN_V9_ABI_COMPATIBILITY): New macro.
+	* config/sparc/sol2.h (SUN_V9_ABI_COMPATIBILITY): Redefine it.
+	* config/sparc/sparc.cc (fp_type_for_abi): New predicate.
+	(traverse_record_type): Use it to spot floating-point types.
+	(compute_fp_layout): Also deal with array types.
+
+2024-04-25  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector-crypto.md: Add early clobber to the
+	dest operand of vwsll.
+
+2024-04-25  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/altivec.md (*bcdinvalid_<mode>): Replace bcdadd
+	with bcdsub.
+	(bcdinvalid_<mode>): Likewise.
+
 2024-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/114738

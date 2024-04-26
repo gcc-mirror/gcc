@@ -1,3 +1,153 @@
+2024-04-25  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/bpf-debug-options-1.c: New test.
+	* gcc.target/bpf/bpf-debug-options-2.c: Likewise.
+	* gcc.target/bpf/bpf-debug-options-3.c: Likewise.
+	* gcc.target/bpf/core-options-4.c: Likewise.
+
+2024-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111284
+	* g++.dg/cpp1z/constexpr-111284.C: New test.
+	* g++.dg/cpp1y/constexpr-lifetime7.C: Expect one error on a different
+	line.
+
+2024-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/113208
+	* g++.dg/abi/comdat2.C: New test.
+	* g++.dg/abi/comdat5.C: New test.
+	* g++.dg/lto/pr113208_0.C: New test.
+	* g++.dg/lto/pr113208_1.C: New file.
+	* g++.dg/lto/pr113208.h: New file.
+
+2024-04-25  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/core-options-1.c: New test.
+	* gcc.target/bpf/core-options-2.c: Likewise.
+	* gcc.target/bpf/core-options-3.c: Likewise.
+
+2024-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/114825
+	* gfortran.dg/gomp/pr114825.f90: New test.
+
+2024-04-25  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* gcc.target/bpf/alu-1.c: Specify conventional asm dialect.
+	* gcc.target/bpf/xbpf-indirect-call-1.c: Likewise.
+	* gcc.target/bpf/sync-fetch-and-add.c: Likewise.
+	* gcc.target/bpf/smov-2.c: Likewise.
+	* gcc.target/bpf/smov-1.c: Likewise.
+	* gcc.target/bpf/smod-1.c: Likewise.
+	* gcc.target/bpf/sload-1.c: Likewise.
+	* gcc.target/bpf/sdiv-1.c: Likewise.
+	* gcc.target/bpf/nop-1.c: Likewise.
+	* gcc.target/bpf/neg-1.c: Likewise.
+	* gcc.target/bpf/ldxdw.c: Likewise.
+	* gcc.target/bpf/jmp-1.c: Likewise.
+	* gcc.target/bpf/inline-memops-threshold-1.c: Likewise.
+	* gcc.target/bpf/float-1.c: Likewise.
+	* gcc.target/bpf/double-2.c: Likewise.
+	* gcc.target/bpf/double-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-type-id.c: Likewise.
+	* gcc.target/bpf/core-builtin-type-based.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-size-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-sign-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-sign-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-rshift-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-rshift-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-offset-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-1-le.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-lshift-1-be.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-existence-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-errors-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-fieldinfo-const-elimination.c:
+	Likewise.
+	* gcc.target/bpf/core-builtin-exprlist-4.c: Likewise.
+	* gcc.target/bpf/core-builtin-exprlist-3.c: Likewise.
+	* gcc.target/bpf/core-builtin-exprlist-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-exprlist-1.c: Likewise.
+	* gcc.target/bpf/core-builtin-enumvalue-opt.c: Likewise.
+	* gcc.target/bpf/core-builtin-enumvalue-errors.c: Likewise.
+	* gcc.target/bpf/core-builtin-enumvalue.c: Likewise.
+	* gcc.target/bpf/core-builtin-3.c: Likewise.
+	* gcc.target/bpf/core-builtin-2.c: Likewise.
+	* gcc.target/bpf/core-builtin-1.c: Likewise.
+	* gcc.target/bpf/core-attr-struct-as-array.c: Likewise.
+	* gcc.target/bpf/core-attr-6.c: Likewise.
+	* gcc.target/bpf/core-attr-5.c: Likewise.
+	* gcc.target/bpf/core-attr-4.c: Likewise.
+	* gcc.target/bpf/core-attr-3.c: Likewise.
+	* gcc.target/bpf/core-attr-2.c: Likewise.
+	* gcc.target/bpf/core-attr-1.c: Likewise.
+	* gcc.target/bpf/builtin-load.c: Likewise.
+	* gcc.target/bpf/btfext-funcinfo-nocore.c: Likewise.
+	* gcc.target/bpf/btfext-funcinfo.c: Likewise.
+	* gcc.target/bpf/bswap-1.c: Likewise.
+	* gcc.target/bpf/bswap-2.c: Likewise.
+	* gcc.target/bpf/attr-kernel-helper.c: Likewise.
+	* gcc.target/bpf/atomic-xchg-2.c: Likewise.
+	* gcc.target/bpf/atomic-xchg-1.c: Likewise.
+	* gcc.target/bpf/atomic-op-3.c: Likewise.
+	* gcc.target/bpf/atomic-op-2.c: Likewise.
+	* gcc.target/bpf/atomic-op-1.c: Likewise.
+	* gcc.target/bpf/atomic-fetch-op-3.c: Likewise.
+	* gcc.target/bpf/atomic-fetch-op-2.c: Likewise.
+	* gcc.target/bpf/atomic-fetch-op-1.c: Likewise.
+	* gcc.target/bpf/atomic-cmpxchg-2.c: Likewise.
+	* gcc.target/bpf/atomic-cmpxchg-1.c: Likewise.
+	* gcc.target/bpf/alu-2.c: Likewise.
+
+2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	* gcc.target/arm/cmse/extend-param.c: New test.
+	* gcc.target/arm/cmse/extend-return.c: New test.
+
+2024-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114792
+	* gcc.dg/torture/pr114792.c: New testcase.
+
+2024-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/small-struct-1.c: New test.
+	* gcc.target/sparc/pr105573.c: Rename to...
+	* gcc.target/sparc/20230425-1.c: ...this.
+	* gcc.target/sparc/pr109541.c: Rename to...
+	* gcc.target/sparc/20230607-1.c: ...this
+
+2024-04-25  Pan Li  <pan2.li@intel.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/114714
+	* g++.target/riscv/rvv/base/pr114714-1.C: New test.
+	* g++.target/riscv/rvv/base/pr114714-2.C: New test.
+
+2024-04-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93678
+	* gfortran.dg/pr93678.f90: New test.
+
+2024-04-25  Paul Thomas  <pault@gcc.gnu.org>
+	    Jakub Jelinek  <jakub@gcc.gnu.org>
+
+	PR fortran/89462
+	* gfortran.dg/pr89462.f90: New test.
+
+2024-04-25  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/bcd-4.c: Adjust the number of bcdadd and
+	bcdsub.
+
+2024-04-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-3.c: New test.
+
 2024-04-24  Patrick Palka  <ppalka@redhat.com>
 
 	* g++.dg/modules/pr99023_a.X: Run only in C++20 mode.

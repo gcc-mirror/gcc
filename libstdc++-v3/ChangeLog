@@ -1,3 +1,26 @@
+2024-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/run_doxygen: Rename man pages for nested types.
+
+2024-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (tzdb_list): Fix typo in Doxygen comment.
+
+2024-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/run_doxygen: Adjust sed pattern to match '\fR' for
+	new man output that Doxygen 1.10 generates.
+
+2024-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/stdheader.cc (init_map): Add missing headers.
+	* doc/doxygen/user.cfg.in (EXCLUDE): Exclude generated files for
+	std::format and std::text_encoding.
+
+2024-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant: Add comment to #include.
+
 2024-04-22  Matthias Kretz  <m.kretz@gsi.de>
 
 	PR libstdc++/114803

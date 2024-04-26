@@ -1,3 +1,7 @@
+2024-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gthr.h (GTHREAD_USE_WEAK): Redefine to 0 for GLIBC 2.34 or later.
+
 2024-04-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/114794
