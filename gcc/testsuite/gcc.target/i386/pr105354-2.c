@@ -17,7 +17,7 @@ sse2_test (void)
       b.a[i] = i + 16;
       res_ab.a[i] = 0;
       exp_ab.a[i] = -1;
-      if (i <= 8)
+      if (i < 8)
 	{
 	  c.a[i] = i;
 	  d.a[i] = i + 8;
