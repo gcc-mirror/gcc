@@ -23,8 +23,8 @@ since that release.
 </para>
 
 <para>
-This section describes the C++17 and library TS support in mainline GCC,
-not in any particular release.
+This section describes the C++17 and library TS support in
+the GCC 13 release series, not in any particular release.
 </para>
 
 <para>

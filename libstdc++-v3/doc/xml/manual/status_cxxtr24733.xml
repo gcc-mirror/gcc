@@ -17,8 +17,8 @@ decimal floating-point arithmetic".
 </para>
 
 <para>
-This page describes the TR 24733 support in mainline GCC, not in any
-particular release.
+This page describes the TR 24733 support in
+the GCC 13 release series, not in any particular release.
 </para>
 
 <!-- Status is Yes or No, Broken/Partial-->
