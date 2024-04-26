@@ -1543,9 +1543,9 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn_and_split "*bstrins_<mode>_for_mask"
-  [(set (match_operand:GPR 0 "register_operand")
-	(and:GPR (match_operand:GPR 1 "register_operand")
-		 (match_operand:GPR 2 "ins_zero_bitmask_operand")))]
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(and:GPR (match_operand:GPR 1 "register_operand" "r")
+		 (match_operand:GPR 2 "ins_zero_bitmask_operand" "i")))]
   ""
   "#"
   ""
@@ -1563,11 +1563,11 @@
   })
 
 (define_insn_and_split "*bstrins_<mode>_for_ior_mask"
-  [(set (match_operand:GPR 0 "register_operand")
-	(ior:GPR (and:GPR (match_operand:GPR 1 "register_operand")
-                          (match_operand:GPR 2 "const_int_operand"))
-		 (and:GPR (match_operand:GPR 3 "register_operand")
-			  (match_operand:GPR 4 "const_int_operand"))))]
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(ior:GPR (and:GPR (match_operand:GPR 1 "register_operand" "r")
+			  (match_operand:GPR 2 "const_int_operand" "i"))
+		 (and:GPR (match_operand:GPR 3 "register_operand" "r")
+			  (match_operand:GPR 4 "const_int_operand" "i"))))]
   "loongarch_pre_reload_split ()
    && loongarch_use_bstrins_for_ior_with_mask (<MODE>mode, operands)"
   "#"
