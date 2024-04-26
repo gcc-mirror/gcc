@@ -1,3 +1,17 @@
+2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	Backported from master:
+	2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	* gcc.target/arm/cmse/extend-param.c: New test.
+	* gcc.target/arm/cmse/extend-return.c: New test.
+
+2024-04-25  Kewen Lin  <linkw@linux.ibm.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/88309
+	* gcc.target/powerpc/pr88309.c: New test.
+
 2024-04-24  Kito Cheng  <kito.cheng@sifive.com>
 
 	PR target/114172

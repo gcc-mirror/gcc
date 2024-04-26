@@ -1,3 +1,23 @@
+2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	Backported from master:
+	2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	PR target/114837
+	* config/arm/arm.cc (cmse_nonsecure_call_inline_register_clear):
+	Add zero/sign extend.
+	(arm_expand_prologue): Add zero/sign extend.
+
+2024-04-25  Kewen Lin  <linkw@linux.ibm.com>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/88309
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_builtin): Fix
+	wrong align passed to function build_aligned_type.
+	* tree-ssa-loop-prefetch.cc (is_miss_rate_acceptable): Add an
+	assertion to ensure align_unit should be positive.
+	* tree.cc (build_qualified_type): Update function comments.
+
 2024-04-24  Kito Cheng  <kito.cheng@sifive.com>
 
 	PR target/114172

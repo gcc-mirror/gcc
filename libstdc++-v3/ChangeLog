@@ -1,3 +1,24 @@
+2024-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/experimental/Makefile.am (install-exec-local): New target.
+	(uninstall-local): New target.
+	* src/experimental/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.am: Build libstdc++_libbacktrace as
+	noinst_LTLIBRARIES so it's only a convenience library.
+	* src/libbacktrace/Makefile.in: Regenerate.
+
+2024-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/experimental/Makefile.am: Use libstdc++fsconvenience.a
+	instead of libstdc++fs.a.
+	* src/experimental/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.am: Build libstdc++fsconvenience.a as
+	well.
+	* src/filesystem/Makefile.in: Regenerate.
+
 2024-04-15  Andreas Schwab  <schwab@suse.de>
 
 	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
