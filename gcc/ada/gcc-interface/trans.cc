@@ -9321,6 +9321,10 @@ elaborate_all_entities_for_package (Entity_Id gnat_package)
       if (kind == E_Package_Body)
 	continue;
 
+      /* Skip subprogram bodies.  */
+      if (kind == E_Subprogram_Body)
+	continue;
+
       /* Skip limited views that point back to the main unit.  */
       if (IN (kind, Incomplete_Kind)
 	  && From_Limited_With (gnat_entity)
@@ -9425,6 +9429,10 @@ process_freeze_entity (Node_Id gnat_node)
   /* Likewise for the entities internally used by the front-end to register
      primitives covering abstract interfaces, see Expand_N_Freeze_Entity.  */
   if (Is_Subprogram (gnat_entity) && Present (Interface_Alias (gnat_entity)))
+    return;
+
+  /* Skip subprogram bodies.  */
+  if (kind == E_Subprogram_Body)
     return;
 
   /* Check for an old definition if this isn't an object with address clause,
