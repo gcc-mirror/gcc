@@ -52,6 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "rtl-iter.h"
 #include "gimple-range.h"
+#include "tree-ssa-live.h"
+#include "tree-outof-ssa.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -2771,8 +2773,8 @@ expand_call_mem_ref (tree type, gcall *stmt, int index)
   tree tmp = addr;
   if (TREE_CODE (tmp) == SSA_NAME)
     {
-      gimple *def = SSA_NAME_DEF_STMT (tmp);
-      if (gimple_assign_single_p (def))
+      gimple *def = get_gimple_for_ssa_name (tmp);
+      if (def && gimple_assign_single_p (def))
 	tmp = gimple_assign_rhs1 (def);
     }
 
