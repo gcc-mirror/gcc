@@ -51,6 +51,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "explow.h"
 #include "rtl-iter.h"
+#include "tree-ssa-live.h"
+#include "tree-outof-ssa.h"
+
+/* For lang_hooks.types.type_for_mode.  */
+#include "langhooks.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -2677,8 +2682,8 @@ expand_call_mem_ref (tree type, gcall *stmt, int index)
   tree tmp = addr;
   if (TREE_CODE (tmp) == SSA_NAME)
     {
-      gimple *def = SSA_NAME_DEF_STMT (tmp);
-      if (gimple_assign_single_p (def))
+      gimple *def = get_gimple_for_ssa_name (tmp);
+      if (def && gimple_assign_single_p (def))
 	tmp = gimple_assign_rhs1 (def);
     }
 
