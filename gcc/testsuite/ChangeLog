@@ -1,3 +1,28 @@
+2024-04-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-09-08  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-segaddr.c: Adjust for darwin linker warning.
+	* gcc.dg/pie-7.c: Likewise.
+
+2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	Backported from master:
+	2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	* gcc.target/arm/cmse/extend-param.c: New test.
+	* gcc.target/arm/cmse/extend-return.c: New test.
+
+2024-04-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2024-04-09  Kewen Lin  <linkw@linux.ibm.com>
+		    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/88309
+	* gcc.target/powerpc/pr88309.c: New test.
+
 2024-04-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:

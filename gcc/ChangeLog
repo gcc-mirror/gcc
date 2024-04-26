@@ -1,3 +1,105 @@
+2024-04-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_override_options): Update the
+	clang major version value in the dsymutil check.
+
+2024-04-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.in: Regenerate.
+	* config/darwin.c (darwin_file_start): Add assembler directives
+	for the target OS version, where these are supported by the
+	assembler.
+	(darwin_override_options): Check for building >= macOS 10.14.
+	* configure: Regenerate.
+	* configure.ac: Check for assembler support of .build_version
+	directives.
+
+2024-04-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/111610
+	* configure: Regenerate.
+	* configure.ac: Rename the missing dsymutil case to "DET_UNKNOWN".
+
+2024-04-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-protos.h (enum darwin_external_toolchain): New.
+	* config/darwin.c (DSYMUTIL_VERSION): New.
+	(darwin_override_options): Choose the default debug DWARF version
+	depending on the configured dsymutil version.
+
+2024-04-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/rs6000/darwin.h (LIB_SPEC): Include libSystemStubs for
+	all 32b Darwin PowerPC cases.
+
+2024-04-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_function_section): Place unlikely
+	executed global init code into the standard cold section.
+
+2024-04-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (static_init_section): Add the
+	__TEXT,__StaticInit section.
+	* config/darwin.c (darwin_function_section): Use the static init
+	section for global initializers, to match other platform toolchains.
+
+2024-04-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (darwin_exception_section): Move to
+	the __TEXT segment.
+	* config/darwin.c (darwin_emit_except_table_label): Align before
+	the exception table label.
+	* config/darwin.h (ASM_PREFERRED_EH_DATA_FORMAT): Use indirect PC-
+	relative 4byte relocs.
+
+2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	Backported from master:
+	2024-04-25  Richard Ball  <richard.ball@arm.com>
+
+	PR target/114837
+	* config/arm/arm.c (cmse_nonsecure_call_inline_register_clear):
+	Add zero/sign extend.
+	(arm_expand_prologue): Add zero/sign extend.
+
+2024-04-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2024-04-09  Kewen Lin  <linkw@linux.ibm.com>
+		    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/88309
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_builtin): Fix
+	wrong align passed to function build_aligned_type.
+	* tree-ssa-loop-prefetch.c (is_miss_rate_acceptable): Add an
+	assertion to ensure align_unit should be positive.
+	* tree.c (build_qualified_type): Update function comments.
+
 2024-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backported from master:
