@@ -3793,7 +3793,9 @@ print_instantiation_partial_context_line (diagnostic_context *context,
 		   : _("required from here\n"));
     }
   gcc_rich_location rich_loc (loc);
+  char *saved_prefix = pp_take_prefix (context->printer);
   diagnostic_show_locus (context, &rich_loc, DK_NOTE);
+  pp_set_prefix (context->printer, saved_prefix);
 }
 
 /* Same as print_instantiation_full_context but less verbose.  */
