@@ -23,7 +23,11 @@ void
 baz()
 {
   bar<int>(); // { dg-error "no match" }
-/* { dg-begin-multiline-output "" }
+/* { dg-begin-multiline-output "for no match error" }
+   bar<int>();
+   ~~~~~~~~^~
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "for required from here message" }
    bar<int>();
    ~~~~~~~~^~
    { dg-end-multiline-output "" } */
