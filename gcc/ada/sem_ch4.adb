@@ -9805,11 +9805,23 @@ package body Sem_Ch4 is
          begin
             Error := False;
 
+            --  When climbing through the parents of an interface type,
+            --  look for acceptable class-wide homonyms associated with
+            --  the interface type.
+
+            if Is_Interface (Anc_Type) then
+               Traverse_Homonyms (Anc_Type, Error);
+
+               if Error then
+                  return;
+               end if;
+            end if;
+
             Intface := First (Intface_List);
             while Present (Intface) loop
 
                --  Look for acceptable class-wide homonyms associated with the
-               --  interface.
+               --  interface type.
 
                Traverse_Homonyms (Etype (Intface), Error);
 
@@ -9828,6 +9840,15 @@ package body Sem_Ch4 is
 
                Next (Intface);
             end loop;
+
+            --  For derived interface types continue the search climbing to
+            --  the parent type.
+
+            if Is_Interface (Anc_Type)
+              and then Etype (Anc_Type) /= Anc_Type
+            then
+               Traverse_Interfaces (Etype (Anc_Type), Error);
+            end if;
          end Traverse_Interfaces;
 
       --  Start of processing for Try_Class_Wide_Operation
