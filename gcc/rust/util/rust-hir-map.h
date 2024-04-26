@@ -106,7 +106,7 @@ public:
   bool is_local_hirid_crate (HirId crateNum);
 
   void insert_defid_mapping (DefId id, HIR::Item *item);
-  HIR::Item *lookup_defid (DefId id);
+  tl::optional<HIR::Item *> lookup_defid (DefId id);
   void insert_defid_mapping (DefId id, HIR::TraitItem *item);
   HIR::TraitItem *lookup_trait_item_defid (DefId id);
 

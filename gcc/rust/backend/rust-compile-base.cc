@@ -877,13 +877,12 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
   // Now we can try and resolve the address since this might be a forward
   // declared function, generic function which has not be compiled yet or
   // its an not yet trait bound function
-  HIR::Item *resolved_item = ctx->get_mappings ().lookup_defid (id);
-  if (resolved_item != nullptr)
+  if (auto resolved_item = ctx->get_mappings ().lookup_defid (id))
     {
       if (!fntype->has_substitutions_defined ())
-	return CompileItem::compile (resolved_item, ctx);
+	return CompileItem::compile (*resolved_item, ctx);
 
-      return CompileItem::compile (resolved_item, ctx, fntype);
+      return CompileItem::compile (*resolved_item, ctx, fntype);
     }
 
   // it might be resolved to a trait item

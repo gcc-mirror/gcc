@@ -414,8 +414,7 @@ TyTy::TypeBoundPredicate
 TypeCheckBase::get_marker_predicate (LangItem::Kind item_type, location_t locus)
 {
   DefId item_id = mappings.get_lang_item (item_type, locus);
-  HIR::Item *item = mappings.lookup_defid (item_id);
-  rust_assert (item != nullptr);
+  HIR::Item *item = mappings.lookup_defid (item_id).value ();
   rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
 
   HIR::Trait &trait = *static_cast<HIR::Trait *> (item);

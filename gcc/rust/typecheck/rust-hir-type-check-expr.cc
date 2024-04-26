@@ -642,8 +642,7 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
-  rust_assert (item != nullptr);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
   TyTy::BaseType *item_type = nullptr;
   bool ok
@@ -697,8 +696,7 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
-  rust_assert (item != nullptr);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
   TyTy::BaseType *item_type = nullptr;
   bool ok
@@ -745,8 +743,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
-  rust_assert (item != nullptr);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
   TyTy::BaseType *item_type = nullptr;
   bool ok
@@ -792,8 +789,7 @@ TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
-  rust_assert (item != nullptr);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
   TyTy::BaseType *item_type = nullptr;
   bool ok
@@ -823,8 +819,7 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
     }
 
   // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
-  rust_assert (item != nullptr);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
   TyTy::BaseType *item_type = nullptr;
   bool ok
@@ -1599,7 +1594,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   rust_assert (lang_item_defined);
 
   // these lang items are always traits
-  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id);
+  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
   rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
   HIR::Trait *trait_item = static_cast<HIR::Trait *> (item);
 
