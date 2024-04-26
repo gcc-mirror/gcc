@@ -2229,7 +2229,7 @@ ClosureType::setup_fn_once_output () const
   rust_assert (trait_item_lang_item_defined);
 
   // resolve to the trait
-  HIR::Item *item = mappings.lookup_defid (trait_id);
+  HIR::Item *item = mappings.lookup_defid (trait_id).value ();
   rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
   HIR::Trait *trait = static_cast<HIR::Trait *> (item);
 

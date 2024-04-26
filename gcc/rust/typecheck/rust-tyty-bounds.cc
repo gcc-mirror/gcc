@@ -157,9 +157,10 @@ TypeBoundsProbe::assemble_builtin_candidate (LangItem::Kind lang_item)
   if (!found_lang_item)
     return;
 
-  HIR::Item *item = mappings.lookup_defid (id);
-  if (item == nullptr)
+  auto defid = mappings.lookup_defid (id);
+  if (!defid)
     return;
+  auto item = defid.value ();
 
   rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Trait);
   HIR::Trait *trait = static_cast<HIR::Trait *> (item);

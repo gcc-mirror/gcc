@@ -146,8 +146,7 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
 	if (!current_module.has_value ())
 	  return;
 
-	auto module = mappings.lookup_defid (vis.get_module_id ());
-	rust_assert (module != nullptr);
+	auto module = mappings.lookup_defid (vis.get_module_id ()).value ();
 
 	auto mod_node_id = module->get_mappings ().get_nodeid ();
 
