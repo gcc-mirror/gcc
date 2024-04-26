@@ -1666,7 +1666,7 @@ namespace __format
 	      __str = __wstr;
 	    }
 
-	  if (_M_spec._M_localized)
+	  if (_M_spec._M_localized && __builtin_isfinite(__v))
 	    {
 	      if constexpr (is_same_v<char, _CharT>)
 		__wstr = _M_localize(__str, __expc, __fc.locale());
