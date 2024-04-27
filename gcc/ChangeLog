@@ -1,3 +1,10 @@
+2024-04-26  Richard Ball  <richard.ball@arm.com>
+
+	PR target/114272
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE):
+	Change SCHEDULER_IDENT from cortexa55 to cortexa53
+	for Cortex-A510.
+
 2024-04-25  Richard Ball  <richard.ball@arm.com>
 
 	Backported from master:

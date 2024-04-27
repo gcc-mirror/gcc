@@ -1,3 +1,15 @@
+2024-04-26  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/110621
+	* gcc.target/i386/pr105354-2.c: As mentioned.
+
+2024-04-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2023-07-12  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/pdt_33.f03: New test.
+
 2024-04-25  Richard Ball  <richard.ball@arm.com>
 
 	Backported from master:

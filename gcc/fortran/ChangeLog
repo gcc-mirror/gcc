@@ -1,3 +1,21 @@
+2024-04-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2023-07-12  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/102003
+	* expr.cc (find_inquiry_ref): Replace len of pdt_string by
+	constant.
+	(simplify_ref_chain): Ensure input to find_inquiry_ref is
+	NULL.
+	(gfc_match_init_expr): Prevent PDT analysis for function calls.
+	(gfc_pdt_find_component_copy_initializer): Get the initializer
+	value for given component.
+	* gfortran.h (gfc_pdt_find_component_copy_initializer): New
+	function.
+	* simplify.cc (gfc_simplify_len): Replace len() of PDT with pdt
+	component ref or constant.
+
 2024-04-06  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
