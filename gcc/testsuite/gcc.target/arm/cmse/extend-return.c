@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcmse" } */
+/* { dg-options "-mcmse -fshort-enums" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include <arm_cmse.h>
