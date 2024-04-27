@@ -1,3 +1,21 @@
+2024-04-26  Frederik Harwath  <frederik@harwath.name>
+
+	* config.gcc: Add gfx90c.
+	* config/gcn/gcn-hsa.h (NO_SRAM_ECC): Likewise.
+	* config/gcn/gcn-opts.h (enum processor_type): Likewise.
+	(TARGET_GFX90c): New macro.
+	* config/gcn/gcn.cc (gcn_option_override): Handle gfx90c.
+	(gcn_omp_device_kind_arch_isa): Likewise.
+	(output_file_start): Likewise.
+	* config/gcn/gcn.h: Add gfx90c.
+	* config/gcn/gcn.opt: Likewise.
+	* config/gcn/mkoffload.cc (EF_AMDGPU_MACH_AMDGCN_GFX90c): New macro.
+	(get_arch): Handle gfx90c.
+	(main): Handle EF_AMDGPU_MACH_AMDGCN_GFX90c
+	* config/gcn/t-omp-device: Add gfx90c.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+
 2024-04-25  David Faust  <david.faust@oracle.com>
 
 	* config/bpf/bpf.h (PREFERRED_DEBUGGING_TYPE): Set to BTF_DEBUG.

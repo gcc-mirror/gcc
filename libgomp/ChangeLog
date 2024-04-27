@@ -1,3 +1,9 @@
+2024-04-26  Frederik Harwath  <frederik@harwath.name>
+
+	* plugin/plugin-gcn.c (isa_hsa_name): Handle EF_AMDGPU_MACH_AMDGCN_GFX90c.
+	(isa_code): Handle gfx90c.
+	(max_isa_vgprs): Handle EF_AMDGPU_MACH_AMDGCN_GFX90c.
+
 2024-04-16  Chung-Lin Tang  <cltang@baylibre.com>
 
 	* libgomp.h (REFCOUNT_ACC_MAP_DATA): Define as (REFCOUNT_SPECIAL | 2).
