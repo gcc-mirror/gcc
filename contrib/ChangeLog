@@ -1,3 +1,8 @@
+2024-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (active_refs): Add
+	releases/gcc-14.
+
 2024-04-18  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* config-list.mk (LIST): --enable-obsolete for nios2*-*-*.

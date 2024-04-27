@@ -1,3 +1,18 @@
+2024-04-26  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_q_disable.c: Remove test.
+
+2024-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/concepts/diagnostic2.C: Expect source line printed
+	for the "required from here" message.
+	* g++.dg/template/error60a.C: New test.
+
+2024-04-26  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/110621
+	* gcc.target/i386/pr105354-2.c: As mentioned.
+
 2024-04-25  David Faust  <david.faust@oracle.com>
 
 	* gcc.target/bpf/bpf-debug-options-1.c: New test.

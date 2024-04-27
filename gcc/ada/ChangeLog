@@ -1,3 +1,7 @@
+2024-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gnatvsn.ads: Bump Library_Version to 15.
+
 2024-04-15  Piotr Trojanek  <trojanek@adacore.com>
 
 	* doc/gnat_rm/implementation_defined_aspects.rst

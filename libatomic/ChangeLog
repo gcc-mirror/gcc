@@ -1,3 +1,8 @@
+2024-04-26  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/linux/aarch64/atomic_16.S: Add __libat_ prefix in the
+	LSE2/LSE128/CORE macros, remove elsewhere.  Add ATOMIC macro.
+
 2024-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure: Regenerate.
