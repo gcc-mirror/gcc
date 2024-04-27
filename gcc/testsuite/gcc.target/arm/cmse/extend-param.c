@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcmse" } */
+/* { dg-options "-mcmse -fshort-enums" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include <arm_cmse.h>
@@ -78,7 +78,6 @@ __attribute__((cmse_nonsecure_entry)) char enumSecureFunc (enum offset index) {
   if (index >= ARRAY_SIZE)
     return 0;
   return array[index];
-
 }
 
 /*
@@ -88,9 +87,23 @@ __attribute__((cmse_nonsecure_entry)) char enumSecureFunc (enum offset index) {
 **	...
 */
 __attribute__((cmse_nonsecure_entry)) char boolSecureFunc (bool index) {
-
   if (index >= ARRAY_SIZE)
     return 0;
   return array[index];
+}
 
+/*
+**__acle_se_boolCharShortEnumSecureFunc:
+**	...
+**	uxtb	r0, r0
+**	uxtb	r1, r1
+**	uxth	r2, r2
+**	uxtb	r3, r3
+**	...
+*/
+__attribute__((cmse_nonsecure_entry,optimize(0))) char boolCharShortEnumSecureFunc (bool a, unsigned char b, unsigned short c, enum offset d) {
+  size_t index = a + b + c + d;
+  if (index >= ARRAY_SIZE)
+    return 0;
+  return array[index];
 }
