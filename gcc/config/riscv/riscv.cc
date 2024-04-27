@@ -2786,6 +2786,45 @@ riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
   REG_NOTES (insn) = dwarf;
 }
 
+/* Take care below subreg const_poly_int move:
+
+   1. (set (subreg:DI (reg:TI 237) 8)
+	   (subreg:DI (const_poly_int:TI [4, 2]) 8))
+      =>
+      (set (subreg:DI (reg:TI 237) 8)
+	   (const_int 0)) */
+
+static bool
+riscv_legitimize_subreg_const_poly_move (machine_mode mode, rtx dest, rtx src)
+{
+  gcc_assert (SUBREG_P (src) && CONST_POLY_INT_P (SUBREG_REG (src)));
+  gcc_assert (SUBREG_BYTE (src).is_constant ());
+
+  int byte_offset = SUBREG_BYTE (src).to_constant ();
+  rtx const_poly = SUBREG_REG (src);
+  machine_mode subreg_mode = GET_MODE (const_poly);
+
+  if (subreg_mode != TImode) /* Only TImode is needed for now.  */
+    return false;
+
+  if (byte_offset == 8)
+    {
+      /* The const_poly_int cannot exceed int64, just set zero here.  */
+      emit_move_insn (dest, CONST0_RTX (mode));
+      return true;
+    }
+
+  /* The below transform will be covered in somewhere else.
+     Thus, ignore this here.
+     (set (subreg:DI (reg:TI 237) 0)
+	  (subreg:DI (const_poly_int:TI [4, 2]) 0))
+     =>
+     (set (subreg:DI (reg:TI 237) 0)
+	  (const_poly_int:DI [4, 2])) */
+
+  return false;
+}
+
 /* If (set DEST SRC) is not a valid move instruction, emit an equivalent
    sequence that is valid.  */
 
@@ -2839,6 +2878,11 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	}
       return true;
     }
+
+  if (SUBREG_P (src) && CONST_POLY_INT_P (SUBREG_REG (src))
+    && riscv_legitimize_subreg_const_poly_move (mode, dest, src))
+    return true;
+
   /* Expand
        (set (reg:DI target) (subreg:DI (reg:V8QI reg) 0))
      Expand this data movement instead of simply forbid it since
