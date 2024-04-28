@@ -49,6 +49,18 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #endif
 
 #include <windows.h>
+
+#ifdef HAVE_TLHELP32_H
+#include <tlhelp32.h>
+
+#ifdef UNICODE
+/* If UNICODE is defined, all the symbols are replaced by a macro to use the
+   wide variant. But we need the ansi variant, so undef the macros. */
+#undef MODULEENTRY32
+#undef Module32First
+#undef Module32Next
+#endif
+#endif
 #endif
 
 /* Coff file header.  */
@@ -592,7 +604,8 @@ coff_syminfo (struct backtrace_state *state, uintptr_t addr,
 static int
 coff_add (struct backtrace_state *state, int descriptor,
 	  backtrace_error_callback error_callback, void *data,
-	  fileline *fileline_fn, int *found_sym, int *found_dwarf)
+	  fileline *fileline_fn, int *found_sym, int *found_dwarf,
+	  uintptr_t module_handle ATTRIBUTE_UNUSED)
 {
   struct backtrace_view fhdr_view;
   off_t fhdr_off;
@@ -870,12 +883,7 @@ coff_add (struct backtrace_state *state, int descriptor,
     }
 
 #ifdef HAVE_WINDOWS_H
-  {
-    uintptr_t module_handle;
-
-    module_handle = (uintptr_t) GetModuleHandle (NULL);
-    base_address = module_handle - image_base;
-  }
+  base_address = module_handle - image_base;
 #endif
 
   if (!backtrace_dwarf_add (state, base_address, &dwarf_sections,
@@ -917,11 +925,60 @@ backtrace_initialize (struct backtrace_state *state,
   int found_sym;
   int found_dwarf;
   fileline coff_fileline_fn;
+  uintptr_t module_handle = 0;
+#ifdef HAVE_TLHELP32_H
+  fileline module_fileline_fn;
+  int module_found_sym;
+  HANDLE snapshot;
+#endif
+
+#ifdef HAVE_WINDOWS_H
+  module_handle = (uintptr_t) GetModuleHandle (NULL);
+#endif
 
   ret = coff_add (state, descriptor, error_callback, data,
-		  &coff_fileline_fn, &found_sym, &found_dwarf);
+		  &coff_fileline_fn, &found_sym, &found_dwarf, module_handle);
   if (!ret)
     return 0;
+
+#ifdef HAVE_TLHELP32_H
+  do
+    {
+      snapshot = CreateToolhelp32Snapshot (TH32CS_SNAPMODULE, 0);
+    }
+  while (snapshot == INVALID_HANDLE_VALUE
+	 && GetLastError () == ERROR_BAD_LENGTH);
+
+  if (snapshot != INVALID_HANDLE_VALUE)
+    {
+      MODULEENTRY32 entry;
+      BOOL ok;
+      entry.dwSize = sizeof (MODULEENTRY32);
+
+      for (ok = Module32First (snapshot, &entry); ok; ok = Module32Next (snapshot, &entry))
+	{
+	  if (strcmp (filename, entry.szExePath) == 0)
+	    continue;
+
+	  module_handle = (uintptr_t) entry.hModule;
+	  if (module_handle == 0)
+	    continue;
+
+	  descriptor = backtrace_open (entry.szExePath, error_callback, data,
+				       NULL);
+	  if (descriptor < 0)
+	    continue;
+
+	  coff_add (state, descriptor, error_callback, data,
+		    &module_fileline_fn, &module_found_sym, &found_dwarf,
+		    module_handle);
+	  if (module_found_sym)
+	    found_sym = 1;
+	}
+
+      CloseHandle (snapshot);
+    }
+#endif
 
   if (!state->threaded)
     {
