@@ -1,3 +1,23 @@
+2024-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/113822
+	* config/aarch64/aarch64.cc (aarch64_evpc_reencode): Use
+	vec_perm_indices::new_shrunk_vector instead of manually
+	going through the indices.
+
+2024-04-27  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/114861
+	* config/loongarch/loongarch.md (bstrins_<mode>_for_mask): Add
+	constraints for operands.
+	(bstrins_<mode>_for_ior_mask): Likewise.
+
+2024-04-27  Fangrui Song  <maskray@gcc.gnu.org>
+
+	* config/riscv/elf.h (LINK_SPEC): Add -X.
+	* config/riscv/freebsd.h (LINK_SPEC): Add -X.
+	* config/riscv/linux.h (LINK_SPEC): Add -X.
+
 2024-04-26  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/aarch64.cc (MAX_SET_SIZE): New define.

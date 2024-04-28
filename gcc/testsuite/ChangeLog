@@ -1,3 +1,8 @@
+2024-04-27  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/114861
+	* gcc.target/loongarch/pr114861.c: New test.
+
 2024-04-26  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* gcc.target/aarch64/ldp_stp_q_disable.c: Remove test.
