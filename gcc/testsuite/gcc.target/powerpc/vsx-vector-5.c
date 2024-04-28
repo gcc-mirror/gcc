@@ -1,10 +1,7 @@
 /* { dg-do run { target lp64 } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-mvsx -O2" } */
-
-/* This will run, and someday we should add the support to test whether we are
-   running on VSX hardware.  */
 
 #include <altivec.h>
 #include <stdlib.h>
