@@ -2138,6 +2138,10 @@ static int have_E = 0;
 /* Pointer to output file name passed in with -o. */
 static const char *output_file = 0;
 
+/* Pointer to input file name passed in with -truncate.
+   This file should be truncated after linking. */
+static const char *totruncate_file = 0;
+
 /* This is the list of suffixes and codes (%g/%u/%U/%j) and the associated
    temp file.  If the HOST_BIT_BUCKET is used for %j, no entry is made for
    it here.  */
@@ -4535,6 +4539,11 @@ driver_handle_option (struct gcc_options *opts,
       if (report_times_to_file)
 	fclose (report_times_to_file);
       report_times_to_file = fopen (arg, "a");
+      do_save = false;
+      break;
+
+    case OPT_truncate:
+      totruncate_file = arg;
       do_save = false;
       break;
 
@@ -9285,6 +9294,11 @@ driver::final_actions () const
   if (seen_error ())
     delete_failure_queue ();
   delete_temp_files ();
+
+  if (totruncate_file != NULL && !seen_error ())
+    /* Truncate file specified by -truncate.
+       Used by lto-wrapper to reduce temporary disk-space usage. */
+    truncate(totruncate_file, 0);
 
   if (print_help_list)
     {

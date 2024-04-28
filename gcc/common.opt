@@ -422,6 +422,12 @@ Display target specific command line options (including assembler and linker opt
 -time
 Driver Alias(time)
 
+;; Truncate the file specified after linking.
+;; This option is used by lto-wrapper to reduce the peak disk-usage when
+;; linking with many .LTRANS units.
+truncate
+Driver Separate Undocumented MissingArgError(missing filename after %qs)
+
 -verbose
 Driver Alias(v)
 
