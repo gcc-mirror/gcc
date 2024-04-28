@@ -4096,18 +4096,13 @@ debugging formats.  Otherwise, this release of GCC should now match
 more of the configuration used in the stock FreeBSD configuration of
 GCC@.  In particular, @option{--enable-threads} is now configured by
 default.  However, as a general user, do not attempt to replace the
-system compiler with this release.  Known to bootstrap and check with
-good results on FreeBSD 7.2-STABLE@.  In the past, known to bootstrap
-and check with good results on FreeBSD 3.0, 3.4, 4.0, 4.2, 4.3, 4.4,
-4.5, 4.8, 4.9 and 5-CURRENT@.
+system compiler with this release.
 
 The version of binutils installed in @file{/usr/bin} probably works
 with this release of GCC@.  Bootstrapping against the latest GNU
 binutils and/or the version found in @file{/usr/ports/devel/binutils} has
 been known to enable additional features and improve overall testsuite
-results.  However, it is currently known that boehm-gc may not configure
-properly on FreeBSD prior to the FreeBSD 7.0 release with GNU binutils
-after 2.16.1.
+results.
 
 @html
 <hr />
