@@ -704,9 +704,15 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
 	    }
 	  else
 	    {
-	      tmp = gen_lowpart_if_possible (op_mode, value1);
-	      if (! tmp)
-		tmp = gen_lowpart (op_mode, force_reg (value_mode, value1));
+	      if (targetm.mode_rep_extended (op_mode, value_mode) != UNKNOWN)
+		tmp = simplify_gen_unary (TRUNCATE, op_mode,
+					  value1, value_mode);
+	      else
+		{
+		  tmp = gen_lowpart_if_possible (op_mode, value1);
+		  if (! tmp)
+		    tmp = gen_lowpart (op_mode, force_reg (value_mode, value1));
+		}
 	    }
 	  value1 = tmp;
 	}
