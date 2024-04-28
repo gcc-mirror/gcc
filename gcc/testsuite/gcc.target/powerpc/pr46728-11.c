@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-skip-if "-mpowerpc-gpopt not supported" { powerpc*-*-darwin* } } */
 /* { dg-options "-O2 -ffast-math -fno-inline -fno-unroll-loops -lm -mpowerpc-gpopt" } */
+/* { dg-require-effective-target sqrt_insn } */
 
 #include <math.h>
 
