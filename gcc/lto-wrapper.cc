@@ -2023,14 +2023,12 @@ cont:
 	      fprintf (mstream, "%s:\n\t@%s ", output_name, new_argv[0]);
 	      for (j = 1; new_argv[j] != NULL; ++j)
 		fprintf (mstream, " '%s'", new_argv[j]);
-	      fprintf (mstream, "\n");
 	      /* If we are not preserving the ltrans input files then
 	         truncate them as soon as we have processed it.  This
 		 reduces temporary disk-space usage.  */
 	      if (! save_temps)
-		fprintf (mstream, "\t@-touch -r \"%s\" \"%s.tem\" > /dev/null "
-			 "2>&1 && mv \"%s.tem\" \"%s\"\n",
-			 input_name, input_name, input_name, input_name); 
+		fprintf (mstream, " -truncate '%s'", input_name);
+	      fprintf (mstream, "\n");
 	    }
 	  else
 	    {
