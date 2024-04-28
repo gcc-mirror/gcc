@@ -216,6 +216,10 @@ getSiginfoCode(siginfo_t *info)
 	return (uintptr)(info->si_code);
 }
 
+#if defined(__sparc__) && defined(__arch64__) && defined(__linux__)
+  #define gregs mc_gregs
+#endif
+
 struct getSiginfoRet {
 	uintptr sigaddr;
 	uintptr sigpc;
@@ -242,9 +246,9 @@ getSiginfo(siginfo_t *info, void *context __attribute__((unused)))
 	// Use unportable code to pull it from context, and if that fails
 	// try a stack backtrace across the signal handler.
 
-#if defined(__x86_64__) && defined(__linux__)
+#if defined(__x86_64__) && (defined(__linux__) || (defined(__sun__) && defined(__svr4__)))
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gregs[REG_RIP];
-#elif defined(__i386__) && defined(__linux__)
+#elif defined(__i386__) && (defined(__linux__) || (defined(__sun__) && defined(__svr4__)))
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gregs[REG_EIP];
 #elif defined(__alpha__) && defined(__linux__)
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.sc_pc;
@@ -262,6 +266,9 @@ getSiginfo(siginfo_t *info, void *context __attribute__((unused)))
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.pc;
 #elif defined(__NetBSD__)
 	ret.sigpc = _UC_MACHINE_PC(((ucontext_t*)(context)));
+#endif
+#if defined(__sparc__) && (defined(__linux__) || (defined(__sun__) && defined(__svr4__)))
+	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.gregs[REG_PC];
 #endif
 
 	if (ret.sigpc == 0) {
@@ -285,7 +292,7 @@ void dumpregs(siginfo_t *, void *)
 void
 dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((unused)))
 {
-#if defined(__x86_64__) && defined(__linux__)
+#if defined(__x86_64__) && (defined(__linux__) || (defined(__sun__) && defined(__svr4__)))
 	{
 		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
 
@@ -306,12 +313,22 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
 		runtime_printf("r14    %X\n", m->gregs[REG_R14]);
 		runtime_printf("r15    %X\n", m->gregs[REG_R15]);
 		runtime_printf("rip    %X\n", m->gregs[REG_RIP]);
+#if defined(REG_EFL)
 		runtime_printf("rflags %X\n", m->gregs[REG_EFL]);
+#elif defined(REG_RFL)
+		runtime_printf("rflags %X\n", m->gregs[REG_RFL]);
+#endif
+#if defined(REG_CSGSFS)
 		runtime_printf("cs     %X\n", m->gregs[REG_CSGSFS] & 0xffff);
 		runtime_printf("fs     %X\n", (m->gregs[REG_CSGSFS] >> 16) & 0xffff);
 		runtime_printf("gs     %X\n", (m->gregs[REG_CSGSFS] >> 32) & 0xffff);
+#elif defined(REG_CS) && defined(REG_FS) && defined(REG_GS)
+		runtime_printf("cs     %X\n", m->gregs[REG_CS]);
+		runtime_printf("fs     %X\n", m->gregs[REG_FS]);
+		runtime_printf("gs     %X\n", m->gregs[REG_GS]);
+#endif
 	  }
-#elif defined(__i386__) && defined(__linux__)
+#elif defined(__i386__) && (defined(__linux__) || (defined(__sun__) && defined(__svr4__)))
 	{
 		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
 
@@ -422,6 +439,44 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
 		runtime_printf("sp     %X\n", m->sp);
 		runtime_printf("pc     %X\n", m->pc);
 		runtime_printf("pstate %X\n", m->pstate);
+	  }
+#elif defined(__sparc__) && (defined(__linux__) || (defined(__sun__) && defined(__svr4__)))
+	{
+		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
+
+#ifdef __sparcv9
+  #define REG_FMT "%X"
+#else
+  #define REG_FMT "%x"
+#endif
+
+#ifdef REG_CCR
+		runtime_printf("ccr  " REG_FMT "\n", m->gregs[REG_CCR]);
+#else
+		runtime_printf("psr  " REG_FMT "\n", m->gregs[REG_PSR]);
+#endif
+		runtime_printf("pc   " REG_FMT "\n", m->gregs[REG_PC]);
+		runtime_printf("npc  " REG_FMT "\n", m->gregs[REG_nPC]);
+		runtime_printf("y    " REG_FMT "\n", m->gregs[REG_Y]);
+		runtime_printf("g1   " REG_FMT "\n", m->gregs[REG_G1]);
+		runtime_printf("g2   " REG_FMT "\n", m->gregs[REG_G2]);
+		runtime_printf("g3   " REG_FMT "\n", m->gregs[REG_G3]);
+		runtime_printf("g4   " REG_FMT "\n", m->gregs[REG_G4]);
+		runtime_printf("g5   " REG_FMT "\n", m->gregs[REG_G5]);
+		runtime_printf("g6   " REG_FMT "\n", m->gregs[REG_G6]);
+		runtime_printf("g7   " REG_FMT "\n", m->gregs[REG_G7]);
+		runtime_printf("o0   " REG_FMT "\n", m->gregs[REG_O0]);
+		runtime_printf("o1   " REG_FMT "\n", m->gregs[REG_O1]);
+		runtime_printf("o2   " REG_FMT "\n", m->gregs[REG_O2]);
+		runtime_printf("o3   " REG_FMT "\n", m->gregs[REG_O3]);
+		runtime_printf("o4   " REG_FMT "\n", m->gregs[REG_O4]);
+		runtime_printf("o5   " REG_FMT "\n", m->gregs[REG_O5]);
+		runtime_printf("o6   " REG_FMT "\n", m->gregs[REG_O6]);
+		runtime_printf("o7   " REG_FMT "\n", m->gregs[REG_O7]);
+#if defined(REG_ASI) && defined(REG_FPRS) && !defined(__linux__)
+		runtime_printf("asi  " REG_FMT "\n", m->gregs[REG_ASI]);
+		runtime_printf("fprs " REG_FMT "\n", m->gregs[REG_FPRS]);
+#endif
 	  }
 #endif
 }
