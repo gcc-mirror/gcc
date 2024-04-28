@@ -1,3 +1,12 @@
+2024-04-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c
+	(build_v2_objc_method_fixup_call): Early exit for cases
+	where the sender or receiver are known to be in error.
+
 2024-04-23  Matt Jacobson  <mhjacobson@me.com>
 
 	Backported from master:

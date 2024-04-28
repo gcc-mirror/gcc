@@ -1,3 +1,26 @@
+2024-04-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+		    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/pie-2.c: Skip test on darwin.
+
+2024-04-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-10-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/debug/dwarf2/pr85550.C: Skip for Darwin.
+
+2024-04-27  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	Backported from master:
+	2023-09-29  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/debug/dwarf2/inline4.c: Ajdust regexp to match darwin
+	output.
+
 2024-04-25  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:
