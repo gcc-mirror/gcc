@@ -7417,6 +7417,7 @@ extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
 extern void set_instantiating_module (tree);
 extern void set_defining_module (tree);
 extern void maybe_key_decl (tree ctx, tree decl);
+extern void propagate_defining_module (tree decl, tree orig);
 
 extern void mangle_module (int m, bool include_partition);
 extern void mangle_module_fini ();
@@ -7650,6 +7651,7 @@ extern bool template_guide_p			(const_tree);
 extern bool builtin_guide_p			(const_tree);
 extern void store_explicit_specifier		(tree, tree);
 extern tree lookup_explicit_specifier		(tree);
+extern tree lookup_imported_hidden_friend	(tree);
 extern void walk_specializations		(bool,
 						 void (*)(bool, spec_entry *,
 							  void *),
