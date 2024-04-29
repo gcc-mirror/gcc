@@ -11093,6 +11093,16 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
   tree gnu_interface_offset
     = gnu_interface_tag ? byte_position (gnu_interface_tag) : NULL_TREE;
 
+  /* But we generate a call to the Thunk_Entity in the thunk.  */
+  tree gnu_target
+    = gnat_to_gnu_entity (Thunk_Entity (gnat_thunk), NULL_TREE, false);
+
+  /* If the target is local, then thunk and target must have the same context
+     because cgraph_node::expand_thunk can only forward the static chain.  */
+  if (DECL_STATIC_CHAIN (gnu_target)
+      && DECL_CONTEXT (gnu_thunk) != DECL_CONTEXT (gnu_target))
+    return false;
+
   /* There are three ways to retrieve the offset between the interface view
      and the base object.  Either the controlling type covers the interface
      type and the offset of the corresponding tag is fixed, in which case it
@@ -11111,6 +11121,15 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
       virtual_value = 0;
       virtual_offset = NULL_TREE;
       indirect_offset = 0;
+
+      /* Do not create a null thunk, instead make it an alias.  */
+      if (fixed_offset == 0)
+	{
+	  SET_DECL_ASSEMBLER_NAME (gnu_thunk, DECL_ASSEMBLER_NAME (gnu_target));
+	  (void) cgraph_node::get_create (gnu_target);
+	  (void) cgraph_node::create_alias (gnu_thunk, gnu_target);
+	  return true;
+	}
     }
   else if (!gnu_interface_offset
 	   && !Is_Variable_Size_Record (gnat_controlling_type))
@@ -11131,16 +11150,6 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
       virtual_offset = NULL_TREE;
       indirect_offset = (HOST_WIDE_INT) (POINTER_SIZE / BITS_PER_UNIT);
     }
-
-  /* But we generate a call to the Thunk_Entity in the thunk.  */
-  tree gnu_target
-    = gnat_to_gnu_entity (Thunk_Entity (gnat_thunk), NULL_TREE, false);
-
-  /* If the target is local, then thunk and target must have the same context
-     because cgraph_node::expand_thunk can only forward the static chain.  */
-  if (DECL_STATIC_CHAIN (gnu_target)
-      && DECL_CONTEXT (gnu_thunk) != DECL_CONTEXT (gnu_target))
-    return false;
 
   /* If the target returns by invisible reference and is external, apply the
      same transformation as Subprogram_Body_to_gnu here.  */
