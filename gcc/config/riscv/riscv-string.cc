@@ -637,18 +637,18 @@ riscv_block_move_straight (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
   delta = bits / BITS_PER_UNIT;
 
   /* Allocate a buffer for the temporary registers.  */
-  regs = XALLOCAVEC (rtx, length / delta);
+  regs = XALLOCAVEC (rtx, length / delta - 1);
 
   /* Load as many BITS-sized chunks as possible.  Use a normal load if
      the source has enough alignment, otherwise use left/right pairs.  */
-  for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
+  for (offset = 0, i = 0; offset + 2 * delta <= length; offset += delta, i++)
     {
       regs[i] = gen_reg_rtx (mode);
       riscv_emit_move (regs[i], adjust_address (src, mode, offset));
     }
 
   /* Copy the chunks to the destination.  */
-  for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
+  for (offset = 0, i = 0; offset + 2 * delta <= length; offset += delta, i++)
     riscv_emit_move (adjust_address (dest, mode, offset), regs[i]);
 
   /* Mop up any left-over bytes.  */
