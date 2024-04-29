@@ -2276,30 +2276,35 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
   if (modules_p ()
       && TREE_CODE (CP_DECL_CONTEXT (olddecl)) == NAMESPACE_DECL
-      && TREE_CODE (olddecl) != NAMESPACE_DECL
-      && !hiding)
+      && TREE_CODE (olddecl) != NAMESPACE_DECL)
     {
       if (!module_may_redeclare (olddecl, newdecl))
 	return error_mark_node;
 
-      tree not_tmpl = STRIP_TEMPLATE (olddecl);
-      if (DECL_LANG_SPECIFIC (not_tmpl)
-	  && DECL_MODULE_ATTACH_P (not_tmpl)
-	  /* Typedefs are not entities and so are OK to be redeclared
-	     as exported: see [module.interface]/p6.  */
-	  && TREE_CODE (olddecl) != TYPE_DECL)
+      if (!hiding)
 	{
-	  if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (newdecl))
-	      && !DECL_MODULE_EXPORT_P (not_tmpl))
+	  /* The old declaration should match the exportingness of the new
+	     declaration.  But hidden friend declarations just keep the
+	     exportingness of the old declaration; see CWG2588.  */
+	  tree not_tmpl = STRIP_TEMPLATE (olddecl);
+	  if (DECL_LANG_SPECIFIC (not_tmpl)
+	      && DECL_MODULE_ATTACH_P (not_tmpl)
+	      /* Typedefs are not entities and so are OK to be redeclared
+		 as exported: see [module.interface]/p6.  */
+	      && TREE_CODE (olddecl) != TYPE_DECL)
 	    {
-	      auto_diagnostic_group d;
-	      error ("conflicting exporting for declaration %qD", newdecl);
-	      inform (olddecl_loc,
-		      "previously declared here without exporting");
+	      if (DECL_MODULE_EXPORT_P (newdecl)
+		  && !DECL_MODULE_EXPORT_P (not_tmpl))
+		{
+		  auto_diagnostic_group d;
+		  error ("conflicting exporting for declaration %qD", newdecl);
+		  inform (olddecl_loc,
+			  "previously declared here without exporting");
+		}
 	    }
+	  else if (DECL_MODULE_EXPORT_P (newdecl))
+	    DECL_MODULE_EXPORT_P (not_tmpl) = true;
 	}
-      else if (DECL_MODULE_EXPORT_P (newdecl))
-	DECL_MODULE_EXPORT_P (not_tmpl) = true;
     }
 
   /* We have committed to returning OLDDECL at this point.  */
@@ -3320,6 +3325,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
      reclaiming memory. */
   if (flag_concepts)
     remove_constraints (newdecl);
+
+  /* And similarly for any module tracking data.  */
+  if (modules_p ())
+    remove_defining_module (newdecl);
 
   ggc_free (newdecl);
 

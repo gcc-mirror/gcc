@@ -4131,6 +4131,22 @@ mergeable_namespace_slots (tree ns, tree name, bool is_attached, tree *vec)
   return vslot;
 }
 
+/* Retrieve the bindings for an existing mergeable entity in namespace
+   NS slot NAME.  Returns NULL if no such bindings exists.  */
+
+static tree
+get_mergeable_namespace_binding (tree ns, tree name, bool is_attached)
+{
+  tree *mslot = find_namespace_slot (ns, name, false);
+  if (!mslot || !*mslot || TREE_CODE (*mslot) != BINDING_VECTOR)
+    return NULL_TREE;
+
+  tree *vslot = get_fixed_binding_slot
+    (mslot, name, is_attached ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL,
+     false);
+  return vslot ? *vslot : NULL_TREE;
+}
+
 /* DECL is a new mergeable namespace-scope decl.  Add it to the
    mergeable entities on GSLOT.  */
 
@@ -4451,6 +4467,43 @@ push_local_binding (tree id, tree decl, bool is_using)
   /* And put DECL on the list of things declared by the current
      binding level.  */
   add_decl_to_level (b, decl);
+}
+
+/* Lookup the FRIEND_TMPL within all merged module imports.  Used to dedup
+   instantiations of temploid hidden friends from imported modules.  */
+
+tree
+lookup_imported_hidden_friend (tree friend_tmpl)
+{
+  /* For a class-scope friend class it should have been found by regular
+     name lookup.  Otherwise we're looking in the current namespace.  */
+  gcc_checking_assert (CP_DECL_CONTEXT (friend_tmpl) == current_namespace);
+
+  tree inner = DECL_TEMPLATE_RESULT (friend_tmpl);
+  if (!DECL_LANG_SPECIFIC (inner)
+      || !DECL_MODULE_IMPORT_P (inner))
+    return NULL_TREE;
+
+  /* Imported temploid friends are not considered as attached to this
+     module for merging purposes.  */
+  tree bind = get_mergeable_namespace_binding (current_namespace,
+					       DECL_NAME (inner), false);
+  if (!bind)
+    return NULL_TREE;
+
+  /* We're only interested in declarations coming from the same module
+     of the friend class we're attempting to instantiate.  */
+  int m = get_originating_module (friend_tmpl);
+  gcc_assert (m != 0);
+
+  /* There should be at most one class template from the module we're
+     looking for, return it.  */
+  for (ovl_iterator iter (bind); iter; ++iter)
+    if (DECL_CLASS_TEMPLATE_P (*iter)
+	&& get_originating_module (*iter) == m)
+      return *iter;
+
+  return NULL_TREE;
 }
 
 

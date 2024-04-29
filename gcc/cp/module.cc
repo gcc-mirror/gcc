@@ -2727,6 +2727,12 @@ vec<tree, va_heap, vl_embed> *post_load_decls;
 typedef hash_map<tree, auto_vec<tree>> keyed_map_t;
 static keyed_map_t *keyed_table;
 
+/* Instantiations of temploid friends imported from another module
+   need to be attached to the same module as the temploid.  This maps
+   these decls to the temploid they are instantiated them, as there is
+   no other easy way to get this information.  */
+static GTY((cache)) decl_tree_cache_map *imported_temploid_friends;
+
 /********************************************************************/
 /* Tree streaming.   The tree streaming is very specific to the tree
    structures themselves.  A tag indicates the kind of tree being
@@ -7820,6 +7826,12 @@ trees_out::decl_value (tree decl, depset *dep)
 		  && DECL_MODULE_ATTACH_P (not_tmpl))
 		is_attached = true;
 
+	      /* But don't consider imported temploid friends as attached,
+		 since importers will need to merge this decl even if it was
+		 attached to a different module.  */
+	      if (imported_temploid_friends->get (decl))
+		is_attached = false;
+
 	      bits.b (is_attached);
 	    }
 	  bits.b (dep && dep->has_defn ());
@@ -7995,6 +8007,15 @@ trees_out::decl_value (tree decl, depset *dep)
 	    dump (dumper::MERGE)
 	      && dump ("Written %d[%u] attached decl %N", tag, ix, attached);
 	}
+    }
+
+  if (TREE_CODE (inner) == FUNCTION_DECL
+      || TREE_CODE (inner) == TYPE_DECL)
+    {
+      /* Write imported temploid friends so that importers can reconstruct
+	 this information on stream-in.  */
+      tree* slot = imported_temploid_friends->get (decl);
+      tree_node (slot ? *slot : NULL_TREE);
     }
 
   bool is_typedef = false;
@@ -8302,6 +8323,12 @@ trees_in::decl_value ()
 	    set_overrun ();
 	}
     }
+
+  if (TREE_CODE (inner) == FUNCTION_DECL
+      || TREE_CODE (inner) == TYPE_DECL)
+    if (tree owner = tree_node ())
+      if (is_new)
+	imported_temploid_friends->put (decl, owner);
 
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
   unsigned tdef_flags = 0;
@@ -18941,6 +18968,12 @@ get_originating_module_decl (tree decl)
 	  && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
 	decl = TYPE_NAME (DECL_CHAIN (decl));
 
+      /* An imported temploid friend is attached to the same module the
+	 befriending class was.  */
+      if (imported_temploid_friends)
+	if (tree *slot = imported_temploid_friends->get (decl))
+	  decl = *slot;
+
       int use;
       if (tree ti = node_template_info (decl, use))
 	{
@@ -19247,6 +19280,46 @@ maybe_key_decl (tree ctx, tree decl)
       DECL_MODULE_KEYED_DECLS_P (ctx) = true;
     }
   vec.safe_push (decl);
+}
+
+/* DECL is an instantiated friend that should be attached to the same
+   module that ORIG is.  */
+
+void
+propagate_defining_module (tree decl, tree orig)
+{
+  if (!modules_p ())
+    return;
+
+  tree not_tmpl = STRIP_TEMPLATE (orig);
+  if (DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_ATTACH_P (not_tmpl))
+    {
+      tree inner = STRIP_TEMPLATE (decl);
+      retrofit_lang_decl (inner);
+      DECL_MODULE_ATTACH_P (inner) = true;
+    }
+
+  if (DECL_LANG_SPECIFIC (not_tmpl) && DECL_MODULE_IMPORT_P (not_tmpl))
+    {
+      bool exists = imported_temploid_friends->put (decl, orig);
+
+      /* We should only be called if lookup for an existing decl
+	 failed, in which case there shouldn't already be an entry
+	 in the map.  */
+      gcc_assert (!exists);
+    }
+}
+
+/* DECL is being freed, clear data we don't need anymore.  */
+
+void
+remove_defining_module (tree decl)
+{
+  if (!modules_p ())
+    return;
+
+  if (imported_temploid_friends)
+    imported_temploid_friends->remove (decl);
 }
 
 /* Create the flat name string.  It is simplest to have it handy.  */
@@ -20462,6 +20535,8 @@ init_modules (cpp_reader *reader)
       pending_table = new pending_map_t (EXPERIMENT (1, 400));
       entity_map = new entity_map_t (EXPERIMENT (1, 400));
       vec_safe_reserve (entity_ary, EXPERIMENT (1, 400));
+      imported_temploid_friends
+	= decl_tree_cache_map::create_ggc (EXPERIMENT (1, 400));
     }
 
 #if CHECKING_P
