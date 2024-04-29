@@ -4535,7 +4535,7 @@ vect_recog_divmod_pattern (vec_info *vinfo,
   enum tree_code rhs_code;
   optab optab;
   tree q, cst;
-  int dummy_int, prec;
+  int prec;
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -4795,17 +4795,17 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	/* FIXME: Can transform this into oprnd0 >= oprnd1 ? 1 : 0.  */
 	return NULL;
 
-      /* Find a suitable multiplier and right shift count
-	 instead of multiplying with D.  */
-      mh = choose_multiplier (d, prec, prec, &ml, &post_shift, &dummy_int);
+      /* Find a suitable multiplier and right shift count instead of
+	 directly dividing by D.  */
+      mh = choose_multiplier (d, prec, prec, &ml, &post_shift);
 
-      /* If the suggested multiplier is more than SIZE bits, we can do better
+      /* If the suggested multiplier is more than PREC bits, we can do better
 	 for even divisors, using an initial right shift.  */
       if (mh != 0 && (d & 1) == 0)
 	{
 	  pre_shift = ctz_or_zero (d);
 	  mh = choose_multiplier (d >> pre_shift, prec, prec - pre_shift,
-				  &ml, &post_shift, &dummy_int);
+				  &ml, &post_shift);
 	  gcc_assert (!mh);
 	}
       else
@@ -4924,7 +4924,7 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	/* This case is not handled correctly below.  */
 	return NULL;
 
-      choose_multiplier (abs_d, prec, prec - 1, &ml, &post_shift, &dummy_int);
+      choose_multiplier (abs_d, prec, prec - 1, &ml, &post_shift);
       if (ml >= HOST_WIDE_INT_1U << (prec - 1))
 	{
 	  add = true;

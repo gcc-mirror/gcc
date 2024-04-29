@@ -694,12 +694,13 @@ extern rtx emit_store_flag_force (rtx, enum rtx_code, rtx, rtx,
 
 extern void canonicalize_comparison (machine_mode, enum rtx_code *, rtx *);
 
-/* Choose a minimal N + 1 bit approximation to 1/D that can be used to
-   replace division by D, and put the least significant N bits of the result
-   in *MULTIPLIER_PTR and return the most significant bit.  */
+/* Choose a minimal N + 1 bit approximation to 2**K / D that can be used to
+   replace division by D, put the least significant N bits of the result in
+   *MULTIPLIER_PTR, the value K - N in *POST_SHIFT_PTR, and return the most
+   significant bit.  */
 extern unsigned HOST_WIDE_INT choose_multiplier (unsigned HOST_WIDE_INT, int,
 						 int, unsigned HOST_WIDE_INT *,
-						 int *, int *);
+						 int *);
 
 #ifdef TREE_CODE
 extern rtx expand_variable_shift (enum tree_code, machine_mode,

@@ -551,7 +551,6 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   int *shift_temps = post_shifts + nunits;
   unsigned HOST_WIDE_INT *mulc = XALLOCAVEC (unsigned HOST_WIDE_INT, nunits);
   int prec = TYPE_PRECISION (TREE_TYPE (type));
-  int dummy_int;
   unsigned int i;
   signop sign_p = TYPE_SIGN (TREE_TYPE (type));
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (TYPE_MODE (TREE_TYPE (type)));
@@ -609,11 +608,11 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      continue;
 	    }
 
-	  /* Find a suitable multiplier and right shift count
-	     instead of multiplying with D.  */
-	  mh = choose_multiplier (d, prec, prec, &ml, &post_shift, &dummy_int);
+	  /* Find a suitable multiplier and right shift count instead of
+	     directly dividing by D.  */
+	  mh = choose_multiplier (d, prec, prec, &ml, &post_shift);
 
-	  /* If the suggested multiplier is more than SIZE bits, we can
+	  /* If the suggested multiplier is more than PREC bits, we can
 	     do better for even divisors, using an initial right shift.  */
 	  if ((mh != 0 && (d & 1) == 0)
 	      || (!has_vector_shift && pre_shift != -1))
@@ -655,7 +654,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 		    }
 		  mh = choose_multiplier (d >> pre_shift, prec,
 					  prec - pre_shift,
-					  &ml, &post_shift, &dummy_int);
+					  &ml, &post_shift);
 		  gcc_assert (!mh);
 		  pre_shifts[i] = pre_shift;
 		}
@@ -699,7 +698,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	    }
 
 	  choose_multiplier (abs_d, prec, prec - 1, &ml,
-			     &post_shift, &dummy_int);
+			     &post_shift);
 	  if (ml >= HOST_WIDE_INT_1U << (prec - 1))
 	    {
 	      this_mode = 4 + (d < 0);
