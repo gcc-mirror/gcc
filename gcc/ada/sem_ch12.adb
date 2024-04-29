@@ -1402,8 +1402,8 @@ package body Sem_Ch12 is
                if No (Formal) then
                   Error_Msg_Sloc := Sloc (Node (Elem));
                   Error_Msg_NE
-                    ("?instance uses predefined operation, not primitive "
-                     & "operation&#", Actual, Node (Elem));
+                    ("?instance uses predefined, not primitive, operator&#",
+                     Actual, Node (Elem));
                end if;
             end if;
 
@@ -1490,6 +1490,16 @@ package body Sem_Ch12 is
          --  Case of positional parameter corresponding to current formal
 
          elsif No (Selector_Name (Actual)) then
+            --  A "<>" without "name =>" is illegal syntax
+
+            if Box_Present (Actual) then
+               if False then -- ???
+                  --  Disable this for now, because we have various code that
+                  --  needs to be updated.
+                  Error_Msg_N ("box requires named notation", Actual);
+               end if;
+            end if;
+
             Found_Assoc := Actual;
             Act         := Explicit_Generic_Actual_Parameter (Actual);
             Num_Matched := Num_Matched + 1;
@@ -2208,22 +2218,12 @@ package body Sem_Ch12 is
                      end Explicit_Freeze_Check;
                   end if;
 
-               --  For use type and use package appearing in the generic part,
-               --  we have already copied them, so we can just move them where
-               --  they belong (we mustn't recopy them since this would mess up
-               --  the Sloc values).
+               --  Copy use clauses to where they belong
 
                when N_Use_Package_Clause
                   | N_Use_Type_Clause
                =>
-                  if Nkind (Original_Node (I_Node)) =
-                                     N_Formal_Package_Declaration
-                  then
-                     Append (New_Copy_Tree (Formal), Assoc_List);
-                  else
-                     Remove (Formal);
-                     Append (Formal, Assoc_List);
-                  end if;
+                  Append (New_Copy_Tree (Formal), Assoc_List);
 
                when others =>
                   raise Program_Error;
