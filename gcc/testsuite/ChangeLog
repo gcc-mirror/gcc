@@ -1,3 +1,55 @@
+2024-04-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/zero_extendkmask.c: New file.
+
+2024-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/cdce3.c: Require sqrt_insn effective target.
+	* gcc.target/powerpc/pr46728-10.c: Likewise.  Drop darwin
+	explicit skipping.
+	* gcc.target/powerpc/pr46728-11.c: Likewise.  Likewise.
+	* gcc.target/powerpc/pr46728-13.c: Likewise.  Likewise.
+	* gcc.target/powerpc/pr46728-14.c: Likewise.  Likewise.
+
+2024-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/58684
+	* gcc.dg/torture/pr91323.c: Expect execution fail on
+	powerpc*-*-*.
+
+2024-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/powerpc/vec-mul.c: Run on target vsx_hw, just
+	compile otherwise.
+
+2024-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-31a.c: Disable
+	ldist.
+
+2024-04-28  Olivier Hainque  <hainque@adacore.com>
+
+	* gcc.target/powerpc/swaps-p8-20.c: Change powerpc_altivec_ok
+	require-effective-target test into vmx_hw.
+	* gcc.target/powerpc/vsx-vector-5.c: Change powerpc_vsx_ok
+	require-effective-target test into vsx_hw.
+
+2024-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/powerpc/pr106680-1.c: Error on vxworks too.
+	* gcc.target/powerpc/pr106680-2.c: Likewise.
+	* gcc.target/powerpc/pr106680-3.c: Likewise.
+
+2024-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp (check_vect_support_and_set_flags):
+	Decay to link rather than compile.
+
+2024-04-28  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/95782
+	* g++.target/s390/pr95782.C: New test.
+
 2024-04-27  Xi Ruoyao  <xry111@xry111.site>
 
 	PR target/114861

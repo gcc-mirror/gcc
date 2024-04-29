@@ -1,3 +1,13 @@
+2024-04-28  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Checked for tlhelp32.h
+	* pecoff.c: Include <tlhelp32.h> if available.
+	(backtrace_initialize): Use tlhelp32 api for a snapshot to
+	detect loaded modules.
+	(coff_add): New argument for the module handle of the file,
+	to get the base address.
+	* configure, config.h.in: Regenerate.
+
 2024-04-23  Ian Lance Taylor  <iant@golang.org>
 
 	* configure.ac: Test --compress-debug-sections=zlib-gnu and

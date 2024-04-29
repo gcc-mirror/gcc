@@ -1,3 +1,212 @@
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-ccp.cc (ccp_finalize): Normalize before calling
+	set_bitmask.
+	* value-range.cc (irange::intersect_bitmask): Calculate changed
+	irange_bitmask bits on our own.
+	(irange::union_bitmask): Same.
+	(irange_bitmask::verify_mask): Verify that bits are normalized.
+	* value-range.h (irange_bitmask::union_): Do not normalize.
+	Remove return value.
+	(irange_bitmask::intersect): Same.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-ptr.cc (pointer_plus_operator::wi_fold): Use method
+	range setters instead of out of line functions.
+	(pointer_min_max_operator::wi_fold): Same.
+	(pointer_and_operator::wi_fold): Same.
+	(pointer_or_operator::wi_fold): Same.
+	* range-op.cc (operator_negate::fold_range): Same.
+	(operator_addr_expr::fold_range): Same.
+	(range_op_cast_tests): Same.
+	* range.cc (range_zero): Remove.
+	(range_nonzero): Remove.
+	* range.h (range_zero): Remove.
+	(range_nonzero): Remove.
+	* value-range.cc (range_tests_misc): Use method instead of out of
+	line function.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-pretty-print.cc (print_int_bound): New.
+	(print_irange_bitmasks): New.
+	(vrange_printer::print_irange_bound): Remove.
+	(vrange_printer::print_irange_bitmasks): Remove.
+	* value-range-pretty-print.h: Remove print_irange_bitmasks and
+	print_irange_bound
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (range_includes_zero_p): Accept vrange.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-loop-split.cc (split_at_bb_p): Make int_range a Value_Range.
+	* tree-ssa-strlen.cc (get_range): Same.
+	* value-query.cc (range_query::get_tree_range):  Handle both
+	integers and pointers.
+	* vr-values.cc (simplify_using_ranges::fold_cond_with_ops): Make
+	r0 and r1 Value_Range's.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (get_bitmask_from_range): Move out of irange class.
+	(irange::get_bitmask): Call function instead of internal method.
+	* value-range.h (class irange): Remove get_bitmask_from_range.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (get_legacy_range): Make static and add another
+	version of get_legacy_range that takes a vrange.
+	* value-range.h (class irange): Remove unnecessary friendship with
+	get_legacy_range.
+	(get_legacy_range): Accept a vrange.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.cc (irange_storage::set_irange): Move
+	verification code from here...
+	(vrange_storage::set_vrange): ...to here.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc (cfn_clz::fold_range): Change
+	range_includes_zero_p argument to a reference.
+	(cfn_ctz::fold_range): Same.
+	* range-op.cc (operator_plus::lhs_op1_relation): Same.
+	* value-range.h (range_includes_zero_p): Same.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.cc (simplify_using_ranges::fold_cond_with_ops): Remove
+	type from range_true and range_false.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.h: Remove friends.
+	* value-range.cc (gt_ggc_mx): Remove.
+	(gt_pch_nx): Remove.
+	* value-range.h (class vrange): Remove GTY markers.
+	(class irange): Same.
+	(class int_range): Same.
+	(class frange): Same.
+	(gt_ggc_mx): Remove.
+	(gt_pch_nx): Remove.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (propagate_bits_across_jump_function): Access bitmask
+	through base class.
+	(ipcp_store_vr_results): Same.
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Same.
+	(ipcp_get_parm_bits): Same.
+	(ipcp_update_vr): Same.
+	* range-op-mixed.h (update_known_bitmask): Change argument to vrange.
+	* range-op.cc (update_known_bitmask): Same.
+	* value-range.cc (vrange::update_bitmask):  New.
+	(irange::set_nonzero_bits): Move to vrange class.
+	(irange::get_nonzero_bits): Same.
+	* value-range.h (class vrange): Add update_bitmask, get_bitmask,
+	get_nonzero_bits, and set_nonzero_bits.
+	(class irange): Make bitmask methods virtual overrides.
+	(class Value_Range): Add get_bitmask and update_bitmask.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-loop-niter.cc (refine_value_range_using_guard): Convert
+	bound to wide_int.
+	* value-range.cc (Value_Range::lower_bound): Remove.
+	(Value_Range::upper_bound): Remove.
+	(unsupported_range::lbound): New.
+	(unsupported_range::ubound): New.
+	(frange::lbound): New.
+	(frange::ubound): New.
+	(irange::lbound): New.
+	(irange::ubound): New.
+	* value-range.h (class vrange): Add lbound() and ubound().
+	(class irange): Same.
+	(class frange): Same.
+	(class unsupported_range): Same.
+	(class Value_Range): Rename lower_bound and upper_bound to lbound
+	and ubound respectively.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-warn-access.cc (check_nul_terminated_array): Make Value_Range an int_range.
+	(memmodel_to_uhwi): Same
+	* tree-ssa-loop-niter.cc (refine_value_range_using_guard): Same.
+	(determine_value_range): Same.
+	(infer_loop_bounds_from_signedness): Same.
+	(scev_var_range_cant_overflow): Same.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (vrange::~vrange): New.
+	(int_range::~int_range): Make final override.
+
+2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (unsupported_range::accept): Move down.
+	(vrange::contains_p):  Rename to...
+	(unsupported_range::contains_p): ...this.
+	(vrange::singleton_p): Rename to...
+	(unsupported_range::singleton_p): ...this.
+	(vrange::set): Rename to...
+	(unsupported_range::set): ...this.
+	(vrange::type): Rename to...
+	(unsupported_range::type): ...this.
+	(vrange::supports_type_p): Rename to...
+	(unsupported_range::supports_type_p): ...this.
+	(vrange::set_undefined): Rename to...
+	(unsupported_range::set_undefined): ...this.
+	(vrange::set_varying): Rename to...
+	(unsupported_range::set_varying): ...this.
+	(vrange::union_): Rename to...
+	(unsupported_range::union_): ...this.
+	(vrange::intersect): Rename to...
+	(unsupported_range::intersect): ...this.
+	(vrange::zero_p): Rename to...
+	(unsupported_range::zero_p): ...this.
+	(vrange::nonzero_p): Rename to...
+	(unsupported_range::nonzero_p): ...this.
+	(vrange::set_nonzero): Rename to...
+	(unsupported_range::set_nonzero): ...this.
+	(vrange::set_zero): Rename to...
+	(unsupported_range::set_zero): ...this.
+	(vrange::set_nonnegative): Rename to...
+	(unsupported_range::set_nonnegative): ...this.
+	(vrange::fits_p): Rename to...
+	(unsupported_range::fits_p): ...this.
+	(unsupported_range::operator=): New.
+	(frange::fits_p): New.
+	* value-range.h (class vrange): Make an abstract class.
+	(class unsupported_range): Declare override methods.
+
+2024-04-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	PR target/112959
+	* doc/install.texi (Specific) <*-*-freebsd*>: Remove references to
+	FreeBSD 7 and older.
+
+2024-04-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/contrib.texi: Update David Binderman's entry.
+
+2024-04-28  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md: (zero_extendsidi2): Adjust
+	alternative *k to ?k.
+	(zero_extend<mode>di2): Ditto.
+	(*zero_extend<mode>si2): Ditto.
+	(*zero_extendqihi2): Ditto.
+
+2024-04-28  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/95782
+	* config/s390/s390-c.cc (s390_macro_to_expand): Avoid empty identifier.
+
 2024-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR target/113822
