@@ -1886,25 +1886,28 @@ namespace __format
 	if (__grp.empty() && __point == __dot)
 	  return __lstr; // Locale uses '.' and no grouping.
 
-	size_t __d = __str.find(__dot);
-	size_t __e = min(__d, __str.find(__exp));
+	size_t __d = __str.find(__dot); // Index of radix character (if any).
+	size_t __e = min(__d, __str.find(__exp)); // First of radix or exponent
 	if (__e == __str.npos)
 	  __e = __str.size();
-	const size_t __r = __str.size() - __e;
+	const size_t __r = __str.size() - __e; // Length of remainder.
 	auto __overwrite = [&](_CharT* __p, size_t) {
+	  // Apply grouping to the digits before the radix or exponent.
 	  auto __end = std::__add_grouping(__p, __np.thousands_sep(),
 					   __grp.data(), __grp.size(),
 					   __str.data(), __str.data() + __e);
-	  if (__r)
+	  if (__r) // If there's a fractional part or exponent
 	    {
 	      if (__d != __str.npos)
 		{
-		  *__end = __point;
+		  *__end = __point; // Add the locale's radix character.
 		  ++__end;
 		  ++__e;
 		}
-	      if (__r > 1)
-		__end += __str.copy(__end, __str.npos, __e);
+	      const size_t __rlen = __str.size() - __e;
+	      // Append fractional digits and/or exponent:
+	      char_traits<_CharT>::copy(__end, __str.data() + __e, __rlen);
+	      __end += __rlen;
 	    }
 	  return (__end - __p);
 	};
