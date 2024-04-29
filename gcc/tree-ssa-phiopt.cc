@@ -1146,6 +1146,13 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
   if (code != NE_EXPR && code != EQ_EXPR)
     return 0;
 
+  /* Do not make conditional undefs unconditional.  */
+  if ((TREE_CODE (arg0) == SSA_NAME
+       && ssa_name_maybe_undef_p (arg0))
+      || (TREE_CODE (arg1) == SSA_NAME
+	  && ssa_name_maybe_undef_p (arg1)))
+    return false;
+
   /* If the type says honor signed zeros we cannot do this
      optimization.  */
   if (HONOR_SIGNED_ZEROS (arg1))
