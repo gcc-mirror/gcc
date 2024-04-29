@@ -11668,6 +11668,19 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
 	old_vptr = build_int_cst (TREE_TYPE (vptr), 0);
 
       size = gfc_vptr_size_get (rhs_vptr);
+
+      /* Take into account _len of unlimited polymorphic entities.
+	 TODO: handle class(*) allocatable function results on rhs.  */
+      if (UNLIMITED_POLY (rhs) && rhs->expr_type == EXPR_VARIABLE)
+	{
+	  tree len = trans_get_upoly_len (block, rhs);
+	  len = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
+				 fold_convert (size_type_node, len),
+				 size_one_node);
+	  size = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (size),
+				  size, fold_convert (TREE_TYPE (size), len));
+	}
+
       tmp = lse->expr;
       class_han = GFC_CLASS_TYPE_P (TREE_TYPE (tmp))
 	  ? gfc_class_data_get (tmp) : tmp;
