@@ -1,3 +1,65 @@
+2024-04-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/ssp-2.c: Ignore warning that
+	-multiply_defined is obsolete
+
+2024-04-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2024-02-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-ld-2.c: Ignore warning
+	that -bind_at_load is deprecated.
+
+2024-04-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-10-30  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.target/i386/pr105554.c: Require ifunc.
+
+2024-04-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2023-08-20  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR analyzer/104042
+	* gcc.dg/analyzer/analyzer.exp: Pass -D_FORTIFY_SOURCE=0 on Darwin.
+
+2024-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/asan-dg.exp: Do not apply color to asan output when
+	under test.
+
+2024-04-28  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	Backported from master:
+	2023-08-20  Francois-Xavier Coudert  <fxcoudert@gmail.com>
+
+	* gcc.dg/ipa/ipa-icf-38.c: Require alias support.
+
+2024-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/encode-10.mm: Remove unneeded '-lobjc' option addition.
+	* obj-c++.dg/encode-9.mm: Likewise.
+
+2024-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105522
+	* gcc.dg/pr105522.c: New file.
+
 2024-04-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:

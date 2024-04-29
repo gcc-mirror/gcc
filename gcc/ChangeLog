@@ -1,3 +1,46 @@
+2024-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c: Return true as the default libc avaiability.
+
+2024-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Handle weak crts
+	before other objects. (REAL_LIBGCC_SPEC): Remove weak crts
+	from here.  (DARWIN_WEAK_CRTS): New.
+
+2024-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_build_constant_cfstring): Prevent over-
+	alignment of CFString constants by setting DECL_USER_ALIGN.
+
+2024-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_objc1_section): Use the correct
+	meta-data version for constant strings.
+	(machopic_select_section): Assert if we fail to handle CFString
+	sections as Obejctive-C meta-data or drectly.
+
+2024-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-01-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105522
+	* config/darwin.c (machopic_select_section): Handle C and C++
+	CFStrings.
+	(darwin_rename_builtins): Move this out of the CFString code.
+	(darwin_libc_has_function): Likewise.
+	(darwin_build_constant_cfstring): Create an anonymous var to
+	hold each CFString.
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Handle constant
+	CFstrings.
+
 2024-04-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:
