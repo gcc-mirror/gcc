@@ -7262,11 +7262,12 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	{
 	  /* Use class_init_assign to initialize expr.  */
 	  gfc_code *ini;
-	  ini = gfc_get_code (EXEC_INIT_ASSIGN);
+	  ini = gfc_get_code (EXEC_ALLOCATE);
 	  ini->expr1 = gfc_find_and_cut_at_last_class_ref (expr, true);
 	  tmp = gfc_trans_class_init_assign (ini);
 	  gfc_free_statements (ini);
-	  gfc_add_expr_to_block (&block, tmp);
+	  if (tmp != NULL_TREE)
+	    gfc_add_expr_to_block (&block, tmp);
 	}
       else if ((init_expr = allocate_get_initializer (code, expr)))
 	{
