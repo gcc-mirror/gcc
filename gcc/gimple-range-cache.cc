@@ -957,11 +957,9 @@ ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
   m_workback.truncate (0);
   m_temporal = new temporal_cache;
+
   // If DOM info is available, spawn an oracle as well.
-  if (dom_info_available_p (CDI_DOMINATORS))
-      m_oracle = new dom_oracle ();
-    else
-      m_oracle = NULL;
+  create_relation_oracle ();
 
   unsigned x, lim = last_basic_block_for_fn (cfun);
   // Calculate outgoing range info upfront.  This will fully populate the
@@ -979,8 +977,7 @@ ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
 ranger_cache::~ranger_cache ()
 {
   delete m_update;
-  if (m_oracle)
-    delete m_oracle;
+  destroy_relation_oracle ();
   delete m_temporal;
   m_workback.release ();
 }

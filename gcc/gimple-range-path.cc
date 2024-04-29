@@ -60,6 +60,7 @@ path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
 path_range_query::~path_range_query ()
 {
   delete m_oracle;
+  m_oracle = NULL;
 }
 
 // Return TRUE if NAME is an exit dependency for the path.

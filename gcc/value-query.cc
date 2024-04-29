@@ -185,6 +185,8 @@ range_query::range_query ()
 
 range_query::~range_query ()
 {
+  if (m_oracle)
+    destroy_relation_oracle ();
 }
 
 // This routine will invoke the equivalent of range_of_expr on
@@ -436,54 +438,4 @@ global_range_query::range_of_expr (vrange &r, tree expr, gimple *stmt)
   gimple_range_global (r, expr);
 
   return true;
-}
-
-// Return any known relation between SSA1 and SSA2 before stmt S is executed.
-// If GET_RANGE is true, query the range of both operands first to ensure
-// the definitions have been processed and any relations have be created.
-
-relation_kind
-range_query::query_relation (gimple *s, tree ssa1, tree ssa2, bool get_range)
-{
-  if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
-    return VREL_VARYING;
-
-  // Ensure ssa1 and ssa2 have both been evaluated.
-  if (get_range)
-    {
-      Value_Range tmp1 (TREE_TYPE (ssa1));
-      Value_Range tmp2 (TREE_TYPE (ssa2));
-      range_of_expr (tmp1, ssa1, s);
-      range_of_expr (tmp2, ssa2, s);
-    }
-  return m_oracle->query_relation (gimple_bb (s), ssa1, ssa2);
-}
-
-// Return any known relation between SSA1 and SSA2 on edge E.
-// If GET_RANGE is true, query the range of both operands first to ensure
-// the definitions have been processed and any relations have be created.
-
-relation_kind
-range_query::query_relation (edge e, tree ssa1, tree ssa2, bool get_range)
-{
-  basic_block bb;
-  if (!m_oracle || TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
-    return VREL_VARYING;
-
-  // Use destination block if it has a single predecessor, and this picks
-  // up any relation on the edge.
-  // Otherwise choose the src edge and the result is the same as on-exit.
-  if (!single_pred_p (e->dest))
-    bb = e->src;
-  else
-    bb = e->dest;
-
-  // Ensure ssa1 and ssa2 have both been evaluated.
-  if (get_range)
-    {
-      Value_Range tmp (TREE_TYPE (ssa1));
-      range_on_edge (tmp, e, ssa1);
-      range_on_edge (tmp, e, ssa2);
-    }
-  return m_oracle->query_relation (bb, ssa1, ssa2);
 }

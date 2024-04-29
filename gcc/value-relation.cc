@@ -288,6 +288,39 @@ relation_oracle::valid_equivs (bitmap b, const_bitmap equivs, basic_block bb)
     }
 }
 
+// Return any known relation between SSA1 and SSA2 before stmt S is executed.
+// If GET_RANGE is true, query the range of both operands first to ensure
+// the definitions have been processed and any relations have be created.
+
+relation_kind
+relation_oracle::query_relation (gimple *s, tree ssa1, tree ssa2)
+{
+  if (TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
+    return VREL_VARYING;
+  return query_relation (gimple_bb (s), ssa1, ssa2);
+}
+
+// Return any known relation between SSA1 and SSA2 on edge E.
+// If GET_RANGE is true, query the range of both operands first to ensure
+// the definitions have been processed and any relations have be created.
+
+relation_kind
+relation_oracle::query_relation (edge e, tree ssa1, tree ssa2)
+{
+  basic_block bb;
+  if (TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
+    return VREL_VARYING;
+
+  // Use destination block if it has a single predecessor, and this picks
+  // up any relation on the edge.
+  // Otherwise choose the src edge and the result is the same as on-exit.
+  if (!single_pred_p (e->dest))
+    bb = e->src;
+  else
+    bb = e->dest;
+
+  return query_relation (bb, ssa1, ssa2);
+}
 // -------------------------------------------------------------------------
 
 // The very first element in the m_equiv chain is actually just a summary

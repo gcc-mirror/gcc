@@ -105,8 +105,10 @@ public:
 
   // register a relation between 2 ssa names in a basic block.
   virtual void register_relation (basic_block, relation_kind, tree, tree) = 0;
-  // Query for a relation between two ssa names in a basic block.
+  // Query if there is any relation between SSA1 and SSA2.
   virtual relation_kind query_relation (basic_block, tree, tree) = 0;
+  relation_kind query_relation (gimple *s, tree ssa1, tree ssa2);
+  relation_kind query_relation (edge e, tree ssa1, tree ssa2);
 
   relation_kind validate_relation (relation_kind, tree, tree);
   relation_kind validate_relation (relation_kind, vrange &, vrange &);

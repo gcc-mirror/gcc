@@ -67,6 +67,7 @@ gimple_ranger::gimple_ranger (bool use_imm_uses) :
 
 gimple_ranger::~gimple_ranger ()
 {
+  m_oracle = NULL;
   m_stmt_list.release ();
 }
 
