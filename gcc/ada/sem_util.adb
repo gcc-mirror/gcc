@@ -23907,27 +23907,6 @@ package body Sem_Util is
          elsif EWA_Inner_Scope_Level > 0 then
             return;
 
-         --  Nothing to do when the entity does not denote a construct that
-         --  may appear within an N_Expression_With_Actions node. Relaxing
-         --  this restriction leads to a performance penalty.
-
-         --  ??? this list is flaky, and may hide dormant bugs
-         --  Should functions be included???
-
-         --  Quantified expressions contain an entity declaration that must
-         --  always be replaced when the expander is active, even if it has
-         --  not been analyzed yet like e.g. in predicates.
-
-         elsif Ekind (Id) not in E_Block
-                               | E_Constant
-                               | E_Label
-                               | E_Procedure
-                               | E_Variable
-           and then not Is_Entity_Of_Quantified_Expression (Id)
-           and then not Is_Type (Id)
-         then
-            return;
-
          --  Nothing to do when the entity was already visited
 
          elsif NCT_Tables_In_Use
