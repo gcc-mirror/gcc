@@ -16075,13 +16075,37 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 
   /* Parse the identifier-list.  */
   auto_vec<cp_expr, 10> v;
+  bool attr_diagnosed = false;
+  int first_attr = -1;
+  unsigned int cnt = 0;
   if (!cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_SQUARE))
     while (true)
       {
 	cp_expr e = cp_parser_identifier (parser);
 	if (e.get_value () == error_mark_node)
 	  break;
+	tree attr = NULL_TREE;
+	if (cp_next_tokens_can_be_std_attribute_p (parser))
+	  {
+	    if (cxx_dialect >= cxx17 && cxx_dialect < cxx26 && !attr_diagnosed)
+	      {
+		pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+			 OPT_Wc__26_extensions,
+			 "structured bindings with attributed identifiers "
+			 "only available with %<-std=c++2c%> or "
+			 "%<-std=gnu++2c%>");
+		attr_diagnosed = true;
+	      }
+	    attr = cp_parser_std_attribute_spec_seq (parser);
+	    if (attr == error_mark_node)
+	      attr = NULL_TREE;
+	    if (attr && first_attr == -1)
+	      first_attr = v.length ();
+	  }
 	v.safe_push (e);
+	++cnt;
+	if (first_attr != -1)
+	  v.safe_push (attr);
 	if (!cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	  break;
 	cp_lexer_consume_token (parser->lexer);
@@ -16139,8 +16163,11 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	  declarator->id_loc = e.get_location ();
 	}
       tree elt_pushed_scope;
+      tree attr = NULL_TREE;
+      if (first_attr != -1 && i >= (unsigned) first_attr)
+	attr = v[++i].get_value ();
       tree decl2 = start_decl (declarator, &decl_specs, SD_DECOMPOSITION,
-			       NULL_TREE, NULL_TREE, &elt_pushed_scope);
+			       NULL_TREE, attr, &elt_pushed_scope);
       if (decl2 == error_mark_node)
 	decl = error_mark_node;
       else if (decl != error_mark_node && DECL_CHAIN (decl2) != prev)
@@ -16183,7 +16210,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 
       if (decl != error_mark_node)
 	{
-	  cp_decomp decomp = { prev, v.length () };
+	  cp_decomp decomp = { prev, cnt };
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
 			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT),
 			  &decomp);
@@ -16193,7 +16220,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
   else if (decl != error_mark_node)
     {
       *maybe_range_for_decl = prev;
-      cp_decomp decomp = { prev, v.length () };
+      cp_decomp decomp = { prev, cnt };
       /* Ensure DECL_VALUE_EXPR is created for all the decls but
 	 the underlying DECL.  */
       cp_finish_decomp (decl, &decomp);

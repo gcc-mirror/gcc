@@ -1044,7 +1044,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  /* Old macro, superseded by
 	     __cpp_nontype_template_parameter_auto.  */
 	  cpp_define (pfile, "__cpp_template_auto=201606L");
-	  cpp_define (pfile, "__cpp_structured_bindings=201606L");
+	  if (cxx_dialect <= cxx23)
+	    cpp_define (pfile, "__cpp_structured_bindings=201606L");
 	  cpp_define (pfile, "__cpp_variadic_using=201611L");
 	  cpp_define (pfile, "__cpp_guaranteed_copy_elision=201606L");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_auto=201606L");
@@ -1090,6 +1091,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_constexpr=202306L");
 	  cpp_define (pfile, "__cpp_static_assert=202306L");
 	  cpp_define (pfile, "__cpp_placeholder_variables=202306L");
+	  cpp_define (pfile, "__cpp_structured_bindings=202403L");
 	}
       if (flag_concepts)
         {

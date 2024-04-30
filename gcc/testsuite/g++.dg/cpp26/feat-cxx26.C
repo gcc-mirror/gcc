@@ -394,8 +394,8 @@
 
 #ifndef __cpp_structured_bindings
 #  error "__cpp_structured_bindings"
-#elif __cpp_structured_bindings != 201606
-#  error "__cpp_structured_bindings != 201606"
+#elif __cpp_structured_bindings != 202403
+#  error "__cpp_structured_bindings != 202403"
 #endif
 
 #ifndef __cpp_template_template_args
