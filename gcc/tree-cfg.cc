@@ -4842,7 +4842,7 @@ verify_gimple_assign (gassign *stmt)
       tree lhs = gimple_assign_lhs (stmt);
       if (is_gimple_reg (lhs))
 	{
-	  error ("nontemporal store's lhs cannot be a gimple register");
+	  error ("nontemporal store lhs cannot be a gimple register");
 	  debug_generic_stmt (lhs);
 	  return true;
 	}
