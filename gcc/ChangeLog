@@ -1,3 +1,13 @@
+2024-04-29  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2024-04-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/114885
+	* config/riscv/riscv.cc (riscv_legitimize_subreg_const_poly_move): New
+	func impl to take care of (const_int_poly:TI 8).
+	(riscv_legitimize_move): Handle subreg is const_int_poly,
+
 2024-04-27  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
