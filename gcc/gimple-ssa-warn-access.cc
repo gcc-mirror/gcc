@@ -330,7 +330,7 @@ check_nul_terminated_array (GimpleOrTree expr, tree src, tree bound)
   wide_int bndrng[2];
   if (bound)
     {
-      int_range<2> r (TREE_TYPE (bound));
+      int_range_max r (TREE_TYPE (bound));
 
       get_range_query (cfun)->range_of_expr (r, bound);
 
@@ -2816,7 +2816,7 @@ memmodel_to_uhwi (tree ord, gimple *stmt, unsigned HOST_WIDE_INT *cstval)
     {
       /* Use the range query to determine constant values in the absence
 	 of constant propagation (such as at -O0).  */
-      int_range<2> rng (TREE_TYPE (ord));
+      int_range_max rng (TREE_TYPE (ord));
       if (!get_range_query (cfun)->range_of_expr (rng, ord, stmt)
 	  || !rng.singleton_p (&ord))
 	return false;
