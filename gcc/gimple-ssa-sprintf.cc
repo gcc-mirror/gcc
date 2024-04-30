@@ -2170,8 +2170,7 @@ format_character (const directive &dir, tree arg, pointer_query &ptr_qry)
 
   res.knownrange = true;
 
-  if (dir.specifier == 'C'
-      || dir.modifier == FMT_LEN_l)
+  if (dir.specifier == 'C' || dir.modifier == FMT_LEN_l)
     {
       /* A wide character can result in as few as zero bytes.  */
       res.range.min = 0;
@@ -2182,10 +2181,13 @@ format_character (const directive &dir, tree arg, pointer_query &ptr_qry)
 	{
 	  if (min == 0 && max == 0)
 	    {
-	      /* The NUL wide character results in no bytes.  */
-	      res.range.max = 0;
-	      res.range.likely = 0;
-	      res.range.unlikely = 0;
+	      /* In strict reading of older ISO C or POSIX, this required
+		 no characters to be emitted.  ISO C23 changes that, so
+		 does POSIX, to match what has been implemented in most of the
+		 implementations, namely emitting a single NUL character.
+		 Let's use 0 for minimum and 1 for all the other values.  */
+	      res.range.max = 1;
+	      res.range.likely = res.range.unlikely = 1;
 	    }
 	  else if (min >= 0 && min < 128)
 	    {
@@ -2193,11 +2195,12 @@ format_character (const directive &dir, tree arg, pointer_query &ptr_qry)
 		 is not a 1-to-1 mapping to the source character set or
 		 if the source set is not ASCII.  */
 	      bool one_2_one_ascii
-		= (target_to_host_charmap[0] == 1 && target_to_host ('a') == 97);
+		= (target_to_host_charmap[0] == 1
+		   && target_to_host ('a') == 97);
 
 	      /* A wide character in the ASCII range most likely results
 		 in a single byte, and only unlikely in up to MB_LEN_MAX.  */
-	      res.range.max = one_2_one_ascii ? 1 : target_mb_len_max ();;
+	      res.range.max = one_2_one_ascii ? 1 : target_mb_len_max ();
 	      res.range.likely = 1;
 	      res.range.unlikely = target_mb_len_max ();
 	      res.mayfail = !one_2_one_ascii;
@@ -2228,7 +2231,6 @@ format_character (const directive &dir, tree arg, pointer_query &ptr_qry)
       /* A plain '%c' directive.  Its output is exactly 1.  */
       res.range.min = res.range.max = 1;
       res.range.likely = res.range.unlikely = 1;
-      res.knownrange = true;
     }
 
   /* Bump up the byte counters if WIDTH is greater.  */
