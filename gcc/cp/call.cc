@@ -13800,6 +13800,9 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
       tree name = mangle_ref_init_variable (decl);
       DECL_NAME (var) = name;
       SET_DECL_ASSEMBLER_NAME (var, name);
+
+      /* Set the context to make the variable mergeable in modules.  */
+      DECL_CONTEXT (var) = current_scope ();
     }
   else
     /* Create a new cleanup level if necessary.  */
