@@ -1149,15 +1149,6 @@ fetch_overflow_builtins (ArithmeticOrLogicalOperator op)
   rust_assert (abort);
   rust_assert (builtin);
 
-  // FIXME: ARTHUR: This is really ugly. The builtin context should take care of
-  // that
-  TREE_SIDE_EFFECTS (abort) = 1;
-  TREE_READONLY (abort) = 0;
-
-  // FIXME: ARTHUR: Same here. Remove these!
-  TREE_SIDE_EFFECTS (builtin) = 1;
-  TREE_READONLY (builtin) = 0;
-
   return {abort, builtin};
 }
 
@@ -1192,10 +1183,6 @@ arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
 
   auto abort_call = build_call_expr_loc (location, abort, 0);
 
-  // FIXME: ARTHUR: Is that needed?
-  TREE_SIDE_EFFECTS (abort_call) = 1;
-  TREE_READONLY (abort_call) = 0;
-
   auto builtin_call
     = build_call_expr_loc (location, builtin, 3, left, right, result_ref);
   auto overflow_check
@@ -1204,10 +1191,6 @@ arithmetic_or_logical_expression_checked (ArithmeticOrLogicalOperator op,
 
   auto if_block = build3_loc (location, COND_EXPR, void_type_node,
 			      overflow_check, abort_call, NULL_TREE);
-
-  // FIXME: ARTHUR: Needed?
-  TREE_SIDE_EFFECTS (if_block) = 1;
-  TREE_READONLY (if_block) = 0;
 
   return if_block;
 }
