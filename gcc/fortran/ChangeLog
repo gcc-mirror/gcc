@@ -1,3 +1,38 @@
+2024-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* expr.cc (check_transformational): Add SELECTED_LOGICAL_KIND
+	to allowed functions for Fortran 2023.
+	* gfortran.h (GFC_ISYM_SL_KIND): New.
+	* gfortran.texi: Mention SELECTED_LOGICAL_KIND.
+	* intrinsic.cc (add_functions): Add SELECTED_LOGICAL_KIND.
+	(gfc_intrinsic_func_interface): Allow it in initialization
+	expressions.
+	* intrinsic.h (gfc_simplify_selected_logical_kind): New proto.
+	* intrinsic.texi: Add SELECTED_LOGICAL_KIND.
+	* simplify.cc (gfc_simplify_selected_logical_kind): New
+	function.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Initialize
+	gfor_fndecl_sl_kind.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_sl_kind): New function.
+	(gfc_conv_intrinsic_function): Call it for GFC_ISYM_SL_KIND.
+	* trans.h (gfor_fndecl_sl_kind): New symbol.
+
+2024-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* iso-fortran-env.def: Add logical{8,16,32,64} and
+	real16 named constants.
+
+2024-04-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114959
+	* trans-expr.cc (gfc_trans_class_init_assign): Return NULL_TREE
+	if the default initializer has all NULL fields. Guard this
+	by a requirement that the code not be EXEC_INIT_ASSIGN and that
+	the object be an INTENT_OUT dummy.
+	* trans-stmt.cc (gfc_trans_allocate): Change the initializer
+	code for allocate with mold to EXEC_ALLOCATE to allow an
+	initializer with all NULL fields.
+
 2024-04-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/93678

@@ -1,3 +1,38 @@
+2024-04-29  demin.han  <demin.han@starfivetech.com>
+
+	PR target/114506
+	* config/riscv/riscv-vector-costs.cc (non_contiguous_memory_access_p): Rename
+	(need_additional_vector_vars_p): Rename and refine condition
+
+2024-04-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/114885
+	* config/riscv/riscv.cc (riscv_legitimize_subreg_const_poly_move): New
+	func impl to take care of (const_int_poly:TI 8).
+	(riscv_legitimize_move): Handle subreg is const_int_poly,
+
+2024-04-29  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc: Move ziccamoa, ziccif,
+	zicclsm, and ziccrse into riscv_zi_subext.
+	* config/riscv/riscv.opt: Define MASK_ZIC64B for
+	riscv_ziccmo_subext.
+
+2024-04-29  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/i6400.md (i6400_fpu_minmax): New
+	define_insn_reservation.
+	* config/mips/mips.h (ISA_HAS_FMIN_FMAX): Define new macro.
+	* config/mips/mips.md (UNSPEC_FMIN): New unspec.
+	(UNSPEC_FMAX): Same as above.
+	(type): Add fminmax.
+	(smin<mode>3): Generates MIN.fmt instructions.
+	(smax<mode>3): Generates MAX.fmt instructions.
+	(fmin<mode>3): Generates MIN.fmt instructions.
+	(fmax<mode>3): Generates MAX.fmt instructions.
+	* config/mips/p6600.md (p6600_fpu_fabs): Include fminmax
+	type.
+
 2024-04-28  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-ssa-ccp.cc (ccp_finalize): Normalize before calling

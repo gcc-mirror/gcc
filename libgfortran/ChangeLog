@@ -1,3 +1,8 @@
+2024-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.map: Add _gfortran_selected_logical_kind.
+	* intrinsics/selected_int_kind.f90: Add SELECTED_LOGICAL_KIND.
+
 2024-04-12  Ian McInerney  <i.mcinerney17@imperial.ac.uk>
 
 	* runtime/error.c (gf_vsnprintf): Fix compilation

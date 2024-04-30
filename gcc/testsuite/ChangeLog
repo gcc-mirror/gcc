@@ -1,3 +1,38 @@
+2024-04-29  Alexandre Oliva  <oliva@gnu.org>
+
+	Revert:
+	2024-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp (check_vect_support_and_set_flags):
+	Decay to link rather than compile.
+
+2024-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/selected_logical_kind_1.f90: New test.
+	* gfortran.dg/selected_logical_kind_2.f90: New test.
+	* gfortran.dg/selected_logical_kind_3.f90: New test.
+	* gfortran.dg/selected_logical_kind_4.f90: New test.
+
+2024-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gfortran.dg/iso_fortran_env_8.f90: New test.
+	* gfortran.dg/iso_fortran_env_9.f90: New test.
+
+2024-04-29  demin.han  <demin.han@starfivetech.com>
+
+	PR target/114506
+	* gcc.dg/vect/costmodel/riscv/rvv/pr114506.c: New test.
+
+2024-04-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114959
+	* gfortran.dg/pr114959.f90: New test.
+
+2024-04-29  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips-minmax1.c: New test for MIPS R6.
+	* gcc.target/mips/mips-minmax2.c: Same as above.
+
 2024-04-28  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/zero_extendkmask.c: New file.
