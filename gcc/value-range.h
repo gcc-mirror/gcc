@@ -684,6 +684,16 @@ typedef int_range<2> value_range;
 // This is an "infinite" precision range object for use in temporary
 // calculations for any of the handled types.  The object can be
 // transparently used as a vrange.
+//
+// Using any of the various constructors initializes the object
+// appropriately, but the default constructor is uninitialized and
+// must be initialized either with set_type() or by assigning into it.
+//
+// Assigning between incompatible types is allowed.  For example if a
+// temporary holds an irange, you can assign an frange into it, and
+// all the right things will happen.  However, before passing this
+// object to a function accepting a vrange, the correct type must be
+// set.  If it isn't, you can do so with set_type().
 
 class Value_Range
 {
@@ -693,6 +703,7 @@ public:
   Value_Range (tree type);
   Value_Range (tree, tree, value_range_kind kind = VR_RANGE);
   Value_Range (const Value_Range &);
+  ~Value_Range ();
   void set_type (tree type);
   vrange& operator= (const vrange &);
   Value_Range& operator= (const Value_Range &);
@@ -726,16 +737,29 @@ public:
   void accept (const vrange_visitor &v) const { m_vrange->accept (v); }
 private:
   void init (tree type);
-  unsupported_range m_unsupported;
+  void init (const vrange &);
+
   vrange *m_vrange;
-  int_range_max m_irange;
-  frange m_frange;
+  // The buffer must be at least the size of the largest range.
+  static_assert (sizeof (int_range_max) > sizeof (frange));
+  char m_buffer[sizeof (int_range_max)];
 };
+
+// The default constructor is uninitialized and must be initialized
+// with either set_type() or with an assignment into it.
 
 inline
 Value_Range::Value_Range ()
 {
-  m_vrange = &m_unsupported;
+  m_vrange = NULL;
+}
+
+// Copy constructor.
+
+inline
+Value_Range::Value_Range (const Value_Range &r)
+{
+  init (*r.m_vrange);
 }
 
 // Copy constructor from a vrange.
@@ -743,17 +767,20 @@ Value_Range::Value_Range ()
 inline
 Value_Range::Value_Range (const vrange &r)
 {
-  *this = r;
+  init (r);
 }
 
-// Copy constructor from a TYPE.  The range of the temporary is set to
-// UNDEFINED.
+// Construct an UNDEFINED range that can hold ranges of TYPE.  If TYPE
+// is not supported, default to unsupported_range.
 
 inline
 Value_Range::Value_Range (tree type)
 {
   init (type);
 }
+
+// Construct a range that can hold a range of [MIN, MAX], where MIN
+// and MAX are trees.
 
 inline
 Value_Range::Value_Range (tree min, tree max, value_range_kind kind)
@@ -763,13 +790,25 @@ Value_Range::Value_Range (tree min, tree max, value_range_kind kind)
 }
 
 inline
-Value_Range::Value_Range (const Value_Range &r)
+Value_Range::~Value_Range ()
 {
-  *this = *r.m_vrange;
+  if (m_vrange)
+    m_vrange->~vrange ();
 }
 
-// Initialize object so it is possible to store temporaries of TYPE
-// into it.
+// Initialize object to an UNDEFINED range that can hold ranges of
+// TYPE.  Clean-up memory if there was a previous object.
+
+inline void
+Value_Range::set_type (tree type)
+{
+  if (m_vrange)
+    m_vrange->~vrange ();
+  init (type);
+}
+
+// Initialize object to an UNDEFINED range that can hold ranges of
+// TYPE.
 
 inline void
 Value_Range::init (tree type)
@@ -777,71 +816,45 @@ Value_Range::init (tree type)
   gcc_checking_assert (TYPE_P (type));
 
   if (irange::supports_p (type))
-    m_vrange = &m_irange;
+    m_vrange = new (&m_buffer) int_range_max ();
   else if (frange::supports_p (type))
-    m_vrange = &m_frange;
+    m_vrange = new (&m_buffer) frange ();
   else
-    m_vrange = &m_unsupported;
+    m_vrange = new (&m_buffer) unsupported_range ();
 }
 
-// Set the temporary to allow storing temporaries of TYPE.  The range
-// of the temporary is set to UNDEFINED.
+// Initialize object with a copy of R.
 
 inline void
-Value_Range::set_type (tree type)
+Value_Range::init (const vrange &r)
 {
-  init (type);
-  m_vrange->set_undefined ();
+  if (is_a <irange> (r))
+    m_vrange = new (&m_buffer) int_range_max (as_a <irange> (r));
+  else if (is_a <frange> (r))
+    m_vrange = new (&m_buffer) frange (as_a <frange> (r));
+  else
+    m_vrange = new (&m_buffer) unsupported_range (as_a <unsupported_range> (r));
 }
 
-// Assignment operator for temporaries.  Copying incompatible types is
-// allowed.
+// Assignment operator.  Copying incompatible types is allowed.  That
+// is, assigning an frange to an object holding an irange does the
+// right thing.
 
 inline vrange &
 Value_Range::operator= (const vrange &r)
 {
-  if (is_a <irange> (r))
-    {
-      m_irange = as_a <irange> (r);
-      m_vrange = &m_irange;
-    }
-  else if (is_a <frange> (r))
-    {
-      m_frange = as_a <frange> (r);
-      m_vrange = &m_frange;
-    }
-  else if (is_a <unsupported_range> (r))
-    {
-      m_unsupported = as_a <unsupported_range> (r);
-      m_vrange = &m_unsupported;
-    }
-  else
-    gcc_unreachable ();
-
+  if (m_vrange)
+    m_vrange->~vrange ();
+  init (r);
   return *m_vrange;
 }
 
 inline Value_Range &
 Value_Range::operator= (const Value_Range &r)
 {
-  if (r.m_vrange == &r.m_irange)
-    {
-      m_irange = r.m_irange;
-      m_vrange = &m_irange;
-    }
-  else if (r.m_vrange == &r.m_frange)
-    {
-      m_frange = r.m_frange;
-      m_vrange = &m_frange;
-    }
-  else if (r.m_vrange == &r.m_unsupported)
-    {
-      m_unsupported = r.m_unsupported;
-      m_vrange = &m_unsupported;
-    }
-  else
-    gcc_unreachable ();
-
+  // No need to call the m_vrange destructor here, as we will do so in
+  // the assignment below.
+  *this = *r.m_vrange;
   return *this;
 }
 
