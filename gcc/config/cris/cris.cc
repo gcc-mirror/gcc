@@ -2061,7 +2061,7 @@ cris_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 	  }
       /* fall through */
 
-    case ZERO_EXTEND: case SIGN_EXTEND:
+    case ZERO_EXTEND: case SIGN_EXTEND: case POST_INC:
       *total = rtx_cost (XEXP (x, 0), VOIDmode, (enum rtx_code) outer_code,
 			 opno, speed);
       return true;
