@@ -8505,7 +8505,8 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
     {
       gcc_assert (code == IFN_COND_ADD || code == IFN_COND_SUB
 		  || code == IFN_COND_MUL || code == IFN_COND_AND
-		  || code == IFN_COND_IOR || code == IFN_COND_XOR);
+		  || code == IFN_COND_IOR || code == IFN_COND_XOR
+		  || code == IFN_COND_MIN || code == IFN_COND_MAX);
       gcc_assert (op.num_ops == 4
 		  && (op.ops[reduc_index]
 		      == op.ops[internal_fn_else_index ((internal_fn) code)]));
