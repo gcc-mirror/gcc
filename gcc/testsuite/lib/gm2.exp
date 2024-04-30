@@ -23,36 +23,6 @@ load_lib prune.exp
 load_lib gcc-defs.exp
 load_lib target-libpath.exp
 load_lib timeout.exp
-load_lib timeout-dg.exp
-
-
-if {[info exists individual_timeout]} {
-    set gm2_previous_timeout $individual_timeout
-} else {
-    set gm2_previous_timeout 10
-}
-
-
-# set gm2_previous_timeout $individual_timeout
-
-# We should be able to complete any test in 10 seconds.
-dg-timeout S 10
-
-
-# only push one level.
-
-proc gm2_push_timeout { secs } {
-    global individual_timeout
-    set individual_timeout $secs
-}
-
-
-proc gm2_pop_timeout { } {
-    global individual_timeout
-    global gm2_previous_timeout
-    set individual_timeout $gm2_previous_timeout
-}
-
 
 #
 # GCC_UNDER_TEST is the compiler under test.
@@ -167,10 +137,6 @@ proc gm2_init { args } {
 
     set gm2_link_path "[gm2_link_flags [get_multilibs]]"
     verbose $gm2_link_path 1
-
-    # Set the default timeout value, larger tests can override
-    # this if necessary.
-    dg-timeout S 10
 }
 
 

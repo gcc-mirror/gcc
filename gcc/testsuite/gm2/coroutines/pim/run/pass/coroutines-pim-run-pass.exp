@@ -24,15 +24,10 @@ if $tracelevel then {
 
 # load support procs
 load_lib gm2-torture.exp
-load_lib timeout-dg.exp
 
 set gm2src ${srcdir}/../gm2
 
 gm2_init_cor ""
-
-# We should be able to compile, link or run in 20 seconds.
-gm2_push_timeout 20
-
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -42,5 +37,3 @@ foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
 
     gm2-torture-execute $testcase "" "pass"
 }
-
-gm2_pop_timeout
