@@ -12498,6 +12498,8 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 	  for (; friend_classes; friend_classes = TREE_CHAIN (friend_classes))
 	    {
 	      tree f = TREE_VALUE (friend_classes);
+	      if (TREE_CODE (f) == TEMPLATE_DECL)
+		f = TREE_TYPE (f);
 
 	      if (CLASS_TYPE_P (f))
 		{
