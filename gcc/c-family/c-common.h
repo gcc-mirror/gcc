@@ -1407,12 +1407,12 @@ public:
 
   bool maybe_zero_length_array_section (tree);
 
-  tree expand_array_base (tree, vec<omp_addr_token *> &, tree, unsigned *,
-			  c_omp_region_type);
-  tree expand_component_selector (tree, vec<omp_addr_token *> &, tree,
-				  unsigned *, c_omp_region_type);
-  tree expand_map_clause (tree, tree, vec<omp_addr_token *> &,
-			  c_omp_region_type);
+  tree * expand_array_base (tree *, vec<omp_addr_token *> &, tree, unsigned *,
+			    c_omp_region_type);
+  tree * expand_component_selector (tree *, vec<omp_addr_token *> &, tree,
+				    unsigned *, c_omp_region_type);
+  tree * expand_map_clause (tree *, tree, vec<omp_addr_token *> &,
+			    c_omp_region_type);
 };
 
 enum c_omp_directive_kind {

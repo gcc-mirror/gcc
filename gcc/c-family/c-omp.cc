@@ -3642,11 +3642,12 @@ c_omp_address_inspector::maybe_zero_length_array_section (tree clause)
    expression types here, because e.g. you can't have an array of
    references.  */
 
-static tree
-omp_expand_access_chain (tree c, tree expr, vec<omp_addr_token *> &addr_tokens,
-			 unsigned *idx, c_omp_region_type ort)
+static tree *
+omp_expand_access_chain (tree *pc, tree expr,
+			 vec<omp_addr_token *> &addr_tokens, unsigned *idx, c_omp_region_type ort)
 {
   using namespace omp_addr_tokenizer;
+  tree c = *pc;
   location_t loc = OMP_CLAUSE_LOCATION (c);
   unsigned i = *idx;
   tree c2 = NULL_TREE;
@@ -3689,34 +3690,35 @@ omp_expand_access_chain (tree c, tree expr, vec<omp_addr_token *> &addr_tokens,
       break;
 
     default:
-      return error_mark_node;
+      return NULL;
     }
 
   if (c2)
     {
       OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
       OMP_CLAUSE_CHAIN (c) = c2;
-      c = c2;
+      pc = &OMP_CLAUSE_CHAIN (c);
     }
 
   *idx = ++i;
 
   if (i < addr_tokens.length ()
       && addr_tokens[i]->type == ACCESS_METHOD)
-    return omp_expand_access_chain (c, expr, addr_tokens, idx, ort);
+    return omp_expand_access_chain (pc, expr, addr_tokens, idx, ort);
 
-  return c;
+  return pc;
 }
 
 /* Translate "array_base_decl access_method" to OMP mapping clauses.  */
 
-tree
-c_omp_address_inspector::expand_array_base (tree c,
+tree *
+c_omp_address_inspector::expand_array_base (tree *pc,
 					    vec<omp_addr_token *> &addr_tokens,
 					    tree expr, unsigned *idx,
 					    c_omp_region_type ort)
 {
   using namespace omp_addr_tokenizer;
+  tree c = *pc;
   location_t loc = OMP_CLAUSE_LOCATION (c);
   int i = *idx;
   tree decl = addr_tokens[i + 1]->expr;
@@ -3742,7 +3744,7 @@ c_omp_address_inspector::expand_array_base (tree c,
     {
       i += 2;
       *idx = i;
-      return c;
+      return pc;
     }
 
   switch (addr_tokens[i + 1]->u.access_kind)
@@ -4019,7 +4021,7 @@ c_omp_address_inspector::expand_array_base (tree c,
 
     default:
       *idx = i + consume_tokens;
-      return error_mark_node;
+      return NULL;
     }
 
   if (c3)
@@ -4032,7 +4034,7 @@ c_omp_address_inspector::expand_array_base (tree c,
 	  OMP_CLAUSE_MAP_IMPLICIT (c2) = 1;
 	  OMP_CLAUSE_MAP_IMPLICIT (c3) = 1;
 	}
-      c = c3;
+      pc = &OMP_CLAUSE_CHAIN (c2);
     }
   else if (c2)
     {
@@ -4040,28 +4042,29 @@ c_omp_address_inspector::expand_array_base (tree c,
       OMP_CLAUSE_CHAIN (c) = c2;
       if (implicit_p)
 	OMP_CLAUSE_MAP_IMPLICIT (c2) = 1;
-      c = c2;
+      pc = &OMP_CLAUSE_CHAIN (c);
     }
 
   i += consume_tokens;
   *idx = i;
 
   if (chain_p && map_p)
-    return omp_expand_access_chain (c, expr, addr_tokens, idx, ort);
+    return omp_expand_access_chain (pc, expr, addr_tokens, idx, ort);
 
-  return c;
+  return pc;
 }
 
 /* Translate "component_selector access_method" to OMP mapping clauses.  */
 
-tree
-c_omp_address_inspector::expand_component_selector (tree c,
+tree *
+c_omp_address_inspector::expand_component_selector (tree *pc,
 						    vec<omp_addr_token *>
 						      &addr_tokens,
 						    tree expr, unsigned *idx,
 						    c_omp_region_type ort)
 {
   using namespace omp_addr_tokenizer;
+  tree c = *pc;
   location_t loc = OMP_CLAUSE_LOCATION (c);
   unsigned i = *idx;
   tree c2 = NULL_TREE, c3 = NULL_TREE;
@@ -4168,7 +4171,7 @@ c_omp_address_inspector::expand_component_selector (tree c,
 
     default:
       *idx = i + 2;
-      return error_mark_node;
+      return NULL;
     }
 
   if (c3)
@@ -4176,29 +4179,29 @@ c_omp_address_inspector::expand_component_selector (tree c,
       OMP_CLAUSE_CHAIN (c3) = OMP_CLAUSE_CHAIN (c);
       OMP_CLAUSE_CHAIN (c2) = c3;
       OMP_CLAUSE_CHAIN (c) = c2;
-      c = c3;
+      pc = &OMP_CLAUSE_CHAIN (c2);
     }
   else if (c2)
     {
       OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
       OMP_CLAUSE_CHAIN (c) = c2;
-      c = c2;
+      pc = &OMP_CLAUSE_CHAIN (c);
     }
 
   i += 2;
   *idx = i;
 
   if (chain_p && map_p)
-    return omp_expand_access_chain (c, expr, addr_tokens, idx, ort);
+    return omp_expand_access_chain (pc, expr, addr_tokens, idx, ort);
 
-  return c;
+  return pc;
 }
 
 /* Expand a map clause into a group of mapping clauses, creating nodes to
    attach/detach pointers and so forth as necessary.  */
 
-tree
-c_omp_address_inspector::expand_map_clause (tree c, tree expr,
+tree *
+c_omp_address_inspector::expand_map_clause (tree *pc, tree expr,
 					    vec<omp_addr_token *> &addr_tokens,
 					    c_omp_region_type ort)
 {
@@ -4214,18 +4217,18 @@ c_omp_address_inspector::expand_map_clause (tree c, tree expr,
 	  && addr_tokens[i]->u.structure_base_kind == BASE_DECL
 	  && addr_tokens[i + 1]->type == ACCESS_METHOD)
 	{
-	  c = expand_array_base (c, addr_tokens, expr, &i, ort);
-	  if (c == error_mark_node)
-	    return error_mark_node;
+	  pc = expand_array_base (pc, addr_tokens, expr, &i, ort);
+	  if (pc == NULL)
+	    return NULL;
 	}
       else if (remaining >= 2
 	       && addr_tokens[i]->type == ARRAY_BASE
 	       && addr_tokens[i]->u.structure_base_kind == BASE_ARBITRARY_EXPR
 	       && addr_tokens[i + 1]->type == ACCESS_METHOD)
 	{
-	  c = expand_array_base (c, addr_tokens, expr, &i, ort);
-	  if (c == error_mark_node)
-	    return error_mark_node;
+	  pc = expand_array_base (pc, addr_tokens, expr, &i, ort);
+	  if (pc == NULL)
+	    return NULL;
 	}
       else if (remaining >= 2
 	       && addr_tokens[i]->type == STRUCTURE_BASE
@@ -4252,18 +4255,18 @@ c_omp_address_inspector::expand_map_clause (tree c, tree expr,
 		i++;
 	      break;
 	    default:
-	      return error_mark_node;
+	      return NULL;
 	    }
 	}
       else if (remaining >= 2
 	       && addr_tokens[i]->type == COMPONENT_SELECTOR
 	       && addr_tokens[i + 1]->type == ACCESS_METHOD)
 	{
-	  c = expand_component_selector (c, addr_tokens, expr, &i, ort);
+	  pc = expand_component_selector (pc, addr_tokens, expr, &i, ort);
 	  /* We used 'expr', so these must have been the last tokens.  */
 	  gcc_assert (i == length);
-	  if (c == error_mark_node)
-	    return error_mark_node;
+	  if (pc == NULL)
+	    return NULL;
 	}
       else if (remaining >= 3
 	       && addr_tokens[i]->type == COMPONENT_SELECTOR
@@ -4281,9 +4284,9 @@ c_omp_address_inspector::expand_map_clause (tree c, tree expr,
     }
 
   if (i == length)
-    return c;
+    return pc;
 
-  return error_mark_node;
+  return NULL;
 }
 
 /* Given a mapper function MAPPER_FN, recursively scan through the map clauses
