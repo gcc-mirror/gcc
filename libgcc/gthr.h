@@ -142,7 +142,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #ifdef __GLIBC_PREREQ
-#if __GLIBC_PREREQ(2, 34)
+#if __GLIBC_PREREQ(2, 34) && !defined(__gnu_hurd__)
 /* glibc 2.34 and later has all pthread_* APIs inside of libc,
    no need to link separately with -lpthread.  */
 #undef GTHREAD_USE_WEAK
