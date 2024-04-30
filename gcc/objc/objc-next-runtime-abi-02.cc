@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TAG_MSGSENDSUPER_STRET	"objc_msgSendSuper2_stret"
 
 #define USE_FIXUP_BEFORE	100600
+#define WEAK_PROTOCOLS_AFTER	100700
 #define TAG_FIXUP		"_fixup"
 
 
@@ -1025,7 +1026,7 @@ next_runtime_abi_02_protocol_decl (tree p)
   /* static struct _objc_protocol _OBJC_Protocol_<mumble>; */
   snprintf (buf, BUFSIZE, "_OBJC_Protocol_%s",
 	    IDENTIFIER_POINTER (PROTOCOL_NAME (p)));
-  if (flag_next_runtime >= USE_FIXUP_BEFORE)
+  if (flag_next_runtime >= WEAK_PROTOCOLS_AFTER)
     {
       decl = create_hidden_decl (objc_v2_protocol_template, buf);
       DECL_WEAK (decl) = true;
@@ -2312,7 +2313,7 @@ build_v2_protocol_list_address_table (void)
       gcc_assert (ref->id && TREE_CODE (ref->id) == PROTOCOL_INTERFACE_TYPE);
       snprintf (buf, BUFSIZE, "_OBJC_LabelProtocol_%s",
 		IDENTIFIER_POINTER (PROTOCOL_NAME (ref->id)));
-      if (flag_next_runtime >= USE_FIXUP_BEFORE)
+      if (flag_next_runtime >= WEAK_PROTOCOLS_AFTER)
 	{
 	  decl = create_hidden_decl (objc_protocol_type, buf, /*is def=*/true);
 	  DECL_WEAK (decl) = true;
