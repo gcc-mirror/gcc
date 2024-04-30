@@ -4494,7 +4494,7 @@ vls_mode_valid_p (machine_mode vls_mode)
       All double floating point will be unchanged for ceil if it is
       greater than and equal to 4503599627370496.
  */
-static rtx
+rtx
 get_fp_rounding_coefficient (machine_mode inner_mode)
 {
   REAL_VALUE_TYPE real;

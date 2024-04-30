@@ -196,6 +196,13 @@
 
 (define_code_iterator bitmanip_rotate [rotate rotatert])
 
+;; These code iterators allow the signed and unsigned fix operations to use
+;; the same template.
+(define_code_iterator fix_ops [fix unsigned_fix])
+
+(define_code_attr fix_uns [(fix "fix") (unsigned_fix "fixuns")])
+
+
 ;; -------------------------------------------------------------------
 ;; Code Attributes
 ;; -------------------------------------------------------------------
@@ -311,11 +318,6 @@
 ;; -------------------------------------------------------------------
 ;; Int Iterators.
 ;; -------------------------------------------------------------------
-
-;; Iterator and attributes for floating-point rounding instructions.
-(define_int_iterator RINT [UNSPEC_LRINT UNSPEC_LROUND])
-(define_int_attr rint_pattern [(UNSPEC_LRINT "rint") (UNSPEC_LROUND "round")])
-(define_int_attr rint_rm [(UNSPEC_LRINT "dyn") (UNSPEC_LROUND "rmm")])
 
 ;; Iterator and attributes for quiet comparisons.
 (define_int_iterator QUIET_COMPARISON [UNSPEC_FLT_QUIET UNSPEC_FLE_QUIET])

@@ -64,7 +64,6 @@
   UNSPEC_ROUNDEVEN
   UNSPEC_NEARBYINT
   UNSPEC_LRINT
-  UNSPEC_LROUND
   UNSPEC_FMIN
   UNSPEC_FMAX
   UNSPEC_FMINM
@@ -1919,21 +1918,48 @@
 ;;
 ;;  ....................
 
-(define_insn "fix_trunc<ANYF:mode><GPR:mode>2"
-  [(set (match_operand:GPR      0 "register_operand" "=r")
-	(fix:GPR
+(define_expand "<fix_uns>_trunc<ANYF:mode>si2"
+  [(set (match_operand:SI      0 "register_operand" "=r")
+	(fix_ops:SI
 	    (match_operand:ANYF 1 "register_operand" " f")))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
-  "fcvt.<GPR:ifmt>.<ANYF:fmt> %0,%1,rtz"
+{
+  if (TARGET_64BIT)
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_<fix_uns>_trunc<ANYF:mode>si2_sext (t, operands[1]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
+
+(define_insn "*<fix_uns>_trunc<ANYF:mode>si2"
+  [(set (match_operand:SI      0 "register_operand" "=r")
+	(fix_ops:SI
+	    (match_operand:ANYF 1 "register_operand" " f")))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "fcvt.w<u>.<ANYF:fmt> %0,%1,rtz"
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
 
-(define_insn "fixuns_trunc<ANYF:mode><GPR:mode>2"
-  [(set (match_operand:GPR      0 "register_operand" "=r")
-	(unsigned_fix:GPR
+(define_insn "<fix_uns>_trunc<ANYF:mode>si2_sext"
+  [(set (match_operand:DI      0 "register_operand" "=r")
+  (sign_extend:DI (fix_ops:SI
+	    (match_operand:ANYF 1 "register_operand" " f"))))]
+  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "fcvt.w<u>.<ANYF:fmt> %0,%1,rtz"
+  [(set_attr "type" "fcvt_f2i")
+   (set_attr "mode" "<ANYF:MODE>")])
+
+(define_insn "<fix_uns>_trunc<ANYF:mode>di2"
+  [(set (match_operand:DI      0 "register_operand" "=r")
+	(fix_ops:DI
 	    (match_operand:ANYF 1 "register_operand" " f")))]
-  "TARGET_HARD_FLOAT  || TARGET_ZFINX"
-  "fcvt.<GPR:ifmt>u.<ANYF:fmt> %0,%1,rtz"
+  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "fcvt.l<u>.<ANYF:fmt> %0,%1,rtz"
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
 
@@ -1955,17 +1981,170 @@
   [(set_attr "type" "fcvt_i2f")
    (set_attr "mode" "<ANYF:MODE>")])
 
-(define_insn "l<rint_pattern><ANYF:mode><GPR:mode>2"
-  [(set (match_operand:GPR       0 "register_operand" "=r")
-	(unspec:GPR
+(define_expand "lrint<ANYF:mode>si2"
+  [(set (match_operand:SI       0 "register_operand" "=r")
+	(unspec:SI
 	    [(match_operand:ANYF 1 "register_operand" " f")]
-	    RINT))]
+	    UNSPEC_LRINT))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
-  "fcvt.<GPR:ifmt>.<ANYF:fmt> %0,%1,<rint_rm>"
+{
+  if (TARGET_64BIT)
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_lrint<ANYF:mode>si2_sext (t, operands[1]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
+
+(define_insn "*lrint<ANYF:mode>si2"
+  [(set (match_operand:SI       0 "register_operand" "=r")
+	(unspec:SI
+	    [(match_operand:ANYF 1 "register_operand" " f")]
+	    UNSPEC_LRINT))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "fcvt.w.<ANYF:fmt> %0,%1,dyn"
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
 
-(define_insn "<round_pattern><ANYF:mode>2"
+(define_insn "lrint<ANYF:mode>si2_sext"
+  [(set (match_operand:DI       0 "register_operand" "=r")
+  (sign_extend:DI (unspec:SI
+	    [(match_operand:ANYF 1 "register_operand" " f")]
+	    UNSPEC_LRINT)))]
+  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "fcvt.w.<ANYF:fmt> %0,%1,dyn"
+  [(set_attr "type" "fcvt_f2i")
+   (set_attr "mode" "<ANYF:MODE>")])
+
+(define_insn "lrint<ANYF:mode>di2"
+  [(set (match_operand:DI       0 "register_operand" "=r")
+	(unspec:DI
+	    [(match_operand:ANYF 1 "register_operand" " f")]
+	    UNSPEC_LRINT))]
+  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "fcvt.l.<ANYF:fmt> %0,%1,dyn"
+  [(set_attr "type" "fcvt_f2i")
+   (set_attr "mode" "<ANYF:MODE>")])
+
+(define_expand "l<round_pattern><ANYF:mode>si2"
+  [(set (match_operand:SI       0 "register_operand" "=r")
+	(unspec:SI
+	    [(match_operand:ANYF 1 "register_operand" " f")]
+    ROUND))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+{
+  if (TARGET_64BIT)
+    {
+      rtx t = gen_reg_rtx (DImode);
+      emit_insn (gen_l<round_pattern><ANYF:mode>si2_sext (t, operands[1]));
+      t = gen_lowpart (SImode, t);
+      SUBREG_PROMOTED_VAR_P (t) = 1;
+      SUBREG_PROMOTED_SET (t, SRP_SIGNED);
+      emit_move_insn (operands[0], t);
+      DONE;
+    }
+})
+
+(define_insn "*l<round_pattern><ANYF:mode>si2"
+  [(set (match_operand:SI       0 "register_operand" "=r")
+	(unspec:SI
+	    [(match_operand:ANYF 1 "register_operand" " f")]
+    ROUND))]
+  "TARGET_HARD_FLOAT || TARGET_ZFINX"
+  "fcvt.w.<ANYF:fmt> %0,%1,<round_rm>"
+  [(set_attr "type" "fcvt_f2i")
+   (set_attr "mode" "<ANYF:MODE>")])
+
+(define_insn "l<round_pattern><ANYF:mode>si2_sext"
+  [(set (match_operand:DI       0 "register_operand" "=r")
+	 (sign_extend:DI (unspec:SI
+	                     [(match_operand:ANYF 1 "register_operand" " f")]
+                      ROUND)))]
+  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "fcvt.w.<ANYF:fmt> %0,%1,<round_rm>"
+  [(set_attr "type" "fcvt_f2i")
+   (set_attr "mode" "<ANYF:MODE>")])
+
+(define_insn "l<round_pattern><ANYF:mode>di2"
+  [(set (match_operand:DI       0 "register_operand" "=r")
+	(unspec:DI
+	    [(match_operand:ANYF 1 "register_operand" " f")]
+    ROUND))]
+  "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
+  "fcvt.l.<ANYF:fmt> %0,%1,<round_rm>"
+  [(set_attr "type" "fcvt_f2i")
+   (set_attr "mode" "<ANYF:MODE>")])
+
+(define_expand "<round_pattern><ANYF:mode>2"
+  [(set (match_operand:ANYF     0 "register_operand" "=f")
+        (unspec:ANYF
+            [(match_operand:ANYF 1 "register_operand" " f")]
+        ROUND))]
+  "TARGET_HARD_FLOAT && (TARGET_ZFA
+                         || flag_fp_int_builtin_inexact || !flag_trapping_math)"
+{
+  if (TARGET_ZFA)
+    emit_insn (gen_<round_pattern><ANYF:mode>_zfa2 (operands[0],
+                                                    operands[1]));
+  else
+    {
+      rtx reg;
+      rtx label = gen_label_rtx ();
+      rtx end_label = gen_label_rtx ();
+      rtx abs_reg = gen_reg_rtx (<ANYF:MODE>mode);
+      rtx coeff_reg = gen_reg_rtx (<ANYF:MODE>mode);
+      rtx tmp_reg = gen_reg_rtx (<ANYF:MODE>mode);
+
+      riscv_emit_move (tmp_reg, operands[1]);
+      riscv_emit_move (coeff_reg,
+                       riscv_vector::get_fp_rounding_coefficient (<ANYF:MODE>mode));
+      emit_insn (gen_abs<ANYF:mode>2 (abs_reg, operands[1]));
+
+      riscv_expand_conditional_branch (label, LT, abs_reg, coeff_reg);
+
+      emit_jump_insn (gen_jump (end_label));
+      emit_barrier ();
+
+      emit_label (label);
+      switch (<ANYF:MODE>mode)
+        {
+        case SFmode:
+          reg = gen_reg_rtx (SImode);
+          emit_insn (gen_l<round_pattern>sfsi2 (reg, operands[1]));
+          emit_insn (gen_floatsisf2 (abs_reg, reg));
+          break;
+        case DFmode:
+          if (TARGET_64BIT)
+            {
+              reg = gen_reg_rtx (DImode);
+              emit_insn (gen_l<round_pattern>dfdi2 (reg, operands[1]));
+              emit_insn (gen_floatdidf2 (abs_reg, reg));
+            }
+          else
+            {
+              reg = gen_reg_rtx (SImode);
+              emit_insn (gen_l<round_pattern>dfsi2 (reg, operands[1]));
+              emit_insn (gen_floatsidf2 (abs_reg, reg));
+            }
+          break;
+        default:
+          gcc_unreachable ();
+        }
+
+      emit_insn (gen_copysign<ANYF:mode>3 (tmp_reg, abs_reg, operands[1]));
+
+      emit_label (end_label);
+      riscv_emit_move (operands[0], tmp_reg);
+    }
+
+  DONE;
+})
+
+(define_insn "<round_pattern><ANYF:mode>_zfa2"
   [(set (match_operand:ANYF     0 "register_operand" "=f")
 	(unspec:ANYF
 	    [(match_operand:ANYF 1 "register_operand" " f")]
