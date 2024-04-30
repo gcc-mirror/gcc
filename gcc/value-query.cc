@@ -178,15 +178,47 @@ range_query::dump (FILE *)
 {
 }
 
+// Default oracle for all range queries.  This contains no storage and thus
+// can be used anywhere.
+relation_oracle default_relation_oracle;
+
+// Create dominance based range oracle for the current query if dom info is
+// available.
+
+void
+range_query::create_relation_oracle ()
+{
+  gcc_checking_assert (this != &global_ranges);
+  gcc_checking_assert (m_oracle == &default_relation_oracle);
+
+  if (!dom_info_available_p (CDI_DOMINATORS))
+    return;
+  m_oracle = new dom_oracle ();
+  gcc_checking_assert (m_oracle);
+}
+
+// Destroy any relation oracle that was created.
+
+void
+range_query::destroy_relation_oracle ()
+{
+  // m_oracle can be NULL if a derived range_query class took care of
+  // disposing its own oracle.
+  if (m_oracle && m_oracle != &default_relation_oracle)
+    {
+      delete m_oracle;
+      m_oracle = &default_relation_oracle;
+    }
+}
+
 range_query::range_query ()
 {
-  m_oracle = NULL;
+  m_oracle = &default_relation_oracle;
 }
 
 range_query::~range_query ()
 {
-  if (m_oracle)
-    destroy_relation_oracle ();
+  destroy_relation_oracle ();
 }
 
 // This routine will invoke the equivalent of range_of_expr on

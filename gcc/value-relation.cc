@@ -208,66 +208,6 @@ static const tree_code relation_to_code [VREL_LAST] = {
   ERROR_MARK, ERROR_MARK, LT_EXPR, LE_EXPR, GT_EXPR, GE_EXPR, EQ_EXPR,
   NE_EXPR };
 
-// This routine validates that a relation can be applied to a specific set of
-// ranges.  In particular, floating point x == x may not be true if the NaN bit
-// is set in the range.  Symbolically the oracle will determine x == x,
-// but specific range instances may override this.
-// To verify, attempt to fold the relation using the supplied ranges.
-// One would expect [1,1] to be returned, anything else means there is something
-// in the range preventing the relation from applying.
-// If there is no mechanism to verify, assume the relation is acceptable.
-
-relation_kind
-relation_oracle::validate_relation (relation_kind rel, vrange &op1, vrange &op2)
-{
-  // If there is no mapping to a tree code, leave the relation as is.
-  tree_code code = relation_to_code [rel];
-  if (code == ERROR_MARK)
-    return rel;
-
-  // Undefined ranges cannot be checked either.
-  if (op1.undefined_p () || op2.undefined_p ())
-    return rel;
-
-  tree t1 = op1.type ();
-  tree t2 = op2.type ();
-
-  // If the range types are not compatible, no relation can exist.
-  if (!range_compatible_p (t1, t2))
-    return VREL_VARYING;
-
-  // If there is no handler, leave the relation as is.
-  range_op_handler handler (code);
-  if (!handler)
-    return rel;
-
-  // If the relation cannot be folded for any reason, leave as is.
-  Value_Range result (boolean_type_node);
-  if (!handler.fold_range (result, boolean_type_node, op1, op2,
-			   relation_trio::op1_op2 (rel)))
-    return rel;
-
-  // The expression op1 REL op2 using REL should fold to [1,1].
-  // Any other result means the relation is not verified to be true.
-  if (result.varying_p () || result.zero_p ())
-    return VREL_VARYING;
-
-  return rel;
-}
-
-// If no range is available, create a varying range for each SSA name and
-// verify.
-
-relation_kind
-relation_oracle::validate_relation (relation_kind rel, tree ssa1, tree ssa2)
-{
-  Value_Range op1, op2;
-  op1.set_varying (TREE_TYPE (ssa1));
-  op2.set_varying (TREE_TYPE (ssa2));
-
-  return validate_relation (rel, op1, op2);
-}
-
 // Given an equivalence set EQUIV, set all the bits in B that are still valid
 // members of EQUIV in basic block BB.
 
@@ -1058,8 +998,8 @@ dom_oracle::~dom_oracle ()
 // Register relation K between ssa_name OP1 and OP2 on STMT.
 
 void
-relation_oracle::register_stmt (gimple *stmt, relation_kind k, tree op1,
-				tree op2)
+relation_oracle::register_relation (gimple *stmt, relation_kind k, tree op1,
+				    tree op2)
 {
   gcc_checking_assert (TREE_CODE (op1) == SSA_NAME);
   gcc_checking_assert (TREE_CODE (op2) == SSA_NAME);
@@ -1106,7 +1046,7 @@ relation_oracle::register_stmt (gimple *stmt, relation_kind k, tree op1,
 // Register relation K between ssa_name OP1 and OP2 on edge E.
 
 void
-relation_oracle::register_edge (edge e, relation_kind k, tree op1, tree op2)
+relation_oracle::register_relation (edge e, relation_kind k, tree op1, tree op2)
 {
   gcc_checking_assert (TREE_CODE (op1) == SSA_NAME);
   gcc_checking_assert (TREE_CODE (op2) == SSA_NAME);

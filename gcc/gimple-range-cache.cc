@@ -1001,8 +1001,7 @@ ranger_cache::dump_bb (FILE *f, basic_block bb)
 {
   m_gori.gori_map::dump (f, bb, false);
   m_on_entry.dump (f, bb);
-  if (m_oracle)
-    m_oracle->dump (f, bb);
+  m_oracle->dump (f, bb);
 }
 
 // Get the global range for NAME, and return in R.  Return false if the
@@ -1437,62 +1436,59 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
       // See if any equivalences can refine it.
       // PR 109462, like 108139 below, a one way equivalence introduced
       // by a PHI node can also be through the definition side.  Disallow it.
-      if (m_oracle)
+      tree equiv_name;
+      relation_kind rel;
+      int prec = TYPE_PRECISION (type);
+      FOR_EACH_PARTIAL_AND_FULL_EQUIV (m_oracle, bb, name, equiv_name, rel)
 	{
-	  tree equiv_name;
-	  relation_kind rel;
-	  int prec = TYPE_PRECISION (type);
-	  FOR_EACH_PARTIAL_AND_FULL_EQUIV (m_oracle, bb, name, equiv_name, rel)
+	  basic_block equiv_bb = gimple_bb (SSA_NAME_DEF_STMT (equiv_name));
+
+	  // Ignore partial equivs that are smaller than this object.
+	  if (rel != VREL_EQ && prec > pe_to_bits (rel))
+	    continue;
+
+	  // Check if the equiv has any ranges calculated.
+	  if (!m_gori.has_edge_range_p (equiv_name))
+	    continue;
+
+	  // Check if the equiv definition dominates this block
+	  if (equiv_bb == bb ||
+	      (equiv_bb && !dominated_by_p (CDI_DOMINATORS, bb, equiv_bb)))
+	    continue;
+
+	  if (DEBUG_RANGE_CACHE)
 	    {
-	      basic_block equiv_bb = gimple_bb (SSA_NAME_DEF_STMT (equiv_name));
+	      if (rel == VREL_EQ)
+		fprintf (dump_file, "Checking Equivalence (");
+	      else
+		fprintf (dump_file, "Checking Partial equiv (");
+	      print_relation (dump_file, rel);
+	      fprintf (dump_file, ") ");
+	      print_generic_expr (dump_file, equiv_name, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+	  Value_Range equiv_range (TREE_TYPE (equiv_name));
+	  if (range_from_dom (equiv_range, equiv_name, bb, RFD_READ_ONLY))
+	    {
+	      if (rel != VREL_EQ)
+		range_cast (equiv_range, type);
+	      else
+		adjust_equivalence_range (equiv_range);
 
-	      // Ignore partial equivs that are smaller than this object.
-	      if (rel != VREL_EQ && prec > pe_to_bits (rel))
-		continue;
-
-	      // Check if the equiv has any ranges calculated.
-	      if (!m_gori.has_edge_range_p (equiv_name))
-		continue;
-
-	      // Check if the equiv definition dominates this block
-	      if (equiv_bb == bb ||
-		  (equiv_bb && !dominated_by_p (CDI_DOMINATORS, bb, equiv_bb)))
-		continue;
-
-	      if (DEBUG_RANGE_CACHE)
+	      if (block_result.intersect (equiv_range))
 		{
-		  if (rel == VREL_EQ)
-		    fprintf (dump_file, "Checking Equivalence (");
-		  else
-		    fprintf (dump_file, "Checking Partial equiv (");
-		  print_relation (dump_file, rel);
-		  fprintf (dump_file, ") ");
-		  print_generic_expr (dump_file, equiv_name, TDF_SLIM);
-		  fprintf (dump_file, "\n");
-		}
-	      Value_Range equiv_range (TREE_TYPE (equiv_name));
-	      if (range_from_dom (equiv_range, equiv_name, bb, RFD_READ_ONLY))
-		{
-		  if (rel != VREL_EQ)
-		    range_cast (equiv_range, type);
-		  else
-		    adjust_equivalence_range (equiv_range);
-
-		  if (block_result.intersect (equiv_range))
+		  if (DEBUG_RANGE_CACHE)
 		    {
-		      if (DEBUG_RANGE_CACHE)
-			{
-			  if (rel == VREL_EQ)
-			    fprintf (dump_file, "Equivalence update! :  ");
-			  else
-			    fprintf (dump_file, "Partial equiv update! :  ");
-			  print_generic_expr (dump_file, equiv_name, TDF_SLIM);
-			  fprintf (dump_file, " has range  :  ");
-			  equiv_range.dump (dump_file);
-			  fprintf (dump_file, " refining range to :");
-			  block_result.dump (dump_file);
-			  fprintf (dump_file, "\n");
-			}
+		      if (rel == VREL_EQ)
+			fprintf (dump_file, "Equivalence update! :  ");
+		      else
+			fprintf (dump_file, "Partial equiv update! :  ");
+		      print_generic_expr (dump_file, equiv_name, TDF_SLIM);
+		      fprintf (dump_file, " has range  :  ");
+		      equiv_range.dump (dump_file);
+		      fprintf (dump_file, " refining range to :");
+		      block_result.dump (dump_file);
+		      fprintf (dump_file, "\n");
 		    }
 		}
 	    }

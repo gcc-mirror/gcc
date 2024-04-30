@@ -44,7 +44,7 @@ path_range_query::path_range_query (gimple_ranger &ranger,
     m_ranger (ranger),
     m_resolve (resolve)
 {
-  m_oracle = new path_oracle (m_ranger.oracle ());
+  m_oracle = new path_oracle (&(m_ranger.oracle ()));
 
   reset_path (path, dependencies);
 }
@@ -54,7 +54,7 @@ path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
     m_ranger (ranger),
     m_resolve (resolve)
 {
-  m_oracle = new path_oracle (m_ranger.oracle ());
+  m_oracle = new path_oracle (&(m_ranger.oracle ()));
 }
 
 path_range_query::~path_range_query ()
@@ -563,7 +563,7 @@ path_range_query::compute_ranges (const bitmap_head *dependencies)
   if (m_resolve)
     {
       path_oracle *p = get_path_oracle ();
-      p->reset_path (m_ranger.oracle ());
+      p->reset_path (&(m_ranger.oracle ()));
     }
 
   if (DEBUG_SOLVER)
@@ -629,11 +629,6 @@ jt_fur_source::jt_fur_source (gimple *s,
   gcc_checking_assert (!path.is_empty ());
 
   m_entry = path[path.length () - 1];
-
-  if (dom_info_available_p (CDI_DOMINATORS))
-    m_oracle = query->oracle ();
-  else
-    m_oracle = NULL;
 }
 
 // Ignore statement and register relation on entry to path.
@@ -641,8 +636,7 @@ jt_fur_source::jt_fur_source (gimple *s,
 void
 jt_fur_source::register_relation (gimple *, relation_kind k, tree op1, tree op2)
 {
-  if (m_oracle)
-    m_oracle->register_relation (m_entry, k, op1, op2);
+  m_query->oracle ().register_relation (m_entry, k, op1, op2);
 }
 
 // Ignore edge and register relation on entry to path.
@@ -650,20 +644,16 @@ jt_fur_source::register_relation (gimple *, relation_kind k, tree op1, tree op2)
 void
 jt_fur_source::register_relation (edge, relation_kind k, tree op1, tree op2)
 {
-  if (m_oracle)
-    m_oracle->register_relation (m_entry, k, op1, op2);
+  m_query->oracle ().register_relation (m_entry, k, op1, op2);
 }
 
 relation_kind
 jt_fur_source::query_relation (tree op1, tree op2)
 {
-  if (!m_oracle)
-    return VREL_VARYING;
-
   if (TREE_CODE (op1) != SSA_NAME || TREE_CODE (op2) != SSA_NAME)
     return VREL_VARYING;
 
-  return m_oracle->query_relation (m_entry, op1, op2);
+  return m_query->oracle().query_relation (m_entry, op1, op2);
 }
 
 // Return the range of STMT at the end of the path being analyzed.

@@ -178,10 +178,7 @@ fur_stmt::get_phi_operand (vrange &r, tree expr, edge e)
 relation_kind
 fur_stmt::query_relation (tree op1, tree op2)
 {
-  relation_oracle *oracle = m_query->oracle ();
-  if (!oracle)
-    return VREL_VARYING;
-  return oracle->query_relation (m_stmt, op1, op2);
+  return m_query->oracle ().query_relation (m_stmt, op1, op2);
 }
 
 // Instantiate a stmt based fur_source with a GORI object.
@@ -192,10 +189,6 @@ fur_depend::fur_depend (gimple *s, gori_compute *gori, range_query *q)
 {
   gcc_checking_assert (gori);
   m_gori = gori;
-  // Set relations if there is an oracle in the range_query.
-  // This will enable registering of relationships as they are discovered.
-  m_oracle = q->oracle ();
-
 }
 
 // Register a relation on a stmt if there is an oracle.
@@ -203,8 +196,7 @@ fur_depend::fur_depend (gimple *s, gori_compute *gori, range_query *q)
 void
 fur_depend::register_relation (gimple *s, relation_kind k, tree op1, tree op2)
 {
-  if (m_oracle)
-    m_oracle->register_stmt (s, k, op1, op2);
+  m_query->oracle ().register_relation (s, k, op1, op2);
 }
 
 // Register a relation on an edge if there is an oracle.
@@ -212,8 +204,7 @@ fur_depend::register_relation (gimple *s, relation_kind k, tree op1, tree op2)
 void
 fur_depend::register_relation (edge e, relation_kind k, tree op1, tree op2)
 {
-  if (m_oracle)
-    m_oracle->register_edge (e, k, op1, op2);
+  m_query->oracle ().register_relation (e, k, op1, op2);
 }
 
 // This version of fur_source will pick a range up from a list of ranges
@@ -863,7 +854,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
   tree single_arg = NULL_TREE;
   bool seen_arg = false;
 
-  relation_oracle *oracle = src.query()->oracle ();
+  relation_oracle *oracle = &(src.query()->oracle ());
   // Start with an empty range, unioning in each argument's range.
   r.set_undefined ();
   for (x = 0; x < gimple_phi_num_args (phi); x++)
@@ -884,8 +875,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	  // Likewise, if the incoming PHI argument is equivalent to this
 	  // PHI definition, it provides no new info.  Accumulate these ranges
 	  // in case all arguments are equivalences.
-	  if (oracle
-	      && oracle->query_relation (e, arg, phi_def) == VREL_EQ)
+	  if (oracle->query_relation (e, arg, phi_def) == VREL_EQ)
 	    equiv_range.union_(arg_range);
 	  else
 	    r.union_ (arg_range);
@@ -1135,7 +1125,7 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
 					vrange &op2)
 {
   // No queries or already folded.
-  if (!src.gori () || !src.query ()->oracle () || lhs_range.singleton_p ())
+  if (!src.gori () || lhs_range.singleton_p ())
     return;
 
   // Only care about AND and OR expressions.

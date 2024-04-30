@@ -75,12 +75,12 @@ public:
   virtual bool range_on_entry (vrange &r, basic_block bb, tree expr);
   virtual bool range_on_exit (vrange &r, basic_block bb, tree expr);
 
-  inline relation_oracle *oracle () const  { return m_oracle; }
+  inline class relation_oracle &oracle () const  { return *m_oracle; }
+  void create_relation_oracle ();
+  void destroy_relation_oracle ();
 
   virtual void dump (FILE *);
 
-  void create_relation_oracle ();
-  void destroy_relation_oracle ();
 protected:
   bool get_tree_range (vrange &v, tree expr, gimple *stmt,
 		       basic_block bbentry = NULL, basic_block bbexit = NULL);
@@ -118,29 +118,4 @@ get_range_query (const struct function *fun)
 // Query the global range of NAME in function F.  Default to cfun.
 extern void gimple_range_global (vrange &v, tree name,
 				 struct function *f = cfun);
-
-// Create dominance based range oracle for the current query if dom info is
-// available.
-
-inline void
-range_query::create_relation_oracle ()
-{
-  if (!dom_info_available_p (CDI_DOMINATORS))
-    return;
-  gcc_checking_assert (m_oracle == NULL);
-  m_oracle = new dom_oracle ();
-}
-
-// Destroy any relation oracle that was created.
-
-inline void
-range_query::destroy_relation_oracle ()
-{
-  if (m_oracle != NULL)
-    {
-      delete m_oracle;
-      m_oracle = NULL;
-    }
-}
-
 #endif // GCC_QUERY_H

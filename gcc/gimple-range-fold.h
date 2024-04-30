@@ -138,8 +138,6 @@ public:
 				  tree op2) override;
   virtual void register_relation (edge e, relation_kind k, tree op1,
 				  tree op2) override;
-protected:
-  relation_oracle *m_oracle;
 };
 
 // This class uses ranges to fold a gimple statement producing a range for

@@ -43,8 +43,8 @@ gimple_ranger::gimple_ranger (bool use_imm_uses) :
 	tracer (""),
 	current_bb (NULL)
 {
-  // If the cache has a relation oracle, use it.
-  m_oracle = m_cache.oracle ();
+  // Share the oracle from the cache.
+  m_oracle = &m_cache.oracle ();
   if (dump_file && (param_ranger_debug & RANGER_DEBUG_TRACE))
     tracer.enable_trace ();
   m_stmt_list.create (0);
@@ -67,6 +67,7 @@ gimple_ranger::gimple_ranger (bool use_imm_uses) :
 
 gimple_ranger::~gimple_ranger ()
 {
+  // Restore the original oracle.
   m_oracle = NULL;
   m_stmt_list.release ();
 }
