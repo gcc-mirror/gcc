@@ -200,11 +200,11 @@ void test_sprintf_chk_c_const (void)
   T (3, "%c%c", '1', '2');
 
   /* Wide characters.  */
-  T (0, "%lc",     (wint_t)0);   /* { dg-warning "nul past the end" } */
-  T (1, "%lc",     (wint_t)0);
-  T (1, "%lc%lc",  (wint_t)0, (wint_t)0);
+  T (0, "%lc",     (wint_t)0);   /* { dg-warning ".%lc. directive writing up to 1 bytes into a region of size 0" } */
+  T (1, "%lc",     (wint_t)0);   /* { dg-warning "nul past the end" } */
+  T (1, "%lc%lc",  (wint_t)0, (wint_t)0);   /* { dg-warning ".%lc. directive writing up to 1 bytes into a region of size between 0 and 1" } */
   T (2, "%lc",     (wint_t)0);
-  T (2, "%lc%lc",  (wint_t)0, (wint_t)0);
+  T (2, "%lc%lc",  (wint_t)0, (wint_t)0);   /* { dg-warning "nul past the end" } */
 
   /* The following could result in as few as no bytes and in as many as
      MB_CUR_MAX, but since the MB_CUR_MAX value is a runtime property
@@ -1550,7 +1550,7 @@ void test_snprintf_c_const (char *d)
 
   /* Wide characters.  */
   T (0, "%lc",  (wint_t)0);
-  T (1, "%lc",  (wint_t)0);
+  T (1, "%lc",  (wint_t)0);      /* { dg-warning "output may be truncated before the last format character" } */
   T (2, "%lc",  (wint_t)0);
 
   /* The following could result in as few as a single byte and in as many
@@ -1603,7 +1603,7 @@ void test_snprintf_chk_c_const (void)
 
   /* Wide characters.  */
   T (0, "%lc",  (wint_t)0);
-  T (1, "%lc",  (wint_t)0);
+  T (1, "%lc",  (wint_t)0);      /* { dg-warning "output may be truncated before the last format character" } */
   T (2, "%lc",  (wint_t)0);
 
   /* The following could result in as few as a single byte and in as many
