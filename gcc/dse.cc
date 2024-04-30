@@ -1946,7 +1946,9 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
 				 copy_rtx (store_info->const_rhs));
   else if (VECTOR_MODE_P (read_mode) && VECTOR_MODE_P (store_mode)
     && known_le (GET_MODE_BITSIZE (read_mode), GET_MODE_BITSIZE (store_mode))
-    && targetm.modes_tieable_p (read_mode, store_mode))
+    && targetm.modes_tieable_p (read_mode, store_mode)
+    && validate_subreg (read_mode, store_mode, copy_rtx (store_info->rhs),
+			subreg_lowpart_offset (read_mode, store_mode)))
     read_reg = gen_lowpart (read_mode, copy_rtx (store_info->rhs));
   else
     read_reg = extract_low_bits (read_mode, store_mode,
