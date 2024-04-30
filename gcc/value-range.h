@@ -389,6 +389,11 @@ public:
   {
     set_undefined ();
   }
+  unsupported_range (const unsupported_range &src)
+    : vrange (VR_UNKNOWN)
+  {
+    unsupported_range::operator= (src);
+  }
   void set (tree min, tree, value_range_kind = VR_RANGE) final override;
   tree type () const final override;
   bool supports_type_p (const_tree) const final override;
@@ -405,7 +410,7 @@ public:
   void set_zero (tree type) final override;
   void set_nonnegative (tree type) final override;
   bool fits_p (const vrange &) const final override;
-  unsupported_range& operator= (const vrange &r);
+  unsupported_range& operator= (const unsupported_range &r);
   tree lbound () const final override;
   tree ubound () const final override;
 };

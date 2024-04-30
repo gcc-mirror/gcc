@@ -147,8 +147,10 @@ unsupported_range::set_varying (tree)
 }
 
 bool
-unsupported_range::union_ (const vrange &r)
+unsupported_range::union_ (const vrange &v)
 {
+  const unsupported_range &r = as_a <unsupported_range> (v);
+
   if (r.undefined_p () || varying_p ())
     return false;
   if (undefined_p () || r.varying_p ())
@@ -161,8 +163,10 @@ unsupported_range::union_ (const vrange &r)
 }
 
 bool
-unsupported_range::intersect (const vrange &r)
+unsupported_range::intersect (const vrange &v)
 {
+  const unsupported_range &r = as_a <unsupported_range> (v);
+
   if (undefined_p () || r.varying_p ())
     return false;
   if (r.undefined_p ())
@@ -216,7 +220,7 @@ unsupported_range::fits_p (const vrange &) const
 }
 
 unsupported_range &
-unsupported_range::operator= (const vrange &r)
+unsupported_range::operator= (const unsupported_range &r)
 {
   if (r.undefined_p ())
     set_undefined ();
