@@ -1,3 +1,39 @@
+2024-04-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/114034
+	* g++.dg/gcov/gcov-dump-1.C: Remove extra -lgcov.
+	* g++.dg/gcov/gcov-dump-2.C: Likewise.
+
+2024-04-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/114036
+	* gcc.misc-tests/gcov-14.c: Allow for 'Foo' to be undefined
+	on Darwin link lines.
+
+2024-04-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-03-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/114049
+	* gcc.dg/framework-1.c: Use an IOKit header instead of a
+	Kernel one.
+
+2024-04-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-02-02  Iain Sandoe  <iain@sandoe.co.uk>
+		    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* lib/target-supports.exp (check_effective_target_shared):
+	Allow the external symbols referenced in the test to be undefined.
+
 2024-04-28  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:
