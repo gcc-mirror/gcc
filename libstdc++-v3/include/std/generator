@@ -322,8 +322,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	template<typename _Promise>
 	auto await_suspend(std::coroutine_handle<_Promise> __c) noexcept
 	{
+#ifdef __glibcxx_is_pointer_interconvertible
 	  static_assert(is_pointer_interconvertible_base_of_v<
 			_Promise_erased, _Promise>);
+#endif
 
 	  auto& __n = __c.promise()._M_nest;
 	  return __n._M_pop();
@@ -344,8 +346,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	template<typename _Promise>
 	void await_suspend(std::coroutine_handle<_Promise>) noexcept
 	{
+#ifdef __glibcxx_is_pointer_interconvertible
 	  static_assert(is_pointer_interconvertible_base_of_v<
 			_Promise_erased, _Promise>);
+#endif
 	  _M_bottom_value = ::std::addressof(_M_value);
 	}
 
@@ -375,8 +379,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::coroutine_handle<>
 	await_suspend(std::coroutine_handle<_Promise> __p) noexcept
 	{
+#ifdef __glibcxx_is_pointer_interconvertible
 	  static_assert(is_pointer_interconvertible_base_of_v<
 			_Promise_erased, _Promise>);
+#endif
 
 	  auto __c = _Coro_handle::from_address(__p.address());
 	  auto __t = _Coro_handle::from_address(this->_M_gen._M_coro.address());
@@ -685,8 +691,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return { coroutine_handle<promise_type>::from_promise(*this) }; }
       };
 
+#ifdef __glibcxx_is_pointer_interconvertible
       static_assert(is_pointer_interconvertible_base_of_v<_Erased_promise,
 		    promise_type>);
+#endif
 
       generator(const generator&) = delete;
 
