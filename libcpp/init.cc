@@ -594,7 +594,7 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199409L");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC23
 	   || CPP_OPTION (pfile, lang) == CLK_GNUC23)
-    _cpp_define_builtin (pfile, "__STDC_VERSION__ 202000L");
+    _cpp_define_builtin (pfile, "__STDC_VERSION__ 202311L");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC17
 	   || CPP_OPTION (pfile, lang) == CLK_GNUC17)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 201710L");
