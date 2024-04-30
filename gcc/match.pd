@@ -4290,6 +4290,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cond (eq @0 integer_all_onesp) @1 (op:c@2 @1 @0))
    @2))
 
+/* a != 0 ? a / b : 0  -> a / b iff b is nonzero. */
+(for op (trunc_div ceil_div floor_div round_div exact_div)
+ (simplify
+  (cond (ne @0 integer_zerop) (op@2 @3 @1) integer_zerop )
+   (if (bitwise_equal_p (@0, @3)
+        && tree_expr_nonzero_p (@1))
+    @2)))
+
+/* Note we prefer the != case here
+   as (a != 0) * (a * b) will generate that version. */
+/* a != 0 ? a * b : 0 -> a * b */
+/* a != 0 ? a & b : 0 -> a & b */
+(for op (mult bit_and)
+ (simplify
+  (cond (ne @0 integer_zerop) (op:c@2 @1 @3) integer_zerop)
+  (if (bitwise_equal_p (@0, @3))
+   @2)))
+
 /* Simplifications of shift and rotates.  */
 
 (for rotate (lrotate rrotate)
