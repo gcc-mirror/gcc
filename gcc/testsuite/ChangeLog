@@ -1,3 +1,11 @@
+2024-04-29  Lehua Ding  <lehua.ding@rivai.ai>
+
+	Backported from master:
+	2023-08-31  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111234
+	* gcc.target/riscv/rvv/vsetvl/pr111234.c: New test.
+
 2024-04-26  Haochen Jiang  <haochen.jiang@intel.com>
 
 	PR target/110621

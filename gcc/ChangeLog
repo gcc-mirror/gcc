@@ -1,3 +1,11 @@
+2024-04-29  Lehua Ding  <lehua.ding@rivai.ai>
+
+	Backported from master:
+	2023-08-31  Lehua Ding  <lehua.ding@rivai.ai>
+
+	PR target/111234
+	* config/riscv/riscv-vsetvl.cc (gen_vsetvl_pat): Remove condition.
+
 2024-04-26  Richard Ball  <richard.ball@arm.com>
 
 	PR target/114272
