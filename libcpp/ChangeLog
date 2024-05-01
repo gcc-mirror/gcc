@@ -1,3 +1,8 @@
+2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.cc (cpp_init_builtins): Change __STDC_VERSION__
+	for C23 from 202000L to 202311L.
+
 2024-04-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR preprocessor/114748

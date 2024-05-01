@@ -1,3 +1,8 @@
+2024-04-30  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_gimple_binary_expression):
+	Parse __{CEIL,FLOOR,ROUND}_{DIV,MOD} and __EXACT_DIV.
+
 2024-04-19  Martin Uecker  <uecker@tugraz.at>
 	    Jakub Jelinek  <jakub@redhat.com>
 

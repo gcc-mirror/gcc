@@ -1,3 +1,58 @@
+2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114456
+	* parser.cc (cp_parser_decomposition_declaration): Implement C++26
+	P0609R3 - Attributes for Structured Bindings.  Parse attributed
+	identifier lists for structured binding declarations, pass the
+	attributes to start_decl.
+
+2024-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/105320
+	PR c++/114275
+	* cp-tree.h (propagate_defining_module): Declare.
+	(lookup_imported_hidden_friend): Declare.
+	* decl.cc (duplicate_decls): Also check if hidden decls can be
+	redeclared in this module.
+	* module.cc (imported_temploid_friends): New.
+	(init_modules): Initialize it.
+	(trees_out::decl_value): Write it; don't consider imported
+	temploid friends as attached to a module.
+	(trees_in::decl_value): Read it.
+	(get_originating_module_decl): Follow the owning decl for an
+	imported temploid friend.
+	(propagate_defining_module): New.
+	* name-lookup.cc (get_mergeable_namespace_binding): New.
+	(lookup_imported_hidden_friend): New.
+	* pt.cc (tsubst_friend_function): Propagate defining module for
+	new friend functions.
+	(tsubst_friend_class): Lookup imported hidden friends.  Check
+	for valid module attachment of existing names.  Propagate
+	defining module for new classes.
+
+2024-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* cp-tree.h (module_may_redeclare): Add default parameter.
+	* decl.cc (duplicate_decls): Don't emit errors for failed
+	module_may_redeclare.
+	(xref_tag): Likewise.
+	(start_enum): Likewise.
+	* semantics.cc (begin_class_definition): Likewise.
+	* module.cc (module_may_redeclare): Clean up logic. Emit error
+	messages on failure.
+
+2024-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114889
+	* module.cc (trees_in::read_class_def): Look through
+	TEMPLATE_DECL when adding to CLASSTYPE_BEFRIENDING_CLASSES.
+
+2024-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114888
+	* typeck.cc (cp_build_binary_op) <case *_DIV_*>: Add missing
+	dependence check for the second sizeof operand.
+
 2024-04-26  Patrick Palka  <ppalka@redhat.com>
 
 	* error.cc (print_instantiation_partial_context_line): Clear the

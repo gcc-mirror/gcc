@@ -1,3 +1,142 @@
+2024-04-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-op.cc (gimple_range_op_handler::calc_op1): Don't
+	assert that here are less than 3 operands.
+	(gimple_range_op_handler::maybe_builtin_call): Simply return if
+	there is no type for the function call.
+
+2024-04-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::range_on_entry): Adjust for new
+	API and support non-SSA expressions.
+	(gimple_ranger::range_on_exit): Ditto.
+	* gimple-range.h (range_on_entry, range_on_exit): Adjust API.
+	* value-query.cc (range_query::range_on_entry): New.
+	(range_query::range_on_exit): New.
+	(range_query::value_on_entry): New.
+	(range_query::value_on_exit): New.
+	(range_query::invoke_range_of_expr): New.
+	(range_query::get_tree_range): Allow stmt, on_entry or on_exit
+	range queries.
+	SSA_NAMES should invoke range_of_expr if possible.
+	* value-query.h (class range_query): Adjust prototypes.
+
+2024-04-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::range_of_expr): Call range_of_stmt
+	when there is no context stmt.
+
+2024-04-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::get_global_range): Do not
+	pre-evaluate PHI nodes from the cache.
+	(ranger_cache::fill_block_cache): Make re-entrant.
+
+2024-04-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-query.cc (get_range_global): Rename to gimple_range_global.
+	(gimple_range_global): Remove wrapper function.
+	(global_range_query::range_of_expr): Call gimple_range_global.
+
+2024-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-cfg.cc (verify_gimple_assign): Remove quote
+	mark to shut up the warning.
+
+2024-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (value_replacement): Reject undef variables
+	so they don't become unconditional used.
+
+2024-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (value_replacement): Move check for
+	NE/EQ earlier.
+
+2024-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (single_non_singleton_phi_for_edges):
+	Remove the special case of gimple_seq_singleton_p.
+
+2024-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/112976
+	* cfgexpand.cc (expand_gimple_stmt_1): Remove
+	support for expanding nontemporal "moves" with
+	ssa names on the LHS.
+
+2024-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/112976
+	* tree-cfg.cc (verify_gimple_assign): Verify that
+	nontmporal moves are stores.
+	* gimple.h (struct gimple): Note that only
+	nontemporal stores are supported.
+
+2024-04-30  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* config/riscv/iterators.md (fix_ops, fix_uns): New iterators.
+	(RINT, rint_pattern, rint_rm): Remove unused iterators.
+	* config/riscv/riscv-protos.h (get_fp_rounding_coefficient): Prototype.
+	* config/riscv/riscv-v.cc (get_fp_rounding_coefficient): Externalize.
+	external linkage.
+	* config/riscv/riscv.md (UNSPEC_LROUND): Remove.
+	(fix_trunc<ANYF:mode><GPR:mode>2): Replace with ...
+	(<fix_uns>_trunc<ANYF:mode>si2): New expander & associated insn.
+	(<fix_uns>_trunc<ANYF:mode>si2_ext): New insn.
+	(<fix_uns>_trunc<ANYF:mode>di2): Likewise.
+	(l<rint_pattern><ANYF:mode><GPR:mode>2): Replace with ...
+	(lrint<ANYF:mode>si2): New expander and associated insn.
+	(lrint<ANYF:mode>si2_ext, lrint<ANYF:mode>di2): New insns.
+	(<round_pattern><ANYF:mode>2): Replace with....
+	(l<round_pattern><ANYF:mode>si2): New expander and associated insn.
+	(l<round_pattern><ANYF:mode>si2_sext): New insn.
+	(l<round_pattern><ANYF:mode>di2): Likewise.
+	(<round_pattern><ANYF:mode>2): New expander.
+
+2024-04-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-warn-access.cc (check_nul_terminated_array): Change
+	int_range<2> to int_range_max.
+	(memmodel_to_uhwi): Same.
+	* tree-ssa-loop-niter.cc (refine_value_range_using_guard): Same.
+	(determine_value_range): Same.
+	(infer_loop_bounds_from_signedness): Same.
+	(scev_var_range_cant_overflow): Same.
+
+2024-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/13421
+	* optabs-tree.cc (optab_for_tree_code): Do not consider
+	{add,sub}v or {us,ss}{add,sub} optabs for POINTER_DIFF_EXPR
+	or POINTER_PLUS_EXPR.
+
+2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114876
+	* gimple-ssa-sprintf.cc (format_character): For min == 0 && max == 0,
+	set max, likely and unlikely members to 1 rather than 0.  Remove
+	useless res.knownrange = true;.  Formatting fixes.
+
+2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR tree-optimization/114883
+	* tree-vect-loop.cc (vect_transform_reduction): Allow IFN_COND_MIN and
+	IFN_COND_MAX in the assert.
+
+2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/cpp.texi (__STDC_VERSION__): Document 202311L value
+	for -std=c23/-std=gnu23.
+
+2024-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114734
+	* internal-fn.cc (expand_call_mem_ref): Use
+	get_gimple_for_ssa_name to get at the def stmt of the address
+	argument to honor SSA coalescing constraints.
+
 2024-04-29  demin.han  <demin.han@starfivetech.com>
 
 	PR target/114506

@@ -1,3 +1,10 @@
+2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114456
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_structured_bindings for C++26 to 202403L rather than
+	201606L.
+
 2024-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-attribs.cc (handle_objc_nullability_attribute): Spelling fix:

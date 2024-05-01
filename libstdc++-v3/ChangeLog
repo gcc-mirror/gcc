@@ -1,3 +1,8 @@
+2024-04-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite/lib/gdb-test.exp (gdb-test): Fix regexp.  Quote
+	newlines in logs.
+
 2024-04-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	Backported from master:
