@@ -261,9 +261,13 @@ namespace __unicode
       {
 	_Guard<_Iter> __g{this, _M_curr()};
 	char32_t __c{};
-	uint8_t __u = *_M_curr()++;
 	const uint8_t __lo_bound = 0x80, __hi_bound = 0xBF;
+	uint8_t __u = *_M_curr()++;
 	uint8_t __to_incr = 1;
+	auto __incr = [&, this] {
+	  ++__to_incr;
+	  return ++_M_curr();
+	};
 
 	if (__u <= 0x7F) [[likely]]      // 0x00 to 0x7F
 	  __c = __u;
@@ -281,8 +285,7 @@ namespace __unicode
 	    else
 	      {
 		__c = (__c << 6) | (__u & 0x3F);
-		++_M_curr();
-		++__to_incr;
+		__incr();
 	      }
 	  }
 	else if (__u <= 0xEF) // 0xE0 to 0xEF
@@ -295,11 +298,10 @@ namespace __unicode
 
 	    if (__u < __lo_bound_2 || __u > __hi_bound_2) [[unlikely]]
 	      __c = _S_error();
-	    else if (++_M_curr() == _M_last) [[unlikely]]
+	    else if (__incr() == _M_last) [[unlikely]]
 	      __c = _S_error();
 	    else
 	      {
-		++__to_incr;
 		__c = (__c << 6) | (__u & 0x3F);
 		__u = *_M_curr();
 
@@ -308,8 +310,7 @@ namespace __unicode
 		else
 		  {
 		    __c = (__c << 6) | (__u & 0x3F);
-		    ++_M_curr();
-		    ++__to_incr;
+		    __incr();
 		  }
 	      }
 	  }
@@ -323,21 +324,19 @@ namespace __unicode
 
 	    if (__u < __lo_bound_2 || __u > __hi_bound_2) [[unlikely]]
 	      __c = _S_error();
-	    else if (++_M_curr() == _M_last) [[unlikely]]
+	    else if (__incr() == _M_last) [[unlikely]]
 	      __c = _S_error();
 	    else
 	      {
-		++__to_incr;
 		__c = (__c << 6) | (__u & 0x3F);
 		__u = *_M_curr();
 
 		if (__u < __lo_bound || __u > __hi_bound) [[unlikely]]
 		  __c = _S_error();
-		else if (++_M_curr() == _M_last) [[unlikely]]
+		else if (__incr() == _M_last) [[unlikely]]
 		  __c = _S_error();
 		else
 		  {
-		    ++__to_incr;
 		    __c = (__c << 6) | (__u & 0x3F);
 		    __u = *_M_curr();
 
@@ -346,8 +345,7 @@ namespace __unicode
 		    else
 		      {
 			__c = (__c << 6) | (__u & 0x3F);
-			++_M_curr();
-			++__to_incr;
+			__incr();
 		      }
 		  }
 	      }

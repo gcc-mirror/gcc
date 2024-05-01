@@ -55,6 +55,13 @@ test_illformed_utf8()
   VERIFY( std::ranges::equal(v5, u8"\uFFFD\uFFFD\uFFFD\uFFFD\uFFFD\x41\uFFFD\uFFFD\x42"sv) );
   uc::_Utf8_view v6("\xe1\x80\xe2\xf0\x91\x92\xf1\xbf\x41"sv); // Table 3-11
   VERIFY( std::ranges::equal(v6, u8"\uFFFD\uFFFD\uFFFD\uFFFD\x41"sv) );
+
+  uc::_Utf32_view v7("\xe1\x80"sv);
+  VERIFY( std::ranges::equal(v7, U"\uFFFD"sv) );
+  uc::_Utf32_view v8("\xf1\x80"sv);
+  VERIFY( std::ranges::equal(v8, U"\uFFFD"sv) );
+  uc::_Utf32_view v9("\xf1\x80\x80"sv);
+  VERIFY( std::ranges::equal(v9, U"\uFFFD"sv) );
 }
 
 constexpr void
