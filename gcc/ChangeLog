@@ -1,3 +1,13 @@
+2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+		    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR tree-optimization/114883
+	* tree-vect-loop.cc (vect_transform_reduction): Allow IFN_COND_MIN and
+	IFN_COND_MAX in the assert.
+
 2024-04-29  Pan Li  <pan2.li@intel.com>
 
 	Backported from master:

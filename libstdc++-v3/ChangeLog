@@ -1,3 +1,14 @@
+2024-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114863
+	* include/std/format (__formatter_fp::format): Only use
+	_M_localized for finite values.
+	* testsuite/std/format/functions/format.cc: Check localized
+	formatting of NaN and initiny.
+
 2024-04-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.

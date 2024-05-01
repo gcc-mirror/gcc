@@ -1,3 +1,11 @@
+2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gthr.h (GTHREAD_USE_WEAK): Don't redefine to 0 for glibc 2.34+
+	on GNU Hurd.
+
 2024-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gthr.h (GTHREAD_USE_WEAK): Redefine to 0 for GLIBC 2.34 or later.

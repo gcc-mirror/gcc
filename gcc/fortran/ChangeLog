@@ -1,3 +1,17 @@
+2024-04-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114959
+	* trans-expr.cc (gfc_trans_class_init_assign): Return NULL_TREE
+	if the default initializer has all NULL fields. Guard this
+	by a requirement that the code not be EXEC_INIT_ASSIGN and that
+	the object be an INTENT_OUT dummy.
+	* trans-stmt.cc (gfc_trans_allocate): Change the initializer
+	code for allocate with mold to EXEC_ALLOCATE to allow an
+	initializer with all NULL fields.
+
 2024-04-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/93678
