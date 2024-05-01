@@ -1,3 +1,41 @@
+2024-04-30  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	Backported from master:
+	2024-03-15  Joe Ramsay  <Joe.Ramsay@arm.com>
+
+	* match.pd: Fix truncation pattern for -fno-signed-zeroes
+
+2024-04-30  Monk Chiang  <monk.chiang@sifive.com>
+
+	Backported from master:
+	2024-01-24  Monk Chiang  <monk.chiang@sifive.com>
+
+	PR target/113095
+	* config/riscv/riscv.md: New splitters to rewrite single bit
+	sign extension as the condition to SFB instructions.
+
+2024-04-30  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-09-28  Richard Biener  <rguenther@suse.de>
+
+	PR target/111600
+	* gimple-ssa-warn-access.cc (pass_waccess::check_dangling_stores):
+	Use a heap allocated worklist for CFG traversal instead of
+	recursion.
+
+2024-04-30  Yang Yujie  <yangyujie@loongson.cn>
+
+	Backported from master:
+	2023-12-12  Yang Yujie  <yangyujie@loongson.cn>
+
+	PR target/114848
+	* config/loongarch/loongarch.cc: Do not restore the saved eh_return
+	data registers ($r4-$r7) for a normal return of a function that calls
+	__builtin_eh_return elsewhere.
+	* config/loongarch/loongarch-protos.h: Same.
+	* config/loongarch/loongarch.md: Same.
+
 2024-04-29  Lehua Ding  <lehua.ding@rivai.ai>
 
 	Backported from master:
