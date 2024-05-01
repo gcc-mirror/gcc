@@ -8874,26 +8874,43 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  extract_base_offset_in_addr (SET_DEST (prev_set), &base_prev, &offset_prev);
 	  extract_base_offset_in_addr (SET_DEST (curr_set), &base_curr, &offset_curr);
 
-	  /* The two stores must be contained within opposite halves of the same
-	     16 byte aligned block of memory.  We know that the stack pointer and
-	     the frame pointer have suitable alignment.  So we just need to check
-	     the offsets of the two stores for suitable alignment.
+	  /* Fail if we did not find both bases.  */
+	  if (base_prev == NULL_RTX || base_curr == NULL_RTX)
+	    return false;
 
-	     Originally the thought was to check MEM_ALIGN, but that was reporting
-	     incorrect alignments, even for SP/FP accesses, so we gave up on that
-	     approach.  */
-	  if (base_prev != NULL_RTX
-	      && base_curr != NULL_RTX
-	      && REG_P (base_prev)
-	      && REG_P (base_curr)
-	      && REGNO (base_prev) == REGNO (base_curr)
-	      && (REGNO (base_prev) == STACK_POINTER_REGNUM
-		  || REGNO (base_prev) == HARD_FRAME_POINTER_REGNUM)
-	      && ((INTVAL (offset_prev) == INTVAL (offset_curr) + 8
-		   && (INTVAL (offset_prev) % 16) == 0)
-		  || ((INTVAL (offset_curr) == INTVAL (offset_prev) + 8)
-		      && (INTVAL (offset_curr) % 16) == 0)))
-	    return true;
+	  /* Fail if either base is not a register.  */
+	  if (!REG_P (base_prev) || !REG_P (base_curr))
+	    return false;
+
+	  /* Fail if the bases are not the same register.  */
+	  if (REGNO (base_prev) != REGNO (base_curr))
+	    return false;
+
+	  /* Originally the thought was to check MEM_ALIGN, but that was
+	     reporting incorrect alignments, even for SP/FP accesses, so we
+	     gave up on that approach.  Instead just check for stack/hfp
+	     which we know are aligned.  */
+	  if (REGNO (base_prev) != STACK_POINTER_REGNUM
+	      && REGNO (base_prev) != HARD_FRAME_POINTER_REGNUM)
+	    return false;
+
+	  /* The two stores must be contained within opposite halves of the
+	     same 16 byte aligned block of memory.  We know that the stack
+	     pointer and the frame pointer have suitable alignment.  So we
+	     just need to check the offsets of the two stores for suitable
+	     alignment.  */
+	  /* Get the smaller offset into OFFSET_PREV.  */
+	  if (INTVAL (offset_prev) > INTVAL (offset_curr))
+	    std::swap (offset_prev, offset_curr);
+
+	  /* If the smaller offset (OFFSET_PREV) is not 16 byte aligned,
+	     then fail.  */
+	  if ((INTVAL (offset_prev) % 16) != 0)
+	    return false;
+
+	  /* The higher offset must be 8 bytes more than the lower
+	     offset.  */
+	  return (INTVAL (offset_prev) + 8 == INTVAL (offset_curr));
 	}
     }
 
