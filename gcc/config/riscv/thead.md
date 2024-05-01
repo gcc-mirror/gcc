@@ -466,12 +466,12 @@
 (define_insn_and_split "*th_memidx_operand"
   [(set (match_operand:DI 0 "register_operand" "=r")
      (ashift:DI
-       (zero_extend:DI (subreg:SI (match_operand:DI 1 "register_operand" "r") 0))
+       (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
        (match_operand 2 "const_int_operand" "n")))]
   "TARGET_64BIT && TARGET_XTHEADMEMIDX && lra_in_progress"
   "#"
   ""
-  [(set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 1) 0)))
+  [(set (match_dup 0) (zero_extend:DI (match_dup 1)))
    (set (match_dup 0) (ashift:DI (match_dup 0) (match_dup 2)))]
   ""
   [(set_attr "type" "bitmanip")])
