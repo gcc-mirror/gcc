@@ -2017,7 +2017,6 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	    if (!new_second)
 	      return NULL;
 	    conv = merge_conversion_sequences (t, new_second);
-	    gcc_assert (maybe_valid_p || conv->bad_p);
 	    return conv;
 	  }
     }
