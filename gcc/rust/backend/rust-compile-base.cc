@@ -887,7 +887,7 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
 
   // it might be resolved to a trait item
   HIR::TraitItem *trait_item
-    = ctx->get_mappings ().lookup_trait_item_defid (id);
+    = ctx->get_mappings ().lookup_trait_item_defid (id).value ();
   HIR::Trait *trait = ctx->get_mappings ().lookup_trait_item_mapping (
     trait_item->get_mappings ().get_hirid ());
 

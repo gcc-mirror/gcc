@@ -2238,8 +2238,8 @@ ClosureType::setup_fn_once_output () const
   rust_assert (!trait_ref->is_error ());
 
   // resolve to trait item
-  HIR::TraitItem *trait_item = mappings.lookup_trait_item_defid (trait_item_id);
-  rust_assert (trait_item != nullptr);
+  HIR::TraitItem *trait_item
+    = mappings.lookup_trait_item_defid (trait_item_id).value ();
   rust_assert (trait_item->get_item_kind ()
 	       == HIR::TraitItem::TraitItemKind::TYPE);
   std::string item_identifier = trait_item->trait_identifier ();
