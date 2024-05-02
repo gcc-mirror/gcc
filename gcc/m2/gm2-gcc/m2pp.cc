@@ -35,6 +35,12 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2pp.h"
 
 #define GM2
+/* VERBOSE_TYPE_DESC enables type descriptions to be generated in the
+   assignment and during variable declarations.  It generates
+   moderately ugly output, although the assignment type information
+   can be useful when tracking down non gimple complient trees (during
+   assignment).  */
+#undef VERBOSE_TYPE_DESC
 
 const char *m2pp_dump_description[M2PP_DUMP_END] =
 {
@@ -898,6 +904,7 @@ m2pp_identifier (pretty *s, tree t)
           else
             snprintf (name, 100, "D_%u", DECL_UID (t));
           m2pp_print (s, name);
+#ifdef VERBOSE_TYPE_DESC
 	  if (TREE_TYPE (t) != NULL_TREE)
 	    {
 	      m2pp_needspace (s);
@@ -905,12 +912,11 @@ m2pp_identifier (pretty *s, tree t)
 	      m2pp_needspace (s);
 	      m2pp_simple_type (s, TREE_TYPE (t));
 	      m2pp_needspace (s);
-#if 0
 	      m2pp_type_lowlevel (s, TREE_TYPE (t));
 	      m2pp_needspace (s);
-#endif
 	      m2pp_print (s, "*)");
 	    }
+#endif
         }
     }
 }
@@ -1842,11 +1848,13 @@ m2pp_constructor (pretty *s, tree t)
     m2pp_print (s, ", ");
   }
   m2pp_print (s, "}");
+#ifdef VERBOSE_TYPE_DESC
   m2pp_print (s, "(* type: ");
   setindent (s, getindent (s) + 8);
   m2pp_type (s, TREE_TYPE (t));
   setindent (s, getindent (s) - 8);
   m2pp_print (s, " *)\n");
+#endif
 }
 
 /* m2pp_complex_expr handle GCC complex_expr tree.  */
@@ -2569,15 +2577,20 @@ m2pp_assignment (pretty *s, tree t)
   int o;
 
   m2pp_begin (s);
-
+#ifdef VERBOSE_TYPE_DESC
   /* Print the types of des and expr.  */
+  m2pp_print (s, "(*");
+  m2pp_needspace (s);
   m2pp_type (s, TREE_TYPE (TREE_OPERAND (t, 0)));
   m2pp_needspace (s);
   m2pp_print (s, ":=");
   m2pp_needspace (s);
   m2pp_type (s, TREE_TYPE (TREE_OPERAND (t, 1)));
   m2pp_needspace (s);
-  m2pp_print (s, ";\n");
+  m2pp_print (s, ";");
+  m2pp_needspace (s);
+  m2pp_print (s, "*)\n");
+#endif
   /* Print the assignment statement.  */
   m2pp_designator (s, TREE_OPERAND (t, 0));
   m2pp_needspace (s);

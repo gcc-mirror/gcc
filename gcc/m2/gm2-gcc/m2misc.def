@@ -24,10 +24,9 @@ DEFINITION MODULE FOR "C" m2misc ;
 FROM m2tree IMPORT Tree ;
 FROM SYSTEM IMPORT ADDRESS ;
 
-
 PROCEDURE DebugTree (t: Tree) ;
 PROCEDURE error (message: ARRAY OF CHAR) ;
 PROCEDURE cerror (message: ADDRESS) ;
-
+PROCEDURE warning_m2_dump_filter (message, rule: ADDRESS) ;
 
 END m2misc.

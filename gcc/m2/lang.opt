@@ -134,6 +134,26 @@ fm2-debug-trace=
 Modula-2 Joined
 turn on internal debug tracing for quad,token,line,all (internal switch)
 
+fm2-dump=
+Modula-2 Joined
+dump Modula-2 internal intemediate representation specified by: all,quad,decl,gimple
+
+fm2-dump-decl=
+Modula-2 Joined
+dump Modula-2 decls to the filename stem specified
+
+fm2-dump-gimple=
+Modula-2 Joined
+dump Modula-2 gimple to the filename stem specified
+
+fm2-dump-quad=
+Modula-2 Joined
+dump Modula-2 quads to the filename stem specified
+
+fm2-dump-filter=
+Modula-2 Joined
+filter the language dump using a comma separated list of procedures and modules
+
 fm2-g
 Modula-2
 generate extra nops to improve debugging, producing an instruction for every code related keyword

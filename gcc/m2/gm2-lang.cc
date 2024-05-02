@@ -42,8 +42,6 @@ Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "convert.h"
 #include "rtegraph.h"
 
-#undef ENABLE_M2DUMP_ALL
-
 static void write_globals (void);
 
 static int insideCppArgs = FALSE;
@@ -521,7 +519,6 @@ gm2_langhook_handle_option (
     case OPT_fm2_debug_trace_:
       M2Options_SetM2DebugTraceFilter (value, arg);
       return 1;
-#ifdef ENABLE_M2DUMP_ALL
     case OPT_fm2_dump_:
       return M2Options_SetM2Dump (value, arg);
     case OPT_fm2_dump_decl_:
@@ -536,7 +533,6 @@ gm2_langhook_handle_option (
     case OPT_fm2_dump_filter_:
       M2Options_SetM2DumpFilter (value, arg);
       return 1;
-#endif
     case OPT_Wall:
       M2Options_SetWall (value);
       return 1;

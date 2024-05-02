@@ -29,9 +29,7 @@ DEFINITION MODULE M2AsmUtil ;
                 to their equivalent representation in ASM format.
 *)
 
-FROM DynamicStrings IMPORT String ;
 FROM NameKey IMPORT Name ;
-EXPORT QUALIFIED GetFullSymName, GetFullScopeAsmName ;
 
 
 (*

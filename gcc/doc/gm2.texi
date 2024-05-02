@@ -466,10 +466,39 @@ this option forces the use of the static version.
 @c Modula-2 Joined
 @c set all location values to a specific value (internal switch)
 
-@c fm2-debug-trace=
-@c Modula-2 Joined
-@c turn on trace debugging using a comma separated list:
-@c line,token,quad,all.
+@item -fm2-debug-trace=
+turn on trace debugging using a comma separated list:
+@samp{line,token,quad,all}.  This is an internal command line option.
+
+@item -fm2-dump=
+enable dumping of modula-2 internal representation of data structures
+using a comma separated list.  The list can contain:
+@samp{quad,gimple,decl,all}.
+
+@item -fm2-dump-decl=@file{filestem}
+dump the modula-2 representation of a symbol to the @file{filestem}
+specified.  This option only takes effect if the
+@samp{-fm2-dump-filter} is specified.
+
+@item -fm2-dump-gimple=@file{filestem}
+dump modula-2 gimple representation to the @file{filestem} specified.
+
+@item -fm2-dump-quad=@file{filestem}
+dump quadruple representation to the @file{filestem} specified.
+
+@item -fm2-dump-filter=@samp{rules}
+filter the language dumps @samp{-fdump-lang-decl},
+@samp{-fdump-lang-gimple} and@samp{-fdump-lang-quad}
+on @samp{rules}.  @samp{rules} must be a comma
+separated list which can take three forms: the full decl textual name
+of a procedure, @samp{[libname.]module.ident} or
+@samp{[filename:]module.ident}.  This is an internal command line
+option.  Currently it only filters on procedure names and regexp
+matching is not implemented.  Three examples of its use following
+the previous forms could be:
+@code{-fm2-dump-filter=_M2_hello_init},
+@code{-fm2-dump-filter=m2pim.StrIO.WriteString} and
+@code{-fm2-dump-filter=StrLib.mod:StrIO.WriteString}.
 
 @item -fm2-g
 improve the debugging experience for new programmers at the expense
@@ -487,7 +516,7 @@ specify the module mangled prefix name for all modules in the
 following include paths.
 
 @item -fm2-pathnameI
-for internal use only: used by the driver to copy the user facing -I
+for internal use only: used by the driver to copy the user facing @samp{-I}
 option.
 
 @item -fm2-plugin

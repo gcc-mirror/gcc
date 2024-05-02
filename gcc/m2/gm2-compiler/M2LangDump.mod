@@ -31,7 +31,7 @@ FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
 FROM SymbolTable IMPORT NulSym,
                         GetSymName, GetLibName,
                         GetScope, GetModuleScope, GetMainModule, GetDeclaredMod,
-                        GetLocalSym,
+                        GetLocalSym, FinalSymbol,
                         IsInnerModule,
                         IsVar,
                         IsProcedure,
@@ -43,15 +43,17 @@ FROM SymbolTable IMPORT NulSym,
 FROM M2Options IMPORT GetM2DumpFilter, GetDumpDir, GetDumpQuadFilename,
                       GetDumpDeclFilename, GetDumpGimpleFilename ;
 
+FROM M2AsmUtil IMPORT GetFullSymName ;
 FROM M2GCCDeclare IMPORT IncludeDumpSymbol ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1 ;
 FROM NameKey IMPORT Name, GetKey, MakeKey, makekey, KeyToCharStar, NulName ;
-FROM SymbolConversion IMPORT Gcc2Mod, Mod2Gcc ;
+FROM SymbolConversion IMPORT Gcc2Mod, Mod2Gcc, GccKnowsAbout ;
 FROM M2AsmUtil IMPORT GetFullScopeAsmName ;
 FROM M2LexBuf IMPORT FindFileNameFromToken ;
 FROM M2Printf IMPORT fprintf0, fprintf1, printf0, printf1, printf2 ;
 FROM M2Error IMPORT InternalError ;
 FROM M2Batch IMPORT Get ;
+FROM m2misc IMPORT warning_m2_dump_filter ;
 FROM StrLib IMPORT StrLen ;
 FROM libc IMPORT printf ;
 
@@ -147,12 +149,27 @@ END CloseDumpDecl ;
 
 
 (*
-   AddRuleTextDump -
+   AddRuleTextDump - filter on the textual name given to GCC.
 *)
 
 PROCEDURE AddRuleTextDump (rule: String) ;
+VAR
+   sym      : CARDINAL ;
+   key      : Name ;
+   seenMatch: BOOLEAN ;
 BEGIN
-
+   sym := 1 ;
+   seenMatch := FALSE ;
+   key := makekey (string (rule)) ;
+   WHILE sym <= FinalSymbol () DO
+      IF IsProcedure (sym) AND (key = GetFullSymName (sym))
+      THEN
+         IncludeDumpSymbol (sym) ;
+         seenMatch := TRUE
+      END ;
+      INC (sym)
+   END ;
+   CheckRuleMatch (seenMatch, rule)
 END AddRuleTextDump ;
 
 
@@ -183,8 +200,10 @@ BEGIN
    END ;
    idstr := Slice (rule, start, 0) ;
    sym := GetLocalSym (modsym, makekey (string (idstr))) ;
-   IF sym # NulSym
+   IF sym = NulSym
    THEN
+      CheckRuleMatch (FALSE, rule)
+   ELSE
       IncludeDumpSymbol (sym)
    END
 END AddRuleScopeQualidentDump ;
@@ -228,17 +247,132 @@ END AddRuleScopeDump ;
 
 
 (*
+   GenQualidentSymString - returns the qualified sym string (including
+                           any nested procedure and modules).
+*)
+
+PROCEDURE GenQualidentSymString (sym: CARDINAL) : String ;
+VAR
+   identstr,
+   qualidentstr: String ;
+BEGIN
+   qualidentstr := InitStringCharStar (KeyToCharStar (GetSymName (sym))) ;
+   WHILE GetScope (sym) # NulSym DO
+      sym := GetScope (sym) ;
+      identstr := InitStringCharStar (KeyToCharStar (GetSymName (sym))) ;
+      ConCatChar (identstr, '.') ;
+      qualidentstr := ConCat (identstr, Mark (qualidentstr))
+   END ;
+   RETURN qualidentstr
+END GenQualidentSymString ;
+
+
+(*
+   IdentQualidentMatch - return TRUE if sym name matches symstr.
+*)
+
+PROCEDURE IdentQualidentMatch (sym: CARDINAL; symstr: String) : BOOLEAN ;
+VAR
+   success     : BOOLEAN ;
+   qualidentstr: String ;
+BEGIN
+   qualidentstr := GenQualidentSymString (sym) ;
+   success := Equal (qualidentstr, symstr) ;
+   qualidentstr := KillString (qualidentstr) ;
+   RETURN success
+END IdentQualidentMatch ;
+
+
+(*
+   IsRuleFilenameMatch - return TRUE if rule matches sym.
+*)
+
+PROCEDURE IsRuleFilenameMatch (rule: String; sym: CARDINAL) : BOOLEAN ;
+VAR
+   fname,
+   modstr,
+   symstr,
+   filename: String ;
+   tokenno : CARDINAL ;
+   dot,
+   colon   : INTEGER ;
+   success : BOOLEAN ;
+BEGIN
+   tokenno := GetDeclaredMod (sym) ;
+   filename := FindFileNameFromToken (tokenno, 0) ;
+   fname := NIL ;
+   symstr := NIL ;
+   modstr := NIL ;
+   success := FALSE ;
+   colon := Index (rule, ':', 0) ;
+   IF colon > 0
+   THEN
+      fname := Slice (rule, 0, colon) ;
+      IF Equal (fname, filename)
+      THEN
+         IF INTEGER (Length (rule)) > colon
+         THEN
+            symstr := Slice (rule, colon + 1, 0) ;
+            dot := ReverseIndex (symstr, '.', -1) ;
+            IF dot >= 0
+            THEN
+               success := IdentQualidentMatch (sym, symstr)
+            ELSE
+               success := GetSymName (sym) = makekey (string (symstr))
+            END
+         END
+      END
+   END ;
+   fname := KillString (fname) ;
+   modstr := KillString (modstr) ;
+   symstr := KillString (symstr) ;
+   RETURN success
+END IsRuleFilenameMatch ;
+
+
+(*
+   CheckRuleMatch - issue a warning if seenMatch is FALSE and this is the first time
+                    the rule is matched.
+*)
+
+PROCEDURE CheckRuleMatch (seenMatch: BOOLEAN; rule: String) ;
+VAR
+   message: String ;
+BEGIN
+   IF (NoOfDeclDumps = 1) AND (NOT seenMatch)
+   THEN
+      message := InitString ("no symbol matching: %qs has been found when applying the dump filter") ;
+      warning_m2_dump_filter (string (message), string (rule));
+   END
+END CheckRuleMatch ;
+
+
+(*
    AddRuleFilenameDump -
 *)
 
 PROCEDURE AddRuleFilenameDump (rule: String) ;
+VAR
+   sym      : CARDINAL ;
+   seenMatch: BOOLEAN ;
 BEGIN
-
+   sym := 1 ;
+   seenMatch := FALSE ;
+   WHILE sym <= FinalSymbol () DO
+      IF IsProcedure (sym) AND IsRuleFilenameMatch (rule, sym)
+      THEN
+         IncludeDumpSymbol (sym) ;
+         seenMatch := TRUE
+      END ;
+      INC (sym)
+   END ;
+   CheckRuleMatch (seenMatch, rule)
 END AddRuleFilenameDump ;
 
 
 (*
-   AddRuleSymToDump -
+   AddRuleSymToDump - call appropriate sub rule.  FileName if : present.
+                      Scope if . present otherwise assume a text rule.
 *)
 
 PROCEDURE AddRuleSymToDump (rule: String) ;

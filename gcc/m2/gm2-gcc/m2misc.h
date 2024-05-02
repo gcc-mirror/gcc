@@ -41,6 +41,7 @@ EXTERN void m2misc_printStmt (void);
 EXTERN void m2misc_DebugTreeChain (tree t);
 EXTERN void m2misc_cerror (const char *message);
 EXTERN void m2misc_error (const char *message);
+EXTERN void m2misc_warning_m2_dump_filter (const char *message, const char *rule);
 
 #undef EXTERN
 #endif /* m2misc_h.  */
