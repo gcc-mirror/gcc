@@ -98,16 +98,13 @@ query_type (HirId reference, TyTy::BaseType **result)
     }
 
   // is it an extern item?
-  HirId parent_extern_block_id = UNKNOWN_HIRID;
-  HIR::ExternalItem *extern_item
-    = mappings.lookup_hir_extern_item (reference, &parent_extern_block_id);
-  if (extern_item != nullptr)
+  if (auto extern_item = mappings.lookup_hir_extern_item (reference))
     {
-      auto block = mappings.lookup_hir_extern_block (parent_extern_block_id);
+      auto block = mappings.lookup_hir_extern_block (extern_item->second);
       rust_assert (block.has_value ());
 
-      *result
-	= TypeCheckTopLevelExternItem::Resolve (extern_item, *block.value ());
+      *result = TypeCheckTopLevelExternItem::Resolve (extern_item->first,
+						      *block.value ());
       context->query_completed (reference);
       return true;
     }
