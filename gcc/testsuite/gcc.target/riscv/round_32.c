@@ -1,4 +1,5 @@
 /* { dg-do compile { target { riscv32*-*-* } } } */
+/* { dg-require-effective-target glibc } */
 /* { dg-options "-march=rv32gc -mabi=ilp32d -fno-math-errno -funsafe-math-optimizations -fno-inline" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
 

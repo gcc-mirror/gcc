@@ -1,4 +1,5 @@
 /* { dg-do compile { target { riscv64*-*-* } } } */
+/* { dg-require-effective-target glibc } */
 /* { dg-options "-march=rv64gc -mabi=lp64d -fno-math-errno -funsafe-math-optimizations -fno-inline" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
 
