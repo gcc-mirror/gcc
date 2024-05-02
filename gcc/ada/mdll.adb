@@ -322,17 +322,21 @@ package body MDLL is
          --  Build the DLL
 
          declare
-            Params : OS_Lib.Argument_List :=
-                       Adr_Opt'Unchecked_Access & All_Options;
+            Params      : constant OS_Lib.Argument_List :=
+                            Map_Opt'Unchecked_Access &
+                            Adr_Opt'Unchecked_Access & All_Options;
+            First_Param : Positive := Params'First + 1;
+
          begin
             if Map_File then
-               Params := Map_Opt'Unchecked_Access & Params;
+               First_Param := Params'First;
             end if;
 
-            Utl.Gcc (Output_File => Dll_File,
-                     Files       => Exp_File'Unchecked_Access & Ofiles,
-                     Options     => Params,
-                     Build_Lib   => True);
+            Utl.Gcc
+              (Output_File => Dll_File,
+               Files       => Exp_File'Unchecked_Access & Ofiles,
+               Options     => Params (First_Param .. Params'Last),
+               Build_Lib   => True);
          end;
 
          OS_Lib.Delete_File (Exp_File, Success);
@@ -377,20 +381,25 @@ package body MDLL is
          Utl.Gnatbind (L_Afiles, Options & Bargs_Options);
 
          declare
-            Params : OS_Lib.Argument_List :=
-                       Out_Opt'Unchecked_Access &
-                       Dll_File'Unchecked_Access &
-                       Lib_Opt'Unchecked_Access &
-                       Exp_File'Unchecked_Access &
-                       Adr_Opt'Unchecked_Access &
-                       Ofiles &
-                       All_Options;
+            Params      : constant OS_Lib.Argument_List :=
+                            Map_Opt'Unchecked_Access &
+                            Out_Opt'Unchecked_Access &
+                            Dll_File'Unchecked_Access &
+                            Lib_Opt'Unchecked_Access &
+                            Exp_File'Unchecked_Access &
+                            Adr_Opt'Unchecked_Access &
+                            Ofiles &
+                            All_Options;
+            First_Param : Positive := Params'First + 1;
+
          begin
             if Map_File then
-               Params := Map_Opt'Unchecked_Access & Params;
+               First_Param := Params'First;
             end if;
 
-            Utl.Gnatlink (L_Afiles (L_Afiles'Last).all, Params);
+            Utl.Gnatlink
+              (L_Afiles (L_Afiles'Last).all,
+               Params (First_Param .. Params'Last));
          end;
 
          OS_Lib.Delete_File (Exp_File, Success);
