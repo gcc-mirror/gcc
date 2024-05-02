@@ -1,3 +1,42 @@
+2024-05-01  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/debug/dwarf2/array-3.C: No more 'int' for in-chrg parm.
+	* g++.dg/debug/dwarf2/array-4.C: Likewise.
+
+2024-05-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113706
+	* g++.dg/opt/const-builtin1.C: New test.
+	* c-c++-common/pr103798-2.c: Remove xfail.
+
+2024-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/using-16_a.C: New test.
+	* g++.dg/modules/using-16_b.C: New test.
+	* g++.dg/modules/using-16_c.C: New test.
+
+2024-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114868
+	* g++.dg/modules/using-15_a.C: New test.
+	* g++.dg/modules/using-15_b.C: New test.
+	* g++.dg/modules/using-15_c.C: New test.
+
+2024-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107688
+	* g++.dg/modules/contracts-1_a.C: Avoid now-illegal syntax.
+	* g++.dg/modules/contracts-2_a.C: Likewise.
+	* g++.dg/modules/contracts-3_a.C: Likewise.
+	* g++.dg/modules/contracts-4_a.C: Likewise.
+	* g++.dg/modules/lang-1_c.C: Clarify now-legal syntax.
+	* g++.dg/modules/pr101582-1.C: Remove now-legal XFAILS.
+	* g++.dg/template/crash71.C: Update error messages.
+	* g++.dg/cpp2a/linkage-spec1.C: New test.
+	* g++.dg/modules/export-3.C: New test.
+	* g++.dg/modules/export-4_a.C: New test.
+	* g++.dg/modules/export-4_b.C: New test.
+
 2024-04-30  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
 
 	* gcc.target/riscv/fix.c: New test.

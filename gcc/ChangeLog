@@ -1,3 +1,55 @@
+2024-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	PR target/112959
+	* doc/install.texi (Specific) <*-*-freebsd*>: The Ada and D
+	run-time libraries are broken on i386 which also can affect
+	64-bit builds. Go is broken.
+
+2024-05-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (splitter to use w-form division): Remove
+	explicit subregs.
+	(zero extended bitfield extraction): Similarly.
+	* config/riscv/thead.md (*th_memidx_operand): Similarly.
+
+2024-05-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_macro_fusion_pair_p): Break out
+	tests for easier debugging in store pair fusion case.  Fix offset
+	check in same.
+
+2024-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	PR target/112959
+	* doc/install.texi (Specific) <*-*-freebsd*>: No longer refer
+	to GCC or binutils in base. Recommend bootstrap using binutils.
+
+2024-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <ia64-*-hpux*>: Remove details
+	on libunwind for GCC 3.4 and earlier.
+
+2024-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-fnsummary.cc (evaluate_properties_for_edge): Initialize Value_Range's.
+	* value-range.h (class Value_Range): Add a buffer and remove
+	m_irange and m_frange.
+	(Value_Range::Value_Range): Call init.
+	(Value_Range::set_type): Same.
+	(Value_Range::init): Use in place new to initialize buffer.
+	(Value_Range::operator=): Tidy.
+
+2024-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (unsupported_range::union_): Cast vrange to
+	unsupported_range.
+	(unsupported_range::intersect): Same.
+	(unsupported_range::operator=): Make argument an unsupported_range.
+	* value-range.h: New constructor.
+
 2024-04-30  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-op.cc (gimple_range_op_handler::calc_op1): Don't

@@ -1,3 +1,9 @@
+2024-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114891
+	* include/std/generator: Check feature test macro before using
+	is_pointer_interconvertible_v.
+
 2024-04-30  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* testsuite/lib/gdb-test.exp (gdb-test): Fix regexp.  Quote

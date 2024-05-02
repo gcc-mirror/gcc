@@ -1,3 +1,48 @@
+2024-05-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (base_ctor_identifier): Adjust comment.
+	* call.cc (in_charge_arg_for_name): Abort on deleting dtor.
+	* decl2.cc (maybe_retrofit_in_chrg): Don't add it for
+	destructors without vbases, either.
+	* constexpr.cc (cxx_eval_call_expression): Remove workaround.
+
+2024-05-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113706
+	* decl.cc (decls_match): Handle memchr return type being
+	const-qualified.
+
+2024-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (walk_module_binding): Use the
+	partition-specific hidden flag instead of the top-level
+	decl_hidden.
+
+2024-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114868
+	* module.cc (depset::hash::add_binding_entity): Propagate
+	OVL_USING_P for using-declarations.
+
+2024-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107688
+	* name-lookup.cc (push_namespace): Error when exporting
+	namespace with internal linkage.
+	* parser.h (struct cp_parser): Add new flag
+	'in_unbraced_export_declaration_p'.
+	* parser.cc (cp_debug_parser): Print the new flag.
+	(cp_parser_new): Initialise the new flag.
+	(cp_parser_module_export): Set the new flag.
+	(cp_parser_class_specifier): Clear and restore the new flag.
+	(cp_parser_import_declaration): Imports can now appear directly
+	in a linkage specification.
+	(cp_parser_declaration): Categorise declarations as "name" or
+	"special"; error on the later in contexts where the former is
+	required.
+	(cp_parser_class_head): Error when exporting a partial
+	specialisation.
+
 2024-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/114456
