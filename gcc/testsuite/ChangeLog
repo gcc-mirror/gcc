@@ -1,3 +1,35 @@
+2024-05-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113141
+	* g++.dg/conversion/ref12.C: New test.
+	* g++.dg/cpp0x/initlist-ref1.C: new test.
+
+2024-05-01  centurion  <centurion009@proton.me>
+
+	Backported from master:
+	2024-04-04  centurion  <centurion009@proton.me>
+
+	PR c++/114377
+	* g++.dg/cpp2a/class-deduction-alias19.C: New test.
+
+2024-05-01  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-04-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114561
+	PR c++/114562
+	* g++.dg/conversion/ref10.C: New test.
+	* g++.dg/conversion/ref11.C: New test.
+
+2024-05-01  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100667
+	* g++.dg/ext/is_constructible8.C: New test.
+
 2024-04-30  Joe Ramsay  <Joe.Ramsay@arm.com>
 
 	Backported from master:

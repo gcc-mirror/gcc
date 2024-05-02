@@ -1,3 +1,37 @@
+2024-05-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/113141
+	* call.cc (reference_binding): Remove badness criteria sanity
+	check in the recursive case.
+
+2024-05-01  centurion  <centurion009@proton.me>
+
+	Backported from master:
+	2024-04-04  centurion  <centurion009@proton.me>
+
+	PR c++/114377
+	* pt.cc (find_template_parameter_info::found): Use TREE_TYPE for
+	TEMPLATE_DECL instead of DECL_INITIAL.
+
+2024-05-01  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-04-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114561
+	PR c++/114562
+	* call.cc (convert_like_internal): Avoid adding qualification
+	conversion in direct reference binding.
+
+2024-05-01  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100667
+	* semantics.cc (same_type_ref_bind_p): New.
+	(finish_trait_expr): Use it.
+
 2024-04-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
