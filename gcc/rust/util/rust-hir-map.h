@@ -112,7 +112,8 @@ public:
 
   void insert_local_defid_mapping (CrateNum crateNum, LocalDefId id,
 				   HIR::Item *item);
-  HIR::Item *lookup_local_defid (CrateNum crateNum, LocalDefId id);
+  tl::optional<HIR::Item *> lookup_local_defid (CrateNum crateNum,
+						LocalDefId id);
 
   void insert_hir_item (HIR::Item *item);
   tl::optional<HIR::Item *> lookup_hir_item (HirId id);
