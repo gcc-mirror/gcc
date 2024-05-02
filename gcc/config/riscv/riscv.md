@@ -2077,8 +2077,8 @@
 (define_insn "l<round_pattern><ANYF:mode>si2_sext"
   [(set (match_operand:DI       0 "register_operand" "=r")
 	 (sign_extend:DI (unspec:SI
-	                     [(match_operand:ANYF 1 "register_operand" " f")]
-                      ROUND)))]
+			     [(match_operand:ANYF 1 "register_operand" " f")]
+		      ROUND)))]
   "TARGET_64BIT && (TARGET_HARD_FLOAT || TARGET_ZFINX)"
   "fcvt.w.<ANYF:fmt> %0,%1,<round_rm>"
   [(set_attr "type" "fcvt_f2i")
@@ -2094,13 +2094,25 @@
   [(set_attr "type" "fcvt_f2i")
    (set_attr "mode" "<ANYF:MODE>")])
 
+;; There are a couple non-obvious restrictions to be aware of.
+;;
+;; We'll do a FP-INT conversion in the sequence.  But we don't
+;; have a .l (64bit) variant of those instructions for rv32.
+;; To preserve proper semantics we must reject DFmode inputs
+;; for rv32 unless Zfa is enabled.
+;;
+;; The ANYF iterator allows HFmode.  We don't have all the
+;; necessary patterns defined for HFmode.  So restrict HFmode
+;; to TARGET_ZFA.
 (define_expand "<round_pattern><ANYF:mode>2"
   [(set (match_operand:ANYF     0 "register_operand" "=f")
-        (unspec:ANYF
-            [(match_operand:ANYF 1 "register_operand" " f")]
-        ROUND))]
-  "TARGET_HARD_FLOAT && (TARGET_ZFA
-                         || flag_fp_int_builtin_inexact || !flag_trapping_math)"
+	(unspec:ANYF
+	    [(match_operand:ANYF 1 "register_operand" " f")]
+	ROUND))]
+  "(TARGET_HARD_FLOAT
+    && (TARGET_ZFA || flag_fp_int_builtin_inexact || !flag_trapping_math)
+    && (TARGET_ZFA || TARGET_64BIT || <ANYF:MODE>mode != DFmode)
+    && (TARGET_ZFA || <ANYF:MODE>mode != HFmode))"
 {
   if (TARGET_ZFA)
     emit_insn (gen_<round_pattern><ANYF:mode>_zfa2 (operands[0],
@@ -2116,7 +2128,7 @@
 
       riscv_emit_move (tmp_reg, operands[1]);
       riscv_emit_move (coeff_reg,
-                       riscv_vector::get_fp_rounding_coefficient (<ANYF:MODE>mode));
+		       riscv_vector::get_fp_rounding_coefficient (<ANYF:MODE>mode));
       emit_insn (gen_abs<ANYF:mode>2 (abs_reg, operands[1]));
 
       riscv_expand_conditional_branch (label, LT, abs_reg, coeff_reg);
@@ -2126,29 +2138,20 @@
 
       emit_label (label);
       switch (<ANYF:MODE>mode)
-        {
-        case SFmode:
-          reg = gen_reg_rtx (SImode);
-          emit_insn (gen_l<round_pattern>sfsi2 (reg, operands[1]));
-          emit_insn (gen_floatsisf2 (abs_reg, reg));
-          break;
-        case DFmode:
-          if (TARGET_64BIT)
-            {
-              reg = gen_reg_rtx (DImode);
-              emit_insn (gen_l<round_pattern>dfdi2 (reg, operands[1]));
-              emit_insn (gen_floatdidf2 (abs_reg, reg));
-            }
-          else
-            {
-              reg = gen_reg_rtx (SImode);
-              emit_insn (gen_l<round_pattern>dfsi2 (reg, operands[1]));
-              emit_insn (gen_floatsidf2 (abs_reg, reg));
-            }
-          break;
-        default:
-          gcc_unreachable ();
-        }
+	{
+	case SFmode:
+	  reg = gen_reg_rtx (SImode);
+	  emit_insn (gen_l<round_pattern>sfsi2 (reg, operands[1]));
+	  emit_insn (gen_floatsisf2 (abs_reg, reg));
+	  break;
+	case DFmode:
+	  reg = gen_reg_rtx (DImode);
+	  emit_insn (gen_l<round_pattern>dfdi2 (reg, operands[1]));
+	  emit_insn (gen_floatdidf2 (abs_reg, reg));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
 
       emit_insn (gen_copysign<ANYF:mode>3 (tmp_reg, abs_reg, operands[1]));
 
