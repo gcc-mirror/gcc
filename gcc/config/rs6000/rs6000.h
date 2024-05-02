@@ -494,7 +494,7 @@ extern int rs6000_vector_align[];
    memory support.  */
 #define TARGET_SYNC_HI_QI	(TARGET_QUAD_MEMORY			\
 				 || TARGET_QUAD_MEMORY_ATOMIC		\
-				 || TARGET_DIRECT_MOVE)
+				 || TARGET_POWER8)
 
 #define TARGET_SYNC_TI		TARGET_QUAD_MEMORY_ATOMIC
 
