@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 class gimple_infer_range
 {
 public:
-  gimple_infer_range (gimple *s);
+  gimple_infer_range (gimple *s, bool use_rangeops = false);
   gimple_infer_range (tree name, vrange &r);
   inline unsigned num () const { return num_args; }
   inline tree name (unsigned index) const

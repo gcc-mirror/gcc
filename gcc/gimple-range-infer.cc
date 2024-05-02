@@ -129,6 +129,9 @@ gimple_infer_range::check_assume_func (gcall *call)
 void
 gimple_infer_range::add_range (tree name, vrange &range)
 {
+  // Do not add an inferred range if it is VARYING.
+  if (range.varying_p ())
+    return;
   m_names[num_args] = name;
   m_ranges[num_args] = range;
   if (num_args < size_limit - 1)
@@ -149,8 +152,12 @@ gimple_infer_range::add_nonzero (tree name)
 
 // Process S for range inference and fill in the summary list.
 // This is the routine where new inferred ranges should be added.
+// If USE_RANGEOPS is true, invoke range-ops on stmts with a single
+// ssa-name aa constant to reflect an inferred range. ie
+// x_2 = y_3 + 1 will provide an inferred range for y_3 of [-INF, +INF - 1].
+// This defaults to FALSE as it can be expensive.,
 
-gimple_infer_range::gimple_infer_range (gimple *s)
+gimple_infer_range::gimple_infer_range (gimple *s, bool use_rangeops)
 {
   num_args = 0;
 
@@ -190,6 +197,38 @@ gimple_infer_range::gimple_infer_range (gimple *s)
     walk_stmt_load_store_ops (s, (void *)this, non_null_loadstore,
 			      non_null_loadstore);
 
+  // Gated by flag.
+  if (!use_rangeops)
+    return;
+
+  // Check if there are any inferred ranges from range-ops.
+  gimple_range_op_handler handler (s);
+  if (!handler)
+    return;
+
+  // Only proceed if ONE operand is an SSA_NAME,  This may provide an
+  // inferred range for 'y + 3' , but will bypass expressions like
+  // 'y + z' as it depends on symbolic values.
+  tree ssa1 = gimple_range_ssa_p (handler.operand1 ());
+  tree ssa2 = gimple_range_ssa_p (handler.operand2 ());
+  if ((ssa1 != NULL) == (ssa2 != NULL))
+    return;
+
+  // The other operand should be a constant, so just use the global range
+  // query to pick up any other values.
+  if (ssa1)
+    {
+      Value_Range op1 (TREE_TYPE (ssa1));
+      if (op1_range (op1, s, get_global_range_query ()) && !op1.varying_p ())
+	add_range (ssa1, op1);
+    }
+  else
+    {
+      gcc_checking_assert (ssa2);
+      Value_Range op2 (TREE_TYPE (ssa2));
+      if (op2_range (op2, s, get_global_range_query ()) && !op2.varying_p ())
+	add_range (ssa2, op2);
+    }
 }
 
 // Create an single inferred range for NAMe using range R.

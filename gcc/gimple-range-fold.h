@@ -43,6 +43,13 @@ bool fold_range (vrange &r, gimple *s, vrange &r1, vrange &r2,
 bool fold_range (vrange &r, gimple *s, unsigned num_elements, vrange **vector,
 		 range_query *q = NULL);
 
+// Calculate op1 on stmt S.
+bool op1_range (vrange &, gimple *s, range_query *q = NULL);
+bool op1_range (vrange &, gimple *s, const vrange &lhs, range_query *q = NULL);
+// Calculate op2 on stmt S.
+bool op2_range (vrange &, gimple *s, range_query *q = NULL);
+bool op2_range (vrange &, gimple *s, const vrange &lhs, range_query *q = NULL);
+
 // This routine will return a relation trio for stmt S.
 relation_trio fold_relations (gimple *s, range_query *q = NULL);
 

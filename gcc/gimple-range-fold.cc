@@ -328,6 +328,77 @@ fold_range (vrange &r, gimple *s, edge on_edge, range_query *q)
   return f.fold_stmt (r, s, src);
 }
 
+// Calculate op1 on statetemt S with LHS into range R using range query Q
+// to resolve any other operands.
+
+bool
+op1_range (vrange &r, gimple *s, const vrange &lhs, range_query *q)
+{
+  gimple_range_op_handler handler (s);
+  if (!handler)
+    return false;
+
+  fur_stmt src (s, q);
+
+  tree op2_expr = handler.operand2 ();
+  if (!op2_expr)
+    return handler.calc_op1 (r, lhs);
+
+  Value_Range op2 (TREE_TYPE (op2_expr));
+  if (!src.get_operand (op2, op2_expr))
+    return false;
+
+  return handler.calc_op1 (r, lhs, op2);
+}
+
+// Calculate op1 on statetemt S into range R using range query Q.
+// LHS is set to VARYING in this case.
+
+bool
+op1_range (vrange &r, gimple *s, range_query *q)
+{
+  tree lhs_type = gimple_range_type (s);
+  if (!lhs_type)
+    return false;
+  Value_Range lhs_range;
+  lhs_range.set_varying (lhs_type);
+  return op1_range (r, s, lhs_range, q);
+}
+
+// Calculate op2 on statetemt S with LHS into range R using range query Q
+// to resolve any other operands.
+
+bool
+op2_range (vrange &r, gimple *s, const vrange &lhs, range_query *q)
+{
+
+  gimple_range_op_handler handler (s);
+  if (!handler)
+    return false;
+
+  fur_stmt src (s, q);
+
+  Value_Range op1 (TREE_TYPE (handler.operand1 ()));
+  if (!src.get_operand (op1, handler.operand1 ()))
+    return false;
+
+  return handler.calc_op2 (r, lhs, op1);
+}
+
+// Calculate op2 on statetemt S into range R using range query Q.
+// LHS is set to VARYING in this case.
+
+bool
+op2_range (vrange &r, gimple *s, range_query *q)
+{
+  tree lhs_type = gimple_range_type (s);
+  if (!lhs_type)
+    return false;
+  Value_Range lhs_range;
+  lhs_range.set_varying (lhs_type);
+  return op2_range (r, s, lhs_range, q);
+}
+
 // Provide a fur_source which can be used to determine any relations on
 // a statement.  It manages the callback from fold_using_ranges to determine
 // a relation_trio for a statement.
