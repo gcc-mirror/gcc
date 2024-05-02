@@ -741,7 +741,7 @@ private:
 
   vrange *m_vrange;
   // The buffer must be at least the size of the largest range.
-  static_assert (sizeof (int_range_max) > sizeof (frange));
+  static_assert (sizeof (int_range_max) > sizeof (frange), "");
   char m_buffer[sizeof (int_range_max)];
 };
 
