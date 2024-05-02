@@ -1,3 +1,12 @@
+2024-05-01  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2024-03-07  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/113950
+	* config/rs6000/vsx.md (vsx_splat_<mode>): Correct assignment to operand1
+	and simplify else if with else.
+
 2024-04-30  Joe Ramsay  <Joe.Ramsay@arm.com>
 
 	Backported from master:
