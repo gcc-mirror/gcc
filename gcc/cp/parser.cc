@@ -28634,6 +28634,27 @@ cp_parser_pure_specifier (cp_parser* parser)
       || token->keyword == RID_DELETE)
     {
       maybe_warn_cpp0x (CPP0X_DEFAULTED_DELETED);
+      if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+	{
+	  if (cxx_dialect >= cxx11 && cxx_dialect < cxx26)
+	    pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		     OPT_Wc__26_extensions,
+		     "%<delete%> reason only available with "
+		     "%<-std=c++2c%> or %<-std=gnu++2c%>");
+
+	  /* Consume the `('.  */
+	  matching_parens parens;
+	  parens.consume_open (parser);
+	  tree reason = cp_parser_unevaluated_string_literal (parser);
+	  /* Consume the `)'.  */
+	  parens.require_close (parser);
+	  if (TREE_CODE (reason) == STRING_CST)
+	    {
+	      TREE_TYPE (reason) = token->u.value;
+	      return reason;
+	    }
+	}
+
       return token->u.value;
     }
 

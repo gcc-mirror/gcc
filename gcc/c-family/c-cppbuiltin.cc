@@ -1092,6 +1092,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_static_assert=202306L");
 	  cpp_define (pfile, "__cpp_placeholder_variables=202306L");
 	  cpp_define (pfile, "__cpp_structured_bindings=202403L");
+	  cpp_define (pfile, "__cpp_deleted_function=202403L");
 	}
       if (flag_concepts)
         {

@@ -2420,6 +2420,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 			"previous declaration of %qD", olddecl);
 	    }
 	  DECL_DELETED_FN (newdecl) |= DECL_DELETED_FN (olddecl);
+	  if (DECL_DELETED_FN (olddecl)
+	      && DECL_INITIAL (olddecl)
+	      && TREE_CODE (DECL_INITIAL (olddecl)) == STRING_CST)
+	    DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	}
     }
 
@@ -8597,17 +8601,20 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   if (init && TREE_CODE (decl) == FUNCTION_DECL)
     {
       tree clone;
-      if (init == ridpointers[(int)RID_DELETE])
+      if (init == ridpointers[(int)RID_DELETE]
+	  || (TREE_CODE (init) == STRING_CST
+	      && TREE_TYPE (init) == ridpointers[(int)RID_DELETE]))
 	{
 	  /* FIXME check this is 1st decl.  */
 	  DECL_DELETED_FN (decl) = 1;
 	  DECL_DECLARED_INLINE_P (decl) = 1;
-	  DECL_INITIAL (decl) = error_mark_node;
+	  DECL_INITIAL (decl)
+	    = TREE_CODE (init) == STRING_CST ? init : error_mark_node;
 	  FOR_EACH_CLONE (clone, decl)
 	    {
 	      DECL_DELETED_FN (clone) = 1;
 	      DECL_DECLARED_INLINE_P (clone) = 1;
-	      DECL_INITIAL (clone) = error_mark_node;
+	      DECL_INITIAL (clone) = DECL_INITIAL (decl);
 	    }
 	  init = NULL_TREE;
 	}

@@ -609,3 +609,9 @@
 #elif __cpp_placeholder_variables != 202306
 #  error "__cpp_placeholder_variables != 202306"
 #endif
+
+#ifndef __cpp_deleted_function
+#  error "__cpp_deleted_function"
+#elif __cpp_deleted_function != 202403
+#  error "__cpp_deleted_function != 202403"
+#endif

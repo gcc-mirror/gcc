@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "optabs-query.h"
 #include "omp-general.h"
+#include "escaped_string.h"
 
 /* Id for dumping the raw trees.  */
 int raw_dump_id;
@@ -1038,7 +1039,10 @@ grokfield (const cp_declarator *declarator,
     init = NULL_TREE;
 
   int initialized;
-  if (init == ridpointers[(int)RID_DELETE])
+  if (init == ridpointers[(int)RID_DELETE]
+      || (init
+	  && TREE_CODE (init) == STRING_CST
+	  && TREE_TYPE (init) == ridpointers[(int)RID_DELETE]))
     initialized = SD_DELETED;
   else if (init == ridpointers[(int)RID_DEFAULT])
     initialized = SD_DEFAULTED;
@@ -1123,10 +1127,14 @@ grokfield (const cp_declarator *declarator,
     {
       if (TREE_CODE (value) == FUNCTION_DECL)
 	{
-	  if (init == ridpointers[(int)RID_DELETE])
+	  if (init == ridpointers[(int)RID_DELETE]
+	      || (TREE_CODE (init) == STRING_CST
+		  && TREE_TYPE (init) == ridpointers[(int)RID_DELETE]))
 	    {
 	      DECL_DELETED_FN (value) = 1;
 	      DECL_DECLARED_INLINE_P (value) = 1;
+	      if (TREE_CODE (init) == STRING_CST)
+		DECL_INITIAL (value) = init;
 	    }
 	  else if (init == ridpointers[(int)RID_DEFAULT])
 	    {
@@ -5912,7 +5920,16 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
 	    sorry ("converting lambda that uses %<...%> to function pointer");
 	  else if (complain & tf_error)
 	    {
-	      error ("use of deleted function %qD", decl);
+	      if (DECL_INITIAL (decl)
+		  && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST)
+		{
+		  escaped_string msg;
+		  msg.escape (TREE_STRING_POINTER (DECL_INITIAL (decl)));
+		  error ("use of deleted function %qD: %s",
+			 decl, (const char *) msg);
+		}
+	      else
+		error ("use of deleted function %qD", decl);
 	      if (!maybe_explain_implicit_delete (decl))
 		inform (DECL_SOURCE_LOCATION (decl), "declared here");
 	    }
