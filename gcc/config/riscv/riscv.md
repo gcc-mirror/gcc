@@ -1639,7 +1639,22 @@
   [(set_attr "type" "logical")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "<optab><mode>3"
+;; When we construct constants we may want to twiddle a single bit
+;; by generating an IOR.  But the constant likely doesn't fit
+;; arith_operand.  So the generic code will reload the constant into
+;; a register.  Post-reload we won't have the chance to squash things
+;; back into a Zbs insn.
+;;
+;; So indirect through a define_expand.  That allows us to have a
+;; predicate that conditionally accepts single bit constants without
+;; putting the details of Zbs instructions in here.
+(define_expand "<optab><mode>3"
+  [(set (match_operand:X 0 "register_operand")
+	(any_or:X (match_operand:X 1 "register_operand" "")
+		   (match_operand:X 2 "arith_or_zbs_operand" "")))]
+  "")
+
+(define_insn "*<optab><mode>3"
   [(set (match_operand:X                0 "register_operand" "=r,r")
 	(any_or:X (match_operand:X 1 "register_operand" "%r,r")
 		       (match_operand:X 2 "arith_operand"    " r,I")))]

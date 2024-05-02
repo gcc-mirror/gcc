@@ -725,6 +725,9 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
   HOST_WIDE_INT low_part = CONST_LOW_PART (value);
   int cost = RISCV_MAX_INTEGER_OPS + 1, alt_cost;
   struct riscv_integer_op alt_codes[RISCV_MAX_INTEGER_OPS];
+  int upper_trailing_ones = ctz_hwi (~value >> 32);
+  int lower_leading_ones = clz_hwi (~value << 32);
+
 
   if (SMALL_OPERAND (value) || LUI_OPERAND (value))
     {
@@ -825,22 +828,58 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	  cost = 2;
 	}
       /* Handle the case where the 11 bit range of zero bits wraps around.  */
-      else
+      else if (upper_trailing_ones < 32 && lower_leading_ones < 32
+	       && ((64 - upper_trailing_ones - lower_leading_ones) < 12))
 	{
-	  int upper_trailing_ones = ctz_hwi (~value >> 32);
-	  int lower_leading_ones = clz_hwi (~value << 32);
+	  codes[0].code = UNKNOWN;
+	  /* The sign-bit might be zero, so just rotate to be safe.  */
+	  codes[0].value = ((value << (32 - upper_trailing_ones))
+			    | ((unsigned HOST_WIDE_INT) value
+			       >> (32 + upper_trailing_ones)));
+	  codes[1].code = ROTATERT;
+	  codes[1].value = 32 - upper_trailing_ones;
+	  cost = 2;
+	}
+      /* Final cases, particularly focused on bseti.  */
+      else if (cost > 2 && TARGET_ZBS)
+	{
+	  int i = 0;
 
-	  if (upper_trailing_ones < 32 && lower_leading_ones < 32
-	      && ((64 - upper_trailing_ones - lower_leading_ones) < 12))
+	  /* First handle any bits set by LUI.  Be careful of the
+	     SImode sign bit!.  */
+	  if (value & 0x7ffff800)
 	    {
-	      codes[0].code = UNKNOWN;
-	      /* The sign-bit might be zero, so just rotate to be safe.  */
-	      codes[0].value = ((value << (32 - upper_trailing_ones))
-				| ((unsigned HOST_WIDE_INT) value
-				   >> (32 + upper_trailing_ones)));
-	      codes[1].code = ROTATERT;
-	      codes[1].value = 32 - upper_trailing_ones;
-	      cost = 2;
+	      alt_codes[i].code = (i == 0 ? UNKNOWN : IOR);
+	      alt_codes[i].value = value & 0x7ffff800;
+	      value &= ~0x7ffff800;
+	      i++;
+	    }
+
+	  /* Next, any bits we can handle with addi.  */
+	  if (value & 0x7ff)
+	    {
+	      alt_codes[i].code = (i == 0 ? UNKNOWN : PLUS);
+	      alt_codes[i].value = value & 0x7ff;
+	      value &= ~0x7ff;
+	      i++;
+	    }
+
+	  /* And any residuals with bseti.  */
+	  while (i < cost && value)
+	    {
+	      HOST_WIDE_INT bit = ctz_hwi (value);
+	      alt_codes[i].code = (i == 0 ? UNKNOWN : IOR);
+	      alt_codes[i].value = 1UL << bit;
+	      value &= ~(1ULL << bit);
+	      i++;
+	    }
+
+	  /* If LUI+ADDI+BSETI resulted in a more efficient
+	     sequence, then use it.  */
+	  if (i < cost)
+	    {
+	      memcpy (codes, alt_codes, sizeof (alt_codes));
+	      cost = i;
 	    }
 	}
     }
