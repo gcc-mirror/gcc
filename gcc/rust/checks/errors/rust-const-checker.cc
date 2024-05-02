@@ -315,11 +315,9 @@ ConstChecker::check_function_call (HirId fn_id, location_t locus)
   // There are const extern functions (intrinsics)
   // TODO: Should we check the ABI is only "rust intrinsics"? Is that handled
   // elsewhere?
-  HirId parent_block;
-  auto maybe_extern_item
-    = mappings.lookup_hir_extern_item (fn_id, &parent_block);
+  auto maybe_extern_item = mappings.lookup_hir_extern_item (fn_id);
   if (maybe_extern_item
-      && maybe_extern_item->get_extern_kind ()
+      && maybe_extern_item->first->get_extern_kind ()
 	   != ExternalItem::ExternKind::Function)
     return;
 
@@ -334,7 +332,8 @@ ConstChecker::check_function_call (HirId fn_id, location_t locus)
   if (maybe_extern_item)
     {
       {
-	auto fn = static_cast<ExternalFunctionItem *> (maybe_extern_item);
+	auto fn
+	  = static_cast<ExternalFunctionItem *> (maybe_extern_item->first);
 	if (!is_const_extern_fn (*fn))
 	  is_error = true;
       }

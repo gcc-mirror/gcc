@@ -128,7 +128,10 @@ public:
   tl::optional<HIR::ExternBlock *> lookup_hir_extern_block (HirId id);
 
   void insert_hir_extern_item (HIR::ExternalItem *item, HirId parent_block);
-  HIR::ExternalItem *lookup_hir_extern_item (HirId id, HirId *parent_block);
+
+  // std::pair<hir_extern_item, parent hirid>
+  tl::optional<std::pair<HIR::ExternalItem *, HirId>>
+  lookup_hir_extern_item (HirId id);
 
   void insert_hir_impl_block (HIR::ImplBlock *item);
   tl::optional<HIR::ImplBlock *> lookup_hir_impl_block (HirId id);

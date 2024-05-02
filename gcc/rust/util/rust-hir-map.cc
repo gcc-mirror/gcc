@@ -437,22 +437,20 @@ void
 Mappings::insert_hir_extern_item (HIR::ExternalItem *item, HirId parent_block)
 {
   auto id = item->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_extern_item (id, nullptr) == nullptr);
+  rust_assert (!lookup_hir_extern_item (id));
 
   hirExternItemMappings[id] = {item, parent_block};
   insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
 
-HIR::ExternalItem *
-Mappings::lookup_hir_extern_item (HirId id, HirId *parent_block)
+tl::optional<std::pair<HIR::ExternalItem *, HirId>>
+Mappings::lookup_hir_extern_item (HirId id)
 {
   auto it = hirExternItemMappings.find (id);
   if (it == hirExternItemMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
-  *parent_block = it->second.second;
-
-  return it->second.first;
+  return it->second;
 }
 
 void
