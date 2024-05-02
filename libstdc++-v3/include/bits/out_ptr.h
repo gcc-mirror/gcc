@@ -54,9 +54,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Smart, typename _Pointer, typename... _Args>
     class out_ptr_t
     {
+#if _GLIBCXX_HOSTED
       static_assert(!__is_shared_ptr<_Smart> || sizeof...(_Args) != 0,
 		    "a deleter must be used when adapting std::shared_ptr "
 		    "with std::out_ptr");
+#endif
 
     public:
       explicit
@@ -216,6 +218,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  [[no_unique_address]] _Del2 _M_del;
 	};
 
+#if _GLIBCXX_HOSTED
       // Partial specialization for std::shared_ptr.
       // This specialization gives direct access to the private member
       // of the shared_ptr, avoiding the overhead of storing a separate
@@ -274,6 +277,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  using _Impl<_Smart, _Pointer, _Del, allocator<void>>::_Impl;
 	};
+#endif
 
       using _Impl_t = _Impl<_Smart, _Pointer, _Args...>;
 
@@ -293,8 +297,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Smart, typename _Pointer, typename... _Args>
     class inout_ptr_t
     {
+#if _GLIBCXX_HOSTED
       static_assert(!__is_shared_ptr<_Smart>,
 		    "std::inout_ptr can not be used to wrap std::shared_ptr");
+#endif
 
     public:
       explicit
@@ -320,11 +326,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
+#if _GLIBCXX_HOSTED
       // Avoid an invalid instantiation of out_ptr_t<shared_ptr<T>, ...>
       using _Out_ptr_t
 	= __conditional_t<__is_shared_ptr<_Smart>,
 			  out_ptr_t<void*, void*>,
 			  out_ptr_t<_Smart, _Pointer, _Args...>>;
+#else
+      using _Out_ptr_t = out_ptr_t<_Smart, _Pointer, _Args...>;
+#endif
       using _Impl_t = typename _Out_ptr_t::_Impl_t;
       _Impl_t _M_impl;
     };
