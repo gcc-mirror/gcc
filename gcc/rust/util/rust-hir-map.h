@@ -108,7 +108,7 @@ public:
   void insert_defid_mapping (DefId id, HIR::Item *item);
   tl::optional<HIR::Item *> lookup_defid (DefId id);
   void insert_defid_mapping (DefId id, HIR::TraitItem *item);
-  HIR::TraitItem *lookup_trait_item_defid (DefId id);
+  tl::optional<HIR::TraitItem *> lookup_trait_item_defid (DefId id);
 
   void insert_local_defid_mapping (CrateNum crateNum, LocalDefId id,
 				   HIR::Item *item);
@@ -350,8 +350,8 @@ public:
 
   HIR::ImplBlock *lookup_builtin_marker ();
 
-  HIR::TraitItem *lookup_trait_item_lang_item (LangItem::Kind item,
-					       location_t locus);
+  tl::optional<HIR::TraitItem *>
+  lookup_trait_item_lang_item (LangItem::Kind item, location_t locus);
 
 private:
   Mappings ();

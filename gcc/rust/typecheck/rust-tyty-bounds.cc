@@ -245,8 +245,11 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
 	rust_assert (fn.has_return_type ());
 	TypeCheckType::Resolve (fn.get_return_type ().get ());
 
-	HIR::TraitItem *trait_item = mappings.lookup_trait_item_lang_item (
-	  LangItem::Kind::FN_ONCE_OUTPUT, final_seg->get_locus ());
+	HIR::TraitItem *trait_item
+	  = mappings
+	      .lookup_trait_item_lang_item (LangItem::Kind::FN_ONCE_OUTPUT,
+					    final_seg->get_locus ())
+	      .value ();
 
 	std::vector<HIR::GenericArgsBinding> bindings;
 	location_t output_locus = fn.get_return_type ()->get_locus ();

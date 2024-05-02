@@ -314,7 +314,7 @@ Mappings::insert_defid_mapping (DefId id, HIR::Item *item)
 
   rust_assert (!lookup_defid (id));
   rust_assert (!lookup_local_defid (crate_num, local_def_id));
-  rust_assert (lookup_trait_item_defid (id) == nullptr);
+  rust_assert (!lookup_trait_item_defid (id));
 
   defIdMappings[id] = item;
   insert_local_defid_mapping (crate_num, local_def_id, item);
@@ -338,17 +338,17 @@ Mappings::insert_defid_mapping (DefId id, HIR::TraitItem *item)
 
   rust_assert (!lookup_defid (id));
   rust_assert (!lookup_local_defid (crate_num, local_def_id));
-  rust_assert (lookup_trait_item_defid (id) == nullptr);
+  rust_assert (!lookup_trait_item_defid (id));
 
   defIdTraitItemMappings[id] = item;
 }
 
-HIR::TraitItem *
+tl::optional<HIR::TraitItem *>
 Mappings::lookup_trait_item_defid (DefId id)
 {
   auto it = defIdTraitItemMappings.find (id);
   if (it == defIdTraitItemMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }
@@ -1264,7 +1264,7 @@ Mappings::get_lang_item (LangItem::Kind item_type, location_t locus)
   return item;
 }
 
-HIR::TraitItem *
+tl::optional<HIR::TraitItem *>
 Mappings::lookup_trait_item_lang_item (LangItem::Kind item, location_t locus)
 {
   DefId trait_item_id = get_lang_item (item, locus);
