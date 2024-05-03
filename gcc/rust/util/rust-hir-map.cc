@@ -536,12 +536,12 @@ Mappings::insert_hir_expr (HIR::Expr *expr)
   insert_location (id, expr->get_locus ());
 }
 
-HIR::Expr *
+tl::optional<HIR::Expr *>
 Mappings::lookup_hir_expr (HirId id)
 {
   auto it = hirExprMappings.find (id);
   if (it == hirExprMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }

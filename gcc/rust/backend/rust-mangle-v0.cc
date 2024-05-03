@@ -384,8 +384,6 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 
     auto hir_id = hid.value ();
 
-    HIR::Expr *expr = mappings.lookup_hir_expr (hir_id);
-
     if (auto impl_item = mappings.lookup_hir_implitem (hir_id))
       {
 	switch (impl_item->first->get_impl_item_type ())
@@ -467,9 +465,9 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 				  cpath.get ().c_str ());
 	  break;
 	}
-    else if (expr != nullptr)
+    else if (auto expr = mappings.lookup_hir_expr (hir_id))
       {
-	rust_assert (expr->get_expression_type ()
+	rust_assert (expr.value ()->get_expression_type ()
 		     == HIR::Expr::ExprType::Closure);
 	// Use HIR ID as disambiguator.
 	v0path = v0_closure (v0path, hir_id);
