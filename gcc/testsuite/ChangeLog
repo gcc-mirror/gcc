@@ -1,3 +1,55 @@
+2024-05-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-1.c: New test.
+
+2024-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR middle-end/114734
+	* gcc.target/riscv/rvv/autovec/pr114734.c: New test.
+
+2024-05-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/round_32.c: Add require-effective-target glibc.
+	* gcc.target/riscv/round_64.c: Likewise.
+
+2024-05-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114917
+	* g++.dg/modules/export-5_a.C: New test.
+	* g++.dg/modules/export-5_b.C: New test.
+	* g++.dg/parse/linkage4.C: New test.
+
+2024-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114458
+	* g++.dg/cpp26/feat-cxx26.C (__cpp_deleted_function): Add test.
+	* g++.dg/cpp26/delete-reason1.C: New test.
+	* g++.dg/cpp26/delete-reason2.C: New test.
+	* g++.dg/parse/error65.C (f1): Adjust expected diagnostics.
+
+2024-05-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/risbg-ll-2.c: Fix start offset for rosbg of
+	f10.
+
+2024-05-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114630
+	* g++.dg/modules/partial-3.C: New test.
+
+2024-05-02  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/zero_bits_compound-1.c: Fix for s390.
+
+2024-05-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/105224
+	* g++.dg/modules/virt-2_a.C: Update linkage requirements.
+	* g++.dg/modules/virt-2_b.C: Likewise.
+	* g++.dg/modules/virt-2_c.C: Likewise.
+	* g++.dg/modules/virt-4_a.C: New test.
+	* g++.dg/modules/virt-4_b.C: New test.
+
 2024-05-01  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/debug/dwarf2/array-3.C: No more 'int' for in-chrg parm.

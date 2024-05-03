@@ -1,3 +1,69 @@
+2024-05-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md (<round_pattern><ANYF:mode>2): Adjust
+	condition to match what can be properly implemented.  Fix various
+	formatting issues.
+	(l<round_pattern><ANYF:mode>si2_sext): Fix formatting
+
+2024-05-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/predicates.md (arith_or_zbs_operand): New predicate.
+	* config/riscv/riscv.cc (riscv_build_integer_one): Use bseti to set
+	single bits when profitable.
+	* config/riscv/riscv.md (*<optab><mode>3): Renamed with '*' prefix.
+	(<optab><mode>3): New expander for IOR/XOR.
+
+2024-05-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_print_slp_tree): Mark live lanes.
+	(dot_slp_tree): New overload for multiple entries.
+
+2024-05-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113836
+	* doc/gm2.texi (Compiler options): Add -fm2-debug-trace=,
+	-fm2-dump, -fm2-dump-decl=, -fm2-dump-gimple=, -fm2-dump-quad=
+	and -fm2-dump-filter=.
+
+2024-05-02  Marc Poulhiès  <poulhies@adacore.com>
+
+	* value-range.h: fix static_assert to use 2 arguments.
+
+2024-05-02  Peter Damianov  <peter0x44@disroot.org>
+
+	PR lto/110710
+	* lto-wrapper.cc (run_gcc): Instead of truncating a processed
+	ltrans input from the Makefile use the new -truncate option
+	to accomplish the same.
+
+2024-05-02  Peter Damianov  <peter0x44@disroot.org>
+
+	PR lto/110710
+	* common.opt (truncate): New internal option.
+	* gcc.cc (totruncate_file): New global.
+	(driver_handle_option): Handle -truncate <file>.
+	(driver::final_actions): Truncate the file indicated.
+
+2024-05-02  Richard Biener  <rguenther@suse.de>
+
+	* graphds.cc (dump_graph): Dump in graphviz format.
+
+2024-05-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-live.h (tree_live_info_d::global): Remove.
+	(partition_is_global): Likewise.
+	(make_live_on_entry): Do not set bit in global.
+	* tree-ssa-live.cc (new_tree_live_info): Do not allocate
+	global bitmap.
+	(delete_tree_live_info): Do not release it.
+	(set_var_live_on_entry): Do not set bits in it.
+
+2024-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114579
+	* cfgexpand.cc (add_scope_conflicts_1): Record all-to-all
+	conflicts only when there's a CFG merge but for all CFG merges.
+
 2024-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	PR target/69374

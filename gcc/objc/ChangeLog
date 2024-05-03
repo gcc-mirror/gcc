@@ -1,3 +1,10 @@
+2024-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.cc (WEAK_PROTOCOLS_AFTER): New.
+	(next_runtime_abi_02_protocol_decl): Use WEAK_PROTOCOLS_AFTER
+	to determine this ABI change.
+	(build_v2_protocol_list_address_table): Likewise.
+
 2024-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc-next-runtime-abi-02.cc (build_v2_class_ro_t_initializer): Use

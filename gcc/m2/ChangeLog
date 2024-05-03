@@ -1,3 +1,30 @@
+2024-05-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/113836
+	* gm2-compiler/M2AsmUtil.def: Remove export qualified and
+	unused import.
+	* gm2-compiler/M2LangDump.mod (AddRuleTextDump): New procedure.
+	(AddRuleScopeQualidentDump): Add warning check against unmatched
+	rule.
+	(GenQualidentSymString): New procedure function.
+	(IdentQualidentMatch): New procedure function.
+	(IsRuleFilenameMatch): New procedure function.
+	(CheckRuleMatch): New procedure function.
+	(AddRuleFilenameDump): New procedure function.
+	* gm2-gcc/m2misc.cc (m2misc_warning_m2_dump_filter): New function.
+	* gm2-gcc/m2misc.def (warning_m2_dump_filter): New procedure.
+	* gm2-gcc/m2misc.h (m2misc_warning_m2_dump_filter): New prototype.
+	* gm2-gcc/m2pp.cc (VERBOSE_TYPE_DESC): New define.
+	(m2pp_identifier): Define out verbose type info.
+	(m2pp_constructor): Define out verbose type info.
+	(m2pp_assignment): Define out verbose type info.
+	* gm2-lang.cc (ENABLE_M2DUMP_ALL): Remove.
+	* lang.opt (fm2-dump): Add.
+	(fm2-dump-decl=): Add.
+	(fm2-dump-gimple=): Add.
+	(fm2-dump-quad=): Add.
+	(fm2-dump-filter=): Add.
+
 2024-04-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114836

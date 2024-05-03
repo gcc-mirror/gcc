@@ -1,3 +1,45 @@
+2024-05-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114917
+	* parser.cc (cp_parser_declaration_seq_opt): Clear
+	parser->in_unbraced_* flags when parsing toplevel declarations.
+
+2024-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114458
+	* parser.cc (cp_parser_pure_specifier): Implement C++26 P2573R2
+	- = delete("should have a reason");.  Parse deleted-function-body.
+	* decl.cc (duplicate_decls): Copy DECL_INITIAL from DECL_DELETED_FN
+	olddecl to newdecl if it is a STRING_CST.
+	(cp_finish_decl): Handle deleted init with a reason.
+	* decl2.cc: Include "escaped_string.h".
+	(grokfield): Handle deleted init with a reason.
+	(mark_used): Emit DECL_DELETED_FN reason in the message if any.
+	* cp-tree.h (DECL_DELETED_FN): Document representation of
+	= delete("reason") on a DECL.
+
+2024-05-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114630
+	* module.cc (depset::hash::add_partial_entities): Mark GM
+	specializations as unreached.
+	(depset::hash::find_dependencies): Also reach entities in the
+	DECL_TEMPLATE_SPECIALIZATIONS list.
+
+2024-05-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/105224
+	* class.cc (finish_struct_1): Also push classes attached to a
+	module into the 'keyed_classes' list.
+	* decl.cc (record_key_method_defined): Don't push classes
+	attached to a named module into the 'keyed_classes' list.
+	* module.cc (trees_in::read_class_def): Likewise.
+	* decl2.cc (import_export_class): Uniquely emit vtables for
+	non-template classes attached to a named module.
+	(vtables_uniquely_emitted): New function.
+	(import_export_decl): Update comments. Update with knowledge
+	about new kinds of uniquely emitted vtables.
+
 2024-05-01  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (base_ctor_identifier): Adjust comment.

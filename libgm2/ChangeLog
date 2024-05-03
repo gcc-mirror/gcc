@@ -1,3 +1,13 @@
+2024-05-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Makefile.in: Regenerate.
+	* libm2cor/Makefile.in: Ditto.
+	* libm2iso/Makefile.in: Ditto.
+	* libm2log/Makefile.in: Ditto.
+	* libm2min/Makefile.in: Ditto.
+	* libm2pim/Makefile.in: Ditto.
+	* aclocal.m4: Ditto.
+
 2024-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.host: Fix duplicated words; the the -> the.
