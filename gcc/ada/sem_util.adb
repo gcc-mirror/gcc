@@ -2387,7 +2387,7 @@ package body Sem_Util is
       Actual : Node_Id;
 
    begin
-      if All_Extensions_Allowed then
+      if Ada_Version >= Ada_2022 then
          Actual := First_Actual (Call);
          while Present (Actual) loop
             if Nkind (Actual) = N_Aggregate then
