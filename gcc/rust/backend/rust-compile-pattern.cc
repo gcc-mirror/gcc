@@ -35,11 +35,16 @@ CompilePatternCheckExpr::visit (HIR::PathInExpression &pattern)
 				      &lookup);
   rust_assert (ok);
 
-  // this must be an enum
-  // TODO: might not be
+  // must be an ADT (?)
   rust_assert (lookup->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
-  rust_assert (adt->is_enum ());
+
+  // if this isn't an enum, always succeed
+  if (!adt->is_enum ())
+    {
+      check_expr = boolean_true_node;
+      return;
+    }
 
   // lookup the variant
   HirId variant_id;

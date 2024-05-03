@@ -956,6 +956,8 @@ check_match_scrutinee (HIR::MatchExpr &expr, Context *ctx)
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (scrutinee_expr_tyty);
       if (adt->is_enum ())
 	rust_assert (adt->number_of_variants () > 0);
+      else
+	rust_assert (adt->number_of_variants () == 1);
     }
   else if (scrutinee_kind == TyTy::TypeKind::FLOAT)
     {
