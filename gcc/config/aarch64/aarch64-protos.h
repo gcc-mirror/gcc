@@ -767,7 +767,7 @@ bool aarch64_constant_address_p (rtx);
 bool aarch64_emit_approx_div (rtx, rtx, rtx);
 bool aarch64_emit_approx_sqrt (rtx, rtx, bool);
 tree aarch64_vector_load_decl (tree);
-rtx aarch64_gen_callee_cookie (aarch64_feature_flags, arm_pcs);
+rtx aarch64_gen_callee_cookie (aarch64_isa_mode, arm_pcs);
 void aarch64_expand_call (rtx, rtx, rtx, bool);
 bool aarch64_expand_cpymem_mops (rtx *, bool);
 bool aarch64_expand_cpymem (rtx *, bool);
@@ -808,7 +808,7 @@ int aarch64_add_offset_temporaries (rtx);
 void aarch64_split_add_offset (scalar_int_mode, rtx, rtx, rtx, rtx, rtx);
 bool aarch64_rdsvl_immediate_p (const_rtx);
 rtx aarch64_sme_vq_immediate (machine_mode mode, HOST_WIDE_INT,
-			      aarch64_feature_flags);
+			      aarch64_isa_mode);
 char *aarch64_output_rdsvl (const_rtx);
 bool aarch64_addsvl_addspl_immediate_p (const_rtx);
 char *aarch64_output_addsvl_addspl (rtx);
