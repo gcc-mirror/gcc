@@ -650,11 +650,11 @@ HIRCompileBase::compile_function (
   std::vector<HIR::FunctionParam> &function_params,
   const HIR::FunctionQualifiers &qualifiers, HIR::Visibility &visibility,
   AST::AttrVec &outer_attrs, location_t locus, HIR::BlockExpr *function_body,
-  const Resolver::CanonicalPath *canonical_path, TyTy::FnType *fntype)
+  const Resolver::CanonicalPath &canonical_path, TyTy::FnType *fntype)
 {
   tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
   std::string ir_symbol_name
-    = canonical_path->get () + fntype->subst_as_string ();
+    = canonical_path.get () + fntype->subst_as_string ();
 
   // we don't mangle the main fn since we haven't implemented the main shim
   bool is_main_fn = fn_name.compare ("main") == 0;
@@ -677,7 +677,7 @@ HIRCompileBase::compile_function (
   // conditionally mangle the function name
   bool should_mangle = should_mangle_item (fndecl);
   if (!is_main_fn && should_mangle)
-    asm_name = ctx->mangle_item (fntype, *canonical_path);
+    asm_name = ctx->mangle_item (fntype, canonical_path);
   SET_DECL_ASSEMBLER_NAME (fndecl,
 			   get_identifier_with_length (asm_name.data (),
 						       asm_name.length ()));
@@ -767,10 +767,10 @@ HIRCompileBase::compile_function (
 
 tree
 HIRCompileBase::compile_constant_item (
-  TyTy::BaseType *resolved_type, const Resolver::CanonicalPath *canonical_path,
+  TyTy::BaseType *resolved_type, const Resolver::CanonicalPath &canonical_path,
   HIR::Expr *const_value_expr, location_t locus)
 {
-  const std::string &ident = canonical_path->get ();
+  const std::string &ident = canonical_path.get ();
 
   tree type = TyTyResolveCompile::compile (ctx, resolved_type);
   tree const_type = build_qualified_type (type, TYPE_QUAL_CONST);

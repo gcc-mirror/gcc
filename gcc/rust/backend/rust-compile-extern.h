@@ -134,10 +134,8 @@ public:
     if (fntype->get_abi () == ABI::RUST)
       {
 	// then we need to get the canonical path of it and mangle it
-	const Resolver::CanonicalPath *canonical_path = nullptr;
-	bool ok = ctx->get_mappings ().lookup_canonical_path (
-	  function.get_mappings ().get_nodeid (), &canonical_path);
-	rust_assert (ok);
+	auto canonical_path = ctx->get_mappings ().lookup_canonical_path (
+	  function.get_mappings ().get_nodeid ());
 
 	ir_symbol_name = canonical_path->get () + fntype->subst_as_string ();
 	asm_name = ctx->mangle_item (fntype, *canonical_path);

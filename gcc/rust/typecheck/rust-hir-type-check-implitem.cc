@@ -461,11 +461,8 @@ TypeCheckImplItem::visit (HIR::Function &function)
       TypeCheckPattern::Resolve (param.get_param_name ().get (), param_tyty);
     }
 
-  const CanonicalPath *canonical_path = nullptr;
-  bool ok
-    = mappings.lookup_canonical_path (function.get_mappings ().get_nodeid (),
-				      &canonical_path);
-  rust_assert (ok);
+  auto canonical_path
+    = mappings.lookup_canonical_path (function.get_mappings ().get_nodeid ());
 
   RustIdent ident{*canonical_path, function.get_locus ()};
   auto fnType = new TyTy::FnType (

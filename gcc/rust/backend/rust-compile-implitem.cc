@@ -27,14 +27,12 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
   rust_assert (concrete != nullptr);
   TyTy::BaseType *resolved_type = concrete;
 
-  const Resolver::CanonicalPath *canonical_path = nullptr;
-  bool ok = ctx->get_mappings ().lookup_canonical_path (
-    constant.get_mappings ().get_nodeid (), &canonical_path);
-  rust_assert (ok);
+  auto canonical_path = ctx->get_mappings ().lookup_canonical_path (
+    constant.get_mappings ().get_nodeid ());
 
   HIR::Expr *const_value_expr = constant.get_expr ().get ();
   tree const_expr
-    = compile_constant_item (resolved_type, canonical_path, const_value_expr,
+    = compile_constant_item (resolved_type, *canonical_path, const_value_expr,
 			     constant.get_locus ());
   ctx->push_const (const_expr);
   ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
@@ -77,10 +75,8 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
       fntype->override_context ();
     }
 
-  const Resolver::CanonicalPath *canonical_path = nullptr;
-  bool ok = ctx->get_mappings ().lookup_canonical_path (
-    func.get_mappings ().get_nodeid (), &canonical_path);
-  rust_assert (ok);
+  auto canonical_path = ctx->get_mappings ().lookup_canonical_path (
+    func.get_mappings ().get_nodeid ());
 
   // FIXME: How do we get the proper visibility here?
   auto vis = HIR::Visibility (HIR::Visibility::VisType::PUBLIC);
@@ -90,7 +86,7 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
 			function.get_self (), function.get_function_params (),
 			function.get_qualifiers (), vis,
 			func.get_outer_attrs (), func.get_locus (),
-			func.get_block_expr ().get (), canonical_path, fntype);
+			func.get_block_expr ().get (), *canonical_path, fntype);
   reference = address_expression (fndecl, ref_locus);
 }
 
