@@ -672,18 +672,18 @@ void
 Mappings::insert_hir_struct_field (HIR::StructExprField *field)
 {
   auto id = field->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_struct_field (id) == nullptr);
+  rust_assert (!lookup_hir_struct_field (id));
 
   hirStructFieldMappings[id] = field;
   insert_node_to_hir (field->get_mappings ().get_nodeid (), id);
 }
 
-HIR::StructExprField *
+tl::optional<HIR::StructExprField *>
 Mappings::lookup_hir_struct_field (HirId id)
 {
   auto it = hirStructFieldMappings.find (id);
   if (it == hirStructFieldMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }
