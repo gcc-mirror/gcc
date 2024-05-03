@@ -167,7 +167,7 @@ public:
   tl::optional<HIR::SelfParam *> lookup_hir_self_param (HirId id);
 
   void insert_hir_struct_field (HIR::StructExprField *type);
-  HIR::StructExprField *lookup_hir_struct_field (HirId id);
+  tl::optional<HIR::StructExprField *> lookup_hir_struct_field (HirId id);
 
   void insert_hir_pattern (HIR::Pattern *pattern);
   HIR::Pattern *lookup_hir_pattern (HirId id);
