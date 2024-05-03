@@ -1,3 +1,53 @@
+2024-05-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114672
+	* tree-ssa-math-opts.cc (convert_plusminus_to_widen): Only
+	allow mode-precision results.
+
+2024-05-02  Will Schmidt  <will_schmidt@linux.ibm.com>
+
+	Backported from master:
+	2024-04-12  Will Schmidt  <will_schmidt@linux.ibm.com>
+		    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101865
+	* config/rs6000/rs6000-builtin.cc (rs6000_builtin_is_supported): Use
+	TARGET_POWER8.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Use
+	OPTION_MASK_POWER8.
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add OPTION_MASK_POWER8.
+	(ISA_2_7_MASKS_SERVER): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Update
+	comment.  Use OPTION_MASK_POWER8 and TARGET_POWER8.
+	* config/rs6000/rs6000.h (TARGET_SYNC_HI_QI): Use TARGET_POWER8.
+	* config/rs6000/rs6000.md (define_attr "isa"): Add p8.
+	(define_attr "enabled"): Handle it.
+	(define_insn "prefetch"): Use TARGET_POWER8.
+	* config/rs6000/rs6000.opt (mpower8-internal): New.
+
+2024-05-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-04-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101865
+	* config/rs6000/rs6000.h (TARGET_DIRECT_MOVE): Define.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Replace
+	OPTION_MASK_DIRECT_MOVE with OPTION_MASK_P8_VECTOR.  Delete redundant
+	OPTION_MASK_DIRECT_MOVE usage.  Delete TARGET_DIRECT_MOVE dead code.
+	(rs6000_opt_masks): Neuter the "direct-move" option.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Replace
+	OPTION_MASK_DIRECT_MOVE with OPTION_MASK_P8_VECTOR.  Delete useless
+	comment.
+	* config/rs6000/rs6000-cpus.def (ISA_2_7_MASKS_SERVER): Delete
+	OPTION_MASK_DIRECT_MOVE.
+	(OTHER_P8_VECTOR_MASKS): Likewise.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.opt (mdirect-move): Remove Mask and Var.
+
 2024-04-30  Joe Ramsay  <Joe.Ramsay@arm.com>
 
 	Backported from master:

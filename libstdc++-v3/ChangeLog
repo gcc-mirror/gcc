@@ -1,3 +1,25 @@
+2024-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93672
+	* src/c++98/istream.cc (istream::ignore(streamsize, int_type)):
+	Treat all negative delimiter values as eof().
+	* testsuite/27_io/basic_istream/ignore/char/93672.cc: New test.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/93672.cc: New
+	test.
+
+2024-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-04-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104606
+	* include/std/optional (operator<=>(const optional<T>&, const U&)):
+	Reverse order of three_way_comparable_with template arguments.
+	* testsuite/20_util/optional/relops/104606.cc: New test.
+
 2024-04-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
