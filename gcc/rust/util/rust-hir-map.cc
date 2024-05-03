@@ -592,18 +592,18 @@ void
 Mappings::insert_hir_type (HIR::Type *type)
 {
   auto id = type->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_type (id) == nullptr);
+  rust_assert (!lookup_hir_type (id));
 
   hirTypeMappings[id] = type;
   insert_node_to_hir (type->get_mappings ().get_nodeid (), id);
 }
 
-HIR::Type *
+tl::optional<HIR::Type *>
 Mappings::lookup_hir_type (HirId id)
 {
   auto it = hirTypeMappings.find (id);
   if (it == hirTypeMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }
