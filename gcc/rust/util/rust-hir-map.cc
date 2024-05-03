@@ -571,19 +571,19 @@ void
 Mappings::insert_hir_generic_param (HIR::GenericParam *param)
 {
   auto id = param->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_generic_param (id) == nullptr);
+  rust_assert (!lookup_hir_generic_param (id));
 
   hirGenericParamMappings[id] = param;
   insert_node_to_hir (param->get_mappings ().get_nodeid (), id);
   insert_location (id, param->get_locus ());
 }
 
-HIR::GenericParam *
+tl::optional<HIR::GenericParam *>
 Mappings::lookup_hir_generic_param (HirId id)
 {
   auto it = hirGenericParamMappings.find (id);
   if (it == hirGenericParamMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }
