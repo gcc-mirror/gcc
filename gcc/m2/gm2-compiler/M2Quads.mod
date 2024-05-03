@@ -4584,6 +4584,144 @@ END BuildForLoopToRangeCheck ;
 
 
 (*
+   ForLoopLastIteratorVariable - assigns the last value of the index variable to
+                                 symbol LastIterator.
+                                 The For Loop is regarded:
+
+                                 For ident := e1 To e2 By BySym Do
+
+                                 End
+*)
+
+PROCEDURE ForLoopLastIteratorVariable (LastIterator, e1, e2, BySym, ByType: CARDINAL ;
+                                       e1tok, e2tok, bytok: CARDINAL) ;
+VAR
+   PBType,
+   PositiveBy,
+   ElseQuad,
+   t, f      : CARDINAL ;
+BEGIN
+   Assert (IsVar (LastIterator)) ;
+   (* If By > 0 then.  *)
+   (* q+1 if >=      by        0  q+3.  *)
+   (* q+2 GotoOp                  q+else.   *)
+   PushTFtok (BySym, ByType, bytok) ;  (* BuildRelOp  1st parameter *)
+   PushT (GreaterEqualTok) ;           (*             2nd parameter *)
+                                       (* 3rd parameter *)
+   PushZero (bytok, ByType) ;
+   BuildRelOp (e2tok) ;       (* Choose final expression position.  *)
+   PopBool (t, f) ;
+   BackPatch (t, NextQuad) ;
+
+   (* LastIterator := ((e2-e1) DIV By) * By + e1.  *)
+   PushTF (LastIterator, GetSType (LastIterator)) ;
+   PushTFtok (e2, GetSType (e2), e2tok) ;
+   PushT (MinusTok) ;
+   PushTFtok (e1, GetSType (e1), e1tok) ;
+   doBuildBinaryOp (TRUE, FALSE) ;
+   PushT (DivideTok) ;
+   PushTFtok (BySym, ByType, bytok) ;
+   doBuildBinaryOp (FALSE, FALSE) ;
+   PushT (TimesTok) ;
+   PushTFtok (BySym, ByType, bytok) ;
+   doBuildBinaryOp (FALSE, FALSE) ;
+   PushT (ArithPlusTok) ;
+   PushTFtok (e1, GetSType (e1), e1tok) ;
+   doBuildBinaryOp (FALSE, FALSE) ;
+   BuildForLoopToRangeCheck ;
+   BuildAssignmentWithoutBounds (e1tok, FALSE, FALSE) ;
+   GenQuad (GotoOp, NulSym, NulSym, 0) ;
+   ElseQuad := NextQuad-1 ;
+
+   (* Else.  *)
+
+   BackPatch (f, NextQuad) ;
+
+   PushTtok (MinusTok, bytok) ;
+   PushTFtok (BySym, ByType, bytok) ;
+   BuildUnaryOp ;
+   PopTF (PositiveBy, PBType) ;  (* PositiveBy := - BySym.  *)
+
+   (* LastIterator := e1 - ((e1-e2) DIV PositiveBy) * PositiveBy.  *)
+   PushTF (LastIterator, GetSType (LastIterator)) ;
+   PushTFtok (e1, GetSType (e1), e1tok) ;
+   PushT (MinusTok) ;
+   PushTFtok (e1, GetSType (e1), e1tok) ;
+   PushT (MinusTok) ;
+   PushTFtok (e2, GetSType (e2), e2tok) ;
+   doBuildBinaryOp (TRUE, FALSE) ;
+   PushT (DivideTok) ;
+   PushTFtok (PositiveBy, ByType, bytok) ;
+   doBuildBinaryOp (FALSE, FALSE) ;
+   PushT (TimesTok) ;
+   PushTFtok (PositiveBy, ByType, bytok) ;
+   doBuildBinaryOp (FALSE, FALSE) ;
+   doBuildBinaryOp (FALSE, FALSE) ;
+   BuildForLoopToRangeCheck ;
+   BuildAssignmentWithoutBounds (e1tok, FALSE, FALSE) ;
+   BackPatch (ElseQuad, NextQuad) ;
+
+   (* End.  *)
+END ForLoopLastIteratorVariable ;
+
+
+(*
+   ForLoopLastIteratorConstant - assigns the last value of the index variable to
+                                 symbol LastIterator.
+                                 The For Loop is regarded:
+
+                                 For ident := e1 To e2 By BySym Do
+
+                                 End
+*)
+
+PROCEDURE ForLoopLastIteratorConstant (LastIterator, e1, e2, BySym, ByType: CARDINAL;
+                                       e1tok, e2tok, bytok: CARDINAL) ;
+BEGIN
+   Assert (IsConst (LastIterator)) ;
+   (* LastIterator := VAL (GetType (LastIterator), ((e2-e1) DIV By) * By + e1)  *)
+   PushTF (LastIterator, GetSType (LastIterator)) ;
+   PushTFtok (e2, GetSType (e2), e2tok) ;
+   PushT (MinusTok) ;
+   PushTFtok (e1, GetSType (e1), e1tok) ;
+   doBuildBinaryOp (TRUE, FALSE) ;
+   PushT (DivideTok) ;
+   PushTFtok (BySym, ByType, bytok) ;
+   doBuildBinaryOp (FALSE, FALSE) ;
+   PushT (TimesTok) ;
+   PushTFtok (BySym, ByType, bytok) ;
+   doBuildBinaryOp (FALSE, FALSE) ;
+   PushT (ArithPlusTok) ;
+   PushTFtok (e1, GetSType (e1), e1tok) ;
+   doBuildBinaryOp (FALSE, FALSE) ;
+   BuildForLoopToRangeCheck ;
+   BuildAssignmentWithoutBounds (e1tok, FALSE, FALSE)
+END ForLoopLastIteratorConstant ;
+
+
+(*
+   ForLoopLastIterator - calculate the last iterator value but avoid setting
+                         LastIterator twice if it is a constant (in the quads).
+                         In the ForLoopLastIteratorVariable case only one
+                         path will be chosen but at the time of quadruple
+                         generation we do not know the value of BySym.
+*)
+
+PROCEDURE ForLoopLastIterator (LastIterator, e1, e2, BySym, ByType: CARDINAL ;
+                               e1tok, e2tok, bytok: CARDINAL) ;
+BEGIN
+   IF IsVar (LastIterator)
+   THEN
+      ForLoopLastIteratorVariable (LastIterator, e1, e2, BySym, ByType,
+                                   e1tok, e2tok, bytok)
+   ELSE
+      ForLoopLastIteratorConstant (LastIterator, e1, e2, BySym, ByType,
+                                   e1tok, e2tok, bytok)
+   END
+END ForLoopLastIterator ;
+
+
+(*
    BuildForToByDo - Builds the For To By Do part of the For statement
                     from the quad stack.
                     The Stack is expected to contain:
@@ -4659,7 +4797,7 @@ VAR
    e2tok,
    idtok,
    bytok     : CARDINAL ;
-   FinalValue,
+   LastIterator,
    exit1,
    IdSym,
    BySym,
@@ -4686,55 +4824,40 @@ BEGIN
    BuildAssignmentWithoutBounds (idtok, TRUE, TRUE) ;
 
    UseLineNote (l2) ;
-   FinalValue := MakeTemporary (e2tok,
-                                AreConstant (IsConst (e1) AND IsConst (e2) AND
-                                            IsConst (BySym))) ;
-   PutVar (FinalValue, GetSType (IdSym)) ;
+   LastIterator := MakeTemporary (e2tok,
+                                  AreConstant (IsConst (e1) AND IsConst (e2) AND
+                                               IsConst (BySym))) ;
+   PutVar (LastIterator, GetSType (IdSym)) ;
    etype := MixTypes (GetSType (e1), GetSType (e2), e2tok) ;
    e1 := doConvert (etype, e1) ;
    e2 := doConvert (etype, e2) ;
 
-   PushTF (FinalValue, GetSType(FinalValue)) ;
-   PushTFtok (e2, GetSType(e2), e2tok) ;  (* FinalValue := ((e1-e2) DIV By) * By + e1 *)
-   PushT (MinusTok) ;
-   PushTFtok (e1, GetSType(e1), e1tok) ;
-   doBuildBinaryOp (TRUE, FALSE) ;
-   PushT (DivideTok) ;
-   PushTFtok (BySym, ByType, bytok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   PushT (TimesTok) ;
-   PushTFtok (BySym, ByType, bytok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   PushT (ArithPlusTok) ;
-   PushTFtok (e1, GetSType (e1), e1tok) ;
-   doBuildBinaryOp (FALSE, FALSE) ;
-   BuildForLoopToRangeCheck ;
-   BuildAssignmentWithoutBounds (e1tok, FALSE, FALSE) ;
+   ForLoopLastIterator (LastIterator, e1, e2, BySym, ByType, e1tok, e2tok, bytok) ;
 
    (* q+1 if >=      by        0  q+..2 *)
    (* q+2 GotoOp                  q+3   *)
-   PushTFtok (BySym, ByType, bytok) ;  (* BuildRelOp  1st parameter *)
-   PushT (GreaterEqualTok) ;           (*             2nd parameter *)
-                                       (* 3rd parameter *)
+   PushTFtok (BySym, ByType, bytok) ;  (* BuildRelOp  1st parameter.  *)
+   PushT (GreaterEqualTok) ;           (*             2nd parameter.  *)
+                                       (* 3rd parameter.  *)
    PushZero (bytok, ByType) ;
 
-   BuildRelOp (e2tok) ;       (* choose final expression position.  *)
-   PopBool(t, f) ;
-   BackPatch(f, NextQuad) ;
+   BuildRelOp (e2tok) ;           (* Choose final expression position.  *)
+   PopBool (t, f) ;
+   BackPatch (f, NextQuad) ;
    (* q+3 If >=       e1  e2      q+5  *)
    (* q+4 GotoOp                  Exit *)
    PushTFtok (e1, GetSType (e1), e1tok) ;  (* BuildRelOp  1st parameter *)
    PushT (GreaterEqualTok) ;               (*             2nd parameter *)
    PushTFtok (e2, GetSType (e2), e2tok) ;  (*             3rd parameter *)
-   BuildRelOp (e2tok) ;           (* choose final expression position.  *)
+   BuildRelOp (e2tok) ;           (* Choose final expression position.  *)
    PopBool (t1, exit1) ;
    BackPatch (t1, NextQuad) ;
-   PushFor (Merge (PopFor(), exit1)) ;    (* merge exit1 *)
+   PushFor (Merge (PopFor (), exit1)) ;    (* Merge exit1.  *)
 
    GenQuad (GotoOp, NulSym, NulSym, 0) ;
    ForLoop := NextQuad-1 ;
 
-   (* ELSE *)
+   (* ELSE.  *)
 
    BackPatch (t, NextQuad) ;
    PushTFtok (e2, GetSType(e2), e2tok) ; (* BuildRelOp  1st parameter *)
@@ -4743,16 +4866,16 @@ BEGIN
    BuildRelOp (e2tok) ;
    PopBool (t1, exit1) ;
    BackPatch (t1, NextQuad) ;
-   PushFor (Merge (PopFor (), exit1)) ;       (* merge exit1 *)
+   PushFor (Merge (PopFor (), exit1)) ;       (* Merge exit1.  *)
 
-   BackPatch(ForLoop, NextQuad) ; (* fixes the start of the for loop *)
+   BackPatch(ForLoop, NextQuad) ; (* Fixes the start of the for loop.  *)
    ForLoop := NextQuad ;
 
-   (* and set up the stack *)
+   (* And set up the stack.  *)
 
    PushTFtok (IdSym, GetSym (IdSym), idtok) ;
    PushTFtok (BySym, ByType, bytok) ;
-   PushTFtok (FinalValue, GetSType (FinalValue), e2tok) ;
+   PushTFtok (LastIterator, GetSType (LastIterator), e2tok) ;
    PushT (ForLoop) ;
    PushT (RangeId)
 END BuildForToByDo ;
