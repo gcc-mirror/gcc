@@ -6012,6 +6012,8 @@ type_hash_canon_hash (tree type)
 
   hstate.add_int (TREE_CODE (type));
 
+  hstate.add_flag (TYPE_STRUCTURAL_EQUALITY_P (type));
+
   if (TREE_TYPE (type))
     hstate.add_object (TYPE_HASH (TREE_TYPE (type)));
 
@@ -6107,6 +6109,10 @@ type_cache_hasher::equal (type_hash *a, type_hash *b)
   if (COMPLETE_TYPE_P (a->type) && COMPLETE_TYPE_P (b->type)
       && (TYPE_ALIGN (a->type) != TYPE_ALIGN (b->type)
 	  || TYPE_MODE (a->type) != TYPE_MODE (b->type)))
+    return false;
+
+  if (TYPE_STRUCTURAL_EQUALITY_P (a->type)
+      != TYPE_STRUCTURAL_EQUALITY_P (b->type))
     return false;
 
   switch (TREE_CODE (a->type))
@@ -7347,6 +7353,14 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
   TYPE_DOMAIN (t) = index_type;
   TYPE_ADDR_SPACE (t) = TYPE_ADDR_SPACE (elt_type);
   TYPE_TYPELESS_STORAGE (t) = typeless_storage;
+
+  /* Set TYPE_STRUCTURAL_EQUALITY_P.  */
+  if (set_canonical
+      && (TYPE_STRUCTURAL_EQUALITY_P (elt_type)
+	  || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type))
+	  || in_lto_p))
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
+
   layout_type (t);
 
   if (shared)
@@ -7363,7 +7377,7 @@ build_array_type_1 (tree elt_type, tree index_type, bool typeless_storage,
       if (TYPE_STRUCTURAL_EQUALITY_P (elt_type)
 	  || (index_type && TYPE_STRUCTURAL_EQUALITY_P (index_type))
 	  || in_lto_p)
-	SET_TYPE_STRUCTURAL_EQUALITY (t);
+	gcc_unreachable ();
       else if (TYPE_CANONICAL (elt_type) != elt_type
 	       || (index_type && TYPE_CANONICAL (index_type) != index_type))
 	TYPE_CANONICAL (t)
@@ -7510,6 +7524,16 @@ build_function_type (tree value_type, tree arg_types,
       TYPE_NO_NAMED_ARGS_STDARG_P (t) = 1;
     }
 
+  /* Set up the canonical type. */
+  any_structural_p   = TYPE_STRUCTURAL_EQUALITY_P (value_type);
+  any_noncanonical_p = TYPE_CANONICAL (value_type) != value_type;
+  canon_argtypes = maybe_canonicalize_argtypes (arg_types,
+						&any_structural_p,
+						&any_noncanonical_p);
+  /* Set TYPE_STRUCTURAL_EQUALITY_P early.  */
+  if (any_structural_p)
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
+
   /* If we already have such a type, use the old one.  */
   hashval_t hash = type_hash_canon_hash (t);
   tree probe_type = t;
@@ -7517,14 +7541,8 @@ build_function_type (tree value_type, tree arg_types,
   if (t != probe_type)
     return t;
 
-  /* Set up the canonical type. */
-  any_structural_p   = TYPE_STRUCTURAL_EQUALITY_P (value_type);
-  any_noncanonical_p = TYPE_CANONICAL (value_type) != value_type;
-  canon_argtypes = maybe_canonicalize_argtypes (arg_types,
-						&any_structural_p,
-						&any_noncanonical_p);
   if (any_structural_p)
-    SET_TYPE_STRUCTURAL_EQUALITY (t);
+    gcc_assert (TYPE_STRUCTURAL_EQUALITY_P (t));
   else if (any_noncanonical_p)
     TYPE_CANONICAL (t) = build_function_type (TYPE_CANONICAL (value_type),
 					      canon_argtypes);
@@ -7667,13 +7685,6 @@ build_method_type_directly (tree basetype,
   argtypes = tree_cons (NULL_TREE, ptype, argtypes);
   TYPE_ARG_TYPES (t) = argtypes;
 
-  /* If we already have such a type, use the old one.  */
-  hashval_t hash = type_hash_canon_hash (t);
-  tree probe_type = t;
-  t = type_hash_canon (hash, t);
-  if (t != probe_type)
-    return t;
-
   /* Set up the canonical type. */
   any_structural_p
     = (TYPE_STRUCTURAL_EQUALITY_P (basetype)
@@ -7684,8 +7695,20 @@ build_method_type_directly (tree basetype,
   canon_argtypes = maybe_canonicalize_argtypes (TREE_CHAIN (argtypes),
 						&any_structural_p,
 						&any_noncanonical_p);
+
+  /* Set TYPE_STRUCTURAL_EQUALITY_P early.  */
   if (any_structural_p)
     SET_TYPE_STRUCTURAL_EQUALITY (t);
+
+  /* If we already have such a type, use the old one.  */
+  hashval_t hash = type_hash_canon_hash (t);
+  tree probe_type = t;
+  t = type_hash_canon (hash, t);
+  if (t != probe_type)
+    return t;
+
+  if (any_structural_p)
+    gcc_assert (TYPE_STRUCTURAL_EQUALITY_P (t));
   else if (any_noncanonical_p)
     TYPE_CANONICAL (t)
       = build_method_type_directly (TYPE_CANONICAL (basetype),
@@ -7726,6 +7749,9 @@ build_offset_type (tree basetype, tree type)
 
   TYPE_OFFSET_BASETYPE (t) = TYPE_MAIN_VARIANT (basetype);
   TREE_TYPE (t) = type;
+  if (TYPE_STRUCTURAL_EQUALITY_P (basetype)
+      || TYPE_STRUCTURAL_EQUALITY_P (type))
+    SET_TYPE_STRUCTURAL_EQUALITY (t);
 
   /* If we already have such a type, use the old one.  */
   hashval_t hash = type_hash_canon_hash (t);
@@ -7741,7 +7767,7 @@ build_offset_type (tree basetype, tree type)
     {
       if (TYPE_STRUCTURAL_EQUALITY_P (basetype)
 	  || TYPE_STRUCTURAL_EQUALITY_P (type))
-	SET_TYPE_STRUCTURAL_EQUALITY (t);
+	gcc_unreachable ();
       else if (TYPE_CANONICAL (TYPE_MAIN_VARIANT (basetype)) != basetype
 	       || TYPE_CANONICAL (type) != type)
 	TYPE_CANONICAL (t)
@@ -7770,6 +7796,8 @@ build_complex_type (tree component_type, bool named)
   tree probe = make_node (COMPLEX_TYPE);
 
   TREE_TYPE (probe) = TYPE_MAIN_VARIANT (component_type);
+  if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (probe)))
+    SET_TYPE_STRUCTURAL_EQUALITY (probe);
 
   /* If we already have such a type, use the old one.  */
   hashval_t hash = type_hash_canon_hash (probe);
@@ -7781,11 +7809,10 @@ build_complex_type (tree component_type, bool named)
 	 out the type.  We need to check the canonicalization and
 	 maybe set the name.  */
       gcc_checking_assert (COMPLETE_TYPE_P (t)
-			   && !TYPE_NAME (t)
-			   && TYPE_CANONICAL (t) == t);
+			   && !TYPE_NAME (t));
 
       if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (t)))
-	SET_TYPE_STRUCTURAL_EQUALITY (t);
+	;
       else if (TYPE_CANONICAL (TREE_TYPE (t)) != TREE_TYPE (t))
 	TYPE_CANONICAL (t)
 	  = build_complex_type (TYPE_CANONICAL (TREE_TYPE (t)), named);
