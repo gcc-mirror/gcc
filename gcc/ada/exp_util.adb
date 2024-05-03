@@ -8101,6 +8101,10 @@ package body Exp_Util is
                | N_Task_Body
                | N_Task_Body_Stub
 
+               --  Other things that can occur in stmt or decl lists
+
+               | N_Itype_Reference
+
                --  Use clauses can appear in lists of declarations
 
                | N_Use_Package_Clause
@@ -8370,7 +8374,6 @@ package body Exp_Util is
                | N_Integer_Literal
                | N_Iterator_Specification
                | N_Interpolated_String_Literal
-               | N_Itype_Reference
                | N_Label
                | N_Loop_Parameter_Specification
                | N_Mod_Clause
