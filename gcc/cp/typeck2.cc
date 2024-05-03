@@ -466,6 +466,25 @@ maybe_push_temp_cleanup (tree sub, vec<tree,va_gc> **flags)
     }
 }
 
+/* F is something added to a cleanup flags vec by maybe_push_temp_cleanup or
+   build_vec_init.  Return the code to disable the cleanup it controls.  */
+
+tree
+build_disable_temp_cleanup (tree f)
+{
+  tree d = f;
+  tree i = boolean_false_node;
+  if (TREE_CODE (f) == TREE_LIST)
+    {
+      /* To disable a build_vec_init cleanup, set
+	 iterator = maxindex.  */
+      d = TREE_PURPOSE (f);
+      i = TREE_VALUE (f);
+      ggc_free (f);
+    }
+  return build2 (MODIFY_EXPR, TREE_TYPE (d), d, i);
+}
+
 /* The recursive part of split_nonconstant_init.  DEST is an lvalue
    expression to which INIT should be assigned.  INIT is a CONSTRUCTOR.
    Return true if the whole of the value was initialized by the
@@ -737,20 +756,7 @@ split_nonconstant_init (tree dest, tree init)
 	init = NULL_TREE;
 
       for (tree f : flags)
-	{
-	  /* See maybe_push_temp_cleanup.  */
-	  tree d = f;
-	  tree i = boolean_false_node;
-	  if (TREE_CODE (f) == TREE_LIST)
-	    {
-	      /* To disable a build_vec_init cleanup, set
-		 iterator = maxindex.  */
-	      d = TREE_PURPOSE (f);
-	      i = TREE_VALUE (f);
-	      ggc_free (f);
-	    }
-	  add_stmt (build2 (MODIFY_EXPR, TREE_TYPE (d), d, i));
-	}
+	add_stmt (build_disable_temp_cleanup (f));
       release_tree_vector (flags);
 
       code = pop_stmt_list (code);
