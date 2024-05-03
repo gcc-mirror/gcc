@@ -4578,7 +4578,6 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
     {
       t = lookup_template_class (t, TREE_OPERAND (fullname, 1),
 				 NULL_TREE, context,
-				 /*entering_scope=*/0,
 				 complain | tf_user);
       if (t == error_mark_node)
 	return error_mark_node;
@@ -9175,7 +9174,7 @@ get_tuple_size (tree type)
   tree inst = lookup_template_class (tuple_size_identifier, args,
 				     /*in_decl*/NULL_TREE,
 				     /*context*/std_node,
-				     /*entering_scope*/false, tf_none);
+				     tf_none);
   inst = complete_type (inst);
   if (inst == error_mark_node
       || !COMPLETE_TYPE_P (inst)
@@ -9204,7 +9203,6 @@ get_tuple_element_type (tree type, unsigned i)
   tree inst = lookup_template_class (tuple_element_identifier, args,
 				     /*in_decl*/NULL_TREE,
 				     /*context*/std_node,
-				     /*entering_scope*/false,
 				     tf_warning_or_error);
   return make_typename_type (inst, type_identifier,
 			     none_type, tf_warning_or_error);

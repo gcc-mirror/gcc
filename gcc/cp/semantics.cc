@@ -4011,8 +4011,10 @@ finish_template_type (tree name, tree args, int entering_scope)
   tree type;
 
   type = lookup_template_class (name, args,
-				NULL_TREE, NULL_TREE, entering_scope,
+				NULL_TREE, NULL_TREE,
 				tf_warning_or_error | tf_user);
+  if (entering_scope)
+    type = adjust_type_for_entering_scope (type);
 
   /* If we might be entering the scope of a partial specialization,
      find the one with the right constraints.  */

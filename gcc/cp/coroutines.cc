@@ -353,7 +353,7 @@ instantiate_coro_traits (tree fndecl, location_t kw)
   tree traits_class
     = lookup_template_class (coro_traits_templ, targ,
 			     /*in_decl=*/NULL_TREE, /*context=*/NULL_TREE,
-			     /*entering scope=*/false, tf_warning_or_error);
+			     tf_warning_or_error);
 
   if (traits_class == error_mark_node)
     {
@@ -400,7 +400,7 @@ instantiate_coro_handle_for_promise_type (location_t kw, tree promise_type)
     = lookup_template_class (coro_handle_identifier, targ,
 			     /* in_decl=*/NULL_TREE,
 			     /* context=*/std_node,
-			     /* entering scope=*/false, tf_warning_or_error);
+			     tf_warning_or_error);
 
   if (handle_type == error_mark_node)
     {
