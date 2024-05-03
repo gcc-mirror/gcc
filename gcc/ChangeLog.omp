@@ -1,5 +1,16 @@
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (gimplify_adjust_omp_clauses): Don't gimplify
+	VIEW_CONVERT_EXPR away in GOMP_MAP_TO_GRID/GOMP_MAP_FROM_GRID clauses.
+	* omp-low.cc (omp_noncontig_descriptor_type): Add SPAN field.
+	(scan_sharing_clauses): Don't store descriptor size in its
+	OMP_CLAUSE_SIZE field.
+	(lower_omp_target): Add missing OMP_CLAUSE_MAP check.  Add special-case
+	string handling.  Handle span and bias.  Use low bound instead of zero
+	as index for trailing full dimensions.
+
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (omp_group_last, omp_group_base): Add GOMP_MAP_TO_GRID,
 	GOMP_MAP_FROM_GRID support.
 	(gimplify_adjust_omp_clauses): Support new GOMP_MAP_GRID_DIM,
