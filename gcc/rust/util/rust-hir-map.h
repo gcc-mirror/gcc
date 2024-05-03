@@ -229,8 +229,7 @@ public:
 
   void insert_canonical_path (NodeId id, const Resolver::CanonicalPath path)
   {
-    const Resolver::CanonicalPath *p = nullptr;
-    if (lookup_canonical_path (id, &p))
+    if (auto p = lookup_canonical_path (id))
       {
 	// if we have already stored a canonical path this is ok so long as
 	// this new path is equal or is smaller that the existing one but in
@@ -247,14 +246,14 @@ public:
     paths.emplace (id, std::move (path));
   }
 
-  bool lookup_canonical_path (NodeId id, const Resolver::CanonicalPath **path)
+  tl::optional<const Resolver::CanonicalPath &>
+  lookup_canonical_path (NodeId id)
   {
     auto it = paths.find (id);
     if (it == paths.end ())
-      return false;
+      return tl::nullopt;
 
-    *path = &it->second;
-    return true;
+    return it->second;
   }
 
   void insert_lang_item (LangItem::Kind item_type, DefId id)

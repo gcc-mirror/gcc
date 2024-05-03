@@ -42,14 +42,12 @@ CompileItem::visit (HIR::StaticItem &var)
 
   tree type = TyTyResolveCompile::compile (ctx, resolved_type);
 
-  const Resolver::CanonicalPath *canonical_path = nullptr;
-  ok = ctx->get_mappings ().lookup_canonical_path (
-    var.get_mappings ().get_nodeid (), &canonical_path);
-  rust_assert (ok);
+  auto canonical_path = ctx->get_mappings ().lookup_canonical_path (
+    var.get_mappings ().get_nodeid ());
 
   HIR::Expr *const_value_expr = var.get_expr ().get ();
   ctx->push_const_context ();
-  tree value = compile_constant_item (resolved_type, canonical_path,
+  tree value = compile_constant_item (resolved_type, *canonical_path,
 				      const_value_expr, var.get_locus ());
   ctx->pop_const_context ();
 
@@ -102,17 +100,15 @@ CompileItem::visit (HIR::ConstantItem &constant)
     }
   else
     {
-      const Resolver::CanonicalPath *canonical_path_ptr = nullptr;
-      ok = ctx->get_mappings ().lookup_canonical_path (mappings.get_nodeid (),
-						       &canonical_path_ptr);
-      rust_assert (ok);
-      canonical_path = *canonical_path_ptr;
+      canonical_path = ctx->get_mappings ()
+			 .lookup_canonical_path (mappings.get_nodeid ())
+			 .value ();
     }
 
   HIR::Expr *const_value_expr = constant.get_expr ().get ();
   ctx->push_const_context ();
   tree const_expr
-    = compile_constant_item (resolved_type, &canonical_path, const_value_expr,
+    = compile_constant_item (resolved_type, canonical_path, const_value_expr,
 			     constant.get_locus ());
   ctx->pop_const_context ();
 
@@ -178,10 +174,8 @@ CompileItem::visit (HIR::Function &function)
     }
   else
     {
-      const Resolver::CanonicalPath *path = nullptr;
-      bool ok = ctx->get_mappings ().lookup_canonical_path (
-	function.get_mappings ().get_nodeid (), &path);
-      rust_assert (ok);
+      auto path = ctx->get_mappings ().lookup_canonical_path (
+	function.get_mappings ().get_nodeid ());
 
       canonical_path = *path;
     }
@@ -213,7 +207,7 @@ CompileItem::visit (HIR::Function &function)
 			function.get_function_params (),
 			function.get_qualifiers (), function.get_visibility (),
 			function.get_outer_attrs (), function.get_locus (),
-			function.get_definition ().get (), &canonical_path,
+			function.get_definition ().get (), canonical_path,
 			fntype);
   reference = address_expression (fndecl, ref_locus);
 

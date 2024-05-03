@@ -75,10 +75,8 @@ TypeCheckEnumItem::visit (HIR::EnumItem &item)
   rust_assert (ok);
   context->insert_type (mapping, isize);
 
-  const CanonicalPath *canonical_path = nullptr;
-  ok = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid (),
-				       &canonical_path);
-  rust_assert (ok);
+  auto canonical_path
+    = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid ());
 
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
@@ -106,10 +104,8 @@ TypeCheckEnumItem::visit (HIR::EnumItemDiscriminant &item)
 	      TyTy::TyWithLocation (expected_ty),
 	      TyTy::TyWithLocation (capacity_type), item.get_locus ());
 
-  const CanonicalPath *canonical_path = nullptr;
-  bool ok = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid (),
-					    &canonical_path);
-  rust_assert (ok);
+  auto canonical_path
+    = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid ());
 
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
@@ -155,10 +151,8 @@ TypeCheckEnumItem::visit (HIR::EnumItemTuple &item)
   rust_assert (ok);
   context->insert_type (mapping, isize);
 
-  const CanonicalPath *canonical_path = nullptr;
-  ok = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid (),
-				       &canonical_path);
-  rust_assert (ok);
+  auto canonical_path
+    = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid ());
 
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
@@ -203,10 +197,8 @@ TypeCheckEnumItem::visit (HIR::EnumItemStruct &item)
   rust_assert (ok);
   context->insert_type (mapping, isize);
 
-  const CanonicalPath *canonical_path = nullptr;
-  ok = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid (),
-				       &canonical_path);
-  rust_assert (ok);
+  auto canonical_path
+    = mappings.lookup_canonical_path (item.get_mappings ().get_nodeid ());
 
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),

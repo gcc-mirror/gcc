@@ -91,7 +91,7 @@ protected:
 			      TyTy::BaseType *fn_return_ty);
 
   tree compile_constant_item (TyTy::BaseType *resolved_type,
-			      const Resolver::CanonicalPath *canonical_path,
+			      const Resolver::CanonicalPath &canonical_path,
 			      HIR::Expr *const_value_expr, location_t locus);
 
   tree compile_function (const std::string &fn_name, HIR::SelfParam &self_param,
@@ -99,7 +99,7 @@ protected:
 			 const HIR::FunctionQualifiers &qualifiers,
 			 HIR::Visibility &visibility, AST::AttrVec &outer_attrs,
 			 location_t locus, HIR::BlockExpr *function_body,
-			 const Resolver::CanonicalPath *canonical_path,
+			 const Resolver::CanonicalPath &canonical_path,
 			 TyTy::FnType *fntype);
 
   static tree unit_expression (location_t locus);
