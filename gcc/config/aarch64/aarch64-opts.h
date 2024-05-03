@@ -23,6 +23,8 @@
 #define GCC_AARCH64_OPTS_H
 
 #ifndef USED_FOR_TARGET
+typedef uint64_t aarch64_isa_mode;
+
 typedef uint64_t aarch64_feature_flags;
 
 constexpr unsigned int AARCH64_NUM_ISA_MODES = (0

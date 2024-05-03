@@ -181,7 +181,17 @@ enum class aarch64_feature : unsigned char {
 #include "aarch64-arches.def"
 #undef HANDLE
 
-constexpr auto AARCH64_FL_SM_STATE = AARCH64_FL_SM_ON | AARCH64_FL_SM_OFF;
+/* Define aarch64_isa_mode masks.  */
+#define DEF_AARCH64_ISA_MODE(IDENT) \
+  constexpr auto AARCH64_ISA_MODE_##IDENT ATTRIBUTE_UNUSED \
+    = aarch64_isa_mode (1) << int (aarch64_feature::IDENT);
+#include "aarch64-isa-modes.def"
+#undef HANDLE
+
+constexpr auto AARCH64_FL_SM_STATE ATTRIBUTE_UNUSED
+  = AARCH64_FL_SM_ON | AARCH64_FL_SM_OFF;
+constexpr auto AARCH64_ISA_MODE_SM_STATE ATTRIBUTE_UNUSED
+  = AARCH64_ISA_MODE_SM_ON | AARCH64_ISA_MODE_SM_OFF;
 
 /* The mask of all ISA modes.  */
 constexpr auto AARCH64_FL_ISA_MODES
@@ -189,7 +199,10 @@ constexpr auto AARCH64_FL_ISA_MODES
 
 /* The default ISA mode, for functions with no attributes that specify
    something to the contrary.  */
-constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
+constexpr auto AARCH64_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
+  = AARCH64_ISA_MODE_SM_OFF;
+constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
+  = aarch64_feature_flags (AARCH64_DEFAULT_ISA_MODE);
 
 #endif
 
@@ -202,7 +215,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_SM_OFF         (aarch64_isa_flags & AARCH64_FL_SM_OFF)
 #define AARCH64_ISA_SM_ON          (aarch64_isa_flags & AARCH64_FL_SM_ON)
 #define AARCH64_ISA_ZA_ON          (aarch64_isa_flags & AARCH64_FL_ZA_ON)
-#define AARCH64_ISA_MODE           (aarch64_isa_flags & AARCH64_FL_ISA_MODES)
+#define AARCH64_ISA_MODE           (aarch64_isa_mode) (aarch64_isa_flags & AARCH64_FL_ISA_MODES)
 #define AARCH64_ISA_V8A		   (aarch64_isa_flags & AARCH64_FL_V8A)
 #define AARCH64_ISA_V8_1A	   (aarch64_isa_flags & AARCH64_FL_V8_1A)
 #define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
@@ -1131,7 +1144,7 @@ enum arm_pcs
 typedef struct
 {
   enum arm_pcs pcs_variant;
-  aarch64_feature_flags isa_mode;
+  aarch64_isa_mode isa_mode;
   int aapcs_arg_processed;	/* No need to lay out this argument again.  */
   int aapcs_ncrn;		/* Next Core register number.  */
   int aapcs_nextncrn;		/* Next next core register number.  */
