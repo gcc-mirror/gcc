@@ -260,7 +260,7 @@ BEGIN
    WHILE GetScope (sym) # NulSym DO
       sym := GetScope (sym) ;
       identstr := InitStringCharStar (KeyToCharStar (GetSymName (sym))) ;
-      ConCatChar (identstr, '.') ;
+      identstr := ConCatChar (identstr, '.') ;
       qualidentstr := ConCat (identstr, Mark (qualidentstr))
    END ;
    RETURN qualidentstr
