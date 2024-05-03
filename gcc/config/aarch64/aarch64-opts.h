@@ -24,6 +24,11 @@
 
 #ifndef USED_FOR_TARGET
 typedef uint64_t aarch64_feature_flags;
+
+constexpr unsigned int AARCH64_NUM_ISA_MODES = (0
+#define DEF_AARCH64_ISA_MODE(IDENT) + 1
+#include "aarch64-isa-modes.def"
+);
 #endif
 
 /* The various cores that implement AArch64.  */

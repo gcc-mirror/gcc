@@ -183,11 +183,6 @@ enum class aarch64_feature : unsigned char {
 
 constexpr auto AARCH64_FL_SM_STATE = AARCH64_FL_SM_ON | AARCH64_FL_SM_OFF;
 
-constexpr unsigned int AARCH64_NUM_ISA_MODES = (0
-#define DEF_AARCH64_ISA_MODE(IDENT) + 1
-#include "aarch64-isa-modes.def"
-);
-
 /* The mask of all ISA modes.  */
 constexpr auto AARCH64_FL_ISA_MODES
   = (aarch64_feature_flags (1) << AARCH64_NUM_ISA_MODES) - 1;
