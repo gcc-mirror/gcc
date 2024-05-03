@@ -373,11 +373,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char_type
       fill() const
       {
-	if (!_M_fill_init)
-	  {
-	    _M_fill = this->widen(' ');
-	    _M_fill_init = true;
-	  }
+	if (__builtin_expect(!_M_fill_init, false))
+	  return this->widen(' ');
 	return _M_fill;
       }
 
@@ -393,8 +390,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char_type
       fill(char_type __ch)
       {
-	char_type __old = this->fill();
+	char_type __old = _M_fill;
 	_M_fill = __ch;
+	_M_fill_init = true;
 	return __old;
       }
 
