@@ -1093,9 +1093,9 @@ combine_reg_notes (insn_info *i1, insn_info *i2, bool load_p)
   bool found_eh_region = false;
   rtx result = NULL_RTX;
   result = filter_notes (REG_NOTES (i2->rtl ()), result,
-			 &found_eh_region, fr_expr);
-  result = filter_notes (REG_NOTES (i1->rtl ()), result,
 			 &found_eh_region, fr_expr + 1);
+  result = filter_notes (REG_NOTES (i1->rtl ()), result,
+			 &found_eh_region, fr_expr);
 
   if (!load_p)
     {
