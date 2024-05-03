@@ -800,10 +800,14 @@ private:
   void init (const vrange &);
 
   vrange *m_vrange;
-  // The buffer must be at least the size of the largest range.
-  static_assert (sizeof (int_range_max) > sizeof (frange), "");
-  static_assert (sizeof (int_range_max) > sizeof (prange), "");
-  char m_buffer[sizeof (int_range_max)];
+  union buffer_type {
+    int_range_max ints;
+    frange floats;
+    unsupported_range unsupported;
+    prange pointers;
+    buffer_type () { }
+    ~buffer_type () { }
+  } m_buffer;
 };
 
 // The default constructor is uninitialized and must be initialized
@@ -811,6 +815,7 @@ private:
 
 inline
 Value_Range::Value_Range ()
+  : m_buffer ()
 {
   m_vrange = NULL;
 }
@@ -877,13 +882,13 @@ Value_Range::init (tree type)
   gcc_checking_assert (TYPE_P (type));
 
   if (irange::supports_p (type))
-    m_vrange = new (&m_buffer) int_range_max ();
+    m_vrange = new (&m_buffer.ints) int_range_max ();
   else if (prange::supports_p (type))
-    m_vrange = new (&m_buffer) prange ();
+    m_vrange = new (&m_buffer.pointers) prange ();
   else if (frange::supports_p (type))
-    m_vrange = new (&m_buffer) frange ();
+    m_vrange = new (&m_buffer.floats) frange ();
   else
-    m_vrange = new (&m_buffer) unsupported_range ();
+    m_vrange = new (&m_buffer.unsupported) unsupported_range ();
 }
 
 // Initialize object with a copy of R.
@@ -892,13 +897,14 @@ inline void
 Value_Range::init (const vrange &r)
 {
   if (is_a <irange> (r))
-    m_vrange = new (&m_buffer) int_range_max (as_a <irange> (r));
+    m_vrange = new (&m_buffer.ints) int_range_max (as_a <irange> (r));
   else if (is_a <prange> (r))
-    m_vrange = new (&m_buffer) prange (as_a <prange> (r));
+    m_vrange = new (&m_buffer.pointers) prange (as_a <prange> (r));
   else if (is_a <frange> (r))
-    m_vrange = new (&m_buffer) frange (as_a <frange> (r));
+    m_vrange = new (&m_buffer.floats) frange (as_a <frange> (r));
   else
-    m_vrange = new (&m_buffer) unsupported_range (as_a <unsupported_range> (r));
+    m_vrange = new (&m_buffer.unsupported)
+      unsupported_range (as_a <unsupported_range> (r));
 }
 
 // Assignment operator.  Copying incompatible types is allowed.  That
