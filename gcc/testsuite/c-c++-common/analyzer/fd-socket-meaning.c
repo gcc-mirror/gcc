@@ -1,4 +1,8 @@
 /* { dg-require-effective-target sockets } */
+
+/* Needed on some targets until we have exception-handling working (PR 111475).  */
+/* { dg-additional-options "-fno-exceptions" } */
+
 /* { dg-additional-options "-fanalyzer-verbose-state-changes" } */
 
 #include <sys/socket.h>

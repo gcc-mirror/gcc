@@ -320,7 +320,13 @@ static bool
 signal_unsafe_p (tree fndecl)
 {
   function_set fs = get_async_signal_unsafe_fns ();
-  return fs.contains_decl_p (fndecl);
+  if (fs.contains_decl_p (fndecl))
+    return true;
+  if (is_std_function_p (fndecl)
+      && fs.contains_name_p (IDENTIFIER_POINTER (DECL_NAME (fndecl))))
+    return true;
+
+  return false;
 }
 
 /* Implementation of state_machine::on_stmt vfunc for signal_state_machine.  */
@@ -335,7 +341,8 @@ signal_state_machine::on_stmt (sm_context *sm_ctxt,
     {
       if (const gcall *call = dyn_cast <const gcall *> (stmt))
 	if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
-	  if (is_named_call_p (callee_fndecl, "signal", call, 2))
+	  if (is_named_call_p (callee_fndecl, "signal", call, 2)
+	      || is_std_named_call_p (callee_fndecl, "signal", call, 2))
 	    {
 	      tree handler = gimple_call_arg (call, 1);
 	      if (TREE_CODE (handler) == ADDR_EXPR

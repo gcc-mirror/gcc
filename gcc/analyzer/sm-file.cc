@@ -648,6 +648,14 @@ register_known_file_functions (known_function_manager &kfm)
   kfm.add ("fread", make_unique<kf_fread> ());
   kfm.add ("getc", make_unique<kf_getc> ());
   kfm.add ("getchar", make_unique<kf_getchar> ());
+
+  /* Some C++ implementations use the std:: copies of these functions
+     from <cstdio> for <stdio.h>, so we must match against these too.  */
+  kfm.add_std_ns ("ferror", make_unique<kf_ferror> ());
+  kfm.add_std_ns ("fgets", make_unique<kf_fgets> ());
+  kfm.add_std_ns ("fread", make_unique<kf_fread> ());
+  kfm.add_std_ns ("getc", make_unique<kf_getc> ());
+  kfm.add_std_ns ("getchar", make_unique<kf_getchar> ());
 }
 
 #if CHECKING_P
