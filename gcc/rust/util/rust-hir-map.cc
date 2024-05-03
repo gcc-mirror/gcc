@@ -632,18 +632,18 @@ void
 Mappings::insert_hir_param (HIR::FunctionParam *param)
 {
   auto id = param->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_param (id) == nullptr);
+  rust_assert (!lookup_hir_param (id));
 
   hirParamMappings[id] = param;
   insert_node_to_hir (param->get_mappings ().get_nodeid (), id);
 }
 
-HIR::FunctionParam *
+tl::optional<HIR::FunctionParam *>
 Mappings::lookup_hir_param (HirId id)
 {
   auto it = hirParamMappings.find (id);
   if (it == hirParamMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }
