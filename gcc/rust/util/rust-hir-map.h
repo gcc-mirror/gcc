@@ -146,7 +146,7 @@ public:
   lookup_hir_implitem (HirId id);
 
   void insert_hir_expr (HIR::Expr *expr);
-  HIR::Expr *lookup_hir_expr (HirId id);
+  tl::optional<HIR::Expr *> lookup_hir_expr (HirId id);
 
   void insert_hir_path_expr_seg (HIR::PathExprSegment *expr);
   HIR::PathExprSegment *lookup_hir_path_expr_seg (HirId id);
