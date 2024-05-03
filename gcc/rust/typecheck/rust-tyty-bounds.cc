@@ -152,10 +152,10 @@ TypeBoundsProbe::assemble_sized_builtin ()
 void
 TypeBoundsProbe::assemble_builtin_candidate (LangItem::Kind lang_item)
 {
-  DefId id;
-  bool found_lang_item = mappings.lookup_lang_item (lang_item, &id);
-  if (!found_lang_item)
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item);
+  if (!lang_item_defined)
     return;
+  DefId &id = lang_item_defined.value ();
 
   auto defid = mappings.lookup_defid (id);
   if (!defid)

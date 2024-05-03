@@ -1253,13 +1253,11 @@ Mappings::lookup_builtin_marker ()
 DefId
 Mappings::get_lang_item (LangItem::Kind item_type, location_t locus)
 {
-  DefId item = UNKNOWN_DEFID;
-  bool ok = lookup_lang_item (item_type, &item);
-  if (!ok)
-    rust_fatal_error (locus, "failed to find lang item %s",
-		      LangItem::ToString (item_type).c_str ());
+  if (auto item = lookup_lang_item (item_type))
+    return *item;
 
-  return item;
+  rust_fatal_error (locus, "failed to find lang item %s",
+		    LangItem::ToString (item_type).c_str ());
 }
 
 tl::optional<HIR::TraitItem *>
