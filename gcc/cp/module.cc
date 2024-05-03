@@ -2731,7 +2731,7 @@ static keyed_map_t *keyed_table;
    need to be attached to the same module as the temploid.  This maps
    these decls to the temploid they are instantiated them, as there is
    no other easy way to get this information.  */
-static hash_map<tree, tree> *imported_temploid_friends;
+static GTY((cache)) decl_tree_cache_map *imported_temploid_friends;
 
 /********************************************************************/
 /* Tree streaming.   The tree streaming is very specific to the tree
@@ -8327,7 +8327,8 @@ trees_in::decl_value ()
   if (TREE_CODE (inner) == FUNCTION_DECL
       || TREE_CODE (inner) == TYPE_DECL)
     if (tree owner = tree_node ())
-      imported_temploid_friends->put (decl, owner);
+      if (is_new)
+	imported_temploid_friends->put (decl, owner);
 
   /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
   unsigned tdef_flags = 0;
@@ -19336,6 +19337,18 @@ propagate_defining_module (tree decl, tree orig)
     }
 }
 
+/* DECL is being freed, clear data we don't need anymore.  */
+
+void
+remove_defining_module (tree decl)
+{
+  if (!modules_p ())
+    return;
+
+  if (imported_temploid_friends)
+    imported_temploid_friends->remove (decl);
+}
+
 /* Create the flat name string.  It is simplest to have it handy.  */
 
 void
@@ -20550,7 +20563,7 @@ init_modules (cpp_reader *reader)
       entity_map = new entity_map_t (EXPERIMENT (1, 400));
       vec_safe_reserve (entity_ary, EXPERIMENT (1, 400));
       imported_temploid_friends
-	= new hash_map<tree,tree> (EXPERIMENT (1, 400));
+	= decl_tree_cache_map::create_ggc (EXPERIMENT (1, 400));
     }
 
 #if CHECKING_P

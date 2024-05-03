@@ -3340,6 +3340,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
   if (flag_concepts)
     remove_constraints (newdecl);
 
+  /* And similarly for any module tracking data.  */
+  if (modules_p ())
+    remove_defining_module (newdecl);
+
   ggc_free (newdecl);
 
   return olddecl;

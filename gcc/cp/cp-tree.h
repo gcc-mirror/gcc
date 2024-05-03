@@ -7420,6 +7420,7 @@ extern void set_instantiating_module (tree);
 extern void set_defining_module (tree);
 extern void maybe_key_decl (tree ctx, tree decl);
 extern void propagate_defining_module (tree decl, tree orig);
+extern void remove_defining_module (tree decl);
 
 extern void mangle_module (int m, bool include_partition);
 extern void mangle_module_fini ();
