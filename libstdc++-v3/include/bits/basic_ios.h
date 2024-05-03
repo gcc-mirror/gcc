@@ -408,7 +408,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  with this stream, calls that buffer's @c pubimbue(loc).
        *
        *  Additional l10n notes are at
-       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/localization.html
+       *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/localization.html
       */
       locale
       imbue(const locale& __loc);
@@ -428,7 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @endcode
        *
        *  Additional l10n notes are at
-       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/localization.html
+       *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/localization.html
       */
       char
       narrow(char_type __c, char __dfault) const
@@ -447,7 +447,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @endcode
        *
        *  Additional l10n notes are at
-       *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/localization.html
+       *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/localization.html
       */
       char_type
       widen(char __c) const

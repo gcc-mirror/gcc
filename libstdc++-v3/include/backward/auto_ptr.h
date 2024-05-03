@@ -265,7 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @endcode
        *
        *  But it doesn't work, and won't be fixed. For further details see
-       *  http://cplusplus.github.io/LWG/lwg-closed.html#463
+       *  https://cplusplus.github.io/LWG/lwg-closed.html#463
        */
       auto_ptr(auto_ptr_ref<element_type> __ref) throw()
       : _M_ptr(__ref._M_ptr) { }
