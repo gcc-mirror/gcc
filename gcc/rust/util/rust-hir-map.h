@@ -161,7 +161,7 @@ public:
   tl::optional<HIR::Stmt *> lookup_hir_stmt (HirId id);
 
   void insert_hir_param (HIR::FunctionParam *type);
-  HIR::FunctionParam *lookup_hir_param (HirId id);
+  tl::optional<HIR::FunctionParam *> lookup_hir_param (HirId id);
 
   void insert_hir_self_param (HIR::SelfParam *type);
   HIR::SelfParam *lookup_hir_self_param (HirId id);
