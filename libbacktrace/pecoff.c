@@ -61,6 +61,34 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #undef Module32Next
 #endif
 #endif
+
+#if defined(_ARM_)
+#define NTAPI
+#else
+#define NTAPI __stdcall
+#endif
+
+/* This is a simplified (but binary compatible) version of what Microsoft
+   defines in their documentation. */
+struct dll_notification_data
+{
+  ULONG reserved;
+  /* The name as UNICODE_STRING struct. */
+  PVOID full_dll_name;
+  PVOID base_dll_name;
+  PVOID dll_base;
+  ULONG size_of_image;
+};
+
+#define LDR_DLL_NOTIFICATION_REASON_LOADED 1
+
+typedef LONG NTSTATUS;
+typedef VOID CALLBACK (*LDR_DLL_NOTIFICATION)(ULONG,
+					      struct dll_notification_data*,
+					      PVOID);
+typedef NTSTATUS NTAPI (*LDR_REGISTER_FUNCTION)(ULONG,
+						LDR_DLL_NOTIFICATION, PVOID,
+						PVOID*);
 #endif
 
 /* Coff file header.  */
@@ -911,6 +939,53 @@ coff_add (struct backtrace_state *state, int descriptor,
   return 0;
 }
 
+#ifdef HAVE_WINDOWS_H
+struct dll_notification_context
+{
+  struct backtrace_state *state;
+  backtrace_error_callback error_callback;
+  void *data;
+};
+
+static VOID CALLBACK
+dll_notification (ULONG reason,
+		  struct dll_notification_data *notification_data,
+		  PVOID context)
+{
+  char module_name[MAX_PATH];
+  int descriptor;
+  struct dll_notification_context* dll_context =
+    (struct dll_notification_context*) context;
+  struct backtrace_state *state = dll_context->state;
+  void *data = dll_context->data;
+  backtrace_error_callback error_callback = dll_context->data;
+  fileline fileline;
+  int found_sym;
+  int found_dwarf;
+  HMODULE module_handle;
+
+  if (reason != LDR_DLL_NOTIFICATION_REASON_LOADED)
+    return;
+
+  if (!GetModuleHandleExW ((GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS
+			    | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT),
+			   (wchar_t*) notification_data->dll_base,
+			   &module_handle))
+    return;
+
+  if (!GetModuleFileNameA ((HMODULE) module_handle, module_name, MAX_PATH - 1))
+    return;
+
+  descriptor = backtrace_open (module_name, error_callback, data, NULL);
+
+  if (descriptor < 0)
+    return;
+
+  coff_add (state, descriptor, error_callback, data, &fileline, &found_sym,
+	    &found_dwarf, (uintptr_t) module_handle);
+}
+#endif /* defined(HAVE_WINDOWS_H) */
+
 /* Initialize the backtrace data we need from an ELF executable.  At
    the ELF level, all we need to do is find the debug info
    sections.  */
@@ -933,6 +1008,8 @@ backtrace_initialize (struct backtrace_state *state,
 #endif
 
 #ifdef HAVE_WINDOWS_H
+  HMODULE nt_dll_handle;
+
   module_handle = (uintptr_t) GetModuleHandle (NULL);
 #endif
 
@@ -979,6 +1056,35 @@ backtrace_initialize (struct backtrace_state *state,
       CloseHandle (snapshot);
     }
 #endif
+
+#ifdef HAVE_WINDOWS_H
+  nt_dll_handle = GetModuleHandleW (L"ntdll.dll");
+  if (nt_dll_handle)
+    {
+      LDR_REGISTER_FUNCTION register_func;
+      const char register_name[] = "LdrRegisterDllNotification";
+      register_func = (void*) GetProcAddress (nt_dll_handle,
+					      register_name);
+
+      if (register_func)
+	{
+	  PVOID cookie;
+	  struct dll_notification_context *context
+	    = backtrace_alloc (state,
+			       sizeof (struct dll_notification_context),
+			       error_callback, data);
+
+	  if (context)
+	    {
+	      context->state = state;
+	      context->data = data;
+	      context->error_callback = error_callback;
+
+	      register_func (0, &dll_notification, context, &cookie);
+	    }
+	}
+    }
+#endif /* defined(HAVE_WINDOWS_H) */
 
   if (!state->threaded)
     {
