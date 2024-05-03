@@ -4794,6 +4794,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
   use_operand_p use;
   gimple *simtenter_stmt = NULL;
   vec<tree> *simtvars_save;
+  tree save_stack = NULL_TREE;
 
   /* The gimplifier uses input_location in too many places, such as
      internal_get_tmp_var ().  */
@@ -5042,6 +5043,28 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 			GSI_NEW_STMT);
     }
 
+  /* If function to be inlined calls alloca, wrap the inlined function
+     in between save_stack = __builtin_stack_save (); and
+     __builtin_stack_restore (save_stack); calls.  */
+  if (id->src_cfun->calls_alloca && !gimple_call_noreturn_p (stmt))
+    /* Don't do this for VLA allocations though, just for user alloca
+       calls.  */
+    for (struct cgraph_edge *e = id->src_node->callees; e; e = e->next_callee)
+      if (gimple_maybe_alloca_call_p (e->call_stmt)
+	  && !gimple_call_alloca_for_var_p (e->call_stmt))
+	{
+	  tree fn = builtin_decl_implicit (BUILT_IN_STACK_SAVE);
+	  gcall *call = gimple_build_call (fn, 0);
+	  save_stack = make_ssa_name (ptr_type_node);
+	  gimple_call_set_lhs (call, save_stack);
+	  gimple_stmt_iterator si = gsi_last_bb (bb);
+	  gsi_insert_after (&si, call, GSI_NEW_STMT);
+	  struct cgraph_node *dest = cgraph_node::get_create (fn);
+	  id->dst_node->create_edge (dest, call, bb->count)->inline_failed
+	    = CIF_BODY_NOT_AVAILABLE;
+	  break;
+	}
+
   if (DECL_INITIAL (fn))
     {
       if (gimple_block (stmt))
@@ -5164,6 +5187,17 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 	      gsi_insert_before (&stmt_gsi, clobber_stmt, GSI_SAME_STMT);
 	    }
 	}
+
+  if (save_stack)
+    {
+      tree fn = builtin_decl_implicit (BUILT_IN_STACK_RESTORE);
+      gcall *call = gimple_build_call (fn, 1, save_stack);
+      gsi_insert_before (&stmt_gsi, call, GSI_SAME_STMT);
+      struct cgraph_node *dest = cgraph_node::get_create (fn);
+      id->dst_node->create_edge (dest, call,
+				 return_block->count)->inline_failed
+	= CIF_BODY_NOT_AVAILABLE;
+    }
 
   /* Reset the escaped solution.  */
   if (cfun->gimple_df)
