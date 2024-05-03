@@ -27,6 +27,10 @@ the source, must acknowledge the copyright and authors of this work.
 */
 
 /* { dg-require-effective-target sockets } */
+
+/* Needed on some targets until we have exception-handling working (PR 111475).  */
+/* { dg-additional-options "-fno-exceptions" } */
+
 /* { dg-skip-if "" { hppa*-*-hpux* powerpc*-*-aix* } } */
 
 #include <sys/types.h>
