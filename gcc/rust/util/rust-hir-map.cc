@@ -692,18 +692,18 @@ void
 Mappings::insert_hir_pattern (HIR::Pattern *pattern)
 {
   auto id = pattern->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_pattern (id) == nullptr);
+  rust_assert (!lookup_hir_pattern (id));
 
   hirPatternMappings[id] = pattern;
   insert_node_to_hir (pattern->get_mappings ().get_nodeid (), id);
 }
 
-HIR::Pattern *
+tl::optional<HIR::Pattern *>
 Mappings::lookup_hir_pattern (HirId id)
 {
   auto it = hirPatternMappings.find (id);
   if (it == hirPatternMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }

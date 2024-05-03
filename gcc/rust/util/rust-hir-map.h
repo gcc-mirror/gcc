@@ -170,7 +170,7 @@ public:
   tl::optional<HIR::StructExprField *> lookup_hir_struct_field (HirId id);
 
   void insert_hir_pattern (HIR::Pattern *pattern);
-  HIR::Pattern *lookup_hir_pattern (HirId id);
+  tl::optional<HIR::Pattern *> lookup_hir_pattern (HirId id);
 
   void walk_local_defids_for_crate (CrateNum crateNum,
 				    std::function<bool (HIR::Item *)> cb);
