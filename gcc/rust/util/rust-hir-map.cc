@@ -489,18 +489,18 @@ void
 Mappings::insert_module (HIR::Module *module)
 {
   auto id = module->get_mappings ().get_hirid ();
-  rust_assert (lookup_module (id) == nullptr);
+  rust_assert (!lookup_module (id));
 
   hirModuleMappings[id] = module;
   insert_node_to_hir (module->get_mappings ().get_nodeid (), id);
 }
 
-HIR::Module *
+tl::optional<HIR::Module *>
 Mappings::lookup_module (HirId id)
 {
   auto it = hirModuleMappings.find (id);
   if (it == hirModuleMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }

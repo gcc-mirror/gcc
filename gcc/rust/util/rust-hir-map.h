@@ -138,7 +138,7 @@ public:
   tl::optional<HIR::ImplBlock *> lookup_impl_block_type (HirId id);
 
   void insert_module (HIR::Module *module);
-  HIR::Module *lookup_module (HirId id);
+  tl::optional<HIR::Module *> lookup_module (HirId id);
 
   void insert_hir_implitem (HirId parent_impl_id, HIR::ImplItem *item);
   HIR::ImplItem *lookup_hir_implitem (HirId id, HirId *parent_impl_id);

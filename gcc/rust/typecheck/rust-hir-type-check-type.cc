@@ -391,7 +391,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	}
       auto ref = hid.value ();
 
-      auto seg_is_module = (nullptr != mappings.lookup_module (ref));
+      auto seg_is_module = mappings.lookup_module (ref).has_value ();
       auto seg_is_crate = mappings.is_local_hirid_crate (ref);
       if (seg_is_module || seg_is_crate)
 	{
