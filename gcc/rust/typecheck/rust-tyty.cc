@@ -2218,15 +2218,9 @@ ClosureType::setup_fn_once_output () const
   auto fn_once_lang_item = LangItem::Kind::FN_ONCE;
   auto fn_once_output_lang_item = LangItem::Kind::FN_ONCE_OUTPUT;
 
-  DefId trait_id = UNKNOWN_DEFID;
-  bool trait_lang_item_defined
-    = mappings.lookup_lang_item (fn_once_lang_item, &trait_id);
-  rust_assert (trait_lang_item_defined);
-
-  DefId trait_item_id = UNKNOWN_DEFID;
-  bool trait_item_lang_item_defined
-    = mappings.lookup_lang_item (fn_once_output_lang_item, &trait_item_id);
-  rust_assert (trait_item_lang_item_defined);
+  DefId &trait_id = mappings.lookup_lang_item (fn_once_lang_item).value ();
+  DefId &trait_item_id
+    = mappings.lookup_lang_item (fn_once_output_lang_item).value ();
 
   // resolve to the trait
   HIR::Item *item = mappings.lookup_defid (trait_id).value ();

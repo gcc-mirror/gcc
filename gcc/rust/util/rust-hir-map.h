@@ -267,14 +267,13 @@ public:
     lang_item_mappings[item_type] = id;
   }
 
-  bool lookup_lang_item (LangItem::Kind item_type, DefId *id)
+  tl::optional<DefId &> lookup_lang_item (LangItem::Kind item_type)
   {
     auto it = lang_item_mappings.find (item_type);
     if (it == lang_item_mappings.end ())
-      return false;
+      return tl::nullopt;
 
-    *id = it->second;
-    return true;
+    return it->second;
   }
 
   // This will fatal_error when this lang item does not exist

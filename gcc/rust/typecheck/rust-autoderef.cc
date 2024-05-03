@@ -129,12 +129,11 @@ resolve_operator_overload_fn (
 
   // look up lang item for arithmetic type
   std::string associated_item_name = LangItem::ToString (lang_item_type);
-  DefId respective_lang_item_id = UNKNOWN_DEFID;
-  bool lang_item_defined
-    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
 
   if (!lang_item_defined)
     return false;
+  DefId &respective_lang_item_id = lang_item_defined.value ();
 
   // we might be in a static or const context and unknown is fine
   TypeCheckContextItem current_context = TypeCheckContextItem::get_error ();

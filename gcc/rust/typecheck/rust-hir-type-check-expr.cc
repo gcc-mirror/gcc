@@ -628,10 +628,7 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE;
 
-  DefId respective_lang_item_id = UNKNOWN_DEFID;
-  bool lang_item_defined
-    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
-
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
   // we need to have it maybe
   if (!lang_item_defined)
     {
@@ -640,6 +637,7 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
 			      LangItem::ToString (lang_item_type).c_str ());
       return;
     }
+  DefId respective_lang_item_id = lang_item_defined.value ();
 
   // look it up and it _must_ be a struct definition
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
@@ -682,10 +680,7 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE_FROM;
 
-  DefId respective_lang_item_id = UNKNOWN_DEFID;
-  bool lang_item_defined
-    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
-
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
   // we need to have it maybe
   if (!lang_item_defined)
     {
@@ -694,6 +689,7 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
 			      LangItem::ToString (lang_item_type).c_str ());
       return;
     }
+  DefId &respective_lang_item_id = lang_item_defined.value ();
 
   // look it up and it _must_ be a struct definition
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
@@ -729,10 +725,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE_TO;
 
-  DefId respective_lang_item_id = UNKNOWN_DEFID;
-  bool lang_item_defined
-    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
-
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
   // we need to have it maybe
   if (!lang_item_defined)
     {
@@ -742,6 +735,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
       return;
     }
 
+  DefId &respective_lang_item_id = lang_item_defined.value ();
   // look it up and it _must_ be a struct definition
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
@@ -775,10 +769,7 @@ TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE_FULL;
 
-  DefId respective_lang_item_id = UNKNOWN_DEFID;
-  bool lang_item_defined
-    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
-
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
   // we need to have it maybe
   if (!lang_item_defined)
     {
@@ -787,6 +778,7 @@ TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
 			      LangItem::ToString (lang_item_type).c_str ());
       return;
     }
+  DefId &respective_lang_item_id = lang_item_defined.value ();
 
   // look it up and it _must_ be a struct definition
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
@@ -805,10 +797,7 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE_INCLUSIVE;
 
-  DefId respective_lang_item_id = UNKNOWN_DEFID;
-  bool lang_item_defined
-    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
-
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
   // we need to have it maybe
   if (!lang_item_defined)
     {
@@ -817,6 +806,7 @@ TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
 			      LangItem::ToString (lang_item_type).c_str ());
       return;
     }
+  DefId respective_lang_item_id = lang_item_defined.value ();
 
   // look it up and it _must_ be a struct definition
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
@@ -1580,9 +1570,8 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   // closure
 
   LangItem::Kind lang_item_type = LangItem::Kind::FN_ONCE;
-  DefId respective_lang_item_id = UNKNOWN_DEFID;
-  bool lang_item_defined
-    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
+
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
   if (!lang_item_defined)
     {
       // FIXME
@@ -1591,7 +1580,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
       rust_fatal_error (expr.get_locus (), "unable to find lang item: %qs",
 			LangItem::ToString (lang_item_type).c_str ());
     }
-  rust_assert (lang_item_defined);
+  DefId &respective_lang_item_id = lang_item_defined.value ();
 
   // these lang items are always traits
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
@@ -1635,13 +1624,12 @@ TypeCheckExpr::resolve_operator_overload (LangItem::Kind lang_item_type,
 {
   // look up lang item for arithmetic type
   std::string associated_item_name = LangItem::ToString (lang_item_type);
-  DefId respective_lang_item_id = UNKNOWN_DEFID;
-  bool lang_item_defined
-    = mappings.lookup_lang_item (lang_item_type, &respective_lang_item_id);
 
+  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
   // probe for the lang-item
   if (!lang_item_defined)
     return false;
+  DefId &respective_lang_item_id = lang_item_defined.value ();
 
   // we might be in a static or const context and unknown is fine
   TypeCheckContextItem current_context = TypeCheckContextItem::get_error ();
