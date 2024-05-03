@@ -4407,12 +4407,13 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to,
 			   since MEM_EXPR is shared so make a copy and
 			   walk to the subtree again.  */
 			tree new_expr = unshare_expr (MEM_EXPR (*iter));
+			tree orig_new_expr = new_expr;
 			if (TREE_CODE (new_expr) == WITH_SIZE_EXPR)
 			  new_expr = TREE_OPERAND (new_expr, 0);
 			while (handled_component_p (new_expr))
 			  new_expr = TREE_OPERAND (new_expr, 0);
 			MR_DEPENDENCE_CLIQUE (new_expr) = newc;
-			set_mem_expr (const_cast <rtx> (*iter), new_expr);
+			set_mem_expr (const_cast <rtx> (*iter), orig_new_expr);
 		      }
 		  }
 	    }
