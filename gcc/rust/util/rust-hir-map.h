@@ -149,7 +149,7 @@ public:
   tl::optional<HIR::Expr *> lookup_hir_expr (HirId id);
 
   void insert_hir_path_expr_seg (HIR::PathExprSegment *expr);
-  HIR::PathExprSegment *lookup_hir_path_expr_seg (HirId id);
+  tl::optional<HIR::PathExprSegment *> lookup_hir_path_expr_seg (HirId id);
 
   void insert_hir_generic_param (HIR::GenericParam *expr);
   HIR::GenericParam *lookup_hir_generic_param (HirId id);

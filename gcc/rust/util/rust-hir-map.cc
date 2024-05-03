@@ -550,19 +550,19 @@ void
 Mappings::insert_hir_path_expr_seg (HIR::PathExprSegment *expr)
 {
   auto id = expr->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_path_expr_seg (id) == nullptr);
+  rust_assert (!lookup_hir_path_expr_seg (id));
 
   hirPathSegMappings[id] = expr;
   insert_node_to_hir (expr->get_mappings ().get_nodeid (), id);
   insert_location (id, expr->get_locus ());
 }
 
-HIR::PathExprSegment *
+tl::optional<HIR::PathExprSegment *>
 Mappings::lookup_hir_path_expr_seg (HirId id)
 {
   auto it = hirPathSegMappings.find (id);
   if (it == hirPathSegMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }
