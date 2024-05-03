@@ -1,3 +1,17 @@
+2024-05-02  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2024-04-12  Will Schmidt  <will_schmidt@linux.ibm.com>
+		    Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/101865
+	* gcc.target/powerpc/predefine-p7-novsx.c: New test.
+	* gcc.target/powerpc/predefine-p8-noaltivec-novsx.c: New test.
+	* gcc.target/powerpc/predefine-p8-noaltivec.c: New test.
+	* gcc.target/powerpc/predefine-p8-novsx.c: New test.
+	* gcc.target/powerpc/predefine-p8-pragma-vsx.c: New test.
+	* gcc.target/powerpc/predefine-p9-novsx.c: New test.
+
 2024-04-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
