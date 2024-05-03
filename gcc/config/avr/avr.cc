@@ -1095,6 +1095,16 @@ avr_option_override (void)
       flag_omit_frame_pointer = 0;
     }
 
+  /* Disable flag_delete_null_pointer_checks if zero is a valid address. */
+  if (targetm.addr_space.zero_address_valid (ADDR_SPACE_GENERIC))
+    flag_delete_null_pointer_checks = 0;
+
+  /* PR ipa/92606: Inter-procedural analysis optimizes data across
+     address-spaces and PROGMEM.  As of v14, the PROGMEM part is
+     still not fixed (and there is still no target hook as proposed
+     in PR92932).  Just disable respective bogus optimization.  */
+  flag_ipa_icf_variables = 0;
+
   if (flag_pic == 1)
     warning (OPT_fpic, "%<-fpic%> is not supported");
   if (flag_pic == 2)
