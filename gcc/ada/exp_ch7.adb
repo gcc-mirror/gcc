@@ -839,7 +839,7 @@ package body Exp_Ch7 is
         and then Needs_BIP_Collection (Func_Id)
       then
          declare
-            Ptr_Typ   : constant Node_Id := Make_Temporary (Loc, 'P');
+            Ptr_Typ   : constant Node_Id   := Make_Temporary (Loc, 'P');
             Param     : constant Entity_Id :=
                           Make_Defining_Identifier (Loc, Name_V);
 
@@ -861,27 +861,26 @@ package body Exp_Ch7 is
             Fin_Body :=
               Make_Subprogram_Body (Loc,
                 Specification =>
-                 Make_Procedure_Specification (Loc,
-                   Defining_Unit_Name => Fin_Id,
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name       => Fin_Id,
+                    Parameter_Specifications => New_List (
+                      Make_Parameter_Specification (Loc,
+                        Defining_Identifier => Param,
+                        Parameter_Type      =>
+                          New_Occurrence_Of (RTE (RE_Address), Loc)))),
 
-                   Parameter_Specifications => New_List (
-                     Make_Parameter_Specification (Loc,
-                       Defining_Identifier => Param,
-                       Parameter_Type =>
-                         New_Occurrence_Of (RTE (RE_Address), Loc)))),
+                Declarations => New_List (
+                  Make_Full_Type_Declaration (Loc,
+                    Defining_Identifier => Ptr_Typ,
+                    Type_Definition     =>
+                      Make_Access_To_Object_Definition (Loc,
+                        All_Present        => True,
+                        Subtype_Indication =>
+                          New_Occurrence_Of (Obj_Typ, Loc)))),
 
-             Declarations => New_List (
-               Make_Full_Type_Declaration (Loc,
-                 Defining_Identifier => Ptr_Typ,
-                 Type_Definition     =>
-                   Make_Access_To_Object_Definition (Loc,
-                     All_Present        => True,
-                     Subtype_Indication =>
-                       New_Occurrence_Of (Obj_Typ, Loc)))),
-
-               Handled_Statement_Sequence =>
-                 Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements => Fin_Stmts));
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => Fin_Stmts));
 
             Insert_After_And_Analyze
               (Master_Node_Ins, Fin_Body, Suppress => All_Checks);
@@ -2652,7 +2651,7 @@ package body Exp_Ch7 is
          --  Processing for simple protected objects. Such objects require
          --  manual finalization of their lock managers. Generate:
 
-         --    procedure obj_type_nnFD (v :system__address) is
+         --    procedure obj_typ_nnFD (v : system__address) is
          --       type Ptr_Typ is access all Obj_Typ;
          --       Rnn : Obj_Typ renames Ptr_Typ!(v).all;
          --    begin
@@ -2661,7 +2660,7 @@ package body Exp_Ch7 is
          --    exception
          --       when others =>
          --          null;
-         --    end obj_type_nnFD;
+         --    end obj_typ_nnFD;
 
          if Is_Protected
            or else (Has_Simple_Protected_Object (Obj_Typ)
@@ -2749,6 +2748,76 @@ package body Exp_Ch7 is
                                (Ptr_Typ, New_Occurrence_Of (Param, Loc))))),
 
                    Handled_Statement_Sequence => HSS);
+
+               Push_Scope (Scope (Obj_Id));
+               Insert_After_And_Analyze
+                 (Master_Node_Ins, Fin_Body, Suppress => All_Checks);
+               Pop_Scope;
+
+               Master_Node_Ins := Fin_Body;
+            end;
+
+         --  If the object's subtype is an array that has a constrained first
+         --  subtype and is not this first subtype, we need to build a special
+         --  Finalize_Address primitive for the object's subtype because the
+         --  Finalize_Address primitive of the base type has been tailored to
+         --  the first subtype (see Make_Finalize_Address_Stmts). Generate:
+
+         --    procedure obj_typ_nnFD (v : system__address) is
+         --       type Ptr_Typ is access all Obj_Typ;
+         --    begin
+         --       obj_typBDF (Ptr_Typ!(v).all, f => true);
+         --    end obj_typ_nnFD;
+
+         elsif Is_Array_Type (Etype (Obj_Id))
+           and then Is_Constrained (First_Subtype (Etype (Obj_Id)))
+           and then Etype (Obj_Id) /= First_Subtype (Etype (Obj_Id))
+         then
+            declare
+               Ptr_Typ   : constant Node_Id   := Make_Temporary (Loc, 'P');
+               Param     : constant Entity_Id :=
+                             Make_Defining_Identifier (Loc, Name_V);
+
+               Fin_Body  : Node_Id;
+
+            begin
+               Obj_Typ := Etype (Obj_Id);
+
+               Fin_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Make_TSS_Name_Local
+                     (Obj_Typ, TSS_Finalize_Address));
+
+               Fin_Body :=
+                 Make_Subprogram_Body (Loc,
+                   Specification =>
+                     Make_Procedure_Specification (Loc,
+                       Defining_Unit_Name       => Fin_Id,
+                       Parameter_Specifications => New_List (
+                         Make_Parameter_Specification (Loc,
+                           Defining_Identifier => Param,
+                           Parameter_Type      =>
+                             New_Occurrence_Of (RTE (RE_Address), Loc)))),
+
+                   Declarations => New_List (
+                     Make_Full_Type_Declaration (Loc,
+                       Defining_Identifier => Ptr_Typ,
+                       Type_Definition     =>
+                         Make_Access_To_Object_Definition (Loc,
+                           All_Present        => True,
+                           Subtype_Indication =>
+                             New_Occurrence_Of (Obj_Typ, Loc)))),
+
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (
+                         Make_Final_Call (
+                           Obj_Ref =>
+                             Make_Explicit_Dereference (Loc,
+                               Prefix =>
+                                 Unchecked_Convert_To (Ptr_Typ,
+                                   Make_Identifier (Loc, Name_V))),
+                           Typ     => Obj_Typ))));
 
                Push_Scope (Scope (Obj_Id));
                Insert_After_And_Analyze

@@ -6433,7 +6433,7 @@ package body Exp_Util is
       Obj_Typ := Base_Type (Etype (Obj_Id));
 
       if Is_Access_Type (Obj_Typ) then
-         Obj_Typ := Available_View (Designated_Type (Obj_Typ));
+         Obj_Typ := Base_Type (Available_View (Designated_Type (Obj_Typ)));
       end if;
 
       --  Handle the initialization type of the object declaration
