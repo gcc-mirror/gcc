@@ -449,11 +449,11 @@ UnsafeChecker::visit (MethodCallExpr &expr)
 		       &method_type);
 
   auto fn = *static_cast<TyTy::FnType *> (method_type);
-  auto method = mappings.lookup_hir_implitem (fn.get_ref (), nullptr);
 
+  auto method = mappings.lookup_hir_implitem (fn.get_ref ());
   if (!unsafe_context.is_in_context () && method)
-    check_unsafe_call (static_cast<Function *> (method), expr.get_locus (),
-		       "method");
+    check_unsafe_call (static_cast<Function *> (method->first),
+		       expr.get_locus (), "method");
 
   expr.get_receiver ()->accept_vis (*this);
 

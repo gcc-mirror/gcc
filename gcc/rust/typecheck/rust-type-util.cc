@@ -70,20 +70,16 @@ query_type (HirId reference, TyTy::BaseType **result)
       return true;
     }
 
-  HirId parent_impl_id = UNKNOWN_HIRID;
-  HIR::ImplItem *impl_item
-    = mappings.lookup_hir_implitem (reference, &parent_impl_id);
-  if (impl_item != nullptr)
+  if (auto impl_item = mappings.lookup_hir_implitem (reference))
     {
-      auto impl_block = mappings.lookup_hir_impl_block (parent_impl_id);
-      rust_assert (impl_block);
+      auto impl_block
+	= mappings.lookup_hir_impl_block (impl_item->second).value ();
 
       // found an impl item
-      rust_debug_loc (impl_item->get_locus (), "resolved impl-item {%u} to",
-		      reference);
+      rust_debug_loc (impl_item->first->get_locus (),
+		      "resolved impl-item {%u} to", reference);
 
-      *result
-	= TypeCheckItem::ResolveImplItem (*impl_block.value (), *impl_item);
+      *result = TypeCheckItem::ResolveImplItem (*impl_block, *impl_item->first);
       context->query_completed (reference);
       return true;
     }
