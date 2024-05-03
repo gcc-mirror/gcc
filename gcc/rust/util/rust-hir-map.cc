@@ -612,18 +612,18 @@ void
 Mappings::insert_hir_stmt (HIR::Stmt *stmt)
 {
   auto id = stmt->get_mappings ().get_hirid ();
-  rust_assert (lookup_hir_stmt (id) == nullptr);
+  rust_assert (!lookup_hir_stmt (id));
 
   hirStmtMappings[id] = stmt;
   insert_node_to_hir (stmt->get_mappings ().get_nodeid (), id);
 }
 
-HIR::Stmt *
+tl::optional<HIR::Stmt *>
 Mappings::lookup_hir_stmt (HirId id)
 {
   auto it = hirStmtMappings.find (id);
   if (it == hirStmtMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
   return it->second;
 }
@@ -796,7 +796,7 @@ Mappings::resolve_nodeid_to_stmt (NodeId id)
     return tl::nullopt;
 
   HirId resolved = it->second;
-  return {lookup_hir_stmt (resolved)};
+  return lookup_hir_stmt (resolved);
 }
 
 void

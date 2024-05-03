@@ -158,7 +158,7 @@ public:
   tl::optional<HIR::Type *> lookup_hir_type (HirId id);
 
   void insert_hir_stmt (HIR::Stmt *stmt);
-  HIR::Stmt *lookup_hir_stmt (HirId id);
+  tl::optional<HIR::Stmt *> lookup_hir_stmt (HirId id);
 
   void insert_hir_param (HIR::FunctionParam *type);
   HIR::FunctionParam *lookup_hir_param (HirId id);
