@@ -88,17 +88,9 @@ MarkLive::go (HIR::Crate &)
       scannedSymbols.emplace (hirId);
       liveSymbols.emplace (hirId);
       if (auto item = mappings.lookup_hir_item (hirId))
-	{
-	  item.value ()->accept_vis (*this);
-	}
-      else
-	{ // the item maybe inside a trait impl
-	  HirId parent_impl_id = UNKNOWN_HIRID;
-	  HIR::ImplItem *implItem
-	    = mappings.lookup_hir_implitem (hirId, &parent_impl_id);
-	  if (implItem != nullptr)
-	    implItem->accept_vis (*this);
-	}
+	item.value ()->accept_vis (*this);
+      else if (auto implItem = mappings.lookup_hir_implitem (hirId))
+	implItem->first->accept_vis (*this);
     }
 }
 
@@ -123,21 +115,10 @@ MarkLive::visit (HIR::PathInExpression &expr)
   auto ref = hid.value ();
 
   // it must resolve to some kind of HIR::Item or HIR::InheritImplItem
-  tl::optional<HIR::Item *> resolved_item = mappings.lookup_hir_item (ref);
-  if (resolved_item)
-    {
-      mark_hir_id (resolved_item.value ()->get_mappings ().get_hirid ());
-    }
-  else
-    {
-      HirId parent_impl_id = UNKNOWN_HIRID;
-      HIR::ImplItem *resolved_item
-	= mappings.lookup_hir_implitem (ref, &parent_impl_id);
-      if (resolved_item != nullptr)
-	{
-	  mark_hir_id (resolved_item->get_impl_mappings ().get_hirid ());
-	}
-    }
+  if (auto resolved_item = mappings.lookup_hir_item (ref))
+    mark_hir_id (resolved_item.value ()->get_mappings ().get_hirid ());
+  else if (auto resolved_item = mappings.lookup_hir_implitem (ref))
+    mark_hir_id (resolved_item->first->get_impl_mappings ().get_hirid ());
 }
 
 void

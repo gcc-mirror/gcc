@@ -509,25 +509,21 @@ void
 Mappings::insert_hir_implitem (HirId parent_impl_id, HIR::ImplItem *item)
 {
   auto id = item->get_impl_mappings ().get_hirid ();
-  rust_assert (lookup_hir_implitem (id, nullptr) == nullptr);
+  rust_assert (!lookup_hir_implitem (id));
 
   hirImplItemMappings[id]
     = std::pair<HirId, HIR::ImplItem *> (parent_impl_id, item);
   insert_node_to_hir (item->get_impl_mappings ().get_nodeid (), id);
 }
 
-HIR::ImplItem *
-Mappings::lookup_hir_implitem (HirId id, HirId *parent_impl_id)
+tl::optional<std::pair<HIR::ImplItem *, HirId>>
+Mappings::lookup_hir_implitem (HirId id)
 {
   auto it = hirImplItemMappings.find (id);
   if (it == hirImplItemMappings.end ())
-    return nullptr;
+    return tl::nullopt;
 
-  std::pair<HirId, HIR::ImplItem *> &ref = it->second;
-  if (parent_impl_id != nullptr)
-    *parent_impl_id = ref.first;
-
-  return ref.second;
+  return std::make_pair (it->second.second, it->second.first);
 }
 
 void

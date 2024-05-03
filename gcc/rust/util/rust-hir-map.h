@@ -141,7 +141,9 @@ public:
   tl::optional<HIR::Module *> lookup_module (HirId id);
 
   void insert_hir_implitem (HirId parent_impl_id, HIR::ImplItem *item);
-  HIR::ImplItem *lookup_hir_implitem (HirId id, HirId *parent_impl_id);
+  // Optional<ImpItem, ParentImpl Hir id>
+  tl::optional<std::pair<HIR::ImplItem *, HirId>>
+  lookup_hir_implitem (HirId id);
 
   void insert_hir_expr (HIR::Expr *expr);
   HIR::Expr *lookup_hir_expr (HirId id);
@@ -209,11 +211,7 @@ public:
   void iterate_trait_items (
     std::function<bool (HIR::TraitItem *item, HIR::Trait *)> cb);
 
-  bool is_impl_item (HirId id)
-  {
-    HirId parent_impl_block_id = UNKNOWN_HIRID;
-    return lookup_hir_implitem (id, &parent_impl_block_id) != nullptr;
-  }
+  bool is_impl_item (HirId id) { return lookup_hir_implitem (id).has_value (); }
 
   void insert_trait_item_mapping (HirId trait_item_id, HIR::Trait *trait)
   {

@@ -238,18 +238,14 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	    }
 	}
 
-      HirId parent_impl_id = UNKNOWN_HIRID;
-      HIR::ImplItem *resolved_item
-	= ctx->get_mappings ().lookup_hir_implitem (ref, &parent_impl_id);
-      bool is_impl_item = resolved_item != nullptr;
-      if (is_impl_item)
+      if (auto resolved_item = ctx->get_mappings ().lookup_hir_implitem (ref))
 	{
 	  if (!lookup->has_substitutions_defined ())
-	    return CompileInherentImplItem::Compile (resolved_item, ctx,
+	    return CompileInherentImplItem::Compile (resolved_item->first, ctx,
 						     nullptr, true, expr_locus);
 	  else
-	    return CompileInherentImplItem::Compile (resolved_item, ctx, lookup,
-						     true, expr_locus);
+	    return CompileInherentImplItem::Compile (resolved_item->first, ctx,
+						     lookup, true, expr_locus);
 	}
       else
 	{

@@ -384,17 +384,15 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 
     auto hir_id = hid.value ();
 
-    HirId parent_impl_id = UNKNOWN_HIRID;
-    HIR::ImplItem *impl_item
-      = mappings.lookup_hir_implitem (hir_id, &parent_impl_id);
     HIR::Expr *expr = mappings.lookup_hir_expr (hir_id);
 
-    if (impl_item != nullptr)
+    if (auto impl_item = mappings.lookup_hir_implitem (hir_id))
       {
-	switch (impl_item->get_impl_item_type ())
+	switch (impl_item->first->get_impl_item_type ())
 	  {
 	    case HIR::ImplItem::FUNCTION: {
-	      HIR::Function *fn = static_cast<HIR::Function *> (impl_item);
+	      HIR::Function *fn
+		= static_cast<HIR::Function *> (impl_item->first);
 	      v0path
 		= v0_function_path (v0path, ctx, ty, fn->get_generic_params (),
 				    v0_identifier (seg.get ()));
