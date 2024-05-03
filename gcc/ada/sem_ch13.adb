@@ -13027,8 +13027,6 @@ package body Sem_Ch13 is
         and then Nongeneric_Case
         and then Ekind (E) = E_Record_Type
         and then Is_Tagged_Type (E)
-        and then not Is_Interface (E)
-        and then Has_Interfaces (E)
       then
          --  This would be a good common place to call the routine that checks
          --  overriding of interface primitives (and thus factorize calls to
@@ -13036,7 +13034,22 @@ package body Sem_Ch13 is
          --  compiler). However, this is not possible because it causes
          --  spurious errors in case of late overriding.
 
-         Add_Internal_Interface_Entities (E);
+         if Has_Interfaces (E)
+           and then not Is_Interface (E)
+         then
+            Add_Internal_Interface_Entities (E);
+         end if;
+
+         --  For a derived tagged type, check strub mode compatibility of
+         --  its primitives and whether inherited primitives might require
+         --  a wrapper to handle class-wide conditions. For derived interface
+         --  check strub mode compatibility of its primitives.
+
+         if Is_Derived_Type (E)
+           and then not In_Generic_Scope (E)
+         then
+            Check_Inherited_Conditions (E);
+         end if;
       end if;
 
       --  After all forms of overriding have been resolved, a tagged type may

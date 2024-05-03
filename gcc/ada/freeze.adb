@@ -1520,7 +1520,17 @@ package body Freeze is
       Op_Node        : Elmt_Id;
       Par_Prim       : Entity_Id;
       Prim           : Entity_Id;
-      Wrapper_Needed : Boolean;
+
+      type Wrapper_Kind is (No_Wrapper, LSP_Wrapper, Postcond_Wrapper);
+
+      Wrapper_Needed : Wrapper_Kind;
+      --  Kind of wrapper needed by a given inherited primitive of tagged
+      --  type R:
+      --  * No_Wrapper: No wrapper is needed.
+      --  * LSP_Wrapper: Wrapper that handles inherited class-wide pre/post
+      --    conditions that call overridden primitives.
+      --  * Postcond_Wrapper: Wrapper that handles postconditions of interface
+      --    primitives.
 
       function Build_DTW_Body
         (Loc          : Source_Ptr;
@@ -1536,14 +1546,18 @@ package body Freeze is
       --  Build the spec of the dispatch table wrapper
 
       procedure Build_Inherited_Condition_Pragmas
-        (Subp           : Entity_Id;
-         Wrapper_Needed : out Boolean);
+        (Subp               : Entity_Id;
+         LSP_Wrapper_Needed : out Boolean);
       --  Build corresponding pragmas for an operation whose ancestor has
       --  class-wide pre/postconditions. If the operation is inherited then
       --  Wrapper_Needed is returned True to force the creation of a wrapper
       --  for the inherited operation. If the ancestor is being overridden,
       --  the pragmas are constructed only to verify their legality, in case
       --  they contain calls to other primitives that may have been overridden.
+
+      procedure Check_Interface_Primitives_Strub_Mode;
+      --  Called when R is an interface type to check strub mode compatibility
+      --  all its primitives.
 
       function Needs_Wrapper
         (Class_Cond : Node_Id;
@@ -1638,7 +1652,6 @@ package body Freeze is
          --  Add minimal decoration of fields
 
          Mutate_Ekind (DTW_Id, Ekind (Par_Prim));
-         Set_LSP_Subprogram (DTW_Id, Par_Prim);
          Set_Is_Dispatch_Table_Wrapper (DTW_Id);
          Set_Is_Wrapper (DTW_Id);
 
@@ -1656,8 +1669,8 @@ package body Freeze is
       ---------------------------------------
 
       procedure Build_Inherited_Condition_Pragmas
-        (Subp           : Entity_Id;
-         Wrapper_Needed : out Boolean)
+        (Subp               : Entity_Id;
+         LSP_Wrapper_Needed : out Boolean)
       is
          Class_Pre  : constant Node_Id :=
                         Class_Preconditions (Ultimate_Alias (Subp));
@@ -1666,7 +1679,7 @@ package body Freeze is
          New_Prag   : Node_Id;
 
       begin
-         Wrapper_Needed := False;
+         LSP_Wrapper_Needed := False;
 
          if No (Class_Pre) and then No (Class_Post) then
             return;
@@ -1679,7 +1692,7 @@ package body Freeze is
          if Present (Class_Pre)
            and then Needs_Wrapper (Class_Pre, Subp, Par_Prim)
          then
-            Wrapper_Needed := True;
+            LSP_Wrapper_Needed := True;
          end if;
 
          --  For class-wide postconditions we evaluate whether the wrapper is
@@ -1689,7 +1702,7 @@ package body Freeze is
          if Present (Class_Post)
            and then Needs_Wrapper (Class_Post, Subp, Par_Prim)
          then
-            Wrapper_Needed := True;
+            LSP_Wrapper_Needed := True;
 
             --  Update the class-wide postcondition
 
@@ -1731,6 +1744,101 @@ package body Freeze is
             end if;
          end if;
       end Build_Inherited_Condition_Pragmas;
+
+      -------------------------------------------
+      -- Check_Interface_Primitives_Strub_Mode --
+      -------------------------------------------
+
+      procedure Check_Interface_Primitives_Strub_Mode is
+         Elmt        : Elmt_Id;
+         Iface_Elmt  : Elmt_Id;
+         Iface       : Entity_Id;
+         Iface_Prim  : Entity_Id;
+         Ifaces_List : Elist_Id;
+         Op_Node     : Elmt_Id;
+         Prim        : Entity_Id;
+         Prim_Iface  : Entity_Id;
+
+      begin
+         pragma Assert (Is_Interface (R));
+
+         --  Collect interfaces extended by interface type R
+
+         Collect_Interfaces (R, Ifaces_List);
+
+         Op_Node := First_Elmt (Prim_Ops);
+         while Present (Op_Node) loop
+            Prim       := Node (Op_Node);
+            Prim_Iface := R;
+            Par_Prim   := Overridden_Operation (Prim);
+
+            --  We only need to check entities defined in the sources
+
+            --  Check that overrider and overridden primitives have the same
+            --  strub mode.
+
+            if Present (Par_Prim) then
+               Check_Same_Strub_Mode (Prim, Par_Prim);
+
+            --  No need to check internally added predefined primitives since
+            --  they all have the same strub mode.
+
+            elsif Is_Predefined_Dispatching_Operation (Prim)
+              and then not Comes_From_Source (Prim)
+            then
+               null;
+
+            --  Check strub mode of matching primitives of all the interface
+            --  types, since several interface types may define primitives with
+            --  the same profile that will be implemented by a single primitive
+            --  of tagged types implementing R, and therefore must have the
+            --  same strub mode.
+
+            else
+               --  If this interface primitive has been inherited this is an
+               --  internal entity we rely on its renamed entity (which is the
+               --  entity defined in the sources).
+
+               if Present (Alias (Prim)) then
+                  Prim       := Ultimate_Alias (Prim);
+                  Prim_Iface := Find_Dispatching_Type (Prim);
+               end if;
+
+               --  Search for primitives conformant with this one in the other
+               --  interface types.
+
+               Iface_Elmt := First_Elmt (Ifaces_List);
+               while Present (Iface_Elmt) loop
+                  Iface := Node (Iface_Elmt);
+
+                  if Iface /= Prim_Iface then
+                     Elmt := First_Elmt (Primitive_Operations (Iface));
+                     while Present (Elmt) loop
+                        Iface_Prim := Node (Elmt);
+
+                        if Chars (Iface_Prim) = Chars (Prim)
+                          and then Comes_From_Source (Iface_Prim)
+                          and then Is_Interface_Conformant
+                                     (Prim_Iface, Iface_Prim, Prim)
+                        then
+                           --  Check the strub mode passing the original
+                           --  primitive (instead of its alias); required
+                           --  to report the error at the right location.
+
+                           Check_Same_Strub_Mode (Node (Op_Node), Iface_Prim);
+                        end if;
+
+                        Next_Elmt (Elmt);
+                     end loop;
+                  end if;
+
+                  Next_Elmt (Iface_Elmt);
+               end loop;
+            end if;
+
+            Next_Elmt (Op_Node);
+         end loop;
+      end Check_Interface_Primitives_Strub_Mode;
 
       -------------------
       -- Needs_Wrapper --
@@ -1801,13 +1909,13 @@ package body Freeze is
          return Result;
       end Needs_Wrapper;
 
-      Ifaces_List    : Elist_Id := No_Elist;
-      Ifaces_Listed  : Boolean := False;
-      --  Cache the list of interface operations inherited by R
-
-      Wrappers_List  : Elist_Id := No_Elist;
+      Wrappers_List : Elist_Id := No_Elist;
       --  List containing identifiers of built wrappers. Used to defer building
       --  and analyzing their class-wide precondition subprograms.
+
+      Postcond_Candidates_List : Elist_Id := No_Elist;
+      --  List containing inherited primitives of tagged type R that implement
+      --  interface primitives that have postconditions.
 
    --  Start of processing for Check_Inherited_Conditions
 
@@ -1834,15 +1942,23 @@ package body Freeze is
          end loop;
       end if;
 
+      --  For interface types we only need to check strub mode compatibility
+      --  of their primitives (since they don't have wrappers).
+
+      if Is_Interface (R) then
+         Check_Interface_Primitives_Strub_Mode;
+         return;
+      end if;
+
       --  Perform validity checks on the inherited conditions of overriding
       --  operations, for conformance with LSP, and apply SPARK-specific
       --  restrictions on inherited conditions.
 
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
-         Prim := Node (Op_Node);
-
+         Prim     := Node (Op_Node);
          Par_Prim := Overridden_Operation (Prim);
+
          if Present (Par_Prim)
            and then Comes_From_Source (Prim)
          then
@@ -1873,54 +1989,34 @@ package body Freeze is
             if GNATprove_Mode then
                Collect_Inherited_Class_Wide_Conditions (Prim);
             end if;
+
+         --  Check strub mode compatibility of primitives that implement
+         --  interface primitives.
+
+         elsif Present (Interface_Alias (Prim)) then
+            Check_Same_Strub_Mode (Alias (Prim), Interface_Alias (Prim));
          end if;
 
-         --  Go over operations inherited from interfaces and check
-         --  them for strub mode compatibility as well.
+         Next_Elmt (Op_Node);
+      end loop;
 
-         if Has_Interfaces (R)
-           and then Is_Dispatching_Operation (Prim)
-           and then Find_Dispatching_Type (Prim) = R
+      --  Collect inherited primitives that may need a wrapper to handle
+      --  postconditions of interface primitives; done to improve the
+      --  performance when checking if postcondition wrappers are needed.
+
+      Op_Node := First_Elmt (Prim_Ops);
+      while Present (Op_Node) loop
+         Prim := Node (Op_Node);
+
+         if Present (Interface_Alias (Prim))
+           and then not Comes_From_Source (Alias (Prim))
+           and then Present (Class_Postconditions (Interface_Alias (Prim)))
          then
-            declare
-               Elmt        : Elmt_Id;
-               Iface_Elmt  : Elmt_Id;
-               Iface       : Entity_Id;
-               Iface_Prim  : Entity_Id;
+            if No (Postcond_Candidates_List) then
+               Postcond_Candidates_List := New_Elmt_List;
+            end if;
 
-            begin
-               --  Collect the interfaces only once. We haven't
-               --  finished freezing yet, so we can't use the faster
-               --  search from Sem_Disp.Covered_Interface_Primitives.
-
-               if not Ifaces_Listed then
-                  Collect_Interfaces (R, Ifaces_List);
-                  Ifaces_Listed := True;
-               end if;
-
-               Iface_Elmt := First_Elmt (Ifaces_List);
-               while Present (Iface_Elmt) loop
-                  Iface := Node (Iface_Elmt);
-
-                  Elmt := First_Elmt (Primitive_Operations (Iface));
-                  while Present (Elmt) loop
-                     Iface_Prim := Node (Elmt);
-
-                     if Iface_Prim /= Par_Prim
-                       and then Chars (Iface_Prim) = Chars (Prim)
-                       and then Comes_From_Source (Iface_Prim)
-                       and then Is_Interface_Conformant
-                                  (R, Iface_Prim, Prim)
-                     then
-                        Check_Same_Strub_Mode (Prim, Iface_Prim);
-                     end if;
-
-                     Next_Elmt (Elmt);
-                  end loop;
-
-                  Next_Elmt (Iface_Elmt);
-               end loop;
-            end;
+            Append_Unique_Elmt (Alias (Prim), Postcond_Candidates_List);
          end if;
 
          Next_Elmt (Op_Node);
@@ -1935,7 +2031,7 @@ package body Freeze is
       while Present (Op_Node) loop
          Decls          := Empty_List;
          Prim           := Node (Op_Node);
-         Wrapper_Needed := False;
+         Wrapper_Needed := No_Wrapper;
 
          --  Skip internal entities built for mapping interface primitives
 
@@ -1955,16 +2051,80 @@ package body Freeze is
             end if;
 
             --  Analyze the contract items of the parent operation, and
-            --  determine whether a wrapper is needed. This is determined
-            --  when the condition is rewritten in sem_prag, using the
-            --  mapping between overridden and overriding operations built
-            --  in the loop above.
+            --  determine whether this inherited primitive needs a LSP
+            --  wrapper. This is determined when the condition is rewritten
+            --  in sem_prag, using the mapping between overridden and
+            --  overriding operations built in the loop above.
 
-            Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
-            Build_Inherited_Condition_Pragmas (Prim, Wrapper_Needed);
+            declare
+               LSP_Wrapper_Needed : Boolean;
+
+            begin
+               Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
+               Build_Inherited_Condition_Pragmas (Prim, LSP_Wrapper_Needed);
+
+               if LSP_Wrapper_Needed then
+                  Wrapper_Needed := LSP_Wrapper;
+               end if;
+            end;
+
+            --  If the LSP wrapper is not needed but the tagged type R
+            --  implements additional interface types, and this inherited
+            --  primitive covers an interface primitive of these additional
+            --  interface types that has class-wide postconditions, then it
+            --  requires a postconditions wrapper.
+
+            if Wrapper_Needed = No_Wrapper
+              and then Present (Interfaces (R))
+              and then Present (Postcond_Candidates_List)
+              and then Contains (Postcond_Candidates_List, Prim)
+            then
+               declare
+                  Elmt       : Elmt_Id;
+                  Ent        : Entity_Id;
+                  Iface      : Entity_Id;
+                  Iface_Elmt : Elmt_Id;
+
+               begin
+                  Elmt := First_Elmt (Prim_Ops);
+                  while Present (Elmt) loop
+                     Ent := Node (Elmt);
+
+                     --  Perform the search relying on the internal entities
+                     --  that link tagged type primitives with interface
+                     --  primitives.
+
+                     if Present (Interface_Alias (Ent))
+                       and then (Alias (Ent)) = Prim
+                       and then
+                         Present (Class_Postconditions (Interface_Alias (Ent)))
+                     then
+                        Iface := Find_Dispatching_Type (Interface_Alias (Ent));
+
+                        --  We only need to locate primitives of additional
+                        --  interfaces implemented by tagged type R (since
+                        --  inherited primitives of parent types that cover
+                        --  primitives of inherited interface types don't
+                        --  need a wrapper).
+
+                        Iface_Elmt := First_Elmt (Interfaces (R));
+                        while Present (Iface_Elmt) loop
+                           if Node (Iface_Elmt) = Iface then
+                              Wrapper_Needed := Postcond_Wrapper;
+                              exit;
+                           end if;
+
+                           Next_Elmt (Iface_Elmt);
+                        end loop;
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end;
+            end if;
          end if;
 
-         if Wrapper_Needed
+         if Wrapper_Needed /= No_Wrapper
            and then not Is_Abstract_Subprogram (Par_Prim)
            and then Expander_Active
          then
@@ -2003,6 +2163,14 @@ package body Freeze is
                DTW_Id   := Defining_Entity (DTW_Spec);
                DTW_Decl := Make_Subprogram_Declaration (Loc,
                              Specification => DTW_Spec);
+
+               --  LSP wrappers reference the parent primitive that has the
+               --  the class-wide pre/post condition that calls overridden
+               --  primitives.
+
+               if Wrapper_Needed = LSP_Wrapper then
+                  Set_LSP_Subprogram (DTW_Id, Par_Prim);
+               end if;
 
                --  The spec of the wrapper has been built using the source
                --  location of its parent primitive; we must update it now
@@ -5809,13 +5977,6 @@ package body Freeze is
                   Next_Elmt (Elmt);
                end loop;
             end;
-         end if;
-
-         --  For a derived tagged type, check whether inherited primitives
-         --  might require a wrapper to handle class-wide conditions.
-
-         if Is_Tagged_Type (Rec) and then Is_Derived_Type (Rec) then
-            Check_Inherited_Conditions (Rec);
          end if;
       end Freeze_Record_Type;
 

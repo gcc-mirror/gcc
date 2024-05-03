@@ -8755,6 +8755,10 @@ package body Exp_Disp is
             Write_Str ("(predefined) ");
          end if;
 
+         if Is_Wrapper (Prim) then
+            Write_Str ("(wrapper) ");
+         end if;
+
          --  Prefix the name of the primitive with its corresponding tagged
          --  type to facilitate seeing inherited primitives.
 
