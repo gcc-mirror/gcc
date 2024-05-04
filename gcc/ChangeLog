@@ -1,3 +1,53 @@
+2024-05-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/23872
+	* tree-pretty-print.cc (dump_generic_node <case COMPOUND_EXPR>): Fix
+	calls to dump_generic_node and also remove unreachable code that is testing
+	`flags & TDF_SLIM`.
+
+2024-05-03  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc: Comment updates.
+	* config/riscv/riscv.h: Ditto.
+
+2024-05-03  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* doc/rtl.texi: Add entry for GET_MODE_INNER.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	* bitmap.cc (bitmap_alloc): When using the global bitmap obstack
+	assert that is initialized.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114931
+	* tree.cc (build_array_type_1): Return early when type_hash_canon
+	returned an older existing type.
+	(build_function_type): Likewise.
+	(build_method_type_directly): Likewise.
+	(build_offset_type): Likewise.
+
+2024-05-03  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/114924
+	* cfgrtl.cc (duplicate_insn_chain): When updating MEM_EXPRs,
+	don't strip (e.g.) ARRAY_REFs from the final MEM_EXPR.
+
+2024-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113596
+	* tree-inline.cc (expand_call_inline): Emit __builtin_stack_save
+	and __builtin_stack_restore calls around inlined functions which
+	call alloca.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114921
+	* tree-vect-stmts.cc (vectorizable_assignment): Require
+	same vector component modes for input and output for
+	CONVERT_EXPR_CODE_P.
+
 2024-05-02  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv.md (<round_pattern><ANYF:mode>2): Adjust

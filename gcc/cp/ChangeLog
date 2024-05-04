@@ -1,3 +1,75 @@
+2024-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114935
+	* cp-gimplify.cc (cp_genericize_init): Add flags parm.
+	(cp_genericize_init_expr): Pass nullptr.
+	(cp_genericize_target_expr): Handle cleanup flags.
+	* typeck2.cc (build_disable_temp_cleanup): Factor out of...
+	(split_nonconstant_init): ...here.
+	* cp-tree.h (build_disable_temp_cleanup): Declare.
+
+2024-05-03  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_pointer.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_POINTER.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2024-05-03  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_volatile.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_VOLATILE.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2024-05-03  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_const.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_CONST.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2024-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	* coroutines.cc (instantiate_coro_traits): Adjust call to
+	lookup_template_class.
+	(instantiate_coro_handle_for_promise_type): Likewise.
+	* cp-tree.h (adjust_type_for_entering_scope): Declare.
+	(lookup_template_class): Adjust declaration.
+	* decl.cc (make_typename_type): Adjust call to
+	lookup_template_class. Likewise.
+	(get_tuple_size): Likewise.
+	(get_tuple_element_type): Likewise.
+	* pt.cc (adjust_type_for_entering_scope): Define.
+	(tsubst_entering_scope): Define.
+	(lookup_template_class): Remove entering_scope parameter.
+	Replace tsubst_aggr_type call with tsubst_entering_scope.
+	(tsubst_aggr_type): Remove.
+	(tsubst_aggr_type_1): Inline into tsubst.
+	(tsubst_function_decl): Replace tsubst_aggr_type call
+	with tsubst_entering_scope.
+	(tsubst_template_decl): Likewise.
+	(tsubst_decl): Likewise.
+	(tsubst) <case RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE>:
+	Inlined from tsubst_aggr_type_1.
+	<case BOUND_TEMPLATE_TEMPLATE_PARM>: Adjust calls to
+	lookup_template_class.
+	<case TYPENAME_TYPE>: Replace tsubst_aggr_type call with
+	tsubst_entering_scope.
+	<case UNBOUND_CLASS_TEMPLATE>: Likewise.
+	Increment processing_template_decl when substituting the
+	context.
+	(tsubst_expr) <case FIELD_DECL>: Replace tsubst_aggr_type
+	call with tsubst_entering_scope.
+	<case TEMPLATE_DECL>: Likewise.
+	(instantiate_template): Likewise.
+	(resolve_typename_type): Adjust lookup_template_class call
+	and call adjust_type_for_entering_scope afterward.
+	(listify): Adjust lookup_template_class call.
+	(alias_ctad_tweaks): Likewise.
+	* semantics.cc (finish_template_type): Adjust lookup_template_class
+	call and maybe call adjust_type_for_entering_scope afterward.
+
 2024-05-02  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/114917

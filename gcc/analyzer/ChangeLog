@@ -1,3 +1,34 @@
+2024-05-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111475
+	* analyzer.cc (is_special_named_call_p): Add "look_in_std" param.
+	(is_std_function_p): Make non-static.
+	* analyzer.h (is_special_named_call_p): Add optional "look_in_std"
+	param.
+	(is_std_function_p): New decl.
+	* engine.cc (stmt_requires_new_enode_p): Look for both "signal"
+	and "std::signal".
+	* kf.cc (register_known_functions): Add various "std::" copies
+	of the known functions.
+	* known-function-manager.cc
+	(known_function_manager::~known_function_manager): Clean up
+	m_std_ns_map_id_to_kf.
+	(known_function_manager::add_std_ns): New.
+	(known_function_manager::get_match): Also look for known "std::"
+	functions.
+	(known_function_manager::get_by_identifier_in_std_ns): New.
+	* known-function-manager.h
+	(known_function_manager::add_std_ns): New decl.
+	(known_function_manager::get_by_identifier_in_std_ns): New decl.
+	(known_function_manager::m_std_ns_map_id_to_kf): New field.
+	* sm-file.cc (register_known_file_functions): Add various "std::"
+	copies of the known functions.
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Handle
+	"std::realloc".
+	* sm-signal.cc (signal_unsafe_p): Consider "std::" copies of the
+	functions as also being async-signal-unsafe.
+	(signal_state_machine::on_stmt): Consider "std::signal".
+
 2024-04-12  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	* region-model.cc (region_model::check_region_size): Bail out

@@ -1,3 +1,75 @@
+2024-05-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gfortran.dg/gomp/atomic-21.f90: Update testcase for the removal of `;`.
+
+2024-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114935
+	* g++.dg/cpp0x/initlist-eh1.C: New test.
+
+2024-05-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114929
+	* gm2/pim/run/pass/testforloopchar.mod: New test.
+	* gm2/pim/run/pass/testforloopchar2.mod: New test.
+	* gm2/pim/run/pass/testforloopenum.mod: New test.
+
+2024-05-03  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __is_pointer.
+	Arrange the order lexically around __is_pointer.
+	* g++.dg/ext/is_pointer.C: New test.
+
+2024-05-03  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __is_volatile.
+	* g++.dg/ext/is_volatile.C: New test.
+
+2024-05-03  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __is_const.
+	* g++.dg/ext/is_const.C: New test.
+
+2024-05-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111475
+	* c-c++-common/analyzer/fd-glibc-byte-stream-socket.c: Add
+	-fno-exceptions for now.
+	* c-c++-common/analyzer/fd-manpage-getaddrinfo-client.c: Likewise.
+	* c-c++-common/analyzer/fd-mappage-getaddrinfo-server.c: Rename to...
+	* c-c++-common/analyzer/fd-manpage-getaddrinfo-server.c: ...this, and
+	add -fno-exceptions for now.
+	* c-c++-common/analyzer/fd-socket-meaning.c: Add -fno-exceptions
+	for now.
+	* c-c++-common/analyzer/fd-symbolic-socket.c: Likewise.
+	* c-c++-common/analyzer/flexible-array-member-1.c: Use regexp to
+	handle C vs C++ differences in spelling of function name, which
+	could have a "std::" prefix on some targets.
+	* c-c++-common/analyzer/pr106539.c: Likewise.
+	* c-c++-common/analyzer/malloc-ipa-8-unchecked.c: Move back to...
+	* gcc.dg/analyzer/malloc-ipa-8-unchecked.c: ...here, dropping
+	attempt to generalize output for C vs C++.
+	* c-c++-common/analyzer/signal-4a.c: Move back to...
+	* gcc.dg/analyzer/signal-4a.c: ...here, dropping attempt to
+	generalize output for C vs C++.
+	* c-c++-common/analyzer/signal-4b.c: Move back to...
+	* gcc.dg/analyzer/signal-4b.c: ...here, dropping attempt to
+	generalize output for C vs C++.
+
+2024-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113596
+	* gcc.dg/pr113596.c: New test.
+	* gcc.dg/tree-ssa/pr113596.c: New test.
+
+2024-05-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114929
+	* gm2/pim/run/pass/testforloopzero.mod: New test.
+	* gm2/pim/run/pass/testforloopzero2.mod: New test.
+	* gm2/pim/run/pass/testforloopzero3.mod: New test.
+	* gm2/pim/run/pass/testforloopzero4.mod: New test.
+
 2024-05-02  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/synthesis-1.c: New test.

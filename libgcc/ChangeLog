@@ -1,3 +1,8 @@
+2024-05-03  Peter Damianov  <peter0x44@disroot.org>
+
+	* libgcov-util.c (tag_counters): Swap order of arguments to xcalloc.
+	(topen_to_memory_representation): Likewise.
+
 2024-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* gthr.h (GTHREAD_USE_WEAK): Don't redefine to 0 for glibc 2.34+

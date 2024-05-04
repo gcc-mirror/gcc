@@ -1,3 +1,12 @@
+2024-05-03  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (struct dll_notification_data): Define.
+	(LDR_DLL_NOTIFICATION): New typedef.
+	(LDR_REGISTER_FUNCTION): New typedef.
+	(struct dll_notification_context): Define.
+	(dll_notification): New static function.
+	(backtrace_initialize): Register DLL notification.
+
 2024-04-28  Ian Lance Taylor  <iant@golang.org>
 
 	* configure.ac: Checked for tlhelp32.h
