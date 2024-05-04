@@ -1,3 +1,69 @@
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114749
+	* tree-vect-loop.cc (vect_analyze_loop_2): Reset
+	LOOP_VINFO_USING_PARTIAL_VECTORS_P when re-trying without SLP.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114736
+	* tree-vect-slp.cc (vect_optimize_slp_pass::is_cfg_latch_edge):
+	Do not consider VEC_PERM_EXPRs as PHI use.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR gcov-profile/114715
+	* gimplify.cc (gimplify_switch_expr): Set the location of the
+	GIMPLE switch.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114655
+	* lto-wrapper.cc (merge_flto_options): Add force argument.
+	(merge_and_complain): Do not force here.
+	(run_gcc): But here to make the link-time -flto option override
+	any compile-time one.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114733
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction): Reject
+	neg induction vectorization of single element vectors.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114485
+	* tree-vect-loop-manip.cc (vect_can_peel_nonlinear_iv_p):
+	vect_step_op_neg isn't OK for partial vectors but only
+	for unknown niter.
+
+2024-05-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2023-10-20  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/111882
+	* tree-if-conv.cc (get_bitfield_rep): Return NULL_TREE for bitfields
+	with non-constant offsets.
+
 2024-05-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
