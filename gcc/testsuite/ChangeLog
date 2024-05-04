@@ -1,3 +1,30 @@
+2024-05-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-05-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114929
+	* gm2/pim/run/pass/testforloopzero.mod: New test.
+	* gm2/pim/run/pass/testforloopzero2.mod: New test.
+	* gm2/pim/run/pass/testforloopzero3.mod: New test.
+	* gm2/pim/run/pass/testforloopzero4.mod: New test.
+
+2024-05-03  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114935
+	* g++.dg/cpp0x/initlist-eh1.C: New test.
+
+2024-05-03  Patrick O'Neill  <patrick@rivosinc.com>
+
+	Backported from master:
+	2024-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR middle-end/114734
+	* gcc.target/riscv/rvv/autovec/pr114734.c: New test.
+
 2024-04-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

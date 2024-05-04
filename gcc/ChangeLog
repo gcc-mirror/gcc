@@ -1,3 +1,42 @@
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114921
+	* tree-vect-stmts.cc (vectorizable_assignment): Require
+	same vector component modes for input and output for
+	CONVERT_EXPR_CODE_P.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114734
+	* internal-fn.cc (expand_call_mem_ref): Use
+	get_gimple_for_ssa_name to get at the def stmt of the address
+	argument to honor SSA coalescing constraints.
+
+2024-05-03  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2024-05-03  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/114924
+	* cfgrtl.cc (duplicate_insn_chain): When updating MEM_EXPRs,
+	don't strip (e.g.) ARRAY_REFs from the final MEM_EXPR.
+
+2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114921
+	* tree-vect-stmts.cc (vectorizable_assignment): Require
+	same vector component modes for input and output for
+	CONVERT_EXPR_CODE_P.
+
 2024-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,16 @@
+2024-05-03  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114935
+	* cp-gimplify.cc (cp_genericize_init): Add flags parm.
+	(cp_genericize_init_expr): Pass nullptr.
+	(cp_genericize_target_expr): Handle cleanup flags.
+	* typeck2.cc (build_disable_temp_cleanup): Factor out of...
+	(split_nonconstant_init): ...here.
+	* cp-tree.h (build_disable_temp_cleanup): Declare.
+
 2024-04-30  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

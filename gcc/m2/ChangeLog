@@ -1,3 +1,18 @@
+2024-05-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2024-05-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114929
+	* gm2-compiler/M2Quads.mod (ForLoopLastIteratorVariable): New
+	procedure.
+	(ForLoopLastIteratorConstant): Ditto.
+	(ForLoopLastIterator): Ditto.
+	(BuildForToByDo): Remove LastIterator calculation and call
+	ForLoopLastIterator instead.
+	(FinalValue): Replace with ...
+	(LastIterator): ... this.
+
 2024-04-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114836
