@@ -27,16 +27,16 @@ bool
 PubRestrictedVisitor::is_restriction_valid (NodeId item_id,
 					    const location_t locus)
 {
-  ModuleVisibility visibility;
+  auto visibility = mappings.lookup_visibility (item_id);
 
   // If there is no visibility in the mappings, then the item is private and
   // does not contain any restriction
   // FIXME: Is that correct?
-  if (!mappings.lookup_visibility (item_id, visibility))
+  if (!visibility)
     return true;
 
   for (auto mod = module_stack.rbegin (); mod != module_stack.rend (); mod++)
-    if (*mod == visibility.get_module_id ())
+    if (*mod == visibility->get_module_id ())
       return true;
 
   rust_error_at (locus, "restricted path is not an ancestor of the "

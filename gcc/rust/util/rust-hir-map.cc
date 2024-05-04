@@ -1102,15 +1102,14 @@ Mappings::insert_visibility (NodeId id, Privacy::ModuleVisibility visibility)
   visibility_map.insert ({id, visibility});
 }
 
-bool
-Mappings::lookup_visibility (NodeId id, Privacy::ModuleVisibility &def)
+tl::optional<Privacy::ModuleVisibility &>
+Mappings::lookup_visibility (NodeId id)
 {
   auto it = visibility_map.find (id);
   if (it == visibility_map.end ())
-    return false;
+    return tl::nullopt;
 
-  def = it->second;
-  return true;
+  return it->second;
 }
 
 void
