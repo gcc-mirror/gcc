@@ -128,15 +128,15 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
   if (ref_node_id == UNKNOWN_NODEID)
     return;
 
-  ModuleVisibility vis;
+  auto vis = mappings.lookup_visibility (ref_node_id);
 
   // FIXME: Can we really return here if the item has no visibility?
-  if (!mappings.lookup_visibility (ref_node_id, vis))
+  if (!vis)
     return;
 
   auto valid = true;
 
-  switch (vis.get_kind ())
+  switch (vis->get_kind ())
     {
     case ModuleVisibility::Public:
       break;
@@ -146,7 +146,7 @@ PrivacyReporter::check_for_privacy_violation (const NodeId &use_id,
 	if (!current_module.has_value ())
 	  return;
 
-	auto module = mappings.lookup_defid (vis.get_module_id ()).value ();
+	auto module = mappings.lookup_defid (vis->get_module_id ()).value ();
 
 	auto mod_node_id = module->get_mappings ().get_nodeid ();
 

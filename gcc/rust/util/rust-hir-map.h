@@ -326,7 +326,7 @@ public:
 					       AttributeProcMacro def);
 
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
-  bool lookup_visibility (NodeId id, Privacy::ModuleVisibility &def);
+  tl::optional<Privacy::ModuleVisibility &> lookup_visibility (NodeId id);
 
   void insert_ast_module (AST::Module *);
   tl::optional<AST::Module *> lookup_ast_module (NodeId id);
