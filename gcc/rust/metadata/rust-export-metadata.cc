@@ -56,10 +56,8 @@ void
 ExportContext::emit_trait (const HIR::Trait &trait)
 {
   // lookup the AST node for this
-  AST::Item *item = nullptr;
-  bool ok
-    = mappings.lookup_ast_item (trait.get_mappings ().get_nodeid (), &item);
-  rust_assert (ok);
+  AST::Item *item
+    = mappings.lookup_ast_item (trait.get_mappings ().get_nodeid ()).value ();
 
   std::stringstream oss;
   AST::Dump dumper (oss);
@@ -72,9 +70,8 @@ void
 ExportContext::emit_function (const HIR::Function &fn)
 {
   // lookup the AST node for this
-  AST::Item *item = nullptr;
-  bool ok = mappings.lookup_ast_item (fn.get_mappings ().get_nodeid (), &item);
-  rust_assert (ok);
+  AST::Item *item
+    = mappings.lookup_ast_item (fn.get_mappings ().get_nodeid ()).value ();
 
   // is this a CFG macro or not
   if (item->is_marked_for_strip ())
@@ -119,9 +116,7 @@ ExportContext::emit_macro (NodeId macro)
   std::stringstream oss;
   AST::Dump dumper (oss);
 
-  AST::Item *item;
-  auto ok = mappings.lookup_ast_item (macro, &item);
-  rust_assert (ok);
+  AST::Item *item = mappings.lookup_ast_item (macro).value ();
 
   dumper.go (*item);
 
