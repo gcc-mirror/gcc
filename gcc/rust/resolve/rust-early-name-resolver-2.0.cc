@@ -32,10 +32,7 @@ Early::insert_once (AST::MacroInvocation &invocation, NodeId resolved)
   // TODO: Should we use `ctx.mark_resolved()`?
   auto definition = ctx.mappings.lookup_macro_def (resolved);
 
-  AST::MacroRulesDefinition *existing;
-  auto exists = ctx.mappings.lookup_macro_invocation (invocation, &existing);
-
-  if (!exists)
+  if (!ctx.mappings.lookup_macro_invocation (invocation))
     ctx.mappings.insert_macro_invocation (invocation, definition.value ());
 }
 
@@ -176,8 +173,7 @@ Early::visit (AST::MacroInvocation &invoc)
   if (!rules_def)
     return;
 
-  AST::MacroRulesDefinition *tmp_def = nullptr;
-  if (mappings.lookup_macro_invocation (invoc, &tmp_def))
+  if (mappings.lookup_macro_invocation (invoc))
     return;
 
   mappings.insert_macro_invocation (invoc, rules_def.value ());
