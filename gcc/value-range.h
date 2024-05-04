@@ -378,6 +378,39 @@ private:
   wide_int m_ranges[N*2];
 };
 
+class prange : public vrange
+{
+public:
+  static bool supports_p (const_tree) { return false; }
+  virtual bool supports_type_p (const_tree) const final override { return false; }
+  virtual void accept (const vrange_visitor &) const final override {}
+  virtual void set_undefined () final override {}
+  virtual void set_varying (tree) final override {}
+  virtual void set_nonzero (tree) final override {}
+  virtual void set_zero (tree) final override;
+  virtual void set_nonnegative (tree) final override {}
+  virtual bool contains_p (tree) const final override { return false; }
+  virtual bool fits_p (const vrange &) const final override { return false; }
+  virtual bool singleton_p (tree * = NULL) const final override { return false; }
+  virtual bool zero_p () const final override { return false; }
+  virtual bool nonzero_p () const final override { return false; }
+  virtual void set (tree, tree, value_range_kind = VR_RANGE) final override {}
+  virtual tree type () const final override { return NULL; }
+  virtual bool union_ (const vrange &) final override { return false; }
+  virtual bool intersect (const vrange &) final override { return false; }
+  virtual tree lbound () const final override { return NULL; }
+  virtual tree ubound () const final override { return NULL; }
+
+  wide_int lower_bound () const;
+  wide_int upper_bound () const;
+  irange_bitmask get_bitmask () const final override;
+  void update_bitmask (const irange_bitmask &) final override {}
+private:
+  wide_int m_min;
+  wide_int m_max;
+  irange_bitmask m_bitmask;
+};
+
 // Unsupported temporaries may be created by ranger before it's known
 // they're unsupported, or by vr_values::get_value_range.
 
@@ -1185,6 +1218,32 @@ irange_val_max (const_tree type)
 {
   gcc_checking_assert (irange::supports_p (type));
   return wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+}
+
+inline void
+prange::set_zero (tree type)
+{
+  wide_int zero = wi::zero (TYPE_PRECISION (type));
+  m_min = m_max = zero;
+  m_bitmask = irange_bitmask (zero, zero);
+}
+
+inline wide_int
+prange::lower_bound () const
+{
+  return m_min;
+}
+
+inline wide_int
+prange::upper_bound () const
+{
+  return m_max;
+}
+
+inline irange_bitmask
+prange::get_bitmask () const
+{
+  return m_bitmask;
 }
 
 inline
