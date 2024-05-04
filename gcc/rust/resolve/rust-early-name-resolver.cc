@@ -503,8 +503,7 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
    * we could be inserting the same macro def over and over again until we
    * implement some optimizations */
   // FIXME: ARTHUR: Remove that lookup and add proper optimizations instead
-  AST::MacroRulesDefinition *tmp_def = nullptr;
-  if (mappings.lookup_macro_invocation (invoc, &tmp_def))
+  if (mappings.lookup_macro_invocation (invoc))
     return;
 
   mappings.insert_macro_invocation (invoc, *rules_def);

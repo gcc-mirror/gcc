@@ -272,25 +272,25 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
   invoc_data.set_expander (this);
 
   // lookup the rules
-  AST::MacroRulesDefinition *rules_def = nullptr;
-  bool ok = mappings.lookup_macro_invocation (invoc, &rules_def);
+  auto rules_def = mappings.lookup_macro_invocation (invoc);
 
   // If there's no rule associated with the invocation, we can simply return
   // early. The early name resolver will have already emitted an error.
-  if (!ok)
+  if (!rules_def)
     return;
+
+  auto rdef = rules_def.value ();
 
   // We store the last expanded invocation and macro definition for error
   // reporting in case the recursion limit is reached
   last_invoc = *invoc.clone_macro_invocation_impl ();
-  last_def = *rules_def;
+  last_def = *rdef;
 
-  if (rules_def->is_builtin ())
-    fragment
-      = rules_def->get_builtin_transcriber () (invoc.get_locus (), invoc_data)
-	  .value_or (AST::Fragment::create_empty ());
+  if (rdef->is_builtin ())
+    fragment = rdef->get_builtin_transcriber () (invoc.get_locus (), invoc_data)
+		 .value_or (AST::Fragment::create_empty ());
   else
-    fragment = expand_decl_macro (invoc.get_locus (), invoc_data, *rules_def,
+    fragment = expand_decl_macro (invoc.get_locus (), invoc_data, *rdef,
 				  has_semicolon);
 
   set_expanded_fragment (std::move (fragment));

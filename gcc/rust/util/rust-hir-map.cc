@@ -897,16 +897,14 @@ Mappings::insert_macro_invocation (AST::MacroInvocation &invoc,
   macroInvocations[invoc.get_macro_node_id ()] = def;
 }
 
-bool
-Mappings::lookup_macro_invocation (AST::MacroInvocation &invoc,
-				   AST::MacroRulesDefinition **def)
+tl::optional<AST::MacroRulesDefinition *>
+Mappings::lookup_macro_invocation (AST::MacroInvocation &invoc)
 {
   auto it = macroInvocations.find (invoc.get_macro_node_id ());
   if (it == macroInvocations.end ())
-    return false;
+    return tl::nullopt;
 
-  *def = it->second;
-  return true;
+  return it->second;
 }
 
 void

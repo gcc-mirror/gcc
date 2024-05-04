@@ -282,8 +282,8 @@ public:
 
   void insert_macro_invocation (AST::MacroInvocation &invoc,
 				AST::MacroRulesDefinition *def);
-  bool lookup_macro_invocation (AST::MacroInvocation &invoc,
-				AST::MacroRulesDefinition **def);
+  tl::optional<AST::MacroRulesDefinition *>
+  lookup_macro_invocation (AST::MacroInvocation &invoc);
 
   void insert_exported_macro (AST::MacroRulesDefinition &def);
   std::vector<NodeId> &get_exported_macros ();
