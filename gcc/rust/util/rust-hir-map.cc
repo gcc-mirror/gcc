@@ -1225,15 +1225,14 @@ Mappings::insert_ast_item (AST::Item *item)
   ast_item_mappings[item->get_node_id ()] = item;
 }
 
-bool
-Mappings::lookup_ast_item (NodeId id, AST::Item **result)
+tl::optional<AST::Item *>
+Mappings::lookup_ast_item (NodeId id)
 {
   auto it = ast_item_mappings.find (id);
   if (it == ast_item_mappings.end ())
-    return false;
+    return tl::nullopt;
 
-  *result = it->second;
-  return true;
+  return it->second;
 }
 
 HIR::ImplBlock *

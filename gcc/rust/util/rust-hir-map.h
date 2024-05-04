@@ -345,7 +345,7 @@ public:
   bool node_is_module (NodeId query);
 
   void insert_ast_item (AST::Item *item);
-  bool lookup_ast_item (NodeId id, AST::Item **result);
+  tl::optional<AST::Item *> lookup_ast_item (NodeId id);
 
   HIR::ImplBlock *lookup_builtin_marker ();
 
