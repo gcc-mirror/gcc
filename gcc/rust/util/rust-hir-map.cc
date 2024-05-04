@@ -877,15 +877,14 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
   macroMappings[macro->get_node_id ()] = macro;
 }
 
-bool
-Mappings::lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def)
+tl::optional<AST::MacroRulesDefinition *>
+Mappings::lookup_macro_def (NodeId id)
 {
   auto it = macroMappings.find (id);
   if (it == macroMappings.end ())
-    return false;
+    return tl::nullopt;
 
-  *def = it->second;
-  return true;
+  return it->second;
 }
 
 void

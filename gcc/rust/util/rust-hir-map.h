@@ -278,7 +278,7 @@ public:
 
   void insert_macro_def (AST::MacroRulesDefinition *macro);
 
-  bool lookup_macro_def (NodeId id, AST::MacroRulesDefinition **def);
+  tl::optional<AST::MacroRulesDefinition *> lookup_macro_def (NodeId id);
 
   void insert_macro_invocation (AST::MacroInvocation &invoc,
 				AST::MacroRulesDefinition *def);

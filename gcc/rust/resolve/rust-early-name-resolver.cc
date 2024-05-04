@@ -425,8 +425,7 @@ EarlyNameResolver::visit (AST::MacroRulesDefinition &rules_def)
    * we could be inserting the same macro def over and over again until we
    * implement some optimizations */
   // FIXME: ARTHUR: Remove that lookup and add proper optimizations instead
-  AST::MacroRulesDefinition *tmp = nullptr;
-  if (mappings.lookup_macro_def (rules_def.get_node_id (), &tmp))
+  if (mappings.lookup_macro_def (rules_def.get_node_id ()))
     return;
 
   mappings.insert_macro_def (&rules_def);
@@ -481,11 +480,9 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
     }
 
   // lookup the rules
-  AST::MacroRulesDefinition *rules_def = nullptr;
-  bool ok = mappings.lookup_macro_def (resolved_node, &rules_def);
-  rust_assert (ok);
+  auto rules_def = mappings.lookup_macro_def (resolved_node);
 
-  auto &outer_attrs = rules_def->get_outer_attrs ();
+  auto &outer_attrs = rules_def.value ()->get_outer_attrs ();
   bool is_builtin
     = std::any_of (outer_attrs.begin (), outer_attrs.end (),
 		   [] (AST::Attribute attr) {
@@ -495,12 +492,12 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
 
   if (is_builtin)
     {
-      auto builtin_kind
-	= builtin_macro_from_string (rules_def->get_rule_name ().as_string ());
+      auto builtin_kind = builtin_macro_from_string (
+	rules_def.value ()->get_rule_name ().as_string ());
       invoc.map_to_builtin (builtin_kind.value ());
     }
 
-  auto attributes = rules_def->get_outer_attrs ();
+  auto attributes = rules_def.value ()->get_outer_attrs ();
 
   /* Since the EarlyNameResolver runs multiple time (fixed point algorithm)
    * we could be inserting the same macro def over and over again until we
@@ -510,7 +507,7 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
   if (mappings.lookup_macro_invocation (invoc, &tmp_def))
     return;
 
-  mappings.insert_macro_invocation (invoc, rules_def);
+  mappings.insert_macro_invocation (invoc, *rules_def);
 }
 
 // FIXME: ARTHUR: Do we need to resolve these as well here?

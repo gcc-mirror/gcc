@@ -30,26 +30,20 @@ void
 Early::insert_once (AST::MacroInvocation &invocation, NodeId resolved)
 {
   // TODO: Should we use `ctx.mark_resolved()`?
-  AST::MacroRulesDefinition *definition;
-  auto ok = ctx.mappings.lookup_macro_def (resolved, &definition);
-
-  rust_assert (ok);
+  auto definition = ctx.mappings.lookup_macro_def (resolved);
 
   AST::MacroRulesDefinition *existing;
   auto exists = ctx.mappings.lookup_macro_invocation (invocation, &existing);
 
   if (!exists)
-    ctx.mappings.insert_macro_invocation (invocation, definition);
+    ctx.mappings.insert_macro_invocation (invocation, definition.value ());
 }
 
 void
 Early::insert_once (AST::MacroRulesDefinition &def)
 {
   // TODO: Should we use `ctx.mark_resolved()`?
-  AST::MacroRulesDefinition *definition;
-  auto exists = ctx.mappings.lookup_macro_def (def.get_node_id (), &definition);
-
-  if (!exists)
+  if (!ctx.mappings.lookup_macro_def (def.get_node_id ()))
     ctx.mappings.insert_macro_def (&def);
 }
 
@@ -176,18 +170,17 @@ Early::visit (AST::MacroInvocation &invoc)
   // now do we need to keep mappings or something? or insert "uses" into our
   // ForeverStack? can we do that? are mappings simpler?
   auto &mappings = Analysis::Mappings::get ();
-  AST::MacroRulesDefinition *rules_def = nullptr;
-  if (!mappings.lookup_macro_def (definition->get_node_id (), &rules_def))
-    {
-      // Macro definition not found, maybe it is not expanded yet.
-      return;
-    }
+  auto rules_def = mappings.lookup_macro_def (definition->get_node_id ());
+
+  // Macro definition not found, maybe it is not expanded yet.
+  if (!rules_def)
+    return;
 
   AST::MacroRulesDefinition *tmp_def = nullptr;
   if (mappings.lookup_macro_invocation (invoc, &tmp_def))
     return;
 
-  mappings.insert_macro_invocation (invoc, rules_def);
+  mappings.insert_macro_invocation (invoc, rules_def.value ());
 }
 
 void
