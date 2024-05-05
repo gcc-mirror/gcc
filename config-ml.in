@@ -514,7 +514,12 @@ multi-do:
 	    else \
 	      if [ -d ../$${dir}/$${lib} ]; then \
 		flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
-		if (cd ../$${dir}/$${lib}; $(MAKE) $(FLAGS_TO_PASS) \
+		libsuffix_=`$${compiler} $${flags} --print-multi-os-directory`; \
+		if (cd ../$${dir}/$${lib}; $(MAKE) $(subst \
+				-B$(build_tooldir)/lib/, \
+				-B$(build_tooldir)/lib/$${libsuffix_}/ \
+				-B$(build_tooldir)/lib/, \
+				$(FLAGS_TO_PASS)) \
 				CFLAGS="$(CFLAGS) $${flags}" \
 				CCASFLAGS="$(CCASFLAGS) $${flags}" \
 				FCFLAGS="$(FCFLAGS) $${flags}" \
@@ -768,6 +773,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	# Create a regular expression that matches any string as long
 	# as ML_POPDIR.
 	popdir_rx=`echo "${ML_POPDIR}" | sed 's,.,.,g'`
+	multi_osdir=`${CC-gcc} ${flags} --print-multi-os-directory 2>/dev/null`
 	CC_=
 	for arg in ${CC}; do
 	  case $arg in
@@ -775,6 +781,8 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    CC_="${CC_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\1/p"`' ' ;;
 	  "${ML_POPDIR}"/*)
 	    CC_="${CC_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  -B*/lib/)
+	    CC_="${CC_}${arg}${multi_osdir} ${arg} " ;;
 	  *)
 	    CC_="${CC_}${arg} " ;;
 	  esac
@@ -787,6 +795,8 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    CXX_="${CXX_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  "${ML_POPDIR}"/*)
 	    CXX_="${CXX_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  -B*/lib/)
+	    CXX_="${CXX_}${arg}${multi_osdir} ${arg} " ;;
 	  *)
 	    CXX_="${CXX_}${arg} " ;;
 	  esac
@@ -799,6 +809,8 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    F77_="${F77_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  "${ML_POPDIR}"/*)
 	    F77_="${F77_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  -B*/lib/)
+	    F77_="${F77_}${arg}${multi_osdir} ${arg} " ;;
 	  *)
 	    F77_="${F77_}${arg} " ;;
 	  esac
@@ -811,6 +823,8 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    GFORTRAN_="${GFORTRAN_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  "${ML_POPDIR}"/*)
 	    GFORTRAN_="${GFORTRAN_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  -B*/lib/)
+	    GFORTRAN_="${GFORTRAN_}${arg}${multi_osdir} ${arg} " ;;
 	  *)
 	    GFORTRAN_="${GFORTRAN_}${arg} " ;;
 	  esac
@@ -823,6 +837,8 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    GOC_="${GOC_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  "${ML_POPDIR}"/*)
 	    GOC_="${GOC_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  -B*/lib/)
+	    GOC_="${GOC_}${arg}${multi_osdir} ${arg} " ;;
 	  *)
 	    GOC_="${GOC_}${arg} " ;;
 	  esac
@@ -835,6 +851,8 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 	    GDC_="${GDC_}"`echo "X${arg}" | sed -n "s/X\\(-[BIL]${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X-[BIL]${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
 	  "${ML_POPDIR}"/*)
 	    GDC_="${GDC_}"`echo "X${arg}" | sed -n "s/X\\(${popdir_rx}\\).*/\\1/p"`/${ml_dir}`echo "X${arg}" | sed -n "s/X${popdir_rx}\\(.*\\)/\\1/p"`' ' ;;
+	  -B*/lib/)
+	    GDC_="${GDC_}${arg}${multi_osdir} ${arg} " ;;
 	  *)
 	    GDC_="${GDC_}${arg} " ;;
 	  esac
