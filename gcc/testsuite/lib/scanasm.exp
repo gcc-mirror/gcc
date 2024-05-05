@@ -37,6 +37,21 @@ proc append_encoding_arg { args enc } {
     return $args
 }
 
+# Remove LTO-prefixed sections from TEXT.
+
+proc remove_lto_sections { text } {
+    set p1 {(^|\n)[[:space:]]*\.section[[:space:]]*"?}
+    set lto_sect_prefix {\.gnu\.lto_}
+    set p3 {(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n}
+    if { [istarget *-*-darwin*] } {
+        # Darwin/Mach-O LTO sections are in the __GNU_LTO segment.
+        set lto_sect_prefix {__GNU_LTO}
+    }
+    set patt ${p1}${lto_sect_prefix}${p3}
+    regsub -all ${patt} $text {\1} text
+    return $text
+}
+
 # Scan the OUTPUT_FILE for a pattern.  If it is present and POSITIVE
 # is non-zero, or it is not present and POSITIVE is zero, the test
 # passes.  The ORIG_ARGS is the list of arguments provided by dg-final
@@ -80,10 +95,8 @@ proc dg-scan { name positive testcase output_file orig_args } {
     set text [read $fd]
     close $fd
     if { [string compare -length 14 $name scan-assembler] == 0 } {
-      # Remove LTO sections.
-      # ??? Somehow, .*? is still greedy.
-      # regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_.*?\n(?=[[:space:]]*\.text\n)} $text {\1} text
-      regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+        # Remove LTO sections.
+        set text [remove_lto_sections $text]
     }
 
     set match [regexp -- $pattern $text]
@@ -550,8 +563,8 @@ proc scan-assembler-times { args } {
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
-    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
-
+    # Remove LTO sections.
+    set text [remove_lto_sections $text]
     set result_count [regexp -all -- $pattern $text]
     if {$result_count == $times} {
 	pass "$testcase scan-assembler-times $pp_pattern $times"
@@ -614,7 +627,7 @@ proc scan-assembler-bound { args } {
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
-    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+    set text [remove_lto_sections $text]
 
     set result_count [regexp -all -- $pattern $text]
     if [expr $result_count $cmp $bound] {
@@ -676,7 +689,7 @@ proc scan-assembler-dem { args } {
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
-    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+    set text [remove_lto_sections $text]
 
     if [regexp -- $pattern $text] {
 	pass "$testcase scan-assembler-dem $pp_pattern"
@@ -733,7 +746,7 @@ proc scan-assembler-dem-not { args } {
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
-    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+    set text [remove_lto_sections $text]
 
     if ![regexp -- $pattern $text] {
 	pass "$testcase scan-assembler-dem-not $pp_pattern"
