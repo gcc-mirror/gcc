@@ -1,3 +1,13 @@
+2024-05-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-05-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.cc (WEAK_PROTOCOLS_AFTER): New.
+	(next_runtime_abi_02_protocol_decl): Use WEAK_PROTOCOLS_AFTER
+	to determine this ABI change.
+	(build_v2_protocol_list_address_table): Likewise.
+
 2024-03-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
