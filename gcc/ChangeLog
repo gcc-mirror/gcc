@@ -1,3 +1,241 @@
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc (class cfn_pass_through_arg1): Add overloads
+	for prange operations.
+	(cfn_strlen): Same.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_ge::fold_range): New.
+	(operator_ge::op1_range): New.
+	(operator_ge::op2_range): New.
+	(operator_ge::op1_op2_relation): New.
+	(operator_ge::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_gt::fold_range): New.
+	(operator_gt::op1_range): New.
+	(operator_gt::op2_range): New.
+	(operator_gt::op1_op2_relation): New.
+	(operator_gt::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_le::fold_range): New.
+	(operator_le::op1_range): New.
+	(operator_le::op2_range): New.
+	(operator_le::op1_op2_relation): New.
+	(operator_le::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (max_limit): New.
+	(min_limit): New.
+	(build_lt): New.
+	(build_le): New.
+	(build_gt): New.
+	(build_ge): New.
+	(operator_lt::fold_range): New.
+	(operator_lt::op1_range): New.
+	(operator_lt::op2_range): New.
+	(operator_lt::op1_op2_relation): New.
+	(operator_lt::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_equal::fold_range): New.
+	(operator_equal::op1_range): New.
+	(operator_equal::op2_range): New.
+	(operator_equal::op1_op2_relation): New.
+	(operator_equal::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_not_equal::fold_range): New.
+	(operator_not_equal::op1_range): New.
+	(operator_not_equal::op2_range): New.
+	(operator_not_equal::op1_op2_relation): New.
+	(operator_not_equal::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_bitwise_or::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_bitwise_and::fold_range): New.
+	(operator_bitwise_and::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-ptr.cc
+	(operator_pointer_diff::op1_op2_relation_effect): New.
+	(operator_pointer_diff::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-ptr.cc (class pointer_plus_operator): Add overloaded declarations
+	for pointer variants.
+	(pointer_plus_operator::fold_range): New.
+	(pointer_plus_operator::op2_range): New.
+	(pointer_plus_operator::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_addr_expr::op1_range): New.
+	(operator_addr_expr::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_min::fold_range): New.
+	(operator_min::pointers_handled_p): New.
+	(operator_max::fold_range): New.
+	(operator_max::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_cast::fold_range): New.
+	(operator_cast::op1_range): New.
+	(operator_cast::lhs_op1_relation): New.
+	(operator_cast::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for pointer variants.
+	* range-op-ptr.cc (operator_cst::fold_range): New.
+	(operator_cst::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add overloaded declarations for fold_range, op1_range,
+	lhs_op1_relation, pointers_handled_p.
+	* range-op-ptr.cc (operator_identity::fold_range): New.
+	(operator_identity::lhs_op1_relation): New.
+	(operator_identity::op1_range): New.
+	(operator_identity::pointers_handled_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-mixed.h: Add using declarator for all classes.
+	* range-op-ptr.cc (range_operator::pointers_handled_p): New.
+	(range_operator::fold_range): New.
+	(range_operator::op1_op2_relation_effect): New.
+	(range_operator::op1_range): New.
+	(range_operator::op2_range): New.
+	(range_operator::op1_op2_relation): New.
+	(range_operator::lhs_op1_relation): New.
+	(range_operator::update_bitmask): New.
+	(class pointer_plus_operator): New.
+	(class operator_pointer_diff): New.
+	(class hybrid_min_operator): New.
+	(class hybrid_max_operator): New.
+	* range-op.cc: Add RO_PPP, RO_PPI, RO_IPP, RO_IPI, RO_PIP, RO_PII.
+	(range_op_handler::discriminator_fail): New.
+	(has_pointer_operand_p): New.
+	(range_op_handler::fold_range): Add pointer support.
+	(range_op_handler::op1_range): Same.
+	(range_op_handler::op2_range): Same.
+	(range_op_handler::lhs_op1_relation): Same.
+	(range_op_handler::lhs_op2_relation): Same.
+	(range_op_handler::op1_op2_relation): Same.
+	(class operator_div): Add using.
+	(class operator_lshift): Add using.
+	(class operator_rshift):Add using.
+	(class operator_trunc_mod):Add using.
+	(class operator_absu):Add using.
+	* range-op.h (enum range_op_dispatch_type): New.
+	Add extern definitions for RO_*.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (get_legacy_range): New version for prange.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (add_vrange): Add prange support.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-storage.cc (vrange_allocator::clone_varying): Add
+	prange support.
+	(vrange_allocator::clone_undefined): Same.
+	(vrange_storage::alloc): Same.
+	(vrange_storage::set_vrange): Same.
+	(vrange_storage::get_vrange): Same.
+	(vrange_storage::fits_p): Same.
+	(vrange_storage::equal_p): Same.
+	(prange_storage::alloc): New.
+	(prange_storage::prange_storage): New.
+	(prange_storage::set_prange): New.
+	(prange_storage::get_prange): New.
+	(prange_storage::equal_p): New.
+	(prange_storage::fits_p): New.
+	* value-range-storage.h (class prange_storage): Add prange support.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* data-streamer-in.cc (streamer_read_value_range): Add prange support.
+	* data-streamer-out.cc (streamer_write_vrange): Same.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-pretty-print.cc (vrange_printer::visit): New.
+	* value-range-pretty-print.h: Declare prange visit() method.
+	* value-range.cc (vrange::operator=): Add prange support.
+	(vrange::operator==): Same.
+	(prange::accept): New.
+	(prange::set_nonnegative): New.
+	(prange::set): New.
+	(prange::contains_p): New.
+	(prange::singleton_p): New.
+	(prange::lbound): New.
+	(prange::ubound): New.
+	(prange::union_): New.
+	(prange::intersect): New.
+	(prange::operator=): New.
+	(prange::operator==): New.
+	(prange::invert): New.
+	(prange::verify_range): New.
+	(prange::update_bitmask): New.
+	(range_tests_misc): Use prange.
+	* value-range.h (enum value_range_discriminator): Add VR_PRANGE.
+	(class prange): New.
+	(Value_Range::init): Add prange support.
+	(Value_Range::operator=): Same.
+	(Value_Range::supports_type_p): Same.
+	(prange::prange):  New.
+	(prange::supports_p): New.
+	(prange::supports_type_p): New.
+	(prange::set_undefined): New.
+	(prange::set_varying): New.
+	(prange::set_nonzero): New.
+	(prange::set_zero): New.
+	(prange::contains_p): New.
+	(prange::zero_p): New.
+	(prange::nonzero_p): New.
+	(prange::type): New.
+	(prange::lower_bound): New.
+	(prange::upper_bound): New.
+	(prange::varying_compatible_p): New.
+	(prange::get_bitmask): New.
+	(prange::fits_p): New.
+
+2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (class prange): New.
+
 2024-05-03  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/23872
