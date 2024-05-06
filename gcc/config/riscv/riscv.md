@@ -2793,6 +2793,36 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
+;; Canonical form for a zero-extend of a logical right shift.
+;; Special cases are handled above.
+;; Skip for single-bit extraction (Zbs/XTheadBs) and th.extu (XTheadBb)
+(define_insn_and_split "*lshr<GPR:mode>3_zero_extend_4"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	 (zero_extract:GPR
+       (match_operand:GPR 1 "register_operand" " r")
+       (match_operand     2 "const_int_operand")
+       (match_operand     3 "const_int_operand")))
+   (clobber (match_scratch:GPR  4 "=&r"))]
+  "!((TARGET_ZBS || TARGET_XTHEADBS) && (INTVAL (operands[2]) == 1))
+   && !TARGET_XTHEADBB"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 4)
+     (ashift:GPR (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+     (lshiftrt:GPR (match_dup 4) (match_dup 3)))]
+{
+  int regbits = GET_MODE_BITSIZE (GET_MODE (operands[0])).to_constant ();
+  int sizebits = INTVAL (operands[2]);
+  int startbits = INTVAL (operands[3]);
+  int lshamt = regbits - sizebits - startbits;
+  int rshamt = lshamt + startbits;
+  operands[2] = GEN_INT (lshamt);
+  operands[3] = GEN_INT (rshamt);
+}
+  [(set_attr "type" "shift")
+   (set_attr "mode" "<GPR:MODE>")])
+
 ;; Handle AND with 2^N-1 for N from 12 to XLEN.  This can be split into
 ;; two logical shifts.  Otherwise it requires 3 instructions: lui,
 ;; xor/addi/srli, and.
