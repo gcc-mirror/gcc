@@ -1106,6 +1106,16 @@ local_eliminate_vsetvl_insn (const vector_insn_info &dem)
 	      if (!new_info.skip_avl_compatible_p (dem))
 		return;
 
+	      /* Be more conservative here since we don't really get full
+		 demand info for following instructions, also that instruction
+		 isn't exist in RTL-SSA yet so we need parse that by low level
+		 API rather than vector_insn_info::parse_insn, see PR114747.  */
+	      unsigned last_vsetvli_sew = ::get_sew (PREV_INSN (i->rtl ()));
+	      unsigned last_vsetvli_lmul = ::get_vlmul (PREV_INSN (i->rtl ()));
+	      if (new_info.get_sew() != last_vsetvli_sew ||
+		  new_info.get_vlmul() != last_vsetvli_lmul)
+		return;
+
 	      new_info.set_avl_info (dem.get_avl_info ());
 	      new_info = dem.merge (new_info, LOCAL_MERGE);
 	      change_vsetvl_insn (insn, new_info);
