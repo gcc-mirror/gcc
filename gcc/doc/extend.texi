@@ -42,6 +42,8 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Named Address Spaces::Named address spaces.
 * Zero Length::         Zero-length arrays.
 * Empty Structures::    Structures with no members.
+* Flexible Array Members in Unions::  Unions with Flexible Array Members.
+* Flexible Array Members alone in Structures::  Structures with only Flexible Array Members.
 * Variable Length::     Arrays whose length is computed at run time.
 * Variadic Macros::     Macros with a variable number of arguments.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
@@ -1872,6 +1874,38 @@ struct empty @{
 The structure has size zero.  In C++, empty structures are part
 of the language.  G++ treats empty structures as if they had a single
 member of type @code{char}.
+
+@node Flexible Array Members in Unions
+@section Unions with Flexible Array Members
+@cindex unions with flexible array members
+@cindex unions with FAMs
+
+GCC permits a C99 flexible array member (FAM) to be in a union:
+
+@smallexample
+union with_fam @{
+  int a;
+  int b[];
+@};
+@end smallexample
+
+If every member of a union is a flexible array member, the size of
+such a union is zero.
+
+@node Flexible Array Members alone in Structures
+@section Structures with only Flexible Array Members
+@cindex structures with only flexible array members
+@cindex structures with only FAMs
+
+GCC permits a C99 flexible array member (FAM) to be alone in a structure:
+
+@smallexample
+struct only_fam @{
+  int b[];
+@};
+@end smallexample
+
+The size of such a structure is zero.
 
 @node Variable Length
 @section Arrays of Variable Length
