@@ -5587,15 +5587,15 @@ vectorizable_assignment (vec_info *vinfo,
 
   /* We can handle VIEW_CONVERT conversions that do not change the number
      of elements or the vector size or other conversions when the component
-     mode keeps the same.  */
+     types are nop-convertible.  */
   if (!vectype_in
       || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype_in), nunits)
       || (code == VIEW_CONVERT_EXPR
 	  && maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
 		       GET_MODE_SIZE (TYPE_MODE (vectype_in))))
       || (CONVERT_EXPR_CODE_P (code)
-	  && (TYPE_MODE (TREE_TYPE (vectype))
-	      != TYPE_MODE (TREE_TYPE (vectype_in)))))
+	  && !tree_nop_conversion_p (TREE_TYPE (vectype),
+				     TREE_TYPE (vectype_in))))
     return false;
 
   if (VECTOR_BOOLEAN_TYPE_P (vectype) != VECTOR_BOOLEAN_TYPE_P (vectype_in))
