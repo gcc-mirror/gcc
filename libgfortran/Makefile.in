@@ -4576,7 +4576,7 @@ uninstall-am: uninstall-cafexeclibLTLIBRARIES uninstall-gfor_cHEADERS \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@		$(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD)
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	  gfortran.ver \
-@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	  $(libgfortran_la_OBJECTS:%.lo=.libs/%.o) \
+@LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	  $(subst /,/.libs/,$(libgfortran_la_OBJECTS:.lo=.o)) \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	 `echo $(libgfortran_la_LIBADD) | \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
 @LIBGFOR_USE_SYMVER_SUN_TRUE@@LIBGFOR_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
