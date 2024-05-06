@@ -5955,14 +5955,17 @@ vectorizable_assignment (vec_info *vinfo,
   if (!vectype_in)
     vectype_in = get_vectype_for_scalar_type (vinfo, TREE_TYPE (op), slp_node);
 
-  /* We can handle NOP_EXPR conversions that do not change the number
-     of elements or the vector size.  */
-  if ((CONVERT_EXPR_CODE_P (code)
-       || code == VIEW_CONVERT_EXPR)
-      && (!vectype_in
-	  || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype_in), nunits)
-	  || maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
-		       GET_MODE_SIZE (TYPE_MODE (vectype_in)))))
+  /* We can handle VIEW_CONVERT conversions that do not change the number
+     of elements or the vector size or other conversions when the component
+     types are nop-convertible.  */
+  if (!vectype_in
+      || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype_in), nunits)
+      || (code == VIEW_CONVERT_EXPR
+	  && maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
+		       GET_MODE_SIZE (TYPE_MODE (vectype_in))))
+      || (CONVERT_EXPR_CODE_P (code)
+	  && !tree_nop_conversion_p (TREE_TYPE (vectype),
+				     TREE_TYPE (vectype_in))))
     return false;
 
   if (VECTOR_BOOLEAN_TYPE_P (vectype) != VECTOR_BOOLEAN_TYPE_P (vectype_in))
