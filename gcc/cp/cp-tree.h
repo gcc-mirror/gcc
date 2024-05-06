@@ -9015,6 +9015,24 @@ struct push_access_scope_guard
   }
 };
 
+/* Extracting strings from constexpr.  */
+
+class cexpr_str
+{
+public:
+  cexpr_str (tree message) : message (message) {}
+  cexpr_str (const cexpr_str &) = delete;
+  ~cexpr_str () { XDELETEVEC (buf); }
+
+  bool type_check (location_t location);
+  bool extract (location_t location, const char * & msg, int &len);
+  tree message;
+private:
+  tree message_data = NULL_TREE;
+  tree message_sz = NULL_TREE;
+  char *buf = nullptr;
+};
+
 /* True if TYPE is an extended floating-point type.  */
 
 inline bool
