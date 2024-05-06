@@ -1,3 +1,62 @@
+2024-05-05  liuhongt  <hongtao.liu@intel.com>
+
+	* bid128_fma.c (add_and_round): Fix bug: the result
+	of (+5E+368)*(+10E-34)+(-10E+369) was returning
+	-9999999999999999999999999999999999E+336 instead of expected
+	result -1000000000000000000000000000000000E+337.
+	(bid128_ext_fma): Ditto.
+	(bid64qqq_fma): Ditto.
+	* bid128_noncomp.c: Change return type of bid128_class from
+	int to class_t.
+	* bid128_round_integral.c: Add default case to avoid compiler
+	warning.
+	* bid128_string.c (bid128_to_string): Replace 0x30 with '0'
+	for zero digit.
+	(bid128_from_string): Ditto.
+	* bid32_to_bid128.c (bid128_to_bid32): Fix Bug. In addition
+	to the INEXACT flag, the UNDERFLOW flag needs to be set (and
+	was not) when converting an input such as
+	+6931674235302037148946035460357709E+1857 to +1000000E-101
+	* bid32_to_bid64.c (bid64_to_bid32): fix Bug, In addition to
+	the INEXACT flag, the UNDERFLOW flag needs to be set (and was
+	not) when converting an input such as +9999999000000001E-111
+	to +1000000E-101. Furthermore, significant bits of NaNs are
+	set correctly now. For example,  0x7c00003b9aca0000 was
+	returning 0x7c000002 instead of 0x 7c000100.
+	* bid64_noncomp.c: Change return type of bid64_class from int
+	to class_t.
+	* bid64_round_integral.c (bid64_round_integral_exact): Add
+	default case to avoid compiler warning.
+	* bid64_string.c (bid64_from_string): Fix bug for rounding
+	up. The input string "10000000000000000" was returning
+	+1000000000000001E+1 instead of +1000000000000000E+1.
+	* bid64_to_bid128.c (bid128_to_bid64): Fix bug, in addition to
+	the INEXACT flag, the UNDERFLOW flag needs to be set (and was
+	not) when converting an input such as
+	+9999999999999999999999999999999999E-417 to
+	+1000000000000000E-398.
+	* bid_binarydecimal.c (bid32_to_binary64): Fix bug for
+	conversion between binary and bid types. For example,
+	0x7c0F4240 was returning 0x7FFFA12000000000 instead of
+	expected double precision 0x7FF8000000000000.
+	(binary64_to_bid32): Ditto.
+	(binary80_to_bid32): Ditto.
+	(binary128_to_bid32): Ditto.
+	(binary80_to_bid64): Ditto.
+	(binary128_to_bid64): Ditto.
+	* bid_conf.h (BID_HIGH_128W): New macro.
+	(BID_LOW_128W): Ditto.
+	* bid_functions.h (__ENABLE_BINARY80__): Ditto.
+	(ALIGN): Ditto.
+	* bid_inline_add.h (get_add128): Add default case to avoid compiler
+	warning.
+	* bid_internal.h (get_BID64): Ditto.
+	(fast_get_BID64_check_OF): Ditto.
+	(ALIGN): New macro.
+	Co-authored-by: Anderson, Cristina S <cristina.s.anderson@intel.com>
+	Co-authored-by: Akkas, Ahmet <ahmet.akkas@intel.com>
+	Co-authored-by: Cornea, Marius <marius.cornea@intel.com>
+
 2022-05-20  Christophe Lyon  <christophe.lyon@arm.com>
 
 	* bid_binarydecimal.c (CLZ32_MASK16): Delete.

@@ -1,3 +1,10 @@
+2024-05-05  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-loop-versioning.cc (loop_versioning): Remove m_nloops field.
+	(loop_versioning::loop_versioning): Remove initialization of
+	m_nloops field and move it to be a local variable.
+	(loop_versioning::analyze_blocks): Fix formating.
+
 2024-05-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-range-op.cc (class cfn_pass_through_arg1): Add overloads

@@ -1,3 +1,13 @@
+2024-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114827
+	* trans-array.cc (gfc_alloc_allocatable_for_assignment): Take into
+	account _len of unlimited polymorphic entities when calculating
+	the effective element size for allocation size and array span.
+	Set _len of lhs to _len of rhs.
+	* trans-expr.cc (trans_class_assignment): Take into account _len
+	of unlimited polymorphic entities for allocation size.
+
 2024-04-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* expr.cc (check_transformational): Add SELECTED_LOGICAL_KIND
