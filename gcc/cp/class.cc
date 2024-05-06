@@ -7624,6 +7624,7 @@ diagnose_flexarrays (tree t, const flexmems_t *fmem)
   bool diagd = false;
 
   const char *msg = 0;
+  const char *msg_fam = 0;
 
   if (TYPE_DOMAIN (TREE_TYPE (fmem->array)))
     {
@@ -7649,15 +7650,19 @@ diagnose_flexarrays (tree t, const flexmems_t *fmem)
       if (fmem->after[0])
 	msg = G_("flexible array member %qD not at end of %q#T");
       else if (!fmem->first)
-	msg = G_("flexible array member %qD in an otherwise empty %q#T");
+	msg_fam = G_("flexible array member %qD in an otherwise"
+		     " empty %q#T is a GCC extension");
 
-      if (msg)
+      if (msg || msg_fam)
 	{
 	  location_t loc = DECL_SOURCE_LOCATION (fmem->array);
 	  diagd = true;
 
 	  auto_diagnostic_group d;
-	  error_at (loc, msg, fmem->array, t);
+	  if (msg)
+	    error_at (loc, msg, fmem->array, t);
+	  else
+	    pedwarn (loc, OPT_Wpedantic, msg_fam, fmem->array, t);
 
 	  /* In the unlikely event that the member following the flexible
 	     array member is declared in a different class, or the member

@@ -1245,13 +1245,18 @@ place_union_field (record_layout_info rli, tree field)
       && TYPE_TYPELESS_STORAGE (TREE_TYPE (field)))
     TYPE_TYPELESS_STORAGE (rli->t) = 1;
 
+  /* We might see a flexible array member field (with no DECL_SIZE_UNIT), use
+     zero size for such field.  */
+  tree field_size_unit = DECL_SIZE_UNIT (field)
+			 ? DECL_SIZE_UNIT (field)
+			 : build_int_cst (sizetype, 0);
   /* We assume the union's size will be a multiple of a byte so we don't
      bother with BITPOS.  */
   if (TREE_CODE (rli->t) == UNION_TYPE)
-    rli->offset = size_binop (MAX_EXPR, rli->offset, DECL_SIZE_UNIT (field));
+    rli->offset = size_binop (MAX_EXPR, rli->offset, field_size_unit);
   else if (TREE_CODE (rli->t) == QUAL_UNION_TYPE)
     rli->offset = fold_build3 (COND_EXPR, sizetype, DECL_QUALIFIER (field),
-			       DECL_SIZE_UNIT (field), rli->offset);
+			       field_size_unit, rli->offset);
 }
 
 /* A bitfield of SIZE with a required access alignment of ALIGN is allocated

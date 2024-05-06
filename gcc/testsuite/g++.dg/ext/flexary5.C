@@ -13,7 +13,7 @@ struct S_no_diag: T {
 
 template <class T>
 struct STx_1: T {
-  char a[];   // { dg-error "flexible array member" }
+  char a[];
 };
 
 template <class T, int I>
@@ -37,7 +37,7 @@ struct E1: E<0>, E<1> { };
 struct E2: E<2>, E<3> { };
 struct D1: E1, E2
 {
-    char a[];   // { dg-error "flexible array member" }
+    char a[];
 };
 
 struct NE { size_t i; };

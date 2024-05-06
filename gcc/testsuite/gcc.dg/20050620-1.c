@@ -5,7 +5,7 @@
 void
 foo (void)
 {
-  struct { int i[]; } u;	/* { dg-error "flexible array member" } */
+  struct { int i[]; } u;
 }
 
 void

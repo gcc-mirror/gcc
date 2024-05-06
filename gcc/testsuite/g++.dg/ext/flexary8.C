@@ -4,26 +4,26 @@
 
 union U_i_ax {
     int i;
-    int a[];                  // { dg-error "flexible array member in union" }
+    int a[];
 };
 
 struct SU1 {
   union {
-    int a[];                  // { dg-error "flexible array member in union" }
+    int a[];
   };
 };
 
 struct SU2 {
   int n;
   union {
-    int a[];                  // { dg-error "flexible array member in union" }
+    int a[];
   };
 };
 
 struct SU3 {
   union {
     int n;
-    int a[];                  // { dg-error "flexible array member in union" }
+    int a[];
   };
 };
 

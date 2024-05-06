@@ -9516,11 +9516,8 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       if (flexible_array_member_type_p (TREE_TYPE (x)))
 	{
 	  if (TREE_CODE (t) == UNION_TYPE)
-	    {
-	      error_at (DECL_SOURCE_LOCATION (x),
-			"flexible array member in union");
-	      TREE_TYPE (x) = error_mark_node;
-	    }
+	    pedwarn (DECL_SOURCE_LOCATION (x), OPT_Wpedantic,
+		     "flexible array member in union is a GCC extension");
 	  else if (!is_last_field)
 	    {
 	      error_at (DECL_SOURCE_LOCATION (x),
@@ -9528,12 +9525,9 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	      TREE_TYPE (x) = error_mark_node;
 	    }
 	  else if (!saw_named_field)
-	    {
-	      error_at (DECL_SOURCE_LOCATION (x),
-			"flexible array member in a struct with no named "
-			"members");
-	      TREE_TYPE (x) = error_mark_node;
-	    }
+	    pedwarn (DECL_SOURCE_LOCATION (x), OPT_Wpedantic,
+		     "flexible array member in a struct with no named "
+		     "members is a GCC extension");
 	}
 
       if (pedantic && TREE_CODE (t) == RECORD_TYPE

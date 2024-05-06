@@ -14582,10 +14582,9 @@ grokdeclarator (const cp_declarator *declarator,
 	    if (ctype
 		&& (TREE_CODE (ctype) == UNION_TYPE
 		    || TREE_CODE (ctype) == QUAL_UNION_TYPE))
-	      {
-		error_at (id_loc, "flexible array member in union");
-		type = error_mark_node;
-	      }
+	      pedwarn (id_loc, OPT_Wpedantic,
+		       "flexible array member in union is a GCC extension");
+
 	    else
 	      {
 		/* Array is a flexible member.  */

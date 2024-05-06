@@ -11,7 +11,7 @@
 // { dg-options "" }
 
 struct s {
-    char c[];   // { dg-error "flexible array member .* in an otherwise empty" }
+    char c[];
 };
 
 int main()
