@@ -24,6 +24,11 @@ if { ![check_effective_target_analyzer] } {
     return
 }
 
+# Disable on Solaris until PR analyzer/111475 is fixed.
+if { [istarget *-*-solaris2.*] } {
+    return
+}
+
 if [info exists DEFAULT_CXXFLAGS] then {
   set save_default_cxxflags $DEFAULT_CXXFLAGS
 }
