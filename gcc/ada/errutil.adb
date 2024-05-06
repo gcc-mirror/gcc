@@ -199,6 +199,11 @@ package body Errutil is
          return;
       end if;
 
+      --  Warning, Style and Info attributes are mutually exclusive
+
+      pragma Assert (Boolean'Pos (Is_Warning_Msg) + Boolean'Pos (Is_Info_Msg) +
+        Boolean'Pos (Is_Style_Msg) <= 1);
+
       --  Otherwise build error message object for new message
 
       Errors.Append
@@ -308,15 +313,7 @@ package body Errutil is
       --  Bump appropriate statistics counts
 
       if Errors.Table (Cur_Msg).Info then
-
-         --  Could be (usually is) both "info" and "warning"
-
-         if Errors.Table (Cur_Msg).Warn then
-            Warning_Info_Messages := Warning_Info_Messages + 1;
-            Warnings_Detected := Warnings_Detected + 1;
-         else
-            Report_Info_Messages := Report_Info_Messages + 1;
-         end if;
+         Info_Messages := Info_Messages + 1;
 
       elsif Errors.Table (Cur_Msg).Warn
         or else Errors.Table (Cur_Msg).Style
@@ -553,19 +550,19 @@ package body Errutil is
             Write_Str (" errors");
          end if;
 
-         if Warnings_Detected - Warning_Info_Messages /= 0 then
+         if Warnings_Detected /= 0 then
             Write_Str (", ");
-            Write_Int (Warnings_Detected - Warning_Info_Messages);
+            Write_Int (Warnings_Detected);
             Write_Str (" warning");
 
-            if Warnings_Detected - Warning_Info_Messages /= 1 then
+            if Warnings_Detected /= 1 then
                Write_Char ('s');
             end if;
 
             if Warning_Mode = Treat_As_Error then
                Write_Str (" (treated as error");
 
-               if Warnings_Detected - Warning_Info_Messages /= 1 then
+               if Warnings_Detected /= 1 then
                   Write_Char ('s');
                end if;
 
@@ -595,9 +592,8 @@ package body Errutil is
       --  must not be treated as errors when -gnatwe is in effect.
 
       if Warning_Mode = Treat_As_Error then
-         Total_Errors_Detected :=
-           Total_Errors_Detected + Warnings_Detected - Warning_Info_Messages;
-         Warnings_Detected := Warning_Info_Messages;
+         Total_Errors_Detected := Total_Errors_Detected + Warnings_Detected;
+         Warnings_Detected := 0;
       end if;
 
       --  Prevent displaying the same messages again in the future
@@ -617,8 +613,7 @@ package body Errutil is
       Serious_Errors_Detected := 0;
       Total_Errors_Detected := 0;
       Warnings_Detected := 0;
-      Warning_Info_Messages := 0;
-      Report_Info_Messages := 0;
+      Info_Messages := 0;
       Cur_Msg := No_Error_Msg;
 
       --  Initialize warnings table, if all warnings are suppressed, supply

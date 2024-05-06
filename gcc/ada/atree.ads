@@ -161,15 +161,11 @@ package Atree is
    --  Number of warnings detected. Initialized to zero at the start of
    --  compilation. This count includes the count of style and info messages.
 
-   Warning_Info_Messages : Nat := 0;
-   --  Number of info messages generated as warnings. Info messages are never
-   --  treated as errors (whether from use of the pragma, or the compiler
-   --  switch -gnatwe).
-
-   Report_Info_Messages : Nat := 0;
+   Info_Messages : Nat := 0;
    --  Number of info messages generated as reports. Info messages are never
    --  treated as errors (whether from use of the pragma, or the compiler
-   --  switch -gnatwe). Used under Spark_Mode to report proved checks.
+   --  switch -gnatwe). Used by GNATprove under SPARK_Mode to report proved
+   --  checks.
 
    Check_Messages : Nat := 0;
    --  Number of check messages generated. Check messages are neither warnings

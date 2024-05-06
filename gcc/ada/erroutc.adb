@@ -59,6 +59,11 @@ package body Erroutc is
    --  from generic instantiations by using pragma Warnings around generic
    --  instances, as needed in GNATprove.
 
+   function Has_Switch_Tag (Id : Error_Msg_Id) return Boolean;
+   function Has_Switch_Tag (E_Msg : Error_Msg_Object) return Boolean;
+   --  Returns True if the E_Msg is Warning, Style or Info and has a non-empty
+   --  Warn_Char.
+
    ---------------
    -- Add_Class --
    ---------------
@@ -144,12 +149,7 @@ package body Erroutc is
 
             if Errors.Table (D).Info then
 
-               if Errors.Table (D).Warn then
-                  Warning_Info_Messages := Warning_Info_Messages - 1;
-                  Warnings_Detected := Warnings_Detected - 1;
-               else
-                  Report_Info_Messages := Report_Info_Messages - 1;
-               end if;
+               Info_Messages := Info_Messages - 1;
 
             elsif Errors.Table (D).Warn or else Errors.Table (D).Style then
                Warnings_Detected := Warnings_Detected - 1;
@@ -246,8 +246,7 @@ package body Erroutc is
    ------------------------
 
    function Compilation_Errors return Boolean is
-      Warnings_Count : constant Int
-         := Warnings_Detected - Warning_Info_Messages;
+      Warnings_Count : constant Int := Warnings_Detected;
    begin
       if Total_Errors_Detected /= 0 then
          return True;
@@ -330,6 +329,7 @@ package body Erroutc is
 
       w ("  Line               = ", Int (E.Line));
       w ("  Col                = ", Int (E.Col));
+      w ("  Info               = ", E.Info);
       w ("  Warn               = ", E.Warn);
       w ("  Warn_Err           = ", E.Warn_Err);
       w ("  Warn_Runtime_Raise = ", E.Warn_Runtime_Raise);
@@ -366,13 +366,11 @@ package body Erroutc is
    ------------------------
 
    function Get_Warning_Option (Id : Error_Msg_Id) return String is
-      Warn     : constant Boolean         := Errors.Table (Id).Warn;
       Style    : constant Boolean         := Errors.Table (Id).Style;
       Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
 
    begin
-      if (Warn or Style)
-        and then Warn_Chr /= "  "
+      if Has_Switch_Tag (Errors.Table (Id))
         and then Warn_Chr (1) /= '?'
       then
          if Warn_Chr = "$ " then
@@ -394,13 +392,11 @@ package body Erroutc is
    ---------------------
 
    function Get_Warning_Tag (Id : Error_Msg_Id) return String is
-      Warn     : constant Boolean         := Errors.Table (Id).Warn;
-      Style    : constant Boolean         := Errors.Table (Id).Style;
       Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
       Option   : constant String          := Get_Warning_Option (Id);
 
    begin
-      if Warn or Style then
+      if Has_Switch_Tag (Id) then
          if Warn_Chr = "? " then
             return "[enabled by default]";
          elsif Warn_Chr = "* " then
@@ -412,6 +408,23 @@ package body Erroutc is
 
       return "";
    end Get_Warning_Tag;
+
+   --------------------
+   -- Has_Switch_Tag --
+   --------------------
+
+   function Has_Switch_Tag (Id : Error_Msg_Id) return Boolean
+   is (Has_Switch_Tag (Errors.Table (Id)));
+
+   function Has_Switch_Tag (E_Msg : Error_Msg_Object) return Boolean
+   is
+      Warn     : constant Boolean         := E_Msg.Warn;
+      Style    : constant Boolean         := E_Msg.Style;
+      Info     : constant Boolean         := E_Msg.Info;
+      Warn_Chr : constant String (1 .. 2) := E_Msg.Warn_Chr;
+   begin
+      return (Warn or Style or Info) and then Warn_Chr /= "  ";
+   end Has_Switch_Tag;
 
    -------------
    -- Matches --
@@ -918,6 +931,7 @@ package body Erroutc is
          Is_Unconditional_Msg := False;
          Is_Warning_Msg       := False;
          Is_Runtime_Raise     := False;
+         Warning_Msg_Char     := "  ";
 
          --  Check style message
 
@@ -962,7 +976,14 @@ package body Erroutc is
 
          elsif Msg (J) = '?' or else Msg (J) = '<' then
             if Msg (J) = '?' or else Error_Msg_Warn then
-               Is_Warning_Msg := not Is_Style_Msg;
+
+               --  Consider Info and Style messages as unique message types.
+               --  Those messages can have warning insertion characters within
+               --  them. However they should only be switch specific insertion
+               --  characters and not the generic ? or ?? warning insertion
+               --  characters.
+
+               Is_Warning_Msg := not (Is_Style_Msg or else Is_Info_Msg);
                J := J + 1;
                Warning_Msg_Char := Parse_Message_Class;
 

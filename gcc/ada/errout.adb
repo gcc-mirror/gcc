@@ -283,10 +283,6 @@ package body Errout is
                M.Deleted := True;
                Warnings_Detected := Warnings_Detected - 1;
 
-               if M.Info then
-                  Warning_Info_Messages := Warning_Info_Messages - 1;
-               end if;
-
                if M.Warn_Err then
                   Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
                end if;
@@ -428,7 +424,8 @@ package body Errout is
       --  that style checks are not considered warning messages for this
       --  purpose.
 
-      if Is_Warning_Msg and then Warnings_Suppressed (Orig_Loc) /= No_String
+      if Is_Warning_Msg
+        and then Warnings_Suppressed (Orig_Loc) /= No_String
       then
          return;
 
@@ -1049,6 +1046,33 @@ package body Errout is
          return;
       end if;
 
+      if Is_Info_Msg then
+
+         --  If the flag location is in the main extended source unit then for
+         --  sure we want the message since it definitely belongs.
+
+         if In_Extended_Main_Source_Unit (Sptr) then
+            null;
+
+         --  Keep info message if message text contains !!
+
+         elsif Has_Double_Exclam then
+            null;
+
+         --  Here is where we delete a message from a with'ed unit
+
+         else
+            Cur_Msg := No_Error_Msg;
+
+            if not Continuation then
+               Last_Killed := True;
+            end if;
+
+            return;
+         end if;
+
+      end if;
+
       --  Special check for warning message to see if it should be output
 
       if Is_Warning_Msg then
@@ -1064,7 +1088,7 @@ package body Errout is
          end if;
 
          --  If the flag location is in the main extended source unit then for
-         --  sure we want the warning since it definitely belongs
+         --  sure we want the warning since it definitely belongs.
 
          if In_Extended_Main_Source_Unit (Sptr) then
             null;
@@ -1209,6 +1233,11 @@ package body Errout is
 
          return;
       end if;
+
+      --  Warning, Style and Info attributes are mutually exclusive
+
+      pragma Assert (Boolean'Pos (Is_Warning_Msg) + Boolean'Pos (Is_Info_Msg) +
+        Boolean'Pos (Is_Style_Msg) <= 1);
 
       --  Here we build a new error object
 
@@ -1384,15 +1413,7 @@ package body Errout is
       --  Bump appropriate statistics counts
 
       if Errors.Table (Cur_Msg).Info then
-
-         --  Could be (usually is) both "info" and "warning"
-
-         if Errors.Table (Cur_Msg).Warn then
-            Warning_Info_Messages := Warning_Info_Messages + 1;
-            Warnings_Detected     := Warnings_Detected + 1;
-         else
-            Report_Info_Messages := Report_Info_Messages + 1;
-         end if;
+         Info_Messages := Info_Messages + 1;
 
       elsif Errors.Table (Cur_Msg).Warn
         or else Errors.Table (Cur_Msg).Style
@@ -1648,10 +1669,6 @@ package body Errout is
          if not Errors.Table (E).Deleted then
             Errors.Table (E).Deleted := True;
             Warnings_Detected := Warnings_Detected - 1;
-
-            if Errors.Table (E).Info then
-               Warning_Info_Messages := Warning_Info_Messages - 1;
-            end if;
          end if;
       end Delete_Warning;
 
@@ -1695,7 +1712,8 @@ package body Errout is
             Tag : constant String := Get_Warning_Tag (Cur);
 
          begin
-            if (CE.Warn and not CE.Deleted)
+            if CE.Warn
+              and then not CE.Deleted
               and then
                    (Warning_Specifically_Suppressed (CE.Sptr.Ptr, CE.Text, Tag)
                                                                 /= No_String
@@ -1968,7 +1986,6 @@ package body Errout is
 
       Warnings_Treated_As_Errors := 0;
       Warnings_Detected := 0;
-      Warning_Info_Messages := 0;
       Warnings_As_Errors_Count := 0;
 
       --  Initialize warnings tables
@@ -2640,8 +2657,7 @@ package body Errout is
          --  are also errors.
 
          declare
-            Warnings_Count : constant Int :=
-               Warnings_Detected - Warning_Info_Messages;
+            Warnings_Count : constant Int := Warnings_Detected;
 
             Compile_Time_Warnings : Int;
             --  Number of warnings that come from a Compile_Time_Warning
@@ -2702,12 +2718,12 @@ package body Errout is
             end if;
          end;
 
-         if Warning_Info_Messages + Report_Info_Messages /= 0 then
+         if Info_Messages /= 0 then
             Write_Str (", ");
-            Write_Int (Warning_Info_Messages + Report_Info_Messages);
+            Write_Int (Info_Messages);
             Write_Str (" info message");
 
-            if Warning_Info_Messages + Report_Info_Messages > 1 then
+            if Info_Messages > 1 then
                Write_Char ('s');
             end if;
          end if;
@@ -3419,23 +3435,19 @@ package body Errout is
          Write_Max_Errors;
       end if;
 
-      --  Even though Warning_Info_Messages are a subclass of warnings, they
-      --  must not be treated as errors when -gnatwe is in effect.
-
       if Warning_Mode = Treat_As_Error then
          declare
             Compile_Time_Pragma_Warnings : constant Nat :=
                Count_Compile_Time_Pragma_Warnings;
             Total : constant Int := Total_Errors_Detected + Warnings_Detected
-               - Warning_Info_Messages - Compile_Time_Pragma_Warnings;
+               - Compile_Time_Pragma_Warnings;
             --  We need to protect against a negative Total here, because
             --  if a pragma Compile_Time_Warning occurs in dead code, it
             --  gets counted in Compile_Time_Pragma_Warnings but not in
             --  Warnings_Detected.
          begin
             Total_Errors_Detected := Int'Max (Total, 0);
-            Warnings_Detected :=
-               Warning_Info_Messages + Compile_Time_Pragma_Warnings;
+            Warnings_Detected := Compile_Time_Pragma_Warnings;
          end;
       end if;
    end Output_Messages;
@@ -3628,10 +3640,6 @@ package body Errout is
             then
                if Errors.Table (E).Warn then
                   Warnings_Detected := Warnings_Detected - 1;
-               end if;
-
-               if Errors.Table (E).Info then
-                  Warning_Info_Messages := Warning_Info_Messages - 1;
                end if;
 
                --  When warning about a runtime exception has been escalated
