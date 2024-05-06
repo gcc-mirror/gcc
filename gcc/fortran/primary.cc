@@ -2199,6 +2199,15 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       match mm;
       old_loc = gfc_current_locus;
       mm = gfc_match_name (name);
+
+      /* Check to see if this has a default type.  */
+      if (sym->ts.type == BT_UNKNOWN && tgt_expr == NULL
+	  && gfc_get_default_type (sym->name, sym->ns)->type != BT_UNKNOWN)
+	{
+	  gfc_set_default_type (sym, 0, sym->ns);
+	  primary->ts = sym->ts;
+	}
+
       if (mm == MATCH_YES && is_inquiry_ref (name, &tmp))
 	inquiry = true;
       gfc_current_locus = old_loc;
