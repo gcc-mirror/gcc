@@ -6563,8 +6563,9 @@ layout_var_decl (tree decl)
 	}
     }
 
-  /* If the final element initializes a flexible array field, add the size of
-     that initializer to DECL's size.  */
+  /* If the final element initializes a flexible array field, adjust
+     the size of the DECL with the initializer based on whether the
+     DECL is a union or a structure.  */
   if (type != error_mark_node
       && DECL_INITIAL (decl)
       && TREE_CODE (DECL_INITIAL (decl)) == CONSTRUCTOR
@@ -6585,11 +6586,28 @@ layout_var_decl (tree decl)
 	      && TREE_CODE (vtype) == ARRAY_TYPE
 	      && COMPLETE_TYPE_P (vtype))
 	    {
-	      DECL_SIZE (decl)
-		= size_binop (PLUS_EXPR, DECL_SIZE (decl), TYPE_SIZE (vtype));
-	      DECL_SIZE_UNIT (decl)
-		= size_binop (PLUS_EXPR, DECL_SIZE_UNIT (decl),
-			      TYPE_SIZE_UNIT (vtype));
+	      /* For a structure, add the size of the initializer to the DECL's
+		 size.  */
+	      if (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
+		{
+		  DECL_SIZE (decl)
+		    = size_binop (PLUS_EXPR, DECL_SIZE (decl),
+				  TYPE_SIZE (vtype));
+		  DECL_SIZE_UNIT (decl)
+		    = size_binop (PLUS_EXPR, DECL_SIZE_UNIT (decl),
+				  TYPE_SIZE_UNIT (vtype));
+		}
+	      /* For a union, the DECL's size is the maximum of the current size
+		 and the size of the initializer.  */
+	      else
+		{
+		  DECL_SIZE (decl)
+		    = size_binop (MAX_EXPR, DECL_SIZE (decl),
+				  TYPE_SIZE (vtype));
+		  DECL_SIZE_UNIT (decl)
+		    = size_binop (MAX_EXPR, DECL_SIZE_UNIT (decl),
+				  TYPE_SIZE_UNIT (vtype));
+		}
 	    }
 	}
     }
