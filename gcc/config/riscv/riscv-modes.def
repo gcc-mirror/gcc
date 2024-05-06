@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 
 FLOAT_MODE (HF, 2, ieee_half_format);
 FLOAT_MODE (TF, 16, ieee_quad_format);
+FLOAT_MODE (BF, 2, 0);
+/* Reuse definition from arm.  */
+ADJUST_FLOAT_FORMAT (BF, &arm_bfloat_half_format);
 
 /* Vector modes.  */
 
