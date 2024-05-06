@@ -34,13 +34,23 @@ along with GCC; see the file COPYING3.  If not see
 // The API is simple, just ask for the range on the edge.
 // The return value is NULL for no range, or the branch statement which the
 // edge gets the range from, along with the range.
+//
+// THe switch_limit is the number of switch edges beyond which the switch
+// is ignored (ie, edge_range_p () will return NULL as if the sitch was not
+// there.  THis value can be adjusted any time via set_switch_limit ().
+// THe default is 0, no switches are precoessed until set_switch_limit () is
+// called, and then the default is INT_MAX.
+//
+// No memory is allocated until an edge for a switch is processed which also
+// falls under the edge limit criteria.
 
 class gimple_outgoing_range
 {
 public:
-  gimple_outgoing_range (int max_sw_edges = INT_MAX);
+  gimple_outgoing_range (int max_sw_edges = 0);
   ~gimple_outgoing_range ();
   gimple *edge_range_p (irange &r, edge e);
+  void set_switch_limit (int max_sw_edges = INT_MAX);
 private:
   void calc_switch_ranges (gswitch *sw);
   bool switch_edge_range (irange &r, gswitch *sw, edge e);

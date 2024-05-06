@@ -51,7 +51,6 @@ gimple_outgoing_range_stmt_p (basic_block bb)
   return NULL;
 }
 
-
 // Return a TRUE or FALSE range representing the edge value of a GCOND.
 
 void
@@ -64,22 +63,32 @@ gcond_edge_range (irange &r, edge e)
     r = range_false ();
 }
 
+// Construct a gimple_outgoing_range object.  No memory is allocated.
 
 gimple_outgoing_range::gimple_outgoing_range (int max_sw_edges)
 {
   m_edge_table = NULL;
+  m_range_allocator = NULL;
   m_max_edges = max_sw_edges;
-  m_range_allocator = new vrange_allocator;
 }
 
+// Destruct an edge object, disposing of any memory allocated.
 
 gimple_outgoing_range::~gimple_outgoing_range ()
 {
   if (m_edge_table)
     delete m_edge_table;
-  delete m_range_allocator;
+  if (m_range_allocator)
+    delete m_range_allocator;
 }
 
+// Set a new switch limit.
+
+void
+gimple_outgoing_range::set_switch_limit (int max_sw_edges)
+{
+  m_max_edges = max_sw_edges;
+}
 
 // Get a range for a switch edge E from statement S and return it in R.
 // Use a cached value if it exists, or calculate it if not.
@@ -96,8 +105,10 @@ gimple_outgoing_range::switch_edge_range (irange &r, gswitch *sw, edge e)
       TYPE_PRECISION (TREE_TYPE (gimple_switch_index (sw))))
     return false;
 
-   if (!m_edge_table)
-     m_edge_table = new hash_map<edge, vrange_storage *> (n_edges_for_fn (cfun));
+  if (!m_edge_table)
+    m_edge_table = new hash_map<edge, vrange_storage *> (n_edges_for_fn (cfun));
+  if (!m_range_allocator)
+    m_range_allocator = new vrange_allocator;
 
    vrange_storage **val = m_edge_table->get (e);
    if (!val)
@@ -202,7 +213,7 @@ gimple_outgoing_range::edge_range_p (irange &r, edge e)
     }
 
   // Only process switches if it within the size limit.
-  if (EDGE_COUNT (e->src->succs) > (unsigned)m_max_edges)
+  if (m_max_edges == 0 || (EDGE_COUNT (e->src->succs) > (unsigned)m_max_edges))
     return NULL;
 
   gcc_checking_assert (is_a<gswitch *> (s));
