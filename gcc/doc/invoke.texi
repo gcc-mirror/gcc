@@ -14996,11 +14996,12 @@ with a single instruction, e.g., @code{sqrt}.  A program that relies on
 IEEE exceptions for math error handling may want to use this flag
 for speed while maintaining IEEE arithmetic compatibility.
 
-This option is not turned on by any @option{-O} option since
-it can result in incorrect output for programs that depend on
-an exact implementation of IEEE or ISO rules/specifications for
-math functions. It may, however, yield faster code for programs
-that do not require the guarantees of these specifications.
+This option is not turned on by any @option{-O} option  besides
+@option{-Ofast} since it can result in incorrect output for
+programs that depend on an exact implementation of IEEE or
+ISO rules/specifications for math functions. It may, however,
+yield faster code for programs that do not require the guarantees
+of these specifications.
 
 The default is @option{-fmath-errno}.
 
@@ -15017,11 +15018,12 @@ ANSI standards.  When used at link time, it may include libraries
 or startup files that change the default FPU control word or other
 similar optimizations.
 
-This option is not turned on by any @option{-O} option since
-it can result in incorrect output for programs that depend on
-an exact implementation of IEEE or ISO rules/specifications for
-math functions. It may, however, yield faster code for programs
-that do not require the guarantees of these specifications.
+This option is not turned on by any @option{-O} option besides
+@option{-Ofast} since it can result in incorrect output
+for programs that depend on an exact implementation of IEEE
+or ISO rules/specifications for math functions. It may, however,
+yield faster code for programs that do not require the guarantees
+of these specifications.
 Enables @option{-fno-signed-zeros}, @option{-fno-trapping-math},
 @option{-fassociative-math} and @option{-freciprocal-math}.
 
@@ -15061,11 +15063,12 @@ The default is @option{-fno-reciprocal-math}.
 Allow optimizations for floating-point arithmetic that assume
 that arguments and results are not NaNs or +-Infs.
 
-This option is not turned on by any @option{-O} option since
-it can result in incorrect output for programs that depend on
-an exact implementation of IEEE or ISO rules/specifications for
-math functions. It may, however, yield faster code for programs
-that do not require the guarantees of these specifications.
+This option is not turned on by any @option{-O} option besides
+@option{-Ofast} since it can result in incorrect output
+for programs that depend on an exact implementation of IEEE or
+ISO rules/specifications for math functions. It may, however,
+yield faster code for programs that do not require the guarantees
+of these specifications.
 
 The default is @option{-fno-finite-math-only}.
 
@@ -15089,10 +15092,10 @@ underflow, inexact result and invalid operation.  This option requires
 that @option{-fno-signaling-nans} be in effect.  Setting this option may
 allow faster code if one relies on ``non-stop'' IEEE arithmetic, for example.
 
-This option should never be turned on by any @option{-O} option since
-it can result in incorrect output for programs that depend on
-an exact implementation of IEEE or ISO rules/specifications for
-math functions.
+This option is not turned on by any @option{-O} option besides
+@option{-Ofast} since it can result in incorrect output for programs
+that depend on an exact implementation of IEEE or ISO rules/specifications
+for math functions.
 
 The default is @option{-ftrapping-math}.
 
