@@ -2616,7 +2616,7 @@ struct GTY(()) lang_type {
 
 /* True iff NODE is the CLASSTYPE_AS_BASE version of some type.  */
 #define IS_FAKE_BASE_TYPE(NODE)					\
-  (TREE_CODE (NODE) == RECORD_TYPE				\
+  (RECORD_OR_UNION_TYPE_P (NODE)				\
    && TYPE_CONTEXT (NODE) && CLASS_TYPE_P (TYPE_CONTEXT (NODE))	\
    && CLASSTYPE_AS_BASE (TYPE_CONTEXT (NODE)) == (NODE))
 
