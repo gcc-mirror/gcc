@@ -93,123 +93,15 @@ template <typename _Tp, size_t _ToN = 0, typename _Up, size_t _M,
   }
 
 // }}}
-// __shift_elements_right{{{
-// if (__shift % 2ⁿ == 0) => the low n Bytes are correct
-template <unsigned __shift, typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-  _GLIBCXX_SIMD_INTRINSIC _Tp
-  __shift_elements_right(_Tp __v)
-  {
-    [[maybe_unused]] const auto __iv = __to_intrin(__v);
-    static_assert(__shift <= sizeof(_Tp));
-    if constexpr (__shift == 0)
-      return __v;
-    else if constexpr (__shift == sizeof(_Tp))
-      return _Tp();
-#if _GLIBCXX_SIMD_X86INTRIN // {{{
-    else if constexpr (__have_sse && __shift == 8
-		       && _TVT::template _S_is<float, 4>)
-      return _mm_movehl_ps(__iv, __iv);
-    else if constexpr (__have_sse2 && __shift == 8
-		       && _TVT::template _S_is<double, 2>)
-      return _mm_unpackhi_pd(__iv, __iv);
-    else if constexpr (__have_sse2 && sizeof(_Tp) == 16)
-      return reinterpret_cast<typename _TVT::type>(
-	_mm_srli_si128(reinterpret_cast<__m128i>(__iv), __shift));
-    else if constexpr (__shift == 16 && sizeof(_Tp) == 32)
-      {
-	/*if constexpr (__have_avx && _TVT::template _S_is<double, 4>)
-	  return _mm256_permute2f128_pd(__iv, __iv, 0x81);
-	else if constexpr (__have_avx && _TVT::template _S_is<float, 8>)
-	  return _mm256_permute2f128_ps(__iv, __iv, 0x81);
-	else if constexpr (__have_avx)
-	  return reinterpret_cast<typename _TVT::type>(
-	    _mm256_permute2f128_si256(__iv, __iv, 0x81));
-	else*/
-	return __zero_extend(__hi128(__v));
-      }
-    else if constexpr (__have_avx2 && sizeof(_Tp) == 32 && __shift < 16)
-      {
-	const auto __vll = __vector_bitcast<_LLong>(__v);
-	return reinterpret_cast<typename _TVT::type>(
-	  _mm256_alignr_epi8(_mm256_permute2x128_si256(__vll, __vll, 0x81),
-			     __vll, __shift));
-      }
-    else if constexpr (__have_avx && sizeof(_Tp) == 32 && __shift < 16)
-      {
-	const auto __vll = __vector_bitcast<_LLong>(__v);
-	return reinterpret_cast<typename _TVT::type>(
-	  __concat(_mm_alignr_epi8(__hi128(__vll), __lo128(__vll), __shift),
-		   _mm_srli_si128(__hi128(__vll), __shift)));
-      }
-    else if constexpr (sizeof(_Tp) == 32 && __shift > 16)
-      return __zero_extend(__shift_elements_right<__shift - 16>(__hi128(__v)));
-    else if constexpr (sizeof(_Tp) == 64 && __shift == 32)
-      return __zero_extend(__hi256(__v));
-    else if constexpr (__have_avx512f && sizeof(_Tp) == 64)
-      {
-	if constexpr (__shift >= 48)
-	  return __zero_extend(
-	    __shift_elements_right<__shift - 48>(__extract<3, 4>(__v)));
-	else if constexpr (__shift >= 32)
-	  return __zero_extend(
-	    __shift_elements_right<__shift - 32>(__hi256(__v)));
-	else if constexpr (__shift % 8 == 0)
-	  return reinterpret_cast<typename _TVT::type>(
-	    _mm512_alignr_epi64(__m512i(), __intrin_bitcast<__m512i>(__v),
-				__shift / 8));
-	else if constexpr (__shift % 4 == 0)
-	  return reinterpret_cast<typename _TVT::type>(
-	    _mm512_alignr_epi32(__m512i(), __intrin_bitcast<__m512i>(__v),
-				__shift / 4));
-	else if constexpr (__have_avx512bw && __shift < 16)
-	  {
-	    const auto __vll = __vector_bitcast<_LLong>(__v);
-	    return reinterpret_cast<typename _TVT::type>(
-	      _mm512_alignr_epi8(_mm512_shuffle_i32x4(__vll, __vll, 0xf9),
-				 __vll, __shift));
-	  }
-	else if constexpr (__have_avx512bw && __shift < 32)
-	  {
-	    const auto __vll = __vector_bitcast<_LLong>(__v);
-	    return reinterpret_cast<typename _TVT::type>(
-	      _mm512_alignr_epi8(_mm512_shuffle_i32x4(__vll, __m512i(), 0xee),
-				 _mm512_shuffle_i32x4(__vll, __vll, 0xf9),
-				 __shift - 16));
-	  }
-	else
-	  __assert_unreachable<_Tp>();
-      }
-  /*
-      } else if constexpr (__shift % 16 == 0 && sizeof(_Tp) == 64)
-	  return __auto_bitcast(__extract<__shift / 16, 4>(__v));
-  */
-#endif // _GLIBCXX_SIMD_X86INTRIN }}}
-    else
-      {
-	constexpr int __chunksize = __shift % 8 == 0   ? 8
-				    : __shift % 4 == 0 ? 4
-				    : __shift % 2 == 0 ? 2
-						       : 1;
-	auto __w = __vector_bitcast<__int_with_sizeof_t<__chunksize>>(__v);
-	using _Up = decltype(__w);
-	return __intrin_bitcast<_Tp>(
-	  __call_with_n_evaluations<(sizeof(_Tp) - __shift) / __chunksize>(
-	    [](auto... __chunks) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
-	      return _Up{__chunks...};
-	    }, [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
-	      return __w[__shift / __chunksize + __i];
-	    }));
-      }
-  }
-
-// }}}
 // __extract_part(_SimdWrapper<_Tp, _Np>) {{{
 template <int _Index, int _Total, int _Combine, typename _Tp, size_t _Np>
   _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_CONST constexpr
-  _SimdWrapper<_Tp, _Np / _Total * _Combine>
+  conditional_t<_Np == _Total and _Combine == 1, _Tp, _SimdWrapper<_Tp, _Np / _Total * _Combine>>
   __extract_part(const _SimdWrapper<_Tp, _Np> __x)
   {
-    if constexpr (_Index % 2 == 0 && _Total % 2 == 0 && _Combine % 2 == 0)
+    if constexpr (_Np == _Total and _Combine == 1)
+      return __x[_Index];
+    else if constexpr (_Index % 2 == 0 && _Total % 2 == 0 && _Combine % 2 == 0)
       return __extract_part<_Index / 2, _Total / 2, _Combine / 2>(__x);
     else
       {
@@ -235,39 +127,11 @@ template <int _Index, int _Total, int _Combine, typename _Tp, size_t _Np>
 	  return __x;
 	else if constexpr (_Index == 0)
 	  return __intrin_bitcast<_R>(__as_vector(__x));
-#if _GLIBCXX_SIMD_X86INTRIN // {{{
-	else if constexpr (sizeof(__x) == 32
-			   && __return_size * sizeof(_Tp) <= 16)
-	  {
-	    constexpr size_t __bytes_to_skip = __values_to_skip * sizeof(_Tp);
-	    if constexpr (__bytes_to_skip == 16)
-	      return __vector_bitcast<_Tp, __return_size>(
-		__hi128(__as_vector(__x)));
-	    else
-	      return __vector_bitcast<_Tp, __return_size>(
-		_mm_alignr_epi8(__hi128(__vector_bitcast<_LLong>(__x)),
-				__lo128(__vector_bitcast<_LLong>(__x)),
-				__bytes_to_skip));
-	  }
-#endif // _GLIBCXX_SIMD_X86INTRIN }}}
-	else if constexpr (_Index > 0
-			   && (__values_to_skip % __return_size != 0
-			       || sizeof(_R) >= 8)
-			   && (__values_to_skip + __return_size) * sizeof(_Tp)
-				<= 64
-			   && sizeof(__x) >= 16)
-	  return __intrin_bitcast<_R>(
-	    __shift_elements_right<__values_to_skip * sizeof(_Tp)>(
-	      __as_vector(__x)));
 	else
-	  {
-	    _R __r = {};
-	    __builtin_memcpy(&__r,
-			     reinterpret_cast<const char*>(&__x)
-			       + sizeof(_Tp) * __values_to_skip,
-			     __return_size * sizeof(_Tp));
-	    return __r;
-	  }
+	  return __vec_shuffle(__as_vector(__x), make_index_sequence<__bit_ceil(__return_size)>(),
+			       [](size_t __i) {
+				 return __i + __values_to_skip;
+			       });
       }
   }
 
