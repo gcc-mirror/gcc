@@ -1651,7 +1651,24 @@ template <typename _V>
     if constexpr (__is_vector_type_v<_V>)
       return __x;
     else if constexpr (is_simd<_V>::value || is_simd_mask<_V>::value)
-      return __data(__x)._M_data;
+      {
+	if constexpr (__is_fixed_size_abi_v<typename _V::abi_type>)
+	  {
+	    static_assert(is_simd<_V>::value);
+	    static_assert(_V::abi_type::template __traits<
+			    typename _V::value_type>::_SimdMember::_S_tuple_size == 1);
+	    return __as_vector(__data(__x).first);
+	  }
+	else if constexpr (_V::size() > 1)
+	  return __data(__x)._M_data;
+	else
+	  {
+	    static_assert(is_simd<_V>::value);
+	    using _Tp = typename _V::value_type;
+	    using _RV [[__gnu__::__vector_size__(sizeof(_Tp))]] = _Tp;
+	    return _RV{__data(__x)};
+	  }
+      }
     else if constexpr (__is_vectorizable_v<_V>)
       return __vector_type_t<_V, 2>{__x};
     else
@@ -2060,6 +2077,60 @@ template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
     else
       return ~__a;
   }
+
+// }}}
+// __vec_shuffle{{{
+template <typename _T0, typename _T1, typename _Fun, size_t... _Is>
+  _GLIBCXX_SIMD_INTRINSIC constexpr auto
+  __vec_shuffle(_T0 __x, _T1 __y, index_sequence<_Is...> __seq, _Fun __idx_perm)
+  {
+    constexpr int _N0 = sizeof(__x) / sizeof(__x[0]);
+    constexpr int _N1 = sizeof(__y) / sizeof(__y[0]);
+#if __has_builtin(__builtin_shufflevector)
+#ifdef __clang__
+    // Clang requires _T0 == _T1
+    if constexpr (sizeof(__x) > sizeof(__y) and _N1 == 1)
+      return __vec_shuffle(__x, _T0{__y[0]}, __seq, __idx_perm);
+    else if constexpr (sizeof(__x) > sizeof(__y))
+      return __vec_shuffle(__x, __intrin_bitcast<_T0>(__y), __seq, __idx_perm);
+    else if constexpr (sizeof(__x) < sizeof(__y) and _N0 == 1)
+      return __vec_shuffle(_T1{__x[0]}, __y, __seq, [=](int __i) {
+	       __i = __idx_perm(__i);
+	       return __i < _N0 ? __i : __i - _N0 + _N1;
+	     });
+    else if constexpr (sizeof(__x) < sizeof(__y))
+      return __vec_shuffle(__intrin_bitcast<_T1>(__x), __y, __seq, [=](int __i) {
+	       __i = __idx_perm(__i);
+	       return __i < _N0 ? __i : __i - _N0 + _N1;
+	     });
+    else
+#endif
+      return __builtin_shufflevector(__x, __y, [=] {
+	       constexpr int __j = __idx_perm(_Is);
+	       static_assert(__j < _N0 + _N1);
+	       return __j;
+	     }()...);
+#else
+    using _Tp = __remove_cvref_t<decltype(__x[0])>;
+    return __vector_type_t<_Tp, sizeof...(_Is)> {
+      [=]() -> _Tp {
+	constexpr int __j = __idx_perm(_Is);
+	static_assert(__j < _N0 + _N1);
+	if constexpr (__j < 0)
+	  return 0;
+	else if constexpr (__j < _N0)
+	  return __x[__j];
+	else
+	  return __y[__j - _N0];
+      }()...
+    };
+#endif
+  }
+
+template <typename _T0, typename _Fun, typename _Seq>
+  _GLIBCXX_SIMD_INTRINSIC constexpr auto
+  __vec_shuffle(_T0 __x, _Seq __seq, _Fun __idx_perm)
+  { return __vec_shuffle(__x, _T0(), __seq, __idx_perm); }
 
 // }}}
 // __concat{{{
@@ -3947,7 +4018,7 @@ template <size_t... _Sizes, typename _Tp, typename _Ap,
 // __extract_part {{{
 template <int _Index, int _Total, int _Combine = 1, typename _Tp, size_t _Np>
   _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_CONST constexpr
-  _SimdWrapper<_Tp, _Np / _Total * _Combine>
+  conditional_t<_Np == _Total and _Combine == 1, _Tp, _SimdWrapper<_Tp, _Np / _Total * _Combine>>
   __extract_part(const _SimdWrapper<_Tp, _Np> __x);
 
 template <int _Index, int _Parts, int _Combine = 1, typename _Tp, typename _A0, typename... _As>
@@ -4231,48 +4302,21 @@ template <size_t... _Sizes, typename _Tp, typename _Ap, typename>
 			 __split_wrapper(_SL::template _S_pop_front<1>(),
 					 __data(__x).second));
       }
-    else if constexpr ((!is_same_v<simd_abi::scalar,
-				   simd_abi::deduce_t<_Tp, _Sizes>> && ...)
-		       && (!__is_fixed_size_abi_v<
-			     simd_abi::deduce_t<_Tp, _Sizes>> && ...))
+    else if constexpr ((!__is_fixed_size_abi_v<simd_abi::deduce_t<_Tp, _Sizes>> && ...))
       {
-	if constexpr (((_Sizes * 2 == _Np) && ...))
-	  return {{__private_init, __extract_part<0, 2>(__data(__x))},
-		  {__private_init, __extract_part<1, 2>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 3, _Np / 3, _Np / 3>>)
-	  return {{__private_init, __extract_part<0, 3>(__data(__x))},
-		  {__private_init, __extract_part<1, 3>(__data(__x))},
-		  {__private_init, __extract_part<2, 3>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<2 * _Np / 3, _Np / 3>>)
-	  return {{__private_init, __extract_part<0, 3, 2>(__data(__x))},
-		  {__private_init, __extract_part<2, 3>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 3, 2 * _Np / 3>>)
-	  return {{__private_init, __extract_part<0, 3>(__data(__x))},
-		  {__private_init, __extract_part<1, 3, 2>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 2, _Np / 4, _Np / 4>>)
-	  return {{__private_init, __extract_part<0, 2>(__data(__x))},
-		  {__private_init, __extract_part<2, 4>(__data(__x))},
-		  {__private_init, __extract_part<3, 4>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 4, _Np / 4, _Np / 2>>)
-	  return {{__private_init, __extract_part<0, 4>(__data(__x))},
-		  {__private_init, __extract_part<1, 4>(__data(__x))},
-		  {__private_init, __extract_part<1, 2>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 4, _Np / 2, _Np / 4>>)
-	  return {{__private_init, __extract_part<0, 4>(__data(__x))},
-		  {__private_init, __extract_center(__data(__x))},
-		  {__private_init, __extract_part<3, 4>(__data(__x))}};
-	else if constexpr (((_Sizes * 4 == _Np) && ...))
-	  return {{__private_init, __extract_part<0, 4>(__data(__x))},
-		  {__private_init, __extract_part<1, 4>(__data(__x))},
-		  {__private_init, __extract_part<2, 4>(__data(__x))},
-		  {__private_init, __extract_part<3, 4>(__data(__x))}};
-	// else fall through
+	constexpr array<size_t, sizeof...(_Sizes)> __size = {_Sizes...};
+	return __generate_from_n_evaluations<sizeof...(_Sizes), _Tuple>(
+		 [&](auto __i) constexpr {
+		   constexpr size_t __offset = [&]() {
+		     size_t __r = 0;
+		     for (unsigned __j = 0; __j < __i; ++__j)
+		       __r += __size[__j];
+		     return __r;
+		   }();
+		   return __deduced_simd<_Tp, __size[__i]>(
+			    __private_init,
+			    __extract_part<__offset, _Np, __size[__i]>(__data(__x)));
+		 });
       }
 #ifdef _GLIBCXX_SIMD_USE_ALIASING_LOADS
     const __may_alias<_Tp>* const __element_ptr
@@ -4334,14 +4378,37 @@ template <typename _Tp, typename... _As, typename = __detail::__odr_helper>
   simd<_Tp, simd_abi::deduce_t<_Tp, (simd_size_v<_Tp, _As> + ...)>>
   concat(const simd<_Tp, _As>&... __xs)
   {
-    using _Rp = __deduced_simd<_Tp, (simd_size_v<_Tp, _As> + ...)>;
+    constexpr int _Np = (simd_size_v<_Tp, _As> + ...);
+    using _Abi = simd_abi::deduce_t<_Tp, _Np>;
+    using _Rp = simd<_Tp, _Abi>;
+    using _RW = typename _SimdTraits<_Tp, _Abi>::_SimdMember;
     if constexpr (sizeof...(__xs) == 1)
       return simd_cast<_Rp>(__xs...);
     else if ((... && __xs._M_is_constprop()))
-      return simd<_Tp,
-		  simd_abi::deduce_t<_Tp, (simd_size_v<_Tp, _As> + ...)>>(
-	       [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
+      return _Rp([&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
 	       { return __subscript_in_pack<__i>(__xs...); });
+    else if constexpr (__is_simd_wrapper_v<_RW> and sizeof...(__xs) == 2)
+      {
+	return {__private_init,
+		__vec_shuffle(__as_vector(__xs)..., std::make_index_sequence<_RW::_S_full_size>(),
+			      [](int __i) {
+				constexpr int __sizes[2] = {int(simd_size_v<_Tp, _As>)...};
+				constexpr int __padding0
+				  = sizeof(__vector_type_t<_Tp, __sizes[0]>) / sizeof(_Tp)
+				      - __sizes[0];
+				return __i >= _Np ? -1 : __i < __sizes[0] ? __i : __i + __padding0;
+			      })};
+      }
+    else if constexpr (__is_simd_wrapper_v<_RW> and sizeof...(__xs) == 3)
+      return [](const auto& __x0, const auto& __x1, const auto& __x2)
+		 _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	       return concat(concat(__x0, __x1), __x2);
+	     }(__xs...);
+    else if constexpr (__is_simd_wrapper_v<_RW> and sizeof...(__xs) > 3)
+      return [](const auto& __x0, const auto& __x1, const auto&... __rest)
+		 _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	       return concat(concat(__x0, __x1), concat(__rest...));
+	     }(__xs...);
     else
       {
 	_Rp __r{};
