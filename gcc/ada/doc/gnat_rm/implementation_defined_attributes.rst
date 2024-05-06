@@ -565,12 +565,6 @@ uninitialized value of the type if pragma Initialize_Scalars is used,
 including the ability to modify the value with the binder -Sxx flag and
 relevant environment variables at run time.
 
-Attribute Iterable
-==================
-.. index:: Iterable
-
-Equivalent to Aspect Iterable.
-
 Attribute Large
 ===============
 .. index:: Ada 83 attributes
