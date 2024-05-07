@@ -288,6 +288,7 @@ struct riscv_tune_param
   unsigned short fmv_cost;
   bool slow_unaligned_access;
   bool use_divmod_expansion;
+  bool overlap_op_by_pieces;
   unsigned int fusible_ops;
   const struct cpu_vector_cost *vec_costs;
 };
@@ -427,6 +428,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   8,						/* fmv_cost */
   true,						/* slow_unaligned_access */
   false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
 };
@@ -444,6 +446,7 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   8,						/* fmv_cost */
   true,						/* slow_unaligned_access */
   false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
 };
@@ -461,6 +464,7 @@ static const struct riscv_tune_param sifive_p400_tune_info = {
   4,						/* fmv_cost */
   true,						/* slow_unaligned_access */
   false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
   RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
 };
@@ -478,6 +482,7 @@ static const struct riscv_tune_param sifive_p600_tune_info = {
   4,						/* fmv_cost */
   true,						/* slow_unaligned_access */
   false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
   RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI,  /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
 };
@@ -495,6 +500,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   8,		/* fmv_cost */
   false,            /* slow_unaligned_access */
   false,	/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
 };
@@ -512,6 +518,7 @@ static const struct riscv_tune_param xiangshan_nanhu_tune_info = {
   3,						/* fmv_cost */
   true,						/* slow_unaligned_access */
   false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
   RISCV_FUSE_ZEXTW | RISCV_FUSE_ZEXTH,          /* fusible_ops */
   NULL,						/* vector cost */
 };
@@ -529,6 +536,7 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   4,						/* fmv_cost */
   false,					/* slow_unaligned_access */
   false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
 };
@@ -546,6 +554,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   8,						/* fmv_cost */
   false,					/* slow_unaligned_access */
   false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   NULL,						/* vector cost */
 };
@@ -9979,6 +9988,12 @@ riscv_slow_unaligned_access (machine_mode, unsigned int)
   return riscv_slow_unaligned_access_p;
 }
 
+static bool
+riscv_overlap_op_by_pieces (void)
+{
+  return tune_param->overlap_op_by_pieces;
+}
+
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
 static bool
@@ -11419,6 +11434,9 @@ riscv_get_raw_result_mode (int regno)
 
 #undef TARGET_SLOW_UNALIGNED_ACCESS
 #define TARGET_SLOW_UNALIGNED_ACCESS riscv_slow_unaligned_access
+
+#undef TARGET_OVERLAP_OP_BY_PIECES_P
+#define TARGET_OVERLAP_OP_BY_PIECES_P riscv_overlap_op_by_pieces
 
 #undef TARGET_SECONDARY_MEMORY_NEEDED
 #define TARGET_SECONDARY_MEMORY_NEEDED riscv_secondary_memory_needed
