@@ -12693,6 +12693,22 @@ instantiate_class_template (tree type)
 					tf_warning_or_error, NULL_TREE);
 		  --processing_template_decl;
 		}
+	      else if (PACK_EXPANSION_P (friend_type))
+		{
+		  friend_type = tsubst_pack_expansion (friend_type, args,
+						       tf_warning_or_error,
+						       NULL_TREE);
+		  if (friend_type != error_mark_node)
+		    {
+		      unsigned int len = TREE_VEC_LENGTH (friend_type);
+		      for (unsigned int idx = 0; idx < len; ++idx)
+			if (TREE_VEC_ELT (friend_type, idx) != error_mark_node)
+			  make_friend_class (type,
+					     TREE_VEC_ELT (friend_type, idx),
+					     /*complain=*/false);
+		    }
+		  friend_type = error_mark_node;
+		}
 	      else if (uses_template_parms (friend_type))
 		/* friend class C<T>;  */
 		friend_type = tsubst (friend_type, args,
