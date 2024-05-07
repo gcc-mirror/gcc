@@ -18,7 +18,7 @@ foo (void)
 {
   int i;
   for (i = 0; i < sizeof (array) / sizeof (array[0]); i++)
-    array[i] = MK_CONST128_BROADCAST (0x1fff);
+    array[i] = MK_CONST128_BROADCAST (0x1234);
 }
 
 /* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%xmm\[0-9\]+, %xmm\[0-9\]+" 1 } } */

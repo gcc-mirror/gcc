@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=skylake-avx512 -O2" } */
-/* { dg-final { scan-assembler-times "cmp" 2 } } */
+/* { dg-final { scan-assembler-times "cmp\[dq\]" 2 } } */
 /* { dg-final { scan-assembler-not "and" } } */
 
 typedef long vec __attribute__((vector_size(16)));

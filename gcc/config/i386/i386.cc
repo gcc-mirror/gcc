@@ -22134,6 +22134,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	*total = cost->fabs;
       else if (FLOAT_MODE_P (mode))
 	*total = ix86_vec_cost (mode, cost->sse_op);
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+	*total = cost->sse_op;
       return false;
 
     case SQRT:

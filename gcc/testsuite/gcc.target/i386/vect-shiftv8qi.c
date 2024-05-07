@@ -28,7 +28,7 @@ __vu srl_c (__vu a)
   return a >> 5;
 }
 
-/* { dg-final { scan-assembler-times "psrlw" 2 } } */
+/* { dg-final { scan-assembler-times "psrlw" 5 } } */
 
 __vi sra (__vi a, int n)
 {
