@@ -536,7 +536,7 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   4,						/* fmv_cost */
   false,					/* slow_unaligned_access */
   false,					/* use_divmod_expansion */
-  false,					/* overlap_op_by_pieces */
+  true,						/* overlap_op_by_pieces */
   RISCV_FUSE_NOTHING,                           /* fusible_ops */
   &generic_vector_cost,				/* vector cost */
 };
