@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "symtab-thunks.h"
 #include "symtab-clones.h"
+#include "asan.h"
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
@@ -2198,13 +2199,26 @@ copy_bb (copy_body_data *id, basic_block bb,
 	    }
 	  else if (call_stmt
 		   && id->call_stmt
-		   && gimple_call_internal_p (stmt)
-		   && gimple_call_internal_fn (stmt) == IFN_TSAN_FUNC_EXIT)
-	    {
-	      /* Drop TSAN_FUNC_EXIT () internal calls during inlining.  */
-	      gsi_remove (&copy_gsi, false);
-	      continue;
-	    }
+		   && gimple_call_internal_p (stmt))
+	    switch (gimple_call_internal_fn (stmt))
+	      {
+	      case IFN_TSAN_FUNC_EXIT:
+		/* Drop .TSAN_FUNC_EXIT () internal calls during inlining.  */
+		gsi_remove (&copy_gsi, false);
+		continue;
+	      case IFN_ASAN_MARK:
+		/* Drop .ASAN_MARK internal calls during inlining into
+		   no_sanitize functions.  */
+		if (!sanitize_flags_p (SANITIZE_ADDRESS, id->dst_fn)
+		    && !sanitize_flags_p (SANITIZE_HWADDRESS, id->dst_fn))
+		  {
+		    gsi_remove (&copy_gsi, false);
+		    continue;
+		  }
+		break;
+	      default:
+		break;
+	      }
 
 	  /* Statements produced by inlining can be unfolded, especially
 	     when we constant propagated some operands.  We can't fold
