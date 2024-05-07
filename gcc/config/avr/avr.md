@@ -8527,6 +8527,19 @@
     operands[2] = gen_reg_rtx (HImode);
   })
 
+(define_insn_and_split "*popcounthi2.split8"
+  [(set (reg:HI 24)
+        (zero_extend:HI (popcount:QI (match_operand:QI 0 "register_operand"))))]
+  "! reload_completed"
+  { gcc_unreachable(); }
+  "&& 1"
+  [(set (reg:QI 24)
+        (match_dup 0))
+   (set (reg:QI 24)
+        (popcount:QI (reg:QI 24)))
+   (set (reg:QI 25)
+        (const_int 0))])
+
 (define_insn_and_split "*popcounthi2.libgcc_split"
   [(set (reg:HI 24)
         (popcount:HI (reg:HI 24)))]
