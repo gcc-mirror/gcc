@@ -8,6 +8,26 @@ RTS##_##RT##_ext_##CTS##_##CT##_rshift_##N##_##ATS##_##AT(ATS AT v)	\
     return (CTS CT)(v >> N);						\
 }
 
+#define SLONG_EXT_SCHAR_RSHIFT_N_SLONG(N) \
+	RT_EXT_CT_RSHIFT_N_AT(signed,long,signed,char,N,signed,long)
+
+#define SLONG_EXT_SSHORT_RSHIFT_N_SLONG(N) \
+	RT_EXT_CT_RSHIFT_N_AT(signed,long,signed,short,N,signed,long)
+
+#define SLONG_EXT_SINT_RSHIFT_N_SLONG(N) \
+	RT_EXT_CT_RSHIFT_N_AT(signed,long,signed,int,N,signed,long)
+
+#define SINT_EXT_SSHORT_RSHIFT_N_SINT(N) \
+	RT_EXT_CT_RSHIFT_N_AT(signed,int,signed,short,N,signed,int)
+
+#define SINT_EXT_SSHORT_RSHIFT_N_SLONG(N) \
+	RT_EXT_CT_RSHIFT_N_AT(signed,int,signed,short,N,signed,long)
+
+#define SLONG_EXT_SSHORT_RSHIFT_N_SINT(N) \
+	RT_EXT_CT_RSHIFT_N_AT(signed,long,signed,short,N,signed,int)
+
+
+
 #define ULONG_EXT_USHORT_RSHIFT_N_ULONG(N) \
 	RT_EXT_CT_RSHIFT_N_AT(unsigned,long,unsigned,short,N,unsigned,long)
 
