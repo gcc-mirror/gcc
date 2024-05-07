@@ -1,3 +1,25 @@
+2024-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/106999
+	* gfortran.dg/pr106999.f90: New test.
+
+2024-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114739
+	* gfortran.dg/pr114739.f90: New test.
+	* gfortran.dg/derived_comp_array_ref_8.f90: Add 'implicit none'
+	for consistency with expected error message.
+	* gfortran.dg/nullify_4.f90: ditto
+	* gfortran.dg/pointer_init_6.f90: ditto
+	* gfortran.dg/pr107397.f90: ditto
+	* gfortran.dg/pr88138.f90: ditto
+
 2024-05-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
