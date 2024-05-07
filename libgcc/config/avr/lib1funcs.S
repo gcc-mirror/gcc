@@ -3050,21 +3050,21 @@ ENDF __popcountdi2
 ;; r24 = popcount8 (r24)
 ;; clobbers: __tmp_reg__
 DEFUN __popcountqi2
-    mov  __tmp_reg__, r24
-    andi r24, 1
-    lsr  __tmp_reg__
-    lsr  __tmp_reg__
-    adc  r24, __zero_reg__
-    lsr  __tmp_reg__
-    adc  r24, __zero_reg__
-    lsr  __tmp_reg__
-    adc  r24, __zero_reg__
-    lsr  __tmp_reg__
-    adc  r24, __zero_reg__
-    lsr  __tmp_reg__
-    adc  r24, __zero_reg__
-    lsr  __tmp_reg__
-    adc  r24, __tmp_reg__
+    mov  __tmp_reg__, r24    ; oeoeoeoe
+    andi r24, 0xAA           ; o0o0o0o0
+    lsr  r24                 ; 0o0o0o0o
+    ;; Four values 0, 1 or 2: # bits set o+e
+    sub  __tmp_reg__, r24    ; 44332211
+    mov  r24, __tmp_reg__    ; 44332211
+    andi r24, 0x33           ; 00330011
+    eor  __tmp_reg__, r24    ; 44002200
+    lsr  __tmp_reg__         ; 04400220
+    lsr  __tmp_reg__         ; 00440022
+    add  r24, __tmp_reg__    ; 04210421
+    mov  __tmp_reg__, r24    ; h421l421
+    swap __tmp_reg__         ; l421h421
+    add  r24, __tmp_reg__    ; 84218421
+    andi r24, 0xf            ; 00008421 /17
     ret
 ENDF __popcountqi2
 #endif /* defined (L_popcountqi2) */
