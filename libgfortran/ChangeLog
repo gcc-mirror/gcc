@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-04-12  Ian McInerney  <i.mcinerney17@imperial.ac.uk>
 
 	* runtime/error.c (gf_vsnprintf): Fix compilation

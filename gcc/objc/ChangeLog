@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* objc-next-runtime-abi-02.cc (build_v2_class_ro_t_initializer): Use

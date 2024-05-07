@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-04-26  Frederik Harwath  <frederik@harwath.name>
 
 	* plugin/plugin-gcn.c (isa_hsa_name): Handle EF_AMDGPU_MACH_AMDGCN_GFX90c.

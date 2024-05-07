@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-04-12  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	* region-model.cc (region_model::check_region_size): Bail out

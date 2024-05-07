@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* vtv_rts.cc (vtv_fail): Fix duplicated words; to to -> to.

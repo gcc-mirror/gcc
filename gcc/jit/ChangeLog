@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* docs/topics/expressions.rst (Constructor expressions): Fix

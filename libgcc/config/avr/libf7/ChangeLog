@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2023-11-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* libf7-const.def [F7MOD_sinh_]: Add MiniMax polynomial.

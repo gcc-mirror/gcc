@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (AC_CHECK_DECLS): Check for gets.

@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
 
 	* libproc_macro_internal/proc_macro.h (enum ProcmacroTag): Add

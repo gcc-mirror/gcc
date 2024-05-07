@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-04-17  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR preprocessor/114748

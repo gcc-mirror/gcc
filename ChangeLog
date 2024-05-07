@@ -1,3 +1,7 @@
+2024-05-07  Release Manager
+
+	* GCC 14.1.0 released.
+
 2024-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* configure.ac (have_cargo): Force to "no" in Canadian cross
