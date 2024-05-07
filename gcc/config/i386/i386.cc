@@ -5976,12 +5976,10 @@ ix86_setup_frame_addresses (void)
   cfun->machine->accesses_prev_frame = 1;
 }
 
-#ifndef USE_HIDDEN_LINKONCE
-# if defined(HAVE_GAS_HIDDEN) && (SUPPORTS_ONE_ONLY - 0)
-#  define USE_HIDDEN_LINKONCE 1
-# else
-#  define USE_HIDDEN_LINKONCE 0
-# endif
+#if defined(HAVE_GAS_HIDDEN) && (SUPPORTS_ONE_ONLY - 0)
+# define USE_HIDDEN_LINKONCE 1
+#else
+# define USE_HIDDEN_LINKONCE 0
 #endif
 
 /* Label count for call and return thunks.  It is used to make unique

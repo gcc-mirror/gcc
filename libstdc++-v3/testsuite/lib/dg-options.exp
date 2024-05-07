@@ -296,11 +296,7 @@ proc add_options_for_no_pch { flags } {
 # Add to FLAGS all the target-specific flags needed for networking.
 
 proc add_options_for_net_ts { flags } {
-    # Before they were integrated into libc in Solaris 11.4, Solaris needs
-    # libsocket and libnsl for networking applications.
-    if { [istarget *-*-solaris2*] } {
-	return "$flags -lsocket -lnsl"
-    } elseif { [istarget *-*-rtems*] } {
+    if { [istarget *-*-rtems*] } {
 	return "$flags -lbsd -Wl,--gc-sections"
     }
     return $flags

@@ -4293,7 +4293,7 @@ found on @uref{https://www.bitwizard.nl/sig11/,,www.bitwizard.nl}.
 @end html
 @anchor{ix86-x-solaris2}
 @heading i?86-*-solaris2*
-Use this for Solaris 11.3 or later on x86 and x86-64 systems.  Starting
+Use this for Solaris 11.4 on x86 and x86-64 systems.  Starting
 with GCC 4.7, there is also a 64-bit @samp{amd64-*-solaris2*} or
 @samp{x86_64-*-solaris2*} configuration that corresponds to
 @samp{sparcv9-sun-solaris2*}.
@@ -4895,15 +4895,12 @@ supported as cross-compilation target only.
 @end html
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
-Support for Solaris 11.3 and earlier has been obsoleted in GCC 13, but
-can still be enabled by configuring with @option{--enable-obsolete}.
+Support for Solaris 11.3 and earlier has been removed in GCC 15.
 Support for Solaris 10 has been removed in GCC 10.  Support for Solaris
 9 has been removed in GCC 5.  Support for Solaris 8 has been removed in
 GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
 
-Solaris 11.3 provides GCC 4.5.2, 4.7.3, and 4.8.2 as
-@command{/usr/gcc/4.5/bin/gcc} or similar.  Solaris 11.4
-provides one or more of GCC 5, 7, 9, 10, 11, and 12.
+Solaris 11.4 provides one or more of GCC 5, 7, 9, 10, 11, 12, and 13.
 
 You need to install the @code{system/header}, @code{system/linker}, and
 @code{developer/assembler} packages.
@@ -4922,18 +4919,18 @@ of the build.
 We recommend the use of the Solaris assembler or the GNU assembler, in
 conjunction with the Solaris linker.
 
-The GNU @command{as} versions included in Solaris 11.3, from GNU
-binutils 2.23.1 or newer (in @file{/usr/bin/gas} and
+The GNU @command{as} versions included in Solaris 11.4, from GNU
+binutils 2.30.1 or newer (in @file{/usr/bin/gas} and
 @file{/usr/gnu/bin/as}), are known to work.  The version from GNU
-binutils 2.40 is known to work as well.  Recent versions of the Solaris
+binutils 2.42 is known to work as well.  Recent versions of the Solaris
 assembler in @file{/usr/bin/as} work almost as well, though.  To use GNU
 @command{as}, configure with the options @option{--with-gnu-as
 --with-as=@//usr/@/gnu/@/bin/@/as}.
 
 For linking, the Solaris linker is preferred.  If you want to use the
-GNU linker instead, the version in Solaris 11.3, from GNU binutils
-2.23.1 or newer (in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}),
-works, as does the version from GNU binutils 2.40.  However, it
+GNU linker instead, the version in Solaris 11.4, from GNU binutils
+2.30.1 or newer (in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}),
+works, as does the version from GNU binutils 2.42.  However, it
 generally lacks platform specific features, so better stay with Solaris
 @command{ld}.  To use the LTO linker plugin
 (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU binutils
@@ -4957,7 +4954,7 @@ will be disabled if no appropriate version is found.  Solaris
 work.
 
 In order to build the GNU Ada compiler, GNAT, a working GNAT is needed.
-Since Solaris 11.4 SRU 39, GNAT 11 or 12 is bundled in the
+Since Solaris 11.4 SRU 39, GNAT 11, 12 or 13 is bundled in the
 @code{developer/gcc/gcc-gnat} package.
 
 In order to build the GNU D compiler, GDC, a working @samp{libphobos} is
@@ -4967,20 +4964,8 @@ configuring with @option{--enable-libphobos}.  Also, GDC 9.4.0 is
 required on x86, while GDC 9.3.0 is known to work on SPARC.
 
 The versions of the GNU Multiple Precision Library (GMP), the MPFR
-library and the MPC library bundled with Solaris 11.3 and later are
-usually recent enough to match GCC's requirements.  There are two
-caveats:
-
-@itemize @bullet
-@item
-While the version of the GMP library in Solaris 11.3 works with GCC, you
-need to configure with @option{--with-gmp-include=/usr/include/gmp}.
-
-@item
-The version of the MPFR libary included in Solaris 11.3 is too old; you
-need to provide a more recent one.
-
-@end itemize
+library and the MPC library bundled with Solaris 11.4 are
+recent enough to match GCC's requirements.
 
 @html
 <hr />

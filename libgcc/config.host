@@ -345,24 +345,11 @@ case ${host} in
   # Add cpu-specific t-sol2 after t-slibgcc-* so it can augment SHLIB_MAPFILES.
   tmake_file="$tmake_file $cpu_type/t-sol2"
   extra_parts="gmon.o crtbegin.o crtend.o"
-  if test "${libgcc_cv_solaris_crts}" = yes; then
-    # Solaris 11.4 provides crt1.o, crti.o, and crtn.o as part of the
-    # base system.  crtp.o and crtpg.o implement the compiler-dependent parts.
-    extra_parts="$extra_parts crtp.o crtpg.o"
-    # If the Solaris CRTs are present, both ld and gld will have PIE support.
-    extra_parts="$extra_parts crtbeginS.o crtendS.o"
-  else
-    case ${host} in
-      i?86-*-solaris2* | x86_64-*-solaris2*)
-        # Solaris 10+/x86 provides crt1.o, crti.o, crtn.o, and gcrt1.o as
-        # part of the base system.
-        ;;
-      sparc*-*-solaris2*)
-        # Solaris 10+/SPARC lacks crt1.o and gcrt1.o.
-        extra_parts="$extra_parts crt1.o gcrt1.o"
-        ;;
-    esac
-  fi
+  # Solaris 11.4 provides crt1.o, crti.o, and crtn.o as part of the
+  # base system.  crtp.o and crtpg.o implement the compiler-dependent parts.
+  extra_parts="$extra_parts crtp.o crtpg.o"
+  # If the Solaris CRTs are present, both ld and gld will have PIE support.
+  extra_parts="$extra_parts crtbeginS.o crtendS.o"
   if test x$enable_vtable_verify = xyes; then
     extra_parts="$extra_parts vtv_start.o vtv_end.o vtv_start_preinit.o vtv_end_preinit.o"
   fi

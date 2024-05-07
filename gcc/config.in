@@ -1672,13 +1672,6 @@
 #endif
 
 
-/* Define 0/1 if your linker supports the SHF_MERGE flag with section
-   alignment > 1. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_LD_ALIGNED_SHF_MERGE
-#endif
-
-
 /* Define if your linker supports --as-needed/--no-as-needed or equivalent
    options. */
 #ifndef USED_FOR_TARGET
@@ -2557,12 +2550,6 @@
    DLL exports wrappers to support libstdc++ function replacement. */
 #ifndef USED_FOR_TARGET
 #undef USE_CYGWIN_LIBSTDCXX_WRAPPERS
-#endif
-
-
-/* Define 0/1 if your linker supports hidden thunks in linkonce sections. */
-#ifndef USED_FOR_TARGET
-#undef USE_HIDDEN_LINKONCE
 #endif
 
 

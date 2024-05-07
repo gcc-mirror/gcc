@@ -316,29 +316,6 @@ internal_mcount (char *selfpc, unsigned short *frompcindex)
 /* Only necessary without the Solaris CRTs or a proper gcrt1.o, otherwise
    crtpg.o or gcrt1.o take care of that.
 
-   FIXME: What about _init vs. _start on sparc?  */
-#ifndef HAVE_SOLARIS_CRTS
-  if(!already_setup) {
-    extern char etext[];
-
-    already_setup = 1;
-
-#if defined __i386__
-    /* <sys/vmparam.h> USERSTACK.  */
-    monstartup ((char *) 0x8048000, etext);
-#elif defined __x86_64__
-    monstartup (NULL, etext);
-#elif defined __sparc__
-    {
-      extern char _start[];
-      extern char _init[];
-
-      monstartup (_start < _init ? _start : _init, etext);
-    }
-#endif
-    atexit (_mcleanup);
-  }
-#endif /* !HAVE_SOLARIS_CRTS */
   /* Check that we are profiling and that we aren't recursively invoked.  */
   if (profiling) {
     goto out;
