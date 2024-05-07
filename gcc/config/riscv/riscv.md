@@ -2765,16 +2765,17 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
-;; Canonical form for a zero-extend of a logical right shift.
-(define_insn "*lshrsi3_zero_extend_2"
+;; Canonical form for a sign/zero-extend of a logical right shift.
+;; Special case: extract MSB bits of lower 32-bit word
+(define_insn "*lshrsi3_extend_2"
   [(set (match_operand:DI                   0 "register_operand" "=r")
-	(zero_extract:DI (match_operand:DI  1 "register_operand" " r")
+	(any_extract:DI (match_operand:DI  1 "register_operand" " r")
 			 (match_operand     2 "const_int_operand")
 			 (match_operand     3 "const_int_operand")))]
   "(TARGET_64BIT && (INTVAL (operands[3]) > 0)
     && (INTVAL (operands[2]) + INTVAL (operands[3]) == 32))"
 {
-  return "srliw\t%0,%1,%3";
+  return "<extract_sidi_shift>\t%0,%1,%3";
 }
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])

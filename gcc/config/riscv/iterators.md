@@ -150,6 +150,12 @@
 ;; to use the same template.
 (define_code_iterator any_extend [sign_extend zero_extend])
 
+;; These code iterators allow unsigned and signed extraction to be generated
+;; from the same template.
+(define_code_iterator any_extract [sign_extract zero_extract])
+(define_code_attr extract_sidi_shift [(sign_extract "sraiw")
+				      (zero_extract "srliw")])
+
 ;; This code iterator allows the two right shift instructions to be
 ;; generated from the same template.
 (define_code_iterator any_shiftrt [ashiftrt lshiftrt])
