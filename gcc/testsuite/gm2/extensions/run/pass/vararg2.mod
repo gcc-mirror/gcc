@@ -21,13 +21,13 @@ FROM cvararg IMPORT funcptr ;
 FROM SYSTEM IMPORT ADR ;
 
 BEGIN
-   IF funcptr(1, ADR("hello world"), 11)=1
+   IF funcptr(INTEGER (1), ADR("hello world"), INTEGER (11))=INTEGER (1)
    THEN
    END ;
-   IF funcptr(1, ADR("hello"), 5)=1
+   IF funcptr(INTEGER (1), ADR("hello"), INTEGER (5))=INTEGER (1)
    THEN
    END ;
-   IF funcptr(1, ADR("/etc/passwd"), 11)=1
+   IF funcptr(INTEGER (1), ADR("/etc/passwd"), INTEGER (11))=INTEGER (1)
    THEN
    END
 END vararg2.
