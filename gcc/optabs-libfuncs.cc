@@ -589,7 +589,9 @@ gen_trunc_conv_libfunc (convert_optab tab,
   if (GET_MODE_CLASS (float_tmode) != GET_MODE_CLASS (float_fmode))
     gen_interclass_conv_libfunc (tab, opname, float_tmode, float_fmode);
 
-  if (GET_MODE_PRECISION (float_fmode) <= GET_MODE_PRECISION (float_tmode))
+  if (GET_MODE_PRECISION (float_fmode) <= GET_MODE_PRECISION (float_tmode)
+      && (REAL_MODE_FORMAT (float_tmode) != &arm_bfloat_half_format
+	  || REAL_MODE_FORMAT (float_fmode) != &ieee_half_format))
     return;
 
   if (GET_MODE_CLASS (float_tmode) == GET_MODE_CLASS (float_fmode))
