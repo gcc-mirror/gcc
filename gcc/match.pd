@@ -5876,6 +5876,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (convert (absu:utype @0)))
     @3))))
 
+/* X >  Positive ? X : ABS(X) -> ABS(X) */
+/* X >= Positive ? X : ABS(X) -> ABS(X) */
+/* X == Positive ? X : ABS(X) -> ABS(X) */
+(for cmp (eq gt ge)
+ (simplify
+  (cond (cmp:c @0 tree_expr_nonnegative_p@1) @0 (abs@3 @0))
+  (if (INTEGRAL_TYPE_P (type))
+   @3)))
+
+/* X == Positive ? Positive : ABS(X) -> ABS(X) */
+(simplify
+ (cond (eq:c @0 tree_expr_nonnegative_p@1) @1 (abs@3 @0))
+ (if (INTEGRAL_TYPE_P (type))
+  @3))
+
 /* (X + 1) > Y ? -X : 1 simplifies to X >= Y ? -X : 1 when
    X is unsigned, as when X + 1 overflows, X is -1, so -X == 1.  */
 (simplify
