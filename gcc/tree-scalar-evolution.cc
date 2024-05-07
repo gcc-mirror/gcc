@@ -3458,6 +3458,28 @@ bitcount_call:
 		  && (optab_handler (optab, word_mode)
 		      != CODE_FOR_nothing))
 		  break;
+	      /* If popcount is available for a wider mode, we emulate the
+		 operation for a narrow mode by first zero-extending the value
+		 and then computing popcount in the wider mode.  Analogue for
+		 ctz.  For clz we do the same except that we additionally have
+		 to subtract the difference of the mode precisions from the
+		 result.  */
+	      if (is_a <scalar_int_mode> (mode, &int_mode))
+		{
+		  machine_mode wider_mode_iter;
+		  FOR_EACH_WIDER_MODE (wider_mode_iter, mode)
+		    if (optab_handler (optab, wider_mode_iter)
+			!= CODE_FOR_nothing)
+		      goto check_call_args;
+		  /* Operation ctz may be emulated via clz in expand_ctz.  */
+		  if (optab == ctz_optab)
+		    {
+		      FOR_EACH_WIDER_MODE_FROM (wider_mode_iter, mode)
+			if (optab_handler (clz_optab, wider_mode_iter)
+			    != CODE_FOR_nothing)
+			  goto check_call_args;
+		    }
+		}
 	      return true;
 	    }
 	  break;
@@ -3469,6 +3491,7 @@ bitcount_call:
 	  break;
 	}
 
+check_call_args:
       FOR_EACH_CALL_EXPR_ARG (arg, iter, expr)
 	if (expression_expensive_p (arg, cond_overflow_p, cache, op_cost))
 	  return true;
