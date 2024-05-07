@@ -1048,6 +1048,13 @@ package body Errout is
 
       if Is_Info_Msg then
 
+         --  Immediate return if info messages are suppressed
+
+         if Info_Suppressed then
+            Cur_Msg := No_Error_Msg;
+            return;
+         end if;
+
          --  If the flag location is in the main extended source unit then for
          --  sure we want the message since it definitely belongs.
 

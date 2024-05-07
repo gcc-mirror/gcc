@@ -1667,6 +1667,11 @@ package Opt is
    --  which requires pragma Warnings to be stored for the formal verification
    --  backend.
 
+   Info_Suppressed : Boolean := False;
+   --  GNAT
+   --  Controls whether informational messages are suppressed. Set True by
+   --  -gnatis. If True, informational messages will not be printed.
+
    Wide_Character_Encoding_Method : WC_Encoding_Method := WCEM_Brackets;
    --  GNAT, GNATBIND
    --  Method used for encoding wide characters in the source program. See

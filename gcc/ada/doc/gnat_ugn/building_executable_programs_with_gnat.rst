@@ -4372,6 +4372,21 @@ When no switch :switch:`-gnatw` is used, this is equivalent to:
 
 .. _Debugging_and_Assertion_Control:
 
+Info message Control
+--------------------
+
+In addition to the warning messages, the compiler can also generate info
+messages. In order to control the generation of these messages, the following
+switch is provided:
+
+:switch:`-gnatis`
+  *Suppress all info messages.*
+
+  This switch completely suppresses the output of all info messages from the
+  GNAT front end.
+
+
+
 Debugging and Assertion Control
 -------------------------------
 
