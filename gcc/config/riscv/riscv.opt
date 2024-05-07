@@ -517,15 +517,15 @@ Target Var(TARGET_INLINE_SUBWORD_ATOMIC) Init(1)
 Always inline subword atomic operations.
 
 minline-strcmp
-Target Var(riscv_inline_strcmp) Init(0)
+Target Var(riscv_inline_strcmp) Init(1)
 Inline strcmp calls if possible.
 
 minline-strncmp
-Target Var(riscv_inline_strncmp) Init(0)
+Target Var(riscv_inline_strncmp) Init(1)
 Inline strncmp calls if possible.
 
 minline-strlen
-Target Var(riscv_inline_strlen) Init(0)
+Target Var(riscv_inline_strlen) Init(1)
 Inline strlen calls if possible.
 
 -param=riscv-strcmp-inline-limit=

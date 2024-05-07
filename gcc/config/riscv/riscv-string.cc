@@ -153,7 +153,7 @@ emit_strcmp_scalar_compare_subword (rtx data1, rtx data2, rtx orc1,
   rtx imask = gen_rtx_CONST_INT (Xmode, im);
   rtx m_reg = gen_reg_rtx (Xmode);
   emit_insn (gen_rtx_SET (m_reg, imask));
-  do_rotr3 (m_reg, m_reg, GEN_INT (64 - cmp_bytes * BITS_PER_UNIT));
+  do_rotr3 (m_reg, m_reg, GEN_INT (BITS_PER_WORD - cmp_bytes * BITS_PER_UNIT));
   do_and3 (data1, m_reg, data1);
   do_and3 (data2, m_reg, data2);
   if (TARGET_ZBB)
@@ -496,6 +496,13 @@ riscv_expand_strcmp (rtx result, rtx src1, rtx src2,
       if (!CONST_INT_P (bytes_rtx))
 	return false;
       nbytes = UINTVAL (bytes_rtx);
+
+      /* If NBYTES is zero the result of strncmp will always be zero,
+	 but that would require special casing in the caller.  So for
+	 now just don't do an inline expansion.  This probably rarely
+	 happens in practice, but it is tested by the testsuite.  */
+      if (nbytes == 0)
+	return false;
 
       /* We don't emit parts of a strncmp() call.  */
       if (nbytes > compare_max)
