@@ -95,7 +95,7 @@ using namespace riscv_vector;
    It's a bit different from bitmap_union_of_preds in cfganal.cc. This function
    takes into account the case where pred is ENTRY basic block. The main reason
    for this difference is to make it easier to insert some special value into
-   the ENTRY base block. For example, vsetvl_info with a status of UNKNOW.  */
+   the ENTRY base block. For example, vsetvl_info with a status of UNKNOWN.  */
 static void
 bitmap_union_of_preds_with_entry (sbitmap dst, sbitmap *src, basic_block b)
 {
@@ -126,9 +126,9 @@ bitmap_union_of_preds_with_entry (sbitmap dst, sbitmap *src, basic_block b)
       }
 }
 
-/* Compute the reaching defintion in and out based on the gen and KILL
-   informations in each Base Blocks.
-   This function references the compute_avaiable implementation in lcm.cc  */
+/* Compute the reaching definition in and out based on the gen and KILL
+   information's in each Base Blocks.
+   This function references the compute_available implementation in lcm.cc  */
 static void
 compute_reaching_defintion (sbitmap *gen, sbitmap *kill, sbitmap *in,
 			    sbitmap *out)
@@ -719,7 +719,7 @@ get_all_predecessors (basic_block bb)
    require SEW and LMUL to be fixed.
    Therefore, if the former RVV instruction needs DEMAND_RATIO_P and the latter
    instruction needs DEMAND_SEW_LMUL_P and its SEW/LMUL is the same as that of
-   the former instruction, then we can make the minimu demand of the former
+   the former instruction, then we can make the minimum demand of the former
    instruction strict to DEMAND_SEW_LMUL_P, and its required SEW and LMUL are
    the SEW and LMUL of the latter instruction, and the vsetvl instruction
    generated according to the new demand can also be used for the latter
@@ -741,7 +741,7 @@ enum demand_flags : unsigned
 /* We split the demand information into three parts. They are sew and lmul
    related (sew_lmul_demand_type), tail and mask policy related
    (policy_demand_type) and avl related (avl_demand_type). Then we define three
-   interfaces avaiable_with, compatible_p and merge. avaiable_with is
+   interfaces available_p, compatible_p and merge. available_p is
    used to determine whether the two vsetvl infos prev_info and next_info are
    available or not. If prev_info is available for next_info, it means that the
    RVV insn corresponding to next_info on the path from prev_info to next_info
@@ -1361,17 +1361,17 @@ public:
 
 /* Demand system is the RVV-based VSETVL info analysis tools wrapper.
    It defines compatible rules for SEW/LMUL, POLICY and AVL.
-   Also, it provides 3 iterfaces avaiable_p, compatible_p and
+   Also, it provides 3 interfaces available_p, compatible_p and
    merge for the VSETVL PASS analysis and optimization.
 
-     - avaiable_p: Determine whether the next info can get the
-       avaiable VSETVL status from previous info.
+     - available_p: Determine whether the next info can get the
+       available VSETVL status from previous info.
        e.g. bb 2 (demand SEW = 32, LMUL = M2) -> bb 3 (demand RATIO = 16).
        Since bb 2 demand info (SEW/LMUL = 32/2 = 16) satisfies the bb 3
        demand, the VSETVL instruction in bb 3 can be elided.
-       avaiable_p (previous, next) is true in such situation.
+       available_p (previous, next) is true in such situation.
      - compatible_p: Determine whether prev_info is compatible with next_info
-       so that we can have a new merged info that is avaiable to both of them.
+       so that we can have a new merged info that is available to both of them.
      - merge: Merge the stricter demand information from
        next_info into prev_info so that prev_info becomes available to
        next_info.  */
@@ -1873,7 +1873,7 @@ public:
 	for (insn_info *i = next_insn; i != next_insn->bb ()->head_insn ();
 	     i = i->prev_nondebug_insn ())
 	  {
-	    // no def amd use of vl
+	    // no def and use of vl
 	    if (!ignore_vl && modify_or_use_vl_p (i, info))
 	      return false;
 
@@ -1885,7 +1885,7 @@ public:
 	for (insn_info *i = prev_insn->bb ()->end_insn (); i != prev_insn;
 	     i = i->prev_nondebug_insn ())
 	  {
-	    // no def amd use of vl
+	    // no def mad use of vl
 	    if (!ignore_vl && modify_or_use_vl_p (i, info))
 	      return false;
 
@@ -2106,11 +2106,11 @@ private:
   demand_system m_dem;
   auto_vec<vsetvl_block_info> m_vector_block_infos;
 
-  /* data for avl reaching defintion.  */
+  /* data for avl reaching definition.  */
   sbitmap *m_reg_def_loc;
 
-  /* data for vsetvl info reaching defintion.  */
-  vsetvl_info m_unknow_info;
+  /* data for vsetvl info reaching definition.  */
+  vsetvl_info m_unknown_info;
   auto_vec<vsetvl_info *> m_vsetvl_def_exprs;
   sbitmap *m_vsetvl_def_in;
   sbitmap *m_vsetvl_def_out;
@@ -2209,9 +2209,9 @@ private:
 	    auto &new_prob = get_block_info (e->dest).probability;
 	    /* Normally, the edge probability should be initialized.
 	       However, some special testing code which is written in
-	       GIMPLE IR style force the edge probility uninitialized,
+	       GIMPLE IR style force the edge probability uninitialized,
 	       we conservatively set it as never so that it will not
-	       affect PRE (Phase 3 && Phse 4).  */
+	       affect PRE (Phase 3 && Phase 4).  */
 	    if (!e->probability.initialized_p ())
 	      new_prob = profile_probability::never ();
 	    else if (!new_prob.initialized_p ())
@@ -2307,7 +2307,7 @@ private:
 	  continue;
 	else
 	  /* We pick the highest probability among those incompatible VSETVL
-	     infos. When all incompatible VSTEVL infos have same probability, we
+	     infos. When all incompatible VSETVL infos have same probability, we
 	     don't pick any of them.  */
 	  return false;
       }
@@ -2365,7 +2365,7 @@ public:
     crtl->ssa = new function_info (cfun);
     m_vector_block_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
     compute_probabilities ();
-    m_unknow_info.set_unknown ();
+    m_unknown_info.set_unknown ();
   }
 
   void finish ()
@@ -2414,7 +2414,7 @@ public:
   bool earliest_fuse_vsetvl_info (int iter);
   void pre_global_vsetvl_info ();
   void emit_vsetvl ();
-  void cleaup ();
+  void cleanup ();
   void remove_avl_operand ();
   void remove_unused_dest_operand ();
   void remove_vsetvl_pre_insns ();
@@ -2450,7 +2450,7 @@ void
 pre_vsetvl::compute_vsetvl_def_data ()
 {
   m_vsetvl_def_exprs.truncate (0);
-  add_expr (m_vsetvl_def_exprs, m_unknow_info);
+  add_expr (m_vsetvl_def_exprs, m_unknown_info);
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
       vsetvl_block_info &block_info = get_block_info (bb);
@@ -2495,7 +2495,7 @@ pre_vsetvl::compute_vsetvl_def_data ()
 		  bitmap_set_bit (m_kill[bb->index ()], i);
 		  bitmap_set_bit (def_loc[bb->index ()],
 				  get_expr_index (m_vsetvl_def_exprs,
-						  m_unknow_info));
+						  m_unknown_info));
 		}
 	    }
 	  continue;
@@ -2507,10 +2507,10 @@ pre_vsetvl::compute_vsetvl_def_data ()
 		      get_expr_index (m_vsetvl_def_exprs, footer_info));
     }
 
-  /* Set the def_out of the ENTRY basic block to m_unknow_info expr.  */
+  /* Set the def_out of the ENTRY basic block to m_unknown_info expr.  */
   basic_block entry = ENTRY_BLOCK_PTR_FOR_FN (cfun);
   bitmap_set_bit (m_vsetvl_def_out[entry->index],
-		  get_expr_index (m_vsetvl_def_exprs, m_unknow_info));
+		  get_expr_index (m_vsetvl_def_exprs, m_unknown_info));
 
   compute_reaching_defintion (def_loc, m_kill, m_vsetvl_def_in,
 			      m_vsetvl_def_out);
@@ -2518,7 +2518,7 @@ pre_vsetvl::compute_vsetvl_def_data ()
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file,
-	       "\n  Compute vsetvl info reaching defition data:\n\n");
+	       "\n  Compute vsetvl info reaching definition data:\n\n");
       fprintf (dump_file, "    Expression List (%d):\n",
 	       m_vsetvl_def_exprs.length ());
       for (unsigned i = 0; i < m_vsetvl_def_exprs.length (); i++)
@@ -2803,7 +2803,7 @@ pre_vsetvl::fuse_local_vsetvl_info ()
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
 		      fprintf (dump_file,
-			       "    Cannot fuse uncompatible infos:\n");
+			       "    Cannot fuse incompatible infos:\n");
 		      fprintf (dump_file, "      prev_info: ");
 		      prev_info.dump (dump_file, "       ");
 		      fprintf (dump_file, "      curr_info: ");
@@ -3179,7 +3179,7 @@ pre_vsetvl::pre_global_vsetvl_info ()
 	}
     }
 
-  /* Remove vsetvl infos if all precessors are available to the block.  */
+  /* Remove vsetvl infos if all predecessors are available to the block.  */
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
       vsetvl_block_info &block_info = get_block_info (bb);
@@ -3370,7 +3370,7 @@ pre_vsetvl::emit_vsetvl ()
 }
 
 void
-pre_vsetvl::cleaup ()
+pre_vsetvl::cleanup ()
 {
   remove_avl_operand ();
   remove_unused_dest_operand ();
@@ -3564,10 +3564,10 @@ pass_vsetvl::lazy_vsetvl ()
 	     "\nPhase 4: Insert, modify and remove vsetvl insns.\n\n");
   pre.emit_vsetvl ();
 
-  /* Phase 5: Cleaup */
+  /* Phase 5: Cleanup */
   if (dump_file)
-    fprintf (dump_file, "\nPhase 5: Cleaup\n\n");
-  pre.cleaup ();
+    fprintf (dump_file, "\nPhase 5: Cleanup\n\n");
+  pre.cleanup ();
 
   pre.finish ();
 }
