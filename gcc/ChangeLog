@@ -1,3 +1,87 @@
+2024-05-06  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_implied_info): zfbfmin
+	implies zfhmin.
+	(riscv_ext_version_table, riscv_ext_flag_table): Add zfbfmin.
+	* config/riscv/riscv.opt (ZFBFMIN): Add optoion.
+
+2024-05-06  Xiao Zeng  <zengxiao@eswincomputing.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/iterators.md: New mode iterator HFBF.
+	* config/riscv/riscv-builtins.cc (riscv_init_builtin_types):
+	Initialize data type _Bfloat16.
+	* config/riscv/riscv-modes.def (FLOAT_MODE): New.
+	(ADJUST_FLOAT_FORMAT): New.
+	* config/riscv/riscv.cc (riscv_mangle_type): Support for BFmode.
+	(riscv_scalar_mode_supported_p): Ditto.
+	(riscv_libgcc_floating_mode_supported_p): Ditto.
+	(riscv_init_libfuncs): Set the conversion method for BFmode and
+	HFmode.
+	(riscv_block_arith_comp_libfuncs_for_mode): Set the arithmetic
+	and comparison libfuncs for the mode.
+	* config/riscv/riscv.md (mode" ): Add BF.
+	(movhf): Support for BFmode.
+	(mov<mode>): Ditto.
+	(*movhf_softfloat): Ditto.
+	(*mov<mode>_softfloat): Ditto.
+
+2024-05-06  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* doc/invoke.texi (RISC-V): Add -mcmodel=large.
+
+2024-05-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_integer_op): Add field tracking if we
+	want to use a "uw" instruction variant.
+	(riscv_build_integer_1): Initialize the new field in various places.
+	Use lui+slli.uw for some constants.
+	(riscv_move_integer): Handle slli.uw.
+
+2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/53548
+	* stor-layout.cc (place_union_field): Use zero sizes for flexible array
+	member fields.
+
+2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/53548
+	* doc/extend.texi: Add documentation for Flexible Array Members in
+	Unions and Flexible Array Members alone in Structures.
+
+2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR ipa/92606
+	* config/avr/avr.cc (avr_option_override): Set
+	flag_ipa_icf_variables = 0.
+
+2024-05-06  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* tree-nested.cc (convert_tramp_reference_stmt): Use the correct
+	accessor for GIMPLE_OMP_TARGET clauses.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100923
+	* tree-ssa-sccvn.cc (ao_ref_init_from_vn_reference): Valueize
+	base SSA_NAME.
+	(vn_reference_lookup_3): Adjust vn_context_bb around calls
+	to ao_ref_init_from_vn_reference.
+	(vn_reference_lookup_pieces): Revert original PR100923 fix.
+	(vn_reference_lookup): Likewise.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (ao_ref_init_from_vn_reference): Add
+	TARGET_MEM_REF support.  Handle more bases.
+
+2024-05-06  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR target/113179
+	* expmed.cc(store_bit_field_using_insv): TRUNCATE value1 if
+	needed.
+
 2024-05-05  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	* gimple-loop-versioning.cc (loop_versioning): Remove m_nloops field.

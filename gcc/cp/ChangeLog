@@ -1,3 +1,17 @@
+2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/53548
+	* decl.cc (layout_var_decl): Handle the cases when the DECL is
+	union with a flexible array member initializer.
+
+2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/53548
+	* class.cc (diagnose_flexarrays): Change error to pdewarn for the case
+	flexible array members alone in structures.
+	* decl.cc (grokdeclarator): Change error to pdewarn for the case
+	flexible array members in unions.
+
 2024-05-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/114935

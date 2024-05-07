@@ -1,3 +1,8 @@
+2024-05-06  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config-ml.in: Insert an -B option with multi-os-dir into
+	compiler commands used to build libraries.
+
 2024-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* configure.ac (have_cargo): Force to "no" in Canadian cross

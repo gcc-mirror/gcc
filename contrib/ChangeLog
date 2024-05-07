@@ -1,3 +1,7 @@
+2024-05-06  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* gcc-changelog/git_check_commit.py: Implement --num-commits.
+
 2024-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-changelog/git_update_version.py (active_refs): Add

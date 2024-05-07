@@ -1,3 +1,14 @@
+2024-05-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/t-aix (all-local, libcaf_single): Explicitly reference
+	caf/.libs/single.o
+
+2024-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am [LIBGFOR_USE_SYMVER_SUN] (gfortran.ver-sun): Handle
+	objects in subdirs.
+	* Makefile.in: Regenerate.
+
 2024-05-02  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* Makefile.am: Use sub-dirs, amend recipies accordingly.

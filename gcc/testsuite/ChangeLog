@@ -1,3 +1,73 @@
+2024-05-06  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/arch-35.c: New test.
+	* gcc.target/riscv/arch-36.c: New test.
+	* gcc.target/riscv/predef-34.c: New test.
+	* gcc.target/riscv/predef-35.c: New test.
+
+2024-05-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/114749
+	* gcc.target/riscv/rvv/autovec/pr114749.c: New test.
+
+2024-05-06  Xiao Zeng  <zengxiao@eswincomputing.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/bf16_arithmetic.c: New test.
+	* gcc.target/riscv/bf16_call.c: New test.
+	* gcc.target/riscv/bf16_comparison.c: New test.
+	* gcc.target/riscv/bf16_float_libcall_convert.c: New test.
+	* gcc.target/riscv/bf16_integer_libcall_convert.c: New test.
+
+2024-05-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-2.c: New test.
+
+2024-05-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/114177
+	* gcc.target/aarch64/sve/loop_add_6.c: Use __SIZETYPE__ instead
+	of `unsigned long` for index and offset variables.
+
+2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/53548
+	* c-c++-common/fam-in-union-alone-in-struct-bos-1.c: New test.
+	* c-c++-common/fam-in-union-alone-in-struct-bos.c: New test.
+
+2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/53548
+	* c-c++-common/fam-in-union-alone-in-struct-1.c: New testcase.
+	* c-c++-common/fam-in-union-alone-in-struct-2.c: New testcase.
+	* c-c++-common/fam-in-union-alone-in-struct-3.c: New testcase.
+
+2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/53548
+	* c-c++-common/builtin-clear-padding-3.c: Adjust testcase.
+	* g++.dg/ext/flexary12.C: Likewise.
+	* g++.dg/ext/flexary19.C: Likewise.
+	* g++.dg/ext/flexary2.C: Likewise.
+	* g++.dg/ext/flexary3.C: Likewise.
+	* g++.dg/ext/flexary36.C: Likewise.
+	* g++.dg/ext/flexary4.C: Likewise.
+	* g++.dg/ext/flexary5.C: Likewise.
+	* g++.dg/ext/flexary8.C: Likewise.
+	* g++.dg/torture/pr64280.C: Likewise.
+	* gcc.dg/20050620-1.c: Likewise.
+	* gcc.dg/940510-1.c: Likewise.
+
+2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR ipa/92606
+	* gcc.target/avr/torture/pr92606.c: New test.
+
+2024-05-06  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR target/113179
+	* gcc.target/mips/pr113179.c: New tests.
+
 2024-05-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/114827

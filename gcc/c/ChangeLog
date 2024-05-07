@@ -1,3 +1,15 @@
+2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/53548
+	* c-decl.cc (add_flexible_array_elts_to_size): Handle the cases
+	when the DECL is union.
+
+2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/53548
+	* c-decl.cc (finish_struct): Change errors to pedwarns for the cases
+	flexible array members in union or alone in structures.
+
 2024-04-30  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.cc (c_parser_gimple_binary_expression):

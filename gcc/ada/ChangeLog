@@ -1,3 +1,255 @@
+2024-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Collect_Global_Item): Handle functions with
+	side-effects.
+
+2024-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Collect_Global_Item): Move code.
+
+2024-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Find_Role): Handle functions with side-effects
+	like procedures.
+
+2024-05-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.adb
+	(Make_Build_In_Place_Iface_Call_In_Object_Declaration): Set the
+	Is_Return_Object flag on the entity of the temp object created to
+	hold the BIP call result, from the flag on the passed-in object
+	declaration's entity. Update copyright notice to 2024.
+
+2024-05-06  Bob Duff  <duff@adacore.com>
+
+	* sem_ch10.adb (Expand_With_Clause): Misc cleanup.
+	(Install_Private_With_Clauses): Avoid installing a private
+	with_clause that comes from an instantiated generic
+	(it is marked as Implicit_With, but doesn't come from a parent
+	with). Fix typo in comment, and other minor cleanups.
+
+2024-05-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.adb (Build_Default_Subtype): Tweak source location
+	information.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Do not call
+	Processing_Actions for simple protected objects if the profile is
+	restricted.
+	* exp_util.adb (Requires_Cleanup_Actions): Do not return True for
+	simple protected objects if the profile is restricted.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h: Remove unused declarations and add 'extern' to others.
+	no-issue-check
+
+2024-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo-utils.adb (Is_Relaxed_Initialization_State): Remove.
+	* einfo-utils.ads (Is_Relaxed_Initialization_State): Remove.
+	* einfo.ads: Remove description of removed aspect.
+	* fe.h (Is_Relaxed_Initialization_State): Remove.
+	* sem_prag.adb (Analyze_Abstract_State): Remove support for
+	Relaxed_Initialization.
+	* sem_util.adb (Has_Relaxed_Initialization): Likewise.
+	* sem_util.ads (Has_Relaxed_Initialization): Likewise.
+
+2024-05-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_warn.adb (Within_Postcondition): Add coverage for
+	Preconditions
+
+2024-05-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_warn.adb (Within_Postcondition): Add/modify comments to
+	document various cases.
+
+2024-05-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_warn.adb (Within_Postcondition): Renamed to
+	Within_Contract_Or_Predicate.
+
+2024-05-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_warn.adb (Within_Postcondition): Add case to ignore
+	references within generated predicate function calls.
+
+2024-05-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* hostparm.ads: Fix reference to RM clause.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-finpri.ads (Finalize_Master): Remove obsolete reference
+	in the description.
+	(Finalize_Object): Document the effects of repeated calls.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Finalization_Master_Node_Or_Object): Rename into...
+	(Finalization_Master_Node): ...this and adjust description.
+	* exp_ch4.adb (Process_Transient_In_Expression): Attach the object
+	to its master node here.
+	* exp_ch7.ads (Attach_Object_To_Master_Node): New declaration.
+	* exp_ch7.adb (Attach_Object_To_Master_Node): New procedure.
+	(Build_Finalizer.Process_Declarations): Examine the type of a
+	variable to spot master nodes.
+	(Build_Finalizer.Process_Object_Declaration): Look only at the
+	object and deal specifically with the case of a master node.
+	(Build_Finalizer.Build_BIP_Cleanup_Stmts): Move to child function
+	of Attach_Object_To_Master_Node.
+	(Build_Finalizer.Make_Address_For_Finalize): Move to...
+	(Insert_Actions_In_Scope_Around.Process_Transient_In_Scope): Attach
+	the object to its master node here.
+	(Make_Address_For_Finalize): ...here.
+	(Make_Master_Node_Declaration): Adjust to above renaming and set
+	Finalization_Master_Node only on the object.
+	(Make_Suppress_Object_Finalize_Call): Adjust to above renaming and
+	attach the object to its master node here.
+	* exp_util.adb (Requires_Cleanup_Actions): Examine the type of a
+	variable to spot master nodes.
+	* gen_il-fields.ads (Opt_Field_Enum): Adjust to above renaming.
+	* gen_il-gen-gen_entities.adb (Allocatable_Kind): Likewise.
+	* rtsfind.ads (RE_Id): Add RE_Chain_Node_To_Master.
+	(RE_Unit_Table): Add entry for  RE_Chain_Node_To_Master.
+	* libgnat/s-finpri.ads (Chain_Node_To_Master): New declaration.
+	* libgnat/s-finpri.adb (Chain_Node_To_Master): New procedure.
+	(Attach_Object_To_Master): Call it.
+	(Finalize_Master): Do not raise Program_Error on null addresses.
+	(Finalize_Object): Add assertion that the address is not null.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-taprob.ads (Protection): Add cross-reference to the
+	counterpart in System.Tasking.Protected_Objects.Entries.
+	* libgnarl/s-taskin.ads (Locking Rules): Replace PO_Simple by
+	Protected_Objects.
+	* libgnarl/s-tpoben.ads (Protection_Entries): Likewise.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Finalization_Size>:
+	Return 0 if the prefix is a dereference of an access value subject
+	to the No_Heap_Finalization pragma.
+
+2024-05-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_imgv.adb (Append_Table_To): Remove reference to removed
+	field.
+	* gen_il-fields.ads: Remove Is_Enum_Array_Aggregate field.
+	* gen_il-gen-gen_nodes.adb: Likewise.
+	* sem_aggr.adb: Tweak warning emission condition.
+	* sinfo.ads: Remove documentation for Is_Enum_Array_Aggregate.
+
+2024-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* make.adb (Scan_Make_Arg): Remove redundant condition.
+	* switch-b.adb (Scan_Debug_Switches): Likewise.
+	* switch-c.adb (Scan_Front_End_Switches): Likewise.
+
+2024-05-06  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Add guard.
+
+2024-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_pakd.adb (Create_Packed_Array_Impl_Type): Set associated
+	node for the packed array itype.
+	* exp_util.adb (Possible_Side_Effect_In_SPARK): Remove
+	workaround for a missing associated node.
+
+2024-05-06  Richard Kenner  <kenner@adacore.com>
+
+	* freeze.adb (Freeze_Entity): When changing the convention of
+	primitive to match that of the type, only do this for user-specified
+	primitives.
+
+2024-05-06  Bob Duff  <duff@adacore.com>
+
+	* exp_put_image.adb (Build_Image_Call): Call Set_Uses_Sec_Stack on
+	the current scope. We don't do this at all call sites, because
+	there are three; better to do it here.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute) <Attribute_Round>: Also accept it
+	for ordinary fixed point types.
+	* doc/gnat_rm/implementation_defined_attributes.rst (Round): New.
+	* gnat_rm.texi: Regenerate.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Class_Wide_Type): Use No instead of
+	not Present.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer.Process_Object_Declaration): Adjust
+	the Sloc of the master node declaration in the degenerate case.
+
+2024-05-06  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Call_Can_Be_Inlined_In_GNATprove_Mode):
+	Add case to prevent inlining of call.
+	* inline.ads: Likewise.
+	* sem_res.adb (Resolve_Call): Update comment and message.
+
+2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-finpri$(objext).
+	* contracts.adb (Add_Call_Helper): Append freeze actions to the
+	class-wide type rather than the specific tagged type.
+	* einfo.ads (Finalization_Master_Node_Or_Node): Document.
+	(Status_Flag_Or_Transient_Decl): Remove.
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Address>: Do not
+	adjust a return object of a class-wide interface type.
+	* exp_ch3.adb  (Expand_Freeze_Class_Wide_Type): Add test that
+	Finalize_Address is not already present as a condition for calling
+	Make_Finalize_Address_Body.
+	(Expand_Freeze_Record_Type): Call Make_Finalize_Address_Body for
+	class-wide types of both regular tagged types and interface types.
+	* exp_ch4.adb (Process_Transients_In_Expression): Replace the use
+	of hooks with the use of master nodes.
+	* exp_ch6.adb (Build_Flag_For_Function): Delete.
+	(Expand_N_Extended_Return_Statement): Create a master node for the
+	return object if it does not exist.  At the end of the statement,
+	generate a call to Suppress_Object_Finalize.
+	(Expand_Non_Function_Return): Likewise just before the return.
+	* exp_ch7.ads (Make_Master_Node_Declaration): Declare.
+	(Make_Suppress_Object_Finalize_Call): Likewise.
+	* exp_ch7.adb (Build_Finalization_Master): Defer generating the
+	call to Set_Finalize_Address until freezing if the Finalize_Address
+	procedure has not been analyzed yet.
+	(Build_Finalizer): Reimplement the expansion using a finalization
+	scope master per finalizer.
+	(Insert_Actions_In_Scope_Around): Replace finalization hooks by
+	master nodes and calls to the Finalize_Object.
+	(Make_Master_Node_Declaration): New procedure.
+	(Make_Suppress_Object_Finalize_Call): Likewise.
+	* exp_util.ads (Build_Transient_Object_Statements): Delete.
+	* exp_util.adb (Build_Transient_Object_Statements): Likewise.
+	(Requires_Cleanup_Actions): Remove obsolete code and return true
+	for master nodes.
+	* gen_il-fields.ads (Opt_Field_Enum): Add
+	Finalization_Master_Node_Or_Object and
+	remove Status_Flag_Or_Transient_Decl.
+	* gen_il-gen-gen_entities.adb (Allocatable_Kind): Likewise.
+	* rtsfind.ads (RTU_Id): Add System_Finalization_Primitives.
+	(RE_Id): Add entities of System_Finalization_Primitives.
+	(RE_Unit_Table): Add entries for them.
+	* sem_ch3.adb (Analyze_Object_Declaration): For an array whose type
+	has an unconstrained first subtype and a controlled component, set
+	the Is_Constr_Array_Subt_With_Bounds flag.
+	* libgnat/s-finpri.ads: New file.
+	* libgnat/s-finpri.adb: Likewise.
+
+2024-05-06  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Adapt checking.
+
 2024-04-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnatvsn.ads: Bump Library_Version to 15.

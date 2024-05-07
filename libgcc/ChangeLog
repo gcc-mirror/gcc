@@ -1,3 +1,13 @@
+2024-05-06  Xiao Zeng  <zengxiao@eswincomputing.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/sfp-machine.h (_FP_NANFRAC_B): New.
+	(_FP_NANSIGN_B): Ditto.
+	* config/riscv/t-softfp32: Add support for BF16 libfuncs.
+	* config/riscv/t-softfp64: Ditto.
+	* soft-fp/floatsibf.c: For si -> bf16.
+	* soft-fp/floatunsibf.c: For unsi -> bf16.
+
 2024-05-03  Peter Damianov  <peter0x44@disroot.org>
 
 	* libgcov-util.c (tag_counters): Swap order of arguments to xcalloc.
