@@ -822,9 +822,7 @@ uninstall-am: uninstall-nobase_libsubincludeHEADERS \
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@		$(libssp_la_OBJECTS) $(libssp_la_LIBADD)
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	  $(srcdir)/ssp.map \
-@LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	  $(libssp_la_OBJECTS:%.lo=.libs/%.o) \
-@LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	 `echo $(libssp_la_LIBADD) | \
-@LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+@LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	  $(libssp_la_OBJECTS) $(libssp_la_LIBADD) \
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it

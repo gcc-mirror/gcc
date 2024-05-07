@@ -29,9 +29,7 @@ gfortran.ver-sun : gfortran.ver \
 		$(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl \
 	  gfortran.ver \
-	  $(subst /,/.libs/,$(libgfortran_la_OBJECTS:.lo=.o)) \
-	 `echo $(libgfortran_la_LIBADD) | \
-	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	  $(libgfortran_la_OBJECTS) $(libgfortran_la_LIBADD) \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 else

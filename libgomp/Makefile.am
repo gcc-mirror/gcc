@@ -44,9 +44,7 @@ libgomp.ver-sun : libgomp.ver \
 		$(libgomp_la_OBJECTS) $(libgomp_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl \
 	  libgomp.ver \
-	  $(libgomp_la_OBJECTS:%.lo=.libs/%.o) \
-	 `echo $(libgomp_la_LIBADD) | \
-	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	  $(libgomp_la_OBJECTS) $(libgomp_la_LIBADD) \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 else

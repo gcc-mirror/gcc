@@ -25,8 +25,7 @@ quadmath.map-sun : $(srcdir)/quadmath.map \
 		$(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl \
 	  $(srcdir)/quadmath.map \
-	 `echo $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) | \
-	   sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+	 $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 else

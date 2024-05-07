@@ -39,9 +39,7 @@ libitm.map-sun : $(top_srcdir)/libitm.map \
 		$(libitm_la_OBJECTS) $(libitm_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl \
 	  $(top_srcdir)/libitm.map \
-	  $(libitm_la_OBJECTS:%.lo=.libs/%.o) \
-	 `echo $(libitm_la_LIBADD) | \
-	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	  $(libitm_la_OBJECTS) $(libitm_la_LIBADD) \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 else

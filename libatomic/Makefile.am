@@ -55,9 +55,7 @@ libatomic.map-sun : $(top_srcdir)/libatomic.map \
 		$(libatomic_la_OBJECTS) $(libatomic_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl \
 	  $(top_srcdir)/libatomic.map \
-	  $(libatomic_la_OBJECTS:%.lo=.libs/%.o) \
-	 `echo $(libatomic_la_LIBADD) | \
-	    sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+	  $(libatomic_la_OBJECTS) $(libatomic_la_LIBADD) \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 else

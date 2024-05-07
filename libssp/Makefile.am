@@ -23,9 +23,7 @@ ssp.map-sun : $(srcdir)/ssp.map \
 		$(libssp_la_OBJECTS) $(libssp_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl \
 	  $(srcdir)/ssp.map \
-	  $(libssp_la_OBJECTS:%.lo=.libs/%.o) \
-	 `echo $(libssp_la_LIBADD) | \
-	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+	  $(libssp_la_OBJECTS) $(libssp_la_LIBADD) \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 else

@@ -200,8 +200,7 @@ libffi_version_dep = libffi.map-sun
 libffi.map-sun : libffi.map $(top_srcdir)/../contrib/make_sunver.pl \
 		 $(libffi_la_OBJECTS) $(libffi_la_LIBADD)
 	perl $(top_srcdir)/../contrib/make_sunver.pl libffi.map \
-	 `echo $(libffi_la_OBJECTS) $(libffi_la_LIBADD) | \
-	    sed 's,\([^/        ]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+	 $(libffi_la_OBJECTS) $(libffi_la_LIBADD) \
 	 > $@ || (rm -f $@ ; exit 1)
 endif
 else

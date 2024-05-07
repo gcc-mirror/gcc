@@ -1434,8 +1434,7 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@		$(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD)
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	  $(srcdir)/quadmath.map \
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	 `echo $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) | \
-@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	   sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+@BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	 $(libquadmath_la_OBJECTS) $(libquadmath_la_LIBADD) \
 @BUILD_LIBQUADMATH_TRUE@@LIBQUAD_USE_SYMVER_SUN_TRUE@@LIBQUAD_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 @BUILD_LIBQUADMATH_TRUE@stamp-geninsrc: libquadmath.info
