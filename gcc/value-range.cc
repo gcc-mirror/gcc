@@ -1518,6 +1518,7 @@ irange::verify_range ()
       gcc_checking_assert (m_num_ranges == 0);
       return;
     }
+  gcc_checking_assert (supports_p (type ()));
   gcc_checking_assert (m_num_ranges <= m_max_ranges);
 
   // Legacy allowed these to represent VARYING for unknown types.

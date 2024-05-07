@@ -597,7 +597,7 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
   // Process addresses.
   if (gimple_code (s) == GIMPLE_ASSIGN
       && gimple_assign_rhs_code (s) == ADDR_EXPR)
-    return range_of_address (as_a <irange> (r), s, src);
+    return range_of_address (as_a <prange> (r), s, src);
 
   gimple_range_op_handler handler (s);
   if (handler)
@@ -757,7 +757,7 @@ fold_using_range::range_of_range_op (vrange &r,
 // If a range cannot be calculated, set it to VARYING and return true.
 
 bool
-fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
+fold_using_range::range_of_address (prange &r, gimple *stmt, fur_source &src)
 {
   gcc_checking_assert (gimple_code (stmt) == GIMPLE_ASSIGN);
   gcc_checking_assert (gimple_assign_rhs_code (stmt) == ADDR_EXPR);

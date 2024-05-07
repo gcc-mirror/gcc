@@ -296,7 +296,7 @@ bool values_equal_for_ipcp_p (tree x, tree y);
 static inline bool
 ipa_supports_p (tree type)
 {
-  return irange::supports_p (type);
+  return irange::supports_p (type) || prange::supports_p (type);
 }
 
 #endif /* IPA_CP_H */

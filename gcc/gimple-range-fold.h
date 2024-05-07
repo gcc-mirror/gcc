@@ -157,7 +157,7 @@ protected:
 			  fur_source &src);
   bool range_of_call (vrange &r, gcall *call, fur_source &src);
   bool range_of_cond_expr (vrange &r, gassign* cond, fur_source &src);
-  bool range_of_address (irange &r, gimple *s, fur_source &src);
+  bool range_of_address (prange &r, gimple *s, fur_source &src);
   bool range_of_phi (vrange &r, gphi *phi, fur_source &src);
   void range_of_ssa_name_with_loop_info (vrange &, tree, class loop *, gphi *,
 					 fur_source &src);
