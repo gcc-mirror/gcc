@@ -1,3 +1,96 @@
+2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR ipa/92606
+	* gcc.target/avr/torture/pr92606.c: New test.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114799
+	* gcc.dg/vect/bb-slp-pr114799.c: New testcase.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114787
+	* gcc.dg/torture/pr114787.c: New testcase.
+
+2024-05-06  Patrick O'Neill  <patrick@rivosinc.com>
+
+	Backported from master:
+	2024-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR middle-end/114734
+	* gcc.target/riscv/rvv/autovec/pr114734.c: New test.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114246
+	* gcc.dg/torture/pr114246.c: New testcase.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113630
+	* gcc.dg/torture/pr113630.c: New testcase.
+
+2024-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/106999
+	* gfortran.dg/pr106999.f90: New test.
+
+2024-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112407
+	* gfortran.dg/pr112407a.f90: New test.
+	* gfortran.dg/pr112407b.f90: New test.
+
+2024-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-03-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/110987
+	* gfortran.dg/finalize_56.f90: New test.
+
+2024-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-03-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/113885
+	* gfortran.dg/finalize_54.f90: New test.
+	* gfortran.dg/finalize_55.f90: New test.
+
+2024-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114739
+	* gfortran.dg/pr114739.f90: New test.
+	* gfortran.dg/derived_comp_array_ref_8.f90: Add 'implicit none'
+	for consistency with expected error message.
+	* gfortran.dg/nullify_4.f90: ditto
+	* gfortran.dg/pointer_init_6.f90: ditto
+	* gfortran.dg/pr107397.f90: ditto
+	* gfortran.dg/pr88138.f90: ditto
+
 2024-05-03  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

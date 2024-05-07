@@ -1,3 +1,60 @@
+2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR ipa/92606
+	* config/avr/avr.cc (avr_option_override): Set
+	flag_ipa_icf_variables = 0.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114799
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Properly
+	update ->any_pattern when swapping operands.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114787
+	* tree-cfg.cc (remove_edge_and_dominated_blocks): When
+	removing a loop backedge clear niter info and when removing
+	the last backedge of a loop mark that loop for removal.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114734
+	* internal-fn.cc (expand_call_mem_ref): Use
+	get_gimple_for_ssa_name to get at the def stmt of the address
+	argument to honor SSA coalescing constraints.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114246
+	* tree-ssa-dse.cc (increment_start_addr): Strip useless
+	type conversions from the adjusted address.
+
+2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113630
+	* tree-ssa-pre.cc (compute_avail): Avoid registering a
+	reference with a representation with not matching base
+	access size.
+
 2024-05-03  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
