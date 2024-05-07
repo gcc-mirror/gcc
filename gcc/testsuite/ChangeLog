@@ -1,3 +1,8 @@
+2024-05-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR analyzer/111475
+	* g++.dg/analyzer/analyzer.exp: Disable on *-*-solaris2.*.
+
 2024-05-03  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:
