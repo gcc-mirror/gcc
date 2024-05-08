@@ -68,7 +68,8 @@ LIB1ASMFUNCS += \
 	_bswapdi2 \
 	_ashldi3 _ashrdi3 _lshrdi3 _rotldi3 \
 	_adddi3 _adddi3_s8 _subdi3 \
-	_cmpdi2 _cmpdi2_s8
+	_cmpdi2 _cmpdi2_s8 \
+	_powif
 endif
 
 # Fixed point routines in avr/lib1funcs-fixed.S
@@ -110,6 +111,7 @@ LIB2FUNCS_EXCLUDE = \
 	_moddi3 _umoddi3 \
 	_clz \
 	_clrsbdi2 \
+	_powisf2
 
 
 ifeq ($(long_double_type_size),32)

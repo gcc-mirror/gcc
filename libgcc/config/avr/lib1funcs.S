@@ -80,6 +80,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 .endm
 
+.macro	mov4  r_dest, r_src
+    wmov \r_dest,   \r_src
+    wmov \r_dest+2, \r_src+2
+.endm
+
 #if defined (__AVR_HAVE_JMP_CALL__)
 #define XCALL call
 #define XJMP  jmp
@@ -3311,5 +3316,154 @@ ENDF __fmul
 #undef B1
 #undef C0
 #undef C1
+
+
+
+/**********************************
+ * Floating-Point
+ **********************************/
+
+#if defined (L_powif)
+#ifndef __AVR_TINY__
+
+;; float output and arg #1
+#define A0      22
+#define A1      A0 + 1
+#define A2      A0 + 2
+#define A3      A0 + 3
+
+;; float arg #2
+#define B0      18
+#define B1      B0 + 1
+#define B2      B0 + 2
+#define B3      B0 + 3
+
+;; float X: input and iterated squares
+#define X0      10
+#define X1      X0 + 1
+#define X2      X0 + 2
+#define X3      X0 + 3
+
+;; float Y: expand result
+#define Y0      14
+#define Y1      Y0 + 1
+#define Y2      Y0 + 2
+#define Y3      Y0 + 3
+
+;; .7 = Sign of I.
+;; .0 == 0  =>  Y = 1.0f implicitly.
+#define Flags       R9
+#define Y_set       0
+
+;;;  Integer exponent input.
+#define I0      28
+#define I1      I0+1
+
+#define ONE     0x3f800000
+
+DEFUN __powisf2
+    ;; Save 11 Registers: R9...R17, R28, R29
+    do_prologue_saves 11
+
+    ;; Fill local vars with input parameters.
+    wmov    I0, 20
+    mov4    X0, A0
+    ;; Save sign of exponent for later.
+    mov     Flags,  I1
+    ;; I := abs (I)
+    tst     I1
+    brpl 1f
+    NEG2    I0
+1:
+    ;; Y := (I % 2) ? X : 1.0f
+    ;; (When we come from below, this is like SET, i.e. Flags.Y_set := 1).
+    bst     I0, 0
+    ;; Flags.Y_set = false means that we have to assume Y = 1.0f below.
+    bld     Flags,  Y_set
+2:  ;; We have A == X when we come from above.
+    mov4    Y0, A0
+
+.Loop:
+    ;; while (I >>= 1)
+    lsr     I1
+    ror     I0
+    sbiw    I0, 0
+    breq .Loop_done
+
+    ;; X := X * X
+    mov4    A0, X0
+#ifdef __WITH_AVRLIBC__
+    XCALL   squaref
+#else
+    mov4    B0, X0
+    XCALL   __mulsf3
+#endif /* Have AVR-LibC? */
+    mov4    X0, A0
+
+    ;; if (I % 2 == 1)  Y := Y * X
+    bst     I0, 0
+    brtc .Loop
+    bst     Flags, Y_set
+    ;; When Y is not set  =>  Y := Y * X = 1.0f * X (= A)
+    ;; Plus, we have to set Y_set = 1 (= I0.0)
+    brtc 1b
+    ;; Y is already set: Y := X * Y (= A * Y)
+    mov4    B0, Y0
+    XCALL   __mulsf3
+    rjmp 2b
+
+    ;; End while
+.Loop_done:
+
+    ;; A := 1.0f
+    ldi     A3, hhi8(ONE)
+    ldi     A2, hlo8(ONE)
+    ldi     A1, hi8(ONE)
+    ldi     A0, lo8(ONE)
+
+    ;; When Y is still not set, the result is 1.0f (= A).
+    bst     Flags, Y_set
+    brtc .Lret
+
+    ;; if (I was < 0) Y = 1.0f / Y
+    tst     Flags
+    brmi 1f
+    ;; A := Y
+    mov4    A0, Y0
+    rjmp .Lret
+1:  ;; A := 1 / Y = A / Y
+    mov4    B0, Y0
+    XCALL   __divsf3
+
+.Lret:
+    do_epilogue_restores 11
+ENDF __powisf2
+
+#undef A0
+#undef A1
+#undef A2
+#undef A3
+
+#undef B0
+#undef B1
+#undef B2
+#undef B3
+
+#undef X0
+#undef X1
+#undef X2
+#undef X3
+
+#undef Y0
+#undef Y1
+#undef Y2
+#undef Y3
+
+#undef I0
+#undef I1
+#undef ONE
+
+#endif /* __AVR_TINY__ */
+#endif /* L_powif */
 
 #include "lib1funcs-fixed.S"
