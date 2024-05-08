@@ -2748,8 +2748,7 @@ static rtx expand_mult_const (machine_mode, rtx, HOST_WIDE_INT, rtx,
 static unsigned HOST_WIDE_INT invert_mod2n (unsigned HOST_WIDE_INT, int);
 static rtx extract_high_half (scalar_int_mode, rtx);
 static rtx expmed_mult_highpart (scalar_int_mode, rtx, rtx, rtx, int, int);
-static rtx expmed_mult_highpart_optab (scalar_int_mode, rtx, rtx, rtx,
-				       int, int);
+
 /* Compute and return the best algorithm for multiplying by T.
    The algorithm must cost less than cost_limit
    If retval.cost >= COST_LIMIT, no algorithm was found and all
@@ -3856,30 +3855,25 @@ extract_high_half (scalar_int_mode mode, rtx op)
   return convert_modes (mode, wider_mode, op, 0);
 }
 
-/* Like expmed_mult_highpart, but only consider using a multiplication
-   optab.  OP1 is an rtx for the constant operand.  */
+/* Like expmed_mult_highpart, but only consider using multiplication optab.  */
 
-static rtx
+rtx
 expmed_mult_highpart_optab (scalar_int_mode mode, rtx op0, rtx op1,
 			    rtx target, int unsignedp, int max_cost)
 {
-  rtx narrow_op1 = gen_int_mode (INTVAL (op1), mode);
+  const scalar_int_mode wider_mode = GET_MODE_WIDER_MODE (mode).require ();
+  const bool speed = optimize_insn_for_speed_p ();
+  const int size = GET_MODE_BITSIZE (mode);
   optab moptab;
   rtx tem;
-  int size;
-  bool speed = optimize_insn_for_speed_p ();
-
-  scalar_int_mode wider_mode = GET_MODE_WIDER_MODE (mode).require ();
-
-  size = GET_MODE_BITSIZE (mode);
 
   /* Firstly, try using a multiplication insn that only generates the needed
      high part of the product, and in the sign flavor of unsignedp.  */
   if (mul_highpart_cost (speed, mode) < max_cost)
     {
       moptab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
-      tem = expand_binop (mode, moptab, op0, narrow_op1, target,
-			  unsignedp, OPTAB_DIRECT);
+      tem = expand_binop (mode, moptab, op0, op1, target, unsignedp,
+			  OPTAB_DIRECT);
       if (tem)
 	return tem;
     }
@@ -3892,12 +3886,12 @@ expmed_mult_highpart_optab (scalar_int_mode mode, rtx op0, rtx op1,
 	  + 4 * add_cost (speed, mode) < max_cost))
     {
       moptab = unsignedp ? smul_highpart_optab : umul_highpart_optab;
-      tem = expand_binop (mode, moptab, op0, narrow_op1, target,
-			  unsignedp, OPTAB_DIRECT);
+      tem = expand_binop (mode, moptab, op0, op1, target, !unsignedp,
+			  OPTAB_DIRECT);
       if (tem)
 	/* We used the wrong signedness.  Adjust the result.  */
-	return expand_mult_highpart_adjust (mode, tem, op0, narrow_op1,
-					    tem, unsignedp);
+	return expand_mult_highpart_adjust (mode, tem, op0, op1, tem,
+					    unsignedp);
     }
 
   /* Try widening multiplication.  */
@@ -3905,8 +3899,8 @@ expmed_mult_highpart_optab (scalar_int_mode mode, rtx op0, rtx op1,
   if (convert_optab_handler (moptab, wider_mode, mode) != CODE_FOR_nothing
       && mul_widen_cost (speed, wider_mode) < max_cost)
     {
-      tem = expand_binop (wider_mode, moptab, op0, narrow_op1, 0,
-			  unsignedp, OPTAB_WIDEN);
+      tem = expand_binop (wider_mode, moptab, op0, op1, NULL_RTX, unsignedp,
+			  OPTAB_WIDEN);
       if (tem)
 	return extract_high_half (mode, tem);
     }
@@ -3947,14 +3941,14 @@ expmed_mult_highpart_optab (scalar_int_mode mode, rtx op0, rtx op1,
 	  + 2 * shift_cost (speed, mode, size-1)
 	  + 4 * add_cost (speed, mode) < max_cost))
     {
-      tem = expand_binop (wider_mode, moptab, op0, narrow_op1,
-			  NULL_RTX, ! unsignedp, OPTAB_WIDEN);
+      tem = expand_binop (wider_mode, moptab, op0, op1, NULL_RTX, !unsignedp,
+			  OPTAB_WIDEN);
       if (tem != 0)
 	{
 	  tem = extract_high_half (mode, tem);
 	  /* We used the wrong signedness.  Adjust the result.  */
-	  return expand_mult_highpart_adjust (mode, tem, op0, narrow_op1,
-					      target, unsignedp);
+	  return expand_mult_highpart_adjust (mode, tem, op0, op1, target,
+					      unsignedp);
 	}
     }
 
@@ -3976,18 +3970,19 @@ static rtx
 expmed_mult_highpart (scalar_int_mode mode, rtx op0, rtx op1,
 		      rtx target, int unsignedp, int max_cost)
 {
+  const bool speed = optimize_insn_for_speed_p ();
   unsigned HOST_WIDE_INT cnst1;
   int extra_cost;
   bool sign_adjust = false;
   enum mult_variant variant;
   struct algorithm alg;
-  rtx tem;
-  bool speed = optimize_insn_for_speed_p ();
+  rtx narrow_op1, tem;
 
   /* We can't support modes wider than HOST_BITS_PER_INT.  */
   gcc_assert (HWI_COMPUTABLE_MODE_P (mode));
 
   cnst1 = INTVAL (op1) & GET_MODE_MASK (mode);
+  narrow_op1 = gen_int_mode (INTVAL (op1), mode);
 
   /* We can't optimize modes wider than BITS_PER_WORD.
      ??? We might be able to perform double-word arithmetic if
@@ -3995,7 +3990,7 @@ expmed_mult_highpart (scalar_int_mode mode, rtx op0, rtx op1,
      synth_mult etc. assume single-word operations.  */
   scalar_int_mode wider_mode = GET_MODE_WIDER_MODE (mode).require ();
   if (GET_MODE_BITSIZE (wider_mode) > BITS_PER_WORD)
-    return expmed_mult_highpart_optab (mode, op0, op1, target,
+    return expmed_mult_highpart_optab (mode, op0, narrow_op1, target,
 				       unsignedp, max_cost);
 
   extra_cost = shift_cost (speed, mode, GET_MODE_BITSIZE (mode) - 1);
@@ -4013,7 +4008,8 @@ expmed_mult_highpart (scalar_int_mode mode, rtx op0, rtx op1,
     {
       /* See whether the specialized multiplication optabs are
 	 cheaper than the shift/add version.  */
-      tem = expmed_mult_highpart_optab (mode, op0, op1, target, unsignedp,
+      tem = expmed_mult_highpart_optab (mode, op0, narrow_op1, target,
+					unsignedp,
 					alg.cost.cost + extra_cost);
       if (tem)
 	return tem;
@@ -4028,7 +4024,7 @@ expmed_mult_highpart (scalar_int_mode mode, rtx op0, rtx op1,
 
       return tem;
     }
-  return expmed_mult_highpart_optab (mode, op0, op1, target,
+  return expmed_mult_highpart_optab (mode, op0, narrow_op1, target,
 				     unsignedp, max_cost);
 }
 

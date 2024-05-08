@@ -6751,10 +6751,13 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
       return expand_binop (mode, tab1, op0, op1, target, uns_p,
 			   OPTAB_LIB_WIDEN);
     case 2:
+      return expmed_mult_highpart_optab (as_a <scalar_int_mode> (mode),
+					 op0, op1, target, uns_p, INT_MAX);
+    case 3:
       tab1 = uns_p ? vec_widen_umult_even_optab : vec_widen_smult_even_optab;
       tab2 = uns_p ? vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
       break;
-    case 3:
+    case 4:
       tab1 = uns_p ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
       tab2 = uns_p ? vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
       if (BYTES_BIG_ENDIAN)
@@ -6783,7 +6786,7 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
   m2 = gen_lowpart (mode, eops[0].value);
 
   vec_perm_builder sel;
-  if (method == 2)
+  if (method == 3)
     {
       /* The encoding has 2 interleaved stepped patterns.  */
       sel.new_vector (GET_MODE_NUNITS (mode), 2, 3);

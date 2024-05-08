@@ -502,18 +502,34 @@ find_widening_optab_handler_and_mode (optab op, machine_mode to_mode,
   return CODE_FOR_nothing;
 }
 
-/* Return non-zero if a highpart multiply is supported of can be synthisized.
+/* Return non-zero if a highpart multiply is supported or can be synthesized.
    For the benefit of expand_mult_highpart, the return value is 1 for direct,
-   2 for even/odd widening, and 3 for hi/lo widening.  */
+   2 for integral widening, 3 for even/odd widening, 4 for hi/lo widening.  */
 
 int
 can_mult_highpart_p (machine_mode mode, bool uns_p)
 {
   optab op;
+  scalar_int_mode int_mode;
 
   op = uns_p ? umul_highpart_optab : smul_highpart_optab;
   if (optab_handler (op, mode) != CODE_FOR_nothing)
     return 1;
+
+  /* If the mode is integral, synth from widening or larger operations.  */
+  if (is_a <scalar_int_mode> (mode, &int_mode))
+    {
+      scalar_int_mode wider_mode = GET_MODE_WIDER_MODE (int_mode).require ();
+
+      op = uns_p ? umul_widen_optab : smul_widen_optab;
+      if (convert_optab_handler (op, wider_mode, mode) != CODE_FOR_nothing)
+	return 2;
+
+      /* The test on the size comes from expmed_mult_highpart_optab.  */
+      if (optab_handler (smul_optab, wider_mode) != CODE_FOR_nothing
+	  && GET_MODE_BITSIZE (int_mode) - 1 < BITS_PER_WORD)
+	return 2;
+    }
 
   /* If the mode is an integral vector, synth from widening operations.  */
   if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
@@ -535,7 +551,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 			    + ((i & 1) ? nunits : 0));
 	  vec_perm_indices indices (sel, 2, nunits);
 	  if (can_vec_perm_const_p (mode, mode, indices))
-	    return 2;
+	    return 3;
 	}
     }
 
@@ -551,7 +567,7 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
 	    sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
 	  vec_perm_indices indices (sel, 2, nunits);
 	  if (can_vec_perm_const_p (mode, mode, indices))
-	    return 3;
+	    return 4;
 	}
     }
 
