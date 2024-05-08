@@ -1139,7 +1139,6 @@
 2024-05-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h: Remove unused declarations and add 'extern' to others.
-	no-issue-check
 
 2024-05-06  Piotr Trojanek  <trojanek@adacore.com>
 
