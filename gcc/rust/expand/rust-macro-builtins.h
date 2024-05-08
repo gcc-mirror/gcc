@@ -160,6 +160,12 @@ public:
 						   AST::MacroInvocData &invoc);
 
   static tl::optional<AST::Fragment>
+  nonglobal_asm_handler (location_t invoc_locus, AST::MacroInvocData &invoc);
+
+  static tl::optional<AST::Fragment>
+  global_asm_handler (location_t invoc_locus, AST::MacroInvocData &invoc);
+
+  static tl::optional<AST::Fragment>
   format_args_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
 		       AST::FormatArgs::Newline nl);
 
