@@ -1401,6 +1401,10 @@ determine_unroll_factor (class loop *loop, struct mem_ref_group *refs,
   struct mem_ref_group *agp;
   struct mem_ref *ref;
 
+  /* Bail out early in case we must not unroll loops.  */
+  if (!flag_unroll_loops)
+    return 1;
+
   /* First check whether the loop is not too large to unroll.  We ignore
      PARAM_MAX_UNROLL_TIMES, because for small loops, it prevented us
      from unrolling them enough to make exactly one cache line covered by each
