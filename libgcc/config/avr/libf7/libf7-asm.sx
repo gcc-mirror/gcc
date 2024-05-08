@@ -1877,4 +1877,16 @@ ENDF call_ddd
 
 #include "f7-wraps.h"
 
+;;; Some additional, singular wraps that don't match any pattern.
+
+;; double __powidf2 (double, int)  ; __builtin_powi
+#ifdef F7MOD_D_powi_
+_DEFUN __powidf2
+    .global F7_NAME(powi)
+    ldi     ZH,     hi8(gs(F7_NAME(powi)))
+    ldi     ZL,     lo8(gs(F7_NAME(powi)))
+    F7jmp   call_ddx
+_ENDF __powidf2
+#endif /* F7MOD_D_powi_ */
+
 #endif /* !AVR_TINY */
