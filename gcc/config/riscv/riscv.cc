@@ -878,50 +878,51 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	  codes[1].use_uw = false;
 	  cost = 2;
 	}
-      /* Final cases, particularly focused on bseti.  */
-      else if (cost > 2 && TARGET_ZBS)
+    }
+
+  /* Final cases, particularly focused on bseti.  */
+  if (cost > 2 && TARGET_ZBS)
+    {
+      int i = 0;
+
+      /* First handle any bits set by LUI.  Be careful of the
+	 SImode sign bit!.  */
+      if (value & 0x7ffff800)
 	{
-	  int i = 0;
+	  alt_codes[i].code = (i == 0 ? UNKNOWN : IOR);
+	  alt_codes[i].value = value & 0x7ffff800;
+	  alt_codes[i].use_uw = false;
+	  value &= ~0x7ffff800;
+	   i++;
+	}
 
-	  /* First handle any bits set by LUI.  Be careful of the
-	     SImode sign bit!.  */
-	  if (value & 0x7ffff800)
-	    {
-	      alt_codes[i].code = (i == 0 ? UNKNOWN : IOR);
-	      alt_codes[i].value = value & 0x7ffff800;
-	      alt_codes[i].use_uw = false;
-	      value &= ~0x7ffff800;
-	      i++;
-	    }
+      /* Next, any bits we can handle with addi.  */
+      if (value & 0x7ff)
+	{
+	  alt_codes[i].code = (i == 0 ? UNKNOWN : PLUS);
+	  alt_codes[i].value = value & 0x7ff;
+	  alt_codes[i].use_uw = false;
+	  value &= ~0x7ff;
+	  i++;
+	}
 
-	  /* Next, any bits we can handle with addi.  */
-	  if (value & 0x7ff)
-	    {
-	      alt_codes[i].code = (i == 0 ? UNKNOWN : PLUS);
-	      alt_codes[i].value = value & 0x7ff;
-	      alt_codes[i].use_uw = false;
-	      value &= ~0x7ff;
-	      i++;
-	    }
+      /* And any residuals with bseti.  */
+      while (i < cost && value)
+	{
+	  HOST_WIDE_INT bit = ctz_hwi (value);
+	  alt_codes[i].code = (i == 0 ? UNKNOWN : IOR);
+	  alt_codes[i].value = 1UL << bit;
+	  alt_codes[i].use_uw = false;
+	  value &= ~(1ULL << bit);
+	  i++;
+	}
 
-	  /* And any residuals with bseti.  */
-	  while (i < cost && value)
-	    {
-	      HOST_WIDE_INT bit = ctz_hwi (value);
-	      alt_codes[i].code = (i == 0 ? UNKNOWN : IOR);
-	      alt_codes[i].value = 1UL << bit;
-	      alt_codes[i].use_uw = false;
-	      value &= ~(1ULL << bit);
-	      i++;
-	    }
-
-	  /* If LUI+ADDI+BSETI resulted in a more efficient
-	     sequence, then use it.  */
-	  if (i < cost)
-	    {
-	      memcpy (codes, alt_codes, sizeof (alt_codes));
-	      cost = i;
-	    }
+      /* If LUI+ADDI+BSETI resulted in a more efficient
+	 sequence, then use it.  */
+      if (i < cost)
+	{
+	  memcpy (codes, alt_codes, sizeof (alt_codes));
+	  cost = i;
 	}
     }
 
