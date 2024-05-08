@@ -197,7 +197,8 @@ range_op_handler::discriminator_fail (const vrange &r1,
   gcc_checking_assert (r1.m_discriminator < sizeof (name) - 1);
   gcc_checking_assert (r2.m_discriminator < sizeof (name) - 1);
   gcc_checking_assert (r3.m_discriminator < sizeof (name) - 1);
-  fprintf (stderr, "DISCRIMINATOR FAIL.  Dispatch ====> RO_%c%c%c <====\n",
+  fprintf (stderr,
+	   "Unsupported operand combination in dispatch: RO_%c%c%c\n",
 	   name[r1.m_discriminator],
 	   name[r2.m_discriminator],
 	   name[r3.m_discriminator]);
