@@ -22237,7 +22237,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	{
 	  /* cmov.  */
 	  *total = COSTS_N_INSNS (1);
-	  if (!REG_P (XEXP (x, 0)))
+	  if (!COMPARISON_P (XEXP (x, 0)) && !REG_P (XEXP (x, 0)))
 	    *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed);
 	  if (!REG_P (XEXP (x, 1)))
 	    *total += rtx_cost (XEXP (x, 1), mode, code, 1, speed);
