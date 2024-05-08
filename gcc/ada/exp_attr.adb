@@ -1780,14 +1780,25 @@ package body Exp_Attr is
          begin
             Aux_Decl := Empty;
 
-            --  Generate a nominal type for the constant when the prefix is of
-            --  a constrained type. This is achieved by setting the Etype of
-            --  the relocated prefix to its base type. Since the prefix is now
-            --  the initialization expression of the constant, its freezing
-            --  will produce a proper nominal type.
-
             Temp_Expr := Relocate_Node (Pref);
-            Set_Etype (Temp_Expr, Base_Typ);
+
+            --  For Etype (Temp_Expr) in some cases we cannot use either
+            --  Etype (Pref) or Base_Typ. So we set Etype (Temp_Expr) to null
+            --  and mark Temp_Expr as requiring analysis. Rather than trying
+            --  to sort out exactly when this is needed, we do it
+            --  unconditionally.
+            --  One case where this is needed is when
+            --     1) Pref is an N_Selected_Component name that
+            --        refers to a component which is subject to a
+            --        discriminant-dependent constraint; and
+            --     2) The prefix of that N_Selected_Component refers to a
+            --        formal parameter with an unconstrained subtype; and
+            --     3) Pref has only been preanalyzed (so that
+            --        Build_Actual_Subtype_Of_Component has not been called
+            --        and Etype (Pref) equals the Etype of the component).
+
+            Set_Etype (Temp_Expr, Empty);
+            Set_Analyzed (Temp_Expr, False);
 
             --  Generate:
             --    Temp : constant Base_Typ := Pref;
