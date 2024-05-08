@@ -84,17 +84,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     if (__mod)
       *__fptr++ = __mod;
-    // [22.2.2.2.2] Table 58
+    // C++11 [facet.num.put.virtuals] Table 88
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 4084. std::fixed ignores std::uppercase
+    bool __upper = __flags & ios_base::uppercase;
     if (__fltfield == ios_base::fixed)
-      *__fptr++ = 'f';
+      *__fptr++ = __upper ? 'F' : 'f';
     else if (__fltfield == ios_base::scientific)
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'E' : 'e';
+      *__fptr++ = __upper ? 'E' : 'e';
 #if _GLIBCXX_USE_C99_STDIO
     else if (__fltfield == (ios_base::fixed | ios_base::scientific))
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'A' : 'a';
+      *__fptr++ = __upper ? 'A' : 'a';
 #endif
     else
-      *__fptr++ = (__flags & ios_base::uppercase) ? 'G' : 'g';
+      *__fptr++ = __upper ? 'G' : 'g';
     *__fptr = '\0';
   }
 
