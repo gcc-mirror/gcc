@@ -29,6 +29,9 @@
 (define_register_constraint "f" "TARGET_HARD_FLOAT ? FP_REGS : NO_REGS"
   "A floating-point register (if available).")
 
+(define_register_constraint "w" "ISA_HAS_MSA ? FP_REGS : NO_REGS"
+  "A MIPS SIMD register (if available).")
+
 (define_register_constraint "h" "NO_REGS"
   "Formerly the @code{hi} register.  This constraint is no longer supported.")
 
