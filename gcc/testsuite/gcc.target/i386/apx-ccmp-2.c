@@ -42,6 +42,47 @@ int foo_noapx(int a, int b, int c, int d)
   return sum;
 }
 
+__attribute__((noinline, noclone,
+	       optimize(("finite-math-only")), target("apxf")))
+double foo_fp_apx(int a, double b, int c, double d)
+{
+  int sum = a;
+  double sumd = b;
+
+  if (a != c)
+    {
+      sum += a;
+      if (a < c || sumd != d || sum > c)
+	{
+	  c += a;
+	  sum += a + c;
+	}
+    }
+
+  return sum + sumd;
+}
+
+__attribute__((noinline, noclone,
+	       optimize(("finite-math-only")), target("no-apxf")))
+double foo_fp_noapx(int a, double b, int c, double d)
+{
+  int sum = a;
+  double sumd = b;
+
+  if (a != c)
+    {
+      sum += a;
+      if (a < c || sumd != d || sum > c)
+	{
+	  c += a;
+	  sum += a + c;
+	}
+    }
+
+  return sum + sumd;
+}
+
+
 int main (void)
 {
   if (!__builtin_cpu_supports ("apxf"))
@@ -51,6 +92,12 @@ int main (void)
   int val2 = foo_apx (23, 17, 32, 44);
 
   if (val1 != val2)
+    __builtin_abort ();
+
+  double val3 = foo_fp_noapx (24, 7.5, 32, 2.0);
+  double val4 = foo_fp_apx (24, 7.5, 32, 2.0);
+
+  if (val3 != val4)
     __builtin_abort ();
 
   return 0;

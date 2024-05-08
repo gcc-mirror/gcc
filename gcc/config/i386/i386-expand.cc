@@ -25369,18 +25369,58 @@ ix86_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
   if (op_mode == VOIDmode)
     op_mode = GET_MODE (op1);
 
+  /* We only supports following scalar comparisons that use just 1
+     instruction: DI/SI/QI/HI/DF/SF/HF.
+     Unordered/Ordered compare cannot be corretly indentified by
+     ccmp so they are not supported.  */
   if (!(op_mode == DImode || op_mode == SImode || op_mode == HImode
-	|| op_mode == QImode))
+	|| op_mode == QImode || op_mode == DFmode || op_mode == SFmode
+	|| op_mode == HFmode)
+      || code == ORDERED
+      || code == UNORDERED)
     {
       end_sequence ();
       return NULL_RTX;
     }
 
   /* Canonicalize the operands according to mode.  */
-  if (!nonimmediate_operand (op0, op_mode))
-    op0 = force_reg (op_mode, op0);
-  if (!x86_64_general_operand (op1, op_mode))
-    op1 = force_reg (op_mode, op1);
+  if (SCALAR_INT_MODE_P (op_mode))
+    {
+      if (!nonimmediate_operand (op0, op_mode))
+	op0 = force_reg (op_mode, op0);
+      if (!x86_64_general_operand (op1, op_mode))
+	op1 = force_reg (op_mode, op1);
+    }
+  else
+    {
+      /* op0/op1 can be canonicallized from expand_fp_compare, so
+	 just adjust the code to make it generate supported fp
+	 condition.  */
+      if (ix86_fp_compare_code_to_integer (code) == UNKNOWN)
+	{
+	  /* First try to split condition if we don't need to honor
+	     NaNs, as the ORDERED/UNORDERED check always fall
+	     through.  */
+	  if (!HONOR_NANS (op_mode))
+	    {
+	      rtx_code first_code;
+	      split_comparison (code, op_mode, &first_code, &code);
+	    }
+	  /* Otherwise try to swap the operand order and check if
+	     the comparison is supported.  */
+	  else
+	    {
+	      code = swap_condition (code);
+	      std::swap (op0, op1);
+	    }
+
+	  if (ix86_fp_compare_code_to_integer (code) == UNKNOWN)
+	    {
+	      end_sequence ();
+	      return NULL_RTX;
+	    }
+	}
+    }
 
   *prep_seq = get_insns ();
   end_sequence ();
@@ -25445,6 +25485,9 @@ ix86_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
   dfv = ix86_get_flags_cc ((rtx_code) cmp_code);
 
   prev_code = GET_CODE (prev);
+  /* Fixup FP compare code here.  */
+  if (GET_MODE (XEXP (prev, 0)) == CCFPmode)
+    prev_code = ix86_fp_compare_code_to_integer (prev_code);
 
   if (bit_code != AND)
     prev_code = reverse_condition (prev_code);
