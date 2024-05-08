@@ -1749,20 +1749,33 @@ void f7_powi (f7_t *cc, const f7_t *aa, int ii)
 {
   uint16_t u16 = ii;
   f7_t xx27, *xx2 = &xx27;
+  bool cc_is_one = true;
+  bool expo_is_neg = false;
 
   if (ii < 0)
-    u16 = -u16;
+    {
+      u16 = -u16;
+      expo_is_neg = true;
+    }
 
   f7_copy (xx2, aa);
-
-  f7_set_u16 (cc, 1);
 
   while (1)
     {
       if (u16 & 1)
-	f7_Imul (cc, xx2);
+	{
+	  if (cc_is_one)
+	    {
+	      // C *= X2 simplifies to C = X2.
+	      f7_copy (cc, xx2);
+	      cc_is_one = false;
+	    }
+	  else
+	    f7_Imul (cc, xx2);
+	}
 
-      if (! f7_is_nonzero (cc))
+      if (! cc_is_one
+	  && ! f7_is_nonzero (cc))
 	break;
 
       u16 >>= 1;
@@ -1771,8 +1784,10 @@ void f7_powi (f7_t *cc, const f7_t *aa, int ii)
       f7_Isquare (xx2);
     }
 
-  if (ii < 0)
-    f7_div1 (xx2, aa);
+  if (cc_is_one)
+    f7_set_u16 (cc, 1);
+  else if (expo_is_neg)
+    f7_div1 (cc, cc);
 }
 #endif // F7MOD_powi_
 
