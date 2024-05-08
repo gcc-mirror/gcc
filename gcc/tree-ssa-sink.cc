@@ -439,10 +439,7 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 	  if (sinkbb == frombb)
 	    return false;
 
-	  if (sinkbb == gimple_bb (use))
-	    *togsi = gsi_for_stmt (use);
-	  else
-	    *togsi = gsi_after_labels (sinkbb);
+	  *togsi = gsi_after_labels (sinkbb);
 
 	  return true;
 	}
