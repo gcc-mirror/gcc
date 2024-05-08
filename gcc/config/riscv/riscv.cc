@@ -3130,35 +3130,39 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
     }
 
   /* In order to fit NaN boxing, expand
-     (set FP_REG (reg:HF src))
+     (set FP_REG (reg:HF/BF src))
      to
      (set (reg:SI/DI mask) (const_int -65536)
-     (set (reg:SI/DI temp) (zero_extend:SI/DI (subreg:HI (reg:HF src) 0)))
+     (set (reg:SI/DI temp) (zero_extend:SI/DI (subreg:HI (reg:HF/BF src) 0)))
      (set (reg:SI/DI temp) (ior:SI/DI (reg:SI/DI mask) (reg:SI/DI temp)))
-     (set (reg:HF dest) (unspec:HF [ (reg:SI/DI temp) ] UNSPEC_FMV_SFP16_X))
+     (set (reg:HF/BF dest) (unspec:HF/BF[ (reg:SI/DI temp) ]
+			    UNSPEC_FMV_SFP16_X/UNSPEC_FMV_SBF16_X))
      */
 
- if (TARGET_HARD_FLOAT
-     && !TARGET_ZFHMIN && mode == HFmode
-     && REG_P (dest) && FP_REG_P (REGNO (dest))
-     && REG_P (src) && !FP_REG_P (REGNO (src))
-     && can_create_pseudo_p ())
-   {
-     rtx mask = force_reg (word_mode, gen_int_mode (-65536, word_mode));
-     rtx temp = gen_reg_rtx (word_mode);
-     emit_insn (gen_extend_insn (temp,
-				 simplify_gen_subreg (HImode, src, mode, 0),
-				 word_mode, HImode, 1));
-     if (word_mode == SImode)
-       emit_insn (gen_iorsi3 (temp, mask, temp));
-     else
-       emit_insn (gen_iordi3 (temp, mask, temp));
+  if (TARGET_HARD_FLOAT
+      && ((!TARGET_ZFHMIN && mode == HFmode)
+	  || (!TARGET_ZFBFMIN && mode == BFmode))
+      && REG_P (dest) && FP_REG_P (REGNO (dest))
+      && REG_P (src) && !FP_REG_P (REGNO (src))
+      && can_create_pseudo_p ())
+    {
+      rtx mask = force_reg (word_mode, gen_int_mode (-65536, word_mode));
+      rtx temp = gen_reg_rtx (word_mode);
+      emit_insn (gen_extend_insn (temp,
+				  simplify_gen_subreg (HImode, src, mode, 0),
+				  word_mode, HImode, 1));
+      if (word_mode == SImode)
+	emit_insn (gen_iorsi3 (temp, mask, temp));
+      else
+	emit_insn (gen_iordi3 (temp, mask, temp));
 
-     riscv_emit_move (dest, gen_rtx_UNSPEC (HFmode, gen_rtvec (1, temp),
-					    UNSPEC_FMV_SFP16_X));
+      riscv_emit_move (dest,
+		       gen_rtx_UNSPEC (mode, gen_rtvec (1, temp),
+				       mode == HFmode ? UNSPEC_FMV_SFP16_X
+						      : UNSPEC_FMV_SBF16_X));
 
-     return true;
-   }
+      return true;
+    }
 
   /* We need to deal with constants that would be legitimate
      immediate_operands but aren't legitimate move_operands.  */
