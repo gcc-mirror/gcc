@@ -1111,6 +1111,16 @@ irange::normalize_kind ()
     }
 }
 
+inline bool
+contains_zero_p (const irange &r)
+{
+  if (r.undefined_p ())
+    return false;
+
+  tree zero = build_zero_cst (r.type ());
+  return r.contains_p (zero);
+}
+
 // Return the maximum value for TYPE.
 
 inline tree
