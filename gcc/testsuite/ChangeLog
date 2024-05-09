@@ -1,3 +1,251 @@
+2024-05-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/full-vec-move1.c:
+	Introduce extern func use to get rid of ccp4 optimization.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89224
+	* g++.dg/torture/vector-subaccess-1.C: Add -Wno-psabi as additional
+	options.
+
+2024-05-09  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/msa-inline-asm.c: New test.
+
+2024-05-09  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/cpymemsi-1.c: New test.
+	* gcc.target/riscv/cpymemsi-2.c: New test.
+	* gcc.target/riscv/cpymemsi-3.c: New test.
+	* gcc.target/riscv/cpymemsi.c: New test.
+
+2024-05-09  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/84508
+	* gcc.target/i386/pr84508-1.c: New test.
+	* gcc.target/i386/pr84508-2.c: Ditto.
+
+2024-05-08  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/_Bfloat16-nanboxing.c: New test.
+
+2024-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114981
+	* gcc.target/avr/pr114981-powil.c: New test.
+
+2024-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113582
+	* g++.dg/warn/Wunused-label-4.C: New test.
+
+2024-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/112392
+	* gcc.dg/tree-ssa/phi-opt-41.c: New test.
+
+2024-05-08  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
+
+	PR tree-optimization/81953
+	* gcc.dg/tree-ssa/ssa-sink-21.c: New test.
+
+2024-05-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/extend-shift-helpers.h: Add helpers for
+	sign-extension.
+	* gcc.target/riscv/sign-extend-rshift-32.c: New test.
+	* gcc.target/riscv/sign-extend-rshift-64.c: New test.
+	* gcc.target/riscv/sign-extend-rshift.c: New test.
+
+2024-05-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/111501
+	* gcc.target/riscv/extend-shift-helpers.h: New test.
+	* gcc.target/riscv/pr111501.c: New test.
+	* gcc.target/riscv/zero-extend-rshift-32.c: New test.
+	* gcc.target/riscv/zero-extend-rshift-64.c: New test.
+	* gcc.target/riscv/zero-extend-rshift.c: New test.
+
+2024-05-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/sign-extend-1.c: Test sraiw 24 and sraiw 16.
+
+2024-05-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/sign-extend-1.c: New test.
+
+2024-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114975
+	* gcc.target/avr/pr114975-parity.c: New test.
+
+2024-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114975
+	* gcc.target/avr/pr114975-popcount.c: New test.
+
+2024-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114965
+	* gcc.c-torture/execute/pr114965.c: New test.
+
+2024-05-08  konglin1  <lingling.kong@intel.com>
+
+	* gcc.target/i386/cmov6.c: Fixed.
+
+2024-05-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114856
+	* g++.dg/modules/pr114856.h: New test.
+	* g++.dg/modules/pr114856_a.H: New test.
+	* g++.dg/modules/pr114856_b.C: New test.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/89224
+	* g++.dg/torture/vector-subaccess-1.C: New test.
+	* gcc.dg/pr83415.c: Change warning to error.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/19661
+	* g++.dg/tree-ssa/cxa_atexit-1.C: New test.
+	* g++.dg/tree-ssa/cxa_atexit-2.C: New test.
+	* g++.dg/tree-ssa/cxa_atexit-3.C: New test.
+	* g++.dg/tree-ssa/cxa_atexit-4.C: New test.
+	* g++.dg/tree-ssa/cxa_atexit-5.C: New test.
+	* g++.dg/tree-ssa/cxa_atexit-6.C: New test.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/114894
+	* gcc.dg/tree-ssa/phi-opt-value-5.c: New test.
+
+2024-05-07  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/memcpy-nonoverlapping.c: New test.
+	* gcc.target/riscv/memset-nonoverlapping.c: New test.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114459
+	* g++.dg/cpp26/feat-cxx26.C (__cpp_variadic_friend): Add test.
+	* g++.dg/cpp26/variadic-friend1.C: New test.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114907
+	* gcc.dg/pr114907.c: New test.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114956
+	* gcc.dg/asan/pr114956.c: New test.
+
+2024-05-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114133
+	* gm2/extensions/run/pass/callingc10.mod: Convert constant
+	literal numbers into INTEGER.
+	* gm2/extensions/run/pass/callingc11.mod: Ditto.
+	* gm2/extensions/run/pass/vararg2.mod: Ditto.
+	* gm2/iso/run/pass/packed.mod: Emit a printf as a runtime
+	diagnostic.
+
+2024-05-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zbb-strlen-disabled-2.c: Turn off inlining.
+
+2024-05-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/114674
+	* gcc.target/aarch64/pr114674.c: New test.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/27800
+	* gcc.dg/pr27800.c: New testcase.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114931
+	* gcc.dg/pr114931.c: New testcase.
+
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_effective_target_pie): Always
+	enable on *-*-solaris2*.
+
+2024-05-07  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr113079.c: New test.
+	* gcc.target/i386/pr113079-2.c: New test.
+	* gcc.target/i386/sse4-pr113079-2.c: New test.
+
+2024-05-07  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr113090.c: New test.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* g++.target/pru/minrt-1.cc: New test.
+	* g++.target/pru/minrt-2.cc: New test.
+	* g++.target/pru/minrt-3.cc: New test.
+	* g++.target/pru/pru.exp: New test.
+	* gcc.target/pru/minrt-1.c: New test.
+	* gcc.target/pru/minrt-2.c: New test.
+	* gcc.target/pru/minrt-3.c: New test.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/noreturn-prologue-1.c: New test.
+	* gcc.target/pru/noreturn-prologue-2.c: New test.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/extzv-1.c: Update to mark the new more
+	efficient generated code sequence.
+	* gcc.target/pru/extzv-2.c: Ditto.
+	* gcc.target/pru/extzv-3.c: Ditto.
+	* gcc.target/pru/zero_extend-op0.c: New test.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/ashiftrt.c: Minor update due to new (but
+	equivalent) generated code sequence.
+	* gcc.target/pru/extzv-1.c: New test.
+	* gcc.target/pru/extzv-2.c: New test.
+	* gcc.target/pru/extzv-3.c: New test.
+	* gcc.target/pru/insv-1.c: New test.
+	* gcc.target/pru/insv-2.c: New test.
+	* gcc.target/pru/insv-3.c: New test.
+	* gcc.target/pru/insv-4.c: New test.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/pru/mov-0.c: New test.
+
+2024-05-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/106060
+	* gcc.target/i386/auto-init-8.c: Update test case.
+	* gcc.target/i386/avx512fp16-13.c: Likewise.
+	* gcc.target/i386/pr100865-9a.c: Likewise.
+	* gcc.target/i386/pr101796-1.c: Likewise.
+	* gcc.target/i386/pr106060-1.c: New test case.
+	* gcc.target/i386/pr106060-2.c: Likewise.
+	* gcc.target/i386/pr106060-3.c: Likewise.
+	* gcc.target/i386/pr70314.c: Update test case.
+	* gcc.target/i386/vect-shiftv4qi.c: Likewise.
+	* gcc.target/i386/vect-shiftv8qi.c: Likewise.
+
+2024-05-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114954
+	* g++.dg/modules/pr114954.C: New test.
+
 2024-05-06  Xiao Zeng  <zengxiao@eswincomputing.com>
 
 	* gcc.target/riscv/arch-35.c: New test.

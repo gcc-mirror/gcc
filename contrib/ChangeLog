@@ -1,3 +1,19 @@
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	9dbff9c05520a74e6cd337578f27b56c941f64f3 to IGNORED_COMMITS.
+
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* make_sunver.pl: Use File::Basename;
+	Skip -lLIB args.
+	Convert libtool object/archive names to underlying
+	objects/archives.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 14.
+
 2024-05-06  Ken Matsui  <kmatsui@gcc.gnu.org>
 
 	* gcc-changelog/git_check_commit.py: Implement --num-commits.

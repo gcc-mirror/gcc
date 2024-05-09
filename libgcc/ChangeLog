@@ -1,3 +1,30 @@
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config.host: Add aarch64-w64-mingw32 target. Adjust targets
+	after moving MinGW files.
+	* config/i386/t-gthr-win32: Move to...
+	* config/mingw/t-gthr-win32: ...here.
+	* config/i386/t-mingw-pthread: Move to...
+	* config/mingw/t-mingw-pthread: ...here.
+	* config/aarch64/t-no-eh: New file. EH is not yet implemented for
+	the target, and the default definition should be disabled.
+
+2024-05-07  Wolfgang Hospital  <Wolfgang.Hospital@arcor.de>
+
+	PR target/114835
+	* config/avr/lib1funcs.S (__popcountqi2): Use code that
+	is one instruction shorter / faster.
+
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac <*-*-solaris2*> (libgcc_cv_solaris_crts): Remove.
+	* config.host <*-*-solaris2*>: Remove !libgcc_cv_solaris_crts
+	support.
+	* configure, config.in: Regenerate.
+	* config/sol2/gmon.c (internal_mcount) [!HAVE_SOLARIS_CRTS]: Remove.
+	* config/i386/sol2-c1.S, config/sparc/sol2-c1.S: Remove.
+	* config/sol2/t-sol2 (crt1.o, gcrt1.o): Remove.
+
 2024-05-06  Xiao Zeng  <zengxiao@eswincomputing.com>
 	    Jin Ma  <jinma@linux.alibaba.com>
 

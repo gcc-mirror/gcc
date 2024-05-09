@@ -1,3 +1,617 @@
+2024-05-09  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/constraints.md: Add new constraint 'w'.
+
+2024-05-09  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/84508
+	* config/i386/emmintrin.h
+	(_mm_load_sd): Remove alignment requirement.
+	(_mm_store_sd): Ditto.
+	(_mm_loadh_pd): Ditto.
+	(_mm_loadl_pd): Ditto.
+	(_mm_storel_pd): Add alignment requirement.
+	* config/i386/xmmintrin.h
+	(_mm_loadh_pi): Remove alignment requirement.
+	(_mm_loadl_pi): Ditto.
+	(_mm_load_ss): Ditto.
+	(_mm_store_ss): Ditto.
+
+2024-05-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/114912
+	* value-range.h (class Value_Range): Use a union.
+
+2024-05-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (range_op_handler::discriminator_fail): Reword error
+	message.
+
+2024-05-09  konglin1  <lingling.kong@intel.com>
+
+	* config/i386/i386.cc (ix86_hardreg_mov_ok): Relax
+	hard reg mov restriction when lra in progress.
+
+2024-05-08  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Expand movbf
+	with Nan-boxing value.
+	* config/riscv/riscv.md (*movbf_softfloat_boxing): New pattern.
+
+2024-05-08  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Fix incorrect
+	if-then-else nesting of Zbs code.
+
+2024-05-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/114810
+	* lra-constraints.cc (process_alt_operands): Calculate union reg
+	class for the alternative, peak matched regs and required reload
+	regs.  Recognize alternatives with lack of available registers and
+	make them costly.  Add debug print about this case.
+
+2024-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/112392
+	* match.pd (`x CMP nonnegative ? x : ABS<x>`): New pattern;
+	where CMP is ==, > and >=.
+	(`x CMP nonnegative@y ? y : ABS<x>`): New pattern.
+
+2024-05-08  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
+
+	PR tree-optimization/81953
+	* tree-ssa-sink.cc (statement_sink_location):Sink statements at
+	the begining of the basic block after labels.
+
+2024-05-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/iterators.md (ashiftrt): New code attribute
+	'extract_shift' and adding extractions to optab.
+	* config/riscv/riscv.md (*lshr<GPR:mode>3_zero_extend_4): Rename to...
+	(*<any_extract:optab><GPR:mode>3):...this and add support for
+	sign-extensions.
+
+2024-05-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/111501
+	* config/riscv/riscv.md (*lshr<GPR:mode>3_zero_extend_4): New
+	pattern for zero-extraction.
+
+2024-05-08  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/iterators.md (sraiw): New code iterator 'any_extract'.
+	New code attribute 'extract_sidi_shift'.
+	* config/riscv/riscv.md (*lshrsi3_zero_extend_2): Rename to...
+	(*lshrsi3_extend_2):...this and add support for sign-extensions.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (get_initial_defs_for_reduction): Convert
+	initial value to the vector component type.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_enhance_data_refs_alignment):
+	Properly guard DR_GROUP_SIZE access with STMT_VINFO_GROUPED_ACCESS.
+
+2024-05-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/114936
+	* config/aarch64/aarch64-ldp-fusion.cc (combine_reg_notes):
+	Ensure insn iN has its REG_FRAME_RELATED_EXPR (if any) stored in
+	FR_EXPR[N-1], thus matching the correspondence expected by the
+	copy_rtx calls.
+
+2024-05-08  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* tree-ssa-loop-prefetch.cc (determine_unroll_factor): Honour
+	-fno-unroll-loops.
+
+2024-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114975
+	* config/avr/avr.md: Add combine pattern for
+	8-bit parity detection.
+
+2024-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114975
+	* config/avr/avr.md: Add combine pattern for
+	8-bit popcount detection.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-into-ssa.cc (insert_updated_phi_nodes_for): Skip
+	pruning when the nearest common dominator is the successor
+	of ENTRY_BLOCK.  Do not copy IDF but prune it directly.
+
+2024-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114965
+	* tree-ssa-reassoc.cc (optimize_range_tests_to_bit_test): Don't try to
+	optimize away exp - lowi subtraction from shift count unless entry
+	test is emitted or unless r.upper_bound () is smaller than prec.
+
+2024-05-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expmed.h (choose_multiplier): Tweak description and remove last
+	parameter.
+	* expmed.cc (choose_multiplier): Likewise.  Add assertion for the
+	third parameter and adds details to various comments.
+	(invert_mod2n): Tweak description and add assertion for the first
+	parameter.
+	(expand_divmod): Adjust calls to choose_multiplier.
+	* tree-vect-generic.cc (expand_vector_divmod): Likewise.
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Likewise.
+
+2024-05-08  konglin1  <lingling.kong@intel.com>
+
+	PR target/109549
+	* config/i386/i386.cc (ix86_rtx_costs): The XEXP (x, 0) for cmov
+	is an operator do not need to compute cost.
+
+2024-05-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (sbr_sparse_bitmap::sbr_sparse_bitmap):
+	Change irange to prange.
+	* gimple-range-fold.cc (fold_using_range::fold_stmt): Same.
+	(fold_using_range::range_of_address): Same.
+	* gimple-range-fold.h (range_of_address): Same.
+	* gimple-range-infer.cc (gimple_infer_range::add_nonzero): Same.
+	* gimple-range-op.cc (class cfn_strlen): Same.
+	* gimple-range-path.cc
+	(path_range_query::adjust_for_non_null_uses): Same.
+	* gimple-ssa-warn-access.cc (pass_waccess::check_pointer_uses): Same.
+	* tree-ssa-structalias.cc (find_what_p_points_to): Same.
+	* range-op-ptr.cc (range_op_table::initialize_pointer_ops): Remove
+	hybrid entries in table.
+	* range-op.cc (range_op_table::range_op_table): Add pointer
+	entries for bitwise and/or and min/max.
+	* value-range.cc (irange::verify_range): Add assert.
+	* value-range.h (irange::varying_compatible_p): Remove check for
+	error_mark_node.
+	(irange::supports_p): Remove pointer support.
+	* ipa-cp.h (ipa_supports_p): Add prange support.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/19661
+	* tree-ssa-dce.cc (is_cxa_atexit): New function.
+	(is_removable_cxa_atexit_call): New function.
+	(mark_stmt_if_obviously_necessary): Don't mark removable
+	cxa_at_exit calls.
+	(mark_all_reaching_defs_necessary_1): Likewise.
+	(propagate_necessity): Likewise.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/114894
+	* match.pd (`a != 0 ? a / b : 0`): New pattern.
+	(`a != 0 ? a * b : 0`): New pattern.
+	(`a != 0 ? a & b : 0`): New pattern.
+
+2024-05-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (generic_ooo_tune_info): Turn on
+	overlap_op_by_pieces.
+
+2024-05-07  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (struct riscv_tune_param): Add new
+	"overlap_op_by_pieces" field.
+	(rocket_tune_info, sifive_7_tune_info): Set it.
+	(sifive_p400_tune_info, sifive_p600_tune_info): Likewise.
+	(thead_c906_tune_info, xiangshan_nanhu_tune_info): Likewise.
+	(generic_ooo_tune_info, optimize_size_tune_info): Likewise.
+	(riscv_overlap_op_by_pieces): New function.
+	(TARGET_OVERLAP_OP_BY_PIECES_P): define.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114907
+	* expr.cc (convert_mode_scalar): Use trunc_optab rather than
+	sext_optab for HF->BF conversions.
+	* optabs-libfuncs.cc (gen_trunc_conv_libfunc): Likewise.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114956
+	* tree-inline.cc: Include asan.h.
+	(copy_bb): Remove also .ASAN_MARK calls if id->dst_fn has asan/hwasan
+	sanitization disabled.
+
+2024-05-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-string.cc (riscv_expand_strcmp): Do not inline
+	strncmp with zero size.
+	(emit_strcmp_scalar_compare_subword): Adjust rotation for rv32 vs rv64.
+	* config/riscv/riscv.opt (var_inline_strcmp): Enable by default.
+	(vriscv_inline_strncmp, riscv_inline_strlen): Likewise.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config.gcc: Build and add objects for Cygwin and MinGW. Add Cygwin
+	and MinGW options to the target.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config/i386/mingw-w64.opt.urls: Rename options' name and
+	regenerate option URLs.
+	* config/lynx.opt.urls: Likewise.
+	* config/mingw/cygming.opt.urls: Likewise.
+	* config/mingw/mingw.opt.urls: Likewise.
+	* doc/invoke.texi: Likewise.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config/aarch64/aarch64.h (struct seh_frame_state): Declare SEH
+	structure in machine_function.
+	(GTY): Add SEH field.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config.gcc: Add Cygwin and MinGW difinitions.
+	* config/aarch64/aarch64-protos.h
+	(mingw_pe_maybe_record_exported_symbol): Declare functions
+	which are used in Cygwin and MinGW environment.
+	(mingw_pe_section_type_flags): Likewise.
+	(mingw_pe_unique_section): Likewise.
+	(mingw_pe_encode_section_info): Likewise.
+	* config/aarch64/cygming.h: New file.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config.gcc: Define TARGET_AARCH64_MS_ABI.
+	* config/mingw/mingw-stdint.h (INTPTR_TYPE): Use
+	TARGET_AARCH64_MS_ABI to adjust MinGW headers for
+	AArch64 MS ABI.
+	(UINTPTR_TYPE): Likewise.
+	(defined): Likewise.
+	* config/mingw/mingw32.h (DEFAULT_ABI): Likewise.
+	(defined): Likewise.
+	* config/mingw/winnt.cc (defined): Use TARGET_ARM64_MS_ABI to
+	exclude ix86_get_callcvt.
+	(i386_pe_maybe_mangle_decl_assembler_name): Likewise.
+	(i386_pe_mangle_decl_assembler_name): Likewise.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config/i386/cygming.h (SUBTARGET_ENCODE_SECTION_INFO):
+	Rename functions in mingw folder which will be reused for
+	aarch64.
+	(TARGET_ASM_UNIQUE_SECTION): Likewise.
+	(TARGET_ASM_NAMED_SECTION): Likewise.
+	(TARGET_SECTION_TYPE_FLAGS): Likewise.
+	(ASM_DECLARE_COLD_FUNCTION_NAME): Likewise.
+	(ASM_OUTPUT_EXTERNAL_LIBCALL): Likewise.
+	* config/i386/i386-protos.h (i386_pe_unique_section):
+	Rename into ...
+	(mingw_pe_unique_section): ... this.
+	(i386_pe_declare_function_type): Rename into ...
+	(mingw_pe_declare_function_type): ... this.
+	(i386_pe_encode_section_info): Rename into ...
+	(mingw_pe_encode_section_info): ... this.
+	(i386_pe_maybe_record_exported_symbol): Rename into ...
+	(mingw_pe_maybe_record_exported_symbol): ... this.
+	(i386_pe_section_type_flags): Rename into ...
+	(mingw_pe_section_type_flags): ... this.
+	(i386_pe_asm_named_section): Rename into ...
+	(mingw_pe_asm_named_section): ... this.
+	* config/mingw/winnt.cc (i386_pe_encode_section_info):
+	Rename into ...
+	(mingw_pe_encode_section_info): ... this.
+	(i386_pe_unique_section): Rename into ...
+	(mingw_pe_unique_section): ... this.
+	(i386_pe_section_type_flags): Rename into ...
+	(mingw_pe_section_type_flags): ... this.
+	(i386_pe_asm_named_section): Rename into ...
+	(mingw_pe_asm_named_section): ... this.
+	(i386_pe_asm_output_aligned_decl_common): Likewise.
+	(i386_pe_declare_function_type): Rename into ...
+	(mingw_pe_declare_function_type): ... this.
+	(i386_pe_maybe_record_exported_symbol): Rename into ...
+	(mingw_pe_maybe_record_exported_symbol): ... this.
+	(i386_pe_start_function): Likewise.
+	* varasm.cc (switch_to_comdat_section): Likewise.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config.gcc: Adjust targets after moving MinGW related files
+	from i386 to mingw folder.
+	* config/i386/cygming.opt: Move to...
+	* config/mingw/cygming.opt: ...here.
+	* config/i386/cygming.opt.urls: Move to...
+	* config/mingw/cygming.opt.urls: ...here.
+	* config/i386/cygwin-d.cc: Move to...
+	* config/mingw/cygwin-d.cc: ...here.
+	* config/i386/mingw-stdint.h: Move to...
+	* config/mingw/mingw-stdint.h: ...here.
+	* config/i386/mingw.opt: Move to...
+	* config/mingw/mingw.opt: ...here.
+	* config/i386/mingw.opt.urls: Move to...
+	* config/mingw/mingw.opt.urls: ...here.
+	* config/i386/mingw32.h: Move to...
+	* config/mingw/mingw32.h: ...here.
+	* config/i386/msformat-c.cc: Move to...
+	* config/mingw/msformat-c.cc: ...here.
+	* config/i386/t-cygming: Move to...
+	* config/mingw/t-cygming: ...here and updated.
+	* config/i386/winnt-cxx.cc: Move to...
+	* config/mingw/winnt-cxx.cc: ...here.
+	* config/i386/winnt-d.cc: Move to...
+	* config/mingw/winnt-d.cc: ...here.
+	* config/i386/winnt-stubs.cc: Move to...
+	* config/mingw/winnt-stubs.cc: ...here.
+	* config/i386/winnt.cc: Move to...
+	* config/mingw/winnt.cc: ...here.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config.gcc: Add COFF format support definitions.
+	* config/aarch64/aarch64-coff.h: New file.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config.gcc: Define TARGET_AARCH64_MS_ABI when
+	AArch64 MS ABI is used.
+	* config/aarch64/aarch64.h (FIXED_X18): Adjust
+	FIXED_REGISTERS, CALL_REALLY_USED_REGISTERS and
+	STATIC_CHAIN_REGNUM for AArch64 MS ABI.
+	(CALL_USED_X18): Likewise.
+	(FIXED_REGISTERS): Likewise.
+	* config/aarch64/aarch64-abi-ms.h: New file.
+
+2024-05-07  Zac Walker  <zacwalker@microsoft.com>
+
+	* config.gcc: Add aarch64-w64-mingw32 target.
+
+2024-05-07  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/114674
+	* config/aarch64/aarch64-ldp-fusion.cc (ldp_bb_info::fuse_pair):
+	Use replace_equiv_address_nv on a change of base instead of
+	adjust_address_nv on the other access.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-into-ssa.cc (insert_updated_phi_nodes_for): Fix block
+	index check.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-live.cc (init_var_map): Pre-allocate vec_bbs vector
+	to the correct size and use quick_push.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/27800
+	* gimplify.cc (gimplify_modify_expr_rhs): For a COND_EXPR
+	avoid a temporary from gimplify_cond_expr when the LHS is
+	a register by pushing the assignment into the COND_EXPR arms.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.cc (gimplify_hasher::equal): Remove redundant
+	checking.
+
+2024-05-07  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/110490
+	* tree-scalar-evolution.cc (expression_expensive_p): Also
+	consider mode widening for popcount, clz, and ctz.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.cc (stack_var::representative): Use 'unsigned'
+	for stack var indexes instead of 'size_t'.
+	(stack_var::next): Likewise.
+	(EOC): Likewise.
+	(stack_vars_alloc): Likewise.
+	(stack_vars_num): Likewise.
+	(decl_to_stack_part): Likewise.
+	(stack_vars_sorted): Likewise.
+	(add_stack_var): Likewise.
+	(add_stack_var_conflict): Likewise.
+	(stack_var_conflict_p): Likewise.
+	(visit_op): Likewise.
+	(visit_conflict): Likewise.
+	(add_scope_conflicts_1): Likewise.
+	(stack_var_cmp): Likewise.
+	(part_hashmap): Likewise.
+	(update_alias_info_with_stack_vars): Likewise.
+	(union_stack_vars): Likewise.
+	(partition_stack_vars): Likewise.
+	(dump_stack_var_partition): Likewise.
+	(expand_stack_vars): Likewise.
+	(account_stack_vars): Likewise.
+	(stack_protect_decl_phase_1): Likewise.
+	(stack_protect_decl_phase_2): Likewise.
+	(asan_decl_phase_3): Likewise.
+	(init_vars_expansion): Likewise.
+	(estimated_stack_frame_size): Likewise.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114931
+	* tree.cc (type_hash_canon_hash): Hash TYPE_STRUCTURAL_EQUALITY_P.
+	(type_cache_hasher::equal): Compare TYPE_STRUCTURAL_EQUALITY_P.
+	(build_array_type_1): Set TYPE_STRUCTURAL_EQUALITY_P before
+	probing with type_hash_canon.
+	(build_function_type): Likewise.
+	(build_method_type_directly): Likewise.
+	(build_offset_type): Likewise.
+	(build_complex_type): Likewise.
+	* attribs.cc (build_type_attribute_qual_variant): Likewise.
+
+2024-05-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (ipa_vr_operation_and_type_effects): Use ipa_supports_p.
+	(ipa_value_range_from_jfunc): Change Value_Range type.
+	(propagate_vr_across_jump_function): Same.
+	* ipa-cp.h (ipa_supports_p): New.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Change Value_Range type.
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Use ipa_supports_p.
+	(ipcp_get_parm_bits): Same.
+
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc: Move *-*-solaris2.11.[0-3]* to unsupported list.
+	<*-*-solaris2*> (default_use_cxa_atexit): Set unconditionally.
+	* configure.ac (AX_LIB_SOCKET_NSL): Don't call.
+	(NETLIBS): Remove.
+	(gcc_cv_ld_aligned_shf_merge): Remove.
+	(hidden_linkonce) <i?86-*-solaris2* | x86_64-*-solaris2*>: Remove.
+	(gcc_cv_target_dl_iterate_phdr) <*-*-solaris2*>: Always set to yes.
+	* Makefile.in (NETLIBS): Remove.
+	* configure, config.in, aclocal.m4: Regenerate.
+	* config/sol2.h: Don't check HAVE_SOLARIS_CRTS.
+	(STARTFILE_SPEC): Remove !HAVE_SOLARIS_CRTS case.
+	[USE_GLD] (LINK_EH_SPEC): Remove TARGET_DL_ITERATE_PHDR guard.
+	* config/i386/i386.cc (USE_HIDDEN_LINKONCE): Remove guard.
+	* varasm.cc (mergeable_string_section): Remove
+	HAVE_LD_ALIGNED_SHF_MERGE handling.
+	(mergeable_constant_section): Likewise.
+	* doc/install.texi (Specific,i?86-*-solaris2*): Reference Solaris
+	11.4 only.
+	(Specific, *-*-solaris2*): Document Solaris 11.3 removal.  Remove
+	11.3 references and caveats.  Update for 11.4.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/97263
+	* doc/invoke.texi(fmath-errno): Document it is turned on
+	with -Ofast.
+	(funsafe-math-optimizations): Likewise.
+	(ffinite-math-only): Likewise.
+	(fno-trapping-math): Likewise and use less strong language.
+
+2024-05-07  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (usdot_prodv*qi): Extend to VI1_AVX512
+	with vpmaddwd when avxvnni/avx512vnni is not available.
+
+2024-05-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/113079
+	* config/i386/mmx.md (usdot_prodv8qi): New expander.
+	(sdot_prodv8qi): Ditto.
+	(udot_prodv8qi): Ditto.
+	(usdot_prodv4hi): Ditto.
+	(udot_prodv4hi): Ditto.
+	(sdot_prodv4hi): Ditto.
+
+2024-05-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/113090
+	* config/i386/i386-expand.cc
+	(expand_vec_perm_punpckldq_pshuf): New function.
+	(ix86_expand_vec_perm_const_1): Try
+	expand_vec_perm_punpckldq_pshuf for sequence of 2
+	instructions.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru-passes.cc (class pass_pru_minrt_check): New
+	pass.
+	(pass_pru_minrt_check::execute): New method.
+	(make_pru_minrt_check): New function.
+	* config/pru/pru-passes.def (INSERT_PASS_AFTER): Register the
+	minrt check pass.
+	* config/pru/pru-protos.h (make_pru_minrt_check): Add
+	declaration.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru-passes.cc (class pass_tiabi_check): Rename to
+	add "pru_" prefix.
+	(class pass_pru_tiabi_check): Ditto.
+	(pass_tiabi_check::execute): Ditto.
+	(pass_pru_tiabi_check::execute): Ditto.
+	(make_pru_tiabi_check): Ditto.
+	(pru_register_abicheck_pass): Remove.
+	* config/pru/pru-protos.h (pru_register_abicheck_pass): Remove.
+	(make_pru_tiabi_check): Add declaration.
+	* config/pru/pru.cc (pru_option_override): Remove explicit pass
+	registration.
+	* config/pru/t-pru: Register PRU passes definition file.
+	* config/pru/pru-passes.def: New file.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.md (lshrdi3): Use HOST_WIDE_INT_1U macro.
+	(ashldi3): Ditto.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru-passes.cc: Drop ATTRIBUTE_UNUSED and remove
+	argument's name.
+	* config/pru/pru-pragma.cc (pru_pragma_ctable_entry): Ditto.
+	* config/pru/pru.cc (pru_function_profiler): Ditto.
+	(pru_can_eliminate): Ditto.
+	(pru_rtx_costs): Ditto.
+	(pru_insert_attributes): Ditto.
+	(pru_function_value): Ditto.
+	(pru_libcall_value): Ditto.
+	(pru_return_in_memory): Ditto.
+	(pru_builtin_decl): Ditto.
+	(pru_expand_builtin): Ditto.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.cc (prologue_saved_reg_p): Skip saving
+	if function will not return.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/alu-zext.md (_noz0): New subst attribute.
+	(<code>_impl): Allow zero-extending the destination.
+	(<shift_op>): Remove unified pattern
+	(ashl_impl): New distinct pattern.
+	(lshr_impl): Ditto.
+	(alu3_zext_op0_subst): New subst iterator to zero-extend the
+	destination register.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.md (extzv<mode>): Make it an expand pattern,
+	handle efficiently zero-positioned bit-fields.
+	(insv<mode>): New expand pattern.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.md: New pattern alternative for zero-filling
+	64-bit registers.
+
+2024-05-07  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.cc (pru_address_cost): Implement address cost
+	calculation.
+	(TARGET_ADDRESS_COST): Define for PRU.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114921
+	* tree-vect-stmts.cc (vectorizable_assignment): Use
+	tree_nop_conversion_p to identify converts we can vectorize
+	with a simple assignment.
+
+2024-05-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/106060
+	* config/i386/i386-expand.cc (enum ix86_vec_bcast_alg): New.
+	(struct ix86_vec_bcast_map_simode_t): New type for table below.
+	(ix86_vec_bcast_map_simode): Table of SImode constants that may
+	be efficiently synthesized by a ix86_vec_bcast_alg method.
+	(ix86_vec_bcast_map_simode_cmp): New comparator for bsearch.
+	(ix86_vector_duplicate_simode_const): Efficiently synthesize
+	V4SImode and V8SImode constants that duplicate special constants.
+	(ix86_vector_duplicate_value): Attempt to synthesize "special"
+	vector constants using ix86_vector_duplicate_simode_const.
+	* config/i386/i386.cc (ix86_rtx_costs) <case ABS>: ABS of a
+	vector integer mode costs with a single SSE instruction.
+
 2024-05-06  Xiao Zeng  <zengxiao@eswincomputing.com>
 
 	* common/config/riscv/riscv-common.cc (riscv_implied_info): zfbfmin

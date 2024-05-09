@@ -1,3 +1,27 @@
+2024-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113582
+	* c-warn.cc (warn_for_unused_label): Don't warn if -Wunused-label has
+	been suppressed for the label.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/89224
+	* c-common.cc (convert_vector_to_array_for_subscript): Call build_qualified_type
+	for the inner type.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114459
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_variadic_friend=202403L for C++26.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114931
+	* c-common.cc (complete_array_type): Set TYPE_STRUCTURAL_EQUALITY_P
+	before probing with type_hash_canon.
+
 2024-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/114458

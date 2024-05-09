@@ -1,3 +1,73 @@
+2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Unicode_view::_M_read_utf8): Ensure
+	count of characters consumed is correct when the end of the
+	input is reached unexpectedly.
+	* testsuite/ext/unicode/view.cc: Test incomplete UTF-8
+	sequences.
+
+2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114866
+	* include/bits/out_ptr.h [!_GLIBCXX_HOSTED]: Don't refer to
+	shared_ptr, __shared_ptr or __is_shred_ptr.
+	* testsuite/20_util/headers/memory/114866.cc: New test.
+
+2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (_VARIANT_RELATION_FUNCTION_TEMPLATE):
+	Simplify.
+
+2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h (operator==): Add constraint.
+	* include/bits/version.def (constrained_equality): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/optional: Define feature test macro.
+	(__optional_rep_op_t): Use is_convertible_v instead of
+	is_convertible.
+	* include/std/tuple: Define feature test macro.
+	(operator==, __tuple_cmp, operator<=>): Reimplement C++20
+	comparisons using lambdas. Add constraints.
+	* include/std/utility: Define feature test macro.
+	* include/std/variant: Define feature test macro.
+	(_VARIANT_RELATION_FUNCTION_TEMPLATE): Add constraints.
+	(variant): Remove unnecessary friend declarations for comparison
+	operators.
+	* testsuite/20_util/optional/relops/constrained.cc: New test.
+	* testsuite/20_util/pair/comparison_operators/constrained.cc:
+	New test.
+	* testsuite/20_util/tuple/comparison_operators/constrained.cc:
+	New test.
+	* testsuite/20_util/variant/relops/constrained.cc: New test.
+	* testsuite/20_util/tuple/comparison_operators/overloaded.cc:
+	Disable for C++20 and later.
+	* testsuite/20_util/tuple/comparison_operators/overloaded2.cc:
+	Remove dg-error line for target c++20.
+
+2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/backward/auto_ptr.h: Use https for URL in comment.
+	* include/bits/basic_ios.h: Likewise.
+	* include/std/iostream: Likewise.
+
+2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_abi.cc: Update latest versions to
+	new versions that should be used in future.
+
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* src/Makefile.am [ENABLE_SYMVERS_SUN]
+	(libstdc++-symbols.ver-sun): Pass $(libstdc___la_OBJECTS),
+	$(libstdc___la_LIBADD) to make_sunver.pl unmodified.
+	* src/Makefile.in: Regenerate.
+
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/dg-options.exp (add_options_for_net_ts)
+	<*-*-solaris2*>: Don't link with -lsocket -lnsl.
+
 2024-05-03  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.

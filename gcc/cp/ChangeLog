@@ -1,3 +1,71 @@
+2024-05-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113582
+	* parser.cc (cp_parser_label_for_labeled_statement): suppress_warning
+	if it's not enabled at input_location.
+	* pt.cc (tsubst_stmt): Call copy_warning.
+
+2024-05-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114856
+	* call.cc (make_temporary_var_for_ref_to_temp): Set context for
+	temporaries with linkage.
+	* init.cc (create_temporary_var): Revert to only set context
+	when in a function decl.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/89224
+	* constexpr.cc (cxx_eval_array_reference): Compare main variants
+	for the vector/array types instead of the types directly.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114459
+	* parser.cc (cp_parser_member_declaration): Implement C++26
+	P2893R3 - Variadic friends.  Parse friend type declarations
+	with ... or with more than one friend type specifier.
+	* friend.cc (make_friend_class): Allow TYPE_PACK_EXPANSION.
+	* pt.cc (instantiate_class_template): Handle PACK_EXPANSION_P
+	in friend classes.
+
+2024-05-07  Marek Polacek  <polacek@redhat.com>
+
+	* decl.cc (duplicate_decls): Don't check VAR_P before
+	DECL_DECOMPOSITION_P.
+	* init.cc (build_aggr_init): Likewise.
+	* parser.cc (cp_parser_range_for): Likewise.
+	(do_range_for_auto_deduction): Likewise.
+	(cp_convert_range_for): Likewise.
+	(cp_convert_omp_range_for): Likewise.
+	(cp_finish_omp_range_for): Likewise.
+	* pt.cc (extract_locals_r): Likewise.
+	(tsubst_omp_for_iterator): Likewise.
+	(tsubst_decomp_names): Likewise.
+	(tsubst_stmt): Likewise.
+	* typeck.cc (maybe_warn_about_returning_address_of_local): Likewise.
+
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Make-lang.in (cc1plus$(exeext)): Remove $(NETLIBS).
+
+2024-05-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114954
+	* cp-tree.h (IS_FAKE_BASE_TYPE): Also apply to unions.
+
+2024-05-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114275
+	* cp-tree.h (remove_defining_module): Declare.
+	* decl.cc (duplicate_decls): Call remove_defining_module on
+	to-be-freed newdecl.
+	* module.cc (imported_temploid_friends): Mark as GTY root...
+	(init_modules): ...and allocate from ggc.
+	(trees_in::decl_value): Only track for declarations that won't
+	be discarded.
+	(remove_defining_module): New function.
+
 2024-05-06  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR c/53548

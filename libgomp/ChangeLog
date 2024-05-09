@@ -1,3 +1,10 @@
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am [LIBGOMP_BUILD_VERSIONED_SHLIB_SUN]
+	(libgomp.ver-sun): Pass $(libgomp_la_OBJECTS),
+	$(libgomp_la_LIBADD) to make_sunver.pl unmodified.
+	* Makefile.in: Regenerate.
+
 2024-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/declare-variant-4.h (gfx90c, gfx1036, gfx1103):

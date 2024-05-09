@@ -1,3 +1,10 @@
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am [LIBFFI_BUILD_VERSIONED_SHLIB_SUN] (libffi.map-sun):
+	Pass $(libffi_la_OBJECTS), $(libffi_la_LIBADD) to make_sunver.pl
+	unmodified.
+	* Makefile.in: Regenerate.
+
 2023-10-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR testsuite/109951

@@ -1,3 +1,298 @@
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Number_Of_Elements_In_Array): Fix counting of
+	elements in null arrays; remove redundant parenthesis; avoid
+	run-time conversion of 1 to universal integer.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib.ads, lib.adb (Primary_Stack_Count, Sec_Stack_Count,
+	Increment_Primary_Stack_Count, Increment_Sec_Stack_Count,
+	Unit_Record): Stack counts are never negative.
+	* ali.ads (Unit_Record): Likewise.
+	* bindgen.adb (Num_Primary_Stacks, Num_Sec_Stacks): Likewise.
+	* exp_ch3.adb (Count_Default_Sized_Task_Stacks): Likewise.
+	* sem_util.ads, sem_util.adb (Number_Of_Elements_In_Array):
+	Likewise.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Count_Default_Sized_Task_Stacks): Do not look for
+	tasks inside record discriminants; remove avoid repeated call to
+	Has_Task that happened for record components.
+	(Expand_N_Object_Declaration): Use high-level routine to detect
+	array types and subtypes; remove unused initial values.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_aggr.ads (Static_Array_Aggregate): Fix typo in comment.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Has_Single_Return): Remove redundant check for
+	empty list, because First works also for empty list.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Useful): Remove redundant check for empty list,
+	because iteration with First works also for empty list; rename
+	local variable from L to Action.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Has_Formal_With_Per_Object_Constrained_Component):
+	Use flag Has_Per_Object_Constraint which is set by analysis;
+	rename for consistency.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Access_Attribute): Replace loop with
+	Current_Scope_No_Loops.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Access_Attribute): Move code to IF
+	branch where its result is used.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Access_Attribute): Prevent search from
+	going too far.
+	* sem_ch3.adb (Analyze_Component_Declaration): Remove
+	Contains_POC; reuse Has_Discriminant_Dependent_Constraint.
+
+2024-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Pending_Access_Types): Delete.
+	* exp_ch3.adb (Freeze_Type.Process_Pending_Access_Types): Likewise.
+	(Freeze_Type): Do not call Process_Pending_Access_Types.
+	* exp_ch7.ads (Make_Set_Finalize_Address_Call): Delete.
+	* exp_ch7.adb (Build_Finalization_Master.Add_Pending_Access_Type):
+	Delete.
+	(Build_Finalization_Master): Do not set Finalize_Address on the
+	master or call Add_Pending_Access_Type.
+	(Make_Set_Finalize_Address_Call): Delete.
+	* gen_il-fields.ads (Opt_Field_Enum): Remove Pending_Access_Types.
+	* gen_il-gen-gen_entities.adb (Type_Kind): Likewise.
+	* rtsfind.ads (RE_Id): Remove RE_Set_Finalize_Address.
+	(RE_Unit_Table): Likewise.
+	* sem_ch3.adb (Analyze_Full_Type_Declaration): Do not deal with
+	pending access types.
+	* libgnat/s-finmas.ads (Attach_Unprotected): Add Finalize_Address
+	second parameter.
+	(Delete_Finalize_Address_Unprotected): Delete.
+	(Finalize_Address): Likewise.
+	(Finalize_Address_Unprotected): Likewise.
+	(Is_Homogeneous): Likewise.
+	(Set_Finalize_Address): Likewise.
+	(Set_Finalize_Address_Unprotected): Likewise.
+	(Set_Heterogeneous_Finalize_Address_Unprotected): Likewise.
+	(Set_Is_Heterogeneous): Likewise.
+	(FM_Node): Add Finalize_Address component.
+	(Finalization_Master): Remove Is_Homogeneous and Finalize_Address
+	components.
+	* libgnat/s-finmas.adb: Remove with & use clauses for System.HTable.
+	(Finalize_Address_Table): Delete.
+	(Attach_Unprotected): Add Finalize_Address second parameter and save
+	its value in the Finalize_Address field of the node.
+	(Delete_Finalize_Address_Unprotected): Delete.
+	(Finalize): Call Finalize_Address saved in the nodes.
+	(Finalize_Address): Delete.
+	(Finalize_Address_Unprotected): Likewise.
+	(Hash): Likewise.
+	(Is_Homogeneous): Likewise.
+	(Print_Master): Adjust.
+	(Set_Finalize_Address): Delete.
+	(Set_Finalize_Address_Unprotected): Likewise.
+	(Set_Heterogeneous_Finalize_Address_Unprotected): Likewise.
+	(Set_Is_Heterogeneous): Likewise.
+	* libgnat/s-stposu.adb (Finalize_Address_Table_In_Use): Likewise.
+	(Allocate_Any_Controlled): Pass Fin_Address to Attach_Unprotected
+	and remove obsolete processing.
+	(Deallocate_Any_Controlled): Remove obsolete processing.
+	(Set_Pool_Of_Subpool): Do not call Set_Is_Heterogeneous.
+
+2024-05-07  Joffrey Huguet  <huguet@adacore.com>
+
+	* libgnat/a-ngelfu.ads (Sqrt): Add Global contracts.
+	(Log): Likewise.
+	(Exp): Likewise.
+	("**"): Likewise.
+	(Sin): Likewise.
+	(Cos): Likewise.
+	(Tan): Likewise.
+	(Cot): Likewise.
+	(Arcsin): Likewise.
+	(Arccos): Likewise.
+	(Arctan): Likewise.
+	(Arccot): Likewise.
+	(Sinh): Likewise.
+	(Cosh): Likewise.
+	(Tanh): Likewise.
+	(Coth): Likewise.
+	(Arcsinh): Likewise.
+	(Arccosh): Likewise.
+	(Arctanh): Likewise.
+	(Arccoth): Likewise.
+
+2024-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Postconditions_Proc): Delete.
+	* gen_il-fields.ads (Opt_Field_Enum): Remove Postconditions_Proc.
+	* gen_il-gen-gen_entities.adb (E_Function): Likewise.
+	(E_Procedure): Likewise.
+	(E_Entry): Likewise.
+	(E_Entry_Family): Likewise.
+
+2024-05-07  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sinfo.ads: Fix typo.
+
+2024-05-07  Bob Duff  <duff@adacore.com>
+
+	* exp_attr.adb (Attribute_Old): The 'Old attribute we are
+	processing here is in a postcondition, which cannot be inside the
+	"Wrapped_Statements" of the subprogram with that postcondition. So
+	remove the loop labeled "Climb the parent chain looking for
+	subprogram _Wrapped_Statements". The only way this loop could find
+	a Subp is if we are nested inside a subprogram that also has a
+	postcondition, and in that case we would find the wrong (outer)
+	one. In any case, Subp is set to Empty after the loop, so all
+	subsequent tests for Present (Subp) are necessarily False; remove
+	them and the corresponding code. Set Ins_Node unconditionally (to
+	the right thing). Remove obsolete comments.
+	* sem_util.adb (Determining_Expressions): Fix assertion;
+	Pragma_Test_Case was missing.
+	(Eligible_For_Conditional_Evaluation): Fix assert that could fail
+	in case of errors.
+	* libgnat/s-valspe.ads: Remove pragma Unevaluated_Use_Of_Old;
+	there are no uses of 'Old in this package.
+
+2024-05-07  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strsea.adb (Index): Add assertions.
+	* libgnat/a-strsup.ads ("="): Remove useless precondition.
+	* libgnat/s-aridou.adb (Prove_Rounding_Case): Add assertions.
+	(Lemma_Shift_Right): Add call to lemma.
+	* libgnat/s-arit32.adb (Prove_Rounding_Case): Add assertion.
+	(Prove_ Signs): Add assertions.
+	(Scaled_Divide32): Add assertions.
+
+2024-05-07  Steve Baird  <baird@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Restructure the loop over
+	possible resolutions of a No_Return pragma's argument so that
+	functions (and generic functions) are not processed until after it
+	is known whether there is a non-function candidate resolution. For
+	a pre-2022 Ada version, terminate the iteration before processing
+	functions if a non-function resolution is found.
+
+2024-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/g-socthi.ads (C_Bind): Turn into inline function.
+	(C_Getpeername): Likewise.
+	(C_Getsockname): Likewise.
+	(C_Getsockopt): Likewise.
+	(C_Setsockopt): Likewise.
+	(Nonreentrant_Gethostbyaddr): Likewise.
+	* libgnat/g-socthi.adb (Syscall_Accept): Adjust profile.
+	(Syscall_Connect): Likewise.
+	(Syscall_Recvfrom): Likewise.
+	(Syscall_Sendto): Likewise.
+	(C_Bind): New function.
+	(C_Accept): Adjust to above change for profiles.
+	(C_Connect): Likewise.
+	(C_Getpeername): New function.
+	(C_Getsockname): Likewise.
+	(C_Getsockopt): Likewise.
+	(C_Recvfrom):  Adjust to above change for profiles.
+	(C_Setsockopt): New function.
+	(Nonreentrant_Gethostbyaddr): Likewise.
+
+2024-05-07  Bob Duff  <duff@adacore.com>
+
+	* par-ch3.adb (P_Component_Items): Move P_Aspect_Specifications
+	into the loop, so aspects can be attached to multiple component
+	declarations.
+	(P_Type_Declaration, P_Subtype_Declaration)
+	(P_Known_Discriminant_Part_Opt): Remove default for Semicolon in
+	calls to P_Aspect_Specifications.
+	* gen_il-gen-gen_nodes.adb (N_Discriminant_Specification): Add
+	Aspect_Specifications field to N_Discriminant_Specification, which
+	was missing.
+	* aspects.adb (Has_Aspect_Specifications_Flag): Make it True for
+	N_Discriminant_Specification.
+	* par-ch13.adb: Remove default for Semicolon in calls to
+	P_Aspect_Specifications.
+	(Get_Aspect_Specifications): Misc cleanup.
+	(P_Aspect_Specifications): Remove comment. It's not clear what
+	"the flag" is referring to, but anyway the first part of the
+	comment is obvious, and the second part is apparently obsolete.
+	Misc cleanup.
+	* par.adb (P_Aspect_Specifications, Get_Aspect_Specifications):
+	Remove default for Semicolon; calls are more readable that way.
+	Improve comments.
+	* par-ch12.adb: Remove default for Semicolon in calls to
+	P_Aspect_Specifications.
+	* par-ch6.adb: Likewise.
+	* par-ch7.adb: Likewise.
+	* par-ch9.adb: Likewise.
+	* par-endh.adb: Likewise.
+
+2024-05-07  Justin Squirek  <squirek@adacore.com>
+
+	* sem_prag.adb (Defer_Compile_Time_Warning_Error_To_BE): Better
+	handle itypes such that the tree copy required for the expansion
+	of the pragma doesn't cause ordering problems with internal names.
+
+2024-05-07  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): Add range check flag.
+
+2024-05-07  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Find_Placement_In_State_Space): Stop search for
+	placement when reaching the public state of a generic package.
+
+2024-05-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Check_Return_Subtype_Indication): Add missing check
+	on statically compatible subtypes.
+	* sem_eval.adb (Subtypes_Statically_Compatible): Ensure that both
+	types are either scalar types or access types to evaluate this
+	predicate.
+
+2024-05-07  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Resolve_Name): Clarify comment.
+
+2024-05-07  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Resolve_Name): This is called only for names in
+	aspect_specifications. If the name is an overloaded
+	selected_component, reset the Entity. Note that this was already
+	done for N_Identifier in the code just below.
+
+2024-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Record_Info.List_Structural_Record_Layout): Add
+	another guard for private types after retrieving the parent in the
+	extension case.
+
+2024-05-07  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Is_Volatile_Function): Return True on functions
+	with side effects.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_Item): Handle side-effect
+	functions like procedures.
+
+2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Collect_Global_Item): Update comment.
+
 2024-05-06  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_prag.adb (Collect_Global_Item): Handle functions with
