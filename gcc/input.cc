@@ -443,7 +443,10 @@ file_cache::evicted_cache_tab_entry (unsigned *highest_use_count)
    accessed by caret diagnostic.  This cache is added to an array of
    cache and can be retrieved by lookup_file_in_cache_tab.  This
    function returns the created cache.  Note that only the last
-   num_file_slots files are cached.  */
+   num_file_slots files are cached.
+
+   This can return nullptr if the FILE_PATH can't be opened for
+   reading, or if the content can't be converted to the input_charset.  */
 
 file_cache_slot*
 file_cache::add_file (const char *file_path)
@@ -547,7 +550,10 @@ file_cache::~file_cache ()
 /* Lookup the cache used for the content of a given file accessed by
    caret diagnostic.  If no cached file was found, create a new cache
    for this file, add it to the array of cached file and return
-   it.  */
+   it.
+
+   This can return nullptr on a cache miss if FILE_PATH can't be opened for
+   reading, or if the content can't be converted to the input_charset.  */
 
 file_cache_slot*
 file_cache::lookup_or_add_file (const char *file_path)
@@ -1071,6 +1077,8 @@ get_source_file_content (const char *file_path)
   diagnostic_file_cache_init ();
 
   file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
+  if (c == nullptr)
+    return char_span (nullptr, 0);
   return c->get_full_file_content ();
 }
 
