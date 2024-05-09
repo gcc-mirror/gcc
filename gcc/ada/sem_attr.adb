@@ -6688,6 +6688,7 @@ package body Sem_Attr is
          Error_Msg_GNAT_Extension ("attribute %", Sloc (N));
 
          Check_E0;
+         Check_Dereference;
 
          --  Verify that we are looking at a type with ancestors
 
