@@ -961,13 +961,43 @@ public:
   }
 };
 
-/* Return true if it's OK to copy a value from ARG_TYPE to LHS_TYPE via
+static bool
+representable_in_integral_type_p (const svalue &sval, const_tree type)
+{
+  gcc_assert (INTEGRAL_TYPE_P (type));
+
+  if (tree cst = sval.maybe_get_constant ())
+    return wi::fits_to_tree_p (wi::to_wide (cst), type);
+
+  return true;
+}
+
+/* Return true if it's OK to copy ARG_SVAL from ARG_TYPE to LHS_TYPE via
    va_arg (where argument promotion has already happened).  */
 
 static bool
-va_arg_compatible_types_p (tree lhs_type, tree arg_type)
+va_arg_compatible_types_p (tree lhs_type, tree arg_type, const svalue &arg_sval)
 {
-  return compat_types_p (arg_type, lhs_type);
+  if (compat_types_p (arg_type, lhs_type))
+    return true;
+
+  /* It's OK if both types are integer types, where one is signed and the
+     other type the corresponding unsigned type, when the value is
+     representable in both types.  */
+  if (INTEGRAL_TYPE_P (lhs_type)
+      && INTEGRAL_TYPE_P (arg_type)
+      && TYPE_UNSIGNED (lhs_type) != TYPE_UNSIGNED (arg_type)
+      && TYPE_PRECISION (lhs_type) == TYPE_PRECISION (arg_type)
+      && representable_in_integral_type_p (arg_sval, lhs_type)
+      && representable_in_integral_type_p (arg_sval, arg_type))
+    return true;
+
+  /* It's OK if one type is a pointer to void and the other is a
+     pointer to a character type.
+     This is handled by compat_types_p.  */
+
+  /* Otherwise the types are not compatible.  */
+  return false;
 }
 
 /* If AP_SVAL is a pointer to a var_arg_region, return that var_arg_region.
@@ -1031,7 +1061,7 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
 		{
 		  tree lhs_type = cd.get_lhs_type ();
 		  tree arg_type = arg_sval->get_type ();
-		  if (va_arg_compatible_types_p (lhs_type, arg_type))
+		  if (va_arg_compatible_types_p (lhs_type, arg_type, *arg_sval))
 		    cd.maybe_set_lhs (arg_sval);
 		  else
 		    {
