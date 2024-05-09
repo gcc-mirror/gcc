@@ -395,7 +395,11 @@ int_size_in_bits (const_tree type, bit_size_t *out)
     }
 
   tree sz = TYPE_SIZE (type);
-  if (sz && tree_fits_uhwi_p (sz))
+  if (sz
+      && tree_fits_uhwi_p (sz)
+      /* If the size is zero, then we may have a zero-sized
+	 array; handle such cases by returning false.  */
+      && !integer_zerop (sz))
     {
       *out = TREE_INT_CST_LOW (sz);
       return true;
