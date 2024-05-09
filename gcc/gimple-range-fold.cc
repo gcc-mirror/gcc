@@ -1368,14 +1368,14 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
 	{
 	  r1.set_varying (TREE_TYPE (ssa1));
 	  r2.set_varying (TREE_TYPE (ssa2));
-	  if (e0 && gori ()->outgoing_edge_range_p (r, e0, name, *m_query)
+	  if (e0 && gori ()->edge_range_p (r, e0, name, *m_query)
 	      && r.singleton_p ())
 	    {
 	      relation_kind relation = handler.op1_op2_relation (r, r1, r2);
 	      if (relation != VREL_VARYING)
 		register_relation (e0, relation, ssa1, ssa2);
 	    }
-	  if (e1 && gori ()->outgoing_edge_range_p (r, e1, name, *m_query)
+	  if (e1 && gori ()->edge_range_p (r, e1, name, *m_query)
 	      && r.singleton_p ())
 	    {
 	      relation_kind relation = handler.op1_op2_relation (r, r1, r2);

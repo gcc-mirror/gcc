@@ -415,7 +415,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
     {
       tree name = ssa_name (i);
       Value_Range r (TREE_TYPE (name));
-      if (g.outgoing_edge_range_p (r, e, name, *this))
+      if (g.edge_range_p (r, e, name, *this))
 	{
 	  Value_Range cached_range (TREE_TYPE (name));
 	  if (get_cache (cached_range, name))
@@ -424,7 +424,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
 	  m_cache.set_range (name, r);
 	  if (DEBUG_SOLVER)
 	    {
-	      fprintf (dump_file, "outgoing_edge_range_p for ");
+	      fprintf (dump_file, "edge_range_p for ");
 	      print_generic_expr (dump_file, name, TDF_SLIM);
 	      fprintf (dump_file, " on edge %d->%d ",
 		       e->src->index, e->dest->index);

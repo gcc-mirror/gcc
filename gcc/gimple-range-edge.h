@@ -48,9 +48,22 @@ class gimple_outgoing_range
 {
 public:
   gimple_outgoing_range (int max_sw_edges = 0);
-  ~gimple_outgoing_range ();
+  virtual ~gimple_outgoing_range ();
   gimple *edge_range_p (irange &r, edge e);
   void set_switch_limit (int max_sw_edges = INT_MAX);
+
+  virtual bool edge_range_p (vrange &, edge, tree, range_query &)
+    { return false; }
+  virtual bool condexpr_adjust (vrange &, vrange &, gimple *, tree, tree, tree,
+				class fur_source &) { return false; }
+  virtual bool has_edge_range_p (tree, basic_block = NULL) { return false; }
+  virtual bool has_edge_range_p (tree, edge ) { return false; }
+  virtual void dump (FILE *) { }
+  virtual bool compute_operand_range (vrange &, gimple *, const vrange &, tree,
+				      fur_source &,
+				      class value_relation * = NULL)
+    { return false; }
+  virtual class gori_map *map () { return NULL; }
 private:
   void calc_switch_ranges (gswitch *sw);
   bool switch_edge_range (irange &r, gswitch *sw, edge e);

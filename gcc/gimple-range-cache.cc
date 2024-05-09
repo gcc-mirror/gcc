@@ -950,7 +950,7 @@ update_list::pop ()
 // --------------------------------------------------------------------------
 
 ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
-						: m_gori (not_executable_flag)
+  : m_gori (not_executable_flag, param_vrp_switch_limit)
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
@@ -1178,7 +1178,7 @@ ranger_cache::edge_range (vrange &r, edge e, tree name, enum rfd_mode mode)
   if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
     infer_oracle ().maybe_adjust_range (r, name, e->src);
   Value_Range er (TREE_TYPE (name));
-  if (m_gori.outgoing_edge_range_p (er, e, name, *this))
+  if (m_gori.edge_range_p (er, e, name, *this))
     r.intersect (er);
   return true;
 }
@@ -1738,7 +1738,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 
       edge e = single_pred_edge (prev_bb);
       bb = e->src;
-      if (m_gori.outgoing_edge_range_p (er, e, name, *this))
+      if (m_gori.edge_range_p (er, e, name, *this))
 	{
 	  r.intersect (er);
 	  // If this is a normal edge, apply any inferred ranges.

@@ -557,8 +557,8 @@ debug (gori_map &g)
 
 // Construct a gori_compute object.
 
-gori_compute::gori_compute (int not_executable_flag)
-		      : outgoing (param_vrp_switch_limit), tracer ("GORI ")
+gori_compute::gori_compute (int not_executable_flag, int sw_max_edges)
+  : gimple_outgoing_range (sw_max_edges), tracer ("GORI ")
 {
   m_not_executable_flag = not_executable_flag;
   // Create a boolean_type true and false range.
@@ -566,6 +566,10 @@ gori_compute::gori_compute (int not_executable_flag)
   m_bool_one = range_true ();
   if (dump_file && (param_ranger_debug & RANGER_DEBUG_GORI))
     tracer.enable_trace ();
+}
+
+gori_compute::~gori_compute ()
+{
 }
 
 // Given the switch S, return an evaluation in R for NAME when the lhs
@@ -1380,8 +1384,7 @@ gori_compute::has_edge_range_p (tree name, edge e)
 // control edge or NAME is not defined by this edge.
 
 bool
-gori_compute::outgoing_edge_range_p (vrange &r, edge e, tree name,
-				     range_query &q)
+gori_compute::edge_range_p (vrange &r, edge e, tree name, range_query &q)
 {
   unsigned idx;
 
@@ -1397,7 +1400,7 @@ gori_compute::outgoing_edge_range_p (vrange &r, edge e, tree name,
   gcc_checking_assert (gimple_range_ssa_p (name));
   int_range_max lhs;
   // Determine if there is an outgoing edge.
-  gimple *stmt = outgoing.edge_range_p (lhs, e);
+  gimple *stmt = gimple_outgoing_range::edge_range_p (lhs, e);
   if (!stmt)
     return false;
 

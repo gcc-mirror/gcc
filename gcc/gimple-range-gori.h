@@ -127,7 +127,7 @@ private:
 //   on *ANY* edge that has been seen.  FALSE indicates that the global value
 //   is applicable everywhere that has been processed.
 //
-// outgoing_edge_range_p (vrange &range, edge e, tree name)
+// edge_range_p (vrange &range, edge e, tree name)
 //   Actually does the calculation of RANGE for name on E
 //   This represents application of whatever static range effect edge E
 //   may have on NAME, not any cumulative effect.
@@ -161,11 +161,12 @@ private:
 
 class value_relation;
 
-class gori_compute
+class gori_compute : public gimple_outgoing_range
 {
 public:
-  gori_compute (int not_executable_flag = 0);
-  bool outgoing_edge_range_p (vrange &r, edge e, tree name, range_query &q);
+  gori_compute (int not_executable_flag = 0, int max_sw_edges = 0);
+  virtual ~gori_compute ();
+  bool edge_range_p (vrange &r, edge e, tree name, range_query &q);
   bool condexpr_adjust (vrange &r1, vrange &r2, gimple *s, tree cond, tree op1,
 			tree op2, fur_source &src);
   bool has_edge_range_p (tree name, basic_block bb = NULL);
@@ -205,7 +206,6 @@ private:
   int_range<2> m_bool_zero;	// Boolean false cached.
   int_range<2> m_bool_one;	// Boolean true cached.
 
-  gimple_outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
   range_tracer tracer;
   int m_not_executable_flag;
 };
