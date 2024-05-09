@@ -23,7 +23,7 @@ void test_1 (void)
 
 /* Copying from an on-stack array to a global array.  */
 
-struct coord glob_arr[16];
+struct coord glob_arr2[16];
 
 void test_2 (void)
 {
@@ -31,31 +31,28 @@ void test_2 (void)
   arr[3].x = 5;
   arr[3].y = 6;
 
-  glob_arr[7] = arr[3];
+  glob_arr2[7] = arr[3];
 
-  __analyzer_eval (glob_arr[7].x == 5); /* { dg-warning "TRUE" } */
-  __analyzer_eval (glob_arr[7].y == 6); /* { dg-warning "TRUE" } */
+  __analyzer_eval (glob_arr2[7].x == 5); /* { dg-warning "TRUE" } */
+  __analyzer_eval (glob_arr2[7].y == 6); /* { dg-warning "TRUE" } */
 }
 
 /* Copying from a partially initialized on-stack array to a global array.  */
 
-struct coord glob_arr[16];
+struct coord glob_arr3[16];
 
 void test_3 (void)
 {
   struct coord arr[16];
   arr[3].y = 6;
 
-  glob_arr[7] = arr[3]; // or should the uninit warning be here?
+  glob_arr3[7] = arr[3]; // or should the uninit warning be here?
 
-  __analyzer_eval (glob_arr[7].x); /* { dg-warning "uninitialized" "uninit" { xfail *-*-* } } */
-  /* { dg-bogus "UNKNOWN" "unknown" { xfail *-*-* } .-1 } */
-  __analyzer_eval (glob_arr[7].y == 6); /* { dg-warning "TRUE" } */
+  __analyzer_eval (glob_arr3[7].y == 6); /* { dg-warning "TRUE" } */
+  __analyzer_eval (glob_arr3[7].x); /* { dg-warning "uninitialized" "uninit" } */
 }
 
 /* Symbolic bindings: copying from one array to another.  */
-
-struct coord glob_arr[16];
 
 void test_4 (int i)
 {
@@ -77,8 +74,6 @@ void test_4 (int i)
 
 /* Symbolic bindings: copying within an array: symbolic src and dest  */
 
-struct coord glob_arr[16];
-
 void test_5a (int i, int j)
 {
   struct coord arr[16];
@@ -95,8 +90,6 @@ void test_5a (int i, int j)
 
 /* Symbolic bindings: copying within an array: symbolic src, concrete dest.  */
 
-struct coord glob_arr[16];
-
 void test_5b (int i)
 {
   struct coord arr[16];
@@ -112,8 +105,6 @@ void test_5b (int i)
 }
 
 /* Symbolic bindings: copying within an array: concrete src, symbolic dest.  */
-
-struct coord glob_arr[16];
 
 void test_5c (int i)
 {
@@ -132,10 +123,12 @@ void test_5c (int i)
 /* No info on the subregion being copied, and hence
    binding_cluster2::maybe_get_compound_binding should return NULL.  */
 
+struct coord glob_arr6[16];
+
 void test_6 (void)
 {
   struct coord arr[16];
-  arr[7] = glob_arr[3];
+  arr[7] = glob_arr6[3];
 
   __analyzer_eval (arr[7].x == 5); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (arr[7].y == 6); /* { dg-warning "UNKNOWN" } */

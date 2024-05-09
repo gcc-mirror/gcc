@@ -141,6 +141,7 @@ set plugin_test_list [list \
 	  infoleak-CVE-2017-18550-1.c \
 	  infoleak-antipatterns-1.c \
 	  infoleak-fixit-1.c \
+	  infoleak-pr112969.c \
 	  infoleak-net-ethtool-ioctl.c \
 	  infoleak-vfio_iommu_type1.c \
 	  taint-CVE-2011-0521-1-fixed.c \

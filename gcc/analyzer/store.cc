@@ -1718,7 +1718,16 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
   else
     default_sval = sval_mgr->get_or_create_initial_value (reg);
   const binding_key *default_key = binding_key::make (mgr, reg);
-  default_map.put (default_key, default_sval);
+
+  /* Express the bit-range of the default key for REG relative to REG,
+     rather than to the base region.  */
+  const concrete_binding *concrete_default_key
+    = default_key->dyn_cast_concrete_binding ();
+  if (!concrete_default_key)
+    return nullptr;
+  const concrete_binding *default_key_relative_to_reg
+     = mgr->get_concrete_binding (0, concrete_default_key->get_size_in_bits ());
+  default_map.put (default_key_relative_to_reg, default_sval);
 
   for (map_t::iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
     {
