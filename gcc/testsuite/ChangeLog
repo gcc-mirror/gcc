@@ -94,6 +94,17 @@
 
 	* gcc.target/i386/cmov6.c: Fixed.
 
+2024-05-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	Revert:
+	2024-04-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	Revert:
+	2024-04-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/pr93372-2.c: Tweak scan-assembler
+	checks to cover recent combine improvement.
+
 2024-05-07  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/114856

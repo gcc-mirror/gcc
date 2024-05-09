@@ -477,6 +477,18 @@
 	(Specific, *-*-solaris2*): Document Solaris 11.3 removal.  Remove
 	11.3 references and caveats.  Update for 11.4.
 
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2024-04-10  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2024-03-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/101523
+	* combine.cc (try_combine): Don't do a 2-insn combination if
+	it does not in fact change I2.
+
 2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/97263
