@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-state.h"
 #include "analyzer/checker-event.h"
 #include "analyzer/exploded-graph.h"
+#include "analyzer/inlining-iterator.h"
 
 #if ENABLE_ANALYZER
 
@@ -2146,6 +2147,15 @@ maybe_complain_about_deref_before_check (sm_context *sm_ctxt,
   const frame_region *assumed_nonnull_in_frame = state->m_frame;
   if (checked_in_frame->get_index () > assumed_nonnull_in_frame->get_index ())
     return;
+
+  /* Don't complain if STMT was inlined from another function, to avoid
+     similar false positives involving shared helper functions.  */
+  if (stmt->location)
+    {
+      inlining_info info (stmt->location);
+      if (info.get_extra_frames () > 0)
+	return;
+    }
 
   tree diag_ptr = sm_ctxt->get_diagnostic_tree (ptr);
   if (diag_ptr)
