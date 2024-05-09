@@ -272,6 +272,51 @@ region::can_have_initial_svalue_p () const
     }
 }
 
+/* For regions within a global decl, get the svalue for the initial
+   value of this region when the program starts, caching the result.  */
+
+const svalue *
+region::get_initial_value_at_main (region_model_manager *mgr) const
+{
+  if (!m_cached_init_sval_at_main)
+    m_cached_init_sval_at_main = calc_initial_value_at_main (mgr);
+  return m_cached_init_sval_at_main;
+}
+
+/* Implementation of region::get_initial_value_at_main.  */
+
+const svalue *
+region::calc_initial_value_at_main (region_model_manager *mgr) const
+{
+  const decl_region *base_reg = get_base_region ()->dyn_cast_decl_region ();
+  gcc_assert (base_reg);
+
+  /* Attempt to get the initializer value for base_reg.  */
+  if (const svalue *base_reg_init
+      = base_reg->get_svalue_for_initializer (mgr))
+    {
+      if (this == base_reg)
+	return base_reg_init;
+      else
+	{
+	  /* Get the value for REG within base_reg_init.  */
+	  binding_cluster c (base_reg);
+	  c.bind (mgr->get_store_manager (), base_reg, base_reg_init);
+	  const svalue *sval
+	    = c.get_any_binding (mgr->get_store_manager (), this);
+	  if (sval)
+	    {
+	      if (get_type ())
+		sval = mgr->get_or_create_cast (get_type (), sval);
+	      return sval;
+	    }
+	}
+    }
+
+  /* Otherwise, return INIT_VAL(REG).  */
+  return mgr->get_or_create_initial_value (this);
+}
+
 /* If this region is a decl_region, return the decl.
    Otherwise return NULL.  */
 
@@ -701,7 +746,7 @@ region::is_named_decl_p (const char *decl_name) const
 
 region::region (complexity c, unsigned id, const region *parent, tree type)
 : m_complexity (c), m_id (id), m_parent (parent), m_type (type),
-  m_cached_offset (NULL)
+  m_cached_offset (NULL), m_cached_init_sval_at_main (NULL)
 {
   gcc_assert (type == NULL_TREE || TYPE_P (type));
 }
@@ -1170,14 +1215,13 @@ decl_region::maybe_get_constant_value (region_model_manager *mgr) const
   return NULL;
 }
 
-/* Get an svalue for CTOR, a CONSTRUCTOR for this region's decl.  */
+/* Implementation of decl_region::get_svalue_for_constructor
+   for when the cached value hasn't yet been calculated.  */
 
 const svalue *
-decl_region::get_svalue_for_constructor (tree ctor,
-					 region_model_manager *mgr) const
+decl_region::calc_svalue_for_constructor (tree ctor,
+					  region_model_manager *mgr) const
 {
-  gcc_assert (!TREE_CLOBBER_P (ctor));
-
   /* Create a binding map, applying ctor to it, using this
      decl_region as the base region when building child regions
      for offset calculations.  */
@@ -1187,6 +1231,21 @@ decl_region::get_svalue_for_constructor (tree ctor,
 
   /* Return a compound svalue for the map we built.  */
   return mgr->get_or_create_compound_svalue (get_type (), map);
+}
+
+/* Get an svalue for CTOR, a CONSTRUCTOR for this region's decl.  */
+
+const svalue *
+decl_region::get_svalue_for_constructor (tree ctor,
+					 region_model_manager *mgr) const
+{
+  gcc_assert (!TREE_CLOBBER_P (ctor));
+  gcc_assert (ctor == DECL_INITIAL (m_decl));
+
+  if (!m_ctor_svalue)
+    m_ctor_svalue = calc_svalue_for_constructor (ctor, mgr);
+
+  return m_ctor_svalue;
 }
 
 /* For use on decl_regions for global variables.

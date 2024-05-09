@@ -2355,30 +2355,7 @@ region_model::get_initial_value_for_global (const region *reg) const
      the initial value of REG can be taken from the initialization value
      of the decl.  */
   if (called_from_main_p () || TREE_READONLY (decl))
-    {
-      /* Attempt to get the initializer value for base_reg.  */
-      if (const svalue *base_reg_init
-	    = base_reg->get_svalue_for_initializer (m_mgr))
-	{
-	  if (reg == base_reg)
-	    return base_reg_init;
-	  else
-	    {
-	      /* Get the value for REG within base_reg_init.  */
-	      binding_cluster c (base_reg);
-	      c.bind (m_mgr->get_store_manager (), base_reg, base_reg_init);
-	      const svalue *sval
-		= c.get_any_binding (m_mgr->get_store_manager (), reg);
-	      if (sval)
-		{
-		  if (reg->get_type ())
-		    sval = m_mgr->get_or_create_cast (reg->get_type (),
-						      sval);
-		  return sval;
-		}
-	    }
-	}
-    }
+    return reg->get_initial_value_at_main (m_mgr);
 
   /* Otherwise, return INIT_VAL(REG).  */
   return m_mgr->get_or_create_initial_value (reg);
