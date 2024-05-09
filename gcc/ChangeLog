@@ -1,3 +1,54 @@
+2024-05-09  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110386
+	* gimple-ssa-backprop.cc (strip_sign_op_1): Remove ABSU_EXPR.
+
+2024-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-02-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/109804
+	* gimple-ssa-warn-access.cc (new_delete_mismatch_p): Handle
+	DEMANGLE_COMPONENT_UNNAMED_TYPE.
+
+2024-05-08  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111331
+	* tree-ssa-phiopt.cc (minmax_replacement):
+	Fix the LE/GE comparison for the
+	`(a CMP CST1) ? max<a,CST2> : a` optimization.
+
+2024-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-03-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/95351
+	* fold-const.cc (merge_truthop_with_opposite_arm): Use
+	the type of the operands of the comparison and not the type
+	of the comparison.
+
+2024-05-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add new MCUs (copy from gcc-13).
+	* doc/avr-mmcu.texi: Rebuild.
+
+2024-05-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR ipa/92606
+	* config/avr/avr.cc (avr_option_override): Set
+	flag_ipa_icf_variables = 0.
+
 2024-05-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
