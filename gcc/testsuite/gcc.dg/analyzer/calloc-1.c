@@ -25,3 +25,37 @@ char *test_1 (size_t sz)
 
   return p;
 }
+
+char **
+test_pr113333_1 (void)
+{
+  char **p = (char **)calloc (1, sizeof(char *));
+  if (p)
+    {
+      __analyzer_eval (*p == 0); /* { dg-warning "TRUE" } */
+      __analyzer_eval (p[0] == 0); /* { dg-warning "TRUE" } */
+    }
+  return p;
+}
+
+char **
+test_pr113333_2 (void)
+{
+  char **p = (char **)calloc (2, sizeof(char *));
+  if (p)
+    {
+      __analyzer_eval (*p == 0); /* { dg-warning "TRUE" } */
+      __analyzer_eval (p[0] == 0); /* { dg-warning "TRUE" } */
+      __analyzer_eval (p[1] == 0); /* { dg-warning "TRUE" } */
+    }
+  return p;
+}
+
+char **
+test_pr113333_3 (void)
+{
+  char **vec = (char **)calloc (1, sizeof(char *));
+  if (vec)
+    for (char **p=vec ; *p ; p++); /* { dg-bogus "heap-based buffer over-read" } */
+  return vec;
+}

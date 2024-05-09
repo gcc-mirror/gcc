@@ -6,5 +6,5 @@ x7 (void)
   int **md = calloc (1, sizeof (void *));
 
   return md[0][0]; /* { dg-warning "possibly-NULL" "unchecked deref" } */
-  /* { dg-warning "leak of 'md'" "leak" { target *-*-* } .-1 } */
+  /* { dg-warning "Wanalyzer-null-dereference" "deref of NULL" { target *-*-* } .-1 } */
 }

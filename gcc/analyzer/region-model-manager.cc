@@ -422,6 +422,12 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
 	      && region_sval->get_type ()
 	      && POINTER_TYPE_P (region_sval->get_type ()))
 	    return get_ptr_svalue (type, region_sval->get_pointee ());
+
+	/* Casting all zeroes should give all zeroes.  */
+	if (type
+	    && arg->all_zeroes_p ()
+	    && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
+	  return get_or_create_int_cst (type, 0);
       }
       break;
     case TRUTH_NOT_EXPR:
