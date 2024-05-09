@@ -1237,6 +1237,11 @@ region_model::on_stmt_pre (const gimple *stmt,
       /* No-op for now.  */
       break;
 
+    case GIMPLE_DEBUG:
+      /* We should have stripped these out when building the supergraph.  */
+      gcc_unreachable ();
+      break;
+
     case GIMPLE_ASSIGN:
       {
 	const gassign *assign = as_a <const gassign *> (stmt);

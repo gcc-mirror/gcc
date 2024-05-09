@@ -329,6 +329,15 @@ state_purge_per_ssa_name::state_purge_per_ssa_name (const state_purge_map &map,
 	      map.log ("used by stmt: %s", pp_formatted_text (&pp));
 	    }
 
+	  if (is_gimple_debug (use_stmt))
+	    {
+	      /* We skipped debug stmts when building the supergraph,
+		 so ignore them now.  */
+	      if (map.get_logger ())
+		map.log ("skipping debug stmt");
+	      continue;
+	    }
+
 	  const supernode *snode
 	    = map.get_sg ().get_supernode_for_stmt (use_stmt);
 

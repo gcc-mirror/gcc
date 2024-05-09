@@ -182,6 +182,10 @@ supergraph::supergraph (logger *logger)
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
+	      /* Discard debug stmts here, so we don't have to check for
+		 them anywhere within the analyzer.  */
+	      if (is_gimple_debug (stmt))
+		continue;
 	      node_for_stmts->m_stmts.safe_push (stmt);
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
 	      m_stmt_uids.make_uid_unique (stmt);
