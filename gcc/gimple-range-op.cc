@@ -1120,7 +1120,7 @@ class cfn_strlen : public range_operator
 {
 public:
   using range_operator::fold_range;
-  virtual bool fold_range (irange &r, tree type, const prange &,
+  virtual bool fold_range (irange &r, tree type, const irange &,
 			   const irange &, relation_trio) const
   {
     wide_int max = irange_val_max (ptrdiff_type_node);

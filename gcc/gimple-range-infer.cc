@@ -123,7 +123,7 @@ gimple_infer_range::add_nonzero (tree name)
 {
   if (!gimple_range_ssa_p (name))
     return;
-  prange nz;
+  int_range<2> nz;
   nz.set_nonzero (TREE_TYPE (name));
   add_range (name, nz);
 }

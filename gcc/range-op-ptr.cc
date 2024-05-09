@@ -1968,4 +1968,8 @@ range_op_table::initialize_pointer_ops ()
 {
   set (POINTER_PLUS_EXPR, op_pointer_plus);
   set (POINTER_DIFF_EXPR, op_pointer_diff);
+  set (BIT_AND_EXPR, op_hybrid_and);
+  set (BIT_IOR_EXPR, op_hybrid_or);
+  set (MIN_EXPR, op_hybrid_min);
+  set (MAX_EXPR, op_hybrid_max);
 }

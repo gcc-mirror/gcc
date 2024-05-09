@@ -443,7 +443,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
 void
 path_range_query::adjust_for_non_null_uses (basic_block bb)
 {
-  prange r;
+  int_range_max r;
   bitmap_iterator bi;
   unsigned i;
 

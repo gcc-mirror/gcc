@@ -6833,7 +6833,7 @@ find_what_p_points_to (tree fndecl, tree p)
   struct ptr_info_def *pi;
   tree lookup_p = p;
   varinfo_t vi;
-  prange vr;
+  value_range vr;
   get_range_query (DECL_STRUCT_FUNCTION (fndecl))->range_of_expr (vr, p);
   bool nonnull = vr.nonzero_p ();
 
