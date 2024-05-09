@@ -4213,7 +4213,7 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 		 where the realloc call is known to have failed are valid.
 		 Ignore pointers that nothing is known about.  Those could
 		 have escaped along with their nullness.  */
-	      value_range vr;
+	      prange vr;
 	      if (m_ptr_qry.rvals->range_of_expr (vr, realloc_lhs, use_stmt))
 		{
 		  if (vr.zero_p ())

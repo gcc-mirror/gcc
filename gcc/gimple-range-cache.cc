@@ -274,10 +274,10 @@ sbr_sparse_bitmap::sbr_sparse_bitmap (tree t, vrange_allocator *allocator,
   // Pre-cache zero and non-zero values for pointers.
   if (POINTER_TYPE_P (t))
     {
-      int_range<2> nonzero;
+      prange nonzero;
       nonzero.set_nonzero (t);
       m_range[1] = m_range_allocator->clone (nonzero);
-      int_range<2> zero;
+      prange zero;
       zero.set_zero (t);
       m_range[2] = m_range_allocator->clone (zero);
     }

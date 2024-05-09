@@ -994,7 +994,7 @@ irange::varying_compatible_p () const
   const wide_int &u = m_base[1];
   tree t = m_type;
 
-  if (m_kind == VR_VARYING && t == error_mark_node)
+  if (m_kind == VR_VARYING)
     return true;
 
   unsigned prec = TYPE_PRECISION (t);
@@ -1039,7 +1039,7 @@ irange::nonzero_p () const
 inline bool
 irange::supports_p (const_tree type)
 {
-  return INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type);
+  return INTEGRAL_TYPE_P (type);
 }
 
 inline bool
