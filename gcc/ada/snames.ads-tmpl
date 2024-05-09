@@ -165,7 +165,6 @@ package Snames is
    Name_Relaxed_Initialization         : constant Name_Id := N + $;
    Name_Stable_Properties              : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
-   Name_Storage_Model                  : constant Name_Id := N + $;
    Name_Storage_Model_Type             : constant Name_Id := N + $;
    Name_String_Literal                 : constant Name_Id := N + $;
    Name_Synchronization                : constant Name_Id := N + $;
