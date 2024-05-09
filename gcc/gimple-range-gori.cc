@@ -589,7 +589,7 @@ gori_compute::compute_operand_range_switch (vrange &r, gswitch *s,
     }
 
   // If op1 is in the definition chain, pass lhs back.
-  if (gimple_range_ssa_p (op1) && in_chain_p (name, op1))
+  if (gimple_range_ssa_p (op1) && m_map.in_chain_p (name, op1))
     return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), lhs, name, src);
 
   return false;
@@ -646,8 +646,8 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
 
   // NAME is not in this stmt, but one of the names in it ought to be
   // derived from it.
-  bool op1_in_chain = op1 && in_chain_p (name, op1);
-  bool op2_in_chain = op2 && in_chain_p (name, op2);
+  bool op1_in_chain = op1 && m_map.in_chain_p (name, op1);
+  bool op2_in_chain = op2 && m_map.in_chain_p (name, op2);
 
   // If neither operand is derived, then this stmt tells us nothing.
   if (!op1_in_chain && !op2_in_chain)
@@ -658,9 +658,9 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   // Instead just evaluate the one operand.
   if (op1_in_chain && op2_in_chain)
     {
-      if (in_chain_p (op1, op2) || op1 == op2)
+      if (m_map.in_chain_p (op1, op2) || op1 == op2)
 	op1_in_chain = false;
-      else if (in_chain_p (op2, op1))
+      else if (m_map.in_chain_p (op2, op1))
 	op2_in_chain = false;
     }
 
@@ -675,11 +675,11 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
       // a) both elements are in the defchain
       //    c = x > y   // (x and y are in c's defchain)
       if (op1_in_chain)
-	res = in_chain_p (vrel_ptr->op1 (), op1)
-	      && in_chain_p (vrel_ptr->op2 (), op1);
+	res = m_map.in_chain_p (vrel_ptr->op1 (), op1)
+	      && m_map.in_chain_p (vrel_ptr->op2 (), op1);
       if (!res && op2_in_chain)
-	res = in_chain_p (vrel_ptr->op1 (), op2)
-	      || in_chain_p (vrel_ptr->op2 (), op2);
+	res = m_map.in_chain_p (vrel_ptr->op1 (), op2)
+	      || m_map.in_chain_p (vrel_ptr->op2 (), op2);
       if (!res)
 	{
 	  // or b) one relation element is in the defchain of the other and the
@@ -955,7 +955,7 @@ gori_compute::compute_logical_operands (vrange &true_range, vrange &false_range,
 {
   gimple *stmt = handler.stmt ();
   gimple *src_stmt = gimple_range_ssa_p (op) ? SSA_NAME_DEF_STMT (op) : NULL;
-  if (!op_in_chain || !src_stmt || chain_import_p (handler.lhs (), op))
+  if (!op_in_chain || !src_stmt || m_map.chain_import_p (handler.lhs (), op))
     {
       // If op is not in the def chain, or defined in this block,
       // use its known value on entry to the block.
@@ -1018,9 +1018,9 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
     return false;
 
   bool change = false;
-  bool op1_def_p = in_chain_p (op2, op1);
+  bool op1_def_p = m_map.in_chain_p (op2, op1);
   if (!op1_def_p)
-    if (!in_chain_p (op1, op2))
+    if (!m_map.in_chain_p (op1, op2))
       return false;
 
   tree def_op = op1_def_p ? op1 : op2;
@@ -1304,8 +1304,8 @@ gori_compute::compute_operand1_and_operand2_range (vrange &r,
 bool
 gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
 {
-  tree dep1 = depend1 (name);
-  tree dep2 = depend2 (name);
+  tree dep1 = m_map.depend1 (name);
+  tree dep2 = m_map.depend2 (name);
 
   // If the first dependency is not set, there is no recomputation.
   // Dependencies reflect original IL, not current state.   Check if the
@@ -1327,7 +1327,8 @@ gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
 	  gcc_checking_assert (depth >= 1);
 	}
 
-      bool res = (bb ? is_export_p (dep1, bb) : is_export_p (dep1));
+      bool res = (bb ? m_map.is_export_p (dep1, bb)
+		     : m_map.is_export_p (dep1));
       if (res || depth <= 1)
 	return res;
       // Check another level of recomputation.
@@ -1335,9 +1336,9 @@ gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
     }
   // Two dependencies terminate the depth of the search.
   if (bb)
-    return is_export_p (dep1, bb) || is_export_p (dep2, bb);
+    return m_map.is_export_p (dep1, bb) || m_map.is_export_p (dep2, bb);
   else
-    return is_export_p (dep1) || is_export_p (dep2);
+    return m_map.is_export_p (dep1) || m_map.is_export_p (dep2);
 }
 
 // Return TRUE if NAME can be recomputed on edge E.  If any direct dependent
@@ -1359,10 +1360,10 @@ gori_compute::has_edge_range_p (tree name, basic_block bb)
 {
   // Check if NAME is an export or can be recomputed.
   if (bb)
-    return is_export_p (name, bb) || may_recompute_p (name, bb);
+    return m_map.is_export_p (name, bb) || may_recompute_p (name, bb);
 
   // If no block is specified, check for anywhere in the IL.
-  return is_export_p (name) || may_recompute_p (name);
+  return m_map.is_export_p (name) || may_recompute_p (name);
 }
 
 // Return TRUE if a range can be calculated or recomputed for NAME on edge E.
@@ -1402,7 +1403,7 @@ gori_compute::outgoing_edge_range_p (vrange &r, edge e, tree name,
 
   fur_stmt src (stmt, &q);
   // If NAME can be calculated on the edge, use that.
-  if (is_export_p (name, e->src))
+  if (m_map.is_export_p (name, e->src))
     {
       bool res;
       if ((idx = tracer.header ("outgoing_edge")))
@@ -1526,13 +1527,13 @@ gori_compute::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
     }
 
    // Now solve for SSA1 or SSA2 if they are in the dependency chain.
-   if (ssa1 && in_chain_p (ssa1, cond_name))
+   if (ssa1 && m_map.in_chain_p (ssa1, cond_name))
     {
       Value_Range tmp1 (TREE_TYPE (ssa1));
       if (compute_operand_range (tmp1, def_stmt, cond_true, ssa1, src))
 	r1.intersect (tmp1);
     }
-  if (ssa2 && in_chain_p (ssa2, cond_name))
+  if (ssa2 && m_map.in_chain_p (ssa2, cond_name))
     {
       Value_Range tmp2 (TREE_TYPE (ssa2));
       if (compute_operand_range (tmp2, def_stmt, cond_false, ssa2, src))
@@ -1555,7 +1556,7 @@ gori_compute::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
 void
 gori_compute::dump (FILE *f)
 {
-  gori_map::dump (f);
+  m_map.gori_map::dump (f);
 }
 
 // ------------------------------------------------------------------------

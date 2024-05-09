@@ -310,7 +310,7 @@ gimple_ranger::range_of_stmt (vrange &r, gimple *s, tree name)
 	  // Update any exports in the cache if this is a gimple cond statement.
 	  tree exp;
 	  basic_block bb = gimple_bb (s);
-	  FOR_EACH_GORI_EXPORT_NAME (m_cache.m_gori, bb, exp)
+	  FOR_EACH_GORI_EXPORT_NAME (*(m_cache.m_gori.map ()), bb, exp)
 	    m_cache.propagate_updated_value (exp, bb);
 	}
     }
@@ -540,8 +540,8 @@ gimple_ranger::register_transitive_inferred_ranges (basic_block bb)
       // an inferred range as well.
       Value_Range r (TREE_TYPE (lhs));
       r.set_undefined ();
-      tree name1 = gori ().depend1 (lhs);
-      tree name2 = gori ().depend2 (lhs);
+      tree name1 = gori ().map () ->depend1 (lhs);
+      tree name2 = gori ().map ()->depend2 (lhs);
       if ((name1 && infer_oracle ().has_range_p (bb, name1))
 	  || (name2 && infer_oracle ().has_range_p (bb, name2)))
 	{

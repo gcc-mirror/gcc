@@ -161,7 +161,7 @@ private:
 
 class value_relation;
 
-class gori_compute : public gori_map
+class gori_compute
 {
 public:
   gori_compute (int not_executable_flag = 0);
@@ -174,7 +174,9 @@ public:
   bool compute_operand_range (vrange &r, gimple *stmt, const vrange &lhs,
 			      tree name, class fur_source &src,
 			      value_relation *rel = NULL);
+  gori_map *map () { return &m_map; }
 private:
+  gori_map m_map;
   bool refine_using_relation (tree op1, vrange &op1_range,
 			      tree op2, vrange &op2_range,
 			      fur_source &src, relation_kind k);

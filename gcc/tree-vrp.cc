@@ -210,14 +210,14 @@ remove_unreachable::handle_early (gimple *s, edge e)
 
   // Check if every export use is dominated by this branch.
   tree name;
-  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+  FOR_EACH_GORI_EXPORT_NAME (*(m_ranger.gori ().map ()), e->src, name)
     {
       if (!fully_replaceable (name, e->src))
 	return;
     }
 
   // Set the global value for each.
-  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+  FOR_EACH_GORI_EXPORT_NAME (*(m_ranger.gori ().map ()), e->src, name)
     {
       Value_Range r (TREE_TYPE (name));
       m_ranger.range_on_entry (r, e->dest, name);
@@ -287,7 +287,7 @@ remove_unreachable::remove_and_update_globals ()
       gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
 
       bool dominate_exit_p = true;
-      FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+      FOR_EACH_GORI_EXPORT_NAME (*(m_ranger.gori ().map ()), e->src, name)
 	{
 	  // Ensure the cache is set for NAME in the succ block.
 	  Value_Range r(TREE_TYPE (name));
@@ -304,7 +304,8 @@ remove_unreachable::remove_and_update_globals ()
       // If the exit is dominated, add to the export list.  Otherwise if this
       // isn't the final VRP pass, leave the call in the IL.
       if (dominate_exit_p)
-	bitmap_ior_into (all_exports, m_ranger.gori ().exports (e->src));
+	bitmap_ior_into (all_exports,
+			 m_ranger.gori ().map ()->exports (e->src));
       else if (!final_p)
 	continue;
 

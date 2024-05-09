@@ -1431,7 +1431,7 @@ dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
 
   tree name;
   gori_compute &gori = m_ranger->gori ();
-  FOR_EACH_GORI_EXPORT_NAME (gori, pred_e->src, name)
+  FOR_EACH_GORI_EXPORT_NAME (*(gori.map()), pred_e->src, name)
     if (all_uses_feed_or_dominated_by_stmt (name, stmt)
 	// The condition must post-dominate the definition point.
 	&& (SSA_NAME_IS_DEFAULT_DEF (name)

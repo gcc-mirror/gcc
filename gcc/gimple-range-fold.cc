@@ -747,7 +747,7 @@ fold_using_range::range_of_range_op (vrange &r,
 	  if (lhs && gimple_range_ssa_p (op1))
 	    {
 	      if (src.gori ())
-		src.gori ()->register_dependency (lhs, op1);
+		src.gori ()->map ()->register_dependency (lhs, op1);
 	      relation_kind rel;
 	      rel = handler.lhs_op1_relation (r, range1, range1);
 	      if (rel != VREL_VARYING)
@@ -775,8 +775,8 @@ fold_using_range::range_of_range_op (vrange &r,
 	    {
 	      if (src.gori ())
 		{
-		  src.gori ()->register_dependency (lhs, op1);
-		  src.gori ()->register_dependency (lhs, op2);
+		  src.gori ()->map ()->register_dependency (lhs, op1);
+		  src.gori ()->map ()->register_dependency (lhs, op2);
 		}
 	      if (gimple_range_ssa_p (op1))
 		{
@@ -845,7 +845,7 @@ fold_using_range::range_of_address (prange &r, gimple *stmt, fur_source &src)
       tree ssa = TREE_OPERAND (base, 0);
       tree lhs = gimple_get_lhs (stmt);
       if (lhs && gimple_range_ssa_p (ssa) && src.gori ())
-	src.gori ()->register_dependency (lhs, ssa);
+	src.gori ()->map ()->register_dependency (lhs, ssa);
       src.get_operand (r, ssa);
       range_cast (r, TREE_TYPE (gimple_assign_rhs1 (stmt)));
 
@@ -952,7 +952,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	    r.union_ (arg_range);
 
 	  if (gimple_range_ssa_p (arg) && src.gori ())
-	    src.gori ()->register_dependency (phi_def, arg);
+	    src.gori ()->map ()->register_dependency (phi_def, arg);
 	}
 
       // Track if all arguments are the same.
@@ -1353,7 +1353,7 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
   // leading to the condition such as:
   // c_2 = a_4 < b_7
   // if (c_2)
-  FOR_EACH_GORI_EXPORT_NAME (*(gori ()), bb, name)
+  FOR_EACH_GORI_EXPORT_NAME (*(gori ()->map ()), bb, name)
     {
       if (TREE_CODE (TREE_TYPE (name)) != BOOLEAN_TYPE)
 	continue;
