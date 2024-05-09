@@ -1,3 +1,70 @@
+2024-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114975
+	* config/avr/avr.md: Add combine pattern for
+	8-bit parity detection.
+
+2024-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114975
+	* config/avr/avr.md: Add combine pattern for
+	8-bit popcount detection.
+
+2024-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114965
+	* tree-ssa-reassoc.cc (optimize_range_tests_to_bit_test): Don't try to
+	optimize away exp - lowi subtraction from shift count unless entry
+	test is emitted or unless r.upper_bound () is smaller than prec.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114907
+	* expr.cc (convert_mode_scalar): Use trunc_optab rather than
+	sext_optab for HF->BF conversions.
+	* optabs-libfuncs.cc (gen_trunc_conv_libfunc): Likewise.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114956
+	* tree-inline.cc: Include asan.h.
+	(copy_bb): Remove also .ASAN_MARK calls if id->dst_fn has asan/hwasan
+	sanitization disabled.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114876
+	* gimple-ssa-sprintf.cc (format_character): For min == 0 && max == 0,
+	set max, likely and unlikely members to 1 rather than 0.  Remove
+	useless res.knownrange = true;.  Formatting fixes.
+
+2024-05-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR ipa/92606
+	* config/avr/avr.cc (avr_option_override): Set
+	flag_ipa_icf_variables = 0.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.
