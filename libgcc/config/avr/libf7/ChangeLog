@@ -1,3 +1,14 @@
+2024-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114981
+	* libf7-common.mk (F7_ASM_PARTS): Add D_powi
+	* libf7-asm.sx (F7MOD_D_powi_, __powidf2): New module and function.
+	* libf7.c (f7_powi): Fix last (wrong) statement.
+	Tweak trivial multiplications with 1.0.
+
 2023-11-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	* libf7-const.def [F7MOD_sinh_]: Add MiniMax polynomial.

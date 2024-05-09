@@ -1,3 +1,177 @@
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114965
+	* tree-ssa-reassoc.cc (optimize_range_tests_to_bit_test): Don't try to
+	optimize away exp - lowi subtraction from shift count unless entry
+	test is emitted or unless r.upper_bound () is smaller than prec.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114907
+	* expr.cc (convert_mode_scalar): Use trunc_optab rather than
+	sext_optab for HF->BF conversions.
+	* optabs-libfuncs.cc (gen_trunc_conv_libfunc): Likewise.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114956
+	* tree-inline.cc: Include asan.h.
+	(copy_bb): Remove also .ASAN_MARK calls if id->dst_fn has asan/hwasan
+	sanitization disabled.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114876
+	* gimple-ssa-sprintf.cc (format_character): For min == 0 && max == 0,
+	set max, likely and unlikely members to 1 rather than 0.  Remove
+	useless res.knownrange = true;.  Formatting fixes.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/114825
+	* tree-nested.cc (get_debug_decl): New function.
+	(get_nonlocal_debug_decl): Use it.
+	(get_local_debug_decl): Likewise.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114375
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Compute the
+	load permutation for masked loads but reject it when any
+	such is necessary.
+	* tree-vect-stmts.cc (vectorizable_load): Reject masked
+	VMAT_ELEMENTWISE and VMAT_STRIDED_SLP as those are not
+	supported.
+
+2024-05-08  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2024-05-03  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/114924
+	* cfgrtl.cc (duplicate_insn_chain): When updating MEM_EXPRs,
+	don't strip (e.g.) ARRAY_REFs from the final MEM_EXPR.
+
+2024-05-08  Richard Ball  <richard.ball@arm.com>
+
+	Backported from master:
+	2024-02-01  Richard Ball  <richard.ball@arm.com>
+
+	PR tree-optimization/111268
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1):
+	Add variable-length check for vector input arguments
+	to a function.
+
+2024-05-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2023-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110792
+	* config/i386/i386.md (<any_rotate>ti3): For rotations by 64 bits
+	place operand in a register before gen_<insn>64ti2_doubleword.
+	(<any_rotate>di3): Likewise, for rotations by 32 bits, place
+	operand in a register before gen_<insn>32di2_doubleword.
+	(<any_rotate>32di2_doubleword): Constrain operand to be in register.
+	(<any_rotate>64ti2_doubleword): Likewise.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112732
+	* tree.cc (build_opaque_vector_type): Reset TYPE_ALIAS_SET
+	of the newly built type.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): For = in the
+	innermost common loop record a partition conflict.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112991
+	PR tree-optimization/112961
+	* tree-ssa-sccvn.h (do_rpo_vn): Add skip_entry_phis argument.
+	* tree-ssa-sccvn.cc (do_rpo_vn): Likewise.
+	(do_rpo_vn_1): Likewise, merge with auto-processing.
+	(run_rpo_vn): Adjust.
+	(pass_fre::execute): Likewise.
+	* tree-if-conv.cc (tree_if_conversion): Revert last change.
+	Value-number latch block but disable value-numbering of
+	entry PHIs.
+	* tree-ssa-uninit.cc (execute_early_warn_uninitialized): Adjust.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113396
+	* tree-dfa.cc (get_ref_base_and_extent): Use index range
+	bounds only if they fit within the address-range constraints
+	of offset_int.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	PR tree-optimization/114121
+	* tree-ssa-sccvn.h (vn_reference_s::offset,
+	vn_reference_s::max_size): New fields.
+	(vn_reference_insert_pieces): Adjust prototype.
+	* tree-ssa-pre.cc (phi_translate_1): Preserve offset/max_size.
+	* tree-ssa-sccvn.cc (vn_reference_eq): Compare offset and
+	size, allow using "don't know" state.
+	(vn_walk_cb_data::finish): Pass along offset/max_size.
+	(vn_reference_lookup_or_insert_for_pieces): Take offset and
+	max_size as argument and use it.
+	(vn_reference_lookup_3): Properly adjust offset and max_size
+	according to the adjusted ao_ref.
+	(vn_reference_lookup_pieces): Initialize offset and max_size.
+	(vn_reference_lookup): Likewise.
+	(vn_reference_lookup_call): Likewise.
+	(vn_reference_insert): Likewise.
+	(visit_reference_op_call): Likewise.
+	(vn_reference_insert_pieces): Take offset and max_size
+	as argument and use it.
+
+2024-05-07  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/114747
+	* config/riscv/riscv-vsetvl.cc (local_eliminate_vsetvl_insn):
+	Check target vsetvl_discard_result and source vsetvli has same
+	SEW and LMUL.
+
 2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

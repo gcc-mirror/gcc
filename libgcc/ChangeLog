@@ -1,3 +1,12 @@
+2024-05-08  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-07-23  Andrew Pinski  <apinski@marvell.com>
+
+	* config.host (riscv*-*-linux*): Add t-crtstuff to tmake_file.
+	(riscv*-*-freebsd*): Likewise.
+	* config/riscv/t-crtstuff: New file.
+
 2024-04-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

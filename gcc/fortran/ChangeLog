@@ -1,3 +1,44 @@
+2024-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-25  Paul Thomas  <pault@gcc.gnu.org>
+		    Jakub Jelinek  <jakub@gcc.gnu.org>
+
+	PR fortran/89462
+	* decl.cc (build_sym): Add an extra argument 'elem'. If 'elem'
+	is greater than 1, gfc_new_charlen is called to generate a new
+	charlen, registered in the symbol namespace.
+	(variable_decl, enumerator_decl): Set the new argument in the
+	calls to build_sym.
+
+2024-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93678
+	* trans-expr.cc (gfc_conv_procedure_call): Use the interface,
+	where possible, to obtain the type of character procedure
+	pointers of class entities.
+
+2024-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/113956
+	* trans-expr.cc (gfc_trans_pointer_assignment): Remove assert
+	causing the ICE since it was unnecesary.
+
+2024-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114535
+	* resolve.cc (resolve_symbol): Remove last chunk that checked
+	for finalization of unreferenced symbols.
+
 2024-05-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

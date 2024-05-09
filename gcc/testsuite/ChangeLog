@@ -1,3 +1,186 @@
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89224
+	* g++.dg/torture/vector-subaccess-1.C: Add -Wno-psabi as additional
+	options.
+
+2024-05-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114981
+	* gcc.target/avr/pr114981-powil.c: New test.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114965
+	* gcc.c-torture/execute/pr114965.c: New test.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114907
+	* gcc.dg/pr114907.c: New test.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/114956
+	* gcc.dg/asan/pr114956.c: New test.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/114876
+	* gcc.dg/pr114876.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-1.c: Adjust expected
+	diagnostics.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/111284
+	* g++.dg/cpp1z/constexpr-111284.C: New test.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/114825
+	* gfortran.dg/gomp/pr114825.f90: New test.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114375
+	* gcc.dg/vect/vect-pr114375.c: New testcase.
+
+2024-05-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2023-08-06  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110792
+	* gcc.target/i386/pr110792.c: Remove dg-final scan-assembler-not.
+
+2024-05-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2023-08-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/110792
+	* g++.target/i386/pr110792.C: New 32-bit C++ test case.
+	* gcc.target/i386/pr110792.c: New 64-bit C test case.
+
+2024-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-02-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/97990
+	* g++.dg/torture/vector-struct-1.C: New test.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* gcc.dg/torture/pr112281-1.c: New testcase.
+	* gcc.dg/torture/pr112281-2.c: Likewise.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-12-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112991
+	PR tree-optimization/112961
+	* gcc.dg/torture/pr112991.c: New testcase.
+	* g++.dg/vect/pr112961.cc: Likewise.
+
+2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/113396
+	* gcc.dg/torture/pr113396.c: New testcase.
+
+2024-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-25  Paul Thomas  <pault@gcc.gnu.org>
+		    Jakub Jelinek  <jakub@gcc.gnu.org>
+
+	PR fortran/89462
+	* gfortran.dg/pr89462.f90: New test.
+
+2024-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93678
+	* gfortran.dg/pr93678.f90: New test.
+
+2024-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/113956
+	* gfortran.dg/pr113956.f90: New test.
+
+2024-05-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-04-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114535
+	* gfortran.dg/pr114535d.f90: New test.
+	* gfortran.dg/pr114535iv.f90: Additional source.
+
+2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/89224
+	* g++.dg/torture/vector-subaccess-1.C: New test.
+	* gcc.dg/pr83415.c: Change warning to error.
+
+2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113831
+	PR tree-optimization/114121
+	* gcc.dg/torture/pr113831.c: New testcase.
+
+2024-05-07  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/vsetvl/pr114747.c: New.
+
 2024-05-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
