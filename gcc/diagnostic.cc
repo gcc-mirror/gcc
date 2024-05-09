@@ -2175,6 +2175,9 @@ internal_error_no_backtrace (const char *gmsgid, ...)
   gcc_unreachable ();
 }
 
+
+static enum diagnostics_output_format output_format;
+
 /* Special case error functions.  Most are implemented in terms of the
    above, or should be.  */
 
@@ -2183,6 +2186,25 @@ internal_error_no_backtrace (const char *gmsgid, ...)
 void
 fnotice (FILE *file, const char *cmsgid, ...)
 {
+  /* If the user requested one of the machine-readable diagnostic output
+     formats on stderr (e.g. -fdiagnostics-format=sarif-stderr), then
+     emitting free-form text on stderr will lead to corrupt output.
+     Skip the message for such cases.  */
+  if (file == stderr && global_dc)
+    switch (output_format)
+      {
+      default:
+	gcc_unreachable ();
+      case DIAGNOSTICS_OUTPUT_FORMAT_TEXT:
+      case DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE:
+      case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE:
+	break;
+      case DIAGNOSTICS_OUTPUT_FORMAT_JSON_STDERR:
+      case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR:
+	/* stderr is meant to machine-readable; skip.  */
+	return;
+      }
+
   va_list ap;
 
   va_start (ap, cmsgid);
@@ -2290,6 +2312,8 @@ diagnostic_output_format_init (diagnostic_context *context,
 			       const char *base_file_name,
 			       enum diagnostics_output_format format)
 {
+  output_format = format;
+
   switch (format)
     {
     default:
