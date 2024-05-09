@@ -154,8 +154,8 @@ package body Exp_Aggr is
    --  case the aggregate must slide, and we must introduce an intermediate
    --  temporary to hold it.
    --
-   --  The same holds in an assignment to one-dimensional array of arrays,
-   --  when a component may be given with bounds that differ from those of the
+   --  The same holds in an assignment to multi-dimensional arrays, when
+   --  components may be given with bounds that differ from those of the
    --  component type.
 
    function Number_Of_Choices (N : Node_Id) return Nat;
@@ -9550,32 +9550,44 @@ package body Exp_Aggr is
       elsif Is_Others_Aggregate (Aggr) then
          return False;
 
-      else
-         --  Sliding can only occur along the first dimension
-         --  If any the bounds of non-static sliding is required
-         --  to force potential range checks.
+      --  Check if sliding is required
 
+      else
          declare
-            Bounds1 : constant Range_Nodes :=
-              Get_Index_Bounds (First_Index (Typ));
-            Bounds2 : constant Range_Nodes :=
-              Get_Index_Bounds (First_Index (Obj_Type));
+            Obj_Index  : Node_Id := First_Index (Obj_Type);
+            Obj_Bounds : Range_Nodes;
+            Typ_Index  : Node_Id := First_Index (Typ);
+            Typ_Bounds : Range_Nodes;
 
          begin
-            if not Is_OK_Static_Expression (Bounds1.First) or else
-               not Is_OK_Static_Expression (Bounds2.First) or else
-               not Is_OK_Static_Expression (Bounds1.Last) or else
-               not Is_OK_Static_Expression (Bounds2.Last)
-            then
-               return True;
+            while Present (Typ_Index) loop
+               pragma Assert (Present (Obj_Index));
 
-            else
-               return Expr_Value (Bounds1.First) /= Expr_Value (Bounds2.First)
-                        or else
-                      Expr_Value (Bounds1.Last) /= Expr_Value (Bounds2.Last);
-            end if;
+               Typ_Bounds := Get_Index_Bounds (Typ_Index);
+               Obj_Bounds := Get_Index_Bounds (Obj_Index);
+
+               if not Is_OK_Static_Expression (Typ_Bounds.First) or else
+                 not Is_OK_Static_Expression (Obj_Bounds.First) or else
+                 not Is_OK_Static_Expression (Typ_Bounds.Last) or else
+                 not Is_OK_Static_Expression (Obj_Bounds.Last)
+               then
+                  return True;
+
+               elsif Expr_Value (Typ_Bounds.First)
+                       /= Expr_Value (Obj_Bounds.First)
+                 or else Expr_Value (Typ_Bounds.Last)
+                           /= Expr_Value (Obj_Bounds.Last)
+               then
+                  return True;
+               end if;
+
+               Next_Index (Typ_Index);
+               Next_Index (Obj_Index);
+            end loop;
          end;
       end if;
+
+      return False;
    end Must_Slide;
 
    ---------------------
