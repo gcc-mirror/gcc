@@ -23,8 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Csets;          use Csets;
-
 package body Opt is
 
    --------------------
@@ -188,7 +186,6 @@ package body Opt is
          Prefix_Exception_Messages   := True;
          Uneval_Old                  := 'E';
          Use_VADS_Size               := False;
-         Identifier_Char ('[')       := False;
 
          --  Note: we do not need to worry about Warnings_As_Errors_Count since
          --  we do not expect to get any warnings from compiling such a unit.
