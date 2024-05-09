@@ -22362,6 +22362,67 @@ expand_vec_perm_2perm_pblendv (struct expand_vec_perm_d *d, bool two_insn)
   return true;
 }
 
+/* A subroutine of ix86_expand_vec_perm_const_1.
+   Implement a permutation with psrlw, psllw and por.
+   It handles case:
+   __builtin_shufflevector (v,v,1,0,3,2,5,4,7,6,9,8,11,10,13,12,15,14);
+   __builtin_shufflevector (v,v,1,0,3,2,5,4,7,6); */
+
+static bool
+expand_vec_perm_psrlw_psllw_por (struct expand_vec_perm_d *d)
+{
+  unsigned i;
+  rtx (*gen_shr) (rtx, rtx, rtx);
+  rtx (*gen_shl) (rtx, rtx, rtx);
+  rtx (*gen_or) (rtx, rtx, rtx);
+  machine_mode mode = VOIDmode;
+
+  if (!TARGET_SSE2 || !d->one_operand_p)
+    return false;
+
+  switch (d->vmode)
+    {
+    case E_V8QImode:
+      if (!TARGET_MMX_WITH_SSE)
+	return false;
+      mode = V4HImode;
+      gen_shr = gen_ashrv4hi3;
+      gen_shl = gen_ashlv4hi3;
+      gen_or = gen_iorv4hi3;
+      break;
+    case E_V16QImode:
+      mode = V8HImode;
+      gen_shr = gen_vlshrv8hi3;
+      gen_shl = gen_vashlv8hi3;
+      gen_or = gen_iorv8hi3;
+      break;
+    default: return false;
+    }
+
+  if (!rtx_equal_p (d->op0, d->op1))
+    return false;
+
+  for (i = 0; i < d->nelt; i += 2)
+    if (d->perm[i] != i + 1 || d->perm[i + 1] != i)
+      return false;
+
+  if (d->testing_p)
+    return true;
+
+  rtx tmp1 = gen_reg_rtx (mode);
+  rtx tmp2 = gen_reg_rtx (mode);
+  rtx op0 = force_reg (d->vmode, d->op0);
+
+  emit_move_insn (tmp1, lowpart_subreg (mode, op0, d->vmode));
+  emit_move_insn (tmp2, lowpart_subreg (mode, op0, d->vmode));
+  emit_insn (gen_shr (tmp1, tmp1, GEN_INT (8)));
+  emit_insn (gen_shl (tmp2, tmp2, GEN_INT (8)));
+  emit_insn (gen_or (tmp1, tmp1, tmp2));
+  emit_move_insn (d->target, lowpart_subreg (d->vmode, tmp1, mode));
+
+  return true;
+}
+
 /* A subroutine of ix86_expand_vec_perm_const_1.  Implement a V4DF
    permutation using two vperm2f128, followed by a vshufpd insn blending
    the two vectors together.  */
@@ -23780,6 +23841,9 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     return true;
 
   if (expand_vec_perm_2perm_pblendv (d, false))
+    return true;
+
+  if (expand_vec_perm_psrlw_psllw_por (d))
     return true;
 
   /* Try sequences of four instructions.  */
