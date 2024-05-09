@@ -593,12 +593,12 @@ frange_storage::fits_p (const frange &) const
 prange_storage *
 prange_storage::alloc (vrange_internal_alloc &allocator, const prange &r)
 {
-  // Assume all pointers are the same size.
-  unsigned prec = TYPE_PRECISION (TREE_TYPE (null_pointer_node));
-  gcc_checking_assert (r.undefined_p () || TYPE_PRECISION (r.type ()) == prec);
-
-  typedef trailing_wide_ints<NINTS> twi;
-  size_t size = sizeof (prange_storage) + twi::extra_size (prec);
+  size_t size = sizeof (prange_storage);
+  if (!r.undefined_p ())
+    {
+      unsigned prec = TYPE_PRECISION (r.type ());
+      size += trailing_wide_ints<NINTS>::extra_size (prec);
+    }
   prange_storage *p = static_cast <prange_storage *> (allocator.alloc (size));
   new (p) prange_storage (r);
   return p;
@@ -610,8 +610,12 @@ prange_storage::prange_storage (const prange &r)
 {
   // It is the caller's responsibility to allocate enough space such
   // that the precision fits.
-  unsigned prec = TYPE_PRECISION (TREE_TYPE (null_pointer_node));
-  m_trailing_ints.set_precision (prec);
+  if (r.undefined_p ())
+    // Undefined ranges do not require any extra space for trailing
+    // wide ints.
+    m_trailing_ints.set_precision (0);
+  else
+    m_trailing_ints.set_precision (TYPE_PRECISION (r.type ()));
 
   set_prange (r);
 }
@@ -669,10 +673,14 @@ prange_storage::equal_p (const prange &r) const
 }
 
 bool
-prange_storage::fits_p (const prange &) const
+prange_storage::fits_p (const prange &r) const
 {
-  // All pointers are the same size.
-  return true;
+  // Undefined ranges always fit, because they don't store anything in
+  // the trailing wide ints.
+  if (r.undefined_p ())
+    return true;
+
+  return TYPE_PRECISION (r.type ()) <= m_trailing_ints.get_precision ();
 }
 
 
