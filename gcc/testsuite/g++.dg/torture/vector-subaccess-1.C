@@ -1,4 +1,5 @@
 /* PR c++/89224 */
+/* { dg-additional-options "-Wno-psabi" } */
 
 /* The access of `vector[i]` has the same qualifiers as the original
    vector which was missing. */
