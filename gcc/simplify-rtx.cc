@@ -5021,6 +5021,60 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
       return gen_rtx_CONST_VECTOR (mode, v);
     }
 
+  if (VECTOR_MODE_P (mode)
+      && GET_CODE (op0) == CONST_VECTOR
+      && (CONST_SCALAR_INT_P (op1) || CONST_DOUBLE_AS_FLOAT_P (op1))
+      && (CONST_VECTOR_DUPLICATE_P (op0)
+	  || CONST_VECTOR_NUNITS (op0).is_constant ()))
+    {
+      switch (code)
+	{
+	case PLUS:
+	case MINUS:
+	case MULT:
+	case DIV:
+	case MOD:
+	case UDIV:
+	case UMOD:
+	case AND:
+	case IOR:
+	case XOR:
+	case SMIN:
+	case SMAX:
+	case UMIN:
+	case UMAX:
+	case LSHIFTRT:
+	case ASHIFTRT:
+	case ASHIFT:
+	case ROTATE:
+	case ROTATERT:
+	case SS_PLUS:
+	case US_PLUS:
+	case SS_MINUS:
+	case US_MINUS:
+	case SS_ASHIFT:
+	case US_ASHIFT:
+	case COPYSIGN:
+	  break;
+	default:
+	  return NULL_RTX;
+	}
+
+      unsigned int npatterns = (CONST_VECTOR_DUPLICATE_P (op0)
+				? CONST_VECTOR_NPATTERNS (op0)
+				: CONST_VECTOR_NUNITS (op0).to_constant ());
+      rtx_vector_builder builder (mode, npatterns, 1);
+      for (unsigned i = 0; i < npatterns; i++)
+	{
+	  rtx x = simplify_binary_operation (code, GET_MODE_INNER (mode),
+					     CONST_VECTOR_ELT (op0, i), op1);
+	  if (!x || !valid_for_const_vector_p (mode, x))
+	    return 0;
+	  builder.quick_push (x);
+	}
+      return builder.build ();
+    }
+
   if (SCALAR_FLOAT_MODE_P (mode)
       && CONST_DOUBLE_AS_FLOAT_P (op0) 
       && CONST_DOUBLE_AS_FLOAT_P (op1)
