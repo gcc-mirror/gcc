@@ -76,13 +76,13 @@ void *create_buffer(int32_t n)
   return malloc(n);
 }
 
-void test_7(int32_t n) 
+void test_7(int32_t n)
 {
   int32_t *buf = create_buffer(n * sizeof (int32_t));
   free (buf);
 }
 
-void test_8(int32_t n) 
+void test_8(int32_t n)
 {
   /* FIXME: At the moment, region_model::set_value (lhs, <return_value>)
      is called at the src_node of the return edge. This edge has no stmts
@@ -98,13 +98,11 @@ void test_9 (void)
 {
   int32_t n;
   scanf("%i", &n);
-  /* n is a conjured_svalue.  */
-  void *ptr = malloc (n); /* { dg-message "'n' bytes" "note" } */
-  int32_t *iptr = (int32_t *)ptr; /* { dg-line assign9 } */
+  /* n is a conjured_svalue without any constraint. We have to assume
+     that is a multiple of sizeof (int32_t *); see PR analyzer/110014.  */
+  void *ptr = malloc (n);
+  int32_t *iptr = (int32_t *)ptr;
   free (iptr);
-
-  /* { dg-warning "allocated buffer size is not a multiple of the pointee's size \\\[CWE-131\\\]" "warning" { target *-*-* } assign9 } */
-  /* { dg-message "'int32_t \\*' (\\\{aka '(long )?int \\*'\\\})? here; 'sizeof \\(int32_t (\\\{aka (long )?int\\\})?\\)' is '4'" "note" { target *-*-* } assign9 } */
 }
 
 void test_11 (void)
@@ -156,4 +154,14 @@ void test_13 (void)
     }
   else
     free (ptr);
+}
+
+int *test_14 (size_t n)
+{
+  int *ptr = NULL;
+  /* n is an initial_svalue and guarded such that there is no equiv_class
+     for n itself but only for a binop_svalue containing n.  */
+  if (n % sizeof (int) == 0)
+    ptr = malloc (n);
+  return ptr;
 }

@@ -2949,7 +2949,7 @@ capacity_compatible_with_type (tree cst, tree pointee_size_tree)
 
    It works by visiting all svalues inside SVAL until it reaches
    atomic nodes.  From those, it goes back up again and adds each
-   node that might be a multiple of SIZE_CST to the RESULT_SET.  */
+   node that is not a multiple of SIZE_CST to the RESULT_SET.  */
 
 class size_visitor : public visitor
 {
@@ -2960,7 +2960,7 @@ public:
     m_root_sval->accept (this);
   }
 
-  bool get_result ()
+  bool is_dubious_capacity ()
   {
     return result_set.contains (m_root_sval);
   }
@@ -2970,22 +2970,10 @@ public:
     check_constant (sval->get_constant (), sval);
   }
 
-  void visit_unknown_svalue (const unknown_svalue *sval ATTRIBUTE_UNUSED)
-    final override
-  {
-    result_set.add (sval);
-  }
-
-  void visit_poisoned_svalue (const poisoned_svalue *sval ATTRIBUTE_UNUSED)
-    final override
-  {
-    result_set.add (sval);
-  }
-
   void visit_unaryop_svalue (const unaryop_svalue *sval) final override
   {
-    const svalue *arg = sval->get_arg ();
-    if (result_set.contains (arg))
+    if (CONVERT_EXPR_CODE_P (sval->get_op ())
+	  && result_set.contains (sval->get_arg ()))
       result_set.add (sval);
   }
 
@@ -2994,28 +2982,24 @@ public:
     const svalue *arg0 = sval->get_arg0 ();
     const svalue *arg1 = sval->get_arg1 ();
 
-    if (sval->get_op () == MULT_EXPR)
+    switch (sval->get_op ())
       {
-	if (result_set.contains (arg0) || result_set.contains (arg1))
-	  result_set.add (sval);
+	case MULT_EXPR:
+	  if (result_set.contains (arg0) && result_set.contains (arg1))
+	    result_set.add (sval);
+	  break;
+	case PLUS_EXPR:
+	case MINUS_EXPR:
+	  if (result_set.contains (arg0) || result_set.contains (arg1))
+	    result_set.add (sval);
+	  break;
+	default:
+	  break;
       }
-    else
-      {
-	if (result_set.contains (arg0) && result_set.contains (arg1))
-	  result_set.add (sval);
-      }
-  }
-
-  void visit_repeated_svalue (const repeated_svalue *sval) final override
-  {
-    sval->get_inner_svalue ()->accept (this);
-    if (result_set.contains (sval->get_inner_svalue ()))
-      result_set.add (sval);
   }
 
   void visit_unmergeable_svalue (const unmergeable_svalue *sval) final override
   {
-    sval->get_arg ()->accept (this);
     if (result_set.contains (sval->get_arg ()))
       result_set.add (sval);
   }
@@ -3025,33 +3009,30 @@ public:
     const svalue *base = sval->get_base_svalue ();
     const svalue *iter = sval->get_iter_svalue ();
 
-    if (result_set.contains (base) && result_set.contains (iter))
+    if (result_set.contains (base) || result_set.contains (iter))
       result_set.add (sval);
   }
 
-  void visit_conjured_svalue (const conjured_svalue *sval ATTRIBUTE_UNUSED)
-    final override
+  void visit_initial_svalue (const initial_svalue *sval) final override
   {
-    equiv_class_id id (-1);
+    equiv_class_id id = equiv_class_id::null ();
     if (m_cm->get_equiv_class_by_svalue (sval, &id))
       {
 	if (tree cst = id.get_obj (*m_cm).get_any_constant ())
 	  check_constant (cst, sval);
-	else
-	  result_set.add (sval);
+      }
+    else if (!m_cm->sval_constrained_p (sval))
+      {
+	result_set.add (sval);
       }
   }
 
-  void visit_asm_output_svalue (const asm_output_svalue *sval ATTRIBUTE_UNUSED)
-    final override
+  void visit_conjured_svalue (const conjured_svalue *sval) final override
   {
-    result_set.add (sval);
-  }
-
-  void visit_const_fn_result_svalue (const const_fn_result_svalue
-				      *sval ATTRIBUTE_UNUSED) final override
-  {
-    result_set.add (sval);
+    equiv_class_id id = equiv_class_id::null ();
+    if (m_cm->get_equiv_class_by_svalue (sval, &id))
+      if (tree cst = id.get_obj (*m_cm).get_any_constant ())
+	check_constant (cst, sval);
   }
 
 private:
@@ -3061,10 +3042,9 @@ private:
       {
       default:
 	/* Assume all unhandled operands are compatible.  */
-	result_set.add (sval);
 	break;
       case INTEGER_CST:
-	if (capacity_compatible_with_type (cst, m_size_cst))
+	if (!capacity_compatible_with_type (cst, m_size_cst))
 	  result_set.add (sval);
 	break;
       }
@@ -3187,7 +3167,7 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	if (!is_struct)
 	  {
 	    size_visitor v (pointee_size_tree, capacity, m_constraints);
-	    if (!v.get_result ())
+	    if (v.is_dubious_capacity ())
 	      {
 		tree expr = get_representative_tree (capacity);
 		ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg,

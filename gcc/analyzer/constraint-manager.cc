@@ -2218,6 +2218,137 @@ constraint_manager::get_equiv_class_by_svalue (const svalue *sval,
   return false;
 }
 
+/* Tries to find a svalue inside another svalue.  */
+
+class sval_finder : public visitor
+{
+public:
+  sval_finder (const svalue *query) : m_query (query), m_found (false)
+  {
+  }
+
+  bool found_query_p ()
+  {
+    return m_found;
+  }
+
+  void visit_region_svalue (const region_svalue *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_constant_svalue (const constant_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_unknown_svalue (const unknown_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_poisoned_svalue (const poisoned_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_setjmp_svalue (const setjmp_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_initial_svalue (const initial_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_unaryop_svalue (const unaryop_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_binop_svalue (const binop_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_sub_svalue (const sub_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_repeated_svalue (const repeated_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_bits_within_svalue (const bits_within_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_unmergeable_svalue (const unmergeable_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_placeholder_svalue (const placeholder_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_widening_svalue (const widening_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_compound_svalue (const compound_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_conjured_svalue (const conjured_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_asm_output_svalue (const asm_output_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+  void visit_const_fn_result_svalue (const const_fn_result_svalue  *sval)
+  {
+    m_found |= m_query == sval;
+  }
+
+private:
+  const svalue *m_query;
+  bool m_found;
+};
+
+/* Returns true if SVAL is constrained.  */
+
+bool
+constraint_manager::sval_constrained_p (const svalue *sval) const
+{
+  int i;
+  equiv_class *ec;
+  sval_finder finder (sval);
+  FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
+    {
+      int j;
+      const svalue *iv;
+      FOR_EACH_VEC_ELT (ec->m_vars, j, iv)
+	{
+	  iv->accept (&finder);
+	  if (finder.found_query_p ())
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Ensure that SVAL has an equivalence class within this constraint_manager;
    return the ID of the class.  */
 
