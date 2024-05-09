@@ -4919,7 +4919,7 @@ recording::global::write_to_dump (dump &d)
   else if (m_rvalue_init)
     {
       d.write (" = ");
-      d.write (m_rvalue_init->get_debug_string ());
+      d.write ("%s", m_rvalue_init->get_debug_string ());
       d.write (";\n");
     }
 
