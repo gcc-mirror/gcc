@@ -150,6 +150,15 @@ package body Sem_Ch13 is
    --  is inserted before the freeze node, and the body of the function is
    --  inserted after the freeze node.
 
+   procedure Check_Aspect_At_End_Of_Declarations (ASN : Node_Id);
+   --  Performs the processing of an aspect at the freeze all point and issues
+   --  appropriate error messages if the visibility has indeed changed. ASN is
+   --  the N_Aspect_Specification node for the aspect.
+
+   procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id);
+   --  Performs the processing of an aspect at the freeze point. ASN is the
+   --  N_Aspect_Specification node for the aspect.
+
    procedure Check_Pool_Size_Clash (Ent : Entity_Id; SP, SS : Node_Id);
    --  Called if both Storage_Pool and Storage_Size attribute definition
    --  clauses (SP and SS) are present for entity Ent. Issue error message.
@@ -1669,7 +1678,6 @@ package body Sem_Ch13 is
       --  Local variables
 
       Aspect : Node_Id;
-      Aitem  : Node_Id := Empty;
       Ent    : Node_Id;
 
       L : constant List_Id := Aspect_Specifications (N);
@@ -1722,7 +1730,12 @@ package body Sem_Ch13 is
             Loc  : constant Source_Ptr := Sloc (Aspect);
             Nam  : constant Name_Id    := Chars (Id);
             A_Id : constant Aspect_Id  := Get_Aspect_Id (Nam);
+
+            Aitem : Node_Id := Empty;
+            --  The associated N_Pragma or N_Attribute_Definition_Clause
+
             Anod : Node_Id;
+            --  An auxiliary node
 
             Delay_Required : Boolean;
             --  Set False if delay is not required
@@ -2949,19 +2962,6 @@ package body Sem_Ch13 is
                   end if;
             end case;
 
-            if Delay_Required
-               and then (A_Id = Aspect_Stable_Properties
-                          or else A_Id = Aspect_Designated_Storage_Model
-                          or else A_Id = Aspect_Storage_Model_Type
-                          or else A_Id = Aspect_Aggregate)
-               --  ??? It seems like we should do this for all aspects, not
-               --  just these, but that causes as-yet-undiagnosed regressions.
-
-            then
-               Set_Has_Delayed_Aspects (E);
-               Set_Is_Delayed_Aspect (Aspect);
-            end if;
-
             --  Check 13.1(9.2/5): A representation aspect of a subtype or type
             --  shall not be specified (whether by a representation item or an
             --  aspect_specification) before the type is completely defined
@@ -3306,6 +3306,9 @@ package body Sem_Ch13 is
                   goto Continue;
 
                --  External_Name, Link_Name
+
+               --  Only the legality checks are done during the analysis, thus
+               --  no delay is required.
 
                when Aspect_External_Name
                   | Aspect_Link_Name
@@ -4126,30 +4129,20 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-                  Aitem := Empty;
-
                when Aspect_Aggregate =>
                   --  We will be checking that the aspect is not specified on a
                   --  non-array type in Check_Aspect_At_Freeze_Point
 
                   Validate_Aspect_Aggregate (Expr);
-                  Record_Rep_Item (E, Aspect);
-                  goto Continue;
-
-               when Aspect_Local_Restrictions =>
-                  Validate_Aspect_Local_Restrictions (E, Expr);
-                  Record_Rep_Item (E, Aspect);
-                  goto Continue;
 
                when Aspect_Stable_Properties =>
                   Validate_Aspect_Stable_Properties
                     (E, Expr, Class_Present => Class_Present (Aspect));
-                  Record_Rep_Item (E, Aspect);
-                  goto Continue;
 
                when Aspect_Designated_Storage_Model =>
                   if not All_Extensions_Allowed then
                      Error_Msg_GNAT_Extension ("aspect %", Loc);
+                     goto Continue;
 
                   elsif not Is_Type (E)
                     or else Ekind (E) /= E_Access_Type
@@ -4157,14 +4150,13 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("can only be specified for pool-specific access type",
                         Aspect);
+                     goto Continue;
                   end if;
-
-                  Record_Rep_Item (E, Aspect);
-                  goto Continue;
 
                when Aspect_Storage_Model_Type =>
                   if not All_Extensions_Allowed then
                      Error_Msg_GNAT_Extension ("aspect %", Loc);
+                     goto Continue;
 
                   elsif not Is_Type (E)
                     or else not Is_Immutably_Limited_Type (E)
@@ -4172,10 +4164,8 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("can only be specified for immutably limited type",
                         Aspect);
+                     goto Continue;
                   end if;
-
-                  Record_Rep_Item (E, Aspect);
-                  goto Continue;
 
                when Aspect_Integer_Literal
                   | Aspect_Real_Literal
@@ -4193,16 +4183,13 @@ package body Sem_Ch13 is
                        (No_Implementation_Aspect_Specifications, N);
                   end if;
 
-                  Aitem := Empty;
-
                --  Case 3b: The aspects listed below don't correspond to
                --  pragmas/attributes and don't need delayed analysis.
 
                --  Implicit_Dereference
 
-               --  For Implicit_Dereference, External_Name and Link_Name, only
-               --  the legality checks are done during the analysis, thus no
-               --  delay is required.
+               --  Only the legality checks are done during the analysis, thus
+               --  no delay is required.
 
                when Aspect_Implicit_Dereference =>
                   Analyze_Aspect_Implicit_Dereference;
@@ -4218,6 +4205,11 @@ package body Sem_Ch13 is
 
                when Aspect_Dimension_System =>
                   Analyze_Aspect_Dimension_System (N, Id, Expr);
+                  goto Continue;
+
+               when Aspect_Local_Restrictions =>
+                  Validate_Aspect_Local_Restrictions (E, Expr);
+                  Record_Rep_Item (E, Aspect);
                   goto Continue;
 
                --  Case 4: Aspects requiring special handling
@@ -4806,6 +4798,7 @@ package body Sem_Ch13 is
                   end if;
                end;
             end if;
+
          exception
             when Aspect_Exit => null;
          end Analyze_One_Aspect;
@@ -11156,6 +11149,28 @@ package body Sem_Ch13 is
             ASN, Ent);
       end if;
    end Check_Aspect_At_End_Of_Declarations;
+
+   ------------------------------------------
+   -- Check_Aspects_At_End_Of_Declarations --
+   ------------------------------------------
+
+   procedure Check_Aspects_At_End_Of_Declarations (E : Entity_Id) is
+      ASN : Node_Id;
+
+   begin
+      ASN := First_Rep_Item (E);
+
+      while Present (ASN) loop
+         if Nkind (ASN) = N_Aspect_Specification
+           and then Entity (ASN) = E
+           and then Is_Delayed_Aspect (ASN)
+         then
+            Check_Aspect_At_End_Of_Declarations (ASN);
+         end if;
+
+         Next_Rep_Item (ASN);
+      end loop;
+   end Check_Aspects_At_End_Of_Declarations;
 
    ----------------------------------
    -- Check_Aspect_At_Freeze_Point --

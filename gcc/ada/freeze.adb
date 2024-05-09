@@ -2645,22 +2645,7 @@ package body Freeze is
             --  for a description of how we handle aspect visibility).
 
             elsif Has_Delayed_Aspects (E) then
-               declare
-                  Ritem : Node_Id;
-
-               begin
-                  Ritem := First_Rep_Item (E);
-                  while Present (Ritem) loop
-                     if Nkind (Ritem) = N_Aspect_Specification
-                       and then Entity (Ritem) = E
-                       and then Is_Delayed_Aspect (Ritem)
-                     then
-                        Check_Aspect_At_End_Of_Declarations (Ritem);
-                     end if;
-
-                     Next_Rep_Item (Ritem);
-                  end loop;
-               end;
+               Check_Aspects_At_End_Of_Declarations (E);
             end if;
 
             --  If an incomplete type is still not frozen, this may be a
