@@ -368,7 +368,7 @@ public:
   concrete_binding (bit_offset_t start_bit_offset, bit_size_t size_in_bits)
   : m_bit_range (start_bit_offset, size_in_bits)
   {
-    gcc_assert (!m_bit_range.empty_p ());
+    gcc_assert (m_bit_range.m_size_in_bits > 0);
   }
   bool concrete_p () const final override { return true; }
 
@@ -409,10 +409,10 @@ public:
 
   static int cmp_ptr_ptr (const void *, const void *);
 
-  void mark_deleted () { m_bit_range.m_start_bit_offset = -1; }
-  void mark_empty () { m_bit_range.m_start_bit_offset = -2; }
-  bool is_deleted () const { return m_bit_range.m_start_bit_offset == -1; }
-  bool is_empty () const { return m_bit_range.m_start_bit_offset == -2; }
+  void mark_deleted () { m_bit_range.m_size_in_bits = -1; }
+  void mark_empty () { m_bit_range.m_size_in_bits = -2; }
+  bool is_deleted () const { return m_bit_range.m_size_in_bits == -1; }
+  bool is_empty () const { return m_bit_range.m_size_in_bits == -2; }
 
 private:
   bit_range m_bit_range;
