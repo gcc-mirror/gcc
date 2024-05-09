@@ -368,6 +368,33 @@ support interactions with GPU.
 Here is a link to the full RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-storage-model.rst
 
+Attribute Super
+---------------
+.. index:: Super
+
+The ``Super`` attribute can be applied to objects of tagged types in order
+to obtain a view conversion to the most immediate specific parent type.
+
+It cannot be applied to objects of types without any ancestors, or types whose
+immediate parent is abstract.
+
+.. code-block:: ada
+
+  type T1 is tagged null record;
+  procedure P (V : T1);
+
+  type T2 is new T1 with null record;
+  procedure P (V : T2);
+
+  procedure Call (V : T2'Class) is
+  begin
+    V'Super.P; --  Equivalent to "P (T1 (V));", a nondispatching call
+               --  to T1's primitive procedure P.
+  end;
+
+Here is a link to the full RFC:
+https://github.com/QuentinOchem/ada-spark-rfcs/blob/oop/considered/rfc-oop-super.rst
+
 Simpler accessibility model
 ---------------------------
 
