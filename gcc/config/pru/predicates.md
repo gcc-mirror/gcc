@@ -103,7 +103,7 @@
       else
 	return 0;
 
-      return REGNO_REG_CLASS (regno) == MULSRC0_REGNUM
+      return REGNO_REG_CLASS (regno) == MULSRC0_REGS
 	     || regno >= FIRST_PSEUDO_REGISTER;
     }
   return 0;
@@ -123,7 +123,7 @@
       else
 	return 0;
 
-      return REGNO_REG_CLASS (regno) == MULSRC1_REGNUM
+      return REGNO_REG_CLASS (regno) == MULSRC1_REGS
 	     || regno >= FIRST_PSEUDO_REGISTER;
     }
   return 0;
