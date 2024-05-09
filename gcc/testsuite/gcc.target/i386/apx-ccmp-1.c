@@ -96,9 +96,11 @@ f15 (double a, double b, int c, int d)
 
 /* { dg-final { scan-assembler-times "ccmpg" 2 } } */
 /* { dg-final { scan-assembler-times "ccmple" 2 } } */
-/* { dg-final { scan-assembler-times "ccmpne" 4 } } */
-/* { dg-final { scan-assembler-times "ccmpe" 3 } } */
+/* { dg-final { scan-assembler-times "ccmpne" 2 } } */
+/* { dg-final { scan-assembler-times "ccmpe" 1 } } */
 /* { dg-final { scan-assembler-times "ccmpbe" 1 } } */
+/* { dg-final { scan-assembler-times "ctestne" 2 } } */
+/* { dg-final { scan-assembler-times "cteste" 2 } } */
 /* { dg-final { scan-assembler-times "ccmpa" 1 } } */
-/* { dg-final { scan-assembler-times "ccmpbl" 2 } } */
-
+/* { dg-final { scan-assembler-times "ccmpbl" 1 } } */
+/* { dg-final { scan-assembler-times "ctestbl" 1 } } */

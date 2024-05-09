@@ -12,7 +12,7 @@ int foo_apx(int a, int b, int c, int d)
       c += d;
       a += b;
       sum += a + c;
-      if (b != d && sum < c || sum > d)
+      if (b > d && sum != 0 || sum > d)
 	{
 	  b += d;
 	  sum += b;
@@ -32,7 +32,7 @@ int foo_noapx(int a, int b, int c, int d)
       c += d;
       a += b;
       sum += a + c;
-      if (b != d && sum < c || sum > d)
+      if (b > d && sum != 0 || sum > d)
 	{
 	  b += d;
 	  sum += b;
