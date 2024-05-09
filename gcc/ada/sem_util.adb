@@ -38,6 +38,7 @@ with Freeze;         use Freeze;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
 with Lib.Xref;       use Lib.Xref;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet.Sp;       use Namet.Sp;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -17166,6 +17167,13 @@ package body Sem_Util is
       --  Record types
 
       elsif Is_Record_Type (Typ) then
+         --  Mutably tagged types get default initialized to their parent
+         --  subtype's default values.
+
+         if Is_Mutably_Tagged_CW_Equivalent_Type (Typ) then
+            return True;
+         end if;
+
          if Has_Defaulted_Discriminants (Typ)
            and then Is_Fully_Initialized_Variant (Typ)
          then
@@ -22682,6 +22690,11 @@ package body Sem_Util is
       elsif Is_Access_Type (Typ)
         or else (Consider_IS_NS and then Is_Scalar_Type (Typ))
       then
+         return True;
+
+      --  Mutably tagged types require default initialization
+
+      elsif Is_Mutably_Tagged_CW_Equivalent_Type (Typ) then
          return True;
 
       --  If Initialize/Normalize_Scalars is in effect, string objects also

@@ -43,6 +43,7 @@ with Freeze;           use Freeze;
 with Ghost;            use Ghost;
 with Lib;              use Lib;
 with Lib.Xref;         use Lib.Xref;
+with Mutably_Tagged;   use Mutably_Tagged;
 with Namet;            use Namet;
 with Nlists;           use Nlists;
 with Nmake;            use Nmake;
@@ -3067,6 +3068,15 @@ package body Sem_Ch13 is
                             Prefix         => Ent,
                             Attribute_Name => Name_Class);
                      end if;
+                  end if;
+
+                  --  Propagate the 'Size'Class aspect to the class-wide type
+
+                  if A_Id = Aspect_Size and then Class_Present (Aspect) then
+                     Ent :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => Ent,
+                         Attribute_Name => Name_Class);
                   end if;
 
                   --  Construct the attribute_definition_clause. The expression
@@ -7335,6 +7345,70 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("nonconfirming Size for aliased object is not "
                         & "supported", N);
+                  end if;
+
+                  --  Handle extension aspect 'Size'Class which allows for
+                  --  "mutably tagged" types.
+
+                  if Ekind (Etyp) = E_Class_Wide_Type then
+                     Error_Msg_GNAT_Extension
+                       ("attribute size class", Sloc (N));
+
+                     --  Check for various restrictions applied to mutably
+                     --  tagged types.
+
+                     if Is_Derived_Type (Etype (Etyp)) then
+                        Error_Msg_N
+                          ("cannot be specified on derived types", Nam);
+
+                     elsif Ekind (Etype (Prefix (Nam))) = E_Record_Subtype then
+                        Error_Msg_N
+                          ("cannot be specified on a subtype", Nam);
+
+                     elsif Is_Interface (Etype (Etyp)) then
+                        Error_Msg_N
+                          ("cannot be specified on interface types", Nam);
+
+                     elsif Has_Discriminants (Etype (Etyp)) then
+                        Error_Msg_N
+                          ("cannot be specified on discriminated type", Nam);
+
+                     elsif Present (Incomplete_Or_Partial_View (Etype (Etyp)))
+                       and then Is_Tagged_Type
+                                  (Incomplete_Or_Partial_View (Etype (Etyp)))
+                     then
+                        Error_Msg_N
+                          ("cannot be specified on a type whose partial view"
+                           & " is tagged", Nam);
+
+                     --  Otherwise, the declaration is valid
+
+                     else
+                        declare
+                           Actions : List_Id;
+                        begin
+                           --  Generate our class-wide equivalent type which
+                           --  is sized according to the value specified by
+                           --  'Size'Class.
+
+                           Set_Class_Wide_Equivalent_Type (Etyp,
+                             Make_CW_Equivalent_Type (Etyp, Empty, Actions));
+
+                           --  Add a Compile_Time_Error sizing check as a hint
+                           --  to the backend.
+
+                           Append_To (Actions,
+                             Make_CW_Size_Compile_Check
+                               (Etype (Etyp), U_Ent));
+
+                           --  Set the expansion to occur during freezing when
+                           --  everything is analyzed
+
+                           Append_Freeze_Actions (Etyp, Actions);
+
+                           Set_Is_Mutably_Tagged_Type (Etyp);
+                        end;
+                     end if;
                   end if;
 
                   Set_Has_Size_Clause (U_Ent);

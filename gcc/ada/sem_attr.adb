@@ -46,6 +46,7 @@ with Gnatvsn;        use Gnatvsn;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
 with Lib.Xref;       use Lib.Xref;
+with Mutably_Tagged; use Mutably_Tagged;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
 with Opt;            use Opt;
@@ -6753,7 +6754,10 @@ package body Sem_Attr is
          Check_E0;
          Check_Dereference;
 
-         if not Is_Tagged_Type (P_Type) then
+         if Is_Mutably_Tagged_CW_Equivalent_Type (P_Type) then
+            null;
+
+         elsif not Is_Tagged_Type (P_Type) then
             Error_Attr_P ("prefix of % attribute must be tagged");
 
          --  Next test does not apply to generated code why not, and what does
@@ -11785,6 +11789,10 @@ package body Sem_Attr is
                   Error_Msg_F
                     ("illegal attribute for discriminant-dependent component",
                      P);
+
+               elsif Depends_On_Mutably_Tagged_Ext_Comp (P) then
+                  Error_Msg_F
+                    ("illegal attribute for mutably tagged component", P);
                end if;
 
                --  Check static matching rule of 3.10.2(27). Nominal subtype

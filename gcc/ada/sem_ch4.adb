@@ -36,6 +36,7 @@ with Exp_Util;       use Exp_Util;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
 with Lib.Xref;       use Lib.Xref;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Namet.Sp;       use Namet.Sp;
 with Nlists;         use Nlists;
@@ -623,6 +624,12 @@ package body Sem_Ch4 is
                         Make_Index_Or_Discriminant_Constraint (Loc,
                           Constraints => Constr)));
                end;
+
+            --  Rewrite the mutably tagged type to a non-class-wide type for
+            --  proper initialization.
+
+            elsif Is_Mutably_Tagged_Type (Type_Id) then
+               Rewrite (E, New_Occurrence_Of (Etype (Type_Id), Loc));
             end if;
          end if;
 
@@ -2885,6 +2892,12 @@ package body Sem_Ch4 is
             Set_Etype (N, Component_Type (Array_Type));
             Check_Implicit_Dereference (N, Etype (N));
 
+            --  Generate conversion to class-wide type
+
+            if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (N)) then
+               Make_Mutably_Tagged_Conversion (N);
+            end if;
+
             if Present (Index) then
                Error_Msg_N
                  ("too few subscripts in array reference", First (Exprs));
@@ -4066,6 +4079,17 @@ package body Sem_Ch4 is
                  and then Etype (Actual) = Full_View (Etype (Formal))
                then
                   Set_Etype (Formal, Etype (Actual));
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
+               --  Generate a class-wide type conversion for instances of
+               --  class-wide equivalent types to their corresponding
+               --  mutably tagged type.
+
+               elsif Is_Mutably_Tagged_CW_Equivalent_Type (Etype (Actual))
+                 and then Etype (Formal) = Parent_Subtype (Etype (Actual))
+               then
+                  Make_Mutably_Tagged_Conversion (Actual);
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
@@ -5294,6 +5318,11 @@ package body Sem_Ch4 is
             Prefix_Type := Implicitly_Designated_Type (Prefix_Type);
          end if;
 
+      --  Handle mutably tagged types
+
+      elsif Is_Class_Wide_Equivalent_Type (Prefix_Type) then
+         Prefix_Type := Parent_Subtype (Prefix_Type);
+
       --  If we have an explicit dereference of a remote access-to-class-wide
       --  value, then issue an error (see RM-E.2.2(16/1)). However we first
       --  have to check for the case of a prefix that is a controlling operand
@@ -5389,7 +5418,6 @@ package body Sem_Ch4 is
          Check_Implicit_Dereference (N, Etype (Comp));
 
       elsif Is_Record_Type (Prefix_Type) then
-
          --  Find a component with the given name. If the node is a prefixed
          --  call, do not examine components whose visibility may be
          --  accidental.
@@ -5557,6 +5585,13 @@ package body Sem_Ch4 is
 
                else
                   Set_Etype (N, Etype (Comp));
+               end if;
+
+               --  Force the generation of a mutably tagged type conversion
+               --  when we encounter a special class-wide equivalent type.
+
+               if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (Name)) then
+                  Make_Mutably_Tagged_Conversion (Name, Force => True);
                end if;
 
                Check_Implicit_Dereference (N, Etype (N));
@@ -6327,6 +6362,30 @@ package body Sem_Ch4 is
          Error_Msg_N
            ("formal parameter cannot be converted to class-wide type when "
             & "Extensions_Visible is False", Expr);
+      end if;
+
+      --  Perform special checking for access to mutably tagged type since they
+      --  are not compatible with interfaces.
+
+      if Is_Access_Type (Typ)
+        and then Is_Access_Type (Etype (Expr))
+        and then not Error_Posted (N)
+      then
+
+         if Is_Mutably_Tagged_Type (Directly_Designated_Type (Typ))
+           and then Is_Interface (Directly_Designated_Type (Etype (Expr)))
+         then
+            Error_Msg_N
+              ("argument of conversion to mutably tagged access type cannot "
+               & "be access to interface", Expr);
+
+         elsif Is_Mutably_Tagged_Type (Directly_Designated_Type (Etype (Expr)))
+           and then Is_Interface (Directly_Designated_Type (Typ))
+         then
+            Error_Msg_N
+              ("argument of conversion to interface access type cannot "
+               & "be access to mutably tagged type", Expr);
+         end if;
       end if;
    end Analyze_Type_Conversion;
 

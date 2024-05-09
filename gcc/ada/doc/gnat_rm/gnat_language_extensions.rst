@@ -496,3 +496,41 @@ case statement with composite selector type".
 
 Link to the original RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-pattern-matching.rst
+
+Mutably Tagged Types with Size'Class Aspect
+-------------------------------------------
+
+The `Size'Class` aspect can be applied to a tagged type to specify a size
+constraint for the type and its descendants. When this aspect is specified
+on a tagged type, the class-wide type of that type is considered to be a
+"mutably tagged" type - meaning that objects of the class-wide type can have
+their tag changed by assignment from objects with a different tag.
+
+When the aspect is applied to a type, the size of each of its descendant types
+must not exceed the size specified for the aspect.
+
+Example:
+
+.. code-block:: ada
+
+    type Base is tagged null record
+        with Size'Class => 16 * 8;  -- Size in bits (128 bits, or 16 bytes)
+
+    type Derived_Type is new Base with record
+       Data_Field : Integer;
+    end record;  -- ERROR if Derived_Type exceeds 16 bytes
+
+Class-wide types with a specified `Size'Class` can be used as the type of
+array components, record components, and stand-alone objects.
+
+.. code-block:: ada
+
+    Inst : Base'Class;
+    type Array_of_Base is array (Positive range <>) of Base'Class;
+
+Note: Legality of the `Size'Class` aspect is subject to certain restrictions on
+the tagged type, such as being undiscriminated, having no dynamic composite
+subcomponents, among others detailed in the RFC.
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/topic/rfc-finally/considered/rfc-class-size.md

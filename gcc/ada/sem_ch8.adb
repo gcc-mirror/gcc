@@ -39,6 +39,7 @@ with Lib;            use Lib;
 with Lib.Load;       use Lib.Load;
 with Lib.Xref;       use Lib.Xref;
 with Local_Restrict;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Namet.Sp;       use Namet.Sp;
 with Nlists;         use Nlists;
@@ -1511,6 +1512,10 @@ package body Sem_Ch8 is
             if Is_Dependent_Component_Of_Mutable_Object (Nam) then
                Error_Msg_N
                  ("illegal renaming of discriminant-dependent component", Nam);
+            elsif Depends_On_Mutably_Tagged_Ext_Comp (Nam) then
+               Error_Msg_N
+                 ("illegal renaming of mutably tagged dependent component",
+                  Nam);
             end if;
 
             --  If the renaming comes from source and the renamed object is a
@@ -2093,6 +2098,10 @@ package body Sem_Ch8 is
                if Is_Dependent_Component_Of_Mutable_Object (Nam) then
                   Error_Msg_N
                     ("illegal renaming of discriminant-dependent component",
+                     Nam);
+               elsif Depends_On_Mutably_Tagged_Ext_Comp (Nam) then
+                  Error_Msg_N
+                    ("illegal renaming of mutably tagged dependent component",
                      Nam);
                end if;
             else

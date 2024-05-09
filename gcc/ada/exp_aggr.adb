@@ -43,6 +43,7 @@ with Exp_Tss;        use Exp_Tss;
 with Freeze;         use Freeze;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nmake;          use Nmake;
 with Nlists;         use Nlists;
@@ -1370,8 +1371,8 @@ package body Exp_Aggr is
          Expr_Q := Unqualify (Expr);
 
          if Present (Etype (N)) and then Etype (N) /= Any_Composite then
-            Comp_Typ := Component_Type (Etype (N));
-            pragma Assert (Comp_Typ = Ctype); --  AI-287
+            Comp_Typ := Get_Corresponding_Mutably_Tagged_Type_If_Present
+                          (Component_Type (Etype (N)));
 
          elsif Present (Next (First (New_Indexes))) then
 
@@ -4474,7 +4475,8 @@ package body Exp_Aggr is
       Dims                 : constant Nat := Number_Dimensions (Typ);
       Max_Others_Replicate : constant Nat := Max_Aggregate_Size (N);
 
-      Static_Components : Boolean := True;
+      Ctyp              : Entity_Id := Component_Type (Typ);
+      Static_Components : Boolean   := True;
 
       procedure Check_Static_Components;
       --  Check whether all components of the aggregate are compile-time known
@@ -4908,9 +4910,9 @@ package body Exp_Aggr is
          end if;
       end Is_Flat;
 
-      -------------------------
-      --  Is_Static_Element  --
-      -------------------------
+      -----------------------
+      -- Is_Static_Element --
+      -----------------------
 
       function Is_Static_Element (N : Node_Id; Dims : Nat) return Boolean is
          Expr : constant Node_Id := Expression (N);
@@ -4935,7 +4937,7 @@ package body Exp_Aggr is
          --  but only at the innermost level for a multidimensional array.
 
          elsif Dims = 1 then
-            Preanalyze_And_Resolve (Expr, Component_Type (Typ));
+            Preanalyze_And_Resolve (Expr, Ctyp);
             return Compile_Time_Known_Value (Expr);
 
          else
@@ -4985,6 +4987,10 @@ package body Exp_Aggr is
       if Has_Controlled_Component (Typ) then
          return;
       end if;
+
+      --  Special handling for mutably taggeds
+
+      Ctyp := Get_Corresponding_Mutably_Tagged_Type_If_Present (Ctyp);
 
       Check_Static_Components;
 
@@ -5076,9 +5082,10 @@ package body Exp_Aggr is
    procedure Expand_Array_Aggregate (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
 
-      Typ  : constant Entity_Id := Etype (N);
-      Ctyp : constant Entity_Id := Component_Type (Typ);
+      Typ : constant Entity_Id := Etype (N);
       --  Typ is the correct constrained array subtype of the aggregate
+
+      Ctyp : Entity_Id := Component_Type (Typ);
       --  Ctyp is the corresponding component type.
 
       Aggr_Dimension : constant Pos := Number_Dimensions (Typ);
@@ -6026,6 +6033,10 @@ package body Exp_Aggr is
       --  never get here.
 
       pragma Assert (not Raises_Constraint_Error (N));
+
+      --  Special handling for mutably taggeds
+
+      Ctyp := Get_Corresponding_Mutably_Tagged_Type_If_Present (Ctyp);
 
       --  STEP 1a
 
@@ -7931,6 +7942,10 @@ package body Exp_Aggr is
       --  NOTE: This sets the global Static_Components to False in most, but
       --  not all, cases when it returns False.
 
+      function Contains_Mutably_Tagged_Component
+        (Typ : Entity_Id) return Boolean;
+      --  Determine if some component of Typ is mutably tagged
+
       function Has_Per_Object_Constraint (L : List_Id) return Boolean;
       --  Return True if any element of L has Has_Per_Object_Constraint set.
       --  L should be the Choices component of an N_Component_Association.
@@ -8433,6 +8448,30 @@ package body Exp_Aggr is
          return True;
       end Component_OK_For_Backend;
 
+      ---------------------------------------
+      -- Contains_Mutably_Tagged_Component --
+      ---------------------------------------
+
+      function Contains_Mutably_Tagged_Component
+        (Typ : Entity_Id) return Boolean
+      is
+         Comp : Entity_Id;
+      begin
+         --  Move through Typ's components looking for mutably tagged ones
+
+         Comp := First_Component (Typ);
+         while Present (Comp) loop
+            --  When we find one, return True
+
+            if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (Comp)) then
+               return True;
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+         return False;
+      end Contains_Mutably_Tagged_Component;
+
       -------------------------------
       -- Has_Per_Object_Constraint --
       -------------------------------
@@ -8515,7 +8554,8 @@ package body Exp_Aggr is
       end if;
 
       --  If the pragma Aggregate_Individually_Assign is set, always convert to
-      --  assignments.
+      --  assignments so that proper tag assignments and conversions can be
+      --  generated.
 
       if Aggregate_Individually_Assign then
          Convert_To_Assignments (N, Typ);
@@ -8553,6 +8593,12 @@ package body Exp_Aggr is
          else
             Build_Back_End_Aggregate;
          end if;
+
+      --  When we have any components which are mutably tagged types then
+      --  special processing is required.
+
+      elsif Contains_Mutably_Tagged_Component (Typ) then
+         Convert_To_Assignments (N, Typ);
 
       --  Gigi doesn't properly handle temporaries of variable size so we
       --  generate it in the front-end

@@ -41,6 +41,7 @@ with Exp_Pakd;       use Exp_Pakd;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Inline;         use Inline;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -2398,8 +2399,14 @@ package body Exp_Ch5 is
       Lhs  : constant Node_Id    := Name (N);
       Loc  : constant Source_Ptr := Sloc (N);
       Rhs  : constant Node_Id    := Expression (N);
-      Typ  : constant Entity_Id  := Underlying_Type (Etype (Lhs));
-      Exp  : Node_Id;
+
+      --  Obtain the relevant corresponding mutably tagged type if necessary
+
+      Typ  : constant Entity_Id :=
+        Get_Corresponding_Mutably_Tagged_Type_If_Present
+          (Underlying_Type (Etype (Lhs)));
+
+      Exp : Node_Id;
 
    begin
       --  Special case to check right away, if the Componentwise_Assignment
@@ -2776,7 +2783,9 @@ package body Exp_Ch5 is
                Apply_Discriminant_Check (Rhs, Typ, Lhs);
             end if;
 
-         elsif Is_Array_Type (Typ) and then Is_Constrained (Typ) then
+         elsif Is_Array_Type (Typ) and then
+           (Is_Constrained (Typ) or else Is_Mutably_Tagged_Conversion (Lhs))
+         then
             Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
             if not Suppress_Assignment_Checks (N) then
@@ -3072,13 +3081,64 @@ package body Exp_Ch5 is
                                      Attribute_Name => Name_Address)));
                         end if;
 
-                        Append_To (L,
-                          Make_Raise_Constraint_Error (Loc,
-                            Condition =>
-                              Make_Op_Ne (Loc,
-                                Left_Opnd  => Lhs_Tag,
-                                Right_Opnd => Rhs_Tag),
-                            Reason    => CE_Tag_Check_Failed));
+                        --  Handle assignment to a mutably tagged type
+
+                        if Is_Mutably_Tagged_Conversion (Lhs)
+                          or else Is_Mutably_Tagged_Type (Typ)
+                          or else Is_Mutably_Tagged_Type (Etype (Lhs))
+                        then
+                           --  Create a tag check when we have the extra
+                           --  constrained formal and it is true (meaning we
+                           --  are not dealing with a mutably tagged object).
+
+                           if Is_Entity_Name (Name (N))
+                             and then Is_Formal (Entity (Name (N)))
+                             and then Present
+                                        (Extra_Constrained (Entity (Name (N))))
+                           then
+                              Append_To (L,
+                                Make_If_Statement (Loc,
+                                  Condition       =>
+                                    New_Occurrence_Of
+                                      (Extra_Constrained
+                                        (Entity (Name (N))), Loc),
+                                  Then_Statements => New_List (
+                                    Make_Raise_Constraint_Error (Loc,
+                                      Condition =>
+                                        Make_Op_Ne (Loc,
+                                          Left_Opnd  => Lhs_Tag,
+                                          Right_Opnd => Rhs_Tag),
+                                      Reason    => CE_Tag_Check_Failed))));
+                           end if;
+
+                           --  Generate a tag assignment before the actual
+                           --  assignment so we dispatch to the proper
+                           --  assign version.
+
+                           Append_To (L,
+                             Make_Assignment_Statement (Loc,
+                               Name       =>
+                               Make_Selected_Component (Loc,
+                                 Prefix        => Duplicate_Subexpr (Lhs),
+                                 Selector_Name =>
+                                   Make_Identifier (Loc, Name_uTag)),
+                             Expression =>
+                               Make_Selected_Component (Loc,
+                                 Prefix        => Duplicate_Subexpr (Rhs),
+                                 Selector_Name =>
+                                   Make_Identifier (Loc, Name_uTag))));
+
+                        --  Otherwise generate a normal tag check
+
+                        else
+                           Append_To (L,
+                             Make_Raise_Constraint_Error (Loc,
+                               Condition =>
+                                 Make_Op_Ne (Loc,
+                                   Left_Opnd  => Lhs_Tag,
+                                   Right_Opnd => Rhs_Tag),
+                               Reason    => CE_Tag_Check_Failed));
+                        end if;
                      end;
                   end if;
 

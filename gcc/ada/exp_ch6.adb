@@ -4224,8 +4224,10 @@ package body Exp_Ch6 is
          --  because the object has underlying discriminants with defaults.
 
          if Present (Extra_Constrained (Formal)) then
-            if Is_Private_Type (Etype (Prev))
-              and then not Has_Discriminants (Base_Type (Etype (Prev)))
+            if Is_Mutably_Tagged_Type (Etype (Actual))
+              or else (Is_Private_Type (Etype (Prev))
+                        and then not Has_Discriminants
+                                       (Base_Type (Etype (Prev))))
             then
                Add_Extra_Actual
                  (Expr => New_Occurrence_Of (Standard_False, Loc),

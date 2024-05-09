@@ -27,6 +27,7 @@ with Atree;          use Atree;
 with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Ghost;          use Ghost;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
@@ -79,6 +80,12 @@ package body Sem_Ch2 is
          return;
       else
          Find_Direct_Name (N);
+      end if;
+
+      --  Generate a conversion when we see an expanded mutably tagged type
+
+      if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (N)) then
+         Make_Mutably_Tagged_Conversion (N);
       end if;
 
       --  A Ghost entity must appear in a specific context. Only do this

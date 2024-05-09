@@ -40,6 +40,7 @@ with Itypes;         use Itypes;
 with Lib;            use Lib;
 with Lib.Load;       use Lib.Load;
 with Lib.Xref;       use Lib.Xref;
+with Mutably_Tagged; use Mutably_Tagged;
 with Nlists;         use Nlists;
 with Namet;          use Namet;
 with Nmake;          use Nmake;
@@ -11496,6 +11497,10 @@ package body Sem_Ch12 is
          then
             Error_Msg_N
               ("illegal discriminant-dependent component for in out parameter",
+               Actual);
+         elsif Depends_On_Mutably_Tagged_Ext_Comp (Actual) then
+            Error_Msg_N
+              ("illegal mutably tagged component for in out parameter",
                Actual);
          end if;
 

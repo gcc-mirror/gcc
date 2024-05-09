@@ -885,6 +885,26 @@ package Exp_Util is
    --  list. If Warn is True, a warning will be output at the start of N
    --  indicating the deletion of the code.
 
+   function Make_CW_Equivalent_Type
+     (T        : Entity_Id;
+      E        : Node_Id;
+      List_Def : out List_Id) return Entity_Id;
+   --  T is a class-wide type entity, and E is the initial expression node that
+   --  constrains T in cases such as: " X: T := E" or "new T'(E)". When there
+   --  is no E present then it is assumed that T is an unconstrained mutably
+   --  tagged class-wide type.
+   --
+   --  This function returns the entity of the Equivalent type and inserts
+   --  on the fly the necessary declaration into List_Def such as:
+   --
+   --    type anon is record
+   --       _parent : Root_Type (T); constrained with E discriminants (if any)
+   --       Extension : String (1 .. expr to match size of E);
+   --    end record;
+   --
+   --  This record is compatible with any object of the class of T thanks to
+   --  the first field and has the same size as E thanks to the second.
+
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id;
    --  Generate a call to the Invariant_Procedure associated with the type of
    --  expression Expr. Expr is passed as an actual parameter in the call.

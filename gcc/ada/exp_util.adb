@@ -181,22 +181,6 @@ package body Exp_Util is
    --  Determine whether pragma Default_Initial_Condition denoted by Prag has
    --  an assertion expression that should be verified at run time.
 
-   function Make_CW_Equivalent_Type
-     (T : Entity_Id;
-      E : Node_Id) return Entity_Id;
-   --  T is a class-wide type entity, E is the initial expression node that
-   --  constrains T in case such as: " X: T := E" or "new T'(E)". This function
-   --  returns the entity of the Equivalent type and inserts on the fly the
-   --  necessary declaration such as:
-   --
-   --    type anon is record
-   --       _parent : Root_Type (T); constrained with E discriminants (if any)
-   --       Extension : String (1 .. expr to match size of E);
-   --    end record;
-   --
-   --  This record is compatible with any object of the class of T thanks to
-   --  the first field and has the same size as E thanks to the second.
-
    function Make_Literal_Range
      (Loc         : Source_Ptr;
       Literal_Typ : Entity_Id) return Node_Id;
@@ -10160,13 +10144,13 @@ package body Exp_Util is
    --  representation of the extension part.)
 
    function Make_CW_Equivalent_Type
-     (T : Entity_Id;
-      E : Node_Id) return Entity_Id
+     (T        : Entity_Id;
+      E        : Node_Id;
+      List_Def : out List_Id) return Entity_Id
    is
       Loc         : constant Source_Ptr := Sloc (E);
       Root_Typ    : constant Entity_Id  := Root_Type (T);
       Root_Utyp   : constant Entity_Id  := Underlying_Type (Root_Typ);
-      List_Def    : constant List_Id    := Empty_List;
       Comp_List   : constant List_Id    := New_List;
 
       Equiv_Type  : Entity_Id;
@@ -10177,6 +10161,8 @@ package body Exp_Util is
       Size_Expr   : Node_Id;
 
    begin
+      List_Def := New_List;
+
       --  If the root type is already constrained, there are no discriminants
       --  in the expression.
 
@@ -10214,7 +10200,10 @@ package body Exp_Util is
       --  need to convert it first to the class-wide type to force a call to
       --  the _Size primitive operation.
 
-      if Has_Tag_Of_Type (E) then
+      if No (E) then
+         Size_Attr := Make_Integer_Literal (Loc, RM_Size (T));
+
+      elsif Has_Tag_Of_Type (E) then
          if not Has_Discriminants (Etype (E))
            or else Is_Constrained (Etype (E))
          then
@@ -10237,7 +10226,7 @@ package body Exp_Util is
              Attribute_Name => Name_Size);
       end if;
 
-      if not Is_Interface (Root_Typ) then
+      if not Is_Interface (Root_Typ) and then Present (E) then
 
          --  subtype rg__xx is
          --    Storage_Offset range 1 .. (Exp'size - Typ'object_size)
@@ -10317,11 +10306,15 @@ package body Exp_Util is
 
       Set_Is_Class_Wide_Equivalent_Type (Equiv_Type);
 
-      --  A class-wide equivalent type does not require initialization
+      --  A class-wide equivalent type does not require initialization unless
+      --  no expression is present - in which case initialization gets
+      --  generated as part of the mutably tagged type machinery.
 
-      Set_Suppress_Initialization (Equiv_Type);
+      if Present (E) then
+         Set_Suppress_Initialization (Equiv_Type);
+      end if;
 
-      if not Is_Interface (Root_Typ) then
+      if not Is_Interface (Root_Typ) and Present (E) then
          Append_To (Comp_List,
            Make_Component_Declaration (Loc,
              Defining_Identifier  =>
@@ -10346,6 +10339,8 @@ package body Exp_Util is
                  Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of (RTE (RE_Tag), Loc))));
+
+         Set_Is_Tag (Defining_Identifier (Last (Comp_List)));
       end if;
 
       Append_To (Comp_List,
@@ -10365,17 +10360,6 @@ package body Exp_Util is
                 Make_Component_List (Loc,
                   Component_Items => Comp_List,
                   Variant_Part    => Empty))));
-
-      --  Suppress all checks during the analysis of the expanded code to avoid
-      --  the generation of spurious warnings under ZFP run-time.
-
-      Insert_Actions (E, List_Def, Suppress => All_Checks);
-
-      --  In the case of an interface type mark the tag for First_Tag_Component
-
-      if Is_Interface (Root_Typ) then
-         Set_Is_Tag (First_Entity (Equiv_Type));
-      end if;
 
       return Equiv_Type;
    end Make_CW_Equivalent_Type;
@@ -10765,6 +10749,7 @@ package body Exp_Util is
          declare
             CW_Subtype : constant Entity_Id :=
                            New_Class_Wide_Subtype (Unc_Typ, E);
+            Equiv_Def : List_Id;
 
          begin
             --  A class-wide equivalent type is not needed on VM targets
@@ -10788,7 +10773,14 @@ package body Exp_Util is
                end if;
 
                Set_Equivalent_Type
-                 (CW_Subtype, Make_CW_Equivalent_Type (Unc_Typ, E));
+                 (CW_Subtype, Make_CW_Equivalent_Type (Unc_Typ, E, Equiv_Def));
+
+                --  Suppress all checks during the analysis of the expanded
+                --  code to avoid the generation of spurious warnings under
+                --  ZFP run-time.
+
+               Insert_Actions
+                 (E, Equiv_Def, Suppress => All_Checks);
             end if;
 
             Set_Cloned_Subtype (CW_Subtype, Base_Type (Unc_Typ));

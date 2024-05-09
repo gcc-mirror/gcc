@@ -260,6 +260,7 @@ package Aspects is
       Aspect_Post              => True,
       Aspect_Read              => True,
       Aspect_Write             => True,
+      Aspect_Size              => True,
       Aspect_Stable_Properties => True,
       Aspect_Type_Invariant    => True,
       others                   => False);

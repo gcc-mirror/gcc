@@ -1012,15 +1012,10 @@ package body Freeze is
 
          elsif Is_Record_Type (T) then
 
-            --  A class-wide type is never considered to have a known size
-
-            if Is_Class_Wide_Type (T) then
-               return False;
-
             --  A subtype of a variant record must not have non-static
             --  discriminated components.
 
-            elsif T /= Base_Type (T)
+            if T /= Base_Type (T)
               and then not Static_Discriminated_Components (T)
             then
                return False;
@@ -7819,6 +7814,7 @@ package body Freeze is
 
          if (Has_Size_Clause (E) or else Has_Object_Size_Clause (E))
            and then not Size_Known_At_Compile_Time (E)
+           and then not Is_Mutably_Tagged_Type (E)
          then
             --  Suppress this message if errors posted on E, even if we are
             --  in all errors mode, since this is often a junk message

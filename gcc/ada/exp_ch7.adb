@@ -8288,6 +8288,9 @@ package body Exp_Ch7 is
 
       if Has_Controlled_Component (Utyp) then
          Proc := TSS (Utyp, Deep_Name_Of (Initialize_Case));
+      elsif Is_Mutably_Tagged_Type (Utyp) then
+         Proc := Find_Prim_Op (Etype (Utyp), Name_Of (Initialize_Case));
+         Check_Visibly_Controlled (Initialize_Case, Etype (Typ), Proc, Ref);
       else
          Proc := Find_Prim_Op (Utyp, Name_Of (Initialize_Case));
          Check_Visibly_Controlled (Initialize_Case, Typ, Proc, Ref);

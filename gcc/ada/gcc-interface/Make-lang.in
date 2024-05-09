@@ -376,6 +376,7 @@ GNAT_ADA_OBJS =	\
  ada/namet.o	\
  ada/nlists.o	\
  ada/nmake.o	\
+ ada/mutably_tagged.o	\
  ada/opt.o	\
  ada/osint-c.o	\
  ada/osint.o	\

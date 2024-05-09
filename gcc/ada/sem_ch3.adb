@@ -48,6 +48,7 @@ with Itypes;         use Itypes;
 with Layout;         use Layout;
 with Lib;            use Lib;
 with Lib.Xref;       use Lib.Xref;
+with Mutably_Tagged;    use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -2162,6 +2163,7 @@ package body Sem_Ch3 is
       --  and thus unconstrained. Regular components must be constrained.
 
       if not Is_Definite_Subtype (T)
+        and then not Is_Mutably_Tagged_Type (T)
         and then Chars (Id) /= Name_uParent
       then
          if Is_Class_Wide_Type (T) then
@@ -4802,8 +4804,30 @@ package body Sem_Ch3 is
                null;
 
             elsif Is_Class_Wide_Type (T) then
-               Error_Msg_N
-                 ("initialization required in class-wide declaration", N);
+
+               --  Case of a mutably tagged type
+
+               if Is_Mutably_Tagged_Type (T) then
+                  Act_T := Class_Wide_Equivalent_Type (T);
+
+                  Rewrite (Object_Definition (N),
+                    New_Occurrence_Of (Act_T, Loc));
+
+                  Insert_After (N,
+                    Make_Procedure_Call_Statement (Loc,
+                      Name => New_Occurrence_Of (Init_Proc (Etype (T)), Loc),
+                      Parameter_Associations => New_List (
+                        Unchecked_Convert_To
+                          (Etype (T), New_Occurrence_Of (Id, Loc)))));
+
+                  Freeze_Before (N, Act_T);
+
+               --  Otherwise an initial expression is required
+
+               else
+                  Error_Msg_N
+                    ("initialization required in class-wide declaration", N);
+               end if;
 
             else
                Error_Msg_N
@@ -4899,6 +4923,17 @@ package body Sem_Ch3 is
                   Set_Is_Frozen (Id);
                   goto Leave;
                end if;
+
+            --  Rewrite mutably tagged class-wide type declarations to be that
+            --  of the corresponding class-wide equivalent type.
+
+            elsif Is_Mutably_Tagged_Type (T) then
+               Act_T := Class_Wide_Equivalent_Type (T);
+
+               Rewrite (Object_Definition (N),
+                 New_Occurrence_Of (Act_T, Loc));
+
+               Freeze_Before (N, Act_T);
 
             else
                --  Ensure that the generated subtype has a unique external name
@@ -6679,7 +6714,11 @@ package body Sem_Ch3 is
       --  that all the indexes are unconstrained but we still need to make sure
       --  that the element type is constrained.
 
-      if not Is_Definite_Subtype (Element_Type) then
+      if Is_Mutably_Tagged_Type (Element_Type) then
+         Set_Component_Type (T,
+           Class_Wide_Equivalent_Type (Element_Type));
+
+      elsif not Is_Definite_Subtype (Element_Type) then
          Error_Msg_N
            ("unconstrained element type in array declaration",
             Subtype_Indication (Component_Def));
@@ -17773,6 +17812,83 @@ package body Sem_Ch3 is
 
       Build_Derived_Type (N, Parent_Type, T, Is_Completion,
         Derive_Subps => not Is_Underlying_Record_View (T));
+
+      --  Check for special mutably tagged type declarations
+
+      if Is_Tagged_Type (Parent_Type)
+        and then not Error_Posted (T)
+      then
+         declare
+            Actions        : List_Id;
+            CW_Typ         : constant Entity_Id := Class_Wide_Type (T);
+            Root_Class_Typ : constant Entity_Id :=
+              Class_Wide_Type (Root_Type (Parent_Type));
+         begin
+            --  Perform various checks when we are indeed looking at a
+            --  mutably tagged declaration.
+
+            if Present (Root_Class_Typ)
+              and then Is_Mutably_Tagged_Type (Root_Class_Typ)
+            then
+               --  Verify the level of the descendant's declaration is not
+               --  deeper than the root type since this could cause leaking
+               --  of the type.
+
+               if Scope (Root_Class_Typ) /= Scope (T)
+                 and then Deepest_Type_Access_Level (Root_Class_Typ)
+                            < Deepest_Type_Access_Level (T)
+               then
+                  Error_Msg_NE
+                    ("descendant of mutably tagged type cannot be deeper than"
+                     & " its root", N, Root_Type (T));
+
+               elsif Present (Incomplete_Or_Partial_View (T))
+                 and then Is_Tagged_Type (Incomplete_Or_Partial_View (T))
+               then
+                  Error_Msg_N
+                    ("descendant of mutably tagged type cannot a have partial"
+                      & " view which is tagged", N);
+
+               --  Mutably tagged types cannot have discriminants
+
+               elsif Present (Discriminant_Specifications (N)) then
+                  Error_Msg_N
+                    ("descendant of mutably tagged type cannot have"
+                     & " discriminates", N);
+
+               elsif Present (Interfaces (T))
+                 and then not Is_Empty_Elmt_List (Interfaces (T))
+               then
+                  Error_Msg_N
+                    ("descendant of mutably tagged type cannot implement"
+                     & " an interface", N);
+
+               --  We have a valid descendant type
+
+               else
+                  --  Set inherited attributes
+
+                  Set_Has_Size_Clause     (CW_Typ);
+                  Set_RM_Size             (CW_Typ, RM_Size (Root_Class_Typ));
+                  Set_Is_Mutably_Tagged_Type (CW_Typ);
+
+                  --  Generate a new class-wide equivalent type
+
+                  Set_Class_Wide_Equivalent_Type (CW_Typ,
+                    Make_CW_Equivalent_Type (CW_Typ, Empty, Actions));
+
+                  Insert_List_After_And_Analyze (N, Actions);
+
+                  --  Add a Compile_Time_Error sizing check as a hint
+                  --  to the backend since we don't know the true size of
+                  --  anything at this point.
+
+                  Insert_After_And_Analyze (N,
+                    Make_CW_Size_Compile_Check (T, Root_Class_Typ));
+               end if;
+            end if;
+         end;
+      end if;
 
       --  AI-419: The parent type of an explicitly limited derived type must
       --  be a limited type or a limited interface.

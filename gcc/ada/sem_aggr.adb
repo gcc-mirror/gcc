@@ -37,6 +37,7 @@ with Freeze;         use Freeze;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
 with Lib.Xref;       use Lib.Xref;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Namet.Sp;       use Namet.Sp;
 with Nmake;          use Nmake;
@@ -2699,7 +2700,18 @@ package body Sem_Aggr is
                      Full_Analysis := Save_Analysis;
                      Expander_Mode_Restore;
 
-                     if Is_Tagged_Type (Etype (Expr)) then
+                     --  Skip tagged checking for mutably tagged CW equivalent
+                     --  types.
+
+                     if Is_Tagged_Type (Etype (Expr))
+                       and then Is_Class_Wide_Equivalent_Type
+                                  (Component_Type (Etype (N)))
+                     then
+                        null;
+
+                     --  Otherwise perform the dynamic tag check
+
+                     elsif Is_Tagged_Type (Etype (Expr)) then
                         Check_Dynamically_Tagged_Expression
                           (Expr => Expr,
                            Typ  => Component_Type (Etype (N)),
@@ -5344,6 +5356,12 @@ package body Sem_Aggr is
             Relocate := True;
          end if;
 
+         --  Obtain the corresponding mutably tagged types if we are looking
+         --  at a special internally generated class-wide equivalent type.
+
+         Expr_Type :=
+           Get_Corresponding_Mutably_Tagged_Type_If_Present (Expr_Type);
+
          Analyze_And_Resolve (Expr, Expr_Type);
          Check_Expr_OK_In_Limited_Aggregate (Expr);
          Check_Non_Static_Context (Expr);
@@ -5351,7 +5369,9 @@ package body Sem_Aggr is
 
          --  Check wrong use of class-wide types
 
-         if Is_Class_Wide_Type (Etype (Expr)) then
+         if Is_Class_Wide_Type (Etype (Expr))
+           and then not Is_Mutably_Tagged_Type (Expr_Type)
+         then
             Error_Msg_N ("dynamically tagged expression not allowed", Expr);
          end if;
 
