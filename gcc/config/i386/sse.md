@@ -2201,6 +2201,73 @@
 	  UNSPEC_KORTEST))]
   "TARGET_AVX512F")
 
+;; Optimize cmp + setcc with mask register by kortest + setcc.
+(define_insn_and_split "*kortest_cmp<mode>_setcc"
+   [(set (match_operand:QI 0 "nonimmediate_operand" "=qm, qm")
+	 (match_operator:QI 1 "bt_comparison_operator"
+	    [(match_operand:SWI1248_AVX512BWDQ_64 2 "register_operand" "?k, <r>")
+	     (const_int -1)]))
+  (clobber (reg:CC FLAGS_REG))]
+  "TARGET_AVX512BW"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  if (MASK_REGNO_P (REGNO (operands[2])))
+    {
+      emit_insn (gen_kortest<mode>_ccc (operands[2], operands[2]));
+      operands[4] = gen_rtx_REG (CCCmode, FLAGS_REG);
+    }
+  else
+    {
+      operands[4] = gen_rtx_REG (CCZmode, FLAGS_REG);
+      emit_insn (gen_rtx_SET (operands[4],
+			      gen_rtx_COMPARE (CCZmode,
+					       operands[2],
+					       constm1_rtx)));
+    }
+  ix86_expand_setcc (operands[0],
+		     GET_CODE (operands[1]),
+		     operands[4],
+		     const0_rtx);
+  DONE;
+})
+
+;; Optimize cmp + jcc with mask register by kortest + jcc.
+(define_insn_and_split "*kortest_cmp<mode>_jcc"
+   [(set (pc)
+      (if_then_else
+	(match_operator 0 "bt_comparison_operator"
+	  [(match_operand:SWI1248_AVX512BWDQ_64 1 "register_operand" "?k, <r>")
+	   (const_int -1)])
+	  (label_ref (match_operand 2))
+      (pc)))
+  (clobber (reg:CC FLAGS_REG))]
+  "TARGET_AVX512BW"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  if (MASK_REGNO_P (REGNO (operands[1])))
+    {
+      emit_insn (gen_kortest<mode>_ccc (operands[1], operands[1]));
+      operands[4] = gen_rtx_REG (CCCmode, FLAGS_REG);
+    }
+  else
+    {
+      operands[4] = gen_rtx_REG (CCZmode, FLAGS_REG);
+      emit_insn (gen_rtx_SET (operands[4],
+			      gen_rtx_COMPARE (CCZmode,
+					       operands[1],
+					       constm1_rtx)));
+    }
+  ix86_expand_branch (GET_CODE (operands[0]),
+		      operands[4],
+		      const0_rtx,
+		      operands[2]);
+  DONE;
+})
+
 (define_insn "kunpckhi"
   [(set (match_operand:HI 0 "register_operand" "=k")
 	(ior:HI
