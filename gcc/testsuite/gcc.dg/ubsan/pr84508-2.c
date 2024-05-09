@@ -1,5 +1,6 @@
-/* { dg-do run { target { ! ia32 } } } */
+/* { dg-do run { target { { i?86-*-* x86_64-*-* } && { ! ia32 } } } } */
 /* { dg-options "-fsanitize=undefined" } */
+
 #include <emmintrin.h>
 
 int main()
