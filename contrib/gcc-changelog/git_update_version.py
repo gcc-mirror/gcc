@@ -40,7 +40,8 @@ IGNORED_COMMITS = (
         '1957bedf29a1b2cc231972aba680fe80199d5498',
         '040e5b0edbca861196d9e2ea2af5e805769c8d5d',
         '8057f9aa1f7e70490064de796d7a8d42d446caf8',
-        '9dbff9c05520a74e6cd337578f27b56c941f64f3')
+        '109f1b28fc94c93096506e3df0c25e331cef19d0',
+        '39f81924d88e3cc197fc3df74204c9b5e01e12f7')
 
 FORMAT = '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT,
