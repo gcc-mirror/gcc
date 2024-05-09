@@ -4854,8 +4854,18 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	     But use the RHS aggregate to load from to expose more
 	     optimization opportunities.  */
 	  if (access_has_children_p (lacc))
-	    generate_subtree_copies (lacc->first_child, rhs, lacc->offset,
-				     0, 0, gsi, true, true, loc);
+	    {
+	      generate_subtree_copies (lacc->first_child, rhs, lacc->offset,
+				       0, 0, gsi, true, true, loc);
+	      if (lacc->grp_covered)
+		{
+		  unlink_stmt_vdef (stmt);
+		  gsi_remove (& orig_gsi, true);
+		  release_defs (stmt);
+		  sra_stats.deleted++;
+		  return SRA_AM_REMOVED;
+		}
+	    }
 	}
 
       return SRA_AM_NONE;
