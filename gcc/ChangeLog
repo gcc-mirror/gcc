@@ -1,3 +1,31 @@
+2024-05-09  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110386
+	* gimple-ssa-backprop.c (strip_sign_op_1): Remove ABSU_EXPR.
+
+2024-05-08  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111331
+	* tree-ssa-phiopt.c (minmax_replacement):
+	Fix the LE/GE comparison for the
+	`(a CMP CST1) ? max<a,CST2> : a` optimization.
+
+2024-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-03-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/95351
+	* fold-const.c (merge_truthop_with_opposite_arm): Use
+	the type of the operands of the comparison and not the type
+	of the comparison.
+
 2024-05-02  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

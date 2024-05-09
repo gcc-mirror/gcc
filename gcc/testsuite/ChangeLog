@@ -1,3 +1,48 @@
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/89224
+	* g++.dg/torture/vector-subaccess-1.C: Add -Wno-psabi as additional
+	options.
+
+2024-05-09  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-25  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/110386
+	* gcc.c-torture/compile/pr110386-1.c: New test.
+	* gcc.c-torture/compile/pr110386-2.c: New test.
+
+2024-05-08  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-09-10  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/111331
+	* gcc.c-torture/execute/pr111331-1.c: New test.
+	* gcc.c-torture/execute/pr111331-2.c: New test.
+	* gcc.c-torture/execute/pr111331-3.c: New test.
+
+2024-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-03-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/95351
+	* gcc.dg/float_opposite_arm-1.c: New test.
+
+2024-05-08  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/89224
+	* g++.dg/torture/vector-subaccess-1.C: New test.
+	* gcc.dg/pr83415.c: Change warning to error.
+
 2024-05-02  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
