@@ -3495,20 +3495,20 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: Atomic Synchronization, warnings
 
 :switch:`-gnatw.n`
-  *Activate info messages on atomic synchronization.*
+  *Activate warnings on atomic synchronization.*
 
-  This switch activates info messages when an access to an atomic variable
+  This switch activates warnings when an access to an atomic variable
   requires the generation of atomic synchronization code. These
-  info messages are off by default.
+  warnings are off by default.
 
 .. index:: -gnatw.N  (gcc)
 
 :switch:`-gnatw.N`
-  *Suppress info messages on atomic synchronization.*
+  *Suppress warnings on atomic synchronization.*
 
   .. index:: Atomic Synchronization, warnings
 
-  This switch suppresses info messages when an access to an atomic variable
+  This switch suppresses warnings when an access to an atomic variable
   requires the generation of atomic synchronization code.
 
 
@@ -4371,6 +4371,8 @@ When no switch :switch:`-gnatw` is used, this is equivalent to:
   * :switch:`-gnatw.z`
 
 .. _Debugging_and_Assertion_Control:
+
+
 
 Info message Control
 --------------------

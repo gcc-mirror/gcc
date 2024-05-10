@@ -11757,11 +11757,11 @@ use of @code{-gnatg}.
 
 @item @code{-gnatw.n}
 
-`Activate info messages on atomic synchronization.'
+`Activate warnings on atomic synchronization.'
 
-This switch activates info messages when an access to an atomic variable
+This switch activates warnings when an access to an atomic variable
 requires the generation of atomic synchronization code. These
-info messages are off by default.
+warnings are off by default.
 @end table
 
 @geindex -gnatw.N (gcc)
@@ -11771,12 +11771,12 @@ info messages are off by default.
 
 @item @code{-gnatw.N}
 
-`Suppress info messages on atomic synchronization.'
+`Suppress warnings on atomic synchronization.'
 
 @geindex Atomic Synchronization
 @geindex warnings
 
-This switch suppresses info messages when an access to an atomic variable
+This switch suppresses warnings when an access to an atomic variable
 requires the generation of atomic synchronization code.
 @end table
 

@@ -299,10 +299,10 @@ package body Exp_Util is
 
          if Present (Msg_Node) then
             Error_Msg_N
-              ("info: atomic synchronization set for &?.n?", Msg_Node);
+              ("atomic synchronization set for &?.n?", Msg_Node);
          else
             Error_Msg_N
-              ("info: atomic synchronization set?.n?", N);
+              ("atomic synchronization set?.n?", N);
          end if;
       end if;
    end Activate_Atomic_Synchronization;
