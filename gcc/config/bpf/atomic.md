@@ -34,7 +34,7 @@
           (match_operand:SI 2 "const_int_operand")] ;; Memory model.
          UNSPEC_AADD))]
   ""
-  "{xadd<mop>\t%0,%1|lock *(<smop> *)(%w0) += %w1}"
+  "{xadd<mop>\t%0,%1|lock *(<smop> *)%w0 += %w1}"
   [(set_attr "type" "atomic")])
 
 (define_insn "atomic_and<AMO:mode>"
@@ -45,7 +45,7 @@
           (match_operand:SI 2 "const_int_operand")] ;; Memory model.
          UNSPEC_AAND))]
   "bpf_has_v3_atomics"
-  "{aand<msuffix>\t%0,%1|lock *(<smop> *)(%w0) &= %w1}")
+  "{aand<msuffix>\t%0,%1|lock *(<smop> *)%w0 &= %w1}")
 
 (define_insn "atomic_or<AMO:mode>"
   [(set (match_operand:AMO 0 "memory_operand" "+m")
@@ -55,7 +55,7 @@
           (match_operand:SI 2 "const_int_operand")] ;; Memory model.
          UNSPEC_AOR))]
   "bpf_has_v3_atomics"
-  "{aor<msuffix>\t%0,%1|lock *(<smop> *)(%w0) %|= %w1}")
+  "{aor<msuffix>\t%0,%1|lock *(<smop> *)%w0 %|= %w1}")
 
 (define_insn "atomic_xor<AMO:mode>"
   [(set (match_operand:AMO 0 "memory_operand" "+m")
@@ -65,7 +65,7 @@
           (match_operand:SI 2 "const_int_operand")] ;; Memory model.
          UNSPEC_AXOR))]
   "bpf_has_v3_atomics"
-  "{axor<msuffix>\t%0,%1|lock *(<smop> *)(%w0) ^= %w1}")
+  "{axor<msuffix>\t%0,%1|lock *(<smop> *)%w0 ^= %w1}")
 
 ;;; Feching (read-modify-store) versions of atomic operations.
 
@@ -79,7 +79,7 @@
           (match_operand:AMO 3 "const_int_operand")] ;; Memory model
         UNSPEC_AFADD))]
   "bpf_has_v3_atomics"
-  "{afadd<msuffix>\t%1,%0|%w0 = atomic_fetch_add((<smop> *)(%1), %w0)}")
+  "{afadd<msuffix>\t%1,%0|%w0 = atomic_fetch_add((<smop> *)%1, %w0)}")
 
 (define_insn "atomic_fetch_and<AMO:mode>"
   [(set (match_operand:AMO 0 "register_operand" "=r")
@@ -91,7 +91,7 @@
           (match_operand:AMO 3 "const_int_operand")]
          UNSPEC_AFAND))]
   "bpf_has_v3_atomics"
-  "{afand<msuffix>\t%1,%0|%w0 = atomic_fetch_and((<smop> *)(%1), %w0)}")
+  "{afand<msuffix>\t%1,%0|%w0 = atomic_fetch_and((<smop> *)%1, %w0)}")
 
 (define_insn "atomic_fetch_or<AMO:mode>"
   [(set (match_operand:AMO 0 "register_operand" "=r")
@@ -103,7 +103,7 @@
           (match_operand:AMO 3 "const_int_operand")]
          UNSPEC_AFOR))]
   "bpf_has_v3_atomics"
-  "{afor<msuffix>\t%1,%0|%w0 = atomic_fetch_or((<smop> *)(%1), %w0)}")
+  "{afor<msuffix>\t%1,%0|%w0 = atomic_fetch_or((<smop> *)%1, %w0)}")
 
 (define_insn "atomic_fetch_xor<AMO:mode>"
   [(set (match_operand:AMO 0 "register_operand" "=r")
@@ -115,7 +115,7 @@
           (match_operand:AMO 3 "const_int_operand")]
          UNSPEC_AFXOR))]
   "bpf_has_v3_atomics"
-  "{afxor<msuffix>\t%1,%0|%w0 = atomic_fetch_xor((<smop> *)(%1), %w0)}")
+  "{afxor<msuffix>\t%1,%0|%w0 = atomic_fetch_xor((<smop> *)%1, %w0)}")
 
 ;; Weird suffixes used in pseudo-c atomic compare-exchange insns.
 (define_mode_attr pcaxsuffix [(SI "32_32") (DI "_64")])
