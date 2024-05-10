@@ -18856,7 +18856,6 @@ aarch64_override_options (void)
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  auto isa_mode = AARCH64_FL_DEFAULT_ISA_MODE;
   if (cpu && arch)
     {
       /* If both -mcpu and -march are specified, warn if they are not
@@ -18879,25 +18878,25 @@ aarch64_override_options (void)
 	}
 
       selected_arch = arch->arch;
-      aarch64_set_asm_isa_flags (arch_isa | isa_mode);
+      aarch64_set_asm_isa_flags (arch_isa | AARCH64_FL_DEFAULT_ISA_MODE);
     }
   else if (cpu)
     {
       selected_arch = cpu->arch;
-      aarch64_set_asm_isa_flags (cpu_isa | isa_mode);
+      aarch64_set_asm_isa_flags (cpu_isa | AARCH64_FL_DEFAULT_ISA_MODE);
     }
   else if (arch)
     {
       cpu = &all_cores[arch->ident];
       selected_arch = arch->arch;
-      aarch64_set_asm_isa_flags (arch_isa | isa_mode);
+      aarch64_set_asm_isa_flags (arch_isa | AARCH64_FL_DEFAULT_ISA_MODE);
     }
   else
     {
       /* No -mcpu or -march specified, so use the default CPU.  */
       cpu = &all_cores[TARGET_CPU_DEFAULT];
       selected_arch = cpu->arch;
-      aarch64_set_asm_isa_flags (cpu->flags | isa_mode);
+      aarch64_set_asm_isa_flags (cpu->flags | AARCH64_FL_DEFAULT_ISA_MODE);
     }
 
   selected_tune = tune ? tune->ident : cpu->ident;
