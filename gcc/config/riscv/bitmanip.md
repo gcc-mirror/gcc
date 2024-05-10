@@ -184,6 +184,23 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "DI")])
 
+;; Combine will reassociate the operands in the most useful way here.  We
+;; just have to give it guidance on where to split the result to facilitate
+;; shNadd.uw generation.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (plus:DI (and:DI (ashift:DI (match_operand:DI 1 "register_operand")
+					     (match_operand:QI 2 "imm123_operand"))
+				  (match_operand 3 "consecutive_bits32_operand"))
+			  (match_operand:DI 4 "register_operand"))
+		 (match_operand 5 "immediate_operand")))]
+  "TARGET_64BIT && TARGET_ZBA"
+  [(set (match_dup 0)
+	(plus:DI (and:DI (ashift:DI (match_dup 1) (match_dup 2))
+			 (match_dup 3))
+		 (match_dup 4)))
+   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 5)))])
+
 ;; ZBB extension.
 
 (define_expand "clzdi2"
