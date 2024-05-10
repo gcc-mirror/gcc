@@ -1,5 +1,5 @@
 /* { dg-do compile { target vect_simd_clones } } */
-/* { dg-additional-options "-fdump-tree-ompdevlow" } */
+/* { dg-additional-options "-fdump-tree-optimized" } */
 /* { dg-additional-options "-mno-sse3" { target { i?86-*-* x86_64-*-* } } } */
 
 int f01 (int);
@@ -21,6 +21,6 @@ test1 (int x)
      not, that also depends on whether it is a declare simd clone or not and which
      one, but the f03 variant has a higher score anyway.  */
   return f05 (x);
-  /* { dg-final { scan-tree-dump "f03 \\\(x" "ompdevlow" } } */
-  /* { dg-final { scan-tree-dump-not "f05 \\\(x" "ompdevlow" } } */
+  /* { dg-final { scan-tree-dump "f03 \\\(x" "optimized" } } */
+  /* { dg-final { scan-tree-dump-not "f05 \\\(x" "optimized" } } */
 }
