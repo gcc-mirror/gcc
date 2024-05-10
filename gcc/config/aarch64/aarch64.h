@@ -23,13 +23,18 @@
 #define GCC_AARCH64_H
 
 #define aarch64_get_asm_isa_flags(opts) \
-  (aarch64_feature_flags ((opts)->x_aarch64_asm_isa_flags))
+  (aarch64_feature_flags ((opts)->x_aarch64_asm_isa_flags_0))
 #define aarch64_get_isa_flags(opts) \
-  (aarch64_feature_flags ((opts)->x_aarch64_isa_flags))
+  (aarch64_feature_flags ((opts)->x_aarch64_isa_flags_0))
 
 /* Make these flags read-only so that all uses go via
    aarch64_set_asm_isa_flags.  */
-#ifndef GENERATOR_FILE
+#ifdef GENERATOR_FILE
+#undef aarch64_asm_isa_flags
+#define aarch64_asm_isa_flags (aarch64_feature_flags (aarch64_asm_isa_flags_0))
+#undef aarch64_isa_flags
+#define aarch64_isa_flags (aarch64_feature_flags (aarch64_isa_flags_0))
+#else
 #undef aarch64_asm_isa_flags
 #define aarch64_asm_isa_flags (aarch64_get_asm_isa_flags (&global_options))
 #undef aarch64_isa_flags
