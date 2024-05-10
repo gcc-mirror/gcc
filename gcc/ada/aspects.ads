@@ -325,12 +325,12 @@ package Aspects is
    --  List is currently incomplete ???
 
    Operational_Aspect : constant array (Aspect_Id) of Boolean :=
-     (Aspect_Constant_Indexing          => True,
+     (Aspect_Aggregate                  => True,
+      Aspect_Constant_Indexing          => True,
       Aspect_Default_Iterator           => True,
       Aspect_Iterator_Element           => True,
       Aspect_Iterable                   => True,
       Aspect_Variable_Indexing          => True,
-      Aspect_Aggregate                  => True,
       others                            => False);
 
    --  The following array indicates aspects for which multiple occurrences of

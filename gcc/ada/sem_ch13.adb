@@ -1367,7 +1367,11 @@ package body Sem_Ch13 is
                      Validate_Storage_Model_Type_Aspect (E, ASN);
 
                   when Aspect_Aggregate =>
-                     null;
+                     if Is_Array_Type (E) then
+                        Error_Msg_N
+                          ("aspect Aggregate may not be applied to array type",
+                           ASN);
+                     end if;
 
                   when others =>
                      null;
@@ -1384,7 +1388,7 @@ package body Sem_Ch13 is
          Next_Rep_Item (ASN);
       end loop;
 
-      --  Make a second pass for a Full_Access_Only entry
+      --  Make a second pass for a Full_Access_Only entry, see above why
 
       ASN := First_Rep_Item (E);
       while Present (ASN) loop
@@ -4130,8 +4134,8 @@ package body Sem_Ch13 is
                   end if;
 
                when Aspect_Aggregate =>
-                  --  We will be checking that the aspect is not specified on a
-                  --  non-array type in Check_Aspect_At_Freeze_Point
+                  --  We will be checking that the aspect is not specified on
+                  --  an array type in Analyze_Aspects_At_Freeze_Point.
 
                   Validate_Aspect_Aggregate (Expr);
 
@@ -11378,11 +11382,6 @@ package body Sem_Ch13 is
             return;
 
          when Aspect_Aggregate =>
-            if Is_Array_Type (Entity (ASN)) then
-               Error_Msg_N
-                 ("aspect& can only be applied to non-array type",
-                  Ident);
-            end if;
             Resolve_Aspect_Aggregate (Entity (ASN), Expression (ASN));
             return;
 
