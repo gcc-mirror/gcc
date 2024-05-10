@@ -750,10 +750,10 @@
 	       (const_int 1)
 
 	       (eq_attr "type" "vssegte,vmpop,vmffs")
-	       (const_int 2)       
+	       (const_int 2)
 
 	       (eq_attr "type" "vstux,vstox,vssegts,vssegtux,vssegtox,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
-				vfwcvtftof,vmsfs,vired,viwred,vfredu,vfredo,vfwredu,vfwredo")
+				vfwcvtftof,vmsfs,vired,viwred,vfredu,vfredo,vfwredu,vfwredo,vwsll")
 	       (const_int 3)
 
 	       (eq_attr "type" "viwalu,viwmul,viwmuladd,vfwalu,vfwmul,vfwmuladd")

@@ -295,7 +295,7 @@
        (ashift:VWEXTI
          (zero_extend:VWEXTI
            (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "vr"))
-         (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand"  "vr"))
+         (match_operand:<V_DOUBLE_TRUNC> 4 "vector_shift_operand"  "vrvk"))
        (match_operand:VWEXTI 2 "vector_merge_operand" "0vu")))]
   "TARGET_ZVBB"
   "vwsll.v%o4\t%0,%3,%4%p1"
@@ -316,7 +316,7 @@
        (ashift:VWEXTI
          (zero_extend:VWEXTI
            (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "   vr,    vr"))
-         (match_operand:<VSUBEL> 4 "pmode_reg_or_uimm5_operand" "   rK,    rK"))
+         (match_operand 4 "pmode_reg_or_uimm5_operand"		"   rK,    rK"))
        (match_operand:VWEXTI 2 "vector_merge_operand"           "   vu,    0")))]
   "TARGET_ZVBB"
   "vwsll.v%o4\t%0,%3,%4%p1"

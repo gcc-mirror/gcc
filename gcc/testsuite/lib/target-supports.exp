@@ -1958,6 +1958,17 @@ proc check_effective_target_riscv_zbb { } {
     }]
 }
 
+# Return 1 if the target arch supports the Zbb extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zvbb { } {
+    return [check_no_compiler_messages riscv_ext_zvbb assembly {
+       #ifndef __riscv_zvbb
+       #error "Not __riscv_zvbb"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the XTheadVector extension, 0 otherwise.
 # Cache the result.
 
@@ -2046,10 +2057,33 @@ proc check_effective_target_riscv_zvfh_ok { } {
     return 0
 }
 
+proc check_effective_target_riscv_zvbb_ok { } {
+    # If the target already supports v without any added options,
+    # we may assume we can execute just fine.
+    if { [check_effective_target_riscv_zvbb] } {
+	return 1
+    }
+
+    # check if we can execute vector insns with the given hardware or
+    # simulator
+    set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &zvbb]
+    if { [check_runtime ${gcc_march}_zvbb_exec {
+	int main()
+	{
+	    asm ("vsetivli zero,8,e16,m1,ta,ma");
+	    asm ("vwsll.vi v8,v16,2" : : : "v8");
+	    return 0;
+	} } "-march=${gcc_march}"] } {
+	    return 1
+	}
+
+    return 0
+}
+
 proc riscv_get_arch { } {
     set gcc_march ""
     # ??? do we neeed to add more extensions to the list below?
-    foreach ext { i m a f d q c v zicsr zifencei zfh zba zbb zbc zbs zvfh ztso } {
+    foreach ext { i m a f d q c v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso } {
 	if { [check_no_compiler_messages  riscv_ext_$ext assembly [string map [list DEF __riscv_$ext] {
 		#ifndef DEF
 		#error "Not DEF"
@@ -2142,6 +2176,18 @@ proc add_options_for_riscv_zvfh { flags } {
 	return "$flags"
     }
     return "$flags -march=[riscv_get_arch]_zvfh"
+}
+
+proc add_options_for_riscv_zvbb { flags } {
+    if { [lsearch $flags -march=*] >= 0 } {
+	# If there are multiple -march flags, we have to adjust all of them.
+	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zvbb ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zvbb[[:alnum:]_.]*)_zvbb} $flags \\1 ]
+    }
+    if { [check_effective_target_riscv_zvbb] } {
+	return "$flags"
+    }
+    return "$flags -march=[riscv_get_arch]_zvbb"
 }
 
 # Return 1 if the target OS supports running SSE executables, 0
