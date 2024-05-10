@@ -10650,7 +10650,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
   unsigned int vec_flags = aarch64_classify_vector_memory_mode (mode);
   vec_flags &= ~VEC_PARTIAL;
 
-  /* On BE, we use load/store pair for all large int mode load/stores.
+  /* We use load/store pair for all large int mode load/stores.
      TI/TF/TDmode may also use a load/store pair.  */
   bool advsimd_struct_p = (vec_flags == (VEC_ADVSIMD | VEC_STRUCT));
   bool load_store_pair_p = (type == ADDR_QUERY_LDP_STP
@@ -10658,8 +10658,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 			    || mode == TImode
 			    || mode == TFmode
 			    || mode == TDmode
-			    || ((!TARGET_SIMD || BYTES_BIG_ENDIAN)
-				&& advsimd_struct_p));
+			    || advsimd_struct_p);
   /* If we are dealing with ADDR_QUERY_LDP_STP_N that means the incoming mode
      corresponds to the actual size of the memory being loaded/stored and the
      mode of the corresponding addressing mode is half of that.  */
@@ -10690,14 +10689,6 @@ aarch64_classify_address (struct aarch64_address_info *info,
      allow_reg_index_p above.  */
   if ((vec_flags & (VEC_SVE_DATA | VEC_SVE_PRED)) != 0
       && (code != REG && code != PLUS))
-    return false;
-
-  /* On LE, for AdvSIMD, don't support anything other than POST_INC or
-     REG addressing.  */
-  if (advsimd_struct_p
-      && TARGET_SIMD
-      && !BYTES_BIG_ENDIAN
-      && (code != POST_INC && code != REG))
     return false;
 
   gcc_checking_assert (GET_MODE (x) == VOIDmode

@@ -7873,32 +7873,6 @@
   [(set_attr "type" "neon_store1_4reg<q>")]
 )
 
-(define_insn "*aarch64_mov<mode>"
-  [(set (match_operand:VSTRUCT_QD 0 "aarch64_simd_nonimmediate_operand")
-	(match_operand:VSTRUCT_QD 1 "aarch64_simd_general_operand"))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN
-   && (register_operand (operands[0], <MODE>mode)
-       || register_operand (operands[1], <MODE>mode))"
-  {@ [ cons: =0 , 1   ; attrs: type                    , length        ]
-     [ w        , w   ; multiple                       , <insn_count>  ] #
-     [ Utv      , w   ; neon_store<nregs>_<nregs>reg_q , 4             ] st1\t{%S1.<Vtype> - %<Vendreg>1.<Vtype>}, %0
-     [ w        , Utv ; neon_load<nregs>_<nregs>reg_q  , 4             ] ld1\t{%S0.<Vtype> - %<Vendreg>0.<Vtype>}, %1
-  }
-)
-
-(define_insn "*aarch64_mov<mode>"
-  [(set (match_operand:VSTRUCT 0 "aarch64_simd_nonimmediate_operand")
-	(match_operand:VSTRUCT 1 "aarch64_simd_general_operand"))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN
-   && (register_operand (operands[0], <MODE>mode)
-       || register_operand (operands[1], <MODE>mode))"
-  {@ [ cons: =0 , 1   ; attrs: type                    , length        ]
-     [ w        , w   ; multiple                       , <insn_count>  ] #
-     [ Utv      , w   ; neon_store<nregs>_<nregs>reg_q , 4             ] st1\t{%S1.16b - %<Vendreg>1.16b}, %0
-     [ w        , Utv ; neon_load<nregs>_<nregs>reg_q  , 4             ] ld1\t{%S0.16b - %<Vendreg>0.16b}, %1
-  }
-)
-
 (define_insn "*aarch64_movv8di"
   [(set (match_operand:V8DI 0 "nonimmediate_operand" "=r,m,r")
 	(match_operand:V8DI 1 "general_operand" " r,r,m"))]
@@ -7928,11 +7902,10 @@
   [(set_attr "type" "neon_store1_1reg<q>")]
 )
 
-(define_insn "*aarch64_be_mov<mode>"
+(define_insn "*aarch64_mov<mode>"
   [(set (match_operand:VSTRUCT_2D 0 "nonimmediate_operand")
 	(match_operand:VSTRUCT_2D 1 "general_operand"))]
   "TARGET_FLOAT
-   && (!TARGET_SIMD || BYTES_BIG_ENDIAN)
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
   {@ [ cons: =0 , 1 ; attrs: type , length ]
@@ -7942,11 +7915,10 @@
   }
 )
 
-(define_insn "*aarch64_be_mov<mode>"
+(define_insn "*aarch64_mov<mode>"
   [(set (match_operand:VSTRUCT_2Q 0 "nonimmediate_operand")
 	(match_operand:VSTRUCT_2Q 1 "general_operand"))]
   "TARGET_FLOAT
-   && (!TARGET_SIMD || BYTES_BIG_ENDIAN)
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
   {@ [ cons: =0 , 1 ; attrs: type , arch , length ]
@@ -7956,11 +7928,10 @@
   }
 )
 
-(define_insn "*aarch64_be_movoi"
+(define_insn "*aarch64_movoi"
   [(set (match_operand:OI 0 "nonimmediate_operand")
 	(match_operand:OI 1 "general_operand"))]
   "TARGET_FLOAT
-   && (!TARGET_SIMD || BYTES_BIG_ENDIAN)
    && (register_operand (operands[0], OImode)
        || register_operand (operands[1], OImode))"
   {@ [ cons: =0 , 1 ; attrs: type , arch , length ]
@@ -7970,11 +7941,10 @@
   }
 )
 
-(define_insn "*aarch64_be_mov<mode>"
+(define_insn "*aarch64_mov<mode>"
   [(set (match_operand:VSTRUCT_3QD 0 "nonimmediate_operand" "=w,o,w")
 	(match_operand:VSTRUCT_3QD 1 "general_operand"      " w,w,o"))]
   "TARGET_FLOAT
-   && (!TARGET_SIMD || BYTES_BIG_ENDIAN)
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
   "#"
@@ -7983,11 +7953,10 @@
    (set_attr "length" "12,8,8")]
 )
 
-(define_insn "*aarch64_be_movci"
+(define_insn "*aarch64_movci"
   [(set (match_operand:CI 0 "nonimmediate_operand" "=w,o,w")
 	(match_operand:CI 1 "general_operand"      " w,w,o"))]
   "TARGET_FLOAT
-   && (!TARGET_SIMD || BYTES_BIG_ENDIAN)
    && (register_operand (operands[0], CImode)
        || register_operand (operands[1], CImode))"
   "#"
@@ -7996,11 +7965,10 @@
    (set_attr "length" "12,8,8")]
 )
 
-(define_insn "*aarch64_be_mov<mode>"
+(define_insn "*aarch64_mov<mode>"
   [(set (match_operand:VSTRUCT_4QD 0 "nonimmediate_operand" "=w,o,w")
 	(match_operand:VSTRUCT_4QD 1 "general_operand"      " w,w,o"))]
   "TARGET_FLOAT
-   && (!TARGET_SIMD || BYTES_BIG_ENDIAN)
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
   "#"
@@ -8009,11 +7977,10 @@
    (set_attr "length" "16,8,8")]
 )
 
-(define_insn "*aarch64_be_movxi"
+(define_insn "*aarch64_movxi"
   [(set (match_operand:XI 0 "nonimmediate_operand" "=w,o,w")
 	(match_operand:XI 1 "general_operand"      " w,w,o"))]
   "TARGET_FLOAT
-   && (!TARGET_SIMD || BYTES_BIG_ENDIAN)
    && (register_operand (operands[0], XImode)
        || register_operand (operands[1], XImode))"
   "#"
@@ -8050,11 +8017,8 @@
 {
   if (register_operand (operands[0], <MODE>mode)
       && register_operand (operands[1], <MODE>mode))
-    {
-      aarch64_simd_emit_reg_reg_move (operands, <VSTRUCT_ELT>mode, 3);
-      DONE;
-    }
-  else if (!TARGET_SIMD || BYTES_BIG_ENDIAN)
+    aarch64_simd_emit_reg_reg_move (operands, <VSTRUCT_ELT>mode, 3);
+  else
     {
       int elt_size = GET_MODE_SIZE (<MODE>mode).to_constant () / <nregs>;
       machine_mode pair_mode = elt_size == 16 ? V2x16QImode : V2x8QImode;
@@ -8072,10 +8036,8 @@
 							operands[1],
 							<MODE>mode,
 							2 * elt_size)));
-      DONE;
     }
-  else
-    FAIL;
+  DONE;
 })
 
 (define_split
@@ -8086,11 +8048,8 @@
 {
   if (register_operand (operands[0], CImode)
       && register_operand (operands[1], CImode))
-    {
-      aarch64_simd_emit_reg_reg_move (operands, TImode, 3);
-      DONE;
-    }
-  else if (!TARGET_SIMD || BYTES_BIG_ENDIAN)
+    aarch64_simd_emit_reg_reg_move (operands, TImode, 3);
+  else
     {
       emit_move_insn (simplify_gen_subreg (OImode, operands[0], CImode, 0),
 		      simplify_gen_subreg (OImode, operands[1], CImode, 0));
@@ -8100,10 +8059,8 @@
 		      gen_lowpart (V16QImode,
 				   simplify_gen_subreg (TImode, operands[1],
 							CImode, 32)));
-      DONE;
     }
-  else
-    FAIL;
+  DONE;
 })
 
 (define_split
@@ -8114,11 +8071,8 @@
 {
   if (register_operand (operands[0], <MODE>mode)
       && register_operand (operands[1], <MODE>mode))
-    {
-      aarch64_simd_emit_reg_reg_move (operands, <VSTRUCT_ELT>mode, 4);
-      DONE;
-    }
-  else if (!TARGET_SIMD || BYTES_BIG_ENDIAN)
+    aarch64_simd_emit_reg_reg_move (operands, <VSTRUCT_ELT>mode, 4);
+  else
     {
       int elt_size = GET_MODE_SIZE (<MODE>mode).to_constant () / <nregs>;
       machine_mode pair_mode = elt_size == 16 ? V2x16QImode : V2x8QImode;
@@ -8130,10 +8084,8 @@
 					   <MODE>mode, 2 * elt_size),
 		      simplify_gen_subreg (pair_mode, operands[1],
 					   <MODE>mode, 2 * elt_size));
-      DONE;
     }
-  else
-    FAIL;
+  DONE;
 })
 
 (define_split
@@ -8144,20 +8096,15 @@
 {
   if (register_operand (operands[0], XImode)
       && register_operand (operands[1], XImode))
-    {
-      aarch64_simd_emit_reg_reg_move (operands, TImode, 4);
-      DONE;
-    }
-  else if (!TARGET_SIMD || BYTES_BIG_ENDIAN)
+    aarch64_simd_emit_reg_reg_move (operands, TImode, 4);
+  else
     {
       emit_move_insn (simplify_gen_subreg (OImode, operands[0], XImode, 0),
 		      simplify_gen_subreg (OImode, operands[1], XImode, 0));
       emit_move_insn (simplify_gen_subreg (OImode, operands[0], XImode, 32),
 		      simplify_gen_subreg (OImode, operands[1], XImode, 32));
-      DONE;
     }
-  else
-    FAIL;
+  DONE;
 })
 
 (define_split
