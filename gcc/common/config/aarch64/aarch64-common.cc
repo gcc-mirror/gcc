@@ -111,7 +111,7 @@ aarch64_handle_option (struct gcc_options *opts,
 
     case OPT_mgeneral_regs_only:
       opts->x_target_flags |= MASK_GENERAL_REGS_ONLY;
-      aarch64_set_asm_isa_flags (opts, opts->x_aarch64_asm_isa_flags);
+      aarch64_set_asm_isa_flags (opts, aarch64_get_asm_isa_flags (opts));
       return true;
 
     case OPT_mfix_cortex_a53_835769:
