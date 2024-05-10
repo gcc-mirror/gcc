@@ -67,15 +67,19 @@ static const struct default_options aarch_option_optimization_table[] =
   };
 
 
-/* Set OPTS->x_aarch64_asm_isa_flags_0 to FLAGS and update
-   OPTS->x_aarch64_isa_flags_0 accordingly.  */
+/* Set OPTS->x_aarch64_asm_isa_flags_<0..n> to FLAGS and update
+   OPTS->x_aarch64_isa_flags_<0..n> accordingly.  */
 void
 aarch64_set_asm_isa_flags (gcc_options *opts, aarch64_feature_flags flags)
 {
-  opts->x_aarch64_asm_isa_flags_0 = flags;
+  opts->x_aarch64_asm_isa_flags_0 = flags.val[0];
+  opts->x_aarch64_asm_isa_flags_1 = flags.val[1];
+
   if (opts->x_target_flags & MASK_GENERAL_REGS_ONLY)
     flags &= ~feature_deps::get_flags_off (AARCH64_FL_FP);
-  opts->x_aarch64_isa_flags_0 = flags;
+
+  opts->x_aarch64_isa_flags_0 = flags.val[0];
+  opts->x_aarch64_isa_flags_1 = flags.val[1];
 }
 
 /* Implement TARGET_HANDLE_OPTION.

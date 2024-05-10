@@ -34,7 +34,13 @@ TargetVariable
 uint64_t aarch64_asm_isa_flags_0 = 0
 
 TargetVariable
+uint64_t aarch64_asm_isa_flags_1 = 0
+
+TargetVariable
 uint64_t aarch64_isa_flags_0 = 0
+
+TargetVariable
+uint64_t aarch64_isa_flags_1 = 0
 
 TargetVariable
 unsigned aarch_enable_bti = 2

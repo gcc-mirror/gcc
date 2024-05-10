@@ -19119,7 +19119,7 @@ aarch64_set_current_function (tree fndecl)
      aarch64_pragma_target_parse.  */
   if (old_tree == new_tree
       && (!fndecl || aarch64_previous_fndecl)
-      && (aarch64_isa_mode) (isa_flags & AARCH64_FL_ISA_MODES) == new_isa_mode)
+      && (isa_flags & AARCH64_FL_ISA_MODES).val[0] == new_isa_mode)
     {
       gcc_assert (AARCH64_ISA_MODE == new_isa_mode);
       return;
@@ -19134,11 +19134,11 @@ aarch64_set_current_function (tree fndecl)
   /* The ISA mode can vary based on function type attributes and
      function declaration attributes.  Make sure that the target
      options correctly reflect these attributes.  */
-  if ((aarch64_isa_mode) (isa_flags & AARCH64_FL_ISA_MODES) != new_isa_mode)
+  if ((isa_flags & AARCH64_FL_ISA_MODES).val[0] != new_isa_mode)
     {
       auto base_flags = (aarch64_asm_isa_flags & ~AARCH64_FL_ISA_MODES);
       aarch64_set_asm_isa_flags (base_flags
-				 | (aarch64_feature_flags) new_isa_mode);
+				 | aarch64_feature_flags (new_isa_mode));
 
       aarch64_override_options_internal (&global_options);
       new_tree = build_target_option_node (&global_options,

@@ -23,14 +23,16 @@
 #define GCC_AARCH64_OPTS_H
 
 #ifndef USED_FOR_TARGET
-typedef uint64_t aarch64_isa_mode;
+#include "bbitmap.h"
 
-typedef uint64_t aarch64_feature_flags;
+typedef uint64_t aarch64_isa_mode;
 
 constexpr unsigned int AARCH64_NUM_ISA_MODES = (0
 #define DEF_AARCH64_ISA_MODE(IDENT) + 1
 #include "aarch64-isa-modes.def"
 );
+
+typedef bbitmap<2> aarch64_feature_flags;
 #endif
 
 /* The various cores that implement AArch64.  */
