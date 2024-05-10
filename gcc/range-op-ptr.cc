@@ -62,63 +62,38 @@ range_operator::pointers_handled_p (range_op_dispatch_type ATTRIBUTE_UNUSED,
 }
 
 bool
-range_operator::fold_range (prange &r, tree type,
-			    const prange &op1,
-			    const prange &op2,
-			    relation_trio trio) const
+range_operator::fold_range (prange &, tree, const prange &, const prange &,
+			    relation_trio) const
 {
-  relation_kind rel = trio.op1_op2 ();
-  r.set_varying (type);
-  op1_op2_relation_effect (r, type, op1, op2, rel);
-  return true;
+  return false;
 }
 
 bool
-range_operator::fold_range (prange &r, tree type,
-			    const prange &op1,
-			    const irange &op2,
-			    relation_trio trio) const
+range_operator::fold_range (prange &, tree, const prange &, const irange &,
+			    relation_trio) const
 {
-  relation_kind rel = trio.op1_op2 ();
-  r.set_varying (type);
-  op1_op2_relation_effect (r, type, op1, op2, rel);
-  return true;
+  return false;
 }
 
 bool
-range_operator::fold_range (irange &r, tree type,
-			    const prange &op1,
-			    const prange &op2,
-			    relation_trio trio) const
+range_operator::fold_range (irange &, tree, const prange &, const prange &,
+			    relation_trio) const
 {
-  relation_kind rel = trio.op1_op2 ();
-  r.set_varying (type);
-  op1_op2_relation_effect (r, type, op1, op2, rel);
-  return true;
+  return false;
 }
 
 bool
-range_operator::fold_range (prange &r, tree type,
-			    const irange &op1,
-			    const prange &op2,
-			    relation_trio trio) const
+range_operator::fold_range (prange &, tree, const irange &, const prange &,
+			    relation_trio) const
 {
-  relation_kind rel = trio.op1_op2 ();
-  r.set_varying (type);
-  op1_op2_relation_effect (r, type, op1, op2, rel);
-  return true;
+  return false;
 }
 
 bool
-range_operator::fold_range (irange &r, tree type,
-			    const prange &op1,
-			    const irange &op2,
-			    relation_trio trio) const
+range_operator::fold_range (irange &, tree, const prange &, const irange &,
+			    relation_trio) const
 {
-  relation_kind rel = trio.op1_op2 ();
-  r.set_varying (type);
-  op1_op2_relation_effect (r, type, op1, op2, rel);
-  return true;
+  return false;
 }
 
 bool
