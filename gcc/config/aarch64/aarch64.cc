@@ -18329,10 +18329,11 @@ aarch64_override_options_internal (struct gcc_options *opts)
       && !fixed_regs[R18_REGNUM])
     error ("%<-fsanitize=shadow-call-stack%> requires %<-ffixed-x18%>");
 
-  if ((opts->x_aarch64_isa_flags & (AARCH64_FL_SM_ON | AARCH64_FL_ZA_ON))
-      && !(opts->x_aarch64_isa_flags & AARCH64_FL_SME))
+  aarch64_feature_flags isa_flags = aarch64_get_isa_flags (opts);
+  if ((isa_flags & (AARCH64_FL_SM_ON | AARCH64_FL_ZA_ON))
+      && !(isa_flags & AARCH64_FL_SME))
     {
-      if (opts->x_aarch64_isa_flags & AARCH64_FL_SM_ON)
+      if (isa_flags & AARCH64_FL_SM_ON)
 	error ("streaming functions require the ISA extension %qs", "sme");
       else
 	error ("functions with SME state require the ISA extension %qs",
@@ -18341,8 +18342,7 @@ aarch64_override_options_internal (struct gcc_options *opts)
 	      " option %<-march%>, or by using the %<target%>"
 	      " attribute or pragma", "sme");
       opts->x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
-      auto new_flags = (opts->x_aarch64_asm_isa_flags
-			| feature_deps::SME ().enable);
+      auto new_flags = isa_flags | feature_deps::SME ().enable;
       aarch64_set_asm_isa_flags (opts, new_flags);
     }
 
@@ -19036,9 +19036,9 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
   const struct processor *cpu
     = aarch64_get_tune_cpu (ptr->x_selected_tune);
   const struct processor *arch = aarch64_get_arch (ptr->x_selected_arch);
+  aarch64_feature_flags isa_flags = aarch64_get_asm_isa_flags(ptr);
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (ptr->x_aarch64_asm_isa_flags,
-						  arch->flags);
+    = aarch64_get_extension_string_for_isa_flags (isa_flags, arch->flags);
 
   fprintf (file, "%*sselected tune = %s\n", indent, "", cpu->name);
   fprintf (file, "%*sselected arch = %s%s\n", indent, "",
@@ -19098,7 +19098,7 @@ aarch64_set_current_function (tree fndecl)
   auto new_isa_mode = (fndecl
 		       ? aarch64_fndecl_isa_mode (fndecl)
 		       : AARCH64_DEFAULT_ISA_MODE);
-  auto isa_flags = TREE_TARGET_OPTION (new_tree)->x_aarch64_isa_flags;
+  auto isa_flags = aarch64_get_isa_flags (TREE_TARGET_OPTION (new_tree));
 
   static bool reported_zt0_p;
   if (!reported_zt0_p
@@ -20703,16 +20703,16 @@ aarch64_can_inline_p (tree caller, tree callee)
 					   : target_option_default_node);
 
   /* Callee's ISA flags should be a subset of the caller's.  */
-  auto caller_asm_isa = (caller_opts->x_aarch64_asm_isa_flags
+  auto caller_asm_isa = (aarch64_get_asm_isa_flags (caller_opts)
 			 & ~AARCH64_FL_ISA_MODES);
-  auto callee_asm_isa = (callee_opts->x_aarch64_asm_isa_flags
+  auto callee_asm_isa = (aarch64_get_asm_isa_flags (callee_opts)
 			 & ~AARCH64_FL_ISA_MODES);
   if (callee_asm_isa & ~caller_asm_isa)
     return false;
 
-  auto caller_isa = (caller_opts->x_aarch64_isa_flags
+  auto caller_isa = (aarch64_get_isa_flags (caller_opts)
 		     & ~AARCH64_FL_ISA_MODES);
-  auto callee_isa = (callee_opts->x_aarch64_isa_flags
+  auto callee_isa = (aarch64_get_isa_flags (callee_opts)
 		     & ~AARCH64_FL_ISA_MODES);
   if (callee_isa & ~caller_isa)
     return false;
@@ -20732,8 +20732,8 @@ aarch64_can_inline_p (tree caller, tree callee)
      PSTATE.SM mode.  Otherwise the caller and callee must agree on
      PSTATE.SM mode, unless we can prove that the callee is naturally
      streaming-compatible.  */
-  auto caller_sm = (caller_opts->x_aarch64_isa_flags & AARCH64_FL_SM_STATE);
-  auto callee_sm = (callee_opts->x_aarch64_isa_flags & AARCH64_FL_SM_STATE);
+  auto caller_sm = (aarch64_get_isa_flags (caller_opts) & AARCH64_FL_SM_STATE);
+  auto callee_sm = (aarch64_get_isa_flags (callee_opts) & AARCH64_FL_SM_STATE);
   if (callee_sm
       && caller_sm != callee_sm
       && callee_has_property (AARCH64_IPA_SM_FIXED))
@@ -20746,8 +20746,8 @@ aarch64_can_inline_p (tree caller, tree callee)
 
      The only other problematic case for ZA is inlining a function that
      directly clobbers ZA or ZT0 into a function that has ZA or ZT0 state.  */
-  auto caller_za = (caller_opts->x_aarch64_isa_flags & AARCH64_FL_ZA_ON);
-  auto callee_za = (callee_opts->x_aarch64_isa_flags & AARCH64_FL_ZA_ON);
+  auto caller_za = (aarch64_get_isa_flags (caller_opts) & AARCH64_FL_ZA_ON);
+  auto callee_za = (aarch64_get_isa_flags (callee_opts) & AARCH64_FL_ZA_ON);
   if (!caller_za && callee_za)
     return false;
   if (!callee_za
@@ -24483,7 +24483,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   const struct processor *this_arch
     = aarch64_get_arch (targ_options->x_selected_arch);
 
-  auto isa_flags = targ_options->x_aarch64_asm_isa_flags;
+  auto isa_flags = aarch64_get_asm_isa_flags (targ_options);
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (isa_flags,
 						  this_arch->flags);
@@ -24613,7 +24613,7 @@ aarch64_start_file (void)
 
   const struct processor *default_arch
     = aarch64_get_arch (default_options->x_selected_arch);
-  auto default_isa_flags = default_options->x_aarch64_asm_isa_flags;
+  auto default_isa_flags = aarch64_get_asm_isa_flags (default_options);
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
 						  default_arch->flags);
