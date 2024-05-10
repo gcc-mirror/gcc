@@ -24283,6 +24283,9 @@ ix86_expand_vecop_qihi_partial (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 
   if (CONST_INT_P (op2)
       && (code == ASHIFT || code == LSHIFTRT || code == ASHIFTRT)
+      /* With AVX512 it's cheaper to do vpmovsxbw/op/vpmovwb.
+         Even with SSE4.1 the alternative is better.  */
+      && !TARGET_SSE4_1
       && ix86_expand_vec_shift_qihi_constant (code, qdest, qop1, qop2))
     {
       emit_move_insn (dest, gen_lowpart (qimode, qdest));

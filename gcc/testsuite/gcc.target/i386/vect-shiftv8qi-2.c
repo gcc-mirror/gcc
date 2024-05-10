@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -msse2 -mno-avx2 -mno-avx512vl" } */
+/* { dg-options "-O2 -march=cascadelake" } */
 
 #define N 8
 
@@ -16,7 +16,7 @@ __vu sll_c (__vu a)
   return a << 5;
 }
 
-/* { dg-final { scan-assembler-times "psllw" 2 } } */
+/* { dg-final { scan-assembler-times "vpsllw" 2 } } */
 
 __vu srl (__vu a, int n)
 {
@@ -28,7 +28,7 @@ __vu srl_c (__vu a)
   return a >> 5;
 }
 
-/* { dg-final { scan-assembler-times "psrlw" 5 } } */
+/* { dg-final { scan-assembler-times "vpsrlw" 2 } } */
 
 __vi sra (__vi a, int n)
 {
@@ -40,4 +40,4 @@ __vi sra_c (__vi a)
   return a >> 5;
 }
 
-/* { dg-final { scan-assembler-times "psraw" 2 } } */
+/* { dg-final { scan-assembler-times "vpsraw" 2 } } */

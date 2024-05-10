@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2" } */
+/* { dg-options "-O2 -msse2 -mno-avx2 -mno-avx512vl" } */
 
 #define N 4
 
