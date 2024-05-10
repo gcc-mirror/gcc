@@ -23,17 +23,21 @@
 #define GCC_AARCH64_H
 
 #define aarch64_get_asm_isa_flags(opts) \
-  (aarch64_feature_flags ((opts)->x_aarch64_asm_isa_flags_0))
+  (aarch64_feature_flags ((opts)->x_aarch64_asm_isa_flags_0, \
+			  (opts)->x_aarch64_asm_isa_flags_1))
 #define aarch64_get_isa_flags(opts) \
-  (aarch64_feature_flags ((opts)->x_aarch64_isa_flags_0))
+  (aarch64_feature_flags ((opts)->x_aarch64_isa_flags_0, \
+			  (opts)->x_aarch64_isa_flags_1))
 
 /* Make these flags read-only so that all uses go via
    aarch64_set_asm_isa_flags.  */
 #ifdef GENERATOR_FILE
 #undef aarch64_asm_isa_flags
-#define aarch64_asm_isa_flags (aarch64_feature_flags (aarch64_asm_isa_flags_0))
+#define aarch64_asm_isa_flags (aarch64_feature_flags (aarch64_asm_isa_flags_0,\
+						      aarch64_asm_isa_flags_1))
 #undef aarch64_isa_flags
-#define aarch64_isa_flags (aarch64_feature_flags (aarch64_isa_flags_0))
+#define aarch64_isa_flags (aarch64_feature_flags (aarch64_isa_flags_0, \
+						  aarch64_isa_flags_1))
 #else
 #undef aarch64_asm_isa_flags
 #define aarch64_asm_isa_flags (aarch64_get_asm_isa_flags (&global_options))
@@ -167,8 +171,8 @@ enum class aarch64_feature : unsigned char {
 
 /* Define unique flags for each of the above.  */
 #define HANDLE(IDENT) \
-  constexpr auto AARCH64_FL_##IDENT \
-    = aarch64_feature_flags (1) << int (aarch64_feature::IDENT);
+  constexpr auto AARCH64_FL_##IDENT ATTRIBUTE_UNUSED \
+    = aarch64_feature_flags::from_index (int (aarch64_feature::IDENT));
 #define DEF_AARCH64_ISA_MODE(IDENT) HANDLE (IDENT)
 #define AARCH64_OPT_EXTENSION(A, IDENT, C, D, E, F) HANDLE (IDENT)
 #define AARCH64_ARCH(A, B, IDENT, D, E) HANDLE (IDENT)
@@ -191,7 +195,7 @@ constexpr auto AARCH64_ISA_MODE_SM_STATE ATTRIBUTE_UNUSED
 
 /* The mask of all ISA modes.  */
 constexpr auto AARCH64_FL_ISA_MODES
-  = (aarch64_feature_flags (1) << AARCH64_NUM_ISA_MODES) - 1;
+  = aarch64_feature_flags ((1 << AARCH64_NUM_ISA_MODES) - 1);
 
 /* The default ISA mode, for functions with no attributes that specify
    something to the contrary.  */
@@ -210,7 +214,7 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 
 #define AARCH64_HAVE_ISA(X) (bool (aarch64_isa_flags & AARCH64_FL_##X))
 
-#define AARCH64_ISA_MODE           (aarch64_isa_mode) (aarch64_isa_flags & AARCH64_FL_ISA_MODES)
+#define AARCH64_ISA_MODE    ((aarch64_isa_flags & AARCH64_FL_ISA_MODES).val[0])
 
 /* The current function is a normal non-streaming function.  */
 #define TARGET_NON_STREAMING AARCH64_HAVE_ISA (SM_OFF)
