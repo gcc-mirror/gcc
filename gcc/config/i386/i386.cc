@@ -25799,6 +25799,20 @@ ix86_bitint_type_info (int n, struct bitint_info *info)
   return true;
 }
 
+/* Returns modified FUNCTION_TYPE for cdtor callabi.  */
+tree
+ix86_cxx_adjust_cdtor_callabi_fntype (tree fntype)
+{
+  if (TARGET_64BIT
+      || TARGET_RTD
+      || ix86_function_type_abi (fntype) != MS_ABI)
+    return fntype;
+  /* For 32-bit MS ABI add thiscall attribute.  */
+  tree attribs = tree_cons (get_identifier ("thiscall"), NULL_TREE,
+			    TYPE_ATTRIBUTES (fntype));
+  return build_type_attribute_variant (fntype, attribs);
+}
+
 /* Implement PUSH_ROUNDING.  On 386, we have pushw instruction that
    decrements by exactly 2 no matter what the position was, there is no pushb.
 
@@ -26410,6 +26424,8 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
 #undef TARGET_C_BITINT_TYPE_INFO
 #define TARGET_C_BITINT_TYPE_INFO ix86_bitint_type_info
+#undef TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE
+#define TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE ix86_cxx_adjust_cdtor_callabi_fntype
 #undef TARGET_PROMOTE_PROTOTYPES
 #define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
 #undef TARGET_PUSH_ARGUMENT

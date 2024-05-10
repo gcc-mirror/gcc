@@ -11117,6 +11117,14 @@ shared libraries are run in the correct order when the libraries are
 unloaded. The default is to return false.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE (tree @var{fntype})
+This hook returns a possibly modified @code{FUNCTION_TYPE} for arguments
+to @code{__cxa_atexit}, @code{__cxa_thread_atexit} or @code{__cxa_throw}
+function pointers.  ABIs like mingw32 require special attributes to be added
+to function types pointed to by arguments of these functions.
+The default is to return the passed argument unmodified.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_CXX_ADJUST_CLASS_AT_DEFINITION (tree @var{type})
 @var{type} is a C++ class (i.e., RECORD_TYPE or UNION_TYPE) that has just
 been defined.  Use this hook to make adjustments to the class (eg, tweak
