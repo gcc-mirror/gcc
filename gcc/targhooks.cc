@@ -329,6 +329,14 @@ default_cxx_get_cookie_size (tree type)
   return cookie_size;
 }
 
+/* Returns modified FUNCTION_TYPE for cdtor callabi.  */
+
+tree
+default_cxx_adjust_cdtor_callabi_fntype (tree fntype)
+{
+  return fntype;
+}
+
 /* Return true if a parameter must be passed by reference.  This version
    of the TARGET_PASS_BY_REFERENCE hook uses just MUST_PASS_IN_STACK.  */
 

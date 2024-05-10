@@ -6498,7 +6498,7 @@ is in effect.  The default is to return false to use @code{__cxa_atexit}.",
  hook_bool_void_false)
 
 /* Returns true if target may use atexit in the same manner as
-   __cxa_atexit  to register static destructors.  */
+   __cxa_atexit to register static destructors.  */
 DEFHOOK
 (use_atexit_for_cxa_atexit,
  "This hook returns true if the target @code{atexit} function can be used\n\
@@ -6508,6 +6508,17 @@ shared libraries are run in the correct order when the libraries are\n\
 unloaded. The default is to return false.",
  bool, (void),
  hook_bool_void_false)
+
+/* Returns modified FUNCTION_TYPE for cdtor callabi.  */
+DEFHOOK
+(adjust_cdtor_callabi_fntype,
+ "This hook returns a possibly modified @code{FUNCTION_TYPE} for arguments\n\
+to @code{__cxa_atexit}, @code{__cxa_thread_atexit} or @code{__cxa_throw}\n\
+function pointers.  ABIs like mingw32 require special attributes to be added\n\
+to function types pointed to by arguments of these functions.\n\
+The default is to return the passed argument unmodified.",
+ tree, (tree fntype),
+ default_cxx_adjust_cdtor_callabi_fntype)
 
 DEFHOOK
 (adjust_class_at_definition,

@@ -7223,6 +7223,8 @@ floating-point support; they are not included in this mechanism.
 
 @hook TARGET_CXX_USE_ATEXIT_FOR_CXA_ATEXIT
 
+@hook TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE
+
 @hook TARGET_CXX_ADJUST_CLASS_AT_DEFINITION
 
 @hook TARGET_CXX_DECL_MANGLING_CONTEXT

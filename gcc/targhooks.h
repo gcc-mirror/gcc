@@ -65,6 +65,7 @@ extern machine_mode default_mode_for_suffix (char);
 
 extern tree default_cxx_guard_type (void);
 extern tree default_cxx_get_cookie_size (tree);
+extern tree default_cxx_adjust_cdtor_callabi_fntype (tree);
 
 extern bool hook_pass_by_reference_must_pass_in_stack
   (cumulative_args_t, const function_arg_info &);
