@@ -686,7 +686,7 @@ prange::update_bitmask (const irange_bitmask &bm)
   // If all the bits are known, this is a singleton.
   if (bm.mask () == 0)
     {
-      set (type (), m_bitmask.value (), m_bitmask.value ());
+      set (type (), bm.value (), bm.value ());
       return;
     }
 
