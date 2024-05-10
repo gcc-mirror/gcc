@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2024-2024, Free Software Foundation, Inc.         --
+--             Copyright (C) 2024, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,8 +36,8 @@ package Mutably_Tagged is
    --  This package implements mutably tagged types via the Size'class aspect
    --  which enables the creation of class-wide types with a specific maximum
    --  size. This allows such types to be used directly in record components,
-   --  in object declarations without an initial expression, and to be
-   --  assigned a value from any type in a mutably tagged type's hierarchy.
+   --  in object declarations without an initial expression, and to be assigned
+   --  a value from any type in a mutably tagged type's hierarchy.
 
    --  For example, this structure allows Base_Type and its derivatives to be
    --  treated as components with a predictable size:
@@ -49,17 +49,16 @@ package Mutably_Tagged is
    --      Component : Base_Type'Class;
    --    end record;
 
-   --  The core of thier implementation involve creating an "equivalent" type
+   --  The core of their implementation involves creating an "equivalent" type
    --  for each class-wide type that adheres to the Size'Class constraint. This
-   --  is achieved using the function Make_CW_Equivalent_Type, which
-   --  generates a type that is compatible in size and structure with any
+   --  is achieved by using the function Make_CW_Equivalent_Type from Exp_Util,
+   --  which generates a type that is compatible in size and structure with any
    --  derived type of the base class-wide type.
 
-   --  Once the class-wide equivalent type is generated, all references to
-   --  mutably tagged typed object declarations get rewritten to be
-   --  declarations of said equivalent type. References to these objects also
-   --  then get wrapped in unchecked conversions to the proper mutably tagged
-   --  class-wide type.
+   --  Once the class-wide equivalent type is generated, all declarations of
+   --  mutably tagged typed objects get rewritten as declarations of objects
+   --  with the equivalent type. References to these objects also then get
+   --  wrapped in unchecked conversions to the mutably tagged class-wide type.
 
    function Corresponding_Mutably_Tagged_Type
      (CW_Equiv_Typ : Entity_Id) return Entity_Id;
