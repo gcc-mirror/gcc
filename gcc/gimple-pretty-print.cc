@@ -2082,8 +2082,22 @@ dump_gimple_omp_metadirective (pretty_printer *buffer, const gimple *gs,
 			       int spc, dump_flags_t flags)
 {
   if (flags & TDF_RAW)
-    dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S> >", gs,
-		     gimple_omp_body (gs));
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>", gs,
+		       gimple_omp_body (gs));
+      dump_gimple_fmt (buffer, spc, flags, "%+VARIANTS");
+      gimple_seq variant_seq = gimple_omp_variants (gs);
+      gimple_stmt_iterator gsi = gsi_start (variant_seq);
+
+      for (unsigned i = 0; i < gimple_num_ops (gs); i++)
+	{
+	  gimple *variant = gsi_stmt (gsi);
+	  dump_gimple_fmt (buffer, spc, flags, "%+<%S>",
+			   gimple_omp_body (variant));
+	  gsi_next (&gsi);
+	}
+      dump_gimple_fmt (buffer, spc, flags, "%n>");
+    }
   else
     {
       pp_string (buffer, "#pragma omp metadirective");
