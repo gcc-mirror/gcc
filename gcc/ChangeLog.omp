@@ -1,3 +1,12 @@
+2024-05-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* tree-nested.cc (convert_nonlocal_reference_stmt): Handle
+	GIMPLE_OMP_METADIRECTIVE specially.
+	(convert_local_reference_stmt): Likewise.
+	(convert_tramp_reference_stmt): Likewise.
+	(convert_gimple_call): Likewise.
+
+
 2024-04-22  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* tree-nested.cc (convert_tramp_reference_stmt): Use the correct

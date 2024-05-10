@@ -1832,6 +1832,17 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	         info, gimple_omp_body_ptr (stmt));
       break;
 
+    case GIMPLE_OMP_METADIRECTIVE:
+      {
+	gimple_seq variant_seq = gimple_omp_variants (stmt);
+	for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  walk_body (convert_nonlocal_reference_stmt,
+		     convert_nonlocal_reference_op,
+		     info, gimple_omp_body_ptr (gsi_stmt (gsi)));
+      }
+      break;
+
     case GIMPLE_BIND:
       {
       gbind *bind_stmt = as_a <gbind *> (stmt);
@@ -2567,6 +2578,17 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 		 info, gimple_omp_body_ptr (stmt));
       break;
 
+    case GIMPLE_OMP_METADIRECTIVE:
+      {
+	gimple_seq variant_seq = gimple_omp_variants (stmt);
+	for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  walk_body (convert_local_reference_stmt,
+		     convert_local_reference_op,
+		     info, gimple_omp_body_ptr (gsi_stmt (gsi)));
+      }
+      break;
+
     case GIMPLE_COND:
       wi->val_only = true;
       wi->is_lhs = false;
@@ -2944,6 +2966,17 @@ convert_tramp_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       }
       break;
 
+    case GIMPLE_OMP_METADIRECTIVE:
+      {
+	gimple_seq variant_seq = gimple_omp_variants (stmt);
+	for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  walk_body (convert_tramp_reference_stmt,
+		     convert_tramp_reference_op,
+		     info, gimple_omp_body_ptr (gsi_stmt (gsi)));
+      }
+      break;
+
     default:
       *handled_ops_p = false;
       return NULL_TREE;
@@ -3091,6 +3124,16 @@ convert_gimple_call (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_SCAN:
     case GIMPLE_OMP_CRITICAL:
       walk_body (convert_gimple_call, NULL, info, gimple_omp_body_ptr (stmt));
+      break;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      {
+	gimple_seq variant_seq = gimple_omp_variants (stmt);
+	for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  walk_body (convert_gimple_call, NULL,
+		     info, gimple_omp_body_ptr (gsi_stmt (gsi)));
+      }
       break;
 
     default:
