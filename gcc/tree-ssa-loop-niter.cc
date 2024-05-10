@@ -2303,6 +2303,38 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
   return call;
 }
 
+/* Returns true if STMT is equivalent to x << 1.  */
+
+static bool
+is_lshift_by_1 (gassign *stmt)
+{
+  if (gimple_assign_rhs_code (stmt) == LSHIFT_EXPR
+      && integer_onep (gimple_assign_rhs2 (stmt)))
+    return true;
+  if (gimple_assign_rhs_code (stmt) == MULT_EXPR
+      && tree_fits_shwi_p (gimple_assign_rhs2 (stmt))
+      && tree_to_shwi (gimple_assign_rhs2 (stmt)) == 2)
+    return true;
+  return false;
+}
+
+/* Returns true if STMT is equivalent to x >> 1.  */
+
+static bool
+is_rshift_by_1 (gassign *stmt)
+{
+  if (!TYPE_UNSIGNED (TREE_TYPE (gimple_assign_lhs (stmt))))
+    return false;
+  if (gimple_assign_rhs_code (stmt) == RSHIFT_EXPR
+      && integer_onep (gimple_assign_rhs2 (stmt)))
+    return true;
+  if (gimple_assign_rhs_code (stmt) == TRUNC_DIV_EXPR
+      && tree_fits_shwi_p (gimple_assign_rhs2 (stmt))
+      && tree_to_shwi (gimple_assign_rhs2 (stmt)) == 2)
+    return true;
+  return false;
+}
+
 /* See comment below for number_of_iterations_bitcount.
    For c[lt]z, we have:
 
@@ -2400,14 +2432,12 @@ number_of_iterations_cltz (loop_p loop, edge exit,
 
   /* Make sure iv_2_stmt is a logical shift by one stmt:
      iv_2 = iv_1 {<<|>>} 1  */
-  if (!is_gimple_assign (iv_2_stmt)
-      || (gimple_assign_rhs_code (iv_2_stmt) != LSHIFT_EXPR
-	  && (gimple_assign_rhs_code (iv_2_stmt) != RSHIFT_EXPR
-	      || !TYPE_UNSIGNED (TREE_TYPE (gimple_assign_lhs (iv_2_stmt)))))
-      || !integer_onep (gimple_assign_rhs2 (iv_2_stmt)))
+  if (!is_gimple_assign (iv_2_stmt))
     return false;
-
-  bool left_shift = (gimple_assign_rhs_code (iv_2_stmt) == LSHIFT_EXPR);
+  bool left_shift = false;
+  if (!((left_shift = is_lshift_by_1 (as_a <gassign *> (iv_2_stmt)))
+	|| is_rshift_by_1 (as_a <gassign *> (iv_2_stmt))))
+    return false;
 
   tree iv_1 = gimple_assign_rhs1 (iv_2_stmt);
 
@@ -2516,14 +2546,12 @@ number_of_iterations_cltz_complement (loop_p loop, edge exit,
 
   /* Make sure iv_2_stmt is a logical shift by one stmt:
      iv_2 = iv_1 {>>|<<} 1  */
-  if (!is_gimple_assign (iv_2_stmt)
-      || (gimple_assign_rhs_code (iv_2_stmt) != LSHIFT_EXPR
-	  && (gimple_assign_rhs_code (iv_2_stmt) != RSHIFT_EXPR
-	      || !TYPE_UNSIGNED (TREE_TYPE (gimple_assign_lhs (iv_2_stmt)))))
-      || !integer_onep (gimple_assign_rhs2 (iv_2_stmt)))
+  if (!is_gimple_assign (iv_2_stmt))
     return false;
-
-  bool left_shift = (gimple_assign_rhs_code (iv_2_stmt) == LSHIFT_EXPR);
+  bool left_shift = false;
+  if (!((left_shift = is_lshift_by_1 (as_a <gassign *> (iv_2_stmt)))
+	|| is_rshift_by_1 (as_a <gassign *> (iv_2_stmt))))
+    return false;
 
   tree iv_1 = gimple_assign_rhs1 (iv_2_stmt);
 
