@@ -552,7 +552,7 @@ package body GPrep is
 
             Errutil.Finalize (Source_Type => "input");
 
-            OS_Exit (0);
+            OS_Exit (1);
 
          --  Otherwise, close the output file, and we are done
 

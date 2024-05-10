@@ -313,6 +313,7 @@ package body Lib.Load is
         Is_Predefined_Renaming_File_Name (Fname);
       GNAT_Name : constant Boolean :=
         Is_GNAT_File_Name (Fname);
+      Saved_Error_Count : constant Nat := Total_Errors_Detected;
       Version : Word := 0;
 
    begin
@@ -336,7 +337,14 @@ package body Lib.Load is
          if Main_Source_File > No_Source_File then
             Version := Source_Checksum (Main_Source_File);
 
-         else
+         --  If we get here and Saved_Error_Count /= Total_Errors_Detected,
+         --  then an error occurred during preprocessing. In this case
+         --  we have already generated an error message during preprocessing
+         --  and we do not want to emit an incorrect "file foo.adb not found"
+         --  message here.
+
+         elsif Saved_Error_Count = Total_Errors_Detected then
+
             --  To avoid emitting a source location (since there is no file),
             --  we write a custom error message instead of using the machinery
             --  in errout.adb.
