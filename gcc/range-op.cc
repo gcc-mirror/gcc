@@ -49,6 +49,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-ccp.h"
 #include "range-op-mixed.h"
 
+// Set to 1 to trap on range-op entries that cannot handle the pointer
+// combination being requested.  This is a temporary sanity check to
+// aid in debugging, and will be removed later in the release cycle.
+#define TRAP_ON_UNHANDLED_POINTER_OPERATORS 0
+
 // Instantiate the operators which apply to multiple types here.
 
 operator_equal op_equal;
@@ -233,7 +238,8 @@ range_op_handler::fold_range (vrange &r, tree type,
 #if CHECKING_P
   if (!lh.undefined_p () && !rh.undefined_p ())
     gcc_assert (m_operator->operand_check_p (type, lh.type (), rh.type ()));
-  if (has_pointer_operand_p (r, lh, rh)
+  if (TRAP_ON_UNHANDLED_POINTER_OPERATORS
+      && has_pointer_operand_p (r, lh, rh)
       && !m_operator->pointers_handled_p (DISPATCH_FOLD_RANGE,
 					  dispatch_kind (r, lh, rh)))
     discriminator_fail (r, lh, rh);
@@ -299,7 +305,8 @@ range_op_handler::op1_range (vrange &r, tree type,
 #if CHECKING_P
   if (!op2.undefined_p ())
     gcc_assert (m_operator->operand_check_p (lhs.type (), type, op2.type ()));
-  if (has_pointer_operand_p (r, lhs, op2)
+  if (TRAP_ON_UNHANDLED_POINTER_OPERATORS
+      && has_pointer_operand_p (r, lhs, op2)
       && !m_operator->pointers_handled_p (DISPATCH_OP1_RANGE,
 					  dispatch_kind (r, lhs, op2)))
     discriminator_fail (r, lhs, op2);
@@ -353,7 +360,8 @@ range_op_handler::op2_range (vrange &r, tree type,
 #if CHECKING_P
   if (!op1.undefined_p ())
     gcc_assert (m_operator->operand_check_p (lhs.type (), op1.type (), type));
-  if (has_pointer_operand_p (r, lhs, op1)
+  if (TRAP_ON_UNHANDLED_POINTER_OPERATORS
+      && has_pointer_operand_p (r, lhs, op1)
       && !m_operator->pointers_handled_p (DISPATCH_OP2_RANGE,
 					  dispatch_kind (r, lhs, op1)))
     discriminator_fail (r, lhs, op1);
@@ -395,7 +403,8 @@ range_op_handler::lhs_op1_relation (const vrange &lhs,
 {
   gcc_checking_assert (m_operator);
 #if CHECKING_P
-  if (has_pointer_operand_p (lhs, op1, op2)
+  if (TRAP_ON_UNHANDLED_POINTER_OPERATORS
+      && has_pointer_operand_p (lhs, op1, op2)
       && !m_operator->pointers_handled_p (DISPATCH_LHS_OP1_RELATION,
 					  dispatch_kind (lhs, op1, op2)))
     discriminator_fail (lhs, op1, op2);
@@ -442,7 +451,8 @@ range_op_handler::lhs_op2_relation (const vrange &lhs,
 {
   gcc_checking_assert (m_operator);
 #if CHECKING_P
-  if (has_pointer_operand_p (lhs, op1, op2)
+  if (TRAP_ON_UNHANDLED_POINTER_OPERATORS
+      && has_pointer_operand_p (lhs, op1, op2)
       && !m_operator->pointers_handled_p (DISPATCH_LHS_OP2_RELATION,
 					  dispatch_kind (lhs, op1, op2)))
     discriminator_fail (lhs, op1, op2);
@@ -475,7 +485,8 @@ range_op_handler::op1_op2_relation (const vrange &lhs,
 {
   gcc_checking_assert (m_operator);
 #if CHECKING_P
-  if (has_pointer_operand_p (lhs, op1, op2)
+  if (TRAP_ON_UNHANDLED_POINTER_OPERATORS
+      && has_pointer_operand_p (lhs, op1, op2)
       && !m_operator->pointers_handled_p (DISPATCH_OP1_OP2_RELATION,
 					  dispatch_kind (lhs, op1, op2)))
     discriminator_fail (lhs, op1, op2);
