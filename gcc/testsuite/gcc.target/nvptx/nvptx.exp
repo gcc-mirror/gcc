@@ -49,6 +49,11 @@ proc check_effective_target_default_ptx_isa_version_at_least { major minor } {
     return $res
 }
 
+# Return 1 if code by default compiles for at least PTX ISA version 6.0.
+proc check_effective_target_default_ptx_isa_version_at_least_6_0 { } {
+    return [check_effective_target_default_ptx_isa_version_at_least 6 0]
+}
+
 # Return 1 if code with PTX ISA version major.minor or higher can be run.
 proc check_effective_target_runtime_ptx_isa_version_at_least { major minor } {
     set name runtime_ptx_isa_version_${major}_${minor}

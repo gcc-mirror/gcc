@@ -1,3 +1,14 @@
+2024-05-10  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.md (nvptx_uniform_warp_check): Make fit for
+	non-full-warp execution, via 'vote.all.pred'.
+	gcc/testsuite/
+	* gcc.target/nvptx/nvptx.exp
+	(check_effective_target_default_ptx_isa_version_at_least_6_0):
+	New.
+	* gcc.target/nvptx/uniform-simt-2.c: Adjust.
+	* gcc.target/nvptx/uniform-simt-5.c: New.
+
 2024-05-28  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/nvptx/nvptx.h: Configure global constructor, destructor
