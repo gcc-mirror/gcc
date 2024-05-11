@@ -10788,6 +10788,11 @@ grokfndecl (tree ctype,
 		  "cannot declare %<::main%> to be %qs", "consteval");
       if (!publicp)
 	error_at (location, "cannot declare %<::main%> to be static");
+      if (current_lang_depth () != 0)
+	pedwarn (location, OPT_Wpedantic, "cannot declare %<::main%> with a"
+		 " linkage specification");
+      if (module_attach_p ())
+	error_at (location, "cannot attach %<::main%> to a named module");
       inlinep = 0;
       publicp = 1;
     }
@@ -11287,10 +11292,16 @@ grokvardecl (tree type,
     DECL_INTERFACE_KNOWN (decl) = 1;
 
   if (DECL_NAME (decl)
-      && MAIN_NAME_P (DECL_NAME (decl))
-      && scope == global_namespace)
-    error_at (DECL_SOURCE_LOCATION (decl),
-	      "cannot declare %<::main%> to be a global variable");
+      && MAIN_NAME_P (DECL_NAME (decl)))
+    {
+      if (scope == global_namespace)
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "cannot declare %<::main%> to be a global variable");
+      else if (DECL_EXTERN_C_P (decl))
+	error_at (DECL_SOURCE_LOCATION (decl),
+		  "an entity named %<main%> cannot be declared with "
+		  "C language linkage");
+    }
 
   /* Check that the variable can be safely declared as a concept.
      Note that this also forbids explicit specializations.  */
