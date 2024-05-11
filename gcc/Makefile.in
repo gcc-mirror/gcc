@@ -1443,6 +1443,7 @@ OBJS = \
 	dumpfile.o \
 	dwarf2asm.o \
 	dwarf2cfi.o \
+	dwarf2codeview.o \
 	dwarf2ctf.o \
 	dwarf2out.o \
 	early-remat.o \
@@ -2838,6 +2839,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.cc \
   $(srcdir)/dwarf2cfi.cc \
+  $(srcdir)/dwarf2codeview.cc \
   $(srcdir)/dwarf2ctf.cc \
   $(srcdir)/dwarf2out.cc \
   $(srcdir)/ctfc.h \

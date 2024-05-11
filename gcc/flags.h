@@ -53,6 +53,10 @@ extern bool btf_with_core_debuginfo_p ();
 
 extern bool ctf_debuginfo_p ();
 
+/* Return true iff CodeView debug info is enabled.  */
+
+extern bool codeview_debuginfo_p ();
+
 /* Return true iff DWARF2 debug info is enabled.  */
 
 extern bool dwarf_debuginfo_p (struct gcc_options *opts = &global_options);

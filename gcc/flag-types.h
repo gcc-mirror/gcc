@@ -29,6 +29,7 @@ enum debug_info_type
   DINFO_TYPE_VMS,		  /* VMS debug info.  */
   DINFO_TYPE_CTF,		  /* CTF debug info.  */
   DINFO_TYPE_BTF,		  /* BTF debug info.  */
+  DINFO_TYPE_CODEVIEW,		  /* CodeView debug info.  */
   DINFO_TYPE_BTF_WITH_CORE,	  /* BTF debug info with CO-RE relocations.  */
   DINFO_TYPE_MAX = DINFO_TYPE_BTF_WITH_CORE /* Marker only.  */
 };
@@ -42,6 +43,8 @@ enum debug_info_type
 #define CTF_DEBUG     (1U << DINFO_TYPE_CTF)
 /* Write BTF debug info (using btfout.cc).  */
 #define BTF_DEBUG     (1U << DINFO_TYPE_BTF)
+/* Write CodeView debug info (using dwarf2codeview.cc).  */
+#define CODEVIEW_DEBUG     (1U << DINFO_TYPE_CODEVIEW)
 /* Write BTF debug info for BPF CO-RE usecase (using btfout.cc).  */
 #define BTF_WITH_CORE_DEBUG     (1U << DINFO_TYPE_BTF_WITH_CORE)
 

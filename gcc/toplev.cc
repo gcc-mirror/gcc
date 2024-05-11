@@ -1438,6 +1438,10 @@ process_options ()
   else if (write_symbols == DWARF2_DEBUG)
     debug_hooks = &dwarf2_lineno_debug_hooks;
 #endif
+#ifdef CODEVIEW_DEBUGGING_INFO
+  else if (codeview_debuginfo_p ())
+    debug_hooks = &dwarf2_debug_hooks;
+#endif
   else
     {
       gcc_assert (debug_set_count (write_symbols) <= 1);
