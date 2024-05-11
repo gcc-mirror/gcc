@@ -39,10 +39,14 @@ along with GCC; see the file COPYING3.  If not see
 
 #define CV_SIGNATURE_C13	4
 
+#define DEBUG_S_LINES		0xf2
 #define DEBUG_S_STRINGTABLE     0xf3
 #define DEBUG_S_FILECHKSMS      0xf4
 
 #define CHKSUM_TYPE_MD5		1
+
+#define LINE_LABEL	"Lcvline"
+#define END_FUNC_LABEL	"Lcvendfunc"
 
 #define HASH_SIZE 16
 
@@ -91,11 +95,128 @@ struct codeview_source_file
   uint8_t hash[HASH_SIZE];
 };
 
+struct codeview_line
+{
+  codeview_line *next;
+  unsigned int line_no;
+  unsigned int label_num;
+};
+
+struct codeview_line_block
+{
+  codeview_line_block *next;
+  uint32_t file_id;
+  unsigned int num_lines;
+  codeview_line *lines, *last_line;
+};
+
+struct codeview_function
+{
+  codeview_function *next;
+  function *func;
+  unsigned int end_label;
+  codeview_line_block *blocks, *last_block;
+};
+
+static unsigned int line_label_num;
+static unsigned int func_label_num;
 static codeview_source_file *files, *last_file;
 static unsigned int num_files;
 static uint32_t string_offset = 1;
 static hash_table<string_hasher> *strings_htab;
 static codeview_string *strings, *last_string;
+static codeview_function *funcs, *last_func;
+static const char* last_filename;
+static uint32_t last_file_id;
+
+/* Record new line number against the current function.  */
+
+void
+codeview_source_line (unsigned int line_no, const char *filename)
+{
+  codeview_line *l;
+  uint32_t file_id = last_file_id;
+  unsigned int label_num = ++line_label_num;
+
+  targetm.asm_out.internal_label (asm_out_file, LINE_LABEL, label_num);
+
+  if (!last_func || last_func->func != cfun)
+    {
+      codeview_function *f = (codeview_function *)
+				xmalloc (sizeof (codeview_function));
+
+      f->next = NULL;
+      f->func = cfun;
+      f->end_label = 0;
+      f->blocks = f->last_block = NULL;
+
+      if (!funcs)
+	funcs = f;
+      else
+	last_func->next = f;
+
+      last_func = f;
+    }
+
+  if (filename != last_filename)
+    {
+      codeview_source_file *sf = files;
+
+      while (sf)
+	{
+	  if (!strcmp (sf->filename, filename))
+	    {
+	      /* 0x18 is the size of the checksum entry for each file.
+		 0x6 bytes for the header, plus 0x10 bytes for the hash,
+		 then padded to a multiple of 4.  */
+
+	      file_id = sf->file_num * 0x18;
+	      last_filename = filename;
+	      last_file_id = file_id;
+	      break;
+	    }
+
+	  sf = sf->next;
+	}
+    }
+
+  if (!last_func->last_block || last_func->last_block->file_id != file_id)
+    {
+      codeview_line_block *b;
+
+      b = (codeview_line_block *) xmalloc (sizeof (codeview_line_block));
+
+      b->next = NULL;
+      b->file_id = file_id;
+      b->num_lines = 0;
+      b->lines = b->last_line = NULL;
+
+      if (!last_func->blocks)
+	last_func->blocks = b;
+      else
+	last_func->last_block->next = b;
+
+      last_func->last_block = b;
+    }
+
+  if (last_func->last_block->last_line
+    && last_func->last_block->last_line->line_no == line_no)
+    return;
+
+  l = (codeview_line *) xmalloc (sizeof (codeview_line));
+
+  l->next = NULL;
+  l->line_no = line_no;
+  l->label_num = label_num;
+
+  if (!last_func->last_block->lines)
+    last_func->last_block->lines = l;
+  else
+    last_func->last_block->last_line->next = l;
+
+  last_func->last_block->last_line = l;
+  last_func->last_block->num_lines++;
+}
 
 /* Adds string to the string table, returning its offset.  If already present,
    this returns the offset of the existing string.  */
@@ -290,6 +411,187 @@ write_source_files (void)
   asm_fprintf (asm_out_file, "%LLcv_filechksms_end:\n");
 }
 
+/* Write out the line number information for each function into the
+   .debug$S section.  */
+
+static void
+write_line_numbers (void)
+{
+  unsigned int func_num = 0;
+
+  while (funcs)
+    {
+      codeview_function *next = funcs->next;
+      unsigned int first_label_num;
+
+      fputs (integer_asm_op (4, false), asm_out_file);
+      fprint_whex (asm_out_file, DEBUG_S_LINES);
+      putc ('\n', asm_out_file);
+
+      fputs (integer_asm_op (4, false), asm_out_file);
+      asm_fprintf (asm_out_file, "%LLcv_lines%u_end - %LLcv_lines%u_start\n",
+		   func_num, func_num);
+
+      asm_fprintf (asm_out_file, "%LLcv_lines%u_start:\n", func_num);
+
+      /* Output the header (struct cv_lines_header in binutils or
+	 CV_DebugSLinesHeader_t in Microsoft's cvinfo.h):
+
+	struct cv_lines_header
+	{
+	  uint32_t offset;
+	  uint16_t section;
+	  uint16_t flags;
+	  uint32_t length;
+	};
+      */
+
+      asm_fprintf (asm_out_file, "\t.secrel32\t%L" LINE_LABEL "%u\n",
+		   funcs->blocks->lines->label_num);
+      asm_fprintf (asm_out_file, "\t.secidx\t%L" LINE_LABEL "%u\n",
+		   funcs->blocks->lines->label_num);
+
+      /* flags */
+      fputs (integer_asm_op (2, false), asm_out_file);
+      fprint_whex (asm_out_file, 0);
+      putc ('\n', asm_out_file);
+
+      first_label_num = funcs->blocks->lines->label_num;
+
+      /* length */
+      fputs (integer_asm_op (4, false), asm_out_file);
+      asm_fprintf (asm_out_file,
+		   "%L" END_FUNC_LABEL "%u - %L" LINE_LABEL "%u\n",
+		   funcs->end_label, first_label_num);
+
+      while (funcs->blocks)
+	{
+	  codeview_line_block *next = funcs->blocks->next;
+
+	  /* Next comes the blocks, each block being a part of a function
+	     within the same source file (struct cv_lines_block in binutils or
+	     CV_DebugSLinesFileBlockHeader_t in Microsoft's cvinfo.h):
+
+	    struct cv_lines_block
+	    {
+	      uint32_t file_id;
+	      uint32_t num_lines;
+	      uint32_t length;
+	    };
+	  */
+
+	  /* file ID */
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, funcs->blocks->file_id);
+	  putc ('\n', asm_out_file);
+
+	  /* number of lines */
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, funcs->blocks->num_lines);
+	  putc ('\n', asm_out_file);
+
+	  /* length of code block: (num_lines * sizeof (struct cv_line)) +
+	     sizeof (struct cv_lines_block) */
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, (funcs->blocks->num_lines * 0x8) + 0xc);
+	  putc ('\n', asm_out_file);
+
+	  while (funcs->blocks->lines)
+	    {
+	      codeview_line *next = funcs->blocks->lines->next;
+
+	      /* Finally comes the line number information (struct cv_line in
+		 binutils or CV_Line_t in Microsoft's cvinfo.h):
+
+		struct cv_line
+		{
+		  uint32_t offset;
+		  uint32_t line_no;
+		};
+
+		Strictly speaking line_no is a bitfield: the bottom 24 bits
+		are the line number, and the top bit means "is a statement".
+	      */
+
+	      fputs (integer_asm_op (4, false), asm_out_file);
+	      asm_fprintf (asm_out_file,
+			   "%L" LINE_LABEL "%u - %L" LINE_LABEL "%u\n",
+			   funcs->blocks->lines->label_num, first_label_num);
+
+	      fputs (integer_asm_op (4, false), asm_out_file);
+	      fprint_whex (asm_out_file,
+			   0x80000000
+			   | (funcs->blocks->lines->line_no & 0xffffff));
+	      putc ('\n', asm_out_file);
+
+	      free (funcs->blocks->lines);
+
+	      funcs->blocks->lines = next;
+	    }
+
+	  free (funcs->blocks);
+
+	  funcs->blocks = next;
+	}
+
+      free (funcs);
+
+      asm_fprintf (asm_out_file, "%LLcv_lines%u_end:\n", func_num);
+      func_num++;
+
+      funcs = next;
+    }
+}
+
+/* Treat cold sections as separate functions, for the purposes of line
+   numbers.  */
+
+void
+codeview_switch_text_section (void)
+{
+  codeview_function *f;
+
+  if (last_func && last_func->end_label == 0)
+    {
+      unsigned int label_num = ++func_label_num;
+
+      targetm.asm_out.internal_label (asm_out_file, END_FUNC_LABEL,
+				      label_num);
+
+      last_func->end_label = label_num;
+    }
+
+  f = (codeview_function *) xmalloc (sizeof (codeview_function));
+
+  f->next = NULL;
+  f->func = cfun;
+  f->end_label = 0;
+  f->blocks = f->last_block = NULL;
+
+  if (!funcs)
+    funcs = f;
+  else
+    last_func->next = f;
+
+  last_func = f;
+}
+
+/* Mark the end of the current function.  */
+
+void
+codeview_end_epilogue (void)
+{
+  if (last_func && last_func->end_label == 0)
+    {
+      unsigned int label_num = ++func_label_num;
+
+      targetm.asm_out.internal_label (asm_out_file, END_FUNC_LABEL,
+				      label_num);
+
+      last_func->end_label = label_num;
+    }
+}
+
 /* Finish CodeView debug info emission.  */
 
 void
@@ -303,6 +605,7 @@ codeview_debug_finish (void)
 
   write_strings_table ();
   write_source_files ();
+  write_line_numbers ();
 }
 
 #endif

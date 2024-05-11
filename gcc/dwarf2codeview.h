@@ -26,6 +26,9 @@ along with GCC; see the file COPYING3.  If not see
 /* Debug Format Interface.  Used in dwarf2out.cc.  */
 
 extern void codeview_debug_finish (void);
+extern void codeview_source_line (unsigned int, const char *);
 extern void codeview_start_source_file (const char *);
+extern void codeview_switch_text_section ();
+extern void codeview_end_epilogue (void);
 
 #endif /* GCC_DWARF2CODEVIEW_H */

@@ -1399,7 +1399,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
     opts->x_debug_nonbind_markers_p
       = (opts->x_optimize
 	 && opts->x_debug_info_level >= DINFO_LEVEL_NORMAL
-	 && dwarf_debuginfo_p (opts)
+	 && (dwarf_debuginfo_p (opts) || codeview_debuginfo_p ())
 	 && !(opts->x_flag_selective_scheduling
 	      || opts->x_flag_selective_scheduling2));
 
