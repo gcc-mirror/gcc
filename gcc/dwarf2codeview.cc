@@ -39,14 +39,25 @@ along with GCC; see the file COPYING3.  If not see
 
 #define CV_SIGNATURE_C13	4
 
+#define DEBUG_S_SYMBOLS		0xf1
 #define DEBUG_S_LINES		0xf2
 #define DEBUG_S_STRINGTABLE     0xf3
 #define DEBUG_S_FILECHKSMS      0xf4
 
 #define CHKSUM_TYPE_MD5		1
 
+#define S_COMPILE3		0x113c
+
+#define CV_CFL_80386		0x03
+#define CV_CFL_X64		0xD0
+
+#define CV_CFL_C		0x00
+#define CV_CFL_CXX		0x01
+
 #define LINE_LABEL	"Lcvline"
 #define END_FUNC_LABEL	"Lcvendfunc"
+#define SYMBOL_START_LABEL	"Lcvsymstart"
+#define SYMBOL_END_LABEL	"Lcvsymend"
 
 #define HASH_SIZE 16
 
@@ -120,6 +131,7 @@ struct codeview_function
 
 static unsigned int line_label_num;
 static unsigned int func_label_num;
+static unsigned int sym_label_num;
 static codeview_source_file *files, *last_file;
 static unsigned int num_files;
 static uint32_t string_offset = 1;
@@ -592,6 +604,119 @@ codeview_end_epilogue (void)
     }
 }
 
+/* Return the CodeView constant for the selected architecture.  */
+
+static uint16_t
+target_processor (void)
+{
+  if (TARGET_64BIT)
+    return CV_CFL_X64;
+  else
+    return CV_CFL_80386;
+}
+
+/* Return the CodeView constant for the language being used.  */
+
+static uint32_t
+language_constant (void)
+{
+  const char *language_string = lang_hooks.name;
+
+  if (startswith (language_string, "GNU C++"))
+    return CV_CFL_CXX;
+  else if (startswith (language_string, "GNU C"))
+    return CV_CFL_C;
+
+  return 0;
+}
+
+/* Write a S_COMPILE3 symbol, which records the details of the compiler
+   being used.  */
+
+static void
+write_compile3_symbol (void)
+{
+  unsigned int label_num = ++sym_label_num;
+
+  static const char compiler_name[] = "GCC ";
+
+  /* This is struct COMPILESYM3 in binutils and Microsoft's cvinfo.h:
+
+     struct COMPILESYM3
+     {
+       uint16_t length;
+       uint16_t type;
+       uint32_t flags;
+       uint16_t machine;
+       uint16_t frontend_major;
+       uint16_t frontend_minor;
+       uint16_t frontend_build;
+       uint16_t frontend_qfe;
+       uint16_t backend_major;
+       uint16_t backend_minor;
+       uint16_t backend_build;
+       uint16_t backend_qfe;
+     } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_COMPILE3);
+  putc ('\n', asm_out_file);
+
+  /* Microsoft has the flags as a bitfield, with the bottom 8 bits being the
+     language constant, and the reset being MSVC-specific stuff.  */
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, language_constant ());
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, target_processor ());
+  putc ('\n', asm_out_file);
+
+  /* Write 8 uint16_ts for the frontend and backend versions.  As with GAS, we
+     zero these, as it's easier to record the version in the compiler
+     string.  */
+  for (unsigned int i = 0; i < 8; i++)
+    {
+      fputs (integer_asm_op (2, false), asm_out_file);
+      fprint_whex (asm_out_file, 0);
+      putc ('\n', asm_out_file);
+    }
+
+  ASM_OUTPUT_ASCII (asm_out_file, compiler_name, sizeof (compiler_name) - 1);
+  ASM_OUTPUT_ASCII (asm_out_file, version_string, strlen (version_string) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+}
+
+/* Write the CodeView symbols into the .debug$S section.  */
+
+static void
+write_codeview_symbols (void)
+{
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, DEBUG_S_SYMBOLS);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_syms_end - %LLcv_syms_start\n");
+
+  asm_fprintf (asm_out_file, "%LLcv_syms_start:\n");
+
+  write_compile3_symbol ();
+
+  asm_fprintf (asm_out_file, "%LLcv_syms_end:\n");
+}
+
 /* Finish CodeView debug info emission.  */
 
 void
@@ -606,6 +731,7 @@ codeview_debug_finish (void)
   write_strings_table ();
   write_source_files ();
   write_line_numbers ();
+  write_codeview_symbols ();
 }
 
 #endif
