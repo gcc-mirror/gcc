@@ -21,6 +21,11 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBGCCJIT_H
 
 #include <stdio.h>
+#ifdef __has_include
+#if __has_include (<sys/types.h>)
+#include <sys/types.h>
+#endif
+#endif
 
 #ifdef __cplusplus
 extern "C" {
