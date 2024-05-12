@@ -5456,6 +5456,8 @@ process_partial_specialization (tree decl)
   gcc_checking_assert (!TI_PARTIAL_INFO (tinfo));
   TI_PARTIAL_INFO (tinfo) = build_template_info (tmpl, NULL_TREE);
 
+  set_defining_module_for_partial_spec (decl);
+
   for (inst = DECL_TEMPLATE_INSTANTIATIONS (maintmpl); inst;
        inst = TREE_CHAIN (inst))
     {
