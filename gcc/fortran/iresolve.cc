@@ -3017,6 +3017,10 @@ gfc_resolve_transfer (gfc_expr *f, gfc_expr *source ATTRIBUTE_UNUSED,
 	}
     }
 
+  if (UNLIMITED_POLY (mold))
+    gfc_error ("TODO: unlimited polymorphic MOLD in TRANSFER intrinsic at %L",
+	       &mold->where);
+
   f->ts = mold->ts;
 
   if (size == NULL && mold->rank == 0)
