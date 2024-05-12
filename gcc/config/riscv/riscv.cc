@@ -921,12 +921,12 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 
       /* First handle any bits set by LUI.  Be careful of the
 	 SImode sign bit!.  */
-      if (value & 0x7ffff800)
+      if (value & 0x7ffff000)
 	{
 	  alt_codes[i].code = (i == 0 ? UNKNOWN : IOR);
-	  alt_codes[i].value = value & 0x7ffff800;
+	  alt_codes[i].value = value & 0x7ffff000;
 	  alt_codes[i].use_uw = false;
-	  value &= ~0x7ffff800;
+	  value &= ~0x7ffff000;
 	   i++;
 	}
 
