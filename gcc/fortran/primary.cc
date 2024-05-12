@@ -2250,7 +2250,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	 can be found.  If this was an inquiry reference with the same name
 	 as a derived component and the associate-name type is not derived
 	 or class, this is fixed up in 'gfc_fixup_inferred_type_refs'.  */
-      if (mm == MATCH_YES && is_inquiry_ref (name, &tmp)
+      if (mm == MATCH_YES && is_inquiry_ref (name, NULL)
 	  && !(sym->ts.type == BT_UNKNOWN
 		&& gfc_find_derived_types (sym, gfc_current_ns, name)))
 	inquiry = true;
