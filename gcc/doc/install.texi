@@ -4316,12 +4316,6 @@ Building GCC on this target requires the GNU Assembler.  The bundled HP
 assembler will not work.  To prevent GCC from using the wrong assembler,
 the option @option{--with-gnu-as} may be necessary.
 
-The GCC libunwind library has not been ported to HPUX@.  This means that for
-GCC versions 3.2.3 and earlier, @option{--enable-libunwind-exceptions}
-is required to build GCC@.  For GCC 3.3 and later, this is the default.
-For gcc 3.4.3 and later, @option{--enable-libunwind-exceptions} is
-removed and the system libunwind library will always be used.
-
 @html
 <hr />
 <!-- rs6000-ibm-aix*, powerpc-ibm-aix* -->
