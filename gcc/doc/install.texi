@@ -4092,16 +4092,11 @@ This configuration is intended for embedded systems.
 We support FreeBSD using the ELF file format with DWARF 2 debugging
 for all CPU architectures.  There are
 no known issues with mixing object files and libraries with different
-debugging formats.  Otherwise, this release of GCC should now match
-more of the configuration used in the stock FreeBSD configuration of
-GCC@.  In particular, @option{--enable-threads} is now configured by
-default.  However, as a general user, do not attempt to replace the
-system compiler with this release.
+debugging formats.
 
-The version of binutils installed in @file{/usr/bin} probably works
-with this release of GCC@.  Bootstrapping against the latest GNU
-binutils and/or the version found in @file{/usr/ports/devel/binutils} has
-been known to enable additional features and improve overall testsuite
+We recommend bootstrapping against the latest GNU binutils or the
+version found in the @file{devel/binutils} port. This also has been
+known to enable additional features and improve overall testsuite
 results.
 
 @html
