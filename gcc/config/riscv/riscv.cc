@@ -819,13 +819,14 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 				  & ~HOST_WIDE_INT_C (0x80000000)))))
 	shift -= IMM_BITS, x <<= IMM_BITS;
 
-      /* Adjust X if it isn't a LUI operand in isolation, but we can use
-	 a subsequent "uw" instruction form to mask off the undesirable
-	 bits.  */
+      /* If X has bits 32..63 clear and bit 31 set, then go ahead and mark
+	 it as desiring a "uw" operation for the shift.  That way we can have
+	 LUI+ADDI to generate the constant, then shift it into position
+	 clearing out the undesirable bits.  */
       if (!LUI_OPERAND (x)
 	  && TARGET_64BIT
 	  && TARGET_ZBA
-	  && LUI_OPERAND (x & ~HOST_WIDE_INT_C (0x80000000UL)))
+	  && clz_hwi (x) == 32)
 	{
 	  x = sext_hwi (x, 32);
 	  use_uw = true;
