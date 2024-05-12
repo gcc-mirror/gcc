@@ -8252,7 +8252,9 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
 {
   gfc_expr *arg;
   gfc_se argse;
-  tree type, result_type, tmp;
+  tree type, result_type, tmp, class_decl = NULL;
+  gfc_symbol *sym;
+  bool unlimited = false;
 
   arg = expr->value.function.actual->expr;
 
@@ -8263,10 +8265,12 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
     {
       if (arg->ts.type == BT_CLASS)
 	{
+	  unlimited = UNLIMITED_POLY (arg);
 	  gfc_add_vptr_component (arg);
 	  gfc_add_size_component (arg);
 	  gfc_conv_expr (&argse, arg);
 	  tmp = fold_convert (result_type, argse.expr);
+	  class_decl = gfc_get_class_from_expr (argse.expr);
 	  goto done;
 	}
 
@@ -8278,14 +8282,20 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
     {
       argse.want_pointer = 0;
       gfc_conv_expr_descriptor (&argse, arg);
+      sym = arg->expr_type == EXPR_VARIABLE ? arg->symtree->n.sym : NULL;
       if (arg->ts.type == BT_CLASS)
 	{
-	  if (arg->rank > 0)
-	    tmp = gfc_class_vtab_size_get (
-		 GFC_DECL_SAVED_DESCRIPTOR (arg->symtree->n.sym->backend_decl));
-	  else
+	  unlimited = UNLIMITED_POLY (arg);
+	  if (TREE_CODE (argse.expr) == COMPONENT_REF)
 	    tmp = gfc_class_vtab_size_get (TREE_OPERAND (argse.expr, 0));
+	  else if (arg->rank > 0 && sym
+		   && DECL_LANG_SPECIFIC (sym->backend_decl))
+	    tmp = gfc_class_vtab_size_get (
+		 GFC_DECL_SAVED_DESCRIPTOR (sym->backend_decl));
+	  else
+	    gcc_unreachable ();
 	  tmp = fold_convert (result_type, tmp);
+	  class_decl = gfc_get_class_from_expr (argse.expr);
 	  goto done;
 	}
       type = gfc_get_element_type (TREE_TYPE (argse.expr));
@@ -8299,6 +8309,9 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
   tmp = fold_convert (result_type, tmp);
 
 done:
+  if (unlimited && class_decl)
+    tmp = gfc_resize_class_size_with_len (NULL, class_decl, tmp);
+
   se->expr = fold_build2_loc (input_location, MULT_EXPR, result_type, tmp,
 			      build_int_cst (result_type, BITS_PER_UNIT));
   gfc_add_block_to_block (&se->pre, &argse.pre);
@@ -8421,7 +8434,10 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 	{
 	  tmp = build_fold_indirect_ref_loc (input_location, argse.expr);
 	  if (GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
-	    source = gfc_class_data_get (tmp);
+	    {
+	      source = gfc_class_data_get (tmp);
+	      class_ref = tmp;
+	    }
 	  else
 	    {
 	      /* Array elements are evaluated as a reference to the data.
@@ -8448,9 +8464,17 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 	  break;
 	case BT_CLASS:
 	  if (class_ref != NULL_TREE)
-	    tmp = gfc_class_vtab_size_get (class_ref);
+	    {
+	      tmp = gfc_class_vtab_size_get (class_ref);
+	      if (UNLIMITED_POLY (source_expr))
+		tmp = gfc_resize_class_size_with_len (NULL, class_ref, tmp);
+	    }
 	  else
-	    tmp = gfc_class_vtab_size_get (argse.expr);
+	    {
+	      tmp = gfc_class_vtab_size_get (argse.expr);
+	      if (UNLIMITED_POLY (source_expr))
+		tmp = gfc_resize_class_size_with_len (NULL, argse.expr, tmp);
+	    }
 	  break;
 	default:
 	  source_type = TREE_TYPE (build_fold_indirect_ref_loc (input_location,
@@ -8503,6 +8527,13 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
       if (arg->expr->ts.type == BT_CHARACTER)
 	tmp = size_of_string_in_bytes (arg->expr->ts.kind,
 				       argse.string_length);
+      else if (arg->expr->ts.type == BT_CLASS)
+	{
+	  class_ref = TREE_OPERAND (argse.expr, 0);
+	  tmp = gfc_class_vtab_size_get (class_ref);
+	  if (UNLIMITED_POLY (arg->expr))
+	    tmp = gfc_resize_class_size_with_len (&argse.pre, class_ref, tmp);
+	}
       else
 	tmp = fold_convert (gfc_array_index_type,
 			    size_in_bytes (source_type));
@@ -8543,15 +8574,14 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 
   if (arg->expr->rank == 0)
     {
-      gfc_conv_expr_reference (&argse, arg->expr);
+      gfc_conv_expr_reference (&argse, mold_expr);
       mold_type = TREE_TYPE (build_fold_indirect_ref_loc (input_location,
 							  argse.expr));
     }
   else
     {
-      gfc_init_se (&argse, NULL);
       argse.want_pointer = 0;
-      gfc_conv_expr_descriptor (&argse, arg->expr);
+      gfc_conv_expr_descriptor (&argse, mold_expr);
       mold_type = gfc_get_element_type (TREE_TYPE (argse.expr));
     }
 
@@ -8562,27 +8592,41 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
     {
       /* If this TRANSFER is nested in another TRANSFER, use a type
 	 that preserves all bits.  */
-      if (arg->expr->ts.type == BT_LOGICAL)
-	mold_type = gfc_get_int_type (arg->expr->ts.kind);
+      if (mold_expr->ts.type == BT_LOGICAL)
+	mold_type = gfc_get_int_type (mold_expr->ts.kind);
     }
 
   /* Obtain the destination word length.  */
-  switch (arg->expr->ts.type)
+  switch (mold_expr->ts.type)
     {
     case BT_CHARACTER:
-      tmp = size_of_string_in_bytes (arg->expr->ts.kind, argse.string_length);
-      mold_type = gfc_get_character_type_len (arg->expr->ts.kind,
+      tmp = size_of_string_in_bytes (mold_expr->ts.kind, argse.string_length);
+      mold_type = gfc_get_character_type_len (mold_expr->ts.kind,
 					      argse.string_length);
       break;
     case BT_CLASS:
-      tmp = gfc_class_vtab_size_get (argse.expr);
+      if (scalar_mold)
+	class_ref = argse.expr;
+      else
+	class_ref = TREE_OPERAND (argse.expr, 0);
+      tmp = gfc_class_vtab_size_get (class_ref);
+      if (UNLIMITED_POLY (arg->expr))
+	tmp = gfc_resize_class_size_with_len (&argse.pre, class_ref, tmp);
       break;
     default:
       tmp = fold_convert (gfc_array_index_type, size_in_bytes (mold_type));
       break;
     }
-  dest_word_len = gfc_create_var (gfc_array_index_type, NULL);
-  gfc_add_modify (&se->pre, dest_word_len, tmp);
+
+  /* Do not fix dest_word_len if it is a variable, since the temporary can wind
+     up being used before the assignment.  */
+  if (mold_expr->ts.type == BT_CHARACTER && mold_expr->ts.deferred)
+    dest_word_len = tmp;
+  else
+    {
+      dest_word_len = gfc_create_var (gfc_array_index_type, NULL);
+      gfc_add_modify (&se->pre, dest_word_len, tmp);
+    }
 
   /* Finally convert SIZE, if it is present.  */
   arg = arg->next;

@@ -317,6 +317,8 @@ gfc_resize_class_size_with_len (stmtblock_t * block, tree class_expr, tree size)
 	  size = gfc_evaluate_now (size, block);
 	  tmp = gfc_evaluate_now (fold_convert (type , tmp), block);
 	}
+      else
+	tmp = fold_convert (type , tmp);
       tmp2 = fold_build2_loc (input_location, MULT_EXPR,
 			      type, size, tmp);
       tmp = fold_build2_loc (input_location, GT_EXPR,
@@ -11998,15 +12000,24 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
 
       /* Take into account _len of unlimited polymorphic entities.
 	 TODO: handle class(*) allocatable function results on rhs.  */
-      if (UNLIMITED_POLY (rhs) && rhs->expr_type == EXPR_VARIABLE)
+      if (UNLIMITED_POLY (rhs))
 	{
-	  tree len = trans_get_upoly_len (block, rhs);
+	  tree len;
+	  if (rhs->expr_type == EXPR_VARIABLE)
+	    len = trans_get_upoly_len (block, rhs);
+	  else
+	    len = gfc_class_len_get (tmp);
 	  len = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
 				 fold_convert (size_type_node, len),
 				 size_one_node);
 	  size = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (size),
 				  size, fold_convert (TREE_TYPE (size), len));
 	}
+      else if (rhs->ts.type == BT_CHARACTER && rse->string_length)
+	size = fold_build2_loc (input_location, MULT_EXPR,
+				gfc_charlen_type_node, size,
+				rse->string_length);
+
 
       tmp = lse->expr;
       class_han = GFC_CLASS_TYPE_P (TREE_TYPE (tmp))
