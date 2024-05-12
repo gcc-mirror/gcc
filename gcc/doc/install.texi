@@ -4099,6 +4099,14 @@ version found in the @file{devel/binutils} port. This also has been
 known to enable additional features and improve overall testsuite
 results.
 
+@c Bugs 112958 and 112957
+Ada and D (or rather their respective libraries) are broken on
+FreeBSD/i386. This also affects building 32-bit libraries on
+FreeBSD/amd64, so configure with @option{--disable-multilib}
+there in case you are building one of these front ends.
+
+Go (or rather libgo) is generally broken on FreeBSD.
+
 @html
 <hr />
 @end html
