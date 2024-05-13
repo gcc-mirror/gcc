@@ -1869,6 +1869,8 @@ package body Sem_Ch13 is
 
             procedure Analyze_Aspect_Disable_Controlled is
             begin
+               Error_Msg_Name_1 := Nam;
+
                --  The aspect applies only to controlled records
 
                if not (Ekind (E) = E_Record_Type
@@ -3796,32 +3798,6 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
-               --  No_Controlled_Parts, No_Task_Parts
-
-               when Aspect_No_Controlled_Parts | Aspect_No_Task_Parts =>
-
-                  --  Check appropriate type argument
-
-                  if not Is_Type (E) then
-                     Error_Msg_N
-                       ("aspect % can only be applied to types", E);
-                  end if;
-
-                  --  Disallow subtypes
-
-                  if Nkind (Declaration_Node (E)) = N_Subtype_Declaration then
-                     Error_Msg_N
-                       ("aspect % cannot be applied to subtypes", E);
-                  end if;
-
-                  --  Resolve the expression to a boolean
-
-                  if Present (Expr) then
-                     Check_Expr_Is_OK_Static_Expression (Expr, Any_Boolean);
-                  end if;
-
-                  goto Continue;
-
                --  Obsolescent
 
                when Aspect_Obsolescent => declare
@@ -4502,6 +4478,45 @@ package body Sem_Ch13 is
 
                   elsif A_Id = Aspect_Full_Access_Only then
                      Error_Msg_Ada_2022_Feature ("aspect %", Loc);
+
+                  --  No_Controlled_Parts, No_Task_Parts
+
+                  elsif A_Id in Aspect_No_Controlled_Parts
+                              | Aspect_No_Task_Parts
+                  then
+                     Error_Msg_Name_1 := Nam;
+
+                     --  Disallow formal types
+
+                     if Nkind (Original_Node (N)) = N_Formal_Type_Declaration
+                     then
+                        Error_Msg_N
+                          ("aspect % not allowed for formal type declaration",
+                           Aspect);
+
+                     --  Disallow subtypes
+
+                     elsif Nkind (Original_Node (N)) = N_Subtype_Declaration
+                     then
+                        Error_Msg_N
+                          ("aspect % not allowed for subtype declaration",
+                           Aspect);
+
+                     --  Accept all other types
+
+                     elsif not Is_Type (E) then
+                        Error_Msg_N
+                          ("aspect % can only be specified for a type",
+                           Aspect);
+                     end if;
+
+                     --  Resolve the expression to a boolean
+
+                     if Present (Expr) then
+                        Check_Expr_Is_OK_Static_Expression (Expr, Any_Boolean);
+                     end if;
+
+                     goto Continue;
 
                   --  Ada 2022 (AI12-0075): static expression functions
 
@@ -11539,8 +11554,6 @@ package body Sem_Ch13 is
             | Aspect_Max_Entry_Queue_Depth
             | Aspect_Max_Entry_Queue_Length
             | Aspect_Max_Queue_Length
-            | Aspect_No_Controlled_Parts
-            | Aspect_No_Task_Parts
             | Aspect_Obsolescent
             | Aspect_Part_Of
             | Aspect_Post
