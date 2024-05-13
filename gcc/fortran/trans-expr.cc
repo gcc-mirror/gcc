@@ -1518,7 +1518,6 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
       stmtblock_t body;
       stmtblock_t ifbody;
       gfc_loopinfo loop;
-      tree orig_nelems = nelems; /* Needed for bounds check.  */
 
       gfc_init_block (&body);
       tmp = fold_build2_loc (input_location, MINUS_EXPR,
@@ -1550,27 +1549,32 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
       /* Add bounds check.  */
       if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS) > 0 && is_from_desc)
 	{
-	  char *msg;
 	  const char *name = "<<unknown>>";
-	  tree from_len;
+	  int dim, rank;
 
 	  if (DECL_P (to))
-	    name = (const char *)(DECL_NAME (to)->identifier.id.str);
+	    name = IDENTIFIER_POINTER (DECL_NAME (to));
 
-	  from_len = gfc_conv_descriptor_size (from_data, 1);
-	  from_len = fold_convert (TREE_TYPE (orig_nelems), from_len);
-	  tmp = fold_build2_loc (input_location, NE_EXPR,
-				  logical_type_node, from_len, orig_nelems);
-	  msg = xasprintf ("Array bound mismatch for dimension %d "
-			   "of array '%s' (%%ld/%%ld)",
-			   1, name);
+	  rank = GFC_TYPE_ARRAY_RANK (TREE_TYPE (from_data));
+	  for (dim = 1; dim <= rank; dim++)
+	    {
+	      tree from_len, to_len, cond;
+	      char *msg;
 
-	  gfc_trans_runtime_check (true, false, tmp, &body,
-				   &gfc_current_locus, msg,
-			     fold_convert (long_integer_type_node, orig_nelems),
-			       fold_convert (long_integer_type_node, from_len));
-
-	  free (msg);
+	      from_len = gfc_conv_descriptor_size (from_data, dim);
+	      from_len = fold_convert (long_integer_type_node, from_len);
+	      to_len = gfc_conv_descriptor_size (to_data, dim);
+	      to_len = fold_convert (long_integer_type_node, to_len);
+	      msg = xasprintf ("Array bound mismatch for dimension %d "
+			       "of array '%s' (%%ld/%%ld)",
+			       dim, name);
+	      cond = fold_build2_loc (input_location, NE_EXPR,
+				      logical_type_node, from_len, to_len);
+	      gfc_trans_runtime_check (true, false, cond, &body,
+				       &gfc_current_locus, msg,
+				       to_len, from_len);
+	      free (msg);
+	    }
 	}
 
       tmp = build_call_vec (fcn_type, fcn, args);
