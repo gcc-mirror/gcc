@@ -8249,8 +8249,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	 call the finalization function of the temporary. Note that the
 	 nullification of allocatable components needed by the result
 	 is done in gfc_trans_assignment_1.  */
-      if (expr && ((gfc_is_class_array_function (expr)
-		    && se->ss && se->ss->loop)
+      if (expr && (gfc_is_class_array_function (expr)
 		   || gfc_is_alloc_class_scalar_function (expr))
 	  && se->expr && GFC_CLASS_TYPE_P (TREE_TYPE (se->expr))
 	  && expr->must_finalize)
@@ -12032,18 +12031,25 @@ trans_class_assignment (stmtblock_t *block, gfc_expr *lhs, gfc_expr *rhs,
 
       /* Reallocate if dynamic types are different. */
       gfc_init_block (&re_alloc);
-      tmp = fold_convert (pvoid_type_node, class_han);
-      re = build_call_expr_loc (input_location,
-				builtin_decl_explicit (BUILT_IN_REALLOC), 2,
-				tmp, size);
-      re = fold_build2_loc (input_location, MODIFY_EXPR, TREE_TYPE (tmp), tmp,
-			    re);
-      tmp = fold_build2_loc (input_location, NE_EXPR,
-			     logical_type_node, rhs_vptr, old_vptr);
-      re = fold_build3_loc (input_location, COND_EXPR, void_type_node,
-			    tmp, re, build_empty_stmt (input_location));
-      gfc_add_expr_to_block (&re_alloc, re);
-
+      if (UNLIMITED_POLY (lhs) && rhs->ts.type == BT_CHARACTER)
+	{
+	  gfc_add_expr_to_block (&re_alloc, gfc_call_free (class_han));
+	  gfc_allocate_using_malloc (&re_alloc, class_han, size, NULL_TREE);
+	}
+      else
+	{
+	  tmp = fold_convert (pvoid_type_node, class_han);
+	  re = build_call_expr_loc (input_location,
+				    builtin_decl_explicit (BUILT_IN_REALLOC),
+				    2, tmp, size);
+	  re = fold_build2_loc (input_location, MODIFY_EXPR, TREE_TYPE (tmp),
+				tmp, re);
+	  tmp = fold_build2_loc (input_location, NE_EXPR,
+				 logical_type_node, rhs_vptr, old_vptr);
+	  re = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				tmp, re, build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&re_alloc, re);
+	}
       tree realloc_expr = lhs->ts.type == BT_CLASS ?
 					  gfc_finish_block (&re_alloc) :
 					  build_empty_stmt (input_location);

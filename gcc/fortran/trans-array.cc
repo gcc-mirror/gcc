@@ -5964,6 +5964,11 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
       tmp = gfc_conv_descriptor_dtype (descriptor);
       gfc_add_modify (pblock, tmp, gfc_get_dtype_rank_type (rank, type));
     }
+  else if (expr3_desc && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (expr3_desc)))
+    {
+      tmp = gfc_conv_descriptor_dtype (descriptor);
+      gfc_add_modify (pblock, tmp, gfc_conv_descriptor_dtype (expr3_desc));
+    }
   else
     {
       tmp = gfc_conv_descriptor_dtype (descriptor);
