@@ -7,6 +7,19 @@
 	(register_sanitizer_builtins): New.
 	(register_known_functions): Call register_sanitizer_builtins.
 
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114473
+	* call-summary.cc
+	(call_summary_replay::convert_svalue_from_summary): Assert that
+	the types match.
+	(call_summary_replay::convert_region_from_summary): Likewise.
+	(call_summary_replay::convert_region_from_summary_1): Add missing
+	cast for the deref of RK_SYMBOLIC case.
+
 2024-05-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109251
@@ -22,6 +35,19 @@
 	types.
 	(kf_va_arg::impl_call_pre): Pass arg_sval to
 	va_arg_compatible_types_p.
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-01-31  David Malcolm  <dmalcolm@redhat.com>
+	PR analyzer/113253
+	* region-model.cc (region_model::on_stmt_pre): Add gcc_unreachable
+	for debug statements.
+	* state-purge.cc
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Skip any
+	debug stmts in the FOR_EACH_IMM_USE_FAST list.
+	* supergraph.cc (supergraph::supergraph): Don't add debug stmts
+	to the supernodes.
 
 2024-05-09  David Malcolm  <dmalcolm@redhat.com>
 
@@ -57,6 +83,64 @@
 	(concrete_binding::mark_empty): Likewise.
 	(concrete_binding::is_deleted): Likewise.
 	(concrete_binding::is_empty): Likewise.
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2023-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110882
+	* region.cc (int_size_in_bits): Fail on zero-sized types.
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2023-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110700
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_int_cst): Assert that we have
+	an integral or pointer type.
+	* sm-taint.cc (taint_state_machine::check_for_tainted_divisor):
+	Don't check non-integral types.
+
+2024-05-09  Tim Lange  <mail@tim-lange.me>
+
+	Backported from master:
+	2023-06-09  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/109577
+	* constraint-manager.cc (class sval_finder): Visitor to find
+	childs in svalue trees.
+	(constraint_manager::sval_constrained_p): Add new function to
+	check whether a sval might be part of an constraint.
+	* constraint-manager.h: Add sval_constrained_p function.
+	* region-model.cc (class size_visitor): Reverse behavior to not
+	emit a warning on not explicitly considered cases.
+	(region_model::check_region_size):
+	Adapt to size_visitor changes.
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2023-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110112
+	* region-model.cc (region_model::get_initial_value_for_global):
+	Move code to region::calc_initial_value_at_main.
+	* region.cc (region::get_initial_value_at_main): New function.
+	(region::calc_initial_value_at_main): New function, based on code
+	in region_model::get_initial_value_for_global.
+	(region::region): Initialize m_cached_init_sval_at_main.
+	(decl_region::get_svalue_for_constructor): Add a cache, splitting
+	out body to...
+	(decl_region::calc_svalue_for_constructor): ...this new function.
+	* region.h (region::get_initial_value_at_main): New decl.
+	(region::calc_initial_value_at_main): New decl.
+	(region::m_cached_init_sval_at_main): New field.
+	(decl_region::decl_region): Initialize m_ctor_svalue.
+	(decl_region::calc_svalue_for_constructor): New decl.
+	(decl_region::m_ctor_svalue): New field.
 
 2023-07-27  Release Manager
 

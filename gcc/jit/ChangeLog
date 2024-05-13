@@ -1,3 +1,11 @@
+2024-05-09  Vibhav Pant  <vibhavp@gmail.com>
+
+	Backported from master:
+	2023-10-25  Vibhav Pant  <vibhavp@gmail.com>
+
+	* jit-recording.cc (recording::global::write_to_dump): Fix
+	dump of string literal initializers.
+
 2024-04-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

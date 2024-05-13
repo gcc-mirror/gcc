@@ -9,6 +9,14 @@
 	* gcc.dg/analyzer/deref-before-check-pr114408.c: New test.
 	* c-c++-common/ubsan/analyzer-ice-pr114408.c: New test.
 
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-03-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114473
+	* gcc.dg/analyzer/call-summaries-pr114473.c: New test.
+
 2024-05-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109251
@@ -20,6 +28,14 @@
 	PR analyzer/111289
 	* gcc.dg/analyzer/stdarg-pr111289-int.c: New test.
 	* gcc.dg/analyzer/stdarg-pr111289-ptr.c: New test.
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2024-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113253
+	* gcc.dg/analyzer/deref-before-check-pr113253.c: New test.
 
 2024-05-09  David Malcolm  <dmalcolm@redhat.com>
 
@@ -47,6 +63,69 @@
 
 	PR analyzer/112889
 	* gcc.dg/analyzer/ice-pr112889.c: New test.
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2023-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108171
+	* gcc.dg/analyzer/pr108171.c: New test.
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2023-08-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110882
+	* gcc.dg/analyzer/pr110882.c: New test.
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2023-07-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/110700
+	* gcc.dg/analyzer/taint-divisor-2.c: New test.
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2023-06-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/110466
+	* jit.dg/jit.exp (jit-check-debug-info): Gracefully handle too
+	early versions of gdb that don't support our dwarf version, via
+	"unsupported".
+
+2024-05-09  David Malcolm <dmalcolm@redhat.com>
+
+	Backported from master:
+	2023-06-30  David Malcolm  <dmalcolm@redhat.com>
+		    Marek Polacek  <polacek@redhat.com>
+
+	PR jit/110466
+	* jit.dg/test-expressions.c (run_test_of_comparison): Fix size
+	param to gcc_jit_type_get_vector.
+	(verify_comparisons): Use a typedef rather than __vector.
+
+2024-05-09  Tim Lange  <mail@tim-lange.me>
+
+	Backported from master:
+	2023-06-09  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/110014
+	* gcc.dg/analyzer/realloc-pr110014.c: New tests.
+
+2024-05-09  Tim Lange  <mail@tim-lange.me>
+
+	Backported from master:
+	2023-06-09  Tim Lange  <mail@tim-lange.me>
+
+	PR analyzer/109577
+	* gcc.dg/analyzer/allocation-size-2.c: Change expected output
+	and add new test case.
+	* gcc.dg/analyzer/pr109577.c: New test.
 
 2024-05-09  Vladimir N. Makarov  <vmakarov@redhat.com>
 
