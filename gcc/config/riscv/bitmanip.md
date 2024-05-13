@@ -843,6 +843,40 @@
 }
 [(set_attr "type" "bitmanip")])
 
+;; If we have the ZBA extension, then we can clear the upper half of a 64
+;; bit object with a zext.w.  So if we have AND where the constant would
+;; require synthesis of two or more instructions, but 32->64 sign extension
+;; of the constant is a simm12, then we can use zext.w+andi.  If the adjusted
+;; constant is a single bit constant, then we can use zext.w+bclri
+;;
+;; With the mvconst_internal pattern claiming a single insn to synthesize
+;; constants, this must be a define_insn_and_split.
+(define_insn_and_split ""
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (match_operand:DI 1 "register_operand" "r")
+		(match_operand 2 "const_int_operand" "n")))]
+  "TARGET_64BIT
+   && TARGET_ZBA
+   && !paradoxical_subreg_p (operands[1])
+   /* Only profitable if synthesis takes more than one insn.  */
+   && riscv_const_insns (operands[2]) != 1
+   /* We need the upper half to be zero.  */
+   && (INTVAL (operands[2]) & HOST_WIDE_INT_C (0xffffffff00000000)) == 0
+   /* And the the adjusted constant must either be something we can
+      implement with andi or bclri.  */
+   && ((SMALL_OPERAND (sext_hwi (INTVAL (operands[2]), 32))
+        || (TARGET_ZBS && popcount_hwi (INTVAL (operands[2])) == 31))
+       && INTVAL (operands[2]) != 0x7fffffff)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (zero_extend:DI (match_dup 3)))
+   (set (match_dup 0) (and:DI (match_dup 0) (match_dup 2)))]
+  "{
+     operands[3] = gen_lowpart (SImode, operands[1]);
+     operands[2] = GEN_INT (sext_hwi (INTVAL (operands[2]), 32));
+   }"
+  [(set_attr "type" "bitmanip")])
+
 ;; IF_THEN_ELSE: test for 2 bits of opposite polarity
 (define_insn_and_split "*branch<X:mode>_mask_twobits_equals_singlebit"
   [(set (pc)
