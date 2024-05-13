@@ -247,6 +247,32 @@
 	* config/riscv/bitmanip.md: Add splitter for shadd feeding another
 	add instruction.
 
+2024-05-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	Revert:
+	2024-05-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (sbr_sparse_bitmap::sbr_sparse_bitmap):
+	Change irange to prange.
+	* gimple-range-fold.cc (fold_using_range::fold_stmt): Same.
+	(fold_using_range::range_of_address): Same.
+	* gimple-range-fold.h (range_of_address): Same.
+	* gimple-range-infer.cc (gimple_infer_range::add_nonzero): Same.
+	* gimple-range-op.cc (class cfn_strlen): Same.
+	* gimple-range-path.cc
+	(path_range_query::adjust_for_non_null_uses): Same.
+	* gimple-ssa-warn-access.cc (pass_waccess::check_pointer_uses): Same.
+	* tree-ssa-structalias.cc (find_what_p_points_to): Same.
+	* range-op-ptr.cc (range_op_table::initialize_pointer_ops): Remove
+	hybrid entries in table.
+	* range-op.cc (range_op_table::range_op_table): Add pointer
+	entries for bitwise and/or and min/max.
+	* value-range.cc (irange::verify_range): Add assert.
+	* value-range.h (irange::varying_compatible_p): Remove check for
+	error_mark_node.
+	(irange::supports_p): Remove pointer support.
+	* ipa-cp.h (ipa_supports_p): Add prange support.
+
 2024-05-09  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* simplify-rtx.cc (simplify_const_binary_operation): Constant
