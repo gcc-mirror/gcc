@@ -12914,10 +12914,10 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
   tree val;
   if (kind == CPTK_RANK)
     {
-      size_t __array_rank = 0;
+      size_t rank = 0;
       for (; TREE_CODE (type1) == ARRAY_TYPE; type1 = TREE_TYPE (type1))
-	++__array_rank;
-      val = build_int_cst (size_type_node, __array_rank);
+	++rank;
+      val = build_int_cst (size_type_node, rank);
     }
   else
     val = (trait_expr_value (kind, type1, type2)
