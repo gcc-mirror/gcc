@@ -2674,8 +2674,9 @@ process_alt_operands (int only_alternative)
 	      if (early_clobber_p
 		  || curr_static_id->operand[nop].type != OP_OUT)
 		{
-		  all_used_nregs
-		    += ira_reg_class_min_nregs[this_alternative][mode];
+		  if (winreg)
+		    all_used_nregs
+		      += ira_reg_class_min_nregs[this_alternative][mode];
 		  all_this_alternative
 		    = (reg_class_subunion
 		       [all_this_alternative][this_alternative]);
@@ -3250,6 +3251,7 @@ process_alt_operands (int only_alternative)
 	  overall += LRA_MAX_REJECT;
 	}
       if (all_this_alternative != NO_REGS
+	  && !SMALL_REGISTER_CLASS_P (all_this_alternative)
 	  && all_used_nregs != 0 && all_reload_nregs != 0
 	  && (all_used_nregs + all_reload_nregs + 1
 	      >= ira_class_hard_regs_num[all_this_alternative]))
