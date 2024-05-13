@@ -1,3 +1,19 @@
+2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114981
+	* gcc.target/avr/pr114981-powif.c: New test.
+
+2024-05-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114827
+	* gfortran.dg/asan/unlimited_polymorphic_34.f90: New test.
+
 2024-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

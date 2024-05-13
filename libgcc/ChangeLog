@@ -1,3 +1,14 @@
+2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114981
+	* config/avr/t-avr (LIB2FUNCS_EXCLUDE): Add _powisf2.
+	(LIB1ASMFUNCS) [!avrtiny]: Add _powif.
+	* config/avr/lib1funcs.S (mov4): New .macro.
+	(L_powif, __powisf2) [!avrtiny]: New module and function.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.

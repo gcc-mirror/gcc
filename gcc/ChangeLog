@@ -1,3 +1,70 @@
+2024-05-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backported from master:
+	2024-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	PR target/112959
+	* doc/install.texi (Specific) <*-*-freebsd*>: The Ada and D
+	run-time libraries are broken on i386 which also can affect
+	64-bit builds. Go is broken.
+
+2024-05-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backported from master:
+	2024-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	PR target/112959
+	* doc/install.texi (Specific) <*-*-freebsd*>: No longer refer
+	to GCC or binutils in base. Recommend bootstrap using binutils.
+
+2024-05-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backported from master:
+	2024-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <ia64-*-hpux*>: Remove details
+	on libunwind for GCC 3.4 and earlier.
+
+2024-05-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backported from master:
+	2024-04-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	PR target/112959
+	* doc/install.texi (Specific) <*-*-freebsd*>: Remove references to
+	FreeBSD 7 and older.
+
+2024-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114968
+	* target.def (use_atexit_for_cxa_atexit): Remove spurious space
+	from comment.
+	(adjust_cdtor_callabi_fntype): New cxx target hook.
+	* targhooks.h (default_cxx_adjust_cdtor_callabi_fntype): Declare.
+	* targhooks.cc (default_cxx_adjust_cdtor_callabi_fntype): New
+	function.
+	* doc/tm.texi.in (TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE): Add.
+	* doc/tm.texi: Regenerate.
+	* config/i386/i386.cc (ix86_cxx_adjust_cdtor_callabi_fntype): New
+	function.
+	(TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE): Redefine.
+
+2024-05-10  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2024-05-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR driver/114980
+	* opts-common.cc (prune_options): Move -fdiagnostics-urls=
+	early like -fdiagnostics-color=.
+
 2024-05-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
