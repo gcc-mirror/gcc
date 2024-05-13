@@ -483,7 +483,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type
       max_size() const noexcept
-      { return _Impl::_S_max_size(_M_impl._M_alloc); }
+      { return _Impl::_S_max_size(_M_alloc); }
 
       const_reference
       operator[](size_type __n) const noexcept

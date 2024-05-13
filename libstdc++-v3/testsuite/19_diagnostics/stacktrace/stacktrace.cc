@@ -206,10 +206,20 @@ test_pr105031()
   s = auto(s);
 }
 
+void
+test_pr115063()
+{
+  // PR libstdc++/115063
+  // compilation error: std::basic_stracktrace::max_size()
+  std::stacktrace s;
+  VERIFY( s.max_size() != 0 );
+}
+
 int main()
 {
   test_cons();
   test_assign();
   test_swap();
   test_pr105031();
+  test_pr115063();
 }
