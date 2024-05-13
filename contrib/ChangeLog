@@ -1,5 +1,12 @@
 2024-05-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc-changelog/git_update_version.py: Replace
+	9dbff9c05520a74e6cd337578f27b56c941f64f3 with
+	39f81924d88e3cc197fc3df74204c9b5e01e12f7 and
+	109f1b28fc94c93096506e3df0c25e331cef19d0 in IGNORED_COMMITS.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc-changelog/git_update_version.py: Add
 	9dbff9c05520a74e6cd337578f27b56c941f64f3 to IGNORED_COMMITS.
 

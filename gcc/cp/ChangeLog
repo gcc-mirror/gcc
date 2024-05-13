@@ -1,3 +1,105 @@
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_nothrow_invocable.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_NOTHROW_INVOCABLE.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_invocable.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_IS_INVOCABLE.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+	* cp-tree.h (build_invoke): New function.
+	* method.cc (build_invoke): New function.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __array_rank.
+	* constraint.cc (diagnose_trait_expr): Handle CPTK_RANK.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __decay.
+	* semantics.cc (finish_trait_type): Handle CPTK_DECAY.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __add_rvalue_reference.
+	* semantics.cc (finish_trait_type): Handle
+	CPTK_ADD_RVALUE_REFERENCE.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __add_lvalue_reference.
+	* semantics.cc (finish_trait_type): Handle
+	CPTK_ADD_LVALUE_REFERENCE.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __remove_all_extents.
+	* semantics.cc (finish_trait_type): Handle
+	CPTK_REMOVE_ALL_EXTENTS.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __remove_extent.
+	* semantics.cc (finish_trait_type): Handle CPTK_REMOVE_EXTENT.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __add_pointer.
+	* semantics.cc (finish_trait_type): Handle CPTK_ADD_POINTER.
+	(object_type_p): New function.
+	(referenceable_type_p): Likewise.
+	(trait_expr_value): Use object_type_p.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* cp-trait.def: Define __is_unbounded_array.
+	* constraint.cc (diagnose_trait_expr): Handle
+	CPTK_IS_UNBOUNDED_ARRAY.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+
+2024-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114968
+	* cp-tree.h (atexit_fn_ptr_type_node, cleanup_type): Adjust macro
+	comments.
+	(get_cxa_atexit_fn_ptr_type): Declare.
+	* decl.cc (get_atexit_fn_ptr_type): Adjust function comment, only
+	build type for atexit argument.
+	(get_cxa_atexit_fn_ptr_type): New function.
+	(get_atexit_node): Call get_cxa_atexit_fn_ptr_type rather than
+	get_atexit_fn_ptr_type when using __cxa_atexit.
+	(get_thread_atexit_node): Call get_cxa_atexit_fn_ptr_type
+	rather than get_atexit_fn_ptr_type.
+	(start_cleanup_fn): Add ob_parm argument, call
+	get_cxa_atexit_fn_ptr_type or get_atexit_fn_ptr_type depending
+	on it and create PARM_DECL also based on that argument.
+	(register_dtor_fn): Adjust start_cleanup_fn caller, use
+	get_cxa_atexit_fn_ptr_type rather than get_atexit_fn_ptr_type
+	for use_dtor casts.
+	* except.cc (build_throw): Use get_cxa_atexit_fn_ptr_type ().
+
+2024-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114983
+	* pt.cc (tsubst_expr) <case SIZEOF_EXPR>: Use copy_warning.
+	* semantics.cc (finish_parenthesized_expr): Also suppress
+	-Wsizeof-array-div.
+
+2024-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85889
+	* lambda.cc (add_capture): Add a pedwarn for capturing structured
+	bindings.
+
 2024-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113582

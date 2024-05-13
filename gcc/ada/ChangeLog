@@ -1,3 +1,399 @@
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* accessibility.adb: Remove clauses for Exp_Ch3.
+	* exp_ch3.ads (Init_Proc_Level_Formal): Move declaration to...
+	* exp_ch3.adb (Init_Proc_Level_Formal): Move body to...
+	* exp_util.ads (Init_Proc_Level_Formal): ...here.
+	(Inside_Init_Proc): Alphabetize.
+	* exp_util.adb (Init_Proc_Level_Formal): ...here.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Potentially_Unevaluated): Remove code for
+	recovering the original structure of expressions with AND THEN.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Attribute_22): Remove Put_Image and Object_Size.
+	* sem_attr.ads (Attribute_Imp_Def): Restore Object_Size.
+
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb: Adjust the description of finalization management.
+	(Build_Finalizer): Rename scope master into master throughout.
+	* rtsfind.ads (RE_Id): Replace RE_Finalization_Scope_Master with
+	RE_Finalization_Master.
+	(RE_Unit_Table): Replace entry for RE_Finalization_Scope_Master with
+	entry for RE_Finalization_Master.
+	* libgnat/s-finpri.ads (Finalization_Scope_Master): Rename into...
+	(Finalization_Master): ...this.
+	(Attach_Object_To_Master): Adjust to above renaming.
+	(Chain_Node_To_Master): Likewise.
+	(Finalize_Master): Likewise.
+	* libgnat/s-finpri.adb (Attach_Object_To_Master): Likewise.
+	(Chain_Node_To_Master): Likewise.
+	(Finalize_Master): Likewise.
+
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-imaged.ads (System.Image_D): Add Uns formal parameter.
+	* libgnat/s-imaged.adb: Add with clauses for System.Image_I,
+	System.Value_I_Spec and System.Value_U_Spec.
+	(Uns_Spec): New instance of System.Value_U_Spec.
+	(Int_Spec): New instance of System.Value_I_Spec.
+	(Image_I): New instance of System.Image_I.
+	(Set_Image_Integer): New renaming.
+	(Set_Image_Decimal): Replace 'Image with call to Set_Image_Integer.
+	* libgnat/s-imde32.ads (Uns32): New subtype.
+	(Impl): Pass Uns32 as second actual paramter to Image_D.
+	* libgnat/s-imde64.ads (Uns64): New subtype.
+	(Impl): Pass Uns64 as second actual paramter to Image_D.
+	* libgnat/s-imde128.ads (Uns128): New subtype.
+	(Impl): Pass Uns128 as second actual paramter to Image_D.
+	* libgnat/s-imagef.adb (Set_Image_Fixed): Document bounds for the
+	A, D and AF local constants.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Attribute_22): Add Put_Image and Object_Size.
+	* sem_attr.ads (Attribute_Imp_Def): Remove Object_Size.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.adb (Copy_Aspects): Style fix.
+	* contracts.adb (Analyze_Contracts): Style fix.
+	(Save_Global_References_In_Contract): Remove extra guards.
+	* par_sco.adb (Traverse_Aspects): Move guard to the caller and
+	make it consistent with Save_Global_References_In_Contract.
+	* sem_ch12.adb (Has_Contracts): Remove extra guards.
+	* sem_ch3.adb (Delayed_Aspect_Present, Get_Partial_View_Aspect,
+	Check_Duplicate_Aspects): Likewise.
+	* sem_disp.adb (Check_Dispatching_Operation): Likewise.
+
+2024-05-13  Bob Duff  <duff@adacore.com>
+
+	* errout.adb (Output_Messages): Protect against the total going
+	negative.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Append_Enabled_Item): Remove use of Split_PPC;
+	simplify.
+	* gen_il-fields.ads (Opt_Field_Enum): Remove flag definition.
+	* gen_il-gen-gen_nodes.adb (N_Aspect_Specification, N_Pragma):
+	Remove Split_PPC flags.
+	* gen_il-internals.adb (Image): Remove use of Split_PPC.
+	* par_sco.adb (Traverse_Aspects): Likewise.
+	* sem_ch13.adb (Make_Aitem_Pragma): Likewise.
+	* sem_ch6.adb (List_Inherited_Pre_Post_Aspects): Likewise.
+	* sem_prag.adb (Analyze_Pre_Post_Condition, Analyze_Pragma,
+	Find_Related_Declaration_Or_Body): Likewise.
+	* sem_util.adb (Applied_On_Conjunct): Likewise.
+	* sinfo.ads: Remove flag documentation.
+	* treepr.adb (Image): Remove use of Split_PPC.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (Append_Message): Build the location string from
+	scratch and not rely on the one produced while splitting the
+	aspect into pragmas.
+	* exp_prag.adb (Expand_Pragma_Check): Split pre/post checks in
+	expansion.
+	* sem_ch13.adb (Analyze_Aspect_Specification): Don't split
+	pre/post expressions into conjuncts; don't add message with
+	location to the corresponding pragma.
+	* sem_prag.adb (Build_Pragma_Check_Equivalent): Inherited
+	pragmas no longer have messages that would need to be updated.
+	* sinput.adb (Build_Location_String): Adjust to keep previous
+	messages while using with inherited pragmas.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* contracts.adb (Inherit_Subprogram_Contract): Fix style.
+	* sem_ch5.adb (Analyze_Iterator_Specification): Likewise.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Has_No_Output): Iteration with
+	First_Formal/Next_Formal involves Entity_Ids.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): When processing pragma
+	Lock_Free, check if restriction No_Implementation_Pragmas is
+	enabled.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gen_il-fields.ads (Opt_Field_Enum):
+	Remove Is_Expanded_Contract from the list of flags.
+	* gen_il-gen-gen_nodes.adb (N_Contract): Remove
+	Is_Expanded_Contract from the list of N_Contract fields.
+	* sinfo.ads (Is_Expanded_Contract): Remove comments for the flag
+	and its single occurrence in N_Contract.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch9.adb (Build_Protected_Subprogram_Body,
+	Build_Protected_Subprogram_Call_Cleanup): Reuse refactored
+	routine.
+	* sem_util.adb
+	(Has_Enabled_Aspect): Refactored repeated code.
+	(Is_Static_Function): Reuse refactored routine.
+	* sem_util.ads (Has_Enabled_Aspect):
+	New query routine refactored from repeated code.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch9.adb (Build_Protected_Subprogram_Call_Cleanup): If
+	aspect Exclusive_Functions is present then the cleanup of a
+	protected function now services queued entries, just like the
+	cleanup of a protected procedure.
+
+2024-05-13  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads (Append_Entity_Name): Fix comment to reflect new
+	semantics. The comment said, "The qualification stops at an
+	enclosing scope has no source name (block or loop)." There seems
+	to be no reason for stopping; instead, we should SKIP things with
+	no source name. And the "loop" part was wrong.
+	* sem_util.adb (Append_Entity_Name): Do not stop the recursion;
+	skip to next-outer scope instead. Misc cleanup/simplification.
+
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-finpri.adb (Finalize): Replace "master" by "collection"
+	in comments and add a comment about the form of the loop.
+	* libgnat/s-stposu.adb (Allocate_Any_Controlled): Tweak comment.
+
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Remove s-finmas$(objext).
+	* einfo.ads (Anonymous_Masters): Rename into Anonymous_Collections.
+	(Finalization_Master): Rename into Finalization_Collection.
+	* gen_il-fields.ads (Opt_Field_Enum): Replace Anonymous_Masters
+	with Anonymous_Collections; and Finalization_Master with
+	Finalization_Collection.
+	* gen_il-gen-gen_entities.adb (Access_Kind): Likewise.
+	(E_Function): Likewise.
+	(E_Procedure): Likewise.
+	(E_Package): Likewise.
+	(E_Subprogram_Body): Likewise.
+	* exp_ch3.adb (Build_Heap_Or_Pool_Allocator): Adjust to renamings.
+	(Freeze_Type): Likewise.
+	(Stream_Operation_OK): Remove obsolete test.
+	* exp_ch4.adb (Expand_Allocator_Expression): Adjust to renamings.
+	(Expand_N_Allocator): Likewise.
+	* exp_ch6.ads (BIP_Formal_Kind): Replace BIP_Finalization_Master
+	with BIP_Collection.
+	(Needs_BIP_Finalization_Master): Rename into...
+	(Needs_BIP_Collection): ...this.
+	* exp_ch6.adb (BIP_Finalization_Master_Suffix): Delete.
+	(BIP_Collection_Suffix): New constant string.
+	(Add_Finalization_Master_Actual_To_Build_In_Place_Call): Rename to
+	(Add_Collection_Actual_To_Build_In_Place_Call): ...this and adjust.
+	(BIP_Formal_Suffix): Replace BIP_Finalization_Master alternative
+	with BIP_Collection alternative.
+	(BIP_Suffix_Kind): Replace test on BIP_Finalization_Master_Suffix
+	with test on BIP_Collection_Suffix.
+	(Is_Build_In_Place_Entity): Likewise.
+	(Make_Build_In_Place_Call_In_Allocator): Call Needs_BIP_Collection
+	and Add_Collection_Actual_To_Build_In_Place_Call.
+	(Make_Build_In_Place_Call_In_Anonymous_Context): Likewise.
+	(Make_Build_In_Place_Call_In_Assignment): Likewise.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Likewise.
+	(Needs_BIP_Finalization_Master): Rename into...
+	(Needs_BIP_Collection): ...this.
+	(Needs_BIP_Alloc_Form): Call Needs_BIP_Collection.
+	* exp_ch7.ads (Build_Anonymous_Master): Rename into...
+	(Build_Anonymous_Collection): ...this.
+	(Build_Finalization_Master): Rename into...
+	(Build_Finalization_Collection): ...this.
+	* exp_ch7.adb (Allows_Finalization_Master): Rename into...
+	(Allows_Finalization_Collection): ...this.
+	(Build_BIP_Cleanup_Stmts): Adjust to renamings.
+	(Build_Anonymous_Master): Rename into...
+	(Build_Anonymous_Collection): ...this.  Adjust to renamings.
+	(Build_Finalization_Master): Rename into...
+	(Build_Finalization_Collection): ...this.  Adjust to renamings.
+	(Build_Finalizer): Adjust comment to renamings.
+	* exp_ch13.adb (Expand_N_Free_Statement): Adjust to renamings.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Likewise.
+	(Requires_Cleanup_Actions): Adjust comment to renamings.
+	* freeze.adb (Freeze_All): Likewise.
+	* rtsfind.ads (RTU_Id): Remove System_Finalization_Masters.
+	(RE_Id): Remove RE_Finalization_Master & RE_Finalization_Master_Ptr
+	add RE_Finalization_Collection & RE_Finalization_Collection_Ptr.
+	Adjust RE_Add_Offset_To_Address and RE_Finalization_Scope_Master.
+	(RE_Unit_Table): Remove entries for RE_Finalization_Master &
+	RE_Finalization_Master_Ptr, add ones for RE_Finalization_Collection
+	& RE_Finalization_Collection_Ptr.  Also adjust those of
+	RE_Add_Offset_To_Address and RE_Finalization_Scope_Master.
+	* sem_ch3.adb (Access_Type_Declaration): Adjust to renamings.
+	* sem_ch6.adb (Create_Extra_Formals): Likewise.
+	* sem_util.adb (Designated_Subtype_Mark): Likewise.
+	* libgnat/s-finpri.ads: Add clauses for Ada.Finalization and
+	System.Storage_Elements.
+	(Finalization_Collection): New limited controlled type.
+	(Finalization_Collection_Ptr): Likewise.
+	(Initialize): New overriding procedure.
+	(Finalize): Likewise.
+	(Finalization_Started): Likewise.
+	(Collection_Node): New type.
+	(Collection_Node_Ptr): Likewise.
+	(Attach_Node_To_Collection): New procedure.
+	(Detach_Node_From_Collection): Likewise.
+	(Header_Size): New function.
+	(Add_Offset_To_Address): Likewise.
+	* libgnat/s-finpri.adb (Add_Offset_To_Address): New function.
+	(Attach_Node_To_Collection): New procedure.
+	(Detach_Node_From_Collection): Likewise.
+	(Finalization_Started): Likewise.
+	(Finalize): New overriding procedure.
+	(Header_Size): New function.
+	(Initialize): New overriding procedure.
+	* libgnat/s-spsufi.ads (Finalize_And_Deallocate): Adjust comment.
+	* libgnat/s-spsufi.adb: Remove clause for Finalization_Masters and
+	add clause for Finalization_Primitives.
+	(Finalize_And_Deallocate): Finalize the Collection component.
+	* libgnat/s-stposu.ads: Remove clause for Finalization_Masters and
+	add clause for Finalization_Primitives.
+	(Root_Subpool): Replace Master component with Collection.
+	(Allocate_Any_Controlled): Replace Context_Master parameter with
+	Context_Collection parameter.
+	* libgnat/s-stposu.adb: Remove clauses for Finalization_Masters and
+	add clauses for Finalization_Primitives.
+	(Address_To_FM_Node_Ptr): Delete.
+	(To_Collection_Node_Ptr): New instance of Ada.Unchecked_Conversion.
+	(Adjust_Controlled_Dereference): Adjust comment to renamings.
+	(Allocate_Any_Controlled): Replace Context_Master parameter with
+	Context_Collection parameter.  Adjust to renamings.
+	(Deallocate_Any_Controlled): Adjust to renamings.
+	(Print_Subpool): Likewise.
+	* libgnat/s-finmas.ads: Delete.
+	* libgnat/s-finmas.adb: Likewise.
+
+2024-05-13  Ashley Gay  <gay@adacore.com>
+
+	* Makefile.rtl: remove i-vxinco.* from the build
+	* doc/gnat_rm/the_gnat_library.rst: Remove i-vxinco.ads from
+	the units documentation.
+	* impunit.adb: Remove i-vxinco from the list of available units
+	in GNATstudio.
+	* libgnarl/i-vxinco.adb: Remove.
+	* libgnarl/i-vxinco.ads: Ditto.
+	* libgnarl/s-interr__vxworks.adb: enrich comment
+	* libgnarl/s-vxwext__kernel.ads: fix comment
+	* libgnat/i-vxwork.ads: Remove deprecated interrupt connections
+	API, as well as an example.
+	* libgnat/i-vxwork__x86.ads: Ditto and add the paragma
+	Obscolescent to Attach_Handler
+	* gnat_rm.texi: Regenerate.
+
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Heap_Or_Pool_Allocator): Use the BIPstoragepool
+	formal parameter to retrieve the pool in the presence of a master.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Always pass
+	a pool reference along with the master reference.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Likewise.
+	* exp_ch7.adb (Build_BIP_Cleanup_Stmts): Use the BIPstoragepool
+	formal parameter to retrieve the pool in the presence of a master.
+	(Create_Anonymous_Master): Do not call Set_Base_Pool.
+	(Build_Finalization_Master): Likewise.
+	* rtsfind.ads (RE_Id): Remove RE_Base_Pool and RE_Set_Base_Pool.
+	(RE_Unit_Table): Remove associated entries.
+	* libgnat/s-finmas.ads: Remove clause for System.Storage_Pools.
+	(Any_Storage_Pool_Ptr): Delete.
+	(Finalization_Master): Remove Base_Pool component.
+	(Base_Pool): Delete.
+	(Set_Base_Pool): Likewise.
+	* libgnat/s-finmas.adb (Base_Pool): Likewise.
+	(Set_Base_Pool): Likewise.
+	(Print_Master): Do not print Base_Pool.
+
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Add_Unconstrained_Actuals_To_Build_In_Place_Call):
+	Rename Pool_Actual into Pool_Exp and use Empty as default value.
+	(Add_Finalization_Master_Actual_To_Build_In_Place_Call): Change the
+	names of the first two parameters and use a simpler code structure.
+	(Make_Build_In_Place_Call_In_Allocator): Rename the local variable
+	for the pool actual and set it to Empty if it is not used.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Rename the local
+	variable for the master actual.
+
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): In the case of a
+	return object of a BIP function that needs finalization, save
+	the assignment statement made to initialize it, if any.
+	* exp_ch6.ads (BIP_Formal_Kind): Adjust description.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Make a
+	couple of adjustments to the commentary.
+	(Needs_BIP_Alloc_Form): Also return true if the function needs
+	a BIP_Finalization_Master parameter.
+	* exp_ch7.adb (Build_BIP_Cleanup_Stmts): Remove now always true
+	test on Needs_BIP_Alloc_Form.
+	(Attach_Object_To_Master_Node): Remove duplication in comment.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Get_Index_Bounds): Guard against missing Entity,
+	which happens on illegal constrained type declaration.
+
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Treat Alignment like Component_Size
+	for array types.
+
+2024-05-13  Steve Baird  <baird@adacore.com>
+
+	* sem_case.adb: Replace all tests of Core_Extensions_Allowed with
+	corresponding tests of All_Extensions_Allowed.
+	* sem_ch5.adb: Likewise.
+	* doc/gnat_rm/gnat_language_extensions.rst: update documentation.
+	* gnat_rm.texi: Regenerate.
+
+2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (New_Put_Image_Subprogram): In the nondeferred case
+	coming from an aspect and for a type with delaying freezing, also
+	freeze the subprogram immediately.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-direct.adb (Start_Search_Internal): Combine subtype
+	and object declaration.
+	* libgnat/g-dirope.adb (Read): Replace convoluted unchecked
+	conversion with an overlay.
+
+2024-05-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/g-dirope.adb (Read): Use null-excluding,
+	access-to-constant type; replace element-by-element copy with
+	array assignments.
+
+2024-05-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Move determination of
+	whether the aggregate is an indexed aggregate earlier in the
+	procedure. Test Is_Indexed_Aggregate as a criterion for generating
+	a call to the container type's New_Indexed function, add proper
+	computation of bounds to pass in to the function, and remove later
+	code for generating such a call. Add and improve comments.
+	(Aggregate_Size): Remove special treatment of case where there is
+	exactly one component association, and instead loop over all
+	component associations to determine whether any of them have a
+	nonstatic length. If there is at least one such nonstatic
+	association, return -1.
+	(Build_Siz_Exp): Accumulate a sum of the sizes of each of the
+	component associations in Siz_Exp (which will only be used if
+	there any associations that are of Nkind
+	N_Iterated_Component_Association with a nonstatic range).
+	(Expand_Range_Component): Fix typos in the procedure's spec
+	comment and block comment.
+
 2024-05-07  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.adb (Number_Of_Elements_In_Array): Fix counting of

@@ -1,3 +1,9 @@
+2024-05-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115003
+	* gm2-compiler/SymbolTable.mod (GetScope): Add UndefinedSym
+	case clause and return NulSym.
+
 2024-05-03  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114929

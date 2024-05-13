@@ -1,3 +1,11 @@
+2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114981
+	* config/avr/t-avr (LIB2FUNCS_EXCLUDE): Add _powisf2.
+	(LIB1ASMFUNCS) [!avrtiny]: Add _powif.
+	* config/avr/lib1funcs.S (mov4): New .macro.
+	(L_powif, __powisf2) [!avrtiny]: New module and function.
+
 2024-05-07  Zac Walker  <zacwalker@microsoft.com>
 
 	* config.host: Add aarch64-w64-mingw32 target. Adjust targets

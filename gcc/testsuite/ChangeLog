@@ -1,3 +1,176 @@
+2024-05-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/113363
+	* gfortran.dg/pr113363.f90: New test.
+
+2024-05-13  YunQiang Su  <syq@debian.org>
+
+	Revert:
+	2024-05-13  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/msa-inline-asm.c: New test.
+
+2024-05-12  Roger Sayle  <roger@nextmovesoftware.com>
+	    Kyrill Tkachov  <kyrylo.tkachov@foss.arm.com>
+	    Roger Sayle  <roger@nextmovesoftware.com>
+	    Kyrill Tkachov  <kyrylo.tkachov@foss.arm.com>
+
+	* gcc.target/arm/extend-ror.c: New test.
+
+2024-05-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-5.c: New test.
+
+2024-05-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-4.c: New test
+
+2024-05-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84006
+	PR fortran/100027
+	PR fortran/98534
+	* gfortran.dg/storage_size_7.f90: New test.
+	* gfortran.dg/transfer_class_4.f90: New test.
+
+2024-05-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115039
+	* gfortran.dg/statement_function_5.f90: New test.
+
+2024-05-11  Mark Harmstone  <mark@harmstone.com>
+
+	* gcc.dg/debug/codeview/codeview-1.c: New test.
+	* gcc.dg/debug/codeview/codeview.exp: New testsuite driver.
+
+2024-05-11  dzhao.ampere  <di.zhao@amperecomputing.com>
+
+	PR tree-optimization/114760
+	* gcc.dg/tree-ssa/pr114760-1.c: New test.
+	* gcc.dg/tree-ssa/pr114760-2.c: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of
+	__is_nothrow_invocable.
+	* g++.dg/ext/is_nothrow_invocable.C: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __is_invocable.
+	* g++.dg/ext/is_invocable1.C: New test.
+	* g++.dg/ext/is_invocable2.C: New test.
+	* g++.dg/ext/is_invocable3.C: New test.
+	* g++.dg/ext/is_invocable4.C: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __array_rank.
+	* g++.dg/ext/rank.C: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __decay.
+	* g++.dg/ext/decay.C: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of
+	__add_rvalue_reference.
+	* g++.dg/ext/add_rvalue_reference.C: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of
+	__add_lvalue_reference.
+	* g++.dg/ext/add_lvalue_reference.C: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of
+	__remove_all_extents.
+	* g++.dg/ext/remove_all_extents.C: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __remove_extent.
+	* g++.dg/ext/remove_extent.C: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of __add_pointer.
+	* g++.dg/ext/add_pointer.C: New test.
+
+2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* g++.dg/ext/has-builtin-1.C: Test existence of
+	__is_unbounded_array.
+	* g++.dg/ext/is_unbounded_array.C: New test.
+
+2024-05-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-1.c: Also count shNadd instructions.
+	* gcc.target/riscv/synthesis-3.c: New test.
+
+2024-05-10  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/vect-shiftv4qi.c: Specify -mno-avx512vl.
+	* gcc.target/i386/vect-shiftv8qi.c: Likewise.
+	* gcc.target/i386/vect-shiftv4qi-2.c: New test case.
+	* gcc.target/i386/vect-shiftv8qi-2.c: Likewise.
+
+2024-05-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/114942
+	* gcc.target/i386/pr114942.c: New.
+
+2024-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114998
+	* gcc.dg/torture/pr114998.c: New testcase.
+
+2024-05-10  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-reduc-sad-9.c: New testcase.
+
+2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/114981
+	* gcc.target/avr/pr114981-powif.c: New test.
+
+2024-05-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zba-shadduw.c: New test.
+
+2024-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114983
+	* g++.dg/warn/Wsizeof-array-div3.C: New test.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/84508
+	* gcc.target/i386/pr84508-1.c: Move to ...
+	* gcc.dg/ubsan/pr84508-1.c: ... here.  Restrict to i?86/x86_64
+	non-ia32 targets.
+	* gcc.target/i386/pr84508-2.c: Move to ...
+	* gcc.dg/ubsan/pr84508-2.c: ... here.  Restrict to i?86/x86_64
+	non-ia32 targets.
+
+2024-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/85889
+	* g++.dg/cpp2a/decomp3.C: Use -Wno-c++20-extensions.
+	* g++.dg/cpp1z/decomp60.C: New test.
+
+2024-05-09  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/tree-ssa/pr109849.C: Also check that the aggeegate store
+	to cur disappears.
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Instead of relying on DSE,
+	check that the unwanted stores were removed at early SRA time.
+
 2024-05-09  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vls-vlmax/full-vec-move1.c:

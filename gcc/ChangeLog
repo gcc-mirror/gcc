@@ -1,3 +1,264 @@
+2024-05-13  YunQiang Su  <syq@debian.org>
+
+	Revert:
+	2024-05-09  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/constraints.md: Add new constraint 'w'.
+
+2024-05-12  Roger Sayle  <roger@nextmovesoftware.com>
+	    Kyrill Tkachov  <kyrylo.tkachov@foss.arm.com>
+
+	* config/arm/arm.md (*arm_zeroextractsi2_8_8, *arm_signextractsi2_8_8,
+	*arm_zeroextractsi2_8_16, *arm_signextractsi2_8_16,
+	*arm_zeroextractsi2_16_8, *arm_signextractsi2_16_8): New.
+
+2024-05-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Use slli.uw more.
+
+2024-05-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Fix thinko in testing
+	when lui can be used to set several bits in bseti path.
+
+2024-05-12  Mark Wielaard  <mark@klomp.org>
+
+	* config/mingw/cygming.opt.urls: Regenerate.
+	* config/mingw/mingw.opt.urls: Likewise.
+
+2024-05-11  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (DEBUG_S_SYMBOLS): Define.
+	(S_COMPILE3, CV_CFL_80386, CV_CFL_X64): Likewise.
+	(CV_CFL_C, CV_CFL_CXX): Likewise.
+	(SYMBOL_START_LABEL, SYMBOL_END_LABEL): Likewise.
+	(start_processor, language_constant): New functions.
+	(write_compile3_symbol, write_codeview_symbols): Likewise.
+	(codeview_debug_finish): Call write_codeview_symbols.
+
+2024-05-11  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (DEBUG_S_LINES, LINE_LABEL): Define.
+	(END_FUNC_LABEL): Likewise.
+	(struct codeview_line, codeview_line_block): New structures.
+	(codeview_function): Likewise.
+	(line_label_num, func_label_num, funcs, last_func): New variables.
+	(last_filename, last_file_id): Likewise.
+	(codeview_source_line, write_line_numbers): New functions.
+	(codeview_switch_text_section, codeview_end_epilogue): Likewise.
+	(codeview_debug_finish): Call write_line_numbers.
+	* dwarf2codeview.h (codeview_source_line): Prototype.
+	(codeview_switch_text_secction, codeview_end_epilogue): Likewise.
+	* dwarf2out.cc (dwarf2_end_epilogue): Add codeview support.
+	(dwarf2out_switch_text_section): Likewise.
+	(dwarf2out_source_line): Likewise.
+	* opts.cc (finish_options): Handle codeview debugging symbols.
+
+2024-05-11  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (DEBUG_S_STRINGTABLE): Define.
+	(DEBUG_S_FILECHKSMS, CHKSUM_TYPE_MD5, HASH_SIZE): Likewise.
+	(codeview_string, codeview_source_file): New structures.
+	(struct string_hasher): New class for codeview_string hashing.
+	(files, last_file, num_files, string_offset): New variables.
+	(strings_hstab, strings, last_string): Likewise.
+	(add_string, codevie_start_source_file): New functions.
+	(write_strings_tabe, write_soruce_files): Likewise.
+	(codeview_debug_finish): Call new functions.
+	* dwarf2codeview.h (codeview_start_source_file): Prototype.
+	* dwarf2out.cc (dwarf2out_start_source_file): Handle codeview.
+
+2024-05-11  Mark Harmstone  <mark@harmstone.com>
+
+	* Makefile.in (OBJS): Add dwarf2codeview.o.
+	(GTFILES): Add dwarf2codeview.cc
+	* config/i386/cygming.h (CODEVIEW_DEBUGGING_INFO): Define.
+	* dwarf2codeview.cc: New file.
+	* dwarf2codeview.h: New file.
+	* dwarf2out.cc: Include dwarf2codeview.h.
+	(dwarf2out_finish): Call codeview_debug_finish as needed.
+	* flag-types.h (DINFO_TYPE_CODEVIEW): Add enum member.
+	(CODEVIEW_DEBUG): Define.
+	* flags.h (codeview_debuginfo_p): Proottype.
+	* opts.cc (debug_type_names): Add codeview.
+	(debug_type_masks): Add CODEVIEW_DEBUG.
+	(df_set_names): Add codeview.
+	(codeview_debuginfo_p): New function.
+	(dwarf_based_debuginfo_p): Add CODEVIEW clause.
+	(set_debug_level): Handle CODEVIEW_DEBUG.
+	* toplev.cc (process_options): Handle codeview.
+
+2024-05-11  dzhao.ampere  <di.zhao@amperecomputing.com>
+
+	PR tree-optimization/114760
+	* tree-ssa-loop-niter.cc (is_lshift_by_1): New function
+	to check if STMT is equivalent to x << 1.
+	(is_rshift_by_1): New function to check if STMT is
+	equivalent to x >> 1.
+	(number_of_iterations_cltz): Enhance the identification
+	of logical shift by one.
+	(number_of_iterations_cltz_complement): Enhance the
+	identification of logical shift by one.
+
+2024-05-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-ptr.cc (range_operator::fold_range): Return false.
+
+2024-05-11  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (TRAP_ON_UNHANDLED_POINTER_OPERATORS): New
+	(range_op_handler::fold_range): Use it.
+	(range_op_handler::op1_range): Same.
+	(range_op_handler::op2_range): Same.
+	(range_op_handler::lhs_op1_relation): Same.
+	(range_op_handler::lhs_op2_relation): Same.
+	(range_op_handler::op1_op2_relation): Same.
+
+2024-05-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Recognize cases where
+	we can use shNadd to improve constant synthesis.
+	(riscv_move_integer): Handle code generation for shNadd.
+
+2024-05-10  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi_partial):
+	Don't attempt ix86_expand_vec_shift_qihi_constant on SSE4.1.
+
+2024-05-10  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/predicates.md (pru_mulsrc0_operand): Use register
+	class instead of register number for the check.
+	(pru_mulsrc1_operand): Ditto.
+
+2024-05-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/114942
+	* lra-constraints.cc (struct input_reload): Add new member early_clobber_p.
+	(get_reload_reg): Add new arg early_clobber_p, don't reuse input
+	reload with true early_clobber_p member value, use the arg for new
+	element of curr_insn_input_reloads.
+	(match_reload): Assign false to early_clobber_p member.
+	(process_addr_reg, simplify_operand_subreg, curr_insn_transform):
+	Adjust get_reload_reg calls.
+
+2024-05-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/115026
+	* value-range.cc (prange::update_bitmask): Use operand bitmask.
+
+2024-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114998
+	* tree-loop-distribution.cc (free_rdg): Take loop argument.
+	Reset UIDs of stmts still in the IL rather than all stmts
+	referenced from the RDG.
+	(loop_distribution::build_rdg): Pass loop to free_rdg.
+	(loop_distribution::distribute_loop): Likewise.
+	(loop_distribution::transform_reduction_loop): Likewise.
+
+2024-05-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (vect_pattern_recog_1): Do not
+	remove reductions involving patterns.
+	* tree-vect-loop.cc (vectorizable_reduction): Reject SLP
+	reduction groups with multiple lane-reducing reductions.
+	* tree-vect-slp.cc (vect_analyze_slp_instance): When discovering
+	SLP reduction groups avoid including lane-reducing ones.
+
+2024-05-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* config/bpf/bpf.cc (bpf_print_operand_address): Include
+	surrounding parenthesis around mem operands in pseudoc asm
+	dialect.
+	* config/bpf/bpf.md (*mov<MM:mode>): Adapt accordingly.
+	(zero_extendhidi2): Likewise.
+	(zero_extendqidi2): Likewise.
+	(*extendsidi2): Likewise.
+	(*extendsidi2): Likewise.
+	(extendhidi2): Likewise.
+	(extendqidi2): Likewise.
+	(extendhisi2): Likewise.
+	* config/bpf/atomic.md (atomic_add<AMO:mode>): Likewise.
+	(atomic_and<AMO:mode>): Likewise.
+	(atomic_or<AMO:mode>): Likewise.
+	(atomic_xor<AMO:mode>): Likewise.
+	(atomic_fetch_add<AMO:mode>): Likewise.
+	(atomic_fetch_and<AMO:mode>): Likewise.
+	(atomic_fetch_or<AMO:mode>): Likewise.
+	(atomic_fetch_xor<AMO:mode>): Likewise.
+
+2024-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114968
+	* target.def (use_atexit_for_cxa_atexit): Remove spurious space
+	from comment.
+	(adjust_cdtor_callabi_fntype): New cxx target hook.
+	* targhooks.h (default_cxx_adjust_cdtor_callabi_fntype): Declare.
+	* targhooks.cc (default_cxx_adjust_cdtor_callabi_fntype): New
+	function.
+	* doc/tm.texi.in (TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE): Add.
+	* doc/tm.texi: Regenerate.
+	* config/i386/i386.cc (ix86_cxx_adjust_cdtor_callabi_fntype): New
+	function.
+	(TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE): Redefine.
+
+2024-05-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/115009
+	* value-range-storage.cc (prange_storage::alloc): Do not assume
+	all pointers are the same size.
+	(prange_storage::prange_storage): Same.
+	(prange_storage::fits_p): Same.
+
+2024-05-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vsetvl.cc: Fix typos in comments.
+	(get_all_predecessors): Ditto.
+	(pre_vsetvl::m_unknow_info): Rename to...
+	(pre_vsetvl::m_unknown_info): this.
+	(pre_vsetvl::compute_vsetvl_def_data): Rename m_unknow_info to
+	m_unknown_info.
+	(pre_vsetvl::cleaup): Rename to...
+	(pre_vsetvl::cleanup): this.
+	(pre_vsetvl::compute_vsetvl_def_data): Fix typos.
+	(pass_vsetvl::lazy_vsetvl): Update function name and fix typos.
+	* config/riscv/riscv.cc: Fix typos in comments.
+	(struct machine_function): Fix typo in comments.
+	(riscv_valid_lo_sum_p): Ditto.
+	(riscv_force_address): Ditto.
+	(riscv_immediate_operand_p): Ditto.
+	(riscv_in_small_data_p): Ditto.
+	(riscv_first_stack_step): Ditto.
+	(riscv_expand_prologue): Ditto.
+	(riscv_convert_vector_chunks): Ditto.
+	(riscv_override_options_internal): Ditto.
+	(get_common_costs): Ditto.
+
+2024-05-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR driver/114980
+	* opts-common.cc (prune_options): Move -fdiagnostics-urls=
+	early like -fdiagnostics-color=.
+
+2024-05-10  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md: Add splitter for shadd feeding another
+	add instruction.
+
+2024-05-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.cc (simplify_const_binary_operation): Constant
+	fold binary operations where the LHS is CONST_VECTOR and the
+	RHS is CONST_INT (or CONST_DOUBLE) such as vector shifts.
+
+2024-05-09  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.cc (sra_modify_assign): Remove the original statement
+	also when dealing with a store to a fully covered aggregate from a
+	non-candidate.
+
 2024-05-09  YunQiang Su  <syq@gcc.gnu.org>
 
 	* config/mips/constraints.md: Add new constraint 'w'.

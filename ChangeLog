@@ -1,3 +1,11 @@
+2024-05-13  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* MAINTAINERS: Add myself.
+
+2024-05-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* MAINTAINERS: Add myself to DCO.
+
 2024-05-06  YunQiang Su  <syq@gcc.gnu.org>
 
 	* config-ml.in: Insert an -B option with multi-os-dir into
