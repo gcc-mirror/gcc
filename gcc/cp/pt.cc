@@ -30201,26 +30201,11 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
       if (init == error_mark_node)
 	return NULL_TREE;
       parms = collect_ctor_idx_types (init, parms);
-      /* If we're creating a deduction guide for a member class template,
-	 we've used the original template pattern type for the reshape_init
-	 above; this is done because we want PARMS to be a template parameter
-	 type, something that can be deduced when used as a function template
-	 parameter.  At this point the outer class template has already been
-	 partially instantiated (we deferred the deduction until the enclosing
-	 scope is non-dependent).  Therefore we have to partially instantiate
-	 PARMS, so that its template level is properly reduced and we don't get
-	 mismatches when deducing types using the guide with PARMS.  */
-      if (member_template_p)
-	{
-	  ++processing_template_decl;
-	  parms = tsubst (parms, DECL_TI_ARGS (tmpl), complain, init);
-	  --processing_template_decl;
-	}
     }
   else if (TREE_CODE (init) == TREE_LIST)
     {
       int len = list_length (init);
-      for (tree field = TYPE_FIELDS (type);
+      for (tree field = TYPE_FIELDS (template_type);
 	   len;
 	   --len, field = DECL_CHAIN (field))
 	{
@@ -30234,6 +30219,22 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
   else
     /* Aggregate initialization doesn't apply to an initializer expression.  */
     return NULL_TREE;
+
+  /* If we're creating a deduction guide for a member class template,
+     we've used the original template pattern type for the reshape_init
+     above; this is done because we want PARMS to be a template parameter
+     type, something that can be deduced when used as a function template
+     parameter.  At this point the outer class template has already been
+     partially instantiated (we deferred the deduction until the enclosing
+     scope is non-dependent).  Therefore we have to partially instantiate
+     PARMS, so that its template level is properly reduced and we don't get
+     mismatches when deducing types using the guide with PARMS.  */
+  if (member_template_p)
+    {
+      ++processing_template_decl;
+      parms = tsubst (parms, outer_template_args (tmpl), complain, init);
+      --processing_template_decl;
+    }
 
   if (parms)
     {
@@ -30426,7 +30427,11 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  /* Substitute the associated constraints.  */
 	  tree ci = get_constraints (f);
 	  if (ci)
-	    ci = tsubst_constraint_info (ci, targs, complain, in_decl);
+	    {
+	      if (tree outer_targs = outer_template_args (f))
+		ci = tsubst_constraint_info (ci, outer_targs, complain, in_decl);
+	      ci = tsubst_constraint_info (ci, targs, complain, in_decl);
+	    }
 	  if (ci == error_mark_node)
 	    continue;
 
