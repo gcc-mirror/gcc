@@ -3997,22 +3997,21 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: bit order warnings
 
 :switch:`-gnatw.v`
-  *Activate info messages for non-default bit order.*
+  *Activate warnings for non-default bit order.*
 
-  This switch activates messages (labeled "info", they are not warnings,
-  just informational messages) about the effects of non-default bit-order
-  on records to which a component clause is applied. The effect of specifying
-  non-default bit ordering is a bit subtle (and changed with Ada 2005), so
-  these messages, which are given by default, are useful in understanding the
-  exact consequences of using this feature.
+  This switch activates warning messages about the effects of non-default
+  bit-order on records to which a component clause is applied. The effect of
+  specifying non-default bit ordering is a bit subtle
+  (and changed with Ada 2005), so these messages, which are given by default,
+  are useful in understanding the exact consequences of using this feature.
 
 
 .. index:: -gnatw.V  (gcc)
 
 :switch:`-gnatw.V`
-  *Suppress info messages for non-default bit order.*
+  *Suppress warnings for non-default bit order.*
 
-  This switch suppresses information messages for the effects of specifying
+  This switch suppresses warnings for the effects of specifying
   non-default bit order on record components with component clauses.
 
 
