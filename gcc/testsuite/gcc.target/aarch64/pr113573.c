@@ -26,7 +26,7 @@ void jsimd_extbgrx_ycc_convert_neon() {
       int y_l = vmull_laneq_u16(r);
       uint16x8_t __a = g;
       jsimd_extbgrx_ycc_convert_neon___trans_tmp_2 =
-          (uint16x4_t)__builtin_aarch64_get_lowv8hi((int16x8_t)__a);
+          (uint16x4_t)vget_low_s16((int16x8_t)__a);
       __a = b;
       int cb_l = scaled_128_5;
       int cb_h = scaled_128_5;
