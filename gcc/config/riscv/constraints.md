@@ -80,6 +80,12 @@
   (and (match_code "const_int")
        (match_test "LUI_OPERAND (ival)")))
 
+(define_constraint "MiG"
+  "const can be represented as sum of any S12 values."
+  (and (match_code "const_int")
+       (ior (match_test "IN_RANGE (ival,  2048,  4094)")
+	    (match_test "IN_RANGE (ival, -4096, -2049)"))))
+
 (define_constraint "Ds3"
   "@internal
    1, 2 or 3 immediate"

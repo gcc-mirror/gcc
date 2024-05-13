@@ -7145,6 +7145,17 @@ riscv_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
   return (to == HARD_FRAME_POINTER_REGNUM || to == STACK_POINTER_REGNUM);
 }
 
+/* Helper to determine if reg X pertains to stack.  */
+bool
+riscv_reg_frame_related (rtx x)
+{
+  return REG_P (x)
+	 && (REGNO (x) == FRAME_POINTER_REGNUM
+	     || REGNO (x) == HARD_FRAME_POINTER_REGNUM
+	     || REGNO (x) == ARG_POINTER_REGNUM
+	     || REGNO (x) == VIRTUAL_STACK_VARS_REGNUM);
+}
+
 /* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame pointer
    or argument pointer.  TO is either the stack pointer or hard frame
    pointer.  */

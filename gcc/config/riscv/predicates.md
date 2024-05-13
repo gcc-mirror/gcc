@@ -428,6 +428,12 @@
 	return true;
 })
 
+(define_predicate "const_two_s12"
+  (match_code "const_int")
+{
+  return SUM_OF_TWO_S12 (INTVAL (op));
+})
+
 ;; CORE-V Predicates:
 (define_predicate "immediate_register_operand"
   (ior (match_operand 0 "register_operand")

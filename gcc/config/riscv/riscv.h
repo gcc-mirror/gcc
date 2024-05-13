@@ -626,6 +626,21 @@ enum reg_class
   (((VALUE) | ((1UL<<31) - IMM_REACH)) == ((1UL<<31) - IMM_REACH)	\
    || ((VALUE) | ((1UL<<31) - IMM_REACH)) + IMM_REACH == 0)
 
+/* True if a VALUE (constant) can be expressed as sum of two S12 constants
+   (in range -2048 to 2047).
+   Range check logic:
+     from: min S12 + 1 (or -1 depending on what side of zero)
+       to: two times the min S12 value (to max out S12 bits).  */
+
+#define SUM_OF_TWO_S12_N(VALUE)						\
+  (((VALUE) >= (-2048 * 2)) && ((VALUE) <= (-2048 - 1)))
+
+#define SUM_OF_TWO_S12_P(VALUE)						\
+  (((VALUE) >= (2047 + 1)) && ((VALUE) <= (2047 * 2)))
+
+#define SUM_OF_TWO_S12(VALUE)						\
+  (SUM_OF_TWO_S12_N (VALUE) || SUM_OF_TWO_S12_P (VALUE))
+
 /* If this is a single bit mask, then we can load it with bseti.  Special
    handling of SImode 0x80000000 on RV64 is done in riscv_build_integer_1. */
 #define SINGLE_BIT_MASK_OPERAND(VALUE)					\
