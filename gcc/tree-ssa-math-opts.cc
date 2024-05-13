@@ -3947,6 +3947,66 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
   else
     return 0;
 
+  if (maxval
+      && ccode == RSHIFT_EXPR
+      && crhs1 == lhs
+      && TREE_CODE (crhs2) == INTEGER_CST
+      && wi::to_widest (crhs2) == TYPE_PRECISION (TREE_TYPE (maxval)))
+    {
+      tree shiftlhs = gimple_assign_lhs (use_stmt);
+      if (!shiftlhs)
+	return 0;
+      use_operand_p use;
+      if (!single_imm_use (shiftlhs, &use, &cur_use_stmt))
+	return 0;
+      if (gimple_code (cur_use_stmt) == GIMPLE_COND)
+	{
+	  ccode = gimple_cond_code (cur_use_stmt);
+	  crhs1 = gimple_cond_lhs (cur_use_stmt);
+	  crhs2 = gimple_cond_rhs (cur_use_stmt);
+	}
+      else if (is_gimple_assign (cur_use_stmt))
+	{
+	  if (gimple_assign_rhs_class (cur_use_stmt) == GIMPLE_BINARY_RHS)
+	    {
+	      ccode = gimple_assign_rhs_code (cur_use_stmt);
+	      crhs1 = gimple_assign_rhs1 (cur_use_stmt);
+	      crhs2 = gimple_assign_rhs2 (cur_use_stmt);
+	    }
+	  else if (gimple_assign_rhs_code (cur_use_stmt) == COND_EXPR)
+	    {
+	      tree cond = gimple_assign_rhs1 (cur_use_stmt);
+	      if (COMPARISON_CLASS_P (cond))
+		{
+		  ccode = TREE_CODE (cond);
+		  crhs1 = TREE_OPERAND (cond, 0);
+		  crhs2 = TREE_OPERAND (cond, 1);
+		}
+	      else
+		return 0;
+	    }
+	  else
+	    {
+	      enum tree_code sc = gimple_assign_rhs_code (cur_use_stmt);
+	      tree castlhs = gimple_assign_lhs (cur_use_stmt);
+	      if (!CONVERT_EXPR_CODE_P (sc)
+		  || !castlhs
+		  || !INTEGRAL_TYPE_P (TREE_TYPE (castlhs))
+		  || (TYPE_PRECISION (TREE_TYPE (castlhs))
+		      > TYPE_PRECISION (TREE_TYPE (maxval))))
+		return 0;
+	      return 1;
+	    }
+	}
+      else
+	return 0;
+      if ((ccode != EQ_EXPR && ccode != NE_EXPR)
+	  || crhs1 != shiftlhs
+	  || !integer_zerop (crhs2))
+	return 0;
+      return 1;
+    }
+
   if (TREE_CODE_CLASS (ccode) != tcc_comparison)
     return 0;
 
@@ -4049,6 +4109,7 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
    _8 = IMAGPART_EXPR <_7>;
    if (_8)
    and replace (utype) x with _9.
+   Or with x >> popcount (max) instead of x > max.
 
    Also recognize:
    x = ~z;
@@ -4481,10 +4542,62 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	  gcc_checking_assert (is_gimple_assign (use_stmt));
 	  if (gimple_assign_rhs_class (use_stmt) == GIMPLE_BINARY_RHS)
 	    {
-	      gimple_assign_set_rhs1 (use_stmt, ovf);
-	      gimple_assign_set_rhs2 (use_stmt, build_int_cst (type, 0));
-	      gimple_assign_set_rhs_code (use_stmt,
-					  ovf_use == 1 ? NE_EXPR : EQ_EXPR);
+	      if (gimple_assign_rhs_code (use_stmt) == RSHIFT_EXPR)
+		{
+		  g2 = gimple_build_assign (make_ssa_name (boolean_type_node),
+					    ovf_use == 1 ? NE_EXPR : EQ_EXPR,
+					    ovf, build_int_cst (type, 0));
+		  gimple_stmt_iterator gsiu = gsi_for_stmt (use_stmt);
+		  gsi_insert_before (&gsiu, g2, GSI_SAME_STMT);
+		  gimple_assign_set_rhs_with_ops (&gsiu, NOP_EXPR,
+						  gimple_assign_lhs (g2));
+		  update_stmt (use_stmt);
+		  use_operand_p use;
+		  single_imm_use (gimple_assign_lhs (use_stmt), &use,
+				  &use_stmt);
+		  if (gimple_code (use_stmt) == GIMPLE_COND)
+		    {
+		      gcond *cond_stmt = as_a <gcond *> (use_stmt);
+		      gimple_cond_set_lhs (cond_stmt, ovf);
+		      gimple_cond_set_rhs (cond_stmt, build_int_cst (type, 0));
+		    }
+		  else
+		    {
+		      gcc_checking_assert (is_gimple_assign (use_stmt));
+		      if (gimple_assign_rhs_class (use_stmt)
+			  == GIMPLE_BINARY_RHS)
+			{
+			  gimple_assign_set_rhs1 (use_stmt, ovf);
+			  gimple_assign_set_rhs2 (use_stmt,
+						  build_int_cst (type, 0));
+			}
+		      else if (gimple_assign_cast_p (use_stmt))
+			gimple_assign_set_rhs1 (use_stmt, ovf);
+		      else
+			{
+			  tree_code sc = gimple_assign_rhs_code (use_stmt);
+			  gcc_checking_assert (sc == COND_EXPR);
+			  tree cond = gimple_assign_rhs1 (use_stmt);
+			  cond = build2 (TREE_CODE (cond),
+					 boolean_type_node, ovf,
+					 build_int_cst (type, 0));
+			  gimple_assign_set_rhs1 (use_stmt, cond);
+			}
+		    }
+		  update_stmt (use_stmt);
+		  gsi_remove (&gsiu, true);
+		  gsiu = gsi_for_stmt (g2);
+		  gsi_remove (&gsiu, true);
+		  continue;
+		}
+	      else
+		{
+		  gimple_assign_set_rhs1 (use_stmt, ovf);
+		  gimple_assign_set_rhs2 (use_stmt, build_int_cst (type, 0));
+		  gimple_assign_set_rhs_code (use_stmt,
+					      ovf_use == 1
+					      ? NE_EXPR : EQ_EXPR);
+		}
 	    }
 	  else
 	    {
