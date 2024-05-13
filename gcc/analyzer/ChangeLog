@@ -1,3 +1,63 @@
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114408
+	* engine.cc (impl_run_checkers): Free up any dominance info that
+	we may have created.
+	* kf.cc (class kf_ubsan_handler): New.
+	(register_sanitizer_builtins): New.
+	(register_known_functions): Call register_sanitizer_builtins.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109251
+	* sm-malloc.cc (deref_before_check::emit): Reject cases where the
+	check is in a loop header within a macro expansion.
+	(deref_before_check::loop_header_p): New.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111289
+	* varargs.cc (representable_in_integral_type_p): New.
+	(va_arg_compatible_types_p): Add "arg_sval" param.  Handle integer
+	types.
+	(kf_va_arg::impl_call_pre): Pass arg_sval to
+	va_arg_compatible_types_p.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112969
+	* store.cc (binding_cluster::maybe_get_compound_binding): When
+	populating default_map, express the bit-range of the default key
+	for REG relative to REG, rather than to the base region.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113333
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Casting all zeroes
+	should give all zeroes.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112790
+	* checker-event.cc (class inlining_info): Move to...
+	* inlining-iterator.h (class inlining_info): ...here.
+	* sm-malloc.cc: Include "analyzer/inlining-iterator.h".
+	(maybe_complain_about_deref_before_check): Reject stmts that were
+	inlined from another function.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112889
+	* store.h (concrete_binding::concrete_binding): Strengthen
+	assertion to require size to be be positive, rather than just
+	non-zero.
+	(concrete_binding::mark_deleted): Use size rather than start bit
+	offset.
+	(concrete_binding::mark_empty): Likewise.
+	(concrete_binding::is_deleted): Likewise.
+	(concrete_binding::is_empty): Likewise.
+
 2023-07-27  Release Manager
 
 	* GCC 13.2.0 released.

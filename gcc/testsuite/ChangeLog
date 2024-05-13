@@ -1,3 +1,63 @@
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/111700
+	* c-c++-common/diagnostic-format-sarif-file-pr111700.c: New test.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114408
+	* gcc.dg/analyzer/deref-before-check-pr114408.c: New test.
+	* c-c++-common/ubsan/analyzer-ice-pr114408.c: New test.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109251
+	* gcc.dg/analyzer/deref-before-check-pr109251-1.c: New test.
+	* gcc.dg/analyzer/deref-before-check-pr109251-2.c: New test.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111289
+	* gcc.dg/analyzer/stdarg-pr111289-int.c: New test.
+	* gcc.dg/analyzer/stdarg-pr111289-ptr.c: New test.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112969
+	* gcc.dg/analyzer/compound-assignment-5.c (test_3): Remove
+	xfails, reorder tests.
+	* gcc.dg/analyzer/compound-assignment-pr112969.c: New test.
+	* gcc.dg/plugin/infoleak-pr112969.c: New test.
+	* gcc.dg/plugin/plugin.exp: Add infoleak-pr112969.c to
+	analyzer_kernel_plugin.c tests.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/113333
+	* gcc.dg/analyzer/calloc-1.c: Add tests.
+	* gcc.dg/analyzer/data-model-9.c: Update expected results.
+	* gcc.dg/analyzer/pr96639.c: Update expected results.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112790
+	* gcc.dg/analyzer/deref-before-check-pr112790.c: New test.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/112889
+	* gcc.dg/analyzer/ice-pr112889.c: New test.
+
+2024-05-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/114415
+	* gcc.target/i386/pr114415.c: New test.
+
+2024-05-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111009
+	* gcc.dg/pr111009.c: New.
+
 2024-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

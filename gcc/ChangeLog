@@ -1,3 +1,41 @@
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/114348
+	* diagnostic.cc (output_format): New variable.
+	(fnotice): Bail out if the user requested one of the
+	machine-readable diagnostic output formats on stderr.
+	(diagnostic_output_format_init): Set output_format.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR middle-end/112684
+	* toplev.cc (toplev::main): Don't ICE in
+	-fdiagnostics-generate-patch when exiting after options,
+	since no edit context will have been created.
+
+2024-05-09  David Malcolm  <dmalcolm@redhat.com>
+
+	PR driver/111700
+	* input.cc (file_cache::add_file): Update leading comment to
+	clarify that it can fail.
+	(file_cache::lookup_or_add_file): Likewise.
+	(get_source_file_content): Gracefully handle lookup_or_add_file
+	failing.
+
+2024-05-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/114415
+	* sched-deps.cc (add_insn_mem_dependence): Add memory check for mem argument.
+	(sched_analyze_1): Treat stack pointer modification as memory read.
+	(sched_analyze_2, sched_analyze_insn): Add memory guard for processing pending_read_mems.
+	* sched-int.h (deps_desc): Add comment to pending_read_mems.
+
+2024-05-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111009
+	* range-op.cc (operator_addr_expr::op1_range): Be more restrictive.
+	* value-range.h (contains_zero_p): New.
+
 2024-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
