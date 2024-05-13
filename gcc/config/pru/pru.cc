@@ -517,6 +517,17 @@ pru_can_use_return_insn (void)
   return cfun->machine->total_size == 0;
 }
 
+/* Implement `TARGET_CLASS_LIKELY_SPILLED_P'.  The original intention
+   of the default implementation is kept, but is adjusted for PRU.
+   Return TRUE if the given class C contains a single SImode
+   (as opposed to word_mode!) register.  */
+
+static bool
+pru_class_likely_spilled_p (reg_class_t c)
+{
+  return (reg_class_size[(int) c] <= GET_MODE_SIZE (SImode));
+}
+
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
 static bool
@@ -3180,6 +3191,9 @@ pru_unwind_word_mode (void)
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE pru_can_eliminate
+
+#undef TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P pru_class_likely_spilled_p
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK pru_hard_regno_mode_ok
