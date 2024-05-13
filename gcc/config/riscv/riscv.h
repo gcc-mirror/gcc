@@ -641,6 +641,13 @@ enum reg_class
 #define SUM_OF_TWO_S12(VALUE)						\
   (SUM_OF_TWO_S12_N (VALUE) || SUM_OF_TWO_S12_P (VALUE))
 
+/* Variant with first value 8 byte aligned if involving stack regs.  */
+#define SUM_OF_TWO_S12_P_ALGN(VALUE)				\
+  (((VALUE) >= (2032 + 1)) && ((VALUE) <= (2032 * 2)))
+
+#define SUM_OF_TWO_S12_ALGN(VALUE)				\
+  (SUM_OF_TWO_S12_N (VALUE) || SUM_OF_TWO_S12_P_ALGN (VALUE))
+
 /* If this is a single bit mask, then we can load it with bseti.  Special
    handling of SImode 0x80000000 on RV64 is done in riscv_build_integer_1. */
 #define SINGLE_BIT_MASK_OPERAND(VALUE)					\

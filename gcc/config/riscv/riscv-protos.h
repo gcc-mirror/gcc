@@ -167,6 +167,8 @@ extern void riscv_subword_address (rtx, rtx *, rtx *, rtx *, rtx *);
 extern void riscv_lshift_subword (machine_mode, rtx, rtx, rtx *);
 extern enum memmodel riscv_union_memmodels (enum memmodel, enum memmodel);
 extern bool riscv_reg_frame_related (rtx);
+extern void riscv_split_sum_of_two_s12 (HOST_WIDE_INT, HOST_WIDE_INT *,
+					HOST_WIDE_INT *);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);

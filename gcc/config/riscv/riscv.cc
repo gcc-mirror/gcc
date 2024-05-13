@@ -4075,6 +4075,32 @@ riscv_split_doubleword_move (rtx dest, rtx src)
        riscv_emit_move (riscv_subword (dest, true), riscv_subword (src, true));
      }
 }
+
+/* Constant VAL is known to be sum of two S12 constants.  Break it into
+   comprising BASE and OFF.
+   Numerically S12 is -2048 to 2047, however it uses the more conservative
+   range -2048 to 2032 as offsets pertain to stack related registers.  */
+
+void
+riscv_split_sum_of_two_s12 (HOST_WIDE_INT val, HOST_WIDE_INT *base,
+			    HOST_WIDE_INT *off)
+{
+  if (SUM_OF_TWO_S12_N (val))
+    {
+      *base = -2048;
+      *off = val - (-2048);
+    }
+  else if (SUM_OF_TWO_S12_P_ALGN (val))
+    {
+      *base = 2032;
+      *off = val - 2032;
+    }
+  else
+    {
+      gcc_unreachable ();
+    }
+}
+
 
 /* Return the appropriate instructions to move SRC into DEST.  Assume
    that SRC is operand 1 and DEST is operand 0.  */
@@ -7864,6 +7890,17 @@ riscv_expand_prologue (void)
 				GEN_INT (-constant_frame));
 	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 	}
+      else if (SUM_OF_TWO_S12_ALGN (-constant_frame))
+	{
+	  HOST_WIDE_INT one, two;
+	  riscv_split_sum_of_two_s12 (-constant_frame, &one, &two);
+	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (one));
+	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+	  insn = gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (two));
+	  RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
+	}
       else
 	{
 	  riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), GEN_INT (-constant_frame));
@@ -8160,10 +8197,21 @@ riscv_expand_epilogue (int style)
 
       /* Get an rtx for STEP1 that we can add to BASE.
 	 Skip if adjust equal to zero.  */
-      if (step1.to_constant () != 0)
+      HOST_WIDE_INT step1_value = step1.to_constant ();
+      if (step1_value != 0)
 	{
-	  rtx adjust = GEN_INT (step1.to_constant ());
-	  if (!SMALL_OPERAND (step1.to_constant ()))
+	  rtx adjust = GEN_INT (step1_value);
+	  if (SUM_OF_TWO_S12_ALGN (step1_value))
+	    {
+	      HOST_WIDE_INT one, two;
+	      riscv_split_sum_of_two_s12 (step1_value, &one, &two);
+	      insn = emit_insn (gen_add3_insn (stack_pointer_rtx,
+						stack_pointer_rtx,
+						GEN_INT (one)));
+	      RTX_FRAME_RELATED_P (insn) = 1;
+	      adjust = GEN_INT (two);
+	    }
+	  else if (!SMALL_OPERAND (step1_value))
 	    {
 	      riscv_emit_move (RISCV_PROLOGUE_TEMP (Pmode), adjust);
 	      adjust = RISCV_PROLOGUE_TEMP (Pmode);
