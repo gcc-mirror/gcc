@@ -4911,6 +4911,7 @@ done:
 	  gfc_expr *expr;
 	  locus *expr_loc;
 	  const char *expr_name;
+	  char *ref_name = NULL;
 
 	  ss_info = ss->info;
 	  if (ss_info->type != GFC_SS_SECTION)
@@ -4922,7 +4923,10 @@ done:
 
 	  expr = ss_info->expr;
 	  expr_loc = &expr->where;
-	  expr_name = expr->symtree->name;
+	  if (expr->ref)
+	    expr_name = ref_name = abridged_ref_name (expr, NULL);
+	  else
+	    expr_name = expr->symtree->name;
 
 	  gfc_start_block (&inner);
 
@@ -5134,6 +5138,7 @@ done:
 
 	  gfc_add_expr_to_block (&block, tmp);
 
+	  free (ref_name);
 	}
 
       tmp = gfc_finish_block (&block);
