@@ -298,7 +298,7 @@
          (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand"  "vr"))
        (match_operand:VWEXTI 2 "vector_merge_operand" "0vu")))]
   "TARGET_ZVBB"
-  "vwsll.vv\t%0,%3,%4%p1"
+  "vwsll.v%o4\t%0,%3,%4%p1"
   [(set_attr "type" "vwsll")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
 

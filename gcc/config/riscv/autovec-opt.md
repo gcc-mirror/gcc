@@ -1467,5 +1467,127 @@
 	operands, operands[4]);
     DONE;
   }
-  [(set_attr "type" "vector")]
-)
+  [(set_attr "type" "vector")])
+
+;; vzext.vf2 + vsll = vwsll.
+(define_insn_and_split "*vwsll_zext1_<mode>"
+  [(set (match_operand:VWEXTI 0		    "register_operand"	   "=vr ")
+      (ashift:VWEXTI
+	(zero_extend:VWEXTI
+	  (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"	   " vr "))
+	  (match_operand:<V_DOUBLE_TRUNC> 2 "vector_shift_operand" "vrvk")))]
+  "TARGET_ZVBB && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_vwsll (<MODE>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vwsll")])
+
+(define_insn_and_split "*vwsll_zext2_<mode>"
+  [(set (match_operand:VWEXTI 0		    "register_operand"	   "=vr ")
+      (ashift:VWEXTI
+	(zero_extend:VWEXTI
+	  (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"	   " vr "))
+	(zero_extend:VWEXTI
+	  (match_operand:<V_DOUBLE_TRUNC> 2 "vector_shift_operand" "vrvk"))))]
+  "TARGET_ZVBB && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_vwsll (<MODE>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vwsll")])
+
+
+(define_insn_and_split "*vwsll_zext1_scalar_<mode>"
+  [(set (match_operand:VWEXTI 0		    "register_operand"		  "=vr")
+      (ashift:VWEXTI
+	(zero_extend:VWEXTI
+	  (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"		  " vr"))
+	  (match_operand:<VEL>		  2 "vector_scalar_shift_operand" " rK")))]
+  "TARGET_ZVBB && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    if (GET_CODE (operands[2]) == SUBREG)
+      operands[2] = SUBREG_REG (operands[2]);
+    insn_code icode = code_for_pred_vwsll_scalar (<MODE>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vwsll")])
+
+;; For
+;;   uint16_t dst;
+;;   uint8_t a, b;
+;;   dst = vwsll (a, b)
+;; we seem to create
+;;   aa = (int) a;
+;;   bb = (int) b;
+;;   dst = (short) vwsll (aa, bb);
+;; The following patterns help to combine this idiom into one vwsll.
+
+(define_insn_and_split "*vwsll_zext1_trunc_<mode>"
+  [(set (match_operand:<V_DOUBLE_TRUNC> 0   "register_operand"	   "=vr ")
+    (truncate:<V_DOUBLE_TRUNC>
+      (ashift:VQEXTI
+	(zero_extend:VQEXTI
+	  (match_operand:<V_QUAD_TRUNC> 1   "register_operand"	   " vr "))
+	(match_operand:VQEXTI		2   "vector_shift_operand" "vrvk"))))]
+  "TARGET_ZVBB && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_vwsll (<V_DOUBLE_TRUNC>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vwsll")])
+
+(define_insn_and_split "*vwsll_zext2_trunc_<mode>"
+  [(set (match_operand:<V_DOUBLE_TRUNC> 0   "register_operand"	   "=vr ")
+    (truncate:<V_DOUBLE_TRUNC>
+      (ashift:VQEXTI
+	(zero_extend:VQEXTI
+	  (match_operand:<V_QUAD_TRUNC> 1   "register_operand"	   " vr "))
+	(zero_extend:VQEXTI
+	  (match_operand:<V_QUAD_TRUNC>	2   "vector_shift_operand" "vrvk")))))]
+  "TARGET_ZVBB && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_vwsll (<V_DOUBLE_TRUNC>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vwsll")])
+
+(define_insn_and_split "*vwsll_zext1_trunc_scalar_<mode>"
+  [(set (match_operand:<V_DOUBLE_TRUNC> 0   "register_operand"		  "=vr ")
+    (truncate:<V_DOUBLE_TRUNC>
+      (ashift:VQEXTI
+	(zero_extend:VQEXTI
+	  (match_operand:<V_QUAD_TRUNC> 1   "register_operand"		  " vr "))
+	  (match_operand:<VEL>		2   "vector_scalar_shift_operand" " rK"))))]
+  "TARGET_ZVBB && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    if (GET_CODE (operands[2]) == SUBREG)
+      operands[2] = SUBREG_REG (operands[2]);
+    insn_code icode = code_for_pred_vwsll_scalar (<V_DOUBLE_TRUNC>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vwsll")])
