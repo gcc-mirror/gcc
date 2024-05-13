@@ -5699,8 +5699,7 @@ enum tsubst_flags {
 				declaration.  */
   tf_no_cleanup = 1 << 10,   /* Do not build a cleanup
 				(build_target_expr and friends) */
-  tf_norm = 1 << 11,		 /* Build diagnostic information during
-				    constraint normalization.  */
+  /* 1 << 11 is available.  */
   tf_tst_ok = 1 << 12,		 /* Allow a typename-specifier to name
 				    a template (C++17 or later).  */
   tf_dguide = 1 << 13,		/* Building a deduction guide from a ctor.  */
