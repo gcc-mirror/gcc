@@ -87,7 +87,7 @@ namespace
   void*
   __open_terminal(std::streambuf* sb)
   {
-#ifndef _GLIBCXX_USE_STDIO_PURE
+#if ! defined _GLIBCXX_USE_STDIO_PURE && defined __cpp_rtti
     using namespace __gnu_cxx;
 
     if (auto fb = dynamic_cast<stdio_sync_filebuf<char>*>(sb))
