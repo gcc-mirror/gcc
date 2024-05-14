@@ -1,3 +1,12 @@
+2024-05-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/54052
+	* rtl-ssa/blocks.cc (function_info::place_phis): Filter
+	local defs by LR_OUT.
+
 2024-05-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR middle-end/114348

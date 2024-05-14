@@ -1,3 +1,11 @@
+2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114709
+	* g++.dg/cpp0x/constexpr-union8.C: New test.
+
 2024-05-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR driver/111700

@@ -1,3 +1,12 @@
+2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114709
+	* constexpr.cc (cxx_fold_indirect_ref): Restrict object/offset
+	canonicalization to RECORD_TYPE member accesses.
+
 2024-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
