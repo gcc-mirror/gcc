@@ -85,7 +85,6 @@ static void emit_block_move_via_sized_loop (rtx, rtx, rtx, unsigned, unsigned);
 static void emit_block_move_via_oriented_loop (rtx, rtx, rtx, unsigned, unsigned);
 static rtx emit_block_cmp_via_loop (rtx, rtx, rtx, tree, rtx, bool,
 				    unsigned, unsigned);
-static void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
 static rtx_insn *compress_float_constant (rtx, rtx);
 static rtx get_subtarget (rtx);
 static rtx store_field (rtx, poly_int64, poly_int64, poly_uint64, poly_uint64,
@@ -1840,10 +1839,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
     return to;
 }
 
-/* Generate several move instructions to clear LEN bytes of block TO.  (A MEM
-   rtx with BLKmode).  ALIGN is maximum alignment we can assume.  */
-
-static void
+void
 clear_by_pieces (rtx to, unsigned HOST_WIDE_INT len, unsigned int align)
 {
   if (len == 0)

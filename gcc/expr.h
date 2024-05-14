@@ -245,6 +245,11 @@ extern bool can_store_by_pieces (unsigned HOST_WIDE_INT,
 extern rtx store_by_pieces (rtx, unsigned HOST_WIDE_INT, by_pieces_constfn,
 			    void *, unsigned int, bool, memop_ret);
 
+/* Generate several move instructions to clear LEN bytes of block TO.  (A MEM
+   rtx with BLKmode).  ALIGN is maximum alignment we can assume.  */
+
+extern void clear_by_pieces (rtx, unsigned HOST_WIDE_INT, unsigned int);
+
 /* If can_store_by_pieces passes for worst-case values near MAX_LEN, call
    store_by_pieces within conditionals so as to handle variable LEN efficiently,
    storing VAL, if non-NULL_RTX, or valc instead.  */
