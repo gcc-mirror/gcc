@@ -24,6 +24,6 @@ void foo3()
     __builtin_riscv_zicbom_cbo_inval((void*)0x111);
 }
 
-/* { dg-final { scan-assembler-times "cbo.clean" 3 } } */
-/* { dg-final { scan-assembler-times "cbo.flush" 3 } } */
-/* { dg-final { scan-assembler-times "cbo.inval" 3 } } */
+/* { dg-final { scan-assembler-times "cbo.clean\t" 3 } } */
+/* { dg-final { scan-assembler-times "cbo.flush\t" 3 } } */
+/* { dg-final { scan-assembler-times "cbo.inval\t" 3 } } */
