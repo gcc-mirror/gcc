@@ -295,6 +295,11 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
   if (!may_be_aliased (decl))
     return false;
 
+  /* From here we require a SSA name pointer.  Anything else aliases.  */
+  if (TREE_CODE (ptr) != SSA_NAME
+      || !POINTER_TYPE_P (TREE_TYPE (ptr)))
+    return true;
+
   /* If we do not have useful points-to information for this pointer
      we cannot disambiguate anything else.  */
   pi = SSA_NAME_PTR_INFO (ptr);
