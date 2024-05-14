@@ -4397,6 +4397,58 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
 		       GOMP_PLUGIN_target_task_completion, async_data);
 }
 
+/* The selectors are passed as strings, but are actually sets of multiple
+   trait property names, separated by '\0' and with an extra '\0' at
+   the end.  Match such a string SELECTORS against an array of strings
+   CHOICES, that is terminated by a null pointer.
+   matches.  */
+static bool
+gomp_match_selectors (const char *selectors, const char **choices)
+{
+  while (*selectors != '\0')
+    {
+      bool match = false;
+      for (int i = 0; !match && choices[i]; i++)
+	match = !strcmp (selectors, choices[i]);
+      if (!match)
+	return false;
+      selectors += strlen (selectors) + 1;
+    }
+  return true;
+}
+
+/* Here we can only have one possible match and it must be
+   the only selector provided.  */
+static bool
+gomp_match_isa (const char *selectors, gcn_isa isa)
+{
+  if (isa_code (selectors) != isa)
+    return false;
+  if (*(selectors + strlen (selectors) + 1) != '\0')
+    return false;
+  return true;
+}
+
+bool
+GOMP_OFFLOAD_evaluate_device (int device_num, const char *kind,
+			      const char *arch, const char *isa)
+{
+  static const char *kind_choices[] = { "gpu", "nohost", NULL };
+  static const char *arch_choices[] = { "gcn", "amdgcn", NULL };
+  struct agent_info *agent = get_agent_info (device_num);
+
+  if (kind && !gomp_match_selectors (kind, kind_choices))
+    return false;
+
+  if (arch && !gomp_match_selectors (arch, arch_choices))
+    return false;
+
+  if (isa && !gomp_match_isa (isa, agent->device_isa))
+    return false;
+
+  return true;
+}
+
 /* }}} */
 /* {{{ OpenACC Plugin API  */
 

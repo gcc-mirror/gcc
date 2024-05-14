@@ -429,6 +429,11 @@ GOMP_5.1.2 {
 	GOMP_target_map_indirect_ptr;
 } GOMP_5.1.1;
 
+GOMP_5.1.3 {
+  global:
+	GOMP_evaluate_target_device;
+} GOMP_5.1.2;
+
 OACC_2.0 {
   global:
 	acc_get_num_devices;

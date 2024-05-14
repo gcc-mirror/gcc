@@ -154,6 +154,8 @@ extern int GOMP_OFFLOAD_memcpy3d (int, int, size_t, size_t, size_t, void *,
 extern bool GOMP_OFFLOAD_can_run (void *);
 extern void GOMP_OFFLOAD_run (int, void *, void *, void **);
 extern void GOMP_OFFLOAD_async_run (int, void *, void *, void **, void *);
+extern bool GOMP_OFFLOAD_evaluate_device (int, const char *, const char *,
+					  const char *);
 
 extern void GOMP_OFFLOAD_openacc_exec (void (*) (void *), size_t, void **,
 				       void **, unsigned *, void *);

@@ -319,6 +319,7 @@ struct ptx_device
   int max_threads_per_block;
   int max_threads_per_multiprocessor;
   int default_dims[GOMP_DIM_MAX];
+  int compute_major, compute_minor;
 
   /* Length as used by the CUDA Runtime API ('struct cudaDeviceProp').  */
   char name[256];
@@ -550,6 +551,14 @@ nvptx_open_device (int n)
 
   for (int i = 0; i != GOMP_DIM_MAX; i++)
     ptx_dev->default_dims[i] = 0;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR, dev);
+  ptx_dev->compute_major = pi;
+
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute, &pi,
+		  CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR, dev);
+  ptx_dev->compute_minor = pi;
 
   CUDA_CALL_ERET (NULL, cuDeviceGetName, ptx_dev->name, sizeof ptx_dev->name,
 		  dev);
@@ -2558,3 +2567,76 @@ poll_again:
 }
 
 /* TODO: Implement GOMP_OFFLOAD_async_run. */
+
+/* The selectors are passed as strings, but are actually sets of multiple
+   trait property names, separated by '\0' and with an extra '\0' at
+   the end.  Match such a string SELECTORS against an array of strings
+   CHOICES, that is terminated by a null pointer.
+   matches.  */
+static bool
+gomp_match_selectors (const char *selectors, const char **choices)
+{
+  while (*selectors != '\0')
+    {
+      bool match = false;
+      for (int i = 0; !match && choices[i]; i++)
+	match = !strcmp (selectors, choices[i]);
+      if (!match)
+	return false;
+      selectors += strlen (selectors) + 1;
+    }
+  return true;
+}
+
+/* Here we can only have one possible match and it must be
+   the only selector provided.  */
+static bool
+gomp_match_selector (const char *selectors, const char *choice)
+{
+  if (!strcmp (selectors, choice))
+    return false;
+  if (*(selectors + strlen (selectors) + 1) != '\0')
+    return false;
+  return true;
+}
+
+#define CHECK_ISA(major, minor)					\
+  if (device->compute_major >= major				\
+      && device->compute_minor >= minor				\
+      && gomp_match_selector (isa, "sm_"#major#minor))		\
+    return true
+
+bool
+GOMP_OFFLOAD_evaluate_device (int device_num, const char *kind,
+			      const char *arch, const char *isa)
+{
+  static const char *kind_choices[] = { "gpu", "nohost", NULL };
+  static const char *arch_choices[] = { "nvptx", NULL };
+  if (kind && !gomp_match_selectors (kind, kind_choices))
+    return false;
+
+  if (arch && !gomp_match_selectors (arch, arch_choices))
+    return false;
+
+  if (!isa)
+    return true;
+
+  struct ptx_device *device = ptx_devices[device_num];
+
+  CHECK_ISA (3, 0);
+  CHECK_ISA (3, 5);
+  CHECK_ISA (3, 7);
+  CHECK_ISA (5, 0);
+  CHECK_ISA (5, 2);
+  CHECK_ISA (5, 3);
+  CHECK_ISA (6, 0);
+  CHECK_ISA (6, 1);
+  CHECK_ISA (6, 2);
+  CHECK_ISA (7, 0);
+  CHECK_ISA (7, 2);
+  CHECK_ISA (7, 5);
+  CHECK_ISA (8, 0);
+  CHECK_ISA (8, 6);
+
+  return false;
+}

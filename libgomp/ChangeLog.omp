@@ -1,3 +1,35 @@
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* Makefile.am (libgomp_la_SOURCES): Add selector.c.
+	* Makefile.in: Regenerate.
+	* config/gcn/selector.c: New.
+	* config/linux/selector.c: New.
+	* config/linux/x86/selector.c: New.
+	* config/nvptx/selector.c: New.
+	* libgomp-plugin.h (GOMP_OFFLOAD_evaluate_device): New.
+	* libgomp.h (struct gomp_device_descr): Add evaluate_device_func field.
+	* libgomp.map (GOMP_5.1.3): New, add GOMP_evaluate_target_device.
+	* libgomp.texi (OpenMP Context Selectors): Document dynamic selector
+	matching of kind/arch/isa.
+	* libgomp_g.h (GOMP_evaluate_current_device): New.
+	(GOMP_evaluate_target_device): New.
+	* oacc-host.c (host_evaluate_device): New.
+	(host_openacc_exec): Initialize evaluate_device_func field to
+	host_evaluate_device.
+	* plugin/plugin-gcn.c (gomp_match_selectors): New.
+	(gomp_match_isa): New.
+	(GOMP_OFFLOAD_evaluate_device): New.
+	* plugin/plugin-nvptx.c (struct ptx_device): Add compute_major and
+	compute_minor fields.
+	(nvptx_open_device): Read compute capability information from device.
+	(gomp_match_selectors): New.
+	(gomp_match_selector): New.
+	(CHECK_ISA): New macro.
+	(GOMP_OFFLOAD_evaluate_device): New.
+	* selector.c: New.
+	* target.c (GOMP_evaluate_target_device): New.
+	(gomp_load_plugin_for_device): Load evaluate_device plugin function.
+
 2023-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/allocate-8a.f90: New test.

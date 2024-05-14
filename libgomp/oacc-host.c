@@ -136,6 +136,16 @@ host_run (int n __attribute__ ((unused)), void *fn_ptr, void *vars,
   fn (vars);
 }
 
+static bool
+host_evaluate_device (int device_num __attribute__ ((unused)),
+		      const char *kind __attribute__ ((unused)),
+		      const char *arch __attribute__ ((unused)),
+		      const char *isa __attribute__ ((unused)))
+{
+  __builtin_unreachable ();
+  return false;
+}
+
 static void
 host_openacc_exec (void (*fn) (void *),
 		   size_t mapnum __attribute__ ((unused)),
@@ -285,6 +295,7 @@ static struct gomp_device_descr host_dispatch =
     .memcpy2d_func = NULL,
     .memcpy3d_func = NULL,
     .run_func = host_run,
+    .evaluate_device_func = host_evaluate_device,
 
     .mem_map = { NULL },
     .mem_map_rev = { NULL },

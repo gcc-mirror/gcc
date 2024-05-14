@@ -5652,6 +5652,45 @@ omp_pause_resource_all (omp_pause_resource_t kind)
 ialias (omp_pause_resource)
 ialias (omp_pause_resource_all)
 
+bool
+GOMP_evaluate_target_device (int device_num, const char *kind,
+			     const char *arch, const char *isa)
+{
+  bool result = true;
+
+  /* -2 is a magic number to indicate the device number was not specified;
+     in that case it's supposed to use the default device.  */
+  if (device_num == -2)
+    device_num = omp_get_default_device ();
+
+  if (kind && strcmp (kind, "any") == 0)
+    kind = NULL;
+
+  gomp_debug (1, "%s: device_num = %u, kind=%s, arch=%s, isa=%s",
+	      __FUNCTION__, device_num, kind, arch, isa);
+
+  if (omp_get_device_num () == device_num)
+    result = GOMP_evaluate_current_device (kind, arch, isa);
+  else
+    {
+      if (!omp_is_initial_device ())
+	/* Accelerators are not expected to know about other devices.  */
+	result = false;
+      else
+	{
+	  struct gomp_device_descr *device = resolve_device (device_num, true);
+	  if (device == NULL)
+	    result = false;
+	  else if (device->evaluate_device_func)
+	    result = device->evaluate_device_func (device_num, kind, arch,
+						   isa);
+	}
+    }
+
+  gomp_debug (1, " -> %s\n", result ? "true" : "false");
+  return result;
+}
+
 #ifdef PLUGIN_SUPPORT
 
 /* This function tries to load a plugin for DEVICE.  Name of plugin is passed
@@ -5706,6 +5745,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM_OPT (page_locked_host_free, page_locked_host_free);
   DLSYM (dev2host);
   DLSYM (host2dev);
+  DLSYM (evaluate_device);
   DLSYM_OPT (memcpy2d, memcpy2d);
   DLSYM_OPT (memcpy3d, memcpy3d);
   device->capabilities = device->get_caps_func ();
