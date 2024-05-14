@@ -42,7 +42,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-sra.h"
 
 #include "tree-ssa-alias-compare.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-icf-gimple.h"
+#include "sreal.h"
+#include "ipa-prop.h"
 
 namespace ipa_icf_gimple {
 
@@ -750,6 +754,31 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
       && t2
       && !compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
     return return_false_with_msg ("GIMPLE internal call LHS type mismatch");
+
+  if (!gimple_call_internal_p (s1))
+    {
+      cgraph_edge *e1 = cgraph_node::get (m_source_func_decl)->get_edge (s1);
+      cgraph_edge *e2 = cgraph_node::get (m_target_func_decl)->get_edge (s2);
+      class ipa_edge_args *args1 = ipa_edge_args_sum->get (e1);
+      class ipa_edge_args *args2 = ipa_edge_args_sum->get (e2);
+      if ((args1 != nullptr) != (args2 != nullptr))
+	return return_false_with_msg ("ipa_edge_args mismatch");
+      if (args1)
+	{
+	  int n1 = ipa_get_cs_argument_count (args1);
+	  int n2 = ipa_get_cs_argument_count (args2);
+	  if (n1 != n2)
+	    return return_false_with_msg ("ipa_edge_args nargs mismatch");
+	  for (int i = 0; i < n1; i++)
+	    {
+	      struct ipa_jump_func *jf1 = ipa_get_ith_jump_func (args1, i);
+	      struct ipa_jump_func *jf2 = ipa_get_ith_jump_func (args2, i);
+	      if (((jf1 != nullptr) != (jf2 != nullptr))
+		  || (jf1 && !ipa_jump_functions_equivalent_p (jf1, jf2)))
+		return return_false_with_msg ("jump function mismatch");
+	    }
+	}
+    }
 
   return compare_operand (t1, t2, get_operand_access_type (&map, t1));
 }

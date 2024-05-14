@@ -458,7 +458,7 @@ ipcp_lattice<valtype>::is_single_const ()
 
 /* Return true iff X and Y should be considered equal values by IPA-CP.  */
 
-static bool
+bool
 values_equal_for_ipcp_p (tree x, tree y)
 {
   gcc_checking_assert (x != NULL_TREE && y != NULL_TREE);

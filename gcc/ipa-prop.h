@@ -1194,11 +1194,14 @@ bool ipcp_get_parm_bits (tree, tree *, widest_int *);
 bool unadjusted_ptr_and_unit_offset (tree op, tree *ret,
 				     poly_int64 *offset_ret);
 
+bool ipa_jump_functions_equivalent_p (ipa_jump_func *jf1, ipa_jump_func *jf2);
+
 /* From tree-sra.cc:  */
 tree build_ref_for_offset (location_t, tree, poly_int64, bool, tree,
 			   gimple_stmt_iterator *, bool);
 
 /* In ipa-cp.cc  */
 void ipa_cp_cc_finalize (void);
+bool values_equal_for_ipcp_p (tree x, tree y);
 
 #endif /* IPA_PROP_H */
