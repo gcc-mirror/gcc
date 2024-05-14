@@ -1,3 +1,8 @@
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_finish_omp_declare_variant): Update calls to
+	omp_check_context_selector and omp_context_selector_matches.
+
 2023-10-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-parser.cc (c_parser_omp_allocate): Change error

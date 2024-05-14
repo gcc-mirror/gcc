@@ -2335,6 +2335,7 @@ edge.  Rethrowing the exception is represented using @code{RESX_EXPR}.
 @tindex OMP_CONTINUE
 @tindex OMP_ATOMIC
 @tindex OMP_CLAUSE
+@tindex OMP_METADIRECTIVE
 
 All the statements starting with @code{OMP_} represent directives and
 clauses used by the OpenMP API @w{@uref{https://www.openmp.org}}.
@@ -2551,6 +2552,37 @@ of variables are restricted to exactly one, accessed with
 same clause @code{C} need to be represented as multiple @code{C} clauses
 chained together.  This facilitates adding new clauses during
 compilation.
+
+@item OMP_METADIRECTIVE
+
+Represents @code{#pragma omp metadirective}.  This node has one field,
+accessed by the @code{OMP_METADIRECTIVE_VARIANTS (@var{node})} macro.
+
+Metadirective variants are represented internally as @code{TREE_LIST} nodes
+but you should use the interface provided in @file{omp-general.h} to
+access their components.
+
+@code{OMP_METADIRECTIVE_VARIANT_SELECTOR (@var{variant})}
+is the selector associated with the variant; this is null for the
+@samp{otherwise}/@samp{default} alternative.
+
+@code{OMP_METADIRECTIVE_VARIANT_DIRECTIVE (@var{variant})} is the
+nested directive for the variant.
+
+@code{OMP_METADIRECTIVE_VARIANT_BODY (@var{variant})} represents
+statements following a nested standalone or utility directive.
+In other cases, this field is null and the body is part of the
+nested directive instead.
+
+Metadirective context selectors (as well as context selectors for
+@code{#pragma omp declare variant}) are also represented internally using
+a @code{TREE_LIST} representation but with accessors and constructors
+declared in @file{omp-general.h}.  A complete context selector is a list of
+trait-set selectors, which are in turn composed of a list of trait selectors,
+each of which may have a list of trait properties.
+Identifiers for trait-set selectors and trait selectors are enums
+defined in @file{omp-selectors.h}, while trait property identifiers are
+string constants.
 
 @end table
 

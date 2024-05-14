@@ -1,3 +1,9 @@
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_declare_variant):  Update calls to
+	omp_check_context_selector and omp_context_selector_matches.
+	* types.def (BT_FN_BOOL_INT_CONST_PTR_CONST_PTR_CONST_PTR): New.
+
 2023-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_trans_omp_clauses): Avoid gfc_evaluate_now

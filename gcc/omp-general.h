@@ -91,6 +91,22 @@ struct omp_for_data
   tree adjn1;
 };
 
+/* Needs to be a GC-friendly widest_int variant, but precision is
+   desirable to be the same on all targets.  */
+typedef generic_wide_int <fixed_wide_int_storage <1024> > score_wide_int;
+
+/* A structure describing a variant in a metadirective.  */
+
+struct GTY(()) omp_variant
+{
+  score_wide_int score;
+  tree selector;
+  tree alternative;
+  tree body;
+  tree dynamic_selector;
+  bool resolvable_p : 1;
+};
+
 #define OACC_FN_ATTRIB "oacc function"
 
 /* Accessors for OMP context selectors, used by variant directives.
@@ -150,6 +166,15 @@ extern tree make_trait_set_selector (enum omp_tss_code, tree, tree);
 extern tree make_trait_selector (enum omp_ts_code, tree, tree, tree);
 extern tree make_trait_property (tree, tree, tree);
 
+/* Accessors and constructor for metadirective variants.  */
+#define OMP_METADIRECTIVE_VARIANT_SELECTOR(v) \
+  TREE_PURPOSE (v)
+#define OMP_METADIRECTIVE_VARIANT_DIRECTIVE(v) \
+  TREE_PURPOSE (TREE_VALUE (v))
+#define OMP_METADIRECTIVE_VARIANT_BODY(v) \
+  TREE_VALUE (TREE_VALUE (v))
+extern tree make_omp_metadirective_variant (tree, tree, tree);
+
 extern tree omp_find_clause (tree clauses, enum omp_clause_code kind);
 extern bool omp_is_allocatable_or_ptr (tree decl);
 extern tree omp_check_optional_argument (tree decl, bool for_present_check);
@@ -167,15 +192,17 @@ extern int omp_max_simt_vf (void);
 extern int omp_max_simd_vf (void);
 extern const char *omp_context_name_list_prop (tree);
 extern void omp_construct_traits_to_codes (tree, int, enum tree_code *);
-extern tree omp_check_context_selector (location_t loc, tree ctx);
+extern tree omp_check_context_selector (location_t loc, tree ctx,
+					bool metadirective_p);
 extern void omp_mark_declare_variant (location_t loc, tree variant,
 				      tree construct);
-extern int omp_context_selector_matches (tree);
+extern int omp_context_selector_matches (tree, bool, bool);
 extern int omp_context_selector_set_compare (enum omp_tss_code, tree, tree);
 extern tree omp_get_context_selector (tree, enum omp_tss_code,
 				      enum omp_ts_code);
 extern tree omp_get_context_selector_list (tree, enum omp_tss_code);
 extern tree omp_resolve_declare_variant (tree);
+extern vec<struct omp_variant> omp_early_resolve_metadirective (tree);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);
 extern void oacc_replace_fn_attrib (tree fn, tree dims);

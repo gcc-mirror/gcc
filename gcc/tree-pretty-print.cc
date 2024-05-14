@@ -1623,7 +1623,7 @@ dump_omp_clauses (pretty_printer *pp, tree clause, int spc, dump_flags_t flags,
 }
 
 /* Dump an OpenMP context selector CTX to PP.  */
-static void
+void
 dump_omp_context_selector (pretty_printer *pp, tree ctx, int spc,
 			   dump_flags_t flags)
 {
@@ -4177,6 +4177,40 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_generic_node (pp, OMP_DECLARE_MAPPER_DECL (node), spc, flags, false);
       pp_right_paren (pp);
       dump_omp_clauses (pp, OMP_DECLARE_MAPPER_CLAUSES (node), spc, flags);
+      break;
+
+    case OMP_METADIRECTIVE:
+      {
+	pp_string (pp, "#pragma omp metadirective");
+	newline_and_indent (pp, spc + 2);
+	pp_left_brace (pp);
+
+	tree variant = OMP_METADIRECTIVE_VARIANTS (node);
+	while (variant != NULL_TREE)
+	  {
+	    tree selector = OMP_METADIRECTIVE_VARIANT_SELECTOR (variant);
+	    tree directive = OMP_METADIRECTIVE_VARIANT_DIRECTIVE (variant);
+	    tree body = OMP_METADIRECTIVE_VARIANT_BODY (variant);
+
+	    newline_and_indent (pp, spc + 4);
+	    if (selector == NULL_TREE)
+	      pp_string (pp, "default:");
+	    else
+	      {
+		pp_string (pp, "when (");
+		dump_omp_context_selector (pp, selector, spc + 4, flags);
+		pp_string (pp, "):");
+	      }
+	    newline_and_indent (pp, spc + 6);
+
+	    dump_generic_node (pp, directive, spc + 6, flags, false);
+	    newline_and_indent (pp, spc + 6);
+	    dump_generic_node (pp, body, spc + 6, flags, false);
+	    variant = TREE_CHAIN (variant);
+	  }
+	newline_and_indent (pp, spc + 2);
+	pp_right_brace (pp);
+      }
       break;
 
     case TRANSACTION_EXPR:

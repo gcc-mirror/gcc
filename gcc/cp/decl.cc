@@ -8334,7 +8334,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	  tree construct
 	    = omp_get_context_selector_list (ctx, OMP_TRAIT_SET_CONSTRUCT);
 	  omp_mark_declare_variant (match_loc, variant, construct);
-	  if (!omp_context_selector_matches (ctx))
+	  if (!omp_context_selector_matches (ctx, false, true))
 	    return true;
 	  TREE_PURPOSE (TREE_VALUE (attr)) = variant;
 	}

@@ -11095,7 +11095,7 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	  continue;
 	}
       set_selectors = omp_check_context_selector
-	  (gfc_get_location (&odv->where), set_selectors);
+	(gfc_get_location (&odv->where), set_selectors, false);
       if (set_selectors != error_mark_node)
 	{
 	  if (!variant_proc_sym->attr.implicit_type
@@ -11132,7 +11132,7 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	      omp_mark_declare_variant (gfc_get_location (&odv->where),
 					gfc_get_symbol_decl (variant_proc_sym),
 					construct);
-	      if (omp_context_selector_matches (set_selectors))
+	      if (omp_context_selector_matches (set_selectors, false, true))
 		{
 		  tree id = get_identifier ("omp declare variant base");
 		  tree variant = gfc_get_symbol_decl (variant_proc_sym);

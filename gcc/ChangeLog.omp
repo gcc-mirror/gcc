@@ -1,3 +1,42 @@
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* Makefile.in (GTFILES): Move omp-general.h earlier in the list.
+	* builtin-types.def (BT_FN_BOOL_INT_CONST_PTR_CONST_PTR_CONST_PTR):
+	New.
+	* doc/generic.texi (OpenMP): Document OMP_METADIRECTIVE and
+	context selector interfaces.
+	* omp-builtins.def (BUILT_IN_GOMP_EVALUATE_TARGET_DEVICE): New.
+	* omp-general.cc (omp_check_context_selector): Add metadirective_p
+	parameter, use it to conditionalize target_device support.
+	(make_omp_metadirective_variant): New.
+	(omp_context_selector_matches): Add metadirective_p and delay_p
+	parameters, use them to control things that can only be matched
+	late.  Handle OMP_TRAIT_SET_TARGET_DEVICE.
+	(score_wide_int): Move definition to omp-general.h.
+	(omp_encode_kind_arch_isa_props): New.
+	(omp_dynamic_cond): New.
+	(omp_context_compute_score): Handle OMP_TRAIT_SET_TARGET_DEVICE.
+	(omp_resolve_late_declare_variant, omp_resolve_declare_variant):
+	Adjust calls to omp_context_selector_matches.
+	(sort_variant): New.
+	(omp_get_dynamic_candidates): New.
+	(omp_early_resolve_metadirective): New.
+	* omp-general.h (score_wide_int): Moved here from omp-general.cc.
+	(struct omp_variant): New.
+	(OMP_METADIRECTIVE_VARIANT_SELECTOR): New.
+	(OMP_METADIRECTIVE_VARIANT_DIRECTIVE): New.
+	(OMP_METADIRECTIVE_VARIANT_BODY): New.
+	(make_omp_metadirective_variant): Declare.
+	(omp_check_context_selector): Adjust to match definition.
+	(omp_context_selector_matches): Likewise.
+	(omp_early_resolve_metadirective): New.
+	* tree-pretty-print.cc (dump_omp_context_selector): Remove
+	static qualifier.
+	(dump_generic_node): Handle OMP_METADIRECTIVE.
+	* tree-pretty-print.h (dump_omp_context_selector): Declare.
+	* tree.def (OMP_METADIRECTIVE): New.
+	* tree.h (OMP_METADIRECTIVE_VARIANTS): New.
+
 2023-10-30  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gcc/gimplify.cc (gimplify_omp_allocate): Gimplify allocator.
