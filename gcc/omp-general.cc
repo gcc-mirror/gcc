@@ -1326,6 +1326,8 @@ omp_check_context_selector (location_t loc, tree ctx, bool metadirective_p)
   for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
     {
       enum omp_tss_code tss_code = OMP_TSS_CODE (tss);
+      bool saw_any_prop = false;
+      bool saw_other_prop = false;
 
       /* FIXME: not implemented yet.  */
       if (!metadirective_p && tss_code == OMP_TRAIT_SET_TARGET_DEVICE)
@@ -1362,6 +1364,27 @@ omp_check_context_selector (location_t loc, tree ctx, bool metadirective_p)
 	    }
 	  else
 	    ts_seen[ts_code] = true;
+
+
+	  /* If trait-property "any" is specified in the "kind"
+	     trait-selector of the "device" selector set or the
+	     "target_device" selector sets, no other trait-property
+	     may be specified in the same selector set.  */
+	  if (ts_code == OMP_TRAIT_DEVICE_KIND)
+	    for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
+	      {
+		const char *prop = omp_context_name_list_prop (p);
+		if (!prop)
+		  continue;
+		else if (strcmp (prop, "any") == 0)
+		  saw_any_prop = true;
+		else
+		  saw_other_prop = true;
+	      }
+	else if (ts_code == OMP_TRAIT_DEVICE_ARCH
+		   || ts_code == OMP_TRAIT_DEVICE_ISA
+		   || ts_code == OMP_TRAIT_DEVICE_NUM)
+	    saw_other_prop = true;
 
 	  if (omp_ts_map[ts_code].valid_properties == NULL)
 	    continue;
@@ -1414,6 +1437,14 @@ omp_check_context_selector (location_t loc, tree ctx, bool metadirective_p)
 		  /* Identifier traits.  */
 		  break;
 	      }
+	}
+
+      if (saw_any_prop && saw_other_prop)
+	{
+	  error_at (loc,
+		    "no other trait-property may be specified "
+		    "in the same selector set with %<kind(\"any\")%>");
+	  return error_mark_node;
 	}
     }
   return ctx;

@@ -38,7 +38,7 @@ contains
   subroutine f17 ()
   end subroutine
   subroutine f18 ()
-    !$omp declare variant (f17) match (device={kind("any","fpga")})
+    !$omp declare variant (f17) match (device={kind("fpga")})
   end subroutine
 
   subroutine test1 ()

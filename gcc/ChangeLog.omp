@@ -1,5 +1,10 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* omp-general.cc (omp_check_context_selector): Reject other
+	properties in the same selector set with kind(any).
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* cgraph.h (struct cgraph_node): Add has_metadirectives flag.
 	* cgraphclones.cc (cgraph_node::create_clone): Copy has_metadirectives
 	flag.
