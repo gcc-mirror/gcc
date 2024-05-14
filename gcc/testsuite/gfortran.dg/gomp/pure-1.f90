@@ -110,3 +110,10 @@ pure integer function func_tile(n)
   end do
   func_tile = r
 end
+
+!pure logical function func_metadirective()
+logical function func_metadirective()
+  implicit none
+  !$omp metadirective
+  func_metadirective = .false.
+end

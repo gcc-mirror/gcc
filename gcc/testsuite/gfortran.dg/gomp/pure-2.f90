@@ -26,14 +26,6 @@ logical function func_interchange(n)
   end do
 end
 
-
-!pure logical function func_metadirective()
-logical function func_metadirective()
-  implicit none
-  !$omp metadirective  ! { dg-error "Unclassifiable OpenMP directive" }
-  func_metadirective = .false.
-end
-
 !pure logical function func_reverse(n)
 logical function func_reverse(n)
   implicit none

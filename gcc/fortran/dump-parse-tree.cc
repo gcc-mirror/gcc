@@ -2197,6 +2197,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_MASTER: name = "MASTER"; break;
     case EXEC_OMP_MASTER_TASKLOOP: name = "MASTER TASKLOOP"; break;
     case EXEC_OMP_MASTER_TASKLOOP_SIMD: name = "MASTER TASKLOOP SIMD"; break;
+    case EXEC_OMP_METADIRECTIVE: name = "METADIRECTIVE"; break;
     case EXEC_OMP_ORDERED: name = "ORDERED"; break;
     case EXEC_OMP_DEPOBJ: name = "DEPOBJ"; break;
     case EXEC_OMP_PARALLEL: name = "PARALLEL"; break;
@@ -2396,6 +2397,25 @@ show_omp_node (int level, gfc_code *c)
 	  code_indent (level, 0);
 	  fputs ("!$OMP SECTION\n", dumpfile);
 	  d = d->block;
+	}
+    }
+  else if (c->op == EXEC_OMP_METADIRECTIVE)
+    {
+      gfc_omp_variant *variant
+	= c->ext.omp_variants;
+
+      while (variant)
+	{
+	  code_indent (level + 1, 0);
+	  if (variant->selectors)
+	    fputs ("WHEN ()\n", dumpfile);
+	  else
+	    fputs ("DEFAULT ()\n", dumpfile);
+	  /* TODO: Print selector.  */
+	  show_code (level + 2, variant->code);
+	  if (variant->next)
+	    fputs ("\n", dumpfile);
+	  variant = variant->next;
 	}
     }
   else
@@ -3541,6 +3561,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_MASTER:
     case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_MASTER_TASKLOOP_SIMD:
+    case EXEC_OMP_METADIRECTIVE:
     case EXEC_OMP_ORDERED:
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_DO:
