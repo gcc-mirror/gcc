@@ -4685,8 +4685,14 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 for any temporaries in the initialization are naturally within our
 	 cleanup region, so we don't want wrap_temporary_cleanups to do
 	 anything for arrays.  But if the array is a subobject, we need to
-	 tell split_nonconstant_init how to turn off this cleanup in favor of
-	 the cleanup for the complete object.  */
+	 tell split_nonconstant_init or cp_genericize_target_expr how to turn
+	 off this cleanup in favor of the cleanup for the complete object.
+
+	 ??? For an array temporary such as an initializer_list backing array,
+	 it would avoid redundancy to leave this cleanup active, clear
+	 CLEANUP_EH_ONLY, and not build another cleanup for the temporary
+	 itself.  But that breaks when gimplify_target_expr adds a clobber
+	 cleanup that runs before the build_vec_init cleanup.  */
       if (cleanup_flags)
 	vec_safe_push (*cleanup_flags, build_tree_list (iterator, maxindex));
     }
