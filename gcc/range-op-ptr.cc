@@ -58,7 +58,7 @@ bool
 range_operator::pointers_handled_p (range_op_dispatch_type ATTRIBUTE_UNUSED,
 				    unsigned dispatch ATTRIBUTE_UNUSED) const
 {
-  return false;
+  return true;
 }
 
 bool
