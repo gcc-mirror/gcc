@@ -1,5 +1,28 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* parser.cc (cp_parser_skip_to_end_of_block_or_statement): Add
+	metadirective_p parameter, use it to control brace/parentheses
+	behavior for metadirectives.
+	(mangle_metadirective_region_label): New.
+	(cp_parser_label_for_labeled_statement): Use it.
+	(cp_parser_jump_statement): Likewise.
+	(cp_parser_omp_context_selector): Add metadirective_p
+	parameter, use it to control error behavior for non-constant exprs
+	properties.
+	(cp_parser_omp_context_selector_specification): Add metadirective_p
+	parameter, use it for cp_parser_omp_context_selector call.
+	(cp_finish_omp_declare_variant): Adjust call to
+	cp_parser_omp_context_selector_specification.
+	(analyze_metadirective_body): New.
+	(cp_parser_omp_metadirective): New.
+	(cp_parser_pragma): Handle PRAGMA_OMP_METADIRECTIVE.
+	* parser.h (struct cp_parser): Add fields for metadirective parsing
+	state.
+	* pt.cc (tsubst_omp_context_selector): New.
+	(tsubst_stmt): Handle OMP_METADIRECTIVE.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* decl.cc (omp_declare_variant_finalize_one):  Update call to
 	omp_context_selector_matches to pass additional arguments.
 	* parser.cc (cp_finish_omp_declare_variant): Likewise for

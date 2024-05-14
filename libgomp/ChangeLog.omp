@@ -1,5 +1,11 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* testsuite/libgomp.c++/metadirective-template-1.C: New.
+	* testsuite/libgomp.c++/metadirective-template-2.C: New.
+	* testsuite/libgomp.c++/metadirective-template-3.C: New.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* Makefile.am (libgomp_la_SOURCES): Add selector.c.
 	* Makefile.in: Regenerate.
 	* config/gcn/selector.c: New.

@@ -1,5 +1,16 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* g++.dg/gomp/attrs-metadirective-1.C: New.
+	* g++.dg/gomp/attrs-metadirective-2.C: New.
+	* g++.dg/gomp/attrs-metadirective-3.C: New.
+	* g++.dg/gomp/attrs-metadirective-4.C: New.
+	* g++.dg/gomp/attrs-metadirective-5.C: New.
+	* g++.dg/gomp/attrs-metadirective-6.C: New.
+	* g++.dg/gomp/attrs-metadirective-7.C: New.
+	* g++.dg/gomp/attrs-metadirective-8.C: New.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* gcc.dg/gomp/metadirective-1.c: New.
 
 2023-10-26  Tobias Burnus  <tobias@codesourcery.com>

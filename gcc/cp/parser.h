@@ -453,6 +453,13 @@ struct GTY(()) cp_parser {
   /* Pointer to state for parsing omp_loops.  Managed by
      cp_parser_omp_for_loop in parser.cc and not used outside that file.  */
   struct omp_for_parse_data * GTY((skip)) omp_for_parse_state;
+
+  /* Set if we are processing a statement body associated with a
+     metadirective variant.  */
+  bool in_metadirective_body;
+
+  vec<tree> * GTY((skip)) metadirective_body_labels;
+  unsigned metadirective_region_num;
 };
 
 /* In parser.cc  */
