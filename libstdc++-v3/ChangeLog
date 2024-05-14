@@ -1,3 +1,25 @@
+2024-05-13  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/114958
+	* include/experimental/bits/simd.h (__as_vector): Return scalar
+	simd as one-element vector. Return vector from single-vector
+	fixed_size simd.
+	(__vec_shuffle): New.
+	(__extract_part): Adjust return type signature.
+	(split): Use __extract_part for any split into non-fixed_size
+	simds.
+	(concat): If the return type stores a single vector, use
+	__vec_shuffle (which calls __builtin_shufflevector) to produce
+	the return value.
+	* include/experimental/bits/simd_builtin.h
+	(__shift_elements_right): Removed.
+	(__extract_part): Return single elements directly. Use
+	__vec_shuffle (which calls __builtin_shufflevector) to for all
+	non-trivial cases.
+	* include/experimental/bits/simd_fixed_size.h (__extract_part):
+	Return single elements directly.
+	* testsuite/experimental/simd/pr114958.cc: New test.
+
 2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unicode.h (_Unicode_view::_M_read_utf8): Ensure

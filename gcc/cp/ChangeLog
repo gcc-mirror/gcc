@@ -1,3 +1,36 @@
+2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (norm_info::norm_info): Take a bool instead of
+	tsubst_flags_t.
+	(norm_info::generate_diagnostics): Turn this predicate function
+	into a bool data member.
+	(normalize_logical_operation): Adjust after norm_info changes.
+	(normalize_concept_check): Likewise.
+	(normalize_atom): Likewise.
+	(get_normalized_constraints_from_info): Likewise.
+	(normalize_concept_definition): Likewise.
+	(normalize_constraint_expression): Likewise.
+	(normalize_placeholder_type_constraints): Likewise.
+	(satisfy_nondeclaration_constraints): Likewise.
+	* cp-tree.h (enum tsubst_flags): Remove tf_norm.
+
+2024-05-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	PR c++/115061
+	* semantics.cc (finish_trait_expr): Use rank instead of
+	__array_rank.
+
+2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114974
+	PR c++/114901
+	PR c++/114903
+	* pt.cc (maybe_aggr_guide): Fix obtaining TYPE_FIELDS in
+	the paren init case.  Hoist out partial substitution logic
+	to apply to the paren init case as well.
+	(alias_ctad_tweaks): Substitute outer template arguments into
+	a guide's constraints.
+
 2024-05-11  Ken Matsui  <kmatsui@gcc.gnu.org>
 
 	* cp-trait.def: Define __is_nothrow_invocable.

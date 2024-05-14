@@ -1,3 +1,43 @@
+2024-05-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zba_zbs_and-1.c: New test.
+
+2024-05-13  Sergei Lewis  <slewis@rivosinc.com>
+
+	PR target/112109
+	* gcc.target/riscv/rvv/base/movmem-1.c: New test
+
+2024-05-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/114988
+	* gcc.target/riscv/rvv/base/pr114988-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr114988-2.c: New test.
+
+2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114974
+	PR c++/114901
+	PR c++/114903
+	* g++.dg/cpp2a/class-deduction-aggr14.C: New test.
+	* g++.dg/cpp2a/class-deduction-alias20.C: New test.
+	* g++.dg/cpp2a/class-deduction-alias21.C: New test.
+
+2024-05-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zbs-bext-2.c: New test.
+	* gcc.target/riscv/zbs-bext.c: Fix one of the possible expectes sequences.
+
+2024-05-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/98529
+	* g++.dg/modules/stdio-1_a.H (scan-lang-dump): Allow for
+	::std::printf.
+
+2024-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113982
+	* gcc.dg/pr113982.c: New test.
+
 2024-05-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/113363

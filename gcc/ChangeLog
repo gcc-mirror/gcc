@@ -1,3 +1,55 @@
+2024-05-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md: Add new splitter for AND with
+	a constant that masks off bits 32..63 and needs synthesis.
+
+2024-05-13  Sergei Lewis  <slewis@rivosinc.com>
+
+	* config/riscv/riscv.md (movmem<mode>): Use riscv_vector::expand_block_move,
+	if and only if we know the entire operation can be performed using one vector
+	load followed by one vector store
+
+2024-05-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/115013
+	* lra-constraints.cc (process_alt_operands): Update all_used_nregs
+	only for winreg.  Ignore reg starvation for small reg classes.
+
+2024-05-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/114988
+	* config/riscv/riscv-vector-builtins.cc
+	(validate_instance_type_required_extensions): New func impl to
+	validate the intrinisc func type ops.
+	(expand_builtin): Validate instance type before expand.
+
+2024-05-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (bextseqzdisi): New patterns.
+	* config/riscv/.riscv.cc.swo: New file.
+	* config/riscv/j: New file.
+
+2024-05-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60276
+	* tree-vect-stmts.cc (vectorizable_load): Do not exempt
+	pure_slp grouped loads from the STMT_VINFO_MIN_NEG_DIST
+	restriction.
+
+2024-05-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp_instance): Remove
+	slp_inst_kind_reduc_group handling.
+	(vect_analyze_slp): Add the meat here.
+
+2024-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/113982
+	* tree-ssa-math-opts.cc (arith_overflow_check_p): Also return 1
+	for RSHIFT_EXPR by precision of maxval if shift result is only
+	used in a cast or comparison against zero.
+	(match_arith_overflow): Handle the RSHIFT_EXPR use case.
+
 2024-05-13  YunQiang Su  <syq@debian.org>
 
 	Revert:
