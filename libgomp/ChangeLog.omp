@@ -1,5 +1,13 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* testsuite/libgomp.c-c++-common/metadirective-1.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-2.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-3.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-4.c: New.
+	* testsuite/libgomp.c-c++-common/metadirective-5.c: New.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* testsuite/libgomp.c++/metadirective-template-1.C: New.
 	* testsuite/libgomp.c++/metadirective-template-2.C: New.
 	* testsuite/libgomp.c++/metadirective-template-3.C: New.

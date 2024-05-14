@@ -34,7 +34,7 @@ void f (int a[], int b[], int c[])
      being literally nothing there.  */
   [[omp::directive (metadirective
       when (implementation={vendor("gnu")}: parallel for))]]
-  [[omp::directive (metadirective      /* { dg-error "'#pragma' is not allowed here" } */
+  [[omp::directive (metadirective      /* { dg-error "loop nest expected" } */
       when (implementation={vendor("cray")}: parallel for))]]
       for (i = 0; i < N; i++) c[i] = a[i] * b[i];
 }

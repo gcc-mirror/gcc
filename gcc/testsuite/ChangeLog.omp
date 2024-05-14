@@ -1,5 +1,20 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* c-c++-common/gomp/metadirective-1.c: New.
+	* c-c++-common/gomp/metadirective-2.c: New.
+	* c-c++-common/gomp/metadirective-3.c: New.
+	* c-c++-common/gomp/metadirective-4.c: New.
+	* c-c++-common/gomp/metadirective-5.c: New.
+	* c-c++-common/gomp/metadirective-6.c: New.
+	* c-c++-common/gomp/metadirective-7.c: New.
+	* c-c++-common/gomp/metadirective-8.c: New.
+	* c-c++-common/gomp/metadirective-construct.c: New.
+	* c-c++-common/gomp/metadirective-device.c: New.
+	* c-c++-common/gomp/metadirective-no-score.c: New.
+	* c-c++-common/gomp/metadirective-target-device.c: New.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* g++.dg/gomp/attrs-metadirective-1.C: New.
 	* g++.dg/gomp/attrs-metadirective-2.C: New.
 	* g++.dg/gomp/attrs-metadirective-3.C: New.
