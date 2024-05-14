@@ -189,6 +189,7 @@ rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
 
 /* Routines implemented in riscv-string.c.  */
 extern bool riscv_expand_block_move (rtx, rtx, rtx);
+extern bool riscv_expand_block_clear (rtx, rtx);
 
 /* Information about one CPU we know about.  */
 struct riscv_cpu_info {

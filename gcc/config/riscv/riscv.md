@@ -2608,6 +2608,30 @@
     FAIL;
 })
 
+;; Fill memory with constant byte.
+;; Argument 0 is the destination
+;; Argument 1 is the constant byte
+;; Argument 2 is the length
+;; Argument 3 is the alignment
+
+(define_expand "setmem<mode>"
+  [(parallel [(set (match_operand:BLK 0 "memory_operand")
+		   (match_operand:QI 2 "const_int_operand"))
+	      (use (match_operand:P 1 ""))
+	      (use (match_operand:SI 3 "const_int_operand"))])]
+ ""
+ {
+  /* If value to set is not zero, use the library routine.  */
+  if (operands[2] != const0_rtx)
+    FAIL;
+
+  if (riscv_expand_block_clear (operands[0], operands[1]))
+    DONE;
+  else
+    FAIL;
+})
+
+
 ;; Expand in-line code to clear the instruction cache between operand[0] and
 ;; operand[1].
 (define_expand "clear_cache"

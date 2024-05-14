@@ -794,6 +794,65 @@ riscv_expand_block_move (rtx dest, rtx src, rtx length)
   return false;
 }
 
+/* Expand a block-clear instruction via cbo.zero instructions.  */
+
+static bool
+riscv_expand_block_clear_zicboz_zic64b (rtx dest, rtx length)
+{
+  unsigned HOST_WIDE_INT hwi_length;
+  unsigned HOST_WIDE_INT align;
+  const unsigned HOST_WIDE_INT cbo_bytes = 64;
+
+  gcc_assert (TARGET_ZICBOZ && TARGET_ZIC64B);
+
+  if (!CONST_INT_P (length))
+    return false;
+
+  hwi_length = UINTVAL (length);
+  if (hwi_length < cbo_bytes)
+    return false;
+
+  align = MEM_ALIGN (dest) / BITS_PER_UNIT;
+  if (align < cbo_bytes)
+    return false;
+
+  /* We don't emit loops.  Instead apply move-bytes limitation.  */
+  unsigned HOST_WIDE_INT max_bytes = RISCV_MAX_MOVE_BYTES_STRAIGHT /
+	  UNITS_PER_WORD * cbo_bytes;
+  if (hwi_length > max_bytes)
+    return false;
+
+  unsigned HOST_WIDE_INT offset = 0;
+  while (offset + cbo_bytes <= hwi_length)
+    {
+      rtx mem = adjust_address (dest, BLKmode, offset);
+      rtx addr = force_reg (Pmode, XEXP (mem, 0));
+      emit_insn (gen_riscv_zero_di (addr));
+      offset += cbo_bytes;
+    }
+
+  if (offset < hwi_length)
+    {
+      rtx mem = adjust_address (dest, BLKmode, offset);
+      clear_by_pieces (mem, hwi_length - offset, align);
+    }
+
+  return true;
+}
+
+bool
+riscv_expand_block_clear (rtx dest, rtx length)
+{
+  /* Only use setmem-zero expansion for Zicboz + Zic64b.  */
+  if (!TARGET_ZICBOZ || !TARGET_ZIC64B)
+    return false;
+
+  if (optimize_function_for_size_p (cfun))
+    return false;
+
+  return riscv_expand_block_clear_zicboz_zic64b (dest, length);
+}
+
 /* --- Vector expanders --- */
 
 namespace riscv_vector {
