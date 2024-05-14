@@ -4638,8 +4638,8 @@ validate_instance_type_required_extensions (const rvv_type_info type,
 {
   uint64_t exts = type.required_extensions;
 
-  if ((exts & RVV_REQUIRE_ELEN_FP_16) &&
-    !TARGET_VECTOR_ELEN_FP_16_P (riscv_vector_elen_flags))
+  if ((exts & RVV_REQUIRE_ELEN_FP_16)
+    && !TARGET_VECTOR_ELEN_FP_16_P (riscv_vector_elen_flags))
     {
       error_at (EXPR_LOCATION (exp),
 		"built-in function %qE requires the "
@@ -4648,8 +4648,8 @@ validate_instance_type_required_extensions (const rvv_type_info type,
       return false;
     }
 
-  if ((exts & RVV_REQUIRE_ELEN_FP_32) &&
-    !TARGET_VECTOR_ELEN_FP_32_P (riscv_vector_elen_flags))
+  if ((exts & RVV_REQUIRE_ELEN_FP_32)
+    && !TARGET_VECTOR_ELEN_FP_32_P (riscv_vector_elen_flags))
     {
       error_at (EXPR_LOCATION (exp),
 		"built-in function %qE requires the "
@@ -4658,8 +4658,8 @@ validate_instance_type_required_extensions (const rvv_type_info type,
       return false;
     }
 
-  if ((exts & RVV_REQUIRE_ELEN_FP_64) &&
-    !TARGET_VECTOR_ELEN_FP_64_P (riscv_vector_elen_flags))
+  if ((exts & RVV_REQUIRE_ELEN_FP_64)
+    && !TARGET_VECTOR_ELEN_FP_64_P (riscv_vector_elen_flags))
     {
       error_at (EXPR_LOCATION (exp),
 		"built-in function %qE requires the zve64d or v ISA extension",
@@ -4667,8 +4667,8 @@ validate_instance_type_required_extensions (const rvv_type_info type,
       return false;
     }
 
-  if ((exts & RVV_REQUIRE_ELEN_64) &&
-    !TARGET_VECTOR_ELEN_64_P (riscv_vector_elen_flags))
+  if ((exts & RVV_REQUIRE_ELEN_64)
+    && !TARGET_VECTOR_ELEN_64_P (riscv_vector_elen_flags))
     {
       error_at (EXPR_LOCATION (exp),
 		"built-in function %qE requires the "
