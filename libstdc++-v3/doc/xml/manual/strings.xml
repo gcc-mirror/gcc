@@ -356,8 +356,8 @@ stringtok(Container &amp;container, string const &amp;in,
       entry</link>) but the regular copy constructor cannot be used
       because libstdc++'s <code>string</code> is Copy-On-Write in GCC 3.
    </para>
-   <para>In <link linkend="status.iso.2011">C++11</link> mode you can call
-      <code>s.shrink_to_fit()</code> to achieve the same effect as
+   <para>From GCC 4.5 in <link linkend="status.iso.2011">C++11</link> mode you
+      can call <code>s.shrink_to_fit()</code> to achieve the same effect as
       <code>s.reserve(s.size())</code>.
    </para>
 
