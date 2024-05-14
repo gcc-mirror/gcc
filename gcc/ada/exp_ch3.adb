@@ -5431,17 +5431,6 @@ package body Exp_Ch3 is
 
    begin
       if not Is_Bit_Packed_Array (Typ) then
-
-         --  If the component contains tasks, so does the array type. This may
-         --  not be indicated in the array type because the component may have
-         --  been a private type at the point of definition. Same if component
-         --  type is controlled or contains protected objects.
-
-         Propagate_Concurrent_Flags (Base, Comp_Typ);
-         Set_Has_Controlled_Component
-           (Base, Has_Controlled_Component (Comp_Typ)
-                    or else Is_Controlled (Comp_Typ));
-
          if No (Init_Proc (Base)) then
 
             --  If this is an anonymous array created for a declaration with
@@ -6123,8 +6112,6 @@ package body Exp_Ch3 is
       Typ      : constant Node_Id := Entity (N);
       Typ_Decl : constant Node_Id := Parent (Typ);
 
-      Comp        : Entity_Id;
-      Comp_Typ    : Entity_Id;
       Predef_List : List_Id;
 
       Wrapper_Decl_List : List_Id;
@@ -6155,31 +6142,6 @@ package body Exp_Ch3 is
       then
          Check_Stream_Attributes (Typ);
       end if;
-
-      --  Update task, protected, and controlled component flags, because some
-      --  of the component types may have been private at the point of the
-      --  record declaration. Detect anonymous access-to-controlled components.
-
-      Comp := First_Component (Typ);
-      while Present (Comp) loop
-         Comp_Typ := Etype (Comp);
-
-         Propagate_Concurrent_Flags (Typ, Comp_Typ);
-
-         --  Do not set Has_Controlled_Component on a class-wide equivalent
-         --  type. See Make_CW_Equivalent_Type.
-
-         if not Is_Class_Wide_Equivalent_Type (Typ)
-           and then
-             (Has_Controlled_Component (Comp_Typ)
-               or else (Chars (Comp) /= Name_uParent
-                         and then Is_Controlled (Comp_Typ)))
-         then
-            Set_Has_Controlled_Component (Typ);
-         end if;
-
-         Next_Component (Comp);
-      end loop;
 
       --  Handle constructors of untagged CPP_Class types
 

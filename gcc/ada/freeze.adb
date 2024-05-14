@@ -3661,7 +3661,9 @@ package body Freeze is
 
             Set_SSO_From_Default (Arr);
 
-            --  Propagate flags for component type
+            --  Propagate flags from component type
+
+            Propagate_Concurrent_Flags (Arr, Ctyp);
 
             if Is_Controlled (Ctyp)
               or else Has_Controlled_Component (Ctyp)
@@ -5684,11 +5686,12 @@ package body Freeze is
                Freeze_And_Append (Corresponding_Remote_Type (Rec), N, Result);
             end if;
 
-            --  Check for controlled components, unchecked unions, and type
-            --  invariants.
+            --  Check for tasks, protected and controlled components, unchecked
+            --  unions, and type invariants.
 
             Comp := First_Component (Rec);
             while Present (Comp) loop
+               Propagate_Concurrent_Flags (Rec, Etype (Comp));
 
                --  Do not set Has_Controlled_Component on a class-wide
                --  equivalent type. See Make_CW_Equivalent_Type.
