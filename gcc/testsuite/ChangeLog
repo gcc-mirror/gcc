@@ -1,3 +1,8 @@
+2024-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111009
+	* gcc.dg/pr111009.c: New.
+
 2024-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

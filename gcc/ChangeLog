@@ -1,3 +1,9 @@
+2024-05-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111009
+	* range-op.cc (operator_addr_expr::op1_range): Be more restrictive.
+	* value-range.h (contains_zero_p): New.
+
 2024-05-09  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
