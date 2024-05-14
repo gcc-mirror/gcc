@@ -3066,6 +3066,28 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 	return ptr_derefs_may_alias_p (build_fold_addr_expr (addr_a),
 				       TREE_OPERAND (addr_b, 0));
     }
+  /* If dr_analyze_innermost failed to handle a component we are
+     possibly left with a non-base in which case we didn't analyze
+     a possible evolution of the base when analyzing a loop.  */
+  else if (loop_nest
+	   && (handled_component_p (addr_a) || handled_component_p (addr_b)))
+    {
+      /* For true dependences we can apply TBAA.  */
+      if (flag_strict_aliasing
+	  && DR_IS_WRITE (a) && DR_IS_READ (b)
+	  && !alias_sets_conflict_p (get_alias_set (DR_REF (a)),
+				     get_alias_set (DR_REF (b))))
+	return false;
+      if (TREE_CODE (addr_a) == MEM_REF)
+	return ptr_derefs_may_alias_p (TREE_OPERAND (addr_a, 0),
+				       build_fold_addr_expr (addr_b));
+      else if (TREE_CODE (addr_b) == MEM_REF)
+	return ptr_derefs_may_alias_p (build_fold_addr_expr (addr_a),
+				       TREE_OPERAND (addr_b, 0));
+      else
+	return ptr_derefs_may_alias_p (build_fold_addr_expr (addr_a),
+				       build_fold_addr_expr (addr_b));
+    }
 
   /* Otherwise DR_BASE_OBJECT is an access that covers the whole object
      that is being subsetted in the loop nest.  */

@@ -1840,11 +1840,11 @@ loop_distribution::classify_builtin_ldst (loop_p loop, struct graph *rdg,
   /* Now check that if there is a dependence.  */
   ddr_p ddr = get_data_dependence (rdg, src_dr, dst_dr);
 
-  /* Classify as memmove if no dependence between load and store.  */
+  /* Classify as memcpy if no dependence between load and store.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
     {
       partition->builtin = alloc_builtin (dst_dr, src_dr, base, src_base, size);
-      partition->kind = PKIND_MEMMOVE;
+      partition->kind = PKIND_MEMCPY;
       return;
     }
 
