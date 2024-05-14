@@ -6495,6 +6495,13 @@ gimple_can_duplicate_bb_p (const_basic_block bb)
 	&& gimple_call_internal_p (last)
 	&& gimple_call_internal_unique_p (last))
       return false;
+
+    /* Prohibit duplication of returns_twice calls, otherwise associated
+       abnormal edges also need to be duplicated properly.
+       return_twice functions will always be the last statement.  */
+    if (is_gimple_call (last)
+	&& (gimple_call_flags (last) & ECF_RETURNS_TWICE))
+      return false;
   }
 
   for (gimple_stmt_iterator gsi = gsi_start_bb (CONST_CAST_BB (bb));
@@ -6502,15 +6509,12 @@ gimple_can_duplicate_bb_p (const_basic_block bb)
     {
       gimple *g = gsi_stmt (gsi);
 
-      /* Prohibit duplication of returns_twice calls, otherwise associated
-	 abnormal edges also need to be duplicated properly.
-	 An IFN_GOMP_SIMT_ENTER_ALLOC/IFN_GOMP_SIMT_EXIT call must be
+      /* An IFN_GOMP_SIMT_ENTER_ALLOC/IFN_GOMP_SIMT_EXIT call must be
 	 duplicated as part of its group, or not at all.
 	 The IFN_GOMP_SIMT_VOTE_ANY and IFN_GOMP_SIMT_XCHG_* are part of such a
 	 group, so the same holds there.  */
       if (is_gimple_call (g)
-	  && (gimple_call_flags (g) & ECF_RETURNS_TWICE
-	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
+	  && (gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_EXIT)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_VOTE_ANY)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_BFLY)
