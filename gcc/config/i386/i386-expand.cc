@@ -24246,6 +24246,28 @@ ix86_expand_vec_shift_qihi_constant (enum rtx_code code,
     return false;
 
   gcc_assert (code == ASHIFT || code == ASHIFTRT || code == LSHIFTRT);
+
+
+  if (shift_amount == 7
+      && code == ASHIFTRT)
+    {
+      if (qimode == V16QImode
+	  || qimode == V32QImode)
+	{
+	  rtx zero = gen_reg_rtx (qimode);
+	  emit_move_insn (zero, CONST0_RTX (qimode));
+	  emit_move_insn (dest, gen_rtx_fmt_ee (GT, qimode, zero, op1));
+	}
+      else
+	{
+	  gcc_assert (qimode == V64QImode);
+	  rtx kmask = gen_reg_rtx (DImode);
+	  emit_insn (gen_avx512bw_cvtb2maskv64qi (kmask, op1));
+	  emit_insn (gen_avx512bw_cvtmask2bv64qi (dest, kmask));
+	}
+      return true;
+    }
+
   /* Record sign bit.  */
   xor_constant = 1 << (8 - shift_amount - 1);
 
@@ -24353,6 +24375,16 @@ ix86_expand_vecop_qihi_partial (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       && ix86_expand_vec_shift_qihi_constant (code, qdest, qop1, qop2))
     {
       emit_move_insn (dest, gen_lowpart (qimode, qdest));
+      return;
+    }
+
+  if (CONST_INT_P (op2)
+      && code == ASHIFTRT
+      && INTVAL (op2) == 7)
+    {
+      rtx zero = gen_reg_rtx (qimode);
+      emit_move_insn (zero, CONST0_RTX (qimode));
+      emit_move_insn (dest, gen_rtx_fmt_ee (GT, qimode, zero, op1));
       return;
     }
 
