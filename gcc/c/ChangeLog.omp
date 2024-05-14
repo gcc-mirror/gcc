@@ -1,5 +1,21 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* c-parser.cc (struct c_parser): Add new fields for metadirectives.
+	(c_parser_skip_to_end_of_block_or_statement):  Add metadirective_p
+	parameter; use it to control brace and parentheses behavior.
+	(mangle_metadirective_region_label): New.
+	(c_parser_label, c_parser_statement_after_labels): Use it.
+	(c_parser_pragma): Handle metadirective.
+	(c_parser_omp_context_selector): Add metadirective_p flag, use it
+	to gate support for non-constant user condition.
+	(c_parser_omp_context_selector_specification): Add metadirective_p
+	argument.
+	(c_parser_finish_omp_declare_variant): Adjust call to above.
+	(analyze_metadirective_body): New.
+	(c_parser_omp_metadirective): New.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* c-parser.cc (c_finish_omp_declare_variant): Update calls to
 	omp_check_context_selector and omp_context_selector_matches.
 
