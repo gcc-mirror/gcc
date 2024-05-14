@@ -55,6 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "convert.h"
 #include "opts.h"
+#include "cfganal.h"
+#include "cfghooks.h"
 
 /* Describe the OpenACC looping structure of a function.  The entire
    function is held in a 'NULL' loop.  */
@@ -557,6 +559,7 @@ scan_omp_target_region_r (tree *tp, int *walk_subtrees, void *data)
     case OMP_ORDERED:
     case OMP_CRITICAL:
     case OMP_SCAN:
+    case OMP_METADIRECTIVE:
       tgtdata->ompacc_invalid = true;
       tgtdata->warning_msgs.safe_push ("construct not supported");
       tgtdata->warning_locs.safe_push (EXPR_LOCATION (*tp));
@@ -2339,6 +2342,92 @@ is_sync_builtin_call (gcall *call)
   return false;
 }
 
+/* Resolve an OpenMP metadirective in the function FUN, in the basic block
+   BB.  The metadirective should be the last statement in BB.  */
+
+static void
+omp_expand_metadirective (function *fun, basic_block bb)
+{
+  gimple *stmt = last_nondebug_stmt (bb);
+  vec<struct omp_variant> candidates
+    = omp_late_resolve_metadirective (stmt);
+
+  /* This is the last chance for the metadirective to be resolved.  */
+  gcc_assert (!candidates.is_empty ());
+
+  auto_vec<tree> labels;
+
+  for (unsigned int i = 0; i < candidates.length (); i++)
+    labels.safe_push (candidates[i].alternative);
+
+  /* Delete BBs for all variants not in the candidate list.  */
+  for (unsigned i = 0; i < gimple_num_ops (stmt); i++)
+    {
+      tree label = gimple_omp_metadirective_label (stmt, i);
+      if (!labels.contains (label))
+	{
+	  edge e = find_edge (bb, label_to_block (fun, label));
+	  remove_edge_and_dominated_blocks (e);
+	  labels.safe_push (label);
+	}
+    }
+
+  /* Remove the metadirective statement.  */
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  gsi_remove (&gsi, true);
+
+  if (candidates.length () == 1)
+    {
+      /* Special case if there is only one selector - there should be one
+	 remaining edge from BB to the selected variant.  */
+      edge e = find_edge (bb, label_to_block (fun,
+					      candidates.last ().alternative));
+      e->flags |= EDGE_FALLTHRU;
+
+      return;
+    }
+
+  basic_block cur_bb = bb;
+
+  /* For each candidate, create a conditional that checks the dynamic
+     condition, branching to the candidate directive if true, to the
+     next candidate check if false.  */
+  for (unsigned i = 0; i < candidates.length () - 1; i++)
+    {
+      basic_block next_bb = NULL;
+      gcond *cond_stmt
+	= gimple_build_cond_from_tree (candidates[i].dynamic_selector,
+				       NULL_TREE, NULL_TREE);
+      gsi = gsi_last_bb (cur_bb);
+      gsi_insert_seq_after (&gsi, cond_stmt, GSI_NEW_STMT);
+
+      if (i < candidates.length () - 2)
+	{
+	  edge e_false = split_block (cur_bb, cond_stmt);
+	  e_false->flags &= ~EDGE_FALLTHRU;
+	  e_false->flags |= EDGE_FALSE_VALUE;
+	  e_false->probability = profile_probability::uninitialized ();
+
+	  next_bb = e_false->dest;
+	}
+
+      /* Redirect the source of the edge from BB to the candidate directive
+	 to the conditional.  Reusing the edge avoids disturbing phi nodes in
+	  the destination BB.  */
+      edge e = find_edge (bb, label_to_block (fun, candidates[i].alternative));
+      redirect_edge_pred (e, cur_bb);
+      e->flags |= EDGE_TRUE_VALUE;
+
+      if (next_bb)
+	cur_bb = next_bb;
+    }
+
+  /* The last of the candidates is always static.  */
+  edge e = find_edge (cur_bb, label_to_block (fun,
+					      candidates.last ().alternative));
+  e->flags |= EDGE_FALSE_VALUE;
+}
+
 /* Main entry point for oacc transformations which run on the device
    compiler after LTO, so we know what the target device is at this
    point (including the host fallback).  */
@@ -3023,6 +3112,7 @@ execute_omp_device_lower ()
   gimple_stmt_iterator gsi;
   bool calls_declare_variant_alt
     = cgraph_node::get (cfun->decl)->calls_declare_variant_alt;
+  auto_vec<basic_block> metadirective_bbs;
 #ifdef ACCEL_COMPILER
   bool omp_redirect_indirect_calls = vec_safe_length (offload_ind_funcs) > 0;
   tree map_ptr_fn
@@ -3032,6 +3122,8 @@ execute_omp_device_lower ()
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple *stmt = gsi_stmt (gsi);
+	if (is_a<gomp_metadirective *> (stmt))
+	  metadirective_bbs.safe_push (bb);
 	if (!is_gimple_call (stmt))
 	  continue;
 	if (!gimple_call_internal_p (stmt))
@@ -3181,6 +3273,16 @@ execute_omp_device_lower ()
 	  }
   if (vf != 1)
     cfun->has_force_vectorize_loops = false;
+  if (!metadirective_bbs.is_empty ())
+    {
+      calculate_dominance_info (CDI_DOMINATORS);
+
+      for (unsigned i = 0; i < metadirective_bbs.length (); i++)
+	omp_expand_metadirective (cfun, metadirective_bbs[i]);
+
+      free_dominance_info (cfun, CDI_DOMINATORS);
+      mark_virtual_operands_for_renaming (cfun);
+    }
   return 0;
 }
 
@@ -3209,6 +3311,7 @@ public:
   /* opt_pass methods: */
   bool gate (function *fun) final override
     {
+      cgraph_node *node = cgraph_node::get (fun->decl);
 #ifdef ACCEL_COMPILER
       bool offload_ind_funcs_p = vec_safe_length (offload_ind_funcs) > 0;
 #else
@@ -3216,7 +3319,8 @@ public:
 #endif
       return (!(fun->curr_properties & PROP_gimple_lomp_dev)
 	      || (flag_openmp
-		  && (cgraph_node::get (fun->decl)->calls_declare_variant_alt
+		  && (node->calls_declare_variant_alt
+		      || node->has_metadirectives
 		      || offload_ind_funcs_p)));
     }
   unsigned int execute (function *) final override

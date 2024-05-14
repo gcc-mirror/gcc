@@ -3236,6 +3236,28 @@ omp_early_resolve_metadirective (tree metadirective)
   return omp_get_dynamic_candidates (candidates, true);
 }
 
+/* Return a vector of dynamic replacement candidates for the metadirective
+   Gimple statement in GS.  Return an empty vector if the metadirective
+   cannot be resolved.  */
+
+vec<struct omp_variant>
+omp_late_resolve_metadirective (gimple *gs)
+{
+  auto_vec <struct omp_variant> variants;
+
+  for (unsigned i = 0; i < gimple_num_ops (gs); i++)
+    {
+      struct omp_variant variant;
+
+      variant.selector = gimple_op (gs, i);
+      variant.alternative = gimple_omp_metadirective_label (gs, i);
+
+      variants.safe_push (variant);
+    }
+
+  return omp_get_dynamic_candidates (variants, false);
+}
+
 /* Encode an oacc launch argument.  This matches the GOMP_LAUNCH_PACK
    macro on gomp-constants.h.  We do not check for overflow.  */
 

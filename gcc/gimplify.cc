@@ -6401,6 +6401,7 @@ is_gimple_stmt (tree t)
     case OMP_TASKGROUP:
     case OMP_ORDERED:
     case OMP_CRITICAL:
+    case OMP_METADIRECTIVE:
     case OMP_TASK:
     case OMP_TARGET:
     case OMP_TARGET_DATA:
@@ -18855,6 +18856,184 @@ gimplify_omp_declare_mapper (tree *expr_p)
   return GS_ALL_DONE;
 }
 
+/* Replace a metadirective with the candidate directive variants in
+   CANDIDATES.  */
+
+static enum gimplify_status
+expand_omp_metadirective (vec<struct omp_variant> &candidates,
+			  gimple_seq *pre_p)
+{
+  auto_vec<tree> selectors;
+  auto_vec<tree> directive_labels;
+  auto_vec<gimple_seq> directive_bodies;
+  tree body_label = NULL_TREE;
+  tree end_label = create_artificial_label (UNKNOWN_LOCATION);
+
+  /* Construct bodies for each candidate.  */
+  for (unsigned i = 0; i < candidates.length(); i++)
+    {
+      struct omp_variant &candidate = candidates[i];
+      gimple_seq body = NULL;
+
+      selectors.safe_push (candidate.dynamic_selector);
+      directive_labels.safe_push (create_artificial_label (UNKNOWN_LOCATION));
+
+      gimplify_seq_add_stmt (&body,
+			     gimple_build_label (directive_labels.last ()));
+      if (candidate.alternative != NULL_TREE)
+	gimplify_stmt (&candidate.alternative, &body);
+      if (candidate.body != NULL_TREE)
+	{
+	  if (body_label != NULL_TREE)
+	    gimplify_seq_add_stmt (&body, gimple_build_goto (body_label));
+	  else
+	    {
+	      body_label = create_artificial_label (UNKNOWN_LOCATION);
+	      gimplify_seq_add_stmt (&body, gimple_build_label (body_label));
+	      gimplify_stmt (&candidate.body, &body);
+	    }
+	}
+
+      directive_bodies.safe_push (body);
+    }
+
+  auto_vec<tree> cond_labels;
+
+  cond_labels.safe_push (NULL_TREE);
+  for (unsigned i = 1; i < candidates.length () - 1; i++)
+    cond_labels.safe_push (create_artificial_label (UNKNOWN_LOCATION));
+  if (candidates.length () > 1)
+    cond_labels.safe_push (directive_labels.last ());
+
+  /* Generate conditionals to test each dynamic selector in turn, executing
+     the directive candidate if successful.  */
+  for (unsigned i = 0; i < candidates.length () - 1; i++)
+    {
+      if (i != 0)
+	gimplify_seq_add_stmt (pre_p, gimple_build_label (cond_labels [i]));
+
+      enum gimplify_status ret = gimplify_expr (&selectors[i], pre_p, NULL,
+						is_gimple_val, fb_rvalue);
+      if (ret == GS_ERROR || ret == GS_UNHANDLED)
+	return ret;
+
+      gcond *cond_stmt
+	= gimple_build_cond_from_tree (selectors[i], directive_labels[i],
+				       cond_labels[i + 1]);
+
+      gimplify_seq_add_stmt (pre_p, cond_stmt);
+      gimplify_seq_add_seq (pre_p, directive_bodies[i]);
+      gimplify_seq_add_stmt (pre_p, gimple_build_goto (end_label));
+    }
+
+  gimplify_seq_add_seq (pre_p, directive_bodies.last ());
+  gimplify_seq_add_stmt (pre_p, gimple_build_label (end_label));
+
+  return GS_ALL_DONE;
+}
+
+/* Gimplify an OMP_METADIRECTIVE construct.   EXPR is the tree version.
+   The metadirective will be resolved at this point if possible.  */
+
+static enum gimplify_status
+gimplify_omp_metadirective (tree *expr_p, gimple_seq *pre_p, gimple_seq *,
+			    bool (*) (tree), fallback_t)
+{
+  auto_vec<tree> selectors;
+
+  /* Mark offloadable functions containing metadirectives that specify
+     a 'construct' selector with a 'target' constructor.  */
+  if (offloading_function_p (current_function_decl))
+    {
+      for (tree variant = OMP_METADIRECTIVE_VARIANTS (*expr_p);
+	   variant != NULL_TREE; variant = TREE_CHAIN (variant))
+	{
+	  tree selector = OMP_METADIRECTIVE_VARIANT_SELECTOR (variant);
+
+	  if (omp_get_context_selector (selector, OMP_TRAIT_SET_CONSTRUCT,
+					OMP_TRAIT_CONSTRUCT_TARGET))
+	    {
+	      tree id = get_identifier ("omp metadirective construct target");
+
+	      DECL_ATTRIBUTES (current_function_decl)
+		= tree_cons (id, NULL_TREE,
+			     DECL_ATTRIBUTES (current_function_decl));
+	      break;
+	    }
+	}
+    }
+
+  /* Try to resolve the metadirective.  */
+  vec<struct omp_variant> candidates
+    = omp_early_resolve_metadirective (*expr_p);
+  if (!candidates.is_empty ())
+    return expand_omp_metadirective (candidates, pre_p);
+
+  /* The metadirective cannot be resolved yet.  */
+
+  gomp_variant *first_variant = NULL;
+  gomp_variant *prev_variant = NULL;
+  gimple_seq standalone_body = NULL;
+  tree body_label = NULL;
+  tree end_label = create_artificial_label (UNKNOWN_LOCATION);
+
+  for (tree variant = OMP_METADIRECTIVE_VARIANTS (*expr_p); variant != NULL_TREE;
+       variant = TREE_CHAIN (variant))
+    {
+      tree selector = OMP_METADIRECTIVE_VARIANT_SELECTOR (variant);
+      tree directive = OMP_METADIRECTIVE_VARIANT_DIRECTIVE (variant);
+      tree body = OMP_METADIRECTIVE_VARIANT_BODY (variant);
+
+      selectors.safe_push (selector);
+      gomp_variant *omp_variant
+	= gimple_build_omp_variant (NULL);
+      gimple_seq *directive_p = gimple_omp_body_ptr (omp_variant);
+
+      gimplify_stmt (&directive, directive_p);
+      if (body != NULL_TREE)
+	{
+	  if (standalone_body == NULL)
+	    {
+	      gimplify_stmt (&body, &standalone_body);
+	      body_label = create_artificial_label (UNKNOWN_LOCATION);
+	    }
+	  gimplify_seq_add_stmt (directive_p, gimple_build_goto (body_label));
+	}
+      else
+	gimplify_seq_add_stmt (directive_p, gimple_build_goto (end_label));
+
+      if (!first_variant)
+	first_variant = omp_variant;
+      if (prev_variant)
+	{
+	  prev_variant->next = omp_variant;
+	  omp_variant->prev = prev_variant;
+	}
+      prev_variant = omp_variant;
+    }
+
+  gomp_metadirective *stmt
+    = gimple_build_omp_metadirective (selectors.length ());
+  gimple_omp_metadirective_set_variants (stmt, first_variant);
+
+  tree selector;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (selectors, i, selector)
+    gimple_set_op (stmt, i, selector);
+
+  gimplify_seq_add_stmt (pre_p, stmt);
+  if (standalone_body)
+    {
+      gimplify_seq_add_stmt (pre_p, gimple_build_label (body_label));
+      gimplify_seq_add_stmt (pre_p, standalone_body);
+    }
+  gimplify_seq_add_stmt (pre_p, gimple_build_label (end_label));
+
+  cgraph_node::get (cfun->decl)->has_metadirectives = 1;
+
+  return GS_ALL_DONE;
+}
+
 /* Convert the GENERIC expression tree *EXPR_P to GIMPLE.  If the
    expression produces a value to be used as an operand inside a GIMPLE
    statement, the value will be stored back in *EXPR_P.  This value will
@@ -19785,6 +19964,11 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case OMP_DECLARE_MAPPER:
 	  ret = gimplify_omp_declare_mapper (expr_p);
+	  break;
+
+	case OMP_METADIRECTIVE:
+	  ret = gimplify_omp_metadirective (expr_p, pre_p, post_p,
+					    gimple_test_f, fallback);
 	  break;
 
 	case TRANSACTION_EXPR:

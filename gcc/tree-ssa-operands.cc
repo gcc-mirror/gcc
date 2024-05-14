@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "diagnostic-core.h"
 #include "stmt.h"
+#include "omp-general.h"
 #include "print-tree.h"
 #include "dumpfile.h"
 
@@ -971,6 +972,22 @@ operands_scanner::parse_ssa_operands ()
     case GIMPLE_RETURN:
       append_vuse (gimple_vop (fn));
       goto do_default;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      n = gimple_num_ops (stmt);
+      for (i = start; i < n; i++)
+	for (tree tss = gimple_op (stmt, i);
+	     tss != NULL; tss = TREE_CHAIN (tss))
+	  if (OMP_TSS_CODE (tss) == OMP_TRAIT_SET_USER
+	      || OMP_TSS_CODE (tss) == OMP_TRAIT_SET_TARGET_DEVICE)
+	    for (tree ts = OMP_TSS_TRAIT_SELECTORS (tss);
+		 ts != NULL; ts = TREE_CHAIN (ts))
+	      if (OMP_TS_CODE (ts) == OMP_TRAIT_USER_CONDITION
+		  || OMP_TS_CODE (ts) == OMP_TRAIT_DEVICE_NUM)
+		for (tree tp = OMP_TS_PROPERTIES (ts);
+		     tp != NULL; tp = TREE_CHAIN (tp))
+		  get_expr_operands (&OMP_TP_VALUE (tp), opf_use);
+      break;
 
     case GIMPLE_CALL:
       /* Add call-clobbered operands, if needed.  */

@@ -501,6 +501,20 @@ walk_gimple_op (gimple *stmt, walk_tree_fn callback_op,
 	return ret;
       break;
 
+    case GIMPLE_OMP_METADIRECTIVE:
+      {
+	gimple_seq variant_seq = gimple_omp_variants (stmt);
+	for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    ret = walk_gimple_op (gimple_omp_body (gsi_stmt (gsi)),
+				  callback_op, wi);
+	    if (ret)
+	      return ret;
+	  }
+      }
+      break;
+
     case GIMPLE_TRANSACTION:
       {
 	gtransaction *txn = as_a <gtransaction *> (stmt);
@@ -715,6 +729,20 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
 			     callback_op, wi);
       if (ret)
 	return wi->callback_result;
+      break;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      {
+	gimple_seq variant_seq = gimple_omp_variants (stmt);
+	for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
+	     !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    ret = walk_gimple_seq_mod (gimple_omp_body_ptr (gsi_stmt (gsi)),
+				       callback_stmt, callback_op, wi);
+	    if (ret)
+	      return wi->callback_result;
+	  }
+      }
       break;
 
     case GIMPLE_WITH_CLEANUP_EXPR:

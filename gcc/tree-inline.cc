@@ -1672,6 +1672,36 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 		   (s1, gimple_omp_masked_clauses (stmt));
 	  break;
 
+	case GIMPLE_OMP_METADIRECTIVE:
+	  copy = gimple_build_omp_metadirective (gimple_num_ops (stmt));
+	  {
+	    gimple *first_variant = NULL;
+	    gimple **prev_next = &first_variant;
+	    gimple_seq variant_seq = gimple_omp_variants (stmt);
+	    for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
+		 !gsi_end_p (gsi); gsi_next (&gsi))
+	      {
+		s1 = remap_gimple_seq (gimple_omp_body (gsi_stmt (gsi)), id);
+		gimple *new_variant
+		  = gimple_build_omp_variant (s1);
+
+		*prev_next = new_variant;
+		prev_next = &new_variant->next;
+	      }
+	    gimple_omp_metadirective_set_variants (copy, first_variant);
+	  }
+
+	  memset (&wi, 0, sizeof (wi));
+	  wi.info = id;
+	  for (unsigned i = 0; i < gimple_num_ops (stmt); i++)
+	    {
+	      tree label = gimple_omp_metadirective_label (stmt, i);
+	      walk_tree (&label, remap_gimple_op_r, &wi, NULL);
+	      gimple_omp_metadirective_set_label (copy, i, label);
+	      gimple_set_op (copy, i, gimple_op (stmt, i));
+	    }
+	  break;
+
 	case GIMPLE_OMP_SCOPE:
 	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
 	  copy = gimple_build_omp_scope
@@ -4607,6 +4637,13 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
       return (weights->omp_cost
               + estimate_num_insns_seq (gimple_omp_body (stmt), weights));
 
+    case GIMPLE_OMP_METADIRECTIVE:
+      /* The actual instruction will disappear eventually, so metadirective
+	 statements have zero additional cost (if only static selectors
+	 are used).  */
+      /* TODO: Estimate the cost of evaluating dynamic selectors  */
+      return 0;
+
     case GIMPLE_TRANSACTION:
       return (weights->tm_cost
 	      + estimate_num_insns_seq (gimple_transaction_body (
@@ -5021,6 +5058,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
   dst_cfun->calls_eh_return |= id->src_cfun->calls_eh_return;
   id->dst_node->calls_declare_variant_alt
     |= id->src_node->calls_declare_variant_alt;
+  id->dst_node->has_metadirectives |= id->src_node->has_metadirectives;
 
   gcc_assert (!id->src_cfun->after_inlining);
 
@@ -6276,6 +6314,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 		   new_entry ? new_entry->count : old_entry_block->count);
   new_version_node->calls_declare_variant_alt
     = old_version_node->calls_declare_variant_alt;
+  new_version_node->has_metadirectives = old_version_node->has_metadirectives;
   if (DECL_STRUCT_FUNCTION (new_decl)->gimple_df)
     DECL_STRUCT_FUNCTION (new_decl)->gimple_df->ipa_pta
       = id.src_cfun->gimple_df->ipa_pta;

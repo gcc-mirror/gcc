@@ -2075,6 +2075,64 @@ dump_gimple_assume (pretty_printer *buffer, const gimple *gs,
     }
 }
 
+/* Dump a GIMPLE_OMP_METADIRECTIVE tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_metadirective (pretty_printer *buffer, const gimple *gs,
+			       int spc, dump_flags_t flags)
+{
+  if (flags & TDF_RAW)
+    dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S> >", gs,
+		     gimple_omp_body (gs));
+  else
+    {
+      pp_string (buffer, "#pragma omp metadirective");
+      newline_and_indent (buffer, spc + 2);
+
+      gimple_seq variant_seq = gimple_omp_variants (gs);
+      gimple_stmt_iterator gsi = gsi_start (variant_seq);
+
+      for (unsigned i = 0; i < gimple_num_ops (gs); i++)
+	{
+	  tree selector = gimple_op (gs, i);
+
+	  if (selector == NULL_TREE)
+	    pp_string (buffer, "default:");
+	  else
+	    {
+	      pp_string (buffer, "when (");
+	      dump_omp_context_selector (buffer, selector, spc, flags);
+	      pp_string (buffer, "):");
+	    }
+
+	  gimple *variant = gsi_stmt (gsi);
+
+	  if (variant != NULL)
+	    {
+	      newline_and_indent (buffer, spc + 4);
+	      pp_left_brace (buffer);
+	      pp_newline (buffer);
+	      dump_gimple_seq (buffer, gimple_omp_body (variant), spc + 6,
+			       flags);
+	      newline_and_indent (buffer, spc + 4);
+	      pp_right_brace (buffer);
+
+	      gsi_next (&gsi);
+	    }
+	  else
+	    {
+	      tree label = gimple_omp_metadirective_label (gs, i);
+
+	      pp_string (buffer, " ");
+	      dump_generic_node (buffer, label, spc, flags, false);
+	    }
+
+	  if (i != gimple_num_ops (gs) - 1)
+	    newline_and_indent (buffer, spc + 2);
+	}
+    }
+}
+
 /* Dump a GIMPLE_TRANSACTION tuple on the pretty_printer BUFFER.  */
 
 static void
@@ -2821,6 +2879,12 @@ pp_gimple_stmt_1 (pretty_printer *buffer, const gimple *gs, int spc,
     case GIMPLE_OMP_CRITICAL:
       dump_gimple_omp_critical (buffer, as_a <const gomp_critical *> (gs), spc,
 				flags);
+      break;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      dump_gimple_omp_metadirective (buffer,
+				     as_a <const gomp_metadirective *> (gs),
+				     spc, flags);
       break;
 
     case GIMPLE_CATCH:

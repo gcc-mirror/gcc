@@ -10043,6 +10043,8 @@ expand_omp_target (struct omp_region *region)
       child_cfun->has_force_vectorize_loops |= cfun->has_force_vectorize_loops;
       cgraph_node *node = cgraph_node::get_create (child_fn);
       node->parallelized_function = 1;
+      node->has_metadirectives
+	|= cgraph_node::get (cfun->decl)->has_metadirectives;
       cgraph_node::add_new_function (child_fn, true);
 
       /* Add the new function to the offload table.  */
@@ -10841,6 +10843,10 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	  /* GIMPLE_OMP_SECTIONS_SWITCH is part of
 	     GIMPLE_OMP_SECTIONS, and we do nothing for it.  */
 	}
+      else if (code == GIMPLE_OMP_METADIRECTIVE)
+	{
+	  /* Do nothing for metadirectives.  */
+	}
       else
 	{
 	  region = new_omp_region (bb, code, parent);
@@ -11224,6 +11230,30 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
 	default:
 	  gcc_unreachable ();
 	}
+      break;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      /* Create an edge to the beginning of the body of each candidate
+	 directive.  */
+      {
+	gimple *stmt = last_nondebug_stmt (bb);
+	unsigned i;
+	bool seen_default = false;
+
+	for (i = 0; i < gimple_num_ops (stmt); i++)
+	  {
+	    tree dest = gimple_omp_metadirective_label (stmt, i);
+	    basic_block dest_bb = label_to_block (cfun, dest);
+	    make_edge (bb, dest_bb, 0);
+
+	    if (gimple_op (stmt, i) == NULL_TREE)
+	      seen_default = true;
+	  }
+
+	gcc_assert (seen_default);
+
+	fallthru = false;
+      }
       break;
 
     default:

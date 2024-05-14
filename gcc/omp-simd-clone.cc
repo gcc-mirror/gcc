@@ -690,6 +690,7 @@ simd_clone_create (struct cgraph_node *old_node, bool force_local)
       new_node->externally_visible = old_node->externally_visible;
       new_node->calls_declare_variant_alt
 	= old_node->calls_declare_variant_alt;
+      new_node->has_metadirectives = old_node->has_metadirectives;
     }
 
   /* Mark clones with internal linkage as gc'able, so they will not be

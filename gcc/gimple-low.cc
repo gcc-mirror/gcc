@@ -229,6 +229,36 @@ lower_sequence (gimple_seq *seq, struct lower_data *data)
     lower_stmt (&gsi, data);
 }
 
+/* Lower the OpenMP metadirective statement pointed by GSI.  */
+
+static void
+lower_omp_metadirective (gimple_stmt_iterator *gsi, struct lower_data *data)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  gimple_seq variant_seq = gimple_omp_variants (stmt);
+  gimple_stmt_iterator variant_gsi = gsi_start (variant_seq);
+  unsigned i;
+
+  /* The variants are not used after lowering.  */
+  gimple_omp_metadirective_set_variants (stmt, NULL);
+
+  for (i = 0; i < gimple_num_ops (stmt); i++)
+    {
+      gimple *variant = gsi_stmt (variant_gsi);
+      tree label = create_artificial_label (UNKNOWN_LOCATION);
+      gimple_omp_metadirective_set_label (stmt, i, label);
+      gsi_insert_after (gsi, gimple_build_label (label), GSI_CONTINUE_LINKING);
+
+      gimple_seq *directive_ptr = gimple_omp_body_ptr (variant);
+      lower_sequence (directive_ptr, data);
+      gsi_insert_seq_after (gsi, *directive_ptr, GSI_CONTINUE_LINKING);
+
+      gsi_next (&variant_gsi);
+    }
+
+  gsi_next (gsi);
+}
+
 
 /* Lower the OpenMP directive statement pointed by GSI.  DATA is
    passed through the recursion.  */
@@ -841,6 +871,12 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 
     case GIMPLE_ASSUME:
       lower_assumption (gsi, data);
+      return;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      data->cannot_fallthru = false;
+      lower_omp_metadirective (gsi, data);
+      data->cannot_fallthru = false;
       return;
 
     case GIMPLE_TRANSACTION:

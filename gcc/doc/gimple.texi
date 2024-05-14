@@ -310,6 +310,9 @@ kinds, along with their relationships to @code{GSS_} values (layouts) and
      + gimple_statement_with_ops_base
      |   |    (no GSS layout)
      |   |
+     |   + gomp_metadirective
+     |	 |     code: GIMPLE_OMP_METADIRECTIVE
+     |   |
      |   + gimple_statement_with_ops
      |   |   |    layout: GSS_WITH_OPS
      |   |   |
@@ -357,6 +360,9 @@ kinds, along with their relationships to @code{GSS_} values (layouts) and
      |   |
      |   + gomp_for
      |   |        layout: GSS_OMP_FOR, code: GIMPLE_OMP_FOR
+     |   |
+     |   + gomp_variant
+     |   |        code: GIMPLE_OMP_METADIRECTIVE_VARIANT
      |   |
      |   + gomp_parallel_layout
      |   |   |    layout: GSS_OMP_PARALLEL_LAYOUT

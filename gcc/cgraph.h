@@ -900,6 +900,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       ipcp_clone (false), declare_variant_alt (false),
       calls_declare_variant_alt (false), gc_candidate (false),
       called_by_ifunc_resolver (false),
+      has_metadirectives (false),
       m_uid (uid), m_summary_id (-1)
   {}
 
@@ -1501,6 +1502,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned gc_candidate : 1;
   /* Set if the function is called by an IFUNC resolver.  */
   unsigned called_by_ifunc_resolver : 1;
+  /* True if the function contains unresolved metadirectives.  */
+  unsigned has_metadirectives : 1;
 
 private:
   /* Unique id of the node.  */

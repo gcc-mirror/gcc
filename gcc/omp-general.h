@@ -203,6 +203,7 @@ extern tree omp_get_context_selector (tree, enum omp_tss_code,
 extern tree omp_get_context_selector_list (tree, enum omp_tss_code);
 extern tree omp_resolve_declare_variant (tree);
 extern vec<struct omp_variant> omp_early_resolve_metadirective (tree);
+extern vec<struct omp_variant> omp_late_resolve_metadirective (gimple *);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);
 extern tree oacc_replace_fn_attrib_attr (tree attribs, tree dims);
 extern void oacc_replace_fn_attrib (tree fn, tree dims);

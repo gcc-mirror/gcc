@@ -127,6 +127,7 @@ output_gimple_stmt (struct output_block *ob, struct function *fn, gimple *stmt)
     case GIMPLE_COND:
     case GIMPLE_GOTO:
     case GIMPLE_DEBUG:
+    case GIMPLE_OMP_METADIRECTIVE:
       for (i = 0; i < gimple_num_ops (stmt); i++)
 	{
 	  tree op = gimple_op (stmt, i);
@@ -169,6 +170,11 @@ output_gimple_stmt (struct output_block *ob, struct function *fn, gimple *stmt)
 	  else
 	    stream_write_tree (ob, gimple_call_fntype (stmt), true);
 	}
+      if (gimple_code (stmt) == GIMPLE_OMP_METADIRECTIVE)
+	for (i = 0; i < gimple_num_ops (stmt); i++)
+	  stream_write_tree (ob, gimple_omp_metadirective_label (stmt, i),
+			     true);
+
       break;
 
     case GIMPLE_NOP:

@@ -1312,6 +1312,41 @@ gimple_build_assume (tree guard, gimple_seq body)
   return p;
 }
 
+/* Allocate extra memory for a GIMPLE_OMP_METADIRECTIVE statement.  */
+
+void
+gimple_alloc_omp_metadirective (gimple *g)
+{
+  gomp_metadirective *p = as_a <gomp_metadirective *> (g);
+
+  p->labels = ggc_cleared_vec_alloc<tree> (gimple_num_ops (p));
+}
+
+/* Build a GIMPLE_OMP_METADIRECTIVE statement.  */
+
+gomp_metadirective *
+gimple_build_omp_metadirective (int num_variants)
+{
+  gomp_metadirective *p
+    = as_a <gomp_metadirective *> (gimple_alloc (GIMPLE_OMP_METADIRECTIVE,
+						 num_variants));
+  gimple_alloc_omp_metadirective (p);
+  gimple_omp_metadirective_set_variants (p, NULL);
+
+  return p;
+}
+
+/* Build a GIMPLE_OMP_METADIRECTIVE_VARIANT statement.  */
+
+gomp_variant *
+gimple_build_omp_variant (gimple_seq body)
+{
+  gomp_variant *variant = as_a <gomp_variant *>
+    (gimple_alloc (GIMPLE_OMP_METADIRECTIVE_VARIANT, 0));
+  gimple_omp_set_body (variant, body);
+  return variant;
+}
+
 /* Build a GIMPLE_TRANSACTION statement.  */
 
 gtransaction *

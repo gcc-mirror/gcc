@@ -187,6 +187,10 @@ struct omp_context
 
   /* Candidates for adjusting OpenACC privatization level.  */
   vec<tree> oacc_privatization_candidates;
+
+  /* Only used for omp metadirectives.  Links to the next shallow
+     clone of this context.  */
+  struct omp_context *next_clone;
 };
 
 static splay_tree all_contexts;
@@ -1102,6 +1106,7 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
   splay_tree_insert (all_contexts, (splay_tree_key) stmt,
 		     (splay_tree_value) ctx);
   ctx->stmt = stmt;
+  ctx->next_clone = NULL;
 
   if (outer_ctx)
     {
@@ -1129,6 +1134,18 @@ new_omp_context (gimple *stmt, omp_context *outer_ctx)
   ctx->cb.decl_map = new hash_map<tree, tree>;
 
   return ctx;
+}
+
+static omp_context *
+clone_omp_context (omp_context *ctx)
+{
+  omp_context *clone_ctx = XCNEW (omp_context);
+
+  memcpy (clone_ctx, ctx, sizeof (omp_context));
+  ctx->next_clone = clone_ctx;
+  clone_ctx->next_clone = NULL;
+
+  return clone_ctx;
 }
 
 static gimple_seq maybe_catch_exception (gimple_seq);
@@ -1176,6 +1193,15 @@ static void
 delete_omp_context (splay_tree_value value)
 {
   omp_context *ctx = (omp_context *) value;
+
+  /* Delete clones.  */
+  omp_context *clone = ctx->next_clone;
+  while (clone)
+    {
+      omp_context *next_clone = clone->next_clone;
+      XDELETE (clone);
+      clone = next_clone;
+    }
 
   delete ctx->cb.decl_map;
 
@@ -2449,6 +2475,9 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
   DECL_FUNCTION_VERSIONED (decl)
     = DECL_FUNCTION_VERSIONED (current_function_decl);
 
+  if (cgraph_node::get (cfun->decl)->has_metadirectives)
+    cgraph_node::get_create (decl)->has_metadirectives = 1;
+
   if (omp_maybe_offloaded_ctx (ctx))
     {
       cgraph_node::get_create (decl)->offloadable = 1;
@@ -3627,6 +3656,22 @@ scan_omp_teams (gomp_teams *stmt, omp_context *outer_ctx)
     ctx->record_type = ctx->receiver_decl = NULL;
 }
 
+/* Scan an OpenMP metadirective.  */
+
+static void
+scan_omp_metadirective (gomp_metadirective *stmt, omp_context *outer_ctx)
+{
+  gimple_seq variant_seq = gimple_omp_variants (stmt);
+  for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple_seq *directive_p = gimple_omp_body_ptr (gsi_stmt (gsi));
+      omp_context *ctx = outer_ctx ? clone_omp_context (outer_ctx) : NULL;
+
+      scan_omp (directive_p, ctx);
+    }
+}
+
 /* Check nesting restrictions.  */
 static bool
 check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
@@ -4688,6 +4733,10 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	}
       else
 	scan_omp_teams (as_a <gomp_teams *> (stmt), ctx);
+      break;
+
+    case GIMPLE_OMP_METADIRECTIVE:
+      scan_omp_metadirective (as_a <gomp_metadirective *> (stmt), ctx);
       break;
 
     case GIMPLE_BIND:
@@ -11198,6 +11247,19 @@ oacc_privatization_scan_decl_chain (omp_context *ctx, tree decls)
     }
 }
 
+static void
+lower_omp_metadirective (gimple_stmt_iterator *gsi_p, omp_context *ctx)
+{
+  gimple *stmt = gsi_stmt (*gsi_p);
+  gimple_seq variant_seq = gimple_omp_variants (stmt);
+  for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple_seq *directive_p = gimple_omp_body_ptr (gsi_stmt (gsi));
+      lower_omp (directive_p, ctx);
+    }
+}
+
 /* Callback for walk_gimple_seq.  Find #pragma omp scan statement.  */
 
 static tree
@@ -15706,10 +15768,31 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       else
 	lower_omp_teams (gsi_p, ctx);
       break;
+    case GIMPLE_OMP_METADIRECTIVE:
+      lower_omp_metadirective (gsi_p, ctx);
+      break;
     case GIMPLE_CALL:
       tree fndecl;
       call_stmt = as_a <gcall *> (stmt);
       fndecl = gimple_call_fndecl (call_stmt);
+      if (fndecl
+	  && lookup_attribute ("omp metadirective construct target",
+			       DECL_ATTRIBUTES (fndecl)))
+	{
+	  bool in_target_ctx = false;
+
+	  for (omp_context *up = ctx; up; up = up->outer)
+	    if (gimple_code (up->stmt) == GIMPLE_OMP_TARGET)
+	      {
+		in_target_ctx = true;
+		break;
+	      }
+	  if (!ctx || !in_target_ctx)
+	    warning_at (gimple_location (stmt), 0,
+			"direct calls to an offloadable function containing "
+			"metadirectives with a %<construct={target}%> "
+			"selector may produce unexpected results");
+	}
       if (fndecl
 	  && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
 	switch (DECL_FUNCTION_CODE (fndecl))

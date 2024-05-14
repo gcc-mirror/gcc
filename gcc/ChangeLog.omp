@@ -1,5 +1,81 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* cgraph.h (struct cgraph_node): Add has_metadirectives flag.
+	* cgraphclones.cc (cgraph_node::create_clone): Copy has_metadirectives
+	flag.
+	* doc/gimple.texi (Class hierarchy of GIMPLE statements): Document
+	gomp_metadirective and gomp_variant.
+	* gimple-low.cc (lower_omp_metadirective): New.
+	(lower_stmt): Call it.
+	* gimple-pretty-print.cc (dump_gimple_omp_metadirective): New.
+	(pp_gimple_stmt_1): Call it.
+	* gimple-streamer-in.cc (input_gimple_stmt): Handle
+	GIMPLE_OMP_METADIRECTIVE.
+	* gimple-streamer-out.cc (output_gimple_stmt): Likewise.
+	* gimple-walk.cc (walk_gimple_op): Likewise.
+	(walk_gimple_stmt): Likewise.
+	* gimple.cc (gimple_alloc_omp_metadirective): New.
+	(gimple_build_omp_metadirective): New.
+	(gimple_build_omp_variant): New.
+	* gimple.def (GIMPLE_OMP_METADIRECTIVE): New.
+	(GIMPLE_OMP_METADIRECTIVE_VARIANT): New.
+	* gimple.h (gomp_variant, gomp_metadirective): New.
+	(is_a_helper <gomp_metadirective *>::test): New.
+	(is_a_helper <gomp_variant *>::test): New.
+	(is_a_helper <const gomp_metadirective *>::test): New.
+	(is_a_helper <const gomp_variant *>::test): New.
+	(gimple_alloc_omp_metadirective): New.
+	(gimple_build_omp_metadirective): New.
+	(gimple_build_omp_variant): New.
+	(gimple_has_substatements): Handle GIMPLE_OMP_METADIRECTIVE.
+	(gimple_has_ops): Likewise.
+	(gimple_omp_metadirective_label): New.
+	(gimple_omp_metadirective_set_label): New.
+	(gimple_omp_variants): New.
+	(gimple_omp_metadirective_set_variants): New.
+	(gimple_return_set_retval): Handle GIMPLE_OMP_METADIRECTIVE.
+	* gimplify.cc (is_gimple_stmt): HANDLE OMP_METADIRECTIVE.
+	(expand_omp_metadirective): New.
+	(gimplify_omp_metadirective): New.
+	(gimplify_expr): Call it.
+	* gsstruct.def (GSS_OMP_METADIRECTIVE): New.
+	(GSS_OMP_METADIRECTIVE_VARIANT): New.
+	* lto-cgraph.cc (lto_output_node): Handle has_metadirectives flag.
+	(input_overwrite_node): Likewise.
+	* omp-expand.cc (expand_omp_target): Propagate has_metadirectives
+	flag.
+	(build_omp_regions_1): Handle GIMPLE_OMP_METADIRECTIVE.
+	(omp_make_gimple_edges): Likewise.
+	* omp-general.cc (omp_late_resolve_metadirective): New.
+	* omp-general.h (omp_late_resolve_metadirective): Declare.
+	* omp-low.cc (struct omp_context): Add next_clone field.
+	(new_omp_context): Handle next_clone field.
+	(clone_omp_context): New.
+	(delete_omp_context): Delete clones.
+	(create_omp_child_function): Propagate has_metadirectives bit.
+	(scan_omp_metadirective): New.
+	(scan_omp_1_stmt): Handle GIMPLE_OMP_METADIRECTIVE.
+	(lower_omp_metadirective): New.
+	(lower_omp_1): Handle GIMPLE_OMP_METADIRECTIVE.  Warn about
+	direct calls to offloadable functions containing metadirectives.
+	* omp-offload.cc: Include cfganal.h and cfghooks.h.
+	(omp_expand_metadirective): New.
+	(execute_omp_device_lower): Handle metadirectives.
+	(pass_omp_device_lower::gate): 	Check has_metadirectives bit.
+	* omp-simd-clone.cc (simd_clone_create): Propagate has_metadirectives
+	flag.
+	* tree-cfg.cc (cleanup_dead_labels): Handle GIMPLE_OMP_METADIRECTIVE.
+	(gimple_redirect_edge_and_branch): Likewise.
+	* tree-inline.cc (remap_gimple_stmt): Handle GIMPLE_OMP_METADIRECTIVE.
+	(estimate_num_instructions): Likewise.
+	(expand_call_inline): Propagate has_metadirectives flag.
+	(tree_function_versioning): Likewise.
+	* tree-ssa-operands.cc: Include omp-general.h.
+	(operands_scanner::parse_ssa_operands): Handle
+	GIMPLE_OMP_METADIRECTIVE.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* Makefile.in (GTFILES): Move omp-general.h earlier in the list.
 	* builtin-types.def (BT_FN_BOOL_INT_CONST_PTR_CONST_PTR_CONST_PTR):
 	New.
