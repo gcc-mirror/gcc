@@ -1776,6 +1776,9 @@ static const scoped_attribute_specs *const rs6000_attribute_table[] =
 #undef TARGET_CONST_ANCHOR
 #define TARGET_CONST_ANCHOR 0x8000
 
+#undef TARGET_OVERLAP_OP_BY_PIECES_P
+#define TARGET_OVERLAP_OP_BY_PIECES_P hook_bool_void_true
+
 
 
 /* Processor table.  */
