@@ -1,3 +1,17 @@
+2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114974
+	PR c++/114901
+	PR c++/114903
+	* pt.cc (maybe_aggr_guide): Fix obtaining TYPE_FIELDS in
+	the paren init case.  Hoist out partial substitution logic
+	to apply to the paren init case as well.
+	(alias_ctad_tweaks): Substitute outer template arguments into
+	a guide's constraints.
+
 2024-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

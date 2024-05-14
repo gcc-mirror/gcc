@@ -1,3 +1,15 @@
+2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114974
+	PR c++/114901
+	PR c++/114903
+	* g++.dg/cpp2a/class-deduction-aggr14.C: New test.
+	* g++.dg/cpp2a/class-deduction-alias20.C: New test.
+	* g++.dg/cpp2a/class-deduction-alias21.C: New test.
+
 2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
