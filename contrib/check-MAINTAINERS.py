@@ -71,6 +71,14 @@ def check_group(name, lines):
             print(f'Line should not start with space: "{line}"')
             exit_code = 2
 
+        # Special-case some names
+        if line == 'James Norris':
+            continue
+
+        if '\t' not in line:
+            print(f'Name and email should be separated by tabs: "{line}"')
+            exit_code = 2
+
     lines = [line + '\n' for line in lines]
     sorted_lines = sorted(lines, key=sort_by_surname)
     if lines != sorted_lines:
