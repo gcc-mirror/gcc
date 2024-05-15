@@ -114,22 +114,25 @@ PROCEDURE ReadRestLine (cid: IOChan.ChanId; VAR s: ARRAY OF CHAR);
   *)
 VAR
    i, h    : CARDINAL ;
+   ignore  : CHAR ;
    finished: BOOLEAN ;
 BEGIN
    h := HIGH(s) ;
    i := 0 ;
    finished := FALSE ;
-   WHILE (i<=h) AND CharAvailable (cid) AND (NOT finished) DO
-      ReadChar (cid, s[i]) ;
+   WHILE CharAvailable (cid) AND (NOT finished) DO
+      IF i <= h
+      THEN
+         ReadChar (cid, s[i])
+      ELSE
+         ReadChar (cid, ignore)
+      END ;
       IF EofOrEoln (cid)
       THEN
          finished := TRUE
       ELSE
          INC (i)
       END
-   END ;
-   WHILE CharAvailable (cid) DO
-      IOChan.Skip (cid)
    END ;
    SetNul (cid, i, s, TRUE)
 END ReadRestLine ;
