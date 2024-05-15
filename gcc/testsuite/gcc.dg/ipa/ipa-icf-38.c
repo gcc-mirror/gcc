@@ -2,6 +2,7 @@
 /* { dg-require-alias "" } */
 /* { dg-options "-O2 -fdump-ipa-icf-optimized -flto -fdump-tree-optimized -fno-ipa-vrp" } */
 /* { dg-require-effective-target lto } */
+/* { dg-require-effective-target linker_plugin } */
 /* { dg-additional-sources "ipa-icf-38a.c" }*/
 
 /* Based on ipa-icf-3.c.  */
