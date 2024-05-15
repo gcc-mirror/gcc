@@ -4487,6 +4487,57 @@ vect_recog_mult_pattern (vec_info *vinfo,
   return pattern_stmt;
 }
 
+extern bool gimple_unsigned_integer_sat_add (tree, tree*, tree (*)(tree));
+
+/*
+ * Try to detect saturation add pattern (SAT_ADD), aka below gimple:
+ *   _7 = _4 + _6;
+ *   _8 = _4 > _7;
+ *   _9 = (long unsigned int) _8;
+ *   _10 = -_9;
+ *   _12 = _7 | _10;
+ *
+ * And then simplied to
+ *   _12 = .SAT_ADD (_4, _6);
+ */
+
+static gimple *
+vect_recog_sat_add_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
+			    tree *type_out)
+{
+  gimple *last_stmt = STMT_VINFO_STMT (stmt_vinfo);
+
+  if (!is_gimple_assign (last_stmt))
+    return NULL;
+
+  tree res_ops[2];
+  tree lhs = gimple_assign_lhs (last_stmt);
+
+  if (gimple_unsigned_integer_sat_add (lhs, res_ops, NULL))
+    {
+      tree itype = TREE_TYPE (res_ops[0]);
+      tree vtype = get_vectype_for_scalar_type (vinfo, itype);
+
+      if (vtype != NULL_TREE
+	&& direct_internal_fn_supported_p (IFN_SAT_ADD, vtype,
+					   OPTIMIZE_FOR_BOTH))
+	{
+	  *type_out = vtype;
+	  gcall *call = gimple_build_call_internal (IFN_SAT_ADD, 2, res_ops[0],
+						    res_ops[1]);
+
+	  gimple_call_set_lhs (call, vect_recog_temp_ssa_var (itype, NULL));
+	  gimple_call_set_nothrow (call, /* nothrow_p */ false);
+	  gimple_set_location (call, gimple_location (last_stmt));
+
+	  vect_pattern_detected ("vect_recog_sat_add_pattern", last_stmt);
+	  return call;
+	}
+    }
+
+  return NULL;
+}
+
 /* Detect a signed division by a constant that wouldn't be
    otherwise vectorized:
 
@@ -6987,6 +7038,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
   { vect_recog_vector_vector_shift_pattern, "vector_vector_shift" },
   { vect_recog_divmod_pattern, "divmod" },
   { vect_recog_mult_pattern, "mult" },
+  { vect_recog_sat_add_pattern, "sat_add" },
   { vect_recog_mixed_size_cond_pattern, "mixed_size_cond" },
   { vect_recog_gcond_pattern, "gcond" },
   { vect_recog_bool_pattern, "bool" },
