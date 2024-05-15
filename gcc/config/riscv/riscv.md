@@ -87,8 +87,7 @@
   UNSPEC_STRLEN
 
   ;; Workaround for HFmode and BFmode without hardware extension
-  UNSPEC_FMV_SFP16_X
-  UNSPEC_FMV_SBF16_X
+  UNSPEC_FMV_FP16_X
 
   ;; XTheadFmv moves
   UNSPEC_XTHEADFMV
@@ -1959,19 +1958,11 @@
    (set_attr "type" "fmove,move,load,store,mtc,mfc")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*movhf_softfloat_boxing"
-  [(set (match_operand:HF 0 "register_operand"            "=f")
-        (unspec:HF [(match_operand:X 1 "register_operand" " r")] UNSPEC_FMV_SFP16_X))]
+(define_insn "*mov<HFBF:mode>_softfloat_boxing"
+  [(set (match_operand:HFBF 0 "register_operand"	    "=f")
+	(unspec:HFBF [(match_operand:X 1 "register_operand" " r")]
+	 UNSPEC_FMV_FP16_X))]
   "!TARGET_ZFHMIN"
-  "fmv.w.x\t%0,%1"
-  [(set_attr "type" "fmove")
-   (set_attr "mode" "SF")])
-
-(define_insn "*movbf_softfloat_boxing"
-  [(set (match_operand:BF 0 "register_operand"		  "=f")
-	(unspec:BF [(match_operand:X 1 "register_operand" " r")]
-	 UNSPEC_FMV_SBF16_X))]
-  "!TARGET_ZFBFMIN"
   "fmv.w.x\t%0,%1"
   [(set_attr "type" "fmove")
    (set_attr "mode" "SF")])
