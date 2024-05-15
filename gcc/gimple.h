@@ -856,10 +856,14 @@ struct GTY((tag("GSS_OMP_METADIRECTIVE")))
   /* [ WORD 8 ] : a list of bodies associated with the directive variants.  */
   gomp_variant *variants;
 
-  /* [ WORD 9 ] : label vector.  */
+  /* [ WORD 9 ] : the cached OpenMP context for this directive, used for
+     post-gimplification resolution.  */
+  tree context;
+
+  /* [ WORD 10 ] : label vector.  */
   tree * GTY((length ("%h.num_ops"))) labels;
 
-  /* [ WORD 10 ] : operand vector.  Used to hold the selectors for the
+  /* [ WORD 11 ] : operand vector.  Used to hold the selectors for the
      directive variants.  */
   tree GTY((length ("%h.num_ops"))) op[1];
 };
@@ -6689,6 +6693,24 @@ gimple_assume_body (const gimple *gs)
   const gimple_statement_assume *assume_stmt
     = as_a <const gimple_statement_assume *> (gs);
   return assume_stmt->body;
+}
+
+
+static inline tree
+gimple_omp_metadirective_context (const gimple *g)
+{
+  const gomp_metadirective *omp_metadirective
+    = as_a <const gomp_metadirective *> (g);
+  return omp_metadirective->context;
+}
+
+
+static inline void
+gimple_omp_metadirective_set_context (gimple *g, tree context)
+{
+  gomp_metadirective *omp_metadirective
+    = as_a <gomp_metadirective *> (g);
+  omp_metadirective->context = context;
 }
 
 

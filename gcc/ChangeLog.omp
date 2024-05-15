@@ -1,5 +1,80 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* gimple-streamer-in.cc (input_gimple_stmt): Restore
+	gomp_metadirective context.
+	* gimple-streamer-out.cc (output_gimple_stmt): Save
+	gomp_metadirective context.
+	* gimple.cc (gimple_build_omp_metadirective): Initialize
+	gomp_metadirective context.
+	* gimple.def (GIMPLE_OMP_METADIRECTIVE): Update comments.
+	* gimple.h (gomp_metadirective): Add context field and update comments.
+	(gimple_omp_metadirective_context): New.
+	(gimple_omp_metadirective_set_context): New.
+	* gimplify.cc (omp_resolved_variant_calls): New.
+	(gimplify_variant_call_expr): New.
+	(gimplify_call_expr): Adjust parameters.  Call
+	gimplify_variant_call_expr to handle declare variant substitution.
+	(omp_construct_selector_matches): Delete.
+	(omp_get_construct_context): New.
+	(gimplify_omp_metadirective): Use filtered list of candidates
+	to construct the gomp_metadirective structure.  Save the construct
+	context.
+	(gimplify_expr): Adjust arguments to gimplify_call_expr.
+	(gimplify_function_tree): Initialize and free
+	omp_resolved_variant_calls around the call to gimplify_body.
+	* gimplify.h (omp_construct_selector_matches): Delete.
+	(omp_get_construct_context): New.
+	* omp-general.cc (omp_construct_traits_to_codes): Delete.
+	(omp_maybe_offloaded): Add construct_context parameter and comments.
+	Use construct_context to check for nesting in a target directive
+	instead of calling omp_construct_selector_matches.
+	(expr_uses_parm_decl): New.
+	(omp_check_context_selector): Don't reject target_device selector
+	for "declare variant".  Add missing check for invalid simd properties.
+	Reject dynamic selectors that reference parameter variables in
+	"declare variant" with a "sorry".
+	(omp_construct_traits_match): New.
+	(omp_context_selector_matches): Adjust parameters to pass in
+	construct_context.  Rewrite construct selector matching to
+	use omp_construct_traits_match.  Replace unnecessary conditionals
+	checking that traits match the right selector set with asserts.
+	(omp_construct_simd_compare): Add match_p parameter, use it to
+	enable additional matching rules for simdlen and align clauses.
+	(omp_context_selector_set_compare): Make static.  Adjust
+	call to omp_construct_simd_compare).
+	(omp_dynamic_cond): Clean up code missed in a previously-committed
+	patch.
+	(omp_context_compare_score): Adjust parameters, rewrite and add
+	comments.
+	(omp_complete_construct_context): New.
+	(omp_resolve_late_declare_variant): Delete.
+	(omp_declare_variant_remove_hook): Delete.
+	(omp_resolve_declare_variant): Delete.
+	(omp_get_dynamic_candidates): Make non-static and adjust parameters.
+	Call omp_complete_construct_context and pass the result to
+	omp_context_selector_matches.  Add more comments, debug output,
+	and logic to allow resolution in some cases where candidates
+	cannot be scored accurately.
+	(omp_declare_variant_candidates): New.
+	(omp_metadirective_candidates): New, split from...
+	(omp_early_resolve_metadirective): ...here.
+	(omp_late_resolve_metadirective): Explicitly initialize
+	dynamic_selector field.  Adjust call to omp_get_dynamic_candidates.
+	* omp-general.h (struct omp_variant): Add comments explaining
+	how this is used for "declare variant".
+	(omp_construct_traits_to_codes): Delete.
+	(omp_context_selector_matches): Adjust parameters.
+	(omp_context_selector_set_compare): Delete.
+	(omp_resolve_declare_variant): Delete.
+	(omp_declare_variant_candidates): Declare.
+	(omp_metadirective_candidates): Declare.
+	(omp_get_dynamic_candidates): Declare.
+	* omp-offload.cc (execute_omp_device_lower): Remove logic
+	for the old way of handling declare variant.
+	* tree-inline.cc (remap_gimple_stmt): Copy metadirective context.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* omp-general.cc (omp_check_context_selector): Reject other
 	properties in the same selector set with kind(any).
 

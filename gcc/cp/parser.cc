@@ -49087,7 +49087,7 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
 
 static tree
 cp_parser_omp_context_selector (cp_parser *parser, enum omp_tss_code set,
-				bool has_parms_p, bool metadirective_p)
+				bool has_parms_p)
 {
   tree ret = NULL_TREE;
   do
@@ -49248,31 +49248,24 @@ cp_parser_omp_context_selector (cp_parser *parser, enum omp_tss_code set,
 	      break;
 	    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
 	    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
-	      /* FIXME: I believe it is an unimplemented feature rather
-		 than a user error to have non-constant expressions
-		 inside "declare variant".  */
-	      t = metadirective_p
-		? cp_parser_expression (parser)
-		: cp_parser_constant_expression (parser);
-	      if (t != error_mark_node)
+	      processing_omp_trait_property_expr = true;
+	      /* This actually parses a not-necessarily-constant
+		 conditional-expression.  */
+	      t = cp_parser_constant_expression (parser, true, NULL, false);
+	      processing_omp_trait_property_expr = false;
+	      if (t == error_mark_node)
+		return error_mark_node;
+	      if (!type_dependent_expression_p (t))
 		{
 		  t = fold_non_dependent_expr (t);
-		  if (!metadirective_p
-		      && !value_dependent_expression_p (t)
-		      && (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-			  || !tree_fits_shwi_p (t)))
-		    error_at (token->location, "property must be "
-			      "constant integer expression");
-		  if (metadirective_p
-		      && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
-		    error_at (token->location,
-			      "property must be integer expression");
-		  else
-		    properties = make_trait_property (NULL_TREE, t,
-						      properties);
+		  if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		    {
+		      error_at (token->location,
+				"property must be integer expression");
+		      return error_mark_node;
+		    }
 		}
-	      else
-		return error_mark_node;
+	      properties = make_trait_property (NULL_TREE, t, properties);
 	      break;
 	    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
 	      if (sel == OMP_TRAIT_CONSTRUCT_SIMD)
@@ -49345,8 +49338,7 @@ cp_parser_omp_context_selector (cp_parser *parser, enum omp_tss_code set,
 
 static tree
 cp_parser_omp_context_selector_specification (cp_parser *parser,
-					      bool has_parms_p,
-					      bool metadirective_p)
+					      bool has_parms_p)
 {
   tree ret = NULL_TREE;
   do
@@ -49373,8 +49365,7 @@ cp_parser_omp_context_selector_specification (cp_parser *parser,
 	return error_mark_node;
 
       tree selectors
-	= cp_parser_omp_context_selector (parser, set, has_parms_p,
-					  metadirective_p);
+	= cp_parser_omp_context_selector (parser, set, has_parms_p);
       if (selectors == error_mark_node)
 	{
 	  cp_parser_skip_to_closing_brace (parser);
@@ -49684,8 +49675,7 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
   if (!parens.require_open (parser))
     goto fail;
 
-  tree ctx = cp_parser_omp_context_selector_specification (parser, true,
-							   false);
+  tree ctx = cp_parser_omp_context_selector_specification (parser, true);
   if (ctx == error_mark_node)
     goto fail;
   ctx = omp_check_context_selector (match_loc, ctx, false);
@@ -50474,8 +50464,7 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 
       if (!default_p)
 	{
-	  ctx = cp_parser_omp_context_selector_specification (parser, false,
-							      true);
+	  ctx = cp_parser_omp_context_selector_specification (parser, false);
 	  if (ctx == error_mark_node)
 	    goto fail;
 	  ctx = omp_check_context_selector (match_loc, ctx, true);
@@ -50487,8 +50476,7 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 	  /* FIXME: we could still do this if the context selector
 	     doesn't have any dependent subexpressions.  */
 	  skip = (!processing_template_decl
-		  && omp_context_selector_matches (ctx, true, true) == 0);
-
+		  && !omp_context_selector_matches (ctx, NULL_TREE, false));
 	  if (cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
 	    {
 	      cp_parser_require (parser, CPP_COLON, RT_COLON);

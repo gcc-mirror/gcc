@@ -17936,7 +17936,8 @@ tsubst_omp_context_selector (tree ctx, tree args, tsubst_flags_t complain,
 		if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
 		  error_at (cp_expr_loc_or_input_loc (t),
 			    "property must be integer expression");
-		properties = make_trait_property (NULL_TREE, t, NULL_TREE);
+		else
+		  properties = make_trait_property (NULL_TREE, t, NULL_TREE);
 		break;
 	      case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
 		if (OMP_TS_CODE (sel) == OMP_TRAIT_CONSTRUCT_SIMD)
@@ -19547,7 +19548,7 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 						   in_decl);
 		/* Remove the selector from further consideration if it can be
 		   evaluated as a non-match at this point.  */
-		if (omp_context_selector_matches (ctx, true, true) == 0)
+		if (omp_context_selector_matches (ctx, NULL_TREE, false) == 0)
 		  continue;
 	      }
 	    s = push_stmt_list ();

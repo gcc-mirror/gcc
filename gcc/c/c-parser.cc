@@ -25631,7 +25631,7 @@ c_parser_omp_declare_simd (c_parser *parser, enum pragma_context context)
 
 static tree
 c_parser_omp_context_selector (c_parser *parser, enum omp_tss_code set,
-			       tree parms, bool metadirective_p)
+			       tree parms)
 {
   tree ret = NULL_TREE;
   do
@@ -25778,16 +25778,7 @@ c_parser_omp_context_selector (c_parser *parser, enum omp_tss_code set,
 		{
 		  mark_exp_read (t);
 		  t = c_fully_fold (t, false, NULL);
-		  /* FIXME: I believe it is an unimplemented feature rather
-		     than a user error to have non-constant expressions
-		     inside "declare variant".  */
-		  if (!metadirective_p
-		      && (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-			  || !tree_fits_shwi_p  (t)))
-		    error_at (token->location,
-			      "property must be constant integer expression");
-		  else if (metadirective_p
-			   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		  if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
 		    error_at (token->location,
 			      "property must be integer expression");
 		  else
@@ -25870,8 +25861,7 @@ c_parser_omp_context_selector (c_parser *parser, enum omp_tss_code set,
      user  */
 
 static tree
-c_parser_omp_context_selector_specification (c_parser *parser, tree parms,
-					     bool metadirective_p)
+c_parser_omp_context_selector_specification (c_parser *parser, tree parms)
 {
   tree ret = NULL_TREE;
   do
@@ -25896,8 +25886,7 @@ c_parser_omp_context_selector_specification (c_parser *parser, tree parms,
       if (!braces.require_open (parser))
 	return error_mark_node;
 
-      tree selectors = c_parser_omp_context_selector (parser, set, parms,
-						      metadirective_p);
+      tree selectors = c_parser_omp_context_selector (parser, set, parms);
       if (selectors == error_mark_node)
 	ret = error_mark_node;
       else if (ret != error_mark_node)
@@ -25973,8 +25962,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
   if (parms == NULL_TREE)
     parms = error_mark_node;
 
-  tree ctx = c_parser_omp_context_selector_specification (parser,
-							  parms, false);
+  tree ctx = c_parser_omp_context_selector_specification (parser, parms);
   if (ctx == error_mark_node)
     goto fail;
   ctx = omp_check_context_selector (match_loc, ctx, false);
@@ -26010,7 +25998,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  tree construct
 	    = omp_get_context_selector_list (ctx, OMP_TRAIT_SET_CONSTRUCT);
 	  omp_mark_declare_variant (match_loc, variant, construct);
-	  if (omp_context_selector_matches (ctx, false, true))
+	  if (omp_context_selector_matches (ctx, NULL_TREE, false))
 	    {
 	      tree attr
 		= tree_cons (get_identifier ("omp declare variant base"),
@@ -27948,7 +27936,7 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
       if (!default_p)
 	{
 	  ctx = c_parser_omp_context_selector_specification (parser,
-							     NULL_TREE, true);
+							     NULL_TREE);
 	  if (ctx == error_mark_node)
 	    goto error;
 	  ctx = omp_check_context_selector (match_loc, ctx, true);
@@ -27957,7 +27945,7 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
 
 	  /* Remove the selector from further consideration if can be
 	     evaluated as a non-match at this point.  */
-	  skip = omp_context_selector_matches (ctx, true, true) == 0;
+	  skip = (omp_context_selector_matches (ctx, NULL_TREE, false) == 0);
 
 	  if (c_parser_next_token_is_not (parser, CPP_COLON))
 	    {

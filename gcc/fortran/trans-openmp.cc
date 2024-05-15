@@ -11146,7 +11146,8 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	      omp_mark_declare_variant (gfc_get_location (&odv->where),
 					gfc_get_symbol_decl (variant_proc_sym),
 					construct);
-	      if (omp_context_selector_matches (set_selectors, false, true))
+	      if (omp_context_selector_matches (set_selectors,
+						NULL_TREE, false))
 		{
 		  tree id = get_identifier ("omp declare variant base");
 		  tree variant = gfc_get_symbol_decl (variant_proc_sym);
@@ -11328,7 +11329,7 @@ gfc_trans_omp_metadirective (gfc_code *code)
 	return error_mark_node;
 
       /* If the selector doesn't match, drop the whole variant.  */
-      if (!omp_context_selector_matches (ctx, true, true))
+      if (!omp_context_selector_matches (ctx, NULL_TREE, false))
 	{
 	  variant = variant->next;
 	  continue;

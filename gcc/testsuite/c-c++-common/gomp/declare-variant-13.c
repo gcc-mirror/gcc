@@ -1,5 +1,5 @@
 /* { dg-do compile { target vect_simd_clones } } */
-/* { dg-additional-options "-fdump-tree-gimple" } */
+/* { dg-additional-options "-fdump-tree-ompdevlow" } */
 /* { dg-additional-options "-mno-sse3" { target { i?86-*-* x86_64-*-* } } } */
 
 int f01 (int);
@@ -20,5 +20,7 @@ test1 (int x)
      isa has score 2^2 or 2^3.  We can't decide on whether avx512f will match or
      not, that also depends on whether it is a declare simd clone or not and which
      one, but the f03 variant has a higher score anyway.  */
-  return f05 (x);	/* { dg-final { scan-tree-dump-times "f03 \\\(x" 1 "gimple" } } */
+  return f05 (x);
+  /* { dg-final { scan-tree-dump "f03 \\\(x" "ompdevlow" } } */
+  /* { dg-final { scan-tree-dump-not "f05 \\\(x" "ompdevlow" } } */
 }

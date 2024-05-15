@@ -1331,6 +1331,7 @@ gimple_build_omp_metadirective (int num_variants)
     = as_a <gomp_metadirective *> (gimple_alloc (GIMPLE_OMP_METADIRECTIVE,
 						 num_variants));
   gimple_alloc_omp_metadirective (p);
+  gimple_omp_metadirective_set_context (p, NULL);
   gimple_omp_metadirective_set_variants (p, NULL);
 
   return p;

@@ -1678,6 +1678,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	    gimple *first_variant = NULL;
 	    gimple **prev_next = &first_variant;
 	    gimple_seq variant_seq = gimple_omp_variants (stmt);
+	    tree context = gimple_omp_metadirective_context (stmt);
 	    for (gimple_stmt_iterator gsi = gsi_start (variant_seq);
 		 !gsi_end_p (gsi); gsi_next (&gsi))
 	      {
@@ -1689,6 +1690,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 		prev_next = &new_variant->next;
 	      }
 	    gimple_omp_metadirective_set_variants (copy, first_variant);
+	    gimple_omp_metadirective_set_context (copy, context);
 	  }
 
 	  memset (&wi, 0, sizeof (wi));

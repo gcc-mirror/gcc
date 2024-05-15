@@ -1,5 +1,23 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* cp-tree.h (struct saved_scope): Add new field
+	x_processing_omp_trait_property_expr.
+	(processing_omp_trait_property_expr): Define
+	* decl.cc (omp_declare_variant_finalize_one): Adjust arguments
+	to omp_context_selector_matches.
+	* parser.cc (cp_parser_omp_context_selector): Remove metadirective_p
+	argument and conditionalization.
+	(cp_parser_omp_context_selector_specification): Remove metadirective_p
+	argument and adjust call not to pass it on.
+	(cp_finish_omp_declare_variant): Adjust arguments on call to above.
+	(cp_parser_omp_metadirective): Likewise.
+	* pt.cc (tsubst_omp_context_selector): Adjust error behavior.
+	(tsubst_stmt): Adjust call to omp_context_selector_matches.
+	* semantics.cc (finish_id_expression_1): Do not diagnose error
+	for use of parameter in declare variant selector here.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* parser.cc (cp_parser_skip_to_end_of_block_or_statement): Add
 	metadirective_p parameter, use it to control brace/parentheses
 	behavior for metadirectives.

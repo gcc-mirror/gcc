@@ -95,16 +95,27 @@ struct omp_for_data
    desirable to be the same on all targets.  */
 typedef generic_wide_int <fixed_wide_int_storage <1024> > score_wide_int;
 
-/* A structure describing a variant in a metadirective.  */
-
+/* A structure describing a variant alternative in a metadirective or
+   variant function, used for matching and scoring during resolution.  */
 struct GTY(()) omp_variant
 {
-  score_wide_int score;
+  /* Context selector.  This is NULL_TREE for the default.  */
   tree selector;
+  /* For early resolution of "metadirective", contains the nested directive.
+     For early resolution of "declare variant", contains the function decl
+     for this alternative.  For late resolution of both, contains the label
+     that is the branch target for this alternative.  */
   tree alternative;
+  /* Common body, used for metadirective.  */
   tree body;
+  /* If the selector is dynamic, this is the dynamic part; otherwise
+     NULL_TREE.  Filled in during resolution.  */
   tree dynamic_selector;
+  /* A selector can match but not be resolvable due to its score not
+     being computable yet.  */
   bool resolvable_p : 1;
+  /* The score, if resolvable_p is true.  */
+  score_wide_int score;
 };
 
 #define OACC_FN_ATTRIB "oacc function"
@@ -191,17 +202,18 @@ extern poly_uint64 omp_max_vf (void);
 extern int omp_max_simt_vf (void);
 extern int omp_max_simd_vf (void);
 extern const char *omp_context_name_list_prop (tree);
-extern void omp_construct_traits_to_codes (tree, int, enum tree_code *);
 extern tree omp_check_context_selector (location_t loc, tree ctx,
 					bool metadirective_p);
 extern void omp_mark_declare_variant (location_t loc, tree variant,
 				      tree construct);
-extern int omp_context_selector_matches (tree, bool, bool);
-extern int omp_context_selector_set_compare (enum omp_tss_code, tree, tree);
+extern int omp_context_selector_matches (tree, tree, bool);
 extern tree omp_get_context_selector (tree, enum omp_tss_code,
 				      enum omp_ts_code);
 extern tree omp_get_context_selector_list (tree, enum omp_tss_code);
-extern tree omp_resolve_declare_variant (tree);
+extern vec<struct omp_variant> omp_declare_variant_candidates (tree, tree);
+extern vec<struct omp_variant> omp_metadirective_candidates (tree, tree);
+extern vec<struct omp_variant>
+omp_get_dynamic_candidates (vec<struct omp_variant>&, tree);
 extern vec<struct omp_variant> omp_early_resolve_metadirective (tree);
 extern vec<struct omp_variant> omp_late_resolve_metadirective (gimple *);
 extern tree oacc_launch_pack (unsigned code, tree device, unsigned op);

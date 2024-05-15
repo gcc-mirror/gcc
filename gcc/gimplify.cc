@@ -97,6 +97,11 @@ reset_cond_uid ()
 /* Hash set of poisoned variables in a bind expr.  */
 static hash_set<tree> *asan_poisoned_variables = NULL;
 
+/* Hash set of already-resolved calls to OpenMP "declare variant"
+   functions.  A call can resolve to the original function and
+   we don't want to repeat the resolution multiple times.  */
+static hash_set<tree> *omp_resolved_variant_calls = NULL;
+
 enum gimplify_omp_var_data
 {
   GOVD_SEEN = 0x000001,
@@ -3885,12 +3890,185 @@ maybe_fold_stmt (gimple_stmt_iterator *gsi)
   return fold_stmt (gsi);
 }
 
+/* Helper function for gimplify_call_expr: handle "declare variant"
+   resolution and expansion.  Arguments are as for gimplify_call_expr.
+   If *EXPR_P is unchanged, the return value should be ignored and the
+   normal gimplify_call_expr handling should be applied.  Otherwise GS_OK
+   is returned if the new *EXPR_P is something that needs to be further
+   gimplified, or GS_ALL_DONE if *EXPR_P has been translated into a
+   GIMPLE_OMP_METADIRECTIVE.  */
+
+static enum gimplify_status
+gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
+			    fallback_t fallback)
+{
+  /* If we've already processed this call, stop now.  This can happen
+     if the variant call resolves to the original function, or to
+     a dynamic conditional that includes the default call to the original
+     function.  */
+  gcc_assert (omp_resolved_variant_calls != NULL);
+  if (omp_resolved_variant_calls->contains (*expr_p))
+    return GS_OK;
+
+  tree fndecl = get_callee_fndecl (*expr_p);
+  tree fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
+  location_t loc = EXPR_LOCATION (*expr_p);
+  tree construct_context = omp_get_construct_context ();
+  vec<struct omp_variant> all_candidates
+    = omp_declare_variant_candidates (fndecl, construct_context);
+  gcc_assert (!all_candidates.is_empty ());
+  vec<struct omp_variant> candidates
+    = omp_get_dynamic_candidates (all_candidates, construct_context);
+
+  /* If the variant call could be resolved now, build a nest of COND_EXPRs
+     if there are dynamic candidates, and/or a new CALL_EXPR for each
+     candidate call.  */
+  if (!candidates.is_empty ())
+    {
+      int n = candidates.length ();
+      tree tail = NULL_TREE;
+
+      for (int i = n - 1; i >= 0; i--)
+	{
+	  if (tail)
+	    gcc_assert (candidates[i].dynamic_selector);
+	  else
+	    gcc_assert (!candidates[i].dynamic_selector);
+	  if (candidates[i].alternative == fndecl)
+	    {
+	      /* We should only get the original function back as the
+		 default.  */
+	      gcc_assert (!tail);
+	      omp_resolved_variant_calls->add (*expr_p);
+	      tail = *expr_p;
+	    }
+	  else
+	    {
+	      /* Special case: if there are no adjust_args/append_args for
+		 the final static selector, we can re-use the old CALL_EXPR
+		 and just replace the function.  */
+	      /* FIXME: also test for adjust_args/append_args.  */
+	      tree thiscall = tail ? unshare_expr (*expr_p) : *expr_p;
+	      CALL_EXPR_FN (thiscall) = build1 (ADDR_EXPR, fnptrtype,
+						candidates[i].alternative);
+	      /* FIXME: Handle adjust_args/append_args here too.  */
+	      if (!tail)
+		tail = thiscall;
+	      else
+		tail = build3 (COND_EXPR, TREE_TYPE (*expr_p),
+			       candidates[i].dynamic_selector,
+			       thiscall, tail);
+	    }
+	}
+      *expr_p = tail;
+      return GS_OK;
+    }
+
+  /* If we couldn't resolve the variant call now, replace the call with a
+     GIMPLE_OMP_METADIRECTIVE that has gimplified calls in each of its
+     alternatives.  Yes, this is badly named, but the same logic is used
+     to replace both things in the late resolution from the ompdevlow pass.  */
+  else
+    {
+      /* If we need a usable return value, we need a temporary
+	 and an assignment in each alternative.  This logic was borrowed
+	 from gimplify_cond_expr.  */
+      tree type = TREE_TYPE (*expr_p);
+      bool want_value = (fallback != fb_none && !VOID_TYPE_P (type));
+      bool pointerize = false;
+      tree tmp = NULL_TREE, result = NULL_TREE;
+
+      if (want_value)
+	{
+	  /* If either an rvalue is ok or we do not require an lvalue,
+	     create the temporary.  But we cannot do that if the type is
+	     addressable.  */
+	  if (((fallback & fb_rvalue) || !(fallback & fb_lvalue))
+	      && !TREE_ADDRESSABLE (type))
+	    {
+	      tmp = create_tmp_var (type, "iftmp");
+	      result = tmp;
+	    }
+
+	  /* Otherwise, only create and copy references to the values.  */
+	  else
+	    {
+	      pointerize = true;
+	      type = build_pointer_type (type);
+	      tmp = create_tmp_var (type, "iftmp");
+	      result = build_simple_mem_ref_loc (loc, tmp);
+	    }
+	}
+
+      /* The following code was more or less stolen from
+	 gimplify_omp_metadirective.  FIXME: do we also need to copy
+	 the "omp metadirective construct target" part too?  */
+      gomp_variant *first_variant = NULL;
+      gomp_variant *prev_variant = NULL;
+      gomp_metadirective *stmt
+	= gimple_build_omp_metadirective (all_candidates.length ());
+      tree end_label = create_artificial_label (UNKNOWN_LOCATION);
+
+      for (unsigned int i = 0; i < all_candidates.length (); i++)
+	{
+	  tree decl = all_candidates[i].alternative;
+	  gimple_set_op (stmt, i, all_candidates[i].selector);
+	  gomp_variant *omp_variant
+	    = gimple_build_omp_variant (NULL);
+	  gimple_seq *directive_p = gimple_omp_body_ptr (omp_variant);
+	  tree thiscall;
+
+	  /* We need to turn the decl from the candidate into a function
+	     call and possible assignment, gimplify it, and stuff that in
+	     the directive seq of the gomp_variant.  */
+	  if (decl == fndecl)
+	    {
+	      thiscall = *expr_p;
+	      omp_resolved_variant_calls->add (*expr_p);
+	    }
+	  else
+	    {
+	      /* FIXME: handle adjust_args/append_args here too.  */
+	      thiscall = unshare_expr (*expr_p);
+	      CALL_EXPR_FN (thiscall) = build1 (ADDR_EXPR, fnptrtype, decl);
+	    }
+	  if (pointerize)
+	    thiscall = build_fold_addr_expr_loc (loc, thiscall);
+	  if (want_value)
+	    thiscall = build2 (INIT_EXPR, type, tmp, thiscall);
+
+	  gimplify_stmt (&thiscall, directive_p);
+	  gimplify_seq_add_stmt (directive_p, gimple_build_goto (end_label));
+
+	  if (!first_variant)
+	    first_variant = omp_variant;
+	  if (prev_variant)
+	    {
+	      prev_variant->next = omp_variant;
+	      omp_variant->prev = prev_variant;
+	    }
+	  prev_variant = omp_variant;
+	}
+
+      gimple_omp_metadirective_set_context (stmt, construct_context);
+      gimple_omp_metadirective_set_variants (stmt, first_variant);
+
+      gimplify_seq_add_stmt (pre_p, stmt);
+      gimplify_seq_add_stmt (pre_p, gimple_build_label (end_label));
+      cgraph_node::get (cfun->decl)->has_metadirectives = 1;
+
+      *expr_p = result;
+      return GS_ALL_DONE;
+    }
+}
+
 /* Gimplify the CALL_EXPR node *EXPR_P into the GIMPLE sequence PRE_P.
    WANT_VALUE is true if the result of the call is desired.  */
 
 static enum gimplify_status
-gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
+gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 {
+  bool want_value = (fallback != fb_none);
   tree fndecl, parms, p, fnptrtype;
   enum gimplify_status ret;
   int i, nargs;
@@ -4056,14 +4234,23 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
   /* Remember the original function pointer type.  */
   fnptrtype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 
+  /* Handle "declare variant" substitution.  */
   if (flag_openmp
       && fndecl
       && cfun
-      && (cfun->curr_properties & PROP_gimple_any) == 0)
+      && (cfun->curr_properties & PROP_gimple_any) == 0
+      && lookup_attribute ("omp declare variant base",
+			   DECL_ATTRIBUTES (fndecl)))
     {
-      tree variant = omp_resolve_declare_variant (fndecl);
-      if (variant != fndecl)
-	CALL_EXPR_FN (*expr_p) = build1 (ADDR_EXPR, fnptrtype, variant);
+      tree orig = *expr_p;
+      enum gimplify_status ret
+	= gimplify_variant_call_expr (expr_p, pre_p, fallback);
+      /* This may resolve to the same call, or the call expr with just
+	 the function replaced, in which case we should just continue to
+	 gimplify it normally.  Otherwise, if we get something else back,
+	 stop here.  */
+      if (*expr_p != orig)
+	return ret;
     }
 
   /* There is a sequence point before the call, so any side effects in
@@ -15482,57 +15669,59 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
   delete_omp_context (ctx);
 }
 
-/* Return 0 if CONSTRUCTS selectors don't match the OpenMP context,
-   -1 if unknown yet (simd is involved, won't be known until vectorization)
-   and 1 if they do.  If SCORES is non-NULL, it should point to an array
-   of at least 2*NCONSTRUCTS+2 ints, and will be filled with the positions
-   of the CONSTRUCTS (position -1 if it will never match) followed by
-   number of constructs in the OpenMP context construct trait.  If the
-   score depends on whether it will be in a declare simd clone or not,
-   the function returns 2 and there will be two sets of the scores, the first
-   one for the case that it is not in a declare simd clone, the other
-   that it is in a declare simd clone.  */
+/* Collect a list of traits for enclosing constructs in the current
+   OpenMP context.  The list is in the same format as the trait selector
+   list of construct trait sets built by the front ends.
 
-int
-omp_construct_selector_matches (enum tree_code *constructs, int nconstructs,
-				int *scores)
+   Per the OpenMP specification, the construct trait set includes constructs
+   up to an enclosing "target" construct.  If there is no "target" construct,
+   then additional things may be added to the construct trait set (simd for
+   simd clones, additional constructs associated with "declare variant",
+   the target trait for "declare target"); those are not handled here.
+   In particular simd clones are not known during gimplification so
+   matching/scoring of context selectors that might involve them needs
+   to be deferred to the omp_device_lower pass.  */
+
+tree
+omp_get_construct_context (void)
 {
-  int matched = 0, cnt = 0;
-  bool simd_seen = false;
-  bool target_seen = false;
-  int declare_simd_cnt = -1;
-  auto_vec<enum tree_code, 16> codes;
+  tree result = NULL_TREE;
   for (struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp; ctx;)
     {
-      if (((ctx->region_type & ORT_PARALLEL) && ctx->code == OMP_PARALLEL)
-	  || ((ctx->region_type & (ORT_TARGET | ORT_IMPLICIT_TARGET | ORT_ACC))
-	      == ORT_TARGET && ctx->code == OMP_TARGET)
-	  || ((ctx->region_type & ORT_TEAMS) && ctx->code == OMP_TEAMS)
-	  || (ctx->region_type == ORT_WORKSHARE && ctx->code == OMP_FOR)
-	  || (ctx->region_type == ORT_SIMD
-	      && ctx->code == OMP_SIMD
-	      && !omp_find_clause (ctx->clauses, OMP_CLAUSE_BIND)))
+      if (((ctx->region_type & (ORT_TARGET | ORT_IMPLICIT_TARGET | ORT_ACC))
+		== ORT_TARGET)
+	       && ctx->code == OMP_TARGET)
 	{
-	  ++cnt;
-	  if (scores)
-	    codes.safe_push (ctx->code);
-	  else if (matched < nconstructs && ctx->code == constructs[matched])
-	    {
-	      if (ctx->code == OMP_SIMD)
-		{
-		  if (matched)
-		    return 0;
-		  simd_seen = true;
-		}
-	      ++matched;
-	    }
-	  if (ctx->code == OMP_TARGET)
-	    {
-	      if (scores == NULL)
-		return matched < nconstructs ? 0 : simd_seen ? -1 : 1;
-	      target_seen = true;
-	      break;
-	    }
+	  result = make_trait_selector (OMP_TRAIT_CONSTRUCT_TARGET,
+					NULL_TREE, NULL_TREE, result);
+	  /* We're not interested in any outer constructs.  */
+	  break;
+	}
+      else if ((ctx->region_type & ORT_PARALLEL) && ctx->code == OMP_PARALLEL)
+	result = make_trait_selector (OMP_TRAIT_CONSTRUCT_PARALLEL,
+				      NULL_TREE, NULL_TREE, result);
+      else if ((ctx->region_type & ORT_TEAMS) && ctx->code == OMP_TEAMS)
+	result = make_trait_selector (OMP_TRAIT_CONSTRUCT_TEAMS,
+				      NULL_TREE, NULL_TREE, result);
+      else if (ctx->region_type == ORT_WORKSHARE && ctx->code == OMP_FOR)
+	result = make_trait_selector (OMP_TRAIT_CONSTRUCT_FOR,
+				      NULL_TREE, NULL_TREE, result);
+      else if (ctx->region_type == ORT_SIMD
+	       && ctx->code == OMP_SIMD
+	       && !omp_find_clause (ctx->clauses, OMP_CLAUSE_BIND))
+	{
+	  tree props = NULL_TREE;
+	  tree *last = &props;
+	  for (tree c = ctx->clauses; c; c = OMP_CLAUSE_CHAIN (c))
+	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SIMDLEN
+		|| OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INBRANCH
+		|| OMP_CLAUSE_CODE (c) == OMP_CLAUSE_NOTINBRANCH)
+	      {
+		*last = unshare_expr (c);
+		last = &(OMP_CLAUSE_CHAIN (c));
+	      }
+	  result = make_trait_selector (OMP_TRAIT_CONSTRUCT_SIMD,
+					NULL_TREE, props, result);
 	}
       else if (ctx->region_type == ORT_WORKSHARE
 	       && ctx->code == OMP_LOOP
@@ -15544,89 +15733,8 @@ omp_construct_selector_matches (enum tree_code *constructs, int nconstructs,
 	ctx = ctx->outer_context->outer_context;
       ctx = ctx->outer_context;
     }
-  if (!target_seen
-      && lookup_attribute ("omp declare simd",
-			   DECL_ATTRIBUTES (current_function_decl)))
-    {
-      /* Declare simd is a maybe case, it is supposed to be added only to the
-	 omp-simd-clone.cc added clones and not to the base function.  */
-      declare_simd_cnt = cnt++;
-      if (scores)
-	codes.safe_push (OMP_SIMD);
-      else if (cnt == 0
-	       && constructs[0] == OMP_SIMD)
-	{
-	  gcc_assert (matched == 0);
-	  simd_seen = true;
-	  if (++matched == nconstructs)
-	    return -1;
-	}
-    }
-  if (tree attr = lookup_attribute ("omp declare variant variant",
-				    DECL_ATTRIBUTES (current_function_decl)))
-    {
-      tree selectors = TREE_VALUE (attr);
-      int variant_nconstructs = list_length (selectors);
-      enum tree_code *variant_constructs = NULL;
-      if (!target_seen && variant_nconstructs)
-	{
-	  variant_constructs
-	    = (enum tree_code *) alloca (variant_nconstructs
-					 * sizeof (enum tree_code));
-	  omp_construct_traits_to_codes (selectors, variant_nconstructs,
-					 variant_constructs);
-	}
-      for (int i = 0; i < variant_nconstructs; i++)
-	{
-	  ++cnt;
-	  if (scores)
-	    codes.safe_push (variant_constructs[i]);
-	  else if (matched < nconstructs
-		   && variant_constructs[i] == constructs[matched])
-	    {
-	      if (variant_constructs[i] == OMP_SIMD)
-		{
-		  if (matched)
-		    return 0;
-		  simd_seen = true;
-		}
-	      ++matched;
-	    }
-	}
-    }
-  if (!target_seen
-      && lookup_attribute ("omp declare target block",
-			   DECL_ATTRIBUTES (current_function_decl)))
-    {
-      if (scores)
-	codes.safe_push (OMP_TARGET);
-      else if (matched < nconstructs && constructs[matched] == OMP_TARGET)
-	++matched;
-    }
-  if (scores)
-    {
-      for (int pass = 0; pass < (declare_simd_cnt == -1 ? 1 : 2); pass++)
-	{
-	  int j = codes.length () - 1;
-	  for (int i = nconstructs - 1; i >= 0; i--)
-	    {
-	      while (j >= 0
-		     && (pass != 0 || declare_simd_cnt != j)
-		     && constructs[i] != codes[j])
-		--j;
-	      if (pass == 0 && declare_simd_cnt != -1 && j > declare_simd_cnt)
-		*scores++ = j - 1;
-	      else
-		*scores++ = j;
-	    }
-	  *scores++ = ((pass == 0 && declare_simd_cnt != -1)
-		       ? codes.length () - 1 : codes.length ());
-	}
-      return declare_simd_cnt == -1 ? 1 : 2;
-    }
-  if (matched == nconstructs)
-    return simd_seen ? -1 : 1;
-  return 0;
+
+  return result;
 }
 
 /* Gimplify OACC_CACHE.  */
@@ -18964,8 +19072,11 @@ gimplify_omp_metadirective (tree *expr_p, gimple_seq *pre_p, gimple_seq *,
     }
 
   /* Try to resolve the metadirective.  */
+  tree construct_context = omp_get_construct_context ();
+  vec<struct omp_variant> all_candidates
+    = omp_metadirective_candidates (*expr_p, construct_context);
   vec<struct omp_variant> candidates
-    = omp_early_resolve_metadirective (*expr_p);
+    = omp_get_dynamic_candidates (all_candidates, construct_context);
   if (!candidates.is_empty ())
     return expand_omp_metadirective (candidates, pre_p);
 
@@ -18977,12 +19088,11 @@ gimplify_omp_metadirective (tree *expr_p, gimple_seq *pre_p, gimple_seq *,
   tree body_label = NULL;
   tree end_label = create_artificial_label (UNKNOWN_LOCATION);
 
-  for (tree variant = OMP_METADIRECTIVE_VARIANTS (*expr_p); variant != NULL_TREE;
-       variant = TREE_CHAIN (variant))
+  for (unsigned int i = 0; i < all_candidates.length (); i++)
     {
-      tree selector = OMP_METADIRECTIVE_VARIANT_SELECTOR (variant);
-      tree directive = OMP_METADIRECTIVE_VARIANT_DIRECTIVE (variant);
-      tree body = OMP_METADIRECTIVE_VARIANT_BODY (variant);
+      tree selector = all_candidates[i].selector;
+      tree directive = all_candidates[i].alternative;
+      tree body = all_candidates[i].body;
 
       selectors.safe_push (selector);
       gomp_variant *omp_variant
@@ -19014,6 +19124,7 @@ gimplify_omp_metadirective (tree *expr_p, gimple_seq *pre_p, gimple_seq *,
 
   gomp_metadirective *stmt
     = gimple_build_omp_metadirective (selectors.length ());
+  gimple_omp_metadirective_set_context (stmt, construct_context);
   gimple_omp_metadirective_set_variants (stmt, first_variant);
 
   tree selector;
@@ -19273,7 +19384,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  break;
 
 	case CALL_EXPR:
-	  ret = gimplify_call_expr (expr_p, pre_p, fallback != fb_none);
+	  ret = gimplify_call_expr (expr_p, pre_p, fallback);
 
 	  /* C99 code may assign to an array in a structure returned
 	     from a function, and this has undefined behavior only on
@@ -20783,7 +20894,16 @@ gimplify_function_tree (tree fndecl)
 
   if (asan_sanitize_use_after_scope ())
     asan_poisoned_variables = new hash_set<tree> ();
+  if (flag_openmp)
+    omp_resolved_variant_calls = new hash_set<tree> ();
+
   bind = gimplify_body (fndecl, true);
+
+  if (omp_resolved_variant_calls)
+    {
+      delete omp_resolved_variant_calls;
+      omp_resolved_variant_calls = NULL;
+    }
   if (asan_poisoned_variables)
     {
       delete asan_poisoned_variables;

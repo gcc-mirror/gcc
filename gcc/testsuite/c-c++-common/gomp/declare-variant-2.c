@@ -38,8 +38,8 @@ void f18 (void);
 void f19 (void);
 #pragma omp declare variant (f1) match(user={condition()})	/* { dg-error "expected \[^\n\r]*expression before '\\)' token" } */
 void f20 (void);
-#pragma omp declare variant (f1) match(user={condition(f1)})	/* { dg-error "property must be constant integer expression" "" { target { c || c++11 } } } */
-void f21 (void);						/* { dg-error "cannot appear in a constant-expression" "" { target c++98_only } .-1 } */
+#pragma omp declare variant (f1) match(user={condition(f1)})	/* { dg-error "property must be integer expression" } */
+void f21 (void);
 #pragma omp declare variant (f1) match(user={condition(1, 2, 3)})	/* { dg-error "expected '\\)' before ',' token" } */
 void f22 (void);
 #pragma omp declare variant (f1) match(construct={master})	/* { dg-warning "unknown selector 'master' for context selector set 'construct'" } */

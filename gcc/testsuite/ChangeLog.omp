@@ -1,5 +1,22 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* c-c++-common/gomp/declare-variant-12.c: Adjust expected behavior.
+	* c-c++-common/gomp/declare-variant-13.c: Likewise.
+	* c-c++-common/gomp/declare-variant-2.c: Likewise.
+	* c-c++-common/gomp/declare-variant-arg-exprs.c: New.
+	* c-c++-common/gomp/declare-dynamic-1.c: New.
+	* c-c++-common/gomp/declare-dynamic-2.c: New.
+	* c-c++-common/gomp/metadirective-3.c: Adjust expected behavior.
+	* g++.dg/gomp/attrs-metadirective-3.C: Likewise.
+	* g++.dg/gomp/declare-variant-class-1.C: New.
+	* g++.dg/gomp/declare-variant-class-2.C: New.
+	* gfortran.dg/gomp/declare-variant-12.f90: Adjust expected behavior.
+	* gfortran.dg/gomp/declare-variant-13.f90: Likewise.
+	* gfortran.dg/gomp/metadirective-1.f90: Likewise.
+	* gfortran.dg/gomp/metadirective-3.f90: Likewise.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* c-c++-common/gomp/declare-variant-10.c: Fix broken tests.
 	* c-c++-common/gomp/declare-variant-3.c: Likewise.
 	* c-c++-common/gomp/declare-variant-9.c: Likewise.

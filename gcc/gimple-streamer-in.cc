@@ -193,6 +193,9 @@ input_gimple_stmt (class lto_input_block *ib, class data_in *data_in,
 	    = dyn_cast <gomp_metadirective*> (stmt))
 	{
 	  gimple_alloc_omp_metadirective (metadirective_stmt);
+	  gimple_omp_metadirective_set_context (metadirective_stmt,
+						stream_read_tree (ib,
+								  data_in));
 	  for (i = 0; i < num_ops; i++)
 	    gimple_omp_metadirective_set_label (metadirective_stmt, i,
 						stream_read_tree (ib,

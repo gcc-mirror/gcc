@@ -398,7 +398,8 @@ DEFGSCODE(GIMPLE_OMP_TEAMS, "gimple_omp_teams", GSS_OMP_PARALLEL_LAYOUT)
    CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
 DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP_SINGLE_LAYOUT)
 
-/* GIMPLE_OMP_METADIRECTIVE represents #pragma omp metadirective.  */
+/* GIMPLE_OMP_METADIRECTIVE represents both #pragma omp metadirective and
+   a call to a function with "declare variant" variants.  */
 DEFGSCODE(GIMPLE_OMP_METADIRECTIVE, "gimple_omp_metadirective",
 	  GSS_OMP_METADIRECTIVE)
 

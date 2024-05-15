@@ -3128,16 +3128,8 @@ execute_omp_device_lower ()
 	  continue;
 	if (!gimple_call_internal_p (stmt))
 	  {
-	    if (calls_declare_variant_alt)
-	      if (tree fndecl = gimple_call_fndecl (stmt))
-		{
-		  tree new_fndecl = omp_resolve_declare_variant (fndecl);
-		  if (new_fndecl != fndecl)
-		    {
-		      gimple_call_set_fndecl (stmt, new_fndecl);
-		      update_stmt (stmt);
-		    }
-		}
+	    /* FIXME: this is a leftover of obsolete code.  */
+	    gcc_assert (!calls_declare_variant_alt);
 #ifdef ACCEL_COMPILER
 	    if (omp_redirect_indirect_calls
 		&& gimple_call_fndecl (stmt) == NULL_TREE)

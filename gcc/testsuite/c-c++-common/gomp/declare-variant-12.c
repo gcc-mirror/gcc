@@ -29,29 +29,29 @@ void f13 (void);
 void f14 (void);
 void f15 (void);
 void f16 (void);
-#pragma omp declare variant (f14) match (construct={teams,parallel,for}) /* 16+8+4 */
-#pragma omp declare variant (f15) match (construct={parallel},user={condition(score(19):1)}) /* 8+19 */
-#pragma omp declare variant (f16) match (implementation={atomic_default_mem_order(score(27):seq_cst)})
+#pragma omp declare variant (f14) match (construct={teams,parallel,for}) /* 1+8+16 */
+#pragma omp declare variant (f15) match (construct={parallel},user={condition(score(16):1)}) /* 8+16 */
+#pragma omp declare variant (f16) match (implementation={atomic_default_mem_order(score(24):seq_cst)})
 void f17 (void);
 void f18 (void);
 void f19 (void);
 void f20 (void);
-#pragma omp declare variant (f18) match (construct={teams,parallel,for}) /* 16+8+4 */
+#pragma omp declare variant (f18) match (construct={teams,parallel,for}) /* 1+8+6 */
 #pragma omp declare variant (f19) match (construct={for},user={condition(score(25):1)}) /* 4+25 */
 #pragma omp declare variant (f20) match (implementation={atomic_default_mem_order(score(28):seq_cst)})
 void f21 (void);
 void f22 (void);
 void f23 (void);
 void f24 (void);
-#pragma omp declare variant (f22) match (construct={parallel,for}) /* 2+1 */
+#pragma omp declare variant (f22) match (construct={parallel,for}) /* 8+16 */
 #pragma omp declare variant (f23) match (construct={for}) /* 0 */
 #pragma omp declare variant (f24) match (implementation={atomic_default_mem_order(score(2):seq_cst)})
 void f25 (void);
 void f26 (void);
 void f27 (void);
 void f28 (void);
-#pragma omp declare variant (f26) match (construct={parallel,for}) /* 2+1 */
-#pragma omp declare variant (f27) match (construct={for},user={condition(1)}) /* 4 */
+#pragma omp declare variant (f26) match (construct={parallel,for}) /* 8+16 */
+#pragma omp declare variant (f27) match (construct={for},user={condition(score(25):1)}) /* 16 + 25 */
 #pragma omp declare variant (f28) match (implementation={atomic_default_mem_order(score(3):seq_cst)})
 void f29 (void);
 
