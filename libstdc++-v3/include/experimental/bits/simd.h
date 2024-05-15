@@ -1665,7 +1665,12 @@ template <typename _V>
 	  {
 	    static_assert(is_simd<_V>::value);
 	    using _Tp = typename _V::value_type;
+#ifdef __i386__
+	    constexpr auto __bytes = sizeof(_Tp) == 8 ? 16 : sizeof(_Tp);
+	    using _RV [[__gnu__::__vector_size__(__bytes)]] = _Tp;
+#else
 	    using _RV [[__gnu__::__vector_size__(sizeof(_Tp))]] = _Tp;
+#endif
 	    return _RV{__data(__x)};
 	  }
       }
@@ -2081,11 +2086,14 @@ template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
 // }}}
 // __vec_shuffle{{{
 template <typename _T0, typename _T1, typename _Fun, size_t... _Is>
-  _GLIBCXX_SIMD_INTRINSIC constexpr auto
+  _GLIBCXX_SIMD_INTRINSIC constexpr
+  __vector_type_t<remove_reference_t<decltype(declval<_T0>()[0])>, sizeof...(_Is)>
   __vec_shuffle(_T0 __x, _T1 __y, index_sequence<_Is...> __seq, _Fun __idx_perm)
   {
     constexpr int _N0 = sizeof(__x) / sizeof(__x[0]);
     constexpr int _N1 = sizeof(__y) / sizeof(__y[0]);
+    using _Tp = remove_reference_t<decltype(declval<_T0>()[0])>;
+    using _RV [[maybe_unused]] = __vector_type_t<_Tp, sizeof...(_Is)>;
 #if __has_builtin(__builtin_shufflevector)
 #ifdef __clang__
     // Clang requires _T0 == _T1
@@ -2105,14 +2113,23 @@ template <typename _T0, typename _T1, typename _Fun, size_t... _Is>
 	     });
     else
 #endif
-      return __builtin_shufflevector(__x, __y, [=] {
-	       constexpr int __j = __idx_perm(_Is);
-	       static_assert(__j < _N0 + _N1);
-	       return __j;
-	     }()...);
+      {
+	const auto __r = __builtin_shufflevector(__x, __y, [=] {
+			   constexpr int __j = __idx_perm(_Is);
+			   static_assert(__j < _N0 + _N1);
+			   return __j;
+			 }()...);
+#ifdef __i386__
+	if constexpr (sizeof(__r) == sizeof(_RV))
+	  return __r;
+	else
+	  return _RV {__r[_Is]...};
 #else
-    using _Tp = __remove_cvref_t<decltype(__x[0])>;
-    return __vector_type_t<_Tp, sizeof...(_Is)> {
+	return __r;
+#endif
+      }
+#else
+    return _RV {
       [=]() -> _Tp {
 	constexpr int __j = __idx_perm(_Is);
 	static_assert(__j < _N0 + _N1);
@@ -4393,9 +4410,9 @@ template <typename _Tp, typename... _As, typename = __detail::__odr_helper>
 		__vec_shuffle(__as_vector(__xs)..., std::make_index_sequence<_RW::_S_full_size>(),
 			      [](int __i) {
 				constexpr int __sizes[2] = {int(simd_size_v<_Tp, _As>)...};
-				constexpr int __padding0
-				  = sizeof(__vector_type_t<_Tp, __sizes[0]>) / sizeof(_Tp)
-				      - __sizes[0];
+				constexpr int __vsizes[2]
+				  = {int(sizeof(__as_vector(__xs)) / sizeof(_Tp))...};
+				constexpr int __padding0 = __vsizes[0] - __sizes[0];
 				return __i >= _Np ? -1 : __i < __sizes[0] ? __i : __i + __padding0;
 			      })};
       }
