@@ -827,7 +827,10 @@ riscv_expand_block_clear_zicboz_zic64b (rtx dest, rtx length)
     {
       rtx mem = adjust_address (dest, BLKmode, offset);
       rtx addr = force_reg (Pmode, XEXP (mem, 0));
-      emit_insn (gen_riscv_zero_di (addr));
+      if (TARGET_64BIT)
+	emit_insn (gen_riscv_zero_di (addr));
+      else
+	emit_insn (gen_riscv_zero_si (addr));
       offset += cbo_bytes;
     }
 

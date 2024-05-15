@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zic64b_zicboz" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_zic64b_zicboz" { target { rv32 } } } */
+/* { dg-options "-march=rv64gc_zic64b_zicboz -mabi=lp64d" } */
 /* { dg-skip-if "" { *-*-* } {"-O0" "-Os" "-Og" "-Oz" "-flto" } } */
 /* { dg-final { check-function-bodies "**" "" } } */
 /* { dg-allow-blank-lines-in-output 1 } */
