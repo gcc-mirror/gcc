@@ -1,3 +1,58 @@
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115015
+	* src/c++23/print.cc (__open_terminal(streambuf*)) [!__cpp_rtti]:
+	Do not use dynamic_cast.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115063
+	* include/std/stacktrace (basic_stacktrace::max_size): Fix typo
+	in reference to _M_alloc member.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Check
+	max_size() compiles.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114891
+	* include/std/generator: Check feature test macro before using
+	is_pointer_interconvertible_v.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_abi.cc: Update latest versions to
+	new versions that should be used in future.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Unicode_view::_M_read_utf8): Ensure
+	count of characters consumed is correct when the end of the
+	input is reached unexpectedly.
+	* testsuite/ext/unicode/view.cc: Test incomplete UTF-8
+	sequences.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114866
+	* include/bits/out_ptr.h [!_GLIBCXX_HOSTED]: Don't refer to
+	shared_ptr, __shared_ptr or __is_shred_ptr.
+	* testsuite/20_util/headers/memory/114866.cc: New test.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.
