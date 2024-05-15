@@ -19,6 +19,7 @@
 #include "rust-feature-gate.h"
 #include "rust-abi.h"
 #include "rust-ast-visitor.h"
+#include "rust-feature.h"
 
 namespace Rust {
 
@@ -143,5 +144,13 @@ FeatureGate::visit (AST::ExternalTypeItem &item)
   gate (Feature::Name::EXTERN_TYPES, item.get_locus (),
 	"extern types are experimental");
 }
+
+void
+FeatureGate::visit (AST::TraitImpl &impl)
+{
+  if (impl.is_exclam ())
+    gate (Feature::Name::NEGATIVE_IMPLS, impl.get_locus (),
+	  "negative_impls are not yet implemented");
+};
 
 } // namespace Rust

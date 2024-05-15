@@ -42,6 +42,9 @@ Feature::create (Feature::Name name)
     case Feature::Name::EXTERN_TYPES:
       return Feature (Feature::Name::EXTERN_TYPES, Feature::State::ACTIVE,
 		      "extern_types", "1.23.0", 43467, tl::nullopt, "");
+    case Feature::Name::NEGATIVE_IMPLS:
+      return Feature (Feature::Name::NEGATIVE_IMPLS, Feature::State::ACTIVE,
+		      "negative_impls", "1.0.0", 68318, tl::nullopt, "");
     default:
       rust_unreachable ();
     }
@@ -52,6 +55,7 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"intrinsics", Feature::Name::INTRINSICS},
   {"rustc_attrs", Feature::Name::RUSTC_ATTRS},
   {"decl_macro", Feature::Name::DECL_MACRO},
+  {"negative_impls", Feature::Name::NEGATIVE_IMPLS},
   // TODO: Rename to "auto_traits" when supporting
   // later Rust versions
   {"optin_builtin_traits", Feature::Name::AUTO_TRAITS},
