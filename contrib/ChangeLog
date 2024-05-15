@@ -1,3 +1,7 @@
+2024-05-14  Filip Kastl  <fkastl@suse.cz>
+
+	* check-MAINTAINERS.py: Add warning about not using tabs.
+
 2024-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-changelog/git_update_version.py: Replace

@@ -1,3 +1,88 @@
+2024-05-14  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR rtl-optimization/115013
+	* config/pru/pru.cc (pru_class_likely_spilled_p): Implement
+	to mark classes containing one SImode register as likely
+	spilled.
+	(TARGET_CLASS_LIKELY_SPILLED_P): Define.
+
+2024-05-14  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.h: New macros to check for sum of two S12
+	range.
+	* config/riscv/constraints.md: New constraint.
+	* config/riscv/predicates.md: New Predicate.
+	* config/riscv/riscv.md: New splitter.
+	* config/riscv/riscv.cc (riscv_reg_frame_related): New helper.
+	* config/riscv/riscv-protos.h: New helper prototype.
+
+2024-05-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99954
+	* tree-data-ref.cc (dr_may_alias_p): For bases that are
+	not completely analyzed fall back to TBAA and points-to.
+	* tree-loop-distribution.cc
+	(loop_distribution::classify_builtin_ldst): When there
+	is no dependence again classify as memcpy.
+	* tree-ssa-alias.cc (ptr_deref_may_alias_decl_p): Verify
+	the pointer is an SSA name.
+
+2024-05-14  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-protos.h (riscv_expand_block_clear): New prototype.
+	* config/riscv/riscv-string.cc (riscv_expand_block_clear_zicboz_zic64b):
+	New function to expand a block-clear with cbo.zero.
+	(riscv_expand_block_clear): New RISC-V block-clear expansion function.
+	* config/riscv/riscv.md (setmem<mode>): New setmem expansion.
+
+2024-05-14  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* expr.cc (clear_by_pieces): Remove static from clear_by_pieces.
+	* expr.h (clear_by_pieces): Add prototype for clear_by_pieces.
+
+2024-05-14  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/115066
+	* dwarf2out.cc (output_macinfo_op): Fix DW_MACRO_define_strx/strp
+	choice for v4 .debug_macro.dwo.  Add asserts to check that choice.
+
+2024-05-14  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/113291
+	* ipa-inline.cc (enum can_inline_edge_by_limits_flags): New enum.
+	(can_inline_edge_by_limits_p): Take flags instead of multiple bools; add flag
+	for forcing inlinie limits.
+	(can_early_inline_edge_p): Update.
+	(want_inline_self_recursive_call_p): Update; use FORCE_LIMITS mode.
+	(check_callers): Update.
+	(update_caller_keys): Update.
+	(update_callee_keys): Update.
+	(recursive_inlining): Update.
+	(add_new_edges_to_heap): Update.
+	(speculation_useful_p): Update.
+	(inline_small_functions): Clear DECL_DISREGARD_INLINE_LIMITS on self recursion.
+	(flatten_function): Update.
+	(inline_to_all_callers_1): Update.
+
+2024-05-14  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.cc (TARGET_OVERLAP_OP_BY_PIECES_P): Define.
+
+2024-05-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-05-13  Sergei Lewis  <slewis@rivosinc.com>
+
+	* config/riscv/riscv.md (movmem<mode>): Use riscv_vector::expand_block_move,
+	if and only if we know the entire operation can be performed using one vector
+	load followed by one vector store
+
+2024-05-14  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins.cc
+	(validate_instance_type_required_extensions): Remove the
+	operator from the trailing and put it to new line.
+
 2024-05-13  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/bitmanip.md: Add new splitter for AND with

@@ -1,3 +1,14 @@
+2024-05-14  Simon Martin  <simon-l.martin@laposte.net>
+
+	PR c++/105760
+	* pt.cc (build_deduction_guide): Check for error_mark_node
+	result from tsubst_arg_types.
+
+2024-05-14  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (wrap_cleanups_r): Clarify comment.
+	* init.cc (build_vec_init): Update comment.
+
 2024-05-13  Patrick Palka  <ppalka@redhat.com>
 
 	* constraint.cc (norm_info::norm_info): Take a bool instead of

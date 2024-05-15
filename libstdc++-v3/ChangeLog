@@ -1,3 +1,23 @@
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115015
+	* src/c++23/print.cc (__open_terminal(streambuf*)) [!__cpp_rtti]:
+	Do not use dynamic_cast.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/strings.xml: Clarify that GCC 4.5 added
+	std::string::shrink_to_fit.
+	* doc/html/manual/strings.html: Regenerate.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115063
+	* include/std/stacktrace (basic_stacktrace::max_size): Fix typo
+	in reference to _M_alloc member.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Check
+	max_size() compiles.
+
 2024-05-13  Matthias Kretz  <m.kretz@gsi.de>
 
 	PR libstdc++/114958

@@ -1,3 +1,407 @@
+2024-05-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.ads (Aspect_Id, Boolean_Aspect): Change categorization
+	of Boolean-valued SPARK aspects.
+	* sem_ch13.adb (Analyze_Aspect_Specification): Adapt CASE
+	statements to new classification of Boolean-valued SPARK
+	aspects.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch13.adb (Validate_Unchecked_Conversions): Add node
+	parameters to Error_Msg calls.
+
+2024-05-14  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_util.adb: Typo fix in comment.
+	* exp_aggr.adb: Likewise.
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Finalization Management): Add a short description of
+	the implementation of finalization chains.
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Move the first call to
+	Build_Allocate_Deallocate_Proc up to before the accessibility check.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* errout.adb (Validate_Specific_Warnings): Adapt to record
+	definition change.
+	* erroutc.adb (Set_Specific_Warning_On, Set_Specific_Warning_Off,
+	Warning_Specifically_Suppressed): Likewise.
+	* erroutc.ads: Change record definition.
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Build_Default_Initialization): Do not generate the
+	protection for finalization collections.
+	(Build_Heap_Or_Pool_Allocator): Set the No_Initialization flag on
+	the declaration of the temporary.
+	* exp_ch4.adb (Build_Aggregate_In_Place): Do not build an allocation
+	procedure here.
+	(Expand_Allocator_Expression): Build an allocation procedure, if it
+	is required, only just before rewriting the allocator.
+	(Expand_N_Allocator): Do not build an allocation procedure if the
+	No_Initialization flag is set on the allocator, except for those
+	generated for special return objects.  In other cases, build an
+	allocation procedure, if it is required, only before rewriting
+	the allocator.
+	* exp_ch7.ads (Make_Address_For_Finalize): New function declaration.
+	* exp_ch7.adb (Finalization Management): Update description for
+	dynamically allocated objects.
+	(Make_Address_For_Finalize): Remove declaration.
+	(Find_Last_Init): Change to function and move to...
+	(Process_Object_Declaration): Adjust to above change.
+	* exp_util.ads (Build_Allocate_Deallocate_Proc): Add Mark parameter
+	with Empty default and document it.
+	(Find_Last_Init): New function declaration.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Add Mark parameter
+	with Empty default and pass it in recursive call.  Deal with type
+	conversions created for interface types.  Adjust call sequence to
+	Allocate_Any_Controlled by changing Collection to In/Out parameter
+	and removing Finalize_Address parameter.  For a controlled object,
+	generate a conditional call to Attach_Object_To_Collection for an
+	allocation and to Detach_Object_From_Collection for a deallocation.
+	(Find_Last_Init): ...here.  Compute the initialization type for an
+	allocator whose designating type is class wide specifically and also
+	handle concurrent types.
+	* rtsfind.ads (RE_Id): Add RE_Attach_Object_To_Collection and
+	RE_Detach_Object_From_Collection.
+	(RE_Unit_Table): Add entries for RE_Attach_Object_To_Collection and
+	RE_Detach_Object_From_Collection.
+	* libgnat/s-finpri.ads (Finalization_Started): Delete.
+	(Attach_Node_To_Collection): Likewise.
+	(Detach_Node_From_Collection): Move to...
+	(Attach_Object_To_Collection): New procedure declaration.
+	(Detach_Object_From_Collection): Likewise.
+	(Finalization_Collection): Remove Atomic for Finalization_Started.
+	Add pragma Inline for Initialize.
+	* libgnat/s-finpri.adb: Add clause for Ada.Unchecked_Conversion.
+	(To_Collection_Node_Ptr): New instance of Ada.Unchecked_Conversion.
+	(Detach_Node_From_Collection): ...here.
+	(Attach_Object_To_Collection): New procedure.
+	(Detach_Object_From_Collection): Likewise.
+	(Finalization_Started): Delete.
+	(Finalize): Replace allocation with attachment in comments.
+	* libgnat/s-stposu.ads (Allocate_Any_Controlled): Rename parameter
+	Context_Subpool into Named_Subpool, parameter Context_Collection
+	into Collection and change it to In/Out, and remove Fin_Address.
+	* libgnat/s-stposu.adb: Remove clause for Ada.Unchecked_Conversion
+	and Finalization_Primitives.
+	(To_Collection_Node_Ptr): Delete.
+	(Allocate_Any_Controlled): Rename parameter Context_Subpool into
+	Named_Subpool, parameter Context_Collection into Collection and
+	change it to In/Out, and remove Fin_Address.  Do not lock/unlock
+	and do not attach the object, instead only displace its address.
+	(Deallocate_Any_Controlled): Do not lock/unlock and do not detach
+	the object.
+	(Header_Size_With_Padding): Use qualified name for Header_Size.
+
+2024-05-14  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Build_And_Insert_Type_Attr_Subp): If a subprogram
+	associated with a (library-level) type declared in another unit is
+	to be inserted somewhere in a list, then insert it at the head of
+	the list.
+	* sem_ch5.adb (Analyze_Assignment): Normally a limited-type
+	assignment is illegal. Relax this rule if Comes_From_Source is
+	False and the type is not immutably limited.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* errout.ads (Error_Msg): Add node parameter.
+	* errout.adb (Error_Msg): Add parameter and pass it to
+	the underlying call.
+	* sem_prag.adb (Validate_Compile_Time_Warning_Or_Error): Pass
+	pragma node when emitting errors.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* styleg.ads (Check_Xtra_Parens_Precedence): Moved ...
+	* style.ads (Check_Xtra_Parens_Precedence): ... here. Also
+	replace corresponding renaming.
+	* styleg.adb (Check_Xtra_Parens_Precedence): Moved ...
+	* style.adb (Check_Xtra_Parens_Precedence): here. Also use
+	Errout.Error_Msg and pass it a node parameter.
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.ads (Convert_Aggr_In_Allocator): Rename Alloc into N,
+	replace Decl with Temp and adjust description.
+	(Convert_Aggr_In_Object_Decl): Alphabetize.
+	(Is_Delayed_Aggregate): Likewise.
+	* exp_aggr.adb (Convert_Aggr_In_Allocator): Rename Alloc into N
+	and replace Decl with Temp.  Allocate a list only when neeeded.
+	(Convert_Array_Aggr_In_Allocator): Replace N with Decl and insert
+	new code before it.
+	* exp_ch4.adb (Build_Aggregate_In_Place): New procedure nested in
+	Expand_Allocator_Expression.
+	(Expand_Allocator_Expression): Call it to build aggregates in place.
+	Remove second parameter in calls to Build_Allocate_Deallocate_Proc.
+	(Expand_N_Allocator): Likewise.
+	* exp_ch13.adb (Expand_N_Free_Statement): Likewise.
+	* exp_util.ads (Build_Allocate_Deallocate_Proc): Remove Is_Allocate
+	parameter.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Remove Is_Allocate
+	parameter and replace it with local variable of same name.  Delete
+	useless pattern matching.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* usage.adb (Usage): Fix enabled-by-default indicators.
+
+2024-05-14  Philippe Gil  <gil@adacore.com>
+
+	* libgnat/s-win32.ads (LocalFileTimeToFileTime): Swap parameters.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* restrict.adb (Violation_Of_No_Dependence): Tweak error
+	reporting calls.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Adapt call to new signature.
+	* erroutc.ads (Set_Specific_Warning_Off): change signature
+	and update documentation.
+	(Validate_Specific_Warnings): Move ...
+	* errout.adb: ... here and change signature. Also move body
+	of Validate_Specific_Warnings from erroutc.adb.
+	(Finalize): Adapt call.
+	* errout.ads (Set_Specific_Warning_Off): Adapt signature of
+	renaming.
+	* erroutc.adb (Set_Specific_Warning_Off): Adapt signature and
+	body.
+	(Validate_Specific_Warnings): Move to the body of Errout.
+	(Warning_Specifically_Suppressed): Adapt body.
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code): Pass N in the call to
+	Build_Initialization_Call.
+	(Build_Record_Aggr_Code): Likewise.
+	(Convert_Aggr_In_Object_Decl): Likewise.
+	(Initialize_Discriminants): Likewise.
+	* exp_ch3.ads (Build_Initialization_Call): Replace Loc witn N.
+	* exp_ch3.adb (Build_Array_Init_Proc): Pass N in the call to
+	Build_Initialization_Call.
+	(Build_Default_Initialization): Likewise.
+	(Expand_N_Object_Declaration): Likewise.
+	(Build_Initialization_Call): Replace Loc witn N parameter and add
+	Loc local variable.  Build a default subtype for an allocator of
+	a discriminated type with defaulted discriminants.
+	(Build_Record_Init_Proc): Pass the declaration of components in the
+	call to Build_Initialization_Call.
+	* exp_ch6.adb (Make_CPP_Constructor_Call_In_Allocator): Pass the
+	allocator in the call to Build_Initialization_Call.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Fix typo.
+
+2024-05-14  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Find_Hook_Context): Exclude N_*Aggregate Nkinds
+	of Parent (Par) from the early return in the second loop of the
+	In_Cond_Expr case, to prevent returning an aggregate from this
+	function rather than the enclosing declaration or statement.
+
+2024-05-14  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb: Replace 6 "not Present" tests with equivalent calls to "No".
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Examine the Expression
+	field after the call to Default_Initialize_Object in order to set
+	Is_Known_Null, as well as Is_Known_Non_Null, on an access object.
+
+2024-05-14  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb: Change name of package Cached_Streaming_Ops to
+	reflect the fact that it is now also used for Put_Image
+	procedures. Similarly change other "Streaming_Op" names therein.
+	Add Validate_Cached_Candidate procedure to detect case where a
+	subprogram found in the cache cannot be reused. Add new generic
+	procedure Build_And_Insert_Type_Attr_Subp; the "Build" part is
+	handled by just calling a formal procedure; the bulk of this
+	(generic) procedure's code has to with deciding where in the tree
+	to insert the newly-constructed subprogram. Replace each later
+	"Build" call (and the following Insert_Action or
+	Compile_Stream_Body_In_Scope call) with a declare block that
+	instantiates and then calls this generic procedure. Delete the
+	now-unused procedure Compile_Stream_Body_In_Scope. A constructed
+	subprogram is entered in the appropriate cache if the
+	corresponding type is untagged; this replaces more complex tests.
+	A new function Interunit_Ref_OK is added to determine whether an
+	attribute reference occuring in one unit can safely refer to a
+	cached subprogram declared in another unit.
+	* exp_ch3.adb (Build_Predefined_Primitive_Bodies): A formal
+	parameter was deleted, so delete the corresponding actual in a
+	call.
+	* exp_put_image.adb (Build_Array_Put_Image_Procedure): Because the
+	procedure being built may be referenced more than once, the
+	generated procedure takes its source position info from the type
+	declaration instead of the (first) attribute reference.
+	(Build_Record_Put_Image_Procedure): Likewise.
+	* exp_put_image.ads (Build_Array_Put_Image_Procedure): Eliminate
+	now-unused Nod parameter.
+	(Build_Record_Put_Image_Procedure): Eliminate now-unused Loc parameter.
+	* sem_ch3.adb (Constrain_Discriminated_Type): For declaring a
+	subtype with a discriminant constraint, ignore privacy if
+	Comes_From_Source is false (as is already done if Is_Instance is
+	true).
+	* sem_res.adb (Resolve): When passed two type entities that have
+	the same underlying base type, Sem_Type.Covers may return False in
+	some cases because of privacy. [This can happen even if
+	Is_Private_Type returns False both for Etype (N) and for Typ;
+	Covers calls Base_Type, which can take a non-private argument and
+	yield a private result.] If Comes_From_Source (N) is False
+	(e.g., for a compiler-generated Put_Image or streaming subprogram), then
+	avoid that scenario by not calling Covers. Covers already has tests for
+	doing this sort of thing (see the calls therein to Full_View_Covers),
+	but the Comes_From_Source test is too coarse to apply there. So instead
+	we handle the problem here at the call site.
+	(Original_Implementation_Base_Type): A new function. Same as
+	Implementation_Base_Type except if the Original_Node attribute of
+	a non-derived type declaration indicates that it once was a derived
+	type declaration. Needed for looking through privacy.
+	(Valid Conversion): Ignore privacy when converting between different views
+	of the same type if Comes_From_Source is False for the conversion.
+	(Valid_Tagged_Conversion): An ancestor-to-descendant conversion is not an
+	illegal downward conversion if there is no type extension involved
+	(because the derivation was from an untagged view of the parent type).
+
+2024-05-14  Steve Baird  <baird@adacore.com>
+
+	* sem_ch5.adb (Analyze_Case_Statement): Emit a message and return
+	early in the case where general case statements are allowed but
+	the selector expression is of a private type. This is done to
+	avoid a bugbox.
+
+2024-05-14  Justin Squirek  <squirek@adacore.com>
+
+	* sem_util.adb (Set_Referenced_Modified): Use Original_Node to
+	avoid recursive calls on expanded / internal objects such that
+	source nodes get appropriately marked as referenced.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Stop ignoring
+	warning suppression settings.
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Pass the alignment
+	parameter in the inner call for a secondary stack allocation too.
+
+2024-05-14  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch10.adb (Install_Inherited_Policy_Pragmas): New subprogram.
+	(Remove_Inherited_Policy_Pragmas): New subprogram.
+	(Analyze_Compilation_Unit): Call the new subprograms to
+	install and remove inherited assertion policy pragmas.
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_If_Expression): Set No_Initialization on the
+	declaration of the temporary in the by-reference case.
+	* exp_util.adb (Initialized_By_Access): Delete.
+	(Is_Allocated): Likewise.
+	(Initialized_By_Reference): New predicate.
+	(Is_Finalizable_Transient): If the transient object is of an access
+	type, do not return true unless it is initialized by a reference.
+
+2024-05-14  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb:	Move computation of Accum_Typ entirely into the
+	function Build_Stat.
+
+2024-05-14  Steve Baird  <baird@adacore.com>
+
+	* sem_ch12.ads: Declare new Instance_Context package, which
+	declares a private type Context with operations Save_And_Reset and
+	Restore.
+	* sem_ch12.adb: Provide body for new Instance_Context package.
+	* rtsfind.adb (Load_RTU): Wrap an Instance_Context Save/Restore
+	call pair around the call to Semantics.
+	* table.ads: Add initial value for Last_Val (because
+	Save_And_Reset expects Last_Val to be initialized).
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Replace reference to
+	Build_Task_Allocate_Block_With_Init_Stmts in comment with reference
+	to Build_Task_Allocate_Block.
+	(Convert_Aggr_In_Allocator): Likewise for the call in the code.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Likewise.
+	* exp_ch3.ads: Alphabetize clauses.
+	(Build_Default_Initialization): New function declaration.
+	(Build_Default_Simple_Initialization): Likewise.
+	(Build_Initialization_Call): Add Target_Ref parameter with default.
+	* exp_ch3.adb (Build_Default_Initialization): New function extracted
+	from...
+	(Build_Default_Simple_Initialization): Likewise.
+	(Build_Initialization_Call): Add Target_Ref parameter with default.
+	(Expand_N_Object_Declaration): ...here.
+	(Default_Initialize_Object): Call Build_Default_Initialization and
+	Build_Default_Simple_Initialization.
+	* exp_ch4.adb (Expand_Allocator_Expression): Minor comment tweaks.
+	(Expand_N_Allocator): Call Build_Default_Initialization and
+	Build_Default_Simple_Initialization to implement the default
+	initialization of the allocated object.
+	* exp_ch9.ads (Build_Task_Allocate_Block): Delete.
+	(Build_Task_Allocate_Block_With_Init_Stmts): Rename into...
+	(Build_Task_Allocate_Block): ...this.
+	* exp_ch9.adb: Remove clauses for Exp_Tss.
+	(Build_Task_Allocate_Block): Delete.
+	(Build_Task_Allocate_Block_With_Init_Stmts): Rename into...
+	(Build_Task_Allocate_Block): ...this.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Remove unnecessary
+	initialization expression, adjust commentary and replace early exit
+	with assertion.
+	* sem_ch4.adb (Analyze_Allocator): In the null-exclusion case, call
+	Apply_Compile_Time_Constraint_Error to insert the raise.
+
+2024-05-14  Ronan Desplanques  <desplanques@adacore.com>
+
+	* styleg.ads (Check_Boolean_Operator): Moved ...
+	* style.ads (Check_Boolean_Operator): ... here.
+	* styleg.adb (Check_Boolean_Operator): Moved ...
+	* style.adb (Check_Boolean_Operator): ... here. Also add node
+	parameter to call to Errout.Error_Msg.
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sprint.adb (Sprint_Node_Actual) <N_Raise_Statement>: Be prepared
+	for an empty Name.
+	<N_Raise_When_Statement>: Likewise.
+
+2024-05-14  Yannick Moy  <moy@adacore.com>
+
+	* contracts.adb: Fix references to SPARK RM rules.
+	* freeze.adb: Same.
+	* ghost.adb: Fix references to SPARK RM rules.
+	(Check_Ghost_Context): Update checking of references to
+	ghost entities in assertion expressions.
+	* sem_ch6.adb: Fix references to SPARK RM rules.
+	* sem_prag.adb: Same.
+
+2024-05-14  Yannick Moy  <moy@adacore.com>
+
+	* ghost.adb (Mark_And_Set_Ghost_Instantiation): Fix the current
+	Ghost policy for the instantiation.
+
+2024-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Default_Initialize_Object): Return immediately when
+	either Has_Init_Expression or No_Initialization is set on the node.
+	Tidy up the rest of the code accordingly.
+	(Simple_Initialization_OK): Do not test Has_Init_Expression here.
+
 2024-05-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* accessibility.adb: Remove clauses for Exp_Ch3.
