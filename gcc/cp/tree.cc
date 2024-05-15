@@ -275,7 +275,10 @@ lvalue_kind (const_tree ref)
       /* We expect to see unlowered MODOP_EXPRs only during
 	 template processing.  */
       gcc_assert (processing_template_decl);
-      return clk_ordinary;
+      if (CLASS_TYPE_P (TREE_TYPE (TREE_OPERAND (ref, 0))))
+	goto default_;
+      else
+	return clk_ordinary;
 
     case MODIFY_EXPR:
     case TYPEID_EXPR:
