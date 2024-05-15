@@ -4086,12 +4086,12 @@ package body Sem_Ch13 is
                      Error_Msg_N ("aspect% cannot apply to subtype", Id);
                      goto Continue;
 
-                  elsif A_Id = Aspect_Default_Value
-                    and then not Is_Scalar_Type (E)
-                  then
-                     Error_Msg_N
-                       ("aspect% can only be applied to scalar type", Id);
-                     goto Continue;
+                  elsif A_Id = Aspect_Default_Value then
+                     if not Is_Scalar_Type (E) then
+                        Error_Msg_N
+                          ("aspect% can only be applied to scalar type", Id);
+                        goto Continue;
+                     end if;
 
                   elsif A_Id = Aspect_Default_Component_Value then
                      if not Is_Array_Type (E) then
@@ -11118,7 +11118,7 @@ package body Sem_Ch13 is
          --  If the end of declarations comes before any other freeze point,
          --  the Freeze_Expr is not analyzed: no check needed.
 
-         if Analyzed (Freeze_Expr) and then not In_Instance then
+         if Analyzed (Freeze_Expr) then
             Check_Overloaded_Name;
          else
             Err := False;

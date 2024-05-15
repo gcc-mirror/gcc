@@ -3086,7 +3086,6 @@ package body Freeze is
                when N_Attribute_Reference =>
                   if Attribute_Name (N) in Name_Access | Name_Unchecked_Access
                     and then Is_Entity_Name (Prefix (N))
-                    and then Is_Type (Entity (Prefix (N)))
                     and then Entity (Prefix (N)) = E
                   then
                      if Ada_Version < Ada_2012 then
