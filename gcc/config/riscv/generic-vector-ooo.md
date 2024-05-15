@@ -74,7 +74,7 @@
 
 ;; Vector crypto, assumed to be a generic operation for now.
 (define_insn_reservation "vec_crypto" 4
-  (eq_attr "type" "crypto")
+  (eq_attr "type" "crypto,vclz,vctz,vcpop")
   "vxu_ooo_issue,vxu_ooo_alu")
 
 ;; Vector crypto, AES

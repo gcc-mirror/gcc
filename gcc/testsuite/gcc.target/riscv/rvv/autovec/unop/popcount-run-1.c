@@ -1,4 +1,5 @@
-/* { dg-do run { target { riscv_v } } } */
+/* { dg-do run { target { riscv_v_ok } } } */
+/* { dg-add-options "riscv_v" } */
 
 #include "popcount-1.c"
 

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv64gcv -mabi=lp64d -mrvv-vector-bits=scalable -fno-vect-cost-model -fdump-tree-slp-details" } */
+/* { dg-add-options "riscv_v" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -fno-vect-cost-model -fdump-tree-slp-details" } */
 
 int x[8];
 int y[8];
@@ -17,3 +18,4 @@ void foo ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "slp2" } } */
+/* { dg-final { scan-assembler "vcpop.v" { target { riscv_zvbb } } } } */

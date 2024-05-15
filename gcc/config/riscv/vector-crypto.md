@@ -99,42 +99,43 @@
 ;; vror.vv vror.vx vror.vi
 ;; vwsll.vv vwsll.vx vwsll.vi
 (define_insn "@pred_vandn<mode>"
-  [(set (match_operand:VI 0 "register_operand"         "=vd, vr, vd, vr")
-     (if_then_else:VI
+  [(set (match_operand:V_VLSI 0 "register_operand"	  "=vd, vr, vd, vr")
+     (if_then_else:V_VLSI
        (unspec:<VM>
-         [(match_operand:<VM> 1 "vector_mask_operand"   "vm,Wc1, vm,Wc1")
-          (match_operand 5 "vector_length_operand"      "rK, rK, rK, rK")
-          (match_operand 6 "const_int_operand"          " i,  i,  i,  i")
-          (match_operand 7 "const_int_operand"          " i,  i,  i,  i")
-          (match_operand 8 "const_int_operand"          " i,  i,  i,  i")
+         [(match_operand:<VM> 1 "vector_mask_operand"	  "vm,Wc1, vm,Wc1")
+          (match_operand 5 "vector_length_operand"        "rK, rK, rK, rK")
+          (match_operand 6 "const_int_operand"            " i,  i,  i,  i")
+          (match_operand 7 "const_int_operand"            " i,  i,  i,  i")
+          (match_operand 8 "const_int_operand"            " i,  i,  i,  i")
           (reg:SI VL_REGNUM)
           (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-       (and:VI
-         (not:VI (match_operand:VI 4 "register_operand" "vr, vr, vr, vr"))
-         (match_operand:VI 3 "register_operand"         "vr, vr, vr, vr"))
-       (match_operand:VI 2 "vector_merge_operand"       "vu, vu,  0,  0")))]
+       (and:V_VLSI
+         (not:V_VLSI
+	    (match_operand:V_VLSI 4 "register_operand"	  "vr, vr, vr, vr"))
+         (match_operand:V_VLSI 3 "register_operand"	  "vr, vr, vr, vr"))
+       (match_operand:V_VLSI 2 "vector_merge_operand"     "vu, vu,  0,  0")))]
   "TARGET_ZVBB || TARGET_ZVKB"
   "vandn.vv\t%0,%3,%4%p1"
   [(set_attr "type" "vandn")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "@pred_vandn<mode>_scalar"
-  [(set (match_operand:VI_QHS 0 "register_operand"     "=vd, vr,vd, vr")
-     (if_then_else:VI_QHS
+  [(set (match_operand:V_VLSI_QHS 0 "register_operand"	  "=vd, vr,vd, vr")
+     (if_then_else:V_VLSI_QHS
        (unspec:<VM>
-         [(match_operand:<VM> 1 "vector_mask_operand"  " vm,Wc1,vm,Wc1")
-          (match_operand 5 "vector_length_operand"     " rK, rK,rK, rK")
-          (match_operand 6 "const_int_operand"         "  i,  i, i,  i")
-          (match_operand 7 "const_int_operand"         "  i,  i, i,  i")
-          (match_operand 8 "const_int_operand"         "  i,  i, i,  i")
+         [(match_operand:<VM> 1 "vector_mask_operand"	  " vm,Wc1,vm,Wc1")
+          (match_operand 5 "vector_length_operand"     	  " rK, rK,rK, rK")
+          (match_operand 6 "const_int_operand"         	  "  i,  i, i,  i")
+          (match_operand 7 "const_int_operand"         	  "  i,  i, i,  i")
+          (match_operand 8 "const_int_operand"         	  "  i,  i, i,  i")
           (reg:SI VL_REGNUM)
           (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-       (and:VI_QHS
-         (not:VI_QHS
-           (vec_duplicate:VI_QHS
-             (match_operand:<VEL> 4 "register_operand" " r,  r, r,  r")))
-         (match_operand:VI_QHS 3 "register_operand"    "vr, vr,vr, vr"))
-       (match_operand:VI_QHS 2 "vector_merge_operand"  "vu, vu, 0,  0")))]
+       (and:V_VLSI_QHS
+         (not:V_VLSI_QHS
+           (vec_duplicate:V_VLSI_QHS
+             (match_operand:<VEL> 4 "register_operand"	  " r,  r, r,  r")))
+         (match_operand:V_VLSI_QHS 3 "register_operand"   "vr, vr,vr, vr"))
+       (match_operand:V_VLSI_QHS 2 "vector_merge_operand" "vu, vu, 0,  0")))]
   "TARGET_ZVBB || TARGET_ZVKB"
   "vandn.vx\t%0,%3,%4%p1"
   [(set_attr "type" "vandn")
@@ -143,8 +144,8 @@
 ;; Handle GET_MODE_INNER (mode) = DImode. We need to split them since
 ;; we need to deal with SEW = 64 in RV32 system.
 (define_expand "@pred_vandn<mode>_scalar"
-  [(set (match_operand:VI_D 0 "register_operand")
-     (if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand")
+     (if_then_else:V_VLSI_D
        (unspec:<VM>
          [(match_operand:<VM> 1 "vector_mask_operand")
           (match_operand 5 "vector_length_operand")
@@ -153,12 +154,12 @@
           (match_operand 8 "const_int_operand")
           (reg:SI VL_REGNUM)
           (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-       (and:VI_D
-         (not:VI_D
-           (vec_duplicate:VI_D
+       (and:V_VLSI_D
+         (not:V_VLSI_D
+           (vec_duplicate:V_VLSI_D
              (match_operand:<VEL> 4 "reg_or_int_operand")))
-         (match_operand:VI_D 3 "register_operand"))
-       (match_operand:VI_D 2 "vector_merge_operand")))]
+         (match_operand:V_VLSI_D 3 "register_operand"))
+       (match_operand:V_VLSI_D 2 "vector_merge_operand")))]
   "TARGET_ZVBB || TARGET_ZVKB"
 {
   if (riscv_vector::sew64_scalar_helper (
@@ -177,30 +178,30 @@
 })
 
 (define_insn "*pred_vandn<mode>_scalar"
-  [(set (match_operand:VI_D 0 "register_operand"        "=vd, vr,vd, vr")
-     (if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand"        "=vd, vr,vd, vr")
+     (if_then_else:V_VLSI_D
        (unspec:<VM>
-         [(match_operand:<VM> 1 "vector_mask_operand"   " vm,Wc1,vm,Wc1")
-          (match_operand 5 "vector_length_operand"      " rK, rK,rK, rK")
-          (match_operand 6 "const_int_operand"          " i,   i, i,  i")
-          (match_operand 7 "const_int_operand"          " i,   i, i,  i")
-          (match_operand 8 "const_int_operand"          " i,   i, i,  i")
+         [(match_operand:<VM> 1 "vector_mask_operand"	    " vm,Wc1,vm,Wc1")
+          (match_operand 5 "vector_length_operand"          " rK, rK,rK, rK")
+          (match_operand 6 "const_int_operand"              " i,   i, i,  i")
+          (match_operand 7 "const_int_operand"              " i,   i, i,  i")
+          (match_operand 8 "const_int_operand"              " i,   i, i,  i")
           (reg:SI VL_REGNUM)
           (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-       (and:VI_D
-         (not:VI_D
-           (vec_duplicate:VI_D
-             (match_operand:<VEL> 4 "reg_or_0_operand" " rJ, rJ,rJ, rJ")))
-         (match_operand:VI_D 3 "register_operand"      " vr, vr,vr, vr"))
-       (match_operand:VI_D 2 "vector_merge_operand"    " vu, vu, 0,  0")))]
+       (and:V_VLSI_D
+         (not:V_VLSI_D
+           (vec_duplicate:V_VLSI_D
+             (match_operand:<VEL> 4 "reg_or_0_operand"	    " rJ, rJ,rJ, rJ")))
+         (match_operand:V_VLSI_D 3 "register_operand"	    " vr, vr,vr, vr"))
+       (match_operand:V_VLSI_D 2 "vector_merge_operand"	    " vu, vu, 0,  0")))]
   "TARGET_ZVBB || TARGET_ZVKB"
   "vandn.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "vandn")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*pred_vandn<mode>_extended_scalar"
-  [(set (match_operand:VI_D 0 "register_operand"            "=vd, vr,vd, vr")
-     (if_then_else:VI_D
+  [(set (match_operand:V_VLSI_D 0 "register_operand"        "=vd, vr,vd, vr")
+     (if_then_else:V_VLSI_D
        (unspec:<VM>
          [(match_operand:<VM> 1 "vector_mask_operand"       " vm,Wc1,vm,Wc1")
           (match_operand 5 "vector_length_operand"          " rK, rK,rK, rK")
@@ -209,13 +210,13 @@
           (match_operand 8 "const_int_operand"              " i,   i, i,  i")
           (reg:SI VL_REGNUM)
           (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-       (and:VI_D
-         (not:VI_D
-           (vec_duplicate:VI_D
+       (and:V_VLSI_D
+         (not:V_VLSI_D
+           (vec_duplicate:V_VLSI_D
              (sign_extend:<VEL>
                (match_operand:<VSUBEL> 4 "reg_or_0_operand" " rJ, rJ,rJ, rJ"))))
-         (match_operand:VI_D 3 "register_operand"           " vr, vr,vr, vr"))
-       (match_operand:VI_D 2 "vector_merge_operand"      " vu, vu, 0,  0")))]
+         (match_operand:V_VLSI_D 3 "register_operand"       " vr, vr,vr, vr"))
+       (match_operand:V_VLSI_D 2 "vector_merge_operand"     " vu, vu, 0,  0")))]
   "TARGET_ZVBB || TARGET_ZVKB"
   "vandn.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "vandn")
@@ -325,34 +326,34 @@
 
 ;; vbrev.v vbrev8.v vrev8.v
 (define_insn "@pred_v<rev><mode>"
-  [(set (match_operand:VI 0 "register_operand"        "=vd,vr,vd,vr")
-     (if_then_else:VI
+  [(set (match_operand:V_VLSI 0 "register_operand"        "=vd,vr,vd,vr")
+     (if_then_else:V_VLSI
        (unspec:<VM>
-         [(match_operand:<VM> 1 "vector_mask_operand" "vm,Wc1,vm,Wc1")
-          (match_operand 4 "vector_length_operand"    "rK,rK, rK, rK")
-          (match_operand 5 "const_int_operand"        "i,  i,  i,  i")
-          (match_operand 6 "const_int_operand"        "i,  i,  i,  i")
-          (match_operand 7 "const_int_operand"        "i,  i,  i,  i")
+         [(match_operand:<VM> 1 "vector_mask_operand"	  "vm,Wc1,vm,Wc1")
+          (match_operand 4 "vector_length_operand"    	  "rK,rK, rK, rK")
+          (match_operand 5 "const_int_operand"        	  "i,  i,  i,  i")
+          (match_operand 6 "const_int_operand"        	  "i,  i,  i,  i")
+          (match_operand 7 "const_int_operand"        	  "i,  i,  i,  i")
           (reg:SI VL_REGNUM)
           (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-       (unspec:VI
-         [(match_operand:VI 3 "register_operand"      "vr,vr, vr, vr")]UNSPEC_VRBB8)
-       (match_operand:VI 2 "vector_merge_operand"     "vu,vu,  0,  0")))]
+       (unspec:V_VLSI
+         [(match_operand:V_VLSI 3 "register_operand"      "vr,vr, vr, vr")]UNSPEC_VRBB8)
+       (match_operand:V_VLSI 2 "vector_merge_operand"     "vu,vu,  0,  0")))]
   "TARGET_ZVBB || TARGET_ZVKB"
   "v<rev>.v\t%0,%3%p1"
   [(set_attr "type" "v<rev>")
    (set_attr "mode" "<MODE>")])
 
-;; vclz.v vctz.v
+;; vclz.v vctz.v vcpop.v
 (define_insn "@pred_v<bitmanip_optab><mode>"
-  [(set (match_operand:VI 0  "register_operand"           "=vd, vr")
-     (clz_ctz_pcnt:VI
+  [(set (match_operand:V_VLSI 0	    "register_operand"      "=vd, vr")
+     (clz_ctz_pcnt:V_VLSI
        (parallel
-         [(match_operand:VI 2 "register_operand"           "vr, vr")
+         [(match_operand:V_VLSI 2   "register_operand"      " vr, vr")
           (unspec:<VM>
-            [(match_operand:<VM> 1 "vector_mask_operand"   "vm,Wc1")
-             (match_operand 3      "vector_length_operand" "rK, rK")
-             (match_operand 4      "const_int_operand"     " i,  i")
+            [(match_operand:<VM> 1  "vector_mask_operand"   " vm,Wc1")
+             (match_operand 3       "vector_length_operand" " rK, rK")
+             (match_operand 4       "const_int_operand"     "  i,  i")
              (reg:SI VL_REGNUM)
              (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)])))]
   "TARGET_ZVBB"

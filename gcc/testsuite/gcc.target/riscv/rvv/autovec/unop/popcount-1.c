@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv64gcv -mabi=lp64d -mrvv-vector-bits=scalable -fno-vect-cost-model -fdump-tree-vect-details" } */
+/* { dg-add-options "riscv_v" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -fno-vect-cost-model -fdump-tree-vect-details" } */
 
 #include <stdint-gcc.h>
 
@@ -18,3 +19,4 @@ popcount_64 (uint64_t *restrict dst, uint64_t *restrict src, int size)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 2 "vect" } } */
+/* { dg-final { scan-assembler-times "vcpop.v" 2 { target { riscv_zvbb } } } } */

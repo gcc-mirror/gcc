@@ -1566,7 +1566,7 @@
 })
 
 ;; -------------------------------------------------------------------------------
-;; - [INT] POPCOUNT.
+;; - [INT] POPCOUNT, CTZ and CLZ.
 ;; -------------------------------------------------------------------------------
 
 (define_expand "popcount<mode>2"
@@ -1574,8 +1574,34 @@
    (match_operand:V_VLSI 1 "register_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::expand_popcount (operands);
+  if (!TARGET_ZVBB)
+    riscv_vector::expand_popcount (operands);
+  else
+    {
+      riscv_vector::emit_vlmax_insn (code_for_pred_v (POPCOUNT, <MODE>mode),
+				     riscv_vector::CPOP_OP, operands);
+    }
   DONE;
+})
+
+(define_expand "ctz<mode>2"
+  [(match_operand:V_VLSI 0 "register_operand")
+   (match_operand:V_VLSI 1 "register_operand")]
+  "TARGET_ZVBB"
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred_v (CTZ, <MODE>mode),
+				   riscv_vector::CPOP_OP, operands);
+    DONE;
+})
+
+(define_expand "clz<mode>2"
+  [(match_operand:V_VLSI 0 "register_operand")
+   (match_operand:V_VLSI 1 "register_operand")]
+  "TARGET_ZVBB"
+  {
+    riscv_vector::emit_vlmax_insn (code_for_pred_v (CLZ, <MODE>mode),
+				   riscv_vector::CPOP_OP, operands);
+    DONE;
 })
 
 

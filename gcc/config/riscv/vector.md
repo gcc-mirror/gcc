@@ -52,7 +52,7 @@
 			  vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,\
 			  vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
 			  vgather,vcompress,vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,\
-			  vssegtux,vssegtox,vlsegdff,vandn,vbrev,vbrev8,vrev8,vclz,vctz,vrol,\
+			  vssegtux,vssegtox,vlsegdff,vandn,vbrev,vbrev8,vrev8,vcpop,vclz,vctz,vrol,\
 			  vror,vwsll,vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,\
 			  vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c")
 	 (const_string "true")]
@@ -76,7 +76,7 @@
 			  vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovxv,vfmovfv,\
 			  vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
 			  vgather,vcompress,vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,\
-			  vssegtux,vssegtox,vlsegdff,vandn,vbrev,vbrev8,vrev8,vclz,vctz,vrol,\
+			  vssegtux,vssegtox,vlsegdff,vandn,vbrev,vbrev8,vrev8,vcpop,vclz,vctz,vrol,\
 			  vror,vwsll,vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,\
 			  vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c")
 	 (const_string "true")]
@@ -443,7 +443,7 @@
 			  vimovxv,vfmovvf,vfmovfv,vslideup,vslidedown,\
 			  vislide1up,vislide1down,vfslide1up,vfslide1down,\
 			  vgather,vcompress,vlsegdux,vlsegdox,vssegtux,vssegtox,\
-			  vandn,vbrev,vbrev8,vrev8,vclz,vctz,vrol,vror,vwsll,\
+			  vandn,vbrev,vbrev8,vrev8,vcpop,vclz,vctz,vrol,vror,vwsll,\
 			  vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,\
 			  vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,\
 			  vsm3me,vsm3c")
@@ -743,7 +743,7 @@
 				vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,\
 				vfcvtitof,vfncvtitof,vfncvtftoi,vfncvtftof,vmalu,vmiota,vmidx,\
 				vimovxv,vfmovfv,vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
-				vgather,vcompress,vmov,vnclip,vnshift,vandn")
+				vgather,vcompress,vmov,vnclip,vnshift,vandn,vcpop,vclz,vctz")
 	       (const_int 0)
 
 	       (eq_attr "type" "vimovvx,vfmovvf")
@@ -789,8 +789,8 @@
 	 (eq_attr "type" "vicmp,vimuladd,vfcmp,vfmuladd")
 	   (const_int 6)
 
-	 (eq_attr "type" "vmpop,vmffs,vmidx,vssegte,vclz,vctz,vgmul,vaesef,vaesem,vaesdf,vaesdm,\
-                          vaesz,vsm4r")
+	 (eq_attr "type" "vmpop,vmffs,vmidx,vssegte,vcpop,vclz,vctz,vgmul,vaesef,vaesem,vaesdf,\
+			  vaesdm,vaesz,vsm4r")
 	   (const_int 3)]
   (const_int INVALID_ATTRIBUTE)))
 
@@ -892,7 +892,7 @@
                           vsm4k,vsm3me,vsm3c")
 	   (const_int 6)
 
-	 (eq_attr "type" "vmpop,vmffs,vssegte,vclz,vctz")
+	 (eq_attr "type" "vmpop,vmffs,vssegte,vcpop,vclz,vctz")
 	   (const_int 4)]
 	(const_int INVALID_ATTRIBUTE)))
 
