@@ -627,6 +627,183 @@ riscv_expand_strlen (rtx result, rtx src, rtx search_char, rtx align)
   return false;
 }
 
+/* Generate the sequence of load and compares for memcmp using Zbb.
+
+   RESULT is the register where the return value of memcmp will be stored.
+   The source pointers are SRC1 and SRC2 (NBYTES bytes to compare).
+   DATA1 and DATA2 are registers where the data chunks will be stored.
+   DIFF_LABEL is the location of the code that calculates the return value.
+   FINAL_LABEL is the location of the code that comes after the calculation
+   of the return value.  */
+
+static void
+emit_memcmp_scalar_load_and_compare (rtx result, rtx src1, rtx src2,
+				     unsigned HOST_WIDE_INT nbytes,
+				     rtx data1, rtx data2,
+				     rtx diff_label, rtx final_label)
+{
+  const unsigned HOST_WIDE_INT xlen = GET_MODE_SIZE (Xmode);
+  unsigned HOST_WIDE_INT offset = 0;
+
+  while (nbytes > 0)
+    {
+      unsigned HOST_WIDE_INT cmp_bytes = xlen < nbytes ? xlen : nbytes;
+      machine_mode load_mode;
+
+      /* Special cases to avoid masking of trailing bytes.  */
+      if (cmp_bytes == 1)
+	load_mode = QImode;
+      else if (cmp_bytes == 2)
+	load_mode = HImode;
+      else if (cmp_bytes == 4)
+	load_mode = SImode;
+      else
+	load_mode = Xmode;
+
+      rtx addr1 = adjust_address (src1, load_mode, offset);
+      do_load (load_mode, data1, addr1);
+      rtx addr2 = adjust_address (src2, load_mode, offset);
+      do_load (load_mode, data2, addr2);
+
+      /* Fast-path for a single byte.  */
+      if (cmp_bytes == 1)
+	{
+	  rtx tmp = gen_reg_rtx (Xmode);
+	  do_sub3 (tmp, data1, data2);
+	  emit_insn (gen_movsi (result, gen_lowpart (SImode, tmp)));
+	  emit_jump_insn (gen_jump (final_label));
+	  emit_barrier (); /* No fall-through.  */
+	  return;
+	}
+
+      /* Shift off trailing bytes in words if needed.  */
+      unsigned int load_bytes = GET_MODE_SIZE (load_mode).to_constant ();
+      if (cmp_bytes < load_bytes)
+	{
+	  int shamt = (load_bytes - cmp_bytes) * BITS_PER_UNIT;
+	  do_ashl3 (data1, data1, GEN_INT (shamt));
+	  do_ashl3 (data2, data2, GEN_INT (shamt));
+	}
+
+      /* Break out if data1 != data2 */
+      rtx cond = gen_rtx_NE (VOIDmode, data1, data2);
+      emit_unlikely_jump_insn (gen_cbranch4 (Pmode, cond, data1,
+					     data2, diff_label));
+      /* Fall-through on equality.  */
+
+      offset += cmp_bytes;
+      nbytes -= cmp_bytes;
+    }
+}
+
+/* memcmp result calculation.
+
+   RESULT is the register where the return value will be stored.
+   The two data chunks are in DATA1 and DATA2.  */
+
+static void
+emit_memcmp_scalar_result_calculation (rtx result, rtx data1, rtx data2)
+{
+  /* Get bytes in big-endian order and compare as words.  */
+  do_bswap2 (data1, data1);
+  do_bswap2 (data2, data2);
+  /* Synthesize (data1 >= data2) ? 1 : -1 in a branchless sequence.  */
+  rtx tmp = gen_reg_rtx (Xmode);
+  emit_insn (gen_slt_3 (LTU, Xmode, Xmode, tmp, data1, data2));
+  do_neg2 (tmp, tmp);
+  do_ior3 (tmp, tmp, const1_rtx);
+  emit_insn (gen_movsi (result, gen_lowpart (SImode, tmp)));
+}
+
+/* Expand memcmp using scalar instructions (incl. Zbb).
+
+   RESULT is the register where the return value will be stored.
+   The source pointers are SRC1 and SRC2 (NBYTES bytes to compare).  */
+
+static bool
+riscv_expand_block_compare_scalar (rtx result, rtx src1, rtx src2, rtx nbytes)
+{
+  const unsigned HOST_WIDE_INT xlen = GET_MODE_SIZE (Xmode);
+
+  if (optimize_function_for_size_p (cfun))
+    return false;
+
+  /* We don't support big endian.  */
+  if (BYTES_BIG_ENDIAN)
+    return false;
+
+  if (!CONST_INT_P (nbytes))
+    return false;
+
+  /* We need the rev (bswap) instruction.  */
+  if (!TARGET_ZBB)
+    return false;
+
+  unsigned HOST_WIDE_INT length = UINTVAL (nbytes);
+
+  /* Limit to 12-bits (maximum load-offset).  */
+  if (length > IMM_REACH)
+    length = IMM_REACH;
+
+  /* We need xlen-aligned memory.  */
+  unsigned HOST_WIDE_INT align = MIN (MEM_ALIGN (src1), MEM_ALIGN (src2));
+  if (align < (xlen * BITS_PER_UNIT))
+    return false;
+
+  if (length > RISCV_MAX_MOVE_BYTES_STRAIGHT)
+    return false;
+
+  /* Overall structure of emitted code:
+       Load-and-compare:
+	 - Load data1 and data2
+	 - Compare strings and either:
+	   - Fall-through on equality
+	   - Jump to end_label if data1 != data2
+       // Fall-through
+       Set result to 0 and jump to final_label
+     diff_label:
+       Calculate result value with the use of data1 and data2
+       Jump to final_label
+     final_label:
+       // Nothing.  */
+
+  rtx data1 = gen_reg_rtx (Xmode);
+  rtx data2 = gen_reg_rtx (Xmode);
+  rtx diff_label = gen_label_rtx ();
+  rtx final_label = gen_label_rtx ();
+
+  /* Generate a sequence of zbb instructions to compare out
+     to the length specified.  */
+  emit_memcmp_scalar_load_and_compare (result, src1, src2, length,
+				       data1, data2,
+				       diff_label, final_label);
+
+  emit_insn (gen_rtx_SET (result, gen_rtx_CONST_INT (SImode, 0)));
+  emit_jump_insn (gen_jump (final_label));
+  emit_barrier (); /* No fall-through.  */
+
+  emit_label (diff_label);
+  emit_memcmp_scalar_result_calculation (result, data1, data2);
+  emit_jump_insn (gen_jump (final_label));
+  emit_barrier (); /* No fall-through.  */
+
+  emit_label (final_label);
+  return true;
+}
+
+/* Expand memcmp operation.
+
+   RESULT is the register where the return value will be stored.
+   The source pointers are SRC1 and SRC2 (NBYTES bytes to compare).  */
+
+bool
+riscv_expand_block_compare (rtx result, rtx src1, rtx src2, rtx nbytes)
+{
+  if (stringop_strategy & STRATEGY_SCALAR)
+    return riscv_expand_block_compare_scalar (result, src1, src2, nbytes);
+
+  return false;
+}
 /* Emit straight-line code to move LENGTH bytes from SRC to DEST
    with accesses that are ALIGN bytes aligned.
    Assume that the areas do not overlap.  */
