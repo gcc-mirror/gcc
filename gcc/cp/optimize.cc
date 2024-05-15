@@ -220,10 +220,8 @@ can_alias_cdtor (tree fn)
   gcc_assert (DECL_MAYBE_IN_CHARGE_CDTOR_P (fn));
   /* Don't use aliases for weak/linkonce definitions unless we can put both
      symbols in the same COMDAT group.  */
-  return (DECL_INTERFACE_KNOWN (fn)
-	  && (SUPPORTS_ONE_ONLY || !DECL_WEAK (fn))
-	  && (!DECL_ONE_ONLY (fn)
-	      || (HAVE_COMDAT_GROUP && DECL_WEAK (fn))));
+  return (DECL_WEAK (fn) ? (HAVE_COMDAT_GROUP && DECL_ONE_ONLY (fn))
+			 : (DECL_INTERFACE_KNOWN (fn) && !DECL_ONE_ONLY (fn)));
 }
 
 /* FN is a [cd]tor, fns is a pointer to an array of length 3.  Fill fns
@@ -712,7 +710,7 @@ maybe_clone_body (tree fn)
 	  if (expand_or_defer_fn_1 (clone))
 	    emit_associated_thunks (clone);
 	  /* We didn't generate a body, so remove the empty one.  */
-	  DECL_SAVED_TREE (clone) = NULL_TREE;
+	  DECL_SAVED_TREE (clone) = void_node;
 	}
       else
 	expand_or_defer_fn (clone);
@@ -722,59 +720,4 @@ maybe_clone_body (tree fn)
 
   /* We don't need to process the original function any further.  */
   return 1;
-}
-
-/* If maybe_clone_body is called while the cdtor is still tentative,
-   DECL_ONE_ONLY will be false and so will be can_alias_cdtor (fn).
-   In that case we wouldn't try to optimize using an alias and instead
-   would emit separate base and complete cdtor.  The following function
-   attempts to still optimize that case when we import_export_decl
-   is called first time on one of the clones.  */
-
-void
-maybe_optimize_cdtor (tree orig_decl)
-{
-  tree fns[3];
-  tree fn = DECL_CLONED_FUNCTION (orig_decl);
-  gcc_checking_assert (DECL_MAYBE_IN_CHARGE_CDTOR_P (fn));
-  if (DECL_INTERFACE_KNOWN (fn)
-      || !TREE_ASM_WRITTEN (fn)
-      || !DECL_ONE_ONLY (orig_decl)
-      || symtab->global_info_ready)
-    return;
-
-  populate_clone_array (fn, fns);
-
-  if (!fns[0] || !fns[1])
-    return;
-  for (int i = 2 - !fns[2]; i >= 0; --i)
-    if (fns[i] != orig_decl && DECL_INTERFACE_KNOWN (fns[i]))
-      return;
-  DECL_INTERFACE_KNOWN (fn) = 1;
-  comdat_linkage (fn);
-  if (!can_alias_cdtor (fn))
-    return;
-  /* For comdat base and complete cdtors put them into the same,
-     *[CD]5* comdat group instead of *[CD][12]*.  */
-  auto n0 = cgraph_node::get_create (fns[0]);
-  auto n1 = cgraph_node::get_create (fns[1]);
-  auto n2 = fns[2] ? cgraph_node::get_create (fns[1]) : NULL;
-  if (n0->lowered || n1->lowered || (n2 && n2->lowered))
-    return;
-  import_export_decl (fns[0]);
-  n1->definition = false;
-  if (!n0->create_same_body_alias (fns[1], fns[0]))
-    return;
-
-  tree comdat_group = cdtor_comdat_group (fns[1], fns[0]);
-  n1 = cgraph_node::get (fns[1]);
-  n0->set_comdat_group (comdat_group);
-  if (n1->same_comdat_group)
-    n1->remove_from_same_comdat_group ();
-  n1->add_to_same_comdat_group (n0);
-  if (fns[2])
-    n2->add_to_same_comdat_group (n0);
-  import_export_decl (fns[1]);
-  /* Remove the body now that it is an alias.  */
-  release_function_body (fns[1]);
 }
