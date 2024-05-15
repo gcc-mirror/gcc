@@ -11841,8 +11841,10 @@ simplify_compare_const (enum rtx_code code, machine_mode mode,
      `and'ed with that bit), we can replace this with a comparison
      with zero.  */
   if (const_op
-      && (code == EQ || code == NE || code == GE || code == GEU
-	  || code == LT || code == LTU)
+      && (code == EQ || code == NE || code == GEU || code == LTU
+	  /* This optimization is incorrect for signed >= INT_MIN or
+	     < INT_MIN, those are always true or always false.  */
+	  || ((code == GE || code == LT) && const_op > 0))
       && is_a <scalar_int_mode> (mode, &int_mode)
       && GET_MODE_PRECISION (int_mode) - 1 < HOST_BITS_PER_WIDE_INT
       && pow2p_hwi (const_op & GET_MODE_MASK (int_mode))
