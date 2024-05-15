@@ -4202,6 +4202,7 @@ commutative_binary_fn_p (internal_fn fn)
     case IFN_UBSAN_CHECK_MUL:
     case IFN_ADD_OVERFLOW:
     case IFN_MUL_OVERFLOW:
+    case IFN_SAT_ADD:
     case IFN_VEC_WIDEN_PLUS:
     case IFN_VEC_WIDEN_PLUS_LO:
     case IFN_VEC_WIDEN_PLUS_HI:

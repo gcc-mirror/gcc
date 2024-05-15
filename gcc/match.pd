@@ -3043,6 +3043,57 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        || POINTER_TYPE_P (itype))
       && wi::eq_p (wi::to_wide (int_cst), wi::max_value (itype))))))
 
+/* Unsigned Saturation Add */
+(match (usadd_left_part_1 @0 @1)
+ (plus:c @0 @1)
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@1)))))
+
+(match (usadd_left_part_2 @0 @1)
+ (realpart (IFN_ADD_OVERFLOW:c @0 @1))
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@1)))))
+
+(match (usadd_right_part_1 @0 @1)
+ (negate (convert (lt (plus:c @0 @1) @0)))
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@1)))))
+
+(match (usadd_right_part_1 @0 @1)
+ (negate (convert (gt @0 (plus:c @0 @1))))
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@1)))))
+
+(match (usadd_right_part_2 @0 @1)
+ (negate (convert (ne (imagpart (IFN_ADD_OVERFLOW:c @0 @1)) integer_zerop)))
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@0))
+      && types_match (type, TREE_TYPE (@1)))))
+
+/* We cannot merge or overload usadd_left_part_1 and usadd_left_part_2
+   because the sub part of left_part_2 cannot work with right_part_1.
+   For example, left_part_2 pattern focus one .ADD_OVERFLOW but the
+   right_part_1 has nothing to do with .ADD_OVERFLOW.  */
+
+/* Unsigned saturation add, case 1 (branchless):
+   SAT_U_ADD = (X + Y) | - ((X + Y) < X) or
+   SAT_U_ADD = (X + Y) | - (X > (X + Y)).  */
+(match (unsigned_integer_sat_add @0 @1)
+ (bit_ior:c (usadd_left_part_1 @0 @1) (usadd_right_part_1 @0 @1)))
+
+/* Unsigned saturation add, case 2 (branchless with .ADD_OVERFLOW).  */
+(match (unsigned_integer_sat_add @0 @1)
+ (bit_ior:c (usadd_left_part_2 @0 @1) (usadd_right_part_2 @0 @1)))
+
 /* x >  y  &&  x != XXX_MIN  -->  x > y
    x >  y  &&  x == XXX_MIN  -->  false . */
 (for eqne (eq ne)
