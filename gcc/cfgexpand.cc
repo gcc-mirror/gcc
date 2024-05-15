@@ -584,10 +584,21 @@ add_scope_conflicts_2 (tree use, bitmap work,
 	  || INTEGRAL_TYPE_P (TREE_TYPE (use))))
     {
       gimple *g = SSA_NAME_DEF_STMT (use);
-      if (is_gimple_assign (g))
-	if (tree op = gimple_assign_rhs1 (g))
-	  if (TREE_CODE (op) == ADDR_EXPR)
-	    visit (g, TREE_OPERAND (op, 0), op, work);
+      if (gassign *a = dyn_cast <gassign *> (g))
+	{
+	  if (tree op = gimple_assign_rhs1 (a))
+	    if (TREE_CODE (op) == ADDR_EXPR)
+	      visit (a, TREE_OPERAND (op, 0), op, work);
+	}
+      else if (gphi *p = dyn_cast <gphi *> (g))
+	for (unsigned i = 0; i < gimple_phi_num_args (p); ++i)
+	  if (TREE_CODE (use = gimple_phi_arg_def (p, i)) == SSA_NAME)
+	    if (gassign *a = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (use)))
+	      {
+		if (tree op = gimple_assign_rhs1 (a))
+		  if (TREE_CODE (op) == ADDR_EXPR)
+		    visit (a, TREE_OPERAND (op, 0), op, work);
+	      }
     }
 }
 
