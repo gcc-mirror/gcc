@@ -1526,6 +1526,8 @@ begin
             Check_Rep_Info;
          end if;
 
+         pragma Annotate (Xcov, Dump_Buffers);
+
          return;
       end if;
 
@@ -1679,6 +1681,8 @@ begin
       Atree.Print_Statistics;
    end if;
 
+   pragma Annotate (Xcov, Dump_Buffers);
+
 --  The outer exception handler handles an unrecoverable error
 
 exception
@@ -1693,6 +1697,9 @@ exception
       Set_Standard_Output;
       Source_Dump;
       Tree_Dump;
+
+      pragma Annotate (Xcov, Dump_Buffers);
+
       Exit_Program (E_Errors);
 
 end Gnat1drv;
