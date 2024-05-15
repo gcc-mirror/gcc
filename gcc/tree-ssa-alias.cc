@@ -2049,7 +2049,7 @@ decl_refs_may_alias_p (tree ref1, tree base1,
    which is done by ao_ref_base and thus one extra walk
    of handled components is needed.  */
 
-static bool
+bool
 view_converted_memref_p (tree base)
 {
   if (TREE_CODE (base) != MEM_REF && TREE_CODE (base) != TARGET_MEM_REF)
@@ -4330,8 +4330,8 @@ ao_compare::compare_ao_refs (ao_ref *ref1, ao_ref *ref2,
   else if ((end_struct_ref1 != NULL) != (end_struct_ref2 != NULL))
     return flags | ACCESS_PATH;
   if (end_struct_ref1
-      && TYPE_MAIN_VARIANT (TREE_TYPE (end_struct_ref1))
-	 != TYPE_MAIN_VARIANT (TREE_TYPE (end_struct_ref2)))
+      && same_type_for_tbaa (TREE_TYPE (end_struct_ref1),
+			     TREE_TYPE (end_struct_ref2)) != 1)
     return flags | ACCESS_PATH;
 
   /* Now compare all handled components of the access path.

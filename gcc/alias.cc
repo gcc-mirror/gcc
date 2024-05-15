@@ -770,10 +770,7 @@ reference_alias_ptr_type_1 (tree *t)
   /* If the innermost reference is a MEM_REF that has a
      conversion embedded treat it like a VIEW_CONVERT_EXPR above,
      using the memory access type for determining the alias-set.  */
-  if (TREE_CODE (inner) == MEM_REF
-      && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
-	  != TYPE_MAIN_VARIANT
-	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (inner, 1))))))
+  if (view_converted_memref_p (inner))
     {
       tree alias_ptrtype = TREE_TYPE (TREE_OPERAND (inner, 1));
       /* Unless we have the (aggregate) effective type of the access
