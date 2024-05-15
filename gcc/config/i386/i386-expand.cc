@@ -24458,7 +24458,7 @@ ix86_expand_vecop_qihi_partial (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       d.op0 = d.op1 = qres;
       d.vmode = V16QImode;
       d.nelt = 16;
-      d.one_operand_p = false;
+      d.one_operand_p = TARGET_SSSE3;
       d.testing_p = false;
 
       for (i = 0; i < d.nelt; ++i)
