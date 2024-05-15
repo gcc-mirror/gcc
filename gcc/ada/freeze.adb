@@ -3201,9 +3201,7 @@ package body Freeze is
                --  Search through aspects present on the private type
 
                while Present (Curr_Aspect_Spec) loop
-                  if Get_Aspect_Id (Curr_Aspect_Spec)
-                       = Aspect_No_Parts
-                  then
+                  if Get_Aspect_Id (Curr_Aspect_Spec) = Aspect_No_Parts then
                      Aspect_Spec := Curr_Aspect_Spec;
                      exit;
                   end if;
@@ -8906,8 +8904,8 @@ package body Freeze is
       --  Now we have the right place to do the freezing. First, a special
       --  adjustment, if we are in spec-expression analysis mode, these freeze
       --  actions must not be thrown away (normally all inserted actions are
-      --  thrown away in this mode. However, the freeze actions are from static
-      --  expressions and one of the important reasons we are doing this
+      --  thrown away in this mode). However, the freeze actions are from
+      --  static expressions and one of the important reasons we are doing this
       --  special analysis is to get these freeze actions. Therefore we turn
       --  off the In_Spec_Expression mode to propagate these freeze actions.
       --  This also means they get properly analyzed and expanded.
