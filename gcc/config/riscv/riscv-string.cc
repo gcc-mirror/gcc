@@ -86,35 +86,47 @@ GEN_EMIT_HELPER2(th_rev) /* do_th_rev2  */
 GEN_EMIT_HELPER2(th_tstnbz) /* do_th_tstnbz2  */
 GEN_EMIT_HELPER3(xor) /* do_xor3  */
 GEN_EMIT_HELPER2(zero_extendqi) /* do_zero_extendqi2  */
+GEN_EMIT_HELPER2(zero_extendhi) /* do_zero_extendhi2  */
 
 #undef GEN_EMIT_HELPER2
 #undef GEN_EMIT_HELPER3
 
-/* Helper function to load a byte or a Pmode register.
+/* Helper function to emit zero-extended loads.
+
+   MODE is the mode to use for the load.
+   DEST is the destination register for the data.
+   MEM is the source to load from.  */
+
+static void
+do_load (machine_mode mode, rtx dest, rtx mem)
+{
+  if (mode == QImode)
+    do_zero_extendqi2 (dest, mem);
+  else if (mode == HImode)
+    do_zero_extendhi2 (dest, mem);
+  else if (mode == SImode && TARGET_64BIT)
+    emit_insn (gen_zero_extendsidi2 (dest, mem));
+  else if (mode == Xmode)
+    emit_move_insn (dest, mem);
+  else
+    gcc_unreachable ();
+}
+
+/* Helper function to emit zero-extended loads.
 
    MODE is the mode to use for the load (QImode or Pmode).
    DEST is the destination register for the data.
    ADDR_REG is the register that holds the address.
-   ADDR is the address expression to load from.
+   ADDR is the address expression to load from.  */
 
-   This function returns an rtx containing the register,
-   where the ADDR is stored.  */
-
-static rtx
+static void
 do_load_from_addr (machine_mode mode, rtx dest, rtx addr_reg, rtx addr)
 {
   rtx mem = gen_rtx_MEM (mode, addr_reg);
   MEM_COPY_ATTRIBUTES (mem, addr);
   set_mem_size (mem, GET_MODE_SIZE (mode));
 
-  if (mode == QImode)
-    do_zero_extendqi2 (dest, mem);
-  else if (mode == Xmode)
-    emit_move_insn (dest, mem);
-  else
-    gcc_unreachable ();
-
-  return addr_reg;
+  do_load (mode, dest, mem);
 }
 
 /* Generate a sequence to compare single characters in data1 and data2.

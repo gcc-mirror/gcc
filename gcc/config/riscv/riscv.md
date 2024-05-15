@@ -2635,6 +2635,21 @@
   DONE;
 })
 
+(define_expand "cmpmemsi"
+  [(parallel [(set (match_operand:SI 0)
+               (compare:SI (match_operand:BLK 1)
+                           (match_operand:BLK 2)))
+	      (use (match_operand:SI 3))
+	      (use (match_operand:SI 4))])]
+  "!optimize_size"
+{
+  if (riscv_expand_block_compare (operands[0], operands[1], operands[2],
+                                  operands[3]))
+    DONE;
+  else
+    FAIL;
+})
+
 (define_expand "cpymem<mode>"
   [(parallel [(set (match_operand:BLK 0 "general_operand")
 		   (match_operand:BLK 1 "general_operand"))
