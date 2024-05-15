@@ -7454,7 +7454,6 @@ extern bool handle_module_option (unsigned opt, const char *arg, int value);
 /* In optimize.cc */
 extern tree clone_attrs				(tree);
 extern bool maybe_clone_body			(tree);
-extern void maybe_optimize_cdtor		(tree);
 
 /* In parser.cc */
 extern tree cp_convert_range_for (tree, tree, tree, cp_decomp *, bool,
