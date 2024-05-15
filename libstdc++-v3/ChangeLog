@@ -1,3 +1,50 @@
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115063
+	* include/std/stacktrace (basic_stacktrace::max_size): Fix typo
+	in reference to _M_alloc member.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Check
+	max_size() compiles.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114359
+	* include/bits/random.tcc (binomial_distribution::param_type):
+	Ensure arithmetic is done as type double.
+	* testsuite/26_numerics/random/binomial_distribution/114359.cc: New test.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-04-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/manipulators/extended/get_time/char/2.cc:
+	Adjust input string so that it matches %a with or without a
+	trailing period.
+	* testsuite/std/time/year_month_day/io.cc: Adjust expected
+	format for %x in the fr_FR locale.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (tzdb_list): Fix typo in Doxygen comment.
+
+2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-04-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/run_doxygen: Adjust sed pattern to match '\fR' for
+	new man output that Doxygen 1.10 generates.
+
 2024-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,47 @@
+2024-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113907
+	* ipa-prop.h (ipa_jump_functions_equivalent_p): Declare.
+	(values_equal_for_ipcp_p): Likewise.
+	* ipa-prop.cc (ipa_agg_pass_through_jf_equivalent_p): New function.
+	(ipa_agg_jump_functions_equivalent_p): Likewise.
+	(ipa_jump_functions_equivalent_p): Likewise.
+	* ipa-cp.cc (values_equal_for_ipcp_p): Make function public.
+	* ipa-icf-gimple.cc: Include alloc-pool.h, symbol-summary.h, sreal.h,
+	ipa-cp.h and ipa-prop.h.
+	(func_checker::compare_gimple_call): Comapre jump functions.
+
+2024-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113359
+	* ipa-icf-gimple.h (func_checker): New members
+	safe_for_total_scalarization_p, m_total_scalarization_limit_known_p
+	and m_total_scalarization_limit.
+	(func_checker::func_checker): Initialize new member variables.
+	* ipa-icf-gimple.cc: Include tree-sra.h.
+	(func_checker::func_checker): Initialize new member variables.
+	(func_checker::safe_for_total_scalarization_p): New function.
+	(func_checker::compare_operand): Use the new function.
+	* tree-sra.h (sra_get_max_scalarization_size): Declare.
+	(sra_total_scalarization_would_copy_same_data_p): Likewise.
+	* tree-sra.cc (prepare_iteration_over_array_elts): New function.
+	(class sra_padding_collecting): New.
+	(sra_padding_collecting::record_padding): Likewise.
+	(scalarizable_type_p): Rename to totally_scalarizable_type_p.  Add
+	ability to record padding when requested.
+	(totally_scalarize_subtree): Split out gathering information necessary
+	to iterate over array elements to prepare_iteration_over_array_elts.
+	Fix errornous early exit.
+	(analyze_all_variable_accesses): Adjust the call to
+	totally_scalarizable_type_p.  Move determining of total scalariation
+	size limit...
+	(sra_get_max_scalarization_size): ...here.
+	(check_ts_and_push_padding_to_vec): New function.
+	(sra_total_scalarization_would_copy_same_data_p): Likewise.
+
 2024-05-13  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

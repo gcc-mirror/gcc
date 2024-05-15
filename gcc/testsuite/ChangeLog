@@ -1,3 +1,35 @@
+2024-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113907
+	* gcc.dg/lto/pr113907_0.c: New.
+	* gcc.dg/lto/pr113907_1.c: Likewise.
+	* gcc.dg/lto/pr113907_2.c: Likewise.
+
+2024-05-14  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/113359
+	* gcc.dg/lto/pr113359-1_0.c: New.
+	* gcc.dg/lto/pr113359-1_1.c: Likewise.
+	* gcc.dg/lto/pr113359-2_0.c: Likewise.
+	* gcc.dg/lto/pr113359-2_1.c: Likewise.
+	* gcc.dg/lto/pr113359-3_0.c: Likewise.
+	* gcc.dg/lto/pr113359-3_1.c: Likewise.
+	* gcc.dg/lto/pr113359-4_0.c: Likewise.
+	* gcc.dg/lto/pr113359-4_1.c: Likewise.
+	* gcc.dg/lto/pr113359-5_0.c: Likewise.
+	* gcc.dg/lto/pr113359-5_1.c: Likewise.
+
+2024-05-14  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-04-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114303
+	* g++.dg/cpp1z/constexpr-if-lambda6.C: New test.
+
 2024-05-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
