@@ -805,21 +805,22 @@ prune_unused_phi_nodes (bitmap phis, bitmap kills, bitmap uses)
      locate the nearest dominating def in logarithmic time by binary search.*/
   bitmap_ior (to_remove, kills, phis);
   n_defs = bitmap_count_bits (to_remove);
-  defs = XNEWVEC (struct dom_dfsnum, 2 * n_defs + 1);
+  adef = 2 * n_defs + 1;
+  defs = XNEWVEC (struct dom_dfsnum, adef);
   defs[0].bb_index = 1;
   defs[0].dfs_num = 0;
-  adef = 1;
+  struct dom_dfsnum *head = defs + 1, *tail = defs + adef;
   EXECUTE_IF_SET_IN_BITMAP (to_remove, 0, i, bi)
     {
       def_bb = BASIC_BLOCK_FOR_FN (cfun, i);
-      defs[adef].bb_index = i;
-      defs[adef].dfs_num = bb_dom_dfs_in (CDI_DOMINATORS, def_bb);
-      defs[adef + 1].bb_index = i;
-      defs[adef + 1].dfs_num = bb_dom_dfs_out (CDI_DOMINATORS, def_bb);
-      adef += 2;
+      head->bb_index = i;
+      head->dfs_num = bb_dom_dfs_in (CDI_DOMINATORS, def_bb);
+      head++, tail--;
+      tail->bb_index = i;
+      tail->dfs_num = bb_dom_dfs_out (CDI_DOMINATORS, def_bb);
     }
+  gcc_checking_assert (head == tail);
   BITMAP_FREE (to_remove);
-  gcc_assert (adef == 2 * n_defs + 1);
   qsort (defs, adef, sizeof (struct dom_dfsnum), cmp_dfsnum);
   gcc_assert (defs[0].bb_index == 1);
 
