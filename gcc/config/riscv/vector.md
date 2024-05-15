@@ -743,7 +743,7 @@
 				vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,\
 				vfcvtitof,vfncvtitof,vfncvtftoi,vfncvtftof,vmalu,vmiota,vmidx,\
 				vimovxv,vfmovfv,vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
-				vgather,vcompress,vmov,vnclip,vnshift")
+				vgather,vcompress,vmov,vnclip,vnshift,vandn")
 	       (const_int 0)
 
 	       (eq_attr "type" "vimovvx,vfmovvf")

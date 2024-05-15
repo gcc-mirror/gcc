@@ -1591,3 +1591,21 @@
     DONE;
   }
   [(set_attr "type" "vwsll")])
+
+;; vnot + vand = vandn.
+(define_insn_and_split "*vandn_<mode>"
+ [(set (match_operand:V_VLSI 0 "register_operand" "=vr")
+   (and:V_VLSI
+    (not:V_VLSI
+      (match_operand:V_VLSI  2 "register_operand"  "vr"))
+    (match_operand:V_VLSI    1 "register_operand"  "vr")))]
+  "TARGET_ZVBB && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_vandn (<MODE>mode);
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
+    DONE;
+  }
+  [(set_attr "type" "vandn")])
