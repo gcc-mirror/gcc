@@ -222,8 +222,6 @@ UrlSuffix(gcc/MIPS-Options.html#index-msym32)
 msynci
 UrlSuffix(gcc/MIPS-Options.html#index-msynci)
 
-; skipping UrlSuffix for 'mlra' due to finding no URLs
-
 mlxc1-sxc1
 UrlSuffix(gcc/MIPS-Options.html#index-mlxc1-sxc1)
 

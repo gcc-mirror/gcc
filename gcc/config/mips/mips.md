@@ -1781,13 +1781,7 @@
    (set_attr "mode"	"SI")
    (set_attr "insn_count" "1,1,2")
    (set (attr "enabled")
-        (cond [(and (eq_attr "alternative" "0")
-                    (match_test "!mips_lra_flag"))
-                  (const_string "yes")
-               (and (eq_attr "alternative" "1")
-                    (match_test "mips_lra_flag"))
-                  (const_string "yes")
-               (eq_attr "alternative" "2")
+        (cond [(eq_attr "alternative" "1,2")
                   (const_string "yes")]
               (const_string "no")))])
 
@@ -1811,13 +1805,7 @@
    (set_attr "mode"	"SI")
    (set_attr "insn_count" "1,1,1,2")
    (set (attr "enabled")
-        (cond [(and (eq_attr "alternative" "0")
-                    (match_test "!mips_lra_flag"))
-                  (const_string "yes")
-               (and (eq_attr "alternative" "1")
-                    (match_test "mips_lra_flag"))
-                  (const_string "yes")
-               (eq_attr "alternative" "2,3")
+        (cond [(eq_attr "alternative" "1,2,3")
                   (const_string "yes")]
               (const_string "no")))])
 
@@ -2039,13 +2027,7 @@
    (set_attr "mode"     "SI")
    (set_attr "insn_count" "1,1,2")
    (set (attr "enabled")
-        (cond [(and (eq_attr "alternative" "0")
-                    (match_test "!mips_lra_flag"))
-                  (const_string "yes")
-               (and (eq_attr "alternative" "1")
-                    (match_test "mips_lra_flag"))
-                  (const_string "yes")
-               (eq_attr "alternative" "2")
+        (cond [(eq_attr "alternative" "1,2")
                   (const_string "yes")]
               (const_string "no")))])
 
