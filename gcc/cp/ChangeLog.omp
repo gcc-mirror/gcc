@@ -1,5 +1,10 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* decl2.cc (cplus_decl_attributes): Don't add "omp declare target
+	block".
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* cp-tree.h (struct saved_scope): Add new field
 	x_processing_omp_trait_property_expr.
 	(processing_omp_trait_property_expr): Define

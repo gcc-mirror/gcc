@@ -1,5 +1,10 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* omp-general.cc (omp_complete_construct_context): Check
+	"omp declare target" attribute, not "omp declare target block".
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* cgraph.cc (symbol_table::create_edge): Don't set
 	calls_declare_variant_alt in the caller.
 	* cgraph.h (struct cgraph_node): Remove declare_variant_alt

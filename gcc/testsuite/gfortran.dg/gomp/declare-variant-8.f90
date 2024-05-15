@@ -167,23 +167,15 @@ contains
   end subroutine
 
   subroutine test2 ()
-    ! OpenMP 5.0 specifies that the 'target' trait should be added for
-    ! functions within a declare target block, but Fortran does not have
-    ! the notion of a declare target _block_, so the variant is not used here.
-    ! This may change in later versions of OpenMP.
-
     !$omp declare target
     !$omp parallel
-      call f18 ()	! { dg-final { scan-tree-dump-times "f18 \\\(\\\);" 1 "gimple" } }
+      call f18 ()	! { dg-final { scan-tree-dump-times "f17 \\\(\\\);" 1 "gimple" } }
     !$omp end parallel
   end subroutine
 
   subroutine test3 ()
-    ! In the C version, this test was used to check that the
-    ! 'declare target to' form of the directive did not result in the variant
-    ! being used.
     !$omp parallel
-      call f20 ()	! { dg-final { scan-tree-dump-times "f20 \\\(\\\);" 1 "gimple" } }
+      call f20 ()	! { dg-final { scan-tree-dump-times "f19 \\\(\\\);" 1 "gimple" } }
     !$omp end parallel
   end subroutine
 

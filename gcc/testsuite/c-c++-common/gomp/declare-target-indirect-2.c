@@ -4,12 +4,12 @@
 #pragma omp begin declare target indirect
 void fn1 (void) { }
 #pragma omp end declare target
-/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target, omp declare target block, omp declare target indirect\\\)\\\)\\\nvoid fn1" "gimple" } } */
+/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target, omp declare target indirect\\\)\\\)\\\nvoid fn1" "gimple" } } */
 
 #pragma omp begin declare target indirect (0)
 void fn2 (void) { }
 #pragma omp end declare target
-/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target, omp declare target block\\\)\\\)\\\nvoid fn2" "gimple" } } */
+/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target\\\)\\\)\\\nvoid fn2" "gimple" } } */
 
 void fn3 (void) { }
 #pragma omp declare target indirect to (fn3)
@@ -27,6 +27,6 @@ void fn4 (void) { }
     #pragma omp declare target indirect enter(baz)
   #pragma omp end declare target
 #pragma omp end declare target
-/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target, omp declare target block, omp declare target indirect\\\)\\\)\\\nint foo" "gimple" } } */
-/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target, omp declare target block\\\)\\\)\\\nint bar" "gimple" } } */
-/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target indirect, omp declare target, omp declare target block\\\)\\\)\\\nint baz" "gimple" } } */
+/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target, omp declare target indirect\\\)\\\)\\\nint foo" "gimple" } } */
+/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target\\\)\\\)\\\nint bar" "gimple" } } */
+/* { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target indirect, omp declare target\\\)\\\)\\\nint baz" "gimple" } } */

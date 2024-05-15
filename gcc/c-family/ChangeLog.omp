@@ -1,5 +1,10 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* c-attribs.cc (c_common_gnu_attributes): Delete "omp declare
+	target block".
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* c-common.h (enum c_omp_directive_kind): Add C_OMP_DIR_META.
 	(c_omp_expand_metadirective): Declare.
 	* c-gimplify.cc: Include omp-general.h.

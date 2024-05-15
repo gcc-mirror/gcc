@@ -1,5 +1,10 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* c-decl.cc (c_decl_attributes): Don't add "omp declare target
+	block".
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* c-parser.c (c_parser_omp_context_selector): Remove metadirective_p
 	parameter and conditionalization.
 	(c_parser_omp_context_selector_specification): Remove metadirective_p

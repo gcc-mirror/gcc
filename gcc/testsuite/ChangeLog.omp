@@ -1,5 +1,15 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* c-c++-common/gomp/declare-target-indirect-2.c : Adjust
+	expected output for removal of "omp declare target block".
+	* c-c++-common/gomp/declare-variant-8.c: Likewise, the variant
+	call to f20 is now resolved differently.
+	* c-c++-common/gomp/reverse-offload-1.c: Adjust expected output.
+	* gfortran.dg/gomp/declare-variant-8.f90: Likewise, both f18
+	and f20 now resolve to the variant.  Delete obsolete comments.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* c-c++-common/gomp/declare-variant-12.c: Adjust expected behavior.
 	* c-c++-common/gomp/declare-variant-13.c: Likewise.
 	* c-c++-common/gomp/declare-variant-2.c: Likewise.
