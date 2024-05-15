@@ -159,7 +159,7 @@ package body Debug is
    --  d_t  In LLVM-based CCG, dump LLVM IR after transformations are done
    --  d_u  In LLVM-based CCG, dump flows
    --  d_v  Enable additional checks and debug printouts in Atree
-   --  d_w
+   --  d_w  In LLVM-based CCG, don't send front end data to CCG
    --  d_x  Disable inline expansion of Image attribute for enumeration types
    --  d_y
    --  d_z
@@ -1010,6 +1010,8 @@ package body Debug is
    --       and after transformations.
 
    --  d_v  Enable additional checks and debug printouts in Atree
+
+   --  d_w  In LLVM-based CCG, don't send front end data to CCG
 
    --  d_x  The compiler does not expand in line the Image attribute for user-
    --       defined enumeration types and the standard boolean type.
