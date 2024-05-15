@@ -14722,6 +14722,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   tree *detach_seen = NULL;
   bool linear_variable_step_check = false;
   tree *nowait_clause = NULL;
+  tree *grainsize_seen = NULL;
+  bool num_tasks_seen = false;
   tree ordered_clause = NULL_TREE;
   tree schedule_clause = NULL_TREE;
   bool oacc_async = false;
@@ -16021,8 +16023,6 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_PROC_BIND:
 	case OMP_CLAUSE_DEVICE_TYPE:
 	case OMP_CLAUSE_PRIORITY:
-	case OMP_CLAUSE_GRAINSIZE:
-	case OMP_CLAUSE_NUM_TASKS:
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_HINT:
@@ -16045,6 +16045,16 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_NOHOST:
 	case OMP_CLAUSE_INDIRECT:
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_GRAINSIZE:
+	  grainsize_seen = pc;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_NUM_TASKS:
+	  num_tasks_seen = true;
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
@@ -16331,6 +16341,14 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		"%<nogroup%> clause must not be used together with "
 		"%<reduction%> clause");
       *nogroup_seen = OMP_CLAUSE_CHAIN (*nogroup_seen);
+    }
+
+  if (grainsize_seen && num_tasks_seen)
+    {
+      error_at (OMP_CLAUSE_LOCATION (*grainsize_seen),
+		"%<grainsize%> clause must not be used together with "
+		"%<num_tasks%> clause");
+      *grainsize_seen = OMP_CLAUSE_CHAIN (*grainsize_seen);
     }
 
   if (detach_seen)

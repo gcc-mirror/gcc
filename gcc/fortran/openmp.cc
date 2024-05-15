@@ -9175,6 +9175,13 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     resolve_positive_int_expr (omp_clauses->grainsize, "GRAINSIZE");
   if (omp_clauses->num_tasks)
     resolve_positive_int_expr (omp_clauses->num_tasks, "NUM_TASKS");
+  if (omp_clauses->grainsize && omp_clauses->num_tasks)
+    gfc_error ("%<GRAINSIZE%> clause at %L must not be used together with "
+	       "%<NUM_TASKS%> clause", &omp_clauses->grainsize->where);
+  if (omp_clauses->lists[OMP_LIST_REDUCTION] && omp_clauses->nogroup)
+    gfc_error ("%<REDUCTION%> clause at %L must not be used together with "
+	       "%<NOGROUP%> clause",
+	       &omp_clauses->lists[OMP_LIST_REDUCTION]->where);
   if (omp_clauses->async)
     if (omp_clauses->async_expr)
       resolve_scalar_int_expr (omp_clauses->async_expr, "ASYNC");
