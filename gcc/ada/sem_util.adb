@@ -26238,6 +26238,54 @@ package body Sem_Util is
       end if;
    end Propagate_Concurrent_Flags;
 
+   --------------------------------
+   -- Propagate_Controlled_Flags --
+   --------------------------------
+
+   procedure Propagate_Controlled_Flags
+     (Typ      : Entity_Id;
+      From_Typ : Entity_Id;
+      Comp     : Boolean := False;
+      Deriv    : Boolean := False)
+   is
+   begin
+      --  It does not make sense to have both Comp and Deriv set True
+
+      pragma Assert (not Comp or else not Deriv);
+
+      --  This implementation only supports array types for the component case.
+      --  Disregard Is_Controlled_Active and Disable_Controlled in this case.
+
+      if Comp then
+         pragma Assert (Is_Array_Type (Typ));
+
+      else
+         if Is_Controlled_Active (From_Typ) then
+            Set_Is_Controlled_Active (Typ);
+         end if;
+
+         if Disable_Controlled (From_Typ) then
+            Set_Disable_Controlled (Typ);
+         end if;
+      end if;
+
+      --  Direct controlled types do not inherit Finalize_Storage_Only
+
+      if not (Deriv and then Is_Controlled (From_Typ)) then
+         if Finalize_Storage_Only (From_Typ) then
+            Set_Finalize_Storage_Only (Typ);
+         end if;
+      end if;
+
+      --  Is_Controlled yields Has_Controlled_Component for component
+
+      if Has_Controlled_Component (From_Typ)
+        or else (Comp and then Is_Controlled (From_Typ))
+      then
+         Set_Has_Controlled_Component (Typ);
+      end if;
+   end Propagate_Controlled_Flags;
+
    ------------------------------
    -- Propagate_DIC_Attributes --
    ------------------------------

@@ -5485,10 +5485,7 @@ package body Sem_Ch3 is
       Reinit_Size_Align    (T);
       Set_Default_SSO      (T);
       Set_No_Reordering    (T, No_Component_Reordering);
-
-      Set_Etype            (T,                Parent_Base);
-      Propagate_Concurrent_Flags (T, Parent_Base);
-
+      Set_Etype            (T, Parent_Base);
       Set_Convention       (T, Convention     (Parent_Type));
       Set_First_Rep_Item   (T, First_Rep_Item (Parent_Type));
       Set_Is_First_Subtype (T);
@@ -6567,14 +6564,16 @@ package body Sem_Ch3 is
       end if;
 
       if Nkind (Def) = N_Constrained_Array_Definition then
+         Index := First (Discrete_Subtype_Definitions (Def));
+
          --  Establish Implicit_Base as unconstrained base type
 
          Implicit_Base := Create_Itype (E_Array_Type, P, Related_Id, 'B');
 
          Set_Etype              (Implicit_Base, Implicit_Base);
          Set_Scope              (Implicit_Base, Current_Scope);
+         Set_First_Index        (Implicit_Base, Index);
          Set_Has_Delayed_Freeze (Implicit_Base);
-         Set_Default_SSO        (Implicit_Base);
 
          --  The constrained array type is a subtype of the unconstrained one
 
@@ -6582,27 +6581,9 @@ package body Sem_Ch3 is
          Reinit_Size_Align      (T);
          Set_Etype              (T, Implicit_Base);
          Set_Scope              (T, Current_Scope);
-         Set_Is_Constrained     (T);
-         Set_First_Index        (T,
-           First (Discrete_Subtype_Definitions (Def)));
+         Set_First_Index        (T, Index);
          Set_Has_Delayed_Freeze (T);
-
-         --  Complete setup of implicit base type
-
-         pragma Assert (not Known_Component_Size (Implicit_Base));
-         Set_Component_Type (Implicit_Base, Element_Type);
-         Set_Finalize_Storage_Only
-                            (Implicit_Base,
-                              Finalize_Storage_Only (Element_Type));
-         Set_First_Index    (Implicit_Base, First_Index (T));
-         Set_Has_Controlled_Component
-                            (Implicit_Base,
-                              Has_Controlled_Component (Element_Type)
-                                or else Is_Controlled (Element_Type));
-         Set_Packed_Array_Impl_Type
-                            (Implicit_Base, Empty);
-
-         Propagate_Concurrent_Flags (Implicit_Base, Element_Type);
+         Set_Is_Constrained     (T);
 
       --  Unconstrained array case
 
@@ -6611,26 +6592,15 @@ package body Sem_Ch3 is
          Reinit_Size_Align            (T);
          Set_Etype                    (T, T);
          Set_Scope                    (T, Current_Scope);
-         pragma Assert (not Known_Component_Size (T));
-         Set_Is_Constrained           (T, False);
+         Set_First_Index              (T, First (Subtype_Marks (Def)));
+         Set_Has_Delayed_Freeze       (T);
          Set_Is_Fixed_Lower_Bound_Array_Subtype
                                       (T, Has_FLB_Index);
-         Set_First_Index              (T, First (Subtype_Marks (Def)));
-         Set_Has_Delayed_Freeze       (T, True);
-         Propagate_Concurrent_Flags   (T, Element_Type);
-         Set_Has_Controlled_Component (T, Has_Controlled_Component
-                                                        (Element_Type)
-                                            or else
-                                          Is_Controlled (Element_Type));
-         Set_Finalize_Storage_Only    (T, Finalize_Storage_Only
-                                                        (Element_Type));
-         Set_Default_SSO              (T);
       end if;
 
       --  Common attributes for both cases
 
-      Set_Component_Type (Base_Type (T), Element_Type);
-      Set_Packed_Array_Impl_Type (T, Empty);
+      Set_Component_Type (Etype (T), Element_Type);
 
       if Aliased_Present (Component_Definition (Def)) then
          Set_Has_Aliased_Components (Etype (T));
@@ -6640,6 +6610,13 @@ package body Sem_Ch3 is
 
          Set_Has_Independent_Components (Etype (T));
       end if;
+
+      pragma Assert (not Known_Component_Size (Etype (T)));
+
+      Propagate_Concurrent_Flags (Etype (T), Element_Type);
+      Propagate_Controlled_Flags (Etype (T), Element_Type, Comp => True);
+
+      Set_Default_SSO (Etype (T));
 
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute to the
       --  array type to ensure that objects of this type are initialized.
@@ -8516,22 +8493,6 @@ package body Sem_Ch3 is
          Set_Stored_Constraint (Derived_Type, No_Elist);
          Set_Is_Constrained    (Derived_Type, Is_Constrained (Parent_Type));
 
-         Set_Is_Controlled_Active
-           (Derived_Type, Is_Controlled_Active     (Parent_Type));
-
-         Set_Disable_Controlled
-           (Derived_Type, Disable_Controlled       (Parent_Type));
-
-         Set_Has_Controlled_Component
-           (Derived_Type, Has_Controlled_Component (Parent_Type));
-
-         --  Direct controlled types do not inherit Finalize_Storage_Only flag
-
-         if not Is_Controlled (Parent_Type) then
-            Set_Finalize_Storage_Only
-              (Base_Type (Derived_Type), Finalize_Storage_Only (Parent_Type));
-         end if;
-
          --  If this is not a completion, construct the implicit full view by
          --  deriving from the full view of the parent type. But if this is a
          --  completion, the derived private type being built is a full view
@@ -9848,8 +9809,9 @@ package body Sem_Ch3 is
 
       --  Fields inherited from the Parent_Base
 
-      Set_Has_Controlled_Component
-        (Derived_Type, Has_Controlled_Component (Parent_Base));
+      Propagate_Concurrent_Flags (Derived_Type, Parent_Base);
+      Propagate_Controlled_Flags (Derived_Type, Parent_Base, Deriv => True);
+
       Set_Has_Non_Standard_Rep
         (Derived_Type, Has_Non_Standard_Rep     (Parent_Base));
       Set_Has_Primitive_Operations
@@ -9914,9 +9876,6 @@ package body Sem_Ch3 is
            and then Scope (Scope (Scope (Derived_Type))) = Standard_Standard
          then
             Set_Is_Controlled_Active (Derived_Type);
-         else
-            Set_Is_Controlled_Active
-              (Derived_Type, Is_Controlled_Active (Parent_Base));
          end if;
 
          --  Minor optimization: there is no need to generate the class-wide
@@ -10194,17 +10153,15 @@ package body Sem_Ch3 is
       Set_Scope                  (Derived_Type, Current_Scope);
       Set_Etype                  (Derived_Type,        Parent_Base);
       Mutate_Ekind               (Derived_Type, Ekind (Parent_Base));
-      Propagate_Concurrent_Flags (Derived_Type,        Parent_Base);
+
+      Propagate_Concurrent_Flags (Derived_Type, Parent_Base);
+      Propagate_Controlled_Flags (Derived_Type, Parent_Base, Deriv => True);
 
       Set_Size_Info (Derived_Type, Parent_Type);
       Copy_RM_Size (To => Derived_Type, From => Parent_Type);
 
-      Set_Is_Controlled_Active
-        (Derived_Type, Is_Controlled_Active (Parent_Type));
-
-      Set_Disable_Controlled (Derived_Type, Disable_Controlled (Parent_Type));
-      Set_Is_Tagged_Type     (Derived_Type, Is_Tagged_Type     (Parent_Type));
-      Set_Is_Volatile        (Derived_Type, Is_Volatile        (Parent_Type));
+      Set_Is_Tagged_Type (Derived_Type, Is_Tagged_Type (Parent_Type));
+      Set_Is_Volatile    (Derived_Type, Is_Volatile    (Parent_Type));
 
       if Is_Tagged_Type (Derived_Type) then
          Set_No_Tagged_Streams_Pragma
@@ -15272,9 +15229,9 @@ package body Sem_Ch3 is
       Set_Component_Alignment        (T1, Component_Alignment        (T2));
       Set_Component_Type             (T1, Component_Type             (T2));
       Set_Component_Size             (T1, Component_Size             (T2));
-      Set_Has_Controlled_Component   (T1, Has_Controlled_Component   (T2));
       Set_Has_Non_Standard_Rep       (T1, Has_Non_Standard_Rep       (T2));
       Propagate_Concurrent_Flags     (T1,                             T2);
+      Propagate_Controlled_Flags     (T1,                             T2);
       Set_Is_Packed                  (T1, Is_Packed                  (T2));
       Set_Has_Aliased_Components     (T1, Has_Aliased_Components     (T2));
       Set_Has_Atomic_Components      (T1, Has_Atomic_Components      (T2));
@@ -22950,8 +22907,7 @@ package body Sem_Ch3 is
 
    procedure Record_Type_Definition (Def : Node_Id; Prev_T : Entity_Id) is
       Component          : Entity_Id;
-      Ctrl_Components    : Boolean := False;
-      Final_Storage_Only : Boolean;
+      Final_Storage_Only : Boolean := True;
       T                  : Entity_Id;
 
    begin
@@ -22962,8 +22918,6 @@ package body Sem_Ch3 is
       end if;
 
       Set_Is_Not_Self_Hidden (T);
-
-      Final_Storage_Only := not Is_Controlled (T);
 
       --  Ada 2005: Check whether an explicit "limited" is present in a derived
       --  type declaration.
@@ -23020,20 +22974,20 @@ package body Sem_Ch3 is
                       or else (Chars (Component) /= Name_uParent
                                 and then Is_Controlled (Etype (Component))))
          then
-            Set_Has_Controlled_Component (T, True);
+            Set_Has_Controlled_Component (T);
             Final_Storage_Only :=
               Final_Storage_Only
                 and then Finalize_Storage_Only (Etype (Component));
-            Ctrl_Components := True;
          end if;
 
          Next_Entity (Component);
       end loop;
 
-      --  A Type is Finalize_Storage_Only only if all its controlled components
-      --  are also.
+      --  For a type that is not directly controlled but has controlled
+      --  components, Finalize_Storage_Only is set if all the controlled
+      --  components are Finalize_Storage_Only.
 
-      if Ctrl_Components then
+      if not Is_Controlled (T) and then Has_Controlled_Component (T) then
          Set_Finalize_Storage_Only (T, Final_Storage_Only);
       end if;
 

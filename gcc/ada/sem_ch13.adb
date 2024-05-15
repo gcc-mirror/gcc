@@ -14097,13 +14097,6 @@ package body Sem_Ch13 is
                Set_Has_Volatile_Components (Imp_Bas_Typ);
             end if;
 
-            --  Finalize_Storage_Only
-
-            Rep := Get_Inherited_Rep_Item (Typ, Name_Finalize_Storage_Only);
-            if Present (Rep) then
-               Set_Finalize_Storage_Only (Bas_Typ);
-            end if;
-
             --  Universal_Aliasing
 
             Rep := Get_Inherited_Rep_Item (Typ, Name_Universal_Aliasing);

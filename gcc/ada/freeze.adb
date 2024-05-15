@@ -3661,12 +3661,7 @@ package body Freeze is
             --  Propagate flags from component type
 
             Propagate_Concurrent_Flags (Arr, Ctyp);
-
-            if Is_Controlled (Ctyp)
-              or else Has_Controlled_Component (Ctyp)
-            then
-               Set_Has_Controlled_Component (Arr);
-            end if;
+            Propagate_Controlled_Flags (Arr, Ctyp, Comp => True);
 
             if Has_Unchecked_Union (Ctyp) then
                Set_Has_Unchecked_Union (Arr);
@@ -5083,6 +5078,9 @@ package body Freeze is
          --  Accumulates total Esize values of all elementary components. Used
          --  for processing of Implicit_Packing.
 
+         Final_Storage_Only : Boolean := True;
+         --  Used to compute the Finalize_Storage_Only flag
+
          Placed_Component : Boolean := False;
          --  Set True if we find at least one component with a component
          --  clause (used to warn about useless Bit_Order pragmas, and also
@@ -5708,6 +5706,9 @@ package body Freeze is
                              (Corresponding_Record_Type (Etype (Comp)))))
                then
                   Set_Has_Controlled_Component (Rec);
+                  Final_Storage_Only :=
+                    Final_Storage_Only
+                      and then Finalize_Storage_Only (Etype (Comp));
                end if;
 
                if Has_Unchecked_Union (Etype (Comp)) then
@@ -5739,6 +5740,15 @@ package body Freeze is
 
                Next_Component (Comp);
             end loop;
+
+            --  For a type that is not directly controlled but has controlled
+            --  components, Finalize_Storage_Only is set if all the controlled
+            --  components are Finalize_Storage_Only.
+
+            if not Is_Controlled (Rec) and then Has_Controlled_Component (Rec)
+            then
+               Set_Finalize_Storage_Only (Rec, Final_Storage_Only);
+            end if;
          end if;
 
          --  Enforce the restriction that access attributes with a current

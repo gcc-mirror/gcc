@@ -2919,6 +2919,7 @@ package body Sem_Ch7 is
                                      (Priv, Has_Pragma_Unreferenced_Objects
                                                                        (Full));
          Set_Predicates_Ignored      (Priv, Predicates_Ignored         (Full));
+
          if Is_Unchecked_Union (Full) then
             Set_Is_Unchecked_Union (Base_Type (Priv));
          end if;
@@ -2928,14 +2929,8 @@ package body Sem_Ch7 is
          end if;
 
          if Priv_Is_Base_Type then
-            Set_Is_Controlled_Active
-                              (Priv, Is_Controlled_Active     (Full_Base));
-            Set_Finalize_Storage_Only
-                              (Priv, Finalize_Storage_Only    (Full_Base));
-            Set_Has_Controlled_Component
-                              (Priv, Has_Controlled_Component (Full_Base));
-
-            Propagate_Concurrent_Flags (Priv, Base_Type (Full));
+            Propagate_Concurrent_Flags (Priv, Full_Base);
+            Propagate_Controlled_Flags (Priv, Full_Base);
          end if;
 
          --  As explained in Freeze_Entity, private types are required to point

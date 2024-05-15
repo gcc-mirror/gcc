@@ -2914,6 +2914,17 @@ package Sem_Util is
    --  by one of these flags. This procedure can only set flags for Typ, and
    --  never clear them. Comp_Typ is the type of a component or a parent.
 
+   procedure Propagate_Controlled_Flags
+     (Typ      : Entity_Id;
+      From_Typ : Entity_Id;
+      Comp     : Boolean := False;
+      Deriv    : Boolean := False);
+   --  Set Disable_Controlled, Finalize_Storage_Only, Has_Controlled_Component,
+   --  and Is_Controlled_Active on Typ when the flags are set on From_Typ. If
+   --  Comp is True, From_Typ is the type of a component of Typ while, if Deriv
+   --  is True, From_Typ is the parent type of Typ. This procedure can only set
+   --  flags for Typ, and never clear them.
+
    procedure Propagate_DIC_Attributes
      (Typ      : Entity_Id;
       From_Typ : Entity_Id);
