@@ -227,8 +227,6 @@ emit_strcmp_scalar_load_and_compare (rtx result, rtx src1, rtx src2,
 				     rtx final_label)
 {
   const unsigned HOST_WIDE_INT xlen = GET_MODE_SIZE (Xmode);
-  rtx src1_addr = force_reg (Pmode, XEXP (src1, 0));
-  rtx src2_addr = force_reg (Pmode, XEXP (src2, 0));
   unsigned HOST_WIDE_INT offset = 0;
 
   rtx testval = gen_reg_rtx (Xmode);
@@ -246,10 +244,10 @@ emit_strcmp_scalar_load_and_compare (rtx result, rtx src1, rtx src2,
       else
 	load_mode = Xmode;
 
-      rtx addr1 = gen_rtx_PLUS (Pmode, src1_addr, GEN_INT (offset));
-      do_load_from_addr (load_mode, data1, addr1, src1);
-      rtx addr2 = gen_rtx_PLUS (Pmode, src2_addr, GEN_INT (offset));
-      do_load_from_addr (load_mode, data2, addr2, src2);
+      rtx addr1 = adjust_address (src1, load_mode, offset);
+      do_load (load_mode, data1, addr1);
+      rtx addr2 = adjust_address (src2, load_mode, offset);
+      do_load (load_mode, data2, addr2);
 
       if (cmp_bytes == 1)
 	{
