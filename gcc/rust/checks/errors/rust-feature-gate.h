@@ -127,6 +127,7 @@ public:
   void visit (AST::StaticItem &static_item) override {}
   void visit (AST::TraitItemConst &item) override {}
   void visit (AST::TraitItemType &item) override {}
+  void visit (AST::TraitImpl &impl) override;
   void visit (AST::Trait &trait) override {}
   void visit (AST::ExternalTypeItem &item) override;
   void visit (AST::ExternalStaticItem &item) override {}
