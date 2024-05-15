@@ -1,5 +1,50 @@
 2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
 
+	* cgraph.cc (symbol_table::create_edge): Don't set
+	calls_declare_variant_alt in the caller.
+	* cgraph.h (struct cgraph_node): Remove declare_variant_alt
+	and calls_declare_variant_alt flags.
+	* cgraphclones.cc (cgraph_node::create_clone): Don't copy
+	calls_declare_variant_alt bit.
+	* ipa-free-lang-data.cc (free_lang_data_in_decl): Adjust code
+	referencing declare_variant_alt bit.
+	* ipa.cc (symbol_table::remove_unreachable_nodes): Likewise.
+	* lto-cgraph.cc (lto_output_node): Remove references to deleted
+	bits.
+	(output_refs): Adjust code referencing declare_variant_alt bit.
+	(input_overwrite_node): Remove references to deleted bits.
+	(input_refs): Adjust code referencing declare_variant_alt bit.
+	* lto-streamer-out.cc (lto_output): Likewise.
+	* lto-streamer.h (omp_lto_output_declare_variant_alt): Delete.
+	(omp_lto_input_declare_variant_alt): Delete.
+	* lto/lto-partition.cc (lto_balanced_map): Adjust code referencing
+	deleted declare_variant_alt bit.
+	* omp-expand.cc (expand_omp_target): Use has_metadirectives bit to
+	trigger pass_omp_device_lower instead of calls_declare_variant_alt.
+	* omp-general.cc (struct omp_declare_variant_entry): Delete.
+	(struct omp_declare_variant_base_entry): Delete.
+	(struct omp_declare_variant_hasher): Delete.
+	(omp_declare_variant_hasher::hash): Delete.
+	(omp_declare_variant_hasher::equal): Delete.
+	(omp_declare_variants): Delete.
+	(omp_declare_variant_alt_hasher): Delete.
+	(omp_declare_variant_alt_hasher::hash): Delete.
+	(omp_declare_variant_alt_hasher::equal): Delete.
+	(omp_declare_variant_alt): Delete.
+	(omp_lto_output_declare_variant_alt): Delete.
+	(omp_lto_input_declare_variant_alt): Delete.
+	(includes): Delete unnecessary include of gt-omp-general.h.
+	* omp-offload.cc (execute_omp_device_lower): Remove references
+	to deleted bit.
+	(pass_omp_device_lower::gate): Likewise.
+	* omp-simd-clone.cc (simd_clone_create): Likewise.
+	* passes.cc (ipa_write_summaries): Likeise.
+	* symtab.cc (symtab_node::get_partitioning_class): Likewise.
+	* tree-inline.cc (expand_call_inline): Likewise.
+	(tree_function_versioning): Likewise.
+
+2024-05-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
 	* gimple-streamer-in.cc (input_gimple_stmt): Restore
 	gomp_metadirective context.
 	* gimple-streamer-out.cc (output_gimple_stmt): Save

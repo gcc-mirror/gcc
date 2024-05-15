@@ -10136,7 +10136,7 @@ expand_omp_target (struct omp_region *region)
 
 	  /* Enable pass_omp_device_lower pass.  */
 	  fn2_node = cgraph_node::get (DECL_CONTEXT (child_fn));
-	  fn2_node->calls_declare_variant_alt = 1;
+	  fn2_node->has_metadirectives = 1;
 
 	  t = build_decl (DECL_SOURCE_LOCATION (child_fn),
 			  RESULT_DECL, NULL_TREE, void_type_node);

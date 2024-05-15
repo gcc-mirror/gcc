@@ -2815,8 +2815,7 @@ lto_output (void)
 		  && flag_incremental_link != INCREMENTAL_LINK_LTO)
 	      /* Thunks have no body but they may be synthetized
 		 at WPA time.  */
-	      || DECL_ARGUMENTS (cnode->decl)
-	      || cnode->declare_variant_alt))
+	      || DECL_ARGUMENTS (cnode->decl)))
 	output_function (cnode);
       else if ((vnode = dyn_cast <varpool_node *> (snode))
 	       && (DECL_INITIAL (vnode->decl) != error_mark_node
