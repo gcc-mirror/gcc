@@ -1763,6 +1763,31 @@
   [(set_attr "type" "fcvt")
    (set_attr "mode" "HF")])
 
+(define_insn "truncsfbf2"
+  [(set (match_operand:BF    0 "register_operand" "=f")
+	(float_truncate:BF
+	   (match_operand:SF 1 "register_operand" " f")))]
+  "TARGET_ZFBFMIN"
+  "fcvt.bf16.s\t%0,%1"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "BF")])
+
+;; The conversion of HF/DF/TF to BF needs to be done with SF if there is a
+;; chance to generate at least one instruction, otherwise just using
+;; libfunc __trunc[h|d|t]fbf2.
+(define_expand "trunc<mode>bf2"
+  [(set (match_operand:BF	0 "register_operand" "=f")
+	(float_truncate:BF
+	   (match_operand:FBF	1 "register_operand" " f")))]
+  "TARGET_ZFBFMIN"
+  {
+    convert_move (operands[0],
+		  convert_modes (SFmode, <MODE>mode, operands[1], 0), 0);
+    DONE;
+  }
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "BF")])
+
 ;;
 ;;  ....................
 ;;
@@ -1907,6 +1932,15 @@
   [(set_attr "type" "fcvt")
    (set_attr "mode" "SF")])
 
+(define_insn "extendbfsf2"
+  [(set (match_operand:SF    0 "register_operand" "=f")
+	(float_extend:SF
+	   (match_operand:BF 1 "register_operand" " f")))]
+  "TARGET_ZFBFMIN"
+  "fcvt.s.bf16\t%0,%1"
+  [(set_attr "type" "fcvt")
+   (set_attr "mode" "SF")])
+
 (define_insn "extendsfdf2"
   [(set (match_operand:DF     0 "register_operand" "=f")
 	(float_extend:DF
@@ -1936,16 +1970,17 @@
     DONE;
 })
 
-(define_insn "*movhf_hardfloat"
-  [(set (match_operand:HF 0 "nonimmediate_operand" "=f,   f,f,f,m,m,*f,*r,  *r,*r,*m")
-	(match_operand:HF 1 "move_operand"         " f,zfli,G,m,f,G,*r,*f,*G*r,*m,*r"))]
-  "TARGET_ZFHMIN
-   && (register_operand (operands[0], HFmode)
-       || reg_or_0_operand (operands[1], HFmode))"
+(define_insn "*mov<mode>_hardfloat"
+  [(set (match_operand:HFBF 0 "nonimmediate_operand" "=f,   f,f,f,m,m,*f,*r,  *r,*r,*m")
+	(match_operand:HFBF 1 "move_operand"	     " f,zfli,G,m,f,G,*r,*f,*G*r,*m,*r"))]
+  "((TARGET_ZFHMIN && <MODE>mode == HFmode)
+    || (TARGET_ZFBFMIN && <MODE>mode == BFmode))
+   && (register_operand (operands[0], <MODE>mode)
+       || reg_or_0_operand (operands[1], <MODE>mode))"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "type" "fmove,fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
-   (set_attr "mode" "HF")])
+   (set_attr "mode" "<MODE>")])
 
 (define_insn "*mov<mode>_softfloat"
   [(set (match_operand:HFBF 0 "nonimmediate_operand" "=f, r,r,m,*f,*r")

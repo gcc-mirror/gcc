@@ -78,8 +78,12 @@
 ;; Iterator for floating-point modes that can be loaded into X registers.
 (define_mode_iterator SOFTF [SF (DF "TARGET_64BIT") (HF "TARGET_ZFHMIN")])
 
-;; Iterator for floating-point modes of BF16
+;; Iterator for floating-point modes of BF16.
 (define_mode_iterator HFBF [HF BF])
+
+;; Conversion between floating-point modes and BF16.
+;; SF to BF16 have hardware instructions.
+(define_mode_iterator FBF [HF DF TF])
 
 ;; -------------------------------------------------------------------
 ;; Mode attributes

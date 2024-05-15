@@ -4310,7 +4310,7 @@ riscv_output_move (rtx dest, rtx src)
 	switch (width)
 	  {
 	  case 2:
-	    if (TARGET_ZFHMIN)
+	    if (TARGET_ZFHMIN || TARGET_ZFBFMIN)
 	      return "fmv.x.h\t%0,%1";
 	    /* Using fmv.x.s + sign-extend to emulate fmv.x.h.  */
 	    return "fmv.x.s\t%0,%1;slli\t%0,%0,16;srai\t%0,%0,16";
@@ -4366,7 +4366,7 @@ riscv_output_move (rtx dest, rtx src)
 	    switch (width)
 	      {
 	      case 2:
-		if (TARGET_ZFHMIN)
+		if (TARGET_ZFHMIN || TARGET_ZFBFMIN)
 		  return "fmv.h.x\t%0,%z1";
 		/* High 16 bits should be all-1, otherwise HW will treated
 		   as a n-bit canonical NaN, but isn't matter for softfloat.  */
