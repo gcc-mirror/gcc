@@ -29,7 +29,7 @@ void int_arr_write_element_after_end_off_by_one(int32_t x)
            |   arr[10] = x;
            |   ~~~~~~~~^~~
            |           |
-           |           (2) out-of-bounds write from byte 40 till byte 43 but 'arr' ends at byte 40
+           |           (2) ⚠️  out-of-bounds write from byte 40 till byte 43 but 'arr' ends at byte 40
            |
    { dg-end-multiline-output "" } */
 

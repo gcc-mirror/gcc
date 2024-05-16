@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-event-id.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
+#include "text-art/theme.h"
 
 /* Anonymous namespace for path-printing code.  */
 
@@ -60,13 +61,36 @@ class path_label : public range_label
     /* Get the description of the event, perhaps with colorization:
        normally, we don't colorize within a range_label, but this
        is special-cased for diagnostic paths.  */
-    bool colorize = pp_show_color (global_dc->printer);
+    const bool colorize = pp_show_color (global_dc->printer);
     label_text event_text (event.get_desc (colorize));
     gcc_assert (event_text.get ());
+
+    const diagnostic_event::meaning meaning (event.get_meaning ());
+
     pretty_printer pp;
-    pp_show_color (&pp) = pp_show_color (global_dc->printer);
+    pp_show_color (&pp) = colorize;
     diagnostic_event_id_t event_id (event_idx);
-    pp_printf (&pp, "%@ %s", &event_id, event_text.get ());
+
+    pp_printf (&pp, "%@", &event_id);
+    pp_space (&pp);
+
+    if (meaning.m_verb == diagnostic_event::VERB_danger)
+      if (text_art::theme *theme = global_dc->get_diagram_theme ())
+	if (theme->emojis_p ())
+	  {
+	    pp_unicode_character (&pp, 0x26A0); /* U+26A0 WARNING SIGN.  */
+	    /* Append U+FE0F VARIATION SELECTOR-16 to select the emoji
+	       variation of the char.  */
+	    pp_unicode_character (&pp, 0xFE0F);
+	    /* U+26A0 WARNING SIGN has East_Asian_Width == Neutral, but in its
+	       emoji variant is printed (by vte at least) with a 2nd half
+	       overlapping the next char.  Hence we add two spaces here: a space
+	       to be covered by this overlap, plus another space of padding.  */
+	    pp_string (&pp, "  ");
+	  }
+
+    pp_printf (&pp, "%s", event_text.get ());
+
     label_text result = label_text::take (xstrdup (pp_formatted_text (&pp)));
     return result;
   }
