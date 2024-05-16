@@ -329,19 +329,6 @@ public:
     r = lhs;
     return true;
   }
-  virtual bool pointers_handled_p (range_op_dispatch_type type,
-				   unsigned dispatch) const
-  {
-    switch (type)
-      {
-      case DISPATCH_FOLD_RANGE:
-	return dispatch == RO_PPP;
-      case DISPATCH_OP1_RANGE:
-	return dispatch == RO_PPP;
-      default:
-	return true;
-      }
-  }
 } op_cfn_pass_through_arg1;
 
 // Implement range operator for CFN_BUILT_IN_SIGNBIT.
@@ -1131,17 +1118,6 @@ public:
     // FIXME: Use max_object_size() - 1 here.
     r.set (type, wi::zero (TYPE_PRECISION (type)), max - 2);
     return true;
-  }
-  virtual bool pointers_handled_p (range_op_dispatch_type type,
-				   unsigned dispatch) const
-  {
-    switch (type)
-      {
-      case DISPATCH_FOLD_RANGE:
-	return dispatch == RO_IPI;
-      default:
-	return true;
-      }
   }
 } op_cfn_strlen;
 

@@ -229,7 +229,6 @@ public:
 
   // Compatability check for operands.
   virtual bool operand_check_p (tree, tree, tree) const;
-  virtual bool pointers_handled_p (enum range_op_dispatch_type, unsigned) const;
 
 protected:
   // Perform an integral operation between 2 sub-ranges and return it.
@@ -410,21 +409,5 @@ protected:
   void initialize_pointer_ops ();
   void initialize_float_ops ();
 };
-
-// Temporary exports so the pointers_handled_p() sanity code can see
-// which pointer combination is being attempted.  This will be deleted
-// once pointers_handled_p is gone.
-extern const unsigned RO_III;
-extern const unsigned RO_IFI;
-extern const unsigned RO_IFF;
-extern const unsigned RO_FFF;
-extern const unsigned RO_FIF;
-extern const unsigned RO_FII;
-extern const unsigned RO_PPP;
-extern const unsigned RO_PPI;
-extern const unsigned RO_IPP;
-extern const unsigned RO_IPI;
-extern const unsigned RO_PIP;
-extern const unsigned RO_PII;
 
 #endif // GCC_RANGE_OP_H

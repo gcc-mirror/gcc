@@ -151,9 +151,8 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
-  bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return range_compatible_p (t1, t2); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_not_equal : public range_operator
@@ -203,9 +202,8 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
-  bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return range_compatible_p (t1, t2); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
+  bool operand_check_p (tree t0, tree t1, tree t2) const final override
+  { return range_compatible_p (t1, t2) && INTEGRAL_TYPE_P (t0); }
 };
 
 class operator_lt :  public range_operator
@@ -252,9 +250,8 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
-  bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return range_compatible_p (t1, t2); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_le :  public range_operator
@@ -304,9 +301,8 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
-  bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return range_compatible_p (t1, t2); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_gt :  public range_operator
@@ -355,9 +351,8 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
-  bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return range_compatible_p (t1, t2); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_ge :  public range_operator
@@ -407,9 +402,8 @@ public:
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
   // Check op1 and op2 for compatibility.
-  bool operand_check_p (tree, tree t1, tree t2) const final override
-    { return range_compatible_p (t1, t2); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+  { return range_compatible_p (t2, t3) && INTEGRAL_TYPE_P (t1); }
 };
 
 class operator_identity : public range_operator
@@ -442,7 +436,6 @@ public:
   relation_kind lhs_op1_relation (const prange &lhs,
 				  const prange &op1, const prange &op2,
 				  relation_kind rel) const final override;
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 };
 
 class operator_cst : public range_operator
@@ -458,7 +451,6 @@ public:
   bool fold_range (frange &r, tree type,
 		   const frange &op1, const frange &op2,
 		   relation_trio = TRIO_VARYING) const final override;
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 };
 
 
@@ -507,7 +499,6 @@ public:
 				  relation_kind) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const final override;
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 private:
   bool truncating_cast_p (const irange &inner, const irange &outer) const;
   bool inside_domain_p (const wide_int &min, const wide_int &max,
@@ -730,7 +721,6 @@ public:
   bool op1_range (prange &r, tree type,
 		  const prange &lhs, const prange &op2,
 		  relation_trio rel = TRIO_VARYING) const final override;
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 };
 
 class operator_bitwise_not : public range_operator
@@ -807,7 +797,6 @@ public:
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -834,7 +823,6 @@ public:
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -855,7 +843,6 @@ public:
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
@@ -876,7 +863,6 @@ public:
   // Check compatibility of all operands.
   bool operand_check_p (tree t1, tree t2, tree t3) const final override
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
-  bool pointers_handled_p (range_op_dispatch_type, unsigned) const final override;
 protected:
   void wi_fold (irange &r, tree type, const wide_int &lh_lb,
 		const wide_int &lh_ub, const wide_int &rh_lb,
