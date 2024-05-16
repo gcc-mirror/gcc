@@ -12600,21 +12600,30 @@ package body Sem_Attr is
 
          when Attribute_Reduce =>
             declare
-               E1 : constant Node_Id := First (Expressions (N));
-               E2 : constant Node_Id := Next (E1);
+               Reducer_Subp_Name : constant Node_Id := First (Expressions (N));
+               Init_Value_Exp    : constant Node_Id :=
+                 Next (Reducer_Subp_Name);
                Op : Entity_Id := Empty;
 
                Index : Interp_Index;
                It    : Interp;
-               function Proper_Op (Op : Entity_Id) return Boolean;
+
+               function Proper_Op
+                 (Op     : Entity_Id;
+                  Strict : Boolean := False) return Boolean;
+               --  Is Op a suitable reducer subprogram?
+               --  Strict indicates whether ops found in Standard should be
+               --  considered even if Typ is not a predefined type.
 
                ---------------
                -- Proper_Op --
                ---------------
 
-               function Proper_Op (Op : Entity_Id) return Boolean is
+               function Proper_Op
+                 (Op     : Entity_Id;
+                  Strict : Boolean := False) return Boolean
+               is
                   F1, F2 : Entity_Id;
-
                begin
                   F1 := First_Formal (Op);
                   if No (F1) then
@@ -12630,42 +12639,89 @@ package body Sem_Attr is
                         return Ekind (F1) = E_In_Out_Parameter
                           and then Covers (Typ, Etype (F1));
 
+                     elsif Covers (Typ, Etype (Op)) then
+                        return True;
+
+                     elsif Ekind (Op) = E_Operator
+                       and then Scope (Op) = Standard_Standard
+                       and then not Strict
+                     then
+                        declare
+                           Op_Chars : constant Any_Operator_Name := Chars (Op);
+                           --  Nonassociative ops like division are unlikely
+                           --  to come up in practice, but they are legal.
+                        begin
+                           case Op_Chars is
+                              when Name_Op_Add
+                                | Name_Op_Subtract
+                                | Name_Op_Multiply
+                                | Name_Op_Divide
+                                | Name_Op_Expon
+                              =>
+                                 return Is_Numeric_Type (Typ);
+
+                              when Name_Op_Mod | Name_Op_Rem =>
+                                 return Is_Numeric_Type (Typ)
+                                   and then Is_Discrete_Type (Typ);
+
+                              when Name_Op_And | Name_Op_Or | Name_Op_Xor =>
+                                 --  No Boolean array operators in Standard
+                                 return Is_Boolean_Type (Typ)
+                                   or else Is_Modular_Integer_Type (Typ);
+
+                              when Name_Op_Concat =>
+                                 return Is_Array_Type (Typ)
+                                   and then Number_Dimensions (Typ) = 1;
+
+                              when Name_Op_Eq | Name_Op_Ne
+                                | Name_Op_Lt | Name_Op_Le
+                                | Name_Op_Gt | Name_Op_Ge
+                              =>
+                                 return Is_Boolean_Type (Typ);
+
+                              when Name_Op_Abs | Name_Op_Not =>
+                                 --  unary ops were already handled
+                                 pragma Assert (False);
+                                 raise Program_Error;
+                           end case;
+                        end;
                      else
-                        return
-                          (Ekind (Op) = E_Operator
-                            and then Scope (Op) = Standard_Standard)
-                            or else  Covers (Typ, Etype (Op));
+                        return False;
                      end if;
                   end if;
                end Proper_Op;
 
             begin
-               Resolve (E2, Typ);
-               if Is_Overloaded (E1) then
-                  Get_First_Interp (E1, Index, It);
-                  while Present (It.Nam) loop
-                     if Proper_Op (It.Nam) then
-                        Op := It.Nam;
-                        Set_Entity (E1, Op);
-                        exit;
-                     end if;
+               Resolve (Init_Value_Exp, Typ);
+               if Is_Overloaded (Reducer_Subp_Name) then
+                  Outer :
+                  for Retry in Boolean loop
+                     Get_First_Interp (Reducer_Subp_Name, Index, It);
+                     while Present (It.Nam) loop
+                        if Proper_Op (It.Nam, Strict => not Retry) then
+                           Op := It.Nam;
+                           Set_Entity (Reducer_Subp_Name, Op);
+                           exit Outer;
+                        end if;
 
-                     Get_Next_Interp (Index, It);
-                  end loop;
+                        Get_Next_Interp (Index, It);
+                     end loop;
+                  end loop Outer;
 
-               elsif Nkind (E1) = N_Attribute_Reference
-                 and then (Attribute_Name (E1) = Name_Max
-                   or else Attribute_Name (E1) = Name_Min)
+               elsif Nkind (Reducer_Subp_Name) = N_Attribute_Reference
+                 and then (Attribute_Name (Reducer_Subp_Name) = Name_Max
+                   or else Attribute_Name (Reducer_Subp_Name) = Name_Min)
                then
-                  Op := E1;
+                  Op := Reducer_Subp_Name;
 
-               elsif Proper_Op (Entity (E1)) then
-                  Op := Entity (E1);
+               elsif Proper_Op (Entity (Reducer_Subp_Name)) then
+                  Op := Entity (Reducer_Subp_Name);
                   Set_Etype (N, Typ);
                end if;
 
                if No (Op) then
-                  Error_Msg_N ("No visible subprogram for reduction", E1);
+                  Error_Msg_N ("No suitable reducer subprogram found",
+                    Reducer_Subp_Name);
                end if;
             end;
 
