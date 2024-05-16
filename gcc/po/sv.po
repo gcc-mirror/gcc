@@ -29,10 +29,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 14.1-b20240218\n"
+"Project-Id-Version: gcc 14.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2024-05-02 19:44+0000\n"
-"PO-Revision-Date: 2024-04-10 22:53+0200\n"
+"PO-Revision-Date: 2024-05-16 22:03+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -1652,7 +1652,7 @@ msgstr "Varna för typkonvertering som slänger kvalificerare."
 #: c-family/c.opt:519
 #, no-c-format
 msgid "Warn about a cast to reference type that does not use a related user-defined conversion function."
-msgstr ""
+msgstr "Varna för en typkonvertering till en referenstyp som inte använder en relaterad användardefinierad konverteringsfunktion."
 
 #: c-family/c.opt:523 c-family/c.opt:527
 #, no-c-format
@@ -1977,10 +1977,9 @@ msgid "Warn when __builtin_frame_address or __builtin_return_address is used uns
 msgstr "Varna när __builtin_frame_address eller __builtin_return_address används osäkert."
 
 #: c-family/c.opt:811
-#, fuzzy, no-c-format
-#| msgid "global module fragment contents must be from preprocessor inclusion"
+#, no-c-format
 msgid "Warn about the global module fragment not containing only preprocessing directives."
-msgstr "globala modulfragments innehåll måste komma från preprocessorinkludering"
+msgstr "Varna för att det globala modulfragmentet inte endast innehåller preprocessordirektiv."
 
 #: c-family/c.opt:815
 #, no-c-format
@@ -2508,8 +2507,7 @@ msgid "Warn about suspicious length parameters to certain string functions if th
 msgstr "Varna för misstänkta längdparametrar till vissa strängfunktioner om argumentet använder sizeof."
 
 #: c-family/c.opt:1323
-#, fuzzy, no-c-format
-#| msgid "Warn about inproper usages of flexible array members according to the level of -fstrict-flex-arrays."
+#, no-c-format
 msgid "Warn about improper usages of flexible array members according to the level of -fstrict-flex-arrays."
 msgstr "Varna för felaktig användning av flexibla vektorelement enligt nivån på -fstrict-flex-arrays."
 
@@ -4136,14 +4134,12 @@ msgid "turn on internal debugging of the compiler (internal switch)"
 msgstr "slå på intern felsökning av kompilatorn (intern flagga)"
 
 #: m2/lang.opt:95
-#, fuzzy, no-c-format
-#| msgid "turn on internal debugging of the compiler (internal switch)"
+#, no-c-format
 msgid "turn on tracing of procedure line numbers (internal switch)"
-msgstr "slå på intern felsökning av kompilatorn (intern flagga)"
+msgstr "slå på spårning av procedurers radnummer (intern flagga)"
 
 #: m2/lang.opt:99
-#, fuzzy, no-c-format
-#| msgid "recognise the specified suffix as a definition module filename"
+#, no-c-format
 msgid "recognize the specified suffix as a definition module filename"
 msgstr "känn igen det angivna suffixet som ett definitionsmudulsfilnamn"
 
@@ -4188,10 +4184,9 @@ msgid "set all location values to a specific value (internal switch)"
 msgstr "sätt alla platsvärden till ett specifikt värde (intern flagga)"
 
 #: m2/lang.opt:135
-#, fuzzy, no-c-format
-#| msgid "turn on internal debugging of the compiler (internal switch)"
+#, no-c-format
 msgid "turn on internal debug tracing for quad,token,line,all (internal switch)"
-msgstr "slå på intern felsökning av kompilatorn (intern flagga)"
+msgstr "slå på intern felsökningsspårning för quad,token,line,all (intern flagga)"
 
 #: m2/lang.opt:139
 #, no-c-format
@@ -4234,8 +4229,7 @@ msgid "compile all implementation modules and program module at once"
 msgstr "kompilera alla implementationsmoduler och programmoduler på en gång"
 
 #: m2/lang.opt:175
-#, fuzzy, no-c-format
-#| msgid "recognise the specified suffix as implementation and module filenames"
+#, no-c-format
 msgid "recognize the specified suffix as implementation and module filenames"
 msgstr "känn igen det angivna suffixet som implementation och modulfilnamn"
 
@@ -4340,8 +4334,7 @@ msgid "optimize non var unbounded parameters by passing it by reference, providi
 msgstr "optimera icke-var obegränsade parametrar genom att skicka dem via referens, förutsatt att den inte skrivs till i den anropade proceduren."
 
 #: m2/lang.opt:263
-#, fuzzy, no-c-format
-#| msgid "orders the initialization/finalializations for scaffold-static or force linking of modules if scaffold-dynamic"
+#, no-c-format
 msgid "orders the initialization/finalizations for scaffold-static or force linking of modules if scaffold-dynamic"
 msgstr "ordrar initieringar/avslutningar för ställnings-statiska eller tvingad länkning av moduler om ställning-dynamisk"
 
@@ -4691,8 +4684,7 @@ msgid "Warn about code paths in which an unsanitized value is used as a size."
 msgstr "Varna för kodvägar i vilka ett osanerat värde används som en storlek."
 
 #: analyzer/analyzer.opt:227
-#, fuzzy, no-c-format
-#| msgid "Warn about code paths in in which a call is made to strtok with undefined behavior."
+#, no-c-format
 msgid "Warn about code paths in which a call is made to strtok with undefined behavior."
 msgstr "Varna för kodvägar i vilka förefaller ett anrop görs av strtok med odefinierat beteende."
 
@@ -5272,8 +5264,7 @@ msgid "-image_base <address>\tSpecify <address> as the base address for a dylib 
 msgstr "-image_base <adress>\tAnge <adress> som basadress för ett dylib eller en bunt."
 
 #: config/darwin.opt:214
-#, fuzzy, no-c-format
-#| msgid "-init <symbol_name>\tThe symbol <symbol_name> will be used as the first initialiser for a dylib."
+#, no-c-format
 msgid "-init <symbol_name>\tThe symbol <symbol_name> will be used as the first initializer for a dylib."
 msgstr "-init <symbolnamn>\tSymbolen <symbolnamn> kommer användas som den första initieraren för ett dylib."
 
@@ -5918,10 +5909,9 @@ msgid "Take advantage of linker relaxations to reduce the number of instructions
 msgstr "Dra nytta av länkarlättnader för att reducera antalet instruktioner som krävs för att materialisera symboladresser."
 
 #: config/riscv/riscv.opt:155
-#, fuzzy, no-c-format
-#| msgid "Enable the CSR checking for the ISA-dependent CRS and the read-only CSR. The ISA-dependent CSR are only valid when the specific ISA is set.  The read-only CSR can not be written by the CSR instructions."
+#, no-c-format
 msgid "Enable the CSR checking for the ISA-dependent CSR and the read-only CSR. The ISA-dependent CSR are only valid when the specific ISA is set.  The read-only CSR can not be written by the CSR instructions."
-msgstr "Aktivera CSR-kontroll för de ISA-beroende CSR:erna och endast läsnings-CSR:er. De ISA-beroande CSR:erna är endast giltiga för det specifika ISA-uppsättningen. Endast läsnings-CSR:er kan inte skrivas av CSR-instruktionerna."
+msgstr "Aktivera CSR-kontroll för den ISA-beroende CSR:en och endast läsnings-CSR:er. De ISA-beroande CSR:erna är endast giltiga för det specifika ISA-uppsättningen. Endast läsnings-CSR:er kan inte skrivas av CSR-instruktionerna."
 
 #: config/riscv/riscv.opt:161 config/aarch64/aarch64.opt:141
 #: config/i386/i386.opt:420
@@ -6010,16 +6000,14 @@ msgid "Max number of bytes to compare as part of inlined strcmp/strncmp routines
 msgstr "Max antal byte att jämföra som en del av inline:ade strcmp/strncmp-rutiner (standard: 64)."
 
 #: config/riscv/riscv.opt:535
-#, fuzzy, no-c-format
-#| msgid "The RVV possible LMUL (-param=riscv-autovec-lmul=):"
+#, no-c-format
 msgid "The RVV possible LMUL (-mrvv-max-lmul=):"
-msgstr "De RVV-möjliga LMUL (-param=riscv-autovec-lmul=):"
+msgstr "De RVV-möjliga LMUL (-mrvv-max-lmul=):"
 
 #: config/riscv/riscv.opt:554
-#, fuzzy, no-c-format
-#| msgid "-param=riscv-autovec-lmul=<string>\tSet the RVV LMUL of auto-vectorization in the RISC-V port."
+#, no-c-format
 msgid "-mrvv-max-lmul=<string>\tSet the RVV LMUL of auto-vectorization."
-msgstr "-param=riscv-autovec-lmul=<sträng>\tSätt RVV LMUL:en för autovektorisering i RISC-V-porteringen."
+msgstr "-mrvv-max-lmul=<sträng>\tSätt RVV LMUL:en för autovektorisering."
 
 #: config/riscv/riscv.opt:561
 #, no-c-format
@@ -6042,16 +6030,14 @@ msgid "Specify stringop expansion strategy."
 msgstr "Ange strategi för expansion av stringop."
 
 #: config/riscv/riscv.opt:598
-#, fuzzy, no-c-format
-#| msgid "The possible SVE vector lengths:"
+#, no-c-format
 msgid "The possible RVV vector register lengths:"
-msgstr "De möjliga SVE-vektorlängderna:"
+msgstr "De möjliga längderna på RVV-vektorregister:"
 
 #: config/riscv/riscv.opt:608
-#, fuzzy, no-c-format
-#| msgid "-msve-vector-bits=<number>\tSet the number of bits in an SVE vector register."
+#, no-c-format
 msgid "-mrvv-vector-bits=<string>\tSet the kind of bits for an RVV vector register."
-msgstr "-msve-vector-bits=<antal>\tAnge antalet bitar i ett SVE-vektorregister."
+msgstr "-mrvv-vector-bits=<sträng>\tAnge typen av bitar i ett RVV-vektorregister."
 
 #: config/riscv/riscv.opt:612 config/aarch64/aarch64.opt:49
 #: config/loongarch/loongarch.opt:283
@@ -6692,8 +6678,7 @@ msgid "Assume labels and symbols can be addressed using 16 bit absolute addresse
 msgstr "Anta att etiketter och symboler kan adresseras med 16-bitars absoluta adresser."
 
 #: config/epiphany/epiphany.opt:108
-#, fuzzy, no-c-format
-#| msgid "A floatig point to integer truncation may be replaced with rounding to save mode switching."
+#, no-c-format
 msgid "A floating point to integer truncation may be replaced with rounding to save mode switching."
 msgstr "En avhuggning från flyttal till heltal får ersättas med avrundning för att spara lägesbyten."
 
@@ -7370,7 +7355,7 @@ msgstr "Maximalt antal bitar som kan lagras till minne effektivt."
 #: config/i386/i386.opt:664
 #, no-c-format
 msgid "Optimize noreturn functions by not saving callee-saved registers used in the function."
-msgstr ""
+msgstr "Optimera noreturn-funktioner genom att inte spara anropad-sparade register som används i funktionen."
 
 #: config/i386/i386.opt:670
 #, no-c-format
@@ -8464,44 +8449,39 @@ msgid "Assume the VxWorks vThreads environment."
 msgstr "Anta miljön VxWorks vThreads."
 
 #: config/avr/avr.opt:23
-#, fuzzy, no-c-format
-#| msgid "Use subroutines for function prologues and epilogues."
+#, no-c-format
 msgid "Optimization. Use subroutines for function prologues and epilogues."
-msgstr "Använd subrutiner för funktionprologer och -epiloger."
+msgstr "Optimering. Använd subrutiner för funktionprologer och -epiloger."
 
 #: config/avr/avr.opt:27
-#, fuzzy, no-c-format
-#| msgid "-mmcu=MCU\tSelect the target MCU."
+#, no-c-format
 msgid "-mmcu=<MCU>\tSelect the target MCU."
-msgstr "-mmcu=MCU\tVälj mål-MCU:n."
+msgstr "-mmcu=<MCU>\tVälj mål-MCU:n."
 
 #: config/avr/avr.opt:31
-#, fuzzy, no-c-format
-#| msgid "Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues."
+#, no-c-format
 msgid "Optimization. Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues."
-msgstr "Tillåt användning av pseudoinstruktionen __gcc_isr i ISR-prologer och -epiloger."
+msgstr "Optimering. Tillåt användning av pseudoinstruktionen __gcc_isr i ISR-prologer och -epiloger."
 
 #: config/avr/avr.opt:35
-#, fuzzy, no-c-format
-#| msgid "Set the number of 64 KiB flash segments."
+#, no-c-format
 msgid "This option is used internally. Set the number of 64 KiB flash segments."
-msgstr "Sätt antalet 64 KiB flash-segment."
+msgstr "Denna flagga används internt. Sätt antalet 64 KiB flash-segment."
 
 #: config/avr/avr.opt:39
 #, no-c-format
 msgid "This option is used internally. Indicate presence of a processor erratum.  Do not skip 32-bit instructions."
-msgstr ""
+msgstr "Denna flagga används internt. Indikera närvaro av ett processorerrata. Hoppa inte över 32-bitarsinstruktioner."
 
 #: config/avr/avr.opt:43
-#, fuzzy, no-c-format
-#| msgid "Enable Read-Modify-Write (RMW) instructions support/use."
+#, no-c-format
 msgid "This option is used internally. Enable Read-Modify-Write (RMW) instructions support/use."
-msgstr "Aktivera stöd/användning av Läs-Ändra-Skriv- (RMW-)instruktioner."
+msgstr "Denna flagga används internt. Aktivera stöd/användning av Läs-Ändra-Skriv- (RMW-)instruktioner."
 
 #: config/avr/avr.opt:53
 #, no-c-format
 msgid "This option is used internally for multilib generation and selection.  Assume RJMP / RCALL can target all program memory."
-msgstr ""
+msgstr "Denna flagga används internt för multilib-generering och -val. Anta att RJMP / RCALL kan ha allt programminne som mål."
 
 #: config/avr/avr.opt:57
 #, no-c-format
@@ -8514,16 +8494,14 @@ msgid "Change the stack pointer without disabling interrupts."
 msgstr "Ändra stackpekaren utan att avaktivera avbrott."
 
 #: config/avr/avr.opt:65
-#, fuzzy, no-c-format
-#| msgid "Set the branch costs for conditional branch instructions.  Reasonable values are small, non-negative integers.  The default branch cost is 0."
+#, no-c-format
 msgid "-mbranch-cost=<cost>\tOptimization. Set the branch costs for conditional branch instructions.  Reasonable values are small, non-negative integers.  The default branch cost is 0."
-msgstr "Ställ in grenkostnaden för villkorliga greninstruktioner.  Rimliga värden är små, ickenegativa heltal.  Standardkostnaden för grenar är 0."
+msgstr "-mbranch-cost=<kostnad>\tOptimering. Ställ in grenkostnaden för villkorliga greninstruktioner.  Rimliga värden är små, ickenegativa heltal.  Standardkostnaden för grenar är 0."
 
 #: config/avr/avr.opt:69
-#, fuzzy, no-c-format
-#| msgid "Treat main as if it had attribute OS_task."
+#, no-c-format
 msgid "Optimization. Treat main as if it had attribute OS_task."
-msgstr "Behandla main som om den hade attributet OS_task."
+msgstr "Optimering. Behandla main som om den hade attributet OS_task."
 
 #: config/avr/avr.opt:79
 #, no-c-format
@@ -8531,10 +8509,9 @@ msgid "Change only the low 8 bits of the stack pointer."
 msgstr "Ändra endast de låga 8 bitarna av stackpekaren."
 
 #: config/avr/avr.opt:83
-#, fuzzy, no-c-format
-#| msgid "Relax branches."
+#, no-c-format
 msgid "Optimization. Relax branches."
-msgstr "Lätta på grenar."
+msgstr "Optimering. Lätta på grenar."
 
 #: config/avr/avr.opt:87
 #, no-c-format
@@ -8542,21 +8519,19 @@ msgid "Make the linker relaxation machine assume that a program counter wrap-aro
 msgstr "Gör så att länkarens lättnadsmaskin antar att programräknaren slår runt."
 
 #: config/avr/avr.opt:91
-#, fuzzy, no-c-format
-#| msgid "Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf."
+#, no-c-format
 msgid "Optimization. Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf."
-msgstr "Samla utgående funktionsargument och ta/släpp det nödvändiga stackutrymmet för utgående funktionsargument i funktionsprologen/-epilogen.  Utan denna flagga trycks utgående argument på stacken före anrop av en funktion och plockas efteråt.  Denna flagga kan medföra reducerad kodstorlek för funktioner som anropar många funktioner som får sina argument på stacken som, till exempel printf."
+msgstr "Optimering. Samla utgående funktionsargument och ta/släpp det nödvändiga stackutrymmet för utgående funktionsargument i funktionsprologen/-epilogen.  Utan denna flagga trycks utgående argument på stacken före anrop av en funktion och plockas efteråt.  Denna flagga kan medföra reducerad kodstorlek för funktioner som anropar många funktioner som får sina argument på stacken som, till exempel printf."
 
 #: config/avr/avr.opt:95
-#, fuzzy, no-c-format
-#| msgid "When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X."
+#, no-c-format
 msgid "Optimization. When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X."
-msgstr "När RAM skall nås, använd X som hårdvaran framtvingar, d.v.s. använda bara för-dekrementering, efter-inkrementering och indirekt adressering med registret X.  Utan denna flagga kan kompilatorn anta att det finns ett adresseringsläge X+konstant liknande Y+konstant och Z+konstant och mata ut instruktioner för att emulera ett sådant adresseringsläge för X."
+msgstr "Optimering. När RAM skall nås, använd X som hårdvaran framtvingar, d.v.s. använda bara för-dekrementering, efter-inkrementering och indirekt adressering med registret X.  Utan denna flagga kan kompilatorn anta att det finns ett adresseringsläge X+konstant liknande Y+konstant och Z+konstant och mata ut instruktioner för att emulera ett sådant adresseringsläge för X."
 
 #: config/avr/avr.opt:99
 #, no-c-format
 msgid "This option is used internally. The device has the bitfield NVMCTRL_CTRLB.FLMAP."
-msgstr ""
+msgstr "Denna flagga används internt. Enheten har bitfältet NVMCTRL_CTRLB.FLMAP."
 
 #: config/avr/avr.opt:103
 #, no-c-format
@@ -8566,17 +8541,17 @@ msgstr "Enheten har sektionen .rodata placerad i RAM-området."
 #: config/avr/avr.opt:108
 #, no-c-format
 msgid "This option is used internally for multilib generation and selection. The device has no SPH special function register."
-msgstr ""
+msgstr "Denna flagga används internt för multilib-generering och -val. Enheten har inga speiciella SPH-fuktionsregister."
 
 #: config/avr/avr.opt:112
 #, no-c-format
 msgid "Optimization. Split register additions from load/store instructions. Most useful on Reduced Tiny."
-msgstr ""
+msgstr "Optimering. Dela registeradditioner fån ladda-/lagrainstruktioner. Mest användbart på Reduced Tiny."
 
 #: config/avr/avr.opt:116
 #, no-c-format
 msgid "-mfuse-add=<0,2>\tOptimization. Split register additions from load/store instructions. Most useful on Reduced Tiny."
-msgstr ""
+msgstr "-mfuse-add=<0,2>\tOptimering. Dela registeradditioner från ladda-/lagrainstruktioner. Mest användbart på Reduced Tiny."
 
 #: config/avr/avr.opt:120
 #, no-c-format
@@ -8594,10 +8569,9 @@ msgid "Allow to use truncation instead of rounding towards zero for fractional f
 msgstr "Tillåt avhuggning istället för avrundning mot noll för bråkdelsfixdecimaltyper."
 
 #: config/avr/avr.opt:132
-#, fuzzy, no-c-format
-#| msgid "Assume that all data in static storage can be accessed by LDS / STS.  This option is only useful for reduced Tiny devices."
+#, no-c-format
 msgid "Assume that all data in static storage can be accessed by LDS / STS instructions.  This option is only useful for reduced Tiny devices like ATtiny40."
-msgstr "Anta att all data i statisk lagring kan kommas åt med LDS/STS.  Denna flagga är bara användbar för reducerade Tiny-enheter."
+msgstr "Anta att all data i statisk lagring kan kommas åt med LDS-/STS-instruktioner.  Denna flagga är bara användbar för reducerade Tiny-enheter såsom ATiny40."
 
 #: config/avr/avr.opt:136
 #, no-c-format
@@ -8910,10 +8884,9 @@ msgid "Store all argument registers on the stack."
 msgstr "Slagra alla argumentregister på stacken."
 
 #: config/s390/s390.opt:335
-#, fuzzy, no-c-format
-#| msgid "Assume external symbols to be potentially unaligned.  By default all symbols without explicit alignment are assumed to reside on a 2 byte boundary as mandated by the IBM Z ABI."
+#, no-c-format
 msgid "Assume external symbols, whose natural alignment would be 1, to be potentially unaligned.  By default all symbols without explicit alignment are assumed to reside on a 2 byte boundary as mandated by the IBM Z ABI."
-msgstr "Anta att externa symboler potentiellt är ojusterade. Som standard antas alla symboler utan en explicit justering att ligga på en 2-bytegräns så som IBM Z ABI:et kräver."
+msgstr "Anta att externa symboler, vars naturliga justering skulle vara 1, potentiellt är ojusterade. Som standard antas alla symboler utan en explicit justering att ligga på en 2-bytegräns så som IBM Z ABI:et kräver."
 
 #: config/rl78/rl78.opt:27 config/rx/elf.opt:26 config/csky/csky.opt:198
 #, no-c-format
@@ -10239,10 +10212,9 @@ msgid "Enable LoongArch Advanced SIMD Extension (LASX, 256-bit)."
 msgstr "Aktivera LoongArch Advanced SIMD-utvidgningen (LASX, 256-bit)."
 
 #: config/loongarch/loongarch.opt:107
-#, fuzzy, no-c-format
-#| msgid "LoongArch CPU types:"
+#, no-c-format
 msgid "LoongArch ARCH presets:"
-msgstr "LoongArch-CPU-typer:"
+msgstr "LoongArch-ARCH-förinställningar:"
 
 #: config/loongarch/loongarch.opt:132
 #, no-c-format
@@ -10250,10 +10222,9 @@ msgid "-march=PROCESSOR\tGenerate code for the given PROCESSOR ISA."
 msgstr "-march=PROCESSOR\tGenerera kod för den angivna PROCESSOR-ISA:n."
 
 #: config/loongarch/loongarch.opt:136
-#, fuzzy, no-c-format
-#| msgid "LoongArch CPU types:"
+#, no-c-format
 msgid "LoongArch TUNE presets:"
-msgstr "LoongArch-CPU-typer:"
+msgstr "LoongArch-TUNE-förinställningar:"
 
 #: config/loongarch/loongarch.opt:155
 #, no-c-format
@@ -12553,7 +12524,7 @@ msgstr "Kompilera för enheter med funktionen SRAM ECC aktiverad, eller inte. St
 #: config/gcn/gcn.opt:125
 #, no-c-format
 msgid "--param=gcn-preferred-vectorization-factor=[default,32,64]\tPreferred vectorization factor."
-msgstr ""
+msgstr "--param=gcn-preferred-vectorization-factor=[default,32,64]\tFöredragen vektoriseringsfaktor."
 
 #: config/fr30/fr30.opt:23
 #, no-c-format
@@ -12623,13 +12594,12 @@ msgstr "Använd flyttnings- och minnesladdningsinstruktioner med tecken."
 #: config/bpf/bpf.opt:80
 #, no-c-format
 msgid "Select the eBPF ISA version to target in code generation."
-msgstr ""
+msgstr "Välj eBPF ISA-versionen att ha som mål i kodgenereringen."
 
 #: config/bpf/bpf.opt:84
-#, fuzzy, no-c-format
-#| msgid "Known PTX ISA versions (for use with the -mptx= option):"
+#, no-c-format
 msgid "Valid ISA versions (for use with the -mcpu= option)"
-msgstr "Kända PTX ISA-versioner (att användas med flaggan -mptx=):"
+msgstr "Giltiga ISA-versioner (att användas med flaggan -mcpu=)"
 
 #: config/bpf/bpf.opt:104
 #, no-c-format
@@ -12639,7 +12609,7 @@ msgstr "Kända assemblerdialekter (att användas med flaggan -masm=)"
 #: config/bpf/bpf.opt:114
 #, no-c-format
 msgid "-minline-memops-threshold=<number> Maximum size of memset/memmove/memcpy to inline, larger sizes will use a library call."
-msgstr ""
+msgstr "-minline-memops-threshold=<tal> Maximal storlek på memset/memmove/memcpy för att inline:a, större storlek kommer använda ett biblioteksanrop."
 
 #: config/mips/mips.opt:32
 #, no-c-format
@@ -13012,22 +12982,19 @@ msgid "Use 4-operand madd.s/madd.d and related instructions where applicable."
 msgstr "Använd 4-operanders madd.s/madd.d och relaterade instruktioner där det går."
 
 #: config/mips/mips.opt:434
-#, fuzzy, no-c-format
-#| msgid "Generate code with unaligned load store, valid for MIPS R6."
+#, no-c-format
 msgid "Don't generate code with unaligned load store, only valid for MIPS R6."
-msgstr "Generera kod med ojusterad load store, giltigt för MIPS R6."
+msgstr "Generera inte kod med ojusterad load store, endast giltigt för MIPS R6."
 
 #: config/mips/mips.opt:438
-#, fuzzy, no-c-format
-#| msgid "Generate code with unaligned load store, valid for MIPS R6."
+#, no-c-format
 msgid "Generate code with unaligned load store for R6 (alias of -mno-strict-align)."
-msgstr "Generera kod med ojusterad load store, giltigt för MIPS R6."
+msgstr "Generera kod med ojusterad load store för R6 (alias för -mno-strict-align)."
 
 #: config/mips/mips.opt:442
-#, fuzzy, no-c-format
-#| msgid "Generate code with unaligned load store, valid for MIPS R6."
+#, no-c-format
 msgid "Don't generate code with unaligned load store for R6 (alias of -mstrict-align)."
-msgstr "Generera kod med ojusterad load store, giltigt för MIPS R6."
+msgstr "Generera inte kod med ojusterad load store för R6 (alias för -mstrict-align)."
 
 #: config/mips/mips.opt:450
 #, no-c-format
@@ -13982,7 +13949,7 @@ msgstr "Varna ifall en funktion slutar tidigare än den börjar på grund av ogi
 #: common.opt:875
 #, no-c-format
 msgid "Warn when a conditional has too many terms and condition coverage profiling gives up instrumenting the expression."
-msgstr ""
+msgstr "Varna när ett villkor har för många termer och villkorstäckningsprofileringen ger upp att instrumentera uttrycket."
 
 #: common.opt:880
 #, no-c-format
@@ -15225,10 +15192,9 @@ msgid "Insert arc-based program profiling code."
 msgstr "Lägg in bågbaserad programprofileringskod."
 
 #: common.opt:2474
-#, fuzzy, no-c-format
-#| msgid "Insert arc-based program profiling code."
+#, no-c-format
 msgid "Insert condition coverage profiling code."
-msgstr "Lägg in bågbaserad programprofileringskod."
+msgstr "Lägg in profileringskod för villkorstäckning."
 
 #: common.opt:2478
 #, no-c-format
@@ -16647,8 +16613,7 @@ msgid "Maximum size of a list of values associated with each parameter for inter
 msgstr "Maximal storlek för en lista på värden associerad med varje parameter för konstantpropagering mellan procedurer."
 
 #: params.opt:266
-#, fuzzy, no-c-format
-#| msgid "When using profile feedback, use the edge at this percentage position in frequncy histogram as the bases for IPA-CP heuristics."
+#, no-c-format
 msgid "When using profile feedback, use the edge at this percentage position in frequency histogram as the bases for IPA-CP heuristics."
 msgstr "När profilåterkoppling används, använd bågarna vid denna procentuella position i frekvenshistogram som basen för IPA-CP-heuristik."
 
@@ -18586,16 +18551,13 @@ msgstr ""
 "                                    för procentsatser\n"
 
 #: gcov.cc:975
-#, fuzzy, c-format
-#| msgid ""
-#| "  -c, --branch-counts             Output counts of branches taken\n"
-#| "                                    rather than percentages\n"
+#, c-format
 msgid ""
 "  -g, --conditions                Include modified condition/decision\n"
 "                                    coverage in output\n"
 msgstr ""
-"  -c, --branch-counts             Skriv antal hopp tagna istället\n"
-"                                    för procentsatser\n"
+"  -g, --conditions                Inkludera modifierad täckning av\n"
+"                                    villkor/beslut i utdata\n"
 
 #: gcov.cc:977
 #, c-format
@@ -18799,13 +18761,12 @@ msgstr "%s:version '%.4s', föredrar '%.4s'\n"
 #: gcov.cc:1977
 #, c-format
 msgid "%s:already seen blocks for '%s'\n"
-msgstr "%s:redan sett block för ”%s”\n"
+msgstr "%s:redan sedda block för ”%s”\n"
 
 #: gcov.cc:2064
-#, fuzzy, c-format
-#| msgid "%s:already seen blocks for '%s'\n"
+#, c-format
 msgid "%s:already seen conditions for '%s'\n"
-msgstr "%s:redan sett block för ”%s”\n"
+msgstr "%s:redan seda villkor för ”%s”\n"
 
 #: gcov.cc:2115 gcov.cc:2244
 #, c-format
@@ -18908,16 +18869,14 @@ msgid "No calls\n"
 msgstr "Inga anrop\n"
 
 #: gcov.cc:2688
-#, fuzzy, c-format
-#| msgid "Lines executed:%s of %d\n"
+#, c-format
 msgid "Condition outcomes covered:%s of %d\n"
-msgstr "Körda rader:%s av %d\n"
+msgstr "Täckta villkorsresultat:%s av %d\n"
 
 #: gcov.cc:2693
-#, fuzzy, c-format
-#| msgid "bad condition code"
+#, c-format
 msgid "No conditions\n"
-msgstr "felaktig villkorskod"
+msgstr "Inga villkor\n"
 
 #: gcov.cc:2913
 #, c-format
@@ -18927,13 +18886,12 @@ msgstr "%s:inga rader för ”%s\n"
 #: gcov.cc:3049
 #, c-format
 msgid "condition outcomes covered %d/%d\n"
-msgstr ""
+msgstr "täckta villkorsresultat %d/%d\n"
 
 #: gcov.cc:3062
-#, fuzzy, c-format
-#| msgid "unconditional %2d taken %s\n"
+#, c-format
 msgid "condition %2u not covered (%s%s)\n"
-msgstr "ovillkorligt hopp %2d taget %s\n"
+msgstr "villkor %2u inte täckt (%s%s)\n"
 
 #: gcov.cc:3076
 #, c-format
@@ -23245,7 +23203,7 @@ msgstr "använder gammalt darwin-ABI"
 #: config/rs6000/rs6000.opt:475
 #, gcc-internal-format
 msgid "Do not use %<-mpower8-internal%>; use %<-mcpu=power8%> instead"
-msgstr ""
+msgstr "Använd inte %<-mpower8-internal%>; använd %<-mcpu=power8%> istället"
 
 #: config/fused-madd.opt:22
 #, gcc-internal-format
@@ -31886,16 +31844,14 @@ msgid "label %qD in the middle of basic block %d"
 msgstr "etiketten %qD mitt i grundblock %d"
 
 #: tree-cfg.cc:5830
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "returns_twice call is %s in basic block %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "returns_twice call is not last in basic block %d"
-msgstr "returns_twice-anrop är %s i grundblock %d"
+msgstr "anropet av returns_twice är inte sist i grundblock %d"
 
 #: tree-cfg.cc:5839
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "returns_twice call is %s in basic block %d"
+#, gcc-internal-format, gfc-internal-format
 msgid "returns_twice call is not first in basic block %d"
-msgstr "returns_twice-anrop är %s i grundblock %d"
+msgstr "anropet av returns_twice är inte först i grundblock %d"
 
 #: tree-cfg.cc:5871
 #, gcc-internal-format, gfc-internal-format
@@ -32142,7 +32098,7 @@ msgstr "%s från %s anropad i %s"
 #: tree-profile.cc:899
 #, gcc-internal-format, gfc-internal-format
 msgid "Too many conditions (found %u); giving up coverage"
-msgstr ""
+msgstr "För många villkor (hittade %u); ger upp täckning"
 
 #: tree-profile.cc:1757
 #, gcc-internal-format
@@ -34212,8 +34168,7 @@ msgid "%qE cannot be applied to non-pointer type %qT"
 msgstr "attributet %qE kan inte användas på en icke-pekartyp %qT"
 
 #: c-family/c-attribs.cc:6247
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute argument %qE is not recognised"
+#, gcc-internal-format
 msgid "%qE attribute argument %qE is not recognized"
 msgstr "argumentet %2$qE till attributet %1$qE är inte känt"
 
@@ -35715,37 +35670,25 @@ msgstr "samma slingiterationsvariabler %qD använda i flera associerade slingor"
 msgid "two different outer iteration variables %qD and %qD used in a single loop"
 msgstr "två olika yttre iterationsvariabler %qD och %qD använda i en enda slinga"
 
-# %s blir en oöversättbar engelsk text
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114112
 #: c-family/c-omp.cc:1820
-#, fuzzy, gcc-internal-format
-#| msgid "variable %qD used %s is bound in intervening code"
+#, gcc-internal-format
 msgid "variable %qD used as loop variable is bound in intervening code"
-msgstr "variabeln %qD använd %s är bunden i mellanliggande kod"
+msgstr "variabeln %qD använd som slingvariabel är bunden i mellanliggande kod"
 
-# %s blir en oöversättbar engelsk text
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114112
 #: c-family/c-omp.cc:1824
-#, fuzzy, gcc-internal-format
-#| msgid "variable %qD used %s is bound in intervening code"
+#, gcc-internal-format
 msgid "variable %qD used in initializer is bound in intervening code"
-msgstr "variabeln %qD använd %s är bunden i mellanliggande kod"
+msgstr "variabeln %qD använd i en initierare är bunden i mellanliggande kod"
 
-# %s blir en oöversättbar engelsk text
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114112
 #: c-family/c-omp.cc:1828
-#, fuzzy, gcc-internal-format
-#| msgid "variable %qD used %s is bound in intervening code"
+#, gcc-internal-format
 msgid "variable %qD used in end test is bound in intervening code"
-msgstr "variabeln %qD använd %s är bunden i mellanliggande kod"
+msgstr "variabeln %qD använd i sluttest är bunden i mellanliggande kod"
 
-# %s blir en oöversättbar engelsk text
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114112
 #: c-family/c-omp.cc:1832
-#, fuzzy, gcc-internal-format
-#| msgid "variable %qD used %s is bound in intervening code"
+#, gcc-internal-format
 msgid "variable %qD used in increment expression is bound in intervening code"
-msgstr "variabeln %qD använd %s är bunden i mellanliggande kod"
+msgstr "variabeln %qD använd i ett ökningsuttryck är bunden i mellanliggande kod"
 
 #: c-family/c-omp.cc:2436
 #, gcc-internal-format
@@ -37846,10 +37789,9 @@ msgid "%<-gsplit-dwarf%> is not supported on this platform, ignored"
 msgstr "%<-gsplit-dwarf%> stödjs inte på denna plattform, ignoreras"
 
 #: config/darwin.cc:3449
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not supported, now cmodel is set to %qs"
+#, gcc-internal-format
 msgid "%<-g3%> is not supported by the debug linker in use (set to 2)"
-msgstr "%qs stödjs inte, nu är cmodel satt till %qs"
+msgstr "%<-g3%> stödjs inte av felsökningslänkaren som används (satt till 2)"
 
 #: config/darwin.cc:3541
 #, gcc-internal-format
@@ -39941,10 +39883,9 @@ msgid "%qs is a reserved identifier in AVR-LibC.  Consider %<#include <avr/inter
 msgstr "%qs är en reserverad identifierare i AVR-LibC.  Överväg %<#include <avr/interrupt.h>%> före makrot %qs används"
 
 #: config/avr/avr.cc:1507
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is a reserved identifier in AVR-LibC.  Consider %<#include <avr/interrupt.h>%> before using the %qs macro"
+#, gcc-internal-format
 msgid "%qs is a deprecated identifier in AVR-LibC.  Consider %<#include <avr/interrupt.h>%> or %<#include <compat/deprecated.h>%> before using the %qs macro"
-msgstr "%qs är en reserverad identifierare i AVR-LibC.  Överväg %<#include <avr/interrupt.h>%> före makrot %qs används"
+msgstr "%qs är en undanbedd identifierare i AVR-LibC. Överväg %<#include <avr/interrupt.h>%> eller %<#include <compat/deprecated.h>%> före makrot %qs används"
 
 #: config/avr/avr.cc:1728
 #, gcc-internal-format
@@ -40240,26 +40181,24 @@ msgid "invalid built-in function at expansion"
 msgstr "ogiltig inbyggd funktion vid expansionen"
 
 #: config/bpf/bpf.cc:1287 config/bpf/bpf.cc:1290
-#, fuzzy, gcc-internal-format
-#| msgid "second argument to %<__builtin_prefetch%> must be a constant"
+#, gcc-internal-format
 msgid "could not inline call to %<__builtin_%s%>: size must be constant"
-msgstr "andra argumentet till %<__builtin_prefetch%> måste vara en konstant"
+msgstr "kunde inte inline:a anropet av %<__builtin_%s%>: storleken måste vara konstant"
 
 #: config/bpf/bpf.cc:1318 config/bpf/bpf.cc:1321
 #, gcc-internal-format
 msgid "could not inline call to %<__builtin_%s%>: too many bytes, use %<-minline-memops-threshold%>"
-msgstr ""
+msgstr "kunde inte inline:a anropet av %<__builtin_%s%>: för många byte, använd %<-minline-memops-threshold%>"
 
 #: config/bpf/bpf.cc:1371 config/bpf/bpf.cc:1374
-#, fuzzy, gcc-internal-format
-#| msgid "second argument to %<__builtin_prefetch%> must be a constant"
+#, gcc-internal-format
 msgid "could not inline call to %<__builtin_memset%>: size must be constant"
-msgstr "andra argumentet till %<__builtin_prefetch%> måste vara en konstant"
+msgstr "kunde inte inline:a anropet av %<__builtin_memset%>: storleken måste vara konstant"
 
 #: config/bpf/bpf.cc:1402 config/bpf/bpf.cc:1405
 #, gcc-internal-format
 msgid "could not inline call to %<__builtin_memset%>: too many bytes, use %<-minline-memops-threshold%>"
-msgstr ""
+msgstr "kunde int inline:a anropet av %<__builtin_memset%>: för många byte, använd %<-minline-memops-threshold%>"
 
 #: config/c6x/c6x.cc:245
 #, gcc-internal-format
@@ -40558,22 +40497,19 @@ msgid "deleting file %qs: %m"
 msgstr "raderar filen %qs: %m"
 
 #: config/gcn/mkoffload.cc:877
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized argument in option %qs"
+#, gcc-internal-format
 msgid "unrecognized argument in option %<-march=%s%>"
-msgstr "okänt argument till flaggan %qs"
+msgstr "okänt argument till flaggan %<-march=%s%>"
 
 #: config/gcn/mkoffload.cc:901
-#, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %<-march=%> switch are: %s"
+#, gcc-internal-format
 msgid "valid arguments to %<-march=%> are: %s"
-msgstr "giltiga argument till flaggan %<-march=%> är: %s"
+msgstr "giltiga argument till %<-march=%> är: %s"
 
 #: config/gcn/mkoffload.cc:904
-#, fuzzy, gcc-internal-format
-#| msgid "valid arguments to %<-march=%> switch are: %s"
+#, gcc-internal-format
 msgid "valid argument to %<-march=%> is %qs"
-msgstr "giltiga argument till flaggan %<-march=%> är: %s"
+msgstr "giltigt argument till flaggan %<-march=%> är %s"
 
 #: config/gcn/mkoffload.cc:940
 #, gcc-internal-format
@@ -41779,10 +41715,9 @@ msgid "failed to expand built-in function"
 msgstr "misslyckades att expandera inbyggd funktion"
 
 #: config/loongarch/loongarch-builtins.cc:3116
-#, fuzzy, gcc-internal-format
-#| msgid "built-in function %qD takes one argument only"
+#, gcc-internal-format
 msgid "built-in function %qD is not enabled"
-msgstr "inbyggd funktion %qD tar bara ett argument"
+msgstr "den inbyggda funktionen %qD är inte aktiverad"
 
 #: config/loongarch/loongarch-cpu.cc:115
 #, gcc-internal-format
@@ -41831,8 +41766,7 @@ msgid "%qs does not work on a cross compiler"
 msgstr "%qs fungerar inte med en korskompilator"
 
 #: config/loongarch/loongarch-opts.cc:375
-#, fuzzy, gcc-internal-format
-#| msgid "enabing %qs promotes %<%s%s%> to %<%s%s%>"
+#, gcc-internal-format
 msgid "enabling %qs promotes %<%s%s%> to %<%s%s%>"
 msgstr "aktivering av %qs befordrar %<%s%s%> till %<%s%s%>"
 
@@ -43325,10 +43259,9 @@ msgid "capture by copy of RVV type %qT"
 msgstr "fångst av kopia av RVV-typen %qT"
 
 #: config/riscv/riscv-vector-builtins.cc:4646
-#, fuzzy, gcc-internal-format
-#| msgid "this definition requires the MVE ISA extension"
+#, gcc-internal-format
 msgid "built-in function %qE requires the %qs ISA extension"
-msgstr "denna definition kräver ISA-utökningen MVE"
+msgstr "den inbyggda funktionen %qE kräver ISA-utökningen %qs"
 
 #: config/riscv/riscv-vector-builtins.cc:4696
 #, gcc-internal-format
@@ -43361,46 +43294,39 @@ msgid "RVV type %qT cannot be passed to an unprototyped function"
 msgstr "RVV-typen %qT kan inte skickas till en funktion utan prototyp"
 
 #: config/riscv/riscv.cc:5611
-#, fuzzy, gcc-internal-format
-#| msgid "%qE requires the SVE ISA extension"
+#, gcc-internal-format
 msgid "%s %qT requires the V ISA extension"
-msgstr "%qE behöver ISA-utökningen SVE"
+msgstr "%s %qT kräver ISA-utökningen V"
 
 #: config/riscv/riscv.cc:5623
-#, fuzzy, gcc-internal-format
-#| msgid "%qE requires the SVE ISA extension"
+#, gcc-internal-format
 msgid "%s %qT requires the zve64x, zve64f, zve64d or v ISA extension"
-msgstr "%qE behöver ISA-utökningen SVE"
+msgstr "%s %qT kräver ISA-utökningen zve64x, zve64f, zve64d eller v"
 
 #: config/riscv/riscv.cc:5634
-#, fuzzy, gcc-internal-format
-#| msgid "%qE requires the SVE ISA extension"
+#, gcc-internal-format
 msgid "%s %qT requires the zvfhmin or zvfh ISA extension"
-msgstr "%qE behöver ISA-utökningen SVE"
+msgstr "%s %qT kräver ISA-utökningen zvfhmin eller zvfh"
 
 #: config/riscv/riscv.cc:5643
-#, fuzzy, gcc-internal-format
-#| msgid "%qE requires the SVE ISA extension"
+#, gcc-internal-format
 msgid "%s %qT requires the zve32f, zve64f, zve64d or v ISA extension"
-msgstr "%qE behöver ISA-utökningen SVE"
+msgstr "%s %qT kräver ISA-utökningen zve32f, zve64f, zve64d eller v"
 
 #: config/riscv/riscv.cc:5652
-#, fuzzy, gcc-internal-format
-#| msgid "%qE requires the SVE ISA extension"
+#, gcc-internal-format
 msgid "%s %qT requires the zve64d or v ISA extension"
-msgstr "%qE behöver ISA-utökningen SVE"
+msgstr "%s %qT kräver ISA-utökningen zve64d eller v"
 
 #: config/riscv/riscv.cc:5662
-#, fuzzy, gcc-internal-format
-#| msgid "%qs requires the %qs option and either the %qs or %qs option"
+#, gcc-internal-format
 msgid "%s %qT requires the minimal vector length %qd but %qd is given"
-msgstr "%qs behöver flaggan %qs och antingen flaggan %qs eller %qs"
+msgstr "%s %qT kräver den minimala vektorlängden %qd men %qd ges"
 
 #: config/riscv/riscv.cc:5717
-#, fuzzy, gcc-internal-format
-#| msgid "functions with %qs state require the ISA extension %qs"
+#, gcc-internal-format
 msgid "function attribute %qs requires the V ISA extension"
-msgstr "funktioner med %qs-tillstånd behöver ISA-utökningen %qs"
+msgstr "funktionsattributet %qs kräver ISA-utökningen V"
 
 #: config/riscv/riscv.cc:5811
 #, gcc-internal-format
@@ -43410,24 +43336,22 @@ msgstr "argumentet till attributet %qE är inte %<\"user\"%>, %<\"supervisor\"%>
 #: config/riscv/riscv.cc:5834
 #, gcc-internal-format
 msgid "%qs is only supported when %<-mrvv-vector-bits=zvl%> is specified"
-msgstr ""
+msgstr "%qs stödjs endast när %<-mrvv-vector-bits=zvl%> anges"
 
 #: config/riscv/riscv.cc:5843
-#, fuzzy, gcc-internal-format
-#| msgid "%qs applied to non-SVE type %qT"
+#, gcc-internal-format
 msgid "%qs applied to non-RVV type %qT"
-msgstr "%qs använt på %qT som inte är en SVE-typ"
+msgstr "%qs använt på %qT som inte är en RVV-typ"
 
 #: config/riscv/riscv.cc:5851
-#, fuzzy, gcc-internal-format
-#| msgid "%qs requires an integer constant expression"
+#, gcc-internal-format
 msgid "%qs requires an integer constant"
-msgstr "%qs kräver ett konstant heltalsuttryck"
+msgstr "%qs kräver en heltalskonstant"
 
 #: config/riscv/riscv.cc:5861
 #, gcc-internal-format
 msgid "invalid RVV vector size %qd, expected size is %qd based on LMUL of type and %qs"
-msgstr ""
+msgstr "felaktig RVV-vektorstorlek %qd, förväntad storlek är %qd baserat på LMUL av typen och %qs"
 
 #: config/riscv/riscv.cc:9255
 #, gcc-internal-format
@@ -47754,22 +47678,19 @@ msgid "%qs operand not an integral type"
 msgstr "operanden %qs är inte en heltalstyp"
 
 #: c/c-parser.cc:11864
-#, fuzzy, gcc-internal-format
-#| msgid "argument %u in call to function %qE has enumerated type"
+#, gcc-internal-format
 msgid "argument %u in call to function %qs has enumerated type"
-msgstr "argument %u i anrop av funktionen %qE har uppräkningstyp"
+msgstr "argument %u i anrop av funktionen %qs har uppräkningstyp"
 
 #: c/c-parser.cc:11871
-#, fuzzy, gcc-internal-format
-#| msgid "argument %u in call to function %qE has boolean type"
+#, gcc-internal-format
 msgid "argument %u in call to function %qs has boolean type"
-msgstr "argument %u i anrop av funktionen %qE har boolesk typ"
+msgstr "argument %u i anrop av funktionen %qs har boolesk typ"
 
 #: c/c-parser.cc:11878
-#, fuzzy, gcc-internal-format
-#| msgid "argument 1 in call to function %qE has signed type"
+#, gcc-internal-format
 msgid "argument 1 in call to function %qs has signed type"
-msgstr "argument 1 i anrop av funktionen %qE har typ med tecken"
+msgstr "argument 1 i anrop av funktionen %qs har typ med tecken"
 
 #: c/c-parser.cc:12142 cp/parser.cc:6134
 #, gcc-internal-format
@@ -51205,10 +51126,9 @@ msgid "expected case label"
 msgstr "case-etikett förväntades"
 
 #: cp/call.cc:2041
-#, fuzzy, gcc-internal-format
-#| msgid "casting %qT to %qT does not dereference pointer"
+#, gcc-internal-format
 msgid "casting %qT to %qT does not use %qD"
-msgstr "typkonvertering av %qT till %qT derefererar inte pekare"
+msgstr "typkonvertering av %qT till %qT använder inte %qD"
 
 #. A bad conversion for 'this' must be discarding cv-quals.
 #: cp/call.cc:3888
@@ -55377,10 +55297,9 @@ msgid "declaration of %q#D outside of class is not definition"
 msgstr "deklaration av %q#D utanför en klass är inte en definition"
 
 #: cp/decl.cc:6097
-#, fuzzy, gcc-internal-format
-#| msgid "block-scope extern declaration %q#D not permitted in module purview"
+#, gcc-internal-format
 msgid "block-scope extern declaration %q#D must not be attached to a named module"
-msgstr "extern-deklaration %q#D med blockräckvidd är inte tillåtet i modulens räckvidd"
+msgstr "extern-deklaration %q#D med blockräckvidd får inte kopplas till en namngiven modul"
 
 #: cp/decl.cc:6133
 #, gcc-internal-format
@@ -56827,10 +56746,9 @@ msgid "an explicit object member function cannot be %<static%>"
 msgstr "en explicit objektmedlemsfunktion kan inte vara %<static%>"
 
 #: cp/decl.cc:13735
-#, fuzzy, gcc-internal-format
-#| msgid "In explicit object member function %qD"
+#, gcc-internal-format
 msgid "%qD cannot be an explicit object member function"
-msgstr "I explicit objektmedlemsfunktion %qD"
+msgstr "%qD kan inte vara en explicit objektmedlemsfunktion"
 
 #: cp/decl.cc:13758
 #, gcc-internal-format
@@ -58005,16 +57923,14 @@ msgid "%qT declared with greater visibility than its base %qT"
 msgstr "%qT är deklarerad med större synlighet än sin bas %qT"
 
 #: cp/decl2.cc:4713
-#, fuzzy, gcc-internal-format
-#| msgid "%q#D, declared using unnamed type, is used but never defined"
+#, gcc-internal-format
 msgid "%q#D, declared using an unnamed type, is used but never defined"
 msgstr "%q#D, deklarerad med en namnlös typ, används men är aldrig definierad"
 
 #: cp/decl2.cc:4717
-#, fuzzy, gcc-internal-format
-#| msgid "%q#D, declared using unnamed type, is used but never defined"
+#, gcc-internal-format
 msgid "%q#D, declared using an unnamed type, is used but not defined"
-msgstr "%q#D, deklarerad med en namnlös typ, används men är aldrig definierad"
+msgstr "%q#D, deklarerad med en namnlös typ, används men är inte definierad"
 
 #. DRs 132, 319 and 389 seem to indicate types with
 #. no linkage can only be used to declare extern "C"
@@ -58041,10 +57957,9 @@ msgid "%q#D, declared using local type %qT, is used but never defined"
 msgstr "%q#D, deklarerad med en lokal typ %qT, används men är aldrig definierad"
 
 #: cp/decl2.cc:4757
-#, fuzzy, gcc-internal-format
-#| msgid "%q#D, declared using local type %qT, is used but never defined"
+#, gcc-internal-format
 msgid "%q#D, declared using local type %qT, is used but not defined here"
-msgstr "%q#D, deklarerad med en lokal typ %qT, används men är aldrig definierad"
+msgstr "%q#D, deklarerad med en lokal typ %qT, används men är inte definierad här"
 
 #: cp/decl2.cc:4765
 #, gcc-internal-format
@@ -61551,8 +61466,7 @@ msgid "comma-separated list in using-declaration only available with %<-std=c++1
 msgstr "en kommaseparerad lista i using-deklaration är endast tillgängligt med %<-std=c++17%> eller %<-std=gnu++17%>"
 
 #: cp/parser.cc:22408
-#, fuzzy, gcc-internal-format
-#| msgid "access declarations are deprecated in favour of using-declarations; suggestion: add the %<using%> keyword"
+#, gcc-internal-format
 msgid "access declarations are deprecated in favor of using-declarations; suggestion: add the %<using%> keyword"
 msgstr "åtkomstdeklarationer bör undvikas till förmån för using-deklarationer; förslag: lägg till nyckelordet %<using%>"
 
@@ -64351,16 +64265,14 @@ msgid "%<std::is_constant_evaluated%> always evaluates to true in %<if constexpr
 msgstr "%<std::is_constant_evaluated%> beräknas alltid till sant i %<if constexpr%>"
 
 #: cp/semantics.cc:1120
-#, fuzzy, gcc-internal-format
-#| msgid "%<std::is_constant_evaluated%> always evaluates to true in a %<consteval%> function"
+#, gcc-internal-format
 msgid "%<std::is_constant_evaluated%> evaluates to true when checking if trivially empty iteration statement is trivial infinite loop"
-msgstr "%<std::is_constant_evaluated%> beräknas alltid till sant i en %<consteval%>-funktion"
+msgstr "%<std::is_constant_evaluated%> beräknas till sant vid kontroll om en trivialt tom slingsats är en trivialt oändlig slinga"
 
 #: cp/semantics.cc:1125
-#, fuzzy, gcc-internal-format
-#| msgid "%<std::is_constant_evaluated%> always evaluates to false in a non-%<constexpr%> function"
+#, gcc-internal-format
 msgid "and evaluates to false when actually evaluating the condition in non-%<constexpr%> function"
-msgstr "%<std::is_constant_evaluated%> beräknas alltid till falskt i en icke-%<constexpr%>-funktion"
+msgstr "och beräknas alltid till falskt vid faktisk beräkning av villkoret i en icke-%<constexpr%>-funktion"
 
 #: cp/semantics.cc:1130
 #, gcc-internal-format
@@ -65224,10 +65136,9 @@ msgid "%qE attribute applied to extern \"C\" declaration %qD"
 msgstr "attributet %qE tillämpat på extern \"C\"-deklaration %qD"
 
 #: cp/tree.cc:5417
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute argument must be a string constant"
+#, gcc-internal-format
 msgid "%qE attribute argument must be an expression that evaluates to true or false"
-msgstr "argument till attribut %qE måste vara en strängkonstant"
+msgstr "argument till attribut %qE måste vara ett uttryck som beräknas till sant eller falskt"
 
 #: cp/tree.cc:6283
 #, gcc-internal-format
@@ -68339,16 +68250,14 @@ msgid "Polymorphic FPTR at %L to C_F_POINTER"
 msgstr "Polymorf FPTR vid %L till C_F_POINTER"
 
 #: fortran/check.cc:5476
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qE attribute on a function not returning a pointer"
+#, gcc-internal-format, gfc-internal-format
 msgid "FPTR argument to C_F_POINTER at %L is a function returning a pointer"
-msgstr "attributet %qE på en funktion som inte returnerar en pekare"
+msgstr "argumentet FPTR till C_F_POINTER vid %L är en funktion som returnerar en pekare"
 
 #: fortran/check.cc:5483
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Noninteroperable array FPTR at %L to C_F_POINTER: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Noninteroperable array FPTR argument to C_F_POINTER at %L: %s"
-msgstr "Ej interoperabel vektor-FPTR vid %L till C_F_POINTER: %s"
+msgstr "Ej interoperabel vektor-FPTR är argument till C_F_POINTER vid %L: %s"
 
 #: fortran/check.cc:5499
 #, gcc-internal-format, gfc-internal-format
@@ -71898,12 +71807,12 @@ msgstr "Oväntad alternativ returspecificerare i subrutinanrop vid %L"
 #: fortran/interface.cc:3326
 #, gcc-internal-format
 msgid "Intrinsic %<NULL()%> without %<MOLD%> argument at %L passed to assumed-rank dummy %qs"
-msgstr ""
+msgstr "Inbyggd %<NULL()%> utan argumentet %<MOLD%> vid %L skickad til attrappen %qs med antagen ordning"
 
 #: fortran/interface.cc:3340
 #, gcc-internal-format
 msgid "Intrinsic %<NULL()%> without %<MOLD%> argument at %L passed to assumed-length dummy %qs"
-msgstr ""
+msgstr "Inbyggd %<NULL()%> utan argumentet %<MOLD%> vid %L skickad till attrappen %qs med antagen längd"
 
 #: fortran/interface.cc:3362
 #, gcc-internal-format
@@ -77998,10 +77907,9 @@ msgid "The intrinsic %qs declared INTRINSIC at %L is not available in the curren
 msgstr "Den inbyggda %qs deklarerad INTRINSIC vid %L är inte tillgänglig i den aktuella standardinställningen utan i %s.  Använd en lämplig flagga %<-std=*%> eller aktivera %<-fall-intrinsics%> för att använda den."
 
 #: fortran/resolve.cc:1971
-#, fuzzy, gcc-internal-format
-#| msgid "Non-RECURSIVE procedure %qs at %L is possibly calling itself recursively.  Declare it RECURSIVE or use %<-frecursive%>"
+#, gcc-internal-format
 msgid "Non-RECURSIVE procedure %qs from module %qs is  possibly calling itself recursively in procedure %qs.  Declare it RECURSIVE or use %<-frecursive%>"
-msgstr "Icke RECURSIVE procedur %qs vid %L anropar kanske sig själv rekursivt.  Deklarera den RECURSIVE eller använd %<-frecursive%>"
+msgstr "Icke RECURSIVE procedur %qs från modulen %qs anropar kanske sig själv rekursivt i proceduren %qs. Deklarera den RECURSIVE eller använd %<-frecursive%>"
 
 #: fortran/resolve.cc:1976 fortran/resolve.cc:6843
 #, gcc-internal-format
@@ -79653,16 +79561,14 @@ msgid "Argument %qs of %qs with PASS(%s) at %L must be of the derived-type %qs"
 msgstr "Argument %qs till %qs med PASS(%s) vid %L måste ha den härledda typen %qs"
 
 #: fortran/resolve.cc:15043
-#, fuzzy, gcc-internal-format
-#| msgid "Argument %qs of %qs with PASS(%s) at %L must be of the derived-type %qs"
+#, gcc-internal-format
 msgid "Argument %qs of %qs with PASS(%s) at %L must be of the parametric derived-type %qs"
-msgstr "Argument %qs till %qs med PASS(%s) vid %L måste ha den härledda typen %qs"
+msgstr "Argument %qs till %qs med PASS(%s) vid %L måste ha den parametriskt härledda typen %qs"
 
 #: fortran/resolve.cc:15085
-#, fuzzy, gcc-internal-format
-#| msgid "All the LEN type parameters in the TYPE IS statement at %C must be ASSUMED"
+#, gcc-internal-format
 msgid "All LEN type parameters of the passed dummy argument %qs of %qs at %L must be ASSUMED."
-msgstr "Alla LEN-typparametrar i satsen TYPE IS vid %C måste vara ASSUMED"
+msgstr "Alla parametrar av typen LEN i det skickade attrappargumentet %qs till %qs vid %L måste vara ASSUMED"
 
 #: fortran/resolve.cc:15095
 #, gcc-internal-format
@@ -79875,10 +79781,9 @@ msgid "CLASS variable %qs at %L cannot have the PARAMETER attribute"
 msgstr "CLASS-variabeln %qs vid %L får inte ha attributet PARAMETER"
 
 #: fortran/resolve.cc:16212
-#, fuzzy, gcc-internal-format
-#| msgid "Entity %qs at %L has a deferred type parameter and requires either the POINTER or ALLOCATABLE attribute"
+#, gcc-internal-format
 msgid "Entity %qs at %L has a deferred LEN parameter %qs and requires either the POINTER or ALLOCATABLE attribute"
-msgstr "Enheten %qs vid %L har en fördröjd typparameter och kräver antingen attributet POINTER eller ALLOCATABLE"
+msgstr "Enheten %qs vid %L har en fördröjd LEN-parameter %qs och kräver antingen attributet POINTER eller ALLOCATABLE"
 
 #: fortran/resolve.cc:16224
 #, gcc-internal-format
@@ -81309,10 +81214,9 @@ msgid "Array %qs at %L is larger than limit set by %<-fmax-stack-var-size=%>, mo
 msgstr "Vektorn %qs vid %L är större än gränsen satt med %<-fmax-stack-var-size=%>, flyttad från stacken till statisk lagring.  Detta gör proceduren osäker när den anropas rekursivt, eller samtidigt från flera trådar.  Överväg att öka gränsen %<-fmax-stack-var-size=%> (eller använd %<-frecursive%>, som implicerad obegränsad %<-fmax-stack-var-size=%> – eller ändra koden till att använda en ALLOCATABLE vektor. Om variabeln aldrig används av flera samtidigt kan denna varning ignoreras och variabeln skulle också kunna deklareras med attributet SAVE."
 
 #: fortran/trans-decl.cc:1800
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s at %C has no default type"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s at %L has no default type"
-msgstr "%s vid %C har ingen standardtyp"
+msgstr "%s vid %L har ingen standardtyp"
 
 #: fortran/trans-decl.cc:1804
 #, gcc-internal-format
@@ -83277,51 +83181,3 @@ msgstr "oanvänt namn %qE"
 #, gcc-internal-format, gfc-internal-format
 msgid "are you trying to break %s? how dare you?"
 msgstr "försöker du göra sönder %s? hur vågar du?"
-
-#, no-c-format
-#~ msgid "turn on quadruple tracing (internal switch)"
-#~ msgstr "slå på kvadrupel spårning (intern flagga)"
-
-#, no-c-format
-#~ msgid "turn on the Modula-2 api tracing (internal switch)"
-#~ msgstr "slå på Modula-2-api-spårningen (intern flagga)"
-
-#, no-c-format
-#~ msgid "turn on the Modula-2 function line number generation (internal switch)"
-#~ msgstr "slå på radnummergenereringen av Modula-2-funktioner (intern flagga)"
-
-#, no-c-format
-#~ msgid "Valid arguments to -param=riscv-autovec-preference=:"
-#~ msgstr "Giltiga argument till -param=riscv-autovec-preference=:"
-
-#, no-c-format
-#~ msgid "-param=riscv-autovec-preference=<string>\tSet the preference of auto-vectorization in the RISC-V port."
-#~ msgstr "-param=riscv-autovec-preference=<sträng>\tSätt preferensen för autovektorisering i RISC-V-porteringen."
-
-#, no-c-format
-#~ msgid "Indicate presence of a processor erratum."
-#~ msgstr "Indikera närvaron av ett processor-errata."
-
-#, no-c-format
-#~ msgid "Use RJMP / RCALL even though CALL / JMP are available."
-#~ msgstr "Använd RJMP/RCALL även om CALL/JMP är tillgängliga."
-
-#, no-c-format
-#~ msgid "The device has the bitfield NVMCTRL_CTRLB.FLMAP.  This option is used internally."
-#~ msgstr "Enheten har bitfältet NVMCTRL_CTRLB.FLMAP. Denna flagga används internt."
-
-#, no-c-format
-#~ msgid "The device has no SPH special function register. This option will be overridden by the compiler driver with the correct setting if presence/absence of SPH can be deduced from -mmcu=MCU."
-#~ msgstr "Enheten har inget SPH-specialfunktionsregister.  Denna flagga kommer åsidosättas av kompilatordrivrutinen med de riktiga inställningarna om närvaro/frånvaro av SPH kan avgöras från -mmcu=MCU."
-
-#, gcc-internal-format
-#~ msgid "invalid key type for %<-mbranch-protection=%>"
-#~ msgstr "felaktig nyckeltyp till %<-mbranch-protection=%>"
-
-#, gcc-internal-format
-#~ msgid "%<#pragma riscv intrinsic%> option %qs needs 'V' or 'XTHEADVECTOR' extension enabled"
-#~ msgstr "%<#pragma riscv intrinsic%>-alternativet %qs behöver ha utvidgningen ”V” eller ”XTHEADVECTOR” aktiverad"
-
-#, gcc-internal-format
-#~ msgid "The object %qs at %L has a deferred LEN parameter %qs and is neither allocatable nor a pointer"
-#~ msgstr "Objektet %qs vid %L har en fördröjd LEN-parameter %qs och är varken allokerbar eller en pekare"
