@@ -316,10 +316,9 @@ simplify_using_ranges::fold_cond_with_ops (enum tree_code code,
       || !query->range_of_expr (r1, op1, s))
     return NULL_TREE;
 
-  tree type = TREE_TYPE (op0);
   int_range<1> res;
   range_op_handler handler (code);
-  if (handler && handler.fold_range (res, type, r0, r1))
+  if (handler && handler.fold_range (res, boolean_type_node, r0, r1))
     {
       if (res == range_true ())
 	return boolean_true_node;
