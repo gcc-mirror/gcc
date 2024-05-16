@@ -3896,25 +3896,69 @@
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
 
 (define_insn "@pred_single_widen_<plus_minus:optab><any_extend:su><mode>_scalar"
-  [(set (match_operand:VWEXTI 0 "register_operand"                   "=vr,   vr")
+  [(set (match_operand:VWEXTI 0 "register_operand"                 "=vd,vd, vr, vr")
 	(if_then_else:VWEXTI
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"           "vmWc1,vmWc1")
-	     (match_operand 5 "vector_length_operand"              "   rK,   rK")
-	     (match_operand 6 "const_int_operand"                  "    i,    i")
-	     (match_operand 7 "const_int_operand"                  "    i,    i")
-	     (match_operand 8 "const_int_operand"                  "    i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"	   " vm,vm,Wc1,Wc1")
+	     (match_operand 5 "vector_length_operand"              " rK,rK, rK, rK")
+	     (match_operand 6 "const_int_operand"                  "  i, i,  i,  i")
+	     (match_operand 7 "const_int_operand"                  "  i, i,  i,  i")
+	     (match_operand 8 "const_int_operand"                  "  i, i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (plus_minus:VWEXTI
-	    (match_operand:VWEXTI 3 "register_operand"             "   vr,   vr")
+	    (match_operand:VWEXTI 3 "register_operand"             " vr,vr, vr, vr")
 	    (any_extend:VWEXTI
 	      (vec_duplicate:<V_DOUBLE_TRUNC>
-		(match_operand:<VSUBEL> 4 "reg_or_0_operand"       "   rJ,   rJ"))))
-	  (match_operand:VWEXTI 2 "vector_merge_operand"           "   vu,    0")))]
+		(match_operand:<VSUBEL> 4 "reg_or_0_operand"       " rJ,rJ, rJ, rJ"))))
+	  (match_operand:VWEXTI 2 "vector_merge_operand"           " vu, 0, vu,  0")))]
   "TARGET_VECTOR"
   "vw<plus_minus:insn><any_extend:u>.wx\t%0,%3,%z4%p1"
   [(set_attr "type" "vi<widen_binop_insn_type>")
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+
+(define_insn "@pred_single_widen_add<any_extend:su><mode>_extended_scalar"
+  [(set (match_operand:VWEXTI 0 "register_operand"                 "=vd,vd, vr, vr")
+	(if_then_else:VWEXTI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"	   " vm,vm,Wc1,Wc1")
+	     (match_operand 5 "vector_length_operand"              " rK,rK, rK, rK")
+	     (match_operand 6 "const_int_operand"                  "  i, i,  i,  i")
+	     (match_operand 7 "const_int_operand"                  "  i, i,  i,  i")
+	     (match_operand 8 "const_int_operand"                  "  i, i,  i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (plus:VWEXTI
+	    (vec_duplicate:VWEXTI
+	      (any_extend:<VEL>
+		(match_operand:<VSUBEL> 4 "reg_or_0_operand"       " rJ,rJ, rJ, rJ")))
+	    (match_operand:VWEXTI 3 "register_operand"             " vr,vr, vr, vr"))
+	  (match_operand:VWEXTI 2 "vector_merge_operand"           " vu, 0, vu,  0")))]
+  "TARGET_VECTOR"
+  "vwadd<any_extend:u>.wx\t%0,%3,%z4%p1"
+  [(set_attr "type" "viwalu")
+   (set_attr "mode" "<V_DOUBLE_TRUNC>")])
+
+(define_insn "@pred_single_widen_sub<any_extend:su><mode>_extended_scalar"
+  [(set (match_operand:VWEXTI 0 "register_operand"                 "=vd,vd, vr, vr")
+	(if_then_else:VWEXTI
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand"	   " vm,vm,Wc1,Wc1")
+	     (match_operand 5 "vector_length_operand"              " rK,rK, rK, rK")
+	     (match_operand 6 "const_int_operand"                  "  i, i,  i,  i")
+	     (match_operand 7 "const_int_operand"                  "  i, i,  i,  i")
+	     (match_operand 8 "const_int_operand"                  "  i, i,  i,  i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (minus:VWEXTI
+	    (match_operand:VWEXTI 3 "register_operand"             " vr,vr, vr, vr")
+	    (vec_duplicate:VWEXTI
+	      (any_extend:<VEL>
+		(match_operand:<VSUBEL> 4 "reg_or_0_operand"       " rJ,rJ, rJ, rJ"))))
+	  (match_operand:VWEXTI 2 "vector_merge_operand"           " vu, 0, vu,  0")))]
+  "TARGET_VECTOR"
+  "vwsub<any_extend:u>.wx\t%0,%3,%z4%p1"
+  [(set_attr "type" "viwalu")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")])
 
 (define_insn "@pred_widen_mulsu<mode>"
