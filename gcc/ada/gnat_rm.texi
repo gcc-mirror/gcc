@@ -349,8 +349,8 @@ Implementation Defined Aspects
 * Aspect Refined_State:: 
 * Aspect Relaxed_Initialization:: 
 * Aspect Remote_Access_Type:: 
-* Aspect Secondary_Stack_Size:: 
 * Aspect Scalar_Storage_Order:: 
+* Aspect Secondary_Stack_Size:: 
 * Aspect Shared:: 
 * Aspect Side_Effects:: 
 * Aspect Simple_Storage_Pool:: 
@@ -900,7 +900,7 @@ Curated Extensions
 
 Experimental Language Extensions
 
-* Pragma Storage_Model:: 
+* Storage Model:: 
 * Attribute Super:: 
 * Simpler accessibility model:: 
 * Case pattern matching:: 
@@ -9298,8 +9298,8 @@ or attribute definition clause.
 * Aspect Refined_State:: 
 * Aspect Relaxed_Initialization:: 
 * Aspect Remote_Access_Type:: 
-* Aspect Secondary_Stack_Size:: 
 * Aspect Scalar_Storage_Order:: 
+* Aspect Secondary_Stack_Size:: 
 * Aspect Shared:: 
 * Aspect Side_Effects:: 
 * Aspect Simple_Storage_Pool:: 
@@ -9989,7 +9989,7 @@ This aspect is equivalent to @ref{d9,,pragma Refined_State}.
 For the syntax and semantics of this aspect, see the SPARK 2014 Reference
 Manual, section 6.10.
 
-@node Aspect Remote_Access_Type,Aspect Secondary_Stack_Size,Aspect Relaxed_Initialization,Implementation Defined Aspects
+@node Aspect Remote_Access_Type,Aspect Scalar_Storage_Order,Aspect Relaxed_Initialization,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-remote-access-type}@anchor{159}
 @section Aspect Remote_Access_Type
 
@@ -9998,8 +9998,17 @@ Manual, section 6.10.
 
 This aspect is equivalent to @ref{dc,,pragma Remote_Access_Type}.
 
-@node Aspect Secondary_Stack_Size,Aspect Scalar_Storage_Order,Aspect Remote_Access_Type,Implementation Defined Aspects
-@anchor{gnat_rm/implementation_defined_aspects aspect-secondary-stack-size}@anchor{15a}
+@node Aspect Scalar_Storage_Order,Aspect Secondary_Stack_Size,Aspect Remote_Access_Type,Implementation Defined Aspects
+@anchor{gnat_rm/implementation_defined_aspects aspect-scalar-storage-order}@anchor{15a}
+@section Aspect Scalar_Storage_Order
+
+
+@geindex Scalar_Storage_Order
+
+This aspect is equivalent to a @ref{15b,,attribute Scalar_Storage_Order}.
+
+@node Aspect Secondary_Stack_Size,Aspect Shared,Aspect Scalar_Storage_Order,Implementation Defined Aspects
+@anchor{gnat_rm/implementation_defined_aspects aspect-secondary-stack-size}@anchor{15c}
 @section Aspect Secondary_Stack_Size
 
 
@@ -10007,16 +10016,7 @@ This aspect is equivalent to @ref{dc,,pragma Remote_Access_Type}.
 
 This aspect is equivalent to @ref{e2,,pragma Secondary_Stack_Size}.
 
-@node Aspect Scalar_Storage_Order,Aspect Shared,Aspect Secondary_Stack_Size,Implementation Defined Aspects
-@anchor{gnat_rm/implementation_defined_aspects aspect-scalar-storage-order}@anchor{15b}
-@section Aspect Scalar_Storage_Order
-
-
-@geindex Scalar_Storage_Order
-
-This aspect is equivalent to a @ref{15c,,attribute Scalar_Storage_Order}.
-
-@node Aspect Shared,Aspect Side_Effects,Aspect Scalar_Storage_Order,Implementation Defined Aspects
+@node Aspect Shared,Aspect Side_Effects,Aspect Secondary_Stack_Size,Implementation Defined Aspects
 @anchor{gnat_rm/implementation_defined_aspects aspect-shared}@anchor{15d}
 @section Aspect Shared
 
@@ -11389,7 +11389,7 @@ the Ada 83 reference manual for an exact description of the semantics of
 this attribute.
 
 @node Attribute Scalar_Storage_Order,Attribute Simple_Storage_Pool,Attribute Safe_Small,Implementation Defined Attributes
-@anchor{gnat_rm/implementation_defined_attributes attribute-scalar-storage-order}@anchor{15c}@anchor{gnat_rm/implementation_defined_attributes id4}@anchor{1aa}
+@anchor{gnat_rm/implementation_defined_attributes attribute-scalar-storage-order}@anchor{15b}@anchor{gnat_rm/implementation_defined_attributes id4}@anchor{1aa}
 @section Attribute Scalar_Storage_Order
 
 
@@ -29198,7 +29198,7 @@ particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
 
 
 @menu
-* Pragma Storage_Model:: 
+* Storage Model:: 
 * Attribute Super:: 
 * Simpler accessibility model:: 
 * Case pattern matching:: 
@@ -29206,9 +29206,9 @@ particular the @code{Shift_Left} and @code{Shift_Right} intrinsics.
 
 @end menu
 
-@node Pragma Storage_Model,Attribute Super,,Experimental Language Extensions
-@anchor{gnat_rm/gnat_language_extensions pragma-storage-model}@anchor{448}
-@subsection Pragma Storage_Model
+@node Storage Model,Attribute Super,,Experimental Language Extensions
+@anchor{gnat_rm/gnat_language_extensions storage-model}@anchor{448}
+@subsection Storage Model
 
 
 This feature proposes to redesign the concepts of Storage Pools into a more
@@ -29221,7 +29221,7 @@ support interactions with GPU.
 Here is a link to the full RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-storage-model.rst}
 
-@node Attribute Super,Simpler accessibility model,Pragma Storage_Model,Experimental Language Extensions
+@node Attribute Super,Simpler accessibility model,Storage Model,Experimental Language Extensions
 @anchor{gnat_rm/gnat_language_extensions attribute-super}@anchor{449}
 @subsection Attribute Super
 

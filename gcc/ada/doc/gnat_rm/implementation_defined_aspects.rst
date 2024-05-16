@@ -574,19 +574,18 @@ Aspect Remote_Access_Type
 
 This aspect is equivalent to :ref:`pragma Remote_Access_Type<Pragma-Remote_Access_Type>`.
 
+Aspect Scalar_Storage_Order
+===========================
+.. index:: Scalar_Storage_Order
+
+This aspect is equivalent to a :ref:`attribute Scalar_Storage_Order<Attribute-Scalar_Storage_Order>`.
+
 Aspect Secondary_Stack_Size
 ===========================
 
 .. index:: Secondary_Stack_Size
 
 This aspect is equivalent to :ref:`pragma Secondary_Stack_Size<Pragma-Secondary_Stack_Size>`.
-
-
-Aspect Scalar_Storage_Order
-===========================
-.. index:: Scalar_Storage_Order
-
-This aspect is equivalent to a :ref:`attribute Scalar_Storage_Order<Attribute-Scalar_Storage_Order>`.
 
 Aspect Shared
 =============

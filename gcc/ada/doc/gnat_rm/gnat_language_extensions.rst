@@ -355,8 +355,8 @@ particular the ``Shift_Left`` and ``Shift_Right`` intrinsics.
 Experimental Language Extensions
 ================================
 
-Pragma Storage_Model
---------------------
+Storage Model
+-------------
 
 This feature proposes to redesign the concepts of Storage Pools into a more
 efficient model allowing higher performances and easier integration with low
