@@ -748,8 +748,7 @@ vect_get_and_check_slp_defs (vec_info *vinfo, unsigned char swap,
 	  && is_a <bb_vec_info> (vinfo)
 	  && TREE_CODE (oprnd) == SSA_NAME
 	  && !SSA_NAME_IS_DEFAULT_DEF (oprnd)
-	  && !dominated_by_p (CDI_DOMINATORS,
-			      as_a <bb_vec_info> (vinfo)->bbs[0],
+	  && !dominated_by_p (CDI_DOMINATORS, vinfo->bbs[0],
 			      gimple_bb (SSA_NAME_DEF_STMT (oprnd))))
 	{
 	  if (dump_enabled_p ())
@@ -6293,10 +6292,16 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 
 _bb_vec_info::_bb_vec_info (vec<basic_block> _bbs, vec_info_shared *shared)
   : vec_info (vec_info::bb, shared),
-    bbs (_bbs),
     roots (vNULL)
 {
-  for (unsigned i = 0; i < bbs.length (); ++i)
+  /* The region we are operating on.  bbs[0] is the entry, excluding
+     its PHI nodes.  In the future we might want to track an explicit
+     entry edge to cover bbs[0] PHI nodes and have a region entry
+     insert location.  */
+  bbs = _bbs.address ();
+  nbbs = _bbs.length ();
+
+  for (unsigned i = 0; i < nbbs; ++i)
     {
       if (i != 0)
 	for (gphi_iterator si = gsi_start_phis (bbs[i]); !gsi_end_p (si);
@@ -6325,7 +6330,7 @@ _bb_vec_info::_bb_vec_info (vec<basic_block> _bbs, vec_info_shared *shared)
 _bb_vec_info::~_bb_vec_info ()
 {
   /* Reset region marker.  */
-  for (unsigned i = 0; i < bbs.length (); ++i)
+  for (unsigned i = 0; i < nbbs; ++i)
     {
       if (i != 0)
 	for (gphi_iterator si = gsi_start_phis (bbs[i]); !gsi_end_p (si);
@@ -7630,7 +7635,7 @@ vect_slp_is_lane_insert (gimple *use_stmt, tree vec, unsigned *this_lane)
 static void
 vect_slp_check_for_roots (bb_vec_info bb_vinfo)
 {
-  for (unsigned i = 0; i < bb_vinfo->bbs.length (); ++i)
+  for (unsigned i = 0; i < bb_vinfo->nbbs; ++i)
     for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[i]);
 	 !gsi_end_p (gsi); gsi_next (&gsi))
     {
@@ -8114,7 +8119,7 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	     we vectorized all if-converted code.  */
 	  if ((!profitable_subgraphs.is_empty () || force_clear) && orig_loop)
 	    {
-	      gcc_assert (bb_vinfo->bbs.length () == 1);
+	      gcc_assert (bb_vinfo->nbbs == 1);
 	      for (gimple_stmt_iterator gsi = gsi_start_bb (bb_vinfo->bbs[0]);
 		   !gsi_end_p (gsi); gsi_next (&gsi))
 		{
@@ -9618,14 +9623,14 @@ vect_schedule_slp_node (vec_info *vinfo,
       if (!last_stmt)
 	{
 	  gcc_assert (seen_vector_def);
-	  si = gsi_after_labels (as_a <bb_vec_info> (vinfo)->bbs[0]);
+	  si = gsi_after_labels (vinfo->bbs[0]);
 	}
       else if (is_ctrl_altering_stmt (last_stmt))
 	{
 	  /* We split regions to vectorize at control altering stmts
 	     with a definition so this must be an external which
 	     we can insert at the start of the region.  */
-	  si = gsi_after_labels (as_a <bb_vec_info> (vinfo)->bbs[0]);
+	  si = gsi_after_labels (vinfo->bbs[0]);
 	}
       else if (is_a <bb_vec_info> (vinfo)
 	       && gimple_bb (last_stmt) != gimple_bb (stmt_info->stmt)

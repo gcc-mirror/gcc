@@ -1028,7 +1028,6 @@ bb_in_loop_p (const_basic_block bb, const void *data)
 _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
   : vec_info (vec_info::loop, shared),
     loop (loop_in),
-    bbs (XCNEWVEC (basic_block, loop->num_nodes)),
     num_itersm1 (NULL_TREE),
     num_iters (NULL_TREE),
     num_iters_unchanged (NULL_TREE),
@@ -1079,8 +1078,9 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
      case of the loop forms we allow, a dfs order of the BBs would the same
      as reversed postorder traversal, so we are safe.  */
 
-  unsigned int nbbs = dfs_enumerate_from (loop->header, 0, bb_in_loop_p,
-					  bbs, loop->num_nodes, loop);
+  bbs = XCNEWVEC (basic_block, loop->num_nodes);
+  nbbs = dfs_enumerate_from (loop->header, 0, bb_in_loop_p, bbs,
+			     loop->num_nodes, loop);
   gcc_assert (nbbs == loop->num_nodes);
 
   for (unsigned int i = 0; i < nbbs; i++)
@@ -11667,6 +11667,7 @@ update_epilogue_loop_vinfo (class loop *epilogue, tree advance)
 
   free (LOOP_VINFO_BBS (epilogue_vinfo));
   LOOP_VINFO_BBS (epilogue_vinfo) = epilogue_bbs;
+  LOOP_VINFO_NBBS (epilogue_vinfo) = epilogue->num_nodes;
 
   /* Advance data_reference's with the number of iterations of the previous
      loop and its prologue.  */

@@ -463,7 +463,9 @@ shrink_simd_arrays
 vec_info::vec_info (vec_info::vec_kind kind_in, vec_info_shared *shared_)
   : kind (kind_in),
     shared (shared_),
-    stmt_vec_info_ro (false)
+    stmt_vec_info_ro (false),
+    bbs (NULL),
+    nbbs (0)
 {
   stmt_vec_infos.create (50);
 }
@@ -660,9 +662,8 @@ vec_info::insert_seq_on_entry (stmt_vec_info context, gimple_seq seq)
     }
   else
     {
-      bb_vec_info bb_vinfo = as_a <bb_vec_info> (this);
       gimple_stmt_iterator gsi_region_begin
-	= gsi_after_labels (bb_vinfo->bbs[0]);
+	= gsi_after_labels (bbs[0]);
       gsi_insert_seq_before (&gsi_region_begin, seq, GSI_SAME_STMT);
     }
 }
