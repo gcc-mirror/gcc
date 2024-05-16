@@ -6347,6 +6347,36 @@ for the specified entity, as shown in the following example:
   pragma Style_Checks (Off, Arg);
   Rf2 : Integer := ARG;      -- OK, no error
 
+Pragma Subprogram_Variant
+=========================
+.. index:: Subprogram_Variant
+
+Syntax:
+
+
+::
+
+  pragma Subprogram_Variant (SUBPROGRAM_VARIANT_LIST);
+
+  SUBPROGRAM_VARIANT_LIST ::=
+    STRUCTURAL_SUBPROGRAM_VARIANT_ITEM
+  | NUMERIC_SUBPROGRAM_VARIANT_ITEMS
+
+  NUMERIC_SUBPROGRAM_VARIANT_ITEMS ::=
+    NUMERIC_SUBPROGRAM_VARIANT_ITEM {, NUMERIC_SUBPROGRAM_VARIANT_ITEM}
+
+  NUMERIC_SUBPROGRAM_VARIANT_ITEM ::=
+    CHANGE_DIRECTION => EXPRESSION
+
+  STRUCTURAL_SUBPROGRAM_VARIANT_ITEM ::=
+    STRUCTURAL => EXPRESSION
+
+  CHANGE_DIRECTION ::= Increases | Decreases
+
+The ``Subprogram_Variant`` pragma is intended to be an exact replacement for
+the implementation-defined ``Subprogram_Variant`` aspect, and shares its
+restrictions and semantics.
+
 
 Pragma Subtitle
 ===============

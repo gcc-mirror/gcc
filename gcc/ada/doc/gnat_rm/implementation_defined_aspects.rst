@@ -620,6 +620,13 @@ This aspect is equivalent to :ref:`pragma SPARK_Mode<Pragma-SPARK_Mode>` and
 may be specified for either or both of the specification and body
 of a subprogram or package.
 
+Aspect Subprogram_Variant
+=========================
+.. index:: Subprogram_Variant
+
+For the syntax and semantics of this aspect, see the SPARK 2014 Reference
+Manual, section 6.1.8.
+
 Aspect Suppress_Debug_Info
 ==========================
 .. index:: Suppress_Debug_Info
