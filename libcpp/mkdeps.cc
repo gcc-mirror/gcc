@@ -411,8 +411,7 @@ make_write_vec (const mkdeps::vec<const char *> &vec, FILE *fp,
   return col;
 }
 
-/* Write the dependencies to a Makefile.  If PHONY is true, add
-   .PHONY targets for all the dependencies too.  */
+/* Write the dependencies to a Makefile.  */
 
 static void
 make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
@@ -453,7 +452,7 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 	column = make_write_name (d->cmi_name, fp, column, colmax);
       fputs (":", fp);
       column++;
-      column = make_write_vec (d->modules, fp, column, colmax, 0, ".c++m");
+      column = make_write_vec (d->modules, fp, column, colmax, 0, ".c++-module");
       fputs ("\n", fp);
     }
 
@@ -463,7 +462,7 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 	{
 	  /* module-name : cmi-name */
 	  column = make_write_name (d->module_name, fp, 0, colmax,
-				    true, ".c++m");
+				    true, ".c++-module");
 	  fputs (":", fp);
 	  column++;
 	  column = make_write_name (d->cmi_name, fp, column, colmax);
@@ -471,7 +470,7 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 
 	  column = fprintf (fp, ".PHONY:");
 	  column = make_write_name (d->module_name, fp, column, colmax,
-				    true, ".c++m");
+				    true, ".c++-module");
 	  fputs ("\n", fp);
 	}
 
@@ -488,11 +487,11 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 	  fputs ("\n", fp);
 	}
     }
-  
+
   if (d->modules.size ())
     {
       column = fprintf (fp, "CXX_IMPORTS +=");
-      make_write_vec (d->modules, fp, column, colmax, 0, ".c++m");
+      make_write_vec (d->modules, fp, column, colmax, 0, ".c++-module");
       fputs ("\n", fp);
     }
 }

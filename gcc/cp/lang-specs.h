@@ -39,6 +39,12 @@ along with GCC; see the file COPYING3.  If not see
   {".HPP", "@c++-header", 0, 0, 0},
   {".tcc", "@c++-header", 0, 0, 0},
   {".hh",  "@c++-header", 0, 0, 0},
+  /* Module interface unit.  Should there also be a .C counterpart?  */
+  {".ixx", "@c++", 0, 0, 0}, /* MSVC */
+  {".cppm", "@c++", 0, 0, 0}, /* Clang/libc++ */
+  {".cxxm", "@c++", 0, 0, 0},
+  {".c++m", "@c++", 0, 0, 0},
+  {".ccm", "@c++", 0, 0, 0},
   {"@c++-header",
       "%{E|M|MM:cc1plus -E %{fmodules-ts:-fdirectives-only -fmodule-header}"
       "  %(cpp_options) %2 %(cpp_debug_options)}"

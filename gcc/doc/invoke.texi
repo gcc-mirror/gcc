@@ -2317,9 +2317,12 @@ other language.
 C++ source files conventionally use one of the suffixes @samp{.C},
 @samp{.cc}, @samp{.cpp}, @samp{.CPP}, @samp{.c++}, @samp{.cp}, or
 @samp{.cxx}; C++ header files often use @samp{.hh}, @samp{.hpp},
-@samp{.H}, or (for shared template code) @samp{.tcc}; and
-preprocessed C++ files use the suffix @samp{.ii}.  GCC recognizes
-files with these names and compiles them as C++ programs even if you
+@samp{.H}, or (for shared template code) @samp{.tcc};
+preprocessed C++ files use the suffix @samp{.ii}; and C++20 module interface
+units sometimes use @samp{.ixx}, @samp{.cppm}, @samp{.cxxm}, @samp{.c++m},
+or @samp{.ccm}.
+
+GCC recognizes files with these names and compiles them as C++ programs even if you
 call the compiler the same way as for compiling C programs (usually
 with the name @command{gcc}).
 
@@ -37705,13 +37708,10 @@ Modular compilation is @emph{not} enabled with just the
 version selected, although in pre-C++20 versions, it is of course an
 extension.
 
-No new source file suffixes are required or supported.  If you wish to
-use a non-standard suffix (@pxref{Overall Options}), you also need
-to provide a @option{-x c++} option too.@footnote{Some users like to
-distinguish module interface files with a new suffix, such as naming
-the source @code{module.cppm}, which involves
-teaching all tools about the new suffix.  A different scheme, such as
-naming @code{module-m.cpp} would be less invasive.}
+No new source file suffixes are required.  A few suffixes preferred
+for module interface units by other compilers (e.g. @samp{.ixx},
+@samp{.cppm}) are supported, but files with these suffixes are treated
+the same as any other C++ source file.
 
 Compiling a module interface unit produces an additional output (to
 the assembly or object file), called a Compiled Module Interface
