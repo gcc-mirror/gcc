@@ -1436,3 +1436,36 @@
     DONE;
   }
   [(set_attr "type" "vmalu")])
+
+;; Optimization pattern for early break auto-vectorization
+;; vcond_mask_len (mask, ones, zeros, len, bias) + vlmax popcount
+;; -> non vlmax popcount (mask, len)
+(define_insn_and_split "*vcond_mask_len_popcount_<VB_VLS:mode><P:mode>"
+  [(set (match_operand:P 0 "register_operand")
+    (popcount:P
+     (unspec:VB_VLS [
+      (unspec:VB_VLS [
+       (match_operand:VB_VLS 1 "register_operand")
+       (match_operand:VB_VLS 2 "const_1_operand")
+       (match_operand:VB_VLS 3 "const_0_operand")
+       (match_operand 4 "autovec_length_operand")
+       (match_operand 5 "const_0_operand")] UNSPEC_SELECT_MASK)
+      (match_operand 6 "autovec_length_operand")
+      (const_int 1)
+      (reg:SI VL_REGNUM)
+      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)))]
+  "TARGET_VECTOR
+   && can_create_pseudo_p ()
+   && riscv_vector::get_vector_mode (Pmode, GET_MODE_NUNITS (<VB_VLS:MODE>mode)).exists ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    riscv_vector::emit_nonvlmax_insn (
+	code_for_pred_popcount (<VB_VLS:MODE>mode, Pmode),
+	riscv_vector::CPOP_OP,
+	operands, operands[4]);
+    DONE;
+  }
+  [(set_attr "type" "vector")]
+)

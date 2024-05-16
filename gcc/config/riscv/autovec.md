@@ -2612,3 +2612,64 @@
     DONE;
   }
 )
+
+;; =========================================================================
+;; == Early break auto-vectorization patterns
+;; =========================================================================
+
+;; vcond_mask_len (mask, 1s, 0s, len, bias)
+;; => mask[i] = mask[i] && i < len ? 1 : 0
+(define_insn_and_split "vcond_mask_len_<mode>"
+  [(set (match_operand:VB 0 "register_operand")
+    (unspec: VB [
+     (match_operand:VB 1 "register_operand")
+     (match_operand:VB 2 "const_1_operand")
+     (match_operand:VB 3 "const_0_operand")
+     (match_operand 4 "autovec_length_operand")
+     (match_operand 5 "const_0_operand")] UNSPEC_SELECT_MASK))]
+  "TARGET_VECTOR
+   && can_create_pseudo_p ()
+   && riscv_vector::get_vector_mode (Pmode, GET_MODE_NUNITS (<MODE>mode)).exists ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    machine_mode mode = riscv_vector::get_vector_mode (Pmode,
+			GET_MODE_NUNITS (<MODE>mode)).require ();
+    rtx reg = gen_reg_rtx (mode);
+    riscv_vector::expand_vec_series (reg, const0_rtx, const1_rtx);
+    rtx dup_rtx = gen_rtx_VEC_DUPLICATE (mode, operands[4]);
+    insn_code icode = code_for_pred_cmp_scalar (mode);
+    rtx cmp = gen_rtx_fmt_ee (LTU, <MODE>mode, reg, dup_rtx);
+    rtx ops[] = {operands[0], operands[1], operands[1], cmp, reg, operands[4]};
+    emit_vlmax_insn (icode, riscv_vector::COMPARE_OP_MU, ops);
+    DONE;
+  }
+  [(set_attr "type" "vector")])
+
+;; cbranch
+(define_expand "cbranch<mode>4"
+  [(set (pc)
+	(if_then_else
+	  (match_operator 0 "equality_operator"
+	    [(match_operand:VB_VLS 1 "register_operand")
+	     (match_operand:VB_VLS 2 "reg_or_0_operand")])
+	  (label_ref (match_operand 3 ""))
+	  (pc)))]
+  "TARGET_VECTOR"
+  {
+    rtx pred;
+    if (operands[2] == CONST0_RTX (<MODE>mode))
+      pred = operands[1];
+    else
+      pred = expand_binop (<MODE>mode, xor_optab, operands[1],
+			   operands[2], NULL_RTX, 0,
+			   OPTAB_DIRECT);
+    rtx reg = gen_reg_rtx (Pmode);
+    rtx cpop_ops[] = {reg, pred};
+    emit_vlmax_insn (code_for_pred_popcount (<MODE>mode, Pmode),
+		     riscv_vector::CPOP_OP, cpop_ops);
+    operands[1] = reg;
+    operands[2] = const0_rtx;
+  }
+)

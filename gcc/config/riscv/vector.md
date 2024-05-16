@@ -6121,21 +6121,21 @@
    (set_attr "vl_op_idx" "4")
    (set (attr "avl_type_idx") (const_int 5))])
 
-(define_insn "@pred_popcount<VB:mode><P:mode>"
-  [(set (match_operand:P 0 "register_operand"               "=r")
+(define_insn "@pred_popcount<VB_VLS:mode><P:mode>"
+  [(set (match_operand:P 0 "register_operand"                   "=r")
 	(popcount:P
-	  (unspec:VB
-	    [(and:VB
-	       (match_operand:VB 1 "vector_mask_operand" "vmWc1")
-	       (match_operand:VB 2 "register_operand"    "   vr"))
-	     (match_operand 3 "vector_length_operand"    "   rK")
-	     (match_operand 4 "const_int_operand"        "    i")
+	  (unspec:VB_VLS
+	    [(and:VB_VLS
+	       (match_operand:VB_VLS 1 "vector_mask_operand" "vmWc1")
+	       (match_operand:VB_VLS 2 "register_operand"    "   vr"))
+	     (match_operand 3 "vector_length_operand"        "   rK")
+	     (match_operand 4 "const_int_operand"            "    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)))]
   "TARGET_VECTOR"
   "vcpop.m\t%0,%2%p1"
   [(set_attr "type" "vmpop")
-   (set_attr "mode" "<VB:MODE>")])
+   (set_attr "mode" "<VB_VLS:MODE>")])
 
 (define_insn "@pred_ffs<VB:mode><P:mode>"
   [(set (match_operand:P 0 "register_operand"                 "=r")
