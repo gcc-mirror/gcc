@@ -12895,7 +12895,9 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
     ncopies = vect_get_num_copies (loop_vinfo, vectype);
 
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+  vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
   bool masked_loop_p = LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
+  bool len_loop_p = LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo);
 
   /* Now build the new conditional.  Pattern gimple_conds get dropped during
      codegen so we must replace the original insn.  */
@@ -12959,11 +12961,10 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	{
 	  if (direct_internal_fn_supported_p (IFN_VCOND_MASK_LEN, vectype,
 					      OPTIMIZE_FOR_SPEED))
-	    return false;
+	    vect_record_loop_len (loop_vinfo, lens, ncopies, vectype, 1);
 	  else
 	    vect_record_loop_mask (loop_vinfo, masks, ncopies, vectype, NULL);
 	}
-
 
       return true;
     }
@@ -13017,6 +13018,15 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 				  stmts[i], &cond_gsi);
 	    workset.quick_push (stmt_mask);
 	  }
+      else if (len_loop_p)
+	for (unsigned i = 0; i < stmts.length (); i++)
+	  {
+	    tree len_mask = vect_gen_loop_len_mask (loop_vinfo, gsi, &cond_gsi,
+						    lens, ncopies, vectype,
+						    stmts[i], i, 1);
+
+	    workset.quick_push (len_mask);
+	  }
       else
 	workset.splice (stmts);
 
@@ -13041,6 +13051,9 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	  new_temp = prepare_vec_mask (loop_vinfo, TREE_TYPE (mask), mask,
 				       new_temp, &cond_gsi);
 	}
+      else if (len_loop_p)
+	new_temp = vect_gen_loop_len_mask (loop_vinfo, gsi, &cond_gsi, lens,
+					   ncopies, vectype, new_temp, 0, 1);
     }
 
   gcc_assert (new_temp);

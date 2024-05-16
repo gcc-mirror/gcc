@@ -11416,6 +11416,33 @@ vect_get_loop_len (loop_vec_info loop_vinfo, gimple_stmt_iterator *gsi,
   return loop_len;
 }
 
+/* Generate the tree for the loop len mask and return it.  Given the lens,
+   nvectors, vectype, index and factor to gen the len mask as below.
+
+   tree len_mask = VCOND_MASK_LEN (compare_mask, ones, zero, len, bias)
+*/
+tree
+vect_gen_loop_len_mask (loop_vec_info loop_vinfo, gimple_stmt_iterator *gsi,
+			gimple_stmt_iterator *cond_gsi, vec_loop_lens *lens,
+			unsigned int nvectors, tree vectype, tree stmt,
+			unsigned int index, unsigned int factor)
+{
+  tree all_one_mask = build_all_ones_cst (vectype);
+  tree all_zero_mask = build_zero_cst (vectype);
+  tree len = vect_get_loop_len (loop_vinfo, gsi, lens, nvectors, vectype, index,
+				factor);
+  tree bias = build_int_cst (intQI_type_node,
+			     LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo));
+  tree len_mask = make_temp_ssa_name (TREE_TYPE (stmt), NULL, "vec_len_mask");
+  gcall *call = gimple_build_call_internal (IFN_VCOND_MASK_LEN, 5, stmt,
+					    all_one_mask, all_zero_mask, len,
+					    bias);
+  gimple_call_set_lhs (call, len_mask);
+  gsi_insert_before (cond_gsi, call, GSI_SAME_STMT);
+
+  return len_mask;
+}
+
 /* Scale profiling counters by estimation for LOOP which is vectorized
    by factor VF.
    If FLAT is true, the loop we started with had unrealistically flat
