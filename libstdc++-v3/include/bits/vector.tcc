@@ -467,32 +467,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       pointer __new_start(this->_M_allocate(__len));
       pointer __new_finish(__new_start);
 
-      // RAII guard for allocated storage.
-      struct _Guard
       {
-	pointer _M_storage;	    // Storage to deallocate
-	size_type _M_len;
-	_Tp_alloc_type& _M_alloc;
-
-	_GLIBCXX20_CONSTEXPR
-	_Guard(pointer __s, size_type __l, _Tp_alloc_type& __a)
-	: _M_storage(__s), _M_len(__l), _M_alloc(__a)
-	{ }
-
-	_GLIBCXX20_CONSTEXPR
-	~_Guard()
-	{
-	  if (_M_storage)
-	    __gnu_cxx::__alloc_traits<_Tp_alloc_type>::
-	      deallocate(_M_alloc, _M_storage, _M_len);
-	}
-
-      private:
-	_Guard(const _Guard&);
-      };
-
-      {
-	_Guard __guard(__new_start, __len, _M_impl);
+	_Guard_alloc __guard(__new_start, __len, *this);
 
 	// The order of the three operations is dictated by the C++11
 	// case, where the moves could alter a new element belonging
@@ -596,32 +572,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       pointer __new_start(this->_M_allocate(__len));
       pointer __new_finish(__new_start);
 
-      // RAII guard for allocated storage.
-      struct _Guard
       {
-	pointer _M_storage;	    // Storage to deallocate
-	size_type _M_len;
-	_Tp_alloc_type& _M_alloc;
-
-	_GLIBCXX20_CONSTEXPR
-	_Guard(pointer __s, size_type __l, _Tp_alloc_type& __a)
-	: _M_storage(__s), _M_len(__l), _M_alloc(__a)
-	{ }
-
-	_GLIBCXX20_CONSTEXPR
-	~_Guard()
-	{
-	  if (_M_storage)
-	    __gnu_cxx::__alloc_traits<_Tp_alloc_type>::
-	      deallocate(_M_alloc, _M_storage, _M_len);
-	}
-
-      private:
-	_Guard(const _Guard&);
-      };
-
-      {
-	_Guard __guard(__new_start, __len, _M_impl);
+	_Guard_alloc __guard(__new_start, __len, *this);
 
 	// The order of the three operations is dictated by the C++11
 	// case, where the moves could alter a new element belonging
@@ -833,32 +785,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		_M_check_len(__n, "vector::_M_default_append");
 	      pointer __new_start(this->_M_allocate(__len));
 
-	      // RAII guard for allocated storage.
-	      struct _Guard
 	      {
-		pointer _M_storage;         // Storage to deallocate
-		size_type _M_len;
-		_Tp_alloc_type& _M_alloc;
-
-		_GLIBCXX20_CONSTEXPR
-		_Guard(pointer __s, size_type __l, _Tp_alloc_type& __a)
-		: _M_storage(__s), _M_len(__l), _M_alloc(__a)
-		{ }
-
-		_GLIBCXX20_CONSTEXPR
-		~_Guard()
-		{
-		  if (_M_storage)
-		    __gnu_cxx::__alloc_traits<_Tp_alloc_type>::
-		      deallocate(_M_alloc, _M_storage, _M_len);
-		}
-
-	      private:
-		_Guard(const _Guard&);
-	      };
-
-	      {
-		_Guard __guard(__new_start, __len, _M_impl);
+		_Guard_alloc __guard(__new_start, __len, *this);
 
 		std::__uninitialized_default_n_a(__new_start + __size, __n,
 						 _M_get_Tp_allocator());

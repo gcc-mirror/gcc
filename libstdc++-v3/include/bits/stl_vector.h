@@ -1607,6 +1607,39 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       clear() _GLIBCXX_NOEXCEPT
       { _M_erase_at_end(this->_M_impl._M_start); }
 
+    private:
+      // RAII guard for allocated storage.
+      struct _Guard_alloc
+      {
+	pointer _M_storage;	    // Storage to deallocate
+	size_type _M_len;
+	_Base& _M_vect;
+
+	_GLIBCXX20_CONSTEXPR
+	_Guard_alloc(pointer __s, size_type __l, _Base& __vect)
+	: _M_storage(__s), _M_len(__l), _M_vect(__vect)
+	{ }
+
+	_GLIBCXX20_CONSTEXPR
+	~_Guard_alloc()
+	{
+	  if (_M_storage)
+	    _M_vect._M_deallocate(_M_storage, _M_len);
+	}
+
+	_GLIBCXX20_CONSTEXPR
+	pointer
+	_M_release()
+	{
+	  pointer __res = _M_storage;
+	  _M_storage = pointer();
+	  return __res;
+	}
+
+      private:
+	_Guard_alloc(const _Guard_alloc&);
+      };
+
     protected:
       /**
        *  Memory expansion handler.  Uses the member allocation function to
@@ -1618,18 +1651,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_M_allocate_and_copy(size_type __n,
 			     _ForwardIterator __first, _ForwardIterator __last)
 	{
-	  pointer __result = this->_M_allocate(__n);
-	  __try
-	    {
-	      std::__uninitialized_copy_a(__first, __last, __result,
-					  _M_get_Tp_allocator());
-	      return __result;
-	    }
-	  __catch(...)
-	    {
-	      _M_deallocate(__result, __n);
-	      __throw_exception_again;
-	    }
+	  _Guard_alloc __guard(this->_M_allocate(__n), __n, *this);
+	  std::__uninitialized_copy_a
+	    (__first, __last, __guard._M_storage, _M_get_Tp_allocator());
+	  return __guard._M_release();
 	}
 
 
@@ -1642,13 +1667,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // 438. Ambiguity in the "do the right thing" clause
       template<typename _Integer>
 	void
-	_M_initialize_dispatch(_Integer __n, _Integer __value, __true_type)
+	_M_initialize_dispatch(_Integer __int_n, _Integer __value, __true_type)
 	{
-	  this->_M_impl._M_start = _M_allocate(_S_check_init_len(
-		static_cast<size_type>(__n), _M_get_Tp_allocator()));
-	  this->_M_impl._M_end_of_storage =
-	    this->_M_impl._M_start + static_cast<size_type>(__n);
-	  _M_fill_initialize(static_cast<size_type>(__n), __value);
+	  const size_type __n = static_cast<size_type>(__int_n);
+	  pointer __start =
+	    _M_allocate(_S_check_init_len(__n, _M_get_Tp_allocator()));
+	  this->_M_impl._M_start = __start;
+	  this->_M_impl._M_end_of_storage = __start + __n;
+	  _M_fill_initialize(__n, __value);
 	}
 
       // Called by the range constructor to implement [23.1.1]/9
@@ -1690,13 +1716,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			    std::forward_iterator_tag)
 	{
 	  const size_type __n = std::distance(__first, __last);
-	  this->_M_impl._M_start
-	    = this->_M_allocate(_S_check_init_len(__n, _M_get_Tp_allocator()));
-	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
-	  this->_M_impl._M_finish =
-	    std::__uninitialized_copy_a(__first, __last,
-					this->_M_impl._M_start,
-					_M_get_Tp_allocator());
+	  pointer __start =
+	    this->_M_allocate(_S_check_init_len(__n, _M_get_Tp_allocator()));
+	  _Guard_alloc __guard(__start, __n, *this);
+	  this->_M_impl._M_finish = std::__uninitialized_copy_a
+	    (__first, __last, __start, _M_get_Tp_allocator());
+	  this->_M_impl._M_start = __start;
+	  (void) __guard._M_release();
+	  this->_M_impl._M_end_of_storage = __start + __n;
 	}
 
       // Called by the first initialize_dispatch above and by the
