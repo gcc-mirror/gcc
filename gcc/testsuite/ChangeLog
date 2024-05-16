@@ -1,3 +1,11 @@
+2024-05-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114931
+	* gcc.dg/pr114931.c: New testcase.
+
 2024-05-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

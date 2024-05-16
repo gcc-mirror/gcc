@@ -1,3 +1,31 @@
+2024-05-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114931
+	* tree.cc (type_hash_canon_hash): Hash TYPE_STRUCTURAL_EQUALITY_P.
+	(type_cache_hasher::equal): Compare TYPE_STRUCTURAL_EQUALITY_P.
+	(build_array_type_1): Set TYPE_STRUCTURAL_EQUALITY_P before
+	probing with type_hash_canon.
+	(build_function_type): Likewise.
+	(build_method_type_directly): Likewise.
+	(build_offset_type): Likewise.
+	(build_complex_type): Likewise.
+	* attribs.cc (build_type_attribute_qual_variant): Likewise.
+
+2024-05-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114931
+	* tree.cc (build_array_type_1): Return early when type_hash_canon
+	returned an older existing type.
+	(build_function_type): Likewise.
+	(build_method_type_directly): Likewise.
+	(build_offset_type): Likewise.
+
 2024-05-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2024-05-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114931
+	* c-common.cc (complete_array_type): Set TYPE_STRUCTURAL_EQUALITY_P
+	before probing with type_hash_canon.
+
 2024-05-07  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
