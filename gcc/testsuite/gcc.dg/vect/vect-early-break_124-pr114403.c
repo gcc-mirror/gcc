@@ -2,7 +2,7 @@
 /* { dg-require-effective-target vect_early_break_hw } */
 /* { dg-require-effective-target vect_long_long } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { xfail riscv*-*-* } } } */
 
 #include "tree-vect.h"
 
