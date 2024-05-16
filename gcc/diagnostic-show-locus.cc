@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "version.h"
@@ -31,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "cpplib.h"
+#include "text-art/types.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -1923,14 +1925,18 @@ struct pod_label_text
 class line_label
 {
 public:
-  line_label (const cpp_char_column_policy &policy,
-	      int state_idx, int column,
+  line_label (int state_idx, int column,
 	      label_text text)
   : m_state_idx (state_idx), m_column (column),
     m_text (std::move (text)), m_label_line (0), m_has_vbar (true)
   {
-    const int bytes = strlen (m_text.m_buffer);
-    m_display_width = cpp_display_width (m_text.m_buffer, bytes, policy);
+    /* Using styled_string rather than cpp_display_width here
+       lets us skip SGR formatting characters for color and URLs.
+       It doesn't handle tabs and unicode escaping, but we don't
+       expect to see either of those in labels.  */
+    text_art::style_manager sm;
+    text_art::styled_string str (sm, m_text.m_buffer);
+    m_display_width = str.calc_canvas_width ();
   }
 
   /* Sorting is primarily by column, then by state index.  */
@@ -1990,7 +1996,7 @@ layout::print_any_labels (linenum_type row)
 	if (text.get () == NULL)
 	  continue;
 
-	labels.safe_push (line_label (m_policy, i, disp_col, std::move (text)));
+	labels.safe_push (line_label (i, disp_col, std::move (text)));
       }
   }
 
@@ -4382,9 +4388,9 @@ test_one_liner_labels_utf8 ()
       ASSERT_STREQ (" <U+1F602>_foo = <U+03C0>_bar.<U+1F602>_field<U+03C0>;\n"
 		    " ^~~~~~~~~~~~~   ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~\n"
 		    " |               |            |\n"
-		    " |               |            label 2\xcf\x80\n"
-		    " |               label 1\xcf\x80\n"
-		    " label 0\xf0\x9f\x98\x82\n",
+		    " label 0\xf0\x9f\x98\x82"
+		    /* ... */ "       label 1\xcf\x80"
+		    /* ...................*/ "     label 2\xcf\x80\n",
 		    pp_formatted_text (dc.printer));
     }
     {
@@ -4395,9 +4401,9 @@ test_one_liner_labels_utf8 ()
 	(" <f0><9f><98><82>_foo = <cf><80>_bar.<f0><9f><98><82>_field<cf><80>;\n"
 	 " ^~~~~~~~~~~~~~~~~~~~   ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 	 " |                      |            |\n"
-	 " |                      |            label 2\xcf\x80\n"
-	 " |                      label 1\xcf\x80\n"
-	 " label 0\xf0\x9f\x98\x82\n",
+	 " label 0\xf0\x9f\x98\x82"
+	 /* ... */ "              label 1\xcf\x80"
+	 /* ..........................*/ "     label 2\xcf\x80\n",
 	 pp_formatted_text (dc.printer));
     }
   }
