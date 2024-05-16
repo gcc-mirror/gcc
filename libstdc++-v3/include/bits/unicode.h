@@ -34,10 +34,12 @@
 #include <array>
 #include <bit>      // bit_width
 #include <charconv> // __detail::__from_chars_alnum_to_val_table
+#include <string_view>
 #include <cstdint>
 #include <bits/stl_algo.h>
 #include <bits/stl_iterator.h>
-#include <bits/ranges_base.h>
+#include <bits/ranges_base.h> // iterator_t, sentinel_t, input_range, etc.
+#include <bits/ranges_util.h> // view_interface
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -802,7 +804,7 @@ inline namespace __v15_1_0
 	operator++(int)
 	{
 	  auto __tmp = *this;
-	  ++this;
+	  ++*this;
 	  return __tmp;
 	}
 
