@@ -1,3 +1,15 @@
+2024-05-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115057
+	* gm2-libs-iso/TextIO.mod (ReadRestLine): Use ReadChar to
+	skip unwanted characters as this calls IOChan.Look and updates
+	the cid result status.  A Skip without a Look does not update
+	the status.  Skip always sets read result to allRight.
+	* gm2-libs-iso/TextUtil.def (SkipSpaces): Improve comments.
+	(CharAvailable): Improve comments.
+	* gm2-libs-iso/TextUtil.mod (SkipSpaces): Improve comments.
+	(CharAvailable): Improve comments.
+
 2024-05-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/115003

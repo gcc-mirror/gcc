@@ -1,3 +1,150 @@
+2024-05-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114899
+	* c-c++-common/analyzer/out-of-bounds-diagram-pr114899.c: New test.
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/cmpmemsi-1.c: New test.
+	* gcc.target/riscv/cmpmemsi-2.c: New test.
+	* gcc.target/riscv/cmpmemsi-3.c: New test.
+	* gcc.target/riscv/cmpmemsi.c: New test.
+
+2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114854
+	* g++.dg/cpp1y/nsdmi-aggr22.C: New test.
+
+2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	DR 1693
+	PR c++/113760
+	DR 569
+	* g++.dg/diagnostic/semicolon1.C: New test.
+	* g++.dg/diagnostic/semicolon10.C: New test.
+	* g++.dg/diagnostic/semicolon11.C: New test.
+	* g++.dg/diagnostic/semicolon12.C: New test.
+	* g++.dg/diagnostic/semicolon13.C: New test.
+	* g++.dg/diagnostic/semicolon14.C: New test.
+	* g++.dg/diagnostic/semicolon15.C: New test.
+	* g++.dg/diagnostic/semicolon16.C: New test.
+	* g++.dg/diagnostic/semicolon17.C: New test.
+	* g++.dg/diagnostic/semicolon2.C: New test.
+	* g++.dg/diagnostic/semicolon3.C: New test.
+	* g++.dg/diagnostic/semicolon4.C: New test.
+	* g++.dg/diagnostic/semicolon5.C: New test.
+	* g++.dg/diagnostic/semicolon6.C: New test.
+	* g++.dg/diagnostic/semicolon7.C: New test.
+	* g++.dg/diagnostic/semicolon8.C: New test.
+	* g++.dg/diagnostic/semicolon9.C: New test.
+
+2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR lto/113208
+	* g++.dg/abi/comdat3.C: New test.
+	* g++.dg/abi/comdat4.C: New test.
+
+2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114902
+	PR rtl-optimization/115092
+	* gcc.dg/pr114902.c: New test.
+	* gcc.dg/pr115092.c: New test.
+
+2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115103
+	* c-c++-common/gomp/clause-dups-1.c: Add 2 further expected errors.
+	* gfortran.dg/gomp/pr115103.f90: New test.
+
+2024-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114589
+	* gfortran.dg/streamio_9.f90: Use -ffloat-store to avoid
+	excess precision when not spilling.
+	* g++.dg/tree-ssa/pr114589.C: New testcase.
+
+2024-05-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115057
+	* gm2/isolib/run/pass/testrestline.mod: New test.
+	* gm2/isolib/run/pass/testrestline2.mod: New test.
+	* gm2/isolib/run/pass/testrestline3.mod: New test.
+
+2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	DR 2855
+	* g++.dg/DRs/dr2855.C: New test.
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/cmo-zicboz-zic64-1.c: Fix for rv32.
+
+2024-05-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/ldp_stp_16.c: Update to check for UZP1.
+	* gcc.target/aarch64/pr109072_1.c: Likewise.
+	* gcc.target/aarch64/vec-init-14.c: Likewise.
+	* gcc.target/aarch64/vec-init-9.c: Likewise.
+
+2024-05-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR ipa/85656
+	* gcc.dg/ipa/ipa-icf-38.c: Require linker_plugin.
+
+2024-05-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.target/i386/pr97054.C (dg-options): Add -fomit-frame-pointer.
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/cpymem-32-ooo.c: Adjustments for overlapping
+	access.
+	* gcc.target/riscv/cpymem-32.c: Adjustments for code emitted by
+	by-pieces.
+	* gcc.target/riscv/cpymem-64-ooo.c: Adjustments for overlapping
+	access.
+	* gcc.target/riscv/cpymem-64.c: Adjustments for code emitted by
+	by-pieces.
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/cpymem-32-ooo.c: Adjust for overlapping
+	access.
+	* gcc.target/riscv/cpymem-64-ooo.c: Likewise.
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/cpymem-32-ooo.c: Adjust for unaligned access.
+	* gcc.target/riscv/cpymem-64-ooo.c: Likewise.
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/cpymem-32-ooo.c: New test.
+	* gcc.target/riscv/cpymem-32.c: New test.
+	* gcc.target/riscv/cpymem-64-ooo.c: New test.
+	* gcc.target/riscv/cpymem-64.c: New test.
+
+2024-05-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/cmo-zicboz-zic64-1.c: Don't run on rv32.
+
+2024-05-15  Levy Hsu  <admin@levyhsu.com>
+
+	PR target/107563
+	* g++.target/i386/pr107563-a.C: New test.
+	* g++.target/i386/pr107563-b.C: New test.
+
+2024-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114994
+	* g++.dg/template/non-dependent32.C: New test.
+
+2024-05-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/shift-add-2.c: New test.
+
 2024-05-14  Simon Martin  <simon-l.martin@laposte.net>
 
 	PR c++/105760

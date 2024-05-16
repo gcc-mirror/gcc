@@ -1,3 +1,10 @@
+2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	DR 1693
+	PR c++/113760
+	DR 569
+	* c.opt (Wextra-semi): Initialize to -1.
+
 2024-05-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/113582

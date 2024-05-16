@@ -1,3 +1,10 @@
+2024-05-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/114899
+	* access-diagram.cc
+	(written_svalue_spatial_item::get_label_string): Bulletproof
+	against SSA_NAME_VAR being null.
+
 2024-05-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/111475

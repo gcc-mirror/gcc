@@ -1,3 +1,114 @@
+2024-05-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-string.cc: Add missing hunk from last change.
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-string.cc (emit_strcmp_scalar_load_and_compare):
+	Use adjust_address() to calculate MEM-PLUS pattern.
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-protos.h (riscv_expand_block_compare): New
+	prototype.
+	* config/riscv/riscv-string.cc (GEN_EMIT_HELPER2): New helper
+	for zero_extendhi.
+	(do_load_from_addr): Add support for HI and SI/64 modes.
+	(do_load): Add helper for zero-extended loads.
+	(emit_memcmp_scalar_load_and_compare): New helper to emit memcmp.
+	(emit_memcmp_scalar_result_calculation): Likewise.
+	(riscv_expand_block_compare_scalar): Likewise.
+	(riscv_expand_block_compare): New RISC-V expander for memory compare.
+	* config/riscv/riscv.md (cmpmemsi): New cmpmem expansion.
+
+2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	DR 1693
+	PR c++/113760
+	DR 569
+	* doc/invoke.texi: Update -Wextra-semi documentation.
+
+2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114902
+	PR rtl-optimization/115092
+	* combine.cc (simplify_compare_const): Don't optimize
+	GE op0 SIGNED_MIN or LT op0 SIGNED_MIN into NE op0 const0_rtx or
+	EQ op0 const0_rtx.
+
+2024-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114589
+	* tree-ssa-sink.cc (select_best_block): Remove profile-based
+	heuristics.  Instead reject sink locations that sink
+	to post-dominators.  Move empty latch check here from
+	statement_sink_location.  Also consider early_bb for the
+	loop depth check.
+	(statement_sink_location): Remove superfluous check.  Remove
+	empty latch check.
+	(pass_sink_code::execute): Compute/release post-dominators.
+
+2024-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/111422
+	* cfgexpand.cc (add_scope_conflicts_2): Handle PHIs
+	by recursing to their arguments.
+
+2024-05-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_combine_internal<mode>):
+	Use UZP1 instead of INS.
+	(aarch64_combine_internal_be<mode>): Likewise.
+
+2024-05-15  Jan Hubicka  <jh@suse.cz>
+
+	* alias.cc (reference_alias_ptr_type_1): Use view_converted_memref_p.
+	* alias.h (view_converted_memref_p): Declare.
+	* tree-ssa-alias.cc (view_converted_memref_p): Export.
+	(ao_compare::compare_ao_refs): Use same_type_for_tbaa.
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-string.cc (riscv_block_move_straight):
+	Hand over up to 2xXLEN bytes to move_by_pieces().
+
+2024-05-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-string.cc (riscv_block_move_straight): Add
+	parameter align.
+	(riscv_adjust_block_mem): Replace parameter length by align.
+	(riscv_block_move_loop): Add parameter align.
+	(riscv_expand_block_move_scalar): Set alignment properly if the
+	target has fast unaligned access.
+
+2024-05-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/114995
+	* range-op-ptr.cc (range_operator::pointers_handled_p): Default to true.
+
+2024-05-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/114301
+	* tree-cfg.cc (gimple_can_duplicate_bb_p): Check returns_twice
+	only on the last call statement rather than all.
+
+2024-05-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-string.cc
+	(riscv_expand_block_clear_zicboz_zic64b): Handle rv32 correctly.
+
+2024-05-15  Levy Hsu  <admin@levyhsu.com>
+
+	PR target/107563
+	* config/i386/i386-expand.cc (expand_vec_perm_psrlw_psllw_por): New
+	subroutine.
+	(ix86_expand_vec_perm_const_1): Call expand_vec_perm_psrlw_psllw_por.
+
+2024-05-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md: Add pattern for sign extended shift-add
+	sequence with a masked input.
+
 2024-05-14  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	PR rtl-optimization/115013

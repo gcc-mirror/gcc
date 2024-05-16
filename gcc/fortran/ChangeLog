@@ -1,3 +1,10 @@
+2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115103
+	* openmp.cc (resolve_omp_clauses): Diagnose grainsize
+	used together with num_tasks or nogroup used together with
+	reduction.
+
 2024-05-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/113363

@@ -1,3 +1,31 @@
+2024-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77704
+	* include/bits/basic_ios.h (basic_ios::fill()): Do not modify
+	_M_fill and _M_fill_init in a const member function.
+	(basic_ios::fill(char_type)): Use _M_fill directly instead of
+	calling fill(). Set _M_fill_init to true.
+	* include/bits/basic_ios.tcc (basic_ios::init): Set _M_fill and
+	_M_fill_init here instead.
+	* testsuite/27_io/basic_ios/fill/char/1.cc: New test.
+	* testsuite/27_io/basic_ios/fill/wchar_t/1.cc: New test.
+
+2024-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__detail::__variant::__compare): New
+	function template.
+	(operator==, operator!=, operator<, operator>, operator<=)
+	(operator>=): Replace macro definition with handwritten function
+	calling __detail::__variant::__compare.
+	(operator<=>): Call __detail::__variant::__compare.
+
+2024-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89624
+	* include/bits/atomic_base.h (memory_order): Use int as
+	underlying type.
+	* testsuite/29_atomics/atomic/89624.cc: New test.
+
 2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/115015

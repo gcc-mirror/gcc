@@ -1,3 +1,51 @@
+2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114854
+	* call.cc (convert_like_internal) <case ck_user>: Don't set
+	TARGET_EXPR_DIRECT_INIT_P.
+
+2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	DR 1693
+	PR c++/113760
+	DR 569
+	* parser.cc (extra_semi_kind): New.
+	(maybe_warn_extra_semi): New.
+	(cp_parser_declaration): Call maybe_warn_extra_semi.
+	(cp_parser_member_declaration): Likewise.
+
+2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR lto/113208
+	* cp-tree.h (maybe_optimize_cdtor): Remove.
+	* decl2.cc (tentative_decl_linkage): Call maybe_make_one_only
+	for implicit instantiations of maybe in charge ctors/dtors
+	declared inline.
+	(import_export_decl): Don't call maybe_optimize_cdtor.
+	(c_parse_final_cleanups): Formatting fixes.
+	* optimize.cc (can_alias_cdtor): Adjust condition, for
+	HAVE_COMDAT_GROUP && DECL_ONE_ONLY && DECL_WEAK return true even
+	if not DECL_INTERFACE_KNOWN.
+	(maybe_clone_body): Don't clear DECL_SAVED_TREE, instead set it
+	to void_node.
+	(maybe_clone_body): Remove.
+	* decl.cc (cxx_comdat_group): For DECL_CLONED_FUNCTION_P
+	functions if SUPPORTS_ONE_ONLY return DECL_COMDAT_GROUP if already
+	set.
+
+2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115103
+	* semantics.cc (finish_omp_clauses): Diagnose grainsize
+	used together with num_tasks.
+
+2024-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114994
+	* tree.cc (lvalue_kind) <case MODOP_EXPR>: For a class
+	assignment, consider the result type.
+
 2024-05-14  Simon Martin  <simon-l.martin@laposte.net>
 
 	PR c++/105760
