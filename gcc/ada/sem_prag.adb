@@ -20464,11 +20464,7 @@ package body Sem_Prag is
 
          --  pragma Max_Entry_Queue_Length (static_integer_EXPRESSION);
 
-         --  This processing is shared by Pragma_Max_Entry_Queue_Depth and
-         --  Pragma_Max_Queue_Length.
-
          when Pragma_Max_Entry_Queue_Length
-            | Pragma_Max_Entry_Queue_Depth
             | Pragma_Max_Queue_Length
          =>
          Max_Entry_Queue_Length : declare
@@ -20478,9 +20474,7 @@ package body Sem_Prag is
             Val        : Uint;
 
          begin
-            if Prag_Id = Pragma_Max_Entry_Queue_Depth
-              or else Prag_Id = Pragma_Max_Queue_Length
-            then
+            if Prag_Id = Pragma_Max_Queue_Length then
                GNAT_Pragma;
             end if;
 
@@ -20515,10 +20509,6 @@ package body Sem_Prag is
             if (Has_Rep_Pragma (Entry_Id, Name_Max_Entry_Queue_Length)
                   and then
                 Prag_Id /= Pragma_Max_Entry_Queue_Length)
-                 or else
-               (Has_Rep_Pragma (Entry_Id, Name_Max_Entry_Queue_Depth)
-                  and then
-                Prag_Id /= Pragma_Max_Entry_Queue_Depth)
                  or else
                (Has_Rep_Pragma (Entry_Id, Name_Max_Queue_Length)
                   and then
@@ -32766,7 +32756,6 @@ package body Sem_Prag is
       Pragma_Machine_Attribute              => -1,
       Pragma_Main                           => -1,
       Pragma_Main_Storage                   => -1,
-      Pragma_Max_Entry_Queue_Depth          =>  0,
       Pragma_Max_Entry_Queue_Length         =>  0,
       Pragma_Max_Queue_Length               =>  0,
       Pragma_Memory_Size                    =>  0,

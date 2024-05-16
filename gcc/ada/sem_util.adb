@@ -10709,8 +10709,6 @@ package body Sem_Util is
    function Get_Max_Queue_Length (Id : Entity_Id) return Uint is
       pragma Assert (Is_Entry (Id));
       PMQL  : constant Entity_Id := Get_Pragma (Id, Pragma_Max_Queue_Length);
-      PMEQD : constant Entity_Id :=
-         Get_Pragma (Id, Pragma_Max_Entry_Queue_Depth);
       PMEQL : constant Entity_Id :=
          Get_Pragma (Id, Pragma_Max_Entry_Queue_Length);
       Max   : Uint;
@@ -10725,9 +10723,6 @@ package body Sem_Util is
       if Present (PMQL) then
          Max := Expr_Value
             (Expression (First (Pragma_Argument_Associations (PMQL))));
-      elsif Present (PMEQD) then
-         Max := Expr_Value
-            (Expression (First (Pragma_Argument_Associations (PMEQD))));
       elsif Present (PMEQL) then
          Max := Expr_Value
             (Expression (First (Pragma_Argument_Associations (PMEQL))));
@@ -12224,9 +12219,9 @@ package body Sem_Util is
       return
         Ekind (Id) = E_Entry
           and then
-        (Present (Get_Pragma (Id, Pragma_Max_Queue_Length)) or else
-         Present (Get_Pragma (Id, Pragma_Max_Entry_Queue_Depth)) or else
-         Present (Get_Pragma (Id, Pragma_Max_Entry_Queue_Length)));
+            (Present (Get_Pragma (Id, Pragma_Max_Queue_Length))
+              or else
+             Present (Get_Pragma (Id, Pragma_Max_Entry_Queue_Length)));
    end Has_Max_Queue_Length;
 
    ---------------------------------

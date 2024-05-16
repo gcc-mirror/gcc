@@ -114,7 +114,6 @@ package Aspects is
       Aspect_Linker_Section,                -- GNAT
       Aspect_Local_Restrictions,            -- GNAT
       Aspect_Machine_Radix,
-      Aspect_Max_Entry_Queue_Depth,         -- GNAT
       Aspect_Max_Entry_Queue_Length,
       Aspect_Max_Queue_Length,              -- GNAT
       Aspect_Object_Size,
@@ -304,7 +303,6 @@ package Aspects is
       Aspect_Linker_Section             => True,
       Aspect_Local_Restrictions         => True,
       Aspect_Lock_Free                  => True,
-      Aspect_Max_Entry_Queue_Depth      => True,
       Aspect_Max_Queue_Length           => True,
       Aspect_No_Caching                 => True,
       Aspect_No_Elaboration_Code_All    => True,
@@ -450,7 +448,6 @@ package Aspects is
       Aspect_Linker_Section             => Expression,
       Aspect_Local_Restrictions         => Expression,
       Aspect_Machine_Radix              => Expression,
-      Aspect_Max_Entry_Queue_Depth      => Expression,
       Aspect_Max_Entry_Queue_Length     => Expression,
       Aspect_Max_Queue_Length           => Expression,
       Aspect_Object_Size                => Expression,
@@ -549,7 +546,6 @@ package Aspects is
       Aspect_Linker_Section               => True,
       Aspect_Local_Restrictions           => False,
       Aspect_Machine_Radix                => True,
-      Aspect_Max_Entry_Queue_Depth        => False,
       Aspect_Max_Entry_Queue_Length       => False,
       Aspect_Max_Queue_Length             => False,
       Aspect_Object_Size                  => True,
@@ -732,7 +728,6 @@ package Aspects is
       Aspect_Lock_Free                    => Name_Lock_Free,
       Aspect_Local_Restrictions           => Name_Local_Restrictions,
       Aspect_Machine_Radix                => Name_Machine_Radix,
-      Aspect_Max_Entry_Queue_Depth        => Name_Max_Entry_Queue_Depth,
       Aspect_Max_Entry_Queue_Length       => Name_Max_Entry_Queue_Length,
       Aspect_Max_Queue_Length             => Name_Max_Queue_Length,
       Aspect_No_Caching                   => Name_No_Caching,
@@ -1046,7 +1041,6 @@ package Aspects is
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Local_Restrictions           => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
-      Aspect_Max_Entry_Queue_Depth        => Never_Delay,
       Aspect_Max_Entry_Queue_Length       => Never_Delay,
       Aspect_Max_Queue_Length             => Never_Delay,
       Aspect_No_Caching                   => Never_Delay,

@@ -9376,8 +9376,7 @@ package body Exp_Ch9 is
             Need_Array : Boolean := False;
 
          begin
-            --  First check if there is any Max_Queue_Length,
-            --  Max_Entry_Queue_Length or Max_Entry_Queue_Depth pragma.
+            --  First check if there is any Max_[Entry_]Queue_Length pragma
 
             Item := First_Entity (Prot_Typ);
             while Present (Item) loop
