@@ -3575,6 +3575,10 @@ get_constraint_for_1 (tree t, vec<ce_s> *results, bool address_p,
       }
     case tcc_reference:
       {
+	if (TREE_THIS_VOLATILE (t))
+	  /* Fall back to anything.  */
+	  break;
+
 	switch (TREE_CODE (t))
 	  {
 	  case MEM_REF:
@@ -3676,6 +3680,9 @@ get_constraint_for_1 (tree t, vec<ce_s> *results, bool address_p,
       }
     case tcc_declaration:
       {
+	if (VAR_P (t) && TREE_THIS_VOLATILE (t))
+	  /* Fall back to anything.  */
+	  break;
 	get_constraint_for_ssa_var (t, results, address_p);
 	return;
       }
