@@ -63,6 +63,16 @@ class theme
     Y_ARROW_UP_TAIL,
     Y_ARROW_DOWN_HEAD,
     Y_ARROW_DOWN_TAIL,
+
+    /* The interprocedural depth indications shown in execution paths
+       with DPF_INLINE_EVENTS.  */
+    INTERPROCEDURAL_PUSH_FRAME_LEFT,   /* e.g. "+".  */
+    INTERPROCEDURAL_PUSH_FRAME_MIDDLE, /* e.g. "-".  */
+    INTERPROCEDURAL_PUSH_FRAME_RIGHT,  /* e.g. ">".  */
+    INTERPROCEDURAL_DEPTH_MARKER,       /* e.g. "|".  */
+    INTERPROCEDURAL_POP_FRAMES_LEFT,   /* e.g. "<".  */
+    INTERPROCEDURAL_POP_FRAMES_MIDDLE, /* e.g. "-".  */
+    INTERPROCEDURAL_POP_FRAMES_RIGHT  /* e.g. "+".  */
   };
 
   virtual ~theme () = default;

@@ -125,6 +125,21 @@ ascii_theme::get_cppchar (enum cell_kind kind) const
     case cell_kind::Y_ARROW_UP_TAIL:
     case cell_kind::Y_ARROW_DOWN_TAIL:
       return '|';
+
+    case cell_kind::INTERPROCEDURAL_PUSH_FRAME_LEFT:
+      return '+';
+    case cell_kind::INTERPROCEDURAL_PUSH_FRAME_MIDDLE:
+      return '-';
+    case cell_kind::INTERPROCEDURAL_PUSH_FRAME_RIGHT:
+      return '>';
+    case cell_kind::INTERPROCEDURAL_DEPTH_MARKER:
+      return '|';
+    case cell_kind::INTERPROCEDURAL_POP_FRAMES_LEFT:
+      return '<';
+    case cell_kind::INTERPROCEDURAL_POP_FRAMES_MIDDLE:
+      return '-';
+    case cell_kind::INTERPROCEDURAL_POP_FRAMES_RIGHT:
+      return '+';
     }
 }
 
@@ -180,5 +195,20 @@ unicode_theme::get_cppchar (enum cell_kind kind) const
     case cell_kind::Y_ARROW_UP_TAIL:
     case cell_kind::Y_ARROW_DOWN_TAIL:
       return 0x2502; /* "│": U+2502: BOX DRAWINGS LIGHT VERTICAL */
+
+    case cell_kind::INTERPROCEDURAL_PUSH_FRAME_LEFT:
+      return 0x2514; /* "└": U+2514: BOX DRAWINGS LIGHT UP AND RIGHT  */
+    case cell_kind::INTERPROCEDURAL_PUSH_FRAME_MIDDLE:
+      return 0x2500; /* "─": U+2500: BOX DRAWINGS LIGHT HORIZONTAL */
+    case cell_kind::INTERPROCEDURAL_PUSH_FRAME_RIGHT:
+      return '>';
+    case cell_kind::INTERPROCEDURAL_DEPTH_MARKER:
+      return 0x2502; /* "│": U+2502: BOX DRAWINGS LIGHT VERTICAL */
+    case cell_kind::INTERPROCEDURAL_POP_FRAMES_LEFT:
+      return '<';
+    case cell_kind::INTERPROCEDURAL_POP_FRAMES_MIDDLE:
+      return 0x2500; /* "─": U+2500: BOX DRAWINGS LIGHT HORIZONTAL */
+    case cell_kind::INTERPROCEDURAL_POP_FRAMES_RIGHT:
+      return 0x2518; /* "┘": U+2518: BOX DRAWINGS LIGHT UP AND LEFT.  */
     }
 }

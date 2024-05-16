@@ -437,6 +437,15 @@ public:
       = colorize_start (pp_show_color (pp), line_color);
     const char *end_line_color = colorize_stop (pp_show_color (pp));
 
+    text_art::ascii_theme fallback_theme;
+    text_art::theme *theme = dc->get_diagram_theme ();
+    if (!theme)
+      theme = &fallback_theme;
+
+    cppchar_t depth_marker_char = theme->get_cppchar
+      (text_art::theme::cell_kind::INTERPROCEDURAL_DEPTH_MARKER);
+    /* e.g. "|".  */
+
     const bool interprocedural_p = m_per_thread_summary.interprocedural_p ();
 
     write_indent (pp, m_cur_indent);
@@ -446,11 +455,21 @@ public:
 	  {
 	    gcc_assert (interprocedural_p);
 	    /* Show pushed stack frame(s).  */
-	    const char *push_prefix = "+--> ";
+	    cppchar_t left = theme->get_cppchar
+	      (text_art::theme::cell_kind::INTERPROCEDURAL_PUSH_FRAME_LEFT);
+	    cppchar_t middle = theme->get_cppchar
+	      (text_art::theme::cell_kind::INTERPROCEDURAL_PUSH_FRAME_MIDDLE);
+	    cppchar_t right = theme->get_cppchar
+	      (text_art::theme::cell_kind::INTERPROCEDURAL_PUSH_FRAME_RIGHT);
+	    /* e.g. "+--> ".  */
 	    pp_string (pp, start_line_color);
-	    pp_string (pp, push_prefix);
+	    pp_unicode_character (pp, left);
+	    pp_unicode_character (pp, middle);
+	    pp_unicode_character (pp, middle);
+	    pp_unicode_character (pp, right);
+	    pp_space (pp);
 	    pp_string (pp, end_line_color);
-	    m_cur_indent += strlen (push_prefix);
+	    m_cur_indent += 5;
 	  }
       }
     if (range->m_fndecl)
@@ -473,7 +492,7 @@ public:
       {
 	write_indent (pp, m_cur_indent + per_frame_indent);
 	pp_string (pp, start_line_color);
-	pp_string (pp, "|");
+	pp_unicode_character (pp, depth_marker_char);
 	pp_string (pp, end_line_color);
 	pp_newline (pp);
 
@@ -483,7 +502,7 @@ public:
 	  pretty_printer tmp_pp;
 	  write_indent (&tmp_pp, m_cur_indent + per_frame_indent);
 	  pp_string (&tmp_pp, start_line_color);
-	  pp_string (&tmp_pp, "|");
+	  pp_unicode_character (&tmp_pp, depth_marker_char);
 	  pp_string (&tmp_pp, end_line_color);
 	  prefix = xstrdup (pp_formatted_text (&tmp_pp));
 	}
@@ -494,7 +513,7 @@ public:
 
 	write_indent (pp, m_cur_indent + per_frame_indent);
 	pp_string (pp, start_line_color);
-	pp_string (pp, "|");
+	pp_unicode_character (pp, depth_marker_char);
 	pp_string (pp, end_line_color);
 	pp_newline (pp);
       }
@@ -510,9 +529,15 @@ public:
 		/* Show returning from stack frame(s), by printing
 		   something like:
 		   "                   |\n"
-		   "     <------------ +\n"
+		   "     <-------------+\n"
 		   "     |\n".  */
 		gcc_assert (interprocedural_p);
+		cppchar_t left = theme->get_cppchar
+		  (text_art::theme::cell_kind::INTERPROCEDURAL_POP_FRAMES_LEFT);
+		cppchar_t middle = theme->get_cppchar
+		  (text_art::theme::cell_kind::INTERPROCEDURAL_POP_FRAMES_MIDDLE);
+		cppchar_t right = theme->get_cppchar
+		  (text_art::theme::cell_kind::INTERPROCEDURAL_POP_FRAMES_RIGHT);
 		int vbar_for_next_frame
 		  = *m_vbar_column_for_depth.get (next_range->m_stack_depth);
 
@@ -520,18 +545,18 @@ public:
 		  = vbar_for_next_frame - per_frame_indent;
 		write_indent (pp, vbar_for_next_frame);
 		pp_string (pp, start_line_color);
-		pp_character (pp, '<');
+		pp_unicode_character (pp, left);
 		for (int i = indent_for_next_frame + per_frame_indent;
 		     i < m_cur_indent + per_frame_indent - 1; i++)
-		  pp_character (pp, '-');
-		pp_character (pp, '+');
+		  pp_unicode_character (pp, middle);
+		pp_unicode_character (pp, right);
 		pp_string (pp, end_line_color);
 		pp_newline (pp);
 		m_cur_indent = indent_for_next_frame;
 
 		write_indent (pp, vbar_for_next_frame);
 		pp_string (pp, start_line_color);
-		pp_character (pp, '|');
+		pp_unicode_character (pp, depth_marker_char);
 		pp_string (pp, end_line_color);
 		pp_newline (pp);
 	      }
@@ -864,59 +889,119 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
   path_summary summary (path, false);
   ASSERT_EQ (summary.get_num_ranges (), 9);
 
-  test_diagnostic_context dc;
-  print_path_summary_as_text (&summary, &dc, true);
-  ASSERT_STREQ
-    ("  `test': events 1-2 (depth 0)\n"
-     "    |\n"
-     "    | (1): entering `test'\n"
-     "    | (2): calling `make_boxed_int'\n"
-     "    |\n"
-     "    +--> `make_boxed_int': events 3-4 (depth 1)\n"
-     "           |\n"
-     "           | (3): entering `make_boxed_int'\n"
-     "           | (4): calling `wrapped_malloc'\n"
-     "           |\n"
-     "           +--> `wrapped_malloc': events 5-6 (depth 2)\n"
-     "                  |\n"
-     "                  | (5): entering `wrapped_malloc'\n"
-     "                  | (6): calling malloc\n"
-     "                  |\n"
-     "    <-------------+\n"
-     "    |\n"
-     "  `test': events 7-8 (depth 0)\n"
-     "    |\n"
-     "    | (7): returning to `test'\n"
-     "    | (8): calling `free_boxed_int'\n"
-     "    |\n"
-     "    +--> `free_boxed_int': events 9-10 (depth 1)\n"
-     "           |\n"
-     "           | (9): entering `free_boxed_int'\n"
-     "           | (10): calling `wrapped_free'\n"
-     "           |\n"
-     "           +--> `wrapped_free': events 11-12 (depth 2)\n"
-     "                  |\n"
-     "                  | (11): entering `wrapped_free'\n"
-     "                  | (12): calling free\n"
-     "                  |\n"
-     "    <-------------+\n"
-     "    |\n"
-     "  `test': events 13-14 (depth 0)\n"
-     "    |\n"
-     "    | (13): returning to `test'\n"
-     "    | (14): calling `free_boxed_int'\n"
-     "    |\n"
-     "    +--> `free_boxed_int': events 15-16 (depth 1)\n"
-     "           |\n"
-     "           | (15): entering `free_boxed_int'\n"
-     "           | (16): calling `wrapped_free'\n"
-     "           |\n"
-     "           +--> `wrapped_free': events 17-18 (depth 2)\n"
-     "                  |\n"
-     "                  | (17): entering `wrapped_free'\n"
-     "                  | (18): calling free\n"
-     "                  |\n",
-     pp_formatted_text (dc.printer));
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    print_path_summary_as_text (&summary, &dc, true);
+    ASSERT_STREQ
+      ("  `test': events 1-2 (depth 0)\n"
+       "    |\n"
+       "    | (1): entering `test'\n"
+       "    | (2): calling `make_boxed_int'\n"
+       "    |\n"
+       "    +--> `make_boxed_int': events 3-4 (depth 1)\n"
+       "           |\n"
+       "           | (3): entering `make_boxed_int'\n"
+       "           | (4): calling `wrapped_malloc'\n"
+       "           |\n"
+       "           +--> `wrapped_malloc': events 5-6 (depth 2)\n"
+       "                  |\n"
+       "                  | (5): entering `wrapped_malloc'\n"
+       "                  | (6): calling malloc\n"
+       "                  |\n"
+       "    <-------------+\n"
+       "    |\n"
+       "  `test': events 7-8 (depth 0)\n"
+       "    |\n"
+       "    | (7): returning to `test'\n"
+       "    | (8): calling `free_boxed_int'\n"
+       "    |\n"
+       "    +--> `free_boxed_int': events 9-10 (depth 1)\n"
+       "           |\n"
+       "           | (9): entering `free_boxed_int'\n"
+       "           | (10): calling `wrapped_free'\n"
+       "           |\n"
+       "           +--> `wrapped_free': events 11-12 (depth 2)\n"
+       "                  |\n"
+       "                  | (11): entering `wrapped_free'\n"
+       "                  | (12): calling free\n"
+       "                  |\n"
+       "    <-------------+\n"
+       "    |\n"
+       "  `test': events 13-14 (depth 0)\n"
+       "    |\n"
+       "    | (13): returning to `test'\n"
+       "    | (14): calling `free_boxed_int'\n"
+       "    |\n"
+       "    +--> `free_boxed_int': events 15-16 (depth 1)\n"
+       "           |\n"
+       "           | (15): entering `free_boxed_int'\n"
+       "           | (16): calling `wrapped_free'\n"
+       "           |\n"
+       "           +--> `wrapped_free': events 17-18 (depth 2)\n"
+       "                  |\n"
+       "                  | (17): entering `wrapped_free'\n"
+       "                  | (18): calling free\n"
+       "                  |\n",
+       pp_formatted_text (dc.printer));
+  }
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
+    print_path_summary_as_text (&summary, &dc, true);
+    ASSERT_STREQ
+      ("  `test': events 1-2 (depth 0)\n"
+       "    │\n"
+       "    │ (1): entering `test'\n"
+       "    │ (2): calling `make_boxed_int'\n"
+       "    │\n"
+       "    └──> `make_boxed_int': events 3-4 (depth 1)\n"
+       "           │\n"
+       "           │ (3): entering `make_boxed_int'\n"
+       "           │ (4): calling `wrapped_malloc'\n"
+       "           │\n"
+       "           └──> `wrapped_malloc': events 5-6 (depth 2)\n"
+       "                  │\n"
+       "                  │ (5): entering `wrapped_malloc'\n"
+       "                  │ (6): calling malloc\n"
+       "                  │\n"
+       "    <─────────────┘\n"
+       "    │\n"
+       "  `test': events 7-8 (depth 0)\n"
+       "    │\n"
+       "    │ (7): returning to `test'\n"
+       "    │ (8): calling `free_boxed_int'\n"
+       "    │\n"
+       "    └──> `free_boxed_int': events 9-10 (depth 1)\n"
+       "           │\n"
+       "           │ (9): entering `free_boxed_int'\n"
+       "           │ (10): calling `wrapped_free'\n"
+       "           │\n"
+       "           └──> `wrapped_free': events 11-12 (depth 2)\n"
+       "                  │\n"
+       "                  │ (11): entering `wrapped_free'\n"
+       "                  │ (12): calling free\n"
+       "                  │\n"
+       "    <─────────────┘\n"
+       "    │\n"
+       "  `test': events 13-14 (depth 0)\n"
+       "    │\n"
+       "    │ (13): returning to `test'\n"
+       "    │ (14): calling `free_boxed_int'\n"
+       "    │\n"
+       "    └──> `free_boxed_int': events 15-16 (depth 1)\n"
+       "           │\n"
+       "           │ (15): entering `free_boxed_int'\n"
+       "           │ (16): calling `wrapped_free'\n"
+       "           │\n"
+       "           └──> `wrapped_free': events 17-18 (depth 2)\n"
+       "                  │\n"
+       "                  │ (17): entering `wrapped_free'\n"
+       "                  │ (18): calling free\n"
+       "                  │\n",
+       pp_formatted_text (dc.printer));
+  }
+
 }
 
 /* Example where we pop the stack to an intermediate frame, rather than the
@@ -946,35 +1031,70 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
   path_summary summary (path, false);
   ASSERT_EQ (summary.get_num_ranges (), 5);
 
-  test_diagnostic_context dc;
-  print_path_summary_as_text (&summary, &dc, true);
-  ASSERT_STREQ
-    ("  `foo': events 1-2 (depth 0)\n"
-     "    |\n"
-     "    | (1): entering `foo'\n"
-     "    | (2): calling `bar'\n"
-     "    |\n"
-     "    +--> `bar': events 3-4 (depth 1)\n"
-     "           |\n"
-     "           | (3): entering `bar'\n"
-     "           | (4): calling `baz'\n"
-     "           |\n"
-     "           +--> `baz': event 5 (depth 2)\n"
-     "                  |\n"
-     "                  | (5): entering `baz'\n"
-     "                  |\n"
-     "           <------+\n"
-     "           |\n"
-     "         `bar': events 6-7 (depth 1)\n"
-     "           |\n"
-     "           | (6): returning to `bar'\n"
-     "           | (7): calling `baz'\n"
-     "           |\n"
-     "           +--> `baz': event 8 (depth 2)\n"
-     "                  |\n"
-     "                  | (8): entering `baz'\n"
-     "                  |\n",
-     pp_formatted_text (dc.printer));
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    print_path_summary_as_text (&summary, &dc, true);
+    ASSERT_STREQ
+      ("  `foo': events 1-2 (depth 0)\n"
+       "    |\n"
+       "    | (1): entering `foo'\n"
+       "    | (2): calling `bar'\n"
+       "    |\n"
+       "    +--> `bar': events 3-4 (depth 1)\n"
+       "           |\n"
+       "           | (3): entering `bar'\n"
+       "           | (4): calling `baz'\n"
+       "           |\n"
+       "           +--> `baz': event 5 (depth 2)\n"
+       "                  |\n"
+       "                  | (5): entering `baz'\n"
+       "                  |\n"
+       "           <------+\n"
+       "           |\n"
+       "         `bar': events 6-7 (depth 1)\n"
+       "           |\n"
+       "           | (6): returning to `bar'\n"
+       "           | (7): calling `baz'\n"
+       "           |\n"
+       "           +--> `baz': event 8 (depth 2)\n"
+       "                  |\n"
+       "                  | (8): entering `baz'\n"
+       "                  |\n",
+       pp_formatted_text (dc.printer));
+  }
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
+    print_path_summary_as_text (&summary, &dc, true);
+    ASSERT_STREQ
+      ("  `foo': events 1-2 (depth 0)\n"
+       "    │\n"
+       "    │ (1): entering `foo'\n"
+       "    │ (2): calling `bar'\n"
+       "    │\n"
+       "    └──> `bar': events 3-4 (depth 1)\n"
+       "           │\n"
+       "           │ (3): entering `bar'\n"
+       "           │ (4): calling `baz'\n"
+       "           │\n"
+       "           └──> `baz': event 5 (depth 2)\n"
+       "                  │\n"
+       "                  │ (5): entering `baz'\n"
+       "                  │\n"
+       "           <──────┘\n"
+       "           │\n"
+       "         `bar': events 6-7 (depth 1)\n"
+       "           │\n"
+       "           │ (6): returning to `bar'\n"
+       "           │ (7): calling `baz'\n"
+       "           │\n"
+       "           └──> `baz': event 8 (depth 2)\n"
+       "                  │\n"
+       "                  │ (8): entering `baz'\n"
+       "                  │\n",
+       pp_formatted_text (dc.printer));
+  }
 }
 
 /* Verify that print_path_summary is sane in the face of a recursive
@@ -998,29 +1118,58 @@ test_recursion (pretty_printer *event_pp)
   path_summary summary (path, false);
   ASSERT_EQ (summary.get_num_ranges (), 4);
 
-  test_diagnostic_context dc;
-  print_path_summary_as_text (&summary, &dc, true);
-  ASSERT_STREQ
-    ("  `factorial': events 1-2 (depth 0)\n"
-     "    |\n"
-     "    | (1): entering `factorial'\n"
-     "    | (2): calling `factorial'\n"
-     "    |\n"
-     "    +--> `factorial': events 3-4 (depth 1)\n"
-     "           |\n"
-     "           | (3): entering `factorial'\n"
-     "           | (4): calling `factorial'\n"
-     "           |\n"
-     "           +--> `factorial': events 5-6 (depth 2)\n"
-     "                  |\n"
-     "                  | (5): entering `factorial'\n"
-     "                  | (6): calling `factorial'\n"
-     "                  |\n"
-     "                  +--> `factorial': event 7 (depth 3)\n"
-     "                         |\n"
-     "                         | (7): entering `factorial'\n"
-     "                         |\n",
-     pp_formatted_text (dc.printer));
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    print_path_summary_as_text (&summary, &dc, true);
+    ASSERT_STREQ
+      ("  `factorial': events 1-2 (depth 0)\n"
+       "    |\n"
+       "    | (1): entering `factorial'\n"
+       "    | (2): calling `factorial'\n"
+       "    |\n"
+       "    +--> `factorial': events 3-4 (depth 1)\n"
+       "           |\n"
+       "           | (3): entering `factorial'\n"
+       "           | (4): calling `factorial'\n"
+       "           |\n"
+       "           +--> `factorial': events 5-6 (depth 2)\n"
+       "                  |\n"
+       "                  | (5): entering `factorial'\n"
+       "                  | (6): calling `factorial'\n"
+       "                  |\n"
+       "                  +--> `factorial': event 7 (depth 3)\n"
+       "                         |\n"
+       "                         | (7): entering `factorial'\n"
+       "                         |\n",
+       pp_formatted_text (dc.printer));
+  }
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
+    print_path_summary_as_text (&summary, &dc, true);
+    ASSERT_STREQ
+      ("  `factorial': events 1-2 (depth 0)\n"
+       "    │\n"
+       "    │ (1): entering `factorial'\n"
+       "    │ (2): calling `factorial'\n"
+       "    │\n"
+       "    └──> `factorial': events 3-4 (depth 1)\n"
+       "           │\n"
+       "           │ (3): entering `factorial'\n"
+       "           │ (4): calling `factorial'\n"
+       "           │\n"
+       "           └──> `factorial': events 5-6 (depth 2)\n"
+       "                  │\n"
+       "                  │ (5): entering `factorial'\n"
+       "                  │ (6): calling `factorial'\n"
+       "                  │\n"
+       "                  └──> `factorial': event 7 (depth 3)\n"
+       "                         │\n"
+       "                         │ (7): entering `factorial'\n"
+       "                         │\n",
+       pp_formatted_text (dc.printer));
+  }
 }
 
 /* Run all of the selftests within this file.  */
