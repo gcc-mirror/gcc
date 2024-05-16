@@ -1843,7 +1843,9 @@ package body Sem_Attr is
                if Nkind (P) = N_Aspect_Specification then
                   return P_Type = Entity (P);
 
-               elsif Nkind (P) in N_Declaration then
+               --  Prevent the search from going too far
+
+               elsif Is_Body_Or_Package_Declaration (P) then
                   return False;
                end if;
 
