@@ -408,10 +408,10 @@ static live_vars_map *live_vars;
 static vec<bitmap_head> live_vars_vec;
 
 /* Finds tailcalls falling into basic block BB. The list of found tailcalls is
-   added to the start of RET.  */
+   added to the start of RET. When ONLY_MUSTTAIL is set only handle musttail.  */
 
 static void
-find_tail_calls (basic_block bb, struct tailcall **ret)
+find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
 {
   tree ass_var = NULL_TREE, ret_var, func, param;
   gimple *stmt;
@@ -445,6 +445,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       if (is_gimple_call (stmt))
 	{
 	  call = as_a <gcall *> (stmt);
+	  /* Handle only musttail calls when not optimizing.  */
+	  if (only_musttail && !gimple_call_must_tail_p (call))
+	    return;
 	  ass_var = gimple_call_lhs (call);
 	  break;
 	}
@@ -467,7 +470,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       edge_iterator ei;
       /* Recurse to the predecessors.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
-	find_tail_calls (e->src, ret);
+	find_tail_calls (e->src, ret, only_musttail);
 
       return;
     }
@@ -528,7 +531,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   func = gimple_call_fndecl (call);
   if (func
       && !fndecl_built_in_p (func)
-      && recursive_call_p (current_function_decl, func))
+      && recursive_call_p (current_function_decl, func)
+      && !only_musttail)
     {
       tree arg;
 
@@ -1094,10 +1098,11 @@ create_tailcall_accumulator (const char *label, basic_block bb, tree init)
 }
 
 /* Optimizes tail calls in the function, turning the tail recursion
-   into iteration.  */
+   into iteration. When ONLY_MUSTCALL is true only optimize mustcall
+   marked calls.  */
 
 static unsigned int
-tree_optimize_tail_calls_1 (bool opt_tailcalls)
+tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_mustcall)
 {
   edge e;
   bool phis_constructed = false;
@@ -1117,7 +1122,7 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls)
       /* Only traverse the normal exits, i.e. those that end with return
 	 statement.  */
       if (safe_is_a <greturn *> (*gsi_last_bb (e->src)))
-	find_tail_calls (e->src, &tailcalls);
+	find_tail_calls (e->src, &tailcalls, only_mustcall);
     }
 
   if (live_vars)
@@ -1228,7 +1233,7 @@ gate_tail_calls (void)
 static unsigned int
 execute_tail_calls (void)
 {
-  return tree_optimize_tail_calls_1 (true);
+  return tree_optimize_tail_calls_1 (true, false);
 }
 
 namespace {
@@ -1261,7 +1266,7 @@ public:
   bool gate (function *) final override { return gate_tail_calls (); }
   unsigned int execute (function *) final override
     {
-      return tree_optimize_tail_calls_1 (false);
+      return tree_optimize_tail_calls_1 (false, false);
     }
 
 }; // class pass_tail_recursion
@@ -1311,4 +1316,49 @@ gimple_opt_pass *
 make_pass_tail_calls (gcc::context *ctxt)
 {
   return new pass_tail_calls (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_musttail =
+{
+  GIMPLE_PASS, /* type */
+  "musttail", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_musttail : public gimple_opt_pass
+{
+public:
+  pass_musttail (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_musttail, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  /* This pass is only used when the other tail call pass
+     doesn't run to make [[musttail]] still work. But only
+     run it when there is actually a musttail in the function.  */
+  bool gate (function *f) final override
+  {
+    return !flag_optimize_sibling_calls && f->has_musttail;
+  }
+  unsigned int execute (function *) final override
+  {
+    return tree_optimize_tail_calls_1 (true, true);
+  }
+
+}; // class pass_musttail
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_musttail (gcc::context *ctxt)
+{
+  return new pass_musttail (ctxt);
 }

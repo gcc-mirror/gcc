@@ -444,6 +444,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_tsan_O0);
   NEXT_PASS (pass_sanopt);
   NEXT_PASS (pass_cleanup_eh);
+  NEXT_PASS (pass_musttail);
   NEXT_PASS (pass_lower_resx);
   NEXT_PASS (pass_nrv);
   NEXT_PASS (pass_gimple_isel);
