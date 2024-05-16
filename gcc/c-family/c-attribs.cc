@@ -340,6 +340,8 @@ const struct attribute_spec c_common_gnu_attributes[] =
   { "common",                 0, 0, true,  false, false, false,
 			      handle_common_attribute,
 	                      attr_common_exclusions },
+  { "musttail",		      0, 0, false, false, false,
+			      false, handle_musttail_attribute, NULL },
   /* FIXME: logically, noreturn attributes should be listed as
      "false, true, true" and apply to function types.  But implementing this
      would require all the places in the compiler that use TREE_THIS_VOLATILE
@@ -1219,6 +1221,19 @@ handle_common_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       *no_add_attrs = true;
     }
 
+  return NULL_TREE;
+}
+
+/* Handle a "musttail" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_musttail_attribute (tree ARG_UNUSED (*node), tree name, tree ARG_UNUSED (args),
+			   int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  /* Currently only a statement attribute, handled directly in parser.  */
+  warning (OPT_Wattributes, "%qE attribute ignored", name);
+  *no_add_attrs = true;
   return NULL_TREE;
 }
 

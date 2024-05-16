@@ -1645,6 +1645,7 @@ extern tree find_tm_attribute (tree);
 extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[];
 extern const struct attribute_spec::exclusions attr_noreturn_exclusions[];
 extern tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
+extern tree handle_musttail_attribute (tree *, tree, tree, int, bool *);
 extern bool has_attribute (location_t, tree, tree, tree (*)(tree));
 extern tree build_attr_access_from_parms (tree, bool);
 
