@@ -41,22 +41,20 @@ class sarif_object;
         29 |     PyList_Append(list, item);
            |     ^~~~~~~~~~~~~~~~~~~~~~~~~
        'demo': events 1-3
-          |
-          |   25 |   list = PyList_New(0);
-          |      |          ^~~~~~~~~~~~~
-          |      |          |
-          |      |          (1) when 'PyList_New' fails, returning NULL
-          |   26 |
-          |   27 |   for (i = 0; i < count; i++) {
-          |      |   ~~~
-          |      |   |
-          |      |   (2) when 'i < count'
-          |   28 |     item = PyLong_FromLong(random());
-          |   29 |     PyList_Append(list, item);
-          |      |     ~~~~~~~~~~~~~~~~~~~~~~~~~
-          |      |     |
-          |      |     (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
-          |
+        25 |   list = PyList_New(0);
+           |          ^~~~~~~~~~~~~
+           |          |
+           |          (1) when 'PyList_New' fails, returning NULL
+        26 |
+        27 |   for (i = 0; i < count; i++) {
+           |   ~~~
+           |   |
+           |   (2) when 'i < count'
+        28 |     item = PyLong_FromLong(random());
+        29 |     PyList_Append(list, item);
+           |     ~~~~~~~~~~~~~~~~~~~~~~~~~
+           |     |
+           |     (3) when calling 'PyList_Append', passing NULL from (1) as argument 1
 
     The diagnostic-printing code has consolidated the path into a single
     run of events, since all the events are near each other and within the same
@@ -146,7 +144,7 @@ class diagnostic_event
 
   virtual tree get_fndecl () const = 0;
 
-  /* Stack depth, so that consumers can visualizes the interprocedural
+  /* Stack depth, so that consumers can visualize the interprocedural
      calls, returns, and frame nesting.  */
   virtual int get_stack_depth () const = 0;
 

@@ -17,51 +17,58 @@ void test (void *ptr)
       |                           ^~~~~~~~~
    NN |   WRAPPED_FREE (ptr);
       |   ^~~~~~~~~~~~
-  'test': event 1
-    |
-    |
-    |   NN | #define WRAPPED_FREE(PTR) free(PTR)
-    |      |                           ^~~~~~~~~
-    |      |                           |
-    |      |                           (1) first 'free' here
-    |   NN |   WRAPPED_FREE (ptr);
-    |      |   ^~~~~~~~~~~~
-    |
-  'test': event 2
-    |
-    |
-    |   NN | #define WRAPPED_FREE(PTR) free(PTR)
-    |      |                           ^~~~~~~~~
-    |      |                           |
-    |      |                           (2) second 'free' here; first 'free' was at (1)
-    |   NN |   WRAPPED_FREE (ptr);
-    |      |   ^~~~~~~~~~~~
-    |
      { dg-end-multiline-output "" { target c } } */
   /* { dg-begin-multiline-output "" }
    NN | #define WRAPPED_FREE(PTR) free(PTR)
       |                           ~~~~^~~~~
    NN |   WRAPPED_FREE (ptr);
       |   ^~~~~~~~~~~~
+     { dg-end-multiline-output "" { target c++ } } */
+  /* { dg-begin-multiline-output "" }
+  'test': event 1
+     { dg-end-multiline-output "" { target c } } */
+  /* { dg-begin-multiline-output "" }
   'void test(void*)': event 1
-    |
-    |
-    |   NN | #define WRAPPED_FREE(PTR) free(PTR)
-    |      |                           ~~~~^~~~~
-    |      |                               |
-    |      |                               (1) first 'free' here
-    |   NN |   WRAPPED_FREE (ptr);
-    |      |   ^~~~~~~~~~~~
-    |
+     { dg-end-multiline-output "" { target c++ } } */
+  /* { dg-prune-output "\[^\n\r\]*malloc-macro.h\[^\n\r\]*" } */
+  /* { dg-begin-multiline-output "" }
+   NN | #define WRAPPED_FREE(PTR) free(PTR)
+      |                           ^~~~~~~~~
+      |                           |
+      |                           (1) first 'free' here
+   NN |   WRAPPED_FREE (ptr);
+      |   ^~~~~~~~~~~~
+     { dg-end-multiline-output "" { target c } } */
+  /* { dg-begin-multiline-output "" }
+   NN | #define WRAPPED_FREE(PTR) free(PTR)
+      |                           ~~~~^~~~~
+      |                               |
+      |                               (1) first 'free' here
+   NN |   WRAPPED_FREE (ptr);
+      |   ^~~~~~~~~~~~
+     { dg-end-multiline-output "" { target c++ } } */
+  /* { dg-prune-output "\[^\n\r\]*malloc-macro.h\[^\n\r\]*" } */
+  /* { dg-begin-multiline-output "" }
+  'test': event 2
+     { dg-end-multiline-output "" { target c } } */
+  /* { dg-begin-multiline-output "" }
   'void test(void*)': event 2
-    |
-    |
-    |   NN | #define WRAPPED_FREE(PTR) free(PTR)
-    |      |                           ~~~~^~~~~
-    |      |                               |
-    |      |                               (2) second 'free' here; first 'free' was at (1)
-    |   NN |   WRAPPED_FREE (ptr);
-    |      |   ^~~~~~~~~~~~
-    |
+     { dg-end-multiline-output "" { target c++ } } */
+  /* { dg-prune-output "\[^\n\r\]*malloc-macro.h\[^\n\r\]*" } */
+  /* { dg-begin-multiline-output "" }
+   NN | #define WRAPPED_FREE(PTR) free(PTR)
+      |                           ^~~~~~~~~
+      |                           |
+      |                           (2) second 'free' here; first 'free' was at (1)
+   NN |   WRAPPED_FREE (ptr);
+      |   ^~~~~~~~~~~~
+     { dg-end-multiline-output "" { target c } } */
+  /* { dg-begin-multiline-output "" }
+   NN | #define WRAPPED_FREE(PTR) free(PTR)
+      |                           ~~~~^~~~~
+      |                               |
+      |                               (2) second 'free' here; first 'free' was at (1)
+   NN |   WRAPPED_FREE (ptr);
+      |   ^~~~~~~~~~~~
      { dg-end-multiline-output "" { target c++ } } */
 }

@@ -141,6 +141,8 @@ public:
   const char *get_name () const { return m_name.get (); }
   unsigned get_swimlane_index () const { return m_swimlane_idx; }
 
+  bool interprocedural_p () const;
+
 private:
   friend struct path_summary;
   friend class thread_event_printer;
@@ -293,6 +295,26 @@ private:
   }
 };
 
+/* Return true iff there is more than one stack frame used by the events
+   of this thread.  */
+
+bool
+per_thread_summary::interprocedural_p () const
+{
+  if (m_event_ranges.is_empty ())
+    return false;
+  tree first_fndecl = m_event_ranges[0]->m_fndecl;
+  int first_stack_depth = m_event_ranges[0]->m_stack_depth;
+  for (auto range : m_event_ranges)
+    {
+      if (range->m_fndecl != first_fndecl)
+	return true;
+      if (range->m_stack_depth != first_stack_depth)
+	return true;
+    }
+  return false;
+}
+
 /* path_summary's ctor.  */
 
 path_summary::path_summary (const diagnostic_path &path,
@@ -391,11 +413,14 @@ public:
       = colorize_start (pp_show_color (pp), line_color);
     const char *end_line_color = colorize_stop (pp_show_color (pp));
 
+    const bool interprocedural_p = m_per_thread_summary.interprocedural_p ();
+
     write_indent (pp, m_cur_indent);
     if (const event_range *prev_range = get_any_prev_range ())
       {
 	if (range->m_stack_depth > prev_range->m_stack_depth)
 	  {
+	    gcc_assert (interprocedural_p);
 	    /* Show pushed stack frame(s).  */
 	    const char *push_prefix = "+--> ";
 	    pp_string (pp, start_line_color);
@@ -420,34 +445,37 @@ public:
     pp_newline (pp);
 
     /* Print a run of events.  */
-    {
-      write_indent (pp, m_cur_indent + per_frame_indent);
-      pp_string (pp, start_line_color);
-      pp_string (pp, "|");
-      pp_string (pp, end_line_color);
-      pp_newline (pp);
-
-      char *saved_prefix = pp_take_prefix (pp);
-      char *prefix;
+    if (interprocedural_p)
       {
-	pretty_printer tmp_pp;
-	write_indent (&tmp_pp, m_cur_indent + per_frame_indent);
-	pp_string (&tmp_pp, start_line_color);
-	pp_string (&tmp_pp, "|");
-	pp_string (&tmp_pp, end_line_color);
-	prefix = xstrdup (pp_formatted_text (&tmp_pp));
-      }
-      pp_set_prefix (pp, prefix);
-      pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
-      range->print (dc, pp);
-      pp_set_prefix (pp, saved_prefix);
+	write_indent (pp, m_cur_indent + per_frame_indent);
+	pp_string (pp, start_line_color);
+	pp_string (pp, "|");
+	pp_string (pp, end_line_color);
+	pp_newline (pp);
 
-      write_indent (pp, m_cur_indent + per_frame_indent);
-      pp_string (pp, start_line_color);
-      pp_string (pp, "|");
-      pp_string (pp, end_line_color);
-      pp_newline (pp);
-    }
+	char *saved_prefix = pp_take_prefix (pp);
+	char *prefix;
+	{
+	  pretty_printer tmp_pp;
+	  write_indent (&tmp_pp, m_cur_indent + per_frame_indent);
+	  pp_string (&tmp_pp, start_line_color);
+	  pp_string (&tmp_pp, "|");
+	  pp_string (&tmp_pp, end_line_color);
+	  prefix = xstrdup (pp_formatted_text (&tmp_pp));
+	}
+	pp_set_prefix (pp, prefix);
+	pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+	range->print (dc, pp);
+	pp_set_prefix (pp, saved_prefix);
+
+	write_indent (pp, m_cur_indent + per_frame_indent);
+	pp_string (pp, start_line_color);
+	pp_string (pp, "|");
+	pp_string (pp, end_line_color);
+	pp_newline (pp);
+      }
+    else
+      range->print (dc, pp);
 
     if (const event_range *next_range = get_any_next_range ())
       {
@@ -460,6 +488,7 @@ public:
 		   "                   |\n"
 		   "     <------------ +\n"
 		   "     |\n".  */
+		gcc_assert (interprocedural_p);
 		int vbar_for_next_frame
 		  = *m_vbar_column_for_depth.get (next_range->m_stack_depth);
 
@@ -492,6 +521,7 @@ public:
 	else if (range->m_stack_depth < next_range->m_stack_depth)
 	  {
 	    /* Prepare to show pushed stack frame.  */
+	    gcc_assert (interprocedural_p);
 	    gcc_assert (range->m_stack_depth != EMPTY);
 	    gcc_assert (range->m_stack_depth != DELETED);
 	    m_vbar_column_for_depth.put (range->m_stack_depth,
@@ -766,10 +796,8 @@ test_intraprocedural_path (pretty_printer *event_pp)
   test_diagnostic_context dc;
   print_path_summary_as_text (&summary, &dc, true);
   ASSERT_STREQ ("  `foo': events 1-2 (depth 0)\n"
-		"    |\n"
-		"    | (1): first `free'\n"
-		"    | (2): double `free'\n"
-		"    |\n",
+		" (1): first `free'\n"
+		" (2): double `free'\n",
 		pp_formatted_text (dc.printer));
 }
 
