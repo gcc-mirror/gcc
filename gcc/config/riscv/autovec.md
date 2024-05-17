@@ -2614,6 +2614,23 @@
 )
 
 ;; =========================================================================
+;; == [INT] Saturation ALU.
+;; =========================================================================
+;; Includes:
+;; - add
+;; =========================================================================
+(define_expand "usadd<mode>3"
+  [(match_operand:V_VLSI 0 "register_operand")
+   (match_operand:V_VLSI 1 "register_operand")
+   (match_operand:V_VLSI 2 "register_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_usadd (operands[0], operands[1], operands[2], <MODE>mode);
+    DONE;
+  }
+)
+
+;; =========================================================================
 ;; == Early break auto-vectorization patterns
 ;; =========================================================================
 

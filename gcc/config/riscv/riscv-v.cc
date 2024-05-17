@@ -4635,6 +4635,16 @@ emit_vec_cvt_x_f_rtz (rtx op_dest, rtx op_src, rtx mask,
     }
 }
 
+static void
+emit_vec_saddu (rtx op_dest, rtx op_1, rtx op_2, insn_type type,
+		machine_mode vec_mode)
+{
+  rtx ops[] = {op_dest, op_1, op_2};
+  insn_code icode = code_for_pred (US_PLUS, vec_mode);
+
+  emit_vlmax_insn (icode, type, ops);
+}
+
 void
 expand_vec_ceil (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 		 machine_mode vec_int_mode)
@@ -4860,6 +4870,15 @@ expand_vec_lfloor (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 {
   emit_vec_rounding_to_integer (op_0, op_1, UNARY_OP_FRM_RDN, vec_fp_mode,
 				vec_int_mode);
+}
+
+/* Expand the standard name usadd<mode>3 for vector mode,  we can leverage
+   the vector fixed point vector single-width saturating add directly.  */
+
+void
+expand_vec_usadd (rtx op_0, rtx op_1, rtx op_2, machine_mode vec_mode)
+{
+  emit_vec_saddu (op_0, op_1, op_2, BINARY_OP, vec_mode);
 }
 
 /* Vectorize popcount by the Wilkes-Wheeler-Gill algorithm that libgcc uses as

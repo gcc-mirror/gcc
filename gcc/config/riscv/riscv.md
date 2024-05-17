@@ -4160,6 +4160,17 @@
   "{ operands[6] = gen_lowpart (SImode, operands[5]); }"
   [(set_attr "type" "arith")])
 
+(define_expand "usadd<mode>3"
+  [(match_operand:ANYI 0 "register_operand")
+   (match_operand:ANYI 1 "register_operand")
+   (match_operand:ANYI 2 "register_operand")]
+  ""
+  {
+    riscv_expand_usadd (operands[0], operands[1], operands[2]);
+    DONE;
+  }
+)
+
 (include "bitmanip.md")
 (include "crypto.md")
 (include "sync.md")
