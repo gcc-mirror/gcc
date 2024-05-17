@@ -42,16 +42,16 @@
 # include <stop_token>	// std::stop_source, std::stop_token, std::nostopstate
 #endif
 
-#if __cplusplus > 202002L
-# include <format>
-#endif
-
 #include <bits/std_thread.h> // std::thread, get_id, yield
 #include <bits/this_thread_sleep.h> // std::this_thread::sleep_for, sleep_until
 
 #define __glibcxx_want_jthread
 #define __glibcxx_want_formatters
 #include <bits/version.h>
+
+#if __cpp_lib_formatters
+# include <format>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -104,10 +104,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, thread::id __id)
     {
+      // Convert non-void pointers to const void* for formatted output.
+      using __output_type
+	= __conditional_t<is_pointer<thread::native_handle_type>::value,
+			  const void*,
+			  thread::native_handle_type>;
+
       if (__id == thread::id())
 	return __out << "thread::id of a non-executing thread";
       else
-	return __out << __id._M_thread;
+	return __out << static_cast<__output_type>(__id._M_thread);
     }
   /// @}
 
@@ -287,8 +293,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // __cpp_lib_jthread
 
 #ifdef __cpp_lib_formatters // C++ >= 23
-
   template<typename _CharT>
+    requires is_pointer_v<thread::native_handle_type>
+      || is_integral_v<thread::native_handle_type>
     class formatter<thread::id, _CharT>
     {
     public:
@@ -331,10 +338,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(thread::id __id, basic_format_context<_Out, _CharT>& __fc) const
 	{
-	  std::basic_ostringstream<_CharT> __os;
-	  __os << __id;
-	  auto __str = __os.view();
-	  return __format::__write_padded_as_spec(__str, __str.size(),
+	  basic_string_view<_CharT> __sv;
+	  if constexpr (is_same_v<_CharT, char>)
+	    __sv = "{}thread::id of a non-executing thread";
+	  else
+	    __sv = L"{}thread::id of a non-executing thread";
+	  basic_string<_CharT> __str;
+	  if (__id == thread::id())
+	    __sv.remove_prefix(2);
+	  else
+	    {
+	      using _FmtStr = __format::_Runtime_format_string<_CharT>;
+	      // Convert non-void pointers to const void* for formatted output.
+	      using __output_type
+		= __conditional_t<is_pointer_v<thread::native_handle_type>,
+				  const void*,
+				  thread::native_handle_type>;
+	      auto __o = static_cast<__output_type>(__id._M_thread);
+	      __sv = __str = std::format(_FmtStr(__sv.substr(0, 2)), __o);
+	    }
+	  return __format::__write_padded_as_spec(__sv, __sv.size(),
 						  __fc, _M_spec,
 						  __format::_Align_right);
 	}
