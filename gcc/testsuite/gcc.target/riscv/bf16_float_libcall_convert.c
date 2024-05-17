@@ -14,7 +14,7 @@
  *    bf          -> tf == bf -> sf -> tf (call   __extendbfsf2 && __extendsftf2)
 */
 
-extern   _Bfloat16 bf;
+extern   __bf16    bf;
 extern   _Float16  hf;
 extern      float  sf;
 extern      double df;

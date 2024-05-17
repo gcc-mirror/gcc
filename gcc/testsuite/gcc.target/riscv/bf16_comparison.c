@@ -4,9 +4,9 @@
 
 /* 1) bf -> sf               (call	__extendbfsf2)  */
 /* 2) sf1 [<|<=|>|>=|==] sf2 (call	__[lt|le|gt|ge|eq]sf2)  */
-extern _Bfloat16 bf;
-extern _Bfloat16 bf1;
-extern _Bfloat16 bf2;
+extern __bf16 bf;
+extern __bf16 bf1;
+extern __bf16 bf2;
 
 void bf_lt_bf () { bf = (bf1 < bf2) ? bf1 : bf2; }
 

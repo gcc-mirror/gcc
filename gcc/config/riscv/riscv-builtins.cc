@@ -275,7 +275,7 @@ riscv_init_builtin_types (void)
     lang_hooks.types.register_builtin_type (riscv_float16_type_node,
 					    "_Float16");
 
-  /* Provide the _Bfloat16 type and bfloat16_type_node if needed.  */
+  /* Provide the __bf16 type and bfloat16_type_node if needed.  */
   if (!bfloat16_type_node)
     {
       riscv_bfloat16_type_node = make_node (REAL_TYPE);
@@ -286,9 +286,9 @@ riscv_init_builtin_types (void)
   else
     riscv_bfloat16_type_node = bfloat16_type_node;
 
-  if (!maybe_get_identifier ("_Bfloat16"))
+  if (!maybe_get_identifier ("__bf16"))
     lang_hooks.types.register_builtin_type (riscv_bfloat16_type_node,
-					    "_Bfloat16");
+					    "__bf16");
 }
 
 /* Implement TARGET_INIT_BUILTINS.  */

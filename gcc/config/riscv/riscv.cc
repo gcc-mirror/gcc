@@ -10276,7 +10276,7 @@ riscv_asan_shadow_offset (void)
 static const char *
 riscv_mangle_type (const_tree type)
 {
-  /* Half-precision float, _Float16 is "DF16_" and _Bfloat16 is "DF16b".  */
+  /* Half-precision float, _Float16 is "DF16_" and __bf16 is "DF16b".  */
   if (SCALAR_FLOAT_TYPE_P (type) && TYPE_PRECISION (type) == 16)
     {
       if (TYPE_MODE (type) == HFmode)

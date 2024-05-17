@@ -4,9 +4,9 @@
 
 /* 1) bf -> sf (call      __extendbfsf2)  */
 /* 2) sf -> bf (call      __truncsfbf2)  */
-__attribute__ ((noinline)) _Bfloat16 add (_Bfloat16 a, _Bfloat16 b) { return a + b; }
+__attribute__ ((noinline)) __bf16 add (__bf16 a, __bf16 b) { return a + b; }
 
-_Bfloat16 test(_Bfloat16 a, _Bfloat16 b) { return add (a, b); }
+__bf16 test(__bf16 a, __bf16 b) { return add (a, b); }
 
 /* { dg-final { scan-assembler-times "call\t__extendbfsf2" 2 } } */
 /* { dg-final { scan-assembler-times "call\t__truncsfbf2" 1 } } */

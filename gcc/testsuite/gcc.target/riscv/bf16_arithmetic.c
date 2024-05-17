@@ -5,9 +5,9 @@
 /* 1) bf -> sf          (call      __extendbfsf2)  */
 /* 2) sf1 [+|-|*|/] sf2 (call      __[add|sub|mul|div]sf3)  */
 /* 3) sf -> bf          (call      __truncsfbf2)  */
-extern _Bfloat16 bf;
-extern _Bfloat16 bf1;
-extern _Bfloat16 bf2;
+extern __bf16 bf;
+extern __bf16 bf1;
+extern __bf16 bf2;
 
 void bf_add_bf () { bf = bf1 + bf2; }
 

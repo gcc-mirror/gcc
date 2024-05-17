@@ -16,7 +16,7 @@
  *    bf          -> udi/uti     (call   __fixunssf[d|t]i)
 */
 
-extern _Bfloat16 bf;
+extern __bf16 bf;
 
 extern   signed char       qi;
 extern unsigned char      uqi;
