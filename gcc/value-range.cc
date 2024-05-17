@@ -589,6 +589,11 @@ prange::intersect (const vrange &v)
   irange_bitmask new_bitmask = get_bitmask_from_range (m_type, m_min, m_max);
   m_bitmask.intersect (new_bitmask);
   m_bitmask.intersect (r.m_bitmask);
+  if (varying_compatible_p ())
+    {
+      set_varying (type ());
+      return true;
+    }
 
   if (flag_checking)
     verify_range ();
@@ -2888,6 +2893,22 @@ range_tests_misc ()
   p0.invert ();
   p0.invert ();
   ASSERT_TRUE (p0 == p1);
+
+  // The intersection of:
+  //    [0, +INF] MASK 0xff..00 VALUE 0xf8
+  //    [0, +INF] MASK 0xff..00 VALUE 0x00
+  // is [0, +INF] MASK 0xff..ff VALUE 0x00, which is VARYING.
+  // Test that we normalized to VARYING.
+  unsigned prec = TYPE_PRECISION (voidp);
+  p0.set_varying (voidp);
+  wide_int mask = wi::mask (8, true, prec);
+  wide_int value = wi::uhwi (0xf8, prec);
+  irange_bitmask bm (wi::uhwi (0xf8, prec), mask);
+  p0.update_bitmask (bm);
+  p1.set_varying (voidp);
+  bm = irange_bitmask (wi::zero (prec), mask);
+  p1.update_bitmask (bm);
+  p0.intersect (p1);
 
   // [10,20] U [15, 30] => [10, 30].
   r0 = range_int (10, 20);
