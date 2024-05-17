@@ -178,7 +178,7 @@ fur_stmt::get_phi_operand (vrange &r, tree expr, edge e)
 relation_kind
 fur_stmt::query_relation (tree op1, tree op2)
 {
-  return m_query->oracle ().query_relation (m_stmt, op1, op2);
+  return m_query->relation ().query (m_stmt, op1, op2);
 }
 
 // Instantiate a stmt based fur_source with a GORI object.
@@ -196,7 +196,7 @@ fur_depend::fur_depend (gimple *s, gori_compute *gori, range_query *q)
 void
 fur_depend::register_relation (gimple *s, relation_kind k, tree op1, tree op2)
 {
-  m_query->oracle ().register_relation (s, k, op1, op2);
+  m_query->relation ().record (s, k, op1, op2);
 }
 
 // Register a relation on an edge if there is an oracle.
@@ -204,7 +204,7 @@ fur_depend::register_relation (gimple *s, relation_kind k, tree op1, tree op2)
 void
 fur_depend::register_relation (edge e, relation_kind k, tree op1, tree op2)
 {
-  m_query->oracle ().register_relation (e, k, op1, op2);
+  m_query->relation ().record (e, k, op1, op2);
 }
 
 // This version of fur_source will pick a range up from a list of ranges
@@ -854,7 +854,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
   tree single_arg = NULL_TREE;
   bool seen_arg = false;
 
-  relation_oracle *oracle = &(src.query()->oracle ());
+  relation_oracle *oracle = &(src.query()->relation ());
   // Start with an empty range, unioning in each argument's range.
   r.set_undefined ();
   for (x = 0; x < gimple_phi_num_args (phi); x++)
@@ -875,7 +875,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	  // Likewise, if the incoming PHI argument is equivalent to this
 	  // PHI definition, it provides no new info.  Accumulate these ranges
 	  // in case all arguments are equivalences.
-	  if (oracle->query_relation (e, arg, phi_def) == VREL_EQ)
+	  if (oracle->query (e, arg, phi_def) == VREL_EQ)
 	    equiv_range.union_(arg_range);
 	  else
 	    r.union_ (arg_range);

@@ -1001,7 +1001,7 @@ ranger_cache::dump_bb (FILE *f, basic_block bb)
 {
   m_gori.gori_map::dump (f, bb, false);
   m_on_entry.dump (f, bb);
-  m_oracle->dump (f, bb);
+  m_relation->dump (f, bb);
 }
 
 // Get the global range for NAME, and return in R.  Return false if the
@@ -1439,7 +1439,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
       tree equiv_name;
       relation_kind rel;
       int prec = TYPE_PRECISION (type);
-      FOR_EACH_PARTIAL_AND_FULL_EQUIV (m_oracle, bb, name, equiv_name, rel)
+      FOR_EACH_PARTIAL_AND_FULL_EQUIV (m_relation, bb, name, equiv_name, rel)
 	{
 	  basic_block equiv_bb = gimple_bb (SSA_NAME_DEF_STMT (equiv_name));
 

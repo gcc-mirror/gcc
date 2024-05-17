@@ -189,12 +189,12 @@ void
 range_query::create_relation_oracle ()
 {
   gcc_checking_assert (this != &global_ranges);
-  gcc_checking_assert (m_oracle == &default_relation_oracle);
+  gcc_checking_assert (m_relation == &default_relation_oracle);
 
   if (!dom_info_available_p (CDI_DOMINATORS))
     return;
-  m_oracle = new dom_oracle ();
-  gcc_checking_assert (m_oracle);
+  m_relation = new dom_oracle ();
+  gcc_checking_assert (m_relation);
 }
 
 // Destroy any relation oracle that was created.
@@ -202,18 +202,18 @@ range_query::create_relation_oracle ()
 void
 range_query::destroy_relation_oracle ()
 {
-  // m_oracle can be NULL if a derived range_query class took care of
+  // m_relation can be NULL if a derived range_query class took care of
   // disposing its own oracle.
-  if (m_oracle && m_oracle != &default_relation_oracle)
+  if (m_relation && m_relation != &default_relation_oracle)
     {
-      delete m_oracle;
-      m_oracle = &default_relation_oracle;
+      delete m_relation;
+      m_relation = &default_relation_oracle;
     }
 }
 
 range_query::range_query ()
 {
-  m_oracle = &default_relation_oracle;
+  m_relation = &default_relation_oracle;
 }
 
 range_query::~range_query ()

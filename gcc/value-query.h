@@ -75,7 +75,7 @@ public:
   virtual bool range_on_entry (vrange &r, basic_block bb, tree expr);
   virtual bool range_on_exit (vrange &r, basic_block bb, tree expr);
 
-  inline class relation_oracle &oracle () const  { return *m_oracle; }
+  inline class relation_oracle &relation () const  { return *m_relation; }
   void create_relation_oracle ();
   void destroy_relation_oracle ();
 
@@ -87,7 +87,7 @@ protected:
   bool invoke_range_of_expr (vrange &v, tree expr, gimple *stmt,
 			     basic_block bbentry, basic_block bbexit);
   bool get_arith_expr_range (vrange &r, tree expr, gimple *stmt);
-  relation_oracle *m_oracle;
+  relation_oracle *m_relation;
 };
 
 // Global ranges for SSA names using SSA_NAME_RANGE_INFO.

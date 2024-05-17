@@ -44,7 +44,7 @@ path_range_query::path_range_query (gimple_ranger &ranger,
     m_ranger (ranger),
     m_resolve (resolve)
 {
-  m_oracle = new path_oracle (&(m_ranger.oracle ()));
+  m_relation = new path_oracle (&(m_ranger.relation ()));
 
   reset_path (path, dependencies);
 }
@@ -54,13 +54,13 @@ path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
     m_ranger (ranger),
     m_resolve (resolve)
 {
-  m_oracle = new path_oracle (&(m_ranger.oracle ()));
+  m_relation = new path_oracle (&(m_ranger.relation ()));
 }
 
 path_range_query::~path_range_query ()
 {
-  delete m_oracle;
-  m_oracle = NULL;
+  delete m_relation;
+  m_relation = NULL;
 }
 
 // Return TRUE if NAME is an exit dependency for the path.
@@ -563,7 +563,7 @@ path_range_query::compute_ranges (const bitmap_head *dependencies)
   if (m_resolve)
     {
       path_oracle *p = get_path_oracle ();
-      p->reset_path (&(m_ranger.oracle ()));
+      p->reset_path (&(m_ranger.relation ()));
     }
 
   if (DEBUG_SOLVER)
@@ -636,7 +636,7 @@ jt_fur_source::jt_fur_source (gimple *s,
 void
 jt_fur_source::register_relation (gimple *, relation_kind k, tree op1, tree op2)
 {
-  m_query->oracle ().register_relation (m_entry, k, op1, op2);
+  m_query->relation ().record (m_entry, k, op1, op2);
 }
 
 // Ignore edge and register relation on entry to path.
@@ -644,7 +644,7 @@ jt_fur_source::register_relation (gimple *, relation_kind k, tree op1, tree op2)
 void
 jt_fur_source::register_relation (edge, relation_kind k, tree op1, tree op2)
 {
-  m_query->oracle ().register_relation (m_entry, k, op1, op2);
+  m_query->relation ().record (m_entry, k, op1, op2);
 }
 
 relation_kind
@@ -653,7 +653,7 @@ jt_fur_source::query_relation (tree op1, tree op2)
   if (TREE_CODE (op1) != SSA_NAME || TREE_CODE (op2) != SSA_NAME)
     return VREL_VARYING;
 
-  return m_query->oracle().query_relation (m_entry, op1, op2);
+  return m_query->relation ().query (m_entry, op1, op2);
 }
 
 // Return the range of STMT at the end of the path being analyzed.
@@ -707,7 +707,7 @@ path_range_query::maybe_register_phi_relation (gphi *phi, edge e)
     fprintf (dump_file, "maybe_register_phi_relation in bb%d:", bb->index);
 
   get_path_oracle ()->killing_def (result);
-  m_oracle->register_relation (entry_bb (), VREL_EQ, arg, result);
+  m_relation->record (entry_bb (), VREL_EQ, arg, result);
 }
 
 // Compute relations for each PHI in BB.  For example:

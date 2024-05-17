@@ -233,11 +233,11 @@ relation_oracle::valid_equivs (bitmap b, const_bitmap equivs, basic_block bb)
 // the definitions have been processed and any relations have be created.
 
 relation_kind
-relation_oracle::query_relation (gimple *s, tree ssa1, tree ssa2)
+relation_oracle::query (gimple *s, tree ssa1, tree ssa2)
 {
   if (TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
     return VREL_VARYING;
-  return query_relation (gimple_bb (s), ssa1, ssa2);
+  return query (gimple_bb (s), ssa1, ssa2);
 }
 
 // Return any known relation between SSA1 and SSA2 on edge E.
@@ -245,7 +245,7 @@ relation_oracle::query_relation (gimple *s, tree ssa1, tree ssa2)
 // the definitions have been processed and any relations have be created.
 
 relation_kind
-relation_oracle::query_relation (edge e, tree ssa1, tree ssa2)
+relation_oracle::query (edge e, tree ssa1, tree ssa2)
 {
   basic_block bb;
   if (TREE_CODE (ssa1) != SSA_NAME || TREE_CODE (ssa2) != SSA_NAME)
@@ -259,7 +259,7 @@ relation_oracle::query_relation (edge e, tree ssa1, tree ssa2)
   else
     bb = e->dest;
 
-  return query_relation (bb, ssa1, ssa2);
+  return query (bb, ssa1, ssa2);
 }
 // -------------------------------------------------------------------------
 
@@ -478,7 +478,7 @@ equiv_oracle::equiv_set (tree ssa, basic_block bb)
 // Query if there is a relation (equivalence) between 2 SSA_NAMEs.
 
 relation_kind
-equiv_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
+equiv_oracle::query (basic_block bb, tree ssa1, tree ssa2)
 {
   // If the 2 ssa names share the same equiv set, they are equal.
   if (equiv_set (ssa1, bb) == equiv_set (ssa2, bb))
@@ -491,8 +491,8 @@ equiv_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
 // Query if there is a relation (equivalence) between 2 SSA_NAMEs.
 
 relation_kind
-equiv_oracle::query_relation (basic_block bb ATTRIBUTE_UNUSED, const_bitmap e1,
-			      const_bitmap e2)
+equiv_oracle::query (basic_block bb ATTRIBUTE_UNUSED, const_bitmap e1,
+		     const_bitmap e2)
 {
   // If the 2 ssa names share the same equiv set, they are equal.
   if (bitmap_equal_p (e1, e2))
@@ -624,8 +624,7 @@ equiv_oracle::register_initial_def (tree ssa)
 // containing all the ssa_names in this basic block.
 
 void
-equiv_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
-				 tree ssa2)
+equiv_oracle::record (basic_block bb, relation_kind k, tree ssa1, tree ssa2)
 {
   // Process partial equivalencies.
   if (relation_partial_equiv_p (k))
@@ -998,8 +997,7 @@ dom_oracle::~dom_oracle ()
 // Register relation K between ssa_name OP1 and OP2 on STMT.
 
 void
-relation_oracle::register_relation (gimple *stmt, relation_kind k, tree op1,
-				    tree op2)
+relation_oracle::record (gimple *stmt, relation_kind k, tree op1, tree op2)
 {
   gcc_checking_assert (TREE_CODE (op1) == SSA_NAME);
   gcc_checking_assert (TREE_CODE (op2) == SSA_NAME);
@@ -1040,13 +1038,13 @@ relation_oracle::register_relation (gimple *stmt, relation_kind k, tree op1,
 	  return;
 	}
     }
-  register_relation (gimple_bb (stmt), k, op1, op2);
+  record (gimple_bb (stmt), k, op1, op2);
 }
 
 // Register relation K between ssa_name OP1 and OP2 on edge E.
 
 void
-relation_oracle::register_relation (edge e, relation_kind k, tree op1, tree op2)
+relation_oracle::record (edge e, relation_kind k, tree op1, tree op2)
 {
   gcc_checking_assert (TREE_CODE (op1) == SSA_NAME);
   gcc_checking_assert (TREE_CODE (op2) == SSA_NAME);
@@ -1064,7 +1062,7 @@ relation_oracle::register_relation (edge e, relation_kind k, tree op1, tree op2)
       fprintf (dump_file, " on (%d->%d)\n", e->src->index, e->dest->index);
     }
 
-  register_relation (e->dest, k, op1, op2);
+  record (e->dest, k, op1, op2);
 }
 
 // Register relation K between OP! and OP2 in block BB.
@@ -1072,8 +1070,7 @@ relation_oracle::register_relation (edge e, relation_kind k, tree op1, tree op2)
 // tree to merge with.
 
 void
-dom_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
-			       tree op2)
+dom_oracle::record (basic_block bb, relation_kind k, tree op1, tree op2)
 {
   // If the 2 ssa_names are the same, do nothing.  An equivalence is implied,
   // and no other relation makes sense.
@@ -1082,7 +1079,7 @@ dom_oracle::register_relation (basic_block bb, relation_kind k, tree op1,
 
   // Equivalencies are handled by the equivalence oracle.
   if (relation_equiv_p (k))
-    equiv_oracle::register_relation (bb, k, op1, op2);
+    equiv_oracle::record (bb, k, op1, op2);
   else
     {
       // if neither op1 nor op2 are in a relation before this is registered,
@@ -1283,8 +1280,7 @@ dom_oracle::find_relation_block (unsigned bb, const_bitmap b1,
 // and B2, starting with block BB.
 
 relation_kind
-dom_oracle::query_relation (basic_block bb, const_bitmap b1,
-			    const_bitmap b2)
+dom_oracle::query (basic_block bb, const_bitmap b1, const_bitmap b2)
 {
   relation_kind r;
   if (bitmap_equal_p (b1, b2))
@@ -1371,7 +1367,7 @@ dom_oracle::find_relation_dom (basic_block bb, unsigned v1, unsigned v2) const
 // dominator of BB
 
 relation_kind
-dom_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
+dom_oracle::query (basic_block bb, tree ssa1, tree ssa2)
 {
   relation_kind kind;
   unsigned v1 = SSA_NAME_VERSION (ssa1);
@@ -1401,7 +1397,7 @@ dom_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
     return kind;
 
   // Query using the equivalence sets.
-  kind = query_relation (bb, equiv1, equiv2);
+  kind = query (bb, equiv1, equiv2);
   return kind;
 }
 
@@ -1565,8 +1561,7 @@ path_oracle::killing_def (tree ssa)
 // querying from BB.
 
 void
-path_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
-				tree ssa2)
+path_oracle::record (basic_block bb, relation_kind k, tree ssa1, tree ssa2)
 {
   // If the 2 ssa_names are the same, do nothing.  An equivalence is implied,
   // and no other relation makes sense.
@@ -1581,7 +1576,7 @@ path_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
       fprintf (dump_file, " (root: bb%d)\n", bb->index);
     }
 
-  relation_kind curr = query_relation (bb, ssa1, ssa2);
+  relation_kind curr = query (bb, ssa1, ssa2);
   if (curr != VREL_VARYING)
     k = relation_intersect (curr, k);
 
@@ -1604,7 +1599,7 @@ path_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
 // starting at block BB.
 
 relation_kind
-path_oracle::query_relation (basic_block bb, const_bitmap b1, const_bitmap b2)
+path_oracle::query (basic_block bb, const_bitmap b1, const_bitmap b2)
 {
   if (bitmap_equal_p (b1, b2))
     return VREL_EQ;
@@ -1618,7 +1613,7 @@ path_oracle::query_relation (basic_block bb, const_bitmap b1, const_bitmap b2)
     return k;
 
   if (k == VREL_VARYING && m_root)
-    k = m_root->query_relation (bb, b1, b2);
+    k = m_root->query (bb, b1, b2);
 
   return k;
 }
@@ -1627,7 +1622,7 @@ path_oracle::query_relation (basic_block bb, const_bitmap b1, const_bitmap b2)
 // starting at block BB.
 
 relation_kind
-path_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
+path_oracle::query (basic_block bb, tree ssa1, tree ssa2)
 {
   unsigned v1 = SSA_NAME_VERSION (ssa1);
   unsigned v2 = SSA_NAME_VERSION (ssa2);
@@ -1640,7 +1635,7 @@ path_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   if (bitmap_bit_p (equiv_1, v2) && bitmap_bit_p (equiv_2, v1))
     return VREL_EQ;
 
-  return query_relation (bb, equiv_1, equiv_2);
+  return query (bb, equiv_1, equiv_2);
 }
 
 // Reset any relations registered on this path.  ORACLE is the root
