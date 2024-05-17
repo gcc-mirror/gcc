@@ -554,9 +554,7 @@ which contains a pointer to the dispatching table.
   "If ``Word_Size`` = ``Storage_Unit``, the default bit
   ordering.  See 13.5.3(5)."
 
-``Word_Size`` (32) is not the same as ``Storage_Unit`` (8) for this
-implementation, so no non-default bit ordering is supported.  The default
-bit ordering corresponds to the natural endianness of the target architecture.
+``Word_Size`` does not equal ``Storage_Unit`` in this implementation.
 
 *
   "The contents of the visible part of package ``System``.  See 13.7(2)."

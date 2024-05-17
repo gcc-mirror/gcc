@@ -14363,21 +14363,24 @@ declared before the entity.”
 Followed.  In fact, GNAT goes beyond the recommended level of support
 by allowing nonstatic expressions in some representation clauses even
 without the need to declare constants initialized with the values of
-such expressions.
-For example:
+such expressions. For example:
 
 @example
-  X : Integer;
-  Y : Float;
-  for Y'Address use X'Address;>>
+X : Integer;
+Y : Float;
+for Y'Address use X'Address;
+@end example
 
+is accepted directly by GNAT.
 
-"An implementation need not support a specification for the `@w{`}Size`@w{`}
+@quotation
+
+“An implementation need not support a specification for the @code{Size}
 for a given composite subtype, nor the size or storage place for an
 object (including a component) of a given composite subtype, unless the
 constraints on the subtype and its composite subcomponents (if any) are
-all static constraints."
-@end example
+all static constraints.”
+@end quotation
 
 Followed.  Size Clauses are not permitted on nonstatic components, as
 described above.
@@ -14747,13 +14750,11 @@ Followed.  There are no such components in GNAT.
 
 “The recommended level of support for the non-default bit ordering is:
 
-If @code{Word_Size} = @code{Storage_Unit}, then the implementation
-should support the non-default bit ordering in addition to the default
-bit ordering.”
+The implementation should support the nondefault bit ordering in addition
+to the default bit ordering.”
 @end quotation
 
-Followed.  Word size does not equal storage size in this implementation.
-Thus non-default bit ordering is not supported.
+Followed.
 
 @geindex Address
 @geindex as private type
@@ -16787,9 +16788,7 @@ which contains a pointer to the dispatching table.
 ordering.  See 13.5.3(5).”
 @end itemize
 
-@code{Word_Size} (32) is not the same as @code{Storage_Unit} (8) for this
-implementation, so no non-default bit ordering is supported.  The default
-bit ordering corresponds to the natural endianness of the target architecture.
+@code{Word_Size} does not equal @code{Storage_Unit} in this implementation.
 
 
 @itemize *
