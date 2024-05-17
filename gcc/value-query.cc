@@ -182,6 +182,23 @@ range_query::dump (FILE *)
 // can be used anywhere.
 relation_oracle default_relation_oracle;
 infer_range_oracle default_infer_oracle;
+gimple_outgoing_range default_gori;
+
+void
+range_query::create_gori (int not_executable_flag, int sw_max_edges)
+{
+  gcc_checking_assert (m_gori == &default_gori);
+  m_gori = new gori_compute (not_executable_flag, sw_max_edges);
+  gcc_checking_assert (m_gori);
+}
+
+void
+range_query::destroy_gori ()
+{
+  if (m_gori && m_gori != &default_gori)
+    delete m_gori;
+  m_gori= &default_gori;
+}
 
 void
 range_query::create_infer_oracle (bool do_search)
@@ -233,6 +250,7 @@ range_query::share_query (range_query &q)
 {
   m_relation = q.m_relation;
   m_infer = q.m_infer;
+  m_gori = q.m_gori;
   m_shared_copy_p = true;
 }
 
@@ -240,6 +258,7 @@ range_query::range_query ()
 {
   m_relation = &default_relation_oracle;
   m_infer = &default_infer_oracle;
+  m_gori = &default_gori;
   m_shared_copy_p = false;
 }
 
@@ -248,6 +267,7 @@ range_query::~range_query ()
   // Do not destroy anything if this is a shared copy.
   if (m_shared_copy_p)
     return;
+  destroy_gori ();
   destroy_infer_oracle ();
   destroy_relation_oracle ();
 }

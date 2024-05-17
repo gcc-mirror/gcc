@@ -44,6 +44,8 @@ path_range_query::path_range_query (gimple_ranger &ranger,
     m_ranger (ranger),
     m_resolve (resolve)
 {
+  share_query (ranger);
+  // Override the relation oracle with a local path relation oracle.
   m_relation = new path_oracle (&(m_ranger.relation ()));
 
   reset_path (path, dependencies);
@@ -54,6 +56,8 @@ path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
     m_ranger (ranger),
     m_resolve (resolve)
 {
+  share_query (ranger);
+  // Override the relation oracle with a local path relation oracle.
   m_relation = new path_oracle (&(m_ranger.relation ()));
 }
 
@@ -303,7 +307,7 @@ path_range_query::range_defined_in_block (vrange &r, tree name, basic_block bb)
     }
 
   if (bb && POINTER_TYPE_P (TREE_TYPE (name)))
-    m_ranger.infer_oracle ().maybe_adjust_range (r, name, bb);
+    infer_oracle ().maybe_adjust_range (r, name, bb);
 
   if (DEBUG_SOLVER && (bb || !r.varying_p ()))
     {
@@ -409,13 +413,12 @@ path_range_query::compute_ranges_in_block (basic_block bb)
       p->reset_path ();
     }
 
-  gori_compute &g = m_ranger.gori ();
-  bitmap exports = g.map()->exports (bb);
+  bitmap exports = gori ().map ()->exports (bb);
   EXECUTE_IF_AND_IN_BITMAP (m_exit_dependencies, exports, 0, i, bi)
     {
       tree name = ssa_name (i);
       Value_Range r (TREE_TYPE (name));
-      if (g.edge_range_p (r, e, name, *this))
+      if (gori ().edge_range_p (r, e, name, *this))
 	{
 	  Value_Range cached_range (TREE_TYPE (name));
 	  if (get_cache (cached_range, name))
@@ -463,7 +466,7 @@ path_range_query::adjust_for_non_null_uses (basic_block bb)
       else
 	r.set_varying (TREE_TYPE (name));
 
-      if (m_ranger.infer_oracle ().maybe_adjust_range (r, name, bb))
+      if (infer_oracle ().maybe_adjust_range (r, name, bb))
 	m_cache.set_range (name, r);
     }
 }
@@ -487,8 +490,7 @@ path_range_query::compute_exit_dependencies (bitmap dependencies)
 {
   // Start with the imports from the exit block...
   basic_block exit = m_path[0];
-  gori_compute &gori = m_ranger.gori ();
-  bitmap_copy (dependencies, gori.map()->imports (exit));
+  bitmap_copy (dependencies, gori ().map()->imports (exit));
 
   auto_vec<tree> worklist (bitmap_count_bits (dependencies));
   bitmap_iterator bi;
@@ -536,7 +538,7 @@ path_range_query::compute_exit_dependencies (bitmap dependencies)
       {
 	basic_block bb = m_path[i];
 	tree name;
-	FOR_EACH_GORI_EXPORT_NAME (*(gori.map ()), bb, name)
+	FOR_EACH_GORI_EXPORT_NAME (*(gori ().map ()), bb, name)
 	  if (TREE_CODE (TREE_TYPE (name)) == BOOLEAN_TYPE)
 	    bitmap_set_bit (dependencies, SSA_NAME_VERSION (name));
       }
@@ -611,8 +613,7 @@ path_range_query::compute_ranges (const bitmap_head *dependencies)
 class jt_fur_source : public fur_depend
 {
 public:
-  jt_fur_source (gimple *s, path_range_query *, gori_compute *,
-		 const vec<basic_block> &);
+  jt_fur_source (gimple *s, path_range_query *, const vec<basic_block> &);
   relation_kind query_relation (tree op1, tree op2) override;
   void register_relation (gimple *, relation_kind, tree op1, tree op2) override;
   void register_relation (edge, relation_kind, tree op1, tree op2) override;
@@ -622,9 +623,8 @@ private:
 
 jt_fur_source::jt_fur_source (gimple *s,
 			      path_range_query *query,
-			      gori_compute *gori,
 			      const vec<basic_block> &path)
-  : fur_depend (s, gori, query)
+  : fur_depend (s, query)
 {
   gcc_checking_assert (!path.is_empty ());
 
@@ -671,7 +671,7 @@ path_range_query::range_of_stmt (vrange &r, gimple *stmt, tree)
   if (m_resolve)
     {
       fold_using_range f;
-      jt_fur_source src (stmt, this, &m_ranger.gori (), m_path);
+      jt_fur_source src (stmt, this, m_path);
       if (!f.fold_stmt (r, stmt, src))
 	r.set_varying (type);
     }
@@ -761,7 +761,7 @@ path_range_query::compute_outgoing_relations (basic_block bb, basic_block next)
       else
 	gcc_unreachable ();
 
-      jt_fur_source src (NULL, this, &m_ranger.gori (), m_path);
+      jt_fur_source src (NULL, this, m_path);
       src.register_outgoing_edges (cond, r, e0, e1);
     }
 }

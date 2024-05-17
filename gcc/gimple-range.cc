@@ -273,7 +273,7 @@ bool
 gimple_ranger::fold_range_internal (vrange &r, gimple *s, tree name)
 {
   fold_using_range f;
-  fur_depend src (s, &(gori ()), this);
+  fur_depend src (s, this);
   return f.fold_stmt (r, s, src, name);
 }
 
@@ -310,7 +310,7 @@ gimple_ranger::range_of_stmt (vrange &r, gimple *s, tree name)
 	  // Update any exports in the cache if this is a gimple cond statement.
 	  tree exp;
 	  basic_block bb = gimple_bb (s);
-	  FOR_EACH_GORI_EXPORT_NAME (*(m_cache.m_gori.map ()), bb, exp)
+	  FOR_EACH_GORI_EXPORT_NAME (*(gori ().map ()), bb, exp)
 	    m_cache.propagate_updated_value (exp, bb);
 	}
     }
@@ -755,6 +755,7 @@ assume_query::range_of_expr (vrange &r, tree expr, gimple *stmt)
 
 assume_query::assume_query ()
 {
+  create_gori (0, param_vrp_switch_limit);
   basic_block exit_bb = EXIT_BLOCK_PTR_FOR_FN (cfun);
   if (single_pred_p (exit_bb))
     {
@@ -785,6 +786,11 @@ assume_query::assume_query ()
     }
 }
 
+assume_query::~assume_query ()
+{
+  destroy_gori ();
+}
+
 // Evaluate operand OP on statement S, using the provided LHS range.
 // If successful, set the range in the global table, then visit OP's def stmt.
 
@@ -792,7 +798,7 @@ void
 assume_query::calculate_op (tree op, gimple *s, vrange &lhs, fur_source &src)
 {
   Value_Range op_range (TREE_TYPE (op));
-  if (m_gori.compute_operand_range (op_range, s, lhs, op, src)
+  if (gori ().compute_operand_range (op_range, s, lhs, op, src)
       && !op_range.varying_p ())
     {
       // Set the global range, merging if there is already a range.

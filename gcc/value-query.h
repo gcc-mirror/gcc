@@ -83,6 +83,10 @@ public:
   void create_infer_oracle (bool do_search = TRUE);
   void destroy_infer_oracle ();
 
+  inline class gimple_outgoing_range &gori () const { return *m_gori; }
+  void create_gori (int not_executable_flag = 0, int sw_max_edges = INT_MAX);
+  void destroy_gori ();
+
   virtual void dump (FILE *);
 
 protected:
@@ -93,6 +97,7 @@ protected:
   bool get_arith_expr_range (vrange &r, tree expr, gimple *stmt);
   relation_oracle *m_relation;
   infer_range_oracle *m_infer;
+  gimple_outgoing_range *m_gori;
   // When multiple related range queries wish to share oracles.
   // This is an internal interface
   void share_query (range_query &q);

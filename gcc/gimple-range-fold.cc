@@ -59,7 +59,7 @@ fur_source::fur_source (range_query *q)
     m_query = q;
   else
     m_query = get_range_query (cfun);
-  m_gori = NULL;
+  m_depend_p = false;
 }
 
 // Invoke range_of_expr on EXPR.
@@ -184,11 +184,10 @@ fur_stmt::query_relation (tree op1, tree op2)
 // Instantiate a stmt based fur_source with a GORI object.
 
 
-fur_depend::fur_depend (gimple *s, gori_compute *gori, range_query *q)
+fur_depend::fur_depend (gimple *s, range_query *q)
   : fur_stmt (s, q)
 {
-  gcc_checking_assert (gori);
-  m_gori = gori;
+  m_depend_p = true;
 }
 
 // Register a relation on a stmt if there is an oracle.

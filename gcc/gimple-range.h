@@ -55,7 +55,6 @@ public:
   virtual bool range_on_entry (vrange &r, basic_block bb, tree name) override;
   virtual bool range_on_exit (vrange &r, basic_block bb, tree name) override;
   void export_global_ranges ();
-  inline gori_compute &gori ()  { return m_cache.m_gori; }
   virtual void dump (FILE *f) override;
   void debug ();
   void dump_bb (FILE *f, basic_block bb);
@@ -87,6 +86,7 @@ class assume_query : public range_query
 {
 public:
   assume_query ();
+  ~assume_query ();
   bool assume_range_p (vrange &r, tree name);
   virtual bool range_of_expr (vrange &r, tree expr, gimple * = NULL);
   void dump (FILE *f);
@@ -97,7 +97,6 @@ protected:
   void check_taken_edge (edge e, fur_source &src);
 
   ssa_lazy_cache global;
-  gori_compute m_gori;
 };
 
 // DOM based ranger for fast VRP.

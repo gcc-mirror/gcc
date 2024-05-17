@@ -950,7 +950,6 @@ update_list::pop ()
 // --------------------------------------------------------------------------
 
 ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
-  : m_gori (not_executable_flag, param_vrp_switch_limit)
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
@@ -960,6 +959,7 @@ ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
   // If DOM info is available, spawn an oracle as well.
   create_relation_oracle ();
   create_infer_oracle (use_imm_uses);
+  create_gori (not_executable_flag, param_vrp_switch_limit);
 
   unsigned x, lim = last_basic_block_for_fn (cfun);
   // Calculate outgoing range info upfront.  This will fully populate the
@@ -969,7 +969,7 @@ ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, x);
       if (bb)
-	m_gori.map ()->exports (bb);
+	gori ().map ()->exports (bb);
     }
   m_update = new update_list ();
 }
@@ -1000,7 +1000,7 @@ ranger_cache::dump (FILE *f)
 void
 ranger_cache::dump_bb (FILE *f, basic_block bb)
 {
-  m_gori.map ()->dump (f, bb, false);
+  gori ().map ()->dump (f, bb, false);
   m_on_entry.dump (f, bb);
   m_relation->dump (f, bb);
 }
@@ -1033,8 +1033,8 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
   current_p = false;
   if (had_global)
     current_p = r.singleton_p ()
-		|| m_temporal->current_p (name, m_gori.map ()->depend1 (name),
-					  m_gori.map ()->depend2 (name));
+		|| m_temporal->current_p (name, gori ().map ()->depend1 (name),
+					  gori ().map ()->depend2 (name));
   else
     {
       // If no global value has been set and value is VARYING, fold the stmt
@@ -1071,8 +1071,8 @@ ranger_cache::set_global_range (tree name, const vrange &r, bool changed)
   if (!changed)
     {
       // If there are dependencies, make sure this is not out of date.
-      if (!m_temporal->current_p (name, m_gori.map ()->depend1 (name),
-				 m_gori.map ()->depend2 (name)))
+      if (!m_temporal->current_p (name, gori ().map ()->depend1 (name),
+				 gori ().map ()->depend2 (name)))
 	m_temporal->set_timestamp (name);
       return;
     }
@@ -1097,7 +1097,7 @@ ranger_cache::set_global_range (tree name, const vrange &r, bool changed)
 
   if (r.singleton_p ()
       || (POINTER_TYPE_P (TREE_TYPE (name)) && r.nonzero_p ()))
-    m_gori.map ()->set_range_invariant (name);
+    gori ().map ()->set_range_invariant (name);
   m_temporal->set_timestamp (name);
 }
 
@@ -1178,7 +1178,7 @@ ranger_cache::edge_range (vrange &r, edge e, tree name, enum rfd_mode mode)
   if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
     infer_oracle ().maybe_adjust_range (r, name, e->src);
   Value_Range er (TREE_TYPE (name));
-  if (m_gori.edge_range_p (er, e, name, *this))
+  if (gori ().edge_range_p (er, e, name, *this))
     r.intersect (er);
   return true;
 }
@@ -1230,7 +1230,7 @@ ranger_cache::block_range (vrange &r, basic_block bb, tree name, bool calc)
 
   // If there are no range calculations anywhere in the IL, global range
   // applies everywhere, so don't bother caching it.
-  if (!m_gori.has_edge_range_p (name))
+  if (!gori ().has_edge_range_p (name))
     return false;
 
   if (calc)
@@ -1449,7 +1449,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	    continue;
 
 	  // Check if the equiv has any ranges calculated.
-	  if (!m_gori.has_edge_range_p (equiv_name))
+	  if (!gori ().has_edge_range_p (equiv_name))
 	    continue;
 
 	  // Check if the equiv definition dominates this block
@@ -1562,7 +1562,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 		  r.dump (dump_file);
 		  fprintf (dump_file, ", ");
 		}
-	      if (!r.undefined_p () || m_gori.has_edge_range_p (name, e))
+	      if (!r.undefined_p () || gori ().has_edge_range_p (name, e))
 		{
 		  m_update->add (node);
 		  if (DEBUG_RANGE_CACHE)
@@ -1671,7 +1671,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
       infer_oracle ().maybe_adjust_range (infer, name, bb);
 
       // This block has an outgoing range.
-      if (m_gori.has_edge_range_p (name, bb))
+      if (gori ().has_edge_range_p (name, bb))
 	m_workback.quick_push (prev_bb);
       else
 	{
@@ -1683,7 +1683,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	  // If the first pred does not generate a range, then we will be
 	  // using the dominator range anyway, so that's all the check needed.
 	  if (EDGE_COUNT (prev_bb->preds) > 1
-	      && m_gori.has_edge_range_p (name, EDGE_PRED (prev_bb, 0)->src))
+	      && gori ().has_edge_range_p (name, EDGE_PRED (prev_bb, 0)->src))
 	    {
 	      edge e;
 	      edge_iterator ei;
@@ -1738,7 +1738,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 
       edge e = single_pred_edge (prev_bb);
       bb = e->src;
-      if (m_gori.edge_range_p (er, e, name, *this))
+      if (gori ().edge_range_p (er, e, name, *this))
 	{
 	  r.intersect (er);
 	  // If this is a normal edge, apply any inferred ranges.
@@ -1782,8 +1782,8 @@ ranger_cache::register_inferred_value (const vrange &ir, tree name,
     {
       m_on_entry.set_bb_range (name, bb, r);
       // If this range was invariant before, remove invariant.
-      if (!m_gori.has_edge_range_p (name))
-	m_gori.map ()->set_range_invariant (name, false);
+      if (!gori ().has_edge_range_p (name))
+	gori ().map ()->set_range_invariant (name, false);
     }
 }
 
