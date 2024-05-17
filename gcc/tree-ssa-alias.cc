@@ -501,7 +501,8 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
 	      || pi2->pt.vars_contains_interposable)
 	    return false;
 	  if ((!pi1->pt.null || !pi2->pt.null)
-	      && (!pi1->pt.const_pool || !pi2->pt.const_pool))
+	      && (!pt_solution_includes_const_pool (&pi1->pt)
+		  || !pt_solution_includes_const_pool (&pi2->pt)))
 	    return !pt_solutions_intersect (&pi1->pt, &pi2->pt);
 	}
     }

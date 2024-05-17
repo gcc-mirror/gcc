@@ -178,6 +178,7 @@ extern bool pt_solution_empty_p (const pt_solution *);
 extern bool pt_solution_singleton_or_null_p (struct pt_solution *, unsigned *);
 extern bool pt_solution_includes_global (struct pt_solution *, bool);
 extern bool pt_solution_includes (struct pt_solution *, const_tree);
+extern bool pt_solution_includes_const_pool (struct pt_solution *);
 extern bool pt_solutions_intersect (struct pt_solution *, struct pt_solution *);
 extern void pt_solution_reset (struct pt_solution *);
 extern void pt_solution_set (struct pt_solution *, bitmap, bool);

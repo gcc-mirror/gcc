@@ -7080,6 +7080,17 @@ pt_solution_includes (struct pt_solution *pt, const_tree decl)
   return res;
 }
 
+/* Return true if the points-to solution *PT contains a reference to a
+   constant pool entry.  */
+
+bool
+pt_solution_includes_const_pool (struct pt_solution *pt)
+{
+  return (pt->const_pool
+	  || (pt->escaped && (!cfun || cfun->gimple_df->escaped.const_pool))
+	  || (pt->ipa_escaped && ipa_escaped_pt.const_pool));
+}
+
 /* Return true if both points-to solutions PT1 and PT2 have a non-empty
    intersection.  */
 
