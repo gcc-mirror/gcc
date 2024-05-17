@@ -303,7 +303,7 @@ path_range_query::range_defined_in_block (vrange &r, tree name, basic_block bb)
     }
 
   if (bb && POINTER_TYPE_P (TREE_TYPE (name)))
-    m_ranger.m_cache.m_exit.maybe_adjust_range (r, name, bb);
+    m_ranger.infer_oracle ().maybe_adjust_range (r, name, bb);
 
   if (DEBUG_SOLVER && (bb || !r.varying_p ()))
     {
@@ -463,7 +463,7 @@ path_range_query::adjust_for_non_null_uses (basic_block bb)
       else
 	r.set_varying (TREE_TYPE (name));
 
-      if (m_ranger.m_cache.m_exit.maybe_adjust_range (r, name, bb))
+      if (m_ranger.infer_oracle ().maybe_adjust_range (r, name, bb))
 	m_cache.set_range (name, r);
     }
 }

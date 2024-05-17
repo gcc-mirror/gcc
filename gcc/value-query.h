@@ -79,6 +79,10 @@ public:
   void create_relation_oracle ();
   void destroy_relation_oracle ();
 
+  inline class infer_range_oracle &infer_oracle () const { return *m_infer; }
+  void create_infer_oracle (bool do_search = TRUE);
+  void destroy_infer_oracle ();
+
   virtual void dump (FILE *);
 
 protected:
@@ -88,6 +92,7 @@ protected:
 			     basic_block bbentry, basic_block bbexit);
   bool get_arith_expr_range (vrange &r, tree expr, gimple *stmt);
   relation_oracle *m_relation;
+  infer_range_oracle *m_infer;
   // When multiple related range queries wish to share oracles.
   // This is an internal interface
   void share_query (range_query &q);

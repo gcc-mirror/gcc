@@ -950,8 +950,7 @@ update_list::pop ()
 // --------------------------------------------------------------------------
 
 ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
-						: m_gori (not_executable_flag),
-						  m_exit (use_imm_uses)
+						: m_gori (not_executable_flag)
 {
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
@@ -960,6 +959,7 @@ ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
 
   // If DOM info is available, spawn an oracle as well.
   create_relation_oracle ();
+  create_infer_oracle (use_imm_uses);
 
   unsigned x, lim = last_basic_block_for_fn (cfun);
   // Calculate outgoing range info upfront.  This will fully populate the
@@ -977,6 +977,7 @@ ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
 ranger_cache::~ranger_cache ()
 {
   delete m_update;
+  destroy_infer_oracle ();
   destroy_relation_oracle ();
   delete m_temporal;
   m_workback.release ();
@@ -1175,7 +1176,7 @@ ranger_cache::edge_range (vrange &r, edge e, tree name, enum rfd_mode mode)
   exit_range (r, name, e->src, mode);
   // If this is not an abnormal edge, check for inferred ranges on exit.
   if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
-    m_exit.maybe_adjust_range (r, name, e->src);
+    infer_oracle ().maybe_adjust_range (r, name, e->src);
   Value_Range er (TREE_TYPE (name));
   if (m_gori.outgoing_edge_range_p (er, e, name, *this))
     r.intersect (er);
@@ -1544,7 +1545,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  // Regardless of whether we have visited pred or not, if the
 	  // pred has inferred ranges, revisit this block.
 	  // Don't search the DOM tree.
-	  if (m_exit.has_range_p (name, pred))
+	  if (infer_oracle ().has_range_p (pred, name))
 	    {
 	      if (DEBUG_RANGE_CACHE)
 		fprintf (dump_file, "Inferred range: update ");
@@ -1667,7 +1668,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   for ( ; bb; prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       // Accumulate any block exit inferred ranges.
-      m_exit.maybe_adjust_range (infer, name, bb);
+      infer_oracle ().maybe_adjust_range (infer, name, bb);
 
       // This block has an outgoing range.
       if (m_gori.has_edge_range_p (name, bb))
@@ -1742,7 +1743,7 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	  r.intersect (er);
 	  // If this is a normal edge, apply any inferred ranges.
 	  if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
-	    m_exit.maybe_adjust_range (r, name, bb);
+	    infer_oracle ().maybe_adjust_range (r, name, bb);
 
 	  if (DEBUG_RANGE_CACHE)
 	    {
@@ -1811,11 +1812,8 @@ ranger_cache::apply_inferred_ranges (gimple *s)
 	update = false;
     }
 
-  for (unsigned x = 0; x < infer.num (); x++)
-    {
-      tree name = infer.name (x);
-      m_exit.add_range (name, bb, infer.range (x));
-      if (update)
-	register_inferred_value (infer.range (x), name, bb);
-    }
+  infer_oracle ().add_ranges (s, infer);
+  if (update)
+    for (unsigned x = 0; x < infer.num (); x++)
+      register_inferred_value (infer.range (x), infer.name (x), bb);
 }

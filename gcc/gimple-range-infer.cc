@@ -37,6 +37,25 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "tree-dfa.h"
 
+// Create the global oracle.
+
+infer_range_oracle infer_oracle;
+
+// This class is merely an accessor which is granted internals to
+// gimple_infer_range such that non_null_loadstore as a static callback can
+// call the protected add_nonzero ().
+// Static functions ccannot be friends, so we do it through a class wrapper.
+
+class non_null_wrapper
+{
+public:
+  inline non_null_wrapper (gimple_infer_range *infer) : m_infer (infer) { }
+  inline void add_nonzero (tree name) { m_infer->add_nonzero (name); }
+  inline void add_range (tree t, vrange &r) { m_infer->add_range (t, r); }
+private:
+  gimple_infer_range *m_infer;
+};
+
 // Adapted from infer_nonnull_range_by_dereference and check_loadstore
 // to process nonnull ssa_name OP in S.  DATA contains a pointer to a
 // stmt range inference instance.
@@ -50,8 +69,8 @@ non_null_loadstore (gimple *, tree op, tree, void *data)
       addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (op));
       if (!targetm.addr_space.zero_address_valid (as))
 	{
-	  tree ssa = TREE_OPERAND (op, 0);
-	  ((gimple_infer_range *)data)->add_nonzero (ssa);
+	  non_null_wrapper wrapper ((gimple_infer_range *)data);
+	  wrapper.add_nonzero (TREE_OPERAND (op, 0));
 	}
     }
   return false;
@@ -173,6 +192,14 @@ gimple_infer_range::gimple_infer_range (gimple *s)
 
 }
 
+// Create an single inferred range for NAMe using range R.
+
+gimple_infer_range::gimple_infer_range (tree name, vrange &r)
+{
+  num_args = 0;
+  add_range (name, r);
+}
+
 // -------------------------------------------------------------------------
 
 // This class is an element in the list of inferred ranges.
@@ -181,9 +208,11 @@ class exit_range
 {
 public:
   tree name;
+  gimple *stmt;
   vrange_storage *range;
   exit_range *next;
 };
+
 
 // If there is an element which matches SSA, return a pointer to the element.
 // Otherwise return NULL.
@@ -253,33 +282,26 @@ infer_range_manager::get_nonzero (tree name)
   return *(m_nonzero[v]);
 }
 
-// Return TRUE if there are any range inferences in block BB.
+// Return TRUE if NAME has a range inference in block BB.  If NAME is NULL,
+// return TRUE if there are any name sin BB.
 
 bool
-infer_range_manager::has_range_p (basic_block bb)
-{
-  if (bb->index >= (int)m_on_exit.length ())
-    return false;
-  bitmap b = m_on_exit[bb->index].m_names;
-  return b && !bitmap_empty_p (b);
-}
-
-// Return TRUE if NAME has a range inference in block BB.
-
-bool
-infer_range_manager::has_range_p (tree name, basic_block bb)
+infer_range_manager::has_range_p (basic_block bb, tree name)
 {
   // Check if this is an immediate use search model.
-  if (m_seen && !bitmap_bit_p (m_seen, SSA_NAME_VERSION (name)))
+  if (name && m_seen && !bitmap_bit_p (m_seen, SSA_NAME_VERSION (name)))
     register_all_uses (name);
 
   if (bb->index >= (int)m_on_exit.length ())
     return false;
-  if (!m_on_exit[bb->index].m_names)
+
+  bitmap b = m_on_exit[bb->index].m_names;
+  if (!b)
     return false;
-  if (!bitmap_bit_p (m_on_exit[bb->index].m_names, SSA_NAME_VERSION (name)))
-    return false;
-  return true;
+
+  if (name)
+    return bitmap_bit_p (m_on_exit[bb->index].m_names, SSA_NAME_VERSION (name));
+  return !bitmap_empty_p (b);
 }
 
 // Return TRUE if NAME has a range inference in block BB, and adjust range R
@@ -288,7 +310,7 @@ infer_range_manager::has_range_p (tree name, basic_block bb)
 bool
 infer_range_manager::maybe_adjust_range (vrange &r, tree name, basic_block bb)
 {
-  if (!has_range_p (name, bb))
+  if (!has_range_p (bb, name))
     return false;
   exit_range *ptr = m_on_exit[bb->index].find_ptr (name);
   gcc_checking_assert (ptr);
@@ -299,11 +321,23 @@ infer_range_manager::maybe_adjust_range (vrange &r, tree name, basic_block bb)
   return r.intersect (tmp);
 }
 
-// Add range R as an inferred range for NAME in block BB.
+// Add all inferred ranges in INFER at stmt S.
 
 void
-infer_range_manager::add_range (tree name, basic_block bb, const vrange &r)
+infer_range_manager::add_ranges (gimple *s, gimple_infer_range &infer)
 {
+  for (unsigned x = 0; x < infer.num (); x++)
+    add_range (infer.name (x), s, infer.range (x));
+}
+
+// Add range R as an inferred range for NAME on stmt S.
+
+void
+infer_range_manager::add_range (tree name, gimple *s, const vrange &r)
+{
+  basic_block bb = gimple_bb (s);
+  if (!bb)
+    return;
   if (bb->index >= (int)m_on_exit.length ())
     m_on_exit.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
 
@@ -334,6 +368,7 @@ infer_range_manager::add_range (tree name, basic_block bb, const vrange &r)
 	ptr->range->set_vrange (cur);
       else
 	ptr->range = m_range_allocator->clone (cur);
+      ptr->stmt = s;
       return;
     }
 
@@ -342,16 +377,17 @@ infer_range_manager::add_range (tree name, basic_block bb, const vrange &r)
   ptr = (exit_range *)obstack_alloc (&m_list_obstack, sizeof (exit_range));
   ptr->range = m_range_allocator->clone (r);
   ptr->name = name;
+  ptr->stmt = s;
   ptr->next = m_on_exit[bb->index].head;
   m_on_exit[bb->index].head = ptr;
 }
 
-// Add a non-zero inferred range for NAME in block BB.
+// Add a non-zero inferred range for NAME at stmt S.
 
 void
-infer_range_manager::add_nonzero (tree name, basic_block bb)
+infer_range_manager::add_nonzero (tree name, gimple *s)
 {
-  add_range (name, bb, get_nonzero (name));
+  add_range (name, s, get_nonzero (name));
 }
 
 // Follow immediate use chains and find all inferred ranges for NAME.
@@ -378,7 +414,7 @@ infer_range_manager::register_all_uses (tree name)
       for (unsigned x = 0; x < infer.num (); x++)
 	{
 	  if (name == infer.name (x))
-	    add_range (name, gimple_bb (s), infer.range (x));
+	    add_range (name, s, infer.range (x));
 	}
     }
 }

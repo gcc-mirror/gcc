@@ -181,6 +181,23 @@ range_query::dump (FILE *)
 // Default oracle for all range queries.  This contains no storage and thus
 // can be used anywhere.
 relation_oracle default_relation_oracle;
+infer_range_oracle default_infer_oracle;
+
+void
+range_query::create_infer_oracle (bool do_search)
+{
+  gcc_checking_assert (m_infer == &default_infer_oracle);
+  m_infer = new infer_range_manager (do_search);
+  gcc_checking_assert (m_infer);
+}
+
+void
+range_query::destroy_infer_oracle ()
+{
+  if (m_infer && m_infer != &default_infer_oracle)
+    delete m_infer;
+  m_infer = &default_infer_oracle;
+}
 
 // Create dominance based range oracle for the current query if dom info is
 // available.
@@ -215,12 +232,14 @@ void
 range_query::share_query (range_query &q)
 {
   m_relation = q.m_relation;
+  m_infer = q.m_infer;
   m_shared_copy_p = true;
 }
 
 range_query::range_query ()
 {
   m_relation = &default_relation_oracle;
+  m_infer = &default_infer_oracle;
   m_shared_copy_p = false;
 }
 
@@ -229,6 +248,7 @@ range_query::~range_query ()
   // Do not destroy anything if this is a shared copy.
   if (m_shared_copy_p)
     return;
+  destroy_infer_oracle ();
   destroy_relation_oracle ();
 }
 

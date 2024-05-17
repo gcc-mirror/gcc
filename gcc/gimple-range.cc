@@ -253,7 +253,7 @@ gimple_ranger::range_on_edge (vrange &r, edge e, tree name)
       range_on_exit (r, e->src, name);
       // If this is not an abnormal edge, check for a non-null exit .
       if ((e->flags & (EDGE_EH | EDGE_ABNORMAL)) == 0)
-	m_cache.m_exit.maybe_adjust_range (r, name, e->src);
+	infer_oracle ().maybe_adjust_range (r, name, e->src);
       gcc_checking_assert  (r.undefined_p ()
 			    || range_compatible_p (r.type(), TREE_TYPE (name)));
 
@@ -516,8 +516,7 @@ void
 gimple_ranger::register_transitive_inferred_ranges (basic_block bb)
 {
   // Return if there are no inferred ranges in BB.
-  infer_range_manager &infer = m_cache.m_exit;
-  if (!infer.has_range_p (bb))
+  if (!infer_oracle ().has_range_p (bb))
     return;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -530,7 +529,7 @@ gimple_ranger::register_transitive_inferred_ranges (basic_block bb)
       gimple *s = gsi_stmt (si);
       tree lhs = gimple_get_lhs (s);
       // If the LHS already has an inferred effect, leave it be.
-      if (!gimple_range_ssa_p (lhs) || infer.has_range_p (lhs, bb))
+      if (!gimple_range_ssa_p (lhs) || infer_oracle ().has_range_p (bb, lhs))
 	continue;
       // Pick up global value.
       Value_Range g (TREE_TYPE (lhs));
@@ -543,13 +542,14 @@ gimple_ranger::register_transitive_inferred_ranges (basic_block bb)
       r.set_undefined ();
       tree name1 = gori ().depend1 (lhs);
       tree name2 = gori ().depend2 (lhs);
-      if ((name1 && infer.has_range_p (name1, bb))
-	  || (name2 && infer.has_range_p (name2, bb)))
+      if ((name1 && infer_oracle ().has_range_p (bb, name1))
+	  || (name2 && infer_oracle ().has_range_p (bb, name2)))
 	{
 	  // Check if folding S produces a different result.
 	  if (fold_range (r, s, this) && g != r)
 	    {
-	      infer.add_range (lhs, bb, r);
+	      gimple_infer_range ir (lhs, r);
+	      infer_oracle ().add_ranges (s, ir);
 	      m_cache.register_inferred_value (r, lhs, bb);
 	    }
 	}
