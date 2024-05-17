@@ -2553,7 +2553,8 @@ vect_check_store_rhs (vec_info *vinfo, stmt_vec_info stmt_info,
 
   /* In the case this is a store from a constant make sure
      native_encode_expr can handle it.  */
-  if (CONSTANT_CLASS_P (*rhs) && native_encode_expr (*rhs, NULL, 64) == 0)
+  if (rhs_dt == vect_constant_def
+      && CONSTANT_CLASS_P (*rhs) && native_encode_expr (*rhs, NULL, 64) == 0)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -14002,8 +14003,26 @@ vect_is_simple_use (vec_info *vinfo, stmt_vec_info stmt, slp_tree slp_node,
       *vectype = SLP_TREE_VECTYPE (child);
       if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	{
-	  *op = gimple_get_lhs (SLP_TREE_REPRESENTATIVE (child)->stmt);
-	  return vect_is_simple_use (*op, vinfo, dt, def_stmt_info_out);
+	  /* ???  VEC_PERM nodes might be intermediate and their lane value
+	     have no representative (nor do we build a VEC_PERM stmt for
+	     the actual operation).  Note for two-operator nodes we set
+	     a representative but leave scalar stmts empty as we'd only
+	     have one for a subset of lanes.  Ideally no caller would
+	     require *op for internal defs.  */
+	  if (SLP_TREE_REPRESENTATIVE (child))
+	    {
+	      *op = gimple_get_lhs (SLP_TREE_REPRESENTATIVE (child)->stmt);
+	      return vect_is_simple_use (*op, vinfo, dt, def_stmt_info_out);
+	    }
+	  else
+	    {
+	      gcc_assert (SLP_TREE_CODE (child) == VEC_PERM_EXPR);
+	      *op = error_mark_node;
+	      *dt = vect_internal_def;
+	      if (def_stmt_info_out)
+		*def_stmt_info_out = NULL;
+	      return true;
+	    }
 	}
       else
 	{
