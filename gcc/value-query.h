@@ -88,6 +88,11 @@ protected:
 			     basic_block bbentry, basic_block bbexit);
   bool get_arith_expr_range (vrange &r, tree expr, gimple *stmt);
   relation_oracle *m_relation;
+  // When multiple related range queries wish to share oracles.
+  // This is an internal interface
+  void share_query (range_query &q);
+  bool m_shared_copy_p;
+
 };
 
 // Global ranges for SSA names using SSA_NAME_RANGE_INFO.

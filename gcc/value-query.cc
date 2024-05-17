@@ -211,13 +211,24 @@ range_query::destroy_relation_oracle ()
     }
 }
 
+void
+range_query::share_query (range_query &q)
+{
+  m_relation = q.m_relation;
+  m_shared_copy_p = true;
+}
+
 range_query::range_query ()
 {
   m_relation = &default_relation_oracle;
+  m_shared_copy_p = false;
 }
 
 range_query::~range_query ()
 {
+  // Do not destroy anything if this is a shared copy.
+  if (m_shared_copy_p)
+    return;
   destroy_relation_oracle ();
 }
 
