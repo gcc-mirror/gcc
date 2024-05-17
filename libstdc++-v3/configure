@@ -53867,6 +53867,22 @@ fi
 
 done
 
+  for ac_header in tlhelp32.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "tlhelp32.h" "ac_cv_header_tlhelp32_h" "#ifdef HAVE_WINDOWS_H
+  #  include <windows.h>
+  #endif
+
+"
+if test "x$ac_cv_header_tlhelp32_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_TLHELP32_H 1
+_ACEOF
+
+fi
+
+done
+
 
   # Check for the fcntl function.
   if test -n "${with_target_subdir}"; then

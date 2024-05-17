@@ -5481,6 +5481,11 @@ AC_DEFUN([GLIBCXX_ENABLE_BACKTRACE], [
     BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_DL_ITERATE_PHDR=1"
   fi
   AC_CHECK_HEADERS(windows.h)
+  AC_CHECK_HEADERS(tlhelp32.h, [], [],
+  [#ifdef HAVE_WINDOWS_H
+  #  include <windows.h>
+  #endif
+  ])
 
   # Check for the fcntl function.
   if test -n "${with_target_subdir}"; then
