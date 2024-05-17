@@ -1485,28 +1485,6 @@ expand_const_vector (rtx target, rtx src)
 	      emit_vlmax_insn (code_for_pred_merge (mode), MERGE_OP, ops);
 	    }
 	}
-      else if (npatterns == 1 && nelts_per_pattern == 3)
-	{
-	  /* Generate the following CONST_VECTOR:
-	     { base0, base1, base1 + step, base1 + step * 2, ... }  */
-	  rtx base0 = builder.elt (0);
-	  rtx base1 = builder.elt (1);
-	  rtx base2 = builder.elt (2);
-
-	  rtx step = simplify_binary_operation (MINUS, builder.inner_mode (),
-						base2, base1);
-
-	  /* Step 1 - { base1, base1 + step, base1 + step * 2, ... }  */
-	  rtx tmp = gen_reg_rtx (mode);
-	  expand_vec_series (tmp, base1, step);
-	  /* Step 2 - { base0, base1, base1 + step, base1 + step * 2, ... }  */
-	  if (!rtx_equal_p (base0, const0_rtx))
-	    base0 = force_reg (builder.inner_mode (), base0);
-
-	  insn_code icode = optab_handler (vec_shl_insert_optab, mode);
-	  gcc_assert (icode != CODE_FOR_nothing);
-	  emit_insn (GEN_FCN (icode) (target, tmp, base0));
-	}
       else
 	/* TODO: We will enable more variable-length vector in the future.  */
 	gcc_unreachable ();
@@ -3579,6 +3557,10 @@ shuffle_extract_and_slide1up_patterns (struct expand_vec_perm_d *d)
   emit_vlmax_insn (icode, BINARY_OP, ops);
   return true;
 }
+
+/* This looks for a series pattern in the provided vector permute structure D.
+   If successful it emits a series insn as well as a gather to implement it.
+   Return true if successful, false otherwise.  */
 
 static bool
 shuffle_series_patterns (struct expand_vec_perm_d *d)
