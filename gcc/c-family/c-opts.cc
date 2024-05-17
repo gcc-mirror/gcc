@@ -770,6 +770,19 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       cpp_opts->traditional = 1;
       break;
 
+    case OPT_fsearch_include_path:
+      cpp_opts->main_search = CMS_user;
+      break;
+
+    case OPT_fsearch_include_path_:
+      if (!strcmp (arg, "user"))
+	cpp_opts->main_search = CMS_user;
+      else if (!strcmp (arg, "system"))
+	cpp_opts->main_search = CMS_system;
+      else
+	error ("invalid argument %qs to %<-fsearch-include-path%>", arg);
+      break;
+
     case OPT_v:
       verbose = true;
       break;

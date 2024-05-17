@@ -744,14 +744,12 @@ cpp_read_main_file (cpp_reader *pfile, const char *fname, bool injecting)
     /* Set the default target (if there is none already).  */
     deps_add_default_target (deps, fname);
 
+  auto main_search = CPP_OPTION (pfile, main_search);
+  bool angle = main_search == CMS_system;
+  cpp_dir *start_dir = (main_search < CMS_user ? &pfile->no_search_path
+			: search_path_head (pfile, fname, angle, IT_CMDLINE));
   pfile->main_file
-    = _cpp_find_file (pfile, fname,
-		      CPP_OPTION (pfile, preprocessed) ? &pfile->no_search_path
-		      : CPP_OPTION (pfile, main_search) == CMS_user
-		      ? pfile->quote_include
-		      : CPP_OPTION (pfile, main_search) == CMS_system
-		      ? pfile->bracket_include : &pfile->no_search_path,
-		      /*angle=*/0, _cpp_FFK_NORMAL, 0);
+    = _cpp_find_file (pfile, fname, start_dir, angle, _cpp_FFK_NORMAL, 0);
 
   if (_cpp_find_failed (pfile->main_file))
     return NULL;

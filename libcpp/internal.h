@@ -766,6 +766,8 @@ extern _cpp_file *_cpp_find_file (cpp_reader *, const char *, cpp_dir *,
 				  int angle, _cpp_find_file_kind, location_t);
 extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
+extern cpp_dir *search_path_head (cpp_reader *, const char *, int,
+				  include_type, bool = false);
 extern const char *_cpp_find_header_unit (cpp_reader *, const char *file,
 					  bool angle_p,  location_t);
 extern int _cpp_stack_embed (cpp_reader *, const char *, bool,

@@ -38001,6 +38001,11 @@ installed.  Specifying the language as one of these variants also
 inhibits output of the object file, as header files have no associated
 object file.
 
+Alternately, or for a module interface unit in an installed location,
+you can use @option{-fsearch-include-path} to specify that the main
+source file should be found on the include path rather than the
+current directory.
+
 Header units can be used in much the same way as precompiled headers
 (@pxref{Precompiled Headers}), but with fewer restrictions: an
 #include that is translated to a header unit import can appear at any

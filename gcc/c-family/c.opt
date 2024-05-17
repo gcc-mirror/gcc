@@ -2280,6 +2280,13 @@ frtti
 C++ ObjC++ Optimization Var(flag_rtti) Init(1)
 Generate run time type descriptor information.
 
+fsearch-include-path
+C ObjC C++ ObjC++
+Look for the main source file on the include path.
+
+fsearch-include-path=
+C++ ObjC++ Joined RejectNegative Undocumented
+
 fshort-enums
 C ObjC C++ ObjC++ LTO Optimization Var(flag_short_enums)
 Use the narrowest integer type possible for enumeration types.

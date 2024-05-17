@@ -270,6 +270,21 @@ When preprocessing, do not shorten system header paths with canonicalization.
 @item -fmax-include-depth=@var{depth}
 Set the maximum depth of the nested #include. The default is 200. 
 
+@opindex fsearch-include-path
+@item -fsearch-include-path@r{[}=@var{kind}@r{]}
+Look for input files on the #include path, not just the current
+directory.  This is particularly useful with C++20 modules, for which
+both header units and module interface units need to be compiled
+directly:
+
+@smallexample
+g++ -c -std=c++20 -fmodules -fsearch-include-path bits/stdc++.h bits/std.cc
+@end smallexample
+
+@var{kind} defaults to @samp{user}, which looks on the @code{#include
+"@dots{}"} search path; you can also explicitly specify @samp{system}
+for the @code{#include <@dots{}>} search path.
+
 @opindex ftabstop
 @item -ftabstop=@var{width}
 Set the distance between tab stops.  This helps the preprocessor report
