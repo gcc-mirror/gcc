@@ -156,6 +156,10 @@ class diagnostic_event
 
   virtual meaning get_meaning () const = 0;
 
+  /* True iff we should draw a line connecting this event to the
+     next event (e.g. to highlight control flow).  */
+  virtual bool connect_to_next_event_p () const = 0;
+
   virtual diagnostic_thread_id_t get_thread_id () const = 0;
 
   /* Hook for SARIF output to allow for adding diagnostic-specific
@@ -224,9 +228,18 @@ class simple_diagnostic_event : public diagnostic_event
   {
     return meaning ();
   }
+  bool connect_to_next_event_p () const final override
+  {
+    return m_connected_to_next_event;
+  }
   diagnostic_thread_id_t get_thread_id () const final override
   {
     return m_thread_id;
+  }
+
+  void connect_to_next_event ()
+  {
+    m_connected_to_next_event = true;
   }
 
  private:
@@ -234,6 +247,7 @@ class simple_diagnostic_event : public diagnostic_event
   tree m_fndecl;
   int m_depth;
   char *m_desc; // has been i18n-ed and formatted
+  bool m_connected_to_next_event;
   diagnostic_thread_id_t m_thread_id;
 };
 
@@ -276,6 +290,8 @@ class simple_diagnostic_path : public diagnostic_path
 		    location_t loc, tree fndecl, int depth,
 		    const char *fmt, ...)
     ATTRIBUTE_GCC_DIAG(6,7);
+
+  void connect_to_next_event ();
 
  private:
   auto_delete_vec<simple_diagnostic_thread> m_threads;

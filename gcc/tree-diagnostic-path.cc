@@ -19,6 +19,9 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_ALGORITHM
+#define INCLUDE_MEMORY
+#define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -34,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "diagnostic-color.h"
 #include "diagnostic-event-id.h"
+#include "diagnostic-label-effects.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "text-art/theme.h"
@@ -50,7 +54,7 @@ class path_label : public range_label
 {
  public:
   path_label (const diagnostic_path *path, unsigned start_idx)
-  : m_path (path), m_start_idx (start_idx)
+  : m_path (path), m_start_idx (start_idx), m_effects (*this)
   {}
 
   label_text get_text (unsigned range_idx) const final override
@@ -95,9 +99,53 @@ class path_label : public range_label
     return result;
   }
 
+  const label_effects *get_effects (unsigned /*range_idx*/) const
+  {
+    return &m_effects;
+  }
+
  private:
+  class path_label_effects : public label_effects
+  {
+  public:
+    path_label_effects (const path_label &path_label)
+    : m_path_label (path_label)
+    {
+    }
+    bool has_in_edge (unsigned range_idx) const final override
+    {
+      if (const diagnostic_event *prev_event
+	    = m_path_label.get_prev_event (range_idx))
+	return prev_event->connect_to_next_event_p ();
+      return false;
+    }
+    bool has_out_edge (unsigned range_idx) const final override
+    {
+      const diagnostic_event &event = m_path_label.get_event (range_idx);
+      return event.connect_to_next_event_p ();
+    }
+
+  private:
+    const path_label &m_path_label;
+  };
+
+  const diagnostic_event &get_event (unsigned range_idx) const
+  {
+    unsigned event_idx = m_start_idx + range_idx;
+    return m_path->get_event (event_idx);
+  }
+
+  const diagnostic_event *get_prev_event (unsigned range_idx) const
+  {
+    if (m_start_idx + range_idx == 0)
+      return nullptr;
+    unsigned event_idx = m_start_idx + range_idx - 1;
+    return &m_path->get_event (event_idx);
+  }
+
   const diagnostic_path *m_path;
   unsigned m_start_idx;
+  path_label_effects m_effects;
 };
 
 /* Return true if E1 and E2 can be consolidated into the same run of events
@@ -150,6 +198,7 @@ public:
   per_thread_summary (label_text name, unsigned swimlane_idx)
   : m_name (std::move (name)),
     m_swimlane_idx (swimlane_idx),
+    m_last_event (nullptr),
     m_min_depth (INT_MAX),
     m_max_depth (INT_MIN)
   {}
@@ -170,6 +219,7 @@ public:
 private:
   friend struct path_summary;
   friend class thread_event_printer;
+  friend struct event_range;
 
   const label_text m_name;
 
@@ -179,6 +229,9 @@ private:
 
   // The event ranges specific to this thread:
   auto_vec<event_range *> m_event_ranges;
+
+  const diagnostic_event *m_last_event;
+
   int m_min_depth;
   int m_max_depth;
 };
@@ -188,9 +241,95 @@ private:
    to print with a single call to diagnostic_show_locus.  */
 struct event_range
 {
+  /* A struct for tracking the mergability of labels on a particular
+     source line.  In particular, track information about links between
+     labels to ensure that we only consolidate events involving links
+     that the source-printing code is able to handle (splitting them
+     otherwise).  */
+  struct per_source_line_info
+  {
+    void init (int line)
+    {
+      m_line = line;
+      m_has_in_edge = false;
+      m_has_out_edge = false;
+      m_min_label_source_column = INT_MAX;
+      m_max_label_source_column = INT_MIN;
+    }
+
+    /* Return true if our source-printing/labelling/linking code can handle
+       the events already on this source line, *and* a new event at COLUMN.  */
+    bool
+    can_add_label_for_event_p (bool has_in_edge,
+			       const diagnostic_event *prev_event,
+			       bool has_out_edge,
+			       int column) const
+    {
+      /* Any existing in-edge has to be the left-most label on its
+	 source line.  */
+      if (m_has_in_edge && column < m_min_label_source_column)
+	return false;
+      /* Any existing out-edge has to be the right-most label on its
+	 source line.  */
+      if (m_has_out_edge && column > m_max_label_source_column)
+	return false;
+      /* Can't have more than one in-edge.  */
+      if (m_has_in_edge && has_in_edge)
+	return false;
+      /* Can't have more than one out-edge.  */
+      if (m_has_out_edge && has_out_edge)
+	return false;
+
+      if (has_in_edge)
+	{
+	  /* Any new in-edge needs to be the left-most label on its
+	     source line.  */
+	  if (column > m_min_label_source_column)
+	    return false;
+
+	  gcc_assert (prev_event);
+	  const location_t prev_loc = prev_event->get_location ();
+	  expanded_location prev_exploc
+	    = linemap_client_expand_location_to_spelling_point
+		(line_table, prev_loc, LOCATION_ASPECT_CARET);
+	  /* The destination in-edge's line number has to be <= the
+	     source out-edge's line number (if any).  */
+	  if (prev_exploc.line >= m_line)
+	    return false;
+	}
+
+      /* Any new out-edge needs to be the right-most label on its
+	 source line.  */
+      if (has_out_edge)
+	if (column < m_max_label_source_column)
+	  return false;
+
+      /* All checks passed; we can add the new event at COLUMN.  */
+      return true;
+    }
+
+    void
+    add_label_for_event (bool has_in_edge, bool has_out_edge, int column)
+    {
+      if (has_in_edge)
+	m_has_in_edge = true;
+      if (has_out_edge)
+	m_has_out_edge = true;
+      m_min_label_source_column = std::min (m_min_label_source_column, column);
+      m_max_label_source_column = std::max (m_max_label_source_column, column);
+    }
+
+    int m_line;
+    bool m_has_in_edge;
+    bool m_has_out_edge;
+    int m_min_label_source_column;
+    int m_max_label_source_column;
+  };
+
   event_range (const diagnostic_path *path, unsigned start_idx,
 	       const diagnostic_event &initial_event,
-	       const per_thread_summary &t)
+	       per_thread_summary &t,
+	       bool show_event_links)
   : m_path (path),
     m_initial_event (initial_event),
     m_fndecl (initial_event.get_fndecl ()),
@@ -199,8 +338,39 @@ struct event_range
     m_path_label (path, start_idx),
     m_richloc (initial_event.get_location (), &m_path_label),
     m_thread_id (initial_event.get_thread_id ()),
-    m_per_thread_summary (t)
-  {}
+    m_per_thread_summary (t),
+    m_show_event_links (show_event_links)
+  {
+    if (m_show_event_links)
+      {
+	expanded_location exploc
+	  = linemap_client_expand_location_to_spelling_point
+	  (line_table, initial_event.get_location (), LOCATION_ASPECT_CARET);
+	per_source_line_info &source_line_info
+	  = get_per_source_line_info (exploc.line);
+
+	const diagnostic_event *prev_thread_event = t.m_last_event;
+	const bool has_in_edge
+	  = (prev_thread_event
+	     ? prev_thread_event->connect_to_next_event_p ()
+	     : false);
+	const bool has_out_edge = initial_event.connect_to_next_event_p ();
+
+	source_line_info.add_label_for_event
+	  (has_in_edge, has_out_edge, exploc.column);
+      }
+  }
+
+  per_source_line_info &
+  get_per_source_line_info (int source_line)
+  {
+    bool existed = false;
+    per_source_line_info &result
+      = m_source_line_info_map.get_or_insert (source_line, &existed);
+    if (!existed)
+      result.init (source_line);
+    return result;
+  }
 
   bool maybe_add_event (const diagnostic_event &new_ev, unsigned idx,
 			bool check_rich_locations)
@@ -208,18 +378,48 @@ struct event_range
     if (!can_consolidate_events (m_initial_event, new_ev,
 				 check_rich_locations))
       return false;
+
+    /* Verify compatibility of the new label and existing labels
+       with respect to the link-printing code.  */
+    expanded_location exploc
+      = linemap_client_expand_location_to_spelling_point
+      (line_table, new_ev.get_location (), LOCATION_ASPECT_CARET);
+    per_source_line_info &source_line_info
+      = get_per_source_line_info (exploc.line);
+    const diagnostic_event *prev_event = nullptr;
+    if (idx > 0)
+      prev_event = &m_path->get_event (idx - 1);
+    const bool has_in_edge = (prev_event
+			      ? prev_event->connect_to_next_event_p ()
+			      : false);
+    const bool has_out_edge = new_ev.connect_to_next_event_p ();
+    if (m_show_event_links)
+      if (!source_line_info.can_add_label_for_event_p
+	  (has_in_edge, prev_event,
+	   has_out_edge, exploc.column))
+	return false;
+
+    /* Potentially verify that the locations are sufficiently close.  */
     if (check_rich_locations)
       if (!m_richloc.add_location_if_nearby (new_ev.get_location (),
 					     false, &m_path_label))
 	return false;
+
     m_end_idx = idx;
+    m_per_thread_summary.m_last_event = &new_ev;
+
+    if (m_show_event_links)
+      source_line_info.add_label_for_event
+	(has_in_edge, has_out_edge, exploc.column);
+
     return true;
   }
 
   /* Print the events in this range to DC, typically as a single
      call to the printer's diagnostic_show_locus.  */
 
-  void print (diagnostic_context *dc, pretty_printer *pp)
+  void print (diagnostic_context *dc, pretty_printer *pp,
+	      diagnostic_source_effect_info *effect_info)
   {
     location_t initial_loc = m_initial_event.get_location ();
 
@@ -256,7 +456,8 @@ struct event_range
       }
 
     /* Call diagnostic_show_locus to show the events using labels.  */
-    diagnostic_show_locus (dc, &m_richloc, DK_DIAGNOSTIC_PATH, pp);
+    diagnostic_show_locus (dc, &m_richloc, DK_DIAGNOSTIC_PATH, pp,
+			   effect_info);
 
     /* If we have a macro expansion, show the expansion to the user.  */
     if (linemap_location_from_macro_expansion_p (line_table, initial_loc))
@@ -275,7 +476,10 @@ struct event_range
   path_label m_path_label;
   gcc_rich_location m_richloc;
   diagnostic_thread_id_t m_thread_id;
-  const per_thread_summary &m_per_thread_summary;
+  per_thread_summary &m_per_thread_summary;
+  hash_map<int_hash<int, -1, -2>,
+	   per_source_line_info> m_source_line_info_map;
+  bool m_show_event_links;
 };
 
 /* A struct for grouping together the events in a diagnostic_path into
@@ -284,7 +488,9 @@ struct event_range
 
 struct path_summary
 {
-  path_summary (const diagnostic_path &path, bool check_rich_locations);
+  path_summary (const diagnostic_path &path,
+		bool check_rich_locations,
+		bool show_event_links = true);
 
   unsigned get_num_ranges () const { return m_ranges.length (); }
   bool multithreaded_p () const { return m_per_thread_summary.length () > 1; }
@@ -342,7 +548,8 @@ per_thread_summary::interprocedural_p () const
 /* path_summary's ctor.  */
 
 path_summary::path_summary (const diagnostic_path &path,
-			    bool check_rich_locations)
+			    bool check_rich_locations,
+			    bool show_event_links)
 {
   const unsigned num_events = path.num_events ();
 
@@ -360,9 +567,11 @@ path_summary::path_summary (const diagnostic_path &path,
 	if (cur_event_range->maybe_add_event (event, idx, check_rich_locations))
 	  continue;
 
-      cur_event_range = new event_range (&path, idx, event, pts);
+      cur_event_range = new event_range (&path, idx, event, pts,
+					 show_event_links);
       m_ranges.safe_push (cur_event_range);
       pts.m_event_ranges.safe_push (cur_event_range);
+      pts.m_last_event = &event;
     }
 }
 
@@ -428,9 +637,11 @@ public:
       return nullptr;
   }
 
-  void print_swimlane_for_event_range (diagnostic_context *dc,
-				       pretty_printer *pp,
-				       event_range *range)
+  void
+  print_swimlane_for_event_range (diagnostic_context *dc,
+				  pretty_printer *pp,
+				  event_range *range,
+				  diagnostic_source_effect_info *effect_info)
   {
     const char *const line_color = "path";
     const char *start_line_color
@@ -508,7 +719,7 @@ public:
 	}
 	pp_set_prefix (pp, prefix);
 	pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
-	range->print (dc, pp);
+	range->print (dc, pp, effect_info);
 	pp_set_prefix (pp, saved_prefix);
 
 	write_indent (pp, m_cur_indent + per_frame_indent);
@@ -518,7 +729,7 @@ public:
 	pp_newline (pp);
       }
     else
-      range->print (dc, pp);
+      range->print (dc, pp, effect_info);
 
     if (const event_range *next_range = get_any_next_range ())
       {
@@ -648,6 +859,7 @@ print_path_summary_as_text (const path_summary *ps, diagnostic_context *dc,
 
   unsigned i;
   event_range *range;
+  int last_out_edge_column = -1;
   FOR_EACH_VEC_ELT (ps->m_ranges, i, range)
     {
       const int swimlane_idx
@@ -662,7 +874,12 @@ print_path_summary_as_text (const path_summary *ps, diagnostic_context *dc,
 	    pp_newline (pp);
 	  }
       thread_event_printer &tep = thread_event_printers[swimlane_idx];
-      tep.print_swimlane_for_event_range (dc, pp, range);
+      /* Wire up any trailing out-edge from previous range to leading in-edge
+	 of this range.  */
+      diagnostic_source_effect_info effect_info;
+      effect_info.m_leading_in_edge_column = last_out_edge_column;
+      tep.print_swimlane_for_event_range (dc, pp, range, &effect_info);
+      last_out_edge_column = effect_info.m_trailing_out_edge_column;
     }
 }
 
@@ -721,7 +938,8 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
     case DPF_INLINE_EVENTS:
       {
 	/* Consolidate related events.  */
-	path_summary summary (*path, true);
+	path_summary summary (*path, true,
+			      context->m_source_printing.show_event_links_p);
 	char *saved_prefix = pp_take_prefix (context->printer);
 	pp_set_prefix (context->printer, NULL);
 	print_path_summary_as_text (&summary, context,
@@ -775,6 +993,27 @@ default_tree_make_json_for_path (diagnostic_context *context,
 #endif
 
 namespace selftest {
+
+/* Return true iff all events in PATH have locations for which column data
+   is available, so that selftests that require precise string output can
+   bail out for awkward line_table cases.  */
+
+static bool
+path_events_have_column_data_p (const diagnostic_path &path)
+{
+  for (unsigned idx = 0; idx < path.num_events (); idx++)
+    {
+      location_t event_loc = path.get_event (idx).get_location ();
+      if (line_table->get_pure_location (event_loc)
+	  > LINE_MAP_MAX_LOCATION_WITH_COLS)
+	return false;
+      if (line_table->get_start (event_loc) > LINE_MAP_MAX_LOCATION_WITH_COLS)
+	return false;
+      if (line_table->get_finish (event_loc) > LINE_MAP_MAX_LOCATION_WITH_COLS)
+	return false;
+    }
+  return true;
+}
 
 /* A subclass of simple_diagnostic_path that adds member functions
    for adding test events.  */
@@ -1172,20 +1411,909 @@ test_recursion (pretty_printer *event_pp)
   }
 }
 
+/* Helper class for writing tests of control flow visualization.  */
+
+class control_flow_test
+{
+public:
+  control_flow_test (const location &loc,
+		     const line_table_case &case_,
+		     const char *content)
+  : m_tmp_file (loc, ".c", content,
+		/* gcc_rich_location::add_location_if_nearby implicitly
+		   uses global_dc's file_cache, so we need to evict
+		   tmp when we're done.  */
+		&global_dc->get_file_cache ()),
+    m_ltt (case_)
+  {
+    m_ord_map
+      = linemap_check_ordinary (linemap_add (line_table, LC_ENTER, false,
+					     m_tmp_file.get_filename (), 0));
+    linemap_line_start (line_table, 1, 100);
+  }
+
+  location_t get_line_and_column (int line, int column)
+  {
+    return linemap_position_for_line_and_column (line_table, m_ord_map,
+						 line, column);
+  }
+
+  location_t get_line_and_columns (int line, int first_column, int last_column)
+  {
+    return get_line_and_columns (line,
+				 first_column, first_column, last_column);
+  }
+
+  location_t get_line_and_columns (int line,
+				   int first_column,
+				   int caret_column,
+				   int last_column)
+  {
+    return make_location (get_line_and_column (line, caret_column),
+			  get_line_and_column (line, first_column),
+			  get_line_and_column (line, last_column));
+  }
+
+private:
+  temp_source_file m_tmp_file;
+  line_table_test m_ltt;
+  const line_map_ordinary *m_ord_map;
+};
+
+/* Example of event edges where all events can go in the same layout,
+   testing the 6 combinations of:
+   - ASCII vs Unicode vs event links off
+   - line numbering on and off.  */
+
+static void
+test_control_flow_1 (const line_table_case &case_,
+		     pretty_printer *event_pp)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333333.
+     ...123456789012345678901234567890123456789.  */
+  const char *content
+    = ("int test (int *p)\n" /* line 1.  */
+       "{\n"                 /* line 2.  */
+       "  if (p)\n"          /* line 3.  */
+       "    return 0;\n"     /* line 4.  */
+       "  return *p;\n"      /* line 5.  */
+       "}\n");               /* line 6.  */
+
+  control_flow_test t (SELFTEST_LOCATION, case_, content);
+
+  const location_t conditional = t.get_line_and_column (3, 7);
+  const location_t cfg_dest = t.get_line_and_column (5, 10);
+
+  test_diagnostic_path path (event_pp);
+  path.add_event (conditional, NULL_TREE, 0,
+		  "following %qs branch (when %qs is NULL)...",
+		  "false", "p");
+  path.connect_to_next_event ();
+
+  path.add_event (cfg_dest, NULL_TREE, 0,
+		  "...to here");
+  path.add_event (cfg_dest, NULL_TREE, 0,
+		  "dereference of NULL %qs",
+		  "p");
+
+  if (!path_events_have_column_data_p (path))
+    return;
+
+  path_summary summary (path, true /*false*/);
+
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    dc.m_source_printing.show_event_links_p = true;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-3\n"
+       "FILENAME:3:7:\n"
+       "   if (p)\n"
+       "       ^\n"
+       "       |\n"
+       "       (1) following `false' branch (when `p' is NULL)... ->-+\n"
+       "                                                             |\n"
+       "FILENAME:5:10:\n"
+       "                                                             |\n"
+       "+------------------------------------------------------------+\n"
+       "|  return *p;\n"
+       "|         ~\n"
+       "|         |\n"
+       "+-------->(2) ...to here\n"
+       "          (3) dereference of NULL `p'\n",
+       pp_formatted_text (dc.printer));
+  }
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    dc.m_source_printing.show_event_links_p = false;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-3\n"
+       "FILENAME:3:7:\n"
+       "   if (p)\n"
+       "       ^\n"
+       "       |\n"
+       "       (1) following `false' branch (when `p' is NULL)...\n"
+       "FILENAME:5:10:\n"
+       "   return *p;\n"
+       "          ~\n"
+       "          |\n"
+       "          (2) ...to here\n"
+       "          (3) dereference of NULL `p'\n",
+       pp_formatted_text (dc.printer));
+  }
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    dc.m_source_printing.show_line_numbers_p = true;
+    dc.m_source_printing.show_event_links_p = true;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-3\n"
+       "FILENAME:3:7:\n"
+       "    3 |   if (p)\n"
+       "      |       ^\n"
+       "      |       |\n"
+       "      |       (1) following `false' branch (when `p' is NULL)... ->-+\n"
+       "      |                                                             |\n"
+       "      |                                                             |\n"
+       "      |+------------------------------------------------------------+\n"
+       "    4 ||    return 0;\n"
+       "    5 ||  return *p;\n"
+       "      ||         ~\n"
+       "      ||         |\n"
+       "      |+-------->(2) ...to here\n"
+       "      |          (3) dereference of NULL `p'\n",
+       pp_formatted_text (dc.printer));
+  }
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    dc.m_source_printing.show_line_numbers_p = true;
+    dc.m_source_printing.show_event_links_p = false;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-3\n"
+       "FILENAME:3:7:\n"
+       "    3 |   if (p)\n"
+       "      |       ^\n"
+       "      |       |\n"
+       "      |       (1) following `false' branch (when `p' is NULL)...\n"
+       "    4 |     return 0;\n"
+       "    5 |   return *p;\n"
+       "      |          ~\n"
+       "      |          |\n"
+       "      |          (2) ...to here\n"
+       "      |          (3) dereference of NULL `p'\n",
+       pp_formatted_text (dc.printer));
+  }
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
+    dc.m_source_printing.show_event_links_p = true;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-3\n"
+       "FILENAME:3:7:\n"
+       "   if (p)\n"
+       "       ^\n"
+       "       |\n"
+       "       (1) following `false' branch (when `p' is NULL)... ─>─┐\n"
+       "                                                             │\n"
+       "FILENAME:5:10:\n"
+       "                                                             │\n"
+       "┌────────────────────────────────────────────────────────────┘\n"
+       "│  return *p;\n"
+       "│         ~\n"
+       "│         |\n"
+       "└────────>(2) ...to here\n"
+       "          (3) dereference of NULL `p'\n",
+       pp_formatted_text (dc.printer));
+  }
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_UNICODE);
+    dc.m_source_printing.show_event_links_p = true;
+    dc.m_source_printing.show_line_numbers_p = true;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-3\n"
+       "FILENAME:3:7:\n"
+       "    3 |   if (p)\n"
+       "      |       ^\n"
+       "      |       |\n"
+       "      |       (1) following `false' branch (when `p' is NULL)... ─>─┐\n"
+       "      |                                                             │\n"
+       "      |                                                             │\n"
+       "      |┌────────────────────────────────────────────────────────────┘\n"
+       "    4 |│    return 0;\n"
+       "    5 |│  return *p;\n"
+       "      |│         ~\n"
+       "      |│         |\n"
+       "      |└────────>(2) ...to here\n"
+       "      |          (3) dereference of NULL `p'\n",
+       pp_formatted_text (dc.printer));
+  }
+}
+
+/* Complex example involving a backedge.  */
+
+static void
+test_control_flow_2 (const line_table_case &case_,
+		     pretty_printer *event_pp)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333333.
+     ...123456789012345678901234567890123456789.  */
+  const char *content
+    = ("int for_loop_noop_next (struct node *n)\n" /* <--------- line 1.  */
+       "{\n" /* <----------------------------------------------- line 2.  */
+       "  int sum = 0;\n" /* <---------------------------------- line 3.  */
+       "  for (struct node *iter = n; iter; iter->next)\n" /* <- line 4.  */
+       "    sum += n->val;\n" /* <------------------------------ line 5.  */
+       "  return sum;\n" /* <----------------------------------- line 6.  */
+       "}\n");  /* <-------------------------------------------- line 7.  */
+  /* Adapted from infinite-loop-linked-list.c where
+     "iter->next" should be "iter = iter->next".  */
+
+  control_flow_test t (SELFTEST_LOCATION, case_, content);
+
+  const location_t iter_test = t.get_line_and_columns (4, 31, 34);
+  const location_t loop_body_start = t.get_line_and_columns (5, 12, 17);
+  const location_t loop_body_end = t.get_line_and_columns (5, 5, 9, 17);
+
+  test_diagnostic_path path (event_pp);
+  path.add_event (iter_test, NULL_TREE, 0, "infinite loop here");
+
+  path.add_event (iter_test, NULL_TREE, 0, "looping from here...");
+  path.connect_to_next_event ();
+
+  path.add_event (loop_body_start, NULL_TREE, 0, "...to here");
+
+  path.add_event (loop_body_end, NULL_TREE, 0, "looping back...");
+  path.connect_to_next_event ();
+
+  path.add_event (iter_test, NULL_TREE, 0, "...to here");
+
+  if (!path_events_have_column_data_p (path))
+    return;
+
+  path_summary summary (path, true);
+
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    dc.m_source_printing.show_event_links_p = true;
+    dc.m_source_printing.show_line_numbers_p = true;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-3\n"
+       "FILENAME:4:31:\n"
+       "    4 |   for (struct node *iter = n; iter; iter->next)\n"
+       "      |                               ^~~~\n"
+       "      |                               |\n"
+       "      |                               (1) infinite loop here\n"
+       "      |                               (2) looping from here... ->-+\n"
+       "      |                                                           |\n"
+       "      |                                                           |\n"
+       "      |+----------------------------------------------------------+\n"
+       "    5 ||    sum += n->val;\n"
+       "      ||           ~~~~~~              \n"
+       "      ||           |\n"
+       "      |+---------->(3) ...to here\n"
+       /* We need to start an new event_range here as event (4) is to the
+	  left of event (3), and thus (4) would mess up the in-edge to (3).  */
+       "  event 4\n"
+       "    5 |     sum += n->val;\n"
+       "      |     ~~~~^~~~~~~~~\n"
+       "      |         |\n"
+       "      |         (4) looping back... ->-+\n"
+       "      |                                |\n"
+       /* We need to start an new event_range here as event (4) with an
+	  out-edge is on a later line (line 5) than its destination event (5),
+	  on line 4.  */
+       "  event 5\n"
+       "      |                                |\n"
+       "      |+-------------------------------+\n"
+       "    4 ||  for (struct node *iter = n; iter; iter->next)\n"
+       "      ||                              ^~~~\n"
+       "      ||                              |\n"
+       "      |+----------------------------->(5) ...to here\n",
+       pp_formatted_text (dc.printer));
+  }
+}
+
+/* Complex example involving a backedge and both an in-edge and out-edge
+   on the same line.  */
+
+static void
+test_control_flow_3 (const line_table_case &case_,
+		     pretty_printer *event_pp)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333333.
+     ...123456789012345678901234567890123456789.  */
+  const char *content
+    = ("void test_missing_comparison_in_for_condition_1 (int n)\n"
+       "{\n" /* <------------------------- line 2.  */
+       "  for (int i = 0; n; i++)\n" /* <- line 3.  */
+       "    {\n" /* <--------------------- line 4.  */
+       "    }\n" /* <--------------------- line 5.  */
+       "}\n"); /* <----------------------- line 6.  */
+  /* Adapted from infinite-loop-1.c where the condition should have been
+     "i < n", rather than just "n".  */
+
+  control_flow_test t (SELFTEST_LOCATION, case_, content);
+
+  const location_t iter_test = t.get_line_and_column (3, 19);
+  const location_t iter_next = t.get_line_and_columns (3, 22, 24);
+
+  test_diagnostic_path path (event_pp);
+  path.add_event (iter_test, NULL_TREE, 0, "infinite loop here");
+
+  path.add_event (iter_test, NULL_TREE, 0, "looping from here...");
+  path.connect_to_next_event ();
+
+  path.add_event (iter_next, NULL_TREE, 0, "...to here");
+
+  path.add_event (iter_next, NULL_TREE, 0, "looping back...");
+  path.connect_to_next_event ();
+
+  path.add_event (iter_test, NULL_TREE, 0, "...to here");
+
+  if (!path_events_have_column_data_p (path))
+    return;
+
+  path_summary summary (path, true);
+
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    dc.m_source_printing.show_event_links_p = true;
+    dc.m_source_printing.show_line_numbers_p = true;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-2\n"
+       "FILENAME:3:19:\n"
+       "    3 |   for (int i = 0; n; i++)\n"
+       "      |                   ^\n"
+       "      |                   |\n"
+       "      |                   (1) infinite loop here\n"
+       "      |                   (2) looping from here... ->-+\n"
+       "      |                                               |\n"
+       "  events 3-4\n"
+       "      |                                               |\n"
+       "      |+----------------------------------------------+\n"
+       "    3 ||  for (int i = 0; n; i++)\n"
+       "      ||                     ^~~\n"
+       "      ||                     |\n"
+       "      |+-------------------->(3) ...to here\n"
+       "      |                      (4) looping back... ->-+\n"
+       "      |                                             |\n"
+       /* We need to start an new event_range here as event (4) with an
+	  out-edge is on the same line as its destination event (5), but
+	  to the right, which we can't handle as a single event_range. */
+       "  event 5\n"
+       "      |                                             |\n"
+       "      |+--------------------------------------------+\n"
+       "    3 ||  for (int i = 0; n; i++)\n"
+       "      ||                  ^\n"
+       "      ||                  |\n"
+       "      |+----------------->(5) ...to here\n",
+       pp_formatted_text (dc.printer));
+  }
+}
+
+/* Implementation of ASSERT_CFG_EDGE_PATH_STREQ.  */
+
+static void
+assert_cfg_edge_path_streq (const location &loc,
+			    pretty_printer *event_pp,
+			    const location_t src_loc,
+			    const location_t dst_loc,
+			    const char *expected_str)
+{
+  test_diagnostic_path path (event_pp);
+  path.add_event (src_loc, NULL_TREE, 0, "from here...");
+  path.connect_to_next_event ();
+
+  path.add_event (dst_loc, NULL_TREE, 0, "...to here");
+
+  if (!path_events_have_column_data_p (path))
+    return;
+
+  path_summary summary (path, true);
+
+  test_diagnostic_context dc;
+  dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+  dc.m_source_printing.show_event_links_p = true;
+  dc.m_source_printing.show_line_numbers_p = true;
+  print_path_summary_as_text (&summary, &dc, false);
+  ASSERT_STREQ_AT (loc, expected_str,
+		   pp_formatted_text (dc.printer));
+}
+
+/* Assert that if we make a path with an event with "from here..." at SRC_LOC
+   leading to an event "...to here" at DST_LOC that we print the path
+   as EXPECTED_STR.  */
+
+#define ASSERT_CFG_EDGE_PATH_STREQ(SRC_LOC, DST_LOC, EXPECTED_STR) \
+  assert_cfg_edge_path_streq ((SELFTEST_LOCATION), (event_pp),	   \
+			      (SRC_LOC), (DST_LOC), (EXPECTED_STR))
+
+/* Various examples of edge, trying to cover all combinations of:
+   - relative x positive of src label and dst label
+   - relative y position of labels:
+     - on same line
+     - on next line
+     - on line after next
+     - big gap, where src is before dst
+     - big gap, where src is after dst
+   and other awkward cases.  */
+
+static void
+test_control_flow_4 (const line_table_case &case_,
+		     pretty_printer *event_pp)
+{
+  std::string many_lines;
+  for (int i = 1; i <= 100; i++)
+    /* ............000000000111
+       ............123456789012.  */
+    many_lines += "LHS      RHS\n";
+  control_flow_test t (SELFTEST_LOCATION, case_, many_lines.c_str ());
+
+  /* Same line.  */
+  {
+    /* LHS -> RHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (3, 1, 3),
+       t.get_line_and_columns (3, 10, 12),
+       ("  event 1\n"
+	"FILENAME:3:1:\n"
+	"    3 | LHS      RHS\n"
+	"      | ^~~\n"
+	"      | |\n"
+	"      | (1) from here... ->-+\n"
+	"      |                     |\n"
+	"  event 2\n"
+	"      |                     |\n"
+	"      |+--------------------+\n"
+	"    3 ||LHS      RHS\n"
+	"      ||         ^~~\n"
+	"      ||         |\n"
+	"      |+-------->(2) ...to here\n"));
+
+    /*  RHS -> LHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (3, 10, 12),
+       t.get_line_and_columns (3, 1, 3),
+       ("  event 1\n"
+	"FILENAME:3:10:\n"
+	"    3 | LHS      RHS\n"
+	"      |          ^~~\n"
+	"      |          |\n"
+	"      |          (1) from here... ->-+\n"
+	"      |                              |\n"
+	"  event 2\n"
+	"      |                              |\n"
+	"      |+-----------------------------+\n"
+	"    3 ||LHS      RHS\n"
+	"      ||^~~\n"
+	"      |||\n"
+	"      |+(2) ...to here\n"));
+  }
+
+  /* Next line.  */
+  {
+    /* LHS -> RHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (3, 1, 3),
+       t.get_line_and_columns (4, 5, 7),
+       ("  events 1-2\n"
+	"FILENAME:3:1:\n"
+	"    3 | LHS      RHS\n"
+	"      | ^~~\n"
+	"      | |\n"
+	"      | (1) from here... ->-+\n"
+	"      |                     |\n"
+	"      |                     |\n"
+	"      |+--------------------+\n"
+	"    4 ||LHS      RHS\n"
+	"      ||    ~~~\n"
+	"      ||    |\n"
+	"      |+--->(2) ...to here\n"));
+
+    /*  RHS -> LHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (3, 10, 12),
+       t.get_line_and_columns (4, 1, 3),
+       ("  events 1-2\n"
+	"FILENAME:3:10:\n"
+	"    3 | LHS      RHS\n"
+	"      |          ^~~\n"
+	"      |          |\n"
+	"      |          (1) from here... ->-+\n"
+	"      |                              |\n"
+	"      |                              |\n"
+	"      |+-----------------------------+\n"
+	"    4 ||LHS      RHS\n"
+	"      ||~~~       \n"
+	"      |||\n"
+	"      |+(2) ...to here\n"));
+  }
+
+  /* Line after next.  */
+  {
+    /* LHS -> RHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (3, 1, 3),
+       t.get_line_and_columns (5, 10, 12),
+       ("  events 1-2\n"
+	"FILENAME:3:1:\n"
+	"    3 | LHS      RHS\n"
+	"      | ^~~\n"
+	"      | |\n"
+	"      | (1) from here... ->-+\n"
+	"      |                     |\n"
+	"      |                     |\n"
+	"      |+--------------------+\n"
+	"    4 ||LHS      RHS\n"
+	"    5 ||LHS      RHS\n"
+	"      ||         ~~~\n"
+	"      ||         |\n"
+	"      |+-------->(2) ...to here\n"));
+
+    /*  RHS -> LHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (3, 10, 12),
+       t.get_line_and_columns (5, 1, 3),
+       ("  events 1-2\n"
+	"FILENAME:3:10:\n"
+	"    3 | LHS      RHS\n"
+	"      |          ^~~\n"
+	"      |          |\n"
+	"      |          (1) from here... ->-+\n"
+	"      |                              |\n"
+	"      |                              |\n"
+	"      |+-----------------------------+\n"
+	"    4 ||LHS      RHS\n"
+	"    5 ||LHS      RHS\n"
+	"      ||~~~       \n"
+	"      |||\n"
+	"      |+(2) ...to here\n"));
+  }
+
+  /* Big gap, increasing line number.  */
+  {
+    /* LHS -> RHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (3, 1, 3),
+       t.get_line_and_columns (97, 10, 12),
+       ("  events 1-2\n"
+	"FILENAME:3:1:\n"
+	"    3 | LHS      RHS\n"
+	"      | ^~~\n"
+	"      | |\n"
+	"      | (1) from here... ->-+\n"
+	"      |                     |\n"
+	"......\n"
+	"      |                     |\n"
+	"      |+--------------------+\n"
+	"   97 ||LHS      RHS\n"
+	"      ||         ~~~\n"
+	"      ||         |\n"
+	"      |+-------->(2) ...to here\n"));
+
+    /*  RHS -> LHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (3, 10, 12),
+       t.get_line_and_columns (97, 1, 3),
+       ("  events 1-2\n"
+	"FILENAME:3:10:\n"
+	"    3 | LHS      RHS\n"
+	"      |          ^~~\n"
+	"      |          |\n"
+	"      |          (1) from here... ->-+\n"
+	"      |                              |\n"
+	"......\n"
+	"      |                              |\n"
+	"      |+-----------------------------+\n"
+	"   97 ||LHS      RHS\n"
+	"      ||~~~       \n"
+	"      |||\n"
+	"      |+(2) ...to here\n"));
+  }
+
+  /* Big gap, decreasing line number.  */
+  {
+    /* LHS -> RHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (97, 1, 3),
+       t.get_line_and_columns (3, 10, 12),
+       ("  event 1\n"
+	"FILENAME:97:1:\n"
+	"   97 | LHS      RHS\n"
+	"      | ^~~\n"
+	"      | |\n"
+	"      | (1) from here... ->-+\n"
+	"      |                     |\n"
+	"  event 2\n"
+	"      |                     |\n"
+	"      |+--------------------+\n"
+	"    3 ||LHS      RHS\n"
+	"      ||         ^~~\n"
+	"      ||         |\n"
+	"      |+-------->(2) ...to here\n"));
+
+    /*  RHS -> LHS.  */
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (97, 10, 12),
+       t.get_line_and_columns (3, 1, 3),
+       ("  event 1\n"
+	"FILENAME:97:10:\n"
+	"   97 | LHS      RHS\n"
+	"      |          ^~~\n"
+	"      |          |\n"
+	"      |          (1) from here... ->-+\n"
+	"      |                              |\n"
+	"  event 2\n"
+	"      |                              |\n"
+	"      |+-----------------------------+\n"
+	"    3 ||LHS      RHS\n"
+	"      ||^~~\n"
+	"      |||\n"
+	"      |+(2) ...to here\n"));
+  }
+
+  /* Unknown src.  */
+  {
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (UNKNOWN_LOCATION,
+       t.get_line_and_columns (3, 10, 12),
+       ("  event 1\n"
+	" (1): from here...\n"
+	"  event 2\n"
+	"FILENAME:3:10:\n"
+	"    3 | LHS      RHS\n"
+	"      |          ^~~\n"
+	"      |          |\n"
+	"      |+-------->(2) ...to here\n"));
+  }
+
+  /* Unknown dst.  */
+  {
+    ASSERT_CFG_EDGE_PATH_STREQ
+      (t.get_line_and_columns (3, 1, 3),
+       UNKNOWN_LOCATION,
+       ("  event 1\n"
+	"FILENAME:3:1:\n"
+	"    3 | LHS      RHS\n"
+	"      | ^~~\n"
+	"      | |\n"
+	"      | (1) from here... ->-+\n"
+	"      |                     |\n"
+	"  event 2\n"
+	"FILENAME:\n"
+	" (2): ...to here\n"));
+  }
+}
+
+/* Another complex example, adapted from data-model-20.c.  */
+
+static void
+test_control_flow_5 (const line_table_case &case_,
+		     pretty_printer *event_pp)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333333444444444455555555556666666666.
+     ...123456789012345678901234567890123456789012345678901234567890123456789.  */
+  const char *content
+    = ("  if ((arr = (struct foo **)malloc(n * sizeof(struct foo *))) == NULL)\n"
+       "    return NULL;\n" /* <------------------------- line 2.  */
+       "\n" /* <----------------------------------------- line 3.  */
+       "  for (i = 0; i < n; i++) {\n" /* <-------------- line 4.  */
+       "    if ((arr[i] = (struct foo *)malloc(sizeof(struct foo))) == NULL) {\n");
+
+  control_flow_test t (SELFTEST_LOCATION, case_, content);
+
+  test_diagnostic_path path (event_pp);
+  /* (1) */
+  path.add_event (t.get_line_and_column (1, 6), NULL_TREE, 0,
+		  "following %qs branch (when %qs is non-NULL)...",
+		  "false", "arr");
+  path.connect_to_next_event ();
+
+  /* (2) */
+  path.add_event (t.get_line_and_columns (4, 8, 10, 12), NULL_TREE, 0,
+		  "...to here");
+
+  /* (3) */
+  path.add_event (t.get_line_and_columns (4, 15, 17, 19), NULL_TREE, 0,
+		  "following %qs branch (when %qs)...",
+		  "true", "i < n");
+  path.connect_to_next_event ();
+
+  /* (4) */
+  path.add_event (t.get_line_and_column (5, 13), NULL_TREE, 0,
+		  "...to here");
+
+  /* (5) */
+  path.add_event (t.get_line_and_columns (5, 33, 58), NULL_TREE, 0,
+		  "allocated here");
+
+  if (!path_events_have_column_data_p (path))
+    return;
+
+  path_summary summary (path, true);
+
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    dc.m_source_printing.show_event_links_p = true;
+    dc.m_source_printing.show_line_numbers_p = true;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-5\n"
+       "FILENAME:1:6:\n"
+       "    1 |   if ((arr = (struct foo **)malloc(n * sizeof(struct foo *))) == NULL)\n"
+       "      |      ^\n"
+       "      |      |\n"
+       "      |      (1) following `false' branch (when `arr' is non-NULL)... ->-+\n"
+       "      |                                                                  |\n"
+       "......\n"
+       "      |                                                                  |\n"
+       "      |+-----------------------------------------------------------------+\n"
+       "    4 ||  for (i = 0; i < n; i++) {\n"
+       "      ||       ~~~~~  ~~~~~\n"
+       "      ||         |      |\n"
+       "      ||         |      (3) following `true' branch (when `i < n')... ->-+\n"
+       "      |+-------->(2) ...to here                                          |\n"
+       "      |                                                                  |\n"
+       "      |                                                                  |\n"
+       "      |+-----------------------------------------------------------------+\n"
+       "    5 ||    if ((arr[i] = (struct foo *)malloc(sizeof(struct foo))) == NULL) {\n"
+       "      ||            ~                   ~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+       "      ||            |                   |\n"
+       "      |+----------->(4) ...to here      (5) allocated here\n",
+       pp_formatted_text (dc.printer));
+  }
+}
+
+/* Another complex example, adapted from loop-3.c.  */
+
+static void
+test_control_flow_6 (const line_table_case &case_,
+		     pretty_printer *event_pp)
+{
+  /* Create a tempfile and write some text to it.
+     ...000000000111111111122222222223333333.
+     ...123456789012345678901234567890123456.  */
+  const char *content
+    = ("#include <stdlib.h>\n" /* <------------------ line 1.  */
+       "\n" /* <------------------------------------- line 2.  */
+       "void test(int c)\n" /* <--------------------- line 3.  */
+       "{\n" /* <------------------------------------ line 4.  */
+       "  int i;\n" /* <----------------------------- line 5.  */
+       "  char *buffer = (char*)malloc(256);\n" /* <- line 6.  */
+       "\n" /* <------------------------------------- line 7.  */
+       "  for (i=0; i<255; i++) {\n" /* <------------ line 8.  */
+       "    buffer[i] = c;\n" /* <------------------- line 9.  */
+       "\n" /* <------------------------------------- line 10.  */
+       "    free(buffer);\n" /* <-------------------- line 11.  */
+       "  }\n"); /* <-------------------------------- line 12.  */
+
+  control_flow_test t (SELFTEST_LOCATION, case_, content);
+
+  test_diagnostic_path path (event_pp);
+  /* (1) */
+  path.add_event (t.get_line_and_columns (6, 25, 35), NULL_TREE, 0,
+		  "allocated here");
+
+  /* (2) */
+  path.add_event (t.get_line_and_columns (8, 13, 14, 17), NULL_TREE, 0,
+		  "following %qs branch (when %qs)...",
+		  "true", "i <= 254");
+  path.connect_to_next_event ();
+
+  /* (3) */
+  path.add_event (t.get_line_and_columns (9, 5, 15, 17), NULL_TREE, 0,
+		  "...to here");
+
+  /* (4) */
+  path.add_event (t.get_line_and_columns (8, 13, 14, 17), NULL_TREE, 0,
+		  "following %qs branch (when %qs)...",
+		  "true", "i <= 254");
+  path.connect_to_next_event ();
+
+  /* (5) */
+  path.add_event (t.get_line_and_columns (9, 5, 15, 17), NULL_TREE, 0,
+		  "...to here");
+
+  if (!path_events_have_column_data_p (path))
+    return;
+
+  path_summary summary (path, true);
+
+  {
+    test_diagnostic_context dc;
+    dc.set_text_art_charset (DIAGNOSTICS_TEXT_ART_CHARSET_ASCII);
+    dc.m_source_printing.show_event_links_p = true;
+    dc.m_source_printing.show_line_numbers_p = true;
+    print_path_summary_as_text (&summary, &dc, false);
+    ASSERT_STREQ
+      ("  events 1-3\n"
+       "FILENAME:6:25:\n"
+       "    6 |   char *buffer = (char*)malloc(256);\n"
+       "      |                         ^~~~~~~~~~~\n"
+       "      |                         |\n"
+       "      |                         (1) allocated here\n"
+       "    7 | \n"
+       "    8 |   for (i=0; i<255; i++) {\n"
+       "      |             ~~~~~        \n"
+       "      |              |\n"
+       "      |              (2) following `true' branch (when `i <= 254')... ->-+\n"
+       "      |                                                                  |\n"
+       "      |                                                                  |\n"
+       "      |+-----------------------------------------------------------------+\n"
+       "    9 ||    buffer[i] = c;\n"
+       "      ||    ~~~~~~~~~~~~~        \n"
+       "      ||              |\n"
+       "      |+------------->(3) ...to here\n"
+       "  events 4-5\n"
+       "    8 |   for (i=0; i<255; i++) {\n"
+       "      |             ~^~~~\n"
+       "      |              |\n"
+       "      |              (4) following `true' branch (when `i <= 254')... ->-+\n"
+       "      |                                                                  |\n"
+       "      |                                                                  |\n"
+       "      |+-----------------------------------------------------------------+\n"
+       "    9 ||    buffer[i] = c;\n"
+       "      ||    ~~~~~~~~~~~~~\n"
+       "      ||              |\n"
+       "      |+------------->(5) ...to here\n",
+       pp_formatted_text (dc.printer));
+  }
+}
+
+static void
+control_flow_tests (const line_table_case &case_)
+{
+  std::unique_ptr<pretty_printer> event_pp
+    = std::unique_ptr<pretty_printer> (global_dc->printer->clone ());
+  pp_show_color (event_pp) = 0;
+
+  test_control_flow_1 (case_, event_pp.get ());
+  test_control_flow_2 (case_, event_pp.get ());
+  test_control_flow_3 (case_, event_pp.get ());
+  test_control_flow_4 (case_, event_pp.get ());
+  test_control_flow_5 (case_, event_pp.get ());
+  test_control_flow_6 (case_, event_pp.get ());
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 tree_diagnostic_path_cc_tests ()
 {
+  /* In a few places we use the global dc's printer to determine
+     colorization so ensure this off during the tests.  */
+  bool saved_show_color = pp_show_color (global_dc->printer);
+  pp_show_color (global_dc->printer) = false;
+
   auto_fix_quotes fix_quotes;
-  pretty_printer *event_pp = global_dc->printer->clone ();
-  pp_show_color (event_pp) = 0;
-  test_empty_path (event_pp);
-  test_intraprocedural_path (event_pp);
-  test_interprocedural_path_1 (event_pp);
-  test_interprocedural_path_2 (event_pp);
-  test_recursion (event_pp);
-  delete event_pp;
+  std::unique_ptr<pretty_printer> event_pp
+    = std::unique_ptr<pretty_printer> (global_dc->printer->clone ());
+  test_empty_path (event_pp.get ());
+  test_intraprocedural_path (event_pp.get ());
+  test_interprocedural_path_1 (event_pp.get ());
+  test_interprocedural_path_2 (event_pp.get ());
+  test_recursion (event_pp.get ());
+  for_each_line_table_case (control_flow_tests);
+
+  pp_show_color (global_dc->printer) = saved_show_color;
 }
 
 } // namespace selftest

@@ -162,6 +162,21 @@ public:
   }
 };
 
+class looping_back_event : public start_cfg_edge_event
+{
+public:
+  looping_back_event (const exploded_edge &eedge,
+		      const event_loc_info &loc_info)
+  : start_cfg_edge_event (eedge, loc_info)
+  {
+  }
+
+  label_text get_desc (bool can_colorize) const final override
+  {
+    return label_text::borrow ("looping back...");
+  }
+};
+
 /* A subclass of pending_diagnostic for complaining about suspected
    infinite loops.  */
 
@@ -300,8 +315,7 @@ public:
 	else if (cfg_sedge->back_edge_p ())
 	  {
 	    emission_path->add_event
-	      (make_unique<precanned_custom_event>
-	       (loc_info_from, "looping back..."));
+	      (make_unique<looping_back_event> (*eedge, loc_info_from));
 	    emission_path->add_event
 	      (make_unique<end_cfg_edge_event>
 	       (*eedge,

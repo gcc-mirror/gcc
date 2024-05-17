@@ -113,6 +113,7 @@ public:
       return NULL;
   }
   meaning get_meaning () const override;
+  bool connect_to_next_event_p () const override { return false; }
   diagnostic_thread_id_t get_thread_id () const final override
   {
     return 0;
@@ -451,6 +452,7 @@ public:
   }
 
   label_text get_desc (bool can_colorize) const override;
+  bool connect_to_next_event_p () const final override { return true; }
 
 protected:
   label_text maybe_describe_condition (bool can_colorize) const;
@@ -534,6 +536,7 @@ public:
 
   label_text get_desc (bool can_colorize) const final override;
   meaning get_meaning () const override;
+  bool connect_to_next_event_p () const final override { return true; }
 
  private:
   bool m_edge_sense;

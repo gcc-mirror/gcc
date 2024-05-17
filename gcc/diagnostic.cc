@@ -253,6 +253,7 @@ diagnostic_context::initialize (int n_opts)
   m_source_printing.show_line_numbers_p = false;
   m_source_printing.min_margin_width = 0;
   m_source_printing.show_ruler_p = false;
+  m_source_printing.show_event_links_p = false;
   m_report_bug = false;
   m_extra_output_kind = EXTRA_DIAGNOSTIC_OUTPUT_none;
   if (const char *var = getenv ("GCC_EXTRA_DIAGNOSTIC_OUTPUT"))
@@ -2627,6 +2628,16 @@ simple_diagnostic_path::add_thread_event (diagnostic_thread_id_t thread_id,
   return diagnostic_event_id_t (m_events.length () - 1);
 }
 
+/* Mark the most recent event on this path (which must exist) as being
+   connected to the next one to be added.  */
+
+void
+simple_diagnostic_path::connect_to_next_event ()
+{
+  gcc_assert (m_events.length () > 0);
+  m_events[m_events.length () - 1]->connect_to_next_event ();
+}
+
 /* struct simple_diagnostic_event.  */
 
 /* simple_diagnostic_event's ctor.  */
@@ -2638,6 +2649,7 @@ simple_diagnostic_event (location_t loc,
 			 const char *desc,
 			 diagnostic_thread_id_t thread_id)
 : m_loc (loc), m_fndecl (fndecl), m_depth (depth), m_desc (xstrdup (desc)),
+  m_connected_to_next_event (false),
   m_thread_id (thread_id)
 {
 }

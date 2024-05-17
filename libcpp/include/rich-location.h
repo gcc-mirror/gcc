@@ -23,6 +23,7 @@ along with this program; see the file COPYING3.  If not see
 #define LIBCPP_RICH_LOCATION_H
 
 class range_label;
+class label_effects;
 
 /* A hint to diagnostic_show_locus on how to print a source range within a
    rich_location.
@@ -641,6 +642,12 @@ class range_label
      The RANGE_IDX is provided, allowing for range_label instances to be
      shared by multiple ranges if need be (the "flyweight" design pattern).  */
   virtual label_text get_text (unsigned range_idx) const = 0;
+
+  /* Get any special effects for the label (e.g. links to other labels).  */
+  virtual const label_effects *get_effects (unsigned /*range_idx*/) const
+  {
+    return nullptr;
+  }
 };
 
 /* A fix-it hint: a suggested insertion, replacement, or deletion of text.

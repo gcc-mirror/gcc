@@ -2937,6 +2937,10 @@ common_handle_option (struct gcc_options *opts,
       dc->m_source_printing.enabled = value;
       break;
 
+    case OPT_fdiagnostics_show_event_links:
+      dc->m_source_printing.show_event_links_p = value;
+      break;
+
     case OPT_fdiagnostics_show_labels:
       dc->m_source_printing.show_labels_p = value;
       break;
@@ -3818,6 +3822,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_fdiagnostics_show_location_:
       case OPT_fdiagnostics_show_option:
       case OPT_fdiagnostics_show_caret:
+      case OPT_fdiagnostics_show_event_links:
       case OPT_fdiagnostics_show_labels:
       case OPT_fdiagnostics_show_line_numbers:
       case OPT_fdiagnostics_color_:

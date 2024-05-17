@@ -72,7 +72,16 @@ class theme
     INTERPROCEDURAL_DEPTH_MARKER,       /* e.g. "|".  */
     INTERPROCEDURAL_POP_FRAMES_LEFT,   /* e.g. "<".  */
     INTERPROCEDURAL_POP_FRAMES_MIDDLE, /* e.g. "-".  */
-    INTERPROCEDURAL_POP_FRAMES_RIGHT  /* e.g. "+".  */
+    INTERPROCEDURAL_POP_FRAMES_RIGHT,  /* e.g. "+".  */
+
+    /* CFG stuff.  */
+    CFG_RIGHT,              /* e.g. "-".  */
+    CFG_FROM_RIGHT_TO_DOWN, /* e.g. "+".  */
+    CFG_DOWN,               /* e.g. "|".  */
+    CFG_FROM_DOWN_TO_LEFT,  /* e.g. "+".  */
+    CFG_LEFT,               /* e.g. "-".  */
+    CFG_FROM_LEFT_TO_DOWN,  /* e.g. "+".  */
+    CFG_FROM_DOWN_TO_RIGHT  /* e.g. "+".  */
   };
 
   virtual ~theme () = default;

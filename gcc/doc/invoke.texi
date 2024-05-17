@@ -307,6 +307,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-format=@r{[}text@r{|}sarif-stderr@r{|}sarif-file@r{|}json@r{|}json-stderr@r{|}json-file@r{]}
 -fno-diagnostics-json-formatting
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret
+-fno-diagnostics-show-event-links
 -fno-diagnostics-show-labels  -fno-diagnostics-show-line-numbers
 -fno-diagnostics-show-cwe
 -fno-diagnostics-show-rule
@@ -5211,7 +5212,8 @@ options:
 -fdiagnostics-color=never
 -fdiagnostics-urls=never
 -fdiagnostics-path-format=separate-events
--fdiagnostics-text-art-charset=none}
+-fdiagnostics-text-art-charset=none
+-fno-diagnostics-show-event-links}
 In the future, if GCC changes the default appearance of its diagnostics, the
 corresponding option to disable the new behavior will be added to this list.
 
@@ -5445,6 +5447,31 @@ as the types of expressions:
 
 This option suppresses the printing of these labels (in the example above,
 the vertical bars and the ``char *'' and ``long int'' text).
+
+@opindex fno-diagnostics-show-event-links
+@opindex fdiagnostics-show-event-links
+@item -fno-diagnostics-show-event-links
+By default, when printing execution paths (via
+@option{-fdiagnostics-path-format=inline-events}), GCC will print lines
+connecting related events, such as the line connecting events 1 and 2 in:
+
+@smallexample
+    3 |   if (p)
+      |       ^
+      |       |
+      |       (1) following `false' branch (when `p' is NULL)... ->-+
+      |                                                             |
+      |                                                             |
+      |+------------------------------------------------------------+
+    4 ||    return 0;
+    5 ||  return *p;
+      ||         ~
+      ||         |
+      |+-------->(2) ...to here
+      |          (3) dereference of NULL `p'
+@end smallexample
+
+This option suppresses the printing of such connector lines.
 
 @opindex fno-diagnostics-show-cwe
 @opindex fdiagnostics-show-cwe

@@ -1090,7 +1090,8 @@ decode_cmdline_options_to_array (unsigned int argc, const char **argv,
 	    "-fdiagnostics-color=never",
 	    "-fdiagnostics-urls=never",
 	    "-fdiagnostics-path-format=separate-events",
-	    "-fdiagnostics-text-art-charset=none"
+	    "-fdiagnostics-text-art-charset=none",
+	    "-fno-diagnostics-show-event-links"
 	  };
 	  const int num_expanded = ARRAY_SIZE (expanded_args);
 	  opt_array_len += num_expanded - 1;

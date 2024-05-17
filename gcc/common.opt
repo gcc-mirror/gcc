@@ -1368,6 +1368,10 @@ fdiagnostics-show-caret
 Common Var(flag_diagnostics_show_caret) Init(1)
 Show the source line with a caret indicating the column.
 
+fdiagnostics-show-event-links
+Common Var(flag_diagnostics_show_event_links) Init(1)
+Show lines linking related events in diagnostic paths.
+
 fdiagnostics-show-labels
 Common Var(flag_diagnostics_show_labels) Init(1)
 Show labels annotating ranges of source code when showing source.
