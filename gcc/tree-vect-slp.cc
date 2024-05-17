@@ -9271,13 +9271,8 @@ vect_schedule_slp_node (vec_info *vinfo,
   gcc_assert (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0);
   SLP_TREE_VEC_DEFS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
 
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "------>vectorizing SLP node starting from: %G",
-		     stmt_info->stmt);
-
-  if (STMT_VINFO_DATA_REF (stmt_info)
-      && SLP_TREE_CODE (node) != VEC_PERM_EXPR)
+  if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+      && STMT_VINFO_DATA_REF (stmt_info))
     {
       /* Vectorized loads go before the first scalar load to make it
 	 ready early, vectorized stores go before the last scalar
@@ -9289,10 +9284,10 @@ vect_schedule_slp_node (vec_info *vinfo,
 	last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
       si = gsi_for_stmt (last_stmt_info->stmt);
     }
-  else if ((STMT_VINFO_TYPE (stmt_info) == cycle_phi_info_type
-	    || STMT_VINFO_TYPE (stmt_info) == induc_vec_info_type
-	    || STMT_VINFO_TYPE (stmt_info) == phi_info_type)
-	   && SLP_TREE_CODE (node) != VEC_PERM_EXPR)
+  else if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
+	   && (STMT_VINFO_TYPE (stmt_info) == cycle_phi_info_type
+	       || STMT_VINFO_TYPE (stmt_info) == induc_vec_info_type
+	       || STMT_VINFO_TYPE (stmt_info) == phi_info_type))
     {
       /* For PHI node vectorization we do not use the insertion iterator.  */
       si = gsi_none ();
@@ -9426,6 +9421,9 @@ vect_schedule_slp_node (vec_info *vinfo,
   /* Handle purely internal nodes.  */
   if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
     {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "------>vectorizing SLP permutation node\n");
       /* ???  the transform kind is stored to STMT_VINFO_TYPE which might
 	 be shared with different SLP nodes (but usually it's the same
 	 operation apart from the case the stmt is only there for denoting
@@ -9444,7 +9442,13 @@ vect_schedule_slp_node (vec_info *vinfo,
 	  }
     }
   else
-    vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "------>vectorizing SLP node starting from: %G",
+			 stmt_info->stmt);
+      vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
+    }
 }
 
 /* Replace scalar calls from SLP node NODE with setting of their lhs to zero.
