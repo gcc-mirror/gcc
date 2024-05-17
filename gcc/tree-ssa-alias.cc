@@ -2041,8 +2041,9 @@ view_converted_memref_p (tree base)
 {
   if (TREE_CODE (base) != MEM_REF && TREE_CODE (base) != TARGET_MEM_REF)
     return false;
-  return same_type_for_tbaa (TREE_TYPE (base),
-			     TREE_TYPE (TREE_OPERAND (base, 1))) != 1;
+  return (same_type_for_tbaa (TREE_TYPE (base),
+			      TREE_TYPE (TREE_TYPE (TREE_OPERAND (base, 1))))
+	  != 1);
 }
 
 /* Return true if an indirect reference based on *PTR1 constrained
