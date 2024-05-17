@@ -30205,6 +30205,13 @@ maybe_aggr_guide (tree tmpl, tree init, vec<tree,va_gc> *args)
   else if (TREE_CODE (init) == TREE_LIST)
     {
       int len = list_length (init);
+      for (tree binfo : BINFO_BASE_BINFOS (TYPE_BINFO (template_type)))
+	{
+	  if (!len)
+	    break;
+	  parms = tree_cons (NULL_TREE, BINFO_TYPE (binfo), parms);
+	  --len;
+	}
       for (tree field = TYPE_FIELDS (template_type);
 	   len;
 	   --len, field = DECL_CHAIN (field))
