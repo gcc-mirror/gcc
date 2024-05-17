@@ -246,6 +246,7 @@ package body System.Tasking.Initialization is
    procedure Initialize_RTS_Lock (Addr : Address) is
       Lock : aliased SOL.RTS_Lock;
       for Lock'Address use Addr;
+      pragma Import (Ada, Lock);
 
    begin
       Initialize_Lock (Lock'Unchecked_Access, PO_Level);
@@ -258,6 +259,7 @@ package body System.Tasking.Initialization is
    procedure Finalize_RTS_Lock (Addr : Address) is
       Lock : aliased SOL.RTS_Lock;
       for Lock'Address use Addr;
+      pragma Import (Ada, Lock);
 
    begin
       Finalize_Lock (Lock'Unchecked_Access);
@@ -270,6 +272,7 @@ package body System.Tasking.Initialization is
    procedure Acquire_RTS_Lock (Addr : Address) is
       Lock : aliased SOL.RTS_Lock;
       for Lock'Address use Addr;
+      pragma Import (Ada, Lock);
 
    begin
       Write_Lock (Lock'Unchecked_Access);
@@ -282,6 +285,7 @@ package body System.Tasking.Initialization is
    procedure Release_RTS_Lock (Addr : Address) is
       Lock : aliased SOL.RTS_Lock;
       for Lock'Address use Addr;
+      pragma Import (Ada, Lock);
 
    begin
       Unlock (Lock'Unchecked_Access);

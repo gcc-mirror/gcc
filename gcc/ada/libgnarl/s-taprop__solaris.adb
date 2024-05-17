@@ -1399,7 +1399,7 @@ package body System.Task_Primitives.Operations is
       P := Self_ID.Common.LL.Locks;
 
       if P /= null then
-         L.Next := P;
+         L.Next := To_RTS_Lock_Ptr (P);
       end if;
 
       Self_ID.Common.LL.Locking := null;
@@ -1440,7 +1440,7 @@ package body System.Task_Primitives.Operations is
 
       Self_ID.Common.LL.L.Owner := null;
       P := Self_ID.Common.LL.Locks;
-      Self_ID.Common.LL.Locks := Self_ID.Common.LL.Locks.Next;
+      Self_ID.Common.LL.Locks := To_Lock_Ptr (Self_ID.Common.LL.Locks.Next);
       P.Next := null;
       return True;
    end Check_Sleep;
@@ -1468,7 +1468,7 @@ package body System.Task_Primitives.Operations is
       P := Self_ID.Common.LL.Locks;
 
       if P /= null then
-         L.Next := P;
+         L.Next := To_RTS_Lock_Ptr (P);
       end if;
 
       Self_ID.Common.LL.Locking := null;
@@ -1549,7 +1549,7 @@ package body System.Task_Primitives.Operations is
 
       L.Owner := null;
       P := Self_ID.Common.LL.Locks;
-      Self_ID.Common.LL.Locks := Self_ID.Common.LL.Locks.Next;
+      Self_ID.Common.LL.Locks := To_Lock_Ptr (Self_ID.Common.LL.Locks.Next);
       P.Next := null;
       return True;
    end Check_Unlock;

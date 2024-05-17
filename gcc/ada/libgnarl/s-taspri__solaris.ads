@@ -47,6 +47,8 @@ package System.Task_Primitives is
 
    function To_Lock_Ptr is
      new Ada.Unchecked_Conversion (OS_Locks.RTS_Lock_Ptr, Lock_Ptr);
+   function To_RTS_Lock_Ptr is
+     new Ada.Unchecked_Conversion (Lock_Ptr, OS_Locks.RTS_Lock_Ptr);
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control

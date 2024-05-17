@@ -31,6 +31,7 @@
 
 --  This is a Solaris (native) version of this package
 
+with Ada.Unchecked_Conversion;
 with Interfaces.C;
 
 package System.OS_Locks is
@@ -65,10 +66,10 @@ package System.OS_Locks is
 
 private
 
-   type array_type_9 is array (0 .. 3) of unsigned_char;
+   type array_type_9 is array (0 .. 3) of Interfaces.C.unsigned_char;
    type record_type_3 is record
       flag  : array_type_9;
-      Xtype : unsigned_long;
+      Xtype : Interfaces.C.unsigned_long;
    end record;
    pragma Convention (C, record_type_3);
 
@@ -79,6 +80,6 @@ private
       lock  : upad64_t;
       data  : upad64_t;
    end record;
-  pragma Convention (C, mutex_t);
+   pragma Convention (C, mutex_t);
 
 end System.OS_Locks;

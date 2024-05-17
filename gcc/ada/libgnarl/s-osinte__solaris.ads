@@ -298,7 +298,7 @@ package System.OS_Interface is
 
    function To_thread_t is new Ada.Unchecked_Conversion (Integer, thread_t);
 
-   subtype mutex_t is System.OS_Lock.mutex_t;
+   subtype mutex_t is System.OS_Locks.mutex_t;
 
    type cond_t is limited private;
 
