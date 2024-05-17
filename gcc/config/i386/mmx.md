@@ -3051,6 +3051,13 @@
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
+(define_expand "<insn><mode>3"
+  [(set (match_operand:MMXMODE12 0 "register_operand")
+	(sat_plusminus:MMXMODE12
+	  (match_operand:MMXMODE12 1 "register_operand")
+	  (match_operand:MMXMODE12 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE")
+
 (define_insn "*mmx_<insn><mode>3"
   [(set (match_operand:MMXMODE12 0 "register_operand" "=y,x,Yw")
         (sat_plusminus:MMXMODE12

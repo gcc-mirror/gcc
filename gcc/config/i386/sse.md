@@ -15483,7 +15483,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "<sse2_avx2>_<insn><mode>3<mask_name>"
+(define_expand "<insn><mode>3<mask_name>"
   [(set (match_operand:VI12_AVX2_AVX512BW 0 "register_operand")
 	(sat_plusminus:VI12_AVX2_AVX512BW
 	  (match_operand:VI12_AVX2_AVX512BW 1 "vector_operand")
@@ -16950,7 +16950,7 @@
       operands[1] = force_reg (<MODE>mode, operands[1]);
       if (rtx_equal_p (op3, op2))
 	op3 = gen_reg_rtx (V8HImode);
-      emit_insn (gen_sse2_ussubv8hi3 (op3, operands[1], op2));
+      emit_insn (gen_ussubv8hi3 (op3, operands[1], op2));
       emit_insn (gen_addv8hi3 (op0, op3, op2));
       DONE;
     }
