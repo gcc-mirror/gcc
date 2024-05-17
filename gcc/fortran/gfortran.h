@@ -2241,6 +2241,10 @@ typedef struct gfc_namespace
   /* Set when resolve_types has been called for this namespace.  */
   unsigned types_resolved:1;
 
+  /* Set if the associate_name in a select type statement is an
+     inferred type.  */
+  unsigned assoc_name_inferred:1;
+
   /* Set to 1 if code has been generated for this namespace.  */
   unsigned translated:1;
 

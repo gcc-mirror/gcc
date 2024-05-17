@@ -6721,6 +6721,27 @@ gfc_match_select_type (void)
       goto cleanup;
     }
 
+  /* Select type namespaces are not filled until resolution. Therefore, the
+     namespace must be marked as having an inferred type associate name if
+     either expr1 is an inferred type variable or expr2 is. In the latter
+     case, as well as the symbol being marked as inferred type, it might be
+     that it has not been detected to be so. In this case the target has
+     unknown type. Once the namespace is marked, the fixups in resolution can
+     be triggered.  */
+  if (!expr2
+      && expr1->symtree->n.sym->assoc
+      && expr1->symtree->n.sym->assoc->inferred_type)
+    gfc_current_ns->assoc_name_inferred = 1;
+  else if (expr2 && expr2->expr_type == EXPR_VARIABLE
+	   && expr2->symtree->n.sym->assoc)
+    {
+      if (expr2->symtree->n.sym->assoc->inferred_type)
+	gfc_current_ns->assoc_name_inferred = 1;
+      else if (expr2->symtree->n.sym->assoc->target
+	       && expr2->symtree->n.sym->assoc->target->ts.type == BT_UNKNOWN)
+	gfc_current_ns->assoc_name_inferred = 1;
+    }
+
   new_st.op = EXEC_SELECT_TYPE;
   new_st.expr1 = expr1;
   new_st.expr2 = expr2;
