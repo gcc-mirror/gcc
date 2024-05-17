@@ -534,6 +534,9 @@ UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show
 fdiagnostics-show-caret
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-caret)
 
+fdiagnostics-show-event-links
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-event-links)
+
 fdiagnostics-show-labels
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show-labels)
 
