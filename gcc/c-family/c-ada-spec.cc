@@ -699,6 +699,8 @@ compare_comment (const void *lp, const void *rp)
 
 static tree *to_dump = NULL;
 static int to_dump_count = 0;
+static bool bitfield_used = false;
+static bool packed_layout = false;
 
 /* Collect a list of declarations from T relevant to SOURCE_FILE to be dumped
    by a subsequent call to dump_ada_nodes.  */
@@ -1825,7 +1827,7 @@ dump_ada_array_type (pretty_printer *buffer, tree node, int spc)
 
       pp_string (buffer, " of ");
 
-      if (TREE_CODE (tmp) != POINTER_TYPE)
+      if (TREE_CODE (tmp) != POINTER_TYPE && !packed_layout)
 	pp_string (buffer, "aliased ");
 
       if (TYPE_NAME (tmp)
@@ -2082,9 +2084,6 @@ is_float128 (tree node)
 	 || id_equal (name, "_Float128")
 	 || id_equal (name, "_Float128x");
 }
-
-static bool bitfield_used = false;
-static bool packed_layout = false;
 
 /* Recursively dump in BUFFER Ada declarations corresponding to NODE of type
    TYPE.  SPC is the indentation level.  LIMITED_ACCESS indicates whether NODE
