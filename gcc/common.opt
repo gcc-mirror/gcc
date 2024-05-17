@@ -2412,7 +2412,7 @@ Common RejectNegative Joined UInteger Optimization
 -fpack-struct=<number>	Set initial maximum structure member alignment.
 
 fpcc-struct-return
-Common Var(flag_pcc_struct_return,1) Init(DEFAULT_PCC_STRUCT_RETURN)
+Common Var(flag_pcc_struct_return,1) Init(DEFAULT_PCC_STRUCT_RETURN) Optimization
 Return small aggregates in memory, not registers.
 
 fpeel-loops
@@ -2602,7 +2602,7 @@ Common Var(flag_record_gcc_switches)
 Record gcc command line switches in the object file.
 
 freg-struct-return
-Common Var(flag_pcc_struct_return,0) Optimization
+Common NegativeAlias Alias(fpcc_struct_return) Optimization
 Return small aggregates in registers.
 
 fregmove
