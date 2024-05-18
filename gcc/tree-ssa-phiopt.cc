@@ -2106,6 +2106,10 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
 	  || gimple_code (assign) != GIMPLE_ASSIGN)
 	return false;
 
+      /* There cannot be any phi nodes in the middle bb. */
+      if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
+	return false;
+
       lhs = gimple_assign_lhs (assign);
       ass_code = gimple_assign_rhs_code (assign);
       if (ass_code != MAX_EXPR && ass_code != MIN_EXPR)
@@ -2117,6 +2121,10 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
       assign = last_and_only_stmt (alt_middle_bb);
       if (!assign
 	  || gimple_code (assign) != GIMPLE_ASSIGN)
+	return false;
+
+      /* There cannot be any phi nodes in the alt middle bb. */
+      if (!gimple_seq_empty_p (phi_nodes (alt_middle_bb)))
 	return false;
 
       alt_lhs = gimple_assign_lhs (assign);
@@ -2227,6 +2235,10 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
 
       if (!assign
 	  || gimple_code (assign) != GIMPLE_ASSIGN)
+	return false;
+
+      /* There cannot be any phi nodes in the middle bb. */
+      if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
 	return false;
 
       lhs = gimple_assign_lhs (assign);
