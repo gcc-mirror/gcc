@@ -1973,6 +1973,10 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 	  || gimple_code (assign) != GIMPLE_ASSIGN)
 	return false;
 
+      /* There cannot be any phi nodes in the middle bb. */
+      if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
+	return false;
+
       lhs = gimple_assign_lhs (assign);
       ass_code = gimple_assign_rhs_code (assign);
       if (ass_code != MAX_EXPR && ass_code != MIN_EXPR)
