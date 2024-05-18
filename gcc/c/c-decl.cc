@@ -10277,6 +10277,7 @@ build_enumerator (location_t decl_loc, location_t loc,
 		  struct c_enum_contents *the_enum, tree name, tree value)
 {
   tree decl;
+  tree old_decl;
 
   /* Validate and default VALUE.  */
 
@@ -10335,6 +10336,23 @@ build_enumerator (location_t decl_loc, location_t loc,
 	 have the enum type, both inside and outside the
 	 definition.  */
       value = convert (the_enum->enum_type, value);
+    }
+  else if (flag_isoc23
+	   && (old_decl = lookup_name_in_scope (name, current_scope))
+	   && old_decl != error_mark_node
+	   && TREE_TYPE (old_decl)
+	   && TREE_TYPE (TREE_TYPE (old_decl))
+	   && TREE_CODE (old_decl) == CONST_DECL)
+    {
+      /* Enumeration constants in a redeclaration have the previous type.  */
+      tree previous_type = TREE_TYPE (DECL_INITIAL (old_decl));
+      if (!int_fits_type_p (value, previous_type))
+	{
+	  error_at (loc, "value of redeclared enumerator outside the range "
+			 "of %qT", previous_type);
+	  locate_old_decl (old_decl);
+	}
+      value = convert (previous_type, value);
     }
   else
     {
@@ -10402,9 +10420,14 @@ build_enumerator (location_t decl_loc, location_t loc,
 			     false);
     }
   else
-    the_enum->enum_next_value
-      = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
-			 PLUS_EXPR, value, integer_one_node, false);
+    {
+      /* In a redeclaration the type can already be the enumeral type.  */
+      if (TREE_CODE (TREE_TYPE (value)) == ENUMERAL_TYPE)
+	value = convert (ENUM_UNDERLYING_TYPE (TREE_TYPE (value)), value);
+      the_enum->enum_next_value
+	= build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
+			   PLUS_EXPR, value, integer_one_node, false);
+    }
   the_enum->enum_overflow = tree_int_cst_lt (the_enum->enum_next_value, value);
   if (the_enum->enum_overflow
       && !ENUM_FIXED_UNDERLYING_TYPE_P (the_enum->enum_type))
