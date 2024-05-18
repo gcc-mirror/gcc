@@ -1582,6 +1582,18 @@ BorrowExpr::as_string () const
 }
 
 std::string
+BoxExpr::as_string () const
+{
+  return "box " + expr->as_string ();
+}
+
+void
+BoxExpr::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
 ReturnExpr::as_string () const
 {
   /* TODO: find way to incorporate outer attrs - may have to represent in

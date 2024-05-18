@@ -213,6 +213,11 @@ ASTLoweringBase::visit (AST::RangeFromToInclExpr &)
 void
 ASTLoweringBase::visit (AST::RangeToInclExpr &)
 {}
+
+void
+ASTLoweringBase::visit (AST::BoxExpr &)
+{}
+
 void
 ASTLoweringBase::visit (AST::ReturnExpr &)
 {}

@@ -130,6 +130,7 @@ private:
   virtual void visit (RangeFromToInclExpr &expr) override final{};
   virtual void visit (RangeToInclExpr &expr) override final{};
   virtual void visit (ReturnExpr &expr) override final{};
+  virtual void visit (BoxExpr &expr) override final{};
   virtual void visit (UnsafeBlockExpr &expr) override final{};
   virtual void visit (LoopExpr &expr) override final{};
   virtual void visit (WhileLoopExpr &expr) override final{};

@@ -622,6 +622,9 @@ private:
 							= AST::AttrVec ());
   AST::ClosureParam parse_closure_param ();
 
+  std::unique_ptr<AST::BoxExpr> parse_box_expr (AST::AttrVec outer_attrs,
+						location_t pratt_parsed_loc
+						= UNKNOWN_LOCATION);
   // When given a pratt_parsed_loc, use it as the location of the
   // first token parsed in the expression (the parsing of that first
   // token should be skipped).

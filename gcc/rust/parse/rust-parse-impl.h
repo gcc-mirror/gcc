@@ -7550,6 +7550,27 @@ Parser<ManagedTokenSource>::parse_literal_expr (AST::AttrVec outer_attrs)
 			  t->get_locus ()));
 }
 
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::BoxExpr>
+Parser<ManagedTokenSource>::parse_box_expr (AST::AttrVec outer_attrs,
+					    location_t pratt_parsed_loc)
+{
+  location_t locus = pratt_parsed_loc;
+  if (locus == UNKNOWN_LOCATION)
+    {
+      locus = lexer.peek_token ()->get_locus ();
+      skip_token (BOX);
+    }
+
+  ParseRestrictions restrictions;
+  restrictions.expr_can_be_null = false;
+
+  std::unique_ptr<AST::Expr> expr = parse_expr (AST::AttrVec (), restrictions);
+
+  return std::unique_ptr<AST::BoxExpr> (
+    new AST::BoxExpr (std::move (expr), std::move (outer_attrs), locus));
+}
+
 // Parses a return expression (including any expression to return).
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ReturnExpr>
@@ -12461,6 +12482,8 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
     case UNSAFE:
       return parse_unsafe_block_expr (std::move (outer_attrs),
 				      tok->get_locus ());
+    case BOX:
+      return parse_box_expr (std::move (outer_attrs), tok->get_locus ());
     case UNDERSCORE:
       add_error (
 	Error (tok->get_locus (),

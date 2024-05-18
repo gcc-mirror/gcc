@@ -85,6 +85,7 @@ public:
   void visit (AST::UnsafeBlockExpr &expr) override;
   void visit (AST::PathInExpression &expr) override;
   void visit (AST::QualifiedPathInExpression &expr) override;
+  void visit (AST::BoxExpr &expr) override;
   void visit (AST::ReturnExpr &expr) override;
   void visit (AST::CallExpr &expr) override;
   void visit (AST::MethodCallExpr &expr) override;

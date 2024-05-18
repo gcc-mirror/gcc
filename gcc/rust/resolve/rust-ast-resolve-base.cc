@@ -267,6 +267,10 @@ ResolverBase::visit (AST::RangeToInclExpr &)
 {}
 
 void
+ResolverBase::visit (AST::BoxExpr &)
+{}
+
+void
 ResolverBase::visit (AST::ReturnExpr &)
 {}
 
