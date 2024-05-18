@@ -1244,6 +1244,7 @@ See RS/6000 and PowerPC Options.
 -mplt  -mno-plt
 -mabi=@var{ABI-string}
 -mfdiv  -mno-fdiv
+-mfence-tso  -mno-fence-tso
 -mdiv  -mno-div
 -misa-spec=@var{ISA-spec-string}
 -march=@var{ISA-string}
@@ -30435,6 +30436,13 @@ present, and are subject to change.
 Do or don't use hardware floating-point divide and square root instructions.
 This requires the F or D extensions for floating-point registers.  The default
 is to use them if the specified architecture has these instructions.
+
+@opindex mfence-tso
+@item -mfence-tso
+@itemx -mno-fence-tso
+Do or don't use the @samp{fence.tso} instruction, which is unimplemented on
+some processors (including those from T-Head).  If the @samp{fence.tso}
+instruction is not availiable then a stronger fence will be used instead.
 
 @opindex mdiv
 @item -mdiv

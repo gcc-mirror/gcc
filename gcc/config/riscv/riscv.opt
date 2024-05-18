@@ -624,3 +624,7 @@ Enum(tls_type) String(desc) Value(TLS_DESCRIPTORS)
 mtls-dialect=
 Target RejectNegative Joined Enum(tls_type) Var(riscv_tls_dialect) Init(TLS_TRADITIONAL) Save
 Specify TLS dialect.
+
+mfence-tso
+Target Var(TARGET_FENCE_TSO) Init(1)
+Specifies whether the fence.tso instruction should be used.
