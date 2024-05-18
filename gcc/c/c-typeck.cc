@@ -1891,7 +1891,11 @@ array_to_pointer_conversion (location_t loc, tree exp)
 
   copy_warning (exp, orig_exp);
 
+  bool varmod = C_TYPE_VARIABLY_MODIFIED (restype);
+
   ptrtype = build_pointer_type (restype);
+
+  C_TYPE_VARIABLY_MODIFIED (ptrtype) = varmod;
 
   if (INDIRECT_REF_P (exp))
     return convert (ptrtype, TREE_OPERAND (exp, 0));
@@ -4630,6 +4634,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
   tree eptype = NULL_TREE;
   const char *invalid_op_diag;
   bool int_operands;
+  bool varmod;
 
   int_operands = EXPR_INT_CONST_OPERANDS (xarg);
   if (int_operands)
@@ -5113,7 +5118,11 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
       gcc_assert (TREE_CODE (arg) != COMPONENT_REF
 		  || !DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)));
 
+      varmod = C_TYPE_VARIABLY_MODIFIED (argtype);
+
       argtype = build_pointer_type (argtype);
+
+      C_TYPE_VARIABLY_MODIFIED (argtype) = varmod;
 
       /* ??? Cope with user tricks that amount to offsetof.  Delete this
 	 when we have proper support for integer constant expressions.  */
