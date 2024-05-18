@@ -3310,6 +3310,79 @@ protected:
   }
 };
 
+class BoxExpr : public ExprWithoutBlock
+{
+  std::unique_ptr<Expr> expr;
+  std::vector<Attribute> outer_attrs;
+  location_t locus;
+
+public:
+  BoxExpr (std::unique_ptr<Expr> expr, std::vector<Attribute> outer_attrs,
+	   location_t locus)
+    : expr (std::move (expr)), outer_attrs (outer_attrs), locus (locus)
+  {}
+
+  // Copy constructor with clone
+  BoxExpr (BoxExpr const &other)
+    : ExprWithoutBlock (other), outer_attrs (other.outer_attrs),
+      locus (other.locus)
+  {
+    // guard to protect from null pointer dereference
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr ();
+  }
+
+  BoxExpr &operator= (BoxExpr const &other)
+  {
+    ExprWithoutBlock::operator= (other);
+    locus = other.locus;
+    outer_attrs = other.outer_attrs;
+
+    // guard to protect from null pointer dereference
+    if (other.expr != nullptr)
+      expr = other.expr->clone_expr ();
+    else
+      expr = nullptr;
+
+    return *this;
+  }
+
+  // move constructors
+  BoxExpr (BoxExpr &&other) = default;
+  BoxExpr &operator= (BoxExpr &&other) = default;
+
+  location_t get_locus () const override final { return locus; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  void mark_for_strip () override { expr = nullptr; }
+  bool is_marked_for_strip () const override { return expr == nullptr; }
+
+  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
+
+  std::string as_string () const override;
+
+  Expr &get_boxed_expr ()
+  {
+    rust_assert (expr != nullptr);
+    return *expr;
+  }
+
+protected:
+  /* Use covariance to implement clone function as returning this object rather
+   * than base */
+  BoxExpr *clone_expr_without_block_impl () const override
+  {
+    return new BoxExpr (*this);
+  }
+};
+
 // Return expression AST node representation
 class ReturnExpr : public ExprWithoutBlock
 {

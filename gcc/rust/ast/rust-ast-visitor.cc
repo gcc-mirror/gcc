@@ -532,6 +532,13 @@ DefaultASTVisitor::visit (AST::ReturnExpr &expr)
 }
 
 void
+DefaultASTVisitor::visit (AST::BoxExpr &expr)
+{
+  visit_outer_attrs (expr);
+  visit (expr.get_boxed_expr ());
+}
+
+void
 DefaultASTVisitor::visit (AST::UnsafeBlockExpr &expr)
 {
   visit_outer_attrs (expr);

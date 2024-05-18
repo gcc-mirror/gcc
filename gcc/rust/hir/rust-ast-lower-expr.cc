@@ -24,6 +24,7 @@
 #include "rust-ast-lower-type.h"
 #include "rust-ast.h"
 #include "rust-diagnostics.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace HIR {
@@ -139,6 +140,13 @@ void
 ASTLoweringExpr::visit (AST::QualifiedPathInExpression &expr)
 {
   translated = ASTLowerQualPathInExpression::translate (expr);
+}
+
+void
+ASTLoweringExpr::visit (AST::BoxExpr &expr)
+{
+  // Not implemented
+  rust_unreachable ();
 }
 
 void

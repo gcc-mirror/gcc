@@ -20,6 +20,7 @@
 #include "rust-diagnostics.h"
 #include "rust-item.h"
 #include "rust-keyword-values.h"
+#include "rust-token.h"
 
 namespace Rust {
 namespace AST {
@@ -1313,6 +1314,13 @@ TokenCollector::visit (RangeToInclExpr &expr)
 {
   push (Rust::Token::make (DOT_DOT_EQ, expr.get_locus ()));
   visit (expr.get_to_expr ());
+}
+
+void
+TokenCollector::visit (BoxExpr &expr)
+{
+  push (Rust::Token::make (BOX, expr.get_locus ()));
+  visit (expr.get_boxed_expr ());
 }
 
 void

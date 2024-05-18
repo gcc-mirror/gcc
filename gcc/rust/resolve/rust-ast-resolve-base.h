@@ -89,6 +89,7 @@ public:
   void visit (AST::RangeFullExpr &);
   void visit (AST::RangeFromToInclExpr &);
   void visit (AST::RangeToInclExpr &);
+  void visit (AST::BoxExpr &);
   void visit (AST::ReturnExpr &);
   void visit (AST::UnsafeBlockExpr &);
   void visit (AST::LoopExpr &);

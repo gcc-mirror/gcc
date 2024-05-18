@@ -137,6 +137,7 @@ public:
   virtual void visit (AST::RangeFullExpr &expr);
   virtual void visit (AST::RangeFromToInclExpr &expr);
   virtual void visit (AST::RangeToInclExpr &expr);
+  virtual void visit (AST::BoxExpr &expr);
   virtual void visit (AST::ReturnExpr &expr);
   virtual void visit (AST::UnsafeBlockExpr &expr);
   virtual void visit (AST::LoopExpr &expr);
