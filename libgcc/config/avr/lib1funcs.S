@@ -2921,11 +2921,9 @@ DEFUN __clzhi2
     clr  r26
     tst  r25
     brne 1f
-    subi r26, -8
     or   r25, r24
-    brne 1f
-    ldi  r24, 16
-    ret
+    breq 0f
+    subi r26, -8
 1:  cpi  r25, 16
     brsh 3f
     subi r26, -3
@@ -2935,6 +2933,8 @@ DEFUN __clzhi2
     brcc 2b
     mov  r24, r26
     clr  r25
+    ret
+0:  ldi  r24, 16
     ret
 ENDF __clzhi2
 #endif /* defined (L_clzhi2) */
