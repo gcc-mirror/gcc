@@ -16,74 +16,32 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-macro-builtins.h"
-#include "rust-macro-builtins-helpers.h"
-#include "rust-macro-invoc-lexer.h"
+#include "rust-macro-builtins-asm.h"
 
 namespace Rust {
 
-struct AsmParseError
-{
-};
-
-// This is just an enum to hold some operands right now.
-enum InlineAsmDirSpec
-{
-  In,
-  Out,
-  InOut,
-  SplitInOut,
-  Const,
-  Sym,
-  Label,
-};
-
-enum InlineAsmOptions
-{
-
-};
-
-typedef std::string symbol_name;
-typedef std::vector<AST::Expr> Templates;
-typedef std::vector<InlineAsmDirSpec> Operands;
-typedef std::map<std::string, int> RegisterArgs;
-typedef std::map<symbol_name, int> ClobberAbis;
-typedef std::map<symbol_name, int> NamedValues;
-
-struct AsmArg
-{
-  Templates templates;
-  Operands operands;
-  std::map<symbol_name, int> named_values;
-  RegisterArgs register_arguments;
-  ClobberAbis clobber_abis;
-  InlineAsmOptions options;
-  std::vector<InlineAsmOptions>
-    options_span; // TODO: @badumbatish @jjasmine I have no idea what span do, i
-		  // copied it out of rustc_builtin_macros/src/asm.rs
-};
-
-tl::optional<AsmArg>
-parseAsmArg (Parser<MacroInvocLexer> &p, bool is_global_asm);
-static tl::optional<AST::Fragment>
-parse_global_asm (location_t invoc_locus, AST::MacroInvocData &invoc);
-static tl::optional<AST::Fragment>
-parse_nonglobal_asm (location_t invoc_locus, AST::MacroInvocData &invoc);
-static tl::optional<AST::Fragment>
-parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
-	   bool is_global_asm);
-
 tl::optional<InlineAsmDirSpec>
-parseDirSpec (Parser<MacroInvocLexer> &p, TokenId last_token_id)
-{
-  return tl::nullopt;
-}
-tl::optional<AsmArg>
-parseAsmArg (Parser<MacroInvocLexer> &p, bool is_global_asm)
+parseDirSpec (Parser<MacroInvocLexer> &parser, TokenId last_token_id)
 {
   return tl::nullopt;
 }
 
+bool
+check_identifier (Parser<MacroInvocLexer> &p, std::string ident)
+{
+  auto token = p.peek_current_token ();
+
+  if (token->get_id () == IDENTIFIER
+      && (token->as_string () == ident || ident == ""))
+    {
+      p.skip_token ();
+      return true;
+    }
+  else
+    {
+      return false;
+    }
+}
 tl::optional<std::string>
 parse_format_string (Parser<MacroInvocLexer> &parser, TokenId last_token_id)
 {
@@ -123,6 +81,59 @@ MacroBuiltin::nonglobal_asm_handler (location_t invoc_locus,
   // Just to clarify the code
   bool is_global_asm = false;
   return parse_asm (invoc_locus, invoc, is_global_asm);
+}
+
+tl::optional<AsmArg>
+parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+	     bool is_global_asm)
+{
+  auto token = parser.peek_current_token ();
+  AsmArg arg;
+  tl::optional<std::string> fm_string;
+  while (token->get_id () != last_token_id)
+    {
+      std::cout << token->get_token_description () << std::endl;
+
+      token = parser.peek_current_token ();
+
+      // We accept a comma token here.
+      if (token->get_id () != COMMA)
+	{
+	  break;
+	}
+      parser.skip_token ();
+
+      // And if that token comma is also the trailing comma, we break
+      // TODO: Check with mentor see what last_token_id means
+      token = parser.peek_current_token ();
+      if (token->get_id () == COMMA && token->get_id () == last_token_id)
+	{
+	  parser.skip_token ();
+	  break;
+	}
+
+      // Ok after the left paren is good, we better be parsing correctly
+      // everything in here, which is operand in ABNF
+
+      // TODO: Parse clobber abi
+      if (check_identifier (parser, "clobber_abi"))
+	{
+	  std::cout << "Clobber abi tee hee" << std::endl;
+	  continue;
+	}
+
+      // TODO: Parse options
+      if (check_identifier (parser, "options"))
+	{
+	  std::cout << "Parse optoins" << std::endl;
+	  continue;
+	}
+
+      // Ok after we have check that neither clobber_abi nor options works, the
+      // only other logical choice is reg_operand
+      fm_string = parse_format_string (parser, last_token_id);
+    }
+  return tl::nullopt;
 }
 
 static tl::optional<AST::Fragment>
@@ -171,26 +182,8 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
       fm_string = parse_format_string (parser, last_token_id);
     }
 
-  // operands stream
-  token = parser.peek_current_token ();
-  while (token->get_id () != last_token_id)
-    {
-      std::cout << token->get_token_description () << std::endl;
-
-      token = parser.peek_current_token ();
-      if (token->get_id () != COMMA)
-	{
-	  break;
-	}
-      parser.skip_token ();
-      // Ok after the left paren is good, we better be parsing correctly
-      // everything in here, which is operand in ABNF
-
-      // TODO: Work on parsing operands
-      fm_string = parse_format_string (parser, last_token_id);
-    }
-
-  // TODO: Handle the optional ","
+  // operands stream, also handles the optional ","
+  parseAsmArg (parser, last_token_id, is_global_asm);
 
   return tl::nullopt;
 }
