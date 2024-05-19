@@ -1,3 +1,609 @@
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/115133
+	* libgnarl/s-osinte__solaris.ads (mutex_t): Fix typo.
+	* libgnarl/s-taprop__solaris.adb (Record_Lock): Add conversion.
+	(Check_Sleep): Likewise.
+	(Record_Wakeup): Likewise.
+	(Check_Unlock): Likewise.
+	* libgnarl/s-tasini.adb (Initialize_RTS_Lock): Add pragma Import
+	on the overlaid variable.
+	(Finalize_RTS_Lock): Likewise.
+	(Acquire_RTS_Lock): Likewise.
+	(Release_RTS_Lock): Likewise.
+	* libgnarl/s-taspri__solaris.ads (To_RTS_Lock_Ptr): New instance
+	of Ada.Unchecked_Conversion.
+	* libgnat/s-oslock__solaris.ads: Add with clause for
+	Ada.Unchecked_Conversion.
+	(array_type_9): Add missing name qualification.
+	(record_type_3): Likewise.
+	(mutex_t): Fix formatting.
+
+2024-05-17  Viljar Indus  <indus@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate):
+	Derive the size for iterable aggregates in the case of
+	one-dimensional array objects.
+
+2024-05-17  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_aggr.adb (Aggr_Size_OK): Remove workaround and extend
+	comment.
+
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bindgen.adb (Gen_Adainit): Generate declaration and call to the
+	imported procedure __gnat_tasking_runtime_initialize if need be.
+	* libgnat/s-soflin.ads (Locking Soft-Links): Add commentary.
+	* libgnarl/s-tasini.adb (Tasking_Runtime_Initialize): New procedure
+	exported as __gnat_tasking_runtime_initialize.  Initialize RTS_Lock
+	manipulation routines here instead of...
+	(Init_RTS): ...here.
+
+2024-05-17  Steve Baird  <baird@adacore.com>
+
+	* scng.adb (scan): When checking for an unprocessed preprocessor
+	directive, take into account the preprocessor's rules about case
+	insensitivity and about white space between the '#' and the
+	keyword.
+
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-taspri__mingw.ads: Add clause for System.OS_Interface.
+	(Private_Data): Change type of Thread component.
+
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/g-alvevi.ads: Add pragma Universal_Aliasing for all the
+	view types.
+	* libgnat/s-stratt.ads: Likewise for Fat_Pointer type.
+
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-oslock$(objext).
+	(LIBGNAT_TARGET_PAIRS): Use s-oslock__dummy.ads by default.
+	Set specific s-oslock.ads source file for all the platforms.
+	* exp_ch7.ads (Preload_Finalization_Collection): New procedure.
+	* exp_ch7.adb (Allows_Finalization_Collection): Return False if
+	System.Finalization_Primitives has not been preloaded.
+	(Preload_Finalization_Collection): New procedure.
+	* opt.ads (Interface_Seen): New boolean variable.
+	* s-oscons-tmplt.c: Use "N" string for pragma Style_Checks.
+	* scng.adb (Scan): Set Interface_Seen upon seeing "interface".
+	* sem_ch10.adb: Add clause for Exp_Ch7.
+	(Analyze_Compilation_Unit): Call Preload_Finalization_Collection
+	after the context of the unit is analyzed.
+	* libgnarl/a-rttiev.adb: Add with clause for System.OS_Locks and
+	alphabetize others.
+	(Event_Queue_Lock): Adjust qualified name of subtype.
+	* libgnarl/s-osinte__aix.ads: Add with clause for System.OS_Locks
+	and change pthread_mutex_t into a local subtype.
+	* libgnarl/s-osinte__android.ads: Likewise.
+	* libgnarl/s-osinte__darwin.ads: Likewise.
+	* libgnarl/s-osinte__dragonfly.ads: Likewise.
+	* libgnarl/s-osinte__freebsd.ads: Likewise.
+	* libgnarl/s-osinte__gnu.ads: Likewise.
+	* libgnarl/s-osinte__hpux-dce.ads: Likewise.
+	* libgnarl/s-osinte__hpux.ads: Add Likewise.
+	* libgnarl/s-osinte__kfreebsd-gnu.ads: Likewise.
+	* libgnarl/s-osinte__linux.ads: Likewise.
+	* libgnarl/s-osinte__lynxos178e.ads: Likewise.
+	* libgnarl/s-osinte__qnx.ads: Likewise.
+	* libgnarl/s-osinte__rtems.ads: Likewise.
+	* libgnarl/s-osinte__mingw.ads: Add with clause for System.OS_Locks
+	and change CRITICAL_SECTION into a local subtype.  Add declarations
+	for imported procedures dealing with CRITICAL_SECTION.
+	* libgnarl/s-osinte__solaris.ads: Add with clause for System.OS_Locks
+	and change mutex_t into a local subtype.
+	* libgnarl/s-osinte__vxworks.ads: Add missing blank line.
+	* libgnarl/s-taprop.ads: Alphabetize clauses and package renamings.
+	Use qualified name for RTS_Lock throughout.
+	* libgnarl/s-taprop__dummy.adb: Add use clause for System.OS_Locks
+	and alphabetize others.
+	* libgnarl/s-taprop__hpux-dce.adb: Likewise.
+	* libgnarl/s-taprop__linux.adb: Likewise.
+	* libgnarl/s-taprop__posix.adb: Likewise.
+	* libgnarl/s-taprop__qnx.adb: Likewise.
+	* libgnarl/s-taprop__rtems.adb: Likewise.
+	* libgnarl/s-taprop__solaris.adb: Likewise.
+	* libgnarl/s-taprop__vxworks.adb: Likewise.
+	* libgnarl/s-taprop__mingw.adb: Likewise.  Remove declarations for
+	imported procedures dealing with CRITICAL_SECTION.
+	* libgnarl/s-tarest.adb: Add with clause for System.OS_Locks and
+	alphabetize others.
+	(Global_Task_Lock): Adjust qualified name of subtype.
+	* libgnarl/s-tasini.adb: Add clause for System.OS_Locks.
+	(Initialize_RTS_Lock): New procedure.
+	(Finalize_RTS_Lock): Likewise.
+	(Acquire_RTS_Lock): Likewise.
+	(Release_RTS_Lock): Likewise.
+	(Init_RTS): Add compile-time assertions for RTS_Lock types.
+	Set the soft links for the RTS lock manipulation routines.
+	* libgnarl/s-taspri__dummy.ads: Add with clause for System.OS_Locks.
+	(RTS_Lock): Delete and adjust throughout accordingly.
+	* libgnarl/s-taspri__hpux-dce.ads: Likewise.
+	* libgnarl/s-taspri__lynxos.ads: Likewise.
+	* libgnarl/s-taspri__mingw.ads: Likewise.
+	* libgnarl/s-taspri__posix-noaltstack.ads: Likewise.
+	* libgnarl/s-taspri__posix.ads: Likewise.
+	* libgnarl/s-taspri__solaris.ads: Likewise.
+	* libgnarl/s-taspri__vxworks.ads: Likewise.
+	* libgnat/s-finpri.ads: Add clause for System.OS_Locks.
+	(Finalization_Collection): Change type of Lock.
+	* libgnat/s-finpri.adb (Initialize): Call Initialize_RTS_Lock.
+	(Lock_Collection): Call Acquire_RTS_Lock.
+	(Unlock_Collection): Call Release_RTS_Lock.
+	* libgnat/s-oslock__dummy.ads: New file.
+	* libgnat/s-oslock__hpux-dce.ads: Likewise.
+	* libgnat/s-oslock__mingw.ads: Likewise.
+	* libgnat/s-oslock__posix.ads: Likewise.
+	* libgnat/s-oslock__solaris.ads: Likewise.
+	* libgnat/s-oslock__vxworks.ads: Likewise.
+	* libgnat/s-soflin.ads (Null_Set_Address): New null procedure.
+	(Initialize_RTS_Lock): New soft link.
+	(Finalize_RTS_Lock): Likewise.
+	(Acquire_RTS_Lock): Likewise.
+	(Release_RTS_Lock): Likewise.
+	* exp_ch4.adb (Expand_N_Allocator): In the subtype indication case,
+	call Apply_Predicate_Check on the resulting access value if need be.
+
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Materialize_Entity): Document secondary usage.
+
+2024-05-17  Steve Baird  <baird@adacore.com>
+
+	* local_restrict.adb (Active_Restriction): When traversing scopes,
+	do not skip over a subprogram body.
+
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-taprop__dummy.adb (Initialize_Lock): Fix formatting.
+	* libgnarl/s-taprop__linux.adb (RTS_Lock_Ptr): Delete.
+	(Init_Mutex): Rename into...
+	(Initialize_Lock): ...this.
+	(Initialize_Lock [Lock]): Call above procedure.
+	(Initialize_Lock [RTS_Lock]): Likewise.
+	(Initialize_TCB): Likewise.
+	* libgnarl/s-taprop__posix.adb (Initialize_Lock): New procedure
+	factored out from the other two homonyms.
+	(Initialize_Lock [Lock]): Call above procedure.
+	(Initialize_Lock [RTS_Lock]): Likewise.
+	* libgnarl/s-taprop__qnx.adb (RTS_Lock_Ptr): Delete.
+	(Init_Mutex): Rename into...
+	(Initialize_Lock): ...this.
+	(Initialize_Lock [Lock]): Call above procedure.
+	(Initialize_Lock [RTS_Lock]): Likewise.
+	(Initialize_TCB): Likewise.
+	* libgnarl/s-taprop__rtems.adb (Initialize_Lock): New procedure
+	factored out from the other two homonyms.
+	(Initialize_Lock [Lock]): Call above procedure.
+	(Initialize_Lock [RTS_Lock]): Likewise.
+
+2024-05-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Known_On_Entry): Handle constants introduced
+	by validity checks.
+
+2024-05-17  Steve Baird  <baird@adacore.com>
+
+	* libgnat/a-direct.adb (Start_Search_Internal): Do not call
+	Modification_Time for a special file; declare a Calendar.Time
+	constant No_Time and use that instead.
+
+2024-05-17  Steve Baird  <baird@adacore.com>
+
+	* exp_ch3.adb (Build_Equivalent_Record_Aggregate): Add
+	Has_Predicates test for a scalar component to match what is
+	already done for other kinds of components.
+
+2024-05-17  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Improve comments
+	and condition.
+
+2024-05-17  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_aggr.adb (Resolve_Array_Aggregate): Fix location of error
+	message.
+
+2024-05-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Is_Unconstrained_Or_Tagged_Item): Move to
+	Sem_Util, so it can be used from GNATprove.
+	* sem_util.ads (Is_Unconstrained_Or_Tagged_Item): Move from
+	Sem_Prag; spec.
+	* sem_util.adb (Is_Unconstrained_Or_Tagged_Item): Move from
+	Sem_Prag; body.
+
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_pakd.adb (Create_Packed_Array_Impl_Type): For non-bit-packed
+	array types, propagate the aliased property of the component.
+	(Install_PAT): Set fields on the implicit base type of an array.
+	* libgnat/a-stream.ads (private part): Add pragma Universal_Aliasing
+	for Stream_Element.
+	* libgnat/g-alleve.ads: Add pragma Universal_Aliasing for all the
+	vector types.
+	* libgnat/g-alleve__hard.ads: Likewise.
+
+2024-05-17  Bob Duff  <duff@adacore.com>
+
+	* bcheck.adb (Check_Consistency_Of_Sdep): Split out new procedure.
+	Add check for special case of subprogram spec that no longer
+	exists.
+	(Check_Consistency): Call Check_Consistency_Of_Sdep, except when
+	Reified_Child_Spec is True. No need for "goto Continue" or "exit
+	Sdep_Loop".
+	* ali.ads (Subunit_Name, Unit_Name): Change the type to
+	Unit_Name_Type. Add a comment pointing to the ALI file
+	documentation, because it's in a somewhat-surprising place.
+	* ali.adb (Scan_ALI): Subunit_Name and Unit_Name are now
+	Unit_Name_Type. Remove comment explaining why Name_Find is used;
+	Name_Find is the usual case. Do not remove the "%s" or "%b" from
+	the Unit_Name. We need to be able to distinguish specs and bodies.
+	This is also necessary to obey the invariant of Unit_Name_Type.
+	* binde.adb (Write_Closure): Subunit_Name is now Unit_Name_Type.
+	* clean.adb (Clean_Executables): Likewise.
+
+2024-05-17  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_aggr.adb (Resolve_Null_Array_Aggregate): Update
+	documentation comments.
+
+2024-05-17  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Has_Some_Controlled_Component): Fix a bug which
+	causes (in some cases involving a Disable_Controlled aspect
+	specification) Needs_Finalization to return different answers for
+	one type depending on whether the function is called before or
+	after the type is frozen.
+	* libgnat/a-coorse.ads: Type Control_Reference_Type gets an Adjust
+	procedure.
+	* libgnat/a-cborse.ads: Likewise.
+	* libgnat/a-ciorse.ads: Likewise
+	* libgnat/a-coorse.adb:
+	(Finalize): Reclaim allocated Key_Type object.
+	(Adjust): New procedure; prevent sharing of non-null Key_Access
+	values by allocating a copy.
+	* libgnat/a-cborse.adb: Likewise.
+	* libgnat/a-ciorse.adb: Likewise.
+
+2024-05-17  Bob Duff  <duff@adacore.com>
+
+	* uname.adb (Get_Unit_Name_String): Move Asserts after
+	Buf is initialized.
+
+2024-05-17  Bob Duff  <duff@adacore.com>
+
+	* ali-util.adb (Read_Withed_ALIs): Minor reformatting.
+	* bindo-units.adb (Corresponding_Body): Add assert.
+	(Corresponding_Spec): Likewise.
+	* uname.adb: Clean up assertions, use available functions.
+	Get_Spec_Name/Get_Body_Name can assert that N obeys the
+	conventions for Unit_Name_Type (end in "%s" or "%b").
+
+2024-05-17  Sebastian Poeplau  <poeplau@adacore.com>
+
+	* raise-gcc.c: Work around __builtin_code_address_from_pointer
+	if it is unavailable.
+
+2024-05-17  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_aggr.adb (Build_Array_Aggr_Code) <Gen_Loop>: Copy the
+	initialization expression when unrolling the loop.
+
+2024-05-17  Bob Duff  <duff@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Operation): Call
+	Create_Extra_Formals, so that the caller will have an extra
+	"constrained" parameter, which will be checked on assignment in
+	the callee, and will be passed in by the caller.
+
+2024-05-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Is_Unconstrained_Or_Tagged_Item): Remove call
+	to Has_Discriminants; combine ELSIF branches.
+
+2024-05-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch7.adb (New_Private_Type): Simplify setting of
+	Is_Constrained flag.
+	* sem_prag.adb (Is_Unconstrained_Or_Tagged_Item): Simplify
+	detection of private types with no discriminant.
+
+2024-05-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Is_Unconstrained_Or_Tagged_Item): Allow objects
+	of private types with unknown discriminants.
+
+2024-05-17  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Is_Unconstrained_Or_Tagged_Item): Tune repeated
+	testing of type kinds.
+
+2024-05-17  Marc Poulhiès  <poulhies@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst: Fix
+	copy/paste.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-05-17  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch3.adb (Analyze_Component_Declaration):
+	Apply range checks only for Scalar_Types to
+	ensure that they have the Scalar_Range attribute.
+
+2024-05-17  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch3.adb (Analyze_Component_Declaration):
+	Add Range_Checks for Subtype_Indications
+
+2024-05-17  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): Remove call to
+	Relocate_Node.
+	* sem_attr.adb (Analyze_Attribute): Likewise.
+
+2024-05-17  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_aggr.adb (Flatten): Small cleanup.
+
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute) <Attribute_Size>: Remove special
+	processing for pragma Compile_Time_{Warning,Error}.
+	(Eval_Attribute.Compile_Time_Known_Attribute): Set Is_Static on the
+	resulting value if In_Compile_Time_Warning_Or_Error is set.
+	(Eval_Attribute.Full_Type): New helper function.
+	(Eval_Attribute): Call Full_Type for type attributes.  Add handling
+	of Object_Size and adjust that of Max_Size_In_Storage_Elements in
+	the non-static case.
+
+2024-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Attach_Object_To_Master_Node): Remove reference to a
+	transient object in comment.
+
+2024-05-16  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_ch7.adb (Reset_Scopes_To_Block_Elab_Proc): also reset scope
+	for object declarations.
+
+2024-05-16  Steve Baird  <baird@adacore.com>
+
+	* checks.adb (Expr_Known_Valid): Return True for a static expression.
+	* exp_util.adb (Adjust_Condition): No validity check needed for a
+	condition if it is an expression for which a validity check has
+	already been generated.
+
+2024-05-16  Gary Dismukes  <dismukes@adacore.com>
+
+	* libgnat/a-coinve.ads (type Vector): In the Aggregate aspect for
+	this type, the Empty operation is changed to denote the Empty
+	function, rather than the Empty_Vector constant.
+	* exp_aggr.adb (Expand_Container_Aggregate): Remove code for
+	handling the case where the Empty_Subp denotes a constant object,
+	which should never happen (and add an assertion that Empty_Subp
+	must denote a function).
+	* sem_ch13.adb (Valid_Empty): No longer allow the entity to be an
+	E_Constant, and require the (optional) parameter of an Empty
+	function to be of a signed integer type (rather than any integer
+	type).
+
+2024-05-16  Justin Squirek  <squirek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst: Add entry for
+	Super attribute.
+	* accessibility.adb (Accessibility_Level): Add handling for Super.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Add entry for
+	Super.
+	* sem_attr.adb (Analyze_Attribute): Create a case to handle the
+	semantic checking and expansion for Super.
+	(Eval_Attribute): Add entry for Super.
+	* sem_attr.ads: Add entry for Super.
+	* sem_util.adb (Is_Aliased_View, Is_Variable): Add case to handle
+	references to 'Super.
+	* snames.ads-tmpl: Register Name_Super and Attribute_Super.
+	* gnat_rm.texi: Regenerate.
+
+2024-05-16  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.ads (Check_Function_Writable_Actuals): Fix comment.
+
+2024-05-16  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_res.adb (Resolve_Case_Expression): Add length check
+	insertion.
+	* exp_ch4.adb (Expand_N_Case_Expression): Add handling of nodes
+	known to raise Constraint_Error.
+
+2024-05-16  Sebastian Poeplau  <poeplau@adacore.com>
+
+	* adaint.c: New defines for STANDALONE mode.
+
+2024-05-16  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper):
+	If the spec is not present for a subprogram body then
+	check if the body definiton was created for a protected
+	procedure.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_cg.adb (Generate_CG_Output): Remove code for ignored ghost
+	entities that applied to subprogram calls.
+	(Register_CG_Node): Skip ignored ghost entities, both calls
+	and tagged types, when they are registered.
+
+2024-05-16  Ronan Desplanques  <desplanques@adacore.com>
+
+	* checks.adb (Apply_Selected_Length_Checks): Fix reason code.
+
+2024-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-finpri.adb (Raise_From_Controlled_Operation): New
+	declaration of imported procedure moved from...
+	(Finalize_Master): ...there.
+	(Finalize): Call Raise_From_Controlled_Operation instead of
+	Reraise_Occurrence to propagate the exception, if any.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch4.adb (Analyze_If_Expression): Add guard for
+	if_expression without an ELSE part.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch13.adb (Expand_N_Free_Statement): After analysis, the
+	new temporary has the type of its Object_Definition and the new
+	occurrence of this temporary has this type as well; simplify.
+	* sem_util.adb
+	(Indirect_Temp_Value): Remove redundant call to Set_Etype;
+	simplify.
+	(Is_Access_Type_For_Indirect_Temp): Add missing body header.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Is_Known_On_Entry): Check whether condition and
+	dependent expressions of an if_expression are known on entry.
+
+2024-05-16  Ronan Desplanques  <desplanques@adacore.com>
+
+	* checks.ads: Fix comments.
+	* checks.adb: Likewise.
+
+2024-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-finpri.ads: Add use type clause for Storage_Offset.
+	(Header_Alignment): Turn into an expression function.
+	(Header_Size): Likewise.
+	* libgnat/s-finpri.adb: Remove use type clause for Storage_Offset.
+	(Header_Alignment): Delete.
+	(Header_Size): Likewise.
+
+2024-05-16  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_ch7.adb (Unnest_Loop::Fixup_Inner_Scopes): detect a new
+	problematic pattern and fixup the scope accordingly.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gnat_cuda.adb (Remove_CUDA_Device_Entities): Fix typo.
+
+2024-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-finpri.ads (Header_Alignment): New function.
+	(Header_Size): Adjust description.
+	(Master_Node): Put Finalize_Address as first component.
+	(Collection_Node): Likewise.
+	* libgnat/s-finpri.adb (Header_Alignment): New function.
+	(Header_Size): Return the object size in storage units.
+	* libgnat/s-stposu.ads (Adjust_Controlled_Dereference): Replace
+	collection node with header in description.
+	* libgnat/s-stposu.adb (Adjust_Controlled_Dereference): Likewise.
+	(Allocate_Any_Controlled): Likewise.  Pass the maximum of the
+	specified alignment and that of the header to the allocator.
+	(Deallocate_Any_Controlled): Likewise to the deallocator.
+
+2024-05-16  Viljar Indus  <indus@adacore.com>
+
+	* exp_aggr.adb (Two_Pass_Aggregate_Expansion):
+	Explicitly create new Defining_Iterators for both
+	of the loops.
+
+2024-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch6.adb (Check_Private_Overriding): Implement the second part
+	of RM 3.9.3(10) consistently in both cases.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* erroutc.adb (Set_Msg_Insertion_Reserved_Word): Fix casing for
+	CUDA appearing in error message strings.
+	(Set_Msg_Str): Likewise for CUDA being a part of a Name_Id.
+
+2024-05-16  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_ch4.adb (Expand_Composite_Equality): Call Error_Msg_N
+	instead of Error_Msg.
+
+2024-05-16  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Build_And_Insert_Type_Attr_Subp): Further tweaking
+	of the point where a compiler-generated Put_Image or streaming
+	subprogram is to be inserted in the tree. If one such subprogram
+	calls another (as is often the case with, for example, Put_Image
+	procedures for composite type and for a component type thereof),
+	then we want to avoid use-before-definition problems that can
+	result from inserting the caller ahead of the callee.
+
+2024-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-finpri.ads (Lock_Type): New modular type.
+	(Collection_Node): Add Enclosing_Collection component.
+	(Finalization_Collection): Add Lock component.
+	* libgnat/s-finpri.adb: Add clauses for System.Atomic_Primitives.
+	(Attach_Object_To_Collection): Lock and unlock the collection.
+	Save a pointer to the enclosing collection in the node.
+	(Detach_Object_From_Collection): Lock and unlock the collection.
+	(Finalize): Likewise.
+	(Initialize): Initialize the lock.
+	(Lock_Collection): New procedure.
+	(Unlock_Collection): Likewise.
+
+2024-05-16  Steve Baird  <baird@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Expand existing checks for
+	generic formal types for which Is_Generic_Type returns False. In
+	that case, mark the attribute reference as nonstatic.
+
+2024-05-16  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb (Copy_Node_With_Replacement): Add call to
+	Copy_Dimensions so that any dimension information associated with
+	the copied node is also associated with the resulting copy.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (N_Procedure_Specification): Remove
+	Aspect_Specifications field.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specification): Consistently
+	reuse existing constant where possible.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specification): Consistently
+	reuse existing constant where possible.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.ads (Aspect_Id): Fix ordering.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Move case alternative to match
+	to alphabetic order.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gnat_cuda.adb (Remove_CUDA_Device_Entities): Fix casing
+	(this primarily fixes a style, because the capitalization will
+	not be preserved by the error-reporting machinery anyway).
+	* sem_ch13.adb (Analyze_User_Aspect_Aspect_Specification): Fix
+	casing in error message.
+
+2024-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Fix
+	documentation.
+	* sem_prag.adb: Fix comments.
+	* gnat_rm.texi: Regenerate.
+
 2024-05-14  Piotr Trojanek  <trojanek@adacore.com>
 
 	* aspects.ads (Aspect_Id, Boolean_Aspect): Change categorization

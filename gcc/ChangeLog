@@ -1,3 +1,486 @@
+2024-05-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/115142
+	* config/riscv/riscv.cc (mem_shadd_or_shadd_rtx_p): Make sure
+	shifted argument is a register.
+
+2024-05-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* optabs-query.cc (can_mult_highpart_p): Test for the existence of
+	a wider mode instead of requiring it.
+
+2024-05-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (popcount<mode>2): Split into...
+	(popcountsi2): define_insn handling SImode popcount.
+	(popcountdi2): define_insn handling DImode popcount, with an
+	explicit truncate:SI to produce an SImode result.
+
+2024-05-18  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* config/riscv/riscv.opt: Add -mno-fence-tso.
+	* config/riscv/sync-rvwmo.md (mem_thread_fence_rvwmo): Respect
+	-mno-fence-tso.
+	* doc/invoke.texi (RISC-V): Document -mno-fence-tso.
+
+2024-05-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md: Add new patterns to allow selection
+	between (x << C1) + C2 vs (x + C2') << C1 depending on the
+	cost C2 vs C2'.
+
+2024-05-18  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Optimize movbf
+	with Nan-boxing value.
+	* config/riscv/riscv.md (*movhf_softfloat_boxing): Expand movbf
+	with Nan-boxing value.
+	(*mov<HFBF:mode>_softfloat_boxing): Ditto.
+	with Nan-boxing value.
+	(*movbf_softfloat_boxing): Delete abandon pattern.
+
+2024-05-18  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/riscv-builtins.cc (riscv_init_builtin_types):
+	Modify _Bfloat16 to __bf16.
+	* config/riscv/riscv.cc (riscv_mangle_type): Ditto.
+
+2024-05-18  Pan Li  <pan2.li@intel.com>
+
+	PR target/51492
+	PR target/112600
+	* config/riscv/autovec.md (usadd<mode>3): New pattern expand for
+	the unsigned SAT_ADD in vector mode.
+	* config/riscv/riscv-protos.h (riscv_expand_usadd): New func decl
+	to expand usadd<mode>3 pattern.
+	(expand_vec_usadd): Ditto but for vector.
+	* config/riscv/riscv-v.cc (emit_vec_saddu): New func impl to emit
+	the vsadd insn.
+	(expand_vec_usadd): New func impl to expand usadd<mode>3 for vector.
+	* config/riscv/riscv.cc (riscv_expand_usadd): New func impl to
+	expand usadd<mode>3 for scalar.
+	* config/riscv/riscv.md (usadd<mode>3): New pattern expand for
+	the unsigned SAT_ADD in scalar mode.
+	* config/riscv/vector.md: Allow VLS mode for vsaddu.
+
+2024-05-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt.urls: Regenerate to add
+	fdiagnostics-show-event-links.
+
+2024-05-17  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-protos.h (struct common_vector_cost): Add
+	segment_permute cost.
+	* config/riscv/riscv-vector-costs.cc (costs::adjust_stmt_cost):
+	Handle segment loads/stores.
+	* config/riscv/riscv.cc: Initialize segment_permute_[2-8] to 1.
+
+2024-05-17  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/113474
+	* internal-fn.cc (expand_vec_cond_mask_optab_fn):  Remove
+	force_regs.
+
+2024-05-17  Tom Tromey  <tromey@adacore.com>
+
+	* dwarf2out.cc (gen_namespace_die): Use DW_TAG_module for Ada.
+
+2024-05-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-show-event-links): New option.
+	* diagnostic-label-effects.h: New file.
+	* diagnostic-path.h (diagnostic_event::connect_to_next_event_p):
+	New pure virtual function.
+	(simple_diagnostic_event::connect_to_next_event_p): Implement it.
+	(simple_diagnostic_event::connect_to_next_event): New.
+	(simple_diagnostic_event::m_connected_to_next_event): New field.
+	(simple_diagnostic_path::connect_to_next_event): New decl.
+	* diagnostic-show-locus.cc: Include "text-art/theme.h" and
+	"diagnostic-label-effects.h".
+	(colorizer::set_cfg_edge): New.
+	(layout::m_fallback_theme): New field.
+	(layout::m_theme): New field.
+	(layout::m_effect_info): New field.
+	(layout::m_link_lhs_state): New enum and field.
+	(layout::m_link_rhs_column): New field.
+	(layout_range::has_in_edge): New.
+	(layout_range::has_out_edge): New.
+	(layout::layout): Add "effect_info" optional param.  Initialize
+	m_theme, m_link_lhs_state, and m_link_rhs_column.
+	(layout::maybe_add_location_range): Remove stray "FIXME" from
+	leading comment.
+	(layout::print_source_line): Replace space after margin with a
+	call to print_leftmost_column.
+	(layout::print_leftmost_column): New.
+	(layout::start_annotation_line): Make non-const.  Gain
+	responsibility for printing the leftmost column after the margin.
+	(layout::print_annotation_line): Drop pp_space, as this is now
+	added by start_annotation_line.
+	(line_label::line_label): Add "has_in_edge" and "has_out_edge"
+	params and initialize...
+	(line_label::m_has_in_edge): New field.
+	(line_label::m_has_out_edge): New field.
+	(layout::print_any_labels): Pass edge information to line_label
+	ctor.  Keep track of in-edges and out-edges, adding visualizations
+	of these links between labels.
+	(layout::print_leading_fixits):  Drop pp_character, as this is now
+	added by start_annotation_line.
+	(layout::print_trailing_fixits): Fix off-by-one errors in column
+	calculation.
+	(layout::move_to_column): Add comment about debugging.
+	(layout::show_ruler): Make non-const.  Drop pp_space calls, as
+	this is now added by start_annotation_line.
+	(layout::print_line): Call print_any_right_to_left_edge_lines.
+	(layout::print_any_right_to_left_edge_lines): New.
+	(layout::update_any_effects): New.
+	(gcc_rich_location::add_location_if_nearby): Initialize
+	loc_range.m_label.
+	(diagnostic_context::maybe_show_locus): Add "effects" param and
+	pass it to diagnostic_context::show_locus.
+	(diagnostic_context::show_locus): Add "effects" param, passing it
+	to layout's ctor.  Call update_any_effects on the layout after
+	printing the lines.
+	(selftest::test_layout_x_offset_display_utf8): Update expected
+	result for eliminated trailing newline.
+	(selftest::test_layout_x_offset_display_utf8): Likewise.
+	(selftest::test_layout_x_offset_display_tab): Likewise.
+	* diagnostic.cc (diagnostic_context::initialize): Initialize
+	m_source_printing.show_event_links_p.
+	(simple_diagnostic_path::connect_to_next_event): New.
+	(simple_diagnostic_event::simple_diagnostic_event): Initialize
+	m_connected_to_next_event.
+	* diagnostic.h (class diagnostic_source_effect_info): New forward
+	decl.
+	(diagnostic_source_printing_options::show_event_links_p): New
+	field.
+	(diagnostic_context::maybe_show_locus): Add optional "effect_info"
+	param.
+	(diagnostic_context::show_locus): Add "effect_info" param.
+	(diagnostic_show_locus): Add optional "effect_info" param.
+	* doc/invoke.texi: Add -fno-diagnostics-show-event-links.
+	* lto-wrapper.cc (merge_and_complain): Add
+	OPT_fdiagnostics_show_event_links to switch.
+	(append_compiler_options): Likewise.
+	(append_diag_options): Likewise.
+	* opts-common.cc (decode_cmdline_options_to_array): Add
+	"-fno-diagnostics-show-event-links" to -fdiagnostics-plain-output.
+	* opts.cc (common_handle_option): Add case for
+	OPT_fdiagnostics_show_event_links.
+	* text-art/theme.cc (ascii_theme::get_cppchar): Handle
+	cell_kind::CFG_*.
+	(unicode_theme::get_cppchar): Likewise.
+	* text-art/theme.h (theme::cell_kind): Add CFG_*.
+	* toplev.cc (general_init): Initialize
+	global_dc->m_source_printing.show_event_links_p.
+	* tree-diagnostic-path.cc: Define INCLUDE_ALGORITHM,
+	INCLUDE_MEMORY, and INCLUDE_STRING.  Include
+	"diagnostic-label-effects.h".
+	(path_label::path_label): Initialize m_effects.
+	(path_label::get_effects): New.
+	(class path_label::path_label_effects): New.
+	(path_label::m_effects): New field.
+	(class per_thread_summary): Add "friend struct event_range;".
+	(per_thread_summary::per_thread_summary): Initialize m_last_event.
+	(per_thread_summary::m_last_event): New field.
+	(struct event_range::per_source_line_info): New.
+	(event_range::event_range): Make "t" non-const.  Add
+	"show_event_links" param and use it to initialize
+	m_show_event_links.  Add info for initial event.
+	(event_range::get_per_source_line_info): New.
+	(event_range::maybe_add_event): Verify compatibility of the new
+	label and existing labels with respect to the link-printing code.
+	Update per-source-line info when an event is added.
+	(event_range::print): Add"effect_info" param and pass to
+	diagnostic_show_locus.
+	(event_range::m_per_thread_summary): Make non-const.
+	(event_range::m_source_line_info_map): New field.
+	(event_range::m_show_event_links): New field.
+	(path_summary::path_summary): Add "show_event_links" optional
+	param, passing it to event_range ctor calls. Update
+	pts.m_last_event.
+	(thread_event_printer::print_swimlane_for_event_range): Add
+	"effect_info" param and pass it to range->print.
+	(print_path_summary_as_text): Keep track of the column for any
+	out-edges at the end of printing each event_range and use as
+	the leading in-edge for the next event_range.
+	(default_tree_diagnostic_path_printer): Pass in show_event_links_p
+	to path_summary ctor.
+	(selftest::path_events_have_column_data_p): New.
+	(class selftest::control_flow_test): New.
+	(selftest::test_control_flow_1): New.
+	(selftest::test_control_flow_2): New.
+	(selftest::test_control_flow_3): New.
+	(selftest::assert_cfg_edge_path_streq): New.
+	(ASSERT_CFG_EDGE_PATH_STREQ): New macro.
+	(selftest::test_control_flow_4): New.
+	(selftest::test_control_flow_5): New.
+	(selftest::test_control_flow_6): New.
+	(selftest::control_flow_tests): New.
+	(selftest::tree_diagnostic_path_cc_tests): Disable colorization on
+	global_dc's printer.  Convert event_pp to a std::unique_ptr. Call
+	control_flow_tests via for_each_line_table_case.
+	(gen_command_line_string): Likewise.
+
+2024-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/112600
+	* config/i386/mmx.md (<insn><mode>3): New expander.
+	* config/i386/sse.md
+	(<sse2_avx2>_<sat_plusminus:insn><mode>3<mask_name>):
+	Rename expander to <sat_plusminus:insn><mode>3<mask_name>.
+	(<umaxmin:code><mode>3): Update for rename.
+	* config/i386/i386-builtin.def: Update for rename.
+
+2024-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/115131
+	* value-range.cc (prange::intersect): Set VARYING if intersection
+	of bitmasks made the range span the entire domain.
+	(range_tests_misc): New test.
+
+2024-05-17  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR c++/114480
+	* tree-into-ssa.cc (prune_unused_phi_nodes): Add dfs_out entries
+	to the 'defs' array in the reverse order.
+
+2024-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/115128
+	* ipa-cp.cc (ipa_value_range_from_jfunc): Check for undefined_p
+	before looking at type.
+	(propagate_vr_across_jump_function): Same.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115110
+	* tree-ssa-alias.cc (view_converted_memref_p): Fix.
+
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expmed.h (expmed_mult_highpart_optab): Declare.
+	* expmed.cc (expmed_mult_highpart_optab): Remove static keyword.
+	Do not assume that OP1 is a constant integer.  Fix pasto.
+	(expmed_mult_highpart): Pass OP1 narrowed to MODE in all the calls
+	to expmed_mult_highpart_optab.
+	* optabs-query.cc (can_mult_highpart_p): Use 2 for integer widening
+	and shift subsequent values accordingly.
+	* optabs.cc (expand_mult_highpart): Call expmed_mult_highpart_optab
+	when can_mult_highpart_p returns 2 and adjust to above change.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.h (pt_solution_includes_const_pool): Declare.
+	* tree-ssa-alias.cc (ptrs_compare_unequal): Use
+	pt_solution_includes_const_pool.
+	* tree-ssa-structalias.cc (pt_solution_includes_const_pool): New.
+
+2024-05-17  Alexandre Oliva  <oliva@adacore.com>
+
+	* common.opt (freg-struct-return): Make it explicitly
+	fpcc-struct-return's NegativeAlias.  Copy Optimization...
+	(freg-struct-return): ... here.
+
+2024-05-17  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/.riscv.cc.swo: Removed.
+	* config/riscv/j: Removed.
+
+2024-05-16  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md(*vcond_mask_len_popcount_<VB_VLS:mode><P:mode>):
+	New pattern of vcond_mask_len_popcount for vector bool mode.
+	* config/riscv/autovec.md (vcond_mask_len_<mode>): New pattern of
+	vcond_mask_len for vector bool mode.
+	(cbranch<mode>4): New pattern for vector bool mode.
+	* config/riscv/vector-iterators.md: Add new unspec UNSPEC_SELECT_MASK.
+	* config/riscv/vector.md (@pred_popcount<VB:mode><P:mode>): Add VLS mode
+	to popcount pattern.
+	(@pred_popcount<VB_VLS:mode><P:mode>): Ditto.
+
+2024-05-16  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/113787
+	* ipa-fnsummary.cc (points_to_local_or_readonly_memory_p): Do not
+	look into TARGET_MEM_REFS with constant opreand 0.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/13962
+	PR tree-optimization/96564
+	* tree-ssa-alias.h (pt_solution::const_pool): New flag.
+	* tree-ssa-alias.cc (ptrs_compare_unequal): Handle pointer-pointer
+	compares.
+	(dump_points_to_solution): Dump the const_pool flag, fix guard
+	of flag dumping.
+	* gimple-pretty-print.cc (pp_points_to_solution): Likewise.
+	* tree-ssa-structalias.cc (find_what_var_points_to): Set
+	the const_pool flag for STRING.
+	(pt_solution_ior_into): Handle the const_pool flag.
+	(ipa_escaped_pt): Initialize it.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (get_constraint_for_1): For
+	volatile referenced or decls use ANYTHING.
+
+2024-05-16  Pan Li  <pan2.li@intel.com>
+
+	* tree-vect-loop.cc (vect_gen_loop_len_mask): New func to gen
+	the loop len mask.
+	* tree-vect-stmts.cc (vectorizable_early_exit): Invoke the
+	vect_gen_loop_len_mask for 1 or more stmt(s).
+	* tree-vectorizer.h (vect_gen_loop_len_mask): New func decl
+	for vect_gen_loop_len_mask.
+
+2024-05-16  Pan Li  <pan2.li@intel.com>
+
+	PR target/51492
+	PR target/112600
+	* tree-vect-patterns.cc (gimple_unsigned_integer_sat_add): New
+	func decl generated by match.pd match.
+	(vect_recog_sat_add_pattern): New func impl to recog the pattern
+	for unsigned SAT_ADD.
+
+2024-05-16  Pan Li  <pan2.li@intel.com>
+
+	PR target/51492
+	PR target/112600
+	* internal-fn.cc (commutative_binary_fn_p): Add type IFN_SAT_ADD
+	to the return true switch case(s).
+	* internal-fn.def (SAT_ADD):  Add new signed optab SAT_ADD.
+	* match.pd: Add unsigned SAT_ADD match(es).
+	* optabs.def (OPTAB_NL): Remove fixed-point limitation for
+	us/ssadd.
+	* tree-ssa-math-opts.cc (gimple_unsigned_integer_sat_add): New
+	extern func decl generated in match.pd match.
+	(match_saturation_arith): New func impl to match the saturation arith.
+	(math_opts_dom_walker::after_dom_children): Try match saturation
+	arith when IOR expr.
+
+2024-05-16  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/114985
+	* gimple-range-op.cc: Remove pointers_handled_p.
+	* ipa-cp.cc (ipa_value_range_from_jfunc): Skip range folding if
+	operands don't match.
+	(propagate_vr_across_jump_function): Same.
+	* range-op-mixed.h: Remove pointers_handled_p and tweak
+	operand_check_p.
+	* range-op-ptr.cc (range_operator::pointers_handled_p): Remove.
+	(pointer_plus_operator::pointers_handled_p): Remove.
+	(class operator_pointer_diff): Remove pointers_handled_p.
+	(operator_pointer_diff::pointers_handled_p): Remove.
+	(operator_identity::pointers_handled_p): Remove.
+	(operator_cst::pointers_handled_p): Remove.
+	(operator_cast::pointers_handled_p): Remove.
+	(operator_min::pointers_handled_p): Remove.
+	(operator_max::pointers_handled_p): Remove.
+	(operator_addr_expr::pointers_handled_p): Remove.
+	(operator_bitwise_and::pointers_handled_p): Remove.
+	(operator_bitwise_or::pointers_handled_p): Remove.
+	(operator_equal::pointers_handled_p): Remove.
+	(operator_not_equal::pointers_handled_p): Remove.
+	(operator_lt::pointers_handled_p): Remove.
+	(operator_le::pointers_handled_p): Remove.
+	(operator_gt::pointers_handled_p): Remove.
+	(operator_ge::pointers_handled_p): Remove.
+	* range-op.cc (TRAP_ON_UNHANDLED_POINTER_OPERATORS): Remove.
+	(range_op_handler::lhs_op1_relation): Remove pointers_handled_p checks.
+	(range_op_handler::lhs_op2_relation): Same.
+	(range_op_handler::op1_op2_relation): Same.
+	* range-op.h: Remove RO_* declarations.
+
+2024-05-16  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/114985
+	* vr-values.cc (simplify_using_ranges::fold_cond_with_ops): Use
+	boolean type when folding conditionals.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79958
+	PR tree-optimization/109087
+	PR tree-optimization/100314
+	PR tree-optimization/114774
+	* tree-ssa-dse.cc (dse_classify_store): New forwarder.
+	(dse_classify_store): Add arguments cnt and visited, recurse
+	to track multiple paths when we end up with multiple defs.
+
+2024-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* text-art/theme.cc (ascii_theme::get_cppchar): Add
+	cell_kind::INTERPROCEDURAL_*.
+	(unicode_theme::get_cppchar): Likewise.
+	* text-art/theme.h (theme::cell_kind): Likewise.
+	* tree-diagnostic-path.cc:
+	(thread_event_printer::print_swimlane_for_event_range): Use the
+	above to get characters for indicating interprocedural stack
+	depth activity, falling back to ascii.
+	(selftest::test_interprocedural_path_1): Test with both ascii
+	and unicode themes.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+
+2024-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-diagnostic-path.cc: Include "text-art/theme.h".
+	(path_label::get_text): If the event has
+	diagnostic_event::VERB_danger, and the theme enables emojis, then
+	add a warning emoji between the event number and the event text.
+
+2024-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-diagnostic-path.cc (per_thread_summary::interprocedural_p):
+	New.
+	(thread_event_printer::print_swimlane_for_event_range): Don't
+	indent and print the stack depth line if this thread's events are
+	purely intraprocedural.
+	(selftest::test_intraprocedural_path): Update expected output.
+
+2024-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-path.h: Update leading comment to reflect
+	intraprocedural cases.  Fix typo in comment.
+	* doc/invoke.texi: Update intraprocedural example.
+
+2024-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.cc: Define INCLUDE_VECTOR and include
+	"text-art/types.h".
+	(line_label::line_label): Drop "policy" argument.  Use
+	styled_string::calc_canvas_width when computing m_display_width,
+	as this skips SGR codes.
+	(layout::print_any_labels): Update for line_label ctor change.
+	(selftest::test_one_liner_labels_utf8): Update expected text to
+	reflect that the labels can fit on one line if we don't get
+	confused by SGR colorization codes.
+
+2024-05-16  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* common/config/riscv/riscv-common.cc:
+	(riscv_implied_info): Add zvfbfwma item.
+	(riscv_ext_version_table): Ditto.
+	(riscv_ext_flag_table): Ditto.
+	* config/riscv/riscv.opt:
+	(MASK_ZVFBFWMA): New macro.
+	(TARGET_ZVFBFWMA): Ditto.
+
+2024-05-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/114514
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi_partial):
+	Set d.one_operand_p to true when TARGET_SSSE3.
+
+2024-05-16  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/114514
+	* config/i386/i386-expand.cc
+	(ix86_expand_vec_shift_qihi_constant): Optimize ashift >> 7 to
+	vpcmpgtb.
+	(ix86_expand_vecop_qihi_partial): Ditto.
+
 2024-05-15  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv-string.cc: Add missing hunk from last change.

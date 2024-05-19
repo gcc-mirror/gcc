@@ -1,3 +1,9 @@
+2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (bitfield_used): Move around.
+	(packed_layout): Likewise.
+	(dump_ada_array_type): Do not put "aliased" for a packed layout.
+
 2024-05-15  Marek Polacek  <polacek@redhat.com>
 
 	DR 1693

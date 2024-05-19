@@ -1,3 +1,13 @@
+2024-05-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.h (checker_event::connect_to_next_event_p):
+	Implement new diagnostic_event::connect_to_next_event_p vfunc.
+	(start_cfg_edge_event::connect_to_next_event_p): Likewise.
+	(start_consolidated_cfg_edges_event::connect_to_next_event_p):
+	Likewise.
+	* infinite-loop.cc (class looping_back_event): New subclass.
+	(infinite_loop_diagnostic::add_final_event): Use it.
+
 2024-05-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114899

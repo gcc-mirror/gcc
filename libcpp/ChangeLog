@@ -1,3 +1,8 @@
+2024-05-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/rich-location.h (class label_effects): New forward decl.
+	(range_label::get_effects): New vfunc.
+
 2024-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* init.cc (cpp_init_builtins): Change __STDC_VERSION__

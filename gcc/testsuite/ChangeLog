@@ -1,3 +1,194 @@
+2024-05-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/115142
+	* gcc.target/riscv/pr115142.c: New test.
+
+2024-05-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/114982
+	* g++.dg/tree-ssa/cxa_atexit-6.C: Skip for Darwin.
+
+2024-05-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-weakimport-3.c: Suppress unwind frames.
+
+2024-05-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/shift-add-1.c: New test.
+
+2024-05-18  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/_Bfloat16-nanboxing.c: Move to...
+	* gcc.target/riscv/__bf16-nanboxing.c: ...here.
+	* gcc.target/riscv/bf16_arithmetic.c: Modify _Bfloat16 to __bf16.
+	* gcc.target/riscv/bf16_call.c: Ditto.
+	* gcc.target/riscv/bf16_comparison.c: Ditto.
+	* gcc.target/riscv/bf16_float_libcall_convert.c: Ditto.
+	* gcc.target/riscv/bf16_integer_libcall_convert.c: Ditto.
+
+2024-05-18  Pan Li  <pan2.li@intel.com>
+
+	PR target/51492
+	PR target/112600
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_binary.h: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-4.c: New test.
+	* gcc.target/riscv/sat_arith.h: New test.
+	* gcc.target/riscv/sat_u_add-1.c: New test.
+	* gcc.target/riscv/sat_u_add-2.c: New test.
+	* gcc.target/riscv/sat_u_add-3.c: New test.
+	* gcc.target/riscv/sat_u_add-4.c: New test.
+	* gcc.target/riscv/sat_u_add-run-1.c: New test.
+	* gcc.target/riscv/sat_u_add-run-2.c: New test.
+	* gcc.target/riscv/sat_u_add-run-3.c: New test.
+	* gcc.target/riscv/sat_u_add-run-4.c: New test.
+	* gcc.target/riscv/scalar_sat_binary.h: New test.
+
+2024-05-17  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-4.c: Adjust test.
+
+2024-05-17  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr113474.c: New test.
+
+2024-05-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/event-links-ascii.c: New test.
+	* gcc.dg/analyzer/event-links-color.c: New test.
+	* gcc.dg/analyzer/event-links-disabled.c: New test.
+	* gcc.dg/analyzer/event-links-unicode.c: New test.
+
+2024-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/112600
+	* gcc.target/i386/pr112600-1a.c: New test.
+	* gcc.target/i386/pr112600-1b.c: New test.
+
+2024-05-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114874
+	* gfortran.dg/pr114874_1.f90: New test for valid code.
+	* gfortran.dg/pr114874_2.f90: New test for invalid code.
+
+2024-05-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115114
+	* g++.dg/cpp2a/class-deduction-aggr15.C: New test.
+
+2024-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr115128.c: New test.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/20240517-1.c: New testcase.
+
+2024-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.dg/vect/slp-mask-store-1.c: Add pragma novector as it will
+	have 2 times LOOP VECTORIZED in RISC-V.
+	* gcc.dg/vect/vect-early-break_124-pr114403.c: Xfail for the
+	riscv backend.
+	* lib/target-supports.exp: Add RISC-V backend.
+
+2024-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/early-break-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/early-break-2.c: New test.
+
+2024-05-16  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/pr113787.c: New test.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/13962
+	PR tree-optimization/96564
+	* gcc.dg/tree-ssa/alias-39.c: New testcase.
+	* g++.dg/vect/pr68145.cc: Use -fno-tree-pta to avoid UB
+	to manifest in transforms no longer vectorizing this testcase
+	for an ICE.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/alias-38.c: New testcase.
+
+2024-05-16  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/cmpmemsi-1.c: Drop options.
+	* gcc.target/riscv/cpymemsi-1.c: Likewise.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79958
+	PR tree-optimization/109087
+	PR tree-optimization/100314
+	PR tree-optimization/114774
+	* gcc.dg/tree-ssa/ssa-dse-48.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-dse-49.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-50.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-51.c: Likewise.
+	* gcc.dg/graphite/pr80906.c: Avoid DSE of last data reference
+	in loop.
+	* g++.dg/ipa/devirt-24.C: Adjust for extra DSE.
+	* g++.dg/warn/Wuninitialized-pr107919-1.C: Use more important
+	-O2 optimization level, -O1 regresses.
+
+2024-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-emoji.c: Update expected
+	output to use unicode for depth indication.
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-unicode.c: Likewise.
+
+2024-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-emoji.c: Update expected
+	output to include warning emoji.
+	* gcc.dg/analyzer/warning-emoji.c: New test.
+
+2024-05-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/allocation-size-multiline-1.c: Update
+	expected results for purely intraprocedural path.
+	* c-c++-common/analyzer/allocation-size-multiline-2.c: Likewise.
+	* c-c++-common/analyzer/allocation-size-multiline-3.c: Likewise.
+	* c-c++-common/analyzer/analyzer-verbosity-0.c: Likewise.
+	* c-c++-common/analyzer/analyzer-verbosity-1.c: Likewise.
+	* c-c++-common/analyzer/analyzer-verbosity-2.c: Likewise.
+	* c-c++-common/analyzer/analyzer-verbosity-3.c: Likewise.
+	* c-c++-common/analyzer/malloc-macro-inline-events.c: Likewise.
+	Doing so for this file requires a rewrite since the paths
+	prefixing the "in expansion of macro" lines become the only thing
+	on their line and so are no longer pruned by multiline.exp logic
+	for pruning extra content on non-blank lines.
+	* c-c++-common/analyzer/malloc-paths-9-noexcept.c: Likewise.
+	* c-c++-common/analyzer/setjmp-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-9.c: Likewise.
+	* gcc.dg/analyzer/out-of-bounds-multiline-2.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-paths-2.c: Likewise.
+
+2024-05-16  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/arch-37.c: New test.
+	* gcc.target/riscv/arch-38.c: New test.
+	* gcc.target/riscv/predef-36.c: New test.
+	* gcc.target/riscv/predef-37.c: New test.
+
+2024-05-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr114514-shufb.c: New test.
+
+2024-05-16  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr114514-shift.c: New test.
+
 2024-05-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114899
