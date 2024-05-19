@@ -20,7 +20,6 @@
 #define RUST_FMT_H
 
 #include "rust-system.h"
-#include <cstddef>
 
 // FIXME: How to encode Option?
 
