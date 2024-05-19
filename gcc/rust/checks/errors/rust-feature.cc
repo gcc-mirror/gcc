@@ -45,6 +45,9 @@ Feature::create (Feature::Name name)
     case Feature::Name::NEGATIVE_IMPLS:
       return Feature (Feature::Name::NEGATIVE_IMPLS, Feature::State::ACTIVE,
 		      "negative_impls", "1.0.0", 68318, tl::nullopt, "");
+    case Feature::Name::BOX_SYNTAX:
+      return Feature (Feature::Name::BOX_SYNTAX, Feature::State::ACTIVE,
+		      "box_syntax", "1.0.0", 49733, tl::nullopt, "");
     default:
       rust_unreachable ();
     }
@@ -62,6 +65,7 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"extern_types", Feature::Name::EXTERN_TYPES},
   {"lang_items", Feature::Name::LANG_ITEMS},
   {"no_core", Feature::Name::NO_CORE},
+  {"box_syntax", Feature::Name::BOX_SYNTAX},
 }; // namespace Rust
 
 tl::optional<Feature::Name>
