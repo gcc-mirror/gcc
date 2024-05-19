@@ -655,11 +655,18 @@
   DONE;
 })
 
-(define_insn "popcount<mode>2"
+(define_insn "popcountsi2"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
-	(popcount:SI (match_operand:SDIM 1 "nvptx_register_operand" "R")))]
+	(popcount:SI (match_operand:SI 1 "nvptx_register_operand" "R")))]
   ""
-  "%.\\tpopc.b%T1\\t%0, %1;")
+  "%.\\tpopc.b32\\t%0, %1;")
+
+(define_insn "popcountdi2"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(truncate:SI
+	  (popcount:DI (match_operand:DI 1 "nvptx_register_operand" "R"))))]
+  ""
+  "%.\\tpopc.b64\\t%0, %1;")
 
 ;; Multiplication variants
 
