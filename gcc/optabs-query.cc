@@ -510,17 +510,16 @@ int
 can_mult_highpart_p (machine_mode mode, bool uns_p)
 {
   optab op;
-  scalar_int_mode int_mode;
+  scalar_int_mode int_mode, wider_mode;
 
   op = uns_p ? umul_highpart_optab : smul_highpart_optab;
   if (optab_handler (op, mode) != CODE_FOR_nothing)
     return 1;
 
   /* If the mode is integral, synth from widening or larger operations.  */
-  if (is_a <scalar_int_mode> (mode, &int_mode))
+  if (is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_WIDER_MODE (int_mode).exists (&wider_mode))
     {
-      scalar_int_mode wider_mode = GET_MODE_WIDER_MODE (int_mode).require ();
-
       op = uns_p ? umul_widen_optab : smul_widen_optab;
       if (convert_optab_handler (op, wider_mode, mode) != CODE_FOR_nothing)
 	return 2;
