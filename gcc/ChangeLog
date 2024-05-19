@@ -1,3 +1,12 @@
+2024-05-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2024-03-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_expand_prologue): Add missing stack
+	tie for scalable and final stack adjustment if needed.
+	Co-authored-by: Raphael Zinsly <rzinsly@ventanamicro.com>
+
 2024-05-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/113907
