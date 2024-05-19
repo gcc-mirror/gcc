@@ -148,7 +148,7 @@ package body Debug is
    --  d_i  Ignore activations and calls to instances for elaboration
    --  d_j  Read JSON files and populate Repinfo tables (opposite of -gnatRjs)
    --  d_k  In CodePeer mode disable expansion of assertion checks
-   --  d_l
+   --  d_l  Disable strict alignment of array types with aliased component
    --  d_m
    --  d_n
    --  d_o
@@ -988,6 +988,9 @@ package body Debug is
    --       (regardless of the -gnata compiler switch); when this switch is
    --       enabled, expansion of assertion expressions is controlled by
    --       pragma Assertion_Policy.
+
+   --  d_l  The compiler does not enforce the strict alignment of array types
+   --       that are declared with an aliased component.
 
    --  d_p  The compiler ignores calls to subprograms which verify the run-time
    --       semantics of invariants and postconditions in both the static and

@@ -2374,18 +2374,24 @@ package body Freeze is
       elsif Is_Array_Type (E) then
          Set_Strict_Alignment (E, Strict_Alignment (Component_Type (E)));
 
-         --  ??? AI12-001: Any component of a packed type that contains an
-         --  aliased part must be aligned according to the alignment of its
-         --  subtype (RM 13.2(7)). This means that the following test:
+         --  RM 13.2(7.1/4): Any component of a packed type that contains an
+         --  aliased part shall be aligned according to the alignment of its
+         --  subtype.
 
-         --    if Has_Aliased_Components (E) then
-         --      Set_Strict_Alignment (E);
-         --    end if;
+         --  Unfortunately this breaks Florist, which has had the bad habit
+         --  of overaligning all the types it declares on 32-bit platforms,
+         --  so make an exception if the component size is the storage unit.
 
-         --  should be implemented here. Unfortunately it would break Florist,
-         --  which has the bad habit of overaligning all the types it declares
-         --  on 32-bit platforms. Other legacy codebases could also be affected
-         --  because this check has historically been missing in GNAT.
+         --  Other legacy codebases could also be affected because this was
+         --  historically not enforced, so -gnatd_l can be used to disable it.
+
+         if Has_Aliased_Components (E)
+           and then not (Known_Component_Size (E)
+                          and then Component_Size (E) = System_Storage_Unit)
+           and then not Debug_Flag_Underscore_L
+         then
+            Set_Strict_Alignment (E);
+         end if;
 
       elsif Is_Record_Type (E) then
          Comp := First_Component (E);
