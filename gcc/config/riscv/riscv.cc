@@ -2465,6 +2465,7 @@ mem_shadd_or_shadd_rtx_p (rtx x)
 {
   return ((GET_CODE (x) == ASHIFT
 	   || GET_CODE (x) == MULT)
+	  && register_operand (XEXP (x, 0), GET_MODE (x))
 	  && CONST_INT_P (XEXP (x, 1))
 	  && ((GET_CODE (x) == ASHIFT && IN_RANGE (INTVAL (XEXP (x, 1)), 1, 3))
 	      || (GET_CODE (x) == MULT
