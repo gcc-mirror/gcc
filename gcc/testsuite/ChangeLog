@@ -1,3 +1,100 @@
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110176
+	* gcc.dg/torture/pr110176.c: New testcase.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111039
+	* gcc.dg/pr111039.c: New testcase.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* gcc.dg/torture/pr112281-1.c: New testcase.
+	* gcc.dg/torture/pr112281-2.c: Likewise.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112495
+	* gcc.target/i386/pr112495.c: New testcase.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112505
+	* gcc.dg/vect/pr112505.c: New testcase.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/112718
+	* gcc.dg/debug/pr112718.c: New testcase.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112793
+	* g++.dg/vect/pr112793.cc: New testcase.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114027
+	* gcc.dg/vect/pr114027.c: Fix iteration count.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114027
+	* gcc.dg/vect/pr114027.c: New testcase.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114375
+	* gcc.dg/vect/vect-pr114375.c: New testcase.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114231
+	* gcc.dg/vect/pr114231.c: New testcase.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR gcov-profile/114715
+	* gcc.misc-tests/gcov-24.c: New testcase.
+
 2024-05-15  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

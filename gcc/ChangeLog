@@ -1,3 +1,129 @@
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/110176
+	* match.pd (zext (bool) <= (int) 4294967295u): Make sure
+	to match INTEGER_CST only without outstanding conversion.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111039
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Check for
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112281
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): For = in the
+	innermost common loop record a partition conflict.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112495
+	* tree-data-ref.cc (runtime_alias_check_p): Reject checks
+	between different address spaces.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112505
+	* tree-vect-loop.cc (vectorizable_induction): Reject
+	bit-precision induction.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR debug/112718
+	* dwarf2out.cc (dwarf2out_finish): Reset all type units
+	for the fat part of an LTO compile.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-12-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112793
+	* tree-vect-slp.cc (vect_schedule_slp_node): Already
+	code-generated constant/external nodes are OK.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114027
+	* tree-vect-loop.cc (vecctorizable_reduction): Use optimized
+	condition reduction classification only for single-element
+	chains.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114375
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Compute the
+	load permutation for masked loads but reject it when any
+	such is necessary.
+	* tree-vect-stmts.cc (vectorizable_load): Reject masked
+	VMAT_ELEMENTWISE and VMAT_STRIDED_SLP as those are not
+	supported.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114231
+	* tree-vect-slp.cc (vect_analyze_slp): Lookup patterns when
+	processing a BB SLP root.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/114734
+	* internal-fn.cc (expand_call_mem_ref): Use
+	get_gimple_for_ssa_name to get at the def stmt of the address
+	argument to honor SSA coalescing constraints.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114655
+	* lto-wrapper.cc (merge_flto_options): Add force argument.
+	(merge_and_complain): Do not force here.
+	(run_gcc): But here to make the link-time -flto option override
+	any compile-time one.
+
+2024-05-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR gcov-profile/114715
+	* gimplify.cc (gimplify_switch_expr): Set the location of the
+	GIMPLE switch.
+
 2024-05-15  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
