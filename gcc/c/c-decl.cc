@@ -5051,7 +5051,7 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      if (t == NULL_TREE)
 		{
 		  t = make_node (code);
-		  if (flag_isoc23 && code != ENUMERAL_TYPE)
+		  if (flag_isoc23 || code == ENUMERAL_TYPE)
 		    SET_TYPE_STRUCTURAL_EQUALITY (t);
 		  pushtag (input_location, name, t);
 		}
@@ -8828,7 +8828,7 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
      the forward-reference will be altered into a real type.  */
 
   ref = make_node (code);
-  if (flag_isoc23 && code != ENUMERAL_TYPE)
+  if (flag_isoc23 || code == ENUMERAL_TYPE)
     SET_TYPE_STRUCTURAL_EQUALITY (ref);
   if (code == ENUMERAL_TYPE)
     {
@@ -9919,6 +9919,7 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
     {
       enumtype = make_node (ENUMERAL_TYPE);
       TYPE_SIZE (enumtype) = NULL_TREE;
+      SET_TYPE_STRUCTURAL_EQUALITY (enumtype);
       pushtag (loc, name, enumtype);
       if (fixed_underlying_type != NULL_TREE)
 	{
@@ -9935,6 +9936,8 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
 	  TYPE_SIZE (enumtype) = NULL_TREE;
 	  TYPE_PRECISION (enumtype) = TYPE_PRECISION (fixed_underlying_type);
 	  ENUM_UNDERLYING_TYPE (enumtype) = fixed_underlying_type;
+	  TYPE_CANONICAL (enumtype) = TYPE_CANONICAL (fixed_underlying_type);
+	  c_update_type_canonical (enumtype);
 	  layout_type (enumtype);
 	}
     }
@@ -10093,6 +10096,10 @@ finish_enum (tree enumtype, tree values, tree attributes)
       TYPE_PRECISION (enumtype) = TYPE_PRECISION (tem);
       ENUM_UNDERLYING_TYPE (enumtype) =
 	c_common_type_for_size (TYPE_PRECISION (tem), TYPE_UNSIGNED (tem));
+
+      TYPE_CANONICAL (enumtype) =
+	TYPE_CANONICAL (ENUM_UNDERLYING_TYPE (enumtype));
+      c_update_type_canonical (enumtype);
 
       layout_type (enumtype);
     }

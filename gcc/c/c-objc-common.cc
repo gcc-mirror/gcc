@@ -130,6 +130,8 @@ get_aka_type (tree type)
 
       result = get_aka_type (orig_type);
     }
+  else if (TREE_CODE (type) == ENUMERAL_TYPE)
+    return type;
   else
     {
       tree canonical = TYPE_CANONICAL (type);
@@ -418,11 +420,6 @@ c_var_mod_p (tree x, tree fn ATTRIBUTE_UNUSED)
 alias_set_type
 c_get_alias_set (tree t)
 {
-  /* Allow aliasing between enumeral types and the underlying
-     integer type.  This is required since those are compatible types.  */
-  if (TREE_CODE (t) == ENUMERAL_TYPE)
-    return get_alias_set (ENUM_UNDERLYING_TYPE (t));
-
   /* Structs with variable size can alias different incompatible
      structs.  Let them alias anything.   */
   if (RECORD_OR_UNION_TYPE_P (t) && C_TYPE_VARIABLE_SIZE (t))

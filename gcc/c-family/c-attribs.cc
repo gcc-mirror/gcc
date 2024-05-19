@@ -1074,6 +1074,7 @@ handle_hardbool_attribute (tree *node, tree name, tree args,
 
   TREE_SET_CODE (*node, ENUMERAL_TYPE);
   ENUM_UNDERLYING_TYPE (*node) = orig;
+  TYPE_CANONICAL (*node) = TYPE_CANONICAL (orig);
 
   tree false_value;
   if (args)

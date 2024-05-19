@@ -1118,10 +1118,8 @@ go_output_typedef (class godump_container *container, tree decl)
      separately.  */
   if (TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE
       && TYPE_SIZE (TREE_TYPE (decl)) != 0
-      && !container->decls_seen.contains (TREE_TYPE (decl))
-      && (TYPE_CANONICAL (TREE_TYPE (decl)) == NULL_TREE
-	  || !container->decls_seen.contains
-				    (TYPE_CANONICAL (TREE_TYPE (decl)))))
+      && !container->decls_seen.contains
+	    (TYPE_MAIN_VARIANT (TREE_TYPE (decl))))
     {
       tree element;
 
@@ -1163,9 +1161,7 @@ go_output_typedef (class godump_container *container, tree decl)
 	  mhval->value = xstrdup (buf);
 	  *slot = mhval;
 	}
-      container->decls_seen.add (TREE_TYPE (decl));
-      if (TYPE_CANONICAL (TREE_TYPE (decl)) != NULL_TREE)
-	container->decls_seen.add (TYPE_CANONICAL (TREE_TYPE (decl)));
+      container->decls_seen.add (TYPE_MAIN_VARIANT (TREE_TYPE (decl)));
     }
 
   if (DECL_NAME (decl) != NULL_TREE)
