@@ -1,3 +1,10 @@
+2024-05-19  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/nvptx/nvptx.md (popcount<mode>2): Split into...
+	(popcountsi2): define_insn handling SImode popcount.
+	(popcountdi2): define_insn handling DImode popcount, with an
+	explicit truncate:SI to produce an SImode result.
+
 2024-04-16  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR middle-end/23872
