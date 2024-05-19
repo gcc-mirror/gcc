@@ -1,3 +1,14 @@
+2024-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115119
+	* include/bits/unicode.h (_Iterator::operator++(int)): Fix typo
+	in increment expression.
+	* testsuite/ext/unicode/grapheme_view.cc: Check post-increment
+	on view's iterator.
+
 2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/115015

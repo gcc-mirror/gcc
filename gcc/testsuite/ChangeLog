@@ -1,3 +1,20 @@
+2024-05-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114874
+	* gfortran.dg/pr114874_1.f90: New test for valid code.
+	* gfortran.dg/pr114874_2.f90: New test for invalid code.
+
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114998
+	* gcc.dg/torture/pr114998.c: New testcase.
+
 2024-05-15  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

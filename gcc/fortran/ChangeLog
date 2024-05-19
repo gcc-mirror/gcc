@@ -1,3 +1,21 @@
+2024-05-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114874
+	* gfortran.h: Add 'assoc_name_inferred' to gfc_namespace.
+	* match.cc (gfc_match_select_type): Set 'assoc_name_inferred'
+	in select type namespace if the selector has inferred type.
+	* primary.cc (gfc_match_varspec): If a select type temporary
+	is apparently scalar and a left parenthesis has been detected,
+	check the current namespace has 'assoc_name_inferred' set. If
+	so, set inferred_type.
+	* resolve.cc (resolve_variable): If the namespace of a select
+	type temporary is marked with 'assoc_name_inferred' call
+	gfc_fixup_inferred_type_refs to ensure references are OK.
+	(gfc_fixup_inferred_type_refs): Catch invalid array refs..
+
 2024-05-09  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

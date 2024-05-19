@@ -1,3 +1,16 @@
+2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114998
+	* tree-loop-distribution.cc (free_rdg): Take loop argument.
+	Reset UIDs of stmts still in the IL rather than all stmts
+	referenced from the RDG.
+	(loop_distribution::build_rdg): Pass loop to free_rdg.
+	(loop_distribution::distribute_loop): Likewise.
+	(loop_distribution::transform_reduction_loop): Likewise.
+
 2024-05-15  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

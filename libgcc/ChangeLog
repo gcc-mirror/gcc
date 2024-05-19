@@ -1,3 +1,11 @@
+2024-05-18  Wolfgang Hospital  <Wolfgang.Hospital@arcor.de>
+
+	Backported from master:
+	2024-05-18  Wolfgang Hospital  <Wolfgang.Hospital@arcor.de>
+
+	PR target/115065
+	* config/avr/lib1funcs.S (__clzhi2): Tweak.
+
 2024-05-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
