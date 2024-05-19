@@ -134,6 +134,8 @@ FeatureGate::visit (AST::Function &function)
 {
   if (!function.is_external ())
     check_rustc_attri (function.get_outer_attrs ());
+
+  AST::DefaultASTVisitor::visit (function);
 }
 
 void
@@ -152,5 +154,14 @@ FeatureGate::visit (AST::TraitImpl &impl)
     gate (Feature::Name::NEGATIVE_IMPLS, impl.get_locus (),
 	  "negative_impls are not yet implemented");
 };
+
+void
+FeatureGate::visit (AST::BoxExpr &expr)
+{
+  gate (
+    Feature::Name::BOX_SYNTAX, expr.get_locus (),
+    "box expression syntax is experimental; you can call `Box::new` instead");
+  AST::DefaultASTVisitor::visit (expr);
+}
 
 } // namespace Rust

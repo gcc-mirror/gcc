@@ -81,7 +81,6 @@ public:
   void visit (AST::MethodCallExpr &expr) override {}
   void visit (AST::FieldAccessExpr &expr) override {}
   void visit (AST::ClosureExprInner &expr) override {}
-  void visit (AST::BlockExpr &expr) override {}
   void visit (AST::ClosureExprInnerTyped &expr) override {}
   void visit (AST::ContinueExpr &expr) override {}
   void visit (AST::BreakExpr &expr) override {}
@@ -92,6 +91,7 @@ public:
   void visit (AST::RangeFromToInclExpr &expr) override {}
   void visit (AST::RangeToInclExpr &expr) override {}
   void visit (AST::ReturnExpr &expr) override {}
+  void visit (AST::BoxExpr &expr) override;
   void visit (AST::UnsafeBlockExpr &expr) override {}
   void visit (AST::LoopExpr &expr) override {}
   void visit (AST::WhileLoopExpr &expr) override {}
@@ -166,7 +166,6 @@ public:
   void visit (AST::SlicePattern &pattern) override {}
   void visit (AST::AltPattern &pattern) override {}
   void visit (AST::EmptyStmt &stmt) override {}
-  void visit (AST::LetStmt &stmt) override {}
   void visit (AST::ExprStmt &stmt) override {}
   void visit (AST::TraitBound &bound) override {}
   void visit (AST::ImplTraitType &type) override {}

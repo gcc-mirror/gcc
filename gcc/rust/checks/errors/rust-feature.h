@@ -46,6 +46,7 @@ public:
     EXTERN_TYPES,
     LANG_ITEMS,
     NO_CORE,
+    BOX_SYNTAX,
   };
 
   const std::string &as_string () { return m_name_str; }
