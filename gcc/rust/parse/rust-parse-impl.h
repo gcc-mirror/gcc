@@ -3093,9 +3093,9 @@ template <typename EndTokenPred>
 std::unique_ptr<AST::GenericParam>
 Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 {
-  auto token = lexer.peek_token ();
   auto outer_attrs = parse_outer_attribute ();
   std::unique_ptr<AST::GenericParam> param;
+  auto token = lexer.peek_token ();
 
   switch (token->get_id ())
     {
