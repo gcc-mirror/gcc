@@ -112,7 +112,7 @@ enum processor_subtypes
 /* Priority of i386 features, greater value is higher priority.   This is
    used to decide the order in which function dispatch must happen.  For
    instance, a version specialized for SSE4.2 should be checked for dispatch
-   before a version for SSE3, as SSE4.2 implies SSE3.  */
+   before a version for SSE3.  */
 enum feature_priority
 {
   P_NONE = 0,
@@ -148,6 +148,9 @@ enum feature_priority
   P_AVX512F,
   P_PROC_AVX512F,
   P_X86_64_V4,
+  P_AVX10_1_256,
+  P_AVX10_1_512,
+  P_PROC_AVX10_1_512,
   P_PROC_DYNAMIC
 };
 
