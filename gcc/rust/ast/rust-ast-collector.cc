@@ -1099,8 +1099,7 @@ TokenCollector::visit (StructExprStruct &expr)
 void
 TokenCollector::visit (StructExprFieldIdentifier &expr)
 {
-  // TODO: Add attributes
-  // visit_items_as_lines (expr.get_attrs ());
+  visit_items_as_lines (expr.get_outer_attrs ());
   auto id = expr.get_field_name ().as_string ();
   push (Rust::Token::make_identifier (expr.get_locus (), std::move (id)));
 }
@@ -1108,8 +1107,7 @@ TokenCollector::visit (StructExprFieldIdentifier &expr)
 void
 TokenCollector::visit (StructExprFieldIdentifierValue &expr)
 {
-  // TODO: Add attributes
-  // visit_items_as_lines (expr.get_attrs ());
+  visit_items_as_lines (expr.get_outer_attrs ());
   auto id = expr.get_field_name ();
   push (Rust::Token::make_identifier (expr.get_locus (), std::move (id)));
   push (Rust::Token::make (COLON, UNDEF_LOCATION));
@@ -1119,8 +1117,7 @@ TokenCollector::visit (StructExprFieldIdentifierValue &expr)
 void
 TokenCollector::visit (StructExprFieldIndexValue &expr)
 {
-  // TODO: Add attributes
-  // visit_items_as_lines (expr.get_attrs ());
+  visit_items_as_lines (expr.get_outer_attrs ());
   push (Rust::Token::make_int (expr.get_locus (),
 			       std::to_string (expr.get_index ())));
   push (Rust::Token::make (COLON, UNDEF_LOCATION));

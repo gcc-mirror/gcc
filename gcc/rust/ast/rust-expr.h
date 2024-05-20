@@ -1758,6 +1758,13 @@ public:
 
   NodeId get_node_id () const { return node_id; }
 
+  const std::vector<AST::Attribute> &get_outer_attrs () const
+  {
+    return outer_attrs;
+  }
+
+  std::vector<AST::Attribute> &get_outer_attrs () { return outer_attrs; }
+
 protected:
   // pure virtual clone implementation
   virtual StructExprField *clone_struct_expr_field_impl () const = 0;
@@ -1765,6 +1772,12 @@ protected:
   StructExprField () : node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
+  StructExprField (AST::AttrVec outer_attrs)
+    : outer_attrs (std::move (outer_attrs)),
+      node_id (Analysis::Mappings::get ().get_next_node_id ())
+  {}
+
+  AST::AttrVec outer_attrs;
   NodeId node_id;
 };
 
@@ -1775,9 +1788,10 @@ class StructExprFieldIdentifier : public StructExprField
   location_t locus;
 
 public:
-  StructExprFieldIdentifier (Identifier field_identifier, location_t locus)
-    : StructExprField (), field_name (std::move (field_identifier)),
-      locus (locus)
+  StructExprFieldIdentifier (Identifier field_identifier,
+			     AST::AttrVec outer_attrs, location_t locus)
+    : StructExprField (std::move (outer_attrs)),
+      field_name (std::move (field_identifier)), locus (locus)
   {}
 
   std::string as_string () const override { return field_name.as_string (); }
@@ -1804,19 +1818,22 @@ class StructExprFieldWithVal : public StructExprField
   std::unique_ptr<Expr> value;
 
 protected:
-  StructExprFieldWithVal (std::unique_ptr<Expr> field_value)
-    : StructExprField (), value (std::move (field_value))
+  StructExprFieldWithVal (std::unique_ptr<Expr> field_value,
+			  AST::AttrVec outer_attrs)
+    : StructExprField (std::move (outer_attrs)), value (std::move (field_value))
   {}
 
   // Copy constructor requires clone
   StructExprFieldWithVal (StructExprFieldWithVal const &other)
-    : value (other.value->clone_expr ())
+    : StructExprField (other.get_outer_attrs ()),
+      value (other.value->clone_expr ())
   {}
 
   // Overload assignment operator to clone unique_ptr
   StructExprFieldWithVal &operator= (StructExprFieldWithVal const &other)
   {
     value = other.value->clone_expr ();
+    outer_attrs = other.get_outer_attrs ();
 
     return *this;
   }
@@ -1845,8 +1862,15 @@ class StructExprFieldIdentifierValue : public StructExprFieldWithVal
 public:
   StructExprFieldIdentifierValue (Identifier field_identifier,
 				  std::unique_ptr<Expr> field_value,
+				  AST::AttrVec outer_attrs, location_t locus)
+    : StructExprFieldWithVal (std::move (field_value), std::move (outer_attrs)),
+      field_name (std::move (field_identifier)), locus (locus)
+  {}
+
+  StructExprFieldIdentifierValue (Identifier field_identifier,
+				  std::unique_ptr<Expr> field_value,
 				  location_t locus)
-    : StructExprFieldWithVal (std::move (field_value)),
+    : StructExprFieldWithVal (std::move (field_value), {}),
       field_name (std::move (field_identifier)), locus (locus)
   {}
 
@@ -1876,9 +1900,9 @@ class StructExprFieldIndexValue : public StructExprFieldWithVal
 public:
   StructExprFieldIndexValue (TupleIndex tuple_index,
 			     std::unique_ptr<Expr> field_value,
-			     location_t locus)
-    : StructExprFieldWithVal (std::move (field_value)), index (tuple_index),
-      locus (locus)
+			     AST::AttrVec outer_attrs, location_t locus)
+    : StructExprFieldWithVal (std::move (field_value), std::move (outer_attrs)),
+      index (tuple_index), locus (locus)
   {}
 
   std::string as_string () const override;

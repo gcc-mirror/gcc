@@ -11699,6 +11699,7 @@ template <typename ManagedTokenSource>
 std::unique_ptr<AST::StructExprField>
 Parser<ManagedTokenSource>::parse_struct_expr_field ()
 {
+  AST::AttrVec outer_attrs = parse_outer_attributes ();
   const_TokenPtr t = lexer.peek_token ();
   switch (t->get_id ())
     {
@@ -11724,6 +11725,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 	  return std::unique_ptr<AST::StructExprFieldIdentifierValue> (
 	    new AST::StructExprFieldIdentifierValue (std::move (ident),
 						     std::move (expr),
+						     std::move (outer_attrs),
 						     t->get_locus ()));
 	}
       else
@@ -11734,6 +11736,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 
 	  return std::unique_ptr<AST::StructExprFieldIdentifier> (
 	    new AST::StructExprFieldIdentifier (std::move (ident),
+						std::move (outer_attrs),
 						t->get_locus ()));
 	}
       case INT_LITERAL: {
@@ -11761,6 +11764,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_field ()
 
 	return std::unique_ptr<AST::StructExprFieldIndexValue> (
 	  new AST::StructExprFieldIndexValue (index, std::move (expr),
+					      std::move (outer_attrs),
 					      t->get_locus ()));
       }
     case DOT_DOT:
@@ -14082,6 +14086,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
       /* technically this would give a struct base-only struct, but this
        * algorithm should work too. As such, AST type not happening. */
     case IDENTIFIER:
+    case HASH:
       case INT_LITERAL: {
 	// struct with struct expr fields
 
