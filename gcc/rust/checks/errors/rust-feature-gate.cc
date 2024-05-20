@@ -18,6 +18,7 @@
 
 #include "rust-feature-gate.h"
 #include "rust-abi.h"
+#include "rust-attribute-values.h"
 #include "rust-ast-visitor.h"
 #include "rust-feature.h"
 
@@ -124,6 +125,19 @@ FeatureGate::check_rustc_attri (const std::vector<AST::Attribute> &attributes)
 }
 
 void
+FeatureGate::check_may_dangle_attribute (
+  const std::vector<AST::Attribute> &attributes)
+{
+  for (const AST::Attribute &attr : attributes)
+    {
+      if (attr.get_path ().as_string () == Values::Attributes::MAY_DANGLE)
+	gate (Feature::Name::DROPCK_EYEPATCH, attr.get_locus (),
+	      "`may_dangle` has unstable semantics and may be removed in the "
+	      "future");
+    }
+}
+
+void
 FeatureGate::visit (AST::MacroRulesDefinition &rules_def)
 {
   check_rustc_attri (rules_def.get_outer_attrs ());
@@ -153,6 +167,8 @@ FeatureGate::visit (AST::TraitImpl &impl)
   if (impl.is_exclam ())
     gate (Feature::Name::NEGATIVE_IMPLS, impl.get_locus (),
 	  "negative_impls are not yet implemented");
+
+  AST::DefaultASTVisitor::visit (impl);
 };
 
 void
@@ -162,6 +178,27 @@ FeatureGate::visit (AST::BoxExpr &expr)
     Feature::Name::BOX_SYNTAX, expr.get_locus (),
     "box expression syntax is experimental; you can call `Box::new` instead");
   AST::DefaultASTVisitor::visit (expr);
+}
+
+void
+FeatureGate::visit (AST::LifetimeParam &lifetime_param)
+{
+  check_may_dangle_attribute (lifetime_param.get_outer_attrs ());
+  AST::DefaultASTVisitor::visit (lifetime_param);
+}
+
+void
+FeatureGate::visit (AST::ConstGenericParam &const_param)
+{
+  check_may_dangle_attribute (const_param.get_outer_attrs ());
+  AST::DefaultASTVisitor::visit (const_param);
+}
+
+void
+FeatureGate::visit (AST::TypeParam &param)
+{
+  check_may_dangle_attribute (param.get_outer_attrs ());
+  AST::DefaultASTVisitor::visit (param);
 }
 
 } // namespace Rust

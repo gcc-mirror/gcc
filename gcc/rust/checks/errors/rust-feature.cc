@@ -48,6 +48,9 @@ Feature::create (Feature::Name name)
     case Feature::Name::BOX_SYNTAX:
       return Feature (Feature::Name::BOX_SYNTAX, Feature::State::ACTIVE,
 		      "box_syntax", "1.0.0", 49733, tl::nullopt, "");
+    case Feature::Name::DROPCK_EYEPATCH:
+      return Feature (Feature::Name::DROPCK_EYEPATCH, Feature::State::ACTIVE,
+		      "dropck_eyepatch", "1.10.0", 34761, tl::nullopt, "");
     default:
       rust_unreachable ();
     }
@@ -66,6 +69,7 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"lang_items", Feature::Name::LANG_ITEMS},
   {"no_core", Feature::Name::NO_CORE},
   {"box_syntax", Feature::Name::BOX_SYNTAX},
+  {"dropck_eyepatch", Feature::Name::DROPCK_EYEPATCH},
 }; // namespace Rust
 
 tl::optional<Feature::Name>

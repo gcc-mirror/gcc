@@ -55,6 +55,7 @@ public:
   static constexpr auto &UNSTABLE = "unstable";
   static constexpr auto &RUSTC_CONST_STABLE = "rustc_const_stable";
   static constexpr auto &RUSTC_CONST_UNSTABLE = "rustc_const_unstable";
+  static constexpr auto &MAY_DANGLE = "may_dangle";
 };
 } // namespace Values
 } // namespace Rust

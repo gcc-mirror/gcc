@@ -40,8 +40,8 @@ public:
   void visit (AST::AttrInputMetaItemContainer &input) override {}
   void visit (AST::IdentifierExpr &ident_expr) override {}
   void visit (AST::Lifetime &lifetime) override {}
-  void visit (AST::LifetimeParam &lifetime_param) override {}
-  void visit (AST::ConstGenericParam &const_param) override {}
+  void visit (AST::LifetimeParam &lifetime_param) override;
+  void visit (AST::ConstGenericParam &const_param) override;
   void visit (AST::PathInExpression &path) override {}
   void visit (AST::TypePathSegment &segment) override {}
   void visit (AST::TypePathSegmentGeneric &segment) override {}
@@ -104,7 +104,7 @@ public:
   void visit (AST::MatchExpr &expr) override {}
   void visit (AST::AwaitExpr &expr) override {}
   void visit (AST::AsyncBlockExpr &expr) override {}
-  void visit (AST::TypeParam &param) override {}
+  void visit (AST::TypeParam &param) override;
   void visit (AST::LifetimeWhereClauseItem &item) override {}
   void visit (AST::TypeBoundWhereClauseItem &item) override {}
   void visit (AST::Module &module) override {}
@@ -188,6 +188,8 @@ public:
 private:
   void gate (Feature::Name name, location_t loc, const std::string &error_msg);
   void check_rustc_attri (const std::vector<AST::Attribute> &attributes);
+  void
+  check_may_dangle_attribute (const std::vector<AST::Attribute> &attributes);
   std::set<Feature::Name> valid_features;
 };
 } // namespace Rust
