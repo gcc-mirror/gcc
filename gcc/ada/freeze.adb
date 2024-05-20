@@ -8872,7 +8872,8 @@ package body Freeze is
             end if;
 
             --  The current scope may be that of a constrained component of
-            --  an enclosing record declaration, or of a loop of an enclosing
+            --  an enclosing record declaration, or a block of an enclosing
+            --  declare expression in Ada 2022, or of a loop of an enclosing
             --  quantified expression or aggregate with an iterated component
             --  in Ada 2022, which is above the current scope in the scope
             --  stack. Indeed in the context of a quantified expression or
@@ -8884,7 +8885,7 @@ package body Freeze is
 
             if not Is_Compilation_Unit (Current_Scope)
               and then (Is_Record_Type (Scope (Current_Scope))
-                         or else (Ekind (Current_Scope) = E_Loop
+                         or else (Ekind (Current_Scope) in E_Block | E_Loop
                                    and then Is_Internal (Current_Scope)))
             then
                Pos := Pos - 1;
