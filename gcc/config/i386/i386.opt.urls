@@ -238,12 +238,6 @@ UrlSuffix(gcc/x86-Options.html#index-mavx2)
 mavx512f
 UrlSuffix(gcc/x86-Options.html#index-mavx512f)
 
-mavx512pf
-UrlSuffix(gcc/x86-Options.html#index-mavx512pf)
-
-mavx512er
-UrlSuffix(gcc/x86-Options.html#index-mavx512er)
-
 mavx512cd
 UrlSuffix(gcc/x86-Options.html#index-mavx512cd)
 
@@ -261,12 +255,6 @@ UrlSuffix(gcc/x86-Options.html#index-mavx512ifma)
 
 mavx512vbmi
 UrlSuffix(gcc/x86-Options.html#index-mavx512vbmi)
-
-mavx5124fmaps
-UrlSuffix(gcc/x86-Options.html#index-mavx5124fmaps)
-
-mavx5124vnniw
-UrlSuffix(gcc/x86-Options.html#index-mavx5124vnniw)
 
 mavx512vpopcntdq
 UrlSuffix(gcc/x86-Options.html#index-mavx512vpopcntdq)
@@ -408,9 +396,6 @@ UrlSuffix(gcc/x86-Options.html#index-mrdrnd)
 
 mf16c
 UrlSuffix(gcc/x86-Options.html#index-mf16c)
-
-mprefetchwt1
-UrlSuffix(gcc/x86-Options.html#index-mprefetchwt1)
 
 mfentry
 UrlSuffix(gcc/x86-Options.html#index-mfentry)
