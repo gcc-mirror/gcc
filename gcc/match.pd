@@ -2023,12 +2023,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (mult (convert @0) @1)))
 
 /* Narrow integer multiplication by a zero_one_valued_p operand.
-   Multiplication by [0,1] is guaranteed not to overflow.  */
+   Multiplication by [0,1] is guaranteed not to overflow except for
+   1bit signed types.  */
 (simplify
  (convert (mult@0 zero_one_valued_p@1 INTEGER_CST@2))
  (if (INTEGRAL_TYPE_P (type)
       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
-      && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@0)))
+      && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@0))
+      && (TYPE_UNSIGNED (type) || TYPE_PRECISION (type) > 1))
   (mult (convert @1) (convert @2))))
 
 /* (X << C) != 0 can be simplified to X, when C is zero_one_valued_p.
