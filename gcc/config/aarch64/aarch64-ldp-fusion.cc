@@ -368,7 +368,7 @@ struct aarch64_pair_fusion : public pair_fusion
 };
 
 // State used by the pass for a given basic block.
-struct ldp_bb_info
+struct pair_fusion_bb_info
 {
   using def_hash = nofree_ptr_hash<def_info>;
   using expr_key_t = pair_hash<tree_operand_hash, int_hash<int, -1, -2>>;
@@ -389,14 +389,14 @@ struct ldp_bb_info
 
   static const size_t obstack_alignment = sizeof (void *);
 
-  ldp_bb_info (bb_info *bb, pair_fusion *d)
+  pair_fusion_bb_info (bb_info *bb, pair_fusion *d)
     : m_bb (bb), m_pass (d), m_emitted_tombstone (false)
   {
     obstack_specify_allocation (&m_obstack, OBSTACK_CHUNK_SIZE,
 				obstack_alignment, obstack_chunk_alloc,
 				obstack_chunk_free);
   }
-  ~ldp_bb_info ()
+  ~pair_fusion_bb_info ()
   {
     obstack_free (&m_obstack, nullptr);
 
@@ -484,7 +484,7 @@ aarch64_pair_fusion::gen_pair (rtx *pats, rtx writeback, bool load_p)
 }
 
 splay_tree_node<access_record *> *
-ldp_bb_info::node_alloc (access_record *access)
+pair_fusion_bb_info::node_alloc (access_record *access)
 {
   using T = splay_tree_node<access_record *>;
   void *addr = obstack_alloc (&m_obstack, sizeof (T));
@@ -532,7 +532,7 @@ drop_writeback (rtx mem)
 // RTX_AUTOINC addresses.  The interface is like strip_offset except we take a
 // MEM so that we know the mode of the access.
 static rtx
-ldp_strip_offset (rtx mem, poly_int64 *offset)
+pair_mem_strip_offset (rtx mem, poly_int64 *offset)
 {
   rtx addr = XEXP (mem, 0);
 
@@ -658,7 +658,8 @@ access_group::track (Alloc alloc_node, poly_int64 offset, insn_info *insn)
 // MEM_EXPR base (i.e. a tree decl) relative to which we can track the access.
 // LFS is used as part of the key to the hash table, see track_access.
 bool
-ldp_bb_info::track_via_mem_expr (insn_info *insn, rtx mem, lfs_fields lfs)
+pair_fusion_bb_info::track_via_mem_expr (insn_info *insn, rtx mem,
+					 lfs_fields lfs)
 {
   if (!MEM_EXPR (mem) || !MEM_OFFSET_KNOWN_P (mem))
     return false;
@@ -706,7 +707,7 @@ ldp_bb_info::track_via_mem_expr (insn_info *insn, rtx mem, lfs_fields lfs)
 // this basic block.  LOAD_P is true if the access is a load, and MEM
 // is the mem rtx that occurs in INSN.
 void
-ldp_bb_info::track_access (insn_info *insn, bool load_p, rtx mem)
+pair_fusion_bb_info::track_access (insn_info *insn, bool load_p, rtx mem)
 {
   // We can't combine volatile MEMs, so punt on these.
   if (MEM_VOLATILE_P (mem))
@@ -739,7 +740,7 @@ ldp_bb_info::track_access (insn_info *insn, bool load_p, rtx mem)
   poly_int64 mem_off;
   rtx addr = XEXP (mem, 0);
   const bool autoinc_p = GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC;
-  rtx base = ldp_strip_offset (mem, &mem_off);
+  rtx base = pair_mem_strip_offset (mem, &mem_off);
   if (!REG_P (base))
     return;
 
@@ -1099,7 +1100,7 @@ def_upwards_move_range (def_info *def)
 // Class that implements a state machine for building the changes needed to form
 // a store pair instruction.  This allows us to easily build the changes in
 // program order, as required by rtl-ssa.
-struct stp_change_builder
+struct store_change_builder
 {
   enum class state
   {
@@ -1126,9 +1127,9 @@ struct stp_change_builder
 
   bool done () const { return m_state == state::DONE; }
 
-  stp_change_builder (insn_info *insns[2],
-		      insn_info *repurpose,
-		      insn_info *dest)
+  store_change_builder (insn_info *insns[2],
+			insn_info *repurpose,
+			insn_info *dest)
     : m_state (state::FIRST), m_insns { insns[0], insns[1] },
       m_repurpose (repurpose), m_dest (dest), m_use (nullptr) {}
 
@@ -1402,7 +1403,7 @@ extract_writebacks (bool load_p, rtx pats[2], int changed)
       const bool autoinc_p = GET_RTX_CLASS (GET_CODE (addr)) == RTX_AUTOINC;
 
       poly_int64 offset;
-      rtx this_base = ldp_strip_offset (mem, &offset);
+      rtx this_base = pair_mem_strip_offset (mem, &offset);
       gcc_assert (REG_P (this_base));
       if (base_reg)
 	gcc_assert (rtx_equal_p (base_reg, this_base));
@@ -1580,7 +1581,7 @@ pair_fusion::find_trailing_add (insn_info *insns[2],
 // We just emitted a tombstone with uid UID, track it in a bitmap for
 // this BB so we can easily identify it later when cleaning up tombstones.
 void
-ldp_bb_info::track_tombstone (int uid)
+pair_fusion_bb_info::track_tombstone (int uid)
 {
   if (!m_emitted_tombstone)
     {
@@ -1780,7 +1781,7 @@ fixup_debug_uses (obstack_watermark &attempt,
 	  gcc_checking_assert (GET_RTX_CLASS (GET_CODE (XEXP (mem, 0)))
 			       == RTX_AUTOINC);
 
-	  base = ldp_strip_offset (mem, &offset);
+	  base = pair_mem_strip_offset (mem, &offset);
 	  gcc_checking_assert (REG_P (base) && REGNO (base) == base_regno);
 	}
       fixup_debug_use (attempt, use, def, base, offset);
@@ -1916,12 +1917,12 @@ fixup_debug_uses (obstack_watermark &attempt,
 // BASE gives the chosen base candidate for the pair and MOVE_RANGE is
 // a singleton range which says where to place the pair.
 bool
-ldp_bb_info::fuse_pair (bool load_p,
-			unsigned access_size,
-			int writeback,
-			insn_info *i1, insn_info *i2,
-			base_cand &base,
-			const insn_range_info &move_range)
+pair_fusion_bb_info::fuse_pair (bool load_p,
+				unsigned access_size,
+				int writeback,
+				insn_info *i1, insn_info *i2,
+				base_cand &base,
+				const insn_range_info &move_range)
 {
   auto attempt = crtl->ssa->new_change_attempt ();
 
@@ -2157,10 +2158,10 @@ ldp_bb_info::fuse_pair (bool load_p,
     }
   else
     {
-      using Action = stp_change_builder::action;
+      using Action = store_change_builder::action;
       insn_info *store_to_change = try_repurpose_store (first, second,
 							move_range);
-      stp_change_builder builder (insns, store_to_change, pair_dst);
+      store_change_builder builder (insns, store_to_change, pair_dst);
       insn_change *change;
       set_info *new_set = nullptr;
       for (; !builder.done (); builder.advance ())
@@ -2180,9 +2181,9 @@ ldp_bb_info::fuse_pair (bool load_p,
 	      auto d2 = drop_memory_access (input_defs[1]);
 	      change->new_defs = merge_access_arrays (attempt, d1, d2);
 	      gcc_assert (change->new_defs.is_valid ());
-	      def_info *stp_def = memory_access (change->insn ()->defs ());
+	      def_info *store_def = memory_access (change->insn ()->defs ());
 	      change->new_defs = insert_access (attempt,
-						stp_def,
+						store_def,
 						change->new_defs);
 	      gcc_assert (change->new_defs.is_valid ());
 	      change->move_range = move_range;
@@ -2593,7 +2594,7 @@ pair_fusion::get_viable_bases (insn_info *insns[2],
     {
       const bool is_lower = (i == reversed);
       poly_int64 poly_off;
-      rtx base = ldp_strip_offset (cand_mems[i], &poly_off);
+      rtx base = pair_mem_strip_offset (cand_mems[i], &poly_off);
       if (GET_RTX_CLASS (GET_CODE (XEXP (cand_mems[i], 0))) == RTX_AUTOINC)
 	writeback |= (1 << i);
 
@@ -2601,7 +2602,7 @@ pair_fusion::get_viable_bases (insn_info *insns[2],
 	continue;
 
       // Punt on accesses relative to eliminable regs.  See the comment in
-      // ldp_bb_info::track_access for a detailed explanation of this.
+      // pair_fusion_bb_info::track_access for a detailed explanation of this.
       if (!reload_completed
 	  && (REGNO (base) == FRAME_POINTER_REGNUM
 	      || REGNO (base) == ARG_POINTER_REGNUM))
@@ -2687,8 +2688,8 @@ pair_fusion::get_viable_bases (insn_info *insns[2],
 // ACCESS_SIZE gives the (common) size of a single access, LOAD_P is true
 // if the accesses are both loads, otherwise they are both stores.
 bool
-ldp_bb_info::try_fuse_pair (bool load_p, unsigned access_size,
-			    insn_info *i1, insn_info *i2)
+pair_fusion_bb_info::try_fuse_pair (bool load_p, unsigned access_size,
+				    insn_info *i1, insn_info *i2)
 {
   if (dump_file)
     fprintf (dump_file, "analyzing pair (load=%d): (%d,%d)\n",
@@ -3071,7 +3072,7 @@ debug (const insn_list_t &l)
 // we can't re-order them anyway, so provided earlier passes have cleaned up
 // redundant loads, we shouldn't miss opportunities by doing this.
 void
-ldp_bb_info::merge_pairs (insn_list_t &left_list,
+pair_fusion_bb_info::merge_pairs (insn_list_t &left_list,
 			  insn_list_t &right_list,
 			  bool load_p,
 			  unsigned access_size)
@@ -3118,7 +3119,7 @@ ldp_bb_info::merge_pairs (insn_list_t &left_list,
 // of accesses.  If we find two sets of adjacent accesses, call
 // merge_pairs.
 void
-ldp_bb_info::transform_for_base (int encoded_lfs,
+pair_fusion_bb_info::transform_for_base (int encoded_lfs,
 				 access_group &group)
 {
   const auto lfs = decode_lfs (encoded_lfs);
@@ -3147,7 +3148,7 @@ ldp_bb_info::transform_for_base (int encoded_lfs,
 // and remove all the tombstone insns, being sure to reparent any uses
 // of mem to previous defs when we do this.
 void
-ldp_bb_info::cleanup_tombstones ()
+pair_fusion_bb_info::cleanup_tombstones ()
 {
   // No need to do anything if we didn't emit a tombstone insn for this BB.
   if (!m_emitted_tombstone)
@@ -3175,7 +3176,7 @@ ldp_bb_info::cleanup_tombstones ()
 
 template<typename Map>
 void
-ldp_bb_info::traverse_base_map (Map &map)
+pair_fusion_bb_info::traverse_base_map (Map &map)
 {
   for (auto kv : map)
     {
@@ -3186,7 +3187,7 @@ ldp_bb_info::traverse_base_map (Map &map)
 }
 
 void
-ldp_bb_info::transform ()
+pair_fusion_bb_info::transform ()
 {
   traverse_base_map (expr_map);
   traverse_base_map (def_map);
@@ -3374,7 +3375,7 @@ void pair_fusion::process_block (bb_info *bb)
   const bool track_loads = track_loads_p ();
   const bool track_stores = track_stores_p ();
 
-  ldp_bb_info bb_state (bb, this);
+  pair_fusion_bb_info bb_state (bb, this);
 
   for (auto insn : bb->nondebug_insns ())
     {
