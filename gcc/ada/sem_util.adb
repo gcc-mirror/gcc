@@ -12119,11 +12119,14 @@ package body Sem_Util is
            and then Is_Constrained (Etype (Subtype_Mark (N)));
 
       --  For all other names, it is sufficient to have a constrained
-      --  Unchecked_Union nominal subtype.
+      --  Unchecked_Union nominal subtype, unless it is incomplete or
+      --  private because it cannot have a known discriminant part in
+      --  this case (RM B.3.3 (11/2)).
 
       else
          return Is_Unchecked_Union (Etype (N))
-           and then Is_Constrained (Etype (N));
+           and then Is_Constrained (Etype (N))
+           and then not Is_Incomplete_Or_Private_Type (Etype (N));
       end if;
    end Has_Inferable_Discriminants;
 

@@ -1570,26 +1570,17 @@ package body Exp_Ch4 is
            (Outer_Type => Typ, Nod => Nod, Comp_Type => Component_Type (Typ),
             Lhs => L, Rhs => R);
 
-         --  If some (sub)component is an unchecked_union, the whole operation
-         --  will raise program error.
+         --  This is necessary to give the warning about Program_Error being
+         --  raised when some (sub)component is an unchecked_union.
 
-         if Nkind (Test) = N_Raise_Program_Error then
+         Preserve_Comes_From_Source (Test, Nod);
 
-            --  This node is going to be inserted at a location where a
-            --  statement is expected: clear its Etype so analysis will set
-            --  it to the expected Standard_Void_Type.
-
-            Set_Etype (Test, Empty);
-            return Test;
-
-         else
-            return
-              Make_Implicit_If_Statement (Nod,
-                Condition       => Make_Op_Not (Loc, Right_Opnd => Test),
-                Then_Statements => New_List (
-                  Make_Simple_Return_Statement (Loc,
-                    Expression => New_Occurrence_Of (Standard_False, Loc))));
-         end if;
+         return
+           Make_Implicit_If_Statement (Nod,
+             Condition       => Make_Op_Not (Loc, Right_Opnd => Test),
+             Then_Statements => New_List (
+               Make_Simple_Return_Statement (Loc,
+                 Expression => New_Occurrence_Of (Standard_False, Loc))));
       end Component_Equality;
 
       ------------------
