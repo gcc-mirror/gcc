@@ -1,8 +1,9 @@
 /* { dg-add-options vect_early_break } */
 /* { dg-require-effective-target vect_early_break_hw } */
 /* { dg-require-effective-target vect_long_long } */
+/* { dg-additional-options "-mtune=generic-ooo" { target riscv*-*-* } } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { xfail riscv*-*-* } } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
 
 #include "tree-vect.h"
 
@@ -74,4 +75,3 @@ int main ()
 
   return 0;
 }
-
