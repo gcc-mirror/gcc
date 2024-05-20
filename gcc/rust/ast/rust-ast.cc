@@ -2399,11 +2399,11 @@ LifetimeParam::as_string () const
 {
   std::string str ("LifetimeParam: ");
 
-  str += "\n Outer attribute: ";
+  str += "\n Outer attribute:";
   if (!has_outer_attribute ())
     str += "none";
-  else
-    str += outer_attr.as_string ();
+  for (auto &attr : outer_attrs)
+    str += " " + attr.as_string ();
 
   str += "\n Lifetime: " + lifetime.as_string ();
 
@@ -2495,11 +2495,11 @@ TypeParam::as_string () const
 {
   std::string str ("TypeParam: ");
 
-  str += "\n Outer attribute: ";
+  str += "\n Outer attribute:";
   if (!has_outer_attribute ())
     str += "none";
-  else
-    str += outer_attr.as_string ();
+  for (auto &attr : outer_attrs)
+    str += " " + attr.as_string ();
 
   str += "\n Identifier: " + type_representation.as_string ();
 

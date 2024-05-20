@@ -347,21 +347,21 @@ class ConstGenericParam : public GenericParam
    */
   GenericArg default_value;
 
-  Attribute outer_attr;
+  AST::AttrVec outer_attrs;
   location_t locus;
 
 public:
   ConstGenericParam (Identifier name, std::unique_ptr<AST::Type> type,
-		     GenericArg default_value, Attribute outer_attr,
+		     GenericArg default_value, AST::AttrVec outer_attrs,
 		     location_t locus)
     : name (name), type (std::move (type)),
-      default_value (std::move (default_value)), outer_attr (outer_attr),
+      default_value (std::move (default_value)), outer_attrs (outer_attrs),
       locus (locus)
   {}
 
   ConstGenericParam (const ConstGenericParam &other)
     : GenericParam (), name (other.name), type (other.type->clone_type ()),
-      default_value (other.default_value), outer_attr (other.outer_attr),
+      default_value (other.default_value), outer_attrs (other.outer_attrs),
       locus (other.locus)
   {}
 
@@ -370,7 +370,7 @@ public:
 
   const Identifier &get_name () const { return name; }
 
-  Attribute &get_outer_attribute () { return outer_attr; }
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
 
   AST::Type &get_type ()
   {

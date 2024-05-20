@@ -3093,7 +3093,7 @@ template <typename EndTokenPred>
 std::unique_ptr<AST::GenericParam>
 Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 {
-  auto outer_attrs = parse_outer_attribute ();
+  auto outer_attrs = parse_outer_attributes ();
   std::unique_ptr<AST::GenericParam> param;
   auto token = lexer.peek_token ();
 
@@ -3460,8 +3460,8 @@ template <typename ManagedTokenSource>
 AST::LifetimeParam
 Parser<ManagedTokenSource>::parse_lifetime_param ()
 {
-  // parse outer attribute, which is optional and may not exist
-  AST::Attribute outer_attr = parse_outer_attribute ();
+  // parse outer attributes, which are optional and may not exist
+  auto outer_attrs = parse_outer_attributes ();
 
   // save lifetime token - required
   const_TokenPtr lifetime_tok = lexer.peek_token ();
@@ -3484,7 +3484,7 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
     }
 
   return AST::LifetimeParam (std::move (lifetime), std::move (lifetime_bounds),
-			     std::move (outer_attr),
+			     std::move (outer_attrs),
 			     lifetime_tok->get_locus ());
 }
 
@@ -3561,8 +3561,8 @@ template <typename ManagedTokenSource>
 std::unique_ptr<AST::TypeParam>
 Parser<ManagedTokenSource>::parse_type_param ()
 {
-  // parse outer attribute, which is optional and may not exist
-  AST::Attribute outer_attr = parse_outer_attribute ();
+  // parse outer attributes, which are optional and may not exist
+  auto outer_attrs = parse_outer_attributes ();
 
   const_TokenPtr identifier_tok = lexer.peek_token ();
   if (identifier_tok->get_id () != IDENTIFIER)
@@ -3605,7 +3605,7 @@ Parser<ManagedTokenSource>::parse_type_param ()
   return std::unique_ptr<AST::TypeParam> (
     new AST::TypeParam (std::move (ident), identifier_tok->get_locus (),
 			std::move (type_param_bounds), std::move (type),
-			std::move (outer_attr)));
+			std::move (outer_attrs)));
 }
 
 /* Parses regular (i.e. non-generic) parameters in functions or methods. Also
