@@ -1753,7 +1753,10 @@ Single-image mode, i.e. @code{num_images()} is always one.
 
 @item @samp{lib}
 Library-based coarray parallelization; a suitable GNU Fortran coarray
-library needs to be linked.
+library such as @url{http://opencoarrays.org} needs to be linked.
+Alternatively, GCC's @code{libcaf_single} library can be linked,
+albeit it only supports a single image.
+
 @end table
 
 
