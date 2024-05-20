@@ -47,6 +47,7 @@ public:
     LANG_ITEMS,
     NO_CORE,
     BOX_SYNTAX,
+    DROPCK_EYEPATCH,
   };
 
   const std::string &as_string () { return m_name_str; }
