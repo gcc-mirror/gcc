@@ -3090,7 +3090,9 @@ gfc_conv_intrinsic_bound (gfc_se * se, gfc_expr * expr, enum gfc_isym_id op)
 				      lbound, gfc_index_one_node);
 	}
       else if (op == GFC_ISYM_SHAPE)
-	se->expr = size;
+	se->expr = fold_build2_loc (input_location, MAX_EXPR,
+				    gfc_array_index_type, size,
+				    gfc_index_zero_node);
       else
 	gcc_unreachable ();
 
