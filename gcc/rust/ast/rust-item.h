@@ -53,7 +53,7 @@ class TypeParam : public GenericParam
 {
   // bool has_outer_attribute;
   // std::unique_ptr<Attribute> outer_attr;
-  Attribute outer_attr;
+  AST::AttrVec outer_attrs;
 
   Identifier type_representation;
 
@@ -77,17 +77,17 @@ public:
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
 
   // Returns whether the type param has an outer attribute.
-  bool has_outer_attribute () const { return !outer_attr.is_empty (); }
+  bool has_outer_attribute () const { return !outer_attrs.empty (); }
 
-  Attribute &get_outer_attribute () { return outer_attr; }
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
 
   TypeParam (Identifier type_representation, location_t locus = UNDEF_LOCATION,
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
-	     Attribute outer_attr = Attribute::create_empty ())
+	     AST::AttrVec outer_attrs = {})
     : GenericParam (Analysis::Mappings::get ().get_next_node_id ()),
-      outer_attr (std::move (outer_attr)),
+      outer_attrs (std::move (outer_attrs)),
       type_representation (std::move (type_representation)),
       type_param_bounds (std::move (type_param_bounds)),
       type (std::move (type)), locus (locus)
@@ -95,7 +95,7 @@ public:
 
   // Copy constructor uses clone
   TypeParam (TypeParam const &other)
-    : GenericParam (other.node_id), outer_attr (other.outer_attr),
+    : GenericParam (other.node_id), outer_attrs (other.outer_attrs),
       type_representation (other.type_representation), locus (other.locus)
   {
     // guard to prevent null pointer dereference
@@ -111,7 +111,7 @@ public:
   TypeParam &operator= (TypeParam const &other)
   {
     type_representation = other.type_representation;
-    outer_attr = other.outer_attr;
+    outer_attrs = other.outer_attrs;
     locus = other.locus;
     node_id = other.node_id;
 

@@ -1602,7 +1602,7 @@ class LifetimeParam : public GenericParam
 {
   Lifetime lifetime;
   std::vector<Lifetime> lifetime_bounds;
-  Attribute outer_attr;
+  AST::AttrVec outer_attrs;
   location_t locus;
 
 public:
@@ -1610,7 +1610,7 @@ public:
 
   Lifetime &get_lifetime () { return lifetime; }
 
-  Attribute &get_outer_attribute () { return outer_attr; }
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
 
   // Returns whether the lifetime param has any lifetime bounds.
   bool has_lifetime_bounds () const { return !lifetime_bounds.empty (); }
@@ -1618,13 +1618,12 @@ public:
   std::vector<Lifetime> &get_lifetime_bounds () { return lifetime_bounds; }
 
   // Returns whether the lifetime param has an outer attribute.
-  bool has_outer_attribute () const { return !outer_attr.is_empty (); }
+  bool has_outer_attribute () const { return !outer_attrs.empty (); }
 
   // Creates an error state lifetime param.
   static LifetimeParam create_error ()
   {
-    return LifetimeParam (Lifetime::error (), {}, Attribute::create_empty (),
-			  UNDEF_LOCATION);
+    return LifetimeParam (Lifetime::error (), {}, {}, UNDEF_LOCATION);
   }
 
   // Returns whether the lifetime param is in an error state.
@@ -1632,10 +1631,10 @@ public:
 
   // Constructor
   LifetimeParam (Lifetime lifetime, std::vector<Lifetime> lifetime_bounds,
-		 Attribute outer_attr, location_t locus)
+		 AST::AttrVec outer_attrs, location_t locus)
     : lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)),
-      outer_attr (std::move (outer_attr)), locus (locus)
+      outer_attrs (std::move (outer_attrs)), locus (locus)
   {}
 
   std::string as_string () const override;

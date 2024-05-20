@@ -69,7 +69,7 @@ DefaultASTVisitor::visit (AST::Lifetime &lifetime)
 void
 DefaultASTVisitor::visit (AST::LifetimeParam &lifetime_param)
 {
-  visit (lifetime_param.get_outer_attribute ());
+  visit_outer_attrs (lifetime_param);
   visit (lifetime_param.get_lifetime ());
   for (auto &lifetime_bound : lifetime_param.get_lifetime_bounds ())
     visit (lifetime_bound);
@@ -78,7 +78,7 @@ DefaultASTVisitor::visit (AST::LifetimeParam &lifetime_param)
 void
 DefaultASTVisitor::visit (AST::ConstGenericParam &const_param)
 {
-  visit (const_param.get_outer_attribute ());
+  visit_outer_attrs (const_param);
   if (const_param.has_type ())
     visit (const_param.get_type ());
   if (const_param.has_default_value ())
@@ -665,7 +665,7 @@ DefaultASTVisitor::visit (AST::AsyncBlockExpr &expr)
 void
 DefaultASTVisitor::visit (AST::TypeParam &param)
 {
-  visit (param.get_outer_attribute ());
+  visit_outer_attrs (param);
   for (auto &bound : param.get_type_param_bounds ())
     visit (bound);
   if (param.has_type ())

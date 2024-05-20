@@ -476,6 +476,7 @@ TokenCollector::visit (LifetimeParam &lifetime_param)
 
   // TODO what to do with outer attr? They are not mentioned in the reference.
 
+  visit_items_as_lines (lifetime_param.get_outer_attrs ());
   auto lifetime = lifetime_param.get_lifetime ();
   visit (lifetime);
 
@@ -495,6 +496,7 @@ TokenCollector::visit (ConstGenericParam &param)
   // Syntax:
   // const IDENTIFIER : Type ( = Block | IDENTIFIER | -?LITERAL )?
 
+  visit_items_as_lines (param.get_outer_attrs ());
   push (Rust::Token::make (CONST, param.get_locus ()));
   auto id = param.get_name ().as_string ();
   push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (id)));
@@ -1509,6 +1511,7 @@ TokenCollector::visit (TypeParam &param)
   // TypeParamBounds :
   //    TypeParamBound ( + TypeParamBound )* +?
 
+  visit_items_as_lines (param.get_outer_attrs ());
   auto id = param.get_type_representation ().as_string ();
   push (Rust::Token::make_identifier (param.get_locus (), std::move (id)));
   if (param.has_type_param_bounds ())
