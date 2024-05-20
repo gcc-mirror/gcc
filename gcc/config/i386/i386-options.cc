@@ -115,8 +115,6 @@ along with GCC; see the file COPYING3.  If not see
 #define m_HASWELL (HOST_WIDE_INT_1U<<PROCESSOR_HASWELL)
 #define m_BONNELL (HOST_WIDE_INT_1U<<PROCESSOR_BONNELL)
 #define m_SILVERMONT (HOST_WIDE_INT_1U<<PROCESSOR_SILVERMONT)
-#define m_KNL (HOST_WIDE_INT_1U<<PROCESSOR_KNL)
-#define m_KNM (HOST_WIDE_INT_1U<<PROCESSOR_KNM)
 #define m_SKYLAKE (HOST_WIDE_INT_1U<<PROCESSOR_SKYLAKE)
 #define m_SKYLAKE_AVX512 (HOST_WIDE_INT_1U<<PROCESSOR_SKYLAKE_AVX512)
 #define m_CANNONLAKE (HOST_WIDE_INT_1U<<PROCESSOR_CANNONLAKE)
@@ -224,8 +222,6 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mwbnoinvd",	OPTION_MASK_ISA2_WBNOINVD },
   { "-mavx512vp2intersect", OPTION_MASK_ISA2_AVX512VP2INTERSECT },
   { "-msgx",		OPTION_MASK_ISA2_SGX },
-  { "-mavx5124vnniw",	OPTION_MASK_ISA2_AVX5124VNNIW },
-  { "-mavx5124fmaps",	OPTION_MASK_ISA2_AVX5124FMAPS },
   { "-mhle",		OPTION_MASK_ISA2_HLE },
   { "-mmovbe",		OPTION_MASK_ISA2_MOVBE },
   { "-mclzero",		OPTION_MASK_ISA2_CLZERO },
@@ -278,8 +274,6 @@ static struct ix86_target_opts isa_opts[] =
   { "-mavx512vl",	OPTION_MASK_ISA_AVX512VL },
   { "-mavx512bw",	OPTION_MASK_ISA_AVX512BW },
   { "-mavx512dq",	OPTION_MASK_ISA_AVX512DQ },
-  { "-mavx512er",	OPTION_MASK_ISA_AVX512ER },
-  { "-mavx512pf",	OPTION_MASK_ISA_AVX512PF },
   { "-mavx512cd",	OPTION_MASK_ISA_AVX512CD },
   { "-mavx512f",	OPTION_MASK_ISA_AVX512F },
   { "-mavx2",		OPTION_MASK_ISA_AVX2 },
@@ -306,7 +300,6 @@ static struct ix86_target_opts isa_opts[] =
   { "-mprfchw",		OPTION_MASK_ISA_PRFCHW },
   { "-mrdseed",		OPTION_MASK_ISA_RDSEED },
   { "-madx",		OPTION_MASK_ISA_ADX },
-  { "-mprefetchwt1",	OPTION_MASK_ISA_PREFETCHWT1 },
   { "-mclflushopt",	OPTION_MASK_ISA_CLFLUSHOPT },
   { "-mxsaves",		OPTION_MASK_ISA_XSAVES },
   { "-mxsavec",		OPTION_MASK_ISA_XSAVEC },
@@ -781,8 +774,6 @@ static const struct processor_costs *processor_cost_table[] =
   &alderlake_cost,
   &alderlake_cost,
   &alderlake_cost,
-  &slm_cost,
-  &slm_cost,
   &skylake_cost,
   &skylake_cost,
   &icelake_cost,
@@ -1030,8 +1021,6 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("pconfig",	OPT_mpconfig),
     IX86_ATTR_ISA ("wbnoinvd",	OPT_mwbnoinvd),
     IX86_ATTR_ISA ("sgx",	OPT_msgx),
-    IX86_ATTR_ISA ("avx5124fmaps", OPT_mavx5124fmaps),
-    IX86_ATTR_ISA ("avx5124vnniw", OPT_mavx5124vnniw),
     IX86_ATTR_ISA ("avx512vpopcntdq", OPT_mavx512vpopcntdq),
     IX86_ATTR_ISA ("avx512vbmi2", OPT_mavx512vbmi2),
     IX86_ATTR_ISA ("avx512vnni", OPT_mavx512vnni),
@@ -1043,8 +1032,6 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("avx512vl",	OPT_mavx512vl),
     IX86_ATTR_ISA ("avx512bw",	OPT_mavx512bw),
     IX86_ATTR_ISA ("avx512dq",	OPT_mavx512dq),
-    IX86_ATTR_ISA ("avx512er",	OPT_mavx512er),
-    IX86_ATTR_ISA ("avx512pf",	OPT_mavx512pf),
     IX86_ATTR_ISA ("avx512cd",	OPT_mavx512cd),
     IX86_ATTR_ISA ("avx512f",	OPT_mavx512f),
     IX86_ATTR_ISA ("avx2",	OPT_mavx2),
@@ -1071,7 +1058,6 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("prfchw",	OPT_mprfchw),
     IX86_ATTR_ISA ("rdseed",	OPT_mrdseed),
     IX86_ATTR_ISA ("adx",	OPT_madx),
-    IX86_ATTR_ISA ("prefetchwt1", OPT_mprefetchwt1),
     IX86_ATTR_ISA ("clflushopt", OPT_mclflushopt),
     IX86_ATTR_ISA ("xsaves",	OPT_mxsaves),
     IX86_ATTR_ISA ("xsavec",	OPT_mxsavec),
@@ -2103,18 +2089,6 @@ ix86_option_override_internal (bool main_args_p,
 		 : G_("%<target(\"tune=x86-64\")%> is deprecated; use "
 		      "%<target(\"tune=k8\")%> or %<target(\"tune=generic\")%>"
 		      " instead as appropriate"));
-      else if (!strcmp (opts->x_ix86_tune_string, "knl"))
-	warning (OPT_Wdeprecated,
-		 main_args_p
-		 ? G_("%<-mtune=knl%> support will be removed in GCC 15")
-		 : G_("%<target(\"tune=knl\")%> support will be removed in "
-		      "GCC 15"));
-      else if (!strcmp (opts->x_ix86_tune_string, "knm"))
-	warning (OPT_Wdeprecated,
-		 main_args_p
-		 ? G_("%<-mtune=knm%> support will be removed in GCC 15")
-		 : G_("%<target(\"tune=knm\")%> support will be removed in "
-		      "GCC 15"));
     }
   else
     {
@@ -2325,19 +2299,6 @@ ix86_option_override_internal (bool main_args_p,
 		   "instruction set");
 	    return false;
 	  }
-
-	if (!strcmp (opts->x_ix86_arch_string, "knl"))
-	  warning (OPT_Wdeprecated,
-		   main_args_p
-		   ? G_("%<-march=knl%> support will be removed in GCC 15")
-		   : G_("%<target(\"arch=knl\")%> support will be removed in "
-			"GCC 15"));
-	else if (!strcmp (opts->x_ix86_arch_string, "knm"))
-	  warning (OPT_Wdeprecated,
-		   main_args_p
-		   ? G_("%<-march=knm%> support will be removed in GCC 15")
-		   : G_("%<target(\"arch=knm\")%> support will be removed in "
-			"GCC 15"));
 
 	ix86_schedule = processor_alias_table[i].schedule;
 	ix86_arch = processor_alias_table[i].processor;
@@ -2631,8 +2592,7 @@ ix86_option_override_internal (bool main_args_p,
   /* Enable SSE prefetch.  */
   if (TARGET_SSE_P (opts->x_ix86_isa_flags)
       || (TARGET_PRFCHW_P (opts->x_ix86_isa_flags)
-	  && !TARGET_3DNOW_P (opts->x_ix86_isa_flags))
-      || TARGET_PREFETCHWT1_P (opts->x_ix86_isa_flags))
+	  && !TARGET_3DNOW_P (opts->x_ix86_isa_flags)))
     ix86_prefetch_sse = true;
 
   /* Enable mwait/monitor instructions for -msse3.  */
@@ -2755,15 +2715,6 @@ ix86_option_override_internal (bool main_args_p,
     {
       opts->x_ix86_isa_flags |= avx512_isa_flags;
       opts->x_ix86_isa_flags2 |= avx512_isa_flags2;
-    }
-
-  /* Disable AVX512{PF,ER,4VNNIW,4FAMPS} for -mno-evex512.  */
-  if (!TARGET_EVEX512_P(opts->x_ix86_isa_flags2))
-    {
-      opts->x_ix86_isa_flags
-	&= ~(OPTION_MASK_ISA_AVX512PF | OPTION_MASK_ISA_AVX512ER);
-      opts->x_ix86_isa_flags2
-	&= ~(OPTION_MASK_ISA2_AVX5124FMAPS | OPTION_MASK_ISA2_AVX5124VNNIW);
     }
 
   /* Validate -mpreferred-stack-boundary= value or default it to
@@ -2982,7 +2933,6 @@ ix86_option_override_internal (bool main_args_p,
     sorry ("%<-mcall-ms2sysv-xlogues%> isn%'t currently supported with SEH");
 
   if (!(opts_set->x_target_flags & MASK_VZEROUPPER)
-      && TARGET_EMIT_VZEROUPPER
       && flag_expensive_optimizations
       && !optimize_size)
     opts->x_target_flags |= MASK_VZEROUPPER;

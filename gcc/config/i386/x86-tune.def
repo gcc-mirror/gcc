@@ -41,9 +41,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* X86_TUNE_SCHEDULE: Enable scheduling.  */
 DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
           m_PENT | m_LAKEMONT | m_PPRO | m_CORE_ALL | m_BONNELL | m_SILVERMONT
-	  | m_INTEL | m_KNL | m_KNM | m_K6_GEODE | m_AMD_MULTIPLE | m_ZHAOXIN
-	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID
-	  | m_CORE_ATOM | m_GENERIC)
+	  | m_INTEL | m_K6_GEODE | m_AMD_MULTIPLE | m_ZHAOXIN | m_GOLDMONT
+	  | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM
+	  | m_GENERIC)
 
 /* X86_TUNE_PARTIAL_REG_DEPENDENCY: Enable more register renaming
    on modern chips.  Prefer stores affecting whole integer register
@@ -52,8 +52,8 @@ DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
 DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency",
           m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2
 	  | m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_INTEL
-	  | m_KNL | m_KNM | m_AMD_MULTIPLE | m_ZHAOXIN | m_TREMONT
-	  | m_CORE_HYBRID | m_CORE_ATOM | m_GENERIC)
+	  | m_AMD_MULTIPLE | m_ZHAOXIN | m_TREMONT | m_CORE_HYBRID
+	  | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: This knob promotes all store
    destinations to be 128bit to allow register renaming on 128bit SSE units,
@@ -112,7 +112,7 @@ DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
    partial dependencies.  */
 DEF_TUNE (X86_TUNE_MOVX, "movx",
           m_PPRO | m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
-	  | m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_KNL | m_KNM | m_INTEL
+	  | m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_INTEL
 	  | m_GOLDMONT_PLUS | m_GEODE | m_AMD_MULTIPLE | m_ZHAOXIN
 	  | m_CORE_AVX2 | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM | m_GENERIC)
 
@@ -120,8 +120,8 @@ DEF_TUNE (X86_TUNE_MOVX, "movx",
    full sized loads.  */
 DEF_TUNE (X86_TUNE_MEMORY_MISMATCH_STALL, "memory_mismatch_stall",
           m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_INTEL
-	  | m_KNL | m_KNM | m_GOLDMONT | m_GOLDMONT_PLUS | m_AMD_MULTIPLE
-	  | m_ZHAOXIN | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM | m_GENERIC)
+	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_AMD_MULTIPLE | m_ZHAOXIN
+	  | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_FUSE_CMP_AND_BRANCH_32: Fuse compare with a subsequent
    conditional jump instruction for 32 bit TARGET.  */
@@ -161,7 +161,7 @@ DEF_TUNE (X86_TUNE_FUSE_ALU_AND_BRANCH, "fuse_alu_and_branch",
    to happen in parallel.  */
 
 DEF_TUNE (X86_TUNE_ACCUMULATE_OUTGOING_ARGS, "accumulate_outgoing_args",
-	  m_PPRO | m_P4_NOCONA | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL
+	  m_PPRO | m_P4_NOCONA | m_BONNELL | m_SILVERMONT | m_INTEL
 	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_ATHLON_K8 | m_ZHAOXIN)
 
 /* X86_TUNE_PROLOGUE_USING_MOVE: Do not use push/pop in prologues that are
@@ -224,8 +224,8 @@ DEF_TUNE (X86_TUNE_PAD_RETURNS, "pad_returns",
 /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
    than 4 branch instructions in the 16 byte window.  */
 DEF_TUNE (X86_TUNE_FOUR_JUMP_LIMIT, "four_jump_limit",
-          m_PPRO | m_P4_NOCONA | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM
-	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_INTEL | m_ATHLON_K8 | m_AMDFAM10)
+	  m_PPRO | m_P4_NOCONA | m_BONNELL | m_SILVERMONT | m_GOLDMONT
+	  | m_GOLDMONT_PLUS | m_INTEL | m_ATHLON_K8 | m_AMDFAM10)
 
 /*****************************************************************************/
 /* Integer instruction selection tuning                                      */
@@ -253,7 +253,7 @@ DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify", ~(m_PENT | m_LAKEMONT | m_PPRO))
    done by GCC generated code.  */
 DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
           ~(m_P4_NOCONA | m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE
-	    | m_BONNELL | m_SILVERMONT | m_INTEL |  m_KNL | m_KNM | m_GOLDMONT
+	    | m_BONNELL | m_SILVERMONT | m_INTEL | m_GOLDMONT
 	    | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM
 	    | m_ZHAOXIN | m_GENERIC))
 
@@ -261,19 +261,18 @@ DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
    for DFmode copies */
 DEF_TUNE (X86_TUNE_INTEGER_DFMODE_MOVES, "integer_dfmode_moves",
           ~(m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
-	    | m_KNL | m_KNM | m_INTEL | m_GEODE | m_AMD_MULTIPLE | m_ZHAOXIN
-	    | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID
-	    | m_CORE_ATOM | m_GENERIC))
+	    | m_INTEL | m_GEODE | m_AMD_MULTIPLE | m_ZHAOXIN | m_GOLDMONT
+	    | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM
+	    | m_GENERIC))
 
 /* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
    will impact LEA instruction selection. */
-DEF_TUNE (X86_TUNE_OPT_AGU, "opt_agu", m_BONNELL | m_SILVERMONT | m_KNL
-	 | m_KNM | m_GOLDMONT | m_GOLDMONT_PLUS | m_INTEL | m_ZHAOXIN)
+DEF_TUNE (X86_TUNE_OPT_AGU, "opt_agu", m_BONNELL | m_SILVERMONT | m_GOLDMONT
+	  | m_GOLDMONT_PLUS | m_INTEL | m_ZHAOXIN)
 
 /* X86_TUNE_AVOID_LEA_FOR_ADDR: Avoid lea for address computation.  */
 DEF_TUNE (X86_TUNE_AVOID_LEA_FOR_ADDR, "avoid_lea_for_addr",
-	  m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS
-	  | m_KNL | m_KNM)
+	  m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS)
 
 /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
    vector path on AMD machines.
@@ -290,8 +289,7 @@ DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM8, "slow_imul_imm8",
 /* X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE: Try to avoid memory operands for
    a conditional move.  */
 DEF_TUNE (X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE, "avoid_mem_opnd_for_cmove",
-	  m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_KNL
-	  | m_KNM | m_INTEL)
+	  m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_INTEL)
 
 /* X86_TUNE_SINGLE_STRINGOP: Enable use of single string operations, such
    as MOVS and STOS (without a REP prefix) to move/set sequences of bytes.  */
@@ -316,22 +314,21 @@ DEF_TUNE (X86_TUNE_MISALIGNED_MOVE_STRING_PRO_EPILOGUES,
 
 /* X86_TUNE_USE_SAHF: Controls use of SAHF.  */
 DEF_TUNE (X86_TUNE_USE_SAHF, "use_sahf",
-          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
-	  | m_KNL | m_KNM | m_INTEL | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER
-	  | m_BTVER | m_ZNVER | m_ZHAOXIN | m_GOLDMONT | m_GOLDMONT_PLUS
-	  | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM | m_GENERIC)
+	  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
+	  | m_INTEL | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER
+	  | m_ZNVER | m_ZHAOXIN | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT
+	  | m_CORE_HYBRID | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_USE_CLTD: Controls use of CLTD and CTQO instructions.  */
 DEF_TUNE (X86_TUNE_USE_CLTD, "use_cltd",
-	  ~(m_PENT | m_LAKEMONT | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL
+	  ~(m_PENT | m_LAKEMONT | m_BONNELL | m_SILVERMONT | m_INTEL
 	    | m_K6 | m_GOLDMONT | m_GOLDMONT_PLUS))
 
 /* X86_TUNE_USE_BT: Enable use of BT (bit test) instructions.  */
 DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
-          m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_INTEL
-	  | m_LAKEMONT | m_AMD_MULTIPLE | m_ZHAOXIN | m_GOLDMONT
-	  | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM
-	  | m_GENERIC)
+	  m_CORE_ALL | m_BONNELL | m_SILVERMONT | m_INTEL | m_LAKEMONT
+	  | m_AMD_MULTIPLE | m_ZHAOXIN | m_GOLDMONT | m_GOLDMONT_PLUS
+	  | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_AVOID_FALSE_DEP_FOR_BMI: Avoid false dependency
    for bit-manipulation instructions.  */
@@ -349,9 +346,8 @@ DEF_TUNE (X86_TUNE_ADJUST_UNROLL, "adjust_unroll_factor", m_BDVER3 | m_BDVER4)
 /* X86_TUNE_ONE_IF_CONV_INSNS: Restrict a number of cmov insns in
    if-converted sequence to one.  */
 DEF_TUNE (X86_TUNE_ONE_IF_CONV_INSN, "one_if_conv_insn",
-	  m_SILVERMONT | m_KNL | m_KNM | m_INTEL | m_CORE_ALL | m_GOLDMONT
-	  | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM
-	  | m_ZHAOXIN | m_GENERIC)
+	  m_SILVERMONT | m_INTEL | m_CORE_ALL | m_GOLDMONT | m_GOLDMONT_PLUS
+	  | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM | m_ZHAOXIN | m_GENERIC)
 
 /* X86_TUNE_AVOID_MFENCE: Use lock prefixed instructions instead of mfence.  */
 DEF_TUNE (X86_TUNE_AVOID_MFENCE, "avoid_mfence",
@@ -362,8 +358,7 @@ DEF_TUNE (X86_TUNE_AVOID_MFENCE, "avoid_mfence",
    generating instructions for abs (x) = (((signed) x >> (W-1) ^ x) -
    (signed) x >> (W-1)) instead of cmove or SSE max/abs instructions.  */
 DEF_TUNE (X86_TUNE_EXPAND_ABS, "expand_abs",
-	  m_CORE_ALL | m_SILVERMONT | m_KNL | m_KNM | m_GOLDMONT
-	  | m_GOLDMONT_PLUS | m_ZHAOXIN)
+	  m_CORE_ALL | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_ZHAOXIN)
 
 /*****************************************************************************/
 /* 387 instruction selection tuning                                          */
@@ -379,9 +374,9 @@ DEF_TUNE (X86_TUNE_USE_HIMODE_FIOP, "use_himode_fiop",
    integer operand.  */
 DEF_TUNE (X86_TUNE_USE_SIMODE_FIOP, "use_simode_fiop",
           ~(m_PENT | m_LAKEMONT | m_PPRO | m_CORE_ALL | m_BONNELL
-	    | m_SILVERMONT | m_KNL | m_KNM | m_INTEL | m_AMD_MULTIPLE
-	    | m_ZHAOXIN | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT
-	    | m_CORE_HYBRID | m_CORE_ATOM | m_GENERIC))
+	    | m_SILVERMONT | m_INTEL | m_AMD_MULTIPLE | m_ZHAOXIN | m_GOLDMONT
+	    | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM
+	    | m_GENERIC))
 
 /* X86_TUNE_USE_FFREEP: Use freep instruction instead of fstp.  */
 DEF_TUNE (X86_TUNE_USE_FFREEP, "use_ffreep", m_AMD_MULTIPLE | m_ZHAOXIN)
@@ -389,9 +384,9 @@ DEF_TUNE (X86_TUNE_USE_FFREEP, "use_ffreep", m_AMD_MULTIPLE | m_ZHAOXIN)
 /* X86_TUNE_EXT_80387_CONSTANTS: Use fancy 80387 constants, such as PI.  */
 DEF_TUNE (X86_TUNE_EXT_80387_CONSTANTS, "ext_80387_constants",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_BONNELL | m_SILVERMONT
-	  | m_KNL | m_KNM | m_INTEL | m_K6_GEODE | m_ATHLON_K8 | m_ZHAOXIN
-	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID
-	  | m_CORE_ATOM | m_GENERIC)
+	  | m_INTEL | m_K6_GEODE | m_ATHLON_K8 | m_ZHAOXIN | m_GOLDMONT
+	  | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM
+	  | m_GENERIC)
 
 /*****************************************************************************/
 /* SSE instruction selection tuning                                          */
@@ -405,15 +400,15 @@ DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill",
 /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL: Use movups for misaligned loads instead
    of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal",
-	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_SILVERMONT | m_KNL | m_KNM
-	  | m_INTEL | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID
+	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_SILVERMONT | m_INTEL
+	  | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID
 	  | m_CORE_ATOM | m_AMDFAM10 | m_BDVER | m_BTVER | m_ZNVER | m_ZHAOXIN
 	  | m_GENERIC)
 
 /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL: Use movups for misaligned stores
    instead of a sequence loading registers by parts.  */
 DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal",
-	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_SILVERMONT | m_KNL | m_KNM
+	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_SILVERMONT
 	  | m_INTEL | m_GOLDMONT | m_GOLDMONT_PLUS | m_TREMONT | m_CORE_HYBRID
 	  | m_CORE_ATOM | m_BDVER | m_ZNVER | m_ZHAOXIN | m_GENERIC)
 
@@ -457,8 +452,7 @@ DEF_TUNE (X86_TUNE_INTER_UNIT_CONVERSIONS, "inter_unit_conversions",
 /* X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS: Try to split memory operand for
    fp converts to destination register.  */
 DEF_TUNE (X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS, "split_mem_opnd_for_fp_converts",
-	  m_SILVERMONT | m_KNL | m_KNM | m_GOLDMONT | m_GOLDMONT_PLUS
-	  | m_INTEL)
+	  m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_INTEL)
 
 /* X86_TUNE_USE_VECTOR_FP_CONVERTS: Prefer vector packed SSE conversion
    from FP to FP.  This form of instructions avoids partial write to the
@@ -472,8 +466,7 @@ DEF_TUNE (X86_TUNE_USE_VECTOR_CONVERTS, "use_vector_converts", m_AMDFAM10)
 
 /* X86_TUNE_SLOW_SHUFB: Indicates tunings with slow pshufb instruction.  */
 DEF_TUNE (X86_TUNE_SLOW_PSHUFB, "slow_pshufb",
-	  m_BONNELL | m_SILVERMONT | m_KNL | m_KNM | m_GOLDMONT
-	  | m_GOLDMONT_PLUS | m_INTEL)
+	  m_BONNELL | m_SILVERMONT | m_GOLDMONT | m_GOLDMONT_PLUS | m_INTEL)
 
 /* X86_TUNE_AVOID_4BYTE_PREFIXES: Avoid instructions requiring 4+ bytes of prefixes.  */
 DEF_TUNE (X86_TUNE_AVOID_4BYTE_PREFIXES, "avoid_4byte_prefixes",
@@ -707,10 +700,6 @@ DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math", m_ALL)
    arithmetic to 32bit via PROMOTE_MODE macro.  This code generation scheme
    is usually used for RISC targets.  */
 DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs", m_NONE)
-
-/* X86_TUNE_EMIT_VZEROUPPER: This enables vzeroupper instruction insertion
-   before a transfer of control flow out of the function.  */
-DEF_TUNE (X86_TUNE_EMIT_VZEROUPPER, "emit_vzeroupper", ~m_KNL)
 
 /* X86_TUNE_SLOW_STC: This disables use of stc, clc and cmc carry flag
   modifications on architectures where theses operations are slow.  */

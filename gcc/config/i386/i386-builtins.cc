@@ -1095,32 +1095,6 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_PINT_QI_V2DI_V4SI_INT,
 	       IX86_BUILTIN_SCATTERALTDIV4SI);
 
-  /* AVX512PF */
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_gatherpfdpd",
-	       VOID_FTYPE_QI_V8SI_PCVOID_INT_INT,
-	       IX86_BUILTIN_GATHERPFDPD);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_gatherpfdps",
-	       VOID_FTYPE_HI_V16SI_PCVOID_INT_INT,
-	       IX86_BUILTIN_GATHERPFDPS);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_gatherpfqpd",
-	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
-	       IX86_BUILTIN_GATHERPFQPD);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_gatherpfqps",
-	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
-	       IX86_BUILTIN_GATHERPFQPS);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_scatterpfdpd",
-	       VOID_FTYPE_QI_V8SI_PCVOID_INT_INT,
-	       IX86_BUILTIN_SCATTERPFDPD);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_scatterpfdps",
-	       VOID_FTYPE_HI_V16SI_PCVOID_INT_INT,
-	       IX86_BUILTIN_SCATTERPFDPS);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_scatterpfqpd",
-	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
-	       IX86_BUILTIN_SCATTERPFQPD);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_scatterpfqps",
-	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
-	       IX86_BUILTIN_SCATTERPFQPS);
-
   /* SHA */
   def_builtin_const (OPTION_MASK_ISA_SHA, 0, "__builtin_ia32_sha1msg1",
 		     V4SI_FTYPE_V4SI_V4SI, IX86_BUILTIN_SHA1MSG1);

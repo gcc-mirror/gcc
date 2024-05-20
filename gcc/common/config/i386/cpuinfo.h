@@ -390,18 +390,6 @@ get_intel_cpu (struct __processor_model *cpu_model,
       CHECK___builtin_cpu_is ("tremont");
       cpu_model->__cpu_type = INTEL_TREMONT;
       break;
-    case 0x57:
-      /* Knights Landing.  */
-      cpu = "knl";
-      CHECK___builtin_cpu_is ("knl");
-      cpu_model->__cpu_type = INTEL_KNL;
-      break;
-    case 0x85:
-      /* Knights Mill. */
-      cpu = "knm";
-      CHECK___builtin_cpu_is ("knm");
-      cpu_model->__cpu_type = INTEL_KNM;
-      break;
     case 0x1a:
     case 0x1e:
     case 0x1f:
@@ -844,8 +832,6 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_CLFLUSHOPT);
       if (ebx & bit_CLWB)
 	set_feature (FEATURE_CLWB);
-      if (ecx & bit_PREFETCHWT1)
-	set_feature (FEATURE_PREFETCHWT1);
       /* NB: bit_OSPKE indicates that OS supports PKU.  */
       if (ecx & bit_OSPKE)
 	set_feature (FEATURE_PKU);
@@ -898,10 +884,6 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX512DQ);
 	  if (ebx & bit_AVX512CD)
 	    set_feature (FEATURE_AVX512CD);
-	  if (ebx & bit_AVX512PF)
-	    set_feature (FEATURE_AVX512PF);
-	  if (ebx & bit_AVX512ER)
-	    set_feature (FEATURE_AVX512ER);
 	  if (ebx & bit_AVX512IFMA)
 	    set_feature (FEATURE_AVX512IFMA);
 	  if (ecx & bit_AVX512VBMI)
@@ -914,10 +896,6 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX512BITALG);
 	  if (ecx & bit_AVX512VPOPCNTDQ)
 	    set_feature (FEATURE_AVX512VPOPCNTDQ);
-	  if (edx & bit_AVX5124VNNIW)
-	    set_feature (FEATURE_AVX5124VNNIW);
-	  if (edx & bit_AVX5124FMAPS)
-	    set_feature (FEATURE_AVX5124FMAPS);
 	  if (edx & bit_AVX512VP2INTERSECT)
 	    set_feature (FEATURE_AVX512VP2INTERSECT);
 	  if (edx & bit_AVX512FP16)

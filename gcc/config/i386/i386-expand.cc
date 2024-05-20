@@ -13648,7 +13648,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	      }
 
 	    if (TARGET_3DNOW || TARGET_PREFETCH_SSE
-		|| TARGET_PRFCHW || TARGET_PREFETCHWT1)
+		|| TARGET_PRFCHW)
 	      emit_insn (gen_prefetch (op0, op1, op2));
 	    else if (!MEM_P (op0) && side_effects_p (op0))
 	      /* Don't do anything with direct references to volatile memory,
@@ -14836,9 +14836,6 @@ rdseed_step:
     case IX86_BUILTIN_SCATTERDIV2DI:
       icode = CODE_FOR_avx512vl_scatterdiv2di;
       goto scatter_gen;
-    case IX86_BUILTIN_GATHERPFDPD:
-      icode = CODE_FOR_avx512pf_gatherpfv8sidf;
-      goto vec_prefetch_gen;
     case IX86_BUILTIN_SCATTERALTSIV8DF:
       icode = CODE_FOR_avx512f_scattersiv8df;
       goto scatter_gen;
@@ -14875,27 +14872,6 @@ rdseed_step:
     case IX86_BUILTIN_SCATTERALTDIV4SI:
       icode = CODE_FOR_avx512vl_scatterdiv4si;
       goto scatter_gen;
-    case IX86_BUILTIN_GATHERPFDPS:
-      icode = CODE_FOR_avx512pf_gatherpfv16sisf;
-      goto vec_prefetch_gen;
-    case IX86_BUILTIN_GATHERPFQPD:
-      icode = CODE_FOR_avx512pf_gatherpfv8didf;
-      goto vec_prefetch_gen;
-    case IX86_BUILTIN_GATHERPFQPS:
-      icode = CODE_FOR_avx512pf_gatherpfv8disf;
-      goto vec_prefetch_gen;
-    case IX86_BUILTIN_SCATTERPFDPD:
-      icode = CODE_FOR_avx512pf_scatterpfv8sidf;
-      goto vec_prefetch_gen;
-    case IX86_BUILTIN_SCATTERPFDPS:
-      icode = CODE_FOR_avx512pf_scatterpfv16sisf;
-      goto vec_prefetch_gen;
-    case IX86_BUILTIN_SCATTERPFQPD:
-      icode = CODE_FOR_avx512pf_scatterpfv8didf;
-      goto vec_prefetch_gen;
-    case IX86_BUILTIN_SCATTERPFQPS:
-      icode = CODE_FOR_avx512pf_scatterpfv8disf;
-      goto vec_prefetch_gen;
 
     gather_gen:
       rtx half;
@@ -15233,66 +15209,6 @@ rdseed_step:
       emit_insn (pat);
       return 0;
 
-    vec_prefetch_gen:
-      arg0 = CALL_EXPR_ARG (exp, 0);
-      arg1 = CALL_EXPR_ARG (exp, 1);
-      arg2 = CALL_EXPR_ARG (exp, 2);
-      arg3 = CALL_EXPR_ARG (exp, 3);
-      arg4 = CALL_EXPR_ARG (exp, 4);
-      op0 = expand_normal (arg0);
-      op1 = expand_normal (arg1);
-      op2 = expand_normal (arg2);
-      op3 = expand_normal (arg3);
-      op4 = expand_normal (arg4);
-      mode0 = insn_data[icode].operand[0].mode;
-      mode1 = insn_data[icode].operand[1].mode;
-      mode3 = insn_data[icode].operand[3].mode;
-      mode4 = insn_data[icode].operand[4].mode;
-
-      op0 = fixup_modeless_constant (op0, mode0);
-
-      if (GET_MODE (op0) == mode0 || GET_MODE (op0) == VOIDmode)
-	{
-	  if (!insn_data[icode].operand[0].predicate (op0, mode0))
-	    op0 = copy_to_mode_reg (mode0, op0);
-	}
-      else
-	{
-	  op0 = copy_to_reg (op0);
-	  op0 = lowpart_subreg (mode0, op0, GET_MODE (op0));
-	}
-
-      if (!insn_data[icode].operand[1].predicate (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
-
-      /* Force memory operand only with base register here.  But we
-	 don't want to do it on memory operand for other builtin
-	 functions.  */
-      op2 = force_reg (Pmode, convert_to_mode (Pmode, op2, 1));
-
-      if (!insn_data[icode].operand[2].predicate (op2, Pmode))
-	op2 = copy_to_mode_reg (Pmode, op2);
-
-      if (!insn_data[icode].operand[3].predicate (op3, mode3))
-	{
-	  error ("the forth argument must be scale 1, 2, 4, 8");
-	  return const0_rtx;
-	}
-
-      if (!insn_data[icode].operand[4].predicate (op4, mode4))
-	{
-	  error ("incorrect hint operand");
-	  return const0_rtx;
-	}
-
-      pat = GEN_FCN (icode) (op0, op1, op2, op3, op4);
-      if (! pat)
-	return const0_rtx;
-
-      emit_insn (pat);
-
-      return 0;
-
     case IX86_BUILTIN_XABORT:
       icode = CODE_FOR_xabort;
       arg0 = CALL_EXPR_ARG (exp, 0);
@@ -15410,229 +15326,9 @@ rdseed_step:
       && fcode <= IX86_BUILTIN__BDESC_ARGS_LAST)
     {
       i = fcode - IX86_BUILTIN__BDESC_ARGS_FIRST;
-      rtx (*fcn) (rtx, rtx, rtx, rtx) = NULL;
-      rtx (*fcn_mask) (rtx, rtx, rtx, rtx, rtx);
-      rtx (*fcn_maskz) (rtx, rtx, rtx, rtx, rtx, rtx);
-      int masked = 1;
-      machine_mode mode, wide_mode, nar_mode;
-
-      nar_mode  = V4SFmode;
-      mode      = V16SFmode;
-      wide_mode = V64SFmode;
-      fcn_mask  = gen_avx5124fmaddps_4fmaddps_mask;
-      fcn_maskz = gen_avx5124fmaddps_4fmaddps_maskz;
 
       switch (fcode)
 	{
-	case IX86_BUILTIN_4FMAPS:
-	  fcn = gen_avx5124fmaddps_4fmaddps;
-	  masked = 0;
-	  goto v4fma_expand;
-
-	case IX86_BUILTIN_4DPWSSD:
-	  nar_mode  = V4SImode;
-	  mode      = V16SImode;
-	  wide_mode = V64SImode;
-	  fcn = gen_avx5124vnniw_vp4dpwssd;
-	  masked = 0;
-	  goto v4fma_expand;
-
-	case IX86_BUILTIN_4DPWSSDS:
-	  nar_mode  = V4SImode;
-	  mode      = V16SImode;
-	  wide_mode = V64SImode;
-	  fcn = gen_avx5124vnniw_vp4dpwssds;
-	  masked = 0;
-	  goto v4fma_expand;
-
-	case IX86_BUILTIN_4FNMAPS:
-	  fcn = gen_avx5124fmaddps_4fnmaddps;
-	  masked = 0;
-	  goto v4fma_expand;
-
-	case IX86_BUILTIN_4FNMAPS_MASK:
-	  fcn_mask  = gen_avx5124fmaddps_4fnmaddps_mask;
-	  fcn_maskz = gen_avx5124fmaddps_4fnmaddps_maskz;
-	  goto v4fma_expand;
-
-	case IX86_BUILTIN_4DPWSSD_MASK:
-	  nar_mode  = V4SImode;
-	  mode      = V16SImode;
-	  wide_mode = V64SImode;
-	  fcn_mask  = gen_avx5124vnniw_vp4dpwssd_mask;
-	  fcn_maskz = gen_avx5124vnniw_vp4dpwssd_maskz;
-	  goto v4fma_expand;
-
-	case IX86_BUILTIN_4DPWSSDS_MASK:
-	  nar_mode  = V4SImode;
-	  mode      = V16SImode;
-	  wide_mode = V64SImode;
-	  fcn_mask  = gen_avx5124vnniw_vp4dpwssds_mask;
-	  fcn_maskz = gen_avx5124vnniw_vp4dpwssds_maskz;
-	  goto v4fma_expand;
-
-	case IX86_BUILTIN_4FMAPS_MASK:
-	  {
-	    tree args[4];
-	    rtx ops[4];
-	    rtx wide_reg;
-	    rtx accum;
-	    rtx addr;
-	    rtx mem;
-
-v4fma_expand:
-	    wide_reg = gen_reg_rtx (wide_mode);
-	    for (i = 0; i < 4; i++)
-	      {
-		args[i] = CALL_EXPR_ARG (exp, i);
-		ops[i] = expand_normal (args[i]);
-
-		emit_move_insn (gen_rtx_SUBREG (mode, wide_reg, i * 64),
-				ops[i]);
-	      }
-
-	    accum = expand_normal (CALL_EXPR_ARG (exp, 4));
-	    accum = force_reg (mode, accum);
-
-	    addr = expand_normal (CALL_EXPR_ARG (exp, 5));
-	    addr = force_reg (Pmode, addr);
-
-	    mem = gen_rtx_MEM (nar_mode, addr);
-
-	    target = gen_reg_rtx (mode);
-
-	    emit_move_insn (target, accum);
-
-	    if (! masked)
-	      emit_insn (fcn (target, accum, wide_reg, mem));
-	    else
-	      {
-		rtx merge, mask;
-		merge = expand_normal (CALL_EXPR_ARG (exp, 6));
-
-		mask = expand_normal (CALL_EXPR_ARG (exp, 7));
-
-		if (CONST_INT_P (mask))
-		  mask = fixup_modeless_constant (mask, HImode);
-
-		mask = force_reg (HImode, mask);
-
-		if (GET_MODE (mask) != HImode)
-		  mask = gen_rtx_SUBREG (HImode, mask, 0);
-
-		/* If merge is 0 then we're about to emit z-masked variant.  */
-		if (const0_operand (merge, mode))
-		  emit_insn (fcn_maskz (target, accum, wide_reg, mem, merge, mask));
-		/* If merge is the same as accum then emit merge-masked variant.  */
-		else if (CALL_EXPR_ARG (exp, 6) == CALL_EXPR_ARG (exp, 4))
-		  {
-		    merge = force_reg (mode, merge);
-		    emit_insn (fcn_mask (target, wide_reg, mem, merge, mask));
-		  }
-		/* Merge with something unknown might happen if we z-mask w/ -O0.  */
-		else
-		  {
-		    target = gen_reg_rtx (mode);
-		    emit_move_insn (target, merge);
-		    emit_insn (fcn_mask (target, wide_reg, mem, target, mask));
-		  }
-	      }
-	    return target;
-	  }
-
-	case IX86_BUILTIN_4FNMASS:
-	  fcn = gen_avx5124fmaddps_4fnmaddss;
-	  masked = 0;
-	  goto s4fma_expand;
-
-	case IX86_BUILTIN_4FMASS:
-	  fcn = gen_avx5124fmaddps_4fmaddss;
-	  masked = 0;
-	  goto s4fma_expand;
-
-	case IX86_BUILTIN_4FNMASS_MASK:
-	  fcn_mask = gen_avx5124fmaddps_4fnmaddss_mask;
-	  fcn_maskz = gen_avx5124fmaddps_4fnmaddss_maskz;
-	  goto s4fma_expand;
-
-	case IX86_BUILTIN_4FMASS_MASK:
-	  {
-	    tree args[4];
-	    rtx ops[4];
-	    rtx wide_reg;
-	    rtx accum;
-	    rtx addr;
-	    rtx mem;
-
-	    fcn_mask = gen_avx5124fmaddps_4fmaddss_mask;
-	    fcn_maskz = gen_avx5124fmaddps_4fmaddss_maskz;
-
-s4fma_expand:
-	    mode = V4SFmode;
-	    wide_reg = gen_reg_rtx (V64SFmode);
-	    for (i = 0; i < 4; i++)
-	      {
-		rtx tmp;
-		args[i] = CALL_EXPR_ARG (exp, i);
-		ops[i] = expand_normal (args[i]);
-
-		tmp = gen_reg_rtx (SFmode);
-		emit_move_insn (tmp, gen_rtx_SUBREG (SFmode, ops[i], 0));
-
-		emit_move_insn (gen_rtx_SUBREG (V16SFmode, wide_reg, i * 64),
-				gen_rtx_SUBREG (V16SFmode, tmp, 0));
-	      }
-
-	    accum = expand_normal (CALL_EXPR_ARG (exp, 4));
-	    accum = force_reg (V4SFmode, accum);
-
-	    addr = expand_normal (CALL_EXPR_ARG (exp, 5));
-	    addr = force_reg (Pmode, addr);
-
-	    mem = gen_rtx_MEM (V4SFmode, addr);
-
-	    target = gen_reg_rtx (V4SFmode);
-
-	    emit_move_insn (target, accum);
-
-	    if (! masked)
-	      emit_insn (fcn (target, accum, wide_reg, mem));
-	    else
-	      {
-		rtx merge, mask;
-		merge = expand_normal (CALL_EXPR_ARG (exp, 6));
-
-		mask = expand_normal (CALL_EXPR_ARG (exp, 7));
-
-		if (CONST_INT_P (mask))
-		  mask = fixup_modeless_constant (mask, QImode);
-
-		mask = force_reg (QImode, mask);
-
-		if (GET_MODE (mask) != QImode)
-		  mask = gen_rtx_SUBREG (QImode, mask, 0);
-
-		/* If merge is 0 then we're about to emit z-masked variant.  */
-		if (const0_operand (merge, mode))
-		  emit_insn (fcn_maskz (target, accum, wide_reg, mem, merge, mask));
-		/* If merge is the same as accum then emit merge-masked
-		   variant.  */
-		else if (CALL_EXPR_ARG (exp, 6) == CALL_EXPR_ARG (exp, 4))
-		  {
-		    merge = force_reg (mode, merge);
-		    emit_insn (fcn_mask (target, wide_reg, mem, merge, mask));
-		  }
-		/* Merge with something unknown might happen if we z-mask
-		   w/ -O0.  */
-		else
-		  {
-		    target = gen_reg_rtx (mode);
-		    emit_move_insn (target, merge);
-		    emit_insn (fcn_mask (target, wide_reg, mem, target, mask));
-		  }
-		}
-	      return target;
-	    }
 	  case IX86_BUILTIN_RDPID:
 	    return ix86_expand_special_args_builtin (bdesc_args + i, exp,
 						     target);
@@ -18977,17 +18673,8 @@ ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
   /* x0 = rcp(b) estimate */
   if (mode == V16SFmode || mode == V8DFmode)
     {
-      if (TARGET_AVX512ER)
-	{
-	  emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
-						      UNSPEC_RCP28)));
-	  /* res = a * x0 */
-	  emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, a, x0)));
-	  return;
-	}
-      else
-	emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
-						    UNSPEC_RCP14)));
+      emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
+						  UNSPEC_RCP14)));
     }
   else
     emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
@@ -19024,24 +18711,6 @@ ix86_emit_swsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
   e1 = gen_reg_rtx (mode);
   e2 = gen_reg_rtx (mode);
   e3 = gen_reg_rtx (mode);
-
-  if (TARGET_AVX512ER && mode == V16SFmode)
-    {
-      if (recip)
-	/* res = rsqrt28(a) estimate */
-	emit_insn (gen_rtx_SET (res, gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
-						     UNSPEC_RSQRT28)));
-      else
-	{
-	  /* x0 = rsqrt28(a) estimate */
-	  emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, a),
-						      UNSPEC_RSQRT28)));
-	  /* res = rcp28(x0) estimate */
-	  emit_insn (gen_rtx_SET (res, gen_rtx_UNSPEC (mode, gen_rtvec (1, x0),
-						       UNSPEC_RCP28)));
-	}
-      return;
-    }
 
   real_from_integer (&r, VOIDmode, -3, SIGNED);
   mthree = const_double_from_real_value (r, SFmode);

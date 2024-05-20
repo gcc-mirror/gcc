@@ -6945,16 +6945,6 @@ Enable/disable the generation of the AVX instructions.
 @itemx no-avx2
 Enable/disable the generation of the AVX2 instructions.
 
-@cindex @code{target("avx5124fmaps")} function attribute, x86
-@item avx5124fmaps
-@itemx no-avx5124fmaps
-Enable/disable the generation of the AVX5124FMAPS instructions.
-
-@cindex @code{target("avx5124vnniw")} function attribute, x86
-@item avx5124vnniw
-@itemx no-avx5124vnniw
-Enable/disable the generation of the AVX5124VNNIW instructions.
-
 @cindex @code{target("avx512bitalg")} function attribute, x86
 @item avx512bitalg
 @itemx no-avx512bitalg
@@ -6989,11 +6979,6 @@ Enable/disable the generation of the AVX512F instructions.
 @item avx512ifma
 @itemx no-avx512ifma
 Enable/disable the generation of the AVX512IFMA instructions.
-
-@cindex @code{target("avx512pf")} function attribute, x86
-@item avx512pf
-@itemx no-avx512pf
-Enable/disable the generation of the AVX512PF instructions.
 
 @cindex @code{target("avx512vbmi")} function attribute, x86
 @item avx512vbmi
@@ -7159,11 +7144,6 @@ Enable/disable the generation of the PKU instructions.
 @item popcnt
 @itemx no-popcnt
 Enable/disable the generation of the POPCNT instruction.
-
-@cindex @code{target("prefetchwt1")} function attribute, x86
-@item prefetchwt1
-@itemx no-prefetchwt1
-Enable/disable the generation of the PREFETCHWT1 instructions.
 
 @cindex @code{target("prfchw")} function attribute, x86
 @item prfchw
@@ -26167,12 +26147,6 @@ Intel Atom Grand Ridge CPU.
 @item clearwaterforest
 Intel Atom Clearwater Forest CPU.
 
-@item knl
-Intel Knights Landing CPU.
-
-@item knm
-Intel Knights Mill CPU.
-
 @item lujiazui
 ZHAOXIN lujiazui CPU.
 
@@ -26301,18 +26275,10 @@ AVX512BW instructions.
 AVX512DQ instructions.
 @item avx512cd
 AVX512CD instructions.
-@item avx512er
-AVX512ER instructions.
-@item avx512pf
-AVX512PF instructions.
 @item avx512vbmi
 AVX512VBMI instructions.
 @item avx512ifma
 AVX512IFMA instructions.
-@item avx5124vnniw
-AVX5124VNNIW instructions.
-@item avx5124fmaps
-AVX5124FMAPS instructions.
 @item avx512vpopcntdq
 AVX512VPOPCNTDQ instructions.
 @item avx512vbmi2

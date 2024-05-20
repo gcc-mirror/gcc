@@ -54,10 +54,6 @@
 
 #include <avx512fintrin.h>
 
-#include <avx512erintrin.h>
-
-#include <avx512pfintrin.h>
-
 #include <avx512cdintrin.h>
 
 #include <avx512vlintrin.h>
@@ -77,10 +73,6 @@
 #include <avx512vbmiintrin.h>
 
 #include <avx512vbmivlintrin.h>
-
-#include <avx5124fmapsintrin.h>
-
-#include <avx5124vnniwintrin.h>
 
 #include <avx512vpopcntdqintrin.h>
 

@@ -59,12 +59,8 @@ ix86_rust_target_cpu_info (void)
     rust_add_target_info ("target_feature", "avx2");
   if (TARGET_AVX512F)
     rust_add_target_info ("target_feature", "avx512f");
-  if (TARGET_AVX512ER)
-    rust_add_target_info ("target_feature", "avx512er");
   if (TARGET_AVX512CD)
     rust_add_target_info ("target_feature", "avx512cd");
-  if (TARGET_AVX512PF)
-    rust_add_target_info ("target_feature", "avx512pf");
   if (TARGET_AVX512DQ)
     rust_add_target_info ("target_feature", "avx512dq");
   if (TARGET_AVX512BW)
