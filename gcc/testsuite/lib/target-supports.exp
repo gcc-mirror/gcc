@@ -7140,7 +7140,7 @@ proc check_effective_target_powerpc_vsx { } {
 	  nope no vsx
 	#endif
 	}
-    }]
+    } [current_compiler_flags]]
 }
 
 # Return 1 if this is a PowerPC target supporting -mvsx
