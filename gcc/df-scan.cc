@@ -3702,13 +3702,7 @@ df_get_exit_block_use_set (bitmap exit_block_uses)
 
   /* Mark the registers that will contain data for the handler.  */
   if (reload_completed && crtl->calls_eh_return)
-    for (i = 0; ; ++i)
-      {
-	unsigned regno = EH_RETURN_DATA_REGNO (i);
-	if (regno == INVALID_REGNUM)
-	  break;
-	bitmap_set_bit (exit_block_uses, regno);
-      }
+    IOR_REG_SET_HRS (exit_block_uses, eh_return_data_regs);
 
 #ifdef EH_RETURN_STACKADJ_RTX
   if ((!targetm.have_epilogue () || ! epilogue_completed)

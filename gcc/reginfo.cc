@@ -420,6 +420,16 @@ init_reg_sets_1 (void)
 	}
     }
 
+  /* Recalculate eh_return_data_regs.  */
+  CLEAR_HARD_REG_SET (eh_return_data_regs);
+  for (i = 0; ; ++i)
+    {
+      unsigned int regno = EH_RETURN_DATA_REGNO (i);
+      if (regno == INVALID_REGNUM)
+	break;
+      SET_HARD_REG_BIT (eh_return_data_regs, regno);
+    }
+
   memset (have_regs_of_mode, 0, sizeof (have_regs_of_mode));
   memset (contains_reg_of_mode, 0, sizeof (contains_reg_of_mode));
   for (m = 0; m < (unsigned int) MAX_MACHINE_MODE; m++)

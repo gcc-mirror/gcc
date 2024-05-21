@@ -1260,14 +1260,8 @@ process_out_of_region_eh_regs (basic_block bb)
       for (int n = ALLOCNO_NUM_OBJECTS (a) - 1; n >= 0; n--)
 	{
 	  ira_object_t obj = ALLOCNO_OBJECT (a, n);
-	  for (int k = 0; ; k++)
-	    {
-	      unsigned int regno = EH_RETURN_DATA_REGNO (k);
-	      if (regno == INVALID_REGNUM)
-		break;
-	      SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);
-	      SET_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj), regno);
-	    }
+	  OBJECT_CONFLICT_HARD_REGS (obj) |= eh_return_data_regs;
+	  OBJECT_TOTAL_CONFLICT_HARD_REGS (obj) |= eh_return_data_regs;
 	}
     }
 }
