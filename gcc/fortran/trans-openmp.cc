@@ -2954,12 +2954,20 @@ gfc_omp_deep_map_kind_p (tree clause)
 
   switch (OMP_CLAUSE_MAP_KIND (clause))
     {
+    case GOMP_MAP_PRESENT_ALLOC:
+    case GOMP_MAP_PRESENT_TO:
+    case GOMP_MAP_PRESENT_TOFROM:
+    case GOMP_MAP_PRESENT_FROM:
+      return false;
     case GOMP_MAP_TO:
     case GOMP_MAP_FROM:
     case GOMP_MAP_TOFROM:
     case GOMP_MAP_ALWAYS_TO:
     case GOMP_MAP_ALWAYS_FROM:
     case GOMP_MAP_ALWAYS_TOFROM:
+    case GOMP_MAP_ALWAYS_PRESENT_TO:
+    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+    case GOMP_MAP_ALWAYS_PRESENT_FROM:
     case GOMP_MAP_FIRSTPRIVATE:
     case GOMP_MAP_ALLOC:
       return true;
