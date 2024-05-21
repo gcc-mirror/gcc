@@ -98,7 +98,19 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 {
   // Parse everything commitedly
   if (!p.skip_token (LEFT_PAREN))
-    {}
+    {
+      // We have shifted `options` to search for the left parenthesis next, we
+      // should error out if this is not possible.
+      // TODO: report some error.
+      return -1;
+    }
+
+  auto token = parser.peek_current_token ();
+  while (token->get_id () != last_token_id && token->get_id () != RIGHT_PAREN)
+    {
+      parser.skip_token ();
+      token = parser.peek_current_token ();
+    }
 }
 bool
 check_identifier (Parser<MacroInvocLexer> &p, std::string ident)
