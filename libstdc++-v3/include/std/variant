@@ -1271,10 +1271,11 @@ namespace __detail::__variant
     operator== [[nodiscard]] (const variant<_Types...>& __lhs,
 			      const variant<_Types...>& __rhs)
     {
-      return __detail::__variant::__compare(true, __lhs, __rhs,
-					    [](auto&& __l, auto&& __r) {
-					      return __l == __r;
-					    });
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l == __r;
+				  });
     }
 
   template<typename... _Types>
@@ -1286,10 +1287,11 @@ namespace __detail::__variant
     operator!= [[nodiscard]] (const variant<_Types...>& __lhs,
 			      const variant<_Types...>& __rhs)
     {
-      return __detail::__variant::__compare(true, __lhs, __rhs,
-					    [](auto&& __l, auto&& __r) {
-					      return __l != __r;
-					    });
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l != __r;
+				  });
     }
 
   template<typename... _Types>
@@ -1301,10 +1303,11 @@ namespace __detail::__variant
     operator< [[nodiscard]] (const variant<_Types...>& __lhs,
 			     const variant<_Types...>& __rhs)
     {
-      return __detail::__variant::__compare(true, __lhs, __rhs,
-					    [](auto&& __l, auto&& __r) {
-					      return __l < __r;
-					    });
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l < __r;
+				  });
     }
 
   template<typename... _Types>
@@ -1316,10 +1319,11 @@ namespace __detail::__variant
     operator<= [[nodiscard]] (const variant<_Types...>& __lhs,
 			      const variant<_Types...>& __rhs)
     {
-      return __detail::__variant::__compare(true, __lhs, __rhs,
-					    [](auto&& __l, auto&& __r) {
-					      return __l <= __r;
-					    });
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l <= __r;
+				  });
     }
 
   template<typename... _Types>
@@ -1331,10 +1335,11 @@ namespace __detail::__variant
     operator> [[nodiscard]] (const variant<_Types...>& __lhs,
 			     const variant<_Types...>& __rhs)
     {
-      return __detail::__variant::__compare(true, __lhs, __rhs,
-					    [](auto&& __l, auto&& __r) {
-					      return __l > __r;
-					    });
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l > __r;
+				  });
     }
 
   template<typename... _Types>
@@ -1346,10 +1351,11 @@ namespace __detail::__variant
     operator>= [[nodiscard]] (const variant<_Types...>& __lhs,
 			      const variant<_Types...>& __rhs)
     {
-      return __detail::__variant::__compare(true, __lhs, __rhs,
-					    [](auto&& __l, auto&& __r) {
-					      return __l >= __r;
-					    });
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(true, __lhs, __rhs,
+				  [](auto&& __l, auto&& __r) -> bool {
+				    return __l >= __r;
+				  });
     }
 
   constexpr bool operator==(monostate, monostate) noexcept { return true; }
@@ -1363,10 +1369,11 @@ namespace __detail::__variant
     {
       common_comparison_category_t<compare_three_way_result_t<_Types>...> __ret
 	= strong_ordering::equal;
-      return __detail::__variant::__compare(__ret, __v, __w,
-					    [](auto&& __l, auto&& __r) {
-					      return __l <=> __r;
-					    });
+      namespace __variant = __detail::__variant;
+      return __variant::__compare(__ret, __v, __w,
+				  [](auto&& __l, auto&& __r) {
+				    return __l <=> __r;
+				  });
     }
 
   constexpr strong_ordering
