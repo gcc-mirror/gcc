@@ -21,11 +21,6 @@ enum InlineAsmDirSpec
   Label,     // TODO: This is not present in ABNF
 };
 
-enum InlineAsmOptions
-{
-
-};
-
 // Place holder for classes
 enum InlineAsmRegOrRegClass
 {
@@ -39,6 +34,7 @@ typedef std::vector<InlineAsmDirSpec> Operands;
 typedef std::map<std::string, int> RegisterArgs;
 typedef std::vector<symbol_name> ClobberAbis;
 typedef std::map<symbol_name, int> NamedValues;
+typedef std::set<std::string> InlineAsmOptions;
 
 struct AsmArg
 {
@@ -70,6 +66,8 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 bool
 check_identifier (Parser<MacroInvocLexer> &p, std::string ident);
 
+void
+check_and_set (Parser<MacroInvocLexer> &p, AsmArg &args, std::string option);
 // From rustc
 int
 parse_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,

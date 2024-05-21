@@ -79,6 +79,8 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	  // illegal, pleaes emit the correct error.
 	  return -1;
 	}
+
+      token = parser.peek_current_token ();
     }
 
   // Done processing the local clobber abis, push that to the main Args in
@@ -92,12 +94,26 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   return 0;
 }
 
+void
+check_and_set (Parser<MacroInvocLexer> &p, AsmArg &args, std::string option)
+{
+  if (args.options.count (option) == 1)
+    {
+      // TODO: report an error of duplication
+
+      return;
+    }
+  else
+    {
+      args.options.insert (option);
+    }
+}
 int
 parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	       AsmArg &args, bool is_global_asm)
 {
   // Parse everything commitedly
-  if (!p.skip_token (LEFT_PAREN))
+  if (!parser.skip_token (LEFT_PAREN))
     {
       // We have shifted `options` to search for the left parenthesis next, we
       // should error out if this is not possible.
@@ -108,9 +124,73 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   auto token = parser.peek_current_token ();
   while (token->get_id () != last_token_id && token->get_id () != RIGHT_PAREN)
     {
-      parser.skip_token ();
+      if (!is_global_asm && check_identifier (parser, "pure"))
+	{
+	  check_and_set (parser, args, "pure");
+	}
+      else if (!is_global_asm && check_identifier (parser, "nomem"))
+	{
+	  check_and_set (parser, args, "nomem");
+	}
+      else if (!is_global_asm && check_identifier (parser, "readonly"))
+	{
+	  check_and_set (parser, args, "readonly");
+	}
+      else if (!is_global_asm && check_identifier (parser, "preserves_flags"))
+	{
+	  check_and_set (parser, args, "preserves_flags");
+	}
+      else if (!is_global_asm && check_identifier (parser, "noreturn"))
+	{
+	  check_and_set (parser, args, "noreturn");
+	}
+      else if (!is_global_asm && check_identifier (parser, "noreturn"))
+	{
+	  check_and_set (parser, args, "noreturn");
+	}
+      else if (!is_global_asm && check_identifier (parser, "nostack"))
+	{
+	  check_and_set (parser, args, "nostack");
+	}
+      else if (!is_global_asm && check_identifier (parser, "may_unwind"))
+	{
+	  check_and_set (parser, args, "may_unwind");
+	}
+      else if (check_identifier (parser, "att_syntax"))
+	{
+	  check_and_set (parser, args, "att_syntax");
+	}
+      else if (check_identifier (parser, "raw"))
+	{
+	  check_and_set (parser, args, "raw");
+	}
+      else
+	{
+	  // TODO: Unexpected error, please return the correct error
+	  rust_error_at (token->get_locus (),
+			 "Unexpected token encountered in parse_options");
+	}
+      if (!parser.skip_token (RIGHT_PAREN))
+	{
+	  break;
+	}
+
+      if (!parser.skip_token (COMMA))
+	{
+	  // TODO: If the skip of comma is unsuccessful, which should be
+	  // illegal, pleaes emit the correct error.
+	  return -1;
+	}
+
       token = parser.peek_current_token ();
     }
+
+  // TODO: Per rust asm.rs regarding options_spans
+  // I'm guessing this has to do with some error reporting.
+  // let new_span = span_start.to(p.prev_token.span);
+  // args.options_spans.push(new_span);
+
+  return 0;
 }
 bool
 check_identifier (Parser<MacroInvocLexer> &p, std::string ident)
