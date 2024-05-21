@@ -168,8 +168,6 @@ public:
 		int max_sw_edges = 0);
   virtual ~gori_compute ();
   bool edge_range_p (vrange &r, edge e, tree name, range_query &q);
-  bool condexpr_adjust (vrange &r1, vrange &r2, gimple *s, tree cond, tree op1,
-			tree op2, fur_source &src);
   bool has_edge_range_p (tree name, basic_block bb = NULL);
   bool has_edge_range_p (tree name, edge e);
   void dump (FILE *f);

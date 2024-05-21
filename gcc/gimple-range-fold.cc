@@ -745,8 +745,8 @@ fold_using_range::range_of_range_op (vrange &r,
 	    r.set_varying (type);
 	  if (lhs && gimple_range_ssa_p (op1))
 	    {
-	      if (src.gori_bb ())
-		src.gori_bb ()->register_dependency (lhs, op1);
+	      if (src.gori_ssa ())
+		src.gori_ssa ()->register_dependency (lhs, op1);
 	      relation_kind rel;
 	      rel = handler.lhs_op1_relation (r, range1, range1);
 	      if (rel != VREL_VARYING)
@@ -772,10 +772,10 @@ fold_using_range::range_of_range_op (vrange &r,
 	    relation_fold_and_or (as_a <irange> (r), s, src, range1, range2);
 	  if (lhs)
 	    {
-	      if (src.gori_bb ())
+	      if (src.gori_ssa ())
 		{
-		  src.gori_bb ()->register_dependency (lhs, op1);
-		  src.gori_bb ()->register_dependency (lhs, op2);
+		  src.gori_ssa ()->register_dependency (lhs, op1);
+		  src.gori_ssa ()->register_dependency (lhs, op2);
 		}
 	      if (gimple_range_ssa_p (op1))
 		{
@@ -843,8 +843,8 @@ fold_using_range::range_of_address (prange &r, gimple *stmt, fur_source &src)
     {
       tree ssa = TREE_OPERAND (base, 0);
       tree lhs = gimple_get_lhs (stmt);
-      if (lhs && gimple_range_ssa_p (ssa) && src.gori_bb ())
-	src.gori_bb ()->register_dependency (lhs, ssa);
+      if (lhs && gimple_range_ssa_p (ssa) && src.gori_ssa ())
+	src.gori_ssa ()->register_dependency (lhs, ssa);
       src.get_operand (r, ssa);
       range_cast (r, TREE_TYPE (gimple_assign_rhs1 (stmt)));
 
@@ -950,8 +950,8 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	  else
 	    r.union_ (arg_range);
 
-	  if (gimple_range_ssa_p (arg) && src.gori_bb ())
-	    src.gori_bb ()->register_dependency (phi_def, arg);
+	  if (gimple_range_ssa_p (arg) && src.gori_ssa ())
+	    src.gori_ssa ()->register_dependency (phi_def, arg);
 	}
 
       // Track if all arguments are the same.
@@ -1114,6 +1114,95 @@ fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &)
   return true;
 }
 
+// Given COND ? OP1 : OP2 with ranges R1 for OP1 and R2 for OP2, Use gori
+// to further resolve R1 and R2 if there are any dependencies between
+// OP1 and COND or OP2 and COND.  All values can are to be calculated using SRC
+// as the origination source location for operands..
+// Effectively, use COND an the edge condition and solve for OP1 on the true
+// edge and OP2 on the false edge.
+
+bool
+fold_using_range::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
+				   tree op1, tree op2, fur_source &src)
+{
+  if (!src.gori () || !src.gori_ssa ())
+    return false;
+
+  tree ssa1 = gimple_range_ssa_p (op1);
+  tree ssa2 = gimple_range_ssa_p (op2);
+  if (!ssa1 && !ssa2)
+    return false;
+  if (TREE_CODE (cond) != SSA_NAME)
+    return false;
+  gassign *cond_def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (cond));
+  if (!cond_def
+      || TREE_CODE_CLASS (gimple_assign_rhs_code (cond_def)) != tcc_comparison)
+    return false;
+  tree type = TREE_TYPE (gimple_assign_rhs1 (cond_def));
+  if (!range_compatible_p (type, TREE_TYPE (gimple_assign_rhs2 (cond_def))))
+    return false;
+  range_op_handler hand (gimple_assign_rhs_code (cond_def));
+  if (!hand)
+    return false;
+
+  tree c1 = gimple_range_ssa_p (gimple_assign_rhs1 (cond_def));
+  tree c2 = gimple_range_ssa_p (gimple_assign_rhs2 (cond_def));
+
+  // Only solve if there is one SSA name in the condition.
+  if ((!c1 && !c2) || (c1 && c2))
+    return false;
+
+  // Pick up the current values of each part of the condition.
+  tree rhs1 = gimple_assign_rhs1 (cond_def);
+  tree rhs2 = gimple_assign_rhs2 (cond_def);
+  Value_Range cl (TREE_TYPE (rhs1));
+  Value_Range cr (TREE_TYPE (rhs2));
+  src.get_operand (cl, rhs1);
+  src.get_operand (cr, rhs2);
+
+  tree cond_name = c1 ? c1 : c2;
+  gimple *def_stmt = SSA_NAME_DEF_STMT (cond_name);
+
+  // Evaluate the value of COND_NAME on the true and false edges, using either
+  // the op1 or op2 routines based on its location.
+  Value_Range cond_true (type), cond_false (type);
+  if (c1)
+    {
+      if (!hand.op1_range (cond_false, type, range_false (), cr))
+	return false;
+      if (!hand.op1_range (cond_true, type, range_true (), cr))
+	return false;
+      cond_false.intersect (cl);
+      cond_true.intersect (cl);
+    }
+  else
+    {
+      if (!hand.op2_range (cond_false, type, range_false (), cl))
+	return false;
+      if (!hand.op2_range (cond_true, type, range_true (), cl))
+	return false;
+      cond_false.intersect (cr);
+      cond_true.intersect (cr);
+    }
+
+   // Now solve for SSA1 or SSA2 if they are in the dependency chain.
+   if (ssa1 && src.gori_ssa()->in_chain_p (ssa1, cond_name))
+    {
+      Value_Range tmp1 (TREE_TYPE (ssa1));
+      if (src.gori ()->compute_operand_range (tmp1, def_stmt, cond_true,
+	  ssa1, src))
+	r1.intersect (tmp1);
+    }
+  if (ssa2 && src.gori_ssa ()->in_chain_p (ssa2, cond_name))
+    {
+      Value_Range tmp2 (TREE_TYPE (ssa2));
+      if (src.gori ()->compute_operand_range (tmp2, def_stmt, cond_false,
+	  ssa2, src))
+	r2.intersect (tmp2);
+    }
+  return true;
+}
+
 // Calculate a range for COND_EXPR statement S and return it in R.
 // If a range cannot be calculated, return false.
 
@@ -1138,16 +1227,15 @@ fold_using_range::range_of_cond_expr  (vrange &r, gassign *s, fur_source &src)
   src.get_operand (range2, op2);
 
   // Try to see if there is a dependence between the COND and either operand
-  if (src.gori ())
-    if (src.gori ()->condexpr_adjust (range1, range2, s, cond, op1, op2, src))
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Possible COND_EXPR adjustment. Range op1 : ");
-	  range1.dump(dump_file);
-	  fprintf (dump_file, " and Range op2: ");
-	  range2.dump(dump_file);
-	  fprintf (dump_file, "\n");
-	}
+  if (condexpr_adjust (range1, range2, s, cond, op1, op2, src))
+    if (dump_file && (dump_flags & TDF_DETAILS))
+      {
+	fprintf (dump_file, "Possible COND_EXPR adjustment. Range op1 : ");
+	range1.dump(dump_file);
+	fprintf (dump_file, " and Range op2: ");
+	range2.dump(dump_file);
+	fprintf (dump_file, "\n");
+      }
 
   // If the condition is known, choose the appropriate expression.
   if (cond_range.singleton_p ())
@@ -1345,14 +1433,14 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
     }
 
   // Outgoing relations of GORI exports require a gori engine.
-  if (!gori_bb ())
+  if (!gori_ssa ())
     return;
 
   // Now look for other relations in the exports.  This will find stmts
   // leading to the condition such as:
   // c_2 = a_4 < b_7
   // if (c_2)
-  FOR_EACH_GORI_EXPORT_NAME (gori_bb (), bb, name)
+  FOR_EACH_GORI_EXPORT_NAME (gori_ssa (), bb, name)
     {
       if (TREE_CODE (TREE_TYPE (name)) != BOOLEAN_TYPE)
 	continue;

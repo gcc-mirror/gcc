@@ -54,13 +54,11 @@ public:
 
   virtual bool edge_range_p (vrange &, edge, tree, range_query &)
     { return false; }
-  virtual bool condexpr_adjust (vrange &, vrange &, gimple *, tree, tree, tree,
-				class fur_source &) { return false; }
   virtual bool has_edge_range_p (tree, basic_block = NULL) { return false; }
   virtual bool has_edge_range_p (tree, edge ) { return false; }
   virtual void dump (FILE *) { }
   virtual bool compute_operand_range (vrange &, gimple *, const vrange &, tree,
-				      fur_source &,
+				      class fur_source &,
 				      class value_relation * = NULL)
     { return false; }
 private:

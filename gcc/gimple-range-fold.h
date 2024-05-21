@@ -106,7 +106,7 @@ class fur_source
 public:
   fur_source (range_query *q = NULL);
   inline range_query *query () const { return m_query; }
-  inline gori_map *gori_bb () const
+  inline gori_map *gori_ssa () const
     { return (m_depend_p && m_query) ? m_query->gori_ssa () : NULL; }
   inline class gimple_outgoing_range *gori ()
     { return m_depend_p ? &(m_query->gori ()) : NULL; }
@@ -171,5 +171,7 @@ protected:
 					 fur_source &src);
   void relation_fold_and_or (irange& lhs_range, gimple *s, fur_source &src,
 			     vrange &op1, vrange &op2);
+  bool condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond, tree op1,
+			tree op2, fur_source &src);
 };
 #endif // GCC_GIMPLE_RANGE_FOLD_H
