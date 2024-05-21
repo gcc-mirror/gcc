@@ -22055,14 +22055,14 @@ expand_vec_perm_psrlw_psllw_por (struct expand_vec_perm_d *d)
       if (!TARGET_MMX_WITH_SSE)
 	return false;
       mode = V4HImode;
-      gen_shr = gen_ashrv4hi3;
+      gen_shr = gen_lshrv4hi3;
       gen_shl = gen_ashlv4hi3;
       gen_or = gen_iorv4hi3;
       break;
     case E_V16QImode:
       mode = V8HImode;
-      gen_shr = gen_vlshrv8hi3;
-      gen_shl = gen_vashlv8hi3;
+      gen_shr = gen_lshrv8hi3;
+      gen_shl = gen_ashlv8hi3;
       gen_or = gen_iorv8hi3;
       break;
     default: return false;
