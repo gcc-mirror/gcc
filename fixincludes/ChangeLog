@@ -1,3 +1,7 @@
+2024-05-21  Release Manager
+
+	* GCC 13.3.0 released.
+
 2023-12-11  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (darwin_flt_eval_method): Handle macOS 14 guard

@@ -1,3 +1,7 @@
+2024-05-21  Release Manager
+
+	* GCC 13.3.0 released.
+
 2024-03-13  Marc Poulhiès  <poulhies@adacore.com>
 
 	* sem_ch13.adb (Check_Aspect_At_Freeze_Point): fix format string,

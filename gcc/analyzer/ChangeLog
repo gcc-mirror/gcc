@@ -1,3 +1,7 @@
+2024-05-21  Release Manager
+
+	* GCC 13.3.0 released.
+
 2024-05-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/114408
