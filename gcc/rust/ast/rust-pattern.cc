@@ -30,6 +30,22 @@ along with GCC; see the file COPYING3.  If not see
 namespace Rust {
 namespace AST {
 
+RangeKind
+tokenid_to_rangekind (TokenId id)
+{
+  switch (id)
+    {
+    case DOT_DOT_EQ:
+      return RangeKind::INCLUDED;
+    case ELLIPSIS:
+      return RangeKind::ELLIPSIS;
+    case DOT_DOT:
+      return RangeKind::EXCLUDED;
+    default:
+      rust_unreachable ();
+    }
+}
+
 std::string
 LiteralPattern::as_string () const
 {
@@ -73,10 +89,17 @@ std::string
 RangePattern::as_string () const
 {
   // TODO: maybe rewrite to work with non-linearisable bounds
-  if (has_ellipsis_syntax)
-    return lower->as_string () + "..." + upper->as_string ();
-  else
-    return lower->as_string () + "..=" + upper->as_string ();
+  switch (range_kind)
+    {
+    case RangeKind::EXCLUDED:
+      return lower->as_string () + ".." + upper->as_string ();
+    case RangeKind::INCLUDED:
+      return lower->as_string () + "..=" + upper->as_string ();
+    case RangeKind::ELLIPSIS:
+      return lower->as_string () + "..." + upper->as_string ();
+    default:
+      rust_unreachable ();
+    }
 }
 
 std::string

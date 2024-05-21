@@ -10261,8 +10261,10 @@ Parser<ManagedTokenSource>::parse_literal_or_range_pattern ()
     }
 
   const_TokenPtr next = lexer.peek_token ();
-  if (next->get_id () == DOT_DOT_EQ || next->get_id () == ELLIPSIS)
+  if (next->get_id () == DOT_DOT_EQ || next->get_id () == ELLIPSIS
+      || next->get_id () == DOT_DOT)
     {
+      AST::RangeKind kind = AST::tokenid_to_rangekind (next->get_id ());
       // range pattern
       lexer.skip_token ();
       std::unique_ptr<AST::RangePatternBound> lower (
@@ -10283,7 +10285,7 @@ Parser<ManagedTokenSource>::parse_literal_or_range_pattern ()
 	}
 
       return std::unique_ptr<AST::RangePattern> (
-	new AST::RangePattern (std::move (lower), std::move (upper),
+	new AST::RangePattern (std::move (lower), std::move (upper), kind,
 			       range_lower->get_locus ()));
     }
   else
@@ -10532,11 +10534,12 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
 	  = parse_qualified_path_in_expression ();
 
 	if (lexer.peek_token ()->get_id () == DOT_DOT_EQ
-	    || lexer.peek_token ()->get_id () == ELLIPSIS)
+	    || lexer.peek_token ()->get_id () == ELLIPSIS
+	    || lexer.peek_token ()->get_id () == DOT_DOT)
 	  {
 	    // qualified range pattern bound, so parse rest of range pattern
-	    bool has_ellipsis_syntax
-	      = lexer.peek_token ()->get_id () == ELLIPSIS;
+	    AST::RangeKind kind
+	      = AST::tokenid_to_rangekind (lexer.peek_token ()->get_id ());
 	    lexer.skip_token ();
 
 	    std::unique_ptr<AST::RangePatternBoundQualPath> lower_bound (
@@ -10546,8 +10549,8 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
 
 	    return std::unique_ptr<AST::RangePattern> (
 	      new AST::RangePattern (std::move (lower_bound),
-				     std::move (upper_bound), t->get_locus (),
-				     has_ellipsis_syntax));
+				     std::move (upper_bound), kind,
+				     t->get_locus ()));
 	  }
 	else
 	  {
@@ -10569,10 +10572,10 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
 	switch (next->get_id ())
 	  {
 	  case DOT_DOT_EQ:
+	  case DOT_DOT:
 	    case ELLIPSIS: {
 	      // qualified range pattern bound, so parse rest of range pattern
-	      bool has_ellipsis_syntax
-		= lexer.peek_token ()->get_id () == ELLIPSIS;
+	      AST::RangeKind kind = AST::tokenid_to_rangekind (next->get_id ());
 	      lexer.skip_token ();
 
 	      std::unique_ptr<AST::RangePatternBoundPath> lower_bound (
@@ -10582,8 +10585,8 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
 
 	      return std::unique_ptr<AST::RangePattern> (
 		new AST::RangePattern (std::move (lower_bound),
-				       std::move (upper_bound),
-				       UNKNOWN_LOCATION, has_ellipsis_syntax));
+				       std::move (upper_bound), kind,
+				       UNKNOWN_LOCATION));
 	    }
 	  case EXCLAM:
 	    return parse_macro_invocation_partial (std::move (path),
@@ -11093,9 +11096,11 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 				  std::move (elems)));
       }
     case DOT_DOT_EQ:
+    case DOT_DOT:
       case ELLIPSIS: {
 	// range
-	bool has_ellipsis_syntax = lexer.peek_token ()->get_id () == ELLIPSIS;
+	AST::RangeKind kind
+	  = AST::tokenid_to_rangekind (lexer.peek_token ()->get_id ());
 
 	lexer.skip_token ();
 
@@ -11106,8 +11111,8 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 
 	return std::unique_ptr<AST::RangePattern> (
 	  new AST::RangePattern (std::move (lower_bound),
-				 std::move (upper_bound), UNKNOWN_LOCATION,
-				 has_ellipsis_syntax));
+				 std::move (upper_bound), kind,
+				 UNKNOWN_LOCATION));
       }
       case PATTERN_BIND: {
 	// only allow on single-segment paths
