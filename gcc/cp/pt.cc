@@ -21524,7 +21524,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	if (DECL_TEMPLATE_PARM_P (t))
 	  RETURN (RECUR (DECL_INITIAL (t)));
-	if (!uses_template_parms (DECL_CONTEXT (t)))
+	if (!args || !uses_template_parms (DECL_CONTEXT (t)))
 	  RETURN (t);
 
 	/* Unfortunately, we cannot just call lookup_name here.
