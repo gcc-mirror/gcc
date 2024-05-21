@@ -163,20 +163,6 @@
     }
 })
 
-;; Generic vector floating point load/store instructions.  These will match
-;; insns defined in vsx.md or altivec.md depending on the switches.
-(define_expand "vector_load_<mode>"
-  [(set (match_operand:VEC_M 0 "vfloat_operand")
-	(match_operand:VEC_M 1 "memory_operand"))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
-  "")
-
-(define_expand "vector_store_<mode>"
-  [(set (match_operand:VEC_M 0 "memory_operand")
-	(match_operand:VEC_M 1 "vfloat_operand"))]
-  "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
-  "")
-
 ;; Splits if a GPR register was chosen for the move
 (define_split
   [(set (match_operand:VEC_L 0 "nonimmediate_operand")
