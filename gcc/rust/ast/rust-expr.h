@@ -4841,6 +4841,7 @@ public:
   TupleClobber clobber_abi;
   InlineAsmOptions options;
   std::vector<location_t> line_spans;
+  bool is_global_asm;
 };
 
 } // namespace AST
