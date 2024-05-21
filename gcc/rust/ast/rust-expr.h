@@ -398,6 +398,8 @@ public:
 
   bool get_is_mut () const { return mutability == Mutability::Mut; }
 
+  Mutability get_mutability () const { return mutability; }
+
   bool get_is_double_borrow () const { return double_borrow; }
   bool is_raw_borrow () const { return raw_borrow; }
 
