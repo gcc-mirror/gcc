@@ -2246,7 +2246,18 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, const_tree arg
   if (! overflow)
     val = real_to_integer (&r, &overflow, TYPE_PRECISION (type));
 
-  t = force_fit_type (type, val, -1, overflow | TREE_OVERFLOW (arg1));
+  /* According to IEEE standard, for conversions from floating point to
+     integer. When a NaN or infinite operand cannot be represented in the
+     destination format and this cannot otherwise be indicated, the invalid
+     operation exception shall be signaled. When a numeric operand would
+     convert to an integer outside the range of the destination format, the
+     invalid operation exception shall be signaled if this situation cannot
+     otherwise be indicated.  */
+  if (!flag_trapping_math || !overflow)
+    t = force_fit_type (type, val, -1, overflow | TREE_OVERFLOW (arg1));
+  else
+    t = NULL_TREE;
+
   return t;
 }
 

@@ -1,6 +1,6 @@
 // PR sanitizer/63956
 // { dg-do compile }
-// { dg-options "-std=c++14 -fsanitize=undefined,float-divide-by-zero,float-cast-overflow" }
+// { dg-options "-std=c++14 -fsanitize=undefined,float-divide-by-zero" }
 
 #define SA(X) static_assert((X),#X)
 #define INT_MIN (-__INT_MAX__ - 1)
@@ -162,8 +162,13 @@ fn11 (double d)
   return i * 2;
 }
 
+void
+__attribute__((optimize("no-trapping-math")))
+foo ()
+{
 constexpr int r1 = fn11 (3.4);
 constexpr int r2 = fn11 (__builtin_inf ()); // { dg-message "in .constexpr. expansion of " }
+}
 
 constexpr int
 fn12 (int i)

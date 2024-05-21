@@ -2,6 +2,7 @@
    C99 6.3.1.4(1a) New.
    Test integer saturation.  */
 
+/* { dg-options  "-fno-trapping-math" } */
 #ifndef	__STDC_WANT_DEC_FP__
 #define __STDC_WANT_DEC_FP__ 1
 #endif

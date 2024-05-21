@@ -3,7 +3,7 @@
 
 /* { dg-do compile } */
 /* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } } */
-/* { dg-options "-std=c99 -Wconversion" } */
+/* { dg-options "-std=c99 -Wconversion -fno-trapping-math" } */
 /* { dg-require-effective-target int32plus } */
 /* { dg-require-effective-target double64plus } */
 #include <limits.h>

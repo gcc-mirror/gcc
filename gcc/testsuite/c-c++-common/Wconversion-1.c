@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Wconversion" } */
+/* { dg-options "-Wconversion -fno-trapping-math" } */
 
 typedef char T;
 

@@ -2256,14 +2256,25 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
       switch (code)
 	{
 	case FIX:
+	  /* According to IEEE standard, for conversions from floating point to
+	     integer. When a NaN or infinite operand cannot be represented in
+	     the destination format and this cannot otherwise be indicated, the
+	     invalid operation exception shall be signaled. When a numeric
+	     operand would convert to an integer outside the range of the
+	     destination format, the invalid operation exception shall be
+	     signaled if this situation cannot otherwise be indicated.  */
 	  if (REAL_VALUE_ISNAN (*x))
-	    return const0_rtx;
+	    return flag_trapping_math ? NULL_RTX : const0_rtx;
+
+	  if (REAL_VALUE_ISINF (*x) && flag_trapping_math)
+	    return NULL_RTX;
 
 	  /* Test against the signed upper bound.  */
 	  wmax = wi::max_value (width, SIGNED);
 	  real_from_integer (&t, VOIDmode, wmax, SIGNED);
 	  if (real_less (&t, x))
-	    return immed_wide_int_const (wmax, mode);
+	    return (flag_trapping_math
+		    ? NULL_RTX : immed_wide_int_const (wmax, mode));
 
 	  /* Test against the signed lower bound.  */
 	  wmin = wi::min_value (width, SIGNED);
@@ -2276,13 +2287,17 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 
 	case UNSIGNED_FIX:
 	  if (REAL_VALUE_ISNAN (*x) || REAL_VALUE_NEGATIVE (*x))
-	    return const0_rtx;
+	    return flag_trapping_math ? NULL_RTX : const0_rtx;
+
+	  if (REAL_VALUE_ISINF (*x) && flag_trapping_math)
+	    return NULL_RTX;
 
 	  /* Test against the unsigned upper bound.  */
 	  wmax = wi::max_value (width, UNSIGNED);
 	  real_from_integer (&t, VOIDmode, wmax, UNSIGNED);
 	  if (real_less (&t, x))
-	    return immed_wide_int_const (wmax, mode);
+	    return (flag_trapping_math
+		    ? NULL_RTX : immed_wide_int_const (wmax, mode));
 
 	  return immed_wide_int_const (real_to_integer (x, &fail, width),
 				       mode);
