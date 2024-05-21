@@ -19,6 +19,7 @@
 #include "rust-ast-builder.h"
 #include "rust-ast-full-decls.h"
 #include "rust-ast-full.h"
+#include "rust-common.h"
 #include "rust-expr.h"
 #include "rust-token.h"
 #include "rust-make-unique.h"
@@ -122,8 +123,10 @@ Builder::let (std::unique_ptr<Pattern> pattern, std::unique_ptr<Type> type,
 std::unique_ptr<Expr>
 Builder::ref (std::unique_ptr<Expr> &&of, bool mut) const
 {
+  auto mutability = mut ? Mutability::Mut : Mutability::Imm;
   return std::unique_ptr<Expr> (
-    new BorrowExpr (std::move (of), mut, /* is double */ false, {}, loc));
+    new BorrowExpr (std::move (of), mutability,
+		    /* raw */ false, /* is double */ false, {}, loc));
 }
 
 std::unique_ptr<Expr>

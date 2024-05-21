@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-ast.h"
 #include "optional.h"
 #include "rust-builtin-ast-nodes.h"
+#include "rust-common.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
@@ -1570,12 +1571,19 @@ BorrowExpr::as_string () const
 
   std::string str ("&");
 
-  if (double_borrow)
-    str += "&";
+  if (raw_borrow)
+    {
+      str += "raw ";
+      str += get_is_mut () ? "const " : "mut ";
+    }
+  else
+    {
+      if (double_borrow)
+	str += "&";
 
-  if (is_mut)
-    str += "mut ";
-
+      if (get_is_mut ())
+	str += "mut ";
+    }
   str += main_or_left_expr->as_string ();
 
   return str;

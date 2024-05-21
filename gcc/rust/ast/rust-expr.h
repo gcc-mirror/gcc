@@ -2,6 +2,7 @@
 #define RUST_AST_EXPR_H
 
 #include "rust-ast.h"
+#include "rust-common.h"
 #include "rust-path.h"
 #include "rust-macro.h"
 #include "rust-operators.h"
@@ -370,18 +371,20 @@ public:
  * overloaded. */
 class BorrowExpr : public OperatorExpr
 {
-  bool is_mut;
+  Mutability mutability;
+  bool raw_borrow;
   bool double_borrow;
 
 public:
   std::string as_string () const override;
 
-  BorrowExpr (std::unique_ptr<Expr> borrow_lvalue, bool is_mut_borrow,
-	      bool is_double_borrow, std::vector<Attribute> outer_attribs,
-	      location_t locus)
+  BorrowExpr (std::unique_ptr<Expr> borrow_lvalue, Mutability mutability,
+	      bool raw_borrow, bool is_double_borrow,
+	      std::vector<Attribute> outer_attribs, location_t locus)
     : OperatorExpr (std::move (borrow_lvalue), std::move (outer_attribs),
 		    locus),
-      is_mut (is_mut_borrow), double_borrow (is_double_borrow)
+      mutability (mutability), raw_borrow (raw_borrow),
+      double_borrow (is_double_borrow)
   {}
 
   void accept_vis (ASTVisitor &vis) override;
@@ -393,9 +396,10 @@ public:
     return *main_or_left_expr;
   }
 
-  bool get_is_mut () const { return is_mut; }
+  bool get_is_mut () const { return mutability == Mutability::Mut; }
 
   bool get_is_double_borrow () const { return double_borrow; }
+  bool is_raw_borrow () const { return raw_borrow; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
