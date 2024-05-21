@@ -969,7 +969,7 @@ ranger_cache::ranger_cache (int not_executable_flag, bool use_imm_uses)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, x);
       if (bb)
-	gori ().map ()->exports (bb);
+	gori_ssa ()->exports (bb);
     }
   m_update = new update_list ();
 }
@@ -1000,7 +1000,7 @@ ranger_cache::dump (FILE *f)
 void
 ranger_cache::dump_bb (FILE *f, basic_block bb)
 {
-  gori ().map ()->dump (f, bb, false);
+  gori_ssa ()->dump (f, bb, false);
   m_on_entry.dump (f, bb);
   m_relation->dump (f, bb);
 }
@@ -1033,8 +1033,8 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
   current_p = false;
   if (had_global)
     current_p = r.singleton_p ()
-		|| m_temporal->current_p (name, gori ().map ()->depend1 (name),
-					  gori ().map ()->depend2 (name));
+		|| m_temporal->current_p (name, gori_ssa ()->depend1 (name),
+					  gori_ssa ()->depend2 (name));
   else
     {
       // If no global value has been set and value is VARYING, fold the stmt
@@ -1071,8 +1071,8 @@ ranger_cache::set_global_range (tree name, const vrange &r, bool changed)
   if (!changed)
     {
       // If there are dependencies, make sure this is not out of date.
-      if (!m_temporal->current_p (name, gori ().map ()->depend1 (name),
-				 gori ().map ()->depend2 (name)))
+      if (!m_temporal->current_p (name, gori_ssa ()->depend1 (name),
+				 gori_ssa ()->depend2 (name)))
 	m_temporal->set_timestamp (name);
       return;
     }
@@ -1097,7 +1097,7 @@ ranger_cache::set_global_range (tree name, const vrange &r, bool changed)
 
   if (r.singleton_p ()
       || (POINTER_TYPE_P (TREE_TYPE (name)) && r.nonzero_p ()))
-    gori ().map ()->set_range_invariant (name);
+    gori_ssa ()->set_range_invariant (name);
   m_temporal->set_timestamp (name);
 }
 
@@ -1783,7 +1783,7 @@ ranger_cache::register_inferred_value (const vrange &ir, tree name,
       m_on_entry.set_bb_range (name, bb, r);
       // If this range was invariant before, remove invariant.
       if (!gori ().has_edge_range_p (name))
-	gori ().map ()->set_range_invariant (name, false);
+	gori_ssa ()->set_range_invariant (name, false);
     }
 }
 

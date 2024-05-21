@@ -514,7 +514,7 @@ gori_map::dump (FILE *f, basic_block bb, bool verbose)
 	fprintf (f, "bb<%u> Imports: ",bb->index);
       else
 	fprintf (f, "Imports: ");
-      FOR_EACH_GORI_IMPORT_NAME (*this, bb, name)
+      FOR_EACH_GORI_IMPORT_NAME (this, bb, name)
 	{
 	  print_generic_expr (f, name, TDF_SLIM);
 	  fprintf (f, "  ");
@@ -527,7 +527,7 @@ gori_map::dump (FILE *f, basic_block bb, bool verbose)
   else
     fprintf (f, "Exports: ");
   // Dump the export vector.
-  FOR_EACH_GORI_EXPORT_NAME (*this, bb, name)
+  FOR_EACH_GORI_EXPORT_NAME (this, bb, name)
     {
       print_generic_expr (f, name, TDF_SLIM);
       fprintf (f, "  ");
@@ -557,8 +557,9 @@ debug (gori_map &g)
 
 // Construct a gori_compute object.
 
-gori_compute::gori_compute (int not_executable_flag, int sw_max_edges)
-  : gimple_outgoing_range (sw_max_edges), tracer ("GORI ")
+gori_compute::gori_compute (gori_map &map, int not_executable_flag,
+			    int sw_max_edges)
+  : gimple_outgoing_range (sw_max_edges), m_map (map), tracer ("GORI ")
 {
   m_not_executable_flag = not_executable_flag;
   // Create a boolean_type true and false range.

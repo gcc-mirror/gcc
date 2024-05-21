@@ -63,7 +63,6 @@ public:
 				      fur_source &,
 				      class value_relation * = NULL)
     { return false; }
-  virtual class gori_map *map () { return NULL; }
 private:
   void calc_switch_ranges (gswitch *sw);
   bool switch_edge_range (irange &r, gswitch *sw, edge e);

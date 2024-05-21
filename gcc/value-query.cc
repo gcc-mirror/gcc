@@ -188,7 +188,9 @@ void
 range_query::create_gori (int not_executable_flag, int sw_max_edges)
 {
   gcc_checking_assert (m_gori == &default_gori);
-  m_gori = new gori_compute (not_executable_flag, sw_max_edges);
+  m_map = new gori_map ();
+  gcc_checking_assert (m_map);
+  m_gori = new gori_compute (*m_map, not_executable_flag, sw_max_edges);
   gcc_checking_assert (m_gori);
 }
 
@@ -251,6 +253,7 @@ range_query::share_query (range_query &q)
   m_relation = q.m_relation;
   m_infer = q.m_infer;
   m_gori = q.m_gori;
+  m_map = q.m_map;
   m_shared_copy_p = true;
 }
 
@@ -259,6 +262,7 @@ range_query::range_query ()
   m_relation = &default_relation_oracle;
   m_infer = &default_infer_oracle;
   m_gori = &default_gori;
+  m_map = NULL;
   m_shared_copy_p = false;
 }
 

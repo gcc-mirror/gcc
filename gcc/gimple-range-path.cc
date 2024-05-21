@@ -413,7 +413,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
       p->reset_path ();
     }
 
-  bitmap exports = gori ().map ()->exports (bb);
+  bitmap exports = gori_ssa ()->exports (bb);
   EXECUTE_IF_AND_IN_BITMAP (m_exit_dependencies, exports, 0, i, bi)
     {
       tree name = ssa_name (i);
@@ -490,7 +490,7 @@ path_range_query::compute_exit_dependencies (bitmap dependencies)
 {
   // Start with the imports from the exit block...
   basic_block exit = m_path[0];
-  bitmap_copy (dependencies, gori ().map()->imports (exit));
+  bitmap_copy (dependencies, gori_ssa ()->imports (exit));
 
   auto_vec<tree> worklist (bitmap_count_bits (dependencies));
   bitmap_iterator bi;
@@ -538,7 +538,7 @@ path_range_query::compute_exit_dependencies (bitmap dependencies)
       {
 	basic_block bb = m_path[i];
 	tree name;
-	FOR_EACH_GORI_EXPORT_NAME (*(gori ().map ()), bb, name)
+	FOR_EACH_GORI_EXPORT_NAME (gori_ssa (), bb, name)
 	  if (TREE_CODE (TREE_TYPE (name)) == BOOLEAN_TYPE)
 	    bitmap_set_bit (dependencies, SSA_NAME_VERSION (name));
       }

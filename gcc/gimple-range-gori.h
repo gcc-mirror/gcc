@@ -164,7 +164,8 @@ class value_relation;
 class gori_compute : public gimple_outgoing_range
 {
 public:
-  gori_compute (int not_executable_flag = 0, int max_sw_edges = 0);
+  gori_compute (gori_map &map, int not_executable_flag = 0,
+		int max_sw_edges = 0);
   virtual ~gori_compute ();
   bool edge_range_p (vrange &r, edge e, tree name, range_query &q);
   bool condexpr_adjust (vrange &r1, vrange &r2, gimple *s, tree cond, tree op1,
@@ -175,9 +176,8 @@ public:
   bool compute_operand_range (vrange &r, gimple *stmt, const vrange &lhs,
 			      tree name, class fur_source &src,
 			      value_relation *rel = NULL);
-  gori_map *map () { return &m_map; }
 private:
-  gori_map m_map;
+  gori_map &m_map;
   bool refine_using_relation (tree op1, vrange &op1_range,
 			      tree op2, vrange &op2_range,
 			      fur_source &src, relation_kind k);
@@ -226,14 +226,14 @@ bool gori_on_edge (class ssa_cache &r, edge e,
 bool gori_name_on_edge (vrange &r, tree name, edge e, range_query *q = NULL);
 
 // For each name that is an import into BB's exports..
-#define FOR_EACH_GORI_IMPORT_NAME(gori, bb, name)			\
-  for (gori_export_iterator iter ((gori).imports ((bb)));	\
+#define FOR_EACH_GORI_IMPORT_NAME(gorimap, bb, name)			\
+  for (gori_export_iterator iter ((gorimap)->imports ((bb)));	\
        ((name) = iter.get_name ());				\
        iter.next ())
 
 // For each name possibly exported from block BB.
-#define FOR_EACH_GORI_EXPORT_NAME(gori, bb, name)		\
-  for (gori_export_iterator iter ((gori).exports ((bb)));	\
+#define FOR_EACH_GORI_EXPORT_NAME(gorimap, bb, name)		\
+  for (gori_export_iterator iter ((gorimap)->exports ((bb)));	\
        ((name) = iter.get_name ());				\
        iter.next ())
 

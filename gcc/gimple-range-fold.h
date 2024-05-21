@@ -105,7 +105,9 @@ class fur_source
 {
 public:
   fur_source (range_query *q = NULL);
-  inline range_query *query () { return m_query; }
+  inline range_query *query () const { return m_query; }
+  inline gori_map *gori_bb () const
+    { return (m_depend_p && m_query) ? m_query->gori_ssa () : NULL; }
   inline class gimple_outgoing_range *gori ()
     { return m_depend_p ? &(m_query->gori ()) : NULL; }
   virtual bool get_operand (vrange &r, tree expr);
