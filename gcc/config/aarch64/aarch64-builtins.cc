@@ -675,6 +675,23 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
   VGET_LOW_BUILTIN(u64) \
   VGET_LOW_BUILTIN(bf16)
 
+#define AARCH64_SIMD_VGET_HIGH_BUILTINS \
+  VGET_HIGH_BUILTIN(f16) \
+  VGET_HIGH_BUILTIN(f32) \
+  VGET_HIGH_BUILTIN(f64) \
+  VGET_HIGH_BUILTIN(p8) \
+  VGET_HIGH_BUILTIN(p16) \
+  VGET_HIGH_BUILTIN(p64) \
+  VGET_HIGH_BUILTIN(s8) \
+  VGET_HIGH_BUILTIN(s16) \
+  VGET_HIGH_BUILTIN(s32) \
+  VGET_HIGH_BUILTIN(s64) \
+  VGET_HIGH_BUILTIN(u8) \
+  VGET_HIGH_BUILTIN(u16) \
+  VGET_HIGH_BUILTIN(u32) \
+  VGET_HIGH_BUILTIN(u64) \
+  VGET_HIGH_BUILTIN(bf16)
+
 typedef struct
 {
   const char *name;
@@ -717,6 +734,9 @@ typedef struct
 #define VGET_LOW_BUILTIN(A) \
   AARCH64_SIMD_BUILTIN_VGET_LOW_##A,
 
+#define VGET_HIGH_BUILTIN(A)                     \
+  AARCH64_SIMD_BUILTIN_VGET_HIGH_##A,
+
 #undef VAR1
 #define VAR1(T, N, MAP, FLAG, A) \
   AARCH64_SIMD_BUILTIN_##T##_##N##A,
@@ -753,6 +773,7 @@ enum aarch64_builtins
   /* SIMD intrinsic builtins.  */
   AARCH64_SIMD_VREINTERPRET_BUILTINS
   AARCH64_SIMD_VGET_LOW_BUILTINS
+  AARCH64_SIMD_VGET_HIGH_BUILTINS
   /* ARMv8.3-A Pointer Authentication Builtins.  */
   AARCH64_PAUTH_BUILTIN_AUTIA1716,
   AARCH64_PAUTH_BUILTIN_PACIA1716,
@@ -855,26 +876,21 @@ static aarch64_fcmla_laneq_builtin_datum aarch64_fcmla_lane_builtin_data[] = {
    false \
   },
 
-#define AARCH64_SIMD_VGET_LOW_BUILTINS \
-  VGET_LOW_BUILTIN(f16) \
-  VGET_LOW_BUILTIN(f32) \
-  VGET_LOW_BUILTIN(f64) \
-  VGET_LOW_BUILTIN(p8) \
-  VGET_LOW_BUILTIN(p16) \
-  VGET_LOW_BUILTIN(p64) \
-  VGET_LOW_BUILTIN(s8) \
-  VGET_LOW_BUILTIN(s16) \
-  VGET_LOW_BUILTIN(s32) \
-  VGET_LOW_BUILTIN(s64) \
-  VGET_LOW_BUILTIN(u8) \
-  VGET_LOW_BUILTIN(u16) \
-  VGET_LOW_BUILTIN(u32) \
-  VGET_LOW_BUILTIN(u64) \
-  VGET_LOW_BUILTIN(bf16)
+#undef VGET_HIGH_BUILTIN
+#define VGET_HIGH_BUILTIN(A) \
+  {"vget_high_" #A, \
+   AARCH64_SIMD_BUILTIN_VGET_HIGH_##A, \
+   2, \
+   { SIMD_INTR_MODE(A, d), SIMD_INTR_MODE(A, q) }, \
+   { SIMD_INTR_QUAL(A), SIMD_INTR_QUAL(A) }, \
+   FLAG_AUTO_FP, \
+   false \
+  },
 
 static const aarch64_simd_intrinsic_datum aarch64_simd_intrinsic_data[] = {
   AARCH64_SIMD_VREINTERPRET_BUILTINS
   AARCH64_SIMD_VGET_LOW_BUILTINS
+  AARCH64_SIMD_VGET_HIGH_BUILTINS
 };
 
 
@@ -3270,6 +3286,10 @@ aarch64_fold_builtin_lane_check (tree arg0, tree arg1, tree arg2)
 #define VGET_LOW_BUILTIN(A) \
   case AARCH64_SIMD_BUILTIN_VGET_LOW_##A:
 
+#undef VGET_HIGH_BUILTIN
+#define VGET_HIGH_BUILTIN(A) \
+  case AARCH64_SIMD_BUILTIN_VGET_HIGH_##A:
+
 /* Try to fold a call to the built-in function with subcode FCODE.  The
    function is passed the N_ARGS arguments in ARGS and it returns a value
    of type TYPE.  Return the new expression on success and NULL_TREE on
@@ -3291,6 +3311,13 @@ aarch64_general_fold_builtin (unsigned int fcode, tree type,
       AARCH64_SIMD_VGET_LOW_BUILTINS
 	{
 	  auto pos = BYTES_BIG_ENDIAN ? 64 : 0;
+
+	  return fold_build3 (BIT_FIELD_REF, type, args[0], bitsize_int (64),
+			      bitsize_int (pos));
+	}
+      AARCH64_SIMD_VGET_HIGH_BUILTINS
+	{
+	  auto pos = BYTES_BIG_ENDIAN ? 0 : 64;
 
 	  return fold_build3 (BIT_FIELD_REF, type, args[0], bitsize_int (64),
 			      bitsize_int (pos));
