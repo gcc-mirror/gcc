@@ -568,7 +568,7 @@
 ;; ...
 ;;
 ;; and so the vectorizer provides r, in which the result has to be accumulated.
-(define_insn "<sur>dot_prod<vsi2qi><vczle><vczbe>"
+(define_insn "<sur>dot_prod<mode><vsi2qi><vczle><vczbe>"
   [(set (match_operand:VS 0 "register_operand" "=w")
 	(plus:VS
 	  (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand" "w")
@@ -582,7 +582,7 @@
 
 ;; These instructions map to the __builtins for the Armv8.6-a I8MM usdot
 ;; (vector) Dot Product operation and the vectorized optab.
-(define_insn "usdot_prod<vsi2qi><vczle><vczbe>"
+(define_insn "usdot_prod<mode><vsi2qi><vczle><vczbe>"
   [(set (match_operand:VS 0 "register_operand" "=w")
 	(plus:VS
 	  (unspec:VS [(match_operand:<VSI2QI> 1 "register_operand" "w")
@@ -1075,7 +1075,8 @@
 	rtx ones = force_reg (V16QImode, CONST1_RTX (V16QImode));
 	rtx abd = gen_reg_rtx (V16QImode);
 	emit_insn (gen_aarch64_<su>abdv16qi (abd, operands[1], operands[2]));
-	emit_insn (gen_udot_prodv16qi (operands[0], abd, ones, operands[3]));
+	emit_insn (gen_udot_prodv4siv16qi (operands[0], abd, ones,
+					   operands[3]));
 	DONE;
       }
     rtx reduc = gen_reg_rtx (V8HImode);
@@ -3530,6 +3531,7 @@
 
     /* Generate a byte popcount.  */
     machine_mode mode = <bitsize> == 64 ? V8QImode : V16QImode;
+    machine_mode mode2 = <bitsize> == 64 ? V2SImode : V4SImode;
     rtx tmp = gen_reg_rtx (mode);
     auto icode = optab_handler (popcount_optab, mode);
     emit_insn (GEN_FCN (icode) (tmp, gen_lowpart (mode, operands[1])));
@@ -3540,7 +3542,7 @@
 	/* For V4SI and V2SI, we can generate a UDOT with a 0 accumulator and a
 	   1 multiplicand.  For V2DI, another UAADDLP is needed.  */
 	rtx ones = force_reg (mode, CONST1_RTX (mode));
-	auto icode = optab_handler (udot_prod_optab, mode);
+	auto icode = convert_optab_handler (udot_prod_optab, mode2, mode);
 	mode = <bitsize> == 64 ? V2SImode : V4SImode;
 	rtx dest = mode == <MODE>mode ? operands[0] : gen_reg_rtx (mode);
 	rtx zeros = force_reg (mode, CONST0_RTX (mode));

@@ -458,6 +458,19 @@ aarch64_types_storestruct_lane_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_poly, qualifier_struct_load_store_lane_index };
 #define TYPES_STORESTRUCT_LANE_P (aarch64_types_storestruct_lane_p_qualifiers)
 
+constexpr insn_code CODE_FOR_aarch64_sdot_prodv8qi
+  = CODE_FOR_sdot_prodv2siv8qi;
+constexpr insn_code CODE_FOR_aarch64_udot_prodv8qi
+  = CODE_FOR_udot_prodv2siv8qi;
+constexpr insn_code CODE_FOR_aarch64_usdot_prodv8qi
+  = CODE_FOR_usdot_prodv2siv8qi;
+constexpr insn_code CODE_FOR_aarch64_sdot_prodv16qi
+  = CODE_FOR_sdot_prodv4siv16qi;
+constexpr insn_code CODE_FOR_aarch64_udot_prodv16qi
+  = CODE_FOR_udot_prodv4siv16qi;
+constexpr insn_code CODE_FOR_aarch64_usdot_prodv16qi
+  = CODE_FOR_usdot_prodv4siv16qi;
+
 #define CF0(N, X) CODE_FOR_aarch64_##N##X
 #define CF1(N, X) CODE_FOR_##N##X##1
 #define CF2(N, X) CODE_FOR_##N##X##2

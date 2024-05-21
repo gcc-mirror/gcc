@@ -3690,6 +3690,21 @@ function_expander::direct_optab_handler_for_sign (optab signed_op,
   return ::direct_optab_handler (op, mode);
 }
 
+/* Choose between signed and unsigned convert optabs SIGNED_OP and
+   UNSIGNED_OP based on the signedness of type suffix SUFFIX_I, then
+   pick the appropriate optab handler for "converting" from FROM_MODE
+   to TO_MODE.  */
+insn_code
+function_expander::convert_optab_handler_for_sign (optab signed_op,
+						   optab unsigned_op,
+						   unsigned int suffix_i,
+						   machine_mode to_mode,
+						   machine_mode from_mode)
+{
+  optab op = type_suffix (suffix_i).unsigned_p ? unsigned_op : signed_op;
+  return ::convert_optab_handler (op, to_mode, from_mode);
+}
+
 /* Return true if X overlaps any input.  */
 bool
 function_expander::overlaps_input_p (rtx x)

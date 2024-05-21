@@ -2021,7 +2021,7 @@
 )
 
 ;; Two-way dot-product.
-(define_insn "@aarch64_sve_<sur>dotvnx4sivnx8hi"
+(define_insn "<sur>dot_prodvnx4sivnx8hi"
   [(set (match_operand:VNx4SI 0 "register_operand")
 	(plus:VNx4SI
 	  (unspec:VNx4SI

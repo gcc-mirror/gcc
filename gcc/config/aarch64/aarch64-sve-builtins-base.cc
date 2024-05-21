@@ -820,15 +820,16 @@ public:
     e.rotate_inputs_left (0, 3);
     insn_code icode;
     if (e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES)
-      icode = e.direct_optab_handler_for_sign (sdot_prod_optab,
-					       udot_prod_optab,
-					       0, GET_MODE (e.args[0]));
+      icode = e.convert_optab_handler_for_sign (sdot_prod_optab,
+						udot_prod_optab,
+						0, e.result_mode (),
+						GET_MODE (e.args[0]));
     else
       icode = (e.type_suffix (0).float_p
 	       ? CODE_FOR_aarch64_sve_fdotvnx4sfvnx8hf
 	       : e.type_suffix (0).unsigned_p
-	       ? CODE_FOR_aarch64_sve_udotvnx4sivnx8hi
-	       : CODE_FOR_aarch64_sve_sdotvnx4sivnx8hi);
+	       ? CODE_FOR_udot_prodvnx4sivnx8hi
+	       : CODE_FOR_sdot_prodvnx4sivnx8hi);
     return e.use_unpred_insn (icode);
   }
 };
@@ -2905,7 +2906,7 @@ public:
        Hence we do the same rotation on arguments as svdot_impl does.  */
     e.rotate_inputs_left (0, 3);
     machine_mode mode = e.vector_mode (0);
-    insn_code icode = code_for_dot_prod (UNSPEC_USDOT, mode);
+    insn_code icode = code_for_dot_prod (UNSPEC_USDOT, e.result_mode (), mode);
     return e.use_exact_insn (icode);
   }
 
