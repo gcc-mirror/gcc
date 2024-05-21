@@ -54,6 +54,10 @@ Feature::create (Feature::Name name)
     case Feature::Name::RAW_REF_OP:
       return Feature (Feature::Name::RAW_REF_OP, Feature::State::ACTIVE,
 		      "raw_ref_op", "1.41.0", 64490, tl::nullopt, "");
+    case Feature::Name::EXCLUSIVE_RANGE_PATTERN:
+      return Feature (Feature::Name::EXCLUSIVE_RANGE_PATTERN,
+		      Feature::State::ACTIVE, "exclusive_range_pattern",
+		      "1.11.0", 37854, tl::nullopt, "");
     default:
       rust_unreachable ();
     }
@@ -74,6 +78,7 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"box_syntax", Feature::Name::BOX_SYNTAX},
   {"dropck_eyepatch", Feature::Name::DROPCK_EYEPATCH},
   {"raw_ref_op", Feature::Name::RAW_REF_OP},
+  {"exclusive_range_pattern", Feature::Name::EXCLUSIVE_RANGE_PATTERN},
 }; // namespace Rust
 
 tl::optional<Feature::Name>

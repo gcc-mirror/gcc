@@ -49,6 +49,7 @@ public:
     BOX_SYNTAX,
     DROPCK_EYEPATCH,
     RAW_REF_OP,
+    EXCLUSIVE_RANGE_PATTERN,
   };
 
   const std::string &as_string () { return m_name_str; }

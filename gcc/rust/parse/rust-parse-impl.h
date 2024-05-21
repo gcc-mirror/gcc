@@ -10586,7 +10586,7 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
 	      return std::unique_ptr<AST::RangePattern> (
 		new AST::RangePattern (std::move (lower_bound),
 				       std::move (upper_bound), kind,
-				       UNKNOWN_LOCATION));
+				       next->get_locus ()));
 	    }
 	  case EXCLAM:
 	    return parse_macro_invocation_partial (std::move (path),
@@ -11112,7 +11112,7 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	return std::unique_ptr<AST::RangePattern> (
 	  new AST::RangePattern (std::move (lower_bound),
 				 std::move (upper_bound), kind,
-				 UNKNOWN_LOCATION));
+				 t->get_locus ()));
       }
       case PATTERN_BIND: {
 	// only allow on single-segment paths
