@@ -1,3 +1,29 @@
+2024-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115143
+	* gcc.c-torture/compile/pr115143-1.c: New test.
+	* gcc.c-torture/compile/pr115143-2.c: New test.
+	* gcc.c-torture/compile/pr115143-3.c: New test.
+
+2024-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115114
+	* g++.dg/cpp2a/class-deduction-aggr15.C: New test.
+
+2024-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114994
+	* g++.dg/template/non-dependent32.C: New test.
+
 2024-05-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

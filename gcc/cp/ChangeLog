@@ -1,3 +1,20 @@
+2024-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115114
+	* pt.cc (maybe_aggr_guide): Consider bases in the paren init case.
+
+2024-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/114994
+	* tree.cc (lvalue_kind) <case MODOP_EXPR>: For a class
+	assignment, consider the result type.
+
 2024-05-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
