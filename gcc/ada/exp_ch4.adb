@@ -2329,6 +2329,28 @@ package body Exp_Ch4 is
       --  Case of untagged record types
 
       elsif Is_Record_Type (Full_Type) then
+         --  Equality composes in Ada 2012 for untagged record types. It also
+         --  composes for bounded strings, because they are part of the
+         --  predefined environment (see 4.5.2(32.1/1)). We could make it
+         --  compose for bounded strings by making them tagged, or by making
+         --  sure all subcomponents are set to the same value, even when not
+         --  used. Instead, we have this special case in the compiler, because
+         --  it's more efficient.
+
+         if Ada_Version >= Ada_2012 or else Is_Bounded_String (Comp_Type) then
+            declare
+               Eq_Call : constant Node_Id :=
+                 Build_Eq_Call (Comp_Type, Loc, Lhs, Rhs);
+
+            begin
+               if Present (Eq_Call) then
+                  return Eq_Call;
+               end if;
+            end;
+         end if;
+
+         --  Check whether a TSS has been created for the type
+
          Eq_Op := TSS (Full_Type, TSS_Composite_Equality);
 
          if Present (Eq_Op) then
@@ -2353,34 +2375,6 @@ package body Exp_Ch4 is
                  Make_Function_Call (Loc,
                    Name                   => New_Occurrence_Of (Eq_Op, Loc),
                    Parameter_Associations => New_List (L_Exp, R_Exp));
-            end;
-
-         --  Equality composes in Ada 2012 for untagged record types. It also
-         --  composes for bounded strings, because they are part of the
-         --  predefined environment (see 4.5.2(32.1/1)). We could make it
-         --  compose for bounded strings by making them tagged, or by making
-         --  sure all subcomponents are set to the same value, even when not
-         --  used. Instead, we have this special case in the compiler, because
-         --  it's more efficient.
-
-         elsif Ada_Version >= Ada_2012 or else Is_Bounded_String (Comp_Type)
-         then
-            --  If no TSS has been created for the type, check whether there is
-            --  a primitive equality declared for it.
-
-            declare
-               Op : constant Node_Id :=
-                 Build_Eq_Call (Comp_Type, Loc, Lhs, Rhs);
-
-            begin
-               --  Use user-defined primitive if it exists, otherwise use
-               --  predefined equality.
-
-               if Present (Op) then
-                  return Op;
-               else
-                  return Make_Op_Eq (Loc, Lhs, Rhs);
-               end if;
             end;
 
          else
