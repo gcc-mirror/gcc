@@ -79,17 +79,17 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	  // illegal, pleaes emit the correct error.
 	  return -1;
 	}
-
-      // Done processing the local clobber abis, push that to the main Args in
-      // argument
-
-      for (auto abi : new_abis)
-	{
-	  args.clobber_abis.push_back (abi);
-	}
-
-      return 0;
     }
+
+  // Done processing the local clobber abis, push that to the main Args in
+  // argument
+
+  for (auto abi : new_abis)
+    {
+      args.clobber_abis.push_back (abi);
+    }
+
+  return 0;
 }
 
 int
