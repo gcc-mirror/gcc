@@ -1,3 +1,372 @@
+2024-05-20  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb: Misc cleanups and comment fixes.
+	(Check_Overloaded_Formal_Subprogram): Remove the Others_Choice
+	error message.
+	(Others_Choice): Remove this variable; no longer needed.
+	* types.ads (Text_Ptr): Add a range constraint limiting the
+	subtype to values that are actually used. This has the advantage
+	that when the compiler is compiled with validity checks,
+	uninitialized values of subtypes Text_Ptr and Source_Ptr will be
+	caught.
+	* sinput.ads (Sloc_Adjust): Use the base subtype; this is used as
+	an offset, so we need to allow arbitrary negative values.
+
+2024-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.ads (Preload_Finalization_Collection): Delete.
+	* exp_ch7.adb (Allows_Finalization_Collection): Revert change.
+	(Preload_Finalization_Collection): Delete.
+	* opt.ads (Interface_Seen): Likewise.
+	* scng.adb (Scan): Revert latest change.
+	* sem_ch10.adb: Remove clause for Exp_Ch7.
+	(Analyze_Compilation_Unit): Revert latest change.
+	* libgnat/i-c.ads: Use a fully qualified name for the standard "+"
+	operator in the preconditons/postconditions of subprograms.
+
+2024-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Record_Aggregate.Component_OK_For_Backend):
+	Also return False for a delayed conditional expression.
+
+2024-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.ads (Check_Compile_Time_Size): Remove obsolete description
+	of usage for the Size_Known_At_Compile_Time flag.
+	* freeze.adb (Check_Compile_Time_Size.Size_Known): In the case where
+	a variant part is present, do not return False if Esize is known.
+	* sem_util.adb (Needs_Secondary_Stack.Caller_Known_Size_Record): Add
+	missing "Start of processing" comment.  Return true if either a size
+	clause or an object size clause has been given for the first subtype
+	of the type.
+
+2024-05-20  Bob Duff  <duff@adacore.com>
+
+	* sinfo.ads: Misc comment corrections and clarifications.
+	The syntax for GENERIC_ASSOCIATION and FORMAL_PACKAGE_ACTUAL_PART
+	was wrong.
+	Emphasize that "others => <>" is not represented as an
+	N_Generic_Association (with or without Box_Present set),
+	and give examples illustrating the various possibilities.
+
+2024-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo-utils.ads (Is_Base_Type): Move to Miscellaneous Subprograms
+	section and add description.
+	* fe.h (Is_Base_Type): Declare.
+
+2024-05-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): Move condition and call for
+	Resolve_Record_Aggregate in front of code related to calling
+	Resolve_Container_Aggregate (and add test that the aggregate is
+	not homogeneous), and remove special-case testing and call to
+	Resolve_Container_Aggregate for empty aggregates. Also, add error
+	check for an attempt to use "[]" for an aggregate of a record type
+	that does not specify an Aggregate aspect.
+	(Resolve_Record_Aggregate): Remove error check for record
+	aggregates with "[]" (now done by Resolve_Aggregate).
+
+2024-05-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): Move condition and call for
+	Resolve_Record_Aggregate in front of code related to calling
+	Resolve_Container_Aggregate (and add test that the aggregate
+	is not homogeneous), and remove special-case testing and call
+	to Resolve_Container_Aggregate for empty aggregates.
+
+2024-05-20  Justin Squirek  <squirek@adacore.com>
+
+	* accessibility.adb (Accessibility_Level): Add cases for 'First
+	and 'Last.
+
+2024-05-20  Justin Squirek  <squirek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Remove restriction on 'Super
+	for abstract types.
+
+2024-05-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.ads (Attribute_Impl_Def): Fix list of
+	implementation-defined attributes.
+
+2024-05-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Attribute_12): Add attributes Old,
+	Overlaps_Storage and Result.
+
+2024-05-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Move IF statement that
+	checks restriction No_Implementation_Attributes for Ada 2005,
+	2012 and Ada 2022 attributes inside Comes_From_Source condition
+	that checks the same restriction for Ada 83 attributes.
+
+2024-05-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Remove condition that is
+	already checked by an enclosing IF statement.
+
+2024-05-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.ads (Universal_Type_Attribute): Simplify using
+	array aggregate syntax with discrete choice list.
+
+2024-05-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.ads (Attribute_Impl_Def): Fix style in comment.
+
+2024-05-20  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-taprop__linux.adb (Enter_Task): Move setting
+	of thread ID out of Enter_Task.
+	(Initialize): Set thread ID for the environment task.
+	(Create_Task): Remove now unnecessary Unrestricted_Access
+	attribute and add justification for a memory write.
+	* libgnarl/s-taprop__posix.adb: Likewise.
+	* libgnarl/s-taprop__qnx.adb: Likewise.
+	* libgnarl/s-taprop__rtems.adb: Likewise.
+	* libgnarl/s-taprop__solaris.adb: Likewise.
+	* libgnarl/s-taspri__posix.ads: Remove pragma Atomic for
+	Private_Data.Thread, and update documentation comment.
+	* libgnarl/s-taspri__lynxos.ads: Likewise.
+	* libgnarl/s-taspri__posix-noaltstack.ads: Likewise.
+	* libgnarl/s-taspri__solaris.ads: Likewise.
+	* libgnarl/s-tporft.adb (Register_Foreign_Thread): Adapt to
+	Enter_Task not setting the thread ID anymore.
+	* libgnarl/s-tassta.adb (Task_Wrapper): Update comment.
+
+2024-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.ads (Is_Delayed_Conditional_Expression): New predicate.
+	* exp_aggr.adb (Convert_To_Assignments.Known_Size): Likewise.
+	(Convert_To_Assignments): Climb the parent chain, looking through
+	qualified expressions and dependent expressions of conditional
+	expressions, to find out whether the expansion may be delayed.
+	Call Known_Size for this in the case of an object declaration.
+	If so, set Expansion_Delayed on the aggregate as well as all the
+	intermediate conditional expressions.
+	(Initialize_Component): Reset the Analyzed flag on an initialization
+	expression that is a conditional expression whose expansion has been
+	delayed.
+	(Is_Delayed_Conditional_Expression): New predicate.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Handle initialization
+	expressions that are conditional expressions whose expansion has
+	been delayed.
+	* exp_ch4.adb (Build_Explicit_Assignment): New procedure.
+	(Expand_Allocator_Expression): Handle initialization expressions
+	that are conditional expressions whose expansion has been delayed.
+	(Expand_N_Case_Expression): Deal with expressions whose expansion
+	has been delayed by waiting for the rewriting of their parent as
+	an assignment statement and then optimizing the assignment.
+	(Expand_N_If_Expression): Likewise.
+	(Expand_N_Qualified_Expression): Do not apply a predicate check to
+	an operand that is a delayed aggregate or conditional expression.
+	* gen_il-gen-gen_nodes.adb (N_If_Expression): Add Expansion_Delayed
+	semantic flag.
+	(N_Case_Expression): Likewise.
+	* sinfo.ads (Expansion_Delayed): Document extended usage.
+
+2024-05-20  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_aggr.adb (Expand_Container_Aggregate): Add top-level
+	variables Choice_{Lo|Hi} and Int_Choice_{Lo|Hi} used for
+	determining the low and high bounds of component association
+	choices. Replace code for determining whether we have an indexed
+	aggregate with call to new function Sem_Aggr.Is_Indexed_Aggregate.
+	Remove test of whether Empty_Subp is a function, since it must be
+	a function. Move Default and Count_Type to be locals of a new
+	block enclosing the code that creates the object to hold the
+	aggregate length, and set them according to the default and type
+	of the Empty function's parameter when present (and to Empty and
+	Standard_Natural otherwise). Use Siz_Exp for the aggregate length
+	when set, and use Empty's default length when available, and use
+	zero for the length otherwise. In generating the call to the
+	New_Indexed function, use the determined lower and upper bounds if
+	determined earlier by Aggregate_Size, and otherwise compute those
+	from the index type's lower bound and the determined aggregate
+	length. In the case where a call to Empty is generated and the
+	function has a formal parameter, pass the value saved in Siz_Decl
+	(otherwise the parameter list is empty). Remove code specific to
+	making a parameterless call to the Empty function. Extend the code
+	for handling positional container aggregates to account for types
+	that define Assign_Indexed, rather than just Add_Unnamed, and in
+	the case of indexed aggregates, create a temporary object to hold
+	values of the aggregate's key index, and initialize and increment
+	that temporary for each call generated to the Assign_Indexed
+	procedure. For named container aggregates that have key choices
+	given by ranges, call Expand_Range_Component to generate a loop
+	that will call the appropriate insertion procedure for each value
+	of the range. For indexed aggregates with a Component_Associations
+	list, set and use the Assign_Indexed procedure for each component
+	association, whether or not there's an iterator specification.
+	(Add_Range_Size): Add code to determine the low and high bounds of
+	the range and capture those in up-level variables when their value
+	is less than or greater than (respectively) the current minimum
+	and maximum bounds values.
+	(Aggregate_Size): Separately handle the case where a single choice
+	is of a discrete type, and call Add_Range_Size to take its value
+	into consideration for determination of min and max bounds of the
+	aggregate. Add comments in a couple of places.
+	(Build_Siz_Exp): Remove the last sentence and "???" from the
+	comment that talks about accumulating nonstatic sizes, since that
+	sentence seems to be obsolete. Record the low and high bound
+	values in Choice_Lo and Choice_Hi in the case of a nonstatic
+	range.
+	(Expand_Iterated_Component): Set the Defining_Identifier of the
+	iterator specification to the Loop_Id in the
+	N_Iterated_Component_Association case.
+	(Expand_Range_Component): Procedure unnested from the block
+	handling indexed aggregates in Expand_Container_Aggregate, and
+	moved to top level of that procedure so it can also be called for
+	Add_Named cases. A formal parameter Insert_Op is added, and
+	existing calls to this procedure are changed to pass the
+	appropriate insertion procedure's Entity.
+	* sem_aggr.ads: Add with_clause for Sinfo.Nodes.
+	(Is_Indexed_Aggregate): New function for use by
+	Resolve_Container_Aggregate and Expand_Container_Aggregate.
+	* sem_aggr.adb: Add with_clause for Sem_Ch5. Move with_clause for
+	Sinfo.Nodes to sem_aggr.ads.
+	(Is_Indexed_Aggregate): New function to determine whether a
+	container aggregate is a container aggregate (replacing local
+	variable of the same name in Resolve_Container_Aggregate).
+	(Resolve_Iterated_Association): Remove part of comment saying that
+	a Key_Expression is always present. Set Parent field of the copy
+	of a component association with a loop parameter specification. On
+	the setting of Loop_Param_Id, account for a
+	Loop_Parameter_Specification being changed into an
+	Iterator_Specification as a result of being analyzed. Only call
+	Preanalyze_And_Resolve on Key_Expr when a key expression is
+	actually present. Remove loop for handling choices for the case of
+	an N_Component_Association with a Defining_Identifier (there
+	shouldn't be more than one choice in this case, and add an
+	assertion to ensure that). Also add code here to handle the case
+	where the choice is a function call, creating an
+	iterator_specification analyzing it, and call
+	Resolve_Iterated_Association recursively to process it. Add error
+	check to enforce RM22 4.3.5(27), which requires that the type of
+	the loop parameter must be the same as the key type when there is
+	no key expression and the aggregate is an indexed aggregate or has
+	an Add_Named op.
+	(Resolve_Container_Aggregate): In the Add_Unnamed case, call
+	Resolve_Iterated_Association for both
+	N_Iterated_Element_Association and N_Component_Association (rather
+	than just the latter). Remove error check for nonstatic choices in
+	component associations in Add_Named cases (multiple named
+	nonstatic associations are fine except in indexed aggregates).
+	Remove local variable Is_Indexed_Aggregate, replaced with new
+	library-level function of the same name, and add test of
+	Is_Indexed_Aggregate in the case where the aggregate type has an
+	Assign_Indexed operation, as a guard for doing error checks for
+	indexed aggregates. For indexed aggregate resolution, do not call
+	Analyze_And_Resolve on the expression of an
+	N_Component_Association in the "box association" case. Move error
+	checks for indexed aggregates with iterated associations that flag
+	cases where an association is a loop_parameter_specification with
+	an iterator filter or a key expression (violation of RM22
+	4.3.5(28/5)), from the loop that checks for contiguous and
+	nonoverlapping choices and into the preceding association loop
+	after the call to Resolve_Iterated_Association. The RM reference
+	is added to the error-message strings.
+
+2024-05-20  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-taprop__linux.adb (Set_Task_Affinity): Fix
+	decision about whether to call CPU_FREE.
+
+2024-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.ads (Convert_Aggr_In_Allocator): Remove Aggr parameter
+	and adjust description.
+	(Convert_Aggr_In_Object_Decl): Adjust description.
+	* exp_aggr.adb (Convert_Aggr_In_Allocator): Remove Aggr parameter
+	and add local variable of the same name instead.  Adjust call to
+	Convert_Array_Aggr_In_Allocator.
+	(Convert_Aggr_In_Object_Decl): Add comment for early return and
+	remove useless inner block statement.
+	(Convert_Array_Aggr_In_Allocator):  Remove Aggr parameter and add
+	local variable of the same name instead.
+	(In_Place_Assign_OK): Move down declarations of local variables.
+	(Convert_To_Assignments): Put all declarations of local variables
+	in the same place.  Fix typo in comment.  Replace T with Full_Typ.
+	* exp_ch4.adb (Expand_Allocator_Expression): Call Unqualify instead
+	of Expression on the qualified expression of the allocator for the
+	sake of consistency.  Adjust call to Convert_Aggr_In_Allocator.
+
+2024-05-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Eval_Attribute): Handle enumeration type with
+	Discard_Names.
+
+2024-05-20  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_imgv.adb (Expand_Width_Attribute): Fix for 'Width that
+	is computed at run time.
+	* sem_attr.adb (Eval_Attribute): Fix for 'Width that is computed
+	at compilation time.
+
+2024-05-20  Sebastian Poeplau  <poeplau@adacore.com>
+
+	* libgnat/s-pooglo.adb (Allocate): Use arithmetic on
+	System.Address to compute the aligned address.
+
+2024-05-20  Steve Baird  <baird@adacore.com>
+
+	* freeze.adb (Adjust_Esize_For_Alignment): Assert that a valid
+	Alignment specification cannot result in adjusting the given
+	type's Esize to be larger than System_Max_Integer_Size.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): In analyzing
+	an Alignment specification, enforce the rule that a specified
+	Alignment value for a discrete or fixed-point type shall not be
+	larger than System_Max_Integer_Size / 8 .
+
+2024-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/g-sothco.ads (In_Addr): Add aspect Universal_Aliasing.
+
+2024-05-20  Jose Ruiz  <ruiz@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Exclude detection of duplicates
+	because they are detected elsewhere.
+
+2024-05-20  Jose Ruiz  <ruiz@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Protected_Type_Declaration): Clarify
+	comments.
+	* sem_prag.adb (Analyze_Pragma): Check for duplicates
+	Max_Entry_Queue_Length, Max_Entry_Queue_Depth and Max_Queue_Length
+	for the same protected entry.
+	* sem_util.adb (Get_Max_Queue_Length): Take into account all three
+	representation aspects that can be used to set this restriction.
+	(Has_Max_Queue_Length): Likewise.
+	* doc/gnat_rm/implementation_defined_pragmas.rst:
+	(pragma Max_Queue_Length): Fix pragma in example.
+	* gnat_rm.texi: Regenerate.
+
+2024-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-finpri.ads (Collection_Node): Move to private part.
+	(Collection_Node_Ptr): Likewise.
+	(Header_Alignment): Change to declaration and move completion to
+	private part.
+	(Header_Size): Likewise.
+	(Lock_Type): Delete.
+	(Finalization_Collection): Move Lock component and remove default
+	value for Finalization_Started component.
+	* libgnat/s-finpri.adb (Initialize): Reorder statements.
+
+2024-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Universal_Aliasing): Remove reference to No_Strict_Aliasing.
+	* doc/gnat_ugn/gnat_and_program_execution.rst
+	(Optimization and Strict Aliasinng): Simplify first example and
+	make it more consistent with the second.  Add description of the
+	effects of pragma Universal_Aliasing and document new warning
+	issued for unchecked conversions.  Remove obsolete stuff.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
 2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/115133

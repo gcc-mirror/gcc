@@ -1,3 +1,215 @@
+2024-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115143
+	* tree-ssa-phiopt.cc (minmax_replacement): Check for empty
+	phi nodes for middle bbs for the case where middle bb is not empty.
+
+2024-05-20  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/102171
+	* config/aarch64/aarch64-builtins.cc (AARCH64_SIMD_VGET_LOW_BUILTINS):
+	New macro to create definitions for all vget_low intrinsics.
+	(VGET_LOW_BUILTIN): Likewise.
+	(enum aarch64_builtins): Add vget_low function codes.
+	(aarch64_general_fold_builtin): Fold vget_low calls.
+	* config/aarch64/aarch64-simd-builtins.def: Delete vget_low builtins.
+	* config/aarch64/aarch64-simd.md (aarch64_get_low<mode>): Delete.
+	(aarch64_vget_lo_halfv8bf): Likewise.
+	* config/aarch64/arm_neon.h (__attribute__): Delete.
+	(vget_low_f16): Likewise.
+	(vget_low_f32): Likewise.
+	(vget_low_f64): Likewise.
+	(vget_low_p8): Likewise.
+	(vget_low_p16): Likewise.
+	(vget_low_p64): Likewise.
+	(vget_low_s8): Likewise.
+	(vget_low_s16): Likewise.
+	(vget_low_s32): Likewise.
+	(vget_low_s64): Likewise.
+	(vget_low_u8): Likewise.
+	(vget_low_u16): Likewise.
+	(vget_low_u32): Likewise.
+	(vget_low_u64): Likewise.
+	(vget_low_bf16): Likewise.
+
+2024-05-20  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs): Improve CTZ costing.
+
+2024-05-20  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.md (movsi_aarch64): Use '\;' to force
+	newline in 2-instruction pattern.
+	(movdi_aarch64): Likewise.
+
+2024-05-20  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
+
+	* config/aarch64/aarch64-ldp-fusion.cc: Rename generic parts of code
+	to avoid "ldp" and "stp".
+
+2024-05-20  Mark Wielaard  <mark@klomp.org>
+
+	* config/riscv/riscv.opt.urls: Regenerate.
+	* config/i386/i386.opt.urls: Likewise.
+
+2024-05-20  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
+
+	* config/aarch64/aarch64-ldp-fusion.cc: Factor out a
+	target-independent interface and move it to the head of the file
+
+2024-05-20  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.cc(mips_option_override):
+	Drop mips_lra_flag variable;
+	(mips_lra_p): Removed.
+	(TARGET_LRA_P): Remove definition here to use the default one.
+	* config/mips/mips.md(*mul_acc_si, *mul_acc_si_r3900, *mul_sub_si):
+	Drop mips_lra_flag variable.
+	* config/mips/mips.opt(-mlra): Removed.
+	* config/mips/mips.opt.urls(mlra): Removed.
+
+2024-05-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Remove Xeon Phi cpus.
+	(get_available_features): Remove Xeon Phi ISAs.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA_AVX512PF_SET): Removed.
+	(OPTION_MASK_ISA_AVX512ER_SET): Ditto.
+	(OPTION_MASK_ISA2_AVX5124FMAPS_SET): Ditto.
+	(OPTION_MASK_ISA2_AVX5124VNNIW_SET): Ditto.
+	(OPTION_MASK_ISA_PREFETCHWT1_SET): Ditto.
+	(OPTION_MASK_ISA_AVX512F_UNSET): Remove AVX512PF and AVX512ER.
+	(OPTION_MASK_ISA_AVX512PF_UNSET): Removed.
+	(OPTION_MASK_ISA_AVX512ER_UNSET): Ditto.
+	(OPTION_MASK_ISA2_AVX5124FMAPS_UNSET): Ditto.
+	(OPTION_MASK_ISA2_AVX5124VNNIW_UNSET): Ditto.
+	(OPTION_MASK_ISA_PREFETCHWT1_UNSET): Ditto.
+	(OPTION_MASK_ISA2_AVX512F_UNSET): Remove AVX5124FMAPS and
+	AVX5125VNNIW.
+	(ix86_handle_option): Remove Xeon Phi options.
+	(processor_names): Remove Xeon Phi cpus.
+	(processor_alias_table): Ditto.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_types): Ditto.
+	(enum processor_features): Remove Xeon Phi ISAs.
+	* common/config/i386/i386-isas.h: Ditto.
+	* config.gcc: Remove Xeon Phi cpus and ISAs.
+	* config/i386/avx5124fmapsintrin.h: Remove intrin support.
+	* config/i386/avx5124vnniwintrin.h: Ditto.
+	* config/i386/avx512erintrin.h: Ditto.
+	* config/i386/avx512pfintrin.h: Ditto.
+	* config/i386/cpuid.h (bit_AVX512PF): Removed.
+	(bit_AVX512ER): Ditto.
+	(bit_PREFETCHWT1): Ditto.
+	(bit_AVX5124VNNIW): Ditto.
+	(bit_AVX5124FMAPS): Ditto.
+	* config/i386/driver-i386.cc
+	(host_detect_local_cpu): Remove Xeon Phi.
+	* config/i386/i386-builtin-types.def: Remove unused types.
+	* config/i386/i386-builtin.def (BDESC): Remove builtins.
+	* config/i386/i386-builtins.cc (ix86_init_mmx_sse_builtins): Ditto.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Remove Xeon
+	Phi cpus and ISAs.
+	* config/i386/i386-expand.cc (ix86_expand_builtin): Remove Xeon Phi
+	related handlers.
+	(ix86_emit_swdivsf): Ditto.
+	(ix86_emit_swsqrtsf): Ditto.
+	* config/i386/i386-isa.def: Remove Xeon Phi ISAs.
+	* config/i386/i386-options.cc (m_KNL): Removed.
+	(m_KNM): Ditto.
+	(isa2_opts): Remove Xeon Phi ISAs.
+	(isa_opts): Ditto.
+	(processor_cost_table): Remove Xeon Phi cpus.
+	(ix86_valid_target_attribute_inner_p): Remove Xeon Phi ISAs.
+	(ix86_option_override_internal): Remove Xeon Phi related handlers.
+	* config/i386/i386-rust.cc (ix86_rust_target_cpu_info): Remove Xeon
+	Phi ISAs.
+	* config/i386/i386.cc (ix86_hard_regno_mode_ok): Remove Xeon Phi
+	related handler.
+	* config/i386/i386.h (TARGET_EMIT_VZEROUPPER): Removed.
+	(enum processor_type): Remove Xeon Phi cpus.
+	* config/i386/i386.md (prefetch): Remove PREFETCHWT1.
+	(*prefetch_3dnow): Ditto.
+	(*prefetch_prefetchwt1): Removed.
+	* config/i386/i386.opt: Remove Xeon Phi ISAs.
+	* config/i386/immintrin.h: Ditto.
+	* config/i386/sse.md (VF1_AVX512ER_128_256): Removed.
+	(rsqrt<mode>2): Change iterator from VF1_AVX512ER_128_256 to
+	VF1_128_256.
+	(GATHER_SCATTER_SF_MEM_MODE): Removed.
+	(avx512pf_gatherpf<mode>sf): Ditto.
+	(*avx512pf_gatherpf<VI48_512:mode>sf_mask): Ditto.
+	(avx512pf_gatherpf<mode>df): Ditto.
+	(*avx512pf_gatherpf<VI4_256_8_512:mode>df_mask): Ditto.
+	(avx512pf_scatterpf<mode>sf): Ditto.
+	(*avx512pf_scatterpf<VI48_512:mode>sf_mask): Ditto.
+	(avx512pf_scatterpf<mode>df): Ditto.
+	(*avx512pf_scatterpf<VI4_256_8_512:mode>df_mask): Ditto.
+	(exp2<mode>2): Ditto.
+	(avx512er_exp2<mode><mask_name><round_saeonly_name>): Ditto.
+	(<mask_codefor>avx512er_rcp28<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx512er_vmrcp28<mode><mask_name><round_saeonly_name>): Ditto.
+	(<mask_codefor>avx512er_rsqrt28<mode><mask_name><round_saeonly_name>):
+	Ditto.
+	(avx512er_vmrsqrt28<mode><mask_name><round_saeonly_name>): Ditto.
+	(IMOD4): Ditto.
+	(imod4_narrow): Ditto.
+	(mov<mode>): Ditto.
+	(*mov<mode>_internal): Ditto.
+	(avx5124fmaddps_4fmaddps): Ditto.
+	(avx5124fmaddps_4fmaddps_mask): Ditto.
+	(avx5124fmaddps_4fmaddps_maskz): Ditto.
+	(avx5124fmaddps_4fmaddss): Ditto.
+	(avx5124fmaddps_4fmaddss_mask): Ditto.
+	(avx5124fmaddps_4fmaddss_maskz): Ditto.
+	(avx5124fmaddps_4fnmaddps): Ditto.
+	(avx5124fmaddps_4fnmaddps_mask): Ditto.
+	(avx5124fmaddps_4fnmaddps_maskz): Ditto.
+	(avx5124fmaddps_4fnmaddss): Ditto.
+	(avx5124fmaddps_4fnmaddss_mask): Ditto.
+	(avx5124fmaddps_4fnmaddss_maskz): Ditto.
+	(avx5124vnniw_vp4dpwssd): Ditto.
+	(avx5124vnniw_vp4dpwssd_mask): Ditto.
+	(avx5124vnniw_vp4dpwssd_maskz): Ditto.
+	(avx5124vnniw_vp4dpwssds): Ditto.
+	(avx5124vnniw_vp4dpwssds_mask): Ditto.
+	(avx5124vnniw_vp4dpwssds_maskz): Ditto.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Remove Xeon Phi cpus.
+	(ix86_adjust_cost): Ditto.
+	* config/i386/x86-tune.def (X86_TUNE_SCHEDULE): Ditto.
+	(X86_TUNE_PARTIAL_REG_DEPENDENCY): Ditto.
+	(X86_TUNE_MOVX): Ditto.
+	(X86_TUNE_MEMORY_MISMATCH_STALL): Ditto.
+	(X86_TUNE_ACCUMULATE_OUTGOING_ARGS): Ditto.
+	(X86_TUNE_FOUR_JUMP_LIMIT): Ditto.
+	(X86_TUNE_USE_INCDEC): Ditto.
+	(X86_TUNE_INTEGER_DFMODE_MOVES): Ditto.
+	(X86_TUNE_OPT_AGU): Ditto.
+	(X86_TUNE_AVOID_LEA_FOR_ADDR): Ditto.
+	(X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE): Ditto.
+	(X86_TUNE_USE_SAHF): Ditto.
+	(X86_TUNE_USE_CLTD): Ditto.
+	(X86_TUNE_USE_BT): Ditto.
+	(X86_TUNE_ONE_IF_CONV_INSN): Ditto.
+	(X86_TUNE_EXPAND_ABS): Ditto.
+	(X86_TUNE_USE_SIMODE_FIOP): Ditto.
+	(X86_TUNE_EXT_80387_CONSTANTS): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL): Ditto.
+	(X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL): Ditto.
+	(X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS): Ditto.
+	(X86_TUNE_SLOW_PSHUFB): Ditto.
+	(X86_TUNE_EMIT_VZEROUPPER): Removed.
+	* config/i386/xmmintrin.h (enum _mm_hint): Remove _MM_HINT_ET1.
+	* doc/extend.texi: Remove Xeon Phi.
+	* doc/invoke.texi: Ditto.
+
+2024-05-20  Pan Li  <pan2.li@intel.com>
+
+	* dse.cc (get_stored_val): Make sure read_mode/write_mode
+	is valid subreg before gen_lowpart.
+
 2024-05-19  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/115142

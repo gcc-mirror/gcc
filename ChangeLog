@@ -1,3 +1,8 @@
+2024-05-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Move Joern Rennecke from arc and epiphany maintainer
+	to Write After Approval.
+
 2024-05-17  Levy Hsu  <admin@levyhsu.com>
 
 	* MAINTAINERS: Add myself.

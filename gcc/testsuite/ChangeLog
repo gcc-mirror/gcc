@@ -1,3 +1,120 @@
+2024-05-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115164
+	* gm2/isolib/run/pass/testlowread.mod: New test.
+	* gm2/isolib/run/pass/testwritereal.mod: New test.
+
+2024-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115143
+	* gcc.c-torture/compile/pr115143-1.c: New test.
+	* gcc.c-torture/compile/pr115143-2.c: New test.
+	* gcc.c-torture/compile/pr115143-3.c: New test.
+
+2024-05-20  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/99798
+	* gfortran.dg/submodule_33.f08: New test.
+
+2024-05-20  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/102171
+	* gcc.target/aarch64/pr113573.c: Replace __builtin_aarch64_get_lowv8hi
+	with vget_low_s16.
+	* gcc.target/aarch64/vget_low_2.c: New test.
+	* gcc.target/aarch64/vget_low_2_be.c: New test.
+
+2024-05-20  Steve Baird  <baird@adacore.com>
+
+	* gnat.dg/specs/alignment2.ads: Adjust.
+	* gnat.dg/specs/alignment2_bis.ads: New test.
+
+2024-05-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115150
+	* gfortran.dg/shape_12.f90: New test.
+
+2024-05-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Remove Xeon Phi ISAs.
+	* g++.dg/other/i386-3.C: Ditto.
+	* g++.target/i386/mv28.C: Ditto.
+	* gcc.target/i386/builtin_target.c: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-26.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fmaddps-1.c: Removed.
+	* gcc.target/i386/avx5124fmadd-v4fmaddps-2.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fmaddss-1.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fnmaddps-1.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fnmaddps-2.c: Ditto.
+	* gcc.target/i386/avx5124fmadd-v4fnmaddss-1.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssd-1.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssd-2.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssds-1.c: Ditto.
+	* gcc.target/i386/avx5124vnniw-vp4dpwssds-2.c: Ditto.
+	* gcc.target/i386/avx512er-check.h: Ditto.
+	* gcc.target/i386/avx512er-vexp2pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2pd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vexp2ps-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28pd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-3.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ps-4.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrcp28ss-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28pd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28pd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-3.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-4.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-5.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ps-6.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28sd-2.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-1.c: Ditto.
+	* gcc.target/i386/avx512er-vrsqrt28ss-2.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf0qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vgatherpf1qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf0qps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1dpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1dps-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1qpd-1.c: Ditto.
+	* gcc.target/i386/avx512pf-vscatterpf1qps-1.c: Ditto.
+	* gcc.target/i386/pr104448.c: Ditto.
+	* gcc.target/i386/pr82941-2.c: Ditto.
+	* gcc.target/i386/pr82942-2.c: Ditto.
+	* gcc.target/i386/pr82990-1.c: Ditto.
+	* gcc.target/i386/pr82990-3.c: Ditto.
+	* gcc.target/i386/pr82990-6.c: Ditto.
+	* gcc.target/i386/pr82990-7.c: Ditto.
+	* gcc.target/i386/pr89523-5.c: Ditto.
+	* gcc.target/i386/pr89523-6.c: Ditto.
+	* gcc.target/i386/pr91033.c: Ditto.
+	* gcc.target/i386/prefetchwt1-1.c: Ditto.
+
+2024-05-20  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/bug-6.c: New test.
+
 2024-05-19  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/115142
