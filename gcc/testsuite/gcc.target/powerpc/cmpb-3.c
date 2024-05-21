@@ -1,6 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
+/* Skip powerpc*-*-darwin* powerpc-*-eabi as dropped popcntb_ok.  */
+/* { dg-skip-if "" { powerpc*-*-darwin* powerpc-*-eabi } } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-require-effective-target powerpc_popcntb_ok } */
 /* { dg-options "-mdejagnu-cpu=power6" } */
 
 void abort ();
