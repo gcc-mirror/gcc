@@ -368,13 +368,22 @@ protected:
   }
 };
 
+enum class RangeKind
+{
+  INCLUDED,
+  ELLIPSIS,
+  EXCLUDED,
+};
+
+RangeKind
+tokenid_to_rangekind (TokenId id);
 // AST node for matching within a certain range (range pattern)
 class RangePattern : public Pattern
 {
   std::unique_ptr<RangePatternBound> lower;
   std::unique_ptr<RangePatternBound> upper;
 
-  bool has_ellipsis_syntax;
+  RangeKind range_kind;
 
   /* location only stored to avoid a dereference - lower pattern should give
    * correct location so maybe change in future */
@@ -386,10 +395,10 @@ public:
 
   // Constructor
   RangePattern (std::unique_ptr<RangePatternBound> lower,
-		std::unique_ptr<RangePatternBound> upper, location_t locus,
-		bool has_ellipsis_syntax = false)
+		std::unique_ptr<RangePatternBound> upper, RangeKind range_kind,
+		location_t locus)
     : lower (std::move (lower)), upper (std::move (upper)),
-      has_ellipsis_syntax (has_ellipsis_syntax), locus (locus),
+      range_kind (range_kind), locus (locus),
       node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
@@ -397,7 +406,7 @@ public:
   RangePattern (RangePattern const &other)
     : lower (other.lower->clone_range_pattern_bound ()),
       upper (other.upper->clone_range_pattern_bound ()),
-      has_ellipsis_syntax (other.has_ellipsis_syntax), locus (other.locus),
+      range_kind (other.range_kind), locus (other.locus),
       node_id (other.node_id)
   {}
 
@@ -406,7 +415,7 @@ public:
   {
     lower = other.lower->clone_range_pattern_bound ();
     upper = other.upper->clone_range_pattern_bound ();
-    has_ellipsis_syntax = other.has_ellipsis_syntax;
+    range_kind = other.range_kind;
     locus = other.locus;
     node_id = other.node_id;
 
@@ -419,11 +428,16 @@ public:
 
   location_t get_locus () const override final { return locus; }
 
-  bool get_has_ellipsis_syntax () { return has_ellipsis_syntax; }
+  bool get_has_ellipsis_syntax () const
+  {
+    return range_kind == RangeKind::ELLIPSIS;
+  }
 
-  bool get_has_lower_bound () { return lower != nullptr; }
+  RangeKind get_range_kind () const { return range_kind; }
 
-  bool get_has_upper_bound () { return upper != nullptr; }
+  bool get_has_lower_bound () const { return lower != nullptr; }
+
+  bool get_has_upper_bound () const { return upper != nullptr; }
 
   void accept_vis (ASTVisitor &vis) override;
 

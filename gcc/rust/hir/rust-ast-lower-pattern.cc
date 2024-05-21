@@ -18,6 +18,7 @@
 
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-expr.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace HIR {
@@ -253,6 +254,8 @@ ASTLoweringPattern::visit (AST::LiteralPattern &pattern)
 void
 ASTLoweringPattern::visit (AST::RangePattern &pattern)
 {
+  if (pattern.get_range_kind () == AST::RangeKind::EXCLUDED)
+    rust_unreachable (); // Not supported yet
   auto upper_bound = lower_range_pattern_bound (pattern.get_upper_bound ());
   auto lower_bound = lower_range_pattern_bound (pattern.get_lower_bound ());
 
