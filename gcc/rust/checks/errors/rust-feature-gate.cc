@@ -201,4 +201,12 @@ FeatureGate::visit (AST::TypeParam &param)
   AST::DefaultASTVisitor::visit (param);
 }
 
+void
+FeatureGate::visit (AST::BorrowExpr &expr)
+{
+  if (expr.is_raw_borrow ())
+    gate (Feature::Name::RAW_REF_OP, expr.get_locus (),
+	  "raw address of syntax is experimental");
+}
+
 } // namespace Rust

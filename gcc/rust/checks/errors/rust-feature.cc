@@ -51,6 +51,9 @@ Feature::create (Feature::Name name)
     case Feature::Name::DROPCK_EYEPATCH:
       return Feature (Feature::Name::DROPCK_EYEPATCH, Feature::State::ACTIVE,
 		      "dropck_eyepatch", "1.10.0", 34761, tl::nullopt, "");
+    case Feature::Name::RAW_REF_OP:
+      return Feature (Feature::Name::RAW_REF_OP, Feature::State::ACTIVE,
+		      "raw_ref_op", "1.41.0", 64490, tl::nullopt, "");
     default:
       rust_unreachable ();
     }
@@ -70,6 +73,7 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"no_core", Feature::Name::NO_CORE},
   {"box_syntax", Feature::Name::BOX_SYNTAX},
   {"dropck_eyepatch", Feature::Name::DROPCK_EYEPATCH},
+  {"raw_ref_op", Feature::Name::RAW_REF_OP},
 }; // namespace Rust
 
 tl::optional<Feature::Name>

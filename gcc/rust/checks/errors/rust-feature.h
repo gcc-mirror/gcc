@@ -48,6 +48,7 @@ public:
     NO_CORE,
     BOX_SYNTAX,
     DROPCK_EYEPATCH,
+    RAW_REF_OP,
   };
 
   const std::string &as_string () { return m_name_str; }
