@@ -424,7 +424,7 @@ package body System.Task_Primitives.Operations is
 
    begin
       Environment_Task_Id := Environment_Task;
-      Self_ID.Common.LL.Thread := thr_self;
+      Environment_Task.Common.LL.Thread := thr_self;
 
       Interrupt_Management.Initialize;
 

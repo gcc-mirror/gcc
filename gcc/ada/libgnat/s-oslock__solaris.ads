@@ -42,10 +42,7 @@ package System.OS_Locks is
    type Private_Task_Serial_Number is mod 2 ** Long_Long_Integer'Size;
    --  Used to give each task a unique serial number
 
-   type Owner_Int is new Integer;
-   for Owner_Int'Alignment use Standard'Maximum_Alignment;
-
-   type Owner_ID is access all Owner_Int;
+   type Owner_ID is access all Integer;
 
    function To_Owner_ID is
      new Ada.Unchecked_Conversion (System.Address, Owner_ID);
