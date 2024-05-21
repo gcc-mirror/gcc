@@ -4640,6 +4640,8 @@ change_vec_perm_layout (slp_tree node, lane_permutation_t &perm,
 	{
 	  slp_tree in_node = SLP_TREE_CHILDREN (node)[entry.first];
 	  unsigned int in_partition_i = m_vertices[in_node->vertex].partition;
+	  if (in_partition_i == -1u)
+	    continue;
 	  this_in_layout_i = m_partitions[in_partition_i].layout;
 	}
       if (this_in_layout_i > 0)
