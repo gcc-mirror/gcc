@@ -7323,7 +7323,7 @@ proc check_effective_target_sparc_vis { } {
 	    #else
 	    int dummy;
 	    #endif
-	}]
+	} [current_compiler_flags]]
     } else {
 	return 0
     }
