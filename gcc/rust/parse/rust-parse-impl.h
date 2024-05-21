@@ -12376,33 +12376,64 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
       case AMP: {
 	// (single) "borrow" expression - shared (mutable) or immutable
 	std::unique_ptr<AST::Expr> expr = nullptr;
-	bool is_mut_borrow = false;
+	Mutability mutability = Mutability::Imm;
+	bool raw_borrow = false;
 
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
 	if (!restrictions.can_be_struct_expr)
 	  entered_from_unary.can_be_struct_expr = false;
 
-	if (lexer.peek_token ()->get_id () == MUT)
+	auto is_mutability = [] (const_TokenPtr token) {
+	  return token->get_id () == CONST || token->get_id () == MUT;
+	};
+
+	auto t = lexer.peek_token ();
+	// Weak raw keyword, we look (1) ahead and treat it as an identifier if
+	// there is no mut nor const.
+	if (t->get_id () == IDENTIFIER
+	    && t->get_str () == Values::WeakKeywords::RAW
+	    && is_mutability (lexer.peek_token (1)))
+	  {
+	    lexer.skip_token ();
+	    switch (lexer.peek_token ()->get_id ())
+	      {
+	      case MUT:
+		mutability = Mutability::Mut;
+		break;
+	      case CONST:
+		mutability = Mutability::Imm;
+		break;
+	      default:
+		rust_error_at (lexer.peek_token ()->get_locus (),
+			       "raw borrow should be either const or mut");
+	      }
+	    lexer.skip_token ();
+	    expr = parse_expr (LBP_UNARY_AMP_MUT, {}, entered_from_unary);
+	    raw_borrow = true;
+	  }
+	else if (t->get_id () == MUT)
 	  {
 	    lexer.skip_token ();
 	    expr = parse_expr (LBP_UNARY_AMP_MUT, {}, entered_from_unary);
-	    is_mut_borrow = true;
+	    mutability = Mutability::Mut;
+	    raw_borrow = false;
 	  }
 	else
 	  {
 	    expr = parse_expr (LBP_UNARY_AMP, {}, entered_from_unary);
+	    raw_borrow = false;
 	  }
 
 	// FIXME: allow outer attributes on expression
 	return std::unique_ptr<AST::BorrowExpr> (
-	  new AST::BorrowExpr (std::move (expr), is_mut_borrow, false,
+	  new AST::BorrowExpr (std::move (expr), mutability, raw_borrow, false,
 			       std::move (outer_attrs), tok->get_locus ()));
       }
       case LOGICAL_AND: {
 	// (double) "borrow" expression - shared (mutable) or immutable
 	std::unique_ptr<AST::Expr> expr = nullptr;
-	bool is_mut_borrow = false;
+	Mutability mutability = Mutability::Imm;
 
 	ParseRestrictions entered_from_unary;
 	entered_from_unary.entered_from_unary = true;
@@ -12411,16 +12442,17 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
 	  {
 	    lexer.skip_token ();
 	    expr = parse_expr (LBP_UNARY_AMP_MUT, {}, entered_from_unary);
-	    is_mut_borrow = true;
+	    mutability = Mutability::Mut;
 	  }
 	else
 	  {
 	    expr = parse_expr (LBP_UNARY_AMP, {}, entered_from_unary);
+	    mutability = Mutability::Imm;
 	  }
 
 	// FIXME: allow outer attributes on expression
 	return std::unique_ptr<AST::BorrowExpr> (
-	  new AST::BorrowExpr (std::move (expr), is_mut_borrow, true,
+	  new AST::BorrowExpr (std::move (expr), mutability, false, true,
 			       std::move (outer_attrs), tok->get_locus ()));
       }
     case OR:

@@ -843,8 +843,21 @@ TokenCollector::visit (BorrowExpr &expr)
   push (Rust::Token::make (AMP, expr.get_locus ()));
   if (expr.get_is_double_borrow ())
     push (Rust::Token::make (AMP, UNDEF_LOCATION));
-  if (expr.get_is_mut ())
-    push (Rust::Token::make (MUT, UNDEF_LOCATION));
+
+  if (expr.is_raw_borrow ())
+    {
+      push (Rust::Token::make_identifier (expr.get_locus (),
+					  Values::WeakKeywords::RAW));
+      if (expr.get_is_mut ())
+	push (Rust::Token::make (MUT, UNDEF_LOCATION));
+      else
+	push (Rust::Token::make (CONST, UNDEF_LOCATION));
+    }
+  else
+    {
+      if (expr.get_is_mut ())
+	push (Rust::Token::make (MUT, UNDEF_LOCATION));
+    }
 
   visit (expr.get_borrowed_expr ());
 }

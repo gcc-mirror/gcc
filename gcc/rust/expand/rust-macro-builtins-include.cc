@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-common.h"
 #include "rust-macro-builtins.h"
 #include "rust-macro-builtins-helpers.h"
 #include "optional.h"
@@ -77,7 +78,9 @@ MacroBuiltin::include_bytes_handler (location_t invoc_locus,
     new AST::ArrayExpr (std::move (elems), {}, {}, invoc_locus));
 
   auto borrow = std::unique_ptr<AST::Expr> (
-    new AST::BorrowExpr (std::move (array), false, false, {}, invoc_locus));
+    new AST::BorrowExpr (std::move (array), Mutability::Imm,
+			 /* raw borrow */ false,
+			 /* double borrow */ false, {}, invoc_locus));
 
   auto node = AST::SingleASTNode (std::move (borrow));
 
