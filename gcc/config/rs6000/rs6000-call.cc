@@ -1391,7 +1391,7 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, const_tree type,
 	    if (cum->fregno + n_fpreg > FP_ARG_MAX_REG + 1)
 	      {
 		gcc_assert (cum->fregno == FP_ARG_MAX_REG
-			    && (mode == TFmode || mode == TDmode));
+			    && FLOAT128_2REG_P (mode));
 		/* Long double or _Decimal128 split over regs and memory.  */
 		mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode : DFmode;
 		cum->use_stack=1;
