@@ -291,7 +291,7 @@ std_name_hint_lookup::find (const char *str, size_t len)
 #line 472 "std-name-hint.gperf"
       {"variant_npos", "<variant>", cxx17},
 #line 223 "std-name-hint.gperf"
-      {"to_address", "<memory>", cxx11},
+      {"to_address", "<memory>", cxx20},
 #line 460 "std-name-hint.gperf"
       {"pair", "<utility>", cxx98},
 #line 269 "std-name-hint.gperf"

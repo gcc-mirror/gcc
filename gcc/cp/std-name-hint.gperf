@@ -220,7 +220,7 @@ pointer_traits, "<memory>", cxx11
 reinterpret_pointer_cast, "<memory>", cxx17
 shared_ptr, "<memory>", cxx11
 static_pointer_cast, "<memory>", cxx11
-to_address, "<memory>", cxx11
+to_address, "<memory>", cxx20
 uninitialized_construct_using_allocator, "<memory>", cxx20
 unique_ptr, "<memory>", cxx11
 uses_allocator, "<memory>", cxx11
