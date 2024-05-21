@@ -4809,11 +4809,8 @@ struct InlineAsmPlaceHolder
 struct InlineAsmTemplatePiece
 {
   bool is_placeholder;
-  union
-  {
-    std::string string;
-    InlineAsmPlaceHolder placeholder;
-  };
+  std::string string;
+  InlineAsmPlaceHolder placeholder;
 };
 
 struct TupleClobber
@@ -4832,16 +4829,47 @@ struct TupleTemplateStr
 };
 
 // Inline Assembly Node
-class InlineAsm : public ExprWithoutBlock
+class InlineAsm : private ExprWithoutBlock
 {
+private:
+  location_t locus;
+  // TODO: Not sure how outer_attrs plays with InlineAsm, I put it here in order
+  // to override, very hacky.
+  std::vector<Attribute> outer_attrs;
+
 public:
   std::vector<InlineAsmTemplatePiece> template_;
   std::vector<TupleTemplateStr> template_strs;
   std::vector<InlineAsmOperand> operands;
-  TupleClobber clobber_abi;
-  InlineAsmOptions options;
+  std::vector<TupleClobber> clobber_abi;
+  // std::set<InlineAsmOptions> options;
+  std::set<std::string> options;
+
   std::vector<location_t> line_spans;
+
   bool is_global_asm;
+
+  InlineAsm (location_t locus, bool is_global_asm)
+    : locus (locus), is_global_asm (is_global_asm)
+  {}
+  void accept_vis (ASTVisitor &vis) override{};
+
+  std::string as_string () const override { return "InlineAsm AST Node"; }
+
+  location_t get_locus () const override { return locus; }
+
+  void mark_for_strip () override {}
+
+  bool is_marked_for_strip () const override { return false; }
+
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> v) override { outer_attrs = v; }
+
+  ExprWithoutBlock *clone_expr_without_block_impl () const override
+  {
+    return nullptr;
+  }
 };
 
 } // namespace AST
