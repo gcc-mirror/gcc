@@ -40,9 +40,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "dbgcnt.h"
 #include "cfgloop.h"
+#include "intl.h"
 #include "common/common-target.h"
 #include "ipa-utils.h"
 #include "tree-ssa-live.h"
+#include "diagnostic-core.h"
 
 /* The file implements the tail recursion elimination.  It is also used to
    analyze the tail calls in general, passing the results to the rtl level
@@ -131,14 +133,20 @@ static tree m_acc, a_acc;
 
 static bitmap tailr_arg_needs_copy;
 
+static void maybe_error_musttail (gcall *call, const char *err);
+
 /* Returns false when the function is not suitable for tail call optimization
-   from some reason (e.g. if it takes variable number of arguments).  */
+   from some reason (e.g. if it takes variable number of arguments). CALL
+   is call to report for.  */
 
 static bool
-suitable_for_tail_opt_p (void)
+suitable_for_tail_opt_p (gcall *call)
 {
   if (cfun->stdarg)
-    return false;
+    {
+      maybe_error_musttail (call, _("caller uses stdargs"));
+      return false;
+    }
 
   return true;
 }
@@ -146,35 +154,47 @@ suitable_for_tail_opt_p (void)
 /* Returns false when the function is not suitable for tail call optimization
    for some reason (e.g. if it takes variable number of arguments).
    This test must pass in addition to suitable_for_tail_opt_p in order to make
-   tail call discovery happen.  */
+   tail call discovery happen. CALL is call to report error for.  */
 
 static bool
-suitable_for_tail_call_opt_p (void)
+suitable_for_tail_call_opt_p (gcall *call)
 {
   tree param;
 
   /* alloca (until we have stack slot life analysis) inhibits
      sibling call optimizations, but not tail recursion.  */
   if (cfun->calls_alloca)
-    return false;
+    {
+      maybe_error_musttail (call, _("caller uses alloca"));
+      return false;
+    }
 
   /* If we are using sjlj exceptions, we may need to add a call to
      _Unwind_SjLj_Unregister at exit of the function.  Which means
      that we cannot do any sibcall transformations.  */
   if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ
       && current_function_has_exception_handlers ())
-    return false;
+    {
+      maybe_error_musttail (call, _("caller uses sjlj exceptions"));
+      return false;
+    }
 
   /* Any function that calls setjmp might have longjmp called from
      any called function.  ??? We really should represent this
      properly in the CFG so that this needn't be special cased.  */
   if (cfun->calls_setjmp)
-    return false;
+    {
+      maybe_error_musttail (call, _("caller uses setjmp"));
+      return false;
+    }
 
   /* Various targets don't handle tail calls correctly in functions
      that call __builtin_eh_return.  */
   if (cfun->calls_eh_return)
-    return false;
+    {
+      maybe_error_musttail (call, _("caller uses __builtin_eh_return"));
+      return false;
+    }
 
   /* ??? It is OK if the argument of a function is taken in some cases,
      but not in all cases.  See PR15387 and PR19616.  Revisit for 4.1.  */
@@ -182,7 +202,10 @@ suitable_for_tail_call_opt_p (void)
        param;
        param = DECL_CHAIN (param))
     if (TREE_ADDRESSABLE (param))
-      return false;
+      {
+	maybe_error_musttail (call, _("address of caller arguments taken"));
+	return false;
+      }
 
   return true;
 }
@@ -402,16 +425,42 @@ propagate_through_phis (tree var, edge e)
   return var;
 }
 
+/* Report an error for failing to tail convert must call CALL
+   with error message ERR. Also clear the flag to prevent further
+   errors.  */
+
+static void
+maybe_error_musttail (gcall *call, const char *err)
+{
+  if (gimple_call_must_tail_p (call))
+    {
+      error_at (call->location, "cannot tail-call: %s", err);
+      /* Avoid another error. ??? If there are multiple reasons why tail
+	 calls fail it might be useful to report them all to avoid
+	 whack-a-mole for the user. But currently there is too much
+	 redundancy in the reporting, so keep it simple.  */
+      gimple_call_set_must_tail (call, false); /* Avoid another error.  */
+      gimple_call_set_tail (call, false);
+    }
+  if (dump_file)
+    {
+      print_gimple_stmt (dump_file, call, 0, TDF_SLIM);
+      fprintf (dump_file, "Cannot convert: %s\n", err);
+    }
+}
+
 /* Argument for compute_live_vars/live_vars_at_stmt and what compute_live_vars
    returns.  Computed lazily, but just once for the function.  */
 static live_vars_map *live_vars;
 static vec<bitmap_head> live_vars_vec;
 
 /* Finds tailcalls falling into basic block BB. The list of found tailcalls is
-   added to the start of RET. When ONLY_MUSTTAIL is set only handle musttail.  */
+   added to the start of RET. When ONLY_MUSTTAIL is set only handle musttail.
+   Update OPT_TAILCALLS as output parameter.  */
 
 static void
-find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
+find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
+		 bool &opt_tailcalls)
 {
   tree ass_var = NULL_TREE, ret_var, func, param;
   gimple *stmt;
@@ -426,8 +475,23 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
   tree var;
 
   if (!single_succ_p (bb))
-    return;
+    {
+      /* If there is an abnormal edge assume it's the only extra one.
+	 Tolerate that case so that we can give better error messages
+	 for musttail later.  */
+      if (!has_abnormal_or_eh_outgoing_edge_p (bb))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "Basic block %d has extra exit edges\n",
+			    bb->index);
+	  return;
+	}
+      if (!cfun->has_musttail)
+	return;
+    }
 
+  bool bad_stmt = false;
+  gimple *last_stmt = nullptr;
   for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
     {
       stmt = gsi_stmt (gsi);
@@ -441,6 +505,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
 	  || is_gimple_debug (stmt))
 	continue;
 
+      if (!last_stmt)
+	last_stmt = stmt;
       /* Check for a call.  */
       if (is_gimple_call (stmt))
 	{
@@ -448,6 +514,12 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
 	  /* Handle only musttail calls when not optimizing.  */
 	  if (only_musttail && !gimple_call_must_tail_p (call))
 	    return;
+	  if (bad_stmt)
+	    {
+	      maybe_error_musttail (call,
+			      _("memory reference or volatile after call"));
+	      return;
+	    }
 	  ass_var = gimple_call_lhs (call);
 	  break;
 	}
@@ -462,18 +534,36 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
       /* If the statement references memory or volatile operands, fail.  */
       if (gimple_references_memory_p (stmt)
 	  || gimple_has_volatile_ops (stmt))
-	return;
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Cannot handle ");
+	      print_gimple_stmt (dump_file, stmt, 0);
+	    }
+	  bad_stmt = true;
+	  if (!cfun->has_musttail)
+	    break;
+	}
     }
+
+  if (bad_stmt)
+    return;
 
   if (gsi_end_p (gsi))
     {
       edge_iterator ei;
       /* Recurse to the predecessors.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
-	find_tail_calls (e->src, ret, only_musttail);
+	find_tail_calls (e->src, ret, only_musttail, opt_tailcalls);
 
       return;
     }
+
+  if (!suitable_for_tail_opt_p (call))
+    return;
+
+  if (!suitable_for_tail_call_opt_p (call))
+    opt_tailcalls = false;
 
   /* If the LHS of our call is not just a simple register or local
      variable, we can't transform this into a tail or sibling call.
@@ -489,13 +579,30 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
   if (ass_var
       && !is_gimple_reg (ass_var)
       && !auto_var_in_fn_p (ass_var, cfun->decl))
-    return;
+    {
+      maybe_error_musttail (call, _("return value in memory"));
+      return;
+    }
+
+  if (cfun->calls_setjmp)
+    {
+      maybe_error_musttail (call, _("caller uses setjmp"));
+      return;
+    }
 
   /* If the call might throw an exception that wouldn't propagate out of
      cfun, we can't transform to a tail or sibling call (82081).  */
-  if (stmt_could_throw_p (cfun, stmt)
-      && !stmt_can_throw_external (cfun, stmt))
+  if ((stmt_could_throw_p (cfun, stmt)
+       && !stmt_can_throw_external (cfun, stmt)) || !single_succ_p (bb))
+  {
+    if (stmt == last_stmt)
+      maybe_error_musttail (call,
+			  _("call may throw exception that does not propagate"));
+    else
+      maybe_error_musttail (call,
+			  _("code between call and return"));
     return;
+  }
 
   /* If the function returns a value, then at present, the tail call
      must return the same type of value.  There is conceptually a copy
@@ -524,7 +631,10 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
   if (result_decl
       && may_be_aliased (result_decl)
       && ref_maybe_used_by_stmt_p (call, result_decl, false))
-    return;
+    {
+      maybe_error_musttail (call, _("tail call must be same type"));
+      return;
+    }
 
   /* We found the call, check whether it is suitable.  */
   tail_recursion = false;
@@ -605,6 +715,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
 	    {
 	      if (local_live_vars)
 		BITMAP_FREE (local_live_vars);
+	      maybe_error_musttail (call, _("call invocation refers to locals"));
 	      return;
 	    }
 	  else
@@ -613,6 +724,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
 	      if (bitmap_bit_p (local_live_vars, *v))
 		{
 		  BITMAP_FREE (local_live_vars);
+		  maybe_error_musttail (call, _("call invocation refers to locals"));
 		  return;
 		}
 	    }
@@ -658,17 +770,21 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
 	continue;
 
       if (gimple_code (stmt) != GIMPLE_ASSIGN)
-	return;
+	{
+	  maybe_error_musttail (call, _("unhandled code after call"));
+	  return;
+	}
 
       /* This is a gimple assign. */
       par ret = process_assignment (as_a <gassign *> (stmt), gsi,
 				    &tmp_m, &tmp_a, &ass_var, to_move_defs);
-      if (ret == FAIL)
-	return;
+      if (ret == FAIL || (ret == TRY_MOVE && !tail_recursion))
+	{
+	  maybe_error_musttail (call, _("return value changed after call"));
+	  return;
+	}
       else if (ret == TRY_MOVE)
 	{
-	  if (! tail_recursion)
-	    return;
 	  /* Do not deal with checking dominance, the real fix is to
 	     do path isolation for the transform phase anyway, removing
 	     the need to compute the accumulators with new stmts.  */
@@ -716,16 +832,26 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail)
   if (ret_var
       && (ret_var != ass_var
 	  && !(is_empty_type (TREE_TYPE (ret_var)) && !ass_var)))
-    return;
+    {
+      maybe_error_musttail (call, _("call uses return slot"));
+      return;
+    }
 
   /* If this is not a tail recursive call, we cannot handle addends or
      multiplicands.  */
   if (!tail_recursion && (m || a))
-    return;
+    {
+      maybe_error_musttail (call, _("operations after non tail recursive call"));
+      return;
+    }
 
   /* For pointers only allow additions.  */
   if (m && POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
-    return;
+    {
+      maybe_error_musttail (call,
+		      _("tail recursion with pointers can only use additions"));
+      return;
+    }
 
   /* Move queued defs.  */
   if (tail_recursion)
@@ -1112,17 +1238,12 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_mustcall)
   tree param;
   edge_iterator ei;
 
-  if (!suitable_for_tail_opt_p ())
-    return 0;
-  if (opt_tailcalls)
-    opt_tailcalls = suitable_for_tail_call_opt_p ();
-
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
       /* Only traverse the normal exits, i.e. those that end with return
 	 statement.  */
       if (safe_is_a <greturn *> (*gsi_last_bb (e->src)))
-	find_tail_calls (e->src, &tailcalls, only_mustcall);
+	find_tail_calls (e->src, &tailcalls, only_mustcall, opt_tailcalls);
     }
 
   if (live_vars)
