@@ -209,4 +209,12 @@ FeatureGate::visit (AST::BorrowExpr &expr)
 	  "raw address of syntax is experimental");
 }
 
+void
+FeatureGate::visit (AST::RangePattern &pattern)
+{
+  if (pattern.get_range_kind () == AST::RangeKind::EXCLUDED)
+    gate (Feature::Name::EXCLUSIVE_RANGE_PATTERN, pattern.get_locus (),
+	  "exclusive range pattern syntax is experimental");
+}
+
 } // namespace Rust

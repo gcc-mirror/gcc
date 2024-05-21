@@ -99,9 +99,7 @@ public:
   void visit (AST::ForLoopExpr &expr) override {}
   void visit (AST::IfExpr &expr) override {}
   void visit (AST::IfExprConseqElse &expr) override {}
-  void visit (AST::IfLetExpr &expr) override {}
   void visit (AST::IfLetExprConseqElse &expr) override {}
-  void visit (AST::MatchExpr &expr) override {}
   void visit (AST::AwaitExpr &expr) override {}
   void visit (AST::AsyncBlockExpr &expr) override {}
   void visit (AST::TypeParam &param) override;
@@ -150,7 +148,7 @@ public:
   void visit (AST::RangePatternBoundLiteral &bound) override {}
   void visit (AST::RangePatternBoundPath &bound) override {}
   void visit (AST::RangePatternBoundQualPath &bound) override {}
-  void visit (AST::RangePattern &pattern) override {}
+  void visit (AST::RangePattern &pattern) override;
   void visit (AST::ReferencePattern &pattern) override {}
   void visit (AST::StructPatternFieldTuplePat &field) override {}
   void visit (AST::StructPatternFieldIdentPat &field) override {}
