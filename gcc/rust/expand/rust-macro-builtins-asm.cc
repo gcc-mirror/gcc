@@ -20,15 +20,15 @@
 
 namespace Rust {
 
-tl::optional<InlineAsmDirSpec>
+int
 parseDirSpec (Parser<MacroInvocLexer> &parser, TokenId last_token_id)
 {
-  return tl::nullopt;
+  return 0;
 }
 
 int
 parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-		   AsmArg &args)
+		   AST::InlineAsm &inlineAsm)
 {
   // clobber_abi := "clobber_abi(" <abi> *("," <abi>) [","] ")"
 
@@ -49,7 +49,7 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       return -1;
     }
 
-  ClobberAbis new_abis;
+  std::vector<AST::TupleClobber> new_abis;
 
   auto token = parser.peek_current_token ();
 
@@ -59,7 +59,7 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       if (token->get_id () == STRING_LITERAL)
 	{
 	  // TODO: Caring for span in here.
-	  new_abis.push_back (token->as_string ());
+	  new_abis.push_back ({token->as_string (), token->get_locus ()});
 	}
       else
 	{
@@ -88,16 +88,17 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 
   for (auto abi : new_abis)
     {
-      args.clobber_abis.push_back (abi);
+      inlineAsm.clobber_abi.push_back (abi);
     }
 
   return 0;
 }
 
 void
-check_and_set (Parser<MacroInvocLexer> &p, AsmArg &args, std::string option)
+check_and_set (Parser<MacroInvocLexer> &p, AST::InlineAsm &inlineAsm,
+	       std::string option)
 {
-  if (args.options.count (option) == 1)
+  if (inlineAsm.options.count (option) == 1)
     {
       // TODO: report an error of duplication
 
@@ -105,13 +106,14 @@ check_and_set (Parser<MacroInvocLexer> &p, AsmArg &args, std::string option)
     }
   else
     {
-      args.options.insert (option);
+      inlineAsm.options.insert (option);
     }
 }
 int
 parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	       AsmArg &args, bool is_global_asm)
+	       AST::InlineAsm &inlineAsm)
 {
+  bool is_global_asm = inlineAsm.is_global_asm;
   // Parse everything commitedly
   if (!parser.skip_token (LEFT_PAREN))
     {
@@ -126,43 +128,43 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       if (!is_global_asm && check_identifier (parser, "pure"))
 	{
-	  check_and_set (parser, args, "pure");
+	  check_and_set (parser, inlineAsm, "pure");
 	}
       else if (!is_global_asm && check_identifier (parser, "nomem"))
 	{
-	  check_and_set (parser, args, "nomem");
+	  check_and_set (parser, inlineAsm, "nomem");
 	}
       else if (!is_global_asm && check_identifier (parser, "readonly"))
 	{
-	  check_and_set (parser, args, "readonly");
+	  check_and_set (parser, inlineAsm, "readonly");
 	}
       else if (!is_global_asm && check_identifier (parser, "preserves_flags"))
 	{
-	  check_and_set (parser, args, "preserves_flags");
+	  check_and_set (parser, inlineAsm, "preserves_flags");
 	}
       else if (!is_global_asm && check_identifier (parser, "noreturn"))
 	{
-	  check_and_set (parser, args, "noreturn");
+	  check_and_set (parser, inlineAsm, "noreturn");
 	}
       else if (!is_global_asm && check_identifier (parser, "noreturn"))
 	{
-	  check_and_set (parser, args, "noreturn");
+	  check_and_set (parser, inlineAsm, "noreturn");
 	}
       else if (!is_global_asm && check_identifier (parser, "nostack"))
 	{
-	  check_and_set (parser, args, "nostack");
+	  check_and_set (parser, inlineAsm, "nostack");
 	}
       else if (!is_global_asm && check_identifier (parser, "may_unwind"))
 	{
-	  check_and_set (parser, args, "may_unwind");
+	  check_and_set (parser, inlineAsm, "may_unwind");
 	}
       else if (check_identifier (parser, "att_syntax"))
 	{
-	  check_and_set (parser, args, "att_syntax");
+	  check_and_set (parser, inlineAsm, "att_syntax");
 	}
       else if (check_identifier (parser, "raw"))
 	{
-	  check_and_set (parser, args, "raw");
+	  check_and_set (parser, inlineAsm, "raw");
 	}
       else
 	{
@@ -249,12 +251,11 @@ MacroBuiltin::nonglobal_asm_handler (location_t invoc_locus,
   return parse_asm (invoc_locus, invoc, is_global_asm);
 }
 
-tl::optional<AsmArg>
+int
 parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	     bool is_global_asm)
+	     AST::InlineAsm &inlineAsm)
 {
   auto token = parser.peek_current_token ();
-  AsmArg arg;
   tl::optional<std::string> fm_string;
   while (token->get_id () != last_token_id)
     {
@@ -299,7 +300,7 @@ parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       // only other logical choice is reg_operand
       fm_string = parse_format_string (parser, last_token_id);
     }
-  return tl::nullopt;
+  return 0;
 }
 
 static tl::optional<AST::Fragment>
@@ -326,6 +327,9 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   Parser<MacroInvocLexer> parser (lex);
   auto last_token_id = macro_end_token (invoc.get_delim_tok_tree (), parser);
 
+  AST::InlineAsm inlineAsm (invoc_locus, is_global_asm);
+  inlineAsm.is_global_asm = is_global_asm;
+
   // Parse the first ever formatted string, success or not, will skip 1 token
   auto fm_string = parse_format_string (parser, last_token_id);
   if (fm_string == tl::nullopt)
@@ -349,7 +353,7 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
     }
 
   // operands stream, also handles the optional ","
-  parseAsmArg (parser, last_token_id, is_global_asm);
+  parseAsmArg (parser, last_token_id, inlineAsm);
 
   return tl::nullopt;
 }
