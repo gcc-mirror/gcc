@@ -5760,15 +5760,14 @@ for (i = 0; i < LEN + BIAS; i++)
     operand0 += operand2[i];
 @end smallexample
 
-@cindex @code{sdot_prod@var{m}} instruction pattern
-@item @samp{sdot_prod@var{m}}
+@cindex @code{sdot_prod@var{m}@var{n}} instruction pattern
+@item @samp{sdot_prod@var{m}@var{n}}
 
-Compute the sum of the products of two signed elements.
-Operand 1 and operand 2 are of the same mode. Their
-product, which is of a wider mode, is computed and added to operand 3.
-Operand 3 is of a mode equal or wider than the mode of the product. The
-result is placed in operand 0, which is of the same mode as operand 3.
-@var{m} is the mode of operand 1 and operand 2.
+Multiply operand 1 by operand 2 without loss of precision, given that
+both operands contain signed elements.  Add each product to the overlapping
+element of operand 3 and store the result in operand 0.  Operands 0 and 3
+have mode @var{m} and operands 1 and 2 have mode @var{n}, with @var{n}
+having narrower elements than @var{m}.
 
 Semantically the expressions perform the multiplication in the following signs
 
@@ -5778,15 +5777,14 @@ sdot<signed op0, signed op1, signed op2, signed op3> ==
 @dots{}
 @end smallexample
 
-@cindex @code{udot_prod@var{m}} instruction pattern
-@item @samp{udot_prod@var{m}}
+@cindex @code{udot_prod@var{m}@var{n}} instruction pattern
+@item @samp{udot_prod@var{m}@var{n}}
 
-Compute the sum of the products of two unsigned elements.
-Operand 1 and operand 2 are of the same mode. Their
-product, which is of a wider mode, is computed and added to operand 3.
-Operand 3 is of a mode equal or wider than the mode of the product. The
-result is placed in operand 0, which is of the same mode as operand 3.
-@var{m} is the mode of operand 1 and operand 2.
+Multiply operand 1 by operand 2 without loss of precision, given that
+both operands contain unsigned elements.  Add each product to the overlapping
+element of operand 3 and store the result in operand 0.  Operands 0 and 3
+have mode @var{m} and operands 1 and 2 have mode @var{n}, with @var{n}
+having narrower elements than @var{m}.
 
 Semantically the expressions perform the multiplication in the following signs
 
@@ -5796,14 +5794,14 @@ udot<unsigned op0, unsigned op1, unsigned op2, unsigned op3> ==
 @dots{}
 @end smallexample
 
-@cindex @code{usdot_prod@var{m}} instruction pattern
-@item @samp{usdot_prod@var{m}}
+@cindex @code{usdot_prod@var{m}@var{n}} instruction pattern
+@item @samp{usdot_prod@var{m}@var{n}}
 Compute the sum of the products of elements of different signs.
-Operand 1 must be unsigned and operand 2 signed. Their
-product, which is of a wider mode, is computed and added to operand 3.
-Operand 3 is of a mode equal or wider than the mode of the product. The
-result is placed in operand 0, which is of the same mode as operand 3.
-@var{m} is the mode of operand 1 and operand 2.
+Multiply operand 1 by operand 2 without loss of precision, given that operand 1
+is unsigned and operand 2 is signed.  Add each product to the overlapping
+element of operand 3 and store the result in operand 0.  Operands 0 and 3 have
+mode @var{m} and operands 1 and 2 have mode @var{n}, with @var{n} having
+narrower elements than @var{m}.
 
 Semantically the expressions perform the multiplication in the following signs
 
