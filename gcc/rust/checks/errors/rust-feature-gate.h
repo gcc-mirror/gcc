@@ -54,7 +54,7 @@ public:
   void visit (AST::AttrInputMacro &attr_input) override {}
   void visit (AST::MetaItemLitExpr &meta_item) override {}
   void visit (AST::MetaItemPathLit &meta_item) override {}
-  void visit (AST::BorrowExpr &expr) override {}
+  void visit (AST::BorrowExpr &expr) override;
   void visit (AST::DereferenceExpr &expr) override {}
   void visit (AST::ErrorPropagationExpr &expr) override {}
   void visit (AST::NegationExpr &expr) override {}
