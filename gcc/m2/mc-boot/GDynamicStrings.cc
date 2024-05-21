@@ -255,11 +255,24 @@ extern "C" int DynamicStrings_Index (DynamicStrings_String s, char ch, unsigned 
 
 /*
    RIndex - returns the indice of the last occurance of, ch,
-            in String, s. The search starts at position, o.
-            -1 is returned if, ch, is not found.
+            in String, s.  The search starts at position, o.
+            -1 is returned if, ch, is not found.  The search
+            is performed left to right.
 */
 
 extern "C" int DynamicStrings_RIndex (DynamicStrings_String s, char ch, unsigned int o);
+
+/*
+   ReverseIndex - returns the indice of the last occurance of ch
+                  in String s.  The search starts at position o
+                  and searches from right to left.  The start position
+                  may be indexed negatively from the right (-1 is the
+                  last index).
+                  The return value if ch is found will always be positive.
+                  -1 is returned if ch is not found.
+*/
+
+extern "C" int DynamicStrings_ReverseIndex (DynamicStrings_String s, char ch, int o);
 
 /*
    RemoveComment - assuming that, comment, is a comment delimiter
@@ -2177,8 +2190,9 @@ extern "C" int DynamicStrings_Index (DynamicStrings_String s, char ch, unsigned 
 
 /*
    RIndex - returns the indice of the last occurance of, ch,
-            in String, s. The search starts at position, o.
-            -1 is returned if, ch, is not found.
+            in String, s.  The search starts at position, o.
+            -1 is returned if, ch, is not found.  The search
+            is performed left to right.
 */
 
 extern "C" int DynamicStrings_RIndex (DynamicStrings_String s, char ch, unsigned int o)
@@ -2228,6 +2242,52 @@ extern "C" int DynamicStrings_RIndex (DynamicStrings_String s, char ch, unsigned
 
 
 /*
+   ReverseIndex - returns the indice of the last occurance of ch
+                  in String s.  The search starts at position o
+                  and searches from right to left.  The start position
+                  may be indexed negatively from the right (-1 is the
+                  last index).
+                  The return value if ch is found will always be positive.
+                  -1 is returned if ch is not found.
+*/
+
+extern "C" int DynamicStrings_ReverseIndex (DynamicStrings_String s, char ch, int o)
+{
+  unsigned int c;
+
+  if (PoisonOn)
+    {
+      s = CheckPoisoned (s);
+    }
+  if (o < 0)
+    {
+      o = ((int ) (DynamicStrings_Length (s)))+o;
+      if (o < 0)
+        {
+          return -1;
+        }
+    }
+  if (((unsigned int ) (o)) < (DynamicStrings_Length (s)))
+    {
+      while (o >= 0)
+        {
+          if ((DynamicStrings_char (s, o)) == ch)
+            {
+              return o;
+            }
+          else
+            {
+              o -= 1;
+            }
+        }
+    }
+  return -1;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    RemoveComment - assuming that, comment, is a comment delimiter
                    which indicates anything to its right is a comment
                    then strip off the comment and also any white space
@@ -2251,7 +2311,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveComment (DynamicStrings_St
     }
   if (TraceOn)
     {
-      s = AssignDebug (s, (const char *) "../../gcc/m2/gm2-libs/DynamicStrings.mod", 40, 1534, (const char *) "RemoveComment", 13);
+      s = AssignDebug (s, (const char *) "../../gcc/m2/gm2-libs/DynamicStrings.mod", 40, 1576, (const char *) "RemoveComment", 13);
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -2276,7 +2336,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveWhitePrefix (DynamicString
   s = DynamicStrings_Slice (s, (int ) (i), 0);
   if (TraceOn)
     {
-      s = AssignDebug (s, (const char *) "../../gcc/m2/gm2-libs/DynamicStrings.mod", 40, 1646, (const char *) "RemoveWhitePrefix", 17);
+      s = AssignDebug (s, (const char *) "../../gcc/m2/gm2-libs/DynamicStrings.mod", 40, 1688, (const char *) "RemoveWhitePrefix", 17);
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -2301,7 +2361,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveWhitePostfix (DynamicStrin
   s = DynamicStrings_Slice (s, 0, i+1);
   if (TraceOn)
     {
-      s = AssignDebug (s, (const char *) "../../gcc/m2/gm2-libs/DynamicStrings.mod", 40, 1668, (const char *) "RemoveWhitePostfix", 18);
+      s = AssignDebug (s, (const char *) "../../gcc/m2/gm2-libs/DynamicStrings.mod", 40, 1710, (const char *) "RemoveWhitePostfix", 18);
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */

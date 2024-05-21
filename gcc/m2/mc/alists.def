@@ -109,4 +109,11 @@ PROCEDURE foreachItemInListDo (l: alist; p: performOperation) ;
 PROCEDURE duplicateList (l: alist) : alist ;
 
 
+(*
+   equalList - returns TRUE if left contains the same information as right.
+*)
+
+PROCEDURE equalList (left, right: alist) : BOOLEAN ;
+
+
 END alists.

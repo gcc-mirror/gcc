@@ -682,7 +682,17 @@ TYPE
                    init :  BOOLEAN ;
                 END ;
 
+       group = POINTER TO RECORD
+                             todoQ,
+                             partialQ,
+                             doneQ   : alist ;
+                             next    : group ;
+                          END ;
+
+
 VAR
+   freeGroup,
+   globalGroup   : group ;    (* The global group of all alists.  *)
    outputFile    : File ;
    lang          : language ;
    bitsperunitN,
@@ -755,9 +765,6 @@ VAR
    baseSymbols   : symbolTree ;
    outputState   : outputStates ;
    doP           : pretty ;
-   todoQ,
-   partialQ,
-   doneQ         : alist ;
    mustVisitScope,
    simplified    : BOOLEAN ;
    tempCount     : CARDINAL ;
@@ -798,6 +805,92 @@ BEGIN
    DISPOSE (n) ;
    n := NIL
 END disposeNode ;
+
+
+(*
+   newGroup -
+*)
+
+PROCEDURE newGroup (VAR g: group) ;
+BEGIN
+   IF freeGroup = NIL
+   THEN
+      NEW (g)
+   ELSE
+      g := freeGroup ;
+      freeGroup := freeGroup^.next
+   END
+END newGroup ;
+
+
+(*
+   initGroup - returns a group which with all lists initialized.
+*)
+
+PROCEDURE initGroup () : group ;
+VAR
+   g: group ;
+BEGIN
+   newGroup (g) ;
+   WITH g^ DO
+      todoQ := alists.initList () ;
+      partialQ := alists.initList () ;
+      doneQ := alists.initList () ;
+      next := NIL
+   END ;
+   RETURN g
+END initGroup ;
+
+
+(*
+   killGroup - deallocate the group and place the group record into the freeGroup list.
+*)
+
+PROCEDURE killGroup (VAR g: group) ;
+BEGIN
+   alists.killList (g^.todoQ) ;
+   alists.killList (g^.partialQ) ;
+   alists.killList (g^.doneQ) ;
+   g^.next := freeGroup ;
+   freeGroup := g ;
+END killGroup ;
+
+
+(*
+   dupGroup - If g is not NIL then destroy g.
+              Return a duplicate of GlobalGroup (not g).
+*)
+
+PROCEDURE dupGroup (g: group) : group ;
+BEGIN
+   IF g # NIL
+   THEN
+      (* Kill old group.  *)
+      killGroup (g)
+   END ;
+   newGroup (g) ;
+   WITH g^ DO
+      (* Copy all lists.  *)
+      todoQ := alists.duplicateList (globalGroup^.todoQ) ;
+      partialQ := alists.duplicateList (globalGroup^.partialQ) ;
+      doneQ := alists.duplicateList (globalGroup^.doneQ) ;
+      next := NIL
+   END ;
+   RETURN g
+END dupGroup ;
+
+
+(*
+   equalGroup - return TRUE if group left = right.
+*)
+
+PROCEDURE equalGroup (left, right: group) : BOOLEAN ;
+BEGIN
+   RETURN ((left = right) OR
+           (alists.equalList (left^.todoQ, right^.todoQ) AND
+            alists.equalList (left^.partialQ, right^.partialQ) AND
+            alists.equalList (left^.doneQ, right^.doneQ)))
+END equalGroup ;
 
 
 (*
@@ -5659,14 +5752,14 @@ END doNothing ;
 
 PROCEDURE doConstC (n: node) ;
 BEGIN
-   IF NOT alists.isItemInList (doneQ, n)
+   IF NOT alists.isItemInList (globalGroup^.doneQ, n)
    THEN
       print (doP, "#   define ") ;
       doFQNameC (doP, n) ;
       setNeedSpace (doP) ;
       doExprC (doP, n^.constF.value) ;
       print (doP, '\n') ;
-      alists.includeItemIntoList (doneQ, n)
+      alists.includeItemIntoList (globalGroup^.doneQ, n)
    END
 END doConstC ;
 
@@ -8602,13 +8695,13 @@ END doPrototypeC ;
 PROCEDURE addTodo (n: node) ;
 BEGIN
    IF (n#NIL) AND
-      (NOT alists.isItemInList (partialQ, n)) AND
-      (NOT alists.isItemInList (doneQ, n))
+      (NOT alists.isItemInList (globalGroup^.partialQ, n)) AND
+      (NOT alists.isItemInList (globalGroup^.doneQ, n))
    THEN
       assert (NOT isVarient (n)) ;
       assert (NOT isVarientField (n)) ;
       assert (NOT isDef (n)) ;
-      alists.includeItemIntoList (todoQ, n)
+      alists.includeItemIntoList (globalGroup^.todoQ, n)
    END
 END addTodo ;
 
@@ -11932,7 +12025,7 @@ END allDependants ;
 
 PROCEDURE walkDependants (l: alist; n: node) : dependentState ;
 BEGIN
-   IF (n=NIL) OR alists.isItemInList (doneQ, n)
+   IF (n=NIL) OR alists.isItemInList (globalGroup^.doneQ, n)
    THEN
       RETURN completed
    ELSIF alists.isItemInList (l, n)
@@ -11954,10 +12047,10 @@ VAR
    t: node ;
 BEGIN
    t := getType (n) ;
-   IF alists.isItemInList (doneQ, t)
+   IF alists.isItemInList (globalGroup^.doneQ, t)
    THEN
       RETURN completed
-   ELSIF alists.isItemInList (partialQ, t)
+   ELSIF alists.isItemInList (globalGroup^.partialQ, t)
    THEN
       RETURN blocked
    ELSE
@@ -12030,13 +12123,13 @@ PROCEDURE dbq (n: node) ;
 BEGIN
    IF getDebugTopological ()
    THEN
-      IF alists.isItemInList (todoQ, n)
+      IF alists.isItemInList (globalGroup^.todoQ, n)
       THEN
          db ('{T', n) ; outText (doP, '}')
-      ELSIF alists.isItemInList (partialQ, n)
+      ELSIF alists.isItemInList (globalGroup^.partialQ, n)
       THEN
          db ('{P', n) ; outText (doP, '}')
-      ELSIF alists.isItemInList (doneQ, n)
+      ELSIF alists.isItemInList (globalGroup^.doneQ, n)
       THEN
          db ('{D', n) ; outText (doP, '}')
       END
@@ -12129,7 +12222,8 @@ END walkVarient ;
 
 PROCEDURE queueBlocked (n: node) ;
 BEGIN
-   IF NOT (alists.isItemInList (doneQ, n) OR alists.isItemInList (partialQ, n))
+   IF NOT (alists.isItemInList (globalGroup^.doneQ, n) OR
+           alists.isItemInList (globalGroup^.partialQ, n))
    THEN
       addTodo (n)
    END
@@ -12145,7 +12239,7 @@ VAR
    t: node ;
 BEGIN
    t := getType (n) ;
-   IF alists.isItemInList (doneQ, t)
+   IF alists.isItemInList (globalGroup^.doneQ, t)
    THEN
       RETURN completed
    ELSE
@@ -12244,7 +12338,8 @@ VAR
 BEGIN
    (* if the type of, n, is done or partial then we can output pointer.  *)
    t := getType (n) ;
-   IF alists.isItemInList (partialQ, t) OR alists.isItemInList (doneQ, t)
+   IF alists.isItemInList (globalGroup^.partialQ, t) OR
+      alists.isItemInList (globalGroup^.doneQ, t)
    THEN
       (* pointer to partial can always generate a complete type.  *)
       RETURN completed
@@ -12270,7 +12365,7 @@ BEGIN
       END ;
 *)
       (* an array can only be declared if its data type has already been emitted.  *)
-      IF NOT alists.isItemInList (doneQ, type)
+      IF NOT alists.isItemInList (globalGroup^.doneQ, type)
       THEN
          s := walkDependants (l, type) ;
          queueBlocked (type) ;
@@ -12320,7 +12415,7 @@ VAR
    t: node ;
 BEGIN
    t := getType (n) ;
-   IF alists.isItemInList (partialQ, t)
+   IF alists.isItemInList (globalGroup^.partialQ, t)
    THEN
       (* parameter can be issued from a partial.  *)
       RETURN completed
@@ -12338,7 +12433,7 @@ VAR
    t: node ;
 BEGIN
    t := getType (n) ;
-   IF alists.isItemInList (partialQ, t)
+   IF alists.isItemInList (globalGroup^.partialQ, t)
    THEN
       (* parameter can be issued from a partial.  *)
       RETURN completed
@@ -12356,7 +12451,7 @@ VAR
    t: node ;
 BEGIN
    t := getType (n) ;
-   IF alists.isItemInList (partialQ, t)
+   IF alists.isItemInList (globalGroup^.partialQ, t)
    THEN
       (* parameter can be issued from a partial.  *)
       RETURN completed
@@ -12376,11 +12471,11 @@ VAR
 BEGIN
    assert (isRecordField (n)) ;
    t := getType (n) ;
-   IF alists.isItemInList (partialQ, t)
+   IF alists.isItemInList (globalGroup^.partialQ, t)
    THEN
       dbs (partial, n) ;
       RETURN partial
-   ELSIF alists.isItemInList (doneQ, t)
+   ELSIF alists.isItemInList (globalGroup^.doneQ, t)
    THEN
       dbs (completed, n) ;
       RETURN completed
@@ -12454,7 +12549,7 @@ VAR
    t: node ;
 BEGIN
    t := getType (n) ;
-   IF alists.isItemInList (partialQ, t)
+   IF alists.isItemInList (globalGroup^.partialQ, t)
    THEN
       (* proctype can be generated from partial types.  *)
    ELSE
@@ -12787,7 +12882,7 @@ PROCEDURE tryCompleteFromPartial (n: node; t: nodeProcedure) : BOOLEAN ;
 BEGIN
    IF isType (n) AND (getType (n)#NIL) AND isPointer (getType (n)) AND (allDependants (getType (n)) = completed)
    THEN
-      (* alists.includeItemIntoList (partialQ, getType (n)) ; *)
+      (* alists.includeItemIntoList (globalGroup^.partialQ, getType (n)) ; *)
       outputHiddenComplete (n) ;
       RETURN TRUE
    ELSIF allDependants (n) = completed
@@ -13824,9 +13919,9 @@ BEGIN
    THEN
       m := Sprintf0 (InitString ('\n')) ;
       m := KillString (WriteS (StdOut, m)) ;
-      dumpQ ('todo', todoQ) ;
-      dumpQ ('partial', partialQ) ;
-      dumpQ ('done', doneQ)
+      dumpQ ('todo', globalGroup^.todoQ) ;
+      dumpQ ('partial', globalGroup^.partialQ) ;
+      dumpQ ('done', globalGroup^.doneQ)
    END
 END dumpLists ;
 
@@ -13885,7 +13980,8 @@ BEGIN
             pt (n) ;
             addTodo (q) ;
             RETURN TRUE
-         ELSIF isArray (q) AND (seenPointer OR alists.isItemInList (doneQ, getType (q)))
+         ELSIF isArray (q) AND (seenPointer OR
+                                alists.isItemInList (globalGroup^.doneQ, getType (q)))
          THEN
             pt (n) ;
             addTodo (q) ;
@@ -13997,23 +14093,23 @@ VAR
    d   : node ;
 BEGIN
    i := 1 ;
-   n := alists.noOfItemsInList (todoQ) ;
+   n := alists.noOfItemsInList (globalGroup^.todoQ) ;
    WHILE i<=n DO
-      d := alists.getItemFromList (todoQ, i) ;
+      d := alists.getItemFromList (globalGroup^.todoQ, i) ;
       IF tryComplete (d, c, t, v)
       THEN
-         alists.removeItemFromList (todoQ, d) ;
-	 alists.includeItemIntoList (doneQ, d) ;
+         alists.removeItemFromList (globalGroup^.todoQ, d) ;
+	 alists.includeItemIntoList (globalGroup^.doneQ, d) ;
          i := 1
       ELSIF tryPartial (d, pt)
       THEN
-         alists.removeItemFromList (todoQ, d) ;
-         alists.includeItemIntoList (partialQ, d) ;
+         alists.removeItemFromList (globalGroup^.todoQ, d) ;
+         alists.includeItemIntoList (globalGroup^.partialQ, d) ;
          i := 1
       ELSE
          INC (i)
       END ;
-      n := alists.noOfItemsInList (todoQ)
+      n := alists.noOfItemsInList (globalGroup^.todoQ)
    END
 END tryOutputTodo ;
 
@@ -14028,13 +14124,13 @@ VAR
    d   : node ;
 BEGIN
    i := 1 ;
-   n := alists.noOfItemsInList (partialQ) ;
+   n := alists.noOfItemsInList (globalGroup^.partialQ) ;
    WHILE i<=n DO
-      d := alists.getItemFromList (partialQ, i) ;
+      d := alists.getItemFromList (globalGroup^.partialQ, i) ;
       IF tryCompleteFromPartial (d, t)
       THEN
-         alists.removeItemFromList (partialQ, d) ;
-         alists.includeItemIntoList (doneQ, d) ;
+         alists.removeItemFromList (globalGroup^.partialQ, d) ;
+         alists.includeItemIntoList (globalGroup^.doneQ, d) ;
          i := 1 ;
          DEC (n)
       ELSE
@@ -14076,8 +14172,8 @@ PROCEDURE debugLists ;
 BEGIN
    IF getDebugTopological ()
    THEN
-      debugList ('todo', todoQ) ;
-      debugList ('partial', partialQ)
+      debugList ('todo', globalGroup^.todoQ) ;
+      debugList ('partial', globalGroup^.partialQ)
    END
 END debugLists ;
 
@@ -14107,44 +14203,39 @@ VAR
    i, h: CARDINAL ;
    l   : alist ;
 BEGIN
-   h := alists.noOfItemsInList (todoQ) ;
+   h := alists.noOfItemsInList (globalGroup^.todoQ) ;
    i := 1 ;
    WHILE i <= h DO
-      n := alists.getItemFromList (todoQ, i) ;
+      n := alists.getItemFromList (globalGroup^.todoQ, i) ;
       l := alists.initList () ;
       visitNode (l, n, p) ;
       alists.killList (l) ;
-      h := alists.noOfItemsInList (todoQ) ;
+      h := alists.noOfItemsInList (globalGroup^.todoQ) ;
       INC (i)
    END
 END populateTodo ;
 
 
 (*
-   topologicallyOut -
+   topologicallyOut - keep trying to resolve the todoQ and partialQ
+                      until there is no change from the global group.
 *)
 
 PROCEDURE topologicallyOut (c, t, v, tp,
                             pc, pt, pv: nodeProcedure) ;
 VAR
-   tol, pal,
-   to,  pa : CARDINAL ;
+   before: group ;
 BEGIN
    populateTodo (addEnumConst) ;
-   tol := 0 ;
-   pal := 0 ;
-   to := alists.noOfItemsInList (todoQ) ;
-   pa := alists.noOfItemsInList (partialQ) ;
-   WHILE (tol#to) OR (pal#pa) DO
+   before := NIL ;
+   REPEAT
+      before := dupGroup (before) ;  (* Get a copy of the globalGroup and free before.  *)
       dumpLists ;
       tryOutputTodo (c, t, v, tp) ;
       dumpLists ;
-      tryOutputPartial (pt) ;
-      tol := to ;
-      pal := pa ;
-      to := alists.noOfItemsInList (todoQ) ;
-      pa := alists.noOfItemsInList (partialQ)
-   END ;
+      tryOutputPartial (pt)
+   UNTIL equalGroup (before, globalGroup) ;
+   killGroup (before) ;
    dumpLists ;
    debugLists
 END topologicallyOut ;
@@ -15352,7 +15443,7 @@ END setLangM2 ;
 
 PROCEDURE addDone (n: node) ;
 BEGIN
-   alists.includeItemIntoList (doneQ, n)
+   alists.includeItemIntoList (globalGroup^.doneQ, n)
 END addDone ;
 
 
@@ -15368,7 +15459,7 @@ BEGIN
       addDone (n) ;
       RETURN
    END ;
-   IF (NOT isDef (n)) AND (lookupImp (getSymName (getScope (n))) = getMainModule ())
+   IF FALSE AND (lookupImp (getSymName (getScope (n))) = getMainModule ())
    THEN
       metaError1 ('cyclic dependancy found between another module using {%1ad} from the definition module of the implementation main being compiled, use the --extended-opaque option to compile', n) ;
       flushErrors ;
@@ -16977,9 +17068,8 @@ BEGIN
    lang := ansiC ;
    outputFile := StdOut ;
    doP := initPretty (write, writeln) ;
-   todoQ := alists.initList () ;
-   partialQ := alists.initList () ;
-   doneQ := alists.initList () ;
+   freeGroup := NIL ;
+   globalGroup := initGroup () ;
    modUniverse := initTree () ;
    defUniverse := initTree () ;
    modUniverseI := InitIndex (1) ;
