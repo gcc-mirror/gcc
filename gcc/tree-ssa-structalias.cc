@@ -7087,6 +7087,7 @@ bool
 pt_solution_includes_const_pool (struct pt_solution *pt)
 {
   return (pt->const_pool
+	  || pt->nonlocal
 	  || (pt->escaped && (!cfun || cfun->gimple_df->escaped.const_pool))
 	  || (pt->ipa_escaped && ipa_escaped_pt.const_pool));
 }
