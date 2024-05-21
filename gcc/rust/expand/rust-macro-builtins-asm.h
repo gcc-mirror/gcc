@@ -37,7 +37,7 @@ typedef std::string symbol_name;
 typedef std::vector<AST::Expr> Templates;
 typedef std::vector<InlineAsmDirSpec> Operands;
 typedef std::map<std::string, int> RegisterArgs;
-typedef std::map<symbol_name, int> ClobberAbis;
+typedef std::vector<symbol_name> ClobberAbis;
 typedef std::map<symbol_name, int> NamedValues;
 
 struct AsmArg
@@ -84,4 +84,9 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 tl::optional<InlineAsmRegOrRegClass>
 parse_reg (Parser<MacroInvocLexer> &parser, TokenId last_token_id, AsmArg &args,
 	   bool is_explicit);
+
+int
+parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+		   AsmArg &args);
+
 } // namespace Rust

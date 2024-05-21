@@ -26,6 +26,80 @@ parseDirSpec (Parser<MacroInvocLexer> &parser, TokenId last_token_id)
   return tl::nullopt;
 }
 
+int
+parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+		   AsmArg &args)
+{
+  // clobber_abi := "clobber_abi(" <abi> *("," <abi>) [","] ")"
+
+  // PARSE EVERYTHING COMMITTEDLY IN THIS FUNCTION, WE CONFIRMED VIA clobber_abi
+  // identifier keyword
+
+  if (!parser.skip_token (LEFT_PAREN))
+    {
+      // TODO: Raise error exactly like rustc if left parenthesis is not
+      // encountered.
+      return -1;
+    }
+
+  if (parser.skip_token (RIGHT_PAREN))
+    {
+      // TODO: We encountered a "clobber_abi()", which should be illegal?
+      // https://github.com/rust-lang/rust/blob/c00957a3e269219413041a4e3565f33b1f9d0779/compiler/rustc_builtin_macros/src/asm.rs#L381
+      return -1;
+    }
+
+  ClobberAbis new_abis;
+
+  auto token = parser.peek_current_token ();
+
+  while (token->get_id () != last_token_id && token->get_id () != RIGHT_PAREN)
+    {
+      // Check if it is a string literal or not, codename: <ABI> in ABNF
+      if (token->get_id () == STRING_LITERAL)
+	{
+	  // TODO: Caring for span in here.
+	  new_abis.push_back (token->as_string ());
+	}
+      else
+	{
+	  // TODO: We encountered something that is not string literal, which
+	  // should be illegal, please emit the correct error
+	  // https://github.com/rust-lang/rust/blob/b92758a9aef1cef7b79e2b72c3d8ba113e547f89/compiler/rustc_builtin_macros/src/asm.rs#L387
+	}
+
+      if (parser.skip_token (RIGHT_PAREN))
+	{
+	  break;
+	}
+
+      if (!parser.skip_token (COMMA))
+	{
+	  // TODO: If the skip of comma is unsuccessful, which should be
+	  // illegal, pleaes emit the correct error.
+	  return -1;
+	}
+
+      // Done processing the local clobber abis, push that to the main Args in
+      // argument
+
+      for (auto abi : new_abis)
+	{
+	  args.clobber_abis.push_back (abi);
+	}
+
+      return 0;
+    }
+}
+
+int
+parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+	       AsmArg &args, bool is_global_asm)
+{
+  // Parse everything commitedly
+  if (!p.skip_token (LEFT_PAREN))
+    {}
+}
 bool
 check_identifier (Parser<MacroInvocLexer> &p, std::string ident)
 {
@@ -115,7 +189,7 @@ parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       // Ok after the left paren is good, we better be parsing correctly
       // everything in here, which is operand in ABNF
 
-      // TODO: Parse clobber abi
+      // TODO: Parse clobber abi, eat the identifier named "clobber_abi" if true
       if (check_identifier (parser, "clobber_abi"))
 	{
 	  std::cout << "Clobber abi tee hee" << std::endl;
