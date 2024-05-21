@@ -15283,7 +15283,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
   rtx op0 = XEXP (cmp, 0);
   rtx op1 = XEXP (cmp, 1);
 
-  if (!TARGET_FLOAT128_HW && FLOAT128_VECTOR_P (mode))
+  if (!TARGET_FLOAT128_HW && FLOAT128_IEEE_P (mode))
     comp_mode = CCmode;
   else if (FLOAT_MODE_P (mode))
     comp_mode = CCFPmode;
@@ -15315,7 +15315,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 
   /* IEEE 128-bit support in VSX registers when we do not have hardware
      support.  */
-  if (!TARGET_FLOAT128_HW && FLOAT128_VECTOR_P (mode))
+  if (!TARGET_FLOAT128_HW && FLOAT128_IEEE_P (mode))
     {
       rtx libfunc = NULL_RTX;
       bool check_nan = false;
