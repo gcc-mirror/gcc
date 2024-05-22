@@ -37646,7 +37646,7 @@ not get debugging information for routines in the precompiled header.
 @cindex speed of compilation
 
 Modules are a C++20 language feature.  As the name suggests, they
-provides a modular compilation system, intending to provide both
+provide a modular compilation system, intending to provide both
 faster builds and better library isolation.  The ``Merging Modules''
 paper @uref{https://wg21.link/p1103}, provides the easiest to read set
 of changes to the standard, although it does not capture later
