@@ -6,5 +6,7 @@ macro_rules! asm {
 }
 
 fn main() {
-    asm!(i_am_a_dummy); // { dg-error "asm template must be a string literal" }
+    unsafe {
+        asm!(i_am_a_dummy); // { dg-error "asm template must be a string literal" }
+    }
 }

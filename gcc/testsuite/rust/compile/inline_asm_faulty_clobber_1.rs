@@ -6,5 +6,7 @@ macro_rules! asm {
 }
 
 fn main() {
-    asm!("nop", clobber_abi);  // { dg-error "expected `\\(`, found end of macro arguments" }
+    unsafe {
+        asm!("nop", clobber_abi);  // { dg-error "expected `\\(`, found end of macro arguments" }
+    }
 }
