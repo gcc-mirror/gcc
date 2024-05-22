@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // We know these standard facets are always installed in every locale
       // so dynamic_cast always succeeds, just use static_cast instead.
 #define _GLIBCXX_STD_FACET(...) \
-      if _GLIBCXX_CONSTEXPR (__is_same(_Facet, __VA_ARGS__)) \
+      if _GLIBCXX_CONSTEXPR (__is_same(const _Facet, const __VA_ARGS__)) \
 	return static_cast<const _Facet*>(__facets[__i])
 
       _GLIBCXX_STD_FACET(ctype<char>);
