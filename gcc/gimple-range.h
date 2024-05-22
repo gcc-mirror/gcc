@@ -121,7 +121,6 @@ protected:
   DISABLE_COPY_AND_ASSIGN (dom_ranger);
   void maybe_push_edge (edge e, bool edge_0);
   ssa_cache m_global;
-  gimple_outgoing_range m_out;
   vec<ssa_lazy_cache *> m_freelist;
   vec<ssa_lazy_cache *> m_e0;
   vec<ssa_lazy_cache *> m_e1;

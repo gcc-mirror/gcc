@@ -85,14 +85,15 @@ along with GCC; see the file COPYING3.  If not see
 
 class remove_unreachable {
 public:
-  remove_unreachable (gimple_ranger &r, bool all) : m_ranger (r), final_p (all)
+  remove_unreachable (range_query &r, bool all) : m_ranger (r), final_p (all)
     { m_list.create (30); }
   ~remove_unreachable () { m_list.release (); }
   void handle_early (gimple *s, edge e);
   void maybe_register (gimple *s);
+  bool remove ();
   bool remove_and_update_globals ();
   vec<std::pair<int, int> > m_list;
-  gimple_ranger &m_ranger;
+  range_query &m_ranger;
   bool final_p;
 };
 
@@ -195,6 +196,9 @@ fully_replaceable (tree name, basic_block bb)
 void
 remove_unreachable::handle_early (gimple *s, edge e)
 {
+  // If there is no gori_ssa, there is no early processsing.
+  if (!m_ranger.gori_ssa ())
+    return ;
   bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;
   bool rhs_p = TREE_CODE (gimple_cond_rhs (s)) == SSA_NAME;
   // Do not remove __builtin_unreachable if it confers a relation, or
@@ -253,6 +257,41 @@ remove_unreachable::handle_early (gimple *s, edge e)
     }
 }
 
+// Process the edges in the list, change the conditions and removing any
+// dead code feeding those conditions.   This removes the unreachables, but
+// makes no attempt to set globals values.
+
+bool
+remove_unreachable::remove ()
+{
+  if (!final_p || m_list.length () == 0)
+    return false;
+
+  bool change = false;
+  unsigned i;
+  for (i = 0; i < m_list.length (); i++)
+    {
+      auto eb = m_list[i];
+      basic_block src = BASIC_BLOCK_FOR_FN (cfun, eb.first);
+      basic_block dest = BASIC_BLOCK_FOR_FN (cfun, eb.second);
+      if (!src || !dest)
+	continue;
+      edge e = find_edge (src, dest);
+      gimple *s = gimple_outgoing_range_stmt_p (e->src);
+      gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
+
+      change = true;
+      // Rewrite the condition.
+      if (e->flags & EDGE_TRUE_VALUE)
+	gimple_cond_make_true (as_a<gcond *> (s));
+      else
+	gimple_cond_make_false (as_a<gcond *> (s));
+      update_stmt (s);
+    }
+
+  return change;
+}
+
 
 // Process the edges in the list, change the conditions and removing any
 // dead code feeding those conditions.  Calculate the range of any
@@ -265,6 +304,10 @@ remove_unreachable::remove_and_update_globals ()
 {
   if (m_list.length () == 0)
     return false;
+
+  // If there is no import/export info, just remove unreachables if necessary.
+  if (!m_ranger.gori_ssa ())
+    return remove ();
 
   // Ensure the cache in SCEV has been cleared before processing
   // globals to be removed.

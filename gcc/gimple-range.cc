@@ -922,7 +922,7 @@ assume_query::dump (FILE *f)
 
 // Create a DOM based ranger for use by a DOM walk pass.
 
-dom_ranger::dom_ranger () : m_global (), m_out ()
+dom_ranger::dom_ranger () : m_global ()
 {
   m_freelist.create (0);
   m_freelist.truncate (0);
@@ -1156,7 +1156,7 @@ dom_ranger::maybe_push_edge (edge e, bool edge_0)
     e_cache = m_freelist.pop ();
   else
     e_cache = new ssa_lazy_cache;
-  gori_on_edge (*e_cache, e, this, &m_out);
+  gori_on_edge (*e_cache, e, this, &gori ());
   if (e_cache->empty_p ())
     m_freelist.safe_push (e_cache);
   else
