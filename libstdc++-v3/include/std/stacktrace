@@ -553,6 +553,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_OPERATOR_DELETE ::operator delete
 #endif
 
+#if __cpp_sized_deallocation
+# define _GLIBCXX_SIZED_DELETE(T, p, n) \
+  _GLIBCXX_OPERATOR_DELETE((p), (n) * sizeof(T))
+#else
+# define _GLIBCXX_SIZED_DELETE(T, p, n) _GLIBCXX_OPERATOR_DELETE(p)
+#endif
+
 	// Precondition: _M_frames == nullptr && __n != 0
 	pointer
 	_M_allocate(allocator_type& __alloc, size_type __n) noexcept
@@ -592,8 +599,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (_M_capacity)
 	    {
 	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
-		_GLIBCXX_OPERATOR_DELETE (static_cast<void*>(_M_frames),
-					  _M_capacity * sizeof(value_type));
+		_GLIBCXX_SIZED_DELETE(value_type,
+				      static_cast<void*>(_M_frames),
+				      _M_capacity);
 	      else
 		__alloc.deallocate(_M_frames, _M_capacity);
 	      _M_frames = nullptr;
@@ -601,6 +609,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 
+#undef _GLIBCXX_SIZED_DELETE
 #undef _GLIBCXX_OPERATOR_DELETE
 #undef _GLIBCXX_OPERATOR_NEW
 
