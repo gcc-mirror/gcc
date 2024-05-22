@@ -21562,7 +21562,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       if (x86_64_immediate_operand (x, VOIDmode))
 	*total = 0;
      else
-	*total = 1;
+	/* movabsq is slightly more expensive than a simple instruction. */
+	*total = COSTS_N_INSNS (1) + 1;
       return true;
 
     case CONST_DOUBLE:
