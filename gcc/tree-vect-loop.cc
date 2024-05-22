@@ -12185,8 +12185,10 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	   !gsi_end_p (si);)
 	{
 	  stmt = gsi_stmt (si);
-	  /* During vectorization remove existing clobber stmts.  */
-	  if (gimple_clobber_p (stmt))
+	  /* During vectorization remove existing clobber stmts and
+	     prefetches.  */
+	  if (gimple_clobber_p (stmt)
+	      || gimple_call_builtin_p (stmt, BUILT_IN_PREFETCH))
 	    {
 	      unlink_stmt_vdef (stmt);
 	      gsi_remove (&si, true);

@@ -5868,6 +5868,8 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
 	    clobbers_memory = true;
 	    break;
 	  }
+      else if (gimple_call_builtin_p (stmt, BUILT_IN_PREFETCH))
+	clobbers_memory = false;
       else
 	clobbers_memory = true;
     }
