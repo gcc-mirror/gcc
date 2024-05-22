@@ -1625,28 +1625,20 @@ gori_calc_operands (vrange &lhs, gimple *stmt, ssa_cache &r, range_query *q)
 }
 
 // Use ssa_cache R as a repository for all outgoing ranges on edge E that
-// can be calculated.  Use OGR if present to establish starting edge ranges,
-// and Q to resolve operand values.  If Q is NULL use the current range
+// can be calculated.  Use Q to establish starting edge ranges anbd to resolve
+// operand values.  If Q is NULL use the current range
 // query available to the system.
 
 bool
-gori_on_edge (ssa_cache &r, edge e, range_query *q, gimple_outgoing_range *ogr)
+gori_on_edge (ssa_cache &r, edge e, range_query *q)
 {
+  if (!q)
+    q = get_range_query (cfun);
   // Start with an empty vector
   r.clear ();
   int_range_max lhs;
   // Determine if there is an outgoing edge.
-  gimple *stmt;
-  if (ogr)
-    stmt = ogr->edge_range_p (lhs, e);
-  else
-    {
-      stmt = gimple_outgoing_range_stmt_p (e->src);
-      if (stmt && is_a<gcond *> (stmt))
-	gcond_edge_range (lhs, e);
-      else
-	stmt = NULL;
-    }
+  gimple *stmt = q->gori ().edge_range_p (lhs, e);
   if (!stmt)
     return false;
   gori_calc_operands (lhs, stmt, r, q);

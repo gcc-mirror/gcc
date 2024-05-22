@@ -213,10 +213,8 @@ private:
 // ssa_cache structure).
 // GORI_NAME_ON_EDGE  is used to simply ask if NAME has a range on edge E
 
-// Fill ssa-cache R with any outgoing ranges on edge E, using OGR and QUERY.
-bool gori_on_edge (class ssa_cache &r, edge e,
-		   range_query *query = NULL,
-		   gimple_outgoing_range *ogr = NULL);
+// Fill ssa-cache R with any outgoing ranges on edge E, using QUERY.
+bool gori_on_edge (class ssa_cache &r, edge e, range_query *query = NULL);
 
 // Query if NAME has an outgoing range on edge E, and return it in R if so.
 // Note this doesnt use ranger, its a static GORI analysis of the range in

@@ -1156,7 +1156,7 @@ dom_ranger::maybe_push_edge (edge e, bool edge_0)
     e_cache = m_freelist.pop ();
   else
     e_cache = new ssa_lazy_cache;
-  gori_on_edge (*e_cache, e, this, &gori ());
+  gori_on_edge (*e_cache, e, this);
   if (e_cache->empty_p ())
     m_freelist.safe_push (e_cache);
   else
