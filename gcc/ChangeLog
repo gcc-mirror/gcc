@@ -1,3 +1,21 @@
+2024-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115143
+	* tree-ssa-phiopt.cc (minmax_replacement): Check for empty
+	phi nodes for middle bbs for the case where middle bb is not empty.
+
+2024-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115154
+	* match.pd (convert (mult zero_one_valued_p@1 INTEGER_CST@2)): Disable
+	for 1bit signed types.
+
 2024-05-21  Release Manager
 
 	* GCC 13.3.0 released.

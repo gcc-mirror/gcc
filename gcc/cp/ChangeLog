@@ -1,3 +1,13 @@
+2024-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107800
+	* cxxapi-data.csv <to_address>: Change dialect to cxx20.
+	* std-name-hint.gperf: Regenerate.
+	* std-name-hint.h: Regenerate.
+
 2024-05-21  Release Manager
 
 	* GCC 13.3.0 released.

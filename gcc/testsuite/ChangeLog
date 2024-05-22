@@ -1,3 +1,40 @@
+2024-05-21  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-05-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115039
+	* gfortran.dg/statement_function_5.f90: New test.
+
+2024-05-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2024-04-10  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/114662
+	* gcc.dg/lto/pr113359-2_0.c: Use unsigned long long instead of
+	unsigned long.
+	* gcc.dg/lto/pr113359-2_1.c: Likewise.
+
+2024-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115143
+	* gcc.c-torture/compile/pr115143-1.c: New test.
+	* gcc.c-torture/compile/pr115143-2.c: New test.
+	* gcc.c-torture/compile/pr115143-3.c: New test.
+
+2024-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115154
+	* c-c++-common/ubsan/signed1bitfield-1.c: New test.
+	* gcc.c-torture/execute/signed1bitfield-1.c: New test.
+
 2024-05-21  Release Manager
 
 	* GCC 13.3.0 released.

@@ -1,3 +1,38 @@
+2024-05-21  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	Backported from master:
+	2023-10-21  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	* testsuite/22_locale/codecvt/codecvt_unicode.h: Test length()
+
+2024-05-21  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	Backported from master:
+	2023-09-29  Dimitrij Mijoski  <dmjpp@hotmail.com>
+
+	PR libstdc++/108976
+	* src/c++11/codecvt.cc (read_utf8_code_point): Fix handing of
+	surrogates in UTF-8.
+	(ucs4_out): Fix handling of surrogates in UCS-4 -> UTF-8.
+	(ucs4_in): Fix handling of range with odd number of bytes.
+	(ucs4_out): Fix handling of surrogates in UCS-4 -> UTF-16.
+	(ucs2_out): Fix handling of surrogates in UCS-2 -> UTF-16.
+	(ucs2_in): Fix handling of range with odd number of bytes.
+	(__codecvt_utf16_base<char16_t>::do_in): Likewise.
+	(__codecvt_utf16_base<char32_t>::do_in): Likewise.
+	(__codecvt_utf16_base<wchar_t>::do_in): Likewise.
+	* testsuite/22_locale/codecvt/codecvt_unicode.cc: Renames, add
+	tests for codecvt_utf16<char16_t> and codecvt_utf16<char32_t>.
+	* testsuite/22_locale/codecvt/codecvt_unicode.h: Refactor UTF-8
+	testing functions for char8_t, add more test cases for errors,
+	add testing functions for codecvt_utf16.
+	* testsuite/22_locale/codecvt/codecvt_unicode_wchar_t.cc:
+	Renames, add tests for codecvt_utf16<whchar_t>.
+	* testsuite/22_locale/codecvt/codecvt_utf16/79980.cc (test06):
+	Fix test.
+	* testsuite/22_locale/codecvt/codecvt_unicode_char8_t.cc: New
+	test.
+
 2024-05-21  Release Manager
 
 	* GCC 13.3.0 released.
