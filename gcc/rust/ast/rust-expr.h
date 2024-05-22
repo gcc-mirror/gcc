@@ -4843,7 +4843,7 @@ public:
   std::vector<InlineAsmOperand> operands;
   std::vector<TupleClobber> clobber_abi;
   // std::set<InlineAsmOptions> options;
-  std::set<std::string> options;
+  std::set<InlineAsmOptions> options;
 
   std::vector<location_t> line_spans;
 
