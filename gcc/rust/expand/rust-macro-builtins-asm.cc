@@ -19,6 +19,17 @@
 #include "rust-macro-builtins-asm.h"
 
 namespace Rust {
+std::map<AST::InlineAsmOptions, std::string> InlineAsmOptionsMap{
+  {AST::InlineAsmOptions::PURE, "pure"},
+  {AST::InlineAsmOptions::NOMEM, "nomem"},
+  {AST::InlineAsmOptions::READONLY, "readonly"},
+  {AST::InlineAsmOptions::PRESERVES_FLAGS, "preserves_flags"},
+  {AST::InlineAsmOptions::NORETURN, "noreturn"},
+  {AST::InlineAsmOptions::NOSTACK, "nostack"},
+  {AST::InlineAsmOptions::MAY_UNWIND, "may_unwind"},
+  {AST::InlineAsmOptions::ATT_SYNTAX, "att_syntax"},
+  {AST::InlineAsmOptions::RAW, "raw"},
+};
 
 int
 parseDirSpec (Parser<MacroInvocLexer> &parser, TokenId last_token_id)
@@ -115,13 +126,15 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 }
 
 void
-check_and_set (Parser<MacroInvocLexer> &p, AST::InlineAsm &inlineAsm,
+check_and_set (Parser<MacroInvocLexer> &parser, AST::InlineAsm &inlineAsm,
 	       AST::InlineAsmOptions option)
 {
-  if (inlineAsm.options.count (option) == 1)
+  if (inlineAsm.options.count (option) != 0)
     {
       // TODO: report an error of duplication
-
+      rust_error_at (parser.peek_current_token ()->get_locus (),
+		     "the `%s` option was already provided",
+		     InlineAsmOptionsMap[option].c_str ());
       return;
     }
   else
@@ -189,20 +202,22 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	  rust_error_at (token->get_locus (),
 			 "Unexpected token encountered in parse_options");
 	}
-      if (!parser.skip_token (RIGHT_PAREN))
+      if (parser.skip_token (RIGHT_PAREN))
 	{
 	  break;
 	}
 
-      if (!parser.skip_token (COMMA))
+      // Parse comma as optional
+      if (parser.skip_token (COMMA))
 	{
-	  // TODO: If the skip of comma is unsuccessful, which should be
-	  // illegal, pleaes emit the correct error.
-	  std::cout << "Illegal comma" << std::endl;
+	  continue;
+	}
+      else
+	{
+	  std::cout << "Sum wrong here, check it out" << std::endl;
+	  token = parser.peek_current_token ();
 	  return -1;
 	}
-
-      token = parser.peek_current_token ();
     }
 
   // TODO: Per rust asm.rs regarding options_spans
