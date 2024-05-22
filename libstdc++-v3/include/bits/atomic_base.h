@@ -1478,7 +1478,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef _GLIBCXX20_INIT
 
   template<typename _Tp,
-	   bool = is_integral_v<_Tp>, bool = is_floating_point_v<_Tp>>
+           bool = is_integral_v<_Tp> && !is_same_v<_Tp, bool>,
+           bool = is_floating_point_v<_Tp>>
     struct __atomic_ref;
 
   // base class for non-integral, non-floating-point, non-pointer types
