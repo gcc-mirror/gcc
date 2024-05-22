@@ -116,7 +116,7 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 
 void
 check_and_set (Parser<MacroInvocLexer> &p, AST::InlineAsm &inlineAsm,
-	       std::string option)
+	       AST::InlineAsmOptions option)
 {
   if (inlineAsm.options.count (option) == 1)
     {
@@ -148,43 +148,40 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       if (!is_global_asm && check_identifier (parser, "pure"))
 	{
-	  check_and_set (parser, inlineAsm, "pure");
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::PURE);
 	}
       else if (!is_global_asm && check_identifier (parser, "nomem"))
 	{
-	  check_and_set (parser, inlineAsm, "nomem");
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::NOMEM);
 	}
       else if (!is_global_asm && check_identifier (parser, "readonly"))
 	{
-	  check_and_set (parser, inlineAsm, "readonly");
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::READONLY);
 	}
       else if (!is_global_asm && check_identifier (parser, "preserves_flags"))
 	{
-	  check_and_set (parser, inlineAsm, "preserves_flags");
+	  check_and_set (parser, inlineAsm,
+			 AST::InlineAsmOptions::PRESERVES_FLAGS);
 	}
       else if (!is_global_asm && check_identifier (parser, "noreturn"))
 	{
-	  check_and_set (parser, inlineAsm, "noreturn");
-	}
-      else if (!is_global_asm && check_identifier (parser, "noreturn"))
-	{
-	  check_and_set (parser, inlineAsm, "noreturn");
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::NORETURN);
 	}
       else if (!is_global_asm && check_identifier (parser, "nostack"))
 	{
-	  check_and_set (parser, inlineAsm, "nostack");
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::NOSTACK);
 	}
       else if (!is_global_asm && check_identifier (parser, "may_unwind"))
 	{
-	  check_and_set (parser, inlineAsm, "may_unwind");
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::MAY_UNWIND);
 	}
       else if (check_identifier (parser, "att_syntax"))
 	{
-	  check_and_set (parser, inlineAsm, "att_syntax");
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::ATT_SYNTAX);
 	}
       else if (check_identifier (parser, "raw"))
 	{
-	  check_and_set (parser, inlineAsm, "raw");
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::RAW);
 	}
       else
 	{
@@ -201,6 +198,7 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	{
 	  // TODO: If the skip of comma is unsuccessful, which should be
 	  // illegal, pleaes emit the correct error.
+	  std::cout << "Illegal comma" << std::endl;
 	  return -1;
 	}
 
@@ -315,13 +313,13 @@ parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       // TODO: Parse options
       if (check_identifier (parser, "options"))
 	{
-	  std::cout << "Parse optoins" << std::endl;
+	  parse_options (parser, last_token_id, inlineAsm);
 	  continue;
 	}
 
       // Ok after we have check that neither clobber_abi nor options works, the
       // only other logical choice is reg_operand
-      std::cout << "reg_operand" << std::endl;
+      // std::cout << "reg_operand" << std::endl;
       fm_string = parse_format_string (parser, last_token_id);
     }
   return 0;
