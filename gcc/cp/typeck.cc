@@ -1227,7 +1227,9 @@ comp_except_specs (const_tree t1, const_tree t2, int exact)
   if ((t1 && TREE_PURPOSE (t1))
       || (t2 && TREE_PURPOSE (t2)))
     return (t1 && t2
-	    && cp_tree_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2)));
+	    && (exact == ce_exact
+		? TREE_PURPOSE (t1) == TREE_PURPOSE (t2)
+		: cp_tree_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2))));
 
   if (t1 == NULL_TREE)			   /* T1 is ...  */
     return t2 == NULL_TREE || exact == ce_derived;
