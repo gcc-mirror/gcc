@@ -317,7 +317,8 @@ expand_widen_pattern_expr (const_sepops ops, rtx op0, rtx op1, rtx wide_op,
     widen_pattern_optab
       = optab_for_tree_code (ops->code, TREE_TYPE (oprnd0), optab_default);
   if (ops->code == WIDEN_MULT_PLUS_EXPR
-      || ops->code == WIDEN_MULT_MINUS_EXPR)
+      || ops->code == WIDEN_MULT_MINUS_EXPR
+      || ops->code == DOT_PROD_EXPR)
     icode = find_widening_optab_handler (widen_pattern_optab,
 					 TYPE_MODE (TREE_TYPE (ops->op2)),
 					 tmode0);

@@ -5244,6 +5244,7 @@ vect_is_emulated_mixed_dot_prod (stmt_vec_info stmt_info)
 
   gcc_assert (STMT_VINFO_REDUC_VECTYPE_IN (stmt_info));
   return !directly_supported_p (DOT_PROD_EXPR,
+				STMT_VINFO_VECTYPE (stmt_info),
 				STMT_VINFO_REDUC_VECTYPE_IN (stmt_info),
 				optab_vector_mixed_sign);
 }
