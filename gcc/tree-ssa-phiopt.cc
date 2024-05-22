@@ -1326,12 +1326,11 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 		    {
 		      /* After the optimization PHI result can have value
 			 which it couldn't have previously.  */
-		      int_range_max r;
+		      Value_Range r (TREE_TYPE (phires));
 		      if (get_global_range_query ()->range_of_expr (r, phires,
 								    phi))
 			{
-			  wide_int warg = wi::to_wide (carg);
-			  int_range<2> tmp (TREE_TYPE (carg), warg, warg);
+			  Value_Range tmp (carg, carg);
 			  r.union_ (tmp);
 			  reset_flow_sensitive_info (phires);
 			  set_range_info (phires, r);
