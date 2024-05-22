@@ -1,3 +1,84 @@
+2024-05-21  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_expand_epilogue): Handle offset
+	being sum of two S12.
+
+2024-05-21  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/105733
+	* config/riscv/riscv.h: New macros for with aligned offsets.
+	* config/riscv/riscv.cc (riscv_split_sum_of_two_s12): New
+	function to split a sum of two s12 values into constituents.
+	(riscv_expand_prologue): Handle offset being sum of two S12.
+	(riscv_expand_epilogue): Ditto.
+	* config/riscv/riscv-protos.h (riscv_split_sum_of_two_s12): New.
+
+2024-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115154
+	* match.pd (convert (mult zero_one_valued_p@1 INTEGER_CST@2)): Disable
+	for 1bit signed types.
+
+2024-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115137
+	* tree-ssa-structalias.cc (pt_solution_includes_const_pool): NONLOCAL
+	also includes constant pool entries.
+
+2024-05-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* hard-reg-set.h (target_hard_regs::x_eh_return_data_regs): New field.
+	(eh_return_data_regs): New macro.
+	* reginfo.cc (init_reg_sets_1): Initialize x_eh_return_data_regs.
+	* df-scan.cc (df_get_exit_block_use_set): Use it.
+	* ira-lives.cc (process_out_of_region_eh_regs): Likewise.
+
+2024-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115149
+	* tree-ssa-live.cc (virtual_operand_live::get_live_in):
+	Explicitly track the first processed edge.
+
+2024-05-21  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/114427
+	* config/i386/i386-expand.cc (expand_vec_perm_even_odd_pack):
+	Use pblendw instead of pand to clear upper bits.
+
+2024-05-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (@ieee_128bit_vsx_neg<IEEE128>2): Remove
+	the use of operands[3].
+	(@ieee_128bit_vsx_neg<IEEE128>2): Likewise.
+	(*ieee_128bit_vsx_nabs<mode>2): Likewise.
+
+2024-05-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (mode attribute rreg): Remove useless
+	entries with modes TF, TD, V4SF and V2DF.
+
+2024-05-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/vector.md (define_expand vector_load_<mode>): Remove.
+	(vector_store_<mode>): Likewise.
+
+2024-05-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.cc (rs6000_darwin64_record_arg_recurse):
+	Clean up TFmode and TDmode check with FLOAT128_2REG_P.
+
+2024-05-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Remove
+	useless check on TARGET_P8_VECTOR && !TARGET_ALTIVEC and add an
+	assertion on !TARGET_VSX if !TARGET_ALTIVEC.
+
+2024-05-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/114402
+	* config/rs6000/rs6000.cc (rs6000_generate_compare): Make IEEE128
+	handling without vsx go with libcall.
+
 2024-05-20  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/115143

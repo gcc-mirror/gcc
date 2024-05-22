@@ -1,3 +1,13 @@
+2024-05-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gcc-changelog/git_update_version.py: Add '-i'/'--ignore' argument
+	to add to-be-ignored commits via the command line.
+	(ignored_commits): Rename from IGNORED_COMMITS and change
+	type from tuple to set.
+	(prepend_to_changelog_files): Show git hash if errors occurred.
+	(update_current_branch): Mark argument as optional by defaulting
+	to None.
+
 2024-05-14  Filip Kastl  <fkastl@suse.cz>
 
 	* check-MAINTAINERS.py: Add warning about not using tabs.

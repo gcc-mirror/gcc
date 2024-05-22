@@ -1,3 +1,27 @@
+2024-05-21  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config.host: Remove powerpc-*-eabispe* support.
+	* config/rs6000/linux-unwind.h (ppc_fallback_frame_state): Remove
+	__SPE__ code.
+	* config/rs6000/t-savresfgpr (LIB2ADD_ST): Remove e500crtres32gpr.S,
+	e500crtres32gpr.S, e500crtsav64gpr.S, e500crtsav64gprctr.S,
+	e500crtres64gpr.S, e500crtsav32gpr.S, e500crtsavg32gpr.S,
+	e500crtres64gprctr.S, e500crtsavg64gprctr.S, e500crtresx32gpr.S,
+	e500crtrest32gpr.S, e500crtrest64gpr.S and e500crtresx64gpr.S.
+	* config/rs6000/e500crtres32gpr.S: Remove.
+	* config/rs6000/e500crtres64gpr.S: Remove.
+	* config/rs6000/e500crtres64gprctr.S: Remove.
+	* config/rs6000/e500crtrest32gpr.S: Remove.
+	* config/rs6000/e500crtrest64gpr.S: Remove.
+	* config/rs6000/e500crtresx32gpr.S: Remove.
+	* config/rs6000/e500crtresx64gpr.S: Remove.
+	* config/rs6000/e500crtsav32gpr.S: Remove.
+	* config/rs6000/e500crtsav64gpr.S: Remove.
+	* config/rs6000/e500crtsav64gprctr.S: Remove.
+	* config/rs6000/e500crtsavg32gpr.S: Remove.
+	* config/rs6000/e500crtsavg64gpr.S: Remove.
+	* config/rs6000/e500crtsavg64gprctr.S: Remove.
+
 2024-05-18  Wolfgang Hospital  <Wolfgang.Hospital@arcor.de>
 
 	PR target/115065

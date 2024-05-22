@@ -1,3 +1,224 @@
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/115168
+	* libgnarl/s-taprop__solaris.adb (Initialize): Fix pasto.
+	* libgnat/s-oslock__solaris.ads (Owner_Int): Delete.
+	(Owner_ID): Change the designated type to Integer.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.cc (nonbinary_modular_operation): Rewrite.
+	Do not create signed types for subtraction, do not create types with
+	partial precision, call fold_convert instead of convert throughout.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Use the Is_Base_Type
+	predicate and remove superfluous calls to Base_Type.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.cc (gnat_protect_expr): Deal specifically
+	with atomic loads. Document the relationship with gnat_save_expr.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Array_Type>: For a
+	packed type implemented specially, temporarily save the XUA type as
+	equivalent to the entity before processing the implementation type.
+	For this implementation type, if its component type is the same as
+	that of the original type, copy the alias set from the latter.
+	<types>: Resort to universal aliasing for all interface types.
+	* gcc-interface/trans.cc (Call_to_gnu): Add GNU_ACTUAL_TYPE local
+	variable and rename existing one to GNU_UNPADDED_ACTUAL_TYPE.
+	If the formal is passed by reference and the actual is a conversion,
+	call aliasable_p to detect aliasing violations, issue a warning upon
+	finding one and create the temporary in the target type.
+	Add an assertion that no such violation has been missed above.
+	(addressable_p): Revert latest changes.
+	(aliasable_p): New predicate.
+	* gcc-interface/utils2.cc (build_binary_op) <ARRAY_RANGE_REF>: When
+	creating a new array type on the fly, preserve the alias set of the
+	operation type.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu) <N_Simple_Return_Statement>:
+	In the return-by-invisible-reference case, remove conversions before
+	looking for a dereference in the return values and building the test
+	protecting against a useless copy operation.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Array_Type>: Set
+	TYPE_TYPELESS_STORAGE on the array types if Universal_Aliasing is
+	set on the type or its component type.
+	<E_Array_Subtype>: Likewise.
+	For other aggregate types, set TYPE_TYPELESS_STORAGE in this case.
+	(set_typeless_storage_on_aggregate_type): New function.
+	(set_universal_aliasing_on_type): Likewise.
+	* gcc-interface/trans.cc (Call_to_gnu): Add const to local variable.
+	Adjust comment.  Pass GNAT_NAME in the call to addressable_p and add
+	a bypass for atomic types in case it returns false.
+	(addressable_p): Add GNAT_EXPR third parameter with default value
+	and add a default value to the existing second parameter.
+	<VIEW_CONVERT_EXPR:>: Return false if the expression comes from a
+	function call and if the alias sets of source and target types are
+	both distinct from zero and each other.
+
+2024-05-21  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gcc-interface/utils2.cc (build_cond_expr): Also apply an
+	indirection when the result type is variable-sized.
+
+2024-05-21  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/decl.cc: Fix typo in comment.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.cc (build_call_alloc_dealloc_proc): Add an
+	assertion that this is not a deallocation of the return or secondary
+	stack and remove subsequent unreachable code.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.cc (build_cond_expr): Use the indirect path
+	for all types containing a placeholder.
+
+2024-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gcc-interface/Make-lang.in (GNATBIND_OBJS): Remove unused
+	dependencies.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: Give a
+	warning for a statically allocated object whose size is constant,
+	valid but too large.
+	(allocatable_size_p): In the static case, return false for a size
+	that is constant, valid but too large.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Variable>: For an
+	array allocated with its bounds, make sure to have an array type
+	to build the template.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (access_attribute_p): New predicate.
+	(lvalue_required_for_attribute_p): Return again 1 for Size and add
+	the missing terminating call to gcc_unreachable.
+	(gnat_to_gnu): Return the result unmodified for a reference to an
+	unconstrained array only if it is the prefix of an access attribute.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (relate_alias_sets): Restore previous code
+	when the type uses structural equality.
+
+2024-05-21  Steve Baird  <baird@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Make_Reference assumes that
+	the referenced object satisfies the constraints of the designated
+	subtype of the access type. Ensure that this assumption holds by
+	introducing a qualified expression if needed (and then ensuring
+	that checking associated with evaluation of the qualified
+	expression is not suppressed).
+
+2024-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* aspects.ads (Nonoverridable_Aspect_Id): Fix layout.
+
+2024-05-21  Ronan Desplanques  <desplanques@adacore.com>
+
+	* frontend.adb (Frontend): Remove duplicate statement.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Validate_Unchecked_Conversion): Restrict forcing the
+	Can_Use_Internal_Rep flag to platforms that require unnesting.
+
+2024-05-21  Viljar Indus  <indus@adacore.com>
+
+	* sem_elab.adb: Add missing elaboration insertion
+	characters to info messages.
+
+2024-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Add_Scope_To_Clean): Use Append_Unique_Elmt.
+	(Analyze_Inlined_Bodies): Refine type of a local counter;
+	remove extra whitespace.
+
+2024-05-21  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-taenca.adb (Wait_For_Completion): Remove call to
+	Yield.
+	* libgnarl/s-tasren.adb (Timed_Selective_Wait, Wait_For_Call):
+	Remove calls to Yield.
+
+2024-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_of_ada_2012_features.rst:
+	Fix formatting.
+	* gnat_rm.texi: Regenerate.
+
+2024-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_of_ada_2012_features.rst:
+	Order list by AI number.
+	* gnat_rm.texi: Regenerate.
+
+2024-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_of_ada_2012_features.rst
+	(AI-0216): Fix index reference.
+	* gnat_rm.texi: Regenerate.
+
+2024-05-21  Viljar Indus  <indus@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Update the documentation of -gnatw.n and -gnatw.l
+	* gnat_ugn.texi: Regenerate.
+
+2024-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(No_Tagged_Streams): Document how to avoid exposing entity names
+	for the entire partition.
+	* exp_disp.adb (Make_DT): Make use of restriction No_Streams.
+	* exp_put_image.adb (Build_Record_Put_Image_Procedure): Respect
+	Discard_Names in the generated Put_Image procedure.
+	* gnat_rm.texi: Regenerate.
+
+2024-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_put_image.adb (Build_Record_Put_Image_Procedure): Remove
+	useless conversions.
+
+2024-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_put_image.adb (Build_Record_Put_Image_Procedure): Remove
+	trailing NUL from the fully qualified type name.
+
+2024-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* err_vars.ads (Error_Msg_Sloc): Initialize to No_Location.
+
+2024-05-21  Justin Squirek  <squirek@adacore.com>
+
+	* doc/gnat_ugn/platform_specific_information.rst: Add note about
+	different priority level granularities under different policies in
+	Windows and move POSIX related info into new section.
+	* libgnarl/s-taprop.ads: Add note about Task_Dispatching_Policy.
+	* libgnarl/s-taprop__mingw.adb:
+	(Set_Priority): Add use of Non_FIFO_Underlying_Priorities.
+	* libgnat/system-mingw.ads: Add documentation for modifying
+	priority mappings and add alternative mapping
+	Non_FIFO_Underlying_Priorities.
+	* gnat_ugn.texi: Regenerate.
+
 2024-05-20  Bob Duff  <duff@adacore.com>
 
 	* sem_ch12.adb: Misc cleanups and comment fixes.

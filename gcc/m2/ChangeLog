@@ -1,3 +1,30 @@
+2024-05-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (MC_EXTENDED_OPAQUE): New definition.
+	* mc-boot/GDynamicStrings.cc: Rebuild.
+	* mc-boot/GDynamicStrings.h: Rebuild.
+	* mc-boot/Galists.cc: Rebuild.
+	* mc-boot/Galists.h: Rebuild.
+	* mc-boot/Gdecl.cc: Rebuild.
+	* mc/alists.def (equalList): New procedure.
+	* mc/alists.mod (equalList): New procedure implementation.
+	* mc/decl.mod (group): New type.
+	(freeGroup): New variable.
+	(globalGroup): Ditto.
+	(todoQ): Remove declaration and prefix all occurances with globalGroup^.
+	(partialQ): Ditto.
+	(doneQ): Ditto.
+	(newGroup): New procedure.
+	(initGroup): Ditto.
+	(killGroup): Ditto.
+	(dupGroup): Ditto.
+	(equalGroup): Ditto.
+	(topologicallyOut): Rewrite.
+
+2024-05-21  Sam James  <sam@gentoo.org>
+
+	* Make-lang.in (m2.install-info): Pass --destdir for dir index.
+
 2024-05-15  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/115057
