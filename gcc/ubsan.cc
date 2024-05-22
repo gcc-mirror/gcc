@@ -1719,13 +1719,17 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
       || TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
     return;
 
+  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (rhs));
+  if (as != TYPE_ADDR_SPACE (utype))
+    utype = build_qualified_type (utype, TYPE_QUALS (utype)
+					 | ENCODE_QUAL_ADDR_SPACE (as));
   bool ends_bb = stmt_ends_bb_p (stmt);
   location_t loc = gimple_location (stmt);
   tree lhs = gimple_assign_lhs (stmt);
   tree ptype = build_pointer_type (TREE_TYPE (rhs));
   tree atype = reference_alias_ptr_type (rhs);
   gimple *g = gimple_build_assign (make_ssa_name (ptype),
-				  build_fold_addr_expr (rhs));
+				   build_fold_addr_expr (rhs));
   gimple_set_location (g, loc);
   gsi_insert_before (gsi, g, GSI_SAME_STMT);
   tree mem = build2 (MEM_REF, utype, gimple_assign_lhs (g),
