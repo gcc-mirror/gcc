@@ -5586,6 +5586,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (vec_cond (bit_and (bit_not @0) @1) @2 @3)))
 #endif
 
+/* (a ? x : y) != (b ? x : y) --> (a^b) ? TRUE  : FALSE */
+/* (a ? x : y) == (b ? x : y) --> (a^b) ? FALSE : TRUE  */
+/* (a ? x : y) != (b ? y : x) --> (a^b) ? FALSE : TRUE  */
+/* (a ? x : y) == (b ? y : x) --> (a^b) ? TRUE  : FALSE */
+(for cnd (cond vec_cond)
+ (for eqne (eq ne)
+  (simplify
+   (eqne:c (cnd @0 @1 @2) (cnd @3 @1 @2))
+    (cnd (bit_xor @0 @3) { constant_boolean_node (eqne == NE_EXPR, type); }
+     { constant_boolean_node (eqne != NE_EXPR, type); }))
+  (simplify
+   (eqne:c (cnd @0 @1 @2) (cnd @3 @2 @1))
+    (cnd (bit_xor @0 @3) { constant_boolean_node (eqne != NE_EXPR, type); }
+     { constant_boolean_node (eqne == NE_EXPR, type); }))))
+
 /* Canonicalize mask ? { 0, ... } : { -1, ...} to ~mask if the mask
    types are compatible.  */
 (simplify
