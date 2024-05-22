@@ -9437,6 +9437,10 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
   if (complain & tf_warning)
     warn_for_address_of_packed_member (type, val);
 
+  /* gimplify_arg elides TARGET_EXPRs that initialize a function argument.  */
+  if (SIMPLE_TARGET_EXPR_P (val))
+    set_target_expr_eliding (val);
+
   return val;
 }
 

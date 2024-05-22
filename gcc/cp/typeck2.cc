@@ -1409,16 +1409,14 @@ digest_init_flags (tree type, tree init, int flags, tsubst_flags_t complain)
    in the context of guaranteed copy elision).  */
 
 static tree
-replace_placeholders_for_class_temp_r (tree *tp, int *, void *data)
+replace_placeholders_for_class_temp_r (tree *tp, int *, void *)
 {
   tree t = *tp;
-  auto pset = static_cast<hash_set<tree> *>(data);
 
   /* We're looking for a TARGET_EXPR nested in the whole expression.  */
   if (TREE_CODE (t) == TARGET_EXPR
       /* That serves as temporary materialization, not an initializer.  */
-      && !TARGET_EXPR_ELIDING_P (t)
-      && !pset->add (t))
+      && !TARGET_EXPR_ELIDING_P (t))
     {
       tree init = TARGET_EXPR_INITIAL (t);
       while (TREE_CODE (init) == COMPOUND_EXPR)
@@ -1433,16 +1431,6 @@ replace_placeholders_for_class_temp_r (tree *tp, int *, void *data)
 	  gcc_checking_assert (!find_placeholders (init));
 	}
     }
-  /* TARGET_EXPRs initializing function arguments are not marked as eliding,
-     even though gimplify_arg drops them on the floor.  Don't go replacing
-     placeholders in them.  */
-  else if (TREE_CODE (t) == CALL_EXPR || TREE_CODE (t) == AGGR_INIT_EXPR)
-    for (int i = 0; i < call_expr_nargs (t); ++i)
-      {
-	tree arg = get_nth_callarg (t, i);
-	if (TREE_CODE (arg) == TARGET_EXPR && !TARGET_EXPR_ELIDING_P (arg))
-	  pset->add (arg);
-      }
 
   return NULL_TREE;
 }
@@ -1490,8 +1478,8 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
      temporary materialization does not occur when initializing an object
      from a prvalue of the same type, therefore we must not replace the
      placeholder with a temporary object so that it can be elided.  */
-  hash_set<tree> pset;
-  cp_walk_tree (&init, replace_placeholders_for_class_temp_r, &pset, nullptr);
+  cp_walk_tree_without_duplicates (&init, replace_placeholders_for_class_temp_r,
+				   nullptr);
 
   return init;
 }
