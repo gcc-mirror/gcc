@@ -11,11 +11,11 @@ int
 parseAsmArg (Parser<MacroInvocLexer> &p, TokenId last_token_id,
 	     AST::InlineAsm &inlineAsm,
 	     bool consumed_comma_without_formatted_string);
-static tl::optional<AST::Fragment>
+tl::optional<AST::Fragment>
 parse_global_asm (location_t invoc_locus, AST::MacroInvocData &invoc);
-static tl::optional<AST::Fragment>
+tl::optional<AST::Fragment>
 parse_nonglobal_asm (location_t invoc_locus, AST::MacroInvocData &invoc);
-static tl::optional<AST::Fragment>
+tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	   bool is_global_asm);
 
