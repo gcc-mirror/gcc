@@ -9,7 +9,8 @@ namespace Rust {
 // all operands.
 int
 parseAsmArg (Parser<MacroInvocLexer> &p, TokenId last_token_id,
-	     AST::InlineAsm &inlineAsm);
+	     AST::InlineAsm &inlineAsm,
+	     bool consumed_comma_without_formatted_string);
 static tl::optional<AST::Fragment>
 parse_global_asm (location_t invoc_locus, AST::MacroInvocData &invoc);
 static tl::optional<AST::Fragment>

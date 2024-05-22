@@ -31,14 +31,31 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 		   AST::InlineAsm &inlineAsm)
 {
   // clobber_abi := "clobber_abi(" <abi> *("," <abi>) [","] ")"
-
   // PARSE EVERYTHING COMMITTEDLY IN THIS FUNCTION, WE CONFIRMED VIA clobber_abi
   // identifier keyword
-
+  auto token = parser.peek_current_token ();
   if (!parser.skip_token (LEFT_PAREN))
     {
       // TODO: Raise error exactly like rustc if left parenthesis is not
       // encountered.
+      token = parser.peek_current_token ();
+
+      // TODO: Error reporting shifted to the left 1 character, I'm not sure
+      // why.
+      if (token->get_id () == last_token_id)
+	{
+	  rust_error_at (parser.peek_current_token ()->get_locus (),
+			 "expected `(`, found end of macro arguments");
+	  return -1;
+	}
+
+      else
+	{
+	  rust_error_at (
+	    parser.peek_current_token ()->get_locus (),
+	    "expected `(`, found `%s`",
+	    parser.peek_current_token ()->get_token_description ());
+	}
       return -1;
     }
 
@@ -46,12 +63,15 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       // TODO: We encountered a "clobber_abi()", which should be illegal?
       // https://github.com/rust-lang/rust/blob/c00957a3e269219413041a4e3565f33b1f9d0779/compiler/rustc_builtin_macros/src/asm.rs#L381
+      rust_error_at (
+	parser.peek_current_token ()->get_locus (),
+	"at least one abi must be provided as an argument to `clobber_abi`");
       return -1;
     }
 
   std::vector<AST::TupleClobber> new_abis;
 
-  auto token = parser.peek_current_token ();
+  token = parser.peek_current_token ();
 
   while (token->get_id () != last_token_id && token->get_id () != RIGHT_PAREN)
     {
@@ -198,7 +218,6 @@ bool
 check_identifier (Parser<MacroInvocLexer> &p, std::string ident)
 {
   auto token = p.peek_current_token ();
-
   if (token->get_id () == IDENTIFIER
       && (token->as_string () == ident || ident == ""))
     {
@@ -218,17 +237,11 @@ parse_format_string (Parser<MacroInvocLexer> &parser, TokenId last_token_id)
   if (token->get_id () != last_token_id && token->get_id () == STRING_LITERAL)
     {
       // very nice, we got a supposedly formatted string.
-      std::cout << token->get_token_description () << std::endl;
       parser.skip_token ();
-      return "formatted string";
+      return token->as_string ();
     }
   else
     {
-      parser.skip_token ();
-      std::cout << token->get_token_description () << std::endl;
-
-      rust_error_at (token->get_locus (),
-		     "asm template must be a string literal");
       return tl::nullopt;
     }
 }
@@ -253,22 +266,32 @@ MacroBuiltin::nonglobal_asm_handler (location_t invoc_locus,
 
 int
 parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	     AST::InlineAsm &inlineAsm)
+	     AST::InlineAsm &inlineAsm,
+	     bool consumed_comma_without_formatted_string)
 {
   auto token = parser.peek_current_token ();
   tl::optional<std::string> fm_string;
   while (token->get_id () != last_token_id)
     {
-      std::cout << token->get_token_description () << std::endl;
-
       token = parser.peek_current_token ();
 
       // We accept a comma token here.
-      if (token->get_id () != COMMA)
+      if (token->get_id () != COMMA && consumed_comma_without_formatted_string)
+	{
+	  // if it is not a comma, but we consumed it previously, this is fine
+	  // but we have to set it to false tho.
+	  consumed_comma_without_formatted_string = false;
+	}
+      else if (token->get_id () == COMMA
+	       && !consumed_comma_without_formatted_string)
+	{
+	  consumed_comma_without_formatted_string = false;
+	  parser.skip_token ();
+	}
+      else
 	{
 	  break;
 	}
-      parser.skip_token ();
 
       // And if that token comma is also the trailing comma, we break
       // TODO: Check with mentor see what last_token_id means
@@ -285,7 +308,7 @@ parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       // TODO: Parse clobber abi, eat the identifier named "clobber_abi" if true
       if (check_identifier (parser, "clobber_abi"))
 	{
-	  std::cout << "Clobber abi tee hee" << std::endl;
+	  parse_clobber_abi (parser, last_token_id, inlineAsm);
 	  continue;
 	}
 
@@ -298,6 +321,7 @@ parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 
       // Ok after we have check that neither clobber_abi nor options works, the
       // only other logical choice is reg_operand
+      std::cout << "reg_operand" << std::endl;
       fm_string = parse_format_string (parser, last_token_id);
     }
   return 0;
@@ -332,28 +356,41 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 
   // Parse the first ever formatted string, success or not, will skip 1 token
   auto fm_string = parse_format_string (parser, last_token_id);
+
   if (fm_string == tl::nullopt)
-    return tl::nullopt;
+    {
+      rust_error_at (parser.peek_current_token ()->get_locus (),
+		     "asm template must be a string literal");
+      return tl::nullopt;
+    }
 
   // formatted string stream
+  int i = 0;
+  bool consumed_comma_without_formatted_string = false;
   auto token = parser.peek_current_token ();
   while (token->get_id () != last_token_id)
     {
-      std::cout << token->get_token_description () << std::endl;
       token = parser.peek_current_token ();
-      if (token->get_id () != COMMA)
+      if (!parser.skip_token (COMMA))
 	{
 	  break;
 	}
-      parser.skip_token ();
       // Ok after the comma is good, we better be parsing correctly everything
       // in here, which is formatted string in ABNF
 
       fm_string = parse_format_string (parser, last_token_id);
+
+      if (fm_string == tl::nullopt)
+	{
+	  consumed_comma_without_formatted_string = true;
+	  break;
+	}
+      consumed_comma_without_formatted_string = false;
     }
 
   // operands stream, also handles the optional ","
-  parseAsmArg (parser, last_token_id, inlineAsm);
+  parseAsmArg (parser, last_token_id, inlineAsm,
+	       consumed_comma_without_formatted_string);
 
   return tl::nullopt;
 }
