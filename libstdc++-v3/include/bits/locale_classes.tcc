@@ -162,6 +162,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @return  true if @p __loc contains a facet of type _Facet, else false.
   */
   template<typename _Facet>
+    _GLIBCXX_NODISCARD
     inline bool
     has_facet(const locale& __loc) throw()
     {
@@ -191,6 +192,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdangling-reference"
   template<typename _Facet>
+    _GLIBCXX_NODISCARD
     inline const _Facet&
     use_facet(const locale& __loc)
     {

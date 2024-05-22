@@ -79,7 +79,7 @@ void test01()
     { VERIFY( false ); }
 
   try 
-    { use_facet<gnu_facet>(loc13); }
+    { (void) use_facet<gnu_facet>(loc13); }
   catch(bad_cast& obj)
     { VERIFY( true ); }
   catch(...)
