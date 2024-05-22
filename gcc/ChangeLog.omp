@@ -1,6 +1,13 @@
 2025-02-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-05-22  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* except.cc (output_function_exception_table): Move call to
+	get_personality_function after targetm_common.except_unwind_info
+	check, to avoid ICE on targets that don't support exceptions.
+
+	Backported from trunk:
 	2025-02-07  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* c-gimplify.cc (c_genericize): Pass 'local_dump_flags' to
