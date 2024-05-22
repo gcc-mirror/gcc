@@ -240,6 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @throw  std::runtime_error if __other has no facet of type _Facet.
     */
     template<typename _Facet>
+      _GLIBCXX_NODISCARD
       locale
       combine(const locale& __other) const;
 
@@ -248,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @brief  Return locale name.
      *  @return  Locale name or "*" if unnamed.
     */
-    _GLIBCXX_DEFAULT_ABI_TAG
+    _GLIBCXX_NODISCARD _GLIBCXX_DEFAULT_ABI_TAG
     string
     name() const;
 
@@ -269,6 +270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @return  True if other and this refer to the same locale instance, are
      *		 copies, or have the same name.  False otherwise.
     */
+    _GLIBCXX_NODISCARD
     bool
     operator==(const locale& __other) const throw();
 
@@ -279,6 +281,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @param  __other  The locale to compare against.
      *  @return  ! (*this == __other)
     */
+    _GLIBCXX_NODISCARD
     bool
     operator!=(const locale& __other) const throw()
     { return !(this->operator==(__other)); }
@@ -300,6 +303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      *  @return  True if collate<_Char> facet compares __s1 < __s2, else false.
     */
     template<typename _Char, typename _Traits, typename _Alloc>
+      _GLIBCXX_NODISCARD
       bool
       operator()(const basic_string<_Char, _Traits, _Alloc>& __s1,
 		 const basic_string<_Char, _Traits, _Alloc>& __s2) const;
@@ -321,6 +325,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /**
      *  @brief  Return reference to the C locale.
     */
+    _GLIBCXX_NODISCARD
     static const locale&
     classic();
 

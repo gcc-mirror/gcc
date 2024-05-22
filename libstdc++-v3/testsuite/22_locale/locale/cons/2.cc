@@ -68,7 +68,7 @@ void test01()
     { VERIFY( false ); }
 
   try 
-    { use_facet<gnu_facet>(loc02); }
+    { (void) use_facet<gnu_facet>(loc02); }
   catch(bad_cast& obj)
     { VERIFY( true ); }
   catch(...)
