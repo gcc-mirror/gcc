@@ -381,6 +381,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   };
 
+#if __cpp_lib_type_trait_variable_templates // C++ >= 17
+  template<typename _Tp>
+    constexpr bool __is_facet = is_base_of_v<locale::facet, _Tp>;
+  template<typename _Tp>
+    constexpr bool __is_facet<volatile _Tp> = false;
+#endif
 
   // 22.1.1.1.2  Class locale::facet
   /**

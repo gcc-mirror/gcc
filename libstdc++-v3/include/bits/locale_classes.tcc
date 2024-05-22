@@ -71,6 +71,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     locale::
     combine(const locale& __other) const
     {
+#if __cpp_lib_type_trait_variable_templates // C++ >= 17
+      static_assert(__is_facet<_Facet>, "Template argument must be a facet");
+#endif
+
       _Impl* __tmp = new _Impl(*_M_impl, 1);
       __try
 	{
