@@ -4836,7 +4836,7 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, tree vuse, gimple *stmt,
       if (maxlen + 1 < nbytes)
 	return false;
 
-      if (nbytes <= minlen)
+      if (nbytes <= minlen || !si->full_string_p)
 	*nulterm = false;
 
       if (nbytes < minlen)
@@ -4845,6 +4845,9 @@ strlen_pass::count_nonzero_bytes_addr (tree exp, tree vuse, gimple *stmt,
 	  if (nbytes < maxlen)
 	    maxlen = nbytes;
 	}
+
+      if (!si->full_string_p)
+	maxlen = nbytes;
 
       if (minlen < lenrange[0])
 	lenrange[0] = minlen;
