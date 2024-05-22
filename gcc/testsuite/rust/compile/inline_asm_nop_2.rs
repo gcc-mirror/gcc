@@ -6,5 +6,7 @@ macro_rules! asm {
 }
 
 fn main() {
-    asm!("nop",);
+    unsafe {
+        asm!("nop",);
+    }
 }

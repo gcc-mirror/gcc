@@ -6,5 +6,7 @@ macro_rules! asm {
 }
 
 fn main() {
-    asm!("nop", clobber_abi+);  // { dg-error "expected `\\(`, found `\\+`" }
+    unsafe {
+        asm!("nop", clobber_abi+);  // { dg-error "expected `\\(`, found `\\+`" }
+    }
 }
