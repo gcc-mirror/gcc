@@ -172,6 +172,39 @@ nearest_common_dominator_of_uses (def_operand_p def_p, bool *debug_stmts)
   return commondom;
 }
 
+/* Return whether sinking STMT from EARLY_BB to BEST_BB should be avoided.  */
+
+static bool
+do_not_sink (gimple *stmt, basic_block early_bb, basic_block best_bb)
+{
+  /* Placing a statement before a setjmp-like function would be invalid
+     (it cannot be reevaluated when execution follows an abnormal edge).
+     If we selected a block with abnormal predecessors, just punt.  */
+  if (bb_has_abnormal_pred (best_bb))
+    return true;
+
+  /* If the latch block is empty, don't make it non-empty by sinking
+     something into it.  */
+  if (best_bb == early_bb->loop_father->latch
+      && empty_block_p (best_bb))
+    return true;
+
+  /* Avoid turning an unconditional read into a conditional one when we
+     still might want to perform vectorization.  */
+  if (best_bb->loop_father == early_bb->loop_father
+      && loop_outer (best_bb->loop_father)
+      && !best_bb->loop_father->inner
+      && gimple_vuse (stmt)
+      && !gimple_vdef (stmt)
+      && flag_tree_loop_vectorize
+      && !(cfun->curr_properties & PROP_loop_opts_done)
+      && dominated_by_p (CDI_DOMINATORS, best_bb->loop_father->latch, early_bb)
+      && !dominated_by_p (CDI_DOMINATORS, best_bb->loop_father->latch, best_bb))
+    return true;
+
+  return false;
+}
+
 /* Given EARLY_BB and LATE_BB, two blocks in a path through the dominator
    tree, return the best basic block between them (inclusive) to place
    statements.
@@ -185,54 +218,57 @@ select_best_block (basic_block early_bb,
 		   basic_block late_bb,
 		   gimple *stmt)
 {
+  /* First pick a block we do not disqualify.  */
+  while (late_bb != early_bb
+	 && do_not_sink (stmt, early_bb, late_bb))
+    late_bb = get_immediate_dominator (CDI_DOMINATORS, late_bb);
+
   basic_block best_bb = late_bb;
   basic_block temp_bb = late_bb;
-
   while (temp_bb != early_bb)
     {
       /* Walk up the dominator tree, hopefully we'll find a shallower
 	 loop nest.  */
       temp_bb = get_immediate_dominator (CDI_DOMINATORS, temp_bb);
 
+      /* Do not consider blocks we do not want to sink to.  */
+      if (temp_bb != early_bb && do_not_sink (stmt, early_bb, temp_bb))
+	;
+
       /* If we've moved into a lower loop nest, then that becomes
 	 our best block.  */
-      if (bb_loop_depth (temp_bb) < bb_loop_depth (best_bb))
+      else if (bb_loop_depth (temp_bb) < bb_loop_depth (best_bb))
+	best_bb = temp_bb;
+
+      /* A higher loop nest is always worse.  */
+      else if (bb_loop_depth (temp_bb) > bb_loop_depth (best_bb))
+	;
+
+      /* But sink the least distance, if the new candidate on the same
+	 loop depth is post-dominated by the current best block pick
+	 the new candidate.  */
+      else if (dominated_by_p (CDI_POST_DOMINATORS, temp_bb, best_bb))
+	best_bb = temp_bb;
+
+      /* Avoid sinking across a conditional branching to exceptional
+	 code.  In practice this does not reduce the number of dynamic
+	 executions of the sunk statement (this includes EH and
+	 branches leading to abort for example).  Treat this case as
+	 post-dominating.  */
+      else if (single_pred_p (best_bb)
+	       && single_pred_edge (best_bb)->src == temp_bb
+	       && (single_pred_edge (best_bb)->flags & EDGE_FALLTHRU
+		   || (single_pred_edge (best_bb)->probability
+		       >= profile_probability::always ())))
 	best_bb = temp_bb;
     }
 
-  /* Placing a statement before a setjmp-like function would be invalid
-     (it cannot be reevaluated when execution follows an abnormal edge).
-     If we selected a block with abnormal predecessors, just punt.  */
-  if (bb_has_abnormal_pred (best_bb))
-    return early_bb;
-
-  /* If we found a shallower loop nest, then we always consider that
-     a win.  This will always give us the most control dependent block
-     within that loop nest.  */
-  if (bb_loop_depth (best_bb) < bb_loop_depth (early_bb))
-    return best_bb;
-
-  /* Do not move stmts to post-dominating places on the same loop depth.  */
-  if (dominated_by_p (CDI_POST_DOMINATORS, early_bb, best_bb))
-    return early_bb;
-
-  /* If the latch block is empty, don't make it non-empty by sinking
-     something into it.  */
-  if (best_bb == early_bb->loop_father->latch
-      && empty_block_p (best_bb))
-    return early_bb;
-
-  /* Avoid turning an unconditional read into a conditional one when we
-     still might want to perform vectorization.  */
-  if (best_bb->loop_father == early_bb->loop_father
-      && loop_outer (best_bb->loop_father)
-      && !best_bb->loop_father->inner
-      && gimple_vuse (stmt)
-      && flag_tree_loop_vectorize
-      && !(cfun->curr_properties & PROP_loop_opts_done)
-      && dominated_by_p (CDI_DOMINATORS, best_bb->loop_father->latch, early_bb)
-      && !dominated_by_p (CDI_DOMINATORS, best_bb->loop_father->latch, best_bb))
-    return early_bb;
+  gcc_checking_assert (best_bb == early_bb
+		       || (!do_not_sink (stmt, early_bb, best_bb)
+			   && ((bb_loop_depth (best_bb)
+				< bb_loop_depth (early_bb))
+			       || !dominated_by_p (CDI_POST_DOMINATORS,
+						   early_bb, best_bb))));
 
   return best_bb;
 }
@@ -677,7 +713,9 @@ sink_code_in_bb (basic_block bb, virtual_operand_live &vop_live)
 	  gimple *vuse_stmt;
 
 	  FOR_EACH_IMM_USE_STMT (vuse_stmt, iter, gimple_vdef (stmt))
-	    if (gimple_code (vuse_stmt) != GIMPLE_PHI)
+	    if (gimple_code (vuse_stmt) != GIMPLE_PHI
+		&& !dominated_by_p (CDI_DOMINATORS, gimple_bb (vuse_stmt),
+				    gsi_bb (togsi)))
 	      FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		SET_USE (use_p, gimple_vuse (stmt));
 	}
