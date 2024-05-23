@@ -19221,7 +19221,7 @@ set_defining_module (tree decl)
   gcc_checking_assert (!DECL_LANG_SPECIFIC (decl)
 		       || !DECL_MODULE_IMPORT_P (decl));
 
-  if (module_p ())
+  if (module_maybe_has_cmi_p ())
     {
       /* We need to track all declarations within a module, not just those
 	 in the module purview, because we don't necessarily know yet if
@@ -19261,7 +19261,7 @@ set_defining_module (tree decl)
 void
 set_defining_module_for_partial_spec (tree decl)
 {
-  if (module_p ()
+  if (module_maybe_has_cmi_p ()
       && DECL_IMPLICIT_TYPEDEF_P (decl)
       && CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)))
     vec_safe_push (partial_specializations, decl);

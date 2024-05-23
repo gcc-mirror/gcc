@@ -7381,7 +7381,7 @@ inline bool module_interface_p ()
 inline bool module_partition_p ()
 { return module_kind & MK_PARTITION; }
 inline bool module_has_cmi_p ()
-{ return module_kind & (MK_INTERFACE | MK_PARTITION); }
+{ return module_kind & (MK_INTERFACE | MK_PARTITION | MK_HEADER); }
 
 inline bool module_purview_p ()
 { return module_kind & MK_PURVIEW; }
@@ -7393,9 +7393,8 @@ inline bool named_module_purview_p ()
 inline bool named_module_attach_p ()
 { return named_module_p () && module_attach_p (); }
 
-/* We don't know if this TU will have a CMI while parsing the GMF,
-   so tentatively assume that it might, for the purpose of determining
-   whether no-linkage decls could be used by an importer.  */
+/* Like module_has_cmi_p, but tentatively assumes that this TU may have a
+   CMI if we haven't seen the module-declaration yet.  */
 inline bool module_maybe_has_cmi_p ()
 { return module_has_cmi_p () || (named_module_p () && !module_purview_p ()); }
 

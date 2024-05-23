@@ -4103,7 +4103,7 @@ pushdecl (tree decl, bool hiding)
 
 	  if (level->kind == sk_namespace
 	      && TREE_PUBLIC (level->this_entity)
-	      && module_p ())
+	      && module_maybe_has_cmi_p ())
 	    maybe_record_mergeable_decl (slot, name, decl);
 	}
     }
