@@ -1,3 +1,22 @@
+2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115152
+	* tree-ssa-strlen.cc (strlen_pass::count_nonzero_bytes_addr): If
+	!si->full_string_p, clear *nulterm and set maxlen to nbytes.
+
+2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/115172
+	* ubsan.cc (instrument_bool_enum_load): If rhs is not in generic
+	address space, use qualified version of utype with the right
+	address space.  Formatting fix.
+
 2024-05-21  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

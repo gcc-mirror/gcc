@@ -1,3 +1,32 @@
+2024-05-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114827
+	* trans-array.cc (gfc_alloc_allocatable_for_assignment): Take into
+	account _len of unlimited polymorphic entities when calculating
+	the effective element size for allocation size and array span.
+	Set _len of lhs to _len of rhs.
+	* trans-expr.cc (trans_class_assignment): Take into account _len
+	of unlimited polymorphic entities for allocation size.
+
+2024-05-22  Andrew Jenner  <andrew@codesourcery.com>
+
+	Backported from master:
+	2023-11-28  Andrew Jenner  <andrew@codesourcery.com>
+		    Tobias Burnus   <tobias@codesourcery.com>
+
+	PR fortran/110415
+	* trans-expr.cc (trans_class_vptr_len_assignment): Add
+	from_vptrp parameter. Populate it. Don't check for DECL_P
+	when deciding whether to create temporary.
+	(trans_class_pointer_fcn, gfc_trans_pointer_assignment): Add
+	NULL argument to trans_class_vptr_len_assignment calls.
+	(trans_class_assignment): Get rhs_vptr from
+	trans_class_vptr_len_assignment and use it for determining size
+	for allocation/reallocation. Use return value from realloc.
+
 2024-05-21  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

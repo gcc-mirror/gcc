@@ -1,3 +1,47 @@
+2024-05-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-05-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/extend-param.c: Add regression test. Add
+	-fshort-enums.
+	* gcc.target/arm/cmse/extend-return.c: Add -fshort-enums option.
+
+2024-05-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114827
+	* gfortran.dg/asan/unlimited_polymorphic_34.f90: New test.
+
+2024-05-22  Andrew Jenner  <andrew@codesourcery.com>
+
+	Backported from master:
+	2023-11-28  Andrew Jenner  <andrew@codesourcery.com>
+		    Tobias Burnus   <tobias@codesourcery.com>
+
+	PR fortran/110415
+	* gfortran.dg/pr110415.f90: New test.
+	* gfortran.dg/asan/pr110415-2.f90: New test.
+	* gfortran.dg/asan/pr110415-3.f90: New test.
+
+2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115152
+	* gcc.dg/pr115152.c: New test.
+
+2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/115172
+	* gcc.dg/asan/pr115172.c: New test.
+
 2024-05-21  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
