@@ -3165,7 +3165,9 @@ package body Inline is
 
          elsif Base_Type (Etype (F)) = Base_Type (Etype (A))
            and then Etype (F) /= Base_Type (Etype (F))
-           and then Is_Constrained (Etype (F))
+           and then (Is_Constrained (Etype (F))
+                      or else
+                     Is_Fixed_Lower_Bound_Array_Subtype (Etype (F)))
          then
             Temp_Typ := Etype (F);
 
@@ -3234,7 +3236,11 @@ package body Inline is
             --  GNATprove.
 
             elsif Etype (F) /= Etype (A)
-              and then (not GNATprove_Mode or else Is_Constrained (Etype (F)))
+              and then
+                (not GNATprove_Mode
+                   or else (Is_Constrained (Etype (F))
+                              or else
+                            Is_Fixed_Lower_Bound_Array_Subtype (Etype (F))))
             then
                New_A    := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
                Temp_Typ := Etype (F);
