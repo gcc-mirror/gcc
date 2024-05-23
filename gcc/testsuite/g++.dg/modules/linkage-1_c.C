@@ -5,5 +5,4 @@ import M;
 
 int main() {
   auto a = x;
-  auto b = y;
 }

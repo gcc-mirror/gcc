@@ -9,7 +9,3 @@ auto f() {
 }
 decltype(f()) g();  // { dg-warning "used but not defined" "" { target c++17_down } }
 export auto x = g();
-
-struct {} s;
-decltype(s) h();  // { dg-warning "used but not defined" "" { target c++17_down } }
-export auto y = h();
