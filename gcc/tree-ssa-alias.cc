@@ -501,6 +501,12 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
 	      || pi2->pt.vars_contains_interposable)
 	    return false;
 	  if ((!pi1->pt.null || !pi2->pt.null)
+	      /* ???  We do not represent FUNCTION_DECL and LABEL_DECL
+		 in pt.vars but only set pt.vars_contains_nonlocal.  This
+		 makes compares involving those and other nonlocals
+		 imprecise.  */
+	      && (!pi1->pt.vars_contains_nonlocal
+		  || !pi2->pt.vars_contains_nonlocal)
 	      && (!pt_solution_includes_const_pool (&pi1->pt)
 		  || !pt_solution_includes_const_pool (&pi2->pt)))
 	    return !pt_solutions_intersect (&pi1->pt, &pi2->pt);
