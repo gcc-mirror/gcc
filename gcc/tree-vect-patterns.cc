@@ -266,7 +266,7 @@ vect_get_internal_def (vec_info *vinfo, tree op)
   stmt_vec_info def_stmt_info = vinfo->lookup_def (op);
   if (def_stmt_info
       && STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_internal_def)
-    return def_stmt_info;
+    return vect_stmt_to_vectorize (def_stmt_info);
   return NULL;
 }
 
@@ -655,7 +655,8 @@ vect_widened_op_tree (vec_info *vinfo, stmt_vec_info stmt_info, tree_code code,
 
 	      /* Recursively process the definition of the operand.  */
 	      stmt_vec_info def_stmt_info
-		= vinfo->lookup_def (this_unprom->op);
+		= vect_get_internal_def (vinfo, this_unprom->op);
+
 	      nops = vect_widened_op_tree (vinfo, def_stmt_info, code,
 					   widened_code, shift_p, max_nops,
 					   this_unprom, common_type,
@@ -1739,7 +1740,6 @@ vect_recog_widen_abd_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
   if (!abd_pattern_vinfo)
     return NULL;
 
-  abd_pattern_vinfo = vect_stmt_to_vectorize (abd_pattern_vinfo);
   gcall *abd_stmt = dyn_cast <gcall *> (STMT_VINFO_STMT (abd_pattern_vinfo));
   if (!abd_stmt
       || !gimple_call_internal_p (abd_stmt)
