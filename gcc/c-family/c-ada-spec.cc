@@ -1558,7 +1558,7 @@ check_type_name_conflict (pretty_printer *buffer, tree t)
   while (TREE_CODE (tmp) == POINTER_TYPE && !TYPE_NAME (tmp))
     tmp = TREE_TYPE (tmp);
 
-  if (TREE_CODE (tmp) != FUNCTION_TYPE)
+  if (TREE_CODE (tmp) != FUNCTION_TYPE && tmp != error_mark_node)
     {
       const char *s;
 
@@ -1788,17 +1788,9 @@ dump_sloc (pretty_printer *buffer, tree node)
 static bool
 is_char_array (tree t)
 {
-  int num_dim = 0;
-
-  while (TREE_CODE (t) == ARRAY_TYPE)
-    {
-      num_dim++;
-      t = TREE_TYPE (t);
-    }
-
-  return num_dim == 1
-	 && TREE_CODE (t) == INTEGER_TYPE
-	 && id_equal (DECL_NAME (TYPE_NAME (t)), "char");
+  return TREE_CODE (t) == ARRAY_TYPE
+	 && TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
+	 && id_equal (DECL_NAME (TYPE_NAME (TREE_TYPE (t))), "char");
 }
 
 /* Dump in BUFFER an array type NODE in Ada syntax.  SPC is the indentation
@@ -1821,9 +1813,7 @@ dump_ada_array_type (pretty_printer *buffer, tree node, int spc)
   /* Print the component type.  */
   if (!char_array)
     {
-      tree tmp = node;
-      while (TREE_CODE (tmp) == ARRAY_TYPE)
-	tmp = TREE_TYPE (tmp);
+      tree tmp = strip_array_types (node);
 
       pp_string (buffer, " of ");
 
@@ -2350,6 +2340,11 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		      && DECL_ORIGINAL_TYPE (DECL_CHAIN (stub)) == ref_type)
 		    ref_type = TREE_TYPE (DECL_CHAIN (stub));
 
+		  /* If this is a pointer to an anonymous array type, then use
+		     the name of the component type.  */
+		  else if (!type_name && is_access)
+		    ref_type = strip_array_types (ref_type);
+
 		  /* Generate "access <type>" instead of "access <subtype>"
 		     if the subtype comes from another file, because subtype
 		     declarations do not contribute to the limited view of a
@@ -2639,10 +2634,7 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, int spc)
       if (!bitmap_set_bit (dumped_anonymous_types, TYPE_UID (field_type)))
 	return;
 
-      /* Recurse on the element type if need be.  */
-      tmp = TREE_TYPE (field_type);
-      while (TREE_CODE (tmp) == ARRAY_TYPE)
-	tmp = TREE_TYPE (tmp);
+      tmp = strip_array_types (field_type);
       decl = get_underlying_decl (tmp);
       if (decl
 	  && !DECL_NAME (decl)
