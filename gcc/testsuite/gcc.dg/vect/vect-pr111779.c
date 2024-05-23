@@ -53,4 +53,4 @@ main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target vect_int } } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { vect_int && { le || { be && vect_shift_char } } } } } } */
