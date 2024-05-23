@@ -3104,7 +3104,7 @@ process_constraint (constraint_t t)
      it here by turning it into *ANYTHING.  */
   if (lhs.type == ADDRESSOF
       && lhs.var == anything_id)
-    lhs.type = DEREF;
+    t->lhs.type = lhs.type = DEREF;
 
   /* ADDRESSOF on the lhs is invalid.  */
   gcc_assert (lhs.type != ADDRESSOF);
