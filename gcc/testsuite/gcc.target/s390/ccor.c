@@ -42,7 +42,7 @@ GENFUN1(2)
 
 GENFUN1(3)
 
-/* { dg-final { scan-assembler {locrno} } } */
+/* { dg-final { scan-assembler {locro} } } */
 
 GENFUN2(0,1)
 
@@ -58,7 +58,7 @@ GENFUN2(0,3)
 
 GENFUN2(1,2)
 
-/* { dg-final { scan-assembler {locrnlh} } } */
+/* { dg-final { scan-assembler {locrlh} } } */
 
 GENFUN2(1,3)
 
