@@ -1,3 +1,62 @@
+2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_classes.h (locale::combine)
+	(locale::name, locale::operator==, locale::operator!=)
+	(locale::operator(), locale::classic): Add nodiscard
+	attribute.
+	* include/bits/locale_classes.tcc (has_facet, use_facet):
+	Likewise.
+	* testsuite/22_locale/locale/cons/12438.cc: Add dg-warning for
+	nodiscard diagnostic.
+	* testsuite/22_locale/locale/cons/2.cc: Cast use_facet
+	expression to void, to suppress diagnostic.
+	* testsuite/22_locale/locale/cons/unicode.cc: Likewise.
+	* testsuite/22_locale/locale/operations/2.cc: Add dg-warning.
+
+2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108323
+	* include/bits/locale_classes.tcc (locale(const locale&, Facet*)):
+	Return a copy of the first argument when the facet pointer is
+	null, as per LWG 2295.
+	(locale::combine): Ensure the result is unnamed.
+	* src/c++11/localename.cc (_M_replace_categories): Ignore
+	whether the second locale has a name when cat == none, as per
+	LWG 3676.
+	* src/c++98/locale.cc (_M_install_facet): Use __builtin_expect
+	to predict that the facet pointer is non-null.
+	* testsuite/22_locale/locale/cons/names.cc: New test.
+
+2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114940
+	* include/bits/version.def (generator): Depend on
+	__cpp_sized_deallocation.
+	* include/bits/version.h: Regenerate.
+	* include/std/stacktrace (_GLIBCXX_SIZED_DELETE): New macro.
+	(basic_stacktrace::_Impl::_M_deallocate): Use it.
+
+2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115099
+	* include/bits/std_thread.h: Declare formatter as friend of
+	thread::id.
+	* include/std/thread (operator<<): Convert non-void pointers to
+	void pointers for output.
+	(formatter): Add constraint that thread::native_handle_type is a
+	pointer or integer.
+	(formatter::format): Reimplement without basic_ostringstream.
+	* testsuite/30_threads/thread/id/output.cc: Check output
+	compiles before <sstream> has been included.
+
+2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115145
+	* include/std/variant (operator==, operator!=, operator<)
+	(operator<=, operator>, operator>=): Add trailing-return-type to
+	lambda expressions to trigger conversion to bool.
+	* testsuite/20_util/variant/relops/115145.cc: New test.
+
 2024-05-17  Björn Schäpers  <bjoern@hazardy.de>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_BACKTACE): Add check for

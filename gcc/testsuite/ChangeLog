@@ -1,3 +1,64 @@
+2024-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115159
+	* g++.dg/modules/noexcept-2_a.H: New test.
+	* g++.dg/modules/noexcept-2_b.C: New test.
+
+2024-05-22  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/102171
+	* gcc.target/aarch64/vget_high_2.c: New test.
+	* gcc.target/aarch64/vget_high_2_be.c: New test.
+
+2024-05-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/extend-param.c: Add regression test. Add
+	-fshort-enums.
+	* gcc.target/arm/cmse/extend-return.c: Add -fshort-enums option.
+
+2024-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/opt/fmo1.C: New test.
+
+2024-05-22  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/115066
+	* gcc.dg/pr115066.c (scan-assembler): Allow for alternative form
+	of Define macro.
+
+2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115152
+	* gcc.dg/pr115152.c: New test.
+
+2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/115172
+	* gcc.dg/asan/pr115172.c: New test.
+
+2024-05-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/115069
+	* gcc.target/i386/pr115069.c: New.
+
+2024-05-22  xuli  <xuli1@eswincomputing.com>
+
+	* gcc.dg/vect/vect-early-break_124-pr114403.c: Enable vectrization for RISC-V target.
+
+2024-05-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/abi/main.C: Check pedwarn for main with linkage-spec.
+	* g++.dg/modules/contracts-1_b.C: Don't declare main in named
+	module.
+	* g++.dg/modules/contracts-3_b.C: Likewise.
+	* g++.dg/modules/contracts-4_d.C: Likewise.
+	* g++.dg/modules/horcrux-1_a.C: Export declarations, so that...
+	* g++.dg/modules/horcrux-1_b.C: Don't declare main in named
+	module.
+	* g++.dg/modules/main-1.C: New test.
+	* g++.dg/parse/linkage5.C: New test.
+	* g++.dg/parse/linkage6.C: New test.
+
 2024-05-21  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/115139

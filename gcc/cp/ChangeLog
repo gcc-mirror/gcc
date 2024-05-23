@@ -1,3 +1,19 @@
+2024-05-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115159
+	* tree.cc (build_cp_fntype_variant): Always use structural
+	equality for types with a complex exception specification.
+	(fixup_deferred_exception_variants): Use structural equality
+	for adjusted variants.
+	* typeck.cc (comp_except_specs): Require == instead of
+	cp_tree_equal for ce_exact noexcept-spec comparison.
+
+2024-05-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* decl.cc (grokfndecl): Check for main functions with language
+	linkage or module attachment.
+	(grokvardecl): Check for extern 'C' entities named main.
+
 2024-05-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/107800
