@@ -8263,6 +8263,7 @@ extern cp_expr build_c_cast			(location_t loc, tree type,
 						 cp_expr expr);
 extern tree cp_build_c_cast			(location_t, tree, tree,
 						 tsubst_flags_t);
+extern bool maybe_warn_self_move		(location_t, tree, tree);
 extern cp_expr build_x_modify_expr		(location_t, tree,
 						 enum tree_code, tree,
 						 tree, tsubst_flags_t);

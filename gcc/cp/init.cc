@@ -999,7 +999,7 @@ perform_member_init (tree member, tree init, hash_set<tree> &uninitialized)
   if (decl == error_mark_node)
     return;
 
-  if ((warn_init_self || warn_uninitialized)
+  if ((warn_init_self || warn_uninitialized || warn_self_move)
       && init
       && TREE_CODE (init) == TREE_LIST
       && TREE_CHAIN (init) == NULL_TREE)
@@ -1013,7 +1013,8 @@ perform_member_init (tree member, tree init, hash_set<tree> &uninitialized)
 	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
 		    OPT_Winit_self, "%qD is initialized with itself",
 		    member);
-      else
+      else if (!maybe_warn_self_move (input_location, member,
+				      TREE_VALUE (init)))
 	find_uninit_fields (&val, &uninitialized, decl);
     }
 

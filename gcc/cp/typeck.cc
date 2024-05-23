@@ -9355,27 +9355,27 @@ cp_build_c_cast (location_t loc, tree type, tree expr,
 
 /* Warn when a value is moved to itself with std::move.  LHS is the target,
    RHS may be the std::move call, and LOC is the location of the whole
-   assignment.  */
+   assignment.  Return true if we warned.  */
 
-static void
+bool
 maybe_warn_self_move (location_t loc, tree lhs, tree rhs)
 {
   if (!warn_self_move)
-    return;
+    return false;
 
   /* C++98 doesn't know move.  */
   if (cxx_dialect < cxx11)
-    return;
+    return false;
 
   if (processing_template_decl)
-    return;
+    return false;
 
   if (!REFERENCE_REF_P (rhs)
       || TREE_CODE (TREE_OPERAND (rhs, 0)) != CALL_EXPR)
-    return;
+    return false;
   tree fn = TREE_OPERAND (rhs, 0);
   if (!is_std_move_p (fn))
-    return;
+    return false;
 
   /* Just a little helper to strip * and various NOPs.  */
   auto extract_op = [] (tree &op) {
@@ -9393,13 +9393,17 @@ maybe_warn_self_move (location_t loc, tree lhs, tree rhs)
   tree type = TREE_TYPE (lhs);
   tree orig_lhs = lhs;
   extract_op (lhs);
-  if (cp_tree_equal (lhs, arg))
-    {
-      auto_diagnostic_group d;
-      if (warning_at (loc, OPT_Wself_move,
-		      "moving %qE of type %qT to itself", orig_lhs, type))
-	inform (loc, "remove %<std::move%> call");
-    }
+  if (cp_tree_equal (lhs, arg)
+      /* Also warn in a member-initializer-list, as in : i(std::move(i)).  */
+      || (TREE_CODE (lhs) == FIELD_DECL
+	  && TREE_CODE (arg) == COMPONENT_REF
+	  && cp_tree_equal (TREE_OPERAND (arg, 0), current_class_ref)
+	  && TREE_OPERAND (arg, 1) == lhs))
+    if (warning_at (loc, OPT_Wself_move,
+		    "moving %qE of type %qT to itself", orig_lhs, type))
+      return true;
+
+  return false;
 }
 
 /* For use from the C common bits.  */
