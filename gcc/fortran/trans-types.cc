@@ -1591,7 +1591,7 @@ gfc_get_dtype_rank_type (int rank, tree etype)
       size = size_in_bytes (etype);
       break;
     }
-      
+
   gcc_assert (size);
 
   STRIP_NOPS (size);
@@ -1740,7 +1740,7 @@ gfc_get_nodesc_array_type (tree etype, gfc_array_spec * as, gfc_packed packed,
 	tmp = gfc_conv_mpz_to_tree (expr->value.integer,
 				    gfc_index_integer_kind);
       else
-      	tmp = NULL_TREE;
+	tmp = NULL_TREE;
       GFC_TYPE_ARRAY_LBOUND (type, n) = tmp;
 
       expr = as->upper[n];

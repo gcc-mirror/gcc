@@ -3201,6 +3201,11 @@ gfc_reduce_init_expr (gfc_expr *expr)
 {
   bool t;
 
+  /* It is far too early to resolve a class compcall. Punt to resolution.  */
+  if (expr && expr->expr_type == EXPR_COMPCALL
+      && expr->symtree->n.sym->ts.type == BT_CLASS)
+    return false;
+
   gfc_init_expr_flag = true;
   t = gfc_resolve_expr (expr);
   if (t)
