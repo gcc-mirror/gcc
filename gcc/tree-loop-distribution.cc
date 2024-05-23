@@ -977,8 +977,11 @@ copy_loop_before (class loop *loop, bool redirect_lc_phi_defs)
 	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    continue;
 	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, exit);
-	  tree new_def = get_current_def (USE_FROM_PTR (use_p));
-	  SET_USE (use_p, new_def);
+	  if (TREE_CODE (USE_FROM_PTR (use_p)) == SSA_NAME)
+	    {
+	      tree new_def = get_current_def (USE_FROM_PTR (use_p));
+	      SET_USE (use_p, new_def);
+	    }
 	}
     }
 
