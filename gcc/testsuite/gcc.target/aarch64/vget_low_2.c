@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fdump-tree-optimized -mlittle-endian" } */
 
 #include <arm_neon.h>
 
