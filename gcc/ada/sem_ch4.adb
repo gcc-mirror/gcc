@@ -5237,22 +5237,6 @@ package body Sem_Ch4 is
             end if;
          end loop;
 
-         --  If Par is a generic actual, look for component in ancestor types.
-         --  Skip this if we have no Declaration_Node, as is the case for
-         --  itypes.
-
-         if Present (Par)
-           and then Is_Generic_Actual_Type (Par)
-           and then Present (Declaration_Node (Par))
-         then
-            Par := Generic_Parent_Type (Declaration_Node (Par));
-            loop
-               Find_Component_In_Instance (Par);
-               exit when Present (Entity (Sel))
-                 or else Par = Etype (Par);
-               Par := Etype (Par);
-            end loop;
-
          --  Another special case: the type is an extension of a private
          --  type T, either is an actual in an instance or is immediately
          --  visible, and we are in the body of the instance, which means
@@ -5263,12 +5247,29 @@ package body Sem_Ch4 is
          --  the Has_Private_View mechanism is bypassed because T or the
          --  ancestor is not directly referenced in the generic body.
 
-         elsif Is_Derived_Type (Typ)
-           and then (Used_As_Generic_Actual (Typ)
+         if Is_Derived_Type (Typ)
+           and then (Used_As_Generic_Actual (Base_Type (Typ))
                       or else Is_Immediately_Visible (Typ))
            and then In_Instance_Body
+           and then Present (Parent_Subtype (Typ))
          then
             Find_Component_In_Instance (Parent_Subtype (Typ));
+
+         --  If Par is a generic actual, look for component in ancestor types.
+         --  Skip this if we have no Declaration_Node, as is the case for
+         --  itypes.
+
+         elsif Present (Par)
+           and then Is_Generic_Actual_Type (Par)
+           and then Present (Declaration_Node (Par))
+         then
+            Par := Generic_Parent_Type (Declaration_Node (Par));
+            loop
+               Find_Component_In_Instance (Par);
+               exit when Present (Entity (Sel))
+                 or else Par = Etype (Par);
+               Par := Etype (Par);
+            end loop;
          end if;
 
          return Etype (N) /= Any_Type;
