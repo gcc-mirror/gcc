@@ -1,3 +1,19 @@
+2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115099
+	* include/bits/std_thread.h: Declare formatter as friend of
+	thread::id.
+	* include/std/thread (operator<<): Convert non-void pointers to
+	void pointers for output.
+	(formatter): Add constraint that thread::native_handle_type is a
+	pointer or integer.
+	(formatter::format): Reimplement without basic_ostringstream.
+	* testsuite/30_threads/thread/id/output.cc: Check output
+	compiles before <sstream> has been included.
+
 2024-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

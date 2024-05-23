@@ -1,3 +1,45 @@
+2024-05-22  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-05-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114983
+	* g++.dg/warn/Wsizeof-array-div3.C: New test.
+
+2024-05-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-05-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/extend-param.c: Add regression test. Add
+	-fshort-enums.
+	* gcc.target/arm/cmse/extend-return.c: Add -fshort-enums option.
+
+2024-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/opt/fmo1.C: New test.
+
+2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115152
+	* gcc.dg/pr115152.c: New test.
+
+2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/115172
+	* gcc.dg/asan/pr115172.c: New test.
+
+2024-05-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/115069
+	* gcc.target/i386/pr115069.c: New.
+
 2024-05-21  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
