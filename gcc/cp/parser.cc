@@ -3230,6 +3230,19 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
       return;
     }
 
+  if (cp_token_is_module_directive (token))
+    {
+      auto_diagnostic_group d;
+      error_at (token->location, "unexpected module directive");
+      if (token->keyword != RID__EXPORT)
+	inform (token->location, "perhaps insert a line break after"
+		" %qs, or other disambiguation, to prevent this being"
+		" considered a module control-line",
+		(token->keyword == RID__MODULE) ? "module" : "import");
+      cp_parser_skip_to_pragma_eol (parser, token);
+      return;
+    }
+
   /* If this is actually a conflict marker, report it as such.  */
   if (token->type == CPP_LSHIFT
       || token->type == CPP_RSHIFT
@@ -15135,10 +15148,17 @@ cp_parser_module_declaration (cp_parser *parser, module_parse mp_state,
   parser->lexer->in_pragma = true;
   cp_token *token = cp_lexer_consume_token (parser->lexer);
 
+  tree scope = current_scope ();
   if (flag_header_unit)
     {
       error_at (token->location,
 		"module-declaration not permitted in header-unit");
+      goto skip_eol;
+    }
+  else if (scope != global_namespace)
+    {
+      error_at (token->location, "module-declaration must be at global scope");
+      inform (DECL_SOURCE_LOCATION (scope), "scope opened here");
       goto skip_eol;
     }
   else if (mp_state == MP_FIRST && !exporting
@@ -15217,9 +15237,9 @@ cp_parser_import_declaration (cp_parser *parser, module_parse mp_state,
       error_at (token->location, "post-module-declaration"
 		" imports must be contiguous");
     note_lexer:
-      inform (token->location, "perhaps insert a line break, or other"
-	      " disambiguation, to prevent this being considered a"
-	      " module control-line");
+      inform (token->location, "perhaps insert a line break after"
+	      " %<import%>, or other disambiguation, to prevent this"
+	      " being considered a module control-line");
     skip_eol:
       cp_parser_skip_to_pragma_eol (parser, token);
     }
