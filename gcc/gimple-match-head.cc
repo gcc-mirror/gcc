@@ -79,6 +79,16 @@ types_match (tree t1, tree t2)
   return types_compatible_p (t1, t2);
 }
 
+/* Routine to determine if the types T1, T2 and T3 are effectively
+   the same for GIMPLE.  If T1, T2 or T2 is not a type, the test
+   applies to their TREE_TYPE.  */
+
+static inline bool
+types_match (tree t1, tree t2, tree t3)
+{
+  return types_match (t1, t2) && types_match (t2, t3);
+}
+
 /* Return if T has a single use.  For GIMPLE, we also allow any
    non-SSA_NAME (ie constants) and zero uses to cope with uses
    that aren't linked up yet.  */
