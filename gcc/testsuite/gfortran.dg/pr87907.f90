@@ -12,12 +12,14 @@ end
 
 submodule(m) m2
    contains
-      subroutine g(x)   ! { dg-error "mismatch in argument" }
+      subroutine g(x) ! { dg-error "FUNCTION attribute conflicts with SUBROUTINE" }
       end
 end
 
 program p
-   use m                ! { dg-error "has a type" }
+   use m
    integer :: x = 3
-   call g(x)            ! { dg-error "which is not consistent with" }
+   call g(x)
 end
+
+! { dg-prune-output "Two main PROGRAMs" }

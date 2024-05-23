@@ -407,18 +407,36 @@ gfc_check_function_type (gfc_namespace *ns)
 
 /******************** Symbol attribute stuff *********************/
 
+/* Older standards produced conflicts for some attributes that are allowed
+   in newer standards.  Check for the conflict and issue an error depending
+   on the standard in play.  */
+
+static bool
+conflict_std (int standard, const char *a1, const char *a2, const char *name,
+	      locus *where)
+{
+  if (name == NULL)
+    {
+      return gfc_notify_std (standard, "%s attribute conflicts "
+			     "with %s attribute at %L", a1, a2,
+			     where);
+    }
+  else
+    {
+      return gfc_notify_std (standard, "%s attribute conflicts "
+			     "with %s attribute in %qs at %L",
+			     a1, a2, name, where);
+    }
+}
+
 /* This is a generic conflict-checker.  We do this to avoid having a
    single conflict in two places.  */
 
 #define conf(a, b) if (attr->a && attr->b) { a1 = a; a2 = b; goto conflict; }
 #define conf2(a) if (attr->a) { a2 = a; goto conflict; }
-#define conf_std(a, b, std) if (attr->a && attr->b)\
-                              {\
-                                a1 = a;\
-                                a2 = b;\
-                                standard = std;\
-                                goto conflict_std;\
-                              }
+#define conf_std(a, b, std) if (attr->a && attr->b \
+				&& !conflict_std (std, a, b, name, where)) \
+				return false;
 
 bool
 gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
@@ -451,7 +469,6 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
 						"OACC DECLARE DEVICE_RESIDENT";
 
   const char *a1, *a2;
-  int standard;
 
   if (attr->artificial)
     return true;
@@ -460,20 +477,10 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
     where = &gfc_current_locus;
 
   if (attr->pointer && attr->intent != INTENT_UNKNOWN)
-    {
-      a1 = pointer;
-      a2 = intent;
-      standard = GFC_STD_F2003;
-      goto conflict_std;
-    }
+    conf_std (pointer, intent, GFC_STD_F2003);
 
-  if (attr->in_namelist && (attr->allocatable || attr->pointer))
-    {
-      a1 = in_namelist;
-      a2 = attr->allocatable ? allocatable : pointer;
-      standard = GFC_STD_F2003;
-      goto conflict_std;
-    }
+  conf_std (in_namelist, allocatable, GFC_STD_F2003);
+  conf_std (in_namelist, pointer, GFC_STD_F2003);
 
   /* Check for attributes not allowed in a BLOCK DATA.  */
   if (gfc_current_state () == COMP_BLOCK_DATA)
@@ -922,20 +929,6 @@ conflict:
 	       a1, a2, name, where);
 
   return false;
-
-conflict_std:
-  if (name == NULL)
-    {
-      return gfc_notify_std (standard, "%s attribute conflicts "
-                             "with %s attribute at %L", a1, a2,
-                             where);
-    }
-  else
-    {
-      return gfc_notify_std (standard, "%s attribute conflicts "
-			     "with %s attribute in %qs at %L",
-                             a1, a2, name, where);
-    }
 }
 
 #undef conf
