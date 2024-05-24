@@ -1,3 +1,25 @@
+2024-05-23  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/version.def (ranges_concat): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/ranges (__detail::__concat_reference_t): Define
+	for C++26.
+	(__detail::__concat_value_t): Likewise.
+	(__detail::__concat_rvalue_reference_t): Likewise.
+	(__detail::__concat_indirectly_readable_impl): Likewise.
+	(__detail::__concat_indirectly_readable): Likewise.
+	(__detail::__concatable): Likewise.
+	(__detail::__all_but_last_common): Likewise.
+	(__detail::__concat_is_random_access): Likewise.
+	(__detail::__concat_is_bidirectional): Likewise.
+	(__detail::__last_is_common): Likewise.
+	(concat_view): Likewise.
+	(__detail::__concat_view_iter_cat): Likewise.
+	(concat_view::iterator): Likewise.
+	(views::__detail::__can_concat_view): Likewise.
+	(views::_Concat, views::concat): Likewise.
+	* testsuite/std/ranges/concat/1.cc: New test.
+
 2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_classes.h (locale::combine)

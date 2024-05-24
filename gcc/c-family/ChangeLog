@@ -1,3 +1,11 @@
+2024-05-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (check_type_name_conflict): Add guard.
+	(is_char_array): Simplify.
+	(dump_ada_array_type): Use strip_array_types.
+	(dump_ada_node) <POINTER_TYPE>: Deal with anonymous array types.
+	(dump_nested_type): Use strip_array_types.
+
 2024-05-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.cc (bitfield_used): Move around.

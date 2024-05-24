@@ -1,3 +1,64 @@
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114947
+	* g++.dg/modules/partial-4_a.C: New test.
+	* g++.dg/modules/partial-4_b.C: New test.
+
+2024-05-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115187
+	* g++.dg/cpp1z/array-prvalue3.C: New test.
+
+2024-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115197
+	* gcc.dg/pr115197.c: New testcase.
+
+2024-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115199
+	* gcc.dg/torture/pr115199.c: New testcase.
+
+2024-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115138
+	* gcc.dg/torture/pr115138.c: New testcase.
+
+2024-05-23  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.target/powerpc/pr106550.c: Adjust by requiring has_arch_ppc64
+	effective target. And remove power10_ok.
+
+2024-05-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/114072
+	* gcc.dg/vect/vect-pr111779.c (scan-tree-dump): Require
+	vect_shift_char on big-endian targets.
+
+2024-05-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103312
+	* gfortran.dg/pr103312.f90: New test.
+
+2024-05-23  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/ccor.c: Order of loads are reversed, now, as a
+	consequence the condition has to be reversed.
+
+2024-05-23  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/105359
+	* gcc.target/powerpc/pr79004.c: Xfail opcodes not available on
+	longdouble64.
+	* lib/target-supports.exp
+	(check_effective_target_long_double_64bit): Drop.
+	(add_options_for_long_double_64bit): Likewise.
+
+2024-05-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/115191
+	* gcc.dg/tree-ssa/pr115191.c: New test.
+
 2024-05-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/115159

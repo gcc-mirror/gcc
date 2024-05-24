@@ -1,3 +1,388 @@
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-edge.h (range_query::condexpr_adjust): Delete.
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Use
+	gori_ssa routine.
+	(fold_using_range::range_of_address): Likewise.
+	(fold_using_range::range_of_phi): Likewise.
+	(fold_using_range::condexpr_adjust): Relocated from gori_compute.
+	(fold_using_range::range_of_cond_expr): Use local condexpr_adjust.
+	(fur_source::register_outgoing_edges): Use gori_ssa routine.
+	* gimple-range-fold.h (gori_ssa): Rename from gori_bb.
+	(fold_using_range::condexpr_adjust): Add prototype.
+	* gimple-range-gori.cc (gori_compute::condexpr_adjust): Relocate.
+	* gimple-range-gori.h (gori_compute::condexpr_adjust): Delete.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Use gori_ssa.
+	(ranger_cache::dump): Likewise.
+	(ranger_cache::get_global_range): Likewise.
+	(ranger_cache::set_global_range): Likewise.
+	(ranger_cache::register_inferred_value): Likewise.
+	* gimple-range-edge.h (gimple_outgoing_range::map): Remove.
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Use
+	gori_ssa.
+	(fold_using_range::range_of_address): Likewise.
+	(fold_using_range::range_of_phi): Likewise.
+	(fur_source::register_outgoing_edges): Likewise.
+	* gimple-range-fold.h (fur_source::query): Make const.
+	(gori_ssa): New.
+	* gimple-range-gori.cc (gori_map::dump): Use 'this' pointer.
+	(gori_compute::gori_compute): Construct with a gori_map.
+	* gimple-range-gori.h (gori_compute:gori_compute): Change
+	prototype.
+	(gori_compute::map): Delete.
+	(gori_compute::m_map): Change to a reference.
+	(FOR_EACH_GORI_IMPORT_NAME): Change parameter gori to gorimap.
+	(FOR_EACH_GORI_EXPORT_NAME): Likewise.
+	* gimple-range-path.cc (path_range_query::compute_ranges_in_block):
+	Use gori_ssa method.
+	(path_range_query::compute_exit_dependencies): Likewise.
+	* gimple-range.cc (gimple_ranger::range_of_stmt): Likewise.
+	(gimple_ranger::register_transitive_inferred_ranges): Likewise.
+	* tree-ssa-dom.cc (set_global_ranges_from_unreachable_edges):
+	Likewise.
+	* tree-ssa-threadedge.cc (compute_exit_dependencies): Likewise.
+	* tree-vrp.cc (remove_unreachable::handle_early): Likewise.
+	(remove_unreachable::remove_and_update_globals): Likewise.
+	* value-query.cc (range_query::create_gori): Create gori map.
+	(range_query::share_query): Copy gori map member.
+	(range_query::range_query): Initiialize gori_map member.
+	* value-query.h (range_query::gori_ssa): New.
+	(range_query::m_map): New.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Create
+	GORi via the range_query instead of a local member.
+	(ranger_cache::dump_bb): Use gori via from the range_query parent.
+	(ranger_cache::get_global_range): Likewise.
+	(ranger_cache::set_global_range): Likewise.
+	(ranger_cache::edge_range): Likewise.
+	(anger_cache::block_range): Likewise.
+	(ranger_cache::fill_block_cache): Likewise.
+	(ranger_cache::range_from_dom): Likewise.
+	(ranger_cache::register_inferred_value): Likewise.
+	* gimple-range-cache.h (ranger_cache::m_gori): Delete.
+	* gimple-range-fold.cc (fur_source::fur_source): Set m_depend_p.
+	(fur_depend::fur_depend): Remove gori parameter.
+	* gimple-range-fold.h (fur_source::gori): Adjust.
+	(fur_source::m_gori): Delete.
+	(fur_source::m_depend): New.
+	(fur_depend::fur_depend): Adjust prototype.
+	* gimple-range-path.cc (path_range_query::path_range_query): Share
+	ranger oracles.
+	(path_range_query::range_defined_in_block): Use oracle directly.
+	(path_range_query::compute_ranges_in_block): Use new gori() method.
+	(path_range_query::adjust_for_non_null_uses): Use oracle directly.
+	(path_range_query::compute_exit_dependencies): Likewise.
+	(jt_fur_source::jt_fur_source): No gori in the parameters.
+	(path_range_query::range_of_stmt): Likewise.
+	(path_range_query::compute_outgoing_relations): Likewise.
+	* gimple-range.cc (gimple_ranger::fold_range_internal): Likewise.
+	(gimple_ranger::range_of_stmt): Access gori via gori () method.
+	(assume_query::range_of_expr): Create a gori object.
+	(assume_query::~assume_query): Destroy a gori object.
+	(assume_query::calculate_op): Remove old gori() accessor.
+	* gimple-range.h (gimple_ranger::gori): Delete.
+	(assume_query::~assume_query): New.
+	(assume_query::m_gori): Delete.
+	* tree-ssa-dom.cc (set_global_ranges_from_unreachable_edges): use
+	gori () method.
+	* tree-ssa-threadedge.cc (compute_exit_dependencies): Likewise.
+	* value-query.cc (default_gori): New.
+	(range_query::create_gori): New.
+	(range_query::destroy_gori): New.
+	(range_query::share_oracles): Set m_gori.
+	(range_query::range_query): Set m_gori to default.
+	(range_query::~range_query): call destroy gori.
+	* value-query.h (range_query): Adjust prototypes
+	(range_query::m_gori): New.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Adjust
+	m_gori constructor.
+	(ranger_cache::edge_range): Use renamed edge_range_p name.
+	(ranger_cache::range_from_dom): Likewise.
+	* gimple-range-edge.h (gimple_outgoing_range::condexpr_adjust): New.
+	(gimple_outgoing_range::has_edge_range_p): New.
+	(gimple_outgoing_range::dump): New.
+	(gimple_outgoing_range::compute_operand_range): New.
+	(gimple_outgoing_range::map): New.
+	* gimple-range-fold.cc (fur_source::register_outgoing_edges ): Use
+	renamed edge_range_p routine
+	* gimple-range-gori.cc (gori_compute::gori_compute): Adjust
+	constructor.
+	(gori_compute::~gori_compute): New.
+	(gori_compute::edge_range_p): Rename from outgoing_edge_range_p
+	and use inherited routine instead of member method.
+	* gimple-range-gori.h (class gori_compute): Inherit from
+	gimple_outgoing_range, adjust protoypes.
+	(gori_compute::outgpoing): Delete.
+	* gimple-range-path.cc (path_range_query::compute_ranges_in_block): Use
+	renamed edge_range_p routine.
+	* tree-ssa-loop-unswitch.cc (evaluate_control_stmt_using_entry_checks):
+	Likewise.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Access
+	gori_map via member call.
+	(ranger_cache::dump_bb): Likewise.
+	(ranger_cache::get_global_range): Likewise.
+	(ranger_cache::set_global_range): Likewise.
+	(ranger_cache::register_inferred_value): Likewise.
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Likewise.
+	(fold_using_range::range_of_address): Likewise.
+	(fold_using_range::range_of_phi): Likewise.
+	* gimple-range-gori.cc (gori_compute::compute_operand_range_switch):
+	likewise.
+	(gori_compute::compute_operand_range): Likewise.
+	(gori_compute::compute_logical_operands): Likewise.
+	(gori_compute::refine_using_relation): Likewise.
+	(gori_compute::compute_operand1_and_operand2_range): Likewise.
+	(gori_compute::may_recompute_p): Likewise.
+	(gori_compute::has_edge_range_p): Likewise.
+	(gori_compute::outgoing_edge_range_p): Likewise.
+	(gori_compute::condexpr_adjust): Likewise.
+	* gimple-range-gori.h (class gori_compute): Do not inherit from
+	gori_map.
+	(gori_compute::m_map): New.
+	* gimple-range-path.cc (gimple-range-path.cc): Use gori_map member.
+	(path_range_query::compute_exit_dependencies): Likewise.
+	* gimple-range.cc (gimple_ranger::range_of_stmt): Likewise.
+	(gimple_ranger::register_transitive_inferred_ranges): Likewise.
+	* tree-ssa-dom.cc (set_global_ranges_from_unreachable_edges): Likewise.
+	* tree-ssa-threadedge.cc (compute_exit_dependencies): Likewise.
+	* tree-vrp.cc (remove_unreachable::handle_early): Likewise.
+	(remove_unreachable::remove_and_update_globals): Likewise.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-edge.cc (gimple_outgoing_range::gimple_outgoing_range):
+	Do not allocate a range allocator at construction time.
+	(gimple_outgoing_range::~gimple_outgoing_range): Delete allocator
+	if one was allocated.
+	(gimple_outgoing_range::set_switch_limit): New.
+	(gimple_outgoing_range::switch_edge_range): Create an allocator if one
+	does not exist.
+	(gimple_outgoing_range::edge_range_p): Check for zero edges.
+	* gimple-range-edge.h (class gimple_outgoing_range): Adjust prototypes.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/113879
+	* gimple-range-fold.cc (op1_range): New.
+	(op2_range): New.
+	* gimple-range-fold.h (op1_range): New prototypes.
+	(op2_range): New prototypes.
+	* gimple-range-infer.cc (gimple_infer_range::add_range): Do not
+	add an inferred range if it is VARYING.
+	(gimple_infer_range::gimple_infer_range): Add inferred ranges
+	for any range-op statements if requested.
+	* gimple-range-infer.h (gimple_infer_range): Add parameter.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Create an infer
+	oracle instead of a local member.
+	(ranger_cache::~ranger_cache): Destroy the oracle.
+	(ranger_cache::edge_range): Use oracle.
+	(ranger_cache::fill_block_cache): Likewise.
+	(ranger_cache::range_from_dom): Likewise.
+	(ranger_cache::apply_inferred_ranges): Likewise.
+	* gimple-range-cache.h (ranger_cache::m_exit): Delete.
+	* gimple-range-infer.cc (infer_oracle): New static object;
+	(class infer_oracle): New.
+	(non_null_wrapper::non_null_wrapper): New.
+	(non_null_wrapper::add_nonzero): New.
+	(non_null_wrapper::add_range): New.
+	(non_null_loadstore): Use nonnull_wrapper.
+	(gimple_infer_range::gimple_infer_range): New alternate constructor.
+	(exit_range::stmt): New.
+	(infer_range_manager::has_range_p): Combine seperate methods.
+	(infer_range_manager::maybe_adjust_range): Adjust has_range_p call.
+	(infer_range_manager::add_ranges): New.
+	(infer_range_manager::add_range): Take stmt rather than BB.
+	(infer_range_manager::add_nonzero): Adjust from BB to stmt.
+	* gimple-range-infer.h (class gimple_infer_range): Adjust methods.
+	(infer_range_oracle): New.
+	(class infer_range_manager): Inherit from infer_range_oracle.
+	Adjust methods.
+	* gimple-range-path.cc (path_range_query::range_defined_in_block): Use
+	oracle.
+	(path_range_query::adjust_for_non_null_uses): Likewise.
+	* gimple-range.cc (gimple_ranger::range_on_edge): Likewise
+	(gimple_ranger::register_transitive_inferred_ranges): Likewise.
+	* value-query.cc (default_infer_oracle): New.
+	(range_query::create_infer_oracle): New.
+	(range_query::destroy_infer_oracle): New.
+	(range_query::share_query): Copy infer pointer.
+	(range_query::range_query): Initialize infer pointer.
+	(range_query::~range_query): destroy infer object.
+	* value-query.h (range_query::infer_oracle): New.
+	(range_query::create_infer_oracle): New prototype.
+	(range_query::destroy_infer_oracle): New prototype.
+	(range_query::m_infer): New.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Share the
+	components from ranger_cache.
+	(gimple_ranger::~gimple_ranger): Don't clear pointer.
+	* value-query.cc (range_query::share_query): New.
+	(range_query::range_query): Clear shared component flag.
+	(range_query::~range_query): Don't free shared component copies.
+	* value-query.h (share_query): New prototype.
+	(m_shared_copy_p): New member.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::dump_bb): Use m_relation.
+	(ranger_cache::fill_block_cache): Likewise
+	* gimple-range-fold.cc (fur_stmt::get_phi_operand): Use new names.
+	(fur_depend::register_relation): Likewise.
+	(fold_using_range::range_of_phi): Likewise.
+	* gimple-range-path.cc (path_range_query::path_range_query): Likewise.
+	(path_range_query::~path_range_query): Likewise.
+	(ath_range_query::compute_ranges): Likewise.
+	(jt_fur_source::register_relation): Likewise.
+	(jt_fur_source::query_relation): Likewise.
+	(path_range_query::maybe_register_phi_relation): Likewise.
+	* gimple-range-path.h (get_path_oracle): Likewise.
+	* gimple-range.cc (gimple_ranger::gimple_ranger): Likewise.
+	(gimple_ranger::~gimple_ranger): Likewise.
+	* value-query.cc (range_query::create_relation_oracle): Likewise.
+	(range_query::destroy_relation_oracle): Likewise.
+	(range_query::share_oracles): Likewise.
+	(range_query::range_query): Likewise.
+	* value-query.h (value_query::relation): Rename from oracle.
+	(m_relation): Rename from m_oracle.
+	* value-relation.cc (relation_oracle::query): Rename from
+	query_relation.
+	(equiv_oracle::query): Likewise.
+	(equiv_oracle::record): Rename from register_relation.
+	(relation_oracle::record): Likewise.
+	(dom_oracle::record): Likewise.
+	(dom_oracle::query): Rename from query_relation.
+	(path_oracle::record): Rename from register_relation.
+	(path_oracle::query): Rename from query_relation.
+	* value-relation.h (*::record): Rename from register_relation.
+	(*::query): Rename from query_relation.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::dump_bb): Remove check for
+	NULL oracle pointer.
+	(ranger_cache::fill_block_cache): Likewise.
+	* gimple-range-fold.cc (fur_stmt::get_phi_operand): Likewise.
+	(fur_depend::fur_depend): Likewise.
+	(fur_depend::register_relation): Likewise, use qury_relation.
+	(fold_using_range::range_of_phi): Likewise.
+	(fold_using_range::relation_fold_and_or): Likewise.
+	* gimple-range-fold.h (fur_source::m_oracle): Delete.  Oracle
+	can be accessed dirctly via m_query now.
+	* gimple-range-path.cc (path_range_query::path_range_query):
+	Adjust for oracle reference pointer.
+	(path_range_query::compute_ranges): Likewise.
+	(jt_fur_source::jt_fur_source): Adjust for no m_oracle member.
+	(jt_fur_source::register_relation): Do not check for NULL
+	pointer.
+	(jt_fur_source::query_relation): Likewise.
+	* gimple-range.cc (gimple_ranger::gimple_ranger):  Adjust for
+	reference pointer.
+	* value-query.cc (default_relation_oracle): New.
+	(range_query::create_relation_oracle): Relocate from header.
+	Ensure not being added to global query.
+	(range_query::destroy_relation_oracle): Relocate from header.
+	(range_query::range_query): Initailize to default oracle.
+	(ange_query::~range_query): Call destroy_relation_oracle.
+	* value-query.h (class range_query): Adjust prototypes.
+	(range_query::create_relation_oracle): Move to source file.
+	(range_query::destroy_relation_oracle): Move to source file.
+	* value-relation.cc (relation_oracle::validate_relation): Delete.
+	(relation_oracle::register_stmt): Rename to register_relation.
+	(relation_oracle::register_edge): Likewise.
+	* value-relation.h (register_stmt): Rename to register_relation and
+	provide default function in base class.
+	(register_edge): Likewise.
+	(relation_oracle::validate_relation): Delete.
+	(relation_oracle::query_relation): Provide default in base class.
+	(relation_oracle::dump): Likewise.
+	(relation_oracle::equiv_set): Likewise.
+	(default_relation_oracle): New extenal reference.
+	(partial_equiv_set, add_partial_equiv): Move to protected.
+
+2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Call
+	create_relation_oracle.
+	(ranger_cache::~ranger_cache): Call destroy_relation_oracle.
+	* gimple-range-fold.cc (fur_stmt::get_phi_operand): Check for
+	relation oracle bnefore calling query_relation.
+	(fold_using_range::range_of_phi): Likewise.
+	* gimple-range-path.cc (path_range_query::~path_range_query): Set
+	relation oracle pointer to NULL when done.
+	* gimple-range.cc (gimple_ranger::~gimple_ranger): Likewise.
+	* value-query.cc (range_query::~range_query): Ensure any
+	relation oracle is destroyed.
+	(range_query::query_relation): relocate to relation_oracle object.
+	* value-query.h (class range_query): Adjust method proototypes.
+	(range_query::create_relation_oracle): New.
+	(range_query::destroy_relation_oracle): New.
+	* value-relation.cc (relation_oracle::query_relation): Relocate
+	from range query class.
+	* value-relation.h (Call relation_oracle): New prototypes.
+
+2024-05-23  Pan Li  <pan2.li@intel.com>
+
+	* generic-match-head.cc (types_match): Add overloaded types_match
+	for 3 types.
+	* gimple-match-head.cc (types_match): Ditto.
+	* match.pd: Leverage overloaded types_match.
+
+2024-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115197
+	* tree-loop-distribution.cc (copy_loop_before): Constant PHI
+	args remain the same.
+
+2024-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115199
+	* tree-ssa-structalias.cc (process_constraint): Also
+	record &ANYTHING = X as *ANYTING = X in the end.
+
+2024-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115138
+	* tree-ssa-alias.cc (ptrs_compare_unequal): Make sure
+	pt.vars_contains_nonlocal differs since we do not represent
+	FUNCTION_DECLs or LABEL_DECLs in vars explicitly.
+
+2024-05-23  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR target/109549
+	* config/s390/s390.cc (TARGET_NOCE_CONVERSION_PROFITABLE_P):
+	Define.
+	(s390_noce_conversion_profitable_p): Implement.
+
+2024-05-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/115191
+	* tree-ssa-phiopt.cc (value_replacement): Use Value_Range instead
+	of int_range_max.
+
+2024-05-23  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Joel Jones  <quic_joeljone@quicinc.com>
+	    Wei Zhao  <quic_wezhao@quicinc.com>
+
+	* config/aarch64/aarch64-cores.def (oryon-1): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi  (AArch64 Options): Document oryon-1.
+
 2024-05-22  Pengxuan Zheng  <quic_pzheng@quicinc.com>
 
 	PR target/102171

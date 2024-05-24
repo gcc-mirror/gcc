@@ -1,3 +1,20 @@
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114947
+	* cp-tree.h (set_defining_module_for_partial_spec): Declare.
+	* module.cc (trees_in::decl_value): Track partial specs coming
+	from partitions.
+	(set_defining_module): Don't track partial specialisations here
+	anymore.
+	(set_defining_module_for_partial_spec): New function.
+	* pt.cc (process_partial_specialization): Call it.
+
+2024-05-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115187
+	* init.cc (build_delete): Use get_target_expr instead of save_expr.
+	* tree.cc (stabilize_expr): Update comment.
+
 2024-05-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/115159
