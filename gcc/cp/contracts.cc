@@ -738,7 +738,7 @@ grok_contract (tree attribute, tree mode, tree result, cp_expr condition,
     return error_mark_node;
 
   tree_code code;
-  if (is_attribute_p ("assert", attribute))
+  if (is_attribute_p ("assert", attribute) || is_attribute_p ("contract_assert", attribute))
     code = ASSERTION_STMT;
   else if (is_attribute_p ("pre", attribute))
     code = PRECONDITION_STMT;
