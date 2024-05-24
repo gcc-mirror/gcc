@@ -325,7 +325,8 @@ enum gfc_statement
   /* Note: gfc_match_omp_nothing returns ST_NONE. */
   ST_OMP_NOTHING, ST_NONE,
   ST_OMP_UNROLL, ST_OMP_END_UNROLL,
-  ST_OMP_TILE, ST_OMP_END_TILE, ST_OMP_INTEROP
+  ST_OMP_TILE, ST_OMP_END_TILE, ST_OMP_INTEROP, ST_OMP_DISPATCH,
+  ST_OMP_END_DISPATCH
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -1397,6 +1398,7 @@ typedef struct gfc_omp_namelist
 	  bool target;
 	  bool targetsync;
 	} init;
+      bool need_device_ptr;
     } u;
   union
     {
@@ -1454,6 +1456,7 @@ enum
   OMP_LIST_INIT,
   OMP_LIST_USE,
   OMP_LIST_DESTROY,
+  OMP_LIST_ADJUST_ARGS,
   OMP_LIST_NUM /* Must be the last.  */
 };
 
@@ -1599,6 +1602,8 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *depobj;
   struct gfc_expr *dist_chunk_size;
   struct gfc_expr *message;
+  struct gfc_expr *novariants;
+  struct gfc_expr *nocontext;
   struct gfc_omp_assumptions *assume;
   struct gfc_expr_list *sizes_list;
   const char *critical_name;
@@ -1729,6 +1734,7 @@ typedef struct gfc_omp_declare_variant
   struct gfc_symtree *variant_proc_symtree;
 
   gfc_omp_set_selector *set_selectors;
+  gfc_omp_namelist *adjust_args_list;
 
   bool checked_p : 1; /* Set if previously checked for errors.  */
   bool error_p : 1; /* Set if error found in directive.  */
@@ -3115,7 +3121,7 @@ enum gfc_exec_op
   EXEC_OMP_PARALLEL_MASKED_TASKLOOP, EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
   EXEC_OMP_MASKED_TASKLOOP, EXEC_OMP_MASKED_TASKLOOP_SIMD, EXEC_OMP_SCOPE,
   EXEC_OMP_UNROLL, EXEC_OMP_TILE, EXEC_OMP_METADIRECTIVE, EXEC_OMP_INTEROP,
-  EXEC_OMP_ERROR, EXEC_OMP_ALLOCATE, EXEC_OMP_ALLOCATORS
+  EXEC_OMP_ERROR, EXEC_OMP_ALLOCATE, EXEC_OMP_ALLOCATORS, EXEC_OMP_DISPATCH
 };
 
 typedef struct gfc_code
@@ -3807,7 +3813,7 @@ void gfc_resolve_do_iterator (gfc_code *, gfc_symbol *, bool);
 void gfc_resolve_omp_local_vars (gfc_namespace *);
 void gfc_resolve_omp_parallel_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_omp_do_blocks (gfc_code *, gfc_namespace *);
-void gfc_resolve_omp_declare_simd (gfc_namespace *);
+void gfc_resolve_omp_declare (gfc_namespace *);
 void gfc_resolve_omp_udrs (gfc_symtree *);
 void gfc_resolve_omp_udms (gfc_symtree *);
 void gfc_omp_instantiate_mappers (gfc_code *, gfc_omp_clauses *,

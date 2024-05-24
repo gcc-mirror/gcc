@@ -1,6 +1,15 @@
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
+	2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-attribs.cc: (c_common_gnu_attributes): Rename "omp declare variant
+	variant adjust_args" into "omp declare variant variant args" to also
+	accommodate append_args.
+
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
 	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* c-attribs.cc (c_common_gnu_attributes): Add attribute for adjust_args

@@ -1,3 +1,14 @@
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): Fix handling of need_device_ptr for
+	type(c_ptr). Fix handling of nested function calls in a dispatch region.
+	(find_ifn_gomp_dispatch): Return the IFN without stripping it.
+	(gimplify_omp_dispatch): Keep IFN_GOMP_DISPATCH until
+	gimplify_call_expr.
+
 2025-01-24  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:

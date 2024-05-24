@@ -11403,6 +11403,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_ALLOCATORS:
 	case EXEC_OMP_ASSUME:
 	case EXEC_OMP_CRITICAL:
+	case EXEC_OMP_DISPATCH:
 	case EXEC_OMP_DISTRIBUTE:
 	case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
 	case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
@@ -13099,6 +13100,7 @@ start:
 	case EXEC_OMP_CRITICAL:
 	case EXEC_OMP_FLUSH:
 	case EXEC_OMP_DEPOBJ:
+	case EXEC_OMP_DISPATCH:
 	case EXEC_OMP_DISTRIBUTE:
 	case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
 	case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
@@ -18443,7 +18445,7 @@ resolve_types (gfc_namespace *ns)
 
   gfc_traverse_ns (ns, gfc_verify_DTIO_procedures);
 
-  gfc_resolve_omp_declare_simd (ns);
+  gfc_resolve_omp_declare (ns);
 
   gfc_resolve_omp_udrs (ns->omp_udr_root);
 

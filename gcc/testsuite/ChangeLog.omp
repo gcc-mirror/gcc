@@ -1,6 +1,35 @@
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
+	2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* g++.dg/gomp/dispatch-3.C: Update scan dumps.
+	* gfortran.dg/gomp/declare-variant-2.f90: Update dg-error.
+	* gfortran.dg/gomp/adjust-args-1.f90: New test.
+	* gfortran.dg/gomp/adjust-args-2.f90: New test.
+	* gfortran.dg/gomp/adjust-args-2a.f90: New test.
+	* gfortran.dg/gomp/adjust-args-3.f90: New test.
+	* gfortran.dg/gomp/adjust-args-4.f90: New test.
+	* gfortran.dg/gomp/adjust-args-5.f90: New test.
+	* gfortran.dg/gomp/adjust-args-6.f90: New test.
+	* gfortran.dg/gomp/adjust-args-7.f90: New test.
+	* gfortran.dg/gomp/adjust-args-8.f90: New test.
+	* gfortran.dg/gomp/adjust-args-9.f90: New test.
+	* gfortran.dg/gomp/dispatch-1.f90: New test.
+	* gfortran.dg/gomp/dispatch-2.f90: New test.
+	* gfortran.dg/gomp/dispatch-3.f90: New test.
+	* gfortran.dg/gomp/dispatch-4.f90: New test.
+	* gfortran.dg/gomp/dispatch-5.f90: New test.
+	* gfortran.dg/gomp/dispatch-6.f90: New test.
+	* gfortran.dg/gomp/dispatch-7.f90: New test.
+	* gfortran.dg/gomp/dispatch-8.f90: New test.
+	* gfortran.dg/gomp/dispatch-9.f90: New test.
+	* gfortran.dg/gomp/dispatch-9a.f90: New test.
+	* gfortran.dg/gomp/dispatch-10.f90: New test.
+
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
 	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* c-c++-common/gomp/declare-variant-2.c: Adjust dg-error directives.

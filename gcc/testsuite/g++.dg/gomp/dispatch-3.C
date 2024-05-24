@@ -12,6 +12,6 @@ void g(int *x)
   //        ^ only this call to f is a dispatch call
 }
 
-/* { dg-final { scan-tree-dump "\.GOMP_DISPATCH \\(\\*f \\(\\*f \\(2\\)\\)\\)" "original" } } */
+/* { dg-final { scan-tree-dump "\\*\.GOMP_DISPATCH \\(f \\(\\*f \\(2\\)\\)\\)" "original" } } */
 /* { dg-final { scan-tree-dump-times "\.GOMP_DISPATCH" 1 "original" } } */
 /* { dg-final { scan-tree-dump-not "\.GOMP_DISPATCH" "gimple" } } */

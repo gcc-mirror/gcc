@@ -18,10 +18,10 @@ contains
     !$omp declare variant match(user={condition(.false.)})	! { dg-error "expected '\\(' at .1." }
   end subroutine
   subroutine f6 ()
-    !$omp declare variant (f1)	! { dg-error "expected 'match' at .1." }
+    !$omp declare variant (f1)	! { dg-error "expected 'match' or 'adjust_args' at .1." }
   end subroutine
   subroutine f7 ()
-    !$omp declare variant (f1) simd	! { dg-error "expected 'match' at .1." }
+    !$omp declare variant (f1) simd	! { dg-error "expected 'match' or 'adjust_args' at .1." }
   end subroutine
   subroutine f8 ()
     !$omp declare variant (f1) match	! { dg-error "expected '\\(' at .1." }
@@ -183,7 +183,7 @@ contains
     !$omp declare variant (f1) match(construct={requires})	! { dg-warning "unknown selector 'requires' for context selector set 'construct' at .1." }
   end subroutine
   subroutine f75 ()
-    !$omp declare variant (f1),match(construct={parallel})	! { dg-error "expected 'match' at .1." }
+    !$omp declare variant (f1),match(construct={parallel})	! { dg-error "expected 'match' or 'adjust_args' at .1." }
   end subroutine
   subroutine f76 ()
     !$omp declare variant (f1) match(implementation={atomic_default_mem_order("relaxed")})	! { dg-error "expected identifier at .1." }

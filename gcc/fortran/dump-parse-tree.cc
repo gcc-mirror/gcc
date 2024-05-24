@@ -2218,6 +2218,18 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fputc (')', dumpfile);
     }
+  if (omp_clauses->novariants)
+    {
+      fputs (" NOVARIANTS(", dumpfile);
+      show_expr (omp_clauses->novariants);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->nocontext)
+    {
+      fputs (" NOCONTEXT(", dumpfile);
+      show_expr (omp_clauses->nocontext);
+      fputc (')', dumpfile);
+    }
 }
 
 /* Show a single OpenMP or OpenACC directive node and everything underneath it
@@ -2255,6 +2267,9 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_CANCEL: name = "CANCEL"; break;
     case EXEC_OMP_CANCELLATION_POINT: name = "CANCELLATION POINT"; break;
     case EXEC_OMP_CRITICAL: name = "CRITICAL"; break;
+    case EXEC_OMP_DISPATCH:
+      name = "DISPATCH";
+      break;
     case EXEC_OMP_DISTRIBUTE: name = "DISTRIBUTE"; break;
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
       name = "DISTRIBUTE PARALLEL DO"; break;
@@ -2360,6 +2375,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_ASSUME:
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
+    case EXEC_OMP_DISPATCH:
     case EXEC_OMP_DISTRIBUTE:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
@@ -3612,6 +3628,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_BARRIER:
     case EXEC_OMP_CRITICAL:
     case EXEC_OMP_DEPOBJ:
+    case EXEC_OMP_DISPATCH:
     case EXEC_OMP_DISTRIBUTE:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
