@@ -45,4 +45,4 @@ f3 (int *restrict y, int *restrict x, int *restrict indices)
     }
 }
 
-/* { dg-final { scan-tree-dump-not "Loop contains only SLP stmts" vect } } */
+/* { dg-final { scan-tree-dump-not "vectorizing stmts using SLP" vect } } */
