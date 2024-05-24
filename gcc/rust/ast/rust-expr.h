@@ -4743,6 +4743,12 @@ struct InlineAsmRegOrRegClass
     std::string Symbol;
   };
 
+  Type type;
+  union
+  {
+    struct Reg reg;
+    struct RegClass regClass;
+  };
   Identifier name;
   location_t locus;
 };
