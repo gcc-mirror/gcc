@@ -19,16 +19,16 @@
 #include "rust-macro-builtins-asm.h"
 
 namespace Rust {
-std::map<AST::InlineAsmOptions, std::string> InlineAsmOptionsMap{
-  {AST::InlineAsmOptions::PURE, "pure"},
-  {AST::InlineAsmOptions::NOMEM, "nomem"},
-  {AST::InlineAsmOptions::READONLY, "readonly"},
-  {AST::InlineAsmOptions::PRESERVES_FLAGS, "preserves_flags"},
-  {AST::InlineAsmOptions::NORETURN, "noreturn"},
-  {AST::InlineAsmOptions::NOSTACK, "nostack"},
-  {AST::InlineAsmOptions::MAY_UNWIND, "may_unwind"},
-  {AST::InlineAsmOptions::ATT_SYNTAX, "att_syntax"},
-  {AST::InlineAsmOptions::RAW, "raw"},
+std::map<AST::InlineAsmOption, std::string> InlineAsmOptionMap{
+  {AST::InlineAsmOption::PURE, "pure"},
+  {AST::InlineAsmOption::NOMEM, "nomem"},
+  {AST::InlineAsmOption::READONLY, "readonly"},
+  {AST::InlineAsmOption::PRESERVES_FLAGS, "preserves_flags"},
+  {AST::InlineAsmOption::NORETURN, "noreturn"},
+  {AST::InlineAsmOption::NOSTACK, "nostack"},
+  {AST::InlineAsmOption::MAY_UNWIND, "may_unwind"},
+  {AST::InlineAsmOption::ATT_SYNTAX, "att_syntax"},
+  {AST::InlineAsmOption::RAW, "raw"},
 };
 
 int
@@ -174,14 +174,14 @@ parse_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 
 void
 check_and_set (Parser<MacroInvocLexer> &parser, AST::InlineAsm &inlineAsm,
-	       AST::InlineAsmOptions option)
+	       AST::InlineAsmOption option)
 {
   if (inlineAsm.options.count (option) != 0)
     {
       // TODO: report an error of duplication
       rust_error_at (parser.peek_current_token ()->get_locus (),
 		     "the `%s` option was already provided",
-		     InlineAsmOptionsMap[option].c_str ());
+		     InlineAsmOptionMap[option].c_str ());
       return;
     }
   else
@@ -208,40 +208,40 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       if (!is_global_asm && check_identifier (parser, "pure"))
 	{
-	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::PURE);
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOption::PURE);
 	}
       else if (!is_global_asm && check_identifier (parser, "nomem"))
 	{
-	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::NOMEM);
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOption::NOMEM);
 	}
       else if (!is_global_asm && check_identifier (parser, "readonly"))
 	{
-	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::READONLY);
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOption::READONLY);
 	}
       else if (!is_global_asm && check_identifier (parser, "preserves_flags"))
 	{
 	  check_and_set (parser, inlineAsm,
-			 AST::InlineAsmOptions::PRESERVES_FLAGS);
+			 AST::InlineAsmOption::PRESERVES_FLAGS);
 	}
       else if (!is_global_asm && check_identifier (parser, "noreturn"))
 	{
-	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::NORETURN);
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOption::NORETURN);
 	}
       else if (!is_global_asm && check_identifier (parser, "nostack"))
 	{
-	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::NOSTACK);
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOption::NOSTACK);
 	}
       else if (!is_global_asm && check_identifier (parser, "may_unwind"))
 	{
-	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::MAY_UNWIND);
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOption::MAY_UNWIND);
 	}
       else if (check_identifier (parser, "att_syntax"))
 	{
-	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::ATT_SYNTAX);
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOption::ATT_SYNTAX);
 	}
       else if (check_identifier (parser, "raw"))
 	{
-	  check_and_set (parser, inlineAsm, AST::InlineAsmOptions::RAW);
+	  check_and_set (parser, inlineAsm, AST::InlineAsmOption::RAW);
 	}
       else
 	{

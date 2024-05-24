@@ -4706,7 +4706,7 @@ protected:
 };
 
 // Inline-assembly specific options
-enum class InlineAsmOptions
+enum class InlineAsmOption
 {
   PURE = 1 << 0,
   NOMEM = 1 << 1,
@@ -4848,8 +4848,7 @@ public:
   std::vector<TupleTemplateStr> template_strs;
   std::vector<InlineAsmOperand> operands;
   std::vector<TupleClobber> clobber_abi;
-  // std::set<InlineAsmOptions> options;
-  std::set<InlineAsmOptions> options;
+  std::set<InlineAsmOption> options;
 
   std::vector<location_t> line_spans;
 
