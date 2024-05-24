@@ -1648,7 +1648,7 @@
 (define_expand "and<mode>3"
   [(set (match_operand:X                0 "register_operand")
         (and:X (match_operand:X 1 "register_operand")
-                       (match_operand:X 2 "arith_operand_or_mode_mask")))]
+	       (match_operand:X 2 "arith_or_mode_mask_or_zbs_operand")))]
   ""
 {
   /* If the second operand is a mode mask, emit an extension

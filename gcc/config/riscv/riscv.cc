@@ -893,6 +893,40 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	  codes[1].use_uw = false;
 	  cost = 2;
 	}
+
+      /* If LUI/ADDI are going to set bits 32..63 and we need a small
+	 number of them cleared, we might be able to use bclri profitably.
+
+	 Note we may allow clearing of bit 31 using bclri.  There's a class
+	 of constants with that bit clear where this helps.  */
+      else if (TARGET_64BIT
+	       && TARGET_ZBS
+	       && (32 - popcount_hwi (value & HOST_WIDE_INT_C (0xffffffff80000000))) + 1 < cost)
+	{
+	  /* Turn on all those upper bits and synthesize the result.  */
+	  HOST_WIDE_INT nval = value | HOST_WIDE_INT_C (0xffffffff80000000);
+	  alt_cost = riscv_build_integer_1 (alt_codes, nval, mode);
+
+	  /* Now iterate over the bits we want to clear until the cost is
+	     too high or we're done.  */
+	  nval = value ^ HOST_WIDE_INT_C (-1);
+	  nval &= HOST_WIDE_INT_C (~0x7fffffff);
+	  while (nval && alt_cost < cost)
+	    {
+	      HOST_WIDE_INT bit = ctz_hwi (nval);
+	      alt_codes[alt_cost].code = AND;
+	      alt_codes[alt_cost].value = ~(1UL << bit);
+	      alt_codes[alt_cost].use_uw = false;
+	      alt_cost++;
+	      nval &= ~(1UL << bit);
+	    }
+
+	  if (nval == 0 && alt_cost <= cost)
+	    {
+	      memcpy (codes, alt_codes, sizeof (alt_codes));
+	      cost = alt_cost;
+	    }
+	}
     }
 
   if (cost > 2 && TARGET_64BIT && TARGET_ZBA)
