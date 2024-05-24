@@ -125,6 +125,53 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   return 0;
 }
 
+int
+parse_reg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+	   AST::InlineAsm &inlineAsm, bool is_explicit)
+{
+  if (!parser.skip_token (LEFT_PAREN))
+    {
+      // TODO: we expect a left parenthesis here, please return the correct
+      // error.
+      return 0;
+    }
+
+  // after successful left parenthesis parsing, we should return ast of
+  // InlineAsmRegOrRegClass of reg or reg class
+  auto token = parser.peek_current_token ();
+  auto tok_id = token->get_id ();
+
+  if (tok_id == IDENTIFIER)
+    {
+      // construct a InlineAsmRegOrRegClass
+    }
+  else if (tok_id == STRING_LITERAL)
+    {
+      // TODO: there is STRING_LITERAL, and BYTE_STRING_LITERAL, should we check
+      // for both?
+
+      // construct a InlineAsmRegOrRegClass
+    }
+  else
+    {
+      // TODO
+    }
+  if (!parser.skip_token (RIGHT_PAREN))
+    {
+      // we expect a left parenthesis here, please return the correct error.
+      return 0;
+    }
+
+  return 0;
+}
+
+int
+parse_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+	       AST::InlineAsm &inlineAsm)
+{
+  return 0;
+}
+
 void
 check_and_set (Parser<MacroInvocLexer> &parser, AST::InlineAsm &inlineAsm,
 	       AST::InlineAsmOptions option)
@@ -340,7 +387,7 @@ parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   return 0;
 }
 
-static tl::optional<AST::Fragment>
+tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	   bool is_global_asm)
 {
