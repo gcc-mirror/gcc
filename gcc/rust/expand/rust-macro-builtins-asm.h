@@ -24,7 +24,7 @@ check_identifier (Parser<MacroInvocLexer> &p, std::string ident);
 
 void
 check_and_set (Parser<MacroInvocLexer> &p, AST::InlineAsm &inlineAsm,
-	       AST::InlineAsmOptions option);
+	       AST::InlineAsmOption option);
 // From rustc
 int
 parse_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,

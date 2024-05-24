@@ -145,7 +145,7 @@ struct MatchCase;
 class MatchExpr;
 class AwaitExpr;
 class AsyncBlockExpr;
-enum class InlineAsmOptions;
+enum class InlineAsmOption;
 struct AnonConst;
 struct InlineAsmRegOrRegClass;
 struct InlineAsmOperand;

@@ -3870,7 +3870,7 @@ public:
   std::vector<AST::InlineAsmTemplatePiece> template_;
   std::vector<AST::TupleTemplateStr> template_strs;
   std::vector<AST::InlineAsmOperand> operands;
-  AST::InlineAsmOptions options;
+  AST::InlineAsmOption options;
   std::vector<location_t> line_spans;
 };
 } // namespace HIR
