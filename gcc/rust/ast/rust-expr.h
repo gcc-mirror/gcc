@@ -4873,6 +4873,7 @@ public:
 
   ExprWithoutBlock *clone_expr_without_block_impl () const override
   {
+    rust_unreachable ();
     return nullptr;
   }
 };
