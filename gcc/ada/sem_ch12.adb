@@ -10996,7 +10996,8 @@ package body Sem_Ch12 is
                if Is_Child_Unit (Gen_Parent) then
                   I_Nam :=
                     New_Copy_Tree (Name (Original_Node (Analyzed_Formal)));
-                  pragma Assert (Entity (I_Nam) = Gen_Parent);
+                  pragma Assert (Entity (I_Nam) = Gen_Parent
+                    or else Renamed_Entity (Entity (I_Nam)) = Gen_Parent);
 
                else
                   I_Nam :=
