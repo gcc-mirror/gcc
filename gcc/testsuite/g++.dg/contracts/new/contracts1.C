@@ -27,7 +27,7 @@ int g2(int a) [[pre: f(a) > a ]]
 }
 
 int fun(int n)  pre (n > 0 );
-void fun2(int n)  pre  n > 0 ]]; // { dg-error  }
+void fun2(int n)  pre  n > 0 ; // { dg-error  }
 void fun2(int n)  pre (: n > 0 ]]; // { dg-error  }
 int fun3(int n)  [[ pre : n > 0 ); // { dg-error "expected .]. before " }
 
