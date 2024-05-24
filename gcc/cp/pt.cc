@@ -21535,6 +21535,13 @@ tsubst_copy_and_build (tree t,
 	 with constant operands.  */
       RETURN (t);
 
+    case ANNOTATE_EXPR:
+      op1 = RECUR (TREE_OPERAND (t, 0));
+      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
+			  TREE_TYPE (op1), op1,
+			  RECUR (TREE_OPERAND (t, 1)),
+			  RECUR (TREE_OPERAND (t, 2))));
+
     case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
       if (location_wrapper_p (t))
@@ -21543,13 +21550,6 @@ tsubst_copy_and_build (tree t,
 	RETURN (maybe_wrap_with_location (RECUR (TREE_OPERAND (t, 0)),
 					  EXPR_LOCATION (t)));
       /* fallthrough.  */
-
-    case ANNOTATE_EXPR:
-      op1 = RECUR (TREE_OPERAND (t, 0));
-      RETURN (build3_loc (EXPR_LOCATION (t), ANNOTATE_EXPR,
-			  TREE_TYPE (op1), op1,
-			  RECUR (TREE_OPERAND (t, 1)),
-			  RECUR (TREE_OPERAND (t, 2))));
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
