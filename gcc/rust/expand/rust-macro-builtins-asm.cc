@@ -307,20 +307,9 @@ parse_format_string (Parser<MacroInvocLexer> &parser, TokenId last_token_id)
 }
 
 tl::optional<AST::Fragment>
-MacroBuiltin::global_asm_handler (location_t invoc_locus,
-				  AST::MacroInvocData &invoc)
+MacroBuiltin::asm_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
+			   bool is_global_asm)
 {
-  // Just to clarify the code
-  bool is_global_asm = true;
-  return parse_asm (invoc_locus, invoc, is_global_asm);
-}
-
-tl::optional<AST::Fragment>
-MacroBuiltin::nonglobal_asm_handler (location_t invoc_locus,
-				     AST::MacroInvocData &invoc)
-{
-  // Just to clarify the code
-  bool is_global_asm = false;
   return parse_asm (invoc_locus, invoc, is_global_asm);
 }
 
