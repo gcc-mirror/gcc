@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 
 */
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -2640,7 +2641,9 @@ create_intersect_range_checks (class loop *loop, tree *cond_expr,
 	 Because the maximum values are inclusive, there is an alias
 	 if the maximum value of one segment is equal to the minimum
 	 value of the other.  */
-      min_align = MIN (dr_a.align, dr_b.align);
+      min_align = std::min (dr_a.align, dr_b.align);
+      min_align = std::min (min_align, known_alignment (dr_a.access_size));
+      min_align = std::min (min_align, known_alignment (dr_b.access_size));
       cmp_code = LT_EXPR;
     }
 
