@@ -123,6 +123,11 @@ namespace parsing_ambig_test4 {
   template <typename T>
   void g() requires d < e > pre(c);
   // d<e> is a bool variable template, pre(c) is the precondition
+
+
+  template <typename T>
+  void f() requires (a < b > pre(c));
+  // just a requires clause, no postcondition
 }
 
 int main() {
