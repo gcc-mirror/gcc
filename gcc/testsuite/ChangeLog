@@ -1,3 +1,13 @@
+2024-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-05-09  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/tree-ssa/pr109849.C: Also check that the aggeegate store
+	to cur disappears.
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Instead of relying on DSE,
+	check that the unwanted stores were removed at early SRA time.
+
 2024-05-22  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

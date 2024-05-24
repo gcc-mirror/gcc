@@ -1,3 +1,12 @@
+2024-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2024-05-09  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.cc (sra_modify_assign): Remove the original statement
+	also when dealing with a store to a fully covered aggregate from a
+	non-candidate.
+
 2024-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/115038
