@@ -420,11 +420,6 @@ c_var_mod_p (tree x, tree fn ATTRIBUTE_UNUSED)
 alias_set_type
 c_get_alias_set (tree t)
 {
-  /* Structs with variable size can alias different incompatible
-     structs.  Let them alias anything.   */
-  if (RECORD_OR_UNION_TYPE_P (t) && C_TYPE_VARIABLE_SIZE (t))
-    return 0;
-
   return c_common_get_alias_set (t);
 }
 

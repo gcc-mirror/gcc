@@ -9749,7 +9749,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   C_TYPE_BEING_DEFINED (t) = 0;
 
   /* Set type canonical based on equivalence class.  */
-  if (flag_isoc23)
+  if (flag_isoc23 && !C_TYPE_VARIABLE_SIZE (t))
     {
       if (c_struct_htab == NULL)
 	c_struct_htab = hash_table<c_struct_hasher>::create_ggc (61);

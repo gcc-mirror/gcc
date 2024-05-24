@@ -1167,6 +1167,28 @@ common_type (tree t1, tree t2)
   return c_common_type (t1, t2);
 }
 
+
+
+/* Helper function for comptypes.  For two compatible types, return 1
+   if they pass consistency checks.  In particular we test that
+   TYPE_CANONICAL is set correctly, i.e. the two types can alias.  */
+
+static bool
+comptypes_verify (tree type1, tree type2)
+{
+  if (TYPE_CANONICAL (type1) != TYPE_CANONICAL (type2)
+      && !TYPE_STRUCTURAL_EQUALITY_P (type1)
+      && !TYPE_STRUCTURAL_EQUALITY_P (type2))
+    {
+      /* FIXME: check other types. */
+      if (RECORD_OR_UNION_TYPE_P (type1)
+	  || TREE_CODE (type1) == ENUMERAL_TYPE
+	  || TREE_CODE (type2) == ENUMERAL_TYPE)
+	return false;
+    }
+  return true;
+}
+
 struct comptypes_data {
   bool enum_and_int_p;
   bool different_types_p;
@@ -1188,6 +1210,8 @@ comptypes (tree type1, tree type2)
   struct comptypes_data data = { };
   bool ret = comptypes_internal (type1, type2, &data);
 
+  gcc_checking_assert (!ret || comptypes_verify (type1, type2));
+
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
 
@@ -1200,6 +1224,8 @@ comptypes_same_p (tree type1, tree type2)
 {
   struct comptypes_data data = { };
   bool ret = comptypes_internal (type1, type2, &data);
+
+  gcc_checking_assert (!ret || comptypes_verify (type1, type2));
 
   if (data.different_types_p)
     return false;
@@ -1218,6 +1244,8 @@ comptypes_check_enum_int (tree type1, tree type2, bool *enum_and_int_p)
   bool ret = comptypes_internal (type1, type2, &data);
   *enum_and_int_p = data.enum_and_int_p;
 
+  gcc_checking_assert (!ret || comptypes_verify (type1, type2));
+
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
 
@@ -1231,6 +1259,8 @@ comptypes_check_different_types (tree type1, tree type2,
   struct comptypes_data data = { };
   bool ret = comptypes_internal (type1, type2, &data);
   *different_types_p = data.different_types_p;
+
+  gcc_checking_assert (!ret || comptypes_verify (type1, type2));
 
   return ret ? (data.warning_needed ? 2 : 1) : 0;
 }
@@ -1273,6 +1303,10 @@ comptypes_equiv_p (tree type1, tree type2)
   struct comptypes_data data = { };
   data.equiv = true;
   bool ret = comptypes_internal (type1, type2, &data);
+
+  /* check that different equivance classes are assigned only
+     to types that are not compatible.  */
+  gcc_checking_assert (ret || !comptypes (type1, type2));
 
   return ret;
 }
@@ -1627,9 +1661,6 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
     case RECORD_TYPE:
 
 	if (list_length (TYPE_FIELDS (t1)) != list_length (TYPE_FIELDS (t2)))
-	  return false;
-
-	if (data->equiv && (C_TYPE_VARIABLE_SIZE (t1) || C_TYPE_VARIABLE_SIZE (t2)))
 	  return false;
 
 	for (s1 = TYPE_FIELDS (t1), s2 = TYPE_FIELDS (t2);
