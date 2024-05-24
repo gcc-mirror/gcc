@@ -270,6 +270,18 @@ package body Sem_Ch4 is
    --  these aspects can be achieved without larger modifications to the
    --  two-pass resolution algorithm.
 
+   function Is_Effectively_Visible_Operator
+     (N : Node_Id; Typ : Entity_Id) return Boolean
+   is (Is_Visible_Operator (N => N, Typ => Typ)
+         or else
+           --  test for a rewritten Foo."+" call
+           (N /= Original_Node (N)
+             and then Is_Effectively_Visible_Operator
+                        (N => Original_Node (N), Typ => Typ))
+         or else not Comes_From_Source (N));
+   --  Return True iff either Is_Visible_Operator returns True or if
+   --  there is a reason it is ok for Is_Visible_Operator to return False.
+
    function Possible_Type_For_Conditional_Expression
      (T1, T2 : Entity_Id) return Entity_Id;
    --  Given two types T1 and T2 that are _not_ compatible, return a type that
@@ -6641,6 +6653,8 @@ package body Sem_Ch4 is
            and then (Covers (T1 => T1, T2 => T2)
                        or else
                      Covers (T1 => T2, T2 => T1))
+           and then Is_Effectively_Visible_Operator
+                      (N, Specific_Type (T1, T2))
          then
             Add_One_Interp (N, Op_Id, Specific_Type (T1, T2));
          end if;
@@ -6670,6 +6684,8 @@ package body Sem_Ch4 is
            and then (Covers (T1 => T1, T2 => T2)
                        or else
                      Covers (T1 => T2, T2 => T1))
+           and then Is_Effectively_Visible_Operator
+                      (N, Specific_Type (T1, T2))
          then
             Add_One_Interp (N, Op_Id, Specific_Type (T1, T2));
 
@@ -6713,6 +6729,8 @@ package body Sem_Ch4 is
            and then (Covers (T1 => T1, T2 => T2)
                        or else
                      Covers (T1 => T2, T2 => T1))
+           and then Is_Effectively_Visible_Operator
+                      (N, Specific_Type (T1, T2))
          then
             Add_One_Interp (N, Op_Id, Specific_Type (T1, T2));
          end if;
@@ -7086,6 +7104,7 @@ package body Sem_Ch4 is
                T := Any_Modular;
             end if;
 
+            --  test Is_Effectively_Visible_Operator here ???
             Add_One_Interp (N, Op_Id, T);
          end if;
       end Check_Boolean_Pair;
@@ -7615,7 +7634,8 @@ package body Sem_Ch4 is
                then
                   null;
 
-               else
+               elsif Is_Effectively_Visible_Operator (N, Base_Type (It.Typ))
+               then
                   Add_One_Interp (N, Op_Id, Base_Type (It.Typ));
                end if;
             end if;
