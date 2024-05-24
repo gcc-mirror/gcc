@@ -113,6 +113,26 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
   (*buffer_len)++;
 }
 
+/* Return true if NUMBER is a preprocessing floating-point number.  */
+
+static bool
+is_cpp_float (unsigned char *number)
+{
+  /* In C, a floating constant need not have a point.  */
+  while (*number != '\0')
+    {
+      if (*number == '.')
+	return true;
+      else if ((*number == 'e' || *number == 'E')
+	       && (*(number + 1) == '+' || *(number + 1) == '-'))
+	return true;
+      else
+	number++;
+    }
+
+  return false;
+}
+
 /* Dump all digits/hex chars from NUMBER to BUFFER and return a pointer
    to the character after the last character written.  If FLOAT_P is true,
    this is a floating-point number.  */
@@ -120,12 +140,45 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
 static unsigned char *
 dump_number (unsigned char *number, unsigned char *buffer, bool float_p)
 {
-  while (*number != '\0'
-	 && *number != (float_p ? 'F' : 'U')
-	 && *number != (float_p ? 'f' : 'u')
-	 && *number != 'l'
-	 && *number != 'L')
-    *buffer++ = *number++;
+  /* In Ada, a real literal is a numeric literal that includes a point.  */
+  if (float_p)
+    {
+      bool point_seen = false;
+
+      while (*number != '\0')
+	{
+	  if (ISDIGIT (*number))
+	    *buffer++ = *number++;
+	  else if (*number == '.')
+	    {
+	      *buffer++ = *number++;
+	      point_seen = true;
+	    }
+	  else if ((*number == 'e' || *number == 'E')
+		   && (*(number + 1) == '+' || *(number + 1) == '-'))
+	    {
+	      if (!point_seen)
+		{
+		  *buffer++ = '.';
+		  *buffer++ = '0';
+		  point_seen = true;
+		}
+	       *buffer++ = *number++;
+	       *buffer++ = *number++;
+	    }
+	  else
+	    break;
+	}
+    }
+
+  /* An integer literal is a numeric literal without a point.  */
+  else
+    while (*number != '\0'
+	   && *number != 'U'
+	   && *number != 'u'
+	   && *number != 'l'
+	   && *number != 'L')
+      *buffer++ = *number++;
 
   return buffer;
 }
@@ -450,7 +503,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 
 			      default:
 				/* Dump floating-point constant unmodified.  */
-				if (strchr ((const char *)tmp, '.'))
+				if (is_cpp_float (tmp))
 				  buffer = dump_number (tmp, buffer, true);
 				else
 				  {
@@ -480,8 +533,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 
 			default:
 			  buffer
-			    = dump_number (tmp, buffer,
-					   strchr ((const char *)tmp, '.'));
+			    = dump_number (tmp, buffer, is_cpp_float (tmp));
 			  break;
 		      }
 		    break;
