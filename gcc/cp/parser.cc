@@ -13077,7 +13077,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	error_at (EXPR_LOCATION (TREE_VALUE (post)),
 		  "postconditions cannot be statements");
 
-    /* Check that assertions are null statements.  */
+    /* Check that assertions are null statements. This only checks for atttribute like assertions  */
     if (cp_contract_assertion_p (std_attrs))
       if (token->type != CPP_SEMICOLON)
 	error_at (token->location, "assertions must be followed by %<;%>");
@@ -13215,6 +13215,38 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_TRANSACTION_CANCEL:
 	  std_attrs = process_stmt_hotness_attribute (std_attrs, attrs_loc);
 	  statement = cp_parser_transaction_cancel (parser);
+	  break;
+	case RID_CONTASSERT:
+		if (flag_contracts_nonattr && flag_contracts)
+		{
+			tree mode = NULL_TREE;  // not needed for non attribute contracts
+			tree result = NULL_TREE; // not needed for assertions
+			tree cont_assert = NULL_TREE;
+	        cont_assert = token->u.value;
+
+	        cp_token *token = cp_lexer_consume_token (parser->lexer);
+		 	location_t loc = token->location;
+		 	tree contract;
+   		    matching_parens parens;
+   		    parens.require_open (parser);
+			/* Defer the parsing of pre/post contracts inside class definitions.  */
+			/* Enable location wrappers when parsing contracts.  */
+			auto suppression = make_temp_override (suppress_location_wrappers, 0);
+
+			/* Parse the condition, ensuring that parameters or the return variable
+			 aren't flagged for use outside the body of a function.  */
+			++processing_contract_condition;
+			cp_expr condition = cp_parser_conditional_expression (parser);
+			--processing_contract_condition;
+
+			parens.require_close (parser);
+
+			/* Build the contract.  */
+			contract = grok_contract (cont_assert, mode, result, condition, loc);
+			std_attrs = finish_contract_attribute (cont_assert, contract);
+		}
+		else
+			error_at (token->location, "%<contract_assertions%> are only available with %<-fcontracts%> and %<-fcontracts-nonattr%>");
 	  break;
 
 	default:
@@ -31659,6 +31691,15 @@ void cp_parser_late_contract_condition (cp_parser *parser,
      [ [ pre :  contract-mode [opt] : conditional-expression ] ]
      [ [ post :  contract-mode [opt] identifier [opt] :
 	 conditional-expression ] ]
+     if attr_mode is true, also parse :
+	function-contract-specifier :
+      pre attribute-specifier-seqopt ( conditional-expression )
+      post attribute-specifier-seqopt ( result-name-introducer[opt] conditional-expression )
+      contract_assert attribute-specifier-seq[opt] ( conditional-expression ) ;
+
+      TODO :
+      - test if we allow attribute-specifier in the new contracts syntax
+      - constify the entities in contracts
 
    Return void_list_node if the current token doesn't start an
    attribute-specifier to differentiate from NULL_TREE returned e.g.
