@@ -575,7 +575,7 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      handle_omp_declare_variant_attribute, NULL },
   { "omp declare variant variant", 0, -1, true,  false, false, false,
 			      handle_omp_declare_variant_attribute, NULL },
-  { "omp declare variant adjust_args need_device_ptr", 0, -1, true,  false,
+  { "omp declare variant variant args", 0, -1, true,  false,
 			      false, false,
 			      handle_omp_declare_variant_attribute, NULL },
   { "simd",		      0, 1, true,  false, false, false,

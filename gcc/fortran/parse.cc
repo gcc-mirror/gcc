@@ -1058,6 +1058,7 @@ decode_omp_directive (void)
       break;
     case 'd':
       matcho ("depobj", gfc_match_omp_depobj, ST_OMP_DEPOBJ);
+      matcho ("dispatch", gfc_match_omp_dispatch, ST_OMP_DISPATCH);
       matchs ("distribute parallel do simd",
 	      gfc_match_omp_distribute_parallel_do_simd,
 	      ST_OMP_DISTRIBUTE_PARALLEL_DO_SIMD);
@@ -1073,6 +1074,7 @@ decode_omp_directive (void)
       matcho ("end allocators", gfc_match_omp_eos_error, ST_OMP_END_ALLOCATORS);
       matcho ("end atomic", gfc_match_omp_eos_error, ST_OMP_END_ATOMIC);
       matcho ("end critical", gfc_match_omp_end_critical, ST_OMP_END_CRITICAL);
+      matcho ("end dispatch", gfc_match_omp_end_nowait, ST_OMP_END_DISPATCH);
       matchs ("end distribute parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_DISTRIBUTE_PARALLEL_DO_SIMD);
       matcho ("end distribute parallel do", gfc_match_omp_eos_error,
@@ -1932,7 +1934,7 @@ next_statement (void)
   case ST_OMP_LOOP: case ST_OMP_PARALLEL_LOOP: case ST_OMP_TEAMS_LOOP: \
   case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
   case ST_OMP_ALLOCATE_EXEC: case ST_OMP_ALLOCATORS: case ST_OMP_ASSUME: \
-  case ST_OMP_TILE: case ST_OMP_UNROLL: \
+  case ST_OMP_TILE: case ST_OMP_UNROLL: case ST_OMP_DISPATCH: \
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
@@ -2614,6 +2616,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
     case ST_OMP_DEPOBJ:
       p = "!$OMP DEPOBJ";
       break;
+    case ST_OMP_DISPATCH:
+      p = "!$OMP DISPATCH";
+      break;
     case ST_OMP_DISTRIBUTE:
       p = "!$OMP DISTRIBUTE";
       break;
@@ -2643,6 +2648,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_END_CRITICAL:
       p = "!$OMP END CRITICAL";
+      break;
+    case ST_OMP_END_DISPATCH:
+      p = "!$OMP END DISPATCH";
       break;
     case ST_OMP_END_DISTRIBUTE:
       p = "!$OMP END DISTRIBUTE";
@@ -6259,6 +6267,46 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 }
 
 
+static gfc_statement
+parse_omp_dispatch (void)
+{
+  gfc_statement st;
+  gfc_code *cp, *np;
+  gfc_state_data s;
+
+  accept_statement (ST_OMP_DISPATCH);
+
+  cp = gfc_state_stack->tail;
+  push_state (&s, COMP_OMP_STRUCTURED_BLOCK, NULL);
+  np = new_level (cp);
+  np->op = cp->op;
+  np->block = NULL;
+
+  st = next_statement ();
+  if (st == ST_NONE)
+    return st;
+  if (st == ST_CALL || st == ST_ASSIGNMENT)
+    accept_statement (st);
+  else
+    {
+      gfc_error ("%<OMP DISPATCH%> directive must be followed by a procedure "
+		 "call with optional assignment at %C");
+      reject_statement ();
+    }
+  pop_state ();
+  st = next_statement ();
+  if (st == ST_OMP_END_DISPATCH)
+    {
+      if (cp->ext.omp_clauses->nowait && new_st.ext.omp_bool)
+	gfc_error_now ("Duplicated NOWAIT clause on !$OMP DISPATCH and !$OMP "
+		       "END DISPATCH at %C");
+      cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
+      accept_statement (st);
+      st = next_statement ();
+    }
+  return st;
+}
+
 /* Accept a series of executable statements.  We return the first
    statement that doesn't fit to the caller.  Any block statements are
    passed on to the correct handler, which usually passes the buck
@@ -6459,6 +6507,10 @@ parse_executable (gfc_statement st)
 
 	case ST_OMP_ATOMIC:
 	  st = parse_omp_oacc_atomic (true);
+	  continue;
+
+	case ST_OMP_DISPATCH:
+	  st = parse_omp_dispatch ();
 	  continue;
 
 	default:

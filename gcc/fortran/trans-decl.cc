@@ -2215,6 +2215,8 @@ get_proc_pointer_decl (gfc_symbol *sym)
   return decl;
 }
 
+static void
+create_function_arglist (gfc_symbol *sym);
 
 /* Get a basic decl for an external function.  */
 
@@ -2464,7 +2466,12 @@ module_sym:
       if (sym->formal_ns->omp_declare_simd)
 	gfc_trans_omp_declare_simd (sym->formal_ns);
       if (flag_openmp)
-	gfc_trans_omp_declare_variant (sym->formal_ns);
+	{
+	  // We need DECL_ARGUMENTS to put attributes on, in case some arguments
+	  // need adjustment
+	  create_function_arglist (sym->formal_ns->proc_name);
+	  gfc_trans_omp_declare_variant (sym->formal_ns);
+	}
     }
 
   return fndecl;

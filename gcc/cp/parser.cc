@@ -50060,8 +50060,9 @@ cp_parser_omp_dispatch (cp_parser *parser, cp_token *pragma_tok)
     default:
       gcc_unreachable ();
     }
-  if (TREE_CODE (*dispatch_call) == FLOAT_EXPR
-      || TREE_CODE (*dispatch_call) == CONVERT_EXPR)
+  while (TREE_CODE (*dispatch_call) == FLOAT_EXPR
+	 || TREE_CODE (*dispatch_call) == CONVERT_EXPR
+	 || TREE_CODE (*dispatch_call) == INDIRECT_REF)
     dispatch_call = &TREE_OPERAND (*dispatch_call, 0);
   *dispatch_call = build_call_expr_internal_loc (loc, IFN_GOMP_DISPATCH,
 						 TREE_TYPE (*dispatch_call), 1,
