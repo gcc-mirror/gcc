@@ -4,7 +4,7 @@
 
 export module foo;
 namespace std {
-  enum class align_val_t : decltype(sizeof(int)) {};  // { dg-error "conflicts with builtin" }
+  enum class align_val_t : decltype(sizeof(int)) {};  // { dg-error "in module .foo. conflicts with builtin" }
 }
 
 // { dg-prune-output "not writing module" }
