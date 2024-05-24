@@ -3688,19 +3688,19 @@ GNAT User’s Guide.
 Syntax:
 
 @example
-pragma Extensions_Allowed (On | Off | All);
+pragma Extensions_Allowed (On | Off | All_Extensions);
 @end example
 
-This configuration pragma enables (via the “On” or “All” argument) or disables
-(via the “Off” argument) the implementation extension mode; the pragma takes
-precedence over the @code{-gnatX} and @code{-gnatX0} command switches.
+This configuration pragma enables (via the “On” or “All_Extensions” argument)
+or disables (via the “Off” argument) the implementation extension mode; the
+pragma takes precedence over the @code{-gnatX} and @code{-gnatX0} command switches.
 
 If an argument of @code{"On"} is specified, the latest version of the Ada language
 is implemented (currently Ada 2022) and, in addition, a curated set of GNAT
 specific extensions are recognized. (See the list here
 @ref{69,,here})
 
-An argument of @code{"All"} has the same effect except that some extra
+An argument of @code{"All_Extensions"} has the same effect except that some extra
 experimental extensions are enabled (See the list here
 @ref{6a,,here})
 
@@ -28817,8 +28817,9 @@ activate the curated subset of extensions.
 @quotation Attention 
 You can activate the extended set of extensions by using either
 the @code{-gnatX0} command line flag, or the pragma @code{Extensions_Allowed} with
-@code{All} as an argument. However, it is not recommended you use this subset
-for serious projects, and is only means as a playground/technology preview.
+@code{All_Extensions} as an argument. However, it is not recommended you use
+this subset for serious projects; it is only meant as a technology preview
+for use in playground experiments.
 @end quotation
 @end cartouche
 

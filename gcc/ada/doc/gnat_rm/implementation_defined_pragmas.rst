@@ -2208,19 +2208,19 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Extensions_Allowed (On | Off | All);
+  pragma Extensions_Allowed (On | Off | All_Extensions);
 
 
-This configuration pragma enables (via the "On" or "All" argument) or disables
-(via the "Off" argument) the implementation extension mode; the pragma takes
-precedence over the ``-gnatX`` and ``-gnatX0`` command switches.
+This configuration pragma enables (via the "On" or "All_Extensions" argument)
+or disables (via the "Off" argument) the implementation extension mode; the
+pragma takes precedence over the ``-gnatX`` and ``-gnatX0`` command switches.
 
 If an argument of ``"On"`` is specified, the latest version of the Ada language
 is implemented (currently Ada 2022) and, in addition, a curated set of GNAT
 specific extensions are recognized. (See the list here
 :ref:`here<Curated_Language_Extensions>`)
 
-An argument of ``"All"`` has the same effect except that some extra
+An argument of ``"All_Extensions"`` has the same effect except that some extra
 experimental extensions are enabled (See the list here
 :ref:`here<Experimental_Language_Extensions>`)
 

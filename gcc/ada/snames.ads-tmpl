@@ -783,6 +783,7 @@ package Snames is
 
    Name_Address_Type                   : constant Name_Id := N + $;
    Name_Aggregate                      : constant Name_Id := N + $;
+   Name_All_Extensions                 : constant Name_Id := N + $;
    Name_Allow                          : constant Name_Id := N + $;
    Name_Amount                         : constant Name_Id := N + $;
    Name_As_Is                          : constant Name_Id := N + $;

@@ -37,8 +37,9 @@ file, or in a ``.adc`` file corresponding to your project.
 
 .. attention:: You can activate the extended set of extensions by using either
    the ``-gnatX0`` command line flag, or the pragma ``Extensions_Allowed`` with
-   ``All`` as an argument. However, it is not recommended you use this subset
-   for serious projects, and is only means as a playground/technology preview.
+   ``All_Extensions`` as an argument. However, it is not recommended you use
+   this subset for serious projects; it is only meant as a technology preview
+   for use in playground experiments.
 
 .. _Curated_Language_Extensions:
 

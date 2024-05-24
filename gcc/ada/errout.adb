@@ -902,21 +902,23 @@ package body Errout is
          if Is_Core_Extension then
             Error_Msg
               ("\unit must be compiled with -gnatX '[or -gnatX0'] " &
-               "or use pragma Extensions_Allowed (On) '[or All']", Loc);
+               "or use pragma Extensions_Allowed (On) '[or All_Extensions']",
+               Loc);
          else
             Error_Msg
               ("\unit must be compiled with -gnatX0 " &
-               "or use pragma Extensions_Allowed (All)", Loc);
+               "or use pragma Extensions_Allowed (All_Extensions)", Loc);
          end if;
       else
          Error_Msg_Sloc := Sloc (Ada_Version_Pragma);
          Error_Msg ("\incompatible with Ada version set#", Loc);
          if Is_Core_Extension then
             Error_Msg
-              ("\must use pragma Extensions_Allowed (On) '[or All']", Loc);
+              ("\must use pragma Extensions_Allowed (On)" &
+                 " '[or All_Extensions']", Loc);
          else
             Error_Msg
-              ("\must use pragma Extensions_Allowed (All)", Loc);
+              ("\must use pragma Extensions_Allowed (All_Extensions)", Loc);
          end if;
       end if;
    end Error_Msg_GNAT_Extension;
