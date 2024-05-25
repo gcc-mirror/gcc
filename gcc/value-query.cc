@@ -188,6 +188,7 @@ void
 range_query::create_gori (int not_executable_flag, int sw_max_edges)
 {
   gcc_checking_assert (m_gori == &default_gori);
+  gcc_checking_assert (m_map == NULL);
   m_map = new gori_map ();
   gcc_checking_assert (m_map);
   m_gori = new gori_compute (*m_map, not_executable_flag, sw_max_edges);
@@ -199,6 +200,9 @@ range_query::destroy_gori ()
 {
   if (m_gori && m_gori != &default_gori)
     delete m_gori;
+  if (m_map)
+    delete m_map;
+  m_map = NULL;
   m_gori= &default_gori;
 }
 
