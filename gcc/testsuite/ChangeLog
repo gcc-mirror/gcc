@@ -1,3 +1,56 @@
+2024-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115187
+	* g++.dg/cpp1z/array-prvalue3.C: New test.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114868
+	* g++.dg/modules/using-15_a.C: New test.
+	* g++.dg/modules/using-15_b.C: New test.
+	* g++.dg/modules/using-15_c.C: New test.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/105320
+	PR c++/114275
+	* g++.dg/modules/tpl-friend-10_a.C: New test.
+	* g++.dg/modules/tpl-friend-10_b.C: New test.
+	* g++.dg/modules/tpl-friend-10_c.C: New test.
+	* g++.dg/modules/tpl-friend-10_d.C: New test.
+	* g++.dg/modules/tpl-friend-11_a.C: New test.
+	* g++.dg/modules/tpl-friend-11_b.C: New test.
+	* g++.dg/modules/tpl-friend-12_a.C: New test.
+	* g++.dg/modules/tpl-friend-12_b.C: New test.
+	* g++.dg/modules/tpl-friend-12_c.C: New test.
+	* g++.dg/modules/tpl-friend-12_d.C: New test.
+	* g++.dg/modules/tpl-friend-12_e.C: New test.
+	* g++.dg/modules/tpl-friend-12_f.C: New test.
+	* g++.dg/modules/tpl-friend-13_a.C: New test.
+	* g++.dg/modules/tpl-friend-13_b.C: New test.
+	* g++.dg/modules/tpl-friend-13_c.C: New test.
+	* g++.dg/modules/tpl-friend-13_d.C: New test.
+	* g++.dg/modules/tpl-friend-13_e.C: New test.
+	* g++.dg/modules/tpl-friend-13_f.C: New test.
+	* g++.dg/modules/tpl-friend-13_g.C: New test.
+	* g++.dg/modules/tpl-friend-14_a.C: New test.
+	* g++.dg/modules/tpl-friend-14_b.C: New test.
+	* g++.dg/modules/tpl-friend-14_c.C: New test.
+	* g++.dg/modules/tpl-friend-14_d.C: New test.
+	* g++.dg/modules/tpl-friend-9.C: New test.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/enum-12.C: Update error message.
+	* g++.dg/modules/friend-5_b.C: Likewise.
+	* g++.dg/modules/shadow-1_b.C: Likewise.
+
 2024-05-23  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

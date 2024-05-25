@@ -1,3 +1,59 @@
+2024-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115187
+	* init.cc (build_delete): Use get_target_expr instead of save_expr.
+	* tree.cc (stabilize_expr): Update comment.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114868
+	* module.cc (depset::hash::add_binding_entity): Propagate
+	OVL_USING_P for using-declarations.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/105320
+	PR c++/114275
+	* cp-tree.h (propagate_defining_module): Declare.
+	(remove_defining_module): Declare.
+	(lookup_imported_hidden_friend): Declare.
+	* decl.cc (duplicate_decls): Also check if hidden decls can be
+	redeclared in this module. Call remove_defining_module on
+	to-be-freed newdecl.
+	* module.cc (imported_temploid_friends): New.
+	(init_modules): Initialize it.
+	(trees_out::decl_value): Write it; don't consider imported
+	temploid friends as attached to a module.
+	(trees_in::decl_value): Read it for non-discarded decls.
+	(get_originating_module_decl): Follow the owning decl for an
+	imported temploid friend.
+	(propagate_defining_module): New.
+	(remove_defining_module): New.
+	* name-lookup.cc (get_mergeable_namespace_binding): New.
+	(lookup_imported_hidden_friend): New.
+	* pt.cc (tsubst_friend_function): Propagate defining module for
+	new friend functions.
+	(tsubst_friend_class): Lookup imported hidden friends.  Check
+	for valid module attachment of existing names.  Propagate
+	defining module for new classes.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* cp-tree.h (module_may_redeclare): Add default parameter.
+	* decl.cc (duplicate_decls): Don't emit errors for failed
+	module_may_redeclare.
+	(xref_tag): Likewise.
+	(start_enum): Likewise.
+	* semantics.cc (begin_class_definition): Likewise.
+	* module.cc (module_may_redeclare): Clean up logic. Emit error
+	messages on failure.
+
 2024-05-22  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
