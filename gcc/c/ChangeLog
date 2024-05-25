@@ -1,3 +1,9 @@
+2024-05-24  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114831
+	* c-typeck.cc (array_to_pointer_conversion, build_unary_op):
+	Propagate flag to pointer target.
+
 2024-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/115103

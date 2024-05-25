@@ -1,3 +1,83 @@
+2024-05-24  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/93635
+	* gfortran.dg/c-interop/c1255-2.f90: Adjust pattern.
+	* gfortran.dg/pr87907.f90: Likewise.
+	* gfortran.dg/pr93635.f90: New test.
+
+2024-05-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/86100
+	* gfortran.dg/bounds_check_25.f90: New test.
+
+2024-05-24  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114831
+	* gcc.dg/pr114831-1.c: New test.
+	* gcc.dg/pr114831-2.c: New test.
+	* gcc.dg/gnu23-varmod-1.c: New test.
+	* gcc.dg/gnu23-varmod-2.c: New test.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115200
+	* g++.dg/modules/mod-decl-1.C: Update error messages.
+	* g++.dg/modules/mod-decl-6.C: New test.
+	* g++.dg/modules/mod-decl-7.C: New test.
+	* g++.dg/modules/mod-decl-8.C: New test.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/linkage-1_a.C: Remove anonymous type test.
+	* g++.dg/modules/linkage-1_b.C: Likewise.
+	* g++.dg/modules/linkage-1_c.C: Likewise.
+	* g++.dg/modules/linkage-2.C: Add note about anonymous types.
+
+2024-05-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-6.c: New test.
+
+2024-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/115192
+	* gcc.dg/vect/pr115192.c: New test.
+
+2024-05-24  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* gcc.dg/fold-perm-2.c: New test.
+
+2024-05-24  Alexandre Oliva  <oliva@adacore.com>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.dg/vect/costmodel/ppc/costmodel-vect-76b.c (N): Tweak.
+
+2024-05-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-gather-4.c: Scan for not vectorizing using
+	SLP.
+
+2024-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115144
+	* gcc.dg/tree-ssa/ssa-sink-22.c: New testcase.
+
+2024-05-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/114148
+	* gcc.target/i386/pr106010-7b.c: Refine testcase.
+
+2024-05-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr97428.c: Expect a single store SLP group.
+	* gcc.dg/vect/slp-11c.c: Likewise, if !vect_load_lanes.
+	* gcc.dg/vect/vect-complex-5.c: Likewise.
+	* gcc.dg/vect/slp-12a.c: Do not expect SLP.
+	* gcc.dg/vect/slp-21.c: Remove not important scanning for SLP.
+	* gcc.dg/vect/slp-cond-1.c: Expect one more SLP if !vect_load_lanes.
+	* gcc.dg/vect/vect-gather-2.c: Expect SLP to be used.
+	* gcc.target/i386/pr52252-atom.c: XFAIL test for palignr.
+
 2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/114947

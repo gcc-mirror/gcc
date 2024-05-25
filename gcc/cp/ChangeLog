@@ -1,5 +1,29 @@
 2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
 
+	PR c++/115200
+	* parser.cc (cp_parser_error_1): Special-case unexpected module
+	directives for better diagnostics.
+	(cp_parser_module_declaration): Check that the module
+	declaration is at global scope.
+	(cp_parser_import_declaration): Sync error message with that in
+	cp_parser_error_1.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* cp-tree.h (module_has_cmi_p): Also include header units.
+	(module_maybe_has_cmi_p): Update comment.
+	* module.cc (set_defining_module): Only need to track
+	declarations for later exporting if the module may have a CMI.
+	(set_defining_module_for_partial_spec): Likewise.
+	* name-lookup.cc (pushdecl): Likewise.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* tree.cc (no_linkage_check): Anonymous types can't be accessed
+	in a different TU.
+
+2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
 	PR c++/114947
 	* cp-tree.h (set_defining_module_for_partial_spec): Declare.
 	* module.cc (trees_in::decl_value): Track partial specs coming

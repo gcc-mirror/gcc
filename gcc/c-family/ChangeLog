@@ -1,3 +1,9 @@
+2024-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (is_cpp_float): New predicate.
+	(dump_number): Deal with more preprocessing floating constants.
+	(dump_ada_macros) <CPP_NUMBER>: Use is_cpp_float.
+
 2024-05-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.cc (check_type_name_conflict): Add guard.

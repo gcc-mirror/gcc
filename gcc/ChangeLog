@@ -1,3 +1,54 @@
+2024-05-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/predicates.md (arith_operand_or_mode_mask): Renamed to..
+	(arith_or_mode_mask_or_zbs_operand): New predicate.
+	* config/riscv/riscv.md (and<mode>3): Update predicate for operand 2.
+	* config/riscv/riscv.cc (riscv_build_integer_1): Use bclri to clear
+	bits, particularly bits 31..63 when profitable to do so.
+
+2024-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/115192
+	* tree-data-ref.cc (create_intersect_range_checks): Take the
+	alignment of the access sizes into account.
+
+2024-05-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi: Replace all occurrences of xref {, , , gm2}
+	with xref {, , , m2}.
+
+2024-05-24  Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* match.pd: Allow no-op view_convert between permutes.
+
+2024-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115144
+	* tree-ssa-sink.cc (do_not_sink): New function, split out
+	from ...
+	(select_best_block): Here.  First pick valid block to
+	sink to.  From that search for the best valid block,
+	avoiding sinking across conditions to exceptional code.
+	(sink_code_in_bb): When updating vuses of stores in
+	paths we do not sink a store to make sure we didn't
+	pick a dominating sink location.
+
+2024-05-24  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiprop.cc (phiprop_insert_phi): Add
+	dce_ssa_names argument. Add the phi's result to it.
+	(propagate_with_phi): Add dce_ssa_names argument.
+	Update call to phiprop_insert_phi.
+	(pass_phiprop::execute): Update call to propagate_with_phi.
+	Call simple_dce_from_worklist if there was a change.
+
+2024-05-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_instance): Do not split
+	store dataref groups on loop SLP discovery failure but create
+	a single SLP instance for the stores but branch to SLP sub-trees
+	and merge with a series of VEC_PERM nodes.
+
 2024-05-23  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-edge.h (range_query::condexpr_adjust): Delete.
