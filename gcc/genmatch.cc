@@ -3428,7 +3428,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 			  child_opname, kid_opname, j);
 	}
       preds[i]->gen_kids (f, indent + 4, gimple, depth);
-      fprintf (f, "}\n");
+      fprintf_indent (f, indent, "  }\n");
       indent -= 2;
       fprintf_indent (f, indent, "}\n");
     }
