@@ -3549,6 +3549,12 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	    return tem;
 	}
 
+      /* Convert (ior (and (not A) B) A) into A | B.  */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (XEXP (op0, 0)) == NOT
+	  && rtx_equal_p (XEXP (XEXP (op0, 0), 0), op1))
+	return simplify_gen_binary (IOR, mode, XEXP (op0, 1), op1);
+
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
@@ -3801,6 +3807,12 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	    return tem;
 	}
 
+      /* Convert (xor (and (not A) B) A) into A | B.  */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (XEXP (op0, 0)) == NOT
+	  && rtx_equal_p (XEXP (XEXP (op0, 0), 0), op1))
+	return simplify_gen_binary (IOR, mode, XEXP (op0, 1), op1);
+
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
@@ -4005,6 +4017,23 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && GET_CODE (XEXP (op0, 1)) == NOT
 	  && rtx_equal_p (op1, XEXP (XEXP (op0, 1), 0)))
 	return simplify_gen_binary (AND, mode, op1, XEXP (op0, 0));
+
+      /* (and (ior/xor (X Y) (not Y)) -> X & ~Y */
+      if ((GET_CODE (op0) == IOR || GET_CODE (op0) == XOR)
+	  && GET_CODE (op1) == NOT
+	  && rtx_equal_p (XEXP (op1, 0), XEXP (op0, 1)))
+	return simplify_gen_binary (AND, mode, XEXP (op0, 0),
+				    simplify_gen_unary (NOT, mode,
+							XEXP (op1, 0),
+							mode));
+      /* (and (ior/xor (Y X) (not Y)) -> X & ~Y */
+      if ((GET_CODE (op0) == IOR || GET_CODE (op0) == XOR)
+	  && GET_CODE (op1) == NOT
+	  && rtx_equal_p (XEXP (op1, 0), XEXP (op0, 0)))
+	return simplify_gen_binary (AND, mode, XEXP (op0, 1),
+				    simplify_gen_unary (NOT, mode,
+							XEXP (op1, 0),
+							mode));
 
       /* Convert (and (ior A C) (ior B C)) into (ior (and A B) C).  */
       if (GET_CODE (op0) == GET_CODE (op1)
