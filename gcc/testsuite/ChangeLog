@@ -1,3 +1,37 @@
+2024-05-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-01-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113598
+	* g++.dg/cpp0x/initlist-pmf2.C: New test.
+
+2024-05-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2023-09-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111529
+	* g++.dg/ext/unroll-4.C: New test.
+
+2024-05-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100667
+	* g++.dg/ext/is_constructible8.C: New test.
+
+2024-05-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2024-04-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114561
+	PR c++/114562
+	* g++.dg/conversion/ref10.C: New test.
+	* g++.dg/conversion/ref11.C: New test.
+
 2024-05-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
