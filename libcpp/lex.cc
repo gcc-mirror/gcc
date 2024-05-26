@@ -5038,7 +5038,7 @@ do_peek_prev (const unsigned char *peek, const unsigned char *bound)
 
   unsigned char c = *--peek;
   if (__builtin_expect (c == '\n', false)
-      || __builtin_expect (c == 'r', false))
+      || __builtin_expect (c == '\r', false))
     {
       if (peek == bound)
 	return peek;
