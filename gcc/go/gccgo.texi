@@ -80,7 +80,7 @@ This manual describes how to use @command{gccgo}, the GNU compiler for
 the Go programming language.  This manual is specifically about
 @command{gccgo}.  For more information about the Go programming
 language in general, including language specifications and standard
-package documentation, see @uref{https://golang.org/}.
+package documentation, see @uref{https://go.dev}.
 
 @menu
 * Copying::                     The GNU General Public License.
@@ -389,8 +389,7 @@ or with C++ code compiled using @code{extern "C"}.
 
 This information is provided largely for documentation purposes.  For
 ordinary use it is best to build programs with the go tool and then
-use @code{import "C"}, as described at
-@url{https://golang.org/cmd/cgo}.
+use @code{import "C"}, as described at @url{https://pkg.go.dev/cmd/cgo}.
 
 @menu
 * C Type Interoperability::     How C and Go types match up.
