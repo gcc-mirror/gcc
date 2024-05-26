@@ -1022,7 +1022,7 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 
       /* If LUI+ADDI+BSETI resulted in a more efficient
 	 sequence, then use it.  */
-      if (i < cost)
+      if (value == 0 && i < cost)
 	{
 	  memcpy (codes, alt_codes, sizeof (alt_codes));
 	  cost = i;
@@ -1073,6 +1073,31 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
 	  cost = alt_cost;
 	}
     }
+
+  /* See if we can generate the inverted constant, then use
+     not to get the desired constant.
+
+     This can't be in riscv_build_integer_1 as it'll mutually
+     recurse with another case in there.  And it has to recurse
+     into riscv_build_integer so we get the trailing 0s case
+     above.  */
+  if (cost > 2 && value < 0)
+    {
+      struct riscv_integer_op alt_codes[RISCV_MAX_INTEGER_OPS];
+      int alt_cost;
+
+      HOST_WIDE_INT nval = ~value;
+      alt_cost = 1 + riscv_build_integer (alt_codes, nval, mode);
+      if (alt_cost < cost)
+	{
+	  alt_codes[alt_cost - 1].code = XOR;
+	  alt_codes[alt_cost - 1].value = -1;
+	  alt_codes[alt_cost - 1].use_uw = false;
+	  memcpy (codes, alt_codes, sizeof (alt_codes));
+	  cost = alt_cost;
+	}
+    }
+
 
   if (!TARGET_64BIT
       && (value > INT32_MAX || value < INT32_MIN))
