@@ -167,7 +167,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)))
       && tree_nop_conversion_p (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
 
-#if GIMPLE
 /* These are used by gimple_bitwise_inverted_equal_p to simplify
    detection of BIT_NOT and comparisons. */
 (match (bit_not_with_nop @0)
@@ -188,7 +187,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_xor@0 @1 @2)
  (if (INTEGRAL_TYPE_P (type)
       && TYPE_PRECISION (type) == 1)))
-#endif
+/* maybe_bit_not is used to match what
+   is acceptable for bitwise_inverted_equal_p. */
+(match (maybe_bit_not @0)
+ (bit_not_with_nop@0 @1))
+(match (maybe_bit_not @0)
+ (INTEGER_CST@0))
+(match (maybe_bit_not @0)
+ (maybe_cmp@0 @1))
 
 /* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
    ABSU_EXPR returns unsigned absolute value of the operand and the operand
@@ -1332,7 +1338,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Simplify ~X & X as zero.  */
 (simplify
- (bit_and (convert? @0) (convert? @1))
+ (bit_and:c (convert? @0) (convert? (maybe_bit_not @1)))
  (with { bool wascmp; }
   (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1))
        && bitwise_inverted_equal_p (@0, @1, wascmp))
@@ -1597,7 +1603,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* ~x ^ x -> -1 */
 (for op (bit_ior bit_xor)
  (simplify
-  (op (convert? @0) (convert? @1))
+  (op:c (convert? @0) (convert? (maybe_bit_not @1)))
   (with { bool wascmp; }
    (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1))
         && bitwise_inverted_equal_p (@0, @1, wascmp))
