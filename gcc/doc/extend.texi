@@ -10026,7 +10026,7 @@ labelled in C90 or C99, so the ambiguity does not arise there.
 @subsubheading Enumerator Attributes
 
 In GNU C, an attribute specifier list may appear as part of an enumerator.
-The attribute goes after the enumeration constant, before @code{=}, if
+The attribute goes after the enumeration constant, before @samp{=}, if
 present.  The optional attribute in the enumerator appertains to the
 enumeration constant.  It is not possible to place the attribute after
 the constant expression, if present.
@@ -10108,7 +10108,7 @@ the @code{noreturn} attribute applies to all the functions
 declared; the @code{format} attribute only applies to @code{d1}.
 
 An attribute specifier list may appear immediately before the comma,
-@code{=} or semicolon terminating the declaration of an identifier other
+@samp{=}, or semicolon terminating the declaration of an identifier other
 than a function definition.  Such attribute specifiers apply
 to the declared object or function.  Where an
 assembler name for an object or function is specified (@pxref{Asm
@@ -11804,7 +11804,7 @@ stop:
 
 The following artificial example shows an @code{asm goto} that sets
 up an output only on one path inside the @code{asm goto}.  Usage of
-constraint modifier @code{=} instead of @code{+} would be wrong as
+constraint modifier @samp{=} instead of @samp{+} would be wrong as
 @code{factor} is used on all paths from the @code{asm goto}.
 
 @example
