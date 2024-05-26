@@ -1,3 +1,14 @@
+2024-05-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-05-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/86100
+	* trans-array.cc (gfc_conv_ss_startstride): Use abridged_ref_name
+	to generate a more user-friendly name for bounds-check messages.
+	* trans-expr.cc (gfc_copy_class_to_class): Fix bounds check for
+	rank>1 by looping over the dimensions.
+
 2024-05-21  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
