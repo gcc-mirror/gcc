@@ -1,3 +1,8 @@
+2024-05-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1): Handle
+	more logical simplifications.
+
 2024-05-24  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/predicates.md (arith_operand_or_mode_mask): Renamed to..

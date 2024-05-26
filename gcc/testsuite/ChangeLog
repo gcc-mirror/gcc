@@ -1,3 +1,15 @@
+2024-05-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* g++.target/riscv/redundant-bitmap-1.C: New test.
+	* g++.target/riscv/redundant-bitmap-2.C: New test.
+	* g++.target/riscv/redundant-bitmap-3.C: New test.
+	* g++.target/riscv/redundant-bitmap-4.C: New test.
+
+2024-05-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/102345
+	* g++.dg/modules/enum-12.C: Test for updated error.
+
 2024-05-24  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

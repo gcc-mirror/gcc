@@ -1,3 +1,8 @@
+2024-05-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/102345
+	* module.cc (module_may_redeclare): Update error message.
+
 2024-05-24  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/115200
