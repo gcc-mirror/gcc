@@ -963,6 +963,26 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	}
     }
 
+  /* We might be able to generate a constant close to our target
+     then a final ADDI to get the desired constant.  */
+  if (cost > 2
+      && (value & 0xfff) != 0
+      && (value & 0x1800) == 0x1000)
+    {
+      HOST_WIDE_INT adjustment = -(0x800 - (value & 0xfff));
+      alt_cost = 1 + riscv_build_integer_1 (alt_codes,
+					    value - adjustment, mode);
+
+      if (alt_cost < cost)
+	{
+	  alt_codes[alt_cost - 1].code = PLUS;
+	  alt_codes[alt_cost - 1].value = adjustment;
+	  alt_codes[alt_cost - 1].use_uw = false;
+	  memcpy (codes, alt_codes, sizeof (alt_codes));
+	  cost = alt_cost;
+	}
+    }
+
   /* Final cases, particularly focused on bseti.  */
   if (cost > 2 && TARGET_ZBS)
     {
