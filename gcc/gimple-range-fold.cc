@@ -1264,7 +1264,11 @@ fold_using_range::range_of_ssa_name_with_loop_info (vrange &r, tree name,
 						    fur_source &src)
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-  if (!range_of_var_in_loop (r, name, l, phi, src.query ()))
+  // SCEV currently invokes get_range_query () for values.  If the query
+  // being passed in is not the same SCEV will use, do not invoke SCEV.
+  // This can be remove if/when SCEV uses a passed in range-query.
+  if (src.query () != get_range_query (cfun)
+      || !range_of_var_in_loop (r, name, l, phi, src.query ()))
     r.set_varying (TREE_TYPE (name));
 }
 
