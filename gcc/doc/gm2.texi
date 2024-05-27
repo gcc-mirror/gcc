@@ -92,8 +92,8 @@ Boston, MA 02110-1301, USA@*
 @node What is GNU Modula-2, Why use GNU Modula-2, , Overview
 @section What is GNU Modula-2
 
-GNU Modula-2 is a @uref{http://gcc.gnu.org/frontends.html, front end}
-for the GNU Compiler Collection (@uref{http://gcc.gnu.org/, GCC}).
+GNU Modula-2 is a @uref{https://gcc.gnu.org/frontends.html, front end}
+for the GNU Compiler Collection (@uref{https://gcc.gnu.org, GCC}).
 The GNU Modula-2 compiler is compliant with the PIM2, PIM3, PIM4 and
 ISO dialects.  Also implemented are a complete set of free ISO
 libraries and PIM libraries.
@@ -3022,7 +3022,7 @@ The mailing list contents can be viewed
 @section Other languages for GCC
 
 These exist and can be found on the frontends web page on the
-@uref{http://gcc.gnu.org/frontends.html, gcc web site}.
+@uref{https://gcc.gnu.org/frontends.html, GCC web site}.
 
 @node License, Copying, Using, Top
 @section License of GNU Modula-2
