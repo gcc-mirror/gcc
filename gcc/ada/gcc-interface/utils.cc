@@ -2002,6 +2002,21 @@ finish_fat_pointer_type (tree record_type, tree field_list)
   TYPE_CONTAINS_PLACEHOLDER_INTERNAL (record_type) = 2;
 }
 
+/* Clear DECL_BIT_FIELD flag and associated markers on FIELD, which is a field
+   of aggregate type TYPE.  */
+
+static void
+clear_decl_bit_field (tree field, tree type)
+{
+  DECL_BIT_FIELD (field) = 0;
+  DECL_BIT_FIELD_TYPE (field) = NULL_TREE;
+
+  /* DECL_BIT_FIELD_REPRESENTATIVE is not defined for QUAL_UNION_TYPE since
+     it uses the same slot as DECL_QUALIFIER.  */
+  if (TREE_CODE (type) != QUAL_UNION_TYPE)
+    DECL_BIT_FIELD_REPRESENTATIVE (field) = NULL_TREE;
+}
+
 /* Given a record type RECORD_TYPE and a list of FIELD_DECL nodes FIELD_LIST,
    finish constructing the record or union type.  If REP_LEVEL is zero, this
    record has no representation clause and so will be entirely laid out here.
@@ -2112,7 +2127,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	      if (TYPE_ALIGN (record_type) >= align)
 		{
 		  SET_DECL_ALIGN (field, MAX (DECL_ALIGN (field), align));
-		  DECL_BIT_FIELD (field) = 0;
+		  clear_decl_bit_field (field, record_type);
 		}
 	      else if (!had_align
 		       && rep_level == 0
@@ -2122,7 +2137,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 		{
 		  SET_TYPE_ALIGN (record_type, align);
 		  SET_DECL_ALIGN (field, MAX (DECL_ALIGN (field), align));
-		  DECL_BIT_FIELD (field) = 0;
+		  clear_decl_bit_field (field, record_type);
 		}
 	    }
 
@@ -2130,7 +2145,7 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 	  if (!STRICT_ALIGNMENT
 	      && DECL_BIT_FIELD (field)
 	      && value_factor_p (pos, BITS_PER_UNIT))
-	    DECL_BIT_FIELD (field) = 0;
+	    clear_decl_bit_field (field, record_type);
 	}
 
       /* Clear DECL_BIT_FIELD_TYPE for a variant part at offset 0, it's simply
@@ -2453,10 +2468,7 @@ rest_of_record_type_compilation (tree record_type)
 	     avoid generating useless attributes for the field in DWARF.  */
 	  if (DECL_SIZE (old_field) == TYPE_SIZE (field_type)
 	      && value_factor_p (pos, BITS_PER_UNIT))
-	    {
-	      DECL_BIT_FIELD (new_field) = 0;
-	      DECL_BIT_FIELD_TYPE (new_field) = NULL_TREE;
-	    }
+	    clear_decl_bit_field (new_field, new_record_type);
 	  DECL_CHAIN (new_field) = TYPE_FIELDS (new_record_type);
 	  TYPE_FIELDS (new_record_type) = new_field;
 
