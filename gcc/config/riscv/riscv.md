@@ -2829,6 +2829,34 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
+;; We can reassociate the shift and bitwise operator which may allow us to
+;; reduce the immediate operand of the bitwise operator into a range that
+;; fits in a simm12.
+;;
+;; We need to make sure that shifting does not lose any bits, particularly
+;; for IOR/XOR.  It probably doesn't matter for AND.
+;;
+;; We also don't want to do this if the immediate already fits in a simm12
+;; field.
+(define_insn_and_split "<optab>_shift_reverse<X:mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+    (any_bitwise:X (ashift:X (match_operand:X 1 "register_operand" "r")
+			     (match_operand 2 "immediate_operand" "n"))
+		   (match_operand 3 "immediate_operand" "n")))]
+  "(!SMALL_OPERAND (INTVAL (operands[3]))
+   && SMALL_OPERAND (INTVAL (operands[3]) >> INTVAL (operands[2]))
+   && (popcount_hwi (INTVAL (operands[3]))
+       <= popcount_hwi (INTVAL (operands[3]) >> INTVAL (operands[2]))))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (any_bitwise:X (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (ashift:X (match_dup 0) (match_dup 2)))]
+  {
+    operands[3] = GEN_INT (INTVAL (operands[3]) >> INTVAL (operands[2]));
+  }
+  [(set_attr "type" "shift")
+   (set_attr "mode" "<X:MODE>")])
+
 ;; Non-canonical, but can be formed by ree when combine is not successful at
 ;; producing one of the two canonical patterns below.
 (define_insn "*lshrsi3_zero_extend_1"
