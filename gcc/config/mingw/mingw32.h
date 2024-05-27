@@ -34,8 +34,12 @@ along with GCC; see the file COPYING3.  If not see
 	 | MASK_STACK_PROBE | MASK_ALIGN_DOUBLE \
 	 | MASK_MS_BITFIELD_LAYOUT)
 
-#ifndef TARGET_USING_MCFGTHREAD
-#define TARGET_USING_MCFGTHREAD  0
+#ifdef TARGET_USING_MCFGTHREAD
+#define DEFINE_THREAD_MODEL  builtin_define ("__USING_MCFGTHREAD__");
+#elif defined(TARGET_USE_PTHREAD_BY_DEFAULT)
+#define DEFINE_THREAD_MODEL  builtin_define ("__USING_POSIXTHREAD__");
+#else
+#define DEFINE_THREAD_MODEL
 #endif
 
 /* See i386/crtdll.h for an alternative definition. _INTEGRAL_MAX_BITS
@@ -56,8 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 	  builtin_define_std ("WIN64");				\
 	  builtin_define ("_WIN64");				\
 	}							\
-      if (TARGET_USING_MCFGTHREAD)				\
-	builtin_define ("__USING_MCFGTHREAD__");		\
+      DEFINE_THREAD_MODEL					\
     }								\
   while (0)
 
@@ -190,7 +193,7 @@ along with GCC; see the file COPYING3.  If not see
 #else
 #define SHARED_LIBGCC_SPEC " -lgcc "
 #endif
-#if TARGET_USING_MCFGTHREAD
+#ifdef TARGET_USING_MCFGTHREAD
 #define MCFGTHREAD_SPEC  " -lmcfgthread -lkernel32 -lntdll "
 #else
 #define MCFGTHREAD_SPEC  ""
