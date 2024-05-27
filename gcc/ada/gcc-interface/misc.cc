@@ -760,6 +760,19 @@ gnat_type_max_size (const_tree gnu_type)
   return max_size_unit;
 }
 
+/* Return the unit size of TYPE without reusable tail padding.  */
+
+static tree
+gnat_unit_size_without_reusable_padding (tree type)
+{
+  /* The padding of justified modular types can always be reused.  */
+  if (TYPE_JUSTIFIED_MODULAR_P (type))
+    return fold_convert (sizetype,
+			 size_binop (CEIL_DIV_EXPR,
+				     TYPE_ADA_SIZE (type), bitsize_unit_node));
+  return TYPE_SIZE_UNIT (type);
+}
+
 static tree get_array_bit_stride (tree);
 
 /* Provide information in INFO for debug output about the TYPE array type.
@@ -1407,6 +1420,8 @@ const struct scoped_attribute_specs *const gnat_attribute_table[] =
 #define LANG_HOOKS_TYPE_FOR_SIZE	gnat_type_for_size
 #undef  LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P	gnat_types_compatible_p
+#undef  LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING
+#define LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING gnat_unit_size_without_reusable_padding
 #undef  LANG_HOOKS_GET_ARRAY_DESCR_INFO
 #define LANG_HOOKS_GET_ARRAY_DESCR_INFO	gnat_get_array_descr_info
 #undef  LANG_HOOKS_GET_SUBRANGE_BOUNDS
@@ -1433,7 +1448,7 @@ const struct scoped_attribute_specs *const gnat_attribute_table[] =
 #define LANG_HOOKS_DEEP_UNSHARING	true
 #undef  LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS
 #define LANG_HOOKS_CUSTOM_FUNCTION_DESCRIPTORS true
-#undef LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE
+#undef  LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE
 #define LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE gnat_get_sarif_source_language
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;

@@ -1976,6 +1976,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  gnu_type = make_node (RECORD_TYPE);
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "JM");
+	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 	  TYPE_PACKED (gnu_type) = 1;
 	  TYPE_SIZE (gnu_type) = TYPE_SIZE (gnu_field_type);
 	  TYPE_SIZE_UNIT (gnu_type) = TYPE_SIZE_UNIT (gnu_field_type);
@@ -2006,7 +2007,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  /* We will output additional debug info manually below.  */
 	  finish_record_type (gnu_type, gnu_field, 2, false);
-	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 
 	  /* Make the original array type a parallel/debug type.  Note that
 	     gnat_get_array_descr_info needs a TYPE_IMPL_PACKED_ARRAY_P type
