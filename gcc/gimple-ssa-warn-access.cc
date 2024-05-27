@@ -1762,7 +1762,7 @@ new_delete_mismatch_p (tree new_decl, tree delete_decl)
   void *np = NULL, *dp = NULL;
   demangle_component *ndc = cplus_demangle_v3_components (new_str, 0, &np);
   demangle_component *ddc = cplus_demangle_v3_components (del_str, 0, &dp);
-  bool mismatch = new_delete_mismatch_p (*ndc, *ddc);
+  bool mismatch = ndc && ddc && new_delete_mismatch_p (*ndc, *ddc);
   free (np);
   free (dp);
   return mismatch;
