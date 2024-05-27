@@ -302,7 +302,7 @@ protected:
 class OperatorExpr : public ExprWithoutBlock
 {
   // TODO: create binary and unary operator subclasses?
-public:
+private:
   location_t locus;
 
 protected:
