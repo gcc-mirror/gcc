@@ -291,7 +291,7 @@ This manual only documents the options specific to @command{gm2}.
 
 This section describes how to compile and link a simple hello world
 program.  It provides a few examples of using the different options
-mentioned in @pxref{Compiler options, , ,m2}.  Assuming that you have
+mentioned in @pxref{Compiler options}.  Assuming that you have
 a file called @file{hello.mod} in your current directory which
 contains:
 
@@ -442,7 +442,7 @@ turn on ISO standard features.  Currently this enables the ISO
 @code{SYSTEM} module and alters the default library search path so
 that the ISO libraries are searched before the PIM libraries.  It also
 effects the behavior of @code{DIV} and @code{MOD} operators.
-@xref{Dialect, , ,m2}.
+@xref{Dialect}.
 
 @item -flibs=
 modifies the default library search path.  The libraries supplied are:
@@ -558,30 +558,30 @@ turn on PIM standard features.  Currently this enables the PIM
 @code{SYSTEM} module and determines which identifiers are pervasive
 (declared in the base module).  If no other @samp{-fpim[234]} switch is
 used then division and modulus operators behave as defined in PIM4.
-@xref{Dialect, , ,m2}.
+@xref{Dialect}.
 
 @item -fpim2
 turn on PIM-2 standard features.  Currently this removes @code{SIZE}
 from being a pervasive identifier (declared in the base module).  It
 places @code{SIZE} in the @code{SYSTEM} module.  It also effects the
 behavior of @code{DIV} and @code{MOD} operators.
-@xref{Dialect, , ,m2}.
+@xref{Dialect}.
 
 @item -fpim3
 turn on PIM-3 standard features.  Currently this only effects the
 behavior of @code{DIV} and @code{MOD} operators.
-@xref{Dialect, , ,m2}.
+@xref{Dialect}.
 
 @item -fpim4
 turn on PIM-4 standard features.  Currently this only effects the
 behavior of @code{DIV} and @code{MOD} operators.
-@xref{Dialect, , ,m2}.
+@xref{Dialect}.
 
 @item -fpositive-mod-floor-div
 forces the @code{DIV} and @code{MOD} operators to behave as defined by PIM4.
 All modulus results are positive and the results from the division are
 rounded to the floor.
-@xref{Dialect, , ,m2}.
+@xref{Dialect}.
 
 @item -fpthread
 link against the pthread library.  By default this option is on.  It
@@ -876,8 +876,8 @@ LONGCOMPLEX               complex long double
 
 Note that GNU Modula-2 also supports fixed sized data types which are
 exported from the @code{SYSTEM} module.
-@xref{The PIM system module, , ,m2}.
-@xref{The ISO system module, , ,m2}.
+@xref{The PIM system module}.
+@xref{The ISO system module}.
 
 @node Standard procedures, High procedure function, Elementary data types, Using
 @section Permanently accessible base procedures.
@@ -1628,7 +1628,7 @@ This section introduces the GNU Modula-2 language extensions.
 The GNU Modula-2 compiler allows abstract data types to be any type,
 not just restricted to a pointer type providing the
 @samp{-fextended-opaque} option is supplied
-@xref{Compiler options, , ,m2}.
+@xref{Compiler options}.
 
 Declarations can be made in any order, whether they are
 types, constants, procedures, nested modules or variables.
@@ -1829,8 +1829,8 @@ program module.
 
 GNU Modula-2 also provides additional fixed sized data types which
 are all exported from the @code{SYSTEM} module.
-@xref{The PIM system module, , ,m2}.
-@xref{The ISO system module, , ,m2}.
+@xref{The PIM system module}.
+@xref{The ISO system module}.
 
 @node Type compatibility, Unbounded by reference, Extensions, Using
 @section Type compatibility
@@ -2205,7 +2205,7 @@ $ python3 testnum.py
 1234 x 2 = 2468
 @end example
 
-@xref{Producing a Python module, , ,m2} for another example which
+@xref{Producing a Python module} for another example which
 uses the @code{UNQUALIFIED} keyword to reduce the module name clutter
 from the viewport of Python3.
 
