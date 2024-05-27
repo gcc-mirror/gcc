@@ -20,19 +20,19 @@
 
 md
 Target RejectNegative InverseMask(G_FLOAT)
-Target DFLOAT double precision code.
+Generate DFLOAT double-precision code.
 
 md-float
 Target RejectNegative InverseMask(G_FLOAT)
-Target DFLOAT double precision code.
+Generate DFLOAT double-precision code.
 
 mg
 Target RejectNegative Mask(G_FLOAT)
-Generate GFLOAT double precision code.
+Generate GFLOAT double-precision code.
 
 mg-float
 Target RejectNegative Mask(G_FLOAT)
-Generate GFLOAT double precision code.
+Generate GFLOAT double-precision code.
 
 mgnu
 Target RejectNegative InverseMask(UNIX_ASM)
