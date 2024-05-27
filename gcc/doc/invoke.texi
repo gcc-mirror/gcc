@@ -1429,7 +1429,7 @@ See RS/6000 and PowerPC Options.
 -mbig-switch}
 
 @emph{VAX Options}
-@gccoptlist{-mg  -mgnu  -munix  -mlra}
+@gccoptlist{-munix  -mgnu  -md  -md-float  -mg  -mg-float  -mlra}
 
 @emph{Visium Options}
 @gccoptlist{-mdebug  -msim  -mfpu  -mno-fpu  -mhard-float  -msoft-float
@@ -34129,9 +34129,19 @@ ranges.
 Do output those jump instructions, on the assumption that the
 GNU assembler is being used.
 
+@opindex md
+@opindex md-float
+@item -md
+@itemx -md-float
+Use the D_floating data format for double-precision floating-point numbers
+instead of G_floating.
+
 @opindex mg
+@opindex mg-float
 @item -mg
-Output code for G-format floating-point numbers instead of D-format.
+@itemx -mg-float
+Use the G_floating data format for double-precision floating-point numbers
+instead of D_floating.
 
 @opindex mlra
 @opindex mno-lra
