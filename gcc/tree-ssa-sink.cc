@@ -467,11 +467,17 @@ statement_sink_location (gimple *stmt, basic_block frombb,
   if (!sinkbb)
     return false;
   
-  sinkbb = select_best_block (frombb, sinkbb, stmt);
-  if (sinkbb == frombb)
+  basic_block bestbb = select_best_block (frombb, sinkbb, stmt);
+  if (bestbb == frombb
+      /* When we sink a store make sure there's not a path to any of
+	 the possibly skipped killing defs as that wrecks the virtual
+	 operand update, requiring inserting of a PHI node.  */
+      || (gimple_vdef (stmt)
+	  && bestbb != sinkbb
+	  && !dominated_by_p (CDI_POST_DOMINATORS, bestbb, sinkbb)))
     return false;
 
-  *togsi = gsi_after_labels (sinkbb);
+  *togsi = gsi_after_labels (bestbb);
 
   return true;
 }
