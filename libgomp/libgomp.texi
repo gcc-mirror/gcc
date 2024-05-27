@@ -294,8 +294,8 @@ The OpenMP 4.5 specification is fully supported.
 @item C/C++'s @code{declare variant} directive: elision support of
       preprocessed code @tab N @tab
 @item @code{declare variant}: new clauses @code{adjust_args} and
-      @code{append_args} @tab N @tab
-@item @code{dispatch} construct @tab N @tab
+      @code{append_args} @tab P @tab Only @code{adjust_args}
+@item @code{dispatch} construct @tab Y @tab
 @item device-specific ICV settings with environment variables @tab Y @tab
 @item @code{assume} and @code{assumes} directives @tab Y @tab
 @item @code{nothing} directive @tab Y @tab
