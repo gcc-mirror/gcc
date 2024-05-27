@@ -158,6 +158,16 @@ bitwise_inverted_equal_p (tree expr1, tree expr2, bool &wascmp)
   if (TREE_CODE (expr2) == BIT_NOT_EXPR
       && bitwise_equal_p (expr1, TREE_OPERAND (expr2, 0)))
     return true;
+
+  /* `X ^ CST` and `X ^ ~CST` match for ~. */
+  if (TREE_CODE (expr1) == BIT_XOR_EXPR && TREE_CODE (expr2) == BIT_XOR_EXPR
+      && bitwise_equal_p (TREE_OPERAND (expr1, 0), TREE_OPERAND (expr2, 0)))
+    {
+      tree cst1 = uniform_integer_cst_p (TREE_OPERAND (expr1, 1));
+      tree cst2 = uniform_integer_cst_p (TREE_OPERAND (expr2, 1));
+      if (cst1 && cst2 && wi::to_wide (cst1) == ~wi::to_wide (cst2))
+	return true;
+    }
   if (COMPARISON_CLASS_P (expr1)
       && COMPARISON_CLASS_P (expr2))
     {
