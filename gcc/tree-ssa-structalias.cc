@@ -1534,8 +1534,10 @@ scc_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 		  graph->indirect_cycles[i - FIRST_REF_NODE] = lowest_node;
 		}
 	    }
+	  bitmap_set_bit (si->deleted, lowest_node);
 	}
-      bitmap_set_bit (si->deleted, n);
+      else
+	bitmap_set_bit (si->deleted, n);
     }
   else
     si->scc_stack.safe_push (n);
