@@ -1,6 +1,13 @@
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
+	2025-01-03  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* libgomp.texi: Update dispatch and adjust_args status.
+
+2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
 	2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* testsuite/libgomp.fortran/declare-variant-2-aux.f90: New test.
