@@ -9650,7 +9650,12 @@ vect_schedule_slp_node (vec_info *vinfo,
       else
 	{
 	  si = gsi_for_stmt (last_stmt);
-	  gsi_next (&si);
+	  /* When we're getting gsi_after_labels from the starting
+	     condition of a fully masked/len loop avoid insertion
+	     after a GIMPLE_COND that can appear as the only header
+	     stmt with early break vectorization.  */
+	  if (gimple_code (last_stmt) != GIMPLE_COND)
+	    gsi_next (&si);
 	}
     }
 
