@@ -1312,7 +1312,12 @@ build_pred_graph (void)
 	{
 	  /* *x = y.  */
 	  if (rhs.offset == 0 && lhs.offset == 0 && rhs.type == SCALAR)
-	    add_pred_graph_edge (graph, FIRST_REF_NODE + lhsvar, rhsvar);
+	    {
+	      if (lhs.var == anything_id)
+		add_pred_graph_edge (graph, storedanything_id, rhsvar);
+	      else
+		add_pred_graph_edge (graph, FIRST_REF_NODE + lhsvar, rhsvar);
+	    }
 	}
       else if (rhs.type == DEREF)
 	{
@@ -1398,7 +1403,12 @@ build_succ_graph (void)
       if (lhs.type == DEREF)
 	{
 	  if (rhs.offset == 0 && lhs.offset == 0 && rhs.type == SCALAR)
-	    add_graph_edge (graph, FIRST_REF_NODE + lhsvar, rhsvar);
+	    {
+	      if (lhs.var == anything_id)
+		add_graph_edge (graph, storedanything_id, rhsvar);
+	      else
+		add_graph_edge (graph, FIRST_REF_NODE + lhsvar, rhsvar);
+	    }
 	}
       else if (rhs.type == DEREF)
 	{
@@ -1418,13 +1428,11 @@ build_succ_graph (void)
 	}
     }
 
-  /* Add edges from STOREDANYTHING to all non-direct nodes that can
-     receive pointers.  */
+  /* Add edges from STOREDANYTHING to all nodes that can receive pointers.  */
   t = find (storedanything_id);
   for (i = integer_id + 1; i < FIRST_REF_NODE; ++i)
     {
-      if (!bitmap_bit_p (graph->direct_nodes, i)
-	  && get_varinfo (i)->may_have_pointers)
+      if (get_varinfo (i)->may_have_pointers)
 	add_graph_edge (graph, find (i), t);
     }
 
