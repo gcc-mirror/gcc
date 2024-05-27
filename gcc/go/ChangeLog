@@ -1,3 +1,9 @@
+2024-05-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gccgo.texi (Top): Move a web reference from golang.org to go.dev.
+	(C Interoperability): Move a web reference from golang.org to
+	pkg.go.dev.
+
 2024-04-05  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* Make-lang.in (go.install-dvi): New rule.

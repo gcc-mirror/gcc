@@ -1,3 +1,7 @@
+2024-05-26  Peter Damianov  <peter0x44@disroot.org>
+
+	* lex.cc (do_peek_prev): Correct typo in argument to __builtin_expect()
+
 2024-05-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/rich-location.h (class label_effects): New forward decl.

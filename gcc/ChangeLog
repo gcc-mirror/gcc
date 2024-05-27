@@ -1,3 +1,27 @@
+2024-05-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer_one): Verify there
+	are no bits left to set in the constant when generating bseti.
+	(riscv_built_integer): Synthesize ~value and if it's cheap use it
+	with a trailing xori with -1.
+
+2024-05-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Attribute Syntax): Use @samp{=} instead of @code{=}.
+	(Extended Asm): Ditto.
+
+2024-05-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_build_integer_1): Try generating
+	a nearby simpler constant, then using a final addi to set low
+	bits properly.
+
+2024-05-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/115208
+	* value-query.cc (range_query::create_gori): Confirm gori_map is NULL.
+	(range_query::destroy_gori): Free gori_map if one was allocated.
+
 2024-05-25  Jeff Law  <jlaw@ventanamicro.com>
 
 	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1): Handle

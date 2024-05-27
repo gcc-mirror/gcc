@@ -1,3 +1,11 @@
+2024-05-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-8.c: New test.
+
+2024-05-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-7.c: New test.
+
 2024-05-25  Jeff Law  <jlaw@ventanamicro.com>
 
 	* g++.target/riscv/redundant-bitmap-1.C: New test.
