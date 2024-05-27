@@ -235,9 +235,9 @@ get_range (tree val, gimple *stmt, wide_int minmax[2],
 class strlen_pass : public dom_walker
 {
 public:
-  strlen_pass (cdi_direction direction)
+  strlen_pass (function *fun, cdi_direction direction)
     : dom_walker (direction),
-      ptr_qry (&m_ranger),
+      ptr_qry (get_range_query (fun)),
       m_cleanup_cfg (false)
   {
   }
@@ -298,8 +298,6 @@ public:
   bool get_len_or_size (gimple *stmt, tree arg, int idx,
 			unsigned HOST_WIDE_INT lenrng[2],
 			unsigned HOST_WIDE_INT *size, bool *nulterm);
-
-  gimple_ranger m_ranger;
 
   /* A pointer_query object to store information about pointers and
      their targets in.  */
@@ -5912,9 +5910,10 @@ printf_strlen_execute (function *fun, bool warn_only)
   ssa_ver_to_stridx.safe_grow_cleared (num_ssa_names, true);
   max_stridx = 1;
 
+  enable_ranger (fun);
   /* String length optimization is implemented as a walk of the dominator
      tree and a forward walk of statements within each block.  */
-  strlen_pass walker (CDI_DOMINATORS);
+  strlen_pass walker (fun, CDI_DOMINATORS);
   walker.walk (ENTRY_BLOCK_PTR_FOR_FN (fun));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5939,6 +5938,7 @@ printf_strlen_execute (function *fun, bool warn_only)
       strlen_to_stridx = NULL;
     }
 
+  disable_ranger (fun);
   scev_finalize ();
   loop_optimizer_finalize ();
 

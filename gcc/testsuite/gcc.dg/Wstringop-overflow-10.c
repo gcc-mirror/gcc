@@ -21,7 +21,7 @@ void
 baz (char *a)
 {
   char b[16] = "abcdefg";
-  __builtin_strncpy (a, b, __builtin_strnlen (b, 7));	/* { dg-bogus "specified bound depends on the length of the source argument" } */
+  __builtin_strncpy (a, b, __builtin_strnlen (b, 7));	/* { dg-warning "output truncated before terminating nul" } */
 }
 
 void fill (char *);
