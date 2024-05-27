@@ -1054,7 +1054,9 @@ package body Ghost is
       Full_Typ : Entity_Id;
 
    begin
-      if Is_Ghost_Entity (Typ) then
+      if Is_Ghost_Entity (Typ)
+        and then Comes_From_Source (Typ)
+      then
          Conc_Typ := Empty;
          Full_Typ := Typ;
 
@@ -1062,7 +1064,9 @@ package body Ghost is
             Conc_Typ := Anonymous_Object (Typ);
             Full_Typ := Conc_Typ;
 
-         elsif Is_Concurrent_Type (Typ) then
+         elsif Has_Protected (Typ)
+           or else Has_Task (Typ)
+         then
             Conc_Typ := Typ;
          end if;
 
