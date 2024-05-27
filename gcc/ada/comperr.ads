@@ -46,7 +46,7 @@ package Comperr is
    --  Note that this is only used at the outer level (to handle constraint
    --  errors or assert errors etc.) In the normal logic of the compiler we
    --  always use pragma Assert to check for errors, and if necessary an
-   --  explicit abort is achieved by pragma Assert (False). From_GCC is true
+   --  explicit abort is achieved by raise Program_Error. From_GCC is true
    --  for a GCC abort and false for a front end exception (with a possible
    --  message stored in TSD.Current_Excep).
 
