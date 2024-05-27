@@ -5616,7 +5616,14 @@ get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
       /* Get the def before the loop.  In reduction chain we have only
 	 one initial value.  Else we have as many as PHIs in the group.  */
       if (i >= initial_values.length () || (j > i && neutral_op))
-	op = neutral_op;
+	{
+	  if (!useless_type_conversion_p (TREE_TYPE (vector_type),
+					  TREE_TYPE (neutral_op)))
+	    neutral_op = gimple_convert (&ctor_seq,
+					 TREE_TYPE (vector_type),
+					 neutral_op);
+	  op = neutral_op;
+	}
       else
 	{
 	  if (!useless_type_conversion_p (TREE_TYPE (vector_type),
