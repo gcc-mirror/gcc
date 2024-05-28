@@ -76,6 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "selftest.h"
+#include "selftest-tree.h"
 #include "print-rtl.h"
 
 #if CHECKING_P
