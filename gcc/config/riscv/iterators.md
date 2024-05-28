@@ -37,6 +37,9 @@
 ;; Likewise, but for XLEN-sized quantities.
 (define_mode_iterator X [(SI "!TARGET_64BIT") (DI "TARGET_64BIT")])
 
+;; Likewise, but for XLEN/2 -sized quantities.
+(define_mode_iterator HX [(HI "!TARGET_64BIT") (SI "TARGET_64BIT")])
+
 ;; Branches operate on XLEN-sized quantities, but for RV64 we accept
 ;; QImode values so we can force zero-extension.
 (define_mode_iterator BR [(QI "TARGET_64BIT") SI (DI "TARGET_64BIT")])

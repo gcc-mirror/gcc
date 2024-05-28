@@ -2844,9 +2844,12 @@
 			     (match_operand 2 "immediate_operand" "n"))
 		   (match_operand 3 "immediate_operand" "n")))]
   "(!SMALL_OPERAND (INTVAL (operands[3]))
-   && SMALL_OPERAND (INTVAL (operands[3]) >> INTVAL (operands[2]))
-   && (popcount_hwi (INTVAL (operands[3]))
-       <= popcount_hwi (INTVAL (operands[3]) >> INTVAL (operands[2]))))"
+    && SMALL_OPERAND (INTVAL (operands[3]) >> INTVAL (operands[2]))
+    && popcount_hwi (INTVAL (operands[3])) > 1
+    && (!TARGET_64BIT
+	|| (exact_log2 ((INTVAL (operands[3]) >> INTVAL (operands[2])) + 1)
+	     == -1))
+    && (INTVAL (operands[3]) & ((1ULL << INTVAL (operands[2])) - 1)) == 0)"
   "#"
   "&& 1"
   [(set (match_dup 0) (any_bitwise:X (match_dup 1) (match_dup 3)))
