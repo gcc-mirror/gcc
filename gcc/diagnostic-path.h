@@ -293,12 +293,15 @@ class simple_diagnostic_path : public diagnostic_path
 
   void connect_to_next_event ();
 
+  void disable_event_localization () { m_localize_events = false; }
+
  private:
   auto_delete_vec<simple_diagnostic_thread> m_threads;
   auto_delete_vec<simple_diagnostic_event> m_events;
 
   /* (for use by add_event).  */
   pretty_printer *m_event_pp;
+  bool m_localize_events;
 };
 
 extern void debug (diagnostic_path *path);

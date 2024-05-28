@@ -2517,7 +2517,8 @@ set_text_art_charset (enum diagnostic_text_art_charset charset)
 /* class simple_diagnostic_path : public diagnostic_path.  */
 
 simple_diagnostic_path::simple_diagnostic_path (pretty_printer *event_pp)
-  : m_event_pp (event_pp)
+: m_event_pp (event_pp),
+  m_localize_events (true)
 {
   add_thread ("main");
 }
@@ -2563,7 +2564,7 @@ simple_diagnostic_path::add_thread (const char *name)
    stack depth DEPTH.
 
    Use m_context's printer to format FMT, as the text of the new
-   event.
+   event.  Localize FMT iff m_localize_events is set.
 
    Return the id of the new event.  */
 
@@ -2580,7 +2581,8 @@ simple_diagnostic_path::add_event (location_t loc, tree fndecl, int depth,
 
   va_start (ap, fmt);
 
-  text_info ti (_(fmt), &ap, 0, nullptr, &rich_loc);
+  text_info ti (m_localize_events ? _(fmt) : fmt,
+		&ap, 0, nullptr, &rich_loc);
   pp_format (pp, &ti);
   pp_output_formatted_text (pp);
 

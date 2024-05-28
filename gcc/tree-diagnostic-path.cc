@@ -1016,7 +1016,7 @@ path_events_have_column_data_p (const diagnostic_path &path)
 }
 
 /* A subclass of simple_diagnostic_path that adds member functions
-   for adding test events.  */
+   for adding test events and suppresses translation of these events.  */
 
 class test_diagnostic_path : public simple_diagnostic_path
 {
@@ -1024,6 +1024,7 @@ class test_diagnostic_path : public simple_diagnostic_path
   test_diagnostic_path (pretty_printer *event_pp)
   : simple_diagnostic_path (event_pp)
   {
+    disable_event_localization ();
   }
 
   void add_entry (tree fndecl, int stack_depth)
