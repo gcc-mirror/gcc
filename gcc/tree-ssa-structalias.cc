@@ -5269,7 +5269,11 @@ find_func_aliases (struct function *fn, gimple *origt)
 
 	  /* A memory constraint makes the address of the operand escape.  */
 	  if (!allows_reg && allows_mem)
-	    make_escape_constraint (build_fold_addr_expr (op));
+	    {
+	      auto_vec<ce_s> tmpc;
+	      get_constraint_for_address_of (op, &tmpc);
+	      make_constraints_to (escaped_id, tmpc);
+	    }
 
 	  /* The asm may read global memory, so outputs may point to
 	     any global memory.  */
@@ -5298,7 +5302,11 @@ find_func_aliases (struct function *fn, gimple *origt)
 
 	  /* A memory constraint makes the address of the operand escape.  */
 	  if (!allows_reg && allows_mem)
-	    make_escape_constraint (build_fold_addr_expr (op));
+	    {
+	      auto_vec<ce_s> tmpc;
+	      get_constraint_for_address_of (op, &tmpc);
+	      make_constraints_to (escaped_id, tmpc);
+	    }
 	  /* Strictly we'd only need the constraint to ESCAPED if
 	     the asm clobbers memory, otherwise using something
 	     along the lines of per-call clobbers/uses would be enough.  */
