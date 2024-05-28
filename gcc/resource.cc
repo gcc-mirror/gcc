@@ -704,156 +704,150 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 
   CLEAR_HARD_REG_SET (pending_dead_regs);
 
-  /* If we found a basic block, get the live registers from it and update
-     them with anything set or killed between its start and the insn before
-     TARGET; this custom life analysis is really about registers so we need
-     to use the LR problem.  Otherwise, we must assume everything is live.  */
-  if (b != -1)
+  /* Get the live registers from the basic block and update them with
+     anything set or killed between its start and the insn before
+     TARGET; this custom life analysis is really about registers so we
+     need to use the LR problem.  Otherwise, we must assume everything
+     is live.  */
+  regset regs_live = DF_LR_IN (BASIC_BLOCK_FOR_FN (cfun, b));
+  rtx_insn *start_insn, *stop_insn;
+  df_ref def;
+
+  /* Compute hard regs live at start of block.  */
+  REG_SET_TO_HARD_REG_SET (current_live_regs, regs_live);
+  FOR_EACH_ARTIFICIAL_DEF (def, b)
+    if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
+      SET_HARD_REG_BIT (current_live_regs, DF_REF_REGNO (def));
+
+  /* Get starting and ending insn, handling the case where each might
+     be a SEQUENCE.  */
+  start_insn = (b == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->index ?
+		insns : BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, b)));
+  stop_insn = target;
+
+  if (NONJUMP_INSN_P (start_insn)
+      && GET_CODE (PATTERN (start_insn)) == SEQUENCE)
+    start_insn = as_a <rtx_sequence *> (PATTERN (start_insn))->insn (0);
+
+  if (NONJUMP_INSN_P (stop_insn)
+      && GET_CODE (PATTERN (stop_insn)) == SEQUENCE)
+    stop_insn = next_insn (PREV_INSN (stop_insn));
+
+  for (insn = start_insn; insn != stop_insn;
+       insn = next_insn_no_annul (insn))
     {
-      regset regs_live = DF_LR_IN (BASIC_BLOCK_FOR_FN (cfun, b));
-      rtx_insn *start_insn, *stop_insn;
-      df_ref def;
+      rtx link;
+      rtx_insn *real_insn = insn;
+      enum rtx_code code = GET_CODE (insn);
 
-      /* Compute hard regs live at start of block.  */
-      REG_SET_TO_HARD_REG_SET (current_live_regs, regs_live);
-      FOR_EACH_ARTIFICIAL_DEF (def, b)
-	if (DF_REF_FLAGS (def) & DF_REF_AT_TOP)
-	  SET_HARD_REG_BIT (current_live_regs, DF_REF_REGNO (def));
+      if (DEBUG_INSN_P (insn))
+	continue;
 
-      /* Get starting and ending insn, handling the case where each might
-	 be a SEQUENCE.  */
-      start_insn = (b == ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->index ?
-		    insns : BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, b)));
-      stop_insn = target;
+      /* If this insn is from the target of a branch, it isn't going to
+	 be used in the sequel.  If it is used in both cases, this
+	 test will not be true.  */
+      if ((code == INSN || code == JUMP_INSN || code == CALL_INSN)
+	  && INSN_FROM_TARGET_P (insn))
+	continue;
 
-      if (NONJUMP_INSN_P (start_insn)
-	  && GET_CODE (PATTERN (start_insn)) == SEQUENCE)
-	start_insn = as_a <rtx_sequence *> (PATTERN (start_insn))->insn (0);
+      /* If this insn is a USE made by update_block, we care about the
+	 underlying insn.  */
+      if (code == INSN
+	  && GET_CODE (PATTERN (insn)) == USE
+	  && INSN_P (XEXP (PATTERN (insn), 0)))
+	real_insn = as_a <rtx_insn *> (XEXP (PATTERN (insn), 0));
 
-      if (NONJUMP_INSN_P (stop_insn)
-	  && GET_CODE (PATTERN (stop_insn)) == SEQUENCE)
-	stop_insn = next_insn (PREV_INSN (stop_insn));
-
-      for (insn = start_insn; insn != stop_insn;
-	   insn = next_insn_no_annul (insn))
+      if (CALL_P (real_insn))
 	{
-	  rtx link;
-	  rtx_insn *real_insn = insn;
-	  enum rtx_code code = GET_CODE (insn);
-
-	  if (DEBUG_INSN_P (insn))
-	    continue;
-
-	  /* If this insn is from the target of a branch, it isn't going to
-	     be used in the sequel.  If it is used in both cases, this
-	     test will not be true.  */
-	  if ((code == INSN || code == JUMP_INSN || code == CALL_INSN)
-	      && INSN_FROM_TARGET_P (insn))
-	    continue;
-
-	  /* If this insn is a USE made by update_block, we care about the
-	     underlying insn.  */
-	  if (code == INSN
-	      && GET_CODE (PATTERN (insn)) == USE
-	      && INSN_P (XEXP (PATTERN (insn), 0)))
-	    real_insn = as_a <rtx_insn *> (XEXP (PATTERN (insn), 0));
-
-	  if (CALL_P (real_insn))
+	  /* Values in call-clobbered registers survive a COND_EXEC CALL
+	     if that is not executed; this matters for resoure use because
+	     they may be used by a complementarily (or more strictly)
+	     predicated instruction, or if the CALL is NORETURN.  */
+	  if (GET_CODE (PATTERN (real_insn)) != COND_EXEC)
 	    {
-	      /* Values in call-clobbered registers survive a COND_EXEC CALL
-		 if that is not executed; this matters for resoure use because
-		 they may be used by a complementarily (or more strictly)
-		 predicated instruction, or if the CALL is NORETURN.  */
-	      if (GET_CODE (PATTERN (real_insn)) != COND_EXEC)
-		{
-		  HARD_REG_SET regs_invalidated_by_this_call
-		    = insn_callee_abi (real_insn).full_reg_clobbers ();
-		  /* CALL clobbers all call-used regs that aren't fixed except
-		     sp, ap, and fp.  Do this before setting the result of the
-		     call live.  */
-		  current_live_regs &= ~regs_invalidated_by_this_call;
-		}
-
-	      /* A CALL_INSN sets any global register live, since it may
-		 have been modified by the call.  */
-	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		if (global_regs[i])
-		  SET_HARD_REG_BIT (current_live_regs, i);
+	      HARD_REG_SET regs_invalidated_by_this_call
+		= insn_callee_abi (real_insn).full_reg_clobbers ();
+	      /* CALL clobbers all call-used regs that aren't fixed except
+		 sp, ap, and fp.  Do this before setting the result of the
+		 call live.  */
+	      current_live_regs &= ~regs_invalidated_by_this_call;
 	    }
 
-	  /* Mark anything killed in an insn to be deadened at the next
-	     label.  Ignore USE insns; the only REG_DEAD notes will be for
-	     parameters.  But they might be early.  A CALL_INSN will usually
-	     clobber registers used for parameters.  It isn't worth bothering
-	     with the unlikely case when it won't.  */
-	  if ((NONJUMP_INSN_P (real_insn)
-	       && GET_CODE (PATTERN (real_insn)) != USE
-	       && GET_CODE (PATTERN (real_insn)) != CLOBBER)
-	      || JUMP_P (real_insn)
-	      || CALL_P (real_insn))
-	    {
-	      for (link = REG_NOTES (real_insn); link; link = XEXP (link, 1))
-		if (REG_NOTE_KIND (link) == REG_DEAD
-		    && REG_P (XEXP (link, 0))
-		    && REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
-		  add_to_hard_reg_set (&pending_dead_regs,
-				      GET_MODE (XEXP (link, 0)),
-				      REGNO (XEXP (link, 0)));
-
-	      note_stores (real_insn, update_live_status, NULL);
-
-	      /* If any registers were unused after this insn, kill them.
-		 These notes will always be accurate.  */
-	      for (link = REG_NOTES (real_insn); link; link = XEXP (link, 1))
-		if (REG_NOTE_KIND (link) == REG_UNUSED
-		    && REG_P (XEXP (link, 0))
-		    && REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
-		  remove_from_hard_reg_set (&current_live_regs,
-					   GET_MODE (XEXP (link, 0)),
-					   REGNO (XEXP (link, 0)));
-	    }
-
-	  else if (LABEL_P (real_insn))
-	    {
-	      basic_block bb;
-
-	      /* A label clobbers the pending dead registers since neither
-		 reload nor jump will propagate a value across a label.  */
-	      current_live_regs &= ~pending_dead_regs;
-	      CLEAR_HARD_REG_SET (pending_dead_regs);
-
-	      /* We must conservatively assume that all registers that used
-		 to be live here still are.  The fallthrough edge may have
-		 left a live register uninitialized.  */
-	      bb = BLOCK_FOR_INSN (real_insn);
-	      if (bb)
-		{
-		  HARD_REG_SET extra_live;
-
-		  REG_SET_TO_HARD_REG_SET (extra_live, DF_LR_IN (bb));
-		  current_live_regs |= extra_live;
-		}
-	    }
-
-	  /* The beginning of the epilogue corresponds to the end of the
-	     RTL chain when there are no epilogue insns.  Certain resources
-	     are implicitly required at that point.  */
-	  else if (NOTE_P (real_insn)
-		   && NOTE_KIND (real_insn) == NOTE_INSN_EPILOGUE_BEG)
-	    current_live_regs |= start_of_epilogue_needs.regs;
+	  /* A CALL_INSN sets any global register live, since it may
+	     have been modified by the call.  */
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (global_regs[i])
+	      SET_HARD_REG_BIT (current_live_regs, i);
 	}
 
-      res->regs = current_live_regs;
-      if (tinfo != NULL)
+      /* Mark anything killed in an insn to be deadened at the next
+	 label.  Ignore USE insns; the only REG_DEAD notes will be for
+	 parameters.  But they might be early.  A CALL_INSN will usually
+	 clobber registers used for parameters.  It isn't worth bothering
+	 with the unlikely case when it won't.  */
+      if ((NONJUMP_INSN_P (real_insn)
+	   && GET_CODE (PATTERN (real_insn)) != USE
+	   && GET_CODE (PATTERN (real_insn)) != CLOBBER)
+	  || JUMP_P (real_insn)
+	  || CALL_P (real_insn))
 	{
-	  tinfo->block = b;
-	  tinfo->bb_tick = bb_ticks[b];
+	  for (link = REG_NOTES (real_insn); link; link = XEXP (link, 1))
+	    if (REG_NOTE_KIND (link) == REG_DEAD
+		&& REG_P (XEXP (link, 0))
+		&& REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
+	      add_to_hard_reg_set (&pending_dead_regs,
+				   GET_MODE (XEXP (link, 0)),
+				   REGNO (XEXP (link, 0)));
+
+	  note_stores (real_insn, update_live_status, NULL);
+
+	  /* If any registers were unused after this insn, kill them.
+	     These notes will always be accurate.  */
+	  for (link = REG_NOTES (real_insn); link; link = XEXP (link, 1))
+	    if (REG_NOTE_KIND (link) == REG_UNUSED
+		&& REG_P (XEXP (link, 0))
+		&& REGNO (XEXP (link, 0)) < FIRST_PSEUDO_REGISTER)
+	      remove_from_hard_reg_set (&current_live_regs,
+					GET_MODE (XEXP (link, 0)),
+					REGNO (XEXP (link, 0)));
 	}
+
+      else if (LABEL_P (real_insn))
+	{
+	  basic_block bb;
+
+	  /* A label clobbers the pending dead registers since neither
+	     reload nor jump will propagate a value across a label.  */
+	  current_live_regs &= ~pending_dead_regs;
+	  CLEAR_HARD_REG_SET (pending_dead_regs);
+
+	  /* We must conservatively assume that all registers that used
+	     to be live here still are.  The fallthrough edge may have
+	     left a live register uninitialized.  */
+	  bb = BLOCK_FOR_INSN (real_insn);
+	  if (bb)
+	    {
+	      HARD_REG_SET extra_live;
+
+	      REG_SET_TO_HARD_REG_SET (extra_live, DF_LR_IN (bb));
+	      current_live_regs |= extra_live;
+	    }
+	}
+
+      /* The beginning of the epilogue corresponds to the end of the
+	 RTL chain when there are no epilogue insns.  Certain resources
+	 are implicitly required at that point.  */
+      else if (NOTE_P (real_insn)
+	       && NOTE_KIND (real_insn) == NOTE_INSN_EPILOGUE_BEG)
+	current_live_regs |= start_of_epilogue_needs.regs;
     }
-  else
-    /* We didn't find the start of a basic block.  Assume everything
-       in use.  This should happen only extremely rarely.  */
-    SET_HARD_REG_SET (res->regs);
+
+  res->regs = current_live_regs;
+  if (tinfo != NULL)
+    {
+      tinfo->block = b;
+      tinfo->bb_tick = bb_ticks[b];
+    }
 
   if (tinfo != NULL)
     tinfo->live_regs = res->regs;
