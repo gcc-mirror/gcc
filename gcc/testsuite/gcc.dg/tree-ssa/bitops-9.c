@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized-raw" } */
+/* { dg-options "-O2 -fdump-tree-cddce1-raw" } */
 /* PR tree-optimization/115238 */
 
 
@@ -10,6 +10,8 @@ void f(int a, vector8 int *b)
         a = 1;
         *b = a | ((~a) ^ *b);
 }
-/* { dg-final { scan-tree-dump-not     "bit_xor_expr, "     "optimized" } } */
-/* { dg-final { scan-tree-dump-times   "bit_ior_expr, "  1  "optimized" } } */
-/* { dg-final { scan-tree-dump-times   "bit_not_expr, "  1  "optimized" } } */
+/* Scan early on in the phases before the vector has possibily been split
+   but late enough after forwprop or other match-simplify has happened though. */
+/* { dg-final { scan-tree-dump-not     "bit_xor_expr, "     "cddce1" } } */
+/* { dg-final { scan-tree-dump-times   "bit_ior_expr, "  1  "cddce1" } } */
+/* { dg-final { scan-tree-dump-times   "bit_not_expr, "  1  "cddce1" } } */
