@@ -4927,7 +4927,7 @@ package body Sem_Ch4 is
    --  the selector must denote a visible entry.
 
    procedure Analyze_Selected_Component (N : Node_Id) is
-      Name          : constant Node_Id := Prefix (N);
+      Pref          : constant Node_Id := Prefix (N);
       Sel           : constant Node_Id := Selector_Name (N);
       Act_Decl      : Node_Id;
       Comp          : Entity_Id := Empty;
@@ -4962,8 +4962,11 @@ package body Sem_Ch4 is
       --  indexed component rather than a function call.
 
       function Has_Dereference (Nod : Node_Id) return Boolean;
-      --  Check whether prefix includes a dereference, explicit or implicit,
-      --  at any recursive level.
+      --  Check whether Nod includes a dereference, explicit or implicit, at
+      --  any recursive level.
+
+      function Is_Simple_Indexed_Component (Nod : Node_Id) return Boolean;
+      --  Check whether Nod is a simple indexed component in the context
 
       function Try_By_Protected_Procedure_Prefixed_View return Boolean;
       --  Return True if N is an access attribute whose prefix is a prefixed
@@ -5106,6 +5109,40 @@ package body Sem_Ch4 is
             return False;
          end if;
       end Has_Dereference;
+
+      ---------------------------------
+      -- Is_Simple_Indexed_Component --
+      ---------------------------------
+
+      function Is_Simple_Indexed_Component (Nod : Node_Id) return Boolean is
+         Expr : Node_Id;
+
+      begin
+         --  Nod must be an indexed component
+
+         if Nkind (Nod) /= N_Indexed_Component then
+            return False;
+         end if;
+
+         --  The context must not be a nested selected component
+
+         if Nkind (Pref) = N_Selected_Component then
+            return False;
+         end if;
+
+         --  The expressions must not be case expressions
+
+         Expr := First (Expressions (Nod));
+         while Present (Expr) loop
+            if Nkind (Expr) = N_Case_Expression then
+               return False;
+            end if;
+
+            Next (Expr);
+         end loop;
+
+         return True;
+      end Is_Simple_Indexed_Component;
 
       ----------------------------------------------
       -- Try_By_Protected_Procedure_Prefixed_View --
@@ -5292,17 +5329,17 @@ package body Sem_Ch4 is
    begin
       Set_Etype (N, Any_Type);
 
-      if Is_Overloaded (Name) then
+      if Is_Overloaded (Pref) then
          Analyze_Overloaded_Selected_Component (N);
          return;
 
-      elsif Etype (Name) = Any_Type then
+      elsif Etype (Pref) = Any_Type then
          Set_Entity (Sel, Any_Id);
          Set_Etype (Sel, Any_Type);
          return;
 
       else
-         Prefix_Type := Etype (Name);
+         Prefix_Type := Etype (Pref);
       end if;
 
       if Is_Access_Type (Prefix_Type) then
@@ -5345,8 +5382,8 @@ package body Sem_Ch4 is
       --  component prefixes because of the prefixed dispatching call case.
       --  Note that implicit dereferences are checked for this just above.
 
-      elsif Nkind (Name) = N_Explicit_Dereference
-        and then Is_Remote_Access_To_Class_Wide_Type (Etype (Prefix (Name)))
+      elsif Nkind (Pref) = N_Explicit_Dereference
+        and then Is_Remote_Access_To_Class_Wide_Type (Etype (Prefix (Pref)))
         and then Comes_From_Source (N)
       then
          if Try_Object_Operation (N) then
@@ -5397,7 +5434,7 @@ package body Sem_Ch4 is
         Is_Concurrent_Type (Prefix_Type)
           and then Is_Internal_Name (Chars (Prefix_Type))
           and then not Is_Derived_Type (Prefix_Type)
-          and then Is_Entity_Name (Name);
+          and then Is_Entity_Name (Pref);
 
       --  Avoid initializing Comp if that initialization is not needed
       --  (and, more importantly, if the call to First_Entity could fail).
@@ -5425,8 +5462,8 @@ package body Sem_Ch4 is
          --  subsequent semantic checks might examine the original node.
 
          Set_Entity (Sel, Comp);
-         Rewrite (Selector_Name (N), New_Occurrence_Of (Comp, Sloc (N)));
-         Set_Original_Discriminant (Selector_Name (N), Comp);
+         Rewrite (Sel, New_Occurrence_Of (Comp, Sloc (N)));
+         Set_Original_Discriminant (Sel, Comp);
          Set_Etype (N, Etype (Comp));
          Check_Implicit_Dereference (N, Etype (Comp));
 
@@ -5477,7 +5514,7 @@ package body Sem_Ch4 is
                --  to duplicate this prefix and duplication is only allowed
                --  on fully resolved expressions.
 
-               Resolve (Name);
+               Resolve (Pref);
 
                --  Ada 2005 (AI-50217): Check wrong use of incomplete types or
                --  subtypes in a package specification.
@@ -5490,38 +5527,39 @@ package body Sem_Ch4 is
                --       N : Natural := X.all.Comp;  --  ERROR, limited view
                --    end Pkg;                       --  Comp is not visible
 
-               if Nkind (Name) = N_Explicit_Dereference
-                 and then From_Limited_With (Etype (Prefix (Name)))
-                 and then not Is_Potentially_Use_Visible (Etype (Name))
+               if Nkind (Pref) = N_Explicit_Dereference
+                 and then From_Limited_With (Etype (Prefix (Pref)))
+                 and then not Is_Potentially_Use_Visible (Etype (Pref))
                  and then Nkind (Parent (Cunit_Entity (Current_Sem_Unit))) =
                             N_Package_Specification
                then
                   Error_Msg_NE
-                    ("premature usage of incomplete}", Prefix (Name),
-                     Etype (Prefix (Name)));
+                    ("premature usage of incomplete}", Prefix (Pref),
+                     Etype (Prefix (Pref)));
                end if;
 
-               --  We never need an actual subtype for the case of a selection
-               --  for a indexed component of a non-packed array, since in
-               --  this case gigi generates all the checks and can find the
-               --  necessary bounds information.
+               --  We generally do not need an actual subtype for the case of
+               --  a selection for an indexed component of a non-packed array,
+               --  since, in this case, gigi can find all the necessary bound
+               --  information. However, when the prefix is itself a selected
+               --  component, for example a.b.c (i), gigi may regard a.b.c as
+               --  a dynamic-sized temporary, so we generate an actual subtype
+               --  for this case. Moreover, if the expressions are complex,
+               --  the actual subtype may be needed for constructs generated
+               --  by their analysis.
 
                --  We also do not need an actual subtype for the case of a
                --  first, last, length, or range attribute applied to a
                --  non-packed array, since gigi can again get the bounds in
                --  these cases (gigi cannot handle the packed case, since it
                --  has the bounds of the packed array type, not the original
-               --  bounds of the type). However, if the prefix is itself a
-               --  selected component, as in a.b.c (i), gigi may regard a.b.c
-               --  as a dynamic-sized temporary, so we do generate an actual
-               --  subtype for this case.
+               --  bounds of the type).
 
                Parent_N := Parent (N);
 
                if not Is_Packed (Etype (Comp))
                  and then
-                   ((Nkind (Parent_N) = N_Indexed_Component
-                       and then Nkind (Name) /= N_Selected_Component)
+                   (Is_Simple_Indexed_Component (Parent_N)
                      or else
                       (Nkind (Parent_N) = N_Attribute_Reference
                         and then
@@ -5603,8 +5641,8 @@ package body Sem_Ch4 is
                --  Force the generation of a mutably tagged type conversion
                --  when we encounter a special class-wide equivalent type.
 
-               if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (Name)) then
-                  Make_Mutably_Tagged_Conversion (Name, Force => True);
+               if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (Pref)) then
+                  Make_Mutably_Tagged_Conversion (Pref, Force => True);
                end if;
 
                Check_Implicit_Dereference (N, Etype (N));
@@ -5616,7 +5654,7 @@ package body Sem_Ch4 is
             --  which can appear in expanded code in a tag check.
 
             if Ekind (Type_To_Use) = E_Record_Type_With_Private
-              and then Chars (Selector_Name (N)) /= Name_uTag
+              and then Chars (Sel) /= Name_uTag
             then
                exit when Comp = Last_Entity (Type_To_Use);
             end if;
@@ -5786,7 +5824,7 @@ package body Sem_Ch4 is
                elsif Ekind (Comp) in E_Discriminant | E_Entry_Family
                  or else (In_Scope
                             and then not Is_Protected_Type (Prefix_Type)
-                            and then Is_Entity_Name (Name))
+                            and then Is_Entity_Name (Pref))
                then
                   Set_Entity_With_Checks (Sel, Comp);
                   Generate_Reference (Comp, Sel);
@@ -5856,8 +5894,8 @@ package body Sem_Ch4 is
          --  and the selector is one of the task operations.
 
          if In_Scope
-           and then not Is_Entity_Name (Name)
-           and then not Has_Dereference (Name)
+           and then not Is_Entity_Name (Pref)
+           and then not Has_Dereference (Pref)
          then
             if Is_Task_Type (Prefix_Type)
               and then Present (Entity (Sel))
@@ -5974,7 +6012,7 @@ package body Sem_Ch4 is
 
             if Present (Comp) then
                if Is_Single_Concurrent_Object then
-                  Error_Msg_Node_2 := Entity (Name);
+                  Error_Msg_Node_2 := Entity (Pref);
                   Error_Msg_NE ("invisible selector& for &", N, Sel);
 
                else
@@ -6006,7 +6044,7 @@ package body Sem_Ch4 is
       if Etype (N) = Any_Type then
 
          if Is_Single_Concurrent_Object then
-            Error_Msg_Node_2 := Entity (Name);
+            Error_Msg_Node_2 := Entity (Pref);
             Error_Msg_NE ("no selector& for&", N, Sel);
 
             Check_Misspelled_Selector (Type_To_Use, Sel);
