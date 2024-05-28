@@ -385,8 +385,8 @@ MacroBuiltin::asm_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
 }
 
 int
-parseAsmArg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	     InlineAsmContext &inlineAsmCtx)
+parse_asm_arg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+	       InlineAsmContext &inlineAsmCtx)
 {
   auto token = parser.peek_current_token ();
   tl::optional<std::string> fm_string;
@@ -505,7 +505,7 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
     }
 
   // operands stream, also handles the optional ","
-  parseAsmArg (parser, last_token_id, inlineAsmCtx);
+  parse_asm_arg (parser, last_token_id, inlineAsmCtx);
 
   return tl::nullopt;
 }

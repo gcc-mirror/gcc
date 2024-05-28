@@ -31,8 +31,8 @@ public:
 };
 
 int
-parseAsmArg (Parser<MacroInvocLexer> &p, TokenId last_token_id,
-	     InlineAsmContext &inlineAsmCtx);
+parse_asm_arg (Parser<MacroInvocLexer> &p, TokenId last_token_id,
+	       InlineAsmContext &inlineAsmCtx);
 
 tl::optional<AST::Fragment>
 parse_global_asm (location_t invoc_locus, AST::MacroInvocData &invoc);
