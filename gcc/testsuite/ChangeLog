@@ -1,3 +1,11 @@
+2024-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115232
+	* g++.dg/pr115232.C: New testcase.
+
 2024-05-25  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

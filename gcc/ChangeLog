@@ -1,3 +1,12 @@
+2024-05-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115232
+	* gimple-ssa-warn-access.cc (new_delete_mismatch_p): Handle
+	failure to demangle gracefully.
+
 2024-05-23  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
