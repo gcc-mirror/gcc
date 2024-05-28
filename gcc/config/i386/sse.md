@@ -6867,9 +6867,9 @@
   [(set (match_operand:VHF_AVX512VL 0 "register_operand" "=&v")
 	(vec_merge:VHF_AVX512VL
 	  (unspec:VHF_AVX512VL
-	    [(match_operand:VHF_AVX512VL 1 "nonimmediate_operand" "<int_comm>v")
-	     (match_operand:VHF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")
-	     (match_operand:VHF_AVX512VL 3 "register_operand" "0")]
+	    [(match_operand:VHF_AVX512VL 1 "<round_nimm_predicate>" "<int_comm>v")
+	     (match_operand:VHF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")
+	     (match_operand:VHF_AVX512VL 3 "<round_nimm_predicate>" "0")]
 	     UNSPEC_COMPLEX_F_C_MA)
 	  (match_dup 1)
 	  (unspec:<avx512fmaskmode>
@@ -6892,8 +6892,8 @@
 (define_insn "<avx512>_<complexopname>_<mode><maskc_name><round_name>"
   [(set (match_operand:VHF_AVX512VL 0 "register_operand" "=&v")
 	  (unspec:VHF_AVX512VL
-	    [(match_operand:VHF_AVX512VL 1 "nonimmediate_operand" "<int_comm>v")
-	     (match_operand:VHF_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")]
+	    [(match_operand:VHF_AVX512VL 1 "<round_nimm_predicate>" "<int_comm>v")
+	     (match_operand:VHF_AVX512VL 2 "<round_nimm_predicate>" "<round_constraint>")]
 	     UNSPEC_COMPLEX_F_C_MUL))]
   "TARGET_AVX512FP16 && <round_mode512bit_condition>"
 {
