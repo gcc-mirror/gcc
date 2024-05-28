@@ -35,10 +35,6 @@ parse_asm_arg (Parser<MacroInvocLexer> &p, TokenId last_token_id,
 	       InlineAsmContext &inlineAsmCtx);
 
 tl::optional<AST::Fragment>
-parse_global_asm (location_t invoc_locus, AST::MacroInvocData &invoc);
-tl::optional<AST::Fragment>
-parse_nonglobal_asm (location_t invoc_locus, AST::MacroInvocData &invoc);
-tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	   bool is_global_asm);
 
