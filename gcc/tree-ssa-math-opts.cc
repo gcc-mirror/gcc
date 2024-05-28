@@ -4087,33 +4087,56 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
 }
 
 extern bool gimple_unsigned_integer_sat_add (tree, tree*, tree (*)(tree));
+extern bool gimple_unsigned_integer_sat_sub (tree, tree*, tree (*)(tree));
+
+static void
+build_saturation_binary_arith_call (gimple_stmt_iterator *gsi, internal_fn fn,
+				    tree lhs, tree op_0, tree op_1)
+{
+  if (direct_internal_fn_supported_p (fn, TREE_TYPE (lhs), OPTIMIZE_FOR_BOTH))
+    {
+      gcall *call = gimple_build_call_internal (fn, 2, op_0, op_1);
+      gimple_call_set_lhs (call, lhs);
+      gsi_replace (gsi, call, /* update_eh_info */ true);
+    }
+}
 
 /*
- * Try to match saturation arith pattern(s).
- *   1. SAT_ADD (unsigned)
- *      _7 = _4 + _6;
- *      _8 = _4 > _7;
- *      _9 = (long unsigned int) _8;
- *      _10 = -_9;
- *      _12 = _7 | _10;
- *      =>
- *      _12 = .SAT_ADD (_4, _6);  */
-static void
-match_saturation_arith (gimple_stmt_iterator *gsi, gassign *stmt)
-{
-  gcall *call = NULL;
+ * Try to match saturation unsigned add.
+ *   _7 = _4 + _6;
+ *   _8 = _4 > _7;
+ *   _9 = (long unsigned int) _8;
+ *   _10 = -_9;
+ *   _12 = _7 | _10;
+ *   =>
+ *   _12 = .SAT_ADD (_4, _6);  */
 
+static void
+match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gassign *stmt)
+{
   tree ops[2];
   tree lhs = gimple_assign_lhs (stmt);
 
-  if (gimple_unsigned_integer_sat_add (lhs, ops, NULL)
-      && direct_internal_fn_supported_p (IFN_SAT_ADD, TREE_TYPE (lhs),
-					 OPTIMIZE_FOR_BOTH))
-    {
-      call = gimple_build_call_internal (IFN_SAT_ADD, 2, ops[0], ops[1]);
-      gimple_call_set_lhs (call, lhs);
-      gsi_replace (gsi, call, true);
-    }
+  if (gimple_unsigned_integer_sat_add (lhs, ops, NULL))
+    build_saturation_binary_arith_call (gsi, IFN_SAT_ADD, lhs, ops[0], ops[1]);
+}
+
+/*
+ * Try to match saturation unsigned sub.
+ *   _1 = _4 >= _5;
+ *   _3 = _4 - _5;
+ *   _6 = _1 ? _3 : 0;
+ *   =>
+ *   _6 = .SAT_SUB (_4, _5);  */
+
+static void
+match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gassign *stmt)
+{
+  tree ops[2];
+  tree lhs = gimple_assign_lhs (stmt);
+
+  if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL))
+    build_saturation_binary_arith_call (gsi, IFN_SAT_SUB, lhs, ops[0], ops[1]);
 }
 
 /* Recognize for unsigned x
@@ -6078,7 +6101,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      break;
 
 	    case BIT_IOR_EXPR:
-	      match_saturation_arith (&gsi, as_a<gassign *> (stmt));
+	      match_unsigned_saturation_add (&gsi, as_a<gassign *> (stmt));
 	      /* fall-through  */
 	    case BIT_XOR_EXPR:
 	      match_uaddc_usubc (&gsi, stmt, code);
@@ -6087,6 +6110,10 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	    case EQ_EXPR:
 	    case NE_EXPR:
 	      match_single_bit_test (&gsi, stmt);
+	      break;
+
+	    case COND_EXPR:
+	      match_unsigned_saturation_sub (&gsi, as_a<gassign *> (stmt));
 	      break;
 
 	    default:;
