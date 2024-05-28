@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -mno-vector-strict-align" } */
 
 #include <stdint-gcc.h>
 

@@ -934,6 +934,10 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
   || (riscv_microarchitecture == sifive_p400) \
   || (riscv_microarchitecture == sifive_p600))
 
+/* True if the target supports misaligned vector loads and stores.  */
+#define TARGET_VECTOR_MISALIGN_SUPPORTED \
+   riscv_vector_unaligned_access_p
+
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
 /* Control the assembler format that we output.  */
@@ -1161,6 +1165,7 @@ while (0)
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_slow_unaligned_access_p;
+extern bool riscv_vector_unaligned_access_p;
 extern bool riscv_user_wants_strict_align;
 extern unsigned riscv_stack_boundary;
 extern unsigned riscv_bytes_per_vector_chunk;

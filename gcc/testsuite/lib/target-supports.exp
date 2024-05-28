@@ -2044,7 +2044,7 @@ proc check_effective_target_riscv_zvfh_ok { } {
     # check if we can execute vector insns with the given hardware or
     # simulator
     set gcc_march [regsub {[[:alnum:]]*} [riscv_get_arch] &v]
-    if { [check_runtime ${gcc_march}_exec {
+    if { [check_runtime ${gcc_march}_zvfh_exec {
 	int main()
 	{
 	    asm ("vsetivli zero,8,e16,m1,ta,ma");
@@ -2056,6 +2056,8 @@ proc check_effective_target_riscv_zvfh_ok { } {
 
     return 0
 }
+
+# Return 1 if we can execute code when using dg-add-options riscv_zvbb
 
 proc check_effective_target_riscv_zvbb_ok { } {
     # If the target already supports v without any added options,
@@ -2076,6 +2078,28 @@ proc check_effective_target_riscv_zvbb_ok { } {
 	} } "-march=${gcc_march}"] } {
 	    return 1
 	}
+    return 0
+}
+
+# Return 1 if we can load a vector from a 1-byte aligned address.
+
+proc check_effective_target_riscv_v_misalign_ok { } {
+
+    if { ![check_effective_target_riscv_v_ok] } {
+	return 0
+    }
+
+    set gcc_march [riscv_get_arch]
+    if { [check_runtime ${gcc_march}_misalign_exec {
+	  int main() {
+	      unsigned char a[16]
+		= {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+	      asm ("vsetivli zero,7,e8,m1,ta,ma");
+	      asm ("addi a7,%0,1" : : "r" (a) : "a7" );
+	      asm ("vle8.v v8,0(a7)" : : : "v8");
+	      return 0; } } "-march=${gcc_march}"] } {
+	return 1
+    }
 
     return 0
 }
@@ -8184,7 +8208,6 @@ proc check_effective_target_vect_hw_misalign { } {
 	     || ([istarget mips*-*-*] && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || ([istarget riscv*-*-*])
 	     || ([istarget loongarch*-*-*])
 	     || [istarget amdgcn*-*-*] } {
 	  return 1
@@ -8193,6 +8216,11 @@ proc check_effective_target_vect_hw_misalign { } {
 	     && ![check_effective_target_arm_vect_no_misalign] } {
 	  return 1
 	}
+	if { [istarget riscv*-*-*]
+	     && [check_effective_target_riscv_v_misalign_ok] } {
+	    return 1
+	}
+
         return 0
     }]
 }
@@ -11610,6 +11638,9 @@ proc check_vect_support_and_set_flags { } {
     } elseif [istarget riscv*-*-*] {
 	if [check_effective_target_riscv_v] {
 	    set dg-do-what-default run
+	    if [check_effective_target_riscv_v_misalign_ok] {
+		lappend DEFAULT_VECTCFLAGS "-mno-vector-strict-align"
+	    }
 	} else {
 	    foreach item [add_options_for_riscv_v ""] {
 		lappend DEFAULT_VECTCFLAGS $item

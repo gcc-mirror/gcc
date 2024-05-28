@@ -128,6 +128,14 @@ mstrict-align
 Target Mask(STRICT_ALIGN) Save
 Do not generate unaligned memory accesses.
 
+mscalar-strict-align
+Target Save Alias(mstrict-align)
+Do not generate unaligned scalar memory accesses.
+
+mvector-strict-align
+Target Save Var(rvv_vector_strict_align) Init(1)
+Do not create element-misaligned vector memory accesses.
+
 Enum
 Name(code_model) Type(enum riscv_code_model)
 Known code models (for use with the -mcmodel= option):

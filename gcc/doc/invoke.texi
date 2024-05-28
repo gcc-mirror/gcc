@@ -31104,6 +31104,23 @@ Do not or do generate unaligned memory accesses.  The default is set depending
 on whether the processor we are optimizing for supports fast unaligned access
 or not.
 
+@opindex mscalar-strict-align
+@opindex mno-scalar-strict-align
+@item -mscalar-strict-align
+@itemx -mno-scalar-strict-align
+Do not or do generate unaligned memory accesses.  The default is set depending
+on whether the processor we are optimizing for supports fast unaligned access
+or not.  This is an alias for @option{-mstrict-align}.
+
+@opindex mvector-strict-align
+@opindex mno-vector-strict-align
+@item -mvector-strict-align
+@itemx -mno-vector-strict-align
+Do not or do generate unaligned vector memory accesses.  The default is set
+to off unless the processor we are optimizing for explicitly supports
+element-misaligned vector memory access.
+
+
 @opindex mcmodel=
 @opindex mcmodel=medlow
 @item -mcmodel=medlow
