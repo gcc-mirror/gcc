@@ -4744,11 +4744,9 @@ struct InlineAsmRegOrRegClass
   };
 
   Type type;
-  union
-  {
-    struct Reg reg;
-    struct RegClass regClass;
-  };
+  struct Reg reg;
+  struct RegClass regClass;
+
   Identifier name;
   location_t locus;
 };
@@ -4802,6 +4800,15 @@ struct InlineAsmOperand
   {
     std::unique_ptr<Expr> sym;
   };
+  RegisterType registerType;
+
+  struct In in;
+  struct Out out;
+  struct InOut inOut;
+  struct SplitInOut splitInOut;
+  struct Const cnst;
+  struct Sym sym;
+
   location_t locus;
 };
 
