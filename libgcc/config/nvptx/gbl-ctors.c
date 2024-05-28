@@ -1,0 +1,74 @@
+/* Global constructor/destructor support
+
+   Copyright (C) 2024 Free Software Foundation, Inc.
+
+   This file is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 3, or (at your option) any
+   later version.
+
+   This file is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   Under Section 7 of GPL version 3, you are granted additional
+   permissions described in the GCC Runtime Library Exception, version
+   3.1, as published by the Free Software Foundation.
+
+   You should have received a copy of the GNU General Public License and
+   a copy of the GCC Runtime Library Exception along with this program;
+   see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+   <http://www.gnu.org/licenses/>.  */
+
+#include "auto-target.h"
+
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#include "gbl-ctors.h"
+
+extern int atexit (void (*function) (void));
+
+
+/* Handler functions ('static', in contrast to the 'gbl-ctors.h'
+   prototypes).  */
+
+static void __static_do_global_ctors (void);
+
+static void
+__static_do_global_ctors (void)
+{
+  __SIZE_TYPE__ nptrs = (__SIZE_TYPE__) __CTOR_LIST__[0];
+  for (__SIZE_TYPE__ i = nptrs; i >= 1; --i)
+    __CTOR_LIST__[i] ();
+}
+
+static void __static_do_global_dtors (void);
+
+static void
+__static_do_global_dtors (void)
+{
+  func_ptr *p = __DTOR_LIST__;
+  ++p;
+  for (; *p; ++p)
+    (*p) ();
+}
+
+
+/* For nvptx target configurations, override the 'crt0.c' dummy.  */
+
+extern void __gbl_ctors (void);
+
+void
+__gbl_ctors (void)
+{
+  __static_do_global_ctors ();
+  atexit (__static_do_global_dtors);
+}
+
+
+/* The following symbol just provides a means for the nvptx-tools 'ld' to
+   trigger linking in this file.  */
+
+int __trigger_gbl_ctors;

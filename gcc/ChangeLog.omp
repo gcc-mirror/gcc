@@ -1,3 +1,20 @@
+2024-05-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.h: Configure global constructor, destructor
+	support.
+	gcc/testsuite/
+	* gcc.dg/no_profile_instrument_function-attr-1.c: GCC/nvptx is
+	'NO_DOT_IN_LABEL' but not 'NO_DOLLAR_IN_LABEL', so '$' may apper
+	in identifiers.
+	* lib/target-supports.exp
+	(check_effective_target_global_constructor): Enable for nvptx.
+	libgcc/
+	* config/nvptx/crt0.c (__gbl_ctors): New weak function.
+	(__main): Invoke it.
+	* config/nvptx/gbl-ctors.c: New.
+	* config/nvptx/t-nvptx: Configure global constructor, destructor
+	support.
+
 2022-10-24  Andrew Stubbs  <ams@codesourcery.com>
 
 	* tree-vect-data-refs.cc (vect_analyze_data_refs): Workaround an
