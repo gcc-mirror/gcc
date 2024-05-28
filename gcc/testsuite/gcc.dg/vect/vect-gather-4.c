@@ -45,4 +45,7 @@ f3 (int *restrict y, int *restrict x, int *restrict indices)
     }
 }
 
-/* { dg-final { scan-tree-dump-not "vectorizing stmts using SLP" vect } } */
+/* We do not want to see a two-lane .MASK_LOAD or .MASK_GATHER_LOAD since
+   the gathers are different on each lane.  This is a bit fragile and
+   should possibly be turned into a runtime test.  */
+/* { dg-final { scan-tree-dump-not "stmt 1 \[^\r\n\]* = .MASK" vect } } */
