@@ -5303,19 +5303,6 @@ set_array_declarator_inner (struct c_declarator *decl,
   return decl;
 }
 
-/* Determine whether TYPE is a ISO C99 flexible array memeber type "[]".  */
-static bool
-flexible_array_member_type_p (const_tree type)
-{
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_SIZE (type) == NULL_TREE
-      && TYPE_DOMAIN (type) != NULL_TREE
-      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE)
-    return true;
-
-  return false;
-}
-
 /* Determine whether TYPE is a one-element array type "[1]".  */
 static bool
 one_element_array_type_p (const_tree type)
@@ -5353,7 +5340,7 @@ add_flexible_array_elts_to_size (tree decl, tree init)
 
   elt = CONSTRUCTOR_ELTS (init)->last ().value;
   type = TREE_TYPE (elt);
-  if (flexible_array_member_type_p (type))
+  if (c_flexible_array_member_type_p (type))
     {
       complete_array_type (&type, elt, false);
       /* For a structure, add the size of the initializer to the DECL's
@@ -9340,7 +9327,7 @@ is_flexible_array_member_p (bool is_last_field,
 
   bool is_zero_length_array = zero_length_array_type_p (TREE_TYPE (x));
   bool is_one_element_array = one_element_array_type_p (TREE_TYPE (x));
-  bool is_flexible_array = flexible_array_member_type_p (TREE_TYPE (x));
+  bool is_flexible_array = c_flexible_array_member_type_p (TREE_TYPE (x));
 
   unsigned int strict_flex_array_level = c_strict_flex_array_level_of (x);
 
@@ -9410,6 +9397,55 @@ c_update_type_canonical (tree t)
     }
 }
 
+/* Verify the argument of the counted_by attribute of the flexible array
+   member FIELD_DECL is a valid field of the containing structure,
+   STRUCT_TYPE, Report error and remove this attribute when it's not.  */
+
+static void
+verify_counted_by_attribute (tree struct_type, tree field_decl)
+{
+  tree attr_counted_by = lookup_attribute ("counted_by",
+					   DECL_ATTRIBUTES (field_decl));
+
+  if (!attr_counted_by)
+    return;
+
+  /* If there is an counted_by attribute attached to the field,
+     verify it.  */
+
+  tree fieldname = TREE_VALUE (TREE_VALUE (attr_counted_by));
+
+  /* Verify the argument of the attrbute is a valid field of the
+     containing structure.  */
+
+  tree counted_by_field = lookup_field (struct_type, fieldname);
+
+  /* Error when the field is not found in the containing structure.  */
+  if (!counted_by_field)
+    error_at (DECL_SOURCE_LOCATION (field_decl),
+	      "argument %qE to the %qE attribute is not a field declaration"
+	      " in the same structure as %qD", fieldname,
+	      (get_attribute_name (attr_counted_by)),
+	      field_decl);
+
+  else
+  /* Error when the field is not with an integer type.  */
+    {
+      while (TREE_CHAIN (counted_by_field))
+	counted_by_field = TREE_CHAIN (counted_by_field);
+      tree real_field = TREE_VALUE (counted_by_field);
+
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (real_field)))
+	error_at (DECL_SOURCE_LOCATION (field_decl),
+		  "argument %qE to the %qE attribute is not a field declaration"
+		  " with an integer type", fieldname,
+		  (get_attribute_name (attr_counted_by)));
+
+    }
+
+  return;
+}
+
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    LOC is the location of the RECORD_TYPE or UNION_TYPE's definition.
    FIELDLIST is a chain of FIELD_DECL nodes for the fields.
@@ -9470,6 +9506,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
      until now.)  */
 
   bool saw_named_field = false;
+  tree counted_by_fam_field = NULL_TREE;
   for (x = fieldlist; x; x = DECL_CHAIN (x))
     {
       /* Whether this field is the last field of the structure or union.
@@ -9530,7 +9567,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	DECL_PACKED (x) = 1;
 
       /* Detect flexible array member in an invalid context.  */
-      if (flexible_array_member_type_p (TREE_TYPE (x)))
+      if (c_flexible_array_member_type_p (TREE_TYPE (x)))
 	{
 	  if (TREE_CODE (t) == UNION_TYPE)
 	    pedwarn (DECL_SOURCE_LOCATION (x), OPT_Wpedantic,
@@ -9545,6 +9582,12 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	    pedwarn (DECL_SOURCE_LOCATION (x), OPT_Wpedantic,
 		     "flexible array member in a struct with no named "
 		     "members is a GCC extension");
+
+	  /* If there is a counted_by attribute attached to this field,
+	     record it here and do more verification later after the
+	     whole structure is complete.  */
+	  if (lookup_attribute ("counted_by", DECL_ATTRIBUTES (x)))
+	    counted_by_fam_field = x;
 	}
 
       if (pedantic && TREE_CODE (t) == RECORD_TYPE
@@ -9559,7 +9602,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	 when x is an array and is the last field.  */
       if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE)
 	TYPE_INCLUDES_FLEXARRAY (t)
-	  = is_last_field && flexible_array_member_type_p (TREE_TYPE (x));
+	  = is_last_field && c_flexible_array_member_type_p (TREE_TYPE (x));
       /* Recursively set TYPE_INCLUDES_FLEXARRAY for the context of x, t
 	 when x is an union or record and is the last field.  */
       else if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
@@ -9815,6 +9858,9 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  && !in_sizeof && !in_typeof && !in_alignof)
 	struct_parse_info->struct_types.safe_push (t);
      }
+
+  if (counted_by_fam_field)
+    verify_counted_by_attribute (t, counted_by_fam_field);
 
   return t;
 }

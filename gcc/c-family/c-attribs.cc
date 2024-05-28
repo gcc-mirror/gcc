@@ -105,6 +105,8 @@ static tree handle_warn_if_not_aligned_attribute (tree *, tree, tree,
 						  int, bool *);
 static tree handle_strict_flex_array_attribute (tree *, tree, tree,
 						 int, bool *);
+static tree handle_counted_by_attribute (tree *, tree, tree,
+					   int, bool *);
 static tree handle_weak_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_noplt_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_alias_ifunc_attribute (bool, tree *, tree, tree, bool *);
@@ -412,6 +414,8 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      handle_warn_if_not_aligned_attribute, NULL },
   { "strict_flex_array",      1, 1, true, false, false, false,
 			      handle_strict_flex_array_attribute, NULL },
+  { "counted_by",	      1, 1, true, false, false, false,
+			      handle_counted_by_attribute, NULL },
   { "weak",                   0, 0, true,  false, false, false,
 			      handle_weak_attribute, NULL },
   { "noplt",                   0, 0, true,  false, false, false,
@@ -659,7 +663,8 @@ attribute_takes_identifier_p (const_tree attr_id)
   else if (!strcmp ("mode", spec->name)
 	   || !strcmp ("format", spec->name)
 	   || !strcmp ("cleanup", spec->name)
-	   || !strcmp ("access", spec->name))
+	   || !strcmp ("access", spec->name)
+	   || !strcmp ("counted_by", spec->name))
     return true;
   else
     return targetm.attribute_takes_identifier_p (attr_id);
@@ -2802,6 +2807,67 @@ handle_strict_flex_array_attribute (tree *node, tree name,
 		"%qE attribute argument %qE is not an integer constant"
 		" between 0 and 3", name, argval);
       *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "counted_by" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_counted_by_attribute (tree *node, tree name,
+			     tree args, int ARG_UNUSED (flags),
+			     bool *no_add_attrs)
+{
+  tree decl = *node;
+  tree argval = TREE_VALUE (args);
+  tree old_counted_by = lookup_attribute ("counted_by", DECL_ATTRIBUTES (decl));
+
+  /* This attribute only applies to field decls of a structure.  */
+  if (TREE_CODE (decl) != FIELD_DECL)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute is not allowed for a non-field"
+		" declaration %q+D", name, decl);
+      *no_add_attrs = true;
+    }
+  /* This attribute only applies to field with array type.  */
+  else if (TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute is not allowed for a non-array field",
+		name);
+      *no_add_attrs = true;
+    }
+  /* This attribute only applies to a C99 flexible array member type.  */
+  else if (! c_flexible_array_member_type_p (TREE_TYPE (decl)))
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%qE attribute is not allowed for a non-flexible"
+		" array member field", name);
+      *no_add_attrs = true;
+    }
+  /* The argument should be an identifier.  */
+  else if (TREE_CODE (argval) != IDENTIFIER_NODE)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"%<counted_by%> argument is not an identifier");
+      *no_add_attrs = true;
+    }
+  /* Issue error when there is a counted_by attribute with a different
+     field as the argument for the same flexible array member field.  */
+  else if (old_counted_by != NULL_TREE)
+    {
+      tree old_fieldname = TREE_VALUE (TREE_VALUE (old_counted_by));
+      if (strcmp (IDENTIFIER_POINTER (old_fieldname),
+		  IDENTIFIER_POINTER (argval)) != 0)
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "%<counted_by%> argument %qE conflicts with"
+		    " previous declaration %qE", argval, old_fieldname);
+	  *no_add_attrs = true;
+	}
     }
 
   return NULL_TREE;

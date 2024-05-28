@@ -7788,6 +7788,74 @@ align them on any target.
 The @code{aligned} attribute can also be used for functions
 (@pxref{Common Function Attributes}.)
 
+@cindex @code{counted_by} variable attribute
+@item counted_by (@var{count})
+The @code{counted_by} attribute may be attached to the C99 flexible array
+member of a structure.  It indicates that the number of the elements of the
+array is given by the field "@var{count}" in the same structure as the
+flexible array member.
+GCC may use this information to improve detection of object size information
+for such structures and provide better results in compile-time diagnostics
+and runtime features like the array bound sanitizer and
+the @code{__builtin_dynamic_object_size}.
+
+For instance, the following code:
+
+@smallexample
+struct P @{
+  size_t count;
+  char other;
+  char array[] __attribute__ ((counted_by (count)));
+@} *p;
+@end smallexample
+
+@noindent
+specifies that the @code{array} is a flexible array member whose number of
+elements is given by the field @code{count} in the same structure.
+
+The field that represents the number of the elements should have an
+integer type.  Otherwise, the compiler reports an error and ignores
+the attribute.
+
+When the field that represents the number of the elements is assigned a
+negative integer value, the compiler treats the value as zero.
+
+An explicit @code{counted_by} annotation defines a relationship between
+two objects, @code{p->array} and @code{p->count}, and there are the
+following requirementthat on the relationship between this pair:
+
+@itemize @bullet
+@item
+@code{p->count} must be initialized before the first reference to
+@code{p->array};
+
+@item
+@code{p->array} has @emph{at least} @code{p->count} number of elements
+available all the time.  This relationship must hold even after any of
+these related objects are updated during the program.
+@end itemize
+
+It's the user's responsibility to make sure the above requirements to
+be kept all the time.  Otherwise the compiler reports warnings,
+at the same time, the results of the array bound sanitizer and the
+@code{__builtin_dynamic_object_size} is undefined.
+
+One important feature of the attribute is, a reference to the flexible
+array member field uses the latest value assigned to the field that
+represents the number of the elements before that reference.  For example,
+
+@smallexample
+  p->count = val1;
+  p->array[20] = 0;  // ref1 to p->array
+  p->count = val2;
+  p->array[30] = 0;  // ref2 to p->array
+@end smallexample
+
+@noindent
+in the above, @code{ref1} uses @code{val1} as the number of the elements in
+@code{p->array}, and @code{ref2} uses @code{val2} as the number of elements
+in @code{p->array}.
+
 @cindex @code{alloc_size} variable attribute
 @item alloc_size (@var{position})
 @itemx alloc_size (@var{position-1}, @var{position-2})

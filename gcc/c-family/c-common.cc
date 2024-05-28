@@ -9942,6 +9942,19 @@ c_common_finalize_early_debug (void)
       (*debug_hooks->early_global_decl) (cnode->decl);
 }
 
+/* Determine whether TYPE is an ISO C99 flexible array member type "[]".  */
+bool
+c_flexible_array_member_type_p (const_tree type)
+{
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_SIZE (type) == NULL_TREE
+      && TYPE_DOMAIN (type) != NULL_TREE
+      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE)
+    return true;
+
+  return false;
+}
+
 /* Get the LEVEL of the strict_flex_array for the ARRAY_FIELD based on the
    values of attribute strict_flex_array and the flag_strict_flex_arrays.  */
 unsigned int
