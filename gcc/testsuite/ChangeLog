@@ -1,3 +1,45 @@
+2024-05-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115238
+	* gcc.dg/tree-ssa/bitops-9.c: New test.
+
+2024-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115220
+	PR tree-optimization/115226
+	* gcc.dg/torture/pr115220.c: New testcase.
+	* gcc.dg/torture/pr115226.c: New testcase.
+
+2024-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115232
+	* g++.dg/pr115232.C: New testcase.
+
+2024-05-27  Simon Martin  <simartin@gcc.gnu.org>
+
+	PR c++/105229
+	* g++.dg/parse/crash72.C: New test.
+
+2024-05-27  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/zmmul-3.c: New test.
+
+2024-05-27  Lyut Nersisyan  <lyut.nersisyan@gmail.com>
+
+	* gcc.target/riscv/and-shift32.c: New test.
+	* gcc.target/riscv/and-shift64.c: New test.
+	Co-authored-by: Jeffrey A Law <jlaw@ventanamicro.com>
+
+2024-05-27  Levy Hsu  <admin@levyhsu.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/115146
+	* g++.target/i386/pr107563-a.C: Append '-mno-sse3' to compile option
+	to avoid test failure on hosts with SSE3 support.
+	* g++.target/i386/pr107563-b.C: Append '-mno-sse3' to compile option
+	to avoid test failure on hosts with SSE3 support.
+	* gcc.target/i386/pr115146.c: New test.
+
 2024-05-26  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/synthesis-8.c: New test.

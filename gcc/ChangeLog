@@ -1,3 +1,79 @@
+2024-05-27  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115238
+	* generic-match-head.cc (bitwise_inverted_equal_p): Use
+	uniform_integer_cst_p instead of checking INTEGER_CST.
+	* gimple-match-head.cc (gimple_bitwise_inverted_equal_p): Likewise.
+
+2024-05-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi: Replace all occurrences of xref
+	{foo, , , gm2} with xref {foo}.
+
+2024-05-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (scc_visit): Mark the node we
+	collapse to as being in a component.
+
+2024-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115220
+	PR tree-optimization/115226
+	* tree-ssa-sink.cc (statement_sink_location): When ignoring
+	paths to kills when sinking stores make sure the final
+	sink location is still post-dominated by the original one.
+	Otherwise we'd need to insert a PHI node to merge virtual operands.
+
+2024-05-27  TheShermanTanker  <tanksherman27@gmail.com>
+
+	* config/mingw/mingw32.h: Add new define for POSIX
+	threads.
+
+2024-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115232
+	* gimple-ssa-warn-access.cc (new_delete_mismatch_p): Handle
+	failure to demangle gracefully.
+
+2024-05-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (What is GNU Modula-2): Move gcc.gnu.org links to
+	https.
+	(Other languages): Ditto. And fix casing of GCC.
+
+2024-05-27  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add TARGET_ZMMUL.
+
+2024-05-27  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* doc/invoke.texi (Option Summary): Add `-md', `-md-float', and
+	`-mg-float' options.  Reorder, matching VAX Options.
+	(VAX Options): Reword the description of `-mg' option.  Add
+	`-md', `-md-float', and `-mg-float' options.
+
+2024-05-27  Abe Skolnik  <abe_skolnik@yahoo.com>
+
+	PR target/79646
+	* config/vax/vax.opt (md, md-float, mg, mg-float): Correct
+	descriptions.
+
+2024-05-27  Lyut Nersisyan  <lyut.nersisyan@gmail.com>
+
+	* config/riscv/riscv.md (<optab>_shift_reverse<X:mode>): New pattern.
+
+2024-05-27  Levy Hsu  <admin@levyhsu.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/115146
+	* config/i386/i386-expand.cc (expand_vec_perm_psrlw_psllw_por): Replace arithmatic shift
+	gen_ashrv4hi3 with logic shift gen_lshrv4hi3.
+	Replace gen_vlshrv8hi3 with gen_lshrv8hi3 and gen_vashlv8hi3 with gen_ashlv8hi3.
+
+2024-05-27  Pan Li  <pan2.li@intel.com>
+
+	* genmatch.cc (dt_node::gen_kids_1): Fix indenet mis-aligned.
+
 2024-05-26  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/riscv.cc (riscv_build_integer_one): Verify there
