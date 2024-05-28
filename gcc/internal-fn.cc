@@ -3438,6 +3438,40 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
     }
 }
 
+/* Expand the IFN_ACCESS_WITH_SIZE function:
+   ACCESS_WITH_SIZE (REF_TO_OBJ, REF_TO_SIZE, CLASS_OF_SIZE,
+		     TYPE_OF_SIZE, ACCESS_MODE)
+   which returns the REF_TO_OBJ same as the 1st argument;
+
+   1st argument REF_TO_OBJ: The reference to the object;
+   2nd argument REF_TO_SIZE: The reference to the size of the object,
+   3rd argument CLASS_OF_SIZE: The size referenced by the REF_TO_SIZE represents
+     0: the number of bytes.
+     1: the number of the elements of the object type;
+   4th argument TYPE_OF_SIZE: A constant 0 with its TYPE being the same as the TYPE
+    of the object referenced by REF_TO_SIZE
+   5th argument ACCESS_MODE:
+    -1: Unknown access semantics
+     0: none
+     1: read_only
+     2: write_only
+     3: read_write
+
+   Both the return type and the type of the first argument of this
+   function have been converted from the incomplete array type to
+   the corresponding pointer type.
+
+   For each call to a .ACCESS_WITH_SIZE, replace it with its 1st argument.  */
+
+static void
+expand_ACCESS_WITH_SIZE (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree ref_to_obj = gimple_call_arg (stmt, 0);
+  if (lhs)
+    expand_assignment (lhs, ref_to_obj, false);
+}
+
 /* The size of an OpenACC compute dimension.  */
 
 static void

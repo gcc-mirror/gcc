@@ -5772,6 +5772,14 @@ extern special_array_member component_ref_sam_type (tree);
    cannot be determined.  */
 extern tree component_ref_size (tree, special_array_member * = NULL);
 
+/* Return true if the given node is a call to a .ACCESS_WITH_SIZE
+   function.  */
+extern bool is_access_with_size_p (const_tree);
+
+/* Get the corresponding reference from the call to a .ACCESS_WITH_SIZE,
+ * i.e. the first argument of this call.  Return NULL_TREE otherwise.  */
+extern tree get_ref_from_access_with_size (tree);
+
 extern int tree_map_base_eq (const void *, const void *);
 extern unsigned int tree_map_base_hash (const void *);
 extern bool tree_map_base_marked_p (const void *);

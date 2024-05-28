@@ -779,7 +779,7 @@ extern void mark_exp_read (tree);
 extern tree composite_type (tree, tree);
 extern tree lookup_field (const_tree, tree);
 extern tree build_component_ref (location_t, tree, tree, location_t,
-				 location_t);
+				 location_t, bool = true);
 extern tree build_array_ref (location_t, tree, tree);
 extern tree build_omp_array_section (location_t, tree, tree, tree);
 extern tree build_external_ref (location_t, tree, bool, tree *);

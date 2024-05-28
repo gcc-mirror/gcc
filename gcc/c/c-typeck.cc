@@ -2652,15 +2652,116 @@ should_suggest_deref_p (tree datum_type)
     return false;
 }
 
+/* For a SUBDATUM field of a structure or union DATUM, generate a REF to
+   the object that represents its counted_by per the attribute counted_by
+   attached to this field if it's a flexible array member field, otherwise
+   return NULL_TREE.
+   Set COUNTED_BY_TYPE to the TYPE of the counted_by field.
+   For example, if:
+
+    struct P {
+      int k;
+      int x[] __attribute__ ((counted_by (k)));
+    } *p;
+
+    for:
+    p->x
+
+    the ref to the object that represents its element count will be:
+
+    &(p->k)
+
+*/
+static tree
+build_counted_by_ref (tree datum, tree subdatum, tree *counted_by_type)
+{
+  tree type = TREE_TYPE (datum);
+  if (!c_flexible_array_member_type_p (TREE_TYPE (subdatum)))
+    return NULL_TREE;
+
+  tree attr_counted_by = lookup_attribute ("counted_by",
+					   DECL_ATTRIBUTES (subdatum));
+  tree counted_by_ref = NULL_TREE;
+  *counted_by_type = NULL_TREE;
+  if (attr_counted_by)
+    {
+      tree field_id = TREE_VALUE (TREE_VALUE (attr_counted_by));
+      counted_by_ref
+	= build_component_ref (UNKNOWN_LOCATION,
+			       datum, field_id,
+			       UNKNOWN_LOCATION, UNKNOWN_LOCATION);
+      counted_by_ref = build_fold_addr_expr (counted_by_ref);
+
+      /* Get the TYPE of the counted_by field.  */
+      tree counted_by_field = lookup_field (type, field_id);
+      gcc_assert (counted_by_field);
+
+      do
+	{
+	  *counted_by_type = TREE_TYPE (TREE_VALUE (counted_by_field));
+	  counted_by_field = TREE_CHAIN (counted_by_field);
+	}
+      while (counted_by_field);
+    }
+  return counted_by_ref;
+}
+
+/* Given a COMPONENT_REF REF with the location LOC, the corresponding
+   COUNTED_BY_REF, and the COUNTED_BY_TYPE, generate an INDIRECT_REF
+   to a call to the internal function .ACCESS_WITH_SIZE.
+
+   REF
+
+   to:
+
+   (*.ACCESS_WITH_SIZE (REF, COUNTED_BY_REF, 1, (TYPE_OF_SIZE)0, -1))
+
+   NOTE: The return type of this function is the POINTER type pointing
+   to the original flexible array type.
+   Then the type of the INDIRECT_REF is the original flexible array type.
+
+   The type of the first argument of this function is a POINTER type
+   to the original flexible array type.
+
+   The 4th argument of the call is a constant 0 with the TYPE of the
+   object pointed by COUNTED_BY_REF.
+
+  */
+static tree
+build_access_with_size_for_counted_by (location_t loc, tree ref,
+				       tree counted_by_ref,
+				       tree counted_by_type)
+{
+  gcc_assert (c_flexible_array_member_type_p (TREE_TYPE (ref)));
+  /* The result type of the call is a pointer to the flexible array type.  */
+  tree result_type = build_pointer_type (TREE_TYPE (ref));
+
+  tree call
+    = build_call_expr_internal_loc (loc, IFN_ACCESS_WITH_SIZE,
+				    result_type, 5,
+				    array_to_pointer_conversion (loc, ref),
+				    counted_by_ref,
+				    build_int_cst (integer_type_node, 1),
+				    build_int_cst (counted_by_type, 0),
+				    build_int_cst (integer_type_node, -1));
+  /* Wrap the call with an INDIRECT_REF with the flexible array type.  */
+  call = build1 (INDIRECT_REF, TREE_TYPE (ref), call);
+  SET_EXPR_LOCATION (call, loc);
+  return call;
+}
+
 /* Make an expression to refer to the COMPONENT field of structure or
    union value DATUM.  COMPONENT is an IDENTIFIER_NODE.  LOC is the
    location of the COMPONENT_REF.  COMPONENT_LOC is the location
    of COMPONENT.  ARROW_LOC is the location of the first -> operand if
-   it is from -> operator.  */
+   it is from -> operator.
+   If HANDLE_COUNTED_BY is true, check the counted_by attribute and generate
+   a call to .ACCESS_WITH_SIZE.  Otherwise, ignore the attribute.  */
 
 tree
 build_component_ref (location_t loc, tree datum, tree component,
-		     location_t component_loc, location_t arrow_loc)
+		     location_t component_loc, location_t arrow_loc,
+		     bool handle_counted_by)
 {
   tree type = TREE_TYPE (datum);
   enum tree_code code = TREE_CODE (type);
@@ -2732,7 +2833,13 @@ build_component_ref (location_t loc, tree datum, tree component,
 	  int quals;
 	  tree subtype;
 	  bool use_datum_quals;
-
+	  tree counted_by_type = NULL_TREE;
+	  /* Do not handle counted_by when in typeof and alignof operator.  */
+	  handle_counted_by = handle_counted_by && !in_typeof && !in_alignof;
+	  tree counted_by_ref = handle_counted_by
+				? build_counted_by_ref (datum, subdatum,
+							&counted_by_type)
+				: NULL_TREE;
 	  if (TREE_TYPE (subdatum) == error_mark_node)
 	    return error_mark_node;
 
@@ -2751,6 +2858,12 @@ build_component_ref (location_t loc, tree datum, tree component,
 	  ref = build3 (COMPONENT_REF, subtype, datum, subdatum,
 			NULL_TREE);
 	  SET_EXPR_LOCATION (ref, loc);
+
+	  if (counted_by_ref)
+	    ref = build_access_with_size_for_counted_by (loc, ref,
+							 counted_by_ref,
+							 counted_by_type);
+
 	  if (TREE_READONLY (subdatum)
 	      || (use_datum_quals && TREE_READONLY (datum)))
 	    TREE_READONLY (ref) = 1;
@@ -5155,7 +5268,11 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	  goto return_build_unary_op;
 	}
 
-      /* Ordinary case; arg is a COMPONENT_REF or a decl.  */
+      /* Ordinary case; arg is a COMPONENT_REF or a decl, or a call to
+	 .ACCESS_WITH_SIZE.  */
+      if (is_access_with_size_p (arg))
+	arg = TREE_OPERAND (TREE_OPERAND (CALL_EXPR_ARG (arg, 0), 0), 0);
+
       argtype = TREE_TYPE (arg);
 
       /* If the lvalue is const or volatile, merge that into the type
@@ -5305,6 +5422,9 @@ lvalue_p (const_tree ref)
 
     case BIND_EXPR:
       return TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE;
+
+    case CALL_EXPR:
+      return is_access_with_size_p (ref);
 
     default:
       return false;
@@ -8592,6 +8712,20 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
     return error_mark_node;
 
   STRIP_TYPE_NOPS (inside_init);
+
+  /* If require_constant is TRUE,  when the initializer is a call to
+     .ACCESS_WITH_SIZE, use the first argument as the initializer.
+     For example:
+     y = (char *) .ACCESS_WITH_SIZE ((char *) &static_annotated.c,...)
+     will be converted to
+     y = &static_annotated.c.  */
+
+  if (require_constant
+      && TREE_CODE (inside_init) == NOP_EXPR
+      && TREE_CODE (TREE_OPERAND (inside_init, 0)) == CALL_EXPR
+      && is_access_with_size_p (TREE_OPERAND (inside_init, 0)))
+    inside_init
+      = get_ref_from_access_with_size (TREE_OPERAND (inside_init, 0));
 
   if (!c_in_omp_for)
     {

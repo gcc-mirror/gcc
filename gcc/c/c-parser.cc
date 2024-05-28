@@ -10848,9 +10848,12 @@ c_parser_postfix_expression (c_parser *parser)
 	    if (c_parser_next_token_is (parser, CPP_NAME))
 	      {
 		c_token *comp_tok = c_parser_peek_token (parser);
+		/* Ignore the counted_by attribute for reference inside
+		   offsetof since the information is not useful at all.  */
 		offsetof_ref
 		  = build_component_ref (loc, offsetof_ref, comp_tok->value,
-					 comp_tok->location, UNKNOWN_LOCATION);
+					 comp_tok->location, UNKNOWN_LOCATION,
+					 false);
 		c_parser_consume_token (parser);
 		while (c_parser_next_token_is (parser, CPP_DOT)
 		       || c_parser_next_token_is (parser,
@@ -10877,11 +10880,14 @@ c_parser_postfix_expression (c_parser *parser)
 			    break;
 			  }
 			c_token *comp_tok = c_parser_peek_token (parser);
+			/* Ignore the counted_by attribute for reference inside
+			   offsetof since the information is not useful.  */
 			offsetof_ref
 			  = build_component_ref (loc, offsetof_ref,
 						 comp_tok->value,
 						 comp_tok->location,
-						 UNKNOWN_LOCATION);
+						 UNKNOWN_LOCATION,
+						 false);
 			c_parser_consume_token (parser);
 		      }
 		    else
