@@ -100,14 +100,13 @@ package Sem_Aux is
    --  entity is declared or Standard_Standard for library-level entities.
 
    function First_Discriminant (Typ : Entity_Id) return Entity_Id;
-   --  Typ is a type with discriminants. The discriminants are the first
-   --  entities declared in the type, so normally this is equivalent to
-   --  First_Entity. The exception arises for tagged types, where the tag
-   --  itself is prepended to the front of the entity chain, so the
-   --  First_Discriminant function steps past the tag if it is present.
-   --  The caller is responsible for checking that the type has discriminants.
-   --  When called on a private type with unknown discriminants, the function
-   --  always returns Empty.
+   --  Typ is a type with discriminants or unknown discriminants. The
+   --  discriminants are the first entities declared in the type, so normally
+   --  this is equivalent to First_Entity. The exception arises for tagged
+   --  types, where the tag itself is prepended to the front of the entity
+   --  chain, so the First_Discriminant function steps past the tag if it is
+   --  present.  When called on a private type with unknown discriminants, the
+   --  function always returns Empty.
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 

@@ -124,10 +124,9 @@ package Nlists is
    --  Used when dealing with a list that can contain pragmas to skip past
    --  any initial pragmas and return the first element that is not a pragma.
    --  If the list is empty, or if it contains only pragmas, then Empty is
-   --  returned. It is an error to call First_Non_Pragma with a Node_Id value
-   --  or No_List (No_List is not considered to be the same as an empty list).
-   --  This function also skips N_Null nodes which can result from rewriting
-   --  unrecognized or incorrect pragmas.
+   --  returned. It is an error to call this with List = No_List. This function
+   --  also skips N_Null nodes, which can result from rewriting incorrect
+   --  pragmas.
 
    function Last (List : List_Id) return Node_Or_Entity_Id;
    pragma Inline (Last);
@@ -139,8 +138,8 @@ package Nlists is
    function Last_Non_Pragma (List : List_Id) return Node_Or_Entity_Id;
    --  Obtains the last element of a given node list that is not a pragma.
    --  If the list is empty, or if it contains only pragmas, then Empty is
-   --  returned. It is an error to call Last_Non_Pragma with a Node_Id or
-   --  No_List. (No_List is not considered to be the same as an empty list).
+   --  returned. It is an error to call this with List = No_List.
+   --  Unlike First_Non_Pragma, this does not skip N_Null nodes.
 
    function List_Length (List : List_Id) return Nat;
    --  Returns number of items in the given list. If called on No_List it
@@ -161,8 +160,8 @@ package Nlists is
      (Node : Node_Or_Entity_Id) return Node_Or_Entity_Id;
    --  This function returns the next node on a node list, skipping past any
    --  pragmas, or Empty if there is no non-pragma entry left. The argument
-   --  must be a member of a node list. This function also skips N_Null nodes
-   --  which can result from rewriting unrecognized or incorrect pragmas.
+   --  must be a member of a node list. This function also skips N_Null nodes,
+   --  which can result from rewriting incorrect pragmas.
 
    procedure Next_Non_Pragma (Node : in out Node_Or_Entity_Id);
    pragma Inline (Next_Non_Pragma);
@@ -190,8 +189,8 @@ package Nlists is
    --  pragmas. If Node is the first element of the list, or if the only
    --  elements preceding it are pragmas, then Empty is returned. The
    --  argument must be a member of a node list. Note: the implementation
-   --  does maintain back pointers, so this function executes quickly in
-   --  constant time.
+   --  maintains back pointers, so this function executes quickly in constant
+   --  time. Unlike Next_Non_Pragma, this does not skip N_Null nodes.
 
    procedure Prev_Non_Pragma (Node : in out Node_Or_Entity_Id);
    pragma Inline (Prev_Non_Pragma);

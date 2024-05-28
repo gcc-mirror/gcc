@@ -135,7 +135,7 @@ package Sem_Ch12 is
    --  captured as described here.
 
    --  Because instantiations can be nested, the environment of the instance,
-   --  involving the actuals and other data-structures, must be saved and
+   --  involving the actuals and other data structures, must be saved and
    --  restored in stack-like fashion. Front-end inlining also uses these
    --  structures for the management of private/full views.
 
@@ -186,7 +186,7 @@ package Sem_Ch12 is
       Act_Unit : Entity_Id);
    --  Because instantiations can be nested, the compiler maintains a stack
    --  of environments that holds variables relevant to the current instance:
-   --  most importanty Instantiated_Parent, Exchanged_Views, Hidden_Entities,
+   --  most importantly Instantiated_Parent, Exchanged_Views, Hidden_Entities,
    --  and others (see full list in Instance_Env).
 
    procedure Restore_Env;
