@@ -2714,7 +2714,8 @@ build_counted_by_ref (tree datum, tree subdatum, tree *counted_by_type)
 
    to:
 
-   (*.ACCESS_WITH_SIZE (REF, COUNTED_BY_REF, 1, (TYPE_OF_SIZE)0, -1))
+   (*.ACCESS_WITH_SIZE (REF, COUNTED_BY_REF, 1, (TYPE_OF_SIZE)0, -1,
+			(TYPE_OF_ARRAY *)0))
 
    NOTE: The return type of this function is the POINTER type pointing
    to the original flexible array type.
@@ -2725,6 +2726,9 @@ build_counted_by_ref (tree datum, tree subdatum, tree *counted_by_type)
 
    The 4th argument of the call is a constant 0 with the TYPE of the
    object pointed by COUNTED_BY_REF.
+
+   The 6th argument of the call is a constant 0 with the pointer TYPE
+   to the original flexible array type.
 
   */
 static tree
@@ -2738,12 +2742,13 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
 
   tree call
     = build_call_expr_internal_loc (loc, IFN_ACCESS_WITH_SIZE,
-				    result_type, 5,
+				    result_type, 6,
 				    array_to_pointer_conversion (loc, ref),
 				    counted_by_ref,
 				    build_int_cst (integer_type_node, 1),
 				    build_int_cst (counted_by_type, 0),
-				    build_int_cst (integer_type_node, -1));
+				    build_int_cst (integer_type_node, -1),
+				    build_int_cst (result_type, 0));
   /* Wrap the call with an INDIRECT_REF with the flexible array type.  */
   call = build1 (INDIRECT_REF, TREE_TYPE (ref), call);
   SET_EXPR_LOCATION (call, loc);

@@ -762,9 +762,11 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
      1: the number of the elements of the object type;
    4th argument TYPE_OF_SIZE: A constant 0 with its TYPE being the same as the TYPE
     of the object referenced by REF_TO_SIZE
+   6th argument: A constant 0 with the pointer TYPE to the original flexible
+     array type.
 
-   The size of the element can be retrived from the result type of the call,
-   which is the pointer to the array type.  */
+   The size of the element can be retrived from the TYPE of the 6th argument
+   of the call, which is the pointer to the array type.  */
 static tree
 access_with_size_object_size (const gcall *call, int object_size_type)
 {
@@ -773,10 +775,12 @@ access_with_size_object_size (const gcall *call, int object_size_type)
     return size_unknown (object_size_type);
 
   gcc_assert (gimple_call_internal_p (call, IFN_ACCESS_WITH_SIZE));
-  /* Result type is a pointer type to the original flexible array type.  */
-  tree result_type = gimple_call_return_type (call);
-  gcc_assert (POINTER_TYPE_P (result_type));
-  tree element_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (result_type)));
+  /* The type of the 6th argument type is the pointer TYPE to the original
+     flexible array type.  */
+  tree pointer_to_array_type = TREE_TYPE (gimple_call_arg (call, 5));
+  gcc_assert (POINTER_TYPE_P (pointer_to_array_type));
+  tree element_type = TREE_TYPE (TREE_TYPE (pointer_to_array_type));
+  tree element_size = TYPE_SIZE_UNIT (element_type);
   tree ref_to_size = gimple_call_arg (call, 1);
   unsigned int class_of_size = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
   tree type = TREE_TYPE (gimple_call_arg (call, 3));

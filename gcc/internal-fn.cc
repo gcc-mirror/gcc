@@ -3456,6 +3456,8 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
      1: read_only
      2: write_only
      3: read_write
+   6th argument: A constant 0 with the pointer TYPE to the original flexible
+     array type.
 
    Both the return type and the type of the first argument of this
    function have been converted from the incomplete array type to
