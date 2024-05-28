@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
-#include "gcc-rich-location.h"
+#include "c-family/c-type-mismatch.h"
 #include "gimplify.h"
 #include "c-family/c-indentation.h"
 #include "c-family/c-spellcheck.h"

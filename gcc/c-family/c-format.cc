@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-diagnostic.h"
 #include "builtins.h"
 #include "attribs.h"
-#include "gcc-rich-location.h"
+#include "c-family/c-type-mismatch.h"
 
 /* Handle attributes associated with format checking.  */
 

@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "decl.h"
-#include "gcc-rich-location.h"
+#include "c-family/c-type-mismatch.h"
 #include "tristate.h"
 
 /* The various kinds of conversion.  */

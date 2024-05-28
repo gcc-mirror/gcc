@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "ubsan.h"
 #include "internal-fn.h"
-#include "gcc-rich-location.h"
+#include "c-family/c-type-mismatch.h"
 #include "cp-name-hint.h"
 #include "attribs.h"
 
