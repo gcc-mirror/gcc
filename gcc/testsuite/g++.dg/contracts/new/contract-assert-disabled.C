@@ -14,6 +14,8 @@ static_assert (__cpp_contracts >= 201906);
 static_assert (__cpp_contracts_literal_semantics >= 201906);
 static_assert (__cpp_contracts_roles >= 201906);
 
+// { dg-prune-output "expected primary-expression" }
+
 int main()
 {
   int x;
