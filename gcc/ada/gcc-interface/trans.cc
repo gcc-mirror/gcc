@@ -3934,6 +3934,12 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   if (Is_Generic_Subprogram (gnat_subprog) || Is_Eliminated (gnat_subprog))
     return;
 
+  /* Likewise if this is a protected subprogram and we are only annotating
+     types, as the required expansion of references did not take place.  */
+  if (Convention (gnat_subprog) == Convention_Protected
+      && type_annotate_only)
+    return;
+
   /* If this subprogram acts as its own spec, define it.  Otherwise, just get
      the already-elaborated tree node.  However, if this subprogram had its
      elaboration deferred, we will already have made a tree node for it.  So
