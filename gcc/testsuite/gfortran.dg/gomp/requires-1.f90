@@ -9,5 +9,3 @@ subroutine bar
 !$omp requires unified_shared_memory unified_address
 !$omp requires atomic_default_mem_order(seq_cst)
 end
-
-! { dg-prune-output "not yet supported" }

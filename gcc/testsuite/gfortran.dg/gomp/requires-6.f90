@@ -12,5 +12,3 @@ subroutine foobar
  i = i + 5
 !$omp requires atomic_default_mem_order(acq_rel) ! { dg-error "Unexpected !.OMP REQUIRES statement" }
 end
-
-! { dg-prune-output "not yet supported" }
