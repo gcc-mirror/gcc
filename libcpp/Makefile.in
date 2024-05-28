@@ -271,7 +271,7 @@ ETAGS = @ETAGS@
 
 TAGS_SOURCES = $(libcpp_a_SOURCES) internal.h system.h ucnid.h \
     include/cpplib.h include/line-map.h include/mkdeps.h include/symtab.h \
-    include/rich-location.h
+    include/rich-location.h include/label-text.h
 
 
 TAGS: $(TAGS_SOURCES)
