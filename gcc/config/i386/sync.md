@@ -215,8 +215,18 @@
 	}
       else
 	{
+	  rtx tmpdi = gen_lowpart (DImode, tmp);
+
 	  emit_insn (gen_loaddi_via_sse (tmp, src));
-	  emit_insn (gen_storedi_via_sse (mem, tmp));
+
+	  if (GENERAL_REG_P (dst)
+	      && TARGET_SSE4_1 && TARGET_INTER_UNIT_MOVES_FROM_VEC)
+	    {
+	      emit_move_insn (dst, tmpdi);
+	      DONE;
+	    }
+	  else
+	    emit_move_insn (mem, tmpdi);
 	}
 
       if (mem != dst)
@@ -294,20 +304,30 @@
     emit_move_insn (dst, src);
   else
     {
-      if (REG_P (src))
-	{
-	  emit_move_insn (mem, src);
-	  src = mem;
-	}
-
       if (STACK_REG_P (tmp))
 	{
+	  if (GENERAL_REG_P (src))
+	    {
+	      emit_move_insn (mem, src);
+	      src = mem;
+	    }
+
 	  emit_insn (gen_loaddi_via_fpu (tmp, src));
 	  emit_insn (gen_storedi_via_fpu (dst, tmp));
 	}
       else
 	{
-	  emit_insn (gen_loaddi_via_sse (tmp, src));
+	  rtx tmpdi = gen_lowpart (DImode, tmp);
+
+	  if (GENERAL_REG_P (src)
+	      && !(TARGET_SSE4_1 && TARGET_INTER_UNIT_MOVES_TO_VEC))
+	    {
+	      emit_move_insn (mem, src);
+	      src = mem;
+	    }
+
+	  emit_move_insn (tmpdi, src);
+
 	  emit_insn (gen_storedi_via_sse (dst, tmp));
 	}
     }
