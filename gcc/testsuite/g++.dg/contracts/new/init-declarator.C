@@ -13,13 +13,19 @@
 static_assert (__cpp_contracts >= 201906);
 static_assert (__cpp_contracts_literal_semantics >= 201906);
 static_assert (__cpp_contracts_roles >= 201906);
-i
+
+// { dg-prune-output "warning" }
+// { dg-prune-output "note" }
+
 int fun(int n)  pre (n > 0 );
 
 int main()
 {
-  int x() [[ pre fun(0) > 0 ]];
-  int y() pre (fun(0) > 0);
-  int z() [[ pre fun(0) > 0 ]] pre (fun(0) > 0);
+  int x() [[ pre fun(0) > 0 ]]; // { dg-error "expected contract level"}
+	// { dg-error "expected .:." "" { target *-*-* } 24 }
+  int y() pre (fun(0) > 0); // { dg-error "was not declared"}
+  int z() [[ pre fun(0) > 0 ]] pre (fun(0) > 0); // { dg-error "expected contract"}
+	// { dg-error "expected .:." "" { target *-*-* } 27 }
+
   return 0;
 }
