@@ -10,19 +10,22 @@
 // { dg-do compile }
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr" }
 
-static_assert (__cpp_contracts >= 201906); // { dg-error }
-static_assert (__cpp_contracts_literal_semantics >= 201906); // { dg-error }
-static_assert (__cpp_contracts_roles >= 201906); // { dg-error }
-contract_assert f();  // { dg-error }
-void f(contract_assert); // { dg-error } { dg-error }
-struct contract_assert{}; // { dg-error } { dg-error }
+// { dg-prune-output "not declared" }
 
+static_assert (__cpp_contracts >= 201906);
+static_assert (__cpp_contracts_literal_semantics >= 201906);
+static_assert (__cpp_contracts_roles >= 201906);
+
+
+contract_assert f(); // { dg-error "expected unqualified-id before" }
+void f(contract_assert); // { dg-error "expected primary-expression before"}
+struct contract_assert{}; // { dg-error "expected unqualified-id before" }
 void contract_assert();
 int main()
 {
 
 	contract_assert(x==0); // { dg-error }
-	contract_assert int i = 0; // { dg-error } { dg-error } { dg-error }
+	contract_assert int i = 0; // { dg-error }
 
 	i = 7;
 	[[assert: i == 0]] contract_assert(x==0); // { dg-error }
