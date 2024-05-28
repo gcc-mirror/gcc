@@ -94,6 +94,7 @@ selftest::run_tests ()
 
   /* Higher-level tests, or for components that other selftests don't
      rely on.  */
+  diagnostic_color_cc_tests ();
   diagnostic_show_locus_cc_tests ();
   diagnostic_format_json_cc_tests ();
   edit_context_cc_tests ();

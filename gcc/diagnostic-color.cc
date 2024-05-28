@@ -17,9 +17,11 @@
    02110-1301, USA.  */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "diagnostic-color.h"
 #include "diagnostic-url.h"
+#include "label-text.h"
 
 #ifdef __MINGW32__
 #  define WIN32_LEAN_AND_MEAN
@@ -27,6 +29,7 @@
 #endif
 
 #include "color-macros.h"
+#include "selftest.h"
 
 /* The context and logic for choosing default --color screen attributes
    (foreground and background colors, etc.) are the following.
@@ -72,56 +75,124 @@
 	 counterparts) and possibly bold blue.  */
 /* Default colors. The user can overwrite them using environment
    variable GCC_COLORS.  */
-struct color_cap
+struct color_default
 {
-  const char *name;
-  const char *val;
-  unsigned char name_len;
-  bool free_val;
+  const char *m_name;
+  const char *m_val;
 };
 
 /* For GCC_COLORS.  */
-static struct color_cap color_dict[] =
+static const color_default gcc_color_defaults[] =
 {
-  { "error", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_RED), 5, false },
-  { "warning", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_MAGENTA),
-	       7, false },
-  { "note", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_CYAN), 4, false },
-  { "range1", SGR_SEQ (COLOR_FG_GREEN), 6, false },
-  { "range2", SGR_SEQ (COLOR_FG_BLUE), 6, false },
-  { "locus", SGR_SEQ (COLOR_BOLD), 5, false },
-  { "quote", SGR_SEQ (COLOR_BOLD), 5, false },
-  { "path", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_CYAN), 4, false },
-  { "fnname", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN), 6, false },
-  { "targs", SGR_SEQ (COLOR_FG_MAGENTA), 5, false },
-  { "fixit-insert", SGR_SEQ (COLOR_FG_GREEN), 12, false },
-  { "fixit-delete", SGR_SEQ (COLOR_FG_RED), 12, false },
-  { "diff-filename", SGR_SEQ (COLOR_BOLD), 13, false },
-  { "diff-hunk", SGR_SEQ (COLOR_FG_CYAN), 9, false },
-  { "diff-delete", SGR_SEQ (COLOR_FG_RED), 11, false },
-  { "diff-insert", SGR_SEQ (COLOR_FG_GREEN), 11, false },
-  { "type-diff", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN), 9, false },
-  { "valid", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN), 5, false },
-  { "invalid", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_RED), 7, false },
-  { NULL, NULL, 0, false }
+  { "error", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_RED) },
+  { "warning", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_MAGENTA) },
+  { "note", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_CYAN) },
+  { "range1", SGR_SEQ (COLOR_FG_GREEN) },
+  { "range2", SGR_SEQ (COLOR_FG_BLUE) },
+  { "locus", SGR_SEQ (COLOR_BOLD) },
+  { "quote", SGR_SEQ (COLOR_BOLD) },
+  { "path", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_CYAN) },
+  { "fnname", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN) },
+  { "targs", SGR_SEQ (COLOR_FG_MAGENTA) },
+  { "fixit-insert", SGR_SEQ (COLOR_FG_GREEN) },
+  { "fixit-delete", SGR_SEQ (COLOR_FG_RED) },
+  { "diff-filename", SGR_SEQ (COLOR_BOLD) },
+  { "diff-hunk", SGR_SEQ (COLOR_FG_CYAN) },
+  { "diff-delete", SGR_SEQ (COLOR_FG_RED) },
+  { "diff-insert", SGR_SEQ (COLOR_FG_GREEN) },
+  { "type-diff", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN) },
+  { "valid", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_GREEN) },
+  { "invalid", SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_RED) }
 };
+
+class diagnostic_color_dict
+{
+public:
+  diagnostic_color_dict (const color_default *default_values,
+			 size_t num_default_values);
+
+  bool parse_envvar_value (const char *const envvar_value);
+
+  const char *get_start_by_name (const char *name, size_t name_len) const;
+  const char *get_start_by_name (const char *name) const
+  {
+    return get_start_by_name (name, strlen (name));
+  }
+
+private:
+  struct entry
+  {
+    entry (const color_default &d)
+    : m_name (d.m_name),
+      m_name_len (strlen (d.m_name)),
+      m_val (label_text::borrow (d.m_val))
+    {
+    }
+
+    const char *m_name;
+    size_t m_name_len;
+    label_text m_val;
+  };
+
+  const entry *get_entry_by_name (const char *name, size_t name_len) const;
+  entry *get_entry_by_name (const char *name, size_t name_len);
+
+  std::vector<entry> m_entries;
+};
+
+static diagnostic_color_dict *g_color_dict;
 
 const char *
 colorize_start (bool show_color, const char *name, size_t name_len)
 {
-  struct color_cap const *cap;
-
   if (!show_color)
     return "";
 
-  for (cap = color_dict; cap->name; cap++)
-    if (cap->name_len == name_len
-	&& memcmp (cap->name, name, name_len) == 0)
-      break;
-  if (cap->name == NULL)
+  if (!g_color_dict)
     return "";
 
-  return cap->val;
+  return g_color_dict->get_start_by_name (name, name_len);
+}
+
+/* Look for an entry named NAME of length NAME_LEN within this
+   diagnostic_color_dict, or nullptr if there isn't one.  */
+
+const diagnostic_color_dict::entry *
+diagnostic_color_dict::get_entry_by_name (const char *name,
+					  size_t name_len) const
+{
+  for (auto &iter : m_entries)
+    if (iter.m_name_len == name_len
+	&& memcmp (iter.m_name, name, name_len) == 0)
+      return &iter;
+  return nullptr;
+}
+
+/* Non-const version of the above.  */
+
+diagnostic_color_dict::entry *
+diagnostic_color_dict::get_entry_by_name (const char *name,
+					  size_t name_len)
+{
+  for (auto &iter : m_entries)
+    if (iter.m_name_len == name_len
+	&& memcmp (iter.m_name, name, name_len) == 0)
+      return &iter;
+  return nullptr;
+}
+
+/* Return the SGR codes to start a color entry named NAME of length
+   NAME_LEN within this diagnostic_color_dict, or the empty string if
+   there isn't one.  */
+
+const char *
+diagnostic_color_dict::get_start_by_name (const char *name,
+					  size_t name_len) const
+{
+  if (const entry *e = get_entry_by_name (name, name_len))
+    return e->m_val.get ();
+
+  return "";
 }
 
 const char *
@@ -130,56 +201,58 @@ colorize_stop (bool show_color)
   return show_color ? SGR_RESET : "";
 }
 
-/* Parse GCC_COLORS.  The default would look like:
-   GCC_COLORS='error=01;31:warning=01;35:note=01;36:\
-   range1=32:range2=34:locus=01:quote=01:path=01;36:\
-   fixit-insert=32:fixit-delete=31:'\
-   diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32:\
-   type-diff=01;32'
-   No character escaping is needed or supported.  */
-static bool
-parse_gcc_colors (void)
-{
-  const char *p, *q, *name, *val;
-  char *b;
-  size_t name_len = 0, val_len = 0;
+/* diagnostic_color_dict's ctor.  Initialize it from the given array
+   of color_default values.  */
 
-  p = getenv ("GCC_COLORS"); /* Plural! */
-  if (p == NULL)
+diagnostic_color_dict::
+diagnostic_color_dict (const color_default *default_values,
+		       size_t num_default_values)
+{
+  m_entries.reserve (num_default_values);
+  for (size_t idx = 0; idx < num_default_values; idx++)
+    m_entries.push_back (entry (default_values[idx]));
+}
+
+/* Parse a list of color definitions from an environment variable
+   value (such as that of GCC_COLORS).
+   No character escaping is needed or supported.  */
+
+bool
+diagnostic_color_dict::parse_envvar_value (const char *const envvar_value)
+{
+  /* envvar not set: use the default colors.  */
+  if (envvar_value == nullptr)
     return true;
-  if (*p == '\0')
+
+  /* envvar set to empty string: disable colorization.  */
+  if (*envvar_value == '\0')
     return false;
 
-  name = q = p;
+  const char *q, *name, *val;
+  size_t name_len = 0, val_len = 0;
+
+  name = q = envvar_value;
   val = NULL;
   /* From now on, be well-formed or you're gone.  */
   for (;;)
     if (*q == ':' || *q == '\0')
       {
-	struct color_cap *cap;
-
 	if (val)
 	  val_len = q - val;
 	else
 	  name_len = q - name;
 	/* Empty name without val (empty cap)
 	   won't match and will be ignored.  */
-	for (cap = color_dict; cap->name; cap++)
-	  if (cap->name_len == name_len
-	      && memcmp (cap->name, name, name_len) == 0)
-	    break;
+	entry *e = get_entry_by_name (name, name_len);
 	/* If name unknown, go on for forward compatibility.  */
-	if (cap->val && val)
+	if (e && val)
 	  {
-	    if (cap->free_val)
-	      free (CONST_CAST (char *, cap->val));
-	    b = XNEWVEC (char, val_len + sizeof (SGR_SEQ ("")));
+	    char *b = XNEWVEC (char, val_len + sizeof (SGR_SEQ ("")));
 	    memcpy (b, SGR_START, strlen (SGR_START));
 	    memcpy (b + strlen (SGR_START), val, val_len);
 	    memcpy (b + strlen (SGR_START) + val_len, SGR_END,
 		    sizeof (SGR_END));
-	    cap->val = (const char *) b;
-	    cap->free_val = true;
+	    e->m_val = label_text::take (b);
 	  }
 	if (*q == '\0')
 	  return true;
@@ -201,6 +274,20 @@ parse_gcc_colors (void)
 	      garbage.  */
     else
       return true;
+}
+
+/* Parse GCC_COLORS.  The default would look like:
+   GCC_COLORS='error=01;31:warning=01;35:note=01;36:\
+   range1=32:range2=34:locus=01:quote=01:path=01;36:\
+   fixit-insert=32:fixit-delete=31:'\
+   diff-filename=01:diff-hunk=32:diff-delete=31:diff-insert=32:\
+   type-diff=01;32'.  */
+static bool
+parse_gcc_colors ()
+{
+  if (!g_color_dict)
+    return false;
+  return g_color_dict->parse_envvar_value (getenv ("GCC_COLORS")); /* Plural! */
 }
 
 /* Return true if we should use color when in auto mode, false otherwise. */
@@ -229,6 +316,10 @@ should_colorize (void)
 bool
 colorize_init (diagnostic_color_rule_t rule)
 {
+  if (!g_color_dict)
+    g_color_dict = new diagnostic_color_dict (gcc_color_defaults,
+					      ARRAY_SIZE (gcc_color_defaults));
+
   switch (rule)
     {
     case DIAGNOSTICS_COLOR_NO:
@@ -351,3 +442,63 @@ determine_url_format (diagnostic_url_rule_t rule)
       gcc_unreachable ();
     }
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Test of an empty diagnostic_color_dict.  */
+
+static void
+test_empty_color_dict ()
+{
+  diagnostic_color_dict d (nullptr, 0);
+  ASSERT_STREQ (d.get_start_by_name ("warning"), "");
+  ASSERT_STREQ (d.get_start_by_name ("should-not-be-found"), "");
+}
+
+/* Test of a diagnostic_color_dict with GCC's defaults.  */
+
+static void
+test_default_color_dict ()
+{
+  diagnostic_color_dict d (gcc_color_defaults,
+			   ARRAY_SIZE (gcc_color_defaults));
+  ASSERT_STREQ (d.get_start_by_name ("warning"),
+		SGR_SEQ (COLOR_BOLD COLOR_SEPARATOR COLOR_FG_MAGENTA));
+  ASSERT_STREQ (d.get_start_by_name ("should-not-be-found"), "");
+}
+
+/* Test of a diagnostic_color_dict with GCC's defaults plus overrides from
+   an environment variable.  */
+
+static void
+test_color_dict_envvar_parsing ()
+{
+  diagnostic_color_dict d (gcc_color_defaults,
+			   ARRAY_SIZE (gcc_color_defaults));
+
+  d.parse_envvar_value ("error=01;37:warning=01;42:unknown-value=01;36");
+
+  ASSERT_STREQ (d.get_start_by_name ("error"),
+		SGR_SEQ ("01;37"));
+  ASSERT_STREQ (d.get_start_by_name ("warning"),
+		SGR_SEQ ("01;42"));
+  ASSERT_STREQ (d.get_start_by_name ("unknown-value"), "");
+  ASSERT_STREQ (d.get_start_by_name ("should-not-be-found"), "");
+}
+
+
+/* Run all of the selftests within this file.  */
+
+void
+diagnostic_color_cc_tests ()
+{
+  test_empty_color_dict ();
+  test_default_color_dict ();
+  test_color_dict_envvar_parsing ();
+}
+
+} // namespace selftest
+
+#endif /* #if CHECKING_P */

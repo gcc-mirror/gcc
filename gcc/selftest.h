@@ -220,6 +220,7 @@ extern void attribs_cc_tests ();
 extern void bitmap_cc_tests ();
 extern void cgraph_cc_tests ();
 extern void convert_cc_tests ();
+extern void diagnostic_color_cc_tests ();
 extern void diagnostic_format_json_cc_tests ();
 extern void diagnostic_show_locus_cc_tests ();
 extern void digraph_cc_tests ();
