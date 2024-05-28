@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "builtins.h"
 #include "gimplify-me.h"
+#include "gimplify.h"
 
 struct object_size_info
 {
@@ -60,6 +61,7 @@ static tree compute_object_offset (tree, const_tree);
 static bool addr_object_size (struct object_size_info *,
 			      const_tree, int, tree *, tree *t = NULL);
 static tree alloc_object_size (const gcall *, int);
+static tree access_with_size_object_size (const gcall *, int);
 static tree pass_through_call (const gcall *);
 static void collect_object_sizes_for (struct object_size_info *, tree);
 static void expr_object_size (struct object_size_info *, tree, tree);
@@ -749,6 +751,60 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
   return false;
 }
 
+/* Compute __builtin_object_size for a CALL to .ACCESS_WITH_SIZE,
+   OBJECT_SIZE_TYPE is the second argument from __builtin_object_size.
+   The 2nd, 3rd, and the 4th parameters of the call determine the size of
+   the CALL:
+
+   2nd argument REF_TO_SIZE: The reference to the size of the object,
+   3rd argument CLASS_OF_SIZE: The size referenced by the REF_TO_SIZE represents
+     0: the number of bytes;
+     1: the number of the elements of the object type;
+   4th argument TYPE_OF_SIZE: A constant 0 with its TYPE being the same as the TYPE
+    of the object referenced by REF_TO_SIZE
+
+   The size of the element can be retrived from the result type of the call,
+   which is the pointer to the array type.  */
+static tree
+access_with_size_object_size (const gcall *call, int object_size_type)
+{
+  /* If not for dynamic object size, return.  */
+  if ((object_size_type & OST_DYNAMIC) == 0)
+    return size_unknown (object_size_type);
+
+  gcc_assert (gimple_call_internal_p (call, IFN_ACCESS_WITH_SIZE));
+  /* Result type is a pointer type to the original flexible array type.  */
+  tree result_type = gimple_call_return_type (call);
+  gcc_assert (POINTER_TYPE_P (result_type));
+  tree element_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (result_type)));
+  tree ref_to_size = gimple_call_arg (call, 1);
+  unsigned int class_of_size = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
+  tree type = TREE_TYPE (gimple_call_arg (call, 3));
+
+  tree size = fold_build2 (MEM_REF, type, ref_to_size,
+			   build_int_cst (ptr_type_node, 0));
+
+  /* If size is negative value, treat it as zero.  */
+  if (!TYPE_UNSIGNED (type))
+  {
+    tree cond_expr = fold_build2 (LT_EXPR, boolean_type_node,
+				  unshare_expr (size), build_zero_cst (type));
+    size = fold_build3 (COND_EXPR, integer_type_node, cond_expr,
+			build_zero_cst (type), size);
+  }
+
+  if (class_of_size == 1)
+    size = size_binop (MULT_EXPR,
+		       fold_convert (sizetype, size),
+		       fold_convert (sizetype, element_size));
+  else
+    size = fold_convert (sizetype, size);
+
+  if (!todo)
+    todo = TODO_update_ssa_only_virtuals;
+
+  return size;
+}
 
 /* Compute __builtin_object_size for CALL, which is a GIMPLE_CALL.
    Handles calls to functions declared with attribute alloc_size.
@@ -1350,8 +1406,12 @@ call_object_size (struct object_size_info *osi, tree ptr, gcall *call)
 
   bool is_strdup = gimple_call_builtin_p (call, BUILT_IN_STRDUP);
   bool is_strndup = gimple_call_builtin_p (call, BUILT_IN_STRNDUP);
+  bool is_access_with_size
+	 = gimple_call_internal_p (call, IFN_ACCESS_WITH_SIZE);
   if (is_strdup || is_strndup)
     bytes = strdup_object_size (call, object_size_type, is_strndup);
+  else if (is_access_with_size)
+    bytes = access_with_size_object_size (call, object_size_type);
   else
     bytes = alloc_object_size (call, object_size_type);
 
