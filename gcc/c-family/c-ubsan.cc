@@ -376,6 +376,40 @@ ubsan_instrument_return (location_t loc)
   return build_call_expr_loc (loc, t, 1, build_fold_addr_expr_loc (loc, data));
 }
 
+/* Get the tree that represented the number of counted_by, i.e, the maximum
+   number of the elements of the object that the call to .ACCESS_WITH_SIZE
+   points to, this number will be the bound of the corresponding array.  */
+static tree
+get_bound_from_access_with_size (tree call)
+{
+  if (!is_access_with_size_p (call))
+    return NULL_TREE;
+
+  tree ref_to_size = CALL_EXPR_ARG (call, 1);
+  unsigned int class_of_size = TREE_INT_CST_LOW (CALL_EXPR_ARG (call, 2));
+  tree type = TREE_TYPE (CALL_EXPR_ARG (call, 3));
+  tree size = fold_build2 (MEM_REF, type, unshare_expr (ref_to_size),
+			   build_int_cst (ptr_type_node, 0));
+  /* If size is negative value, treat it as zero.  */
+  if (!TYPE_UNSIGNED (type))
+  {
+    tree cond = fold_build2 (LT_EXPR, boolean_type_node,
+			     unshare_expr (size), build_zero_cst (type));
+    size = fold_build3 (COND_EXPR, type, cond,
+			build_zero_cst (type), size);
+  }
+
+  /* Only when class_of_size is 1, i.e, the number of the elements of
+     the object type, return the size.  */
+  if (class_of_size != 1)
+    return NULL_TREE;
+  else
+    size = fold_convert (sizetype, size);
+
+  return size;
+}
+
+
 /* Instrument array bounds for ARRAY_REFs.  We create special builtin,
    that gets expanded in the sanopt pass, and make an array dimension
    of it.  ARRAY is the array, *INDEX is an index to the array.
@@ -401,6 +435,14 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
 	  && COMPLETE_TYPE_P (type)
 	  && integer_zerop (TYPE_SIZE (type)))
 	bound = build_int_cst (TREE_TYPE (TYPE_MIN_VALUE (domain)), -1);
+      else if (INDIRECT_REF_P (array)
+	       && is_access_with_size_p ((TREE_OPERAND (array, 0))))
+	{
+	  bound = get_bound_from_access_with_size ((TREE_OPERAND (array, 0)));
+	  bound = fold_build2 (MINUS_EXPR, TREE_TYPE (bound),
+			       bound,
+			       build_int_cst (TREE_TYPE (bound), 1));
+	}
       else
 	return NULL_TREE;
     }
