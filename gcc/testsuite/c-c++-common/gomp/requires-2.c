@@ -6,5 +6,3 @@
 #pragma omp requires dynamic_allocators , dynamic_allocators	/* { dg-error "too many 'dynamic_allocators' clauses" } */
 #pragma omp requires atomic_default_mem_order(seq_cst) atomic_default_mem_order(seq_cst)	/* { dg-error "too many 'atomic_default_mem_order' clauses" } */
 #pragma omp requires atomic_default_mem_order (seq_cst)	/* { dg-error "more than one 'atomic_default_mem_order' clause in a single compilation unit" } */
-
-/* { dg-prune-output "not supported yet" } */

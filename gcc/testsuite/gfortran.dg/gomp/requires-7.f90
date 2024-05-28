@@ -38,4 +38,3 @@ contains
     !$omp requires unified_shared_memory ! { dg-error "must appear in the specification part of a program unit" }
   end
 end
-! { dg-prune-output "not yet supported" }

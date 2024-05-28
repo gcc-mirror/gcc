@@ -12,5 +12,3 @@ subroutine foo
   !$omp target
   !$omp end target
 end
-
-! { dg-prune-output "not yet supported" }
