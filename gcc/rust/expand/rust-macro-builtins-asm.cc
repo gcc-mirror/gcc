@@ -141,11 +141,10 @@ parse_reg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   // InlineAsmRegOrRegClass of reg or reg class
   auto token = parser.peek_current_token ();
   auto tok_id = token->get_id ();
-
-  if (tok_id == IDENTIFIER)
+  AST::InlineAsmRegOrRegClass regClass;
+  if (parser.skip_token (IDENTIFIER))
     {
       // construct a InlineAsmRegOrRegClass
-      AST::InlineAsmRegOrRegClass regClass;
       regClass.type = RegType::RegClass;
       regClass.regClass.Symbol = token->as_string ();
     }
@@ -156,18 +155,27 @@ parse_reg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 
       // construct a InlineAsmRegOrRegClass
       // parse_format_string
+      regClass.type = RegType::Reg;
+      inlineAsmCtx.is_explicit = true;
+      regClass.regClass.Symbol = token->as_string ();
     }
   else
     {
-      // TODO
+      // TODO: This should emit error
+      //  return
+      //  Err(p.dcx().create_err(errors::ExpectedRegisterClassOrExplicitRegister
+      //  {
+      //           span: p.token.span,
+      //       }));
     }
   if (!parser.skip_token (RIGHT_PAREN))
     {
-      // we expect a left parenthesis here, please return the correct error.
+      // TODO: we expect a left parenthesis here, please return the correct
+      // error.
       return tl::nullopt;
     }
 
-  return tl::nullopt;
+  return regClass;
 }
 
 int
@@ -193,7 +201,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   //       };
 
   using RegisterType = AST::InlineAsmOperand::RegisterType;
-
+  AST::InlineAsmOperand reg_operand;
   auto token = parser.peek_current_token ();
   auto iden_token = parser.peek_current_token ();
   auto &inlineAsm = inlineAsmCtx.inlineAsm;
@@ -221,8 +229,9 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {}
   else if (!is_global_asm && check_identifier (parser, "inlateout"))
     {}
-  else if (false && check_identifier (parser, "const"))
+  else if (parser.peek_current_token ()->get_id () == CONST)
     {
+      rust_unreachable ();
       // todo: Please handle const
     }
   else if (false && check_identifier (parser, "sym"))
@@ -237,7 +246,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       return tl::nullopt;
     }
-  return tl::nullopt;
+  return reg_operand;
 }
 void
 check_and_set (Parser<MacroInvocLexer> &parser, InlineAsmContext &inlineAsmCtx,
@@ -410,6 +419,8 @@ parse_asm_arg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	}
       else
 	{
+	  // TODO: we consumed comma, and there happens to also be a comma
+	  // error should be: expected expression, found `,`
 	  break;
 	}
 
