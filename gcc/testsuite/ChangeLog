@@ -1,3 +1,11 @@
+2024-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/115172
+	* gcc.dg/asan/pr115172.c: New test.
+
 2024-05-24  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
