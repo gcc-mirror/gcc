@@ -220,27 +220,40 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   bool is_explicit_reg = false;
   bool is_global_asm = inlineAsm.is_global_asm;
   if (!is_global_asm && check_identifier (parser, "in"))
-    {}
+    {
+      return tl::nullopt;
+    }
   else if (!is_global_asm && check_identifier (parser, "out"))
-    {}
+    {
+      return tl::nullopt;
+    }
   else if (!is_global_asm && check_identifier (parser, "lateout"))
-    {}
+    {
+      return tl::nullopt;
+    }
   else if (!is_global_asm && check_identifier (parser, "inout"))
-    {}
+    {
+      return tl::nullopt;
+    }
   else if (!is_global_asm && check_identifier (parser, "inlateout"))
-    {}
+    {
+      return tl::nullopt;
+    }
   else if (parser.peek_current_token ()->get_id () == CONST)
     {
       rust_unreachable ();
       // todo: Please handle const
+      return tl::nullopt;
     }
   else if (false && check_identifier (parser, "sym"))
     {
       // todo: Please handle sym
+      return tl::nullopt;
     }
   else if (false && check_identifier (parser, "label"))
     {
       // todo: Please handle label
+      return tl::nullopt;
     }
   else
     {
@@ -518,7 +531,13 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   // operands stream, also handles the optional ","
   parse_asm_arg (parser, last_token_id, inlineAsmCtx);
 
-  return tl::nullopt;
+  AST::SingleASTNode single
+    = AST::SingleASTNode (inlineAsmCtx.inlineAsm.clone_expr_without_block ());
+  std::vector<AST::SingleASTNode> single_vec = {single};
+
+  AST::Fragment fragment_ast
+    = AST::Fragment (single_vec, std::vector<std::unique_ptr<AST::Token>> ());
+  return fragment_ast;
 }
 
 } // namespace Rust
