@@ -3110,6 +3110,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
 
+/* Unsigned saturation sub, case 3 (branchless with gt):
+   SAT_U_SUB = (X - Y) * (X > Y).  */
+(match (unsigned_integer_sat_sub @0 @1)
+ (mult:c (minus @0 @1) (convert (gt @0 @1)))
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1))))
+
+/* Unsigned saturation sub, case 4 (branchless with ge):
+   SAT_U_SUB = (X - Y) * (X >= Y).  */
+(match (unsigned_integer_sat_sub @0 @1)
+ (mult:c (minus @0 @1) (convert (ge @0 @1)))
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1))))
+
 /* x >  y  &&  x != XXX_MIN  -->  x > y
    x >  y  &&  x == XXX_MIN  -->  false . */
 (for eqne (eq ne)

@@ -4488,6 +4488,32 @@ vect_recog_mult_pattern (vec_info *vinfo,
 }
 
 extern bool gimple_unsigned_integer_sat_add (tree, tree*, tree (*)(tree));
+extern bool gimple_unsigned_integer_sat_sub (tree, tree*, tree (*)(tree));
+
+static gcall *
+vect_recog_build_binary_gimple_call (vec_info *vinfo, gimple *stmt,
+				     internal_fn fn, tree *type_out,
+				     tree op_0, tree op_1)
+{
+  tree itype = TREE_TYPE (op_0);
+  tree vtype = get_vectype_for_scalar_type (vinfo, itype);
+
+  if (vtype != NULL_TREE
+    && direct_internal_fn_supported_p (fn, vtype, OPTIMIZE_FOR_BOTH))
+    {
+      gcall *call = gimple_build_call_internal (fn, 2, op_0, op_1);
+
+      gimple_call_set_lhs (call, vect_recog_temp_ssa_var (itype, NULL));
+      gimple_call_set_nothrow (call, /* nothrow_p */ false);
+      gimple_set_location (call, gimple_location (stmt));
+
+      *type_out = vtype;
+
+      return call;
+    }
+
+  return NULL;
+}
 
 /*
  * Try to detect saturation add pattern (SAT_ADD), aka below gimple:
@@ -4510,27 +4536,55 @@ vect_recog_sat_add_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
   if (!is_gimple_assign (last_stmt))
     return NULL;
 
-  tree res_ops[2];
+  tree ops[2];
   tree lhs = gimple_assign_lhs (last_stmt);
 
-  if (gimple_unsigned_integer_sat_add (lhs, res_ops, NULL))
+  if (gimple_unsigned_integer_sat_add (lhs, ops, NULL))
     {
-      tree itype = TREE_TYPE (res_ops[0]);
-      tree vtype = get_vectype_for_scalar_type (vinfo, itype);
-
-      if (vtype != NULL_TREE
-	&& direct_internal_fn_supported_p (IFN_SAT_ADD, vtype,
-					   OPTIMIZE_FOR_BOTH))
+      gcall *call = vect_recog_build_binary_gimple_call (vinfo, last_stmt,
+							 IFN_SAT_ADD, type_out,
+							 ops[0], ops[1]);
+      if (call)
 	{
-	  *type_out = vtype;
-	  gcall *call = gimple_build_call_internal (IFN_SAT_ADD, 2, res_ops[0],
-						    res_ops[1]);
-
-	  gimple_call_set_lhs (call, vect_recog_temp_ssa_var (itype, NULL));
-	  gimple_call_set_nothrow (call, /* nothrow_p */ false);
-	  gimple_set_location (call, gimple_location (last_stmt));
-
 	  vect_pattern_detected ("vect_recog_sat_add_pattern", last_stmt);
+	  return call;
+	}
+    }
+
+  return NULL;
+}
+
+/*
+ * Try to detect saturation sub pattern (SAT_ADD), aka below gimple:
+ *   _7 = _1 >= _2;
+ *   _8 = _1 - _2;
+ *   _10 = (long unsigned int) _7;
+ *   _9 = _8 * _10;
+ *
+ * And then simplied to
+ *   _9 = .SAT_SUB (_1, _2);
+ */
+
+static gimple *
+vect_recog_sat_sub_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
+			    tree *type_out)
+{
+  gimple *last_stmt = STMT_VINFO_STMT (stmt_vinfo);
+
+  if (!is_gimple_assign (last_stmt))
+    return NULL;
+
+  tree ops[2];
+  tree lhs = gimple_assign_lhs (last_stmt);
+
+  if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL))
+    {
+      gcall *call = vect_recog_build_binary_gimple_call (vinfo, last_stmt,
+							 IFN_SAT_SUB, type_out,
+							 ops[0], ops[1]);
+      if (call)
+	{
+	  vect_pattern_detected ("vect_recog_sat_sub_pattern", last_stmt);
 	  return call;
 	}
     }
@@ -6999,6 +7053,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
   { vect_recog_divmod_pattern, "divmod" },
   { vect_recog_mult_pattern, "mult" },
   { vect_recog_sat_add_pattern, "sat_add" },
+  { vect_recog_sat_sub_pattern, "sat_sub" },
   { vect_recog_mixed_size_cond_pattern, "mixed_size_cond" },
   { vect_recog_gcond_pattern, "gcond" },
   { vect_recog_bool_pattern, "bool" },
