@@ -1201,8 +1201,23 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
   if (num_devices > 0
       && ((omp_requires_mask
 	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+	       | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
 	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
     return -1;
+  /* Check whether host page access (direct or via migration) is supported;
+     if so, enable USM.  Currently, capabilities is per device type, hence,
+     check all devices.  */
+  if (num_devices > 0
+      && (omp_requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY))
+    for (int dev = 0; dev < num_devices; dev++)
+      {
+	int pi;
+	CUresult r;
+	r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			       CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS, dev);
+	if (r != CUDA_SUCCESS || pi == 0)
+	  return -1;
+      }
   return num_devices;
 }
 
