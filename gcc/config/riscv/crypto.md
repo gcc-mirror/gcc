@@ -107,7 +107,7 @@
 ;; This is slightly more complex than the other pack patterns
 ;; that fully expose the RTL as it needs to self-adjust to
 ;; rv32 and rv64.  But it's not that hard.
-(define_insn "*riscv_xpack_<X:mode>_2"
+(define_insn "riscv_xpack_<X:mode>_<HX:mode>_2"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(ior:X (ashift:X (match_operand:X 1 "register_operand" "r")
 			 (match_operand 2 "immediate_operand" "n"))

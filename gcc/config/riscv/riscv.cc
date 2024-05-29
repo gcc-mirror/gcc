@@ -1123,6 +1123,22 @@ riscv_build_integer (struct riscv_integer_op *codes, HOST_WIDE_INT value,
 	}
     }
 
+  /* With pack we can generate a 64 bit constant with the same high
+     and low 32 bits triviall.  */
+  if (cost > 3 && TARGET_64BIT && TARGET_ZBKB)
+    {
+      unsigned HOST_WIDE_INT loval = value & 0xffffffff;
+      unsigned HOST_WIDE_INT hival = value & ~loval;
+      if (hival >> 32 == loval)
+	{
+	  cost = 1 + riscv_build_integer_1 (codes, sext_hwi (loval, 32), mode);
+	  codes[cost - 1].code = CONCAT;
+	  codes[cost - 1].value = 0;
+	  codes[cost - 1].use_uw = false;
+	}
+
+    }
+
   return cost;
 }
 
@@ -2678,6 +2694,13 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value,
 	      x = gen_rtx_fmt_ee (PLUS, mode, ashift, x);
 	      rtx t = can_create_pseudo_p () ? gen_reg_rtx (mode) : temp;
 	      x = riscv_emit_set (t, x);
+	    }
+	  else if (codes[i].code == CONCAT)
+	    {
+	      rtx t = can_create_pseudo_p () ? gen_reg_rtx (mode) : temp;
+	      rtx t2 = gen_lowpart (SImode, x);
+	      emit_insn (gen_riscv_xpack_di_si_2 (t, x, GEN_INT (32), t2));
+	      x = t;
 	    }
 	  else
 	    x = gen_rtx_fmt_ee (codes[i].code, mode,
