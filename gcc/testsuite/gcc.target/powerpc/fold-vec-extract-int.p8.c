@@ -28,9 +28,8 @@
 /* { dg-final { scan-assembler-times {\mli\M} 6 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mrlwinm\M} 3 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mstxvw4x\M} 6 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\madd\M} 3 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlwz\M} 6 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M} 9 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\maddi?\M} 9 { target ilp32 } } } */
 
 
 

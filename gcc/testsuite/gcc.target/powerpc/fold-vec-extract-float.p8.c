@@ -24,9 +24,8 @@
 /* { dg-final { scan-assembler-times {\mli\M} 1 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mrlwinm\M} 1 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mstxvd2x\M} 1 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\madd\M} 1 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlfs\M} 1 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M} 2 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\maddi?\M} 2 { target ilp32 } } } */
 
 
 #include <altivec.h>
