@@ -3593,7 +3593,7 @@ typedef struct var_loc_list_def var_loc_list;
 
 /* Call argument location list.  */
 struct GTY ((chain_next ("%h.next"))) call_arg_loc_node {
-  rtx GTY (()) call_arg_loc_note;
+  rtx_insn * GTY (()) call_insn;
   const char * GTY (()) label;
   tree GTY (()) block;
   bool tail_call_p;
@@ -3777,7 +3777,8 @@ static void remove_addr_table_entry (addr_table_entry *);
 static void add_AT_addr (dw_die_ref, enum dwarf_attribute, rtx, bool);
 static inline rtx AT_addr (dw_attr_node *);
 static void add_AT_symview (dw_die_ref, enum dwarf_attribute, const char *);
-static void add_AT_lbl_id (dw_die_ref, enum dwarf_attribute, const char *);
+static void add_AT_lbl_id (dw_die_ref, enum dwarf_attribute, const char *,
+			   int = 0);
 static void add_AT_lineptr (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_macptr (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_range_list (dw_die_ref, enum dwarf_attribute,
@@ -5353,14 +5354,17 @@ add_AT_symview (dw_die_ref die, enum dwarf_attribute attr_kind,
 
 static inline void
 add_AT_lbl_id (dw_die_ref die, enum dwarf_attribute attr_kind,
-               const char *lbl_id)
+	       const char *lbl_id, int offset)
 {
   dw_attr_node attr;
 
   attr.dw_attr = attr_kind;
   attr.dw_attr_val.val_class = dw_val_class_lbl_id;
   attr.dw_attr_val.val_entry = NULL;
-  attr.dw_attr_val.v.val_lbl_id = xstrdup (lbl_id);
+  if (!offset)
+    attr.dw_attr_val.v.val_lbl_id = xstrdup (lbl_id);
+  else
+    attr.dw_attr_val.v.val_lbl_id = xasprintf ("%s%+i", lbl_id, offset);
   if (dwarf_split_debug_info)
     attr.dw_attr_val.val_entry
         = add_addr_table_entry (attr.dw_attr_val.v.val_lbl_id,
@@ -23547,7 +23551,9 @@ gen_call_site_die (tree decl, dw_die_ref subr_die,
   if (stmt_die == NULL)
     stmt_die = subr_die;
   die = new_die (dwarf_TAG (DW_TAG_call_site), stmt_die, NULL_TREE);
-  add_AT_lbl_id (die, dwarf_AT (DW_AT_call_return_pc), ca_loc->label);
+  add_AT_lbl_id (die, dwarf_AT (DW_AT_call_return_pc),
+		 ca_loc->label,
+		 targetm.calls.call_offset_return_label (ca_loc->call_insn));
   if (ca_loc->tail_call_p)
     add_AT_flag (die, dwarf_AT (DW_AT_call_tail_call), 1);
   if (ca_loc->symbol_ref)
@@ -24234,11 +24240,14 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    {
 	      dw_die_ref die = NULL;
 	      rtx tloc = NULL_RTX, tlocc = NULL_RTX;
+	      rtx call_arg_loc_note
+		= find_reg_note (ca_loc->call_insn,
+				 REG_CALL_ARG_LOCATION, NULL_RTX);
 	      rtx arg, next_arg;
 	      tree arg_decl = NULL_TREE;
 
-	      for (arg = (ca_loc->call_arg_loc_note != NULL_RTX
-			  ? XEXP (ca_loc->call_arg_loc_note, 0)
+	      for (arg = (call_arg_loc_note != NULL_RTX
+			  ? XEXP (call_arg_loc_note, 0)
 			  : NULL_RTX);
 		   arg; arg = next_arg)
 		{
@@ -28283,8 +28292,7 @@ create_label:
 	= ggc_cleared_alloc<call_arg_loc_node> ();
       rtx_insn *prev = call_insn;
 
-      ca_loc->call_arg_loc_note
-	= find_reg_note (call_insn, REG_CALL_ARG_LOCATION, NULL_RTX);
+      ca_loc->call_insn = call_insn;
       ca_loc->next = NULL;
       ca_loc->label = last_label;
       gcc_assert (prev

@@ -4891,6 +4891,15 @@ Most ports do not need to implement anything for this hook.",
  hook_void_CUMULATIVE_ARGS)
 
 DEFHOOK
+(call_offset_return_label,
+ "While generating call-site debug info for a CALL insn, or a SEQUENCE\n\
+insn starting with a CALL, this target hook is invoked to compute the\n\
+offset to be added to the debug label emitted after the call to obtain\n\
+the return address that should be recorded as the return PC.",
+ int, (rtx_insn *call_insn),
+ hook_int_rtx_insn_0)
+
+DEFHOOK
 (push_argument,
  "This target hook returns @code{true} if push instructions will be\n\
 used to pass outgoing arguments.  When the push instruction usage is\n\
