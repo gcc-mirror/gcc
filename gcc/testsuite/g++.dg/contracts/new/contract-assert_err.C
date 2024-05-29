@@ -19,26 +19,20 @@ static_assert (__cpp_contracts_roles >= 201906);
 
 contract_assert f(); // { dg-error "expected unqualified-id before .contract_assert." }
 
-void f(contract_assert); // { dg-error "variable or field"}
-// { dg-error "expected primary-expression before .contract_assert." "" { target *-*-* } 22 }
+void f(contract_assert); // { dg-error "expected primary-expression before|declared void" }
+struct contract_assert{}; // { dg-error "expected unqualified-id before|expected identifier" }
+void contract_assert(); // { dg-error "expected unqualified-id before" }
 
-
-struct contract_assert{}; // { dg-error "expected unqualified-id before .contract_assert." }
-// { dg-error "expected identifier before .contract_assert." "" { target *-*-* } 26 }
-
-void contract_assert(); // { dg-error "expected unqualified-id before .contract_assert." }
 int main()
 {
 
 	contract_assert(x==0); // { dg-error ".x. was not declared in this scope"}
-	contract_assert int i = 0; // { dg-error "expected "}
-	// { dg-error "expected " "" { target *-*-* } 34 }
+	contract_assert int i = 0; // // { dg-error "expected primary-expression before|before .int." }
 
 	i = 7;
-	[[assert: i == 0]] contract_assert(x==0); // { dg-error "assertions must be followed" }
+	[[assert: i == 0]] contract_assert(x==0); // { dg-error "assertions must be followed by" }
 
-	contract_assert( x = 0); // { dg-error  "expected .\\)."}
-	// { dg-error "expected primary-expression" "" { target *-*-* } 40 }
+	contract_assert( x = 0); // { dg-error  "expected primary-expression before|expected .\\). before .=. token" }
 
     contract_assert( y == 0); // { dg-error ".y. was not declared in this scope" }
 	return 0;

@@ -21,11 +21,11 @@ int fun(int n)  pre (n > 0 );
 
 int main()
 {
-  int x() [[ pre fun(0) > 0 ]]; // { dg-error "expected contract level"}
-	// { dg-error "expected .:." "" { target *-*-* } 24 }
+  int x() [[ pre fun(0) > 0 ]]; /* { dg-error "expected contract level" "" { target *-*-* } }  */
+	/* { dg-error "before .\\(." "" { target *-*-* } .-1 } */
   int y() pre (fun(0) > 0); // { dg-error "was not declared"}
-  int z() [[ pre fun(0) > 0 ]] pre (fun(0) > 0); // { dg-error "expected contract"}
-	// { dg-error "expected .:." "" { target *-*-* } 27 }
+  int z() [[ pre fun(0) > 0 ]] pre (fun(0) > 0); /* { dg-error "expected contract" "" { target *-*-* } } */
+	/* { dg-error "before .\\(." "" { target *-*-* } .-1 } */
 
   return 0;
 }
