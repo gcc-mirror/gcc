@@ -8844,6 +8844,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	       sum += d0[i] * d1[i];      // dot-prod <vector(16) char>
 	       sum += w[i];               // widen-sum <vector(16) char>
 	       sum += abs(s0[i] - s1[i]); // sad <vector(8) short>
+	       sum += n[i];               // normal <vector(4) int>
 	     }
 
 	 The vector size is 128-bit，vectorization factor is 16.  Reduction
@@ -8861,19 +8862,27 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	       sum_v2 = sum_v2;  // copy
 	       sum_v3 = sum_v3;  // copy
 
-	       sum_v0 = WIDEN_SUM (w_v0[i: 0 ~ 15], sum_v0);
-	       sum_v1 = sum_v1;  // copy
+	       sum_v0 = sum_v0;  // copy
+	       sum_v1 = WIDEN_SUM (w_v1[i: 0 ~ 15], sum_v1);
 	       sum_v2 = sum_v2;  // copy
 	       sum_v3 = sum_v3;  // copy
 
-	       sum_v0 = SAD (s0_v0[i: 0 ~ 7 ], s1_v0[i: 0 ~ 7 ], sum_v0);
-	       sum_v1 = SAD (s0_v1[i: 8 ~ 15], s1_v1[i: 8 ~ 15], sum_v1);
-	       sum_v2 = sum_v2;  // copy
+	       sum_v0 = sum_v0;  // copy
+	       sum_v1 = SAD (s0_v1[i: 0 ~ 7 ], s1_v1[i: 0 ~ 7 ], sum_v1);
+	       sum_v2 = SAD (s0_v2[i: 8 ~ 15], s1_v2[i: 8 ~ 15], sum_v2);
 	       sum_v3 = sum_v3;  // copy
+
+	       sum_v0 += n_v0[i: 0  ~ 3 ];
+	       sum_v1 += n_v1[i: 4  ~ 7 ];
+	       sum_v2 += n_v2[i: 8  ~ 11];
+	       sum_v3 += n_v3[i: 12 ~ 15];
 	     }
 
-	   sum_v = sum_v0 + sum_v1 + sum_v2 + sum_v3;   // = sum_v0 + sum_v1
-	*/
+	 Moreover, for a higher instruction parallelism in final vectorized
+	 loop, it is considered to make those effective vector lane-reducing
+	 ops be distributed evenly among all def-use cycles.  In the above
+	 example, DOT_PROD, WIDEN_SUM and SADs are generated into disparate
+	 cycles, instruction dependency among them could be eliminated.  */
       unsigned effec_ncopies = vec_oprnds[0].length ();
       unsigned total_ncopies = vec_oprnds[reduc_index].length ();
 
@@ -8885,6 +8894,47 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	    {
 	      gcc_assert (vec_oprnds[i].length () == effec_ncopies);
 	      vec_oprnds[i].safe_grow_cleared (total_ncopies);
+	    }
+	}
+
+      tree reduc_vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (reduc_info);
+      gcc_assert (reduc_vectype_in);
+
+      unsigned effec_reduc_ncopies
+	= vect_get_num_copies (loop_vinfo, slp_node, reduc_vectype_in);
+
+      gcc_assert (effec_ncopies <= effec_reduc_ncopies);
+
+      if (effec_ncopies < effec_reduc_ncopies)
+	{
+	  /* Find suitable def-use cycles to generate vectorized statements
+	     into, and reorder operands based on the selection.  */
+	  unsigned curr_pos = reduc_info->reduc_result_pos;
+	  unsigned next_pos = (curr_pos + effec_ncopies) % effec_reduc_ncopies;
+
+	  gcc_assert (curr_pos < effec_reduc_ncopies);
+          reduc_info->reduc_result_pos = next_pos;
+
+	  if (curr_pos)
+	    {
+	      unsigned count = effec_reduc_ncopies - effec_ncopies;
+	      unsigned start = curr_pos - count;
+
+	      if ((int) start < 0)
+		{
+		  count = curr_pos;
+		  start = 0;
+		}
+
+	      for (unsigned i = 0; i < op.num_ops - 1; i++)
+		{
+		  for (unsigned j = effec_ncopies; j > start; j--)
+		    {
+		      unsigned k = j - 1;
+		      std::swap (vec_oprnds[i][k], vec_oprnds[i][k + count]);
+		      gcc_assert (!vec_oprnds[i][k]);
+		    }
+		}
 	    }
 	}
     }

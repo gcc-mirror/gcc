@@ -1402,6 +1402,12 @@ public:
   /* The vector type for performing the actual reduction.  */
   tree reduc_vectype;
 
+  /* For loop reduction with multiple vectorized results (ncopies > 1), a
+     lane-reducing operation participating in it may not use all of those
+     results, this field specifies result index starting from which any
+     following land-reducing operation would be assigned to.  */
+  unsigned int reduc_result_pos;
+
   /* If IS_REDUC_INFO is true and if the vector code is performing
      N scalar reductions in parallel, this variable gives the initial
      scalar values of those N reductions.  */
