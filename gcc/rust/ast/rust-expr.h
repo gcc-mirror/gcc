@@ -6,6 +6,7 @@
 #include "rust-path.h"
 #include "rust-macro.h"
 #include "rust-operators.h"
+#include <memory>
 
 namespace Rust {
 namespace AST {
@@ -4723,6 +4724,23 @@ struct AnonConst
 {
   NodeId id;
   std::unique_ptr<Expr> value;
+  AnonConst () {}
+  AnonConst (const AnonConst &other)
+  {
+    id = other.id;
+    value = other.value == nullptr
+	      ? nullptr
+	      : std::unique_ptr<Expr> (other.value->clone_expr ());
+  }
+
+  AnonConst operator= (const AnonConst &other)
+  {
+    id = other.id;
+    value = other.value == nullptr
+	      ? nullptr
+	      : std::unique_ptr<Expr> (other.value->clone_expr ());
+    return *this;
+  }
 };
 
 struct InlineAsmRegOrRegClass
@@ -4767,6 +4785,25 @@ struct InlineAsmOperand
   {
     InlineAsmRegOrRegClass reg;
     std::unique_ptr<Expr> expr;
+
+    In () {}
+    In (const struct In &other)
+    {
+      reg = other.reg;
+      expr = other.expr == nullptr
+	       ? nullptr
+	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+    }
+
+    In operator= (const struct In &other)
+    {
+      reg = other.reg;
+      expr = other.expr == nullptr
+	       ? nullptr
+	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+
+      return *this;
+    }
   };
 
   struct Out
@@ -4774,6 +4811,26 @@ struct InlineAsmOperand
     InlineAsmRegOrRegClass reg;
     bool late;
     std::unique_ptr<Expr> expr; // can be null
+
+    Out () {}
+    Out (const struct Out &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr == nullptr
+	       ? nullptr
+	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+    }
+
+    Out operator= (const struct Out &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr == nullptr
+	       ? nullptr
+	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+      return *this;
+    }
   };
 
   struct InOut
@@ -4781,6 +4838,26 @@ struct InlineAsmOperand
     InlineAsmRegOrRegClass reg;
     bool late;
     std::unique_ptr<Expr> expr; // this can't be null
+
+    InOut () {}
+    InOut (const struct InOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr == nullptr
+	       ? nullptr
+	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+    }
+
+    InOut operator= (const struct InOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      expr = other.expr == nullptr
+	       ? nullptr
+	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+      return *this;
+    }
   };
 
   struct SplitInOut
@@ -4789,6 +4866,33 @@ struct InlineAsmOperand
     bool late;
     std::unique_ptr<Expr> in_expr;
     std::unique_ptr<Expr> out_expr; // could be null
+
+    SplitInOut () {}
+    SplitInOut (const struct SplitInOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      in_expr = other.in_expr == nullptr
+		  ? nullptr
+		  : std::unique_ptr<Expr> (other.in_expr->clone_expr ());
+      out_expr = other.out_expr == nullptr
+		   ? nullptr
+		   : std::unique_ptr<Expr> (other.out_expr->clone_expr ());
+    }
+
+    SplitInOut operator= (const struct SplitInOut &other)
+    {
+      reg = other.reg;
+      late = other.late;
+      in_expr = other.in_expr == nullptr
+		  ? nullptr
+		  : std::unique_ptr<Expr> (other.in_expr->clone_expr ());
+      out_expr = other.out_expr == nullptr
+		   ? nullptr
+		   : std::unique_ptr<Expr> (other.out_expr->clone_expr ());
+
+      return *this;
+    }
   };
 
   struct Const
@@ -4799,6 +4903,18 @@ struct InlineAsmOperand
   struct Sym
   {
     std::unique_ptr<Expr> sym;
+
+    Sym () {}
+    Sym (const struct Sym &other)
+    {
+      sym = std::unique_ptr<Expr> (other.sym->clone_expr ());
+    }
+
+    Sym operator= (const struct Sym &other)
+    {
+      sym = std::unique_ptr<Expr> (other.sym->clone_expr ());
+      return *this;
+    }
   };
   RegisterType registerType;
 
@@ -4808,6 +4924,12 @@ struct InlineAsmOperand
   struct SplitInOut splitInOut;
   struct Const cnst;
   struct Sym sym;
+
+  InlineAsmOperand () {}
+  InlineAsmOperand (const InlineAsmOperand &other)
+    : in (other.in), out (other.out), inOut (other.inOut),
+      splitInOut (other.splitInOut), cnst (other.cnst), sym (other.sym)
+  {}
 
   location_t locus;
 };
@@ -4842,7 +4964,7 @@ struct TupleTemplateStr
 };
 
 // Inline Assembly Node
-class InlineAsm : private ExprWithoutBlock
+class InlineAsm : public ExprWithoutBlock
 {
 private:
   location_t locus;
@@ -4878,10 +5000,9 @@ public:
 
   void set_outer_attrs (std::vector<Attribute> v) override { outer_attrs = v; }
 
-  ExprWithoutBlock *clone_expr_without_block_impl () const override
+  InlineAsm *clone_expr_without_block_impl () const override
   {
-    rust_unreachable ();
-    return nullptr;
+    return new InlineAsm (*this);
   }
 };
 
