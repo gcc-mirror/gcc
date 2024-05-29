@@ -13296,6 +13296,8 @@ vect_analyze_stmt (vec_info *vinfo,
 				      NULL, NULL, node, cost_vec)
 	  || vectorizable_load (vinfo, stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_store (vinfo, stmt_info, NULL, NULL, node, cost_vec)
+	  || vectorizable_lane_reducing (as_a <loop_vec_info> (vinfo),
+					 stmt_info, node, cost_vec)
 	  || vectorizable_reduction (as_a <loop_vec_info> (vinfo), stmt_info,
 				     node, node_instance, cost_vec)
 	  || vectorizable_induction (as_a <loop_vec_info> (vinfo), stmt_info,
