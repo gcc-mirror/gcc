@@ -515,7 +515,7 @@ const struct c_common_resword c_common_reswords[] =
   { "constinit",	RID_CONSTINIT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "const_cast",	RID_CONSTCAST,	D_CXXONLY | D_CXXWARN },
   { "continue",		RID_CONTINUE,	0 },
-  { "contract_assert",	RID_CONTASSERT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
+  { "contract_assert",	RID_CONTASSERT,	D_CXXONLY | D_CXXWARN }, // removed D_CXX20 in order for contracts to work out of the box
   { "decltype",         RID_DECLTYPE,   D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "default",		RID_DEFAULT,	0 },
   { "delete",		RID_DELETE,	D_CXXONLY | D_CXXWARN },
