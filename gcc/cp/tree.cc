@@ -2796,6 +2796,10 @@ build_cp_fntype_variant (tree type, cp_ref_qualifier rqual,
   bool complex_eh_spec_p = (cr && cr != noexcept_true_spec
 			    && !UNPARSED_NOEXCEPT_SPEC_P (cr));
 
+  if (!complex_eh_spec_p && TYPE_RAISES_EXCEPTIONS (type))
+    /* We want to consider structural equality of the exception-less
+       variant since we'll be replacing the exception specification.  */
+    type = build_cp_fntype_variant (type, rqual, /*raises=*/NULL_TREE, late);
   if (TYPE_STRUCTURAL_EQUALITY_P (type) || complex_eh_spec_p)
     /* Propagate structural equality.  And always use structural equality
        for function types with a complex noexcept-spec since their identity
