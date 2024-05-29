@@ -25333,26 +25333,25 @@ aarch64_output_sve_ptrues (rtx const_unspec)
 void
 aarch64_split_combinev16qi (rtx operands[3])
 {
-  unsigned int dest = REGNO (operands[0]);
-  unsigned int src1 = REGNO (operands[1]);
-  unsigned int src2 = REGNO (operands[2]);
   machine_mode halfmode = GET_MODE (operands[1]);
-  unsigned int halfregs = REG_NREGS (operands[1]);
-  rtx destlo, desthi;
 
   gcc_assert (halfmode == V16QImode);
 
-  if (src1 == dest && src2 == dest + halfregs)
+  rtx destlo = simplify_gen_subreg (halfmode, operands[0],
+				    GET_MODE (operands[0]), 0);
+  rtx desthi = simplify_gen_subreg (halfmode, operands[0],
+				    GET_MODE (operands[0]),
+				    GET_MODE_SIZE (halfmode));
+
+  bool skiplo = rtx_equal_p (destlo, operands[1]);
+  bool skiphi = rtx_equal_p (desthi, operands[2]);
+
+  if (skiplo && skiphi)
     {
       /* No-op move.  Can't split to nothing; emit something.  */
       emit_note (NOTE_INSN_DELETED);
       return;
     }
-
-  /* Preserve register attributes for variable tracking.  */
-  destlo = gen_rtx_REG_offset (operands[0], halfmode, dest, 0);
-  desthi = gen_rtx_REG_offset (operands[0], halfmode, dest + halfregs,
-			       GET_MODE_SIZE (halfmode));
 
   /* Special case of reversed high/low parts.  */
   if (reg_overlap_mentioned_p (operands[2], destlo)
@@ -25366,16 +25365,16 @@ aarch64_split_combinev16qi (rtx operands[3])
     {
       /* Try to avoid unnecessary moves if part of the result
 	 is in the right place already.  */
-      if (src1 != dest)
+      if (!skiplo)
 	emit_move_insn (destlo, operands[1]);
-      if (src2 != dest + halfregs)
+      if (!skiphi)
 	emit_move_insn (desthi, operands[2]);
     }
   else
     {
-      if (src2 != dest + halfregs)
+      if (!skiphi)
 	emit_move_insn (desthi, operands[2]);
-      if (src1 != dest)
+      if (!skiplo)
 	emit_move_insn (destlo, operands[1]);
     }
 }

@@ -8474,7 +8474,7 @@
 			UNSPEC_CONCAT))]
   "TARGET_SIMD"
   "#"
-  "&& reload_completed"
+  "&& 1"
   [(const_int 0)]
 {
   aarch64_split_combinev16qi (operands);
