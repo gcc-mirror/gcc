@@ -1,3 +1,10 @@
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/115167
+	* c-objc-common.cc: Replace include of "gcc-rich-location.h" with
+	"c-family/c-type-mismatch.h".
+	* c-typeck.cc: Likewise.
+
 2024-05-24  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/114831

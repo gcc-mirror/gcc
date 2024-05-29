@@ -1,3 +1,10 @@
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (TAGS_SOURCES): Add include/label-text.h.
+	* include/label-text.h: New file.
+	* include/rich-location.h: Include "label-text.h".
+	(class label_text): Move to label-text.h.
+
 2024-05-26  Peter Damianov  <peter0x44@disroot.org>
 
 	* lex.cc (do_peek_prev): Correct typo in argument to __builtin_expect()

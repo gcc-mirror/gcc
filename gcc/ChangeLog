@@ -1,3 +1,199 @@
+2024-05-28  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/67325
+	* config/i386/i386.cc (ix86_rtx_costs): Reduce cost of MEM (A
+	+ imm) to "cost of MEM (A)" + 1.
+
+2024-05-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (dom_ranger::dom_ranger): Do not initialize m_out.
+	(dom_ranger::maybe_push_edge): Use gori () rather than m_out.
+	* gimple-range.h (dom_ranger::m_out): Remove.
+	* tree-vrp.cc (remove_unreachable::remove_unreachable): Use a
+	range-query ranther than a gimple_ranger.
+	(remove_unreachable::remove): New.
+	(remove_unreachable::m_ranger): Change to a range_query.
+	(remove_unreachable::handle_early): If there is no dependency
+	information, do nothing.
+	(remove_unreachable::remove_and_update_globals): Do not update
+	globals if there is no dependecy info to use.
+
+2024-05-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* resource.cc (free_resource_info, clear_hashed_info_for_insn): Don't
+	check for non-null target_hash_table and bb_ticks.
+	(mark_target_live_regs): Ditto.  Replace check for non-NULL result from
+	BLOCK_FOR_INSN with a call to gcc_assert.  Fold code conditioned on
+	tinfo != NULL.
+
+2024-05-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* resource.cc (mark_target_live_regs): Remove redundant check for b
+	being -1, after gcc_assert.
+
+2024-05-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* resource.cc: Include cfgrtl.h.  Use BLOCK_FOR_INSN (insn)->index
+	instead of calling find_basic_block (insn).  Assert for not -1.
+	(find_basic_block): Remove function.
+	(init_resource_info): Call compute_bb_for_insn.
+	(free_resource_info): Call free_bb_for_insn.
+
+2024-05-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR rtl-optimization/115182
+	* resource.cc (mark_target_live_regs): Don't look for
+	unconditional branches after the target to improve on the
+	register liveness.
+	(find_dead_or_set_registers): Remove unused function.
+
+2024-05-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sync.md (atomic_loaddi_fpu): Use movd/pextrd
+	to move DImode value from XMM to GPR for TARGET_SSE4_1.
+	(atomic_storedi_fpu): Use movd/pinsrd to move DImode value
+	from GPR to XMM for TARGET_SSE4_1.
+
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-color.cc: Define INCLUDE_VECTOR.
+	Include "label-text.h" and "selftest.h".
+	(struct color_cap): Replace with...
+	(struct color_default): ...this, adding "m_" prefixes to fields
+	and dropping "name_len" and "free_val" field.
+	(color_dict): Convert to...
+	(gcc_color_defaults): ...this, making const, dropping the trailing
+	strlen and "false" from each entry.
+	(class diagnostic_color_dict): New.
+	(g_color_dict): New.
+	(colorize_start): Reimplement in terms of g_color_dict.
+	(diagnostic_color_dict::get_entry_by_name): New, based on
+	colorize_start.
+	(diagnostic_color_dict::get_start_by_name): Likewise.
+	(diagnostic_color_dict::diagnostic_color_dict): New.
+	(parse_gcc_colors): Reimplement, moving body...
+	(diagnostic_color_dict::parse_envvar_value): ...here.
+	(colorize_init): Lazily create g_color_dict.
+	(selftest::test_empty_color_dict): New.
+	(selftest::test_default_color_dict): New.
+	(selftest::test_color_dict_envvar_parsing): New.
+	(selftest::diagnostic_color_cc_tests): New.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	selftest::diagnostic_color_cc_tests.
+	* selftest.h (selftest::diagnostic_color_cc_tests): New decl.
+
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* function-tests.cc: Include "selftest-tree.h".
+	* selftest-tree.h: New file.
+	* selftest.h (make_fndecl): Move to selftest-tree.h.
+
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/v850/v850.opt.urls: Regenerate, with fix.
+	* config/vax/vax.opt.urls: Likewise.
+	* regenerate-opt-urls.py (TARGET_SPECIFIC_PAGES): Fix transposed
+	values for "vax" and "v850".
+
+2024-05-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/115221
+	* gimple-range-fold.cc (range_of_ssa_name_with_loop_info): Do
+	not invoke SCEV is range_query's do not match.
+
+2024-05-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-strlen.cc (strlen_pass::strlen_pass): Add function
+	pointer and initialize ptr_qry with current range_query.
+	(strlen_pass::m_ranger): Remove.
+	(printf_strlen_execute): Enable and disable ranger.
+
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/115203
+	* diagnostic-path.h
+	(simple_diagnostic_path::disable_event_localization): New.
+	(simple_diagnostic_path::m_localize_events): New field.
+	* diagnostic.cc
+	(simple_diagnostic_path::simple_diagnostic_path): Initialize
+	m_localize_events.
+	(simple_diagnostic_path::add_event): Only localize fmt if
+	m_localize_events is true.
+	* tree-diagnostic-path.cc
+	(test_diagnostic_path::test_diagnostic_path): Call
+	disable_event_localization.
+
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/115167
+	* Makefile.in (C_COMMON_OBJS): Add c-family/c-type-mismatch.o.
+	* gcc-rich-location.cc
+	(maybe_range_label_for_tree_type_mismatch::get_text): Move to
+	c-family/c-type-mismatch.cc.
+	(binary_op_rich_location::binary_op_rich_location): Likewise.
+	(binary_op_rich_location::use_operator_loc_p): Likewise.
+	* gcc-rich-location.h (class range_label_for_type_mismatch):
+	Likewise.
+	(class maybe_range_label_for_tree_type_mismatch): Likewise.
+	(class op_location_t): Likewise for forward decl.
+	(class binary_op_rich_location): Likewise.
+
+2024-05-28  Lyut Nersisyan  <lyut.nersisyan@gmail.com>
+
+	* config/riscv/crypto.md: Add new combiner patterns to generate
+	pack, packh, packw instrutions.
+	* config/riscv/iterators.md (HX): New iterator for half X mode.
+	* config/riscv/riscv.md (<optab>_shift_reverse<X:mode>): Tighten
+	cases to avoid.  Do not lose bits for XOR/IOR.
+
+2024-05-28  Feng Xue  <fxue@os.amperecomputing.com>
+
+	PR tree-optimization/115060
+	* tree-vect-patterns.cc (vect_get_internal_def): Return statement for
+	vectorization.
+	(vect_widened_op_tree): Call vect_get_internal_def instead of look_def
+	to get statement information.
+	(vect_recog_widen_abd_pattern): No need to call vect_stmt_to_vectorize.
+
+2024-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115236
+	* tree-ssa-structalias.cc (build_pred_graph): Properly
+	handle *ANYTHING = X.
+	(build_succ_graph): Likewise.  Do not elide direct nodes
+	from receiving from STOREDANYTHING.
+
+2024-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (find_func_aliases): Use
+	get_constraint_for_address_of to build escape constraints
+	for asm inputs and outputs.
+
+2024-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115254
+	* tree-vect-slp.cc (vect_build_slp_tree): Only account
+	multi-lane SLP to limit.
+
+2024-05-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (get_initial_defs_for_reduction): Convert
+	neutral op to the vector component type.
+
+2024-05-28  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md
+	(<avx512>_<complexopname>_<mode>_mask<round_name>): Align
+	operands' predicate with corresponding expander.
+	(<avx512>_<complexopname>_<mode><maskc_name><round_name>):
+	Ditto.
+
+2024-05-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115169
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_conditional_move): Guard REGNO with REG_P.
+
 2024-05-27  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/115238

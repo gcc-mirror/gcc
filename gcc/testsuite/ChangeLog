@@ -1,3 +1,65 @@
+2024-05-28  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr67325.c: New test.
+
+2024-05-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109396
+	* g++.dg/warn/Wself-move2.C: New test.
+
+2024-05-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/115221
+	* gcc.dg/pr115221.c: New.
+
+2024-05-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-10.c: Add truncating warning.
+
+2024-05-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/lastprivate-conditional-1.c: Remove
+	'{ dg-prune-output "not supported yet" }'.
+	* c-c++-common/gomp/requires-1.c: Likewise.
+	* c-c++-common/gomp/requires-2.c: Likewise.
+	* c-c++-common/gomp/reverse-offload-1.c: Likewise.
+	* g++.dg/gomp/requires-1.C: Likewise.
+	* gfortran.dg/gomp/requires-1.f90: Likewise.
+	* gfortran.dg/gomp/requires-2.f90: Likewise.
+	* gfortran.dg/gomp/requires-4.f90: Likewise.
+	* gfortran.dg/gomp/requires-5.f90: Likewise.
+	* gfortran.dg/gomp/requires-6.f90: Likewise.
+	* gfortran.dg/gomp/requires-7.f90: Likewise.
+
+2024-05-28  Lyut Nersisyan  <lyut.nersisyan@gmail.com>
+
+	* gcc.target/riscv/pack32.c: New test.
+	* gcc.target/riscv/pack64.c: New test.
+	* gcc.target/riscv/packh32.c: New test.
+	* gcc.target/riscv/packh64.c: New test.
+	* gcc.target/riscv/packw.c: New test.
+	Co-authored-by: Jeffrey A Law <jlaw@ventanamicro.com>
+
+2024-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR target/115254
+	* gcc.dg/vect/vect-gather-4.c: Adjust dump scan.
+
+2024-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115236
+	* gcc.dg/pr115236.c: New testcase.
+
+2024-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115254
+	* gcc.dg/vect/slp-cond-2-big-array.c: Expect 4 times SLP.
+	* gcc.dg/vect/slp-cond-2.c: Likewise.
+
+2024-05-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/tree-ssa/bitops-9.c: Look at cdcde1 rather than optmization.
+
 2024-05-27  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/115238

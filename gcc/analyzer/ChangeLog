@@ -1,3 +1,7 @@
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc: Include "selftest-tree.h".
+
 2024-05-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-event.h (checker_event::connect_to_next_event_p):

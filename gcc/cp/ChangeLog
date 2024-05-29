@@ -1,3 +1,29 @@
+2024-05-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109396
+	* cp-tree.h (maybe_warn_self_move): Declare.
+	* init.cc (perform_member_init): Call maybe_warn_self_move.
+	* typeck.cc (maybe_warn_self_move): No longer static.  Change the
+	return type to bool.  Also warn when called from
+	a member-initializer-list.  Drop the inform call.
+
+2024-05-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114707
+	* call.cc (convert_for_arg_passing): Call set_target_expr_eliding.
+	* typeck2.cc (replace_placeholders_for_class_temp_r): Don't use pset.
+	(digest_nsdmi_init): Call cp_walk_tree_without_duplicates instead of
+	cp_walk_tree.
+
+2024-05-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/115167
+	PR bootstrap/115167
+	* call.cc: Replace include of "gcc-rich-location.h" with
+	"c-family/c-type-mismatch.h".
+	* error.cc: Likewise.
+	* typeck.cc: Likewise.
+
 2024-05-25  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/102345
