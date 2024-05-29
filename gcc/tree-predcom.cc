@@ -3522,6 +3522,9 @@ tree_predictive_commoning (bool allow_unroll_p)
 	}
     }
 
+  if (ret != 0)
+    cfun->pending_TODOs |= PENDING_TODO_force_next_scalar_cleanup;
+
   return ret;
 }
 
