@@ -1,3 +1,11 @@
+2024-05-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-05-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115150
+	* gfortran.dg/shape_12.f90: New test.
+
 2024-05-27  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

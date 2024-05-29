@@ -1,3 +1,15 @@
+2024-05-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114940
+	* include/bits/version.def (generator): Depend on
+	__cpp_sized_deallocation.
+	* include/bits/version.h: Regenerate.
+	* include/std/stacktrace (_GLIBCXX_SIZED_DELETE): New macro.
+	(basic_stacktrace::_Impl::_M_deallocate): Use it.
+
 2024-05-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

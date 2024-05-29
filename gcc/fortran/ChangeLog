@@ -1,3 +1,12 @@
+2024-05-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-05-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115150
+	* trans-intrinsic.cc (gfc_conv_intrinsic_bound): Fix SHAPE
+	for zero-size arrays
+
 2024-05-25  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
