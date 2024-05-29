@@ -7391,6 +7391,79 @@ build_vect_cond_expr (code_helper code, tree vop[3], tree mask,
     }
 }
 
+/* Given an operation with CODE in loop reduction path whose reduction PHI is
+   specified by REDUC_INFO, the operation has TYPE of scalar result, and its
+   input vectype is represented by VECTYPE_IN. The vectype of vectorized result
+   may be different from VECTYPE_IN, either in base type or vectype lanes,
+   lane-reducing operation is the case.  This function check if it is possible,
+   and how to perform partial vectorization on the operation in the context
+   of LOOP_VINFO.  */
+
+static void
+vect_reduction_update_partial_vector_usage (loop_vec_info loop_vinfo,
+					    stmt_vec_info reduc_info,
+					    slp_tree slp_node,
+					    code_helper code, tree type,
+					    tree vectype_in)
+{
+  enum vect_reduction_type reduc_type = STMT_VINFO_REDUC_TYPE (reduc_info);
+  internal_fn reduc_fn = STMT_VINFO_REDUC_FN (reduc_info);
+  internal_fn cond_fn = get_conditional_internal_fn (code, type);
+
+  if (reduc_type != FOLD_LEFT_REDUCTION
+      && !use_mask_by_cond_expr_p (code, cond_fn, vectype_in)
+      && (cond_fn == IFN_LAST
+	  || !direct_internal_fn_supported_p (cond_fn, vectype_in,
+					      OPTIMIZE_FOR_SPEED)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't operate on partial vectors because"
+			 " no conditional operation is available.\n");
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+    }
+  else if (reduc_type == FOLD_LEFT_REDUCTION
+	   && reduc_fn == IFN_LAST
+	   && !expand_vec_cond_expr_p (vectype_in, truth_type_for (vectype_in),
+				       SSA_NAME))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			"can't operate on partial vectors because"
+			" no conditional operation is available.\n");
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+    }
+  else if (reduc_type == FOLD_LEFT_REDUCTION
+	   && internal_fn_mask_index (reduc_fn) == -1
+	   && FLOAT_TYPE_P (vectype_in)
+	   && HONOR_SIGN_DEPENDENT_ROUNDING (vectype_in))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't operate on partial vectors because"
+			 " signed zeros cannot be preserved.\n");
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+    }
+  else
+    {
+      internal_fn mask_reduc_fn
+			= get_masked_reduction_fn (reduc_fn, vectype_in);
+      vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+      vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
+      unsigned nvectors;
+
+      if (slp_node)
+	nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+      else
+	nvectors = vect_get_num_copies (loop_vinfo, vectype_in);
+
+      if (mask_reduc_fn == IFN_MASK_LEN_FOLD_LEFT_PLUS)
+	vect_record_loop_len (loop_vinfo, lens, nvectors, vectype_in, 1);
+      else
+	vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype_in, NULL);
+    }
+}
+
 /* Function vectorizable_reduction.
 
    Check if STMT_INFO performs a reduction operation that can be vectorized.
@@ -7456,7 +7529,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   bool single_defuse_cycle = false;
   bool nested_cycle = false;
   bool double_reduc = false;
-  int vec_num;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
   tree cond_reduc_val = NULL_TREE;
 
@@ -8283,11 +8355,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	  return false;
 	}
 
-  if (slp_node)
-    vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-  else
-    vec_num = 1;
-
   vect_model_reduction_cost (loop_vinfo, stmt_info, reduc_fn,
 			     reduction_type, ncopies, cost_vec);
   /* Cost the reduction op inside the loop if transformed via
@@ -8324,60 +8391,10 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       STMT_VINFO_DEF_TYPE (vect_orig_stmt (tem)) = vect_internal_def;
       STMT_VINFO_DEF_TYPE (tem) = vect_internal_def;
     }
-  else if (loop_vinfo && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-    {
-      vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
-      vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
-      internal_fn cond_fn = get_conditional_internal_fn (op.code, op.type);
-
-      if (reduction_type != FOLD_LEFT_REDUCTION
-	  && !use_mask_by_cond_expr_p (op.code, cond_fn, vectype_in)
-	  && (cond_fn == IFN_LAST
-	      || !direct_internal_fn_supported_p (cond_fn, vectype_in,
-						  OPTIMIZE_FOR_SPEED)))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't operate on partial vectors because"
-			     " no conditional operation is available.\n");
-	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
-	}
-      else if (reduction_type == FOLD_LEFT_REDUCTION
-	       && reduc_fn == IFN_LAST
-	       && !expand_vec_cond_expr_p (vectype_in,
-					   truth_type_for (vectype_in),
-					   SSA_NAME))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't operate on partial vectors because"
-			     " no conditional operation is available.\n");
-	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
-	}
-      else if (reduction_type == FOLD_LEFT_REDUCTION
-	       && internal_fn_mask_index (reduc_fn) == -1
-	       && FLOAT_TYPE_P (vectype_in)
-	       && HONOR_SIGN_DEPENDENT_ROUNDING (vectype_in))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "can't operate on partial vectors because"
-			     " signed zeros cannot be preserved.\n");
-	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
-	}
-      else
-	{
-	  internal_fn mask_reduc_fn
-	    = get_masked_reduction_fn (reduc_fn, vectype_in);
-
-	  if (mask_reduc_fn == IFN_MASK_LEN_FOLD_LEFT_PLUS)
-	    vect_record_loop_len (loop_vinfo, lens, ncopies * vec_num,
-				  vectype_in, 1);
-	  else
-	    vect_record_loop_mask (loop_vinfo, masks, ncopies * vec_num,
-				   vectype_in, NULL);
-	}
-    }
+  else if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+    vect_reduction_update_partial_vector_usage (loop_vinfo, reduc_info,
+						slp_node, op.code, op.type,
+						vectype_in);
   return true;
 }
 
