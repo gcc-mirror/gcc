@@ -3355,8 +3355,25 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
   if (hsa_context.agent_count > 0
       && ((omp_requires_mask
 	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+	       | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
 	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
     return -1;
+  /* Check whether host page access is supported; this is per system level
+     (all GPUs supported by HSA).  While intrinsically true for APUs, it
+     requires XNACK support for discrete GPUs.  */
+  if (hsa_context.agent_count > 0
+      && (omp_requires_mask & GOMP_REQUIRES_UNIFIED_SHARED_MEMORY))
+    {
+      bool b;
+      hsa_system_info_t type = HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT;
+      hsa_status_t status = hsa_fns.hsa_system_get_info_fn (type, &b);
+      if (status != HSA_STATUS_SUCCESS)
+	GOMP_PLUGIN_error ("HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT "
+			   "failed");
+      if (!b)
+	return -1;
+    }
+
   return hsa_context.agent_count;
 }
 
