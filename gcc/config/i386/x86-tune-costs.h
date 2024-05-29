@@ -3758,7 +3758,7 @@ struct processor_costs generic_cost = {
   generic_memset,
   COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
-  "16:11:8",				/* Loop alignment.  */
+  "16",					/* Loop alignment.  */
   "16:11:8",				/* Jump alignment.  */
   "0:0:8",				/* Label alignment.  */
   "16",					/* Func alignment.  */
