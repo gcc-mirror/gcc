@@ -5270,8 +5270,7 @@ have_whole_vector_shift (machine_mode mode)
    See vect_emulate_mixed_dot_prod for the actual sequence used.  */
 
 static bool
-vect_is_emulated_mixed_dot_prod (loop_vec_info loop_vinfo,
-				 stmt_vec_info stmt_info)
+vect_is_emulated_mixed_dot_prod (stmt_vec_info stmt_info)
 {
   gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
   if (!assign || gimple_assign_rhs_code (assign) != DOT_PROD_EXPR)
@@ -5282,10 +5281,9 @@ vect_is_emulated_mixed_dot_prod (loop_vec_info loop_vinfo,
   if (TYPE_SIGN (TREE_TYPE (rhs1)) == TYPE_SIGN (TREE_TYPE (rhs2)))
     return false;
 
-  stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
-  gcc_assert (reduc_info->is_reduc_info);
+  gcc_assert (STMT_VINFO_REDUC_VECTYPE_IN (stmt_info));
   return !directly_supported_p (DOT_PROD_EXPR,
-				STMT_VINFO_REDUC_VECTYPE_IN (reduc_info),
+				STMT_VINFO_REDUC_VECTYPE_IN (stmt_info),
 				optab_vector_mixed_sign);
 }
 
@@ -5324,8 +5322,8 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
   if (!gimple_extract_op (orig_stmt_info->stmt, &op))
     gcc_unreachable ();
 
-  bool emulated_mixed_dot_prod
-    = vect_is_emulated_mixed_dot_prod (loop_vinfo, stmt_info);
+  bool emulated_mixed_dot_prod = vect_is_emulated_mixed_dot_prod (stmt_info);
+
   if (reduction_type == EXTRACT_LAST_REDUCTION)
     /* No extra instructions are needed in the prologue.  The loop body
        operations are costed in vectorizable_condition.  */
@@ -7837,6 +7835,11 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     vectype_in = STMT_VINFO_VECTYPE (phi_info);
   STMT_VINFO_REDUC_VECTYPE_IN (reduc_info) = vectype_in;
 
+  /* Each lane-reducing operation has its own input vectype, while reduction
+     PHI records the input vectype with least lanes.  */
+  if (lane_reducing)
+    STMT_VINFO_REDUC_VECTYPE_IN (stmt_info) = vectype_in;
+
   enum vect_reduction_type v_reduc_type = STMT_VINFO_REDUC_TYPE (phi_info);
   STMT_VINFO_REDUC_TYPE (reduc_info) = v_reduc_type;
   /* If we have a condition reduction, see if we can simplify it further.  */
@@ -8363,7 +8366,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   if (single_defuse_cycle || lane_reducing)
     {
       int factor = 1;
-      if (vect_is_emulated_mixed_dot_prod (loop_vinfo, stmt_info))
+      if (vect_is_emulated_mixed_dot_prod (stmt_info))
 	/* Three dot-products and a subtraction.  */
 	factor = 4;
       record_stmt_cost (cost_vec, ncopies * factor, vector_stmt,
@@ -8615,8 +8618,8 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 					: &vec_oprnds2));
     }
 
-  bool emulated_mixed_dot_prod
-    = vect_is_emulated_mixed_dot_prod (loop_vinfo, stmt_info);
+  bool emulated_mixed_dot_prod = vect_is_emulated_mixed_dot_prod (stmt_info);
+
   FOR_EACH_VEC_ELT (vec_oprnds0, i, def0)
     {
       gimple *new_stmt;
