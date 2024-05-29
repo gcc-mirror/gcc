@@ -14276,11 +14276,10 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	      if (d_length == NULL_TREE || !integer_onep (d_length)
 		  || (d_stride && !integer_onep (d_stride)))
 		{
-		  if (ort == C_ORT_ACC
-		      && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
+		  if (openacc && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
 		    {
-		      while (TREE_CODE (d) == TREE_LIST)
-			d = TREE_CHAIN (d);
+		      while (TREE_CODE (d) == OMP_ARRAY_SECTION)
+			d = TREE_OPERAND (d, 0);
 		      if (DECL_P (d))
 			{
 			  /* Note that OpenACC does accept these kinds of
