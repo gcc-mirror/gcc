@@ -7650,9 +7650,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   gimple_match_op op;
   if (!gimple_extract_op (stmt_info->stmt, &op))
     gcc_unreachable ();
-  bool lane_reduc_code_p = (op.code == DOT_PROD_EXPR
-			    || op.code == WIDEN_SUM_EXPR
-			    || op.code == SAD_EXPR);
+  bool lane_reducing = lane_reducing_op_p (op.code);
 
   if (!POINTER_TYPE_P (op.type) && !INTEGRAL_TYPE_P (op.type)
       && !SCALAR_FLOAT_TYPE_P (op.type))
@@ -7664,7 +7662,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   /* For lane-reducing ops we're reducing the number of reduction PHIs
      which means the only use of that may be in the lane-reducing operation.  */
-  if (lane_reduc_code_p
+  if (lane_reducing
       && reduc_chain_length != 1
       && !only_slp_reduc_chain)
     {
@@ -7678,7 +7676,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
      since we'll mix lanes belonging to different reductions.  But it's
      OK to use them in a reduction chain or when the reduction group
      has just one element.  */
-  if (lane_reduc_code_p
+  if (lane_reducing
       && slp_node
       && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
       && SLP_TREE_LANES (slp_node) > 1)
@@ -7738,7 +7736,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       /* To properly compute ncopies we are interested in the widest
 	 non-reduction input type in case we're looking at a widening
 	 accumulation that we later handle in vect_transform_reduction.  */
-      if (lane_reduc_code_p
+      if (lane_reducing
 	  && vectype_op[i]
 	  && (!vectype_in
 	      || (GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_in)))
@@ -8211,7 +8209,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       && loop_vinfo->suggested_unroll_factor == 1)
     single_defuse_cycle = true;
 
-  if (single_defuse_cycle || lane_reduc_code_p)
+  if (single_defuse_cycle || lane_reducing)
     {
       gcc_assert (op.code != COND_EXPR);
 
@@ -8227,7 +8225,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	 mixed-sign dot-products can be implemented using signed
 	 dot-products.  */
       machine_mode vec_mode = TYPE_MODE (vectype_in);
-      if (!lane_reduc_code_p
+      if (!lane_reducing
 	  && !directly_supported_p (op.code, vectype_in, optab_vector))
         {
           if (dump_enabled_p ())
@@ -8252,7 +8250,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
          For the other cases try without the single cycle optimization.  */
       if (!ok)
 	{
-	  if (lane_reduc_code_p)
+	  if (lane_reducing)
 	    return false;
 	  else
 	    single_defuse_cycle = false;
@@ -8263,7 +8261,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   /* If the reduction stmt is one of the patterns that have lane
      reduction embedded we cannot handle the case of ! single_defuse_cycle.  */
   if ((ncopies > 1 && ! single_defuse_cycle)
-      && lane_reduc_code_p)
+      && lane_reducing)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -8274,7 +8272,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   if (slp_node
       && !(!single_defuse_cycle
-	   && !lane_reduc_code_p
+	   && !lane_reducing
 	   && reduction_type != FOLD_LEFT_REDUCTION))
     for (i = 0; i < (int) op.num_ops; i++)
       if (!vect_maybe_update_slp_op_vectype (slp_op[i], vectype_op[i]))
@@ -8295,7 +8293,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   /* Cost the reduction op inside the loop if transformed via
      vect_transform_reduction.  Otherwise this is costed by the
      separate vectorizable_* routines.  */
-  if (single_defuse_cycle || lane_reduc_code_p)
+  if (single_defuse_cycle || lane_reducing)
     {
       int factor = 1;
       if (vect_is_emulated_mixed_dot_prod (loop_vinfo, stmt_info))
@@ -8313,7 +8311,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   /* All but single defuse-cycle optimized, lane-reducing and fold-left
      reductions go through their own vectorizable_* routines.  */
   if (!single_defuse_cycle
-      && !lane_reduc_code_p
+      && !lane_reducing
       && reduction_type != FOLD_LEFT_REDUCTION)
     {
       stmt_vec_info tem
@@ -8555,10 +8553,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
     }
 
   bool single_defuse_cycle = STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info);
-  gcc_assert (single_defuse_cycle
-	      || code == DOT_PROD_EXPR
-	      || code == WIDEN_SUM_EXPR
-	      || code == SAD_EXPR);
+  gcc_assert (single_defuse_cycle || lane_reducing_op_p (code));
 
   /* Create the destination vector  */
   tree scalar_dest = gimple_get_lhs (stmt_info->stmt);

@@ -3928,9 +3928,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 		  /* Do not discover SLP reductions for lane-reducing ops, that
 		     will fail later.  */
 		  && (!(g = dyn_cast <gassign *> (STMT_VINFO_STMT (next_info)))
-		      || (gimple_assign_rhs_code (g) != DOT_PROD_EXPR
-			  && gimple_assign_rhs_code (g) != WIDEN_SUM_EXPR
-			  && gimple_assign_rhs_code (g) != SAD_EXPR)))
+		      || !lane_reducing_op_p (gimple_assign_rhs_code (g))))
 		scalar_stmts.quick_push (next_info);
 	    }
 	  if (scalar_stmts.length () > 1)

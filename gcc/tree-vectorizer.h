@@ -2169,6 +2169,12 @@ vect_apply_runtime_profitability_check_p (loop_vec_info loop_vinfo)
 	  && th >= vect_vf_for_cost (loop_vinfo));
 }
 
+inline bool
+lane_reducing_op_p (code_helper code)
+{
+  return code == DOT_PROD_EXPR || code == WIDEN_SUM_EXPR || code == SAD_EXPR;
+}
+
 /* Source location + hotness information. */
 extern dump_user_location_t vect_location;
 
