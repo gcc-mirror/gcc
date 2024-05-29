@@ -1,5 +1,5 @@
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2 -ftree-vectorize -fno-vect-cost-model -fno-unroll-loops -fdump-tree-vect-details" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Test vectorizer can exploit ISA 2.07 instruction vmuluwm (Vector Multiply
    Unsigned Word Modulo) for both signed and unsigned word multiplication.  */

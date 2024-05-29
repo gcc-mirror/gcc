@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -mpower9-misc -O2" } */
 /* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify P9 atomic memory operations.  */
 

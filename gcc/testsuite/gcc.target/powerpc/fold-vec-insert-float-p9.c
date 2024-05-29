@@ -2,8 +2,8 @@
    inputs produce the right codegen.  Power9 variant.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 

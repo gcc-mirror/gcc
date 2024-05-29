@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Make sure that STXSDX is generated for double scalars in Altivec registers
    on power7 instead of moving the value to a FPR register and doing a X-FORM

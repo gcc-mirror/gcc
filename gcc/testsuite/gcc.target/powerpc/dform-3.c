@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #ifndef TYPE
 #define TYPE vector double

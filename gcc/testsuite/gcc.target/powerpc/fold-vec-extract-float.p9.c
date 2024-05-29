@@ -2,8 +2,8 @@
    inputs produce the right code.  */
 
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2 " } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* { dg-final { scan-assembler-times {\mxscvspdp\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mrldicl\M} 1 { target le } } } */

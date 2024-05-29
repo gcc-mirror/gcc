@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2 -ftree-vectorize -fdump-tree-vect-details -fno-unroll-loops" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #ifndef SIZE
 #define SIZE 1024

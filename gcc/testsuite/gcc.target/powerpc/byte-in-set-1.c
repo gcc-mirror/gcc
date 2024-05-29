@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx" } */
+/* { dg-require-effective-target lp64 } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 

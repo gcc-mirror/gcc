@@ -1,8 +1,8 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2" } */
 /* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* PR target/84154.  Make sure conversion to char/short does not generate a
    store and a load on ISA 2.07 and newer systems.  */

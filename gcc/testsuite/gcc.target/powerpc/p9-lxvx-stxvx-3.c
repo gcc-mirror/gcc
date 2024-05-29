@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target ppc_float128_sw } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O3 -mfloat128" } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target ppc_float128_sw } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler "lxvx" } } */
 /* { dg-final { scan-assembler "stxvx" } } */
 /* { dg-final { scan-assembler-not "lxvd2x" } } */

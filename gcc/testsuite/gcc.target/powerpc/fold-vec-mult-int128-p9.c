@@ -2,10 +2,10 @@
    inputs produce the right results.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
 /* { dg-additional-options "-maix64" { target powerpc-ibm-aix* } } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target int128 } */
 
 #include "altivec.h"
 

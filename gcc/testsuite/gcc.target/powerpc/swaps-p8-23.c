@@ -1,6 +1,6 @@
 /* { dg-do compile { target le } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O3 -ffast-math" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler "lxvd2x" } } */
 /* { dg-final { scan-assembler-not "xxpermdi" { target le } } } */
 

@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* This file tests the extraction of 64-bit values.  On Power 9, the direct
    move is prefered for the  64-bit extract as it is either lower latency or

@@ -2,8 +2,8 @@
    inputs produce the right code with a P8 (LE or BE) target.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 // Targeting P8 (LE) and (BE).  6 tests total.
 // P8 LE constant:  vspltw, mfvsrwz, (1:extsw/2:rldicl)

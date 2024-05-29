@@ -1,8 +1,8 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target longdouble128 } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O3" } */
+/* { dg-require-effective-target longdouble128 } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #if defined(__LONG_DOUBLE_IEEE128__)
 /* If long double is IEEE 128-bit, we need to use the __ibm128 type instead of

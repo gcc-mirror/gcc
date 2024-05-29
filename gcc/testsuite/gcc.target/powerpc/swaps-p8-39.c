@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O3 " } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Previous versions of this test required that the assembler does not
    contain xxpermdi or xxswapd.  However, with the more sophisticated

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2" } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler {\mvspltisw\M} } } */
 /* { dg-final { scan-assembler {\mvupkhsw\M} } } */
 /* { dg-final { scan-assembler-not {\mlvx\M} } } */

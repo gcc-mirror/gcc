@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler-not "\[ \t\]and "     } } */
 /* { dg-final { scan-assembler-not "\[ \t\]or "      } } */
 /* { dg-final { scan-assembler-not "\[ \t\]xor "     } } */

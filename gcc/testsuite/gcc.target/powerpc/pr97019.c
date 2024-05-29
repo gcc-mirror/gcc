@@ -2,8 +2,10 @@
    the built-in functions vec_ld/vec_st can use lxvd2x/stxvd2x
    (P8 big-endian) or lxv/stxv (P9 and later) for some cases,
    those rldicr instructions fed to them are necessary.  */
-/* { dg-do compile { target { powerpc_vsx_ok && le } } } */
+/* { dg-do compile } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target le } */
 
 /* Test there are no useless instructions "rldicr x,y,0,59"
    to align the addresses for lvx/stvx.  */

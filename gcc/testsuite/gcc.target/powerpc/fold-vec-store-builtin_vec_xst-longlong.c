@@ -1,8 +1,8 @@
 /* Verify that overloaded built-ins for __builtin_vec_xst with long long
    inputs produce the right code.  */
 
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2 -mdejagnu-cpu=power8" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 

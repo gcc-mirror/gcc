@@ -2,9 +2,9 @@
    inputs generate the proper code.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx  -O3" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target int128 } */
 
 #include <altivec.h>
 

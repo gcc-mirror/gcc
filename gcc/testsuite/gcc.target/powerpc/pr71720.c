@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify that we generate xxspltw <reg>,<reg>,0 for V4SFmode splat.  */
 

@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-linux* && lp64 } } } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2" } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-require-effective-target ppc_cpu_supports_hw } */
 
 /* Power9 (aka, ISA 3.0) has a MODSD instruction to do modulus, while Power8

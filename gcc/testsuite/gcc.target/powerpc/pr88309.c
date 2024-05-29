@@ -1,5 +1,5 @@
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2 -fprefetch-loop-arrays" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify there is no ICE or hanging.  */
 

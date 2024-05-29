@@ -1,8 +1,8 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target float128 } */
 /* { dg-options "-mvsx -O2" } */
 /* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target float128 } */
 
 extern _Float128 floorf128 (_Float128);
 extern _Float128 ceilf128 (_Float128);

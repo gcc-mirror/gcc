@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Cut down example from s_scalbnl that aborted on 32-bit when the fix for
    48053 went in to allow creating DImode 0's in VSX registers.  */

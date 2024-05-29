@@ -1,5 +1,5 @@
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Note that vector long long and vector double type require vsx support. */
 

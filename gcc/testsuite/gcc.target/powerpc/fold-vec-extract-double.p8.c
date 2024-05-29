@@ -2,8 +2,8 @@
    double inputs produce the right code with a P8 (LE or BE) target.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 // targeting P8, BE and LE. 2 tests.
 // P8 (LE) constants: xxlor

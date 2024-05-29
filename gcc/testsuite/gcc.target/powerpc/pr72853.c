@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O3 -funroll-loops" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* derived from 20021120-1.c, compiled for -mcpu=power9.  */
 

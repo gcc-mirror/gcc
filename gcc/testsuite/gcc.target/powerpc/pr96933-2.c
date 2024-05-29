@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Test vector constructions with char/short type values whether use direct
    move instructions like mtvsrd/mtvsrwz on Power8, rather than transfering

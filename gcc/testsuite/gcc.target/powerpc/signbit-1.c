@@ -1,8 +1,8 @@
 /* { dg-do compile } */
+/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2 -mfloat128" } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-require-effective-target ppc_float128_sw } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2 -mfloat128" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 int do_signbit_kf (__float128 a) { return __builtin_signbit (a); }
 int do_signbit_if (__ibm128 a) { return __builtin_signbit (a); }

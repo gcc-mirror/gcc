@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O3 -ffast-math" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Taken from the Spec 2006 milc brenchmark.  Ultimately, GCC wants to generate
    a DF splat from offsettable memory.  The register allocator decided it was

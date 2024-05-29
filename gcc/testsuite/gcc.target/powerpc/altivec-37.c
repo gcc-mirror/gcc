@@ -1,7 +1,7 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx" } */
 /* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 

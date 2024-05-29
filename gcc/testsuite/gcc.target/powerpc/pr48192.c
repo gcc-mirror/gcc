@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7 -std=gnu89" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Make sure that the conditional macros vector, bool, and pixel are not
    considered as being defined.  */

@@ -2,8 +2,8 @@
    inputs produce the right code with a power7 (BE) target.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 // Six tests total. Targeting P7 (BE).
 // P7 variable offset:  addi, li,       stxvw4x, rldicl, add, lbz, (extsb)

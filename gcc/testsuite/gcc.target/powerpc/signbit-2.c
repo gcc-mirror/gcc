@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target ppc_float128_sw } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2 -mfloat128" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target ppc_float128_sw } */
 
 int do_signbit_kf (__float128 *a) { return __builtin_signbit (*a); }
 

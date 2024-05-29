@@ -1,6 +1,6 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Test that under ISA 3.0 (-mcpu=power9), the compiler optimizes conversion to
    double after a vec_extract to use the VEXTRACTU{B,H} or XXEXTRACTUW

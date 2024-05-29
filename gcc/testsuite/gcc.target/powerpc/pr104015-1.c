@@ -1,5 +1,5 @@
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2 -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* As PR104015, we don't expect vectorizer will re-try some vector modes
    for epilogues on Power9, since Power9 doesn't support partial vector

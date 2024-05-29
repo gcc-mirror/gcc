@@ -1,6 +1,8 @@
-/* { dg-do compile { target { powerpc_vsx_ok } } } */
-/* { dg-require-effective-target vect_int } */
+/* { dg-do compile } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O3 -fdump-tree-slp-details" } */
+/* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target powerpc_vsx } */
+
 
 /* PR80695: Verify cost model for vec_construct on POWER8.  */
 

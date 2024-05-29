@@ -1,6 +1,6 @@
 /* PR target/113950 */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify we do not ICE on the following.  */
 

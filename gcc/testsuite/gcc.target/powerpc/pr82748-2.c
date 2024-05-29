@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2 -mabi=ibmlongdouble -Wno-psabi" } */
 /* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Make sure the old 'q' builtin functions work correctly when the long double
    default uses the IBM double-double format.  */

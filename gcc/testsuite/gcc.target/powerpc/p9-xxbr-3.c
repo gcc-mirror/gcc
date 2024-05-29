@@ -1,6 +1,6 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify that the XXBR{H,W} instructions are generated if the value is
    forced to be in a vector register, and XXBRD is generated all of the

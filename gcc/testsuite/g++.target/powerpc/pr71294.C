@@ -1,5 +1,5 @@
-// { dg-require-effective-target powerpc_vsx_ok } */
 // { dg-options "-mdejagnu-cpu=power8 -mvsx -O3 -fstack-protector" }
+// { dg-require-effective-target powerpc_vsx } */
 
 // PAR target/71294 failed because RELOAD could not figure how create a V2DI
 // vector that auto vectorization created with each element being the same

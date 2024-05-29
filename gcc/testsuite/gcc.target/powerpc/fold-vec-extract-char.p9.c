@@ -2,8 +2,8 @@
    inputs produce the right code with a P9 (LE) target.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2 " } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* { dg-final { scan-assembler-times {\mli\M} 3 { target lp64 } } } */
 /*  Endian sensitive, vextubrx or vextublx.  */

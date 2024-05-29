@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -ftree-vectorize -mdejagnu-cpu=power8 -mvsx -ffast-math -fvect-cost-model=unlimited" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* This tests special handling for various uses of xxpermdi, other than
    to perform doubleword swaps.  */

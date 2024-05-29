@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { *-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target fpic } */
 /* { dg-options "-O3 -mdejagnu-cpu=power8 -mvsx -g -fPIC -fvisibility=hidden -fstack-protector-strong" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target fpic } */
 
 template <typename, typename T> struct E { T e; };
 struct J {

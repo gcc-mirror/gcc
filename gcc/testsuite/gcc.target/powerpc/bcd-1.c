@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler-times "cdtbcd " 1 } } */
 /* { dg-final { scan-assembler-times "cbcdtd " 1 } } */
 /* { dg-final { scan-assembler-times "addg6s " 1 } } */

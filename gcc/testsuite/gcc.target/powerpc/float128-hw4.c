@@ -1,8 +1,8 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target float128 } */
 /* { dg-options "-mvsx -O2 -mabi=ieeelongdouble -Wno-psabi" } */
 /* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target float128 } */
 
 /* Insure that the ISA 3.0 IEEE 128-bit floating point built-in functions can
    be used with long double when the default is IEEE 128-bit.  */

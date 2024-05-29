@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O1" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 typedef long a;
 enum c { e, f, g, h, i, ab } j();

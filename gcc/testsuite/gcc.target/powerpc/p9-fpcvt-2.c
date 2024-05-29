@@ -1,6 +1,6 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 double sc (signed char    *p) { return (double)*p; }
 double uc (unsigned char  *p) { return (double)*p; }

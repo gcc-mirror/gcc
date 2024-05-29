@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target lp64 } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8 -mvsx" } */
+/* { dg-require-effective-target lp64 } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Check that we can optimize sldi + or to rldimi for vector int init.  */
 

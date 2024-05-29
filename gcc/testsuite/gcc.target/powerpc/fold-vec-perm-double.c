@@ -3,8 +3,8 @@
 
 /* { dg-do compile } */
 // vector double needs -mvsx.
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 

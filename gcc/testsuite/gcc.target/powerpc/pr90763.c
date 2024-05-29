@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target int128 } */
 
 /* PR90763: PowerPC vec_xl_len should take const.
 */

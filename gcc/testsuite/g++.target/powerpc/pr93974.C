@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O3 -fstack-protector-strong" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 class a {
   double b[2];

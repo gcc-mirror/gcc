@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-require-effective-target has_arch_ppc64 } */
 
 /* This test should succeed only on 64-bit configurations.  */

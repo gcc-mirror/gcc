@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8 -mvsx -mno-crypto" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 void use_builtins_d (__vector unsigned long long *p, __vector unsigned long long *q, __vector unsigned long long *r, __vector unsigned long long *s)
 {

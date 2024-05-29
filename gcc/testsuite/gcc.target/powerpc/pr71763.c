@@ -1,7 +1,7 @@
 // PR target/71763
 // { dg-do compile }
-// { dg-require-effective-target powerpc_vsx_ok }
 // { dg-options "-O1 -mvsx" }
+// { dg-require-effective-target powerpc_vsx }
 
 int a, b;
 float c;

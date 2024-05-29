@@ -2,9 +2,9 @@
 /* Test to ensure we generate invalid parameter errors rather than an ICE
     when calling builtin_vec_sld() with invalid parameters.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-maltivec -mvsx" } */
 /* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 

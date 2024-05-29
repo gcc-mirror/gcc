@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7 -ffast-math" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler-times {\mfctidz\M|\mxscvdpsxds\M} 2 } } */
 /* { dg-final { scan-assembler-not   {\mlwz\M} } } */
 /* { dg-final { scan-assembler-not   {\mstw\M} } } */

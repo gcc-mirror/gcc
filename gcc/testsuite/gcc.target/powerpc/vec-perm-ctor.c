@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mvsx -fdump-tree-optimized" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* To test all permutations fed by CTOR and CST can be optimized away.  */
 

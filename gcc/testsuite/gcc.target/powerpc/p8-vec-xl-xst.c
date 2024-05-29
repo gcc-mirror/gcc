@@ -1,7 +1,7 @@
 /* { dg-do compile { target { le } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify fix for problem where vec_xl and vec_xst are not recognized
    for the vector char and vector short cases on P8 only.  */

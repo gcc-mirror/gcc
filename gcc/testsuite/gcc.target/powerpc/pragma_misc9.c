@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-mdejagnu-cpu=power9 -maltivec -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target lp64 } */
 
 /* Ensure that if we set a pragma gcc target for an
    older processor, we do not compile builtins that

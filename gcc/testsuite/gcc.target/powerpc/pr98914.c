@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-Og -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 vector int
 foo (vector int v)

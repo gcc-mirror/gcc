@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-linux-* && lp64 } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mvsx -mabi=ieeelongdouble -Wno-psabi" } */
 /* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler "gnu_attribute 4, 13" } } */
 
 /* Check that if we can do the long double operation without doing an emulator

@@ -1,8 +1,8 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target longdouble128 } */
 /* { dg-options "-O2 -mvsx -mabi=ieeelongdouble -Wno-psabi" } */
 /* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target longdouble128 } */
 
 /* Check that the __builtin_powil generates a call to the correct function
    when long double uses IEEE 128-bit floating point.  */

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { { ! vsx_hw } && powerpc_vsx_ok } } } */
+/* { dg-do compile { target { { ! vsx_hw } && powerpc_vsx } } } */
 /* { dg-do run { target vsx_hw } } */
 /* { dg-options "-mvsx -O3" } */
 

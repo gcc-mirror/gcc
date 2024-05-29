@@ -1,8 +1,8 @@
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target float128 } */
 /* { dg-options "-mvsx -O2 -ffast-math -std=c11 -mno-pcrel" } */
 /* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target float128 } */
 
 /* Test to make sure the compiler calls the external function instead of doing
    the built-in processing for _Float128 functions that have hardware support

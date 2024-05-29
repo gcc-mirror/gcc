@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target lp64 } */
 
 vector float
 test (float *a, float *b, float *c, float *d)

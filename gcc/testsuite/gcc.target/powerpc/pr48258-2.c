@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7 -mabi=altivec -ffast-math" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler "xvadddp" } } */
 /* { dg-final { scan-assembler "xvmindp" } } */
 /* { dg-final { scan-assembler "xvmaxdp" } } */

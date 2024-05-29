@@ -1,9 +1,9 @@
 /* PR target/83862.c */
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-require-effective-target ppc_float128_sw } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2 -mabi=ieeelongdouble -Wno-psabi" } */
 /* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
+/* { dg-require-effective-target ppc_float128_sw } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* On little endian systems, optimizing signbit of IEEE 128-bit values from
    memory could abort if the memory address was indexed (reg+reg).  The

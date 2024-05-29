@@ -1,6 +1,6 @@
 /* { dg-skip-if "" { *-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -mdejagnu-tune=power8 -O3 -w" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* target/67211, compiler got a 'insn does not satisfy its constraints' error.  */
 

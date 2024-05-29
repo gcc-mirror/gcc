@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -S -mno-cmpb" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 float testf (float x, float y)
 {

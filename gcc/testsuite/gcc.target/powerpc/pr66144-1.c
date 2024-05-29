@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc64*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify that we optimize vector1 = (vector2 == vector3) by not loading up
    0/-1.  */

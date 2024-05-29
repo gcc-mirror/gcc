@@ -1,8 +1,8 @@
 /* Test for reload ICE arising from POWER9 Vector Dform code generation.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mvsx -funroll-loops -fno-aggressive-loop-optimizations" } */
 /* { dg-additional-options "-mdejagnu-cpu=power9" { target { ! has_arch_pwr9 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 typedef double vec[3];
 struct vec_t

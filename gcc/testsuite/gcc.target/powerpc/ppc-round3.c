@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler-times "fcfid \|xscvsxddp "    2 } } */
 /* { dg-final { scan-assembler-times "fcfids \|xscvsxdsp "   2 } } */
 /* { dg-final { scan-assembler-times "fctiwz \|xscvdpsxws "  2 } } */

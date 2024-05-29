@@ -11,8 +11,8 @@
 */
 
 /* { dg-do compile { target lp64 } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2 -fdump-tree-gimple" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 #include <stdio.h>

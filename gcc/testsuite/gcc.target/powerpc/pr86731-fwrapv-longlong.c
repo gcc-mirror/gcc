@@ -6,10 +6,10 @@
 /* specify -mcpu=power8 -mvsx, which provides vec_sl(long long,...) support. */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-maltivec -O3 -fwrapv -mvsx " } */
 /* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target lp64 } */
 
 #include <altivec.h>
 

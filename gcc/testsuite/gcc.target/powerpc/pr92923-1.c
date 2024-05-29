@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx -O2 -fdump-tree-gimple" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify that overloaded built-ins for "and", "andc", "nor", "or" and "xor"
    do not produce VIEW_CONVERT_EXPR operations on their operands.  Like so:

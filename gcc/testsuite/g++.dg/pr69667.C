@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -w -std=c++14" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* target/69667, compiler got
    internal compiler error: Max. number of generated reload insns per insn is achieved (90)  */

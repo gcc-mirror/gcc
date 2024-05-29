@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc64*-*-* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2 -ftree-vectorize" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify that we can optimize a vector conditional move, where one of the arms
    is all 1's into using the mask as one of the inputs to XXSEL.  */

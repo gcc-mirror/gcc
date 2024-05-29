@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-skip-if "" { powerpc*le-*-* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7 -mabi=altivec -ffast-math -fno-unroll-loops" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler-times "xvaddsp" 3 } } */
 /* { dg-final { scan-assembler-times "xvminsp" 3 } } */
 /* { dg-final { scan-assembler-times "xvmaxsp" 3 } } */

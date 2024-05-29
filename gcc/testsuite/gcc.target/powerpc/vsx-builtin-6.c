@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power7" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Check whether tdiv and tsqrt instructions generate the correct code.  */
 /* Each of the *tdiv* and *tsqrt* instructions should be generated exactly 3

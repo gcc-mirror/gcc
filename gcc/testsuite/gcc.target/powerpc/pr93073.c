@@ -1,6 +1,7 @@
 /* PR target/93073 */
-/* { dg-do compile { target powerpc_vsx_ok } } */
+/* { dg-do compile } */
 /* { dg-options "-mvsx -O1 -ffinite-math-only -fno-trapping-math" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 void bar (void);
 

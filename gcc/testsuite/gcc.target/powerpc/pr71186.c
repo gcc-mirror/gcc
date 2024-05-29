@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 static unsigned short x[(16384/sizeof(unsigned short))] __attribute__ ((aligned (16)));
 static unsigned short y[(16384/sizeof(unsigned short))] __attribute__ ((aligned (16)));

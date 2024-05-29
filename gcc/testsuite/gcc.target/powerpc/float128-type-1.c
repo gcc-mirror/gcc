@@ -1,6 +1,6 @@
 /* { dg-do compile { target { *-*-linux* && lp64 } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2 -mno-float128" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* This test tests whether the underlying IEEE 128-bit floating point) is
    enabled by default on VSX Linux 64-bit systems, even if the keyword

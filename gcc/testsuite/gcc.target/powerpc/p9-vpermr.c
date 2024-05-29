@@ -1,6 +1,6 @@
 /* { dg-do compile { target le } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Test generation of VPERMR/XXPERMR on ISA 3.0 in little endian.  */
 

@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target int128 } */
 /* { dg-options "-mdejagnu-cpu=power8 -mvsx -O3" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target int128 } */
 
 #include <altivec.h>
 
