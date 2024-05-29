@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "regs.h"
 #include "emit-rtl.h"
-#include "cfgrtl.h"
 #include "resource.h"
 #include "insn-attr.h"
 #include "function-abi.h"
@@ -76,6 +75,7 @@ static HARD_REG_SET current_live_regs;
 static HARD_REG_SET pending_dead_regs;
 
 static void update_live_status (rtx, const_rtx, void *);
+static int find_basic_block (rtx_insn *, int);
 static rtx_insn *next_insn_no_annul (rtx_insn *);
 
 /* Utility function called from mark_target_live_regs via note_stores.
@@ -112,6 +112,46 @@ update_live_status (rtx dest, const_rtx x, void *data ATTRIBUTE_UNUSED)
 	SET_HARD_REG_BIT (current_live_regs, i);
 	CLEAR_HARD_REG_BIT (pending_dead_regs, i);
       }
+}
+
+/* Find the number of the basic block with correct live register
+   information that starts closest to INSN.  Return -1 if we couldn't
+   find such a basic block or the beginning is more than
+   SEARCH_LIMIT instructions before INSN.  Use SEARCH_LIMIT = -1 for
+   an unlimited search.
+
+   The delay slot filling code destroys the control-flow graph so,
+   instead of finding the basic block containing INSN, we search
+   backwards toward a BARRIER where the live register information is
+   correct.  */
+
+static int
+find_basic_block (rtx_insn *insn, int search_limit)
+{
+  /* Scan backwards to the previous BARRIER.  Then see if we can find a
+     label that starts a basic block.  Return the basic block number.  */
+  for (insn = prev_nonnote_insn (insn);
+       insn && !BARRIER_P (insn) && search_limit != 0;
+       insn = prev_nonnote_insn (insn), --search_limit)
+    ;
+
+  /* The closest BARRIER is too far away.  */
+  if (search_limit == 0)
+    return -1;
+
+  /* The start of the function.  */
+  else if (insn == 0)
+    return ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->index;
+
+  /* See if any of the upcoming CODE_LABELs start a basic block.  If we reach
+     anything other than a CODE_LABEL or note, we can't find this code.  */
+  for (insn = next_nonnote_insn (insn);
+       insn && LABEL_P (insn);
+       insn = next_nonnote_insn (insn))
+    if (BLOCK_FOR_INSN (insn))
+      return BLOCK_FOR_INSN (insn)->index;
+
+  return -1;
 }
 
 /* Similar to next_insn, but ignores insns in the delay slots of
@@ -674,8 +714,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
     }
 
   if (b == -1)
-    b = BLOCK_FOR_INSN (target)->index;
-  gcc_assert (b != -1);
+    b = find_basic_block (target, param_max_delay_slot_live_search);
 
   if (target_hash_table != NULL)
     {
@@ -683,7 +722,7 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	{
 	  /* If the information is up-to-date, use it.  Otherwise, we will
 	     update it below.  */
-	  if (b == tinfo->block && tinfo->bb_tick == bb_ticks[b])
+	  if (b == tinfo->block && b != -1 && tinfo->bb_tick == bb_ticks[b])
 	    {
 	      res->regs = tinfo->live_regs;
 	      return;
@@ -866,6 +905,7 @@ void
 init_resource_info (rtx_insn *epilogue_insn)
 {
   int i;
+  basic_block bb;
 
   /* Indicate what resources are required to be valid at the end of the current
      function.  The condition code never is and memory always is.
@@ -935,8 +975,10 @@ init_resource_info (rtx_insn *epilogue_insn)
   target_hash_table = XCNEWVEC (struct target_info *, TARGET_HASH_PRIME);
   bb_ticks = XCNEWVEC (int, last_basic_block_for_fn (cfun));
 
-  /* Set the BLOCK_FOR_INSN for each insn.  */
-  compute_bb_for_insn ();
+  /* Set the BLOCK_FOR_INSN of each label that starts a basic block.  */
+  FOR_EACH_BB_FN (bb, cfun)
+    if (LABEL_P (BB_HEAD (bb)))
+      BLOCK_FOR_INSN (BB_HEAD (bb)) = bb;
 }
 
 /* Free up the resources allocated to mark_target_live_regs ().  This
@@ -945,6 +987,8 @@ init_resource_info (rtx_insn *epilogue_insn)
 void
 free_resource_info (void)
 {
+  basic_block bb;
+
   if (target_hash_table != NULL)
     {
       int i;
@@ -971,7 +1015,9 @@ free_resource_info (void)
       bb_ticks = NULL;
     }
 
-  free_bb_for_insn ();
+  FOR_EACH_BB_FN (bb, cfun)
+    if (LABEL_P (BB_HEAD (bb)))
+      BLOCK_FOR_INSN (BB_HEAD (bb)) = NULL;
 }
 
 /* Clear any hashed information that we have stored for INSN.  */
@@ -1017,10 +1063,10 @@ clear_hashed_info_until_next_barrier (rtx_insn *insn)
 void
 incr_ticks_for_insn (rtx_insn *insn)
 {
-  int b = BLOCK_FOR_INSN (insn)->index;
-  gcc_assert (b != -1);
+  int b = find_basic_block (insn, param_max_delay_slot_live_search);
 
-  bb_ticks[b]++;
+  if (b != -1)
+    bb_ticks[b]++;
 }
 
 /* Add TRIAL to the set of resources used at the end of the current
