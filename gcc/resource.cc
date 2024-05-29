@@ -658,41 +658,48 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
   res->cc = 0;
 
   /* See if we have computed this value already.  */
-  for (tinfo = target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME];
-       tinfo; tinfo = tinfo->next)
-    if (tinfo->uid == INSN_UID (target))
-      break;
+  if (target_hash_table != NULL)
+    {
+      for (tinfo = target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME];
+	   tinfo; tinfo = tinfo->next)
+	if (tinfo->uid == INSN_UID (target))
+	  break;
 
-  /* Start by getting the basic block number.  If we have saved
-     information, we can get it from there unless the insn at the
-     start of the basic block has been deleted.  */
-  if (tinfo && tinfo->block != -1
-      && ! BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, tinfo->block))->deleted ())
-    b = tinfo->block;
+      /* Start by getting the basic block number.  If we have saved
+	 information, we can get it from there unless the insn at the
+	 start of the basic block has been deleted.  */
+      if (tinfo && tinfo->block != -1
+	  && ! BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, tinfo->block))->deleted ())
+	b = tinfo->block;
+    }
 
   if (b == -1)
     b = BLOCK_FOR_INSN (target)->index;
   gcc_assert (b != -1);
 
-  if (tinfo)
+  if (target_hash_table != NULL)
     {
-      /* If the information is up-to-date, use it.  Otherwise, we will
-	 update it below.  */
-      if (b == tinfo->block && tinfo->bb_tick == bb_ticks[b])
+      if (tinfo)
 	{
-	  res->regs = tinfo->live_regs;
-	  return;
+	  /* If the information is up-to-date, use it.  Otherwise, we will
+	     update it below.  */
+	  if (b == tinfo->block && tinfo->bb_tick == bb_ticks[b])
+	    {
+	      res->regs = tinfo->live_regs;
+	      return;
+	    }
 	}
-    }
-  else
-    {
-      /* Allocate a place to put our results and chain it into the hash
-	 table.  */
-      tinfo = XNEW (struct target_info);
-      tinfo->uid = INSN_UID (target);
-      tinfo->block = b;
-      tinfo->next = target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME];
-      target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME] = tinfo;
+      else
+	{
+	  /* Allocate a place to put our results and chain it into the
+	     hash table.  */
+	  tinfo = XNEW (struct target_info);
+	  tinfo->uid = INSN_UID (target);
+	  tinfo->block = b;
+	  tinfo->next
+	    = target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME];
+	  target_hash_table[INSN_UID (target) % TARGET_HASH_PRIME] = tinfo;
+	}
     }
 
   CLEAR_HARD_REG_SET (pending_dead_regs);
@@ -818,12 +825,13 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	     to be live here still are.  The fallthrough edge may have
 	     left a live register uninitialized.  */
 	  bb = BLOCK_FOR_INSN (real_insn);
-	  gcc_assert (bb);
+	  if (bb)
+	    {
+	      HARD_REG_SET extra_live;
 
-	  HARD_REG_SET extra_live;
-
-	  REG_SET_TO_HARD_REG_SET (extra_live, DF_LR_IN (bb));
-	  current_live_regs |= extra_live;
+	      REG_SET_TO_HARD_REG_SET (extra_live, DF_LR_IN (bb));
+	      current_live_regs |= extra_live;
+	    }
 	}
 
       /* The beginning of the epilogue corresponds to the end of the
@@ -839,8 +847,10 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
     {
       tinfo->block = b;
       tinfo->bb_tick = bb_ticks[b];
-      tinfo->live_regs = res->regs;
     }
+
+  if (tinfo != NULL)
+    tinfo->live_regs = res->regs;
 }
 
 /* Initialize the resources required by mark_target_live_regs ().
@@ -929,25 +939,31 @@ init_resource_info (rtx_insn *epilogue_insn)
 void
 free_resource_info (void)
 {
-  int i;
-
-  for (i = 0; i < TARGET_HASH_PRIME; ++i)
+  if (target_hash_table != NULL)
     {
-      struct target_info *ti = target_hash_table[i];
+      int i;
 
-      while (ti)
+      for (i = 0; i < TARGET_HASH_PRIME; ++i)
 	{
-	  struct target_info *next = ti->next;
-	  free (ti);
-	  ti = next;
+	  struct target_info *ti = target_hash_table[i];
+
+	  while (ti)
+	    {
+	      struct target_info *next = ti->next;
+	      free (ti);
+	      ti = next;
+	    }
 	}
+
+      free (target_hash_table);
+      target_hash_table = NULL;
     }
 
-  free (target_hash_table);
-  target_hash_table = NULL;
-
-  free (bb_ticks);
-  bb_ticks = NULL;
+  if (bb_ticks != NULL)
+    {
+      free (bb_ticks);
+      bb_ticks = NULL;
+    }
 
   free_bb_for_insn ();
 }
@@ -959,13 +975,16 @@ clear_hashed_info_for_insn (rtx_insn *insn)
 {
   struct target_info *tinfo;
 
-  for (tinfo = target_hash_table[INSN_UID (insn) % TARGET_HASH_PRIME];
-       tinfo; tinfo = tinfo->next)
-    if (tinfo->uid == INSN_UID (insn))
-      break;
+  if (target_hash_table != NULL)
+    {
+      for (tinfo = target_hash_table[INSN_UID (insn) % TARGET_HASH_PRIME];
+	   tinfo; tinfo = tinfo->next)
+	if (tinfo->uid == INSN_UID (insn))
+	  break;
 
-  if (tinfo)
-    tinfo->block = -1;
+      if (tinfo)
+	tinfo->block = -1;
+    }
 }
 
 /* Clear any hashed information that we have stored for instructions
