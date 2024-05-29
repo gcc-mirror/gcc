@@ -4283,9 +4283,6 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 
   rs6000_stack_t *info = rs6000_stack_info ();
 
-  if (epilogue_type == EPILOGUE_TYPE_NORMAL && crtl->calls_eh_return)
-    epilogue_type = EPILOGUE_TYPE_EH_RETURN;
-
   int strategy = info->savres_strategy;
   bool using_load_multiple = !!(strategy & REST_MULTIPLE);
   bool restoring_GPRs_inline = !!(strategy & REST_INLINE_GPRS);
@@ -4763,7 +4760,9 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
 
   /* In the ELFv2 ABI we need to restore all call-saved CR fields from
      *separate* slots if the routine calls __builtin_eh_return, so
-     that they can be independently restored by the unwinder.  */
+     that they can be independently restored by the unwinder.  Since
+     it is for CR fields restoring, it should be done for any epilogue
+     types (not EPILOGUE_TYPE_EH_RETURN specific).  */
   if (DEFAULT_ABI == ABI_ELFv2 && crtl->calls_eh_return)
     {
       int i, cr_off = info->ehcr_offset;
