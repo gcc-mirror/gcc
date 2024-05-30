@@ -18,7 +18,8 @@ UrlSuffix(gcc/AArch64-Options.html#index-mfix-cortex-a53-843419)
 mlittle-endian
 UrlSuffix(gcc/AArch64-Options.html#index-mlittle-endian)
 
-; skipping UrlSuffix for 'mcmodel=' due to finding no URLs
+mcmodel=
+UrlSuffix(gcc/AArch64-Options.html#index-mcmodel_003d)
 
 mtp=
 UrlSuffix(gcc/AArch64-Options.html#index-mtp)

@@ -58,7 +58,7 @@ mrecip
 UrlSuffix(gcc/LoongArch-Options.html#index-mrecip)
 
 mcmodel=
-UrlSuffix(gcc/LoongArch-Options.html#index-mcmodel)
+UrlSuffix(gcc/LoongArch-Options.html#index-mcmodel_003d-1)
 
 mdirect-extern-access
 UrlSuffix(gcc/LoongArch-Options.html#index-mdirect-extern-access)

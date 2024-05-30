@@ -6,7 +6,8 @@ UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-maix64)
 maix32
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-maix32)
 
-; skipping UrlSuffix for 'mcmodel=' due to finding no URLs
+mcmodel=
+UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mcmodel_003d-5)
 
 mpe
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mpe)

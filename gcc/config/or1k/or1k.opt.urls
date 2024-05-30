@@ -24,7 +24,8 @@ UrlSuffix(gcc/OpenRISC-Options.html#index-mdouble-float-3)
 munordered-float
 UrlSuffix(gcc/OpenRISC-Options.html#index-munordered-float)
 
-; skipping UrlSuffix for 'mcmodel=' due to finding no URLs
+mcmodel=
+UrlSuffix(gcc/OpenRISC-Options.html#index-mcmodel_003d-3)
 
 mcmov
 UrlSuffix(gcc/OpenRISC-Options.html#index-mcmov-1)

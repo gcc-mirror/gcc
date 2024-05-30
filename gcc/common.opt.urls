@@ -1339,6 +1339,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fstrict-aliasing)
 fstrict-overflow
 UrlSuffix(gcc/Code-Gen-Options.html#index-fstrict-overflow)
 
+fstrub=disable
+UrlSuffix(gcc/Instrumentation-Options.html#index-fstrub_003ddisable)
+
 fstrub=strict
 UrlSuffix(gcc/Instrumentation-Options.html#index-fstrub_003dstrict)
 

@@ -33,3 +33,6 @@ UrlSuffix(gcc/eBPF-Options.html#index-msmov)
 mcpu=
 UrlSuffix(gcc/eBPF-Options.html#index-mcpu-5)
 
+minline-memops-threshold=
+UrlSuffix(gcc/eBPF-Options.html#index-minline-memops-threshold)
+

@@ -40,7 +40,8 @@ UrlSuffix(gcc/x86-Options.html#index-march-16)
 mlarge-data-threshold=
 UrlSuffix(gcc/x86-Options.html#index-mlarge-data-threshold)
 
-; skipping UrlSuffix for 'mcmodel=' due to finding no URLs
+mcmodel=
+UrlSuffix(gcc/x86-Options.html#index-mcmodel_003d-7)
 
 mcpu=
 UrlSuffix(gcc/x86-Options.html#index-mcpu-14)

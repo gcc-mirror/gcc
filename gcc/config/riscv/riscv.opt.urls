@@ -41,7 +41,8 @@ UrlSuffix(gcc/RISC-V-Options.html#index-msave-restore)
 mshorten-memrefs
 UrlSuffix(gcc/RISC-V-Options.html#index-mshorten-memrefs)
 
-; skipping UrlSuffix for 'mcmodel=' due to finding no URLs
+mcmodel=
+UrlSuffix(gcc/RISC-V-Options.html#index-mcmodel_003d-4)
 
 mstrict-align
 UrlSuffix(gcc/RISC-V-Options.html#index-mstrict-align-4)
