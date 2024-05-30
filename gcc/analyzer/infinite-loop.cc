@@ -171,7 +171,7 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override
+  label_text get_desc (bool) const final override
   {
     return label_text::borrow ("looping back...");
   }
