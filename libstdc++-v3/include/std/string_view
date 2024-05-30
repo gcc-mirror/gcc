@@ -385,7 +385,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[nodiscard]]
       constexpr bool
       starts_with(basic_string_view __x) const noexcept
-      { return this->substr(0, __x.size()) == __x; }
+      {
+	return _M_len >= __x._M_len
+	  && traits_type::compare(_M_str, __x._M_str, __x._M_len) == 0;
+      }
 
       [[nodiscard]]
       constexpr bool
