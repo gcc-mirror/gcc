@@ -104,7 +104,6 @@ struct GTY(()) machine_function
      compute_frame_size.  */
   int callee_save_size;
   bool frame_laid_out;
-  bool epilogue_done;
   bool inhibit_logues_a1_adjusts;
   rtx last_logues_a9_content;
   HARD_REG_SET eliminated_callee_saved;
@@ -3747,23 +3746,10 @@ xtensa_expand_epilogue (bool sibcall_p)
 				  stack_pointer_rtx,
 				  EH_RETURN_STACKADJ_RTX));
     }
-  cfun->machine->epilogue_done = true;
   if (sibcall_p)
     emit_use (gen_rtx_REG (SImode, A0_REG));
   else
     emit_jump_insn (gen_return ());
-}
-
-bool
-xtensa_use_return_instruction_p (void)
-{
-  if (!reload_completed)
-    return false;
-  if (TARGET_WINDOWED_ABI)
-    return true;
-  if (compute_frame_size (get_frame_size ()) == 0)
-    return true;
-  return cfun->machine->epilogue_done;
 }
 
 void

@@ -2735,7 +2735,10 @@
 (define_insn "return"
   [(return)
    (use (reg:SI A0_REG))]
-  "xtensa_use_return_instruction_p ()"
+  "reload_completed
+   && (TARGET_WINDOWED_ABI
+       || compute_frame_size (get_frame_size ()) == 0
+       || epilogue_completed)"
 {
   return TARGET_WINDOWED_ABI ?
       (TARGET_DENSITY ? "retw.n" : "retw") :
