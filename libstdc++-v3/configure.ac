@@ -400,6 +400,13 @@ dnl # rather than hardcoding that information.
         AC_DEFINE(HAVE_SYMLINK)
         AC_DEFINE(HAVE_TRUNCATE)
         AC_DEFINE(HAVE_USLEEP)
+
+        # These functions are defined in librtemscpu.  We don't use
+        # -qrtems during configure, so we don't link that in, and fail
+        # to find them.
+        glibcxx_cv_chdir=yes
+        glibcxx_cv_chmod=yes
+        glibcxx_cv_mkdir=yes
         ;;
     esac
   elif test "x$with_headers" != "xno"; then
