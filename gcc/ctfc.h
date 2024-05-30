@@ -384,8 +384,8 @@ extern void ctf_init (void);
 extern void ctf_output (const char * filename);
 extern void ctf_finalize (void);
 
-extern void btf_output (const char * filename);
-extern void btf_init_postprocess (void);
+extern void btf_early_finish (void);
+extern void btf_finish (const char * filename);
 extern void btf_finalize (void);
 
 extern ctf_container_ref ctf_get_tu_ctfc (void);

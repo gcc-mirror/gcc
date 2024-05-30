@@ -933,30 +933,6 @@ gen_ctf_type (ctf_container_ref ctfc, dw_die_ref die)
   return type_id;
 }
 
-/* Prepare for output and write out the CTF debug information.  */
-
-static void
-ctf_debug_finalize (const char *filename, bool btf)
-{
-  if (btf)
-    {
-      btf_output (filename);
-      /* btf_finalize when compiling BPF applciations gets deallocated by the
-	 BPF target in bpf_file_end.  */
-      if (btf_debuginfo_p () && !btf_with_core_debuginfo_p ())
-	btf_finalize ();
-    }
-
-  else
-    {
-      /* Emit the collected CTF information.  */
-      ctf_output (filename);
-
-      /* Reset the CTF state.  */
-      ctf_finalize ();
-    }
-}
-
 bool
 ctf_do_die (dw_die_ref die)
 {
@@ -996,27 +972,27 @@ ctf_debug_init (void)
   add_name_attribute (ctf_unknown_die, "unknown");
 }
 
-/* Preprocess the CTF debug information after initialization.  */
-
-void
-ctf_debug_init_postprocess (bool btf)
-{
-  /* Only BTF requires postprocessing right after init.  */
-  if (btf)
-    btf_init_postprocess ();
-}
-
 /* Early finish CTF/BTF debug info.  */
 
 void
 ctf_debug_early_finish (const char * filename)
 {
-  /* Emit CTF debug info early always.  */
-  if (ctf_debug_info_level > CTFINFO_LEVEL_NONE
-      /* Emit BTF debug info early if CO-RE relocations are not
-	 required.  */
-      || (btf_debuginfo_p () && !btf_with_core_debuginfo_p ()))
-    ctf_debug_finalize (filename, btf_debuginfo_p ());
+  /* Emit the collected CTF information.  */
+  if (ctf_debug_info_level > CTFINFO_LEVEL_NONE)
+    ctf_output (filename);
+
+  /* If emitting BTF, start translation to BTF.  */
+  if (btf_debuginfo_p ())
+    {
+      btf_early_finish ();
+
+      /* For LTO builds, also emit BTF now.  */
+      if (flag_lto && !in_lto_p)
+	btf_finish (filename);
+    }
+  else
+    /* Otherwise, done with the CTF container.  */
+    ctf_finalize ();
 }
 
 /* Finish CTF/BTF debug info emission.  */
@@ -1024,11 +1000,10 @@ ctf_debug_early_finish (const char * filename)
 void
 ctf_debug_finish (const char * filename)
 {
-  /* Emit BTF debug info here when CO-RE relocations need to be generated.
-     BTF with CO-RE relocations needs to be generated when CO-RE is in effect
-     for the BPF target.  */
-  if (btf_debuginfo_p () && btf_with_core_debuginfo_p ())
-    ctf_debug_finalize (filename, btf_debuginfo_p ());
+  /* Emit BTF late, unless this is an LTO build in which case it was
+     already done early.  */
+  if (btf_debuginfo_p () && !flag_lto)
+    btf_finish (filename);
 }
 
 #include "gt-dwarf2ctf.h"

@@ -1491,6 +1491,34 @@ btf_finalize (void)
   tu_ctfc = NULL;
 }
 
+/* Initial entry point of BTF generation, called at early_finish () after
+   CTF information has possibly been output.  Translate all CTF information
+   to BTF, and do any processing that must be done early, such as creating
+   BTF_KIND_FUNC records.  */
+
+void
+btf_early_finish (void)
+{
+  btf_init_postprocess ();
+}
+
+/* Late entry point for BTF generation, called from dwarf2out_finish ().
+   Complete and emit BTF information.  */
+
+void
+btf_finish (const char * filename)
+{
+  btf_output (filename);
+
+  /* If compiling for BPF with CO-RE info, we cannot deallocate until after the
+     contents of the .BTF.ext section are finalized, which happens very late in
+     BPF backend.  Therefore, the deallocation (i.e. btf_finalize ()) is delayed
+     until TARGET_ASM_FILE_END for BPF CO-RE.  */
+  if (!btf_with_core_debuginfo_p ())
+    btf_finalize ();
+}
+
+
 /* Traversal function for all BTF_KIND_FUNC type records.  */
 
 bool
