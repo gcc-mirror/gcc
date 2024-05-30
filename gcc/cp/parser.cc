@@ -13219,8 +13219,6 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_CONTASSERT:
 		if (flag_contracts_nonattr && flag_contracts)
 		{
-			tree mode = NULL_TREE;  // not needed for non attribute contracts
-			tree result = NULL_TREE; // not needed for assertions
 			tree cont_assert = NULL_TREE;
 	        cont_assert = token->u.value;
 
@@ -13229,7 +13227,6 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 		 	tree contract;
    		    matching_parens parens;
    		    parens.require_open (parser);
-			/* Defer the parsing of pre/post contracts inside class definitions.  */
 			/* Enable location wrappers when parsing contracts.  */
 			auto suppression = make_temp_override (suppress_location_wrappers, 0);
 
@@ -13242,7 +13239,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 			parens.require_close (parser);
 
 			/* Build the contract.  */
-			contract = grok_contract (cont_assert, mode, result, condition, loc);
+			contract = grok_contract (cont_assert, NULL_TREE/*mode*/, NULL_TREE/*result*/, condition, loc);
 			std_attrs = finish_contract_attribute (cont_assert, contract);
 		}
 		else
