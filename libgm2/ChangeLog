@@ -1,3 +1,12 @@
+2024-05-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115276
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use AC_HEADER_TIME.
+	* libm2iso/wraptime.cc (InitTM): Check HAVE_SYS_TIME_H
+	before using struct tm to obtain the size.
+
 2024-05-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Makefile.in: Regenerate.

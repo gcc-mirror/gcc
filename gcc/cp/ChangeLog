@@ -1,3 +1,18 @@
+2024-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109753
+	* decl.cc (start_preparsed_function): Call decl_attributes.
+
+2024-05-29  Jason Merrill  <jason@redhat.com>
+
+	* lang-specs.h: Add module interface extensions.
+
+2024-05-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115223
+	* tree.cc (build_cp_fntype_variant): Propagate structural
+	equality of the exception-less variant.
+
 2024-05-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/109396

@@ -1,3 +1,10 @@
+2024-05-29  Martin Uecker  <uecker@tugraz.at>
+
+	* c-typeck.cc (comptypes_internal): Add flag to track
+	whether a struct is the target of a pointer.
+	(tagged_types_tu_compatible): When forming equivalence
+	classes, treat nested pointed-to structs as equivalent.
+
 2024-05-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/115167

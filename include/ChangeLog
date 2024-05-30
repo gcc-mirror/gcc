@@ -1,3 +1,12 @@
+2024-05-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* hsa.h (HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT): Add
+	enum value.
+
+2024-05-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* cuda/cuda.h (CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS): Add.
+
 2024-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* cuda/cuda.h (CUresult): Add 'CUDA_ERROR_NO_DEVICE'.

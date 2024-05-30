@@ -1,3 +1,13 @@
+2024-05-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109753
+	* c-attribs.cc (handle_optimize_attribute): Set
+	cgraph_node::semantic_interposition.
+
+2024-05-29  Oskari Pirhonen  <xxc3ncoredxx@gmail.com>
+
+	* known-headers.cc (get_stdlib_header_for_name): Add strerror.
+
 2024-05-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/115167

@@ -1,3 +1,19 @@
+2024-05-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (gcn): Update USM handling
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_num_devices): Handle
+	USM if HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT is true.
+
+2024-05-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (nvptx): Update USM description.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_num_devices):
+	Claim support when requesting USM and all devices support
+	CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS.
+	* target.c (gomp_copy_back_icvs): Fix device ptr lookup.
+	(gomp_target_init): Set GOMP_OFFLOAD_CAP_SHARED_MEM is the
+	devices supports USM.
+
 2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am [LIBGOMP_BUILD_VERSIONED_SHLIB_SUN]

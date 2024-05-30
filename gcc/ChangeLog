@@ -1,3 +1,145 @@
+2024-05-29  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.cc(mips16_gp_pseudo_reg): Mark
+	MIPS16_PIC_TEMP and MIPS_PROLOGUE_TEMP clobbered.
+	(mips_emit_call_insn): Mark MIPS16_PIC_TEMP and
+	MIPS_PROLOGUE_TEMP clobbered if MIPS16 and CALL_CLOBBERED_GP.
+
+2024-05-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115224
+	* generic-match-head.cc (bitwise_inverted_equal_p): Add `a ^ CST`
+	case.
+	* gimple-match-head.cc (gimple_bit_xor_cst): New declaration.
+	(gimple_bitwise_inverted_equal_p): Add `a ^ CST` case.
+	* match.pd (bit_xor_cst): New match.
+	(maybe_bit_not): Add bit_xor_cst case.
+
+2024-05-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* match.pd (bit_not_with_nop): Unconditionalize.
+	(maybe_cmp): Likewise.
+	(maybe_bit_not): New match pattern.
+	(`~X & X`): Use maybe_bit_not and add `:c` back.
+	(`~x ^ x`/`~x | x`): Likewise.
+
+2024-05-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115258
+	* config/aarch64/aarch64-simd.md (aarch64_combinev16qi): Allow
+	the split before reload.
+	* config/aarch64/aarch64.cc (aarch64_split_combinev16qi): Generalize
+	into a form that handles pseudo registers.
+
+2024-05-29  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-loop.c : Removed.
+
+2024-05-29  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Move
+	initialization of bbs to explicit construction code.  Adjust the
+	definition of nbbs.
+	(update_epilogue_loop_vinfo): Update nbbs for epilog vinfo.
+	* tree-vect-patterns.cc (vect_determine_precisions): Make
+	loop_vec_info and bb_vec_info share same code.
+	(vect_pattern_recog): Remove duplicated vect_pattern_recog_1 loop.
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Access to bbs[0]
+	via base vec_info class.
+	(_bb_vec_info::_bb_vec_info): Initialize bbs and nbbs using data
+	fields of input auto_vec<> bbs.
+	(vect_slp_region): Use access to nbbs to replace original
+	bbs.length().
+	(vect_schedule_slp_node): Access to bbs[0] via base vec_info class.
+	* tree-vectorizer.cc (vec_info::vec_info): Add initialization of
+	bbs and nbbs.
+	(vec_info::insert_seq_on_entry): Access to bbs[0] via base vec_info
+	class.
+	* tree-vectorizer.h (vec_info): Add new fields bbs and nbbs.
+	(LOOP_VINFO_NBBS): New macro.
+	(BB_VINFO_BBS): Rename BB_VINFO_BB to BB_VINFO_BBS.
+	(BB_VINFO_NBBS): New macro.
+	(_loop_vec_info): Remove field bbs.
+	(_bb_vec_info): Rename field bbs.
+	* tree-vect-loop.c: New file.
+
+2024-05-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/crypto.md (riscv_xpack_<X:mode>_<HX:mode>_2): Remove '*'
+	allow it to be used via the gen_* interface.
+	* config/riscv/riscv.cc (riscv_build_integer): Identify when Zbkb
+	can be used to profitably synthesize repeating constants.
+	(riscv_move_integer): Codegen changes to generate those Zbkb sequences.
+
+2024-05-29  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Update module extension docs.
+
+2024-05-29  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-hsa.h (gcn_local_sym_hash): Fix typo.
+
+2024-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115252
+	* tree-vect-stmts.cc (get_group_load_store_type): Enhance
+	detecting the number of cases where we can avoid accessing a gap
+	during code generation.
+	(vectorizable_load): Remove old half-vector peeling for gap
+	avoidance which is now redundant.  Add gap-aligned case where
+	it's OK to access the gap.  Add assert that we have peeling for
+	gaps enabled when we access a gap.
+
+2024-05-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114435
+	* tree-predcom.cc (tree_predictive_commoning): Queue
+	the next scalar cleanup sub-pipeline to be run when we
+	did something.
+
+2024-05-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/113719
+	* config/i386/i386-options.cc (ix86_override_options_after_change):
+	Remove call to ix86_default_align and
+	ix86_recompute_optlev_based_flags.
+	(ix86_option_override_internal): Call ix86_default_align and
+	ix86_recompute_optlev_based_flags.
+
+2024-05-29  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_avoid_jump_mispredicts): Change
+	gen_pad to gen_max_skip_align.
+	(ix86_align_loops): New function.
+	(ix86_reorg): Call ix86_align_loops.
+	* config/i386/i386.md (pad): Rename to ..
+	(max_skip_align): .. this, and accept 2 operands for align and
+	skip.
+
+2024-05-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/x86-tune-costs.h (generic_cost): Change from
+	16:11:8 to 16.
+
+2024-05-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_on_edge): Always use static ranges
+	from the specified range_query.
+	* gimple-range-gori.h (gori_on_edge): Change prototype.
+	* gimple-range.cc (dom_ranger::maybe_push_edge): Change arguments
+	to call.
+
+2024-05-29  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/114846
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_epilogue): As
+	EPILOGUE_TYPE_EH_RETURN would be passed as epilogue_type directly
+	now, adjust the relevant handlings on it.
+	* config/rs6000/rs6000.md (eh_return expander): Append by calling
+	gen_eh_return_internal and emit_barrier.
+	(eh_return_internal): New define_insn_and_split, call function
+	rs6000_emit_epilogue with epilogue type EPILOGUE_TYPE_EH_RETURN.
+
 2024-05-28  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/67325

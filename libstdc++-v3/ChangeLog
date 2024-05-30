@@ -1,3 +1,34 @@
+2024-05-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/vector.tcc (_Guard): Move all the nested duplicated class...
+	* include/bits/stl_vector.h (_Guard_alloc): ...here and rename.
+	(_M_allocate_and_copy): Use latter.
+	(_M_initialize_dispatch): Small code simplification.
+	(_M_range_initialize): Likewise and set _M_finish first from the result
+	of __uninitialize_fill_n_a that can throw.
+
+2024-05-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/111641
+	* src/libbacktrace/Makefile.am (AM_CFLAGS): Add -funwind-tables.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* testsuite/19_diagnostics/stacktrace/current.cc (dg-options): Add
+	-funwind-tables.
+	* testsuite/19_diagnostics/stacktrace/entry.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/hash.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/output.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Likewise.
+
+2024-05-29  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/115247
+	* include/experimental/bits/simd.h (__as_vector): Don't use
+	vector_size(8) on __i386__.
+	(__vec_shuffle): Never return MMX vectors, widen to 16 bytes
+	instead.
+	(concat): Fix padding calculation to pick up widening logic from
+	__as_vector.
+
 2024-05-23  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/version.def (ranges_concat): Define.

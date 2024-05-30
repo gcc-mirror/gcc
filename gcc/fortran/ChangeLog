@@ -1,3 +1,10 @@
+2024-05-29  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/90069
+	* trans-expr.cc (gfc_conv_procedure_call): Evaluate
+	expressions with side-effects only ones and ensure
+	old is freeed.
+
 2024-05-24  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
