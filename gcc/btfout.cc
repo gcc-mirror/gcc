@@ -61,11 +61,6 @@ static char btf_info_section_label[MAX_BTF_LABEL_BYTES];
 #define BTF_INFO_SECTION_LABEL  "Lbtf"
 #endif
 
-/* BTF encodes void as type id 0.  */
-
-#define BTF_VOID_TYPEID 0
-#define BTF_INIT_TYPEID 1
-
 #define BTF_INVALID_TYPEID 0xFFFFFFFF
 
 /* Mapping of CTF variables to the IDs they will be assigned when they are
@@ -626,7 +621,8 @@ btf_dvd_emit_preprocess_cb (ctf_dvdef_ref *slot, ctf_container_ref arg_ctfc)
     return 1;
 
   /* Do not add variables which refer to unsupported types.  */
-  if (!voids.contains (var->dvd_type) && btf_removed_type_p (var->dvd_type))
+  if (!voids.contains (var->dvd_type->dtd_type)
+      && btf_removed_type_p (var->dvd_type->dtd_type))
     return 1;
 
   arg_ctfc->ctfc_vars_list[num_vars_added] = var;
@@ -716,7 +712,7 @@ btf_emit_preprocess (ctf_container_ref ctfc)
 static bool
 btf_dmd_representable_bitfield_p (ctf_container_ref ctfc, ctf_dmdef_t *dmd)
 {
-  ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[dmd->dmd_type];
+  ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[dmd->dmd_type->dtd_type];
 
   if (CTF_V2_INFO_KIND (ref_type->dtd_data.ctti_info) == CTF_K_SLICE)
     {
@@ -913,8 +909,8 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 static void
 btf_asm_array (ctf_container_ref ctfc, ctf_arinfo_t arr)
 {
-  btf_asm_type_ref ("bta_elem_type", ctfc, arr.ctr_contents);
-  btf_asm_type_ref ("bta_index_type", ctfc, arr.ctr_index);
+  btf_asm_type_ref ("bta_elem_type", ctfc, arr.ctr_contents->dtd_type);
+  btf_asm_type_ref ("bta_index_type", ctfc, arr.ctr_index->dtd_type);
   dw2_asm_output_data (4, arr.ctr_nelems, "bta_nelems");
 }
 
@@ -927,7 +923,7 @@ btf_asm_varent (ctf_container_ref ctfc, ctf_dvdef_ref var)
 		       (*(btf_var_ids->get (var)) + num_types_added + 1),
 		       var->dvd_name);
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_VAR, 0, 0), "btv_info");
-  btf_asm_type_ref ("btv_type", ctfc, var->dvd_type);
+  btf_asm_type_ref ("btv_type", ctfc, var->dvd_type->dtd_type);
   dw2_asm_output_data (4, var->dvd_visibility, "btv_linkage");
 }
 
@@ -937,8 +933,8 @@ btf_asm_varent (ctf_container_ref ctfc, ctf_dvdef_ref var)
 static void
 btf_asm_sou_member (ctf_container_ref ctfc, ctf_dmdef_t * dmd, unsigned int idx)
 {
-  ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[dmd->dmd_type];
-  ctf_id_t base_type = dmd->dmd_type;
+  ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[dmd->dmd_type->dtd_type];
+  ctf_id_t base_type = dmd->dmd_type->dtd_type;
   uint64_t sou_offset = dmd->dmd_offset;
 
   dw2_asm_output_data (4, dmd->dmd_name_offset,
@@ -959,7 +955,7 @@ btf_asm_sou_member (ctf_container_ref ctfc, ctf_dmdef_t * dmd, unsigned int idx)
 	  sou_offset |= ((bits & 0xff) << 24);
 
 	  /* Refer to the base type of the slice.  */
-	  base_type = ref_type->dtd_u.dtu_slice.cts_type;
+	  base_type = ref_type->dtd_u.dtu_slice.cts_type->dtd_type;
 	}
       else
 	{
@@ -1003,9 +999,11 @@ btf_asm_func_arg (ctf_container_ref ctfc, ctf_func_arg_t * farg,
   else
     dw2_asm_output_data (4, 0, "farg_name");
 
-  btf_asm_type_ref ("farg_type", ctfc, (btf_removed_type_p (farg->farg_type)
-					? BTF_VOID_TYPEID
-					: farg->farg_type));
+  ctf_id_t ref_id = BTF_VOID_TYPEID;
+  if (farg->farg_type && !btf_removed_type_p (farg->farg_type->dtd_type))
+    ref_id = farg->farg_type->dtd_type;
+
+  btf_asm_type_ref ("farg_type", ctfc, ref_id);
 }
 
 /* Asm'out a BTF_KIND_FUNC type.  */
@@ -1381,7 +1379,7 @@ btf_init_postprocess (void)
      to create the const modifier type (if needed) now, before making the types
      list.  So we can't avoid iterating with FOR_EACH_VARIABLE here, and then
      again when creating the DATASEC entries.  */
-  ctf_id_t constvoid_id = CTF_NULL_TYPEID;
+  ctf_dtdef_ref constvoid_dtd = NULL;
   varpool_node *var;
   FOR_EACH_VARIABLE (var)
     {
@@ -1400,10 +1398,10 @@ btf_init_postprocess (void)
 	    continue;
 
 	  /* Create the 'const' modifier type for void.  */
-	  if (constvoid_id == CTF_NULL_TYPEID)
-	    constvoid_id = ctf_add_reftype (tu_ctfc, CTF_ADD_ROOT,
-					    dvd->dvd_type, CTF_K_CONST, NULL);
-	  dvd->dvd_type = constvoid_id;
+	  if (constvoid_dtd == NULL)
+	    constvoid_dtd = ctf_add_reftype (tu_ctfc, CTF_ADD_ROOT,
+					     dvd->dvd_type, CTF_K_CONST, NULL);
+	  dvd->dvd_type = constvoid_dtd;
 	}
     }
 

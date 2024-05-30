@@ -1021,7 +1021,8 @@ process_type (struct cr_builtins *data)
       && data->default_value != NULL)
   {
     ctf_container_ref ctfc = ctf_get_tu_ctfc ();
-    unsigned int btf_id = get_btf_id (ctf_lookup_tree_type (ctfc, ret.type));
+    ctf_dtdef_ref dtd = ctf_lookup_tree_type (ctfc, ret.type);
+    unsigned int btf_id = dtd ? dtd->dtd_type : BTF_VOID_TYPEID;
     data->rtx_default_value = expand_normal (build_int_cst (integer_type_node,
 							    btf_id));
   }
