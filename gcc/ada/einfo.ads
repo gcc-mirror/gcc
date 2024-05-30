@@ -1334,13 +1334,17 @@ package Einfo is
 --    First_Component (synthesized)
 --       Applies to incomplete, private, protected, record and task types.
 --       Returns the first component by following the chain of declared
---       entities for the type a component is found (one with an Ekind of
+--       entities for the type until a component is found (one with an Ekind of
 --       E_Component). The discriminants are skipped. If the record is null,
 --       then Empty is returned.
 
 --    First_Component_Or_Discriminant (synthesized)
 --       Similar to First_Component, but discriminants are not skipped, so will
 --       find the first discriminant if discriminants are present.
+
+--    First_Discriminant (synthesized)
+--       Defined for types with discriminants or unknown discriminants.
+--       Returns the first in the Next_Discriminant chain; see Sem_Aux.
 
 --    First_Entity
 --       Defined in all entities that act as scopes to which a list of
@@ -1375,12 +1379,11 @@ package Einfo is
 --    First_Index
 --       Defined in array types and subtypes. By introducing implicit subtypes
 --       for the index constraints, we have the same structure for constrained
---       and unconstrained arrays, subtype marks and discrete ranges are
---       both represented by a subtype. This function returns the tree node
---       corresponding to an occurrence of the first index (NOT the entity for
---       the type). Subsequent indices are obtained using Next_Index. Note that
---       this field is defined for the case of string literal subtypes, but is
---       always Empty.
+--       and unconstrained arrays, subtype marks and discrete ranges are both
+--       represented by a subtype. This function returns the N_Is_Index tree
+--       node corresponding to the first index (not an entity). Subsequent
+--       indices are obtained using Next_Index. Note that this field is defined
+--       for the case of string literal subtypes, but is always Empty.
 
 --    First_Literal
 --       Defined in all enumeration types, including character and boolean
@@ -3749,13 +3752,11 @@ package Einfo is
 --       all the extra formals (see description of Extra_Formal field)
 
 --    Next_Index (synthesized)
---       Applies to array types and subtypes and to string types and
---       subtypes. Yields the next index. The first index is obtained by
---       using the First_Index attribute, and then subsequent indexes are
---       obtained by applying Next_Index to the previous index. Empty is
---       returned to indicate that there are no more indexes. Note that
---       unlike most attributes in this package, Next_Index applies to
---       nodes for the indexes, not to entities.
+--       Applies to the N_Is_Index node returned by First_Index/Next_Index;
+--       returns the next N_Is_Index node in the chain. Empty is returned to
+--       indicate that there are no more indexes. Note that unlike most
+--       attributes in this package, Next_Index applies to nodes for the
+--       indexes, not to entities.
 
 --    Next_Inlined_Subprogram
 --       Defined in subprograms. Used to chain inlined subprograms used in

@@ -1176,7 +1176,7 @@ package Aspects is
                          Class_Present : Boolean := False;
                          Or_Rep_Item   : Boolean := False) return Node_Id;
    --  Find the aspect specification of aspect A (or A'Class if Class_Present)
-   --  associated with entity I.
+   --  associated with entity Id.
    --  If found, then return the aspect specification.
    --  If not found and Or_Rep_Item is true, then look for a representation
    --  item (as opposed to an N_Aspect_Specification node) which specifies

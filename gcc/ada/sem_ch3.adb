@@ -1250,8 +1250,8 @@ package body Sem_Ch3 is
       --  to incomplete types declared in some enclosing scope, not to limited
       --  views from other packages.
 
-      --  Prior to Ada 2012, access to functions parameters must be of mode
-      --  'in'.
+      --  Prior to Ada 2012, all parameters of an access-to-function type must
+      --  be of mode 'in'.
 
       if Present (Formals) then
          Formal := First_Formal (Desig_Type);

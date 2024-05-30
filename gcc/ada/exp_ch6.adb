@@ -2939,8 +2939,8 @@ package body Exp_Ch6 is
             --  If the aspect is inherited, convert the pointer to the
             --  parent type that specifies the contract.
             --  If the original access_to_subprogram has defaults for
-            --  in_parameters, the call may include named associations, so
-            --  we create one for the pointer as well.
+            --  in-mode parameters, the call may include named associations,
+            --  so we create one for the pointer as well.
 
             if Is_Derived_Type (Ptr_Type)
               and then Ptr_Type /= Etype (Last_Formal (Wrapper))
