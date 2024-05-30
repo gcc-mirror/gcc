@@ -93,7 +93,7 @@ package body Switch is
          Set_Standard_Output;
          Usage;
          Write_Eol;
-         Write_Line ("Report bugs to report@adacore.com");
+         Write_Line ("Report bugs to support@adacore.com");
          Exit_Program (E_Success);
       end if;
    end Check_Version_And_Help_G;
