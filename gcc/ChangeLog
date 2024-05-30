@@ -1,3 +1,46 @@
+2024-05-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115149
+	* tree-ssa-live.cc (virtual_operand_live::get_live_in):
+	Explicitly track the first processed edge.
+
+2024-05-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115197
+	* tree-loop-distribution.cc (copy_loop_before): Constant PHI
+	args remain the same.
+
+2024-05-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114921
+	* tree-vect-stmts.cc (vectorizable_assignment): Use
+	tree_nop_conversion_p to identify converts we can vectorize
+	with a simple assignment.
+
+2024-05-29  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_avoid_jump_mispredicts): Change
+	gen_pad to gen_max_skip_align.
+	(ix86_align_loops): New function.
+	(ix86_reorg): Call ix86_align_loops.
+	* config/i386/i386.md (pad): Rename to ..
+	(max_skip_align): .. this, and accept 2 operands for align and
+	skip.
+
+2024-05-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/x86-tune-costs.h (generic_cost): Change from
+	16:11:8 to 16.
+
 2024-05-28  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:

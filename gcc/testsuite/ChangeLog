@@ -1,3 +1,19 @@
+2024-05-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115149
+	* gcc.dg/pr115149.c: New testcase.
+
+2024-05-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115197
+	* gcc.dg/pr115197.c: New testcase.
+
 2024-05-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
