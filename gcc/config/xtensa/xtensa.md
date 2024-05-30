@@ -1413,7 +1413,7 @@
     }
   else
     {
-      gcc_assert (GET_CODE (operands[1]) == SUBREG);
+      gcc_assert (SUBREG_P (operands[1]));
       lit = SUBREG_REG (operands[1]);
       word_off = SUBREG_BYTE (operands[1]) & ~(UNITS_PER_WORD - 1);
       byte_off = SUBREG_BYTE (operands[1]) - word_off;
@@ -2565,7 +2565,7 @@
   ""
 {
   rtx dest = operands[0];
-  if (GET_CODE (dest) != REG || GET_MODE (dest) != Pmode)
+  if (! REG_P (dest) || GET_MODE (dest) != Pmode)
     operands[0] = copy_to_mode_reg (Pmode, dest);
 
   emit_jump_insn (gen_indirect_jump_internal (dest));

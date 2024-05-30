@@ -602,17 +602,17 @@ typedef struct xtensa_args
    valid address.  This is defined to be the same as 'CONSTANT_P (X)',
    but rejecting CONST_DOUBLE.  */
 #define CONSTANT_ADDRESS_P(X)						\
-  ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-    || GET_CODE (X) == CONST_INT || GET_CODE (X) == HIGH		\
+  ((LABEL_REF_P (X) || SYMBOL_REF_P (X) || CONST_INT_P (X)		\
+    || (GET_CODE (X) == HIGH)						\
     || (GET_CODE (X) == CONST)))
 
 /* A C expression that is nonzero if X is a legitimate immediate
    operand on the target machine when generating position independent
    code.  */
 #define LEGITIMATE_PIC_OPERAND_P(X)					\
-  ((GET_CODE (X) != SYMBOL_REF						\
-    || (SYMBOL_REF_LOCAL_P (X) && !SYMBOL_REF_EXTERNAL_P (X)))		\
-   && GET_CODE (X) != LABEL_REF						\
+  ((! SYMBOL_REF_P (X)							\
+    || (SYMBOL_REF_LOCAL_P (X) && ! SYMBOL_REF_EXTERNAL_P (X)))		\
+   && ! LABEL_REF_P (X)							\
    && GET_CODE (X) != CONST)
 
 /* Specify the machine mode that this machine uses
