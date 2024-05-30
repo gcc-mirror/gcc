@@ -13217,38 +13217,41 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  statement = cp_parser_transaction_cancel (parser);
 	  break;
 	case RID_CONTASSERT:
-		if (flag_contracts_nonattr && flag_contracts)
-		{
-			tree cont_assert = NULL_TREE;
-	        cont_assert = token->u.value;
+	  if (flag_contracts_nonattr &&flag_contracts)
+	    {
+	      tree cont_assert = token->u.value;
 
-	        cp_token *token = cp_lexer_consume_token (parser->lexer);
-		 	location_t loc = token->location;
-		 	tree contract;
-   		    matching_parens parens;
-   		    parens.require_open (parser);
-			/* Enable location wrappers when parsing contracts.  */
-			auto suppression = make_temp_override (suppress_location_wrappers, 0);
+	      cp_token *token = cp_lexer_consume_token (parser->lexer);
+	      location_t loc = token->location;
+	      matching_parens parens;
 
-			/* Parse the condition, ensuring that parameters or the return variable
-			 aren't flagged for use outside the body of a function.  */
-			++processing_contract_condition;
-			cp_expr condition = cp_parser_conditional_expression (parser);
-			--processing_contract_condition;
+	      parens.require_open (parser);
+	      /* Enable location wrappers when parsing contracts.  */
+	      auto suppression = make_temp_override (suppress_location_wrappers,
+						     0);
 
-			parens.require_close (parser);
+	      /* Parse the condition, ensuring that parameters or the return variable
+	       aren't flagged for use outside the body of a function.  */
+	      ++processing_contract_condition;
+	      cp_expr condition = cp_parser_conditional_expression (parser);
+	      --processing_contract_condition;
 
-			/* Build the contract.  */
-			contract = grok_contract (cont_assert, NULL_TREE/*mode*/, NULL_TREE/*result*/, condition, loc);
-			std_attrs = finish_contract_attribute (cont_assert, contract);
-		}
-		else
-			error_at (token->location, "%<contract_assertions%> are only available with %<-fcontracts%> and %<-fcontracts-nonattr%>");
+	      parens.require_close (parser);
+
+	      /* Build the contract.  */
+	      tree contract = grok_contract (cont_assert, NULL_TREE /*mode*/,
+					NULL_TREE /*result*/, condition, loc);
+	      std_attrs = finish_contract_attribute (cont_assert, contract);
+	    }
+	  else
+	    error_at (
+		token->location,
+		"%<contract_assertions%> are only available with %<-fcontracts%> and %<-fcontracts-nonattr%>");
 	  break;
 
 	default:
 	  /* It might be a keyword like `int' that can start a
-	     declaration-statement.  */
+	   declaration-statement.  */
 	  break;
 	}
     }
@@ -31482,11 +31485,11 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
   /* Check for postcondition identifiers.  */
   cp_expr identifier;
   if (attr_mode)
-  {
-	  if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 	identifier = cp_parser_identifier (parser);
       if (identifier == error_mark_node)
-	return error_mark_node;
+      return error_mark_node;
       cp_parser_require (parser, CPP_COLON, RT_COLON);
     }
   else
