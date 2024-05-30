@@ -32348,7 +32348,7 @@ dwarf2out_finish (const char *filename)
   /* Generate CTF/BTF debug info.  */
   if ((ctf_debug_info_level > CTFINFO_LEVEL_NONE
        || btf_debuginfo_p ()) && lang_GNU_C ())
-    ctf_debug_finish (filename);
+    ctf_debug_finish ();
 
 #ifdef CODEVIEW_DEBUGGING_INFO
   if (codeview_debuginfo_p ())

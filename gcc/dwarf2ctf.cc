@@ -979,7 +979,7 @@ ctf_debug_early_finish (const char * filename)
 
       /* For LTO builds, also emit BTF now.  */
       if (flag_lto && !in_lto_p)
-	btf_finish (filename);
+	btf_finish ();
     }
   else
     /* Otherwise, done with the CTF container.  */
@@ -989,12 +989,12 @@ ctf_debug_early_finish (const char * filename)
 /* Finish CTF/BTF debug info emission.  */
 
 void
-ctf_debug_finish (const char * filename)
+ctf_debug_finish ()
 {
   /* Emit BTF late, unless this is an LTO build in which case it was
      already done early.  */
   if (btf_debuginfo_p () && !flag_lto)
-    btf_finish (filename);
+    btf_finish ();
 }
 
 #include "gt-dwarf2ctf.h"

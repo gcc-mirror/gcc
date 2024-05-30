@@ -32,7 +32,7 @@ extern void ctf_debug_init (void);
 extern void ctf_debug_init_postprocess (bool);
 extern bool ctf_do_die (dw_die_ref);
 extern void ctf_debug_early_finish (const char *);
-extern void ctf_debug_finish (const char *);
+extern void ctf_debug_finish (void);
 
 /* Wrappers for CTF/BTF to fetch information from GCC DWARF DIE.  Used in
    ctfc.cc.

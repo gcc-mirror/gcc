@@ -164,10 +164,14 @@ struct GTY ((for_user)) ctf_dtdef
   ctf_id_t dtd_type;	      /* Type identifier for this definition.  */
   ctf_dtdef_ref ref_type;     /* Type referred to by this type (if any).  */
   ctf_itype_t dtd_data;	      /* Type node.  */
-  bool from_global_func; /* Whether this type was added from a global
-			    function.  */
   uint32_t linkage;           /* Used in function types.  0=local, 1=global.  */
-  bool dtd_enum_unsigned;     /* Enum signedness.  */
+
+  /* Whether this type was added from a global function.  */
+  BOOL_BITFIELD from_global_func : 1;
+  /* Enum signedness.  */
+  BOOL_BITFIELD dtd_enum_unsigned : 1;
+  /* Lots of spare bits.  */
+
   union GTY ((desc ("ctf_dtu_d_union_selector (&%1)")))
   {
     /* struct, union, or enum.  */
@@ -194,6 +198,7 @@ struct GTY ((for_user)) ctf_dvdef
   uint32_t dvd_name_offset;	/* Offset of the name in str table.  */
   unsigned int dvd_visibility;	/* External visibility.  0=static,1=global.  */
   ctf_dtdef_ref dvd_type;	/* Type of variable.  */
+  ctf_id_t dvd_id;		/* ID of this variable.  Only used for BTF.  */
 };
 
 typedef struct ctf_dvdef ctf_dvdef_t;
@@ -388,7 +393,7 @@ extern void ctf_output (const char * filename);
 extern void ctf_finalize (void);
 
 extern void btf_early_finish (void);
-extern void btf_finish (const char * filename);
+extern void btf_finish (void);
 extern void btf_finalize (void);
 
 extern ctf_container_ref ctf_get_tu_ctfc (void);
@@ -443,7 +448,9 @@ extern int ctf_add_variable (ctf_container_ref, const char *, ctf_dtdef_ref,
 			     dw_die_ref, unsigned int, dw_die_ref);
 
 extern ctf_dtdef_ref ctf_lookup_tree_type (ctf_container_ref, const tree);
-extern ctf_id_t get_btf_id (ctf_id_t);
+
+/* Callback and traversal function for BTF_KIND_FUNC records.  Used by BPF
+   target for BPF CO-RE implementation.  */
 
 typedef bool (*funcs_traverse_callback) (ctf_dtdef_ref, void *);
 bool traverse_btf_func_types (funcs_traverse_callback, void *);
