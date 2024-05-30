@@ -89,7 +89,9 @@ package body Sem_Disp is
    --  to the found entity; otherwise return Empty.
    --
    --  This routine does not search for non-hidden primitives since they are
-   --  covered by the normal Ada 2005 rules.
+   --  covered by the normal Ada 2005 rules. Its name was motivated by an
+   --  intermediate version of AI05-0125 where this term was proposed to
+   --  name these entities in the RM.
 
    function Is_Inherited_Public_Operation (Op : Entity_Id) return Boolean;
    --  Check whether a primitive operation is inherited from an operation
@@ -2403,7 +2405,7 @@ package body Sem_Disp is
                Orig_Prim := Original_Corresponding_Operation (Prim);
 
                if Orig_Prim /= Prim
-                 and then Is_Immediately_Visible (Orig_Prim)
+                 and then not Is_Hidden (Orig_Prim)
                then
                   Vis_Ancestor := First_Elmt (Vis_List);
                   while Present (Vis_Ancestor) loop
