@@ -1320,9 +1320,15 @@ to @var{var_value} before execution of the program created by the test.
 Specify additional files, other than source files, that must be copied
 to the system where the compiler runs.
 
-@item @{ dg-additional-sources "@var{filelist}" @}
+@item @{ dg-additional-sources "@var{filelist}" [@{ target @var{selector} @}] @}
 Specify additional source files to appear in the compile line
 following the main test file.
+If the directive includes the optional @samp{@{ @var{selector} @}}
+then the additional sources are only added if the target system
+matches the @var{selector}.
+Additional sources are generally used only in @samp{link} and @samp{run}
+tests; they are reported as unsupported and discarded in other kinds of
+tests that direct the compiler to output to a single file.
 @end table
 
 @subsubsection Add checks at the end of a test

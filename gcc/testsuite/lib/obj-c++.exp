@@ -388,7 +388,7 @@ proc obj-c++_target_compile { source dest type options } {
 
     set options [concat "$ALWAYS_OBJCXXFLAGS" $options];
 
-    set options [dg-additional-files-options $options $source]
+    set options [dg-additional-files-options $options $source $dest $type]
 
     set result [target_compile $source $dest $type $options]
 

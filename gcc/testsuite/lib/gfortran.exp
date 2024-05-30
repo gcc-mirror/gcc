@@ -295,7 +295,7 @@ proc gfortran_target_compile { source dest type options } {
     lappend options "timeout=[timeout_value]"
 
     set options [concat "$ALWAYS_GFORTRANFLAGS" $options]
-    set options [dg-additional-files-options $options $source]
+    set options [dg-additional-files-options $options $source $dest $type]
     set return_val [target_compile $source $dest $type $options]
 
     if {[board_info $tboard exists multilib_flags]} {

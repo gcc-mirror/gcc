@@ -307,7 +307,22 @@ set additional_sources_used ""
 
 proc dg-additional-sources { args } {
     global additional_sources
-    set additional_sources [lindex $args 1]
+
+    if { [llength $args] > 3 } {
+	error "[lindex $args 0]: too many arguments"
+	return
+    }
+
+    if { [llength $args] >= 3 } {
+	switch [dg-process-target [lindex $args 2]] {
+	    "S" { append additional_sources " [lindex $args 1]" }
+	    "N" { }
+	    "F" { error "[lindex $args 0]: `xfail' not allowed here" }
+	    "P" { error "[lindex $args 0]: `xfail' not allowed here" }
+	}
+    } else {
+	append additional_sources " [lindex $args 1]"
+    }
 }
 
 # Record additional files -- other than source files -- that must be
@@ -383,20 +398,30 @@ proc gcc_adjust_linker_flags {} {
 
 # Return an updated version of OPTIONS that mentions any additional
 # source files registered with dg-additional-sources.  SOURCE is the
-# name of the test case.
+# name of the test case.  If DEST is given and TYPE does not require
+# linking, additional sources are noted as unsupported rather than
+# added, because the compiler rejects a single output for multiple
+# sources.
 
-proc dg-additional-files-options { options source } {
+proc dg-additional-files-options { options source dest type } {
     gcc_adjust_linker_flags
 
     global additional_sources
     global additional_sources_used
     global additional_files
     set to_download [list]
-    if { $additional_sources != "" } then {
+    if { $additional_sources == "" } then {
+    } elseif { $type != "executable" && $dest != "" } then {
+	foreach s $additional_sources {
+	    unsupported "$s: additional-source will not be used to build $dest"
+	}
+	set additional_sources_used ""
+	set additional_sources ""
+    } else {
 	if [is_remote host] {
 	    lappend options "additional_flags=$additional_sources"
 	}
-	regsub -all "^| " $additional_sources " [file dirname $source]/" additional_sources
+	regsub -all {^ *|  *} $additional_sources " [file dirname $source]/" additional_sources
 	if ![is_remote host] {
 	    lappend options "additional_flags=$additional_sources"
 	}

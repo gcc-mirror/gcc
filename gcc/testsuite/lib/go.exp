@@ -221,6 +221,6 @@ proc go_target_compile { source dest type options } {
     lappend options "compiler=$GOC_UNDER_TEST"
 
     set options [concat "$ALWAYS_GOCFLAGS" $options]
-    set options [dg-additional-files-options $options $source]
+    set options [dg-additional-files-options $options $source $dest $type]
     return [target_compile $source $dest $type $options]
 }

@@ -327,6 +327,6 @@ proc gdc_target_compile { source dest type options } {
     lappend options "compiler=$GDC_UNDER_TEST"
 
     set options [concat "$always_dflags" $options]
-    set options [dg-additional-files-options $options $source]
+    set options [dg-additional-files-options $options $source $dest $type]
     return [target_compile $source $dest $type $options]
 }
