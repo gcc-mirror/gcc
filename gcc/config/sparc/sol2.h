@@ -38,6 +38,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDMID
 
+/* Redue ggc-page.cc's chunk size to account for mmap red-zone pages.  */
+#define GGC_QUIRE_SIZE 510
+
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
    true if the symbol may be affected by dynamic relocations.
