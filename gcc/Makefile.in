@@ -1564,6 +1564,7 @@ OBJS = \
 	ipa-strub.o \
 	ipa.o \
 	ira.o \
+	pair-fusion.o \
 	ira-build.o \
 	ira-costs.o \
 	ira-conflicts.o \
