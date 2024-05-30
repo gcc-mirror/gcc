@@ -24,8 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/symbol.h"
 #include "analyzer/store.h"
 #include "analyzer/program-point.h"
+#include "text-art/widget.h"
 
 using namespace ana;
+using text_art::dump_widget_info;
 
 namespace ana {
 
@@ -99,10 +101,15 @@ public:
 	      pretty_printer *pp) const;
 
   virtual void dump_to_pp (pretty_printer *pp, bool simple) const = 0;
-  void dump (bool simple=true) const;
+  void dump () const;
+  void dump (bool simple) const;
   label_text get_desc (bool simple=true) const;
 
   json::value *to_json () const;
+
+  std::unique_ptr<text_art::widget>
+  make_dump_widget (const dump_widget_info &dwi,
+		    const char *prefix = nullptr) const;
 
   virtual const region_svalue *
   dyn_cast_region_svalue () const { return NULL; }
@@ -186,7 +193,15 @@ public:
   : symbol (c, id), m_type (type)
   {}
 
+  void print_svalue_node_label (pretty_printer *pp) const;
+
  private:
+  virtual void
+  print_dump_widget_label (pretty_printer *pp) const = 0;
+  virtual void
+  add_dump_widget_children (text_art::tree_widget &,
+			    const dump_widget_info &dwi) const = 0;
+
   tree m_type;
 };
 
@@ -237,6 +252,13 @@ public:
   dyn_cast_region_svalue () const final override { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
 			  const region_model *) const final override;
@@ -319,6 +341,13 @@ public:
   dyn_cast_constant_svalue () const final override { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
 			  const region_model *) const final override;
@@ -372,6 +401,13 @@ public:
   enum svalue_kind get_kind () const final override { return SK_UNKNOWN; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   const svalue *
@@ -445,6 +481,13 @@ public:
   dyn_cast_poisoned_svalue () const final override { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   const svalue *
@@ -555,6 +598,13 @@ public:
   dyn_cast_setjmp_svalue () const final override { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   int get_enode_index () const;
@@ -605,6 +655,13 @@ public:
   dyn_cast_initial_svalue () const final override { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
 			  const region_model *) const final override;
@@ -680,6 +737,13 @@ public:
   dyn_cast_unaryop_svalue () const final override { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
 			  const region_model *) const final override;
@@ -777,6 +841,13 @@ public:
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
 			  const region_model *) const final override;
@@ -858,6 +929,13 @@ public:
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
 			  const region_model *) const final override;
@@ -941,6 +1019,13 @@ public:
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   const svalue *get_outer_size () const { return m_outer_size; }
@@ -1030,6 +1115,13 @@ public:
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
 			  const region_model *) const final override;
@@ -1089,6 +1181,13 @@ public:
   dyn_cast_unmergeable_svalue () const final override { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
   bool implicitly_live_p (const svalue_set *,
 			  const region_model *) const final override;
@@ -1127,6 +1226,13 @@ public:
   enum svalue_kind get_kind () const final override { return SK_PLACEHOLDER; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   const char *get_name () const { return m_name; }
@@ -1223,6 +1329,13 @@ public:
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   const function_point &get_point () const { return m_point; }
@@ -1318,6 +1431,13 @@ public:
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   const binding_map &get_map () const { return m_map; }
@@ -1455,6 +1575,13 @@ public:
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   const gimple *get_stmt () const { return m_stmt; }
@@ -1580,6 +1707,13 @@ public:
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   const char *get_asm_string () const { return m_asm_string; }
@@ -1713,6 +1847,13 @@ public:
   }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const dump_widget_info &dwi) const final override;
+
   void accept (visitor *v) const final override;
 
   tree get_fndecl () const { return m_fndecl; }

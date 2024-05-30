@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/known-function-manager.h"
 #include "analyzer/region-model-manager.h"
 #include "analyzer/pending-diagnostic.h"
+#include "text-art/widget.h"
+#include "text-art/dump.h"
 
 using namespace ana;
 
@@ -177,6 +179,9 @@ public:
 
   json::object *to_json () const;
 
+  std::unique_ptr<text_art::widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi) const;
+
   bool can_merge_with_p (const region_to_value_map &other,
 			 region_to_value_map *out) const;
 
@@ -277,10 +282,14 @@ class region_model
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (FILE *fp, bool simple, bool multiline) const;
   void dump (bool simple) const;
+  void dump () const;
 
   void debug () const;
 
   json::object *to_json () const;
+
+  std::unique_ptr<text_art::widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi) const;
 
   void validate () const;
 

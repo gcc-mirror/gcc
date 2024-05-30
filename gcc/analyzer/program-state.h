@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_PROGRAM_STATE_H
 #define GCC_ANALYZER_PROGRAM_STATE_H
 
+#include "text-art/widget.h"
+
 namespace ana {
 
 /* Data shared by all program_state instances.  */
@@ -116,6 +118,10 @@ public:
   void dump (bool simple) const;
 
   json::object *to_json () const;
+
+  std::unique_ptr<text_art::widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi,
+		    const region_model *model) const;
 
   bool is_empty_p () const;
 
@@ -223,8 +229,12 @@ public:
   void dump_to_file (const extrinsic_state &ext_state, bool simple,
 		     bool multiline, FILE *outf) const;
   void dump (const extrinsic_state &ext_state, bool simple) const;
+  void dump () const;
 
   json::object *to_json (const extrinsic_state &ext_state) const;
+
+  std::unique_ptr<text_art::widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi) const;
 
   void push_frame (const extrinsic_state &ext_state, const function &fun);
   const function * get_current_function () const;

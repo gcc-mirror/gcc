@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "make-unique.h"
@@ -68,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "analyzer/known-function-manager.h"
 #include "analyzer/call-summary.h"
+#include "text-art/dump.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 
@@ -261,6 +263,26 @@ setjmp_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     pp_printf (pp, "SETJMP(EN: %i)", get_enode_index ());
   else
     pp_printf (pp, "setjmp_svalue(EN%i)", get_enode_index ());
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   setjmp_svalue.  */
+
+void
+setjmp_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "setjmp_svalue(EN: %i)", get_enode_index ());
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   setjmp_svalue.  */
+
+void
+setjmp_svalue::
+add_dump_widget_children (text_art::tree_widget &,
+			  const text_art::dump_widget_info &) const
+{
+  /* No children.  */
 }
 
 /* Get the index of the stored exploded_node.  */
@@ -5420,7 +5442,7 @@ exploded_graph::dump_exploded_nodes () const
 	  pretty_printer pp;
 	  enode->get_point ().print (&pp, format (true));
 	  fprintf (outf, "%s\n", pp_formatted_text (&pp));
-	  enode->get_state ().dump_to_file (m_ext_state, false, true, outf);
+	  text_art::dump_to_file (enode->get_state (), outf);
 	}
 
       fclose (outf);
@@ -5439,7 +5461,8 @@ exploded_graph::dump_exploded_nodes () const
 	    = xasprintf ("%s.en-%i.txt", dump_base_name, i);
 	  FILE *outf = fopen (filename, "w");
 	  if (!outf)
-	    error_at (UNKNOWN_LOCATION, "unable to open %qs for writing", filename);
+	    error_at (UNKNOWN_LOCATION, "unable to open %qs for writing",
+		      filename);
 	  free (filename);
 
 	  fprintf (outf, "EN %i:\n", enode->m_index);
@@ -5447,7 +5470,7 @@ exploded_graph::dump_exploded_nodes () const
 	  pretty_printer pp;
 	  enode->get_point ().print (&pp, format (true));
 	  fprintf (outf, "%s\n", pp_formatted_text (&pp));
-	  enode->get_state ().dump_to_file (m_ext_state, false, true, outf);
+	  text_art::dump_to_file (enode->get_state (), outf);
 
 	  fclose (outf);
 	}

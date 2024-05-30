@@ -1836,6 +1836,7 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	text-art/styled-string.o \
 	text-art/table.o \
 	text-art/theme.o \
+	text-art/tree-widget.o \
 	text-art/widget.o
 
 # Objects in libcommon-target.a, used by drivers and by the core

@@ -155,6 +155,15 @@ ascii_theme::get_cppchar (enum cell_kind kind) const
       return '+';
     case cell_kind::CFG_FROM_DOWN_TO_RIGHT:
       return '+';
+
+    case cell_kind::TREE_CHILD_NON_FINAL:
+      return '+';
+    case cell_kind::TREE_CHILD_FINAL:
+      return '`';
+    case cell_kind::TREE_X_CONNECTOR:
+      return '-';
+    case cell_kind::TREE_Y_CONNECTOR:
+      return '|';
     }
 }
 
@@ -240,5 +249,14 @@ unicode_theme::get_cppchar (enum cell_kind kind) const
       return 0x250c; /* "┌" U+250C: BOX DRAWINGS LIGHT DOWN AND RIGHT */
     case cell_kind::CFG_FROM_DOWN_TO_RIGHT:
       return 0x2514; /* "└": U+2514: BOX DRAWINGS LIGHT UP AND RIGHT  */
+
+    case cell_kind::TREE_CHILD_NON_FINAL:
+      return 0x251C; /* "├": U+251C: BOX DRAWINGS LIGHT VERTICAL AND RIGHT */
+    case cell_kind::TREE_CHILD_FINAL:
+      return 0x2570; /* "╰": U+2570 BOX DRAWINGS LIGHT ARC UP AND RIGHT.  */
+    case cell_kind::TREE_X_CONNECTOR:
+      return 0x2500; /* "─": U+2500: BOX DRAWINGS LIGHT HORIZONTAL */
+    case cell_kind::TREE_Y_CONNECTOR:
+      return 0x2502; /* "│": U+2502: BOX DRAWINGS LIGHT VERTICAL */
     }
 }

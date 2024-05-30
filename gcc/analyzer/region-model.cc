@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #define INCLUDE_MEMORY
 #define INCLUDE_ALGORITHM
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "make-unique.h"
@@ -80,6 +81,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/feasible-graph.h"
 #include "analyzer/record-layout.h"
 #include "diagnostic-format-sarif.h"
+#include "text-art/tree-widget.h"
 
 #if ENABLE_ANALYZER
 
@@ -254,6 +256,39 @@ region_to_value_map::to_json () const
     }
 
   return map_obj;
+}
+
+std::unique_ptr<text_art::widget>
+region_to_value_map::
+make_dump_widget (const text_art::dump_widget_info &dwi) const
+{
+  if (is_empty ())
+    return nullptr;
+
+  std::unique_ptr<text_art::tree_widget> w
+    (text_art::tree_widget::make (dwi, "Dynamic Extents"));
+
+  auto_vec<const region *> regs;
+  for (iterator iter = begin (); iter != end (); ++iter)
+    regs.safe_push ((*iter).first);
+  regs.qsort (region::cmp_ptr_ptr);
+
+  unsigned i;
+  const region *reg;
+  FOR_EACH_VEC_ELT (regs, i, reg)
+    {
+      pretty_printer the_pp;
+      pretty_printer * const pp = &the_pp;
+      pp_format_decoder (pp) = default_tree_printer;
+      const bool simple = true;
+
+      reg->dump_to_pp (pp, simple);
+      pp_string (pp, ": ");
+      const svalue *sval = *get (reg);
+      sval->dump_to_pp (pp, true);
+      w->add_child (text_art::tree_widget::make (dwi, pp));
+    }
+  return w;
 }
 
 /* Attempt to merge THIS with OTHER, writing the result
@@ -465,6 +500,14 @@ region_model::dump (bool simple) const
   dump (stderr, simple, true);
 }
 
+/* Dump a tree-like representation of this state to stderr.  */
+
+DEBUG_FUNCTION void
+region_model::dump () const
+{
+  text_art::dump (*this);
+}
+
 /* Dump a multiline representation of this model to stderr.  */
 
 DEBUG_FUNCTION void
@@ -487,6 +530,33 @@ region_model::to_json () const
     model_obj->set ("current_frame", m_current_frame->to_json ());
   model_obj->set ("dynamic_extents", m_dynamic_extents.to_json ());
   return model_obj;
+}
+
+std::unique_ptr<text_art::widget>
+region_model::make_dump_widget (const text_art::dump_widget_info &dwi) const
+{
+  using text_art::tree_widget;
+  std::unique_ptr<tree_widget> model_widget
+    (tree_widget::from_fmt (dwi, nullptr, "Region Model"));
+
+  if (m_current_frame)
+    {
+      pretty_printer the_pp;
+      pretty_printer * const pp = &the_pp;
+      pp_format_decoder (pp) = default_tree_printer;
+      pp_show_color (pp) = true;
+      const bool simple = true;
+
+      pp_string (pp, "Current Frame: ");
+      m_current_frame->dump_to_pp (pp, simple);
+      model_widget->add_child (tree_widget::make (dwi, pp));
+    }
+  model_widget->add_child
+    (m_store.make_dump_widget (dwi,
+			       m_mgr->get_store_manager ()));
+  model_widget->add_child (m_constraints->make_dump_widget (dwi));
+  model_widget->add_child (m_dynamic_extents.make_dump_widget (dwi));
+  return model_widget;
 }
 
 /* Assert that this object is valid.  */
@@ -7307,6 +7377,14 @@ test_dump ()
 		  "constraint_manager:\n"
 		  "  equiv classes:\n"
 		  "  constraints:\n");
+
+  text_art::ascii_theme theme;
+  pretty_printer pp;
+  dump_to_pp (model, &theme, &pp);
+  ASSERT_STREQ ("Region Model\n"
+		"`- Store\n"
+		"   `- m_called_unknown_fn: false\n",
+		pp_formatted_text (&pp));
 }
 
 /* Helper function for selftests.  Create a struct or union type named NAME,

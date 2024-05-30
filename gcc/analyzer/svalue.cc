@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -49,6 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/region-model.h"
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
+#include "make-unique.h"
+#include "text-art/dump.h"
 
 #if ENABLE_ANALYZER
 
@@ -59,6 +62,24 @@ static int cmp_csts_and_types (const_tree cst1, const_tree cst2);
 /* class svalue and its various subclasses.  */
 
 /* class svalue.  */
+
+/* Dump a tree-like representation of this svalue and its constituent symbols
+   to stderr, using global_dc's colorization and theming options.
+
+   For example:
+   . (gdb) call index_sval->dump()
+   . (27): ‘int’: initial_svalue
+   . ╰─ m_reg: (26): ‘int’: decl_region(‘x_10(D)’)
+   .    ╰─ parent: (9): frame_region(‘test_bitmask_2’, index: 0, depth: 1)
+   .       ╰─ parent: (1): stack region
+   .          ╰─ parent: (0): root region
+  */
+
+DEBUG_FUNCTION void
+svalue::dump () const
+{
+  text_art::dump (*this);
+}
 
 /* Dump a representation of this svalue to stderr.  */
 
@@ -201,6 +222,37 @@ svalue::maybe_print_for_user (pretty_printer *pp,
     }
 
   return false;
+}
+
+/* Use DWI to create a text_art::widget describing this svalue in
+   a tree-like form, using PREFIX as a prefix (e.g. for field names).
+   We do this via two vfuncs:
+   (a) print_dump_widget_label, to populate the text of a tree_widget, and
+   (b) add_dump_widget_children, to add children to the tree_widget.  */
+
+std::unique_ptr<text_art::widget>
+svalue::make_dump_widget (const text_art::dump_widget_info &dwi,
+			  const char *prefix) const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = true;
+
+  if (prefix)
+    pp_printf (&pp, "%s: ", prefix);
+
+  pp_printf (&pp, "(%i): ", get_id ());
+  if (get_type ())
+    pp_printf (&pp, "%qT: ", get_type ());
+
+  print_dump_widget_label (&pp);
+
+  std::unique_ptr<text_art::tree_widget> w
+    (text_art::tree_widget::make (dwi, &pp));
+
+  add_dump_widget_children (*w, dwi);
+
+  return w;
 }
 
 /* If this svalue is a constant_svalue, return the underlying tree constant.
@@ -842,6 +894,26 @@ region_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   region_svalue.  */
+
+void
+region_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "region_svalue: %qs", "&");
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   region_svalue.  */
+
+void
+region_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_reg->make_dump_widget (dwi));
+}
+
 /* Implementation of svalue::accept vfunc for region_svalue.  */
 
 void
@@ -940,6 +1012,26 @@ constant_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
       dump_tree (pp, m_cst_expr);
       pp_string (pp, ")");
     }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   constant_svalue.  */
+
+void
+constant_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "constant_svalue (%qE)", m_cst_expr);
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   constant_svalue.  */
+
+void
+constant_svalue::
+add_dump_widget_children (text_art::tree_widget &,
+			  const text_art::dump_widget_info &) const
+{
+  /* No children.  */
 }
 
 /* Implementation of svalue::accept vfunc for constant_svalue.  */
@@ -1085,6 +1177,26 @@ unknown_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   unknown_svalue.  */
+
+void
+unknown_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "unknown_svalue");
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   unknown_svalue.  */
+
+void
+unknown_svalue::
+add_dump_widget_children (text_art::tree_widget &,
+			  const text_art::dump_widget_info &) const
+{
+  /* No children.  */
+}
+
 /* Implementation of svalue::accept vfunc for unknown_svalue.  */
 
 void
@@ -1146,6 +1258,26 @@ poisoned_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   poisoned_svalue.  */
+
+void
+poisoned_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "poisoned_svalue(%s)", poison_kind_to_str (m_kind));
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   poisoned_svalue.  */
+
+void
+poisoned_svalue::
+add_dump_widget_children (text_art::tree_widget &,
+			  const text_art::dump_widget_info &) const
+{
+  /* No children.  */
+}
+
 /* Implementation of svalue::accept vfunc for poisoned_svalue.  */
 
 void
@@ -1193,6 +1325,26 @@ initial_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
       m_reg->dump_to_pp (pp, simple);
       pp_string (pp, ")");
     }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   initial_svalue.  */
+
+void
+initial_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "initial_svalue");
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   initial_svalue.  */
+
+void
+initial_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_reg->make_dump_widget (dwi, "m_reg"));
 }
 
 /* Implementation of svalue::accept vfunc for initial_svalue.  */
@@ -1285,6 +1437,28 @@ unaryop_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
       m_arg->dump_to_pp (pp, simple);
       pp_character (pp, ')');
     }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   unaryop_svalue.  */
+
+void
+unaryop_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp,
+	     "unaryop_svalue(%s)",
+	     get_tree_code_name (m_op));
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   unaryop_svalue.  */
+
+void
+unaryop_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_arg->make_dump_widget (dwi));
 }
 
 /* Implementation of svalue::accept vfunc for unaryop_svalue.  */
@@ -1389,6 +1563,30 @@ binop_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   binop_svalue.  */
+
+void
+binop_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp,
+	     "binop_svalue(%s: %qs)",
+	     get_tree_code_name (m_op),
+	     op_symbol_code (m_op));
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   binop_svalue.  */
+
+void
+binop_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_arg0->make_dump_widget (dwi));
+  w.add_child (m_arg1->make_dump_widget (dwi));
+}
+
 /* Implementation of svalue::accept vfunc for binop_svalue.  */
 
 void
@@ -1447,6 +1645,27 @@ sub_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
       m_subregion->dump_to_pp (pp, simple);
       pp_character (pp, ')');
     }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   sub_svalue.  */
+
+void
+sub_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "sub_svalue");
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   sub_svalue.  */
+
+void
+sub_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_parent_svalue->make_dump_widget (dwi, "m_parent_svalue"));
+  w.add_child (m_subregion->make_dump_widget (dwi, "m_subregion"));
 }
 
 /* Implementation of svalue::accept vfunc for sub_svalue.  */
@@ -1517,6 +1736,27 @@ repeated_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
       m_inner_svalue->dump_to_pp (pp, simple);
       pp_character (pp, ')');
     }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   repeated_svalue.  */
+
+void
+repeated_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "repeated_svalue");
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   repeated_svalue.  */
+
+void
+repeated_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_outer_size->make_dump_widget (dwi, "m_outer_size"));
+  w.add_child (m_inner_svalue->make_dump_widget (dwi, "m_inner_svalue"));
 }
 
 /* Implementation of svalue::accept vfunc for repeated_svalue.  */
@@ -1644,6 +1884,27 @@ bits_within_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   bits_within_svalue.  */
+
+void
+bits_within_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "bits_within_svalue: ");
+  m_bits.dump_to_pp (pp);
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   bits_within_svalue.  */
+
+void
+bits_within_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_inner_svalue->make_dump_widget (dwi, "m_inner_svalue"));
+}
+
 /* Implementation of svalue::maybe_fold_bits_within vfunc
    for bits_within_svalue.  */
 
@@ -1710,6 +1971,28 @@ widening_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
       m_iter_sval->dump_to_pp (pp, simple);
       pp_character (pp, ')');
     }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   widening_svalue.  */
+
+void
+widening_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "widening_svalue at ");
+  m_point.print (pp, format (false));
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   widening_svalue.  */
+
+void
+widening_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_base_sval->make_dump_widget (dwi, "m_base_sval"));
+  w.add_child (m_iter_sval->make_dump_widget (dwi, "m_iter_sval"));
 }
 
 /* Implementation of svalue::accept vfunc for widening_svalue.  */
@@ -1850,6 +2133,26 @@ placeholder_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     pp_printf (pp, "placeholder_svalue (%qs)", m_name);
 }
 
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   placeholder_svalue.  */
+
+void
+placeholder_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "placeholder_svalue: %qs", m_name);
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   placeholder_svalue.  */
+
+void
+placeholder_svalue::
+add_dump_widget_children (text_art::tree_widget &,
+			  const text_art::dump_widget_info &) const
+{
+  /* No children.  */
+}
+
 /* Implementation of svalue::accept vfunc for placeholder_svalue.  */
 
 void
@@ -1877,6 +2180,26 @@ unmergeable_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
       m_arg->dump_to_pp (pp, simple);
       pp_character (pp, ')');
     }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   unmergeable_svalue.  */
+
+void
+unmergeable_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "unmergeable_svalue");
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   unmergeable_svalue.  */
+
+void
+unmergeable_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_arg->make_dump_widget (dwi));
 }
 
 /* Implementation of svalue::accept vfunc for unmergeable_svalue.  */
@@ -1948,6 +2271,26 @@ compound_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
       m_map.dump_to_pp (pp, simple, false);
       pp_string (pp, "})");
     }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   compound_svalue.  */
+
+void
+compound_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "compound_svalue");
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   compound_svalue.  */
+
+void
+compound_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  m_map.add_to_tree_widget (w, dwi);
 }
 
 /* Implementation of svalue::accept vfunc for compound_svalue.  */
@@ -2081,6 +2424,30 @@ conjured_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     }
 }
 
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   conjured_svalue.  */
+
+void
+conjured_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "conjured_svalue (");
+  pp_gimple_stmt_1 (pp, m_stmt, 0, (dump_flags_t)0);
+  if (m_idx != 0)
+    pp_printf (pp, ", %i", m_idx);
+  pp_character (pp, ')');
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   conjured_svalue.  */
+
+void
+conjured_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  w.add_child (m_id_reg->make_dump_widget (dwi));
+}
+
 /* Implementation of svalue::accept vfunc for conjured_svalue.  */
 
 void
@@ -2133,6 +2500,34 @@ asm_output_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 	  dump_input (pp, 0, m_input_arr[i], simple);
 	}
       pp_string (pp, "})");
+    }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   asm_output_svalue.  */
+
+void
+asm_output_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "asm_output_svalue(%qs, %%%i)",
+	     get_asm_string (),
+	     get_output_idx ());
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   asm_output_svalue.  */
+
+void
+asm_output_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  for (unsigned i = 0; i < m_num_inputs; i++)
+    {
+      pretty_printer pp;
+      pp_printf (&pp, "arg %i", i);
+      w.add_child (m_input_arr[i]->make_dump_widget (dwi,
+						     pp_formatted_text (&pp)));
     }
 }
 
@@ -2195,6 +2590,32 @@ const_fn_result_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
 	  dump_input (pp, i, m_input_arr[i], simple);
 	}
       pp_string (pp, "})");
+    }
+}
+
+/* Implementation of svalue::print_dump_widget_label vfunc for
+   const_fn_result_svalue.  */
+
+void
+const_fn_result_svalue::print_dump_widget_label (pretty_printer *pp) const
+{
+  pp_printf (pp, "const_fn_result_svalue: %qD", m_fndecl);
+}
+
+/* Implementation of svalue::add_dump_widget_children vfunc for
+   const_fn_result_svalue.  */
+
+void
+const_fn_result_svalue::
+add_dump_widget_children (text_art::tree_widget &w,
+			  const text_art::dump_widget_info &dwi) const
+{
+  for (unsigned i = 0; i < m_num_inputs; i++)
+    {
+      pretty_printer pp;
+      pp_printf (&pp, "arg %i", i);
+      w.add_child (m_input_arr[i]->make_dump_widget (dwi,
+						     pp_formatted_text (&pp)));
     }
 }
 

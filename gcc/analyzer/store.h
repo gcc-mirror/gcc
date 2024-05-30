@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_STORE_H
 #define GCC_ANALYZER_STORE_H
 
+#include "text-art/tree-widget.h"
+
 /* Implementation of the region-based ternary model described in:
      "A Memory Model for Static Analysis of C Programs"
       (Zhongxing Xu, Ted Kremenek, and Jian Zhang)
@@ -546,6 +548,9 @@ public:
 
   json::object *to_json () const;
 
+  void add_to_tree_widget (text_art::tree_widget &parent_widget,
+			   const text_art::dump_widget_info &dwi) const;
+
   bool apply_ctor_to_region (const region *parent_reg, tree ctor,
 			     region_model_manager *mgr);
 
@@ -611,6 +616,10 @@ public:
   void validate () const;
 
   json::object *to_json () const;
+
+  std::unique_ptr<text_art::widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi,
+		    store_manager *mgr) const;
 
   void bind (store_manager *mgr, const region *, const svalue *);
 
@@ -749,6 +758,10 @@ public:
   void validate () const;
 
   json::object *to_json () const;
+
+  std::unique_ptr<text_art::widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi,
+		    store_manager *mgr) const;
 
   const svalue *get_any_binding (store_manager *mgr, const region *reg) const;
 

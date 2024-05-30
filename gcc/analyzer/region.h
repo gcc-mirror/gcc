@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_REGION_H
 
 #include "analyzer/symbol.h"
+#include "text-art/widget.h"
 
 namespace ana {
 
@@ -173,11 +174,17 @@ public:
 
   virtual void dump_to_pp (pretty_printer *pp, bool simple) const = 0;
   void dump (bool simple) const;
+  void dump () const;
 
   json::value *to_json () const;
 
+
   bool maybe_print_for_user (pretty_printer *pp,
 			     const region_model &model) const;
+
+  std::unique_ptr<text_art::widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi,
+		    const char *prefix = nullptr) const;
 
   bool non_null_p () const;
 
@@ -256,6 +263,12 @@ public:
  private:
   region_offset calc_offset (region_model_manager *mgr) const;
   const svalue *calc_initial_value_at_main (region_model_manager *mgr) const;
+
+  virtual void
+  print_dump_widget_label (pretty_printer *pp) const = 0;
+  virtual void
+  add_dump_widget_children (text_art::tree_widget &,
+			    const text_art::dump_widget_info &dwi) const;
 
   const region *m_parent;
   tree m_type;
@@ -357,6 +370,8 @@ public:
   void accept (visitor *v) const final override;
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
+  void print_dump_widget_label (pretty_printer *pp) const final override;
+
   /* Accessors.  */
   const frame_region *get_calling_frame () const { return m_calling_frame; }
   const function &get_function () const { return m_fun; }
@@ -416,6 +431,7 @@ class globals_region : public space_region
   /* region vfuncs.  */
   enum region_kind get_kind () const final override { return RK_GLOBALS; }
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 };
 
 } // namespace ana
@@ -442,6 +458,7 @@ public:
 
   /* region vfuncs.  */
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
   enum region_kind get_kind () const final override { return RK_CODE; }
 };
 
@@ -472,6 +489,8 @@ public:
 
   /* region vfuncs.  */
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
+
   enum region_kind get_kind () const final override { return RK_FUNCTION; }
   const function_region *
   dyn_cast_function_region () const final override{ return this; }
@@ -508,6 +527,7 @@ public:
 
   /* region vfuncs.  */
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
   enum region_kind get_kind () const final override { return RK_LABEL; }
 
   tree get_label () const { return m_label; }
@@ -539,6 +559,7 @@ public:
   {}
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 
   enum region_kind get_kind () const final override { return RK_STACK; }
 };
@@ -567,6 +588,7 @@ public:
 
   enum region_kind get_kind () const final override { return RK_HEAP; }
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 };
 
 } // namespace ana
@@ -593,6 +615,7 @@ public:
 
   enum region_kind get_kind () const final override { return RK_THREAD_LOCAL; }
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 };
 
 } // namespace ana
@@ -618,6 +641,7 @@ public:
 
   enum region_kind get_kind () const final override { return RK_ROOT; }
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 };
 
 } // namespace ana
@@ -680,6 +704,11 @@ public:
   enum region_kind get_kind () const final override { return RK_SYMBOLIC; }
   void accept (visitor *v) const final override;
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &w,
+			    const text_art::dump_widget_info &dwi)
+    const final override;
 
   const svalue *get_pointer () const { return m_sval_ptr; }
 
@@ -723,6 +752,9 @@ public:
   dyn_cast_decl_region () const final override { return this; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
 
   bool tracked_p () const final override { return m_tracked; }
 
@@ -808,6 +840,8 @@ public:
   enum region_kind get_kind () const final override { return RK_FIELD; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
+
   const field_region *
   dyn_cast_field_region () const final override { return this; }
 
@@ -896,6 +930,13 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
 
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &,
+			    const text_art::dump_widget_info &dwi)
+    const final override;
+
   const svalue *get_index () const { return m_index; }
 
   virtual bool
@@ -982,6 +1023,13 @@ public:
   void accept (visitor *v) const final override;
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &,
+			    const text_art::dump_widget_info &dwi)
+    const final override;
 
   const svalue *get_byte_offset () const { return m_byte_offset; }
   const svalue *get_bit_offset (region_model_manager *mgr) const;
@@ -1073,6 +1121,12 @@ public:
   void accept (visitor *v) const final override;
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &,
+			    const text_art::dump_widget_info &dwi)
+    const final override;
 
   bool get_byte_size (byte_size_t *out) const final override;
   bool get_bit_size (bit_size_t *out) const final override;
@@ -1162,6 +1216,12 @@ public:
   dyn_cast_cast_region () const final override { return this; }
   void accept (visitor *v) const final override;
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void
+  print_dump_widget_label (pretty_printer *pp) const final override;
+  void
+  add_dump_widget_children (text_art::tree_widget &,
+			    const text_art::dump_widget_info &dwi)
+    const final override;
 
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
 
@@ -1203,6 +1263,7 @@ public:
   get_kind () const final override { return RK_HEAP_ALLOCATED; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 };
 
 /* An untyped region dynamically allocated on the stack via "alloca".  */
@@ -1217,6 +1278,7 @@ public:
   enum region_kind get_kind () const final override { return RK_ALLOCA; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 };
 
 /* A region for a STRING_CST.  */
@@ -1235,6 +1297,7 @@ public:
   enum region_kind get_kind () const final override { return RK_STRING; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 
   /* We assume string literals are immutable, so we don't track them in
      the store.  */
@@ -1314,6 +1377,7 @@ public:
   enum region_kind get_kind () const final override { return RK_BIT_RANGE; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 
   const bit_range &get_bits () const { return m_bits; }
 
@@ -1402,6 +1466,7 @@ public:
   enum region_kind get_kind () const final override { return RK_VAR_ARG; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 
   const frame_region *get_frame_region () const;
   unsigned get_index () const { return m_idx; }
@@ -1440,6 +1505,7 @@ public:
   enum region_kind get_kind () const final override { return RK_ERRNO; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 };
 
 } // namespace ana
@@ -1473,6 +1539,7 @@ public:
   enum region_kind get_kind () const final override { return RK_PRIVATE; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 
 private:
   const char *m_desc;
@@ -1502,6 +1569,7 @@ public:
   enum region_kind get_kind () const final override { return RK_UNKNOWN; }
 
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
+  void print_dump_widget_label (pretty_printer *pp) const final override;
 };
 
 } // namespace ana

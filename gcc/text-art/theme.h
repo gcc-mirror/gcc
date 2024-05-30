@@ -81,7 +81,13 @@ class theme
     CFG_FROM_DOWN_TO_LEFT,  /* e.g. "+".  */
     CFG_LEFT,               /* e.g. "-".  */
     CFG_FROM_LEFT_TO_DOWN,  /* e.g. "+".  */
-    CFG_FROM_DOWN_TO_RIGHT  /* e.g. "+".  */
+    CFG_FROM_DOWN_TO_RIGHT, /* e.g. "+".  */
+
+    /* Tree stuff.  */
+    TREE_CHILD_NON_FINAL, /* e.g. "├" or "+".  */
+    TREE_CHILD_FINAL,     /* e.g. "╰" or "`".  */
+    TREE_X_CONNECTOR,     /* e.g. "─" or "-".  */
+    TREE_Y_CONNECTOR      /* e.g. "|" or "|".  */
   };
 
   virtual ~theme () = default;
