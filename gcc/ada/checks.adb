@@ -7248,7 +7248,8 @@ package body Checks is
       Loc   : constant Source_Ptr := Sloc (N);
       A     : constant Node_Id    := Prefix (N);
       A_Ent : constant Entity_Id  := Entity_Of_Prefix;
-      Sub   : Node_Id;
+
+      Expr : Node_Id;
 
    --  Start of processing for Generate_Index_Checks
 
@@ -7294,13 +7295,13 @@ package body Checks is
       --  us to omit the check have already been taken into account in the
       --  setting of the Do_Range_Check flag earlier on.
 
-      Sub := First (Expressions (N));
+      Expr := First (Expressions (N));
 
       --  Handle string literals
 
       if Ekind (Etype (A)) = E_String_Literal_Subtype then
-         if Do_Range_Check (Sub) then
-            Set_Do_Range_Check (Sub, False);
+         if Do_Range_Check (Expr) then
+            Set_Do_Range_Check (Expr, False);
 
             --  For string literals we obtain the bounds of the string from the
             --  associated subtype.
@@ -7310,8 +7311,8 @@ package body Checks is
                 Condition =>
                    Make_Not_In (Loc,
                      Left_Opnd  =>
-                       Convert_To (Base_Type (Etype (Sub)),
-                         Duplicate_Subexpr_Move_Checks (Sub)),
+                       Convert_To (Base_Type (Etype (Expr)),
+                         Duplicate_Subexpr_Move_Checks (Expr)),
                      Right_Opnd =>
                        Make_Attribute_Reference (Loc,
                          Prefix         => New_Occurrence_Of (Etype (A), Loc),
@@ -7330,11 +7331,19 @@ package body Checks is
             Ind     : Pos;
             Num     : List_Id;
             Range_N : Node_Id;
+            Stmt    : Node_Id;
+            Sub     : Node_Id;
 
          begin
             A_Idx := First_Index (Etype (A));
             Ind   := 1;
-            while Present (Sub) loop
+            while Present (Expr) loop
+               if Nkind (Expr) = N_Expression_With_Actions then
+                  Sub := Expression (Expr);
+               else
+                  Sub := Expr;
+               end if;
+
                if Do_Range_Check (Sub) then
                   Set_Do_Range_Check (Sub, False);
 
@@ -7396,7 +7405,7 @@ package body Checks is
                          Expressions    => Num);
                   end if;
 
-                  Insert_Action (N,
+                  Stmt :=
                     Make_Raise_Constraint_Error (Loc,
                       Condition =>
                          Make_Not_In (Loc,
@@ -7404,14 +7413,21 @@ package body Checks is
                              Convert_To (Base_Type (Etype (Sub)),
                                Duplicate_Subexpr_Move_Checks (Sub)),
                            Right_Opnd => Range_N),
-                      Reason => CE_Index_Check_Failed));
+                      Reason => CE_Index_Check_Failed);
+
+                  if Nkind (Expr) = N_Expression_With_Actions then
+                     Append_To (Actions (Expr), Stmt);
+                     Analyze (Stmt);
+                  else
+                     Insert_Action (Expr, Stmt);
+                  end if;
 
                   Checks_Generated.Elements (Ind) := True;
                end if;
 
                Next_Index (A_Idx);
                Ind := Ind + 1;
-               Next (Sub);
+               Next (Expr);
             end loop;
          end;
       end if;
