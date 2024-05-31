@@ -12304,7 +12304,7 @@ proc check_effective_target_aarch64_tiny { } {
 
 foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod" "sve"
 			  "i8mm" "f32mm" "f64mm" "bf16" "sb" "sve2" "ls64"
-			  "sme" "sme-i16i64" "sme2" "sve-b16b16"
+			  "lut" "sme" "sme-i16i64" "sme2" "sve-b16b16"
 			  "sme-b16b16" "sme-f16f16" "sme2p1" "fp8" "fp8fma"
 			  "ssve-fp8fma" "fp8dot2" "ssve-fp8dot2" "fp8dot4"
 			  "ssve-fp8dot4"} {

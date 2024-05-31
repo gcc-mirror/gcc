@@ -903,6 +903,53 @@ struct load_ext_gather_base : public overloaded_base<1>
   }
 };
 
+
+/* sv<v0>_t svlut[_<t0>_g](sv<t0>x<g>_t, svuint8_t, uint64_t)
+
+   where the final argument is a constant index, the instruction divides
+   the vector argument in BITS-bit quantities.  */
+template<unsigned int BITS>
+struct luti_base : public overloaded_base<0>
+{
+  bool explicit_group_suffix_p () const override { return false; }
+
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    /* Format: return type, table vector, indices vector, immediate value.  */
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "v0,t0,vu8,su64", group, MODE_none);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    auto max_range = c.type_suffix (0).element_bits / BITS - 1;
+    return c.require_immediate_range (2, 0, max_range);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    sve_type type;
+    if (!r.check_num_arguments (3)
+	|| !(type = r.infer_sve_type (0))
+	|| !r.require_vector_type (1, VECTOR_TYPE_svuint8_t)
+	|| !r.require_scalar_type (2, "uint64_t"))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+
+/* Specializations for 2-bit and 4-bit indices.  */
+using luti2_def = luti_base<2>;
+SHAPE (luti2)
+
+using luti4_def = luti_base<4>;
+SHAPE (luti4)
+
+
 /* sv<t0>x<g>_t svfoo_t0_g(uint64_t, svuint8_t, uint64_t)
 
    where the first argument is the ZT register number (currently always 0)

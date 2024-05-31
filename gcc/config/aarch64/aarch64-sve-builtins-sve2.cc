@@ -914,6 +914,21 @@ public:
   unsigned int m_base;
 };
 
+class svluti_lane_impl : public function_base
+{
+public:
+  CONSTEXPR svluti_lane_impl (unsigned int bits) : m_bits (bits)
+  {}
+
+  rtx expand (function_expander &e) const override
+  {
+    auto mode = e.tuple_mode (0);
+    return e.use_exact_insn (code_for_aarch64_sve_luti (m_bits, mode));
+  }
+
+  unsigned int m_bits;
+};
+
 } /* end anonymous namespace */
 
 namespace aarch64_sve {
@@ -1205,5 +1220,7 @@ FUNCTION (svzip, multireg_permute, (UNSPEC_ZIP))
 FUNCTION (svzipq, multireg_permute, (UNSPEC_ZIPQ))
 FUNCTION (svzipq1, svzipq_impl, (0))
 FUNCTION (svzipq2, svzipq_impl, (1))
+FUNCTION (svluti2_lane, svluti_lane_impl, (2))
+FUNCTION (svluti4_lane, svluti_lane_impl, (4))
 
 } /* end namespace aarch64_sve */

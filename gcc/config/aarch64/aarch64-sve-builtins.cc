@@ -283,7 +283,11 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_bhs_integer(S, D) \
   TYPES_bhs_signed (S, D), TYPES_bhs_unsigned (S, D)
 
-#define TYPES_bhs_data(S, D) \
+#define TYPES_bh_data(S, D)			\
+  TYPES_b_data (S, D), \
+  TYPES_h_data (S, D)
+
+#define TYPES_bhs_data(S, D)			\
   TYPES_b_data (S, D), \
   TYPES_h_data (S, D), \
   TYPES_s_data (S, D)
@@ -782,6 +786,7 @@ DEF_SVE_TYPES_ARRAY (bs_unsigned);
 DEF_SVE_TYPES_ARRAY (bhs_signed);
 DEF_SVE_TYPES_ARRAY (bhs_unsigned);
 DEF_SVE_TYPES_ARRAY (bhs_integer);
+DEF_SVE_TYPES_ARRAY (bh_data);
 DEF_SVE_TYPES_ARRAY (bhs_data);
 DEF_SVE_TYPES_ARRAY (bhs_widen);
 DEF_SVE_TYPES_ARRAY (c);
@@ -789,6 +794,7 @@ DEF_SVE_TYPES_ARRAY (h_bfloat);
 DEF_SVE_TYPES_ARRAY (h_float);
 DEF_SVE_TYPES_ARRAY (h_float_mf8);
 DEF_SVE_TYPES_ARRAY (h_integer);
+DEF_SVE_TYPES_ARRAY (h_data);
 DEF_SVE_TYPES_ARRAY (hs_signed);
 DEF_SVE_TYPES_ARRAY (hs_integer);
 DEF_SVE_TYPES_ARRAY (hs_float);
