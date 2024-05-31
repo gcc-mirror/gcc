@@ -94,14 +94,14 @@ format_args_maker (AST::FormatArgs::Newline nl)
 
 enum class isGlobalAsm
 {
-  Yes,
-  No,
+  Global,
+  Inline,
 };
 
 AST::MacroTranscriberFunc
 inline_asm_maker (isGlobalAsm is_global_asm)
 {
-  bool global_asm = is_global_asm == isGlobalAsm::Yes ? true : false;
+  bool global_asm = is_global_asm == isGlobalAsm::Global ? true : false;
 
   return [global_asm] (location_t loc, AST::MacroInvocData &invoc) {
     return MacroBuiltin::asm_handler (loc, invoc, global_asm);
@@ -124,8 +124,8 @@ std::unordered_map<std::string, AST::MacroTranscriberFunc>
     {"include", MacroBuiltin::include_handler},
     {"format_args", format_args_maker (AST::FormatArgs::Newline::No)},
     {"format_args_nl", format_args_maker (AST::FormatArgs::Newline::Yes)},
-    {"asm", inline_asm_maker (isGlobalAsm::No)},
-    {"global_asm", inline_asm_maker (isGlobalAsm::Yes)},
+    {"asm", inline_asm_maker (isGlobalAsm::Inline)},
+    {"global_asm", inline_asm_maker (isGlobalAsm::Global)},
     /* Unimplemented macro builtins */
     {"option_env", MacroBuiltin::sorry},
     {"concat_idents", MacroBuiltin::sorry},
