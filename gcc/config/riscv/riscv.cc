@@ -4641,9 +4641,6 @@ riscv_noce_conversion_profitable_p (rtx_insn *seq,
 {
   struct noce_if_info riscv_if_info = *if_info;
 
-  riscv_if_info.original_cost -= COSTS_N_INSNS (2);
-  riscv_if_info.original_cost += insn_cost (if_info->jump, if_info->speed_p);
-
   /* Hack alert!  When `noce_try_store_flag_mask' uses `cstore<mode>4'
      to emit a conditional set operation on DImode output it comes up
      with a sequence such as:

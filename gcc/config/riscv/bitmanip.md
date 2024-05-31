@@ -553,6 +553,19 @@
   "<bitmanip_insn>\t%0,%1,%z2"
   [(set_attr "type" "<bitmanip_insn>")])
 
+;; Provide a minmax pattern for ifcvt to match.
+(define_insn "*<bitmanip_minmax_cmp_insn>_cmp_<mode>3"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(if_then_else:X
+	    (bitmanip_minmax_cmp_op
+		(match_operand:X 1 "register_operand" "r")
+		(match_operand:X 2 "register_operand" "r"))
+	    (match_dup 1)
+	    (match_dup 2)))]
+  "TARGET_ZBB"
+  "<bitmanip_minmax_cmp_insn>\t%0,%1,%z2"
+  [(set_attr "type" "<bitmanip_minmax_cmp_insn>")])
+
 ;; Optimize the common case of a SImode min/max against a constant
 ;; that is safe both for sign- and zero-extension.
 (define_split

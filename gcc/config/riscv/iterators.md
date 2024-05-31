@@ -264,6 +264,14 @@
 
 (define_code_iterator bitmanip_minmax [smin umin smax umax])
 
+(define_code_iterator bitmanip_minmax_cmp_op [lt ltu le leu ge geu gt gtu])
+
+; Map a comparison operator to a min or max.
+(define_code_attr bitmanip_minmax_cmp_insn [(lt "min") (ltu "minu")
+					    (le "min") (leu "minu")
+					    (ge "max") (geu "maxu")
+					    (gt "max") (gtu "maxu")])
+
 (define_code_iterator clz_ctz_pcnt [clz ctz popcount])
 
 (define_code_iterator bitmanip_rotate [rotate rotatert])
