@@ -14,13 +14,13 @@ public:
   bool allow_templates;
   bool is_explicit;
   bool consumed_comma_without_formatted_string;
-  AST::InlineAsm &inlineAsm;
-  InlineAsmContext (AST::InlineAsm &inlineAsm)
+  AST::InlineAsm &inline_asm;
+  InlineAsmContext (AST::InlineAsm &inline_asm)
     : allow_templates (true), is_explicit (false),
-      consumed_comma_without_formatted_string (false), inlineAsm (inlineAsm)
+      consumed_comma_without_formatted_string (false), inline_asm (inline_asm)
   {}
 
-  bool is_global_asm () { return inlineAsm.is_global_asm; }
+  bool is_global_asm () { return inline_asm.is_global_asm; }
 
   bool allows_templates () { return allow_templates; }
 
@@ -31,41 +31,41 @@ public:
 };
 
 int
-parse_asm_arg (Parser<MacroInvocLexer> &p, TokenId last_token_id,
-	       InlineAsmContext &inlineAsmCtx);
+parse_asm_arg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+	       InlineAsmContext &inline_asm_ctx);
 
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	   bool is_global_asm);
 
 bool
-check_identifier (Parser<MacroInvocLexer> &p, std::string ident);
+check_identifier (Parser<MacroInvocLexer> &parser, std::string ident);
 
 void
-check_and_set (Parser<MacroInvocLexer> &p, InlineAsmContext &inlineAsmCtx,
-	       AST::InlineAsmOption option);
+check_and_set (Parser<MacroInvocLexer> &parser,
+	       InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option);
 // From rustc
 int
 parse_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	       InlineAsmContext &inlineAsmCtx);
+	       InlineAsmContext &inline_asm_ctx);
 
 // From rustc
 tl::optional<AST::InlineAsmOperand>
 parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-		   InlineAsmContext &inlineAsmCtx);
+		   InlineAsmContext &inline_asm_ctx);
 
 // From rustc
 int
 parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	       InlineAsmContext &inlineAsmCtx);
+	       InlineAsmContext &inline_asm_ctx);
 
 // From rustc
 tl::optional<AST::InlineAsmRegOrRegClass>
 parse_reg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	   InlineAsmContext &inlineAsmCtx);
+	   InlineAsmContext &inline_asm_ctx);
 
 int
 parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-		   InlineAsmContext &inlineAsmCtx);
+		   InlineAsmContext &inline_asm_ctx);
 
 } // namespace Rust

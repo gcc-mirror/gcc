@@ -6,7 +6,7 @@
 #include "rust-path.h"
 #include "rust-macro.h"
 #include "rust-operators.h"
-#include <memory>
+#include "rust-system.h"
 
 namespace Rust {
 namespace AST {
@@ -4723,22 +4723,20 @@ enum class InlineAsmOption
 struct AnonConst
 {
   NodeId id;
-  std::unique_ptr<Expr> value;
+  std::unique_ptr<Expr> expr;
   AnonConst () {}
   AnonConst (const AnonConst &other)
   {
     id = other.id;
-    value = other.value == nullptr
-	      ? nullptr
-	      : std::unique_ptr<Expr> (other.value->clone_expr ());
+    if (other.expr)
+      expr = other.expr->clone_expr ();
   }
 
   AnonConst operator= (const AnonConst &other)
   {
     id = other.id;
-    value = other.value == nullptr
-	      ? nullptr
-	      : std::unique_ptr<Expr> (other.value->clone_expr ());
+    if (other.expr)
+      expr = other.expr->clone_expr ();
     return *this;
   }
 };
@@ -4763,7 +4761,7 @@ struct InlineAsmRegOrRegClass
 
   Type type;
   struct Reg reg;
-  struct RegClass regClass;
+  struct RegClass reg_class;
 
   Identifier name;
   location_t locus;
@@ -4790,17 +4788,15 @@ struct InlineAsmOperand
     In (const struct In &other)
     {
       reg = other.reg;
-      expr = other.expr == nullptr
-	       ? nullptr
-	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+      if (other.expr)
+	expr = other.expr->clone_expr ();
     }
 
     In operator= (const struct In &other)
     {
       reg = other.reg;
-      expr = other.expr == nullptr
-	       ? nullptr
-	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+      if (other.expr)
+	expr = other.expr->clone_expr ();
 
       return *this;
     }
@@ -4817,18 +4813,16 @@ struct InlineAsmOperand
     {
       reg = other.reg;
       late = other.late;
-      expr = other.expr == nullptr
-	       ? nullptr
-	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+      if (other.expr)
+	expr = other.expr->clone_expr ();
     }
 
     Out operator= (const struct Out &other)
     {
       reg = other.reg;
       late = other.late;
-      expr = other.expr == nullptr
-	       ? nullptr
-	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+      if (other.expr)
+	expr = other.expr->clone_expr ();
       return *this;
     }
   };
@@ -4844,18 +4838,17 @@ struct InlineAsmOperand
     {
       reg = other.reg;
       late = other.late;
-      expr = other.expr == nullptr
-	       ? nullptr
-	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+      if (other.expr)
+	expr = other.expr->clone_expr ();
     }
 
     InOut operator= (const struct InOut &other)
     {
       reg = other.reg;
       late = other.late;
-      expr = other.expr == nullptr
-	       ? nullptr
-	       : std::unique_ptr<Expr> (other.expr->clone_expr ());
+      if (other.expr)
+	expr = other.expr->clone_expr ();
+
       return *this;
     }
   };
@@ -4872,24 +4865,23 @@ struct InlineAsmOperand
     {
       reg = other.reg;
       late = other.late;
-      in_expr = other.in_expr == nullptr
-		  ? nullptr
-		  : std::unique_ptr<Expr> (other.in_expr->clone_expr ());
-      out_expr = other.out_expr == nullptr
-		   ? nullptr
-		   : std::unique_ptr<Expr> (other.out_expr->clone_expr ());
+      if (other.in_expr)
+	in_expr = other.in_expr->clone_expr ();
+
+      if (other.out_expr)
+	out_expr = other.out_expr->clone_expr ();
     }
 
     SplitInOut operator= (const struct SplitInOut &other)
     {
       reg = other.reg;
       late = other.late;
-      in_expr = other.in_expr == nullptr
-		  ? nullptr
-		  : std::unique_ptr<Expr> (other.in_expr->clone_expr ());
-      out_expr = other.out_expr == nullptr
-		   ? nullptr
-		   : std::unique_ptr<Expr> (other.out_expr->clone_expr ());
+
+      if (other.in_expr)
+	in_expr = other.in_expr->clone_expr ();
+
+      if (other.out_expr)
+	out_expr = other.out_expr->clone_expr ();
 
       return *this;
     }
@@ -4902,33 +4894,35 @@ struct InlineAsmOperand
 
   struct Sym
   {
-    std::unique_ptr<Expr> sym;
+    std::unique_ptr<Expr> expr;
 
     Sym () {}
     Sym (const struct Sym &other)
     {
-      sym = std::unique_ptr<Expr> (other.sym->clone_expr ());
+      if (other.expr)
+	expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
     }
 
     Sym operator= (const struct Sym &other)
     {
-      sym = std::unique_ptr<Expr> (other.sym->clone_expr ());
+      if (other.expr)
+	expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
       return *this;
     }
   };
-  RegisterType registerType;
+  RegisterType register_type;
 
   struct In in;
   struct Out out;
-  struct InOut inOut;
-  struct SplitInOut splitInOut;
+  struct InOut in_out;
+  struct SplitInOut split_in_out;
   struct Const cnst;
   struct Sym sym;
 
   InlineAsmOperand () {}
   InlineAsmOperand (const InlineAsmOperand &other)
-    : in (other.in), out (other.out), inOut (other.inOut),
-      splitInOut (other.splitInOut), cnst (other.cnst), sym (other.sym)
+    : in (other.in), out (other.out), in_out (other.in_out),
+      split_in_out (other.split_in_out), cnst (other.cnst), sym (other.sym)
   {}
 
   location_t locus;
