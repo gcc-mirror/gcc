@@ -276,7 +276,7 @@ case ${target} in
    | nios2*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
-      echo "*** Configuration ${target}${target_min} is obsolete." >&2
+      echo "*** Configuration ${target} is obsolete." >&2
       echo "*** Specify --enable-obsolete to build it anyway." >&2
       echo "*** Support will be REMOVED in the next major release of GCC," >&2
       echo "*** unless a maintainer comes forward." >&2
@@ -328,7 +328,7 @@ case ${target}${target_min} in
  | *-*-sysv*				\
  | vax-*-vms*				\
  )
-	echo "*** Configuration ${target} not supported" 1>&2
+	echo "*** Configuration ${target}${target_min} not supported" 1>&2
 	exit 1
 	;;
 esac
