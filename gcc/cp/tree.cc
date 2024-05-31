@@ -2353,11 +2353,11 @@ ovl_make (tree fn, tree next)
   return result;
 }
 
-/* Add FN to the (potentially NULL) overload set OVL.  USING_OR_HIDDEN is >
-   zero if this is a using-decl.  It is > 1 if we're exporting the
-   using decl.  USING_OR_HIDDEN is < 0, if FN is hidden.  (A decl
-   cannot be both using and hidden.)  We keep the hidden decls first,
-   but remaining ones are unordered.  */
+/* Add FN to the (potentially NULL) overload set OVL.  USING_OR_HIDDEN is > 0
+   if this is a using-decl.  It is > 1 if we're revealing the using decl.
+   It is > 2 if we're also exporting it.  USING_OR_HIDDEN is < 0, if FN is
+   hidden.  (A decl cannot be both using and hidden.)  We keep the hidden
+   decls first, but remaining ones are unordered.  */
 
 tree
 ovl_insert (tree fn, tree maybe_ovl, int using_or_hidden)
@@ -2384,6 +2384,8 @@ ovl_insert (tree fn, tree maybe_ovl, int using_or_hidden)
 	{
 	  OVL_DEDUP_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
 	  if (using_or_hidden > 1)
+	    OVL_PURVIEW_P (maybe_ovl) = true;
+	  if (using_or_hidden > 2)
 	    OVL_EXPORT_P (maybe_ovl) = true;
 	}
     }

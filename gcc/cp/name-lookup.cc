@@ -4234,6 +4234,8 @@ walk_module_binding (tree binding, bitmap partitions,
 	  if (iter.using_p ())
 	    {
 	      flags = WMB_Flags (flags | WMB_Using);
+	      if (iter.purview_p ())
+		flags = WMB_Flags (flags | WMB_Purview);
 	      if (iter.exporting_p ())
 		flags = WMB_Flags (flags | WMB_Export);
 	    }
@@ -4307,6 +4309,8 @@ walk_module_binding (tree binding, bitmap partitions,
 			if (iter.using_p ())
 			  {
 			    flags = WMB_Flags (flags | WMB_Using);
+			    if (iter.purview_p ())
+			      flags = WMB_Flags (flags | WMB_Purview);
 			    if (iter.exporting_p ())
 			      flags = WMB_Flags (flags | WMB_Export);
 			  }
@@ -5210,9 +5214,10 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       for (lkp_iterator usings (lookup.value); usings; ++usings)
 	{
 	  tree new_fn = *usings;
-	  bool exporting = revealing_p && module_exporting_p ();
-	  if (exporting)
-	    exporting = check_can_export_using_decl (new_fn);
+	  tree inner = STRIP_TEMPLATE (new_fn);
+	  bool exporting_p = revealing_p && module_exporting_p ();
+	  if (exporting_p)
+	    exporting_p = check_can_export_using_decl (new_fn);
 
 	  /* [namespace.udecl]
 
@@ -5239,18 +5244,18 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		    ;
 		  else if (old.using_p ())
 		    {
-		      if (exporting)
-			/* Update in place.  'tis ok.  */
+		      /* Update in place.  'tis ok.  */
+		      OVL_PURVIEW_P (old.get_using ()) = true;
+		      if (exporting_p)
 			OVL_EXPORT_P (old.get_using ()) = true;
-		      ;
 		    }
-		  else if (DECL_MODULE_EXPORT_P (new_fn))
-		    ;
-		  else
-		    {
-		      value = old.remove_node (value);
-		      found = false;
-		    }
+		  else if (!DECL_LANG_SPECIFIC (inner)
+			   || !DECL_MODULE_PURVIEW_P (inner))
+		    /* We need to re-insert this function as a revealed
+		       (possibly exported) declaration.  We can't remove
+		       the existing decl because that will change any
+		       overloads cached in template functions.  */
+		    found = false;
 		  break;
 		}
 	      else if (old.using_p ())
@@ -5261,8 +5266,14 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 		continue; /* Parameters do not match.  */
 	      else if (decls_match (new_fn, old_fn))
 		{
-		  /* Extern "C" in different namespaces.  */
+		  /* Extern "C" in different namespaces.  But similarly
+		     to above, if revealing a not-revealed thing we may
+		     need to reinsert.  */
 		  found = true;
+		  if (revealing_p
+		      && (!DECL_LANG_SPECIFIC (inner)
+			  || !DECL_MODULE_PURVIEW_P (inner)))
+		    found = false;
 		  break;
 		}
 	      else
@@ -5278,7 +5289,7 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	    /* Unlike the decl-pushing case we don't drop anticipated
 	       builtins here.  They don't cause a problem, and we'd
 	       like to match them with a future declaration.  */
-	    value = ovl_insert (new_fn, value, 1 + exporting);
+	    value = ovl_insert (new_fn, value, 1 + revealing_p + exporting_p);
 	}
     }
   else if (value
@@ -5291,32 +5302,32 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
     }
   else if (insert_p)
     {
-      if (revealing_p
-	  && module_exporting_p ()
-	  && check_can_export_using_decl (lookup.value)
-	  && lookup.value == value
-	  && !DECL_MODULE_EXPORT_P (value))
+      /* FIXME: Handle exporting declarations from a different scope
+	 without also marking those declarations as exported.
+	 This will require not just binding directly to the underlying
+	 value; see c++/114863 and c++/114865.  We allow this for purview
+	 declarations for now as this doesn't (currently) cause ICEs
+	 later down the line, but this should be revisited.  */
+      if (revealing_p)
 	{
-	  /* We're redeclaring the same value, but this time as
-	     newly exported: make sure to mark it as such.  */
-	  if (TREE_CODE (value) == TEMPLATE_DECL)
+	  if (module_exporting_p ()
+	      && check_can_export_using_decl (lookup.value)
+	      && lookup.value == value
+	      && !DECL_MODULE_EXPORT_P (lookup.value))
 	    {
-	      DECL_MODULE_EXPORT_P (value) = true;
-
-	      tree result = DECL_TEMPLATE_RESULT (value);
-	      retrofit_lang_decl (result);
-	      DECL_MODULE_PURVIEW_P (result) = true;
-	      DECL_MODULE_EXPORT_P (result) = true;
+	      /* We're redeclaring the same value, but this time as
+		 newly exported: make sure to mark it as such.  */
+	      if (TREE_CODE (lookup.value) == TEMPLATE_DECL)
+		DECL_MODULE_EXPORT_P (DECL_TEMPLATE_RESULT (lookup.value)) = true;
+	      DECL_MODULE_EXPORT_P (lookup.value) = true;
 	    }
-	  else
-	    {
-	      retrofit_lang_decl (value);
-	      DECL_MODULE_PURVIEW_P (value) = true;
-	      DECL_MODULE_EXPORT_P (value) = true;
-	    }
+	  /* We're also revealing this declaration with a using-decl,
+	     so mark it as purview to ensure it's emitted.  */
+	  tree inner = STRIP_TEMPLATE (lookup.value);
+	  retrofit_lang_decl (inner);
+	  DECL_MODULE_PURVIEW_P (inner) = true;
 	}
-      else
-	value = lookup.value;
+      value = lookup.value;
     }
   
   /* Now the type binding.  */
@@ -5329,20 +5340,17 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
 	}
       else if (insert_p)
 	{
-	  if (revealing_p
-	      && module_exporting_p ()
-	      && check_can_export_using_decl (lookup.type)
-	      && lookup.type == type
-	      && !DECL_MODULE_EXPORT_P (type))
+	  if (revealing_p)
 	    {
-	      /* We're redeclaring the same type, but this time as
-		 newly exported: make sure to mark it as such.  */
-	      retrofit_lang_decl (type);
-	      DECL_MODULE_PURVIEW_P (type) = true;
-	      DECL_MODULE_EXPORT_P (type) = true;
+	      /* As with revealing value bindings.  */
+	      if (module_exporting_p ()
+		  && check_can_export_using_decl (lookup.type)
+		  && lookup.type == type)
+		DECL_MODULE_EXPORT_P (lookup.type) = true;
+	      retrofit_lang_decl (lookup.type);
+	      DECL_MODULE_PURVIEW_P (lookup.type) = true;
 	    }
-	  else
-	    type = lookup.type;
+	  type = lookup.type;
 	}
     }
 

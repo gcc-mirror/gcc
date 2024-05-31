@@ -495,6 +495,7 @@ enum WMB_Flags
   WMB_Export = 1 << 1,
   WMB_Using = 1 << 2,
   WMB_Hidden = 1 << 3,
+  WMB_Purview = 1 << 4,
 };
 
 extern unsigned walk_module_binding (tree binding, bitmap partitions,

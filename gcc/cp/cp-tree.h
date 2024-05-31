@@ -813,6 +813,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
 /* If set, this OVL_USING_P overload is exported.  */
 #define OVL_EXPORT_P(NODE)	TREE_LANG_FLAG_5 (OVERLOAD_CHECK (NODE))
+/* If set, this OVL_USING_P overload is in the module purview.  */
+#define OVL_PURVIEW_P(NODE)	(OVERLOAD_CHECK (NODE)->base.public_flag)
 /* If set, this overload includes name-independent declarations.  */
 #define OVL_NAME_INDEPENDENT_DECL_P(NODE) \
   TREE_LANG_FLAG_6 (OVERLOAD_CHECK (NODE))
@@ -886,6 +888,11 @@ class ovl_iterator {
   {
     return (TREE_CODE (ovl) == USING_DECL
 	    || (TREE_CODE (ovl) == OVERLOAD && OVL_USING_P (ovl)));
+  }
+  /* Whether this using is in the module purview.  */
+  bool purview_p () const
+  {
+    return OVL_PURVIEW_P (get_using ());
   }
   /* Whether this using is being exported.  */
   bool exporting_p () const

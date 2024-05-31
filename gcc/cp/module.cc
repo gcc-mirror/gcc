@@ -13137,9 +13137,8 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	inner = DECL_TEMPLATE_RESULT (inner);
 
       if ((!DECL_LANG_SPECIFIC (inner) || !DECL_MODULE_PURVIEW_P (inner))
-	  && !((flags & WMB_Using) && (flags & WMB_Export)))
-	/* Ignore global module fragment entities unless explicitly
-	   exported with a using declaration.  */
+	  && !((flags & WMB_Using) && (flags & WMB_Purview)))
+	/* Ignore entities not within the module purview.  */
 	return false;
 
       if (VAR_OR_FUNCTION_DECL_P (inner)
@@ -13189,6 +13188,7 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 		{
 		  if (!(flags & WMB_Hidden))
 		    d->clear_hidden_binding ();
+		  OVL_PURVIEW_P (d->get_entity ()) = true;
 		  if (flags & WMB_Export)
 		    OVL_EXPORT_P (d->get_entity ()) = true;
 		  return bool (flags & WMB_Export);
@@ -13230,6 +13230,7 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	  decl = ovl_make (decl, NULL_TREE);
 	  if (!unscoped_enum_const_p)
 	    OVL_USING_P (decl) = true;
+	  OVL_PURVIEW_P (decl) = true;
 	  if (flags & WMB_Export)
 	    OVL_EXPORT_P (decl) = true;
 	}
@@ -15311,6 +15312,7 @@ module_state::read_cluster (unsigned snum)
 			  {
 			    dedup = true;
 			    OVL_USING_P (decls) = true;
+			    OVL_PURVIEW_P (decls) = true;
 			    if (flags & cbf_export)
 			      OVL_EXPORT_P (decls) = true;
 			  }
