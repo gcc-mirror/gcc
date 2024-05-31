@@ -122,6 +122,7 @@ public:
   void visit (AST::RangeFromToInclExpr &expr) override;
   void visit (AST::ClosureExprInner &expr) override;
   void visit (AST::ClosureExprInnerTyped &expr) override;
+  void visit (AST::InlineAsm &expr) override;
 
   // Extra visitor for FormatArgs nodes
   void visit (AST::FormatArgs &fmt) override;
