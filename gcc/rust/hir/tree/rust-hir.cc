@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-full.h"
+#include "rust-hir-expr.h"
 #include "rust-hir-full.h"
 #include "rust-hir-visitor.h"
 #include "rust-diagnostics.h"
@@ -3768,6 +3769,14 @@ BorrowExpr::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
 }
+
+void
+InlineAsm::accept_vis (HIRExpressionVisitor &vis)
+{}
+
+void
+InlineAsm::accept_vis (HIRFullVisitor &vis)
+{}
 
 void
 BorrowExpr::accept_vis (HIRExpressionVisitor &vis)

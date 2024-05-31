@@ -115,6 +115,7 @@ private:
   virtual void visit (MatchExpr &expr) override;
   virtual void visit (AwaitExpr &expr) override;
   virtual void visit (AsyncBlockExpr &expr) override;
+  virtual void visit (InlineAsm &expr);
   virtual void visit (TypeParam &param) override;
   virtual void visit (ConstGenericParam &param) override;
   virtual void visit (LifetimeWhereClauseItem &item) override;
