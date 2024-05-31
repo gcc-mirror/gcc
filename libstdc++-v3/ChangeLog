@@ -1,3 +1,9 @@
+2024-05-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* configure.ac [*-*-rtems*]: Set chdir, chmod and mkdir as
+	available.
+	* configure: Rebuilt.
+
 2024-05-29  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/vector.tcc (_Guard): Move all the nested duplicated class...

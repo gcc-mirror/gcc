@@ -1,3 +1,234 @@
+2024-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* infinite-loop.cc (looping_back_event::get_desc): Fix unused
+	parameter warning introduced by me in r15-636-g770657d02c986c.
+
+2024-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-details.cc: Define INCLUDE_VECTOR.
+	* call-info.cc: Likewise.
+	* call-summary.cc: Likewise.
+	* checker-event.cc: Likewise.
+	* checker-path.cc: Likewise.
+	* complexity.cc: Likewise.
+	* constraint-manager.cc: Likewise.
+	(bounded_range::make_dump_widget): New.
+	(bounded_ranges::add_to_dump_widget): New.
+	(equiv_class::make_dump_widget): New.
+	(constraint::make_dump_widget): New.
+	(bounded_ranges_constraint::make_dump_widget): New.
+	(constraint_manager::make_dump_widget): New.
+	* constraint-manager.h (bounded_range::make_dump_widget): New
+	decl.
+	(bounded_ranges::add_to_dump_widget): New decl.
+	(equiv_class::make_dump_widget): New decl.
+	(constraint::make_dump_widget): New decl.
+	(bounded_ranges_constraint::make_dump_widget): New decl.
+	(constraint_manager::make_dump_widget): New decl.
+	* diagnostic-manager.cc: Define INCLUDE_VECTOR.
+	* engine.cc: Likewise.  Include "text-art/dump.h".
+	(setjmp_svalue::print_dump_widget_label): New.
+	(setjmp_svalue::add_dump_widget_children): New.
+	(exploded_graph::dump_exploded_nodes): Use text_art::dump_to_file
+	for -fdump-analyzer-exploded-nodes-2 and
+	-fdump-analyzer-exploded-nodes-3.  Fix overlong line.
+	* feasible-graph.cc: Define INCLUDE_VECTOR.
+	* infinite-recursion.cc: Likewise.
+	* kf-analyzer.cc: Likewise.
+	* kf-lang-cp.cc: Likewise.
+	* kf.cc: Likewise.
+	* known-function-manager.cc: Likewise.
+	* pending-diagnostic.cc: Likewise.
+	* program-point.cc: Likewise.
+	* program-state.cc: Likewise.  Include "text-art/tree-widget" and
+	"text-art/dump.h".
+	(sm_state_map::make_dump_widget): New.
+	(program_state::dump): New.
+	(program_state::make_dump_widget): New.
+	* program-state.h: Include "text-art/widget.h".
+	(sm_state_map::make_dump_widget): New decl.
+	(program_state::dump): New decl.
+	(program_state::make_dump_widget): New decl.
+	* ranges.cc: Define INCLUDE_VECTOR.
+	* record-layout.cc: Likewise.
+	* region-model-asm.cc: Likewise.
+	* region-model-manager.cc: Likewise.
+	* region-model-reachability.cc: Likewise.
+	* region-model.cc: Likewise.  Include "text-art/tree-widget.h".
+	(region_to_value_map::make_dump_widget): New.
+	(region_model::dump): New.
+	(region_model::make_dump_widget): New.
+	(selftest::test_dump): Add test of dump_to_pp<region_model>.
+	* region-model.h: Include "text-art/widget.h" and
+	"text-art/dump.h".
+	(region_to_value_map::make_dump_widget): New decl.
+	(region_model::dump): New decl.
+	(region_model::make_dump_widget): New decl.
+	* region.cc: Define INCLUDE_VECTOR and include "text-art/dump.h".
+	(region::dump): New.
+	(region::make_dump_widget): New.
+	(region::add_dump_widget_children): New.
+	(frame_region::print_dump_widget_label): New.
+	(globals_region::print_dump_widget_label): New.
+	(code_region::print_dump_widget_label): New.
+	(function_region::print_dump_widget_label): New.
+	(label_region::print_dump_widget_label): New.
+	(stack_region::print_dump_widget_label): New.
+	(heap_region::print_dump_widget_label): New.
+	(root_region::print_dump_widget_label): New.
+	(thread_local_region::print_dump_widget_label): New.
+	(symbolic_region::print_dump_widget_label): New.
+	(symbolic_region::add_dump_widget_children): New.
+	(decl_region::print_dump_widget_label): New.
+	(field_region::print_dump_widget_label): New.
+	(element_region::print_dump_widget_label): New.
+	(element_region::add_dump_widget_children): New.
+	(offset_region::print_dump_widget_label): New.
+	(offset_region::add_dump_widget_children): New.
+	(sized_region::print_dump_widget_label): New.
+	(sized_region::add_dump_widget_children): New.
+	(cast_region::print_dump_widget_label): New.
+	(cast_region::add_dump_widget_children): New.
+	(heap_allocated_region::print_dump_widget_label): New.
+	(alloca_region::print_dump_widget_label): New.
+	(string_region::print_dump_widget_label): New.
+	(bit_range_region::print_dump_widget_label): New.
+	(var_arg_region::print_dump_widget_label): New.
+	(errno_region::print_dump_widget_label): New.
+	(private_region::print_dump_widget_label): New.
+	(unknown_region::print_dump_widget_label): New.
+	* region.h: Include "text-art/widget.h".
+	(region::dump): New decl.
+	(region::make_dump_widget): New decl.
+	(region::add_dump_widget_children): New decl.
+	(frame_region::print_dump_widget_label): New decl.
+	(globals_region::print_dump_widget_label): New decl.
+	(code_region::print_dump_widget_label): New decl.
+	(function_region::print_dump_widget_label): New decl.
+	(label_region::print_dump_widget_label): New decl.
+	(stack_region::print_dump_widget_label): New decl.
+	(heap_region::print_dump_widget_label): New decl.
+	(root_region::print_dump_widget_label): New decl.
+	(thread_local_region::print_dump_widget_label): New decl.
+	(symbolic_region::print_dump_widget_label): New decl.
+	(symbolic_region::add_dump_widget_children): New decl.
+	(decl_region::print_dump_widget_label): New decl.
+	(field_region::print_dump_widget_label): New decl.
+	(element_region::print_dump_widget_label): New decl.
+	(element_region::add_dump_widget_children): New decl.
+	(offset_region::print_dump_widget_label): New decl.
+	(offset_region::add_dump_widget_children): New decl.
+	(sized_region::print_dump_widget_label): New decl.
+	(sized_region::add_dump_widget_children): New decl.
+	(cast_region::print_dump_widget_label): New decl.
+	(cast_region::add_dump_widget_children): New decl.
+	(heap_allocated_region::print_dump_widget_label): New decl.
+	(alloca_region::print_dump_widget_label): New decl.
+	(string_region::print_dump_widget_label): New decl.
+	(bit_range_region::print_dump_widget_label): New decl.
+	(var_arg_region::print_dump_widget_label): New decl.
+	(errno_region::print_dump_widget_label): New decl.
+	(private_region::print_dump_widget_label): New decl.
+	(unknown_region::print_dump_widget_label): New decl.
+	* sm-fd.cc: Define INCLUDE_VECTOR.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* sm.cc: Likewise.
+	* state-purge.cc: Likewise.
+	* store.cc: Likewise.  Include "text-art/tree-widget.h".
+	(add_binding_to_tree_widget): New.
+	(binding_map::add_to_tree_widget): New.
+	(binding_cluster::make_dump_widget): New.
+	(store::make_dump_widget): New.
+	* store.h: Include "text-art/tree-widget.h".
+	(binding_map::add_to_tree_widget): New decl.
+	(binding_cluster::make_dump_widget): New decl.
+	(store::make_dump_widget): New decl.
+	* svalue.cc: Define INCLUDE_VECTOR.  Include "make-unique.h" and
+	"text-art/dump.h".
+	(svalue::dump): New.
+	(svalue::make_dump_widget): New.
+	(region_svalue::print_dump_widget_label): New.
+	(region_svalue::add_dump_widget_children): New.
+	(constant_svalue::print_dump_widget_label): New.
+	(constant_svalue::add_dump_widget_children): New.
+	(unknown_svalue::print_dump_widget_label): New.
+	(unknown_svalue::add_dump_widget_children): New.
+	(poisoned_svalue::print_dump_widget_label): New.
+	(poisoned_svalue::add_dump_widget_children): New.
+	(initial_svalue::print_dump_widget_label): New.
+	(initial_svalue::add_dump_widget_children): New.
+	(unaryop_svalue::print_dump_widget_label): New.
+	(unaryop_svalue::add_dump_widget_children): New.
+	(binop_svalue::print_dump_widget_label): New.
+	(binop_svalue::add_dump_widget_children): New.
+	(sub_svalue::print_dump_widget_label): New.
+	(sub_svalue::add_dump_widget_children): New.
+	(repeated_svalue::print_dump_widget_label): New.
+	(repeated_svalue::add_dump_widget_children): New.
+	(bits_within_svalue::print_dump_widget_label): New.
+	(bits_within_svalue::add_dump_widget_children): New.
+	(widening_svalue::print_dump_widget_label): New.
+	(widening_svalue::add_dump_widget_children): New.
+	(placeholder_svalue::print_dump_widget_label): New.
+	(placeholder_svalue::add_dump_widget_children): New.
+	(unmergeable_svalue::print_dump_widget_label): New.
+	(unmergeable_svalue::add_dump_widget_children): New.
+	(compound_svalue::print_dump_widget_label): New.
+	(compound_svalue::add_dump_widget_children): New.
+	(conjured_svalue::print_dump_widget_label): New.
+	(conjured_svalue::add_dump_widget_children): New.
+	(asm_output_svalue::print_dump_widget_label): New.
+	(asm_output_svalue::add_dump_widget_children): New.
+	(const_fn_result_svalue::print_dump_widget_label): New.
+	(const_fn_result_svalue::add_dump_widget_children): New.
+	* svalue.h: Include "text-art/widget.h".  Add "using
+	text_art::dump_widget_info".
+	(svalue::dump): New decl.
+	(svalue::make_dump_widget): New decl.
+	(svalue::print_dump_widget_label): New decl.
+	(svalue::print_dump_widget_label): New decl.
+	(svalue::add_dump_widget_children): New decl.
+	(region_svalue::print_dump_widget_label): New decl.
+	(region_svalue::add_dump_widget_children): New decl.
+	(constant_svalue::print_dump_widget_label): New decl.
+	(constant_svalue::add_dump_widget_children): New decl.
+	(unknown_svalue::print_dump_widget_label): New decl.
+	(unknown_svalue::add_dump_widget_children): New decl.
+	(poisoned_svalue::print_dump_widget_label): New decl.
+	(poisoned_svalue::add_dump_widget_children): New decl.
+	(initial_svalue::print_dump_widget_label): New decl.
+	(initial_svalue::add_dump_widget_children): New decl.
+	(unaryop_svalue::print_dump_widget_label): New decl.
+	(unaryop_svalue::add_dump_widget_children): New decl.
+	(binop_svalue::print_dump_widget_label): New decl.
+	(binop_svalue::add_dump_widget_children): New decl.
+	(sub_svalue::print_dump_widget_label): New decl.
+	(sub_svalue::add_dump_widget_children): New decl.
+	(repeated_svalue::print_dump_widget_label): New decl.
+	(repeated_svalue::add_dump_widget_children): New decl.
+	(bits_within_svalue::print_dump_widget_label): New decl.
+	(bits_within_svalue::add_dump_widget_children): New decl.
+	(widening_svalue::print_dump_widget_label): New decl.
+	(widening_svalue::add_dump_widget_children): New decl.
+	(placeholder_svalue::print_dump_widget_label): New decl.
+	(placeholder_svalue::add_dump_widget_children): New decl.
+	(unmergeable_svalue::print_dump_widget_label): New decl.
+	(unmergeable_svalue::add_dump_widget_children): New decl.
+	(compound_svalue::print_dump_widget_label): New decl.
+	(compound_svalue::add_dump_widget_children): New decl.
+	(conjured_svalue::print_dump_widget_label): New decl.
+	(conjured_svalue::add_dump_widget_children): New decl.
+	(asm_output_svalue::print_dump_widget_label): New decl.
+	(asm_output_svalue::add_dump_widget_children): New decl.
+	(const_fn_result_svalue::print_dump_widget_label): New decl.
+	(const_fn_result_svalue::add_dump_widget_children): New decl.
+	* trimmed-graph.cc: Define INCLUDE_VECTOR.
+	* varargs.cc: Likewise.
+
 2024-05-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc: Include "selftest-tree.h".

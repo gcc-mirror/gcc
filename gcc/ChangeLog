@@ -1,3 +1,121 @@
+2024-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115102
+	* config/i386/i386.md (bswaphi2): Also enable for !TARGET_MOVBE.
+	(*bswaphi2): New insn pattern.
+	(bswaphisi2_lowpart): Rename from bswaphi_lowpart.  Rewrite
+	insn RTX to match the expected form of the combine pass.
+	Remove rol{w} alternative and corresponding attributes.
+	(bswsaphisi2_lowpart peephole2): New peephole2 pattern to
+	conditionally convert bswaphisi2_lowpart to rotlhi3_1_slp.
+	(bswapsi2): Update expander for rename.
+	(rotlhi3_1_slp splitter): Conditionally split to bswaphi2.
+
+2024-05-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115281
+	* ira-conflicts.cc (go_through_subreg): Use the natural size of
+	the inner mode rather than the outer mode.
+
+2024-05-30  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
+
+	* pair-fusion.h: Generic header code for load store pair fusion
+	that can be shared across different architectures.
+	* pair-fusion.cc: Generic source code implementation for
+	load store pair fusion that can be shared across different architectures.
+	* Makefile.in: Add new object file pair-fusion.o.
+	* config/aarch64/aarch64-ldp-fusion.cc: Delete generic code and move it
+	to pair-fusion.cc in the middle-end.
+	* config/aarch64/t-aarch64: Add header file dependency on pair-fusion.h.
+	Remove unnecessary header file dependency.
+
+2024-05-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/115031
+	* config/sparc/sol2.h (GGC_QUIRE_SIZE): Define as 510.
+
+2024-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add text-art/tree-widget.o.
+	* doc/analyzer.texi: Rewrite discussion of dumping state to
+	cover the text_art::tree_widget-based dumps, with a more
+	interesting example.
+	* text-art/dump-widget-info.h: New file.
+	* text-art/dump.h: New file.
+	* text-art/selftests.cc (selftest::text_art_tests): Call
+	text_art_tree_widget_cc_tests.
+	* text-art/selftests.h (selftest::text_art_tree_widget_cc_tests):
+	New decl.
+	* text-art/theme.cc (ascii_theme::get_cppchar): Handle the various
+	cell_kind::TREE_*.
+	(unicode_theme::get_cppchar): Likewise.
+	* text-art/theme.h (enum class theme::cell_kind): Add
+	TREE_CHILD_NON_FINAL, TREE_CHILD_FINAL, TREE_X_CONNECTOR, and
+	TREE_Y_CONNECTOR.
+	* text-art/tree-widget.cc: New file.
+	* text-art/tree-widget.h: New file.
+
+2024-05-30  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/sse.md (vcond_mask_<mode><mode>): New expander.
+
+2024-05-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/112325
+	* tree-ssa-loop-ivcanon.cc (estimated_unrolled_size): Move the
+	2 / 3 loop body size reduction to ..
+	(try_unroll_loop_completely): .. here, add it for the check of
+	body size shrink, and the check of comparison against
+	param_max_completely_peeled_insns when
+	(!cunrolli ||loop->inner).
+	(canonicalize_loop_induction_variables): Add new parameter
+	cunrolli and pass down.
+	(tree_unroll_loops_completely_1): Ditto.
+	(canonicalize_induction_variables): Pass cunrolli as false to
+	canonicalize_loop_induction_variables.
+	(tree_unroll_loops_completely): Set cunrolli to true at
+	beginning and set it to false after CHANGED is true.
+
+2024-05-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (dg-additional-sources): Document
+	newly-added support for target selectors, and implicit discard
+	on non-linking tests that name the compiler output explicitly.
+
+2024-05-30  Jiawei  <jiawei@iscas.ac.cn>
+
+	* tree-ssa-pre.cc (create_component_ref_by_pieces_1): New conditions.
+
+2024-05-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	Revert:
+	2024-05-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* resource.cc: Include cfgrtl.h.  Use BLOCK_FOR_INSN (insn)->index
+	instead of calling find_basic_block (insn).  Assert for not -1.
+	(find_basic_block): Remove function.
+	(init_resource_info): Call compute_bb_for_insn.
+	(free_resource_info): Call free_bb_for_insn.
+
+2024-05-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	Revert:
+	2024-05-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* resource.cc (mark_target_live_regs): Remove redundant check for b
+	being -1, after gcc_assert.
+
+2024-05-30  Hans-Peter Nilsson  <hp@axis.com>
+
+	Revert:
+	2024-05-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* resource.cc (free_resource_info, clear_hashed_info_for_insn): Don't
+	check for non-null target_hash_table and bb_ticks.
+	(mark_target_live_regs): Ditto.  Replace check for non-NULL result from
+	BLOCK_FOR_INSN with a call to gcc_assert.  Fold code conditioned on
+	tinfo != NULL.
+
 2024-05-29  YunQiang Su  <syq@gcc.gnu.org>
 
 	* config/mips/mips.cc(mips16_gp_pseudo_reg): Mark

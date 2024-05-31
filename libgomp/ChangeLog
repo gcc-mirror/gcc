@@ -1,3 +1,10 @@
+2024-05-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP 5.0 status): Mark 'requires' as done and
+	link to 'Offload-Target Specifics'.
+	(OpenMP 5.2 status): Add item about additional map-type modifiers
+	in 'declare mapper'.
+
 2024-05-29  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (gcn): Update USM handling

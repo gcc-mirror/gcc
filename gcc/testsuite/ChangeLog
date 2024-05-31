@@ -1,3 +1,63 @@
+2024-05-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115102
+	* gcc.target/i386/pr115102.c: New test.
+
+2024-05-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115281
+	* gfortran.dg/pr115281.f90: New test.
+
+2024-05-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.c: Define INCLUDE_VECTOR.
+	* gcc.dg/plugin/analyzer_gil_plugin.c: Likewise.
+	* gcc.dg/plugin/analyzer_kernel_plugin.c: Likewise.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.c: Likewise.
+
+2024-05-30  Alexandre Oliva  <oliva@adacore.com>
+
+	PR testsuite/101169
+	* gcc.target/powerpc/fold-vec-extract-double.p7.c: Adjust addi
+	counts for ilp32.
+	* gcc.target/powerpc/fold-vec-extract-float.p7.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-float.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-int.p7.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-short.p7.c: Likewise.
+	* gcc.target/powerpc/fold-vec-extract-short.p8.c: Likewise.
+
+2024-05-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr114125.c: New test.
+
+2024-05-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/vect/pr112325.c: New test.
+
+2024-05-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/gcc-defs.exp (dg-additional-sources): Support target
+	selectors.  Make it cumulative.
+	(dg-additional-files-options): Take dest and type.  Note
+	unsupported additional sources when not linking and naming the
+	compiler output.  Adjust source dirname prepending to cope
+	with leading blanks.
+	* lib/g++.exp (g++_target_compile): Pass dest and type on to
+	dg-additional-files-options.
+	* lib/gcc.exp (gcc_target_compile): Likewise.
+	* lib/gdc.exp (gdb_target_compile): Likewise.
+	* lib/gfortran.exp (gfortran_target_compile): Likewise.
+	* lib/go.exp (go_target_compile): Likewise.
+	* lib/obj-c++.exp (obj-c++_target_compile): Likewise.
+	* lib/objc.exp (objc_target_compile): Likewise.
+	* lib/rust.exp (rust_target_compile): Likewise.
+	* lib/profopt.exp (profopt-execute): Likewise-ish.
+
+2024-05-30  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/vsetvl/pr115214.c: New test.
+
 2024-05-29  Martin Uecker  <uecker@tugraz.at>
 
 	* gcc.dg/c23-tag-incomplete-alias-1.c: New test.
