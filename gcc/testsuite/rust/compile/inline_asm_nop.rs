@@ -8,5 +8,6 @@ macro_rules! asm {
 fn main() {
     unsafe {
         asm!("nop");
+        asm!("nop",);
     }
 }
