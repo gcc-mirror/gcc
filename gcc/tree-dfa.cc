@@ -530,7 +530,7 @@ get_ref_base_and_extent (tree exp, poly_int64 *poffset,
 		   index.  */
 		seen_variable_array_ref = true;
 
-		value_range vr;
+		int_range_max vr;
 		range_query *query;
 		query = get_range_query (cfun);
 

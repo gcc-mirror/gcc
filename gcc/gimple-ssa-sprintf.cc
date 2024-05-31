@@ -1079,7 +1079,7 @@ get_int_range (tree arg, gimple *stmt,
 	  && TYPE_PRECISION (argtype) <= TYPE_PRECISION (type))
 	{
 	  /* Try to determine the range of values of the integer argument.  */
-	  value_range vr;
+	  int_range_max vr;
 	  query->range_of_expr (vr, arg, stmt);
 
 	  if (!vr.undefined_p () && !vr.varying_p ())
@@ -1395,7 +1395,7 @@ format_integer (const directive &dir, tree arg, pointer_query &ptr_qry)
     {
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
-      value_range vr;
+      int_range_max vr;
       ptr_qry.rvals->range_of_expr (vr, arg, dir.info->callstmt);
 
       if (!vr.varying_p () && !vr.undefined_p ())
@@ -4260,7 +4260,7 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 
 	  wide_int min = wi::shwi (retval[0], prec);
 	  wide_int max = wi::shwi (retval[1], prec);
-	  value_range r (TREE_TYPE (lhs), min, max);
+	  int_range_max r (TREE_TYPE (lhs), min, max);
 	  set_range_info (lhs, r);
 
 	  setrange = true;
@@ -4629,7 +4629,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
 	  /* Try to determine the range of values of the argument
 	     and use the greater of the two at level 1 and the smaller
 	     of them at level 2.  */
-	  value_range vr;
+	  int_range_max vr;
 	  ptr_qry.rvals->range_of_expr (vr, size, info.callstmt);
 
 	  if (!vr.undefined_p ())

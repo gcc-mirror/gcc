@@ -14495,7 +14495,7 @@ get_range_pos_neg (tree arg)
 
   if (TREE_CODE (arg) != SSA_NAME)
     return 3;
-  value_range r;
+  int_range_max r;
   while (!get_global_range_query ()->range_of_expr (r, arg)
 	 || r.undefined_p () || r.varying_p ())
     {

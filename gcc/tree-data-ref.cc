@@ -588,9 +588,9 @@ debug_ddrs (vec<ddr_p> ddrs)
    precision of A and B.  */
 
 static bool
-compute_distributive_range (tree type, value_range &op0_range,
-			    tree_code code, value_range &op1_range,
-			    tree *off, value_range *result_range)
+compute_distributive_range (tree type, irange &op0_range,
+			    tree_code code, irange &op1_range,
+			    tree *off, irange *result_range)
 {
   gcc_assert (INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_TRAPS (type));
   if (result_range)
@@ -641,7 +641,7 @@ compute_distributive_range (tree type, value_range &op0_range,
      but its range is more conducive to analysis.  */
   range_cast (op0_range, ssizetype);
   range_cast (op1_range, ssizetype);
-  value_range wide_range;
+  int_range_max wide_range;
   range_op_handler op (code);
   bool saved_flag_wrapv = flag_wrapv;
   flag_wrapv = 1;
@@ -682,7 +682,7 @@ compute_distributive_range (tree type, value_range &op0_range,
    FROM_TYPE are integral types.  */
 
 static bool
-nop_conversion_for_offset_p (tree to_type, tree from_type, value_range &range)
+nop_conversion_for_offset_p (tree to_type, tree from_type, irange &range)
 {
   gcc_assert (INTEGRAL_TYPE_P (to_type)
 	      && INTEGRAL_TYPE_P (from_type)
@@ -714,7 +714,7 @@ nop_conversion_for_offset_p (tree to_type, tree from_type, value_range &range)
 
 static void
 split_constant_offset (tree type, tree *var, tree *off,
-		       value_range *result_range,
+		       irange *result_range,
 		       hash_map<tree, std::pair<tree, tree> > &cache,
 		       unsigned *limit);
 
@@ -751,13 +751,13 @@ split_constant_offset (tree type, tree *var, tree *off,
 
 static bool
 split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
-			 tree *var, tree *off, value_range *result_range,
+			 tree *var, tree *off, irange *result_range,
 			 hash_map<tree, std::pair<tree, tree> > &cache,
 			 unsigned *limit)
 {
   tree var0, var1;
   tree off0, off1;
-  value_range op0_range, op1_range;
+  int_range_max op0_range, op1_range;
 
   *var = NULL_TREE;
   *off = NULL_TREE;
@@ -1013,7 +1013,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
    allowed to process before giving up.  */
 
 static void
-split_constant_offset (tree exp, tree *var, tree *off, value_range *exp_range,
+split_constant_offset (tree exp, tree *var, tree *off, irange *exp_range,
 		       hash_map<tree, std::pair<tree, tree> > &cache,
 		       unsigned *limit)
 {
@@ -1023,10 +1023,10 @@ split_constant_offset (tree exp, tree *var, tree *off, value_range *exp_range,
   code = TREE_CODE (exp);
   if (exp_range)
     {
-      *exp_range = type;
+      exp_range->set_varying (type);
       if (code == SSA_NAME)
 	{
-	  value_range vr;
+	  int_range_max vr;
 	  get_range_query (cfun)->range_of_expr (vr, exp);
 	  if (vr.undefined_p ())
 	    vr.set_varying (TREE_TYPE (exp));
@@ -1044,7 +1044,7 @@ split_constant_offset (tree exp, tree *var, tree *off, value_range *exp_range,
 	     domain, instead of VR_VARYING.  The new code normalizes
 	     full-domain ranges to VR_VARYING.  */
 	  if (vr_kind == VR_RANGE || vr_kind == VR_VARYING)
-	    *exp_range = value_range (type, var_min, var_max);
+	    exp_range->set (type, var_min, var_max);
 	}
     }
 
@@ -1062,7 +1062,7 @@ split_constant_offset (tree exp, tree *var, tree *off, value_range *exp_range,
     *var = fold_convert (sizetype, *var);
   *off = ssize_int (0);
 
-  value_range r;
+  int_range_max r;
   if (exp_range && code != SSA_NAME
       && get_range_query (cfun)->range_of_expr (r, exp)
       && !r.undefined_p ())
@@ -6402,7 +6402,7 @@ dr_step_indicator (struct data_reference *dr, int useful_min)
 
       /* Get the range of values that the unconverted step actually has.  */
       wide_int step_min, step_max;
-      value_range vr;
+      int_range_max vr;
       if (TREE_CODE (step) != SSA_NAME
 	  || !get_range_query (cfun)->range_of_expr (vr, step)
 	  || vr.undefined_p ())

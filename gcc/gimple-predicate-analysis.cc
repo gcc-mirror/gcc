@@ -300,7 +300,7 @@ find_var_cmp_const (pred_chain_union preds, gphi *phi, gimple **flag_def,
 	       flag_var >= [min, max] ->  flag_var > [min-1, max]
 	     if no overflow/wrap.  */
 	  tree type = TREE_TYPE (cond_lhs);
-	  value_range r;
+	  int_range_max r;
 	  if (!INTEGRAL_TYPE_P (type)
 	      || !get_range_query (cfun)->range_of_expr (r, cond_rhs)
 	      || r.undefined_p ()

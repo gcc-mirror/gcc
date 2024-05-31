@@ -262,7 +262,7 @@ static bool
 check_out_of_bounds_and_warn (location_t location, tree ref,
 			      tree low_sub_org, tree low_sub, tree up_sub,
 			      tree up_bound, tree up_bound_p1,
-			      const value_range *vr,
+			      const irange *vr,
 			      bool ignore_off_by_one, bool for_array_bound,
 			      bool *out_of_bound)
 {
@@ -373,7 +373,7 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   tree up_sub = low_sub_org;
   tree low_sub = low_sub_org;
 
-  value_range vr;
+  int_range_max vr;
   if (TREE_CODE (low_sub_org) == SSA_NAME)
     {
       get_value_range (vr, low_sub_org, stmt);

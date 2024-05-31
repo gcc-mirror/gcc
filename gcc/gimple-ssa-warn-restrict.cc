@@ -352,7 +352,7 @@ builtin_memref::extend_offset_range (tree offset)
 	 as signed.  */
       wide_int min, max;
       value_range_kind rng = VR_VARYING;
-      value_range vr;
+      int_range_max vr;
       if (m_ptr_qry.rvals->range_of_expr (vr, offset, stmt))
 	{
 	  tree vr_min, vr_max;

@@ -874,8 +874,8 @@ size_must_be_zero_p (tree size)
      can be stored in ssize_t, the signed counterpart of size_t.  */
   wide_int ssize_max = wi::lshift (wi::one (prec), prec - 1) - 1;
   wide_int zero = wi::zero (TYPE_PRECISION (type));
-  value_range valid_range (type, zero, ssize_max);
-  value_range vr;
+  int_range_max valid_range (type, zero, ssize_max);
+  int_range_max vr;
   get_range_query (cfun)->range_of_expr (vr, size);
 
   if (vr.undefined_p ())

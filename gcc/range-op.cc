@@ -570,9 +570,9 @@ get_shift_range (irange &r, tree type, const irange &op)
     return false;
 
   // Build valid range and intersect it with the shift range.
-  r = value_range (op.type (),
-		   wi::shwi (0, TYPE_PRECISION (op.type ())),
-		   wi::shwi (TYPE_PRECISION (type) - 1, TYPE_PRECISION (op.type ())));
+  r.set (op.type (),
+	 wi::shwi (0, TYPE_PRECISION (op.type ())),
+	 wi::shwi (TYPE_PRECISION (type) - 1, TYPE_PRECISION (op.type ())));
   r.intersect (op);
 
   // If there are no valid ranges in the shift range, returned false.
@@ -4055,13 +4055,13 @@ operator_trunc_mod::op1_range (irange &r, tree type,
   // (a % b) >= x && x > 0 , then a >= x.
   if (wi::gt_p (lhs.lower_bound (), 0, sign))
     {
-      r = value_range (type, lhs.lower_bound (), wi::max_value (prec, sign));
+      r.set (type, lhs.lower_bound (), wi::max_value (prec, sign));
       return true;
     }
   // (a % b) <= x && x < 0 , then a <= x.
   if (wi::lt_p (lhs.upper_bound (), 0, sign))
     {
-      r = value_range (type, wi::min_value (prec, sign), lhs.upper_bound ());
+      r.set (type, wi::min_value (prec, sign), lhs.upper_bound ());
       return true;
     }
   return false;
@@ -4083,12 +4083,11 @@ operator_trunc_mod::op2_range (irange &r, tree type,
   if (wi::gt_p (lhs.lower_bound (), 0, sign))
     {
       if (sign == SIGNED)
-	r = value_range (type, wi::neg (lhs.lower_bound ()),
-			 lhs.lower_bound (), VR_ANTI_RANGE);
+	r.set (type, wi::neg (lhs.lower_bound ()),
+	       lhs.lower_bound (), VR_ANTI_RANGE);
       else if (wi::lt_p (lhs.lower_bound (), wi::max_value (prec, sign),
 			 sign))
-	r = value_range (type, lhs.lower_bound () + 1,
-			 wi::max_value (prec, sign));
+	r.set (type, lhs.lower_bound () + 1, wi::max_value (prec, sign));
       else
 	return false;
       return true;
@@ -4097,8 +4096,8 @@ operator_trunc_mod::op2_range (irange &r, tree type,
   if (wi::lt_p (lhs.upper_bound (), 0, sign))
     {
       if (wi::gt_p (lhs.upper_bound (), wi::min_value (prec, sign), sign))
-	r = value_range (type, lhs.upper_bound (),
-			 wi::neg (lhs.upper_bound ()), VR_ANTI_RANGE);
+	r.set (type, lhs.upper_bound (),
+	       wi::neg (lhs.upper_bound ()), VR_ANTI_RANGE);
       else
 	return false;
       return true;

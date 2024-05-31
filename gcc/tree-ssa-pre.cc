@@ -3251,7 +3251,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	  >= TYPE_PRECISION (TREE_TYPE (expr->u.nary->op[0])))
       && SSA_NAME_RANGE_INFO (expr->u.nary->op[0]))
     {
-      value_range r;
+      int_range_max r;
       if (get_range_query (cfun)->range_of_expr (r, expr->u.nary->op[0])
 	  && !r.undefined_p ()
 	  && !r.varying_p ()

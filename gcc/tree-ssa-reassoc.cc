@@ -3377,7 +3377,7 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	 case, if we would need otherwise 2 or more comparisons, then use
 	 the bit test; in the other cases, the threshold is 3 comparisons.  */
       bool entry_test_needed;
-      value_range r;
+      int_range_max r;
       if (TREE_CODE (exp) == SSA_NAME
 	  && get_range_query (cfun)->range_of_expr (r, exp)
 	  && !r.undefined_p ()

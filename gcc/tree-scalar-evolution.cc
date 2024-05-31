@@ -3057,7 +3057,7 @@ iv_can_overflow_p (class loop *loop, tree type, tree base, tree step)
   widest_int nit;
   wide_int base_min, base_max, step_min, step_max, type_min, type_max;
   signop sgn = TYPE_SIGN (type);
-  value_range r;
+  int_range_max r;
 
   if (integer_zerop (step))
     return false;

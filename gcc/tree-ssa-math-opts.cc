@@ -5956,7 +5956,7 @@ optimize_spaceship (gcond *stmt)
 
   wide_int wm1 = wi::minus_one (TYPE_PRECISION (integer_type_node));
   wide_int w2 = wi::two (TYPE_PRECISION (integer_type_node));
-  value_range vr (TREE_TYPE (lhs), wm1, w2);
+  int_range<1> vr (TREE_TYPE (lhs), wm1, w2);
   set_range_info (lhs, vr);
 }
 

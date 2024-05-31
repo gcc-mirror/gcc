@@ -2506,20 +2506,6 @@ debug (const vrange &vr)
   debug (&vr);
 }
 
-DEBUG_FUNCTION void
-debug (const value_range *vr)
-{
-  dump_value_range (stderr, vr);
-  fprintf (stderr, "\n");
-}
-
-DEBUG_FUNCTION void
-debug (const value_range &vr)
-{
-  dump_value_range (stderr, &vr);
-  fprintf (stderr, "\n");
-}
-
 /* Return true, if VAL1 and VAL2 are equal values for VRP purposes.  */
 
 bool

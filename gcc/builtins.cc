@@ -3502,7 +3502,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
     return NULL_RTX;
 
   wide_int min, max;
-  value_range r;
+  int_range_max r;
   get_global_range_query ()->range_of_expr (r, bound);
   if (r.varying_p () || r.undefined_p ())
     return NULL_RTX;
@@ -3576,7 +3576,7 @@ determine_block_size (tree len, rtx len_rtx,
 
       if (TREE_CODE (len) == SSA_NAME)
 	{
-	  value_range r;
+	  int_range_max r;
 	  tree tmin, tmax;
 	  get_global_range_query ()->range_of_expr (r, len);
 	  range_type = get_legacy_range (r, tmin, tmax);

@@ -177,7 +177,7 @@ minmax_from_comparison (tree_code cmp, tree exp0, tree exp1, tree exp2, tree exp
 	  /* a != MIN_RANGE<a> ? a : MIN_RANGE<a>+1 -> MAX_EXPR<MIN_RANGE<a>+1, a> */
 	  if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
 	    {
-	      value_range r;
+	      int_range_max r;
 	      get_range_query (cfun)->range_of_expr (r, exp0);
 	      if (r.undefined_p ())
 		r.set_varying (TREE_TYPE (exp0));
@@ -199,7 +199,7 @@ minmax_from_comparison (tree_code cmp, tree exp0, tree exp1, tree exp2, tree exp
 	  /* a != MAX_RANGE<a> ? a : MAX_RANGE<a>-1 -> MIN_EXPR<MIN_RANGE<a>-1, a> */
 	  if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
 	    {
-	      value_range r;
+	      int_range_max r;
 	      get_range_query (cfun)->range_of_expr (r, exp0);
 	      if (r.undefined_p ())
 		r.set_varying (TREE_TYPE (exp0));

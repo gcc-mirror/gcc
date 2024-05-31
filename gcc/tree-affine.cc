@@ -345,7 +345,7 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 	       for below case:
 		 (T1)(X *+- CST) -> (T1)X *+- (T1)CST
 	       if X *+- CST doesn't overflow by range information.  */
-	    value_range vr;
+	    int_range_max vr;
 	    if (TYPE_UNSIGNED (itype)
 		&& TYPE_OVERFLOW_WRAPS (itype)
 		&& TREE_CODE (op1) == INTEGER_CST

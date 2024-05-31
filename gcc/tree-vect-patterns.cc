@@ -66,7 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 bool
 vect_get_range_info (tree var, wide_int *min_value, wide_int *max_value)
 {
-  value_range vr;
+  int_range_max vr;
   tree vr_min, vr_max;
   get_range_query (cfun)->range_of_expr (vr, var);
   if (vr.undefined_p ())
@@ -5011,7 +5011,7 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	t3 = t2;
 
       int msb = 1;
-      value_range r;
+      int_range_max r;
       get_range_query (cfun)->range_of_expr (r, oprnd0);
       if (!r.varying_p () && !r.undefined_p ())
 	{

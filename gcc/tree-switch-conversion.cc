@@ -1662,7 +1662,7 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   /* If every possible relative value of the index expression is a valid shift
      amount, then we can merge the entry test in the bit test.  */
   bool entry_test_needed;
-  value_range r;
+  int_range_max r;
   if (TREE_CODE (index_expr) == SSA_NAME
       && get_range_query (cfun)->range_of_expr (r, index_expr)
       && !r.undefined_p ()

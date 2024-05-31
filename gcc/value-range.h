@@ -739,8 +739,6 @@ public:
   virtual void visit (const unsupported_range &) const { }
 };
 
-typedef int_range<2> value_range;
-
 // This is an "infinite" precision range object for use in temporary
 // calculations for any of the handled types.  The object can be
 // transparently used as a vrange.
