@@ -3878,9 +3878,9 @@ public:
 
   std::vector<location_t> line_spans;
 
-  void accept_vis (HIRExpressionVisitor &vis) override{};
+  void accept_vis (HIRExpressionVisitor &vis) override;
 
-  void accept_vis (HIRFullVisitor &vis) override{};
+  void accept_vis (HIRFullVisitor &vis) override;
 
   std::string as_string () const override { return "InlineAsm HIR Node"; }
 

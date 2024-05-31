@@ -637,6 +637,17 @@ UnsafeChecker::visit (AsyncBlockExpr &)
 }
 
 void
+UnsafeChecker::visit (InlineAsm &expr)
+{
+  if (unsafe_context.is_in_context ())
+    return;
+
+  rust_error_at (
+    expr.get_locus (), ErrorCode::E0133,
+    "use of inline assembly is unsafe and requires unsafe function or block");
+}
+
+void
 UnsafeChecker::visit (TypeParam &)
 {}
 
