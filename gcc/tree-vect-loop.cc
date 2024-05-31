@@ -3485,7 +3485,7 @@ vect_analyze_loop_1 (class loop *loop, vec_info_shared *shared,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "***** Analysis %s with vector mode %s\n",
-		     res ? "succeeded" : " failed",
+		     res ? "succeeded" : "failed",
 		     GET_MODE_NAME (loop_vinfo->vector_mode));
 
   if (res && !main_loop_vinfo && suggested_unroll_factor > 1)
