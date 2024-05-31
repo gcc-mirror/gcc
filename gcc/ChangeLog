@@ -1,3 +1,13 @@
+2024-05-30  YunQiang Su  <syq@gcc.gnu.org>
+
+	Backported from master:
+	2024-05-29  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.cc(mips16_gp_pseudo_reg): Mark
+	MIPS16_PIC_TEMP and MIPS_PROLOGUE_TEMP clobbered.
+	(mips_emit_call_insn): Mark MIPS16_PIC_TEMP and
+	MIPS_PROLOGUE_TEMP clobbered if MIPS16 and CALL_CLOBBERED_GP.
+
 2024-05-29  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
