@@ -2553,7 +2553,7 @@
 	 (match_operand 1 "" ""))]
   ""
 {
-  xtensa_expand_call (0, operands);
+  xtensa_expand_call (0, operands, false);
   DONE;
 })
 
@@ -2574,7 +2574,7 @@
 	      (match_operand 2 "" "")))]
   ""
 {
-  xtensa_expand_call (1, operands);
+  xtensa_expand_call (1, operands, false);
   DONE;
 })
 
@@ -2595,7 +2595,7 @@
 	 (match_operand 1 "" ""))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_expand_call (0, operands);
+  xtensa_expand_call (0, operands, true);
   DONE;
 })
 
@@ -2616,7 +2616,7 @@
 	      (match_operand 2 "" "")))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_expand_call (1, operands);
+  xtensa_expand_call (1, operands, true);
   DONE;
 })
 
@@ -2723,7 +2723,8 @@
   [(return)]
   ""
 {
-  xtensa_expand_epilogue (false);
+  xtensa_expand_epilogue ();
+  emit_jump_insn (gen_return ());
   DONE;
 })
 
@@ -2731,7 +2732,7 @@
   [(return)]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_expand_epilogue (true);
+  xtensa_expand_epilogue ();
   DONE;
 })
 

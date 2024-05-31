@@ -2239,7 +2239,7 @@ xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
 
 
 void
-xtensa_expand_call (int callop, rtx *operands)
+xtensa_expand_call (int callop, rtx *operands, bool sibcall_p)
 {
   rtx call;
   rtx_insn *call_insn;
@@ -2280,6 +2280,14 @@ xtensa_expand_call (int callop, rtx *operands)
       rtx clob = gen_rtx_CLOBBER (Pmode, xtensa_static_chain (NULL, false));
       CALL_INSN_FUNCTION_USAGE (call_insn) =
 	gen_rtx_EXPR_LIST (Pmode, clob, CALL_INSN_FUNCTION_USAGE (call_insn));
+    }
+  else if (sibcall_p)
+    {
+      /* Sibling call requires a return address to the caller, similar to
+	 "return" insn.  */
+      rtx use = gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, A0_REG));
+      CALL_INSN_FUNCTION_USAGE (call_insn) =
+	gen_rtx_EXPR_LIST (Pmode, use, CALL_INSN_FUNCTION_USAGE (call_insn));
     }
 }
 
@@ -3671,7 +3679,7 @@ xtensa_expand_prologue (void)
 }
 
 void
-xtensa_expand_epilogue (bool sibcall_p)
+xtensa_expand_epilogue (void)
 {
   if (!TARGET_WINDOWED_ABI)
     {
@@ -3736,10 +3744,6 @@ xtensa_expand_epilogue (bool sibcall_p)
 				  stack_pointer_rtx,
 				  EH_RETURN_STACKADJ_RTX));
     }
-  if (sibcall_p)
-    emit_use (gen_rtx_REG (SImode, A0_REG));
-  else
-    emit_jump_insn (gen_return ());
 }
 
 void
