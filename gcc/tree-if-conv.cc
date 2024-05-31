@@ -3381,7 +3381,9 @@ ifcvt_local_dce (class loop *loop)
       gimple_stmt_iterator gsiprev = gsi;
       gsi_prev (&gsiprev);
       stmt = gsi_stmt (gsi);
-      if (gimple_store_p (stmt) && gimple_vdef (stmt))
+      if (!gimple_has_volatile_ops (stmt)
+	  && gimple_store_p (stmt)
+	  && gimple_vdef (stmt))
 	{
 	  tree lhs = gimple_get_lhs (stmt);
 	  ao_ref write;
