@@ -206,9 +206,6 @@ LIBAT_FORALL_MODES([LIBAT_HAVE_ATOMIC_CAS])
 LIBAT_FORALL_MODES([LIBAT_HAVE_ATOMIC_FETCH_ADD])
 LIBAT_FORALL_MODES([LIBAT_HAVE_ATOMIC_FETCH_OP])
 
-# Check for target-specific assembly-level support for atomic operations.
-LIBAT_TEST_FEAT_AARCH64_LSE128()
-
 AC_C_BIGENDIAN
 # I don't like the default behaviour of WORDS_BIGENDIAN undefined for LE.
 AH_BOTTOM(

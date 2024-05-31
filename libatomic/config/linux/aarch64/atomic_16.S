@@ -40,18 +40,9 @@
 
 #include "auto-config.h"
 
-#if !HAVE_IFUNC
-# undef HAVE_FEAT_LSE128
-# define HAVE_FEAT_LSE128 0
-#endif
-
 #define HAVE_FEAT_LSE2	HAVE_IFUNC
 
-#if HAVE_FEAT_LSE128
-	.arch	armv9-a+lse128
-#else
 	.arch	armv8-a+lse
-#endif
 
 #define LSE128(NAME)	libat_##NAME##_i1
 #define LSE2(NAME)	libat_##NAME##_i2
@@ -226,7 +217,6 @@ ENTRY (exchange_16)
 END (exchange_16)
 
 
-#if HAVE_FEAT_LSE128
 ENTRY_FEAT (exchange_16, LSE128)
 	mov	tmp0, x0
 	mov	res0, in0
@@ -234,21 +224,23 @@ ENTRY_FEAT (exchange_16, LSE128)
 	cbnz	w4, 1f
 
 	/* RELAXED.  */
-	swpp	res0, res1, [tmp0]
+	/* swpp res0, res1, [tmp0]  */
+	.inst	0x192180c0
 	ret
 1:
 	cmp	w4, ACQUIRE
 	b.hi	2f
 
 	/* ACQUIRE/CONSUME.  */
-	swppa	res0, res1, [tmp0]
+	/* swppa res0, res1, [tmp0]  */
+	.inst	0x19a180c0
 	ret
 
 	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	swppal	res0, res1, [tmp0]
+2:	/* swppal res0, res1, [tmp0]  */
+	.inst	0x19e180c0
 	ret
 END_FEAT (exchange_16, LSE128)
-#endif
 
 
 ENTRY (compare_exchange_16)
@@ -446,7 +438,6 @@ ENTRY (fetch_or_16)
 END (fetch_or_16)
 
 
-#if HAVE_FEAT_LSE128
 ENTRY_FEAT (fetch_or_16, LSE128)
 	mov	tmp0, x0
 	mov	res0, in0
@@ -454,21 +445,23 @@ ENTRY_FEAT (fetch_or_16, LSE128)
 	cbnz	w4, 1f
 
 	/* RELAXED.  */
-	ldsetp	res0, res1, [tmp0]
+	/* ldsetp res0, res1, [tmp0]  */
+	.inst	0x192130c0
 	ret
 1:
 	cmp	w4, ACQUIRE
 	b.hi	2f
 
 	/* ACQUIRE/CONSUME.  */
-	ldsetpa	res0, res1, [tmp0]
+	/* ldsetpa res0, res1, [tmp0]  */
+	.inst	0x19a130c0
 	ret
 
 	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	ldsetpal	res0, res1, [tmp0]
+2:	/* ldsetpal res0, res1, [tmp0]  */
+	.inst	0x19e130c0
 	ret
 END_FEAT (fetch_or_16, LSE128)
-#endif
 
 
 ENTRY (or_fetch_16)
@@ -493,14 +486,14 @@ ENTRY (or_fetch_16)
 END (or_fetch_16)
 
 
-#if HAVE_FEAT_LSE128
 ENTRY_FEAT (or_fetch_16, LSE128)
 	cbnz	w4, 1f
 	mov	tmp0, in0
 	mov	tmp1, in1
 
 	/* RELAXED.  */
-	ldsetp	in0, in1, [x0]
+	/* ldsetp in0, in1, [x0]  */
+	.inst	0x19233002
 	orr	res0, in0, tmp0
 	orr	res1, in1, tmp1
 	ret
@@ -509,18 +502,19 @@ ENTRY_FEAT (or_fetch_16, LSE128)
 	b.hi	2f
 
 	/* ACQUIRE/CONSUME.  */
-	ldsetpa	in0, in1, [x0]
+	/* ldsetpa in0, in1, [x0]  */
+	.inst	0x19a33002
 	orr	res0, in0, tmp0
 	orr	res1, in1, tmp1
 	ret
 
 	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	ldsetpal	in0, in1, [x0]
+2:	/* ldsetpal in0, in1, [x0]  */
+	.inst	0x19e33002
 	orr	res0, in0, tmp0
 	orr	res1, in1, tmp1
 	ret
 END_FEAT (or_fetch_16, LSE128)
-#endif
 
 
 ENTRY (fetch_and_16)
@@ -545,7 +539,6 @@ ENTRY (fetch_and_16)
 END (fetch_and_16)
 
 
-#if HAVE_FEAT_LSE128
 ENTRY_FEAT (fetch_and_16, LSE128)
 	mov	tmp0, x0
 	mvn	res0, in0
@@ -553,7 +546,8 @@ ENTRY_FEAT (fetch_and_16, LSE128)
 	cbnz	w4, 1f
 
 	/* RELAXED.  */
-	ldclrp	res0, res1, [tmp0]
+	/* ldclrp res0, res1, [tmp0]  */
+	.inst	0x192110c0
 	ret
 
 1:
@@ -561,14 +555,15 @@ ENTRY_FEAT (fetch_and_16, LSE128)
 	b.hi	2f
 
 	/* ACQUIRE/CONSUME.  */
-	ldclrpa res0, res1, [tmp0]
+	/* ldclrpa res0, res1, [tmp0]  */
+	.inst	0x19a110c0
 	ret
 
 	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	ldclrpal	res0, res1, [tmp0]
+2:	/* ldclrpal res0, res1, [tmp0]  */
+	.inst	0x19e110c0
 	ret
 END_FEAT (fetch_and_16, LSE128)
-#endif
 
 
 ENTRY (and_fetch_16)
@@ -593,14 +588,14 @@ ENTRY (and_fetch_16)
 END (and_fetch_16)
 
 
-#if HAVE_FEAT_LSE128
 ENTRY_FEAT (and_fetch_16, LSE128)
 	mvn	tmp0, in0
 	mvn	tmp0, in1
 	cbnz	w4, 1f
 
 	/* RELAXED.  */
-	ldclrp	tmp0, tmp1, [x0]
+	/* ldclrp tmp0, tmp1, [x0]  */
+	.inst	0x19271006
 	and	res0, tmp0, in0
 	and	res1, tmp1, in1
 	ret
@@ -610,18 +605,19 @@ ENTRY_FEAT (and_fetch_16, LSE128)
 	b.hi	2f
 
 	/* ACQUIRE/CONSUME.  */
-	ldclrpa tmp0, tmp1, [x0]
+	/* ldclrpa tmp0, tmp1, [x0]  */
+	.inst	0x19a71006
 	and	res0, tmp0, in0
 	and	res1, tmp1, in1
 	ret
 
 	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	ldclrpal	tmp0, tmp1, [x5]
+2:	/* ldclrpal	tmp0, tmp1, [x5]  */
+	.inst	0x19e710a6
 	and	res0, tmp0, in0
 	and	res1, tmp1, in1
 	ret
 END_FEAT (and_fetch_16, LSE128)
-#endif
 
 
 ENTRY (fetch_xor_16)
@@ -729,16 +725,9 @@ ENTRY (test_and_set_16)
 END (test_and_set_16)
 
 
-/* Alias entry points which are the same in LSE2 and LSE128.  */
-
 #if HAVE_IFUNC
-# if !HAVE_FEAT_LSE128
-ALIAS (exchange_16, LSE128, LSE2)
-ALIAS (fetch_or_16, LSE128, LSE2)
-ALIAS (fetch_and_16, LSE128, LSE2)
-ALIAS (or_fetch_16, LSE128, LSE2)
-ALIAS (and_fetch_16, LSE128, LSE2)
-# endif
+
+/* Alias entry points which are the same in LSE2 and LSE128.  */
 ALIAS (load_16, LSE128, LSE2)
 ALIAS (store_16, LSE128, LSE2)
 ALIAS (compare_exchange_16, LSE128, LSE2)
@@ -753,7 +742,6 @@ ALIAS (nand_fetch_16, LSE128, LSE2)
 ALIAS (test_and_set_16, LSE128, LSE2)
 
 /* Alias entry points which are the same in baseline and LSE2.  */
-
 ALIAS (exchange_16, LSE2, CORE)
 ALIAS (fetch_add_16, LSE2, CORE)
 ALIAS (add_fetch_16, LSE2, CORE)
