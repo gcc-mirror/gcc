@@ -281,7 +281,7 @@ proc libphobos_target_compile { source dest type options } {
     lappend options "compiler=$gdc_final"
     lappend options "timeout=[timeout_value]"
 
-    set options [dg-additional-files-options $options $source]
+    set options [dg-additional-files-options $options $source $dest $type]
     set comp_output [target_compile $source $dest $type $options]
 
     return $comp_output
