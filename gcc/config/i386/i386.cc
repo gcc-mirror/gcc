@@ -24879,6 +24879,23 @@ ix86_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 	    return false;
 	}
     }
+
+  /* W/o TARGET_SSE4_1, it takes 3 instructions (pand, pandn and por)
+     for movdfcc/movsfcc, and could possibly fail cost comparison.
+     Increase branch cost will hurt performance for other modes, so
+     specially add some preference for floating point ifcvt.  */
+  if (!TARGET_SSE4_1 && if_info->x
+      && GET_MODE_CLASS (GET_MODE (if_info->x)) == MODE_FLOAT
+      && if_info->speed_p)
+    {
+      unsigned cost = seq_cost (seq, true);
+
+      if (cost <= if_info->original_cost)
+	return true;
+
+      return cost <= (if_info->max_seq_cost + COSTS_N_INSNS (2));
+    }
+
   return default_noce_conversion_profitable_p (seq, if_info);
 }
 
