@@ -200,6 +200,29 @@
 (define_predicate "xtensa_bit_join_operator"
   (match_code "plus,ior"))
 
+(define_predicate "subreg_HQI_lowpart_operator"
+  (match_code "subreg")
+{
+  int ofs = SUBREG_BYTE (op), pos = 0;
+  switch (GET_MODE (op))
+    {
+    case QImode:
+      if (BYTES_BIG_ENDIAN)
+	pos = 3;
+      break;
+    case HImode:
+      if (BYTES_BIG_ENDIAN)
+	pos = 2;
+      break;
+    default:
+      return false;
+    }
+  return ofs == pos;
+})
+
+(define_predicate "xtensa_sminmax_operator"
+  (match_code "smin,smax"))
+
 (define_predicate "tls_symbol_operand"
   (and (match_code "symbol_ref")
        (match_test "SYMBOL_REF_TLS_MODEL (op) != 0")))

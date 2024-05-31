@@ -180,15 +180,8 @@
   "TARGET_ADDX"
 {
   operands[3] = GEN_INT (1 << INTVAL (operands[3]));
-  switch (GET_CODE (operands[4]))
-    {
-    case PLUS:
-      return "addx%3\t%0, %1, %2";
-    case MINUS:
-      return "subx%3\t%0, %1, %2";
-    default:
-      gcc_unreachable ();
-    }
+  return GET_CODE (operands[4]) == PLUS
+	  ? "addx%3\t%0, %1, %2" : "subx%3\t%0, %1, %2";
 }
   [(set_attr "type"	"arith")
    (set_attr "mode"	"SI")
@@ -535,34 +528,23 @@
 
 ;; Signed clamp.
 
-(define_insn_and_split "*xtensa_clamps"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(smax:SI (smin:SI (match_operand:SI 1 "register_operand" "r")
-			  (match_operand:SI 2 "const_int_operand" "i"))
-		 (match_operand:SI 3 "const_int_operand" "i")))]
-  "TARGET_MINMAX && TARGET_CLAMPS
-   && xtensa_match_CLAMPS_imms_p (operands[3], operands[2])"
-  "#"
-  "&& 1"
-  [(set (match_dup 0)
-	(smin:SI (smax:SI (match_dup 1)
-			  (match_dup 3))
-		 (match_dup 2)))]
-  ""
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3")])
-
 (define_insn "*xtensa_clamps"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(smin:SI (smax:SI (match_operand:SI 1 "register_operand" "r")
-			  (match_operand:SI 2 "const_int_operand" "i"))
-		 (match_operand:SI 3 "const_int_operand" "i")))]
+        (match_operator:SI 5 "xtensa_sminmax_operator"
+	  [(match_operator:SI 4 "xtensa_sminmax_operator"
+	    [(match_operand:SI 1 "register_operand" "r")
+	     (match_operand:SI 2 "const_int_operand" "i")])
+	   (match_operand:SI 3 "const_int_operand" "i")]))]
   "TARGET_MINMAX && TARGET_CLAMPS
-   && xtensa_match_CLAMPS_imms_p (operands[2], operands[3])"
+   && INTVAL (operands[2]) + INTVAL (operands[3]) == -1
+   && ((GET_CODE (operands[5]) == SMIN && GET_CODE (operands[4]) == SMAX
+	&& IN_RANGE (exact_log2 (-INTVAL (operands[2])), 7, 22))
+       || (GET_CODE (operands[5]) == SMAX && GET_CODE (operands[4]) == SMIN
+	   && IN_RANGE (exact_log2 (-INTVAL (operands[3])), 7, 22)))"
 {
   static char result[64];
-  sprintf (result, "clamps\t%%0, %%1, %d", floor_log2 (-INTVAL (operands[2])));
+  rtx bound = operands[GET_CODE (operands[4]) == SMAX ? 2 : 3];
+  sprintf (result, "clamps\t%%0, %%1, %d", floor_log2 (-INTVAL (bound)));
   return result;
 }
   [(set_attr "type"	"arith")
@@ -1101,17 +1083,7 @@
 		   (match_dup 3)))]
 {
   int pos = INTVAL (operands[2]), shift = floor_log2 (INTVAL (operands[3]));
-  switch (GET_CODE (operands[4]))
-    {
-    case ASHIFT:
-      pos = shift - pos;
-      break;
-    case LSHIFTRT:
-      pos = shift + pos;
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  pos = GET_CODE (operands[4]) == ASHIFT ? shift - pos : shift + pos;
   if (BITS_BIG_ENDIAN)
     pos = (32 - (1 + pos)) & 0x1f;
   operands[2] = GEN_INT (pos);
@@ -1147,17 +1119,7 @@
 		 (match_dup 2)]))]
 {
   int pos = INTVAL (operands[3]), shift = floor_log2 (INTVAL (operands[4]));
-  switch (GET_CODE (operands[6]))
-    {
-    case ASHIFT:
-      pos = shift - pos;
-      break;
-    case LSHIFTRT:
-      pos = shift + pos;
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  pos = GET_CODE (operands[6]) == ASHIFT ? shift - pos : shift + pos;
   if (BITS_BIG_ENDIAN)
     pos = (32 - (1 + pos)) & 0x1f;
   operands[3] = GEN_INT (pos);
@@ -2119,11 +2081,12 @@
 (define_split
   [(set (pc)
 	(if_then_else (match_operator 2 "boolean_operator"
-			[(subreg:HQI (not:SI (match_operand:SI 0 "register_operand")) 0)
+			[(match_operator 3 "subreg_HQI_lowpart_operator"
+			   [(not:SI (match_operand:SI 0 "register_operand"))])
 			 (const_int 0)])
 		      (label_ref (match_operand 1 ""))
 		      (pc)))]
-  "!BYTES_BIG_ENDIAN"
+  ""
   [(set (pc)
 	(if_then_else (match_op_dup 2
 			[(and:SI (not:SI (match_dup 0))
@@ -2132,40 +2095,8 @@
 		      (label_ref (match_dup 1))
 		      (pc)))]
 {
-  operands[3] = GEN_INT ((1 << GET_MODE_BITSIZE (<MODE>mode)) - 1);
+  operands[3] = GEN_INT ((1 << GET_MODE_BITSIZE (GET_MODE (operands[3]))) - 1);
 })
-
-(define_split
-  [(set (pc)
-	(if_then_else (match_operator 2 "boolean_operator"
-			[(subreg:HI (not:SI (match_operand:SI 0 "register_operand")) 2)
-			 (const_int 0)])
-		      (label_ref (match_operand 1 ""))
-		      (pc)))]
-  "BYTES_BIG_ENDIAN"
-  [(set (pc)
-	(if_then_else (match_op_dup 2
-			[(and:SI (not:SI (match_dup 0))
-				 (const_int 65535))
-			 (const_int 0)])
-		      (label_ref (match_dup 1))
-		      (pc)))])
-
-(define_split
-  [(set (pc)
-	(if_then_else (match_operator 2 "boolean_operator"
-			[(subreg:QI (not:SI (match_operand:SI 0 "register_operand")) 3)
-			 (const_int 0)])
-		      (label_ref (match_operand 1 ""))
-		      (pc)))]
-  "BYTES_BIG_ENDIAN"
-  [(set (pc)
-	(if_then_else (match_op_dup 2
-			[(and:SI (not:SI (match_dup 0))
-				 (const_int 255))
-			 (const_int 0)])
-		      (label_ref (match_dup 1))
-		      (pc)))])
 
 (define_insn_and_split "*masktrue_const_pow2_minus_one"
   [(set (pc)
