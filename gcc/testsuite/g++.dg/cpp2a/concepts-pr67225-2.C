@@ -1,21 +1,19 @@
 // PR c++/67225
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template<typename Target>
 // template<typename Target, typename... Ts>
-concept bool has_resize ()
-{
-  return requires (Target tgt)
+concept has_resize =
+  requires (Target tgt)
   {
     { tgt.resize () };
   };
-}
 
 template<typename Target>
 void resize (Target tgt)
 {
-  if constexpr (has_resize<Target> ())
+  if constexpr (has_resize<Target>)
   {
     tgt.resize ();
   }

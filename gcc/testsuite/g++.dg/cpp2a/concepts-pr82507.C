@@ -1,11 +1,11 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template<class I>
-concept bool True = true;
+concept True = true;
 
 template<class T>
-concept bool HasType = requires { typename T::type; };
+concept HasType = requires { typename T::type; };
 
 template<class T>
 struct S

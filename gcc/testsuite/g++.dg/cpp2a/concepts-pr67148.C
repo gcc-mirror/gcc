@@ -1,6 +1,6 @@
 // PR c++/67148
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 namespace std
 {
@@ -58,9 +58,9 @@ struct all_same<T, Rest...> :
   meta::and_c<__is_same_as(T, Rest)...> {};
 }
 template <class...Ts>
-concept bool Same() {
-  return detail::all_same<Ts...>::value;
-}
+concept Same =
+  detail::all_same<Ts...>::value;
+
 template <class F, class...Args>
 using ResultType = decltype(declval<F>()(declval<Args>()...));
 template <class>
@@ -74,35 +74,39 @@ using ValueType =
   typename value_type<T>::type;
 
 template <class F, class...Args>
-concept bool Function() {
-  return requires (F& f, Args&&...args) {
+concept Function =
+  requires (F& f, Args&&...args) {
     f((Args&&)args...);
-    requires Same<decltype(f((Args&&)args...)), ResultType<F, Args...> >();
+    requires Same<decltype(f((Args&&)args...)), ResultType<F, Args...> >;
   };
-}
+
 
 template <class, class...> struct __function : std::false_type {};
-Function{F, ...Args} struct __function<F, Args...> : std::true_type {};
+template<typename F, typename... Args>
+  requires Function<F, Args...>
+struct __function<F, Args...> : std::true_type {};
 
 template <class F, class I1, class I2>
-concept bool IndirectCallable() {
-  return Function<F, ValueType<I1>, ValueType<I2>>();
-}
+concept IndirectCallable =
+  Function<F, ValueType<I1>, ValueType<I2>>;
+
 
 template <class F, class I1, class I2>
-concept bool IndirectCallable2() {
-  return __function<F, ValueType<I1>, ValueType<I2>>::value;
-}
+concept IndirectCallable2 =
+  __function<F, ValueType<I1>, ValueType<I2>>::value;
+
 
 namespace ext { namespace models {
 template <class, class, class>
 constexpr bool indirect_callable() { return false; }
-IndirectCallable{F, I1, I2}
+template<typename F, typename I1, typename I2>
+  requires IndirectCallable<F, I1, I2>
 constexpr bool indirect_callable() { return true; }
 
 template <class, class, class>
 constexpr bool indirect_callable2() { return false; }
-IndirectCallable2{F, I1, I2}
+template<typename F, typename I1, typename I2>
+  requires IndirectCallable<F, I1, I2>
 constexpr bool indirect_callable2() { return true; }
 }}
 }}

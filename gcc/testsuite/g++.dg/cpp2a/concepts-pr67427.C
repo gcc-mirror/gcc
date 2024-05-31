@@ -1,16 +1,17 @@
 // PR c++/67427
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template <class S, class I>
-concept bool Sentinel =
+concept Sentinel =
   requires (I i) { i; };
 
 template <class I, class S>
-concept bool SizedIteratorRange =
+concept SizedIteratorRange =
   Sentinel<S, I> && true;
 
-Sentinel{S, I}
+template<typename S, typename I>
+  requires Sentinel<S, I>
 void distance(I first, S last) {}
 
 template <class I, class S>

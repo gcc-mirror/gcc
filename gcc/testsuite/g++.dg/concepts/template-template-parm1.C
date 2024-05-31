@@ -1,6 +1,6 @@
 // PR c++/66937
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 #include <tuple>
 
@@ -23,13 +23,11 @@ using copy_tuple_args = typename detail::copy_tuple_args_impl<Tuple, Sink>::type
 
 // A concept of a column
 template <typename T>
-concept bool Column()
-{
-  return requires()
+concept Column =
+  requires()
     {
       typename T::_name_t;
     };
-}
 
 // column_list is constrained to Column arguments
 template<Column... C>

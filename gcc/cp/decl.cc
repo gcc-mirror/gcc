@@ -1017,16 +1017,6 @@ member_like_constrained_friend_p (tree decl)
 static bool
 function_requirements_equivalent_p (tree newfn, tree oldfn)
 {
-  /* In the concepts TS, the combined constraints are compared.  */
-  if (cxx_dialect < cxx20)
-    {
-      tree ci1 = get_constraints (oldfn);
-      tree ci2 = get_constraints (newfn);
-      tree req1 = ci1 ? CI_ASSOCIATED_CONSTRAINTS (ci1) : NULL_TREE;
-      tree req2 = ci2 ? CI_ASSOCIATED_CONSTRAINTS (ci2) : NULL_TREE;
-      return cp_tree_equal (req1, req2);
-    }
-
   /* [temp.friend]/9 "Such a constrained friend function does not declare the
      same function as a declaration in any other scope."  So no need to
      actually compare the requirements.  */
@@ -10661,9 +10651,8 @@ grokfndecl (tree ctype,
 	 template shall be a definition. */
       if (ci
 	  && (block_local
-	      || (!flag_concepts_ts
-		  && (!processing_template_decl
-		      || (friendp && !memtmpl && !funcdef_flag)))))
+	      || !processing_template_decl
+	      || (friendp && !memtmpl && !funcdef_flag)))
 	{
 	  if (!friendp || !processing_template_decl)
 	    error_at (location, "constraints on a non-templated function");
@@ -11366,9 +11355,6 @@ grokvardecl (tree type,
 	}
       else
         DECL_DECLARED_CONCEPT_P (decl) = true;
-      if (!same_type_ignoring_top_level_qualifiers_p (type, boolean_type_node))
-	error_at (declspecs->locations[ds_type_spec],
-		  "concept must have type %<bool%>");
       if (TEMPLATE_PARMS_CONSTRAINTS (current_template_parms))
         {
           error_at (location, "a variable concept cannot be constrained");

@@ -1,11 +1,9 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
-concept bool C()
-{
-  return requires (T& t) { t.~T(); };
-}
+concept C =
+  requires (T& t) { t.~T(); };
 
 class S1
 {
@@ -19,6 +17,6 @@ class S2
 
 int main()
 {
-  static_assert(C<S1>(), ""); // { dg-error "failed" }
-  static_assert(C<S2>(), ""); // { dg-error "failed" }
+  static_assert(C<S1>, ""); // { dg-error "failed" }
+  static_assert(C<S2>, ""); // { dg-error "failed" }
 }

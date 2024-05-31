@@ -16624,16 +16624,15 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 
           /* Warn for concept as a decl-specifier. We'll rewrite these as
              concept declarations later.  */
-          if (!flag_concepts_ts)
-            {
-	      cp_token *next = cp_lexer_peek_token (parser->lexer);
-	      if (next->keyword == RID_BOOL)
-		permerror (next->location, "the %<bool%> keyword is not "
-			   "allowed in a C++20 concept definition");
-	      else
-		error_at (token->location, "C++20 concept definition syntax "
-			  "is %<concept <name> = <expr>%>");
-            }
+	  {
+	    cp_token *next = cp_lexer_peek_token (parser->lexer);
+	    if (next->keyword == RID_BOOL)
+	      permerror (next->location, "the %<bool%> keyword is not "
+			 "allowed in a C++20 concept definition");
+	    else
+	      error_at (token->location, "C++20 concept definition syntax "
+			"is %<concept <name> = <expr>%>");
+	  }
 
 	  /* In C++20 a concept definition is just 'concept name = expr;'
 	     Support that syntax as a TS extension by pretending we've seen
@@ -18431,61 +18430,6 @@ cp_parser_template_parameter_list (cp_parser* parser)
   return end_template_parm_list (parameter_list);
 }
 
-/* Parse a introduction-list.
-
-   introduction-list:
-     introduced-parameter
-     introduction-list , introduced-parameter
-
-   introduced-parameter:
-     ...[opt] identifier
-
-   Returns a TREE_VEC of WILDCARD_DECLs.  If the parameter is a pack
-   then the introduced parm will have WILDCARD_PACK_P set.  In addition, the
-   WILDCARD_DECL will also have DECL_NAME set and token location in
-   DECL_SOURCE_LOCATION.  */
-
-static tree
-cp_parser_introduction_list (cp_parser *parser)
-{
-  vec<tree, va_gc> *introduction_vec = make_tree_vector ();
-
-  while (true)
-    {
-      bool is_pack = cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS);
-      if (is_pack)
-	cp_lexer_consume_token (parser->lexer);
-
-      tree identifier = cp_parser_identifier (parser);
-      if (identifier == error_mark_node)
-	break;
-
-      /* Build placeholder. */
-      tree parm = build_nt (WILDCARD_DECL);
-      DECL_SOURCE_LOCATION (parm)
-	= cp_lexer_peek_token (parser->lexer)->location;
-      DECL_NAME (parm) = identifier;
-      WILDCARD_PACK_P (parm) = is_pack;
-      vec_safe_push (introduction_vec, parm);
-
-      /* If the next token is not a `,', we're done.  */
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
-	break;
-      /* Otherwise, consume the `,' token.  */
-      cp_lexer_consume_token (parser->lexer);
-    }
-
-  /* Convert the vec into a TREE_VEC.  */
-  tree introduction_list = make_tree_vec (introduction_vec->length ());
-  unsigned int n;
-  tree parm;
-  FOR_EACH_VEC_ELT (*introduction_vec, n, parm)
-    TREE_VEC_ELT (introduction_list, n) = parm;
-
-  release_tree_vector (introduction_vec);
-  return introduction_list;
-}
-
 /* Given a declarator, get the declarator-id part, or NULL_TREE if this
    is an abstract declarator. */
 
@@ -19218,16 +19162,8 @@ cp_parser_template_id (cp_parser *parser,
   location_t combined_loc
     = make_location (token->location, token->location, parser->lexer);
 
-  /* Check for concepts autos where they don't belong.  We could
-     identify types in some cases of identifier TEMPL, looking ahead
-     for a CPP_SCOPE, but that would buy us nothing: we accept auto in
-     types.  We reject them in functions, but if what we have is an
-     identifier, even with none_type we can't conclude it's NOT a
-     type, we have to wait for template substitution.  */
-  if (flag_concepts && check_auto_in_tmpl_args (templ, arguments))
-    template_id = error_mark_node;
   /* Build a representation of the specialization.  */
-  else if (identifier_p (templ))
+  if (identifier_p (templ))
     template_id = build_min_nt_loc (combined_loc,
 				    TEMPLATE_ID_EXPR,
 				    templ, arguments);
@@ -20549,10 +20485,9 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 			 "only available with "
 			 "%<-std=c++14%> or %<-std=gnu++14%>");
 	    }
-	  else if (!flag_concepts_ts && parser->in_template_argument_list_p)
-	    pedwarn (token->location, 0,
-		     "use of %<auto%> in template argument "
-		     "only available with %<-fconcepts-ts%>");
+	  else if (parser->in_template_argument_list_p)
+	    error_at (token->location,
+		     "use of %<auto%> in template argument");
 	  else if (!flag_concepts)
 	    pedwarn (token->location, 0,
 		     "use of %<auto%> in parameter declaration "
@@ -20895,10 +20830,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
   TENTATIVE is true if the type-specifier parsing is tentative; in that case,
   don't give an error if TMPL isn't a valid type-constraint, as the template-id
-  might actually be a concept-check,
-
-  Note that the Concepts TS allows the auto or decltype(auto) to be
-  omitted in a constrained-type-specifier.  */
+  might actually be a concept-check.  */
 
 static tree
 cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
@@ -20929,38 +20861,29 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
   if (con == error_mark_node)
     return error_mark_node;
 
-  /* As per the standard, require auto or decltype(auto), except in some
-     cases (template parameter lists, -fconcepts-ts enabled).  */
+  /* As per the standard, require auto or decltype(auto).  */
   cp_token *placeholder = NULL, *close_paren = NULL;
-  if (cxx_dialect >= cxx20)
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_AUTO))
+    placeholder = cp_lexer_consume_token (parser->lexer);
+  else if (cp_lexer_next_token_is_keyword (parser->lexer, RID_DECLTYPE))
     {
-      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_AUTO))
-	placeholder = cp_lexer_consume_token (parser->lexer);
-      else if (cp_lexer_next_token_is_keyword (parser->lexer, RID_DECLTYPE))
-	{
-	  placeholder = cp_lexer_consume_token (parser->lexer);
-	  matching_parens parens;
-	  parens.require_open (parser);
-	  cp_parser_require_keyword (parser, RID_AUTO, RT_AUTO);
-	  close_paren = parens.require_close (parser);
-	}
+      placeholder = cp_lexer_consume_token (parser->lexer);
+      matching_parens parens;
+      parens.require_open (parser);
+      cp_parser_require_keyword (parser, RID_AUTO, RT_AUTO);
+      close_paren = parens.require_close (parser);
     }
 
   /* A type constraint constrains a contextually determined type or type
-     parameter pack. However, the Concepts TS does allow concepts
-     to introduce non-type and template template parameters.  */
+     parameter pack.  */
   if (TREE_CODE (proto) != TYPE_DECL)
     {
-      if (!flag_concepts_ts
-	  || !processing_template_parmlist)
+      if (!tentative)
 	{
-	  if (!tentative)
-	    {
-	      error_at (loc, "%qE does not constrain a type", DECL_NAME (con));
-	      inform (DECL_SOURCE_LOCATION (con), "concept defined here");
-	    }
-	  return error_mark_node;
+	  error_at (loc, "%qE does not constrain a type", DECL_NAME (con));
+	  inform (DECL_SOURCE_LOCATION (con), "concept defined here");
 	}
+      return error_mark_node;
     }
 
   /* In a template parameter list, a type-parameter can be introduced
@@ -20978,9 +20901,7 @@ cp_parser_placeholder_type_specifier (cp_parser *parser, location_t loc,
     }
 
   /* Diagnose issues placeholder issues.  */
-  if (!flag_concepts_ts
-      && !parser->in_result_type_constraint_p
-      && !placeholder)
+  if (!parser->in_result_type_constraint_p && !placeholder)
     {
       if (tentative)
 	/* Perhaps it's a concept-check expression (c++/91073).  */
@@ -25245,14 +25166,11 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
     abstract_declarator = NULL;
 
   bool auto_typeid_ok = false;
-  /* The concepts TS allows 'auto' as a type-id.  */
-  if (flag_concepts_ts)
-    auto_typeid_ok = !parser->in_type_id_in_expr_p;
   /* DR 625 prohibits use of auto as a template-argument.  We allow 'auto'
      outside the template-argument-list context here only for the sake of
      diagnostic: grokdeclarator then can emit a better error message for
      e.g. using T = auto.  */
-  else if (flag_concepts)
+  if (flag_concepts)
     auto_typeid_ok = (!parser->in_type_id_in_expr_p
 		      && !parser->in_template_argument_list_p);
 
@@ -25326,7 +25244,7 @@ cp_parser_template_type_arg (cp_parser *parser)
   parser->type_definition_forbidden_message = saved_message;
   /* cp_parser_type_id_1 checks for auto, but only for
      ->auto_is_implicit_function_template_parm_p.  */
-  if (cxx_dialect >= cxx14 && !flag_concepts_ts && type_uses_auto (r))
+  if (cxx_dialect >= cxx14 && type_uses_auto (r))
     {
       error ("invalid use of %<auto%> in template argument");
       r = error_mark_node;
@@ -31618,8 +31536,7 @@ cp_parser_constraint_logical_or_expression (cp_parser *parser, bool lambda_p)
   return lhs;
 }
 
-/* Parse the expression after a requires-clause. This has a different grammar
-    than that in the concepts TS.  */
+/* Parse the expression after a requires-clause.  */
 
 static tree
 cp_parser_requires_clause_expression (cp_parser *parser, bool lambda_p)
@@ -31704,10 +31621,7 @@ cp_parser_requires_clause_opt (cp_parser *parser, bool lambda_p)
   else
     cp_lexer_consume_token (parser->lexer);
 
-  if (!flag_concepts_ts)
-    return cp_parser_requires_clause_expression (parser, lambda_p);
-  else
-    return cp_parser_constraint_expression (parser);
+  return cp_parser_requires_clause_expression (parser, lambda_p);
 }
 
 /*---------------------------------------------------------------------------
@@ -32082,7 +31996,7 @@ cp_parser_compound_requirement (cp_parser *parser)
 	      return error_mark_node;
 	    }
 	}
-      else if (!flag_concepts_ts)
+      else
 	/* P1452R2 removed the trailing-return-type option.  */
 	error_at (type_loc,
 		  "return-type-requirement is not a type-constraint");
@@ -33228,110 +33142,6 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
     vec_safe_push (unparsed_funs_with_definitions, decl);
 }
 
-/* Parse a template introduction header for a template-declaration.  Returns
-   false if tentative parse fails.  */
-
-static bool
-cp_parser_template_introduction (cp_parser* parser, bool member_p)
-{
-  cp_parser_parse_tentatively (parser);
-
-  tree saved_scope = parser->scope;
-  tree saved_object_scope = parser->object_scope;
-  tree saved_qualifying_scope = parser->qualifying_scope;
-  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
-
-  cp_token *start_token = cp_lexer_peek_token (parser->lexer);
-
-  /* In classes don't parse valid unnamed bitfields as invalid
-     template introductions.  */
-  if (member_p)
-    parser->colon_corrects_to_scope_p = false;
-
-  /* Look for the optional `::' operator.  */
-  cp_parser_global_scope_opt (parser,
-			      /*current_scope_valid_p=*/false);
-  /* Look for the nested-name-specifier.  */
-  cp_parser_nested_name_specifier_opt (parser,
-				       /*typename_keyword_p=*/false,
-				       /*check_dependency_p=*/true,
-				       /*type_p=*/false,
-				       /*is_declaration=*/false);
-
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
-  tree concept_name = cp_parser_identifier (parser);
-
-  /* Look up the concept for which we will be matching
-     template parameters.  */
-  tree tmpl_decl = cp_parser_lookup_name_simple (parser, concept_name,
-						 token->location);
-  parser->scope = saved_scope;
-  parser->object_scope = saved_object_scope;
-  parser->qualifying_scope = saved_qualifying_scope;
-  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
-
-  if (concept_name == error_mark_node
-      || (seen_error () && !concept_definition_p (tmpl_decl)))
-    cp_parser_simulate_error (parser);
-
-  /* Look for opening brace for introduction.  */
-  matching_braces braces;
-  braces.require_open (parser);
-  location_t open_loc = input_location;
-
-  if (!cp_parser_parse_definitely (parser))
-    return false;
-
-  push_deferring_access_checks (dk_deferred);
-
-  /* Build vector of placeholder parameters and grab
-     matching identifiers.  */
-  tree introduction_list = cp_parser_introduction_list (parser);
-
-  /* Look for closing brace for introduction.  */
-  if (!braces.require_close (parser))
-    return true;
-
-  /* The introduction-list shall not be empty.  */
-  int nargs = TREE_VEC_LENGTH (introduction_list);
-  if (nargs == 0)
-    {
-      /* In cp_parser_introduction_list we have already issued an error.  */
-      return true;
-    }
-
-  if (tmpl_decl == error_mark_node)
-    {
-      cp_parser_name_lookup_error (parser, concept_name, tmpl_decl, NLE_NULL,
-				   token->location);
-      return true;
-    }
-
-  /* Build and associate the constraint.  */
-  location_t introduction_loc = make_location (open_loc,
-					       start_token->location,
-					       parser->lexer);
-  tree parms = finish_template_introduction (tmpl_decl,
-					     introduction_list,
-					     introduction_loc);
-  if (parms && parms != error_mark_node)
-    {
-      if (!flag_concepts_ts)
-	pedwarn (introduction_loc, 0, "template-introductions"
-		 " are not part of C++20 concepts; use %qs to enable",
-		 "-fconcepts-ts");
-
-      cp_parser_template_declaration_after_parameters (parser, parms,
-						       member_p);
-      return true;
-    }
-
-  if (parms == NULL_TREE)
-    error_at (token->location, "no matching concept for template-introduction");
-
-  return true;
-}
-
 /* Parse a normal template-declaration following the template keyword.  */
 
 static void
@@ -33423,8 +33233,6 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
       cp_parser_explicit_template_declaration (parser, member_p);
       return true;
     }
-  else if (flag_concepts)
-    return cp_parser_template_introduction (parser, member_p);
 
   return false;
 }

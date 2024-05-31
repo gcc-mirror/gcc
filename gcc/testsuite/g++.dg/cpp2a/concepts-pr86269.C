@@ -1,9 +1,9 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 #include <type_traits>
 
 template<typename t2, typename t = std::remove_reference_t<t2>>
-concept bool IntegralOrIntegralRef = std::is_integral_v<t>;
+concept IntegralOrIntegralRef = std::is_integral_v<t>;
 
 template<IntegralOrIntegralRef t>
 auto foo(t && v)

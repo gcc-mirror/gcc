@@ -1,20 +1,20 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
-  concept bool Type = true;
+  concept Type = true;
 
 template<typename T, typename U>
-  concept bool Same = __is_same_as(T, U);
+  concept Same = __is_same_as(T, U);
 
 template<typename T, typename U>
-  concept bool C1 = true;
+  concept C1 = true;
 
 template<typename T, typename... Args>
-  concept bool C2 = true;
+  concept C2 = true;
 
 template<typename T, typename U>
-  concept bool C3 = __is_same_as(T, int) && __is_same_as(U, double);
+  concept C3 = __is_same_as(T, int) && __is_same_as(U, double);
 
 template<Same<int> T> struct S1 { };
 template<typename T, Same<T> U> struct S2 { };

@@ -1,6 +1,6 @@
 // PR c++/67427
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template <bool... Values> struct and_c_impl {
   static constexpr bool value = true;
@@ -15,13 +15,11 @@ template <bool... Values> constexpr bool and_c() {
   return and_c_impl<Values...>::value;
 }
 
-template<class T> concept bool C() {
-  return true;
-}
+template<class T> concept C = true;
 
 template<class... Tx>
 struct A {
-  A() requires and_c<C<Tx>()...>() = default;
+  A() requires (and_c<C<Tx>...>()) = default;
 };
 
 int main() {

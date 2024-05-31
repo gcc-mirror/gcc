@@ -1,22 +1,22 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
-  concept bool C1 = __is_class(T);
+  concept C1 = __is_class(T);
 
 template<typename T>
-  concept bool C2() { return __is_class(T); }
+  concept C2 = __is_class(T);
 
 template<typename T>
   constexpr bool C3 = __is_class(T);
 
 
 template<typename U>
-  requires C1<U>() // { dg-error "cannot call a concept" }
+  requires C1<U>
   void f1(U) { }
 
 template<typename U>
-  requires C2<U> // { dg-error "must be called" }
+  requires C2<U>
   void f2(U) { }
 
 template<C3 T>  // { dg-error "not a type" }

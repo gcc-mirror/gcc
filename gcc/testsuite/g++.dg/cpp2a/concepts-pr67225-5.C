@@ -1,12 +1,12 @@
 // PR c++/67225
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template<typename A, typename T>
-concept bool SomeConcept = true;
+concept SomeConcept = true;
 
 template <typename T>
-void breaker(SomeConcept<int>);
+void breaker(SomeConcept<int> auto);
 
 class SomeClass {
     int privateMember;

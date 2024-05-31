@@ -1,8 +1,8 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template<class T>
-concept bool C = requires(const T& t) { t.foo(); };
+concept C = requires(const T& t) { t.foo(); };
 
 template<class T>
 struct Base

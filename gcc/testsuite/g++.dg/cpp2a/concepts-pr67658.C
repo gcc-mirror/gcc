@@ -1,10 +1,10 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
-template<class T> concept bool C1() { return false; }
-template<C1 T> concept bool C2() { return true; } // { dg-error "cannot be constrained" }
+template<class T> concept C1 = false;
+template<C1 T> concept C2 =  true;  // { dg-error "cannot be constrained" }
 
-void f(C2 x) {
+void f(C2 auto x) {
 }
 
 struct A {} a;

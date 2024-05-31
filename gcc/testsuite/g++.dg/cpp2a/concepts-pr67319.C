@@ -1,12 +1,10 @@
 // PR c++/67319
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template <typename T>
-concept bool Any()
-{
-  return requires (T t) { +t; };
-}
+concept Any =
+  requires (T t) { +t; };
 
 struct my_struct
 {

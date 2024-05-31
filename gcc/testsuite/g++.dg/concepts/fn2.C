@@ -1,11 +1,11 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
-  concept bool C() { return __is_class(T); }
+  concept C = __is_class(T);
 
 template<typename T>
-  requires C<T>()
+  requires C<T>
     void f(T x) { }
 
 // Non-dependent args are checked even in dependent scope.

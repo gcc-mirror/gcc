@@ -1,13 +1,13 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 #include <cassert>
 
 template<typename T>
-  concept bool Class() { return __is_class(T); }
+  concept Class = __is_class(T);
 
 template<typename T>
-  concept bool Empty() { return Class<T>() and __is_empty(T); }
+  concept Empty = Class<T> and __is_empty(T);
 
 template<Class T> int f(T) { return 1; }
 template<Empty T> int f(T) { return 2; }

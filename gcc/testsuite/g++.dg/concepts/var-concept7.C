@@ -1,9 +1,13 @@
 // PR c++/85133
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
-template<typename> concept bool C; // { dg-error "no initializer" }
+/* The error with "concept bool" used to be "variable concept has no
+    initializer" which is much better.  Let's at least test that we
+    do not crash.  */
 
-template<C...> struct A {};
+template<typename> concept C; // { dg-error "expected" }
 
-A<int> a;
+template<C...> struct A {}; // { dg-error "declared" }
+
+A<int> a; // { dg-error "" }

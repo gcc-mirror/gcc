@@ -1,6 +1,6 @@
 // PR c++/110065
 // { dg-do compile { target c++17 } }
-// { dg-additional-options -fconcepts-ts }
+// { dg-additional-options -fconcepts }
 
 template <typename>
 inline constexpr bool t = false;

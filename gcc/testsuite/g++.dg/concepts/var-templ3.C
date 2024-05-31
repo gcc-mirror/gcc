@@ -1,6 +1,6 @@
 // PR c++/68666
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 struct A {
   template <class>
@@ -8,6 +8,7 @@ struct A {
 };
 
 template <class T>
-concept bool C = A::val<T>;
+concept C = A::val<T>;
 
-C{T} struct B {};
+template<C T>
+struct B {};

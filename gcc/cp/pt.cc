@@ -3476,10 +3476,6 @@ template_heads_equivalent_p (const_tree tmpl1, const_tree tmpl2)
   tree parms1 = DECL_TEMPLATE_PARMS (tmpl1);
   tree parms2 = DECL_TEMPLATE_PARMS (tmpl2);
 
-  /* Don't change the matching rules for pre-C++20.  */
-  if (cxx_dialect < cxx20)
-    return comp_template_parms (parms1, parms2);
-
   /* ... have the same number of template parameters, and their
      corresponding parameters are equivalent.  */
   if (!template_parameter_lists_equivalent_p (parms1, parms2))
@@ -3887,9 +3883,6 @@ struct find_parameter_pack_data
   /* Set of AST nodes that have been visited by the traversal.  */
   hash_set<tree> *visited;
 
-  /* True iff we're making a type pack expansion.  */
-  bool type_pack_expansion_p;
-
   /* True iff we found a subtree that has the extra args mechanism.  */
   bool found_extra_args_tree_p = false;
 };
@@ -3936,13 +3929,6 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       t = TYPE_MAIN_VARIANT (t);
       /* FALLTHRU */
     case TEMPLATE_TEMPLATE_PARM:
-      /* If the placeholder appears in the decl-specifier-seq of a function
-	 parameter pack (14.6.3), or the type-specifier-seq of a type-id that
-	 is a pack expansion, the invented template parameter is a template
-	 parameter pack.  */
-      if (flag_concepts_ts && ppd->type_pack_expansion_p && is_auto (t)
-	  && TEMPLATE_TYPE_LEVEL (t) != 0)
-	TEMPLATE_TYPE_PARAMETER_PACK (t) = true;
       if (TEMPLATE_TYPE_PARAMETER_PACK (t))
         parameter_pack_p = true;
       break;
@@ -4061,18 +4047,10 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       }
 
     case DECLTYPE_TYPE:
-      {
-	/* When traversing a DECLTYPE_TYPE_EXPR, we need to set
-	   type_pack_expansion_p to false so that any placeholders
-	   within the expression don't get marked as parameter packs.  */
-	bool type_pack_expansion_p = ppd->type_pack_expansion_p;
-	ppd->type_pack_expansion_p = false;
-	cp_walk_tree (&DECLTYPE_TYPE_EXPR (t), &find_parameter_packs_r,
-		      ppd, ppd->visited);
-	ppd->type_pack_expansion_p = type_pack_expansion_p;
-	*walk_subtrees = 0;
-	return NULL_TREE;
-      }
+      cp_walk_tree (&DECLTYPE_TYPE_EXPR (t), &find_parameter_packs_r,
+		    ppd, ppd->visited);
+      *walk_subtrees = 0;
+      return NULL_TREE;
 
     case IF_STMT:
       cp_walk_tree (&IF_COND (t), &find_parameter_packs_r,
@@ -4126,7 +4104,6 @@ uses_parameter_packs (tree t)
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = new hash_set<tree>;
-  ppd.type_pack_expansion_p = false;
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
   delete ppd.visited;
   return parameter_packs;
@@ -4177,7 +4154,6 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
          class expansion.  */
       ppd.visited = new hash_set<tree>;
       ppd.parameter_packs = &parameter_packs;
-      ppd.type_pack_expansion_p = false;
       gcc_assert (TYPE_P (TREE_PURPOSE (arg)));
       cp_walk_tree (&TREE_PURPOSE (arg), &find_parameter_packs_r,
                     &ppd, ppd.visited);
@@ -4243,7 +4219,6 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
   /* Determine which parameter packs will be expanded.  */
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = new hash_set<tree>;
-  ppd.type_pack_expansion_p = TYPE_P (arg);
   cp_walk_tree (&arg, &find_parameter_packs_r, &ppd, ppd.visited);
   delete ppd.visited;
 
@@ -4302,7 +4277,6 @@ check_for_bare_parameter_packs (tree t, location_t loc /* = UNKNOWN_LOCATION */)
 
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = new hash_set<tree>;
-  ppd.type_pack_expansion_p = false;
   cp_walk_tree (&t, &find_parameter_packs_r, &ppd, ppd.visited);
   delete ppd.visited;
 
@@ -5558,7 +5532,6 @@ fixed_parameter_pack_p (tree parm)
   struct find_parameter_pack_data ppd;
   ppd.parameter_packs = &parameter_packs;
   ppd.visited = new hash_set<tree>;
-  ppd.type_pack_expansion_p = false;
 
   fixed_parameter_pack_p_1 (parm, &ppd);
 
@@ -17355,15 +17328,6 @@ tsubst_qualified_id (tree qualified_id, tree args,
 
   if (is_template)
     {
-      /* We may be repeating a check already done during parsing, but
-	 if it was well-formed and passed then, it will pass again
-	 now, and if it didn't, we wouldn't have got here.  The case
-	 we want to catch is when we couldn't tell then, and can now,
-	 namely when templ prior to substitution was an
-	 identifier.  */
-      if (flag_concepts && check_auto_in_tmpl_args (expr, template_args))
-	return error_mark_node;
-
       if (variable_template_p (expr))
 	expr = lookup_and_finish_template_variable (expr, template_args,
 						    complain);
@@ -29629,63 +29593,6 @@ auto_hash::equal (tree t1, tree t2)
   return equivalent_placeholder_constraints (c1, c2);
 }
 
-/* for_each_template_parm callback for extract_autos: if t is a (possibly
-   constrained) auto, add it to the vector.  */
-
-static int
-extract_autos_r (tree t, void *data)
-{
-  hash_table<auto_hash> &hash = *(hash_table<auto_hash>*)data;
-  if (is_auto (t) && !template_placeholder_p (t))
-    {
-      /* All the autos were built with index 0; fix that up now.  */
-      tree *p = hash.find_slot (t, INSERT);
-      int idx;
-      if (*p)
-	/* If this is a repeated constrained-type-specifier, use the index we
-	   chose before.  */
-	idx = TEMPLATE_TYPE_IDX (*p);
-      else
-	{
-	  /* Otherwise this is new, so use the current count.  */
-	  *p = t;
-	  idx = hash.elements () - 1;
-	}
-      if (idx != TEMPLATE_TYPE_IDX (t))
-	{
-	  gcc_checking_assert (TEMPLATE_TYPE_IDX (t) == 0);
-	  gcc_checking_assert (TYPE_CANONICAL (t) != t);
-	  TEMPLATE_TYPE_IDX (t) = idx;
-	  TYPE_CANONICAL (t) = canonical_type_parameter (t);
-	}
-    }
-
-  /* Always keep walking.  */
-  return 0;
-}
-
-/* Return a TREE_VEC of the 'auto's used in type under the Concepts TS, which
-   says they can appear anywhere in the type.  */
-
-static tree
-extract_autos (tree type)
-{
-  hash_set<tree> visited;
-  hash_table<auto_hash> hash (2);
-
-  for_each_template_parm (type, extract_autos_r, &hash, &visited, true);
-
-  tree tree_vec = make_tree_vec (hash.elements());
-  for (tree elt : hash)
-    {
-      unsigned i = TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (elt));
-      TREE_VEC_ELT (tree_vec, i)
-	= build_tree_list (NULL_TREE, TYPE_NAME (elt));
-    }
-
-  return tree_vec;
-}
-
 /* The stem for deduction guide names.  */
 const char *const dguide_base = "__dguide_";
 
@@ -31227,16 +31134,9 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	return error_mark_node;
 
       tree parms = build_tree_list (NULL_TREE, type);
-      tree tparms;
-
-      if (flag_concepts_ts)
-	tparms = extract_autos (type);
-      else
-	{
-	  tparms = make_tree_vec (1);
-	  TREE_VEC_ELT (tparms, 0)
-	    = build_tree_list (NULL_TREE, TYPE_NAME (auto_node));
-	}
+      tree tparms = make_tree_vec (1);
+      TREE_VEC_ELT (tparms, 0)
+	= build_tree_list (NULL_TREE, TYPE_NAME (auto_node));
 
       targs = make_tree_vec (TREE_VEC_LENGTH (tparms));
       int val = type_unification_real (tparms, targs, parms, &init, 1, 0,
@@ -31448,66 +31348,7 @@ type_uses_auto (tree type)
   if (PACK_EXPANSION_P (type))
     type = PACK_EXPANSION_PATTERN (type);
 
-  if (flag_concepts_ts)
-    {
-      /* The Concepts TS allows multiple autos in one type-specifier; just
-	 return the first one we find, do_auto_deduction will collect all of
-	 them.  */
-      if (uses_template_parms (type))
-	return for_each_template_parm (type, is_auto_r, /*data*/NULL,
-				       /*visited*/NULL, /*nondeduced*/false);
-      else
-	return NULL_TREE;
-    }
-  else
-    return find_type_usage (type, is_auto);
-}
-
-/* Report ill-formed occurrences of auto types in ARGUMENTS.  If
-   concepts are enabled, auto is acceptable in template arguments, but
-   only when TEMPL identifies a template class.  Return TRUE if any
-   such errors were reported.  */
-
-bool
-check_auto_in_tmpl_args (tree tmpl, tree args)
-{
-  if (!flag_concepts_ts)
-    /* Only the concepts TS allows 'auto' as a type-id; it'd otherwise
-       have already been rejected by the parser more generally.  */
-    return false;
-
-  /* If there were previous errors, nevermind.  */
-  if (!args || TREE_CODE (args) != TREE_VEC)
-    return false;
-
-  /* If TMPL is an identifier, we're parsing and we can't tell yet
-     whether TMPL is supposed to be a type, a function or a variable.
-     We'll only be able to tell during template substitution, so we
-     expect to be called again then.  If concepts are enabled and we
-     know we have a type, we're ok.  */
-  if (identifier_p (tmpl)
-      || (DECL_P (tmpl)
-	  &&  (DECL_TYPE_TEMPLATE_P (tmpl)
-	       || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))))
-    return false;
-
-  /* Quickly search for any occurrences of auto; usually there won't
-     be any, and then we'll avoid allocating the vector.  */
-  if (!type_uses_auto (args))
-    return false;
-
-  bool errors = false;
-
-  tree vec = extract_autos (args);
-  for (int i = 0; i < TREE_VEC_LENGTH (vec); i++)
-    {
-      tree xauto = TREE_VALUE (TREE_VEC_ELT (vec, i));
-      error_at (DECL_SOURCE_LOCATION (xauto),
-		"invalid use of %qT in template argument", xauto);
-      errors = true;
-    }
-
-  return errors;
+  return find_type_usage (type, is_auto);
 }
 
 /* Recursively walk over && expressions searching for EXPR. Return a reference

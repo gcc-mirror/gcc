@@ -1,6 +1,6 @@
 // { dg-do link { target c++14 } }
-// { dg-options "-fconcepts-ts" }
+// { dg-options "-fconcepts" }
 
-void f() requires true { }
+void f() requires true { }  // { dg-error "constraints on a non-templated function" }
 
 int main() { }

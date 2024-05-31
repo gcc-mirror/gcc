@@ -1,24 +1,20 @@
-// { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts-ts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
-concept bool C1()
-{
-  return requires (T t) { t.f(); }; // { dg-message "in requirements" }
-}
+concept C1 =
+  requires (T t) { t.f(); }; // { dg-message "in requirements" }
 
 template<typename T>
-concept bool C2()
-{
-  return requires { typename T::type; }; // { dg-message "in requirements" }
-}
+concept C2 =
+  requires { typename T::type; }; // { dg-message "in requirements" }
 
 template<typename T>
-  requires C1<T>()
+  requires C1<T>
 void f1(T x) { }
 
 template<typename T>
-  requires C2<T>()
+  requires C2<T>
 void f2(T x) { }
 
 // Note that these declarations are private and therefore
@@ -38,6 +34,6 @@ int main()
   // the constraint check before emitting the access check
   // failures. The context is being presented consistently
   // in both cases.
-  static_assert(C1<S>(), ""); // { dg-error "failed" }
-  static_assert(C2<S>(), ""); // { dg-error "" }
+  static_assert(C1<S>, ""); // { dg-error "failed" }
+  static_assert(C2<S>, ""); // { dg-error "" }
 }

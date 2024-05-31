@@ -1,14 +1,13 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 template<typename F>
-concept bool FCallable()
-{
-  return requires(F)
+concept FCallable =
+  requires(F)
   {
       F::f();
   };
-}
+
 
 class Test1
 {
@@ -26,7 +25,7 @@ public:
   static void f() {}
 };
 
-template<typename X> concept bool C = true;
+template<typename X> concept C = true;
 
 template<C... X>
 void bar(X...)

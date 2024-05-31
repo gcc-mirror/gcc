@@ -1,10 +1,10 @@
 // { dg-do compile { target c++20 } }
-// { dg-additional-options "-fconcepts-ts" }
+// { dg-additional-options "-fconcepts" }
 
 #include <type_traits>
 
 template <class T, class U>
-concept bool Same = std::is_same<T, U>::value;
+concept Same = std::is_same<T, U>::value;
 
 struct test {
   template <Same<int>... Ints>

@@ -1099,12 +1099,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_variadic_friend=202403L");
 	}
       if (flag_concepts)
-        {
-	  if (cxx_dialect >= cxx20 || !flag_concepts_ts)
-	    cpp_define (pfile, "__cpp_concepts=202002L");
-          else
-            cpp_define (pfile, "__cpp_concepts=201507L");
-        }
+	cpp_define (pfile, "__cpp_concepts=202002L");
       if (flag_contracts)
 	{
 	  cpp_define (pfile, "__cpp_contracts=201906L");
