@@ -3132,7 +3132,7 @@
     DONE;
   }
 )
-(define_insn "aarch64_float_extend_lo_<Vwide>"
+(define_insn "extend<mode><Vwide>2"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(float_extend:<VWIDE>
 	  (match_operand:VDF 1 "register_operand" "w")))]

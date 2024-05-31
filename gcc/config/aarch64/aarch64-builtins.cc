@@ -534,6 +534,15 @@ BUILTIN_VDQ_BHSI (urhadd, uavg, _ceil, 0)
 BUILTIN_VDQ_BHSI (shadd, avg, _floor, 0)
 BUILTIN_VDQ_BHSI (uhadd, uavg, _floor, 0)
 
+/* The builtins below should be expanded through the standard optabs
+   CODE_FOR_extend<mode><Vwide>2. */
+#undef VAR1
+#define VAR1(F,T,N,M) \
+  constexpr insn_code CODE_FOR_aarch64_##F##M = CODE_FOR_##T##N##M##2;
+
+VAR1 (float_extend_lo_, extend, v2sf, v2df)
+VAR1 (float_extend_lo_, extend, v4hf, v4sf)
+
 #undef VAR1
 #define VAR1(T, N, MAP, FLAG, A) \
   {#N #A, UP (A), CF##MAP (N, A), 0, TYPES_##T, FLAG_##FLAG},
