@@ -1,3 +1,9 @@
+2024-05-31  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/cuda-lib.def (cuCtxSetLimit): Add.
+	* plugin/plugin-nvptx.c (nvptx_open_device): Handle
+	'GOMP_NVPTX_NATIVE_GPU_THREAD_STACK_SIZE' environment variable.
+
 2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* plugin/plugin-nvptx.c (nvptx_do_global_cdtors): New.
