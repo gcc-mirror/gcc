@@ -150,6 +150,8 @@ init_cuda_lib (void)
 
 #include "secure_getenv.h"
 
+static void notify_var (const char *, const char *);
+
 #undef MIN
 #undef MAX
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
@@ -340,6 +342,9 @@ struct ptx_device
 };
 
 static struct ptx_device **ptx_devices;
+
+/* "Native" GPU thread stack size.  */
+static unsigned native_gpu_thread_stack_size = 0;
 
 /* OpenMP kernels reserve a small amount of ".shared" space for use by
    omp_alloc.  The size is configured using GOMP_NVPTX_LOWLAT_POOL, but the
@@ -555,6 +560,46 @@ nvptx_open_device (int n)
   ptx_dev->free_blocks = NULL;
   pthread_mutex_init (&ptx_dev->free_blocks_lock, NULL);
 
+  /* "Native" GPU thread stack size.  */
+  {
+    /* This is intentionally undocumented, until we work out a proper, common
+       scheme (as much as makes sense) between all offload plugins as well
+       as between nvptx offloading use of "native" stacks for OpenACC vs.
+       OpenMP "soft stacks" vs. OpenMP '-msoft-stack-reserve-local=[...]'.
+
+       GCN offloading has a 'GCN_STACK_SIZE' environment variable (without
+       'GOMP_' prefix): documented; presumably used for all things OpenACC and
+       OpenMP?  Based on GCN command-line option '-mstack-size=[...]' (marked
+       "obsolete"), that one may be set via a GCN 'mkoffload'-synthesized
+       'constructor' function.  */
+    const char *var_name = "GOMP_NVPTX_NATIVE_GPU_THREAD_STACK_SIZE";
+    const char *env_var = secure_getenv (var_name);
+    notify_var (var_name, env_var);
+
+    if (env_var != NULL)
+      {
+	char *endptr;
+	unsigned long val = strtoul (env_var, &endptr, 10);
+	if (endptr == NULL || *endptr != '\0'
+	    || errno == ERANGE || errno == EINVAL
+	    || val > UINT_MAX)
+	  GOMP_PLUGIN_error ("Error parsing %s", var_name);
+	else
+	  native_gpu_thread_stack_size = val;
+      }
+  }
+  if (native_gpu_thread_stack_size == 0)
+    ; /* Zero means use default.  */
+  else
+    {
+      GOMP_PLUGIN_debug (0, "Setting \"native\" GPU thread stack size"
+			 " ('CU_LIMIT_STACK_SIZE') to %u bytes\n",
+			 native_gpu_thread_stack_size);
+      CUDA_CALL (cuCtxSetLimit,
+		 CU_LIMIT_STACK_SIZE, (size_t) native_gpu_thread_stack_size);
+    }
+
+  /* OpenMP "soft stacks".  */
   ptx_dev->omp_stacks.ptr = 0;
   ptx_dev->omp_stacks.size = 0;
   pthread_mutex_init (&ptx_dev->omp_stacks.lock, NULL);
