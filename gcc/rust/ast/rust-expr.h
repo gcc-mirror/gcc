@@ -4994,6 +4994,16 @@ public:
 
   void set_outer_attrs (std::vector<Attribute> v) override { outer_attrs = v; }
 
+  std::vector<InlineAsmTemplatePiece> get_template_ () { return template_; }
+
+  std::vector<TupleTemplateStr> get_template_strs () { return template_strs; }
+
+  std::vector<InlineAsmOperand> get_operands () { return operands; }
+
+  std::vector<TupleClobber> get_clobber_abi () { return clobber_abi; }
+
+  std::set<InlineAsmOption> get_options () { return options; }
+
   InlineAsm *clone_expr_without_block_impl () const override
   {
     return new InlineAsm (*this);

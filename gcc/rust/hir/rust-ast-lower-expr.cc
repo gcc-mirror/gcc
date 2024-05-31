@@ -830,6 +830,20 @@ ASTLoweringExpr::visit (AST::ClosureExprInnerTyped &expr)
 }
 
 void
+ASTLoweringExpr::visit (AST::InlineAsm &expr)
+{
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
+
+  translated
+    = new HIR::InlineAsm (expr.get_locus (), expr.is_global_asm,
+			  expr.get_template_ (), expr.get_template_strs (),
+			  expr.get_operands (), expr.get_clobber_abi (),
+			  expr.get_options (), mapping);
+}
+void
 ASTLoweringExpr::visit (AST::FormatArgs &fmt)
 {
   rust_sorry_at (fmt.get_locus (),

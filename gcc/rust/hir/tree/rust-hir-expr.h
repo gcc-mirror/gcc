@@ -24,7 +24,7 @@
 #include "rust-hir.h"
 #include "rust-hir-path.h"
 #include "rust-operators.h"
-
+#include "rust-expr.h"
 namespace Rust {
 namespace HIR {
 
@@ -3865,13 +3865,69 @@ struct InlineAsmRegOrRegClass
 class InlineAsm : public ExprWithoutBlock
 {
   NodeId id;
+  location_t locus;
 
 public:
+  bool is_global_asm;
+
   std::vector<AST::InlineAsmTemplatePiece> template_;
   std::vector<AST::TupleTemplateStr> template_strs;
   std::vector<AST::InlineAsmOperand> operands;
-  AST::InlineAsmOption options;
+  std::vector<AST::TupleClobber> clobber_abi;
+  std::set<AST::InlineAsmOption> options;
+
   std::vector<location_t> line_spans;
+
+  void accept_vis (HIRExpressionVisitor &vis) override{};
+
+  void accept_vis (HIRFullVisitor &vis) override{};
+
+  std::string as_string () const override { return "InlineAsm HIR Node"; }
+
+  location_t get_locus () const override { return locus; }
+
+  InlineAsm *clone_expr_without_block_impl () const override
+  {
+    return new InlineAsm (*this);
+  }
+
+  ExprType get_expression_type () const final override
+  {
+    // TODO: Not sure if this expression type is UnsafeBlock or not.
+    return ExprType::UnsafeBlock;
+  }
+  std::vector<AST::InlineAsmTemplatePiece> get_template_ ()
+  {
+    return template_;
+  }
+
+  std::vector<AST::TupleTemplateStr> get_template_strs ()
+  {
+    return template_strs;
+  }
+
+  std::vector<AST::InlineAsmOperand> get_operands () { return operands; }
+
+  std::vector<AST::TupleClobber> get_clobber_abi () { return clobber_abi; }
+
+  std::set<AST::InlineAsmOption> get_options () { return options; }
+
+  InlineAsm (location_t locus, bool is_global_asm,
+	     std::vector<AST::InlineAsmTemplatePiece> template_,
+	     std::vector<AST::TupleTemplateStr> template_strs,
+	     std::vector<AST::InlineAsmOperand> operands,
+	     std::vector<AST::TupleClobber> clobber_abi,
+	     std::set<AST::InlineAsmOption> options,
+	     Analysis::NodeMapping mappings,
+	     AST::AttrVec outer_attribs = AST::AttrVec ())
+    : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
+      locus (locus), is_global_asm (is_global_asm),
+      template_ (std::move (template_)),
+      template_strs (std::move (template_strs)),
+      operands (std::move (operands)), clobber_abi (std::move (clobber_abi)),
+      options (std::move (options))
+
+  {}
 };
 } // namespace HIR
 } // namespace Rust
