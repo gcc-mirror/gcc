@@ -1005,6 +1005,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 		const size_type __len =
 		  _M_check_len(__n, "vector::_M_range_insert");
+#if __cplusplus < 201103LL
+		if (__len < (__n + (__old_start - __old_finish)))
+		  __builtin_unreachable();
+#endif
+
 		pointer __new_start(this->_M_allocate(__len));
 		pointer __new_finish(__new_start);
 		__try
