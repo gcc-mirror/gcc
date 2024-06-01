@@ -2331,7 +2331,7 @@ region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
      setjmp was called.  */
   gcc_assert (get_stack_depth () >= setjmp_stack_depth);
   while (get_stack_depth () > setjmp_stack_depth)
-    pop_frame (NULL, NULL, ctxt, false);
+    pop_frame (NULL, NULL, ctxt, nullptr, false);
 
   gcc_assert (get_stack_depth () == setjmp_stack_depth);
 
@@ -5673,7 +5673,7 @@ region_model::update_for_return_gcall (const gcall *call_stmt,
      so that pop_frame can determine the region with respect to the
      *caller* frame.  */
   tree lhs = gimple_call_lhs (call_stmt);
-  pop_frame (lhs, NULL, ctxt);
+  pop_frame (lhs, NULL, ctxt, call_stmt);
 }
 
 /* Extract calling information from the superedge and update the model for the 
@@ -6083,6 +6083,70 @@ region_model::get_current_function () const
   return &frame->get_function ();
 }
 
+/* Custom region_model_context for the assignment to the result
+   at a call statement when popping a frame (PR analyzer/106203).  */
+
+class caller_context : public region_model_context_decorator
+{
+public:
+  caller_context (region_model_context *inner,
+		  const gcall *call_stmt,
+		  const frame_region &caller_frame)
+    : region_model_context_decorator (inner),
+      m_call_stmt (call_stmt),
+      m_caller_frame (caller_frame)
+  {}
+  bool warn (std::unique_ptr<pending_diagnostic> d,
+	     const stmt_finder *custom_finder) override
+  {
+    if (m_inner && custom_finder == nullptr)
+      {
+	/* Custom stmt_finder to use m_call_stmt for the
+	   diagnostic.  */
+	class my_finder : public stmt_finder
+	{
+	public:
+	  my_finder (const gcall *call_stmt,
+		     const frame_region &caller_frame)
+	    : m_call_stmt (call_stmt),
+	      m_caller_frame (caller_frame)
+	  {}
+	  std::unique_ptr<stmt_finder> clone () const override
+	  {
+	    return ::make_unique<my_finder> (m_call_stmt, m_caller_frame);
+	  }
+	  const gimple *find_stmt (const exploded_path &) override
+	  {
+	    return m_call_stmt;
+	  }
+	  void update_event_loc_info (event_loc_info &loc_info) final override
+	  {
+	    loc_info.m_fndecl = m_caller_frame.get_fndecl ();
+	    loc_info.m_depth = m_caller_frame.get_stack_depth ();
+	  }
+
+	private:
+	  const gcall *m_call_stmt;
+	  const frame_region &m_caller_frame;
+	};
+	my_finder finder (m_call_stmt, m_caller_frame);
+	return m_inner->warn (std::move (d), &finder);
+      }
+    else
+      return region_model_context_decorator::warn (std::move (d),
+						   custom_finder);
+  }
+  const gimple *get_stmt () const override
+  {
+    return m_call_stmt;
+  };
+
+private:
+  const gcall *m_call_stmt;
+  const frame_region &m_caller_frame;
+};
+
+
 /* Pop the topmost frame_region from this region_model's stack;
 
    If RESULT_LVALUE is non-null, copy any return value from the frame
@@ -6090,6 +6154,9 @@ region_model::get_current_function () const
    frame, rather than the called frame).
    If OUT_RESULT is non-null, copy any return value from the frame
    into *OUT_RESULT.
+
+   If non-null, use CALL_STMT as the location when complaining about
+   assignment of the return value to RESULT_LVALUE.
 
    If EVAL_RETURN_SVALUE is false, then don't evaluate the return value.
    This is for use when unwinding frames e.g. due to longjmp, to suppress
@@ -6103,6 +6170,7 @@ void
 region_model::pop_frame (tree result_lvalue,
 			 const svalue **out_result,
 			 region_model_context *ctxt,
+			 const gcall *call_stmt,
 			 bool eval_return_svalue)
 {
   gcc_assert (m_current_frame);
@@ -6137,7 +6205,13 @@ region_model::pop_frame (tree result_lvalue,
       /* Compute result_dst_reg using RESULT_LVALUE *after* popping
 	 the frame, but before poisoning pointers into the old frame.  */
       const region *result_dst_reg = get_lvalue (result_lvalue, ctxt);
-      set_value (result_dst_reg, retval, ctxt);
+
+      /* Assign retval to result_dst_reg, using caller_context
+	 to set the call_stmt and the popped_frame for any diagnostics
+	 due to the assignment.  */
+      gcc_assert (m_current_frame);
+      caller_context caller_ctxt (ctxt, call_stmt, *m_current_frame);
+      set_value (result_dst_reg, retval, call_stmt ? &caller_ctxt : ctxt);
     }
 
   unbind_region_and_descendents (frame_reg,POISON_KIND_POPPED_STACK);
@@ -8130,7 +8204,7 @@ test_stack_frames ()
   ASSERT_FALSE (a_in_parent_reg->descendent_of_p (child_frame_reg));
 
   /* Pop the "child_fn" frame from the stack.  */
-  model.pop_frame (NULL, NULL, &ctxt);
+  model.pop_frame (NULL, NULL, &ctxt, nullptr);
   ASSERT_FALSE (model.region_exists_p (child_frame_reg));
   ASSERT_TRUE (model.region_exists_p (parent_frame_reg));
 
@@ -9243,7 +9317,7 @@ test_alloca ()
 
   /* Verify that the pointers to the alloca region are replaced by
      poisoned values when the frame is popped.  */
-  model.pop_frame (NULL, NULL, &ctxt);
+  model.pop_frame (NULL, NULL, &ctxt, nullptr);
   ASSERT_EQ (model.get_rvalue (p, NULL)->get_kind (), SK_POISONED);
 }
 

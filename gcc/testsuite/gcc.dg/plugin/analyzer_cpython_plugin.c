@@ -274,6 +274,11 @@ public:
     return NULL;
   }
 
+  void update_event_loc_info (event_loc_info &) final override
+  {
+    /* No-op.  */
+  }
+
 private:
   const exploded_graph &m_eg;
   tree m_var;

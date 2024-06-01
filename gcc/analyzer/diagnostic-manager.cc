@@ -1588,8 +1588,17 @@ diagnostic_manager::emit_saved_diagnostic (const exploded_graph &eg,
      We use the final enode from the epath, which might be different from
      the sd.m_enode, as the dedupe code doesn't care about enodes, just
      snodes.  */
-  sd.m_d->add_final_event (sd.m_sm, epath->get_final_enode (), sd.m_stmt,
-			   sd.m_var, sd.m_state, &emission_path);
+  {
+    const exploded_node *const enode = epath->get_final_enode ();
+    const gimple *stmt = sd.m_stmt;
+    event_loc_info loc_info (get_stmt_location (stmt, enode->get_function ()),
+			     enode->get_function ()->decl,
+			     enode->get_stack_depth ());
+    if (sd.m_stmt_finder)
+      sd.m_stmt_finder->update_event_loc_info (loc_info);
+    sd.m_d->add_final_event (sd.m_sm, enode, loc_info,
+			     sd.m_var, sd.m_state, &emission_path);
+  }
 
   /* The "final" event might not be final; if the saved_diagnostic has a
      trailing eedge stashed, add any events for it.  This is for use

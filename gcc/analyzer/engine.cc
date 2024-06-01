@@ -681,6 +681,11 @@ public:
     return NULL;
   }
 
+  void update_event_loc_info (event_loc_info &) final override
+  {
+    /* No-op.  */
+  }
+
 private:
   const exploded_graph &m_eg;
   tree m_var;
@@ -2056,7 +2061,7 @@ exploded_node::detect_leaks (exploded_graph &eg)
 				  &old_state, &new_state, &uncertainty, NULL,
 				  get_stmt ());
   const svalue *result = NULL;
-  new_state.m_region_model->pop_frame (NULL, &result, &ctxt);
+  new_state.m_region_model->pop_frame (NULL, &result, &ctxt, nullptr);
   program_state::detect_leaks (old_state, new_state, result,
 			       eg.get_ext_state (), &ctxt);
 }

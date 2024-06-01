@@ -1035,6 +1035,7 @@ public:
   virtual ~stmt_finder () {}
   virtual std::unique_ptr<stmt_finder> clone () const = 0;
   virtual const gimple *find_stmt (const exploded_path &epath) = 0;
+  virtual void update_event_loc_info (event_loc_info &) = 0;
 };
 
 // TODO: split the above up?
