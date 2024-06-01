@@ -292,6 +292,8 @@
 (define_mode_iterator SPLIT34 [SI SF PSI
                                SQ USQ SA USA])
 
+(define_mode_iterator SFDF [SF DF])
+
 ;; Where the most significant bit is located.
 (define_mode_attr MSB  [(QI "7") (QQ "7") (UQQ "7")
                         (HI "15") (HQ "15") (UHQ "15") (HA "15") (UHA "15")
@@ -10046,6 +10048,20 @@
         (zero_extract:QI (match_dup 1)
                          (const_int 1)
                          (match_dup 2)))])
+
+
+;; Work around PR115307: Early passes expand isinf/f/l to a bloat.
+;; These passes do not consider costs, and there is no way to
+;; hook in or otherwise disable the generated bloat.
+
+;; isinfsf2  isinfdf2
+(define_expand "isinf<mode>2"
+  [(parallel [(match_operand:HI 0)
+              (match_operand:SFDF 1)])]
+  ""
+  {
+    FAIL;
+  })
 
 
 ;; Fixed-point instructions
