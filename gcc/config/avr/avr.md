@@ -285,6 +285,8 @@
 (define_mode_iterator SPLIT34 [SI SF PSI
                                SQ USQ SA USA])
 
+(define_mode_iterator SFDF [SF DF])
+
 ;; Define code iterators
 ;; Define two incarnations so that we can build the cartesian product.
 (define_code_iterator any_extend  [sign_extend zero_extend])
@@ -9778,6 +9780,20 @@
     int bitno = INTVAL (operands[2]);
     operands[3] = simplify_gen_subreg (QImode, operands[1], <MODE>mode, bitno / 8);
     operands[4] = GEN_INT (bitno % 8);
+  })
+
+
+;; Work around PR115307: Early passes expand isinf/f/l to a bloat.
+;; These passes do not consider costs, and there is no way to
+;; hook in or otherwise disable the generated bloat.
+
+;; isinfsf2  isinfdf2
+(define_expand "isinf<mode>2"
+  [(parallel [(match_operand:HI 0)
+              (match_operand:SFDF 1)])]
+  ""
+  {
+    FAIL;
   })
 
 
