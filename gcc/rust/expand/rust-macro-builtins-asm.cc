@@ -219,7 +219,6 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 
   token = parser.peek_current_token ();
 
-  bool is_explicit_reg = false;
   bool is_global_asm = inline_asm.is_global_asm;
   if (!is_global_asm && check_identifier (parser, "in"))
     {
@@ -354,7 +353,12 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	{
 	  // TODO: Unexpected error, please return the correct error
 	  rust_error_at (token->get_locus (),
-			 "Unexpected token encountered in parse_options");
+			 "expected one of %qs, %qs, %qs, %qs, %qs, %qs, %qs, "
+			 "%qs, %qs, or %qs, found %qs",
+			 ")", "att_syntax", "may_unwind", "nomem", "noreturn",
+			 "nostack", "preserves_flags", "pure", "raw",
+			 "readonly", token->as_string ().c_str ());
+	  return -1;
 	}
       if (parser.skip_token (RIGHT_PAREN))
 	{
@@ -519,7 +523,7 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   if (fm_string == tl::nullopt)
     {
       rust_error_at (parser.peek_current_token ()->get_locus (),
-		     "asm template must be a string literal");
+		     "%s template must be a string literal", "asm");
       return tl::nullopt;
     }
 
