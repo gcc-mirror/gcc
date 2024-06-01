@@ -45,6 +45,7 @@
 #include <bits/stl_algo.h>
 #include <bits/stl_iterator.h>
 #include <bits/stl_uninitialized.h>
+#include <bits/stl_tempbuf.h> // __get_temporary_buffer
 #include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -545,21 +546,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::min(__size_max, __alloc_max);
 	}
 
-#if __has_builtin(__builtin_operator_new) >= 201802L
-# define _GLIBCXX_OPERATOR_NEW __builtin_operator_new
-# define _GLIBCXX_OPERATOR_DELETE __builtin_operator_delete
-#else
-# define _GLIBCXX_OPERATOR_NEW ::operator new
-# define _GLIBCXX_OPERATOR_DELETE ::operator delete
-#endif
-
-#if __cpp_sized_deallocation
-# define _GLIBCXX_SIZED_DELETE(T, p, n) \
-  _GLIBCXX_OPERATOR_DELETE((p), (n) * sizeof(T))
-#else
-# define _GLIBCXX_SIZED_DELETE(T, p, n) _GLIBCXX_OPERATOR_DELETE(p)
-#endif
-
 	// Precondition: _M_frames == nullptr && __n != 0
 	pointer
 	_M_allocate(allocator_type& __alloc, size_type __n) noexcept
@@ -570,11 +556,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		{
 		  // For std::allocator we use nothrow-new directly so we
 		  // don't need to handle bad_alloc exceptions.
-		  size_t __nb = __n * sizeof(value_type);
-		  void* const __p = _GLIBCXX_OPERATOR_NEW (__nb, nothrow_t{});
+		  auto __p = __detail::__get_temporary_buffer<value_type>(__n);
 		  if (__p == nullptr) [[unlikely]]
 		    return nullptr;
-		  _M_frames = static_cast<pointer>(__p);
+		  _M_frames = __p;
 		}
 	      else
 		{
@@ -599,19 +584,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (_M_capacity)
 	    {
 	      if constexpr (is_same_v<allocator_type, allocator<value_type>>)
-		_GLIBCXX_SIZED_DELETE(value_type,
-				      static_cast<void*>(_M_frames),
-				      _M_capacity);
+		__detail::__return_temporary_buffer(_M_frames, _M_capacity);
 	      else
 		__alloc.deallocate(_M_frames, _M_capacity);
 	      _M_frames = nullptr;
 	      _M_capacity = 0;
 	    }
 	}
-
-#undef _GLIBCXX_SIZED_DELETE
-#undef _GLIBCXX_OPERATOR_DELETE
-#undef _GLIBCXX_OPERATOR_NEW
 
 	// Precondition: __n <= _M_size
 	void
