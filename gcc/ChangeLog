@@ -1,3 +1,38 @@
+2024-05-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113281
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern): Remove
+	workaround for right shifts.
+	(vect_truncatable_operation_p): Handle NEGATE_EXPR and BIT_NOT_EXPR.
+	(vect_determine_precisions_from_range): Be more selective about
+	which codes can be narrowed based on their input and output ranges.
+	For shifts, require at least one more bit of precision than the
+	maximum shift amount.
+
+2024-05-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/115192
+	* tree-data-ref.cc (create_intersect_range_checks): Take the
+	alignment of the access sizes into account.
+
+2024-05-31  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2024-05-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/113719
+	* config/i386/i386-options.cc (ix86_override_options_after_change):
+	Remove call to ix86_default_align and
+	ix86_recompute_optlev_based_flags.
+	(ix86_option_override_internal): Call ix86_default_align and
+	ix86_recompute_optlev_based_flags.
+
 2024-05-30  YunQiang Su  <syq@gcc.gnu.org>
 
 	Backported from master:
