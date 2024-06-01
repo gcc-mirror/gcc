@@ -1,3 +1,11 @@
+2024-05-31  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/crt0.c (__gbl_ctors): New weak function.
+	(__main): Invoke it.
+	* config/nvptx/gbl-ctors.c: New.
+	* config/nvptx/t-nvptx: Configure global constructor, destructor
+	support.
+
 2024-05-21  Kewen Lin  <linkw@linux.ibm.com>
 
 	* config.host: Remove powerpc-*-eabispe* support.

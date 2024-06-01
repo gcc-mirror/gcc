@@ -1,3 +1,9 @@
+2024-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/115294
+	* testsuite/lib/libvtv.exp (libvtv_target_compile): Pass new
+	dg-additional-files-options args.
+
 2024-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* vtv_rts.cc (vtv_fail): Fix duplicated words; to to -> to.

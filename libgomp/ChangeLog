@@ -1,3 +1,9 @@
+2024-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/115294
+	* testsuite/lib/libgomp.exp (libgomp_target_compile): Pass new
+	dg-additional-files-options args.
+
 2024-05-30  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP 5.0 status): Mark 'requires' as done and

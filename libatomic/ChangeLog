@@ -1,3 +1,9 @@
+2024-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/115294
+	* testsuite/lib/libatomic.exp (libatomic_target_compile): Pass new
+	dg-additional-files-options args.
+
 2024-05-07  Zac Walker  <zacwalker@microsoft.com>
 
 	* configure.tgt: Add aarch64-w64-mingw32 target.

@@ -1,3 +1,22 @@
+2024-05-31  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-ubsan.cc (get_bound_from_access_with_size): New function.
+	(ubsan_instrument_bounds): Handle call to .ACCESS_WITH_SIZE.
+
+2024-05-31  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.cc (handle_counted_by_attribute): New function.
+	(attribute_takes_identifier_p): Add counted_by attribute to the list.
+	* c-common.cc (c_flexible_array_member_type_p): ...To this.
+	* c-common.h (c_flexible_array_member_type_p): New prototype.
+
+2024-05-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR tree-optimization/115157
+	PR tree-optimization/115177
+	* c-attribs.cc (handle_hardbool_attribute): Set TYPE_CANONICAL
+	for hardbools.
+
 2024-05-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109753

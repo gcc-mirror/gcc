@@ -1,3 +1,202 @@
+2024-05-31  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_expand_call):
+	Add the third argument as boolean.
+	(xtensa_expand_epilogue): Remove the first argument.
+	* config/xtensa/xtensa.cc (xtensa_expand_call):
+	Add the third argument "sibcall_p", and modify in order to prepend
+	"(use A0_REG)" to CALL_INSN_FUNCTION_USAGE if the argument is true.
+	(xtensa_expand_epilogue): Remove the first argument "sibcall_p" and
+	its conditional clause.
+	* config/xtensa/xtensa.md (call, call_value, sibcall, sibcall_value):
+	Append a boolean value to the argument of xtensa_expand_call()
+	indicating whether it is sibling call or not.
+	(epilogue): Remove the boolean argument from xtensa_expand_epilogue(),
+	and then append emitting "(return)".
+	(sibcall_epilogue): Remove the boolean argument from
+	xtensa_expand_epilogue().
+
+2024-05-31  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md
+	(subreg_HQI_lowpart_operator, xtensa_sminmax_operator):
+	New operator predicates.
+	* config/xtensa/xtensa-protos.h (xtensa_match_CLAMPS_imms_p):
+	Remove.
+	* config/xtensa/xtensa.cc (xtensa_match_CLAMPS_imms_p): Ditto.
+	* config/xtensa/xtensa.md
+	(*addsubx, *extzvsi-1bit_ashlsi3, *extzvsi-1bit_addsubx):
+	Revise the output statements by conditional ternary operator rather
+	than switch-case clause in order to avoid using gcc_unreachable().
+	(xtensa_clamps): Reduce to a single pattern definition using the
+	predicate added above.
+	(Some split patterns to assist *masktrue_const_bitcmpl): Ditto.
+
+2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Document.
+	(shuffle_extract_and_slide1up_patterns): Remove.
+
+2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (ctz<mode>2): New expander.
+	(clz<mode>2): Ditto.
+	* config/riscv/generic-vector-ooo.md: Add bitmanip ops to insn
+	reservation.
+	* config/riscv/vector-crypto.md: Add VLS modes to insns.
+	* config/riscv/vector.md: Add bitmanip ops to mode_idx and other
+	attributes.
+
+2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec-opt.md (*vandn_<mode>): New pattern.
+	* config/riscv/vector.md: Add vandn to mode_idx.
+
+2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (expand_gather_scatter): Use vwsll if
+	applicable.
+	* config/riscv/vector-crypto.md: Remove mode from vwsll shift
+	count operator.
+	* config/riscv/vector.md: Add vwsll to mode iterator.
+
+2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec-opt.md (*vwsll_zext1_<mode>): New
+	pattern.
+	(*vwsll_zext2_<mode>): Ditto.
+	(*vwsll_zext1_scalar_<mode>): Ditto.
+	(*vwsll_zext1_trunc_<mode>): Ditto.
+	(*vwsll_zext2_trunc_<mode>): Ditto.
+	(*vwsll_zext1_trunc_scalar_<mode>): Ditto.
+	* config/riscv/vector-crypto.md: Make pattern similar to other
+	narrowing/widening patterns.
+
+2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/vector.md: Split vwadd.wx/vwsub.wx pattern and
+	add extended_scalar patterns.
+
+2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/115068
+	* config/riscv/vector.md:  Split vfw<insn>.wf pattern.
+
+2024-05-31  Qing Zhao  <qing.zhao@oracle.com>
+
+	* tree-object-size.cc (access_with_size_object_size): Use the type
+	of the 6th argument for the type of the element.
+	* internal-fn.cc (expand_ACCESS_WITH_SIZE): Update the comment with
+	the 6th argument.
+
+2024-05-31  Qing Zhao  <qing.zhao@oracle.com>
+
+	* tree-object-size.cc (access_with_size_object_size): New function.
+	(call_object_size): Call the new function.
+
+2024-05-31  Qing Zhao  <qing.zhao@oracle.com>
+
+	* internal-fn.cc (expand_ACCESS_WITH_SIZE): New function.
+	* internal-fn.def (ACCESS_WITH_SIZE): New internal function.
+	* tree.cc (is_access_with_size_p): New function.
+	(get_ref_from_access_with_size): New function.
+	* tree.h (is_access_with_size_p): New prototype.
+	(get_ref_from_access_with_size): New prototype.
+
+2024-05-31  Qing Zhao  <qing.zhao@oracle.com>
+
+	* doc/extend.texi: Document attribute counted_by.
+
+2024-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115297
+	* config/alpha/alpha.md (<any_divmod:code>si3): Wrap DImode
+	operands 3 and 4 with truncate:SI RTX.
+	(*divmodsi_internal_er): Ditto for operands 1 and 2.
+	(*divmodsi_internal_er_1): Ditto.
+	(*divmodsi_internal): Ditto.
+	* config/alpha/constraints.md ("b"): Correct register
+	number in the description.
+
+2024-05-31  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.h: Configure global constructor, destructor
+	support.
+
+2024-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115278
+	* tree-if-conv.cc (ifcvt_local_dce): Do not DSE volatile stores.
+
+2024-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc: Move ${target_min} from obsolete to unsupported
+	message.
+
+2024-05-31  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/115022
+	* doc/invoke.texi (fstrub=disable): Fix opindex.
+	(minline-memops-threshold): Fix opindex.
+	(mcmodel=): Add opindex and fix them.
+	* common.opt.urls: Regenerate.
+	* config/aarch64/aarch64.opt.urls: Regenerate.
+	* config/bpf/bpf.opt.urls: Regenerate.
+	* config/i386/i386.opt.urls: Regenerate.
+	* config/loongarch/loongarch.opt.urls: Regenerate.
+	* config/nds32/nds32-elf.opt.urls: Regenerate.
+	* config/nds32/nds32-linux.opt.urls: Regenerate.
+	* config/or1k/or1k.opt.urls: Regenerate.
+	* config/riscv/riscv.opt.urls: Regenerate.
+	* config/rs6000/aix64.opt.urls: Regenerate.
+	* config/rs6000/linux64.opt.urls: Regenerate.
+	* config/sparc/sparc.opt.urls: Regenerate.
+
+2024-05-31  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h
+	(xtensa_use_return_instruction_p): Remove.
+	* config/xtensa/xtensa.cc
+	(machine_function): Remove "epilogue_done" field.
+	(xtensa_expand_epilogue): Remove "cfun->machine->epilogue_done" usage.
+	(xtensa_use_return_instruction_p): Remove.
+	* config/xtensa/xtensa.md ("return"):
+	Replace calling "xtensa_use_return_instruction_p()" with inline code.
+
+2024-05-31  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_valid_move, constantpool_address_p,
+	xtensa_tls_symbol_p, gen_int_relational, xtensa_emit_move_sequence,
+	xtensa_copy_incoming_a7, xtensa_expand_block_move,
+	xtensa_expand_nonlocal_goto, xtensa_emit_call,
+	xtensa_legitimate_address_p, xtensa_legitimize_address,
+	xtensa_tls_referenced_p, print_operand, print_operand_address,
+	xtensa_output_literal):
+	Replace RTX code comparisons with their predicate macros such as
+	REG_P().
+	* config/xtensa/xtensa.h (CONSTANT_ADDRESS_P,
+	LEGITIMATE_PIC_OPERAND_P): Ditto.
+	* config/xtensa/xtensa.md (reload<mode>_literal, indirect_jump):
+	Ditto.
+
+2024-05-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR tree-optimization/115157
+	PR tree-optimization/115177
+	* godump.cc (go_output_typedef): Use TYPE_MAIN_VARIANT instead
+	of TYPE_CANONICAL.
+
+2024-05-31  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/emmintrin.h (__double_u): Rename from double_u.
+	(_mm_load_sd): Replace double_u with __double_u.
+	(_mm_store_sd): Ditto.
+	(_mm_loadh_pd): Ditto.
+	(_mm_loadl_pd): Ditto.
+	* config/i386/xmmintrin.h (__float_u): Rename from float_u.
+	(_mm_load_ss): Ditto.
+	(_mm_store_ss): Ditto.
+
 2024-05-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/115102

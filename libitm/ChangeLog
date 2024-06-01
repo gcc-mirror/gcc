@@ -1,3 +1,9 @@
+2024-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/115294
+	* testsuite/lib/libitm.exp (libitm_target_compile): Pass new
+	dg-additional-files-options args.
+
 2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am [LIBITM_BUILD_VERSIONED_SHLIB_SUN] (libitm.map-sun):

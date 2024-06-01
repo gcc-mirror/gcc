@@ -1,3 +1,56 @@
+2024-05-31  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-typeck.cc (build_access_with_size_for_counted_by): Add the 6th
+	argument to .ACCESS_WITH_SIZE.
+
+2024-05-31  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-parser.cc (c_parser_postfix_expression): Ignore the counted-by
+	attribute when build_component_ref inside offsetof operator.
+	* c-tree.h (build_component_ref): Add one more parameter.
+	* c-typeck.cc (build_counted_by_ref): New function.
+	(build_access_with_size_for_counted_by): New function.
+	(build_component_ref): Check the counted-by attribute and build
+	call to .ACCESS_WITH_SIZE.
+	(build_unary_op): When building ADDR_EXPR for
+	.ACCESS_WITH_SIZE, use its first argument.
+	(lvalue_p): Accept call to .ACCESS_WITH_SIZE.
+	(digest_init): Fold call to .ACCESS_WITH_SIZE to its first
+	argument when require_constant is TRUE.
+
+2024-05-31  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (flexible_array_member_type_p): Renamed and moved to...
+	(add_flexible_array_elts_to_size): Use renamed function.
+	(is_flexible_array_member_p): Use renamed function.
+	(verify_counted_by_attribute): New function.
+	(finish_struct): Use renamed function and verify counted_by
+	attribute.
+	* c-tree.h (lookup_field): New prototype.
+	* c-typeck.cc (lookup_field): Expose as extern function.
+	(tagged_types_tu_compatible_p): Check counted_by attribute for
+	structure type.
+
+2024-05-31  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (finish_struct): Do not set TYPE_CANONICAL for
+	structure or unions with variable size.
+	* c-objc-common.cc (c_get_alias_set): Do not set alias set to zero.
+	* c-typeck.cc (comptypes_verify): New function.
+	(comptypes,comptypes_same_p,comptypes_check_enum_int): Add assertion.
+	(comptypes_equiv_p): Add assertion that ensures that compatible
+	types have the same equivalence class.
+	(tagged_types_tu_compatible_p): Remove now unneeded special case.
+
+2024-05-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR tree-optimization/115157
+	PR tree-optimization/115177
+	* c-decl.cc (shadow_tag-warned,parse_xref_tag,start_enum,
+	finish_enum): Set SET_TYPE_STRUCTURAL_EQUALITY / TYPE_CANONICAL.
+	* c-objc-common.cc (get_alias_set): Remove special case.
+	(get_aka_type): Add special case.
+
 2024-05-29  Martin Uecker  <uecker@tugraz.at>
 
 	* c-typeck.cc (comptypes_internal): Add flag to track
