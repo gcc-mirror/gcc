@@ -3025,6 +3025,8 @@ build_class_member_access_expr (cp_expr object, tree member,
 	 know the type of the expression.  Otherwise, we must wait
 	 until overload resolution has been performed.  */
       functions = BASELINK_FUNCTIONS (member);
+      if (TREE_CODE (functions) == OVERLOAD && OVL_SINGLE_P (functions))
+	functions = OVL_FIRST (functions);
       if (TREE_CODE (functions) == FUNCTION_DECL
 	  && DECL_STATIC_FUNCTION_P (functions))
 	type = TREE_TYPE (functions);
@@ -7332,6 +7334,9 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
   else if (BASELINK_P (TREE_OPERAND (arg, 1)))
     {
       tree fn = BASELINK_FUNCTIONS (TREE_OPERAND (arg, 1));
+
+      if (TREE_CODE (fn) == OVERLOAD && OVL_SINGLE_P (fn))
+	fn = OVL_FIRST (fn);
 
       /* We can only get here with a single static member
 	 function.  */
