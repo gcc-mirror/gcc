@@ -1,3 +1,11 @@
+2024-06-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-06-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/115317
+	* libf7-asm.sx (__isinf): Map -Inf to -1.
+
 2024-05-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

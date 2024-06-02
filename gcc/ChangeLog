@@ -1,3 +1,12 @@
+2024-06-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-06-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/115307
+	* config/avr/avr.md (SFDF): New mode iterator.
+	(isinf<mode>2) [sf, df]: New expanders.
+
 2024-05-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
