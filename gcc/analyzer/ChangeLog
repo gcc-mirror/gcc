@@ -1,3 +1,44 @@
+2024-06-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106203
+	* checker-event.h: Include "analyzer/event-loc-info.h".
+	(struct event_loc_info): Move to its own header file.
+	* diagnostic-manager.cc
+	(diagnostic_manager::emit_saved_diagnostic): Move creation of
+	event_loc_info here from add_final_event, and if we have a
+	stmt_finder, call its update_event_loc_info method.
+	* engine.cc (leak_stmt_finder::update_event_loc_info): New.
+	(exploded_node::detect_leaks): Likewise.
+	(exploded_node::detect_leaks): Pass nullptr as call_stmt arg to
+	region_model::pop_frame.
+	* event-loc-info.h: New file, with content taken from
+	checker-event.h.
+	* exploded-graph.h (stmt_finder::update_event_loc_info): New pure
+	virtual function.
+	* infinite-loop.cc (infinite_loop_diagnostic::add_final_event):
+	Update for change to vfunc signature.
+	* infinite-recursion.cc
+	(infinite_recursion_diagnostic::add_final_event): Likewise.
+	* pending-diagnostic.cc (pending_diagnostic::add_final_event):
+	Pass in the event_loc_info from the caller, rather than generating
+	it from a gimple stmt and enode.
+	* pending-diagnostic.h (pending_diagnostic::add_final_event):
+	Likewise.
+	* region-model.cc (region_model::on_longjmp): Pass nullptr as
+	call_stmt arg to region_model::pop_frame.
+	(region_model::update_for_return_gcall): Likewise, but pass
+	call_stmt.
+	(class caller_context): New.
+	(region_model::pop_frame): Add "call_stmt" argument.  Use it
+	and the frame_region with a caller_context when setting
+	result_dst_reg's value so that any diagnostic is reported at the
+	call stmt in the caller.
+	(selftest::test_stack_frames): Pass nullptr as call_stmt arg to
+	region_model::pop_frame.
+	(selftest::test_alloca): Likewise.
+	* region-model.h (region_model::pop_frame): Add "call_stmt"
+	argument.
+
 2024-05-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* infinite-loop.cc (looping_back_event::get_desc): Fix unused

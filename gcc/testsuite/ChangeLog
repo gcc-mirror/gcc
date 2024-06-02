@@ -1,3 +1,35 @@
+2024-06-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106203
+	* c-c++-common/analyzer/allocation-size-1.c (test_9): Remove
+	xfail.
+	* c-c++-common/analyzer/allocation-size-2.c (test_8): Likewise.
+	* gcc.dg/analyzer/allocation-size-multiline-4.c: New test.
+	* gcc.dg/plugin/analyzer_cpython_plugin.c
+	(refcnt_stmt_finder::update_event_loc_info): New.
+
+2024-06-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/115317
+	* gcc.target/avr/torture/pr115317-isinf.c: New test.
+
+2024-06-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/115307
+	* gcc.target/avr/torture/pr115307-isinf.c: New test.
+
+2024-06-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/synthesis-10.c: New test.
+
+2024-06-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114867
+	* g++.dg/modules/using-17_a.C: New test.
+	* g++.dg/modules/using-17_b.C: New test.
+	* g++.dg/modules/using-18_a.C: New test.
+	* g++.dg/modules/using-18_b.C: New test.
+
 2024-05-31  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* gcc.target/riscv/rvv/autovec/unop/popcount-1.c: Adjust check
