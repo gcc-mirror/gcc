@@ -869,7 +869,7 @@ rs6000_init_builtins (void)
 	    continue;
 	  if (e == ENB_MMA && !TARGET_MMA)
 	    continue;
-	  tree fntype = rs6000_builtin_info[i].fntype;
+	  tree fntype = rs6000_builtin_info_fntype[i];
 	  tree t = TREE_TYPE (fntype);
 	  fprintf (stderr, "%s %s (", rs6000_type_string (t),
 		   rs6000_builtin_info[i].bifname);
