@@ -15,4 +15,4 @@ void pixel_sub_wxh(int16_t * __restrict diff, uint8_t *pix1, uint8_t *pix2) {
 /* We can vectorize this without peeling for gaps and thus without epilogue,
    but the only thing we can reliably scan is the zero-padding trick for the
    partial loads.  */
-/* { dg-final { scan-tree-dump-times "\{_\[0-9\]\+, 0" 6 "vect" { target vect64 } } } */
+/* { dg-final { scan-tree-dump-times "\{_\[0-9\]\+, 0" 6 "vect" { target { vect64 && { vect_unpack && vect_perm } } } } } */
