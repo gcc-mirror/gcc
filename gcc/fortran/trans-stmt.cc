@@ -6449,8 +6449,9 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
       else
 	gfc_add_block_to_block (&post, &se.post);
 
-      /* Special case when string in expr3 is zero.  */
+      /* Special case when string in expr3 is scalar and has length zero.  */
       if (code->expr3->ts.type == BT_CHARACTER
+	  && code->expr3->rank == 0
 	  && integer_zerop (se.string_length))
 	{
 	  gfc_init_se (&se, NULL);
