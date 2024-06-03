@@ -75,9 +75,9 @@ struct aarch64_pair_fusion : public pair_fusion
     return aarch64_ldp_alias_check_limit;
   }
 
-  bool should_handle_writeback (enum writeback which) override final
+  bool should_handle_writeback (writeback_type which) override final
   {
-    if (which == writeback::ALL)
+    if (which == writeback_type::ALL)
       return aarch64_ldp_writeback > 1;
     else
       return aarch64_ldp_writeback;
