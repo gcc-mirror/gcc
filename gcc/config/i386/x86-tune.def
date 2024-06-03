@@ -346,8 +346,8 @@ DEF_TUNE (X86_TUNE_ADJUST_UNROLL, "adjust_unroll_factor", m_BDVER3 | m_BDVER4)
 /* X86_TUNE_ONE_IF_CONV_INSNS: Restrict a number of cmov insns in
    if-converted sequence to one.  */
 DEF_TUNE (X86_TUNE_ONE_IF_CONV_INSN, "one_if_conv_insn",
-	  m_SILVERMONT | m_INTEL | m_CORE_ALL | m_GOLDMONT | m_GOLDMONT_PLUS
-	  | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM | m_ZHAOXIN | m_GENERIC)
+	  m_SILVERMONT | m_HASWELL | m_SKYLAKE | m_GOLDMONT | m_GOLDMONT_PLUS
+	  | m_TREMONT  | m_ZHAOXIN)
 
 /* X86_TUNE_AVOID_MFENCE: Use lock prefixed instructions instead of mfence.  */
 DEF_TUNE (X86_TUNE_AVOID_MFENCE, "avoid_mfence",
