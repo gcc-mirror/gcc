@@ -1,3 +1,9 @@
+2024-06-02  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/109958
+	* typeck.cc (build_class_member_access_expr): Handle single OVERLOADs.
+	(cp_build_addr_expr_1): Likewise.
+
 2024-06-01  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/114867

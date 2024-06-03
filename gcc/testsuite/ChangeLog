@@ -1,3 +1,8 @@
+2024-06-02  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/109958
+	* g++.dg/overload/using6.C: New test.
+
 2024-06-01  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/106203
