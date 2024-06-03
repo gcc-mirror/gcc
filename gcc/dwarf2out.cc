@@ -19383,7 +19383,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
     case ROUND_DIV_EXPR:
       if (TYPE_UNSIGNED (TREE_TYPE (loc)))
 	{
-	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (loc));
+	  const enum machine_mode mode = TYPE_MODE (TREE_TYPE (loc));
 	  scalar_int_mode int_mode;
 
 	  if ((dwarf_strict && dwarf_version < 5)
@@ -19518,6 +19518,15 @@ loc_list_from_tree_1 (tree loc, int want_address,
     do_comp_binop:
       if (TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (loc, 0))))
 	{
+	  const enum machine_mode mode
+	    = TYPE_MODE (TREE_TYPE (TREE_OPERAND (loc, 0)));
+	  scalar_int_mode int_mode;
+
+	  /* We can use a signed comparison if the sign bit is not set.  */
+	  if (is_a <scalar_int_mode> (mode, &int_mode)
+	      && GET_MODE_SIZE (int_mode) < DWARF2_ADDR_SIZE)
+	    goto do_binop;
+
 	  list_ret = loc_list_from_tree (TREE_OPERAND (loc, 0), 0, context);
 	  list_ret1 = loc_list_from_tree (TREE_OPERAND (loc, 1), 0, context);
 	  list_ret = loc_list_from_uint_comparison (list_ret, list_ret1,
@@ -19544,6 +19553,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
       add_loc_list (&list_ret, list_ret1);
       if (list_ret == 0)
 	return 0;
+
       add_loc_descr_to_each (list_ret, new_loc_descr (op, 0, 0));
       break;
 
@@ -19667,6 +19677,28 @@ loc_list_from_tree_1 (tree loc, int want_address,
 
   if (!ret && !list_ret)
     return 0;
+
+  /* Implement wrap-around arithmetics for small integer types.  */
+  if ((TREE_CODE (loc) == PLUS_EXPR
+       || TREE_CODE (loc) == MINUS_EXPR
+       || TREE_CODE (loc) == MULT_EXPR
+       || TREE_CODE (loc) == NEGATE_EXPR
+       || TREE_CODE (loc) == LSHIFT_EXPR)
+      && INTEGRAL_TYPE_P (TREE_TYPE (loc))
+      && TYPE_OVERFLOW_WRAPS (TREE_TYPE (loc)))
+    {
+      const enum machine_mode mode = TYPE_MODE (TREE_TYPE (loc));
+      scalar_int_mode int_mode;
+
+      if (is_a <scalar_int_mode> (mode, &int_mode)
+	  && GET_MODE_SIZE (int_mode) < DWARF2_ADDR_SIZE)
+	{
+	   const unsigned HOST_WIDE_INT mask
+	    = (HOST_WIDE_INT_1U << GET_MODE_BITSIZE (int_mode)) - 1;
+	   add_loc_descr_to_each (list_ret, uint_loc_descriptor (mask));
+	   add_loc_descr_to_each (list_ret, new_loc_descr (DW_OP_and, 0, 0));
+	}
+    }
 
   if (want_address == 2 && !have_address
       && (dwarf_version >= 4 || !dwarf_strict))
