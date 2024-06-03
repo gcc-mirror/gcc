@@ -1990,6 +1990,17 @@
   [(set (match_operand:SWI1248_AVX512BW 0 "mask_reg_operand")
 	(any_logic:SWI1248_AVX512BW
 	  (match_operand:SWI1248_AVX512BW 1 "mask_reg_operand")
+	  (match_operand:SWI1248_AVX512BW 2 "mask_reg_operand")))]
+  "TARGET_AVX512F && reload_completed"
+  [(parallel
+     [(set (match_dup 0)
+	   (any_logic:SWI1248_AVX512BW (match_dup 1) (match_dup 2)))
+      (unspec [(const_int 0)] UNSPEC_MASKOP)])])
+
+(define_split
+  [(set (match_operand:SWI1248_AVX512BW 0 "mask_reg_operand")
+	(any_logic:SWI1248_AVX512BW
+	  (match_operand:SWI1248_AVX512BW 1 "mask_reg_operand")
 	  (match_operand:SWI1248_AVX512BW 2 "mask_reg_operand")))
    (clobber (reg:CC FLAGS_REG))]
   "TARGET_AVX512F && reload_completed"
