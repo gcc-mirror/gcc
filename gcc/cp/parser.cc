@@ -23991,7 +23991,12 @@ cp_parser_direct_declarator (cp_parser* parser,
     {
       /* Peek at the next token.  */
       token = cp_lexer_peek_token (parser->lexer);
-      if (token->type == CPP_OPEN_PAREN)
+      if (token->type == CPP_OPEN_PAREN
+	  || (first
+	      && dcl_kind != CP_PARSER_DECLARATOR_NAMED
+	      && token->type == CPP_ELLIPSIS
+	      && cxx_dialect > cxx98
+	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN)))
 	{
 	  /* This is either a parameter-declaration-clause, or a
 	     parenthesized declarator. When we know we are parsing a
@@ -24030,6 +24035,11 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 	     Thus again, we try a parameter-declaration-clause, and if
 	     that fails, we back out and return.  */
+	  bool pack_expansion_p = token->type == CPP_ELLIPSIS;
+
+	  if (pack_expansion_p)
+	    /* Consume the `...' */
+	    cp_lexer_consume_token (parser->lexer);
 
 	  if (!first || dcl_kind != CP_PARSER_DECLARATOR_NAMED)
 	    {
@@ -24173,6 +24183,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 						     attrs,
 						     parens_loc);
 		  declarator->attributes = gnu_attrs;
+		  declarator->parameter_pack_p |= pack_expansion_p;
 		  /* Any subsequent parameter lists are to do with
 		     return type, so are not those of the declared
 		     function.  */
@@ -24196,7 +24207,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 	  /* If this is the first, we can try a parenthesized
 	     declarator.  */
-	  if (first)
+	  if (first && !pack_expansion_p)
 	    {
 	      bool saved_in_type_id_in_expr_p;
 
