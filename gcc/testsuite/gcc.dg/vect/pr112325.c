@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -funroll-loops -fdump-tree-vect-details" } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_shift } */
 /* { dg-additional-options "-mavx2" { target x86_64-*-* i?86-*-* } } */
 
 typedef unsigned short ggml_fp16_t;
