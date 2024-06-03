@@ -606,19 +606,12 @@ template <size_t _Bytes>
     static_assert(_Bytes > 0);
     if constexpr (_Bytes == sizeof(int))
       return int();
-  #ifdef __clang__
-    else if constexpr (_Bytes == sizeof(char))
-      return char();
-  #else
     else if constexpr (_Bytes == sizeof(_SChar))
       return _SChar();
-  #endif
     else if constexpr (_Bytes == sizeof(short))
       return short();
-  #ifndef __clang__
     else if constexpr (_Bytes == sizeof(long))
       return long();
-  #endif
     else if constexpr (_Bytes == sizeof(_LLong))
       return _LLong();
   #ifdef __SIZEOF_INT128__
@@ -2747,6 +2740,8 @@ template <typename _BuiltinType>
 
 // }}}
 // _SimdWrapper{{{
+struct _DisabledSimdWrapper;
+
 template <typename _Tp, size_t _Width>
   struct _SimdWrapper<
     _Tp, _Width,
@@ -2756,16 +2751,17 @@ template <typename _Tp, size_t _Width>
 			      == sizeof(__vector_type_t<_Tp, _Width>),
 		       __vector_type_t<_Tp, _Width>>
   {
-    using _Base
-      = _SimdWrapperBase<__has_iec559_behavior<__signaling_NaN, _Tp>::value
-			   && sizeof(_Tp) * _Width
-				== sizeof(__vector_type_t<_Tp, _Width>),
-			 __vector_type_t<_Tp, _Width>>;
+    static constexpr bool _S_need_default_init
+      = __has_iec559_behavior<__signaling_NaN, _Tp>::value
+	  and sizeof(_Tp) * _Width == sizeof(__vector_type_t<_Tp, _Width>);
+
+    using _BuiltinType = __vector_type_t<_Tp, _Width>;
+
+    using _Base = _SimdWrapperBase<_S_need_default_init, _BuiltinType>;
 
     static_assert(__is_vectorizable_v<_Tp>);
     static_assert(_Width >= 2); // 1 doesn't make sense, use _Tp directly then
 
-    using _BuiltinType = __vector_type_t<_Tp, _Width>;
     using value_type = _Tp;
 
     static inline constexpr size_t _S_full_size
@@ -2801,13 +2797,26 @@ template <typename _Tp, size_t _Width>
     _GLIBCXX_SIMD_INTRINSIC constexpr _SimdWrapper&
     operator=(_SimdWrapper&&) = default;
 
-    template <typename _V, typename = enable_if_t<disjunction_v<
-			     is_same<_V, __vector_type_t<_Tp, _Width>>,
-			     is_same<_V, __intrinsic_type_t<_Tp, _Width>>>>>
+    // Convert from exactly matching __vector_type_t
+    using _SimdWrapperBase<_S_need_default_init, _BuiltinType>::_SimdWrapperBase;
+
+    // Convert from __intrinsic_type_t if __intrinsic_type_t and __vector_type_t differ, otherwise
+    // this ctor should not exist. Making the argument type unusable is our next best solution.
+    _GLIBCXX_SIMD_INTRINSIC constexpr
+    _SimdWrapper(conditional_t<is_same_v<_BuiltinType, __intrinsic_type_t<_Tp, _Width>>,
+			       _DisabledSimdWrapper, __intrinsic_type_t<_Tp, _Width>> __x)
+    : _Base(__vector_bitcast<_Tp, _Width>(__x)) {}
+
+    // Convert from different __vector_type_t, but only if bit reinterpretation is a correct
+    // conversion of the value_type
+    template <typename _V, typename _TVT = _VectorTraits<_V>,
+	      typename = enable_if_t<sizeof(typename _TVT::value_type) == sizeof(_Tp)
+				       and sizeof(_V) == sizeof(_BuiltinType)
+				       and is_integral_v<_Tp>
+				       and is_integral_v<typename _TVT::value_type>>>
       _GLIBCXX_SIMD_INTRINSIC constexpr
       _SimdWrapper(_V __x)
-      // __vector_bitcast can convert e.g. __m128 to __vector(2) float
-      : _Base(__vector_bitcast<_Tp, _Width>(__x)) {}
+      : _Base(reinterpret_cast<_BuiltinType>(__x)) {}
 
     template <typename... _As,
 	      typename = enable_if_t<((is_same_v<simd_abi::scalar, _As> && ...)
