@@ -1,3 +1,7 @@
+2024-06-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (gcn): Fix date of recommended newlib version.
+
 2024-05-10  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* tree-nested.cc (convert_nonlocal_reference_stmt): Handle
