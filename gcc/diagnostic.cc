@@ -2446,6 +2446,7 @@ diagnostic_text_output_format::on_diagram (const diagnostic_diagram &diagram)
 
 void
 diagnostic_output_format_init (diagnostic_context *context,
+			       const char *main_input_filename_,
 			       const char *base_file_name,
 			       enum diagnostics_output_format format,
 			       bool json_formatting)
@@ -2471,11 +2472,13 @@ diagnostic_output_format_init (diagnostic_context *context,
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR:
       diagnostic_output_format_init_sarif_stderr (context,
+						  main_input_filename_,
 						  json_formatting);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE:
       diagnostic_output_format_init_sarif_file (context,
+						main_input_filename_,
 						json_formatting,
 						base_file_name);
       break;

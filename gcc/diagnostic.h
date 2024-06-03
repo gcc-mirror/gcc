@@ -1082,6 +1082,7 @@ extern char *file_name_as_prefix (diagnostic_context *, const char *);
 extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 extern void diagnostic_output_format_init (diagnostic_context *,
+					   const char *main_input_filename_,
 					   const char *base_file_name,
 					   enum diagnostics_output_format,
 					   bool json_formatting);
@@ -1091,11 +1092,14 @@ extern void diagnostic_output_format_init_json_file (diagnostic_context *context
 						     bool formatted,
 						     const char *base_file_name);
 extern void diagnostic_output_format_init_sarif_stderr (diagnostic_context *context,
+							const char *main_input_filename_,
 							bool formatted);
 extern void diagnostic_output_format_init_sarif_file (diagnostic_context *context,
+						      const char *main_input_filename_,
 						      bool formatted,
 						      const char *base_file_name);
 extern void diagnostic_output_format_init_sarif_stream (diagnostic_context *context,
+							const char *main_input_filename_,
 							bool formatted,
 							FILE *stream);
 

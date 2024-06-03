@@ -1,7 +1,9 @@
+/* Verify behavior of SARIF output for the "no diagnostics" case.  */
+
 /* { dg-do compile } */
 /* { dg-options "-fdiagnostics-format=sarif-file" } */
 
-#warning message
+int non_empty;
 
 /* Verify that some JSON was written to a file with the expected name.  */
 /* { dg-final { verify-sarif-file } } */
@@ -18,8 +20,10 @@
        { dg-final { scan-sarif-file "\"sourceLanguage\": \"c\"" { target c } } }
        { dg-final { scan-sarif-file "\"sourceLanguage\": \"cplusplus\"" { target c++ } } }
 
-       { dg-final { scan-sarif-file "\"contents\": " } }
-         { dg-final { scan-sarif-file "\"text\": " } }
+       We expect the contents of the file to *not* be quoted if
+       there are no results.
+       { dg-final { scan-sarif-file-not "\"contents\": " } }
+         { dg-final { scan-sarif-file-not "\"text\": " } }
 	 
        Verify that this file's "role" is "analysisTarget", as per
        "NOTE 3" in SARIF v2.1.0 section 3.24.6.
@@ -35,20 +39,6 @@
        { dg-final { scan-sarif-file "\"toolExecutionNotifications\": \\\[\\\]" } }
        { dg-final { scan-sarif-file "\"executionSuccessful\": true" } }
 
-     { dg-final { scan-sarif-file "\"results\": \\\[" } }
-       { dg-final { scan-sarif-file "\"level\": \"warning\"" } }
-       { dg-final { scan-sarif-file "\"ruleId\": \"-Wcpp\"" } }
-       { dg-final { scan-sarif-file "\"locations\": \\\[" } }
-         { dg-final { scan-sarif-file "\"physicalLocation\": " } }
-           { dg-final { scan-sarif-file "\"contextRegion\": " } }
-           { dg-final { scan-sarif-file "\"artifactLocation\": " } }
-           { dg-final { scan-sarif-file "\"region\": " } }
-             { dg-final { scan-sarif-file "\"startLine\": 4" } }
-             { dg-final { scan-sarif-file "\"startColumn\": 2" } }
-             { dg-final { scan-sarif-file "\"endColumn\": 9" } }
+     We expect an empty list for "results"
+     { dg-final { scan-sarif-file "\"results\": \\\[\\\]" } }  */
 
-         We don't expect logical locations for a top-level warning:
-         { dg-final { scan-sarif-file-not "\"logicalLocations\": " } }
-
-       { dg-final { scan-sarif-file "\"message\": " } }
-         { dg-final { scan-sarif-file "\"text\": \"#warning message" } } */

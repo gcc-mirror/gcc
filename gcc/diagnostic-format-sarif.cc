@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-diagram.h"
 #include "text-art/canvas.h"
 #include "diagnostic-format-sarif.h"
+#include "ordered-hash-map.h"
+#include "sbitmap.h"
 
 class sarif_builder;
 
@@ -55,6 +57,51 @@ public:
 private:
   json::array *m_notifications_arr;
   bool m_success;
+};
+
+/* Corresponds to values for the SARIF artifact objects "roles" property.
+   (SARIF v2.1.0 section 3.24.6).  */
+
+enum class diagnostic_artifact_role
+{
+  analysis_target, /* "analysisTarget".  */
+  debug_output_file, /* "debugOutputFile".  */
+  result_file, /* "resultFile".  */
+  traced_file, /* "tracedFile".  */
+
+  NUM_ROLES
+};
+
+/* Subclass of sarif_object for SARIF artifact objects
+   (SARIF v2.1.0 section 3.24).  */
+
+class sarif_artifact : public sarif_object
+{
+public:
+  sarif_artifact (const char *filename)
+  : m_filename (filename),
+    m_roles ((unsigned)diagnostic_artifact_role::NUM_ROLES),
+    m_embed_contents (false)
+  {
+    bitmap_clear (m_roles);
+  }
+
+  void add_role (enum diagnostic_artifact_role role,
+		 bool embed_contents);
+
+  bool embed_contents_p () const { return m_embed_contents; }
+  void populate_contents (sarif_builder &builder);
+  void populate_roles ();
+
+private:
+  const char *m_filename;
+  auto_sbitmap m_roles;
+
+  /* Flag to track whether this artifact should have a "contents" property
+     (SARIF v2.1.0 section 3.24.8).
+     We only add the contents for those artifacts that have a location
+     referencing them (so that a consumer might want to quote the source).   */
+  bool m_embed_contents;
 };
 
 /* Subclass of sarif_object for SARIF result objects
@@ -158,6 +205,7 @@ class sarif_builder
 {
 public:
   sarif_builder (diagnostic_context *context,
+		 const char *main_input_filename_,
 		 bool formatted);
 
   void end_diagnostic (diagnostic_context *context,
@@ -169,13 +217,16 @@ public:
 
   void flush_to_file (FILE *outf);
 
-  json::array *make_locations_arr (const diagnostic_info &diagnostic);
+  json::array *make_locations_arr (const diagnostic_info &diagnostic,
+				   enum diagnostic_artifact_role role);
   json::object *make_location_object (const rich_location &rich_loc,
-				      const logical_location *logical_loc);
+				      const logical_location *logical_loc,
+				      enum diagnostic_artifact_role role);
   json::object *make_message_object (const char *msg) const;
   json::object *
   make_message_object_for_diagram (diagnostic_context *context,
 				   const diagnostic_diagram &diagram);
+  json::object *maybe_make_artifact_content_object (const char *filename) const;
 
 private:
   sarif_result *make_result_object (diagnostic_context *context,
@@ -183,13 +234,16 @@ private:
 				    diagnostic_t orig_diag_kind);
   void set_any_logical_locs_arr (json::object *location_obj,
 				 const logical_location *logical_loc);
-  json::object *make_location_object (const diagnostic_event &event);
+  json::object *make_location_object (const diagnostic_event &event,
+				      enum diagnostic_artifact_role role);
   json::object *make_code_flow_object (const diagnostic_path &path);
   json::object *
   make_thread_flow_location_object (const diagnostic_event &event,
 				    int path_event_idx);
   json::array *maybe_make_kinds_array (diagnostic_event::meaning m) const;
-  json::object *maybe_make_physical_location_object (location_t loc);
+  json::object *
+  maybe_make_physical_location_object (location_t loc,
+				       enum diagnostic_artifact_role role);
   json::object *make_artifact_location_object (location_t loc);
   json::object *make_artifact_location_object (const char *filename);
   json::object *make_artifact_location_object_for_pwd () const;
@@ -214,11 +268,12 @@ private:
   json::object *make_reporting_descriptor_object_for_cwe_id (int cwe_id) const;
   json::object *
   make_reporting_descriptor_reference_object_for_cwe_id (int cwe_id);
-  json::object *make_artifact_object (const char *filename);
+  sarif_artifact &get_or_create_artifact (const char *filename,
+					  enum diagnostic_artifact_role role,
+					  bool embed_contents);
   char *get_source_lines (const char *filename,
 			  int start_line,
 			  int end_line) const;
-  json::object *maybe_make_artifact_content_object (const char *filename) const;
   json::object *maybe_make_artifact_content_object (const char *filename,
 						    int start_line,
 						    int end_line) const;
@@ -240,7 +295,8 @@ private:
      diagnostic group.  */
   sarif_result *m_cur_group_result;
 
-  hash_set <const char *> m_filenames;
+  ordered_hash_map <nofree_string_hash,
+		    sarif_artifact *> m_filename_to_artifact_map;
   bool m_seen_any_relative_paths;
   hash_set <free_string_hash> m_rule_id_set;
   json::array *m_rules_arr;
@@ -302,6 +358,86 @@ sarif_invocation::prepare_to_flush (diagnostic_context *context)
     client_data_hooks->add_sarif_invocation_properties (*this);
 }
 
+/* class sarif_artifact : public sarif_object.  */
+
+/* Add ROLE to this artifact's roles.
+   If EMBED_CONTENTS is true, then flag that we will attempt to embed the
+   contents of this artifact when writing it out.  */
+
+void
+sarif_artifact::add_role (enum diagnostic_artifact_role role,
+			  bool embed_contents)
+{
+  if (embed_contents)
+    m_embed_contents = true;
+
+  /* In SARIF v2.1.0 section 3.24.6 "roles" property:
+     "resultFile" is for an artifact
+     "which the analysis tool was not explicitly instructed to scan",
+     whereas "analysisTarget" is for one where the
+     "analysis tool was instructed to scan this artifact".
+     Hence the latter excludes the former.  */
+  if (role == diagnostic_artifact_role::result_file)
+    if (bitmap_bit_p (m_roles, (int)diagnostic_artifact_role::analysis_target))
+	return;
+
+  bitmap_set_bit (m_roles, (int)role);
+}
+
+/* Populate the "contents" property (SARIF v2.1.0 section 3.24.8).
+   We do this after initialization to
+   (a) ensure that any charset options have been set
+   (b) only populate it for artifacts that are referenced by a location.  */
+
+void
+sarif_artifact::populate_contents (sarif_builder &builder)
+{
+  if (json::object *artifact_content_obj
+	= builder.maybe_make_artifact_content_object (m_filename))
+    set ("contents", artifact_content_obj);
+}
+
+/* Get a string for ROLE corresponding to the
+   SARIF v2.1.0 section 3.24.6 "roles" property.  */
+
+static const char *
+get_artifact_role_string (enum diagnostic_artifact_role role)
+{
+  switch (role)
+    {
+    default:
+      gcc_unreachable ();
+    case diagnostic_artifact_role::analysis_target:
+      return "analysisTarget";
+    case diagnostic_artifact_role::debug_output_file:
+      return "debugOutputFile";
+    case diagnostic_artifact_role::result_file:
+      return "resultFile";
+    case diagnostic_artifact_role::traced_file:
+      return "tracedFile";
+    }
+}
+
+/* Populate the "roles" property of this json::object with a new
+   json::array for the artifact.roles property (SARIF v2.1.0 section 3.24.6)
+   containing strings such as "analysisTarget", "resultFile"
+   and/or "tracedFile".  */
+
+void
+sarif_artifact::populate_roles ()
+{
+  if (bitmap_empty_p (m_roles))
+    return;
+  json::array *roles_arr = new json::array ();
+  for (int i = 0; i < (int)diagnostic_artifact_role::NUM_ROLES; i++)
+    if (bitmap_bit_p (m_roles, i))
+      {
+	enum diagnostic_artifact_role role = (enum diagnostic_artifact_role)i;
+	roles_arr->append (new json::string (get_artifact_role_string (role)));
+      }
+  set ("roles", roles_arr);
+}
+
 /* class sarif_result : public sarif_object.  */
 
 /* Handle secondary diagnostics that occur within a diagnostic group.
@@ -320,7 +456,8 @@ sarif_result::on_nested_diagnostic (diagnostic_context *context,
      sometimes these will related to current_function_decl, but
      often they won't.  */
   json::object *location_obj
-    = builder->make_location_object (*diagnostic.richloc, NULL);
+    = builder->make_location_object (*diagnostic.richloc, NULL,
+				     diagnostic_artifact_role::result_file);
   json::object *message_obj
     = builder->make_message_object (pp_formatted_text (context->printer));
   pp_clear_output_area (context->printer);
@@ -372,7 +509,9 @@ sarif_ice_notification::sarif_ice_notification (diagnostic_context *context,
 						sarif_builder *builder)
 {
   /* "locations" property (SARIF v2.1.0 section 3.58.4).  */
-  json::array *locations_arr = builder->make_locations_arr (diagnostic);
+  json::array *locations_arr
+    = builder->make_locations_arr (diagnostic,
+				   diagnostic_artifact_role::result_file);
   set ("locations", locations_arr);
 
   /* "message" property (SARIF v2.1.0 section 3.85.5).  */
@@ -403,6 +542,7 @@ sarif_thread_flow::sarif_thread_flow (const diagnostic_thread &thread)
 /* sarif_builder's ctor.  */
 
 sarif_builder::sarif_builder (diagnostic_context *context,
+			      const char *main_input_filename_,
 			      bool formatted)
 : m_context (context),
   m_invocation_obj (new sarif_invocation ()),
@@ -414,6 +554,15 @@ sarif_builder::sarif_builder (diagnostic_context *context,
   m_tabstop (context->m_tabstop),
   m_formatted (formatted)
 {
+  /* Mark MAIN_INPUT_FILENAME_ as the artifact that the tool was
+     instructed to scan.
+     Only quote the contents if it gets referenced by physical locations,
+     since otherwise the "no diagnostics" case would quote the main input
+     file, and doing so noticeably bloated the output seen in analyzer
+     integration testing (build directory went from 20G -> 21G).  */
+  get_or_create_artifact (main_input_filename_,
+			  diagnostic_artifact_role::analysis_target,
+			  false);
 }
 
 /* Implementation of "end_diagnostic" for SARIF output.  */
@@ -599,7 +748,9 @@ sarif_builder::make_result_object (diagnostic_context *context,
   result_obj->set ("message", message_obj);
 
   /* "locations" property (SARIF v2.1.0 section 3.27.12).  */
-  json::array *locations_arr = make_locations_arr (diagnostic);
+  json::array *locations_arr
+    = make_locations_arr (diagnostic,
+			  diagnostic_artifact_role::result_file);
   result_obj->set ("locations", locations_arr);
 
   /* "codeFlows" property (SARIF v2.1.0 section 3.27.18).  */
@@ -729,7 +880,8 @@ make_tool_component_reference_object_for_cwe () const
    - a "notification" object (SARIF v2.1.0 section 3.58.4).  */
 
 json::array *
-sarif_builder::make_locations_arr (const diagnostic_info &diagnostic)
+sarif_builder::make_locations_arr (const diagnostic_info &diagnostic,
+				   enum diagnostic_artifact_role role)
 {
   json::array *locations_arr = new json::array ();
   const logical_location *logical_loc = NULL;
@@ -737,7 +889,7 @@ sarif_builder::make_locations_arr (const diagnostic_info &diagnostic)
     logical_loc = client_data_hooks->get_current_logical_location ();
 
   json::object *location_obj
-    = make_location_object (*diagnostic.richloc, logical_loc);
+    = make_location_object (*diagnostic.richloc, logical_loc, role);
   locations_arr->append (location_obj);
   return locations_arr;
 }
@@ -763,7 +915,8 @@ set_any_logical_locs_arr (json::object *location_obj,
 
 json::object *
 sarif_builder::make_location_object (const rich_location &rich_loc,
-				     const logical_location *logical_loc)
+				     const logical_location *logical_loc,
+				     enum diagnostic_artifact_role role)
 {
   json::object *location_obj = new json::object ();
 
@@ -771,7 +924,8 @@ sarif_builder::make_location_object (const rich_location &rich_loc,
   location_t loc = rich_loc.get_loc ();
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
-  if (json::object *phs_loc_obj = maybe_make_physical_location_object (loc))
+  if (json::object *phs_loc_obj = maybe_make_physical_location_object (loc,
+								       role))
     location_obj->set ("physicalLocation", phs_loc_obj);
 
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
@@ -784,13 +938,15 @@ sarif_builder::make_location_object (const rich_location &rich_loc,
    within a diagnostic_path.  */
 
 json::object *
-sarif_builder::make_location_object (const diagnostic_event &event)
+sarif_builder::make_location_object (const diagnostic_event &event,
+				     enum diagnostic_artifact_role role)
 {
   json::object *location_obj = new json::object ();
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
   location_t loc = event.get_location ();
-  if (json::object *phs_loc_obj = maybe_make_physical_location_object (loc))
+  if (json::object *phs_loc_obj
+	= maybe_make_physical_location_object (loc, role))
     location_obj->set ("physicalLocation", phs_loc_obj);
 
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
@@ -806,11 +962,15 @@ sarif_builder::make_location_object (const diagnostic_event &event)
 }
 
 /* Make a physicalLocation object (SARIF v2.1.0 section 3.29) for LOC,
-   or return NULL;
-   Add any filename to the m_artifacts.  */
+
+   Ensure that we have an artifact object for the file, adding ROLE to it,
+   and flagging that we will attempt to embed the contents of the artifact
+   when writing it out.  */
 
 json::object *
-sarif_builder::maybe_make_physical_location_object (location_t loc)
+sarif_builder::
+maybe_make_physical_location_object (location_t loc,
+				     enum diagnostic_artifact_role role)
 {
   if (loc <= BUILTINS_LOCATION || LOCATION_FILE (loc) == NULL)
     return NULL;
@@ -820,7 +980,7 @@ sarif_builder::maybe_make_physical_location_object (location_t loc)
   /* "artifactLocation" property (SARIF v2.1.0 section 3.29.3).  */
   json::object *artifact_loc_obj = make_artifact_location_object (loc);
   phys_loc_obj->set ("artifactLocation", artifact_loc_obj);
-  m_filenames.add (LOCATION_FILE (loc));
+  get_or_create_artifact (LOCATION_FILE (loc), role, true);
 
   /* "region" property (SARIF v2.1.0 section 3.29.4).  */
   if (json::object *region_obj = maybe_make_region_object (loc))
@@ -1167,7 +1327,8 @@ sarif_builder::make_thread_flow_location_object (const diagnostic_event &ev,
   ev.maybe_add_sarif_properties (*thread_flow_loc_obj);
 
   /* "location" property (SARIF v2.1.0 section 3.38.3).  */
-  json::object *location_obj = make_location_object (ev);
+  json::object *location_obj
+    = make_location_object (ev, diagnostic_artifact_role::traced_file);
   thread_flow_loc_obj->set ("location", location_obj);
 
   /* "kinds" property (SARIF v2.1.0 section 3.38.8).  */
@@ -1335,9 +1496,12 @@ sarif_builder::make_run_object (sarif_invocation *invocation_obj,
 
   /* "artifacts" property (SARIF v2.1.0 section 3.14.15).  */
   json::array *artifacts_arr = new json::array ();
-  for (auto iter : m_filenames)
+  for (auto iter : m_filename_to_artifact_map)
     {
-      json::object *artifact_obj = make_artifact_object (iter);
+      sarif_artifact *artifact_obj = iter.second;
+      if (artifact_obj->embed_contents_p ())
+	artifact_obj->populate_contents (*this);
+      artifact_obj->populate_roles ();
       artifacts_arr->append (artifact_obj);
     }
   run_obj->set ("artifacts", artifacts_arr);
@@ -1508,29 +1672,52 @@ sarif_builder::maybe_make_cwe_taxonomy_object () const
   return taxonomy_obj;
 }
 
-/* Make an artifact object (SARIF v2.1.0 section 3.24).  */
+/* Ensure that we have an artifact object (SARIF v2.1.0 section 3.24)
+   for FILENAME, adding it to m_filename_to_artifact_map if not already
+   found, and adding ROLE to it.
+   If EMBED_CONTENTS is true, then flag that we will attempt to embed the
+   contents of this artifact when writing it out.  */
 
-json::object *
-sarif_builder::make_artifact_object (const char *filename)
+sarif_artifact &
+sarif_builder::get_or_create_artifact (const char *filename,
+				       enum diagnostic_artifact_role role,
+				       bool embed_contents)
 {
-  json::object *artifact_obj = new json::object ();
+  if (auto *slot = m_filename_to_artifact_map.get (filename))
+    {
+      (*slot)->add_role (role, embed_contents);
+      return **slot;
+    }
+
+  sarif_artifact *artifact_obj = new sarif_artifact (filename);
+  artifact_obj->add_role (role, embed_contents);
+  m_filename_to_artifact_map.put (filename, artifact_obj);
 
   /* "location" property (SARIF v2.1.0 section 3.24.2).  */
   json::object *artifact_loc_obj = make_artifact_location_object (filename);
   artifact_obj->set ("location", artifact_loc_obj);
 
-  /* "contents" property (SARIF v2.1.0 section 3.24.8).  */
-  if (json::object *artifact_content_obj
-	= maybe_make_artifact_content_object (filename))
-    artifact_obj->set ("contents", artifact_content_obj);
-
   /* "sourceLanguage" property (SARIF v2.1.0 section 3.24.10).  */
-  if (auto client_data_hooks = m_context->get_client_data_hooks ())
-    if (const char *source_lang
-	= client_data_hooks->maybe_get_sarif_source_language (filename))
-      artifact_obj->set_string ("sourceLanguage", source_lang);
+  switch (role)
+    {
+    default:
+      gcc_unreachable ();
+    case diagnostic_artifact_role::analysis_target:
+    case diagnostic_artifact_role::result_file:
+    case diagnostic_artifact_role::traced_file:
+      /* Assume that these are in the source language.  */
+      if (auto client_data_hooks = m_context->get_client_data_hooks ())
+	if (const char *source_lang
+	    = client_data_hooks->maybe_get_sarif_source_language (filename))
+	  artifact_obj->set_string ("sourceLanguage", source_lang);
+      break;
 
-  return artifact_obj;
+    case diagnostic_artifact_role::debug_output_file:
+      /* Assume that these are not in the source language.  */
+      break;
+    }
+
+  return *artifact_obj;
 }
 
 /* Make an artifactContent object (SARIF v2.1.0 section 3.3) for the
@@ -1728,9 +1915,10 @@ public:
 
 protected:
   sarif_output_format (diagnostic_context &context,
+		       const char *main_input_filename_,
 		       bool formatted)
   : diagnostic_output_format (context),
-    m_builder (&context, formatted)
+    m_builder (&context, main_input_filename_, formatted)
   {}
 
   sarif_builder m_builder;
@@ -1740,9 +1928,10 @@ class sarif_stream_output_format : public sarif_output_format
 {
 public:
   sarif_stream_output_format (diagnostic_context &context,
+			      const char *main_input_filename_,
 			      bool formatted,
 			      FILE *stream)
-  : sarif_output_format (context, formatted),
+  : sarif_output_format (context, main_input_filename_, formatted),
     m_stream (stream)
   {
   }
@@ -1762,9 +1951,10 @@ class sarif_file_output_format : public sarif_output_format
 {
 public:
   sarif_file_output_format (diagnostic_context &context,
+			    const char *main_input_filename_,
 			    bool formatted,
 			    const char *base_file_name)
-  : sarif_output_format (context, formatted),
+  : sarif_output_format (context, main_input_filename_, formatted),
     m_base_file_name (xstrdup (base_file_name))
   {
   }
@@ -1820,12 +2010,15 @@ diagnostic_output_format_init_sarif (diagnostic_context *context)
 
 void
 diagnostic_output_format_init_sarif_stderr (diagnostic_context *context,
+					    const char *main_input_filename_,
 					    bool formatted)
 {
   diagnostic_output_format_init_sarif (context);
-  context->set_output_format (new sarif_stream_output_format (*context,
-							      formatted,
-							      stderr));
+  context->set_output_format
+    (new sarif_stream_output_format (*context,
+				     main_input_filename_,
+				     formatted,
+				     stderr));
 }
 
 /* Populate CONTEXT in preparation for SARIF output to a file named
@@ -1833,24 +2026,30 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context *context,
 
 void
 diagnostic_output_format_init_sarif_file (diagnostic_context *context,
+					  const char *main_input_filename_,
 					  bool formatted,
 					  const char *base_file_name)
 {
   diagnostic_output_format_init_sarif (context);
-  context->set_output_format (new sarif_file_output_format (*context,
-							    formatted,
-							    base_file_name));
+  context->set_output_format
+    (new sarif_file_output_format (*context,
+				   main_input_filename_,
+				   formatted,
+				   base_file_name));
 }
 
 /* Populate CONTEXT in preparation for SARIF output to STREAM.  */
 
 void
 diagnostic_output_format_init_sarif_stream (diagnostic_context *context,
+					    const char *main_input_filename_,
 					    bool formatted,
 					    FILE *stream)
 {
   diagnostic_output_format_init_sarif (context);
-  context->set_output_format (new sarif_stream_output_format (*context,
-							      formatted,
-							      stream));
+  context->set_output_format
+    (new sarif_stream_output_format (*context,
+				     main_input_filename_,
+				     formatted,
+				     stream));
 }
