@@ -75,7 +75,7 @@ struct alias_walker;
 
 // When querying should_handle_writeback, this enum is used to
 // qualify which opportunities we are asking about.
-enum class writeback {
+enum class writeback_type {
   // Only those writeback opportunities that arise from existing
   // auto-increment accesses.
   EXISTING,
@@ -123,7 +123,7 @@ struct pair_fusion {
   // Return true if we should try to handle writeback opportunities.
   // WHICH determines the kinds of writeback opportunities the caller
   // is asking about.
-  virtual bool should_handle_writeback (enum writeback which) = 0;
+  virtual bool should_handle_writeback (writeback_type which) = 0;
 
   // Given BASE_MEM, the mem from the lower candidate access for a pair,
   // and LOAD_P (true if the access is a load), check if we should proceed

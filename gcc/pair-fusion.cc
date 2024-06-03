@@ -426,7 +426,7 @@ pair_fusion_bb_info::track_access (insn_info *insn, bool load_p, rtx mem)
     return;
 
   // Ignore writeback accesses if the hook says to do so.
-  if (!m_pass->should_handle_writeback (writeback::EXISTING)
+  if (!m_pass->should_handle_writeback (writeback_type::EXISTING)
       && GET_RTX_CLASS (GET_CODE (XEXP (mem, 0))) == RTX_AUTOINC)
     return;
 
@@ -1787,7 +1787,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
   // update of the base register and try and fold it in to make this into a
   // writeback pair.
   insn_info *trailing_add = nullptr;
-  if (m_pass->should_handle_writeback (writeback::ALL)
+  if (m_pass->should_handle_writeback (writeback_type::ALL)
       && !writeback_effect
       && (!load_p || (!refers_to_regno_p (base_regno, base_regno + 1,
 					 XEXP (pats[0], 0), nullptr)
@@ -2996,7 +2996,7 @@ void pair_fusion::process_block (bb_info *bb)
       rtx pat = PATTERN (rti);
       bool load_p;
       if (reload_completed
-	  && should_handle_writeback (writeback::ALL)
+	  && should_handle_writeback (writeback_type::ALL)
 	  && pair_mem_insn_p (rti, load_p))
 	try_promote_writeback (insn, load_p);
 
