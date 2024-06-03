@@ -674,8 +674,9 @@ mingw_ansi_fputs (const char *str, FILE *fp)
   /* Don't mess up stdio functions with Windows APIs.  */
   fflush (fp);
 
-  if (GetConsoleMode (h, &mode))
-    /* If it is a console, translate ANSI escape codes as needed.  */
+  if (GetConsoleMode (h, &mode) && !(mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING))
+    /* If it is a console, and doesn't support ANSI escape codes, translate
+       them as needed.  */
     for (;;)
       {
 	if ((esc_code = find_esc_head (&prefix_len, &esc_head, read)) == 0)
