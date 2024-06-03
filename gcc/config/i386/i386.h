@@ -55,6 +55,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_APX_PUSH2POP2 (ix86_apx_features & apx_push2pop2)
 #define TARGET_APX_NDD (ix86_apx_features & apx_ndd)
 #define TARGET_APX_PPX (ix86_apx_features & apx_ppx)
+#define TARGET_APX_NF (ix86_apx_features & apx_nf)
 
 #include "config/vxworks-dummy.h"
 
