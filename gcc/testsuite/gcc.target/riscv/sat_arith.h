@@ -26,6 +26,15 @@ sat_u_add_##T##_fmt_3 (T x, T y)                    \
   return (T)(-overflow) | ret;                      \
 }
 
+#define DEF_SAT_U_ADD_FMT_4(T)                           \
+T __attribute__((noinline))                              \
+sat_u_add_##T##_fmt_4 (T x, T y)                         \
+{                                                        \
+  T ret;                                                 \
+  return __builtin_add_overflow (x, y, &ret) ? -1 : ret; \
+}
+
+
 #define DEF_VEC_SAT_U_ADD_FMT_1(T)                                   \
 void __attribute__((noinline))                                       \
 vec_sat_u_add_##T##_fmt_1 (T *out, T *op_1, T *op_2, unsigned limit) \
@@ -42,6 +51,7 @@ vec_sat_u_add_##T##_fmt_1 (T *out, T *op_1, T *op_2, unsigned limit) \
 #define RUN_SAT_U_ADD_FMT_1(T, x, y) sat_u_add_##T##_fmt_1(x, y)
 #define RUN_SAT_U_ADD_FMT_2(T, x, y) sat_u_add_##T##_fmt_2(x, y)
 #define RUN_SAT_U_ADD_FMT_3(T, x, y) sat_u_add_##T##_fmt_3(x, y)
+#define RUN_SAT_U_ADD_FMT_4(T, x, y) sat_u_add_##T##_fmt_4(x, y)
 
 #define RUN_VEC_SAT_U_ADD_FMT_1(T, out, op_1, op_2, N) \
   vec_sat_u_add_##T##_fmt_1(out, op_1, op_2, N)
