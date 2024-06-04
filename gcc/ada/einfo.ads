@@ -932,18 +932,17 @@ package Einfo is
 --       subtypes. Contains the Digits value specified in the declaration.
 
 --    Direct_Primitive_Operations
---       Defined in tagged types and subtypes (including synchronized types),
---       in tagged private types, and in tagged incomplete types. Moreover, it
---       is also defined for untagged types, both when Extensions_Allowed is
---       True (-gnatX) to support the extension feature of prefixed calls for
---       untagged types, and when Extensions_Allowed is False to get better
---       error messages. This field is an element list of entities for
---       primitive operations of the type. For incomplete types the list is
---       always empty. In order to follow the C++ ABI, entities of primitives
---       that come from source must be stored in this list in the order of
---       their occurrence in the sources. When expansion is disabled, the
---       corresponding record type of a synchronized type is not constructed.
---       In that case, such types carry this attribute directly.
+--       Defined in concurrent types, tagged record types and subtypes, tagged
+--       private types, and tagged incomplete types. Moreover, it is also
+--       defined in untagged types, both when GNAT extensions are allowed, to
+--       support prefixed calls for untagged types, and when GNAT extensions
+--       are not allowed, to give better error messages. Set to a list of
+--       entities for primitive operations of the type. For incomplete types
+--       the list is always empty. In order to follow the C++ ABI, entities of
+--       primitives that come from source must be stored in this list in the
+--       order of their occurrence in the sources. When expansion is disabled,
+--       the corresponding record type of concurrent types is not constructed;
+--       in this case, such types carry this attribute directly.
 
 --    Directly_Designated_Type
 --       Defined in access types. This field points to the type that is
@@ -4066,10 +4065,13 @@ package Einfo is
 
 --    Primitive_Operations (synthesized)
 --       Defined in concurrent types, tagged record types and subtypes, tagged
---       private types and tagged incomplete types. For concurrent types whose
---       Corresponding_Record_Type (CRT) is available, returns the list of
---       Direct_Primitive_Operations of its CRT; otherwise returns No_Elist.
---       For all the other types returns the Direct_Primitive_Operations.
+--       private types, and tagged incomplete types. Moreover, it is also
+--       defined in untagged types, both when GNAT extensions are allowed, to
+--       support prefixed calls for untagged types, and when GNAT extensions
+--       are not allowed, to give better error messages.  For concurrent types
+--       whose Corresponding_Record_Type (CRT) is available, returns the list
+--       of Direct_Primitive_Operations of this CRT. In all the other cases,
+--       returns the list of Direct_Primitive_Operations.
 
 --    Prival
 --       Defined in private components of protected types. Refers to the entity

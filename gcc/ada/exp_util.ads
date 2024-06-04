@@ -578,11 +578,11 @@ package Exp_Util is
    --  Find the last initialization call related to object declaration Decl
 
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
-   --  Find the first primitive operation of a tagged type T with name Name.
-   --  This function allows the use of a primitive operation which is not
-   --  directly visible. If T is a class-wide type, then the reference is to an
-   --  operation of the corresponding root type. It is an error if no primitive
-   --  operation with the given name is found.
+   --  Find the first primitive operation of type T with the specified Name,
+   --  disregarding any visibility considerations. If T is a class-wide type,
+   --  then examine the primitive operations of its corresponding root type.
+   --  Raise Program_Error if no primitive operation with the specified Name
+   --  is found.
 
    function Find_Prim_Op
      (T    : Entity_Id;

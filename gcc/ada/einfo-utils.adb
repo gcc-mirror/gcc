@@ -2422,8 +2422,8 @@ package body Einfo.Utils is
    begin
       if Is_Concurrent_Type (Id) then
          if Present (Corresponding_Record_Type (Id)) then
-            return Direct_Primitive_Operations
-              (Corresponding_Record_Type (Id));
+            return
+              Direct_Primitive_Operations (Corresponding_Record_Type (Id));
 
          --  When expansion is disabled, the corresponding record type is
          --  absent, but if this is a tagged type with ancestors, or if the

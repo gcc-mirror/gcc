@@ -3554,8 +3554,7 @@ package body Sem_Ch3 is
       --  Initialize the list of primitive operations to an empty list,
       --  to cover tagged types as well as untagged types. For untagged
       --  types this is used either to analyze the call as legal when
-      --  Core_Extensions_Allowed is True, or to issue a better error message
-      --  otherwise.
+      --  GNAT extensions are allowed, or to give better error messages.
 
       Set_Direct_Primitive_Operations (T, New_Elmt_List);
 
@@ -5864,8 +5863,6 @@ package body Sem_Ch3 is
                   Set_No_Tagged_Streams_Pragma
                                         (Id, No_Tagged_Streams_Pragma (T));
                   Set_Is_Abstract_Type  (Id, Is_Abstract_Type (T));
-                  Set_Direct_Primitive_Operations
-                                        (Id, Direct_Primitive_Operations (T));
                   Set_Class_Wide_Type   (Id, Class_Wide_Type (T));
 
                   if Is_Interface (T) then
@@ -5895,8 +5892,6 @@ package body Sem_Ch3 is
                     No_Tagged_Streams_Pragma (T));
                   Set_Is_Abstract_Type            (Id, Is_Abstract_Type (T));
                   Set_Class_Wide_Type             (Id, Class_Wide_Type  (T));
-                  Set_Direct_Primitive_Operations (Id,
-                    Direct_Primitive_Operations (T));
                end if;
 
                --  In general the attributes of the subtype of a private type
@@ -6000,16 +5995,6 @@ package body Sem_Ch3 is
                        (Id, No_Tagged_Streams_Pragma (T));
                   end if;
 
-                  --  For tagged types, or when prefixed-call syntax is allowed
-                  --  for untagged types, initialize the list of primitive
-                  --  operations to an empty list.
-
-                  if Is_Tagged_Type (Id)
-                    or else Core_Extensions_Allowed
-                  then
-                     Set_Direct_Primitive_Operations (Id, New_Elmt_List);
-                  end if;
-
                   --  Ada 2005 (AI-412): Decorate an incomplete subtype of an
                   --  incomplete type visible through a limited with clause.
 
@@ -6050,7 +6035,8 @@ package body Sem_Ch3 is
 
       --  When prefixed calls are enabled for untagged types, the subtype
       --  shares the primitive operations of its base type. Do this even
-      --  when Extensions_Allowed is False to issue better error messages.
+      --  when GNAT extensions are not allowed, in order to give better
+      --  error messages.
 
       Set_Direct_Primitive_Operations
         (Id, Direct_Primitive_Operations (Base_Type (T)));
@@ -8462,8 +8448,7 @@ package body Sem_Ch3 is
             --  Initialize the list of primitive operations to an empty list,
             --  to cover tagged types as well as untagged types. For untagged
             --  types this is used either to analyze the call as legal when
-            --  Extensions_Allowed is True, or to issue a better error message
-            --  otherwise.
+            --  GNAT extensions are allowed, or to give better error messages.
 
             Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
 
@@ -9862,8 +9847,7 @@ package body Sem_Ch3 is
       --  Initialize the list of primitive operations to an empty list,
       --  to cover tagged types as well as untagged types. For untagged
       --  types this is used either to analyze the call as legal when
-      --  Extensions_Allowed is True, or to issue a better error message
-      --  otherwise.
+      --  GNAT extensions are allowed, or to give better error messages.
 
       Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
 
@@ -10911,6 +10895,14 @@ package body Sem_Ch3 is
          Make_Class_Wide_Type (Def_Id);
       end if;
 
+      --  When prefixed calls are enabled for untagged types, the subtype
+      --  shares the primitive operations of its base type. Do this even
+      --  when GNAT extensions are not allowed, in order to give better
+      --  error messages.
+
+      Set_Direct_Primitive_Operations
+        (Def_Id, Direct_Primitive_Operations (T));
+
       Set_Stored_Constraint (Def_Id, No_Elist);
 
       if Has_Discrs then
@@ -10921,17 +10913,11 @@ package body Sem_Ch3 is
       if Is_Tagged_Type (T) then
 
          --  Ada 2005 (AI-251): In case of concurrent types we inherit the
-         --  concurrent record type (which has the list of primitive
-         --  operations).
+         --  concurrent record type.
 
-         if Ada_Version >= Ada_2005
-           and then Is_Concurrent_Type (T)
-         then
-            Set_Corresponding_Record_Type (Def_Id,
-               Corresponding_Record_Type (T));
-         else
-            Set_Direct_Primitive_Operations (Def_Id,
-              Direct_Primitive_Operations (T));
+         if Ada_Version >= Ada_2005 and then Is_Concurrent_Type (T) then
+            Set_Corresponding_Record_Type
+              (Def_Id, Corresponding_Record_Type (T));
          end if;
 
          Set_Is_Abstract_Type (Def_Id, Is_Abstract_Type (T));
@@ -13083,6 +13069,14 @@ package body Sem_Ch3 is
       Set_First_Rep_Item     (Full, First_Rep_Item (Full_Base));
       Set_Depends_On_Private (Full, Has_Private_Component (Full));
 
+      --  When prefixed calls are enabled for untagged types, the subtype
+      --  shares the primitive operations of its base type. Do this even
+      --  when GNAT extensions are not allowed, in order to give better
+      --  error messages.
+
+      Set_Direct_Primitive_Operations
+        (Full, Direct_Primitive_Operations (Full_Base));
+
       --  Freeze the private subtype entity if its parent is delayed, and not
       --  already frozen. We skip this processing if the type is an anonymous
       --  subtype of a record component, or is the corresponding record of a
@@ -13189,8 +13183,6 @@ package body Sem_Ch3 is
          Set_Is_Tagged_Type (Full);
          Set_Is_Limited_Record (Full, Is_Limited_Record (Full_Base));
 
-         Set_Direct_Primitive_Operations
-           (Full, Direct_Primitive_Operations (Full_Base));
          Set_No_Tagged_Streams_Pragma
            (Full, No_Tagged_Streams_Pragma (Full_Base));
 
@@ -17469,8 +17461,7 @@ package body Sem_Ch3 is
          --  Initialize the list of primitive operations to an empty list,
          --  to cover tagged types as well as untagged types. For untagged
          --  types this is used either to analyze the call as legal when
-         --  Extensions_Allowed is True, or to issue a better error message
-         --  otherwise.
+         --  GNAT extensions are allowed, or to give better error messages.
 
          Set_Direct_Primitive_Operations (T, New_Elmt_List);
 

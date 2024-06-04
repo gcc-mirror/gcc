@@ -84,9 +84,8 @@ package Sem_Ch4  is
    --  true then N is an N_Selected_Component node which is part of a call to
    --  an entry or procedure of a tagged concurrent type and this routine is
    --  invoked to search for class-wide subprograms conflicting with the target
-   --  entity. If Allow_Extensions is True, then a prefixed call of a primitive
-   --  of a non-tagged type is allowed as if Extensions_Allowed returned True.
-   --  This is used to issue better error messages.
+   --  entity. If Allow_Extensions is True, then a prefixed call to a primitive
+   --  of an untagged type is allowed (used to give better error messages).
 
    procedure Unresolved_Operator (N : Node_Id);
    --  Give an error for an unresolved operator
