@@ -287,6 +287,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *(this->_M_ptr + __idx);
       }
 
+#if __cpp_lib_span >= 202311L // >= C++26
       [[nodiscard]]
       constexpr reference
       at(size_type __idx) const
@@ -296,6 +297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				       "of size %zu"), __idx, this->size());
 	return *(this->_M_ptr + __idx);
       }
+#endif
 
       [[nodiscard]]
       constexpr pointer
