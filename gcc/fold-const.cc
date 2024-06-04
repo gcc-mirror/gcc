@@ -15250,6 +15250,7 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
       return true;
 
     CASE_CFN_CLZ:
+    CASE_CFN_CTZ:
       if (arg1)
 	return RECURSE (arg1);
       return true;
