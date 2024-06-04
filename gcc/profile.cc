@@ -1559,7 +1559,7 @@ branch_prob (bool thunk)
 
   remove_fake_edges ();
 
-  if (condition_coverage_flag || profile_arc_flag)
+  if (condition_coverage_flag || path_coverage_flag || profile_arc_flag)
       gimple_init_gcov_profiler ();
 
   if (condition_coverage_flag)
@@ -1610,6 +1610,10 @@ branch_prob (bool thunk)
       if (flag_profile_values)
 	instrument_values (values);
     }
+
+  void find_paths (struct function*);
+  if (path_coverage_flag)
+    find_paths (cfun);
 
   free_aux_for_edges ();
 

@@ -109,6 +109,7 @@ selftest::run_tests ()
   lazy_diagnostic_path_cc_tests ();
   attribs_cc_tests ();
   opts_diagnostic_cc_tests ();
+  path_coverage_cc_tests ();
 
   /* This one relies on most of the above.  */
   function_tests_cc_tests ();

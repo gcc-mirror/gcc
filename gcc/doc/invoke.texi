@@ -660,6 +660,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Instrumentation Options,,Program Instrumentation Options}.
 @gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage
 -fcondition-coverage
+-fpath-coverage
 -fprofile-abs-path
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path}
 -fprofile-info-section  -fprofile-info-section=@var{name}
@@ -6673,6 +6674,13 @@ Warn if @option{-fcondition-coverage} is used and an expression have too many
 terms and GCC gives up coverage.  Coverage is given up when there are more
 terms in the conditional than there are bits in a @code{gcov_type_unsigned}.
 This warning is enabled by default.
+
+@opindex Wno-coverage-too-many-paths
+@opindex Wcoverage-too-many-paths
+@item -Wno-coverage-too-many-paths
+Warn if @option{-fpath-coverage} is used and a function has too many
+paths and GCC gives up coverage.  Giving up is controlled by
+@option{-fpath-coverage-limit}.  This warning is enabled by default.
 
 @opindex Wno-coverage-invalid-line-number
 @opindex Wcoverage-invalid-line-number
@@ -17506,6 +17514,27 @@ can be used to verify that all terms in a Boolean function are tested and have
 an independent effect on the outcome of a decision.  The result can be read
 with @code{gcov --conditions}.
 
+@item -fpath-coverage
+@opindex fpath-coverage
+Add code so that the paths taken are tracked.  During execution the
+program records the prime paths taken.  The number of paths grows very
+fast with complexity, and to avoid exploding compile times GCC will give
+up instrumentation if the approximate number of paths exceeds the limit
+controlled by @option{-fpath-coverage-limit}.  The result can be read
+with @code{gcov --prime-paths --prime-paths-lines --prime-paths-source},
+@xref{gcov prime paths example}.
+
+@item -fpath-coverage-limit=@var{limit}
+@opindex fpath-coverage-limit
+The threshold at which point @option{-fpath-coverage} gives up on
+instrumenting a function.  This limit is approximate and conservative,
+as GCC uses a pessimistic heuristic which slightly overcounts the
+running number of paths, and gives up if the threshold is reached before
+finding all the paths.  This option is not for fine grained control over
+which functions to instrument - rather it is intended to limit the
+effect of path explosion and keep compile times reasonable.  The default
+is @var{250000}.
+
 @xref{Cross-profiling}.
 
 @cindex @command{gcov}
@@ -17571,6 +17600,14 @@ block must be created to hold the instrumentation code.
 With @option{-fcondition-coverage}, for each conditional in your program GCC
 creates a bitset and records the exercised boolean values that have an
 independent effect on the outcome of that expression.
+
+With @option{-fpath-coverage}, GCC finds and enumerates and records the
+taken prime paths of each function, unless the number of paths would
+exceed the limit controlled by @option{-fpath-coverage-limit}.  If the
+limit is exceeded the function is not instrumented as if
+@option{-fpath-coverage} was not used.  A prime path is the longest
+sequence of unique blocks, except possibly the first and last, which is
+not a subpath of any other path.
 
 @need 2000
 @opindex ftest-coverage

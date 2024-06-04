@@ -1640,6 +1640,8 @@ OBJS = \
 	opts-global.o \
 	ordered-hash-map-tests.o \
 	passes.o \
+	prime-paths.o \
+	path-coverage.o \
 	plugin.o \
 	pointer-query.o \
 	postreload-gcse.o \
@@ -3058,6 +3060,8 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-scalar-evolution.cc \
   $(srcdir)/tree-ssa-operands.h \
   $(srcdir)/tree-profile.cc $(srcdir)/tree-nested.cc \
+  $(srcdir)/path-coverage.cc \
+  $(srcdir)/prime-paths.cc \
   $(srcdir)/omp-offload.h \
   $(srcdir)/omp-general.h \
   $(srcdir)/omp-general.cc \
@@ -3435,7 +3439,7 @@ s-version: build/genversion$(build_exeext)
 # gcov.o needs $(ZLIBINC) added to the include flags.
 CFLAGS-gcov.o += $(ZLIBINC)
 
-GCOV_OBJS = gcov.o json.o
+GCOV_OBJS = gcov.o json.o graphds.o prime-paths.o bitmap.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_OBJS) \
 		hash-table.o ggc-none.o $(LIBS) $(ZLIB) -o $@

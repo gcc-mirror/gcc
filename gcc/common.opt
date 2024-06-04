@@ -885,6 +885,18 @@ Common Var(warn_too_many_conditions) Init(1) Warning
 Warn when a conditional has too many terms and condition coverage profiling
 gives up instrumenting the expression.
 
+fpath-coverage-limit=
+Common RejectNegative Joined UInteger Var(path_coverage_limit) Init(250000)
+-fpath-coverage-limit=<number> Don't instrument functions path count exceeding
+<number>.
+
+Wcoverage-too-many-paths
+Common Var(warn_too_many_paths) Init(1) Warning
+Warn if a function exceeds the number of paths (controlled by
+-fpath-coverage-limit) and path coverage give up instrumenting the function.
+The limit is approximate and conservative and coverage might give up even if
+the actual number is slightly below the limit.
+
 Wmissing-profile
 Common Var(warn_missing_profile) Init(1) Warning
 Warn in case profiles in -fprofile-use do not exist.
@@ -2453,6 +2465,10 @@ Does nothing. Preserved for backward compatibility.
 foptimize-sibling-calls
 Common Var(flag_optimize_sibling_calls) Optimization
 Optimize sibling and tail recursive calls.
+
+fpath-coverage
+Common Var(path_coverage_flag)
+Insert path profiling code.
 
 fpartial-inlining
 Common Var(flag_partial_inlining) Optimization
