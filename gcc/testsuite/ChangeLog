@@ -1,3 +1,11 @@
+2024-06-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-05-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115297
+	* gcc.target/alpha/pr115297.c: New test.
+
 2024-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
