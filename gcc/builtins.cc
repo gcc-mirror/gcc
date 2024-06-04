@@ -9539,7 +9539,21 @@ fold_builtin_arith_overflow (location_t loc, enum built_in_function fcode,
       tree ctype = build_complex_type (type);
       tree call = build_call_expr_internal_loc (loc, ifn, ctype, 2,
 						arg0, arg1);
-      tree tgt = save_expr (call);
+      tree tgt;
+      if (ovf_only)
+	{
+	  tgt = call;
+	  intres = NULL_TREE;
+	}
+      else
+	{
+	  /* Force SAVE_EXPR even for calls which satisfy tree_invariant_p_1,
+	     as while the call itself is const, the REALPART_EXPR store is
+	     certainly not.  And in any case, we want just one call,
+	     not multiple and trying to CSE them later.  */
+	  TREE_SIDE_EFFECTS (call) = 1;
+	  tgt = save_expr (call);
+	}
       intres = build1_loc (loc, REALPART_EXPR, type, tgt);
       ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
       ovfres = fold_convert_loc (loc, boolean_type_node, ovfres);
