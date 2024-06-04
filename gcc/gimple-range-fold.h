@@ -78,7 +78,7 @@ gimple_range_type (const gimple *s)
 	    type = TREE_TYPE (type);
 	}
     }
-  if (type && Value_Range::supports_type_p (type))
+  if (type && value_range::supports_type_p (type))
     return type;
   return NULL_TREE;
 }
@@ -91,7 +91,7 @@ gimple_range_ssa_p (tree exp)
   if (exp && TREE_CODE (exp) == SSA_NAME &&
       !SSA_NAME_IS_VIRTUAL_OPERAND (exp) &&
       !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (exp) &&
-      Value_Range::supports_type_p (TREE_TYPE (exp)))
+      value_range::supports_type_p (TREE_TYPE (exp)))
     return exp;
   return NULL_TREE;
 }

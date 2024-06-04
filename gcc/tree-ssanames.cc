@@ -432,7 +432,7 @@ set_range_info (tree name, const vrange &r)
       return false;
     }
 
-  Value_Range tmp (type);
+  value_range tmp (type);
   if (range_info_p (name))
     range_info_get_range (name, tmp);
   else
@@ -751,7 +751,7 @@ duplicate_ssa_name_range_info (tree name, tree src)
 
   if (range_info_p (src))
     {
-      Value_Range src_range (TREE_TYPE (src));
+      value_range src_range (TREE_TYPE (src));
       range_info_get_range (src, src_range);
       range_info_set_range (name, src_range);
     }

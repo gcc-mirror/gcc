@@ -115,13 +115,13 @@ loop_static_stmt_p (class loop *loop,
 		    gimple *stmt)
 {
   tree type = gimple_range_type (stmt);
-  if (!type || !Value_Range::supports_type_p (type))
+  if (!type || !value_range::supports_type_p (type))
     return false;
 
   if (!query)
     query = get_range_query (loop, gimple_bb (stmt), ranger);
 
-  Value_Range r (gimple_range_type (stmt));
+  value_range r (gimple_range_type (stmt));
   if (!query->range_of_stmt (r, stmt))
     return false;
   return r.singleton_p ();

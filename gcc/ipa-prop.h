@@ -306,7 +306,7 @@ public:
   void set_unknown ();
   bool known_p () const { return m_storage != NULL; }
   tree type () const { return m_type; }
-  void get_vrange (Value_Range &) const;
+  void get_vrange (value_range &) const;
   bool equal_p (const vrange &) const;
   bool equal_p (const ipa_vr &) const;
   const vrange_storage *storage () const { return m_storage; }
@@ -521,7 +521,7 @@ public:
   auto_vec<ipa_argagg_value, 32> m_known_aggs;
 
   /* Vector describing known value ranges of arguments.  */
-  auto_vec<Value_Range, 32> m_known_value_ranges;
+  auto_vec<value_range, 32> m_known_value_ranges;
 };
 
 inline
@@ -573,7 +573,7 @@ public:
   vec<ipa_argagg_value> m_known_aggs = vNULL;
 
   /* Vector describing known value ranges of arguments.  */
-  vec<Value_Range> m_known_value_ranges = vNULL;
+  vec<value_range> m_known_value_ranges = vNULL;
 };
 
 inline
@@ -1277,8 +1277,8 @@ ipa_range_set_and_normalize (vrange &r, tree val)
     r.set (val, val);
 }
 
-bool ipa_return_value_range (Value_Range &range, tree decl);
-void ipa_record_return_value_range (Value_Range val);
+bool ipa_return_value_range (value_range &range, tree decl);
+void ipa_record_return_value_range (value_range val);
 bool ipa_jump_functions_equivalent_p (ipa_jump_func *jf1, ipa_jump_func *jf2);
 
 

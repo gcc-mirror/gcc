@@ -1437,7 +1437,7 @@ dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
 	    || (gimple_bb (SSA_NAME_DEF_STMT (name))
 		== pred_e->src)))
       {
-	Value_Range r (TREE_TYPE (name));
+	value_range r (TREE_TYPE (name));
 
 	if (m_ranger->range_on_edge (r, pred_e, name)
 	    && !r.varying_p ()
@@ -2032,7 +2032,7 @@ cprop_operand (gimple *stmt, use_operand_p op_p, range_query *query)
   val = SSA_NAME_VALUE (op);
   if (!val)
     {
-      Value_Range r (TREE_TYPE (op));
+      value_range r (TREE_TYPE (op));
       tree single;
       if (query->range_of_expr (r, op, stmt) && r.singleton_p (&single))
 	val = single;

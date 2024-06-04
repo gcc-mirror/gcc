@@ -62,7 +62,7 @@ irange::accept (const vrange_visitor &v) const
 }
 
 void
-Value_Range::dump (FILE *out) const
+value_range::dump (FILE *out) const
 {
   if (m_vrange)
     m_vrange->dump (out);
@@ -71,7 +71,7 @@ Value_Range::dump (FILE *out) const
 }
 
 DEBUG_FUNCTION void
-debug (const Value_Range &r)
+debug (const value_range &r)
 {
   r.dump (stderr);
   fprintf (stderr, "\n");

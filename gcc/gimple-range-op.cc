@@ -133,7 +133,7 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	  m_op1 = gimple_cond_lhs (m_stmt);
 	  m_op2 = gimple_cond_rhs (m_stmt);
 	  // Check that operands are supported types.  One check is enough.
-	  if (Value_Range::supports_type_p (TREE_TYPE (m_op1)))
+	  if (value_range::supports_type_p (TREE_TYPE (m_op1)))
 	    m_operator = oper.range_op ();
 	  gcc_checking_assert (m_operator);
 	  return;
@@ -153,7 +153,7 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	  if (gimple_num_ops (m_stmt) >= 3)
 	    m_op2 = gimple_assign_rhs2 (m_stmt);
 	  // Check that operands are supported types.  One check is enough.
-	  if ((m_op1 && !Value_Range::supports_type_p (TREE_TYPE (m_op1))))
+	  if ((m_op1 && !value_range::supports_type_p (TREE_TYPE (m_op1))))
 	    return;
 	  m_operator = oper.range_op ();
 	  gcc_checking_assert (m_operator);
@@ -185,7 +185,7 @@ gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range)
   // Unary operations require the type of the first operand in the
   // second range position.
   tree type = TREE_TYPE (operand1 ());
-  Value_Range type_range (type);
+  value_range type_range (type);
   type_range.set_varying (type);
   return op1_range (r, type, lhs_range, type_range);
 }
@@ -218,7 +218,7 @@ gimple_range_op_handler::calc_op1 (vrange &r, const vrange &lhs_range,
 	op2_type = TREE_TYPE (operand2 ());
       else
 	op2_type = TREE_TYPE (operand1 ());
-      Value_Range trange (op2_type);
+      value_range trange (op2_type);
       trange.set_varying (op2_type);
       return op1_range (r, type, lhs_range, trange, k);
     }
@@ -243,7 +243,7 @@ gimple_range_op_handler::calc_op2 (vrange &r, const vrange &lhs_range,
   if (op1_range.undefined_p ())
     {
       tree op1_type = TREE_TYPE (operand1 ());
-      Value_Range trange (op1_type);
+      value_range trange (op1_type);
       trange.set_varying (op1_type);
       return op2_range (r, type, lhs_range, trange, k);
     }
@@ -1228,7 +1228,7 @@ gimple_range_op_handler::maybe_builtin_call ()
   tree type = gimple_range_type (call);
   if (!type)
     return;
-  if (!Value_Range::supports_type_p (type))
+  if (!value_range::supports_type_p (type))
     return;
 
   switch (func)

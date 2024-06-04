@@ -219,14 +219,14 @@ streamer_read_real_value (class lto_input_block *ib, REAL_VALUE_TYPE *r)
 
 void
 streamer_read_value_range (class lto_input_block *ib, data_in *data_in,
-			   Value_Range &vr)
+			   value_range &vr)
 {
   // Read the common fields to all vranges.
   value_range_kind kind = streamer_read_enum (ib, value_range_kind, VR_LAST);
   gcc_checking_assert (kind != VR_UNDEFINED);
   tree type = stream_read_tree (ib, data_in);
 
-  // Initialize the Value_Range to the correct type.
+  // Initialize the value_range to the correct type.
   vr.set_type (type);
 
   if (is_a <irange> (vr))

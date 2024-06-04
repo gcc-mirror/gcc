@@ -310,8 +310,8 @@ tree
 simplify_using_ranges::fold_cond_with_ops (enum tree_code code,
 					   tree op0, tree op1, gimple *s)
 {
-  Value_Range r0 (TREE_TYPE (op0));
-  Value_Range r1 (TREE_TYPE (op1));
+  value_range r0 (TREE_TYPE (op0));
+  value_range r1 (TREE_TYPE (op1));
   if (!query->range_of_expr (r0, op0, s)
       || !query->range_of_expr (r1, op1, s))
     return NULL_TREE;
@@ -451,7 +451,7 @@ simplify_using_ranges::legacy_fold_cond (gcond *stmt, edge *taken_edge_p)
 	  fprintf (dump_file, "\t");
 	  print_generic_expr (dump_file, use);
 	  fprintf (dump_file, ": ");
-	  Value_Range r (TREE_TYPE (use));
+	  value_range r (TREE_TYPE (use));
 	  query->range_of_expr (r, use, stmt);
 	  r.dump (dump_file);
 	}

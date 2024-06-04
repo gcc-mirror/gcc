@@ -74,10 +74,10 @@ range_query::value_of_expr (tree expr, gimple *stmt)
 {
   tree t;
 
-  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
+  if (!value_range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
 
-  Value_Range r (TREE_TYPE (expr));
+  value_range r (TREE_TYPE (expr));
 
   if (range_of_expr (r, expr, stmt))
     {
@@ -99,9 +99,9 @@ range_query::value_on_edge (edge e, tree expr)
 {
   tree t;
 
-  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
+  if (!value_range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
-  Value_Range r (TREE_TYPE (expr));
+  value_range r (TREE_TYPE (expr));
   if (range_on_edge (r, e, expr))
     {
       // A constant used in an unreachable block often returns as UNDEFINED.
@@ -127,9 +127,9 @@ range_query::value_of_stmt (gimple *stmt, tree name)
 
   gcc_checking_assert (!name || name == gimple_get_lhs (stmt));
 
-  if (!name || !Value_Range::supports_type_p (TREE_TYPE (name)))
+  if (!name || !value_range::supports_type_p (TREE_TYPE (name)))
     return NULL_TREE;
-  Value_Range r (TREE_TYPE (name));
+  value_range r (TREE_TYPE (name));
   if (range_of_stmt (r, stmt, name) && r.singleton_p (&t))
     return t;
   return NULL_TREE;
@@ -144,10 +144,10 @@ range_query::value_on_entry (basic_block bb, tree expr)
   tree t;
 
   gcc_checking_assert (bb);
-  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
+  if (!value_range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
 
-  Value_Range r (TREE_TYPE (expr));
+  value_range r (TREE_TYPE (expr));
 
   if (range_on_entry (r, bb, expr) && r.singleton_p (&t))
     return t;
@@ -163,10 +163,10 @@ range_query::value_on_exit (basic_block bb, tree expr)
   tree t;
 
   gcc_checking_assert (bb);
-  if (!Value_Range::supports_type_p (TREE_TYPE (expr)))
+  if (!value_range::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
 
-  Value_Range r (TREE_TYPE (expr));
+  value_range r (TREE_TYPE (expr));
 
   if (range_on_exit (r, bb, expr) && r.singleton_p (&t))
     return t;
@@ -317,7 +317,7 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt,
   else
     type = TREE_TYPE (expr);
 
-  if (!Value_Range::supports_type_p (type))
+  if (!value_range::supports_type_p (type))
     {
       r.set_undefined ();
       return false;
@@ -381,13 +381,13 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt,
       tree op0 = TREE_OPERAND (expr, 0);
       tree op1 = TREE_OPERAND (expr, 1);
       if (COMPARISON_CLASS_P (expr)
-	  && !Value_Range::supports_type_p (TREE_TYPE (op0)))
+	  && !value_range::supports_type_p (TREE_TYPE (op0)))
 	return false;
       range_op_handler op (TREE_CODE (expr));
       if (op)
 	{
-	  Value_Range r0 (TREE_TYPE (op0));
-	  Value_Range r1 (TREE_TYPE (op1));
+	  value_range r0 (TREE_TYPE (op0));
+	  value_range r1 (TREE_TYPE (op1));
 	  invoke_range_of_expr (r0, op0, stmt, bbentry, bbexit);
 	  invoke_range_of_expr (r1, op1, stmt, bbentry, bbexit);
 	  if (!op.fold_range (r, type, r0, r1))
@@ -401,10 +401,10 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt,
     {
       range_op_handler op (TREE_CODE (expr));
       tree op0_type = TREE_TYPE (TREE_OPERAND (expr, 0));
-      if (op && Value_Range::supports_type_p (op0_type))
+      if (op && value_range::supports_type_p (op0_type))
 	{
-	  Value_Range r0 (TREE_TYPE (TREE_OPERAND (expr, 0)));
-	  Value_Range r1 (type);
+	  value_range r0 (TREE_TYPE (TREE_OPERAND (expr, 0)));
+	  value_range r1 (type);
 	  r1.set_varying (type);
 	  invoke_range_of_expr (r0, TREE_OPERAND (expr, 0), stmt, bbentry,
 				bbexit);

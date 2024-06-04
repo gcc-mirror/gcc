@@ -80,7 +80,7 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <ipa_vr *>
       // This never get called, except in the verification code, as
       // ipa_get_value_range() calculates the hash itself.  This
       // function is mostly here for completness' sake.
-      Value_Range vr;
+      value_range vr;
       p->get_vrange (vr);
       inchash::hash hstate;
       add_vrange (vr, hstate);
@@ -165,13 +165,13 @@ ipa_vr::equal_p (const ipa_vr &o) const
   if (!types_compatible_p (m_type, o.m_type))
     return false;
 
-  Value_Range r;
+  value_range r;
   o.get_vrange (r);
   return m_storage->equal_p (r);
 }
 
 void
-ipa_vr::get_vrange (Value_Range &r) const
+ipa_vr::get_vrange (value_range &r) const
 {
   r.set_type (m_type);
   m_storage->get_vrange (r, m_type);
@@ -193,7 +193,7 @@ ipa_vr::streamer_read (lto_input_block *ib, data_in *data_in)
   bool known = bp_unpack_value (&bp, 1);
   if (known)
     {
-      Value_Range vr;
+      value_range vr;
       streamer_read_value_range (ib, data_in, vr);
       if (!m_storage || !m_storage->fits_p (vr))
 	{
@@ -219,7 +219,7 @@ ipa_vr::streamer_write (output_block *ob) const
   streamer_write_bitpack (&bp);
   if (m_storage)
     {
-      Value_Range vr (m_type);
+      value_range vr (m_type);
       m_storage->get_vrange (vr, m_type);
       streamer_write_vrange (ob, vr);
     }
@@ -230,7 +230,7 @@ ipa_vr::dump (FILE *out) const
 {
   if (known_p ())
     {
-      Value_Range vr (m_type);
+      value_range vr (m_type);
       m_storage->get_vrange (vr, m_type);
       vr.dump (out);
     }
@@ -2299,7 +2299,7 @@ ipa_set_jfunc_vr (ipa_jump_func *jf, const vrange &tmp)
 static void
 ipa_set_jfunc_vr (ipa_jump_func *jf, const ipa_vr &vr)
 {
-  Value_Range tmp;
+  value_range tmp;
   vr.get_vrange (tmp);
   ipa_set_jfunc_vr (jf, tmp);
 }
@@ -2347,7 +2347,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	    useful_context = true;
 	}
 
-      Value_Range vr (TREE_TYPE (arg));
+      value_range vr (TREE_TYPE (arg));
       if (POINTER_TYPE_P (TREE_TYPE (arg)))
 	{
 	  bool addr_nonzero = false;
@@ -2397,7 +2397,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      && get_range_query (cfun)->range_of_expr (vr, arg, cs->call_stmt)
 	      && !vr.undefined_p ())
 	    {
-	      Value_Range resvr (vr);
+	      value_range resvr (vr);
 	      range_cast (resvr, param_type);
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
 		ipa_set_jfunc_vr (jfunc, resvr);
@@ -5778,7 +5778,7 @@ ipcp_get_parm_bits (tree parm, tree *value, widest_int *mask)
   vec<ipa_vr, va_gc> &vr = *ts->m_vr;
   if (!vr[i].known_p ())
     return false;
-  Value_Range tmp;
+  value_range tmp;
   vr[i].get_vrange (tmp);
   if (tmp.undefined_p () || tmp.varying_p ())
     return false;
@@ -5837,7 +5837,7 @@ ipcp_update_vr (struct cgraph_node *node, ipcp_transformation *ts)
 
       if (vr[i].known_p ())
 	{
-	  Value_Range tmp;
+	  value_range tmp;
 	  vr[i].get_vrange (tmp);
 
 	  if (!tmp.undefined_p () && !tmp.varying_p ())
@@ -6007,7 +6007,7 @@ ipcp_transform_function (struct cgraph_node *node)
 /* Record that current function return value range is VAL.  */
 
 void
-ipa_record_return_value_range (Value_Range val)
+ipa_record_return_value_range (value_range val)
 {
   cgraph_node *n = cgraph_node::get (current_function_decl);
   if (!ipa_return_value_sum)
@@ -6030,7 +6030,7 @@ ipa_record_return_value_range (Value_Range val)
 /* Return true if value range of DECL is known and if so initialize RANGE.  */
 
 bool
-ipa_return_value_range (Value_Range &range, tree decl)
+ipa_return_value_range (value_range &range, tree decl)
 {
   cgraph_node *n = cgraph_node::get (decl);
   if (!n || !ipa_return_value_sum)

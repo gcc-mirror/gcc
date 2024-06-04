@@ -775,7 +775,7 @@ ipcp_vr_lattice::meet_with_1 (const vrange &other_vr)
   bool res;
   if (flag_checking)
     {
-      Value_Range save (m_vr);
+      value_range save (m_vr);
       res = m_vr.union_ (other_vr);
       gcc_assert (res == (m_vr != save));
     }
@@ -1656,7 +1656,7 @@ ipa_vr_operation_and_type_effects (vrange &dst_vr,
   if (!handler)
     return false;
 
-  Value_Range varying (dst_type);
+  value_range varying (dst_type);
   varying.set_varying (dst_type);
 
   return (handler.operand_check_p (dst_type, src_type, dst_type)
@@ -1674,7 +1674,7 @@ ipa_vr_operation_and_type_effects (vrange &dst_vr,
 				   enum tree_code operation,
 				   tree dst_type, tree src_type)
 {
-  Value_Range tmp;
+  value_range tmp;
   src_vr.get_vrange (tmp);
   return ipa_vr_operation_and_type_effects (dst_vr, tmp, operation,
 					    dst_type, src_type);
@@ -1713,14 +1713,14 @@ ipa_value_range_from_jfunc (vrange &vr,
       if (!(*sum->m_vr)[idx].known_p ())
 	return;
       tree vr_type = ipa_get_type (info, idx);
-      Value_Range srcvr;
+      value_range srcvr;
       (*sum->m_vr)[idx].get_vrange (srcvr);
 
       enum tree_code operation = ipa_get_jf_pass_through_operation (jfunc);
 
       if (TREE_CODE_CLASS (operation) == tcc_unary)
 	{
-	  Value_Range res (parm_type);
+	  value_range res (parm_type);
 
 	  if (ipa_vr_operation_and_type_effects (res,
 						 srcvr,
@@ -1730,10 +1730,10 @@ ipa_value_range_from_jfunc (vrange &vr,
 	}
       else
 	{
-	  Value_Range op_res (vr_type);
-	  Value_Range res (vr_type);
+	  value_range op_res (vr_type);
+	  value_range res (vr_type);
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
-	  Value_Range op_vr (TREE_TYPE (op));
+	  value_range op_vr (TREE_TYPE (op));
 	  range_op_handler handler (operation);
 
 	  ipa_range_set_and_normalize (op_vr, op);
@@ -2486,7 +2486,7 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	}
     }
 
-  Value_Range vr (parm_type);
+  value_range vr (parm_type);
   if (jfunc->m_vr)
     {
       jfunc->m_vr->get_vrange (vr);
@@ -2534,7 +2534,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
       if (src_lats->m_value_range.bottom_p ())
 	return dest_lat->set_to_bottom ();
 
-      Value_Range vr (param_type);
+      value_range vr (param_type);
       if (TREE_CODE_CLASS (operation) == tcc_unary)
 	ipa_vr_operation_and_type_effects (vr,
 					   src_lats->m_value_range.m_vr,
@@ -2546,8 +2546,8 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
       else if (!ipa_edge_within_scc (cs))
 	{
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
-	  Value_Range op_vr (TREE_TYPE (op));
-	  Value_Range op_res (param_type);
+	  value_range op_vr (TREE_TYPE (op));
+	  value_range op_res (param_type);
 	  range_op_handler handler (operation);
 
 	  ipa_range_set_and_normalize (op_vr, op);
@@ -2576,7 +2576,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	{
 	  if (jfunc->m_vr)
 	    {
-	      Value_Range jvr (param_type);
+	      value_range jvr (param_type);
 	      if (ipa_vr_operation_and_type_effects (jvr, *jfunc->m_vr,
 						     NOP_EXPR,
 						     param_type,
@@ -2595,12 +2595,12 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	  if (TREE_OVERFLOW_P (val))
 	    val = drop_tree_overflow (val);
 
-	  Value_Range tmpvr (val, val);
+	  value_range tmpvr (val, val);
 	  return dest_lat->meet_with (tmpvr);
 	}
     }
 
-  Value_Range vr (param_type);
+  value_range vr (param_type);
   if (jfunc->m_vr
       && ipa_vr_operation_and_type_effects (vr, *jfunc->m_vr, NOP_EXPR,
 					    param_type,
@@ -6359,7 +6359,7 @@ ipcp_store_vr_results (void)
 	    {
 	      if (bits)
 		{
-		  Value_Range tmp = plats->m_value_range.m_vr;
+		  value_range tmp = plats->m_value_range.m_vr;
 		  tree type = ipa_get_type (info, i);
 		  irange_bitmask bm (wide_int::from (bits->get_value (),
 						     TYPE_PRECISION (type),
@@ -6380,7 +6380,7 @@ ipcp_store_vr_results (void)
 	  else if (bits)
 	    {
 	      tree type = ipa_get_type (info, i);
-	      Value_Range tmp;
+	      value_range tmp;
 	      tmp.set_varying (type);
 	      irange_bitmask bm (wide_int::from (bits->get_value (),
 						 TYPE_PRECISION (type),

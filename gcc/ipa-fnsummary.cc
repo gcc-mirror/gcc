@@ -489,7 +489,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  && !c->agg_contents
 	  && (!val || TREE_CODE (val) != INTEGER_CST))
 	{
-	  Value_Range vr (avals->m_known_value_ranges[c->operand_num]);
+	  value_range vr (avals->m_known_value_ranges[c->operand_num]);
 	  if (!vr.undefined_p ()
 	      && !vr.varying_p ()
 	      && (TYPE_SIZE (c->type) == TYPE_SIZE (vr.type ())))
@@ -502,10 +502,10 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		  if (vr.varying_p () || vr.undefined_p ())
 		    break;
 
-		  Value_Range res (op->type);
+		  value_range res (op->type);
 		  if (!op->val[0])
 		    {
-		      Value_Range varying (op->type);
+		      value_range varying (op->type);
 		      varying.set_varying (op->type);
 		      range_op_handler handler (op->code);
 		      if (!handler
@@ -515,7 +515,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		    }
 		  else if (!op->val[1])
 		    {
-		      Value_Range op0 (TREE_TYPE (op->val[0]));
+		      value_range op0 (TREE_TYPE (op->val[0]));
 		      range_op_handler handler (op->code);
 
 		      ipa_range_set_and_normalize (op0, op->val[0]);
@@ -534,7 +534,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	      if (!vr.varying_p () && !vr.undefined_p ())
 		{
 		  int_range<2> res;
-		  Value_Range val_vr (TREE_TYPE (c->val));
+		  value_range val_vr (TREE_TYPE (c->val));
 		  range_op_handler handler (c->code);
 
 		  ipa_range_set_and_normalize (val_vr, c->val);
@@ -675,7 +675,7 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		    && vrp_will_run_p (caller)
 		    && ipa_is_param_used_by_ipa_predicates (callee_pi, i))
 		  {
-		    Value_Range vr (type);
+		    value_range vr (type);
 
 		    ipa_value_range_from_jfunc (vr, caller_parms_info, e, jf, type);
 		    if (!vr.undefined_p () && !vr.varying_p ())

@@ -4092,7 +4092,7 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
   if (tree_int_cst_sign_bit (step))
     {
       wide_int max;
-      Value_Range base_range (TREE_TYPE (orig_base));
+      value_range base_range (TREE_TYPE (orig_base));
       if (get_range_query (cfun)->range_of_expr (base_range, orig_base)
 	  && !base_range.undefined_p ())
 	max = wi::to_wide (base_range.ubound ());
@@ -4115,7 +4115,7 @@ record_nonwrapping_iv (class loop *loop, tree base, tree step, gimple *stmt,
   else
     {
       wide_int min;
-      Value_Range base_range (TREE_TYPE (orig_base));
+      value_range base_range (TREE_TYPE (orig_base));
       if (get_range_query (cfun)->range_of_expr (base_range, orig_base)
 	  && !base_range.undefined_p ())
 	min = wi::to_wide (base_range.lbound ());

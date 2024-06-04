@@ -186,7 +186,7 @@ vrange_storage::set_vrange (const vrange &r)
       && !is_a <frange> (r)
       && !r.undefined_p ())
     {
-      Value_Range tmp (r);
+      value_range tmp (r);
       get_vrange (tmp, r.type ());
       gcc_checking_assert (tmp == r);
     }

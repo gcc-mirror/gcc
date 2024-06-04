@@ -230,7 +230,7 @@ private:
 class ipcp_vr_lattice
 {
 public:
-  Value_Range m_vr;
+  value_range m_vr;
 
   inline bool bottom_p () const;
   inline bool top_p () const;

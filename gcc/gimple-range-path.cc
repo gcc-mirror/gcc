@@ -161,7 +161,7 @@ path_range_query::internal_range_of_expr (vrange &r, tree name, gimple *stmt)
     {
       if (TREE_CODE (name) == SSA_NAME)
 	{
-	  Value_Range glob (TREE_TYPE (name));
+	  value_range glob (TREE_TYPE (name));
 	  gimple_range_global (glob, name);
 	  r.intersect (glob);
 	}
@@ -237,7 +237,7 @@ path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
       // This will get things like PHI <5(99), 6(88)>.  We do this by
       // calling range_of_expr with no context.
       unsigned nargs = gimple_phi_num_args (phi);
-      Value_Range arg_range (TREE_TYPE (name));
+      value_range arg_range (TREE_TYPE (name));
       r.set_undefined ();
       for (size_t i = 0; i < nargs; ++i)
 	{
@@ -263,7 +263,7 @@ path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
     {
       if (m_resolve)
 	{
-	  Value_Range tmp (TREE_TYPE (name));
+	  value_range tmp (TREE_TYPE (name));
 	  // Using both the range on entry to the path, and the
 	  // range on this edge yields significantly better
 	  // results.
@@ -339,7 +339,7 @@ path_range_query::compute_ranges_in_phis (basic_block bb)
       if (!exit_dependency_p (name))
 	continue;
 
-      Value_Range r (TREE_TYPE (name));
+      value_range r (TREE_TYPE (name));
       if (range_defined_in_block (r, name, bb))
 	m_cache.set_range (name, r);
     }
@@ -385,7 +385,7 @@ path_range_query::compute_ranges_in_block (basic_block bb)
   EXECUTE_IF_SET_IN_BITMAP (m_exit_dependencies, 0, i, bi)
     {
       tree name = ssa_name (i);
-      Value_Range r (TREE_TYPE (name));
+      value_range r (TREE_TYPE (name));
 
       if (gimple_code (SSA_NAME_DEF_STMT (name)) != GIMPLE_PHI
 	  && range_defined_in_block (r, name, bb))
@@ -417,10 +417,10 @@ path_range_query::compute_ranges_in_block (basic_block bb)
   EXECUTE_IF_AND_IN_BITMAP (m_exit_dependencies, exports, 0, i, bi)
     {
       tree name = ssa_name (i);
-      Value_Range r (TREE_TYPE (name));
+      value_range r (TREE_TYPE (name));
       if (gori ().edge_range_p (r, e, name, *this))
 	{
-	  Value_Range cached_range (TREE_TYPE (name));
+	  value_range cached_range (TREE_TYPE (name));
 	  if (get_cache (cached_range, name))
 	    r.intersect (cached_range);
 
@@ -477,7 +477,7 @@ bool
 path_range_query::add_to_exit_dependencies (tree name, bitmap dependencies)
 {
   if (TREE_CODE (name) == SSA_NAME
-      && Value_Range::supports_type_p (TREE_TYPE (name)))
+      && value_range::supports_type_p (TREE_TYPE (name)))
     return bitmap_set_bit (dependencies, SSA_NAME_VERSION (name));
   return false;
 }

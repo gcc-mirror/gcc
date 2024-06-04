@@ -58,7 +58,7 @@ enum value_range_discriminator
 // Abstract class for ranges of any of the supported types.
 //
 // To query what types ranger and the entire ecosystem can support,
-// use Value_Range::supports_type_p(tree type).  This is a static
+// use value_range::supports_type_p(tree type).  This is a static
 // method available independently of any vrange object.
 //
 // To query what a given vrange variant can support, use:
@@ -77,7 +77,7 @@ enum value_range_discriminator
 class vrange
 {
   template <typename T> friend bool is_a (vrange &);
-  friend class Value_Range;
+  friend class value_range;
   friend void streamer_write_vrange (struct output_block *, const vrange &);
   friend class range_op_handler;
 public:
@@ -753,20 +753,20 @@ public:
 // object to a function accepting a vrange, the correct type must be
 // set.  If it isn't, you can do so with set_type().
 
-class Value_Range
+class value_range
 {
 public:
-  Value_Range ();
-  Value_Range (const vrange &r);
-  Value_Range (tree type);
-  Value_Range (tree, tree, value_range_kind kind = VR_RANGE);
-  Value_Range (const Value_Range &);
-  ~Value_Range ();
+  value_range ();
+  value_range (const vrange &r);
+  value_range (tree type);
+  value_range (tree, tree, value_range_kind kind = VR_RANGE);
+  value_range (const value_range &);
+  ~value_range ();
   void set_type (tree type);
   vrange& operator= (const vrange &);
-  Value_Range& operator= (const Value_Range &);
-  bool operator== (const Value_Range &r) const;
-  bool operator!= (const Value_Range &r) const;
+  value_range& operator= (const value_range &);
+  bool operator== (const value_range &r) const;
+  bool operator!= (const value_range &r) const;
   operator vrange &();
   operator const vrange &() const;
   void dump (FILE *) const;
@@ -812,7 +812,7 @@ private:
 // with either set_type() or with an assignment into it.
 
 inline
-Value_Range::Value_Range ()
+value_range::value_range ()
   : m_buffer ()
 {
   m_vrange = NULL;
@@ -821,7 +821,7 @@ Value_Range::Value_Range ()
 // Copy constructor.
 
 inline
-Value_Range::Value_Range (const Value_Range &r)
+value_range::value_range (const value_range &r)
 {
   init (*r.m_vrange);
 }
@@ -829,7 +829,7 @@ Value_Range::Value_Range (const Value_Range &r)
 // Copy constructor from a vrange.
 
 inline
-Value_Range::Value_Range (const vrange &r)
+value_range::value_range (const vrange &r)
 {
   init (r);
 }
@@ -838,7 +838,7 @@ Value_Range::Value_Range (const vrange &r)
 // is not supported, default to unsupported_range.
 
 inline
-Value_Range::Value_Range (tree type)
+value_range::value_range (tree type)
 {
   init (type);
 }
@@ -847,14 +847,14 @@ Value_Range::Value_Range (tree type)
 // and MAX are trees.
 
 inline
-Value_Range::Value_Range (tree min, tree max, value_range_kind kind)
+value_range::value_range (tree min, tree max, value_range_kind kind)
 {
   init (TREE_TYPE (min));
   m_vrange->set (min, max, kind);
 }
 
 inline
-Value_Range::~Value_Range ()
+value_range::~value_range ()
 {
   if (m_vrange)
     m_vrange->~vrange ();
@@ -864,7 +864,7 @@ Value_Range::~Value_Range ()
 // TYPE.  Clean-up memory if there was a previous object.
 
 inline void
-Value_Range::set_type (tree type)
+value_range::set_type (tree type)
 {
   if (m_vrange)
     m_vrange->~vrange ();
@@ -875,7 +875,7 @@ Value_Range::set_type (tree type)
 // TYPE.
 
 inline void
-Value_Range::init (tree type)
+value_range::init (tree type)
 {
   gcc_checking_assert (TYPE_P (type));
 
@@ -892,7 +892,7 @@ Value_Range::init (tree type)
 // Initialize object with a copy of R.
 
 inline void
-Value_Range::init (const vrange &r)
+value_range::init (const vrange &r)
 {
   if (is_a <irange> (r))
     m_vrange = new (&m_buffer.ints) int_range_max (as_a <irange> (r));
@@ -910,7 +910,7 @@ Value_Range::init (const vrange &r)
 // right thing.
 
 inline vrange &
-Value_Range::operator= (const vrange &r)
+value_range::operator= (const vrange &r)
 {
   if (m_vrange)
     m_vrange->~vrange ();
@@ -918,8 +918,8 @@ Value_Range::operator= (const vrange &r)
   return *m_vrange;
 }
 
-inline Value_Range &
-Value_Range::operator= (const Value_Range &r)
+inline value_range &
+value_range::operator= (const value_range &r)
 {
   // No need to call the m_vrange destructor here, as we will do so in
   // the assignment below.
@@ -928,25 +928,25 @@ Value_Range::operator= (const Value_Range &r)
 }
 
 inline bool
-Value_Range::operator== (const Value_Range &r) const
+value_range::operator== (const value_range &r) const
 {
   return *m_vrange == *r.m_vrange;
 }
 
 inline bool
-Value_Range::operator!= (const Value_Range &r) const
+value_range::operator!= (const value_range &r) const
 {
   return *m_vrange != *r.m_vrange;
 }
 
 inline
-Value_Range::operator vrange &()
+value_range::operator vrange &()
 {
   return *m_vrange;
 }
 
 inline
-Value_Range::operator const vrange &() const
+value_range::operator const vrange &() const
 {
   return *m_vrange;
 }
@@ -954,7 +954,7 @@ Value_Range::operator const vrange &() const
 // Return TRUE if TYPE is supported by the vrange infrastructure.
 
 inline bool
-Value_Range::supports_type_p (const_tree type)
+value_range::supports_type_p (const_tree type)
 {
   return irange::supports_p (type)
     || prange::supports_p (type)
