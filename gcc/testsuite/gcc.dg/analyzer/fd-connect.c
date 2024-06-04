@@ -1,5 +1,6 @@
 /* { dg-require-effective-target sockets } */
 /* { dg-skip-if "" { powerpc*-*-aix* } } */
+/* { dg-skip-if "PR analyzer/107750" { *-*-solaris2* } } */
 
 #include <sys/socket.h>
 #include <sys/un.h>
