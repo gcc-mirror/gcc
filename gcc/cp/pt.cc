@@ -20918,7 +20918,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		       be using lambdas anyway, so it's ok to be
 		       stricter.  Be strict with C++20 template-id ADL too.
 		       And be strict if we're already failing anyway.  */
-		    bool strict = in_lambda || template_id_p || seen_error();
+		    bool strict = in_lambda || template_id_p || seen_error ();
 		    bool diag = true;
 		    if (strict)
 		      error_at (cp_expr_loc_or_input_loc (t),
@@ -28020,7 +28020,7 @@ dependent_type_p (tree type)
 	 providing us with a dependent type.  */
       gcc_assert (type);
       gcc_assert (TREE_CODE (type) != TEMPLATE_TYPE_PARM || is_auto (type)
-		  || seen_error());
+		  || seen_error ());
       return false;
     }
 
