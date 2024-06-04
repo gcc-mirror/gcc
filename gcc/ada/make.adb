@@ -4478,13 +4478,14 @@ package body Make is
                RTS_Switch := True;
 
                declare
+                  RTS_Arg_Path : constant String := Argv (7 .. Argv'Last);
                   Src_Path_Name : constant String_Ptr :=
                                     Get_RTS_Search_Dir
-                                      (Argv (7 .. Argv'Last), Include);
+                                      (RTS_Arg_Path, Include);
 
                   Lib_Path_Name : constant String_Ptr :=
                                     Get_RTS_Search_Dir
-                                      (Argv (7 .. Argv'Last), Objects);
+                                      (RTS_Arg_Path, Objects);
 
                begin
                   if Src_Path_Name /= null
@@ -4501,16 +4502,19 @@ package body Make is
                     and then Lib_Path_Name = null
                   then
                      Make_Failed
-                       ("RTS path not valid: missing adainclude and adalib "
+                       ("RTS path """ & RTS_Arg_Path
+                        & """ not valid: missing adainclude and adalib "
                         & "directories");
 
                   elsif Src_Path_Name = null then
                      Make_Failed
-                       ("RTS path not valid: missing adainclude directory");
+                       ("RTS path """ & RTS_Arg_Path
+                        & """ not valid: missing adainclude directory");
 
                   else pragma Assert (Lib_Path_Name = null);
                      Make_Failed
-                       ("RTS path not valid: missing adalib directory");
+                       ("RTS path """ & RTS_Arg_Path
+                        & """ not valid: missing adalib directory");
                   end if;
                end;
             end if;
