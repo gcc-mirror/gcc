@@ -585,7 +585,7 @@ invalidate_contract (tree t)
   return t;
 }
 
-/* Returns an invented parameter declration of the form 'TYPE ID' for the
+/* Returns an invented parameter declaration of the form 'TYPE ID' for the
    purpose of parsing the postcondition.
 
    We use a PARM_DECL instead of a VAR_DECL so that tsubst forces a lookup
@@ -600,6 +600,9 @@ make_postcondition_variable (cp_expr id, tree type)
   tree decl = build_lang_decl (PARM_DECL, id, type);
   DECL_ARTIFICIAL (decl) = true;
   DECL_SOURCE_LOCATION (decl) = id.get_location ();
+
+  // constify the postcondition variable
+  TREE_READONLY(decl) = 1;
 
   pushdecl (decl);
   return decl;
@@ -982,7 +985,7 @@ retain_decl (tree decl, copy_body_data *)
    When declarations are merged, we sometimes need to update contracts to
    refer to new parameters.
 
-   If DUPLICATE_P is true, this is called by duplicate_decls to rewrite contacts
+   If DUPLICATE_P is true, this is called by duplicate_decls to rewrite contracts
    in terms of a new set of parameters. In this case, we can retain local
    variables appearing in the contract because the contract is not being
    prepared for insertion into a new function. Importantly, this preserves the
@@ -1938,6 +1941,35 @@ finish_contract_condition (cp_expr condition)
     return condition;
 
   return condition_conversion (condition);
+}
+
+/* constify access to an id from within the contract condition */
+tree
+constify_contract_access(tree decl,location_t location)
+{
+
+  /* only constifies the automatic storage variables for now.
+   * The postcondition variable is created const. Parameters need to be
+   * checked separately, and we also need to make references and *this const
+   */
+
+  if (INDIRECT_REF_P(decl)){
+
+      decl =  build1_loc (location, VIEW_CONVERT_EXPR,
+				  TREE_TYPE (decl), decl);
+      TREE_READONLY(decl) = 1;
+
+  }
+  else if (!TREE_READONLY (decl)
+      && ((VAR_P (decl) && decl_storage_duration (decl) == dk_auto)
+          || (TYPE_REF_P(decl) && decl_storage_duration (TREE_OPERAND (decl, 0)) == dk_auto)
+	  || (TREE_CODE (decl) == PARM_DECL)))
+  {
+      decl = build1_loc (location, VIEW_CONVERT_EXPR,
+			  TREE_TYPE (decl), decl);
+      TREE_READONLY(decl) = 1;
+  }
+  return decl;
 }
 
 void
