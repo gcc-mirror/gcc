@@ -34732,8 +34732,10 @@ instruction set support.
 
 @item lujiazui
 ZHAOXIN lujiazui CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
-SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
-ABM, BMI, BMI2, F16C, FXSR, RDSEED instruction set support.
+SSE4.2, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
+ABM, BMI, BMI2, FXSR, RDSEED instruction set support.  While the CPUs
+do support AVX and F16C, these aren't enabled by @code{-march=lujiazui}
+for performance reasons.
 
 @item yongfeng
 ZHAOXIN yongfeng CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
