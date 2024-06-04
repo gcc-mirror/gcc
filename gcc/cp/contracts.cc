@@ -1953,9 +1953,9 @@ constify_contract_access(tree decl,location_t location)
    * checked separately, and we also need to make references and *this const
    */
 
-  (!TREE_READONLY (decl)
+  if (!TREE_READONLY (decl)
       && ((VAR_P (decl) && decl_storage_duration (decl) == dk_auto)
-          || (TYPE_REF_P(decl) && decl_storage_duration (TREE_OPERAND (decl, 0)) == dk_auto)
+          || (INDIRECT_REF_P(decl) && decl_storage_duration (TREE_OPERAND (decl, 0)) == dk_auto)
 	  || (TREE_CODE (decl) == PARM_DECL)))
   {
       decl = build1_loc (location, VIEW_CONVERT_EXPR,
