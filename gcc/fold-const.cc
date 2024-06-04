@@ -15331,8 +15331,8 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
 	 non-negative if both operands are non-negative.  In the presence
 	 of qNaNs, we're non-negative if either operand is non-negative
 	 and can't be a qNaN, or if both operands are non-negative.  */
-      if (tree_expr_maybe_signaling_nan_p (arg0) ||
-	  tree_expr_maybe_signaling_nan_p (arg1))
+      if (tree_expr_maybe_signaling_nan_p (arg0)
+	  || tree_expr_maybe_signaling_nan_p (arg1))
         return RECURSE (arg0) && RECURSE (arg1);
       return RECURSE (arg0) ? (!tree_expr_maybe_nan_p (arg0)
 			       || RECURSE (arg1))
@@ -15431,8 +15431,8 @@ tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 
     case CALL_EXPR:
       {
-	tree arg0 = call_expr_nargs (t) > 0 ?  CALL_EXPR_ARG (t, 0) : NULL_TREE;
-	tree arg1 = call_expr_nargs (t) > 1 ?  CALL_EXPR_ARG (t, 1) : NULL_TREE;
+	tree arg0 = call_expr_nargs (t) > 0 ? CALL_EXPR_ARG (t, 0) : NULL_TREE;
+	tree arg1 = call_expr_nargs (t) > 1 ? CALL_EXPR_ARG (t, 1) : NULL_TREE;
 
 	return tree_call_nonnegative_warnv_p (TREE_TYPE (t),
 					      get_call_combined_fn (t),

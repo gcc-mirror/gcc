@@ -9334,10 +9334,10 @@ static bool
 gimple_call_nonnegative_warnv_p (gimple *stmt, bool *strict_overflow_p,
 				 int depth)
 {
-  tree arg0 = gimple_call_num_args (stmt) > 0 ?
-    gimple_call_arg (stmt, 0) : NULL_TREE;
-  tree arg1 = gimple_call_num_args (stmt) > 1 ?
-    gimple_call_arg (stmt, 1) : NULL_TREE;
+  tree arg0
+    = gimple_call_num_args (stmt) > 0 ? gimple_call_arg (stmt, 0) : NULL_TREE;
+  tree arg1
+    = gimple_call_num_args (stmt) > 1 ? gimple_call_arg (stmt, 1) : NULL_TREE;
   tree lhs = gimple_call_lhs (stmt);
   return (lhs
 	  && tree_call_nonnegative_warnv_p (TREE_TYPE (lhs),
