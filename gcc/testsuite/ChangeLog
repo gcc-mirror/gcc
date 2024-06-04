@@ -1,3 +1,8 @@
+2024-06-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-25.c: New test.
+	* gcc.target/i386/avx10_1-26.c: Ditto.
+
 2024-06-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

@@ -1,3 +1,15 @@
+2024-06-03  François Dumont  <frs.dumont@gmail.com>
+
+	Backported from master:
+	2024-06-03  François Dumont  <frs.dumont@gmail.com>
+
+	PR libstdc++/109849
+	* include/bits/vector.tcc
+	(std::vector<>::_M_range_insert(iterator, _FwdIt, _FwdIt,
+	forward_iterator_tag))[__cplusplus < 201103L]: Add __builtin_unreachable
+	expression to tell the compiler that the allocated buffer is large enough to
+	receive current elements plus the elements of the range to insert.
+
 2024-06-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

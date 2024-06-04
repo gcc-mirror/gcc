@@ -1,3 +1,12 @@
+2024-06-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc: Change Granite Rapids
+	series CPU type to P_PROC_AVX10_1_512.
+	* common/config/i386/i386-cpuinfo.h (enum feature_priority):
+	Revise comment part. Add P_AVX10_1_256, P_AVX10_1_512,
+	P_PROC_AVX10_1_512.
+	* common/config/i386/i386-isas.h: Link to avx10.1-256, avx10.1-512.
+
 2024-06-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
