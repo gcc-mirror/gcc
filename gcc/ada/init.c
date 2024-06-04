@@ -2100,14 +2100,10 @@ __gnat_install_handler (void)
 
   /* For VxWorks, install all signal handlers, since pragma Interrupt_State
      applies to vectored hardware interrupts, not signals.  */
-  if (__gnat_get_interrupt_state (SIGFPE) != 's')
-     sigaction (SIGFPE,  &act, NULL);
-  if (__gnat_get_interrupt_state (SIGILL) != 's')
-     sigaction (SIGILL,  &act, NULL);
-  if (__gnat_get_interrupt_state (SIGSEGV) != 's')
-     sigaction (SIGSEGV, &act, NULL);
-  if (__gnat_get_interrupt_state (SIGBUS) != 's')
-     sigaction (SIGBUS,  &act, NULL);
+  sigaction (SIGFPE,  &act, NULL);
+  sigaction (SIGILL,  &act, NULL);
+  sigaction (SIGSEGV, &act, NULL);
+  sigaction (SIGBUS,  &act, NULL);
 
 #if defined(__leon__) && defined(_WRS_KERNEL)
   /* Specific to the LEON VxWorks kernel run-time library */
