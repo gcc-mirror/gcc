@@ -16975,7 +16975,7 @@
 (define_mode_attr SDOT_VPDP_SUF
   [(V32HI "v16si") (V16HI "v8si") (V8HI "v4si")])
 
-(define_expand "sdot_prod<mode>"
+(define_expand "sdot_prod<sseunpackmodelower><mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (match_operand:VI2_AVX512VNNIBW 1 "register_operand")
    (match_operand:VI2_AVX512VNNIBW 2 "register_operand")
@@ -17010,7 +17010,7 @@
 
 ;; Normally we use widen_mul_even/odd, but combine can't quite get it all
 ;; back together when madd is available.
-(define_expand "sdot_prodv4si"
+(define_expand "sdot_prodv2div4si"
   [(match_operand:V2DI 0 "register_operand")
    (match_operand:V4SI 1 "register_operand")
    (match_operand:V4SI 2 "register_operand")
@@ -30471,7 +30471,7 @@
    [(set_attr ("prefix") ("evex"))
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "usdot_prod<mode>"
+(define_expand "usdot_prod<ssedvecmodelower><mode>"
   [(match_operand:<ssedvecmode> 0 "register_operand")
    (match_operand:VI1_AVX512 1 "register_operand")
    (match_operand:VI1_AVX512 2 "register_operand")
@@ -30509,10 +30509,11 @@
       rtx sum = gen_reg_rtx (<ssedvecmode>mode);
 
       emit_move_insn (sum, CONST0_RTX (<ssedvecmode>mode));
-      emit_insn (gen_sdot_prod<sseunpackmodelower> (res1, op1_lo,
-						    op2_lo, sum));
-      emit_insn (gen_sdot_prod<sseunpackmodelower> (res2, op1_hi,
-						    op2_hi, operands[3]));
+      emit_insn (gen_sdot_prod<ssedvecmodelower><sseunpackmodelower> (res1,
+						    op1_lo, op2_lo, sum));
+      emit_insn (gen_sdot_prod<ssedvecmodelower><sseunpackmodelower> (res2,
+						    op1_hi, op2_hi,
+						    operands[3]));
       emit_insn (gen_add<ssedvecmodelower>3 (operands[0], res1, res2));
     }
   DONE;
@@ -31336,7 +31337,7 @@
    (UNSPEC_VPDPBSUD "bsud") (UNSPEC_VPDPBSUDS "bsuds")
    (UNSPEC_VPDPBUUD "buud") (UNSPEC_VPDPBUUDS "buuds")])
 
-(define_expand "sdot_prod<mode>"
+(define_expand "sdot_prod<ssedvecmodelower><mode>"
   [(match_operand:<ssedvecmode> 0 "register_operand")
    (match_operand:VI1_AVX512VNNIBW 1 "register_operand")
    (match_operand:VI1_AVX512VNNIBW 2 "register_operand")
@@ -31373,17 +31374,18 @@
       rtx sum = gen_reg_rtx (<ssedvecmode>mode);
 
       emit_move_insn (sum, CONST0_RTX (<ssedvecmode>mode));
-      emit_insn (gen_sdot_prod<sseunpackmodelower> (res1, op1_lo,
-						    op2_lo, sum));
-      emit_insn (gen_sdot_prod<sseunpackmodelower> (res2, op1_hi,
-						    op2_hi, operands[3]));
+      emit_insn (gen_sdot_prod<ssedvecmodelower><sseunpackmodelower> (res1,
+						    op1_lo, op2_lo, sum));
+      emit_insn (gen_sdot_prod<ssedvecmodelower><sseunpackmodelower> (res2,
+						    op1_hi, op2_hi,
+						    operands[3]));
       emit_insn (gen_add<ssedvecmodelower>3 (operands[0], res1, res2));
     }
 
   DONE;
 })
 
-(define_expand "udot_prod<mode>"
+(define_expand "udot_prod<ssedvecmodelower><mode>"
   [(match_operand:<ssedvecmode> 0 "register_operand")
    (match_operand:VI1_AVX512VNNIBW 1 "register_operand")
    (match_operand:VI1_AVX512VNNIBW 2 "register_operand")
@@ -31420,10 +31422,11 @@
      rtx sum = gen_reg_rtx (<ssedvecmode>mode);
 
      emit_move_insn (sum, CONST0_RTX (<ssedvecmode>mode));
-     emit_insn (gen_sdot_prod<sseunpackmodelower> (res1, op1_lo,
-						    op2_lo, sum));
-     emit_insn (gen_sdot_prod<sseunpackmodelower> (res2, op1_hi,
-						    op2_hi, operands[3]));
+     emit_insn (gen_sdot_prod<ssedvecmodelower><sseunpackmodelower> (res1,
+						    op1_lo, op2_lo, sum));
+     emit_insn (gen_sdot_prod<ssedvecmodelower><sseunpackmodelower> (res2,
+						    op1_hi, op2_hi,
+						    operands[3]));
      emit_insn (gen_add<ssedvecmodelower>3 (operands[0], res1, res2));
    }
 
@@ -31803,7 +31806,7 @@
    (UNSPEC_VPDPWSUD "wsud") (UNSPEC_VPDPWSUDS "wsuds")
    (UNSPEC_VPDPWUUD "wuud") (UNSPEC_VPDPWUUDS "wuuds")])
 
-(define_expand "usdot_prod<mode>"
+(define_expand "usdot_prod<sseunpackmodelower><mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (match_operand:VI2_AVX10_2 1 "register_operand")
    (match_operand:VI2_AVX10_2 2 "register_operand")
@@ -31821,7 +31824,7 @@
   DONE;
 })
 
-(define_expand "udot_prod<mode>"
+(define_expand "udot_prod<sseunpackmodelower><mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
    (match_operand:VI2_AVX10_2 1 "register_operand")
    (match_operand:VI2_AVX10_2 2 "register_operand")
