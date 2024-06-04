@@ -1,3 +1,88 @@
+2024-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115012
+	* g++.dg/cpp0x/variadic185.C: New test.
+
+2024-06-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/sarif-path-role.c: New test.
+	* c-c++-common/analyzer/sarif-path-role.h: New header for above
+	test.
+	* c-c++-common/diagnostic-format-sarif-file-1.c: Verify the
+	artifact's "role" property.
+	* c-c++-common/diagnostic-format-sarif-file-header-role.c: New
+	test.
+	* c-c++-common/diagnostic-format-sarif-file-header-role.h: New
+	header for above test.
+	* c-c++-common/diagnostic-format-sarif-file-no-results.c: New
+	test.
+
+2024-06-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115321
+	* gcc.target/i386/pr115321.c: New test.
+
+2024-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/115304
+	* gcc.dg/vect/slp-gap-1.c: Require vect_unpack and vect_perm.
+
+2024-06-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/115303
+	* gcc.dg/vect/pr112325.c: Require vect_shift.
+
+2024-06-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/no-scevccp-outer-7.c: Adjust scanning for
+	succeeded analysis not interrupted by failure.
+	* gcc.dg/vect/no-scevccp-vect-iv-3.c: Likewise.
+	* gcc.dg/vect/vect-cond-reduc-4.c: Likewise.
+	* gcc.dg/vect/vect-live-2.c: Likewise.
+	* gcc.dg/vect/vect-outer-4c-big-array.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s16a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u16a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u16b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u8a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-dot-u8b.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-1a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-1b-big-array.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-1c-big-array.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2a.c: Likewise.
+	* gcc.dg/vect/vect-reduc-pattern-2b-big-array.c: Likewise.
+	* gcc.dg/vect/wrapv-vect-reduc-dot-s8b.c: Likewise.
+
+2024-06-03  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr115299.c: New test.
+	* gcc.target/i386/pr86722.c: Adjust testcase.
+
+2024-06-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_1-25.c: New test.
+	* gcc.target/i386/avx10_1-26.c: Ditto.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-nf.c: Add test.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-nf.c: New test.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+	    Hongyu Wong  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Fixed test.
+
+2024-06-03  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/113609
+	* gcc.target/i386/pr113609-1.c: New test.
+	* gcc.target/i386/pr113609-2.c: Ditto.
+
 2024-06-02  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/109958

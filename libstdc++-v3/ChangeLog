@@ -1,3 +1,44 @@
+2024-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::_Impl::_M_allocate):
+	Use __detail::__get_temporary_buffer.
+	(basic_stacktrace::_Impl::_M_deallocate): Use
+	__detail::__return_temporary_buffer.
+
+2024-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105258
+	* include/bits/stl_tempbuf.h (__detail::__get_temporary_buffer):
+	New function to do allocation for get_temporary_buffer, with
+	extended alignment support.
+	(__detail::__return_temporary_buffer): Support extended
+	alignment.
+	(get_temporary_buffer): Use __get_temporary_buffer.
+	(return_temporary_buffer): Support extended alignment. Add
+	deprecated attribute.
+	(_Temporary_buffer): Move allocation and deallocation into a
+	subobject and remove try-catch block in constructor.
+	(__uninitialized_construct_buf): Use argument deduction for
+	value type.
+	* testsuite/20_util/temporary_buffer.cc: Add dg-warning for new
+	deprecated warning.
+	* testsuite/25_algorithms/stable_sort/overaligned.cc: New test.
+
+2024-06-03  François Dumont  <frs.dumont@gmail.com>
+
+	PR libstdc++/109849
+	* include/bits/vector.tcc
+	(std::vector<>::_M_range_insert(iterator, _FwdIt, _FwdIt,
+	forward_iterator_tag))[__cplusplus < 201103L]: Add __builtin_unreachable
+	expression to tell the compiler that the allocated buffer is large enough to
+	receive current elements plus the elements of the range to insert.
+
+2024-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (starts_with(basic_string_view)):
+	Compare lengths first and then call traits_type::compare
+	directly.
+
 2024-06-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/api.xml: Move gcc.gnu.org links to https.

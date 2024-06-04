@@ -1,3 +1,9 @@
+2024-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115012
+	* parser.cc (cp_parser_direct_declarator): Handle
+	abstract declarator starting with ... followed by opening paren.
+
 2024-06-02  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/109958

@@ -1,3 +1,306 @@
+2024-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/115324
+	* config/rs6000/rs6000-gen-builtins.cc (write_decls): Remove
+	GTY markup from struct bifdata and struct ovlddata and remove their
+	fntype members.  Change next member in struct ovlddata and
+	first_instance member of struct ovldrecord to have int type rather
+	than struct ovlddata *.  Remove GTY markup from rs6000_builtin_info
+	and rs6000_instance_info arrays, declare new
+	rs6000_builtin_info_fntype and rs6000_instance_info_fntype arrays,
+	which have GTY markup.
+	(write_bif_static_init): Adjust for the above changes.
+	(write_ovld_static_init): Likewise.
+	(write_init_bif_table): Likewise.
+	(write_init_ovld_table): Likewise.
+	* config/rs6000/rs6000-builtin.cc (rs6000_init_builtins): Likewise.
+	* config/rs6000/rs6000-c.cc (find_instance): Likewise.  Make static.
+	(altivec_resolve_overloaded_builtin): Adjust for the above changes.
+
+2024-06-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc: Include "ordered-hash-map.h" and
+	"sbitmap.h".
+	(enum class diagnostic_artifact_role): New.
+	(class sarif_artifact): New.
+	(sarif_builder::maybe_make_artifact_content_object): Make public.
+	(sarif_builder::m_filenames): Replace with...
+	(sarif_builder::m_filename_to_artifact_map): ...this.
+	(sarif_artifact::add_role): New.
+	(sarif_artifact::populate_contents): New.
+	(get_artifact_role_string): New.
+	(sarif_artifact::populate_roles): New.
+	(sarif_result::on_nested_diagnostic): Pass role to
+	make_location_object.
+	(sarif_ice_notification::sarif_ice_notification): Likewise.
+	(sarif_builder::sarif_builder): Add "main_input_filename_" param.
+	Mark it as the artifact that the tool was instructed to scan.
+	(sarif_builder::make_result_object): Pass role to
+	make_locations_arr.
+	(sarif_builder::make_locations_arr): Add "role" param and pass it
+	to make_location_object.
+	(sarif_builder::make_location_object): Add "role" param and pass
+	it to maybe_make_physical_location_object.
+	(sarif_builder::maybe_make_physical_location_object): Add "role"
+	param and pass it to call to get_or_create_artifact, rather than
+	adding to now-removed "m_filenames".  Flag the artifact for its
+	contents to be embedded.
+	(sarif_builder::make_thread_flow_location_object): Pass role to
+	make_location_object.
+	(sarif_builder::make_run_object): Update for change from
+	m_filename to m_filename_to_artifact_map.  Call populate_contents
+	and populate_roles on each artifact_obj.
+	(sarif_builder::make_artifact_object): Convert to...
+	(sarif_builder::get_or_create_artifact): ...this, moving addition
+	of contents to make_run_object, and conditionalizing setting of
+	sourceLanguage on "role".
+	(sarif_output_format::sarif_output_format): Add
+	"main_input_filename_" param and pass to m_builder's ctor.
+	(sarif_stream_output_format::sarif_stream_output_format):
+	Likewise.
+	(sarif_file_output_format::sarif_file_output_format): Likewise.
+	(diagnostic_output_format_init_sarif_stderr): Add
+	"main_input_filename_" param and pass to ctor.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	* diagnostic.cc (diagnostic_output_format_init): Add
+	"main_input_filename_" param and pass to the
+	diagnostic_output_format_init_sarif_* calls.
+	* diagnostic.h (diagnostic_output_format_init): Add
+	main_input_filename_" param to decl.
+	(diagnostic_output_format_init_sarif_stderr): Likewise.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	* gcc.cc (driver_handle_option): Pass main input filename to
+	diagnostic_output_format_init.
+	* opts.cc (common_handle_option): Likewise.
+
+2024-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.cc (loc_list_from_tree_1) <CEIL_DIV_EXPR>; Add const.
+	<do_comp_binop>: Use a signed comparison for small unsigned types.
+	Implement wrap-around arithmetics for small integer types.
+
+2024-06-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/115321
+	* config/i386/i386.md (bswapsi2): Force operand 1
+	to a register also for !TARGET_BSWAP.
+
+2024-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* builtins.cc (expand_builtin_strnlen): Replace value_range use
+	with int_range_max or irange when appropriate.
+	(determine_block_size): Same.
+	* fold-const.cc (minmax_from_comparison): Same.
+	* gimple-array-bounds.cc (check_out_of_bounds_and_warn): Same.
+	(array_bounds_checker::check_array_ref): Same.
+	* gimple-fold.cc (size_must_be_zero_p): Same.
+	* gimple-predicate-analysis.cc (find_var_cmp_const): Same.
+	* gimple-ssa-sprintf.cc (get_int_range): Same.
+	(format_integer): Same.
+	(try_substitute_return_value): Same.
+	(handle_printf_call): Same.
+	* gimple-ssa-warn-restrict.cc
+	(builtin_memref::extend_offset_range): Same.
+	* graphite-sese-to-poly.cc (add_param_constraints): Same.
+	* internal-fn.cc (get_min_precision): Same.
+	* match.pd: Same.
+	* pointer-query.cc (get_size_range): Same.
+	* range-op.cc (get_shift_range): Same.
+	(operator_trunc_mod::op1_range): Same.
+	(operator_trunc_mod::op2_range): Same.
+	* range.cc (range_negatives): Same.
+	* range.h (range_positives): Same.
+	(range_negatives): Same.
+	* tree-affine.cc (expr_to_aff_combination): Same.
+	* tree-data-ref.cc (compute_distributive_range): Same.
+	(nop_conversion_for_offset_p): Same.
+	(split_constant_offset): Same.
+	(split_constant_offset_1): Same.
+	(dr_step_indicator): Same.
+	* tree-dfa.cc (get_ref_base_and_extent): Same.
+	* tree-scalar-evolution.cc (iv_can_overflow_p): Same.
+	* tree-ssa-math-opts.cc (optimize_spaceship): Same.
+	* tree-ssa-pre.cc (insert_into_preds_of_block): Same.
+	* tree-ssa-reassoc.cc (optimize_range_tests_to_bit_test): Same.
+	* tree-ssa-strlen.cc (compare_nonzero_chars): Same.
+	(dump_strlen_info): Same.
+	(get_range_strlen_dynamic): Same.
+	(set_strlen_range): Same.
+	(maybe_diag_stxncpy_trunc): Same.
+	(strlen_pass::get_len_or_size): Same.
+	(strlen_pass::handle_builtin_string_cmp): Same.
+	(strlen_pass::count_nonzero_bytes_addr): Same.
+	(strlen_pass::handle_integral_assign): Same.
+	* tree-switch-conversion.cc (bit_test_cluster::emit): Same.
+	* tree-vect-loop-manip.cc (vect_gen_vector_loop_niters): Same.
+	(vect_do_peeling): Same.
+	* tree-vect-patterns.cc (vect_get_range_info): Same.
+	(vect_recog_divmod_pattern): Same.
+	* tree.cc (get_range_pos_neg): Same.
+	* value-range.cc (debug): Remove value_range variants.
+	* value-range.h (value_range): Remove typedef.
+	* vr-values.cc
+	(simplify_using_ranges::op_with_boolean_value_range_p): Replace
+	value_range use with int_range_max or irange when appropriate.
+	(check_for_binary_op_overflow): Same.
+	(simplify_using_ranges::legacy_fold_cond_overflow): Same.
+	(find_case_label_ranges): Same.
+	(simplify_using_ranges::simplify_abs_using_ranges): Same.
+	(test_for_singularity): Same.
+	(simplify_using_ranges::simplify_compare_using_ranges_1): Same.
+	(simplify_using_ranges::simplify_casted_compare): Same.
+	(simplify_using_ranges::simplify_switch_using_ranges): Same.
+	(simplify_conversion_using_ranges): Same.
+	(simplify_using_ranges::two_valued_val_range_p): Same.
+
+2024-06-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (gcn): Fix date of recommended newlib version.
+
+2024-06-03  Marc Poulhiès  <poulhies@adacore.com>
+
+	* config/aarch64/aarch64-ldp-fusion.cc (struct aarch64_pair_fusion):
+	Use new type name.
+
+2024-06-03  Marc Poulhiès  <poulhies@adacore.com>
+
+	* pair-fusion.h (enum class writeback): Rename to...
+	(enum class writeback_type): ...this.
+	(struct pair_fusion): Adjust type name after renaming.
+	* pair-fusion.cc (pair_fusion_bb_info::track_access): Likewise.
+	(pair_fusion_bb_info::fuse_pair): Likewise.
+	(pair_fusion::process_block): Likewise.
+
+2024-06-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_1): Avoid extra space
+	before 'failed'.
+
+2024-06-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (get_initial_defs_for_reduction):
+	Always convert neutral_op.
+
+2024-06-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115299
+	* config/i386/i386.cc (ix86_noce_conversion_profitable_p): Add
+	some preference for floating point ifcvt when SSE4.1 is not
+	available.
+
+2024-06-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc: Change Granite Rapids
+	series CPU type to P_PROC_AVX10_1_512.
+	* common/config/i386/i386-cpuinfo.h (enum feature_priority):
+	Revise comment part. Add P_AVX10_1_256, P_AVX10_1_512,
+	P_PROC_AVX10_1_512.
+	* common/config/i386/i386-isas.h: Link to avx10.1-256, avx10.1-512.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (clz<mode>2_lzcnt_nf): New define_insn.
+	(*clz<mode>2_lzcnt_falsedep_nf): Ditto.
+	(<lt_zcnt>_<mode>_nf): Ditto.
+	(*<lt_zcnt>_<mode>_falsedep_nf): Ditto.
+	(<lt_zcnt>_hi<nf_name>): Ditto.
+	(popcount<mode>2_nf): Ditto.
+	(*popcount<mode>2_falsedep_nf): Ditto.
+	(popcounthi2<nf_name>): Ditto.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (*mul<mode>3_1<nf_name>): New define_insn.
+	(*mulqi3_1<nf_name>): Ditto.
+	(*<u>divmod<mode>4_noext_nf): Ditto.
+	(<u>divmodhiqi3<nf_name>): Ditto.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (x86_64_shld): New define_insn.
+	(x86_64_shld<nf_name>): Ditto.
+	(x86_64_shld_ndd<nf_name>): Ditto.
+	(x86_64_shld_1<nf_name>): Ditto.
+	(x86_64_shld_ndd_1<nf_name>): Ditto.
+	(*x86_64_shld_shrd_1_nozext_nf): Ditto.
+	(x86_shld<nf_name>): Ditto.
+	(x86_shld_ndd<nf_name>): Ditto.
+	(x86_shld_1<nf_name>): Ditto.
+	(x86_shld_ndd_1<nf_name>): Ditto.
+	(*x86_shld_shrd_1_nozext_nf): Ditto.
+	(<insn><dwi>3_doubleword_lowpart_nf): Ditto.
+	(x86_64_shrd<nf_name>): Ditto.
+	(x86_64_shrd_ndd<nf_name>): Ditto.
+	(x86_64_shrd_1<nf_name>): Ditto.
+	(x86_64_shrd_ndd_1<nf_name>): Ditto.
+	(*x86_64_shrd_shld_1_nozext_nf): Ditto.
+	(x86_shrd<nf_name>): Ditto.
+	(x86_shrd_ndd<nf_name>): Ditto.
+	(x86_shrd_1<nf_name>): Ditto.
+	(x86_shrd_ndd_1<nf_name>): Ditto.
+	(*x86_shrd_shld_1_nozext_nf): Ditto.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (ashr<mode>3_cvt<nf_name>): New
+	define_insn.
+	(*<insn><mode>3_1<nf_name>): Ditto.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (*ashr<mode>3_1<nf_name>): New
+	define_insn.
+	(*lshr<mode>3_1<nf_name>): Ditto.
+	(*lshrqi3_1<nf_name>): Ditto.
+	(*lshrhi3_1<nf_name>): Ditto.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (*ashl<mode>3_1<nf_name>): New
+	define_insn.
+	(*ashlhi3_1<nf_name>): Ditto.
+	(*ashlqi3_1<nf_name>): Ditto.
+	* config/i386/sse.md: New define_split.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (nf_nonf_attr): New subst_attr.
+	(nf_nonf_x64_attr): Ditto.
+	(*sub<mode>_1<nf_name>): New define_insn.
+	(*anddi_1<nf_name>): Ditto.
+	(*and<mode>_1<nf_name>): Ditto.
+	(*andqi_1<nf_name>): Ditto.
+	(*<code><mode>_1<nf_name>): Ditto.
+	(*<code>qi_1<nf_name>): Ditto.
+	(*neg<mode>_1<nf_name>): Ditto.
+	* config/i386/sse.md: New define_split.
+
+2024-06-03  Lingling Kong  <lingling.kong@intel.com>
+	    Hongyu Wong  <hongyu.wang@intel.com>
+
+	* config/i386/i386-opts.h (enum apx_features): Add nf
+	enumeration.
+	* config/i386/i386.h (TARGET_APX_NF): New.
+	* config/i386/i386.md (nf_name): New subst_att.
+	(nf_prefix): Ditto.
+	(nf_condition): Ditto.
+	(nf_mem_constraint): Ditto.
+	(nf_applied): Ditto.
+	(nf_subst): Add new define_subst.
+	(*add<mode>_1<nf_name>): New define_insn.
+	(*addhi_1<nf_name>): Ditto.
+	(*addqi_1<nf_name>): Diito.
+	* config/i386/i386.opt: Add apx_nf enumeration.
+
+2024-06-03  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/113609
+	* config/i386/sse.md
+	(*kortest_cmp<mode>_setcc): New define_insn_and_split.
+	(*kortest_cmp<mode>_jcc): Ditto.
+
 2024-06-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR tree-optimization/115307
