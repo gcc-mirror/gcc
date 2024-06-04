@@ -941,8 +941,10 @@ cfn_clz::fold_range (irange &r, tree type, const irange &lh,
   int maxi = prec - 1;
   if (m_gimple_call_internal_p)
     {
-      // Only handle the single common value.
-      if (rh.lower_bound () == prec)
+      // Handle only the two common values.
+      if (rh.lower_bound () == -1)
+	mini = -1;
+      else if (rh.lower_bound () == prec)
 	maxi = prec;
       else
 	// Magic value to give up, unless we can prove arg is non-zero.
@@ -953,7 +955,7 @@ cfn_clz::fold_range (irange &r, tree type, const irange &lh,
   if (wi::gt_p (lh.lower_bound (), 0, TYPE_SIGN (lh.type ())))
     {
       maxi = prec - 1 - wi::floor_log2 (lh.lower_bound ());
-      if (mini == -2)
+      if (mini < 0)
 	mini = 0;
     }
   else if (!range_includes_zero_p (lh))
@@ -969,11 +971,11 @@ cfn_clz::fold_range (irange &r, tree type, const irange &lh,
   if (max == 0)
     {
       // If CLZ_DEFINED_VALUE_AT_ZERO is 2 with VALUE of prec,
-      // return [prec, prec], otherwise ignore the range.
-      if (maxi == prec)
-	mini = prec;
+      // return [prec, prec] or [-1, -1], otherwise ignore the range.
+      if (maxi == prec || mini == -1)
+	mini = maxi;
     }
-  else
+  else if (mini >= 0)
     mini = newmini;
 
   if (mini == -2)
