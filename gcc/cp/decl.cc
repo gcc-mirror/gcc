@@ -2792,10 +2792,13 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  retrofit_lang_decl (newdecl);
 	  tree alias = DECL_LOCAL_DECL_ALIAS (newdecl)
 	    = DECL_LOCAL_DECL_ALIAS (olddecl);
-	  DECL_ATTRIBUTES (alias)
-	    = (*targetm.merge_decl_attributes) (alias, newdecl);
-	  if (TREE_CODE (newdecl) == FUNCTION_DECL)
-	    merge_attribute_bits (newdecl, alias);
+	  if (alias != error_mark_node)
+	    {
+	      DECL_ATTRIBUTES (alias)
+		= (*targetm.merge_decl_attributes) (alias, newdecl);
+	      if (TREE_CODE (newdecl) == FUNCTION_DECL)
+		merge_attribute_bits (newdecl, alias);
+	    }
 	}
     }
 
