@@ -117,6 +117,12 @@ struct arc_info
   /* Loop making arc.  */
   unsigned int cycle : 1;
 
+  /* Is a true arc.  */
+  unsigned int true_value : 1;
+
+  /* Is a false arc.  */
+  unsigned int false_value : 1;
+
   /* Links to next arc on src and dst lists.  */
   struct arc_info *succ_next;
   struct arc_info *pred_next;
@@ -2010,6 +2016,8 @@ read_graph_file (void)
 	      arc->on_tree = !!(flags & GCOV_ARC_ON_TREE);
 	      arc->fake = !!(flags & GCOV_ARC_FAKE);
 	      arc->fall_through = !!(flags & GCOV_ARC_FALLTHROUGH);
+	      arc->true_value = !!(flags & GCOV_ARC_TRUE);
+	      arc->false_value = !!(flags & GCOV_ARC_FALSE);
 
 	      arc->succ_next = src_blk->succ;
 	      src_blk->succ = arc;

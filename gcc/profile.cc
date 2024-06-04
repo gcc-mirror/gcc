@@ -1456,6 +1456,10 @@ branch_prob (bool thunk)
 		    flag_bits |= GCOV_ARC_FAKE;
 		  if (e->flags & EDGE_FALLTHRU)
 		    flag_bits |= GCOV_ARC_FALLTHROUGH;
+		  if (e->flags & EDGE_TRUE_VALUE)
+		    flag_bits |= GCOV_ARC_TRUE;
+		  if (e->flags & EDGE_FALSE_VALUE)
+		    flag_bits |= GCOV_ARC_FALSE;
 		  /* On trees we don't have fallthru flags, but we can
 		     recompute them from CFG shape.  */
 		  if (e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)

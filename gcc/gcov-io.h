@@ -337,6 +337,8 @@ GCOV_COUNTERS
 #define GCOV_ARC_ON_TREE 	(1 << 0)
 #define GCOV_ARC_FAKE		(1 << 1)
 #define GCOV_ARC_FALLTHROUGH	(1 << 2)
+#define GCOV_ARC_TRUE		(1 << 3)
+#define GCOV_ARC_FALSE		(1 << 4)
 
 /* Object & program summary record.  */
 
