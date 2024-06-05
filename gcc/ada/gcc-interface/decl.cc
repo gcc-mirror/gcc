@@ -520,7 +520,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  esize = UI_To_Int (Esize (gnat_entity));
 
 	  if (IN (kind, Float_Kind))
-	    max_esize = fp_prec_to_size (LONG_DOUBLE_TYPE_SIZE);
+	    max_esize
+	      = fp_prec_to_size (TYPE_PRECISION (long_double_type_node));
 	  else if (IN (kind, Access_Kind))
 	    max_esize = POINTER_SIZE * 2;
 	  else
