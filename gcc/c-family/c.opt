@@ -1871,6 +1871,10 @@ fcontracts-nonattr
 C++ Var(flag_contracts_nonattr) Init(0)
 Enable the non-attribute syntax for contracts.
 
+fcontracts-nonattr-noconst
+C++ Var(flag_contracts_nonattr_noconst) Init(0)
+Disable the consitification of entities appearing in a contract condition.
+
 fcontract-assumption-mode=
 C++ Joined RejectNegative
 -fcontract-assumption-mode=[on|off]	Enable or disable treating axiom level contracts as assumptions (default on).

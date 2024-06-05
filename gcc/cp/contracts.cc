@@ -602,7 +602,8 @@ make_postcondition_variable (cp_expr id, tree type)
   DECL_SOURCE_LOCATION (decl) = id.get_location ();
 
   // constify the postcondition variable
-  TREE_READONLY(decl) = 1;
+  if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst)
+	TREE_READONLY(decl) = 1;
 
   pushdecl (decl);
   return decl;
@@ -1948,6 +1949,9 @@ tree
 constify_contract_access(tree decl,location_t location)
 {
 
+  if (!flag_contracts_nonattr || flag_contracts_nonattr_noconst)
+    return decl;
+
   /* only constifies the automatic storage variables for now.
    * The postcondition variable is created const. Parameters need to be
    * checked separately, and we also need to make references and *this const
@@ -1955,7 +1959,7 @@ constify_contract_access(tree decl,location_t location)
 
   if (!TREE_READONLY (decl)
       && ((VAR_P (decl) && decl_storage_duration (decl) == dk_auto)
-          || (INDIRECT_REF_P(decl) && decl_storage_duration (TREE_OPERAND (decl, 0)) == dk_auto)
+          || (REFERENCE_REF_P(decl) && decl_storage_duration (TREE_OPERAND (decl, 0)) == dk_auto)
 	  || (TREE_CODE (decl) == PARM_DECL)))
   {
       decl = build1_loc (location, VIEW_CONVERT_EXPR,
