@@ -4228,6 +4228,17 @@
   }
 )
 
+(define_expand "ussub<mode>3"
+  [(match_operand:ANYI 0 "register_operand")
+   (match_operand:ANYI 1 "register_operand")
+   (match_operand:ANYI 2 "register_operand")]
+  ""
+  {
+    riscv_expand_ussub (operands[0], operands[1], operands[2]);
+    DONE;
+  }
+)
+
 ;; These are forms of (x << C1) + C2, potentially canonicalized from
 ;; ((x + C2') << C1.  Depending on the cost to load C2 vs C2' we may
 ;; want to go ahead and recognize this form as C2 may be cheaper to

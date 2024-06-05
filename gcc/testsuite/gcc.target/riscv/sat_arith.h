@@ -3,6 +3,9 @@
 
 #include <stdint-gcc.h>
 
+/******************************************************************************/
+/* Saturation Add (unsigned and signed)                                       */
+/******************************************************************************/
 #define DEF_SAT_U_ADD_FMT_1(T)             \
 T __attribute__((noinline))                \
 sat_u_add_##T##_fmt_1 (T x, T y)           \
@@ -71,5 +74,25 @@ vec_sat_u_add_##T##_fmt_1 (T *out, T *op_1, T *op_2, unsigned limit) \
 
 #define RUN_VEC_SAT_U_ADD_FMT_1(T, out, op_1, op_2, N) \
   vec_sat_u_add_##T##_fmt_1(out, op_1, op_2, N)
+
+/******************************************************************************/
+/* Saturation Sub (Unsigned and Signed)                                       */
+/******************************************************************************/
+#define DEF_SAT_U_SUB_FMT_1(T)     \
+T __attribute__((noinline))        \
+sat_u_sub_##T##_fmt_1 (T x, T y)   \
+{                                  \
+  return (x - y) & (-(T)(x >= y)); \
+}
+
+#define DEF_SAT_U_SUB_FMT_2(T)    \
+T __attribute__((noinline))       \
+sat_u_sub_##T##_fmt_2 (T x, T y)  \
+{                                 \
+  return (x - y) & (-(T)(x > y)); \
+}
+
+#define RUN_SAT_U_SUB_FMT_1(T, x, y) sat_u_sub_##T##_fmt_1(x, y)
+#define RUN_SAT_U_SUB_FMT_2(T, x, y) sat_u_sub_##T##_fmt_2(x, y)
 
 #endif
