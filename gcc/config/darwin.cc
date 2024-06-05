@@ -3620,7 +3620,7 @@ darwin_patch_builtin (enum built_in_function fncode)
 void
 darwin_patch_builtins (void)
 {
-  if (LONG_DOUBLE_TYPE_SIZE != 128)
+  if (TYPE_PRECISION (long_double_type_node) != 128)
     return;
 
 #define PATCH_BUILTIN(fncode) darwin_patch_builtin (fncode);
