@@ -3749,7 +3749,7 @@
     }
 })
 
-(define_expand "udot_prod<mode>"
+(define_expand "udot_prodv4si<mode>"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (plus:V4SI (match_operand:V4SI 3 "register_operand" "v")
                    (unspec:V4SI [(match_operand:VIshort 1 "register_operand" "v")  
@@ -3761,7 +3761,7 @@
   DONE;
 })
 
-(define_expand "sdot_prodv8hi"
+(define_expand "sdot_prodv4siv8hi"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (plus:V4SI (match_operand:V4SI 3 "register_operand" "v")
                    (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")
