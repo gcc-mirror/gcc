@@ -102,11 +102,76 @@ struct FactsView
   Slice<Pair<Origin, Loan>> placeholder;
 };
 
+// Wrapper around std::vector to pass data from Rust to C++
+template <typename T> struct FFIVector
+{
+  std::vector<T> data;
+
+public:
+  void push (T new_element) { data.push_back (new_element); };
+
+  // allocates memory to a new instance and returns the pointer
+  static FFIVector *make_new () { return new FFIVector{}; }
+
+  // returns current size
+  size_t size () const { return data.size (); }
+
+  T at (size_t index) const
+  {
+    rust_assert (index < data.size ());
+    return data.at (index);
+  }
+};
+
+// Some useful type aliases
+using FFIVectorPair = FFIVector<Pair<size_t, FFIVector<size_t> *>>;
+using FFIVectorTriple = FFIVector<Triple<size_t, size_t, size_t>>;
+
+inline std::vector<size_t>
+make_vector (const FFIVector<size_t> *vec_sizet)
+{
+  std::vector<size_t> return_val (vec_sizet->size ());
+  for (size_t i = 0; i < vec_sizet->size (); ++i)
+    {
+      return_val[i] = vec_sizet->at (i);
+    }
+  return return_val;
+}
+
+inline std::vector<std::pair<size_t, std::vector<size_t>>>
+make_vector (const FFIVectorPair *vec_pair)
+{
+  std::vector<std::pair<size_t, std::vector<size_t>>> return_val (
+    vec_pair->size ());
+  for (size_t i = 0; i < vec_pair->size (); ++i)
+    {
+      std::pair<size_t, std::vector<size_t>> current_pair
+	= {vec_pair->at (i).first, make_vector (vec_pair->at (i).second)};
+      return_val[i] = current_pair;
+    }
+  return return_val;
+}
+
+inline std::vector<std::pair<size_t, std::pair<size_t, size_t>>>
+make_vector (const FFIVectorTriple *vec_triple)
+{
+  std::vector<std::pair<size_t, std::pair<size_t, size_t>>> return_val (
+    vec_triple->size ());
+  for (size_t i = 0; i < vec_triple->size (); ++i)
+    {
+      auto current_element = std::pair<size_t, std::pair<size_t, size_t>>{
+	vec_triple->at (i).first,
+	{vec_triple->at (i).second, vec_triple->at (i).third}};
+      return_val[i] = current_element;
+    }
+  return return_val;
+}
+
 struct Output
 {
-  bool loan_errors;
-  bool subset_errors;
-  bool move_errors;
+  FFIVectorPair *loan_errors;
+  FFIVectorPair *move_errors;
+  FFIVectorTriple *subset_errors;
 };
 
 } // namespace FFI

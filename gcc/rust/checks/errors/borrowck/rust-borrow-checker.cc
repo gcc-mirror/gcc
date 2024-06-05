@@ -155,19 +155,29 @@ BorrowChecker::go (HIR::Crate &crate)
       auto result
 	= Polonius::polonius_run (facts.freeze (), rust_be_debug_p ());
 
-      if (result.loan_errors)
+      // convert to std::vector variation for easier navigation
+      auto loan_errors = make_vector (result.loan_errors);
+      auto move_errors = make_vector (result.move_errors);
+      auto subset_errors = make_vector (result.subset_errors);
+
+      // free allocated data
+      delete result.loan_errors;
+      delete result.move_errors;
+      delete result.subset_errors;
+
+      if (!loan_errors.empty ())
 	{
 	  rust_error_at (func->get_locus (), "Found loan errors in function %s",
 			 func->get_function_name ().as_string ().c_str ());
 	}
-      if (result.subset_errors)
+      if (!subset_errors.empty ())
 	{
 	  rust_error_at (func->get_locus (),
 			 "Found subset errors in function %s. Some lifetime "
 			 "constraints need to be added.",
 			 func->get_function_name ().as_string ().c_str ());
 	}
-      if (result.move_errors)
+      if (!move_errors.empty ())
 	{
 	  rust_error_at (func->get_locus (), "Found move errors in function %s",
 			 func->get_function_name ().as_string ().c_str ());

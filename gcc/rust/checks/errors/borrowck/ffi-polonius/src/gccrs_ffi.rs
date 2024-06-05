@@ -32,6 +32,11 @@ include!("gccrs_ffi_generated.rs");
 
 use crate::GccrsAtom;
 
+// Using opqaue types
+extern "C" {
+    pub type FFIVector;
+}
+
 impl<T1, T2> Into<(GccrsAtom, GccrsAtom)> for Pair<T1, T2>
 where
     GccrsAtom: From<T1> + From<T2>,
