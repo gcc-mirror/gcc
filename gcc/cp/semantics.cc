@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "predict.h"
 #include "memmodel.h"
+#include "print-tree.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -4424,6 +4425,11 @@ finish_id_expression_1 (tree id_expression,
 	}
     }
 
+  if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst
+	&& processing_contract_condition)
+    {
+       decl = constify_contract_access(decl);
+    }
   return cp_expr (decl, location);
 }
 
