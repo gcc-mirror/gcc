@@ -204,14 +204,14 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   //       };
 
   AST::InlineAsmOperand reg_operand;
-  rust_debug("Enter parse_reg_operand");
+  rust_debug ("Enter parse_reg_operand");
   auto token = parser.peek_current_token ();
   auto iden_token = parser.peek_current_token ();
   auto &inline_asm = inline_asm_ctx.inline_asm;
   if (check_identifier (parser, ""))
     {
-    
-      rust_debug("Didn't get passed identifier checking, %s", token->as_string().c_str());
+      rust_debug ("Didn't get passed identifier checking, %s",
+		  token->as_string ().c_str ());
 
       auto equal_token = parser.peek_current_token ();
       if (!parser.skip_token (EQUAL))
@@ -222,36 +222,40 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     }
 
   token = parser.peek_current_token ();
-  rust_debug_loc(token->get_locus(), "Got pass identifier checking with %s",  token->as_string().c_str());
-
+  rust_debug_loc (token->get_locus (), "Got pass identifier checking with %s",
+		  token->as_string ().c_str ());
 
   bool is_global_asm = inline_asm.is_global_asm;
 
-  // For the keyword IN, currently we count it as a seperate keyword called Rust::IN
-  // search for #define RS_TOKEN_LIST in code base.
-  if (!is_global_asm && parser.skip_token(IN))
+  // For the keyword IN, currently we count it as a seperate keyword called
+  // Rust::IN search for #define RS_TOKEN_LIST in code base.
+  if (!is_global_asm && parser.skip_token (IN))
     {
-      rust_debug("Enter parse_reg_operand in");
+      rust_debug ("Enter parse_reg_operand in");
 
-      auto reg = parse_reg(parser, last_token_id, inline_asm_ctx);
+      auto reg = parse_reg (parser, last_token_id, inline_asm_ctx);
 
-      if (parser.skip_token(UNDERSCORE)) {
-        // We are sure to be failing a test here, based on asm.rs 
-        // https://github.com/rust-lang/rust/blob/a330e49593ee890f9197727a3a558b6e6b37f843/compiler/rustc_builtin_macros/src/asm.rs#L112
-        rust_unreachable();
-      }
+      if (parser.skip_token (UNDERSCORE))
+	{
+	  // We are sure to be failing a test here, based on asm.rs
+	  // https://github.com/rust-lang/rust/blob/a330e49593ee890f9197727a3a558b6e6b37f843/compiler/rustc_builtin_macros/src/asm.rs#L112
+	  rust_unreachable ();
+	}
 
-      auto expr = parse_format_string(parser, last_token_id, inline_asm_ctx) ;
+      auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
       reg_operand.register_type = AST::InlineAsmOperand::RegisterType::In;
-      
-      // Since reg is of type optional<T>, we need to check if it is not optional first.
-      // TODO: We don't throw any errors since we should have throw any encountered parsing error in parse_reg
-      if (reg) {
-        reg_operand.in.reg = reg.value();
-      }
-      
-      // Only clone_expr() if we know that we have parse an expression successfully
-      // if (expr) {
+
+      // Since reg is of type optional<T>, we need to check if it is not
+      // optional first.
+      // TODO: We don't throw any errors since we should have throw any
+      // encountered parsing error in parse_reg
+      if (reg)
+	{
+	  reg_operand.in.reg = reg.value ();
+	}
+
+      // Only clone_expr() if we know that we have parse an expression
+      // successfully if (expr) {
       //   reg_operand.in.expr = expr->clone_expr();
       // }
 
@@ -269,51 +273,58 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     }
   else if (!is_global_asm && check_identifier (parser, "inout"))
     {
-      rust_debug("Enter parse_reg_operand inout");
-      
-      auto reg = parse_reg(parser, last_token_id, inline_asm_ctx);
+      rust_debug ("Enter parse_reg_operand inout");
 
-      if (parser.skip_token(UNDERSCORE)) {
-        // We are sure to be failing a test here, based on asm.rs 
-        // https://github.com/rust-lang/rust/blob/a330e49593ee890f9197727a3a558b6e6b37f843/compiler/rustc_builtin_macros/src/asm.rs#L112
-        rust_unreachable();
-      }
+      auto reg = parse_reg (parser, last_token_id, inline_asm_ctx);
 
-      // TODO: Is error propogation our top priority, the ? in rust's asm.rs is doing a lot of work.
+      if (parser.skip_token (UNDERSCORE))
+	{
+	  // We are sure to be failing a test here, based on asm.rs
+	  // https://github.com/rust-lang/rust/blob/a330e49593ee890f9197727a3a558b6e6b37f843/compiler/rustc_builtin_macros/src/asm.rs#L112
+	  rust_unreachable ();
+	}
+
+      // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
+      // doing a lot of work.
       // TODO: Not sure how to use parse_expr
-      auto expr = parse_format_string(parser, last_token_id, inline_asm_ctx) ;
+      auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
 
       std::unique_ptr<AST::Expr> out_expr;
 
-      if (parser.skip_token(MATCH_ARROW)) {
-        rust_debug("Matched MATCH_ARROW");
-        if (!parser.skip_token(UNDERSCORE)) {
-          
-          parse_format_string(parser, last_token_id, inline_asm_ctx) ;
-          //out_expr = parser.parse_expr();
-        }
+      if (parser.skip_token (MATCH_ARROW))
+	{
+	  rust_debug ("Matched MATCH_ARROW");
+	  if (!parser.skip_token (UNDERSCORE))
+	    {
+	      parse_format_string (parser, last_token_id, inline_asm_ctx);
+	      // out_expr = parser.parse_expr();
+	    }
 
-        reg_operand.register_type = AST::InlineAsmOperand::RegisterType::SplitInOut;
-        // reg_operand.split_in_out.in_expr = expr->clone_expr();
-        // reg_operand.split_in_out.out_expr = out_expr->clone_expr();
-        // reg_operand.split_in_out.late = false;
-        return reg_operand;
-
-      } else {
-        reg_operand.register_type = AST::InlineAsmOperand::RegisterType::InOut;
-        // reg_operand.in_out.expr = expr->clone_expr();
-        // reg_operand.in_out.late = false;
-        return reg_operand;
-      }
-    //  if p.eat(&token::FatArrow) {
-    //             let out_expr =
-    //                 if p.eat_keyword(kw::Underscore) { None } else { Some(p.parse_expr()?) };
-    //             ast::InlineAsmOperand::SplitInOut { reg, in_expr: expr, out_expr, late: false }
-    //         } else {
-    //             ast::InlineAsmOperand::InOut { reg, expr, late: false }
-    //         }
+	  reg_operand.register_type
+	    = AST::InlineAsmOperand::RegisterType::SplitInOut;
+	  // reg_operand.split_in_out.in_expr = expr->clone_expr();
+	  // reg_operand.split_in_out.out_expr = out_expr->clone_expr();
+	  // reg_operand.split_in_out.late = false;
+	  return reg_operand;
+	}
+      else
+	{
+	  reg_operand.register_type
+	    = AST::InlineAsmOperand::RegisterType::InOut;
+	  // reg_operand.in_out.expr = expr->clone_expr();
+	  // reg_operand.in_out.late = false;
+	  return reg_operand;
+	}
+      //  if p.eat(&token::FatArrow) {
+      //             let out_expr =
+      //                 if p.eat_keyword(kw::Underscore) { None } else {
+      //                 Some(p.parse_expr()?) };
+      //             ast::InlineAsmOperand::SplitInOut { reg, in_expr: expr,
+      //             out_expr, late: false }
+      //         } else {
+      //             ast::InlineAsmOperand::InOut { reg, expr, late: false }
+      //         }
       return tl::nullopt;
-
     }
   else if (!is_global_asm && check_identifier (parser, "inlateout"))
     {
@@ -464,28 +475,31 @@ bool
 check_identifier (Parser<MacroInvocLexer> &p, std::string ident)
 {
   auto token = p.peek_current_token ();
-  
-  if (token->get_id () == IDENTIFIER) {
-    auto str = token->as_string();
 
-    // For non-promoted keywords, we need to also check for them.
+  if (token->get_id () == IDENTIFIER)
+    {
+      auto str = token->as_string ();
 
-    if (str == ident) {
-      p.skip_token ();
-      return true;
+      // For non-promoted keywords, we need to also check for them.
+
+      if (str == ident)
+	{
+	  p.skip_token ();
+	  return true;
+	}
+      if (ident == "")
+	{
+	  if (potentially_nonpromoted_keywords.find (str)
+	      == potentially_nonpromoted_keywords.end ())
+	    {
+	      p.skip_token ();
+	      return true;
+	    }
+	  return false;
+	}
     }
-    if (ident == "") {
-      if (str != "in" && str != "out" && str != "lateout" && str != "inout" && str != "inlateout" && str != "const" && str != "sym" && str != "label")
-      {
-        p.skip_token ();
-        return true;
-      }
-      return false;
-    }
-  }
 
   return false;
-
 }
 
 tl::optional<std::string>
