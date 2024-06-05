@@ -3772,11 +3772,16 @@ BorrowExpr::accept_vis (HIRFullVisitor &vis)
 
 void
 InlineAsm::accept_vis (HIRExpressionVisitor &vis)
-{}
+{
+  rust_unreachable ();
+}
 
 void
 InlineAsm::accept_vis (HIRFullVisitor &vis)
-{}
+{
+  rust_unreachable ();
+  vis.visit (*this);
+}
 
 void
 BorrowExpr::accept_vis (HIRExpressionVisitor &vis)
