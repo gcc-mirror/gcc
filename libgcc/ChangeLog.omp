@@ -1,0 +1,7 @@
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/gbl-ctors.c ["mgomp"]
+	(__do_global_ctors__entry__mgomp)
+	(__do_global_dtors__entry__mgomp): New.
+	[!"mgomp"] (__do_global_ctors__entry, __do_global_dtors__entry):
+	New.

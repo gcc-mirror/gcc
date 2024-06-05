@@ -1,5 +1,11 @@
 2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* plugin/plugin-nvptx.c (nvptx_do_global_cdtors): New.
+	(nvptx_close_device, GOMP_OFFLOAD_load_image)
+	(GOMP_OFFLOAD_unload_image): Call it.
+
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/error.c (exit): Don't override.
 	* testsuite/libgomp.oacc-fortran/error_stop-1.f: Update.
 	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
