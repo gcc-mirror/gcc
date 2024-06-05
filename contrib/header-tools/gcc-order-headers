@@ -389,7 +389,7 @@ if didnt_do:
   print ("Safeness is determined by checking whether any of the reordered headers are")
   print ("within a conditional and could be hauled out of the conditional, thus changing")
   print ("what the compiler will see.")
-  print ("Multi-line comments after a #include can also cause failuer, they must be turned")
+  print ("Multi-line comments after a #include can also cause failure, they must be turned")
   print ("into single line comments or removed.")
 
 
