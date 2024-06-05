@@ -19976,10 +19976,6 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
       return nullptr;
     }
 
-  if (!spans.init_p ())
-    /* Before the main file, don't divert.  */
-    return nullptr;
-
   dump.push (NULL);
 
   dump () && dump ("Checking include translation '%s'", path);

@@ -1008,7 +1008,10 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
   if (decrement)
     pfile->line_table->highest_location--;
 
-  if (file->header_unit <= 0)
+  /* Normally a header unit becomes an __import directive in the current file,
+     but with -include we need something to LC_LEAVE to trigger the file_change
+     hook and continue to the next -include or the main source file.  */
+  if (file->header_unit <= 0 || type == IT_CMDLINE)
     /* Add line map and do callbacks.  */
     _cpp_do_file_change (pfile, LC_ENTER, file->path,
 		       /* With preamble injection, start on line zero,
