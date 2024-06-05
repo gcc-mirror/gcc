@@ -3349,8 +3349,10 @@
 	  UNSPEC_PRED_Z))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE2 && TARGET_NON_STREAMING"
-  {@ [ cons: =0, 1 , 2, 3, 4 ]
-     [ Upa     , Upl, , w, w ] <sve_int_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>
+  {@ [ cons: =0, 1  , 3, 4; attrs: pred_clobber ]
+     [ &Upa    , Upl, w, w; yes                 ] <sve_int_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>
+     [ ?Upa    , 0  , w, w; yes                 ] ^
+     [ Upa     , Upl, w, w; no                  ] ^
   }
 )
 

@@ -1161,8 +1161,10 @@
 	  (reg:VNx16BI FFRT_REGNUM)
 	  (match_operand:VNx16BI 1 "register_operand")))]
   "TARGET_SVE && TARGET_NON_STREAMING"
-  {@ [ cons: =0, 1   ]
-     [ Upa     , Upa ] rdffr\t%0.b, %1/z
+  {@ [ cons: =0, 1   ; attrs: pred_clobber ]
+     [ &Upa    , Upa ; yes                 ] rdffr\t%0.b, %1/z
+     [ ?Upa    , 0Upa; yes                 ] ^
+     [ Upa     , Upa ; no                  ] ^
   }
 )
 
@@ -1179,8 +1181,10 @@
 	  UNSPEC_PTEST))
    (clobber (match_scratch:VNx16BI 0))]
   "TARGET_SVE && TARGET_NON_STREAMING"
-  {@ [ cons: =0, 1   ]
-     [ Upa     , Upa ] rdffrs\t%0.b, %1/z
+  {@ [ cons: =0, 1   ; attrs: pred_clobber ]
+     [ &Upa    , Upa ; yes                 ] rdffrs\t%0.b, %1/z
+     [ ?Upa    , 0Upa; yes                 ] ^
+     [ Upa     , Upa ; no                  ] ^
   }
 )
 
@@ -1195,8 +1199,10 @@
 	  UNSPEC_PTEST))
    (clobber (match_scratch:VNx16BI 0))]
   "TARGET_SVE && TARGET_NON_STREAMING"
-  {@ [ cons: =0, 1   ]
-     [ Upa     , Upa ] rdffrs\t%0.b, %1/z
+  {@ [ cons: =0, 1   ; attrs: pred_clobber ]
+     [ &Upa    , Upa ; yes                 ] rdffrs\t%0.b, %1/z
+     [ ?Upa    , 0Upa; yes                 ] ^
+     [ Upa     , Upa ; no                  ] ^
   }
 )
 
@@ -1216,8 +1222,10 @@
 	  (reg:VNx16BI FFRT_REGNUM)
 	  (match_dup 1)))]
   "TARGET_SVE && TARGET_NON_STREAMING"
-  {@ [ cons: =0, 1   ]
-     [ Upa     , Upa ] rdffrs\t%0.b, %1/z
+  {@ [ cons: =0, 1   ; attrs: pred_clobber ]
+     [ &Upa    , Upa ; yes                 ] rdffrs\t%0.b, %1/z
+     [ ?Upa    , 0Upa; yes                 ] ^
+     [ Upa     , Upa ; no                  ] ^
   }
 )
 
@@ -1233,8 +1241,10 @@
    (set (match_operand:VNx16BI 0 "register_operand")
 	(reg:VNx16BI FFRT_REGNUM))]
   "TARGET_SVE && TARGET_NON_STREAMING"
-  {@ [ cons: =0, 1   ]
-     [ Upa     , Upa ] rdffrs\t%0.b, %1/z
+  {@ [ cons: =0, 1   ; attrs: pred_clobber ]
+     [ &Upa    , Upa ; yes                 ] rdffrs\t%0.b, %1/z
+     [ ?Upa    , 0Upa; yes                 ] ^
+     [ Upa     , Upa ; no                  ] ^
   }
 )
 
@@ -6651,8 +6661,10 @@
 	(and:PRED_ALL (match_operand:PRED_ALL 1 "register_operand")
 		      (match_operand:PRED_ALL 2 "register_operand")))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2   ]
-     [ Upa     , Upa, Upa ] and\t%0.b, %1/z, %2.b, %2.b
+  {@ [ cons: =0, 1   , 2   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa ; yes                 ] and\t%0.b, %1/z, %2.b, %2.b
+     [ ?Upa    , 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -6679,8 +6691,10 @@
 	    (match_operand:PRED_ALL 3 "register_operand"))
 	  (match_operand:PRED_ALL 1 "register_operand")))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] <logical>\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0, 1   , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ; yes                 ] <logical>\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -6703,8 +6717,10 @@
 	(and:PRED_ALL (LOGICAL:PRED_ALL (match_dup 2) (match_dup 3))
 		      (match_dup 4)))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] <logical>s\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0, 1   , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ; yes                 ] <logical>s\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -6723,8 +6739,10 @@
 	  UNSPEC_PTEST))
    (clobber (match_scratch:VNx16BI 0))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] <logical>s\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0, 1   , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ; yes                 ] <logical>s\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -6745,8 +6763,10 @@
 	    (match_operand:PRED_ALL 2 "register_operand"))
 	  (match_operand:PRED_ALL 1 "register_operand")))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] <nlogical>\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0, 1   , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ; yes                 ] <nlogical>\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -6770,8 +6790,10 @@
 			(match_dup 2))
 		      (match_dup 4)))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] <nlogical>s\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0, 1   , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ; yes                 ] <nlogical>s\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -6791,8 +6813,10 @@
 	  UNSPEC_PTEST))
    (clobber (match_scratch:VNx16BI 0))]
   "TARGET_SVE"
-  {@ [ cons:  =0, 1  , 2  , 3   ]
-     [ Upa      , Upa, Upa, Upa ] <nlogical>s\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons:  =0, 1   , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa     , Upa , Upa , Upa ; yes                 ] <nlogical>s\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa     , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa      , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -6813,8 +6837,10 @@
 	    (not:PRED_ALL (match_operand:PRED_ALL 3 "register_operand")))
 	  (match_operand:PRED_ALL 1 "register_operand")))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] <logical_nn>\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0,  1  , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ; yes                 ] <logical_nn>\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -6839,8 +6865,10 @@
 			(not:PRED_ALL (match_dup 3)))
 		      (match_dup 4)))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] <logical_nn>s\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0, 1   , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ; yes                 ] <logical_nn>s\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -6861,8 +6889,10 @@
 	  UNSPEC_PTEST))
    (clobber (match_scratch:VNx16BI 0))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] <logical_nn>s\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0, 1   , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ; yes                 ] <logical_nn>s\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -8104,9 +8134,13 @@
 	  UNSPEC_PRED_Z))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 3 , 4              ]
-     [ Upa      , Upl , w , <sve_imm_con>  ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, #%4
-     [ Upa      , Upl , w , w              ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>
+  {@ [ cons: =0 , 1   , 3 , 4            ; attrs: pred_clobber ]
+     [ &Upa     , Upl , w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, #%4
+     [ ?Upa     , 0Upl, w , <sve_imm_con>; yes                 ] ^
+     [ Upa      , Upl , w , <sve_imm_con>; no                  ] ^
+     [ &Upa     , Upl , w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>
+     [ ?Upa     , 0Upl, w , w            ; yes                 ] ^
+     [ Upa      , Upl , w , w            ; no                  ] ^
   }
 )
 
@@ -8136,9 +8170,13 @@
 	  UNSPEC_PRED_Z))]
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
-  {@ [ cons: =0 , 1   , 2 , 3              ]
-     [ Upa      , Upl , w , <sve_imm_con>  ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
-     [ Upa      , Upl , w , w              ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>
+  {@ [ cons: =0 , 1    , 2 , 3            ; attrs: pred_clobber ]
+     [ &Upa     ,  Upl , w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
+     [ ?Upa     ,  0Upl, w , <sve_imm_con>; yes                 ] ^
+     [ Upa      ,  Upl , w , <sve_imm_con>; no                  ] ^
+     [ &Upa     ,  Upl , w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>
+     [ ?Upa     ,  0Upl, w , w            ; yes                 ] ^
+     [ Upa      ,  Upl , w , w            ; no                  ] ^
   }
   "&& !rtx_equal_p (operands[4], operands[6])"
   {
@@ -8166,9 +8204,13 @@
    (clobber (match_scratch:<VPRED> 0))]
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
-  {@ [ cons: =0, 1  , 2 , 3              ]
-     [ Upa     , Upl, w , <sve_imm_con>  ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
-     [ Upa     , Upl, w , w              ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>
+  {@ [ cons: =0, 1    , 2 , 3            ; attrs: pred_clobber ]
+     [ &Upa    ,  Upl , w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
+     [ ?Upa    ,  0Upl, w , <sve_imm_con>; yes                 ] ^
+     [ Upa     ,  Upl , w , <sve_imm_con>; no                  ] ^
+     [ &Upa    ,  Upl , w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>
+     [ ?Upa    ,  0Upl, w , w            ; yes                 ] ^
+     [ Upa     ,  Upl , w , w            ; no                  ] ^
   }
   "&& !rtx_equal_p (operands[4], operands[6])"
   {
@@ -8221,8 +8263,10 @@
 	  UNSPEC_PRED_Z))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2, 3, 4 ]
-     [ Upa     , Upl,  , w, w ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.d
+  {@ [ cons: =0, 1    , 2, 3, 4; attrs: pred_clobber ]
+     [ &Upa    ,  Upl ,  , w, w; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.d
+     [ ?Upa    ,  0Upl,  , w, w; yes                 ] ^
+     [ Upa     ,  Upl ,  , w, w; no                  ] ^
   }
 )
 
@@ -8254,8 +8298,10 @@
 	  UNSPEC_PRED_Z))]
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
-  {@ [ cons: =0, 1  , 2, 3, 6   ]
-     [ Upa     , Upl, w, w, Upl ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
+  {@ [ cons: =0, 1    , 2, 3, 6  ; attrs: pred_clobber ]
+     [ &Upa    ,  Upl , w, w, Upl; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
+     [ ?Upa    ,  0Upl, w, w, Upl; yes                 ] ^
+     [ Upa     ,  Upl , w, w, Upl; no                  ] ^
   }
 )
 
@@ -8279,8 +8325,10 @@
    (clobber (match_scratch:<VPRED> 0))]
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
-  {@ [ cons:  =0, 1  , 2, 3, 6   ]
-     [ Upa      , Upl, w, w, Upl ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
+  {@ [ cons:  =0, 1    , 2, 3, 6  ; attrs: pred_clobber ]
+     [ &Upa     ,  Upl , w, w, Upl; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
+     [ ?Upa     ,  0Upl, w, w, Upl; yes                 ] ^
+     [ Upa      ,  Upl , w, w, Upl; no                  ] ^
   }
 )
 
@@ -9948,9 +9996,13 @@
 	   (match_operand:VNx16BI 3 "aarch64_simd_reg_or_zero")]
 	  SVE_BRK_UNARY))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2   , 3   ]
-     [ Upa      , Upa , Upa , Dz  ] brk<brk_op>\t%0.b, %1/z, %2.b
-     [ Upa      , Upa , Upa , 0   ] brk<brk_op>\t%0.b, %1/m, %2.b
+  {@ [ cons: =0 , 1   , 2   , 3  ; attrs: pred_clobber ]
+     [ &Upa     ,  Upa , Upa , Dz; yes                 ] brk<brk_op>\t%0.b, %1/z, %2.b
+     [ ?Upa     ,  0Upa, 0Upa, Dz; yes                 ] ^
+     [ Upa      ,  Upa , Upa , Dz; no                  ] ^
+     [ &Upa     ,  Upa , Upa , 0 ; yes                 ] brk<brk_op>\t%0.b, %1/m, %2.b
+     [ ?Upa     ,  0Upa, 0Upa, 0 ; yes                 ] ^
+     [ Upa      ,  Upa , Upa , 0 ; no                  ] ^
   }
 )
 
@@ -9974,8 +10026,10 @@
 	   (match_dup 3)]
 	  SVE_BRK_UNARY))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2   ]
-     [ Upa     , Upa, Upa ] brk<brk_op>s\t%0.b, %1/z, %2.b
+  {@ [ cons: =0, 1   , 2   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa ; yes                 ] brk<brk_op>s\t%0.b, %1/z, %2.b
+     [ ?Upa    , 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -9994,8 +10048,10 @@
 	  UNSPEC_PTEST))
    (clobber (match_scratch:VNx16BI 0))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2   ]
-     [ Upa     , Upa, Upa ] brk<brk_op>s\t%0.b, %1/z, %2.b
+  {@ [ cons: =0, 1   , 2   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa ; yes                 ] brk<brk_op>s\t%0.b, %1/z, %2.b
+     [ ?Upa    , 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa ; no                  ] ^
   }
 )
 
@@ -10020,8 +10076,10 @@
 	   (match_operand:VNx16BI 3 "register_operand")]
 	  SVE_BRK_BINARY))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3             ]
-     [ Upa     , Upa, Upa, <brk_reg_con> ] brk<brk_op>\t%0.b, %1/z, %2.b, %<brk_reg_opno>.b
+  {@ [ cons: =0,  1  , 2   , 3             ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , <brk_reg_con> ; yes                 ] brk<brk_op>\t%0.b, %1/z, %2.b, %<brk_reg_opno>.b
+     [ ?Upa    , 0Upa, 0Upa, 0<brk_reg_con>; yes                 ] ^
+     [ Upa     , Upa , Upa , <brk_reg_con> ; no                  ] ^
   }
 )
 
@@ -10099,8 +10157,10 @@
 	   (match_dup 3)]
 	  SVE_BRKP))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] brk<brk_op>s\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0, 1   , 2   , 3   , 4; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ,  ; yes                 ] brk<brk_op>s\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa,  ; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ,  ; no                  ] ^
   }
 )
 
@@ -10119,8 +10179,10 @@
 	  UNSPEC_PTEST))
    (clobber (match_scratch:VNx16BI 0))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1  , 2  , 3   ]
-     [ Upa     , Upa, Upa, Upa ] brk<brk_op>s\t%0.b, %1/z, %2.b, %3.b
+  {@ [ cons: =0, 1   , 2   , 3   ; attrs: pred_clobber ]
+     [ &Upa    , Upa , Upa , Upa ; yes                 ] brk<brk_op>s\t%0.b, %1/z, %2.b, %3.b
+     [ ?Upa    , 0Upa, 0Upa, 0Upa; yes                 ] ^
+     [ Upa     , Upa , Upa , Upa ; no                  ] ^
   }
 )
 
