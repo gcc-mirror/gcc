@@ -873,13 +873,15 @@ gfc_build_real_type (gfc_real_info *info)
   int mode_precision = info->mode_precision;
   tree new_type;
 
-  if (mode_precision == FLOAT_TYPE_SIZE)
+  if (mode_precision == TYPE_PRECISION (float_type_node))
     info->c_float = 1;
-  if (mode_precision == DOUBLE_TYPE_SIZE)
+  if (mode_precision == TYPE_PRECISION (double_type_node))
     info->c_double = 1;
-  if (mode_precision == LONG_DOUBLE_TYPE_SIZE && !info->c_float128)
+  if (mode_precision == TYPE_PRECISION (long_double_type_node)
+      && !info->c_float128)
     info->c_long_double = 1;
-  if (mode_precision != LONG_DOUBLE_TYPE_SIZE && mode_precision == 128)
+  if (mode_precision != TYPE_PRECISION (long_double_type_node)
+      && mode_precision == 128)
     {
       /* TODO: see PR101835.  */
       info->c_float128 = 1;

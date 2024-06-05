@@ -395,7 +395,8 @@ build_round_expr (tree arg, tree restype)
      don't have an appropriate function that converts directly to the integer
      type (such as kind == 16), just use ROUND, and then convert the result to
      an integer.  We might also need to convert the result afterwards.  */
-  if (resprec <= INT_TYPE_SIZE && argprec <= LONG_DOUBLE_TYPE_SIZE)
+  if (resprec <= INT_TYPE_SIZE
+      && argprec <= TYPE_PRECISION (long_double_type_node))
     fn = builtin_decl_for_precision (BUILT_IN_IROUND, argprec);
   else if (resprec <= LONG_TYPE_SIZE)
     fn = builtin_decl_for_precision (BUILT_IN_LROUND, argprec);
