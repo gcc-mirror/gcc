@@ -1,3 +1,13 @@
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/error.c (exit): Don't override.
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: Update.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-3.f: Likewise.
+
 2022-12-06  Paul-Antoine Arras <pa@codesourcery.com>
 
 	* config/gcn/selector.c (GOMP_evaluate_current_device): Recognise 'amdgcn'

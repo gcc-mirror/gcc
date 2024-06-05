@@ -1,0 +1,3 @@
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* runtime/minimal.c [__nvptx__] (exit): Don't override.
