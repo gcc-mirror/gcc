@@ -3838,14 +3838,45 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
   template<typename _InputIterator, typename _Tp>
     _GLIBCXX20_CONSTEXPR
     inline _InputIterator
-    find(_InputIterator __first, _InputIterator __last,
-	 const _Tp& __val)
+    find(_InputIterator __first, _InputIterator __last, const _Tp& __val)
     {
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_function_requires(_EqualOpConcept<
 		typename iterator_traits<_InputIterator>::value_type, _Tp>)
       __glibcxx_requires_valid_range(__first, __last);
+
+#if __cpp_if_constexpr && __glibcxx_type_trait_variable_templates
+      using _ValT = typename iterator_traits<_InputIterator>::value_type;
+      if constexpr (__can_use_memchr_for_find<_ValT, _Tp>)
+	{
+	  // If converting the value to the 1-byte value_type alters its value,
+	  // then it would not be found by std::find using equality comparison.
+	  // We need to check this here, because otherwise something like
+	  // memchr("a", 'a'+256, 1) would give a false positive match.
+	  if (!(static_cast<_ValT>(__val) == __val))
+	    return __last;
+	  else if (!__is_constant_evaluated())
+	    {
+	      const void* __p0 = nullptr;
+	      if constexpr (is_pointer_v<decltype(std::__niter_base(__first))>)
+		__p0 = std::__niter_base(__first);
+#if __cpp_lib_concepts
+	      else if constexpr (contiguous_iterator<_InputIterator>)
+		__p0 = std::to_address(__first);
+#endif
+	      if (__p0)
+		{
+		  const int __ival = static_cast<int>(__val);
+		  if (auto __n = std::distance(__first, __last); __n > 0)
+		    if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
+		      return __first + ((const char*)__p1 - (const char*)__p0);
+		  return __last;
+		}
+	    }
+	}
+#endif
+
       return std::__find_if(__first, __last,
 			    __gnu_cxx::__ops::__iter_equals_val(__val));
     }

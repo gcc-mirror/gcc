@@ -34,6 +34,7 @@
 # include <bits/ranges_base.h>
 # include <bits/utility.h>
 # include <bits/invoke.h>
+# include <bits/cpp_type_traits.h> // __can_use_memchr_for_find
 
 #ifdef __glibcxx_ranges
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -494,6 +495,26 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 const _Tp& __value, _Proj __proj = {}) const
       {
+	if constexpr (is_same_v<_Proj, identity>)
+	  if constexpr(__can_use_memchr_for_find<iter_value_t<_Iter>, _Tp>)
+	    if constexpr (sized_sentinel_for<_Sent, _Iter>)
+	      if constexpr (contiguous_iterator<_Iter>)
+		if (!is_constant_evaluated())
+		  {
+		    if (static_cast<iter_value_t<_Iter>>(__value) != __value)
+		      return __last;
+
+		    auto __n = __last - __first;
+		    if (__n > 0)
+		      {
+			const int __ival = static_cast<int>(__value);
+			const void* __p0 = std::to_address(__first);
+			if (auto __p1 = __builtin_memchr(__p0, __ival, __n))
+			  __n = (const char*)__p1 - (const char*)__p0;
+		      }
+		    return __first + __n;
+		  }
+
 	while (__first != __last
 	    && !(std::__invoke(__proj, *__first) == __value))
 	  ++__first;

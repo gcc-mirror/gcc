@@ -35,6 +35,10 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <bits/version.h>
+#if __glibcxx_type_trait_variable_templates
+# include <type_traits> // is_same_v, is_integral_v
+#endif
 
 //
 // This file provides some compile-time information about various types.
@@ -545,6 +549,15 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
   template<typename _Up, bool _SameSize>
     struct __is_memcmp_ordered_with<std::byte, _Up, _SameSize>
     { static constexpr bool __value = false; };
+#endif
+
+#if __glibcxx_type_trait_variable_templates
+  template<typename _ValT, typename _Tp>
+    constexpr bool __can_use_memchr_for_find
+    // Can only use memchr to search for narrow characters and std::byte.
+      = __is_byte<_ValT>::__value
+	// And only if the value to find is an integer (or is also std::byte).
+	  && (is_same_v<_Tp, _ValT> || is_integral_v<_Tp>);
 #endif
 
   //
