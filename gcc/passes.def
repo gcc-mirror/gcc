@@ -226,6 +226,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_thread_jumps_full, /*first=*/true);
       NEXT_PASS (pass_vrp, false /* final_p*/);
+      NEXT_PASS (pass_array_bounds);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_dce);
       /* pass_stdarg is always run and at this point we execute

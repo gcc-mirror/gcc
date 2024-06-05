@@ -1095,8 +1095,7 @@ private:
   from anywhere to perform a VRP pass, including from EVRP.  */
 
 unsigned int
-execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
-		    bool final_p)
+execute_ranger_vrp (struct function *fun, bool final_p)
 {
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
@@ -1112,27 +1111,6 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
   folder.m_unreachable.remove_and_update_globals ();
   if (dump_file && (dump_flags & TDF_DETAILS))
     ranger->dump (dump_file);
-
-  if ((warn_array_bounds || warn_strict_flex_arrays) && warn_array_bounds_p)
-    {
-      // Set all edges as executable, except those ranger says aren't.
-      int non_exec_flag = ranger->non_executable_edge_flag;
-      basic_block bb;
-      FOR_ALL_BB_FN (bb, fun)
-	{
-	  edge_iterator ei;
-	  edge e;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    if (e->flags & non_exec_flag)
-	      e->flags &= ~EDGE_EXECUTABLE;
-	    else
-	      e->flags |= EDGE_EXECUTABLE;
-	}
-      scev_reset ();
-      array_bounds_checker array_checker (fun, ranger);
-      array_checker.check ();
-    }
-
 
   if (Value_Range::supports_type_p (TREE_TYPE
 				     (TREE_TYPE (current_function_decl)))
@@ -1330,14 +1308,13 @@ const pass_data pass_data_fast_vrp =
 class pass_vrp : public gimple_opt_pass
 {
 public:
-  pass_vrp (gcc::context *ctxt, const pass_data &data_, bool warn_p)
-    : gimple_opt_pass (data_, ctxt), data (data_),
-      warn_array_bounds_p (warn_p), final_p (false)
+  pass_vrp (gcc::context *ctxt, const pass_data &data_)
+    : gimple_opt_pass (data_, ctxt), data (data_), final_p (false)
     { }
 
   /* opt_pass methods: */
   opt_pass * clone () final override
-    { return new pass_vrp (m_ctxt, data, false); }
+    { return new pass_vrp (m_ctxt, data); }
   void set_pass_param (unsigned int n, bool param) final override
     {
       gcc_assert (n == 0);
@@ -1350,12 +1327,11 @@ public:
       if (&data == &pass_data_fast_vrp)
 	return execute_fast_vrp (fun);
 
-      return execute_ranger_vrp (fun, warn_array_bounds_p, final_p);
+      return execute_ranger_vrp (fun, final_p);
     }
 
  private:
   const pass_data &data;
-  bool warn_array_bounds_p;
   bool final_p;
 }; // class pass_vrp
 
@@ -1426,19 +1402,19 @@ public:
 gimple_opt_pass *
 make_pass_vrp (gcc::context *ctxt)
 {
-  return new pass_vrp (ctxt, pass_data_vrp, true);
+  return new pass_vrp (ctxt, pass_data_vrp);
 }
 
 gimple_opt_pass *
 make_pass_early_vrp (gcc::context *ctxt)
 {
-  return new pass_vrp (ctxt, pass_data_early_vrp, false);
+  return new pass_vrp (ctxt, pass_data_early_vrp);
 }
 
 gimple_opt_pass *
 make_pass_fast_vrp (gcc::context *ctxt)
 {
-  return new pass_vrp (ctxt, pass_data_fast_vrp, false);
+  return new pass_vrp (ctxt, pass_data_fast_vrp);
 }
 
 gimple_opt_pass *

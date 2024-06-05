@@ -27,7 +27,7 @@ class array_bounds_checker
   friend class check_array_bounds_dom_walker;
 
 public:
-  array_bounds_checker (struct function *, range_query *);
+  array_bounds_checker (struct function *);
   void check ();
 
 private:
