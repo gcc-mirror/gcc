@@ -7099,6 +7099,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool implicit_moved = false;
   bool target_in_reduction_seen = false;
   bool num_tasks_seen = false;
+  bool partial_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -8031,8 +8032,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				"be positive constant integer expression");
 		      remove = true;
 		    }
-		  else
-		    t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}
 	      OMP_CLAUSE_ALIGNED_ALIGNMENT (c) = t;
 	    }
@@ -8886,7 +8885,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (!processing_template_decl)
 		{
 		  t = maybe_constant_value (t);
-		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		  if (TREE_CODE (t) != INTEGER_CST)
 		    {
 		      error_at (OMP_CLAUSE_LOCATION (c),
@@ -9051,11 +9049,51 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				    "integral constant");
 			  remove = true;
 			}
-		      t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		    }
 		}
 
 		/* Update list item.  */
+	      TREE_VALUE (list) = t;
+	    }
+	  break;
+
+	case OMP_CLAUSE_SIZES:
+	  for (tree list = OMP_CLAUSE_SIZES_LIST (c);
+	       !remove && list; list = TREE_CHAIN (list))
+	    {
+	      t = TREE_VALUE (list);
+
+	      if (t == error_mark_node)
+		t = integer_one_node;
+	      else if (!type_dependent_expression_p (t)
+		       && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<sizes%> argument needs positive integral "
+			    "constant");
+		  t = integer_one_node;
+		}
+	      else
+		{
+		  t = mark_rvalue_use (t);
+		  if (!processing_template_decl)
+		    {
+		      t = maybe_constant_value (t);
+		      HOST_WIDE_INT n;
+		      if (!tree_fits_shwi_p (t)
+			  || !INTEGRAL_TYPE_P (TREE_TYPE (t))
+			  || (n = tree_to_shwi (t)) <= 0
+			  || (int)n != n)
+			{
+			  error_at (OMP_CLAUSE_LOCATION (c),
+				    "%<sizes%> argument needs positive "
+				    "integral constant");
+			  t = integer_one_node;
+			}
+		    }
+		}
+
+	      /* Update list item.  */
 	      TREE_VALUE (list) = t;
 	    }
 	  break;
@@ -9112,6 +9150,49 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
+	  break;
+
+	case OMP_CLAUSE_FULL:
+	  break;
+
+	case OMP_CLAUSE_PARTIAL:
+	  partial_seen = true;
+	  t = OMP_CLAUSE_PARTIAL_EXPR (c);
+	  if (!t)
+	    break;
+
+	  if (t == error_mark_node)
+	    t = NULL_TREE;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<partial%> argument needs positive constant "
+			"integer expression");
+	      t = NULL_TREE;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		{
+		  t = maybe_constant_value (t);
+
+		  HOST_WIDE_INT n;
+		  if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+		      || !tree_fits_shwi_p (t)
+		      || (n = tree_to_shwi (t)) <= 0
+		      || (int)n != n)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%<partial%> argument needs positive "
+				"constant integer expression");
+		      t = NULL_TREE;
+		    }
+		}
+	    }
+
+	  OMP_CLAUSE_PARTIAL_EXPR (c) = t;
 	  break;
 
 	default:
@@ -9274,7 +9355,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%<order%> clause must not be used together "
-			"with %<ordered%>");
+			"with %<ordered%> clause");
 	      *pc = OMP_CLAUSE_CHAIN (c);
 	      continue;
 	    }
@@ -9307,12 +9388,23 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
+	case OMP_CLAUSE_FULL:
+	  if (partial_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<full%> clause must not be used together "
+			"with %<partial%> clause");
+	      *pc = OMP_CLAUSE_CHAIN (c);
+	      continue;
+	    }
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
 	case OMP_CLAUSE_NOWAIT:
 	  if (copyprivate_seen)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%<nowait%> clause must not be used together "
-			"with %<copyprivate%>");
+			"with %<copyprivate%> clause");
 	      *pc = OMP_CLAUSE_CHAIN (c);
 	      continue;
 	    }
@@ -10753,16 +10845,14 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
   gcc_assert (TREE_VEC_LENGTH (declv) == TREE_VEC_LENGTH (incrv));
   if (TREE_VEC_LENGTH (declv) > 1)
     {
-      tree c;
-
-      c = omp_find_clause (clauses, OMP_CLAUSE_TILE);
-      if (c)
-	collapse = list_length (OMP_CLAUSE_TILE_LIST (c));
+      if (tree ti = omp_find_clause (clauses, OMP_CLAUSE_TILE))
+	collapse = list_length (OMP_CLAUSE_TILE_LIST (ti));
       else
 	{
-	  c = omp_find_clause (clauses, OMP_CLAUSE_COLLAPSE);
-	  if (c)
-	    collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (c));
+	  if (tree co = omp_find_clause (clauses, OMP_CLAUSE_COLLAPSE))
+	    collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (co));
+	  else if (tree si = omp_find_clause (clauses, OMP_CLAUSE_SIZES))
+	    collapse = list_length (OMP_CLAUSE_SIZES_LIST (si));
 	  if (collapse != TREE_VEC_LENGTH (declv))
 	    ordered = TREE_VEC_LENGTH (declv);
 	}
@@ -10775,6 +10865,13 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
       incr = TREE_VEC_ELT (incrv, i);
       elocus = locus;
 
+      if (decl == global_namespace)
+	{
+	  gcc_assert (init == NULL_TREE && cond == NULL_TREE && incr == NULL_TREE);
+	  TREE_VEC_ELT (declv, i) = NULL_TREE;
+	  init_locv.safe_push (UNKNOWN_LOCATION);
+	  continue;
+	}
       /* We are going to throw out the init's original MODIFY_EXPR or
 	 MODOP_EXPR below.  Save its location so we can use it when
 	 reconstructing the expression farther down.  Alternatively, if the
@@ -10859,7 +10956,7 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	return NULL;
     }
 
-  if (dependent_omp_for_p (declv, initv, condv, incrv))
+  if (dependent_omp_for_p (declv, initv, condv, incrv, body))
     {
       tree stmt;
 
@@ -10867,6 +10964,8 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
 
       for (i = 0; i < TREE_VEC_LENGTH (declv); i++)
 	{
+	  if (TREE_VEC_ELT (declv, i) == NULL_TREE)
+	    continue;
 	  /* This is really just a place-holder.  We'll be decomposing this
 	     again and going through the cp_build_modify_expr path below when
 	     we instantiate the thing.  */
@@ -10902,6 +11001,12 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
       if (orig_incr)
 	TREE_VEC_ELT (orig_incr, i) = incr;
       elocus = init_locv[i];
+
+      if (decl == NULL_TREE)
+	{
+	  i++;
+	  continue;
+	}
 
       if (!DECL_P (decl))
 	{
@@ -10976,6 +11081,8 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INCR (omp_for)); i++)
     {
       init = TREE_VEC_ELT (OMP_FOR_INIT (omp_for), i);
+      if (init == NULL_TREE)
+	continue;
       decl = TREE_OPERAND (init, 0);
       cond = TREE_VEC_ELT (OMP_FOR_COND (omp_for), i);
       incr = TREE_VEC_ELT (OMP_FOR_INCR (omp_for), i);
@@ -11173,7 +11280,9 @@ finish_omp_for_block (tree bind, tree omp_for)
   fofb.b = NULL_TREE;
   fofb.omp_for = omp_for;
   for (int i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (omp_for)); i++)
-    if (TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (omp_for), i)) == TREE_LIST
+    if (TREE_VEC_ELT (OMP_FOR_INIT (omp_for), i)
+	&& (TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (omp_for), i))
+	    == TREE_LIST)
 	&& TREE_CHAIN (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (omp_for), i)))
       {
 	tree v = TREE_CHAIN (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (omp_for), i));

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #include "omp-api.h"  /* For omp_runtime_api_procname.  */
 
+location_t gfc_get_location (locus *);
 
 static gfc_statement omp_code_to_statement (gfc_code *);
 
@@ -195,6 +196,7 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
 			   i == OMP_LIST_USES_ALLOCATORS);
   gfc_free_expr_list (c->wait_list);
   gfc_free_expr_list (c->tile_list);
+  gfc_free_expr_list (c->sizes_list);
   free (CONST_CAST (char *, c->critical_name));
   if (c->assume)
     {
@@ -762,8 +764,8 @@ cleanup:
 }
 
 static match
-match_oacc_expr_list (const char *str, gfc_expr_list **list,
-		      bool allow_asterisk)
+match_omp_oacc_expr_list (const char *str, gfc_expr_list **list,
+			  bool allow_asterisk, bool is_omp)
 {
   gfc_expr_list *head, *tail, *p;
   locus old_loc;
@@ -815,7 +817,10 @@ match_oacc_expr_list (const char *str, gfc_expr_list **list,
   return MATCH_YES;
 
 syntax:
-  gfc_error ("Syntax error in OpenACC expression list at %C");
+  if (is_omp)
+    gfc_error ("Syntax error in OpenMP expression list at %C");
+  else
+    gfc_error ("Syntax error in OpenACC expression list at %C");
 
 cleanup:
   gfc_free_expr_list (head);
@@ -1098,6 +1103,9 @@ enum omp_mask2
   OMP_CLAUSE_ASSUMPTIONS, /* OpenMP 5.1. */
   OMP_CLAUSE_USES_ALLOCATORS, /* OpenMP 5.0  */
   OMP_CLAUSE_INDIRECT, /* OpenMP 5.1  */
+  OMP_CLAUSE_FULL,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_PARTIAL,  /* OpenMP 5.1.  */
+  OMP_CLAUSE_SIZES,  /* OpenMP 5.1.  */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -2682,6 +2690,14 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      && gfc_match_motion_var_list ("from (", &c->lists[OMP_LIST_FROM],
 					     &head) == MATCH_YES)
 	    continue;
+	  if ((mask & OMP_CLAUSE_FULL)
+	      && (m = gfc_match_dupl_check (!c->full, "full")) != MATCH_NO)
+	    {
+	      if (m == MATCH_ERROR)
+		goto error;
+	      c->full = needs_space = true;
+	      continue;
+	    }
 	  break;
 	case 'g':
 	  if ((mask & OMP_CLAUSE_GANG)
@@ -3367,6 +3383,32 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    }
 	  break;
 	case 'p':
+	  if (mask & OMP_CLAUSE_PARTIAL)
+	    {
+	      if ((m = gfc_match_dupl_check (!c->partial, "partial"))
+		  != MATCH_NO)
+		{
+		  int expr;
+		  if (m == MATCH_ERROR)
+		    goto error;
+
+		  c->partial = -1;
+
+		  gfc_expr *cexpr = NULL;
+		  m = gfc_match (" ( %e )", &cexpr);
+		  if (m == MATCH_NO)
+		    ;
+		  else if (m == MATCH_YES
+			   && !gfc_extract_int (cexpr, &expr, -1)
+			   && expr > 0)
+		    c->partial = expr;
+		  else
+		    gfc_error_now ("PARTIAL clause argument not constant "
+				   "positive integer at %C");
+		  gfc_free_expr (cexpr);
+		  continue;
+		}
+	    }
 	  if ((mask & OMP_CLAUSE_COPY)
 	      && gfc_match ("pcopy ( ") == MATCH_YES
 	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
@@ -3649,6 +3691,20 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      continue;
 	    }
+	  if ((mask & OMP_CLAUSE_SIZES)
+	      && ((m = gfc_match_dupl_check (!c->sizes_list, "sizes"))
+		  != MATCH_NO))
+	    {
+	      if (m == MATCH_ERROR)
+		goto error;
+	      m = match_omp_oacc_expr_list (" (", &c->sizes_list, false, true);
+	      if (m == MATCH_ERROR)
+		goto error;
+	      if (m == MATCH_YES)
+		continue;
+	      gfc_error ("Expected %<(%> after %qs at %C", "sizes");
+	      goto error;
+	    }
 	  break;
 	case 't':
 	  if ((mask & OMP_CLAUSE_TASK_REDUCTION)
@@ -3675,8 +3731,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    }
 	  if ((mask & OMP_CLAUSE_TILE)
 	      && !c->tile_list
-	      && match_oacc_expr_list ("tile (", &c->tile_list,
-				       true) == MATCH_YES)
+	      && match_omp_oacc_expr_list ("tile (", &c->tile_list,
+					   true, false) == MATCH_YES)
 	    continue;
 	  if ((mask & OMP_CLAUSE_TO) && (mask & OMP_CLAUSE_LINK))
 	    {
@@ -3772,7 +3828,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  if ((mask & OMP_CLAUSE_WAIT)
 	      && gfc_match ("wait") == MATCH_YES)
 	    {
-	      m = match_oacc_expr_list (" (", &c->wait_list, false);
+	      m = match_omp_oacc_expr_list (" (", &c->wait_list, false, false);
 	      if (m == MATCH_ERROR)
 		goto error;
 	      else if (m == MATCH_NO)
@@ -4128,7 +4184,7 @@ gfc_match_oacc_wait (void)
   bool space = true;
   match m;
 
-  m = match_oacc_expr_list (" (", &wait_list, true);
+  m = match_omp_oacc_expr_list (" (", &wait_list, true, false);
   if (m == MATCH_ERROR)
     return m;
   else if (m == MATCH_YES)
@@ -4528,6 +4584,10 @@ cleanup:
   (omp_mask (OMP_CLAUSE_AT) | OMP_CLAUSE_MESSAGE | OMP_CLAUSE_SEVERITY)
 #define OMP_WORKSHARE_CLAUSES \
   omp_mask (OMP_CLAUSE_NOWAIT)
+#define OMP_UNROLL_CLAUSES \
+  (omp_mask (OMP_CLAUSE_FULL) | OMP_CLAUSE_PARTIAL)
+#define OMP_TILE_CLAUSES \
+  (omp_mask (OMP_CLAUSE_SIZES))
 #define OMP_ALLOCATORS_CLAUSES \
   omp_mask (OMP_CLAUSE_ALLOCATE)
 
@@ -6793,6 +6853,17 @@ gfc_match_omp_teams_distribute_simd (void)
 		    | OMP_SIMD_CLAUSES);
 }
 
+match
+gfc_match_omp_tile (void)
+{
+  return match_omp (EXEC_OMP_TILE, OMP_TILE_CLAUSES);
+}
+
+match
+gfc_match_omp_unroll (void)
+{
+  return match_omp (EXEC_OMP_UNROLL, OMP_UNROLL_CLAUSES);
+}
 
 match
 gfc_match_omp_workshare (void)
@@ -9182,6 +9253,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     gfc_error ("%<REDUCTION%> clause at %L must not be used together with "
 	       "%<NOGROUP%> clause",
 	       &omp_clauses->lists[OMP_LIST_REDUCTION]->where);
+  if (omp_clauses->full && omp_clauses->partial)
+    gfc_error ("%<FULL%> clause at %C must not be used together with "
+	       "%<PARTIAL%> clause");
   if (omp_clauses->async)
     if (omp_clauses->async_expr)
       resolve_scalar_int_expr (omp_clauses->async_expr, "ASYNC");
@@ -9232,6 +9306,22 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
       else if (p)
 	gfc_error ("%s must contain at least one MAP clause at %L",
 		   p, &code->loc);
+    }
+  if (omp_clauses->sizes_list)
+    {
+      gfc_expr_list *el;
+      for (el = omp_clauses->sizes_list; el; el = el->next)
+	{
+	  resolve_scalar_int_expr (el->expr, "SIZES");
+	  if (el->expr->expr_type != EXPR_CONSTANT)
+	    gfc_error ("SIZES requires constant expression at %L",
+		       &el->expr->where);
+	  else if (el->expr->expr_type == EXPR_CONSTANT
+		   && el->expr->ts.type == BT_INTEGER
+		   && mpz_sgn (el->expr->value.integer) <= 0)
+	    gfc_error ("INTEGER expression of %s clause at %L must be "
+		       "positive", "SIZES", &el->expr->where);
+	}
     }
 
   if (!openacc && omp_clauses->detach)
@@ -9913,16 +10003,19 @@ find_nested_loop_in_chain (gfc_code *chain)
     return NULL;
 
   for (code = chain; code; code = code->next)
-    {
-      if (code->op == EXEC_DO)
+    switch (code->op)
+      {
+      case EXEC_DO:
+      case EXEC_OMP_TILE:
+      case EXEC_OMP_UNROLL:
 	return code;
-      else if (code->op == EXEC_BLOCK)
-	{
-	  gfc_code *c = find_nested_loop_in_block (code);
-	  if (c)
-	    return c;
-	}
-    }
+      case EXEC_BLOCK:
+	if (gfc_code *c = find_nested_loop_in_block (code))
+	  return c;
+	break;
+      default:
+	break;
+      }
   return NULL;
 }
 
@@ -9950,6 +10043,9 @@ gfc_resolve_omp_do_blocks (gfc_code *code, gfc_namespace *ns)
 	omp_current_do_collapse = code->ext.omp_clauses->orderedc;
       else if (code->ext.omp_clauses->collapse)
 	omp_current_do_collapse = code->ext.omp_clauses->collapse;
+      else if (code->ext.omp_clauses->sizes_list)
+	omp_current_do_collapse
+	  = gfc_expr_list_len (code->ext.omp_clauses->sizes_list);
       else
 	omp_current_do_collapse = 1;
       if (code->ext.omp_clauses->lists[OMP_LIST_REDUCTION_INSCAN])
@@ -10141,6 +10237,8 @@ gfc_resolve_do_iterator (gfc_code *code, gfc_symbol *sym, bool add_clause)
       if (code == c)
 	return;
       c = find_nested_loop_in_chain (c->block->next);
+      if (c && (c->op == EXEC_OMP_TILE || c->op == EXEC_OMP_UNROLL))
+	return;
     }
 
   /* An openacc context may represent a data clause.  Abort if so.  */
@@ -10439,7 +10537,7 @@ restructure_intervening_code (gfc_code **chainp, gfc_code *outer_loop,
   gfc_code *tail = NULL;
   gfc_code *innermost_loop = NULL;
 
-  for (code = *chainp; code; code = code->next, chainp = &((*chainp)->next))
+  for (code = *chainp; code; code = code->next, chainp = &(*chainp)->next)
     {
       if (code->op == EXEC_DO)
 	{
@@ -10452,7 +10550,7 @@ restructure_intervening_code (gfc_code **chainp, gfc_code *outer_loop,
 	    innermost_loop = code;
 	  else
 	    innermost_loop
-	      = restructure_intervening_code (&(code->block->next),
+	      = restructure_intervening_code (&code->block->next,
 					      code, count - 1);
 	  break;
 	}
@@ -10467,7 +10565,7 @@ restructure_intervening_code (gfc_code **chainp, gfc_code *outer_loop,
 	  code->next = NULL;
 
 	  innermost_loop
-	    = restructure_intervening_code (&(ns->code), outer_loop,
+	    = restructure_intervening_code (&ns->code, outer_loop,
 					    count);
 
 	  /* At this point we have already pulled out the nested loop and
@@ -10524,6 +10622,11 @@ is_outer_iteration_variable (gfc_code *code, int depth, gfc_symbol *var)
     {
       do_code = find_nested_loop_in_chain (do_code->block->next);
       gcc_assert (do_code);
+      if (do_code->op == EXEC_OMP_TILE || do_code->op == EXEC_OMP_UNROLL)
+	{
+	  --i;
+	  continue;
+	}
       gfc_symbol *ivar = do_code->ext.iterator->var->symtree->n.sym;
       if (var == ivar)
 	return true;
@@ -10548,6 +10651,8 @@ check_nested_loop_in_chain (gfc_code *chain, gfc_expr *expr, gfc_symbol *sym,
     {
       if (code->op == EXEC_DO)
 	return code;
+      else if (code->op == EXEC_OMP_TILE || code->op == EXEC_OMP_UNROLL)
+	return check_nested_loop_in_chain (code->block->next, expr, sym, bad);
       else if (code->op == EXEC_BLOCK)
 	{
 	  gfc_code *c = check_nested_loop_in_block (code, expr, sym, bad);
@@ -10654,6 +10759,11 @@ expr_is_invariant (gfc_code *code, int depth, gfc_expr *expr)
     {
       do_code = find_nested_loop_in_chain (do_code->block->next);
       gcc_assert (do_code);
+      if (do_code->op == EXEC_OMP_TILE || do_code->op == EXEC_OMP_UNROLL)
+	{
+	  --i;
+	  continue;
+	}
       gfc_symbol *ivar = do_code->ext.iterator->var->symtree->n.sym;
       if (gfc_find_sym_in_expr (ivar, expr))
 	return false;
@@ -10728,13 +10838,14 @@ static void
 resolve_omp_do (gfc_code *code)
 {
   gfc_code *do_code, *next;
-  int list, i, count;
+  int list, i, count, non_generated_count;
   gfc_omp_namelist *n;
   gfc_symbol *dovar;
   const char *name;
   bool is_simd = false;
   bool errorp = false;
   bool perfect_nesting_errorp = false;
+  bool imperfect = false;
 
   switch (code->op)
     {
@@ -10829,15 +10940,23 @@ resolve_omp_do (gfc_code *code)
       is_simd = true;
       break;
     case EXEC_OMP_TEAMS_LOOP: name = "!$OMP TEAMS LOOP"; break;
+    case EXEC_OMP_TILE: name = "!$OMP TILE"; break;
+    case EXEC_OMP_UNROLL: name = "!$OMP UNROLL"; break;
     default: gcc_unreachable ();
     }
 
   if (code->ext.omp_clauses)
     resolve_omp_clauses (code, code->ext.omp_clauses, NULL);
 
+  if (code->op == EXEC_OMP_TILE && code->ext.omp_clauses->sizes_list == NULL)
+    gfc_error ("SIZES clause is required on !$OMP TILE construct at %L",
+	       &code->loc);
+
   do_code = code->block->next;
   if (code->ext.omp_clauses->orderedc)
     count = code->ext.omp_clauses->orderedc;
+  else if (code->ext.omp_clauses->sizes_list)
+    count = gfc_expr_list_len (code->ext.omp_clauses->sizes_list);
   else
     {
       count = code->ext.omp_clauses->collapse;
@@ -10845,6 +10964,7 @@ resolve_omp_do (gfc_code *code)
 	count = 1;
     }
 
+  non_generated_count = count;
   /* While the spec defines the loop nest depth independently of the COLLAPSE
      clause, in practice the middle end only pays attention to the COLLAPSE
      depth and treats any further inner loops as the final-loop-body.  So
@@ -10858,13 +10978,61 @@ resolve_omp_do (gfc_code *code)
 	{
 	  gfc_error ("%s cannot be a DO WHILE or DO without loop control "
 		     "at %L", name, &do_code->loc);
-	  return;
+	  goto fail;
 	}
       if (do_code->op == EXEC_DO_CONCURRENT)
 	{
 	  gfc_error ("%s cannot be a DO CONCURRENT loop at %L", name,
 		     &do_code->loc);
-	  return;
+	  goto fail;
+	}
+      if (do_code->op == EXEC_OMP_TILE || do_code->op == EXEC_OMP_UNROLL)
+	{
+	  if (do_code->op == EXEC_OMP_UNROLL)
+	    {
+	      if (!do_code->ext.omp_clauses->partial)
+		{
+		  gfc_error ("Generated loop of UNROLL construct at %L "
+			     "without PARTIAL clause does not have "
+			     "canonical form", &do_code->loc);
+		  goto fail;
+		}
+	      else if (i != count)
+		{
+		  gfc_error ("UNROLL construct at %L with PARTIAL clause "
+			     "generates just one loop with canonical form "
+			     "but %d loops are needed",
+			     &do_code->loc, count - i + 1);
+		  goto fail;
+		}
+	    }
+	  else if (do_code->op == EXEC_OMP_TILE)
+	    {
+	      if (do_code->ext.omp_clauses->sizes_list == NULL)
+		/* This should have been diagnosed earlier already.  */
+		return;
+	      int l = gfc_expr_list_len (do_code->ext.omp_clauses->sizes_list);
+	      if (count - i + 1 > l)
+		{
+		  gfc_error ("TILE construct at %L generates %d loops "
+			     "with canonical form but %d loops are needed",
+			     &do_code->loc, l, count - i + 1);
+		  goto fail;
+		}
+	    }
+	  if (do_code->ext.omp_clauses && do_code->ext.omp_clauses->erroneous)
+	    goto fail;
+	  if (imperfect && !perfect_nesting_errorp)
+	    {
+	      sorry_at (gfc_get_location (&do_code->loc),
+			"Imperfectly nested loop using generated loops");
+	      errorp = true;
+	    }
+	  if (non_generated_count == count)
+	    non_generated_count = i - 1;
+	  --i;
+	  do_code = do_code->block->next;
+	  continue;
 	}
       gcc_assert (do_code->op == EXEC_DO);
       if (do_code->ext.iterator->var->ts.type != BT_INTEGER)
@@ -10966,7 +11134,16 @@ resolve_omp_do (gfc_code *code)
 	  errorp = true;
 	}
       if (start_var || end_var)
-	code->ext.omp_clauses->non_rectangular = 1;
+	{
+	  code->ext.omp_clauses->non_rectangular = 1;
+	  if (i > non_generated_count)
+	    {
+	      sorry_at (gfc_get_location (&do_code->loc),
+			"Non-rectangular loops from generated loops "
+			"unsupported");
+	      errorp = true;
+	    }
+	}
 
       /* Only parse loop body into nested loop and intervening code if
 	 there are supposed to be more loops in the nest to collapse.  */
@@ -10980,7 +11157,7 @@ resolve_omp_do (gfc_code *code)
 	  /* Parse error, can't recover from this.  */
 	  gfc_error ("not enough DO loops for collapsed %s (level %d) at %L",
 		     name, i, &code->loc);
-	  return;
+	  goto fail;
 	}
       else if (next != do_code->block->next || next->next)
 	/* Imperfectly nested loop found.  */
@@ -11002,22 +11179,35 @@ resolve_omp_do (gfc_code *code)
 			     name, &code->loc);
 		  perfect_nesting_errorp = true;
 		}
-	      /* FIXME: Also diagnose for TILE directives.  */
+	      else if (code->op == EXEC_OMP_TILE)
+		{
+		  gfc_error ("%s inner loops must be perfectly nested at %L",
+			     name, &code->loc);
+		  perfect_nesting_errorp = true;
+		}
 	      if (perfect_nesting_errorp)
 		errorp = true;
 	    }
 	  if (diagnose_intervening_code_errors (do_code->block->next,
 						name, next))
 	    errorp = true;
+	  imperfect = true;
 	}
       do_code = next;
     }
 
   /* Give up now if we found any constraint violations.  */
   if (errorp)
-    return;
+    {
+    fail:
+      if (code->ext.omp_clauses)
+	code->ext.omp_clauses->erroneous = 1;
+      return;
+    }
 
-  restructure_intervening_code (&(code->block->next), code, count);
+  if (non_generated_count)
+    restructure_intervening_code (&code->block->next, code,
+				  non_generated_count);
 }
 
 
@@ -11168,6 +11358,10 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_PARALLEL_LOOP;
     case EXEC_OMP_DEPOBJ:
       return ST_OMP_DEPOBJ;
+    case EXEC_OMP_TILE:
+      return ST_OMP_TILE;
+    case EXEC_OMP_UNROLL:
+      return ST_OMP_UNROLL;
     default:
       gcc_unreachable ();
     }
@@ -11632,6 +11826,8 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
     case EXEC_OMP_TEAMS_LOOP:
+    case EXEC_OMP_TILE:
+    case EXEC_OMP_UNROLL:
       resolve_omp_do (code);
       break;
     case EXEC_OMP_TARGET:

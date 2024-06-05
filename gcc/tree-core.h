@@ -497,6 +497,15 @@ enum omp_clause_code {
   /* OpenMP clause: indirect [(constant-integer-expression)].  */
   OMP_CLAUSE_INDIRECT,
 
+  /* OpenMP clause: partial (constant-integer-expression).  */
+  OMP_CLAUSE_PARTIAL,
+
+  /* OpenMP clause: full.  */
+  OMP_CLAUSE_FULL,
+
+  /* OpenMP clause: sizes (constant-integer-expression-list).  */
+  OMP_CLAUSE_SIZES,
+
   /* Internally used only clause, holding SIMD uid.  */
   OMP_CLAUSE__SIMDUID_,
 

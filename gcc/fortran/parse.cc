@@ -1006,14 +1006,22 @@ decode_omp_directive (void)
     case 'e':
       matchs ("end assume", gfc_match_omp_eos_error, ST_OMP_END_ASSUME);
       matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
+      matchs ("end tile", gfc_match_omp_eos_error, ST_OMP_END_TILE);
+      matchs ("end unroll", gfc_match_omp_eos_error, ST_OMP_END_UNROLL);
       matcho ("error", gfc_match_omp_error, ST_OMP_ERROR);
+      break;
+    case 'n':
+      matcho ("nothing", gfc_match_omp_nothing, ST_NONE);
       break;
     case 's':
       matchs ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
       matchs ("simd", gfc_match_omp_simd, ST_OMP_SIMD);
       break;
-    case 'n':
-      matcho ("nothing", gfc_match_omp_nothing, ST_NONE);
+    case 't':
+      matchs ("tile", gfc_match_omp_tile, ST_OMP_TILE);
+      break;
+    case 'u':
+      matchs ("unroll", gfc_match_omp_unroll, ST_OMP_UNROLL);
       break;
     }
 
@@ -1916,6 +1924,7 @@ next_statement (void)
   case ST_OMP_LOOP: case ST_OMP_PARALLEL_LOOP: case ST_OMP_TEAMS_LOOP: \
   case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
   case ST_OMP_ALLOCATE_EXEC: case ST_OMP_ALLOCATORS: case ST_OMP_ASSUME: \
+  case ST_OMP_TILE: case ST_OMP_UNROLL: \
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
@@ -2786,6 +2795,12 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
     case ST_OMP_END_TEAMS_LOOP:
       p = "!$OMP END TEAMS LOOP";
       break;
+    case ST_OMP_END_TILE:
+      p = "!$OMP END TILE";
+      break;
+    case ST_OMP_END_UNROLL:
+      p = "!$OMP END UNROLL";
+      break;
     case ST_OMP_END_WORKSHARE:
       p = "!$OMP END WORKSHARE";
       break;
@@ -2967,6 +2982,12 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_THREADPRIVATE:
       p = "!$OMP THREADPRIVATE";
+      break;
+    case ST_OMP_TILE:
+      p = "!$OMP TILE";
+      break;
+    case ST_OMP_UNROLL:
+      p = "!$OMP UNROLL";
       break;
     case ST_OMP_WORKSHARE:
       p = "!$OMP WORKSHARE";
@@ -5441,7 +5462,7 @@ loop:
 /* Parse the statements of OpenMP do/parallel do.  */
 
 static gfc_statement
-parse_omp_do (gfc_statement omp_st)
+parse_omp_do (gfc_statement omp_st, int nested)
 {
   gfc_statement st;
   gfc_code *cp, *np;
@@ -5462,11 +5483,20 @@ parse_omp_do (gfc_statement omp_st)
 	unexpected_eof ();
       else if (st == ST_DO)
 	break;
+      else if (st == ST_OMP_UNROLL || st == ST_OMP_TILE)
+	{
+	  st = parse_omp_do (st, nested + 1);
+	  if (st == ST_IMPLIED_ENDDO)
+	    return st;
+	  goto do_end;
+	}
       else
 	unexpected_statement (st);
     }
 
   parse_do_block ();
+  for (; nested; --nested)
+    pop_state ();
   if (gfc_statement_label != NULL
       && gfc_state_stack->previous != NULL
       && gfc_state_stack->previous->state == COMP_DO
@@ -5487,6 +5517,7 @@ parse_omp_do (gfc_statement omp_st)
   pop_state ();
 
   st = next_statement ();
+do_end:
   gfc_statement omp_end_st = ST_OMP_END_DO;
   switch (omp_st)
     {
@@ -5570,9 +5601,9 @@ parse_omp_do (gfc_statement omp_st)
     case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
       omp_end_st = ST_OMP_END_TEAMS_DISTRIBUTE_SIMD;
       break;
-    case ST_OMP_TEAMS_LOOP:
-      omp_end_st = ST_OMP_END_TEAMS_LOOP;
-      break;
+    case ST_OMP_TEAMS_LOOP: omp_end_st = ST_OMP_END_TEAMS_LOOP; break;
+    case ST_OMP_TILE: omp_end_st = ST_OMP_END_TILE; break;
+    case ST_OMP_UNROLL: omp_end_st = ST_OMP_END_UNROLL; break;
     default: gcc_unreachable ();
     }
   if (st == omp_end_st)
@@ -6073,7 +6104,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 
 		case ST_OMP_PARALLEL_DO:
 		case ST_OMP_PARALLEL_DO_SIMD:
-		  st = parse_omp_do (st);
+		  st = parse_omp_do (st, 0);
 		  continue;
 
 		case ST_OMP_ATOMIC:
@@ -6370,7 +6401,9 @@ parse_executable (gfc_statement st)
 	case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
 	case ST_OMP_TEAMS_LOOP:
-	  st = parse_omp_do (st);
+	case ST_OMP_TILE:
+	case ST_OMP_UNROLL:
+	  st = parse_omp_do (st, 0);
 	  if (st == ST_IMPLIED_ENDDO)
 	    return st;
 	  continue;

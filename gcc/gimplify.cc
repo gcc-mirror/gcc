@@ -6304,6 +6304,8 @@ is_gimple_stmt (tree t)
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_LOOP:
+    case OMP_TILE:
+    case OMP_UNROLL:
     case OACC_LOOP:
     case OMP_SCAN:
     case OMP_SCOPE:
@@ -15027,7 +15029,10 @@ gimplify_omp_taskloop_expr (tree type, tree *tp, gimple_seq *pre_p,
   if (*tp == NULL || is_gimple_constant (*tp))
     return;
 
-  *tp = get_initialized_tmp_var (*tp, pre_p, NULL, false);
+  if (TREE_CODE (*tp) == SAVE_EXPR)
+    gimplify_save_expr (tp, pre_p, NULL);
+  else
+    *tp = get_initialized_tmp_var (*tp, pre_p, NULL, false);
   /* Reference to pointer conversion is considered useless,
      but is significant for firstprivate clause.  Force it
      here.  */
@@ -15070,6 +15075,141 @@ find_standalone_omp_ordered (tree *tp, int *walk_subtrees, void *)
   return NULL_TREE;
 }
 
+/* Gimplify standalone loop transforming directive which has the
+   transformations applied already.  So, all that is needed is gimplify
+   the remaining loops as normal loops.  */
+
+static enum gimplify_status
+gimplify_omp_loop_xform (tree *expr_p, gimple_seq *pre_p)
+{
+  tree for_stmt = *expr_p;
+
+  if (OMP_FOR_PRE_BODY (for_stmt))
+    gimplify_and_add (OMP_FOR_PRE_BODY (for_stmt), pre_p);
+
+  gimple_seq pre_body = NULL, post_body = NULL;
+  for (int i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
+    {
+      if (TREE_VEC_ELT (OMP_FOR_INIT (for_stmt), i) == NULL_TREE)
+	continue;
+      tree iters = NULL_TREE;
+      if (i == 0
+	  && TREE_CODE (for_stmt) == OMP_UNROLL
+	  && !omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_PARTIAL))
+	{
+	  if (omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_FULL))
+	    iters = omp_loop_number_of_iterations (for_stmt, 0, NULL);
+	  else
+	    iters = build_int_cst (integer_type_node, 8);
+	}
+      tree t = TREE_VEC_ELT (OMP_FOR_INIT (for_stmt), i);
+      gcc_assert (TREE_CODE (t) == MODIFY_EXPR);
+      tree decl = TREE_OPERAND (t, 0);
+      gcc_assert (DECL_P (decl));
+      gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (decl))
+		  || POINTER_TYPE_P (TREE_TYPE (decl)));
+      if (DECL_ARTIFICIAL (decl)
+	  && TREE_PRIVATE (t)
+	  && gimplify_omp_ctxp
+	  && gimplify_omp_ctxp->region_type != ORT_NONE)
+	{
+	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
+	  do
+	    {
+	      splay_tree_node n
+		= splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	      if (n != NULL)
+		break;
+	      else if (ctx->region_type != ORT_WORKSHARE
+		       && ctx->region_type != ORT_TASKGROUP
+		       && ctx->region_type != ORT_SIMD
+		       && ctx->region_type != ORT_ACC
+		       && !(ctx->region_type & ORT_TARGET_DATA))
+		{
+		  omp_add_variable (ctx, decl, GOVD_PRIVATE);
+		  break;
+		}
+	      ctx = ctx->outer_context;
+	    }
+	  while (ctx);
+	}
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC)
+	{
+	  gcc_assert (seen_error ());
+	  continue;
+	}
+      gimplify_expr (&TREE_OPERAND (t, 1), pre_p, NULL, is_gimple_val,
+		     fb_rvalue);
+      gimplify_and_add (t, &pre_body);
+      t = TREE_VEC_ELT (OMP_FOR_COND (for_stmt), i);
+      gcc_assert (TREE_OPERAND (t, 0) == decl);
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == TREE_VEC)
+	{
+	  gcc_assert (seen_error ());
+	  continue;
+	}
+      gimplify_expr (&TREE_OPERAND (t, 1), pre_p, NULL, is_gimple_val,
+		     fb_rvalue);
+      tree l1 = create_artificial_label (UNKNOWN_LOCATION);
+      tree l2 = create_artificial_label (UNKNOWN_LOCATION);
+      tree l3 = create_artificial_label (UNKNOWN_LOCATION);
+      gimplify_seq_add_stmt (&pre_body, gimple_build_goto (l2));
+      gimplify_seq_add_stmt (&pre_body, gimple_build_label (l1));
+      gimple_seq this_post_body = NULL;
+      t = TREE_VEC_ELT (OMP_FOR_INCR (for_stmt), i);
+      if (TREE_CODE (t) == MODIFY_EXPR)
+	{
+	  t = TREE_OPERAND (t, 1);
+	  if (TREE_CODE (t) == PLUS_EXPR
+	      && TREE_OPERAND (t, 1) == decl)
+	    {
+	      TREE_OPERAND (t, 1) = TREE_OPERAND (t, 0);
+	      TREE_OPERAND (t, 0) = decl;
+	    }
+	  gimplify_expr (&TREE_OPERAND (t, 1), pre_p, NULL, is_gimple_val,
+			 fb_rvalue);
+	}
+      gimplify_and_add (TREE_VEC_ELT (OMP_FOR_INCR (for_stmt), i),
+			&this_post_body);
+      gimplify_seq_add_stmt (&this_post_body, gimple_build_label (l2));
+      t = TREE_VEC_ELT (OMP_FOR_COND (for_stmt), i);
+      gcond *cond = NULL;
+      tree d = decl;
+      gimplify_expr (&d, &this_post_body, NULL, is_gimple_val, fb_rvalue);
+      if (iters && tree_fits_uhwi_p (iters))
+	{
+	  unsigned HOST_WIDE_INT niters = tree_to_uhwi (iters);
+	  if ((unsigned HOST_WIDE_INT) (int) niters == niters
+	      && (int) niters > 0)
+	    {
+	      t = build2 (TREE_CODE (t), boolean_type_node, d,
+			  TREE_OPERAND (t, 1));
+	      t = build3 (ANNOTATE_EXPR, TREE_TYPE (t), t,
+			  build_int_cst (integer_type_node,
+					 annot_expr_unroll_kind),
+			  build_int_cst (integer_type_node, niters));
+	      gimplify_expr (&t, &this_post_body, NULL, is_gimple_val,
+			     fb_rvalue);
+	      cond = gimple_build_cond (NE_EXPR, t, boolean_false_node,
+					l1, l3);
+	    }
+	}
+      if (cond == NULL)
+	cond = gimple_build_cond (TREE_CODE (t), d, TREE_OPERAND (t, 1),
+				  l1, l3);
+      gimplify_seq_add_stmt (&this_post_body, cond);
+      gimplify_seq_add_stmt (&this_post_body, gimple_build_label (l3));
+      gimplify_seq_add_seq (&this_post_body, post_body);
+      post_body = this_post_body;
+    }
+  gimplify_seq_add_seq (pre_p, pre_body);
+  gimplify_and_add (OMP_FOR_BODY (for_stmt), pre_p);
+  gimplify_seq_add_seq (pre_p, post_body);
+
+  *expr_p = NULL_TREE;
+  return GS_ALL_DONE;
+}
+
 /* Gimplify the gross structure of an OMP_FOR statement.  */
 
 static enum gimplify_status
@@ -15089,7 +15229,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   bool loop_p = (omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_BIND)
 		 != NULL_TREE);
-  if (OMP_FOR_INIT (for_stmt) == NULL_TREE)
+  while (OMP_FOR_INIT (for_stmt) == NULL_TREE)
     {
       tree *data[4] = { NULL, NULL, NULL, NULL };
       gcc_assert (TREE_CODE (for_stmt) != OACC_LOOP);
@@ -15101,6 +15241,15 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  *expr_p = NULL_TREE;
 	  return GS_ERROR;
 	}
+      gcc_assert (inner_for_stmt == *data[3]);
+      omp_maybe_apply_loop_xforms (data[3],
+				   data[2]
+				   ? OMP_FOR_CLAUSES (*data[2])
+				   : TREE_CODE (for_stmt) == OMP_FOR
+				   ? OMP_FOR_CLAUSES (for_stmt)
+				   : NULL_TREE);
+      if (inner_for_stmt != *data[3])
+	continue;
       if (data[2] && OMP_FOR_PRE_BODY (*data[2]))
 	{
 	  append_to_statement_list_force (OMP_FOR_PRE_BODY (*data[2]),
@@ -15254,6 +15403,13 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  OMP_PARALLEL_CLAUSES (*data[1]) = c;
 		}
 	    }
+      break;
+    }
+  if (OMP_FOR_INIT (for_stmt) != NULL_TREE)
+    {
+      omp_maybe_apply_loop_xforms (expr_p, NULL_TREE);
+      if (*expr_p != for_stmt)
+	return GS_OK;
     }
 
   switch (TREE_CODE (for_stmt))
@@ -15305,6 +15461,10 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     case OMP_SIMD:
       ort = ORT_SIMD;
       break;
+    case OMP_TILE:
+    case OMP_UNROLL:
+      gcc_assert (inner_for_stmt == NULL_TREE);
+      return gimplify_omp_loop_xform (expr_p, pre_p);
     default:
       gcc_unreachable ();
     }
@@ -16329,6 +16489,10 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
   struct gimplify_omp_ctx *octx = gimplify_omp_ctxp;
   enum omp_clause_bind_kind kind = OMP_CLAUSE_BIND_THREAD;
   int i;
+
+  omp_maybe_apply_loop_xforms (expr_p, NULL_TREE);
+  if (*expr_p != for_stmt)
+    return GS_OK;
 
   /* If order is not present, the behavior is as if order(concurrent)
      appeared.  */
@@ -18397,6 +18561,8 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_FOR:
 	case OMP_DISTRIBUTE:
 	case OMP_TASKLOOP:
+	case OMP_TILE:
+	case OMP_UNROLL:
 	case OACC_LOOP:
 	  ret = gimplify_omp_for (expr_p, pre_p);
 	  break;

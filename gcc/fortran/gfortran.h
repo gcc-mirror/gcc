@@ -321,7 +321,9 @@ enum gfc_statement
   ST_OMP_ALLOCATE, ST_OMP_ALLOCATE_EXEC,
   ST_OMP_ALLOCATORS, ST_OMP_END_ALLOCATORS,
   /* Note: gfc_match_omp_nothing returns ST_NONE. */
-  ST_OMP_NOTHING, ST_NONE
+  ST_OMP_NOTHING, ST_NONE,
+  ST_OMP_UNROLL, ST_OMP_END_UNROLL,
+  ST_OMP_TILE, ST_OMP_END_TILE
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -1577,11 +1579,13 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *dist_chunk_size;
   struct gfc_expr *message;
   struct gfc_omp_assumptions *assume;
+  struct gfc_expr_list *sizes_list;
   const char *critical_name;
   enum gfc_omp_default_sharing default_sharing;
   enum gfc_omp_atomic_op atomic_op;
   enum gfc_omp_defaultmap defaultmap[OMP_DEFAULTMAP_CAT_NUM];
   int collapse, orderedc;
+  int partial;
   unsigned nowait:1, ordered:1, untied:1, mergeable:1, ancestor:1;
   unsigned inbranch:1, notinbranch:1, nogroup:1;
   unsigned sched_simd:1, sched_monotonic:1, sched_nonmonotonic:1;
@@ -1591,6 +1595,7 @@ typedef struct gfc_omp_clauses
   unsigned non_rectangular:1, order_concurrent:1;
   unsigned contains_teams_construct:1, target_first_st_is_teams:1;
   unsigned contained_in_target_construct:1, indirect:1;
+  unsigned full:1, erroneous:1;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
   ENUM_BITFIELD (gfc_omp_device_type) device_type:2;
   ENUM_BITFIELD (gfc_omp_memorder) memorder:3;
@@ -3033,6 +3038,7 @@ enum gfc_exec_op
   EXEC_OMP_TARGET_TEAMS_LOOP, EXEC_OMP_MASKED, EXEC_OMP_PARALLEL_MASKED,
   EXEC_OMP_PARALLEL_MASKED_TASKLOOP, EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
   EXEC_OMP_MASKED_TASKLOOP, EXEC_OMP_MASKED_TASKLOOP_SIMD, EXEC_OMP_SCOPE,
+  EXEC_OMP_UNROLL, EXEC_OMP_TILE,
   EXEC_OMP_ERROR, EXEC_OMP_ALLOCATE, EXEC_OMP_ALLOCATORS
 };
 
@@ -3957,6 +3963,9 @@ void gfc_generate_module_code (gfc_namespace *);
 
 /* trans-intrinsic.cc */
 bool gfc_inline_intrinsic_function_p (gfc_expr *);
+
+/* trans-openmp.cc */
+int gfc_expr_list_len (gfc_expr_list *);
 
 /* bbt.cc */
 typedef int (*compare_fn) (void *, void *);

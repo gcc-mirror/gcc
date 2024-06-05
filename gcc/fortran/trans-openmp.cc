@@ -4327,6 +4327,34 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
+  if (clauses->full)
+    {
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_FULL);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
+  if (clauses->partial)
+    {
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_PARTIAL);
+      OMP_CLAUSE_PARTIAL_EXPR (c)
+	= (clauses->partial > 0
+	   ? build_int_cst (integer_type_node, clauses->partial)
+	   : NULL_TREE);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
+  if (clauses->sizes_list)
+    {
+      tree list = NULL_TREE;
+      for (gfc_expr_list *el = clauses->sizes_list; el; el = el->next)
+	list = tree_cons (NULL_TREE, gfc_convert_expr_to_tree (block, el->expr),
+			  list);
+
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_SIZES);
+      OMP_CLAUSE_SIZES_LIST (c) = nreverse (list);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
   if (clauses->ordered)
     {
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_ORDERED);
@@ -4783,18 +4811,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
     }
   if (clauses->tile_list)
     {
-      vec<tree, va_gc> *tvec;
-      gfc_expr_list *el;
-
-      vec_alloc (tvec, 4);
-
-      for (el = clauses->tile_list; el; el = el->next)
-	vec_safe_push (tvec, gfc_convert_expr_to_tree (block, el->expr));
+      tree list = NULL_TREE;
+      for (gfc_expr_list *el = clauses->tile_list; el; el = el->next)
+	list = tree_cons (NULL_TREE, gfc_convert_expr_to_tree (block, el->expr),
+			  list);
 
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_TILE);
-      OMP_CLAUSE_TILE_LIST (c) = build_tree_list_vec (tvec);
+      OMP_CLAUSE_TILE_LIST (c) = nreverse (list);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
-      tvec->truncate (0);
     }
   if (clauses->vector)
     {
@@ -5718,6 +5742,16 @@ gfc_nonrect_loop_expr (stmtblock_t *pblock, gfc_se *sep, int loop_n,
   return true;
 }
 
+int
+gfc_expr_list_len (gfc_expr_list *list)
+{
+  unsigned len = 0;
+  for (; list; list = list->next)
+    len++;
+
+  return len;
+}
+
 static tree
 gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 		  gfc_omp_clauses *do_clauses, tree par_clauses)
@@ -5733,18 +5767,19 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   dovar_init *di;
   unsigned ix;
   vec<tree, va_heap, vl_embed> *saved_doacross_steps = doacross_steps;
-  gfc_expr_list *tile = do_clauses ? do_clauses->tile_list : clauses->tile_list;
+  gfc_expr_list *oacc_tile
+    = do_clauses ? do_clauses->tile_list : clauses->tile_list;
+  gfc_expr_list *sizes
+    = do_clauses ? do_clauses->sizes_list : clauses->sizes_list;
   gfc_code *orig_code = code;
 
   /* Both collapsed and tiled loops are lowered the same way.  In
      OpenACC, those clauses are not compatible, so prioritize the tile
      clause, if present.  */
-  if (tile)
-    {
-      collapse = 0;
-      for (gfc_expr_list *el = tile; el; el = el->next)
-	collapse++;
-    }
+  if (oacc_tile)
+    collapse = gfc_expr_list_len (oacc_tile);
+  else if (sizes)
+    collapse = gfc_expr_list_len (sizes);
 
   doacross_steps = NULL;
   if (clauses->orderedc)
@@ -5753,7 +5788,6 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
     collapse = 1;
 
   code = code->block->next;
-  gcc_assert (code->op == EXEC_DO);
 
   init = make_tree_vec (collapse);
   cond = make_tree_vec (collapse);
@@ -5779,6 +5813,17 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
       int dovar_found = 0;
       tree dovar_decl;
 
+      if (code->op == EXEC_OMP_TILE || code->op == EXEC_OMP_UNROLL)
+	{
+	  TREE_VEC_ELT (init, i) = NULL_TREE;
+	  TREE_VEC_ELT (cond, i) = NULL_TREE;
+	  TREE_VEC_ELT (incr, i) = NULL_TREE;
+	  TREE_VEC_ELT (incr, i) = NULL_TREE;
+	  if (orig_decls)
+	    TREE_VEC_ELT (orig_decls, i) = NULL_TREE;
+	  continue;
+	}
+      gcc_assert (code->op == EXEC_DO);
       if (clauses)
 	{
 	  gfc_omp_namelist *n = NULL;
@@ -6092,6 +6137,8 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
       if (code1 != scan)
 	tmpcode->next = scan;
     }
+  else if (code->op == EXEC_OMP_TILE || code->op == EXEC_OMP_UNROLL)
+    tmp = gfc_trans_omp_code (code, true);
   else
     tmp = gfc_trans_omp_code (code->block->next, true);
   gfc_add_expr_to_block (&body, tmp);
@@ -6112,6 +6159,8 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
     case EXEC_OMP_LOOP: stmt = make_node (OMP_LOOP); break;
     case EXEC_OMP_TASKLOOP: stmt = make_node (OMP_TASKLOOP); break;
     case EXEC_OACC_LOOP: stmt = make_node (OACC_LOOP); break;
+    case EXEC_OMP_TILE: stmt = make_node (OMP_TILE); break;
+    case EXEC_OMP_UNROLL: stmt = make_node (OMP_UNROLL); break;
     default: gcc_unreachable ();
     }
 
@@ -8219,6 +8268,8 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_LOOP:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_TASKLOOP:
+    case EXEC_OMP_TILE:
+    case EXEC_OMP_UNROLL:
       return gfc_trans_omp_do (code, code->op, NULL, code->ext.omp_clauses,
 			       NULL);
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:

@@ -283,4 +283,7 @@ typedef omp_addr_tokenizer::omp_addr_token omp_addr_token;
 
 extern bool omp_parse_expr (vec<omp_addr_token *> &, tree);
 
+extern tree omp_loop_number_of_iterations (tree, int, tree * = NULL);
+extern void omp_maybe_apply_loop_xforms (tree *, tree);
+
 #endif /* GCC_OMP_GENERAL_H */

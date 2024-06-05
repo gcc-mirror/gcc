@@ -49,7 +49,7 @@ foo (int x)
   for (int i = 0; i < 16; i++)
     ;
   #pragma omp for
-  [[omp::directive (master)]]					// { dg-error "for statement expected before '\\\[' token" }
+  [[omp::directive (master)]]					// { dg-error "loop nest expected before '\\\[' token" }
   ;
   #pragma omp target teams
   [[omp::directive (parallel)]]					// { dg-error "mixing OpenMP directives with attribute and pragma syntax on the same statement" }

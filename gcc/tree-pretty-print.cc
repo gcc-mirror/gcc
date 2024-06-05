@@ -1461,6 +1461,25 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 			 spc, flags, false);
       pp_right_paren (pp);
       break;
+    case OMP_CLAUSE_PARTIAL:
+      pp_string (pp, "partial");
+      if (OMP_CLAUSE_PARTIAL_EXPR (clause))
+	{
+	  pp_left_paren (pp);
+	  dump_generic_node (pp, OMP_CLAUSE_PARTIAL_EXPR (clause),
+			     spc, flags, false);
+	  pp_right_paren (pp);
+	}
+      break;
+    case OMP_CLAUSE_FULL:
+      pp_string (pp, "full");
+      break;
+    case OMP_CLAUSE_SIZES:
+      pp_string (pp, "sizes(");
+      dump_generic_node (pp, OMP_CLAUSE_SIZES_LIST (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
 
     case OMP_CLAUSE_IF_PRESENT:
       pp_string (pp, "if_present");
@@ -3796,6 +3815,14 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       pp_string (pp, "#pragma omp loop");
       goto dump_omp_loop;
 
+    case OMP_TILE:
+      pp_string (pp, "#pragma omp tile");
+      goto dump_omp_loop;
+
+    case OMP_UNROLL:
+      pp_string (pp, "#pragma omp unroll");
+      goto dump_omp_loop;
+
     case OACC_LOOP:
       pp_string (pp, "#pragma acc loop");
       goto dump_omp_loop;
@@ -3853,6 +3880,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	      spc -= 2;
 	      for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (node)); i++)
 		{
+		  if (TREE_VEC_ELT (OMP_FOR_INIT (node), i) == NULL_TREE)
+		    continue;
 		  spc += 2;
 		  newline_and_indent (pp, spc);
 		  pp_string (pp, "for (");

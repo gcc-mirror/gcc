@@ -958,6 +958,19 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
       tree cond = TREE_VEC_ELT (condv, i);
       tree incr = TREE_VEC_ELT (incrv, i);
 
+      if (init == NULL_TREE)
+	{
+	  gcc_assert (decl == NULL_TREE
+		      && cond == NULL_TREE
+		      && incr == NULL_TREE);
+	  for (i++; i < TREE_VEC_LENGTH (declv); i++)
+	    gcc_assert (TREE_VEC_ELT (declv, i) == NULL_TREE
+			&& TREE_VEC_ELT (initv, i) == NULL_TREE
+			&& TREE_VEC_ELT (condv, i) == NULL_TREE
+			&& TREE_VEC_ELT (incrv, i) == NULL_TREE);
+	  break;
+	}
+
       elocus = locus;
       if (EXPR_HAS_LOCATION (init))
 	elocus = EXPR_LOCATION (init);
@@ -1304,9 +1317,11 @@ static int
 c_omp_is_loop_iterator (tree decl, struct c_omp_check_loop_iv_data *d)
 {
   for (int i = 0; i < TREE_VEC_LENGTH (d->declv); i++)
-    if (decl == TREE_VEC_ELT (d->declv, i)
-	|| (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
-	    && decl == TREE_PURPOSE (TREE_VEC_ELT (d->declv, i))))
+    if (TREE_VEC_ELT (d->declv, i) == NULL_TREE)
+      continue;
+    else if (decl == TREE_VEC_ELT (d->declv, i)
+	     || (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
+		 && decl == TREE_PURPOSE (TREE_VEC_ELT (d->declv, i))))
       return i;
     else if (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
 	     && TREE_CHAIN (TREE_VEC_ELT (d->declv, i))
@@ -1584,6 +1599,68 @@ c_omp_check_nonrect_loop_iv (tree *tp, struct c_omp_check_loop_iv_data *d,
   return ret;
 }
 
+/* Callback for walk_tree to find nested loop transforming construct.  */
+
+static tree
+c_find_nested_loop_xform_r (tree *tp, int *walk_subtrees, void *)
+{
+  *walk_subtrees = 0;
+  switch (TREE_CODE (*tp))
+    {
+    case OMP_TILE:
+    case OMP_UNROLL:
+      return *tp;
+    case BIND_EXPR:
+      *walk_subtrees = 1;
+      break;
+    case STATEMENT_LIST:
+      *walk_subtrees = 1;
+      break;
+    case TRY_FINALLY_EXPR:
+      *walk_subtrees = 1;
+      break;
+    default:
+      break;
+    }
+  return NULL;
+}
+
+/* Find Jth loop among generated loops of STMT.  */
+
+int
+c_omp_find_generated_loop (tree &stmt, int j, walk_tree_lh lh)
+{
+  stmt = walk_tree_1 (&stmt, c_find_nested_loop_xform_r,
+		      NULL, NULL, lh);
+  gcc_assert (stmt);
+  switch (TREE_CODE (stmt))
+    {
+    case OMP_UNROLL:
+      gcc_assert (omp_find_clause (OMP_FOR_CLAUSES (stmt),
+				   OMP_CLAUSE_PARTIAL));
+      /* FALLTHRU */
+    case OMP_TILE:
+      int k;
+      k = 0;
+      for (int i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (stmt)); ++i)
+	if (i == j)
+	  {
+	    if (TREE_VEC_ELT (OMP_FOR_INIT (stmt), i) == NULL_TREE)
+	      {
+		stmt = OMP_FOR_BODY (stmt);
+		return c_omp_find_generated_loop (stmt, k, lh);
+	      }
+	    else
+	      return i;
+	  }
+	else if (TREE_VEC_ELT (OMP_FOR_INIT (stmt), i) == NULL_TREE)
+	  ++k;
+      gcc_unreachable ();
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Diagnose invalid references to loop iterators in lb, b and incr
    expressions.  */
 
@@ -1592,7 +1669,7 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 {
   hash_set<tree> pset;
   struct c_omp_check_loop_iv_data data;
-  int i;
+  int i, k = 0;
 
   data.declv = declv;
   data.fail = false;
@@ -1602,13 +1679,24 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
   data.ppset = &pset;
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (stmt)); i++)
     {
+      tree this_stmt = stmt;
+      int j = i;
       tree init = TREE_VEC_ELT (OMP_FOR_INIT (stmt), i);
+      if (init == NULL_TREE)
+	{
+	  if (k == 0)
+	    data.declv = copy_node (declv);
+	  this_stmt = OMP_FOR_BODY (stmt);
+	  j = c_omp_find_generated_loop (this_stmt, k++, lh);
+	  init = TREE_VEC_ELT (OMP_FOR_INIT (this_stmt), j);
+	  TREE_VEC_ELT (data.declv, i) = TREE_OPERAND (init, 0);
+	}
       gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
       tree decl = TREE_OPERAND (init, 0);
-      tree cond = TREE_VEC_ELT (OMP_FOR_COND (stmt), i);
+      tree cond = TREE_VEC_ELT (OMP_FOR_COND (this_stmt), j);
       gcc_assert (COMPARISON_CLASS_P (cond));
       gcc_assert (TREE_OPERAND (cond, 0) == decl);
-      tree incr = TREE_VEC_ELT (OMP_FOR_INCR (stmt), i);
+      tree incr = TREE_VEC_ELT (OMP_FOR_INCR (this_stmt), j);
       data.expr_loc = EXPR_LOCATION (TREE_OPERAND (init, 1));
       tree vec_outer1 = NULL_TREE, vec_outer2 = NULL_TREE;
       int kind = 0;
@@ -1636,9 +1724,9 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 	 expression then involves the subtraction and always refers
 	 to the original value.  The C++ FE needs to warn on those
 	 earlier.  */
-      if (decl == TREE_VEC_ELT (declv, i)
-	  || (TREE_CODE (TREE_VEC_ELT (declv, i)) == TREE_LIST
-	      && decl == TREE_PURPOSE (TREE_VEC_ELT (declv, i))))
+      if (decl == TREE_VEC_ELT (data.declv, i)
+	  || (TREE_CODE (TREE_VEC_ELT (data.declv, i)) == TREE_LIST
+	      && decl == TREE_PURPOSE (TREE_VEC_ELT (data.declv, i))))
 	{
 	  data.expr_loc = EXPR_LOCATION (cond);
 	  data.kind = kind | 1;
@@ -1655,6 +1743,15 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 	    loc = data.stmt_loc;
 	  error_at (loc, "two different outer iteration variables %qD and %qD"
 			 " used in a single loop", vec_outer1, vec_outer2);
+	  data.fail = true;
+	}
+      else if ((vec_outer1 || vec_outer2) && this_stmt != stmt)
+	{
+	  location_t loc = data.expr_loc;
+	  if (loc == UNKNOWN_LOCATION)
+	    loc = data.stmt_loc;
+	  sorry_at (loc, "non-rectangular loops from generated loops "
+			 "unsupported");
 	  data.fail = true;
 	}
       if (vec_outer1 || vec_outer2)
@@ -1853,6 +1950,12 @@ c_omp_check_loop_binding_exprs (tree stmt, vec<tree> *orig_inits)
   for (int i = 1; i < TREE_VEC_LENGTH (OMP_FOR_INIT (stmt)); i++)
     {
       tree init = TREE_VEC_ELT (OMP_FOR_INIT (stmt), i);
+      if (init == NULL_TREE)
+	{
+	  sorry_at (loc, "imperfectly nested loop using generated loops");
+	  ok = false;
+	  continue;
+	}
       tree cond = TREE_VEC_ELT (OMP_FOR_COND (stmt), i);
       tree incr = TREE_VEC_ELT (OMP_FOR_INCR (stmt), i);
       gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
@@ -4268,14 +4371,14 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_STANDALONE, false },
   { "taskyield", nullptr, nullptr, PRAGMA_OMP_TASKYIELD,
     C_OMP_DIR_STANDALONE, false },
-  /* { "tile", nullptr, nullptr, PRAGMA_OMP_TILE,
-    C_OMP_DIR_CONSTRUCT, false },  */
+  { "tile", nullptr, nullptr, PRAGMA_OMP_TILE,
+    C_OMP_DIR_CONSTRUCT, false },
   { "teams", nullptr, nullptr, PRAGMA_OMP_TEAMS,
     C_OMP_DIR_CONSTRUCT, true },
   { "threadprivate", nullptr, nullptr, PRAGMA_OMP_THREADPRIVATE,
-    C_OMP_DIR_DECLARATIVE, false }
-  /* { "unroll", nullptr, nullptr, PRAGMA_OMP_UNROLL,
-    C_OMP_DIR_CONSTRUCT, false },  */
+    C_OMP_DIR_DECLARATIVE, false },
+  { "unroll", nullptr, nullptr, PRAGMA_OMP_UNROLL,
+    C_OMP_DIR_CONSTRUCT, false },
 };
 
 /* Find (non-combined/composite) OpenMP directive (if any) which starts

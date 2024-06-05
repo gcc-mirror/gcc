@@ -14984,6 +14984,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool allocate_seen = false;
   bool implicit_moved = false;
   bool target_in_reduction_seen = false;
+  tree *full_seen = NULL;
+  bool partial_seen = false;
   bool openacc = (ort & C_ORT_ACC) != 0;
 
   bitmap_obstack_initialize (NULL);
@@ -15298,7 +15300,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (*nowait_clause),
 			"%<nowait%> clause must not be used together "
-			"with %<copyprivate%>");
+			"with %<copyprivate%> clause");
 	      *nowait_clause = OMP_CLAUSE_CHAIN (*nowait_clause);
 	      nowait_clause = NULL;
 	    }
@@ -16210,7 +16212,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%<nowait%> clause must not be used together "
-			"with %<copyprivate%>");
+			"with %<copyprivate%> clause");
 	      remove = true;
 	      break;
 	    }
@@ -16223,7 +16225,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%<order%> clause must not be used together "
-			"with %<ordered%>");
+			"with %<ordered%> clause");
 	      remove = true;
 	      break;
 	    }
@@ -16326,7 +16328,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (*order_clause),
 			"%<order%> clause must not be used together "
-			"with %<ordered%>");
+			"with %<ordered%> clause");
 	      *order_clause = OMP_CLAUSE_CHAIN (*order_clause);
 	      order_clause = NULL;
 	    }
@@ -16339,6 +16341,20 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  continue;
 	case OMP_CLAUSE_SIMDLEN:
 	  simdlen = c;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_FULL:
+	  full_seen = pc;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_PARTIAL:
+	  partial_seen = true;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_SIZES:
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
@@ -16596,6 +16612,14 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		"%<grainsize%> clause must not be used together with "
 		"%<num_tasks%> clause");
       *grainsize_seen = OMP_CLAUSE_CHAIN (*grainsize_seen);
+    }
+
+  if (full_seen && partial_seen)
+    {
+      error_at (OMP_CLAUSE_LOCATION (*full_seen),
+		"%<full%> clause must not be used together with "
+		"%<partial%> clause");
+      *full_seen = OMP_CLAUSE_CHAIN (*full_seen);
     }
 
   if (detach_seen)

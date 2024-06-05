@@ -46,28 +46,3 @@ logical function func_reverse(n)
   end do
 end
 
-!pure integer function func_unroll(n)
-integer function func_unroll(n)
-  implicit none
-  integer, value :: n
-  integer :: j, r
-  r = 0
-  !$omp unroll partial(2) ! { dg-error "Unclassifiable OpenMP directive" }
-  do j = 1, n
-    r = r + j
-  end do
-  func_unroll = r
-end
-
-!pure integer function func_tile(n)
-integer function func_tile(n)
-  implicit none
-  integer, value :: n
-  integer :: j, r
-  r = 0
-  !$omp tile sizes(2) ! { dg-error "Unclassifiable OpenMP directive" }
-  do j = 1, n
-    r = r + j
-  end do
-  func_tile = r
-end
