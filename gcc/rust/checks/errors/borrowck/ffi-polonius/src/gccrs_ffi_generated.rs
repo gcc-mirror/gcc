@@ -52,7 +52,7 @@ pub struct FactsView {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct Output {
-    pub loan_errors: bool,
-    pub subset_errors: bool,
-    pub move_errors: bool,
+    pub loan_errors: *mut FFIVector,
+    pub move_errors: *mut FFIVector,
+    pub subset_errors: *mut FFIVector,
 }

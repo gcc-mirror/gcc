@@ -171,6 +171,7 @@ GRS_OBJS = \
     rust/rust-borrow-checker.o \
     rust/rust-bir-builder-expr-stmt.o \
     rust/rust-bir-dump.o \
+    rust/rust-polonius.o\
     rust/rust-hir-dot-operator.o \
     rust/rust-hir-path-probe.o \
     rust/rust-type-util.o \
@@ -484,6 +485,12 @@ rust/%.o: rust/checks/errors/privacy/%.cc
 
 # build borrow checking pass files in rust folder
 rust/%.o: rust/checks/errors/borrowck/%.cc
+	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
+	$(POSTCOMPILE)
+
+
+# build borrow checking pass polonius files in rust folder
+rust/%.o: rust/checks/errors/borrowck/polonius/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 

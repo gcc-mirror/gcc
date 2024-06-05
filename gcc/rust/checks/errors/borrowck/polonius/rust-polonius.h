@@ -225,6 +225,30 @@ struct Facts
 extern "C" FFI::Output
 polonius_run (FFI::FactsView input, bool dump_enabled);
 
+// Helper functions for FFIVector to be used on Rust side
+extern "C" {
+
+FFI::FFIVector<size_t> *
+FFIVector__new ();
+
+FFI::FFIVectorPair *
+FFIVector__new_vec_pair ();
+
+FFI::FFIVectorTriple *
+FFIVector__new_vec_triple ();
+
+void
+FFIVector__push (FFI::FFIVector<size_t> *vector, size_t element);
+
+void
+FFIVector__push_vec_pair (FFI::FFIVectorPair *vector,
+			  FFI::Pair<size_t, FFI::FFIVector<size_t> *> element);
+
+void
+FFIVector__push_vec_triple (FFI::FFIVectorTriple *vector,
+			    FFI::Triple<size_t, size_t, size_t> element);
+}
+
 } // namespace Polonius
 } // namespace Rust
 
