@@ -1,6 +1,12 @@
 2024-12-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2024-06-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* lib/scanasm.exp (configure_check-function-bodies): Allow single-char
+	function names.
+
+	Backported from trunk:
 	2024-08-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* gcc.dg/signbit-5.c: Un-XFAIL for GCN.
