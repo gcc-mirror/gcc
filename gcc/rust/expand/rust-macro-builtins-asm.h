@@ -68,4 +68,8 @@ int
 parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 		   InlineAsmContext &inline_asm_ctx);
 
+tl::optional<std::string>
+parse_format_string (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+		     InlineAsmContext &inline_asm_ctx);
+
 } // namespace Rust
