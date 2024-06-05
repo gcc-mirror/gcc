@@ -129,7 +129,7 @@ public:
   virtual void visit (MatchExpr &expr) = 0;
   virtual void visit (AwaitExpr &expr) = 0;
   virtual void visit (AsyncBlockExpr &expr) = 0;
-  virtual void visit (InlineAsm &expr){};
+  virtual void visit (InlineAsm &expr) { rust_unreachable (); }
 
   // rust-item.h
   virtual void visit (TypeParam &param) = 0;

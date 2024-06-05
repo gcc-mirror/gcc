@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_VISITOR_H
 #define RUST_HIR_VISITOR_H
 
+#include "rust-hir-expr.h"
 #include "rust-hir-full-decls.h"
 
 namespace Rust {
@@ -85,6 +86,7 @@ public:
   virtual void visit (MatchExpr &expr) = 0;
   virtual void visit (AwaitExpr &expr) = 0;
   virtual void visit (AsyncBlockExpr &expr) = 0;
+  virtual void visit (InlineAsm &expr) {}
   virtual void visit (TypeParam &param) = 0;
   virtual void visit (ConstGenericParam &param) = 0;
   virtual void visit (LifetimeWhereClauseItem &item) = 0;
