@@ -1,4 +1,10 @@
 2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Andrew Stubbs <ams@gcc.gnu.org>
+
+	* config/nvptx/t-nvptx: Add unwind-nvptx.c.
+	* config/nvptx/unwind-nvptx.c: New file.
+
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/nvptx/gbl-ctors.c ["mgomp"]
 	(__do_global_ctors__entry__mgomp)
