@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optional.h"
 #include "rust-builtin-ast-nodes.h"
 #include "rust-common.h"
+#include "rust-expr.h"
 #include "rust-system.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
@@ -4651,6 +4652,12 @@ AwaitExpr::accept_vis (ASTVisitor &vis)
 
 void
 AsyncBlockExpr::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+InlineAsm::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
