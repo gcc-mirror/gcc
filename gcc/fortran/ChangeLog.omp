@@ -1,3 +1,72 @@
+2024-06-05  Jakub Jelinek  <jakub@redhat.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gfortran.h (enum gfc_statement): Add ST_OMP_UNROLL,
+	ST_OMP_END_UNROLL, ST_OMP_TILE and ST_OMP_END_TILE.
+	(struct gfc_omp_clauses): Add sizes_list, partial, full and erroneous
+	members.
+	(enum gfc_exec_op): Add EXEC_OMP_UNROLL and EXEC_OMP_TILE.
+	(gfc_expr_list_len): Declare.
+	* match.h (gfc_match_omp_tile, gfc_match_omp_unroll): Declare.
+	* openmp.cc (gfc_get_location): Declare.
+	(gfc_free_omp_clauses): Free sizes_list.
+	(match_oacc_expr_list): Rename to ...
+	(match_omp_oacc_expr_list): ... this.  Add is_omp argument and
+	change diagnostic wording if it is true.
+	(enum omp_mask2): Add OMP_CLAUSE_{FULL,PARTIAL,SIZES}.
+	(gfc_match_omp_clauses): Parse full, partial and sizes clauses.
+	(gfc_match_oacc_wait): Use match_omp_oacc_expr_list instead of
+	match_oacc_expr_list.
+	(OMP_UNROLL_CLAUSES, OMP_TILE_CLAUSES): Define.
+	(gfc_match_omp_tile, gfc_match_omp_unroll): New functions.
+	(resolve_omp_clauses): Diagnose full vs. partial clause conflict.
+	Resolve sizes clause arguments.
+	(find_nested_loop_in_chain): Use switch instead of series of ifs.
+	Handle EXEC_OMP_TILE and EXEC_OMP_UNROLL.
+	(gfc_resolve_omp_do_blocks): Set omp_current_do_collapse to
+	list length of sizes_list if present.
+	(gfc_resolve_do_iterator): Return for EXEC_OMP_TILE or
+	EXEC_OMP_UNROLL.
+	(restructure_intervening_code): Remove spurious ()s around & operands.
+	(is_outer_iteration_variable): Handle EXEC_OMP_TILE and
+	EXEC_OMP_UNROLL.
+	(check_nested_loop_in_chain): Likewise.
+	(expr_is_invariant): Likewise.
+	(resolve_omp_do): Handle EXEC_OMP_TILE and EXEC_OMP_UNROLL.  Diagnose
+	tile without sizes clause.  Use sizes_list length for count if
+	non-NULL.  Set code->ext.omp_clauses->erroneous on loops where we've
+	reported diagnostics.  Sorry for mixing non-rectangular loops with
+	generated loops.
+	(omp_code_to_statement): Handle EXEC_OMP_TILE and EXEC_OMP_UNROLL.
+	(gfc_resolve_omp_directive): Likewise.
+	* parse.cc (decode_omp_directive): Parse end tile, end unroll, tile
+	and unroll.  Move nothing entry alphabetically.
+	(case_exec_markers): Add ST_OMP_TILE and ST_OMP_UNROLL.
+	(gfc_ascii_statement): Handle ST_OMP_END_TILE, ST_OMP_END_UNROLL,
+	ST_OMP_TILE and ST_OMP_UNROLL.
+	(parse_omp_do): Add nested argument.  Handle ST_OMP_TILE and
+	ST_OMP_UNROLL.
+	(parse_omp_structured_block): Adjust parse_omp_do caller.
+	(parse_executable): Likewise.  Handle ST_OMP_TILE and ST_OMP_UNROLL.
+	* resolve.cc (gfc_resolve_blocks): Handle EXEC_OMP_TILE and
+	EXEC_OMP_UNROLL.
+	(gfc_resolve_code): Likewise.
+	* st.cc (gfc_free_statement): Likewise.
+	* trans.cc (trans_code): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle full, partial and
+	sizes clauses.  Use tree_cons + nreverse instead of
+	temporary vector and build_tree_list_vec for tile_list handling.
+	(gfc_expr_list_len): New function.
+	(gfc_trans_omp_do): Rename tile to oacc_tile.  Handle sizes clause.
+	Don't assert code->op is EXEC_DO.  Handle EXEC_OMP_TILE and
+	EXEC_OMP_UNROLL.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_TILE and EXEC_OMP_UNROLL.
+	* dump-parse-tree.cc (show_omp_clauses): Dump full, partial and
+	sizes clauses.
+	(show_omp_node): Handle EXEC_OMP_TILE and EXEC_OMP_UNROLL.
+	(show_code_node): Likewise.
+
 2023-03-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_has_alloc_comps): Add 'bool

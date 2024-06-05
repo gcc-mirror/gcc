@@ -1,3 +1,38 @@
+2024-06-05  Jakub Jelinek  <jakub@redhat.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-parser.cc (c_parser_skip_std_attribute_spec_seq): New function.
+	(check_omp_intervening_code): Reject imperfectly nested tile.
+	(c_parser_compound_statement_nostart): If want_nested_loop, use
+	c_parser_omp_next_tokens_can_be_canon_loop instead of just checking
+	for RID_FOR keyword.
+	(c_parser_omp_clause_name): Handle full and partial clause names.
+	(c_parser_omp_clause_allocate): Remove spurious semicolon.
+	(c_parser_omp_clause_full, c_parser_omp_clause_partial): New
+	functions.
+	(c_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_FULL and
+	PRAGMA_OMP_CLAUSE_PARTIAL.
+	(c_parser_omp_next_tokens_can_be_canon_loop): New function.
+	(c_parser_omp_loop_nest): Parse C23 attributes.  Handle tile/unroll
+	constructs.  Use c_parser_omp_next_tokens_can_be_canon_loop instead
+	of just checking for RID_FOR keyword.  Only add_stmt (body) if it is
+	non-NULL.
+	(c_parser_omp_for_loop): Rename tiling variable to oacc_tiling.  For
+	OMP_CLAUSE_SIZES set collapse to list length of OMP_CLAUSE_SIZES_LIST.
+	Use c_parser_omp_next_tokens_can_be_canon_loop instead of just
+	checking for RID_FOR keyword.  Remove spurious semicolon.  Don't call
+	c_omp_check_loop_binding_exprs if stmt is NULL.  Skip generated loops.
+	(c_parser_omp_tile_sizes, c_parser_omp_tile): New functions.
+	(OMP_UNROLL_CLAUSE_MASK): Define.
+	(c_parser_omp_unroll): New function.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_TILE and
+	PRAGMA_OMP_UNROLL.
+	* c-typeck.cc (c_finish_omp_clauses): Adjust wording of some of the
+	conflicting clause diagnostic messages to include word clause.
+	Handle OMP_CLAUSE_{FULL,PARTIAL,SIZES} and diagnose full vs. partial
+	conflict.
+
 2023-11-19  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang <cltang@codesourcery.com>
 

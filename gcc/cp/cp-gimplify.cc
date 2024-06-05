@@ -759,6 +759,8 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
     case OMP_DISTRIBUTE:
     case OMP_LOOP:
     case OMP_TASKLOOP:
+    case OMP_TILE:
+    case OMP_UNROLL:
       ret = cp_gimplify_omp_for (expr_p, pre_p);
       break;
 
@@ -1396,6 +1398,8 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
     case OMP_DISTRIBUTE:
     case OMP_LOOP:
     case OMP_TASKLOOP:
+    case OMP_TILE:
+    case OMP_UNROLL:
     case OACC_LOOP:
       cp_walk_tree (&OMP_FOR_BODY (stmt), cp_fold_r, data, NULL);
       cp_walk_tree (&OMP_FOR_CLAUSES (stmt), cp_fold_r, data, NULL);
@@ -2169,7 +2173,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	      && TREE_CODE (inner) == OMP_FOR)
 	    {
 	      for (int i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (inner)); i++)
-		if (OMP_FOR_ORIG_DECLS (inner)
+		if (TREE_VEC_ELT (OMP_FOR_INIT (inner), i)
+		    && OMP_FOR_ORIG_DECLS (inner)
 		    && TREE_CODE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner),
 				  i)) == TREE_LIST
 		    && TREE_PURPOSE (TREE_VEC_ELT (OMP_FOR_ORIG_DECLS (inner),
@@ -2229,6 +2234,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case OMP_FOR:
     case OMP_SIMD:
     case OMP_LOOP:
+    case OMP_TILE:
+    case OMP_UNROLL:
     case OACC_LOOP:
     case STATEMENT_LIST:
       /* These cases are handled by shared code.  */

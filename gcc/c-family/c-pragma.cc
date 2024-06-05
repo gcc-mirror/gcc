@@ -1556,6 +1556,8 @@ static const struct omp_pragma_def omp_pragmas_simd[] = {
   { "target", PRAGMA_OMP_TARGET },
   { "taskloop", PRAGMA_OMP_TASKLOOP },
   { "teams", PRAGMA_OMP_TEAMS },
+  { "tile", PRAGMA_OMP_TILE },
+  { "unroll", PRAGMA_OMP_UNROLL },
 };
 
 void

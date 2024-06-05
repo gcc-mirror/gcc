@@ -3037,6 +3037,8 @@ static bool cp_parser_skip_up_to_closing_square_bracket
 static bool cp_parser_skip_to_closing_square_bracket
   (cp_parser *);
 static size_t cp_parser_skip_balanced_tokens (cp_parser *, size_t);
+static bool cp_parser_next_tokens_can_be_canon_loop (cp_parser *,
+						     enum tree_code, bool);
 static tree cp_parser_omp_loop_nest (cp_parser *, bool *);
 
 // -------------------------------------------------------------------------- //
@@ -13323,7 +13325,13 @@ check_omp_intervening_code (cp_parser *parser)
 		    "%<reduction%> %<inscan%> clause");
 	  omp_for_parse_state->perfect_nesting_fail = true;
 	}
-      /* TODO: Also reject loops with TILE directive.  */
+      else if (omp_for_parse_state->code == OMP_TILE)
+	{
+	  error_at (omp_for_parse_state->for_loc,
+		    "inner loops must be perfectly nested "
+		    "with %<tile%> directive");
+	  omp_for_parse_state->perfect_nesting_fail = true;
+	}
       if (omp_for_parse_state->perfect_nesting_fail)
 	omp_for_parse_state->fail = true;
     }
@@ -13374,8 +13382,9 @@ cp_parser_statement_seq_opt (cp_parser* parser, tree in_statement_expr)
       else if (in_omp_loop_block)
 	{
 	  bool want_nested_loop = omp_for_parse_state->want_nested_loop;
+	  tree_code code = omp_for_parse_state->code;
 	  if (want_nested_loop
-	      && token->type == CPP_KEYWORD && token->keyword == RID_FOR)
+	      && cp_parser_next_tokens_can_be_canon_loop (parser, code, false))
 	    {
 	      /* Found the nested loop.  */
 	      omp_for_parse_state->depth++;
@@ -37940,6 +37949,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_FIRSTPRIVATE;
 	  else if (!strcmp ("from", p))
 	    result = PRAGMA_OMP_CLAUSE_FROM;
+	  else if (!strcmp ("full", p))
+	    result = PRAGMA_OMP_CLAUSE_FULL;
 	  break;
 	case 'g':
 	  if (!strcmp ("gang", p))
@@ -38016,6 +38027,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 'p':
 	  if (!strcmp ("parallel", p))
 	    result = PRAGMA_OMP_CLAUSE_PARALLEL;
+	  if (!strcmp ("partial", p))
+	    result = PRAGMA_OMP_CLAUSE_PARTIAL;
 	  else if (!strcmp ("present", p))
 	    result = PRAGMA_OACC_CLAUSE_PRESENT;
 	  else if (!strcmp ("present_or_copy", p)
@@ -40400,6 +40413,48 @@ cp_parser_omp_clause_thread_limit (cp_parser *parser, tree list,
   return c;
 }
 
+/* OpenMP 5.1
+   full */
+
+static tree
+cp_parser_omp_clause_full (tree list, location_t loc)
+{
+  check_no_duplicate_clause (list, OMP_CLAUSE_FULL, "full", loc);
+
+  tree c = build_omp_clause (loc, OMP_CLAUSE_FULL);
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+}
+
+/* OpenMP 5.1
+   partial ( constant-expression ) */
+
+static tree
+cp_parser_omp_clause_partial (cp_parser *parser, tree list, location_t loc)
+{
+  tree num = NULL_TREE;
+  check_no_duplicate_clause (list, OMP_CLAUSE_PARTIAL, "partial", loc);
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+    {
+      matching_parens parens;
+      parens.consume_open (parser);
+      num = cp_parser_constant_expression (parser);
+      if (num == error_mark_node
+	  || !parens.require_close (parser))
+	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					       /*or_comma=*/false,
+					       /*consume_paren=*/true);
+      if (num == error_mark_node)
+	return list;
+    }
+
+  tree c = build_omp_clause (loc, OMP_CLAUSE_PARTIAL);
+  OMP_CLAUSE_PARTIAL_EXPR (c) = num;
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+}
+
 /* OpenMP 4.0:
    aligned ( variable-list )
    aligned ( variable-list : constant-expression )  */
@@ -42380,7 +42435,7 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  else if (nested == 2)
 	    error_at (cp_lexer_peek_token (parser->lexer)->location,
 		      "clauses in %<simd%> trait should be separated "
-                      "by %<,%>");
+		      "by %<,%>");
 	}
 
       token = cp_lexer_peek_token (parser->lexer);
@@ -42730,6 +42785,15 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_ENTER,
 					    clauses);
 	  c_name = "enter";
+	  break;
+	case PRAGMA_OMP_CLAUSE_PARTIAL:
+	  clauses = cp_parser_omp_clause_partial (parser, clauses,
+						  token->location);
+	  c_name = "partial";
+	  break;
+	case PRAGMA_OMP_CLAUSE_FULL:
+	  clauses = cp_parser_omp_clause_full (clauses, token->location);
+	  c_name = "full";
 	  break;
 	default:
 	  cp_parser_error (parser, "expected an OpenMP clause");
@@ -44956,6 +45020,50 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
 }
 
 
+/* Check that the next token starts a loop nest.  Return true if yes,
+   otherwise diagnose an error if ERROR_P is true and return false.  */
+static bool
+cp_parser_next_tokens_can_be_canon_loop (cp_parser *parser, enum tree_code code,
+					 bool error_p)
+{
+  if (code == OACC_LOOP)
+    {
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR))
+	return true;
+      if (error_p)
+	cp_parser_error (parser, "for statement expected");
+    }
+  else
+    {
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR))
+	return true;
+      if (cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA)
+	  && ((cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
+	       == PRAGMA_OMP_UNROLL)
+	      || (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
+		  == PRAGMA_OMP_TILE)))
+	return true;
+      /* Skip standard attributes on next for in case they are
+	 [[omp::directive (unroll partial (4))]] or
+	 [[omp::directive (tile sizes (1, 2, 3))]] etc.  */
+      size_t n = cp_parser_skip_std_attribute_spec_seq (parser, 1);
+      if (cp_lexer_nth_token_is_keyword (parser->lexer, n, RID_FOR))
+	return true;
+      if (error_p)
+	{
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA))
+	    error_at (cp_lexer_peek_token (parser->lexer)->location,
+		      "loop nest expected");
+	  else
+	    cp_parser_error (parser, "loop nest expected");
+	}
+    }
+  return false;
+}
+
+static tree cp_parser_omp_unroll (cp_parser *, cp_token *, bool *);
+static tree cp_parser_omp_tile (cp_parser *, cp_token *, bool *);
+
 /* This function parses a single level of a loop nest, invoking itself
    recursively if necessary.
 
@@ -45008,8 +45116,142 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
   gcc_assert (omp_for_parse_state);
   int depth = omp_for_parse_state->depth;
 
-  /* We have already matched the FOR token but not consumed it yet.  */
-  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR));
+  /* Handle loop transformations first.  Note that when we get here
+     omp_for_parse_state->depth has already been incremented to indicate
+     the depth of the *next* loop, not the level of the loop body the
+     transformation directive appears in.  */
+
+  /* Arrange for C++ standard attribute syntax to be parsed as regular
+     pragmas.  Give an error if there are other random attributes present.  */
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+  tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
+  std_attrs = cp_parser_handle_statement_omp_attributes (parser, std_attrs);
+  if (std_attrs)
+    error_at (token->location,
+	      "attributes other than OpenMP directives "
+	      "are not allowed on %<for%> in loop nest");
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA))
+    {
+      tree transform = NULL_TREE, sizes, body = NULL_TREE;
+      int count = 0;
+      cp_token *pragma_tok;
+      tree stmt;
+      loc = cp_lexer_peek_token (parser->lexer)->location;
+      switch (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer)))
+	{
+	case PRAGMA_OMP_UNROLL:
+	  pragma_tok = cp_lexer_consume_token (parser->lexer);
+	  parser->lexer->in_pragma = true;
+	  body = push_stmt_list ();
+	  stmt = push_omp_privatization_clauses (false);
+	  transform = cp_parser_omp_unroll (parser, pragma_tok, if_p);
+	  pop_omp_privatization_clauses (stmt);
+	  body = pop_stmt_list (body);
+	  if (transform == NULL_TREE || transform == error_mark_node)
+	    {
+	      transform = error_mark_node;
+	      break;
+	    }
+	  gcc_assert (TREE_CODE (transform) == OMP_UNROLL);
+	  if (omp_find_clause (OMP_FOR_CLAUSES (transform),
+			       OMP_CLAUSE_PARTIAL))
+	    {
+	      if (omp_for_parse_state->count - depth > 1)
+		{
+		  error_at (loc, "%<unroll%> construct with %<partial%> "
+				 "clause generates just one loop with "
+				 "canonical form but %d loops are needed",
+			    omp_for_parse_state->count - depth);
+		  transform = error_mark_node;
+		}
+	      else
+		count = 1;
+	    }
+	  else
+	    {
+	      error_at (loc, "generated loop of %<unroll%> construct "
+			     "without %<partial%> clause does not have "
+			     "canonical form");
+	      transform = error_mark_node;
+	    }
+	  break;
+	case PRAGMA_OMP_TILE:
+	  pragma_tok = cp_lexer_consume_token (parser->lexer);
+	  parser->lexer->in_pragma = true;
+	  body = push_stmt_list ();
+	  stmt = push_omp_privatization_clauses (false);
+	  transform = cp_parser_omp_tile (parser, pragma_tok, if_p);
+	  pop_omp_privatization_clauses (stmt);
+	  body = pop_stmt_list (body);
+	  if (transform == NULL_TREE || transform == error_mark_node)
+	    {
+	      transform = error_mark_node;
+	      break;
+	    }
+	  gcc_assert (TREE_CODE (transform) == OMP_TILE);
+	  sizes = omp_find_clause (OMP_FOR_CLAUSES (transform),
+				   OMP_CLAUSE_SIZES);
+	  gcc_assert (sizes);
+	  count = list_length (OMP_CLAUSE_SIZES_LIST (sizes));
+	  if (depth + count < omp_for_parse_state->count)
+	    {
+	      error_at (loc, "%<tile%> construct generates %d loops "
+			     "with canonical form but %d loops are needed",
+			count, omp_for_parse_state->count - depth);
+	      transform = error_mark_node;
+	    }
+	  break;
+	default:
+	  cp_parser_pragma (parser, pragma_stmt, NULL);
+	  break;
+	}
+      if (transform == NULL_TREE)
+	error_at (loc, "expected %<for%> loop or OpenMP loop "
+		  "transformation construct");
+      if (transform == NULL_TREE || transform == error_mark_node)
+	{
+	  omp_for_parse_state->fail = true;
+	  return NULL_TREE;
+	}
+      for (count = omp_for_parse_state->count; depth < count; ++depth)
+	{
+	  TREE_VEC_ELT (omp_for_parse_state->declv, depth) = global_namespace;
+	  TREE_VEC_ELT (omp_for_parse_state->initv, depth) = NULL_TREE;
+	  TREE_VEC_ELT (omp_for_parse_state->condv, depth) = NULL_TREE;
+	  TREE_VEC_ELT (omp_for_parse_state->incrv, depth) = NULL_TREE;
+	  if (omp_for_parse_state->orig_declv)
+	    TREE_VEC_ELT (omp_for_parse_state->incrv, depth) = NULL_TREE;
+	  vec_safe_push (omp_for_parse_state->init_blockv, NULL_TREE);
+	  vec_safe_push (omp_for_parse_state->body_blockv, NULL_TREE);
+	  vec_safe_push (omp_for_parse_state->init_placeholderv, NULL_TREE);
+	  vec_safe_push (omp_for_parse_state->body_placeholderv, NULL_TREE);
+	}
+      omp_for_parse_state->want_nested_loop = false;
+      return body;
+    }
+
+  /* Diagnose errors if we don't have a "for" loop following the
+     optional loop transforms.  Otherwise, consume the token.  */
+  if (!cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR))
+    {
+      omp_for_parse_state->fail = true;
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      /* Don't call cp_parser_error here since it overrides the
+	 provided message with a more confusing one if there was
+	 a bad pragma or attribute directive.  */
+      error_at (token->location, "loop nest expected");
+      /* See if we can recover by skipping over bad pragma(s).  */
+      while (token->type == CPP_PRAGMA)
+	{
+	  cp_parser_skip_to_pragma_eol (parser, token);
+	  if (cp_parser_next_tokens_can_be_canon_loop (parser, omp_for_parse_state->code,
+						       false))
+	    return cp_parser_omp_loop_nest (parser, if_p);
+	  token = cp_lexer_peek_token (parser->lexer);
+	}
+      return NULL_TREE;
+    }
   loc = cp_lexer_consume_token (parser->lexer)->location;
 
   /* Forbid break/continue in the loop initializer, condition, and
@@ -45264,10 +45506,15 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 
   moreloops = depth < omp_for_parse_state->count - 1;
   omp_for_parse_state->want_nested_loop = moreloops;
-  if (moreloops && cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR))
+  if (moreloops
+      && cp_parser_next_tokens_can_be_canon_loop (parser,
+						  omp_for_parse_state->code,
+						  false))
     {
       omp_for_parse_state->depth++;
-      add_stmt (cp_parser_omp_loop_nest (parser, if_p));
+      tree nest = cp_parser_omp_loop_nest (parser, if_p);
+      if (nest)
+	add_stmt (nest);
       omp_for_parse_state->depth--;
     }
   else if (moreloops
@@ -45549,7 +45796,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   tree cl, ordered_cl = NULL_TREE;
   int collapse = 1, ordered = 0;
   unsigned int count;
-  bool tiling = false;
+  bool oacc_tiling = false;
   bool inscan = false;
   struct omp_for_parse_data data;
   struct omp_for_parse_data *save_data = parser->omp_for_parse_state;
@@ -45561,9 +45808,11 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
       collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
     else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_TILE)
       {
-	tiling = true;
+	oacc_tiling = true;
 	collapse = list_length (OMP_CLAUSE_TILE_LIST (cl));
       }
+    else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_SIZES)
+      collapse = list_length (OMP_CLAUSE_SIZES_LIST (cl));
     else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_ORDERED
 	     && OMP_CLAUSE_ORDERED_EXPR (cl))
       {
@@ -45584,14 +45833,11 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
       ordered = collapse;
     }
 
-  gcc_assert (tiling || (collapse >= 1 && ordered >= 0));
+  gcc_assert (oacc_tiling || (collapse >= 1 && ordered >= 0));
   count = ordered ? ordered : collapse;
 
-  if (!cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR))
-    {
-      cp_parser_error (parser, "for statement expected");
-      return NULL;
-    }
+  if (!cp_parser_next_tokens_can_be_canon_loop (parser, code, true))
+    return NULL;
 
   /* Initialize parse state for recursive descent.  */
   data.declv = make_tree_vec (count);
@@ -45616,7 +45862,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   data.ordered_cl = ordered_cl;
   parser->omp_for_parse_state = &data;
 
-  cp_parser_omp_loop_nest (parser, if_p);
+  tree body = cp_parser_omp_loop_nest (parser, if_p);
 
   /* Bomb out early if there was an error (not enough loops, etc).  */
   if (data.fail || data.declv == NULL_TREE)
@@ -45652,66 +45898,93 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   /* First insert markers for structured blocks for intervening code in
      the loop bodies.  */
   for (unsigned int i = 0; i < count - 1; i++)
-    {
-      bool good = find_structured_blocks (&(data.body_blockv[i]),
-					  data.init_placeholderv[i+1]);
-      gcc_assert (good);
-    }
+    if (data.body_blockv[i])
+      for (unsigned int j = i + 1; j < count; j++)
+	if (data.init_placeholderv[j])
+	  {
+	    bool good = find_structured_blocks (&data.body_blockv[i],
+						data.init_placeholderv[j]);
+	    gcc_assert (good);
+	    break;
+	  }
 
   /* Do the substitution from the inside out.  */
   for (unsigned int i = count - 1; i > 0; i--)
-    {
-      substitute_in_tree (&(data.body_blockv[i-1]),
-			  data.init_placeholderv[i],
-			  data.body_blockv[i], false);
-      substitute_in_tree (&(data.init_blockv[i-1]),
-			  data.body_placeholderv[i-1],
-			  data.init_blockv[i], true);
-    }
+    if (data.init_placeholderv[i])
+      for (unsigned int j = i; j > 0; j--)
+	if (data.body_blockv[j - 1])
+	  {
+	    substitute_in_tree (&data.body_blockv[j - 1],
+				data.init_placeholderv[i],
+				data.body_blockv[i], false);
+	    substitute_in_tree (&data.init_blockv[j - 1],
+				data.body_placeholderv[j - 1],
+				data.init_blockv[i], true);
+	    break;
+	  }
+
+  for (unsigned int i = 0; i < count; ++i)
+    if (data.body_blockv[i])
+      {
+	body = data.body_blockv[i];
+	break;
+      }
 
   /* Generate the OMP_FOR.  Note finish_omp_for adds the OMP_FOR
      (and possibly other stuff) to the current statement list but
      returns a pointer to the OMP_FOR itself, or null in case of error.  */
   result = push_stmt_list ();
   ret = finish_omp_for (loc_first, code, data.declv, data.orig_declv,
-			data.initv, data.condv, data.incrv,
-			data.body_blockv[0],
+			data.initv, data.condv, data.incrv, body,
 			data.pre_body, &data.orig_inits, data.clauses);
   result = pop_stmt_list (result);
 
   /* Check for errors involving lb/ub/incr expressions referencing
      variables declared in intervening code.  */
   if (data.saw_intervening_code
+      && ret
       && !c_omp_check_loop_binding_exprs (ret, &data.orig_inits))
     ret = NULL_TREE;
 
   if (ret)
-    {
-      /* Splice the omp_for into the nest of init blocks.  */
-      substitute_in_tree (&(data.init_blockv[0]),
-			  data.body_placeholderv[count - 1],
-			  result, true);
-
-      /* Some later processing for combined directives assumes
-	 that the BIND_EXPR containing range for variables appears
-	 at top level in the OMP_FOR body.  Fix that up if it's
-	 not the case, e.g. because there is intervening code.  */
-      if (code != OACC_LOOP)
-	finish_omp_for_block (data.init_blockv[0], ret);
-
-      /* Clean up the block subblock/superblock links.  Per comment in
-	 begin_compound_stmt, "we don't build BLOCK nodes when processing
-	 templates", so skip this step in that case.  */
-      if (!processing_template_decl)
+    for (unsigned int i = 0; i < count; ++i)
+      if (data.init_blockv[i])
 	{
-	  tree superblock = NULL_TREE;
-	  cp_walk_tree (&data.init_blockv[0], fixup_blocks_walker,
-			(void *)&superblock, NULL);
-	}
+	  int j;
+	  for (j = count - 1; j >= 0; --j)
+	    if (data.body_placeholderv[j])
+	      break;
+	  gcc_assert (j >= 0);
 
-      /* Finally record the result.  */
-      add_stmt (data.init_blockv[0]);
-    }
+	  /* Splice the omp_for into the nest of init blocks.  */
+	  substitute_in_tree (&data.init_blockv[i],
+			      data.body_placeholderv[j],
+			      result, true);
+
+	  /* Some later processing for combined directives assumes
+	     that the BIND_EXPR containing range for variables appears
+	     at top level in the OMP_FOR body.  Fix that up if it's
+	     not the case, e.g. because there is intervening code.  */
+	  if (code != OACC_LOOP)
+	    finish_omp_for_block (data.init_blockv[i], ret);
+
+	  /* Clean up the block subblock/superblock links.  Per comment in
+	     begin_compound_stmt, "we don't build BLOCK nodes when processing
+	     templates", so skip this step in that case.  */
+	  if (!processing_template_decl)
+	    {
+	      tree superblock = NULL_TREE;
+	      cp_walk_tree (&data.init_blockv[i], fixup_blocks_walker,
+			    (void *)&superblock, NULL);
+	    }
+
+	  /* Finally record the result.  */
+	  add_stmt (data.init_blockv[0]);
+	  result = NULL_TREE;
+	  break;
+	}
+  if (ret && result)
+    add_stmt (result);
 
   parser->omp_for_parse_state = save_data;
   return ret;
@@ -47440,6 +47713,98 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 
   finish_omp_target (pragma_tok->location, clauses, body, false);
   return true;
+}
+
+
+/* OpenMP 5.1: Parse sizes list for "omp tile sizes"
+   sizes ( size-expr-list ) */
+static tree
+cp_parser_omp_tile_sizes (cp_parser *parser, location_t loc)
+{
+  tree sizes = NULL_TREE;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+    cp_lexer_consume_token (parser->lexer);
+
+  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+  if (tok->type != CPP_NAME
+      || strcmp ("sizes", IDENTIFIER_POINTER (tok->u.value)))
+    {
+      cp_parser_error (parser, "expected %<sizes%>");
+      return error_mark_node;
+    }
+  cp_lexer_consume_token (parser->lexer);
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return error_mark_node;
+
+  do
+    {
+      if (sizes && !cp_parser_require (parser, CPP_COMMA, RT_COMMA))
+	return error_mark_node;
+
+      tree expr = cp_parser_constant_expression (parser);
+      if (expr == error_mark_node)
+	{
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
+	  return error_mark_node;
+	}
+
+      sizes = tree_cons (NULL_TREE, expr, sizes);
+    }
+  while (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN));
+  parens.require_close (parser);
+
+  gcc_assert (sizes);
+  tree c = build_omp_clause (loc, OMP_CLAUSE_SIZES);
+  OMP_CLAUSE_SIZES_LIST (c) = nreverse (sizes);
+  return c;
+}
+
+/* OpenMP 5.1:
+   #pragma omp tile sizes ( size-expr-list )  */
+
+static tree
+cp_parser_omp_tile (cp_parser *parser, cp_token *tok, bool *if_p)
+{
+  tree clauses = cp_parser_omp_tile_sizes (parser, tok->location);
+  cp_parser_require_pragma_eol (parser, tok);
+
+  if (!clauses || clauses == error_mark_node)
+    return error_mark_node;
+
+  tree block = begin_omp_structured_block ();
+  clauses = finish_omp_clauses (clauses, C_ORT_OMP);
+  tree ret = cp_parser_omp_for_loop (parser, OMP_TILE, clauses, NULL, if_p);
+  block = finish_omp_structured_block (block);
+  add_stmt (block);
+
+  return ret;
+}
+
+#define OMP_UNROLL_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PARTIAL)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FULL))
+
+/* OpenMP 5.1:
+   #pragma omp unroll unroll-clause[optseq]  */
+
+static tree
+cp_parser_omp_unroll (cp_parser *parser, cp_token *tok, bool *if_p)
+{
+  tree clauses = cp_parser_omp_all_clauses (parser, OMP_UNROLL_CLAUSE_MASK,
+					    "#pragma omp unroll", tok, true);
+
+  tree block = begin_omp_structured_block ();
+  tree ret = cp_parser_omp_for_loop (parser, OMP_UNROLL, clauses, NULL, if_p);
+  block = finish_omp_structured_block (block);
+  add_stmt (block);
+
+  return ret;
 }
 
 /* OpenACC 2.0:
@@ -50634,6 +50999,12 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
     case PRAGMA_OMP_ASSUME:
       cp_parser_omp_assume (parser, pragma_tok, if_p);
       return;
+    case PRAGMA_OMP_TILE:
+      stmt = cp_parser_omp_tile (parser, pragma_tok, if_p);
+      break;
+    case PRAGMA_OMP_UNROLL:
+      stmt = cp_parser_omp_unroll (parser, pragma_tok, if_p);
+      break;
     default:
       gcc_unreachable ();
     }
@@ -51256,6 +51627,8 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
     case PRAGMA_OMP_TASKGROUP:
     case PRAGMA_OMP_TASKLOOP:
     case PRAGMA_OMP_TEAMS:
+    case PRAGMA_OMP_TILE:
+    case PRAGMA_OMP_UNROLL:
       if (context != pragma_stmt && context != pragma_compound)
 	goto bad_stmt;
       stmt = push_omp_privatization_clauses (false);

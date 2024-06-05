@@ -86,3 +86,27 @@ pure integer function func_simd(n)
   end do
   func_simd = r
 end
+
+pure integer function func_unroll(n)
+  implicit none
+  integer, value :: n
+  integer :: j, r
+  r = 0
+  !$omp unroll partial(2)
+  do j = 1, n
+    r = r + j
+  end do
+  func_unroll = r
+end
+
+pure integer function func_tile(n)
+  implicit none
+  integer, value :: n
+  integer :: j, r
+  r = 0
+  !$omp tile sizes(2)
+  do j = 1, n
+    r = r + j
+  end do
+  func_tile = r
+end

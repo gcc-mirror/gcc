@@ -1,3 +1,25 @@
+2024-06-05  Jakub Jelinek  <jakub@redhat.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-common.h (c_omp_find_generated_loop): Declare.
+	* c-gimplify.cc (c_genericize_control_stmt): Handle OMP_TILE and
+	OMP_UNROLL.
+	* c-omp.cc (c_finish_omp_for): Handle generated loops.
+	(c_omp_is_loop_iterator): Likewise.
+	(c_find_nested_loop_xform_r, c_omp_find_generated_loop): New
+	functions.
+	(c_omp_check_loop_iv): Handle generated loops.  For now sorry
+	on mixing non-rectangular loop with generated loops.
+	(c_omp_check_loop_binding_exprs): For now sorry on mixing
+	imperfect loops with generated loops.
+	(c_omp_directives): Uncomment tile and unroll entries.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_TILE and
+	PRAGMA_OMP_UNROLL, change PRAGMA_OMP__LAST_ to the latter.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_FULL and
+	PRAGMA_OMP_CLAUSE_PARTIAL.
+	* c-pragma.cc (omp_pragmas_simd): Add tile and unroll omp pragmas.
+
 2023-11-19  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang <cltang@codesourcery.com>
 

@@ -1,3 +1,37 @@
+2024-06-05  Jakub Jelinek  <jakub@redhat.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* tree.def (OMP_TILE, OMP_UNROLL): New tree codes.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_PARTIAL,
+	OMP_CLAUSE_FULL and OMP_CLAUSE_SIZES.
+	* tree.h (OMP_LOOPXFORM_CHECK): Define.
+	(OMP_LOOPXFORM_LOWERED): Define.
+	(OMP_CLAUSE_PARTIAL_EXPR): Define.
+	(OMP_CLAUSE_SIZES_LIST): Define.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add entries
+	for OMP_CLAUSE_{PARTIAL,FULL,SIZES}.
+	* tree-pretty-print.cc (dump_omp_clause): Handle
+	OMP_CLAUSE_{PARTIAL,FULL,SIZES}.
+	(dump_generic_node): Handle OMP_TILE and OMP_UNROLL.  Skip printing
+	loops with NULL OMP_FOR_INIT (node) vector element.
+	* gimplify.cc (is_gimple_stmt): Handle OMP_TILE and OMP_UNROLL.
+	(gimplify_omp_taskloop_expr): For SAVE_EXPR use gimplify_save_expr.
+	(gimplify_omp_loop_xform): New function.
+	(gimplify_omp_for): Call omp_maybe_apply_loop_xforms and if that
+	reshuffles what the passed pointer points to, retry or return GS_OK.
+	Handle OMP_TILE and OMP_UNROLL.
+	(gimplify_omp_loop): Call omp_maybe_apply_loop_xforms and if that
+	reshuffles what the passed pointer points to, return GS_OK.
+	(gimplify_expr): Handle OMP_TILE and OMP_UNROLL.
+	* omp-general.h (omp_loop_number_of_iterations,
+	omp_maybe_apply_loop_xforms): Declare.
+	* omp-general.cc (omp_adjust_for_condition): For LE_EXPR and GE_EXPR
+	with pointers, don't add/subtract one, but the size of what the
+	pointer points to.
+	(omp_loop_number_of_iterations, omp_apply_tile,
+	find_nested_loop_xform, omp_maybe_apply_loop_xforms): New functions.
+
 2023-03-17  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (gather_load<mode><vndi>): New.

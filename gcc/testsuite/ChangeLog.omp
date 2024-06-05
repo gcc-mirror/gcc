@@ -1,3 +1,124 @@
+2024-06-05  Jakub Jelinek  <jakub@redhat.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/gomp/attrs-tile-1.c: New test.
+	* c-c++-common/gomp/attrs-tile-2.c: New test.
+	* c-c++-common/gomp/attrs-tile-3.c: New test.
+	* c-c++-common/gomp/attrs-tile-4.c: New test.
+	* c-c++-common/gomp/attrs-tile-5.c: New test.
+	* c-c++-common/gomp/attrs-tile-6.c: New test.
+	* c-c++-common/gomp/attrs-unroll-1.c: New test.
+	* c-c++-common/gomp/attrs-unroll-2.c: New test.
+	* c-c++-common/gomp/attrs-unroll-3.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-1.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-2.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-3.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-4.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-5.c: New test.
+	* c-c++-common/gomp/imperfect-attributes.c: Adjust expected
+	diagnostics.
+	* c-c++-common/gomp/imperfect-loop-nest.c: New test.
+	* c-c++-common/gomp/ordered-5.c: New test.
+	* c-c++-common/gomp/scan-7.c: New test.
+	* c-c++-common/gomp/tile-1.c: New test.
+	* c-c++-common/gomp/tile-2.c: New test.
+	* c-c++-common/gomp/tile-3.c: New test.
+	* c-c++-common/gomp/tile-4.c: New test.
+	* c-c++-common/gomp/tile-5.c: New test.
+	* c-c++-common/gomp/tile-6.c: New test.
+	* c-c++-common/gomp/tile-7.c: New test.
+	* c-c++-common/gomp/tile-8.c: New test.
+	* c-c++-common/gomp/tile-9.c: New test.
+	* c-c++-common/gomp/tile-10.c: New test.
+	* c-c++-common/gomp/tile-11.c: New test.
+	* c-c++-common/gomp/tile-12.c: New test.
+	* c-c++-common/gomp/tile-13.c: New test.
+	* c-c++-common/gomp/tile-14.c: New test.
+	* c-c++-common/gomp/tile-15.c: New test.
+	* c-c++-common/gomp/unroll-1.c: New test.
+	* c-c++-common/gomp/unroll-2.c: New test.
+	* c-c++-common/gomp/unroll-3.c: New test.
+	* c-c++-common/gomp/unroll-4.c: New test.
+	* c-c++-common/gomp/unroll-5.c: New test.
+	* c-c++-common/gomp/unroll-6.c: New test.
+	* c-c++-common/gomp/unroll-7.c: New test.
+	* c-c++-common/gomp/unroll-8.c: New test.
+	* c-c++-common/gomp/unroll-9.c: New test.
+	* c-c++-common/gomp/unroll-inner-1.c: New test.
+	* c-c++-common/gomp/unroll-inner-2.c: New test.
+	* c-c++-common/gomp/unroll-inner-3.c: New test.
+	* c-c++-common/gomp/unroll-non-rect-1.c: New test.
+	* c-c++-common/gomp/unroll-non-rect-2.c: New test.
+	* c-c++-common/gomp/unroll-non-rect-3.c: New test.
+	* c-c++-common/gomp/unroll-simd-1.c: New test.
+	* gcc.dg/gomp/attrs-4.c: Adjust expected diagnostics.
+	* gcc.dg/gomp/for-1.c: Likewise.
+	* gcc.dg/gomp/for-11.c: Likewise.
+	* g++.dg/gomp/attrs-4.C: Likewise.
+	* g++.dg/gomp/for-1.C: Likewise.
+	* g++.dg/gomp/pr94512.C: Likewise.
+	* g++.dg/gomp/tile-1.C: New test.
+	* g++.dg/gomp/tile-2.C: New test.
+	* g++.dg/gomp/unroll-1.C: New test.
+	* g++.dg/gomp/unroll-2.C: New test.
+	* g++.dg/gomp/unroll-3.C: New test.
+	* gfortran.dg/gomp/inner-loops-1.f90: New test.
+	* gfortran.dg/gomp/inner-loops-2.f90: New test.
+	* gfortran.dg/gomp/pure-1.f90: Add tests for !$omp unroll
+	and !$omp tile.
+	* gfortran.dg/gomp/pure-2.f90: Remove those tests from here.
+	* gfortran.dg/gomp/scan-9.f90: New test.
+	* gfortran.dg/gomp/tile-1.f90: New test.
+	* gfortran.dg/gomp/tile-2.f90: New test.
+	* gfortran.dg/gomp/tile-3.f90: New test.
+	* gfortran.dg/gomp/tile-4.f90: New test.
+	* gfortran.dg/gomp/tile-5.f90: New test.
+	* gfortran.dg/gomp/tile-6.f90: New test.
+	* gfortran.dg/gomp/tile-7.f90: New test.
+	* gfortran.dg/gomp/tile-8.f90: New test.
+	* gfortran.dg/gomp/tile-9.f90: New test.
+	* gfortran.dg/gomp/tile-10.f90: New test.
+	* gfortran.dg/gomp/tile-imperfect-nest-1.f90: New test.
+	* gfortran.dg/gomp/tile-imperfect-nest-2.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-1.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-2.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-3.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-4.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-5.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-6.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-7.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-8.f90: New test.
+	* gfortran.dg/gomp/tile-non-rectangular-1.f90: New test.
+	* gfortran.dg/gomp/tile-non-rectangular-2.f90: New test.
+	* gfortran.dg/gomp/tile-non-rectangular-3.f90: New test.
+	* gfortran.dg/gomp/tile-unroll-1.f90: New test.
+	* gfortran.dg/gomp/tile-unroll-2.f90: New test.
+	* gfortran.dg/gomp/unroll-1.f90: New test.
+	* gfortran.dg/gomp/unroll-2.f90: New test.
+	* gfortran.dg/gomp/unroll-3.f90: New test.
+	* gfortran.dg/gomp/unroll-4.f90: New test.
+	* gfortran.dg/gomp/unroll-5.f90: New test.
+	* gfortran.dg/gomp/unroll-6.f90: New test.
+	* gfortran.dg/gomp/unroll-7.f90: New test.
+	* gfortran.dg/gomp/unroll-8.f90: New test.
+	* gfortran.dg/gomp/unroll-9.f90: New test.
+	* gfortran.dg/gomp/unroll-10.f90: New test.
+	* gfortran.dg/gomp/unroll-11.f90: New test.
+	* gfortran.dg/gomp/unroll-12.f90: New test.
+	* gfortran.dg/gomp/unroll-13.f90: New test.
+	* gfortran.dg/gomp/unroll-inner-loop-1.f90: New test.
+	* gfortran.dg/gomp/unroll-inner-loop-2.f90: New test.
+	* gfortran.dg/gomp/unroll-no-clause-1.f90: New test.
+	* gfortran.dg/gomp/unroll-non-rect-1.f90: New test.
+	* gfortran.dg/gomp/unroll-non-rect-2.f90: New test.
+	* gfortran.dg/gomp/unroll-simd-1.f90: New test.
+	* gfortran.dg/gomp/unroll-simd-2.f90: New test.
+	* gfortran.dg/gomp/unroll-simd-3.f90: New test.
+	* gfortran.dg/gomp/unroll-tile-1.f90: New test.
+	* gfortran.dg/gomp/unroll-tile-2.f90: New test.
+	* gfortran.dg/gomp/unroll-tile-inner-1.f90: New test.
+
 2023-11-19  Tobias Burnus  <tobias@codesourcery.com>
 	    Chung-Lin Tang <cltang@codesourcery.com>
 
