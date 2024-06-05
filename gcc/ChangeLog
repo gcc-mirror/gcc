@@ -1,3 +1,51 @@
+2024-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/100303
+	* rtl-ssa/accesses.cc (function_info::make_use_available): Take a
+	boolean that indicates whether the use will only be used in
+	debug instructions.  Treat it in the same way that existing
+	cross-EBB debug references would be handled if so.
+	(function_info::make_uses_available): Likewise.
+	* rtl-ssa/functions.h (function_info::make_uses_available): Update
+	prototype accordingly.
+	(function_info::make_uses_available): Likewise.
+	* fwprop.c (try_fwprop_subst): Update call accordingly.
+
+2024-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-02-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108086
+	* rtl-ssa/insns.h (insn_info): Make m_num_defs a full unsigned int.
+	Adjust size-related commentary accordingly.
+
+2024-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113281
+	* tree-vect-patterns.c (vect_recog_over_widening_pattern): Remove
+	workaround for right shifts.
+	(vect_truncatable_operation_p): Handle NEGATE_EXPR and BIT_NOT_EXPR.
+	(vect_determine_precisions_from_range): Be more selective about
+	which codes can be narrowed based on their input and output ranges.
+	For shifts, require at least one more bit of precision than the
+	maximum shift amount.
+
+2024-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/115192
+	* tree-data-ref.c (create_intersect_range_checks): Take the
+	alignment of the access sizes into account.
+
 2024-06-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
