@@ -1,3 +1,39 @@
+2024-06-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-02-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/97990
+	* g++.dg/torture/vector-struct-1.C: New test.
+
+2024-06-04  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110381
+	* gcc.dg/vect/pr110381.c: New testcase.
+
+2024-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113281
+	* gcc.dg/vect/pr113281-1.c: New test.
+	* gcc.dg/vect/pr113281-2.c: Likewise.
+	* gcc.dg/vect/pr113281-3.c: Likewise.
+	* gcc.dg/vect/pr113281-4.c: Likewise.
+	* gcc.dg/vect/pr113281-5.c: Likewise.
+
+2024-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/115192
+	* gcc.dg/vect/pr115192.c: New test.
+
 2024-06-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

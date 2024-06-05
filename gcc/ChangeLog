@@ -1,3 +1,53 @@
+2024-06-04  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/112732
+	* tree.cc (build_opaque_vector_type): Reset TYPE_ALIAS_SET
+	of the newly built type.
+
+2024-06-04  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110381
+	* tree-vect-slp.cc (vect_optimize_slp_pass::start_choosing_layouts):
+	Materialize permutes before fold-left reductions.
+
+2024-06-04  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113910
+	* bitmap.cc (bitmap_hash): Mix the full element "hash" to
+	the hashval_t hash.
+
+2024-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113281
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern): Remove
+	workaround for right shifts.
+	(vect_truncatable_operation_p): Handle NEGATE_EXPR and BIT_NOT_EXPR.
+	(vect_determine_precisions_from_range): Be more selective about
+	which codes can be narrowed based on their input and output ranges.
+	For shifts, require at least one more bit of precision than the
+	maximum shift amount.
+
+2024-06-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-05-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/115192
+	* tree-data-ref.cc (create_intersect_range_checks): Take the
+	alignment of the access sizes into account.
+
 2024-06-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
