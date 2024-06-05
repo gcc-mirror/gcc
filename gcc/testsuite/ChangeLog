@@ -1,3 +1,58 @@
+2024-06-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/103388
+	* g++.dg/parse/crash73.C: New test.
+
+2024-06-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83865
+	* gfortran.dg/allocate_with_source_32.f90: New test.
+
+2024-06-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/111106
+	* g++.dg/cpp2a/consteval37.C: New test.
+
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115337
+	* gcc.dg/bitint-106.c: New test.
+
+2024-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/avx10_1-25.c: Require ifunc support.
+	* gcc.target/i386/avx10_1-26.c: Likewise.
+
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108789
+	* gcc.c-torture/execute/pr108789.c: New test.
+
+2024-06-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-24.c: Expect another SLP instance for the
+	reduction.
+	* gcc.dg/vect/slp-24-big-array.c: Likewise.
+	* gcc.dg/vect/slp-reduc-6.c: Remove scan for zero SLP instances.
+
+2024-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR analyzer/107750
+	* gcc.dg/analyzer/fd-accept.c: Skip on *-*-solaris2*.
+	* gcc.dg/analyzer/fd-access-mode-target-headers.c: Likewise.
+	* gcc.dg/analyzer/fd-connect.c: Likewise.
+	* gcc.dg/analyzer/fd-datagram-socket.c: Likewise.
+	* gcc.dg/analyzer/fd-listen.c: Likewise.
+	* gcc.dg/analyzer/fd-socket-misuse.c: Likewise.
+	* gcc.dg/analyzer/fd-stream-socket-active-open.c: Likewise.
+	* gcc.dg/analyzer/fd-stream-socket-passive-open.c: Likewise.
+	* gcc.dg/analyzer/fd-stream-socket.c: Likewise.
+
+2024-06-04  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115299
+	* gcc.target/i386/pr86722.c: Also scan for blendvpd.
+
 2024-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/115012

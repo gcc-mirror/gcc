@@ -1,3 +1,10 @@
+2024-06-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/83865
+	* trans-stmt.cc (gfc_trans_allocate): Restrict special case for
+	source-expression with zero-length character to rank 0, so that
+	the array shape is not discarded.
+
 2024-05-29  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/90069

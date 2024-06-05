@@ -1,3 +1,66 @@
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115337
+	* gimple-range-op.cc (cfn_clz::fold_range): For
+	m_gimple_call_internal_p handle as a special case also second argument
+	of -1 next to prec.
+
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115337
+	* fold-const.cc (tree_call_nonnegative_warnv_p): Handle
+	CASE_CFN_CTZ like CASE_CFN_CLZ.
+
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.cc (tree_call_nonnegative_warnv_p): Formatting fixes.
+	(tree_invalid_nonnegative_warnv_p): Likewise.
+	* gimple-fold.cc (gimple_call_nonnegative_warnv_p): Likewise.
+
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115337
+	* fold-const.cc (tree_call_nonnegative_warnv_p) <CASE_CFN_CLZ>:
+	If arg1 is non-NULL, RECURSE on it, otherwise return true.
+
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108789
+	* builtins.cc (fold_builtin_arith_overflow): For ovf_only,
+	don't call save_expr and don't build REALPART_EXPR, otherwise
+	set TREE_SIDE_EFFECTS on call before calling save_expr.
+	(fold_builtin_addc_subc): Set TREE_SIDE_EFFECTS on call before
+	calling save_expr.
+
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (lujiazui): Clarify that while the CPUs do support
+	AVX and F16C, -march=lujiazui actually doesn't enable those.
+
+2024-06-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Only multi-lane
+	discoveries are reduction chains and need special backedge
+	treatment.
+	(vect_analyze_slp): Fall back to single-lane SLP discovery
+	for reductions.  Make sure to try single-lane SLP reduction
+	for all reductions as fallback.
+	(vectorizable_load): Avoid outer loop SLP vectorization with
+	multi-copy vector stmts in the inner loop.
+	(vectorizable_store): Likewise.
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Allow
+	direct opcode and shift reduction also for SLP reductions
+	with a single lane.
+	* tree-vect-stmts.cc (get_group_load_store_type): For SLP also
+	check for the PR65518 single-element interleaving case as done in
+	vect_grouped_load_supported.
+
+2024-06-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_schedule_slp_node): For mask/len
+	loops make sure to not advance the insertion iterator
+	beyond a GIMPLE_COND.
+
 2024-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/115324

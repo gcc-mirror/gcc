@@ -1,3 +1,13 @@
+2024-06-04  Simon Martin  <simon@nasilyan.com>
+
+	* pt.cc (tsubst_expr): Add missing space after seen_error.
+	(dependent_type_p): Likewise.
+
+2024-06-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/111106
+	* pt.cc (dependent_type_p): Don't fail assert during error recovery.
+
 2024-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/115012

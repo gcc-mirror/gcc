@@ -1,3 +1,17 @@
+2024-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115335
+	* include/std/span (span::at): Guard with feature test macro.
+
+2024-06-04  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/115308
+	* include/experimental/bits/simd.h (__int_for_sizeof): Remove
+	special cases for __clang__.
+	(_SimdWrapper): Change constructor overload set to allow
+	conversion from vector types with integral conversions via bit
+	reinterpretation.
+
 2024-06-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/stacktrace (basic_stacktrace::_Impl::_M_allocate):
