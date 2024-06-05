@@ -4980,8 +4980,8 @@ public:
   InlineAsm (location_t locus, bool is_global_asm)
     : locus (locus), is_global_asm (is_global_asm)
   {}
-  void accept_vis (ASTVisitor &vis) override{};
 
+  void accept_vis (ASTVisitor &vis) override;
   std::string as_string () const override { return "InlineAsm AST Node"; }
 
   location_t get_locus () const override { return locus; }
