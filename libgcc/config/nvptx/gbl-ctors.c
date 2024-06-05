@@ -68,6 +68,61 @@ __gbl_ctors (void)
 }
 
 
+/* For nvptx offloading configurations, need '.entry' wrappers.  */
+
+# if defined(__nvptx_softstack__) && defined(__nvptx_unisimt__)
+
+/* OpenMP */
+
+/* See 'crt0.c', 'mgomp.c'.  */
+extern void *__nvptx_stacks[32] __attribute__((shared,nocommon));
+extern unsigned __nvptx_uni[32] __attribute__((shared,nocommon));
+
+__attribute__((kernel)) void __do_global_ctors__entry__mgomp (void *);
+
+void
+__do_global_ctors__entry__mgomp (void *nvptx_stacks_0)
+{
+  __nvptx_stacks[0] = nvptx_stacks_0;
+  __nvptx_uni[0] = 0;
+
+  __static_do_global_ctors ();
+}
+
+__attribute__((kernel)) void __do_global_dtors__entry__mgomp (void *);
+
+void
+__do_global_dtors__entry__mgomp (void *nvptx_stacks_0)
+{
+  __nvptx_stacks[0] = nvptx_stacks_0;
+  __nvptx_uni[0] = 0;
+
+  __static_do_global_dtors ();
+}
+
+# else
+
+/* OpenACC */
+
+__attribute__((kernel)) void __do_global_ctors__entry (void);
+
+void
+__do_global_ctors__entry (void)
+{
+  __static_do_global_ctors ();
+}
+
+__attribute__((kernel)) void __do_global_dtors__entry (void);
+
+void
+__do_global_dtors__entry (void)
+{
+  __static_do_global_dtors ();
+}
+
+# endif
+
+
 /* The following symbol just provides a means for the nvptx-tools 'ld' to
    trigger linking in this file.  */
 
