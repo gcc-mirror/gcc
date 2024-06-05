@@ -5084,6 +5084,9 @@ package body Freeze is
          --  clause (used to warn about useless Bit_Order pragmas, and also
          --  to detect cases where Implicit_Packing may have an effect).
 
+         Relaxed_Finalization : Boolean := True;
+         --  Used to compute the Has_Relaxed_Finalization flag
+
          Sized_Component_Total_RM_Size : Uint := Uint_0;
          --  Accumulates total RM_Size values of all sized components. Used
          --  for processing of Implicit_Packing.
@@ -5707,6 +5710,9 @@ package body Freeze is
                   Final_Storage_Only :=
                     Final_Storage_Only
                       and then Finalize_Storage_Only (Etype (Comp));
+                  Relaxed_Finalization :=
+                    Relaxed_Finalization
+                      and then Has_Relaxed_Finalization (Etype (Comp));
                end if;
 
                if Has_Unchecked_Union (Etype (Comp)) then
@@ -5741,11 +5747,13 @@ package body Freeze is
 
             --  For a type that is not directly controlled but has controlled
             --  components, Finalize_Storage_Only is set if all the controlled
-            --  components are Finalize_Storage_Only.
+            --  components are Finalize_Storage_Only. The same processing is
+            --  appled to Has_Relaxed_Finalization.
 
             if not Is_Controlled (Rec) and then Has_Controlled_Component (Rec)
             then
-               Set_Finalize_Storage_Only (Rec, Final_Storage_Only);
+               Set_Finalize_Storage_Only    (Rec, Final_Storage_Only);
+               Set_Has_Relaxed_Finalization (Rec, Relaxed_Finalization);
             end if;
          end if;
 

@@ -9640,7 +9640,9 @@ package body Exp_Ch6 is
       --  such build-in-place functions, primitive or not.
 
       return not Restriction_Active (No_Finalization)
-        and then (Needs_Finalization (Typ) or else Is_Tagged_Type (Typ))
+        and then ((Needs_Finalization (Typ)
+                    and then not Has_Relaxed_Finalization (Typ))
+                  or else Is_Tagged_Type (Typ))
         and then not Has_Foreign_Convention (Typ);
    end Needs_BIP_Collection;
 

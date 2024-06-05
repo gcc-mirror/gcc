@@ -60,7 +60,6 @@ with Sem_Res;        use Sem_Res;
 with Sem_Type;       use Sem_Type;
 with Sem_Util;       use Sem_Util;
 with Sinfo.Utils;    use Sinfo.Utils;
-with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
@@ -929,6 +928,7 @@ package body Exp_Util is
 
       Needs_Fin :=
         Needs_Finalization (Desig_Typ)
+          and then not Has_Relaxed_Finalization (Desig_Typ)
           and then not No_Heap_Finalization (Ptr_Typ);
 
       --  The allocation/deallocation of a controlled object must be associated
@@ -6056,6 +6056,23 @@ package body Exp_Util is
       return TSS (Utyp, TSS_Finalize_Address);
    end Finalize_Address;
 
+   -----------------------------
+   -- Find_Controlled_Prim_Op --
+   -----------------------------
+
+   function Find_Controlled_Prim_Op
+     (T : Entity_Id; Name : Name_Id) return Entity_Id
+   is
+      Op_Name : constant Name_Id := Name_Of_Controlled_Prim_Op (T, Name);
+
+   begin
+      if Op_Name = No_Name then
+         return Empty;
+      end if;
+
+      return Find_Optional_Prim_Op (T, Op_Name);
+   end Find_Controlled_Prim_Op;
+
    ------------------------
    -- Find_Interface_ADT --
    ------------------------
@@ -6323,7 +6340,7 @@ package body Exp_Util is
             --  Primitive Initialize
 
             if Is_Controlled (Typ) then
-               Prim_Init := Find_Optional_Prim_Op (Typ, Name_Initialize);
+               Prim_Init := Find_Controlled_Prim_Op (Typ, Name_Initialize);
 
                if Present (Prim_Init) then
                   Prim_Init := Ultimate_Alias (Prim_Init);
@@ -11602,6 +11619,46 @@ package body Exp_Util is
 
       return True;
    end May_Generate_Large_Temp;
+
+   --------------------------------
+   -- Name_Of_Controlled_Prim_Op --
+   --------------------------------
+
+   function Name_Of_Controlled_Prim_Op
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Name_Id
+   is
+   begin
+      pragma Assert (Is_Controlled (Typ));
+
+      --  The aspect Finalizable may change the name of the primitives when
+      --  present, but it's a GNAT extension.
+
+      if All_Extensions_Allowed then
+         declare
+            Rep : constant Node_Id
+              := Get_Rep_Item (Typ, Name_Finalizable, Check_Parents => True);
+
+            Assoc : Node_Id;
+
+         begin
+            if Present (Rep) then
+               Assoc := First (Component_Associations (Expression (Rep)));
+               while Present (Assoc) loop
+                  if Chars (First (Choices (Assoc))) = Nam then
+                     return Chars (Expression (Assoc));
+                  end if;
+
+                  Next (Assoc);
+               end loop;
+
+               return No_Name;
+            end if;
+         end;
+      end if;
+
+      return Nam;
+   end Name_Of_Controlled_Prim_Op;
 
    --------------------------------------------
    -- Needs_Conditional_Null_Excluding_Check --

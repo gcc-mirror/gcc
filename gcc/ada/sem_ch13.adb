@@ -291,6 +291,10 @@ package body Sem_Ch13 is
    --  Check legality and completeness of the aggregate associations given in
    --  the Storage_Model_Type aspect associated with Typ.
 
+   procedure Validate_Finalizable_Aspect (Typ : Entity_Id; ASN : Node_Id);
+   --  Check legality and completeness of the aggregate associations given in
+   --  the Finalizable aspect associated with Typ.
+
    procedure Resolve_Storage_Model_Type_Argument
      (N         : Node_Id;
       Typ       : Entity_Id;
@@ -305,6 +309,13 @@ package body Sem_Ch13 is
      Class_Present : Boolean);
    --  Resolve each one of the functions specified in the specification of
    --  aspect Stable_Properties (or Stable_Properties'Class).
+
+   procedure Resolve_Finalizable_Argument
+     (N   : Node_Id;
+      Typ : Entity_Id;
+      Nam : Name_Id);
+   --  Resolve each one of the arguments specified in the specification of
+   --  aspect Finalizable.
 
    procedure Resolve_Iterable_Operation
      (N      : Node_Id;
@@ -1382,6 +1393,9 @@ package body Sem_Ch13 is
                            ASN);
                      end if;
 
+                  when Aspect_Finalizable =>
+                     Validate_Finalizable_Aspect (E, ASN);
+
                   when others =>
                      null;
                end case;
@@ -1913,8 +1927,8 @@ package body Sem_Ch13 is
                      --  Otherwise the expression is not static
 
                      else
-                        Error_Msg_N
-                          ("expression of aspect % must be static", Aspect);
+                        Flag_Non_Static_Expr
+                          ("expression of aspect % must be static!", Aspect);
                      end if;
 
                   --  Otherwise the aspect appears without an expression and
@@ -2353,9 +2367,9 @@ package body Sem_Ch13 is
                                       (Expression (Assoc))
                                     then
                                        Error_Msg_Name_1 := Nam;
-                                       Error_Msg_N
+                                       Flag_Non_Static_Expr
                                          ("expression of aspect % " &
-                                          "must be static", Aspect);
+                                          "must be static!", Aspect);
                                     end if;
 
                                  else
@@ -2572,8 +2586,8 @@ package body Sem_Ch13 is
                      --  Error if the boolean expression is not static
 
                      if not Is_OK_Static_Expression (Expr) then
-                        Error_Msg_N
-                          ("expression of aspect % must be static", Aspect);
+                        Flag_Non_Static_Expr
+                          ("expression of aspect % must be static!", Aspect);
                      end if;
                   end if;
                end if;
@@ -2628,8 +2642,8 @@ package body Sem_Ch13 is
                         Expr_Value := True;
                      end if;
                   else
-                     Error_Msg_N
-                       ("expression of aspect % must be static", Aspect);
+                     Flag_Non_Static_Expr
+                       ("expression of aspect % must be static!", Aspect);
                   end if;
                end if;
 
@@ -2682,7 +2696,7 @@ package body Sem_Ch13 is
                else
                   Error_Msg_Name_1 := Nam;
                   Flag_Non_Static_Expr
-                    ("entity for aspect% must be a static expression",
+                    ("entity for aspect% must be a static expression!",
                      Expr);
                   raise Aspect_Exit;
                end if;
@@ -4139,6 +4153,7 @@ package body Sem_Ch13 is
 
                when Aspect_Storage_Model_Type =>
                   if not All_Extensions_Allowed then
+                     Error_Msg_Name_1 := Nam;
                      Error_Msg_GNAT_Extension ("aspect %", Loc);
                      goto Continue;
 
@@ -4148,6 +4163,17 @@ package body Sem_Ch13 is
                      Error_Msg_N
                        ("can only be specified for immutably limited type",
                         Aspect);
+                     goto Continue;
+                  end if;
+
+               when Aspect_Finalizable =>
+                  if not All_Extensions_Allowed then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_GNAT_Extension ("aspect %", Loc);
+                     goto Continue;
+
+                  elsif not Is_Type (E) then
+                     Error_Msg_N ("can only be specified for a type", Aspect);
                      goto Continue;
                   end if;
 
@@ -11439,10 +11465,52 @@ package body Sem_Ch13 is
             Analyze (Expression (ASN));
             return;
 
-         --  Ditto for Iterable, legality checks in Validate_Iterable_Aspect.
+         --  Finalizable, legality checks in Validate_Finalizable_Aspect
+
+         when Aspect_Finalizable =>
+            T := Entity (ASN);
+
+            if Nkind (Expression (ASN)) /= N_Aggregate then
+               pragma Assert (Serious_Errors_Detected > 0);
+               return;
+            end if;
+
+            declare
+               Assoc : Node_Id;
+               Exp   : Node_Id;
+               Nam   : Node_Id;
+
+            begin
+               Assoc := First (Component_Associations (Expression (ASN)));
+               while Present (Assoc) loop
+                  Nam := First (Choices (Assoc));
+                  Exp := Expression (Assoc);
+
+                  if Chars (Nam) = Name_Relaxed_Finalization
+                    and then Inside_A_Generic
+                  then
+                     Preanalyze_And_Resolve (Exp, Any_Boolean);
+
+                  else
+                     Analyze (Exp);
+                     Resolve_Finalizable_Argument (Exp, T, Chars (Nam));
+                  end if;
+
+                  Next (Assoc);
+               end loop;
+            end;
+
+            return;
+
+         --  Iterable, legality checks in Validate_Iterable_Aspect
 
          when Aspect_Iterable =>
             T := Entity (ASN);
+
+            if Nkind (Expression (ASN)) /= N_Aggregate then
+               pragma Assert (Serious_Errors_Detected > 0);
+               return;
+            end if;
 
             declare
                Cursor : constant Entity_Id := Get_Cursor_Type (ASN, T);
@@ -14159,6 +14227,15 @@ package body Sem_Ch13 is
                   Set_SSO_Set_High_By_Default (Bas_Typ, False);
                end if;
             end if;
+
+            --  Finalizable
+
+            if Is_Record_Type (Typ) and then Typ = Bas_Typ then
+               Rep := Get_Inherited_Rep_Item (Typ, Name_Finalizable);
+               if Present (Rep) then
+                  Propagate_Controlled_Flags (Typ, Etype (Bas_Typ));
+               end if;
+            end if;
          end;
       end if;
    end Inherit_Aspects_At_Freeze_Point;
@@ -15977,7 +16054,7 @@ package body Sem_Ch13 is
                   when Pre_Post_Aspects =>
                      null;
 
-                  when Aspect_Iterable =>
+                  when Aspect_Finalizable | Aspect_Iterable =>
                      if Nkind (Expr) = N_Aggregate then
                         declare
                            Assoc : Node_Id;
@@ -16448,6 +16525,83 @@ package body Sem_Ch13 is
          Check_Property_Function_Arg (N);
       end if;
    end Validate_Aspect_Stable_Properties;
+
+   ----------------------------------
+   -- Resolve_Finalizable_Argument --
+   ----------------------------------
+
+   procedure Resolve_Finalizable_Argument
+     (N   : Node_Id;
+      Typ : Entity_Id;
+      Nam : Name_Id)
+   is
+      function Is_Finalizable_Primitive (E : Entity_Id) return Boolean;
+      --  Check whether E is a finalizable primitive for Typ
+
+      ------------------------------
+      -- Is_Finalizable_Primitive --
+      ------------------------------
+
+      function Is_Finalizable_Primitive (E : Entity_Id) return Boolean is
+      begin
+         return Ekind (E) = E_Procedure
+           and then Scope (E) = Scope (Typ)
+           and then Present (First_Formal (E))
+           and then Ekind (First_Formal (E)) = E_In_Out_Parameter
+           and then Etype (First_Formal (E)) = Typ
+           and then No (Next_Formal (First_Formal (E)));
+      end Is_Finalizable_Primitive;
+
+   --  Start of processing for Resolve_Finalizable_Argument
+
+   begin
+      if Nam = Name_Relaxed_Finalization then
+         Resolve (N, Any_Boolean);
+
+         if Is_OK_Static_Expression (N) then
+            Set_Has_Relaxed_Finalization (Typ, Is_True (Static_Boolean (N)));
+
+         else
+            Flag_Non_Static_Expr
+              ("expression of aspect Finalizable must be static!", N);
+         end if;
+
+         return;
+      end if;
+
+      if not Is_Entity_Name (N) then
+         null;
+
+      elsif not Is_Overloaded (N) then
+         if Is_Finalizable_Primitive (Entity (N)) then
+            return;
+         end if;
+
+      else
+         --  Overloaded case: find subprogram with proper signature
+
+         declare
+            I  : Interp_Index;
+            It : Interp;
+
+         begin
+            Get_First_Interp (N, I, It);
+
+            while Present (It.Typ) loop
+               if Is_Finalizable_Primitive (It.Nam) then
+                  Set_Entity (N, It.Nam);
+                  return;
+               end if;
+
+               Get_Next_Interp (I, It);
+            end loop;
+         end;
+      end if;
+
+      Error_Msg_N
+        ("finalizable primitive must be local procedure whose only formal " &
+         "parameter has mode `IN OUT` and is of the finalizable type", N);
+   end Resolve_Finalizable_Argument;
 
    --------------------------------
    -- Resolve_Iterable_Operation --
@@ -17692,6 +17846,73 @@ package body Sem_Ch13 is
          end;
       end loop;
    end Validate_Address_Clauses;
+
+   ---------------------------------
+   -- Validate_Finalizable_Aspect --
+   ---------------------------------
+
+   procedure Validate_Finalizable_Aspect (Typ : Entity_Id; ASN : Node_Id) is
+      Aggr : constant Node_Id := Expression (ASN);
+
+      Assoc : Node_Id;
+      Exp   : Node_Id;
+      Nam   : Node_Id;
+
+   begin
+      if not Is_Record_Type (Typ) then
+         Error_Msg_N
+           ("aspect Finalizable can only be specified for a record type", ASN);
+         return;
+
+      elsif Is_Derived_Type (Typ) then
+         Error_Msg_N
+           ("aspect Finalizable cannot be specified for a derived type", ASN);
+         return;
+
+      elsif Nkind (Aggr) /= N_Aggregate then
+         Error_Msg_N ("aspect Finalizable must be an aggregate", Aggr);
+         return;
+
+      elsif not Is_Empty_List (Expressions (Aggr)) then
+         Error_Msg_N
+           ("illegal positional association", First (Expressions (Aggr)));
+         return;
+      end if;
+
+      Set_Is_Controlled_Active (Typ);
+
+      --  Relaxed_Finalization is optional and set True if not specified
+
+      Set_Has_Relaxed_Finalization (Typ);
+
+      Assoc := First (Component_Associations (Aggr));
+      while Present (Assoc) loop
+         Nam := First (Choices (Assoc));
+         Exp := Expression (Assoc);
+
+         if Nkind (Nam) /= N_Identifier or else Present (Next (Nam)) then
+            Error_Msg_N ("illegal name in association", Nam);
+
+         elsif Chars (Nam) in Name_Initialize | Name_Adjust | Name_Finalize
+         then
+            Analyze (Exp);
+            Resolve_Finalizable_Argument (Exp, Typ, Chars (Nam));
+
+         elsif Chars (Nam) = Name_Relaxed_Finalization then
+            if Inside_A_Generic then
+               Preanalyze_And_Resolve (Exp, Any_Boolean);
+            else
+               Analyze (Exp);
+               Resolve_Finalizable_Argument (Exp, Typ, Chars (Nam));
+            end if;
+
+         else
+            Error_Msg_N ("invalid argument for Finalizable aspect", Nam);
+         end if;
+
+         Next (Assoc);
+      end loop;
+   end Validate_Finalizable_Aspect;
 
    ------------------------------
    -- Validate_Iterable_Aspect --

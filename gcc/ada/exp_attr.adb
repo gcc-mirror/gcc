@@ -3757,10 +3757,13 @@ package body Exp_Attr is
 
             Rewrite (N, New_Occurrence_Of (Size, Loc));
 
-         --  The prefix is known to be controlled at compile time. Calculate
-         --  Finalization_Size by calling function Header_Size_With_Padding.
+         --  The prefix is known to be controlled at compile time and to
+         --  require strict finalization. Calculate Finalization_Size by
+         --  calling function Header_Size_With_Padding.
 
-         elsif Needs_Finalization (Ptyp) then
+         elsif Needs_Finalization (Ptyp)
+           and then not Has_Relaxed_Finalization (Ptyp)
+         then
             Rewrite (N, Calculate_Header_Size);
 
          --  The prefix is not an object with controlled parts, so its

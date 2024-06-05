@@ -2036,6 +2036,10 @@ package Einfo is
 --       is detected while analyzing the body. Used to activate some error
 --       checks for infinite recursion.
 
+--    Has_Relaxed_Finalization [base type only]
+--       Defined in all type entities. Indicates that the type is subject to
+--       relaxed semantics for the finalization operations.
+
 --    Has_Shift_Operator [base type only]
 --       Defined in integer types. Set in the base type of an integer type for
 --       which at least one of the shift operators is defined.
@@ -2505,8 +2509,11 @@ package Einfo is
 
 --    Is_Controlled_Active [base type only]
 --       Defined in all type entities. Indicates that the type is controlled,
---       i.e. is either a descendant of Ada.Finalization.Controlled or of
---       Ada.Finalization.Limited_Controlled.
+--       i.e. has been declared with the Finalizable aspect or has inherited
+--       the Finalizable aspect from an ancestor. Can only be set for record
+--       types, tagged or untagged. System.Finalization_Root.Root_Controlled
+--       is an example of the former case while Ada.Finalization.Controlled
+--       and Ada.Finalization.Limited_Controlled are examples of the latter.
 
 --    Is_Controlled (synth) [base type only]
 --       Defined in all type entities. Set if Is_Controlled_Active is set for

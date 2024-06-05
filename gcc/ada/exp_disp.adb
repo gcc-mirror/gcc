@@ -7878,9 +7878,6 @@ package body Exp_Disp is
       First_Prim : constant Elmt_Id := First_Elmt (Primitive_Operations (Typ));
       The_Tag    : constant Entity_Id := First_Tag_Component (Typ);
 
-      Adjusted  : Boolean := False;
-      Finalized : Boolean := False;
-
       Count_Prim : Nat;
       DT_Length  : Nat;
       Nb_Prim    : Nat;
@@ -8208,14 +8205,6 @@ package body Exp_Disp is
             Validate_Position (Prim);
          end if;
 
-         if Chars (Prim) = Name_Finalize then
-            Finalized := True;
-         end if;
-
-         if Chars (Prim) = Name_Adjust then
-            Adjusted := True;
-         end if;
-
          --  An abstract operation cannot be declared in the private part for a
          --  visible abstract type, because it can't be overridden outside this
          --  package hierarchy. For explicit declarations this is checked at
@@ -8261,19 +8250,6 @@ package body Exp_Disp is
 
          Next_Elmt (Prim_Elmt);
       end loop;
-
-      --  Additional check
-
-      if Is_Controlled (Typ) then
-         if not Finalized then
-            Error_Msg_N
-              ("controlled type has no explicit Finalize method??", Typ);
-
-         elsif not Adjusted then
-            Error_Msg_N
-              ("controlled type has no explicit Adjust method??", Typ);
-         end if;
-      end if;
 
       --  Set the final size of the Dispatch Table
 

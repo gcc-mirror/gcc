@@ -98,6 +98,7 @@ package Aspects is
       Aspect_Exceptional_Cases,             -- GNAT
       Aspect_External_Name,
       Aspect_External_Tag,
+      Aspect_Finalizable,                   -- GNAT
       Aspect_Ghost_Predicate,               -- GNAT
       Aspect_Global,                        -- GNAT
       Aspect_GNAT_Annotate,                 -- GNAT
@@ -291,6 +292,7 @@ package Aspects is
       Aspect_Exceptional_Cases          => True,
       Aspect_Extensions_Visible         => True,
       Aspect_Favor_Top_Level            => True,
+      Aspect_Finalizable                => True,
       Aspect_Ghost                      => True,
       Aspect_Ghost_Predicate            => True,
       Aspect_Global                     => True,
@@ -331,8 +333,8 @@ package Aspects is
       Aspect_Subprogram_Variant         => True,
       Aspect_Suppress_Debug_Info        => True,
       Aspect_Suppress_Initialization    => True,
-      Aspect_Thread_Local_Storage       => True,
       Aspect_Test_Case                  => True,
+      Aspect_Thread_Local_Storage       => True,
       Aspect_Unimplemented              => True,
       Aspect_Universal_Aliasing         => True,
       Aspect_Unmodified                 => True,
@@ -355,6 +357,7 @@ package Aspects is
      (Aspect_Aggregate                  => True,
       Aspect_Constant_Indexing          => True,
       Aspect_Default_Iterator           => True,
+      Aspect_Finalizable                => True,
       Aspect_Iterable                   => True,
       Aspect_Iterator_Element           => True,
       Aspect_Variable_Indexing          => True,
@@ -432,6 +435,7 @@ package Aspects is
       Aspect_Exceptional_Cases          => Expression,
       Aspect_External_Name              => Expression,
       Aspect_External_Tag               => Expression,
+      Aspect_Finalizable                => Expression,
       Aspect_Ghost_Predicate            => Expression,
       Aspect_Global                     => Expression,
       Aspect_GNAT_Annotate              => Expression,
@@ -530,6 +534,7 @@ package Aspects is
       Aspect_Exclusive_Functions          => False,
       Aspect_External_Name                => False,
       Aspect_External_Tag                 => False,
+      Aspect_Finalizable                  => False,
       Aspect_Ghost_Predicate              => False,
       Aspect_Global                       => False,
       Aspect_GNAT_Annotate                => False,
@@ -703,6 +708,7 @@ package Aspects is
       Aspect_External_Name                => Name_External_Name,
       Aspect_External_Tag                 => Name_External_Tag,
       Aspect_Favor_Top_Level              => Name_Favor_Top_Level,
+      Aspect_Finalizable                  => Name_Finalizable,
       Aspect_Full_Access_Only             => Name_Full_Access_Only,
       Aspect_Ghost                        => Name_Ghost,
       Aspect_Ghost_Predicate              => Name_Ghost_Predicate,
@@ -953,6 +959,7 @@ package Aspects is
       Aspect_External_Name                => Always_Delay,
       Aspect_External_Tag                 => Always_Delay,
       Aspect_Favor_Top_Level              => Always_Delay,
+      Aspect_Finalizable                  => Always_Delay,
       Aspect_Ghost_Predicate              => Always_Delay,
       Aspect_Implicit_Dereference         => Always_Delay,
       Aspect_Independent                  => Always_Delay,

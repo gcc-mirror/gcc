@@ -2477,7 +2477,7 @@ package body Exp_Aggr is
               Make_Procedure_Call_Statement (Loc,
                 Name                   =>
                   New_Occurrence_Of
-                    (Find_Prim_Op (Init_Typ, Name_Initialize), Loc),
+                    (Find_Controlled_Prim_Op (Init_Typ, Name_Initialize), Loc),
                 Parameter_Associations => New_List (New_Copy_Tree (Ref))));
          end if;
       end Generate_Finalization_Actions;

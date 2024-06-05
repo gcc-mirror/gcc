@@ -1893,6 +1893,7 @@ package body Exp_Ch3 is
         or else Has_Discriminants (T)
         or else Is_Limited_Type (T)
         or else Has_Non_Standard_Rep (T)
+        or else Needs_Finalization (T)
       then
          Initialization_Warning (T);
          return Empty;
@@ -6328,19 +6329,22 @@ package body Exp_Ch3 is
 
             --  Make sure that the primitives Initialize, Adjust and Finalize
             --  are Frozen before other TSS subprograms. We don't want them
-            --  Frozen inside.
+            --  frozen inside.
 
             if Is_Controlled (Typ) then
+               Append_Freeze_Actions (Typ,
+                 Freeze_Entity
+                   (Find_Controlled_Prim_Op (Typ, Name_Initialize), Typ));
+
                if not Is_Limited_Type (Typ) then
                   Append_Freeze_Actions (Typ,
-                    Freeze_Entity (Find_Prim_Op (Typ, Name_Adjust), Typ));
+                    Freeze_Entity
+                      (Find_Controlled_Prim_Op (Typ, Name_Adjust), Typ));
                end if;
 
                Append_Freeze_Actions (Typ,
-                 Freeze_Entity (Find_Prim_Op (Typ, Name_Initialize), Typ));
-
-               Append_Freeze_Actions (Typ,
-                 Freeze_Entity (Find_Prim_Op (Typ, Name_Finalize), Typ));
+                 Freeze_Entity
+                   (Find_Controlled_Prim_Op (Typ, Name_Finalize), Typ));
             end if;
 
             --  Freeze rest of primitive operations. There is no need to handle
@@ -6424,6 +6428,15 @@ package body Exp_Ch3 is
          Build_Record_Init_Proc (Typ_Decl, Typ);
       end if;
 
+     --  Create the body of TSS primitive Finalize_Address. This must be done
+     --  before the bodies of all predefined primitives are created. If Typ
+     --  is limited, Stream_Input and Stream_Read may produce build-in-place
+     --  allocations and for those the expander needs Finalize_Address.
+
+      if Is_Controlled (Typ) then
+         Make_Finalize_Address_Body (Typ);
+      end if;
+
       --  For tagged type that are not interfaces, build bodies of primitive
       --  operations. Note: do this after building the record initialization
       --  procedure, since the primitive operations may need the initialization
@@ -6440,28 +6453,18 @@ package body Exp_Ch3 is
          then
             null;
 
-         else
-            --  Create the body of TSS primitive Finalize_Address. This must
-            --  be done before the bodies of all predefined primitives are
-            --  created. If Typ is limited, Stream_Input and Stream_Read may
-            --  produce build-in-place allocations and for those the expander
-            --  needs Finalize_Address.
+         --  Do not add the body of the predefined primitives if we are
+         --  compiling under restriction No_Dispatching_Calls.
 
-            Make_Finalize_Address_Body (Typ);
+         elsif not Restriction_Active (No_Dispatching_Calls) then
+            --  Create the body of the class-wide type's TSS primitive
+            --  Finalize_Address. This must be done before any class-wide
+            --  precondition functions are created.
 
-            --  Do not add the body of the predefined primitives if we are
-            --  compiling under restriction No_Dispatching_Calls.
+            Make_Finalize_Address_Body (Class_Wide_Type (Typ));
 
-            if not Restriction_Active (No_Dispatching_Calls) then
-               --  Create the body of the class-wide type's TSS primitive
-               --  Finalize_Address. This must be done before any class-wide
-               --  precondition functions are created.
-
-               Make_Finalize_Address_Body (Class_Wide_Type (Typ));
-
-               Predef_List := Predefined_Primitive_Bodies (Typ, Renamed_Eq);
-               Append_Freeze_Actions (Typ, Predef_List);
-            end if;
+            Predef_List := Predefined_Primitive_Bodies (Typ, Renamed_Eq);
+            Append_Freeze_Actions (Typ, Predef_List);
          end if;
 
          --  Ada 2005 (AI-391): If any wrappers were created for nonoverridden

@@ -50,6 +50,7 @@ with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Cat;        use Sem_Cat;
 with Sem_Disp;       use Sem_Disp;
+with Sem_Elab;       use Sem_Elab;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Mech;       use Sem_Mech;
 with Sem_Res;        use Sem_Res;
@@ -8622,8 +8623,9 @@ package body Checks is
       --  need to be called while elaboration is taking place.
 
       elsif Is_Controlled (Tag_Typ)
-        and then
-          Chars (Subp_Id) in Name_Adjust | Name_Finalize | Name_Initialize
+        and then (Is_Controlled_Procedure (Subp_Id, Name_Adjust)
+                   or else Is_Controlled_Procedure (Subp_Id, Name_Finalize)
+                   or else Is_Controlled_Procedure (Subp_Id, Name_Initialize))
       then
          return;
       end if;

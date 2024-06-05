@@ -972,6 +972,11 @@ package body Exp_Ch7 is
       then
          return False;
 
+      --  Do not consider controlled types with relaxed finalization
+
+      elsif Has_Relaxed_Finalization (Desig_Typ) then
+         return False;
+
       --  Do not consider an access type that returns on the secondary stack
 
       elsif Present (Associated_Storage_Pool (Ptr_Typ))
@@ -3944,7 +3949,7 @@ package body Exp_Ch7 is
          --  is from a private type that is not visibly controlled.
 
          Parent_Type := Etype (Typ);
-         Op := Find_Optional_Prim_Op (Parent_Type, Name_Of (Prim));
+         Op := Find_Controlled_Prim_Op (Parent_Type, Name_Of (Prim));
 
          if Present (Op) then
             E := Op;
@@ -5435,7 +5440,7 @@ package body Exp_Ch7 is
       --  Derivations from [Limited_]Controlled
 
       elsif Is_Controlled (Utyp) then
-         Adj_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Adjust_Case));
+         Adj_Id := Find_Controlled_Prim_Op (Utyp, Name_Adjust);
 
       --  Tagged types
 
@@ -6369,6 +6374,8 @@ package body Exp_Ch7 is
       Typ      : Entity_Id;
       Is_Local : Boolean := False) return List_Id
    is
+      Loc : constant Source_Ptr := Sloc (Typ);
+
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id;
       --  Build the statements necessary to adjust a record type. The type may
       --  have discriminants and contain variant parts. Generate:
@@ -6518,7 +6525,6 @@ package body Exp_Ch7 is
       -----------------------------
 
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id is
-         Loc     : constant Source_Ptr := Sloc (Typ);
          Typ_Def : constant Node_Id    := Type_Definition (Parent (Typ));
 
          Finalizer_Data : Finalization_Exception_Data;
@@ -6846,7 +6852,7 @@ package body Exp_Ch7 is
                Proc     : Entity_Id;
 
             begin
-               Proc := Find_Optional_Prim_Op (Typ, Name_Adjust);
+               Proc := Find_Controlled_Prim_Op (Typ, Name_Adjust);
 
                --  Generate:
                --    if F then
@@ -6934,8 +6940,7 @@ package body Exp_Ch7 is
       -------------------------------
 
       function Build_Finalize_Statements (Typ : Entity_Id) return List_Id is
-         Loc     : constant Source_Ptr := Sloc (Typ);
-         Typ_Def : constant Node_Id    := Type_Definition (Parent (Typ));
+         Typ_Def : constant Node_Id := Type_Definition (Parent (Typ));
 
          Counter        : Nat := 0;
          Finalizer_Data : Finalization_Exception_Data;
@@ -7472,7 +7477,7 @@ package body Exp_Ch7 is
                Proc     : Entity_Id;
 
             begin
-               Proc := Find_Optional_Prim_Op (Typ, Name_Finalize);
+               Proc := Find_Controlled_Prim_Op (Typ, Name_Finalize);
 
                --  Generate:
                --    if F then
@@ -7629,22 +7634,17 @@ package body Exp_Ch7 is
             return Build_Finalize_Statements (Typ);
 
          when Initialize_Case =>
-            declare
-               Loc : constant Source_Ptr := Sloc (Typ);
-
-            begin
-               if Is_Controlled (Typ) then
-                  return New_List (
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of
-                          (Find_Prim_Op (Typ, Name_Of (Prim)), Loc),
-                      Parameter_Associations => New_List (
-                        Make_Identifier (Loc, Name_V))));
-               else
-                  return Empty_List;
-               end if;
-            end;
+            if Is_Controlled (Typ) then
+               return New_List (
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   =>
+                     New_Occurrence_Of
+                       (Find_Controlled_Prim_Op (Typ, Name_Initialize), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Identifier (Loc, Name_V))));
+            else
+               return Empty_List;
+            end if;
       end case;
    end Make_Deep_Record_Body;
 
@@ -7784,7 +7784,7 @@ package body Exp_Ch7 is
       --  Derivations from [Limited_]Controlled
 
       elsif Is_Controlled (Utyp) then
-         Fin_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Finalize_Case));
+         Fin_Id := Find_Controlled_Prim_Op (Utyp, Name_Finalize);
 
       --  Tagged types
 
@@ -7895,10 +7895,10 @@ package body Exp_Ch7 is
       if Is_Task then
          null;
 
-      --  Nothing to do if the type is not controlled or it already has a
-      --  TSS entry for Finalize_Address. Skip class-wide subtypes which do not
-      --  come from source. These are usually generated for completeness and
-      --  do not need the Finalize_Address primitive.
+      --  Nothing to do if the type does not need finalization or already has
+      --  a TSS entry for Finalize_Address. Skip class-wide subtypes that do
+      --  not come from source, as they are usually generated for completeness
+      --  and need no Finalize_Address.
 
       elsif not Needs_Finalization (Typ)
         or else Present (TSS (Typ, TSS_Finalize_Address))
@@ -8287,12 +8287,12 @@ package body Exp_Ch7 is
       --  Select the appropriate version of initialize
 
       if Has_Controlled_Component (Utyp) then
-         Proc := TSS (Utyp, Deep_Name_Of (Initialize_Case));
+         Proc := TSS (Utyp, TSS_Deep_Initialize);
       elsif Is_Mutably_Tagged_Type (Utyp) then
-         Proc := Find_Prim_Op (Etype (Utyp), Name_Of (Initialize_Case));
+         Proc := Find_Controlled_Prim_Op (Etype (Utyp), Name_Initialize);
          Check_Visibly_Controlled (Initialize_Case, Etype (Typ), Proc, Ref);
       else
-         Proc := Find_Prim_Op (Utyp, Name_Of (Initialize_Case));
+         Proc := Find_Controlled_Prim_Op (Utyp, Name_Initialize);
          Check_Visibly_Controlled (Initialize_Case, Typ, Proc, Ref);
       end if;
 

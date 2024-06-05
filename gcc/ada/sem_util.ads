@@ -2920,10 +2920,11 @@ package Sem_Util is
       Comp     : Boolean := False;
       Deriv    : Boolean := False);
    --  Set Disable_Controlled, Finalize_Storage_Only, Has_Controlled_Component,
-   --  and Is_Controlled_Active on Typ when the flags are set on From_Typ. If
-   --  Comp is True, From_Typ is the type of a component of Typ while, if Deriv
-   --  is True, From_Typ is the parent type of Typ. This procedure can only set
-   --  flags for Typ, and never clear them.
+   --  Has_Relaxed_Finalization, and Is_Controlled_Active on Typ when the flags
+   --  are set on From_Typ. If Comp is True, From_Typ is assumed to be the type
+   --  of a component of Typ while, if Deriv is True, From_Typ is assumed to be
+   --  the parent type of Typ. This procedure can only set flags for Typ, and
+   --  never clear them.
 
    procedure Propagate_DIC_Attributes
      (Typ      : Entity_Id;

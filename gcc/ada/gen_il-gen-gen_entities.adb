@@ -103,6 +103,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Has_Private_Declaration, Flag),
         Sm (Has_Protected, Flag, Base_Type_Only),
         Sm (Has_Qualified_Name, Flag),
+        Sm (Has_Relaxed_Finalization, Flag, Base_Type_Only),
         Sm (Has_Size_Clause, Flag),
         Sm (Has_Stream_Size_Clause, Flag),
         Sm (Has_Task, Flag, Base_Type_Only),

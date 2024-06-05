@@ -38,7 +38,6 @@ with Exp_Util;       use Exp_Util;
 with Expander;       use Expander;
 with Lib;            use Lib;
 with Lib.Load;       use Lib.Load;
-with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
 with Opt;            use Opt;
@@ -1772,14 +1771,6 @@ package body Sem_Elab is
       function Is_Bridge_Target (Id : Entity_Id) return Boolean;
       pragma Inline (Is_Bridge_Target);
       --  Determine whether arbitrary entity Id denotes a bridge target
-
-      function Is_Controlled_Proc
-        (Subp_Id  : Entity_Id;
-         Subp_Nam : Name_Id) return Boolean;
-      pragma Inline (Is_Controlled_Proc);
-      --  Determine whether subprogram Subp_Id denotes controlled type
-      --  primitives Adjust, Finalize, or Initialize as denoted by name
-      --  Subp_Nam.
 
       function Is_Default_Initial_Condition_Proc
         (Id : Entity_Id) return Boolean;
@@ -5315,7 +5306,7 @@ package body Sem_Elab is
                   --  primitive [Deep_]Initialize.
 
                   if Is_Init_Proc (Spec_Id)
-                    or else Is_Controlled_Proc (Spec_Id, Name_Initialize)
+                    or else Is_Controlled_Procedure (Spec_Id, Name_Initialize)
                     or else Is_TSS (Spec_Id, TSS_Deep_Initialize)
                   then
                      return True;
@@ -5346,7 +5337,7 @@ package body Sem_Elab is
             --  an initialization context.
 
             return
-              (Is_Controlled_Proc (Subp_Id, Name_Finalize)
+              (Is_Controlled_Procedure (Subp_Id, Name_Finalize)
                  or else Is_Finalizer_Proc (Subp_Id)
                  or else Is_TSS (Subp_Id, TSS_Deep_Finalize))
                and then In_Initialization_Context (Call);
@@ -13113,13 +13104,13 @@ package body Sem_Elab is
 
             --  Controlled adjustment actions
 
-            elsif Is_Controlled_Proc (Targ_Id, Name_Adjust) then
+            elsif Is_Controlled_Procedure (Targ_Id, Name_Adjust) then
                Extra := First_Formal_Type (Targ_Id);
                Kind  := Controlled_Adjustment;
 
             --  Controlled finalization actions
 
-            elsif Is_Controlled_Proc (Targ_Id, Name_Finalize)
+            elsif Is_Controlled_Procedure (Targ_Id, Name_Finalize)
               or else Is_Finalizer_Proc (Targ_Id)
             then
                Extra := First_Formal_Type (Targ_Id);
@@ -13127,7 +13118,7 @@ package body Sem_Elab is
 
             --  Controlled initialization actions
 
-            elsif Is_Controlled_Proc (Targ_Id, Name_Initialize) then
+            elsif Is_Controlled_Procedure (Targ_Id, Name_Initialize) then
                Extra := First_Formal_Type (Targ_Id);
                Kind  := Controlled_Initialization;
 
@@ -14427,9 +14418,9 @@ package body Sem_Elab is
       begin
          return
            Is_Activation_Proc (Id)
-             or else Is_Controlled_Proc (Id, Name_Adjust)
-             or else Is_Controlled_Proc (Id, Name_Finalize)
-             or else Is_Controlled_Proc (Id, Name_Initialize)
+             or else Is_Controlled_Procedure (Id, Name_Adjust)
+             or else Is_Controlled_Procedure (Id, Name_Finalize)
+             or else Is_Controlled_Procedure (Id, Name_Initialize)
              or else Is_Init_Proc (Id)
              or else Is_Invariant_Proc (Id)
              or else Is_Protected_Entry (Id)
@@ -14495,39 +14486,6 @@ package body Sem_Elab is
              or else Is_TSS (Id, TSS_Deep_Finalize)
              or else Is_TSS (Id, TSS_Deep_Initialize);
       end Is_Bridge_Target;
-
-      ------------------------
-      -- Is_Controlled_Proc --
-      ------------------------
-
-      function Is_Controlled_Proc
-        (Subp_Id  : Entity_Id;
-         Subp_Nam : Name_Id) return Boolean
-      is
-         Formal_Id : Entity_Id;
-
-      begin
-         pragma Assert
-           (Subp_Nam in Name_Adjust | Name_Finalize | Name_Initialize);
-
-         --  To qualify, the subprogram must denote a source procedure with
-         --  name Adjust, Finalize, or Initialize where the sole formal is
-         --  controlled.
-
-         if Comes_From_Source (Subp_Id)
-           and then Ekind (Subp_Id) = E_Procedure
-           and then Chars (Subp_Id) = Subp_Nam
-         then
-            Formal_Id := First_Formal (Subp_Id);
-
-            return
-              Present (Formal_Id)
-                and then Is_Controlled (Etype (Formal_Id))
-                and then No (Next_Formal (Formal_Id));
-         end if;
-
-         return False;
-      end Is_Controlled_Proc;
 
       ---------------------------------------
       -- Is_Default_Initial_Condition_Proc --
@@ -16948,7 +16906,7 @@ package body Sem_Elab is
                if not Is_Controlled (Typ) then
                   return;
                else
-                  Init := Find_Prim_Op (Typ, Name_Initialize);
+                  Init := Find_Controlled_Prim_Op (Typ, Name_Initialize);
 
                   if Comes_From_Source (Init) then
                      Ent := Init;
@@ -18740,24 +18698,22 @@ package body Sem_Elab is
                  ("instantiation of& may occur before body is seen<l<",
                   N, Orig_Ent);
             else
-               --  A rather specific check. For Finalize/Adjust/Initialize, if
+               --  A rather specific check: for Adjust/Finalize/Initialize, if
                --  the type has Warnings_Off set, suppress the warning.
 
-               if Chars (E) in Name_Adjust
-                             | Name_Finalize
-                             | Name_Initialize
-                 and then Present (First_Formal (E))
+               if Is_Controlled_Procedure (E, Name_Adjust)
+                 or else Is_Controlled_Procedure (E, Name_Finalize)
+                 or else Is_Controlled_Procedure (E, Name_Initialize)
                then
                   declare
                      T : constant Entity_Id := Etype (First_Formal (E));
+
                   begin
-                     if Is_Controlled (T) then
-                        if Has_Warnings_Off (T)
-                          or else (Ekind (T) = E_Private_Type
-                                    and then Has_Warnings_Off (Full_View (T)))
-                        then
-                           goto Output;
-                        end if;
+                     if Has_Warnings_Off (T)
+                       or else (Ekind (T) = E_Private_Type
+                                 and then Has_Warnings_Off (Full_View (T)))
+                     then
+                        goto Output;
                      end if;
                   end;
                end if;
@@ -19375,6 +19331,37 @@ package body Sem_Elab is
         and then Chars (Name (N)) /= Chars (Entity (Name (N)));
    end Is_Call_Of_Generic_Formal;
 
+   -----------------------------
+   -- Is_Controlled_Procedure --
+   -----------------------------
+
+   function Is_Controlled_Procedure
+     (Id  : Entity_Id;
+      Nam : Name_Id) return Boolean
+   is
+   begin
+      --  To qualify, the subprogram must denote a source procedure with
+      --  name Adjust, Finalize, or Initialize where the sole formal is
+      --  in out and controlled.
+
+      if Comes_From_Source (Id) and then Ekind (Id) = E_Procedure then
+         declare
+            Formal_Id : constant Entity_Id := First_Formal (Id);
+
+         begin
+            return
+              Present (Formal_Id)
+                and then Ekind (Formal_Id) = E_In_Out_Parameter
+                and then Is_Controlled (Etype (Formal_Id))
+                and then No (Next_Formal (Formal_Id))
+                and then Chars (Id) =
+                  Name_Of_Controlled_Prim_Op (Etype (Formal_Id), Nam);
+         end;
+      end if;
+
+      return False;
+   end Is_Controlled_Procedure;
+
    -------------------------------
    -- Is_Finalization_Procedure --
    -------------------------------
@@ -19407,7 +19394,7 @@ package body Sem_Elab is
             Deep_Fin := TSS (Typ, TSS_Deep_Finalize);
 
             if Is_Controlled (Typ) then
-               Fin := Find_Prim_Op (Typ, Name_Finalize);
+               Fin := Find_Controlled_Prim_Op (Typ, Name_Finalize);
             end if;
 
             return    (Present (Deep_Fin) and then Id = Deep_Fin)
@@ -19574,10 +19561,7 @@ package body Sem_Elab is
 
       Init_Call : constant Boolean :=
                     Nkind (Call) = N_Procedure_Call_Statement
-                      and then Chars (Subp) = Name_Initialize
-                      and then Comes_From_Source (Subp)
-                      and then Present (Parameter_Associations (Call))
-                      and then Is_Controlled (Etype (First_Actual (Call)));
+                      and then Is_Controlled_Procedure (Subp, Name_Initialize);
 
    begin
       --  If the unit is mentioned in a with_clause of the current unit, it is

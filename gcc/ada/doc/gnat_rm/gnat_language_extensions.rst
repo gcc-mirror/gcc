@@ -562,3 +562,36 @@ subcomponents, among others detailed in the RFC.
 
 Link to the original RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/topic/rfc-finally/considered/rfc-class-size.md
+
+Generalized Finalization
+------------------------
+
+The `Finalizable` aspect can be applied to any record type, tagged or not,
+to specify that it provides the same level of control on the operations of initialization, finalization, and assignment of objects as the controlled
+types (see RM 7.6(2) for a high-level overview). The only restriction is
+that the record type must be a root type, in other words not a derived type.
+
+The aspect additionally makes it possible to specify relaxed semantics for
+the finalization operations by means of the `Relaxed_Finalization` setting.
+
+Example:
+
+.. code-block:: ada
+
+    type Ctrl is record
+      Id : Natural := 0;
+    end record
+      with Finalizable => (Initialize           => Initialize,
+                           Adjust               => Adjust,
+                           Finalize             => Finalize,
+                           Relaxed_Finalization => True);
+
+    procedure Adjust     (Obj : in out Ctrl);
+    procedure Finalize   (Obj : in out Ctrl);
+    procedure Initialize (Obj : in out Ctrl);
+
+As of this writing, the relaxed semantics for finalization operations are
+only implemented for dynamically allocated objects.
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/topic/finalization-rehaul/considered/rfc-generalized-finalization.md

@@ -625,6 +625,7 @@ package Gen_IL.Fields is
       Has_RACW,
       Has_Record_Rep_Clause,
       Has_Recursive_Call,
+      Has_Relaxed_Finalization,
       Has_Shift_Operator,
       Has_Size_Clause,
       Has_Small_Clause,

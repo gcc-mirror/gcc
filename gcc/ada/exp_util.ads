@@ -31,6 +31,7 @@ with Namet;          use Namet;
 with Rtsfind;        use Rtsfind;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
+with Snames;         use Snames;
 with Types;          use Types;
 with Uintp;          use Uintp;
 
@@ -577,12 +578,15 @@ package Exp_Util is
    function Find_Last_Init (Decl : Node_Id) return Node_Id;
    --  Find the last initialization call related to object declaration Decl
 
-   function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
+   function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id
+     with Pre => Name not in Name_Adjust | Name_Finalize | Name_Initialize;
    --  Find the first primitive operation of type T with the specified Name,
    --  disregarding any visibility considerations. If T is a class-wide type,
    --  then examine the primitive operations of its corresponding root type.
-   --  Raise Program_Error if no primitive operation with the specified Name
-   --  is found.
+   --  This function should not be called for the three controlled primitive
+   --  operations, and, instead, Find_Controlled_Prim_Op must be called for
+   --  those. Raise Program_Error if no primitive operation with the given
+   --  Name is found.
 
    function Find_Prim_Op
      (T    : Entity_Id;
@@ -590,6 +594,12 @@ package Exp_Util is
    --  Same as Find_Prim_Op above, except we're searching for an op that has
    --  the form indicated by Name (i.e. is a type support subprogram with the
    --  indicated suffix).
+
+   function Find_Controlled_Prim_Op
+     (T : Entity_Id; Name : Name_Id) return Entity_Id
+     with Pre => Name in Name_Adjust | Name_Finalize | Name_Initialize;
+   --  Same as Find_Prim_Op but for the three controlled primitive operations,
+   --  and returns Empty if not found.
 
    function Find_Optional_Prim_Op
      (T : Entity_Id; Name : Name_Id) return Entity_Id;
@@ -1001,6 +1011,13 @@ package Exp_Util is
    --  caller has to check whether stack checking is actually enabled in order
    --  to guide the expansion (typically of a function call).
 
+   function Name_Of_Controlled_Prim_Op
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Name_Id
+     with Pre => Nam in Name_Adjust | Name_Finalize | Name_Initialize;
+   --  Return the name of the Adjust, Finalize, or Initialize primitive of
+   --  controlled type Typ, if it exists, and No_Name if it does not.
+
    function Needs_Conditional_Null_Excluding_Check
      (Typ : Entity_Id) return Boolean;
    --  Check if a type meets certain properties that require it to have a
@@ -1269,6 +1286,8 @@ package Exp_Util is
 
 private
    pragma Inline (Duplicate_Subexpr);
+   pragma Inline (Find_Controlled_Prim_Op);
+   pragma Inline (Find_Prim_Op);
    pragma Inline (Force_Evaluation);
    pragma Inline (Get_Mapped_Entity);
    pragma Inline (Is_Library_Level_Tagged_Type);

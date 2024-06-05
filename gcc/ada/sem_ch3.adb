@@ -9854,15 +9854,6 @@ package body Sem_Ch3 is
       --  Set fields for tagged types
 
       if Is_Tagged then
-         --  All tagged types defined in Ada.Finalization are controlled
-
-         if Chars (Scope (Derived_Type)) = Name_Finalization
-           and then Chars (Scope (Scope (Derived_Type))) = Name_Ada
-           and then Scope (Scope (Scope (Derived_Type))) = Standard_Standard
-         then
-            Set_Is_Controlled_Active (Derived_Type);
-         end if;
-
          --  Minor optimization: there is no need to generate the class-wide
          --  entity associated with an underlying record view.
 
@@ -22898,9 +22889,10 @@ package body Sem_Ch3 is
    ----------------------------
 
    procedure Record_Type_Definition (Def : Node_Id; Prev_T : Entity_Id) is
-      Component          : Entity_Id;
-      Final_Storage_Only : Boolean := True;
-      T                  : Entity_Id;
+      Component            : Entity_Id;
+      Final_Storage_Only   : Boolean := True;
+      Relaxed_Finalization : Boolean := True;
+      T                    : Entity_Id;
 
    begin
       if Ekind (Prev_T) = E_Incomplete_Type then
@@ -22970,6 +22962,9 @@ package body Sem_Ch3 is
             Final_Storage_Only :=
               Final_Storage_Only
                 and then Finalize_Storage_Only (Etype (Component));
+            Relaxed_Finalization :=
+              Relaxed_Finalization
+                and then Has_Relaxed_Finalization (Etype (Component));
          end if;
 
          Next_Entity (Component);
@@ -22977,10 +22972,12 @@ package body Sem_Ch3 is
 
       --  For a type that is not directly controlled but has controlled
       --  components, Finalize_Storage_Only is set if all the controlled
-      --  components are Finalize_Storage_Only.
+      --  components are Finalize_Storage_Only. The same processing is
+      --  appled to Has_Relaxed_Finalization.
 
       if not Is_Controlled (T) and then Has_Controlled_Component (T) then
-         Set_Finalize_Storage_Only (T, Final_Storage_Only);
+         Set_Finalize_Storage_Only    (T, Final_Storage_Only);
+         Set_Has_Relaxed_Finalization (T, Relaxed_Finalization);
       end if;
 
       --  Place reference to end record on the proper entity, which may

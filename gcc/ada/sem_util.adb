@@ -17201,8 +17201,7 @@ package body Sem_Util is
                if Present (Utyp) then
                   declare
                      Init : constant Entity_Id :=
-                              (Find_Optional_Prim_Op
-                                 (Utyp, Name_Initialize));
+                              Find_Controlled_Prim_Op (Utyp, Name_Initialize);
 
                   begin
                      if Present (Init)
@@ -17211,10 +17210,11 @@ package body Sem_Util is
                      then
                         return True;
 
-                     elsif Has_Null_Extension (Typ)
-                        and then
-                          Is_Fully_Initialized_Type
-                            (Etype (Base_Type (Typ)))
+                     elsif Is_Tagged_Type (Typ)
+                       and then Is_Derived_Type (Typ)
+                       and then Has_Null_Extension (Typ)
+                       and then
+                         Is_Fully_Initialized_Type (Etype (Base_Type (Typ)))
                      then
                         return True;
                      end if;
@@ -26288,6 +26288,10 @@ package body Sem_Util is
         or else (Comp and then Is_Controlled (From_Typ))
       then
          Set_Has_Controlled_Component (Typ);
+      end if;
+
+      if Has_Relaxed_Finalization (From_Typ) then
+         Set_Has_Relaxed_Finalization (Typ);
       end if;
    end Propagate_Controlled_Flags;
 
