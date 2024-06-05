@@ -48,4 +48,8 @@ AARCH64_EXTRA_TUNING_OPTION ("avoid_cross_loop_fma", AVOID_CROSS_LOOP_FMA)
 
 AARCH64_EXTRA_TUNING_OPTION ("fully_pipelined_fma", FULLY_PIPELINED_FMA)
 
+/* Enable is the target prefers to use a fresh register for predicate outputs
+   rather than re-use an input predicate register.  */
+AARCH64_EXTRA_TUNING_OPTION ("avoid_pred_rmw", AVOID_PRED_RMW)
+
 #undef AARCH64_EXTRA_TUNING_OPTION

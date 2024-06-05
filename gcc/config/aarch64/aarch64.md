@@ -445,6 +445,10 @@
 ;; target-independent code.
 (define_attr "is_call" "no,yes" (const_string "no"))
 
+;; Indicates whether we want to enable the pattern with an optional early
+;; clobber for SVE predicates.
+(define_attr "pred_clobber" "any,no,yes" (const_string "any"))
+
 ;; [For compatibility with Arm in pipeline models]
 ;; Attribute that specifies whether or not the instruction touches fp
 ;; registers.
@@ -460,7 +464,17 @@
 
 (define_attr "arch_enabled" "no,yes"
   (if_then_else
-    (ior
+    (and
+      (ior
+	(and
+	  (eq_attr "pred_clobber" "no")
+	  (match_test "!TARGET_SVE_PRED_CLOBBER"))
+	(and
+	  (eq_attr "pred_clobber" "yes")
+	  (match_test "TARGET_SVE_PRED_CLOBBER"))
+	(eq_attr "pred_clobber" "any"))
+
+      (ior
 	(eq_attr "arch" "any")
 
 	(and (eq_attr "arch" "rcpc8_4")
@@ -488,7 +502,7 @@
 	     (match_test "TARGET_SVE"))
 
 	(and (eq_attr "arch" "sme")
-	     (match_test "TARGET_SME")))
+	     (match_test "TARGET_SME"))))
     (const_string "yes")
     (const_string "no")))
 

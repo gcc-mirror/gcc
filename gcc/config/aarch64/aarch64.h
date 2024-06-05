@@ -495,6 +495,11 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
     enabled through +gcs.  */
 #define TARGET_GCS (AARCH64_ISA_GCS)
 
+/* Prefer different predicate registers for the output of a predicated
+   operation over re-using an existing input predicate.  */
+#define TARGET_SVE_PRED_CLOBBER (TARGET_SVE \
+				 && (aarch64_tune_params.extra_tuning_flags \
+				     & AARCH64_EXTRA_TUNE_AVOID_PRED_RMW))
 
 /* Standard register usage.  */
 
