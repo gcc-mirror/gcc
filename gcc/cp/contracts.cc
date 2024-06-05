@@ -1946,12 +1946,8 @@ finish_contract_condition (cp_expr condition)
 
 /* constify access to an id from within the contract condition */
 tree
-constify_contract_access(tree decl,location_t location)
+constify_contract_access(tree decl)
 {
-
-  if (!flag_contracts_nonattr || flag_contracts_nonattr_noconst)
-    return decl;
-
   /* only constifies the automatic storage variables for now.
    * The postcondition variable is created const. Parameters need to be
    * checked separately, and we also need to make references and *this const
@@ -1962,9 +1958,11 @@ constify_contract_access(tree decl,location_t location)
           || (REFERENCE_REF_P(decl) && decl_storage_duration (TREE_OPERAND (decl, 0)) == dk_auto)
 	  || (TREE_CODE (decl) == PARM_DECL)))
   {
-      decl = build1_loc (location, VIEW_CONVERT_EXPR,
-			  TREE_TYPE (decl), decl);
-      TREE_READONLY(decl) = 1;
+
+      tree ctype = TREE_TYPE (decl);
+      ctype = cp_build_qualified_type (ctype, (cp_type_quals (ctype)
+      						   | TYPE_QUAL_CONST));
+      decl = build1 (VIEW_CONVERT_EXPR, ctype, decl);
   }
   return decl;
 }

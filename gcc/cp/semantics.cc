@@ -5005,9 +5005,10 @@ finish_id_expression_1 (tree id_expression,
 	}
     }
 
-  if (processing_contract_condition)
+  if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst
+	&& processing_contract_condition)
     {
-       decl = constify_contract_access(decl, location);
+       decl = constify_contract_access(decl);
     }
   return cp_expr (decl, location);
 }
