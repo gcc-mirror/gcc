@@ -339,8 +339,7 @@ work when configuring GCC@.
 @item A POSIX or SVR4 awk
 
 Necessary for creating some of the generated source files for GCC@.
-If in doubt, use a recent GNU awk version, as some of the older ones
-are broken.  GNU awk version 3.1.5 is known to work.
+If in doubt, use a recent GNU awk version.
 
 @item GNU binutils
 
