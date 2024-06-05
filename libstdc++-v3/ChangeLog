@@ -1,3 +1,26 @@
+2024-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115335
+	* include/std/span (span::at): Guard with feature test macro.
+
+2024-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2024-05-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/111641
+	* src/libbacktrace/Makefile.am (AM_CFLAGS): Add -funwind-tables.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* testsuite/19_diagnostics/stacktrace/current.cc (dg-options): Add
+	-funwind-tables.
+	* testsuite/19_diagnostics/stacktrace/entry.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/hash.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/output.cc: Likewise.
+	* testsuite/19_diagnostics/stacktrace/stacktrace.cc: Likewise.
+
 2024-06-03  François Dumont  <frs.dumont@gmail.com>
 
 	Backported from master:

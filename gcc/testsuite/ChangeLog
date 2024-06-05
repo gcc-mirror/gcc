@@ -1,3 +1,60 @@
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115337
+	* gcc.dg/bitint-106.c: New test.
+
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108789
+	* gcc.c-torture/execute/pr108789.c: New test.
+
+2024-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/114902
+	PR rtl-optimization/115092
+	* gcc.dg/pr114902.c: New test.
+	* gcc.dg/pr115092.c: New test.
+
+2024-06-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2024-04-30  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR modula2/114886
+	* lib/gm2.exp: Don't load timeout-dg.exp.
+	Don't set gm2_previous_timeout.
+	Don't call dg-timeout.
+	(gm2_push_timeout, gm2_pop_timeout): Remove.
+	(gm2_init): Don't call dg-timeout.
+	* lib/gm2-torture.exp: Don't load timeout-dg.exp.
+	Don't set gm2_previous_timeout.
+	Don't call dg-timeout.
+	(gm2_push_timeout, gm2_pop_timeout): Remove.
+	* gm2/coroutines/pim/run/pass/coroutines-pim-run-pass.exp: Don't
+	load timeout-dg.exp.
+	Don't call gm2_push_timeout, gm2_pop_timeout.
+	* gm2/examples/map/pass/examples-map-pass.exp: Don't call
+	gm2_push_timeout, gm2_pop_timeout.
+	* gm2/iso/run/pass/iso-run-pass.exp: Don't load timeout-dg.exp.
+	Don't call gm2_push_timeout, gm2_pop_timeout.
+	* gm2/pimlib/base/run/pass/pimlib-base-run-pass.exp: Don't load
+	timeout-dg.exp.
+	Don't call gm2_push_timeout, gm2_pop_timeout.
+	* gm2/projects/iso/run/pass/halma/projects-iso-run-pass-halma.exp:
+	Don't call gm2_push_timeout, gm2_pop_timeout.
+	* gm2/switches/whole-program/pass/run/switches-whole-program-pass-run.exp:
+	Don't load timeout-dg.exp.
+	Don't call gm2_push_timeout, gm2_pop_timeout.
+
 2024-06-03  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* gcc.target/i386/avx10_1-25.c: New test.
