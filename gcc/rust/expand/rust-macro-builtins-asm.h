@@ -72,4 +72,7 @@ tl::optional<std::string>
 parse_format_string (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 		     InlineAsmContext &inline_asm_ctx);
 
+std::set<std::string> potentially_nonpromoted_keywords
+  = {"in", "out", "lateout", "inout", "inlateout", "const", "sym", "label"};
+
 } // namespace Rust
