@@ -1,3 +1,8 @@
 2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* configure.ac: No longer set 'LIBGFOR_MINIMAL' for nvptx.
+	* configure: Regenerate.
+
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* runtime/minimal.c [__nvptx__] (exit): Don't override.

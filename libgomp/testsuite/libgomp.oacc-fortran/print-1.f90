@@ -3,8 +3,8 @@
 ! { dg-do run }
 ! { dg-output "The answer is 42(\n|\r\n|\r)+" }
 
-! Separate file 'print-1-nvptx.f90' for nvptx offloading.
-! { dg-skip-if "separate file" { offload_target_nvptx } }
+! See 'print-1-nvptx.f90' regarding the nvptx offloading XFAIL.
+! { dg-xfail-run-if TODO { openacc_nvidia_accel_selected } }
 
 ! { dg-additional-options "-fopt-info-note-omp" }
 ! { dg-additional-options "-foffload=-fopt-info-note-omp" }

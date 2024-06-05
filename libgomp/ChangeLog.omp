@@ -1,5 +1,17 @@
 2024-05-31  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* libgomp.texi (nvptx): Update.
+	* testsuite/libgomp.fortran/target-print-1-nvptx.f90: Remove.
+	* testsuite/libgomp.fortran/target-print-1.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/error_stop-2-nvptx.f: New.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Adjust.
+	* testsuite/libgomp.oacc-fortran/print-1-nvptx.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/stop-2-nvptx.f: New.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Adjust.
+
+2024-05-31  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* plugin/cuda-lib.def (cuCtxSetLimit): Add.
 	* plugin/plugin-nvptx.c (nvptx_open_device): Handle
 	'GOMP_NVPTX_NATIVE_GPU_THREAD_STACK_SIZE' environment variable.
