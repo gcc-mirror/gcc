@@ -3082,7 +3082,7 @@
 ;; Widening vector multiply and dot product.
 ;; See c6x-mult.md.in for the define_insn patterns
 
-(define_expand "sdot_prodv2hi"
+(define_expand "sdot_prodsiv2hi"
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:V2HI 1 "register_operand" "")
    (match_operand:V2HI 2 "register_operand" "")
