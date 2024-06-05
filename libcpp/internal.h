@@ -786,6 +786,7 @@ extern bool _cpp_save_file_entries (cpp_reader *pfile, FILE *f);
 extern bool _cpp_read_file_entries (cpp_reader *, FILE *);
 extern const char *_cpp_get_file_name (_cpp_file *);
 extern struct stat *_cpp_get_file_stat (_cpp_file *);
+extern struct cpp_dir *_cpp_get_file_dir (_cpp_file *);
 extern bool _cpp_has_header (cpp_reader *, const char *, int,
 			     enum include_type);
 

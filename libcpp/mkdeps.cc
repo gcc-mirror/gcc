@@ -463,6 +463,19 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 	  /* module-name : cmi-name */
 	  column = make_write_name (d->module_name, fp, 0, colmax,
 				    true, ".c++-module");
+	  const char *module_basename = nullptr;
+	  if (d->is_header_unit)
+	    {
+	      /* Also emit a target for the include name, so for #include
+		 <iostream> you'd make iostream.c++-header-unit, regardless of
+		 what actual directory iostream lives in.  We reconstruct the
+		 include name by skipping the directory where we found it.  */
+	      auto *dir = _cpp_get_file_dir (pfile->main_file);
+	      gcc_assert (!strncmp (d->module_name, dir->name, dir->len));
+	      module_basename = (d->module_name + dir->len + 1);
+	      column = make_write_name (module_basename, fp, column, colmax,
+					true, ".c++-header-unit");
+	    }
 	  fputs (":", fp);
 	  column++;
 	  column = make_write_name (d->cmi_name, fp, column, colmax);
@@ -471,6 +484,9 @@ make_write (const cpp_reader *pfile, FILE *fp, unsigned int colmax)
 	  column = fprintf (fp, ".PHONY:");
 	  column = make_write_name (d->module_name, fp, column, colmax,
 				    true, ".c++-module");
+	  if (module_basename)
+	    column = make_write_name (module_basename, fp, column, colmax,
+				      true, ".c++-header-unit");
 	  fputs ("\n", fp);
 	}
 

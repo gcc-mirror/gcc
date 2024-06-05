@@ -2336,6 +2336,13 @@ _cpp_get_file_stat (_cpp_file *file)
   return &file->st;
 }
 
+/* Return the directory where FILE was found.  */
+struct cpp_dir *
+_cpp_get_file_dir (_cpp_file *file)
+{
+  return file->dir;
+}
+
 /* Set the include chain for "" to QUOTE, for <> to BRACKET.  If
    QUOTE_IGNORES_SOURCE_DIR, then "" includes do not look in the
    directory of the including file.
