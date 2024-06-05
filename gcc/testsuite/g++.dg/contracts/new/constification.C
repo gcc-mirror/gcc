@@ -39,9 +39,8 @@ int main()
   contract_assert(pi++); // { dg-error "increment of read-only location" }
   contract_assert((*pi)++); // ok, not deep const
 
-  contract_assert(i == 4 ? true : false);
+  contract_assert(i == 4 ? i : i ); // ok, no name clash
 
-  contract_assert( i > 4 ? true : false);
 
   return 0;
 }
