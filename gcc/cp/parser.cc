@@ -13230,18 +13230,33 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      auto suppression = make_temp_override (suppress_location_wrappers,
 						     0);
 
+	      /* if we have a current class object, constify it before processing
+	       *  the contract condition */
+	      tree current_class_ref_copy = current_class_ref;
+	      if (current_class_ref)
+	        current_class_ref = view_as_const (current_class_ref);
+
 	      /* Parse the condition, ensuring that parameters or the return variable
 	       aren't flagged for use outside the body of a function.  */
 	      ++processing_contract_condition;
 	      cp_expr condition = cp_parser_conditional_expression (parser);
 	      --processing_contract_condition;
 
-	      parens.require_close (parser);
+	      /* revert (any) constification of the current class object */
+	      current_class_ref = current_class_ref_copy;
 
+	      if (current_class_ref)
+        	{
+
+		  current_class_ref = current_class_ref_copy;
+        	}
+	      parens.require_close (parser);
 	      /* Build the contract.  */
 	      tree contract = grok_contract (cont_assert, NULL_TREE /*mode*/,
 					NULL_TREE /*result*/, condition, loc);
 	      std_attrs = finish_contract_attribute (cont_assert, contract);
+
+
 	    }
 	  else
 	    error_at (
@@ -31555,11 +31570,20 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	  ++processing_template_decl;
 	}
 
+      /* if we have a current class object, constify it before processing
+       *  the contract condition */
+      tree current_class_ref_copy = current_class_ref;
+      if (current_class_ref)
+        current_class_ref = view_as_const (current_class_ref);
+
       /* Parse the condition, ensuring that parameters or the return variable
 	 aren't flagged for use outside the body of a function.  */
       ++processing_contract_condition;
       cp_expr condition = cp_parser_conditional_expression (parser);
       --processing_contract_condition;
+
+      /* revert (any) constification of the current class object */
+      current_class_ref = current_class_ref_copy;
 
       if (!attr_mode)
 	  parens.require_close (parser);
@@ -31644,11 +31668,20 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   cp_token_cache *tokens = DEFPARSE_TOKENS (condition);
   cp_parser_push_lexer_for_tokens (parser, tokens);
 
+  /* if we have a current class object, constify it before processing
+   *  the contract condition */
+  tree current_class_ref_copy = current_class_ref;
+  if (current_class_ref)
+    current_class_ref = view_as_const (current_class_ref);
+
   /* Parse the condition, ensuring that parameters or the return variable
      aren't flagged for use outside the body of a function.  */
   ++processing_contract_condition;
   condition = cp_parser_conditional_expression (parser);
   --processing_contract_condition;
+
+  /* revert (any) constification of the current class object */
+  current_class_ref = current_class_ref_copy;
 
   /* Revert to the main lexer.  */
   cp_parser_pop_lexer (parser);
