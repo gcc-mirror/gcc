@@ -19220,17 +19220,25 @@ cmse_nonsecure_call_inline_register_clear (void)
 	      || TREE_CODE (ret_type) == BOOLEAN_TYPE)
 	      && known_lt (GET_MODE_SIZE (TYPE_MODE (ret_type)), 4))
 	    {
-	      machine_mode ret_mode = TYPE_MODE (ret_type);
+	      rtx ret_reg = gen_rtx_REG (TYPE_MODE (ret_type), R0_REGNUM);
+	      rtx si_reg = gen_rtx_REG (SImode, R0_REGNUM);
 	      rtx extend;
 	      if (TYPE_UNSIGNED (ret_type))
-		extend = gen_rtx_ZERO_EXTEND (SImode,
-					      gen_rtx_REG (ret_mode, R0_REGNUM));
+		extend = gen_rtx_SET (si_reg, gen_rtx_ZERO_EXTEND (SImode,
+								   ret_reg));
 	      else
-		extend = gen_rtx_SIGN_EXTEND (SImode,
-					      gen_rtx_REG (ret_mode, R0_REGNUM));
-	      emit_insn_after (gen_rtx_SET (gen_rtx_REG (SImode, R0_REGNUM),
-					     extend), insn);
-
+		{
+		  /* Signed-extension is a special case because of
+		     thumb1_extendhisi2.  */
+		  if (TARGET_THUMB1
+		      && known_eq (GET_MODE_SIZE (TYPE_MODE (ret_type)), 2))
+		    extend = gen_thumb1_extendhisi2 (si_reg, ret_reg);
+		  else
+		    extend = gen_rtx_SET (si_reg,
+					  gen_rtx_SIGN_EXTEND (SImode,
+							       ret_reg));
+		}
+	      emit_insn_after (extend, insn);
 	    }
 
 
@@ -27249,6 +27257,58 @@ thumb1_expand_prologue (void)
   offsets = arm_get_frame_offsets ();
   live_regs_mask = offsets->saved_regs_mask;
   lr_needs_saving = live_regs_mask & (1 << LR_REGNUM);
+
+  /* The AAPCS requires the callee to widen integral types narrower
+     than 32 bits to the full width of the register; but when handling
+     calls to non-secure space, we cannot trust the callee to have
+     correctly done so.  So forcibly re-widen the result here.  */
+  if (IS_CMSE_ENTRY (func_type))
+    {
+      function_args_iterator args_iter;
+      CUMULATIVE_ARGS args_so_far_v;
+      cumulative_args_t args_so_far;
+      bool first_param = true;
+      tree arg_type;
+      tree fndecl = current_function_decl;
+      tree fntype = TREE_TYPE (fndecl);
+      arm_init_cumulative_args (&args_so_far_v, fntype, NULL_RTX, fndecl);
+      args_so_far = pack_cumulative_args (&args_so_far_v);
+      FOREACH_FUNCTION_ARGS (fntype, arg_type, args_iter)
+	{
+	  rtx arg_rtx;
+
+	  if (VOID_TYPE_P (arg_type))
+	    break;
+
+	  function_arg_info arg (arg_type, /*named=*/true);
+	  if (!first_param)
+	    /* We should advance after processing the argument and pass
+	       the argument we're advancing past.  */
+	    arm_function_arg_advance (args_so_far, arg);
+	  first_param = false;
+	  arg_rtx = arm_function_arg (args_so_far, arg);
+	  gcc_assert (REG_P (arg_rtx));
+	  if ((TREE_CODE (arg_type) == INTEGER_TYPE
+	      || TREE_CODE (arg_type) == ENUMERAL_TYPE
+	      || TREE_CODE (arg_type) == BOOLEAN_TYPE)
+	      && known_lt (GET_MODE_SIZE (GET_MODE (arg_rtx)), 4))
+	    {
+	      rtx res_reg = gen_rtx_REG (SImode, REGNO (arg_rtx));
+	      if (TYPE_UNSIGNED (arg_type))
+		emit_set_insn (res_reg, gen_rtx_ZERO_EXTEND (SImode, arg_rtx));
+	      else
+		{
+		  /* Signed-extension is a special case because of
+		     thumb1_extendhisi2.  */
+		  if (known_eq (GET_MODE_SIZE (GET_MODE (arg_rtx)), 2))
+		    emit_insn (gen_thumb1_extendhisi2 (res_reg, arg_rtx));
+		  else
+		    emit_set_insn (res_reg,
+				   gen_rtx_SIGN_EXTEND (SImode, arg_rtx));
+		}
+	    }
+	}
+    }
 
   /* Extract a mask of the ones we can give to the Thumb's push instruction.  */
   l_mask = live_regs_mask & 0x40ff;
