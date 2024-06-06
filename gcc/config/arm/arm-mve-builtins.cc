@@ -823,7 +823,8 @@ function_builder::get_name (const function_instance &instance,
   for (unsigned int i = 0; i < 2; ++i)
     if (!overloaded_p
 	|| instance.shape->explicit_type_suffix_p (i, instance.pred,
-						   instance.mode_suffix_id))
+						   instance.mode_suffix_id,
+						   instance.type_suffix (i)))
       append_name (instance.type_suffix (i).string);
   return finish_name ();
 }
@@ -1001,9 +1002,11 @@ function_builder::add_overloaded_functions (const function_group_info &group,
   for (unsigned int pi = 0; group.preds[pi] != NUM_PREDS; ++pi)
     {
       unsigned int explicit_type0
-	= (*group.shape)->explicit_type_suffix_p (0, group.preds[pi], mode);
+	= (*group.shape)->explicit_type_suffix_p (0, group.preds[pi], mode,
+						  type_suffixes[NUM_TYPE_SUFFIXES]);
       unsigned int explicit_type1
-	= (*group.shape)->explicit_type_suffix_p (1, group.preds[pi], mode);
+	= (*group.shape)->explicit_type_suffix_p (1, group.preds[pi], mode,
+						  type_suffixes[NUM_TYPE_SUFFIXES]);
 
       if ((*group.shape)->skip_overload_p (group.preds[pi], mode))
 	continue;

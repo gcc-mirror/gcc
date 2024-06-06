@@ -571,9 +571,13 @@ public:
 class function_shape
 {
 public:
-  virtual bool explicit_type_suffix_p (unsigned int, enum predication_index, enum mode_suffix_index) const = 0;
-  virtual bool explicit_mode_suffix_p (enum predication_index, enum mode_suffix_index) const = 0;
-  virtual bool skip_overload_p (enum predication_index, enum mode_suffix_index) const = 0;
+  virtual bool explicit_type_suffix_p (unsigned int, enum predication_index,
+				       enum mode_suffix_index,
+				       type_suffix_info) const = 0;
+  virtual bool explicit_mode_suffix_p (enum predication_index,
+				       enum mode_suffix_index) const = 0;
+  virtual bool skip_overload_p (enum predication_index,
+				enum mode_suffix_index) const = 0;
 
   /* Define all functions associated with the given group.  */
   virtual void build (function_builder &,

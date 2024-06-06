@@ -330,7 +330,8 @@ build_16_32 (function_builder &b, const char *signature,
 struct nonoverloaded_base : public function_shape
 {
   bool
-  explicit_type_suffix_p (unsigned int, enum predication_index, enum mode_suffix_index) const override
+  explicit_type_suffix_p (unsigned int, enum predication_index,
+			  enum mode_suffix_index, type_suffix_info) const override
   {
     return true;
   }
@@ -360,7 +361,8 @@ template<unsigned int EXPLICIT_MASK>
 struct overloaded_base : public function_shape
 {
   bool
-  explicit_type_suffix_p (unsigned int i, enum predication_index, enum mode_suffix_index) const override
+  explicit_type_suffix_p (unsigned int i, enum predication_index,
+			  enum mode_suffix_index, type_suffix_info) const override
   {
     return (EXPLICIT_MASK >> i) & 1;
   }
@@ -1856,7 +1858,7 @@ struct unary_n_def : public overloaded_base<0>
 {
   bool
   explicit_type_suffix_p (unsigned int, enum predication_index pred,
-			  enum mode_suffix_index) const override
+			  enum mode_suffix_index, type_suffix_info) const override
   {
     return pred != PRED_m;
   }
@@ -1978,6 +1980,106 @@ struct unary_widen_acc_def : public overloaded_base<0>
   }
 };
 SHAPE (unary_widen_acc)
+
+/* <T0>_t foo_t0[_t1](<T1>_t)
+   <T0>_t foo_t0_n[_t1](<T1>_t, const int)
+
+   Example: vcvtq.
+   float32x4_t [__arm_]vcvtq[_f32_s32](int32x4_t a)
+   float32x4_t [__arm_]vcvtq_m[_f32_s32](float32x4_t inactive, int32x4_t a, mve_pred16_t p)
+   float32x4_t [__arm_]vcvtq_x[_f32_s32](int32x4_t a, mve_pred16_t p)
+   float32x4_t [__arm_]vcvtq_n[_f32_s32](int32x4_t a, const int imm6)
+   float32x4_t [__arm_]vcvtq_m_n[_f32_s32](float32x4_t inactive, int32x4_t a, const int imm6, mve_pred16_t p)
+   float32x4_t [__arm_]vcvtq_x_n[_f32_s32](int32x4_t a, const int imm6, mve_pred16_t p)
+   int32x4_t [__arm_]vcvtq_s32_f32(float32x4_t a)
+   int32x4_t [__arm_]vcvtq_m[_s32_f32](int32x4_t inactive, float32x4_t a, mve_pred16_t p)
+   int32x4_t [__arm_]vcvtq_x_s32_f32(float32x4_t a, mve_pred16_t p)
+   int32x4_t [__arm_]vcvtq_n_s32_f32(float32x4_t a, const int imm6)
+   int32x4_t [__arm_]vcvtq_m_n[_s32_f32](int32x4_t inactive, float32x4_t a, const int imm6, mve_pred16_t p)
+   int32x4_t [__arm_]vcvtq_x_n_s32_f32(float32x4_t a, const int imm6, mve_pred16_t p)  */
+struct vcvt_def : public overloaded_base<0>
+{
+  bool
+  explicit_type_suffix_p (unsigned int i, enum predication_index pred,
+			  enum mode_suffix_index,
+			  type_suffix_info type_info) const override
+  {
+    if (pred != PRED_m
+	&& ((i == 0 && type_info.integer_p)
+	    || (i == 1 && type_info.float_p)))
+      return true;
+    return false;
+  }
+
+  bool
+  explicit_mode_suffix_p (enum predication_index,
+			  enum mode_suffix_index) const override
+  {
+    return true;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    b.add_overloaded_functions (group, MODE_n, preserve_user_namespace);
+    build_all (b, "v0,v1", group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v1,su64", group, MODE_n, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index from_type;
+    tree res;
+    unsigned int nimm = (r.mode_suffix_id == MODE_none) ? 0 : 1;
+
+    if (!r.check_gp_argument (1 + nimm, i, nargs)
+	|| (from_type
+	    = r.infer_vector_type (i - nimm)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    if (nimm > 0
+	&& !r.require_integer_immediate (i))
+      return error_mark_node;
+
+    type_suffix_index to_type;
+
+    if (type_suffixes[from_type].integer_p)
+      {
+	to_type = find_type_suffix (TYPE_float,
+				    type_suffixes[from_type].element_bits);
+      }
+    else
+      {
+	/* This should not happen: when 'from_type' is float, the type
+	   suffixes are not overloaded (except for "m" predication,
+	   handled above). */
+	gcc_assert (r.pred == PRED_m);
+
+	/* Get the return type from the 'inactive' argument.  */
+	to_type = r.infer_vector_type (0);
+      }
+
+    if ((res = r.lookup_form (r.mode_suffix_id, to_type, from_type)))
+	return res;
+
+    return r.report_no_such_form (from_type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    if (c.mode_suffix_id == MODE_none)
+      return true;
+
+    unsigned int bits = c.type_suffix (0).element_bits;
+    return c.require_immediate_range (1, 1, bits);
+  }
+};
+SHAPE (vcvt)
 
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, mve_pred16_t)
 
