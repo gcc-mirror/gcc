@@ -25,7 +25,9 @@
 
 with Atree;          use Atree;
 with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
 with Ghost;          use Ghost;
 with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
@@ -141,6 +143,14 @@ package body Sem_Ch2 is
       Str_Elem := First (Expressions (N));
       while Present (Str_Elem) loop
          Analyze (Str_Elem);
+
+         if Nkind (Str_Elem) = N_Identifier
+           and then Ekind (Entity (Str_Elem)) = E_Function
+           and then Is_Overloaded (Str_Elem)
+         then
+            Error_Msg_NE ("ambiguous call to&", Str_Elem, Entity (Str_Elem));
+         end if;
+
          Next (Str_Elem);
       end loop;
    end Analyze_Interpolated_String_Literal;
