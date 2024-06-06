@@ -467,7 +467,7 @@ package body Sem_Res is
       Literal_Aspect_Map :
         constant array (N_Numeric_Or_String_Literal) of Aspect_Id :=
           (N_Integer_Literal             => Aspect_Integer_Literal,
-           N_Interpolated_String_Literal => No_Aspect,
+           N_Interpolated_String_Literal => Aspect_String_Literal,
            N_Real_Literal                => Aspect_Real_Literal,
            N_String_Literal              => Aspect_String_Literal);
 
@@ -487,6 +487,7 @@ package body Sem_Res is
 
    begin
       if (Nkind (N) in N_Numeric_Or_String_Literal
+                     | N_Interpolated_String_Literal
            and then Present
             (Find_Aspect (Typ, Literal_Aspect_Map (Nkind (N)))))
         or else
@@ -561,6 +562,10 @@ package body Sem_Res is
 
          elsif Nkind (N) = N_String_Literal then
             Param1 := Make_String_Literal (Loc, Strval (N));
+            Params := New_List (Param1);
+
+         elsif Nkind (N) = N_Interpolated_String_Literal then
+            Param1 := New_Copy_Tree (N);
             Params := New_List (Param1);
 
          else
