@@ -302,7 +302,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{error} directive @tab Y @tab
 @item @code{masked} construct @tab Y @tab
 @item @code{scope} directive @tab Y @tab
-@item Loop transformation constructs @tab N @tab
+@item Loop transformation constructs @tab Y @tab
 @item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
       clauses of the @code{taskloop} construct @tab Y @tab
 @item @code{align} clause in @code{allocate} directive @tab P
