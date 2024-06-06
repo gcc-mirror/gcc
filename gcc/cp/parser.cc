@@ -13245,11 +13245,6 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      /* revert (any) constification of the current class object */
 	      current_class_ref = current_class_ref_copy;
 
-	      if (current_class_ref)
-        	{
-
-		  current_class_ref = current_class_ref_copy;
-        	}
 	      parens.require_close (parser);
 	      /* Build the contract.  */
 	      tree contract = grok_contract (cont_assert, NULL_TREE /*mode*/,
