@@ -363,7 +363,7 @@ template <typename _Tp>
 
 // }}}
 
-#ifdef __clang__
+#ifdef _GLIBCXX_CLANG
 template <size_t _Np, typename _Tp, typename _Kp>
   _GLIBCXX_SIMD_INTRINSIC constexpr auto
   __movm(_Kp __k) noexcept
@@ -408,7 +408,7 @@ template <size_t _Np, typename _Tp, typename _Kp>
     else
       __assert_unreachable<_Tp>();
   }
-#endif // __clang__
+#endif // _GLIBCXX_CLANG
 
 #ifdef _GLIBCXX_SIMD_WORKAROUND_PR85048
 #include "simd_x86_conversions.h"
@@ -674,7 +674,7 @@ struct _CommonImplX86 : _CommonImplBuiltin
       using _Tp = typename _VectorTraits<_TV>::value_type;
       static_assert(sizeof(_TV) >= 16);
       static_assert(sizeof(_Tp) <= 8);
-#ifdef __clang__
+#ifdef _GLIBCXX_CLANG
       return __movm<_VectorTraits<_TV>::_S_full_size, _Tp>(__k) ? __b : __a;
 #else
       using _IntT
@@ -3505,9 +3505,9 @@ template <typename _Abi, typename>
 	    // optimize masked unary increment and decrement as masked sub +/-1
 	    constexpr int __pm_one
 	      = is_same_v<_Op<void>, __increment<void>> ? -1 : 1;
-#ifdef __clang__
+#ifdef _GLIBCXX_CLANG
 	    return __movm<_Np, _Tp>(__k._M_data) ? __v._M_data - __pm_one : __v._M_data;
-#else // __clang__
+#else // _GLIBCXX_CLANG
 	    using _TV = __vector_type_t<_Tp, _Np>;
 	    constexpr size_t __bytes = sizeof(__v) < 16 ? 16 : sizeof(__v);
 	    constexpr size_t __width = __bytes / sizeof(_Tp);
@@ -3561,7 +3561,7 @@ template <typename _Abi, typename>
 #undef _GLIBCXX_SIMD_MASK_SUB_512
 #undef _GLIBCXX_SIMD_MASK_SUB
 	      }
-#endif // __clang__
+#endif // _GLIBCXX_CLANG
 	  }
 	else
 	  return _Base::template _S_masked_unary<_Op>(__k, __v);

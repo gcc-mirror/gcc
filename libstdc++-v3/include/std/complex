@@ -47,7 +47,7 @@
 // Get rid of a macro possibly defined in <complex.h>
 #undef complex
 
-#ifdef __clang__
+#ifdef _GLIBCXX_CLANG
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc99-extensions"
 #endif
@@ -2646,7 +2646,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif  // C++11
 
-#ifdef __clang__
+#ifdef _GLIBCXX_CLANG
 #pragma clang diagnostic pop
 #endif
 

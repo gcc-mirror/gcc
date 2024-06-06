@@ -1177,7 +1177,7 @@ struct _CommonImplBuiltin
       constexpr size_t _Bytes = _ReqBytes == 0 ? sizeof(__x) : _ReqBytes;
       static_assert(sizeof(__x) >= _Bytes);
 
-#if !defined __clang__ && _GLIBCXX_SIMD_WORKAROUND_PR90424
+#if !defined _GLIBCXX_CLANG && _GLIBCXX_SIMD_WORKAROUND_PR90424
       if constexpr (__is_vector_type_v<_TV>)
 	_S_memcpy<_Bytes>(reinterpret_cast<char*>(__addr), reinterpret_cast<const char*>(&__x));
       else
@@ -2022,7 +2022,7 @@ template <typename _Abi, typename>
 	      return __vector_bitcast<float, 2>(_S_plus_minus(__x4, __y));
 	  }
 #endif
-#if !defined __clang__ && __GCC_IEC_559 == 0
+#if !defined _GLIBCXX_CLANG && __GCC_IEC_559 == 0
 	if (__builtin_is_constant_evaluated()
 	      || (__builtin_constant_p(__x) && __builtin_constant_p(__y)))
 	  return (__x + __y) - __y;

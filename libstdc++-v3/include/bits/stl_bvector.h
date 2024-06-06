@@ -185,7 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     void
     _M_assume_normalized() const
     {
-#if __has_attribute(__assume__) && !defined(__clang__)
+#if __has_attribute(__assume__) && !defined(_GLIBCXX_CLANG)
       unsigned int __ofst = _M_offset;
       __attribute__ ((__assume__ (__ofst < unsigned(_S_word_bit))));
 #endif

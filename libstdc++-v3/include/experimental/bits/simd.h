@@ -1713,7 +1713,7 @@ template <typename _To, typename _From>
 	  __builtin_memcpy(&__r, &__v, sizeof(_To));
 	  return __r;
 	}
-#if _GLIBCXX_SIMD_X86INTRIN && !defined __clang__
+#if _GLIBCXX_SIMD_X86INTRIN && !defined _GLIBCXX_CLANG
     else if constexpr (__have_avx && sizeof(_From) == 16 && sizeof(_To) == 32)
       return reinterpret_cast<_To>(__builtin_ia32_ps256_ps(
 	reinterpret_cast<__vector_type_t<float, 4>>(__v)));
@@ -1968,7 +1968,7 @@ template <typename _TW>
 
 // }}}
 // __andnot{{{
-#if _GLIBCXX_SIMD_X86INTRIN && !defined __clang__
+#if _GLIBCXX_SIMD_X86INTRIN && !defined _GLIBCXX_CLANG
 static constexpr struct
 {
   _GLIBCXX_SIMD_INTRINSIC __v4sf
@@ -2028,7 +2028,7 @@ static constexpr struct
   operator()(__v8di __a, __v8di __b) const noexcept
   { return _mm512_andnot_si512(__a, __b); }
 } _S_x86_andnot;
-#endif // _GLIBCXX_SIMD_X86INTRIN && !__clang__
+#endif // _GLIBCXX_SIMD_X86INTRIN && !_GLIBCXX_CLANG
 
 template <typename _TW>
   _GLIBCXX_SIMD_INTRINSIC constexpr _TW
@@ -2039,7 +2039,7 @@ template <typename _TW>
 	using _TVT = conditional_t<__is_simd_wrapper_v<_TW>, _TW,
 				   _VectorTraitsImpl<_TW>>;
 	using _Tp = typename _TVT::value_type;
-#if _GLIBCXX_SIMD_X86INTRIN && !defined __clang__
+#if _GLIBCXX_SIMD_X86INTRIN && !defined _GLIBCXX_CLANG
 	if constexpr (sizeof(_TW) >= 16)
 	  {
 	    const auto __ai = __to_intrin(__a);
@@ -2088,7 +2088,7 @@ template <typename _T0, typename _T1, typename _Fun, size_t... _Is>
     using _Tp = remove_reference_t<decltype(declval<_T0>()[0])>;
     using _RV [[maybe_unused]] = __vector_type_t<_Tp, sizeof...(_Is)>;
 #if __has_builtin(__builtin_shufflevector)
-#ifdef __clang__
+#ifdef _GLIBCXX_CLANG
     // Clang requires _T0 == _T1
     if constexpr (sizeof(__x) > sizeof(__y) and _N1 == 1)
       return __vec_shuffle(__x, _T0{__y[0]}, __seq, __idx_perm);

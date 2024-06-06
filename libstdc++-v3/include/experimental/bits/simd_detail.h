@@ -262,7 +262,7 @@
 #endif
 //}}}
 
-#ifdef __clang__
+#ifdef _GLIBCXX_CLANG
 #define _GLIBCXX_SIMD_NORMAL_MATH
 #define _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
 #else
@@ -277,7 +277,7 @@
 #define _GLIBCXX_SIMD_IS_UNLIKELY(__x) __builtin_expect(__x, 0)
 #define _GLIBCXX_SIMD_IS_LIKELY(__x) __builtin_expect(__x, 1)
 
-#if _GLIBCXX_SIMD_HAVE_SVE || __STRICT_ANSI__ || defined __clang__
+#if _GLIBCXX_SIMD_HAVE_SVE || __STRICT_ANSI__ || defined _GLIBCXX_CLANG
 #define _GLIBCXX_SIMD_CONSTEXPR
 #define _GLIBCXX_SIMD_USE_CONSTEXPR_API const
 #else
@@ -285,7 +285,7 @@
 #define _GLIBCXX_SIMD_USE_CONSTEXPR_API constexpr
 #endif
 
-#if defined __clang__
+#if defined _GLIBCXX_CLANG
 #define _GLIBCXX_SIMD_USE_CONSTEXPR const
 #else
 #define _GLIBCXX_SIMD_USE_CONSTEXPR constexpr
@@ -330,7 +330,7 @@
 #endif
 
 // integer division not optimized
-#ifndef __clang__
+#ifndef _GLIBCXX_CLANG
 #define _GLIBCXX_SIMD_WORKAROUND_PR90993 1
 #endif
 

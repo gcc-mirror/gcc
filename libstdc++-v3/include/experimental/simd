@@ -59,7 +59,7 @@
 #pragma GCC diagnostic push
 // Many [[gnu::vector_size(N)]] types might lead to a -Wpsabi warning which is
 // irrelevant as those functions never appear on ABI borders
-#ifndef __clang__
+#ifndef _GLIBCXX_CLANG
 #pragma GCC diagnostic ignored "-Wpsabi"
 #endif
 
