@@ -4101,8 +4101,24 @@ build_saturation_binary_arith_call (gimple_stmt_iterator *gsi, internal_fn fn,
     }
 }
 
+static void
+build_saturation_binary_arith_call (gimple_stmt_iterator *gsi, gphi *phi,
+				    internal_fn fn, tree lhs, tree op_0,
+				    tree op_1)
+{
+  if (direct_internal_fn_supported_p (fn, TREE_TYPE (lhs), OPTIMIZE_FOR_BOTH))
+    {
+      gcall *call = gimple_build_call_internal (fn, 2, op_0, op_1);
+      gimple_call_set_lhs (call, lhs);
+      gsi_insert_before (gsi, call, GSI_SAME_STMT);
+
+      gimple_stmt_iterator psi = gsi_for_stmt (phi);
+      remove_phi_node (&psi, /* release_lhs_p */ false);
+    }
+}
+
 /*
- * Try to match saturation unsigned add.
+ * Try to match saturation unsigned add with assign.
  *   _7 = _4 + _6;
  *   _8 = _4 > _7;
  *   _9 = (long unsigned int) _8;
@@ -4119,6 +4135,37 @@ match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gassign *stmt)
 
   if (gimple_unsigned_integer_sat_add (lhs, ops, NULL))
     build_saturation_binary_arith_call (gsi, IFN_SAT_ADD, lhs, ops[0], ops[1]);
+}
+
+/*
+ * Try to match saturation unsigned add with PHI.
+ *   <bb 2> :
+ *   _1 = x_3(D) + y_4(D);
+ *   if (_1 >= x_3(D))
+ *     goto <bb 3>; [INV]
+ *   else
+ *     goto <bb 4>; [INV]
+ *
+ *   <bb 3> :
+ *
+ *   <bb 4> :
+ *   # _2 = PHI <255(2), _1(3)>
+ *   =>
+ *   <bb 4> [local count: 1073741824]:
+ *   _2 = .SAT_ADD (x_4(D), y_5(D));  */
+
+static void
+match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
+{
+  if (gimple_phi_num_args (phi) != 2)
+    return;
+
+  tree ops[2];
+  tree phi_result = gimple_phi_result (phi);
+
+  if (gimple_unsigned_integer_sat_add (phi_result, ops, NULL))
+    build_saturation_binary_arith_call (gsi, phi, IFN_SAT_ADD, phi_result,
+					ops[0], ops[1]);
 }
 
 /*
@@ -6051,6 +6098,13 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
   gimple_stmt_iterator gsi;
 
   fma_deferring_state fma_state (param_avoid_fma_max_bits > 0);
+
+  for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
+    gsi_next (&psi))
+    {
+      gimple_stmt_iterator gsi = gsi_last_bb (bb);
+      match_unsigned_saturation_add (&gsi, psi.phi ());
+    }
 
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
     {

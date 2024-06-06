@@ -848,12 +848,13 @@ public:
     : operand (OP_EXPR, loc), operation (operation_),
       ops (vNULL), expr_type (NULL), is_commutative (is_commutative_),
       is_generic (false), force_single_use (false), force_leaf (false),
-      opt_grp (0) {}
+      match_phi (false), opt_grp (0) {}
   expr (expr *e)
     : operand (OP_EXPR, e->location), operation (e->operation),
       ops (vNULL), expr_type (e->expr_type), is_commutative (e->is_commutative),
       is_generic (e->is_generic), force_single_use (e->force_single_use),
-      force_leaf (e->force_leaf), opt_grp (e->opt_grp) {}
+      force_leaf (e->force_leaf), match_phi (e->match_phi),
+      opt_grp (e->opt_grp) {}
   void append_op (operand *op) { ops.safe_push (op); }
   /* The operator and its operands.  */
   id_base *operation;
@@ -871,6 +872,8 @@ public:
   /* Whether in the result expression this should be a leaf node
      with any children simplified down to simple operands.  */
   bool force_leaf;
+  /* Whether the COND_EXPR is matching PHI gimple,  default false.  */
+  bool match_phi;
   /* If non-zero, the group for optional handling.  */
   unsigned char opt_grp;
   void gen_transform (FILE *f, int, const char *, bool, int,
@@ -1819,6 +1822,7 @@ public:
 
   char *get_name (char *);
   void gen_opname (char *, unsigned);
+  void gen_phi_on_cond (FILE *, int, int);
 };
 
 /* Leaf node of the decision tree, used for DT_SIMPLIFY.  */
@@ -1898,7 +1902,8 @@ cmp_operand (operand *o1, operand *o2)
       expr *e1 = static_cast<expr *>(o1);
       expr *e2 = static_cast<expr *>(o2);
       if (e1->operation != e2->operation
-	  || e1->is_generic != e2->is_generic)
+	  || e1->is_generic != e2->is_generic
+	  || e1->match_phi != e2->match_phi)
 	return false;
       if (e1->operation->kind == id_base::FN
 	  /* For function calls also compare number of arguments.  */
@@ -3251,6 +3256,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 			  depth);
 	  indent += 4;
 	  fprintf_indent (f, indent, "{\n");
+	  bool cond_expr_p = false;
 	  for (unsigned i = 0; i < exprs_len; ++i)
 	    {
 	      expr *e = as_a <expr *> (gimple_exprs[i]->op);
@@ -3262,6 +3268,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	      else
 		{
 		  id_base *op = e->operation;
+		  cond_expr_p |= (*op == COND_EXPR && e->match_phi);
 		  if (*op == CONVERT_EXPR || *op == NOP_EXPR)
 		    fprintf_indent (f, indent, "CASE_CONVERT:\n");
 		  else
@@ -3275,6 +3282,27 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	  fprintf_indent (f, indent, "default:;\n");
 	  fprintf_indent (f, indent, "}\n");
 	  indent -= 4;
+
+	  if (cond_expr_p)
+	    {
+	      fprintf_indent (f, indent,
+		"else if (gphi *_a%d = dyn_cast <gphi *> (_d%d))\n",
+		depth, depth);
+	      indent += 2;
+	      fprintf_indent (f, indent, "{\n");
+	      indent += 2;
+
+	      for (unsigned i = 0; i < exprs_len; i++)
+		{
+		  expr *e = as_a <expr *> (gimple_exprs[i]->op);
+		  if (*e->operation == COND_EXPR && e->match_phi)
+		    gimple_exprs[i]->gen_phi_on_cond (f, indent, depth);
+		}
+
+	      indent -= 2;
+	      fprintf_indent (f, indent, "}\n");
+	      indent -= 2;
+	    }
 	}
 
       if (fns_len)
@@ -3481,6 +3509,86 @@ dt_operand::gen (FILE *f, int indent, bool gimple, int depth)
 	indent = 0;
       fprintf_indent (f, indent, "  }\n");
     }
+}
+
+/* Generate matching code for the phi when meet COND_EXPR.  */
+
+void
+dt_operand::gen_phi_on_cond (FILE *f, int indent, int depth)
+{
+  fprintf_indent (f, indent,
+    "basic_block _b%d = gimple_bb (_a%d);\n", depth, depth);
+
+  fprintf_indent (f, indent, "if (gimple_phi_num_args (_a%d) == 2)\n", depth);
+
+  indent += 2;
+  fprintf_indent (f, indent, "{\n");
+  indent += 2;
+
+  fprintf_indent (f, indent,
+    "basic_block _pb_0_%d = EDGE_PRED (_b%d, 0)->src;\n", depth, depth);
+  fprintf_indent (f, indent,
+    "basic_block _pb_1_%d = EDGE_PRED (_b%d, 1)->src;\n", depth, depth);
+  fprintf_indent (f, indent,
+    "basic_block _db_%d = safe_dyn_cast <gcond *> (*gsi_last_bb (_pb_0_%d)) ? "
+    "_pb_0_%d : _pb_1_%d;\n", depth, depth, depth, depth);
+  fprintf_indent (f, indent,
+    "basic_block _other_db_%d = safe_dyn_cast <gcond *> "
+    "(*gsi_last_bb (_pb_0_%d)) ? _pb_1_%d : _pb_0_%d;\n",
+    depth, depth, depth, depth);
+
+  fprintf_indent (f, indent,
+    "gcond *_ct_%d = safe_dyn_cast <gcond *> (*gsi_last_bb (_db_%d));\n",
+    depth, depth);
+  fprintf_indent (f, indent, "if (_ct_%d"
+    " && EDGE_COUNT (_other_db_%d->preds) == 1\n", depth, depth);
+  fprintf_indent (f, indent,
+    "  && EDGE_COUNT (_other_db_%d->succs) == 1\n", depth);
+  fprintf_indent (f, indent,
+    "  && EDGE_PRED (_other_db_%d, 0)->src == _db_%d)\n", depth, depth);
+
+  indent += 2;
+  fprintf_indent (f, indent, "{\n");
+  indent += 2;
+
+  fprintf_indent (f, indent,
+    "tree _cond_lhs_%d = gimple_cond_lhs (_ct_%d);\n", depth, depth);
+  fprintf_indent (f, indent,
+    "tree _cond_rhs_%d = gimple_cond_rhs (_ct_%d);\n", depth, depth);
+
+  char opname_0[20];
+  char opname_1[20];
+  char opname_2[20];
+  gen_opname (opname_0, 0);
+
+  fprintf_indent (f, indent,
+    "tree %s = build2 (gimple_cond_code (_ct_%d), "
+    "boolean_type_node, _cond_lhs_%d, _cond_rhs_%d);\n",
+    opname_0, depth, depth, depth);
+
+  fprintf_indent (f, indent,
+    "bool _arg_0_is_true_%d = gimple_phi_arg_edge (_a%d, 0)->flags"
+    " & EDGE_TRUE_VALUE;\n", depth, depth);
+
+  gen_opname (opname_1, 1);
+  fprintf_indent (f, indent,
+    "tree %s = gimple_phi_arg_def (_a%d, _arg_0_is_true_%d ? 0 : 1);\n",
+    opname_1, depth, depth);
+
+  gen_opname (opname_2, 2);
+  fprintf_indent (f, indent,
+    "tree %s = gimple_phi_arg_def (_a%d, _arg_0_is_true_%d ? 1 : 0);\n",
+    opname_2, depth, depth);
+
+  gen_kids (f, indent, true, depth);
+
+  indent -= 2;
+  fprintf_indent (f, indent, "}\n");
+  indent -= 2;
+
+  indent -= 2;
+  fprintf_indent (f, indent, "}\n");
+  indent -= 2;
 }
 
 /* Emit a logging call to the debug file to the file F, with the INDENT from
@@ -4598,6 +4706,18 @@ parser::parse_expr ()
     {
       eat_token (CPP_NOT);
       e->force_leaf = true;
+    }
+
+  if (token->type == CPP_XOR && !(token->flags & PREV_WHITE))
+    {
+      if (!parsing_match_operand)
+	fatal_at (token, "modifier '^' is only valid in a match expression");
+
+      if (!(*e->operation == COND_EXPR))
+	fatal_at (token, "modifier '^' can only act on operation COND_EXPR");
+
+      eat_token (CPP_XOR);
+      e->match_phi = true;
     }
 
   if (token->type == CPP_COLON
