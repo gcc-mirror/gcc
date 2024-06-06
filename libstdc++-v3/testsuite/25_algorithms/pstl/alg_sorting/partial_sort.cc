@@ -3,6 +3,7 @@
 // { dg-do run { target c++17 } }
 // { dg-timeout-factor 3 }
 // { dg-require-effective-target tbb_backend }
+// { dg-xfail-run-if "see PR 90276" { debug_mode } }
 
 //===-- partial_sort.pass.cpp ---------------------------------------------===//
 //
