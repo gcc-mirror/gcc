@@ -7926,11 +7926,12 @@ gfc_generate_function_code (gfc_namespace * ns)
 		   && CLASS_DATA (sym)->attr.dimension == 0
 		   && sym->result == sym)
 	    {
-	      tmp = CLASS_DATA (sym)->backend_decl;
-	      tmp = fold_build3_loc (input_location, COMPONENT_REF,
-				     TREE_TYPE (tmp), result, tmp, NULL_TREE);
-	      gfc_add_modify (&init, tmp, fold_convert (TREE_TYPE (tmp),
-							null_pointer_node));
+	      tmp = gfc_class_data_get (result);
+	      gfc_add_modify (&init, tmp,
+			      fold_convert (TREE_TYPE (tmp),
+					    null_pointer_node));
+	      gfc_reset_vptr (&init, nullptr, result,
+			      CLASS_DATA (sym->result)->ts.u.derived);
 	    }
 	  else if (sym->ts.type == BT_DERIVED
 		   && !sym->attr.allocatable)
