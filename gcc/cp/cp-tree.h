@@ -8972,6 +8972,7 @@ extern tree make_postcondition_variable		(cp_expr, tree);
 extern tree grok_contract			(tree, tree, tree, cp_expr, location_t);
 extern tree finish_contract_condition		(cp_expr);
 extern tree constify_contract_access            (tree);
+extern tree view_as_const                       (tree);
 
 /* Return the first contract in ATTRS, or NULL_TREE if there are none.  */
 

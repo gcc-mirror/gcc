@@ -1944,6 +1944,20 @@ finish_contract_condition (cp_expr condition)
   return condition_conversion (condition);
 }
 
+/*
+ *  Wrap the decl into VIEW_CONVERT_EXPR representing
+ *  const qualified version of the decl.
+ */
+
+tree view_as_const(tree decl)
+{
+  tree ctype = TREE_TYPE (decl);
+  ctype = cp_build_qualified_type (ctype, (cp_type_quals (ctype)
+						     | TYPE_QUAL_CONST));
+  decl = build1 (VIEW_CONVERT_EXPR, ctype, decl);
+  return decl;
+}
+
 /* constify access to an id from within the contract condition */
 tree
 constify_contract_access(tree decl)
@@ -1953,17 +1967,20 @@ constify_contract_access(tree decl)
    * checked separately, and we also need to make references and *this const
    */
 
+  /* We check if we have a variable of automatic storage duration, a parameter,
+   * a variable of automatic storage duration of reference type, or a
+   * parameter of reference type
+   */
   if (!TREE_READONLY (decl)
       && ((VAR_P (decl) && decl_storage_duration (decl) == dk_auto)
-          || (REFERENCE_REF_P(decl) && decl_storage_duration (TREE_OPERAND (decl, 0)) == dk_auto)
-	  || (TREE_CODE (decl) == PARM_DECL)))
+	  || (TREE_CODE (decl) == PARM_DECL)
+          || (REFERENCE_REF_P (decl) &&
+		((VAR_P (TREE_OPERAND (decl, 0)) && decl_storage_duration (TREE_OPERAND (decl, 0)) == dk_auto)
+		 || (TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL)))))
   {
-
-      tree ctype = TREE_TYPE (decl);
-      ctype = cp_build_qualified_type (ctype, (cp_type_quals (ctype)
-      						   | TYPE_QUAL_CONST));
-      decl = build1 (VIEW_CONVERT_EXPR, ctype, decl);
+      decl = view_as_const (decl);
   }
+
   return decl;
 }
 
