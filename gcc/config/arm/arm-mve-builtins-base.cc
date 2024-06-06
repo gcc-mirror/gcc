@@ -192,6 +192,118 @@ public:
   }
 };
 
+  /* Implements vcvtq intrinsics.  */
+class vcvtq_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code code;
+    machine_mode target_mode = e.vector_mode (0);
+    int unspec;
+    switch (e.pred)
+      {
+      case PRED_none:
+	switch (e.mode_suffix_id)
+	  {
+	  case MODE_none:
+	    /* No predicate, no suffix.  */
+	    if (e.type_suffix (0).integer_p)
+	      {
+		unspec = (e.type_suffix (0).unsigned_p
+			  ? VCVTQ_FROM_F_U
+			  : VCVTQ_FROM_F_S);
+		code = code_for_mve_q_from_f (unspec, unspec, target_mode);
+	      }
+	    else
+	      {
+		unspec = (e.type_suffix (1).unsigned_p
+			  ? VCVTQ_TO_F_U
+			  : VCVTQ_TO_F_S);
+		code = code_for_mve_q_to_f (unspec, unspec, target_mode);
+	      }
+	    break;
+
+	  case MODE_n:
+	    /* No predicate, _n suffix.  */
+	    if (e.type_suffix (0).integer_p)
+	      {
+		unspec = (e.type_suffix (0).unsigned_p
+			  ? VCVTQ_N_FROM_F_U
+			  : VCVTQ_N_FROM_F_S);
+		code = code_for_mve_q_n_from_f (unspec, unspec, target_mode);
+	      }
+	    else
+	      {
+		unspec = (e.type_suffix (1).unsigned_p
+			  ? VCVTQ_N_TO_F_U
+			  : VCVTQ_N_TO_F_S);
+		code = code_for_mve_q_n_to_f (unspec, unspec, target_mode);
+	      }
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	  }
+	return e.use_exact_insn (code);
+
+      case PRED_m:
+      case PRED_x:
+	switch (e.mode_suffix_id)
+	  {
+	  case MODE_none:
+	    /* No suffix, "m" or "x" predicate.  */
+	    if (e.type_suffix (0).integer_p)
+	      {
+		unspec = (e.type_suffix (0).unsigned_p
+			  ? VCVTQ_M_FROM_F_U
+			  : VCVTQ_M_FROM_F_S);
+		code = code_for_mve_q_m_from_f (unspec, unspec, target_mode);
+	      }
+	    else
+	      {
+		unspec = (e.type_suffix (1).unsigned_p
+			  ? VCVTQ_M_TO_F_U
+			  : VCVTQ_M_TO_F_S);
+		code = code_for_mve_q_m_to_f (unspec, unspec, target_mode);
+	      }
+	    break;
+
+	  case MODE_n:
+	    /* _n suffix, "m" or "x" predicate.  */
+	    if (e.type_suffix (0).integer_p)
+	      {
+		unspec = (e.type_suffix (0).unsigned_p
+			  ? VCVTQ_M_N_FROM_F_U
+			  : VCVTQ_M_N_FROM_F_S);
+		code = code_for_mve_q_m_n_from_f (unspec, unspec, target_mode);
+	      }
+	    else
+	      {
+		unspec = (e.type_suffix (1).unsigned_p
+			  ? VCVTQ_M_N_TO_F_U
+			  : VCVTQ_M_N_TO_F_S);
+		code = code_for_mve_q_m_n_to_f (unspec, unspec, target_mode);
+	      }
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	  }
+	if (e.pred == PRED_m)
+	  return e.use_cond_insn (code, 0);
+	else
+	  return e.use_pred_x_insn (code);
+
+      default:
+	gcc_unreachable ();
+      }
+
+    gcc_unreachable ();
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -392,6 +504,7 @@ FUNCTION (vcmpltq, unspec_based_mve_function_exact_insn_vcmp, (LT, UNKNOWN, LT, 
 FUNCTION (vcmpcsq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GEU, UNKNOWN, UNKNOWN, VCMPCSQ_M_U, UNKNOWN, UNKNOWN, VCMPCSQ_M_N_U, UNKNOWN))
 FUNCTION (vcmphiq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GTU, UNKNOWN, UNKNOWN, VCMPHIQ_M_U, UNKNOWN, UNKNOWN, VCMPHIQ_M_N_U, UNKNOWN))
 FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)
+FUNCTION (vcvtq, vcvtq_impl,)
 FUNCTION (vdupq, vdupq_impl, (VDUPQ_M_N_S, VDUPQ_M_N_U, VDUPQ_M_N_F))
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION (vfmaq, unspec_mve_function_exact_insn, (-1, -1, VFMAQ_F, -1, -1, VFMAQ_N_F, -1, -1, VFMAQ_M_F, -1, -1, VFMAQ_M_N_F))

@@ -205,6 +205,20 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
 #define TYPES_signed_32(S, D) \
   S (s32)
 
+/* All the type combinations allowed by vcvtq.  */
+#define TYPES_cvt(S, D) \
+  D (f16, s16), \
+  D (f16, u16), \
+  \
+  D (f32, s32), \
+  D (f32, u32), \
+  \
+  D (s16, f16), \
+  D (s32, f32), \
+  \
+  D (u16, f16), \
+  D (u32, f32)
+
 #define TYPES_reinterpret_signed1(D, A) \
   D (A, s8), D (A, s16), D (A, s32), D (A, s64)
 
@@ -284,6 +298,7 @@ DEF_MVE_TYPES_ARRAY (integer_32);
 DEF_MVE_TYPES_ARRAY (poly_8_16);
 DEF_MVE_TYPES_ARRAY (signed_16_32);
 DEF_MVE_TYPES_ARRAY (signed_32);
+DEF_MVE_TYPES_ARRAY (cvt);
 DEF_MVE_TYPES_ARRAY (reinterpret_integer);
 DEF_MVE_TYPES_ARRAY (reinterpret_float);
 

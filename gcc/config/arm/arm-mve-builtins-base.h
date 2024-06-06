@@ -54,6 +54,7 @@ extern const function_base *const vcmulq_rot180;
 extern const function_base *const vcmulq_rot270;
 extern const function_base *const vcmulq_rot90;
 extern const function_base *const vcreateq;
+extern const function_base *const vcvtq;
 extern const function_base *const vdupq;
 extern const function_base *const veorq;
 extern const function_base *const vfmaq;
