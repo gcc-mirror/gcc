@@ -4199,7 +4199,7 @@ mips_insn_cost (rtx_insn *x, bool speed)
 
   count = get_attr_insn_count (x);
   ratio = get_attr_perf_ratio (x);
-  cost = count * ratio;
+  cost = COSTS_N_INSNS (count) * ratio;
   if (cost > 0)
     return cost;
 
