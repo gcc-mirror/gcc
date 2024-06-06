@@ -47,6 +47,12 @@ UrlSuffix(gcc/RISC-V-Options.html#index-mcmodel_003d-4)
 mstrict-align
 UrlSuffix(gcc/RISC-V-Options.html#index-mstrict-align-4)
 
+mscalar-strict-align
+UrlSuffix(gcc/RISC-V-Options.html#index-mscalar-strict-align)
+
+mvector-strict-align
+UrlSuffix(gcc/RISC-V-Options.html#index-mvector-strict-align)
+
 ; skipping UrlSuffix for 'mexplicit-relocs' due to finding no URLs
 
 mrelax
