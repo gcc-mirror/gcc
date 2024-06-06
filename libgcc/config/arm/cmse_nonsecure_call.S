@@ -33,6 +33,7 @@
 #endif
 
 .thumb
+.type __gnu_cmse_nonsecure_call, %function
 .global __gnu_cmse_nonsecure_call
 __gnu_cmse_nonsecure_call:
 #if defined(__ARM_ARCH_8M_MAIN__)
@@ -142,3 +143,4 @@ pop	    {r5-r7, pc}
 #else
 #error "This should only be used for armv8-m base- and mainline."
 #endif
+.size __gnu_cmse_nonsecure_call, .-__gnu_cmse_nonsecure_call
