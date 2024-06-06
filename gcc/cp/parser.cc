@@ -13233,7 +13233,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      /* if we have a current class object, constify it before processing
 	       *  the contract condition */
 	      tree current_class_ref_copy = current_class_ref;
-	      if (current_class_ref)
+	      if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst && current_class_ref)
 	        current_class_ref = view_as_const (current_class_ref);
 
 	      /* Parse the condition, ensuring that parameters or the return variable
@@ -31570,7 +31570,7 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       /* if we have a current class object, constify it before processing
        *  the contract condition */
       tree current_class_ref_copy = current_class_ref;
-      if (current_class_ref)
+      if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst && current_class_ref)
         current_class_ref = view_as_const (current_class_ref);
 
       /* Parse the condition, ensuring that parameters or the return variable
@@ -31668,7 +31668,7 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   /* if we have a current class object, constify it before processing
    *  the contract condition */
   tree current_class_ref_copy = current_class_ref;
-  if (current_class_ref)
+  if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst && current_class_ref)
     current_class_ref = view_as_const (current_class_ref);
 
   /* Parse the condition, ensuring that parameters or the return variable
