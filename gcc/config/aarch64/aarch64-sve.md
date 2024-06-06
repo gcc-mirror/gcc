@@ -8134,13 +8134,13 @@
 	  UNSPEC_PRED_Z))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 3 , 4            ; attrs: pred_clobber ]
-     [ &Upa     , Upl , w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, #%4
-     [ ?Upa     , 0Upl, w , <sve_imm_con>; yes                 ] ^
-     [ Upa      , Upl , w , <sve_imm_con>; no                  ] ^
-     [ &Upa     , Upl , w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>
-     [ ?Upa     , 0Upl, w , w            ; yes                 ] ^
-     [ Upa      , Upl , w , w            ; no                  ] ^
+  {@ [ cons: =0 , 1  , 3 , 4            ; attrs: pred_clobber ]
+     [ &Upa     , Upl, w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, #%4
+     [ ?Upl     , 0  , w , <sve_imm_con>; yes                 ] ^
+     [ Upa      , Upl, w , <sve_imm_con>; no                  ] ^
+     [ &Upa     , Upl, w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.<Vetype>
+     [ ?Upl     , 0  , w , w            ; yes                 ] ^
+     [ Upa      , Upl, w , w            ; no                  ] ^
   }
 )
 
@@ -8170,13 +8170,13 @@
 	  UNSPEC_PRED_Z))]
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
-  {@ [ cons: =0 , 1    , 2 , 3            ; attrs: pred_clobber ]
-     [ &Upa     ,  Upl , w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
-     [ ?Upa     ,  0Upl, w , <sve_imm_con>; yes                 ] ^
-     [ Upa      ,  Upl , w , <sve_imm_con>; no                  ] ^
-     [ &Upa     ,  Upl , w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>
-     [ ?Upa     ,  0Upl, w , w            ; yes                 ] ^
-     [ Upa      ,  Upl , w , w            ; no                  ] ^
+  {@ [ cons: =0 , 1   , 2 , 3            ; attrs: pred_clobber ]
+     [ &Upa     ,  Upl, w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
+     [ ?Upl     ,  0  , w , <sve_imm_con>; yes                 ] ^
+     [ Upa      ,  Upl, w , <sve_imm_con>; no                  ] ^
+     [ &Upa     ,  Upl, w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>
+     [ ?Upl     ,  0  , w , w            ; yes                 ] ^
+     [ Upa      ,  Upl, w , w            ; no                  ] ^
   }
   "&& !rtx_equal_p (operands[4], operands[6])"
   {
@@ -8205,12 +8205,12 @@
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
   {@ [ cons: =0, 1    , 2 , 3            ; attrs: pred_clobber ]
-     [ &Upa    ,  Upl , w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
-     [ ?Upa    ,  0Upl, w , <sve_imm_con>; yes                 ] ^
-     [ Upa     ,  Upl , w , <sve_imm_con>; no                  ] ^
-     [ &Upa    ,  Upl , w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>
-     [ ?Upa    ,  0Upl, w , w            ; yes                 ] ^
-     [ Upa     ,  Upl , w , w            ; no                  ] ^
+     [ &Upa    ,  Upl, w , <sve_imm_con>; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, #%3
+     [ ?Upl    ,  0  , w , <sve_imm_con>; yes                 ] ^
+     [ Upa     ,  Upl, w , <sve_imm_con>; no                  ] ^
+     [ &Upa    ,  Upl, w , w            ; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.<Vetype>
+     [ ?Upl    ,  0  , w , w            ; yes                 ] ^
+     [ Upa     ,  Upl, w , w            ; no                  ] ^
   }
   "&& !rtx_equal_p (operands[4], operands[6])"
   {
@@ -8263,10 +8263,10 @@
 	  UNSPEC_PRED_Z))
    (clobber (reg:CC_NZC CC_REGNUM))]
   "TARGET_SVE"
-  {@ [ cons: =0, 1    , 2, 3, 4; attrs: pred_clobber ]
-     [ &Upa    ,  Upl ,  , w, w; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.d
-     [ ?Upa    ,  0Upl,  , w, w; yes                 ] ^
-     [ Upa     ,  Upl ,  , w, w; no                  ] ^
+  {@ [ cons: =0, 1   , 2, 3, 4; attrs: pred_clobber ]
+     [ &Upa    ,  Upl,  , w, w; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %3.<Vetype>, %4.d
+     [ ?Upl    ,  0  ,  , w, w; yes                 ] ^
+     [ Upa     ,  Upl,  , w, w; no                  ] ^
   }
 )
 
@@ -8298,10 +8298,10 @@
 	  UNSPEC_PRED_Z))]
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
-  {@ [ cons: =0, 1    , 2, 3, 6  ; attrs: pred_clobber ]
-     [ &Upa    ,  Upl , w, w, Upl; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
-     [ ?Upa    ,  0Upl, w, w, Upl; yes                 ] ^
-     [ Upa     ,  Upl , w, w, Upl; no                  ] ^
+  {@ [ cons: =0, 1   , 2, 3, 6  ; attrs: pred_clobber ]
+     [ &Upa    ,  Upl, w, w, Upl; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
+     [ ?Upl    ,  0  , w, w, Upl; yes                 ] ^
+     [ Upa     ,  Upl, w, w, Upl; no                  ] ^
   }
 )
 
@@ -8325,10 +8325,10 @@
    (clobber (match_scratch:<VPRED> 0))]
   "TARGET_SVE
    && aarch64_sve_same_pred_for_ptest_p (&operands[4], &operands[6])"
-  {@ [ cons:  =0, 1    , 2, 3, 6  ; attrs: pred_clobber ]
-     [ &Upa     ,  Upl , w, w, Upl; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
-     [ ?Upa     ,  0Upl, w, w, Upl; yes                 ] ^
-     [ Upa      ,  Upl , w, w, Upl; no                  ] ^
+  {@ [ cons:  =0, 1   , 2, 3, 6  ; attrs: pred_clobber ]
+     [ &Upa     ,  Upl, w, w, Upl; yes                 ] cmp<cmp_op>\t%0.<Vetype>, %1/z, %2.<Vetype>, %3.d
+     [ ?Upl     ,  0  , w, w, Upl; yes                 ] ^
+     [ Upa      ,  Upl, w, w, Upl; no                  ] ^
   }
 )
 
