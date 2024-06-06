@@ -4801,8 +4801,14 @@ package body Sem_Ch13 is
               and then Nkind (Type_Definition (N)) = N_Derived_Type_Definition
               and then not In_Instance_Body
             then
+               --  In order to locate the parent type we must go first to its
+               --  base type because the frontend introduces an implicit base
+               --  type even if there is no constraint attached to it, since
+               --  this is closer to the Ada semantics.
+
                declare
-                  Parent_Type      : constant Entity_Id := Etype (E);
+                  Parent_Type      : constant Entity_Id :=
+                    Etype (Base_Type (E));
                   Inherited_Aspect : constant Node_Id :=
                     Find_Aspect (Parent_Type, A_Id);
                begin
