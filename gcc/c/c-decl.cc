@@ -9446,6 +9446,17 @@ verify_counted_by_attribute (tree struct_type, tree field_decl)
   return;
 }
 
+/* TYPE is a struct or union that we're applying may_alias to after the body is
+   parsed.  Fixup any POINTER_TO types.  */
+
+static void
+c_fixup_may_alias (tree type)
+{
+  for (tree t = TYPE_POINTER_TO (type); t; t = TYPE_NEXT_PTR_TO (t))
+    for (tree v = TYPE_MAIN_VARIANT (t); v; v = TYPE_NEXT_VARIANT (v))
+      TYPE_REF_CAN_ALIAS_ALL (v) = true;
+}
+
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    LOC is the location of the RECORD_TYPE or UNION_TYPE's definition.
    FIELDLIST is a chain of FIELD_DECL nodes for the fields.
@@ -9790,6 +9801,10 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
     }
 
   C_TYPE_BEING_DEFINED (t) = 0;
+
+  if (lookup_attribute ("may_alias", TYPE_ATTRIBUTES (t)))
+    for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
+      c_fixup_may_alias (x);
 
   /* Set type canonical based on equivalence class.  */
   if (flag_isoc23 && !C_TYPE_VARIABLE_SIZE (t))
