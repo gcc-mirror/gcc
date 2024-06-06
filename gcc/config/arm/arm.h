@@ -2111,8 +2111,8 @@ enum arm_auto_incmodes
       ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 0, HImode)	\
       : SImode)								\
    : (TARGET_THUMB2							\
-      ? ((min > 0 && max < 0x200) ? QImode				\
-      : (min > 0 && max <= 0x20000) ? HImode				\
+      ? ((min >= 0 && max < 0x200) ? QImode				\
+      : (min >= 0 && max < 0x20000) ? HImode				\
       : SImode)								\
    : ((min >= 0 && max < 1024)						\
       ? (ADDR_DIFF_VEC_FLAGS (body).offset_unsigned = 1, QImode)	\
