@@ -154,6 +154,7 @@ protected:
   void visit (HIR::MatchExpr &expr) override { rust_unreachable (); }
   void visit (HIR::AwaitExpr &expr) override { rust_unreachable (); }
   void visit (HIR::AsyncBlockExpr &expr) override { rust_unreachable (); }
+  void visit (HIR::InlineAsm &expr) override { rust_unreachable (); }
   void visit (HIR::TypeParam &param) override { rust_unreachable (); }
   void visit (HIR::ConstGenericParam &param) override { rust_unreachable (); }
   void visit (HIR::LifetimeWhereClauseItem &item) override

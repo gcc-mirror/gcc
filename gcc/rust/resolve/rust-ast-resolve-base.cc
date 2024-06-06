@@ -323,6 +323,10 @@ ResolverBase::visit (AST::AsyncBlockExpr &)
 {}
 
 void
+ResolverBase::visit (AST::InlineAsm &)
+{}
+
+void
 ResolverBase::visit (AST::TypeParam &)
 {}
 

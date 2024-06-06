@@ -24,6 +24,7 @@
 #include "rust-hir.h"
 #include <string>
 #include "rust-attribute-values.h"
+#include "tree/rust-hir-expr.h"
 
 namespace Rust {
 namespace HIR {
@@ -1469,6 +1470,10 @@ Dump::visit (AsyncBlockExpr &e)
 
   end ("AsyncBlockExpr");
 }
+
+void
+Dump::visit (InlineAsm &e)
+{}
 
 void
 Dump::visit (TypeParam &e)

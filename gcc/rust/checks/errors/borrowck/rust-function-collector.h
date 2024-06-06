@@ -124,6 +124,7 @@ public:
   void visit (HIR::MatchExpr &expr) override {}
   void visit (HIR::AwaitExpr &expr) override {}
   void visit (HIR::AsyncBlockExpr &expr) override {}
+  void visit (HIR::InlineAsm &expr) override {}
   void visit (HIR::TypeParam &param) override {}
   void visit (HIR::ConstGenericParam &param) override {}
   void visit (HIR::LifetimeWhereClauseItem &item) override {}

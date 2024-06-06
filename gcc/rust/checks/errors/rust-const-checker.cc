@@ -535,6 +535,10 @@ ConstChecker::visit (AsyncBlockExpr &)
 }
 
 void
+ConstChecker::visit (InlineAsm &)
+{}
+
+void
 ConstChecker::visit (TypeParam &)
 {}
 

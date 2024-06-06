@@ -303,7 +303,7 @@ public:
   void visit (MatchExpr &expr);
   void visit (AwaitExpr &expr);
   void visit (AsyncBlockExpr &expr);
-
+  void visit (InlineAsm &expr);
   // rust-item.h
   void visit (TypeParam &param);
   void visit (LifetimeWhereClauseItem &item);
