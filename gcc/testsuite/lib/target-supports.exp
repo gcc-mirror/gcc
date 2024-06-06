@@ -10451,7 +10451,13 @@ proc check_effective_target_apxf { } {
 	void
 	foo ()
 	{
-	  __asm__ volatile ("add\t%%r16, %%r31" ::);
+	  __asm__ volatile ("movq\t%r16, %rax");
+	  __asm__ volatile ("push2p\t%r15, %r14");
+	  __asm__ volatile ("addq\t%r16, %r31, %r17");
+	  __asm__ volatile ("{nf} addq\t%r16, %r31");
+	  __asm__ volatile ("setzule\t%al");
+	  __asm__ volatile ("cfcmoveq\t%r16, %r31");
+	  __asm__ volatile ("ccmpleq\t{dfv=sf} %r16, %r31");
 	}
     } "-mapxf" ]
 }
