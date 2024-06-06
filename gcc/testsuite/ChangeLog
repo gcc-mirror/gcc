@@ -1,3 +1,219 @@
+2024-06-05  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* lib/target-supports.exp: Add
+	check_effective_target_riscv_v_misalign_ok.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-7.c: Add
+	-mno-vector-strict-align.
+	* gcc.dg/vect/costmodel/riscv/rvv/vla_vs_vls-10.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/vla_vs_vls-11.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/vla_vs_vls-12.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/vla_vs_vls-8.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/vla_vs_vls-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/misalign-1.c: Ditto.
+
+2024-06-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/pred_clobber_1.c: New test.
+	* gcc.target/aarch64/sve/pred_clobber_2.c: New test.
+	* gcc.target/aarch64/sve/pred_clobber_3.c: New test.
+	* gcc.target/aarch64/sve/pred_clobber_4.c: New test.
+
+2024-06-05  Jakub Jelinek  <jakub@redhat.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* c-c++-common/gomp/attrs-tile-1.c: New test.
+	* c-c++-common/gomp/attrs-tile-2.c: New test.
+	* c-c++-common/gomp/attrs-tile-3.c: New test.
+	* c-c++-common/gomp/attrs-tile-4.c: New test.
+	* c-c++-common/gomp/attrs-tile-5.c: New test.
+	* c-c++-common/gomp/attrs-tile-6.c: New test.
+	* c-c++-common/gomp/attrs-unroll-1.c: New test.
+	* c-c++-common/gomp/attrs-unroll-2.c: New test.
+	* c-c++-common/gomp/attrs-unroll-3.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-1.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-2.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-3.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-4.c: New test.
+	* c-c++-common/gomp/attrs-unroll-inner-5.c: New test.
+	* c-c++-common/gomp/imperfect-attributes.c: Adjust expected
+	diagnostics.
+	* c-c++-common/gomp/imperfect-loop-nest.c: New test.
+	* c-c++-common/gomp/ordered-5.c: New test.
+	* c-c++-common/gomp/scan-7.c: New test.
+	* c-c++-common/gomp/tile-1.c: New test.
+	* c-c++-common/gomp/tile-2.c: New test.
+	* c-c++-common/gomp/tile-3.c: New test.
+	* c-c++-common/gomp/tile-4.c: New test.
+	* c-c++-common/gomp/tile-5.c: New test.
+	* c-c++-common/gomp/tile-6.c: New test.
+	* c-c++-common/gomp/tile-7.c: New test.
+	* c-c++-common/gomp/tile-8.c: New test.
+	* c-c++-common/gomp/tile-9.c: New test.
+	* c-c++-common/gomp/tile-10.c: New test.
+	* c-c++-common/gomp/tile-11.c: New test.
+	* c-c++-common/gomp/tile-12.c: New test.
+	* c-c++-common/gomp/tile-13.c: New test.
+	* c-c++-common/gomp/tile-14.c: New test.
+	* c-c++-common/gomp/tile-15.c: New test.
+	* c-c++-common/gomp/unroll-1.c: New test.
+	* c-c++-common/gomp/unroll-2.c: New test.
+	* c-c++-common/gomp/unroll-3.c: New test.
+	* c-c++-common/gomp/unroll-4.c: New test.
+	* c-c++-common/gomp/unroll-5.c: New test.
+	* c-c++-common/gomp/unroll-6.c: New test.
+	* c-c++-common/gomp/unroll-7.c: New test.
+	* c-c++-common/gomp/unroll-8.c: New test.
+	* c-c++-common/gomp/unroll-9.c: New test.
+	* c-c++-common/gomp/unroll-inner-1.c: New test.
+	* c-c++-common/gomp/unroll-inner-2.c: New test.
+	* c-c++-common/gomp/unroll-inner-3.c: New test.
+	* c-c++-common/gomp/unroll-non-rect-1.c: New test.
+	* c-c++-common/gomp/unroll-non-rect-2.c: New test.
+	* c-c++-common/gomp/unroll-non-rect-3.c: New test.
+	* c-c++-common/gomp/unroll-simd-1.c: New test.
+	* gcc.dg/gomp/attrs-4.c: Adjust expected diagnostics.
+	* gcc.dg/gomp/for-1.c: Likewise.
+	* gcc.dg/gomp/for-11.c: Likewise.
+	* g++.dg/gomp/attrs-4.C: Likewise.
+	* g++.dg/gomp/for-1.C: Likewise.
+	* g++.dg/gomp/pr94512.C: Likewise.
+	* g++.dg/gomp/tile-1.C: New test.
+	* g++.dg/gomp/tile-2.C: New test.
+	* g++.dg/gomp/unroll-1.C: New test.
+	* g++.dg/gomp/unroll-2.C: New test.
+	* g++.dg/gomp/unroll-3.C: New test.
+	* gfortran.dg/gomp/inner-loops-1.f90: New test.
+	* gfortran.dg/gomp/inner-loops-2.f90: New test.
+	* gfortran.dg/gomp/pure-1.f90: Add tests for !$omp unroll
+	and !$omp tile.
+	* gfortran.dg/gomp/pure-2.f90: Remove those tests from here.
+	* gfortran.dg/gomp/scan-9.f90: New test.
+	* gfortran.dg/gomp/tile-1.f90: New test.
+	* gfortran.dg/gomp/tile-2.f90: New test.
+	* gfortran.dg/gomp/tile-3.f90: New test.
+	* gfortran.dg/gomp/tile-4.f90: New test.
+	* gfortran.dg/gomp/tile-5.f90: New test.
+	* gfortran.dg/gomp/tile-6.f90: New test.
+	* gfortran.dg/gomp/tile-7.f90: New test.
+	* gfortran.dg/gomp/tile-8.f90: New test.
+	* gfortran.dg/gomp/tile-9.f90: New test.
+	* gfortran.dg/gomp/tile-10.f90: New test.
+	* gfortran.dg/gomp/tile-imperfect-nest-1.f90: New test.
+	* gfortran.dg/gomp/tile-imperfect-nest-2.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-1.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-2.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-3.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-4.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-5.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-6.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-7.f90: New test.
+	* gfortran.dg/gomp/tile-inner-loops-8.f90: New test.
+	* gfortran.dg/gomp/tile-non-rectangular-1.f90: New test.
+	* gfortran.dg/gomp/tile-non-rectangular-2.f90: New test.
+	* gfortran.dg/gomp/tile-non-rectangular-3.f90: New test.
+	* gfortran.dg/gomp/tile-unroll-1.f90: New test.
+	* gfortran.dg/gomp/tile-unroll-2.f90: New test.
+	* gfortran.dg/gomp/unroll-1.f90: New test.
+	* gfortran.dg/gomp/unroll-2.f90: New test.
+	* gfortran.dg/gomp/unroll-3.f90: New test.
+	* gfortran.dg/gomp/unroll-4.f90: New test.
+	* gfortran.dg/gomp/unroll-5.f90: New test.
+	* gfortran.dg/gomp/unroll-6.f90: New test.
+	* gfortran.dg/gomp/unroll-7.f90: New test.
+	* gfortran.dg/gomp/unroll-8.f90: New test.
+	* gfortran.dg/gomp/unroll-9.f90: New test.
+	* gfortran.dg/gomp/unroll-10.f90: New test.
+	* gfortran.dg/gomp/unroll-11.f90: New test.
+	* gfortran.dg/gomp/unroll-12.f90: New test.
+	* gfortran.dg/gomp/unroll-13.f90: New test.
+	* gfortran.dg/gomp/unroll-inner-loop-1.f90: New test.
+	* gfortran.dg/gomp/unroll-inner-loop-2.f90: New test.
+	* gfortran.dg/gomp/unroll-no-clause-1.f90: New test.
+	* gfortran.dg/gomp/unroll-non-rect-1.f90: New test.
+	* gfortran.dg/gomp/unroll-non-rect-2.f90: New test.
+	* gfortran.dg/gomp/unroll-simd-1.f90: New test.
+	* gfortran.dg/gomp/unroll-simd-2.f90: New test.
+	* gfortran.dg/gomp/unroll-simd-3.f90: New test.
+	* gfortran.dg/gomp/unroll-tile-1.f90: New test.
+	* gfortran.dg/gomp/unroll-tile-2.f90: New test.
+	* gfortran.dg/gomp/unroll-tile-inner-1.f90: New test.
+
+2024-06-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* lib/scanasm.exp (configure_check-function-bodies): Allow single-char
+	function names.
+
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* c-c++-common/initpri1_part_c1.c: Consider 'CDTOR_LINKAGE'.
+	* c-c++-common/initpri1_part_c2.c: Likewise.
+	* c-c++-common/initpri1_part_c3.c: Likewise.
+	* c-c++-common/initpri1_part_cd4.c: Likewise.
+	* c-c++-common/initpri1_part_d1.c: Likewise.
+	* c-c++-common/initpri1_part_d2.c: Likewise.
+	* c-c++-common/initpri1_part_d3.c: Likewise.
+	* c-c++-common/initpri1.c: Specify it.
+	* c-c++-common/initpri1-lto.c: Likewise.
+	* c-c++-common/initpri1-split.c: Likewise.
+	* c-c++-common/initpri1-static.c: New.
+	* c-c++-common/initpri1-lto-static.c: Likewise.
+	* c-c++-common/initpri1-split-static.c: Likewise.
+
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* c-c++-common/initpri1.c: Split into...
+	* c-c++-common/initpri1_part_c1.c: ... this, and...
+	* c-c++-common/initpri1_part_c2.c: ... this, and...
+	* c-c++-common/initpri1_part_c3.c: ... this, and...
+	* c-c++-common/initpri1_part_cd4.c: ... this, and...
+	* c-c++-common/initpri1_part_d1.c: ... this, and...
+	* c-c++-common/initpri1_part_d2.c: ... this, and...
+	* c-c++-common/initpri1_part_d3.c: ... this, and...
+	* c-c++-common/initpri1_part_main.c: ... this part.
+	* c-c++-common/initpri1-split.c: New.
+
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/initpri1-lto.c: Integrate this...
+	* c-c++-common/initpri1-lto.c: ... here.
+
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/initpri1.c: Integrate this...
+	* g++.dg/special/initpri1.C: ..., and this...
+	* c-c++-common/initpri1.c: ... here.
+	* gcc.dg/initpri1-lto.c: Adjust.
+	* gcc.dg/initpri2.c: Integrate this...
+	* g++.dg/special/initpri2.C: ..., and this...
+	* c-c++-common/initpri2.c: ... here.
+
+2024-06-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR lto/46083
+	* gcc.dg/initpri3.c: Remove.
+	* gcc.dg/initpri1-lto.c: New.
+
+2024-06-05  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/pr100927.c: New test.
+	* c-c++-common/Wconversion-1.c: Add -fno-trapping-math.
+	* c-c++-common/dfp/convert-int-saturate.c: Ditto.
+	* g++.dg/ubsan/pr63956.C: Ditto.
+	* g++.dg/warn/Wconversion-real-integer.C: Ditto.
+	* gcc.c-torture/execute/20031003-1.c: Ditto.
+	* gcc.dg/Wconversion-complex-c99.c: Ditto.
+	* gcc.dg/Wconversion-real-integer.c: Ditto.
+	* gcc.dg/c90-const-expr-11.c: Ditto.
+	* gcc.dg/overflow-warn-8.c: Ditto.
+
+2024-06-05  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* gcc.target/riscv/zfbfmin-bf16_arithmetic.c: New test.
+	* gcc.target/riscv/zfbfmin-bf16_comparison.c: New test.
+	* gcc.target/riscv/zfbfmin-bf16_float_libcall_convert.c: New test.
+	* gcc.target/riscv/zfbfmin-bf16_integer_libcall_convert.c: New test.
+
 2024-06-04  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/103388

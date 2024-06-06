@@ -1,3 +1,72 @@
+2024-06-05  Jakub Jelinek  <jakub@redhat.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/imperfect-transform-1.c: New test.
+	* testsuite/libgomp.c-c++-common/imperfect-transform-2.c: New test.
+	* testsuite/libgomp.c-c++-common/matrix-1.h: New test.
+	* testsuite/libgomp.c-c++-common/matrix-constant-iter.h: New test.
+	* testsuite/libgomp.c-c++-common/matrix-helper.h: New test.
+	* testsuite/libgomp.c-c++-common/matrix-no-directive-1.c: New test.
+	* testsuite/libgomp.c-c++-common/matrix-no-directive-unroll-full-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/matrix-omp-distribute-parallel-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/matrix-omp-for-1.c: New test.
+	* testsuite/libgomp.c-c++-common/matrix-omp-parallel-for-1.c: New test.
+	* testsuite/libgomp.c-c++-common/matrix-omp-parallel-masked-taskloop-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/matrix-omp-parallel-masked-taskloop-simd-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/matrix-omp-target-parallel-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/matrix-omp-target-teams-distribute-parallel-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/matrix-omp-taskloop-1.c: New test.
+	* testsuite/libgomp.c-c++-common/matrix-omp-teams-distribute-parallel-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/matrix-simd-1.c: New test.
+	* testsuite/libgomp.c-c++-common/matrix-transform-variants-1.h:
+	New test.
+	* testsuite/libgomp.c-c++-common/target-imperfect-transform-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/target-imperfect-transform-2.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/unroll-1.c: New test.
+	* testsuite/libgomp.c-c++-common/unroll-non-rect-1.c: New test.
+	* testsuite/libgomp.c++/matrix-no-directive-unroll-full-1.C: New test.
+	* testsuite/libgomp.c++/tile-2.C: New test.
+	* testsuite/libgomp.c++/tile-3.C: New test.
+	* testsuite/libgomp.c++/unroll-1.C: New test.
+	* testsuite/libgomp.c++/unroll-2.C: New test.
+	* testsuite/libgomp.c++/unroll-full-tile.C: New test.
+	* testsuite/libgomp.fortran/imperfect-transform-1.f90: New test.
+	* testsuite/libgomp.fortran/imperfect-transform-2.f90: New test.
+	* testsuite/libgomp.fortran/inner-1.f90: New test.
+	* testsuite/libgomp.fortran/nested-fn.f90: New test.
+	* testsuite/libgomp.fortran/target-imperfect-transform-1.f90: New test.
+	* testsuite/libgomp.fortran/target-imperfect-transform-2.f90: New test.
+	* testsuite/libgomp.fortran/tile-1.f90: New test.
+	* testsuite/libgomp.fortran/tile-2.f90: New test.
+	* testsuite/libgomp.fortran/tile-unroll-1.f90: New test.
+	* testsuite/libgomp.fortran/tile-unroll-2.f90: New test.
+	* testsuite/libgomp.fortran/tile-unroll-3.f90: New test.
+	* testsuite/libgomp.fortran/tile-unroll-4.f90: New test.
+	* testsuite/libgomp.fortran/unroll-1.f90: New test.
+	* testsuite/libgomp.fortran/unroll-2.f90: New test.
+	* testsuite/libgomp.fortran/unroll-3.f90: New test.
+	* testsuite/libgomp.fortran/unroll-4.f90: New test.
+	* testsuite/libgomp.fortran/unroll-5.f90: New test.
+	* testsuite/libgomp.fortran/unroll-6.f90: New test.
+	* testsuite/libgomp.fortran/unroll-7a.f90: New test.
+	* testsuite/libgomp.fortran/unroll-7b.f90: New test.
+	* testsuite/libgomp.fortran/unroll-7c.f90: New test.
+	* testsuite/libgomp.fortran/unroll-7.f90: New test.
+	* testsuite/libgomp.fortran/unroll-8.f90: New test.
+	* testsuite/libgomp.fortran/unroll-simd-1.f90: New test.
+	* testsuite/libgomp.fortran/unroll-tile-1.f90: New test.
+	* testsuite/libgomp.fortran/unroll-tile-2.f90: New test.
+
 2024-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/115294

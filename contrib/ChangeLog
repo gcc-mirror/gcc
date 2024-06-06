@@ -1,3 +1,7 @@
+2024-06-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* check_GNU_style_lib.py: Use raw strings for regexps.
+
 2024-05-21  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gcc-changelog/git_update_version.py: Add '-i'/'--ignore' argument

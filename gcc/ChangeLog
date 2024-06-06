@@ -1,3 +1,157 @@
+2024-06-05  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/riscv-opts.h (TARGET_VECTOR_MISALIGN_SUPPORTED):
+	Move from here...
+	* config/riscv/riscv.h (TARGET_VECTOR_MISALIGN_SUPPORTED):
+	...to here and map to riscv_vector_unaligned_access_p.
+	* config/riscv/riscv.opt: Add -mvector-strict-align.
+	* config/riscv/riscv.cc (struct riscv_tune_param): Add
+	vector_unaligned_access.
+	(riscv_override_options_internal): Set
+	riscv_vector_unaligned_access_p.
+	* doc/invoke.texi: Document -mvector-strict-align.
+
+2024-06-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/tuning_models/neoversen2.h (neoversen2_tunings): Add
+	AARCH64_EXTRA_TUNE_AVOID_PRED_RMW.
+	* config/aarch64/tuning_models/neoversev1.h (neoversev1_tunings): Add
+	AARCH64_EXTRA_TUNE_AVOID_PRED_RMW.
+	* config/aarch64/tuning_models/neoversev2.h (neoversev2_tunings): Add
+	AARCH64_EXTRA_TUNE_AVOID_PRED_RMW.
+
+2024-06-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve.md (and<mode>3,
+	@aarch64_pred_<optab><mode>_z, *<optab><mode>3_cc,
+	*<optab><mode>3_ptest, aarch64_pred_<nlogical><mode>_z,
+	*<nlogical><mode>3_cc, *<nlogical><mode>3_ptest,
+	aarch64_pred_<logical_nn><mode>_z, *<logical_nn><mode>3_cc,
+	*<logical_nn><mode>3_ptest, @aarch64_pred_cmp<cmp_op><mode>,
+	*cmp<cmp_op><mode>_cc, *cmp<cmp_op><mode>_ptest,
+	@aarch64_pred_cmp<cmp_op><mode>_wide,
+	*aarch64_pred_cmp<cmp_op><mode>_wide_cc,
+	*aarch64_pred_cmp<cmp_op><mode>_wide_ptest, @aarch64_brk<brk_op>,
+	*aarch64_brk<brk_op>_cc, *aarch64_brk<brk_op>_ptest,
+	@aarch64_brk<brk_op>, *aarch64_brk<brk_op>_cc,
+	*aarch64_brk<brk_op>_ptest, aarch64_rdffr_z, *aarch64_rdffr_z_ptest,
+	*aarch64_rdffr_ptest, *aarch64_rdffr_z_cc, *aarch64_rdffr_cc): Add
+	new early clobber
+	alternative.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_pred_<sve_int_op><mode>): Likewise.
+
+2024-06-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def
+	(AVOID_PRED_RMW): New.
+	* config/aarch64/aarch64.h (TARGET_SVE_PRED_CLOBBER): New.
+	* config/aarch64/aarch64.md (pred_clobber): New.
+	(arch_enabled): Use it.
+
+2024-06-05  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve.md (and<mode>3,
+	@aarch64_pred_<optab><mode>_z, *<optab><mode>3_cc,
+	*<optab><mode>3_ptest, aarch64_pred_<nlogical><mode>_z,
+	*<nlogical><mode>3_cc, *<nlogical><mode>3_ptest,
+	aarch64_pred_<logical_nn><mode>_z, *<logical_nn><mode>3_cc,
+	*<logical_nn><mode>3_ptest, *cmp<cmp_op><mode>_ptest,
+	@aarch64_pred_cmp<cmp_op><mode>_wide,
+	*aarch64_pred_cmp<cmp_op><mode>_wide_cc,
+	*aarch64_pred_cmp<cmp_op><mode>_wide_ptest, *aarch64_brk<brk_op>_cc,
+	*aarch64_brk<brk_op>_ptest, @aarch64_brk<brk_op>,
+	*aarch64_brk<brk_op>_cc, *aarch64_brk<brk_op>_ptest, aarch64_rdffr_z,
+	*aarch64_rdffr_z_ptest, *aarch64_rdffr_ptest, *aarch64_rdffr_z_cc,
+	*aarch64_rdffr_cc): Convert to compact syntax.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_pred_<sve_int_op><mode>): Likewise.
+
+2024-06-05  Jakub Jelinek  <jakub@redhat.com>
+	    Frederik Harwath  <frederik@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* tree.def (OMP_TILE, OMP_UNROLL): New tree codes.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_PARTIAL,
+	OMP_CLAUSE_FULL and OMP_CLAUSE_SIZES.
+	* tree.h (OMP_LOOPXFORM_CHECK): Define.
+	(OMP_LOOPXFORM_LOWERED): Define.
+	(OMP_CLAUSE_PARTIAL_EXPR): Define.
+	(OMP_CLAUSE_SIZES_LIST): Define.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add entries
+	for OMP_CLAUSE_{PARTIAL,FULL,SIZES}.
+	* tree-pretty-print.cc (dump_omp_clause): Handle
+	OMP_CLAUSE_{PARTIAL,FULL,SIZES}.
+	(dump_generic_node): Handle OMP_TILE and OMP_UNROLL.  Skip printing
+	loops with NULL OMP_FOR_INIT (node) vector element.
+	* gimplify.cc (is_gimple_stmt): Handle OMP_TILE and OMP_UNROLL.
+	(gimplify_omp_taskloop_expr): For SAVE_EXPR use gimplify_save_expr.
+	(gimplify_omp_loop_xform): New function.
+	(gimplify_omp_for): Call omp_maybe_apply_loop_xforms and if that
+	reshuffles what the passed pointer points to, retry or return GS_OK.
+	Handle OMP_TILE and OMP_UNROLL.
+	(gimplify_omp_loop): Call omp_maybe_apply_loop_xforms and if that
+	reshuffles what the passed pointer points to, return GS_OK.
+	(gimplify_expr): Handle OMP_TILE and OMP_UNROLL.
+	* omp-general.h (omp_loop_number_of_iterations,
+	omp_maybe_apply_loop_xforms): Declare.
+	* omp-general.cc (omp_adjust_for_condition): For LE_EXPR and GE_EXPR
+	with pointers, don't add/subtract one, but the size of what the
+	pointer points to.
+	(omp_loop_number_of_iterations, omp_apply_tile,
+	find_nested_loop_xform, omp_maybe_apply_loop_xforms): New functions.
+
+2024-06-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/darwin.cc (darwin_patch_builtins): Use TYPE_PRECISION of
+	long_double_type_node to replace LONG_DOUBLE_TYPE_SIZE.
+
+2024-06-05  Pan Li  <pan2.li@intel.com>
+
+	PR target/51492
+	PR target/112600
+	* internal-fn.def (SAT_SUB): Add new IFN define for SAT_SUB.
+	* match.pd: Add new match for SAT_SUB.
+	* optabs.def (OPTAB_NL): Remove fixed-point for ussub/ssub.
+	* tree-ssa-math-opts.cc (gimple_unsigned_integer_sat_sub): Add
+	new decl for generated in match.pd.
+	(build_saturation_binary_arith_call): Add new helper function
+	to build the gimple call to binary SAT alu.
+	(match_saturation_arith): Rename from.
+	(match_unsigned_saturation_add): Rename to.
+	(match_unsigned_saturation_sub): Add new func to match the
+	unsigned sat sub.
+	(math_opts_dom_walker::after_dom_children): Add SAT_SUB matching
+	try when COND_EXPR.
+
+2024-06-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR other/69374
+	* doc/install.texi (Prerequisites): Drop reference to GNU awk
+	version 3.1.5. Remove fluff.
+
+2024-06-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/100927
+	PR rtl-optimization/115161
+	PR rtl-optimization/115115
+	* simplify-rtx.cc (simplify_const_unary_operation): Prevent
+	simplication of FIX/UNSIGNED_FIX for NAN/INF/out-of-range
+	constant when flag_trapping_math.
+	* fold-const.cc (fold_convert_const_int_from_real): Don't fold
+	for overflow value when_trapping_math.
+
+2024-06-05  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* config/riscv/iterators.md: Add mode_iterator between
+	floating-point modes and BFmode.
+	* config/riscv/riscv.cc (riscv_output_move): Handle BFmode move
+	for zfbfmin.
+	* config/riscv/riscv.md (trunc<mode>bf2): New pattern for BFmode.
+	(extendbfsf2): Dotto.
+	(*movhf_hardfloat): Add BFmode.
+	(*mov<mode>_hardfloat): Dotto.
+
 2024-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/115337

@@ -1,3 +1,10 @@
+2024-06-05  Kewen Lin  <linkw@linux.ibm.com>
+	    Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::_init): Use int_size_in_bytes of
+	long_double_type_node to replace the expression with
+	LONG_DOUBLE_TYPE_SIZE for c.long_doublesize assignment.
+
 2024-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/111650

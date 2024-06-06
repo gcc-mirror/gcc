@@ -1,3 +1,8 @@
+2024-06-05  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/faq.xml: Move gcc.gnu.org to https.
+	* doc/html/faq.html: Regenerate.
+
 2024-06-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/115335

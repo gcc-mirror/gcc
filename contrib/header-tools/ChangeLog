@@ -1,3 +1,20 @@
+2024-06-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* README: Fix spelling and capitalization typos.
+	* gcc-order-headers: Fix spelling typo.
+
+2024-06-05  Sundeep KOKKONDA  <sundeep.kokkonda@windriver.com>
+
+	* count-headers: Adapt to Python 3.
+	* gcc-order-headers: Likewise.
+	* graph-header-logs: Likewise.
+	* graph-include-web: Likewise.
+	* headerutils.py: Likewise.
+	* included-by: Likewise.
+	* reduce-headers: Likewise.
+	* replace-header: Likewise.
+	* show-headers: Likewise.
+
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
 	* README: Remove deprecated ports.
