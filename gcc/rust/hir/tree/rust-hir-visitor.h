@@ -86,7 +86,7 @@ public:
   virtual void visit (MatchExpr &expr) = 0;
   virtual void visit (AwaitExpr &expr) = 0;
   virtual void visit (AsyncBlockExpr &expr) = 0;
-  virtual void visit (InlineAsm &expr) {}
+  virtual void visit (InlineAsm &expr) = 0;
   virtual void visit (TypeParam &param) = 0;
   virtual void visit (ConstGenericParam &param) = 0;
   virtual void visit (LifetimeWhereClauseItem &item) = 0;
@@ -225,6 +225,7 @@ public:
   virtual void visit (MatchExpr &) override {}
   virtual void visit (AwaitExpr &) override {}
   virtual void visit (AsyncBlockExpr &) override {}
+  virtual void visit (InlineAsm &) override {}
 
   virtual void visit (TypeParam &) override {}
   virtual void visit (ConstGenericParam &) override {}

@@ -104,6 +104,7 @@ public:
   void visit (AST::MatchExpr &);
   void visit (AST::AwaitExpr &);
   void visit (AST::AsyncBlockExpr &);
+  void visit (AST::InlineAsm &);
 
   void visit (AST::TypeParam &);
 

@@ -143,6 +143,7 @@ private:
   virtual void visit (MatchExpr &expr) override final{};
   virtual void visit (AwaitExpr &expr) override final{};
   virtual void visit (AsyncBlockExpr &expr) override final{};
+  virtual void visit (InlineAsm &expr) override final{};
   virtual void visit (TypeParam &param) override final{};
   virtual void visit (LifetimeWhereClauseItem &item) override final{};
   virtual void visit (TypeBoundWhereClauseItem &item) override final{};

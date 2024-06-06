@@ -18,6 +18,7 @@
 #include "rust-ast-collector.h"
 #include "rust-ast.h"
 #include "rust-diagnostics.h"
+#include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-keyword-values.h"
 #include "rust-token.h"
@@ -1510,6 +1511,10 @@ TokenCollector::visit (AsyncBlockExpr &expr)
     push (Rust::Token::make (MOVE, UNDEF_LOCATION));
   visit (expr.get_block_expr ());
 }
+
+void
+TokenCollector::visit (InlineAsm &expr)
+{}
 
 // rust-item.h
 

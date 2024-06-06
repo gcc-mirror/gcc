@@ -23,7 +23,6 @@
 // full include not required - only forward decls
 #include "rust-ast-full-decls.h"
 #include "rust-ast.h"
-#include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-system.h"
 
@@ -129,7 +128,7 @@ public:
   virtual void visit (MatchExpr &expr) = 0;
   virtual void visit (AwaitExpr &expr) = 0;
   virtual void visit (AsyncBlockExpr &expr) = 0;
-  virtual void visit (InlineAsm &expr) { rust_unreachable (); }
+  virtual void visit (InlineAsm &expr) = 0;
 
   // rust-item.h
   virtual void visit (TypeParam &param) = 0;
@@ -313,6 +312,8 @@ protected:
   virtual void visit (AST::MatchExpr &expr) override;
   virtual void visit (AST::AwaitExpr &expr) override;
   virtual void visit (AST::AsyncBlockExpr &expr) override;
+  virtual void visit (InlineAsm &expr) override;
+
   virtual void visit (AST::TypeParam &param) override;
   virtual void visit (AST::LifetimeWhereClauseItem &item) override;
   virtual void visit (AST::TypeBoundWhereClauseItem &item) override;

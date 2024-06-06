@@ -263,8 +263,23 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     }
   else if (!is_global_asm && check_identifier (parser, "out"))
     {
-      rust_unreachable ();
-      return tl::nullopt;
+      rust_debug ("Enter parse_reg_operand out");
+
+      auto reg = parse_reg (parser, last_token_id, inline_asm_ctx);
+
+      auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
+      reg_operand.register_type = AST::InlineAsmOperand::RegisterType::Out;
+
+      // Since reg is of type optional<T>, we need to check if it is not
+      // optional first.
+      // TODO: We don't throw any errors since we should have throw any
+      // encountered parsing error in parse_reg
+      if (reg)
+	{
+	  reg_operand.in.reg = reg.value ();
+	}
+
+      return reg_operand;
     }
   else if (!is_global_asm && check_identifier (parser, "lateout"))
     {
