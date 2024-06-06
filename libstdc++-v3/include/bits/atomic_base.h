@@ -968,7 +968,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     template<typename _Tp>
-      _GLIBCXX_ALWAYS_INLINE _Tp*
+      _GLIBCXX_ALWAYS_INLINE _GLIBCXX14_CONSTEXPR _Tp*
       __clear_padding(_Tp& __val) noexcept
       {
 	auto* __ptr = std::__addressof(__val);
