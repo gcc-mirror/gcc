@@ -8350,6 +8350,8 @@ vectorizable_store (vec_info *vinfo,
   if (costing_p) /* transformation not required.  */
     {
       STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) = memory_access_type;
+      if (slp_node)
+	SLP_TREE_MEMORY_ACCESS_TYPE (slp_node) = memory_access_type;
 
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
@@ -8390,7 +8392,10 @@ vectorizable_store (vec_info *vinfo,
 	  && first_stmt_info != stmt_info)
 	return true;
     }
-  gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
+  if (slp_node)
+    gcc_assert (memory_access_type == SLP_TREE_MEMORY_ACCESS_TYPE (stmt_info));
+  else
+    gcc_assert (memory_access_type == STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
 
   /* Transform.  */
 
@@ -10232,6 +10237,8 @@ vectorizable_load (vec_info *vinfo,
 
       if (!slp)
 	STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) = memory_access_type;
+      else
+	SLP_TREE_MEMORY_ACCESS_TYPE (slp_node) = memory_access_type;
 
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
@@ -10256,6 +10263,9 @@ vectorizable_load (vec_info *vinfo,
   if (!slp)
     gcc_assert (memory_access_type
 		== STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info));
+  else
+    gcc_assert (memory_access_type
+		== SLP_TREE_MEMORY_ACCESS_TYPE (slp_node));
 
   if (dump_enabled_p () && !costing_p)
     dump_printf_loc (MSG_NOTE, vect_location,
@@ -11337,7 +11347,7 @@ vectorizable_load (vec_info *vinfo,
 			 offset add is consumed by the load).  */
 		      inside_cost = record_stmt_cost (cost_vec, const_nunits,
 						      vec_to_scalar, stmt_info,
-						      0, vect_body);
+						      slp_node, 0, vect_body);
 		      /* N scalar loads plus gathering them into a
 			 vector.  */
 		      inside_cost
@@ -11345,7 +11355,7 @@ vectorizable_load (vec_info *vinfo,
 					    stmt_info, 0, vect_body);
 		      inside_cost
 			= record_stmt_cost (cost_vec, 1, vec_construct,
-					    stmt_info, 0, vect_body);
+					    stmt_info, slp_node, 0, vect_body);
 		      continue;
 		    }
 		  unsigned HOST_WIDE_INT const_offset_nunits

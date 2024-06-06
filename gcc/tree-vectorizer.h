@@ -161,6 +161,46 @@ struct vect_scalar_ops_slice_hash : typed_noop_remove<vect_scalar_ops_slice>
   static bool equal (const value_type &, const compare_type &);
 };
 
+/* Describes how we're going to vectorize an individual load or store,
+   or a group of loads or stores.  */
+enum vect_memory_access_type {
+  /* An access to an invariant address.  This is used only for loads.  */
+  VMAT_INVARIANT,
+
+  /* A simple contiguous access.  */
+  VMAT_CONTIGUOUS,
+
+  /* A contiguous access that goes down in memory rather than up,
+     with no additional permutation.  This is used only for stores
+     of invariants.  */
+  VMAT_CONTIGUOUS_DOWN,
+
+  /* A simple contiguous access in which the elements need to be permuted
+     after loading or before storing.  Only used for loop vectorization;
+     SLP uses separate permutes.  */
+  VMAT_CONTIGUOUS_PERMUTE,
+
+  /* A simple contiguous access in which the elements need to be reversed
+     after loading or before storing.  */
+  VMAT_CONTIGUOUS_REVERSE,
+
+  /* An access that uses IFN_LOAD_LANES or IFN_STORE_LANES.  */
+  VMAT_LOAD_STORE_LANES,
+
+  /* An access in which each scalar element is loaded or stored
+     individually.  */
+  VMAT_ELEMENTWISE,
+
+  /* A hybrid of VMAT_CONTIGUOUS and VMAT_ELEMENTWISE, used for grouped
+     SLP accesses.  Each unrolled iteration uses a contiguous load
+     or store for the whole group, but the groups from separate iterations
+     are combined in the same way as for VMAT_ELEMENTWISE.  */
+  VMAT_STRIDED_SLP,
+
+  /* The access uses gather loads or scatter stores.  */
+  VMAT_GATHER_SCATTER
+};
+
 /************************************************************************
   SLP
  ************************************************************************/
@@ -227,6 +267,10 @@ struct _slp_tree {
   bool ldst_lanes;
 
   int vertex;
+
+  /* Classifies how the load or store is going to be implemented
+     for loop vectorization.  */
+  vect_memory_access_type memory_access_type;
 
   /* If not NULL this is a cached failed SLP discovery attempt with
      the lanes that failed during SLP discovery as 'false'.  This is
@@ -315,6 +359,7 @@ public:
 #define SLP_TREE_REPRESENTATIVE(S)		 (S)->representative
 #define SLP_TREE_LANES(S)			 (S)->lanes
 #define SLP_TREE_CODE(S)			 (S)->code
+#define SLP_TREE_MEMORY_ACCESS_TYPE(S)		 (S)->memory_access_type
 
 enum vect_partial_vector_style {
     vect_partial_vectors_none,
@@ -1201,46 +1246,6 @@ enum vec_load_store_type {
   VLS_LOAD,
   VLS_STORE,
   VLS_STORE_INVARIANT
-};
-
-/* Describes how we're going to vectorize an individual load or store,
-   or a group of loads or stores.  */
-enum vect_memory_access_type {
-  /* An access to an invariant address.  This is used only for loads.  */
-  VMAT_INVARIANT,
-
-  /* A simple contiguous access.  */
-  VMAT_CONTIGUOUS,
-
-  /* A contiguous access that goes down in memory rather than up,
-     with no additional permutation.  This is used only for stores
-     of invariants.  */
-  VMAT_CONTIGUOUS_DOWN,
-
-  /* A simple contiguous access in which the elements need to be permuted
-     after loading or before storing.  Only used for loop vectorization;
-     SLP uses separate permutes.  */
-  VMAT_CONTIGUOUS_PERMUTE,
-
-  /* A simple contiguous access in which the elements need to be reversed
-     after loading or before storing.  */
-  VMAT_CONTIGUOUS_REVERSE,
-
-  /* An access that uses IFN_LOAD_LANES or IFN_STORE_LANES.  */
-  VMAT_LOAD_STORE_LANES,
-
-  /* An access in which each scalar element is loaded or stored
-     individually.  */
-  VMAT_ELEMENTWISE,
-
-  /* A hybrid of VMAT_CONTIGUOUS and VMAT_ELEMENTWISE, used for grouped
-     SLP accesses.  Each unrolled iteration uses a contiguous load
-     or store for the whole group, but the groups from separate iterations
-     are combined in the same way as for VMAT_ELEMENTWISE.  */
-  VMAT_STRIDED_SLP,
-
-  /* The access uses gather loads or scatter stores.  */
-  VMAT_GATHER_SCATTER
 };
 
 class dr_vec_info {
@@ -2344,6 +2349,23 @@ record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
 {
   return record_stmt_cost (body_cost_vec, count, kind, stmt_info,
 			   STMT_VINFO_VECTYPE (stmt_info), misalign, where);
+}
+
+/* Overload of record_stmt_cost with VECTYPE derived from STMT_INFO and
+   SLP node specified.  */
+
+inline unsigned
+record_stmt_cost (stmt_vector_for_cost *body_cost_vec, int count,
+		  enum vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+		  slp_tree node,
+		  int misalign, enum vect_cost_model_location where)
+{
+  if (node)
+    return record_stmt_cost (body_cost_vec, count, kind, node,
+			     STMT_VINFO_VECTYPE (stmt_info), misalign, where);
+  else
+    return record_stmt_cost (body_cost_vec, count, kind, stmt_info,
+			     STMT_VINFO_VECTYPE (stmt_info), misalign, where);
 }
 
 extern void vect_finish_replace_stmt (vec_info *, stmt_vec_info, gimple *);

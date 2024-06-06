@@ -25201,13 +25201,21 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
      (AGU and load ports).  Try to account for this by scaling the
      construction cost by the number of elements involved.  */
   if ((kind == vec_construct || kind == vec_to_scalar)
-      && stmt_info
-      && (STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
-	  || STMT_VINFO_TYPE (stmt_info) == store_vec_info_type)
-      && ((STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
-	   && (TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF (stmt_info)))
-	       != INTEGER_CST))
-	  || STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_GATHER_SCATTER))
+      && ((stmt_info
+	   && (STMT_VINFO_TYPE (stmt_info) == load_vec_info_type
+	       || STMT_VINFO_TYPE (stmt_info) == store_vec_info_type)
+	   && ((STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_ELEMENTWISE
+		&& (TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF (stmt_info)))
+		    != INTEGER_CST))
+	       || (STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info)
+		   == VMAT_GATHER_SCATTER)))
+	  || (node
+	      && ((SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_ELEMENTWISE
+		  && (TREE_CODE (DR_STEP (STMT_VINFO_DATA_REF
+					    (SLP_TREE_REPRESENTATIVE (node))))
+		      != INTEGER_CST))
+		  || (SLP_TREE_MEMORY_ACCESS_TYPE (node)
+		      == VMAT_GATHER_SCATTER)))))
     {
       stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
       stmt_cost *= (TYPE_VECTOR_SUBPARTS (vectype) + 1);
