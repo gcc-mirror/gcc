@@ -8157,13 +8157,15 @@ package body Sem_Util is
       if not Is_Constrained (Typ) then
          All_Static := False;
          Has_Empty  := False;
+         return;
 
       --  A string literal has static bounds, and is not empty as long as it
       --  contains at least one character.
 
       elsif Ekind (Typ) = E_String_Literal_Subtype then
          All_Static := True;
-         Has_Empty  := String_Literal_Length (Typ) > 0;
+         Has_Empty  := String_Literal_Length (Typ) = 0;
+         return;
       end if;
 
       --  Assume that all bounds are static and not empty
