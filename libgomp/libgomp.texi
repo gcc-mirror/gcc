@@ -6432,7 +6432,7 @@ The implementation remark:
 @item I/O within OpenMP target regions and OpenACC compute regions is supported
       using the C library @code{printf} functions.
       Additionally, the Fortran @code{print}/@code{write} statements are
-      supported within OpenMP target regions, but not yet OpenACC compute
+      supported within OpenMP target regions, but not yet within OpenACC compute
       regions.  @c The latter needs 'GOMP_NVPTX_NATIVE_GPU_THREAD_STACK_SIZE'.
 @item Compilation OpenMP code that contains @code{requires reverse_offload}
       requires at least @code{-march=sm_35}, compiling for @code{-march=sm_30}
