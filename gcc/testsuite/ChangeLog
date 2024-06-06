@@ -1,3 +1,8 @@
+2024-06-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/avx10_1-25.c: Require ifunc support.
+	* gcc.target/i386/avx10_1-26.c: Likewise.
+
 2024-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
