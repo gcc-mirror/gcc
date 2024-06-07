@@ -681,6 +681,7 @@ public:
 				     svalue_set *visited,
 				     const region *base_reg,
 				     const svalue *sval,
+				     logger *logger,
 				     auto_vec<path_var> *out_pvs) const;
 
   const svalue *maybe_get_simple_value (store_manager *mgr) const;
@@ -806,6 +807,7 @@ public:
   void get_representative_path_vars (const region_model *model,
 				     svalue_set *visited,
 				     const svalue *sval,
+				     logger *logger,
 				     auto_vec<path_var> *out_pvs) const;
 
   cluster_map_t::iterator begin () const { return m_cluster_map.begin (); }

@@ -903,7 +903,8 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
   svalue_set visited;
   path_var leaked_pv
     = m_old_state->m_region_model->get_representative_path_var (sval,
-								&visited);
+								&visited,
+								nullptr);
 
   /* Strip off top-level casts  */
   if (leaked_pv.m_tree && TREE_CODE (leaked_pv.m_tree) == NOP_EXPR)

@@ -435,14 +435,18 @@ class region_model
 					  region_model_context *ctxt);
   void get_referenced_base_regions (auto_bitmap &out_ids) const;
 
-  tree get_representative_tree (const svalue *sval) const;
-  tree get_representative_tree (const region *reg) const;
+  tree get_representative_tree (const svalue *sval,
+				logger *logger = nullptr) const;
+  tree get_representative_tree (const region *reg,
+				logger *logger = nullptr) const;
   path_var
   get_representative_path_var (const svalue *sval,
-			       svalue_set *visited) const;
+			       svalue_set *visited,
+			       logger *logger) const;
   path_var
   get_representative_path_var (const region *reg,
-			       svalue_set *visited) const;
+			       svalue_set *visited,
+			       logger *logger) const;
 
   /* For selftests.  */
   constraint_manager *get_constraints ()
@@ -585,10 +589,12 @@ private:
 
   path_var
   get_representative_path_var_1 (const svalue *sval,
-				 svalue_set *visited) const;
+				 svalue_set *visited,
+				 logger *logger) const;
   path_var
   get_representative_path_var_1 (const region *reg,
-				 svalue_set *visited) const;
+				 svalue_set *visited,
+				 logger *logger) const;
 
   const known_function *get_known_function (tree fndecl,
 					    const call_details &cd) const;

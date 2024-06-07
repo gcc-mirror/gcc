@@ -2281,6 +2281,7 @@ binding_cluster::get_representative_path_vars (const region_model *model,
 					       svalue_set *visited,
 					       const region *base_reg,
 					       const svalue *sval,
+					       logger *logger,
 					       auto_vec<path_var> *out_pvs)
   const
 {
@@ -2308,7 +2309,8 @@ binding_cluster::get_representative_path_vars (const region_model *model,
 		{
 		  if (path_var pv
 		      = model->get_representative_path_var (subregion,
-							    visited))
+							    visited,
+							    logger))
 		    append_pathvar_with_type (pv, sval->get_type (), out_pvs);
 		}
 	    }
@@ -2317,7 +2319,8 @@ binding_cluster::get_representative_path_vars (const region_model *model,
 	      const symbolic_binding *skey = (const symbolic_binding *)key;
 	      if (path_var pv
 		  = model->get_representative_path_var (skey->get_region (),
-							visited))
+							visited,
+							logger))
 		append_pathvar_with_type (pv, sval->get_type (), out_pvs);
 	    }
 	}
@@ -3282,6 +3285,7 @@ void
 store::get_representative_path_vars (const region_model *model,
 				     svalue_set *visited,
 				     const svalue *sval,
+				     logger *logger,
 				     auto_vec<path_var> *out_pvs) const
 {
   gcc_assert (sval);
@@ -3293,6 +3297,7 @@ store::get_representative_path_vars (const region_model *model,
       const region *base_reg = (*iter).first;
       binding_cluster *cluster = (*iter).second;
       cluster->get_representative_path_vars (model, visited, base_reg, sval,
+					     logger,
 					     out_pvs);
     }
 
@@ -3300,7 +3305,8 @@ store::get_representative_path_vars (const region_model *model,
     {
       const region *reg = init_sval->get_region ();
       if (path_var pv = model->get_representative_path_var (reg,
-							    visited))
+							    visited,
+							    logger))
 	out_pvs->safe_push (pv);
     }
 }

@@ -5343,7 +5343,8 @@ region_model::eval_condition (tree lhs,
 
 path_var
 region_model::get_representative_path_var_1 (const svalue *sval,
-					     svalue_set *visited) const
+					     svalue_set *visited,
+					     logger *logger) const
 {
   gcc_assert (sval);
 
@@ -5360,7 +5361,8 @@ region_model::get_representative_path_var_1 (const svalue *sval,
   /* Handle casts by recursion into get_representative_path_var.  */
   if (const svalue *cast_sval = sval->maybe_undo_cast ())
     {
-      path_var result = get_representative_path_var (cast_sval, visited);
+      path_var result = get_representative_path_var (cast_sval, visited,
+						     logger);
       tree orig_type = sval->get_type ();
       /* If necessary, wrap the result in a cast.  */
       if (result.m_tree && orig_type)
@@ -5369,7 +5371,7 @@ region_model::get_representative_path_var_1 (const svalue *sval,
     }
 
   auto_vec<path_var> pvs;
-  m_store.get_representative_path_vars (this, visited, sval, &pvs);
+  m_store.get_representative_path_vars (this, visited, sval, logger, &pvs);
 
   if (tree cst = sval->maybe_get_constant ())
     pvs.safe_push (path_var (cst, 0));
@@ -5378,7 +5380,7 @@ region_model::get_representative_path_var_1 (const svalue *sval,
   if (const region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())
     {
       const region *reg = ptr_sval->get_pointee ();
-      if (path_var pv = get_representative_path_var (reg, visited))
+      if (path_var pv = get_representative_path_var (reg, visited, logger))
 	return path_var (build1 (ADDR_EXPR,
 				 sval->get_type (),
 				 pv.m_tree),
@@ -5391,7 +5393,7 @@ region_model::get_representative_path_var_1 (const svalue *sval,
       const svalue *parent_sval = sub_sval->get_parent ();
       const region *subreg = sub_sval->get_subregion ();
       if (path_var parent_pv
-	    = get_representative_path_var (parent_sval, visited))
+	    = get_representative_path_var (parent_sval, visited, logger))
 	if (const field_region *field_reg = subreg->dyn_cast_field_region ())
 	  return path_var (build3 (COMPONENT_REF,
 				   sval->get_type (),
@@ -5404,9 +5406,11 @@ region_model::get_representative_path_var_1 (const svalue *sval,
   /* Handle binops.  */
   if (const binop_svalue *binop_sval = sval->dyn_cast_binop_svalue ())
     if (path_var lhs_pv
-	= get_representative_path_var (binop_sval->get_arg0 (), visited))
+	= get_representative_path_var (binop_sval->get_arg0 (), visited,
+				       logger))
       if (path_var rhs_pv
-	  = get_representative_path_var (binop_sval->get_arg1 (), visited))
+	  = get_representative_path_var (binop_sval->get_arg1 (), visited,
+					 logger))
 	return path_var (build2 (binop_sval->get_op (),
 				 sval->get_type (),
 				 lhs_pv.m_tree, rhs_pv.m_tree),
@@ -5429,18 +5433,41 @@ region_model::get_representative_path_var_1 (const svalue *sval,
 
 path_var
 region_model::get_representative_path_var (const svalue *sval,
-					   svalue_set *visited) const
+					   svalue_set *visited,
+					   logger *logger) const
 {
   if (sval == NULL)
     return path_var (NULL_TREE, 0);
 
+  LOG_SCOPE (logger);
+  if (logger)
+    {
+      logger->start_log_line ();
+      logger->log_partial ("sval: ");
+      sval->dump_to_pp (logger->get_printer (), true);
+      logger->end_log_line ();
+    }
+
   tree orig_type = sval->get_type ();
 
-  path_var result = get_representative_path_var_1 (sval, visited);
+  path_var result = get_representative_path_var_1 (sval, visited, logger);
 
   /* Verify that the result has the same type as SVAL, if any.  */
   if (result.m_tree && orig_type)
     gcc_assert (TREE_TYPE (result.m_tree) == orig_type);
+
+  if (logger)
+    {
+      logger->start_log_line ();
+      logger->log_partial ("sval: ");
+      sval->dump_to_pp (logger->get_printer (), true);
+      logger->end_log_line ();
+
+      if (result.m_tree)
+	logger->log ("tree: %qE", result.m_tree);
+      else
+	logger->log ("tree: NULL");
+    }
 
   return result;
 }
@@ -5452,10 +5479,10 @@ region_model::get_representative_path_var (const svalue *sval,
    from analyzer diagnostics.  */
 
 tree
-region_model::get_representative_tree (const svalue *sval) const
+region_model::get_representative_tree (const svalue *sval, logger *logger) const
 {
   svalue_set visited;
-  tree expr = get_representative_path_var (sval, &visited).m_tree;
+  tree expr = get_representative_path_var (sval, &visited, logger).m_tree;
 
   /* Strip off any top-level cast.  */
   if (expr && TREE_CODE (expr) == NOP_EXPR)
@@ -5465,10 +5492,10 @@ region_model::get_representative_tree (const svalue *sval) const
 }
 
 tree
-region_model::get_representative_tree (const region *reg) const
+region_model::get_representative_tree (const region *reg, logger *logger) const
 {
   svalue_set visited;
-  tree expr = get_representative_path_var (reg, &visited).m_tree;
+  tree expr = get_representative_path_var (reg, &visited, logger).m_tree;
 
   /* Strip off any top-level cast.  */
   if (expr && TREE_CODE (expr) == NOP_EXPR)
@@ -5488,7 +5515,8 @@ region_model::get_representative_tree (const region *reg) const
 
 path_var
 region_model::get_representative_path_var_1 (const region *reg,
-					     svalue_set *visited) const
+					     svalue_set *visited,
+					     logger *logger) const
 {
   switch (reg->get_kind ())
     {
@@ -5522,7 +5550,8 @@ region_model::get_representative_path_var_1 (const region *reg,
 	const symbolic_region *symbolic_reg
 	  = as_a <const symbolic_region *> (reg);
 	const svalue *pointer = symbolic_reg->get_pointer ();
-	path_var pointer_pv = get_representative_path_var (pointer, visited);
+	path_var pointer_pv = get_representative_path_var (pointer, visited,
+							   logger);
 	if (!pointer_pv)
 	  return path_var (NULL_TREE, 0);
 	tree offset = build_int_cst (pointer->get_type (), 0);
@@ -5541,7 +5570,8 @@ region_model::get_representative_path_var_1 (const region *reg,
       {
 	const field_region *field_reg = as_a <const field_region *> (reg);
 	path_var parent_pv
-	  = get_representative_path_var (reg->get_parent_region (), visited);
+	  = get_representative_path_var (reg->get_parent_region (), visited,
+					 logger);
 	if (!parent_pv)
 	  return path_var (NULL_TREE, 0);
 	return path_var (build3 (COMPONENT_REF,
@@ -5557,11 +5587,13 @@ region_model::get_representative_path_var_1 (const region *reg,
 	const element_region *element_reg
 	  = as_a <const element_region *> (reg);
 	path_var parent_pv
-	  = get_representative_path_var (reg->get_parent_region (), visited);
+	  = get_representative_path_var (reg->get_parent_region (), visited,
+					 logger);
 	if (!parent_pv)
 	  return path_var (NULL_TREE, 0);
 	path_var index_pv
-	  = get_representative_path_var (element_reg->get_index (), visited);
+	  = get_representative_path_var (element_reg->get_index (), visited,
+					 logger);
 	if (!index_pv)
 	  return path_var (NULL_TREE, 0);
 	return path_var (build4 (ARRAY_REF,
@@ -5576,12 +5608,13 @@ region_model::get_representative_path_var_1 (const region *reg,
 	const offset_region *offset_reg
 	  = as_a <const offset_region *> (reg);
 	path_var parent_pv
-	  = get_representative_path_var (reg->get_parent_region (), visited);
+	  = get_representative_path_var (reg->get_parent_region (), visited,
+					 logger);
 	if (!parent_pv)
 	  return path_var (NULL_TREE, 0);
 	path_var offset_pv
 	  = get_representative_path_var (offset_reg->get_byte_offset (),
-					 visited);
+					 visited, logger);
 	if (!offset_pv || TREE_CODE (offset_pv.m_tree) != INTEGER_CST)
 	  return path_var (NULL_TREE, 0);
 	tree addr_parent = build1 (ADDR_EXPR,
@@ -5600,7 +5633,8 @@ region_model::get_representative_path_var_1 (const region *reg,
     case RK_CAST:
       {
 	path_var parent_pv
-	  = get_representative_path_var (reg->get_parent_region (), visited);
+	  = get_representative_path_var (reg->get_parent_region (), visited,
+					 logger);
 	if (!parent_pv)
 	  return path_var (NULL_TREE, 0);
 	return path_var (build1 (NOP_EXPR,
@@ -5641,13 +5675,36 @@ region_model::get_representative_path_var_1 (const region *reg,
 
 path_var
 region_model::get_representative_path_var (const region *reg,
-					   svalue_set *visited) const
+					   svalue_set *visited,
+					   logger *logger) const
 {
-  path_var result = get_representative_path_var_1 (reg, visited);
+  LOG_SCOPE (logger);
+  if (logger)
+    {
+      logger->start_log_line ();
+      logger->log_partial ("reg: ");
+      reg->dump_to_pp (logger->get_printer (), true);
+      logger->end_log_line ();
+    }
+
+  path_var result = get_representative_path_var_1 (reg, visited, logger);
 
   /* Verify that the result has the same type as REG, if any.  */
   if (result.m_tree && reg->get_type ())
     gcc_assert (TREE_TYPE (result.m_tree) == reg->get_type ());
+
+  if (logger)
+    {
+      logger->start_log_line ();
+      logger->log_partial ("reg: ");
+      reg->dump_to_pp (logger->get_printer (), true);
+      logger->end_log_line ();
+
+      if (result.m_tree)
+	logger->log ("tree: %qE", result.m_tree);
+      else
+	logger->log ("tree: NULL");
+    }
 
   return result;
 }
@@ -8422,7 +8479,8 @@ test_get_representative_path_var ()
       {
 	svalue_set visited;
 	ASSERT_EQ (model.get_representative_path_var (parm_regs[depth],
-						      &visited),
+						      &visited,
+						      nullptr),
 		   path_var (n, depth + 1));
       }
       /* ...and that we can lookup lvalues for locals for all frames,
@@ -8433,7 +8491,8 @@ test_get_representative_path_var ()
       {
 	svalue_set visited;
 	ASSERT_EQ (model.get_representative_path_var (parm_svals[depth],
-						      &visited),
+						      &visited,
+						      nullptr),
 		   path_var (n, depth + 1));
       }
     }
