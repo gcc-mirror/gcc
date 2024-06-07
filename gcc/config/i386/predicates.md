@@ -1098,6 +1098,11 @@
        (and (match_code "not")
 	    (match_test "nonimmediate_operand (XEXP (op, 0), mode)"))))
 
+;; True for expressions valid for 3-operand ternlog instructions.
+(define_predicate "ternlog_operand"
+  (and (match_code "not,and,ior,xor")
+       (match_test "ix86_ternlog_operand_p (op)")))
+
 ;; True if OP is acceptable as operand of DImode shift expander.
 (define_predicate "shiftdi_operand"
   (if_then_else (match_test "TARGET_64BIT")

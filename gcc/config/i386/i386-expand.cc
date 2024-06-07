@@ -11707,6 +11707,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       tree arg = CALL_EXPR_ARG (exp, i);
       rtx op = expand_normal (arg);
       machine_mode mode = insn_p->operand[i + 1].mode;
+      /* Need to fixup modeless constant before testing predicate.  */
+      op = fixup_modeless_constant (op, mode);
       bool match = insn_p->operand[i + 1].predicate (op, mode);
 
       if (second_arg_count && i == 1)
@@ -11873,13 +11875,15 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	  /* If we aren't optimizing, only allow one memory operand to
 	     be generated.  */
 	  if (memory_operand (op, mode))
-	    num_memory++;
-
-	  op = fixup_modeless_constant (op, mode);
+	    {
+	      num_memory++;
+	      if (!optimize && num_memory > 1)
+		op = copy_to_mode_reg (mode, op);
+	    }
 
 	  if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
 	    {
-	      if (optimize || !match || num_memory > 1)
+	      if (!match)
 		op = copy_to_mode_reg (mode, op);
 	    }
 	  else
@@ -25514,6 +25518,552 @@ ix86_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
   end_sequence ();
 
   return gen_rtx_fmt_ee ((rtx_code) cmp_code, VOIDmode, target, const0_rtx);
+}
+
+/* Attempt to convert a CONST_VECTOR into a bcst_mem_operand.
+   Returns NULL_RTX if X is cannot be expressed as a suitable
+   VEC_DUPLICATE in mode MODE.  */
+
+static rtx
+ix86_gen_bcst_mem (machine_mode mode, rtx x)
+{
+  if (!TARGET_AVX512F
+      || GET_CODE (x) != CONST_VECTOR
+      || (!TARGET_AVX512VL
+	  && (GET_MODE_SIZE (mode) != 64 || !TARGET_EVEX512))
+      || !VALID_BCST_MODE_P (GET_MODE_INNER (mode))
+	 /* Disallow HFmode broadcast.  */
+      || GET_MODE_SIZE (GET_MODE_INNER (mode)) < 4)
+    return NULL_RTX;
+
+  rtx cst = CONST_VECTOR_ELT (x, 0);
+  if (!CONST_SCALAR_INT_P (cst)
+      && !CONST_DOUBLE_P (cst)
+      && !CONST_FIXED_P (cst))
+    return NULL_RTX;
+  
+  int n_elts = GET_MODE_NUNITS (mode);
+  if (CONST_VECTOR_NUNITS (x) != n_elts)
+    return NULL_RTX;
+
+  for (int i = 1; i < n_elts; i++)
+    if (!rtx_equal_p (cst, CONST_VECTOR_ELT (x, i)))
+      return NULL_RTX;
+
+  rtx mem = force_const_mem (GET_MODE_INNER (mode), cst);
+  return gen_rtx_VEC_DUPLICATE (mode, validize_mem (mem));
+}
+
+/* Determine the ternlog immediate index that implements 3-operand
+   ternary logic expression OP.  This uses and modifies the 3 element
+   array ARGS to record and check the leaves, either 3 REGs, or 2 REGs
+   and MEM.  Returns an index between 0 and 255 for a valid ternlog,
+   or -1 if the expression isn't suitable.  */
+
+int
+ix86_ternlog_idx (rtx op, rtx *args)
+{
+  int idx0, idx1;
+
+  if (!op)
+    return -1;
+
+  switch (GET_CODE (op))
+    {
+    case REG:
+      if (!args[0])
+	{
+	  args[0] = op;
+	  return 0xf0;
+	}
+      if (REGNO (op) == REGNO (args[0]))
+	return 0xf0;
+      if (!args[1])
+	{
+	  args[1] = op;
+	  return 0xcc;
+	}
+      if (REGNO (op) == REGNO (args[1]))
+	return 0xcc;
+      if (!args[2])
+	{
+	  args[2] = op;
+	  return 0xaa;
+	}
+      if (REG_P (args[2]) && REGNO (op) == REGNO (args[2]))
+	return 0xaa;
+      return -1;
+
+    case VEC_DUPLICATE:
+      if (!bcst_mem_operand (op, GET_MODE (op)))
+	return -1;
+      /* FALLTHRU */
+
+    case MEM:
+      if (!memory_operand (op, GET_MODE (op)))
+	return -1;
+      if (MEM_P (op)
+	  && MEM_VOLATILE_P (op)
+	  && !volatile_ok)
+	return -1;
+      /* FALLTHRU */
+
+    case CONST_VECTOR:
+      if (!args[2])
+	{
+	  args[2] = op;
+	  return 0xaa;
+	}
+      /* Maximum of one volatile memory reference per expression.  */
+      if (side_effects_p (op) && side_effects_p (args[2]))
+	return -1;
+      if (rtx_equal_p (op, args[2]))
+	return 0xaa;
+      /* Check if one CONST_VECTOR is the ones-complement of the other.  */
+      if (GET_CODE (op) == CONST_VECTOR
+	  && GET_CODE (args[2]) == CONST_VECTOR
+	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
+							  op, GET_MODE (op)),
+			  args[2]))
+	return 0x55;
+      return -1;
+
+    case SUBREG:
+      if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))
+	  != GET_MODE_SIZE (GET_MODE (op)))
+	return -1;
+      return ix86_ternlog_idx (SUBREG_REG (op), args);
+
+    case NOT:
+      idx0 = ix86_ternlog_idx (XEXP (op, 0), args);
+      return (idx0 >= 0) ? idx0 ^ 0xff : -1;
+
+    case AND:
+      idx0 = ix86_ternlog_idx (XEXP (op, 0), args);
+      if (idx0 < 0)
+	return -1;
+      idx1 = ix86_ternlog_idx (XEXP (op, 1), args);
+      return (idx1 >= 0) ? idx0 & idx1 : -1;
+
+    case IOR:
+      idx0 = ix86_ternlog_idx (XEXP (op, 0), args);
+      if (idx0 < 0)
+	return -1;
+      idx1 = ix86_ternlog_idx (XEXP (op, 1), args);
+      return (idx1 >= 0) ? idx0 | idx1 : -1;
+
+    case XOR:
+      idx0 = ix86_ternlog_idx (XEXP (op, 0), args);
+      if (idx0 < 0)
+	return -1;
+      if (vector_all_ones_operand (XEXP (op, 1), GET_MODE (op)))
+	return idx0 ^ 0xff;
+      idx1 = ix86_ternlog_idx (XEXP (op, 1), args);
+      return (idx1 >= 0) ? idx0 ^ idx1 : -1;
+
+    case UNSPEC:
+      if (XINT (op, 1) != UNSPEC_VTERNLOG
+	  || XVECLEN (op, 0) != 4
+	  || !CONST_INT_P (XVECEXP (op, 0, 3)))
+	return -1;
+
+      /* TODO: Handle permuted operands.  */
+      if (ix86_ternlog_idx (XVECEXP (op, 0, 0), args) != 0xf0
+	  || ix86_ternlog_idx (XVECEXP (op, 0, 1), args) != 0xcc
+	  || ix86_ternlog_idx (XVECEXP (op, 0, 2), args) != 0xaa)
+	return -1;
+      return INTVAL (XVECEXP (op, 0, 3));
+
+    default:
+      return -1;
+    }
+}
+
+/* Return TRUE if OP (in mode MODE) is the leaf of a ternary logic
+   expression, such as a register or a memory reference.  */
+ 
+bool
+ix86_ternlog_leaf_p (rtx op, machine_mode mode)
+{
+  /* We can't use memory_operand here, as it may return a different
+     value before and after reload (for volatile MEMs) which creates
+     problems splitting instructions.  */
+  return register_operand (op, mode)
+	 || MEM_P (op)
+	 || GET_CODE (op) == CONST_VECTOR
+	 || bcst_mem_operand (op, mode);
+}
+
+/* Test whether OP is a 3-operand ternary logic expression suitable
+   for use in a ternlog instruction.  */
+
+bool
+ix86_ternlog_operand_p (rtx op)
+{
+  rtx op0, op1;
+  rtx args[3];
+
+  args[0] = NULL_RTX;
+  args[1] = NULL_RTX;
+  args[2] = NULL_RTX;
+  int idx = ix86_ternlog_idx (op, args);
+  if (idx < 0)
+    return false;
+
+  /* Don't match simple (binary or unary) expressions.  */
+  machine_mode mode = GET_MODE (op);
+  switch (GET_CODE (op))
+    {
+    case AND:
+      op0 = XEXP (op, 0);
+      op1 = XEXP (op, 1);
+
+      /* Prefer pand.  */
+      if (ix86_ternlog_leaf_p (op0, mode)
+	  && ix86_ternlog_leaf_p (op1, mode))
+	return false;
+      /* Prefer pandn.  */
+      if (GET_CODE (op0) == NOT
+	  && register_operand (XEXP (op0, 0), mode)
+	  && ix86_ternlog_leaf_p (op1, mode))
+	return false;
+      break;
+
+    case IOR:
+      /* Prefer por.  */
+      if (ix86_ternlog_leaf_p (XEXP (op, 0), mode)
+	  && ix86_ternlog_leaf_p (XEXP (op, 1), mode))
+	return false;
+      break;
+
+    case XOR:
+      op1 = XEXP (op, 1);
+      /* Prefer pxor, or one_cmpl<vmode>2.  */
+      if (ix86_ternlog_leaf_p (XEXP (op, 0), mode)
+	  && (ix86_ternlog_leaf_p (op1, mode)
+	      || vector_all_ones_operand (op1, mode)))
+	return false;
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
+/* Helper function for ix86_expand_ternlog.  */
+static rtx
+ix86_expand_ternlog_binop (enum rtx_code code, machine_mode mode,
+			   rtx op0, rtx op1, rtx target)
+{
+  if (GET_MODE (op0) != mode)
+    op0 = gen_lowpart (mode, op0);
+  if (GET_MODE (op1) != mode)
+    op1 = gen_lowpart (mode, op1);
+
+  if (GET_CODE (op0) == CONST_VECTOR)
+    op0 = validize_mem (force_const_mem (mode, op0));
+  if (GET_CODE (op1) == CONST_VECTOR)
+    op1 = validize_mem (force_const_mem (mode, op1));
+
+  if (memory_operand (op0, mode))
+    {
+      if (memory_operand (op1, mode))
+	op0 = force_reg (mode, op0);
+      else
+	std::swap (op0, op1);
+    }
+  rtx ops[3] = { target, op0, op1 };
+  ix86_expand_vector_logical_operator (code, mode, ops);
+  return target;
+}
+
+
+/* Helper function for ix86_expand_ternlog.  */
+static rtx
+ix86_expand_ternlog_andnot (machine_mode mode, rtx op0, rtx op1, rtx target)
+{
+  if (GET_MODE (op0) != mode)
+    op0 = gen_lowpart (mode, op0);
+  op0 = gen_rtx_NOT (mode, op0);
+  if (GET_MODE (op1) != mode)
+    op1 = gen_lowpart (mode, op1);
+  emit_move_insn (target, gen_rtx_AND (mode, op0, op1));
+  return target;
+}
+
+/* Expand a 3-operand ternary logic expression.  Return TARGET. */
+rtx
+ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
+		     rtx target)
+{
+  rtx tmp0, tmp1, tmp2;
+
+  if (!target)
+    target = gen_reg_rtx (mode);
+
+  /* Canonicalize ternlog index for degenerate (duplicated) operands.  */
+  if (rtx_equal_p (op0, op1) && rtx_equal_p (op0, op2))
+    switch (idx & 0x81)
+      {
+      case 0x00:
+	idx = 0x00;
+	break;
+      case 0x01:
+	idx = 0x0f;
+	break;
+      case 0x80:
+	idx = 0xf0;
+	break;
+      case 0x81:
+	idx = 0xff;
+	break;
+      }
+
+  switch (idx & 0xff)
+    {
+    case 0x00:
+      if ((!op0 || !side_effects_p (op0))
+          && (!op1 || !side_effects_p (op1))
+          && (!op2 || !side_effects_p (op2)))
+        {
+	  emit_move_insn (target, CONST0_RTX (mode));
+	  return target;
+	}
+      break;
+
+    case 0x0a: /* ~a&c */
+      if ((!op1 || !side_effects_p (op1))
+	  && op0 && register_operand (op0, mode)
+	  && op2 && register_operand (op2, mode))
+	return ix86_expand_ternlog_andnot (mode, op0, op2, target);
+      break;
+
+    case 0x0c: /* ~a&b */
+      if ((!op2 || !side_effects_p (op2))
+	  && op0 && register_operand (op0, mode)
+	  && op1 && register_operand (op1, mode))
+	return ix86_expand_ternlog_andnot (mode, op0, op1, target);
+      break;
+
+    case 0x0f:  /* ~a */
+      if ((!op1 || !side_effects_p (op1))
+	  && (!op2 || !side_effects_p (op2))
+          && op0)
+	{
+	  if (GET_MODE (op0) != mode)
+	    op0 = gen_lowpart (mode, op0);
+	  if (!TARGET_64BIT && !register_operand (op0, mode))
+	    op0 = force_reg (mode, op0);
+	  emit_move_insn (target, gen_rtx_XOR (mode, op0, CONSTM1_RTX (mode)));
+	  return target;
+	}
+      break;
+  
+    case 0x22: /* ~b&c */
+      if ((!op0 || !side_effects_p (op0))
+	  && op1 && register_operand (op1, mode)
+	  && op2 && register_operand (op2, mode))
+	return ix86_expand_ternlog_andnot (mode, op1, op2, target);
+      break;
+
+    case 0x30: /* ~b&a */
+      if ((!op2 || !side_effects_p (op2))
+	  && op0 && register_operand (op0, mode)
+	  && op1 && register_operand (op1, mode))
+	return ix86_expand_ternlog_andnot (mode, op1, op0, target);
+      break;
+
+    case 0x33:  /* ~b */
+      if ((!op0 || !side_effects_p (op0))
+	  && (!op2 || !side_effects_p (op2))
+          && op1)
+	{
+	  if (GET_MODE (op1) != mode)
+	    op1 = gen_lowpart (mode, op1);
+	  if (!TARGET_64BIT && !register_operand (op1, mode))
+	    op1 = force_reg (mode, op1);
+	  emit_move_insn (target, gen_rtx_XOR (mode, op1, CONSTM1_RTX (mode)));
+	  return target;
+	}
+      break;
+
+    case 0x3c:  /* a^b */
+      if (op0 && op1
+          && (!op2 || !side_effects_p (op2)))
+	return ix86_expand_ternlog_binop (XOR, mode, op0, op1, target);
+      break;
+
+    case 0x44: /* ~c&b */
+      if ((!op0 || !side_effects_p (op0))
+	  && op1 && register_operand (op1, mode)
+	  && op2 && register_operand (op2, mode))
+	return ix86_expand_ternlog_andnot (mode, op2, op1, target);
+      break;
+
+    case 0x50: /* ~c&a */
+      if ((!op1 || !side_effects_p (op1))
+	  && op0 && register_operand (op0, mode)
+	  && op2 && register_operand (op2, mode))
+	return ix86_expand_ternlog_andnot (mode, op2, op0, target);
+      break;
+
+    case 0x55:  /* ~c */
+      if ((!op0 || !side_effects_p (op0))
+	  && (!op1 || !side_effects_p (op1))
+          && op2)
+	{
+	  if (GET_MODE (op2) != mode)
+	    op2 = gen_lowpart (mode, op2);
+	  if (!TARGET_64BIT && !register_operand (op2, mode))
+	    op2 = force_reg (mode, op2);
+	  emit_move_insn (target, gen_rtx_XOR (mode, op2, CONSTM1_RTX (mode)));
+	  return target;
+	}
+      break;
+  
+    case 0x5a:  /* a^c */
+      if (op0 && op2
+          && (!op1 || !side_effects_p (op1)))
+	return ix86_expand_ternlog_binop (XOR, mode, op0, op2, target);
+      break;
+
+    case 0x66:  /* b^c */
+      if ((!op0 || !side_effects_p (op0))
+          && op1 && op2)
+	return ix86_expand_ternlog_binop (XOR, mode, op1, op2, target);
+      break;
+
+    case 0x88:  /* b&c */
+      if ((!op0 || !side_effects_p (op0))
+          && op1 && op2)
+	return ix86_expand_ternlog_binop (AND, mode, op1, op2, target);
+      break;
+
+    case 0xa0:  /* a&c */
+      if ((!op1 || !side_effects_p (op1))
+          && op0 && op2)
+	return ix86_expand_ternlog_binop (AND, mode, op0, op2, target);
+      break;
+
+    case 0xaa:  /* c */
+      if ((!op0 || !side_effects_p (op0))
+	  && (!op1 || !side_effects_p (op1))
+          && op2)
+	{
+	  if (GET_MODE (op2) != mode)
+	    op2 = gen_lowpart (mode, op2);
+	  emit_move_insn (target, op2);
+	  return target;
+	}
+      break;
+
+    case 0xc0:  /* a&b */
+      if (op0 && op1
+          && (!op2 || !side_effects_p (op2)))
+	return ix86_expand_ternlog_binop (AND, mode, op0, op1, target);
+      break;
+
+    case 0xcc:  /* b */
+      if ((!op0 || !side_effects_p (op0))
+          && op1
+	  && (!op2 || !side_effects_p (op2)))
+	{
+	  if (GET_MODE (op1) != mode)
+	    op1 = gen_lowpart (mode, op1);
+	  emit_move_insn (target, op1);
+	  return target;
+	}
+      break;
+
+    case 0xee:  /* b|c */
+      if ((!op0 || !side_effects_p (op0))
+          && op1 && op2)
+	return ix86_expand_ternlog_binop (IOR, mode, op1, op2, target);
+      break;
+
+    case 0xf0:  /* a */
+      if (op0
+          && (!op1 || !side_effects_p (op1))
+	  && (!op2 || !side_effects_p (op2)))
+	{
+	  if (GET_MODE (op0) != mode)
+	    op0 = gen_lowpart (mode, op0);
+	  emit_move_insn (target, op0);
+	  return target;
+	}
+      break;
+
+    case 0xfa:  /* a|c */
+      if (op0 && op2
+          && (!op1 || !side_effects_p (op1)))
+	return ix86_expand_ternlog_binop (IOR, mode, op0, op2, target);
+      break;
+
+    case 0xfc:  /* a|b */
+      if (op0 && op1
+          && (!op2 || !side_effects_p (op2)))
+	return ix86_expand_ternlog_binop (IOR, mode, op0, op1, target);
+      break;
+
+    case 0xff:
+      if ((!op0 || !side_effects_p (op0))
+          && (!op1 || !side_effects_p (op1))
+          && (!op2 || !side_effects_p (op2)))
+        {
+          emit_move_insn (target, CONSTM1_RTX (mode));
+	  return target;
+	}
+      break;
+    }
+
+  tmp0 = register_operand (op0, mode) ? op0 : force_reg (mode, op0);
+  if (GET_MODE (tmp0) != mode)
+    tmp0 = gen_lowpart (mode, tmp0);
+
+  if (!op1 || rtx_equal_p (op0, op1))
+    tmp1 = copy_rtx (tmp0);
+  else if (!register_operand (op1, mode))
+    tmp1 = force_reg (mode, op1);
+  else
+    tmp1 = op1;
+  if (GET_MODE (tmp1) != mode)
+    tmp1 = gen_lowpart (mode, tmp1);
+
+  if (!op2 || rtx_equal_p (op0, op2))
+    tmp2 = copy_rtx (tmp0);
+  else if (rtx_equal_p (op1, op2))
+    tmp2 = copy_rtx (tmp1);
+  else if (GET_CODE (op2) == CONST_VECTOR)
+    {
+      if (GET_MODE (op2) != mode)
+	op2 = gen_lowpart (mode, op2);
+      tmp2 = ix86_gen_bcst_mem (mode, op2);
+      if (!tmp2)
+	{
+	  tmp2 = validize_mem (force_const_mem (mode, op2));
+	  rtx bcast = ix86_broadcast_from_constant (mode, tmp2);
+	  if (bcast)
+	    {
+	      rtx reg2 = gen_reg_rtx (mode);
+	      bool ok = ix86_expand_vector_init_duplicate (false, mode,
+							   reg2, bcast);
+	      if (ok)
+		tmp2 = reg2;
+	    }
+	}
+    }
+  else
+    tmp2 = op2;
+  if (GET_MODE (tmp2) != mode)
+    tmp2 = gen_lowpart (mode, tmp2);
+  /* Some memory_operands are not vector_memory_operands.  */
+  if (!bcst_vector_operand (tmp2, mode))
+    tmp2 = force_reg (mode, tmp2);
+
+  rtvec vec = gen_rtvec (4, tmp0, tmp1, tmp2, GEN_INT (idx));
+  emit_move_insn (target, gen_rtx_UNSPEC (mode, vec, UNSPEC_VTERNLOG));
+  return target;
 }
 
 #include "gt-i386-expand.h"

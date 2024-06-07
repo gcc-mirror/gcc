@@ -251,6 +251,11 @@ extern int ix86_get_flags_cc (enum rtx_code);
 extern rtx ix86_memtag_untagged_pointer (rtx, rtx);
 extern bool ix86_memtag_can_tag_addresses (void);
 
+extern int ix86_ternlog_idx (rtx op, rtx *args);
+extern bool ix86_ternlog_operand_p (rtx op);
+extern rtx ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2,
+				int idx, rtx target);
+
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 #endif	/* TREE_CODE  */

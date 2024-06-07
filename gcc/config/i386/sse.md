@@ -13032,6 +13032,26 @@
 ;;
 ;; and so on.
 
+(define_insn_and_split "*<avx512>_vpternlog<mode>_0"
+  [(set (match_operand:V 0 "register_operand")
+	(match_operand:V 1 "ternlog_operand"))]
+  "(<MODE_SIZE> == 64 || TARGET_AVX512VL
+    || (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256))
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx args[3];
+  args[0] = NULL_RTX;
+  args[1] = NULL_RTX;
+  args[2] = NULL_RTX;
+  int idx = ix86_ternlog_idx (operands[1], args);
+  ix86_expand_ternlog (<MODE>mode, args[0], args[1], args[2], idx,
+		       operands[0]);
+  DONE;
+})
+
 (define_code_iterator any_logic1 [and ior xor])
 (define_code_iterator any_logic2 [and ior xor])
 (define_code_attr logic_op [(and "&") (ior "|") (xor "^")])
@@ -13252,7 +13272,33 @@
 })
 
 
-(define_insn "<avx512>_vternlog<mode>_mask"
+(define_expand "<avx512>_vternlog<mode>_mask"
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand")
+	(vec_merge:VI48_AVX512VL
+	  (unspec:VI48_AVX512VL
+	    [(match_operand:VI48_AVX512VL 1 "register_operand")
+	     (match_operand:VI48_AVX512VL 2 "register_operand")
+	     (match_operand:VI48_AVX512VL 3 "bcst_vector_operand")
+	     (match_operand:SI 4 "const_0_to_255_operand")]
+	    UNSPEC_VTERNLOG)
+	  (match_dup 1)
+	  (match_operand:<avx512fmaskmode> 5 "general_operand")))]
+  "TARGET_AVX512F"
+{
+  unsigned HOST_WIDE_INT mode_mask = GET_MODE_MASK (<avx512fmaskmode>mode);
+  if (CONST_INT_P (operands[5])
+      && (UINTVAL (operands[5]) & mode_mask) == mode_mask)
+    {
+      ix86_expand_ternlog (<MODE>mode, operands[1], operands[2],
+			   operands[3], INTVAL (operands[4]),
+			   operands[0]);
+      DONE;
+    }
+  if (!register_operand (operands[5], <avx512fmaskmode>mode))
+    operands[5] = force_reg (<avx512fmaskmode>mode, operands[5]);
+})
+
+(define_insn "*<avx512>_vternlog<mode>_mask"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:VI48_AVX512VL
 	  (unspec:VI48_AVX512VL
