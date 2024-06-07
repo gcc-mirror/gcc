@@ -443,8 +443,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
      using the GNU linker, the Solaris linker needs an option to not
      warn about this.  Everything works without this option, but you
      get unsightly warnings at link time.  */
-  generate_option (OPT_Wl_, "-t", 1, CL_DRIVER, &new_decoded_options[j]);
-  j++;
+  if (library > 0)
+    {
+      generate_option (OPT_Wl_, "-t", 1, CL_DRIVER, &new_decoded_options[j]);
+      j++;
+    }
 #endif
 
   *in_decoded_options_count = j;
