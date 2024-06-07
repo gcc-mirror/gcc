@@ -2151,11 +2151,24 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 				    nunits, &tem, &remain)
 		  || maybe_lt (remain + group_size, nunits)))
 	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "peeling for gaps insufficient for "
-				 "access\n");
-	      return false;
+	      /* But peeling a single scalar iteration is enough if
+		 we can use the next power-of-two sized partial
+		 access.  */
+	      unsigned HOST_WIDE_INT cnunits, cvf, cremain, cpart_size;
+	      if (!nunits.is_constant (&cnunits)
+		  || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&cvf)
+		  || ((cremain = remain.to_constant (), true)
+		      && ((cpart_size = (1 << ceil_log2 (cremain))) != cnunits)
+		      && vector_vector_composition_type
+			   (vectype, cnunits / cpart_size,
+			    &half_vtype) == NULL_TREE))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "peeling for gaps insufficient for "
+				     "access\n");
+		  return false;
+		}
 	    }
 
 	  /* If this is single-element interleaving with an element
@@ -11584,6 +11597,27 @@ vectorizable_load (vec_info *vinfo,
 			      gcc_assert (new_vtype
 					  || LOOP_VINFO_PEELING_FOR_GAPS
 					       (loop_vinfo));
+			    /* But still reduce the access size to the next
+			       required power-of-two so peeling a single
+			       scalar iteration is sufficient.  */
+			    unsigned HOST_WIDE_INT cremain;
+			    if (remain.is_constant (&cremain))
+			      {
+				unsigned HOST_WIDE_INT cpart_size
+				  = 1 << ceil_log2 (cremain);
+				if (known_gt (nunits, cpart_size)
+				    && constant_multiple_p (nunits, cpart_size,
+							    &num))
+				  {
+				    tree ptype;
+				    new_vtype
+				      = vector_vector_composition_type (vectype,
+									num,
+									&ptype);
+				    if (new_vtype)
+				      ltype = ptype;
+				  }
+			      }
 			  }
 		      }
 		    tree offset
