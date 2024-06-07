@@ -7217,7 +7217,7 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
       if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
 	mask = vect_get_loop_mask (loop_vinfo, gsi, masks, vec_num, vectype_in, i);
       else if (is_cond_op)
-	mask = vec_opmask[0];
+	mask = vec_opmask[i];
       if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
 	{
 	  len = vect_get_loop_len (loop_vinfo, gsi, lens, vec_num, vectype_in,
