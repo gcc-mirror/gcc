@@ -3530,7 +3530,9 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
       /* If we have a peeled vector iteration we will never skip the epilog loop
 	 and we can simplify the cfg a lot by not doing the edge split.  */
-      if (skip_epilog || LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+      if (skip_epilog
+	  || (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+	      && !LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo)))
 	{
 	  guard_cond = fold_build2 (EQ_EXPR, boolean_type_node,
 				    niters, niters_vector_mult_vf);
