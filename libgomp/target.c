@@ -5266,6 +5266,9 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 
   /* host->device, device->host and intra device.  */
   if (num_dims == 2
+      && (!strides || (strides[0] == 1
+		       && strides[1] == 1
+		       && element_size == span))
       && ((src_devicep
 	   && src_devicep == dst_devicep
 	   && src_devicep->memcpy2d_func)
@@ -5292,6 +5295,10 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 	return ret ? 0 : EINVAL;
     }
   else if (num_dims == 3
+	   && (!strides || (strides[0] == 1
+			    && strides[1] == 1
+			    && strides[2] == 1
+			    && element_size == span))
 	   && ((src_devicep
 		&& src_devicep == dst_devicep
 		&& src_devicep->memcpy3d_func)
