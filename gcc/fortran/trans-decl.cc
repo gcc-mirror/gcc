@@ -5107,26 +5107,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      if (sym->ts.type == BT_CLASS)
 		{
 		  /* Initialize _vptr to declared type.  */
-		  gfc_symbol *vtab;
-		  tree rhs;
-
 		  gfc_save_backend_locus (&loc);
 		  gfc_set_backend_locus (&sym->declared_at);
 		  e = gfc_lval_expr_from_sym (sym);
-		  gfc_add_vptr_component (e);
-		  gfc_init_se (&se, NULL);
-		  se.want_pointer = 1;
-		  gfc_conv_expr (&se, e);
+		  gfc_reset_vptr (&init, e);
 		  gfc_free_expr (e);
-		  if (UNLIMITED_POLY (sym))
-		    rhs = build_int_cst (TREE_TYPE (se.expr), 0);
-		  else
-		    {
-		      vtab = gfc_find_derived_vtab (sym->ts.u.derived);
-		      rhs = gfc_build_addr_expr (TREE_TYPE (se.expr),
-						gfc_get_symbol_decl (vtab));
-		    }
-		  gfc_add_modify (&init, se.expr, rhs);
 		  gfc_restore_backend_locus (&loc);
 		}
 
@@ -7968,7 +7953,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 			      fold_convert (TREE_TYPE (tmp),
 					    null_pointer_node));
 	      gfc_reset_vptr (&init, nullptr, result,
-			      CLASS_DATA (sym->result)->ts.u.derived);
+			      sym->result->ts.u.derived);
 	    }
 	  else if (sym->ts.type == BT_DERIVED
 		   && !sym->attr.allocatable)

@@ -8815,15 +8815,7 @@ scalar_transfer:
 
       /* For CLASS results, set the _vptr.  */
       if (mold_expr->ts.type == BT_CLASS)
-	{
-	  tree vptr;
-	  gfc_symbol *vtab;
-	  vptr = gfc_class_vptr_get (tmpdecl);
-	  vtab = gfc_find_derived_vtab (source_expr->ts.u.derived);
-	  gcc_assert (vtab);
-	  tmp = gfc_build_addr_expr (NULL_TREE, gfc_get_symbol_decl (vtab));
-	  gfc_add_modify (&se->pre, vptr, fold_convert (TREE_TYPE (vptr), tmp));
-	}
+	gfc_reset_vptr (&se->pre, nullptr, tmpdecl, source_expr->ts.u.derived);
 
       se->expr = tmpdecl;
     }
