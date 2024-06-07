@@ -591,21 +591,21 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		+---------------------------------------+
 		| Parameter save area (+padding*) (P)	|  32
 		+---------------------------------------+
-		| Optional ROP hash slot (R)		|  32+P
+		| Alloca space (A)			|  32+P
 		+---------------------------------------+
-		| Alloca space (A)			|  32+P+R
+		| Local variable space (L)		|  32+P+A
 		+---------------------------------------+
-		| Local variable space (L)		|  32+P+R+A
+		| Optional ROP hash slot (R)		|  32+P+A+L
 		+---------------------------------------+
-		| Save area for AltiVec registers (W)	|  32+P+R+A+L
+		| Save area for AltiVec registers (W)	|  32+P+A+L+R
 		+---------------------------------------+
-		| AltiVec alignment padding (Y)		|  32+P+R+A+L+W
+		| AltiVec alignment padding (Y)		|  32+P+A+L+R+W
 		+---------------------------------------+
-		| Save area for GP registers (G)	|  32+P+R+A+L+W+Y
+		| Save area for GP registers (G)	|  32+P+A+L+R+W+Y
 		+---------------------------------------+
-		| Save area for FP registers (F)	|  32+P+R+A+L+W+Y+G
+		| Save area for FP registers (F)	|  32+P+A+L+R+W+Y+G
 		+---------------------------------------+
-	old SP->| back chain to caller's caller		|  32+P+R+A+L+W+Y+G+F
+	old SP->| back chain to caller's caller		|  32+P+A+L+R+W+Y+G+F
 		+---------------------------------------+
 
      * If the alloca area is present, the parameter save area is
