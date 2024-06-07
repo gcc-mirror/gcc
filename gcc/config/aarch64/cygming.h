@@ -21,8 +21,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_AARCH64_CYGMING_H
 #define GCC_AARCH64_CYGMING_H
 
+#define DWARF2_DEBUGGING_INFO 1
+
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DINFO_TYPE_NONE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
+#undef DWARF2_UNWIND_INFO
+#define DWARF2_UNWIND_INFO 0
 
 #define FASTCALL_PREFIX '@'
 
@@ -74,6 +79,38 @@ still needed for compilation.  */
 /* Declare the type properly for any external libcall.  */
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
   mingw_pe_declare_function_type (FILE, XSTR (FUN, 0), 1)
+
+/* Use section relative relocations for debugging offsets.  Unlike
+   other targets that fake this by putting the section VMA at 0, PE
+   won't allow it.  */
+#define ASM_OUTPUT_DWARF_OFFSET(FILE, SIZE, LABEL, OFFSET, SECTION) \
+  do {								\
+    switch (SIZE)						\
+      {								\
+      case 4:							\
+	fputs ("\t.secrel32\t", FILE);				\
+	assemble_name (FILE, LABEL);				\
+	if ((OFFSET) != 0)					\
+	  fprintf (FILE, "+" HOST_WIDE_INT_PRINT_DEC,		\
+		   (HOST_WIDE_INT) (OFFSET));			\
+	break;							\
+      case 8:							\
+	/* This is a hack.  There is no 64-bit section relative	\
+	   relocation.  However, the COFF format also does not	\
+	   support 64-bit file offsets; 64-bit applications are	\
+	   limited to 32-bits of code+data in any one module.	\
+	   Fake the 64-bit offset by zero-extending it.  */	\
+	fputs ("\t.secrel32\t", FILE);				\
+	assemble_name (FILE, LABEL);				\
+	if ((OFFSET) != 0)					\
+	  fprintf (FILE, "+" HOST_WIDE_INT_PRINT_DEC,		\
+		   (HOST_WIDE_INT) (OFFSET));			\
+	fputs ("\n\t.long\t0", FILE);				\
+	break;							\
+      default:							\
+	gcc_unreachable ();					\
+      }								\
+  } while (0)
 
 #define TARGET_OS_CPP_BUILTINS()					\
   do									\
