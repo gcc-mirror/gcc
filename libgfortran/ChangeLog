@@ -1,3 +1,14 @@
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Andrew Stubbs  <ams@gcc.gnu.org>
+
+	* configure.ac: No longer set 'LIBGFOR_MINIMAL' for nvptx.
+	* configure: Regenerate.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/85463
+	* runtime/minimal.c [__nvptx__] (exit): Don't override.
+
 2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am [LIBGFOR_USE_SYMVER_SUN} (gfortran.ver-sun): Pass

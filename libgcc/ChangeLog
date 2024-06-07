@@ -1,3 +1,22 @@
+2024-06-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/115360
+	* config/arm/cmse_nonsecure_call.S: Add .type and .size directives.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Andrew Stubbs  <ams@gcc.gnu.org>
+
+	* config/nvptx/t-nvptx: Add unwind-nvptx.c.
+	* config/nvptx/unwind-nvptx.c: New file.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/gbl-ctors.c ["mgomp"]
+	(__do_global_ctors__entry__mgomp)
+	(__do_global_dtors__entry__mgomp): New.
+	[!"mgomp"] (__do_global_ctors__entry, __do_global_dtors__entry):
+	New.
+
 2024-06-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	PR target/115342

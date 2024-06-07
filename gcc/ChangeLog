@@ -1,3 +1,180 @@
+2024-06-06  Pan Li  <pan2.li@intel.com>
+
+	* doc/match-and-simplify.texi: Add doc for the matching flag '^'.
+	* genmatch.cc (cmp_operand): Add match_phi comparation.
+	(dt_node::gen_kids_1): Add cond_expr bool flag for phi match.
+	(dt_operand::gen_phi_on_cond): Add new func to gen phi matching
+	on cond_expr.
+	(parser::parse_expr): Add handling for the expr flag '^'.
+	* match.pd: Add more form for unsigned .SAT_ADD.
+	* tree-ssa-math-opts.cc (build_saturation_binary_arith_call): Add
+	new func impl to build call for phi gimple.
+	(match_unsigned_saturation_add): Add new func impl to match the
+	.SAT_ADD for phi gimple.
+	(math_opts_dom_walker::after_dom_children): Add phi matching
+	try for all gimple phi stmt.
+
+2024-06-06  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113880
+	PR target/113869
+	* config/aarch64/aarch64-builtins.cc (VAR1): Remap float_extend_lo_
+	builtin codes to standard optab ones.
+	* config/aarch64/aarch64-simd.md (aarch64_float_extend_lo_<Vwide>): Rename
+	to...
+	(extend<mode><Vwide>2): ... This.
+
+2024-06-06  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR plugins/115288
+	* Makefile.in (CPPLIB_H): Add label-text.h.
+
+2024-06-06  Richard Ball  <richard.ball@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_define_unconditional_macros):
+	Add missing __ARM_NEON_SVE_BRIDGE.
+
+2024-06-06  Richard Ball  <richard.ball@arm.com>
+
+	PR target/115353
+	* config/arm/arm.h (enum arm_auto_incmodes):
+	Correct CASE_VECTOR_SHORTEN_MODE query.
+
+2024-06-06  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve.md (@aarch64_pred_cmp<cmp_op><mode>,
+	*cmp<cmp_op><mode>_cc, *cmp<cmp_op><mode>_ptest,
+	@aarch64_pred_cmp<cmp_op><mode>_wide,
+	*aarch64_pred_cmp<cmp_op><mode>_wide_cc,
+	*aarch64_pred_cmp<cmp_op><mode>_wide_ptest): Fix Upl tie alternative.
+	* config/aarch64/aarch64-sve2.md (@aarch64_pred_<sve_int_op><mode>): Fix
+	Upl tie alternative.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.md (nvptx_uniform_warp_check): Make fit for
+	non-full-warp execution, via 'vote.all.pred'.
+
+2024-06-06  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add new form for vector mode recog.
+	* tree-vect-patterns.cc (gimple_unsigned_integer_sat_sub): Add
+	new match func decl;
+	(vect_recog_build_binary_gimple_call): Extract helper func to
+	build gcall with given internal_fn.
+	(vect_recog_sat_sub_pattern): Add new func impl to recog .SAT_SUB.
+
+2024-06-06  Michal Jires  <mjires@suse.cz>
+
+	* lto-streamer.cc (lto_get_section_name): Remove suffixes after WPA.
+
+2024-06-06  Michal Jires  <mjires@suse.cz>
+
+	* lto-opts.cc (lto_write_options): Skip OPT_fltrans_output_list_.
+
+2024-06-06  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.opt.urls: Regenerate.
+
+2024-06-06  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_gen_ccmp_first):
+	Add fp compare and check the allowed fp compare type.
+	(ix86_gen_ccmp_next): Adjust compare_code input to ccmp for
+	fp compare.
+
+2024-06-06  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* ccmp.cc (expand_ccmp_expr_1): Check ret and ret2 of
+	expand_ccmp_next, returns the valid one first instead of
+	comparing cost.
+
+2024-06-06  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_gen_ccmp_first): New function
+	that test if the first compare can be generated.
+	(ix86_gen_ccmp_next): New function to emit a simgle compare and ccmp
+	sequence.
+	* config/i386/i386-opts.h (enum apx_features): Add apx_ccmp.
+	* config/i386/i386-protos.h (ix86_gen_ccmp_first): New proto
+	declare.
+	(ix86_gen_ccmp_next): Likewise.
+	(ix86_get_flags_cc): Likewise.
+	* config/i386/i386.cc (ix86_flags_cc): New enum.
+	(ix86_ccmp_dfv_mapping): New string array to map conditional
+	code to dfv.
+	(ix86_print_operand): Handle special dfv flag for CCMP.
+	(ix86_get_flags_cc): New function to return x86 CC enum.
+	(TARGET_GEN_CCMP_FIRST): Define.
+	(TARGET_GEN_CCMP_NEXT): Likewise.
+	* config/i386/i386.h (TARGET_APX_CCMP): Define.
+	* config/i386/i386.md (@ccmp<mode>): New define_insn to support
+	ccmp.
+	(UNSPEC_APX_DFV): New unspec for ccmp dfv.
+	(ALL_CC): New mode iterator.
+	(cstorecc4): Change to ...
+	(cstore<mode>4) ... this, use ALL_CC to loop through all
+	available CCmodes.
+	* config/i386/i386.opt (apx_ccmp): Add enum value for ccmp.
+
+2024-06-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Allow
+	single-lane SLP in-order reductions.
+	(vectorize_fold_left_reduction): Handle SLP reduction with
+	conditional reduction op.
+
+2024-06-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_scalar_cycles_1): Queue
+	double reductions in LOOP_VINFO_REDUCTIONS.
+	(vect_create_epilog_for_reduction): Remove asserts disabling
+	SLP for double reductions.
+	(vectorizable_reduction): Analyze SLP double reductions
+	only once and start off the correct places.
+	* tree-vect-slp.cc (vect_get_and_check_slp_defs): Allow
+	vect_double_reduction_def.
+	(vect_build_slp_tree_2): Fix condition for the ignored
+	reduction initial values.
+	* tree-vect-stmts.cc (vect_analyze_stmt): Allow
+	vect_double_reduction_def.
+
+2024-06-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Adjust for single-lane COND_REDUCTION SLP vectorization.
+	(vectorizable_reduction): Likewise.
+	(vect_transform_cycle_phi): Likewise.
+
+2024-06-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_condition): Allow
+	single-lane SLP, but not when we need to swap then and
+	else clause.
+
+2024-06-06  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.cc(mips_insn_cost): Add missing COSTS_N_INSNS
+	to count.
+
+2024-06-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/114428
+	* config/i386/i386.cc (ix86_rtx_costs): Adjust cost for
+	CONST_VECTOR_DUPLICATE_P in constant_pool.
+	* config/i386/i386-expand.cc (ix86_broadcast_from_constant):
+	Remove static.
+	* config/i386/i386-protos.h (ix86_broadcast_from_constant):
+	Declare.
+
+2024-06-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/114428
+	* simplify-rtx.cc
+	(simplify_context::simplify_binary_operation_1):
+	Simplify (AND (ASHIFTRT A imm) mask) to (LSHIFTRT A imm) for
+	specific mask.
+
 2024-06-05  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	* config/riscv/riscv-opts.h (TARGET_VECTOR_MISALIGN_SUPPORTED):

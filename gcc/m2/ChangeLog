@@ -1,3 +1,13 @@
+2024-06-06  Gaius Mulley  <gaiusmod2@gmail.com>
+	    Kewen.Lin   <linkw@linux.ibm.com>
+
+	* gm2-gcc/m2type.cc (build_m2_short_real_node): Rewrite
+	to use the default float_type_node.
+	(build_m2_real_node): Rewrite to use the default
+	double_type_node.
+	(build_m2_long_real_node): Rewrite to use the default
+	long_double_type_node or float128_type_node.
+
 2024-05-21  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (MC_EXTENDED_OPAQUE): New definition.

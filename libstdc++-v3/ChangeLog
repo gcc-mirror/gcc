@@ -1,3 +1,19 @@
+2024-06-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* include/bits/c++config (_GLIBCXX_CLANG): Define or undefine.
+	* include/bits/locale_facets_nonio.tcc: Test for it.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/c_compatibility/stdatomic.h: Likewise.
+	* include/experimental/bits/simd.h: Likewise.
+	* include/experimental/bits/simd_builtin.h: Likewise.
+	* include/experimental/bits/simd_detail.h: Likewise.
+	* include/experimental/bits/simd_x86.h: Likewise.
+	* include/experimental/simd: Likewise.
+	* include/std/complex: Likewise.
+	* include/std/ranges: Likewise.
+	* include/std/variant: Likewise.
+	* include/pstl/pstl_config.h: Likewise.
+
 2024-06-05  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/faq.xml: Move gcc.gnu.org to https.

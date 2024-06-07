@@ -1,3 +1,62 @@
+2024-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114493
+	* gcc.dg/pr114493-1.c: New test.
+	* gcc.dg/pr114493-2.c: New test.
+
+2024-06-06  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113880
+	PR target/113869
+	* gcc.target/aarch64/extend-vec.c: New test.
+
+2024-06-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/112600
+	* gcc.target/i386/pr112600-2a.c: New test.
+	* gcc.target/i386/pr112600-2b.c: New test.
+
+2024-06-06  Richard Ball  <richard.ball@arm.com>
+
+	* gcc.target/arm/thumb2-switchstatement.c: New test.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/nvptx.exp
+	(check_effective_target_default_ptx_isa_version_at_least_6_0):
+	New.
+	* gcc.target/nvptx/uniform-simt-2.c: Adjust.
+	* gcc.target/nvptx/uniform-simt-5.c: New.
+
+2024-06-06  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ccmp-1.c: Add test for fp compare.
+	* gcc.target/i386/apx-ccmp-2.c: Likewise.
+
+2024-06-06  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ccmp-1.c: New compile test.
+	* gcc.target/i386/apx-ccmp-2.c: New runtime test.
+
+2024-06-06  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/115341
+	* lib/target-supports.exp (check_effective_target_apxf):
+	Check for all apx sub-features.
+
+2024-06-06  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115365
+	* gcc.dg/pr100927.c: Don't scan fix:SI from the note.
+
+2024-06-06  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr114428.c: New test.
+
+2024-06-06  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr114428-1.c: New test.
+
 2024-06-05  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	* lib/target-supports.exp: Add

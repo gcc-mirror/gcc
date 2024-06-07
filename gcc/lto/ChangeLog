@@ -1,3 +1,7 @@
+2024-06-06  Michal Jires  <mjires@suse.cz>
+
+	* lto-common.cc (lto_section_with_id): Dont load suffix during LTRANS.
+
 2024-02-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/113476

@@ -1,3 +1,10 @@
+2024-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114493
+	* c-decl.cc (c_fixup_may_alias): New function.
+	(finish_struct): Call it if "may_alias" attribute is
+	specified.
+
 2024-06-05  Jakub Jelinek  <jakub@redhat.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

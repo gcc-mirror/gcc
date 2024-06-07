@@ -1,3 +1,50 @@
+2024-06-06  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (nvptx): Add missing preposition.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Andrew Stubbs  <ams@gcc.gnu.org>
+
+	* libgomp.texi (nvptx): Update.
+	* testsuite/libgomp.fortran/target-print-1-nvptx.f90: Remove.
+	* testsuite/libgomp.fortran/target-print-1.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/error_stop-2-nvptx.f: New.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Adjust.
+	* testsuite/libgomp.oacc-fortran/print-1-nvptx.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/print-1.f90: Adjust.
+	* testsuite/libgomp.oacc-fortran/stop-2-nvptx.f: New.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Adjust.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR libgomp/97384
+	PR libgomp/105274
+	* plugin/cuda-lib.def (cuCtxSetLimit): Add.
+	* plugin/plugin-nvptx.c (nvptx_open_device): Handle
+	'GOMP_NVPTX_NATIVE_GPU_THREAD_STACK_SIZE' environment variable.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/plugin-nvptx.c (nvptx_do_global_cdtors): New.
+	(nvptx_close_device, GOMP_OFFLOAD_load_image)
+	(GOMP_OFFLOAD_unload_image): Call it.
+
+2024-06-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/85463
+	* config/nvptx/error.c (exit): Don't override.
+	* testsuite/libgomp.oacc-fortran/error_stop-1.f: Update.
+	* testsuite/libgomp.oacc-fortran/error_stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/error_stop-3.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/stop-3.f: Likewise.
+
+2024-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi (OpenMP 5.1 status): Mark Loop transformation constructs
+	as implemented.
+
 2024-06-05  Jakub Jelinek  <jakub@redhat.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
