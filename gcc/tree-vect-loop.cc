@@ -7188,7 +7188,15 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
       tree len = NULL_TREE;
       tree bias = NULL_TREE;
       if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
-	mask = vect_get_loop_mask (loop_vinfo, gsi, masks, vec_num, vectype_in, i);
+	{
+	  tree loop_mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
+					       vec_num, vectype_in, i);
+	  if (is_cond_op)
+	    mask = prepare_vec_mask (loop_vinfo, TREE_TYPE (loop_mask),
+				     loop_mask, vec_opmask[i], gsi);
+	  else
+	    mask = loop_mask;
+	}
       else if (is_cond_op)
 	mask = vec_opmask[0];
       if (LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))

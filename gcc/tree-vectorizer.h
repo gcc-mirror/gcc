@@ -2495,6 +2495,9 @@ extern void vect_free_slp_tree (slp_tree);
 extern bool compatible_calls_p (gcall *, gcall *);
 extern int vect_slp_child_index_for_operand (const gimple *, int op, bool);
 
+extern tree prepare_vec_mask (loop_vec_info, tree, tree, tree,
+			      gimple_stmt_iterator *);
+
 /* In tree-vect-patterns.cc.  */
 extern void
 vect_mark_pattern_stmts (vec_info *, stmt_vec_info, gimple *, tree);
