@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -38,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-partition.h"
 
 #include <limits>
-#include <vector>
 
 vec<ltrans_partition> ltrans_partitions;
 
