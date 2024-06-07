@@ -4286,11 +4286,7 @@ bitint_large_huge::lower_addsub_overflow (tree obj, gimple *stmt)
 		  bool single_comparison
 		    = (startlimb + 2 >= fin || (startlimb & 1) != (i & 1));
 		  if (!single_comparison)
-		    {
-		      cmp_code = GE_EXPR;
-		      if (!check_zero && (start % limb_prec) == 0)
-			single_comparison = true;
-		    }
+		    cmp_code = GE_EXPR;
 		  else if ((startlimb & 1) == (i & 1))
 		    cmp_code = EQ_EXPR;
 		  else
