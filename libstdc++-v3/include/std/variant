@@ -1758,11 +1758,6 @@ namespace __detail::__variant
 	  }, __rhs);
       }
 
-#if defined(_GLIBCXX_CLANG) && __clang_major__ <= 7
-    public:
-      using _Base::_M_u; // See https://bugs.llvm.org/show_bug.cgi?id=31852
-#endif
-
     private:
       template<size_t _Np, typename _Vp>
 	friend constexpr decltype(auto)
