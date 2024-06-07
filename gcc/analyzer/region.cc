@@ -425,10 +425,8 @@ region::get_base_region () const
 	case RK_OFFSET:
 	case RK_SIZED:
 	case RK_BIT_RANGE:
-	  iter = iter->get_parent_region ();
-	  continue;
 	case RK_CAST:
-	  iter = iter->dyn_cast_cast_region ()->get_original_region ();
+	  iter = iter->get_parent_region ();
 	  continue;
 	default:
 	  return iter;
@@ -468,10 +466,7 @@ region::descendent_of_p (const region *elder) const
     {
       if (iter == elder)
 	return true;
-      if (iter->get_kind () == RK_CAST)
-	iter = iter->dyn_cast_cast_region ()->get_original_region ();
-      else
-	iter = iter->get_parent_region ();
+      iter = iter->get_parent_region ();
     }
   return false;
 }
@@ -487,10 +482,7 @@ region::maybe_get_frame_region () const
     {
       if (const frame_region *frame_reg = iter->dyn_cast_frame_region ())
 	return frame_reg;
-      if (iter->get_kind () == RK_CAST)
-	iter = iter->dyn_cast_cast_region ()->get_original_region ();
-      else
-	iter = iter->get_parent_region ();
+      iter = iter->get_parent_region ();
     }
   return NULL;
 }
@@ -525,10 +517,7 @@ region::get_memory_space () const
 	case RK_PRIVATE:
 	  return MEMSPACE_PRIVATE;
 	}
-      if (iter->get_kind () == RK_CAST)
-	iter = iter->dyn_cast_cast_region ()->get_original_region ();
-      else
-	iter = iter->get_parent_region ();
+      iter = iter->get_parent_region ();
     }
   return MEMSPACE_UNKNOWN;
 }
@@ -958,15 +947,8 @@ region::calc_offset (region_model_manager *mgr) const
 	    }
 	  continue;
 	case RK_SIZED:
-	  iter_region = iter_region->get_parent_region ();
-	  continue;
-
 	case RK_CAST:
-	  {
-	    const cast_region *cast_reg
-	      = as_a <const cast_region *> (iter_region);
-	    iter_region = cast_reg->get_original_region ();
-	  }
+	  iter_region = iter_region->get_parent_region ();
 	  continue;
 
 	default:
@@ -2276,15 +2258,6 @@ sized_region::get_bit_size_sval (region_model_manager *mgr) const
 
 /* class cast_region : public region.  */
 
-/* Implementation of region::accept vfunc for cast_region.  */
-
-void
-cast_region::accept (visitor *v) const
-{
-  region::accept (v);
-  m_original_region->accept (v);
-}
-
 /* Implementation of region::dump_to_pp vfunc for cast_region.  */
 
 void
@@ -2295,13 +2268,13 @@ cast_region::dump_to_pp (pretty_printer *pp, bool simple) const
       pp_string (pp, "CAST_REG(");
       print_quoted_type (pp, get_type ());
       pp_string (pp, ", ");
-      m_original_region->dump_to_pp (pp, simple);
+      get_parent_region ()->dump_to_pp (pp, simple);
       pp_string (pp, ")");
     }
   else
     {
       pp_string (pp, "cast_region(");
-      m_original_region->dump_to_pp (pp, simple);
+      get_parent_region ()->dump_to_pp (pp, simple);
       pp_string (pp, ", ");
       print_quoted_type (pp, get_type ());
       pp_printf (pp, ")");
@@ -2312,15 +2285,6 @@ void
 cast_region::print_dump_widget_label (pretty_printer *pp) const
 {
   pp_printf (pp, "cast_region");
-}
-
-void
-cast_region::
-add_dump_widget_children (text_art::tree_widget &w,
-			  const text_art::dump_widget_info &dwi) const
-{
-  w.add_child
-    (m_original_region->make_dump_widget (dwi, "m_original_region"));
 }
 
 /* Implementation of region::get_relative_concrete_offset vfunc

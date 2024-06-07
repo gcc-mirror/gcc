@@ -1170,65 +1170,54 @@ public:
   /* A support class for uniquifying instances of cast_region.  */
   struct key_t
   {
-    key_t (const region *original_region, tree type)
-    : m_original_region (original_region), m_type (type)
+    key_t (const region *parent, tree type)
+    : m_parent (parent), m_type (type)
     {
-      gcc_assert (original_region);
+      gcc_assert (parent);
     }
 
     hashval_t hash () const
     {
       inchash::hash hstate;
-      hstate.add_ptr (m_original_region);
+      hstate.add_ptr (m_parent);
       hstate.add_ptr (m_type);
       return hstate.end ();
     }
 
     bool operator== (const key_t &other) const
     {
-      return (m_original_region == other.m_original_region
+      return (m_parent == other.m_parent
 	      && m_type == other.m_type);
     }
 
     void mark_deleted ()
     {
-      m_original_region = reinterpret_cast<const region *> (1);
+      m_parent = reinterpret_cast<const region *> (1);
     }
-    void mark_empty () { m_original_region = nullptr; }
+    void mark_empty () { m_parent = nullptr; }
     bool is_deleted () const
     {
-      return m_original_region == reinterpret_cast<const region *> (1);
+      return m_parent == reinterpret_cast<const region *> (1);
     }
-    bool is_empty () const { return m_original_region == nullptr; }
+    bool is_empty () const { return m_parent == nullptr; }
 
-    const region *m_original_region;
+    const region *m_parent;
     tree m_type;
   };
 
-  cast_region (symbol::id_t id, const region *original_region, tree type)
-  : region (complexity (original_region), id,
-	    original_region->get_parent_region (), type),
-    m_original_region (original_region)
+  cast_region (symbol::id_t id, const region *parent, tree type)
+  : region (complexity (parent), id,
+	    parent, type)
   {}
 
   enum region_kind get_kind () const final override { return RK_CAST; }
   const cast_region *
   dyn_cast_cast_region () const final override { return this; }
-  void accept (visitor *v) const final override;
   void dump_to_pp (pretty_printer *pp, bool simple) const final override;
   void
   print_dump_widget_label (pretty_printer *pp) const final override;
-  void
-  add_dump_widget_children (text_art::tree_widget &,
-			    const text_art::dump_widget_info &dwi)
-    const final override;
 
   bool get_relative_concrete_offset (bit_offset_t *out) const final override;
-
-  const region *get_original_region () const { return m_original_region; }
-
-private:
-  const region *m_original_region;
 };
 
 } // namespace ana

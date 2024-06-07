@@ -327,7 +327,7 @@ region_model_manager::get_or_create_initial_value (const region *reg,
   /* The initial value of a cast is a cast of the initial value.  */
   if (const cast_region *cast_reg = reg->dyn_cast_cast_region ())
     {
-      const region *original_reg = cast_reg->get_original_region ();
+      const region *original_reg = cast_reg->get_parent_region ();
       return get_or_create_cast (cast_reg->get_type (),
 				 get_or_create_initial_value (original_reg));
     }

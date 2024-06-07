@@ -726,13 +726,12 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
       {
 	const cast_region *summary_cast_reg
 	  = as_a <const cast_region *> (summary_reg);
-	const region *summary_original_reg
-	  = summary_cast_reg->get_original_region ();
-	const region *caller_original_reg
-	  = convert_region_from_summary (summary_original_reg);
-	if (!caller_original_reg)
+	const region *summary_parent_reg = summary_reg->get_parent_region ();
+	const region *caller_parent_reg
+	  = convert_region_from_summary (summary_parent_reg);
+	if (!caller_parent_reg)
 	  return NULL;
-	return mgr->get_cast_region (caller_original_reg,
+	return mgr->get_cast_region (caller_parent_reg,
 				     summary_reg->get_type ());
       }
       break;

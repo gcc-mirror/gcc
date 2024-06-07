@@ -1625,14 +1625,6 @@ region_model::check_region_for_taint (const region *reg,
 	  }
 	  break;
 
-	case RK_CAST:
-	  {
-	    const cast_region *cast_reg
-	      = as_a <const cast_region *> (iter_region);
-	    iter_region = cast_reg->get_original_region ();
-	    continue;
-	  }
-
 	case RK_SIZED:
 	  {
 	    const sized_region *sized_reg

@@ -23,6 +23,6 @@ test_1 (void *data) /* { dg-message "\\(1\\) function 'test_1' marked with '__at
   __analyzer_dump_state ("taint", args); /* { dg-warning "state: 'tainted'" } */
   __analyzer_dump_state ("taint", args->sz); /* { dg-warning "state: 'tainted'" } */
   
-  p = malloc (args->sz); /* { dg-warning "use of attacker-controlled value '\\*args.sz' as allocation size without upper-bounds checking" "warning" } */
-  /* { dg-message "\\(\[0-9\]+\\) use of attacker-controlled value '\\*args.sz' as allocation size without upper-bounds checking" "final event" { target *-*-* } .-1 } */
+  p = malloc (args->sz); /* { dg-warning "use of attacker-controlled value '\[^'\]*.sz' as allocation size without upper-bounds checking" "warning" } */
+  /* { dg-message "\\(\[0-9\]+\\) use of attacker-controlled value '\[^'\]*.sz' as allocation size without upper-bounds checking" "final event" { target *-*-* } .-1 } */
 }
