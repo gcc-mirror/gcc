@@ -12415,6 +12415,9 @@ vectorizable_condition (vec_info *vinfo,
 		       reduction_type != EXTRACT_LAST_REDUCTION
 		       ? else_clause : NULL, vectype, &vec_oprnds3);
 
+  if (reduction_type == EXTRACT_LAST_REDUCTION)
+    vec_else_clause = else_clause;
+
   /* Arguments are ready.  Create the new vector stmt.  */
   FOR_EACH_VEC_ELT (vec_oprnds0, i, vec_cond_lhs)
     {
@@ -12557,17 +12560,24 @@ vectorizable_condition (vec_info *vinfo,
 	{
 	  gimple *old_stmt = vect_orig_stmt (stmt_info)->stmt;
 	  tree lhs = gimple_get_lhs (old_stmt);
+	  if ((unsigned)i != vec_oprnds0.length () - 1)
+	    lhs = copy_ssa_name (lhs);
 	  if (len)
 	    new_stmt = gimple_build_call_internal
-	        (IFN_LEN_FOLD_EXTRACT_LAST, 5, else_clause, vec_compare,
-	         vec_then_clause, len, bias);
+		(IFN_LEN_FOLD_EXTRACT_LAST, 5, vec_else_clause, vec_compare,
+		 vec_then_clause, len, bias);
 	  else
 	    new_stmt = gimple_build_call_internal
-	        (IFN_FOLD_EXTRACT_LAST, 3, else_clause, vec_compare,
-	         vec_then_clause);
+		(IFN_FOLD_EXTRACT_LAST, 3, vec_else_clause, vec_compare,
+		 vec_then_clause);
 	  gimple_call_set_lhs (new_stmt, lhs);
 	  SSA_NAME_DEF_STMT (lhs) = new_stmt;
-	  if (old_stmt == gsi_stmt (*gsi))
+	  if ((unsigned)i != vec_oprnds0.length () - 1)
+	    {
+	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      vec_else_clause = lhs;
+	    }
+	  else if (old_stmt == gsi_stmt (*gsi))
 	    vect_finish_replace_stmt (vinfo, stmt_info, new_stmt);
 	  else
 	    {
