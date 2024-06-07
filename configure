@@ -5241,7 +5241,7 @@ fi
 $as_echo "$as_me:${as_lineno-$LINENO}: checking for C++ compiler version" >&5
 set X $ac_compile
 ac_compiler=$2
-for ac_option in --version -v -V -qversion; do
+for ac_option in --version -v; do
   { { ac_try="$ac_compiler $ac_option >&5"
 case "(($ac_try" in
   *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
