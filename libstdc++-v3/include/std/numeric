@@ -79,6 +79,10 @@
 # include <limits>
 #endif
 
+#if __cplusplus > 202002L
+# include <bits/ranges_algobase.h> // for ranges::iota
+#endif
+
 /**
  * @defgroup numerics Numerics
  *
