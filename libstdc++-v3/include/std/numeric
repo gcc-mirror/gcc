@@ -89,6 +89,10 @@
 #define __glibcxx_want_saturation_arithmetic
 #include <bits/version.h>
 
+#if __glibcxx_ranges_iota >= 202202L // C++ >= 23
+# include <bits/ranges_algobase.h> // for ranges::out_value_result, ranges::iota
+#endif
+
 #ifdef __glibcxx_saturation_arithmetic // C++ >= 26
 # include <bits/sat_arith.h>
 #endif
