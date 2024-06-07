@@ -1,6 +1,6 @@
 // { dg-do run { target c++23 } }
 
-#include <algorithm>
+#include <numeric>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
