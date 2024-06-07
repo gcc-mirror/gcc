@@ -7569,7 +7569,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 				  NULL);
 	parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	/* Look for the closing `>'.  */
-	cp_parser_require (parser, CPP_GREATER, RT_GREATER);
+	cp_parser_require_end_of_template_parameter_list (parser);
 	/* Restore the old message.  */
 	parser->type_definition_forbidden_message = saved_message;
 
