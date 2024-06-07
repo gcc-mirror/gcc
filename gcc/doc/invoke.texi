@@ -496,6 +496,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-tainted-size
 -Wanalyzer-symbol-too-complex
 -Wanalyzer-too-complex
+-Wno-analyzer-undefined-behavior-ptrdiff
 -Wno-analyzer-undefined-behavior-strtok
 -Wno-analyzer-unsafe-call-within-signal-handler
 -Wno-analyzer-use-after-free
@@ -10766,6 +10767,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-tainted-divisor
 -Wanalyzer-tainted-offset
 -Wanalyzer-tainted-size
+-Wanalyzer-undefined-behavior-ptrdiff
 -Wanalyzer-undefined-behavior-strtok
 -Wanalyzer-unsafe-call-within-signal-handler
 -Wanalyzer-use-after-free
@@ -11415,6 +11417,20 @@ an operation such as @code{memset} without being sanitized, so that an
 attacker could inject an out-of-bounds access.
 
 See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+
+@opindex Wanalyzer-undefined-behavior-ptrdiff
+@opindex Wno-analyzer-undefined-behavior-ptrdiff
+@item -Wno-analyzer-undefined-behavior-ptrdiff
+This warning requires @option{-fanalyzer}, which enables it; use
+@option{-Wno-analyzer-undefined-behavior-ptrdiff} to disable it.
+
+This diagnostic warns for paths through the code in which a pointer
+subtraction occurs where the pointers refer to different chunks of
+memory.  Such code relies on undefined behavior, as pointer subtraction
+is only defined for cases where both pointers point to within (or just
+after) the same array.
+
+See @uref{https://cwe.mitre.org/data/definitions/469.html, CWE-469: Use of Pointer Subtraction to Determine Size}.
 
 @opindex Wanalyzer-undefined-behavior-strtok
 @opindex Wno-analyzer-undefined-behavior-strtok

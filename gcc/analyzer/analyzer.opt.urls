@@ -114,6 +114,9 @@ UrlSuffix(gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-offset)
 Wanalyzer-tainted-size
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-Wanalyzer-tainted-size)
 
+Wanalyzer-undefined-behavior-ptrdiff
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-Wanalyzer-undefined-behavior-ptrdiff)
+
 Wanalyzer-undefined-behavior-strtok
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-Wanalyzer-undefined-behavior-strtok)
 

@@ -841,6 +841,144 @@ private:
   tree m_count_cst;
 };
 
+/* A subclass of pending_diagnostic for complaining about pointer
+   subtractions involving unrelated buffers.  */
+
+class undefined_ptrdiff_diagnostic
+: public pending_diagnostic_subclass<undefined_ptrdiff_diagnostic>
+{
+public:
+  /* Region_creation_event subclass to give a custom wording when
+     talking about creation of buffers for LHS and RHS of the
+     subtraction.  */
+  class ptrdiff_region_creation_event : public region_creation_event
+  {
+  public:
+    ptrdiff_region_creation_event (const event_loc_info &loc_info,
+				   bool is_lhs)
+    : region_creation_event (loc_info),
+      m_is_lhs (is_lhs)
+    {
+    }
+
+    label_text get_desc (bool) const
+    {
+      if (m_is_lhs)
+	return label_text::borrow ("underlying object for left-hand side"
+				   " of subtraction created here");
+      else
+	return label_text::borrow ("underlying object for right-hand side"
+				   " of subtraction created here");
+    }
+
+  private:
+    bool m_is_lhs;
+  };
+
+  undefined_ptrdiff_diagnostic (const gassign *assign,
+				const svalue *sval_a,
+				const svalue *sval_b,
+				const region *base_reg_a,
+				const region *base_reg_b)
+  : m_assign (assign),
+    m_sval_a (sval_a),
+    m_sval_b (sval_b),
+    m_base_reg_a (base_reg_a),
+    m_base_reg_b (base_reg_b)
+  {
+    gcc_assert (m_base_reg_a != m_base_reg_b);
+  }
+
+  const char *get_kind () const final override
+  {
+    return "undefined_ptrdiff_diagnostic";
+  }
+
+  bool operator== (const undefined_ptrdiff_diagnostic &other) const
+  {
+    return (m_assign == other.m_assign
+	    && m_sval_a == other.m_sval_a
+	    && m_sval_b == other.m_sval_b
+	    && m_base_reg_a == other.m_base_reg_a
+	    && m_base_reg_b == other.m_base_reg_b);
+  }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_undefined_behavior_ptrdiff;
+  }
+
+  bool emit (diagnostic_emission_context &ctxt) final override
+  {
+    /* CWE-469: Use of Pointer Subtraction to Determine Size.  */
+    ctxt.add_cwe (469);
+    return ctxt.warn ("undefined behavior when subtracting pointers");
+  }
+
+  void add_region_creation_events (const region *reg,
+				   tree /*capacity*/,
+				   const event_loc_info &loc_info,
+				   checker_path &emission_path) final override
+  {
+    if (reg == m_base_reg_a)
+      emission_path.add_event
+	(make_unique<ptrdiff_region_creation_event> (loc_info, true));
+    else if (reg == m_base_reg_b)
+      emission_path.add_event
+	(make_unique<ptrdiff_region_creation_event> (loc_info, false));
+  }
+
+  label_text describe_final_event (const evdesc::final_event &ev) final override
+  {
+    return ev.formatted_print
+      ("subtraction of pointers has undefined behavior if"
+       " they do not point into the same array object");
+  }
+
+  void mark_interesting_stuff (interesting_t *interesting) final override
+  {
+    interesting->add_region_creation (m_base_reg_a);
+    interesting->add_region_creation (m_base_reg_b);
+  }
+
+private:
+  const gassign *m_assign;
+  const svalue *m_sval_a;
+  const svalue *m_sval_b;
+  const region *m_base_reg_a;
+  const region *m_base_reg_b;
+};
+
+/* Check the pointer subtraction SVAL_A - SVAL_B at ASSIGN and add
+   a warning to CTXT if they're not within the same base region.  */
+
+static void
+check_for_invalid_ptrdiff (const gassign *assign,
+			   region_model_context &ctxt,
+			   const svalue *sval_a, const svalue *sval_b)
+{
+  const region *base_reg_a = sval_a->maybe_get_deref_base_region ();
+  if (!base_reg_a)
+    return;
+  const region *base_reg_b = sval_b->maybe_get_deref_base_region ();
+  if (!base_reg_b)
+    return;
+
+  if (base_reg_a == base_reg_b)
+    return;
+
+  if (base_reg_a->get_kind () == RK_SYMBOLIC)
+    return;
+  if (base_reg_b->get_kind () == RK_SYMBOLIC)
+    return;
+
+  ctxt.warn (make_unique<undefined_ptrdiff_diagnostic> (assign,
+							sval_a,
+							sval_b,
+							base_reg_a,
+							base_reg_b));
+}
+
 /* If ASSIGN is a stmt that can be modelled via
      set_value (lhs_reg, SVALUE, CTXT)
    for some SVALUE, get the SVALUE.
@@ -896,6 +1034,9 @@ region_model::get_gassign_result (const gassign *assign,
 	const svalue *rhs2_sval = get_rvalue (rhs2, ctxt);
 
 	// TODO: perhaps fold to zero if they're known to be equal?
+
+	if (ctxt)
+	  check_for_invalid_ptrdiff (assign, *ctxt, rhs1_sval, rhs2_sval);
 
 	const svalue *sval_binop
 	  = m_mgr->get_or_create_binop (TREE_TYPE (lhs), op,

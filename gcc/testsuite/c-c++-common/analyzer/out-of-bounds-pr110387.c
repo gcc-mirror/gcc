@@ -12,8 +12,8 @@ _S_copy (long __n)
 void
 _M_construct ()
 {
-  x = &c - &b;
+  x = &c - &b; /* { dg-warning "undefined behavior when subtracting pointers" } */
   unsigned long __dnew = x;
   if (__dnew > 1)
-    _S_copy (&c - &b);
+    _S_copy (&c - &b); /* { dg-warning "undefined behavior when subtracting pointers" } */
 }
