@@ -47,4 +47,6 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "Data access with gaps requires scalar epilogue loop" "vect" { target { vect_perm && vect_int } } } } */
+/* When the target can compose a vector from its half we do not require
+   a scalar epilogue, but there's no effective target for this.  */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { target { vect_perm && vect_int } } } } */

@@ -2047,6 +2047,36 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
       else
 	{
+	  int cmp = compare_step_with_zero (vinfo, stmt_info);
+	  if (cmp < 0)
+	    {
+	      if (single_element_p)
+		/* ???  The VMAT_CONTIGUOUS_REVERSE code generation is
+		   only correct for single element "interleaving" SLP.  */
+		*memory_access_type = get_negative_load_store_type
+			     (vinfo, stmt_info, vectype, vls_type, 1, poffset);
+	      else
+		{
+		  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
+		     separated by the stride, until we have a complete vector.
+		     Fall back to scalar accesses if that isn't possible.  */
+		  if (multiple_p (nunits, group_size))
+		    *memory_access_type = VMAT_STRIDED_SLP;
+		  else
+		    *memory_access_type = VMAT_ELEMENTWISE;
+		}
+	    }
+	  else if (cmp == 0 && loop_vinfo)
+	    {
+	      gcc_assert (vls_type == VLS_LOAD);
+	      *memory_access_type = VMAT_INVARIANT;
+	      /* Invariant accesses perform only component accesses, alignment
+		 is irrelevant for them.  */
+	      *alignment_support_scheme = dr_unaligned_supported;
+	    }
+	  else
+	    *memory_access_type = VMAT_CONTIGUOUS;
+
 	  overrun_p = loop_vinfo && gap != 0;
 	  if (overrun_p && vls_type != VLS_LOAD)
 	    {
@@ -2064,6 +2094,21 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 						       vectype)
 			/ vect_get_scalar_dr_size (first_dr_info)))
 	    overrun_p = false;
+
+	  /* When we have a contiguous access across loop iterations
+	     but the access in the loop doesn't cover the full vector
+	     we can end up with no gap recorded but still excess
+	     elements accessed, see PR103116.  Make sure we peel for
+	     gaps if necessary and sufficient and give up if not.
+
+	     If there is a combination of the access not covering the full
+	     vector and a gap recorded then we may need to peel twice.  */
+	  if (loop_vinfo
+	      && *memory_access_type == VMAT_CONTIGUOUS
+	      && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
+	      && !multiple_p (group_size * LOOP_VINFO_VECT_FACTOR (loop_vinfo),
+			      nunits))
+	    overrun_p = true;
 
 	  /* If the gap splits the vector in half and the target
 	     can do half-vector operations avoid the epilogue peeling
@@ -2097,68 +2142,20 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 				 "Peeling for outer loop is not supported\n");
 	      return false;
 	    }
-	  int cmp = compare_step_with_zero (vinfo, stmt_info);
-	  if (cmp < 0)
+	  /* Peeling for gaps assumes that a single scalar iteration
+	     is enough to make sure the last vector iteration doesn't
+	     access excess elements.  */
+	  if (overrun_p
+	      && (!can_div_trunc_p (group_size
+				    * LOOP_VINFO_VECT_FACTOR (loop_vinfo) - gap,
+				    nunits, &tem, &remain)
+		  || maybe_lt (remain + group_size, nunits)))
 	    {
-	      if (single_element_p)
-		/* ???  The VMAT_CONTIGUOUS_REVERSE code generation is
-		   only correct for single element "interleaving" SLP.  */
-		*memory_access_type = get_negative_load_store_type
-			     (vinfo, stmt_info, vectype, vls_type, 1, poffset);
-	      else
-		{
-		  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
-		     separated by the stride, until we have a complete vector.
-		     Fall back to scalar accesses if that isn't possible.  */
-		  if (multiple_p (nunits, group_size))
-		    *memory_access_type = VMAT_STRIDED_SLP;
-		  else
-		    *memory_access_type = VMAT_ELEMENTWISE;
-		}
-	    }
-	  else if (cmp == 0 && loop_vinfo)
-	    {
-	      gcc_assert (vls_type == VLS_LOAD);
-	      *memory_access_type = VMAT_INVARIANT;
-	      /* Invariant accesses perform only component accesses, alignment
-		 is irrelevant for them.  */
-	      *alignment_support_scheme = dr_unaligned_supported;
-	    }
-	  else
-	    *memory_access_type = VMAT_CONTIGUOUS;
-
-	  /* When we have a contiguous access across loop iterations
-	     but the access in the loop doesn't cover the full vector
-	     we can end up with no gap recorded but still excess
-	     elements accessed, see PR103116.  Make sure we peel for
-	     gaps if necessary and sufficient and give up if not.
-
-	     If there is a combination of the access not covering the full
-	     vector and a gap recorded then we may need to peel twice.  */
-	  if (loop_vinfo
-	      && *memory_access_type == VMAT_CONTIGUOUS
-	      && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
-	      && !multiple_p (group_size * LOOP_VINFO_VECT_FACTOR (loop_vinfo),
-			      nunits))
-	    {
-	      unsigned HOST_WIDE_INT cnunits, cvf;
-	      if (!can_overrun_p
-		  || !nunits.is_constant (&cnunits)
-		  || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&cvf)
-		  /* Peeling for gaps assumes that a single scalar iteration
-		     is enough to make sure the last vector iteration doesn't
-		     access excess elements.
-		     ???  Enhancements include peeling multiple iterations
-		     or using masked loads with a static mask.  */
-		  || (group_size * cvf) % cnunits + group_size - gap < cnunits)
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "peeling for gaps insufficient for "
-				     "access\n");
-		  return false;
-		}
-	      overrun_p = true;
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "peeling for gaps insufficient for "
+				 "access\n");
+	      return false;
 	    }
 
 	  /* If this is single-element interleaving with an element
