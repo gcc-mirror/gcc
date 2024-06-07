@@ -1,3 +1,12 @@
+2024-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114493
+	* gcc.dg/pr114493-1.c: New test.
+	* gcc.dg/pr114493-2.c: New test.
+
 2024-06-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.target/i386/avx10_1-25.c: Require ifunc support.

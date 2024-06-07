@@ -1,3 +1,13 @@
+2024-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114493
+	* c-decl.cc (c_fixup_may_alias): New function.
+	(finish_struct): Call it if "may_alias" attribute is
+	specified.
+
 2024-05-07  Release Manager
 
 	* GCC 14.1.0 released.

@@ -1,3 +1,11 @@
+2024-06-06  Richard Ball  <richard.ball@arm.com>
+
+	Backported from master:
+	2024-06-06  Richard Ball  <richard.ball@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_define_unconditional_macros):
+	Add missing __ARM_NEON_SVE_BRIDGE.
+
 2024-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
