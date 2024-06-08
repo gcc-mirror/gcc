@@ -1771,7 +1771,7 @@ FP_ASM_SPEC "\
 /* When in 64-bit mode, move insns will sign extend SImode and CCmode
    moves.  All other references are zero extended.  */
 #define LOAD_EXTEND_OP(MODE) \
-  (TARGET_64BIT && ((MODE) == SImode || (MODE) == CCmode) \
+  (TARGET_64BIT && ((MODE) == SImode || (MODE) == CCmode || (MODE) == CCEmode) \
    ? SIGN_EXTEND : ZERO_EXTEND)
 
 /* Define this macro if it is advisable to hold scalars in registers

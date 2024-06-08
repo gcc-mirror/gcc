@@ -5659,7 +5659,7 @@ mips_allocate_fcc (machine_mode mode)
 
   gcc_assert (TARGET_HARD_FLOAT && ISA_HAS_8CC);
 
-  if (mode == CCmode)
+  if (mode == CCmode || mode == CCEmode)
     count = 1;
   else if (mode == CCV2mode)
     count = 2;
@@ -5788,17 +5788,57 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
 	  /* Three FP conditions cannot be implemented by reversing the
 	     operands for C.cond.fmt, instead a reversed condition code is
 	     required and a test for false.  */
+	  machine_mode ccmode = CCmode;
+	  switch (*code)
+	    {
+	    case LTGT:
+	    case LT:
+	    case LE:
+	      ccmode = CCEmode;
+	      break;
+	    default:
+	      break;
+	    }
 	  *code = mips_reversed_fp_cond (&cmp_code) ? EQ : NE;
 	  if (ISA_HAS_8CC)
-	    *op0 = mips_allocate_fcc (CCmode);
+	    *op0 = mips_allocate_fcc (ccmode);
 	  else
-	    *op0 = gen_rtx_REG (CCmode, FPSW_REGNUM);
+	    *op0 = gen_rtx_REG (ccmode, FPSW_REGNUM);
 	}
 
       *op1 = const0_rtx;
       mips_emit_binary (cmp_code, *op0, cmp_op0, cmp_op1);
     }
 }
+
+
+const char *
+mips_output_compare (const char *fpcmp, const char *fcond,
+			const char *fmt, const char *fpcc_mode, bool swap)
+{
+  const char *fc = fcond;
+
+  if (ISA_HAS_CCF)
+    {
+      /* c.lt.fmt is signaling, while cmp.lt.fmt is quiet.  */
+      if (strcmp (fcond, "lt") == 0)
+	fc = "slt";
+      else if (strcmp (fcond, "le") == 0)
+	fc = "sle";
+    }
+  else if (strcmp (fpcc_mode, "cce") == 0)
+    {
+      /* It was LTGT, while we have only inverse one.  It was then converted
+	 to UNEQ by mips_reversed_fp_cond, and we used CCEmode to mark it.
+	 Lets convert it back to ngl now.  */
+      if (strcmp (fcond, "ueq") == 0)
+	fc = "ngl";
+    }
+  if (swap)
+    return concat(fpcmp, ".", fc, ".", fmt, "\t%Z0%2,%1", NULL);
+  return concat(fpcmp, ".", fc, ".", fmt, "\t%Z0%1,%2", NULL);
+}
+
 
 /* Try performing the comparison in OPERANDS[1], whose arms are OPERANDS[2]
    and OPERAND[3].  Store the result in OPERANDS[0].
@@ -13142,7 +13182,7 @@ mips_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
 	    && ST_REG_P (regno)
 	    && (regno - ST_REG_FIRST) % 4 == 0);
 
-  if (mode == CCmode)
+  if (mode == CCmode || mode == CCEmode)
     return ISA_HAS_8CC ? ST_REG_P (regno) : regno == FPSW_REGNUM;
 
   size = GET_MODE_SIZE (mode);
