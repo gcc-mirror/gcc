@@ -543,6 +543,13 @@ BUILTIN_VDQ_BHSI (uhadd, uavg, _floor, 0)
 VAR1 (float_extend_lo_, extend, v2sf, v2df)
 VAR1 (float_extend_lo_, extend, v4hf, v4sf)
 
+/* __builtin_aarch64_float_truncate_lo_<mode> should be expanded through the
+   standard optabs CODE_FOR_trunc<Vwide><mode>2. */
+constexpr insn_code CODE_FOR_aarch64_float_truncate_lo_v4hf
+    = CODE_FOR_truncv4sfv4hf2;
+constexpr insn_code CODE_FOR_aarch64_float_truncate_lo_v2sf
+    = CODE_FOR_truncv2dfv2sf2;
+
 #undef VAR1
 #define VAR1(T, N, MAP, FLAG, A) \
   {#N #A, UP (A), CF##MAP (N, A), 0, TYPES_##T, FLAG_##FLAG},
