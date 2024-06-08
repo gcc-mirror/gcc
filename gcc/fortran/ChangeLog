@@ -1,3 +1,22 @@
+2024-06-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/90068
+	* trans-array.cc (gfc_trans_array_ctor_element): Eval non-
+	variable expressions once only.
+	(gfc_trans_array_constructor_value): Add statements of
+	final block.
+	(trans_array_constructor): Detect when final block is required.
+
+2024-06-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/90072
+	* expr.cc (gfc_is_alloc_class_scalar_function): Detect
+	allocatable class return types also for user-defined
+	functions.
+	* trans-expr.cc (gfc_conv_procedure_call): Same.
+	(trans_class_vptr_len_assignment): Compute vptr len
+	assignment correctly for user-defined functions.
+
 2024-06-05  Jakub Jelinek  <jakub@redhat.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

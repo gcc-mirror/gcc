@@ -1,3 +1,28 @@
+2024-06-07  Simon Martin  <simon@nasilyan.com>
+
+	* lto-partition.cc: Define INCLUDE_VECTOR to avoid running into
+	poisoned identifiers.
+
+2024-06-07  Michal Jires  <mjires@suse.cz>
+
+	* lto-partition.cc (new_partition): Use new_partition_no_push.
+	(new_partition_no_push): New.
+	(free_ltrans_partition): New.
+	(free_ltrans_partitions): Use free_ltrans_partition.
+	(join_partitions): New.
+	(split_partition_into_nodes): New.
+	(is_partition_reorder): New.
+	(class partition_set): New.
+	(distribute_n_partitions): New.
+	(partition_over_target_split): New.
+	(partition_binary_split): New.
+	(partition_fixed_split): New.
+	(class partitioner_base): New.
+	(class partitioner_default): New.
+	(lto_cache_map): New.
+	* lto-partition.h (lto_cache_map): New.
+	* lto.cc (do_whole_program_analysis): Use lto_cache_map.
+
 2024-06-06  Michal Jires  <mjires@suse.cz>
 
 	* lto-common.cc (lto_section_with_id): Dont load suffix during LTRANS.

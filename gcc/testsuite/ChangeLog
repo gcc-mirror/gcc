@@ -1,3 +1,143 @@
+2024-06-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/taint-alloc-4.c: Update expected result to
+	reflect change in message due to
+	region_model::get_representative_path_var_1 now handling RK_CAST.
+
+2024-06-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105892
+	* c-c++-common/analyzer/out-of-bounds-pr110387.c: Add
+	expected warnings about pointer subtraction.
+	* c-c++-common/analyzer/ptr-subtraction-1.c: New test.
+	* c-c++-common/analyzer/ptr-subtraction-CWE-469-example.c: New test.
+
+2024-06-07  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/107575
+	* g++.dg/parse/crash74.C: New test.
+
+2024-06-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/dashinclude-1_b.C: New test.
+	* g++.dg/modules/dashinclude-1_a.H: New test.
+
+2024-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115378
+	* g++.dg/cpp1y/decltype-auto-103497.C: Adjust expected diagnostic.
+	* g++.dg/template/pr95672.C: Likewise.
+	* g++.dg/cpp2a/lambda-targ5.C: New test.
+
+2024-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/115351
+	* g++.target/i386/pr115351.C: New test case.
+
+2024-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-vpternlogd-1.c: Update test case.
+	* gcc.target/i386/avx512f-vpternlogq-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vpternlogd-1.c: Likewise.
+	* gcc.target/i386/avx512vl-vpternlogq-1.c: Likewise.
+	* gcc.target/i386/pr100711-4.c: Likewise.
+	* gcc.target/i386/pr100711-5.c: Likewise.
+	* gcc.target/i386/avx512f-vpternlogd-3.c: New 128-bit test case.
+	* gcc.target/i386/avx512f-vpternlogd-4.c: New 256-bit test case.
+	* gcc.target/i386/avx512f-vpternlogd-5.c: New 512-bit test case.
+	* gcc.target/i386/avx512f-vpternlogq-3.c: New test case.
+
+2024-06-07  Michal Jires  <mjires@suse.cz>
+
+	* gcc.dg/completion-2.c: Add -flto-partition=cache.
+
+2024-06-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/90068
+	* gfortran.dg/finalize_57.f90: New test.
+
+2024-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115352
+	* gcc.dg/torture/bitint-71.c: New test.
+
+2024-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR go/87589
+	* go.test/go-test.exp (go-gc-tests): Require split-stack support
+	for index0.go.
+
+2024-06-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/90072
+	* gfortran.dg/class_77.f90: New test.
+
+2024-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.dg/vect/pr112325.c:Add additional option --param
+	max-completely-peeled-insns=200 for power64*-*-*.
+
+2024-06-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test macro for form 5.
+	* gcc.target/riscv/sat_u_add-21.c: New test.
+	* gcc.target/riscv/sat_u_add-22.c: New test.
+	* gcc.target/riscv/sat_u_add-23.c: New test.
+	* gcc.target/riscv/sat_u_add-24.c: New test.
+	* gcc.target/riscv/sat_u_add-run-21.c: New test.
+	* gcc.target/riscv/sat_u_add-run-22.c: New test.
+	* gcc.target/riscv/sat_u_add-run-23.c: New test.
+	* gcc.target/riscv/sat_u_add-run-24.c: New test.
+
+2024-06-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test macro for form 4.
+	* gcc.target/riscv/sat_u_add-17.c: New test.
+	* gcc.target/riscv/sat_u_add-18.c: New test.
+	* gcc.target/riscv/sat_u_add-19.c: New test.
+	* gcc.target/riscv/sat_u_add-20.c: New test.
+	* gcc.target/riscv/sat_u_add-run-17.c: New test.
+	* gcc.target/riscv/sat_u_add-run-18.c: New test.
+	* gcc.target/riscv/sat_u_add-run-19.c: New test.
+	* gcc.target/riscv/sat_u_add-run-20.c: New test.
+
+2024-06-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test macro for form 3.
+	* gcc.target/riscv/sat_u_add-13.c: New test.
+	* gcc.target/riscv/sat_u_add-14.c: New test.
+	* gcc.target/riscv/sat_u_add-15.c: New test.
+	* gcc.target/riscv/sat_u_add-16.c: New test.
+	* gcc.target/riscv/sat_u_add-run-13.c: New test.
+	* gcc.target/riscv/sat_u_add-run-14.c: New test.
+	* gcc.target/riscv/sat_u_add-run-15.c: New test.
+	* gcc.target/riscv/sat_u_add-run-16.c: New test.
+
+2024-06-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test macro for form 2.
+	* gcc.target/riscv/sat_u_add-10.c: New test.
+	* gcc.target/riscv/sat_u_add-11.c: New test.
+	* gcc.target/riscv/sat_u_add-12.c: New test.
+	* gcc.target/riscv/sat_u_add-9.c: New test.
+	* gcc.target/riscv/sat_u_add-run-10.c: New test.
+	* gcc.target/riscv/sat_u_add-run-11.c: New test.
+	* gcc.target/riscv/sat_u_add-run-12.c: New test.
+	* gcc.target/riscv/sat_u_add-run-9.c: New test.
+
+2024-06-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for form 1.
+	* gcc.target/riscv/sat_u_add-5.c: New test.
+	* gcc.target/riscv/sat_u_add-6.c: New test.
+	* gcc.target/riscv/sat_u_add-7.c: New test.
+	* gcc.target/riscv/sat_u_add-8.c: New test.
+	* gcc.target/riscv/sat_u_add-run-5.c: New test.
+	* gcc.target/riscv/sat_u_add-run-6.c: New test.
+	* gcc.target/riscv/sat_u_add-run-7.c: New test.
+	* gcc.target/riscv/sat_u_add-run-8.c: New test.
+
 2024-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/114493

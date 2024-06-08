@@ -1,3 +1,8 @@
+2024-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gospec.cc (lang_specific_driver) [TARGET_SOLARIS !USE_GLD]: Only
+	add -t if linking.
+
 2024-05-26  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gccgo.texi (Top): Move a web reference from golang.org to go.dev.

@@ -1,3 +1,7 @@
+2024-06-07  Jason Merrill  <jason@redhat.com>
+
+	* files.cc (_cpp_stack_file): LC_ENTER for -include header unit.
+
 2024-05-29  Jason Merrill  <jason@redhat.com>
 
 	* mkdeps.cc (make_write): Change .c++m to .c++-module.

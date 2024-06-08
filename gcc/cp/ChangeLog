@@ -1,3 +1,23 @@
+2024-06-07  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/107575
+	* decl.cc (duplicate_decls): Check for error_mark_node
+	DECL_LOCAL_DECL_ALIAS.
+
+2024-06-07  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (maybe_translate_include): Allow before the main file.
+
+2024-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115378
+	* lambda.cc (lambda_capture_field_type): Set
+	TEMPLATE_TYPE_PARAMETER_PACK on the auto type of an init-capture
+	pack expansion.
+	* pt.cc (find_parameter_packs_r) <case TEMPLATE_TYPE_PARM>:
+	Restrict TEMPLATE_TYPE_PARAMETER_PACK promotion with
+	flag_concepts_ts.
+
 2024-06-05  Jakub Jelinek  <jakub@redhat.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

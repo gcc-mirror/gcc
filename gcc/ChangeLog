@@ -1,3 +1,82 @@
+2024-06-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi: Add -Wanalyzer-undefined-behavior-ptrdiff.
+
+2024-06-07  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (C++ Modules): Mention -include.
+
+2024-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/115351
+	* config/i386/i386.cc (ix86_rtx_costs): Provide estimates for
+	the *concatditi3 and *insvti_highpart patterns, about two insns.
+
+2024-06-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Call
+	fixup_modeless_constant before testing predicates.  Only call
+	copy_to_mode_reg on memory operands (after the first one).
+	(ix86_gen_bcst_mem): Helper function to convert a CONST_VECTOR
+	into a VEC_DUPLICATE if possible.
+	(ix86_ternlog_idx):  Convert an RTX expression into a ternlog
+	index between 0 and 255, recording the operands in ARGS, if
+	possible or return -1 if this is not possible/valid.
+	(ix86_ternlog_leaf_p): Helper function to identify "leaves"
+	of a ternlog expression, e.g. REG_P, MEM_P, CONST_VECTOR, etc.
+	(ix86_ternlog_operand_p): Test whether a expression is suitable
+	for and prefered as an UNSPEC_TERNLOG.
+	(ix86_expand_ternlog_binop): Helper function to construct the
+	binary operation corresponding to a sufficiently simple ternlog.
+	(ix86_expand_ternlog_andnot): Helper function to construct a
+	ANDN operation corresponding to a sufficiently simple ternlog.
+	(ix86_expand_ternlog): Expand a 3-operand ternary logic
+	expression, constructing either an UNSPEC_TERNLOG or simpler
+	rtx expression.  Called from builtin expanders and pre-reload
+	splitters.
+	* config/i386/i386-protos.h (ix86_ternlog_idx): Prototype here.
+	(ix86_ternlog_operand_p): Likewise.
+	(ix86_expand_ternlog): Likewise.
+	* config/i386/predicates.md (ternlog_operand): New predicate
+	that calls xi86_ternlog_operand_p.
+	* config/i386/sse.md (<avx512>_vpternlog<mode>_0): New
+	define_insn_and_split that recognizes a SET_SRC of ternlog_operand
+	and expands it via ix86_expand_ternlog pre-reload.
+	(<avx512>_vternlog<mode>_mask): Convert from define_insn to
+	define_expand.  Use ix86_expand_ternlog if the mask operand is
+	~0 (or 255 or -1).
+	(*<avx512>_vternlog<mode>_mask): define_insn renamed from above.
+
+2024-06-07  Michal Jires  <mjires@suse.cz>
+
+	* common.opt: Add cache partitioning.
+	* flag-types.h (enum lto_partition_model): Likewise.
+
+2024-06-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorize_fold_left_reduction): Fix
+	mask vector operand indexing.
+
+2024-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115352
+	* gimple-lower-bitint.cc (lower_addsub_overflow): Don't disable
+	single_comparison if cmp_code is GE_EXPR.
+
+2024-06-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* target.def (call_offset_return_label): New hook.
+	* doc/tm.texi.in (TARGET_CALL_OFFSET_RETURN_LABEL): Add
+	placeholder.
+	* doc/tm.texi: Rebuild.
+	* dwarf2out.cc (struct call_arg_loc_node): Record call_insn
+	instead of call_arg_loc_note.
+	(add_AT_lbl_id): Add optional offset argument.
+	(gen_call_site_die): Compute and pass on a return pc offset.
+	(gen_subprogram_die): Move call_arg_loc_note computation...
+	(dwarf2out_var_location): ... from here.  Set call_insn.
+
 2024-06-06  Pan Li  <pan2.li@intel.com>
 
 	* doc/match-and-simplify.texi: Add doc for the matching flag '^'.

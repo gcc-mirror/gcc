@@ -1,3 +1,10 @@
+2024-06-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def (darwin_stdint_7, darwin_dispatch_object_1,
+	darwin_os_trace_2, darwin_os_base_1): Include bypasses
+	for recent headers, fixed by Apple.
+
 2024-05-07  Zac Walker  <zacwalker@microsoft.com>
 
 	* mkfixinc.sh: Extend for *-mingw32* targets.
