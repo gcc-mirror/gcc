@@ -1176,7 +1176,7 @@ equiv_class::make_dump_widget (const text_art::dump_widget_info &dwi,
       ec_widget->add_child (tree_widget::make (dwi, &pp));
     }
 
-  return ec_widget;
+  return std::move (ec_widget);
 }
 
 /* Generate a hash value for this equiv_class.
@@ -1500,7 +1500,7 @@ make_dump_widget (const text_art::dump_widget_info &dwi) const
     (tree_widget::from_fmt (dwi, nullptr,
 			    "ec%i bounded ranges", m_ec_id.as_int ()));
   m_ranges->add_to_dump_widget (*brc_widget.get (), dwi);
-  return brc_widget;
+  return std::move (brc_widget);
 }
 
 bool
@@ -1853,7 +1853,7 @@ constraint_manager::make_dump_widget (const text_art::dump_widget_info &dwi) con
   if (cm_widget->get_num_children () == 0)
     return nullptr;
 
-  return cm_widget;
+  return std::move (cm_widget);
 }
 
 /* Attempt to add the constraint LHS OP RHS to this constraint_manager.

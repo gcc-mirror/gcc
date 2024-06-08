@@ -1101,7 +1101,7 @@ region::make_dump_widget (const text_art::dump_widget_info &dwi,
   if (m_parent)
     w->add_child (m_parent->make_dump_widget (dwi, "parent"));
 
-  return w;
+  return std::move (w);
 }
 
 void

@@ -252,7 +252,7 @@ svalue::make_dump_widget (const text_art::dump_widget_info &dwi,
 
   add_dump_widget_children (*w, dwi);
 
-  return w;
+  return std::move (w);
 }
 
 /* If this svalue is a constant_svalue, return the underlying tree constant.

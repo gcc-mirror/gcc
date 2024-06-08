@@ -1489,7 +1489,7 @@ binding_cluster::make_dump_widget (const text_art::dump_widget_info &dwi,
 
       m_map.add_to_tree_widget (*cluster_widget, dwi);
 
-      return cluster_widget;
+      return std::move (cluster_widget);
     }
 }
 
@@ -2769,7 +2769,7 @@ store::make_dump_widget (const text_art::dump_widget_info &dwi,
       store_widget->add_child (std::move (parent_reg_widget));
     }
 
-  return store_widget;
+  return std::move (store_widget);
 }
 
 /* Get any svalue bound to REG, or NULL.  */

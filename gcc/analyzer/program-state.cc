@@ -382,7 +382,7 @@ sm_state_map::make_dump_widget (const text_art::dump_widget_info &dwi,
       state_widget->add_child (tree_widget::make (dwi, pp));
     }
 
-  return state_widget;
+  return std::move (state_widget);
 }
 
 /* Return true if no states have been set within this map
@@ -1247,7 +1247,7 @@ program_state::make_dump_widget (const text_art::dump_widget_info &dwi) const
 	state_widget->add_child (smap->make_dump_widget (dwi, m_region_model));
   }
 
-  return state_widget;
+  return std::move (state_widget);
 }
 
 /* Update this program_state to reflect a top-level call to FUN.

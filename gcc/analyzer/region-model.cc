@@ -288,7 +288,7 @@ make_dump_widget (const text_art::dump_widget_info &dwi) const
       sval->dump_to_pp (pp, true);
       w->add_child (text_art::tree_widget::make (dwi, pp));
     }
-  return w;
+  return std::move (w);
 }
 
 /* Attempt to merge THIS with OTHER, writing the result
@@ -556,7 +556,7 @@ region_model::make_dump_widget (const text_art::dump_widget_info &dwi) const
 			       m_mgr->get_store_manager ()));
   model_widget->add_child (m_constraints->make_dump_widget (dwi));
   model_widget->add_child (m_dynamic_extents.make_dump_widget (dwi));
-  return model_widget;
+  return std::move (model_widget);
 }
 
 /* Assert that this object is valid.  */
