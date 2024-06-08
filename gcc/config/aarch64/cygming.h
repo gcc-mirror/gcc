@@ -51,10 +51,6 @@ still needed for compilation.  */
 #include <stdio.h>
 #endif
 
-extern void mingw_pe_asm_named_section (const char *, unsigned int, tree);
-extern void mingw_pe_declare_function_type (FILE *file, const char *name,
-	int pub);
-
 #define TARGET_ASM_NAMED_SECTION  mingw_pe_asm_named_section
 
 /* Select attributes for named sections.  */
