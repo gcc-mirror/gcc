@@ -1,3 +1,21 @@
+2024-06-07  Richard Ball  <richard.ball@arm.com>
+
+	Backported from master:
+	2024-06-06  Richard Ball  <richard.ball@arm.com>
+
+	PR target/115353
+	* config/arm/arm.h (enum arm_auto_incmodes):
+	Correct CASE_VECTOR_SHORTEN_MODE query.
+
+2024-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115352
+	* gimple-lower-bitint.cc (lower_addsub_overflow): Don't disable
+	single_comparison if cmp_code is GE_EXPR.
+
 2024-06-06  Richard Ball  <richard.ball@arm.com>
 
 	Backported from master:

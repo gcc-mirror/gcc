@@ -1,3 +1,18 @@
+2024-06-07  Richard Ball  <richard.ball@arm.com>
+
+	Backported from master:
+	2024-06-06  Richard Ball  <richard.ball@arm.com>
+
+	* gcc.target/arm/thumb2-switchstatement.c: New test.
+
+2024-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115352
+	* gcc.dg/torture/bitint-71.c: New test.
+
 2024-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
