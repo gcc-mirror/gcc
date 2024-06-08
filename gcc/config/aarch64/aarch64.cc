@@ -860,6 +860,10 @@ static const attribute_spec aarch64_gnu_attributes[] =
   { "Advanced SIMD type", 1, 1, false, true,  false, true,  NULL, NULL },
   { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
   { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL },
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
+  { "dllimport", 0, 0, false, false, false, false, handle_dll_attribute, NULL },
+  { "dllexport", 0, 0, false, false, false, false, handle_dll_attribute, NULL },
+#endif
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
   SUBTARGET_ATTRIBUTE_TABLE
 #endif
@@ -2865,6 +2869,15 @@ static void
 aarch64_load_symref_appropriately (rtx dest, rtx imm,
 				   enum aarch64_symbol_type type)
 {
+#if TARGET_PECOFF
+  rtx tmp = legitimize_pe_coff_symbol (imm, true);
+  if (tmp)
+    {
+      emit_insn (gen_rtx_SET (dest, tmp));
+      return;
+    }
+#endif
+
   switch (type)
     {
     case SYMBOL_SMALL_ABSOLUTE:
@@ -11233,6 +11246,13 @@ aarch64_expand_call (rtx result, rtx mem, rtx cookie, bool sibcall)
 
   gcc_assert (MEM_P (mem));
   callee = XEXP (mem, 0);
+
+#if TARGET_PECOFF
+  tmp = legitimize_pe_coff_symbol (callee, false);
+  if (tmp)
+    callee = tmp;
+#endif
+
   mode = GET_MODE (callee);
   gcc_assert (mode == Pmode);
 
@@ -12709,6 +12729,12 @@ aarch64_anchor_offset (HOST_WIDE_INT offset, HOST_WIDE_INT size,
 static rtx
 aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
 {
+#if TARGET_PECOFF
+  rtx tmp = legitimize_pe_coff_symbol (x, true);
+  if (tmp)
+    return tmp;
+#endif
+
   /* Try to split X+CONST into Y=X+(CONST & ~mask), Y+(CONST&mask),
      where mask is selected by alignment and size of the offset.
      We try to pick as large a range for the offset as possible to

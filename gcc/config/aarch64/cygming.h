@@ -28,11 +28,17 @@ along with GCC; see the file COPYING3.  If not see
 
 #define print_reg(rtx, code, file) (gcc_unreachable ())
 
-#define SYMBOL_FLAG_DLLIMPORT 0
-#define SYMBOL_FLAG_DLLEXPORT 0
+#define SYMBOL_FLAG_DLLIMPORT		(SYMBOL_FLAG_MACH_DEP << 0)
+#define SYMBOL_REF_DLLIMPORT_P(X) \
+	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_DLLIMPORT) != 0)
 
+#define SYMBOL_FLAG_DLLEXPORT		(SYMBOL_FLAG_MACH_DEP << 1)
 #define SYMBOL_REF_DLLEXPORT_P(X) \
 	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_DLLEXPORT) != 0)
+
+#define SYMBOL_FLAG_STUBVAR	(SYMBOL_FLAG_MACH_DEP << 2)
+#define SYMBOL_REF_STUBVAR_P(X) \
+	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_STUBVAR) != 0)
 
 /* Disable SEH and declare the required SEH-related macros that are
 still needed for compilation.  */
@@ -58,6 +64,12 @@ still needed for compilation.  */
 
 #define TARGET_ASM_UNIQUE_SECTION mingw_pe_unique_section
 #define TARGET_ENCODE_SECTION_INFO  mingw_pe_encode_section_info
+
+#define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P mingw_pe_valid_dllimport_attribute_p
+
+/* Output function declarations at the end of the file.  */
+#undef TARGET_ASM_FILE_END
+#define TARGET_ASM_FILE_END mingw_pe_file_end
 
 /* Declare the type properly for any external libcall.  */
 #define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN) \
@@ -158,6 +170,9 @@ still needed for compilation.  */
   { "selectany", 0, 0, true, false, false, false, \
     mingw_handle_selectany_attribute, NULL }
 
+#undef SUB_TARGET_RECORD_STUB
+#define SUB_TARGET_RECORD_STUB mingw_pe_record_stub
+
 #define SUPPORTS_ONE_ONLY 1
 
 /* Define this to be nonzero if static stack checking is supported.  */
@@ -167,5 +182,12 @@ still needed for compilation.  */
 
 #undef MAX_OFILE_ALIGNMENT
 #define MAX_OFILE_ALIGNMENT (8192 * 8)
+
+#undef GOT_ALIAS_SET
+#define GOT_ALIAS_SET mingw_GOT_alias_set ()
+
+#define PE_COFF_EXTERN_DECL_SHOULD_BE_LEGITIMIZED 1
+
+#define HAVE_64BIT_POINTERS 1
 
 #endif
