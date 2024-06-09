@@ -2423,7 +2423,7 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value,
   struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS];
   machine_mode mode;
   int i, num_ops;
-  rtx x;
+  rtx x = NULL_RTX;
 
   mode = GET_MODE (dest);
   /* We use the original mode for the riscv_build_integer call, because HImode
