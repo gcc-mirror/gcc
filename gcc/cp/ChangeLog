@@ -1,3 +1,10 @@
+2024-06-08  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/108438
+	* parser.cc (cp_parser_postfix_expression): Use
+	cp_parser_require_end_of_template_parameter_list to skip to the closing
+	'>' upon error parsing the target type of *_cast<*> expressions.
+
 2024-06-07  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/107575

@@ -1,3 +1,30 @@
+2024-06-08  Deev Patel  <dkp10000@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_impl::__clear_padding):
+	Add missing constexpr specifier.
+	* testsuite/29_atomics/atomic_float/constinit.cc: New test.
+
+2024-06-08  Michael Levine  <mlevine55@bloomberg.net>
+
+	PR libstdc++/108760
+	* include/bits/ranges_algo.h (ranges::out_value_result):
+	Move to <bits/ranges_algobase.h>.
+	(ranges::iota_result, ranges::__iota_fn, ranges::iota): Move to
+	<numeric>.
+	* include/bits/ranges_algobase.h (ranges::out_value_result):
+	Move to here.
+	* include/std/numeric (ranges::iota_result, ranges::__iota_fn)
+	(ranges::iota): Move to here.
+	* testsuite/25_algorithms/iota/1.cc: Renamed to ...
+	* testsuite/26_numerics/iota/2.cc: ... here.
+
+2024-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/algorithm: Define __glibcxx_want_ranges.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Check
+	feature test macro in C++20 mode.
+
 2024-06-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ranges_algobase.h: Include <bits/stl_algobase.h>.

@@ -1,3 +1,18 @@
+2024-06-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* constraint-manager.cc (equiv_class::make_dump_widget): Use
+	std::move to return a std::unique_ptr.
+	(bounded_ranges_constraint::make_dump_widget): Likewise.
+	(constraint_manager::make_dump_widget): Likewise.
+	* program-state.cc (sm_state_map::make_dump_widget): Likewise.
+	(program_state::make_dump_widget): Likewise.
+	* region-model.cc (region_to_value_map::make_dump_widget): Likewise.
+	(region_model::make_dump_widget): Likewise.
+	* region.cc (region::make_dump_widget): Likewise.
+	* store.cc (binding_cluster::make_dump_widget): Likewise.
+	(store::make_dump_widget): Likewise.
+	* svalue.cc (svalue::make_dump_widget): Likewise.
+
 2024-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (impl_region_model_context::on_state_leak): Pass nullptr

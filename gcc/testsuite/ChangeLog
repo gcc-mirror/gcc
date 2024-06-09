@@ -1,3 +1,33 @@
+2024-06-08  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/108438
+	* g++.dg/parse/crash75.C: New test.
+
+2024-06-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112600
+	* gcc.target/i386/pr112600-a.c: New test.
+
+2024-06-08  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add test macros and comments.
+	* gcc.target/riscv/sat_u_sub-1.c: New test.
+	* gcc.target/riscv/sat_u_sub-2.c: New test.
+	* gcc.target/riscv/sat_u_sub-3.c: New test.
+	* gcc.target/riscv/sat_u_sub-4.c: New test.
+	* gcc.target/riscv/sat_u_sub-5.c: New test.
+	* gcc.target/riscv/sat_u_sub-6.c: New test.
+	* gcc.target/riscv/sat_u_sub-7.c: New test.
+	* gcc.target/riscv/sat_u_sub-8.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-1.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-2.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-3.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-4.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-5.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-6.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-7.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-8.c: New test.
+
 2024-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/taint-alloc-4.c: Update expected result to

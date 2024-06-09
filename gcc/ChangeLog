@@ -1,3 +1,21 @@
+2024-06-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Update comment.
+
+2024-06-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112600
+	* config/i386/i386.md (usadd<mode>3): New expander.
+	(x86_mov<mode>cc_0_m1_neg): Use SWI mode iterator.
+
+2024-06-08  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-protos.h (riscv_expand_ussub): Add new func
+	decl for ussub expanding.
+	* config/riscv/riscv.cc (riscv_expand_ussub): Ditto but for impl.
+	* config/riscv/riscv.md (ussub<mode>3): Add new pattern ussub
+	for scalar modes.
+
 2024-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/invoke.texi: Add -Wanalyzer-undefined-behavior-ptrdiff.
