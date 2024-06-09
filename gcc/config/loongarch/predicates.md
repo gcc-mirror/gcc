@@ -293,6 +293,10 @@
   (and (match_code "const_int")
        (match_test "low_bitmask_len (mode, INTVAL (op)) > 12")))
 
+(define_predicate "high_bitmask_operand"
+  (and (match_code "const_int")
+       (match_test "low_bitmask_len (mode, ~INTVAL (op)) > 0")))
+
 (define_predicate "d_operand"
   (and (match_code "reg")
        (match_test "GP_REG_P (REGNO (op))")))
