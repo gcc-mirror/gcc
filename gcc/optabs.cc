@@ -566,8 +566,8 @@ expand_subword_shift (scalar_int_mode op1_mode, optab binoptab,
       if (tmp == 0)
 	return false;
 
-      /* Now OR in the bits carried over from OUTOF_INPUT.  */
-      if (!force_expand_binop (word_mode, ior_optab, tmp, carries,
+      /* Now OR/PLUS in the bits carried over from OUTOF_INPUT.  */
+      if (!force_expand_binop (word_mode, add_optab, tmp, carries,
 			       into_target, unsignedp, methods))
 	return false;
     }
@@ -1937,7 +1937,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 				     NULL_RTX, unsignedp, next_methods);
 
 	  if (into_temp1 != 0 && into_temp2 != 0)
-	    inter = expand_binop (word_mode, ior_optab, into_temp1, into_temp2,
+	    inter = expand_binop (word_mode, add_optab, into_temp1, into_temp2,
 				  into_target, unsignedp, next_methods);
 	  else
 	    inter = 0;
@@ -1953,7 +1953,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 				      NULL_RTX, unsignedp, next_methods);
 
 	  if (inter != 0 && outof_temp1 != 0 && outof_temp2 != 0)
-	    inter = expand_binop (word_mode, ior_optab,
+	    inter = expand_binop (word_mode, add_optab,
 				  outof_temp1, outof_temp2,
 				  outof_target, unsignedp, next_methods);
 

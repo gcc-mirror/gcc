@@ -2616,10 +2616,11 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
 	  else if (methods == OPTAB_LIB_WIDEN)
 	    {
 	      /* If we have been unable to open-code this by a rotation,
-		 do it as the IOR of two shifts.  I.e., to rotate A
-		 by N bits, compute
+		 do it as the IOR or PLUS of two shifts.  I.e., to rotate
+		 A by N bits, compute
 		 (A << N) | ((unsigned) A >> ((-N) & (C - 1)))
-		 where C is the bitsize of A.
+		 where C is the bitsize of A.  If N cannot be zero,
+		 use PLUS instead of IOR.
 
 		 It is theoretically possible that the target machine might
 		 not be able to perform either shift and hence we would
@@ -2656,8 +2657,9 @@ expand_shift_1 (enum tree_code code, machine_mode mode, rtx shifted,
 	      temp1 = expand_shift_1 (left ? RSHIFT_EXPR : LSHIFT_EXPR,
 				      mode, shifted, other_amount,
 				      subtarget, 1);
-	      return expand_binop (mode, ior_optab, temp, temp1, target,
-				   unsignedp, methods);
+	      return expand_binop (mode,
+				   CONST_INT_P (op1) ? add_optab : ior_optab,
+				   temp, temp1, target, unsignedp, methods);
 	    }
 
 	  temp = expand_binop (mode,
