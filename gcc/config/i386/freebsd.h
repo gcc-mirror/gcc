@@ -80,6 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef	LINK_SPEC
 #define LINK_SPEC "\
   %{p:%nconsider using '-pg' instead of '-p' with gprof(1)} \
+  " FBSD_LINK_PG_NOTE " \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
   %{shared:-Bshareable %{h*} %{soname*}} \
