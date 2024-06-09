@@ -112,6 +112,7 @@ extern int dot_symbols;
 
 #define LINK_OS_FREEBSD_SPEC_DEF "\
   %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
+  " FBSD_LINK_PG_NOTE " \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
   %{shared:-Bshareable %{h*} %{soname*}} \

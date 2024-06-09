@@ -92,19 +92,29 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    libc, depending on whether we're doing profiling or need threads support.
    (similar to the default, except no -lg, and no -p).  */
 
+#if FBSD_MAJOR < 14
+#define FBSD_LINK_PG_NOTHREADS	"%{!pg: -lc}  %{pg: -lc_p}"
+#define FBSD_LINK_PG_THREADS	"%{!pg: %{pthread:-lpthread} -lc} " 	\
+				"%{pg: %{pthread:-lpthread} -lc_p}"
+#define FBSD_LINK_PG_NOTE ""
+#else
+#define FBSD_LINK_PG_NOTHREADS "%{-lc} "
+#define FBSD_LINK_PG_THREADS   "%{pthread:-lpthread} -lc "
+#define FBSD_LINK_PG_NOTE "%{pg:%nFreeBSD no longer provides profiled "\
+			  "system libraries}"
+#endif
+
 #ifdef FBSD_NO_THREADS
 #define FBSD_LIB_SPEC "							\
   %{pthread: %eThe -pthread option is only supported on FreeBSD when gcc \
 is built with the --enable-threads configure-time option.}		\
   %{!shared:								\
-    %{!pg: -lc}								\
-    %{pg:  -lc_p}							\
+    " FBSD_LINK_PG_NOTHREADS "						\
   }"
 #else
 #define FBSD_LIB_SPEC "							\
   %{!shared:								\
-    %{!pg: %{pthread:-lpthread} -lc}					\
-    %{pg:  %{pthread:-lpthread_p} -lc_p}				\
+    " FBSD_LINK_PG_THREADS "						\
   }									\
   %{shared:								\
     %{pthread:-lpthread} -lc						\
