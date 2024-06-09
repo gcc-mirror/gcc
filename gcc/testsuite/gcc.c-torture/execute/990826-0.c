@@ -11,6 +11,8 @@ X-UIDL: 9c1e40c572e3b306464f703461764cd5
 #include <stdio.h>
 #include <math.h>
 
+void abort (void);
+
 int
 main()
 {

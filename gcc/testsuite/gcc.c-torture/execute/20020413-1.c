@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 void test(long double val, int *eval)
 {
   long double tmp = 1.0l;

@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32" } */
+/* { dg-options "-mrvv-vector-bits=scalable -march=rv32gcv -mabi=ilp32" } */
+// PR113249
+/* { dg-additional-options "-fno-schedule-insns -fno-schedule-insns2" } */
 
 #include "riscv_vector.h"
 
@@ -16,5 +18,5 @@ void f (void * restrict in, void * restrict out, int n)
     }
 }
 
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e16,\s*mf2,\s*t[au],\s*m[au]} 1 { target { no-opts "-O0"  no-opts "-O1"  no-opts "-Os" no-opts "-Oz" no-opts "-flto" no-opts "-g" no-opts "-funroll-loops" } } } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e32,\s*mf2,\s*t[au],\s*m[au]} 2 { target { no-opts "-O0"  no-opts "-O1"  no-opts "-Os" no-opts "-Oz" no-opts "-flto" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e16,\s*mf2,\s*t[au],\s*m[au]} 2 { target { no-opts "-O0"  no-opts "-O1"  no-opts "-Os" no-opts "-Oz" no-opts "-flto" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e32,\s*mf2,\s*t[au],\s*m[au]} 3 { target { no-opts "-O0"  no-opts "-O1"  no-opts "-Os" no-opts "-Oz" no-opts "-flto" no-opts "-g" no-opts "-funroll-loops" } } } } */

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -42,10 +42,14 @@ public:
   };
 
   static CoercionResult Coerce (TyTy::BaseType *receiver,
-				TyTy::BaseType *expected, Location locus);
+				TyTy::BaseType *expected, location_t locus,
+				bool allow_autoderef,
+				bool is_cast_site = false);
 
   static CoercionResult TryCoerce (TyTy::BaseType *receiver,
-				   TyTy::BaseType *expected, Location locus);
+				   TyTy::BaseType *expected, location_t locus,
+				   bool allow_autoderef,
+				   bool is_cast_site = false);
 
   CoercionResult coerce_unsafe_ptr (TyTy::BaseType *receiver,
 				    TyTy::PointerType *expected,
@@ -61,15 +65,17 @@ public:
   static bool coerceable_mutability (Mutability from_mutbl,
 				     Mutability to_mutbl);
 
-  void mismatched_mutability_error (Location expr_locus, Location lhs,
-				    Location rhs);
-  void object_unsafe_error (Location expr_locus, Location lhs, Location rhs);
+  void mismatched_mutability_error (location_t expr_locus, location_t lhs,
+				    location_t rhs);
+  void object_unsafe_error (location_t expr_locus, location_t lhs,
+			    location_t rhs);
 
 protected:
-  TypeCoercionRules (TyTy::BaseType *expected, Location locus,
-		     bool emit_errors);
+  TypeCoercionRules (TyTy::BaseType *expected, location_t locus,
+		     bool emit_errors, bool allow_autoderef, bool try_flag,
+		     bool is_cast_site);
 
-  bool select (const TyTy::BaseType &autoderefed) override;
+  bool select (TyTy::BaseType &autoderefed) override;
 
   bool do_coercion (TyTy::BaseType *receiver);
 
@@ -80,11 +86,13 @@ private:
 
   // search
   TyTy::BaseType *expected;
-  Location locus;
+  location_t locus;
 
   // mutable fields
   CoercionResult try_result;
   bool emit_errors;
+  bool try_flag;
+  bool is_cast_site;
 };
 
 } // namespace Resolver

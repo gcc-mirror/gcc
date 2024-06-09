@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv64gcv_zvfh -mabi=lp64d --param riscv-autovec-preference=scalable -fno-vect-cost-model" } */
+/* { dg-additional-options "-march=rv64gcv_zvfh -mabi=lp64d -mrvv-vector-bits=scalable -fno-vect-cost-model" } */
 
 #include <stdint-gcc.h>
 
@@ -41,3 +41,5 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tvnot\.v\tv[0-9]+,v[0-9]+,v0\.t} 4 } } */
 /* { dg-final { scan-assembler-times {\tvfabs\.v\tv[0-9]+,v[0-9]+,v0\.t} 3 } } */
 /* { dg-final { scan-assembler-times {\tvfneg\.v\tv[0-9]+,v[0-9]+,v0\.t} 3 } } */
+/* NOTE: int abs operator cannot combine the vmerge.  */
+/* { dg-final { scan-assembler-times {\tvf?merge\.v[vxi]m\t} 4 } } */

@@ -5,17 +5,17 @@
 /* Test to make sure unrelated arguments and comparisons
    don't get optimized incorrectly. */
 
-unsigned short test_bswap16(unsigned short x, unsigned short y)
+__UINT16_TYPE__ test_bswap16(__UINT16_TYPE__ x, __UINT16_TYPE__ y)
 {
   return x ? __builtin_bswap16(y) : 0;
 }
 
-unsigned int test_bswap32(unsigned int x, unsigned int y)
+__UINT32_TYPE__ test_bswap32(__UINT32_TYPE__ x, __UINT32_TYPE__ y)
 {
   return x ? __builtin_bswap32(y) : 0;
 }
 
-unsigned long long test_bswap64(unsigned long long x, unsigned long long y)
+__UINT64_TYPE__ test_bswap64(__UINT64_TYPE__ x, __UINT64_TYPE__ y)
 {
   return x ? __builtin_bswap64(y) : 0;
 }

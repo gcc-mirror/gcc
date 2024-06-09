@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@
 with Ada.Unchecked_Conversion;
 
 with System.OS_Interface;
+with System.OS_Locks;
 
 package System.Task_Primitives is
    pragma Preelaborate;
@@ -44,14 +45,10 @@ package System.Task_Primitives is
    type Lock_Ptr is access all Lock;
    --  Should be used for implementation of protected objects
 
-   type RTS_Lock is limited private;
-   type RTS_Lock_Ptr is access all RTS_Lock;
-   --  Should be used inside the runtime system. The difference between Lock
-   --  and the RTS_Lock is that the later one serves only as a semaphore so
-   --  that do not check for ceiling violations.
-
    function To_Lock_Ptr is
-     new Ada.Unchecked_Conversion (RTS_Lock_Ptr, Lock_Ptr);
+     new Ada.Unchecked_Conversion (OS_Locks.RTS_Lock_Ptr, Lock_Ptr);
+   function To_RTS_Lock_Ptr is
+     new Ada.Unchecked_Conversion (Lock_Ptr, OS_Locks.RTS_Lock_Ptr);
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control
@@ -74,31 +71,7 @@ package System.Task_Primitives is
 
 private
 
-   type Private_Task_Serial_Number is mod 2 ** Long_Long_Integer'Size;
-   --  Used to give each task a unique serial number
-
-   type Base_Lock is new System.OS_Interface.mutex_t;
-
-   type Owner_Int is new Integer;
-   for Owner_Int'Alignment use Standard'Maximum_Alignment;
-
-   type Owner_ID is access all Owner_Int;
-
-   function To_Owner_ID is
-     new Ada.Unchecked_Conversion (System.Address, Owner_ID);
-
-   type Lock is record
-      L              : aliased Base_Lock;
-      Ceiling        : System.Any_Priority := System.Any_Priority'First;
-      Saved_Priority : System.Any_Priority := System.Any_Priority'First;
-      Owner          : Owner_ID;
-      Next           : Lock_Ptr;
-      Level          : Private_Task_Serial_Number := 0;
-      Buddy          : Owner_ID;
-      Frozen         : Boolean := False;
-   end record;
-
-   type RTS_Lock is new Lock;
+   type Lock is new OS_Locks.RTS_Lock;
 
    type Suspension_Object is record
       State : Boolean;
@@ -122,18 +95,24 @@ private
 
    type Private_Data is limited record
       Thread : aliased System.OS_Interface.thread_t;
-      pragma Atomic (Thread);
-      --  Thread field may be updated by two different threads of control.
-      --  (See, Enter_Task and Create_Task in s-taprop.adb). They put the same
-      --  value (thr_self value). We do not want to use lock on those
-      --  operations and the only thing we have to make sure is that they are
-      --  updated in atomic fashion.
+      --  This component is written to once before concurrent access to it is
+      --  possible, and then remains constant. The place where it is written to
+      --  depends on how the enclosing ATCB comes into existence:
+      --
+      --  1. For the environment task, the component is set in
+      --     System.Task_Primitive.Operations.Initialize.
+      --  2. For foreign threads, it happens in
+      --     System.Task_Primitives.Operations.Register_Foreign_Thread.
+      --  3. For others tasks, it's in
+      --     System.Task_Primitives.Operations.Create_Task.
 
       LWP : System.OS_Interface.lwpid_t;
       --  The LWP id of the thread. Set by self in Enter_Task
 
       CV : aliased System.OS_Interface.cond_t;
-      L  : aliased RTS_Lock;
+      --  Condition variable used to queue threads until condition is signaled
+
+      L  : aliased System.OS_Locks.RTS_Lock;
       --  Protection for all components is lock L
 
       Active_Priority : System.Any_Priority := System.Any_Priority'First;

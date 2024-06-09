@@ -1,5 +1,5 @@
 /* Data structure for the modref pass.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by David Cepelik and Jan Hubicka
 
 This file is part of GCC.

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long
 f (long x)
 {
@@ -25,7 +28,8 @@ long nums[] =
   -1L, 0x7fffffffL, -0x7fffffffL - 1L
 };
 
-main ()
+int
+main (void)
 {
   int i;
 

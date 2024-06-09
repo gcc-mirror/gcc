@@ -1,6 +1,6 @@
 /* PR target/106550 */
 /* { dg-options "-O2 -mdejagnu-cpu=power10" } */
-/* { dg-require-effective-target power10_ok } */
+/* { dg-require-effective-target has_arch_ppc64 } */
 
 void
 foo (unsigned long long *a)

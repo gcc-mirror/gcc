@@ -1,6 +1,6 @@
 /* Utility functions for reading gcda files into in-memory
    gcov_info structures and offline profile processing. */
-/* Copyright (C) 2014-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2024 Free Software Foundation, Inc.
    Contributed by Rong Xu <xur@google.com>.
 
 This file is part of GCC.
@@ -211,8 +211,8 @@ tag_counters (unsigned tag, int length)
   gcc_assert (k_ctrs[tag_ix].num == 0);
   k_ctrs[tag_ix].num = n_counts;
 
-  k_ctrs[tag_ix].values = values = (gcov_type *) xcalloc (sizeof (gcov_type),
-							  n_counts);
+  k_ctrs[tag_ix].values = values = (gcov_type *) xcalloc (n_counts,
+							  sizeof (gcov_type));
   gcc_assert (values);
 
   if (length > 0)
@@ -526,7 +526,7 @@ topn_to_memory_representation (struct gcov_ctr_info *info)
       if (n > 0)
 	{
 	  struct gcov_kvp *tuples
-	    = (struct gcov_kvp *)xcalloc (sizeof (struct gcov_kvp), n);
+	    = (struct gcov_kvp *)xcalloc (n, sizeof (struct gcov_kvp));
 	  for (unsigned i = 0; i < n - 1; i++)
 	    tuples[i].next = &tuples[i + 1];
 	  for (unsigned i = 0; i < n; i++)

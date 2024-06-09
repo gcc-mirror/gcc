@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -248,7 +248,7 @@ package body Clean is
                      for J in ALIs.Table (The_ALI).First_Sdep ..
                        ALIs.Table (The_ALI).Last_Sdep
                      loop
-                        if Sdep.Table (J).Subunit_Name /= No_Name then
+                        if Sdep.Table (J).Subunit_Name /= No_Unit_Name then
                            Sources.Increment_Last;
                            Sources.Table (Sources.Last) :=
                              Sdep.Table (J).Sfile;

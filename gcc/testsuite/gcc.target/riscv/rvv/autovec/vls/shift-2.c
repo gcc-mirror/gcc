@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvfh_zvl4096b -mabi=lp64d -O3 -fno-schedule-insns -fno-schedule-insns2 --param=riscv-autovec-lmul=m8" } */
+/* { dg-options "-march=rv64gcv_zvfh_zvl4096b -mabi=lp64d -O3 -fno-schedule-insns -fno-schedule-insns2 -mrvv-max-lmul=m8" } */
 
 #include "def.h"
 
@@ -53,5 +53,5 @@ DEF_OP_VV (shift, 128, uint64_t, >>)
 DEF_OP_VV (shift, 256, uint64_t, >>)
 DEF_OP_VV (shift, 512, uint64_t, >>)
 
-/* { dg-final { scan-assembler-times {vsrl\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 39 } } */
+/* { dg-final { scan-assembler-times {vsrl\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+} 19 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */

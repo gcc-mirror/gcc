@@ -1,6 +1,6 @@
 (* M2Code.mod coordinate the activity of the front end.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -23,10 +23,12 @@ IMPLEMENTATION MODULE M2Code ;
 
 
 FROM SYSTEM IMPORT WORD ;
-FROM M2Options IMPORT Statistics, DisplayQuadruples, OptimizeUncalledProcedures,
-                      (* OptimizeDynamic, *) OptimizeCommonSubExpressions,
-                      StyleChecking, Optimizing, WholeProgram ;
+FROM M2Options IMPORT Statistics, OptimizeUncalledProcedures,
+                      OptimizeCommonSubExpressions,
+                      StyleChecking, Optimizing, WholeProgram,
+                      GetDumpDecl, GetDumpGimple ;
 
+FROM M2LangDump IMPORT CreateDumpDecl, CloseDumpDecl, MakeGimpleTemplate ;
 FROM M2Error IMPORT InternalError ;
 FROM M2Students IMPORT StudentVariableCheck ;
 
@@ -41,7 +43,8 @@ FROM M2Printf IMPORT printf2, printf1, printf0 ;
 FROM NameKey IMPORT Name ;
 FROM M2Batch IMPORT ForeachSourceModuleDo ;
 
-FROM M2Quads IMPORT CountQuads, GetFirstQuad, DisplayQuadList, DisplayQuadRange,
+FROM M2Quads IMPORT CountQuads, GetFirstQuad,
+                    DumpQuadruples, DisplayQuadRange,
                     BackPatchSubrangesAndOptParam,
                     LoopAnalysis, ForLoopAnalysis, GetQuad, QuadOperator ;
 
@@ -59,9 +62,12 @@ FROM M2GenGCC IMPORT ConvertQuadsToTree ;
 
 FROM M2GCCDeclare IMPORT FoldConstants, StartDeclareScope,
                          DeclareProcedure, InitDeclarations,
-                         DeclareModuleVariables, MarkExported ;
+                         DeclareModuleVariables, MarkExported,
+                         DumpFilteredResolver, DumpFilteredDefinitive ;
 
-FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBlockDo ;
+FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock,
+                    ForeachScopeBlockDo2, ForeachScopeBlockDo3 ;
+
 FROM m2top IMPORT StartGlobalContext, EndGlobalContext, SetFlagUnitAtATime ;
 FROM M2Error IMPORT FlushErrors, FlushWarnings ;
 FROM M2Swig IMPORT GenerateSwigFile ;
@@ -69,12 +75,14 @@ FROM m2flex IMPORT GetTotalLines ;
 FROM FIO IMPORT FlushBuffer, StdOut ;
 FROM M2Quiet IMPORT qprintf0 ;
 FROM M2SSA IMPORT DiscoverSSA ;
+FROM m2pp IMPORT CreateDumpGimple, CloseDumpGimple ;
+FROM DynamicStrings IMPORT String, KillString ;
 
 
 CONST
-   MaxOptimTimes = 10 ;   (* upper limit of no of times we run through all optimization *)
-   Debugging     = TRUE ;
-
+   MaxOptimTimes   = 10 ;   (* upper limit of no of times we run through all optimization *)
+   Debugging       = TRUE ;
+   TraceQuadruples = FALSE ;
 
 VAR
    Total,
@@ -137,11 +145,7 @@ BEGIN
       printf1 ('Total source lines compiled    : %6d\n', Count) ;
       FlushBuffer (StdOut)
    END ;
-   IF DisplayQuadruples
-   THEN
-      printf0 ('after all front end optimization\n') ;
-      DisplayQuadList
-   END
+   DumpQuadruples ('after all front end optimization\n')
 END OptimizationAnalysis ;
 
 
@@ -167,11 +171,23 @@ END RemoveUnreachableCode ;
 
 PROCEDURE DoModuleDeclare ;
 BEGIN
+   IF GetDumpDecl ()
+   THEN
+      CreateDumpDecl ("symbol resolver of filtered symbols\n") ;
+      DumpFilteredResolver
+   END ;
    IF WholeProgram
    THEN
       ForeachSourceModuleDo (StartDeclareScope)
    ELSE
       StartDeclareScope (GetMainModule ())
+   END ;
+   IF GetDumpDecl ()
+   THEN
+      CloseDumpDecl ;
+      CreateDumpDecl ("definitive declaration of filtered symbols\n") ;
+      DumpFilteredDefinitive ;
+      CloseDumpDecl
    END
 END DoModuleDeclare ;
 
@@ -196,11 +212,17 @@ END PrintModule ;
 *)
 
 PROCEDURE DoCodeBlock ;
+VAR
+   filename: String ;
+   len     : CARDINAL ;
 BEGIN
-   IF WholeProgram
+   IF GetDumpGimple ()
    THEN
-      (* ForeachSourceModuleDo(PrintModule) ; *)
-      CodeBlock (GetMainModule ())
+      filename := MakeGimpleTemplate (len) ;
+      CreateDumpGimple (filename, len) ;
+      filename := KillString (filename) ;
+      CodeBlock (GetMainModule ()) ;
+      CloseDumpGimple
    ELSE
       CodeBlock (GetMainModule ())
    END
@@ -229,6 +251,7 @@ END DetermineSubExpTemporaries ;
 
 PROCEDURE Code ;
 BEGIN
+   DumpQuadruples ('before any optimization\n') ;
    CheckHiddenTypeAreAddress ;
    SetPassToNoPass ;
    BackPatchSubrangesAndOptParam ;
@@ -236,11 +259,7 @@ BEGIN
 
    ForLoopAnalysis ;   (* must be done before any optimization as the index variable increment quad might change *)
 
-   IF DisplayQuadruples
-   THEN
-      printf0 ('before any optimization\n') ;
-      DisplayQuadList
-   END ;
+   DumpQuadruples ('before declaring symbols to gcc\n') ;
 
    (* now is a suitable time to check for student errors as *)
    (* we know all the front end symbols must be resolved.   *)
@@ -256,20 +275,9 @@ BEGIN
    InitDeclarations ;     (* default and fixed sized types are all declared from now on.  *)
 
    RemoveUnreachableCode ;
-
-   IF DisplayQuadruples
-   THEN
-      printf0 ('after dead procedure elimination\n') ;
-      DisplayQuadList
-   END ;
-
+   DumpQuadruples ('after dead procedure elimination\n') ;
    DetermineSubExpTemporaries ;
-
-   IF DisplayQuadruples
-   THEN
-      printf0 ('after identifying simple subexpression temporaries\n') ;
-      DisplayQuadList
-   END ;
+   DumpQuadruples ('after identifying simple subexpression temporaries\n') ;
 
    qprintf0 ('        symbols to gcc trees\n') ;
    DoModuleDeclare ;
@@ -376,20 +384,6 @@ END Init ;
 
 
 (*
-   DisplayQuadsInScope -
-*)
-
-(*
-PROCEDURE DisplayQuadsInScope (sb: ScopeBlock) ;
-BEGIN
-   printf0 ('Quads in scope\n') ;
-   ForeachScopeBlockDo (sb, DisplayQuadRange) ;
-   printf0 ('===============\n')
-END DisplayQuadsInScope ;
-*)
-
-
-(*
    OptimizeScopeBlock -
 *)
 
@@ -402,31 +396,16 @@ BEGIN
    InitOptimizeVariables ;
    OptimTimes := 1 ;
    Current := CountQuads () ;
-   ForeachScopeBlockDo (sb, InitialDeclareAndOptimize) ;
-   ForeachScopeBlockDo (sb, ScopeBlockVariableAnalysis) ;
+   ForeachScopeBlockDo3 (sb, InitialDeclareAndOptimize) ;
+   ForeachScopeBlockDo3 (sb, ScopeBlockVariableAnalysis) ;
    REPEAT
-      ForeachScopeBlockDo (sb, SecondDeclareAndOptimize) ;
+      ForeachScopeBlockDo3 (sb, SecondDeclareAndOptimize) ;
       Previous := Current ;
       Current := CountQuads () ;
       INC (OptimTimes)
    UNTIL (OptimTimes=MaxOptimTimes) OR (Current=Previous) ;
-   ForeachScopeBlockDo (sb, LoopAnalysis)
+   ForeachScopeBlockDo3 (sb, LoopAnalysis)
 END OptimizeScopeBlock ;
-
-
-(*
-   DisplayQuadNumbers - the range, start..end.
-*)
-
-(*
-PROCEDURE DisplayQuadNumbers (start, end: CARDINAL) ;
-BEGIN
-   IF DisplayQuadruples
-   THEN
-      printf2 ('Coding [%d..%d]\n', start, end)
-   END
-END DisplayQuadNumbers ;
-*)
 
 
 (*
@@ -463,7 +442,7 @@ VAR
    sb: ScopeBlock ;
    n : Name ;
 BEGIN
-   IF DisplayQuadruples
+   IF TraceQuadruples
    THEN
       n := GetSymName (scope) ;
       printf1 ('before coding block %a\n', n)
@@ -472,34 +451,34 @@ BEGIN
    OptimizeScopeBlock (sb) ;
    IF IsProcedure (scope)
    THEN
-      IF DisplayQuadruples
+      IF TraceQuadruples
       THEN
          n := GetSymName(scope) ;
          printf1('before coding procedure %a\n', n) ;
-         ForeachScopeBlockDo(sb, DisplayQuadRange) ;
+         ForeachScopeBlockDo3 (sb, DisplayQuadRange) ;
          printf0('===============\n')
       END ;
-      ForeachScopeBlockDo(sb, ConvertQuadsToTree)
+      ForeachScopeBlockDo2 (sb, ConvertQuadsToTree)
    ELSIF IsModuleWithinProcedure(scope)
    THEN
-      IF DisplayQuadruples
+      IF TraceQuadruples
       THEN
          n := GetSymName(scope) ;
          printf1('before coding module %a within procedure\n', n) ;
-         ForeachScopeBlockDo(sb, DisplayQuadRange) ;
+         ForeachScopeBlockDo3 (sb, DisplayQuadRange) ;
          printf0('===============\n')
       END ;
-      ForeachScopeBlockDo(sb, ConvertQuadsToTree) ;
+      ForeachScopeBlockDo2 (sb, ConvertQuadsToTree) ;
       ForeachProcedureDo(scope, CodeBlock)
    ELSE
-      IF DisplayQuadruples
+      IF TraceQuadruples
       THEN
          n := GetSymName(scope) ;
          printf1('before coding module %a\n', n) ;
-         ForeachScopeBlockDo(sb, DisplayQuadRange) ;
+         ForeachScopeBlockDo3 (sb, DisplayQuadRange) ;
          printf0('===============\n')
       END ;
-      ForeachScopeBlockDo(sb, ConvertQuadsToTree) ;
+      ForeachScopeBlockDo2 (sb, ConvertQuadsToTree) ;
       IF WholeProgram
       THEN
          ForeachSourceModuleDo(CodeProcedures)

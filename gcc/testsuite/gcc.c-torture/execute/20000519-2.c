@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 long x = -1L;
 
 int main()

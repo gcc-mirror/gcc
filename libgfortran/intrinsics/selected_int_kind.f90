@@ -1,4 +1,4 @@
-!   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+!   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 !   Contributed by Kejia Zhao <kejia_zh@yahoo.com.cn>
 !
 !This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -24,7 +24,7 @@
 
 function _gfortran_selected_int_kind (r)
   implicit none
-  integer, intent (in) :: r
+  integer, intent(in) :: r
   integer :: _gfortran_selected_int_kind
   integer :: i
   ! Integer kind_range table
@@ -36,11 +36,37 @@ function _gfortran_selected_int_kind (r)
   include "selected_int_kind.inc"
 
   do i = 1, c
-    if (r <= int_infos (i) % range) then
-      _gfortran_selected_int_kind = int_infos (i) % kind
+    if (r <= int_infos(i)%range) then
+      _gfortran_selected_int_kind = int_infos(i)%kind
       return
     end if
   end do
   _gfortran_selected_int_kind = -1
+  return
+end function
+
+
+! At this time, our logical and integer kinds are the same
+
+function _gfortran_selected_logical_kind (bits)
+  implicit none
+  integer, intent(in) :: bits
+  integer :: _gfortran_selected_logical_kind
+  integer :: i
+  ! Integer kind_range table
+  type :: int_info
+    integer :: kind
+    integer :: range
+  end type int_info
+
+  include "selected_int_kind.inc"
+
+  do i = 1, c
+    if (bits <= 8 * int_infos(i)%kind) then
+      _gfortran_selected_logical_kind = int_infos(i)%kind
+      return
+    end if
+  end do
+  _gfortran_selected_logical_kind = -1
   return
 end function

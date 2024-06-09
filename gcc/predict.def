@@ -1,5 +1,5 @@
 /* Definitions for the branch prediction routines in the GNU compiler.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -93,6 +93,16 @@ DEF_PREDICTOR (PRED_LOOP_ITERATIONS_GUESSED, "guessed loop iterations",
 /* Use number of loop iterations guessed by the contents of the loop.  */
 DEF_PREDICTOR (PRED_LOOP_ITERATIONS_MAX, "guessed loop iterations",
 	       PROB_UNINITIALIZED, PRED_FLAG_FIRST_MATCH)
+
+/* Prediction which is an outcome of combining multiple value predictions.  */
+DEF_PREDICTOR (PRED_COMBINED_VALUE_PREDICTIONS,
+	       "combined value predictions", PROB_UNINITIALIZED, 0)
+
+/* Prediction which is an outcome of combining multiple value predictions
+   on PHI statement (this is less accurate since we do not know reverse
+   edge probabilities at that time).  */
+DEF_PREDICTOR (PRED_COMBINED_VALUE_PREDICTIONS_PHI,
+	       "combined value predictions", PROB_UNINITIALIZED, 0)
 
 /* Branch containing goto is probably not taken.  */
 DEF_PREDICTOR (PRED_CONTINUE, "continue", HITRATE (67), 0)

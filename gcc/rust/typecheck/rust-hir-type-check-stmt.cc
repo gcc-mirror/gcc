@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -17,13 +17,12 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-stmt.h"
-#include "rust-hir-full.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
-#include "rust-hir-type-check-enumitem.h"
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-pattern.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {
@@ -37,15 +36,9 @@ TypeCheckStmt::Resolve (HIR::Stmt *stmt)
 }
 
 void
-TypeCheckStmt::visit (HIR::ExprStmtWithBlock &stmt)
+TypeCheckStmt::visit (HIR::ExprStmt &stmt)
 {
-  infered = TypeCheckExpr::Resolve (stmt.get_expr ());
-}
-
-void
-TypeCheckStmt::visit (HIR::ExprStmtWithoutBlock &stmt)
-{
-  infered = TypeCheckExpr::Resolve (stmt.get_expr ());
+  infered = TypeCheckExpr::Resolve (stmt.get_expr ().get ());
 }
 
 void
@@ -66,8 +59,9 @@ TypeCheckStmt::visit (HIR::ExternBlock &extern_block)
 void
 TypeCheckStmt::visit (HIR::ConstantItem &constant)
 {
-  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
-  TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
+  TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ().get ());
+  TyTy::BaseType *expr_type
+    = TypeCheckExpr::Resolve (constant.get_expr ().get ());
 
   infered = coercion_site (
     constant.get_mappings ().get_hirid (),
@@ -84,23 +78,23 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
 
   HIR::Pattern &stmt_pattern = *stmt.get_pattern ();
   TyTy::BaseType *init_expr_ty = nullptr;
-  Location init_expr_locus;
+  location_t init_expr_locus = UNKNOWN_LOCATION;
   if (stmt.has_init_expr ())
     {
       init_expr_locus = stmt.get_init_expr ()->get_locus ();
-      init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ());
+      init_expr_ty = TypeCheckExpr::Resolve (stmt.get_init_expr ().get ());
       if (init_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
 	return;
 
       init_expr_ty->append_reference (
-	stmt_pattern.get_pattern_mappings ().get_hirid ());
+	stmt_pattern.get_mappings ().get_hirid ());
     }
 
   TyTy::BaseType *specified_ty = nullptr;
-  Location specified_ty_locus;
+  location_t specified_ty_locus;
   if (stmt.has_type ())
     {
-      specified_ty = TypeCheckType::Resolve (stmt.get_type ());
+      specified_ty = TypeCheckType::Resolve (stmt.get_type ().get ());
       specified_ty_locus = stmt.get_type ()->get_locus ();
     }
 
@@ -128,11 +122,12 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
       // let x;
       else
 	{
-	  TypeCheckPattern::Resolve (
-	    &stmt_pattern,
-	    new TyTy::InferType (
-	      stmt_pattern.get_pattern_mappings ().get_hirid (),
-	      TyTy::InferType::InferTypeKind::GENERAL, stmt.get_locus ()));
+	  auto infer
+	    = new TyTy::InferType (stmt_pattern.get_mappings ().get_hirid (),
+				   TyTy::InferType::InferTypeKind::GENERAL,
+				   TyTy::InferType::TypeHint::Default (),
+				   stmt.get_locus ());
+	  TypeCheckPattern::Resolve (&stmt_pattern, infer);
 	}
     }
 }

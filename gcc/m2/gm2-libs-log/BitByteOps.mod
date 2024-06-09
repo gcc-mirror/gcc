@@ -1,6 +1,6 @@
 (* BitByteOps.mod provides a Logitech-3.0 compatible library.
 
-Copyright (C) 2007-2023 Free Software Foundation, Inc.
+Copyright (C) 2007-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE BitByteOps ;
 
-FROM SYSTEM IMPORT BYTE, ADR, SHIFT, ROTATE, TSIZE, BITSET8, CARDINAL8 ;
+FROM SYSTEM IMPORT ADR, SHIFT, ROTATE, TSIZE, BITSET8, CARDINAL8 ;
 
 
 (*

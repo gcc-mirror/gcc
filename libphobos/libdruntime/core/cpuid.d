@@ -628,16 +628,17 @@ void getAMDcacheinfo()
 
     if (max_extended_cpuid >= 0x8000_0006) {
         // AMD K6-III or K6-2+ or later.
-        ubyte numcores = 1;
+        uint numcores = 1;
         if (max_extended_cpuid >= 0x8000_0008) {
+            // read the number of physical cores (minus 1) from the 8 lowest ECX bits
             version (GNU_OR_LDC) asm pure nothrow @nogc {
                 "cpuid" : "=a" (dummy), "=c" (numcores) : "a" (0x8000_0008) : "ebx", "edx";
             } else asm pure nothrow @nogc {
                 mov EAX, 0x8000_0008;
                 cpuid;
-                mov numcores, CL;
+                mov numcores, ECX;
             }
-            ++numcores;
+            numcores = (numcores & 0xFF) + 1;
             if (numcores>cpuFeatures.maxCores) cpuFeatures.maxCores = numcores;
         }
 
@@ -666,10 +667,12 @@ void getAMDcacheinfo()
 // to determine number of processors.
 void getCpuInfo0B()
 {
-    int level=0;
     int threadsPerCore;
     uint a, b, c, d;
-    do {
+    // I'm not sure about this. The docs state that there
+    // are 2 hyperthreads per core if HT is factory enabled.
+    for (int level = 0; level < 2; level++)
+    {
         version (GNU_OR_LDC) asm pure nothrow @nogc {
             "cpuid" : "=a" (a), "=b" (b), "=c" (c), "=d" (d) : "a" (0x0B), "c" (level);
         } else asm pure nothrow @nogc {
@@ -681,19 +684,20 @@ void getCpuInfo0B()
             mov c, ECX;
             mov d, EDX;
         }
-        if (b!=0) {
-           // I'm not sure about this. The docs state that there
-           // are 2 hyperthreads per core if HT is factory enabled.
-            if (level==0)
+        if (b != 0)
+        {
+            if (level == 0)
                 threadsPerCore = b & 0xFFFF;
-            else if (level==1) {
+            else if (level == 1)
+            {
                 cpuFeatures.maxThreads = b & 0xFFFF;
                 cpuFeatures.maxCores = cpuFeatures.maxThreads / threadsPerCore;
             }
-
         }
-        ++level;
-    } while (a!=0 || b!=0);
+        // Got "invalid domain" returned from cpuid
+        if (a == 0 && b == 0)
+            break;
+    }
 }
 
 void cpuidX86()

@@ -1,4 +1,4 @@
 /* { dg-do compile } */
-/* { dg-skip-if "test rvv intrinsic" { *-*-* } { "*" } { "-march=rv*v*" } } */
+/* { dg-skip-if "test rvv intrinsic" { ! riscv_v } } */
 
 #pragma riscv intrinsic "report-error" /* { dg-error {unknown '#pragma riscv intrinsic' option 'report-error'} } */

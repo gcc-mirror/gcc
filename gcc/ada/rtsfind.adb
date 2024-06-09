@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,6 +47,7 @@ with Restrict;       use Restrict;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch12;        use Sem_Ch12;
 with Sem_Dist;       use Sem_Dist;
 with Sem_Util;       use Sem_Util;
 with Sinfo;          use Sinfo;
@@ -1185,7 +1186,13 @@ package body Rtsfind is
 
             else
                Save_Private_Visibility;
-               Semantics (Cunit (U.Unum));
+               declare
+                  Saved_Instance_Context : constant Instance_Context.Context
+                    := Instance_Context.Save_And_Reset;
+               begin
+                  Semantics (Cunit (U.Unum));
+                  Instance_Context.Restore (Saved_Instance_Context);
+               end;
                Restore_Private_Visibility;
 
                if Fatal_Error (U.Unum) = Error_Detected then

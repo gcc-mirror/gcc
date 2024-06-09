@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2019-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,9 +28,9 @@
 #ifndef _AVX512BF16VLINTRIN_H_INCLUDED
 #define _AVX512BF16VLINTRIN_H_INCLUDED
 
-#if !defined(__AVX512VL__) || !defined(__AVX512BF16__)
+#if !defined(__AVX512VL__) || !defined(__AVX512BF16__) || defined (__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("avx512bf16,avx512vl")
+#pragma GCC target("avx512bf16,avx512vl,no-evex512")
 #define __DISABLE_AVX512BF16VL__
 #endif /* __AVX512BF16__ */
 
@@ -44,6 +44,44 @@ typedef __bf16 __m256bh __attribute__ ((__vector_size__ (32), __may_alias__));
 typedef __bf16 __m128bh __attribute__ ((__vector_size__ (16), __may_alias__));
 
 typedef __bf16 __bfloat16;
+
+extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_castsi128_ps(__m128i __A)
+{
+  return (__m128) __A;
+}
+
+extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_castsi256_ps (__m256i __A)
+{
+  return (__m256) __A;
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_slli_epi32 (__m128i __A, int __B)
+{
+  return (__m128i)__builtin_ia32_pslldi128 ((__v4si)__A, __B);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_slli_epi32 (__m256i __A, int __B)
+{
+  return (__m256i)__builtin_ia32_pslldi256 ((__v8si)__A, __B);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_avx512_cvtepi16_epi32 (__m128i __X)
+{
+  return (__m128i) __builtin_ia32_pmovsxwd128 ((__v8hi)__X);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_avx512_cvtepi16_epi32 (__m128i __X)
+{
+  return (__m256i) __builtin_ia32_pmovsxwd256 ((__v8hi)__X);
+}
 
 #define _mm256_cvtneps_pbh(A) \
   (__m128bh) __builtin_ia32_cvtneps2bf16_v8sf (A)
@@ -174,7 +212,7 @@ _mm_cvtness_sbh (float __A)
 {
   __v4sf __V = {__A, 0, 0, 0};
   __v8bf __R = __builtin_ia32_cvtneps2bf16_v4sf_mask ((__v4sf)__V,
-	       (__v8bf)_mm_undefined_si128 (), (__mmask8)-1);
+	       (__v8bf)_mm_avx512_undefined_si128 (), (__mmask8)-1);
   return __R[0];
 }
 
@@ -182,23 +220,23 @@ extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtpbh_ps (__m128bh __A)
 {
-  return (__m128)_mm_castsi128_ps ((__m128i)_mm_slli_epi32 (
-	 (__m128i)_mm_cvtepi16_epi32 ((__m128i)__A), 16));
+  return (__m128)_mm_avx512_castsi128_ps ((__m128i)_mm_avx512_slli_epi32 (
+	 (__m128i)_mm_avx512_cvtepi16_epi32 ((__m128i)__A), 16));
 }
 
 extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_cvtpbh_ps (__m128bh __A)
 {
-  return (__m256)_mm256_castsi256_ps ((__m256i)_mm256_slli_epi32 (
-	 (__m256i)_mm256_cvtepi16_epi32 ((__m128i)__A), 16));
+  return (__m256)_mm256_avx512_castsi256_ps ((__m256i)_mm256_avx512_slli_epi32 (
+	 (__m256i)_mm256_avx512_cvtepi16_epi32 ((__m128i)__A), 16));
 }
 
 extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_cvtpbh_ps (__mmask8 __U, __m128bh __A)
 {
-  return (__m128)_mm_castsi128_ps ((__m128i)_mm_slli_epi32 (
+  return (__m128)_mm_avx512_castsi128_ps ((__m128i)_mm_avx512_slli_epi32 (
 	 (__m128i)_mm_maskz_cvtepi16_epi32 (
 	 (__mmask8)__U, (__m128i)__A), 16));
 }
@@ -207,7 +245,7 @@ extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_cvtpbh_ps (__mmask8 __U, __m128bh __A)
 {
-  return (__m256)_mm256_castsi256_ps ((__m256i)_mm256_slli_epi32 (
+  return (__m256)_mm256_avx512_castsi256_ps ((__m256i)_mm256_avx512_slli_epi32 (
 	 (__m256i)_mm256_maskz_cvtepi16_epi32 (
 	 (__mmask8)__U, (__m128i)__A), 16));
 }
@@ -216,8 +254,8 @@ extern __inline __m128
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_cvtpbh_ps (__m128 __S, __mmask8 __U, __m128bh __A)
 {
-  return (__m128)_mm_castsi128_ps ((__m128i)_mm_mask_slli_epi32 (
-	 (__m128i)__S, (__mmask8)__U, (__m128i)_mm_cvtepi16_epi32 (
+  return (__m128)_mm_avx512_castsi128_ps ((__m128i)_mm_mask_slli_epi32 (
+	 (__m128i)__S, (__mmask8)__U, (__m128i)_mm_avx512_cvtepi16_epi32 (
 	 (__m128i)__A), 16));
 }
 
@@ -225,8 +263,8 @@ extern __inline __m256
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_cvtpbh_ps (__m256 __S, __mmask8 __U, __m128bh __A)
 {
-  return (__m256)_mm256_castsi256_ps ((__m256i)_mm256_mask_slli_epi32 (
-	 (__m256i)__S, (__mmask8)__U, (__m256i)_mm256_cvtepi16_epi32 (
+  return (__m256)_mm256_avx512_castsi256_ps ((__m256i)_mm256_mask_slli_epi32 (
+	 (__m256i)__S, (__mmask8)__U, (__m256i)_mm256_avx512_cvtepi16_epi32 (
 	 (__m128i)__A), 16));
 }
 

@@ -1,9 +1,14 @@
+void abort (void);
+void exit (int);
+
+void
 f (char *x)
 {
   *x = 'x';
 }
 
-main ()
+int
+main (void)
 {
   int i;
   char x = '\0';

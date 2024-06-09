@@ -1,7 +1,11 @@
 #include <limits.h>
 
+void abort (void);
+void exit (int);
+
 int a[2];
 
+void
 f (int i)
 {
   for (; i < INT_MAX; i++)
@@ -12,7 +16,8 @@ f (int i)
     }
 }
 
-main ()
+int
+main (void)
 {
   a[0] = a[1] = 0;
   f (0);

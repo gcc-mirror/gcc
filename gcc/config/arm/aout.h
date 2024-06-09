@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for ARM with a.out
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk).
    
    This file is part of GCC.
@@ -152,7 +152,7 @@
   do							\
     {							\
       ARM_DECLARE_FUNCTION_NAME (STREAM, NAME, DECL);   \
-      ASM_OUTPUT_LABEL (STREAM, NAME);			\
+      ASM_OUTPUT_FUNCTION_LABEL (STREAM, NAME, DECL);	\
     }							\
   while (0)
 #endif
@@ -183,7 +183,28 @@
   do									\
     {									\
       if (TARGET_ARM)							\
-	asm_fprintf (STREAM, "\tb\t%LL%d\n", VALUE);			\
+	{								\
+	  switch (GET_MODE (body))					\
+	    {								\
+	    case E_QImode:						\
+	      asm_fprintf (STREAM, "\t.byte\t(%LL%d-%LLrtx%d-4)/4\n",	\
+			   VALUE, REL);					\
+	      break;							\
+	    case E_HImode:						\
+	      asm_fprintf (STREAM, "\t.2byte\t(%LL%d-%LLrtx%d-4)/4\n",	\
+			   VALUE, REL);					\
+	      break;							\
+	    case E_SImode:						\
+	      if (flag_pic)						\
+		asm_fprintf (STREAM, "\t.word\t%LL%d-%LLrtx%d-4\n",	\
+			     VALUE, REL);				\
+	      else							\
+		asm_fprintf (STREAM, "\t.word\t%LL%d\n", VALUE);	\
+	      break;							\
+	    default:							\
+	      gcc_unreachable ();					\
+	    }								\
+	}								\
       else if (TARGET_THUMB1)						\
 	{								\
 	  if (flag_pic || optimize_size)				\

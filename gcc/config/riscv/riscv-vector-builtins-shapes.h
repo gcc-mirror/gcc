@@ -1,5 +1,5 @@
 /* function_shape declaration for RISC-V 'V' Extension for GNU compiler.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by Ju-Zhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
    This file is part of GCC.
@@ -28,6 +28,8 @@ extern const function_shape *const vsetvl;
 extern const function_shape *const vsetvlmax;
 extern const function_shape *const loadstore;
 extern const function_shape *const indexed_loadstore;
+extern const function_shape *const th_loadstore_width;
+extern const function_shape *const th_indexed_loadstore_width;
 extern const function_shape *const alu;
 extern const function_shape *const alu_frm;
 extern const function_shape *const widen_alu;
@@ -41,6 +43,7 @@ extern const function_shape *const mask_alu;
 extern const function_shape *const reduc_alu;
 extern const function_shape *const reduc_alu_frm;
 extern const function_shape *const scalar_move;
+extern const function_shape *const th_extract;
 extern const function_shape *const vundefined;
 extern const function_shape *const misc;
 extern const function_shape *const vset;
@@ -52,6 +55,10 @@ extern const function_shape *const vlenb;
 extern const function_shape *const seg_loadstore;
 extern const function_shape *const seg_indexed_loadstore;
 extern const function_shape *const seg_fault_load;
+/* Below function_shape are Vectro Crypto*/
+extern const function_shape *const crypto_vv;
+extern const function_shape *const crypto_vi;
+extern const function_shape *const crypto_vv_no_op_type;
 }
 
 } // end namespace riscv_vector

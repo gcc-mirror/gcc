@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* Verify that atomic op mappings match Table A.6's recommended mapping.  */
 /* { dg-options "-O3" } */
+/* { dg-add-options riscv_a } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

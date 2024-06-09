@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -29,21 +29,21 @@ class ResolvePath : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::PathInExpression *expr);
-  static void go (AST::QualifiedPathInExpression *expr);
-  static void go (AST::SimplePath *expr);
+  static NodeId go (AST::PathInExpression *expr);
+  static NodeId go (AST::QualifiedPathInExpression *expr);
+  static NodeId go (AST::SimplePath *expr);
 
 private:
   ResolvePath ();
 
-  void resolve_path (AST::PathInExpression *expr);
-  void resolve_path (AST::QualifiedPathInExpression *expr);
-  void resolve_path (AST::SimplePath *expr);
+  NodeId resolve_path (AST::PathInExpression *expr);
+  NodeId resolve_path (AST::QualifiedPathInExpression *expr);
+  NodeId resolve_path (AST::SimplePath *expr);
 
   void
   resolve_simple_path_segments (CanonicalPath prefix, size_t offs,
 				const std::vector<AST::SimplePathSegment> &segs,
-				NodeId expr_node_id, Location expr_locus);
+				NodeId expr_node_id, location_t expr_locus);
 };
 
 } // namespace Resolver

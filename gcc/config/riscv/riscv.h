@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <stdbool.h>
 #include "config/riscv/riscv-opts.h"
 
+#define SWITCHABLE_TARGET 1
+
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS() riscv_cpu_cpp_builtins (pfile)
 
@@ -48,18 +50,21 @@ extern const char *riscv_expand_arch (int argc, const char **argv);
 extern const char *riscv_expand_arch_from_cpu (int argc, const char **argv);
 extern const char *riscv_default_mtune (int argc, const char **argv);
 extern const char *riscv_multi_lib_check (int argc, const char **argv);
+extern const char *riscv_arch_help (int argc, const char **argv);
 
 # define EXTRA_SPEC_FUNCTIONS						\
   { "riscv_expand_arch", riscv_expand_arch },				\
   { "riscv_expand_arch_from_cpu", riscv_expand_arch_from_cpu },		\
   { "riscv_default_mtune", riscv_default_mtune },			\
-  { "riscv_multi_lib_check", riscv_multi_lib_check },
+  { "riscv_multi_lib_check", riscv_multi_lib_check },			\
+  { "riscv_arch_help", riscv_arch_help },
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march or -mcpu is specified.
    --with-abi is ignored if -mabi is specified.
    --with-tune is ignored if -mtune or -mcpu is specified.
    --with-isa-spec is ignored if -misa-spec is specified.
+   --with-tls is ignored if -mtls-dialect is specified.
 
    But using default -march/-mtune value if -mcpu don't have valid option.  */
 #define OPTION_DEFAULT_SPECS \
@@ -69,8 +74,9 @@ extern const char *riscv_multi_lib_check (int argc, const char **argv);
   {"arch", "%{!march=*:"						\
 	   "  %{!mcpu=*:-march=%(VALUE)}"				\
 	   "  %{mcpu=*:%:riscv_expand_arch_from_cpu(%* %(VALUE))}}" },	\
-  {"abi", "%{!mabi=*:-mabi=%(VALUE)}" }, \
-  {"isa_spec", "%{!misa-spec=*:-misa-spec=%(VALUE)}" }, \
+  {"abi", "%{!mabi=*:-mabi=%(VALUE)}" },				\
+  {"isa_spec", "%{!misa-spec=*:-misa-spec=%(VALUE)}" },			\
+  {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},         	\
 
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
@@ -107,6 +113,9 @@ ASM_MISA_SPEC
 
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS					\
+"%{march=help:%:riscv_arch_help()} "				\
+"%{print-supported-extensions:%:riscv_arch_help()} "		\
+"%{-print-supported-extensions:%:riscv_arch_help()} "		\
 "%{march=*:%:riscv_expand_arch(%*)} "				\
 "%{!march=*:%{mcpu=*:%:riscv_expand_arch_from_cpu(%*)}} "
 
@@ -168,7 +177,7 @@ ASM_MISA_SPEC
 /* The largest type that can be passed in floating-point registers.  */
 #define UNITS_PER_FP_ARG						\
   ((riscv_abi == ABI_ILP32 || riscv_abi == ABI_ILP32E			\
-    || riscv_abi == ABI_LP64)						\
+    || riscv_abi == ABI_LP64 || riscv_abi == ABI_LP64E)			\
    ? 0 									\
    : ((riscv_abi == ABI_ILP32F || riscv_abi == ABI_LP64F) ? 4 : 8))
 
@@ -191,10 +200,15 @@ ASM_MISA_SPEC
 
 /* The smallest supported stack boundary the calling convention supports.  */
 #define STACK_BOUNDARY \
-  (riscv_abi == ABI_ILP32E ? BITS_PER_WORD : 2 * BITS_PER_WORD)
+  (riscv_abi == ABI_ILP32E || riscv_abi == ABI_LP64E \
+   ? BITS_PER_WORD \
+   : 2 * BITS_PER_WORD)
 
 /* The ABI stack alignment.  */
-#define ABI_STACK_BOUNDARY (riscv_abi == ABI_ILP32E ? BITS_PER_WORD : 128)
+#define ABI_STACK_BOUNDARY \
+  (riscv_abi == ABI_ILP32E || riscv_abi == ABI_LP64E \
+   ? BITS_PER_WORD \
+   : 128)
 
 /* There is no point aligning anything to a rounder boundary than this.  */
 #define BIGGEST_ALIGNMENT 128
@@ -301,7 +315,7 @@ ASM_MISA_SPEC
 	- FRAME_POINTER_REGNUM
    - 1 vl register
    - 1 vtype register
-   - 30 unused registers for future expansion
+   - 28 unused registers for future expansion
    - 32 vector registers  */
 
 #define FIRST_PSEUDO_REGISTER 128
@@ -310,7 +324,7 @@ ASM_MISA_SPEC
 
 #define FIXED_REGISTERS							\
 { /* General registers.  */						\
-  1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
+  1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   /* Floating-point registers.  */					\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
@@ -328,7 +342,7 @@ ASM_MISA_SPEC
 
 #define CALL_USED_REGISTERS						\
 { /* General registers.  */						\
-  1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,			\
   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,			\
   /* Floating-point registers.  */					\
   1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1,			\
@@ -372,6 +386,8 @@ ASM_MISA_SPEC
   ((unsigned int) ((int) (REGNO) - GP_REG_FIRST) < GP_REG_NUM)
 #define FP_REG_P(REGNO)  \
   ((unsigned int) ((int) (REGNO) - FP_REG_FIRST) < FP_REG_NUM)
+#define HARDFP_REG_P(REGNO)  \
+  ((REGNO) >= FP_REG_FIRST && (REGNO) <= FP_REG_LAST)
 #define V_REG_P(REGNO)  \
   ((unsigned int) ((int) (REGNO) - V_REG_FIRST) < V_REG_NUM)
 #define VL_REG_P(REGNO) ((REGNO) == VL_REGNUM)
@@ -610,6 +626,28 @@ enum reg_class
   (((VALUE) | ((1UL<<31) - IMM_REACH)) == ((1UL<<31) - IMM_REACH)	\
    || ((VALUE) | ((1UL<<31) - IMM_REACH)) + IMM_REACH == 0)
 
+/* True if a VALUE (constant) can be expressed as sum of two S12 constants
+   (in range -2048 to 2047).
+   Range check logic:
+     from: min S12 + 1 (or -1 depending on what side of zero)
+       to: two times the min S12 value (to max out S12 bits).  */
+
+#define SUM_OF_TWO_S12_N(VALUE)						\
+  (((VALUE) >= (-2048 * 2)) && ((VALUE) <= (-2048 - 1)))
+
+#define SUM_OF_TWO_S12_P(VALUE)						\
+  (((VALUE) >= (2047 + 1)) && ((VALUE) <= (2047 * 2)))
+
+#define SUM_OF_TWO_S12(VALUE)						\
+  (SUM_OF_TWO_S12_N (VALUE) || SUM_OF_TWO_S12_P (VALUE))
+
+/* Variant with first value 8 byte aligned if involving stack regs.  */
+#define SUM_OF_TWO_S12_P_ALGN(VALUE)				\
+  (((VALUE) >= (2032 + 1)) && ((VALUE) <= (2032 * 2)))
+
+#define SUM_OF_TWO_S12_ALGN(VALUE)				\
+  (SUM_OF_TWO_S12_N (VALUE) || SUM_OF_TWO_S12_P_ALGN (VALUE))
+
 /* If this is a single bit mask, then we can load it with bseti.  Special
    handling of SImode 0x80000000 on RV64 is done in riscv_build_integer_1. */
 #define SINGLE_BIT_MASK_OPERAND(VALUE)					\
@@ -624,6 +662,9 @@ enum reg_class
 #define UIMM_EXTRA_BIT_OPERAND(VALUE)					\
   (!SMALL_OPERAND (VALUE)						\
    && SMALL_OPERAND (VALUE & ~(HOST_WIDE_INT_1U << floor_log2 (VALUE))))
+
+/* True if bit BIT is set in VALUE.  */
+#define BITSET_P(VALUE, BIT) (((VALUE) & (1ULL << (BIT))) != 0)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -664,8 +705,17 @@ enum reg_class
 
 #define GP_RETURN GP_ARG_FIRST
 #define FP_RETURN (UNITS_PER_FP_ARG == 0 ? GP_RETURN : FP_ARG_FIRST)
+#define V_RETURN  V_REG_FIRST
 
-#define MAX_ARGS_IN_REGISTERS (riscv_abi == ABI_ILP32E ? 6 : 8)
+#define GP_RETURN_FIRST GP_ARG_FIRST
+#define GP_RETURN_LAST  GP_ARG_FIRST + 1
+#define FP_RETURN_FIRST FP_RETURN
+#define FP_RETURN_LAST  FP_RETURN + 1
+
+#define MAX_ARGS_IN_REGISTERS \
+  (riscv_abi == ABI_ILP32E || riscv_abi == ABI_LP64E \
+   ? 6 \
+   : 8)
 
 #define MAX_ARGS_IN_VECTOR_REGISTERS (16)
 #define MAX_ARGS_IN_MASK_REGISTERS (1)
@@ -691,8 +741,6 @@ enum reg_class
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
   riscv_function_value (VALTYPE, FUNC, VOIDmode)
-
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN)
 
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  */
@@ -720,8 +768,6 @@ typedef struct {
 
   /* Number of floating-point registers used so far, likewise.  */
   unsigned int num_fprs;
-
-  int rvv_psabi_warning;
 
   /* Number of mask registers used so far, up to MAX_ARGS_IN_MASK_REGISTERS.  */
   unsigned int num_mrs;
@@ -814,6 +860,10 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
       asm_fprintf ((FILE), "%U%s", (NAME));				\
   } while (0)
 
+#undef ASM_OUTPUT_OPCODE
+#define ASM_OUTPUT_OPCODE(STREAM, PTR)	\
+  (PTR) = riscv_asm_output_opcode(STREAM, PTR)
+
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 #define CASE_VECTOR_MODE SImode
 #define CASE_VECTOR_PC_RELATIVE (riscv_cmodel != CM_MEDLOW)
@@ -879,7 +929,14 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
    SLT[I][U], AND[I], XOR[I], OR[I], LUI, AUIPC, and their compressed
    counterparts, including C.MV and C.LI) can be in the branch shadow.  */
 
-#define TARGET_SFB_ALU (riscv_microarchitecture == sifive_7)
+#define TARGET_SFB_ALU \
+ ((riscv_microarchitecture == sifive_7) \
+  || (riscv_microarchitecture == sifive_p400) \
+  || (riscv_microarchitecture == sifive_p600))
+
+/* True if the target supports misaligned vector loads and stores.  */
+#define TARGET_VECTOR_MISALIGN_SUPPORTED \
+   riscv_vector_unaligned_access_p
 
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
@@ -908,7 +965,7 @@ extern enum riscv_cc get_riscv_cc (const rtx use);
   "fs0", "fs1", "fa0", "fa1", "fa2", "fa3", "fa4", "fa5",	\
   "fa6", "fa7", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7",	\
   "fs8", "fs9", "fs10","fs11","ft8", "ft9", "ft10","ft11",	\
-  "arg", "frame", "vl", "vtype", "vxrm", "frm", "N/A", "N/A",   \
+  "arg", "frame", "vl", "vtype", "vxrm", "frm", "vxsat", "N/A", \
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",	\
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",	\
   "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A",	\
@@ -1054,6 +1111,10 @@ while (0)
 #define ASM_DECLARE_FUNCTION_NAME(STR, NAME, DECL)                             \
   riscv_declare_function_name (STR, NAME, DECL)
 
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)                           \
+  riscv_declare_function_size (FILE, FNAME, DECL)
+
 /* Add output .variant_cc directive for specific alias definition.  */
 #undef ASM_OUTPUT_DEF_FROM_DECLS
 #define ASM_OUTPUT_DEF_FROM_DECLS(STR, DECL, TARGET)                           \
@@ -1104,6 +1165,7 @@ while (0)
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
 extern bool riscv_slow_unaligned_access_p;
+extern bool riscv_vector_unaligned_access_p;
 extern bool riscv_user_wants_strict_align;
 extern unsigned riscv_stack_boundary;
 extern unsigned riscv_bytes_per_vector_chunk;
@@ -1130,6 +1192,7 @@ extern poly_int64 riscv_v_adjust_bytesize (enum machine_mode, int);
   "%{mabi=ilp32f:ilp32f}" \
   "%{mabi=ilp32d:ilp32d}" \
   "%{mabi=lp64:lp64}" \
+  "%{mabi=lp64e:lp64e}" \
   "%{mabi=lp64f:lp64f}" \
   "%{mabi=lp64d:lp64d}" \
 
@@ -1190,5 +1253,15 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 /* Mode switching (Lazy code motion) for RVV rounding mode instructions.  */
 #define OPTIMIZE_MODE_SWITCHING(ENTITY) (TARGET_VECTOR)
 #define NUM_MODES_FOR_MODE_SWITCHING {VXRM_MODE_NONE, riscv_vector::FRM_NONE}
+
+/* The size difference between different RVV modes can be up to 64 times.
+   e.g. RVVMF64BI vs RVVMF1BI on zvl512b, which is [1, 1] vs [64, 64].  */
+#define MAX_POLY_VARIANT 64
+
+#define HAVE_POST_MODIFY_DISP TARGET_XTHEADMEMIDX
+#define HAVE_PRE_MODIFY_DISP  TARGET_XTHEADMEMIDX
+
+/* Check TLS Descriptors mechanism is selected.  */
+#define TARGET_TLSDESC (riscv_tls_dialect == TLS_DESCRIPTORS)
 
 #endif /* ! GCC_RISCV_H */

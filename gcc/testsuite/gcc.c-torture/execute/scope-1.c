@@ -1,6 +1,10 @@
+void abort (void);
+void exit (int);
+
 int v = 3;
 
-f ()
+void
+f (void)
 {
   int v = 4;
   {
@@ -10,7 +14,8 @@ f ()
   }
 }
 
-main ()
+int
+main (void)
 {
   f ();
   exit (0);

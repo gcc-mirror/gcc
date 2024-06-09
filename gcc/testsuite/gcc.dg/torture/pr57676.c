@@ -1,7 +1,7 @@
 /* Verify that LRA does not abort prematurely in a release build of the
    compiler.  */
 /* { dg-do compile } */
-/* { dg-options "-fno-checking -w -funroll-loops" } */
+/* { dg-options "-fpermissive -fno-checking -w -funroll-loops" } */
 
 int a, b, c;
 

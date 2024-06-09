@@ -1,3 +1,5 @@
+void abort(void);
+
 typedef struct { char *addr; long type; } object;
 
 object bar (object blah)
@@ -22,7 +24,8 @@ int nil;
 object cons1[2] = { {(char *) &nil, 0}, {(char *) &nil, 0} };
 object cons2[2] = { {(char *) &cons1, 64}, {(char *) &nil, 0} };
 
-main()
+int
+main(void)
 {
   object x = {(char *) &cons2, 64};
   object y = {(char *) &nil, 0};

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-optimized" } */
+/* { dg-require-effective-target size32plus } */
 
 int
 __attribute__((noipa))

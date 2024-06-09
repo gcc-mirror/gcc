@@ -239,28 +239,6 @@ AC_SUBST(BFDLIB)
 ])
 
 dnl ====================================================================
-dnl Find the libiberty library. This defines many commonly used C
-dnl functions that exists in various states based on the underlying OS.
-AC_DEFUN([CYG_AC_PATH_LIBERTY], [
-AC_MSG_CHECKING(for the liberty library in the build tree)
-dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../../../../../../.. ../../../../../../../.. ../../../../../../../../.. ../../../../../../../../../.."
-AC_CACHE_VAL(ac_cv_c_liberty,[
-for i in $dirlist; do
-    if test -f "$i/libiberty/Makefile" ; then
-	ac_cv_c_liberty=`(cd $i/libiberty; ${PWDCMD-pwd})`
-    fi
-done
-])
-if test x"${ac_cv_c_liberty}" != x; then
-    LIBERTY="-L${ac_cv_c_liberty}"
-    AC_MSG_RESULT(${ac_cv_c_liberty})
-else
-    AC_MSG_RESULT(none)
-fi
-AC_SUBST(LIBERTY)
-])
-
-dnl ====================================================================
 dnl Find the opcodes library. This is used to do dissasemblies.
 AC_DEFUN([CYG_AC_PATH_OPCODES], [
 AC_MSG_CHECKING(for the opcodes library in the build tree)

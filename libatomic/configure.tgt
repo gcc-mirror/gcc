@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#  Copyright (C) 2012-2023 Free Software Foundation, Inc.
+#  Copyright (C) 2012-2024 Free Software Foundation, Inc.
 #  Contributed by Richard Henderson <rth@redhat.com>.
 #
 #  This file is part of the GNU Atomic Library (libatomic).
@@ -36,6 +36,7 @@ case "${target_cpu}" in
 	XCFLAGS="${XCFLAGS} -mfp-trap-mode=sui"
 	ARCH=alpha
 	;;
+  hppa*)		ARCH=pa ;;
   rs6000 | powerpc*)	ARCH=powerpc ;;
   riscv*)		ARCH=riscv ;;
   sh*)			ARCH=sh ;;
@@ -43,7 +44,7 @@ case "${target_cpu}" in
   aarch64*)
 	ARCH=aarch64
 	case "${target}" in
-	    aarch64*-*-linux*)
+	    aarch64*-*-linux* | aarch64-*-mingw*)
 		if test -n "$enable_aarch64_lse"; then
 		    try_ifunc=yes
 		fi
@@ -194,7 +195,7 @@ esac
 # The type may be different on different architectures.
 case "${target}" in
   aarch64*-*-*)
-	IFUNC_RESOLVER_ARGS="uint64_t hwcap"
+	IFUNC_RESOLVER_ARGS="uint64_t hwcap, const __ifunc_arg_t *features"
 	;;
   *)
 	IFUNC_RESOLVER_ARGS="void"

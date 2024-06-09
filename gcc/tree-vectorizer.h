@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -66,6 +66,7 @@ enum vect_def_type {
   vect_double_reduction_def,
   vect_nested_cycle,
   vect_first_order_recurrence,
+  vect_condition_def,
   vect_unknown_def_type
 };
 
@@ -196,6 +197,11 @@ struct _slp_tree {
      denotes the number of output lanes.  */
   lane_permutation_t lane_permutation;
 
+  /* Selected SIMD clone's function info.  First vector element
+     is SIMD clone's function decl, followed by a pair of trees (base + step)
+     for linear arguments (pair of NULLs for other arguments).  */
+  vec<tree> simd_clone_info;
+
   tree vectype;
   /* Vectorized defs.  */
   vec<tree> vec_defs;
@@ -300,6 +306,7 @@ public:
 #define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
 #define SLP_TREE_LANE_PERMUTATION(S)             (S)->lane_permutation
+#define SLP_TREE_SIMD_CLONE_INFO(S)              (S)->simd_clone_info
 #define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
 #define SLP_TREE_VECTYPE(S)			 (S)->vectype
 #define SLP_TREE_REPRESENTATIVE(S)		 (S)->representative
@@ -492,6 +499,16 @@ public:
      made any decisions about which vector modes to use.  */
   machine_mode vector_mode;
 
+  /* The basic blocks in the vectorization region.  For _loop_vec_info,
+     the memory is internally managed, while for _bb_vec_info, it points
+     to element space of an external auto_vec<>.  This inconsistency is
+     not a good class design pattern.  TODO: improve it with an unified
+     auto_vec<> whose lifetime is confined to vec_info object.  */
+  basic_block *bbs;
+
+  /* The count of the basic blocks in the vectorization region.  */
+  unsigned int nbbs;
+
 private:
   stmt_vec_info new_stmt_vec_info (gimple *stmt);
   void set_vinfo_for_stmt (gimple *, stmt_vec_info, bool = true);
@@ -671,9 +688,6 @@ public:
 
   /* The loop to which this info struct refers to.  */
   class loop *loop;
-
-  /* The loop basic blocks.  */
-  basic_block *bbs;
 
   /* Number of latch executions.  */
   tree num_itersm1;
@@ -882,6 +896,16 @@ public:
      we need to peel off iterations at the end to form an epilogue loop.  */
   bool peeling_for_niter;
 
+  /* When the loop has early breaks that we can vectorize we need to peel
+     the loop for the break finding loop.  */
+  bool early_breaks;
+
+  /* List of loop additional IV conditionals found in the loop.  */
+  auto_vec<gcond *> conds;
+
+  /* Main loop IV cond.  */
+  gcond* loop_iv_cond;
+
   /* True if there are no loop carried data dependencies in the loop.
      If loop->safelen <= 1, then this is always true, either the loop
      didn't have any loop carried data dependencies, or the loop is being
@@ -919,11 +943,40 @@ public:
      analysis.  */
   vec<_loop_vec_info *> epilogue_vinfos;
 
+  /* The controlling loop IV for the current loop when vectorizing.  This IV
+     controls the natural exits of the loop.  */
+  edge vec_loop_iv_exit;
+
+  /* The controlling loop IV for the epilogue loop when vectorizing.  This IV
+     controls the natural exits of the loop.  */
+  edge vec_epilogue_loop_iv_exit;
+
+  /* The controlling loop IV for the scalar loop being vectorized.  This IV
+     controls the natural exits of the loop.  */
+  edge scalar_loop_iv_exit;
+
+  /* Used to store the list of stores needing to be moved if doing early
+     break vectorization as they would violate the scalar loop semantics if
+     vectorized in their current location.  These are stored in order that they
+     need to be moved.  */
+  auto_vec<gimple *> early_break_stores;
+
+  /* The final basic block where to move statements to.  In the case of
+     multiple exits this could be pretty far away.  */
+  basic_block early_break_dest_bb;
+
+  /* Statements whose VUSES need updating if early break vectorization is to
+     happen.  */
+  auto_vec<gimple*> early_break_vuses;
 } *loop_vec_info;
 
 /* Access Functions.  */
 #define LOOP_VINFO_LOOP(L)                 (L)->loop
+#define LOOP_VINFO_IV_EXIT(L)              (L)->vec_loop_iv_exit
+#define LOOP_VINFO_EPILOGUE_IV_EXIT(L)     (L)->vec_epilogue_loop_iv_exit
+#define LOOP_VINFO_SCALAR_IV_EXIT(L)       (L)->scalar_loop_iv_exit
 #define LOOP_VINFO_BBS(L)                  (L)->bbs
+#define LOOP_VINFO_NBBS(L)                 (L)->nbbs
 #define LOOP_VINFO_NITERSM1(L)             (L)->num_itersm1
 #define LOOP_VINFO_NITERS(L)               (L)->num_iters
 /* Since LOOP_VINFO_NITERS and LOOP_VINFO_NITERSM1 can change after
@@ -970,6 +1023,14 @@ public:
 #define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
+#define LOOP_VINFO_EARLY_BREAKS(L)         (L)->early_breaks
+#define LOOP_VINFO_EARLY_BRK_STORES(L)     (L)->early_break_stores
+#define LOOP_VINFO_EARLY_BREAKS_VECT_PEELED(L)  \
+  (single_pred ((L)->loop->latch) != (L)->vec_loop_iv_exit->src)
+#define LOOP_VINFO_EARLY_BRK_DEST_BB(L)    (L)->early_break_dest_bb
+#define LOOP_VINFO_EARLY_BRK_VUSES(L)      (L)->early_break_vuses
+#define LOOP_VINFO_LOOP_CONDS(L)           (L)->conds
+#define LOOP_VINFO_LOOP_IV_COND(L)         (L)->loop_iv_cond
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
 #define LOOP_VINFO_SCALAR_LOOP(L)	   (L)->scalar_loop
 #define LOOP_VINFO_SCALAR_LOOP_SCALING(L)  (L)->scalar_loop_scaling
@@ -1041,16 +1102,11 @@ public:
   _bb_vec_info (vec<basic_block> bbs, vec_info_shared *);
   ~_bb_vec_info ();
 
-  /* The region we are operating on.  bbs[0] is the entry, excluding
-     its PHI nodes.  In the future we might want to track an explicit
-     entry edge to cover bbs[0] PHI nodes and have a region entry
-     insert location.  */
-  vec<basic_block> bbs;
-
   vec<slp_root> roots;
 } *bb_vec_info;
 
-#define BB_VINFO_BB(B)               (B)->bb
+#define BB_VINFO_BBS(B)              (B)->bbs
+#define BB_VINFO_NBBS(B)             (B)->nbbs
 #define BB_VINFO_GROUPED_STORES(B)   (B)->grouped_stores
 #define BB_VINFO_SLP_INSTANCES(B)    (B)->slp_instances
 #define BB_VINFO_DATAREFS(B)         (B)->shared->datarefs
@@ -1770,7 +1826,7 @@ is_loop_header_bb_p (basic_block bb)
 {
   if (bb == (bb->loop_father)->header)
     return true;
-  gcc_checking_assert (EDGE_COUNT (bb->preds) == 1);
+
   return false;
 }
 
@@ -2113,6 +2169,12 @@ vect_apply_runtime_profitability_check_p (loop_vec_info loop_vinfo)
 	  && th >= vect_vf_for_cost (loop_vinfo));
 }
 
+inline bool
+lane_reducing_op_p (code_helper code)
+{
+  return code == DOT_PROD_EXPR || code == WIDEN_SUM_EXPR || code == SAD_EXPR;
+}
+
 /* Source location + hotness information. */
 extern dump_user_location_t vect_location;
 
@@ -2155,11 +2217,14 @@ class auto_purge_vect_location
 
 /* Simple loop peeling and versioning utilities for vectorizer's purposes -
    in tree-vect-loop-manip.cc.  */
-extern void vect_set_loop_condition (class loop *, loop_vec_info,
+extern void vect_set_loop_condition (class loop *, edge, loop_vec_info,
 				     tree, tree, tree, bool);
-extern bool slpeel_can_duplicate_loop_p (const class loop *, const_edge);
-class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *,
-						     class loop *, edge);
+extern bool slpeel_can_duplicate_loop_p (const class loop *, const_edge,
+					 const_edge);
+class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *, edge,
+						    class loop *, edge,
+						    edge, edge *, bool = true,
+						    vec<basic_block> * = NULL);
 class loop *vect_loop_versioning (loop_vec_info, gimple *);
 extern class loop *vect_do_peeling (loop_vec_info, tree, tree,
 				    tree *, tree *, tree *, int, bool, bool,
@@ -2169,6 +2234,8 @@ extern void vect_prepare_for_masked_peels (loop_vec_info);
 extern dump_user_location_t find_loop_location (class loop *);
 extern bool vect_can_advance_ivs_p (loop_vec_info);
 extern void vect_update_inits_of_drs (loop_vec_info, tree, tree_code);
+extern edge vec_init_loop_exit_info (class loop *);
+extern void vect_iv_increment_position (edge, gimple_stmt_iterator *, bool *);
 
 /* In tree-vect-stmts.cc.  */
 extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
@@ -2176,6 +2243,7 @@ extern tree get_related_vectype_for_scalar_type (machine_mode, tree,
 extern tree get_vectype_for_scalar_type (vec_info *, tree, unsigned int = 0);
 extern tree get_vectype_for_scalar_type (vec_info *, tree, slp_tree);
 extern tree get_mask_type_for_scalar_type (vec_info *, tree, unsigned int = 0);
+extern tree get_mask_type_for_scalar_type (vec_info *, tree, slp_tree);
 extern tree get_same_sized_vectype (tree, tree);
 extern bool vect_chooses_same_modes_p (vec_info *, machine_mode);
 extern bool vect_get_loop_mask_type (loop_vec_info);
@@ -2189,6 +2257,7 @@ extern bool vect_is_simple_use (vec_info *, stmt_vec_info, slp_tree,
 				enum vect_def_type *,
 				tree *, stmt_vec_info * = NULL);
 extern bool vect_maybe_update_slp_op_vectype (slp_tree, tree);
+extern tree perm_mask_for_reverse (tree);
 extern bool supportable_widening_operation (vec_info*, code_helper,
 					    stmt_vec_info, tree, tree,
 					    code_helper*, code_helper*,
@@ -2231,10 +2300,10 @@ void vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree, unsigned,
 			tree = NULL, vec<tree> * = NULL,
 			tree = NULL, vec<tree> * = NULL);
 void vect_get_vec_defs (vec_info *, stmt_vec_info, slp_tree, unsigned,
-			tree, vec<tree> *, tree,
-			tree = NULL, vec<tree> * = NULL, tree = NULL,
-			tree = NULL, vec<tree> * = NULL, tree = NULL,
-			tree = NULL, vec<tree> * = NULL, tree = NULL);
+			tree, tree, vec<tree> *,
+			tree = NULL, tree = NULL, vec<tree> * = NULL,
+			tree = NULL, tree = NULL, vec<tree> * = NULL,
+			tree = NULL, tree = NULL, vec<tree> * = NULL);
 extern tree vect_init_vector (vec_info *, stmt_vec_info, tree, tree,
                               gimple_stmt_iterator *);
 extern tree vect_get_slp_vect_def (slp_tree, unsigned);
@@ -2265,6 +2334,9 @@ extern opt_result vect_get_vector_types_for_stmt (vec_info *,
 						  stmt_vec_info, tree *,
 						  tree *, unsigned int = 0);
 extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info, unsigned int = 0);
+
+/* In tree-if-conv.cc.  */
+extern bool ref_within_array_bound (gimple *, tree);
 
 /* In tree-vect-data-refs.cc.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
@@ -2319,7 +2391,7 @@ extern tree vect_create_addr_base_for_vector_ref (vec_info *,
 						  tree);
 
 /* In tree-vect-loop.cc.  */
-extern tree neutral_op_for_reduction (tree, code_helper, tree);
+extern tree neutral_op_for_reduction (tree, code_helper, tree, bool = true);
 extern widest_int vect_iv_limit_for_partial_vectors (loop_vec_info loop_vinfo);
 bool vect_rgroup_iv_might_wrap_p (loop_vec_info, rgroup_controls *);
 /* Used in tree-vect-loop-manip.cc */
@@ -2345,6 +2417,10 @@ extern void vect_record_loop_len (loop_vec_info, vec_loop_lens *, unsigned int,
 extern tree vect_get_loop_len (loop_vec_info, gimple_stmt_iterator *,
 			       vec_loop_lens *, unsigned int, tree,
 			       unsigned int, unsigned int);
+extern tree vect_gen_loop_len_mask (loop_vec_info, gimple_stmt_iterator *,
+				    gimple_stmt_iterator *, vec_loop_lens *,
+				    unsigned int, tree, tree, unsigned int,
+				    unsigned int);
 extern gimple_seq vect_gen_len (tree, tree, tree, tree);
 extern stmt_vec_info info_for_reduction (vec_info *, stmt_vec_info);
 extern bool reduction_fn_for_scalar_code (code_helper, internal_fn *);
@@ -2356,8 +2432,9 @@ struct vect_loop_form_info
   tree number_of_iterations;
   tree number_of_iterationsm1;
   tree assumptions;
-  gcond *loop_cond;
+  auto_vec<gcond *> conds;
   gcond *inner_loop_cond;
+  edge loop_exit;
 };
 extern opt_result vect_analyze_loop_form (class loop *, vect_loop_form_info *);
 extern loop_vec_info vect_create_loop_vinfo (class loop *, vec_info_shared *,
@@ -2429,7 +2506,7 @@ extern int vect_get_place_in_interleaving_chain (stmt_vec_info, stmt_vec_info);
 extern slp_tree vect_create_new_slp_node (unsigned, tree_code);
 extern void vect_free_slp_tree (slp_tree);
 extern bool compatible_calls_p (gcall *, gcall *);
-extern int vect_slp_child_index_for_operand (const gimple *, int op);
+extern int vect_slp_child_index_for_operand (const gimple *, int op, bool);
 
 /* In tree-vect-patterns.cc.  */
 extern void

@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V Scalar Cryptography extensions.
-;; Copyright (C) 2023 Free Software Foundation, Inc.
+;; Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -72,8 +72,8 @@
 
 ;; ZBKB extension
 (define_insn "riscv_brev8_<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-        (unspec:X [(match_operand:X 1 "register_operand" "r")]
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+        (unspec:GPR [(match_operand:GPR 1 "register_operand" "r")]
                   UNSPEC_BREV8))]
   "TARGET_ZBKB"
   "brev8\t%0,%1"
@@ -104,6 +104,19 @@
   "pack\t%0,%1,%2"
   [(set_attr "type" "crypto")])
 
+;; This is slightly more complex than the other pack patterns
+;; that fully expose the RTL as it needs to self-adjust to
+;; rv32 and rv64.  But it's not that hard.
+(define_insn "riscv_xpack_<X:mode>_<HX:mode>_2"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(ior:X (ashift:X (match_operand:X 1 "register_operand" "r")
+			 (match_operand 2 "immediate_operand" "n"))
+	       (zero_extend:X
+		 (match_operand:HX 3 "register_operand" "r"))))]
+  "TARGET_ZBKB && INTVAL (operands[2]) == BITS_PER_WORD / 2"
+  "pack\t%0,%3,%1"
+  [(set_attr "type" "crypto")])
+
 (define_insn "riscv_packh_<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
         (unspec:X [(match_operand:QI 1 "register_operand" "r")
@@ -113,6 +126,29 @@
   "packh\t%0,%1,%2"
   [(set_attr "type" "crypto")])
 
+;; So this is both a useful pattern unto itself and a bridge to the
+;; general packh pattern below.
+(define_insn "*riscv_packh_<mode>_2"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(and:X (ashift:X (match_operand:X 1 "register_operand" "r")
+			 (const_int 8))
+	       (const_int 65280)))]
+ "TARGET_ZBKB"
+ "packh\t%0,x0,%1"
+ [(set_attr "type" "crypto")])
+
+;; While the two operands of the IOR could be swapped, this appears
+;; to be the canonical form.  The other form doesn't seem to trigger.
+(define_insn "*riscv_packh_<mode>_3"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(ior:X (and:X (ashift:X (match_operand:X 1 "register_operand" "r")
+				(const_int 8))
+		      (const_int 65280))
+	       (zero_extend:X (match_operand:QI 2 "register_operand" "r"))))]
+ "TARGET_ZBKB"
+ "packh\t%0,%2,%1"
+ [(set_attr "type" "crypto")])
+
 (define_insn "riscv_packw"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(match_operand:HI 1 "register_operand" "r")
@@ -120,6 +156,33 @@
                   UNSPEC_PACKW))]
   "TARGET_ZBKB && TARGET_64BIT"
   "packw\t%0,%1,%2"
+  [(set_attr "type" "crypto")])
+
+;; Implemented as a splitter for initial recognition.  It generates
+;; new RTL with the extension moved to the outer position.  This
+;; allows later code to eliminate subsequent explicit sign extensions.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(ior:DI (ashift:DI
+		  (sign_extend:DI (match_operand:HI 1 "register_operand"))
+		  (const_int 16))
+		(zero_extend:DI (match_operand:HI 2 "register_operand"))))]
+  "TARGET_ZBKB && TARGET_64BIT"
+  [(set (match_dup 0)
+	(sign_extend:DI (ior:SI (ashift:SI (match_dup 1) (const_int 16))
+				(zero_extend:SI (match_dup 2)))))]
+  "operands[1] = gen_lowpart (SImode, operands[1]);")
+
+;; And this patches the result of the splitter above.
+(define_insn "*riscv_packw_2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (ior:SI
+	    (ashift:SI (match_operand:SI 1 "register_operand" "r")
+		       (const_int 16))
+	    (zero_extend:SI (match_operand:HI 2 "register_operand" "r")))))]
+  "TARGET_ZBKB && TARGET_64BIT"
+  "packw\t%0,%2,%1"
   [(set_attr "type" "crypto")])
 
 ;; ZBKX extension
@@ -148,7 +211,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(match_operand:SI 1 "register_operand" "r")
                    (match_operand:SI 2 "register_operand" "r")
-                   (match_operand:SI 3 "register_operand" "D03")]
+                   (match_operand:SI 3 "const_0_3_operand" "")]
                    UNSPEC_AES_DSI))]
   "TARGET_ZKND && !TARGET_64BIT"
   "aes32dsi\t%0,%1,%2,%3"
@@ -158,7 +221,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(match_operand:SI 1 "register_operand" "r")
                    (match_operand:SI 2 "register_operand" "r")
-                   (match_operand:SI 3 "register_operand" "D03")]
+                   (match_operand:SI 3 "const_0_3_operand" "")]
                    UNSPEC_AES_DSMI))]
   "TARGET_ZKND && !TARGET_64BIT"
   "aes32dsmi\t%0,%1,%2,%3"
@@ -193,7 +256,7 @@
 (define_insn "riscv_aes64ks1i"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (unspec:DI [(match_operand:DI 1 "register_operand" "r")
-                   (match_operand:SI 2 "register_operand" "DsA")]
+                   (match_operand:SI 2 "const_0_10_operand" "")]
                    UNSPEC_AES_KS1I))]
   "(TARGET_ZKND || TARGET_ZKNE) && TARGET_64BIT"
   "aes64ks1i\t%0,%1,%2"
@@ -214,7 +277,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(match_operand:SI 1 "register_operand" "r")
                    (match_operand:SI 2 "register_operand" "r")
-                   (match_operand:SI 3 "register_operand" "D03")]
+                   (match_operand:SI 3 "const_0_3_operand" "")]
                    UNSPEC_AES_ESI))]
   "TARGET_ZKNE && !TARGET_64BIT"
   "aes32esi\t%0,%1,%2,%3"
@@ -224,7 +287,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(match_operand:SI 1 "register_operand" "r")
                    (match_operand:SI 2 "register_operand" "r")
-                   (match_operand:SI 3 "register_operand" "D03")]
+                   (match_operand:SI 3 "const_0_3_operand" "")]
                    UNSPEC_AES_ESMI))]
   "TARGET_ZKNE && !TARGET_64BIT"
   "aes32esmi\t%0,%1,%2,%3"
@@ -431,7 +494,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(match_operand:SI 1 "register_operand" "r")
                    (match_operand:SI 2 "register_operand" "r")
-                   (match_operand:SI 3 "register_operand" "D03")]
+                   (match_operand:SI 3 "const_0_3_operand" "")]
                    SM4_OP))]
   "TARGET_ZKSED && !TARGET_64BIT"
   "<sm4_op>\t%0,%1,%2,%3"
@@ -442,7 +505,7 @@
         (sign_extend:DI
              (unspec:SI [(match_operand:SI 1 "register_operand" "r")
                         (match_operand:SI 2 "register_operand" "r")
-                        (match_operand:SI 3 "register_operand" "D03")]
+                        (match_operand:SI 3 "const_0_3_operand" "")]
                         SM4_OP)))]
   "TARGET_ZKSED && TARGET_64BIT"
   "<sm4_op>\t%0,%1,%2,%3"
@@ -452,7 +515,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
         (unspec:SI [(match_operand:SI 1 "register_operand" "r")
                    (match_operand:SI 2 "register_operand" "r")
-                   (match_operand:SI 3 "register_operand" "D03")]
+                   (match_operand:SI 3 "const_0_3_operand" "")]
                    SM4_OP))]
   "TARGET_ZKSED"
   {

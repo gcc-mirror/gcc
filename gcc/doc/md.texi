@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2010,6 +2010,9 @@ Any @code{symbol_ref} or @code{label_ref}
 @item v
 VGPR register
 
+@item a
+Accelerator VGPR register (CDNA1 onwards)
+
 @item Sg
 SGPR register
 
@@ -2878,7 +2881,7 @@ $r1h
 @item LoongArch---@file{config/loongarch/constraints.md}
 @table @code
 @item f
-A floating-point register (if available).
+A floating-point or vector register (if available).
 @item k
 A memory operand whose address is formed by a base register and
 (optionally scaled) index register.
@@ -3422,8 +3425,8 @@ Any condition register field, @code{cr0}@dots{}@code{cr7}.
 The carry bit, @code{XER[CA]}.
 
 @item we
-Like @code{wa}, if @option{-mpower9-vector} and @option{-m64} are used;
-otherwise, @code{NO_REGS}.
+Like @code{wa}, if this is a POWER9 or later and @option{-mvsx}
+and @option{-m64} are used; otherwise, @code{NO_REGS}.
 
 @item wn
 No register (@code{NO_REGS}).
@@ -4272,6 +4275,10 @@ require non-@code{VOIDmode} immediate operands).
 128-bit integer constant where both the high and low 64-bit word
 satisfy the @code{e} constraint.
 
+@item Ws
+A symbolic reference or label reference.
+You can use the @code{%p} modifier to print the raw symbol.
+
 @item Z
 32-bit unsigned integer constant, or a symbolic reference known
 to fit that range (for immediate operands in zero-extending x86-64
@@ -4513,8 +4520,8 @@ Register constraints correspond directly to register classes.
 @xref{Register Classes}.  There is thus not much flexibility in their
 definitions.
 
-@deffn {MD Expression} define_register_constraint name regclass docstring
-All three arguments are string constants.
+@deffn {MD Expression} define_register_constraint name regclass docstring [filter]
+All arguments are string constants.
 @var{name} is the name of the constraint, as it will appear in
 @code{match_operand} expressions.  If @var{name} is a multi-letter
 constraint its length shall be the same for all constraints starting
@@ -4525,6 +4532,43 @@ If it is an expression, it must have no side effects, and it cannot
 look at the operand.  The usual use of expressions is to map some
 register constraints to @code{NO_REGS} when the register class
 is not available on a given subarchitecture.
+
+If an operand occupies multiple hard registers, the constraint
+requires all of those registers to belong to @var{regclass}.
+For example, if @var{regclass} is @code{GENERAL_REGS} and
+@code{GENERAL_REGS} contains registers @code{r0} to @code{r15},
+the constraint does not allow @var{r15} to be used for modes
+that occupy more than one register.
+
+@cindex @code{TARGET_HARD_REGNO_MODE_OK} and constraints
+The choice of register is also constrained by @code{TARGET_HARD_REGNO_MODE_OK}.
+For example, if @code{TARGET_HARD_REGNO_MODE_OK} disallows @samp{(reg:DI r1)},
+that requirement applies to all constraints whose classes include @code{r1}.
+
+However, it is sometimes useful to impose extra operand-specific
+requirements on the register number.  For example, a target might not
+want to prevent @emph{all} odd-even pairs from holding @code{DImode}
+values, but it might still need to prevent specific operands from
+having an odd-numbered register.  The optional @var{filter} argument
+exists for such cases.  When given, @var{filter} is a C++ expression
+that evaluates to true if @code{regno} is a valid register for the
+operand.  If an operand occupies multiple registers, the condition
+applies only to the first register.
+
+For example:
+
+@smallexample
+(define_register_constraint "e" "GENERAL_REGS" "..." "regno % 2 == 0")
+@end smallexample
+
+defines a constraint that requires an even-numbered general register.
+
+Filter conditions that impose an alignment are encouraged to test
+the alignment of @code{regno} itself, as in the example, rather than
+calculate an offset relative to the start of the class.  If it is
+sometimes necessary for a register of class @var{c} to be aligned
+to @var{n}, the first register in @var{c} should itself by divisible
+by @var{n}.
 
 @var{docstring} is a sentence documenting the meaning of the
 constraint.  Docstrings are explained further below.
@@ -5306,6 +5350,21 @@ no need to define this instruction pattern if the others are supported.
 Similar to @code{vcond@var{m}@var{n}} but operand 3 holds a pre-computed
 result of vector comparison.
 
+@cindex @code{vcond_mask_len_@var{m}@var{n}} instruction pattern
+@item @samp{vcond_mask_@var{m}@var{n}}
+Set each element of operand 0 to the corresponding element of operand 2
+or operand 3.  Choose operand 2 if both the element index is less than
+operand 4 plus operand 5 and the corresponding element of operand 1
+is nonzero:
+
+@smallexample
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = i < op4 + op5 && op1[i] ? op2[i] : op3[i];
+@end smallexample
+
+Operands 0, 2 and 3 have mode @var{m}.  Operand 1 has mode @var{n}.
+Operands 4 and 5 have a target-dependent scalar integer mode.
+
 @cindex @code{maskload@var{m}@var{n}} instruction pattern
 @item @samp{maskload@var{m}@var{n}}
 Perform a masked load of vector from memory operand 1 of mode @var{m}
@@ -5687,6 +5746,7 @@ Operand 1 and operand 2 are of the same mode. Their
 product, which is of a wider mode, is computed and added to operand 3.
 Operand 3 is of a mode equal or wider than the mode of the product. The
 result is placed in operand 0, which is of the same mode as operand 3.
+@var{m} is the mode of operand 1 and operand 2.
 
 Semantically the expressions perform the multiplication in the following signs
 
@@ -5704,6 +5764,7 @@ Operand 1 and operand 2 are of the same mode. Their
 product, which is of a wider mode, is computed and added to operand 3.
 Operand 3 is of a mode equal or wider than the mode of the product. The
 result is placed in operand 0, which is of the same mode as operand 3.
+@var{m} is the mode of operand 1 and operand 2.
 
 Semantically the expressions perform the multiplication in the following signs
 
@@ -5720,6 +5781,7 @@ Operand 1 must be unsigned and operand 2 signed. Their
 product, which is of a wider mode, is computed and added to operand 3.
 Operand 3 is of a mode equal or wider than the mode of the product. The
 result is placed in operand 0, which is of the same mode as operand 3.
+@var{m} is the mode of operand 1 and operand 2.
 
 Semantically the expressions perform the multiplication in the following signs
 
@@ -5738,20 +5800,22 @@ Operand 1 and operand 2 are of the same mode. Their absolute difference, which
 is of a wider mode, is computed and added to operand 3. Operand 3 is of a mode
 equal or wider than the mode of the absolute difference. The result is placed
 in operand 0, which is of the same mode as operand 3.
+@var{m} is the mode of operand 1 and operand 2.
 
-@cindex @code{widen_ssum@var{m3}} instruction pattern
-@cindex @code{widen_usum@var{m3}} instruction pattern
-@item @samp{widen_ssum@var{m3}}
-@itemx @samp{widen_usum@var{m3}}
+@cindex @code{widen_ssum@var{m}3} instruction pattern
+@cindex @code{widen_usum@var{m}3} instruction pattern
+@item @samp{widen_ssum@var{m}3}
+@itemx @samp{widen_usum@var{m}3}
 Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
+@var{m} is the mode of operand 1.
 
-@cindex @code{smulhs@var{m3}} instruction pattern
-@cindex @code{umulhs@var{m3}} instruction pattern
-@item @samp{smulhs@var{m3}}
-@itemx @samp{umulhs@var{m3}}
+@cindex @code{smulhs@var{m}3} instruction pattern
+@cindex @code{umulhs@var{m}3} instruction pattern
+@item @samp{smulhs@var{m}3}
+@itemx @samp{umulhs@var{m}3}
 Signed/unsigned multiply high with scale. This is equivalent to the C code:
 @smallexample
 narrow op0, op1, op2;
@@ -5760,11 +5824,13 @@ op0 = (narrow) (((wide) op1 * (wide) op2) >> (N / 2 - 1));
 @end smallexample
 where the sign of @samp{narrow} determines whether this is a signed
 or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
+@var{m} is the mode for all 3 operands (narrow). The wide mode is not specified
+and is defined to fit the whole multiply.
 
-@cindex @code{smulhrs@var{m3}} instruction pattern
-@cindex @code{umulhrs@var{m3}} instruction pattern
-@item @samp{smulhrs@var{m3}}
-@itemx @samp{umulhrs@var{m3}}
+@cindex @code{smulhrs@var{m}3} instruction pattern
+@cindex @code{umulhrs@var{m}3} instruction pattern
+@item @samp{smulhrs@var{m}3}
+@itemx @samp{umulhrs@var{m}3}
 Signed/unsigned multiply high with round and scale. This is
 equivalent to the C code:
 @smallexample
@@ -5774,11 +5840,13 @@ op0 = (narrow) (((((wide) op1 * (wide) op2) >> (N / 2 - 2)) + 1) >> 1);
 @end smallexample
 where the sign of @samp{narrow} determines whether this is a signed
 or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
+@var{m} is the mode for all 3 operands (narrow). The wide mode is not specified
+and is defined to fit the whole multiply.
 
-@cindex @code{sdiv_pow2@var{m3}} instruction pattern
-@cindex @code{sdiv_pow2@var{m3}} instruction pattern
-@item @samp{sdiv_pow2@var{m3}}
-@itemx @samp{sdiv_pow2@var{m3}}
+@cindex @code{sdiv_pow2@var{m}3} instruction pattern
+@cindex @code{sdiv_pow2@var{m}3} instruction pattern
+@item @samp{sdiv_pow2@var{m}3}
+@itemx @samp{sdiv_pow2@var{m}3}
 Signed division by power-of-2 immediate. Equivalent to:
 @smallexample
 signed op0, op1;
@@ -6860,8 +6928,9 @@ individually copied data units in the block.
 
 The @code{cpymem@var{m}} patterns need not give special consideration
 to the possibility that the source and destination strings might
-overlap. These patterns are used to do inline expansion of
-@code{__builtin_memcpy}.
+overlap.  An exception is the case where source and destination are
+equal, this case needs to be handled correctly.
+These patterns are used to do inline expansion of @code{__builtin_memcpy}.
 
 @cindex @code{movmem@var{m}} instruction pattern
 @item @samp{movmem@var{m}}
@@ -7259,6 +7328,7 @@ form of @samp{@var{op}@var{mode}2}.
 @cindex @code{cond_smax@var{mode}} instruction pattern
 @cindex @code{cond_umin@var{mode}} instruction pattern
 @cindex @code{cond_umax@var{mode}} instruction pattern
+@cindex @code{cond_copysign@var{mode}} instruction pattern
 @cindex @code{cond_fmin@var{mode}} instruction pattern
 @cindex @code{cond_fmax@var{mode}} instruction pattern
 @cindex @code{cond_ashl@var{mode}} instruction pattern
@@ -7278,6 +7348,7 @@ form of @samp{@var{op}@var{mode}2}.
 @itemx @samp{cond_smax@var{mode}}
 @itemx @samp{cond_umin@var{mode}}
 @itemx @samp{cond_umax@var{mode}}
+@itemx @samp{cond_copysign@var{mode}}
 @itemx @samp{cond_fmin@var{mode}}
 @itemx @samp{cond_fmax@var{mode}}
 @itemx @samp{cond_ashl@var{mode}}
@@ -7315,6 +7386,8 @@ form of @samp{@var{op}@var{mode}3}.  As an exception, the vector forms
 of shifts correspond to patterns like @code{vashl@var{mode}3} rather
 than patterns like @code{ashl@var{mode}3}.
 
+@samp{cond_copysign@var{mode}} is only defined for floating point modes.
+
 @cindex @code{cond_fma@var{mode}} instruction pattern
 @cindex @code{cond_fms@var{mode}} instruction pattern
 @cindex @code{cond_fnma@var{mode}} instruction pattern
@@ -7341,8 +7414,10 @@ store the result in operand 0, otherwise store operand 2 in operand 0.
 The operation only works for the operands are vectors.
 
 @smallexample
-for (i = 0; i < ops[4] + ops[5]; i++)
-  op0[i] = op1[i] ? @var{op} op2[i] : op3[i];
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = (i < ops[4] + ops[5] && op1[i]
+            ? @var{op} op2[i]
+            : op3[i]);
 @end smallexample
 
 where, for example, @var{op} is @code{~} for @samp{cond_len_one_cmpl@var{mode}}.
@@ -7374,6 +7449,7 @@ form of @samp{@var{op}@var{mode}2}.
 @cindex @code{cond_len_smax@var{mode}} instruction pattern
 @cindex @code{cond_len_umin@var{mode}} instruction pattern
 @cindex @code{cond_len_umax@var{mode}} instruction pattern
+@cindex @code{cond_len_copysign@var{mode}} instruction pattern
 @cindex @code{cond_len_fmin@var{mode}} instruction pattern
 @cindex @code{cond_len_fmax@var{mode}} instruction pattern
 @cindex @code{cond_len_ashl@var{mode}} instruction pattern
@@ -7393,6 +7469,7 @@ form of @samp{@var{op}@var{mode}2}.
 @itemx @samp{cond_len_smax@var{mode}}
 @itemx @samp{cond_len_umin@var{mode}}
 @itemx @samp{cond_len_umax@var{mode}}
+@itemx @samp{cond_len_copysign@var{mode}}
 @itemx @samp{cond_len_fmin@var{mode}}
 @itemx @samp{cond_len_fmax@var{mode}}
 @itemx @samp{cond_len_ashl@var{mode}}
@@ -7403,8 +7480,10 @@ store the result in operand 0, otherwise store operand 4 in operand 0.
 The operation only works for the operands are vectors.
 
 @smallexample
-for (i = 0; i < ops[5] + ops[6]; i++)
-  op0[i] = op1[i] ? op2[i] @var{op} op3[i] : op4[i];
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = (i < ops[5] + ops[6] && op1[i]
+            ? op2[i] @var{op} op3[i]
+            : op4[i]);
 @end smallexample
 
 where, for example, @var{op} is @code{+} for @samp{cond_len_add@var{mode}}.
@@ -7418,10 +7497,12 @@ integer if @var{m} is scalar, otherwise it has the mode returned by
 @code{TARGET_VECTORIZE_GET_MASK_MODE}.  Operand 5 has whichever
 integer mode the target prefers.
 
-@samp{cond_@var{op}@var{mode}} generally corresponds to a conditional
+@samp{cond_len_@var{op}@var{mode}} generally corresponds to a conditional
 form of @samp{@var{op}@var{mode}3}.  As an exception, the vector forms
 of shifts correspond to patterns like @code{vashl@var{mode}3} rather
 than patterns like @code{ashl@var{mode}3}.
+
+@samp{cond_len_copysign@var{mode}} is only defined for floating point modes.
 
 @cindex @code{cond_len_fma@var{mode}} instruction pattern
 @cindex @code{cond_len_fms@var{mode}} instruction pattern
@@ -7436,8 +7517,10 @@ takes 3 operands rather than two.  For example, the vector form of
 @samp{cond_len_fma@var{mode}} is equivalent to:
 
 @smallexample
-for (i = 0; i < ops[6] + ops[7]; i++)
-  op0[i] = op1[i] ? fma (op2[i], op3[i], op4[i]) : op5[i];
+for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
+  op0[i] = (i < ops[6] + ops[7] && op1[i]
+            ? fma (op2[i], op3[i], op4[i])
+            : op5[i]);
 @end smallexample
 
 @cindex @code{neg@var{mode}cc} instruction pattern
@@ -11775,6 +11858,19 @@ to @code{@var{mode}}.  For example:
 
 means that the @code{:DI} expansion only applies if @code{TARGET_64BIT}
 but that the @code{:SI} expansion has no such constraint.
+
+It is also possible to include iterators in other iterators.  For example:
+
+@smallexample
+(define_mode_iterator VI [V16QI V8HI V4SI V2DI])
+(define_mode_iterator VF [V8HF V4SF (V2DF "TARGET_DOUBLE")])
+(define_mode_iterator V [VI (VF "TARGET_FLOAT")])
+@end smallexample
+
+makes @samp{:V} iterate over the modes in @code{VI} and the modes
+in @code{VF}.  When a construct uses @samp{:V}, the @code{V8HF} and
+@code{V4SF} expansions require @samp{TARGET_FLOAT} while the @code{V2DF}
+expansion requires @samp{TARGET_DOUBLE && TARGET_FLOAT}.
 
 Iterators are applied in the order they are defined.  This can be
 significant if two iterators are used in a construct that requires

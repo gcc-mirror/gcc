@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@ proc plugin-test-execute { plugin_src plugin_tests } {
     set gcc_objdir "$objdir/../../.."
     set includes "-I. -I${srcdir} -I${gcc_srcdir}/gcc -I${gcc_objdir}/gcc \
                   -I${gcc_srcdir}/include -I${gcc_srcdir}/libcpp/include \
-                  $GMPINC -I${gcc_objdir}/intl"
+                  $GMPINC -I${gcc_objdir}/gettext/intl"
 
     if { [ ishost *-*-darwin* ] } {
 	# -mdynamic-no-pic is incompatible with -fPIC.

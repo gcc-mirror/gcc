@@ -1,6 +1,6 @@
 ; analyzer.opt -- Options for the analyzer.
 
-; Copyright (C) 2019-2023 Free Software Foundation, Inc.
+; Copyright (C) 2019-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -43,7 +43,7 @@ Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
 The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
 
 -param=analyzer-max-svalue-depth=
-Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(12) Param
+Common Joined UInteger Var(param_analyzer_max_svalue_depth) Init(18) Param
 The maximum depth of a symbolic value, before approximating the value as unknown.
 
 -param=analyzer-min-snodes-for-call-summary=
@@ -134,6 +134,10 @@ Wanalyzer-imprecise-fp-arithmetic
 Common Var(warn_analyzer_imprecise_fp_arithmetic) Init(1) Warning
 Warn about code paths in which floating-point arithmetic is used in locations where precise computation is needed.
 
+Wanalyzer-infinite-loop
+Common Var(warn_analyzer_infinite_loop) Init(1) Warning
+Warn about code paths which appear to lead to an infinite loop.
+
 Wanalyzer-infinite-recursion
 Common Var(warn_analyzer_infinite_recursion) Init(1) Warning
 Warn about code paths which appear to lead to infinite recursion.
@@ -218,6 +222,14 @@ Wanalyzer-tainted-size
 Common Var(warn_analyzer_tainted_size) Init(1) Warning
 Warn about code paths in which an unsanitized value is used as a size.
 
+Wanalyzer-undefined-behavior-ptrdiff
+Common Var(warn_analyzer_undefined_behavior_ptrdiff) Init(1) Warning
+Warn about code paths in which pointer subtraction involves undefined behavior.
+
+Wanalyzer-undefined-behavior-strtok
+Common Var(warn_analyzer_undefined_behavior_strtok) Init(1) Warning
+Warn about code paths in which a call is made to strtok with undefined behavior.
+
 Wanalyzer-use-after-free
 Common Var(warn_analyzer_use_after_free) Init(1) Warning
 Warn about code paths in which a freed value is used.
@@ -253,6 +265,10 @@ Warn about code paths which attempt to write to a string literal.
 Wanalyzer-use-of-uninitialized-value
 Common Var(warn_analyzer_use_of_uninitialized_value) Init(1) Warning
 Warn about code paths in which an uninitialized value is used.
+
+Wanalyzer-symbol-too-complex
+Common Var(warn_analyzer_symbol_too_complex) Init(0) Warning
+Warn if expressions are too complicated for the analyzer to fully track.
 
 Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning
@@ -353,6 +369,10 @@ Dump a textual representation of each diagnostic's exploded path to SRCFILE.IDX.
 fdump-analyzer-feasibility
 Common RejectNegative Var(flag_dump_analyzer_feasibility)
 Dump various analyzer internals to SRCFILE.*.fg.dot and SRCFILE.*.tg.dot.
+
+fdump-analyzer-infinite-loop
+Common RejectNegative Var(flag_dump_analyzer_infinite_loop)
+Dump various analyzer internals to SRCFILE.*.infinite-loop.dot.
 
 fdump-analyzer-json
 Common RejectNegative Var(flag_dump_analyzer_json)

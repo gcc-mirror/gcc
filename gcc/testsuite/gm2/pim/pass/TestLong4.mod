@@ -22,6 +22,5 @@ FROM libc IMPORT exit ;
 VAR
    l: LONGCARD ;
 BEGIN
-   (* test for assignment of MAX(LONGINT)+1 *)
-   l := 9223372036854775808
+   l := MAX (LONGCARD)
 END TestLong4.

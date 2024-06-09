@@ -1,5 +1,5 @@
 /* Target machine subroutines for TI PRU.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
    Dimitar Dimitrov <dimitar@dinux.eu>
 
    This file is part of GCC.
@@ -405,7 +405,7 @@ pru_get_return_address (int count)
 
 /* Implement FUNCTION_PROFILER macro.  */
 void
-pru_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
+pru_function_profiler (FILE *file, int)
 {
   fprintf (file, "\tmov\tr1, ra\n");
   fprintf (file, "\tcall\t_mcount\n");
@@ -443,6 +443,10 @@ prologue_saved_reg_p (int regno)
 {
   gcc_assert (GP_REG_P (regno));
 
+  /* Do not save the register if function will not return.  */
+  if (TREE_THIS_VOLATILE (current_function_decl))
+    return false;
+
   if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
     return true;
 
@@ -463,7 +467,7 @@ prologue_saved_reg_p (int regno)
 
 /* Implement TARGET_CAN_ELIMINATE.  */
 static bool
-pru_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
+pru_can_eliminate (const int, const int to)
 {
   if (to == STACK_POINTER_REGNUM)
     return !frame_pointer_needed;
@@ -513,6 +517,17 @@ pru_can_use_return_insn (void)
   return cfun->machine->total_size == 0;
 }
 
+/* Implement `TARGET_CLASS_LIKELY_SPILLED_P'.  The original intention
+   of the default implementation is kept, but is adjusted for PRU.
+   Return TRUE if the given class C contains a single SImode
+   (as opposed to word_mode!) register.  */
+
+static bool
+pru_class_likely_spilled_p (reg_class_t c)
+{
+  return (reg_class_size[(int) c] <= GET_MODE_SIZE (SImode));
+}
+
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
 static bool
@@ -622,20 +637,13 @@ pru_option_override (void)
      options.  */
   target_option_default_node = target_option_current_node
     = build_target_option_node (&global_options, &global_options_set);
-
-  /* Due to difficulties in implementing the TI ABI with GCC,
-     at least check and error-out if GCC cannot compile a
-     compliant output.  */
-  pru_register_abicheck_pass ();
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
 static bool
-pru_rtx_costs (rtx x, machine_mode mode,
-	       int outer_code, int opno ATTRIBUTE_UNUSED,
-	       int *total, bool speed ATTRIBUTE_UNUSED)
+pru_rtx_costs (rtx x, machine_mode mode, int outer_code, int, int *total, bool)
 {
   const int code = GET_CODE (x);
 
@@ -782,6 +790,61 @@ pru_rtx_costs (rtx x, machine_mode mode,
 	return false;
       }
     }
+}
+
+/* Calculate the cost of an addressing mode that contains ADDR.
+   ADDR must be a valid address.  */
+
+static int
+pru_address_cost (rtx addr, machine_mode, addr_space_t as, bool)
+{
+  if (as != ADDR_SPACE_GENERIC)
+    /* All currently implemented special address spaces for PRU
+       are much more efficient than generic memory I/O.  */
+    return 0;
+  else if (ctable_addr_operand (addr, VOIDmode)
+	   || (GET_CODE (addr) == PLUS
+	       && ctable_base_operand (XEXP (addr, 1), VOIDmode)))
+    /* Using CTABLE instructions reduces register pressure,
+       so give it precedence.  */
+    return 1;
+  else
+    /* Same two instructions (LBBO/SBBO) are used for any valid
+       addressing mode.  */
+    return 2;
+}
+
+/* Insn costs on PRU are straightforward because:
+     - Insns emit 0, 1 or more instructions.
+     - All instructions are 32-bit length.
+     - All instructions execute in 1 cycle (sans memory access delays).
+   The "length" attribute maps nicely to the insn cost.  */
+
+static int
+pru_insn_cost (rtx_insn *insn, bool speed)
+{
+  /* Use generic cost calculation for unrecognized insns.  */
+  if (recog_memoized (insn) < 0)
+    return pattern_cost (insn, speed);
+
+  unsigned int len = get_attr_length (insn);
+
+  gcc_assert ((len % 4) == 0);
+
+  int cost = COSTS_N_INSNS (len / 4);
+  /* Some insns have zero length (e.g. blockage, pruloop_end).
+     In such cases give the minimum cost, because a return of
+     0 would incorrectly indicate that the insn cost is unknown.  */
+  if (cost == 0)
+    cost = 1;
+
+  /* Writes are usually posted, so they take 1 cycle.  Reads
+     from DMEM usually take 3 cycles.
+     See TI document SPRACE8A, Device-Specific PRU Read Latency Values.  */
+  if (speed && get_attr_type (insn) == TYPE_LD)
+    cost += COSTS_N_INSNS (2);
+
+  return cost;
 }
 
 static GTY(()) rtx eqdf_libfunc;
@@ -2115,7 +2178,7 @@ pru_nongeneric_pointer_addrspace (tree typ)
    during the "mov<mode>" pattern expansion.  */
 
 static void
-pru_insert_attributes (tree node, tree *attributes ATTRIBUTE_UNUSED)
+pru_insert_attributes (tree node, tree *)
 {
 
   /* Validate __regio_symbol variable declarations.  */
@@ -2340,15 +2403,14 @@ pru_function_arg_advance (cumulative_args_t cum_v,
 
 /* Implement TARGET_FUNCTION_VALUE.  */
 static rtx
-pru_function_value (const_tree ret_type, const_tree fn ATTRIBUTE_UNUSED,
-		      bool outgoing ATTRIBUTE_UNUSED)
+pru_function_value (const_tree ret_type, const_tree, bool)
 {
   return gen_rtx_REG (TYPE_MODE (ret_type), FIRST_RETVAL_REGNUM);
 }
 
 /* Implement TARGET_LIBCALL_VALUE.  */
 static rtx
-pru_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+pru_libcall_value (machine_mode mode, const_rtx)
 {
   return gen_rtx_REG (mode, FIRST_RETVAL_REGNUM);
 }
@@ -2362,7 +2424,7 @@ pru_function_value_regno_p (const unsigned int regno)
 
 /* Implement TARGET_RETURN_IN_MEMORY.  */
 bool
-pru_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
+pru_return_in_memory (const_tree type, const_tree)
 {
   bool in_memory = (!pru_arg_in_reg_bysize (int_size_in_bytes (type))
 		    || int_size_in_bytes (type) == -1);
@@ -2930,7 +2992,7 @@ pru_init_builtins (void)
 /* Implement TARGET_BUILTIN_DECL.  */
 
 static tree
-pru_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+pru_builtin_decl (unsigned code, bool)
 {
   switch (code)
     {
@@ -3009,10 +3071,7 @@ pru_expand_delay_cycles (rtx arg)
    IGNORE is nonzero if the value is to be ignored.  */
 
 static rtx
-pru_expand_builtin (tree exp, rtx target,
-		    rtx subtarget ATTRIBUTE_UNUSED,
-		    machine_mode mode,
-		    int ignore ATTRIBUTE_UNUSED)
+pru_expand_builtin (tree exp, rtx target, rtx, machine_mode mode, int)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
@@ -3133,6 +3192,9 @@ pru_unwind_word_mode (void)
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE pru_can_eliminate
 
+#undef TARGET_CLASS_LIKELY_SPILLED_P
+#define TARGET_CLASS_LIKELY_SPILLED_P pru_class_likely_spilled_p
+
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK pru_hard_regno_mode_ok
 
@@ -3174,6 +3236,12 @@ pru_unwind_word_mode (void)
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pru_rtx_costs
+
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST pru_address_cost
+
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST pru_insn_cost
 
 #undef TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND pru_print_operand

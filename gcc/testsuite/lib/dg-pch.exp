@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2023 Free Software Foundation, Inc.
+# Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -95,10 +95,31 @@ proc dg-flags-pch { subdir test otherflags options suffix } {
 	set dg-do-what-default precompile
 	catch { file_on_host delete "$bname$suffix" }
 	gcc_copy_files "[file rootname $test]${suffix}s" "$bname$suffix"
-	dg-test -keep-output "./$bname$suffix" "$otherflags $flags" ""
+	dg-test -keep-output "./$bname$suffix" "$otherflags $flags -c" ""
 
 	# For the rest, the default is to compile to .s.
 	set dg-do-what-default compile
+
+	# Process the target selectors to see whether the remaining
+	# part of the test should be skipped.
+	#
+	# ??? This doesn't currently handle flag-specific skips,
+	# based on dg-options.
+	set dg-do-what [list compile "" P]
+	set dg-extra-tool-flags ""
+	foreach op [dg-get-options "./$bname$suffix"] {
+	    switch [lindex $op 0] {
+		dg-require-effective-target -
+		dg-skip-if {
+		    if { [catch "$op" msg] } {
+			perror "$bname$suffix: $msg for \"$op\""
+		    }
+		}
+	    }
+	}
+	if { [lindex ${dg-do-what} 1] == "N" } {
+	    continue
+	}
 
 	set have_errs [llength [grep $test "{\[ \t\]\+dg-error\[ \t\]\+.*\[ \t\]\+}"]]
 
@@ -134,8 +155,7 @@ proc dg-flags-pch { subdir test otherflags options suffix } {
  		    fail "$nshort $flags assembly comparison"
 		}
 	    }
-	} elseif { $pch_unsupported_debug == 0 \
-		   || [llength [grep $test "{\[ \t\]\+dg-require-effective-target\[ \t\]\+pch_supported_debug\[ \t\]\+.*\[ \t\]\+}"]] > 0 } {
+	} else {
 	    verbose -log "pch file '$bname$suffix.gch' missing"
 	    fail "$nshort $flags"
 	    if { !$have_errs } {

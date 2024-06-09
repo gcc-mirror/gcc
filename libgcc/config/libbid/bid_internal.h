@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -970,6 +970,8 @@ get_BID64 (UINT64 sgn, int expon, UINT64 coeff, int rmode,
 	// round up
 	if (sgn)
 	  r = SMALLEST_BID64;
+      default:
+        break;
       }
       return r;
     }
@@ -1086,6 +1088,8 @@ fast_get_BID64_check_OF (UINT64 sgn, int expon, UINT64 coeff, int rmode,
 	  // round up
 	  if (sgn)
 	    r = SMALLEST_BID64;
+        default:
+          break;
 	}
 	return r;
       }
@@ -2581,19 +2585,6 @@ ALIGN (16)
       temp_x.d=(float)coefficient_x;\
       A=((tempx.i >>23) & EXPONENT_MASK32) - 0x7f;\
 }
-
-     enum class_types {
-       signalingNaN,
-       quietNaN,
-       negativeInfinity,
-       negativeNormal,
-       negativeSubnormal,
-       negativeZero,
-       positiveZero,
-       positiveSubnormal,
-       positiveNormal,
-       positiveInfinity
-     };
 
      typedef union {
        UINT64 ui64;

@@ -1,0 +1,219 @@
+/* ACLE support for AArch64 SME.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+#ifndef DEF_SME_FUNCTION
+#define DEF_SME_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
+  DEF_SME_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
+#endif
+
+#ifndef DEF_SME_ZA_FUNCTION_GS
+#define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUP, PREDS) \
+  DEF_SME_FUNCTION_GS (NAME, SHAPE, TYPES, GROUP, PREDS)
+#endif
+
+#ifndef DEF_SME_ZA_FUNCTION
+#define DEF_SME_ZA_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
+  DEF_SME_ZA_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
+#endif
+
+#define REQUIRED_EXTENSIONS 0
+DEF_SME_FUNCTION (arm_has_sme, bool_inherent, none, none)
+DEF_SME_FUNCTION (arm_in_streaming_mode, bool_inherent, none, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS AARCH64_FL_SME
+DEF_SME_FUNCTION (svcntsb, count_inherent, none, none)
+DEF_SME_FUNCTION (svcntsd, count_inherent, none, none)
+DEF_SME_FUNCTION (svcntsh, count_inherent, none, none)
+DEF_SME_FUNCTION (svcntsw, count_inherent, none, none)
+DEF_SME_ZA_FUNCTION (svldr, ldr_za, za, none)
+DEF_SME_ZA_FUNCTION (svstr, str_za, za, none)
+DEF_SME_ZA_FUNCTION (svundef, inherent_za, za, none)
+DEF_SME_ZA_FUNCTION (svzero, inherent_za, za, none)
+DEF_SME_ZA_FUNCTION (svzero_mask, inherent_mask_za, za, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS AARCH64_FL_SME | AARCH64_FL_SM_ON
+DEF_SME_ZA_FUNCTION (svaddha, unary_za_m, za_s_integer, za_m)
+DEF_SME_ZA_FUNCTION (svaddva, unary_za_m, za_s_integer, za_m)
+DEF_SME_ZA_FUNCTION (svld1_hor, load_za, all_za, none)
+DEF_SME_ZA_FUNCTION (svld1_ver, load_za, all_za, none)
+DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, mop_base, za_m)
+DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, d_za, za_m)
+DEF_SME_ZA_FUNCTION (svmops, binary_za_m, mop_base, za_m)
+DEF_SME_ZA_FUNCTION (svmops, binary_za_m, d_za, za_m)
+DEF_SME_ZA_FUNCTION (svread_hor, read_za_m, za_all_data, m)
+DEF_SME_ZA_FUNCTION (svread_ver, read_za_m, za_all_data, m)
+DEF_SME_ZA_FUNCTION (svst1_hor, store_za, all_za, none)
+DEF_SME_ZA_FUNCTION (svst1_ver, store_za, all_za, none)
+DEF_SME_ZA_FUNCTION (svsumopa, binary_za_uint_m, mop_base_signed, za_m)
+DEF_SME_ZA_FUNCTION (svsumops, binary_za_uint_m, mop_base_signed, za_m)
+DEF_SME_ZA_FUNCTION (svusmopa, binary_za_int_m, mop_base_unsigned, za_m)
+DEF_SME_ZA_FUNCTION (svusmops, binary_za_int_m, mop_base_unsigned, za_m)
+DEF_SME_ZA_FUNCTION (svwrite_hor, write_za_m, za_all_data, za_m)
+DEF_SME_ZA_FUNCTION (svwrite_ver, write_za_m, za_all_data, za_m)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
+			     | AARCH64_FL_SME_I16I64 \
+			     | AARCH64_FL_SM_ON)
+DEF_SME_ZA_FUNCTION (svaddha, unary_za_m, za_d_integer, za_m)
+DEF_SME_ZA_FUNCTION (svaddva, unary_za_m, za_d_integer, za_m)
+DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, mop_i16i64, za_m)
+DEF_SME_ZA_FUNCTION (svmops, binary_za_m, mop_i16i64, za_m)
+DEF_SME_ZA_FUNCTION (svsumopa, binary_za_uint_m, mop_i16i64_signed, za_m)
+DEF_SME_ZA_FUNCTION (svsumops, binary_za_uint_m, mop_i16i64_signed, za_m)
+DEF_SME_ZA_FUNCTION (svusmopa, binary_za_int_m, mop_i16i64_unsigned, za_m)
+DEF_SME_ZA_FUNCTION (svusmops, binary_za_int_m, mop_i16i64_unsigned, za_m)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
+			     | AARCH64_FL_SME_F64F64 \
+			     | AARCH64_FL_SM_ON)
+DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, za_d_float, za_m)
+DEF_SME_ZA_FUNCTION (svmops, binary_za_m, za_d_float, za_m)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS AARCH64_FL_SME | AARCH64_FL_SME2
+DEF_SME_FUNCTION (svldr_zt, ldr_zt, none, none)
+DEF_SME_FUNCTION (svstr_zt, str_zt, none, none)
+DEF_SME_FUNCTION (svzero_zt, inherent_zt, none, none)
+#undef REQUIRED_EXTENSIONS
+
+/* The d_za entries in this section just declare C _za64 overloads,
+   which will then be resolved to either an integer function or a
+   floating-point function.  They are needed because the integer and
+   floating-point functions have different architecture requirements.  */
+#define REQUIRED_EXTENSIONS AARCH64_FL_SME | AARCH64_FL_SME2 | AARCH64_FL_SM_ON
+DEF_SME_ZA_FUNCTION_GS (svadd, unary_za_slice, za_s_data, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svadd, unary_za_slice, d_za, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svadd_write, binary_za_slice_opt_single, za_s_integer,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION (svbmopa, binary_za_m, za_s_unsigned, za_m)
+DEF_SME_ZA_FUNCTION (svbmops, binary_za_m, za_s_unsigned, za_m)
+DEF_SME_ZA_FUNCTION_GS (svdot, binary_za_slice_opt_single, za_s_h_data,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svdot, binary_za_slice_opt_single, za_s_b_integer,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svdot_lane, dot_za_slice_lane, za_s_h_data,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svdot_lane, dot_za_slice_lane, za_s_b_integer,
+			vg1x24, none)
+DEF_SME_FUNCTION_GS (svluti2_lane_zt, luti2_lane_zt, bhs_data, x124, none)
+DEF_SME_FUNCTION_GS (svluti4_lane_zt, luti4_lane_zt, bhs_data, x12, none)
+DEF_SME_FUNCTION_GS (svluti4_lane_zt, luti4_lane_zt, hs_data, x4, none)
+DEF_SME_ZA_FUNCTION_GS (svmla, binary_za_slice_opt_single, za_s_float,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svmla, binary_za_slice_opt_single, za_s_h_data,
+			vg2, none)
+DEF_SME_ZA_FUNCTION_GS (svmla, binary_za_slice_opt_single, za_s_b_integer,
+			vg4, none)
+DEF_SME_ZA_FUNCTION_GS (svmla_lane, binary_za_slice_lane, za_s_float,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svmla_lane, binary_za_slice_lane, za_s_h_data,
+			vg2, none)
+DEF_SME_ZA_FUNCTION_GS (svmla_lane, binary_za_slice_lane, za_s_b_integer,
+			vg4, none)
+DEF_SME_ZA_FUNCTION_GS (svmls, binary_za_slice_opt_single, za_s_float,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svmls, binary_za_slice_opt_single, za_s_h_data,
+			vg2, none)
+DEF_SME_ZA_FUNCTION_GS (svmls, binary_za_slice_opt_single, za_s_b_integer,
+			vg4, none)
+DEF_SME_ZA_FUNCTION_GS (svmls_lane, binary_za_slice_lane, za_s_float,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svmls_lane, binary_za_slice_lane, za_s_h_data,
+			vg2, none)
+DEF_SME_ZA_FUNCTION_GS (svmls_lane, binary_za_slice_lane, za_s_b_integer,
+			vg4, none)
+DEF_SME_ZA_FUNCTION (svmopa, binary_za_m, za_s_h_integer, za_m)
+DEF_SME_ZA_FUNCTION (svmops, binary_za_m, za_s_h_integer, za_m)
+DEF_SME_ZA_FUNCTION_GS (svread, read_za_slice, za_bhsd_data, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svread_hor, read_za, za_bhsd_data, vg24, none)
+DEF_SME_ZA_FUNCTION_GS (svread_ver, read_za, za_bhsd_data, vg24, none)
+DEF_SME_ZA_FUNCTION_GS (svsub, unary_za_slice, za_s_data, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svsub, unary_za_slice, d_za, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svsub_write, binary_za_slice_opt_single, za_s_integer,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svsudot, binary_za_slice_uint_opt_single,
+		        za_s_b_signed, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svsudot_lane, dot_za_slice_uint_lane,
+			za_s_b_signed, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svsuvdot_lane, dot_za_slice_uint_lane,
+			za_s_b_signed, vg1x4, none)
+DEF_SME_ZA_FUNCTION_GS (svusdot, binary_za_slice_int_opt_single,
+		        za_s_b_unsigned, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svusdot_lane, dot_za_slice_int_lane,
+			za_s_b_unsigned, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svusvdot_lane, dot_za_slice_int_lane,
+			za_s_b_unsigned, vg1x4, none)
+DEF_SME_ZA_FUNCTION_GS (svvdot_lane, dot_za_slice_lane, za_s_h_data,
+			vg1x2, none)
+DEF_SME_ZA_FUNCTION_GS (svvdot_lane, dot_za_slice_lane, za_s_b_integer,
+			vg1x4, none)
+DEF_SME_ZA_FUNCTION_GS (svwrite, write_za_slice, za_bhsd_data, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svwrite_hor, write_za, za_bhsd_data, vg24, none)
+DEF_SME_ZA_FUNCTION_GS (svwrite_ver, write_za, za_bhsd_data, vg24, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
+			     | AARCH64_FL_SME2 \
+			     | AARCH64_FL_SME_I16I64 \
+			     | AARCH64_FL_SM_ON)
+DEF_SME_ZA_FUNCTION_GS (svadd, unary_za_slice, za_d_integer, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svadd_write, binary_za_slice_opt_single, za_d_integer,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svdot, binary_za_slice_opt_single, za_d_h_integer,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svdot_lane, dot_za_slice_lane, za_d_h_integer,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svmla, binary_za_slice_opt_single, za_d_h_integer,
+			vg4, none)
+DEF_SME_ZA_FUNCTION_GS (svmla_lane, binary_za_slice_lane, za_d_h_integer,
+			vg4, none)
+DEF_SME_ZA_FUNCTION_GS (svmls, binary_za_slice_opt_single, za_d_h_integer,
+			vg4, none)
+DEF_SME_ZA_FUNCTION_GS (svmls_lane, binary_za_slice_lane, za_d_h_integer,
+			vg4, none)
+DEF_SME_ZA_FUNCTION_GS (svsub, unary_za_slice, za_d_integer, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svsub_write, binary_za_slice_opt_single, za_d_integer,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svvdot_lane, dot_za_slice_lane, za_d_h_integer,
+			vg1x4, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS (AARCH64_FL_SME \
+			     | AARCH64_FL_SME2 \
+			     | AARCH64_FL_SME_F64F64 \
+			     | AARCH64_FL_SM_ON)
+DEF_SME_ZA_FUNCTION_GS (svadd, unary_za_slice, za_d_float, vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svmla, binary_za_slice_opt_single, za_d_float,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svmla_lane, binary_za_slice_lane, za_d_float,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svmls, binary_za_slice_opt_single, za_d_float,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svmls_lane, binary_za_slice_lane, za_d_float,
+			vg1x24, none)
+DEF_SME_ZA_FUNCTION_GS (svsub, unary_za_slice, za_d_float, vg1x24, none)
+#undef REQUIRED_EXTENSIONS
+
+#undef DEF_SME_ZA_FUNCTION
+#undef DEF_SME_ZA_FUNCTION_GS
+#undef DEF_SME_FUNCTION

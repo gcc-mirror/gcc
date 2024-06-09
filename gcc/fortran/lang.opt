@@ -1,5 +1,5 @@
 ; Options for the Fortran front end.
-; Copyright (C) 2003-2023 Free Software Foundation, Inc.
+; Copyright (C) 2003-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -286,6 +286,10 @@ Fortran Var(warn_use_without_only) Warning
 Warn about USE statements that have no ONLY qualifier.
 
 Wopenacc-parallelism
+Fortran
+; Documented in C
+
+Wopenmp
 Fortran
 ; Documented in C
 
@@ -712,6 +716,10 @@ fopenmp-simd
 Fortran
 ; Documented in C
 
+fopenmp-allocators
+Fortran Var(flag_openmp_allocators)
+Handle OpenMP allocators for allocatables and pointers.
+
 fpack-derived
 Fortran Var(flag_pack_derived)
 Try to lay out derived types as compactly as possible.
@@ -882,6 +890,10 @@ Conform to the ISO Fortran 2008 standard including TS 29113.
 std=f2018
 Fortran
 Conform to the ISO Fortran 2018 standard.
+
+std=f2023
+Fortran
+Conform to the ISO Fortran 2023 standard.
 
 std=f95
 Fortran

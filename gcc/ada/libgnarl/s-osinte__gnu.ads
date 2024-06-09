@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,9 +38,12 @@
 --  PLEASE DO NOT add any with-clauses to this package or remove the pragma
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package
 
-with Interfaces.C;
-with System.Parameters;
 with Ada.Unchecked_Conversion;
+
+with Interfaces.C;
+
+with System.OS_Locks;
+with System.Parameters;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -298,14 +301,14 @@ package System.OS_Interface is
    function To_pthread_t is new Ada.Unchecked_Conversion
      (unsigned_long, pthread_t);
 
-   type pthread_mutex_t     is limited private;
+   subtype pthread_mutex_t  is System.OS_Locks.pthread_mutex_t;
    type pthread_rwlock_t     is limited private;
-   type pthread_cond_t      is limited private;
-   type pthread_attr_t      is limited private;
-   type pthread_mutexattr_t is limited private;
+   type pthread_cond_t       is limited private;
+   type pthread_attr_t       is limited private;
+   type pthread_mutexattr_t  is limited private;
    type pthread_rwlockattr_t is limited private;
-   type pthread_condattr_t  is limited private;
-   type pthread_key_t       is private;
+   type pthread_condattr_t   is limited private;
+   type pthread_key_t        is private;
 
    --  From /usr/include/pthread/pthreadtypes.h
    PTHREAD_CREATE_DETACHED : constant := 1;
@@ -711,39 +714,6 @@ private
       mutex_type  : int;
    end record;
    pragma Convention (C, pthread_mutexattr_t);
-
-   --  From: /usr/include/pthread/pthreadtypes.h
-   --  typedef struct __pthread_mutex pthread_mutex_t; and
-   --  /usr/include/i386-gnu/bits/mutex.h:
-   --  struct __pthread_mutex {
-   --  __pthread_spinlock_t __held;
-   --  __pthread_spinlock_t __lock;
-   --  /* in cthreads, mutex_init does not initialized the third
-   --    pointer, as such, we cannot rely on its value for anything.  */
-   --    char *cthreadscompat1;
-   --  struct __pthread *__queue;
-   --  struct __pthread_mutexattr *attr;
-   --  void *data;
-   --  /*  up to this point, we are completely compatible with cthreads
-   --    and what libc expects.  */
-   --    void *owner;
-   --  unsigned locks;
-   --  /* if null then the default attributes apply.  */
-   --    };
-
-   type pthread_mutex_t is record
-      held          : int;
-      lock          : int;
-      cthreadcompat : System.Address;
-      queue         : System.Address;
-      attr          : System.Address;
-      data          : System.Address;
-      owner         : System.Address;
-      locks         : unsigned;
-   end record;
-   pragma Convention (C, pthread_mutex_t);
-   --  pointer needed?
-   --  type pthread_mutex_t_ptr is access pthread_mutex_t;
 
    --  From: /usr/include/pthread/pthreadtypes.h:
    --  typedef struct __pthread_cond pthread_cond_t;

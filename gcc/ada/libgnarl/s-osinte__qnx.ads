@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1995-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,8 +38,11 @@
 --  Preelaborate. This package is designed to be a bottom-level (leaf) package.
 
 with Ada.Unchecked_Conversion;
+
 with Interfaces.C;
+
 with System.OS_Constants;
+with System.OS_Locks;
 with System.Parameters;
 
 package System.OS_Interface is
@@ -268,7 +271,7 @@ package System.OS_Interface is
    type pthread_t is new int;
    subtype Thread_Id is pthread_t;
 
-   type pthread_mutex_t      is limited private;
+   subtype pthread_mutex_t   is System.OS_Locks.pthread_mutex_t;
    type pthread_cond_t       is limited private;
    type pthread_attr_t       is limited private;
    type pthread_mutexattr_t  is limited private;
@@ -283,7 +286,7 @@ package System.OS_Interface is
    PTHREAD_INHERIT_SCHED  : constant := 0;
    PTHREAD_EXPLICIT_SCHED : constant := 2;
 
-   --  Read/Write lock not supported on Android.
+   --  Read/Write lock not supported on QNX
 
    subtype pthread_rwlock_t     is pthread_mutex_t;
    subtype pthread_rwlockattr_t is pthread_mutexattr_t;
@@ -597,15 +600,9 @@ private
 
    type pthread_mutexattr_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_MUTEXATTR_SIZE);
-   end  record;
+   end record;
    pragma Convention (C, pthread_mutexattr_t);
    for pthread_mutexattr_t'Alignment use Interfaces.C.int'Alignment;
-
-   type pthread_mutex_t is record
-      Data : char_array (1 .. OS_Constants.PTHREAD_MUTEX_SIZE);
-   end record;
-   pragma Convention (C, pthread_mutex_t);
-   for pthread_mutex_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
    type pthread_cond_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_COND_SIZE);

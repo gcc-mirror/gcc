@@ -1,6 +1,6 @@
 (* FIO.mod provides a simple buffered file input/output library.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -36,23 +36,21 @@ IMPLEMENTATION MODULE FIO ;
                  provides a simple buffered file input/output library.
 *)
 
-FROM SYSTEM IMPORT ADR, TSIZE, SIZE, WORD ;
+FROM SYSTEM IMPORT ADR, TSIZE, WORD, CSSIZE_T ;
 FROM ASCII IMPORT nl, nul, tab ;
 FROM StrLib IMPORT StrLen, StrConCat, StrCopy ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM NumberIO IMPORT CardToStr ;
-FROM libc IMPORT exit, open, creat, read, write, close, lseek, strncpy, memcpy ;
 FROM Indexing IMPORT Index, InitIndex, InBounds, HighIndice, PutIndice, GetIndice ;
 FROM M2RTS IMPORT InstallTerminationProcedure ;
+FROM libc IMPORT exit, open, creat, read, write, close, lseek, strncpy, memcpy ;
+FROM wrapc IMPORT SeekSet, SeekEnd, ReadOnly, WriteOnly ;
+
 
 CONST
-   SEEK_SET            =       0 ;   (* relative from beginning of the file *)
-   SEEK_END            =       2 ;   (* relative to the end of the file     *)
-   UNIXREADONLY        =       0 ;
-   UNIXWRITEONLY       =       1 ;
-   CreatePermissions   =     666B;
    MaxBufferLength     = 1024*16 ;
    MaxErrorString      = 1024* 8 ;
+   CreatePermissions   =     666B;
 
 TYPE
    FileUsage         = (unused, openedforread, openedforwrite, openedforrandom) ;
@@ -428,10 +426,10 @@ BEGIN
                THEN
                   unixfd := creat(name.address, CreatePermissions)
                ELSE
-                  unixfd := open(name.address, UNIXWRITEONLY, 0)
+                  unixfd := open(name.address, INTEGER (WriteOnly ()), 0)
                END
             ELSE
-               unixfd := open(name.address, UNIXREADONLY, 0)
+               unixfd := open(name.address, INTEGER (ReadOnly ()), 0)
             END ;
             IF unixfd<0
             THEN
@@ -1448,7 +1446,7 @@ BEGIN
                      filled   := 0
                   END
                END ;
-               offset := lseek(unixfd, pos, SEEK_SET) ;
+               offset := lseek (unixfd, VAL (CSSIZE_T, pos), SeekSet ()) ;
                IF (offset>=0) AND (pos=offset)
                THEN
                   abspos := pos
@@ -1497,7 +1495,7 @@ BEGIN
                   filled   := 0
                END
             END ;
-            offset := lseek(unixfd, pos, SEEK_END) ;
+            offset := lseek (unixfd, VAL (CSSIZE_T, pos), SeekEnd ()) ;
             IF offset>=0
             THEN
                abspos := offset ;

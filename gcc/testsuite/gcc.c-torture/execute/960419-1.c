@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 static int i;
 
 void
@@ -8,7 +11,8 @@ check(x)
     abort();
 }
 
-main()
+int
+main(void)
 {
   int *p = &i;
 

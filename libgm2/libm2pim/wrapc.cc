@@ -59,6 +59,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <time.h>
 #endif
 
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+
 /* Define a generic NULL if one hasn't already been defined.  */
 
 #if !defined(NULL)
@@ -276,6 +280,78 @@ EXPORT(isfinitef) (float x)
   return false;
 #endif
 }
+
+/* isnan - provide non builtin alternative to the gcc builtin isnan.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+extern "C" int
+EXPORT(isnan) (double x)
+{
+#if defined(FP_NAN)
+  return fpclassify (x) == FP_NAN;
+#else
+  return x != x;
+#endif
+}
+
+/* isnanf - provide non builtin alternative to the gcc builtin isnanf.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+extern "C" int
+EXPORT(isnanf) (float x)
+{
+#if defined(FP_NAN)
+  return fpclassify (x) == FP_NAN;
+#else
+  return x != x;
+#endif
+}
+
+/* isnanl - provide non builtin alternative to the gcc builtin isnanl.
+   Returns 1 if x is a NaN otherwise return 0.  */
+
+extern "C" int
+EXPORT(isnanl) (long double x)
+{
+#if defined(FP_NAN)
+  return fpclassify (x) == FP_NAN;
+#else
+  return x != x;
+#endif
+}
+
+/* SeekSet return the system libc SEEK_SET value.  */
+
+extern "C" int
+EXPORT(SeekSet) (void)
+{
+  return SEEK_SET;
+}
+
+/* SeekEnd return the system libc SEEK_END value.  */
+
+extern "C" int
+EXPORT(SeekEnd) (void)
+{
+  return SEEK_END;
+}
+
+/* ReadOnly return the system value of O_RDONLY.  */
+
+extern "C" int
+EXPORT(ReadOnly) (void)
+{
+  return O_RDONLY;
+}
+
+/* WriteOnly return the system value of O_WRONLY.  */
+
+extern "C" int
+EXPORT(WriteOnly) (void)
+{
+  return O_WRONLY;
+}
+
 
 /* GNU Modula-2 linking hooks.  */
 

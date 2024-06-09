@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -66,9 +66,9 @@ _mm256_aesenclast_epi128 (__m256i __A, __m256i __B)
 #endif /* __DISABLE_VAES__ */
 
 
-#if !defined(__VAES__) || !defined(__AVX512F__)
+#if !defined(__VAES__) || !defined(__AVX512F__) || !defined(__EVEX512__)
 #pragma GCC push_options
-#pragma GCC target("vaes,avx512f")
+#pragma GCC target("vaes,avx512f,evex512")
 #define __DISABLE_VAESF__
 #endif /* __VAES__ */
 

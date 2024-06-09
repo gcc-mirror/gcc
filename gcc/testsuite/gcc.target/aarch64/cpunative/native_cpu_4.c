@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+crypto} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+crypto\n} } } */
 
 /* Test one where all crypto bits are given so crypto should be enabled.  */

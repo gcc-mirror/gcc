@@ -1,5 +1,5 @@
 /* Sets (bit vectors) of hard registers, and operations on them.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC
 
@@ -421,6 +421,9 @@ struct target_hard_regs {
      with the local stack frame are safe, but scant others.  */
   HARD_REG_SET x_regs_invalidated_by_call;
 
+  /* The set of registers that are used by EH_RETURN_DATA_REGNO.  */
+  HARD_REG_SET x_eh_return_data_regs;
+
   /* Table of register numbers in the order in which to try to use them.  */
   int x_reg_alloc_order[FIRST_PSEUDO_REGISTER];
 
@@ -485,6 +488,8 @@ extern struct target_hard_regs *this_target_hard_regs;
 #define call_used_or_fixed_regs \
   (regs_invalidated_by_call | fixed_reg_set)
 #endif
+#define eh_return_data_regs \
+  (this_target_hard_regs->x_eh_return_data_regs)
 #define reg_alloc_order \
   (this_target_hard_regs->x_reg_alloc_order)
 #define inv_reg_alloc_order \

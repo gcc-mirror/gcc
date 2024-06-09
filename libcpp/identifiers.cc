@@ -1,5 +1,5 @@
 /* Hash tables for the CPP library.
-   Copyright (C) 1986-2023 Free Software Foundation, Inc.
+   Copyright (C) 1986-2024 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -27,24 +27,22 @@ along with this program; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "internal.h"
 
-static hashnode alloc_node (cpp_hash_table *);
-
 /* Return an identifier node for hashtable.c.  Used by cpplib except
    when integrated with the C front ends.  */
+template<typename Node>
 static hashnode
 alloc_node (cpp_hash_table *table)
 {
-  cpp_hashnode *node;
-
-  node = XOBNEW (&table->pfile->hash_ob, cpp_hashnode);
-  memset (node, 0, sizeof (cpp_hashnode));
+  const auto node = XOBNEW (&table->pfile->hash_ob, Node);
+  memset (node, 0, sizeof (Node));
   return HT_NODE (node);
 }
 
 /* Set up the identifier hash table.  Use TABLE if non-null, otherwise
    create our own.  */
 void
-_cpp_init_hashtable (cpp_reader *pfile, cpp_hash_table *table)
+_cpp_init_hashtable (cpp_reader *pfile, cpp_hash_table *table,
+		     cpp_hash_table *extra_table)
 {
   struct spec_nodes *s;
 
@@ -52,13 +50,23 @@ _cpp_init_hashtable (cpp_reader *pfile, cpp_hash_table *table)
     {
       pfile->our_hashtable = 1;
       table = ht_create (13);	/* 8K (=2^13) entries.  */
-      table->alloc_node = alloc_node;
-
-      obstack_specify_allocation (&pfile->hash_ob, 0, 0, xmalloc, free);
+      table->alloc_node = alloc_node<cpp_hashnode>;
     }
 
+  if (extra_table == NULL)
+    {
+      pfile->our_extra_hashtable = true;
+      extra_table = ht_create (6); /* 64 entries.  */
+      extra_table->alloc_node = alloc_node<cpp_hashnode_extra>;
+    }
+
+  if (pfile->our_hashtable || pfile->our_extra_hashtable)
+    obstack_specify_allocation (&pfile->hash_ob, 0, 0, xmalloc, free);
+
   table->pfile = pfile;
+  extra_table->pfile = pfile;
   pfile->hash_table = table;
+  pfile->extra_hash_table = extra_table;
 
   /* Now we can initialize things that use the hash table.  */
   _cpp_init_directives (pfile);
@@ -80,10 +88,11 @@ void
 _cpp_destroy_hashtable (cpp_reader *pfile)
 {
   if (pfile->our_hashtable)
-    {
-      ht_destroy (pfile->hash_table);
-      obstack_free (&pfile->hash_ob, 0);
-    }
+    ht_destroy (pfile->hash_table);
+  if (pfile->our_extra_hashtable)
+    ht_destroy (pfile->extra_hash_table);
+  if (pfile->our_hashtable || pfile->our_extra_hashtable)
+    obstack_free (&pfile->hash_ob, 0);
 }
 
 /* Returns the hash entry for the STR of length LEN, creating one
@@ -110,7 +119,12 @@ cpp_defined (cpp_reader *pfile, const unsigned char *str, int len)
 /* We don't need a proxy since the hash table's identifier comes first
    in cpp_hashnode.  However, in case this is ever changed, we have a
    static assertion for it.  */
-extern char proxy_assertion_broken[offsetof (struct cpp_hashnode, ident) == 0 ? 1 : -1];
+static_assert (offsetof (cpp_hashnode, ident) == 0,
+	       "struct cpp_hashnode must have a struct ht_identifier as"
+	       " its first member");
+static_assert (offsetof (cpp_hashnode_extra, ident) == 0,
+	       "struct cpp_hashnode_extra must have a struct ht_identifier as"
+	       " its first member");
 
 /* For all nodes in the hashtable, callback CB with parameters PFILE,
    the node, and V.  */

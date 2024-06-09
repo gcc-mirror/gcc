@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -40,7 +40,6 @@ enum _mm_hint
   _MM_HINT_IT1 = 18,
   /* _MM_HINT_ET is _MM_HINT_T with set 3rd bit.  */
   _MM_HINT_ET0 = 7,
-  _MM_HINT_ET1 = 6,
   _MM_HINT_T0 = 3,
   _MM_HINT_T1 = 2,
   _MM_HINT_T2 = 1,
@@ -73,6 +72,7 @@ typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));
 
 /* Unaligned version of the same type.  */
 typedef float __m128_u __attribute__ ((__vector_size__ (16), __may_alias__, __aligned__ (1)));
+typedef float __float_u __attribute__ ((__may_alias__, __aligned__ (1)));
 
 /* Internal data types for implementing the intrinsics.  */
 typedef float __v4sf __attribute__ ((__vector_size__ (16)));
@@ -774,7 +774,7 @@ _mm_unpacklo_ps (__m128 __A, __m128 __B)
 /* Sets the upper two SPFP values with 64-bits of data loaded from P;
    the lower two values are passed through from A.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_loadh_pi (__m128 __A, __m64 const *__P)
+_mm_loadh_pi (__m128 __A, __m64_u const *__P)
 {
   return (__m128) __builtin_ia32_loadhps ((__v4sf)__A, (const __v2sf *)__P);
 }
@@ -803,7 +803,7 @@ _mm_movelh_ps (__m128 __A, __m128 __B)
 /* Sets the lower two SPFP values with 64-bits of data loaded from P;
    the upper two values are passed through from A.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_loadl_pi (__m128 __A, __m64 const *__P)
+_mm_loadl_pi (__m128 __A, __m64_u const *__P)
 {
   return (__m128) __builtin_ia32_loadlps ((__v4sf)__A, (const __v2sf *)__P);
 }
@@ -910,7 +910,7 @@ _mm_set_ps1 (float __F)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_load_ss (float const *__P)
 {
-  return _mm_set_ss (*__P);
+  return __extension__ (__m128) (__v4sf){ *(__float_u *)__P, 0.0f, 0.0f, 0.0f };
 }
 
 /* Create a vector with all four elements equal to *P.  */
@@ -966,7 +966,7 @@ _mm_setr_ps (float __Z, float __Y, float __X, float __W)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_store_ss (float *__P, __m128 __A)
 {
-  *__P = ((__v4sf)__A)[0];
+  *(__float_u *)__P = ((__v4sf)__A)[0];
 }
 
 extern __inline float __attribute__((__gnu_inline__, __always_inline__, __artificial__))

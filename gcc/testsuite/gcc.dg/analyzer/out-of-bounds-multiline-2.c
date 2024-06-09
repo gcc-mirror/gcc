@@ -18,15 +18,14 @@ void int_vla_write_element_after_end_off_by_one(int32_t x, size_t n)
    arr[n] = x;
    ~~~~~~~^~~
   'int_vla_write_element_after_end_off_by_one': events 1-2 (depth 1)
-    |
-    |   int32_t arr[n];
-    |           ^~~
-    |           |
-    |           (1) capacity: 'n * 4' bytes
-    |
-    |   arr[n] = x;
-    |   ~~~~~~~~~~
-    |          |
-    |          (2) write of 4 bytes at offset 'n * 4' exceeds the buffer
-    |
+   int32_t arr[n];
+           ^~~
+           |
+           (1) capacity: 'n * 4' bytes
+   { dg-end-multiline-output "" } */
+/* { dg-begin-multiline-output "" }
+   arr[n] = x;
+   ~~~~~~~~~~
+          |
+          (2) write of 4 bytes at offset 'n * 4' exceeds the buffer
    { dg-end-multiline-output "" } */

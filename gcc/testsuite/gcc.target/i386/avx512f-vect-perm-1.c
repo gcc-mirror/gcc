@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -ffast-math -march=knl" } */
-/* { dg-final { scan-assembler-times "vpermps\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-options "-O2 -ftree-vectorize -ffast-math -march=skylake-avx512 -mprefer-vector-width=512" } */
+/* { dg-final { scan-assembler-times "vpermd\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 
 #define N 1024
 float f1[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));

@@ -34,6 +34,36 @@ int lib_strncmp(const char *a, const char *b, size_t n)
 
 #define MAX_SZ 600
 
+/* A means to run only a fraction of the tests, beginning at a random
+   count.  */
+#ifdef RUN_FRACTION
+
+#define SKIP_ITERATION skip_iteration ()
+static unsigned int iteration_count;
+
+static _Bool
+skip_iteration (void)
+{
+  _Bool run = ++iteration_count == RUN_FRACTION;
+
+  if (run)
+    iteration_count = 0;
+
+  return !run;
+}
+
+static void
+initialize_skip_iteration_count ()
+{
+  srand (2024);
+  iteration_count = (unsigned int) (rand ()) % RUN_FRACTION;
+}
+
+#else
+#define SKIP_ITERATION 0
+#define initialize_skip_iteration_count()
+#endif
+
 #define DEF_RS(ALIGN)                                                      \
 static void test_memcmp_runtime_size_ ## ALIGN (const char *str1, 	   \
 						const char *str2,	   \
@@ -110,6 +140,8 @@ static void test_driver_memcmp (void (test_memcmp)(const char *, const char *, i
   int i,j,l;
   for(l=0;l<sz;l++) {
     for(i=0;i<NRAND/sz;i++) {
+      if (SKIP_ITERATION)
+	continue;
       for(j=0;j<l;j++) {
 	buf1[j] = rand() & 0xff;
 	buf2[j] = buf1[j];
@@ -128,6 +160,8 @@ static void test_driver_memcmp (void (test_memcmp)(const char *, const char *, i
   for(diff_pos = ((test_sz>TZONE)?(test_sz-TZONE):0); diff_pos < test_sz+TZONE; diff_pos++)
     for(zero_pos = ((test_sz>TZONE)?(test_sz-TZONE):0); zero_pos < test_sz+TZONE; zero_pos++)
       {
+	if (SKIP_ITERATION)
+	  continue;
 	memset(buf1, 'A', 2*test_sz);
 	memset(buf2, 'A', 2*test_sz);
 	buf2[diff_pos] = 'B';
@@ -490,6 +524,7 @@ DEF_TEST(49,1)
 int
 main(int argc, char **argv)
 {
+  initialize_skip_iteration_count ();
 #ifdef TEST_ALL
     RUN_TEST(1,1)
     RUN_TEST(1,2)

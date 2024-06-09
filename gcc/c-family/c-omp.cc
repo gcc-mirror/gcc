@@ -1,7 +1,7 @@
 /* This file contains routines to construct OpenACC and OpenMP constructs,
    called from parsing in the C and C++ front ends.
 
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>,
 		  Diego Novillo <dnovillo@redhat.com>.
 
@@ -958,6 +958,19 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
       tree cond = TREE_VEC_ELT (condv, i);
       tree incr = TREE_VEC_ELT (incrv, i);
 
+      if (init == NULL_TREE)
+	{
+	  gcc_assert (decl == NULL_TREE
+		      && cond == NULL_TREE
+		      && incr == NULL_TREE);
+	  for (i++; i < TREE_VEC_LENGTH (declv); i++)
+	    gcc_assert (TREE_VEC_ELT (declv, i) == NULL_TREE
+			&& TREE_VEC_ELT (initv, i) == NULL_TREE
+			&& TREE_VEC_ELT (condv, i) == NULL_TREE
+			&& TREE_VEC_ELT (incrv, i) == NULL_TREE);
+	  break;
+	}
+
       elocus = locus;
       if (EXPR_HAS_LOCATION (init))
 	elocus = EXPR_LOCATION (init);
@@ -1304,9 +1317,11 @@ static int
 c_omp_is_loop_iterator (tree decl, struct c_omp_check_loop_iv_data *d)
 {
   for (int i = 0; i < TREE_VEC_LENGTH (d->declv); i++)
-    if (decl == TREE_VEC_ELT (d->declv, i)
-	|| (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
-	    && decl == TREE_PURPOSE (TREE_VEC_ELT (d->declv, i))))
+    if (TREE_VEC_ELT (d->declv, i) == NULL_TREE)
+      continue;
+    else if (decl == TREE_VEC_ELT (d->declv, i)
+	     || (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
+		 && decl == TREE_PURPOSE (TREE_VEC_ELT (d->declv, i))))
       return i;
     else if (TREE_CODE (TREE_VEC_ELT (d->declv, i)) == TREE_LIST
 	     && TREE_CHAIN (TREE_VEC_ELT (d->declv, i))
@@ -1584,6 +1599,68 @@ c_omp_check_nonrect_loop_iv (tree *tp, struct c_omp_check_loop_iv_data *d,
   return ret;
 }
 
+/* Callback for walk_tree to find nested loop transforming construct.  */
+
+static tree
+c_find_nested_loop_xform_r (tree *tp, int *walk_subtrees, void *)
+{
+  *walk_subtrees = 0;
+  switch (TREE_CODE (*tp))
+    {
+    case OMP_TILE:
+    case OMP_UNROLL:
+      return *tp;
+    case BIND_EXPR:
+      *walk_subtrees = 1;
+      break;
+    case STATEMENT_LIST:
+      *walk_subtrees = 1;
+      break;
+    case TRY_FINALLY_EXPR:
+      *walk_subtrees = 1;
+      break;
+    default:
+      break;
+    }
+  return NULL;
+}
+
+/* Find Jth loop among generated loops of STMT.  */
+
+int
+c_omp_find_generated_loop (tree &stmt, int j, walk_tree_lh lh)
+{
+  stmt = walk_tree_1 (&stmt, c_find_nested_loop_xform_r,
+		      NULL, NULL, lh);
+  gcc_assert (stmt);
+  switch (TREE_CODE (stmt))
+    {
+    case OMP_UNROLL:
+      gcc_assert (omp_find_clause (OMP_FOR_CLAUSES (stmt),
+				   OMP_CLAUSE_PARTIAL));
+      /* FALLTHRU */
+    case OMP_TILE:
+      int k;
+      k = 0;
+      for (int i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (stmt)); ++i)
+	if (i == j)
+	  {
+	    if (TREE_VEC_ELT (OMP_FOR_INIT (stmt), i) == NULL_TREE)
+	      {
+		stmt = OMP_FOR_BODY (stmt);
+		return c_omp_find_generated_loop (stmt, k, lh);
+	      }
+	    else
+	      return i;
+	  }
+	else if (TREE_VEC_ELT (OMP_FOR_INIT (stmt), i) == NULL_TREE)
+	  ++k;
+      gcc_unreachable ();
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Diagnose invalid references to loop iterators in lb, b and incr
    expressions.  */
 
@@ -1592,7 +1669,7 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 {
   hash_set<tree> pset;
   struct c_omp_check_loop_iv_data data;
-  int i;
+  int i, k = 0;
 
   data.declv = declv;
   data.fail = false;
@@ -1602,13 +1679,24 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
   data.ppset = &pset;
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (stmt)); i++)
     {
+      tree this_stmt = stmt;
+      int j = i;
       tree init = TREE_VEC_ELT (OMP_FOR_INIT (stmt), i);
+      if (init == NULL_TREE)
+	{
+	  if (k == 0)
+	    data.declv = copy_node (declv);
+	  this_stmt = OMP_FOR_BODY (stmt);
+	  j = c_omp_find_generated_loop (this_stmt, k++, lh);
+	  init = TREE_VEC_ELT (OMP_FOR_INIT (this_stmt), j);
+	  TREE_VEC_ELT (data.declv, i) = TREE_OPERAND (init, 0);
+	}
       gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
       tree decl = TREE_OPERAND (init, 0);
-      tree cond = TREE_VEC_ELT (OMP_FOR_COND (stmt), i);
+      tree cond = TREE_VEC_ELT (OMP_FOR_COND (this_stmt), j);
       gcc_assert (COMPARISON_CLASS_P (cond));
       gcc_assert (TREE_OPERAND (cond, 0) == decl);
-      tree incr = TREE_VEC_ELT (OMP_FOR_INCR (stmt), i);
+      tree incr = TREE_VEC_ELT (OMP_FOR_INCR (this_stmt), j);
       data.expr_loc = EXPR_LOCATION (TREE_OPERAND (init, 1));
       tree vec_outer1 = NULL_TREE, vec_outer2 = NULL_TREE;
       int kind = 0;
@@ -1636,9 +1724,9 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 	 expression then involves the subtraction and always refers
 	 to the original value.  The C++ FE needs to warn on those
 	 earlier.  */
-      if (decl == TREE_VEC_ELT (declv, i)
-	  || (TREE_CODE (TREE_VEC_ELT (declv, i)) == TREE_LIST
-	      && decl == TREE_PURPOSE (TREE_VEC_ELT (declv, i))))
+      if (decl == TREE_VEC_ELT (data.declv, i)
+	  || (TREE_CODE (TREE_VEC_ELT (data.declv, i)) == TREE_LIST
+	      && decl == TREE_PURPOSE (TREE_VEC_ELT (data.declv, i))))
 	{
 	  data.expr_loc = EXPR_LOCATION (cond);
 	  data.kind = kind | 1;
@@ -1655,6 +1743,15 @@ c_omp_check_loop_iv (tree stmt, tree declv, walk_tree_lh lh)
 	    loc = data.stmt_loc;
 	  error_at (loc, "two different outer iteration variables %qD and %qD"
 			 " used in a single loop", vec_outer1, vec_outer2);
+	  data.fail = true;
+	}
+      else if ((vec_outer1 || vec_outer2) && this_stmt != stmt)
+	{
+	  location_t loc = data.expr_loc;
+	  if (loc == UNKNOWN_LOCATION)
+	    loc = data.stmt_loc;
+	  sorry_at (loc, "non-rectangular loops from generated loops "
+			 "unsupported");
 	  data.fail = true;
 	}
       if (vec_outer1 || vec_outer2)
@@ -1793,22 +1890,46 @@ check_loop_binding_expr_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 #define LOCATION_OR(loc1, loc2) \
   ((loc1) != UNKNOWN_LOCATION ? (loc1) : (loc2))
 
+enum check_loop_binding_expr_ctx {
+  CHECK_LOOP_BINDING_EXPR_CTX_LOOP_VAR,
+  CHECK_LOOP_BINDING_EXPR_CTX_IN_INIT,
+  CHECK_LOOP_BINDING_EXPR_CTX_END_TEST,
+  CHECK_LOOP_BINDING_EXPR_CTX_INCR
+};
+
 /* Check a single expression EXPR for references to variables bound in
    intervening code in BODY.  Return true if ok, otherwise give an error
    referencing CONTEXT and return false.  Use LOC for the error message
    if EXPR doesn't have one.  */
 static bool
-check_loop_binding_expr (tree expr, tree body, const char *context,
-			 location_t loc)
+check_loop_binding_expr (tree expr, tree body, location_t loc,
+			 check_loop_binding_expr_ctx ctx)
 {
   tree bad = walk_tree (&expr, check_loop_binding_expr_r, (void *)&body, NULL);
 
   if (bad)
     {
       location_t eloc = EXPR_LOCATION (expr);
-      error_at (LOCATION_OR (eloc, loc),
-		"variable %qD used %s is bound "
-		"in intervening code", bad, context);
+      eloc = LOCATION_OR (eloc, loc);
+      switch (ctx)
+	{
+	case CHECK_LOOP_BINDING_EXPR_CTX_LOOP_VAR:
+	  error_at (eloc, "variable %qD used as loop variable is bound "
+		    "in intervening code", bad);
+	  break;
+	case CHECK_LOOP_BINDING_EXPR_CTX_IN_INIT:
+	  error_at (eloc, "variable %qD used in initializer is bound "
+		    "in intervening code", bad);
+	  break;
+	case CHECK_LOOP_BINDING_EXPR_CTX_END_TEST:
+	  error_at (eloc, "variable %qD used in end test is bound "
+		    "in intervening code", bad);
+	  break;
+	case CHECK_LOOP_BINDING_EXPR_CTX_INCR:
+	  error_at (eloc, "variable %qD used in increment expression is bound "
+		    "in intervening code", bad);
+	  break;
+	}
       return false;
     }
   return true;
@@ -1829,6 +1950,12 @@ c_omp_check_loop_binding_exprs (tree stmt, vec<tree> *orig_inits)
   for (int i = 1; i < TREE_VEC_LENGTH (OMP_FOR_INIT (stmt)); i++)
     {
       tree init = TREE_VEC_ELT (OMP_FOR_INIT (stmt), i);
+      if (init == NULL_TREE)
+	{
+	  sorry_at (loc, "imperfectly nested loop using generated loops");
+	  ok = false;
+	  continue;
+	}
       tree cond = TREE_VEC_ELT (OMP_FOR_COND (stmt), i);
       tree incr = TREE_VEC_ELT (OMP_FOR_INCR (stmt), i);
       gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
@@ -1839,13 +1966,15 @@ c_omp_check_loop_binding_exprs (tree stmt, vec<tree> *orig_inits)
 
       e = TREE_OPERAND (init, 1);
       eloc = LOCATION_OR (EXPR_LOCATION (init), loc);
-      if (!check_loop_binding_expr (decl, body, "as loop variable", eloc))
+      if (!check_loop_binding_expr (decl, body, eloc,
+				    CHECK_LOOP_BINDING_EXPR_CTX_LOOP_VAR))
 	ok = false;
-      if (!check_loop_binding_expr (e, body, "in initializer", eloc))
+      if (!check_loop_binding_expr (e, body, eloc,
+				    CHECK_LOOP_BINDING_EXPR_CTX_IN_INIT))
 	ok = false;
       if (orig_init
-	  && !check_loop_binding_expr (orig_init, body,
-				       "in initializer", eloc))
+	  && !check_loop_binding_expr (orig_init, body, eloc,
+				       CHECK_LOOP_BINDING_EXPR_CTX_IN_INIT))
 	ok = false;
 
       /* INCR and/or COND may be null if this is a template with a
@@ -1859,7 +1988,8 @@ c_omp_check_loop_binding_exprs (tree stmt, vec<tree> *orig_inits)
 	    e = TREE_OPERAND (cond, 0);
 	  else
 	    e = cond;
-	  if (!check_loop_binding_expr (e, body, "in end test", eloc))
+	  if (!check_loop_binding_expr (e, body, eloc,
+					CHECK_LOOP_BINDING_EXPR_CTX_END_TEST))
 	    ok = false;
 	}
 
@@ -1870,8 +2000,8 @@ c_omp_check_loop_binding_exprs (tree stmt, vec<tree> *orig_inits)
 	     increment/decrement.  We don't have to check the latter
 	     since there are no operands besides the iteration variable.  */
 	  if (TREE_CODE (incr) == MODIFY_EXPR
-	      && !check_loop_binding_expr (TREE_OPERAND (incr, 1), body,
-					   "in increment expression", eloc))
+	      && !check_loop_binding_expr (TREE_OPERAND (incr, 1), body, eloc,
+					   CHECK_LOOP_BINDING_EXPR_CTX_INCR))
 	    ok = false;
 	}
     }
@@ -2830,9 +2960,23 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		    }
 		  else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == TREE_LIST)
 		    {
+		      /* TODO: This can go away once we transition all uses of
+			 TREE_LIST for representing OMP array sections to
+			 OMP_ARRAY_SECTION.  */
 		      tree t;
 		      for (t = OMP_CLAUSE_DECL (c);
 			   TREE_CODE (t) == TREE_LIST; t = TREE_CHAIN (t))
+			;
+		      if (DECL_P (t))
+			bitmap_clear_bit (&allocate_head, DECL_UID (t));
+		      break;
+		    }
+		  else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == OMP_ARRAY_SECTION)
+		    {
+		      tree t;
+		      for (t = OMP_CLAUSE_DECL (c);
+			   TREE_CODE (t) == OMP_ARRAY_SECTION;
+			   t = TREE_OPERAND (t, 0))
 			;
 		      if (DECL_P (t))
 			bitmap_clear_bit (&allocate_head, DECL_UID (t));
@@ -3169,8 +3313,9 @@ struct map_clause
     decl_mapped (false), omp_declare_target (false) { }
 };
 
-/* Adjust map clauses after normal clause parsing, mainly to turn specific
-   base-pointer map cases into attach/detach and mark them addressable.  */
+/* Adjust map clauses after normal clause parsing, mainly to mark specific
+   base-pointer map cases addressable that may be turned into attach/detach
+   operations during gimplification.  */
 void
 c_omp_adjust_map_clauses (tree clauses, bool is_target)
 {
@@ -3186,7 +3331,6 @@ c_omp_adjust_map_clauses (tree clauses, bool is_target)
 	    && POINTER_TYPE_P (TREE_TYPE (OMP_CLAUSE_DECL (c))))
 	  {
 	    tree ptr = OMP_CLAUSE_DECL (c);
-	    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ATTACH_DETACH);
 	    c_common_mark_addressable_vec (ptr);
 	  }
       return;
@@ -3199,7 +3343,7 @@ c_omp_adjust_map_clauses (tree clauses, bool is_target)
 	&& DECL_P (OMP_CLAUSE_DECL (c)))
       {
 	/* If this is for a target construct, the firstprivate pointer
-	   is changed to attach/detach if either is true:
+	   is marked addressable if either is true:
 	   (1) the base-pointer is mapped in this same construct, or
 	   (2) the base-pointer is a variable place on the device by
 	       "declare target" directives.
@@ -3241,11 +3385,879 @@ c_omp_adjust_map_clauses (tree clauses, bool is_target)
 
       if (mc.firstprivate_ptr_p
 	  && (mc.decl_mapped || mc.omp_declare_target))
+	c_common_mark_addressable_vec (OMP_CLAUSE_DECL (mc.clause));
+    }
+}
+
+/* Maybe strip off an indirection from a "converted" reference, then find the
+   origin of a pointer (i.e. without any offset).  */
+
+tree
+c_omp_address_inspector::unconverted_ref_origin ()
+{
+  tree t = orig;
+
+  /* We may have a reference-typed component access at the outermost level
+     that has had convert_from_reference called on it.  Get the un-dereferenced
+     reference itself.  */
+  t = maybe_unconvert_ref (t);
+
+  /* Find base pointer for POINTER_PLUS_EXPR, etc.  */
+  t = get_origin (t);
+
+  return t;
+}
+
+/* Return TRUE if the address is a component access.  */
+
+bool
+c_omp_address_inspector::component_access_p ()
+{
+  tree t = maybe_unconvert_ref (orig);
+
+  t = get_origin (t);
+
+  return TREE_CODE (t) == COMPONENT_REF;
+}
+
+/* Perform various checks on the address, as described by clause CLAUSE (we
+   only use its code and location here).  */
+
+bool
+c_omp_address_inspector::check_clause (tree clause)
+{
+  tree t = unconverted_ref_origin ();
+
+  if (TREE_CODE (t) != COMPONENT_REF)
+    return true;
+
+  if (TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL
+      && DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
+    {
+      error_at (OMP_CLAUSE_LOCATION (clause),
+		"bit-field %qE in %qs clause",
+		t, omp_clause_code_name[OMP_CLAUSE_CODE (clause)]);
+      return false;
+    }
+  else if (!processing_template_decl_p ()
+	   && !omp_mappable_type (TREE_TYPE (t)))
+    {
+      error_at (OMP_CLAUSE_LOCATION (clause),
+		"%qE does not have a mappable type in %qs clause",
+		t, omp_clause_code_name[OMP_CLAUSE_CODE (clause)]);
+      emit_unmappable_type_notes (TREE_TYPE (t));
+      return false;
+    }
+  else if (TREE_TYPE (t) && TYPE_ATOMIC (TREE_TYPE (t)))
+    {
+      error_at (OMP_CLAUSE_LOCATION (clause),
+		"%<_Atomic%> %qE in %qs clause", t,
+		omp_clause_code_name[OMP_CLAUSE_CODE (clause)]);
+      return false;
+    }
+
+  return true;
+}
+
+/* Find the "root term" for the address.  This is the innermost decl, etc.
+   of the access.  */
+
+tree
+c_omp_address_inspector::get_root_term (bool checking)
+{
+  if (root_term && !checking)
+    return root_term;
+
+  tree t = unconverted_ref_origin ();
+
+  while (TREE_CODE (t) == COMPONENT_REF)
+    {
+      if (checking
+	  && TREE_TYPE (TREE_OPERAND (t, 0))
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
 	{
-	  OMP_CLAUSE_SET_MAP_KIND (mc.clause, GOMP_MAP_ATTACH_DETACH);
-	  c_common_mark_addressable_vec (OMP_CLAUSE_DECL (mc.clause));
+	  error_at (loc, "%qE is a member of a union", t);
+	  return error_mark_node;
+	}
+      t = TREE_OPERAND (t, 0);
+      while (TREE_CODE (t) == MEM_REF
+	     || TREE_CODE (t) == INDIRECT_REF
+	     || TREE_CODE (t) == ARRAY_REF)
+	{
+	  if (TREE_CODE (t) == MEM_REF
+	      || TREE_CODE (t) == INDIRECT_REF)
+	    indirections = true;
+	  t = TREE_OPERAND (t, 0);
+	  STRIP_NOPS (t);
+	  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+	    t = TREE_OPERAND (t, 0);
 	}
     }
+
+  root_term = t;
+
+  return t;
+}
+
+/* Return TRUE if the address is supported in mapping clauses.  At present,
+   this means that the innermost expression is a DECL_P, but could be extended
+   to other types of expression in the future.  */
+
+bool
+c_omp_address_inspector::map_supported_p ()
+{
+  /* If we've already decided if the mapped address is supported, return
+     that.  */
+  if (map_supported != -1)
+    return map_supported;
+
+  tree t = unconverted_ref_origin ();
+
+  STRIP_NOPS (t);
+
+  while (TREE_CODE (t) == INDIRECT_REF
+	 || TREE_CODE (t) == MEM_REF
+	 || TREE_CODE (t) == ARRAY_REF
+	 || TREE_CODE (t) == COMPONENT_REF
+	 || TREE_CODE (t) == COMPOUND_EXPR
+	 || TREE_CODE (t) == SAVE_EXPR
+	 || TREE_CODE (t) == POINTER_PLUS_EXPR
+	 || TREE_CODE (t) == NON_LVALUE_EXPR
+	 || TREE_CODE (t) == OMP_ARRAY_SECTION
+	 || TREE_CODE (t) == NOP_EXPR)
+    if (TREE_CODE (t) == COMPOUND_EXPR)
+      t = TREE_OPERAND (t, 1);
+    else
+      t = TREE_OPERAND (t, 0);
+
+  STRIP_NOPS (t);
+
+  map_supported = DECL_P (t);
+
+  return map_supported;
+}
+
+/* Get the origin of an address T, stripping off offsets and some other
+   bits.  */
+
+tree
+c_omp_address_inspector::get_origin (tree t)
+{
+  while (1)
+    {
+      if (TREE_CODE (t) == COMPOUND_EXPR)
+	{
+	  t = TREE_OPERAND (t, 1);
+	  STRIP_NOPS (t);
+	}
+      else if (TREE_CODE (t) == POINTER_PLUS_EXPR
+	       || TREE_CODE (t) == SAVE_EXPR)
+	t = TREE_OPERAND (t, 0);
+      else if (!processing_template_decl_p ()
+	       && TREE_CODE (t) == INDIRECT_REF
+	       && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == REFERENCE_TYPE)
+	t = TREE_OPERAND (t, 0);
+      else
+	break;
+    }
+  STRIP_NOPS (t);
+  return t;
+}
+
+/* For an address T that might be a reference that has had
+   "convert_from_reference" called on it, return the actual reference without
+   any indirection.  */
+
+tree
+c_omp_address_inspector::maybe_unconvert_ref (tree t)
+{
+  /* Be careful not to dereference the type if we're processing a
+     template decl, else it might be NULL.  */
+  if (!processing_template_decl_p ()
+      && TREE_CODE (t) == INDIRECT_REF
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == REFERENCE_TYPE)
+    return TREE_OPERAND (t, 0);
+
+  return t;
+}
+
+/* Return TRUE if CLAUSE might describe a zero-length array section.  */
+
+bool
+c_omp_address_inspector::maybe_zero_length_array_section (tree clause)
+{
+  switch (OMP_CLAUSE_MAP_KIND (clause))
+    {
+    case GOMP_MAP_ALLOC:
+    case GOMP_MAP_IF_PRESENT:
+    case GOMP_MAP_TO:
+    case GOMP_MAP_FROM:
+    case GOMP_MAP_TOFROM:
+    case GOMP_MAP_ALWAYS_TO:
+    case GOMP_MAP_ALWAYS_FROM:
+    case GOMP_MAP_ALWAYS_TOFROM:
+    case GOMP_MAP_PRESENT_ALLOC:
+    case GOMP_MAP_PRESENT_TO:
+    case GOMP_MAP_PRESENT_FROM:
+    case GOMP_MAP_PRESENT_TOFROM:
+    case GOMP_MAP_ALWAYS_PRESENT_TO:
+    case GOMP_MAP_ALWAYS_PRESENT_FROM:
+    case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
+    case GOMP_MAP_RELEASE:
+    case GOMP_MAP_DELETE:
+    case GOMP_MAP_FORCE_TO:
+    case GOMP_MAP_FORCE_FROM:
+    case GOMP_MAP_FORCE_TOFROM:
+    case GOMP_MAP_FORCE_PRESENT:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* Expand a chained access.  We only expect to see a quite limited range of
+   expression types here, because e.g. you can't have an array of
+   references.  */
+
+static tree
+omp_expand_access_chain (tree c, tree expr, vec<omp_addr_token *> &addr_tokens,
+			 unsigned *idx, c_omp_region_type ort)
+{
+  using namespace omp_addr_tokenizer;
+  location_t loc = OMP_CLAUSE_LOCATION (c);
+  unsigned i = *idx;
+  tree c2 = NULL_TREE;
+  gomp_map_kind kind;
+
+  if ((ort & C_ORT_EXIT_DATA) != 0
+      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FROM
+      || (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	  && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FROM
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DELETE
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_RELEASE
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_FROM
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FORCE_FROM
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_PRESENT_FROM
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALWAYS_PRESENT_FROM)))
+    kind = GOMP_MAP_DETACH;
+  else
+    kind = GOMP_MAP_ATTACH;
+
+  switch (addr_tokens[i]->u.access_kind)
+    {
+    case ACCESS_POINTER:
+    case ACCESS_POINTER_OFFSET:
+      {
+	tree virtual_origin
+	  = fold_convert_loc (loc, ptrdiff_type_node, addr_tokens[i]->expr);
+	tree data_addr = omp_accessed_addr (addr_tokens, i, expr);
+	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	OMP_CLAUSE_SET_MAP_KIND (c2, kind);
+	OMP_CLAUSE_DECL (c2) = addr_tokens[i]->expr;
+	OMP_CLAUSE_SIZE (c2)
+	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
+			     fold_convert_loc (loc, ptrdiff_type_node,
+					       data_addr),
+			     virtual_origin);
+      }
+      break;
+
+    case ACCESS_INDEXED_ARRAY:
+      break;
+
+    default:
+      return error_mark_node;
+    }
+
+  if (c2)
+    {
+      OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
+      OMP_CLAUSE_CHAIN (c) = c2;
+      c = c2;
+    }
+
+  *idx = ++i;
+
+  if (i < addr_tokens.length ()
+      && addr_tokens[i]->type == ACCESS_METHOD)
+    return omp_expand_access_chain (c, expr, addr_tokens, idx, ort);
+
+  return c;
+}
+
+/* Translate "array_base_decl access_method" to OMP mapping clauses.  */
+
+tree
+c_omp_address_inspector::expand_array_base (tree c,
+					    vec<omp_addr_token *> &addr_tokens,
+					    tree expr, unsigned *idx,
+					    c_omp_region_type ort)
+{
+  using namespace omp_addr_tokenizer;
+  location_t loc = OMP_CLAUSE_LOCATION (c);
+  int i = *idx;
+  tree decl = addr_tokens[i + 1]->expr;
+  bool decl_p = DECL_P (decl);
+  bool declare_target_p = (decl_p
+			   && is_global_var (decl)
+			   && lookup_attribute ("omp declare target",
+						DECL_ATTRIBUTES (decl)));
+  bool map_p = OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP;
+  bool implicit_p = map_p && OMP_CLAUSE_MAP_IMPLICIT (c);
+  bool chain_p = omp_access_chain_p (addr_tokens, i + 1);
+  tree c2 = NULL_TREE, c3 = NULL_TREE;
+  unsigned consume_tokens = 2;
+  bool target_p = (ort & C_ORT_TARGET) != 0;
+  bool openmp_p = (ort & C_ORT_OMP) != 0;
+
+  gcc_assert (i == 0);
+
+  if (!openmp_p
+      && map_p
+      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
+	  || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_DETACH))
+    {
+      i += 2;
+      *idx = i;
+      return c;
+    }
+
+  switch (addr_tokens[i + 1]->u.access_kind)
+    {
+    case ACCESS_DIRECT:
+      if (decl_p && !target_p)
+	c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+      break;
+
+    case ACCESS_REF:
+      {
+	/* Copy the referenced object.  Note that we do this even for !MAP_P
+	   clauses.  */
+	tree obj = convert_from_reference (addr_tokens[i + 1]->expr);
+	if (TREE_CODE (TREE_TYPE (obj)) == ARRAY_TYPE)
+	  /* We have a ref to array: add a [0] element as the ME expects.  */
+	  OMP_CLAUSE_DECL (c) = build_array_ref (loc, obj, integer_zero_node);
+	else
+	  OMP_CLAUSE_DECL (c) = obj;
+	OMP_CLAUSE_SIZE (c) = TYPE_SIZE_UNIT (TREE_TYPE (obj));
+
+	if (!map_p)
+	  {
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	    break;
+	  }
+
+	if (!target_p)
+	  break;
+
+	/* If we have a reference to a pointer, avoid using
+	   FIRSTPRIVATE_REFERENCE here in case the pointer is modified in the
+	   offload region (we can only do that if the pointer does not point
+	   to a mapped block).  We could avoid doing this if we don't have a
+	   FROM mapping...  */
+	bool ref_to_ptr = TREE_CODE (TREE_TYPE (obj)) == POINTER_TYPE;
+
+	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	if (!ref_to_ptr
+	    && !declare_target_p
+	    && decl_p)
+	  OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_REFERENCE);
+	else
+	  {
+	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	  }
+	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_SIZE (c2) = size_zero_node;
+
+	if (ref_to_ptr)
+	  {
+	    c3 = c2;
+	    c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALLOC);
+	    OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	    OMP_CLAUSE_SIZE (c2)
+	      = TYPE_SIZE_UNIT (TREE_TYPE (OMP_CLAUSE_DECL (c2)));
+	  }
+      }
+      break;
+
+    case ACCESS_INDEXED_REF_TO_ARRAY:
+      {
+	if (!map_p)
+	  {
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	    break;
+	  }
+
+	if (!target_p)
+	  break;
+
+	tree virtual_origin
+	  = convert_from_reference (addr_tokens[i + 1]->expr);
+	virtual_origin = build_fold_addr_expr (virtual_origin);
+	virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
+					   virtual_origin);
+	tree data_addr = omp_accessed_addr (addr_tokens, i + 1, expr);
+	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	if (decl_p && target_p && !declare_target_p)
+	  {
+	    /* It appears that omp-low.cc mishandles cases where we have a
+	       [reference to an] array of pointers such as:
+
+		 int *arr[N];   (or "int *(&arr)[N] = ...")
+		 #pragma omp target map(arr[a][b:c])
+		 { ... }
+
+	       in such cases chain_p will be true.  For now, fall back to
+	       GOMP_MAP_POINTER.  */
+	    enum gomp_map_kind k = chain_p ? GOMP_MAP_POINTER
+					   : GOMP_MAP_FIRSTPRIVATE_REFERENCE;
+	    OMP_CLAUSE_SET_MAP_KIND (c2, k);
+	  }
+	else
+	  {
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	  }
+	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_SIZE (c2)
+	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
+			     fold_convert_loc (loc, ptrdiff_type_node,
+					       data_addr),
+			     virtual_origin);
+      }
+      break;
+
+    case ACCESS_INDEXED_ARRAY:
+      {
+	if (!map_p)
+	  {
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	    break;
+	  }
+
+	/* The code handling "firstprivatize_array_bases" in gimplify.cc is
+	   relevant here.  What do we need to create for arrays at this
+	   stage?  (This condition doesn't feel quite right.  FIXME?)  */
+	if (!target_p
+	    && (TREE_CODE (TREE_TYPE (addr_tokens[i + 1]->expr))
+		== ARRAY_TYPE))
+	  break;
+
+	tree virtual_origin
+	  = build_fold_addr_expr (addr_tokens[i + 1]->expr);
+	virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
+					   virtual_origin);
+	tree data_addr = omp_accessed_addr (addr_tokens, i + 1, expr);
+	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	if (decl_p && target_p)
+	  {
+	    /* See comment for ACCESS_INDEXED_REF_TO_ARRAY above.  */
+	    enum gomp_map_kind k = chain_p ? GOMP_MAP_POINTER
+					   : GOMP_MAP_FIRSTPRIVATE_POINTER;
+	    OMP_CLAUSE_SET_MAP_KIND (c2, k);
+	  }
+	else
+	  {
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	  }
+	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_SIZE (c2)
+	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
+			     fold_convert_loc (loc, ptrdiff_type_node,
+					       data_addr),
+			     virtual_origin);
+      }
+      break;
+
+    case ACCESS_POINTER:
+    case ACCESS_POINTER_OFFSET:
+      {
+	if (!map_p)
+	  {
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	    break;
+	  }
+
+	unsigned last_access = i + 1;
+	tree virtual_origin;
+
+	if (chain_p
+	    && addr_tokens[i + 2]->type == ACCESS_METHOD
+	    && addr_tokens[i + 2]->u.access_kind == ACCESS_INDEXED_ARRAY)
+	  {
+	    /* !!! This seems wrong for ACCESS_POINTER_OFFSET.  */
+	    consume_tokens = 3;
+	    chain_p = omp_access_chain_p (addr_tokens, i + 2);
+	    last_access = i + 2;
+	    virtual_origin
+	      = build_array_ref (loc, addr_tokens[last_access]->expr,
+				 integer_zero_node);
+	    virtual_origin = build_fold_addr_expr (virtual_origin);
+	    virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
+					       virtual_origin);
+	  }
+	else
+	  virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
+					     addr_tokens[last_access]->expr);
+	tree data_addr = omp_accessed_addr (addr_tokens, last_access, expr);
+	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	/* For OpenACC, use FIRSTPRIVATE_POINTER for decls even on non-compute
+	   regions (e.g. "acc data" constructs).  It'll be removed anyway in
+	   gimplify.cc, but doing it this way maintains diagnostic
+	   behaviour.  */
+	if (decl_p && (target_p || !openmp_p) && !chain_p && !declare_target_p)
+	  OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
+	else
+	  {
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	  }
+	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_SIZE (c2)
+	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
+			     fold_convert_loc (loc, ptrdiff_type_node,
+					       data_addr),
+			     virtual_origin);
+      }
+      break;
+
+    case ACCESS_REF_TO_POINTER:
+    case ACCESS_REF_TO_POINTER_OFFSET:
+      {
+	if (!map_p)
+	  {
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	    break;
+	  }
+
+	unsigned last_access = i + 1;
+	tree virtual_origin;
+
+	if (chain_p
+	    && addr_tokens[i + 2]->type == ACCESS_METHOD
+	    && addr_tokens[i + 2]->u.access_kind == ACCESS_INDEXED_ARRAY)
+	  {
+	    /* !!! This seems wrong for ACCESS_POINTER_OFFSET.  */
+	    consume_tokens = 3;
+	    chain_p = omp_access_chain_p (addr_tokens, i + 2);
+	    last_access = i + 2;
+	    virtual_origin
+	      = build_array_ref (loc, addr_tokens[last_access]->expr,
+				 integer_zero_node);
+	    virtual_origin = build_fold_addr_expr (virtual_origin);
+	    virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
+					       virtual_origin);
+	  }
+	else
+	  {
+	    virtual_origin
+	      = convert_from_reference (addr_tokens[last_access]->expr);
+	    virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
+					       virtual_origin);
+	  }
+
+	tree data_addr = omp_accessed_addr (addr_tokens, last_access, expr);
+	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	if (decl_p && target_p && !chain_p && !declare_target_p)
+	  {
+	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_REFERENCE);
+	    OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	  }
+	else
+	  {
+	    if (decl_p)
+	      c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	    OMP_CLAUSE_DECL (c2)
+	      = convert_from_reference (addr_tokens[i + 1]->expr);
+	  }
+	OMP_CLAUSE_SIZE (c2)
+	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
+			     fold_convert_loc (loc, ptrdiff_type_node,
+					       data_addr),
+			     virtual_origin);
+      }
+      break;
+
+    default:
+      *idx = i + consume_tokens;
+      return error_mark_node;
+    }
+
+  if (c3)
+    {
+      OMP_CLAUSE_CHAIN (c3) = OMP_CLAUSE_CHAIN (c);
+      OMP_CLAUSE_CHAIN (c2) = c3;
+      OMP_CLAUSE_CHAIN (c) = c2;
+      if (implicit_p)
+	{
+	  OMP_CLAUSE_MAP_IMPLICIT (c2) = 1;
+	  OMP_CLAUSE_MAP_IMPLICIT (c3) = 1;
+	}
+      c = c3;
+    }
+  else if (c2)
+    {
+      OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
+      OMP_CLAUSE_CHAIN (c) = c2;
+      if (implicit_p)
+	OMP_CLAUSE_MAP_IMPLICIT (c2) = 1;
+      c = c2;
+    }
+
+  i += consume_tokens;
+  *idx = i;
+
+  if (chain_p && map_p)
+    return omp_expand_access_chain (c, expr, addr_tokens, idx, ort);
+
+  return c;
+}
+
+/* Translate "component_selector access_method" to OMP mapping clauses.  */
+
+tree
+c_omp_address_inspector::expand_component_selector (tree c,
+						    vec<omp_addr_token *>
+						      &addr_tokens,
+						    tree expr, unsigned *idx,
+						    c_omp_region_type ort)
+{
+  using namespace omp_addr_tokenizer;
+  location_t loc = OMP_CLAUSE_LOCATION (c);
+  unsigned i = *idx;
+  tree c2 = NULL_TREE, c3 = NULL_TREE;
+  bool chain_p = omp_access_chain_p (addr_tokens, i + 1);
+  bool map_p = OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP;
+
+  switch (addr_tokens[i + 1]->u.access_kind)
+    {
+    case ACCESS_DIRECT:
+    case ACCESS_INDEXED_ARRAY:
+      break;
+
+    case ACCESS_REF:
+      {
+	/* Copy the referenced object.  Note that we also do this for !MAP_P
+	   clauses.  */
+	tree obj = convert_from_reference (addr_tokens[i + 1]->expr);
+	OMP_CLAUSE_DECL (c) = obj;
+	OMP_CLAUSE_SIZE (c) = TYPE_SIZE_UNIT (TREE_TYPE (obj));
+
+	if (!map_p)
+	  break;
+
+	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_SIZE (c2) = size_zero_node;
+      }
+      break;
+
+    case ACCESS_INDEXED_REF_TO_ARRAY:
+      {
+	if (!map_p)
+	  break;
+
+	tree virtual_origin
+	  = convert_from_reference (addr_tokens[i + 1]->expr);
+	virtual_origin = build_fold_addr_expr (virtual_origin);
+	virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
+					   virtual_origin);
+	tree data_addr = omp_accessed_addr (addr_tokens, i + 1, expr);
+
+	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_SIZE (c2)
+	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
+			     fold_convert_loc (loc, ptrdiff_type_node,
+					       data_addr),
+			     virtual_origin);
+      }
+      break;
+
+    case ACCESS_POINTER:
+    case ACCESS_POINTER_OFFSET:
+      {
+	if (!map_p)
+	  break;
+
+	tree virtual_origin
+	  = fold_convert_loc (loc, ptrdiff_type_node,
+			      addr_tokens[i + 1]->expr);
+	tree data_addr = omp_accessed_addr (addr_tokens, i + 1, expr);
+
+	c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
+	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	OMP_CLAUSE_DECL (c2) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_SIZE (c2)
+	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
+			     fold_convert_loc (loc, ptrdiff_type_node,
+					       data_addr),
+			     virtual_origin);
+      }
+      break;
+
+    case ACCESS_REF_TO_POINTER:
+    case ACCESS_REF_TO_POINTER_OFFSET:
+      {
+	if (!map_p)
+	  break;
+
+	tree ptr = convert_from_reference (addr_tokens[i + 1]->expr);
+	tree virtual_origin = fold_convert_loc (loc, ptrdiff_type_node,
+						ptr);
+	tree data_addr = omp_accessed_addr (addr_tokens, i + 1, expr);
+
+	/* Attach the pointer...  */
+	c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
+	OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	OMP_CLAUSE_DECL (c2) = ptr;
+	OMP_CLAUSE_SIZE (c2)
+	  = fold_build2_loc (loc, MINUS_EXPR, ptrdiff_type_node,
+			     fold_convert_loc (loc, ptrdiff_type_node,
+					       data_addr),
+			     virtual_origin);
+
+	/* ...and also the reference.  */
+	c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
+	OMP_CLAUSE_SET_MAP_KIND (c3, GOMP_MAP_ATTACH_DETACH);
+	OMP_CLAUSE_DECL (c3) = addr_tokens[i + 1]->expr;
+	OMP_CLAUSE_SIZE (c3) = size_zero_node;
+      }
+      break;
+
+    default:
+      *idx = i + 2;
+      return error_mark_node;
+    }
+
+  if (c3)
+    {
+      OMP_CLAUSE_CHAIN (c3) = OMP_CLAUSE_CHAIN (c);
+      OMP_CLAUSE_CHAIN (c2) = c3;
+      OMP_CLAUSE_CHAIN (c) = c2;
+      c = c3;
+    }
+  else if (c2)
+    {
+      OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
+      OMP_CLAUSE_CHAIN (c) = c2;
+      c = c2;
+    }
+
+  i += 2;
+  *idx = i;
+
+  if (chain_p && map_p)
+    return omp_expand_access_chain (c, expr, addr_tokens, idx, ort);
+
+  return c;
+}
+
+/* Expand a map clause into a group of mapping clauses, creating nodes to
+   attach/detach pointers and so forth as necessary.  */
+
+tree
+c_omp_address_inspector::expand_map_clause (tree c, tree expr,
+					    vec<omp_addr_token *> &addr_tokens,
+					    c_omp_region_type ort)
+{
+  using namespace omp_addr_tokenizer;
+  unsigned i, length = addr_tokens.length ();
+
+  for (i = 0; i < length;)
+    {
+      int remaining = length - i;
+
+      if (remaining >= 2
+	  && addr_tokens[i]->type == ARRAY_BASE
+	  && addr_tokens[i]->u.structure_base_kind == BASE_DECL
+	  && addr_tokens[i + 1]->type == ACCESS_METHOD)
+	{
+	  c = expand_array_base (c, addr_tokens, expr, &i, ort);
+	  if (c == error_mark_node)
+	    return error_mark_node;
+	}
+      else if (remaining >= 2
+	       && addr_tokens[i]->type == ARRAY_BASE
+	       && addr_tokens[i]->u.structure_base_kind == BASE_ARBITRARY_EXPR
+	       && addr_tokens[i + 1]->type == ACCESS_METHOD)
+	{
+	  c = expand_array_base (c, addr_tokens, expr, &i, ort);
+	  if (c == error_mark_node)
+	    return error_mark_node;
+	}
+      else if (remaining >= 2
+	       && addr_tokens[i]->type == STRUCTURE_BASE
+	       && addr_tokens[i]->u.structure_base_kind == BASE_DECL
+	       && addr_tokens[i + 1]->type == ACCESS_METHOD)
+	{
+	  if (addr_tokens[i + 1]->u.access_kind == ACCESS_DIRECT)
+	    c_common_mark_addressable_vec (addr_tokens[i + 1]->expr);
+	  i += 2;
+	  while (addr_tokens[i]->type == ACCESS_METHOD)
+	    i++;
+	}
+      else if (remaining >= 2
+	       && addr_tokens[i]->type == STRUCTURE_BASE
+	       && addr_tokens[i]->u.structure_base_kind == BASE_ARBITRARY_EXPR
+	       && addr_tokens[i + 1]->type == ACCESS_METHOD)
+	{
+	  switch (addr_tokens[i + 1]->u.access_kind)
+	    {
+	    case ACCESS_DIRECT:
+	    case ACCESS_POINTER:
+	      i += 2;
+	      while (addr_tokens[i]->type == ACCESS_METHOD)
+		i++;
+	      break;
+	    default:
+	      return error_mark_node;
+	    }
+	}
+      else if (remaining >= 2
+	       && addr_tokens[i]->type == COMPONENT_SELECTOR
+	       && addr_tokens[i + 1]->type == ACCESS_METHOD)
+	{
+	  c = expand_component_selector (c, addr_tokens, expr, &i, ort);
+	  /* We used 'expr', so these must have been the last tokens.  */
+	  gcc_assert (i == length);
+	  if (c == error_mark_node)
+	    return error_mark_node;
+	}
+      else if (remaining >= 3
+	       && addr_tokens[i]->type == COMPONENT_SELECTOR
+	       && addr_tokens[i + 1]->type == STRUCTURE_BASE
+	       && (addr_tokens[i + 1]->u.structure_base_kind
+		   == BASE_COMPONENT_EXPR)
+	       && addr_tokens[i + 2]->type == ACCESS_METHOD)
+	{
+	  i += 3;
+	  while (addr_tokens[i]->type == ACCESS_METHOD)
+	    i++;
+	}
+      else
+	break;
+    }
+
+  if (i == length)
+    return c;
+
+  return error_mark_node;
 }
 
 const struct c_omp_directive c_omp_directives[] = {
@@ -3359,14 +4371,14 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_STANDALONE, false },
   { "taskyield", nullptr, nullptr, PRAGMA_OMP_TASKYIELD,
     C_OMP_DIR_STANDALONE, false },
-  /* { "tile", nullptr, nullptr, PRAGMA_OMP_TILE,
-    C_OMP_DIR_CONSTRUCT, false },  */
+  { "tile", nullptr, nullptr, PRAGMA_OMP_TILE,
+    C_OMP_DIR_CONSTRUCT, false },
   { "teams", nullptr, nullptr, PRAGMA_OMP_TEAMS,
     C_OMP_DIR_CONSTRUCT, true },
   { "threadprivate", nullptr, nullptr, PRAGMA_OMP_THREADPRIVATE,
-    C_OMP_DIR_DECLARATIVE, false }
-  /* { "unroll", nullptr, nullptr, PRAGMA_OMP_UNROLL,
-    C_OMP_DIR_CONSTRUCT, false },  */
+    C_OMP_DIR_DECLARATIVE, false },
+  { "unroll", nullptr, nullptr, PRAGMA_OMP_UNROLL,
+    C_OMP_DIR_CONSTRUCT, false },
 };
 
 /* Find (non-combined/composite) OpenMP directive (if any) which starts

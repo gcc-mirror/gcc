@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2015-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -235,6 +235,7 @@ package body Contracts is
       --    Interrupt_Handler
       --    Postcondition
       --    Precondition
+      --    Side_Effects
       --    Subprogram_Variant
       --    Test_Case
       --    Volatile_Function
@@ -253,6 +254,7 @@ package body Contracts is
          elsif Prag_Nam in Name_Depends
                          | Name_Extensions_Visible
                          | Name_Global
+                         | Name_Side_Effects
          then
             Add_Classification;
 
@@ -510,7 +512,6 @@ package body Contracts is
                if Present (It) then
                   Validate_Iterable_Aspect (E, It);
                end if;
-
                if Present (I_Lit) then
                   Validate_Literal_Aspect (E, I_Lit);
                end if;
@@ -588,10 +589,6 @@ package body Contracts is
       Items     : constant Node_Id   := Contract (Body_Id);
       Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Body_Decl);
 
-      Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
-      Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
-      --  Save the SPARK_Mode-related data to restore on exit
-
    begin
       --  When a subprogram body declaration is illegal, its defining entity is
       --  left unanalyzed. There is nothing left to do in this case because the
@@ -626,38 +623,10 @@ package body Contracts is
          Analyze_Entry_Or_Subprogram_Contract (Corresponding_Spec (Body_Decl));
       end if;
 
-      --  Due to the timing of contract analysis, delayed pragmas may be
-      --  subject to the wrong SPARK_Mode, usually that of the enclosing
-      --  context. To remedy this, restore the original SPARK_Mode of the
-      --  related subprogram body.
-
-      Set_SPARK_Mode (Body_Id);
-
       --  Ensure that the contract cases or postconditions mention 'Result or
       --  define a post-state.
 
       Check_Result_And_Post_State (Body_Id);
-
-      --  A stand-alone nonvolatile function body cannot have an effectively
-      --  volatile formal parameter or return type (SPARK RM 7.1.3(9)). This
-      --  check is relevant only when SPARK_Mode is on, as it is not a standard
-      --  legality rule. The check is performed here because Volatile_Function
-      --  is processed after the analysis of the related subprogram body. The
-      --  check only applies to source subprograms and not to generated TSS
-      --  subprograms.
-
-      if SPARK_Mode = On
-        and then Ekind (Body_Id) in E_Function | E_Generic_Function
-        and then Comes_From_Source (Spec_Id)
-        and then not Is_Volatile_Function (Body_Id)
-      then
-         Check_Nonvolatile_Function_Profile (Body_Id);
-      end if;
-
-      --  Restore the SPARK_Mode of the enclosing context after all delayed
-      --  pragmas have been analyzed.
-
-      Restore_SPARK_Mode (Saved_SM, Saved_SMP);
 
       --  Capture all global references in a generic subprogram body now that
       --  the contract has been analyzed.
@@ -863,20 +832,6 @@ package body Contracts is
          Check_Result_And_Post_State (Subp_Id);
       end if;
 
-      --  A nonvolatile function cannot have an effectively volatile formal
-      --  parameter or return type (SPARK RM 7.1.3(9)). This check is relevant
-      --  only when SPARK_Mode is on, as it is not a standard legality rule.
-      --  The check is performed here because pragma Volatile_Function is
-      --  processed after the analysis of the related subprogram declaration.
-
-      if SPARK_Mode = On
-        and then Ekind (Subp_Id) in E_Function | E_Generic_Function
-        and then Comes_From_Source (Subp_Id)
-        and then not Is_Volatile_Function (Subp_Id)
-      then
-         Check_Nonvolatile_Function_Profile (Subp_Id);
-      end if;
-
       --  Restore the SPARK_Mode of the enclosing context after all delayed
       --  pragmas have been analyzed.
 
@@ -900,19 +855,16 @@ package body Contracts is
      (Type_Or_Obj_Id : Entity_Id)
    is
       Is_Type_Id : constant Boolean := Is_Type (Type_Or_Obj_Id);
-      Decl_Kind  : constant String :=
-        (if Is_Type_Id then "type" else "object");
 
       --  Local variables
 
-      AR_Val  : Boolean := False;
-      AW_Val  : Boolean := False;
-      ER_Val  : Boolean := False;
-      EW_Val  : Boolean := False;
-      NC_Val  : Boolean;
-      Seen    : Boolean := False;
-      Prag    : Node_Id;
-      Obj_Typ : Entity_Id;
+      AR_Val : Boolean := False;
+      AW_Val : Boolean := False;
+      ER_Val : Boolean := False;
+      EW_Val : Boolean := False;
+      NC_Val : Boolean;
+      Seen   : Boolean := False;
+      Prag   : Node_Id;
 
    --  Start of processing for Check_Type_Or_Object_External_Properties
 
@@ -920,8 +872,6 @@ package body Contracts is
       --  Analyze all external properties
 
       if Is_Type_Id then
-         Obj_Typ := Type_Or_Obj_Id;
-
          --  If the parent type of a derived type is volatile
          --  then the derived type inherits volatility-related flags.
 
@@ -938,8 +888,6 @@ package body Contracts is
                end if;
             end;
          end if;
-      else
-         Obj_Typ := Etype (Type_Or_Obj_Id);
       end if;
 
       Prag := Get_Pragma (Type_Or_Obj_Id, Pragma_Async_Readers);
@@ -1024,96 +972,6 @@ package body Contracts is
 
       if Present (Prag) then
          Analyze_External_Property_In_Decl_Part (Prag, NC_Val);
-      end if;
-
-      --  The following checks are relevant only when SPARK_Mode is on, as
-      --  they are not standard Ada legality rules. Internally generated
-      --  temporaries are ignored, as well as return objects.
-
-      if SPARK_Mode = On
-        and then Comes_From_Source (Type_Or_Obj_Id)
-        and then not Is_Return_Object (Type_Or_Obj_Id)
-      then
-         if Is_Effectively_Volatile (Type_Or_Obj_Id) then
-
-            --  The declaration of an effectively volatile object or type must
-            --  appear at the library level (SPARK RM 7.1.3(3), C.6(6)).
-
-            if not Is_Library_Level_Entity (Type_Or_Obj_Id) then
-               Error_Msg_Code := GEC_Volatile_At_Library_Level;
-               Error_Msg_N
-                 ("effectively volatile "
-                    & Decl_Kind
-                    & " & must be declared at library level '[[]']",
-                    Type_Or_Obj_Id);
-
-            --  An object of a discriminated type cannot be effectively
-            --  volatile except for protected objects (SPARK RM 7.1.3(5)).
-
-            elsif Has_Discriminants (Obj_Typ)
-              and then not Is_Protected_Type (Obj_Typ)
-            then
-               Error_Msg_N
-                ("discriminated " & Decl_Kind & " & cannot be volatile",
-                 Type_Or_Obj_Id);
-            end if;
-
-            --  An object decl shall be compatible with respect to volatility
-            --  with its type (SPARK RM 7.1.3(2)).
-
-            if not Is_Type_Id then
-               if Is_Effectively_Volatile (Obj_Typ) then
-                  Check_Volatility_Compatibility
-                    (Type_Or_Obj_Id, Obj_Typ,
-                     "volatile object", "its type",
-                     Srcpos_Bearer => Type_Or_Obj_Id);
-               end if;
-
-            --  A component of a composite type (in this case, the composite
-            --  type is an array type) shall be compatible with respect to
-            --  volatility with the composite type (SPARK RM 7.1.3(6)).
-
-            elsif Is_Array_Type (Obj_Typ) then
-               Check_Volatility_Compatibility
-                 (Component_Type (Obj_Typ), Obj_Typ,
-                  "component type", "its enclosing array type",
-                  Srcpos_Bearer => Obj_Typ);
-
-            --  A component of a composite type (in this case, the composite
-            --  type is a record type) shall be compatible with respect to
-            --  volatility with the composite type (SPARK RM 7.1.3(6)).
-
-            elsif Is_Record_Type (Obj_Typ) then
-               declare
-                  Comp : Entity_Id := First_Component (Obj_Typ);
-               begin
-                  while Present (Comp) loop
-                     Check_Volatility_Compatibility
-                       (Etype (Comp), Obj_Typ,
-                        "record component " & Get_Name_String (Chars (Comp)),
-                        "its enclosing record type",
-                        Srcpos_Bearer => Comp);
-                     Next_Component (Comp);
-                  end loop;
-               end;
-            end if;
-
-         --  The type or object is not effectively volatile
-
-         else
-            --  A non-effectively volatile type cannot have effectively
-            --  volatile components (SPARK RM 7.1.3(6)).
-
-            if Is_Type_Id
-              and then not Is_Effectively_Volatile (Type_Or_Obj_Id)
-              and then Has_Effectively_Volatile_Component (Type_Or_Obj_Id)
-            then
-               Error_Msg_N
-                 ("non-volatile type & cannot have effectively volatile"
-                    & " components",
-                  Type_Or_Obj_Id);
-            end if;
-         end if;
       end if;
    end Check_Type_Or_Object_External_Properties;
 
@@ -1256,16 +1114,10 @@ package body Contracts is
       if Comes_From_Source (Obj_Id) and then Is_Ghost_Entity (Obj_Id) then
 
          --  A Ghost object cannot be of a type that yields a synchronized
-         --  object (SPARK RM 6.9(19)).
+         --  object (SPARK RM 6.9(21)).
 
          if Yields_Synchronized_Object (Obj_Typ) then
             Error_Msg_N ("ghost object & cannot be synchronized", Obj_Id);
-
-         --  A Ghost object cannot be effectively volatile (SPARK RM 6.9(7) and
-         --  SPARK RM 6.9(19)).
-
-         elsif SPARK_Mode = On and then Is_Effectively_Volatile (Obj_Id) then
-            Error_Msg_N ("ghost object & cannot be volatile", Obj_Id);
 
          --  A Ghost object cannot be imported or exported (SPARK RM 6.9(7)).
          --  One exception to this is the object that represents the dispatch
@@ -2676,17 +2528,9 @@ package body Contracts is
                 Pragma_Argument_Associations => Args,
                 Class_Present                => Class_Present);
 
-            Subp_Decl : Node_Id := Subp_Id;
+            Subp_Decl : constant Node_Id := Enclosing_Declaration (Subp_Id);
+            pragma Assert (Is_Declaration (Subp_Decl));
          begin
-            --  Enclosing_Declaration may return, for example,
-            --  a N_Procedure_Specification node. Cope with this.
-            loop
-               Subp_Decl := Enclosing_Declaration (Subp_Decl);
-               exit when Is_Declaration (Subp_Decl);
-               Subp_Decl := Parent (Subp_Decl);
-               pragma Assert (Present (Subp_Decl));
-            end loop;
-
             Insert_After_And_Analyze (Subp_Decl, Prag);
          end Insert_Stable_Property_Check;
 
@@ -2869,22 +2713,7 @@ package body Contracts is
          --  Otherwise, add the item
 
          else
-            if No (List) then
-               List := New_List;
-            end if;
-
-            --  If the pragma is a conjunct in a composite postcondition, it
-            --  has been processed in reverse order. In the postcondition body
-            --  it must appear before the others.
-
-            if Nkind (Item) = N_Pragma
-              and then From_Aspect_Specification (Item)
-              and then Split_PPC (Item)
-            then
-               Prepend (Item, List);
-            else
-               Append (Item, List);
-            end if;
+            Append_New (Item, List);
          end if;
       end Append_Enabled_Item;
 
@@ -3775,7 +3604,7 @@ package body Contracts is
          end if;
       end Inherit_Pragma;
 
-   --   Start of processing for Inherit_Subprogram_Contract
+   --  Start of processing for Inherit_Subprogram_Contract
 
    begin
       --  Inheritance is carried out only when both entities are subprograms
@@ -3786,6 +3615,7 @@ package body Contracts is
         and then Present (Contract (From_Subp))
       then
          Inherit_Pragma (Pragma_Extensions_Visible);
+         Inherit_Pragma (Pragma_Side_Effects);
       end if;
    end Inherit_Subprogram_Contract;
 
@@ -4330,13 +4160,13 @@ package body Contracts is
          Helper_Decl := Build_Call_Helper_Decl;
          Mutate_Ekind (Helper_Id, Ekind (Subp_Id));
 
-         --  Add the helper to the freezing actions of the tagged type
+         --  Add the helper to the freezing actions of the class-wide type
 
-         Append_Freeze_Action (Tagged_Type, Helper_Decl);
+         Append_Freeze_Action (Class_Wide_Type (Tagged_Type), Helper_Decl);
          Analyze (Helper_Decl);
 
          Helper_Body := Build_Call_Helper_Body;
-         Append_Freeze_Action (Tagged_Type, Helper_Body);
+         Append_Freeze_Action (Class_Wide_Type (Tagged_Type), Helper_Body);
 
          --  If this helper is built as part of building the DTW at the
          --  freezing point of its tagged type then we cannot defer
@@ -5149,9 +4979,7 @@ package body Contracts is
 
       Push_Scope (Gen_Id);
 
-      if Permits_Aspect_Specifications (Templ)
-        and then Has_Aspects (Templ)
-      then
+      if Permits_Aspect_Specifications (Templ) then
          Save_Global_References_In_Aspects (Templ);
       end if;
 

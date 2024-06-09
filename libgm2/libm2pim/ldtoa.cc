@@ -34,11 +34,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define M2EXPORT(FUNC) m2pim ## _M2_ldtoa_ ## FUNC
 #define M2LIBNAME "m2pim"
 
-#if defined(HAVE_STRINGS)
+#if defined(HAVE_STRINGS_H)
 #include <strings.h>
 #endif
 
-#if defined(HAVE_STRING)
+#if defined(HAVE_STRING_H)
 #include <string.h>
 #endif
 

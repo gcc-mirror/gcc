@@ -1,5 +1,5 @@
 /* Routines for manipulation of expression nodes.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1844,6 +1844,11 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 
   gfc_resolve_expr (tmp);
 
+  /* Leave these to the backend since the type and kind is not confirmed until
+     resolution.  */
+  if (IS_INFERRED_TYPE (tmp))
+    goto cleanup;
+
   /* In principle there can be more than one inquiry reference.  */
   for (; inquiry; inquiry = inquiry->next)
     {
@@ -2880,6 +2885,13 @@ check_transformational (gfc_expr *e)
     "trim", "unpack", "findloc", NULL
   };
 
+  static const char * const trans_func_f2023[] =  {
+    "all", "any", "count", "dot_product", "matmul", "null", "pack",
+    "product", "repeat", "reshape", "selected_char_kind", "selected_int_kind",
+    "selected_logical_kind", "selected_real_kind", "spread", "sum", "transfer",
+    "transpose", "trim", "unpack", "findloc", NULL
+  };
+
   int i;
   const char *name;
   const char *const *functions;
@@ -2890,7 +2902,9 @@ check_transformational (gfc_expr *e)
 
   name = e->symtree->n.sym->name;
 
-  if (gfc_option.allow_std & GFC_STD_F2008)
+  if (gfc_option.allow_std & GFC_STD_F2023)
+    functions = trans_func_f2023;
+  else if (gfc_option.allow_std & GFC_STD_F2008)
     functions = trans_func_f2008;
   else if (gfc_option.allow_std & GFC_STD_F2003)
     functions = trans_func_f2003;
@@ -3195,6 +3209,11 @@ bool
 gfc_reduce_init_expr (gfc_expr *expr)
 {
   bool t;
+
+  /* It is far too early to resolve a class compcall. Punt to resolution.  */
+  if (expr && expr->expr_type == EXPR_COMPCALL
+      && expr->symtree->n.sym->ts.type == BT_CLASS)
+    return false;
 
   gfc_init_expr_flag = true;
   t = gfc_resolve_expr (expr);
@@ -3509,19 +3528,14 @@ check_restricted (gfc_expr *e)
       if (!check_references (e->ref, &check_restricted))
 	break;
 
-      /* gfc_is_formal_arg broadcasts that a formal argument list is being
-	 processed in resolve.cc(resolve_formal_arglist).  This is done so
-	 that host associated dummy array indices are accepted (PR23446).
-	 This mechanism also does the same for the specification expressions
-	 of array-valued functions.  */
       if (e->error
 	    || sym->attr.in_common
 	    || sym->attr.use_assoc
+	    || sym->attr.used_in_submodule
 	    || sym->attr.dummy
 	    || sym->attr.implied_index
 	    || sym->attr.flavor == FL_PARAMETER
-	    || is_parent_of_current_ns (sym->ns)
-	    || (gfc_is_formal_arg () && (sym->ns == gfc_current_ns)))
+	    || is_parent_of_current_ns (gfc_get_spec_ns (sym)))
 	{
 	  t = true;
 	  break;
@@ -5491,7 +5505,7 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
 	  break;
 
 	case REF_INQUIRY:
-	  return true;
+	  return false;
 
 	default:
 	  gcc_unreachable ();
@@ -5559,11 +5573,14 @@ bool
 gfc_is_alloc_class_scalar_function (gfc_expr *expr)
 {
   if (expr->expr_type == EXPR_FUNCTION
-      && expr->value.function.esym
-      && expr->value.function.esym->result
-      && expr->value.function.esym->result->ts.type == BT_CLASS
-      && !CLASS_DATA (expr->value.function.esym->result)->attr.dimension
-      && CLASS_DATA (expr->value.function.esym->result)->attr.allocatable)
+      && ((expr->value.function.esym
+	   && expr->value.function.esym->result
+	   && expr->value.function.esym->result->ts.type == BT_CLASS
+	   && !CLASS_DATA (expr->value.function.esym->result)->attr.dimension
+	   && CLASS_DATA (expr->value.function.esym->result)->attr.allocatable)
+	  || (expr->ts.type == BT_CLASS
+	      && CLASS_DATA (expr)->attr.allocatable
+	      && !CLASS_DATA (expr)->attr.dimension)))
     return true;
 
   return false;
@@ -5958,6 +5975,20 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
   if (expr->expr_type == EXPR_ARRAY)
     return true;
 
+  if (expr->expr_type == EXPR_NULL)
+    {
+      /* F2018:16.9.144  NULL ([MOLD]):
+	 "If MOLD is present, the characteristics are the same as MOLD."
+	 "If MOLD is absent, the characteristics of the result are
+	 determined by the entity with which the reference is associated."
+	 F2018:15.3.2.2 characteristics attributes include CONTIGUOUS.  */
+      if (expr->ts.type == BT_UNKNOWN)
+	return true;
+      else
+	return (gfc_variable_attr (expr, NULL).contiguous
+		|| gfc_variable_attr (expr, NULL).allocatable);
+    }
+
   if (expr->expr_type == EXPR_FUNCTION)
     {
       if (expr->value.function.isym)
@@ -6011,15 +6042,16 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
     }
 
   sym = expr->symtree->n.sym;
-  if (expr->ts.type != BT_CLASS
-      && ((part_ref
-	   && !part_ref->u.c.component->attr.contiguous
-	   && part_ref->u.c.component->attr.pointer)
-	  || (!part_ref
-	      && !sym->attr.contiguous
-	      && (sym->attr.pointer
-		  || (sym->as && sym->as->type == AS_ASSUMED_RANK)
-		  || (sym->as && sym->as->type == AS_ASSUMED_SHAPE)))))
+  if ((part_ref
+       && part_ref->u.c.component
+       && !part_ref->u.c.component->attr.contiguous
+       && IS_POINTER (part_ref->u.c.component))
+      || (!part_ref
+	  && expr->ts.type != BT_CLASS
+	  && !sym->attr.contiguous
+	  && (sym->attr.pointer
+	      || (sym->as && sym->as->type == AS_ASSUMED_RANK)
+	      || (sym->as && sym->as->type == AS_ASSUMED_SHAPE))))
     return false;
 
   if (!ar || ar->type == AR_FULL)
@@ -6474,7 +6506,8 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	{
 	  if (context)
 	    {
-	      if (assoc->target->expr_type == EXPR_VARIABLE)
+	      if (assoc->target->expr_type == EXPR_VARIABLE
+		  && gfc_has_vector_index (assoc->target))
 		gfc_error ("%qs at %L associated to vector-indexed target"
 			   " cannot be used in a variable definition"
 			   " context (%s)",

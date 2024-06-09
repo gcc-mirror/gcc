@@ -181,8 +181,8 @@ __bf16 footest (__bf16 scalar0)
   0 ? 0.1 : scalar0;
   0 ? scalar0 : 0.1;
   0 ? bfloat_ptr : bfloat_ptr2;
-  0 ? bfloat_ptr : float_ptr; /* { dg-warning {pointer type mismatch in conditional expression} } */
-  0 ? float_ptr : bfloat_ptr; /* { dg-warning {pointer type mismatch in conditional expression} } */
+  0 ? bfloat_ptr : float_ptr; /* { dg-error {pointer type mismatch in conditional expression} } */
+  0 ? float_ptr : bfloat_ptr; /* { dg-error {pointer type mismatch in conditional expression} } */
 
   scalar0 ? scalar0 : scalar0;
   scalar0 ? is_a_float : scalar0;

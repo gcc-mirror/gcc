@@ -18,7 +18,7 @@ import core.sys.windows.basetyps, core.sys.windows.rpcdcep, core.sys.windows.rpc
   core.sys.windows.w32api;
 import core.sys.windows.windef;  // for HANDLE
 
-mixin DECLARE_HANDLE!("RPC_NS_HANDLE");
+alias RPC_NS_HANDLE = HANDLE;
 
 enum RPC_C_NS_SYNTAX_DEFAULT=0;
 enum RPC_C_NS_SYNTAX_DCE=3;

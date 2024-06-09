@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -dA -gbtf -mco-re" } */
+/* { dg-options "-O0 -dA -gbtf -mco-re -masm=normal" } */
 
 struct S {
   int a;
@@ -21,7 +21,7 @@ unsigned long ula[8];
 
 #define _(x) (__builtin_preserve_access_index (x))
 
-void
+unsigned long
 func (void)
 {
   /* 1 */
@@ -35,6 +35,8 @@ func (void)
 
   /* 6 */
   unsigned long ul = _(ula[6]);
+
+  return b + c + uc + ul;
 }
 
 char

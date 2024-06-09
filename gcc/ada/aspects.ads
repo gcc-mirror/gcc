@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -72,14 +72,10 @@ package Aspects is
       Aspect_Address,
       Aspect_Aggregate,
       Aspect_Alignment,
-      Aspect_Always_Terminates,             -- GNAT
       Aspect_Annotate,                      -- GNAT
-      Aspect_Async_Readers,                 -- GNAT
-      Aspect_Async_Writers,                 -- GNAT
       Aspect_Attach_Handler,
       Aspect_Bit_Order,
       Aspect_Component_Size,
-      Aspect_Constant_After_Elaboration,    -- GNAT
       Aspect_Constant_Indexing,
       Aspect_Contract_Cases,                -- GNAT
       Aspect_Convention,
@@ -95,13 +91,9 @@ package Aspects is
       Aspect_Dimension_System,              -- GNAT
       Aspect_Dispatching_Domain,
       Aspect_Dynamic_Predicate,
-      Aspect_Effective_Reads,               -- GNAT
-      Aspect_Effective_Writes,              -- GNAT
       Aspect_Exceptional_Cases,             -- GNAT
-      Aspect_Extensions_Visible,            -- GNAT
       Aspect_External_Name,
       Aspect_External_Tag,
-      Aspect_Ghost,                         -- GNAT
       Aspect_Ghost_Predicate,               -- GNAT
       Aspect_Global,                        -- GNAT
       Aspect_GNAT_Annotate,                 -- GNAT
@@ -116,11 +108,11 @@ package Aspects is
       Aspect_Iterable,                      -- GNAT
       Aspect_Link_Name,
       Aspect_Linker_Section,                -- GNAT
+      Aspect_Local_Restrictions,            -- GNAT
       Aspect_Machine_Radix,
       Aspect_Max_Entry_Queue_Depth,         -- GNAT
       Aspect_Max_Entry_Queue_Length,
       Aspect_Max_Queue_Length,              -- GNAT
-      Aspect_No_Caching,                    -- GNAT
       Aspect_No_Controlled_Parts,
       Aspect_No_Task_Parts,                 -- GNAT
       Aspect_Object_Size,                   -- GNAT
@@ -163,9 +155,9 @@ package Aspects is
       Aspect_Type_Invariant,
       Aspect_Unimplemented,                 -- GNAT
       Aspect_Unsuppress,
+      Aspect_User_Aspect,                   -- GNAT
       Aspect_Value_Size,                    -- GNAT
       Aspect_Variable_Indexing,
-      Aspect_Volatile_Function,             -- GNAT
       Aspect_Warnings,                      -- GNAT
       Aspect_Write,
 
@@ -187,24 +179,33 @@ package Aspects is
       --  the aspect value is inherited from the parent, in which case, we do
       --  not allow False if we inherit a True value from the parent.
 
+      Aspect_Always_Terminates,             -- GNAT
       Aspect_Asynchronous,
+      Aspect_Async_Readers,                 -- GNAT
+      Aspect_Async_Writers,                 -- GNAT
       Aspect_Atomic,
       Aspect_Atomic_Components,
+      Aspect_Constant_After_Elaboration,    -- GNAT
       Aspect_Disable_Controlled,            -- GNAT
       Aspect_Discard_Names,
       Aspect_CUDA_Device,                   -- GNAT
       Aspect_CUDA_Global,                   -- GNAT
+      Aspect_Effective_Reads,               -- GNAT
+      Aspect_Effective_Writes,              -- GNAT
       Aspect_Exclusive_Functions,
       Aspect_Export,
+      Aspect_Extensions_Visible,            -- GNAT
       Aspect_Favor_Top_Level,               -- GNAT
       Aspect_Full_Access_Only,
+      Aspect_Ghost,                         -- GNAT
+      Aspect_Import,
       Aspect_Independent,
       Aspect_Independent_Components,
-      Aspect_Import,
       Aspect_Inline,
       Aspect_Inline_Always,                 -- GNAT
       Aspect_Interrupt_Handler,
       Aspect_Lock_Free,                     -- GNAT
+      Aspect_No_Caching,                    -- GNAT
       Aspect_No_Inline,                     -- GNAT
       Aspect_No_Return,
       Aspect_No_Tagged_Streams,             -- GNAT
@@ -214,6 +215,7 @@ package Aspects is
       Aspect_Pure_Function,                 -- GNAT
       Aspect_Remote_Access_Type,            -- GNAT
       Aspect_Shared,                        -- GNAT (equivalent to Atomic)
+      Aspect_Side_Effects,                  -- GNAT
       Aspect_Simple_Storage_Pool_Type,      -- GNAT
       Aspect_Static,
       Aspect_Suppress_Debug_Info,           -- GNAT
@@ -227,6 +229,7 @@ package Aspects is
       Aspect_Volatile,
       Aspect_Volatile_Components,
       Aspect_Volatile_Full_Access,          -- GNAT
+      Aspect_Volatile_Function,             -- GNAT
       Aspect_Yield);
 
    subtype Aspect_Id_Exclude_No_Aspect is
@@ -234,14 +237,17 @@ package Aspects is
    --  Aspect_Id's excluding No_Aspect
 
    subtype Nonoverridable_Aspect_Id is Aspect_Id with
-     Static_Predicate => Nonoverridable_Aspect_Id in
-       Aspect_Default_Iterator | Aspect_Iterator_Element |
-       Aspect_Implicit_Dereference | Aspect_Constant_Indexing |
-       Aspect_Variable_Indexing | Aspect_Aggregate |
-       Aspect_Max_Entry_Queue_Length
-        | Aspect_No_Controlled_Parts
-       --  ??? No_Controlled_Parts not yet in Aspect_Id enumeration
-       ;  --  see RM 13.1.1(18.7)
+     Static_Predicate =>
+       Nonoverridable_Aspect_Id in Aspect_Aggregate
+                                 | Aspect_Constant_Indexing
+                                 | Aspect_Default_Iterator
+                                 | Aspect_Implicit_Dereference
+                                 | Aspect_Iterator_Element
+                                 | Aspect_Max_Entry_Queue_Length
+                                 | Aspect_No_Controlled_Parts
+                                 | Aspect_Variable_Indexing;
+   --  ??? No_Controlled_Parts not yet in Aspect_Id enumeration see RM
+   --  13.1.1(18.7).
 
    --  The following array indicates aspects that accept 'Class
 
@@ -295,6 +301,7 @@ package Aspects is
       Aspect_Scalar_Storage_Order       => True,
       Aspect_Secondary_Stack_Size       => True,
       Aspect_Shared                     => True,
+      Aspect_Side_Effects               => True,
       Aspect_Simple_Storage_Pool        => True,
       Aspect_Simple_Storage_Pool_Type   => True,
       Aspect_Subprogram_Variant         => True,
@@ -349,9 +356,13 @@ package Aspects is
    --  enabling the aspect. If the parameter is present it must be a static
    --  expression of type Standard.Boolean. If the value is True, then the
    --  aspect is enabled. If it is False, the aspect is disabled.
+   --
+   --  The Always_Terminates fits in this category even though it accepts an
+   --  optional boolean parameter which is non-static, because we want it to
+   --  be usable with pragma User_Defined_Aspect.
 
    subtype Boolean_Aspects is
-     Aspect_Id range Aspect_Asynchronous .. Aspect_Id'Last;
+     Aspect_Id range Aspect_Always_Terminates .. Aspect_Id'Last;
 
    subtype Pre_Post_Aspects is
      Aspect_Id range Aspect_Post .. Aspect_Precondition;
@@ -372,14 +383,10 @@ package Aspects is
       Aspect_Address                    => Expression,
       Aspect_Aggregate                  => Expression,
       Aspect_Alignment                  => Expression,
-      Aspect_Always_Terminates          => Optional_Expression,
       Aspect_Annotate                   => Expression,
-      Aspect_Async_Readers              => Optional_Expression,
-      Aspect_Async_Writers              => Optional_Expression,
       Aspect_Attach_Handler             => Expression,
       Aspect_Bit_Order                  => Expression,
       Aspect_Component_Size             => Expression,
-      Aspect_Constant_After_Elaboration => Optional_Expression,
       Aspect_Constant_Indexing          => Name,
       Aspect_Contract_Cases             => Expression,
       Aspect_Convention                 => Name,
@@ -395,13 +402,9 @@ package Aspects is
       Aspect_Dimension_System           => Expression,
       Aspect_Dispatching_Domain         => Expression,
       Aspect_Dynamic_Predicate          => Expression,
-      Aspect_Effective_Reads            => Optional_Expression,
-      Aspect_Effective_Writes           => Optional_Expression,
       Aspect_Exceptional_Cases          => Expression,
-      Aspect_Extensions_Visible         => Optional_Expression,
       Aspect_External_Name              => Expression,
       Aspect_External_Tag               => Expression,
-      Aspect_Ghost                      => Optional_Expression,
       Aspect_Ghost_Predicate            => Expression,
       Aspect_Global                     => Expression,
       Aspect_GNAT_Annotate              => Expression,
@@ -416,11 +419,11 @@ package Aspects is
       Aspect_Iterator_Element           => Name,
       Aspect_Link_Name                  => Expression,
       Aspect_Linker_Section             => Expression,
+      Aspect_Local_Restrictions         => Expression,
       Aspect_Machine_Radix              => Expression,
       Aspect_Max_Entry_Queue_Depth      => Expression,
       Aspect_Max_Entry_Queue_Length     => Expression,
       Aspect_Max_Queue_Length           => Expression,
-      Aspect_No_Caching                 => Optional_Expression,
       Aspect_No_Controlled_Parts        => Optional_Expression,
       Aspect_No_Task_Parts              => Optional_Expression,
       Aspect_Object_Size                => Expression,
@@ -463,9 +466,9 @@ package Aspects is
       Aspect_Type_Invariant             => Expression,
       Aspect_Unimplemented              => Optional_Expression,
       Aspect_Unsuppress                 => Name,
+      Aspect_User_Aspect                => Expression,
       Aspect_Value_Size                 => Expression,
       Aspect_Variable_Indexing          => Name,
-      Aspect_Volatile_Function          => Optional_Expression,
       Aspect_Warnings                   => Name,
       Aspect_Write                      => Name,
 
@@ -527,6 +530,7 @@ package Aspects is
       Aspect_Iterator_Element             => False,
       Aspect_Link_Name                    => True,
       Aspect_Linker_Section               => True,
+      Aspect_Local_Restrictions           => False,
       Aspect_Machine_Radix                => True,
       Aspect_Max_Entry_Queue_Depth        => False,
       Aspect_Max_Entry_Queue_Length       => False,
@@ -556,6 +560,7 @@ package Aspects is
       Aspect_Relaxed_Initialization       => False,
       Aspect_Scalar_Storage_Order         => True,
       Aspect_Secondary_Stack_Size         => True,
+      Aspect_Side_Effects                 => False,
       Aspect_Simple_Storage_Pool          => True,
       Aspect_Size                         => True,
       Aspect_Small                        => True,
@@ -574,6 +579,7 @@ package Aspects is
       Aspect_Type_Invariant               => False,
       Aspect_Unimplemented                => False,
       Aspect_Unsuppress                   => False,
+      Aspect_User_Aspect                  => False,
       Aspect_Value_Size                   => True,
       Aspect_Variable_Indexing            => False,
       Aspect_Volatile_Function            => False,
@@ -697,6 +703,7 @@ package Aspects is
       Aspect_Link_Name                    => Name_Link_Name,
       Aspect_Linker_Section               => Name_Linker_Section,
       Aspect_Lock_Free                    => Name_Lock_Free,
+      Aspect_Local_Restrictions           => Name_Local_Restrictions,
       Aspect_Machine_Radix                => Name_Machine_Radix,
       Aspect_Max_Entry_Queue_Depth        => Name_Max_Entry_Queue_Depth,
       Aspect_Max_Entry_Queue_Length       => Name_Max_Entry_Queue_Length,
@@ -741,6 +748,7 @@ package Aspects is
       Aspect_Secondary_Stack_Size         => Name_Secondary_Stack_Size,
       Aspect_Shared                       => Name_Shared,
       Aspect_Shared_Passive               => Name_Shared_Passive,
+      Aspect_Side_Effects                 => Name_Side_Effects,
       Aspect_Simple_Storage_Pool          => Name_Simple_Storage_Pool,
       Aspect_Simple_Storage_Pool_Type     => Name_Simple_Storage_Pool_Type,
       Aspect_Size                         => Name_Size,
@@ -769,6 +777,7 @@ package Aspects is
       Aspect_Unreferenced                 => Name_Unreferenced,
       Aspect_Unreferenced_Objects         => Name_Unreferenced_Objects,
       Aspect_Unsuppress                   => Name_Unsuppress,
+      Aspect_User_Aspect                  => Name_User_Aspect,
       Aspect_Value_Size                   => Name_Value_Size,
       Aspect_Variable_Indexing            => Name_Variable_Indexing,
       Aspect_Volatile                     => Name_Volatile,
@@ -965,6 +974,7 @@ package Aspects is
       Aspect_Shared_Passive               => Always_Delay,
       Aspect_Simple_Storage_Pool          => Always_Delay,
       Aspect_Simple_Storage_Pool_Type     => Always_Delay,
+      Aspect_Stable_Properties            => Always_Delay,
       Aspect_Static_Predicate             => Always_Delay,
       Aspect_Storage_Model_Type           => Always_Delay,
       Aspect_Storage_Pool                 => Always_Delay,
@@ -1007,6 +1017,7 @@ package Aspects is
       Aspect_GNAT_Annotate                => Never_Delay,
       Aspect_Import                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
+      Aspect_Local_Restrictions           => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
       Aspect_Max_Entry_Queue_Depth        => Never_Delay,
       Aspect_Max_Entry_Queue_Length       => Never_Delay,
@@ -1023,13 +1034,14 @@ package Aspects is
       Aspect_Refined_Post                 => Never_Delay,
       Aspect_Refined_State                => Never_Delay,
       Aspect_Relaxed_Initialization       => Never_Delay,
+      Aspect_Side_Effects                 => Never_Delay,
       Aspect_SPARK_Mode                   => Never_Delay,
-      Aspect_Stable_Properties            => Always_Delay,
       Aspect_Static                       => Never_Delay,
       Aspect_Subprogram_Variant           => Never_Delay,
       Aspect_Synchronization              => Never_Delay,
       Aspect_Test_Case                    => Never_Delay,
       Aspect_Unimplemented                => Never_Delay,
+      Aspect_User_Aspect                  => Never_Delay,
       Aspect_Volatile_Function            => Never_Delay,
       Aspect_Warnings                     => Never_Delay,
       Aspect_Yield                        => Never_Delay,
@@ -1131,28 +1143,12 @@ package Aspects is
    --  implemented internally with a hash table in the body, that provides
    --  access to aspect specifications.
 
-   function Aspect_Specifications (N : Node_Id) return List_Id;
-   --  Given a node N, returns the list of N_Aspect_Specification nodes that
-   --  are attached to this declaration node. If the node is in the class of
-   --  declaration nodes that permit aspect specifications, as defined by the
-   --  predicate above, and if their Has_Aspects flag is set to True, then this
-   --  will always be a non-empty list. If this flag is set to False, then
-   --  No_List is returned. Normally, the only nodes that have Has_Aspects set
-   --  True are the nodes for which Permits_Aspect_Specifications would return
-   --  True (i.e. the declaration nodes defined in the RM as permitting the
-   --  presence of Aspect_Specifications). However, it is possible for the
-   --  flag Has_Aspects to be set on other nodes as a result of Rewrite and
-   --  Replace calls, and this function may be used to retrieve the aspect
-   --  specifications for the original rewritten node in such cases.
-
    function Aspects_On_Body_Or_Stub_OK (N : Node_Id) return Boolean;
    --  N denotes a body [stub] with aspects. Determine whether all aspects of N
    --  are allowed to appear on a body [stub].
 
-   procedure Exchange_Aspects (N1 : Node_Id; N2 : Node_Id);
-   --  Exchange the aspect specifications of two nodes. If either node lacks an
-   --  aspect specification list, the routine has no effect. It is assumed that
-   --  both nodes can support aspects.
+   procedure Copy_Aspects (From : Node_Id; To : Node_Id);
+   --  Create a copy of Aspect of From and add them to To.
 
    function Find_Aspect (Id            : Entity_Id;
                          A             : Aspect_Id;
@@ -1180,6 +1176,9 @@ package Aspects is
                         A             : Aspect_Id;
                         Class_Present : Boolean := False) return Boolean;
    --  Determine whether entity Id has aspect A (or A'Class, if Class_Present)
+
+   function Has_Aspects (N : Node_Id) return Boolean;
+   --  Returns whether the node has any aspect specifications
 
    procedure Move_Aspects (From : Node_Id; To : Node_Id);
    --  Relocate the aspect specifications of node From to node To. On entry it
@@ -1211,14 +1210,27 @@ package Aspects is
    --  a simple equality test because e.g. Post and Postcondition are the same.
    --  This is used for detecting duplicate aspects.
 
-   procedure Set_Aspect_Specifications (N : Node_Id; L : List_Id);
-   --  The node N must be in the class of declaration nodes that permit aspect
-   --  specifications and the Has_Aspects flag must be False on entry. L must
-   --  be a non-empty list of N_Aspect_Specification nodes. This procedure sets
-   --  the Has_Aspects flag to True, and makes an entry that can be retrieved
-   --  by a subsequent Aspect_Specifications call. It is an error to call this
-   --  procedure with a node that does not permit aspect specifications, or a
-   --  node that has its Has_Aspects flag set True on entry, or with L being an
-   --  empty list or No_List.
+   package User_Aspect_Support is
+      procedure Register_UAD_Pragma (UAD_Pragma : Node_Id);
+      --  Argument is a User_Aspect_Definition pragma.
+
+      function Registered_UAD_Pragma (Aspect_Name : Name_Id) return Node_Id;
+      --  Returns the registered pragma, if any, for the given name.
+      --  Returns empty if no pragma with a matching first argument is
+      --  in the map.
+
+      --  In Find_Aspect we want to call
+      --  Sem_Ch13.Analyze_User_Aspect_Specification, but doing this in the
+      --  obvious way introduces problems (by pulling the bulk of semantics
+      --  into the closure of package Aspects). So we declare an
+      --  access-to-subp object here and call through it later if it happens
+      --  to be non-null; it is initialized in the body of package Sem_Ch13.
+
+      type Analyze_User_Aspect_Aspect_Specification_Ref is
+        access procedure (N : Node_Id);
+
+      Analyze_User_Aspect_Aspect_Specification_Hook :
+        Analyze_User_Aspect_Aspect_Specification_Ref;
+   end User_Aspect_Support;
 
 end Aspects;

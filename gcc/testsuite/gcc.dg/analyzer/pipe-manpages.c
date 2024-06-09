@@ -1,3 +1,5 @@
+/* { dg-require-fork "" } */
+
 /* Example of "pipe" from release 5.13 of the Linux man-pages project.
 
 Copyright (C) 2005, 2008, Michael Kerrisk <mtk.manpages@gmail.com>

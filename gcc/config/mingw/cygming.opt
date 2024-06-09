@@ -1,0 +1,64 @@
+; Cygwin- and MinGW-specific options.
+
+; Copyright (C) 2005-2024 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+mconsole
+Target RejectNegative
+Create console application.
+
+mdll
+Target RejectNegative
+Generate code for a DLL.
+
+mnop-fun-dllimport
+Target Var(TARGET_NOP_FUN_DLLIMPORT)
+Ignore dllimport for functions.
+
+mthreads
+Target RejectNegative
+Use Mingw-specific thread support.
+
+mwin32
+Target
+Set Windows defines.
+
+mwindows
+Target
+Create GUI application.
+
+mpe-aligned-commons
+Target Var(use_pe_aligned_common) Init(HAVE_GAS_ALIGNED_COMM)
+Use the GNU extension to the PE format for aligned common data.
+
+muse-libstdc-wrappers
+Target Condition({defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS)})
+Compile code that relies on Cygwin DLL wrappers to support C++ operator new/delete replacement.
+
+fset-stack-executable
+Common Var(flag_setstackexecutable) Init(1) Optimization
+For nested functions on stack executable permission is set.
+
+posix
+Driver
+
+fwritable-relocated-rdata
+Common Var(flag_writable_rel_rdata) Init(0)
+Put relocated read-only data into .data section.
+
+; Retain blank line above

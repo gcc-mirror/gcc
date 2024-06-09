@@ -1,3 +1,4 @@
+void abort(void);
 int b=1;
 int foo()
 {

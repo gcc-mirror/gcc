@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2 -ftree-vectorize -fno-vect-cost-model -fno-unroll-loops -fdump-tree-vect-details" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Test if unsigned int unpack vectorization succeeds.  V2DImode is
    supported since Power7 so guard it under Power7 and up.  */

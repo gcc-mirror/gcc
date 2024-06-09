@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 void I_wacom ()
 {
   char buffer[50], *p;

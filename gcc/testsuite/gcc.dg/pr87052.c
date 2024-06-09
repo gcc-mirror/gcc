@@ -36,6 +36,6 @@ void test (void)
    { dg-final { scan-tree-dump-times "b = \"a\\\\x00bc\";"  1 "gimple" } }
    { dg-final { scan-tree-dump-times "c = \"\";"  1 "gimple" } }
    { dg-final { scan-tree-dump-times "d = "  1 "gimple" } }
-   { dg-final { scan-tree-dump-times "d = {CLOBBER\\(eol\\)}"  1 "gimple" } }
+   { dg-final { scan-tree-dump-times "d = {CLOBBER\\(eos\\)}"  1 "gimple" } }
    { dg-final { scan-tree-dump-times "e = "  1 "gimple" } }
-   { dg-final { scan-tree-dump-times "e = {CLOBBER\\(eol\\)}"  1 "gimple" } }  */
+   { dg-final { scan-tree-dump-times "e = {CLOBBER\\(eos\\)}"  1 "gimple" } }  */

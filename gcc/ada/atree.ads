@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -252,7 +252,7 @@ package Atree is
    --  The usual approach is to build a new node using this function and
    --  then, using the value returned, use the Set_xxx functions to set
    --  fields of the node as required. New_Node can only be used for
-   --  non-entity nodes, i.e. it never generates an extended node.
+   --  non-entity nodes.
    --
    --  If we are currently parsing, as indicated by a previous call to
    --  Set_Comes_From_Source_Default (True), then this call also resets
@@ -308,8 +308,7 @@ package Atree is
    --  returns Empty, and New_Copy (Error) returns Error. Note that, unlike
    --  Copy_Separate_Tree, New_Copy does not recursively copy any descendants,
    --  so in general parent pointers are not set correctly for the descendants
-   --  of the copied node. Both normal and extended nodes (entities) may be
-   --  copied using New_Copy.
+   --  of the copied node.
 
    function Relocate_Node (Source : Node_Id) return Node_Id;
    --  Source is a non-entity node that is to be relocated. A new node is
@@ -359,7 +358,7 @@ package Atree is
    --  caller, according to context.
 
    procedure Extend_Node (Source : Node_Id);
-   --  This turns a node into an entity; it function is used only by Sinfo.CN.
+   --  This turns a node into an entity; it is only used by Sinfo.CN.
 
    type Ignored_Ghost_Record_Proc is access procedure (N : Node_Or_Entity_Id);
 
@@ -540,7 +539,7 @@ package Atree is
    --  newly constructed replacement subtree. The actual mechanism is to swap
    --  the contents of these two nodes fixing up the parent pointers of the
    --  replaced node (we do not attempt to preserve parent pointers for the
-   --  original node). Neither Old_Node nor New_Node can be extended nodes.
+   --  original node).
    --  ??? The above explanation is incorrect, instead Copy_Node is called.
    --
    --  Note: New_Node may not contain references to Old_Node, for example as

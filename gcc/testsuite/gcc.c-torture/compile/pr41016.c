@@ -13,5 +13,5 @@ CompareRNAStructures (FILE * ofp, int start, int L, char *ss_true, char *ss)
     }
   if (((int) pairs % 2 != 0) || ((int) pairs_true % 2 != 0)
       || ((int) agree % 2 != 0))
-    Die ("Error in CompareRNAStrutures(); odd number of paired nucleotides\n");
+    __builtin_abort ();
 }

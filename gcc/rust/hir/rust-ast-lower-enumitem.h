@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -46,7 +46,6 @@ public:
     auto defid = resolver.translated->get_mappings ().get_defid ();
 
     resolver.mappings->insert_defid_mapping (defid, resolver.translated);
-    resolver.mappings->insert_hir_item (resolver.translated);
     resolver.mappings->insert_location (hirid,
 					resolver.translated->get_locus ());
 

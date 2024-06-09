@@ -1,4 +1,3 @@
-! { dg-do run }
 ! { dg-additional-options "-fno-inline" }
 
 #define N 200

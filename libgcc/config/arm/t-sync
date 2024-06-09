@@ -1,0 +1,13 @@
+LIB1ASMFUNCS += _sync_none _sync_dmb _sync_cp15dmb _sync_synchronize
+
+EXTRA_PARTS += sync-none.specs sync-dmb.specs sync-cp15dmb.specs
+
+sync-none.specs: $(srcdir)/config/arm/sync-none.specs
+	cp $< .
+
+sync-dmb.specs: $(srcdir)/config/arm/sync-dmb.specs
+	cp $< .
+
+sync-cp15dmb.specs: $(srcdir)/config/arm/sync-cp15dmb.specs
+	cp $< .
+

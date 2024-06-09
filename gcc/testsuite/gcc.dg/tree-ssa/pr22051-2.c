@@ -1,5 +1,5 @@
 /* { dg-do compile }  */
-/* { dg-options "-O2 -fdump-tree-optimized -w" }  */
+/* { dg-options "-fpermissive -O2 -fdump-tree-optimized -w" }  */
 
 void *arf ();
 int

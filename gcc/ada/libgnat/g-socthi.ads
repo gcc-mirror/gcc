@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 2001-2023, AdaCore                     --
+--                     Copyright (C) 2001-2024, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -249,21 +249,21 @@ package GNAT.Sockets.Thin is
    procedure Finalize;
 
 private
-   pragma Import (C, C_Bind, "bind");
+   pragma Inline (C_Bind);
    pragma Import (C, C_Close, "close");
    pragma Import (C, C_Gethostname, "gethostname");
-   pragma Import (C, C_Getpeername, "getpeername");
-   pragma Import (C, C_Getsockname, "getsockname");
-   pragma Import (C, C_Getsockopt, "getsockopt");
+   pragma Inline (C_Getpeername);
+   pragma Inline (C_Getsockname);
+   pragma Inline (C_Getsockopt);
    pragma Import (C, C_Listen, "listen");
    pragma Import (C, C_Select, "select");
-   pragma Import (C, C_Setsockopt, "setsockopt");
+   pragma Inline (C_Setsockopt);
    pragma Import (C, C_Shutdown, "shutdown");
    pragma Import (C, C_Socketpair, "socketpair");
    pragma Import (C, C_System, "system");
 
    pragma Import (C, Nonreentrant_Gethostbyname, "gethostbyname");
-   pragma Import (C, Nonreentrant_Gethostbyaddr, "gethostbyaddr");
+   pragma Inline (Nonreentrant_Gethostbyaddr);
    pragma Import (C, Nonreentrant_Getservbyname, "getservbyname");
    pragma Import (C, Nonreentrant_Getservbyport, "getservbyport");
 

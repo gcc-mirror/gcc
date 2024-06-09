@@ -12,6 +12,7 @@ main1 ()
   unsigned short out[N*8], out2[N*8], b0, b1, b2, b3, b4, a0, a1, a2, a3, b5;
   unsigned short in[N*8];
 
+#pragma GCC novector
   for (i = 0; i < N*8; i++)
     {
       in[i] = i;
@@ -202,18 +203,5 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect"  { target { vect_strided4 || vect_extract_even_odd } } } } */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect"  { target  { ! { vect_strided4 || vect_extract_even_odd } } } } } */
-/* Some targets can vectorize the second of the three main loops using
-   hybrid SLP.  For 128-bit vectors, the required 4->3 permutations are:
-
-   { 0, 1, 2, 4, 5, 6, 8, 9 }
-   { 2, 4, 5, 6, 8, 9, 10, 12 }
-   { 5, 6, 8, 9, 10, 12, 13, 14 }
-
-   Not all vect_perm targets support that, and it's a bit too specific to have
-   its own effective-target selector, so we just test targets directly.  */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 4 "vect" { target { powerpc64*-*-* s390*-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { target { vect_strided4 && { ! { powerpc64*-*-* s390*-*-* } } } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect"  { target { ! { vect_strided4 } } } } } */
-  
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect"  { target { vect_strided4 || vect_extract_even_odd } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 0 loops" 1 "vect"  { target  { ! { vect_strided4 || vect_extract_even_odd } } } } } */

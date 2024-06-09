@@ -1,7 +1,7 @@
 /**
  * Compile-time checks associated with the @mustuse attribute.
  *
- * Copyright: Copyright (C) 2022-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 2022-2024 by The D Language Foundation, All Rights Reserved
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/mustuse.d, _mustuse.d)
  * Documentation:  https://dlang.org/phobos/dmd_mustuse.html
@@ -12,21 +12,11 @@ module dmd.mustuse;
 
 import dmd.dscope;
 import dmd.dsymbol;
+import dmd.errors;
 import dmd.expression;
 import dmd.globals;
 import dmd.identifier;
 import dmd.location;
-
-// Used in isIncrementOrDecrement
-private const StringExp plusPlus, minusMinus;
-
-// Loc.initial cannot be used in static initializers, so
-// these need a static constructor.
-shared static this()
-{
-    plusPlus = new StringExp(Loc.initial, "++");
-    minusMinus = new StringExp(Loc.initial, "--");
-}
 
 /**
  * Check whether discarding an expression would violate the requirements of
@@ -41,6 +31,7 @@ shared static this()
 bool checkMustUse(Expression e, Scope* sc)
 {
     import dmd.id : Id;
+    import dmd.typesem : toDsymbol;
 
     assert(e.type);
     if (auto sym = e.type.toDsymbol(sc))
@@ -49,7 +40,7 @@ bool checkMustUse(Expression e, Scope* sc)
         // isStructDeclaration returns non-null for both structs and unions
         if (sd && hasMustUseAttribute(sd, sc) && !isAssignment(e) && !isIncrementOrDecrement(e))
         {
-            e.error("ignored value of `@%s` type `%s`; prepend a `cast(void)` if intentional",
+            error(e.loc, "ignored value of `@%s` type `%s`; prepend a `cast(void)` if intentional",
                 Id.udaMustUse.toChars(), e.type.toPrettyChars(true));
             return true;
         }
@@ -172,9 +163,15 @@ private bool isIncrementOrDecrement(Expression e)
                     {
                         if (auto argExp = (*tiargs)[0].isExpression())
                         {
-                            auto op = argExp.isStringExp();
-                            if (op && (op.compare(plusPlus) == 0 || op.compare(minusMinus) == 0))
-                                return true;
+                            if (auto op = argExp.isStringExp())
+                            {
+                                if (op.len == 2 && op.sz == 1)
+                                {
+                                    const s = op.peekString();
+                                    if (s == "++" || s == "--")
+                                        return true;
+                                }
+                            }
                         }
                     }
                 }
@@ -226,20 +223,7 @@ private bool hasMustUseAttribute(Dsymbol sym, Scope* sc)
  */
 private bool isMustUseAttribute(Expression e)
 {
-    import dmd.attrib : isCoreUda;
+    import dmd.attrib : isEnumAttribute;
     import dmd.id : Id;
-
-    // Logic based on dmd.objc.Supported.declaredAsOptionalCount
-    auto typeExp = e.isTypeExp;
-    if (!typeExp)
-        return false;
-
-    auto typeEnum = typeExp.type.isTypeEnum();
-    if (!typeEnum)
-        return false;
-
-    if (isCoreUda(typeEnum.sym, Id.udaMustUse))
-        return true;
-
-    return false;
+    return isEnumAttribute(e, Id.udaMustUse);
 }

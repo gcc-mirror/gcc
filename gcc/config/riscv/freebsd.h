@@ -1,5 +1,5 @@
 /* Definitions for RISC-V FreeBSD systems with ELF format.
-   Copyright (C) 2018-2023 Free Software Foundation, Inc.
+   Copyright (C) 2018-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
   %{p:%nconsider using `-pg' instead of `-p' with gprof (1)}	\
   %{v:-V}							\
   %{assert*} %{R*} %{rpath*} %{defsym*}				\
+  -X								\
   %{mbig-endian:-EB}						\
   %{mlittle-endian:-EL}						\
   %{shared:-Bshareable %{h*} %{soname*}}			\

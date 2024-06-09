@@ -123,6 +123,11 @@ else version (IBMZ_Any)
     enum IN_CLOEXEC = 0x80000; // octal!2000000
     enum IN_NONBLOCK = 0x800; // octal!4000
 }
+else version (LoongArch64)
+{
+    enum IN_CLOEXEC = 0x80000; // octal!2000000
+    enum IN_NONBLOCK = 0x800; // octal!4000
+}
 else
     static assert(0, "unimplemented");
 

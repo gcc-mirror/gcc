@@ -329,6 +329,20 @@ this pragma serves no purpose but is ignored
 rather than rejected to allow common sets of sources to be used
 in the two situations.
 
+.. _Pragma-Always_Terminates:
+
+Pragma Always_Terminates
+========================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Always_Terminates [ (boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect ``Always_Terminates``
+in the SPARK 2014 Reference Manual, section 6.1.10.
+
 .. _Pragma-Annotate:
 
 Pragma Annotate
@@ -1905,6 +1919,24 @@ configuration  pragma, or in a declaration sequence where it applies
 till the end of the scope. If an ``Entity`` argument is present,
 the action applies only to that entity.
 
+Pragma Exceptional_Cases
+========================
+.. index:: Exceptional_Cases
+
+Syntax:
+
+
+::
+
+  pragma Exceptional_Cases (EXCEPTIONAL_CASE_LIST);
+
+  EXCEPTIONAL_CASE_LIST ::= EXCEPTIONAL_CASE {, EXCEPTIONAL_CASE}
+  EXCEPTIONAL_CASE      ::= exception_choice {'|' exception_choice} => CONSEQUENCE
+  CONSEQUENCE           ::= Boolean_expression
+
+For the semantics of this aspect, see the SPARK 2014 Reference Manual, section
+6.1.9.
+
 Pragma Export_Function
 ======================
 .. index:: Argument passing mechanisms
@@ -2349,7 +2381,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Favor_Top_Level (type_NAME);
+  pragma Favor_Top_Level (type_LOCAL_NAME);
 
 
 The argument of pragma ``Favor_Top_Level`` must be a named access-to-subprogram
@@ -2472,7 +2504,9 @@ Syntax:
 This is a configuration pragma
 that takes a single argument that is a simple identifier. Any subsequent
 use of a pragma whose pragma identifier matches this argument will be
-silently ignored. This may be useful when legacy code or code intended
+silently ignored. Any preceding use of a pragma whose pragma identifier
+matches this argument will be parsed and then ignored.
+This may be useful when legacy code or code intended
 for compilation with some other compiler contains pragmas that match the
 name, but not the exact implementation, of a GNAT pragma. The use of this
 pragma allows such pragmas to be ignored, which may be useful in CodePeer
@@ -2804,7 +2838,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Independent (Local_NAME);
+  pragma Independent (component_LOCAL_NAME);
 
 
 This pragma is standard in Ada 2012 mode (which also provides an aspect
@@ -3503,6 +3537,11 @@ Pragma Lock_Free
 ================
 
 Syntax:
+
+.. code-block:: ada
+
+  pragma Lock_Free [ (static_boolean_EXPRESSION) ];
+
 This pragma may be specified for protected types or objects. It specifies that
 the implementation of protected operations must be implemented without locks.
 Compilation fails if the compiler cannot generate lock-free code for the
@@ -3732,7 +3771,7 @@ Pragma Max_Queue_Length
 
 Syntax::
 
-   pragma Max_Entry_Queue (static_integer_EXPRESSION);
+   pragma Max_Queue_Length (static_integer_EXPRESSION);
 
 
 This pragma is used to specify the maximum callers per entry queue for
@@ -3816,7 +3855,7 @@ same name) that establishes the restriction ``No_Elaboration_Code`` for
 the current unit and any extended main source units (body and subunits).
 It also has the effect of enforcing a transitive application of this
 aspect, so that if any unit is implicitly or explicitly with'ed by the
-current unit, it must also have the No_Elaboration_Code_All aspect set.
+current unit, it must also have the `No_Elaboration_Code_All` aspect set.
 It may be applied to package or subprogram specs or their generic versions.
 
 Pragma No_Heap_Finalization
@@ -3960,6 +3999,12 @@ When pragmas ``Discard_Names`` and ``No_Tagged_Streams`` are simultaneously
 applied to a tagged type its Expanded_Name and External_Tag are initialized
 with empty strings. This is useful to avoid exposing entity names at binary
 level but has a negative impact on the debuggability of tagged types.
+
+Alternatively, when pragmas ``Discard_Names`` and ``Restrictions (No_Streams)``
+simultanously apply to a tagged type, its Expanded_Name and External_Tag are
+also initialized with empty strings. In particular, both these pragmas can be
+applied as configuration pragmas to avoid exposing entity names at binary
+level for the entire parition.
 
 Pragma Normalize_Scalars
 ========================
@@ -4474,7 +4519,7 @@ Syntax:
 
 ::
 
-  pragma Persistent_BSS [(LOCAL_NAME)]
+  pragma Persistent_BSS [(object_LOCAL_NAME)]
 
 
 This pragma allows selected objects to be placed in the ``.persistent_bss``
@@ -5816,6 +5861,20 @@ Syntax:
 This pragma is provided for compatibility with other Ada implementations. It
 is recognized but ignored by all current versions of GNAT.
 
+.. _Pragma-Side_Effects:
+
+Pragma Side_Effects
+===================
+
+Syntax:
+
+.. code-block:: ada
+
+  pragma Side_Effects [ (static_boolean_EXPRESSION) ];
+
+For the semantics of this pragma, see the entry for aspect
+``Side_Effects`` in the SPARK Reference Manual, section 6.1.11.
+
 .. _Pragma-Simple_Storage_Pool_Type:
 
 Pragma Simple_Storage_Pool_Type
@@ -6452,12 +6511,12 @@ Syntax:
 
 ::
 
-  pragma Suppress_Initialization ([Entity =>] variable_or_subtype_Name);
+  pragma Suppress_Initialization ([Entity =>] variable_or_subtype_LOCAL_NAME);
 
 
-Here variable_or_subtype_Name is the name introduced by a type declaration
-or subtype declaration or the name of a variable introduced by an
-object declaration.
+Here variable_or_subtype_LOCAL_NAME is the name introduced by a type
+declaration or subtype declaration or the name of a variable introduced by
+an object declaration.
 
 In the case of a type or subtype
 this pragma suppresses any implicit or explicit initialization
@@ -6828,6 +6887,39 @@ part or package specification. In the latter case it applies to
 uses up to the end of the corresponding statement sequence or
 sequence of package declarations.
 
+Pragma User_Aspect_Definition
+=============================
+
+Syntax:
+
+
+.. code-block:: ada
+
+  pragma User_Aspect_Definition
+    (Identifier {, Identifier [(Identifier {, Identifier})]});
+
+
+This configuration pragma defines a new aspect, making it available for
+subsequent use in a `User_Aspect` aspect specification. The first identifier
+is the name of the new aspect. Any subsequent arguments specify the names
+of other aspects. A subsequent name for which no parenthesized arguments
+are given shall denote either a Boolean-valued non-representation aspect
+or an aspect that has been defined by another `User_Aspect_Definition`
+pragma. A name for which one or more arguments are given shall be either
+`Annotate` or `Local_Restrictions` (and the arguments shall be appropriate
+for the named aspect).
+
+This pragma, together with the `User_Aspect` aspect, provides a mechanism
+for avoiding textual duplication if some set of aspect specifications
+is needed in multiple places. This is somewhat analogous to how profiles
+allow avoiding duplication of `Restrictions` pragmas.
+
+The visibility rules for an aspect defined by a `User_Aspect_Definition`
+pragma are the same as for a check name introduced by a `Check_Name`
+pragma. If multiple definitions are visible for some aspect at some point,
+then the definitions must agree. A predefined aspect cannot be redefined.
+
+
 Pragma Unimplemented_Unit
 =========================
 
@@ -6863,10 +6955,9 @@ Syntax:
 
 ``type_LOCAL_NAME`` must refer to a type declaration in the current
 declarative part.  The effect is to inhibit strict type-based aliasing
-optimization for the given type.  In other words, the effect is as though
-access types designating this type were subject to pragma No_Strict_Aliasing.
-For a detailed description of the strict aliasing optimization, and the
-situations in which it must be suppressed, see the section on
+optimizations for the given type.  For a detailed description of the
+strict type-based aliasing optimizations and the situations in which
+they need to be suppressed, see the section on
 ``Optimization and Strict Aliasing`` in the :title:`GNAT User's Guide`.
 
 .. _Pragma-Unmodified:

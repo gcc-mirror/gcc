@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct s {
   char text[11];
   int flag;
@@ -8,13 +11,14 @@ check (struct s p)
 {
   if (p.flag != 99)
     return 1;
-  return strcmp (p.text, "0123456789");
+  return __builtin_strcmp (p.text, "0123456789");
 }
 
-main ()
+int
+main (void)
 {
   cell.flag = 99;
-  strcpy (cell.text, "0123456789");
+  __builtin_strcpy (cell.text, "0123456789");
 
   if (check (cell))
     abort();

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -fdump-tree-fre-all -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Verify we remove a redundant load that occurs both before and after
 we call a vector load builtin.

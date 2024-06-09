@@ -1,0 +1,8 @@
+MODULE constcast ;
+
+FROM SYSTEM IMPORT CAST ;
+
+CONST Nil = CAST (PROC, NIL) ;
+
+BEGIN
+END constcast.

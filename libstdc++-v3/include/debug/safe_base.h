@@ -1,6 +1,6 @@
 // Safe sequence/iterator base implementation  -*- C++ -*-
 
-// Copyright (C) 2003-2023 Free Software Foundation, Inc.
+// Copyright (C) 2003-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -75,6 +75,7 @@ namespace __gnu_debug
 
   protected:
     /** Initializes the iterator and makes it singular. */
+    _GLIBCXX20_CONSTEXPR
     _Safe_iterator_base()
     : _M_sequence(0), _M_version(0), _M_prior(0), _M_next(0)
     { }
@@ -86,18 +87,31 @@ namespace __gnu_debug
      *  singular. Otherwise, the iterator will reference @p __seq and
      *  be nonsingular.
      */
+    _GLIBCXX20_CONSTEXPR
     _Safe_iterator_base(const _Safe_sequence_base* __seq, bool __constant)
     : _M_sequence(0), _M_version(0), _M_prior(0), _M_next(0)
-    { this->_M_attach(const_cast<_Safe_sequence_base*>(__seq), __constant); }
+    {
+      if (!std::__is_constant_evaluated())
+	this->_M_attach(const_cast<_Safe_sequence_base*>(__seq), __constant);
+    }
 
     /** Initializes the iterator to reference the same sequence that
 	@p __x does. @p __constant is true if this is a constant
 	iterator, and false if it is mutable. */
+    _GLIBCXX20_CONSTEXPR
     _Safe_iterator_base(const _Safe_iterator_base& __x, bool __constant)
     : _M_sequence(0), _M_version(0), _M_prior(0), _M_next(0)
-    { this->_M_attach(__x._M_sequence, __constant); }
+    {
+      if (!std::__is_constant_evaluated())
+	this->_M_attach(__x._M_sequence, __constant);
+    }
 
-    ~_Safe_iterator_base() { this->_M_detach(); }
+    _GLIBCXX20_CONSTEXPR
+    ~_Safe_iterator_base()
+    {
+      if (!std::__is_constant_evaluated())
+	this->_M_detach();
+    }
 
     /** For use in _Safe_iterator. */
     __gnu_cxx::__mutex&
@@ -201,24 +215,34 @@ namespace __gnu_debug
 
   protected:
     // Initialize with a version number of 1 and no iterators
+    _GLIBCXX20_CONSTEXPR
     _Safe_sequence_base() _GLIBCXX_NOEXCEPT
     : _M_iterators(0), _M_const_iterators(0), _M_version(1)
     { }
 
 #if __cplusplus >= 201103L
+    _GLIBCXX20_CONSTEXPR
     _Safe_sequence_base(const _Safe_sequence_base&) noexcept
     : _Safe_sequence_base() { }
 
     // Move constructor swap iterators.
+    _GLIBCXX20_CONSTEXPR
     _Safe_sequence_base(_Safe_sequence_base&& __seq) noexcept
     : _Safe_sequence_base()
-    { _M_swap(__seq); }
+    {
+      if (!std::__is_constant_evaluated())
+	_M_swap(__seq);
+    }
 #endif
 
     /** Notify all iterators that reference this sequence that the
 	sequence is being destroyed. */
+    _GLIBCXX20_CONSTEXPR
     ~_Safe_sequence_base()
-    { this->_M_detach_all(); }
+    {
+      if (!std::__is_constant_evaluated())
+	this->_M_detach_all();
+    }
 
     /** Detach all iterators, leaving them singular. */
     void

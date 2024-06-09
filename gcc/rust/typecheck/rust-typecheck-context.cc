@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {
@@ -31,7 +32,7 @@ TypeCheckContext::get ()
   return instance;
 }
 
-TypeCheckContext::TypeCheckContext () {}
+TypeCheckContext::TypeCheckContext () { lifetime_resolver_stack.emplace (); }
 
 TypeCheckContext::~TypeCheckContext () {}
 
@@ -109,6 +110,16 @@ TypeCheckContext::lookup_type (HirId id, TyTy::BaseType **type) const
 }
 
 void
+TypeCheckContext::clear_type (TyTy::BaseType *ty)
+{
+  auto it = resolved.find (ty->get_ref ());
+  if (it == resolved.end ())
+    return;
+
+  resolved.erase (it);
+}
+
+void
 TypeCheckContext::insert_type_by_node_id (NodeId ref, HirId id)
 {
   rust_assert (node_id_refs.find (ref) == node_id_refs.end ());
@@ -124,6 +135,12 @@ TypeCheckContext::lookup_type_by_node_id (NodeId ref, HirId *id)
 
   *id = it->second;
   return true;
+}
+
+bool
+TypeCheckContext::have_function_context () const
+{
+  return !return_type_stack.empty ();
 }
 
 TyTy::BaseType *
@@ -147,7 +164,7 @@ TypeCheckContext::pop_return_type ()
   return_type_stack.pop_back ();
 }
 
-TypeCheckContextItem &
+TypeCheckContextItem
 TypeCheckContext::peek_context ()
 {
   rust_assert (!return_type_stack.empty ());
@@ -171,10 +188,11 @@ TypeCheckContext::have_loop_context () const
 }
 
 void
-TypeCheckContext::push_new_loop_context (HirId id, Location locus)
+TypeCheckContext::push_new_loop_context (HirId id, location_t locus)
 {
   TyTy::BaseType *infer_var
-    = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL, locus);
+    = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL,
+			   TyTy::InferType::TypeHint::Default (), locus);
   loop_type_stack.push_back (infer_var);
 }
 
@@ -328,7 +346,6 @@ void
 TypeCheckContext::insert_autoderef_mappings (
   HirId id, std::vector<Adjustment> &&adjustments)
 {
-  rust_assert (autoderef_mappings.find (id) == autoderef_mappings.end ());
   autoderef_mappings.emplace (id, std::move (adjustments));
 }
 
@@ -348,8 +365,6 @@ void
 TypeCheckContext::insert_cast_autoderef_mappings (
   HirId id, std::vector<Adjustment> &&adjustments)
 {
-  rust_assert (cast_autoderef_mappings.find (id)
-	       == cast_autoderef_mappings.end ());
   cast_autoderef_mappings.emplace (id, std::move (adjustments));
 }
 
@@ -427,8 +442,8 @@ void
 TypeCheckContext::insert_resolved_predicate (HirId id,
 					     TyTy::TypeBoundPredicate predicate)
 {
-  auto it = predicates.find (id);
-  rust_assert (it == predicates.end ());
+  // auto it = predicates.find (id);
+  // rust_assert (it == predicates.end ());
 
   predicates.insert ({id, predicate});
 }
@@ -482,6 +497,126 @@ TypeCheckContext::trait_query_in_progress (DefId id) const
 	 != trait_queries_in_progress.end ();
 }
 
+Lifetime
+TypeCheckContext::intern_lifetime (const HIR::Lifetime &lifetime)
+{
+  if (lifetime.get_lifetime_type () == AST::Lifetime::NAMED)
+    {
+      auto maybe_interned = lookup_lifetime (lifetime);
+      if (maybe_interned)
+	return *maybe_interned;
+
+      auto interned = next_lifetime_index.next ();
+      lifetime_name_interner[lifetime.get_name ()] = interned;
+      return interned;
+    }
+  if (lifetime.get_lifetime_type () == AST::Lifetime::WILDCARD)
+    {
+      return next_lifetime_index.next ();
+    }
+  if (lifetime.get_lifetime_type () == AST::Lifetime::STATIC)
+    {
+      return Lifetime::static_lifetime ();
+    }
+  rust_unreachable ();
+}
+
+tl::optional<Lifetime>
+TypeCheckContext::lookup_lifetime (const HIR::Lifetime &lifetime) const
+{
+  if (lifetime.get_lifetime_type () == AST::Lifetime::NAMED)
+    {
+      rust_assert (lifetime.get_name () != "static");
+      const auto name = lifetime.get_name ();
+      auto it = lifetime_name_interner.find (name);
+      if (it == lifetime_name_interner.end ())
+	return tl::nullopt;
+      return it->second;
+    }
+  if (lifetime.get_lifetime_type () == AST::Lifetime::WILDCARD)
+    {
+      return Lifetime::anonymous_lifetime ();
+    }
+  if (lifetime.get_lifetime_type () == AST::Lifetime::STATIC)
+    {
+      return Lifetime::static_lifetime ();
+    }
+  rust_unreachable ();
+}
+
+WARN_UNUSED_RESULT tl::optional<TyTy::Region>
+TypeCheckContext::lookup_and_resolve_lifetime (
+  const HIR::Lifetime &lifetime) const
+{
+  auto maybe_interned = lookup_lifetime (lifetime);
+  if (!maybe_interned)
+    return tl::nullopt;
+
+  return get_lifetime_resolver ().resolve (maybe_interned.value ());
+}
+void
+TypeCheckContext::intern_and_insert_lifetime (const HIR::Lifetime &lifetime)
+{
+  get_lifetime_resolver ().insert_mapping (intern_lifetime (lifetime));
+}
+
+WARN_UNUSED_RESULT std::vector<TyTy::Region>
+TypeCheckContext::regions_from_generic_args (const HIR::GenericArgs &args) const
+{
+  std::vector<TyTy::Region> regions;
+  for (const auto &lifetime : args.get_lifetime_args ())
+    {
+      auto resolved = lookup_and_resolve_lifetime (lifetime);
+      if (!resolved)
+	{
+	  rust_error_at (lifetime.get_locus (), "unresolved lifetime");
+	  return {};
+	}
+      regions.push_back (*resolved);
+    }
+  return regions;
+}
+
+void
+TypeCheckContext::compute_inference_variables (bool error)
+{
+  auto mappings = Analysis::Mappings::get ();
+
+  // default inference variables if possible
+  iterate ([&] (HirId id, TyTy::BaseType *ty) mutable -> bool {
+    // nothing to do
+    if (ty->get_kind () != TyTy::TypeKind::INFER)
+      return true;
+
+    TyTy::InferType *infer_var = static_cast<TyTy::InferType *> (ty);
+    TyTy::BaseType *default_type;
+
+    rust_debug_loc (mappings->lookup_location (id),
+		    "trying to default infer-var: %s",
+		    infer_var->as_string ().c_str ());
+    bool ok = infer_var->default_type (&default_type);
+    if (!ok)
+      {
+	if (error)
+	  rust_error_at (mappings->lookup_location (id), ErrorCode::E0282,
+			 "type annotations needed");
+	return true;
+      }
+
+    auto result
+      = unify_site (id, TyTy::TyWithLocation (ty),
+		    TyTy::TyWithLocation (default_type), UNDEF_LOCATION);
+    rust_assert (result);
+    rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
+    result->set_ref (id);
+    insert_type (Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
+					UNKNOWN_LOCAL_DEFID),
+		 result);
+
+    return true;
+  });
+}
+
 // TypeCheckContextItem
 
 TypeCheckContextItem::Item::Item (HIR::Function *item) : item (item) {}
@@ -507,6 +642,71 @@ TypeCheckContextItem::TypeCheckContextItem (HIR::ImplBlock *impl_block,
 TypeCheckContextItem::TypeCheckContextItem (HIR::TraitItemFunc *trait_item)
   : type (ItemType::TRAIT_ITEM), item (trait_item)
 {}
+
+TypeCheckContextItem::TypeCheckContextItem (const TypeCheckContextItem &other)
+  : type (other.type), item (other.item)
+{
+  switch (other.type)
+    {
+    case ITEM:
+      item.item = other.item.item;
+      break;
+
+    case IMPL_ITEM:
+      item.impl_item = other.item.impl_item;
+      break;
+
+    case TRAIT_ITEM:
+      item.trait_item = other.item.trait_item;
+      break;
+
+    case ERROR:
+      item.item = nullptr;
+      break;
+    }
+}
+
+TypeCheckContextItem::TypeCheckContextItem ()
+  : type (ItemType::ERROR), item (static_cast<HIR::Function *> (nullptr))
+{}
+
+TypeCheckContextItem &
+TypeCheckContextItem::operator= (const TypeCheckContextItem &other)
+{
+  type = other.type;
+  switch (other.type)
+    {
+    case ITEM:
+      item.item = other.item.item;
+      break;
+
+    case IMPL_ITEM:
+      item.impl_item = other.item.impl_item;
+      break;
+
+    case TRAIT_ITEM:
+      item.trait_item = other.item.trait_item;
+      break;
+
+    case ERROR:
+      item.item = nullptr;
+      break;
+    }
+
+  return *this;
+}
+
+TypeCheckContextItem
+TypeCheckContextItem::get_error ()
+{
+  return TypeCheckContextItem ();
+}
+
+bool
+TypeCheckContextItem::is_error () const
+{
+  return type == ERROR;
+}
 
 HIR::Function *
 TypeCheckContextItem::get_item ()
@@ -554,6 +754,10 @@ TypeCheckContextItem::get_context_type ()
     case TRAIT_ITEM:
       reference = get_trait_item ()->get_mappings ().get_hirid ();
       break;
+
+    case ERROR:
+      rust_unreachable ();
+      return nullptr;
     }
 
   rust_assert (reference != UNKNOWN_HIRID);
@@ -563,6 +767,27 @@ TypeCheckContextItem::get_context_type ()
   rust_assert (ok);
   rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
   return static_cast<TyTy::FnType *> (lookup);
+}
+
+DefId
+TypeCheckContextItem::get_defid () const
+{
+  switch (get_type ())
+    {
+    case ITEM:
+      return item.item->get_mappings ().get_defid ();
+
+    case IMPL_ITEM:
+      return item.impl_item.second->get_mappings ().get_defid ();
+
+    case TRAIT_ITEM:
+      return item.trait_item->get_mappings ().get_defid ();
+
+    case ERROR:
+      return UNKNOWN_DEFID;
+    }
+
+  return UNKNOWN_DEFID;
 }
 
 } // namespace Resolver

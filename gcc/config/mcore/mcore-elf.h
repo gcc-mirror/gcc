@@ -1,5 +1,5 @@
 /* Definitions of MCore target. 
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GCC.
@@ -51,7 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 	}							\
       ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");	\
       ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));		\
-      ASM_OUTPUT_LABEL (FILE, NAME);				\
+      ASM_OUTPUT_FUNCTION_LABEL (FILE, NAME, DECL);		\
     }								\
   while (0)
 

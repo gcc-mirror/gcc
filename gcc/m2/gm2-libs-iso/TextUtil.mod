@@ -1,6 +1,6 @@
 IMPLEMENTATION MODULE TextUtil ;
 
-IMPORT IOChan, CharClass, IOConsts ;
+IMPORT CharClass, IOConsts ;
 
 (*
    SkipSpaces - skips any spaces.
@@ -23,7 +23,8 @@ BEGIN
 END SkipSpaces ;
 
 
-(* The following procedures do not read past line marks.  *)
+(* CharAvailable returns TRUE if IOChan.ReadResult is notKnown or
+   allRight.  *)
 
 PROCEDURE CharAvailable (cid: IOChan.ChanId) : BOOLEAN ;
 BEGIN
@@ -31,6 +32,9 @@ BEGIN
            (IOChan.ReadResult (cid) = IOConsts.allRight) )
 END CharAvailable ;
 
+
+(* EofOrEoln returns TRUE if IOChan.ReadResult is endOfLine or
+   endOfInput.  *)
 
 PROCEDURE EofOrEoln (cid: IOChan.ChanId) : BOOLEAN ;
 BEGIN

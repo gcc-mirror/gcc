@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -729,6 +729,18 @@ is
            Is_Less_Key_Node    => Is_Less_Key_Node,
            Is_Greater_Key_Node => Is_Greater_Key_Node);
 
+      ------------
+      -- Adjust --
+      ------------
+
+      procedure Adjust (Control : in out Reference_Control_Type) is
+      begin
+         Impl.Reference_Control_Type (Control).Adjust;
+         if Control.Old_Key /= null then
+            Control.Old_Key := new Key_Type'(Control.Old_Key.all);
+         end if;
+      end Adjust;
+
       -------------
       -- Ceiling --
       -------------
@@ -825,6 +837,8 @@ is
       --------------
 
       procedure Finalize (Control : in out Reference_Control_Type) is
+         procedure Deallocate is
+           new Ada.Unchecked_Deallocation (Key_Type, Key_Access);
       begin
          if Control.Container /= null then
             Impl.Reference_Control_Type (Control).Finalize;
@@ -836,7 +850,7 @@ is
             end if;
 
             Control.Container := null;
-            Control.Old_Key   := null;
+            Deallocate (Control.Old_Key);
          end if;
       end Finalize;
 

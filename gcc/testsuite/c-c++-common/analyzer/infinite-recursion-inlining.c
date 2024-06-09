@@ -11,13 +11,13 @@
 
 void test_direct (void)
 {
-  test_direct (); /* Ideally would warn here, but it becomes an infinite loop.  */
-}
+  test_direct ();
+} /* { dg-warning "infinite-loop" } */
 
 void test_guarded (int flag)
 {
-  if (flag)
-    test_guarded (flag);  /* Ideally would warn here, but it becomes an infinite loop.  */
+  if (flag) /* { dg-warning "infinite-loop" } */
+    test_guarded (flag);
 }
 
 void test_flipped_guard (int flag)
@@ -34,7 +34,7 @@ void test_param_variant (int depth)
 
 void test_unguarded_param_variant (int depth)
 {
-  test_unguarded_param_variant (depth - 1); /* Ideally would warn here, but it becomes an infinite loop.  */
+  test_unguarded_param_variant (depth - 1); /* { dg-warning "infinite-loop" } */
 }
 
 int g;
@@ -90,27 +90,23 @@ int test_do_while_postdecrement_param (int n)
 
 /* Various cases of decrementing "n" as the recursion proceeds where
    not every path recurses, but we're not actually checking "n", so
-   if "flag" is true it's an infinite recursion.  */
+   if "flag" is true it's an infinite recursion (which looks like an
+   infinite loop after inlining).  */
 
 void test_partially_guarded_postdecrement (int flag, int n)
 {
-  /* Ideally we'd catch this, but it becomes an infinite loop.  */
-  if (flag)
+  if (flag) /* { dg-warning "infinite loop" } */
     test_partially_guarded_postdecrement (flag, n--);
 }
 
 void test_partially_guarded_predecrement (int flag, int n)
 {
-  /* We fail to report this; we see that "n" is changing,
-     though it isn't relevant to whether we recurse.  */
-  if (flag)
-    test_partially_guarded_predecrement (flag, --n); /* { dg-warning "infinite recursion" "TODO" { xfail *-*-* } } */
+  if (flag) /* { dg-warning "infinite loop" } */
+    test_partially_guarded_predecrement (flag, --n);
 }
 
 void test_partially_guarded_subtract (int flag, int n)
 {
-  /* We fail to report this; we see that "n" is changing,
-     though it isn't relevant to whether we recurse.  */
-  if (flag)
-    test_partially_guarded_subtract (flag, n - 1); /* { dg-warning "infinite recursion" "TODO" { xfail *-*-* } } */
+  if (flag) /* { dg-warning "infinite loop" } */
+    test_partially_guarded_subtract (flag, n - 1);
 }

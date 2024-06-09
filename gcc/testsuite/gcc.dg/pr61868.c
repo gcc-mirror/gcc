@@ -7,4 +7,4 @@ int main ()
   foo (100);
   return 0;
 }
-/* { dg-final { scan-assembler "\.gnu\.lto.*.12345" } } */
+/* { dg-final { scan-raw-assembler "\.gnu\.lto.*.12345" } } */

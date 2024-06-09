@@ -2495,8 +2495,8 @@ extern (Windows) nothrow {
     alias NAMEENUMPROCW WINSTAENUMPROCW;
 }
 
-mixin DECLARE_HANDLE!("HDWP");
-mixin DECLARE_HANDLE!("HDEVNOTIFY");
+alias HDWP = HANDLE;
+alias HDEVNOTIFY = HANDLE;
 
 struct MENUGETOBJECTINFO {
     DWORD dwFlags;

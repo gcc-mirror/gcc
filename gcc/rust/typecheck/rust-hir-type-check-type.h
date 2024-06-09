@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,9 +20,7 @@
 #define RUST_HIR_TYPE_CHECK_TYPE
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
-#include "rust-substitution-mapper.h"
-#include "rust-hir-path-probe.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Resolver {
@@ -38,7 +36,7 @@ public:
   void visit (HIR::TypePathSegmentGeneric &generic);
 
 private:
-  TypeCheckResolveGenericArguments (Location locus)
+  TypeCheckResolveGenericArguments (location_t locus)
     : TypeCheckBase (), args (HIR::GenericArgs::create_empty (locus))
   {}
 
@@ -90,7 +88,7 @@ private:
     NodeId root_resolved_node_id, HirId expr_id,
     std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments, size_t offset,
     TyTy::BaseType *tyseg, const Analysis::NodeMapping &expr_mappings,
-    Location expr_locus);
+    location_t expr_locus);
 
   TyTy::BaseType *translated;
 };
@@ -98,7 +96,8 @@ private:
 class TypeResolveGenericParam : public TypeCheckBase
 {
 public:
-  static TyTy::ParamType *Resolve (HIR::GenericParam *param);
+  static TyTy::ParamType *Resolve (HIR::GenericParam *param,
+				   bool apply_sized = true);
 
 protected:
   void visit (HIR::TypeParam &param);
@@ -106,22 +105,31 @@ protected:
   void visit (HIR::ConstGenericParam &param);
 
 private:
-  TypeResolveGenericParam () : TypeCheckBase (), resolved (nullptr) {}
+  TypeResolveGenericParam (bool apply_sized)
+    : TypeCheckBase (), resolved (nullptr), apply_sized (apply_sized)
+  {}
 
   TyTy::ParamType *resolved;
+  bool apply_sized;
 };
 
 class ResolveWhereClauseItem : public TypeCheckBase
 {
+  // pair(a, b) => a: b
+  TyTy::RegionConstraints &region_constraints;
+
 public:
-  static void Resolve (HIR::WhereClauseItem &item);
+  static void Resolve (HIR::WhereClauseItem &item,
+		       TyTy::RegionConstraints &region_constraints);
 
 protected:
   void visit (HIR::LifetimeWhereClauseItem &item);
   void visit (HIR::TypeBoundWhereClauseItem &item);
 
 private:
-  ResolveWhereClauseItem () : TypeCheckBase () {}
+  ResolveWhereClauseItem (TyTy::RegionConstraints &region_constraints)
+    : region_constraints (region_constraints)
+  {}
 };
 
 } // namespace Resolver

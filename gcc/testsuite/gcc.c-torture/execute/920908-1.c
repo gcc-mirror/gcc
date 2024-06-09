@@ -2,6 +2,9 @@
 
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 typedef struct{int A;}T;
 
 T f(int x,...)
@@ -17,7 +20,8 @@ va_end(ap);
 return X;
 }
 
-main()
+int
+main(void)
 {
 T X,Y;
 int i;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,16 +77,11 @@ package body Ada.Command_Line is
 
    function Argument_Count return Natural is
    begin
-      if not Initialized then
-         --  RM A.15 (11)
-         return 0;
-      end if;
-
-      if Remove_Args = null then
-         return Arg_Count - 1;
-      else
-         return Remove_Count;
-      end if;
+      return
+         (if not Initialized then 0  --  RM A.15 (11)
+          elsif Remove_Args = null then Arg_Count - 1
+          else Remove_Count
+         );
    end Argument_Count;
 
    -----------------
@@ -107,6 +102,8 @@ package body Ada.Command_Line is
 
    function Command_Name return String is
    begin
+      pragma Annotate (Gnatcheck, Exempt_On, "Improper_Returns",
+                       "early returns for performance");
       if not Initialized then
          return "";
       end if;
@@ -118,6 +115,7 @@ package body Ada.Command_Line is
          Fill_Arg (Arg'Address, 0);
          return Arg;
       end;
+      pragma Annotate (Gnatcheck, Exempt_Off, "Improper_Returns");
    end Command_Name;
 
 end Ada.Command_Line;

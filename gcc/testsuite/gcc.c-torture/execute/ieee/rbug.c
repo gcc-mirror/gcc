@@ -2,6 +2,9 @@
 #include <ieeefp.h>
 #endif
 
+void abort (void);
+void exit (int);
+
 double d (unsigned long long k)
 {
   double x;
@@ -18,7 +21,8 @@ float s (unsigned long long k)
   return x;
 }
 
-main ()
+int
+main (void)
 {
   unsigned long long int k;
   double x;

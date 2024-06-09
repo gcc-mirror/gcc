@@ -1,7 +1,7 @@
 --
 -- m2-h.bnf grammar and associated actions for pass h.
 --
--- Copyright (C) 2001-2023 Free Software Foundation, Inc.
+-- Copyright (C) 2001-2024 Free Software Foundation, Inc.
 -- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 --
 -- This file is part of GNU Modula-2.
@@ -23,7 +23,7 @@
 (* output from m2-h.bnf, automatically generated do not edit if these
    are the top two lines in the file.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -102,7 +102,8 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     AddVarientRange, AddVarientEquality,
                     BuildDefaultFieldAlignment, BuildPragmaField,
                     CheckWithReference, DisplayStack, Annotate,
-                    IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto ;
+                    IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto,
+                    PushInConstExpression, PopInConstExpression ;
 
 FROM P3SymBuild IMPORT P3StartBuildProgModule,
                        P3EndBuildProgModule,
@@ -572,10 +573,12 @@ ConstantDeclaration :=                                                     % Pus
                      =:
 
 ConstExpression :=                                                         % VAR tokpos: CARDINAL ; %
+                                                                           % PushInConstExpression %
                                                                            % PushAutoOn %
                    SimpleConstExpr [ Relation                              % tokpos := GetTokenNo ()-1 %
                                               SimpleConstExpr              % BuildRelOp (tokpos) %
                                    ]                                       % PopAuto %
+                                                                           % PopInConstExpression %
                 =:
 
 Relation := "="                                                            % PushTtok(EqualTok, GetTokenNo() -1) %
@@ -652,19 +655,23 @@ ArraySetRecordValue := ComponentValue                                      % Bui
                                                            }
                      =:
 
-Constructor := '{'                                                         % BuildConstructorStart (GetTokenNo() -1) %
-                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd (GetTokenNo())  %
+Constructor :=                                                             % VAR tokpos: CARDINAL ; %
+                                                                           % DisplayStack %
+               '{'                                                         % tokpos := GetTokenNo () -1 %
+                                                                           % BuildConstructorStart (tokpos) %
+                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd (tokpos, GetTokenNo())  %
                '}' =:
 
-ConstSetOrQualidentOrFunction :=                                            % PushAutoOn %
-                                 (
+ConstSetOrQualidentOrFunction :=                                           % PushAutoOn %
+                                                                           % VAR tokpos: CARDINAL ; %
+                                 (                                         % tokpos := GetTokenNo () %
                                     Qualident
                                     [ Constructor |
                                        ConstActualParameters               % BuildConstFunctionCall %
                                                                           ]
-                                      |                                    % BuildTypeForConstructor %
+                                      |                                    % BuildTypeForConstructor (tokpos) %
                                         Constructor
-                                 )                                          % PopAuto %
+                                 )                                         % PopAuto %
                                 =:
 
 ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" ConstAttributeExpression ")" ")" =:

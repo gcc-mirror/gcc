@@ -1,5 +1,5 @@
 // Feature test macro definitions                                  -*- C++ -*-
-// Copyright (C) 2023 Free Software Foundation, Inc.
+// Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -209,7 +209,6 @@ ftms = {
   values = {
     v = 201304;
     cxxmin = 14;
-    extra_cond = "!defined(_GLIBCXX_DEBUG)";
   };
 };
 
@@ -739,6 +738,7 @@ ftms = {
   values = {
     v = 201907;
     cxxmin = 20;
+    extra_cond = "(__GCC_ATOMIC_INT_LOCK_FREE | __GCC_ATOMIC_LONG_LOCK_FREE | __GCC_ATOMIC_CHAR_LOCK_FREE) & 2";
   };
 };
 
@@ -763,6 +763,15 @@ ftms = {
   values = {
     v = 201907;
     cxxmin = 20;
+  };
+};
+
+ftms = {
+  name = bind_back;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+    extra_cond = "__cpp_explicit_this_parameter";
   };
 };
 
@@ -960,6 +969,11 @@ ftms = {
 ftms = {
   name = span;
   values = {
+    v = 202311;
+    cxxmin = 26;
+    extra_cond = "__glibcxx_concepts";
+  };
+  values = {
     v = 202002;
     cxxmin = 20;
     extra_cond = "__glibcxx_concepts";
@@ -1155,14 +1169,21 @@ ftms = {
   // TODO: #define __cpp_lib_format_ranges 202207L
   name = format;
   values = {
-    v = 202106;
+    v = 202110;
     cxxmin = 20;
     hosted = yes;
   };
 };
 
-// #undef __glibcxx_chrono
-// #define __glibcxx_chrono 201907L
+ftms = {
+  name = format_uchar;
+  values = {
+    v = 202311;
+    cxxmin = 20;
+    hosted = yes;
+  };
+};
+
 // FIXME: #define __glibcxx_execution 201902L
 
 ftms = {
@@ -1213,6 +1234,15 @@ ftms = {
     v = 201907;
     cxxmin = 20;
     hosted = yes;
+  };
+};
+
+ftms = {
+  name = constrained_equality;
+  values = {
+    v = 202403;
+    cxxmin = 20;
+    extra_cond = "__glibcxx_three_way_comparison";
   };
 };
 
@@ -1344,6 +1374,70 @@ ftms = {
 };
 
 ftms = {
+  name = freestanding_algorithm;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = freestanding_array;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = freestanding_cstring;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = freestanding_expected;
+  values = {
+    v = 202311;
+    cxxmin = 23;
+    // This is a C++26 feature, but we support it in C++23.
+    extra_cond = "__cpp_lib_expected";
+  };
+};
+
+ftms = {
+  name = freestanding_optional;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = freestanding_string_view;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = freestanding_variant;
+  values = {
+    v = 202311;
+    // This is a C++26 feature, but we support it in C++23.
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = invoke_r;
   values = {
     v = 202106;
@@ -1370,19 +1464,21 @@ ftms = {
   };
 };
 
-ftms = {
-  name = to_underlying;
-  values = {
-    v = 202102;
-    cxxmin = 23;
-  };
-};
+//ftms = {
+//  name = containers_ranges;
+//  values = {
+//    v = 202202;
+//    cxxmin = 23;
+//    hosted = yes;
+//  };
+//};
 
 ftms = {
-  name = unreachable;
+  name = ranges_to_container;
   values = {
     v = 202202;
     cxxmin = 23;
+    hosted = yes;
   };
 };
 
@@ -1461,7 +1557,7 @@ ftms = {
 ftms = {
   name = ranges_as_const;
   values = {
-    v = 202207;
+    v = 202311;
     cxxmin = 23;
   };
 };
@@ -1551,6 +1647,15 @@ ftms = {
 };
 
 ftms = {
+  name = generator;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+    extra_cond = "__glibcxx_coroutine && __cpp_sized_deallocation";
+  };
+};
+
+ftms = {
   name = ios_noreplace;
   values = {
     v = 202207;
@@ -1563,6 +1668,23 @@ ftms = {
   name = move_only_function;
   values = {
     v = 202110;
+    cxxmin = 23;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = out_ptr;
+  values = {
+    v = 202311;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = print;
+  values = {
+    v = 202211;
     cxxmin = 23;
     hosted = yes;
   };
@@ -1607,6 +1729,30 @@ ftms = {
 };
 
 ftms = {
+  name = to_underlying;
+  values = {
+    v = 202102;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = tuple_like;
+  values = {
+    v = 202207;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = unreachable;
+  values = {
+    v = 202202;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = fstream_native_handle;
   values = {
     v = 202306;
@@ -1624,12 +1770,46 @@ ftms = {
 };
 
 ftms = {
+  name = reference_wrapper;
+  values = {
+    v = 202403;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
+  name = saturation_arithmetic;
+  values = {
+    v = 202311;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
+  name = text_encoding;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+    extra_cond = "_GLIBCXX_USE_NL_LANGINFO_L";
+  };
+};
+
+ftms = {
   name = to_string;
   values = {
     v = 202306;
     cxxmin = 26;
     hosted = yes;
     extra_cond = "__glibcxx_to_chars";
+  };
+};
+
+ftms = {
+  name = ranges_concat;
+  values = {
+    v = 202403;
+    cxxmin = 26;
   };
 };
 
@@ -1640,7 +1820,7 @@ stds[11] = ">= 201103L";
 stds[14] = ">= 201402L";
 stds[17] = ">= 201703L";
 stds[20] = ">= 202002L";
-stds[23] = ">= 202302L";
+stds[23] = ">= 202100L"; // Should be 202302L but Clang 16 uses 202101L
 stds[26] = ">  202302L"; // TODO: update when finalized
 
 // Local Variables:

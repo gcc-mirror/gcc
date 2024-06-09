@@ -1,6 +1,6 @@
 (* M2FileName.def construct file names.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -39,7 +39,7 @@ EXPORT QUALIFIED CalculateFileName, CalculateStemName, ExtractExtension ;
                        given a module and an extension. This file name
                        length will be operating system specific.
                        String, Extension, is concatenated onto
-                       Module and thus it is safe to `Mark' the extension
+                       Module and thus it is safe to Mark the extension
                        for garbage collection.
 *)
 

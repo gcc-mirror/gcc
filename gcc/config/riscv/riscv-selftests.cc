@@ -267,15 +267,14 @@ run_const_vector_selftests (void)
 	      rtx dup = gen_const_vec_duplicate (mode, GEN_INT (val));
 	      emit_move_insn (dest, dup);
 	      rtx_insn *insn = get_last_insn ();
-	      rtx src = XEXP (SET_SRC (PATTERN (insn)), 1);
+	      rtx src = SET_SRC (PATTERN (insn));
 	      /* 1. Should be vmv.v.i for in rang of -16 ~ 15.
 		 2. Should be vmv.v.x for exceed -16 ~ 15.  */
 	      if (IN_RANGE (val, -16, 15))
-		ASSERT_TRUE (rtx_equal_p (src, dup));
-	      else
 		ASSERT_TRUE (
-		  rtx_equal_p (src,
-			       gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));
+		  rtx_equal_p (XEXP (SET_SRC (PATTERN (insn)), 1), dup));
+	      else
+		ASSERT_TRUE (GET_CODE (src) == VEC_DUPLICATE);
 	      end_sequence ();
 	    }
 	}
@@ -294,10 +293,9 @@ run_const_vector_selftests (void)
 	  rtx dup = gen_const_vec_duplicate (mode, ele);
 	  emit_move_insn (dest, dup);
 	  rtx_insn *insn = get_last_insn ();
-	  rtx src = XEXP (SET_SRC (PATTERN (insn)), 1);
+	  rtx src = SET_SRC (PATTERN (insn));
 	  /* Should always be vfmv.v.f.  */
-	  ASSERT_TRUE (
-	    rtx_equal_p (src, gen_rtx_VEC_DUPLICATE (mode, XEXP (src, 0))));
+	  ASSERT_TRUE (GET_CODE (src) == VEC_DUPLICATE);
 	  end_sequence ();
 	}
     }
@@ -370,7 +368,19 @@ namespace selftest {
 void
 riscv_run_selftests (void)
 {
-  run_poly_int_selftests ();
+  if (!BYTES_PER_RISCV_VECTOR.is_constant ())
+    /* We can know POLY value = [4, 4] when BYTES_PER_RISCV_VECTOR
+       is !is_constant () since we can use csrr vlenb and scalar shift
+       instruction to compute such POLY value and store it into a scalar
+       register.  Wheras, we can't know [4, 4] on it is specified as
+       FIXED-VLMAX since BYTES_PER_RISCV_VECTOR = 16 for -march=rv64gcv
+       and csrr vlenb is 16 which is totally unrelated to any
+       compile-time unknown POLY value.
+
+       Since we never need to compute a compile-time unknown POLY value
+       when -mrvv-vector-bits=zvl, disable poly
+       selftests in such situation.  */
+    run_poly_int_selftests ();
   run_const_vector_selftests ();
   run_broadcast_selftests ();
 }

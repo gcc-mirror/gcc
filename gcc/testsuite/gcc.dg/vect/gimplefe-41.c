@@ -1,5 +1,5 @@
 /* { dg-do compile { target { vect_double && vect_long_long } } } */
-/* { dg-options "-fgimple -Wno-psabi -w" } */
+/* { dg-additional-options "-fgimple -Wno-psabi -w" } */
 /* { dg-additional-options "-msse2" { target x86_64-*-* i?86-*-* } } */
 
 typedef double __v2df __attribute__ ((__vector_size__ (16)));

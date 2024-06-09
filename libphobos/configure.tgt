@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-# Copyright (C) 2018-2023 Free Software Foundation, Inc.
+# Copyright (C) 2018-2024 Free Software Foundation, Inc.
 #
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,9 @@ case "${target}" in
   *-*-dragonfly*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
+  aarch64-*-darwin2*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
   aarch64*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
@@ -34,6 +37,9 @@ case "${target}" in
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   hppa-*-linux*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
+  loongarch*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   mips*-*-linux*)
@@ -53,6 +59,12 @@ case "${target}" in
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   sparc*-*-solaris2.11*)
+	LIBPHOBOS_SUPPORTED=yes
+	;;
+  *-*-darwin9* | *-*-darwin1[01]*)
+	LIBDRUNTIME_ONLY=yes
+	;;
+  x86_64-*-darwin1[2-9]* | x86_64-*-darwin2* | i?86-*-darwin1[2-7])
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   x86_64-*-freebsd* | i?86-*-freebsd*)

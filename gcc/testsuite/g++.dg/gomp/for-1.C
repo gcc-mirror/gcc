@@ -24,7 +24,7 @@ void foo (int j, int k)
 
   // Malformed parallel loops.
   #pragma omp for
-  i = 0;		// { dg-error "for statement expected" }
+  i = 0;		// { dg-error "loop nest expected" }
   for ( ; i < 10; )
     {
       baz (i);

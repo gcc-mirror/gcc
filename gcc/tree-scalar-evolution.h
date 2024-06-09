@@ -1,5 +1,5 @@
 /* Scalar evolution detector.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern tree number_of_latch_executions (class loop *);
 extern gcond *get_loop_exit_condition (const class loop *);
+extern gcond *get_loop_exit_condition (const_edge);
 
 extern void scev_initialize (void);
 extern bool scev_initialized_p (void);
@@ -35,13 +36,15 @@ extern tree resolve_mixers (class loop *, tree, bool *);
 extern void gather_stats_on_scev_database (void);
 extern bool final_value_replacement_loop (class loop *);
 extern unsigned int scev_const_prop (void);
-extern bool expression_expensive_p (tree);
+extern bool expression_expensive_p (tree, bool *);
 extern bool simple_iv_with_niters (class loop *, class loop *, tree,
 				   struct affine_iv *, tree *, bool);
 extern bool simple_iv (class loop *, class loop *, tree, struct affine_iv *,
 		       bool);
 extern bool iv_can_overflow_p (class loop *, tree, tree, tree);
 extern tree compute_overall_effect_of_inner_loop (class loop *, tree);
+extern void record_nonwrapping_chrec (tree);
+extern bool nonwrapping_chrec_p (tree);
 
 /* Returns the basic block preceding LOOP, or the CFG entry block when
    the loop is function's body.  */

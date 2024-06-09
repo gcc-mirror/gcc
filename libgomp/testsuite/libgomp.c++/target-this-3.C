@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 extern "C" void abort ();
 
 struct S
@@ -15,12 +16,13 @@ struct S
   bool set_ptr (int n)
   {
     bool mapped;
+    uintptr_t hostptr = (uintptr_t) ptr;
     #pragma omp target map(from:mapped)
     {
-      if (ptr != NULL)
+      if (ptr != (int *) hostptr)
 	for (int i = 0; i < ptr_len; i++)
 	  ptr[i] = n;
-      mapped = (ptr != NULL);
+      mapped = (ptr != (int *) hostptr);
     }
     return mapped;
   }
@@ -28,12 +30,13 @@ struct S
   bool set_refptr (int n)
   {
     bool mapped;
+    uintptr_t hostrefptr = (uintptr_t) refptr;
     #pragma omp target map(from:mapped)
     {
-      if (refptr != NULL)
+      if (refptr != (int *) hostrefptr)
 	for (int i = 0; i < refptr_len; i++)
 	  refptr[i] = n;
-      mapped = (refptr != NULL);
+      mapped = (refptr != (int *) hostrefptr);
     }
     return mapped;
   }

@@ -1,3 +1,4 @@
+void
 f (int phaseone)
 {
   typedef struct

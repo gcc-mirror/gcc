@@ -105,17 +105,21 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@BUILD_CORLIB_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -nodefaultrpaths -Wl,-rpath,@loader_path/
 subdir = libm2cor
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
-	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
-	$(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/../config/override.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
+	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
+	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
+	$(top_srcdir)/../config/gc++filt.m4 \
+	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am
@@ -245,6 +249,7 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -273,6 +278,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GLIBCXX_LIBS = @GLIBCXX_LIBS@
 GM2_FOR_TARGET = @GM2_FOR_TARGET@
 GREP = @GREP@
 INSTALL = @INSTALL@
@@ -340,6 +346,8 @@ enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
 get_gcc_base_ver = @get_gcc_base_ver@
+glibcxx_builddir = @glibcxx_builddir@
+glibcxx_srcdir = @glibcxx_srcdir@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -382,6 +390,8 @@ toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+toplevel_builddir = @toplevel_builddir@
+toplevel_srcdir = @toplevel_srcdir@
 SUFFIXES = .c .cc .mod .def .o .obj .lo .a .la
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
@@ -445,7 +455,6 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LONGDOUBLE_ABI=$(TARGET_LONGDOUBLE_ABI)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
 
@@ -465,18 +474,18 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_CORLIB_TRUE@libm2cor_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2cor_la_SOURCES)))
 @BUILD_CORLIB_TRUE@libm2cor_la_CFLAGS = \
 @BUILD_CORLIB_TRUE@    -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
-@BUILD_CORLIB_TRUE@    -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso \
-@BUILD_CORLIB_TRUE@    $(TARGET_LONGDOUBLE_ABI)
+@BUILD_CORLIB_TRUE@    -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
 
 @BUILD_CORLIB_TRUE@libm2cor_la_M2FLAGS = \
 @BUILD_CORLIB_TRUE@    -fm2-pathname=m2cor -I. -I$(GM2_SRC)/gm2-libs-coroutines \
 @BUILD_CORLIB_TRUE@    -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
 @BUILD_CORLIB_TRUE@    -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
-@BUILD_CORLIB_TRUE@    -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2cor \
-@BUILD_CORLIB_TRUE@    $(TARGET_LONGDOUBLE_ABI)
+@BUILD_CORLIB_TRUE@    -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2cor
 
-@BUILD_CORLIB_TRUE@@TARGET_DARWIN_FALSE@libm2cor_la_link_flags = 
-@BUILD_CORLIB_TRUE@@TARGET_DARWIN_TRUE@libm2cor_la_link_flags = -Wl,-undefined,dynamic_lookup
+@BUILD_CORLIB_TRUE@@TARGET_DARWIN_FALSE@libm2cor_la_link_flags =  \
+@BUILD_CORLIB_TRUE@@TARGET_DARWIN_FALSE@	$(am__append_1)
+@BUILD_CORLIB_TRUE@@TARGET_DARWIN_TRUE@libm2cor_la_link_flags = -Wl,-undefined,dynamic_lookup \
+@BUILD_CORLIB_TRUE@@TARGET_DARWIN_TRUE@	$(am__append_1)
 @BUILD_CORLIB_TRUE@libm2cor_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2cor_la_link_flags)
 @BUILD_CORLIB_TRUE@BUILT_SOURCES = SYSTEM.def
 @BUILD_CORLIB_TRUE@CLEANFILES = SYSTEM.def

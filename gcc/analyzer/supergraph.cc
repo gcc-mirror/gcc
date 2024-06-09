@@ -1,5 +1,5 @@
 /* "Supergraph" classes that combine CFGs and callgraph into one digraph.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -182,6 +182,10 @@ supergraph::supergraph (logger *logger)
 	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
+	      /* Discard debug stmts here, so we don't have to check for
+		 them anywhere within the analyzer.  */
+	      if (is_gimple_debug (stmt))
+		continue;
 	      node_for_stmts->m_stmts.safe_push (stmt);
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
 	      m_stmt_uids.make_uid_unique (stmt);
@@ -360,6 +364,7 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
     FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     {
       function *fun = node->get_fun ();
+      gcc_assert (fun);
       const char *funcname = function_name (fun);
       gv.println ("subgraph \"cluster_%s\" {",
 		  funcname);
@@ -405,9 +410,9 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
 
       /* Add an invisible edge from ENTRY to EXIT, to improve the graph layout.  */
       pp_string (pp, "\t");
-      get_node_for_function_entry (fun)->dump_dot_id (pp);
+      get_node_for_function_entry (*fun)->dump_dot_id (pp);
       pp_string (pp, ":s -> ");
-      get_node_for_function_exit (fun)->dump_dot_id (pp);
+      get_node_for_function_exit (*fun)->dump_dot_id (pp);
       pp_string (pp, ":n [style=\"invis\",constraint=true];\n");
 
       /* Terminate per-function "subgraph" */
@@ -790,6 +795,13 @@ supernode::get_start_location () const
   if (return_p ())
     return m_fun->function_end_locus;
 
+  /* We have no locations for stmts.  If we have a single out-edge that's
+     a CFG edge, the goto_locus of that edge is a better location for this
+     than UNKNOWN_LOCATION.  */
+  if (m_succs.length () == 1)
+    if (const cfg_superedge *cfg_sedge = m_succs[0]->dyn_cast_cfg_superedge ())
+      return cfg_sedge->get_goto_locus ();
+
   return UNKNOWN_LOCATION;
 }
 
@@ -812,6 +824,12 @@ supernode::get_end_location () const
     return m_fun->function_start_locus;
   if (return_p ())
     return m_fun->function_end_locus;
+
+  /* If we have a single out-edge that's a CFG edge, use the goto_locus of
+     that edge.  */
+  if (m_succs.length () == 1)
+    if (const cfg_superedge *cfg_sedge = m_succs[0]->dyn_cast_cfg_superedge ())
+      return cfg_sedge->get_goto_locus ();
 
   return UNKNOWN_LOCATION;
 }
@@ -1062,6 +1080,9 @@ cfg_superedge::dump_label_to_pp (pretty_printer *pp,
 #undef DEF_EDGE_FLAG
       pp_string (pp, ")");
     }
+
+  if (m_cfg_edge->goto_locus > BUILTINS_LOCATION)
+    pp_string (pp, " (has goto_locus)");
 
   /* Otherwise, no label.  */
 }

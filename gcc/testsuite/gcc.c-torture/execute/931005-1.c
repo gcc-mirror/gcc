@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef struct
 {
   char x;
@@ -12,7 +15,8 @@ f (s1)
   return s1a;
 }
 
-main ()
+int
+main (void)
 {
   T s1a, s1b;
   s1a.x = 100;

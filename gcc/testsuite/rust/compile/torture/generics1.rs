@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo {
     a: f32,
     b: bool,

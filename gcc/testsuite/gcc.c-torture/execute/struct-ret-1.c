@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 
+void abort (void);
+void exit (int);
+
 char out[100];
 
 typedef struct { double d; int i[3]; } B;
@@ -41,7 +44,8 @@ X f (B a, char b, double c, B d)
 
 X (*fp) (B, char, double, B) = &f;
 
-main ()
+int
+main (void)
 {
   X Xr;
   char tmp[100];

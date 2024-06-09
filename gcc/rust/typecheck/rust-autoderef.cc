@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,14 +20,16 @@
 #include "rust-hir-path-probe.h"
 #include "rust-hir-dot-operator.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-type-util.h"
+#include "rust-substitution-mapper.h"
 
 namespace Rust {
 namespace Resolver {
 
 static bool
 resolve_operator_overload_fn (
-  Analysis::RustLangItem::ItemType lang_item_type, const TyTy::BaseType *ty,
-  TyTy::FnType **resolved_fn, HIR::ImplItem **impl_item,
+  Analysis::RustLangItem::ItemType lang_item_type, TyTy::BaseType *ty,
+  TyTy::FnType **resolved_fn,
   Adjustment::AdjustmentType *requires_ref_adjustment);
 
 TyTy::BaseType *
@@ -40,22 +42,21 @@ Adjuster::adjust_type (const std::vector<Adjustment> &adjustments)
 }
 
 Adjustment
-Adjuster::try_deref_type (const TyTy::BaseType *ty,
+Adjuster::try_deref_type (TyTy::BaseType *ty,
 			  Analysis::RustLangItem::ItemType deref_lang_item)
 {
-  HIR::ImplItem *impl_item = nullptr;
   TyTy::FnType *fn = nullptr;
   Adjustment::AdjustmentType requires_ref_adjustment
     = Adjustment::AdjustmentType::ERROR;
   bool operator_overloaded
-    = resolve_operator_overload_fn (deref_lang_item, ty, &fn, &impl_item,
+    = resolve_operator_overload_fn (deref_lang_item, ty, &fn,
 				    &requires_ref_adjustment);
   if (!operator_overloaded)
     {
       return Adjustment::get_error ();
     }
 
-  auto resolved_base = fn->get_return_type ()->clone ();
+  auto resolved_base = fn->get_return_type ()->destructure ();
   bool is_valid_type = resolved_base->get_kind () == TyTy::TypeKind::REF;
   if (!is_valid_type)
     return Adjustment::get_error ();
@@ -80,12 +81,12 @@ Adjuster::try_deref_type (const TyTy::BaseType *ty,
     }
 
   return Adjustment::get_op_overload_deref_adjustment (adjustment_type, ty,
-						       ref_base, fn, impl_item,
+						       ref_base, fn,
 						       requires_ref_adjustment);
 }
 
 Adjustment
-Adjuster::try_raw_deref_type (const TyTy::BaseType *ty)
+Adjuster::try_raw_deref_type (TyTy::BaseType *ty)
 {
   bool is_valid_type = ty->get_kind () == TyTy::TypeKind::REF;
   if (!is_valid_type)
@@ -93,13 +94,13 @@ Adjuster::try_raw_deref_type (const TyTy::BaseType *ty)
 
   const TyTy::ReferenceType *ref_base
     = static_cast<const TyTy::ReferenceType *> (ty);
-  auto infered = ref_base->get_base ()->clone ();
+  auto infered = ref_base->get_base ()->destructure ();
 
   return Adjustment (Adjustment::AdjustmentType::INDIRECTION, ty, infered);
 }
 
 Adjustment
-Adjuster::try_unsize_type (const TyTy::BaseType *ty)
+Adjuster::try_unsize_type (TyTy::BaseType *ty)
 {
   bool is_valid_type = ty->get_kind () == TyTy::TypeKind::ARRAY;
   if (!is_valid_type)
@@ -121,8 +122,8 @@ Adjuster::try_unsize_type (const TyTy::BaseType *ty)
 
 static bool
 resolve_operator_overload_fn (
-  Analysis::RustLangItem::ItemType lang_item_type, const TyTy::BaseType *ty,
-  TyTy::FnType **resolved_fn, HIR::ImplItem **impl_item,
+  Analysis::RustLangItem::ItemType lang_item_type, TyTy::BaseType *lhs,
+  TyTy::FnType **resolved_fn,
   Adjustment::AdjustmentType *requires_ref_adjustment)
 {
   auto context = TypeCheckContext::get ();
@@ -138,40 +139,78 @@ resolve_operator_overload_fn (
   if (!lang_item_defined)
     return false;
 
-  auto segment = HIR::PathIdentSegment (associated_item_name);
-  auto candidates
-    = MethodResolver::Probe (ty, HIR::PathIdentSegment (associated_item_name),
-			     true);
+  // we might be in a static or const context and unknown is fine
+  TypeCheckContextItem current_context = TypeCheckContextItem::get_error ();
+  if (context->have_function_context ())
+    {
+      current_context = context->peek_context ();
+    }
 
-  bool have_implementation_for_lang_item = !candidates.empty ();
+  // this flags stops recurisve calls to try and deref when none is available
+  // which will cause an infinite loop
+  bool autoderef_flag = true;
+  auto segment = HIR::PathIdentSegment (associated_item_name);
+  auto candidates = MethodResolver::Probe (lhs, segment, autoderef_flag);
+
+  // remove any recursive candidates
+  std::set<MethodCandidate> resolved_candidates;
+  for (auto &c : candidates)
+    {
+      const TyTy::BaseType *candidate_type = c.candidate.ty;
+      rust_assert (candidate_type->get_kind () == TyTy::TypeKind::FNDEF);
+
+      const TyTy::FnType &fn
+	= *static_cast<const TyTy::FnType *> (candidate_type);
+
+      DefId current_fn_defid = current_context.get_defid ();
+      bool recursive_candidated = fn.get_id () == current_fn_defid;
+      if (!recursive_candidated)
+	{
+	  resolved_candidates.insert (c);
+	}
+    }
+
+  auto selected_candidates
+    = MethodResolver::Select (resolved_candidates, lhs, {});
+  bool have_implementation_for_lang_item = selected_candidates.size () > 0;
   if (!have_implementation_for_lang_item)
     return false;
 
-  // multiple candidates?
-  if (candidates.size () > 1)
+  if (selected_candidates.size () > 1)
     {
-      // error out? probably not for this case
+      // no need to error out as we are just trying to see if there is a fit
       return false;
     }
 
   // Get the adjusted self
-  auto candidate = *candidates.begin ();
-  Adjuster adj (ty);
+  MethodCandidate candidate = *selected_candidates.begin ();
+  Adjuster adj (lhs);
   TyTy::BaseType *adjusted_self = adj.adjust_type (candidate.adjustments);
 
-  // is this the case we are recursive
-  // handle the case where we are within the impl block for this
-  // lang_item otherwise we end up with a recursive operator overload
-  // such as the i32 operator overload trait
-  TypeCheckContextItem &fn_context = context->peek_context ();
-  if (fn_context.get_type () == TypeCheckContextItem::ItemType::IMPL_ITEM)
+  PathProbeCandidate &resolved_candidate = candidate.candidate;
+  TyTy::BaseType *lookup_tyty = candidate.candidate.ty;
+  rust_assert (lookup_tyty->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::BaseType *lookup = lookup_tyty;
+  TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
+  rust_assert (fn->is_method ());
+
+  rust_debug ("is_impl_item_candidate: %s",
+	      resolved_candidate.is_impl_candidate () ? "true" : "false");
+
+  // in the case where we resolve to a trait bound we have to be careful we are
+  // able to do so there is a case where we are currently resolving the deref
+  // operator overload function which is generic and this might resolve to the
+  // trait item of deref which is not valid as its just another recursive case
+  if (current_context.get_type () == TypeCheckContextItem::ItemType::IMPL_ITEM)
     {
-      auto &impl_item = fn_context.get_impl_item ();
+      auto &impl_item = current_context.get_impl_item ();
       HIR::ImplBlock *parent = impl_item.first;
       HIR::Function *fn = impl_item.second;
 
       if (parent->has_trait_ref ()
-	  && fn->get_function_name ().compare (associated_item_name) == 0)
+	  && fn->get_function_name ().as_string ().compare (
+	       associated_item_name)
+	       == 0)
 	{
 	  TraitReference *trait_reference
 	    = TraitResolver::Lookup (*parent->get_trait_ref ().get ());
@@ -200,24 +239,17 @@ resolve_operator_overload_fn (
 	}
     }
 
-  TyTy::BaseType *lookup_tyty = candidate.candidate.ty;
-
-  // rust only support impl item deref operator overloading ie you must have an
-  // impl block for it
-  rust_assert (candidate.candidate.type
-	       == PathProbeCandidate::CandidateType::IMPL_FUNC);
-  *impl_item = candidate.candidate.item.impl.impl_item;
-
-  rust_assert (lookup_tyty->get_kind () == TyTy::TypeKind::FNDEF);
-  TyTy::BaseType *lookup = lookup_tyty;
-  TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
-  rust_assert (fn->is_method ());
+  // we found a valid operator overload
+  fn->prepare_higher_ranked_bounds ();
+  rust_debug ("resolved operator overload to: {%u} {%s}",
+	      candidate.candidate.ty->get_ref (),
+	      candidate.candidate.ty->debug_str ().c_str ());
 
   if (fn->needs_substitution ())
     {
-      if (ty->get_kind () == TyTy::TypeKind::ADT)
+      if (lhs->get_kind () == TyTy::TypeKind::ADT)
 	{
-	  const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (ty);
+	  const TyTy::ADTType *adt = static_cast<const TyTy::ADTType *> (lhs);
 
 	  auto s = fn->get_self_type ()->get_root ();
 	  rust_assert (s->can_eq (adt, false));
@@ -260,14 +292,14 @@ resolve_operator_overload_fn (
 	  // requires another deref which is matched to the deref trait impl of
 	  // &&T so this requires another reference and deref call
 
-	  lookup = fn->infer_substitions (Location ());
+	  lookup = fn->infer_substitions (UNDEF_LOCATION);
 	  rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
 	  fn = static_cast<TyTy::FnType *> (lookup);
 
-	  Location unify_locus = mappings->lookup_location (ty->get_ref ());
-	  TypeCheckBase::unify_site (
-	    ty->get_ref (), TyTy::TyWithLocation (fn->get_self_type ()),
-	    TyTy::TyWithLocation (adjusted_self), unify_locus);
+	  location_t unify_locus = mappings->lookup_location (lhs->get_ref ());
+	  unify_site (lhs->get_ref (),
+		      TyTy::TyWithLocation (fn->get_self_type ()),
+		      TyTy::TyWithLocation (adjusted_self), unify_locus);
 
 	  lookup = fn;
 	}
@@ -292,9 +324,9 @@ AutoderefCycle::try_hook (const TyTy::BaseType &)
 {}
 
 bool
-AutoderefCycle::cycle (const TyTy::BaseType *receiver)
+AutoderefCycle::cycle (TyTy::BaseType *receiver)
 {
-  const TyTy::BaseType *r = receiver;
+  TyTy::BaseType *r = receiver;
   while (true)
     {
       rust_debug ("autoderef try 1: {%s}", r->debug_str ().c_str ());
@@ -306,7 +338,6 @@ AutoderefCycle::cycle (const TyTy::BaseType *receiver)
 	return false;
 
       // try unsize
-
       Adjustment unsize = Adjuster::try_unsize_type (r);
       if (!unsize.is_error ())
 	{
@@ -319,6 +350,13 @@ AutoderefCycle::cycle (const TyTy::BaseType *receiver)
 	    return true;
 
 	  adjustments.pop_back ();
+	}
+
+      bool is_ptr = receiver->get_kind () == TyTy::TypeKind::POINTER;
+      if (is_ptr)
+	{
+	  // deref of raw pointers is unsafe
+	  return false;
 	}
 
       Adjustment deref
@@ -382,7 +420,7 @@ AutoderefCycle::cycle (const TyTy::BaseType *receiver)
 }
 
 bool
-AutoderefCycle::try_autoderefed (const TyTy::BaseType *r)
+AutoderefCycle::try_autoderefed (TyTy::BaseType *r)
 {
   try_hook (*r);
 

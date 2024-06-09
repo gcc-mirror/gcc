@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 macro_rules! define_trait {
     ($assoc:ident, $i:item) => {
         type $assoc;

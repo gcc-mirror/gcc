@@ -1,5 +1,5 @@
 /* Compilation switch flag type definitions for GCC.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,6 +29,7 @@ enum debug_info_type
   DINFO_TYPE_VMS,		  /* VMS debug info.  */
   DINFO_TYPE_CTF,		  /* CTF debug info.  */
   DINFO_TYPE_BTF,		  /* BTF debug info.  */
+  DINFO_TYPE_CODEVIEW,		  /* CodeView debug info.  */
   DINFO_TYPE_BTF_WITH_CORE,	  /* BTF debug info with CO-RE relocations.  */
   DINFO_TYPE_MAX = DINFO_TYPE_BTF_WITH_CORE /* Marker only.  */
 };
@@ -42,6 +43,8 @@ enum debug_info_type
 #define CTF_DEBUG     (1U << DINFO_TYPE_CTF)
 /* Write BTF debug info (using btfout.cc).  */
 #define BTF_DEBUG     (1U << DINFO_TYPE_BTF)
+/* Write CodeView debug info (using dwarf2codeview.cc).  */
+#define CODEVIEW_DEBUG     (1U << DINFO_TYPE_CODEVIEW)
 /* Write BTF debug info for BPF CO-RE usecase (using btfout.cc).  */
 #define BTF_WITH_CORE_DEBUG     (1U << DINFO_TYPE_BTF_WITH_CORE)
 
@@ -155,6 +158,16 @@ enum stack_reuse_level
   SR_NONE,
   SR_NAMED_VARS,
   SR_ALL
+};
+
+/* Control Flow Redundancy hardening options for noreturn calls.  */
+enum hardcfr_noret
+{
+  HCFRNR_NEVER,
+  HCFRNR_NOTHROW,
+  HCFRNR_NO_XTHROW,
+  HCFRNR_UNSPECIFIED,
+  HCFRNR_ALWAYS,
 };
 
 /* The live patching level.  */
@@ -383,7 +396,8 @@ enum lto_partition_model {
   LTO_PARTITION_ONE = 1,
   LTO_PARTITION_BALANCED = 2,
   LTO_PARTITION_1TO1 = 3,
-  LTO_PARTITION_MAX = 4
+  LTO_PARTITION_MAX = 4,
+  LTO_PARTITION_CACHE = 5
 };
 
 /* flag_lto_linker_output initialization values.  */
@@ -436,6 +450,17 @@ enum gfc_convert
   GFC_FLAG_CONVERT_R16_IBM_LITTLE,
 };
 
+
+/* Inline String Operations functions.  */
+enum ilsop_fn
+{
+  ILSOP_NONE = 0,
+  ILSOP_MEMSET = 1 << 0,
+  ILSOP_MEMCPY = 1 << 1,
+  ILSOP_MEMMOVE = 1 << 2,
+  ILSOP_MEMCMP = 1 << 3,
+  ILSOP_ALL = -1
+};
 
 /* Control-Flow Protection values.  */
 enum cf_protection_level

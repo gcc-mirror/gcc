@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "cfgloop.h"
@@ -1403,11 +1405,17 @@ cgraph_edge::redirect_callee (cgraph_node *n)
    speculative indirect call, remove "speculative" of the indirect call and
    also redirect stmt to it's final direct target.
 
+   When called from within tree-inline, KILLED_SSAs has to contain the pointer
+   to killed_new_ssa_names within the copy_body_data structure and SSAs
+   discovered to be useless (if LHS is removed) will be added to it, otherwise
+   it needs to be NULL.
+
    It is up to caller to iteratively transform each "speculative"
    direct call as appropriate.  */
 
 gimple *
-cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
+cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e,
+					   hash_set <tree> *killed_ssas)
 {
   tree decl = gimple_call_fndecl (e->call_stmt);
   gcall *new_stmt;
@@ -1527,7 +1535,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e)
 	remove_stmt_from_eh_lp (e->call_stmt);
 
       tree old_fntype = gimple_call_fntype (e->call_stmt);
-      new_stmt = padjs->modify_call (e, false);
+      new_stmt = padjs->modify_call (e, false, killed_ssas);
       cgraph_node *origin = e->callee;
       while (origin->clone_of)
 	origin = origin->clone_of;
@@ -2624,6 +2632,54 @@ cgraph_node::set_malloc_flag (bool malloc_p)
 	  cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
 	  if (!malloc_p || alias->get_availability () > AVAIL_INTERPOSABLE)
 	    set_malloc_flag_1 (alias, malloc_p, &changed);
+	}
+    }
+  return changed;
+}
+
+/* Worker to set malloc flag.  */
+static void
+add_detected_attribute_1 (cgraph_node *node, const char *attr, bool *changed)
+{
+  if (!lookup_attribute (attr, DECL_ATTRIBUTES (node->decl)))
+    {
+      DECL_ATTRIBUTES (node->decl) = tree_cons (get_identifier (attr),
+					 NULL_TREE, DECL_ATTRIBUTES (node->decl));
+      *changed = true;
+    }
+
+  ipa_ref *ref;
+  FOR_EACH_ALIAS (node, ref)
+    {
+      cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+      if (alias->get_availability () > AVAIL_INTERPOSABLE)
+	add_detected_attribute_1 (alias, attr, changed);
+    }
+
+  for (cgraph_edge *e = node->callers; e; e = e->next_caller)
+    if (e->caller->thunk
+	&& (e->caller->get_availability () > AVAIL_INTERPOSABLE))
+      add_detected_attribute_1 (e->caller, attr, changed);
+}
+
+/* Add attribyte ATTR to function and its aliases.  */
+
+bool
+cgraph_node::add_detected_attribute (const char *attr)
+{
+  bool changed = false;
+
+  if (get_availability () > AVAIL_INTERPOSABLE)
+    add_detected_attribute_1 (this, attr, &changed);
+  else
+    {
+      ipa_ref *ref;
+
+      FOR_EACH_ALIAS (this, ref)
+	{
+	  cgraph_node *alias = dyn_cast<cgraph_node *> (ref->referring);
+	  if (alias->get_availability () > AVAIL_INTERPOSABLE)
+	    add_detected_attribute_1 (alias, attr, &changed);
 	}
     }
   return changed;

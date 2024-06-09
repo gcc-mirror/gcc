@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -113,16 +113,9 @@ public:
 
     virtual Statement *syntaxCopy();
 
-    const char *toChars() const override final;
-
-    void error(const char *format, ...);
-    void warning(const char *format, ...);
-    void deprecation(const char *format, ...);
     virtual Statement *getRelatedLabeled() { return this; }
     virtual bool hasBreak() const;
     virtual bool hasContinue() const;
-    bool usesEH();
-    bool comeFrom();
     bool hasCode();
     virtual Statement *last();
 
@@ -431,17 +424,19 @@ public:
 class SwitchStatement final : public Statement
 {
 public:
+    Parameter *param;
     Expression *condition;
     Statement *_body;
     d_bool isFinal;
+    Loc endloc;
 
+    d_bool hasDefault;             // true if default statement
+    d_bool hasVars;                // true if has variable case values
     DefaultStatement *sdefault;
     Statement *tryBody;            // set to TryCatchStatement or TryFinallyStatement if in _body portion
     TryFinallyStatement *tf;
     GotoCaseStatements gotoCases;  // array of unresolved GotoCaseStatement's
     CaseStatements *cases;         // array of CaseStatement's
-    int hasNoDefault;           // !=0 if no default statement
-    int hasVars;                // !=0 if has variable case values
     VarDeclaration *lastVar;
 
     SwitchStatement *syntaxCopy() override;
@@ -706,12 +701,21 @@ public:
     void accept(Visitor *v) override { v->visit(this); }
 };
 
-Statement* asmSemantic(AsmStatement *s, Scope *sc);
+namespace dmd
+{
+    // in statementsem.d
+    Statement* statementSemantic(Statement *s, Scope *sc);
+    // in iasm.d
+    Statement* asmSemantic(AsmStatement *s, Scope *sc);
+    // in iasmgcc.d
+    Statement *gccAsmSemantic(GccAsmStatement *s, Scope *sc);
+}
 
 class AsmStatement : public Statement
 {
 public:
     Token *tokens;
+    d_bool caseSensitive;  // for register names
 
     AsmStatement *syntaxCopy() override;
     void accept(Visitor *v) override { v->visit(this); }
@@ -720,7 +724,7 @@ public:
 class InlineAsmStatement final : public AsmStatement
 {
 public:
-    code *asmcode;
+    void *asmcode;
     unsigned asmalign;          // alignment of this statement
     unsigned regs;              // mask of registers modified (must match regm_t in back end)
     d_bool refparam;              // true if function parameter is referenced

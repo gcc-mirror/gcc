@@ -1,3 +1,8 @@
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* decCommon.c (decFinalize): Fix duplicated words in
+	comment; the the -> the.
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
@@ -783,7 +788,7 @@
 	* decDPD.h: Likewise.
 	* decLibrary.c, decRound.c: Likewise.
 
-Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable" } */
 
 #include <assert.h>
 #include "narrow-2.c"

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Unchecked_Conversion;
-with Aspects;        use Aspects;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
@@ -1261,9 +1260,9 @@ package body Atree is
       end if;
    end Change_Node;
 
-   ----------------
-   -- Copy_Slots --
-   ----------------
+   ------------------------
+   -- Copy_Dynamic_Slots --
+   ------------------------
 
    procedure Copy_Dynamic_Slots
      (From, To : Node_Offset; Num_Slots : Slot_Count)
@@ -1283,6 +1282,10 @@ package body Atree is
       Destination_Slots := Source_Slots;
    end Copy_Dynamic_Slots;
 
+   ----------------
+   -- Copy_Slots --
+   ----------------
+
    procedure Copy_Slots (Source, Destination : Node_Id) is
       pragma Debug (Validate_Node (Source));
       pragma Assert (Source /= Destination);
@@ -1293,6 +1296,12 @@ package body Atree is
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
 
    begin
+      --  Empty_Or_Error use as described in types.ads
+      if Destination <= Empty_Or_Error or No (Source) then
+         pragma Assert (Serious_Errors_Detected > 0);
+         return;
+      end if;
+
       Copy_Dynamic_Slots
         (Off_F (Source), Off_F (Destination), S_Size);
       All_Node_Offsets (Destination).Slots := All_Node_Offsets (Source).Slots;
@@ -1459,16 +1468,6 @@ package body Atree is
          New_Id := New_Copy (Source);
 
          Walk (New_Id, Source);
-
-         --  Explicitly copy the aspect specifications as those do not reside
-         --  in a node field.
-
-         if Permits_Aspect_Specifications (Source)
-           and then Has_Aspects (Source)
-         then
-            Set_Aspect_Specifications
-              (New_Id, Copy_List (Aspect_Specifications (Source)));
-         end if;
 
          --  Set Entity field to Empty to ensure that no entity references
          --  are shared between the two, if the source is already analyzed.
@@ -1873,11 +1872,6 @@ package body Atree is
             Set_Is_Overloaded (New_Id, False);
          end if;
 
-         --  Always clear Has_Aspects, the caller must take care of copying
-         --  aspects if this is required for the particular situation.
-
-         Set_Has_Aspects (New_Id, False);
-
          --  Mark the copy as Ghost depending on the current Ghost region
 
          if Nkind (New_Id) in N_Entity then
@@ -2156,7 +2150,6 @@ package body Atree is
 
    procedure Replace (Old_Node, New_Node : Node_Id) is
       Old_Post : constant Boolean := Error_Posted (Old_Node);
-      Old_HasA : constant Boolean := Has_Aspects (Old_Node);
       Old_CFS  : constant Boolean := Comes_From_Source (Old_Node);
 
       procedure Destroy_New_Node;
@@ -2183,7 +2176,6 @@ package body Atree is
       Copy_Node (Source => New_Node, Destination => Old_Node);
       Set_Comes_From_Source (Old_Node, Old_CFS);
       Set_Error_Posted      (Old_Node, Old_Post);
-      Set_Has_Aspects       (Old_Node, Old_HasA);
 
       --  Fix parents of substituted node, since it has changed identity
 
@@ -2224,8 +2216,6 @@ package body Atree is
       Old_Is_IGN : constant Boolean := Is_Ignored_Ghost_Node (Old_Node);
       Old_Error_Posted : constant Boolean :=
                            Error_Posted (Old_Node);
-      Old_Has_Aspects  : constant Boolean :=
-                           Has_Aspects (Old_Node);
 
       Old_Must_Not_Freeze : constant Boolean :=
         (if Nkind (Old_Node) in N_Subexpr then Must_Not_Freeze (Old_Node)
@@ -2261,27 +2251,12 @@ package body Atree is
          Sav_Node := New_Copy (Old_Node);
          Set_Original_Node (Sav_Node, Sav_Node);
          Set_Original_Node (Old_Node, Sav_Node);
-
-         --  Both the old and new copies of the node will share the same list
-         --  of aspect specifications if aspect specifications are present.
-         --  Restore the parent link of the aspect list to the old node, which
-         --  is the one linked in the tree.
-
-         if Old_Has_Aspects then
-            declare
-               Aspects : constant List_Id := Aspect_Specifications (Old_Node);
-            begin
-               Set_Aspect_Specifications (Sav_Node, Aspects);
-               Set_Parent (Aspects, Old_Node);
-            end;
-         end if;
       end if;
 
       --  Copy substitute node into place, preserving old fields as required
 
       Copy_Node (Source => New_Node, Destination => Old_Node);
       Set_Error_Posted (Old_Node, Old_Error_Posted);
-      Set_Has_Aspects  (Old_Node, Old_Has_Aspects);
 
       Set_Check_Actuals (Old_Node, Old_CA);
       Set_Is_Ignored_Ghost_Node (Old_Node, Old_Is_IGN);

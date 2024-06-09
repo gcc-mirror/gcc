@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zve64d -mabi=ilp32 -O3 -fno-vect-cost-model --param=riscv-autovec-preference=scalable -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv32gc_zve64d -mabi=ilp32 -O3 -fno-vect-cost-model -mrvv-vector-bits=scalable -fdump-tree-vect-details" } */
 
 #include "riscv_vector.h"
 

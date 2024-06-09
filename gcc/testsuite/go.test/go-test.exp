@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 #   Written by Ian Lance Taylor <iant@google.com>.
 
 # This program is free software; you can redistribute it and/or modify
@@ -477,7 +477,8 @@ proc go-gc-tests { } {
 	if { ( [file tail $test] == "select2.go" \
 		   || [file tail $test] == "stack.go" \
 		   || [file tail $test] == "peano.go" \
-		   || [file tail $test] == "nilptr2.go" ) \
+		   || [file tail $test] == "nilptr2.go" \
+		   || [file tail $test] == "index0.go" ) \
 		 && ! [check_effective_target_split_stack] } {
 	    # These tests fails on targets without split stack.
 	    untested $name

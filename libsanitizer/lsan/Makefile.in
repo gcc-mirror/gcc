@@ -231,6 +231,7 @@ ALLOC_FILE = @ALLOC_FILE@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AS_SYM_ASSIGN_DEFS = @AS_SYM_ASSIGN_DEFS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -413,7 +414,12 @@ liblsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/interception/libinterception.la \
 	$(am__append_1) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-liblsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_liblsan)
+@ENABLE_DARWIN_AT_RPATH_TRUE@liblsan_darwin_rpath =  \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wc,-nodefaultrpaths \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
+liblsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+	$(link_liblsan) $(liblsan_darwin_rpath)
+
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -787,7 +793,6 @@ uninstall-am: uninstall-nodist_toolexeclibHEADERS \
 	uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
-
 
 liblsan_preinit.o: lsan_preinit.o
 	cp $< $@

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -119,9 +119,9 @@ package Exp_Ch9 is
    --  the start of the statements of the activator.
 
    procedure Build_Task_Allocate_Block
-     (Actions : List_Id;
-      N       : Node_Id;
-      Args    : List_Id);
+     (Actions    : List_Id;
+      N          : Node_Id;
+      Init_Stmts : List_Id);
    --  This routine is used in the case of allocators where the designated type
    --  is a task or contains tasks. In this case, the normal initialize call
    --  is replaced by:
@@ -136,7 +136,7 @@ package Exp_Ch9 is
    --       end;
    --
    --    begin
-   --       Init (Args);
+   --       Init_Stmts;
    --       Activate_Tasks (_Chain);
    --    at end
    --       _Expunge;
@@ -149,17 +149,6 @@ package Exp_Ch9 is
    --  the initialization call, constructed by the caller, which uses the
    --  Master_Id of the access type as the _Master parameter, and _Chain
    --  (defined above) as the _Chain parameter.
-
-   procedure Build_Task_Allocate_Block_With_Init_Stmts
-     (Actions    : List_Id;
-      N          : Node_Id;
-      Init_Stmts : List_Id);
-   --  Ada 2005 (AI-287): Similar to previous routine, but used to expand
-   --  allocated aggregates with default initialized components. Init_Stmts
-   --  contains the list of statements required to initialize the allocated
-   --  aggregate. It replaces the call to Init (Args) done by
-   --  Build_Task_Allocate_Block. Also used to expand allocators containing
-   --  build-in-place function calls.
 
    function Build_Wrapper_Spec
      (Subp_Id : Entity_Id;

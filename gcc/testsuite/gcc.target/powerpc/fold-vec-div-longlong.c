@@ -2,9 +2,9 @@
    inputs produce the right results.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
+/* { dg-require-effective-target lp64 } */
 
 #include <altivec.h>
 

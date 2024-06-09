@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7 -fmerge-all-constants" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 struct locale_time_t
 {

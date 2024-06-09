@@ -2,7 +2,7 @@
 
 // 2006-02-05  Paolo Carlini  <pcarlini@suse.de>
 //
-// Copyright (C) 2006-2023 Free Software Foundation, Inc.
+// Copyright (C) 2006-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,7 @@ void test01(int dummy, ...)
   char* s = 0;
   const char* cs = 0;
   const char* format = "%i";
-  FILE* stream = 0;
+  FILE* stream = va_arg(ap, FILE*);
   std::size_t n = 0;
 
   int ret;

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power6 -maltivec -O2" } */
 
 #include <altivec.h>

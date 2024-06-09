@@ -1,5 +1,8 @@
 #include <math.h>
 
+void abort (void);
+void exit (int);
+
 static const double zero =  0.0;
 static const double pone =  1.0;
 static const double none = -1.0;

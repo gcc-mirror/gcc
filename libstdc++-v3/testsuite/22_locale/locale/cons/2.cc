@@ -2,7 +2,7 @@
 
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000-2023 Free Software Foundation, Inc.
+// Copyright (C) 2000-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -68,7 +68,7 @@ void test01()
     { VERIFY( false ); }
 
   try 
-    { use_facet<gnu_facet>(loc02); }
+    { (void) use_facet<gnu_facet>(loc02); }
   catch(bad_cast& obj)
     { VERIFY( true ); }
   catch(...)

@@ -34,11 +34,11 @@ avx_test (void)
     p_init[i] = i % 2 + 3;
 
   memcpy (pd_src, p_init, 2 * N * sizeof (double));
-  memcpy (ps_dst, p_init, 2 * N * sizeof (float));
-  memcpy (epi64_dst, p_init, 2 * N * sizeof (long long));
-  memcpy (epi32_dst, p_init, 2 * N * sizeof (int));
-  memcpy (epi16_dst, p_init, 2 * N * sizeof (short));
-  memcpy (epi8_dst, p_init, 2 * N * sizeof (char));
+  memcpy (ps_src, p_init, 2 * N * sizeof (float));
+  memcpy (epi64_src, p_init, 2 * N * sizeof (long long));
+  memcpy (epi32_src, p_init, 2 * N * sizeof (int));
+  memcpy (epi16_src, p_init, 2 * N * sizeof (short));
+  memcpy (epi8_src, p_init, 2 * N * sizeof (char));
 
   foo_pd (pd_dst, pd_src[0]);
   foo_ps (ps_dst, ps_src[0]);

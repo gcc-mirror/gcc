@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned char x = 50;
 volatile short y = -5;
 

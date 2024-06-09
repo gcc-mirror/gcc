@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Synopsys DesignWare ARC cpu.
-   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+   Copyright (C) 1994-2024 Free Software Foundation, Inc.
 
    Sources derived from work done by Sankhya Technologies (www.sankhya.com) on
    behalf of Synopsys Inc.
@@ -187,44 +187,6 @@ static tree arc_handle_secure_attribute (tree *, tree, tree, int, bool *);
 static tree arc_handle_uncached_attribute (tree *, tree, tree, int, bool *);
 static tree arc_handle_aux_attribute (tree *, tree, tree, int, bool *);
 
-/* Initialized arc_attribute_table to NULL since arc doesnot have any
-   machine specific supported attributes.  */
-const struct attribute_spec arc_attribute_table[] =
-{
- /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
-      affects_type_identity, handler, exclude } */
-  { "interrupt", 1, 1, true, false, false, true,
-    arc_handle_interrupt_attribute, NULL },
-  /* Function calls made to this symbol must be done indirectly, because
-     it may lie outside of the 21/25 bit addressing range of a normal function
-     call.  */
-  { "long_call",    0, 0, false, true,  true,  false, NULL, NULL },
-  /* Whereas these functions are always known to reside within the 25 bit
-     addressing range of unconditionalized bl.  */
-  { "medium_call",   0, 0, false, true,  true, false, NULL, NULL },
-  /* And these functions are always known to reside within the 21 bit
-     addressing range of blcc.  */
-  { "short_call",   0, 0, false, true,  true,  false, NULL, NULL },
-  /* Function which are not having the prologue and epilogue generated
-     by the compiler.  */
-  { "naked", 0, 0, true, false, false,  false, arc_handle_fndecl_attribute,
-    NULL },
-  /* Functions calls made using jli instruction.  The pointer in JLI
-     table is found latter.  */
-  { "jli_always",    0, 0, false, true,  true, false,  NULL, NULL },
-  /* Functions calls made using jli instruction.  The pointer in JLI
-     table is given as input parameter.  */
-  { "jli_fixed",    1, 1, false, true,  true, false, arc_handle_jli_attribute,
-    NULL },
-  /* Call a function using secure-mode.  */
-  { "secure_call",  1, 1, false, true, true, false, arc_handle_secure_attribute,
-    NULL },
-   /* Bypass caches using .di flag.  */
-  { "uncached", 0, 0, false, true, false, false, arc_handle_uncached_attribute,
-    NULL },
-  { "aux", 0, 1, true, false, false, false, arc_handle_aux_attribute, NULL },
-  { NULL, 0, 0, false, false, false, false, NULL, NULL }
-};
 static int arc_comp_type_attributes (const_tree, const_tree);
 static void arc_file_start (void);
 static void arc_internal_label (FILE *, const char *, unsigned long);
@@ -241,7 +203,6 @@ static int branch_dest (rtx);
 static void  arc_output_pic_addr_const (FILE *,  rtx, int);
 static bool arc_function_ok_for_sibcall (tree, tree);
 static rtx arc_function_value (const_tree, const_tree, bool);
-const char * output_shift (rtx *);
 static void arc_reorg (void);
 static bool arc_in_small_data_p (const_tree);
 
@@ -644,6 +605,9 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN arc_expand_builtin
 
+#undef  TARGET_FOLD_BUILTIN
+#define TARGET_FOLD_BUILTIN arc_fold_builtin
+
 #undef  TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL arc_builtin_decl
 
@@ -770,6 +734,42 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 #define TARGET_WARN_FUNC_RETURN arc_warn_func_return
 
 #include "target-def.h"
+
+TARGET_GNU_ATTRIBUTES (arc_attribute_table,
+{
+ /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
+      affects_type_identity, handler, exclude } */
+  { "interrupt", 1, 1, true, false, false, true,
+    arc_handle_interrupt_attribute, NULL },
+  /* Function calls made to this symbol must be done indirectly, because
+     it may lie outside of the 21/25 bit addressing range of a normal function
+     call.  */
+  { "long_call",    0, 0, false, true,  true,  false, NULL, NULL },
+  /* Whereas these functions are always known to reside within the 25 bit
+     addressing range of unconditionalized bl.  */
+  { "medium_call",   0, 0, false, true,  true, false, NULL, NULL },
+  /* And these functions are always known to reside within the 21 bit
+     addressing range of blcc.  */
+  { "short_call",   0, 0, false, true,  true,  false, NULL, NULL },
+  /* Function which are not having the prologue and epilogue generated
+     by the compiler.  */
+  { "naked", 0, 0, true, false, false,  false, arc_handle_fndecl_attribute,
+    NULL },
+  /* Functions calls made using jli instruction.  The pointer in JLI
+     table is found latter.  */
+  { "jli_always",    0, 0, false, true,  true, false,  NULL, NULL },
+  /* Functions calls made using jli instruction.  The pointer in JLI
+     table is given as input parameter.  */
+  { "jli_fixed",    1, 1, false, true,  true, false, arc_handle_jli_attribute,
+    NULL },
+  /* Call a function using secure-mode.  */
+  { "secure_call",  1, 1, false, true, true, false, arc_handle_secure_attribute,
+    NULL },
+   /* Bypass caches using .di flag.  */
+  { "uncached", 0, 0, false, true, false, false, arc_handle_uncached_attribute,
+    NULL },
+  { "aux", 0, 1, true, false, false, false, arc_handle_aux_attribute, NULL }
+});
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
@@ -1562,7 +1562,7 @@ arc_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 
   /* add.f for if (a+b) */
   if (mode == SImode
-      && GET_CODE (y) == NEG
+      && GET_CODE (x) == NEG
       && (op == EQ || op == NE))
     return CC_ZNmode;
 
@@ -2352,7 +2352,8 @@ arc_setup_incoming_varargs (cumulative_args_t args_so_far,
   /* We must treat `__builtin_va_alist' as an anonymous arg.  */
 
   next_cum = *get_cumulative_args (args_so_far);
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
     arc_function_arg_advance (pack_cumulative_args (&next_cum), arg);
   first_anon_arg = next_cum;
 
@@ -4151,143 +4152,595 @@ arc_pre_reload_split (void)
 	  && !(cfun->curr_properties & PROP_rtl_split_insns));
 }
 
-/* Output the assembler code for doing a shift.
-   We go to a bit of trouble to generate efficient code as the ARC601 only has
-   single bit shifts.  This is taken from the h8300 port.  We only have one
-   mode of shifting and can't access individual bytes like the h8300 can, so
-   this is greatly simplified (at the expense of not generating hyper-
-   efficient code).
-
-   This function is not used if the variable shift insns are present.  */
-
-/* FIXME:  This probably can be done using a define_split in arc.md.
-   Alternately, generate rtx rather than output instructions.  */
+/* Output the assembler code for a zero-overhead loop doing a shift
+   or rotate.  We know OPERANDS[0] == OPERANDS[1], and the bit count
+   is OPERANDS[2].  */
 
 const char *
-output_shift (rtx *operands)
+output_shift_loop (enum rtx_code code, rtx *operands)
 {
-  /*  static int loopend_lab;*/
-  rtx shift = operands[3];
-  machine_mode mode = GET_MODE (shift);
-  enum rtx_code code = GET_CODE (shift);
-  const char *shift_one;
-
-  gcc_assert (mode == SImode);
-
-  switch (code)
-    {
-    case ASHIFT:   shift_one = "add %0,%1,%1"; break;
-    case ASHIFTRT: shift_one = "asr %0,%1"; break;
-    case LSHIFTRT: shift_one = "lsr %0,%1"; break;
-    default:       gcc_unreachable ();
-    }
+  bool twice_p = false;
+  gcc_assert (GET_MODE (operands[0]) == SImode);
 
   if (GET_CODE (operands[2]) != CONST_INT)
     {
-      output_asm_insn ("and.f lp_count,%2, 0x1f", operands);
-      goto shiftloop;
+      output_asm_insn ("and.f\tlp_count,%2,0x1f", operands);
+      output_asm_insn ("lpnz\t2f", operands);
     }
   else
     {
-      int n;
-
-      n = INTVAL (operands[2]);
-
-      /* Only consider the lower 5 bits of the shift count.  */
-      n = n & 0x1f;
-
-      /* First see if we can do them inline.  */
-      /* ??? We could get better scheduling & shorter code (using short insns)
-	 by using splitters.  Alas, that'd be even more verbose.  */
-      if (code == ASHIFT && n <= 9 && n > 2
-	  && dest_reg_operand (operands[4], SImode))
+      int n = INTVAL (operands[2]) & 31;
+      if (!n)
 	{
-	  output_asm_insn ("mov %4,0\n\tadd3 %0,%4,%1", operands);
-	  for (n -=3 ; n >= 3; n -= 3)
-	    output_asm_insn ("add3 %0,%4,%0", operands);
-	  if (n == 2)
-	    output_asm_insn ("add2 %0,%4,%0", operands);
-	  else if (n)
-	    output_asm_insn ("add %0,%0,%0", operands);
+	  output_asm_insn ("mov\t%0,%1",operands);
+	  return "";
 	}
-      else if (n <= 4)
-	{
-	  while (--n >= 0)
-	    {
-	      output_asm_insn (shift_one, operands);
-	      operands[1] = operands[0];
-	    }
-	}
-      /* See if we can use a rotate/and.  */
-      else if (n == BITS_PER_WORD - 1)
-	{
-	  switch (code)
-	    {
-	    case ASHIFT :
-	      output_asm_insn ("and %0,%1,1\n\tror %0,%0", operands);
-	      break;
-	    case ASHIFTRT :
-	      /* The ARC doesn't have a rol insn.  Use something else.  */
-	      output_asm_insn ("add.f 0,%1,%1\n\tsbc %0,%0,%0", operands);
-	      break;
-	    case LSHIFTRT :
-	      /* The ARC doesn't have a rol insn.  Use something else.  */
-	      output_asm_insn ("add.f 0,%1,%1\n\trlc %0,0", operands);
-	      break;
-	    default:
-	      break;
-	    }
-	}
-      else if (n == BITS_PER_WORD - 2 && dest_reg_operand (operands[4], SImode))
-	{
-	  switch (code)
-	    {
-	    case ASHIFT :
-	      output_asm_insn ("and %0,%1,3\n\tror %0,%0\n\tror %0,%0", operands);
-	      break;
-	    case ASHIFTRT :
-#if 1 /* Need some scheduling comparisons.  */
-	      output_asm_insn ("add.f %4,%1,%1\n\tsbc %0,%0,%0\n\t"
-			       "add.f 0,%4,%4\n\trlc %0,%0", operands);
-#else
-	      output_asm_insn ("add.f %4,%1,%1\n\tbxor %0,%4,31\n\t"
-			       "sbc.f %0,%0,%4\n\trlc %0,%0", operands);
-#endif
-	      break;
-	    case LSHIFTRT :
-#if 1
-	      output_asm_insn ("add.f %4,%1,%1\n\trlc %0,0\n\t"
-			       "add.f 0,%4,%4\n\trlc %0,%0", operands);
-#else
-	      output_asm_insn ("add.f %0,%1,%1\n\trlc.f %0,0\n\t"
-			       "and %0,%0,1\n\trlc %0,%0", operands);
-#endif
-	      break;
-	    default:
-	      break;
-	    }
-	}
-      else if (n == BITS_PER_WORD - 3 && code == ASHIFT)
-	output_asm_insn ("and %0,%1,7\n\tror %0,%0\n\tror %0,%0\n\tror %0,%0",
-			 operands);
-      /* Must loop.  */
-      else
-	{
-	  operands[2] = GEN_INT (n);
-	  output_asm_insn ("mov.f lp_count, %2", operands);
 
-	shiftloop:
+      if ((n & 1) == 0 && code != ROTATE)
+	{
+	  twice_p = true;
+	  n >>= 1;
+	}
+      operands[2] = GEN_INT (n);
+      output_asm_insn ("mov\tlp_count,%2", operands);
+      output_asm_insn ("lp\t2f", operands);
+    }
+
+  switch (code)
+    {
+    case ASHIFT:
+      output_asm_insn ("add\t%0,%1,%1", operands);
+      if (twice_p)
+	output_asm_insn ("add\t%0,%1,%1", operands);
+      break;
+    case ASHIFTRT:
+      output_asm_insn ("asr\t%0,%1", operands);
+      if (twice_p)
+	output_asm_insn ("asr\t%0,%1", operands);
+      break;
+    case LSHIFTRT:
+      output_asm_insn ("lsr\t%0,%1", operands);
+      if (twice_p)
+	output_asm_insn ("lsr\t%0,%1", operands);
+      break;
+    case ROTATERT:
+      output_asm_insn ("ror\t%0,%1", operands);
+      if (twice_p)
+	output_asm_insn ("ror\t%0,%1", operands);
+      break;
+    case ROTATE:
+      output_asm_insn ("add.f\t%0,%1,%1", operands);
+      output_asm_insn ("adc\t%0,%0,0", operands);
+      twice_p = true;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (!twice_p)
+    output_asm_insn ("nop", operands);
+  fprintf (asm_out_file, "2:\t%s end single insn loop\n", ASM_COMMENT_START);
+  return "";
+}
+
+/* See below where shifts are handled for explanation of this enum.  */
+enum arc_shift_alg
+{
+  SHIFT_MOVE,		/* Register-to-register move.  */
+  SHIFT_LOOP,		/* Zero-overhead loop implementation.  */
+  SHIFT_INLINE,		/* Mmultiple LSHIFTs and LSHIFT-PLUSs.  */ 
+  SHIFT_AND_ROT,        /* Bitwise AND, then ROTATERTs.  */
+  SHIFT_SWAP,		/* SWAP then multiple LSHIFTs/LSHIFT-PLUSs.  */
+  SHIFT_AND_SWAP_ROT	/* Bitwise AND, then SWAP, then ROTATERTs.  */
+};
+
+struct arc_shift_info {
+  enum arc_shift_alg alg;
+  unsigned int cost;
+};
+
+/* Return shift algorithm context, an index into the following tables.
+ * 0 for -Os (optimize for size)	3 for -O2 (optimized for speed)
+ * 1 for -Os -mswap TARGET_V2		4 for -O2 -mswap TARGET_V2
+ * 2 for -Os -mswap !TARGET_V2		5 for -O2 -mswap !TARGET_V2  */
+static unsigned int
+arc_shift_context_idx ()
+{
+  if (optimize_function_for_size_p (cfun))
+    {
+      if (!TARGET_SWAP)
+	return 0;
+      if (TARGET_V2)
+	return 1;
+      return 2;
+    }
+  else
+    {
+      if (!TARGET_SWAP)
+	return 3;
+      if (TARGET_V2)
+	return 4;
+      return 5;
+    }
+}
+
+static const arc_shift_info arc_ashl_alg[6][32] = {
+  {  /* 0: -Os.  */
+    { SHIFT_MOVE,         COSTS_N_INSNS (1) },  /*  0 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (1) },  /*  1 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  2 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  3 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  4 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  5 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  6 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  7 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  8 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  9 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 10 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 11 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 12 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 13 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 14 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 15 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 16 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 17 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 18 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 19 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 20 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 21 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 22 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 23 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 24 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 25 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 26 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 27 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 28 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (4) },  /* 29 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (3) },  /* 30 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (2) }   /* 31 */
+  },
+  {  /* 1: -Os -mswap TARGET_V2.  */
+    { SHIFT_MOVE,         COSTS_N_INSNS (1) },  /*  0 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (1) },  /*  1 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  2 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  3 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  4 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  5 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  6 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  7 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  8 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  9 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 10 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 11 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 12 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 13 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (4) },  /* 14 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (3) },  /* 15 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (1) },  /* 16 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (2) },  /* 17 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (3) },  /* 18 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (3) },  /* 19 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 20 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 21 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 22 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 23 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 24 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 25 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 26 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 27 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 28 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (4) },  /* 29 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (3) },  /* 30 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (2) }   /* 31 */
+  },
+  {  /* 2: -Os -mswap !TARGET_V2.  */
+    { SHIFT_MOVE,         COSTS_N_INSNS (1) },  /*  0 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (1) },  /*  1 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  2 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  3 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  4 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  5 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  6 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  7 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  8 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  9 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 10 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 11 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 12 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 13 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (4) },  /* 14 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (3) },  /* 15 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (2) },  /* 16 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (3) },  /* 17 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 18 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 19 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 20 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 21 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 22 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 23 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 24 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 25 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 26 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 27 */
+    { SHIFT_LOOP,         COSTS_N_INSNS (4) },  /* 28 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (4) },  /* 29 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (3) },  /* 30 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (2) }   /* 31 */
+  },
+  {  /* 3: -O2.  */
+    { SHIFT_MOVE,         COSTS_N_INSNS (1) },  /*  0 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (1) },  /*  1 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  2 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  3 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  4 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  5 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  6 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  7 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  8 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  9 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (5) },  /* 10 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (5) },  /* 11 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (5) },  /* 12 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (6) },  /* 13 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (6) },  /* 14 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (6) },  /* 15 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (7) },  /* 16 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (7) },  /* 17 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (7) },  /* 18 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (8) },  /* 19 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (8) },  /* 20 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (8) },  /* 21 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (9) },  /* 22 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (9) },  /* 23 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (9) },  /* 24 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (8) },  /* 25 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (7) },  /* 26 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (6) },  /* 27 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (5) },  /* 28 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (4) },  /* 29 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (3) },  /* 30 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (2) }   /* 31 */
+  },
+  {  /* 4: -O2 -mswap TARGET_V2.  */
+    { SHIFT_MOVE,         COSTS_N_INSNS (1) },  /*  0 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (1) },  /*  1 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  2 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  3 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  4 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  5 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  6 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  7 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  8 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  9 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (5) },  /* 10 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (5) },  /* 11 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (5) },  /* 12 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (5) },  /* 13 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (4) },  /* 14 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (3) },  /* 15 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (1) },  /* 16 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (2) },  /* 17 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (3) },  /* 18 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (3) },  /* 19 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 20 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 21 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 22 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (5) },  /* 23 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (5) },  /* 24 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (5) },  /* 25 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (6) },  /* 26 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (6) },  /* 27 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (5) },  /* 28 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (4) },  /* 29 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (3) },  /* 30 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (2) }   /* 31 */
+  },
+  {  /* 5: -O2 -mswap !TARGET_V2.  */
+    { SHIFT_MOVE,         COSTS_N_INSNS (1) },  /*  0 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (1) },  /*  1 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  2 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (2) },  /*  3 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  4 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  5 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (3) },  /*  6 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  7 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  8 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (4) },  /*  9 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (5) },  /* 10 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (5) },  /* 11 */
+    { SHIFT_INLINE,       COSTS_N_INSNS (5) },  /* 12 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (5) },  /* 13 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (4) },  /* 14 */
+    { SHIFT_AND_SWAP_ROT, COSTS_N_INSNS (3) },  /* 15 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (2) },  /* 16 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (3) },  /* 17 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 18 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (4) },  /* 19 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (5) },  /* 20 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (5) },  /* 21 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (5) },  /* 22 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (6) },  /* 23 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (6) },  /* 24 */
+    { SHIFT_SWAP,         COSTS_N_INSNS (6) },  /* 25 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (7) },  /* 26 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (6) },  /* 27 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (5) },  /* 28 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (4) },  /* 29 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (3) },  /* 30 */
+    { SHIFT_AND_ROT,      COSTS_N_INSNS (2) }   /* 31 */
+  }
+};
+
+/* Split SImode left shift instruction.  */
+void
+arc_split_ashl (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      switch (arc_ashl_alg [arc_shift_context_idx ()][n].alg)
+	{
+	case SHIFT_MOVE:
+	  emit_move_insn (operands[0], operands[1]);
+	  return;
+
+	case SHIFT_SWAP:
+	  if (!TARGET_V2)
 	    {
-	      output_asm_insn ("lpnz\t2f", operands);
-	      output_asm_insn (shift_one, operands);
-	      output_asm_insn ("nop", operands);
-	      fprintf (asm_out_file, "2:\t%s end single insn loop\n",
-		       ASM_COMMENT_START);
+	      emit_insn (gen_andsi3_i (operands[0], operands[1],
+				       GEN_INT (0xffff)));
+	      emit_insn (gen_rotrsi2_cnt16 (operands[0], operands[0]));
 	    }
+	  else
+	    emit_insn (gen_ashlsi2_cnt16 (operands[0], operands[1]));
+	  n -= 16;
+	  if (n == 0)
+	    return;
+	  operands[1] = operands[0];
+	  /* FALL THRU */
+
+	case SHIFT_INLINE:
+	  if (n <= 2)
+	    {
+	      emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[1]));
+	      if (n == 2)
+		emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    {
+	      rtx zero = gen_reg_rtx (SImode);
+	      emit_move_insn (zero, const0_rtx);
+	      emit_insn (gen_add_shift (operands[0], operands[1],
+					GEN_INT (3), zero));
+	      for (n -= 3; n >= 3; n -= 3)
+		emit_insn (gen_add_shift (operands[0], operands[0],
+					  GEN_INT (3), zero));
+	      if (n == 2)
+		emit_insn (gen_add_shift (operands[0], operands[0],
+					  const2_rtx, zero));
+	      else if (n)
+		emit_insn (gen_ashlsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  return;
+
+	case SHIFT_AND_ROT:
+	  emit_insn (gen_andsi3_i (operands[0], operands[1],
+				   GEN_INT ((1 << (32 - n)) - 1)));
+	  for (; n < 32; n++)
+	    emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+
+	case SHIFT_AND_SWAP_ROT:
+	  emit_insn (gen_andsi3_i (operands[0], operands[1],
+				   GEN_INT ((1 << (32 - n)) - 1)));
+	  emit_insn (gen_rotrsi2_cnt16 (operands[0], operands[0]));
+	  for (; n < 16; n++)
+	    emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+
+	case SHIFT_LOOP:
+	  break;
+
+	default:
+	  gcc_unreachable ();
 	}
     }
 
-  return "";
+  emit_insn (gen_ashlsi3_loop (operands[0], operands[1], operands[2]));
+}
+
+/* Split SImode arithmetic right shift instruction.  */
+void
+arc_split_ashr (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 4)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[1]));
+	      while (--n > 0)
+		emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n >= 16 && n <= 18 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotrsi2_cnt16 (operands[0], operands[1]));
+	  emit_insn (gen_extendhisi2 (operands[0],
+				      gen_lowpart (HImode, operands[0])));
+	  while (--n >= 16)
+	    emit_insn (gen_ashrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n == 30)
+	{
+	  rtx tmp = gen_reg_rtx (SImode);
+	  emit_insn (gen_add_f (tmp, operands[1], operands[1]));
+	  emit_insn (gen_sbc (operands[0], operands[0], operands[0]));
+	  emit_insn (gen_addsi_compare_2 (tmp, tmp));
+	  emit_insn (gen_adc (operands[0], operands[0], operands[0]));
+	  return;
+	}
+      else if (n == 31)
+	{
+	  emit_insn (gen_addsi_compare_2 (operands[1], operands[1]));
+	  emit_insn (gen_sbc (operands[0], operands[0], operands[0]));
+	  return;
+	}
+    }
+
+  emit_insn (gen_ashrsi3_loop (operands[0], operands[1], operands[2]));
+}
+
+/* Split SImode logical right shift instruction.  */
+void
+arc_split_lshr (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 4)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[1]));
+	      while (--n > 0)
+		emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n >= 16 && n <= 19 && TARGET_SWAP && TARGET_V2)
+	{
+	  emit_insn (gen_lshrsi2_cnt16 (operands[0], operands[1]));
+	  while (--n >= 16)
+	    emit_insn (gen_lshrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n == 30)
+	{
+	  rtx tmp = gen_reg_rtx (SImode);
+	  emit_insn (gen_add_f (tmp, operands[1], operands[1]));
+	  emit_insn (gen_scc_ltu_cc_c (operands[0]));
+	  emit_insn (gen_addsi_compare_2 (tmp, tmp));
+	  emit_insn (gen_adc (operands[0], operands[0], operands[0]));
+	  return;
+	}
+      else if (n == 31)
+	{
+	  emit_insn (gen_addsi_compare_2 (operands[1], operands[1]));
+	  emit_insn (gen_scc_ltu_cc_c (operands[0]));
+	  return;
+	}
+    }
+
+  emit_insn (gen_lshrsi3_loop (operands[0], operands[1], operands[2]));
+}
+
+/* Split SImode rotate left instruction.  */
+void
+arc_split_rotl (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 2)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[1]));
+	      if (n == 2)
+		emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n >= 28)
+	{
+	  emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[1]));
+	  while (++n < 32)
+	    emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n >= 13 && n <= 16 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotlsi2_cnt16 (operands[0], operands[1]));
+	  while (++n <= 16)
+	    emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n == 17 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotlsi2_cnt16 (operands[0], operands[1]));
+	  emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n >= 16 || n == 12 || n == 14)
+	{
+	  emit_insn (gen_rotrsi3_loop (operands[0], operands[1],
+				       GEN_INT (32 - n)));
+	  return;
+	}
+    }
+
+  emit_insn (gen_rotlsi3_loop (operands[0], operands[1], operands[2]));
+}
+
+/* Split SImode rotate right instruction.  */
+void
+arc_split_rotr (rtx *operands)
+{
+  if (CONST_INT_P (operands[2]))
+    {
+      int n = INTVAL (operands[2]) & 0x1f;
+      if (n <= 4)
+	{
+	  if (n != 0)
+	    {
+	      emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[1]));
+	      while (--n > 0)
+		emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	    }
+	  else
+	    emit_move_insn (operands[0], operands[1]);
+	  return;
+	}
+      else if (n == 15 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotrsi2_cnt16 (operands[0], operands[1]));
+	  emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n >= 16 && n <= 19 && TARGET_SWAP)
+	{
+	  emit_insn (gen_rotrsi2_cnt16 (operands[0], operands[1]));
+	  while (--n >= 16)
+	    emit_insn (gen_rotrsi3_cnt1 (operands[0], operands[0]));
+	  return;
+	}
+      else if (n >= 30)
+	{
+	  emit_insn (gen_rotlsi3_cnt1 (operands[0], operands[1]));
+	  if (n == 31)
+	    emit_insn (gen_rotlsi3_cnt1 (operands[1], operands[1]));
+	  return;
+	}
+      else if (n >= 21 || n == 17 || n == 19)
+	{
+	  emit_insn (gen_rotrsi3_loop (operands[0], operands[1],
+				       GEN_INT (32 - n)));
+	  return;
+	}
+    }
+
+  emit_insn (gen_rotrsi3_loop (operands[0], operands[1], operands[2]));
 }
 
 /* Nested function support.  */
@@ -4459,9 +4912,9 @@ arc_print_operand (FILE *file, rtx x, int code)
 
     case 'c':
       if (GET_CODE (x) == CONST_INT)
-        fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) );
+	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) );
       else
-        output_operand_lossage ("invalid operands to %%c code");
+	output_operand_lossage ("invalid operands to %%c code");
 
       return;
 
@@ -5349,7 +5802,7 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case CONST:
     case LABEL_REF:
     case SYMBOL_REF:
-      *total = speed ? COSTS_N_INSNS (1) : COSTS_N_INSNS (4);
+      *total = speed ? COSTS_N_INSNS (1) : COSTS_N_BYTES (4);
       return true;
 
     case CONST_DOUBLE:
@@ -5371,28 +5824,65 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
        If we need more than 12 insns to do a multiply, then go out-of-line,
        since the call overhead will be < 10% of the cost of the multiply.  */
     case ASHIFT:
-    case ASHIFTRT:
-    case LSHIFTRT:
+      if (mode == DImode)
+	{
+	  if (XEXP (x, 1) == const1_rtx)
+	    {
+	      *total += rtx_cost (XEXP (x, 0), mode, ASHIFT, 0, speed)
+			+ COSTS_N_INSNS (2);
+	      return true;
+	    }
+	  return false;
+	}
       if (TARGET_BARREL_SHIFTER)
 	{
-	  if (CONSTANT_P (XEXP (x, 0)))
+	  *total = COSTS_N_INSNS (1);
+	  if (CONST_INT_P (XEXP (x, 1)))
 	    {
-	      *total += rtx_cost (XEXP (x, 1), mode, (enum rtx_code) code,
+	      *total += rtx_cost (XEXP (x, 0), mode, ASHIFT, 0, speed);
+	      return true;
+	    }
+	}
+      else if (CONST_INT_P (XEXP (x, 1)))
+	{
+	  unsigned int n = INTVAL (XEXP (x, 1)) & 0x1f;
+	  *total = arc_ashl_alg[arc_shift_context_idx ()][n].cost
+		   + rtx_cost (XEXP (x, 0), mode, ASHIFT, 0, speed);
+	  return true;
+	}
+      else
+	/* Variable shift loop takes 2 * n + 2 cycles.  */
+	*total = speed ? COSTS_N_INSNS (64) : COSTS_N_INSNS (4);
+      return false;
+
+    case ASHIFTRT:
+    case LSHIFTRT:
+    case ROTATE:
+    case ROTATERT:
+      if (mode == DImode)
+	return false;
+      if (TARGET_BARREL_SHIFTER)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  if (CONSTANT_P (XEXP (x, 1)))
+	    {
+	      *total += rtx_cost (XEXP (x, 0), mode, (enum rtx_code) code,
 				  0, speed);
 	      return true;
 	    }
-	  *total = COSTS_N_INSNS (1);
 	}
       else if (GET_CODE (XEXP (x, 1)) != CONST_INT)
-	*total = COSTS_N_INSNS (16);
+	*total = speed ? COSTS_N_INSNS (16) : COSTS_N_INSNS (4);
       else
 	{
-	  *total = COSTS_N_INSNS (INTVAL (XEXP ((x), 1)));
-	  /* ??? want_to_gcse_p can throw negative shift counts at us,
-	     and then panics when it gets a negative cost as result.
-	     Seen for gcc.c-torture/compile/20020710-1.c -Os .  */
-	  if (*total < 0)
-	    *total = 0;
+	  int n = INTVAL (XEXP (x, 1)) & 31;
+	  if (n < 4)
+	    *total = COSTS_N_INSNS (n);
+	  else
+	    *total = speed ? COSTS_N_INSNS (n + 2) : COSTS_N_INSNS (4);
+	  *total += rtx_cost (XEXP (x, 0), mode, (enum rtx_code) code,
+			      0, speed);
+	  return true;
 	}
       return false;
 
@@ -5424,6 +5914,8 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
       return false;
 
     case PLUS:
+      if (mode == DImode)
+	return false;
       if (outer_code == MEM && CONST_INT_P (XEXP (x, 1))
 	  && RTX_OK_FOR_OFFSET_P (mode, XEXP (x, 1)))
 	{
@@ -5433,8 +5925,8 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
       if ((GET_CODE (XEXP (x, 0)) == ASHIFT
 	   && _1_2_3_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
-          || (GET_CODE (XEXP (x, 0)) == MULT
-              && _2_4_8_operand (XEXP (XEXP (x, 0), 1), VOIDmode)))
+	  || (GET_CODE (XEXP (x, 0)) == MULT
+	      && _2_4_8_operand (XEXP (XEXP (x, 0), 1), VOIDmode)))
 	{
 	  if (CONSTANT_P (XEXP (x, 1)) && !speed)
 	    *total += COSTS_N_INSNS (4);
@@ -5445,8 +5937,8 @@ arc_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MINUS:
       if ((GET_CODE (XEXP (x, 1)) == ASHIFT
 	   && _1_2_3_operand (XEXP (XEXP (x, 1), 1), VOIDmode))
-          || (GET_CODE (XEXP (x, 1)) == MULT
-              && _2_4_8_operand (XEXP (XEXP (x, 1), 1), VOIDmode)))
+	  || (GET_CODE (XEXP (x, 1)) == MULT
+	      && _2_4_8_operand (XEXP (XEXP (x, 1), 1), VOIDmode)))
 	{
 	  if (CONSTANT_P (XEXP (x, 0)) && !speed)
 	    *total += COSTS_N_INSNS (4);
@@ -6844,6 +7336,46 @@ arc_expand_builtin (tree exp,
     return const0_rtx;
 }
 
+/* Implement TARGET_FOLD_BUILTIN.  */
+
+static tree
+arc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
+                  bool ignore ATTRIBUTE_UNUSED)
+{
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
+
+  switch (fcode)
+    {
+    default:
+      break;
+
+    case ARC_BUILTIN_SWAP:
+      return fold_build2 (LROTATE_EXPR, integer_type_node, arg[0],
+                          build_int_cst (integer_type_node, 16));
+
+    case ARC_BUILTIN_NORM:
+      if (TREE_CODE (arg[0]) == INTEGER_CST
+	  && !TREE_OVERFLOW (arg[0]))
+	{
+	  wide_int arg0 = wi::to_wide (arg[0], 32);
+	  wide_int result = wi::shwi (wi::clrsb (arg0), 32);
+	  return wide_int_to_tree (integer_type_node, result);
+	}
+      break;
+
+    case ARC_BUILTIN_NORMW:
+      if (TREE_CODE (arg[0]) == INTEGER_CST
+	  && !TREE_OVERFLOW (arg[0]))
+	{
+	  wide_int arg0 = wi::to_wide (arg[0], 16);
+	  wide_int result = wi::shwi (wi::clrsb (arg0), 32);
+	  return wide_int_to_tree (integer_type_node, result);
+	}
+      break;
+    }
+  return NULL_TREE;
+}
+
 /* Returns true if the operands[opno] is a valid compile-time constant to be
    used as register number in the code for builtins.  Else it flags an error
    and returns false.  */
@@ -7546,9 +8078,9 @@ hwloop_optimize (hwloop_info loop)
   if (REG_P (loop->iter_reg) && (REGNO (loop->iter_reg)) != LP_COUNT)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d doesn't use lp_count as loop"
+	fprintf (dump_file, ";; loop %d doesn't use lp_count as loop"
 		 " iterator\n",
-                 loop->loop_no);
+		 loop->loop_no);
       /* This loop doesn't use the lp_count, check though if we can
 	 fix it.  */
       if (TEST_HARD_REG_BIT (loop->regs_set_in_loop, LP_COUNT)
@@ -7721,7 +8253,7 @@ hwloop_optimize (hwloop_info loop)
 		 /* Make sure we don't split a call and its corresponding
 		    CALL_ARG_LOCATION note.  */
 		 && NOTE_KIND (entry_after) != NOTE_INSN_CALL_ARG_LOCATION))
-        entry_after = NEXT_INSN (entry_after);
+	entry_after = NEXT_INSN (entry_after);
 #endif
       entry_after = next_nonnote_insn_bb (entry_after);
 
@@ -10958,35 +11490,37 @@ static int
 arc_insn_cost (rtx_insn *insn, bool speed)
 {
   int cost;
-  if (recog_memoized (insn) < 0)
-    return 0;
-
-  /* If optimizing for size, we want the insn size.  */
-  if (!speed)
-    return get_attr_length (insn);
-
-  /* Use cost if provided.  */
-  cost = get_attr_cost (insn);
-  if (cost > 0)
-    return cost;
-
-  /* For speed make a simple cost model: memory access is more
-     expensive than any other instruction.  */
-  enum attr_type type = get_attr_type (insn);
-
-  switch (type)
+  enum attr_type type;
+  if (recog_memoized (insn) >= 0)
     {
-    case TYPE_LOAD:
-    case TYPE_STORE:
-      cost = COSTS_N_INSNS (2);
-      break;
-
-    default:
-      cost = COSTS_N_INSNS (1);
-      break;
+      if (speed)
+	{
+	  /* Use cost if provided.  */
+	  cost = get_attr_cost (insn);
+	  if (cost > 0)
+	    return cost;
+	  /* For speed make a simple cost model: memory access is more
+	     expensive than any other instruction.  */
+	  type = get_attr_type (insn);
+	  if (type == TYPE_LOAD || type == TYPE_STORE)
+	    return COSTS_N_INSNS (2);
+	}
+      else
+	{
+	  /* If optimizing for size, we want the insn size.  */
+	  type = get_attr_type (insn);
+	  if (type != TYPE_MULTI)
+	    return get_attr_length (insn);
+	}
     }
 
-  return cost;
+  if (rtx set = single_set (insn))
+    cost = set_rtx_cost (set, speed);
+  else
+    cost = pattern_cost (PATTERN (insn), speed);
+  /* If the cost is zero, then it's likely a complex insn.  We don't
+     want the cost of these to be less than something we know about.  */
+  return cost ? cost : COSTS_N_INSNS (2);
 }
 
 static unsigned

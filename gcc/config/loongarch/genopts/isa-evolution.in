@@ -1,0 +1,5 @@
+2	25	frecipe		1.1		Support frecipe.{s/d} and frsqrte.{s/d} instructions.
+2	26	div32		1.1		Support div.w[u] and mod.w[u] instructions with inputs not sign-extended.
+2	27	lam-bh		1.1		Support am{swap/add}[_db].{b/h} instructions.
+2	28	lamcas		1.1		Support amcas[_db].{b/h/w/d} instructions.
+3	23	ld-seq-sa	1.1		Do not need load-load barriers (dbar 0x700).

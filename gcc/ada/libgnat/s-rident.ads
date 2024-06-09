@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -449,7 +449,6 @@ package System.Rident is
                            No_Asynchronous_Control         => True,
                            No_Dynamic_Attachment           => True,
                            No_Dynamic_CPU_Assignment       => True,
-                           No_Dynamic_Priorities           => True,
                            No_Local_Protected_Objects      => True,
                            No_Protected_Type_Allocators    => True,
                            No_Requeue_Statements           => True,

@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,6 +38,7 @@
 #include <bits/ranges_base.h> // ranges::begin, ranges::range etc.
 #include <bits/invoke.h>      // __invoke
 #include <bits/cpp_type_traits.h> // __is_byte
+#include <bits/stl_algobase.h> // __memcmp
 
 #if __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)

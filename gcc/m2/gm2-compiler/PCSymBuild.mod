@@ -1,6 +1,6 @@
 (* PCSymBuild.mod pass C symbol creation.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -39,7 +39,7 @@ FROM M2Quads IMPORT PushT, PopT, OperandT, PopN, PopTF, PushTF, IsAutoPushOn,
 
 FROM M2Options IMPORT Iso ;
 FROM StdIO IMPORT Write ;
-FROM M2System IMPORT IsPseudoSystemFunctionConstExpression ;
+FROM M2System IMPORT Cast, IsPseudoSystemFunctionConstExpression ;
 
 FROM M2Base IMPORT MixTypes,
                    ZType, RType, Char, Boolean, Val, Max, Min, Convert,
@@ -1399,7 +1399,7 @@ BEGIN
       second := PopAddress (exprStack) ;
       first := PopAddress (exprStack)
    END ;
-   IF func=Val
+   IF (func=Val) OR (func=Cast)
    THEN
       InitConvert (cast, NulSym, first, second)
    ELSIF (func=Max) OR (func=Min)
@@ -1410,6 +1410,38 @@ BEGIN
                     first, second, n>2)
    END
 END buildConstFunction ;
+
+
+(*
+   ErrorConstFunction - generate an error message at functok using func in the
+                        error message providing it is not NulSym.
+*)
+
+PROCEDURE ErrorConstFunction (func: CARDINAL; functok: CARDINAL) ;
+BEGIN
+   IF func = NulSym
+   THEN
+      IF Iso
+      THEN
+         ErrorFormat0 (NewError (functok),
+                       'the only functions permissible in a constant expression are: CAP, CAST, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
+      ELSE
+         ErrorFormat0 (NewError (functok),
+                       'the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
+      END
+   ELSE
+      IF Iso
+      THEN
+         MetaErrorT1 (functok,
+                      'the only functions permissible in a constant expression are: CAP, CAST, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
+                      func)
+      ELSE
+         MetaErrorT1 (functok,
+                      'the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
+                      func)
+      END
+   END
+END ErrorConstFunction ;
 
 
 (*
@@ -1426,7 +1458,10 @@ BEGIN
    PopTtok (func, functok) ;
    IF inDesignator
    THEN
-      IF (func#Convert) AND
+      IF func = NulSym
+      THEN
+         ErrorConstFunction (func, functok)
+      ELSIF (func#Convert) AND
          (IsPseudoBaseFunction(func) OR
           IsPseudoSystemFunctionConstExpression(func) OR
           (IsProcedure(func) AND IsProcedureBuiltin(func)))
@@ -1442,16 +1477,7 @@ BEGIN
             WriteFormat0('a constant type conversion can only have one argument')
          END
       ELSE
-         IF Iso
-         THEN
-            MetaErrorT1 (functok,
-                         'the only functions permissible in a constant expression are: CAP, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
-                        func)
-         ELSE
-            MetaErrorT1 (functok,
-                         'the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
-                        func)
-         END
+         ErrorConstFunction (func, functok)
       END
    END ;
    PushTtok (func, functok)

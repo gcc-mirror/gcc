@@ -1,7 +1,7 @@
 /* Data structures and declarations used for reading and writing
    GIMPLE to a file stream.
 
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by Doug Kwan <dougkwan@google.com>
 
 This file is part of GCC.

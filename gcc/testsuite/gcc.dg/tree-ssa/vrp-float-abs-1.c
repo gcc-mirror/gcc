@@ -14,4 +14,4 @@ foo (double x, double y)
     }
 }
 
-// { dg-final { scan-tree-dump-not "link_error" "evrp" } }
+// { dg-final { scan-tree-dump-not "link_error" "evrp" { xfail s390*-*-* } } } xfail: PR114678

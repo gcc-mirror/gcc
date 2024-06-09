@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -19,14 +19,11 @@
 #include "rust-compile.h"
 #include "rust-compile-item.h"
 #include "rust-compile-implitem.h"
-#include "rust-compile-expr.h"
-#include "rust-compile-struct-field-expr.h"
-#include "rust-compile-stmt.h"
-#include "rust-hir-trait-resolve.h"
-#include "rust-hir-path-probe.h"
 #include "rust-hir-type-bounds.h"
-#include "rust-hir-dot-operator.h"
-#include "rust-compile-block.h"
+#include "rust-compile-type.h"
+#include "rust-substitution-mapper.h"
+#include "rust-type-util.h"
+#include "rust-session-manager.h"
 
 namespace Rust {
 namespace Compile {
@@ -47,17 +44,20 @@ CompileCrate::Compile (HIR::Crate &crate, Context *ctx)
 void
 CompileCrate::go ()
 {
-  for (auto &item : crate.items)
+  for (auto &item : crate.get_items ())
     CompileItem::compile (item.get (), ctx);
+  auto crate_type
+    = Rust::Session::get_instance ().options.target_data.get_crate_type ();
+  if (crate_type == TargetOptions::CrateType::PROC_MACRO)
+    add_proc_macro_symbols ();
 }
 
 // Shared methods in compilation
 
 tree
-HIRCompileBase::coercion_site (HirId id, tree rvalue,
-			       const TyTy::BaseType *rval,
-			       const TyTy::BaseType *lval,
-			       Location lvalue_locus, Location rvalue_locus)
+HIRCompileBase::coercion_site (HirId id, tree rvalue, TyTy::BaseType *rval,
+			       TyTy::BaseType *lval, location_t lvalue_locus,
+			       location_t rvalue_locus)
 {
   std::vector<Resolver::Adjustment> *adjustments = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_autoderef_mappings (id, &adjustments);
@@ -70,20 +70,20 @@ HIRCompileBase::coercion_site (HirId id, tree rvalue,
 }
 
 tree
-HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
-				const TyTy::BaseType *lval,
-				Location lvalue_locus, Location rvalue_locus)
+HIRCompileBase::coercion_site1 (tree rvalue, TyTy::BaseType *rval,
+				TyTy::BaseType *lval, location_t lvalue_locus,
+				location_t rvalue_locus)
 {
   if (rvalue == error_mark_node)
     return error_mark_node;
 
-  const TyTy::BaseType *actual = rval->destructure ();
-  const TyTy::BaseType *expected = lval->destructure ();
+  TyTy::BaseType *actual = rval->destructure ();
+  TyTy::BaseType *expected = lval->destructure ();
 
   if (expected->get_kind () == TyTy::TypeKind::REF)
     {
       // this is a dyn object
-      if (SLICE_TYPE_P (TREE_TYPE (rvalue)))
+      if (RS_DST_FLAG_P (TREE_TYPE (rvalue)))
 	{
 	  return rvalue;
 	}
@@ -101,7 +101,7 @@ HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
       tree coerced
 	= coercion_site1 (deref_rvalue, act->get_base (), exp->get_base (),
 			  lvalue_locus, rvalue_locus);
-      if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
+      if (exp->is_dyn_object () && RS_DST_FLAG_P (TREE_TYPE (coerced)))
 	return coerced;
 
       return address_expression (coerced, rvalue_locus);
@@ -109,7 +109,7 @@ HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
   else if (expected->get_kind () == TyTy::TypeKind::POINTER)
     {
       // this is a dyn object
-      if (SLICE_TYPE_P (TREE_TYPE (rvalue)))
+      if (RS_DST_FLAG_P (TREE_TYPE (rvalue)))
 	{
 	  return rvalue;
 	}
@@ -120,8 +120,8 @@ HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
       if (!valid_coercion)
 	return error_mark_node;
 
-      const TyTy::ReferenceType *exp
-	= static_cast<const TyTy::ReferenceType *> (expected);
+      const TyTy::PointerType *exp
+	= static_cast<const TyTy::PointerType *> (expected);
 
       TyTy::BaseType *actual_base = nullptr;
       if (actual->get_kind () == TyTy::TypeKind::REF)
@@ -145,7 +145,7 @@ HIRCompileBase::coercion_site1 (tree rvalue, const TyTy::BaseType *rval,
 	= coercion_site1 (deref_rvalue, actual_base, exp->get_base (),
 			  lvalue_locus, rvalue_locus);
 
-      if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
+      if (exp->is_dyn_object () && RS_DST_FLAG_P (TREE_TYPE (coerced)))
 	return coerced;
 
       return address_expression (coerced, rvalue_locus);
@@ -186,9 +186,13 @@ tree
 HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 				      const TyTy::BaseType *actual,
 				      const TyTy::DynamicObjectType *ty,
-				      Location locus)
+				      location_t locus)
 {
-  tree dynamic_object = TyTyResolveCompile::compile (ctx, ty);
+  // DST's get wrapped in a pseudo reference that doesnt exist...
+  const TyTy::ReferenceType r (ctx->get_mappings ()->get_next_hir_id (),
+			       TyTy::TyVar (ty->get_ref ()), Mutability::Imm);
+
+  tree dynamic_object = TyTyResolveCompile::compile (ctx, &r);
   tree dynamic_object_fields = TYPE_FIELDS (dynamic_object);
   tree vtable_field = DECL_CHAIN (dynamic_object_fields);
   rust_assert (TREE_CODE (TREE_TYPE (vtable_field)) == ARRAY_TYPE);
@@ -219,12 +223,14 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
       vtable_ctor_idx.push_back (i++);
     }
 
-  tree vtable_ctor = ctx->get_backend ()->array_constructor_expression (
-    TREE_TYPE (vtable_field), vtable_ctor_idx, vtable_ctor_elems, locus);
+  tree vtable_ctor
+    = Backend::array_constructor_expression (TREE_TYPE (vtable_field),
+					     vtable_ctor_idx, vtable_ctor_elems,
+					     locus);
 
   std::vector<tree> dyn_ctor = {address_of_compiled_ref, vtable_ctor};
-  return ctx->get_backend ()->constructor_expression (dynamic_object, false,
-						      dyn_ctor, -1, locus);
+  return Backend::constructor_expression (dynamic_object, false, dyn_ctor, -1,
+					  locus);
 }
 
 tree
@@ -233,7 +239,7 @@ HIRCompileBase::compute_address_for_trait_item (
   const TyTy::TypeBoundPredicate *predicate,
   std::vector<std::pair<Resolver::TraitReference *, HIR::ImplBlock *>>
     &receiver_bounds,
-  const TyTy::BaseType *receiver, const TyTy::BaseType *root, Location locus)
+  const TyTy::BaseType *receiver, const TyTy::BaseType *root, location_t locus)
 {
   // There are two cases here one where its an item which has an implementation
   // within a trait-impl-block. Then there is the case where there is a default
@@ -306,11 +312,6 @@ HIRCompileBase::compute_address_for_trait_item (
     = self_bound->lookup_associated_item (ref->get_identifier ());
   rust_assert (!associated_self_item.is_error ());
 
-  TyTy::BaseType *mono1 = associated_self_item.get_tyty_for_receiver (self);
-  rust_assert (mono1 != nullptr);
-  rust_assert (mono1->get_kind () == TyTy::TypeKind::FNDEF);
-  TyTy::FnType *assocated_item_ty1 = static_cast<TyTy::FnType *> (mono1);
-
   // Lookup the impl-block for the associated impl_item if it exists
   HIR::Function *associated_function = nullptr;
   for (auto &impl_item : associated_impl_block->get_impl_items ())
@@ -322,7 +323,8 @@ HIRCompileBase::compute_address_for_trait_item (
 
       HIR::Function *fn = static_cast<HIR::Function *> (impl_item.get ());
       bool found_associated_item
-	= fn->get_function_name ().compare (ref->get_identifier ()) == 0;
+	= fn->get_function_name ().as_string ().compare (ref->get_identifier ())
+	  == 0;
       if (found_associated_item)
 	associated_function = fn;
     }
@@ -340,10 +342,15 @@ HIRCompileBase::compute_address_for_trait_item (
 
       if (lookup_fntype->needs_substitution ())
 	{
-	  TyTy::SubstitutionArgumentMappings mappings
-	    = assocated_item_ty1->solve_missing_mappings_from_this (
-	      *trait_item_fntype, *lookup_fntype);
-	  lookup_fntype = lookup_fntype->handle_substitions (mappings);
+	  TyTy::BaseType *infer
+	    = Resolver::SubstMapper::InferSubst (lookup_fntype, UNDEF_LOCATION);
+	  infer
+	    = Resolver::unify_site (infer->get_ref (),
+				    TyTy::TyWithLocation (trait_item_fntype),
+				    TyTy::TyWithLocation (infer),
+				    UNDEF_LOCATION);
+	  rust_assert (infer->get_kind () == TyTy::TypeKind::FNDEF);
+	  lookup_fntype = static_cast<TyTy::FnType *> (infer);
 	}
 
       return CompileInherentImplItem::Compile (associated_function, ctx,
@@ -361,8 +368,8 @@ HIRCompileBase::compute_address_for_trait_item (
 
 bool
 HIRCompileBase::verify_array_capacities (tree ltype, tree rtype,
-					 Location lvalue_locus,
-					 Location rvalue_locus)
+					 location_t lvalue_locus,
+					 location_t rvalue_locus)
 {
   rust_assert (ltype != NULL_TREE);
   rust_assert (rtype != NULL_TREE);
@@ -401,11 +408,12 @@ HIRCompileBase::verify_array_capacities (tree ltype, tree rtype,
 
   if (ltype_length != rtype_length)
     {
-      rust_error_at (
-	rvalue_locus,
-	"expected an array with a fixed size of " HOST_WIDE_INT_PRINT_UNSIGNED
-	" elements, found one with " HOST_WIDE_INT_PRINT_UNSIGNED " elements",
-	ltype_length, rtype_length);
+      rust_error_at (rvalue_locus, ErrorCode::E0308,
+		     "mismatched types, expected an array with a fixed size "
+		     "of " HOST_WIDE_INT_PRINT_UNSIGNED
+		     " elements, found one with " HOST_WIDE_INT_PRINT_UNSIGNED
+		     " elements",
+		     ltype_length, rtype_length);
       return false;
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2023 Free Software Foundation, Inc.
+ * Copyright (C) 2007-2024 Free Software Foundation, Inc.
  *
  * This file is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -88,15 +88,12 @@
 #define bit_AVX512IFMA	(1 << 21)
 #define bit_CLFLUSHOPT	(1 << 23)
 #define bit_CLWB	(1 << 24)
-#define bit_AVX512PF	(1 << 26)
-#define bit_AVX512ER	(1 << 27)
 #define bit_AVX512CD	(1 << 28)
 #define bit_SHA		(1 << 29)
 #define bit_AVX512BW	(1 << 30)
 #define bit_AVX512VL	(1u << 31)
 
 /* %ecx */
-#define bit_PREFETCHWT1	(1 << 0)
 #define bit_AVX512VBMI	(1 << 1)
 #define bit_PKU		(1 << 3)
 #define bit_OSPKE	(1 << 4)
@@ -117,8 +114,6 @@
 #define bit_ENQCMD	(1 << 29)
 
 /* %edx */
-#define bit_AVX5124VNNIW	(1 << 2)
-#define bit_AVX5124FMAPS	(1 << 3)
 #define bit_UINTR	(1 << 5)
 #define bit_AVX512VP2INTERSECT	(1 << 8)
 #define bit_SERIALIZE	(1 << 14)
@@ -149,6 +144,9 @@
 #define bit_AVXNECONVERT	(1 << 5)
 #define bit_AVXVNNIINT16	(1 << 10)
 #define bit_PREFETCHI	(1 << 14)
+#define bit_USER_MSR	(1 << 15)
+#define bit_AVX10	(1 << 19)
+#define bit_APX_F	(1 << 21)
 
 /* Extended State Enumeration Sub-leaf (%eax == 0xd, %ecx == 1) */
 #define bit_XSAVEOPT	(1 << 0)
@@ -164,6 +162,10 @@
 #define bit_AESKLE	( 1<<0 )
 #define bit_WIDEKL	( 1<<2 )
 
+/* AVX10 sub leaf (%eax == 0x24) */
+/* %ebx */
+#define bit_AVX10_256	(1 << 17)
+#define bit_AVX10_512	(1 << 18)
 
 /* Signatures for different CPU implementations as returned in uses
    of cpuid with level 0.  */

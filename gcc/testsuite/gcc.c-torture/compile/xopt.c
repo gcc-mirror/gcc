@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 proc1 (a)
      unsigned a;
 {

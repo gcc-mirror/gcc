@@ -1,5 +1,5 @@
 /* RTL reader for GCC.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1293,8 +1293,25 @@ md_reader::read_mapping (struct iterator_group *group, htab_t table)
 	  string = read_string (false);
 	  require_char_ws (')');
 	}
-      number = group->find_builtin (name.string);
-      end_ptr = add_map_value (end_ptr, number, string);
+      auto *subm = (struct mapping *) htab_find (group->iterators,
+						 &name.string);
+      if (subm)
+	{
+	  if (m == subm)
+	    fatal_with_file_and_line ("recursive definition of `%s'",
+				      name.string);
+	  for (map_value *v = subm->values; v; v = v->next)
+	    {
+	      auto *joined = rtx_reader_ptr->join_c_conditions (v->string,
+								string);
+	      end_ptr = add_map_value (end_ptr, v->number, joined);
+	    }
+	}
+      else
+	{
+	  number = group->find_builtin (name.string);
+	  end_ptr = add_map_value (end_ptr, number, string);
+	}
       c = read_skip_spaces ();
     }
   while (c != ']');
@@ -1896,8 +1913,10 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 		repeat_count--;
 		value = saved_rtx;
 	      }
-	    else
+	    else if (c == '(')
 	      value = read_nested_rtx ();
+	    else
+	      fatal_with_file_and_line ("unexpected character in vector");
 
 	    for (; repeat_count > 0; repeat_count--)
 	      {

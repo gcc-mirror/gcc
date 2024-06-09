@@ -137,124 +137,6 @@ An exception message can also be added:
 Link to the original RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional-when-constructs.rst
 
-Case pattern matching
----------------------
-
-The selector for a case statement (but not yet for a case expression) may be of a composite type, subject to
-some restrictions (described below). Aggregate syntax is used for choices
-of such a case statement; however, in cases where a "normal" aggregate would
-require a discrete value, a discrete subtype may be used instead; box
-notation can also be used to match all values.
-
-Consider this example:
-
-.. code-block:: ada
-
-  type Rec is record
-     F1, F2 : Integer;
-  end record;
-
-  procedure Caser_1 (X : Rec) is
-  begin
-     case X is
-        when (F1 => Positive, F2 => Positive) =>
-           Do_This;
-        when (F1 => Natural, F2 => <>) | (F1 => <>, F2 => Natural) =>
-           Do_That;
-        when others =>
-            Do_The_Other_Thing;
-     end case;
-  end Caser_1;
-
-If ``Caser_1`` is called and both components of X are positive, then
-``Do_This`` will be called; otherwise, if either component is nonnegative
-then ``Do_That`` will be called; otherwise, ``Do_The_Other_Thing`` will be
-called.
-
-In addition, pattern bindings are supported. This is a mechanism
-for binding a name to a component of a matching value for use within
-an alternative of a case statement. For a component association
-that occurs within a case choice, the expression may be followed by
-``is <identifier>``. In the special case of a "box" component association,
-the identifier may instead be provided within the box. Either of these
-indicates that the given identifier denotes (a constant view of) the matching
-subcomponent of the case selector.
-
-.. attention:: Binding is not yet supported for arrays or subcomponents
-   thereof.
-
-Consider this example (which uses type ``Rec`` from the previous example):
-
-.. code-block:: ada
-
-  procedure Caser_2 (X : Rec) is
-  begin
-     case X is
-        when (F1 => Positive is Abc, F2 => Positive) =>
-           Do_This (Abc)
-        when (F1 => Natural is N1, F2 => <N2>) |
-             (F1 => <N2>, F2 => Natural is N1) =>
-           Do_That (Param_1 => N1, Param_2 => N2);
-        when others =>
-           Do_The_Other_Thing;
-     end case;
-  end Caser_2;
-
-This example is the same as the previous one with respect to determining
-whether ``Do_This``, ``Do_That``, or ``Do_The_Other_Thing`` will be called. But
-for this version, ``Do_This`` takes a parameter and ``Do_That`` takes two
-parameters. If ``Do_This`` is called, the actual parameter in the call will be
-``X.F1``.
-
-If ``Do_That`` is called, the situation is more complex because there are two
-choices for that alternative. If ``Do_That`` is called because the first choice
-matched (i.e., because ``X.F1`` is nonnegative and either ``X.F1`` or ``X.F2``
-is zero or negative), then the actual parameters of the call will be (in order)
-``X.F1`` and ``X.F2``. If ``Do_That`` is called because the second choice
-matched (and the first one did not), then the actual parameters will be
-reversed.
-
-Within the choice list for single alternative, each choice must define the same
-set of bindings and the component subtypes for for a given identifer must all
-statically match. Currently, the case of a binding for a nondiscrete component
-is not implemented.
-
-If the set of values that match the choice(s) of an earlier alternative
-overlaps the corresponding set of a later alternative, then the first set shall
-be a proper subset of the second (and the later alternative will not be
-executed if the earlier alternative "matches"). All possible values of the
-composite type shall be covered. The composite type of the selector shall be an
-array or record type that is neither limited nor class-wide. Currently, a "when
-others =>" case choice is required; it is intended that this requirement will
-be relaxed at some point.
-
-If a subcomponent's subtype does not meet certain restrictions, then the only
-value that can be specified for that subcomponent in a case choice expression
-is a "box" component association (which matches all possible values for the
-subcomponent). This restriction applies if:
-
-- the component subtype is not a record, array, or discrete type; or
-
-- the component subtype is subject to a non-static constraint or has a
-  predicate; or:
-
-- the component type is an enumeration type that is subject to an enumeration
-  representation clause; or
-
-- the component type is a multidimensional array type or an array type with a
-  nonstatic index subtype.
-
-Support for casing on arrays (and on records that contain arrays) is
-currently subject to some restrictions. Non-positional
-array aggregates are not supported as (or within) case choices. Likewise
-for array type and subtype names. The current implementation exceeds
-compile-time capacity limits in some annoyingly common scenarios; the
-message generated in such cases is usually "Capacity exceeded in compiling
-case statement with composite selector type".
-
-Link to the original RFC:
-https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-pattern-matching.rst
-
 Fixed lower bounds for array types and subtypes
 -----------------------------------------------
 
@@ -496,3 +378,121 @@ while removing dynamic accessibility checking.
 
 Here is a link to the full RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-simpler-accessibility.md
+
+Case pattern matching
+---------------------
+
+The selector for a case statement (but not yet for a case expression) may be of a composite type, subject to
+some restrictions (described below). Aggregate syntax is used for choices
+of such a case statement; however, in cases where a "normal" aggregate would
+require a discrete value, a discrete subtype may be used instead; box
+notation can also be used to match all values.
+
+Consider this example:
+
+.. code-block:: ada
+
+  type Rec is record
+     F1, F2 : Integer;
+  end record;
+
+  procedure Caser_1 (X : Rec) is
+  begin
+     case X is
+        when (F1 => Positive, F2 => Positive) =>
+           Do_This;
+        when (F1 => Natural, F2 => <>) | (F1 => <>, F2 => Natural) =>
+           Do_That;
+        when others =>
+            Do_The_Other_Thing;
+     end case;
+  end Caser_1;
+
+If ``Caser_1`` is called and both components of X are positive, then
+``Do_This`` will be called; otherwise, if either component is nonnegative
+then ``Do_That`` will be called; otherwise, ``Do_The_Other_Thing`` will be
+called.
+
+In addition, pattern bindings are supported. This is a mechanism
+for binding a name to a component of a matching value for use within
+an alternative of a case statement. For a component association
+that occurs within a case choice, the expression may be followed by
+``is <identifier>``. In the special case of a "box" component association,
+the identifier may instead be provided within the box. Either of these
+indicates that the given identifier denotes (a constant view of) the matching
+subcomponent of the case selector.
+
+.. attention:: Binding is not yet supported for arrays or subcomponents
+   thereof.
+
+Consider this example (which uses type ``Rec`` from the previous example):
+
+.. code-block:: ada
+
+  procedure Caser_2 (X : Rec) is
+  begin
+     case X is
+        when (F1 => Positive is Abc, F2 => Positive) =>
+           Do_This (Abc)
+        when (F1 => Natural is N1, F2 => <N2>) |
+             (F1 => <N2>, F2 => Natural is N1) =>
+           Do_That (Param_1 => N1, Param_2 => N2);
+        when others =>
+           Do_The_Other_Thing;
+     end case;
+  end Caser_2;
+
+This example is the same as the previous one with respect to determining
+whether ``Do_This``, ``Do_That``, or ``Do_The_Other_Thing`` will be called. But
+for this version, ``Do_This`` takes a parameter and ``Do_That`` takes two
+parameters. If ``Do_This`` is called, the actual parameter in the call will be
+``X.F1``.
+
+If ``Do_That`` is called, the situation is more complex because there are two
+choices for that alternative. If ``Do_That`` is called because the first choice
+matched (i.e., because ``X.F1`` is nonnegative and either ``X.F1`` or ``X.F2``
+is zero or negative), then the actual parameters of the call will be (in order)
+``X.F1`` and ``X.F2``. If ``Do_That`` is called because the second choice
+matched (and the first one did not), then the actual parameters will be
+reversed.
+
+Within the choice list for single alternative, each choice must define the same
+set of bindings and the component subtypes for for a given identifer must all
+statically match. Currently, the case of a binding for a nondiscrete component
+is not implemented.
+
+If the set of values that match the choice(s) of an earlier alternative
+overlaps the corresponding set of a later alternative, then the first set shall
+be a proper subset of the second (and the later alternative will not be
+executed if the earlier alternative "matches"). All possible values of the
+composite type shall be covered. The composite type of the selector shall be an
+array or record type that is neither limited nor class-wide. Currently, a "when
+others =>" case choice is required; it is intended that this requirement will
+be relaxed at some point.
+
+If a subcomponent's subtype does not meet certain restrictions, then the only
+value that can be specified for that subcomponent in a case choice expression
+is a "box" component association (which matches all possible values for the
+subcomponent). This restriction applies if:
+
+- the component subtype is not a record, array, or discrete type; or
+
+- the component subtype is subject to a non-static constraint or has a
+  predicate; or:
+
+- the component type is an enumeration type that is subject to an enumeration
+  representation clause; or
+
+- the component type is a multidimensional array type or an array type with a
+  nonstatic index subtype.
+
+Support for casing on arrays (and on records that contain arrays) is
+currently subject to some restrictions. Non-positional
+array aggregates are not supported as (or within) case choices. Likewise
+for array type and subtype names. The current implementation exceeds
+compile-time capacity limits in some annoyingly common scenarios; the
+message generated in such cases is usually "Capacity exceeded in compiling
+case statement with composite selector type".
+
+Link to the original RFC:
+https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-pattern-matching.rst

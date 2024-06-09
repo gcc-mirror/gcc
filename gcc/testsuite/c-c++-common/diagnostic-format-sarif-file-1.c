@@ -20,6 +20,11 @@
 
        { dg-final { scan-sarif-file "\"contents\": " } }
          { dg-final { scan-sarif-file "\"text\": " } }
+	 
+       Verify that this file's "role" is "analysisTarget", as per
+       "NOTE 3" in SARIF v2.1.0 section 3.24.6.
+       { dg-final { scan-sarif-file "\"roles\": \\\[\"analysisTarget\"\\\]" } }
+
      { dg-final { scan-sarif-file "\"tool\": " } }
        { dg-final { scan-sarif-file "\"driver\": " } }
          { dg-final { scan-sarif-file "\"name\": \"GNU C" } }

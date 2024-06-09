@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -83,5 +83,8 @@ private
 
    for Stream_Element_Array'Read use Read_SEA;
    for Stream_Element_Array'Write use Write_SEA;
+
+   pragma Universal_Aliasing (Stream_Element);
+   --  This type is used to stream any other type
 
 end Ada.Streams;

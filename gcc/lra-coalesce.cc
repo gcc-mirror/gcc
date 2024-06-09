@@ -1,5 +1,5 @@
 /* Coalesce spilled pseudos.
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -112,9 +112,7 @@ merge_pseudos (int regno1, int regno2)
     = (lra_merge_live_ranges
        (lra_reg_info[first].live_ranges,
 	lra_copy_live_range_list (lra_reg_info[first2].live_ranges)));
-  if (partial_subreg_p (lra_reg_info[first].biggest_mode,
-			lra_reg_info[first2].biggest_mode))
-    lra_reg_info[first].biggest_mode = lra_reg_info[first2].biggest_mode;
+  lra_update_biggest_mode (first, lra_reg_info[first2].biggest_mode);
 }
 
 /* Change pseudos in *LOC on their coalescing group

@@ -1,7 +1,7 @@
 /* Decompose OpenACC 'kernels' constructs into parts, a sequence of compute
    constructs
 
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1519,17 +1519,18 @@ omp_oacc_kernels_decompose_1 (gimple *kernels_stmt)
 	      break;
 	    }
 	}
-      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IF)
+      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IF
+	       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SELF)
 	{
-	  /* If there is an 'if' clause, it must be duplicated to the
-	     enclosing data region.  Temporarily remove the if clause's
-	     chain to avoid copying it.  */
+	  /* If there is an 'if' or 'self' clause, it must be duplicated to the
+	     enclosing data region.  Temporarily remove its chain to avoid
+	     copying it.  */
 	  tree saved_chain = OMP_CLAUSE_CHAIN (c);
 	  OMP_CLAUSE_CHAIN (c) = NULL;
-	  tree new_if_clause = unshare_expr (c);
+	  tree new_clause = unshare_expr (c);
 	  OMP_CLAUSE_CHAIN (c) = saved_chain;
-	  OMP_CLAUSE_CHAIN (new_if_clause) = data_clauses;
-	  data_clauses = new_if_clause;
+	  OMP_CLAUSE_CHAIN (new_clause) = data_clauses;
+	  data_clauses = new_clause;
 	}
     }
   /* Restore the original order of the clauses.  */

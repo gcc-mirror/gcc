@@ -1,5 +1,5 @@
 ;; Constraint definitions for RISC-V target.
-;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -55,6 +55,11 @@
   (and (match_code "const_int")
        (match_test "ival == 2")))
 
+(define_constraint "c03"
+  "Constant value 3"
+  (and (match_code "const_int")
+       (match_test "ival == 3")))
+
 (define_constraint "c04"
   "Constant value 4"
   (and (match_code "const_int")
@@ -74,6 +79,12 @@
   "A U-type 20-bit signed immediate."
   (and (match_code "const_int")
        (match_test "LUI_OPERAND (ival)")))
+
+(define_constraint "MiG"
+  "const can be represented as sum of any S12 values."
+  (and (match_code "const_int")
+       (ior (match_test "IN_RANGE (ival,  2048,  4094)")
+	    (match_test "IN_RANGE (ival, -4096, -2049)"))))
 
 (define_constraint "Ds3"
   "@internal
@@ -102,14 +113,6 @@
   "@internal"
   (and (match_code "const_int")
        (match_test "SINGLE_BIT_MASK_OPERAND (~ival)")))
-
-(define_constraint "D03"
-  "0, 1, 2 or 3 immediate"
-  (match_test "IN_RANGE (ival, 0, 3)"))
-
-(define_constraint "DsA"
-  "0 - 10 immediate"
-  (match_test "IN_RANGE (ival, 0, 10)"))
 
 ;; Floating-point constant +0.0, used for FCVT-based moves when FMV is
 ;; not available in RV32.
@@ -213,3 +216,68 @@
   "Vector duplicate memory operand"
   (and (match_code "mem")
        (match_code "reg" "0")))
+
+;; Vendor ISA extension constraints.
+
+(define_memory_constraint "th_m_mia"
+  "@internal
+   A MEM with a valid address for th.[l|s]*ia instructions."
+  (and (match_code "mem")
+       (match_test "th_memidx_legitimate_modify_p (op, true)")))
+
+(define_memory_constraint "th_m_mib"
+  "@internal
+   A MEM with a valid address for th.[l|s]*ib instructions."
+  (and (match_code "mem")
+       (match_test "th_memidx_legitimate_modify_p (op, false)")))
+
+(define_memory_constraint "th_m_mir"
+  "@internal
+   A MEM with a valid address for th.[l|s]*r* instructions."
+  (and (match_code "mem")
+       (match_test "th_memidx_legitimate_index_p (op, false)")))
+
+(define_memory_constraint "th_m_miu"
+  "@internal
+   A MEM with a valid address for th.[l|s]*ur* instructions."
+  (and (match_code "mem")
+       (match_test "th_memidx_legitimate_index_p (op, true)")))
+
+;; CORE-V Constraints
+(define_constraint "CV_alu_pow2"
+  "@internal
+   Checking for CORE-V ALU clip if ival plus 1 is a power of 2"
+  (and (match_code "const_int")
+       (and (match_test "IN_RANGE (ival, 0, 1073741823)")
+            (match_test "exact_log2 (ival + 1) != -1"))))
+
+(define_constraint "CV_bi_sign5"
+  "@internal
+   A 5-bit signed immediate for CORE-V Immediate Branch."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -16, 15)")))
+
+(define_constraint "CV_simd_si6"
+  "A 6-bit signed immediate for SIMD."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -32, 31)")))
+
+(define_constraint "CV_simd_un6"
+  "A 6-bit unsigned immediate for SIMD."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 63)")))
+
+(define_constraint "CV_simd_i01"
+  "Shifting immediate for SIMD shufflei1."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 64, 127)")))
+
+(define_constraint "CV_simd_i02"
+  "Shifting immediate for SIMD shufflei2."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -128, -65)")))
+
+(define_constraint "CV_simd_i03"
+  "Shifting immediate for SIMD shufflei3."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -64, -1)")))

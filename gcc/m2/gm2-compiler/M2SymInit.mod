@@ -1,6 +1,6 @@
 (* M2SymInit.mod records initialization state for variables.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -571,10 +571,11 @@ VAR
    op                          : QuadOperator ;
    op1, op2, op3               : CARDINAL ;
    op1tok, op2tok, op3tok, qtok: CARDINAL ;
-   overflowChecking            : BOOLEAN ;
+   constExpr, overflowChecking : BOOLEAN ;
    s                           : String ;
 BEGIN
-   GetQuadOtok (quad, qtok, op, op1, op2, op3, overflowChecking,
+   GetQuadOtok (quad, qtok, op, op1, op2, op3,
+                overflowChecking, constExpr,
                 op1tok, op2tok, op3tok) ;
    IF IsUniqueWarning (qtok)
    THEN
@@ -1244,12 +1245,12 @@ END stop ;
 *)
 
 PROCEDURE CheckReadBeforeInitQuad (procSym: CARDINAL; quad: CARDINAL;
-                                   warning: BOOLEAN; lst: List; i: CARDINAL) : BOOLEAN ;
+                                   warning: BOOLEAN; i: CARDINAL) : BOOLEAN ;
 VAR
    op                          : QuadOperator ;
    op1, op2, op3               : CARDINAL ;
    op1tok, op2tok, op3tok, qtok: CARDINAL ;
-   overflowChecking            : BOOLEAN ;
+   constExpr, overflowChecking : BOOLEAN ;
 BEGIN
    IF quad = 3140
    THEN
@@ -1262,7 +1263,8 @@ BEGIN
       ForeachLocalSymDo (procSym, PrintSym) ;
       printf0 ("***********************************\n")
    END ;
-   GetQuadOtok (quad, qtok, op, op1, op2, op3, overflowChecking,
+   GetQuadOtok (quad, qtok, op, op1, op2, op3,
+                overflowChecking, constExpr,
                 op1tok, op2tok, op3tok) ;
    op1tok := DefaultTokPos (op1tok, qtok) ;
    op2tok := DefaultTokPos (op2tok, qtok) ;
@@ -1342,6 +1344,9 @@ BEGIN
    ElementSizeOp,
    BuiltinConstOp,  (* Nothing to do, it is assigning a constant to op1 (also a const).  *)
    BuiltinTypeInfoOp,  (* Likewise assigning op1 (const) with a type.  *)
+   StringConvertCnulOp,
+   StringConvertM2nulOp,
+   StringLengthOp,
    ProcedureScopeOp,
    InitEndOp,
    InitStartOp,
@@ -1382,7 +1387,7 @@ END CheckReadBeforeInitQuad ;
 
 PROCEDURE FilterCheckReadBeforeInitQuad (procSym: CARDINAL; start: CARDINAL;
                                          warning: BOOLEAN;
-                                         lst: List; i: CARDINAL) : BOOLEAN ;
+                                         i: CARDINAL) : BOOLEAN ;
 VAR
    Op           : QuadOperator ;
    Op1, Op2, Op3: CARDINAL ;
@@ -1390,7 +1395,7 @@ BEGIN
    GetQuad (start, Op, Op1, Op2, Op3) ;
    IF (Op # RangeCheckOp) AND (Op # StatementNoteOp)
    THEN
-      RETURN CheckReadBeforeInitQuad (procSym, start, warning, lst, i)
+      RETURN CheckReadBeforeInitQuad (procSym, start, warning, i)
    END ;
    RETURN FALSE
 END FilterCheckReadBeforeInitQuad ;
@@ -1403,10 +1408,10 @@ END FilterCheckReadBeforeInitQuad ;
 PROCEDURE CheckReadBeforeInitFirstBasicBlock (procSym: CARDINAL;
                                               start, end: CARDINAL;
                                               warning: BOOLEAN;
-                                              lst: List; i: CARDINAL) ;
+                                              i: CARDINAL) ;
 BEGIN
    LOOP
-      IF FilterCheckReadBeforeInitQuad (procSym, start, warning, lst, i)
+      IF FilterCheckReadBeforeInitQuad (procSym, start, warning, i)
       THEN
       END ;
       IF start = end
@@ -1538,12 +1543,13 @@ VAR
    op                            : QuadOperator ;
    op1, proc, param, paramValue  : CARDINAL ;
    op1tok, op2tok, paramtok, qtok: CARDINAL ;
-   overflowChecking              : BOOLEAN ;
+   constExpr, overflowChecking   : BOOLEAN ;
    heapValue, ptrToHeap          : CARDINAL ;
 BEGIN
    IF trashQuad # 0
    THEN
-      GetQuadOtok (trashQuad, qtok, op, op1, proc, param, overflowChecking,
+      GetQuadOtok (trashQuad, qtok, op, op1, proc, param,
+                   overflowChecking, constExpr,
                    op1tok, op2tok, paramtok) ;
       heapValue := GetQuadTrash (trashQuad) ;
       IF Debugging
@@ -1630,7 +1636,7 @@ BEGIN
       bbPtr := Indexing.GetIndice (bbArray, bbi) ;
       CheckReadBeforeInitFirstBasicBlock (procSym,
                                           bbPtr^.start, bbPtr^.end,
-                                          warning, lst, i) ;
+                                          warning, i) ;
       IF bbPtr^.endCond
       THEN
          (* Check to see if we are moving into an conditional block in which case

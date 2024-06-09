@@ -1,5 +1,8 @@
 /* { dg-require-stack-size "128 * 128 * 4 + 1024" } */
 
+void abort (void);
+void exit (int);
+
 typedef struct {
   float wsx;
 } struct_list;
@@ -10,19 +13,22 @@ typedef struct {
   float x, y;
 } vector_t;
 
-w(float x, float y) {}
+void w(float x, float y) {}
 
+void
 f1(float x, float y)
 {
   if (x != 0 || y != 0)
     abort();
 }
+void
 f2(float x, float y)
 {
   if (x != 1 || y != 1)
     abort();
 }
 
+void
 gitter(int count, vector_t pos[], list_t list, int *nww, vector_t limit[2], float r)
 {
   float d;
@@ -48,7 +54,8 @@ gitter(int count, vector_t pos[], list_t list, int *nww, vector_t limit[2], floa
 vector_t pos[1] = {{0., 0.}};
 vector_t limit[2] = {{0.,0.},{1.,1.}};
 
-main()
+int
+main(void)
 {
   int nww;
   struct_list list;

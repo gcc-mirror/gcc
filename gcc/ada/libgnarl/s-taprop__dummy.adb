@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2023, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2024, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,8 +36,9 @@
 
 package body System.Task_Primitives.Operations is
 
-   use System.Tasking;
+   use System.OS_Locks;
    use System.Parameters;
+   use System.Tasking;
 
    pragma Warnings (Off);
    --  Turn off warnings since so many unreferenced parameters
@@ -239,7 +240,9 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock
-     (L : not null access RTS_Lock; Level : Lock_Level) is
+     (L     : not null access RTS_Lock;
+      Level : Lock_Level)
+   is
    begin
       null;
    end Initialize_Lock;

@@ -2,6 +2,7 @@
 /* { dg-require-effective-target indirect_jumps } */
 
 long buf[10];
+void bar (void);
 
 int foo()
 {

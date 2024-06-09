@@ -1,6 +1,10 @@
 /* { dg-require-effective-target label_values } */
 
+void abort (void);
+void exit (int);
+
 int tab[9];
+void
 execute(oip, ip)
      unsigned short *oip, *ip;
 {
@@ -17,7 +21,8 @@ base:
   goto *(&&base + *ip++);
 }
 
-main()
+int
+main(void)
 {
   unsigned short ip[10];
   int i;

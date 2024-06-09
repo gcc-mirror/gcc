@@ -1,4 +1,5 @@
 /* { dg-require-effective-target indirect_calls } */
+/* { dg-additional-options "-std=gnu89" } */
 
 bar (foo, a)
      int (**foo) ();

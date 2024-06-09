@@ -1,7 +1,7 @@
 ! { dg-do compile }
 ! { dg-options "-Ofast" }
 ! { dg-additional-options "-march=znver2" { target x86_64-*-* i?86-*-* } }
-   SUBROUTINE sfddagd( regime, znt,ite ,jte )
+   SUBROUTINE sfddagd( regime, znt,ite ,jte, ime, IN )
    REAL, DIMENSION( ime, IN) :: regime, znt
    REAL, DIMENSION( ite, jte) :: wndcor_u 
    LOGICAL wrf_dm_on_monitor

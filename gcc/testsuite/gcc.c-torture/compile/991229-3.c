@@ -1,4 +1,5 @@
 int m[8],b[8];
+int rand(void);
 
 int main(){
 	int i;

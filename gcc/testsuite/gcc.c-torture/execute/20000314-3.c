@@ -1,4 +1,5 @@
 extern void abort (void);
+extern void exit (int);
 
 static char arg0[] = "arg0";
 static char arg1[] = "arg1";

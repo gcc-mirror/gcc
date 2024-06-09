@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2024 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -64,7 +64,7 @@ riscv_fallback_frame_state (struct _Unwind_Context *context,
     return _URC_END_OF_STACK;
 
   rt_ = context->cfa;
-  sc = &rt_->uc.uc_mcontext;
+  sc = (struct sigcontext *) &rt_->uc.uc_mcontext;
 
   new_cfa = (_Unwind_Ptr) sc;
   fs->regs.cfa_how = CFA_REG_OFFSET;

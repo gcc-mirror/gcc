@@ -32,18 +32,4 @@ package Alignment2 is
   end record;
   for R4'Alignment use 32;
 
-  -- warning
-  type I1 is new Integer_32;
-  for I1'Size use 32;
-  for I1'Alignment use 32; -- { dg-warning "suspiciously large alignment" }
-
-  -- warning
-  type I2 is new Integer_32;
-  for I2'Alignment use 32; -- { dg-warning "suspiciously large alignment" }
-
-  -- OK, big size
-  type I3 is new Integer_32;
-  for I3'Size use 32 * 8; -- { dg-warning "unused" }
-  for I3'Alignment use 32;
-
 end Alignment2;

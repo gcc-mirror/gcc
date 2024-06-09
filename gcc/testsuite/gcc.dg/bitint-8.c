@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target bitint } } */
-/* { dg-options "-O2 -std=c2x -Wno-uninitialized" } */
+/* { dg-options "-O2 -std=c23 -Wno-uninitialized" } */
 
 #if __BITINT_MAXWIDTH__ >= 135
 _BitInt(135)

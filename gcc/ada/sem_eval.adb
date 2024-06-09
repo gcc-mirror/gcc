@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6507,7 +6507,7 @@ package body Sem_Eval is
 
       --  Scalar types
 
-      elsif Is_Scalar_Type (T1) then
+      elsif Is_Scalar_Type (T1) and then Is_Scalar_Type (T2) then
 
          --  Definitely compatible if we match
 
@@ -6560,7 +6560,7 @@ package body Sem_Eval is
 
       --  Access types
 
-      elsif Is_Access_Type (T1) then
+      elsif Is_Access_Type (T1) and then Is_Access_Type (T2) then
          return
            (not Is_Constrained (T2)
              or else Subtypes_Statically_Match
@@ -6812,7 +6812,7 @@ package body Sem_Eval is
 
                  --  No constraint on the parent type
 
-                 or else not Present (Discriminant_Constraint (Etype (Typ)))
+                 or else No (Discriminant_Constraint (Etype (Typ)))
                  or else Is_Empty_Elmt_List
                            (Discriminant_Constraint (Etype (Typ)))
 

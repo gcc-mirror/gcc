@@ -1,18 +1,43 @@
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+
+// This file is part of GCC.
+
+// GCC is free software; you can redistribute it and/or modify it under
+// the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 3, or (at your option) any later
+// version.
+
+// GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+// WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+// for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with GCC; see the file COPYING3.  If not see
+// <http://www.gnu.org/licenses/>.
+
 #include "rust-macro-substitute-ctx.h"
 
 namespace Rust {
 
-std::vector<std::unique_ptr<AST::Token>>
-SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
+bool
+SubstituteCtx::substitute_metavar (
+  std::unique_ptr<AST::Token> &metavar,
+  std::vector<std::unique_ptr<AST::Token>> &expanded)
 {
   auto metavar_name = metavar->get_str ();
 
-  std::vector<std::unique_ptr<AST::Token>> expanded;
   auto it = fragments.find (metavar_name);
   if (it == fragments.end ())
     {
-      // Return a copy of the original token
+      // fail to substitute
+
+      // HACK: substitute ($ crate) => (crate)
+      if (metavar->get_id () != CRATE)
+	return false;
+
       expanded.push_back (metavar->clone_token ());
+      return true;
     }
   else
     {
@@ -20,7 +45,7 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
       // currently expanding a repetition metavar - not a simple metavar. We
       // need to error out and inform the user.
       // Associated test case for an example: compile/macro-issue1224.rs
-      if (it->second.get_match_amount () != 1)
+      if (!it->second->is_single_fragment ())
 	{
 	  rust_error_at (metavar->get_locus (),
 			 "metavariable is still repeating at this depth");
@@ -28,12 +53,12 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
 	    metavar->get_locus (),
 	    "you probably forgot the repetition operator: %<%s%s%s%>", "$(",
 	    metavar->as_string ().c_str (), ")*");
-	  return expanded;
+	  return true;
 	}
 
       // We only care about the vector when expanding repetitions.
       // Just access the first element of the vector.
-      auto &frag = it->second.get_single_fragment ();
+      auto &frag = it->second->get_single_fragment ();
       for (size_t offs = frag.token_offset_begin; offs < frag.token_offset_end;
 	   offs++)
 	{
@@ -42,7 +67,7 @@ SubstituteCtx::substitute_metavar (std::unique_ptr<AST::Token> &metavar)
 	}
     }
 
-  return expanded;
+  return true;
 }
 
 bool
@@ -58,7 +83,8 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
       if (macro.at (i)->get_id () == DOLLAR_SIGN)
 	{
 	  auto &frag_token = macro.at (i + 1);
-	  if (frag_token->get_id () == IDENTIFIER)
+	  if (token_id_is_keyword (frag_token->get_id ())
+	      || frag_token->get_id () == IDENTIFIER)
 	    {
 	      auto it = fragments.find (frag_token->get_str ());
 	      if (it == fragments.end ())
@@ -74,33 +100,38 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
 		  is_valid = false;
 		}
 
-	      auto &fragment = it->second;
+	      auto &fragment = *it->second;
 
-	      size_t repeat_amount = fragment.get_match_amount ();
-	      if (!first_fragment_found)
+	      if (!fragment.is_single_fragment ())
 		{
-		  first_fragment_found = true;
-		  expected_repetition_amount = repeat_amount;
-		}
-	      else
-		{
-		  if (repeat_amount != expected_repetition_amount
-		      && !fragment.is_single_fragment ())
+		  auto &fragment_rep
+		    = static_cast<MatchedFragmentContainerRepetition &> (
+		      fragment);
+		  size_t repeat_amount = fragment_rep.get_match_amount ();
+		  if (!first_fragment_found)
 		    {
-		      rust_error_at (
-			frag_token->get_locus (),
-			"different amount of matches used in merged "
-			"repetitions: expected %lu, got %lu",
-			(unsigned long) expected_repetition_amount,
-			(unsigned long) repeat_amount);
-		      is_valid = false;
+		      first_fragment_found = true;
+		      expected_repetition_amount = repeat_amount;
+		    }
+		  else
+		    {
+		      if (repeat_amount != expected_repetition_amount)
+			{
+			  rust_error_at (
+			    frag_token->get_locus (),
+			    "different amount of matches used in merged "
+			    "repetitions: expected %lu, got %lu",
+			    (unsigned long) expected_repetition_amount,
+			    (unsigned long) repeat_amount);
+			  is_valid = false;
+			}
 		    }
 		}
 	    }
 	}
     }
 
-  return is_valid;
+  return is_valid && first_fragment_found;
 }
 
 std::vector<std::unique_ptr<AST::Token>>
@@ -142,20 +173,18 @@ SubstituteCtx::substitute_repetition (
 
   for (size_t i = 0; i < repeat_amount; i++)
     {
-      std::map<std::string, MatchedFragmentContainer> sub_map;
+      std::map<std::string, MatchedFragmentContainer *> sub_map;
       for (auto &kv_match : fragments)
 	{
-	  MatchedFragment sub_fragment;
-
-	  // FIXME: Hack: If a fragment is not repeated, how does it fit in the
-	  // submap? Do we really want to expand it? Is this normal behavior?
-	  if (kv_match.second.is_single_fragment ())
-	    sub_fragment = kv_match.second.get_single_fragment ();
-	  else
-	    sub_fragment = kv_match.second.get_fragments ()[i];
-
-	  sub_map.insert (
-	    {kv_match.first, MatchedFragmentContainer::metavar (sub_fragment)});
+	  if (kv_match.second->is_single_fragment ())
+	    sub_map.emplace (kv_match.first, kv_match.second);
+	  // Hack: A repeating meta variable might not be present in the new
+	  // macro. Don't include this match if the fragment doesn't have enough
+	  // items, as check_repetition_amount should prevent repetition amount
+	  // mismatches anyway.
+	  else if (kv_match.second->get_fragments ().size () > i)
+	    sub_map.emplace (kv_match.first,
+			     kv_match.second->get_fragments ().at (i).get ());
 	}
 
       auto substitute_context = SubstituteCtx (input, new_macro, sub_map);
@@ -187,11 +216,24 @@ std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
 SubstituteCtx::substitute_token (size_t token_idx)
 {
   auto &token = macro.at (token_idx);
+
   switch (token->get_id ())
     {
-    case IDENTIFIER:
-      rust_debug ("expanding metavar: %s", token->get_str ().c_str ());
-      return {substitute_metavar (token), 1};
+    default:
+      if (token_id_is_keyword (token->get_id ()))
+	{
+	case IDENTIFIER:
+	  std::vector<std::unique_ptr<AST::Token>> expanded;
+
+	  rust_debug ("expanding metavar: %s", token->get_str ().c_str ());
+
+	  if (substitute_metavar (token, expanded))
+	    return {std::move (expanded), 2};
+	}
+
+      // don't substitute, dollar sign is alone/metavar is unknown
+      return {std::vector<std::unique_ptr<AST::Token>> (), 0};
+
       case LEFT_PAREN: {
 	// We need to parse up until the closing delimiter and expand this
 	// fragment->n times.
@@ -260,22 +302,11 @@ SubstituteCtx::substitute_token (size_t token_idx)
 
 	return {substitute_repetition (pattern_start, pattern_end,
 				       std::move (separator_token)),
-		pattern_end - pattern_start + to_skip};
+		pattern_end - pattern_start + to_skip + 1};
       }
-      // TODO: We need to check if the $ was alone. In that case, do
-      // not error out: Simply act as if there was an empty identifier
-      // with no associated fragment and paste the dollar sign in the
-      // transcription. Unsure how to do that since we always have at
-      // least the closing curly brace after an empty $...
-    default:
-      rust_error_at (token->get_locus (),
-		     "unexpected token in macro transcribe: expected "
-		     "%<(%> or identifier after %<$%>, got %<%s%>",
-		     get_token_description (token->get_id ()));
     }
 
-  // FIXME: gcc_unreachable() error case?
-  return {std::vector<std::unique_ptr<AST::Token>> (), 0};
+  rust_unreachable ();
 }
 
 std::vector<std::unique_ptr<AST::Token>>
@@ -284,7 +315,7 @@ SubstituteCtx::substitute_tokens ()
   std::vector<std::unique_ptr<AST::Token>> replaced_tokens;
   rust_debug ("expanding tokens");
 
-  for (size_t i = 0; i < macro.size (); i++)
+  for (size_t i = 0; i < macro.size ();)
     {
       auto &tok = macro.at (i);
       if (tok->get_id () == DOLLAR_SIGN)
@@ -295,6 +326,12 @@ SubstituteCtx::substitute_tokens ()
 	  auto expanded = std::move (p.first);
 	  auto tok_to_skip = p.second;
 
+	  if (!tok_to_skip)
+	    {
+	      replaced_tokens.emplace_back (tok->clone_token ());
+	      tok_to_skip++;
+	    }
+
 	  i += tok_to_skip;
 
 	  for (auto &token : expanded)
@@ -303,6 +340,7 @@ SubstituteCtx::substitute_tokens ()
       else
 	{
 	  replaced_tokens.emplace_back (tok->clone_token ());
+	  i++;
 	}
     }
 

@@ -1470,3 +1470,8 @@ demangle.anonymous
 --format=dlang
 _D8demangle9anonymous03fooZ
 demangle.anonymous.foo
+#
+# Test that 'auto' works.
+--format=auto
+_D8demangle9anonymous03fooZ
+demangle.anonymous.foo

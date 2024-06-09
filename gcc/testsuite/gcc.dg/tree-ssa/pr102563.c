@@ -1,10 +1,10 @@
 // { dg-do compile }
 // { dg-options "-O2 -w" }
 
-int _bdf_parse_glyphs_bp;
+void (*_bdf_parse_glyphs_bp) (void);
 long _bdf_parse_glyphs_nibbles;
 
-void _bdf_parse_glyphs_p() 
+void _bdf_parse_glyphs_p(void)
 {
   long p_2;
 

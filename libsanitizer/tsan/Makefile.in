@@ -148,10 +148,10 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__objects_1 = tsan_debugging.lo tsan_external.lo tsan_fd.lo \
 	tsan_flags.lo tsan_ignoreset.lo tsan_interceptors_posix.lo \
-	tsan_interceptors_mac.lo tsan_interface_ann.lo \
-	tsan_interface_atomic.lo tsan_interface.lo \
-	tsan_interface_java.lo tsan_malloc_mac.lo tsan_md5.lo \
-	tsan_mman.lo tsan_mutexset.lo tsan_new_delete.lo \
+	tsan_interceptors_mac.lo tsan_interceptors_memintrinsics.lo \
+	tsan_interface_ann.lo tsan_interface_atomic.lo \
+	tsan_interface.lo tsan_interface_java.lo tsan_malloc_mac.lo \
+	tsan_md5.lo tsan_mman.lo tsan_mutexset.lo tsan_new_delete.lo \
 	tsan_platform_linux.lo tsan_platform_mac.lo \
 	tsan_platform_posix.lo tsan_platform_windows.lo tsan_report.lo \
 	tsan_rtl.lo tsan_rtl_access.lo tsan_rtl_mutex.lo \
@@ -260,6 +260,7 @@ ALLOC_FILE = @ALLOC_FILE@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AS_SYM_ASSIGN_DEFS = @AS_SYM_ASSIGN_DEFS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -427,6 +428,7 @@ tsan_files = \
 	tsan_ignoreset.cpp \
 	tsan_interceptors_posix.cpp \
 	tsan_interceptors_mac.cpp \
+	tsan_interceptors_memintrinsics.cpp \
 	tsan_interface_ann.cpp \
 	tsan_interface_atomic.cpp \
 	tsan_interface.cpp \
@@ -454,7 +456,7 @@ tsan_files = \
 	tsan_vector_clock.cpp
 
 libtsan_la_SOURCES = $(tsan_files)
-EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S tsan_rtl_aarch64.S tsan_rtl_mips64.S tsan_rtl_ppc64.S tsan_rtl_s390x.S
+EXTRA_libtsan_la_SOURCES = tsan_rtl_amd64.S tsan_rtl_aarch64.S tsan_rtl_loongarch64.S tsan_rtl_mips64.S tsan_rtl_ppc64.S tsan_rtl_s390x.S tsan_rtl_riscv64.S
 libtsan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/interception/libinterception.la \
@@ -464,7 +466,10 @@ libtsan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/interception/libinterception.la \
 	$(TSAN_TARGET_DEPENDENT_OBJECTS) $(am__append_2)
-libtsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libtsan)
+@ENABLE_DARWIN_AT_RPATH_TRUE@libtsan_darwin_rpath = -nodefaultrpaths -Wl,-rpath,@loader_path/
+libtsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+	$(link_libtsan) $(libtsan_darwin_rpath)
+
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -589,6 +594,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_ignoreset.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interceptors_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interceptors_memintrinsics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interceptors_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_interface_ann.Plo@am__quote@
@@ -608,11 +614,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_aarch64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_access.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_amd64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_loongarch64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_mips64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_mutex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_ppc64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_proc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_report.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_riscv64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_s390x.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_rtl_thread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tsan_stack_trace.Plo@am__quote@

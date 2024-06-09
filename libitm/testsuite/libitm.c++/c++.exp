@@ -1,4 +1,4 @@
-# Copyright (C) 2011-2023 Free Software Foundation, Inc.
+# Copyright (C) 2011-2024 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,8 +56,10 @@ if { $lang_test_file_found } {
     # Gather a list of all tests.
     set tests [lsort [glob -nocomplain $srcdir/$subdir/*.C]]
 
+    set stdcxxadder ""
     if { $blddir != "" } {
 	set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+	set stdcxxadder "-B ${blddir}/${lang_library_path}"
     } else {
 	set ld_library_path "$always_ld_library_path"
     }
@@ -72,7 +74,7 @@ if { $lang_test_file_found } {
     }
 
     # Main loop.
-    dg-runtest $tests "" $libstdcxx_includes
+    dg-runtest $tests $stdcxxadder $libstdcxx_includes
 }
 
 # All done.

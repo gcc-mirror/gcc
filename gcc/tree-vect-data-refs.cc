@@ -1,5 +1,5 @@
 /* Data References Analysis and Manipulation Utilities for Vectorization.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -97,6 +97,34 @@ vect_lanes_optab_supported_p (const char *name, convert_optab optab,
   return true;
 }
 
+/* Helper function to identify a simd clone call.  If this is a call to a
+   function with simd clones then return the corresponding cgraph_node,
+   otherwise return NULL.  */
+
+static cgraph_node*
+simd_clone_call_p (gimple *stmt)
+{
+  gcall *call = dyn_cast <gcall *> (stmt);
+  if (!call)
+    return NULL;
+
+  tree fndecl = NULL_TREE;
+  if (gimple_call_internal_p (call, IFN_MASK_CALL))
+    fndecl = TREE_OPERAND (gimple_call_arg (stmt, 0), 0);
+  else
+    fndecl = gimple_call_fndecl (stmt);
+
+  if (fndecl == NULL_TREE)
+    return NULL;
+
+  cgraph_node *node = cgraph_node::get (fndecl);
+  if (node && node->simd_clones != NULL)
+    return node;
+
+  return NULL;
+}
+
+
 
 /* Return the smallest scalar part of STMT_INFO.
    This is used to determine the vectype of the stmt.  We generally set the
@@ -143,6 +171,23 @@ vect_get_smallest_scalar_type (stmt_vec_info stmt_info, tree scalar_type)
 	  rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (rhs_type));
 	  if (rhs < lhs)
 	    scalar_type = rhs_type;
+	}
+    }
+  else if (cgraph_node *node = simd_clone_call_p (stmt_info->stmt))
+    {
+      auto clone = node->simd_clones->simdclone;
+      for (unsigned int i = 0; i < clone->nargs; ++i)
+	{
+	  if (clone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
+	    {
+	      tree arg_scalar_type = TREE_TYPE (clone->args[i].vector_type);
+	      rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (arg_scalar_type));
+	      if (rhs < lhs)
+		{
+		  scalar_type = arg_scalar_type;
+		  lhs = rhs;
+		}
+	    }
 	}
     }
   else if (gcall *call = dyn_cast <gcall *> (stmt_info->stmt))
@@ -236,6 +281,12 @@ vect_preserves_scalar_order_p (dr_vec_info *dr_info_a, dr_vec_info *dr_info_b)
   if (!STMT_VINFO_GROUPED_ACCESS (stmtinfo_a)
       && !STMT_VINFO_GROUPED_ACCESS (stmtinfo_b))
     return true;
+
+  /* If there is a loop invariant read involved we might vectorize it in
+     the prologue, breaking scalar oder with respect to the in-loop store.  */
+  if ((DR_IS_READ (dr_info_a->dr) && integer_zerop (DR_STEP (dr_info_a->dr)))
+      || (DR_IS_READ (dr_info_b->dr) && integer_zerop (DR_STEP (dr_info_b->dr))))
+    return false;
 
   /* STMT_A and STMT_B belong to overlapping groups.  All loads are
      emitted at the position of the first scalar load.
@@ -568,6 +619,248 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   return opt_result::success ();
 }
 
+/* Function vect_analyze_early_break_dependences.
+
+   Examine all the data references in the loop and make sure that if we have
+   multiple exits that we are able to safely move stores such that they become
+   safe for vectorization.  The function also calculates the place where to move
+   the instructions to and computes what the new vUSE chain should be.
+
+   This works in tandem with the CFG that will be produced by
+   slpeel_tree_duplicate_loop_to_edge_cfg later on.
+
+   This function tries to validate whether an early break vectorization
+   is possible for the current instruction sequence. Returns True i
+   possible, otherwise False.
+
+   Requirements:
+     - Any memory access must be to a fixed size buffer.
+     - There must not be any loads and stores to the same object.
+     - Multiple loads are allowed as long as they don't alias.
+
+   NOTE:
+     This implementation is very conservative. Any overlapping loads/stores
+     that take place before the early break statement gets rejected aside from
+     WAR dependencies.
+
+     i.e.:
+
+	a[i] = 8
+	c = a[i]
+	if (b[i])
+	  ...
+
+	is not allowed, but
+
+	c = a[i]
+	a[i] = 8
+	if (b[i])
+	  ...
+
+	is which is the common case.  */
+
+static opt_result
+vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
+{
+  DUMP_VECT_SCOPE ("vect_analyze_early_break_dependences");
+
+  /* List of all load data references found during traversal.  */
+  auto_vec<data_reference *> bases;
+  basic_block dest_bb = NULL;
+
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  class loop *loop_nest = loop_outer (loop);
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "loop contains multiple exits, analyzing"
+		     " statement dependencies.\n");
+
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+    if (dump_enabled_p ())
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "alternate exit has been chosen as main exit.\n");
+
+  /* Since we don't support general control flow, the location we'll move the
+     side-effects to is always the latch connected exit.  When we support
+     general control flow we can do better but for now this is fine.  Move
+     side-effects to the in-loop destination of the last early exit.  For the
+     PEELED case we move the side-effects to the latch block as this is
+     guaranteed to be the last block to be executed when a vector iteration
+     finished.  */
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+    dest_bb = loop->latch;
+  else
+    dest_bb = single_pred (loop->latch);
+
+  /* We start looking from dest_bb, for the non-PEELED case we don't want to
+     move any stores already present, but we do want to read and validate the
+     loads.  */
+  basic_block bb = dest_bb;
+
+  /* We move stores across all loads to the beginning of dest_bb, so
+     the first block processed below doesn't need dependence checking.  */
+  bool check_deps = false;
+
+  do
+    {
+      gimple_stmt_iterator gsi = gsi_last_bb (bb);
+
+      /* Now analyze all the remaining statements and try to determine which
+	 instructions are allowed/needed to be moved.  */
+      while (!gsi_end_p (gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  gsi_prev (&gsi);
+	  if (is_gimple_debug (stmt))
+	    continue;
+
+	  stmt_vec_info stmt_vinfo = loop_vinfo->lookup_stmt (stmt);
+	  auto dr_ref = STMT_VINFO_DATA_REF (stmt_vinfo);
+	  if (!dr_ref)
+	    continue;
+
+	  /* We know everything below dest_bb is safe since we know we
+	     had a full vector iteration when reaching it.  Either by
+	     the loop entry / IV exit test being last or because this
+	     is the loop latch itself.  */
+	  if (!check_deps)
+	    continue;
+
+	  /* Check if vector accesses to the object will be within bounds.
+	     must be a constant or assume loop will be versioned or niters
+	     bounded by VF so accesses are within range.  We only need to check
+	     the reads since writes are moved to a safe place where if we get
+	     there we know they are safe to perform.  */
+	  if (DR_IS_READ (dr_ref)
+	      && !ref_within_array_bound (stmt, DR_REF (dr_ref)))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "early breaks not supported: vectorization "
+				 "would %s beyond size of obj.\n",
+				 DR_IS_READ (dr_ref) ? "read" : "write");
+	      return opt_result::failure_at (stmt,
+				 "can't safely apply code motion to "
+				 "dependencies of %G to vectorize "
+				 "the early exit.\n", stmt);
+	    }
+
+	  if (DR_IS_READ (dr_ref))
+	    bases.safe_push (dr_ref);
+	  else if (DR_IS_WRITE (dr_ref))
+	    {
+	      /* We are moving writes down in the CFG.  To be sure that this
+		 is valid after vectorization we have to check all the loads
+		 we are sinking the stores past to see if any of them may
+		 alias or are the same object.
+
+		 Same objects will not be an issue because unless the store
+		 is marked volatile the value can be forwarded.  If the
+		 store is marked volatile we don't vectorize the loop
+		 anyway.
+
+		 That leaves the check for aliasing.  We don't really need
+		 to care about the stores aliasing with each other since the
+		 stores are moved in order so the effects are still observed
+		 correctly.  This leaves the check for WAR dependencies
+		 which we would be introducing here if the DR can alias.
+		 The check is quadratic in loads/stores but I have not found
+		 a better API to do this.  I believe all loads and stores
+		 must be checked.  We also must check them when we
+		 encountered the store, since we don't care about loads past
+		 the store.  */
+
+	      for (auto dr_read : bases)
+		if (dr_may_alias_p (dr_ref, dr_read, loop_nest))
+		  {
+		    if (dump_enabled_p ())
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				       vect_location,
+				       "early breaks not supported: "
+				       "overlapping loads and stores "
+				       "found before the break "
+				       "statement.\n");
+
+		    return opt_result::failure_at (stmt,
+			     "can't safely apply code motion to dependencies"
+			     " to vectorize the early exit. %G may alias with"
+			     " %G\n", stmt, dr_read->stmt);
+		  }
+	    }
+
+	  if (gimple_vdef (stmt))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "==> recording stmt %G", stmt);
+
+	      LOOP_VINFO_EARLY_BRK_STORES (loop_vinfo).safe_push (stmt);
+	    }
+	  else if (gimple_vuse (stmt))
+	    {
+	      LOOP_VINFO_EARLY_BRK_VUSES (loop_vinfo).safe_insert (0, stmt);
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "marked statement for vUSE update: %G", stmt);
+	    }
+	}
+
+      if (!single_pred_p (bb))
+	{
+	  gcc_assert (bb == loop->header);
+	  break;
+	}
+
+      /* If we possibly sink through a virtual PHI make sure to elide that.  */
+      if (gphi *vphi = get_virtual_phi (bb))
+	LOOP_VINFO_EARLY_BRK_STORES (loop_vinfo).safe_push (vphi);
+
+      /* All earlier blocks need dependence checking.  */
+      check_deps = true;
+      bb = single_pred (bb);
+    }
+  while (1);
+
+  /* We don't allow outer -> inner loop transitions which should have been
+     trapped already during loop form analysis.  */
+  gcc_assert (dest_bb->loop_father == loop);
+
+  /* Check that the destination block we picked has only one pred.  To relax this we
+     have to take special care when moving the statements.  We don't currently support
+     such control flow however this check is there to simplify how we handle
+     labels that may be present anywhere in the IL.  This check is to ensure that the
+     labels aren't significant for the CFG.  */
+  if (!single_pred (dest_bb))
+    return opt_result::failure_at (vect_location,
+			     "chosen loop exit block (BB %d) does not have a "
+			     "single predecessor which is currently not "
+			     "supported for early break vectorization.\n",
+			     dest_bb->index);
+
+  LOOP_VINFO_EARLY_BRK_DEST_BB (loop_vinfo) = dest_bb;
+
+  if (!LOOP_VINFO_EARLY_BRK_VUSES (loop_vinfo).is_empty ())
+    {
+      /* All uses shall be updated to that of the first load.  Entries are
+	 stored in reverse order.  */
+      tree vuse = gimple_vuse (LOOP_VINFO_EARLY_BRK_VUSES (loop_vinfo).last ());
+      for (auto g : LOOP_VINFO_EARLY_BRK_VUSES (loop_vinfo))
+	{
+	  if (dump_enabled_p ())
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "will update use: %T, mem_ref: %G", vuse, g);
+	}
+    }
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "recorded statements to be moved to BB %d\n",
+		     LOOP_VINFO_EARLY_BRK_DEST_BB (loop_vinfo)->index);
+
+  return opt_result::success ();
+}
+
 /* Function vect_analyze_data_ref_dependences.
 
    Examine all the data references in the loop, and make sure there do not
@@ -611,6 +904,11 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
 	if (!res)
 	  return res;
       }
+
+  /* If we have early break statements in the loop, check to see if they
+     are of a form we can vectorizer.  */
+  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+    return vect_analyze_early_break_dependences (loop_vinfo);
 
   return opt_result::success ();
 }
@@ -1992,8 +2290,11 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{
 		  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-		  nscalars = (STMT_SLP_TYPE (stmt_info)
-			      ? vf * DR_GROUP_SIZE (stmt_info) : vf);
+		  unsigned group_size = 1;
+		  if (STMT_SLP_TYPE (stmt_info)
+		      && STMT_VINFO_GROUPED_ACCESS (stmt_info))
+		    group_size = DR_GROUP_SIZE (stmt_info);
+		  nscalars = vf * group_size;
 		}
 
 	      /* Save info about DR in the hash table.  Also include peeling
@@ -2078,8 +2379,10 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
   /* Check if we can possibly peel the loop.  */
   if (!vect_can_advance_ivs_p (loop_vinfo)
-      || !slpeel_can_duplicate_loop_p (loop, single_exit (loop))
-      || loop->inner)
+      || !slpeel_can_duplicate_loop_p (loop, LOOP_VINFO_IV_EXIT (loop_vinfo),
+				       loop_preheader_edge (loop))
+      || loop->inner
+      || LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
     do_peeling = false;
 
   struct _vect_peel_extended_info peel_for_known_alignment;
@@ -4042,6 +4345,11 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   if (!multiple_p (pbitpos, BITS_PER_UNIT))
     return false;
 
+  /* We need to be able to form an address to the base which for example
+     isn't possible for hard registers.  */
+  if (may_be_nonaddressable_p (base))
+    return false;
+
   poly_int64 pbytepos = exact_div (pbitpos, BITS_PER_UNIT);
 
   if (TREE_CODE (base) == MEM_REF)
@@ -5037,7 +5345,7 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
       while (sinfo);
     }
-  aggr_ptr_type = build_pointer_type_for_mode (aggr_type, ptr_mode,
+  aggr_ptr_type = build_pointer_type_for_mode (aggr_type, VOIDmode,
 					       need_ref_all);
   aggr_ptr = vect_get_new_vect_var (aggr_ptr_type, vect_pointer_var, base_name);
 

@@ -3,8 +3,6 @@
 
 #include <arm_neon.h>
 
-#include <arm_neon.h>
-
 #define FUNC(IT, OT, S)         \
 OT                              \
 foo_##S (IT a)                  \

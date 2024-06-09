@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int
 sub1 (unsigned long long i)
 {
@@ -34,7 +37,8 @@ sub4 (unsigned long long i)
     return 1;
 }
 
-main()
+int
+main(void)
 {
   if (sub1 (0x80000000ULL))
     abort ();

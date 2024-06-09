@@ -39,95 +39,79 @@ void test_2 (void)
    NN |       __analyzer_dump_path ();
       |       ^~~~~~~~~~~~~~~~~~~~~~~
   'test_2': event 1
-    |
-    |   NN |   i = SETJMP(env);
-    |      |       ^~~~~~
-    |      |       |
-    |      |       (1) 'setjmp' called here
-    |
+   NN |   i = SETJMP(env);
+      |       ^~~~~~
+      |       |
+      |       (1) 'setjmp' called here
   'test_2': events 2-4
-    |
-    |   NN |   if (i != 0)
-    |      |      ^
-    |      |      |
-    |      |      (2) following 'false' branch (when 'i == 0')...
-    |......
-    |   NN |     longjmp (env, 1);
-    |      |     ~~~~~~~~~~~~~~~~
-    |      |     |
-    |      |     (3) ...to here
-    |      |     (4) rewinding within 'test_2' from 'longjmp'...
-    |
+   NN |   if (i != 0)
+      |      ^
+      |      |
+      |      (2) following 'false' branch (when 'i == 0')...
+......
+   NN |     longjmp (env, 1);
+      |     ~~~~~~~~~~~~~~~~
+      |     |
+      |     (3) ...to here
+      |     (4) rewinding within 'test_2' from 'longjmp'...
   'test_2': event 5
-    |
-    |   NN |   i = SETJMP(env);
-    |      |       ^~~~~~
-    |      |       |
-    |      |       (5) ...to 'setjmp' (saved at (1))
-    |
+   NN |   i = SETJMP(env);
+      |       ^~~~~~
+      |       |
+      |       (5) ...to 'setjmp' (saved at (1))
   'test_2': events 6-8
-    |
-    |   NN |   if (i != 0)
-    |      |      ^
-    |      |      |
-    |      |      (6) following 'true' branch (when 'i != 0')...
-    |   NN |     {
-    |   NN |       foo (2);
-    |      |       ~~~~~~~
-    |      |       |
-    |      |       (7) ...to here
-    |   NN |       __analyzer_dump_path ();
-    |      |       ~~~~~~~~~~~~~~~~~~~~~~~
-    |      |       |
-    |      |       (8) here
-    |
+   NN |   if (i != 0)
+      |      ^
+      |      |
+      |      (6) following 'true' branch (when 'i != 0')...
+   NN |     {
+   NN |       foo (2);
+      |       ~~~~~~~
+      |       |
+      |       (7) ...to here
+   NN |       __analyzer_dump_path ();
+      |       ~~~~~~~~~~~~~~~~~~~~~~~
+      |       |
+      |       (8) here
     { dg-end-multiline-output "" { target c } } */
 /* { dg-begin-multiline-output "" }
    NN |       __analyzer_dump_path ();
       |       ~~~~~~~~~~~~~~~~~~~~~^~
   'void test_2()': event 1
-    |
-    |   NN |   i = SETJMP(env);
-    |      |       ^~~~~~
-    |      |       |
-    |      |       (1) 'setjmp' called here
-    |
+   NN |   i = SETJMP(env);
+      |       ^~~~~~
+      |       |
+      |       (1) 'setjmp' called here
   'void test_2()': events 2-4
-    |
-    |   NN |   if (i != 0)
-    |      |   ^~
-    |      |   |
-    |      |   (2) following 'false' branch (when 'i == 0')...
-    |......
-    |   NN |     longjmp (env, 1);
-    |      |     ~~~~~~~~~~~~~~~~
-    |      |             |
-    |      |             (3) ...to here
-    |      |             (4) rewinding within 'test_2' from 'longjmp'...
-    |
+   NN |   if (i != 0)
+      |   ^~
+      |   |
+      |   (2) following 'false' branch (when 'i == 0')...
+......
+   NN |     longjmp (env, 1);
+      |     ~~~~~~~~~~~~~~~~
+      |             |
+      |             (3) ...to here
+      |             (4) rewinding within 'test_2' from 'longjmp'...
   'void test_2()': event 5
-    |
-    |   NN |   i = SETJMP(env);
-    |      |       ^~~~~~
-    |      |       |
-    |      |       (5) ...to 'setjmp' (saved at (1))
-    |
+   NN |   i = SETJMP(env);
+      |       ^~~~~~
+      |       |
+      |       (5) ...to 'setjmp' (saved at (1))
   'void test_2()': events 6-8
-    |
-    |   NN |   if (i != 0)
-    |      |   ^~
-    |      |   |
-    |      |   (6) following 'true' branch (when 'i != 0')...
-    |   NN |     {
-    |   NN |       foo (2);
-    |      |       ~~~~~~~
-    |      |           |
-    |      |           (7) ...to here
-    |   NN |       __analyzer_dump_path ();
-    |      |       ~~~~~~~~~~~~~~~~~~~~~~~
-    |      |                            |
-    |      |                            (8) here
-    |
+   NN |   if (i != 0)
+      |   ^~
+      |   |
+      |   (6) following 'true' branch (when 'i != 0')...
+   NN |     {
+   NN |       foo (2);
+      |       ~~~~~~~
+      |           |
+      |           (7) ...to here
+   NN |       __analyzer_dump_path ();
+      |       ~~~~~~~~~~~~~~~~~~~~~~~
+      |                            |
+      |                            (8) here
     { dg-end-multiline-output "" { target c++ } } */
 
 void test_3 (void)

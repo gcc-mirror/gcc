@@ -226,9 +226,9 @@ possible encoding schemes:
   ``16#A345#``.
   This scheme is compatible with use of the full Wide_Character set.
 
-*Upper-Half Coding*
-  .. index:: Upper-Half Coding
+.. index:: Upper-Half Coding
 
+*Upper-Half Coding*
   The wide character with encoding ``16#abcd#`` where the upper bit is on
   (in other words, 'a' is in the range 8-F) is represented as two bytes,
   ``16#ab#`` and ``16#cd#``. The second byte cannot be a format control
@@ -236,9 +236,9 @@ possible encoding schemes:
   be also used for shift-JIS or EUC, where the internal coding matches the
   external coding.
 
-*Shift JIS Coding*
-  .. index:: Shift JIS Coding
+.. index:: Shift JIS Coding
 
+*Shift JIS Coding*
   A wide character is represented by a two-character sequence,
   ``16#ab#`` and
   ``16#cd#``, with the restrictions described for upper-half encoding as
@@ -247,10 +247,9 @@ possible encoding schemes:
   conversion. Only characters defined in the JIS code set table can be
   used with this encoding method.
 
+.. index:: EUC Coding
 
 *EUC Coding*
-  .. index:: EUC Coding
-
   A wide character is represented by a two-character sequence
   ``16#ab#`` and
   ``16#cd#``, with both characters being in the upper half. The internal
@@ -1462,6 +1461,7 @@ recognized by GNAT::
      Unevaluated_Use_Of_Old
      Unsuppress
      Use_VADS_Size
+     User_Aspect_Definition
      Validity_Checks
      Warning_As_Error
      Warnings

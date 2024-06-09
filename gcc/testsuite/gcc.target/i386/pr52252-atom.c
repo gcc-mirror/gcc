@@ -25,4 +25,5 @@ matrix_mul (byte *in, byte *out, int size)
     }
 }
 
-/* { dg-final { scan-assembler "palignr" } } */
+/* We are no longer using hybrid SLP.  */
+/* { dg-final { scan-assembler "palignr" { xfail *-*-* } } } */

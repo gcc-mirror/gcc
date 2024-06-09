@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2023 Free Software Foundation, Inc.
+// Copyright (C) 2016-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,4 +33,5 @@ int main()
   X x[1];
   int i[1];
   std::lexicographical_compare(x, x+1, i, i+1);
+  // { dg-warning "ignoring return value" "" { target c++17 } 35 }
 }

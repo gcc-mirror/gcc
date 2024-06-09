@@ -480,8 +480,8 @@
 
 #ifndef __cpp_consteval
 #  error "__cpp_consteval"
-#elif __cpp_consteval != 201811
-#  error "__cpp_consteval != 201811"
+#elif __cpp_consteval != 202211L
+#  error "__cpp_consteval != 202211L"
 #endif
 
 #ifndef __cpp_concepts
@@ -576,6 +576,12 @@
 #  error "__cpp_implicit_move"
 #elif __cpp_implicit_move != 202207
 #  error "__cpp_implicit_move != 202207"
+#endif
+
+#ifndef __cpp_explicit_this_parameter
+#  error "__cpp_explicit_this_parameter"
+#elif __cpp_explicit_this_parameter != 202110
+#  error "__cpp_explicit_this_parameter != 202110"
 #endif
 
 #ifndef __cpp_auto_cast

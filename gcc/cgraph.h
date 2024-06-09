@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -153,7 +153,7 @@ public:
   void remove (void);
 
   /* Undo any definition or use of the symbol.  */
-  void reset (void);
+  void reset (bool preserve_comdat_group = false);
 
   /* Dump symtab node to F.  */
   void dump (FILE *f);
@@ -478,6 +478,9 @@ public:
   /* Return the cgraph node that has ASMNAME for its DECL_ASSEMBLER_NAME.
      Return NULL if there's no such node.  */
   static symtab_node *get_for_asmname (const_tree asmname);
+
+  /* Check symbol table for callees of IFUNC resolvers.  */
+  static void check_ifunc_callee_symtab_nodes (void);
 
   /* Verify symbol table for internal consistency.  */
   static DEBUG_FUNCTION void verify_symtab_nodes (void);
@@ -896,6 +899,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       redefined_extern_inline (false), tm_may_enter_irr (false),
       ipcp_clone (false), declare_variant_alt (false),
       calls_declare_variant_alt (false), gc_candidate (false),
+      called_by_ifunc_resolver (false),
       m_uid (uid), m_summary_id (-1)
   {}
 
@@ -1189,6 +1193,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      Return true if any change was done. */
 
   bool set_pure_flag (bool pure, bool looping);
+
+  /* Add attribute ATTR to cgraph_node's decl and on aliases of the node
+     if any.  */
+  bool add_detected_attribute (const char *attr);
 
   /* Call callback on function and aliases associated to the function.
      When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
@@ -1491,6 +1499,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      is set for local SIMD clones when they are created and cleared if the
      vectorizer uses them.  */
   unsigned gc_candidate : 1;
+  /* Set if the function is called by an IFUNC resolver.  */
+  unsigned called_by_ifunc_resolver : 1;
 
 private:
   /* Unique id of the node.  */
@@ -1833,9 +1843,16 @@ public:
      speculative indirect call, remove "speculative" of the indirect call and
      also redirect stmt to it's final direct target.
 
+     When called from within tree-inline, KILLED_SSAs has to contain the
+     pointer to killed_new_ssa_names within the copy_body_data structure and
+     SSAs discovered to be useless (if LHS is removed) will be added to it,
+     otherwise it needs to be NULL.
+
      It is up to caller to iteratively transform each "speculative"
      direct call as appropriate.  */
-  static gimple *redirect_call_stmt_to_callee (cgraph_edge *e);
+  static gimple *redirect_call_stmt_to_callee (cgraph_edge *e,
+					       hash_set <tree>
+					       *killed_ssas = nullptr);
 
   /* Create clone of edge in the node N represented
      by CALL_EXPR the callgraph.  */

@@ -1,12 +1,13 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fgimple -fdump-tree-optimized -ffast-math" } */
+/* { dg-additional-options "-fno-vect-cost-model" { target { riscv_v } } } */
 
 double __GIMPLE (ssa, startwith("loop"))
 neg_xi (double *x)
 {
   int i;
-  long unsigned int index;
-  long unsigned int offset;
+  __SIZETYPE__ index;
+  __SIZETYPE__ offset;
   double * xi_ptr;
   double xi;
   double neg_xi;
@@ -20,8 +21,8 @@ neg_xi (double *x)
   res_1 = __PHI (__BB5: 0.0, __BB3: res_2);
   i_4 = __PHI (__BB5: 0, __BB3: i_5);
   ivtmp_6 = __PHI (__BB5: 100U, __BB3: ivtmp_7);
-  index = (long unsigned int) i_4;
-  offset = index * 8UL;
+  index = (__SIZE_TYPE__) i_4;
+  offset = index * _Literal(__SIZE_TYPE__) 8;
   xi_ptr = x_8(D) + offset;
   xi = *xi_ptr;
   neg_xi = -xi;
@@ -41,5 +42,5 @@ neg_xi (double *x)
   return res_3;
 }
 
-/* { dg-final { scan-tree-dump { = \.COND_ADD} "vect" { target { vect_double_cond_arith && vect_fully_masked } } } } */
-/* { dg-final { scan-tree-dump { = \.COND_SUB} "optimized" { target { vect_double_cond_arith && vect_fully_masked } } } } */
+/* { dg-final { scan-tree-dump { = \.COND_(LEN_)?ADD} "vect" { target { vect_double_cond_arith && vect_fully_masked } } } } */
+/* { dg-final { scan-tree-dump { = \.COND_(LEN_)?SUB} "optimized" { target { vect_double_cond_arith && vect_fully_masked } } } } */

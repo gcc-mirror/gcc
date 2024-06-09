@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-O3" } */
-/* { dg-additional-options "-march=skylake-avx512" { target avx512f } } */
+/* { dg-additional-options "-march=skylake-avx512" { target x86_64-*-* i?86-*-* } } */
 /* { dg-additional-options "-fdump-tree-optimized-details-blocks" } */
 
 extern unsigned long long int arr_86[];

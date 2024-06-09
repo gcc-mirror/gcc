@@ -1,5 +1,8 @@
+void exit (int);
+
 #define m(L) (L'1' + (L))
-main ()
+int
+main (void)
 {
   exit (m (0) != L'1');
 }

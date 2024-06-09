@@ -7,7 +7,7 @@ program p
       character(:), pointer :: a
    end type
    type(t) :: z
-   character((0.)/0), target :: c = 'abc' ! { dg-error "Division by zero" }
+   character((0.)/0), target :: c = 'abc' ! { dg-error "Arithmetic NaN" }
    z%a => c
 ! The associate statement was not needed to trigger the ICE.
    associate (y => z%a)

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -408,5 +408,5 @@ package body System.Pool_Size is
          pragma Warnings (On);
       end Size;
 
-   end  Variable_Size_Management;
+   end Variable_Size_Management;
 end System.Pool_Size;

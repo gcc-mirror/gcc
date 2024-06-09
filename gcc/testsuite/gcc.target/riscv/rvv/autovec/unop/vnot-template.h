@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdint-gcc.h>
 
 #define TEST_TYPE(TYPE) 				\

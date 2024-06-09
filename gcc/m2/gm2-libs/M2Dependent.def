@@ -1,6 +1,6 @@
 (* M2Dependent.def defines the run time module dependencies interface.
 
-Copyright (C) 2022-2023 Free Software Foundation, Inc.
+Copyright (C) 2022-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -60,6 +60,42 @@ PROCEDURE RegisterModule (modulename, libname: ADDRESS;
 
 PROCEDURE RequestDependant (modulename, libname,
                             dependantmodule, dependantlibname: ADDRESS) ;
+
+
+(*
+   InstallTerminationProcedure - installs a procedure, p, which will
+                                 be called when the procedure
+                                 ExecuteTerminationProcedures
+                                 is invoked.  It returns TRUE is the
+                                 procedure is installed.
+*)
+
+PROCEDURE InstallTerminationProcedure (p: PROC) : BOOLEAN ;
+
+
+(*
+   ExecuteInitialProcedures - executes the initial procedures installed
+                              by InstallInitialProcedure.
+*)
+
+PROCEDURE ExecuteInitialProcedures ;
+
+
+(*
+   InstallInitialProcedure - installs a procedure to be executed just
+                             before the BEGIN code section of the main
+                             program module.
+*)
+
+PROCEDURE InstallInitialProcedure (p: PROC) : BOOLEAN ;
+
+
+(*
+   ExecuteTerminationProcedures - calls each installed termination procedure
+                                  in reverse order.
+*)
+
+PROCEDURE ExecuteTerminationProcedures ;
 
 
 END M2Dependent.

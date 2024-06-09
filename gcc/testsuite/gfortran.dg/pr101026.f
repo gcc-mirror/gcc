@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-Ofast -frounding-math" }
-      SUBROUTINE PASSB4 (CC,CH)
+      SUBROUTINE PASSB4 (CC,CH,IDO,L1)
       DIMENSION CC(IDO,4,L1), CH(IDO,L1,*)
          DO 103 I=2,IDO,2
             TI4 = CC0-CC(I,4,K)

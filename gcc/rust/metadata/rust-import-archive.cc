@@ -7,6 +7,7 @@
 #include "rust-system.h"
 #include "rust-diagnostics.h"
 #include "rust-imports.h"
+#include "rust-make-unique.h"
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -102,7 +103,7 @@ Import::is_archive_magic (const char *bytes)
 class Archive_file
 {
 public:
-  Archive_file (const std::string &filename, int fd, Location location)
+  Archive_file (const std::string &filename, int fd, location_t location)
     : filename_ (filename), fd_ (fd), filesize_ (-1), first_member_offset_ (0),
       extended_names_ (), is_thin_archive_ (false), is_big_archive_ (false),
       location_ (location), nested_archives_ ()
@@ -127,7 +128,7 @@ public:
   bool is_big_archive () const { return this->is_big_archive_; }
 
   // Return the location of the import statement.
-  Location location () const { return this->location_; }
+  location_t location () const { return this->location_; }
 
   // Read bytes.
   bool read (off_t offset, off_t size, char *);
@@ -187,7 +188,7 @@ private:
   // Whether this is a big archive.
   bool is_big_archive_;
   // The location of the import statements.
-  Location location_;
+  location_t location_;
   // Table of nested archives.
   Nested_archive_table nested_archives_;
 };
@@ -782,7 +783,10 @@ public:
   Stream_concatenate () : inputs_ () {}
 
   // Add a new stream.
-  void add (Import::Stream *is) { this->inputs_.push_back (is); }
+  void add (std::unique_ptr<Import::Stream> is)
+  {
+    this->inputs_.push_back (std::move (is));
+  }
 
 protected:
   bool do_peek (size_t, const char **);
@@ -790,7 +794,7 @@ protected:
   void do_advance (size_t);
 
 private:
-  std::list<Import::Stream *> inputs_;
+  std::list<std::unique_ptr<Import::Stream>> inputs_;
 };
 
 // Peek ahead.
@@ -804,7 +808,6 @@ Stream_concatenate::do_peek (size_t length, const char **bytes)
 	return false;
       if (this->inputs_.front ()->peek (length, bytes))
 	return true;
-      delete this->inputs_.front ();
       this->inputs_.pop_front ();
     }
 }
@@ -826,7 +829,6 @@ Stream_concatenate::do_advance (size_t skip)
 	  this->inputs_.front ()->advance (skip);
 	  return;
 	}
-      delete this->inputs_.front ();
       this->inputs_.pop_front ();
     }
 }
@@ -834,15 +836,15 @@ Stream_concatenate::do_advance (size_t skip)
 // Import data from an archive.  We walk through the archive and
 // import data from each member.
 
-Import::Stream *
+std::unique_ptr<Import::Stream>
 Import::find_archive_export_data (const std::string &filename, int fd,
-				  Location location)
+				  location_t location)
 {
   Archive_file afile (filename, fd, location);
   if (!afile.initialize ())
-    return NULL;
+    return nullptr;
 
-  Stream_concatenate *ret = new Stream_concatenate;
+  auto ret = Rust::make_unique<Stream_concatenate> ();
 
   bool any_data = false;
   bool any_members = false;
@@ -855,14 +857,14 @@ Import::find_archive_export_data (const std::string &filename, int fd,
       std::string member_name;
       if (!afile.get_file_and_offset (p->off, p->name, p->nested_off,
 				      &member_fd, &member_off, &member_name))
-	return NULL;
+	return nullptr;
 
-      Import::Stream *is
+      std::unique_ptr<Import::Stream> is
 	= Import::find_object_export_data (member_name, member_fd, member_off,
 					   location);
-      if (is != NULL)
+      if (is != nullptr)
 	{
-	  ret->add (is);
+	  ret->add (std::move (is));
 	  any_data = true;
 	}
     }
@@ -870,16 +872,15 @@ Import::find_archive_export_data (const std::string &filename, int fd,
   if (!any_members)
     {
       // It's normal to have an empty archive file when using gobuild.
-      return new Stream_from_string ("");
+      return Rust::make_unique<Stream_from_string> ("");
     }
 
   if (!any_data)
     {
-      delete ret;
-      return NULL;
+      return nullptr;
     }
 
-  return ret;
+  return std::unique_ptr<Stream>{static_cast<Stream *> (ret.release ())};
 }
 
 } // namespace Rust

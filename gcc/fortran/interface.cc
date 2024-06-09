@@ -1,5 +1,5 @@
 /* Deal with interfaces.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -736,10 +736,18 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
      better way of doing this.  When ISO C binding is cleared up,
      this can probably be removed.  See PR 57048.  */
 
-  if (((ts1->type == BT_INTEGER && ts2->type == BT_DERIVED)
-       || (ts1->type == BT_DERIVED && ts2->type == BT_INTEGER))
-      && ts1->u.derived && ts2->u.derived
-      && ts1->u.derived == ts2->u.derived)
+  if ((ts1->type == BT_INTEGER
+       && ts2->type == BT_DERIVED
+       && ts1->f90_type == BT_VOID
+       && ts2->u.derived->from_intmod == INTMOD_ISO_C_BINDING
+       && ts1->u.derived
+       && strcmp (ts1->u.derived->name, ts2->u.derived->name) == 0)
+      || (ts2->type == BT_INTEGER
+	  && ts1->type == BT_DERIVED
+	  && ts2->f90_type == BT_VOID
+	  && ts1->u.derived->from_intmod == INTMOD_ISO_C_BINDING
+	  && ts2->u.derived
+	  && strcmp (ts1->u.derived->name, ts2->u.derived->name) == 0))
     return true;
 
   /* The _data component is not always present, therefore check for its
@@ -1781,6 +1789,14 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
       return false;
     }
 
+  if (s2->attr.subroutine && s1->attr.flavor == FL_VARIABLE)
+    {
+      if (errmsg != NULL)
+	snprintf (errmsg, err_len, "subroutine proc pointer '%s' passed "
+		  "to dummy variable '%s'", name2, s1->name);
+      return false;
+    }
+
   /* Do strict checks on all characteristics
      (for dummy procedures and procedure pointer assignments).  */
   if (!generic_flag && strict_flag)
@@ -2417,10 +2433,20 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     {
       gfc_symbol *act_sym = actual->symtree->n.sym;
 
-      if (formal->attr.flavor != FL_PROCEDURE)
+      if (formal->attr.flavor != FL_PROCEDURE && !act_sym->ts.interface)
 	{
 	  if (where)
 	    gfc_error ("Invalid procedure argument at %L", &actual->where);
+	  return false;
+	}
+      else if (act_sym->ts.interface
+	       && !gfc_compare_interfaces (formal, act_sym->ts.interface,
+					   act_sym->name, 0, 1, err,
+					   sizeof(err),NULL, NULL))
+	{
+	  if (where)
+	    gfc_error_opt (0, "Interface mismatch in dummy procedure %qs at %L:"
+			   " %s", formal->name, &actual->where, err);
 	  return false;
 	}
 
@@ -3288,6 +3314,36 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && a->expr->ts.type != BT_ASSUMED)
 	gfc_find_vtab (&a->expr->ts);
 
+      /* Interp J3/22-146:
+	 "If the context of the reference to NULL is an <actual argument>
+	 corresponding to an <assumed-rank> dummy argument, MOLD shall be
+	 present."  */
+      if (a->expr->expr_type == EXPR_NULL
+	  && a->expr->ts.type == BT_UNKNOWN
+	  && f->sym->as
+	  && f->sym->as->type == AS_ASSUMED_RANK)
+	{
+	  gfc_error ("Intrinsic %<NULL()%> without %<MOLD%> argument at %L "
+		     "passed to assumed-rank dummy %qs",
+		     &a->expr->where, f->sym->name);
+	  ok = false;
+	  goto match;
+	}
+
+      if (a->expr->expr_type == EXPR_NULL
+	  && a->expr->ts.type == BT_UNKNOWN
+	  && f->sym->ts.type == BT_CHARACTER
+	  && !f->sym->ts.deferred
+	  && f->sym->ts.u.cl
+	  && f->sym->ts.u.cl->length == NULL)
+	{
+	  gfc_error ("Intrinsic %<NULL()%> without %<MOLD%> argument at %L "
+		     "passed to assumed-length dummy %qs",
+		     &a->expr->where, f->sym->name);
+	  ok = false;
+	  goto match;
+	}
+
       if (a->expr->expr_type == EXPR_NULL
 	  && ((f->sym->ts.type != BT_CLASS && !f->sym->attr.pointer
 	       && (f->sym->attr.allocatable || !f->sym->attr.optional
@@ -3399,6 +3455,10 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	}
 
       if (f->sym->ts.type == BT_CLASS)
+	goto skip_size_check;
+
+      /* Skip size check for NULL() actual without MOLD argument.  */
+      if (a->expr->expr_type == EXPR_NULL && a->expr->ts.type == BT_UNKNOWN)
 	goto skip_size_check;
 
       actual_size = get_expr_storage_size (a->expr);
@@ -4729,6 +4789,17 @@ gfc_extend_expr (gfc_expr *e)
 	  if (sym != NULL)
 	    break;
 	}
+
+      /* F2018(15.4.3.4.2) requires that the use of unlimited polymorphic
+	 formal arguments does not override the intrinsic uses.  */
+      gfc_push_suppress_errors ();
+      if (sym
+	  && (UNLIMITED_POLY (sym->formal->sym)
+	      || (sym->formal->next
+		  && UNLIMITED_POLY (sym->formal->next->sym)))
+	  && !gfc_check_operator_interface (sym, e->value.op.op, e->where))
+	sym = NULL;
+      gfc_pop_suppress_errors ();
     }
 
   /* TODO: Do an ambiguity-check and error if multiple matching interfaces are

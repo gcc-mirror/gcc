@@ -3049,7 +3049,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 # the compiler configuration to `libtool'.
 # _LT_LANG_CXX_CONFIG
 
-
 # _LT_SYS_HIDDEN_LIBDEPS([TAGNAME])
 # ---------------------------------
 # Figure out "hidden" library dependencies from verbose

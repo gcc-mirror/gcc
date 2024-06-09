@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -61,6 +61,9 @@ enum class SCOPE
     Cfile         = 0x0800,  // C semantics apply
     free          = 0x8000,  // is on free list
     fullinst      = 0x10000, // fully instantiate templates
+    ctfeBlock     = 0x20000, // inside a `if (__ctfe)` block
+    dip1000       = 0x40000, // dip1000 errors enabled for this scope
+    dip25         = 0x80000, // dip25 errors enabled for this scope
 };
 
 struct Scope
@@ -84,6 +87,7 @@ struct Scope
     Dsymbol *inunion;           // !=null if processing members of a union
     d_bool nofree;                // true if shouldn't free it
     d_bool inLoop;                // true if inside a loop (where constructor calls aren't allowed)
+    d_bool inDefaultArg;          // true if inside a default argument (where __FILE__, etc are evaluated at the call site)
     int intypeof;               // in typeof(exp)
     VarDeclaration *lastVar;    // Previous symbol used to prevent goto-skips-init
     ErrorSink *eSink;           // sink for error messages
@@ -127,5 +131,5 @@ struct Scope
     AliasDeclaration *aliasAsg; // if set, then aliasAsg is being assigned a new value,
                                 // do not set wasRead for it
 
-    Dsymbol *search(const Loc &loc, Identifier *ident, Dsymbol **pscopesym, int flags = IgnoreNone);
+    Dsymbol *search(const Loc &loc, Identifier *ident, Dsymbol *&pscopesym, SearchOptFlags flags = (SearchOptFlags)SearchOpt::all);
 };

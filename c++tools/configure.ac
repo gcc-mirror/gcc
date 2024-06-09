@@ -1,5 +1,5 @@
 # Configure script for c++tools
-#   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 #   Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 #
 # This file is free software; you can redistribute it and/or modify it
@@ -22,7 +22,6 @@
 # By default g++ uses an in-process mapper.
 
 sinclude(../config/acx.m4)
-sinclude(../config/ax_lib_socket_nsl.m4)
 
 AC_INIT(c++tools)
 
@@ -263,15 +262,6 @@ fi
 
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
-
-# Solaris needs libsocket and libnsl for socket functions before 11.4.
-# libcody uses those.
-save_LIBS="$LIBS"
-LIBS=
-AX_LIB_SOCKET_NSL
-NETLIBS="$LIBS"
-LIBS="$save_LIBS"
-AC_SUBST(NETLIBS)
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile])

@@ -12,7 +12,7 @@ struct S1
   // The following declares a named data member of an unnamed struct
   // (i.e., it is not an anonymous struct).
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } s;
 };
 
@@ -21,7 +21,7 @@ struct S2
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } s[1];
 };
 
@@ -30,7 +30,7 @@ struct S3
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } s[];
 };
 
@@ -39,7 +39,7 @@ struct S4
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } s[2];
 };
 
@@ -48,7 +48,7 @@ struct S5
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } s[1][2];
 };
 
@@ -57,7 +57,7 @@ struct S6
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } s[][2];
 };
 
@@ -66,7 +66,7 @@ struct S7
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } *s;
 };
 
@@ -75,7 +75,7 @@ struct S8
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } **s;
 };
 
@@ -84,7 +84,7 @@ struct S9
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } *s[1];
 };
 
@@ -93,7 +93,7 @@ struct S10
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } *s[];
 };
 
@@ -102,7 +102,7 @@ struct S11
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } **s[1];
 };
 
@@ -111,7 +111,7 @@ struct S12
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } **s[];
 };
 
@@ -120,7 +120,7 @@ struct S13
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } **s[2];
 };
 
@@ -129,7 +129,7 @@ struct S14
   int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } &s;
 };
 
@@ -138,7 +138,7 @@ struct S15
   int i;
 
   typedef struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } T15;
 };
 
@@ -159,8 +159,8 @@ struct S17
 {
   int i;
 
-  union {           // anonymous union
-    int a[];        // { dg-error "flexible array member in union" }
+  union {           // { dg-warning "invalid use" } 
+    int a[];        // { dg-warning "flexible array member in union" }
   };
 };
 
@@ -209,7 +209,7 @@ struct S22
   struct S22S {
     static int i;
 
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } s;
 };
 
@@ -218,7 +218,7 @@ struct S23
   struct {          // { dg-warning "10:ISO C\\+\\+ prohibits anonymous struct" }
     static int i;   // { dg-error "static data member" }
 
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   };
 };
 
@@ -227,7 +227,7 @@ struct S24
   static int i;
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } s;
 };
 
@@ -252,7 +252,7 @@ struct S26
   };
 
   struct {
-    int a[];        // { dg-error "in an otherwise empty" }
+    int a[];        // { dg-warning "in an otherwise empty" }
   } s;
 };
 

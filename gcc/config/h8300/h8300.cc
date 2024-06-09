@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for Renesas H8/300.
-   Copyright (C) 1992-2023 Free Software Foundation, Inc.
+   Copyright (C) 1992-2024 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -4299,6 +4299,11 @@ compute_a_shift_length (rtx operands[3], rtx_code code)
 	  /* Fall through.  */
 
 	case SHIFT_INLINE:
+	  /* H8/SX has a richer set of logical shifts.  */
+	  if (TARGET_H8300SX
+	      && (code == ASHIFT || code == LSHIFTRT))
+	    return (exact_log2 (n) >= 0) ? 2 : 4;
+
 	  n = info.remainder;
 
 	  if (info.shift2 != NULL)
@@ -4909,7 +4914,7 @@ h8300_insert_attributes (tree node, tree *attributes)
    tiny_data: This variable lives in the tiny data area and can be
    referenced with 16-bit absolute memory references.  */
 
-static const struct attribute_spec h8300_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (h8300_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -4926,9 +4931,8 @@ static const struct attribute_spec h8300_attribute_table[] =
   { "eightbit_data",     0, 0, true,  false, false, false,
     h8300_handle_eightbit_data_attribute, NULL },
   { "tiny_data",         0, 0, true,  false, false, false,
-    h8300_handle_tiny_data_attribute, NULL },
-  { NULL,                0, 0, false, false, false, false, NULL, NULL }
-};
+    h8300_handle_tiny_data_attribute, NULL }
+});
 
 
 /* Handle an attribute requiring a FUNCTION_DECL; arguments as in
@@ -5497,6 +5501,70 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
       mem = adjust_address (m_tramp, SImode, 6);
       emit_move_insn (mem, tem);
     }
+}
+
+/* Return true if a signed bitfield extraction with length COUNT
+   starting at position POS should be optimized by first shifting
+   right to put the field in the LSB, then using a 3 operand sequence
+   to sign extend from an arbitrary position.  Return false
+   otherwise.
+
+   The basic idea here is to compute the length of each sequence
+   and use that as a proxy for performance.  It's not strictly
+   correct on the H8/SX which has variable timed shifts and some
+   lengths may be incorrect, but this is pretty close.
+
+   There may be cases where the length computations are inaccurate
+   which may in turn lead to a sub-optimal sequence, but that
+   should be rare.
+
+   We do not try to balance avoiding a loop with burning an extra
+   couple bytes.   Those probably couple be handled with special
+   cases.  */
+
+bool
+use_extvsi (int count, int pos)
+{
+  rtx operands[3];
+  operands[0] = gen_rtx_REG (SImode, 0);
+  operands[1] = gen_rtx_REG (SImode, 0);
+
+  /* We have a special sequence to sign extract a single bit
+     object, otherwise compute it as a pair of shifts, first
+     left, then arithmetic right.  The cost of that special
+     sequence is 8/10 depending on where the bit is.  */
+  unsigned shift_cost;
+  if (count == 1)
+    shift_cost = pos >= 16 ? 10 : 8;
+  else
+    {
+      unsigned lshift = 32 - (count + pos);
+      unsigned rshift = 32 - count;
+      operands[2] = GEN_INT (lshift);
+      shift_cost = compute_a_shift_length (operands, ASHIFT);
+      operands[2] = GEN_INT (rshift);
+      shift_cost += compute_a_shift_length (operands, ASHIFTRT);
+    }
+
+  /* Cost of hopefully optimized sequence.  First we logically shift right
+     by an adjusted count.  Logicals are generally better than arith,
+     particularly for H8/SX.  */
+  operands[2] = GEN_INT (pos);
+  unsigned opt_cost = compute_a_shift_length (operands, LSHIFTRT);
+  operands[2] = gen_int_mode (~(HOST_WIDE_INT_M1U << count), SImode);
+  opt_cost += compute_logical_op_length (SImode, AND, operands, NULL);
+  operands[2] = gen_int_mode (HOST_WIDE_INT_1U << (count - 1), SImode);
+  opt_cost += compute_logical_op_length (SImode, XOR, operands, NULL);
+
+  /* H8/SX has short form subtraction.  */
+  if (TARGET_H8300SX && (INTVAL (operands[2]) >= 1 && INTVAL (operands[2]) <= 7))
+    opt_cost += 2;
+  else if (TARGET_H8300SX && (INTVAL (operands[2]) >= 8 && INTVAL (operands[2]) <= 32767))
+    opt_cost += 4;
+  else
+    opt_cost += 6;
+
+  return opt_cost <= shift_cost;
 }
 
 /* Implement PUSH_ROUNDING.

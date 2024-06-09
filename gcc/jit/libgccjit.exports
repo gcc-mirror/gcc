@@ -1,0 +1,233 @@
+# Linker export list for Darwin libgccjit.dylib
+
+#   Contributed by Iain Sandoe <iain@sandoe.co.uk>.
+#
+# This file is part of GCC.
+#
+# GCC is free software you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.  */
+
+# The initial release of the library.
+# Keep this list sorted alphabetically:
+_gcc_jit_block_add_assignment
+_gcc_jit_block_add_assignment_op
+_gcc_jit_block_add_comment
+_gcc_jit_block_add_eval
+_gcc_jit_block_as_object
+_gcc_jit_block_end_with_conditional
+_gcc_jit_block_end_with_jump
+_gcc_jit_block_end_with_return
+_gcc_jit_block_end_with_void_return
+_gcc_jit_block_get_function
+_gcc_jit_context_acquire
+_gcc_jit_context_compile
+_gcc_jit_context_compile_to_file
+_gcc_jit_context_dump_to_file
+_gcc_jit_context_dump_reproducer_to_file
+_gcc_jit_context_enable_dump
+_gcc_jit_context_get_builtin_function
+_gcc_jit_context_get_first_error
+_gcc_jit_context_get_last_error
+_gcc_jit_context_get_type
+_gcc_jit_context_get_int_type
+_gcc_jit_context_new_array_access
+_gcc_jit_context_new_array_type
+_gcc_jit_context_new_binary_op
+_gcc_jit_context_new_call
+_gcc_jit_context_new_call_through_ptr
+_gcc_jit_context_new_cast
+_gcc_jit_context_new_child_context
+_gcc_jit_context_new_comparison
+_gcc_jit_context_new_field
+_gcc_jit_context_new_function
+_gcc_jit_context_new_function_ptr_type
+_gcc_jit_context_new_global
+_gcc_jit_context_new_location
+_gcc_jit_context_new_opaque_struct
+_gcc_jit_context_new_param
+_gcc_jit_context_new_rvalue_from_double
+_gcc_jit_context_new_rvalue_from_int
+_gcc_jit_context_new_rvalue_from_long
+_gcc_jit_context_new_rvalue_from_ptr
+_gcc_jit_context_new_string_literal
+_gcc_jit_context_new_struct_type
+_gcc_jit_context_new_unary_op
+_gcc_jit_context_new_union_type
+_gcc_jit_context_null
+_gcc_jit_context_one
+_gcc_jit_context_release
+_gcc_jit_context_set_bool_option
+_gcc_jit_context_set_int_option
+_gcc_jit_context_set_logfile
+_gcc_jit_context_set_str_option
+_gcc_jit_context_zero
+_gcc_jit_field_as_object
+_gcc_jit_function_as_object
+_gcc_jit_function_dump_to_dot
+_gcc_jit_function_get_param
+_gcc_jit_function_new_block
+_gcc_jit_function_new_local
+_gcc_jit_location_as_object
+_gcc_jit_lvalue_as_object
+_gcc_jit_lvalue_as_rvalue
+_gcc_jit_lvalue_access_field
+_gcc_jit_lvalue_get_address
+_gcc_jit_object_get_context
+_gcc_jit_object_get_debug_string
+_gcc_jit_param_as_lvalue
+_gcc_jit_param_as_object
+_gcc_jit_param_as_rvalue
+_gcc_jit_result_get_code
+_gcc_jit_result_get_global
+_gcc_jit_result_release
+_gcc_jit_rvalue_access_field
+_gcc_jit_rvalue_as_object
+_gcc_jit_rvalue_dereference
+_gcc_jit_rvalue_dereference_field
+_gcc_jit_rvalue_get_type
+_gcc_jit_struct_as_type
+_gcc_jit_struct_set_fields
+_gcc_jit_type_as_object
+_gcc_jit_type_get_const
+_gcc_jit_type_get_pointer
+_gcc_jit_type_get_volatile
+
+# Add support for adding arbitrary command-line options (PR jit/66628).
+# LIBGCCJIT_ABI_1
+_gcc_jit_context_add_command_line_option
+
+# Add support for disabling the check for unreachable blocks (PR jit/66546).
+# LIBGCCJIT_ABI_2
+_gcc_jit_context_set_bool_allow_unreachable_blocks
+
+# Add support for switch statements.
+# LIBGCCJIT_ABI_3
+_gcc_jit_block_end_with_switch
+_gcc_jit_case_as_object
+_gcc_jit_context_new_case
+
+# Add timing API.
+#LIBGCCJIT_ABI_4
+_gcc_jit_context_get_timer
+_gcc_jit_context_set_timer
+_gcc_jit_timer_new
+_gcc_jit_timer_release
+_gcc_jit_timer_push
+_gcc_jit_timer_pop
+_gcc_jit_timer_print
+
+# LIBGCCJIT_ABI_5
+_gcc_jit_context_set_bool_use_external_driver
+
+# LIBGCCJIT_ABI_6
+_gcc_jit_rvalue_set_bool_require_tail_call
+
+# LIBGCCJIT_ABI_7
+_gcc_jit_type_get_aligned
+
+# LIBGCCJIT_ABI_8
+_gcc_jit_type_get_vector
+
+# LIBGCCJIT_ABI_9
+_gcc_jit_function_get_address
+
+# LIBGCCJIT_ABI_10
+_gcc_jit_context_new_rvalue_from_vector
+
+# LIBGCCJIT_ABI_11
+_gcc_jit_context_add_driver_option
+
+# LIBGCCJIT_ABI_12
+_gcc_jit_context_new_bitfield
+
+# LIBGCCJIT_ABI_13
+_gcc_jit_version_major
+_gcc_jit_version_minor
+_gcc_jit_version_patchlevel
+
+# LIBGCCJIT_ABI_14
+_gcc_jit_global_set_initializer
+
+# LIBGCCJIT_ABI_15
+_gcc_jit_block_add_extended_asm
+_gcc_jit_block_end_with_extended_asm_goto
+_gcc_jit_extended_asm_as_object
+_gcc_jit_extended_asm_set_volatile_flag
+_gcc_jit_extended_asm_set_inline_flag
+_gcc_jit_extended_asm_add_output_operand
+_gcc_jit_extended_asm_add_input_operand
+_gcc_jit_extended_asm_add_clobber
+_gcc_jit_context_add_top_level_asm
+
+# LIBGCCJIT_ABI_16
+_gcc_jit_function_get_return_type
+_gcc_jit_function_get_param_count
+_gcc_jit_function_type_get_return_type
+_gcc_jit_function_type_get_param_count
+_gcc_jit_function_type_get_param_type
+_gcc_jit_type_unqualified
+_gcc_jit_type_dyncast_array
+_gcc_jit_type_is_bool
+_gcc_jit_type_dyncast_function_ptr_type
+_gcc_jit_type_is_integral
+_gcc_jit_type_is_pointer
+_gcc_jit_type_dyncast_vector
+_gcc_jit_vector_type_get_element_type
+_gcc_jit_vector_type_get_num_units
+_gcc_jit_struct_get_field
+_gcc_jit_type_is_struct
+_gcc_jit_struct_get_field_count
+
+# LIBGCCJIT_ABI_17
+_gcc_jit_lvalue_set_tls_model
+
+# LIBGCCJIT_ABI_18
+_gcc_jit_lvalue_set_link_section
+
+#LIBGCCJIT_ABI_19
+_gcc_jit_context_new_array_constructor
+_gcc_jit_context_new_struct_constructor
+_gcc_jit_context_new_union_constructor
+_gcc_jit_global_set_initializer_rvalue
+
+# LIBGCCJIT_ABI_20
+_gcc_jit_compatible_types
+_gcc_jit_type_get_size
+
+# LIBGCCJIT_ABI_21
+_gcc_jit_context_new_bitcast
+
+# LIBGCCJIT_ABI_22
+_gcc_jit_lvalue_set_register_name
+
+# LIBGCCJIT_ABI_23
+_gcc_jit_context_set_bool_print_errors_to_stderr
+
+# LIBGCCJIT_ABI_24
+_gcc_jit_lvalue_set_alignment
+_gcc_jit_lvalue_get_alignment
+
+# LIBGCCJIT_ABI_25
+_gcc_jit_type_get_restrict
+
+# LIBGCCJIT_ABI_26 
+_gcc_jit_function_add_attribute
+_gcc_jit_function_add_string_attribute
+_gcc_jit_lvalue_add_string_attribute
+_gcc_jit_function_add_integer_array_attribute
+
+# LIBGCCJIT_ABI_27
+_gcc_jit_context_new_sizeof
+
+

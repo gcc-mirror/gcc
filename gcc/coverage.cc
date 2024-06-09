@@ -1,5 +1,5 @@
 /* Read and write coverage files, and associated functionality.
-   Copyright (C) 1990-2023 Free Software Foundation, Inc.
+   Copyright (C) 1990-2024 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -138,7 +138,7 @@ tree
 get_gcov_type (void)
 {
   scalar_int_mode mode
-    = smallest_int_mode_for_size (targetm.gcov_type_size ());
+    = smallest_int_mode_for_size (LONG_LONG_TYPE_SIZE > 32 ? 64 : 32);
   return lang_hooks.types.type_for_mode (mode, false);
 }
 

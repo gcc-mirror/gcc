@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2023 Free Software Foundation, Inc.
+# Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,34 +21,6 @@
 load_lib file-format.exp
 load_lib target-libpath.exp
 load_lib timeout.exp
-load_lib timeout-dg.exp
-
-
-if {[info exists individual_timeout]} {
-    set gm2_previous_timeout $individual_timeout
-} else {
-    set gm2_previous_timeout 10
-}
-
-
-# We should be able to complete any test in 10 seconds.
-dg-timeout S 10
-
-
-# only push one level.
-
-proc gm2_push_timeout { secs } {
-    global individual_timeout
-    set individual_timeout $secs
-}
-
-
-proc gm2_pop_timeout { } {
-    global individual_timeout
-    global gm2_previous_timeout
-    set individual_timeout $gm2_previous_timeout
-}
-
 
 # The default option list can be overridden by
 # TORTURE_OPTIONS="{ { list1 } ... { listN } }"
@@ -138,7 +110,7 @@ proc gm2-torture-compile { src option } {
 
 proc gm2_check_compile_fail {testcase option objname gcc_output} {
     global tool;
-    set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
+    set fatal_signal "*nternal compiler error: program*got fatal signal"
 
     if [string match "$fatal_signal 6" $gcc_output] then {
 	${tool}_fail $testcase "Got Signal 6, $option"
@@ -170,8 +142,9 @@ proc gm2_check_compile_fail {testcase option objname gcc_output} {
     regsub -all -- "\[\r\n\]*" $gcc_output "" gcc_output
 
     # check for any internal error
-    if { [string match "internal error" $gcc_output] ||
-	 [string match "internal compiler error" $gcc_output] } then {
+    if { [string match "*internal error*" $gcc_output] ||
+	 [string match "*internal compiler error*" $gcc_output] } then {
+	puts stderr "ICE: "
 	${tool}_fail $testcase $option
 	return 0
     }

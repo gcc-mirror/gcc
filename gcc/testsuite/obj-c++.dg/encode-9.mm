@@ -1,5 +1,4 @@
 /* Test than @encode is properly instantiated. */
-/* { dg-options "-lobjc" } */
 /* { dg-do run } */
 
 #include <string.h>           

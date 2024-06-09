@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct obstack
 {
   long chunk_size;

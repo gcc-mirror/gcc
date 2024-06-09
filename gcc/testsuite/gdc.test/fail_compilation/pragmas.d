@@ -5,7 +5,6 @@ TEST_OUTPUT:
 ---
 fail_compilation/pragmas.d(103): Error: one boolean expression expected for `pragma(inline)`, not 2
 fail_compilation/pragmas.d(108): Error: one boolean expression expected for `pragma(inline)`, not 2
-fail_compilation/pragmas.d(118): Error: unrecognized `pragma(unrecognized)`
 ---
 */
 
@@ -28,5 +27,5 @@ void test3()
 
 void test4()
 {
-    pragma(unrecognized, "string");
+    pragma(unrecognized, "string"); // permitted, just ignored
 }

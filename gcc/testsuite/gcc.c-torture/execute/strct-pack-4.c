@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 typedef struct
 {
   unsigned char a __attribute__((packed));
@@ -16,7 +19,8 @@ my_set_b (void)
   return 0x1234;
 }
 
-main ()
+int
+main (void)
 {
   three_char_t three_char;
 

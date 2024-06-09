@@ -1,6 +1,6 @@
 // { dg-do run { target { ! ia32 } } }
 // { dg-require-effective-target fstack_protector }
-// { dg-options "-O2 -fno-strict-aliasing -msse4.2 -mfpmath=sse -fPIC -fstack-protector-strong -O2" }
+// { dg-options "-O2 -fno-strict-aliasing -msse4.2 -mfpmath=sse -fPIC -fstack-protector-strong -O2 -fomit-frame-pointer" }
 
 struct p2_icode *ipc;
 register int pars asm("r13");

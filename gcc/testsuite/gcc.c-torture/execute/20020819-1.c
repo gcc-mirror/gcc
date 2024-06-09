@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fpermissive" } */
+
 foo ()
 {
   return 0;

@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2023 Free Software Foundation, Inc.
+# Copyright (C) 2004-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,9 +25,3 @@ crtpg.o: $(srcdir)/config/sol2/crtpg.c
 # gmon build rule
 gmon.o:	$(srcdir)/config/sol2/gmon.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $<
-
-# Assemble startup files.
-crt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
-	$(crt_compile) -c $<
-gcrt1.o: $(srcdir)/config/$(cpu_type)/sol2-c1.S
-	$(crt_compile) -c -DGCRT1 $<

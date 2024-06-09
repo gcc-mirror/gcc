@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -73,6 +73,9 @@ package System.Stream_Attributes is
       P1 : System.Address;
       P2 : System.Address;
    end record;
+
+   pragma Universal_Aliasing (Fat_Pointer);
+   --  This avoids a copy for the aforementioned unchecked conversions
 
    ------------------------------------
    -- Treatment of enumeration types --

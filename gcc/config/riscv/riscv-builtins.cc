@@ -1,5 +1,5 @@
 /* Subroutines used for expanding RISC-V builtins.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
 This file is part of GCC.
@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #define RISCV_FTYPE_NAME1(A, B) RISCV_##A##_FTYPE_##B
 #define RISCV_FTYPE_NAME2(A, B, C) RISCV_##A##_FTYPE_##B##_##C
 #define RISCV_FTYPE_NAME3(A, B, C, D) RISCV_##A##_FTYPE_##B##_##C##_##D
+#define RISCV_FTYPE_NAME4(A, B, C, D, E) \
+  RISCV_##A##_FTYPE_##B##_##C##_##D##_##E
 
 /* Classifies the prototype of a built-in function.  */
 enum riscv_function_type {
@@ -103,6 +105,7 @@ AVAIL (zero32,  TARGET_ZICBOZ && !TARGET_64BIT)
 AVAIL (zero64,  TARGET_ZICBOZ && TARGET_64BIT)
 AVAIL (prefetchi32, TARGET_ZICBOP && !TARGET_64BIT)
 AVAIL (prefetchi64, TARGET_ZICBOP && TARGET_64BIT)
+AVAIL (crypto_zbkb, TARGET_ZBKB)
 AVAIL (crypto_zbkb32, TARGET_ZBKB && !TARGET_64BIT)
 AVAIL (crypto_zbkb64, TARGET_ZBKB && TARGET_64BIT)
 AVAIL (crypto_zbkx32, TARGET_ZBKX && !TARGET_64BIT)
@@ -117,11 +120,22 @@ AVAIL (crypto_zknh32, TARGET_ZKNH && !TARGET_64BIT)
 AVAIL (crypto_zknh64, TARGET_ZKNH && TARGET_64BIT)
 AVAIL (crypto_zksh, TARGET_ZKSH)
 AVAIL (crypto_zksed, TARGET_ZKSED)
+AVAIL (clmul_zbkc_or_zbc, (TARGET_ZBKC || TARGET_ZBC))
 AVAIL (clmul_zbkc32_or_zbc32, (TARGET_ZBKC || TARGET_ZBC) && !TARGET_64BIT)
 AVAIL (clmul_zbkc64_or_zbc64, (TARGET_ZBKC || TARGET_ZBC) && TARGET_64BIT)
 AVAIL (clmulr_zbc32, TARGET_ZBC && !TARGET_64BIT)
 AVAIL (clmulr_zbc64, TARGET_ZBC && TARGET_64BIT)
+AVAIL (zbb, TARGET_ZBB)
+AVAIL (zbb64, TARGET_ZBB && TARGET_64BIT)
+AVAIL (zbb64_or_zbkb64, (TARGET_ZBKB || TARGET_ZBB) && TARGET_64BIT)
+AVAIL (zbb_or_zbkb, (TARGET_ZBKB || TARGET_ZBB))
 AVAIL (hint_pause, (!0))
+
+// CORE-V AVAIL
+AVAIL (cvmac, TARGET_XCVMAC && !TARGET_64BIT)
+AVAIL (cvalu, TARGET_XCVALU && !TARGET_64BIT)
+AVAIL (cvelw, TARGET_XCVELW && !TARGET_64BIT)
+AVAIL (cvsimd, TARGET_XCVSIMD && !TARGET_64BIT)
 
 /* Construct a riscv_builtin_description from the given arguments.
 
@@ -137,6 +151,22 @@ AVAIL (hint_pause, (!0))
    riscv_builtin_avail_.  */
 #define RISCV_BUILTIN(INSN, NAME, BUILTIN_TYPE,	FUNCTION_TYPE, AVAIL)	\
   { CODE_FOR_riscv_ ## INSN, "__builtin_riscv_" NAME,			\
+    BUILTIN_TYPE, FUNCTION_TYPE, riscv_builtin_avail_ ## AVAIL }
+
+/* Construct a riscv_builtin_description from the given arguments like RISCV_BUILTIN.
+
+   INSN is the name of the associated instruction pattern, without the
+   leading CODE_FOR_.
+
+   NAME is the name of the function itself, without the leading
+   "__builtin_riscv_".
+
+   BUILTIN_TYPE and FUNCTION_TYPE are riscv_builtin_description fields.
+
+   AVAIL is the name of the availability predicate, without the leading
+   riscv_builtin_avail_.  */
+#define RISCV_BUILTIN_NO_PREFIX(INSN, NAME, BUILTIN_TYPE,	FUNCTION_TYPE, AVAIL)	\
+  { CODE_FOR_ ## INSN, "__builtin_riscv_" NAME,			\
     BUILTIN_TYPE, FUNCTION_TYPE, riscv_builtin_avail_ ## AVAIL }
 
 /* Define __builtin_riscv_<INSN>, which is a RISCV_BUILTIN_DIRECT function
@@ -158,7 +188,11 @@ AVAIL (hint_pause, (!0))
 #define RISCV_ATYPE_UHI unsigned_intHI_type_node
 #define RISCV_ATYPE_USI unsigned_intSI_type_node
 #define RISCV_ATYPE_UDI unsigned_intDI_type_node
+#define RISCV_ATYPE_QI intQI_type_node
+#define RISCV_ATYPE_HI intHI_type_node
+#define RISCV_ATYPE_SI intSI_type_node
 #define RISCV_ATYPE_VOID_PTR ptr_type_node
+#define RISCV_ATYPE_INT_PTR integer_ptr_type_node
 
 /* RISCV_FTYPE_ATYPESN takes N RISCV_FTYPES-like type codes and lists
    their associated RISCV_ATYPEs.  */
@@ -170,10 +204,14 @@ AVAIL (hint_pause, (!0))
   RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C
 #define RISCV_FTYPE_ATYPES3(A, B, C, D) \
   RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C, RISCV_ATYPE_##D
+#define RISCV_FTYPE_ATYPES4(A, B, C, D, E) \
+  RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C, RISCV_ATYPE_##D, \
+  RISCV_ATYPE_##E
 
 static const struct riscv_builtin_description riscv_builtins[] = {
   #include "riscv-cmo.def"
   #include "riscv-scalar-crypto.def"
+  #include "corev.def"
 
   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
   DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float),
@@ -192,6 +230,7 @@ static GTY(()) int riscv_builtin_decl_index[NUM_INSN_CODES];
   riscv_builtin_decls[riscv_builtin_decl_index[(CODE)]]
 
 tree riscv_float16_type_node = NULL_TREE;
+tree riscv_bfloat16_type_node = NULL_TREE;
 
 /* Return the function type associated with function prototype TYPE.  */
 
@@ -235,6 +274,21 @@ riscv_init_builtin_types (void)
   if (!maybe_get_identifier ("_Float16"))
     lang_hooks.types.register_builtin_type (riscv_float16_type_node,
 					    "_Float16");
+
+  /* Provide the __bf16 type and bfloat16_type_node if needed.  */
+  if (!bfloat16_type_node)
+    {
+      riscv_bfloat16_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (riscv_bfloat16_type_node) = 16;
+      SET_TYPE_MODE (riscv_bfloat16_type_node, BFmode);
+      layout_type (riscv_bfloat16_type_node);
+    }
+  else
+    riscv_bfloat16_type_node = bfloat16_type_node;
+
+  if (!maybe_get_identifier ("__bf16"))
+    lang_hooks.types.register_builtin_type (riscv_bfloat16_type_node,
+					    "__bf16");
 }
 
 /* Implement TARGET_INIT_BUILTINS.  */

@@ -1,4 +1,5 @@
 /* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+/* { dg-additional-options "-std=gnu89" } */
 
 byte_match_count2 (buf, n, xm, m1, m2, m3, m4)
      unsigned *buf;

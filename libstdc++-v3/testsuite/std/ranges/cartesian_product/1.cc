@@ -1,14 +1,16 @@
 // { dg-do run { target c++23 } }
+// { dg-add-options no_pch }
 
 #include <ranges>
-#include <algorithm>
-#include <sstream>
-#include <testsuite_hooks.h>
-#include <testsuite_iterators.h>
 
 #if __cpp_lib_ranges_cartesian_product != 202207L
 # error "Feature-test macro __cpp_lib_ranges_cartesian_product has wrong value in <ranges>"
 #endif
+
+#include <algorithm>
+#include <sstream>
+#include <testsuite_hooks.h>
+#include <testsuite_iterators.h>
 
 namespace ranges = std::ranges;
 namespace views = std::views;
@@ -22,9 +24,9 @@ test01()
   int w[] = {9};
 
   auto v0 = views::cartesian_product();
-  VERIFY( ranges::end(v0) - ranges::begin(v0) == 0 );
-  VERIFY( ranges::size(v0) == 0 );
-  VERIFY( ranges::empty(v0) );
+  VERIFY( ranges::end(v0) - ranges::begin(v0) == 1 );
+  VERIFY( ranges::size(v0) == 1 );
+  VERIFY( !ranges::empty(v0) );
 
   auto v1 = views::cartesian_product(x);
   VERIFY( ranges::end(v1) - ranges::begin(v1) == 3 );

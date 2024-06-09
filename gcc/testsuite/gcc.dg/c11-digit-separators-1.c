@@ -1,4 +1,4 @@
-/* Test C2x digit separators not in C11.  */
+/* Test C23 digit separators not in C11.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
 

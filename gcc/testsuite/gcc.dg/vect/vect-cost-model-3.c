@@ -8,4 +8,4 @@ f (int *restrict x, int *restrict y)
     x[i] += y[i];
 }
 
-/* { dg-final { scan-tree-dump {LOOP VECTORIZED} vect { target vect_int } } } */
+/* { dg-final { scan-tree-dump {LOOP VECTORIZED} vect { target { vect_int && vect_hw_misalign } } } } */

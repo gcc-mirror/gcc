@@ -2,6 +2,7 @@
 // Bug: We were encoding the name of the instantiation as 'operator int'
 // rather than 'operator T'.
 // { dg-do compile }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct C {
     template <class T>

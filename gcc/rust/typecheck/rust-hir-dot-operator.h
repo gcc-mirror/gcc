@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -54,9 +54,12 @@ public:
   };
 
   static std::set<MethodCandidate>
-  Probe (const TyTy::BaseType *receiver,
-	 const HIR::PathIdentSegment &segment_name,
+  Probe (TyTy::BaseType *receiver, const HIR::PathIdentSegment &segment_name,
 	 bool autoderef_flag = false);
+
+  static std::set<MethodCandidate>
+  Select (std::set<MethodCandidate> &candidates, TyTy::BaseType *receiver,
+	  std::vector<TyTy::BaseType *> arguments);
 
   static std::vector<predicate_candidate> get_predicate_items (
     const HIR::PathIdentSegment &segment_name, const TyTy::BaseType &receiver,
@@ -68,7 +71,11 @@ protected:
 
   void try_hook (const TyTy::BaseType &r) override;
 
-  bool select (const TyTy::BaseType &receiver) override;
+  bool select (TyTy::BaseType &receiver) override;
+
+private:
+  std::vector<Adjustment>
+  append_adjustments (const std::vector<Adjustment> &adjustments) const;
 
 private:
   // search

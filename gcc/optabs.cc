@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -533,15 +533,13 @@ expand_subword_shift (scalar_int_mode op1_mode, optab binoptab,
 	 has unknown behavior.  Do a single shift first, then shift by the
 	 remainder.  It's OK to use ~OP1 as the remainder if shift counts
 	 are truncated to the mode size.  */
-      carries = expand_binop (word_mode, reverse_unsigned_shift,
-			      outof_input, const1_rtx, 0, unsignedp, methods);
-      if (shift_mask == BITS_PER_WORD - 1)
-	{
-	  tmp = immed_wide_int_const
-	    (wi::minus_one (GET_MODE_PRECISION (op1_mode)), op1_mode);
-	  tmp = simplify_expand_binop (op1_mode, xor_optab, op1, tmp,
-				       0, true, methods);
-	}
+      carries = simplify_expand_binop (word_mode, reverse_unsigned_shift,
+				       outof_input, const1_rtx, 0,
+				       unsignedp, methods);
+      if (carries == const0_rtx)
+	tmp = const0_rtx;
+      else if (shift_mask == BITS_PER_WORD - 1)
+	tmp = expand_unop (op1_mode, one_cmpl_optab, op1, 0, true);
       else
 	{
 	  tmp = immed_wide_int_const (wi::shwi (BITS_PER_WORD - 1,
@@ -552,22 +550,29 @@ expand_subword_shift (scalar_int_mode op1_mode, optab binoptab,
     }
   if (tmp == 0 || carries == 0)
     return false;
-  carries = expand_binop (word_mode, reverse_unsigned_shift,
-			  carries, tmp, 0, unsignedp, methods);
+  if (carries != const0_rtx && tmp != const0_rtx)
+    carries = simplify_expand_binop (word_mode, reverse_unsigned_shift,
+				     carries, tmp, 0, unsignedp, methods);
   if (carries == 0)
     return false;
 
-  /* Shift INTO_INPUT logically by OP1.  This is the last use of INTO_INPUT
-     so the result can go directly into INTO_TARGET if convenient.  */
-  tmp = expand_binop (word_mode, unsigned_shift, into_input, op1,
-		      into_target, unsignedp, methods);
-  if (tmp == 0)
-    return false;
+  if (into_input != const0_rtx)
+    {
+      /* Shift INTO_INPUT logically by OP1.  This is the last use of
+	 INTO_INPUT so the result can go directly into INTO_TARGET if
+	 convenient.  */
+      tmp = simplify_expand_binop (word_mode, unsigned_shift, into_input,
+				   op1, into_target, unsignedp, methods);
+      if (tmp == 0)
+	return false;
 
-  /* Now OR in the bits carried over from OUTOF_INPUT.  */
-  if (!force_expand_binop (word_mode, ior_optab, tmp, carries,
-			   into_target, unsignedp, methods))
-    return false;
+      /* Now OR in the bits carried over from OUTOF_INPUT.  */
+      if (!force_expand_binop (word_mode, ior_optab, tmp, carries,
+			       into_target, unsignedp, methods))
+	return false;
+    }
+  else
+    emit_move_insn (into_target, carries);
 
   /* Use a standard word_mode shift for the out-of half.  */
   if (outof_target != 0)
@@ -5126,6 +5131,7 @@ emit_conditional_move (rtx target, struct rtx_comparison comp,
 	  /* If we are optimizing, force expensive constants into a register
 	     but preserve an eventual equality with op2/op3.  */
 	  if (CONSTANT_P (orig_op0) && optimize
+	      && cmpmode == mode
 	      && (rtx_cost (orig_op0, mode, COMPARE, 0,
 			    optimize_insn_for_speed_p ())
 		  > COSTS_N_INSNS (1))
@@ -5137,6 +5143,7 @@ emit_conditional_move (rtx target, struct rtx_comparison comp,
 		op3p = XEXP (comparison, 0) = force_reg (cmpmode, orig_op0);
 	    }
 	  if (CONSTANT_P (orig_op1) && optimize
+	      && cmpmode == mode
 	      && (rtx_cost (orig_op1, mode, COMPARE, 0,
 			    optimize_insn_for_speed_p ())
 		  > COSTS_N_INSNS (1))
@@ -6744,10 +6751,13 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
       return expand_binop (mode, tab1, op0, op1, target, uns_p,
 			   OPTAB_LIB_WIDEN);
     case 2:
+      return expmed_mult_highpart_optab (as_a <scalar_int_mode> (mode),
+					 op0, op1, target, uns_p, INT_MAX);
+    case 3:
       tab1 = uns_p ? vec_widen_umult_even_optab : vec_widen_smult_even_optab;
       tab2 = uns_p ? vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
       break;
-    case 3:
+    case 4:
       tab1 = uns_p ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
       tab2 = uns_p ? vec_widen_umult_hi_optab : vec_widen_smult_hi_optab;
       if (BYTES_BIG_ENDIAN)
@@ -6776,7 +6786,7 @@ expand_mult_highpart (machine_mode mode, rtx op0, rtx op1,
   m2 = gen_lowpart (mode, eops[0].value);
 
   vec_perm_builder sel;
-  if (method == 2)
+  if (method == 3)
     {
       /* The encoding has 2 interleaved stepped patterns.  */
       sel.new_vector (GET_MODE_NUNITS (mode), 2, 3);

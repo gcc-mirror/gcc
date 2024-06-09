@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -66,7 +66,7 @@ get_string_in_delims (std::string str_input, AST::DelimType delim_type)
     default:
       return "ERROR-MARK-STRING (delims)";
     }
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 std::string
@@ -128,7 +128,7 @@ Visibility::as_string () const
       return std::string ("pub(in ") + path.get_mappings ().as_string ()
 	     + std::string (")");
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -168,7 +168,7 @@ std::string
 Module::as_string () const
 {
   // get module string for "[vis] mod [name]"
-  std::string str = VisItem::as_string () + "mod " + module_name;
+  std::string str = VisItem::as_string () + "mod " + module_name.as_string ();
 
   // inner attributes
   str += "\n inner attributes: ";
@@ -223,7 +223,7 @@ StaticItem::as_string () const
       str += " mut";
     }
 
-  str += name;
+  str += name.as_string ();
 
   // DEBUG: null pointer check
   if (type == nullptr)
@@ -266,7 +266,7 @@ TupleStruct::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += "struct " + struct_name;
+  str += "struct " + struct_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -323,7 +323,7 @@ ConstantItem::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += "const " + identifier;
+  str += "const " + identifier.as_string ();
 
   // DEBUG: null pointer check
   if (type == nullptr)
@@ -425,7 +425,7 @@ StructStruct::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += "struct " + struct_name;
+  str += "struct " + struct_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -518,7 +518,7 @@ UseTreeGlob::as_string () const
       // some kind of error
       return "ERROR-PATH";
     }
-  gcc_unreachable ();
+  rust_unreachable ();
 }
 
 std::string
@@ -581,7 +581,7 @@ UseTreeRebind::as_string () const
       // nothing to add, just path
       break;
     case IDENTIFIER:
-      path_str += " as " + identifier;
+      path_str += " as " + identifier.as_string ();
       break;
     case WILDCARD:
       path_str += " as _";
@@ -598,7 +598,7 @@ std::string
 Enum::as_string () const
 {
   std::string str = VisItem::as_string ();
-  str += enum_name;
+  str += enum_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -669,7 +669,7 @@ Trait::as_string () const
       str += "unsafe ";
     }
 
-  str += "trait " + name;
+  str += "trait " + name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -756,7 +756,7 @@ Union::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += "union " + union_name;
+  str += "union " + union_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -834,7 +834,7 @@ Function::as_string () const
       str += "void ";
     }
 
-  str += function_name;
+  str += function_name.as_string ();
 
   if (has_generics ())
     {
@@ -985,7 +985,7 @@ TypeAlias::as_string () const
 {
   std::string str = VisItem::as_string ();
 
-  str += " " + new_type_name;
+  str += " " + new_type_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -1075,9 +1075,9 @@ PathInExpression::as_string () const
 }
 
 std::string
-ExprStmtWithBlock::as_string () const
+ExprStmt::as_string () const
 {
-  std::string str = indent_spaces (enter) + "ExprStmtWithBlock: \n";
+  std::string str = indent_spaces (enter) + "ExprStmt:\n";
 
   if (expr == nullptr)
     {
@@ -1181,11 +1181,6 @@ std::string
 BorrowExpr::as_string () const
 {
   std::string str ("&");
-
-  if (double_borrow)
-    {
-      str += "&";
-    }
 
   if (is_mut ())
     {
@@ -1342,7 +1337,7 @@ CompoundAssignmentExpr::as_string () const
       operator_str = ">>";
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 
@@ -1458,7 +1453,7 @@ DereferenceExpr::as_string () const
 std::string
 FieldAccessExpr::as_string () const
 {
-  return receiver->as_string () + "." + field;
+  return receiver->as_string () + "." + field.as_string ();
 }
 
 std::string
@@ -1525,27 +1520,7 @@ IfExprConseqElse::as_string () const
 {
   std::string str = IfExpr::as_string ();
 
-  str += "\n Else block expr: " + else_block->as_string ();
-
-  return str;
-}
-
-std::string
-IfExprConseqIf::as_string () const
-{
-  std::string str = IfExpr::as_string ();
-
-  str += "\n Else if expr: \n  " + conseq_if_expr->as_string ();
-
-  return str;
-}
-
-std::string
-IfExprConseqIfLet::as_string () const
-{
-  std::string str = IfExpr::as_string ();
-
-  str += "\n Else if let expr: \n  " + if_let_expr->as_string ();
+  str += "\n Else expr: " + else_block->as_string ();
 
   return str;
 }
@@ -1580,27 +1555,7 @@ IfLetExprConseqElse::as_string () const
 {
   std::string str = IfLetExpr::as_string ();
 
-  str += "\n Else block expr: " + else_block->as_string ();
-
-  return str;
-}
-
-std::string
-IfLetExprConseqIf::as_string () const
-{
-  std::string str = IfLetExpr::as_string ();
-
-  str += "\n Else if expr: \n  " + if_expr->as_string ();
-
-  return str;
-}
-
-std::string
-IfLetExprConseqIfLet::as_string () const
-{
-  std::string str = IfLetExpr::as_string ();
-
-  str += "\n Else if let expr: \n  " + if_let_expr->as_string ();
+  str += "\n Else expr: " + else_block->as_string ();
 
   return str;
 }
@@ -1657,7 +1612,7 @@ ArithmeticOrLogicalExpr::as_string () const
       operator_str = ">>";
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 
@@ -1982,26 +1937,6 @@ TupleExpr::as_string () const
 }
 
 std::string
-ExprStmtWithoutBlock::as_string () const
-{
-  std::string str ("ExprStmtWithoutBlock:\n");
-  indent_spaces (enter);
-  str += indent_spaces (stay);
-
-  if (expr == nullptr)
-    {
-      str += "none (this shouldn't happen and is probably an error)";
-    }
-  else
-    {
-      str += expr->as_string ();
-    }
-  indent_spaces (out);
-
-  return str;
-}
-
-std::string
 FunctionParam::as_string () const
 {
   return param_name->as_string () + " : " + type->as_string ();
@@ -2012,25 +1947,12 @@ FunctionQualifiers::as_string () const
 {
   std::string str;
 
-  switch (const_status)
-    {
-    case NONE:
-      // do nothing
-      break;
-    case CONST_FN:
-      str += "const ";
-      break;
-    case ASYNC_FN:
-      str += "async ";
-      break;
-    default:
-      return "ERROR_MARK_STRING: async-const status failure";
-    }
-
-  if (unsafety == Unsafety::Unsafe)
-    {
-      str += "unsafe ";
-    }
+  if (is_const ())
+    str += "const ";
+  if (is_async ())
+    str += "async ";
+  if (is_unsafe ())
+    str += "unsafe ";
 
   if (has_extern)
     {
@@ -2046,14 +1968,16 @@ TraitBound::as_string () const
 {
   std::string str ("TraitBound:");
 
-  str += "\n Has opening question mark: ";
-  if (opening_question_mark)
+  switch (polarity)
     {
-      str += "true";
-    }
-  else
-    {
-      str += "false";
+    case RegularBound:
+      break;
+    case NegativeBound:
+      str += "!";
+      break;
+    case AntiBound:
+      str += "?";
+      break;
     }
 
   str += "\n For lifetimes: ";
@@ -2112,6 +2036,7 @@ QualifiedPathInType::as_string () const
 {
   std::string str = path_type.as_string ();
 
+  str += "::" + associated_segment->as_string ();
   for (const auto &segment : segments)
     {
       str += "::" + segment->as_string ();
@@ -2177,7 +2102,7 @@ TypeParam::as_string () const
       str += outer_attr.as_string ();
     }
 
-  str += "\n Identifier: " + type_representation;
+  str += "\n Identifier: " + type_representation.as_string ();
 
   str += "\n Type param bounds: ";
   if (!has_type_param_bounds ())
@@ -2232,7 +2157,7 @@ PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
     }
 
   // kind of a HACK to get locus depending on opening scope resolution
-  Location locus = Linemap::unknown_location ();
+  location_t locus = UNKNOWN_LOCATION;
   if (with_opening_scope_resolution)
     {
       locus = simple_segments[0].get_locus () - 2; // minus 2 chars for ::
@@ -2343,31 +2268,7 @@ GenericArgs::as_string () const
 std::string
 GenericArgsBinding::as_string () const
 {
-  return identifier + " = " + type->as_string ();
-}
-
-std::string
-ForLoopExpr::as_string () const
-{
-  std::string str ("ForLoopExpr: ");
-
-  str += "\n Label: ";
-  if (!has_loop_label ())
-    {
-      str += "none";
-    }
-  else
-    {
-      str += loop_label.as_string ();
-    }
-
-  str += "\n Pattern: " + pattern->as_string ();
-
-  str += "\n Iterator expr: " + iterator_expr->as_string ();
-
-  str += "\n Loop block: " + loop_block->as_string ();
-
-  return str;
+  return identifier.as_string () + " = " + type->as_string ();
 }
 
 std::string
@@ -2404,6 +2305,19 @@ SlicePattern::as_string () const
   std::string str ("SlicePattern: ");
 
   for (const auto &pattern : items)
+    {
+      str += "\n " + pattern->as_string ();
+    }
+
+  return str;
+}
+
+std::string
+AltPattern::as_string () const
+{
+  std::string str ("AltPattern: ");
+
+  for (const auto &pattern : alts)
     {
       str += "\n " + pattern->as_string ();
     }
@@ -2503,7 +2417,7 @@ StructPatternFieldIdent::as_string () const
       str += "mut ";
     }
 
-  str += ident;
+  str += ident.as_string ();
 
   return str;
 }
@@ -2527,7 +2441,7 @@ StructPatternFieldIdentPat::as_string () const
 
   str += "\n";
 
-  str += ident + " : " + ident_pattern->as_string ();
+  str += ident.as_string () + " : " + ident_pattern->as_string ();
 
   return str;
 }
@@ -2608,7 +2522,7 @@ IdentifierPattern::as_string () const
       str += "mut ";
     }
 
-  str += variable_ident;
+  str += variable_ident.as_string ();
 
   if (has_pattern_to_bind ())
     {
@@ -3037,7 +2951,7 @@ StructExprFieldWithVal::as_string () const
 std::string
 StructExprFieldIdentifierValue::as_string () const
 {
-  return field_name + " : " + StructExprFieldWithVal::as_string ();
+  return field_name.as_string () + " : " + StructExprFieldWithVal::as_string ();
 }
 
 std::string
@@ -3081,7 +2995,7 @@ std::string
 EnumItem::as_string () const
 {
   std::string str = Item::as_string ();
-  str += variant_name;
+  str += variant_name.as_string ();
   str += " ";
   switch (get_enum_item_kind ())
     {
@@ -3211,7 +3125,7 @@ StructField::as_string () const
       str += "\n" + visibility.as_string ();
     }
 
-  str += " " + field_name + " : " + field_type->as_string ();
+  str += " " + field_name.as_string () + " : " + field_type->as_string ();
 
   return str;
 }
@@ -3265,7 +3179,7 @@ ExternalStaticItem::as_string () const
     }
 
   // add name
-  str += get_item_name ();
+  str += get_item_name ().as_string ();
 
   // add type on new line
   str += "\n Type: " + item_type->as_string ();
@@ -3281,7 +3195,7 @@ ExternalFunctionItem::as_string () const
   str += "fn ";
 
   // add name
-  str += get_item_name ();
+  str += get_item_name ().as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -3345,7 +3259,7 @@ ExternalFunctionItem::as_string () const
 std::string
 NamedFunctionParam::as_string () const
 {
-  std::string str = name;
+  std::string str = name.as_string ();
 
   str += "\n Type: " + param_type->as_string ();
 
@@ -3403,7 +3317,8 @@ TraitItemFunc::as_string () const
 std::string
 TraitFunctionDecl::as_string () const
 {
-  std::string str = qualifiers.as_string () + "fn " + function_name;
+  std::string str
+    = qualifiers.as_string () + "fn " + function_name.as_string ();
 
   // generic params
   str += "\n Generic params: ";
@@ -3487,7 +3402,7 @@ TraitItemConst::as_string () const
 	}
     }
 
-  str += "\nconst " + name + " : " + type->as_string ();
+  str += "\nconst " + name.as_string () + " : " + type->as_string ();
 
   if (has_expression ())
     {
@@ -3515,7 +3430,7 @@ TraitItemType::as_string () const
 	}
     }
 
-  str += "\ntype " + name;
+  str += "\ntype " + name.as_string ();
 
   str += "\n Type param bounds: ";
   if (!has_type_param_bounds ())
@@ -3701,7 +3616,7 @@ MaybeNamedParam::as_string () const
     case UNNAMED:
       break;
     case IDENTIFIER:
-      str = name + " : ";
+      str = name.as_string () + " : ";
       break;
     case WILDCARD:
       str = "_ : ";
@@ -3713,6 +3628,36 @@ MaybeNamedParam::as_string () const
   str += param_type->as_string ();
 
   return str;
+}
+
+std::string
+enum_to_str (MaybeNamedParam::ParamKind pk)
+{
+  switch (pk)
+    {
+    case MaybeNamedParam::ParamKind::UNNAMED:
+      return "UNNAMED";
+    case MaybeNamedParam::ParamKind::IDENTIFIER:
+      return "IDENTIFIER";
+    case MaybeNamedParam::ParamKind::WILDCARD:
+      return "WILDCARD";
+    }
+  gcc_unreachable ();
+}
+
+std::string
+enum_to_str (UseTreeRebind::NewBindType nbt)
+{
+  switch (nbt)
+    {
+    case UseTreeRebind::NewBindType::NONE:
+      return "NONE";
+    case UseTreeRebind::NewBindType::IDENTIFIER:
+      return "IDENTIFIER";
+    case UseTreeRebind::NewBindType::WILDCARD:
+      return "WILDCARD";
+    }
+  gcc_unreachable ();
 }
 
 /* Override that calls the function recursively on all items contained within
@@ -4106,12 +4051,6 @@ WhileLetLoopExpr::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-ForLoopExpr::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 IfExpr::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -4124,18 +4063,6 @@ IfExprConseqElse::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-IfExprConseqIf::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfExprConseqIfLet::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 IfLetExpr::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -4143,18 +4070,6 @@ IfLetExpr::accept_vis (HIRFullVisitor &vis)
 
 void
 IfLetExprConseqElse::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqIf::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqIfLet::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -4478,6 +4393,12 @@ SlicePattern::accept_vis (HIRFullVisitor &vis)
 }
 
 void
+AltPattern::accept_vis (HIRFullVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
 EmptyStmt::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -4490,13 +4411,7 @@ LetStmt::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-ExprStmtWithoutBlock::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ExprStmtWithBlock::accept_vis (HIRFullVisitor &vis)
+ExprStmt::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -4808,13 +4723,13 @@ SlicePattern::accept_vis (HIRPatternVisitor &vis)
 }
 
 void
-RangePattern::accept_vis (HIRPatternVisitor &vis)
+AltPattern::accept_vis (HIRPatternVisitor &vis)
 {
   vis.visit (*this);
 }
 
 void
-ForLoopExpr::accept_vis (HIRExpressionVisitor &vis)
+RangePattern::accept_vis (HIRPatternVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -4832,7 +4747,7 @@ QualifiedPathInType::accept_vis (HIRTypeVisitor &vis)
 }
 
 void
-ExprStmtWithoutBlock::accept_vis (HIRStmtVisitor &vis)
+ExprStmt::accept_vis (HIRStmtVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -4898,18 +4813,6 @@ RangeFromToInclExpr::accept_vis (HIRExpressionVisitor &vis)
 }
 
 void
-IfLetExprConseqIfLet::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqIf::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 IfLetExprConseqElse::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
@@ -4917,18 +4820,6 @@ IfLetExprConseqElse::accept_vis (HIRExpressionVisitor &vis)
 
 void
 IfLetExpr::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfExprConseqIfLet::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfExprConseqIf::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -5031,12 +4922,6 @@ ReturnExpr::accept_vis (HIRExpressionVisitor &vis)
 
 void
 QualifiedPathInExpression::accept_vis (HIRPatternVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ExprStmtWithBlock::accept_vis (HIRStmtVisitor &vis)
 {
   vis.visit (*this);
 }

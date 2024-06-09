@@ -1,5 +1,5 @@
 /* d-tree.h -- Definitions and declarations for code generation.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ typedef Array <Expression *> Expressions;
 
 /* Usage of TREE_LANG_FLAG_?:
    0: METHOD_CALL_EXPR
+   1: CALL_EXPR_WARN_IF_UNUSED (in CALL_EXPR).
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_SHARED
@@ -94,7 +95,7 @@ enum level_kind
 
 enum intrinsic_code
 {
-#define DEF_D_INTRINSIC(CODE, B, N, M, D, C) CODE,
+#define DEF_D_INTRINSIC(CODE, B, N, M, D, C, F) CODE,
 
 #include "intrinsics.def"
 
@@ -357,6 +358,11 @@ lang_tree_node
 #define METHOD_CALL_EXPR(NODE) \
   (TREE_LANG_FLAG_0 (NODE))
 
+/* True if the CALL_EXPR is free of side effects, and its return value
+   should not be discarded.  */
+#define CALL_EXPR_WARN_IF_UNUSED(NODE) \
+  (TREE_LANG_FLAG_1 (CALL_EXPR_CHECK (NODE)))
+
 /* True if the type was declared 'shared'.  */
 #define TYPE_SHARED(NODE) \
   (TYPE_LANG_FLAG_0 (NODE))
@@ -438,6 +444,9 @@ enum d_tree_index
   DTI_NULL_ARRAY,
   DTI_BOTTOM_TYPE,
 
+  DTI_BOOL_FALSE,
+  DTI_BOOL_TRUE,
+
   DTI_MAX
 };
 
@@ -474,6 +483,9 @@ extern GTY(()) tree d_global_trees[DTI_MAX];
 #define null_array_node			d_global_trees[DTI_NULL_ARRAY]
 /* The bottom type, referred to as `noreturn` in code.  */
 #define noreturn_type_node		d_global_trees[DTI_BOTTOM_TYPE]
+/* D boolean values are always byte-sized, unlike boolean_type_node.  */
+#define d_bool_false_node		d_global_trees[DTI_BOOL_FALSE]
+#define d_bool_true_node		d_global_trees[DTI_BOOL_TRUE]
 
 /* A prefix for internal variables, which are not user-visible.  */
 #if !defined (NO_DOT_IN_LABEL)
@@ -508,8 +520,8 @@ extern tree insert_decl_attribute (tree, const char *, tree = NULL_TREE);
 extern void apply_user_attributes (Dsymbol *, tree);
 
 /* In d-builtins.cc.  */
-extern const attribute_spec d_langhook_attribute_table[];
-extern const attribute_spec d_langhook_common_attribute_table[];
+extern const struct scoped_attribute_specs d_langhook_gnu_attribute_table;
+extern const struct scoped_attribute_specs d_langhook_common_attribute_table;
 extern Type *build_frontend_type (tree);
 
 extern tree d_builtin_function (tree);
@@ -594,6 +606,7 @@ extern tree build_bounds_slice_condition (SliceExp *, tree, tree, tree);
 extern bool array_bounds_check (void);
 extern bool checkaction_trap_p (void);
 extern TypeFunction *get_function_type (Type *);
+extern bool call_side_effect_free_p (FuncDeclaration *, Type *);
 extern bool call_by_alias_p (FuncDeclaration *, FuncDeclaration *);
 extern tree d_build_call_expr (FuncDeclaration *, tree, Expressions *);
 extern tree d_build_call (TypeFunction *, tree, tree, Expressions *);
@@ -612,8 +625,8 @@ extern tree d_truthvalue_conversion (tree);
 extern tree d_convert (tree, tree);
 extern tree convert_expr (tree, Type *, Type *);
 extern tree convert_for_rvalue (tree, Type *, Type *);
-extern tree convert_for_assignment (tree, Type *, Type *);
-extern tree convert_for_argument (tree, Parameter *);
+extern tree convert_for_assignment (Expression *, Type *, bool = false);
+extern tree convert_for_argument (Expression *, Parameter *);
 extern tree convert_for_condition (tree, Type *);
 extern tree d_array_convert (Expression *);
 extern tree d_array_convert (Type *, Expression *);
@@ -668,6 +681,7 @@ extern tree build_import_decl (Dsymbol *);
 /* In intrinsics.cc.  */
 extern void maybe_set_intrinsic (FuncDeclaration *);
 extern tree maybe_expand_intrinsic (tree);
+extern tree maybe_reject_intrinsic (tree);
 
 /* In modules.cc.  */
 extern void build_module_tree (Module *);

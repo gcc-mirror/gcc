@@ -3,10 +3,8 @@
 /* { dg-options "-O2 -mavx512f -mavx512vl -mavx512dq" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
 /* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } }
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to2\\\}" 2 { target { ! ia32 } } } }  */
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to4\\\}" 4 { target { ! ia32 } } } }  */
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to2\\\}" 5 { target ia32 } } } */
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to4\\\}" 7 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to2\\\}" 2 } }  */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to4\\\}" 4 } }  */
 /* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to8\\\}" 2 } }  */
 /* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%(?:r|e)\[^\n\]*, %xmm\[0-9\]+" 3 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%(?:r|e)\[^\n\]*, %ymm\[0-9\]+" 3 } } */

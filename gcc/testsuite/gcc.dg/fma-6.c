@@ -64,4 +64,4 @@ f10 (double a, double b, double c)
   return -__builtin_fma (a, b, -c);
 }
 
-/* { dg-final { scan-tree-dump-times { = \.FNMA \(} 14 "optimized" { target scalar_all_fma } } } */
+/* { dg-final { scan-tree-dump-times { = \.FNMA \(} 14 "optimized" { target { scalar_all_fma && { ! loongarch*-*-* } } } } } */

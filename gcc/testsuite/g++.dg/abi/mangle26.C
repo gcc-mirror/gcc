@@ -1,7 +1,7 @@
 // Test of std mangling
 
 // { dg-do compile }
-// { dg-options "-fno-inline -fno-implicit-constexpr" }
+// { dg-options "-fno-inline -fno-implicit-constexpr -fabi-compat-version=0" }
 
 namespace std {
   struct A {

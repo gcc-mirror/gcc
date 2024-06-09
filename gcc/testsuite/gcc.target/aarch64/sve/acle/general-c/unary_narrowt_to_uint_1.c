@@ -26,6 +26,6 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8,
   svqxtunt (u32, u64); /* { dg-error {'svqxtunt' has no form that takes 'svuint64_t' arguments} } */
   svqxtunt (u32, s64);
   svqxtunt (u16, f32); /* { dg-error {'svqxtunt' has no form that takes 'svfloat32_t' arguments} } */
-  svqxtunt (1, u16); /* { dg-error {passing 'int' to argument 1 of 'svqxtunt', which expects an SVE vector type} } */
-  svqxtunt (u8, 1); /* { dg-error {passing 'int' to argument 2 of 'svqxtunt', which expects an SVE vector type} } */
+  svqxtunt (1, u16); /* { dg-error {passing 'int' to argument 1 of 'svqxtunt', which expects an SVE type rather than a scalar} } */
+  svqxtunt (u8, 1); /* { dg-error {passing 'int' to argument 2 of 'svqxtunt', which expects an SVE type rather than a scalar} } */
 }

@@ -1,6 +1,6 @@
 (* SYSTEM.mod provides access to the SYSTEM dependent module.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -26,7 +26,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE SYSTEM ;
 
-FROM libc IMPORT memcpy, memcpy, memset ;
+FROM libc IMPORT memcpy, memset ;
 
 CONST
    BitsPerBitset = MAX(BITSET)+1 ;

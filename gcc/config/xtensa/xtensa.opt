@@ -1,6 +1,6 @@
 ; Options for the Tensilica Xtensa port of the compiler.
 
-; Copyright (C) 2005-2023 Free Software Foundation, Inc.
+; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -38,8 +38,8 @@ Target RejectNegative Joined UInteger Var(xtensa_extra_l32r_costs) Init(0)
 Set extra memory access cost for L32R instruction, in clock-cycle units.
 
 mlra
-Target Mask(LRA)
-Use LRA instead of reload (transitional).
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
 
 mtarget-align
 Target

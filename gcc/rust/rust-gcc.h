@@ -1,5 +1,5 @@
 // rust-gcc.cc -- Rust frontend to gcc IR.
-// Copyright (C) 2011-2023 Free Software Foundation, Inc.
+// Copyright (C) 2011-2024 Free Software Foundation, Inc.
 // Contributed by Ian Lance Taylor, Google.
 // forked from gccgo
 
@@ -19,16 +19,13 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-system.h"
-
 // This has to be included outside of extern "C", so we have to
 // include it here before tree.h includes it later.
-#include <gmp.h>
 
-#include "tree.h"
+#ifndef RUST_GCC
+#define RUST_GCC
+
 #include "rust-location.h"
-
-// TODO: this will have to be significantly modified to work with Rust
 
 // Bvariable is a bit more complicated, because of zero-sized types.
 // The GNU linker does not permit dynamic variables with zero size.
@@ -47,12 +44,19 @@ public:
   Bvariable (tree t, tree orig_type) : t_ (t), orig_type_ (orig_type) {}
 
   // Get the tree for use as an expression.
-  tree get_tree (Location) const;
+  tree get_tree (location_t) const;
 
   // Get the actual decl;
   tree get_decl () const { return this->t_; }
+
+  // Create an error variable.  This is used for cases which should
+  // not occur in a correct program, in order to keep the compilation
+  // going without crashing.
+  static Bvariable *error_variable ();
 
 private:
   tree t_;
   tree orig_type_;
 };
+
+#endif // RUST_GCC

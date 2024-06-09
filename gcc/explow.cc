@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1201,6 +1201,9 @@ record_new_stack_level (void)
 rtx
 align_dynamic_address (rtx target, unsigned required_align)
 {
+  if (required_align == BITS_PER_UNIT)
+    return target;
+
   /* CEIL_DIV_EXPR needs to worry about the addition overflowing,
      but we know it can't.  So add ourselves and then do
      TRUNC_DIV_EXPR.  */
@@ -1375,12 +1378,16 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   HOST_WIDE_INT stack_usage_size = -1;
   rtx_code_label *final_label;
   rtx final_target, target;
+  rtx addr = (virtuals_instantiated
+	      ? plus_constant (Pmode, stack_pointer_rtx,
+			       get_stack_dynamic_offset ())
+	      : virtual_stack_dynamic_rtx);
 
   /* If we're asking for zero bytes, it doesn't matter what we point
      to since we can't dereference it.  But return a reasonable
      address anyway.  */
   if (size == const0_rtx)
-    return virtual_stack_dynamic_rtx;
+    return addr;
 
   /* Otherwise, show we're calling alloca or equivalent.  */
   cfun->calls_alloca = 1;
@@ -1532,7 +1539,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       poly_int64 saved_stack_pointer_delta;
 
       if (!STACK_GROWS_DOWNWARD)
-	emit_move_insn (target, virtual_stack_dynamic_rtx);
+	emit_move_insn (target, force_operand (addr, target));
 
       /* Check stack bounds if necessary.  */
       if (crtl->limit_stack)
@@ -1575,7 +1582,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       stack_pointer_delta = saved_stack_pointer_delta;
 
       if (STACK_GROWS_DOWNWARD)
-	emit_move_insn (target, virtual_stack_dynamic_rtx);
+	emit_move_insn (target, force_operand (addr, target));
     }
 
   suppress_reg_args_size = false;
@@ -1818,7 +1825,10 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 			   gen_int_mode (PROBE_INTERVAL, Pmode), test_addr,
 			   1, OPTAB_WIDEN);
 
-      gcc_assert (temp == test_addr);
+      /* There is no guarantee that expand_binop constructs its result
+	 in TEST_ADDR.  So copy into TEST_ADDR if necessary.  */
+      if (temp != test_addr)
+	emit_move_insn (test_addr, temp);
 
       /* Probe at TEST_ADDR.  */
       emit_stack_probe (test_addr);

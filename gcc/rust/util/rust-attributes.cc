@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -16,37 +16,50 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-ast-visitor.h"
 #include "rust-system.h"
+#include "rust-session-manager.h"
 #include "rust-attributes.h"
 #include "rust-ast.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
+#include "rust-unicode.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Analysis {
 
+using Attrs = Values::Attributes;
+
 // https://doc.rust-lang.org/stable/nightly-rustc/src/rustc_feature/builtin_attrs.rs.html#248
 static const BuiltinAttrDefinition __definitions[]
-  = {{"inline", CODE_GENERATION},
-     {"cold", CODE_GENERATION},
-     {"cfg", EXPANSION},
-     {"cfg_attr", EXPANSION},
-     {"deprecated", STATIC_ANALYSIS},
-     {"allow", STATIC_ANALYSIS},
-     {"doc", HIR_LOWERING},
-     {"must_use", STATIC_ANALYSIS},
-     {"lang", HIR_LOWERING},
-     {"link_section", CODE_GENERATION},
-     {"no_mangle", CODE_GENERATION},
-     {"repr", CODE_GENERATION},
-     {"path", EXPANSION},
-     {"macro_use", NAME_RESOLUTION},
+  = {{Attrs::INLINE, CODE_GENERATION},
+     {Attrs::COLD, CODE_GENERATION},
+     {Attrs::CFG, EXPANSION},
+     {Attrs::CFG_ATTR, EXPANSION},
+     {Attrs::DEPRECATED, STATIC_ANALYSIS},
+     {Attrs::ALLOW, STATIC_ANALYSIS},
+     {Attrs::ALLOW_INTERNAL_UNSTABLE, STATIC_ANALYSIS},
+     {Attrs::DOC, HIR_LOWERING},
+     {Attrs::MUST_USE, STATIC_ANALYSIS},
+     {Attrs::LANG, HIR_LOWERING},
+     {Attrs::LINK_SECTION, CODE_GENERATION},
+     {Attrs::NO_MANGLE, CODE_GENERATION},
+     {Attrs::REPR, CODE_GENERATION},
+     {Attrs::RUSTC_BUILTIN_MACRO, EXPANSION},
+     {Attrs::PATH, EXPANSION},
+     {Attrs::MACRO_USE, NAME_RESOLUTION},
+     {Attrs::MACRO_EXPORT, NAME_RESOLUTION},
+     {Attrs::PROC_MACRO, EXPANSION},
+     {Attrs::PROC_MACRO_DERIVE, EXPANSION},
+     {Attrs::PROC_MACRO_ATTRIBUTE, EXPANSION},
      // FIXME: This is not implemented yet, see
      // https://github.com/Rust-GCC/gccrs/issues/1475
-     {"target_feature", CODE_GENERATION},
+     {Attrs::TARGET_FEATURE, CODE_GENERATION},
      // From now on, these are reserved by the compiler and gated through
      // #![feature(rustc_attrs)]
-     {"rustc_inherit_overflow_checks", CODE_GENERATION}};
+     {Attrs::RUSTC_INHERIT_OVERFLOW_CHECKS, CODE_GENERATION},
+     {Attrs::STABLE, STATIC_ANALYSIS}};
 
 BuiltinAttributeMappings *
 BuiltinAttributeMappings::get ()
@@ -83,6 +96,12 @@ AttributeChecker::AttributeChecker () {}
 void
 AttributeChecker::go (AST::Crate &crate)
 {
+  visit (crate);
+}
+
+void
+AttributeChecker::visit (AST::Crate &crate)
+{
   check_attributes (crate.get_inner_attrs ());
 
   for (auto &item : crate.items)
@@ -114,7 +133,7 @@ is_builtin (const AST::Attribute &attribute, BuiltinAttrDefinition &builtin)
  * characters.
  */
 static void
-check_doc_alias (const std::string &alias_input, const Location &locus)
+check_doc_alias (const std::string &alias_input, const location_t locus)
 {
   // FIXME: The locus here is for the whole attribute. Can we get the locus
   // of the alias input instead?
@@ -161,6 +180,7 @@ check_doc_attribute (const AST::Attribute &attribute)
   switch (attribute.get_attr_input ().get_attr_input_type ())
     {
     case AST::AttrInput::LITERAL:
+    case AST::AttrInput::MACRO:
     case AST::AttrInput::META_ITEM:
       break;
       // FIXME: Handle them as well
@@ -180,12 +200,57 @@ check_doc_attribute (const AST::Attribute &attribute)
 		      ->get_name_value_pair ();
 
 		// FIXME: Check for other stuff than #[doc(alias = ...)]
-		if (name_value.first == "alias")
+		if (name_value.first.as_string () == "alias")
 		  check_doc_alias (name_value.second, attribute.get_locus ());
 	      }
 	  }
 	break;
       }
+    }
+}
+
+static bool
+is_proc_macro_type (const AST::Attribute &attribute)
+{
+  BuiltinAttrDefinition result;
+  if (!is_builtin (attribute, result))
+    return false;
+
+  auto name = result.name;
+  return name == Attrs::PROC_MACRO || name == Attrs::PROC_MACRO_DERIVE
+	 || name == Attrs::PROC_MACRO_ATTRIBUTE;
+}
+
+// Emit an error when one encountered attribute is either #[proc_macro],
+// #[proc_macro_attribute] or #[proc_macro_derive]
+static void
+check_proc_macro_non_function (const AST::AttrVec &attributes)
+{
+  for (auto &attr : attributes)
+    {
+      if (is_proc_macro_type (attr))
+	rust_error_at (
+	  attr.get_locus (),
+	  "the %<#[%s]%> attribute may only be used on bare functions",
+	  attr.get_path ().get_segments ()[0].as_string ().c_str ());
+    }
+}
+
+// Emit an error when one attribute is either proc_macro, proc_macro_attribute
+// or proc_macro_derive
+static void
+check_proc_macro_non_root (AST::AttrVec attributes, location_t loc)
+{
+  for (auto &attr : attributes)
+    {
+      if (is_proc_macro_type (attr))
+	{
+	  rust_error_at (
+	    loc,
+	    "functions tagged with %<#[%s]%> must currently "
+	    "reside in the root of the crate",
+	    attr.get_path ().get_segments ().at (0).as_string ().c_str ());
+	}
     }
 }
 
@@ -201,7 +266,7 @@ AttributeChecker::check_attribute (const AST::Attribute &attribute)
   // TODO: Add checks here for each builtin attribute
   // TODO: Have an enum of builtins as well, switching on strings is annoying
   // and costly
-  if (result.name == "doc")
+  if (result.name == Attrs::DOC)
     check_doc_attribute (attribute);
 }
 
@@ -276,6 +341,10 @@ AttributeChecker::visit (AST::LiteralExpr &)
 
 void
 AttributeChecker::visit (AST::AttrInputLiteral &)
+{}
+
+void
+AttributeChecker::visit (AST::AttrInputMacro &)
 {}
 
 void
@@ -395,8 +464,20 @@ AttributeChecker::visit (AST::ClosureExprInner &)
 {}
 
 void
-AttributeChecker::visit (AST::BlockExpr &)
-{}
+AttributeChecker::visit (AST::BlockExpr &expr)
+{
+  for (auto &stmt : expr.get_statements ())
+    {
+      if (stmt->get_stmt_kind () == AST::Stmt::Kind::Item)
+	{
+	  // Non owning pointer, let it go out of scope
+	  auto item = static_cast<AST::Item *> (stmt.get ());
+	  check_proc_macro_non_root (item->get_outer_attrs (),
+				     item->get_locus ());
+	}
+    }
+  AST::DefaultASTVisitor::visit (expr);
+}
 
 void
 AttributeChecker::visit (AST::ClosureExprInnerTyped &)
@@ -439,10 +520,6 @@ AttributeChecker::visit (AST::ReturnExpr &)
 {}
 
 void
-AttributeChecker::visit (AST::UnsafeBlockExpr &)
-{}
-
-void
 AttributeChecker::visit (AST::LoopExpr &)
 {}
 
@@ -467,27 +544,11 @@ AttributeChecker::visit (AST::IfExprConseqElse &)
 {}
 
 void
-AttributeChecker::visit (AST::IfExprConseqIf &)
-{}
-
-void
-AttributeChecker::visit (AST::IfExprConseqIfLet &)
-{}
-
-void
 AttributeChecker::visit (AST::IfLetExpr &)
 {}
 
 void
 AttributeChecker::visit (AST::IfLetExprConseqElse &)
-{}
-
-void
-AttributeChecker::visit (AST::IfLetExprConseqIf &)
-{}
-
-void
-AttributeChecker::visit (AST::IfLetExprConseqIfLet &)
 {}
 
 void
@@ -516,16 +577,21 @@ AttributeChecker::visit (AST::TypeBoundWhereClauseItem &)
 {}
 
 void
-AttributeChecker::visit (AST::Method &)
-{}
+AttributeChecker::visit (AST::Module &module)
+{
+  check_proc_macro_non_function (module.get_outer_attrs ());
+  for (auto &item : module.get_items ())
+    {
+      check_proc_macro_non_root (item->get_outer_attrs (), item->get_locus ());
+    }
+  AST::DefaultASTVisitor::visit (module);
+}
 
 void
-AttributeChecker::visit (AST::Module &)
-{}
-
-void
-AttributeChecker::visit (AST::ExternCrate &)
-{}
+AttributeChecker::visit (AST::ExternCrate &crate)
+{
+  check_proc_macro_non_function (crate.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::UseTreeGlob &)
@@ -540,26 +606,89 @@ AttributeChecker::visit (AST::UseTreeRebind &)
 {}
 
 void
-AttributeChecker::visit (AST::UseDeclaration &)
-{}
+AttributeChecker::visit (AST::UseDeclaration &declaration)
+{
+  check_proc_macro_non_function (declaration.get_outer_attrs ());
+}
+
+static void
+check_no_mangle_function (const AST::Attribute &attribute,
+			  const AST::Function &fun)
+{
+  if (attribute.has_attr_input ())
+    {
+      rust_error_at (attribute.get_locus (), ErrorCode::E0754,
+		     "malformed %<no_mangle%> attribute input");
+      rust_inform (attribute.get_locus (),
+		   "must be of the form: %<#[no_mangle]%>");
+    }
+  if (!is_ascii_only (fun.get_function_name ().as_string ()))
+    rust_error_at (fun.get_function_name ().get_locus (),
+		   "the %<#[no_mangle]%> attribute requires ASCII identifier");
+}
 
 void
-AttributeChecker::visit (AST::Function &)
-{}
+AttributeChecker::visit (AST::Function &fun)
+{
+  auto check_crate_type = [] (const char *name, AST::Attribute &attribute) {
+    if (!Session::get_instance ().options.is_proc_macro ())
+      rust_error_at (attribute.get_locus (),
+		     "the %<#[%s]%> attribute is only usable with crates of "
+		     "the %<proc-macro%> crate type",
+		     name);
+  };
+
+  BuiltinAttrDefinition result;
+  for (auto &attribute : fun.get_outer_attrs ())
+    {
+      if (!is_builtin (attribute, result))
+	return;
+
+      auto name = result.name.c_str ();
+
+      if (result.name == Attrs::PROC_MACRO_DERIVE)
+	{
+	  if (!attribute.has_attr_input ())
+	    {
+	      rust_error_at (attribute.get_locus (),
+			     "malformed %<%s%> attribute input", name);
+	      rust_inform (
+		attribute.get_locus (),
+		"must be of the form: %<#[proc_macro_derive(TraitName, "
+		"/*opt*/ attributes(name1, name2, ...))]%>");
+	    }
+	  check_crate_type (name, attribute);
+	}
+      else if (result.name == Attrs::PROC_MACRO
+	       || result.name == Attrs::PROC_MACRO_ATTRIBUTE)
+	{
+	  check_crate_type (name, attribute);
+	}
+      else if (result.name == "no_mangle")
+	check_no_mangle_function (attribute, fun);
+    }
+  if (fun.has_body ())
+    fun.get_definition ().value ()->accept_vis (*this);
+}
 
 void
-AttributeChecker::visit (AST::TypeAlias &)
-{}
+AttributeChecker::visit (AST::TypeAlias &alias)
+{
+  check_proc_macro_non_function (alias.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::StructStruct &struct_item)
 {
   check_attributes (struct_item.get_outer_attrs ());
+  check_proc_macro_non_function (struct_item.get_outer_attrs ());
 }
 
 void
-AttributeChecker::visit (AST::TupleStruct &)
-{}
+AttributeChecker::visit (AST::TupleStruct &tuplestruct)
+{
+  check_proc_macro_non_function (tuplestruct.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::EnumItem &)
@@ -578,28 +707,28 @@ AttributeChecker::visit (AST::EnumItemDiscriminant &)
 {}
 
 void
-AttributeChecker::visit (AST::Enum &)
-{}
+AttributeChecker::visit (AST::Enum &enumeration)
+{
+  check_proc_macro_non_function (enumeration.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::Union &)
-{}
+AttributeChecker::visit (AST::Union &u)
+{
+  check_proc_macro_non_function (u.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::ConstantItem &)
-{}
+AttributeChecker::visit (AST::ConstantItem &item)
+{
+  check_proc_macro_non_function (item.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::StaticItem &)
-{}
-
-void
-AttributeChecker::visit (AST::TraitItemFunc &)
-{}
-
-void
-AttributeChecker::visit (AST::TraitItemMethod &)
-{}
+AttributeChecker::visit (AST::StaticItem &item)
+{
+  check_proc_macro_non_function (item.get_outer_attrs ());
+}
 
 void
 AttributeChecker::visit (AST::TraitItemConst &)
@@ -610,15 +739,27 @@ AttributeChecker::visit (AST::TraitItemType &)
 {}
 
 void
-AttributeChecker::visit (AST::Trait &)
-{}
+AttributeChecker::visit (AST::Trait &trait)
+{
+  check_proc_macro_non_function (trait.get_outer_attrs ());
+}
 
 void
-AttributeChecker::visit (AST::InherentImpl &)
-{}
+AttributeChecker::visit (AST::InherentImpl &impl)
+{
+  check_proc_macro_non_function (impl.get_outer_attrs ());
+  AST::DefaultASTVisitor::visit (impl);
+}
 
 void
-AttributeChecker::visit (AST::TraitImpl &)
+AttributeChecker::visit (AST::TraitImpl &impl)
+{
+  check_proc_macro_non_function (impl.get_outer_attrs ());
+  AST::DefaultASTVisitor::visit (impl);
+}
+
+void
+AttributeChecker::visit (AST::ExternalTypeItem &)
 {}
 
 void
@@ -630,8 +771,10 @@ AttributeChecker::visit (AST::ExternalFunctionItem &)
 {}
 
 void
-AttributeChecker::visit (AST::ExternBlock &)
-{}
+AttributeChecker::visit (AST::ExternBlock &block)
+{
+  check_proc_macro_non_function (block.get_outer_attrs ());
+}
 
 // rust-macro.h
 void
@@ -689,6 +832,10 @@ AttributeChecker::visit (AST::IdentifierPattern &)
 
 void
 AttributeChecker::visit (AST::WildcardPattern &)
+{}
+
+void
+AttributeChecker::visit (AST::RestPattern &)
 {}
 
 // void AttributeChecker::visit(RangePatternBound& ){}
@@ -781,11 +928,7 @@ AttributeChecker::visit (AST::LetStmt &)
 {}
 
 void
-AttributeChecker::visit (AST::ExprStmtWithoutBlock &)
-{}
-
-void
-AttributeChecker::visit (AST::ExprStmtWithBlock &)
+AttributeChecker::visit (AST::ExprStmt &)
 {}
 
 // rust-type.h
@@ -843,6 +986,18 @@ AttributeChecker::visit (AST::InferredType &)
 
 void
 AttributeChecker::visit (AST::BareFunctionType &)
+{}
+
+void
+AttributeChecker::visit (AST::SelfParam &)
+{}
+
+void
+AttributeChecker::visit (AST::VariadicParam &)
+{}
+
+void
+AttributeChecker::visit (AST::FunctionParam &)
 {}
 
 } // namespace Analysis

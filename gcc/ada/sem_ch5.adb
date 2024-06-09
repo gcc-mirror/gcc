@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -597,10 +597,13 @@ package body Sem_Ch5 is
 
       --  Error of assigning to limited type. We do however allow this in
       --  certain cases where the front end generates the assignments.
+      --  Comes_From_Source test is needed to allow compiler-generated
+      --  streaming/put_image subprograms, which may ignore privacy.
 
       elsif Is_Limited_Type (T1)
         and then not Assignment_OK (Lhs)
         and then not Assignment_OK (Original_Node (Lhs))
+        and then (Comes_From_Source (N) or Is_Immutably_Limited_Type (T1))
       then
          --  CPP constructors can only be called in declarations
 
@@ -1473,7 +1476,7 @@ package body Sem_Ch5 is
       --  out non-discretes may resolve the ambiguity.
       --  But GNAT extensions allow casing on non-discretes.
 
-      elsif Core_Extensions_Allowed and then Is_Overloaded (Exp) then
+      elsif All_Extensions_Allowed and then Is_Overloaded (Exp) then
 
          --  It would be nice if we could generate all the right error
          --  messages by calling "Resolve (Exp, Any_Type);" in the
@@ -1491,12 +1494,21 @@ package body Sem_Ch5 is
       --  Check for a GNAT-extension "general" case statement (i.e., one where
       --  the type of the selecting expression is not discrete).
 
-      elsif Core_Extensions_Allowed
+      elsif All_Extensions_Allowed
          and then not Is_Discrete_Type (Etype (Exp))
       then
          Resolve (Exp, Etype (Exp));
          Exp_Type := Etype (Exp);
          Is_General_Case_Statement := True;
+         if not (Is_Record_Type (Exp_Type) or Is_Array_Type (Exp_Type)) then
+            Error_Msg_N
+              ("selecting expression of general case statement " &
+               "must be a record or an array",
+               Exp);
+
+            --  Avoid cascading errors
+            return;
+         end if;
       else
          Analyze_And_Resolve (Exp, Any_Discrete);
          Exp_Type := Etype (Exp);
@@ -1529,7 +1541,7 @@ package body Sem_Ch5 is
            ("(Ada 83) case expression cannot be of a generic type", Exp);
          return;
 
-      elsif not Core_Extensions_Allowed
+      elsif not All_Extensions_Allowed
         and then not Is_Discrete_Type (Exp_Type)
       then
          Error_Msg_N
@@ -2113,11 +2125,28 @@ package body Sem_Ch5 is
          Ent : Entity_Id;
 
       begin
-         --  If iterator type is derived, the cursor is declared in the scope
-         --  of the parent type.
+         --  If the iterator type is derived and it has an iterator interface
+         --  type as an ancestor, then the cursor type is declared in the scope
+         --  of that interface type.
 
          if Is_Derived_Type (Typ) then
-            Ent := First_Entity (Scope (Etype (Typ)));
+            declare
+               Iter_Iface : constant Entity_Id :=
+                              Iterator_Interface_Ancestor (Typ);
+
+            begin
+               if Present (Iter_Iface) then
+                  Ent := First_Entity (Scope (Iter_Iface));
+
+               --  If there's not an iterator interface, then retrieve the
+               --  scope associated with the parent type and start from its
+               --  first entity.
+
+               else
+                  Ent := First_Entity (Scope (Etype (Typ)));
+               end if;
+            end;
+
          else
             Ent := First_Entity (Scope (Typ));
          end if;
@@ -2141,7 +2170,7 @@ package body Sem_Ch5 is
          return Etype (Ent);
       end Get_Cursor_Type;
 
-   --   Start of processing for Analyze_Iterator_Specification
+   --  Start of processing for Analyze_Iterator_Specification
 
    begin
       Enter_Name (Def_Id);
@@ -3434,14 +3463,6 @@ package body Sem_Ch5 is
 
       if Present (Iterator_Filter (N)) then
          Preanalyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
-      end if;
-
-      --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).
-      --  This check is relevant only when SPARK_Mode is on as it is not a
-      --  standard Ada legality check.
-
-      if SPARK_Mode = On and then Is_Effectively_Volatile (Id) then
-         Error_Msg_N ("loop parameter cannot be volatile", Id);
       end if;
    end Analyze_Loop_Parameter_Specification;
 

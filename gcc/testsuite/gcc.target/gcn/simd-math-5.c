@@ -1,6 +1,9 @@
 /* Test that the auto-vectorizer uses the libgcc vectorized division and
    modulus functions.  */
 
+/* The 'scan-assembler' directives are specific to 64-lane vectors.
+   { dg-additional-options --param=gcn-preferred-vectorization-factor=64 } */
+
 /* Setting it this way ensures the run tests use the same flag as the
    compile tests.  */
 #pragma GCC optimize("O2")

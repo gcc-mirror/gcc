@@ -75,7 +75,7 @@ int64x2_t s64q_6(int64_t a0, int64_t a1) {
 
 /*
 ** f64q_1:
-**	ins	v0\.d\[1\], v1\.d\[0\]
+**	uzp1	v0\.2d, v0\.2d, v1\.2d
 **	ret
 */
 float64x2_t f64q_1(float64_t a0, float64_t a1) {
@@ -98,7 +98,7 @@ float64x2_t f64q_2(float64_t a0, float64_t *ptr) {
 /*
 ** f64q_3:
 **	ldr	d0, \[x0\]
-**	ins	v0\.d\[1\], v1\.d\[0\]
+**	uzp1	v0\.2d, v0\.2d, v1\.2d
 **	ret
 */
 float64x2_t f64q_3(float64_t a0, float64_t a1, float64_t *ptr) {
@@ -140,7 +140,7 @@ float64x2_t f64q_6(float64_t a0, float64_t a1) {
 
 /*
 ** s32q_1:
-**	ins	v0\.d\[1\], v1\.d\[0\]
+**	uzp1	v0\.2d, v0\.2d, v1\.2d
 **	ret
 */
 int32x4_t s32q_1(int32x2_t a0, int32x2_t a1) {
@@ -157,7 +157,7 @@ int32x4_t s32q_2(int32x2_t a0, int32x2_t *ptr) {
 /*
 ** s32q_3:
 **	ldr	d0, \[x0\]
-**	ins	v0\.d\[1\], v1\.d\[0\]
+**	uzp1	v0\.2d, v0\.2d, v1\.2d
 **	ret
 */
 int32x4_t s32q_3(int32x2_t a0, int32x2_t a1, int32x2_t *ptr) {
@@ -204,7 +204,7 @@ int32x4_t s32q_6(int32x2_t a0, int32x2_t a1) {
 
 /*
 ** f32q_1:
-**	ins	v0\.d\[1\], v1\.d\[0\]
+**	uzp1	v0\.2d, v0\.2d, v1\.2d
 **	ret
 */
 float32x4_t f32q_1(float32x2_t a0, float32x2_t a1) {
@@ -221,7 +221,7 @@ float32x4_t f32q_2(float32x2_t a0, float32x2_t *ptr) {
 /*
 ** f32q_3:
 **	ldr	d0, \[x0\]
-**	ins	v0\.d\[1\], v1\.d\[0\]
+**	uzp1	v0\.2d, v0\.2d, v1\.2d
 **	ret
 */
 float32x4_t f32q_3(float32x2_t a0, float32x2_t a1, float32x2_t *ptr) {

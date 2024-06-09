@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -42,13 +42,14 @@ TyVar::get_tyty () const
 }
 
 TyVar
-TyVar::get_implicit_infer_var (Location locus)
+TyVar::get_implicit_infer_var (location_t locus)
 {
   auto mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
 
   InferType *infer = new InferType (mappings->get_next_hir_id (),
-				    InferType::InferTypeKind::GENERAL, locus);
+				    InferType::InferTypeKind::GENERAL,
+				    InferType::TypeHint::Default (), locus);
   context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
 					       UNKNOWN_NODEID,
 					       infer->get_ref (),
@@ -102,7 +103,7 @@ TyVar::monomorphized_clone () const
   return TyVar (c->get_ref ());
 }
 
-TyWithLocation::TyWithLocation (BaseType *ty, Location locus)
+TyWithLocation::TyWithLocation (BaseType *ty, location_t locus)
   : ty (ty), locus (locus)
 {}
 

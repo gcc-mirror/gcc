@@ -17,7 +17,7 @@ sdbm__splpage (char *pag, char *New, long int sbit)
 	register int off = 1024 ;
 	char cur[1024 ];
 	register short *ino = (short *) cur;
-	(void) memcpy(cur, pag, 1024 );
+	(void) __builtin_memcpy(cur, pag, 1024 );
 	(void) ({ void *__s = ( pag ); __builtin_memset ( __s , '\0',     1024   ) ; __s; });
 	(void) ({ void *__s = ( New ); __builtin_memset ( __s , '\0',     1024   ) ; __s; });
 	n = ino[0];

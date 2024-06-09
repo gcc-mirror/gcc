@@ -1,6 +1,6 @@
 ;; Machine Description for LARCH Loongson SX ASE
 ;;
-;; Copyright (C) 2018 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -34,28 +34,16 @@
   UNSPEC_LSX_VBITSETI
   UNSPEC_LSX_BRANCH_V
   UNSPEC_LSX_BRANCH
-  UNSPEC_LSX_VFCMP_CAF
   UNSPEC_LSX_VFCLASS
-  UNSPEC_LSX_VFCMP_CUNE
   UNSPEC_LSX_VFCVT
   UNSPEC_LSX_VFCVTH
   UNSPEC_LSX_VFCVTL
   UNSPEC_LSX_VFLOGB
   UNSPEC_LSX_VFRECIP
+  UNSPEC_LSX_VFRECIPE
   UNSPEC_LSX_VFRINT
   UNSPEC_LSX_VFRSQRT
-  UNSPEC_LSX_VFCMP_SAF
-  UNSPEC_LSX_VFCMP_SEQ
-  UNSPEC_LSX_VFCMP_SLE
-  UNSPEC_LSX_VFCMP_SLT
-  UNSPEC_LSX_VFCMP_SNE
-  UNSPEC_LSX_VFCMP_SOR
-  UNSPEC_LSX_VFCMP_SUEQ
-  UNSPEC_LSX_VFCMP_SULE
-  UNSPEC_LSX_VFCMP_SULT
-  UNSPEC_LSX_VFCMP_SUN
-  UNSPEC_LSX_VFCMP_SUNE
-  UNSPEC_LSX_VFTINT_S
+  UNSPEC_LSX_VFRSQRTE
   UNSPEC_LSX_VFTINT_U
   UNSPEC_LSX_VSAT_S
   UNSPEC_LSX_VSAT_U
@@ -65,8 +53,6 @@
   UNSPEC_LSX_VSRLR
   UNSPEC_LSX_VSRLRI
   UNSPEC_LSX_VSHUF
-  UNSPEC_LSX_VMUH_S
-  UNSPEC_LSX_VMUH_U
   UNSPEC_LSX_VEXTW_S
   UNSPEC_LSX_VEXTW_U
   UNSPEC_LSX_VSLLWIL_S
@@ -89,9 +75,6 @@
   UNSPEC_LSX_VEXTRINS
   UNSPEC_LSX_VMSKLTZ
   UNSPEC_LSX_VSIGNCOV
-  UNSPEC_LSX_VFTINTRNE
-  UNSPEC_LSX_VFTINTRP
-  UNSPEC_LSX_VFTINTRM
   UNSPEC_LSX_VFTINT_W_D
   UNSPEC_LSX_VFFINT_S_L
   UNSPEC_LSX_VFTINTRZ_W_D
@@ -110,14 +93,6 @@
   UNSPEC_LSX_VFTINTRNEL_L_S
   UNSPEC_LSX_VFTINTRNEH_L_S
   UNSPEC_LSX_VFTINTH_L_H
-  UNSPEC_LSX_VFRINTRNE_S
-  UNSPEC_LSX_VFRINTRNE_D
-  UNSPEC_LSX_VFRINTRZ_S
-  UNSPEC_LSX_VFRINTRZ_D
-  UNSPEC_LSX_VFRINTRP_S
-  UNSPEC_LSX_VFRINTRP_D
-  UNSPEC_LSX_VFRINTRM_S
-  UNSPEC_LSX_VFRINTRM_D
   UNSPEC_LSX_VSSRARN_S
   UNSPEC_LSX_VSSRARN_U
   UNSPEC_LSX_VSSRLN_U
@@ -155,7 +130,6 @@
   UNSPEC_LSX_VMADDWOD
   UNSPEC_LSX_VMADDWOD2
   UNSPEC_LSX_VMADDWOD3
-  UNSPEC_LSX_VROTR
   UNSPEC_LSX_VADD_Q
   UNSPEC_LSX_VSUB_Q
   UNSPEC_LSX_VEXTH_Q_D
@@ -221,9 +195,6 @@
 ;; Only used for copy_{u,s}.w and vilvh.
 (define_mode_iterator LSX_W    [V4SI V4SF])
 
-;; Only integer modes.
-(define_mode_iterator ILSX     [V2DI V4SI V8HI V16QI])
-
 ;; As ILSX but excludes V16QI.
 (define_mode_iterator ILSX_DWH [V2DI V4SI V8HI])
 
@@ -242,20 +213,8 @@
 ;;;; Only integer modes for fixed-point madd_q/maddr_q.
 ;;(define_mode_iterator ILSX_WH  [V4SI V8HI])
 
-;; Only floating-point modes.
-(define_mode_iterator FLSX     [V2DF V4SF])
-
 ;; Only used for immediate set shuffle elements instruction.
 (define_mode_iterator LSX_WHB_W [V4SI V8HI V16QI V4SF])
-
-;; The attribute gives the integer vector mode with same size.
-(define_mode_attr VIMODE
-  [(V2DF "V2DI")
-   (V4SF "V4SI")
-   (V2DI "V2DI")
-   (V4SI "V4SI")
-   (V8HI "V8HI")
-   (V16QI "V16QI")])
 
 ;; The attribute gives half modes for vector modes.
 (define_mode_attr VHMODE
@@ -391,46 +350,6 @@
    (V4SI "exp_4")
    (V8HI "exp_8")
    (V16QI "exp_16")])
-
-;; This attribute is used to form an immediate operand constraint using
-;; "const_<bitimm>_operand".
-(define_mode_attr bitimm
-  [(V16QI "uimm3")
-   (V8HI  "uimm4")
-   (V4SI  "uimm5")
-   (V2DI  "uimm6")])
-
-
-(define_int_iterator FRINT_S [UNSPEC_LSX_VFRINTRP_S
-			    UNSPEC_LSX_VFRINTRZ_S
-			    UNSPEC_LSX_VFRINT
-			    UNSPEC_LSX_VFRINTRM_S])
-
-(define_int_iterator FRINT_D [UNSPEC_LSX_VFRINTRP_D
-			    UNSPEC_LSX_VFRINTRZ_D
-			    UNSPEC_LSX_VFRINT
-			    UNSPEC_LSX_VFRINTRM_D])
-
-(define_int_attr frint_pattern_s
-  [(UNSPEC_LSX_VFRINTRP_S  "ceil")
-   (UNSPEC_LSX_VFRINTRZ_S  "btrunc")
-   (UNSPEC_LSX_VFRINT	   "rint")
-   (UNSPEC_LSX_VFRINTRM_S  "floor")])
-
-(define_int_attr frint_pattern_d
-  [(UNSPEC_LSX_VFRINTRP_D  "ceil")
-   (UNSPEC_LSX_VFRINTRZ_D  "btrunc")
-   (UNSPEC_LSX_VFRINT	   "rint")
-   (UNSPEC_LSX_VFRINTRM_D  "floor")])
-
-(define_int_attr frint_suffix
-  [(UNSPEC_LSX_VFRINTRP_S  "rp")
-   (UNSPEC_LSX_VFRINTRP_D  "rp")
-   (UNSPEC_LSX_VFRINTRZ_S  "rz")
-   (UNSPEC_LSX_VFRINTRZ_D  "rz")
-   (UNSPEC_LSX_VFRINT	   "")
-   (UNSPEC_LSX_VFRINTRM_S  "rm")
-   (UNSPEC_LSX_VFRINTRM_D  "rm")])
 
 (define_expand "vec_init<mode><unitmode>"
   [(match_operand:LSX 0 "register_operand")
@@ -599,8 +518,7 @@
 	   (match_operand:LSX 3 "register_operand")]))]
   "ISA_HAS_LSX"
 {
-  bool ok = loongarch_expand_vec_cmp (operands);
-  gcc_assert (ok);
+  loongarch_expand_vec_cmp (operands);
   DONE;
 })
 
@@ -611,8 +529,7 @@
 	   (match_operand:ILSX 3 "register_operand")]))]
   "ISA_HAS_LSX"
 {
-  bool ok = loongarch_expand_vec_cmp (operands);
-  gcc_assert (ok);
+  loongarch_expand_vec_cmp (operands);
   DONE;
 })
 
@@ -644,15 +561,15 @@
   DONE;
 })
 
-(define_expand "vcond_mask_<ILSX:mode><ILSX:mode>"
-  [(match_operand:ILSX 0 "register_operand")
-   (match_operand:ILSX 1 "reg_or_m1_operand")
-   (match_operand:ILSX 2 "reg_or_0_operand")
-   (match_operand:ILSX 3 "register_operand")]
+(define_expand "vcond_mask_<mode><mode_i>"
+  [(match_operand:LSX 0 "register_operand")
+   (match_operand:LSX 1 "reg_or_m1_operand")
+   (match_operand:LSX 2 "reg_or_0_operand")
+   (match_operand:<VIMODE> 3 "register_operand")]
   "ISA_HAS_LSX"
 {
-  loongarch_expand_vec_cond_mask_expr (<ILSX:MODE>mode,
-				      <ILSX:VIMODE>mode, operands);
+  loongarch_expand_vec_cond_mask_expr (<MODE>mode,
+				       <VIMODE>mode, operands);
   DONE;
 })
 
@@ -665,27 +582,10 @@
 	  (match_operand 3 "const_<bitmask>_operand" "")))]
   "ISA_HAS_LSX"
 {
-  if (!TARGET_64BIT && (<MODE>mode == V2DImode || <MODE>mode == V2DFmode))
-    return "#";
-  else
-    return "vinsgr2vr.<lsxfmt>\t%w0,%z1,%y3";
+  return "vinsgr2vr.<lsxfmt>\t%w0,%z1,%y3";
 }
   [(set_attr "type" "simd_insert")
    (set_attr "mode" "<MODE>")])
-
-(define_split
-  [(set (match_operand:LSX_D 0 "register_operand")
-	(vec_merge:LSX_D
-	  (vec_duplicate:LSX_D
-	    (match_operand:<UNITMODE> 1 "<LSX_D:lsx_d>_operand"))
-	  (match_operand:LSX_D 2 "register_operand")
-	  (match_operand 3 "const_<bitmask>_operand")))]
-  "reload_completed && ISA_HAS_LSX && !TARGET_64BIT"
-  [(const_int 0)]
-{
-  loongarch_split_lsx_insert_d (operands[0], operands[2], operands[3], operands[1]);
-  DONE;
-})
 
 (define_insn "lsx_vextrins_<lsxfmt_f>_internal"
   [(set (match_operand:LSX 0 "register_operand" "=f")
@@ -736,69 +636,25 @@
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "<MODE>")])
 
-(define_insn_and_split "lsx_vpickve2gr_du"
+(define_insn "lsx_vpickve2gr_du"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(vec_select:DI
 	  (match_operand:V2DI 1 "register_operand" "f")
 	  (parallel [(match_operand 2 "const_0_or_1_operand" "")])))]
   "ISA_HAS_LSX"
-{
-  if (TARGET_64BIT)
-    return "vpickve2gr.du\t%0,%w1,%2";
-  else
-    return "#";
-}
-  "reload_completed && ISA_HAS_LSX && !TARGET_64BIT"
-  [(const_int 0)]
-{
-  loongarch_split_lsx_copy_d (operands[0], operands[1], operands[2],
-			      gen_lsx_vpickve2gr_wu);
-  DONE;
-}
+  "vpickve2gr.du\t%0,%w1,%2"
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "V2DI")])
 
-(define_insn_and_split "lsx_vpickve2gr_<lsxfmt_f>"
+(define_insn "lsx_vpickve2gr_<lsxfmt_f>"
   [(set (match_operand:<UNITMODE> 0 "register_operand" "=r")
 	(vec_select:<UNITMODE>
 	  (match_operand:LSX_D 1 "register_operand" "f")
 	  (parallel [(match_operand 2 "const_<indeximm>_operand" "")])))]
   "ISA_HAS_LSX"
-{
-  if (TARGET_64BIT)
-    return "vpickve2gr.<lsxfmt>\t%0,%w1,%2";
-  else
-    return "#";
-}
-  "reload_completed && ISA_HAS_LSX && !TARGET_64BIT"
-  [(const_int 0)]
-{
-  loongarch_split_lsx_copy_d (operands[0], operands[1], operands[2],
-			      gen_lsx_vpickve2gr_w);
-  DONE;
-}
+  "vpickve2gr.<lsxfmt>\t%0,%w1,%2"
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "<MODE>")])
-
-
-(define_expand "abs<mode>2"
-  [(match_operand:ILSX 0 "register_operand" "=f")
-   (abs:ILSX (match_operand:ILSX 1 "register_operand" "f"))]
-  "ISA_HAS_LSX"
-{
-  if (ISA_HAS_LSX)
-  {
-    emit_insn (gen_vabs<mode>2 (operands[0], operands[1]));
-    DONE;
-  }
-  else
-  {
-    rtx reg = gen_reg_rtx (<MODE>mode);
-    emit_move_insn (reg, CONST0_RTX (<MODE>mode));
-    emit_insn (gen_lsx_vadda_<lsxfmt> (operands[0], operands[1], reg));
-    DONE;
-  }
-})
 
 (define_expand "neg<mode>2"
   [(set (match_operand:ILSX 0 "register_operand")
@@ -806,17 +662,6 @@
   "ISA_HAS_LSX"
 {
   emit_insn (gen_vneg<mode>2 (operands[0], operands[1]));
-  DONE;
-})
-
-(define_expand "neg<mode>2"
-  [(set (match_operand:FLSX 0 "register_operand")
-	(neg:FLSX (match_operand:FLSX 1 "register_operand")))]
-  "ISA_HAS_LSX"
-{
-  rtx reg = gen_reg_rtx (<MODE>mode);
-  emit_move_insn (reg, CONST0_RTX (<MODE>mode));
-  emit_insn (gen_sub<mode>3 (operands[0], reg, operands[1]));
   DONE;
 })
 
@@ -837,7 +682,7 @@
  [(match_operand:LSX 0 "register_operand")
   (match_operand:LSX 1 "register_operand")
   (match_operand:LSX 2 "register_operand")
-  (match_operand:LSX 3 "register_operand")]
+  (match_operand:<VIMODE> 3 "register_operand")]
   "ISA_HAS_LSX"
 {
   loongarch_expand_vec_perm (operands[0], operands[1],
@@ -875,47 +720,21 @@
 })
 
 (define_insn "mov<mode>_lsx"
-  [(set (match_operand:LSX 0 "nonimmediate_operand" "=f,f,R,*r,*f")
-	(match_operand:LSX 1 "move_operand" "fYGYI,R,f,*f,*r"))]
+  [(set (match_operand:LSX 0 "nonimmediate_operand" "=f,f,R,*r,*f,*r")
+	(match_operand:LSX 1 "move_operand" "fYGYI,R,f,*f,*r,*r"))]
   "ISA_HAS_LSX"
 { return loongarch_output_move (operands[0], operands[1]); }
-  [(set_attr "type" "simd_move,simd_load,simd_store,simd_copy,simd_insert")
+  [(set_attr "type" "simd_move,simd_load,simd_store,simd_copy,simd_insert,simd_copy")
    (set_attr "mode" "<MODE>")])
 
 (define_split
   [(set (match_operand:LSX 0 "nonimmediate_operand")
 	(match_operand:LSX 1 "move_operand"))]
   "reload_completed && ISA_HAS_LSX
-   && loongarch_split_move_insn_p (operands[0], operands[1])"
+   && loongarch_split_move_p (operands[0], operands[1])"
   [(const_int 0)]
 {
-  loongarch_split_move_insn (operands[0], operands[1], curr_insn);
-  DONE;
-})
-
-;; Offset load
-(define_expand "lsx_ld_<lsxfmt_f>"
-  [(match_operand:LSX 0 "register_operand")
-   (match_operand 1 "pmode_register_operand")
-   (match_operand 2 "aq10<lsxfmt>_operand")]
-  "ISA_HAS_LSX"
-{
-  rtx addr = plus_constant (GET_MODE (operands[1]), operands[1],
-			    INTVAL (operands[2]));
-  loongarch_emit_move (operands[0], gen_rtx_MEM (<MODE>mode, addr));
-  DONE;
-})
-
-;; Offset store
-(define_expand "lsx_st_<lsxfmt_f>"
-  [(match_operand:LSX 0 "register_operand")
-   (match_operand 1 "pmode_register_operand")
-   (match_operand 2 "aq10<lsxfmt>_operand")]
-  "ISA_HAS_LSX"
-{
-  rtx addr = plus_constant (GET_MODE (operands[1]), operands[1],
-			    INTVAL (operands[2]));
-  loongarch_emit_move (gen_rtx_MEM (<MODE>mode, addr), operands[0]);
+  loongarch_split_move (operands[0], operands[1]);
   DONE;
 })
 
@@ -1027,10 +846,10 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "xor<mode>3"
-  [(set (match_operand:ILSX 0 "register_operand" "=f,f,f")
-	(xor:ILSX
-	  (match_operand:ILSX 1 "register_operand" "f,f,f")
-	  (match_operand:ILSX 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
+  [(set (match_operand:LSX 0 "register_operand" "=f,f,f")
+	(xor:LSX
+	  (match_operand:LSX 1 "register_operand" "f,f,f")
+	  (match_operand:LSX 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
   "ISA_HAS_LSX"
   "@
    vxor.v\t%w0,%w1,%w2
@@ -1151,7 +970,25 @@
   [(set_attr "type" "simd_fmul")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "div<mode>3"
+(define_expand "div<mode>3"
+  [(set (match_operand:FLSX 0 "register_operand")
+    (div:FLSX (match_operand:FLSX 1 "reg_or_vecotr_1_operand")
+	      (match_operand:FLSX 2 "register_operand")))]
+  "ISA_HAS_LSX"
+{
+  if (<MODE>mode == V4SFmode
+    && TARGET_RECIP_VEC_DIV
+    && optimize_insn_for_speed_p ()
+    && flag_finite_math_only && !flag_trapping_math
+    && flag_unsafe_math_optimizations)
+  {
+    loongarch_emit_swdivsf (operands[0], operands[1],
+	operands[2], V4SFmode);
+    DONE;
+  }
+})
+
+(define_insn "*div<mode>3"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
 	(div:FLSX (match_operand:FLSX 1 "register_operand" "f")
 		  (match_operand:FLSX 2 "register_operand" "f")))]
@@ -1180,7 +1017,23 @@
   [(set_attr "type" "simd_fmadd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "sqrt<mode>2"
+(define_expand "sqrt<mode>2"
+  [(set (match_operand:FLSX 0 "register_operand")
+    (sqrt:FLSX (match_operand:FLSX 1 "register_operand")))]
+  "ISA_HAS_LSX"
+{
+  if (<MODE>mode == V4SFmode
+      && TARGET_RECIP_VEC_SQRT
+      && flag_unsafe_math_optimizations
+      && optimize_insn_for_speed_p ()
+      && flag_finite_math_only && !flag_trapping_math)
+    {
+      loongarch_emit_swrsqrtsf (operands[0], operands[1], V4SFmode, 0);
+      DONE;
+    }
+})
+
+(define_insn "*sqrt<mode>2"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
 	(sqrt:FLSX (match_operand:FLSX 1 "register_operand" "f")))]
   "ISA_HAS_LSX"
@@ -1411,76 +1264,6 @@
   [(set_attr "type" "simd_fclass")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vfcmp_caf_<flsxfmt>"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(unspec:<VIMODE> [(match_operand:FLSX 1 "register_operand" "f")
-			  (match_operand:FLSX 2 "register_operand" "f")]
-			 UNSPEC_LSX_VFCMP_CAF))]
-  "ISA_HAS_LSX"
-  "vfcmp.caf.<flsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vfcmp_cune_<FLSX:flsxfmt>"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(unspec:<VIMODE> [(match_operand:FLSX 1 "register_operand" "f")
-			  (match_operand:FLSX 2 "register_operand" "f")]
-			 UNSPEC_LSX_VFCMP_CUNE))]
-  "ISA_HAS_LSX"
-  "vfcmp.cune.<FLSX:flsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
-(define_code_iterator vfcond [unordered ordered eq ne le lt uneq unle unlt])
-
-(define_code_attr fcc
-  [(unordered "cun")
-   (ordered   "cor")
-   (eq	      "ceq")
-   (ne	      "cne")
-   (uneq      "cueq")
-   (unle      "cule")
-   (unlt      "cult")
-   (le	      "cle")
-   (lt	      "clt")])
-
-(define_int_iterator FSC_UNS [UNSPEC_LSX_VFCMP_SAF UNSPEC_LSX_VFCMP_SUN UNSPEC_LSX_VFCMP_SOR
-			      UNSPEC_LSX_VFCMP_SEQ UNSPEC_LSX_VFCMP_SNE UNSPEC_LSX_VFCMP_SUEQ
-			      UNSPEC_LSX_VFCMP_SUNE UNSPEC_LSX_VFCMP_SULE UNSPEC_LSX_VFCMP_SULT
-			      UNSPEC_LSX_VFCMP_SLE UNSPEC_LSX_VFCMP_SLT])
-
-(define_int_attr fsc
-  [(UNSPEC_LSX_VFCMP_SAF  "saf")
-   (UNSPEC_LSX_VFCMP_SUN  "sun")
-   (UNSPEC_LSX_VFCMP_SOR  "sor")
-   (UNSPEC_LSX_VFCMP_SEQ  "seq")
-   (UNSPEC_LSX_VFCMP_SNE  "sne")
-   (UNSPEC_LSX_VFCMP_SUEQ "sueq")
-   (UNSPEC_LSX_VFCMP_SUNE "sune")
-   (UNSPEC_LSX_VFCMP_SULE "sule")
-   (UNSPEC_LSX_VFCMP_SULT "sult")
-   (UNSPEC_LSX_VFCMP_SLE  "sle")
-   (UNSPEC_LSX_VFCMP_SLT  "slt")])
-
-(define_insn "lsx_vfcmp_<vfcond:fcc>_<FLSX:flsxfmt>"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(vfcond:<VIMODE> (match_operand:FLSX 1 "register_operand" "f")
-			 (match_operand:FLSX 2 "register_operand" "f")))]
-  "ISA_HAS_LSX"
-  "vfcmp.<vfcond:fcc>.<FLSX:flsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vfcmp_<fsc>_<FLSX:flsxfmt>"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(unspec:<VIMODE> [(match_operand:FLSX 1 "register_operand" "f")
-			  (match_operand:FLSX 2 "register_operand" "f")]
-			 FSC_UNS))]
-  "ISA_HAS_LSX"
-  "vfcmp.<fsc>.<FLSX:flsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_fcmp")
-   (set_attr "mode" "<MODE>")])
-
 (define_mode_attr fint
   [(V4SF "v4si")
    (V2DF "v2di")])
@@ -1523,26 +1306,12 @@
   "ISA_HAS_LSX"
 {
   if (which_alternative == 1)
-    return "ldi.<lsxfmt>\t%w0,0";
+    return "vldi.<lsxfmt>\t%w0,0";
 
-  if (!TARGET_64BIT && (<MODE>mode == V2DImode || <MODE>mode == V2DFmode))
-    return "#";
-  else
-    return "vreplgr2vr.<lsxfmt>\t%w0,%z1";
+  return "vreplgr2vr.<lsxfmt>\t%w0,%z1";
 }
   [(set_attr "type" "simd_fill")
    (set_attr "mode" "<MODE>")])
-
-(define_split
-  [(set (match_operand:LSX_D 0 "register_operand")
-	(vec_duplicate:LSX_D
-	  (match_operand:<UNITMODE> 1 "register_operand")))]
-  "reload_completed && ISA_HAS_LSX && !TARGET_64BIT"
-  [(const_int 0)]
-{
-  loongarch_split_lsx_fill_d (operands[0], operands[1]);
-  DONE;
-})
 
 (define_insn "logb<mode>2"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
@@ -1607,41 +1376,57 @@
   [(set_attr "type" "simd_fminmax")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vfrecip_<flsxfmt>"
+(define_insn "recip<mode>3"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
-	(unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRECIP))]
+       (div:FLSX (match_operand:FLSX 1 "const_vector_1_operand" "")
+		 (match_operand:FLSX 2 "register_operand" "f")))]
   "ISA_HAS_LSX"
-  "vfrecip.<flsxfmt>\t%w0,%w1"
+  "vfrecip.<flsxfmt>\t%w0,%w2"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vfrint_<flsxfmt>"
+;; Approximate Reciprocal Instructions.
+
+(define_insn "lsx_vfrecipe_<flsxfmt>"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
-	(unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRINT))]
-  "ISA_HAS_LSX"
-  "vfrint.<flsxfmt>\t%w0,%w1"
-  [(set_attr "type" "simd_fcvt")
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+		 UNSPEC_LSX_VFRECIPE))]
+  "ISA_HAS_LSX && ISA_HAS_FRECIPE"
+  "vfrecipe.<flsxfmt>\t%w0,%w1"
+  [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vfrsqrt_<flsxfmt>"
+(define_expand "rsqrt<mode>2"
   [(set (match_operand:FLSX 0 "register_operand" "=f")
-	(unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRSQRT))]
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+	     UNSPEC_LSX_VFRSQRT))]
+ "ISA_HAS_LSX"
+{
+ if (<MODE>mode == V4SFmode && TARGET_RECIP_VEC_RSQRT)
+   {
+     loongarch_emit_swrsqrtsf (operands[0], operands[1], V4SFmode, 1);
+     DONE;
+   }
+})
+
+(define_insn "*rsqrt<mode>2"
+  [(set (match_operand:FLSX 0 "register_operand" "=f")
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+		 UNSPEC_LSX_VFRSQRT))]
   "ISA_HAS_LSX"
   "vfrsqrt.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vftint_s_<ilsxfmt>_<flsxfmt>"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(unspec:<VIMODE> [(match_operand:FLSX 1 "register_operand" "f")]
-			 UNSPEC_LSX_VFTINT_S))]
-  "ISA_HAS_LSX"
-  "vftint.<ilsxfmt>.<flsxfmt>\t%w0,%w1"
-  [(set_attr "type" "simd_fcvt")
-   (set_attr "cnv_mode" "<FINTCNV_2>")
+;; Approximate Reciprocal Square Root Instructions.
+
+(define_insn "lsx_vfrsqrte_<flsxfmt>"
+  [(set (match_operand:FLSX 0 "register_operand" "=f")
+    (unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
+		 UNSPEC_LSX_VFRSQRTE))]
+  "ISA_HAS_LSX && ISA_HAS_FRECIPE"
+  "vfrsqrte.<flsxfmt>\t%w0,%w1"
+  [(set_attr "type" "simd_fdiv")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "lsx_vftint_u_<ilsxfmt_u>_<flsxfmt>"
@@ -1650,15 +1435,6 @@
 			 UNSPEC_LSX_VFTINT_U))]
   "ISA_HAS_LSX"
   "vftint.<ilsxfmt_u>.<flsxfmt>\t%w0,%w1"
-  [(set_attr "type" "simd_fcvt")
-   (set_attr "cnv_mode" "<FINTCNV_2>")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "fix_trunc<FLSX:mode><mode_i>2"
-  [(set (match_operand:<VIMODE> 0 "register_operand" "=f")
-	(fix:<VIMODE> (match_operand:FLSX 1 "register_operand" "f")))]
-  "ISA_HAS_LSX"
-  "vftintrz.<ilsxfmt>.<flsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_fcvt")
    (set_attr "cnv_mode" "<FINTCNV_2>")
    (set_attr "mode" "<MODE>")])
@@ -2577,7 +2353,7 @@
   [(set_attr "type" "simd_logic")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "vabs<mode>2"
+(define_insn "abs<mode>2"
   [(set (match_operand:ILSX 0 "register_operand" "=f")
 	(abs:ILSX (match_operand:ILSX 1 "register_operand" "f")))]
   "ISA_HAS_LSX"
@@ -2591,26 +2367,6 @@
   "ISA_HAS_LSX"
   "vneg.<lsxfmt>\t%w0,%w1"
   [(set_attr "type" "simd_logic")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vmuh_s_<lsxfmt>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_VMUH_S))]
-  "ISA_HAS_LSX"
-  "vmuh.<lsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vmuh_u_<lsxfmt_u>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_VMUH_U))]
-  "ISA_HAS_LSX"
-  "vmuh.<lsxfmt_u>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "lsx_vextw_s_d"
@@ -2873,16 +2629,51 @@
 	  (match_operand:FLSX 1 "register_operand")))
    (set (match_dup 5)
 	(and:FLSX (match_dup 3)
-		  (match_operand:FLSX 2 "register_operand")))
+		  (match_operand:FLSX 2 "reg_or_vector_same_val_operand")))
    (set (match_operand:FLSX 0 "register_operand")
 	(ior:FLSX (match_dup 4) (match_dup 5)))]
   "ISA_HAS_LSX"
 {
+  /* copysign (x, -1) should instead be expanded as setting the sign
+     bit.  */
+  if (!REG_P (operands[2]))
+    {
+      rtx op2_elt = unwrap_const_vec_duplicate (operands[2]);
+      if (GET_CODE (op2_elt) == CONST_DOUBLE
+	  && real_isneg (CONST_DOUBLE_REAL_VALUE (op2_elt)))
+	{
+	  rtx n = GEN_INT (8 * GET_MODE_SIZE (<UNITMODE>mode) - 1);
+	  operands[0] = lowpart_subreg (<VIMODE>mode, operands[0],
+					<MODE>mode);
+	  operands[1] = lowpart_subreg (<VIMODE>mode, operands[1],
+					<MODE>mode);
+	  emit_insn (gen_lsx_vbitseti_<lsxfmt> (operands[0], operands[1],
+						n));
+	  DONE;
+	}
+    }
+
+  operands[2] = force_reg (<MODE>mode, operands[2]);
   operands[3] = loongarch_build_signbit_mask (<MODE>mode, 1, 0);
 
   operands[4] = gen_reg_rtx (<MODE>mode);
   operands[5] = gen_reg_rtx (<MODE>mode);
 })
+
+(define_expand "@xorsign<mode>3"
+  [(set (match_dup 4)
+    (and:FLSX (match_dup 3)
+        (match_operand:FLSX 2 "register_operand")))
+   (set (match_operand:FLSX 0 "register_operand")
+    (xor:FLSX (match_dup 4)
+         (match_operand:FLSX 1 "register_operand")))]
+  "ISA_HAS_LSX"
+{
+  operands[3] = loongarch_build_signbit_mask (<MODE>mode, 1, 0);
+
+  operands[4] = gen_reg_rtx (<MODE>mode);
+})
+
 
 (define_insn "absv2df2"
   [(set (match_operand:V2DF 0 "register_operand" "=f")
@@ -2944,60 +2735,6 @@
   "vfnmadd.<flsxfmt>\t%w0,%w1,%w2,%w3"
   [(set_attr "type" "simd_fmadd")
    (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vftintrne_w_s"
-  [(set (match_operand:V4SI 0 "register_operand" "=f")
-	(unspec:V4SI [(match_operand:V4SF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFTINTRNE))]
-  "ISA_HAS_LSX"
-  "vftintrne.w.s\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4SF")])
-
-(define_insn "lsx_vftintrne_l_d"
-  [(set (match_operand:V2DI 0 "register_operand" "=f")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFTINTRNE))]
-  "ISA_HAS_LSX"
-  "vftintrne.l.d\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V2DF")])
-
-(define_insn "lsx_vftintrp_w_s"
-  [(set (match_operand:V4SI 0 "register_operand" "=f")
-	(unspec:V4SI [(match_operand:V4SF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFTINTRP))]
-  "ISA_HAS_LSX"
-  "vftintrp.w.s\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4SF")])
-
-(define_insn "lsx_vftintrp_l_d"
-  [(set (match_operand:V2DI 0 "register_operand" "=f")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFTINTRP))]
-  "ISA_HAS_LSX"
-  "vftintrp.l.d\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V2DF")])
-
-(define_insn "lsx_vftintrm_w_s"
-  [(set (match_operand:V4SI 0 "register_operand" "=f")
-	(unspec:V4SI [(match_operand:V4SF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFTINTRM))]
-  "ISA_HAS_LSX"
-  "vftintrm.w.s\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4SF")])
-
-(define_insn "lsx_vftintrm_l_d"
-  [(set (match_operand:V2DI 0 "register_operand" "=f")
-	(unspec:V2DI [(match_operand:V2DF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFTINTRM))]
-  "ISA_HAS_LSX"
-  "vftintrm.l.d\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V2DF")])
 
 (define_insn "lsx_vftint_w_d"
   [(set (match_operand:V4SI 0 "register_operand" "=f")
@@ -3166,108 +2903,6 @@
   "vftintrnel.l.s\t%w0,%w1"
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "V4SF")])
-
-(define_insn "lsx_vfrintrne_s"
-  [(set (match_operand:V4SF 0 "register_operand" "=f")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRINTRNE_S))]
-  "ISA_HAS_LSX"
-  "vfrintrne.s\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4SF")])
-
-(define_insn "lsx_vfrintrne_d"
-  [(set (match_operand:V2DF 0 "register_operand" "=f")
-	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRINTRNE_D))]
-  "ISA_HAS_LSX"
-  "vfrintrne.d\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V2DF")])
-
-(define_insn "lsx_vfrintrz_s"
-  [(set (match_operand:V4SF 0 "register_operand" "=f")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRINTRZ_S))]
-  "ISA_HAS_LSX"
-  "vfrintrz.s\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4SF")])
-
-(define_insn "lsx_vfrintrz_d"
-  [(set (match_operand:V2DF 0 "register_operand" "=f")
-	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRINTRZ_D))]
-  "ISA_HAS_LSX"
-  "vfrintrz.d\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V2DF")])
-
-(define_insn "lsx_vfrintrp_s"
-  [(set (match_operand:V4SF 0 "register_operand" "=f")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRINTRP_S))]
-  "ISA_HAS_LSX"
-  "vfrintrp.s\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4SF")])
-
-(define_insn "lsx_vfrintrp_d"
-  [(set (match_operand:V2DF 0 "register_operand" "=f")
-	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRINTRP_D))]
-  "ISA_HAS_LSX"
-  "vfrintrp.d\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V2DF")])
-
-(define_insn "lsx_vfrintrm_s"
-  [(set (match_operand:V4SF 0 "register_operand" "=f")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRINTRM_S))]
-  "ISA_HAS_LSX"
-  "vfrintrm.s\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4SF")])
-
-(define_insn "lsx_vfrintrm_d"
-  [(set (match_operand:V2DF 0 "register_operand" "=f")
-	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "f")]
-		     UNSPEC_LSX_VFRINTRM_D))]
-  "ISA_HAS_LSX"
-  "vfrintrm.d\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V2DF")])
-
-;; Vector versions of the floating-point frint patterns.
-;; Expands to btrunc, ceil, floor, rint.
-(define_insn "<FRINT_S:frint_pattern_s>v4sf2"
- [(set (match_operand:V4SF 0 "register_operand" "=f")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "f")]
-			 FRINT_S))]
-  "ISA_HAS_LSX"
-  "vfrint<FRINT_S:frint_suffix>.s\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V4SF")])
-
-(define_insn "<FRINT_D:frint_pattern_d>v2df2"
- [(set (match_operand:V2DF 0 "register_operand" "=f")
-	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "f")]
-			 FRINT_D))]
-  "ISA_HAS_LSX"
-  "vfrint<FRINT_D:frint_suffix>.d\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "V2DF")])
-
-;; Expands to round.
-(define_insn "round<mode>2"
- [(set (match_operand:FLSX 0 "register_operand" "=f")
-	(unspec:FLSX [(match_operand:FLSX 1 "register_operand" "f")]
-			 UNSPEC_LSX_VFRINT))]
-  "ISA_HAS_LSX"
-  "vfrint.<flsxfrint>\t%w0,%w1"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "<MODE>")])
 
 ;; Offset load and broadcast
 (define_expand "lsx_vldrepl_<lsxfmt_f>"
@@ -3578,6 +3213,84 @@
   loongarch_expand_vector_reduc (gen_umin<mode>3, tmp, operands[1]);
   emit_insn (gen_vec_extract<mode><unitmode> (operands[0], tmp,
 					      const0_rtx));
+  DONE;
+})
+
+(define_expand "avg<mode>3_ceil"
+  [(match_operand:ILSX_WHB 0 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  emit_insn (gen_lsx_vavgr_s_<lsxfmt> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "uavg<mode>3_ceil"
+  [(match_operand:ILSX_WHB 0 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  emit_insn (gen_lsx_vavgr_u_<lsxfmt_u> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "avg<mode>3_floor"
+  [(match_operand:ILSX_WHB 0 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  emit_insn (gen_lsx_vavg_s_<lsxfmt> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "uavg<mode>3_floor"
+  [(match_operand:ILSX_WHB 0 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  emit_insn (gen_lsx_vavg_u_<lsxfmt_u> (operands[0],
+	operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "usadv16qi"
+  [(match_operand:V4SI 0 "register_operand")
+   (match_operand:V16QI 1 "register_operand")
+   (match_operand:V16QI 2 "register_operand")
+   (match_operand:V4SI 3 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  rtx t1 = gen_reg_rtx (V16QImode);
+  rtx t2 = gen_reg_rtx (V8HImode);
+  rtx t3 = gen_reg_rtx (V4SImode);
+  emit_insn (gen_lsx_vabsd_u_bu (t1, operands[1], operands[2]));
+  emit_insn (gen_lsx_vhaddw_hu_bu (t2, t1, t1));
+  emit_insn (gen_lsx_vhaddw_wu_hu (t3, t2, t2));
+  emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));
+  DONE;
+})
+
+(define_expand "ssadv16qi"
+  [(match_operand:V4SI 0 "register_operand")
+   (match_operand:V16QI 1 "register_operand")
+   (match_operand:V16QI 2 "register_operand")
+   (match_operand:V4SI 3 "register_operand")]
+  "ISA_HAS_LSX"
+{
+  rtx t1 = gen_reg_rtx (V16QImode);
+  rtx t2 = gen_reg_rtx (V8HImode);
+  rtx t3 = gen_reg_rtx (V4SImode);
+  emit_insn (gen_lsx_vabsd_s_b (t1, operands[1], operands[2]));
+  emit_insn (gen_lsx_vhaddw_hu_bu (t2, t1, t1));
+  emit_insn (gen_lsx_vhaddw_wu_hu (t3, t2, t2));
+  emit_insn (gen_addv4si3 (operands[0], t3, operands[3]));
   DONE;
 })
 
@@ -4319,16 +4032,6 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "V2DI")])
 
-(define_insn "lsx_vrotr_<lsxfmt>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand:ILSX 2 "register_operand" "f")]
-		     UNSPEC_LSX_VROTR))]
-  "ISA_HAS_LSX"
-  "vrotr.<lsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_int_arith")
-   (set_attr "mode" "<MODE>")])
-
 (define_insn "lsx_vadd_q"
   [(set (match_operand:V2DI 0 "register_operand" "=f")
 	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "f")
@@ -4421,15 +4124,6 @@
   "vexth.qu.du\t%w0,%w1"
   [(set_attr "type" "simd_fcvt")
    (set_attr "mode" "V2DI")])
-
-(define_insn "lsx_vrotri_<lsxfmt>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(rotatert:ILSX (match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand 2 "const_<bitimm>_operand" "")))]
-  "ISA_HAS_LSX"
-  "vrotri.<lsxfmt>\t%w0,%w1,%2"
-  [(set_attr "type" "simd_shf")
-   (set_attr "mode" "<MODE>")])
 
 (define_insn "lsx_vextl_q_d"
   [(set (match_operand:V2DI 0 "register_operand" "=f")

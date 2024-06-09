@@ -125,9 +125,10 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_common.lo sanitizer_common_libcdep.lo \
 	sanitizer_coverage_libcdep_new.lo \
 	sanitizer_deadlock_detector1.lo \
-	sanitizer_deadlock_detector2.lo sanitizer_errno.lo \
-	sanitizer_file.lo sanitizer_flags.lo sanitizer_flag_parser.lo \
-	sanitizer_libc.lo sanitizer_libignore.lo sanitizer_linux.lo \
+	sanitizer_deadlock_detector2.lo sanitizer_dl.lo \
+	sanitizer_errno.lo sanitizer_file.lo sanitizer_flags.lo \
+	sanitizer_flag_parser.lo sanitizer_libc.lo \
+	sanitizer_libignore.lo sanitizer_linux.lo \
 	sanitizer_linux_libcdep.lo sanitizer_linux_s390.lo \
 	sanitizer_mac.lo sanitizer_mac_libcdep.lo sanitizer_mutex.lo \
 	sanitizer_netbsd.lo sanitizer_platform_limits_freebsd.lo \
@@ -138,20 +139,21 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_posix_libcdep.lo sanitizer_printf.lo \
 	sanitizer_procmaps_bsd.lo sanitizer_procmaps_common.lo \
 	sanitizer_procmaps_linux.lo sanitizer_procmaps_mac.lo \
-	sanitizer_procmaps_solaris.lo sanitizer_solaris.lo \
-	sanitizer_stack_store.lo sanitizer_stackdepot.lo \
-	sanitizer_stacktrace.lo sanitizer_stacktrace_libcdep.lo \
-	sanitizer_stacktrace_sparc.lo sanitizer_symbolizer_mac.lo \
-	sanitizer_symbolizer_report.lo sanitizer_stacktrace_printer.lo \
+	sanitizer_procmaps_solaris.lo sanitizer_range.lo \
+	sanitizer_solaris.lo sanitizer_stack_store.lo \
+	sanitizer_stackdepot.lo sanitizer_stacktrace.lo \
+	sanitizer_stacktrace_libcdep.lo sanitizer_stacktrace_sparc.lo \
+	sanitizer_symbolizer_mac.lo sanitizer_symbolizer_report.lo \
+	sanitizer_stacktrace_printer.lo \
 	sanitizer_stoptheworld_linux_libcdep.lo \
 	sanitizer_stoptheworld_mac.lo sanitizer_suppressions.lo \
 	sanitizer_symbolizer.lo sanitizer_symbolizer_libbacktrace.lo \
 	sanitizer_symbolizer_libcdep.lo \
 	sanitizer_symbolizer_posix_libcdep.lo \
 	sanitizer_symbolizer_win.lo sanitizer_termination.lo \
-	sanitizer_thread_registry.lo sanitizer_tls_get_addr.lo \
-	sanitizer_unwind_linux_libcdep.lo sanitizer_unwind_win.lo \
-	sanitizer_win.lo
+	sanitizer_thread_arg_retval.lo sanitizer_thread_registry.lo \
+	sanitizer_tls_get_addr.lo sanitizer_unwind_linux_libcdep.lo \
+	sanitizer_unwind_win.lo sanitizer_win.lo
 am_libsanitizer_common_la_OBJECTS = $(am__objects_1)
 libsanitizer_common_la_OBJECTS = $(am_libsanitizer_common_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -222,6 +224,7 @@ ALLOC_FILE = @ALLOC_FILE@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AS_SYM_ASSIGN_DEFS = @AS_SYM_ASSIGN_DEFS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -242,7 +245,7 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
-DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS @RPC_DEFS@
+DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS @RPC_DEFS@ @AS_SYM_ASSIGN_DEFS@
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -390,6 +393,7 @@ sanitizer_common_files = \
 	sanitizer_coverage_libcdep_new.cpp \
 	sanitizer_deadlock_detector1.cpp \
 	sanitizer_deadlock_detector2.cpp \
+	sanitizer_dl.cpp \
 	sanitizer_errno.cpp \
 	sanitizer_file.cpp \
 	sanitizer_flags.cpp \
@@ -416,6 +420,7 @@ sanitizer_common_files = \
 	sanitizer_procmaps_linux.cpp \
 	sanitizer_procmaps_mac.cpp \
 	sanitizer_procmaps_solaris.cpp \
+	sanitizer_range.cpp \
 	sanitizer_solaris.cpp \
 	sanitizer_stack_store.cpp \
 	sanitizer_stackdepot.cpp \
@@ -434,6 +439,7 @@ sanitizer_common_files = \
 	sanitizer_symbolizer_posix_libcdep.cpp \
 	sanitizer_symbolizer_win.cpp \
 	sanitizer_termination.cpp \
+	sanitizer_thread_arg_retval.cpp \
 	sanitizer_thread_registry.cpp \
 	sanitizer_tls_get_addr.cpp \
 	sanitizer_unwind_linux_libcdep.cpp \
@@ -546,6 +552,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_coverage_libcdep_new.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_deadlock_detector1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_deadlock_detector2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_dl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_errno.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_file.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_flag_parser.Plo@am__quote@
@@ -572,6 +579,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_solaris.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_range.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_solaris.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stack_store.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stackdepot.Plo@am__quote@
@@ -590,6 +598,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_win.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_termination.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_thread_arg_retval.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_thread_registry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_tls_get_addr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_unwind_linux_libcdep.Plo@am__quote@

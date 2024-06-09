@@ -1,6 +1,6 @@
 // { dg-require-namedlocale "" }
 
-// Copyright (C) 2003-2023 Free Software Foundation, Inc.
+// Copyright (C) 2003-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,7 +45,7 @@ void test01(int iters)
 	  locale loc2 = locale("");
 	  VERIFY( !has_facet<MyFacet>(loc2) );
 	  
-	  loc1.combine<MyFacet>(loc2);
+	  loc1.combine<MyFacet>(loc2); // { dg-warning "nodiscard" "" { target c++17 } }
 	  VERIFY( false );
 	}
       catch (std::runtime_error&)

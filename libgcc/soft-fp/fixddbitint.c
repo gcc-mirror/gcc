@@ -103,7 +103,7 @@ __bid_fixddbitint (UBILtype *r, SItype rprec, _Decimal64 a)
 #if BIL_TYPE_SIZE == 64
       d = limbs[0];
 #elif BIL_TYPE_SIZE == 32
-      d = (limbs[BITINT_END (0, 1)] << 32) | limbs[BITINT_END (1, 0)];
+      d = (UDItype) limbs[BITINT_END (0, 1)] << 32 | limbs[BITINT_END (1, 0)];
 #else
 # error Unsupported BIL_TYPE_SIZE
 #endif

@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+// Copyright (C) 2019-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,6 +20,7 @@
 // Test wide character inserters defined as deleted by P1423.
 
 // { dg-do compile { target c++20 } }
+// { dg-skip-if "" { *-*-* } { "-fno-char8_t" } }
 
 #include <ostream>
 

@@ -1,5 +1,5 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for the D frontend.
-# Copyright (C) 2006-2023 Free Software Foundation, Inc.
+# Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,6 +87,7 @@ D_FRONTEND_OBJS = \
 	d/ast_node.o \
 	d/astcodegen.o \
 	d/astenums.o \
+	d/basicmangle.o \
 	d/blockexit.o \
 	d/builtin.o \
 	d/canthrow.o \
@@ -95,7 +96,7 @@ D_FRONTEND_OBJS = \
 	d/common-bitfields.o \
 	d/common-file.o \
 	d/common-outbuffer.o \
-	d/common-string.o \
+	d/common-smallbuffer.o \
 	d/compiler.o \
 	d/cond.o \
 	d/constfold.o \
@@ -103,6 +104,7 @@ D_FRONTEND_OBJS = \
 	d/cppmangle.o \
 	d/ctfeexpr.o \
 	d/ctorflow.o \
+	d/cxxfrontend.o \
 	d/dcast.o \
 	d/dclass.o \
 	d/declaration.o \
@@ -122,6 +124,7 @@ D_FRONTEND_OBJS = \
 	d/dtoh.o \
 	d/dversion.o \
 	d/entity.o \
+	d/enumsem.o \
 	d/errors.o \
 	d/errorsink.o \
 	d/escape.o \
@@ -130,6 +133,7 @@ D_FRONTEND_OBJS = \
 	d/file_manager.o \
 	d/foreachvar.o \
 	d/func.o \
+	d/funcsem.o \
 	d/globals.o \
 	d/gluelayer.o \
 	d/hdrgen.o \
@@ -160,6 +164,7 @@ D_FRONTEND_OBJS = \
 	d/parsetimevisitor.o \
 	d/permissivevisitor.o \
 	d/postordervisitor.o \
+	d/pragmasem.o \
 	d/printast.o \
 	d/root-aav.o \
 	d/root-array.o \
@@ -174,11 +179,11 @@ D_FRONTEND_OBJS = \
 	d/root-port.o \
 	d/root-region.o \
 	d/root-rmem.o \
-	d/root-rootobject.o \
 	d/root-speller.o \
 	d/root-string.o \
 	d/root-stringtable.o \
 	d/root-utf.o \
+	d/rootobject.o \
 	d/safe.o \
 	d/sapply.o \
 	d/semantic2.o \
@@ -192,6 +197,7 @@ D_FRONTEND_OBJS = \
 	d/stmtstate.o \
 	d/target.o \
 	d/templateparamsem.o \
+	d/templatesem.o \
 	d/tokens.o \
 	d/traits.o \
 	d/transitivevisitor.o \

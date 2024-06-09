@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (chertykov@gmail.com)
 
 This file is part of GCC.
@@ -65,6 +65,7 @@ enum
 #define AVR_HAVE_JMP_CALL (avr_arch->have_jmp_call && ! AVR_SHORT_CALLS)
 #define AVR_HAVE_MUL (avr_arch->have_mul)
 #define AVR_HAVE_MOVW (avr_arch->have_movw_lpmx)
+#define AVR_HAVE_ADIW (!AVR_TINY)
 #define AVR_HAVE_LPM (!AVR_TINY)
 #define AVR_HAVE_LPMX (avr_arch->have_movw_lpmx)
 #define AVR_HAVE_ELPM (avr_arch->have_elpm)
@@ -332,6 +333,10 @@ typedef struct avr_args
 
   /* Next available register number */
   int regno;
+
+  /* Whether some of the arguments are passed on the stack,
+     and hence an arg pointer is needed.  */
+  int has_stack_args;
 } CUMULATIVE_ARGS;
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
@@ -500,9 +505,11 @@ typedef struct avr_args
 
 extern const char *avr_devicespecs_file (int, const char**);
 extern const char *avr_double_lib (int, const char**);
+extern const char *avr_no_devlib (int, const char**);
 
 #define EXTRA_SPEC_FUNCTIONS                            \
   { "double-lib", avr_double_lib },                     \
+  { "no-devlib", avr_no_devlib },                       \
   { "device-specs-file", avr_devicespecs_file },
 
 /* Driver self specs has lmited functionality w.r.t. '%s' for dynamic specs.

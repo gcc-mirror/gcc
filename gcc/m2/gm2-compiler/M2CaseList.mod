@@ -1,6 +1,6 @@
 (* M2CaseList.mod implement ISO case label lists.
 
-Copyright (C) 2009-2023 Free Software Foundation, Inc.
+Copyright (C) 2009-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -39,8 +39,8 @@ FROM m2type IMPORT GetMinFrom ;
 FROM m2expr IMPORT GetIntegerOne, CSTIntToString, CSTIntToChar ;
 FROM Storage IMPORT ALLOCATE ;
 FROM M2Base IMPORT IsExpressionCompatible, Char ;
-FROM M2Printf IMPORT printf1 ;
 FROM M2LexBuf IMPORT TokenToLocation ;
+FROM NumberIO IMPORT WriteCard ;
 
 FROM SymbolTable IMPORT NulSym, IsConst, IsFieldVarient, IsRecord, IsRecordField, GetVarientTag, GetType,
                         ForeachLocalSymDo, GetSymName, IsEnumeration, SkipType, NoOfElements, GetNth,
@@ -975,7 +975,7 @@ BEGIN
              appendString (InitStringChar ("'"))
           END
        ELSE
-          appendString (InitStringCharStar ('CHR (')) ;
+          appendString (InitString ('CHR (')) ;
           appendString (InitStringCharStar (CSTIntToString (value))) ;
           appendString (InitStringChar (')'))
        END
@@ -1191,7 +1191,7 @@ end InRangeList ;
 PROCEDURE WriteCase (c: CARDINAL) ;
 BEGIN
    (* this debugging PROCEDURE should be finished.  *)
-   printf1 ("%d", c)
+   WriteCard (c, 0)
 END WriteCase ;
 
 

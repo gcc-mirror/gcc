@@ -2,4 +2,4 @@
 /* { dg-do preprocess } */
 /* { dg-options "-std=gnu11" } */
 
-#include "c2x-elifdef-1.c"
+#include "c23-elifdef-1.c"

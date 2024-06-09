@@ -18,7 +18,7 @@ func _() {
 
 func _() {
 	defer func() { // no error here about deferred function
-		1 +    // GCCGO_ERROR "value computed is not used"
+		1 +
 	}()            // ERROR "expecting expression|expected operand"
 }
 

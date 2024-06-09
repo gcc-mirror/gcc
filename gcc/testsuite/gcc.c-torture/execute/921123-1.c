@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 f(short *p)
 {
   short x = *p;

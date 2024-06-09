@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Debug;          use Debug;
 with Elists;         use Elists;
@@ -1515,10 +1514,10 @@ package body Sem_Disp is
                         Subp);
 
                   else
-
                      --  The subprogram body declares a primitive operation.
                      --  We must update its dispatching information here. The
                      --  information is taken from the overridden subprogram.
+                     --  Such a late-overriding body also needs extra formals.
                      --  We must also generate a cross-reference entry because
                      --  references to other primitives were already created
                      --  when type was frozen.
@@ -1528,6 +1527,7 @@ package body Sem_Disp is
                      if Present (DTC_Entity (Old_Subp)) then
                         Set_DTC_Entity (Subp, DTC_Entity (Old_Subp));
                         Set_DT_Position_Value (Subp, DT_Position (Old_Subp));
+                        Create_Extra_Formals (Subp);
 
                         if not Restriction_Active (No_Dispatching_Calls) then
                            if Building_Static_DT (Tagged_Type) then
@@ -1933,19 +1933,17 @@ package body Sem_Disp is
             Asp    : Node_Id;
 
          begin
-            if Present (Aspect_Specifications (W_Decl)) then
-               Asp := First (Aspect_Specifications (W_Decl));
-               while Present (Asp) loop
-                  if Chars (Identifier (Asp)) = Name_Yield then
-                     Error_Msg_Name_1 := Name_Yield;
-                     Error_Msg_N
-                       ("specification of inherited aspect% can only confirm "
-                        & "parent value", Asp);
-                  end if;
+            Asp := First (Aspect_Specifications (W_Decl));
+            while Present (Asp) loop
+               if Chars (Identifier (Asp)) = Name_Yield then
+                  Error_Msg_Name_1 := Name_Yield;
+                  Error_Msg_N
+                    ("specification of inherited aspect% can only confirm "
+                     & "parent value", Asp);
+               end if;
 
-                  Next (Asp);
-               end loop;
-            end if;
+               Next (Asp);
+            end loop;
 
             Set_Has_Yield_Aspect (Wrapped_Entity (Subp));
          end;
@@ -2582,6 +2580,7 @@ package body Sem_Disp is
                loop
                   Parent_Op := Overridden_Operation (Parent_Op);
                   exit when No (Parent_Op)
+                    or else No (Find_DT (Parent_Op))
                     or else (No_Interfaces
                               and then Is_Interface (Find_DT (Parent_Op)));
 

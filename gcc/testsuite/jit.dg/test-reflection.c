@@ -59,6 +59,7 @@ verify_code (gcc_jit_context *ctxt, gcc_jit_result *result)
   CHECK (vec_type != double_type);
   CHECK_VALUE (gcc_jit_vector_type_get_element_type(vector_type), double_type);
   CHECK_VALUE (gcc_jit_vector_type_get_num_units(vector_type), 4);
+  CHECK (!gcc_jit_type_is_integral(vec_type));
 
   CHECK (!gcc_jit_type_is_pointer(double_type));
   CHECK_VALUE (gcc_jit_type_is_pointer(gcc_jit_type_get_pointer(double_type)), double_type);

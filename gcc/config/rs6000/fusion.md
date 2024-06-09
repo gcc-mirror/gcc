@@ -1,6 +1,6 @@
 ;; Generated automatically by genfusion.pl
 
-;; Copyright (C) 2020-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

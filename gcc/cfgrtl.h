@@ -1,5 +1,5 @@
 /* Define control flow data structures for the CFG.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -38,6 +38,7 @@ extern edge try_redirect_by_replacing_jump (edge, basic_block, bool);
 extern void emit_barrier_after_bb (basic_block bb);
 extern basic_block force_nonfallthru_and_redirect (edge, basic_block, rtx);
 extern void insert_insn_on_edge (rtx, edge);
+extern void prepend_insn_to_edge (rtx, edge);
 extern void commit_one_edge_insertion (edge e);
 extern void commit_edge_insertions (void);
 extern void print_rtl_with_bb (FILE *, const rtx_insn *, dump_flags_t);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2023, AdaCore                     --
+--                     Copyright (C) 2001-2024, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,13 +62,13 @@ package body GNAT.Sockets.Thin is
    function Syscall_Accept
      (S       : C.int;
       Addr    : System.Address;
-      Addrlen : not null access C.int) return C.int;
+      Addrlen : not null access C.unsigned) return C.int;
    pragma Import (C, Syscall_Accept, "accept");
 
    function Syscall_Connect
      (S       : C.int;
       Name    : System.Address;
-      Namelen : C.int) return C.int;
+      Namelen : C.unsigned) return C.int;
    pragma Import (C, Syscall_Connect, "connect");
 
    function Syscall_Recv
@@ -84,7 +84,7 @@ package body GNAT.Sockets.Thin is
       Len     : C.size_t;
       Flags   : C.int;
       From    : System.Address;
-      Fromlen : not null access C.int) return System.CRTL.ssize_t;
+      Fromlen : not null access C.unsigned) return System.CRTL.ssize_t;
    pragma Import (C, Syscall_Recvfrom, "recvfrom");
 
    function Syscall_Recvmsg
@@ -105,7 +105,7 @@ package body GNAT.Sockets.Thin is
       Len   : C.size_t;
       Flags : C.int;
       To    : System.Address;
-      Tolen : C.int) return System.CRTL.ssize_t;
+      Tolen : C.unsigned) return System.CRTL.ssize_t;
    pragma Import (C, Syscall_Sendto, "sendto");
 
    function Syscall_Socket
@@ -125,6 +125,25 @@ package body GNAT.Sockets.Thin is
    function Non_Blocking_Socket (S : C.int) return Boolean;
    procedure Set_Non_Blocking_Socket (S : C.int; V : Boolean);
 
+   ------------
+   -- C_Bind --
+   ------------
+
+   function C_Bind
+     (S       : C.int;
+      Name    : System.Address;
+      Namelen : C.int) return C.int
+   is
+      function Bind
+        (S       : C.int;
+         Name    : System.Address;
+         Namelen : C.unsigned) return C.int
+      with Import, Convention => C, External_Name => "bind";
+
+   begin
+      return Bind (S, Name, C.unsigned (Namelen));
+   end C_Bind;
+
    --------------
    -- C_Accept --
    --------------
@@ -134,21 +153,26 @@ package body GNAT.Sockets.Thin is
       Addr    : System.Address;
       Addrlen : not null access C.int) return C.int
    is
-      R   : C.int;
-      Val : aliased C.int := 1;
+      R         : C.int;
+      U_Addrlen : aliased C.unsigned;
+      Val       : aliased C.int := 1;
 
       Discard : C.int;
       pragma Warnings (Off, Discard);
 
    begin
+      U_Addrlen := C.unsigned (Addrlen.all);
+
       loop
-         R := Syscall_Accept (S, Addr, Addrlen);
+         R := Syscall_Accept (S, Addr, U_Addrlen'Unchecked_Access);
          exit when SOSC.Thread_Blocking_IO
            or else R /= Failure
            or else Non_Blocking_Socket (S)
            or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
+
+      Addrlen.all := C.int (U_Addrlen);
 
       if not SOSC.Thread_Blocking_IO
         and then R /= Failure
@@ -177,7 +201,7 @@ package body GNAT.Sockets.Thin is
       Res : C.int;
 
    begin
-      Res := Syscall_Connect (S, Name, Namelen);
+      Res := Syscall_Connect (S, Name, C.unsigned (Namelen));
 
       if SOSC.Thread_Blocking_IO
         or else Res /= Failure
@@ -215,7 +239,7 @@ package body GNAT.Sockets.Thin is
          end loop;
       end;
 
-      Res := Syscall_Connect (S, Name, Namelen);
+      Res := Syscall_Connect (S, Name, C.unsigned (Namelen));
 
       if Res = Failure
         and then Errno = SOSC.EISCONN
@@ -225,6 +249,85 @@ package body GNAT.Sockets.Thin is
          return Res;
       end if;
    end C_Connect;
+
+   -------------------
+   -- C_Getpeername --
+   -------------------
+
+   function C_Getpeername
+     (S       : C.int;
+      Name    : System.Address;
+      Namelen : not null access C.int) return C.int
+   is
+      function Getpeername
+        (S       : C.int;
+         Name    : System.Address;
+         Namelen : not null access C.unsigned) return C.int
+      with Import, Convention => C, External_Name => "getpeername";
+
+      U_Namelen : aliased C.unsigned;
+      Val       : C.int;
+
+   begin
+      U_Namelen := C.unsigned (Namelen.all);
+      Val := Getpeername (S, Name, U_Namelen'Unchecked_Access);
+      Namelen.all := C.int (U_Namelen);
+      return Val;
+   end C_Getpeername;
+
+   -------------------
+   -- C_Getsockname --
+   -------------------
+
+   function C_Getsockname
+     (S       : C.int;
+      Name    : System.Address;
+      Namelen : not null access C.int) return C.int
+   is
+      function Getsockname
+        (S       : C.int;
+         Name    : System.Address;
+         Namelen : not null access C.unsigned) return C.int
+      with Import, Convention => C, External_Name => "getsockname";
+
+      U_Namelen : aliased C.unsigned;
+      Val       : C.int;
+
+   begin
+      U_Namelen := C.unsigned (Namelen.all);
+      Val := Getsockname (S, Name, U_Namelen'Unchecked_Access);
+      Namelen.all := C.int (U_Namelen);
+      return Val;
+   end C_Getsockname;
+
+   -------------------
+   --  C_Getsockopt --
+   -------------------
+
+   function C_Getsockopt
+     (S       : C.int;
+      Level   : C.int;
+      Optname : C.int;
+      Optval  : System.Address;
+      Optlen  : not null access C.int) return C.int
+   is
+      function Getsockopt
+        (S       : C.int;
+         Level   : C.int;
+         Optname : C.int;
+         Optval  : System.Address;
+         Optlen  : not null access C.unsigned) return C.int
+      with Import, Convention => C, External_Name => "getsockopt";
+
+      U_Optlen : aliased C.unsigned;
+      Val      : C.int;
+
+   begin
+      U_Optlen := C.unsigned (Optlen.all);
+      Val := Getsockopt (S, Level, Optname, Optval, U_Optlen'Unchecked_Access);
+      Optlen.all := C.int (U_Optlen);
+      return Val;
+   end C_Getsockopt;
 
    ------------------
    -- Socket_Ioctl --
@@ -282,17 +385,23 @@ package body GNAT.Sockets.Thin is
       From    : System.Address;
       Fromlen : not null access C.int) return C.int
    is
-      Res : C.int;
+      Res       : C.int;
+      U_Fromlen : aliased C.unsigned;
 
    begin
+      U_Fromlen := C.unsigned (Fromlen.all);
+
       loop
-         Res := C.int (Syscall_Recvfrom (S, Msg, Len, Flags, From, Fromlen));
+         Res := C.int (Syscall_Recvfrom (S, Msg, Len, Flags, From,
+                                                  U_Fromlen'Unchecked_Access));
          exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
            or else Errno /= SOSC.EWOULDBLOCK;
          delay Quantum;
       end loop;
+
+      Fromlen.all := C.int (U_Fromlen);
 
       return Res;
    end C_Recvfrom;
@@ -361,7 +470,8 @@ package body GNAT.Sockets.Thin is
 
    begin
       loop
-         Res := C.int (Syscall_Sendto (S, Msg, Len, Flags, To, Tolen));
+         Res := C.int (Syscall_Sendto (S, Msg, Len, Flags, To,
+                                                          C.unsigned (Tolen)));
          exit when SOSC.Thread_Blocking_IO
            or else Res /= Failure
            or else Non_Blocking_Socket (S)
@@ -371,6 +481,29 @@ package body GNAT.Sockets.Thin is
 
       return Res;
    end C_Sendto;
+
+   ------------------
+   -- C_Setsockopt --
+   ------------------
+
+   function C_Setsockopt
+     (S       : C.int;
+      Level   : C.int;
+      Optname : C.int;
+      Optval  : System.Address;
+      Optlen  : C.int) return C.int
+   is
+      function Setsockopt
+        (S       : C.int;
+         Level   : C.int;
+         Optname : C.int;
+         Optval  : System.Address;
+         Optlen  : C.unsigned) return C.int
+      with Import, Convention => C, External_Name => "setsockopt";
+
+   begin
+      return Setsockopt  (S, Level, Optname, Optval, C.unsigned (Optlen));
+   end C_Setsockopt;
 
    --------------
    -- C_Socket --
@@ -456,6 +589,25 @@ package body GNAT.Sockets.Thin is
 
       Task_Lock.Unlock;
    end Set_Non_Blocking_Socket;
+
+   --------------------------------
+   -- Nonreentrant_Gethostbyaddr --
+   --------------------------------
+
+   function Nonreentrant_Gethostbyaddr
+     (Addr      : System.Address;
+      Addr_Len  : C.int;
+      Addr_Type : C.int) return Hostent_Access
+   is
+      function Gethostbyaddr
+        (Addr      : System.Address;
+         Addr_Len  : C.unsigned;
+         Addr_Type : C.int) return Hostent_Access
+      with Import, Convention => C, External_Name => "gethostbyaddr";
+
+   begin
+      return Gethostbyaddr (Addr, C.unsigned (Addr_Len), Addr_Type);
+   end Nonreentrant_Gethostbyaddr;
 
    --------------------
    -- Signalling_Fds --

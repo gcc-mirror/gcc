@@ -1,5 +1,5 @@
 ;; Predicate definitions for TI PRU.
-;; Copyright (C) 2014-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2024 Free Software Foundation, Inc.
 ;; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;;
 ;; This file is part of GCC.
@@ -103,7 +103,7 @@
       else
 	return 0;
 
-      return REGNO_REG_CLASS (regno) == MULSRC0_REGNUM
+      return REGNO_REG_CLASS (regno) == MULSRC0_REGS
 	     || regno >= FIRST_PSEUDO_REGISTER;
     }
   return 0;
@@ -123,7 +123,7 @@
       else
 	return 0;
 
-      return REGNO_REG_CLASS (regno) == MULSRC1_REGNUM
+      return REGNO_REG_CLASS (regno) == MULSRC1_REGS
 	     || regno >= FIRST_PSEUDO_REGISTER;
     }
   return 0;

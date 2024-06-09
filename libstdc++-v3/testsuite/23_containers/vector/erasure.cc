@@ -1,6 +1,7 @@
 // { dg-do run { target c++20 } }
+// { dg-add-options no_pch }
 
-// Copyright (C) 2018-2023 Free Software Foundation, Inc.
+// Copyright (C) 2018-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,13 +19,14 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <vector>
-#include <testsuite_hooks.h>
 
 #ifndef __cpp_lib_erase_if
 # error "Feature-test macro for erase_if missing in <vector>"
 #elif __cpp_lib_erase_if < 202002
 # error "Feature-test macro for erase_if has wrong value in <vector>"
 #endif
+
+#include <testsuite_hooks.h>
 
 void
 test01()

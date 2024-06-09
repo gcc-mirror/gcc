@@ -1,6 +1,6 @@
 ; Options for the ARM port of the compiler.
 
-; Copyright (C) 2005-2023 Free Software Foundation, Inc.
+; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -29,9 +29,6 @@ enum aarch_function_type aarch_ra_sign_scope = AARCH_FUNCTION_NONE
 
 TargetVariable
 unsigned aarch_enable_bti = 0
-
-TargetVariable
-enum aarch_key_type aarch_ra_sign_key = AARCH_KEY_A
 
 Enum
 Name(tls_type) Type(enum arm_tls_type)

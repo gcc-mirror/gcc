@@ -1,5 +1,5 @@
 // PR c++/16240
-// { dg-options "-fabi-version=3" }
+// { dg-options "-fabi-version=3 -fabi-compat-version=3" }
 
 void foo(char);
 template<void (&)(char)> struct CB {};

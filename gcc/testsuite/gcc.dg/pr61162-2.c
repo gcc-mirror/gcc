@@ -1,6 +1,6 @@
 /* PR c/61162 */
 /* { dg-do compile } */
-/* { dg-options "-Wc++-compat -Wpointer-sign -Wpedantic" } */
+/* { dg-options "-fpermissive -Wc++-compat -Wpointer-sign -Wpedantic" } */
 
 enum e { A };
 struct s { int a; };

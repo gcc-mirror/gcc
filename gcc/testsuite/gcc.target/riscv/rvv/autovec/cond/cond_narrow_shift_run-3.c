@@ -1,9 +1,9 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -fno-vect-cost-model" } */
 
 #include "cond_narrow_shift-3.c"
 
-#define N 99
+#define N 61
 
 #define TEST_LOOP(TYPE1, TYPE2)                                                \
   {                                                                            \

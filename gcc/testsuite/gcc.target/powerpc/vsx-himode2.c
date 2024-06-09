@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power9 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power9 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 unsigned int foo (unsigned short u)
 {

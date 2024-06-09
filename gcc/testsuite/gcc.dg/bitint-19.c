@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target bitint } } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 #define expr_has_type(e, t) _Generic (e, default : 0, t : 1)
 

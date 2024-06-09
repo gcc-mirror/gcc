@@ -1,5 +1,5 @@
 /* Classes for purging state at function_points.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -89,7 +90,7 @@ class gimple_op_visitor : public log_user
 public:
   gimple_op_visitor (state_purge_map *map,
 		     const function_point &point,
-		     function *fun)
+		     const function &fun)
   : log_user (map->get_logger ()),
     m_map (map),
     m_point (point),
@@ -172,7 +173,7 @@ private:
 
   state_purge_map *m_map;
   const function_point &m_point;
-  function *m_fun;
+  const function &m_fun;
 };
 
 static bool
@@ -214,6 +215,7 @@ state_purge_map::state_purge_map (const supergraph &sg,
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
   {
     function *fun = node->get_fun ();
+    gcc_assert (fun);
     if (logger)
       log ("function: %s", function_name (fun));
     tree name;
@@ -225,7 +227,7 @@ state_purge_map::state_purge_map (const supergraph &sg,
 	  if (TREE_CODE (var) == VAR_DECL)
 	    if (VAR_DECL_IS_VIRTUAL_OPERAND (var))
 	      continue;
-	m_ssa_map.put (name, new state_purge_per_ssa_name (*this, name, fun));
+	m_ssa_map.put (name, new state_purge_per_ssa_name (*this, name, *fun));
       }
   }
 
@@ -241,8 +243,10 @@ state_purge_map::state_purge_map (const supergraph &sg,
       unsigned i;
       FOR_EACH_VEC_ELT (snode->m_stmts, i, stmt)
 	{
+	  function *fun = snode->get_function ();
+	  gcc_assert (fun);
 	  function_point point (function_point::before_stmt (snode, i));
-	  gimple_op_visitor v (this, point, snode->get_function ());
+	  gimple_op_visitor v (this, point, *fun);
 	  walk_stmt_load_store_addr_ops (stmt, &v,
 					 my_load_cb, my_store_cb, my_addr_cb);
 	}
@@ -272,7 +276,7 @@ state_purge_map::~state_purge_map ()
    if necessary.  */
 
 state_purge_per_decl &
-state_purge_map::get_or_create_data_for_decl (function *fun, tree decl)
+state_purge_map::get_or_create_data_for_decl (const function &fun, tree decl)
 {
   if (state_purge_per_decl **slot
       = const_cast <decl_map_t&> (m_decl_map).get (decl))
@@ -295,14 +299,14 @@ state_purge_map::get_or_create_data_for_decl (function *fun, tree decl)
 
 state_purge_per_ssa_name::state_purge_per_ssa_name (const state_purge_map &map,
 						    tree name,
-						    function *fun)
+						    const function &fun)
 : state_purge_per_tree (fun), m_points_needing_name (), m_name (name)
 {
   LOG_FUNC (map.get_logger ());
 
   if (map.get_logger ())
     {
-      map.log ("SSA name: %qE within %qD", name, fun->decl);
+      map.log ("SSA name: %qE within %qD", name, fun.decl);
 
       /* Show def stmt.  */
       const gimple *def_stmt = SSA_NAME_DEF_STMT (name);
@@ -327,6 +331,15 @@ state_purge_per_ssa_name::state_purge_per_ssa_name (const state_purge_map &map,
 	      pretty_printer pp;
 	      pp_gimple_stmt_1 (&pp, use_stmt, 0, (dump_flags_t)0);
 	      map.log ("used by stmt: %s", pp_formatted_text (&pp));
+	    }
+
+	  if (is_gimple_debug (use_stmt))
+	    {
+	      /* We skipped debug stmts when building the supergraph,
+		 so ignore them now.  */
+	      if (map.get_logger ())
+		map.log ("skipping debug stmt");
+	      continue;
 	    }
 
 	  const supernode *snode
@@ -401,7 +414,7 @@ state_purge_per_ssa_name::state_purge_per_ssa_name (const state_purge_map &map,
 
   if (map.get_logger ())
     {
-      map.log ("%qE in %qD is needed to process:", name, fun->decl);
+      map.log ("%qE in %qD is needed to process:", name, fun.decl);
       /* Log m_points_needing_name, sorting it to avoid churn when comparing
 	 dumps.  */
       auto_vec<function_point> points;
@@ -463,7 +476,7 @@ state_purge_per_ssa_name::add_to_worklist (const function_point &point,
       logger->end_log_line ();
     }
 
-  gcc_assert (point.get_function () == get_function ());
+  gcc_assert (point.get_function () == &get_function ());
   if (point.get_from_edge ())
     gcc_assert (point.get_from_edge ()->get_kind () == SUPEREDGE_CFG_EDGE);
 
@@ -669,7 +682,7 @@ state_purge_per_ssa_name::process_point (const function_point &point,
 
 state_purge_per_decl::state_purge_per_decl (const state_purge_map &map,
 					    tree decl,
-					    function *fun)
+					    const function &fun)
 : state_purge_per_tree (fun),
   m_decl (decl)
 {
@@ -785,7 +798,7 @@ state_purge_per_decl::add_to_worklist (const function_point &point,
       logger->end_log_line ();
     }
 
-  gcc_assert (point.get_function () == get_function ());
+  gcc_assert (point.get_function () == &get_function ());
   if (point.get_from_edge ())
     gcc_assert (point.get_from_edge ()->get_kind () == SUPEREDGE_CFG_EDGE);
 
@@ -1183,7 +1196,7 @@ state_purge_annotator::print_needed (graphviz_out *gv,
     {
       tree name = (*iter).first;
       state_purge_per_ssa_name *per_name_data = (*iter).second;
-      if (per_name_data->get_function () == point.get_function ())
+      if (&per_name_data->get_function () == point.get_function ())
 	{
 	  if (per_name_data->needed_at_point_p (point))
 	    needed.safe_push (name);
@@ -1197,7 +1210,7 @@ state_purge_annotator::print_needed (graphviz_out *gv,
     {
       tree decl = (*iter).first;
       state_purge_per_decl *per_decl_data = (*iter).second;
-      if (per_decl_data->get_function () == point.get_function ())
+      if (&per_decl_data->get_function () == point.get_function ())
 	{
 	  if (per_decl_data->needed_at_point_p (point))
 	    needed.safe_push (decl);

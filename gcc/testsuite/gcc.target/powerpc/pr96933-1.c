@@ -1,7 +1,7 @@
 /* { dg-do compile } */
+/* { dg-options "-O2 -mdejagnu-cpu=power9 -mvsx" } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-O2 -mdejagnu-cpu=power9" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Test vector constructions with char/short type values whether use 128bit
    direct move instructions mtvsrdd on Power9 or later, rather than transfering

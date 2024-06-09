@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -43,6 +43,13 @@
    help describe the attributes (for example, pure) for the intrinsic
    function.  */
 
+  BUILTIN_V12DIF (LOADSTRUCT_LANE, vec_ldap1_lane, 0, ALL)
+  BUILTIN_V12DI (LOADSTRUCT_LANE_U, vec_ldap1_lane, 0, ALL)
+  BUILTIN_V12DI (LOADSTRUCT_LANE_P, vec_ldap1_lane, 0, ALL)
+  BUILTIN_V12DIF (STORESTRUCT_LANE, vec_stl1_lane, 0, ALL)
+  BUILTIN_V12DI (STORESTRUCT_LANE_U, vec_stl1_lane, 0, ALL)
+  BUILTIN_V12DI (STORESTRUCT_LANE_P, vec_stl1_lane, 0, ALL)
+
   BUILTIN_VDC (BINOP, combine, 0, AUTO_FP)
   BUILTIN_VD_I (BINOPU, combine, 0, NONE)
   BUILTIN_VDC_P (BINOPP, combine, 0, NONE)
@@ -57,11 +64,6 @@
   BUILTIN_VDQ_BHSI (UNOP, clz, 2, NONE)
   BUILTIN_VS (UNOP, ctz, 2, NONE)
   BUILTIN_VB (UNOP, popcount, 2, NONE)
-
-  /* Implemented by aarch64_get_low<mode>.  */
-  BUILTIN_VQMOV (UNOP, get_low, 0, AUTO_FP)
-  /* Implemented by aarch64_get_high<mode>.  */
-  BUILTIN_VQMOV (UNOP, get_high, 0, AUTO_FP)
 
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0, NONE)
@@ -952,10 +954,6 @@
   VAR1 (QUADOP_LANE, bfmlalt_lane, 0, FP, v4sf)
   VAR1 (QUADOP_LANE, bfmlalb_lane_q, 0, FP, v4sf)
   VAR1 (QUADOP_LANE, bfmlalt_lane_q, 0, FP, v4sf)
-
-  /* Implemented by aarch64_vget_lo/hi_halfv8bf.  */
-  VAR1 (UNOP, vget_lo_half, 0, AUTO_FP, v8bf)
-  VAR1 (UNOP, vget_hi_half, 0, AUTO_FP, v8bf)
 
   /* Implemented by aarch64_simd_<sur>mmlav16qi.  */
   VAR1 (TERNOP, simd_smmla, 0, NONE, v16qi)

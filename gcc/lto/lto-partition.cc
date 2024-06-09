@@ -1,5 +1,5 @@
 /* LTO partitioning logic routines.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,6 +18,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
@@ -31,10 +32,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "symbol-summary.h"
 #include "tree-vrp.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "lto-partition.h"
-#include "sreal.h"
+
+#include <limits>
 
 vec<ltrans_partition> ltrans_partitions;
 
@@ -59,18 +63,39 @@ cmp_partitions_order (const void *a, const void *b)
   return orderb - ordera;
 }
 
-/* Create new partition with name NAME.  */
-
+/* Create new partition with name NAME.
+   Does not push into ltrans_partitions.  */
 static ltrans_partition
-new_partition (const char *name)
+new_partition_no_push (const char *name)
 {
   ltrans_partition part = XCNEW (struct ltrans_partition_def);
   part->encoder = lto_symtab_encoder_new (false);
   part->name = name;
   part->insns = 0;
   part->symbols = 0;
+  return part;
+}
+
+/* Create new partition with name NAME.  */
+
+static ltrans_partition
+new_partition (const char *name)
+{
+  ltrans_partition part = new_partition_no_push (name);
   ltrans_partitions.safe_push (part);
   return part;
+}
+
+/* Free memory used by ltrans partition.
+   Encoder can be kept to be freed after streaming.  */
+static void
+free_ltrans_partition (ltrans_partition part, bool delete_encoder)
+{
+  if (part->initializers_visited)
+    delete part->initializers_visited;
+  if (delete_encoder)
+    lto_symtab_encoder_delete (part->encoder);
+  free (part);
 }
 
 /* Free memory used by ltrans datastructures.  */
@@ -81,12 +106,7 @@ free_ltrans_partitions (void)
   unsigned int idx;
   ltrans_partition part;
   for (idx = 0; ltrans_partitions.iterate (idx, &part); idx++)
-    {
-      if (part->initializers_visited)
-	delete part->initializers_visited;
-      /* Symtab encoder is freed after streaming.  */
-      free (part);
-    }
+    free_ltrans_partition (part, false);
   ltrans_partitions.release ();
 }
 
@@ -427,6 +447,574 @@ account_reference_p (symtab_node *n1, symtab_node *n2)
   return true;
 }
 
+/* Joins two partitions into one.
+   NULL partitions are equivalent to empty partition.
+   If both partition are non-null, symbols from FROM are added into INTO.  */
+static ltrans_partition
+join_partitions (ltrans_partition into, ltrans_partition from)
+{
+  if (!into)
+    return from;
+  if (!from)
+    return into;
+
+  lto_symtab_encoder_iterator lsei;
+  lto_symtab_encoder_t encoder = from->encoder;
+
+  /* If aux is non zero, it will not be added to the new partition.  Since
+     adding symbols is recursive, it is safer to reduce aux of all symbols
+     before adding any symbols to other partition.  */
+  for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
+    {
+      symtab_node *node = lsei_node (lsei);
+      node->aux = (void *)((size_t)node->aux - 1);
+    }
+
+  for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
+    {
+      symtab_node *node = lsei_node (lsei);
+
+      if (symbol_partitioned_p (node))
+	continue;
+
+      add_symbol_to_partition (into, node);
+    }
+
+  free_ltrans_partition (from, true);
+
+  return into;
+}
+
+/* Takes symbols from given partitions and splits them into N partitions where
+   each partitions contains one symbol and its requirements.  */
+static std::vector<ltrans_partition>
+split_partition_into_nodes (ltrans_partition part)
+{
+  std::vector<ltrans_partition> partitions;
+
+  lto_symtab_encoder_iterator lsei;
+  lto_symtab_encoder_t encoder = part->encoder;
+
+  for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
+    {
+      symtab_node *node = lsei_node (lsei);
+      node->aux = (void *)((size_t)node->aux - 1);
+    }
+
+  for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
+    {
+      symtab_node *node = lsei_node (lsei);
+
+      if (node->get_partitioning_class () != SYMBOL_PARTITION
+	  || symbol_partitioned_p (node))
+	continue;
+
+      ltrans_partition new_part = new_partition_no_push (part->name);
+      add_symbol_to_partition (new_part, node);
+      partitions.push_back (new_part);
+    }
+
+  return partitions;
+}
+
+/* Returns whether partition contains symbols that cannot be reordered.  */
+static bool
+is_partition_reorder (ltrans_partition part)
+{
+  lto_symtab_encoder_iterator lsei;
+  lto_symtab_encoder_t encoder = part->encoder;
+
+  for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
+    {
+      symtab_node *node = lsei_node (lsei);
+      if (node->no_reorder)
+	return false;
+    }
+  return true;
+}
+
+/* Represents groups of symbols, that should be partitioned into n_partitions
+   partitions.  */
+class partition_set
+{
+public:
+  /* Metadata to easily pass copy to new partition_set.  */
+  class metadata
+  {
+  public:
+    /* Partitions can be reordered.  */
+    bool reorder;
+    /* Partitions can be split into individual symbols.  */
+    bool splitable;
+
+    metadata (bool reorder, bool splitable):
+      reorder (reorder), splitable (splitable)
+    {}
+  };
+  metadata data;
+
+  /* Symbol groups.  Use push (g) to insert symbols.  */
+  std::vector<ltrans_partition> sym_groups;
+  /* Number of partitions these symbols should be partitioned into.  */
+  size_t n_partitions;
+  /* Total number of instructions of all symbols.  */
+  int64_t insns;
+
+  /* Constructor.  Symbols and n_partitions can be added later.  */
+  partition_set (metadata data, std::vector<ltrans_partition> sym_groups = {},
+		 size_t n_partitions = 0)
+    : data (data), sym_groups (std::move (sym_groups)),
+    n_partitions (n_partitions), insns (0)
+  {
+    for (ltrans_partition g: this->sym_groups)
+      insns += g->insns;
+  }
+
+  /* Adds symbol group and updates total insns.  */
+  void
+  push (ltrans_partition g)
+  {
+    sym_groups.push_back (g);
+    insns += g->insns;
+  }
+
+  /* Returns whether any symbols group is contained.  */
+  bool
+  empty ()
+  {
+    return sym_groups.empty ();
+  }
+};
+
+/* Distributes total n_partitions among partition_sets.
+   Aims to be as fair as possible.  */
+static void
+distribute_n_partitions (std::vector<partition_set>& ps, size_t n_partitions)
+{
+  gcc_assert (ps.size ());
+  gcc_assert (ps.size () <= n_partitions);
+
+  int64_t total_size = 0;
+
+  for (partition_set& p: ps)
+    {
+      total_size += p.insns;
+      p.n_partitions = 0;
+    }
+
+  if (total_size <= 0)
+    total_size = 1;
+
+  size_t n_partitions_allocated = 0;
+
+  /* First we allocate largest amount of partitions so that target_sizes are
+     larger than target size of total (insns/total_size).
+     All partition_set must have n_partitions at least one.  */
+  for (partition_set& p: ps)
+    {
+      p.n_partitions = n_partitions * p.insns / total_size;
+      if (p.n_partitions == 0 && p.sym_groups.size ())
+	p.n_partitions = 1;
+      if (!p.data.splitable)
+	p.n_partitions = std::min (p.n_partitions, p.sym_groups.size ());
+
+      n_partitions_allocated += p.n_partitions;
+    }
+
+  /* Rare special case, with a lot of initially 0 sized splits.  */
+  while (n_partitions_allocated > n_partitions)
+    {
+      size_t idx = 0;
+      int64_t min = std::numeric_limits<int64_t>::max ();
+
+      for (size_t i = 0; i < ps.size (); ++i)
+	{
+	  if (ps[i].n_partitions <= 1)
+	    continue;
+
+	  int64_t target_size = ps[i].insns / ps[i].n_partitions;
+	  if (min > target_size)
+	    {
+	      min = target_size;
+	      idx = i;
+	    }
+	}
+
+      ps[idx].n_partitions--;
+      n_partitions_allocated--;
+    }
+
+  /* Typical case where with any increase of n_partitions target size will cross
+     total target size.  We optimize for minimal:
+     (old_target_size - total_target_size)
+     - (total_target_size - new_target_size).  */
+  while (n_partitions_allocated < n_partitions)
+    {
+      size_t idx = 0;
+      int64_t max = 0;
+
+      for (size_t i = 0; i < ps.size (); ++i)
+	{
+	  if (ps[i].sym_groups.size () <= 1 && !ps[i].data.splitable)
+	    continue;
+
+	  int64_t target_size = ps[i].insns / ps[i].n_partitions;
+	  int64_t new_target_size = ps[i].insns / (ps[i].n_partitions + 1);
+
+	  int64_t positive_change = target_size + new_target_size;
+
+	  if (max < positive_change)
+	    {
+	      max = positive_change;
+	      idx = i;
+	    }
+	}
+
+      ps[idx].n_partitions++;
+      n_partitions_allocated++;
+    }
+}
+
+/* Splits off symbol groups that are larger than target size.
+   n_partitions are then distributed between individual
+   split off symbol groups, and everything else as a whole.
+
+   Split off symbol groups with n_partitions > 1, are
+   then split into individual symbols.
+
+   Order is not conserved.  This pass is ignored if reorder is not allowed.  */
+static std::vector<partition_set>
+partition_over_target_split (partition_set& p)
+{
+  gcc_assert (p.n_partitions >= 1);
+
+  std::vector<partition_set> all;
+  partition_set small (p.data);
+
+  int64_t target_size = p.insns / p.n_partitions;
+
+  for (ltrans_partition g: p.sym_groups)
+    {
+      if (g->insns > target_size
+	  && (p.data.reorder || is_partition_reorder (g)))
+	all.push_back (partition_set (p.data, {g}));
+      else
+	small.push (g);
+    }
+
+  if (all.empty ())
+    return {};
+
+  if (small.sym_groups.size ())
+    {
+      /* Handles special case where n_partitions might be smaller than
+	 all.size ().  Which can happen as result of interger division or with
+	 0 sized partition_sets.  Then also prevents too small symbol group.
+	 This should also be a special case; more common one,
+	 but with no correctness problems.  */
+      if (all.size () && (
+	     small.insns < (int64_t) p.n_partitions
+	  || small.insns < target_size * 0.6
+	  || small.insns < param_min_partition_size))
+	{
+	  size_t idx = 0;
+	  int64_t min_insns = std::numeric_limits<int64_t>::max ();
+	  for (size_t i = 0; i < all.size (); ++i)
+	    {
+	      if (all[i].insns < min_insns)
+		{
+		  min_insns = all[i].insns;
+		  idx = i;
+		}
+	    }
+
+	  gcc_assert (all[idx].sym_groups.size () == 1);
+
+	  ltrans_partition& into = all[idx].sym_groups[0];
+	  for (ltrans_partition g: small.sym_groups)
+	    into = join_partitions (into, g);
+
+	  all[idx].insns = into->insns;
+	}
+      else
+	{
+	  gcc_assert (all.size () < p.n_partitions);
+	  all.push_back (std::move (small));
+	}
+    }
+
+  distribute_n_partitions (all, p.n_partitions);
+
+  for (partition_set& p: all)
+    {
+      gcc_assert (p.sym_groups.size ());
+
+      /* Handles large symbol groups (large files) that will be
+	 further divided.  */
+      if (p.sym_groups.size () == 1 && p.n_partitions > 1)
+	{
+	  p.sym_groups = split_partition_into_nodes (p.sym_groups[0]);
+	  p.data.reorder = false;
+	  p.data.splitable = false;
+	}
+    }
+
+  return all;
+}
+
+/* Splits partition_set into two partition_sets with
+   equal or off by one n_partitions.
+   Order is conserved.  */
+static std::vector<partition_set>
+partition_binary_split (partition_set& p)
+{
+  gcc_assert (p.n_partitions > 1);
+
+  if (p.sym_groups.size () < 2)
+    return {};
+
+  int64_t target_size = p.insns / p.n_partitions;
+
+
+  std::vector<partition_set> result (2, partition_set (p.data));
+  partition_set& first  = result[0];
+  partition_set& second = result[1];
+
+  first.n_partitions = p.n_partitions/2;
+  second.n_partitions = p.n_partitions - first.n_partitions;
+
+  int64_t first_target_size = first.n_partitions * target_size;
+
+  int64_t insns = 0;
+  for (ltrans_partition g: p.sym_groups)
+    {
+      /* We want at least one symbol in first partition.  */
+      if (first.empty ())
+	first.push (g);
+      else if (insns < first_target_size)
+	{
+	  if (insns + g->insns < first_target_size)
+	    first.push (g);
+	  else
+	    {
+	      /* Target splitting point is in this symbol group.  */
+	      int64_t diff_first  = first_target_size - insns;
+	      int64_t diff_second = (insns + g->insns) - first_target_size;
+
+	      if (diff_first * second.n_partitions
+		  > diff_second * first.n_partitions)
+		first.push (g);
+	      else
+		second.push (g);
+	    }
+	}
+      else
+	second.push (g);
+
+      insns += g->insns;
+    }
+
+  return result;
+}
+
+/* Split partition_set into 'into' partition_sets with equal or off by one
+   number of symbol groups.  Sizes of symbol groups are ignored for deciding
+   where to split. n_partitions is then distributed among new partition_sets
+   based on their sizes.
+   Order in conserved.  */
+static std::vector<partition_set>
+partition_fixed_split (partition_set& p, size_t into)
+{
+  gcc_assert (into < p.n_partitions);
+
+  std::vector<partition_set> result;
+
+  for (size_t i = 0; i < into; ++i)
+    {
+      size_t begin = i * p.sym_groups.size () / into;
+      size_t end = (i + 1) * p.sym_groups.size () / into;
+
+      auto it = p.sym_groups.begin ();
+      result.push_back (partition_set (p.data, {it + begin, it + end}));
+    }
+
+  distribute_n_partitions (result, p.n_partitions);
+
+  return result;
+}
+
+
+/* Base implementation to inherit from for all Partitioners.  */
+class partitioner_base {
+public:
+  /* Partitions sym_groups into n_partitions partitions inserted into
+     ltrans_partitions.  */
+  void
+  apply (std::vector<ltrans_partition>& sym_groups, int n_partitions)
+  {
+    partition_set p (partition_set::metadata (true, true),
+		     std::move (sym_groups), n_partitions);
+    split (p, 0);
+  }
+
+protected:
+  partitioner_base (int64_t min_partition_size, int64_t max_partition_size):
+    min_partition_size (min_partition_size),
+    max_partition_size (max_partition_size)
+  {
+    gcc_assert (min_partition_size != 0);
+    gcc_assert (max_partition_size != 0);
+  }
+  virtual ~partitioner_base ()
+  {}
+
+  /* Joins all symbol groups into one finalized partition.  */
+  void
+  finalize (partition_set& p)
+  {
+    ltrans_partition joined = NULL;
+
+    for (ltrans_partition g: p.sym_groups)
+      joined = join_partitions (joined, g);
+
+    if (joined)
+      ltrans_partitions.safe_push (joined);
+  }
+
+  /* Splits all partition_sets.  */
+  void
+  split_list (std::vector<partition_set>& ps, uintptr_t state)
+  {
+    for (partition_set& p: ps)
+      split (p, state);
+  }
+
+  /* Handles common cases:
+     too large or small n_partitions, or n_partitions = 1.
+     And then calls split_state.  */
+  void
+  split (partition_set& p, uintptr_t state)
+  {
+    size_t min_partitions = p.insns / max_partition_size + 1;
+    size_t max_partitions = p.insns / min_partition_size;
+    if (!p.data.splitable)
+      max_partitions = std::min (max_partitions, p.sym_groups.size ());
+
+    p.n_partitions = std::max (p.n_partitions, min_partitions);
+    p.n_partitions = std::min (p.n_partitions, max_partitions);
+
+    if (p.n_partitions <= 1)
+      return finalize (p);
+
+    split_state (p, state);
+  }
+
+  /* State machine for specific partitioner implementation.  */
+  virtual void
+  split_state (partition_set& p, uintptr_t state) = 0;
+
+  int64_t min_partition_size, max_partition_size;
+};
+
+
+/* Partitioner combining fixed, over_target, and binary partitionings.  */
+class partitioner_default: public partitioner_base
+{
+public:
+  partitioner_default (int64_t min_partition_size, int64_t max_partition_size):
+    partitioner_base (min_partition_size, max_partition_size)
+  {}
+
+private:
+  virtual void
+  split_state (partition_set& p, uintptr_t state)
+  {
+    const uintptr_t FIXED = 0;
+    const uintptr_t OVER_TARGET = 1;
+    const uintptr_t BINARY = 2;
+
+    std::vector<partition_set> ps;
+
+    switch (state)
+      {
+      case FIXED:
+	if (p.n_partitions > 64 && p.sym_groups.size () >= 4)
+	  {
+	    ps = partition_fixed_split (p, 4);
+	    split_list (ps, OVER_TARGET);
+	    break;
+	  }
+
+	/* FALLTHROUGH */
+      case OVER_TARGET:
+	ps = partition_over_target_split (p);
+	if (!ps.empty ())
+	  {
+	    split_list (ps, BINARY);
+	    break;
+	  }
+
+	/* FALLTHROUGH */
+      case BINARY:
+	ps = partition_binary_split (p);
+	if (!ps.empty ())
+	  {
+	    split_list (ps, OVER_TARGET);
+	    break;
+	  }
+
+	/* FALLTHROUGH */
+      default:
+	finalize (p);
+      }
+  }
+};
+
+/* Group cgraph nodes into equally-sized partitions.
+   It tries to keep symbols from single source file together to minimize
+   propagation of divergence.
+
+   It starts with symbols already grouped by source files.  If reasonably
+   possible it only either combines several files into one final partition,
+   or, if a file is large, split the file into several final partitions.
+
+   Intermediate representation is partition_set which contains set of
+   groups of symbols (each group corresponding to original source file) and
+   number of final partitions this partition_set should split into.
+
+   First partition_fixed_split splits partition_set into constant number of
+   partition_sets with equal number of symbols groups.  If for example there
+   are 39 source files, the resulting partition_sets will contain 10, 10,
+   10, and 9 source files.  This splitting intentionally ignores estimated
+   instruction counts to minimize propagation of divergence.
+
+   Second partition_over_target_split separates too large files and splits
+   them into individual symbols to be combined back into several smaller
+   files in next step.
+
+   Third partition_binary_split splits partition_set into two halves until
+   it should be split into only one final partition, at which point the
+   remaining symbols are joined into one final partition.
+*/
+
+void
+lto_cache_map (int n_lto_partitions, int max_partition_size)
+{
+  lto_1_to_1_map ();
+
+  std::vector<ltrans_partition> partitions;
+  for (unsigned i = 0; i < ltrans_partitions.length (); ++i)
+    {
+      ltrans_partition part = ltrans_partitions[i];
+      partitions.push_back (part);
+    }
+  ltrans_partitions.truncate (0);
+
+  partitioner_default partitioner = partitioner_default
+    (param_min_partition_size, max_partition_size);
+
+  partitioner.apply (partitions, n_lto_partitions);
+}
 
 /* Group cgraph nodes into equally-sized partitions.
 

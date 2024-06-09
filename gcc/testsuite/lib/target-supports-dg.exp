@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2023 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -334,6 +334,23 @@ proc check-flags { args } {
     # The args are within another list; pull them out.
     set args [lindex $args 0]
 
+    # The next two arguments are optional.  If they were not specified,
+    # use the defaults.
+    if { [llength $args] == 2 } {
+	lappend args "*"
+    }
+    if { [llength $args] == 3 } {
+	lappend args ""
+    }
+
+    # If the option strings are the defaults, or the same as the
+    # defaults, there is no need to call check_conditional_xfail to
+    # compare them to the actual options.
+    if { [string compare [lindex $args 2] "*"] == 0
+	 && [string compare [lindex $args 3] "" ] == 0 } {
+	return 1
+    }
+
     # Start the list with a dummy tool name so the list will match "*"
     # if there are no flags.
     set compiler_flags " toolname "
@@ -350,26 +367,9 @@ proc check-flags { args } {
 	append compiler_flags "[board_info $dest multilib_flags] "
     }
 
-    # The next two arguments are optional.  If they were not specified,
-    # use the defaults.
-    if { [llength $args] == 2 } {
-	lappend $args [list "*"]
-    }
-    if { [llength $args] == 3 } {
-	lappend $args [list ""]
-    }
-
-    # If the option strings are the defaults, or the same as the
-    # defaults, there is no need to call check_conditional_xfail to
-    # compare them to the actual options.
-    if { [string compare [lindex $args 2] "*"] == 0
-	 && [string compare [lindex $args 3] "" ] == 0 } {
-	set result 1    
-    } else {
-	# The target list might be an effective-target keyword, so replace
-	# the original list with "*-*-*", since we already know it matches.
-	set result [check_conditional_xfail [lreplace $args 1 1 "*-*-*"]]
-    }
+    # The target list might be an effective-target keyword, so replace
+    # the original list with "*-*-*", since we already know it matches.
+    set result [check_conditional_xfail [lreplace $args 1 1 "*-*-*"]]
 
     # Any value in this variable was left over from an earlier test.
     set compiler_flags ""

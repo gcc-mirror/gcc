@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3590,7 +3590,7 @@ package body Sem_Case is
 
             --  Hold on, maybe it isn't a complete mess after all.
 
-            if Core_Extensions_Allowed and then Subtyp /= Any_Type then
+            if All_Extensions_Allowed and then Subtyp /= Any_Type then
                Check_Composite_Case_Selector;
                Check_Case_Pattern_Choices;
             end if;
@@ -3874,7 +3874,7 @@ package body Sem_Case is
    function Is_Case_Choice_Pattern (Expr : Node_Id) return Boolean is
       E : Node_Id := Expr;
    begin
-      if not Core_Extensions_Allowed then
+      if not All_Extensions_Allowed then
          return False;
       end if;
 

@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -mcpu=v6.00.a " } */
+/* { dg-options "-O3 -mcpu=v10.0" } */
 
 volatile float f1, f2, f3;
 

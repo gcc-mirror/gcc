@@ -705,7 +705,7 @@
 #define BNEG(T) NOMIPS16 T FN (bneg, T ## _DF) (T i, T j) { return BUILTIN (bneg, T ## _DF) (i, j); }
 #define BNEGI(T) NOMIPS16 T FN (bnegi, T ## _DF) (T i) { return BUILTIN (bnegi, T ## _DF) (i, 0); }
 #define BSEL(T) NOMIPS16 T FN (bsel, v) (T i, T j, T k) { return BUILTIN (bsel, v) (i, j, k); }
-#define BSELI(T) NOMIPS16 T FN (bseli, T ## _DF) (T i, T j) { return BUILTIN (bseli, T ## _DF) (i, j, U8MAX); }
+#define BSELI(T) NOMIPS16 T FN (bseli, T ## _DF) (T i, T j) { return BUILTIN (bseli, T ## _DF) (i, j, U8MAX-1); }
 #define BSET(T) NOMIPS16 T FN (bset, T ## _DF) (T i, T j) { return BUILTIN (bset, T ## _DF) (i, j); }
 #define BSETI(T) NOMIPS16 T FN (bseti, T ## _DF) (T i) { return BUILTIN (bseti, T ## _DF) (i, 0); }
 #define NLOC(T) NOMIPS16 T FN (nloc, T ## _DF) (T i) { return BUILTIN (nloc, T ## _DF) (i); }

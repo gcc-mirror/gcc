@@ -2,7 +2,10 @@
    defined, CCP was not traversing the edges out of the if(), which caused
    the PHI node for 'k' at the top of the while to only be visited once.
    This ended up causing CCP to think that 'k' was the constant '1'.  */
-main()
+void abort (void);
+
+int
+main(void)
 {
   int i, j, k;
 

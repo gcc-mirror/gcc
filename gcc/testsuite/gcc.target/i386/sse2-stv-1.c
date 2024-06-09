@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -msse2" } */
+/* { dg-options "-O2 -msse2 -mno-stackrealign" } */
 
 unsigned long long a,b,c,d;
 

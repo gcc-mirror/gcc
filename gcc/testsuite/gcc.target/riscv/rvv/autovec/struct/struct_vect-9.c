@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-std=c99 -march=rv64gcv_zvfh -mabi=lp64d --param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
+/* { dg-additional-options "-std=c99 -march=rv64gcv_zvfh -mabi=lp64d -mrvv-vector-bits=scalable -fno-vect-cost-model" } */
 
 #define TYPE uint64_t
 #define ITYPE int64_t

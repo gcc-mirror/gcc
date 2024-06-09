@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned int foo(unsigned int x)
 {
   if (x < 5)

@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 2007-2023 Free Software Foundation, Inc.
+// Copyright (C) 2007-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1465,7 +1465,7 @@ _GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __err = ios_base::goodbit;
       bool __use_state = false;
-#if __GNUC__ >= 5 && !defined(__clang__)
+#if __GNUC__ >= 5 && !defined(_GLIBCXX_CLANG)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpmf-conversions"
       // Nasty hack.  The C++ standard mandates that get invokes the do_get

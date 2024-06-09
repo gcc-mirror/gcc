@@ -1,5 +1,5 @@
 /* TLS emulation.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 This file is part of GCC.
@@ -56,6 +56,14 @@ struct __emutls_array
 #ifndef EMUTLS_ATTR
 #  define EMUTLS_ATTR
 #endif
+
+/* __emutls_get_address and __emutls_register_common are registered as
+   builtins, but the compiler struct __emutls_object doesn't have
+   a union in there and is only created when actually needed for
+   the calls to the builtins, so the builtins are created with void *
+   arguments rather than struct __emutls_object *.  Avoid
+   -Wbuiltin-declaration-mismatch warnings.  */
+#pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
 
 EMUTLS_ATTR
 void *__emutls_get_address (struct __emutls_object *);

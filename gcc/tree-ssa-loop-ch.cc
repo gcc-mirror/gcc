@@ -1,5 +1,5 @@
 /* Loop header copying on trees.
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -40,6 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range-path.h"
 #include "gimple-pretty-print.h"
 #include "cfganal.h"
+#include "tree-ssa-loop-manip.h"
+#include "tree-ssa-loop-niter.h"
+#include "tree-scalar-evolution.h"
 
 /* Return path query insteance for testing ranges of statements
    in headers of LOOP contained in basic block BB.
@@ -565,7 +568,7 @@ do_while_loop_p (class loop *loop)
 	       <body>
        // region start
      loop_header:
-	       if (cond1)   <- we need to update probabbility here
+	       if (cond1)   <- we need to update probability here
 		 goto loop_exit;
 	       if (cond2)   <- and determine scaling factor here.
 			       moreover cond2 is now always true
@@ -756,6 +759,21 @@ protected:
   bool process_loop_p (class loop *loop) final override;
 }; // class pass_ch_vect
 
+/* Sort comparator to order loops after the specified order.  */
+
+static int
+ch_order_loops (const void *a_, const void *b_, void *order_)
+{
+  int *order = (int *)order_;
+  const class loop *a = *(const class loop * const *)a_;
+  const class loop *b = *(const class loop * const *)b_;
+  if (a->num == b->num)
+    return 0;
+  if (order[a->num] < order[b->num])
+    return -1;
+  return 1;
+}
+
 /* For all loops, copy the condition at the end of the loop body in front
    of the loop.  This is beneficial since it increases efficiency of
    code motion optimizations.  It also saves one jump on entry to the loop.  */
@@ -796,7 +814,16 @@ ch_base::copy_headers (function *fun)
 	fprintf (dump_file,
 		 "Analyzing loop %i\n", loop->num);
 
+      /* If the loop is already a do-while style one (either because it was
+	 written as such, or because jump threading transformed it into one),
+	 we might be in fact peeling the first iteration of the loop.  This
+	 in general is not a good idea.  Also avoid touching infinite loops.  */
+      if (!loop_has_exit_edges (loop)
+	  || !process_loop_p (loop))
+	continue;
+
       basic_block header = loop->header;
+      estimate_numbers_of_iterations (loop);
       if (!get_max_loop_iterations_int (loop))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -806,14 +833,6 @@ ch_base::copy_headers (function *fun)
 	  loops_to_unloop_nunroll.safe_push (0);
 	  continue;
 	}
-
-      /* If the loop is already a do-while style one (either because it was
-	 written as such, or because jump threading transformed it into one),
-	 we might be in fact peeling the first iteration of the loop.  This
-	 in general is not a good idea.  Also avoid touching infinite loops.  */
-      if (!loop_has_exit_edges (loop)
-	  || !process_loop_p (loop))
-	continue;
 
       /* Iterate the header copying up to limit; this takes care of the cases
 	 like while (a && b) {...}, where we want to have both of the conditions
@@ -953,7 +972,7 @@ ch_base::copy_headers (function *fun)
 
       edge entry = loop_preheader_edge (loop);
 
-      propagate_threaded_block_debug_into (exit->dest, entry->dest);
+      propagate_threaded_block_debug_into (nonexit->dest, entry->dest);
       if (!gimple_duplicate_seme_region (entry, exit, bbs, n_bbs, copied_bbs,
 					 true))
 	{
@@ -1045,7 +1064,7 @@ ch_base::copy_headers (function *fun)
 	  fprintf (dump_file, "\n");
 	}
 
-      /* We possibly decreased number of itrations by 1.  */
+      /* We possibly decreased number of iterations by 1.  */
       auto_vec<edge> exits = get_loop_exit_edges (loop);
       bool precise = (nexits == (int) exits.length ());
       /* Check that loop may not terminate in other way than via
@@ -1148,8 +1167,24 @@ ch_base::copy_headers (function *fun)
     }
   if (!loops_to_unloop.is_empty ())
     {
+      /* Make sure loops are ordered inner to outer for unlooping.  */
+      if (loops_to_unloop.length () != 1)
+	{
+	  auto_vec<int, 8> order;
+	  order.safe_grow (number_of_loops (cfun), true);
+	  int i = 0;
+	  for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
+	    order[loop->num] = i++;
+	  loops_to_unloop.sort (ch_order_loops, order.address ());
+	}
       bool irred_invalidated;
-      unloop_loops (loops_to_unloop, loops_to_unloop_nunroll, NULL, &irred_invalidated);
+      auto_bitmap lc_invalidated;
+      auto_vec<edge> edges_to_remove;
+      unloop_loops (loops_to_unloop, loops_to_unloop_nunroll, edges_to_remove,
+		    lc_invalidated, &irred_invalidated);
+      if (loops_state_satisfies_p (fun, LOOP_CLOSED_SSA)
+	  && !bitmap_empty_p (lc_invalidated))
+	rewrite_into_loop_closed_ssa (NULL, 0);
       changed = true;
     }
   free (bbs);
@@ -1163,12 +1198,12 @@ ch_base::copy_headers (function *fun)
 unsigned int
 pass_ch::execute (function *fun)
 {
-  loop_optimizer_init (LOOPS_HAVE_PREHEADERS
-		       | LOOPS_HAVE_SIMPLE_LATCHES
-		       | LOOPS_HAVE_RECORDED_EXITS);
+  loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
+  scev_initialize ();
 
   unsigned int res = copy_headers (fun);
 
+  scev_finalize ();
   loop_optimizer_finalize ();
   return res;
 }

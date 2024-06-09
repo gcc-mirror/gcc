@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -212,30 +212,31 @@ package Sem_Prag is
    --  of subprogram bodies.
 
    Pragma_Significant_To_Subprograms : constant array (Pragma_Id) of Boolean :=
-     (Pragma_Always_Terminates  => True,
-      Pragma_Contract_Cases     => True,
-      Pragma_Depends            => True,
-      Pragma_Exceptional_Cases  => True,
-      Pragma_Ghost              => True,
-      Pragma_Global             => True,
-      Pragma_Inline             => True,
-      Pragma_Inline_Always      => True,
-      Pragma_Post               => True,
-      Pragma_Post_Class         => True,
-      Pragma_Postcondition      => True,
-      Pragma_Pre                => True,
-      Pragma_Pre_Class          => True,
-      Pragma_Precondition       => True,
-      Pragma_Pure               => True,
-      Pragma_Pure_Function      => True,
-      Pragma_Refined_Depends    => True,
-      Pragma_Refined_Global     => True,
-      Pragma_Refined_Post       => True,
-      Pragma_Refined_State      => True,
-      Pragma_Subprogram_Variant => True,
-      Pragma_Volatile           => True,
-      Pragma_Volatile_Function  => True,
-      others                    => False);
+     (Pragma_Always_Terminates   => True,
+      Pragma_Contract_Cases      => True,
+      Pragma_Depends             => True,
+      Pragma_Exceptional_Cases   => True,
+      Pragma_Ghost               => True,
+      Pragma_Global              => True,
+      Pragma_Inline              => True,
+      Pragma_Inline_Always       => True,
+      Pragma_Post                => True,
+      Pragma_Post_Class          => True,
+      Pragma_Postcondition       => True,
+      Pragma_Pre                 => True,
+      Pragma_Pre_Class           => True,
+      Pragma_Precondition        => True,
+      Pragma_Pure                => True,
+      Pragma_Pure_Function       => True,
+      Pragma_Refined_Depends     => True,
+      Pragma_Refined_Global      => True,
+      Pragma_Refined_Post        => True,
+      Pragma_Refined_State       => True,
+      Pragma_Side_Effects        => True,
+      Pragma_Subprogram_Variant  => True,
+      Pragma_Volatile            => True,
+      Pragma_Volatile_Function   => True,
+      others                     => False);
 
    -----------------
    -- Subprograms --
@@ -243,6 +244,10 @@ package Sem_Prag is
 
    procedure Analyze_Pragma (N : Node_Id);
    --  Analyze procedure for pragma reference node N
+
+   procedure Analyze_Pragmas_If_Present (Decl : Node_Id; Id : Pragma_Id);
+   --  Inspect the list of pragmas after declaration Decl and look for a pragma
+   --  that matches Id. If found, analyze the pragma.
 
    procedure Analyze_Always_Terminates_In_Decl_Part
      (N         : Node_Id;
@@ -475,6 +480,7 @@ package Sem_Prag is
    --    Refined_Global
    --    Refined_Post
    --    Refined_State
+   --    Side_Effects
    --    Subprogram_Variant
    --    Test_Case
    --    Volatile_Function

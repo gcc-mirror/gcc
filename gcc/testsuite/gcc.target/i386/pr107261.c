@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2" } */
+/* { dg-options "-O2 -msse2 -fomit-frame-pointer" } */
 
 typedef __bf16 v4bf __attribute__ ((vector_size (8)));
 typedef __bf16 v2bf __attribute__ ((vector_size (4)));

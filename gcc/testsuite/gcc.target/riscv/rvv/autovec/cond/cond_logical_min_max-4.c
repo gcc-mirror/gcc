@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d --param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
+/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d -mrvv-vector-bits=scalable -fno-vect-cost-model" } */
 
 #include <stdint-gcc.h>
 
@@ -47,3 +47,4 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {vmax\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 4 } } */
 /* { dg-final { scan-assembler-times {vminu\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 4 } } */
 /* { dg-final { scan-assembler-times {vmaxu\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 4 } } */
+/* { dg-final { scan-assembler-not {\tvf?merge\.v[vxi]m\t} } } */

@@ -1,5 +1,5 @@
 /* Builtins macros for RISC-V 'V' Extension for GNU compiler.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by Ju-Zhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
 This file is part of GCC.
@@ -483,7 +483,7 @@ DEF_RVV_TYPE (vfloat16m4_t, 17, __rvv_float16m4_t, float16, RVVM4HF, _f16m4,
 /* Define tuple types for SEW = 16, LMUL = M4. */
 DEF_RVV_TUPLE_TYPE (vfloat16m4x2_t, 19, __rvv_float16m4x2_t, vfloat16m4_t, float16, 2, _f16m4x2)
 /* LMUL = 8.  */
-DEF_RVV_TYPE (vfloat16m8_t, 16, __rvv_float16m8_t, float16, RVVM8HF, _f16m8,
+DEF_RVV_TYPE (vfloat16m8_t, 17, __rvv_float16m8_t, float16, RVVM8HF, _f16m8,
 	      _f16, _e16m8)
 
 /* Disable all when !TARGET_VECTOR_ELEN_FP_32.  */
@@ -558,6 +558,7 @@ DEF_RVV_TYPE (vfloat64m8_t, 17, __rvv_float64m8_t, double, RVVM8DF, _f64m8,
 
 DEF_RVV_OP_TYPE (vv)
 DEF_RVV_OP_TYPE (vx)
+DEF_RVV_OP_TYPE (vi)
 DEF_RVV_OP_TYPE (v)
 DEF_RVV_OP_TYPE (wv)
 DEF_RVV_OP_TYPE (wx)

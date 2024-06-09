@@ -44,8 +44,7 @@ test_zero_fill (char *dst)
   __analyzer_eval (dst[4] == '\0'); /* { dg-warning "TRUE" "correct" { xfail *-*-* } } */
   /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
   __analyzer_eval (__analyzer_get_strlen (dst) == 0); /* { dg-warning "TRUE" } */
-  __analyzer_eval (__analyzer_get_strlen (dst + 1) == 0); /* { dg-warning "TRUE" "correct" { xfail *-*-* } } */
-  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
+  __analyzer_eval (__analyzer_get_strlen (dst + 1) == 0); /* { dg-warning "TRUE" } */
 }
 
 char *test_unterminated_concrete_a (char *dst)

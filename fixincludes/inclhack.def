@@ -1486,6 +1486,7 @@ fix = {
   mach      = "*-*-darwin*";
   files     = os/trace.h;
   select    = "typedef.*\\^os_trace_payload_t.*";
+  bypass    = "#ifdef __BLOCKS__";
   c_fix     = format;
   c_fix_arg = "#if __BLOCKS__\n%0\n#endif";
   test_text = "typedef void (^os_trace_payload_t)(xpc_object_t xdict);";
@@ -1566,6 +1567,7 @@ fix = {
 #define __has_attribute.*
 #endif
 OS_BASE_1_SEL;
+  bypass    = "#define __has_extension";
   c_fix     = format;
   c_fix_arg = <<- OS_BASE_1_FIX
 %0
@@ -1589,6 +1591,7 @@ fix = {
   mach      = "*-*-darwin*";
   files     = dispatch/object.h;
   select    = "typedef void.*\\^dispatch_block_t.*";
+  bypass    = "#ifdef __BLOCKS__";
   c_fix     = format;
   c_fix_arg = "#if __BLOCKS__\n%0\n#endif";
   test_text = <<- DISPATCH_OBJECT_1_TEST
@@ -1791,6 +1794,7 @@ fix = {
 		"#endif";
     select    = "#define INTMAX_C\\(v\\)[ \t]+\\(v ## LL\\)\n"
 		"#define UINTMAX_C\\(v\\)[ \t]+\\(v ## ULL\\)";
+    bypass = '#ifdef __LP64__';
     test_text = "#define INTMAX_C(v)  (v ## LL)\n"
 		"#define UINTMAX_C(v) (v ## ULL)";
 };

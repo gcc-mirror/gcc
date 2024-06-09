@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -37,7 +37,7 @@ VisibilityResolver::go (HIR::Crate &crate)
 
   current_module = crate.get_mappings ().get_defid ();
 
-  for (auto &item : crate.items)
+  for (auto &item : crate.get_items ())
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
 	{
@@ -74,6 +74,16 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
   HirId ref;
   rust_assert (mappings.lookup_node_to_hir (ref_node_id, &ref));
 
+  auto crate = mappings.get_ast_crate (mappings.get_current_crate ());
+
+  // we may be dealing with pub(crate)
+  if (ref_node_id == crate.get_node_id ())
+    // FIXME: What do we do here? There isn't a DefId for the Crate, so can we
+    // actually do anything?
+    // We basically want to return true always but just when exporting export
+    // these items as private?
+    return true;
+
   auto module = mappings.lookup_module (ref);
   if (!module)
     {
@@ -107,7 +117,7 @@ VisibilityResolver::resolve_visibility (const HIR::Visibility &visibility,
 	return result;
       }
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       return false;
     }
 }
@@ -230,7 +240,7 @@ VisibilityResolver::visit (HIR::ImplBlock &impl)
 	  vis_item = static_cast<HIR::ConstantItem *> (item.get ());
 	  break;
 	default:
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	  return;
 	}
       vis_item->accept_vis (*this);

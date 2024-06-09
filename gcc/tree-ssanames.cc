@@ -1,5 +1,5 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -521,10 +521,6 @@ bool
 ssa_name_has_boolean_range (tree op)
 {
   gcc_assert (TREE_CODE (op) == SSA_NAME);
-
-  /* Boolean types always have a range [0..1].  */
-  if (TREE_CODE (TREE_TYPE (op)) == BOOLEAN_TYPE)
-    return true;
 
   /* An integral type with a single bit of precision.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (op))

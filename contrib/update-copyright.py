@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (C) 2013-2023 Free Software Foundation, Inc.
+# Copyright (C) 2013-2024 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,6 +83,7 @@ class GenericFilter:
                 'gpl_v3.texi',
                 'fdl-1.3.xml',
                 'gpl-3.0.xml',
+                'gpl_v3_without_node.texi',
 
                 # Skip auto- and libtool-related files
                 'aclocal.m4',
@@ -556,6 +557,9 @@ class GCCFilter (GenericFilter):
         self.skip_files |= set ([
                 # Not part of GCC
                 'math-68881.h',
+
+                # Weird ways to compose copyright year
+                'GmcOptions.cc',
                 ])
 
         self.skip_dirs |= set ([

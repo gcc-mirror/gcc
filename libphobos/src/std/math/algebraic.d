@@ -43,24 +43,24 @@ import std.traits : CommonType, isFloatingPoint, isIntegral, isSigned, Unqual;
  *     the return type will be the same as the input.
  *
  * Limitations:
- *     Does not work correctly for signed intergal types and value `Num`.min.
+ *     When x is a signed integral equal to `Num.min` the value of x will be returned instead.
+ *     Note for 2's complement; `-Num.min` (= `Num.max + 1`) is not representable due to overflow.
  */
-auto abs(Num)(Num x) @nogc pure nothrow
-if ((is(immutable Num == immutable short) || is(immutable Num == immutable byte)) ||
-    (is(typeof(Num.init >= 0)) && is(typeof(-Num.init))))
+auto abs(Num)(Num x) @nogc nothrow pure
+if (isIntegral!Num || (is(typeof(Num.init >= 0)) && is(typeof(-Num.init))))
 {
     static if (isFloatingPoint!(Num))
         return fabs(x);
     else
     {
-        static if (is(immutable Num == immutable short) || is(immutable Num == immutable byte))
-            return x >= 0 ? x : cast(Num) -int(x);
+        static if (isIntegral!Num)
+            return x >= 0 ? x : cast(Num) -x;
         else
             return x >= 0 ? x : -x;
     }
 }
 
-/// ditto
+///
 @safe pure nothrow @nogc unittest
 {
     import std.math.traits : isIdentical, isNaN;
@@ -70,16 +70,27 @@ if ((is(immutable Num == immutable short) || is(immutable Num == immutable byte)
     assert(abs(-real.infinity) == real.infinity);
     assert(abs(-56) == 56);
     assert(abs(2321312L)  == 2321312L);
+    assert(abs(23u) == 23u);
 }
 
 @safe pure nothrow @nogc unittest
 {
-    short s = -8;
-    byte b = -8;
-    assert(abs(s) == 8);
-    assert(abs(b) == 8);
-    immutable(byte) c = -8;
-    assert(abs(c) == 8);
+    assert(abs(byte(-8)) == 8);
+    assert(abs(ubyte(8u)) == 8);
+    assert(abs(short(-8)) == 8);
+    assert(abs(ushort(8u)) == 8);
+    assert(abs(int(-8)) == 8);
+    assert(abs(uint(8u)) == 8);
+    assert(abs(long(-8)) == 8);
+    assert(abs(ulong(8u)) == 8);
+    assert(is(typeof(abs(byte(-8))) == byte));
+    assert(is(typeof(abs(ubyte(8u))) == ubyte));
+    assert(is(typeof(abs(short(-8))) == short));
+    assert(is(typeof(abs(ushort(8u))) == ushort));
+    assert(is(typeof(abs(int(-8))) == int));
+    assert(is(typeof(abs(uint(8u))) == uint));
+    assert(is(typeof(abs(long(-8))) == long));
+    assert(is(typeof(abs(ulong(8u))) == ulong));
 }
 
 @safe pure nothrow @nogc unittest
@@ -297,7 +308,7 @@ if (isFloatingPoint!T)
     // If both are huge, avoid overflow by scaling by 2^^-N.
     // If both are tiny, avoid underflow by scaling by 2^^N.
     import core.math : fabs, sqrt;
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     alias F = floatTraits!T;
 

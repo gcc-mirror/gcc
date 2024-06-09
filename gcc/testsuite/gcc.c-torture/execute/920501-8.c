@@ -1,5 +1,8 @@
 /* { dg-additional-options "-Wl,-u,_printf_float" { target newlib_nano_io } } */
 
+void abort (void);
+void exit (int);
+
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -31,10 +34,11 @@ va (int a, double b, int c, ...)
   va_end (ap);
 }
 
-main()
+int
+main(void)
 {
   va (1, 1.0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15);
-  if (strcmp ("1,1.000000,2,3,4,5,6,7,8,9,10,11,12,13,14,15", buf))
+  if (__builtin_strcmp ("1,1.000000,2,3,4,5,6,7,8,9,10,11,12,13,14,15", buf))
     abort();
   exit(0);
 }

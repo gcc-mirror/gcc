@@ -1,5 +1,8 @@
 /* { dg-require-stack-size "8*100*100" } */
 
+void abort (void);
+void exit (int);
+
 double x[100][100];
 int main ()
 {

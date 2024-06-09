@@ -15,7 +15,7 @@ volatile __m512i a, b;
 void
 foo()
 {
-  b = _mm512_srlv_epi16 (a, _mm512_set1_epi16 (3));
-  b = _mm512_sllv_epi16 (a, _mm512_set1_epi16 (4));
-  b = _mm512_srav_epi16 (a, _mm512_set1_epi16 (5));
+  b = _mm512_srlv_epi16 (a, _mm512_set1_epi16 (4));
+  b = _mm512_sllv_epi16 (a, _mm512_set1_epi16 (5));
+  b = _mm512_srav_epi16 (a, _mm512_set1_epi16 (6));
 }

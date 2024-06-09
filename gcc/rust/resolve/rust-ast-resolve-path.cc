@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -25,28 +25,28 @@ namespace Resolver {
 
 ResolvePath::ResolvePath () : ResolverBase () {}
 
-void
+NodeId
 ResolvePath::go (AST::PathInExpression *expr)
 {
   ResolvePath resolver;
-  resolver.resolve_path (expr);
+  return resolver.resolve_path (expr);
 }
 
-void
+NodeId
 ResolvePath::go (AST::QualifiedPathInExpression *expr)
 {
   ResolvePath resolver;
-  resolver.resolve_path (expr);
+  return resolver.resolve_path (expr);
 }
 
-void
+NodeId
 ResolvePath::go (AST::SimplePath *expr)
 {
   ResolvePath resolver;
-  resolver.resolve_path (expr);
+  return resolver.resolve_path (expr);
 }
 
-void
+NodeId
 ResolvePath::resolve_path (AST::PathInExpression *expr)
 {
   NodeId resolved_node_id = UNKNOWN_NODEID;
@@ -62,13 +62,11 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       bool in_middle_of_path = i > 0;
       if (in_middle_of_path && segment.is_lower_self_seg ())
 	{
-	  // error[E0433]: failed to resolve: `self` in paths can only be used
-	  // in start position
-	  rust_error_at (segment.get_locus (),
+	  rust_error_at (segment.get_locus (), ErrorCode::E0433,
 			 "failed to resolve: %<%s%> in paths can only be used "
 			 "in start position",
 			 segment.as_string ().c_str ());
-	  return;
+	  return UNKNOWN_NODEID;
 	}
 
       NodeId crate_scope_id = resolver->peek_crate_module_scope ();
@@ -87,7 +85,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	    {
 	      rust_error_at (segment.get_locus (),
 			     "cannot use %<super%> at the crate scope");
-	      return;
+	      return UNKNOWN_NODEID;
 	    }
 
 	  module_scope_id = resolver->peek_parent_module_scope ();
@@ -166,10 +164,10 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
       if (resolved_node_id == UNKNOWN_NODEID
 	  && previous_resolved_node_id == module_scope_id)
 	{
-	  Optional<CanonicalPath &> resolved_child
+	  tl::optional<CanonicalPath &> resolved_child
 	    = mappings->lookup_module_child (module_scope_id,
 					     ident_seg.as_string ());
-	  if (resolved_child.is_some ())
+	  if (resolved_child.has_value ())
 	    {
 	      NodeId resolved_node = resolved_child->get_node_id ();
 	      if (resolver->get_name_scope ().decl_was_declared_here (
@@ -191,7 +189,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 		  rust_error_at (segment.get_locus (),
 				 "Cannot find path %<%s%> in this scope",
 				 segment.as_string ().c_str ());
-		  return;
+		  return UNKNOWN_NODEID;
 		}
 	    }
 	}
@@ -208,10 +206,10 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	}
       else if (is_first_segment)
 	{
-	  rust_error_at (segment.get_locus (),
+	  rust_error_at (segment.get_locus (), ErrorCode::E0433,
 			 "Cannot find path %<%s%> in this scope",
 			 segment.as_string ().c_str ());
-	  return;
+	  return UNKNOWN_NODEID;
 	}
     }
 
@@ -233,12 +231,13 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	}
       else
 	{
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
+  return resolved_node_id;
 }
 
-void
+NodeId
 ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
 {
   AST::QualifiedPathType &root_segment = expr->get_qualified_path_type ();
@@ -254,27 +253,36 @@ ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
       if (segment.has_generic_args ())
 	ResolveGenericArgs::go (segment.get_generic_args ());
     }
+
+  // cannot fully resolve a qualified path as it is dependant on associated
+  // items
+  return UNKNOWN_NODEID;
 }
 
-void
+NodeId
 ResolvePath::resolve_path (AST::SimplePath *expr)
 {
   NodeId crate_scope_id = resolver->peek_crate_module_scope ();
   NodeId module_scope_id = resolver->peek_current_module_scope ();
 
+  NodeId previous_resolved_node_id = UNKNOWN_NODEID;
   NodeId resolved_node_id = UNKNOWN_NODEID;
   for (size_t i = 0; i < expr->get_segments ().size (); i++)
     {
-      auto &segment = expr->get_segments ().at (i);
+      AST::SimplePathSegment &segment = expr->get_segments ().at (i);
       bool is_first_segment = i == 0;
+      bool is_final_segment = i >= (expr->get_segments ().size () - 1);
       resolved_node_id = UNKNOWN_NODEID;
 
       if (segment.is_crate_path_seg ())
 	{
 	  // what is the current crate scope node id?
 	  module_scope_id = crate_scope_id;
+	  previous_resolved_node_id = module_scope_id;
 	  resolver->insert_resolved_name (segment.get_node_id (),
 					  module_scope_id);
+	  resolved_node_id = module_scope_id;
+
 	  continue;
 	}
       else if (segment.is_super_path_seg ())
@@ -283,19 +291,22 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	    {
 	      rust_error_at (segment.get_locus (),
 			     "cannot use %<super%> at the crate scope");
-	      return;
+	      return UNKNOWN_NODEID;
 	    }
 
 	  module_scope_id = resolver->peek_parent_module_scope ();
+	  previous_resolved_node_id = module_scope_id;
 	  resolver->insert_resolved_name (segment.get_node_id (),
 					  module_scope_id);
+	  resolved_node_id = module_scope_id;
+
 	  continue;
 	}
 
-      Optional<CanonicalPath &> resolved_child
+      tl::optional<CanonicalPath &> resolved_child
 	= mappings->lookup_module_child (module_scope_id,
 					 segment.get_segment_name ());
-      if (resolved_child.is_some ())
+      if (resolved_child.has_value ())
 	{
 	  NodeId resolved_node = resolved_child->get_node_id ();
 	  if (resolver->get_name_scope ().decl_was_declared_here (
@@ -317,7 +328,7 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	      rust_error_at (segment.get_locus (),
 			     "Cannot find path %<%s%> in this scope",
 			     segment.as_string ().c_str ());
-	      return;
+	      return UNKNOWN_NODEID;
 	    }
 	}
 
@@ -343,18 +354,37 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	    }
 	}
 
+      // if we still have not resolved and this is the final segment and the
+      // final segment is self its likely the case: pub use
+      //
+      // result::Result::{self, Err, Ok};
+      //
+      // Then the resolved_node_id is just the previous one so long as it is a
+      // resolved node id
+      // rust_debug_loc (segment.get_locus (),
+      //   	      "trying to resolve seg: [%s] first [%s] last [%s]",
+      //   	      segment.get_segment_name ().c_str (),
+      //   	      is_first_segment ? "true" : "false",
+      //   	      is_final_segment ? "true" : "false");
+      if (resolved_node_id == UNKNOWN_NODEID && !is_first_segment
+	  && is_final_segment && segment.is_lower_self_seg ())
+	resolved_node_id = previous_resolved_node_id;
+
+      // final check
       if (resolved_node_id == UNKNOWN_NODEID)
 	{
 	  rust_error_at (segment.get_locus (),
 			 "cannot find simple path segment %<%s%> in this scope",
 			 segment.as_string ().c_str ());
-	  return;
+	  return UNKNOWN_NODEID;
 	}
 
       if (mappings->node_is_module (resolved_node_id))
 	{
 	  module_scope_id = resolved_node_id;
 	}
+
+      previous_resolved_node_id = resolved_node_id;
     }
 
   resolved_node = resolved_node_id;
@@ -375,9 +405,10 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	}
       else
 	{
-	  gcc_unreachable ();
+	  rust_unreachable ();
 	}
     }
+  return resolved_node_id;
 }
 
 } // namespace Resolver

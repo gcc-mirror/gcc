@@ -1,3 +1,4 @@
+/* { dg-require-effective-target int32plus } */
 /* PR tree-opt/109938 */
 
 #include "../../gcc.dg/tree-ssa/pr109938.c"

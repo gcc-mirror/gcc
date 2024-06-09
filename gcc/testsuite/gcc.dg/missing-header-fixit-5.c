@@ -3,7 +3,7 @@
    Rely on -Wimplicit-function-declaration for fixit hints, not on
    -Wbuiltin-declaration-mismatch (which misses abs, isdigit, putchar).  */
 
-/* { dg-options "-fdiagnostics-show-caret -fdiagnostics-show-line-numbers -Wimplicit-function-declaration -Wno-builtin-declaration-mismatch" } */
+/* { dg-options "-fpermissive -fdiagnostics-show-caret -fdiagnostics-show-line-numbers -Wimplicit-function-declaration -Wno-builtin-declaration-mismatch" } */
 
 int
 foo (char *m, int i)

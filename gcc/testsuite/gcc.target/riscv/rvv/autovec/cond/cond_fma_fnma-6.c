@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d --param=riscv-autovec-preference=scalable -fno-vect-cost-model -ffast-math" } */
+/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d -mrvv-vector-bits=scalable -fno-vect-cost-model -ffast-math" } */
 
 #include <stdint-gcc.h>
 
@@ -33,3 +33,5 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {vnmsac\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 4 } } */
 /* { dg-final { scan-assembler-times {vfmacc\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 3 } } */
 /* { dg-final { scan-assembler-times {vfnmsac\.vv\s+v[0-9]+,v[0-9]+,v[0-9]+,v0.t} 3 } } */
+/* NOTE: 14 vmerge is need for other purpose.  */
+/* { dg-final { scan-assembler-times {\tvf?merge\.v[vxi]m\t} 14 } } */

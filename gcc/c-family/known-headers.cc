@@ -1,5 +1,5 @@
 /* Support for suggestions about missing #include directives.
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -182,6 +182,7 @@ get_stdlib_header_for_name (const char *name, enum stdlib lib)
     {"strchr", {"<string.h>", "<cstring>"} },
     {"strcmp", {"<string.h>", "<cstring>"} },
     {"strcpy", {"<string.h>", "<cstring>"} },
+    {"strerror", {"<string.h>", "<cstring>"} },
     {"strlen", {"<string.h>", "<cstring>"} },
     {"strncat", {"<string.h>", "<cstring>"} },
     {"strncmp", {"<string.h>", "<cstring>"} },

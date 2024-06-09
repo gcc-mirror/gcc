@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2060,7 +2060,8 @@ When a value occupying several consecutive registers is expected in a
 certain class, all the registers used must belong to that class.
 Therefore, register classes cannot be used to enforce a requirement for
 a register pair to start with an even-numbered register.  The way to
-specify this requirement is with @code{TARGET_HARD_REGNO_MODE_OK}.
+specify this requirement is with @code{TARGET_HARD_REGNO_MODE_OK},
+or with a filter expression in a @code{define_register_constraint}.
 
 Register classes used for input-operands of bitwise-and or shift
 instructions have a special requirement: each such class must have, for
@@ -2150,11 +2151,28 @@ of an address, @code{ADDRESS} for something that occurs in an
 index expression if @var{outer_code} is @code{PLUS}; @code{SCRATCH} otherwise.
 @end defmac
 
+@defmac INSN_BASE_REG_CLASS (@var{insn})
+A C expression whose value is the register class to which a valid
+base register for a specified @var{insn} must belong. This macro is
+used when some backend insns may have limited usage of base register
+compared with other insns. If you define this macro, the compiler will
+use it instead of all other defined macros that relate to
+BASE_REG_CLASS.
+@end defmac
+
 @defmac INDEX_REG_CLASS
 A macro whose definition is the name of the class to which a valid
 index register must belong.  An index register is one used in an
 address where its value is either multiplied by a scale factor or
 added to another register (as well as added to a displacement).
+@end defmac
+
+@defmac INSN_INDEX_REG_CLASS (@var{insn})
+A C expression whose value is the register class to which a valid
+index register for a specified @var{insn} must belong. This macro is
+used when some backend insns may have limited usage of index register
+compared with other insns. If you defined this macro, the compiler
+will use it instead of @code{INDEX_REG_CLASS}.
 @end defmac
 
 @defmac REGNO_OK_FOR_BASE_P (@var{num})
@@ -2198,6 +2216,15 @@ address, @code{ADDRESS} for something that occurs in an
 corresponding index expression if @var{outer_code} is @code{PLUS};
 @code{SCRATCH} otherwise.  The mode may be @code{VOIDmode} for addresses
 that appear outside a @code{MEM}, i.e., as an @code{address_operand}.
+@end defmac
+
+@defmac REGNO_OK_FOR_INSN_BASE_P (@var{num}, @var{insn})
+A C expression which is nonzero if register number @var{num} is
+suitable for use as a base register in operand addresses for a specified
+@var{insn}. This macro is used when some backend insn may have limited
+usage of base register compared with other insns. If you define this
+macro, the compiler will use it instead of all other defined macros
+that relate to REGNO_OK_FOR_BASE_P.
 @end defmac
 
 @defmac REGNO_OK_FOR_INDEX_P (@var{num})
@@ -2659,6 +2686,56 @@ in DWARF 2 debug information.  The default is zero.  A different value
 may reduce the size of debug information on some ports.
 @end defmac
 
+@hook TARGET_HAVE_STRUB_SUPPORT_FOR
+
+@defmac STACK_ADDRESS_OFFSET
+Offset from the stack pointer register to the boundary address between
+the stack area claimed by an active function, and stack ranges that
+could get clobbered if it called another function.  It should NOT
+encompass any stack red zone, that is used in leaf functions.
+
+This value is added to the stack pointer register to compute the address
+returned by @code{__builtin_stack_address}, and this is its only use.
+If this macro is not defined, no offset is added.  Defining it like
+@code{STACK_POINTER_OFFSET} may be appropriate for many machines, but
+not all.
+
+On SPARC, for example, the register save area is *not* considered active
+or used by the active function, but rather as akin to the area in which
+call-preserved registers are saved by callees, so the stack address is
+above that area, even though the (unbiased) stack pointer points below
+it.  This enables @code{__strub_leave} to clear what would otherwise
+overlap with its own register save area.
+
+On PowerPC, @code{STACK_POINTER_OFFSET} also reserves space for a save
+area, but that area is used by the caller rather than the callee, so the
+boundary address is below it.
+
+If the address is computed too high or too low, parts of a stack range
+that should be scrubbed may be left unscrubbed, scrubbing may corrupt
+active portions of the stack frame, and stack ranges may be
+doubly-scrubbed by caller and callee.
+@end defmac
+
+@defmac TARGET_STRUB_USE_DYNAMIC_ARRAY
+If defined to nonzero, @code{__strub_leave} will allocate a dynamic
+array covering the stack range that needs scrubbing before clearing it.
+Allocating the array tends to make scrubbing slower, but it enables the
+scrubbing to be safely implemented with a @code{memset} call, which
+could make up for the difference.
+@end defmac
+
+@defmac TARGET_STRUB_MAY_USE_MEMSET
+If defined to nonzero, enable @code{__strub_leave} to be optimized so as
+to call @code{memset} for stack scrubbing.  This is only enabled by
+default if @code{TARGET_STRUB_USE_DYNAMIC_ARRAY} is enabled; it's not
+advisable to enable it otherwise, since @code{memset} would then likely
+overwrite its own stack frame, but it might work if the target ABI
+enables @code{memset} to not use the stack at all, not even for
+arguments or its return address, and its implementation is trivial
+enough that it doesn't use a stack frame.
+@end defmac
+
 @node Exception Handling
 @subsection Exception Handling Support
 @cindex exception handling
@@ -2714,6 +2791,18 @@ the @code{eh_return} instruction pattern should be used instead.
 
 If you want to support call frame exception handling, you must
 define either this macro or the @code{eh_return} instruction pattern.
+@end defmac
+
+@defmac EH_RETURN_TAKEN_RTX
+A C expression whose value is RTL representing a location in which
+to store if the EH return path was taken instead of a normal return.
+This macro allows conditionally executing different code in the
+epilogue for the EH and normal return cases.
+
+When this macro is defined, the macros @code{EH_RETURN_STACKADJ_RTX}
+and @code{EH_RETURN_HANDLER_RTX} are only meaningful in the epilogue
+when 1 is stored to the specified location. The value 0 means normal
+return.
 @end defmac
 
 @defmac RETURN_ADDR_OFFSET
@@ -3798,6 +3887,10 @@ These machine description macros help implement varargs:
 
 @hook TARGET_STRICT_ARGUMENT_NAMING
 
+@hook TARGET_CALL_OFFSET_RETURN_LABEL
+
+@hook TARGET_START_CALL_ARGS
+
 @hook TARGET_CALL_ARGS
 
 @hook TARGET_END_CALL_ARGS
@@ -4016,6 +4109,8 @@ macro, a reasonable default is used.
 @hook TARGET_LIBC_HAS_FUNCTION
 
 @hook TARGET_LIBC_HAS_FAST_FUNCTION
+
+@hook TARGET_FORTIFY_SOURCE_DEFAULT_LEVEL
 
 @hook TARGET_LIBM_FUNCTION_MAX_ERROR
 
@@ -6906,7 +7001,7 @@ The following macros control mode switching optimizations:
 
 @defmac OPTIMIZE_MODE_SWITCHING (@var{entity})
 Define this macro if the port needs extra instructions inserted for mode
-switching in an optimizing compilation.
+switching.
 
 For an example, the SH4 can perform both single and double precision
 floating point operations, but to perform a single precision operation,
@@ -6916,27 +7011,31 @@ purpose register as a scratch register, hence these FPSCR sets have to
 be inserted before reload, i.e.@: you cannot put this into instruction emitting
 or @code{TARGET_MACHINE_DEPENDENT_REORG}.
 
-You can have multiple entities that are mode-switched, and select at run time
-which entities actually need it.  @code{OPTIMIZE_MODE_SWITCHING} should
-return nonzero for any @var{entity} that needs mode-switching.
+You can have multiple entities that are mode-switched, some of which might
+only be needed conditionally.  The entities are identified by their index
+into the @code{NUM_MODES_FOR_MODE_SWITCHING} initializer, with the length
+of the initializer determining the number of entities.
+
+@code{OPTIMIZE_MODE_SWITCHING} should return nonzero for any @var{entity}
+that needs mode-switching.
+
 If you define this macro, you also have to define
 @code{NUM_MODES_FOR_MODE_SWITCHING}, @code{TARGET_MODE_NEEDED},
 @code{TARGET_MODE_PRIORITY} and @code{TARGET_MODE_EMIT}.
-@code{TARGET_MODE_AFTER}, @code{TARGET_MODE_ENTRY}, and @code{TARGET_MODE_EXIT}
-are optional.
+The other macros in this section are optional.
 @end defmac
 
 @defmac NUM_MODES_FOR_MODE_SWITCHING
 If you define @code{OPTIMIZE_MODE_SWITCHING}, you have to define this as
 initializer for an array of integers.  Each initializer element
 N refers to an entity that needs mode switching, and specifies the number
-of different modes that might need to be set for this entity.
-The position of the initializer in the initializer---starting counting at
+of different modes that are defined for that entity.
+The position of the element in the initializer---starting counting at
 zero---determines the integer that is used to refer to the mode-switched
 entity in question.
-In macros that take mode arguments / yield a mode result, modes are
-represented as numbers 0 @dots{} N @minus{} 1.  N is used to specify that no mode
-switch is needed / supplied.
+Modes are represented as numbers 0 @dots{} N @minus{} 1.
+In mode arguments and return values, N either represents an unknown
+mode or ``no mode'', depending on context.
 @end defmac
 
 @hook TARGET_MODE_EMIT
@@ -6945,9 +7044,15 @@ switch is needed / supplied.
 
 @hook TARGET_MODE_AFTER
 
+@hook TARGET_MODE_CONFLUENCE
+
+@hook TARGET_MODE_BACKPROP
+
 @hook TARGET_MODE_ENTRY
 
 @hook TARGET_MODE_EXIT
+
+@hook TARGET_MODE_EH_HANDLER
 
 @hook TARGET_MODE_PRIORITY
 
@@ -6991,6 +7096,8 @@ on this implementation detail.
 @hook TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P
 
 @hook TARGET_OPTION_VALID_ATTRIBUTE_P
+
+@hook TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P
 
 @hook TARGET_OPTION_SAVE
 
@@ -7117,6 +7224,8 @@ floating-point support; they are not included in this mechanism.
 @hook TARGET_CXX_USE_AEABI_ATEXIT
 
 @hook TARGET_CXX_USE_ATEXIT_FOR_CXA_ATEXIT
+
+@hook TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE
 
 @hook TARGET_CXX_ADJUST_CLASS_AT_DEFINITION
 
@@ -7733,6 +7842,10 @@ of the if-block in the @code{struct ce_if_block} structure that is pointed
 to by @var{ce_info}.
 @end defmac
 
+@hook TARGET_USE_LATE_PROLOGUE_EPILOGUE
+
+@hook TARGET_EMIT_EPILOGUE_FOR_SIBCALL
+
 @hook TARGET_MACHINE_DEPENDENT_REORG
 
 @hook TARGET_INIT_BUILTINS
@@ -8004,6 +8117,6 @@ maintainer is familiar with.
 
 @hook TARGET_MEMTAG_UNTAGGED_POINTER
 
-@hook TARGET_GCOV_TYPE_SIZE
-
 @hook TARGET_HAVE_SHADOW_CALL_STACK
+
+@hook TARGET_HAVE_LIBATOMIC

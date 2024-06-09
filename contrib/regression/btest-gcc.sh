@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #  Test GCC.
-#  Copyright (C) 1999-2023 Free Software Foundation, Inc.
+#  Copyright (C) 1999-2024 Free Software Foundation, Inc.
 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -22,20 +22,29 @@
 
 add_passes_despite_regression=0
 dashj=''
+handle_xpass_as_fail=false
 
 # <options> can be
 # --add-passes-despite-regression:
 #  Add new "PASSes" despite there being some regressions.
 # -j<n>:
 #  Pass '-j<n>' to make.
+# --handle-xpass-as-fail:
+#  Count XPASS as a FAIL (default ignored).
 
-case "$1" in
- --add-passes-despite-regression)
-  add_passes_despite_regression=1; shift;;
- -j*)
-  dashj=$1; shift;;
- -*) echo "Invalid option: $1"; exit 2;;
-esac
+while : ; do
+  case "$1" in
+   --add-passes-despite-regression)
+    add_passes_despite_regression=1;;
+   --handle-xpass-as-fail)
+    handle_xpass_as_fail=true;;
+   -j*)
+    dashj=$1;;
+   -*) echo "Invalid option: $1"; exit 2;;
+   *) break;;
+  esac
+  shift
+done
 
 # TARGET is the target triplet.  It should be the same one as used in
 # constructing PREFIX.  Or it can be the keyword 'native', indicating
@@ -199,7 +208,11 @@ done
 # Work out what failed
 for LOG in $TESTLOGS ; do
   L=`basename $LOG`
-  awk '/^FAIL: / { print "'$L'",$2; }' $LOG || exit 1
+  if $handle_xpass_as_fail ; then
+   awk '/^(FAIL|XPASS): / { print "'$L'",$2; }' $LOG || exit 1
+  else
+   awk '/^FAIL: / { print "'$L'",$2; }' $LOG || exit 1
+  fi
 done | sort | uniq > $FAILED || exit 1
 comm -12 $FAILED $PASSES >> $REGRESS || exit 1
 NUMREGRESS=`wc -l < $REGRESS | tr -d ' '`

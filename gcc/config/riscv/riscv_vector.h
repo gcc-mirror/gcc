@@ -1,5 +1,5 @@
 /* RISC-V 'V' Extension intrinsics include file.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -28,9 +28,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#ifndef __riscv_vector
-#error "Vector intrinsics require the vector extension."
-#else
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -45,5 +42,4 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif // __cplusplus
-#endif // __riscv_vector
 #endif // __RISCV_VECTOR_H

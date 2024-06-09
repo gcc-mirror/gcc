@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2023 Free Software Foundation, Inc.
+// Copyright (C) 2015-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,15 +16,17 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++14 } }
+// { dg-add-options no_pch }
 
 #include <experimental/numeric>
-#include <experimental/type_traits>
 
 #ifndef __cpp_lib_experimental_gcd_lcm
 # error "Feature-test macro for gcd missing"
 #elif __cpp_lib_experimental_gcd_lcm != 201411
 # error "Feature-test macro for gcd has wrong value"
 #endif
+
+#include <experimental/type_traits>
 
 using std::experimental::fundamentals_v2::gcd;
 using std::experimental::is_same_v;

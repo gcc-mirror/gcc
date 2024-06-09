@@ -1,5 +1,5 @@
 /* lang-specs.h -- gcc driver specs for Rust frontend.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -22,5 +22,5 @@
 
 {".rs", "@rust", 0, 1, 0},
   {"@rust",
-   "rust1 %i %(cc1_options) %{I*} %{L*} %D %{!fsyntax-only:%(invoke_as)}", 0, 1,
+   "crab1 %i %(cc1_options) %{I*} %{L*} %D %{!fsyntax-only:%(invoke_as)}", 0, 1,
    0},

@@ -1,0 +1,6 @@
+DEFINITION MODULE constdef ;  (*!m2iso+gm2*)
+
+CONST
+   StrConst = 'hello' ;
+
+END constdef.

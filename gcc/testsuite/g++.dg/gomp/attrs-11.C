@@ -7,9 +7,9 @@ namespace O { typedef int T; };
 void
 foo ()
 {
-  [[omp::directive (parallel)]] asm ("");			// { dg-error "expected" }
+  [[omp::directive (parallel)]] asm ("");
   [[omp::directive (parallel)]] __extension__ asm ("");		// { dg-error "expected" }
-  __extension__ [[omp::directive (parallel)]] asm ("");		// { dg-error "expected" }
+  __extension__ [[omp::directive (parallel)]] asm ("");
   [[omp::directive (parallel)]] namespace M = ::N;		// { dg-error "expected" }
   [[omp::directive (parallel)]] using namespace N;		// { dg-error "not allowed to be specified in this context" }
   [[omp::directive (parallel)]] using O::T;			// { dg-error "expected" }

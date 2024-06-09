@@ -38,7 +38,7 @@ end function ext_fun
 
 contains
 
-  type(foo) function fun() ! { dg-error "already has an explicit interface" }
+  type(foo) function fun() ! { dg-error "has an explicit interface" }
   end function fun  ! { dg-error "Expecting END PROGRAM" }
 
 end

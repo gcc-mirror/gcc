@@ -1,5 +1,7 @@
 /* Reduced from qemu-7.2.0's hw/intc/omap_intc.c */
 
+/* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
+
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 
 typedef unsigned char __uint8_t;

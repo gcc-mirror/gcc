@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
    This file is part of GCC.
@@ -118,23 +118,23 @@ comparator (const void *va, const void *vb)
 
       if (*a != *b)
 	return *a - *b;
-      
+
       a++;
       b++;
     }
 
   return *a - *b;
-} 
+}
 
 static void
 print_mcus (size_t n_mcus)
 {
   int duplicate = 0;
   size_t i;
-    
+
   if (!n_mcus)
     return;
-    
+
   qsort (mcus, n_mcus, sizeof (avr_mcu_t*), comparator);
 
   printf ("@*@var{mcu}@tie{}=");
@@ -162,7 +162,7 @@ int main (void)
   size_t i, n_mcus = 0;
   const avr_mcu_t *mcu;
 
-  printf ("@c Copyright (C) 2012-2023 Free Software Foundation, Inc.\n");
+  printf ("@c Copyright (C) 2012-2024 Free Software Foundation, Inc.\n");
   printf ("@c This is part of the GCC manual.\n");
   printf ("@c For copying conditions, see the file "
 	  "gcc/doc/include/fdl.texi.\n\n");
@@ -189,7 +189,8 @@ int main (void)
 
 	  for (i = 0; i < ARRAY_SIZE (avr_texinfo); i++)
 	    if (arch_id == avr_texinfo[i].arch_id)
-	      printf ("@item %s\n%s\n", mcu->name, avr_texinfo[i].texinfo);
+	      printf ("@item @anchor{%s}%s\n%s\n", mcu->name, mcu->name,
+		      avr_texinfo[i].texinfo);
 	}
       else if (arch_id == (enum avr_arch_id) mcu->arch_id)
 	{

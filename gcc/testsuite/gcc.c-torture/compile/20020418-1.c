@@ -3,6 +3,7 @@
    was assigned a hard register only after expand_null_return was called,
    thus return pseudo was clobbered twice and the hard register not at
    all.  */
+/* { dg-additional-options "-std=gnu89" } */
 
 void baz (void);
                        

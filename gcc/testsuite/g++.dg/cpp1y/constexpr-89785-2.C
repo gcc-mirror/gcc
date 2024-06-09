@@ -1,5 +1,6 @@
 // PR c++/89785
 // { dg-do compile { target c++14 } }
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
 
 constexpr int
 foo (int x)

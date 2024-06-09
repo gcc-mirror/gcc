@@ -1,6 +1,6 @@
 /* Test :: token handling in asm.  */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 
 void
 f (void)

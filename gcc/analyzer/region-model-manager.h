@@ -1,5 +1,5 @@
 /* Consolidation of svalues and regions.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -44,6 +44,7 @@ public:
   }
 
   /* svalue consolidation.  */
+  const svalue *get_or_create_constant_svalue (tree type, tree cst_expr);
   const svalue *get_or_create_constant_svalue (tree cst_expr);
   const svalue *get_or_create_int_cst (tree type, const poly_wide_int_ref &cst);
   const svalue *get_or_create_null_ptr (tree pointer_type);
@@ -79,7 +80,8 @@ public:
 					       const binding_map &map);
   const svalue *get_or_create_conjured_svalue (tree type, const gimple *stmt,
 					       const region *id_reg,
-					       const conjured_purge &p);
+					       const conjured_purge &p,
+					       unsigned idx = 0);
   const svalue *
   get_or_create_asm_output_svalue (tree type,
 				   const gasm *asm_stmt,
@@ -105,6 +107,7 @@ public:
   const svalue *create_unique_svalue (tree type);
 
   /* region consolidation.  */
+  const root_region *get_root_region () const { return &m_root_region; }
   const stack_region * get_stack_region () const { return &m_stack_region; }
   const heap_region *get_heap_region () const { return &m_heap_region; }
   const code_region *get_code_region () const { return &m_code_region; }
@@ -129,7 +132,7 @@ public:
   const region *get_cast_region (const region *original_region,
 				 tree type);
   const frame_region *get_frame_region (const frame_region *calling_frame,
-					function *fun);
+					const function &fun);
   const region *get_symbolic_region (const svalue *sval);
   const string_region *get_region_for_string (tree string_cst);
   const region *get_bit_range (const region *parent, tree type,
@@ -168,14 +171,14 @@ public:
 
   void dump_untracked_regions () const;
 
+  const svalue *maybe_fold_binop (tree type, enum tree_code op,
+				  const svalue *arg0, const svalue *arg1);
 private:
   bool too_complex_p (const complexity &c) const;
   bool reject_if_too_complex (svalue *sval);
 
   const svalue *maybe_fold_unaryop (tree type, enum tree_code op,
 				    const svalue *arg);
-  const svalue *maybe_fold_binop (tree type, enum tree_code op,
-				  const svalue *arg0, const svalue *arg1);
   const svalue *maybe_fold_sub_svalue (tree type,
 				       const svalue *parent_svalue,
 				       const region *subregion);
@@ -202,7 +205,7 @@ private:
   heap_region m_heap_region;
 
   /* svalue consolidation.  */
-  typedef hash_map<tree, constant_svalue *> constants_map_t;
+  typedef hash_map<constant_svalue::key_t, constant_svalue *> constants_map_t;
   constants_map_t m_constants_map;
 
   typedef hash_map<tree, unknown_svalue *> unknowns_map_t;

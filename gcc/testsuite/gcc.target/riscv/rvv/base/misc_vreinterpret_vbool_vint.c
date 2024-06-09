@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64 -O3 -Wno-psabi" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64 -O3" } */
 #include "riscv_vector.h"
 
 vbool1_t test_vreinterpret_v_i8m1_b1 (vint8m1_t src) {
@@ -114,6 +114,4 @@ vuint64m1_t test_vreinterpret_v_b1_vuint64m1 (vbool1_t src) {
   return __riscv_vreinterpret_v_b1_u64m1 (src);
 }
 
-/* { dg-final { scan-assembler-times {vlm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 28 } } */
-/* { dg-final { scan-assembler-times {vsm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 20 } } */
-/* { dg-final { scan-assembler-times {vs1r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 8 } } */
+/* { dg-final { scan-assembler-times {vmv1r.v\s+v[0-9]+,\s*v[0-9]+} 28 } } */

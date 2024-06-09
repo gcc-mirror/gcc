@@ -12,7 +12,7 @@ test (svbool_t pg, svint8_t s8, svuint8_t u8,
   svcvt_f64_m (0, pg, s32); /* { dg-error {passing 'int' to argument 1 of 'svcvt_f64_m', which expects 'svfloat64_t'} } */
   svcvt_f64_m (pg, pg, s32); /* { dg-error {passing 'svbool_t' to argument 1 of 'svcvt_f64_m', which expects 'svfloat64_t'} } */
   svcvt_f64_m (f64, s32, s32); /* { dg-error {passing 'svint32_t' to argument 2 of 'svcvt_f64_m', which expects 'svbool_t'} } */
-  svcvt_f64_m (f64, pg, 0); /* { dg-error {passing 'int' to argument 3 of 'svcvt_f64_m', which expects an SVE vector type} } */
+  svcvt_f64_m (f64, pg, 0); /* { dg-error {passing 'int' to argument 3 of 'svcvt_f64_m', which expects an SVE type rather than a scalar} } */
 
   svcvt_f64_m (f64, pg, s8); /* { dg-error {'svcvt_f64_m' has no form that takes 'svint8_t' arguments} } */
   svcvt_f64_m (f64, pg, s16); /* { dg-error {'svcvt_f64_m' has no form that takes 'svint16_t' arguments} } */

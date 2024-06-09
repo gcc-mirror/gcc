@@ -1,5 +1,5 @@
 /* Some code common to C and ObjC front ends.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,12 +27,46 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "langhooks.h"
 #include "c-objc-common.h"
-#include "gcc-rich-location.h"
+#include "c-family/c-type-mismatch.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "dwarf2.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool, bool *, const char **);
+
+/* Info for C language features which can be queried through
+   __has_{feature,extension}.  */
+
+struct c_feature_info
+{
+  const char *ident;
+  const int *enable_flag;
+};
+
+static const c_feature_info c_feature_table[] =
+{
+  { "c_alignas", &flag_isoc11 },
+  { "c_alignof", &flag_isoc11 },
+  { "c_atomic", &flag_isoc11 },
+  { "c_generic_selections", &flag_isoc11 },
+  { "c_static_assert", &flag_isoc11 },
+  { "c_thread_local", &flag_isoc11 },
+  { "cxx_binary_literals", &flag_isoc23 }
+};
+
+/* Register features specific to the C language.  */
+
+void
+c_register_features ()
+{
+  for (unsigned i = 0; i < ARRAY_SIZE (c_feature_table); i++)
+    {
+      const c_feature_info *info = c_feature_table + i;
+      const bool feat_p = !info->enable_flag || *info->enable_flag;
+      c_common_register_feature (info->ident, feat_p);
+    }
+}
 
 bool
 c_missing_noreturn_ok_p (tree decl)
@@ -96,6 +130,8 @@ get_aka_type (tree type)
 
       result = get_aka_type (orig_type);
     }
+  else if (TREE_CODE (type) == ENUMERAL_TYPE)
+    return type;
   else
     {
       tree canonical = TYPE_CANONICAL (type);
@@ -384,11 +420,6 @@ c_var_mod_p (tree x, tree fn ATTRIBUTE_UNUSED)
 alias_set_type
 c_get_alias_set (tree t)
 {
-  /* Allow aliasing between enumeral types and the underlying
-     integer type.  This is required since those are compatible types.  */
-  if (TREE_CODE (t) == ENUMERAL_TYPE)
-    return get_alias_set (ENUM_UNDERLYING_TYPE (t));
-
   return c_common_get_alias_set (t);
 }
 
@@ -407,4 +438,26 @@ bool
 instantiation_dependent_expression_p (tree)
 {
   return false;
+}
+
+/* Return -1 if dwarf ATTR shouldn't be added for TYPE, or the attribute
+   value otherwise.  */
+int
+c_type_dwarf_attribute (const_tree type, int attr)
+{
+  if (type == NULL_TREE)
+    return -1;
+
+  switch (attr)
+    {
+    case DW_AT_export_symbols:
+      if (RECORD_OR_UNION_TYPE_P (type) && TYPE_NAME (type) == NULL_TREE)
+	return 1;
+      break;
+
+    default:
+      break;
+    }
+
+  return -1;
 }

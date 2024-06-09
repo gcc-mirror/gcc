@@ -1,6 +1,6 @@
 /* PR sanitizer/56417 */
 /* { dg-do compile } */
-/* { dg-options "-w" } */
+/* { dg-options "-fpermissive -w" } */
 
 int
 foo (void)

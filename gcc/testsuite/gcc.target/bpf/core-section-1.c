@@ -35,4 +35,4 @@ int bar_func (struct T *t)
 /* { dg-final { scan-assembler-times "ascii \"foo_sec.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"bar_sec.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "bpfcr_type" 2 } } */
-/* { dg-final { scan-assembler-times "btfext_core_info_rec_size" 1 } } */
+/* { dg-final { scan-assembler-times "CoreInfo entry size" 1 } } */

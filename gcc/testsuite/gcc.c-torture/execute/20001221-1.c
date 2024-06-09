@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int main ()
 {
   unsigned long long a;

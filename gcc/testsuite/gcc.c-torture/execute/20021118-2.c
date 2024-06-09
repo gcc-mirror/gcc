@@ -1,6 +1,9 @@
 /* Originally added to test SH constant pool layout.  t1() failed for
    non-PIC and t2() failed for PIC.  */
 
+void abort (void);
+void exit (int);
+
 int t1 (float *f, int i,
 	void (*f1) (double),
 	void (*f2) (float, float))

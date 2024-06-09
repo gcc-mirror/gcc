@@ -44,9 +44,9 @@ inlined_wrong (TEntry *entry_p, int flag)
 void
 expect_func (int a, unsigned char *b)
 {
-  if (abs ((a == 0)))
+  if (__builtin_abs ((a == 0)))
     abort ();
-  if (abs ((b == 0)))
+  if (__builtin_abs ((b == 0)))
     abort ();
 }
 

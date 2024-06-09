@@ -2,7 +2,7 @@
 
 // 2008-09-16  Chris Fairles  <chris.fairles@gmail.com>
 
-// Copyright (C) 2008-2023 Free Software Foundation, Inc.
+// Copyright (C) 2008-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,7 @@ int compare_counter::count = 0;
 void test01()
 {
   std::minmax({1, 2, 3, 4, 5, 6, 7, 8}, compare_counter());
+  // { dg-warning "ignoring return value" "" { target c++17 } 45 }
 
   // If N is the number of arguments in the minmax function call, 
   // 25.3.7 specifies that at most 3N/2 comparisons are allowed.

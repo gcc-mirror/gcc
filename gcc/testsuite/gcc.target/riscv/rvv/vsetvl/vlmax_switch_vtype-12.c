@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32 -fno-tree-vectorize" } */
+/* { dg-options "-mrvv-vector-bits=scalable -march=rv32gcv -mabi=ilp32 -fno-tree-vectorize" } */
+// PR113249
+/* { dg-additional-options "-fno-schedule-insns -fno-schedule-insns2" } */
 
 #include "riscv_vector.h"
 
@@ -51,5 +53,5 @@ void foo (int8_t * restrict in, int8_t * restrict out, int n, int cond1, int con
       *(vint16mf4_t*)(out + 30000) = v;
     }
 }
-/* { dg-final { scan-assembler-times {vsetvli} 9 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli} 15 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
 

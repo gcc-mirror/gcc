@@ -96,7 +96,7 @@ static threadSem **semArray = NULL;
 /* These are used to lock the above module data structures.  */
 static __gthread_mutex_t lock;  /* This is the only mutex for
 				   the whole module.  */
-static int initialized = false;
+static bool initialized = false;
 
 extern "C" int EXPORT(init) (void);
 

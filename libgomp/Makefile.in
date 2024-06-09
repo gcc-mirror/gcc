@@ -16,7 +16,7 @@
 
 # Plugins for offload execution, Makefile.am fragment.
 #
-# Copyright (C) 2014-2023 Free Software Foundation, Inc.
+# Copyright (C) 2014-2024 Free Software Foundation, Inc.
 #
 # Contributed by Mentor Embedded.
 #
@@ -219,7 +219,7 @@ am_libgomp_la_OBJECTS = alloc.lo atomic.lo barrier.lo critical.lo \
 	oacc-parallel.lo oacc-host.lo oacc-init.lo oacc-mem.lo \
 	oacc-async.lo oacc-plugin.lo oacc-cuda.lo priority_queue.lo \
 	affinity-fmt.lo teams.lo allocator.lo oacc-profiling.lo \
-	oacc-target.lo $(am__objects_1)
+	oacc-target.lo target-indirect.lo $(am__objects_1)
 libgomp_la_OBJECTS = $(am_libgomp_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -535,8 +535,11 @@ nodist_toolexeclib_HEADERS = libgomp.spec
 @LIBGOMP_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgomp_version_dep = libgomp.ver
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@libgomp_version_dep = libgomp.ver-sun
 libgomp_version_info = -version-info $(libtool_VERSION)
+@ENABLE_DARWIN_AT_RPATH_TRUE@libgomp_darwin_rpath =  \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wc,-nodefaultrpaths \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
 libgomp_la_LDFLAGS = $(libgomp_version_info) $(libgomp_version_script) \
-        $(lt_host_flags)
+        $(lt_host_flags) $(libgomp_darwin_rpath)
 
 libgomp_la_LIBADD = $(DL_LIBS)
 libgomp_la_DEPENDENCIES = $(libgomp_version_dep)
@@ -549,7 +552,7 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 	oacc-parallel.c oacc-host.c oacc-init.c oacc-mem.c \
 	oacc-async.c oacc-plugin.c oacc-cuda.c priority_queue.c \
 	affinity-fmt.c teams.c allocator.c oacc-profiling.c \
-	oacc-target.c $(am__append_3)
+	oacc-target.c target-indirect.c $(am__append_3)
 
 # Nvidia PTX OpenACC plugin.
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
@@ -777,6 +780,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/single.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/splay-tree.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/target-indirect.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/target.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/task.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/team.Plo@am__quote@
@@ -1374,9 +1378,7 @@ vpath % $(strip $(search_path))
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@		$(libgomp_la_OBJECTS) $(libgomp_la_LIBADD)
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	  libgomp.ver \
-@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	  $(libgomp_la_OBJECTS:%.lo=.libs/%.o) \
-@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	 `echo $(libgomp_la_LIBADD) | \
-@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+@LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	  $(libgomp_la_OBJECTS) $(libgomp_la_LIBADD) \
 @LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBGOMP_BUILD_VERSIONED_SHLIB_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 omp_lib_kinds.mod: omp_lib.mod

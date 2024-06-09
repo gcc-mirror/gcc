@@ -1,5 +1,5 @@
 /* Language-specific hook definitions for C front end.
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "langhooks-def.h"
 #include "c-objc-common.h"
+#include "c-family/c-pragma.h"
+#include "c-parser.h"
 
 enum c_language_kind c_language = clk_c;
 
@@ -59,6 +61,15 @@ const char *
 c_get_sarif_source_language (const char *)
 {
   return "c";
+}
+
+/* Implement c-family hook to register language-specific features for
+   __has_{feature,extension}.  */
+
+void
+c_family_register_lang_features ()
+{
+  c_register_features ();
 }
 
 #if CHECKING_P

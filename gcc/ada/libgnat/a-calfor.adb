@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2006-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2006-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -777,7 +777,7 @@ package body Ada.Calendar.Formatting is
 
    function Value (Elapsed_Time : String) return Duration is
       D          : String (1 .. 11);
-      Hour       : Hour_Number;
+      Hour       : Natural;
       Minute     : Minute_Number;
       Second     : Second_Number;
       Sub_Second : Second_Duration := 0.0;
@@ -817,7 +817,7 @@ package body Ada.Calendar.Formatting is
 
       --  Value extraction
 
-      Hour   := Hour_Number   (Hour_Number'Value   (D (1 .. 2)));
+      Hour   := Natural       (Natural'Value       (D (1 .. 2)));
       Minute := Minute_Number (Minute_Number'Value (D (4 .. 5)));
       Second := Second_Number (Second_Number'Value (D (7 .. 8)));
 
@@ -837,9 +837,14 @@ package body Ada.Calendar.Formatting is
          raise Constraint_Error;
       end if;
 
-      return Seconds_Of (Hour, Minute, Second, Sub_Second);
+      return Duration (Hour * 3600)
+        + Duration (Minute * 60)
+        + Duration (Second)
+        + Sub_Second;
 
    exception
+      --  CE is mandated, but preserve trace if CE already.
+      when Constraint_Error => raise;
       when others => raise Constraint_Error;
    end Value;
 

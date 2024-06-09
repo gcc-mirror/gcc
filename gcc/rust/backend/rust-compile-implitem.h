@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,20 +20,18 @@
 #define RUST_COMPILE_IMPLITEM_H
 
 #include "rust-compile-item.h"
-#include "rust-compile-expr.h"
-#include "rust-compile-fnparam.h"
 
 namespace Rust {
 namespace Compile {
 
-// this is a proxy for HIR::ImplItem's back to use the normel HIR::Item path
+// this is a proxy for HIR::ImplItem's back to use the normal HIR::Item path
 class CompileInherentImplItem : public CompileItem
 {
 public:
   static tree Compile (HIR::ImplItem *item, Context *ctx,
 		       TyTy::BaseType *concrete = nullptr,
 		       bool is_query_mode = false,
-		       Location ref_locus = Location ())
+		       location_t ref_locus = UNDEF_LOCATION)
   {
     CompileInherentImplItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
@@ -47,7 +45,7 @@ public:
 
 private:
   CompileInherentImplItem (Context *ctx, TyTy::BaseType *concrete,
-			   Location ref_locus)
+			   location_t ref_locus)
     : CompileItem (ctx, concrete, ref_locus)
   {}
 };
@@ -57,7 +55,7 @@ class CompileTraitItem : public HIRCompileBase, public HIR::HIRTraitItemVisitor
 public:
   static tree Compile (HIR::TraitItem *item, Context *ctx,
 		       TyTy::BaseType *concrete, bool is_query_mode = false,
-		       Location ref_locus = Location ())
+		       location_t ref_locus = UNDEF_LOCATION)
   {
     CompileTraitItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
@@ -75,14 +73,15 @@ public:
   void visit (HIR::TraitItemType &typ) override {}
 
 private:
-  CompileTraitItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)
+  CompileTraitItem (Context *ctx, TyTy::BaseType *concrete,
+		    location_t ref_locus)
     : HIRCompileBase (ctx), concrete (concrete), reference (error_mark_node),
       ref_locus (ref_locus)
   {}
 
   TyTy::BaseType *concrete;
   tree reference;
-  Location ref_locus;
+  location_t ref_locus;
 };
 
 } // namespace Compile

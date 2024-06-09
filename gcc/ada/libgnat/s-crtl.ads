@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -220,7 +220,8 @@ package System.CRTL is
    function ungetc (c : int; stream : FILEs) return int;
    pragma Import (C, ungetc, "ungetc");
 
-   function unlink (filename : chars) return int;
+   function unlink (filename : chars;
+     encoding : Filename_Encoding := Unspecified) return int;
    pragma Import (C, unlink, "__gnat_unlink");
 
    function open (filename : chars; oflag : int) return int;

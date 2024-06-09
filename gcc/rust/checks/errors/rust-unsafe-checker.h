@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -38,18 +38,18 @@ private:
    * Check if a mutable static or external static item is used outside of an
    * unsafe context
    */
-  void check_use_of_static (HirId node_id, Location locus);
+  void check_use_of_static (HirId node_id, location_t locus);
 
   /**
    * Check if a call to an unsafe or external function is outside of an unsafe
    * context
    */
-  void check_function_call (HirId node_id, Location locus);
+  void check_function_call (HirId node_id, location_t locus);
 
   /**
    * Check if any unsafe attributes are present on a function
    */
-  void check_function_attr (HirId node_id, Location locus);
+  void check_function_attr (HirId node_id, location_t locus);
 
   StackedContexts<HirId> unsafe_context;
 
@@ -108,15 +108,10 @@ private:
   virtual void visit (LoopExpr &expr) override;
   virtual void visit (WhileLoopExpr &expr) override;
   virtual void visit (WhileLetLoopExpr &expr) override;
-  virtual void visit (ForLoopExpr &expr) override;
   virtual void visit (IfExpr &expr) override;
   virtual void visit (IfExprConseqElse &expr) override;
-  virtual void visit (IfExprConseqIf &expr) override;
-  virtual void visit (IfExprConseqIfLet &expr) override;
   virtual void visit (IfLetExpr &expr) override;
   virtual void visit (IfLetExprConseqElse &expr) override;
-  virtual void visit (IfLetExprConseqIf &expr) override;
-  virtual void visit (IfLetExprConseqIfLet &expr) override;
   virtual void visit (MatchExpr &expr) override;
   virtual void visit (AwaitExpr &expr) override;
   virtual void visit (AsyncBlockExpr &expr) override;
@@ -169,10 +164,10 @@ private:
   virtual void visit (TuplePatternItemsRanged &tuple_items) override;
   virtual void visit (TuplePattern &pattern) override;
   virtual void visit (SlicePattern &pattern) override;
+  virtual void visit (AltPattern &pattern) override;
   virtual void visit (EmptyStmt &stmt) override;
   virtual void visit (LetStmt &stmt) override;
-  virtual void visit (ExprStmtWithoutBlock &stmt) override;
-  virtual void visit (ExprStmtWithBlock &stmt) override;
+  virtual void visit (ExprStmt &stmt) override;
   virtual void visit (TraitBound &bound) override;
   virtual void visit (ImplTraitType &type) override;
   virtual void visit (TraitObjectType &type) override;

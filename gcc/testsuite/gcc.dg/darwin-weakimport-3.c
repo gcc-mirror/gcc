@@ -10,11 +10,12 @@
    With modern linkers this is moot, since even weak symbols
    are emitted into the regular sections.
 
-   To avoid the unwind tables -fno-asynchronous-unwind-tables.
+   To avoid the unwind tables -fno-asynchronous-unwind-tables
+   and fno-unwind-tables (since EH contains coalesced data).
    To ensure that we emit code for an older linker -mtarget-linker
    To avoid the get_pc thunk optimise at least O1.  */
 
-/* { dg-options "-fno-asynchronous-unwind-tables -O1 -mtarget-linker 85.2" } */
+/* { dg-options "-fno-asynchronous-unwind-tables -fno-unwind-tables -O1 -mtarget-linker 85.2" } */
 /* { dg-require-weak "" } */
 
 /* { dg-final { scan-assembler-not "coalesced" } } */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2015-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2015-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -137,7 +137,7 @@ extern struct gomp_task *priority_tree_next_task (enum priority_queue_type,
 						  bool *);
 
 /* Return TRUE if there is more than one priority in HEAD.  This is
-   used throughout to to choose between the fast path (priority 0 only
+   used throughout to choose between the fast path (priority 0 only
    items) and a world with multiple priorities.  */
 
 static inline bool

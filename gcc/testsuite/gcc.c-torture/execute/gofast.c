@@ -8,6 +8,9 @@
 
 #include <stdio.h>
 
+void abort (void);
+void exit (int);
+
 float fp_add (float a, float b) { return a + b; }
 float fp_sub (float a, float b) { return a - b; }
 float fp_mul (float a, float b) { return a * b; }

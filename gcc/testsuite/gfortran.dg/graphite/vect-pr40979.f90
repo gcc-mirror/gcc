@@ -1,6 +1,7 @@
 ! { dg-do compile }
 ! { dg-require-effective-target vect_double }
 ! { dg-additional-options "-msse2" { target { { i?86-*-* x86_64-*-* } && ilp32 } } }
+! { dg-additional-options "-mlsx" { target { loongarch*-*-* } } }
 
 module mqc_m
 integer, parameter, private :: longreal = selected_real_kind(15,90)

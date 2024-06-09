@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2023, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2024, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -98,9 +98,11 @@ extern void Set_Normalized_First_Bit	(Entity_Id, Uint);
 extern void Set_Normalized_Position	(Entity_Id, Uint);
 extern void Set_RM_Size			(Entity_Id, Uint);
 
+#define Is_Base_Type		einfo__utils__is_base_type
 #define Is_Entity_Name		einfo__utils__is_entity_name
 
-extern Boolean Is_Entity_Name		(Node_Id);
+extern Boolean Is_Base_Type	(Entity_Id);
+extern Boolean Is_Entity_Name	(Node_Id);
 
 #define Get_Attribute_Definition_Clause	einfo__utils__get_attribute_definition_clause
 
@@ -377,308 +379,114 @@ extern Boolean Get_Warn_On_Questionable_Layout (void);
 
 // The following corresponds to Ada code in Einfo.Utils.
 
-typedef Boolean B;
-typedef Component_Alignment_Kind C;
+typedef Boolean   B;
 typedef Entity_Id E;
-typedef Mechanism_Type M;
-typedef Node_Id N;
-typedef Uint U;
-typedef Ureal R;
-typedef Elist_Id L;
-typedef List_Id S;
-
-#define Is_Access_Object_Type einfo__utils__is_access_object_type
-B Is_Access_Object_Type               (E Id);
-
-#define Is_Named_Access_Type einfo__utils__is_named_access_type
-B Is_Named_Access_Type                (E Id);
+typedef Node_Id   N;
 
 #define Address_Clause einfo__utils__address_clause
-N Address_Clause                      (E Id);
-
-#define Aft_Value einfo__utils__aft_value
-U Aft_Value                           (E Id);
+extern N Address_Clause (E Id);
 
 #define Alignment_Clause einfo__utils__alignment_clause
-N Alignment_Clause                    (E Id);
+extern N Alignment_Clause (E Id);
 
 #define Base_Type einfo__utils__base_type
-E Base_Type                           (E Id);
+extern E Base_Type (E Id);
 
 #define Declaration_Node einfo__utils__declaration_node
-N Declaration_Node                    (E Id);
+extern N Declaration_Node (E Id);
 
 #define Designated_Type einfo__utils__designated_type
-E Designated_Type                     (E Id);
-
-#define First_Component einfo__utils__first_component
-E First_Component                     (E Id);
-
-#define First_Component_Or_Discriminant einfo__utils__first_component_or_discriminant
-E First_Component_Or_Discriminant     (E Id);
+extern E Designated_Type (E Id);
 
 #define First_Formal einfo__utils__first_formal
-E First_Formal                        (E Id);
+extern E First_Formal (E Id);
 
 #define First_Formal_With_Extras einfo__utils__first_formal_with_extras
-E First_Formal_With_Extras            (E Id);
-
-#define Has_Attach_Handler einfo__utils__has_attach_handler
-B Has_Attach_Handler                  (E Id);
-
-#define Has_Entries einfo__utils__has_entries
-B Has_Entries                         (E Id);
+extern E First_Formal_With_Extras (E Id);
 
 #define Has_Foreign_Convention einfo__utils__has_foreign_convention
-B Has_Foreign_Convention              (E Id);
-
-#define Has_Interrupt_Handler einfo__utils__has_interrupt_handler
-B Has_Interrupt_Handler               (E Id);
-
-#define Has_Non_Limited_View einfo__utils__has_non_limited_view
-B Has_Non_Limited_View                (E Id);
-
-#define Has_Non_Null_Abstract_State einfo__utils__has_non_null_abstract_state
-B Has_Non_Null_Abstract_State         (E Id);
-
-#define Has_Non_Null_Visible_Refinement einfo__utils__has_non_null_visible_refinement
-B Has_Non_Null_Visible_Refinement     (E Id);
-
-#define Has_Null_Abstract_State einfo__utils__has_null_abstract_state
-B Has_Null_Abstract_State             (E Id);
-
-#define Has_Null_Visible_Refinement einfo__utils__has_null_visible_refinement
-B Has_Null_Visible_Refinement         (E Id);
+extern B Has_Foreign_Convention (E Id);
 
 #define Implementation_Base_Type einfo__utils__implementation_base_type
-E Implementation_Base_Type            (E Id);
-
-#define Is_Base_Type einfo__utils__is_base_type
-B Is_Base_Type                        (E Id);
+extern E Implementation_Base_Type (E Id);
 
 #define Is_Boolean_Type einfo__utils__is_boolean_type
-B Is_Boolean_Type                     (E Id);
-
-#define Is_Constant_Object einfo__utils__is_constant_object
-B Is_Constant_Object                  (E Id);
-
-#define Is_Controlled einfo__utils__is_controlled
-B Is_Controlled                       (E Id);
-
-#define Is_Discriminal einfo__utils__is_discriminal
-B Is_Discriminal                      (E Id);
-
-#define Is_Dynamic_Scope einfo__utils__is_dynamic_scope
-B Is_Dynamic_Scope                    (E Id);
-
-#define Is_Elaboration_Target einfo__utils__is_elaboration_target
-B Is_Elaboration_Target               (E Id);
-
-#define Is_External_State einfo__utils__is_external_state
-B Is_External_State                   (E Id);
-
-#define Is_Finalizer einfo__utils__is_finalizer
-B Is_Finalizer                        (E Id);
-
-#define Is_Null_State einfo__utils__is_null_state
-B Is_Null_State                       (E Id);
-
-#define Is_Package_Or_Generic_Package einfo__utils__is_package_or_generic_package
-B Is_Package_Or_Generic_Package       (E Id);
-
-#define Is_Packed_Array einfo__utils__is_packed_array
-B Is_Packed_Array                     (E Id);
-
-#define Is_Prival einfo__utils__is_prival
-B Is_Prival                           (E Id);
-
-#define Is_Protected_Component einfo__utils__is_protected_component
-B Is_Protected_Component              (E Id);
-
-#define Is_Protected_Interface einfo__utils__is_protected_interface
-B Is_Protected_Interface              (E Id);
-
-#define Is_Protected_Record_Type einfo__utils__is_protected_record_type
-B Is_Protected_Record_Type            (E Id);
-
-#define Is_Relaxed_Initialization_State einfo__utils__is_relaxed_initialization_state
-B Is_Relaxed_Initialization_State     (E Id);
-
-#define Is_Standard_Character_Type einfo__utils__is_standard_character_type
-B Is_Standard_Character_Type          (E Id);
-
-#define Is_Standard_String_Type einfo__utils__is_standard_string_type
-B Is_Standard_String_Type             (E Id);
-
-#define Is_String_Type einfo__utils__is_string_type
-B Is_String_Type                      (E Id);
-
-#define Is_Synchronized_Interface einfo__utils__is_synchronized_interface
-B Is_Synchronized_Interface           (E Id);
-
-#define Is_Synchronized_State einfo__utils__is_synchronized_state
-B Is_Synchronized_State               (E Id);
-
-#define Is_Task_Interface einfo__utils__is_task_interface
-B Is_Task_Interface                   (E Id);
-
-#define Is_Task_Record_Type einfo__utils__is_task_record_type
-B Is_Task_Record_Type                 (E Id);
-
-#define Is_Wrapper_Package einfo__utils__is_wrapper_package
-B Is_Wrapper_Package                  (E Id);
-
-#define Last_Formal einfo__utils__last_formal
-E Last_Formal                         (E Id);
-
-#define Machine_Emax_Value einfo__utils__machine_emax_value
-U Machine_Emax_Value                  (E Id);
-
-#define Machine_Emin_Value einfo__utils__machine_emin_value
-U Machine_Emin_Value                  (E Id);
-
-#define Machine_Mantissa_Value einfo__utils__machine_mantissa_value
-U Machine_Mantissa_Value              (E Id);
-
-#define Machine_Radix_Value einfo__utils__machine_radix_value
-U Machine_Radix_Value                 (E Id);
-
-#define Model_Emin_Value einfo__utils__model_emin_value
-U Model_Emin_Value                    (E Id);
-
-#define Model_Epsilon_Value einfo__utils__model_epsilon_value
-R Model_Epsilon_Value                 (E Id);
-
-#define Model_Mantissa_Value einfo__utils__model_mantissa_value
-U Model_Mantissa_Value                (E Id);
-
-#define Model_Small_Value einfo__utils__model_small_value
-R Model_Small_Value                   (E Id);
-
-#define Next_Component einfo__utils__next_component
-E Next_Component                      (E Id);
-
-#define Next_Component_Or_Discriminant einfo__utils__next_component_or_discriminant
-E Next_Component_Or_Discriminant      (E Id);
+extern B Is_Boolean_Type (E Id);
 
 #define Next_Discriminant einfo__utils__next_discriminant
-E Next_Discriminant                   (E Id);
+extern E Next_Discriminant (E Id);
 
 #define Next_Formal einfo__utils__next_formal
-E Next_Formal                         (E Id);
+extern E Next_Formal (E Id);
 
 #define Next_Formal_With_Extras einfo__utils__next_formal_with_extras
-E Next_Formal_With_Extras             (E Id);
+extern E Next_Formal_With_Extras (E Id);
 
 #define Number_Dimensions einfo__utils__number_dimensions
-Pos Number_Dimensions                   (E Id);
-
-#define Number_Entries einfo__utils__number_entries
-Nat Number_Entries                      (E Id);
-
-#define Number_Formals einfo__utils__number_formals
-Pos Number_Formals                      (E Id);
+extern Pos Number_Dimensions (E Id);
 
 #define Object_Size_Clause einfo__utils__object_size_clause
-N Object_Size_Clause                  (E Id);
-
-#define Partial_Refinement_Constituents einfo__utils__partial_refinement_constituents
-L Partial_Refinement_Constituents     (E Id);
-
-#define Primitive_Operations einfo__utils__primitive_operations
-L Primitive_Operations                (E Id);
+extern N Object_Size_Clause (E Id);
 
 #define Root_Type einfo__utils__root_type
-E Root_Type                           (E Id);
-
-#define Safe_Emax_Value einfo__utils__safe_emax_value
-U Safe_Emax_Value                     (E Id);
-
-#define Safe_First_Value einfo__utils__safe_first_value
-R Safe_First_Value                    (E Id);
-
-#define Safe_Last_Value einfo__utils__safe_last_value
-R Safe_Last_Value                     (E Id);
-
-#define Scope_Depth einfo__utils__scope_depth
-U Scope_Depth                         (E Id);
-
-#define Scope_Depth_Set einfo__utils__scope_depth_set
-B Scope_Depth_Set                     (E Id);
+extern E Root_Type (E Id);
 
 #define Size_Clause einfo__utils__size_clause
-N Size_Clause                         (E Id);
-
-#define Stream_Size_Clause einfo__utils__stream_size_clause
-N Stream_Size_Clause                  (E Id);
+extern N Size_Clause (E Id);
 
 #define Type_High_Bound einfo__utils__type_high_bound
-N Type_High_Bound                     (E Id);
+extern N Type_High_Bound (E Id);
 
 #define Type_Low_Bound einfo__utils__type_low_bound
-N Type_Low_Bound                      (E Id);
+extern N Type_Low_Bound (E Id);
 
 #define Underlying_Type einfo__utils__underlying_type
-E Underlying_Type                     (E Id);
+extern E Underlying_Type (E Id);
 
 #define Known_Alignment einfo__utils__known_alignment
-B Known_Alignment                       (Entity_Id E);
-
-#define Known_Component_Bit_Offset einfo__utils__known_component_bit_offset
-B Known_Component_Bit_Offset            (Entity_Id E);
+extern B Known_Alignment (Entity_Id E);
 
 #define Known_Component_Size einfo__utils__known_component_size
-B Known_Component_Size                  (Entity_Id E);
+extern B Known_Component_Size (Entity_Id E);
 
 #define Known_Esize einfo__utils__known_esize
-B Known_Esize                           (Entity_Id E);
-
-#define Known_Normalized_First_Bit einfo__utils__known_normalized_first_bit
-B Known_Normalized_First_Bit            (Entity_Id E);
+extern B Known_Esize (Entity_Id E);
 
 #define Known_Normalized_Position einfo__utils__known_normalized_position
-B Known_Normalized_Position             (Entity_Id E);
-
-#define Known_Normalized_Position_Max einfo__utils__known_normalized_position_max
-B Known_Normalized_Position_Max         (Entity_Id E);
+extern B Known_Normalized_Position (Entity_Id E);
 
 #define Known_RM_Size einfo__utils__known_rm_size
-B Known_RM_Size                         (Entity_Id E);
+extern B Known_RM_Size (Entity_Id E);
 
 #define Copy_Alignment einfo__utils__copy_alignment
-B Copy_Alignment(Entity_Id To, Entity_Id From);
+extern B Copy_Alignment(Entity_Id To, Entity_Id From);
 
 #define Copy_Esize einfo__utils__copy_esize
-B Copy_Esize(Entity_Id To, Entity_Id From);
+extern B Copy_Esize(Entity_Id To, Entity_Id From);
 
 #define Copy_RM_Size einfo__utils__copy_rm_size
-B Copy_RM_Size(Entity_Id To, Entity_Id From);
+extern B Copy_RM_Size(Entity_Id To, Entity_Id From);
 
 #define Is_Discrete_Or_Fixed_Point_Type einfo__utils__is_discrete_or_fixed_point_type
-B Is_Discrete_Or_Fixed_Point_Type     (E Id);
+extern B Is_Discrete_Or_Fixed_Point_Type (E Id);
 
 #define Is_Floating_Point_Type einfo__utils__is_floating_point_type
-B Is_Floating_Point_Type                      (E Id);
+extern B Is_Floating_Point_Type (E Id);
 
 #define Is_Record_Type einfo__utils__is_record_type
-B Is_Record_Type                      (E Id);
+extern B Is_Record_Type (E Id);
 
 #define Is_Full_Access einfo__utils__is_full_access
-B Is_Full_Access (E Id);
+extern B Is_Full_Access (E Id);
 
 #define Next_Index einfo__utils__next_index
-Node_Id Next_Index (Node_Id Id);
+extern Node_Id Next_Index (Node_Id Id);
 
 #define Next_Literal einfo__utils__next_literal
-E Next_Literal (E Id);
+extern E Next_Literal (E Id);
 
 #define Next_Stored_Discriminant einfo__utils__next_stored_discriminant
-E Next_Stored_Discriminant (E Id);
-
-#define Parameter_Mode einfo__utils__parameter_mode
-// Parameter_Mode really returns Formal_Kind, but that is not visible, because
-// fe.h is included before einfo.h.
-Entity_Kind Parameter_Mode (E Id);
+extern E Next_Stored_Discriminant (E Id);
 
 // The following is needed because Convention in Sem_Util is a renaming
 // of Basic_Convention.
@@ -693,17 +501,18 @@ Convention (N Node)
 // See comments regarding Entity_Or_Associated_Node in Sinfo.Utils.
 
 #define Entity sinfo__nodes__entity_or_associated_node
-Entity_Id Entity (N Node);
+extern Entity_Id Entity (N Node);
 
 // See comments regarding Renamed_Or_Alias in Einfo.Utils
 
 #define Alias einfo__entities__renamed_or_alias
+extern Node_Id Alias (N Node);
 
 #define Renamed_Entity einfo__entities__renamed_or_alias
-Node_Id Renamed_Entity (N Node);
+extern Node_Id Renamed_Entity (N Node);
 
 #define Renamed_Object einfo__entities__renamed_or_alias
-Node_Id Renamed_Object (N Node);
+extern Node_Id Renamed_Object (N Node);
 
 #ifdef __cplusplus
 }

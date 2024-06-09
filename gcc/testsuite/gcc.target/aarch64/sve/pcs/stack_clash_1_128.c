@@ -19,6 +19,7 @@
 **	str	p13, \[sp, #9, mul vl\]
 **	str	p14, \[sp, #10, mul vl\]
 **	str	p15, \[sp, #11, mul vl\]
+** (
 **	str	z8, \[sp, #2, mul vl\]
 **	str	z9, \[sp, #3, mul vl\]
 **	str	z10, \[sp, #4, mul vl\]
@@ -35,7 +36,18 @@
 **	str	z21, \[sp, #15, mul vl\]
 **	str	z22, \[sp, #16, mul vl\]
 **	str	z23, \[sp, #17, mul vl\]
+** |
+**	stp	q8, q9, \[sp, 32\]
+**	stp	q10, q11, \[sp, 64\]
+**	stp	q12, q13, \[sp, 96\]
+**	stp	q14, q15, \[sp, 128\]
+**	stp	q16, q17, \[sp, 160\]
+**	stp	q18, q19, \[sp, 192\]
+**	stp	q20, q21, \[sp, 224\]
+**	stp	q22, q23, \[sp, 256\]
+** )
 **	ptrue	p0\.b, vl16
+** (
 **	ldr	z8, \[sp, #2, mul vl\]
 **	ldr	z9, \[sp, #3, mul vl\]
 **	ldr	z10, \[sp, #4, mul vl\]
@@ -52,6 +64,16 @@
 **	ldr	z21, \[sp, #15, mul vl\]
 **	ldr	z22, \[sp, #16, mul vl\]
 **	ldr	z23, \[sp, #17, mul vl\]
+** |
+**	ldp	q8, q9, \[sp, 32\]
+**	ldp	q10, q11, \[sp, 64\]
+**	ldp	q12, q13, \[sp, 96\]
+**	ldp	q14, q15, \[sp, 128\]
+**	ldp	q16, q17, \[sp, 160\]
+**	ldp	q18, q19, \[sp, 192\]
+**	ldp	q20, q21, \[sp, 224\]
+**	ldp	q22, q23, \[sp, 256\]
+** )
 **	ldr	p4, \[sp\]
 **	ldr	p5, \[sp, #1, mul vl\]
 **	ldr	p6, \[sp, #2, mul vl\]
@@ -101,16 +123,26 @@ test_2 (void)
 **	str	p5, \[sp\]
 **	str	p6, \[sp, #1, mul vl\]
 **	str	p11, \[sp, #2, mul vl\]
+** (
 **	str	z8, \[sp, #1, mul vl\]
 **	str	z13, \[sp, #2, mul vl\]
 **	str	z19, \[sp, #3, mul vl\]
 **	str	z20, \[sp, #4, mul vl\]
+** |
+**	stp	q8, q13, \[sp, 16\]
+**	stp	q19, q20, \[sp, 48\]
+** )
 **	str	z22, \[sp, #5, mul vl\]
 **	ptrue	p0\.b, vl16
+** (
 **	ldr	z8, \[sp, #1, mul vl\]
 **	ldr	z13, \[sp, #2, mul vl\]
 **	ldr	z19, \[sp, #3, mul vl\]
 **	ldr	z20, \[sp, #4, mul vl\]
+** |
+**	ldp	q8, q13, \[sp, 16\]
+**	ldp	q19, q20, \[sp, 48\]
+** )
 **	ldr	z22, \[sp, #5, mul vl\]
 **	ldr	p5, \[sp\]
 **	ldr	p6, \[sp, #1, mul vl\]

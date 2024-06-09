@@ -1,5 +1,6 @@
 // PR c++/88482
 // { dg-do compile }
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
 
 extern "C" int __cxa_throw (void *, void *, void (*) (void *));	// { dg-message "previous declaration" }
 extern "C" void *__cxa_get_exception_ptr (void *) throw ();

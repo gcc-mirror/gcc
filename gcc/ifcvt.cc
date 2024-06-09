@@ -1,5 +1,5 @@
 /* If-conversion support.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -787,6 +787,7 @@ static rtx noce_get_alt_condition (struct noce_if_info *, rtx, rtx_insn **);
 static bool noce_try_minmax (struct noce_if_info *);
 static bool noce_try_abs (struct noce_if_info *);
 static bool noce_try_sign_mask (struct noce_if_info *);
+static int noce_try_cond_zero_arith (struct noce_if_info *);
 
 /* Return the comparison code for reversed condition for IF_INFO,
    or UNKNOWN if reversing the condition is not possible.  */
@@ -1829,6 +1830,35 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
     }
   else
     return NULL_RTX;
+}
+
+/*  Emit a conditional zero, returning TARGET or NULL_RTX upon failure.
+    IF_INFO describes the if-conversion scenario under consideration.
+    CZERO_CODE selects the condition (EQ/NE).
+    NON_ZERO_OP is the nonzero operand of the conditional move
+    TARGET is the desired output register.  */
+
+static rtx
+noce_emit_czero (struct noce_if_info *if_info, enum rtx_code czero_code,
+		 rtx non_zero_op, rtx target)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx cond_op0 = XEXP (if_info->cond, 0);
+  rtx czero_cond
+    = gen_rtx_fmt_ee (czero_code, GET_MODE (cond_op0), cond_op0, const0_rtx);
+  rtx if_then_else
+    = gen_rtx_IF_THEN_ELSE (mode, czero_cond, const0_rtx, non_zero_op);
+  rtx set = gen_rtx_SET (target, if_then_else);
+
+  rtx_insn *insn = make_insn_raw (set);
+
+  if (recog_memoized (insn) >= 0)
+    {
+      add_insn (insn);
+      return target;
+    }
+
+  return NULL_RTX;
 }
 
 /* Try only simple constants and registers here.  More complex cases
@@ -2880,6 +2910,193 @@ noce_try_sign_mask (struct noce_if_info *if_info)
   return true;
 }
 
+/*  Check if OP is supported by conditional zero based if conversion,
+    returning TRUE if satisfied otherwise FALSE.
+
+    OP is the operation to check.  */
+
+static bool
+noce_cond_zero_binary_op_supported (rtx op)
+{
+  enum rtx_code opcode = GET_CODE (op);
+
+  if (opcode == PLUS || opcode == MINUS || opcode == IOR || opcode == XOR
+      || opcode == ASHIFT || opcode == ASHIFTRT || opcode == LSHIFTRT
+      || opcode == ROTATE || opcode == ROTATERT || opcode == AND)
+    return true;
+
+  return false;
+}
+
+/*  Helper function to return REG itself,
+    otherwise NULL_RTX for other RTX_CODE.  */
+
+static rtx
+get_base_reg (rtx exp)
+{
+  if (REG_P (exp))
+    return exp;
+
+  return NULL_RTX;
+}
+
+/*  Check if IF-BB and THEN-BB satisfy the condition for conditional zero
+    based if conversion, returning TRUE if satisfied otherwise FALSE.
+
+    IF_INFO describes the if-conversion scenario under consideration.
+    COMMON_PTR points to the common REG of canonicalized IF_INFO->A and
+    IF_INFO->B.
+    CZERO_CODE_PTR points to the comparison code to use in czero RTX.
+    A_PTR points to the A expression of canonicalized IF_INFO->A.
+    TO_REPLACE points to the RTX to be replaced by czero RTX destnation.  */
+
+static bool
+noce_bbs_ok_for_cond_zero_arith (struct noce_if_info *if_info, rtx *common_ptr,
+				 rtx *bin_exp_ptr,
+				 enum rtx_code *czero_code_ptr, rtx *a_ptr,
+				 rtx **to_replace)
+{
+  rtx common = NULL_RTX;
+  rtx cond = if_info->cond;
+  rtx a = copy_rtx (if_info->a);
+  rtx b = copy_rtx (if_info->b);
+  rtx bin_op1 = NULL_RTX;
+  enum rtx_code czero_code = UNKNOWN;
+  bool reverse = false;
+  rtx op0, op1, bin_exp;
+
+  if (!noce_simple_bbs (if_info))
+    return false;
+
+  /* COND must be EQ or NE comparision of a reg and 0.  */
+  if (GET_CODE (cond) != NE && GET_CODE (cond) != EQ)
+    return false;
+  if (!REG_P (XEXP (cond, 0)) || !rtx_equal_p (XEXP (cond, 1), const0_rtx))
+    return false;
+
+  /* Canonicalize x = y : (y op z) to x = (y op z) : y.  */
+  if (REG_P (a) && noce_cond_zero_binary_op_supported (b))
+    {
+      std::swap (a, b);
+      reverse = !reverse;
+    }
+
+  /* Check if x = (y op z) : y is supported by czero based ifcvt.  */
+  if (!(noce_cond_zero_binary_op_supported (a) && REG_P (b)))
+    return false;
+
+  bin_exp = a;
+
+  /* Canonicalize x = (z op y) : y to x = (y op z) : y */
+  op1 = get_base_reg (XEXP (bin_exp, 1));
+  if (op1 && rtx_equal_p (op1, b) && COMMUTATIVE_ARITH_P (bin_exp))
+    std::swap (XEXP (bin_exp, 0), XEXP (bin_exp, 1));
+
+  op0 = get_base_reg (XEXP (bin_exp, 0));
+  if (op0 && rtx_equal_p (op0, b))
+    {
+      common = b;
+      bin_op1 = XEXP (bin_exp, 1);
+      czero_code = (reverse ^ (GET_CODE (bin_exp) == AND))
+		     ? noce_reversed_cond_code (if_info)
+		     : GET_CODE (cond);
+    }
+  else
+    return false;
+
+  if (czero_code == UNKNOWN)
+    return false;
+
+  if (REG_P (bin_op1))
+    *to_replace = &XEXP (bin_exp, 1);
+  else
+    return false;
+
+  *common_ptr = common;
+  *bin_exp_ptr = bin_exp;
+  *czero_code_ptr = czero_code;
+  *a_ptr = a;
+
+  return true;
+}
+
+/*  Try to covert if-then-else with conditional zero,
+    returning TURE on success or FALSE on failure.
+    IF_INFO describes the if-conversion scenario under consideration.  */
+
+static int
+noce_try_cond_zero_arith (struct noce_if_info *if_info)
+{
+  rtx target, rtmp, a;
+  rtx_insn *seq;
+  machine_mode mode = GET_MODE (if_info->x);
+  rtx common = NULL_RTX;
+  enum rtx_code czero_code = UNKNOWN;
+  rtx bin_exp = NULL_RTX;
+  enum rtx_code bin_code = UNKNOWN;
+  rtx non_zero_op = NULL_RTX;
+  rtx *to_replace = NULL;
+
+  if (!noce_bbs_ok_for_cond_zero_arith (if_info, &common, &bin_exp, &czero_code,
+					&a, &to_replace))
+    return false;
+
+  start_sequence ();
+
+  bin_code = GET_CODE (bin_exp);
+
+  if (bin_code == AND)
+    {
+      rtmp = gen_reg_rtx (mode);
+      noce_emit_move_insn (rtmp, a);
+
+      target = noce_emit_czero (if_info, czero_code, common, if_info->x);
+      if (!target)
+	{
+	  end_sequence ();
+	  return false;
+	}
+
+      target = expand_simple_binop (mode, IOR, rtmp, target, if_info->x, 0,
+				    OPTAB_WIDEN);
+      if (!target)
+	{
+	  end_sequence ();
+	  return false;
+	}
+
+      if (target != if_info->x)
+	noce_emit_move_insn (if_info->x, target);
+    }
+  else
+    {
+      non_zero_op = *to_replace;
+      /* If x is used in both input and out like x = c ? x + z : x,
+	 use a new reg to avoid modifying x  */
+      if (common && rtx_equal_p (common, if_info->x))
+	target = gen_reg_rtx (mode);
+      else
+	target = if_info->x;
+
+      target = noce_emit_czero (if_info, czero_code, non_zero_op, target);
+      if (!target || !to_replace)
+	{
+	  end_sequence ();
+	  return false;
+	}
+
+      *to_replace = target;
+      noce_emit_move_insn (if_info->x, a);
+    }
+
+  seq = end_ifcvt_sequence (if_info);
+  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
+    return false;
+
+  emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
+  if_info->transform_name = "noce_try_cond_zero_arith";
+  return true;
+}
 
 /* Optimize away "if (x & C) x |= C" and similar bit manipulation
    transformations.  */
@@ -3492,44 +3709,6 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
       if (if_info->then_else_reversed)
 	std::swap (old_val, new_val);
 
-
-      /* We allow simple lowpart register subreg SET sources in
-	 bb_ok_for_noce_convert_multiple_sets.  Be careful when processing
-	 sequences like:
-	 (set (reg:SI r1) (reg:SI r2))
-	 (set (reg:HI r3) (subreg:HI (r1)))
-	 For the second insn new_val or old_val (r1 in this example) will be
-	 taken from the temporaries and have the wider mode which will not
-	 match with the mode of the other source of the conditional move, so
-	 we'll end up trying to emit r4:HI = cond ? (r1:SI) : (r3:HI).
-	 Wrap the two cmove operands into subregs if appropriate to prevent
-	 that.  */
-
-      if (!CONSTANT_P (new_val)
-	  && GET_MODE (new_val) != GET_MODE (temp))
-	{
-	  machine_mode src_mode = GET_MODE (new_val);
-	  machine_mode dst_mode = GET_MODE (temp);
-	  if (!partial_subreg_p (dst_mode, src_mode))
-	    {
-	      end_sequence ();
-	      return false;
-	    }
-	  new_val = lowpart_subreg (dst_mode, new_val, src_mode);
-	}
-      if (!CONSTANT_P (old_val)
-	  && GET_MODE (old_val) != GET_MODE (temp))
-	{
-	  machine_mode src_mode = GET_MODE (old_val);
-	  machine_mode dst_mode = GET_MODE (temp);
-	  if (!partial_subreg_p (dst_mode, src_mode))
-	    {
-	      end_sequence ();
-	      return false;
-	    }
-	  old_val = lowpart_subreg (dst_mode, old_val, src_mode);
-	}
-
       /* Try emitting a conditional move passing the backend the
 	 canonicalized comparison.  The backend is then able to
 	 recognize expressions like
@@ -3974,6 +4153,9 @@ noce_process_if_block (struct noce_if_info *if_info)
       if (noce_try_addcc (if_info))
 	goto success;
       if (noce_try_store_flag_mask (if_info))
+	goto success;
+      if (HAVE_conditional_move
+          && noce_try_cond_zero_arith (if_info))
 	goto success;
       if (HAVE_conditional_move
 	  && noce_try_cmove_arith (if_info))

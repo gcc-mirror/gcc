@@ -376,8 +376,11 @@ libssp_la_SOURCES = \
 
 libssp_la_LIBADD = 
 libssp_la_DEPENDENCIES = $(version_dep) $(libssp_la_LIBADD)
+@ENABLE_DARWIN_AT_RPATH_TRUE@libssp_darwin_rpath =  \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wc,-nodefaultrpaths \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
 libssp_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
-		    $(version_arg) $(lt_host_flags)
+		    $(version_arg) $(lt_host_flags) $(libssp_darwin_rpath)
 
 libssp_nonshared_la_SOURCES = \
 	ssp-local.c
@@ -400,6 +403,7 @@ AM_MAKEFLAGS = \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
+	"EXPECT=$(EXPECT)" \
 	"INSTALL=$(INSTALL)" \
 	"INSTALL_DATA=$(INSTALL_DATA)" \
 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
@@ -818,9 +822,7 @@ uninstall-am: uninstall-nobase_libsubincludeHEADERS \
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@		$(libssp_la_OBJECTS) $(libssp_la_LIBADD)
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	  $(srcdir)/ssp.map \
-@LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	  $(libssp_la_OBJECTS:%.lo=.libs/%.o) \
-@LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	 `echo $(libssp_la_LIBADD) | \
-@LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	    sed 's,/\([^/.]*\)\.la,/.libs/\1.a,g'` \
+@LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	  $(libssp_la_OBJECTS) $(libssp_la_LIBADD) \
 @LIBSSP_USE_SYMVER_SUN_TRUE@@LIBSSP_USE_SYMVER_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it

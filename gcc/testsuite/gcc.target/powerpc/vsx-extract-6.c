@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 vector unsigned long
 test_vpasted (vector unsigned long high, vector unsigned long low)

@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -65,6 +65,7 @@ extern machine_mode default_mode_for_suffix (char);
 
 extern tree default_cxx_guard_type (void);
 extern tree default_cxx_get_cookie_size (tree);
+extern tree default_cxx_adjust_cdtor_callabi_fntype (tree);
 
 extern bool hook_pass_by_reference_must_pass_in_stack
   (cumulative_args_t, const function_arg_info &);
@@ -142,8 +143,9 @@ extern bool hook_bool_CUMULATIVE_ARGS_arg_info_true
   (cumulative_args_t, const function_arg_info &);
 extern int hook_int_CUMULATIVE_ARGS_arg_info_0
   (cumulative_args_t, const function_arg_info &);
-extern void hook_void_CUMULATIVE_ARGS_tree
-  (cumulative_args_t, tree);
+extern void hook_void_CUMULATIVE_ARGS (cumulative_args_t);
+extern void hook_void_CUMULATIVE_ARGS_tree (cumulative_args_t, tree);
+extern void hook_void_CUMULATIVE_ARGS_rtx_tree (cumulative_args_t, rtx, tree);
 extern const char *hook_invalid_arg_for_unprototyped_fn
   (const_tree, const_tree, const_tree);
 extern void default_function_arg_advance
@@ -192,6 +194,7 @@ extern bool default_hard_regno_scratch_ok (unsigned int);
 extern bool default_mode_dependent_address_p (const_rtx, addr_space_t);
 extern bool default_new_address_profitable_p (rtx, rtx_insn *, rtx);
 extern bool default_target_option_valid_attribute_p (tree, tree, tree, int);
+extern bool default_target_option_valid_version_attribute_p (tree, tree, tree, int);
 extern bool default_target_option_pragma_parse (tree, tree);
 extern bool default_target_can_inline_p (tree, tree);
 extern bool default_update_ipa_fn_target_info (unsigned int &, const gimple *);
@@ -219,6 +222,7 @@ extern bool default_libc_has_fast_function (int fcode);
 extern bool no_c99_libc_has_function (enum function_class, tree);
 extern bool gnu_libc_has_function (enum function_class, tree);
 extern bool bsd_libc_has_function (enum function_class, tree);
+extern unsigned default_fortify_source_default_level (void);
 extern unsigned default_libm_function_max_error (unsigned, machine_mode, bool);
 extern unsigned glibc_linux_libm_function_max_error (unsigned, machine_mode,
 						     bool);
@@ -301,7 +305,5 @@ extern rtx default_memtag_add_tag (rtx, poly_int64, uint8_t);
 extern rtx default_memtag_set_tag (rtx, rtx, rtx);
 extern rtx default_memtag_extract_tag (rtx, rtx);
 extern rtx default_memtag_untagged_pointer (rtx, rtx);
-
-extern HOST_WIDE_INT default_gcov_type_size (void);
 
 #endif /* GCC_TARGHOOKS_H */

@@ -1,6 +1,6 @@
 (* SymbolConversion.mod mapping between m2 symbols and gcc symbols.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -24,10 +24,10 @@ IMPLEMENTATION MODULE SymbolConversion ;
 FROM NameKey IMPORT Name ;
 
 FROM Indexing IMPORT Index, InitIndex, PutIndice, GetIndice, InBounds,
-                     DebugIndex ;
+                     DebugIndex, InitIndexTuned, HighIndice ;
 
 FROM SymbolTable IMPORT IsConst, PopValue, IsValueSolved, GetSymName,
-                        GetType, SkipType ;
+                        GetType, SkipType, NulSym ;
 
 FROM M2Error IMPORT InternalError ;
 FROM M2ALU IMPORT PushTypeOfTree ;
@@ -85,6 +85,27 @@ BEGIN
       RETURN( NIL )
    END
 END Mod2Gcc ;
+
+
+(*
+   Gcc2Mod - given a gcc tree return the modula-2 symbol.
+*)
+
+PROCEDURE Gcc2Mod (tree: Tree) : CARDINAL ;
+VAR
+   high, i: CARDINAL ;
+BEGIN
+   i := 1 ;
+   high := HighIndice (mod2gcc) ;
+   WHILE i <= high DO
+      IF GetIndice (mod2gcc, i) = tree
+      THEN
+         RETURN i
+      END ;
+      INC (i)
+   END ;
+   RETURN NulSym
+END Gcc2Mod ;
 
 
 (*
@@ -237,8 +258,8 @@ END Poison ;
 
 PROCEDURE Init ;
 BEGIN
-   mod2gcc := InitIndex(1) ;
-   ALLOCATE(PoisonedSymbol, 1)
+   mod2gcc := InitIndexTuned (1, 1024*1024 DIV 16, 16) ;
+   ALLOCATE (PoisonedSymbol, 1)
 END Init ;
 
 

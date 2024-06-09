@@ -1,5 +1,5 @@
 /* Various declarations for language-independent pretty-print subroutines.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_PRETTY_PRINT_H
 
 #include "obstack.h"
+#include "rich-location.h"
 #include "diagnostic-url.h"
 
 /* Maximum number of format string arguments.  */
@@ -68,6 +69,8 @@ enum diagnostic_prefixing_rule_t
   DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE = 0x2
 };
 
+class quoting_info;
+
 /* The chunk_info data structure forms a stack of the results from the
    first phase of formatting (pp_format) which have not yet been
    output (pp_output_formatted_text).  A stack is necessary because
@@ -85,6 +88,10 @@ struct chunk_info
      text, and the third phase simply emits all the chunks in sequence
      with appropriate line-wrapping.  */
   const char *args[PP_NL_ARGMAX * 2];
+
+  /* If non-null, information on quoted text runs within the chunks
+     for use by a urlifier.  */
+  quoting_info *m_quotes;
 };
 
 /* The output buffer datatype.  This is best seen as an abstract datatype
@@ -228,6 +235,8 @@ class format_postprocessor
 /* True if colors should be shown.  */
 #define pp_show_color(PP) (PP)->show_color
 
+class urlifier;
+
 /* The data structure that contains the bare minimum required to do
    proper pretty-printing.  Clients may derived from this structure
    and add additional fields they need.  */
@@ -295,6 +304,10 @@ public:
 
   /* Whether URLs should be emitted, and which terminator to use.  */
   diagnostic_url_format url_format;
+
+  /* If true, then we've had a pp_begin_url (nullptr), and so the
+     next pp_end_url should be a no-op.  */
+  bool m_skipping_null_url;
 };
 
 inline const char *
@@ -400,8 +413,10 @@ extern void pp_verbatim (pretty_printer *, const char *, ...)
      ATTRIBUTE_GCC_PPDIAG(2,3);
 extern void pp_flush (pretty_printer *);
 extern void pp_really_flush (pretty_printer *);
-extern void pp_format (pretty_printer *, text_info *);
-extern void pp_output_formatted_text (pretty_printer *);
+extern void pp_format (pretty_printer *, text_info *,
+		       const urlifier * = nullptr);
+extern void pp_output_formatted_text (pretty_printer *,
+				      const urlifier * = nullptr);
 extern void pp_format_verbatim (pretty_printer *, text_info *);
 
 extern void pp_indent (pretty_printer *);
@@ -448,8 +463,9 @@ pp_wide_integer (pretty_printer *pp, HOST_WIDE_INT i)
 inline void
 pp_wide_int (pretty_printer *pp, const wide_int_ref &w, signop sgn)
 {
-  unsigned int prec = w.get_precision ();
-  if (UNLIKELY ((prec + 3) / 4 > sizeof (pp_buffer (pp)->digit_buffer) - 3))
+  unsigned int len;
+  print_dec_buf_size (w, sgn, &len);
+  if (UNLIKELY (len > sizeof (pp_buffer (pp)->digit_buffer)))
     pp_wide_int_large (pp, w, sgn);
   else
     {

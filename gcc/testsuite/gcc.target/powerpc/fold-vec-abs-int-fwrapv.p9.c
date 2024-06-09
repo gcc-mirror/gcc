@@ -2,8 +2,8 @@
    inputs produce the right results when -mcpu=power9 is specified.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-maltivec -O2 -mdejagnu-cpu=power9 -fwrapv" } */
+/* { dg-options "-maltivec -O2 -mdejagnu-cpu=power9 -mvsx -fwrapv" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 

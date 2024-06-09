@@ -1,5 +1,5 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -82,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-rtl.h"
 #include "function-abi.h"
 #include "common/common-target.h"
+#include "diagnostic.h"
 
 #include "dwarf2out.h"
 
@@ -1685,9 +1686,6 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
 
   high_block_linenum = high_function_linenum = last_linenum;
 
-  if (flag_sanitize & SANITIZE_ADDRESS)
-    asan_function_start ();
-
   rtx_insn *first = *firstp;
   if (in_initial_view_p (first))
     {
@@ -2103,7 +2101,8 @@ asm_show_source (const char *filename, int linenum)
   if (!filename)
     return;
 
-  char_span line = location_get_source_line (filename, linenum);
+  char_span line
+    = global_dc->get_file_cache ().get_source_line (filename, linenum);
   if (!line)
     return;
 

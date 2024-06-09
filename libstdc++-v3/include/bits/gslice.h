@@ -1,6 +1,6 @@
 // The template and inlines for the -*- C++ -*- gslice class.
 
-// Copyright (C) 1997-2023 Free Software Foundation, Inc.
+// Copyright (C) 1997-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -169,6 +169,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline gslice&
   gslice::operator=(const gslice& __g)
   {
+    // Safe for self-assignment. Checking for it would add overhead just to
+    // optimize a case that should never happen anyway.
     if (__g._M_index)
       __g._M_index->_M_increment_use();
     if (_M_index && _M_index->_M_decrement_use() == 0)

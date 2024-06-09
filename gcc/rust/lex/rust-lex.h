@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -22,7 +22,9 @@
 #include "rust-linemap.h"
 #include "rust-buffered-queue.h"
 #include "rust-token.h"
-#include "rust-optional.h"
+#include "optional.h"
+#include "selftest.h"
+#include "rust-input-source.h"
 
 namespace Rust {
 // Simple wrapper for FILE* that simplifies destruction.
@@ -111,23 +113,20 @@ class Lexer
 {
 private:
   // Request new Location for current column in line_table
-  Location get_current_location ();
+  location_t get_current_location ();
 
   // Skips the current input char.
   void skip_input ();
   // Advances current input char to n + 1 chars ahead of current position.
   void skip_input (int n);
 
-  // Returns char n chars ahead of current position.
-  int peek_input ();
   // Peeks the current char.
-  int peek_input (int n);
+  Codepoint peek_input ();
+  // Returns char n bytes ahead of current position.
+  Codepoint peek_input (int n);
 
   // Classifies keyword (i.e. gets id for keyword).
   TokenId classify_keyword (const std::string &str);
-
-  // Builds a token from the input queue.
-  TokenPtr build_token ();
 
   std::tuple<std::string, int, bool> parse_in_decimal ();
   std::pair<std::string, int> parse_in_exponent_part ();
@@ -138,38 +137,32 @@ private:
   std::pair<long, int> parse_partial_hex_escape ();
   std::pair<Codepoint, int> parse_partial_unicode_escape ();
 
-  int get_input_codepoint_length ();
-  int test_get_input_codepoint_n_length (int n_start_offset);
-  Codepoint peek_codepoint_input ();
-  Codepoint test_peek_codepoint_input (int n);
-  void skip_codepoint_input ();
-  void skip_broken_string_input (int current_char);
+  void skip_broken_string_input (Codepoint current_char);
 
-  TokenPtr parse_byte_char (Location loc);
-  TokenPtr parse_byte_string (Location loc);
-  TokenPtr parse_raw_byte_string (Location loc);
-  TokenPtr parse_raw_identifier (Location loc);
-  TokenPtr parse_string (Location loc);
-  TokenPtr maybe_parse_raw_string (Location loc);
-  TokenPtr parse_raw_string (Location loc, int initial_hash_count);
-  TokenPtr parse_non_decimal_int_literals (Location loc);
-  TokenPtr parse_decimal_int_or_float (Location loc);
-  TokenPtr parse_char_or_lifetime (Location loc);
-  TokenPtr parse_identifier_or_keyword (Location loc);
+  TokenPtr parse_byte_char (location_t loc);
+  TokenPtr parse_byte_string (location_t loc);
+  TokenPtr parse_raw_byte_string (location_t loc);
+  TokenPtr parse_raw_identifier (location_t loc);
+  TokenPtr parse_string (location_t loc);
+  TokenPtr maybe_parse_raw_string (location_t loc);
+  TokenPtr parse_raw_string (location_t loc, int initial_hash_count);
+  TokenPtr parse_non_decimal_int_literals (location_t loc);
+  TokenPtr parse_decimal_int_or_float (location_t loc);
+  TokenPtr parse_char_or_lifetime (location_t loc);
+  TokenPtr parse_identifier_or_keyword (location_t loc);
 
   template <typename IsDigitFunc>
-  TokenPtr parse_non_decimal_int_literal (Location loc,
+  TokenPtr parse_non_decimal_int_literal (location_t loc,
 					  IsDigitFunc is_digit_func,
 					  std::string existent_str, int base);
 
 public:
   // Construct lexer with input file and filename provided
   Lexer (const char *filename, RAIIFile input, Linemap *linemap,
-	 Optional<std::ofstream &> dump_lex_opt
-	 = Optional<std::ofstream &>::none ());
+	 tl::optional<std::ofstream &> dump_lex_opt = tl::nullopt);
 
   // Lex the contents of a string instead of a file
-  Lexer (const std::string &input);
+  Lexer (const std::string &input, Linemap *linemap);
 
   // dtor
   ~Lexer ();
@@ -182,10 +175,15 @@ public:
   Lexer (Lexer &&other) = default;
   Lexer &operator= (Lexer &&other) = default;
 
+  bool input_source_is_valid_utf8 ();
+
   // Returns token n tokens ahead of current position.
   const_TokenPtr peek_token (int n) { return token_queue.peek (n); }
   // Peeks the current token.
   const_TokenPtr peek_token () { return peek_token (0); }
+
+  // Builds a token from the input queue.
+  TokenPtr build_token ();
 
   // Advances current token to n + 1 tokens ahead of current position.
   void skip_token (int n);
@@ -204,6 +202,8 @@ public:
    * this will only work with "simple" tokens like punctuation. */
   void split_current_token (TokenId new_left, TokenId new_right);
 
+  void split_current_token (std::vector<TokenPtr> new_tokens);
+
   Linemap *get_line_map () { return line_map; }
   std::string get_filename () { return std::string (input.get_filename ()); }
 
@@ -219,7 +219,7 @@ private:
   // Current column number.
   int current_column;
   // Current character.
-  int current_char;
+  Codepoint current_char;
   // Line map.
   Linemap *line_map;
 
@@ -227,57 +227,13 @@ private:
    * allocating new linemap */
   static const int max_column_hint = 80;
 
-  Optional<std::ofstream &> dump_lex_out;
-
-  // Input source wrapper thing.
-  class InputSource
-  {
-  public:
-    virtual ~InputSource () {}
-
-    // Overload operator () to return next char from input stream.
-    virtual int next () = 0;
-  };
-
-  class FileInputSource : public InputSource
-  {
-  private:
-    // Input source file.
-    FILE *input;
-
-  public:
-    // Create new input source from file.
-    FileInputSource (FILE *input) : input (input) {}
-
-    int next () override { return fgetc (input); }
-  };
-
-  class BufferInputSource : public InputSource
-  {
-  private:
-    const std::string &buffer;
-    size_t offs;
-
-  public:
-    // Create new input source from file.
-    BufferInputSource (const std::string &b, size_t offset)
-      : buffer (b), offs (offset)
-    {}
-
-    int next () override
-    {
-      if (offs >= buffer.size ())
-	return EOF;
-
-      return buffer.at (offs++);
-    }
-  };
+  tl::optional<std::ofstream &> dump_lex_out;
 
   // The input source for the lexer.
   // InputSource input_source;
   // Input file queue.
   std::unique_ptr<InputSource> raw_input_source;
-  buffered_queue<int, InputSource &> input_queue;
+  buffered_queue<Codepoint, std::reference_wrapper<InputSource>> input_queue;
 
   // Token source wrapper thing.
   struct TokenSource
@@ -287,6 +243,9 @@ private:
 
     // Create a new TokenSource with given lexer.
     TokenSource (Lexer *parLexer) : lexer (parLexer) {}
+
+    // Used to mimic std::reference_wrapper that is used for InputSource.
+    TokenSource &get () { return *this; }
 
     // Overload operator () to build token in lexer.
     TokenPtr next () { return lexer->build_token (); }
@@ -299,5 +258,15 @@ private:
 };
 
 } // namespace Rust
+
+#if CHECKING_P
+
+namespace selftest {
+void
+rust_input_source_test ();
+
+} // namespace selftest
+
+#endif // CHECKING_P
 
 #endif

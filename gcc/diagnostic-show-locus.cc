@@ -1,5 +1,5 @@
 /* Diagnostic subroutines for printing source-code
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "version.h"
@@ -31,6 +32,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "cpplib.h"
+#include "text-art/types.h"
+#include "text-art/theme.h"
+#include "diagnostic-label-effects.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -83,7 +87,7 @@ struct point_state
 class colorizer
 {
  public:
-  colorizer (diagnostic_context *context,
+  colorizer (pretty_printer *pp,
 	     diagnostic_t diagnostic_kind);
   ~colorizer ();
 
@@ -98,6 +102,7 @@ class colorizer
     else
       set_state (range_idx);
   }
+  void set_cfg_edge () { set_state (0); }
   void set_normal_text () { set_state (STATE_NORMAL_TEXT); }
   void set_fixit_insert () { set_state (STATE_FIXIT_INSERT); }
   void set_fixit_delete () { set_state (STATE_FIXIT_DELETE); }
@@ -113,7 +118,7 @@ class colorizer
   static const int STATE_FIXIT_INSERT  = -2;
   static const int STATE_FIXIT_DELETE  = -3;
 
-  diagnostic_context *m_context;
+  pretty_printer *m_pp;
   diagnostic_t m_diagnostic_kind;
   int m_current_state;
   const char *m_range1;
@@ -175,11 +180,12 @@ enum column_unit {
 class exploc_with_display_col : public expanded_location
 {
  public:
-  exploc_with_display_col (const expanded_location &exploc,
+  exploc_with_display_col (file_cache &fc,
+			   const expanded_location &exploc,
 			   const cpp_char_column_policy &policy,
 			   enum location_aspect aspect)
   : expanded_location (exploc),
-    m_display_col (location_compute_display_column (exploc, policy))
+    m_display_col (location_compute_display_column (fc, exploc, policy))
   {
     if (exploc.column > 0)
       {
@@ -190,7 +196,7 @@ class exploc_with_display_col : public expanded_location
 	    expanded_location prev_exploc (exploc);
 	    prev_exploc.column--;
 	    int prev_display_col
-	      = (location_compute_display_column (prev_exploc, policy));
+	      = (location_compute_display_column (fc, prev_exploc, policy));
 	    m_display_col = prev_display_col + 1;
 	  }
       }
@@ -232,6 +238,9 @@ class layout_range
   bool contains_point (linenum_type row, int column,
 		       enum column_unit col_unit) const;
   bool intersects_line_p (linenum_type row) const;
+
+  bool has_in_edge () const;
+  bool has_out_edge () const;
 
   layout_point m_start;
   layout_point m_finish;
@@ -365,10 +374,11 @@ struct char_display_policy : public cpp_char_column_policy
 class layout
 {
  public:
-  layout (diagnostic_context *context,
-	  rich_location *richloc,
+  layout (const diagnostic_context &context,
+	  const rich_location &richloc,
 	  diagnostic_t diagnostic_kind,
-	  pretty_printer *pp = nullptr);
+	  pretty_printer *pp,
+	  diagnostic_source_effect_info *effect_info = nullptr);
 
   bool maybe_add_location_range (const location_range *loc_range,
 				 unsigned original_idx,
@@ -387,7 +397,11 @@ class layout
 
   void print_line (linenum_type row);
 
+  void print_any_right_to_left_edge_lines ();
+
   void on_bad_codepoint (const char *ptr, cppchar_t ch, size_t ch_sz);
+
+  void update_any_effects () const;
 
  private:
   bool will_show_line_p (linenum_type row) const;
@@ -395,14 +409,15 @@ class layout
   line_bounds print_source_line (linenum_type row, const char *line,
 				 int line_bytes);
   bool should_print_annotation_line_p (linenum_type row) const;
-  void start_annotation_line (char margin_char = ' ') const;
+  void print_leftmost_column ();
+  void start_annotation_line (char margin_char = ' ');
   void print_annotation_line (linenum_type row, const line_bounds lbounds);
   void print_any_labels (linenum_type row);
   void print_trailing_fixits (linenum_type row);
 
   bool annotation_line_showed_range_p (linenum_type line, int start_column,
 				       int finish_column) const;
-  void show_ruler (int max_column) const;
+  void show_ruler (int max_column);
 
   bool validate_fixit_hint_p (const fixit_hint *hint);
 
@@ -428,15 +443,19 @@ class layout
   move_to_column (int *column, int dest_column, bool add_left_margin);
 
  private:
-  diagnostic_context *m_context;
+  bool compatible_locations_p (location_t loc_a, location_t loc_b) const;
+
+  const diagnostic_source_printing_options &m_options;
+  const line_maps *m_line_table;
+  file_cache &m_file_cache;
   pretty_printer *m_pp;
+  const text_art::ascii_theme m_fallback_theme;
+  const text_art::theme &m_theme;
+  diagnostic_source_effect_info *m_effect_info;
   char_display_policy m_policy;
   location_t m_primary_loc;
   exploc_with_display_col m_exploc;
   colorizer m_colorizer;
-  bool m_colorize_source_p;
-  bool m_show_labels_p;
-  bool m_show_line_numbers_p;
   bool m_diagnostic_path_p;
   auto_vec <layout_range> m_layout_ranges;
   auto_vec <const fixit_hint *> m_fixit_hints;
@@ -444,6 +463,55 @@ class layout
   int m_linenum_width;
   int m_x_offset_display;
   bool m_escape_on_output;
+
+  /* Fields for handling links between labels (e.g. for showing CFG edges
+     in execution paths).
+     Note that the logic for printing such links makes various simplifying
+     assumptions about the set of labels in the rich_location, and users
+     of this code will need to split up labels into separate rich_location
+     instances to respect these assumptions, or the output will look wrong.
+     See the diagnostic_path-printing code for more information.  */
+
+  /* An enum for describing the state of the leftmost column,
+     used for showing links between labels.
+     Consider e.g.
+     .x0000000001111111111222222222233333333334444444444.
+     .x1234567890123456789012345678901234567890123456789.
+     |      |                                    <- none
+     |      (9) following ‘false’ branch... ->-+ <- none
+     |                                         | <- none
+     |                                         | <- none
+     |+----------------------------------------+ <- rewinding to lhs
+     ||  result->i = i;                          <- at lhs
+     ||  ~~~~~~~~~~^~~                           <- at lhs
+     ||            |                             <- at lhs
+     |+----------->(10) ...to here               <- indenting to dest
+     ^^
+     ||
+     |leftmost column ("x" above).
+     "margin".  */
+  enum class link_lhs_state {
+    none,
+    rewinding_to_lhs,
+    at_lhs,
+    indenting_to_dest
+  } m_link_lhs_state;
+
+  /* The column of the current link on the RHS, if any, or
+     -1 if there is none.
+     Consider e.g.
+     .x0000000001111111111222222222233333333334444444444.
+     .x1234567890123456789012345678901234567890123456789.
+     |      |                                     <- -1
+     |      (10) following ‘false’ branch... ->-+ <- 42
+     |                                          | <- 42
+     |                                          | <- 42
+     |+-----------------------------------------+ <- 42
+     ||  result->i = i;                           <- -1
+     ||  ~~~~~~~~~~^~~                            <- -1
+     ||            |                              <- -1
+     |+----------->(11) ...to here                <- -1.  */
+  int m_link_rhs_column;
 };
 
 /* Implementation of "class colorizer".  */
@@ -451,9 +519,9 @@ class layout
 /* The constructor for "colorizer".  Lookup and store color codes for the
    different kinds of things we might need to print.  */
 
-colorizer::colorizer (diagnostic_context *context,
+colorizer::colorizer (pretty_printer *pp,
 		      diagnostic_t diagnostic_kind) :
-  m_context (context),
+  m_pp (pp),
   m_diagnostic_kind (diagnostic_kind),
   m_current_state (STATE_NORMAL_TEXT)
 {
@@ -461,7 +529,7 @@ colorizer::colorizer (diagnostic_context *context,
   m_range2 = get_color_by_name ("range2");
   m_fixit_insert = get_color_by_name ("fixit-insert");
   m_fixit_delete = get_color_by_name ("fixit-delete");
-  m_stop_color = colorize_stop (pp_show_color (context->printer));
+  m_stop_color = colorize_stop (pp_show_color (m_pp));
 }
 
 /* The destructor for "colorize".  If colorization is on, print a code to
@@ -497,35 +565,35 @@ colorizer::begin_state (int state)
       break;
 
     case STATE_FIXIT_INSERT:
-      pp_string (m_context->printer, m_fixit_insert);
+      pp_string (m_pp, m_fixit_insert);
       break;
 
     case STATE_FIXIT_DELETE:
-      pp_string (m_context->printer, m_fixit_delete);
+      pp_string (m_pp, m_fixit_delete);
       break;
 
     case 0:
       /* Make range 0 be the same color as the "kind" text
 	 (error vs warning vs note).  */
       pp_string
-	(m_context->printer,
-	 colorize_start (pp_show_color (m_context->printer),
+	(m_pp,
+	 colorize_start (pp_show_color (m_pp),
 			 diagnostic_get_color_for_kind (m_diagnostic_kind)));
       break;
 
     case 1:
-      pp_string (m_context->printer, m_range1);
+      pp_string (m_pp, m_range1);
       break;
 
     case 2:
-      pp_string (m_context->printer, m_range2);
+      pp_string (m_pp, m_range2);
       break;
 
     default:
       /* For ranges beyond 2, alternate between color 1 and color 2.  */
       {
 	gcc_assert (state > 2);
-	pp_string (m_context->printer,
+	pp_string (m_pp,
 		   state % 2 ? m_range1 : m_range2);
       }
       break;
@@ -538,7 +606,7 @@ void
 colorizer::finish_state (int state)
 {
   if (state != STATE_NORMAL_TEXT)
-    pp_string (m_context->printer, m_stop_color);
+    pp_string (m_pp, m_stop_color);
 }
 
 /* Get the color code for NAME (or the empty string if
@@ -547,7 +615,7 @@ colorizer::finish_state (int state)
 const char *
 colorizer::get_color_by_name (const char *name)
 {
-  return colorize_start (pp_show_color (m_context->printer), name);
+  return colorize_start (pp_show_color (m_pp), name);
 }
 
 /* Implementation of class layout_range.  */
@@ -687,6 +755,34 @@ layout_range::intersects_line_p (linenum_type row) const
   return true;
 }
 
+/* Return true if this layout_range should have an in-edge.  */
+
+bool
+layout_range::has_in_edge () const
+{
+  if (!m_label)
+    return false;
+  const label_effects *effects = m_label->get_effects (m_original_idx);
+  if (!effects)
+    return false;
+
+  return effects->has_in_edge (m_original_idx);
+}
+
+/* Return true if this layout_range should have an out-edge.  */
+
+bool
+layout_range::has_out_edge () const
+{
+  if (!m_label)
+    return false;
+  const label_effects *effects = m_label->get_effects (m_original_idx);
+  if (!effects)
+    return false;
+
+  return effects->has_out_edge (m_original_idx);
+}
+
 #if CHECKING_P
 
 /* Default for when we don't care what the tab expansion is set to.  */
@@ -707,18 +803,22 @@ static cpp_char_column_policy def_policy ()
    e.g. in test_diagnostic_show_locus_one_liner_utf8().  */
 
 static layout_range
-make_range (int start_line, int start_col, int end_line, int end_col)
+make_range (file_cache &fc,
+	    int start_line, int start_col, int end_line, int end_col)
 {
   const expanded_location start_exploc
     = {"", start_line, start_col, NULL, false};
   const expanded_location finish_exploc
     = {"", end_line, end_col, NULL, false};
-  return layout_range (exploc_with_display_col (start_exploc, def_policy (),
+  return layout_range (exploc_with_display_col (fc,
+						start_exploc, def_policy (),
 						LOCATION_ASPECT_START),
-		       exploc_with_display_col (finish_exploc, def_policy (),
+		       exploc_with_display_col (fc,
+						finish_exploc, def_policy (),
 						LOCATION_ASPECT_FINISH),
 		       SHOW_RANGE_WITHOUT_CARET,
-		       exploc_with_display_col (start_exploc, def_policy (),
+		       exploc_with_display_col (fc,
+						start_exploc, def_policy (),
 						LOCATION_ASPECT_CARET),
 		       0, NULL);
 }
@@ -732,7 +832,8 @@ make_range (int start_line, int start_col, int end_line, int end_col)
 static void
 test_layout_range_for_single_point ()
 {
-  layout_range point = make_range (7, 10, 7, 10);
+  file_cache fc;
+  layout_range point = make_range (fc, 7, 10, 7, 10);
 
   /* Tests for layout_range::contains_point.  */
 
@@ -768,7 +869,8 @@ test_layout_range_for_single_point ()
 static void
 test_layout_range_for_single_line ()
 {
-  layout_range example_a = make_range (2, 22, 2, 38);
+  file_cache fc;
+  layout_range example_a = make_range (fc, 2, 22, 2, 38);
 
   /* Tests for layout_range::contains_point.  */
 
@@ -810,7 +912,8 @@ test_layout_range_for_single_line ()
 static void
 test_layout_range_for_multiple_lines ()
 {
-  layout_range example_b = make_range (3, 14, 5, 8);
+  file_cache fc;
+  layout_range example_b = make_range (fc, 3, 14, 5, 8);
 
   /* Tests for layout_range::contains_point.  */
 
@@ -933,13 +1036,13 @@ test_get_line_bytes_without_trailing_whitespace ()
    erroneously was leading to hundreds of lines of irrelevant source
    being printed.  */
 
-static bool
-compatible_locations_p (location_t loc_a, location_t loc_b)
+bool
+layout::compatible_locations_p (location_t loc_a, location_t loc_b) const
 {
   if (IS_ADHOC_LOC (loc_a))
-    loc_a = get_location_from_adhoc_loc (line_table, loc_a);
+    loc_a = get_location_from_adhoc_loc (m_line_table, loc_a);
   if (IS_ADHOC_LOC (loc_b))
-    loc_b = get_location_from_adhoc_loc (line_table, loc_b);
+    loc_b = get_location_from_adhoc_loc (m_line_table, loc_b);
 
   /* If either location is one of the special locations outside of a
      linemap, they are only compatible if they are equal.  */
@@ -947,10 +1050,10 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
       || loc_b < RESERVED_LOCATION_COUNT)
     return loc_a == loc_b;
 
-  const line_map *map_a = linemap_lookup (line_table, loc_a);
+  const line_map *map_a = linemap_lookup (m_line_table, loc_a);
   linemap_assert (map_a);
 
-  const line_map *map_b = linemap_lookup (line_table, loc_b);
+  const line_map *map_b = linemap_lookup (m_line_table, loc_b);
   linemap_assert (map_b);
 
   /* Are they within the same map?  */
@@ -962,9 +1065,9 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
 	  /* If so, then they're only compatible if either both are
 	     from the macro definition, or both from the macro arguments.  */
 	  bool loc_a_from_defn
-	    = linemap_location_from_macro_definition_p (line_table, loc_a);
+	    = linemap_location_from_macro_definition_p (m_line_table, loc_a);
 	  bool loc_b_from_defn
-	    = linemap_location_from_macro_definition_p (line_table, loc_b);
+	    = linemap_location_from_macro_definition_p (m_line_table, loc_b);
 	  if (loc_a_from_defn != loc_b_from_defn)
 	    return false;
 
@@ -972,11 +1075,11 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
 	     recurse.  */
 	  const line_map_macro *macro_map = linemap_check_macro (map_a);
 	  location_t loc_a_toward_spelling
-	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
+	    = linemap_macro_map_loc_unwind_toward_spelling (m_line_table,
 							    macro_map,
 							    loc_a);
 	  location_t loc_b_toward_spelling
-	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
+	    = linemap_macro_map_loc_unwind_toward_spelling (m_line_table,
 							    macro_map,
 							    loc_b);
 	  return compatible_locations_p (loc_a_toward_spelling,
@@ -1146,14 +1249,14 @@ make_policy (const diagnostic_context &dc,
 {
   /* The default is to not escape non-ASCII bytes.  */
   char_display_policy result
-    (dc.tabstop, cpp_wcwidth, default_print_decoded_ch);
+    (dc.m_tabstop, cpp_wcwidth, default_print_decoded_ch);
 
   /* If the diagnostic suggests escaping non-ASCII bytes, then
      use policy from user-supplied options.  */
   if (richloc.escape_on_output_p ())
     {
       result.m_undecoded_byte_width = width_per_escaped_byte;
-      switch (dc.escape_format)
+      switch (dc.get_escape_format ())
 	{
 	default:
 	  gcc_unreachable ();
@@ -1182,41 +1285,54 @@ make_policy (const diagnostic_context &dc,
    Determine m_x_offset_display, to ensure that the primary caret
    will fit within the max_width provided by the diagnostic_context.  */
 
-layout::layout (diagnostic_context * context,
-		rich_location *richloc,
+layout::layout (const diagnostic_context &context,
+		const rich_location &richloc,
 		diagnostic_t diagnostic_kind,
-		pretty_printer *pp)
-: m_context (context),
-  m_pp (pp ? pp : context->printer),
-  m_policy (make_policy (*context, *richloc)),
-  m_primary_loc (richloc->get_range (0)->m_loc),
-  m_exploc (richloc->get_expanded_location (0), m_policy,
+		pretty_printer *pp,
+		diagnostic_source_effect_info *effect_info)
+: m_options (context.m_source_printing),
+  m_line_table (richloc.get_line_table ()),
+  m_file_cache (context.get_file_cache ()),
+  m_pp (pp ? pp : context.printer),
+  /* Ensure we have a non-null m_theme. */
+  m_theme (context.get_diagram_theme ()
+	   ? *context.get_diagram_theme ()
+	   : *static_cast <const text_art::theme *> (&m_fallback_theme)),
+  m_effect_info (effect_info),
+  m_policy (make_policy (context, richloc)),
+  m_primary_loc (richloc.get_range (0)->m_loc),
+  m_exploc (m_file_cache,
+	    richloc.get_expanded_location (0), m_policy,
 	    LOCATION_ASPECT_CARET),
-  m_colorizer (context, diagnostic_kind),
-  m_colorize_source_p (context->m_source_printing.colorize_source_p),
-  m_show_labels_p (context->m_source_printing.show_labels_p),
-  m_show_line_numbers_p (context->m_source_printing.show_line_numbers_p),
+  m_colorizer (m_pp, diagnostic_kind),
   m_diagnostic_path_p (diagnostic_kind == DK_DIAGNOSTIC_PATH),
-  m_layout_ranges (richloc->get_num_locations ()),
-  m_fixit_hints (richloc->get_num_fixit_hints ()),
-  m_line_spans (1 + richloc->get_num_locations ()),
+  m_layout_ranges (richloc.get_num_locations ()),
+  m_fixit_hints (richloc.get_num_fixit_hints ()),
+  m_line_spans (1 + richloc.get_num_locations ()),
   m_linenum_width (0),
   m_x_offset_display (0),
-  m_escape_on_output (richloc->escape_on_output_p ())
+  m_escape_on_output (richloc.escape_on_output_p ()),
+  m_link_lhs_state (link_lhs_state::none),
+  m_link_rhs_column (-1)
 {
-  for (unsigned int idx = 0; idx < richloc->get_num_locations (); idx++)
+  if (m_options.show_event_links_p)
+    if (effect_info)
+      if (effect_info->m_leading_in_edge_column)
+	m_link_rhs_column = effect_info->m_leading_in_edge_column;
+
+  for (unsigned int idx = 0; idx < richloc.get_num_locations (); idx++)
     {
       /* This diagnostic printer can only cope with "sufficiently sane" ranges.
 	 Ignore any ranges that are awkward to handle.  */
-      const location_range *loc_range = richloc->get_range (idx);
+      const location_range *loc_range = richloc.get_range (idx);
       maybe_add_location_range (loc_range, idx, false);
     }
 
   /* Populate m_fixit_hints, filtering to only those that are in the
      same file.  */
-  for (unsigned int i = 0; i < richloc->get_num_fixit_hints (); i++)
+  for (unsigned int i = 0; i < richloc.get_num_fixit_hints (); i++)
     {
-      const fixit_hint *hint = richloc->get_fixit_hint (i);
+      const fixit_hint *hint = richloc.get_fixit_hint (i);
       if (validate_fixit_hint_p (hint))
 	m_fixit_hints.safe_push (hint);
     }
@@ -1229,8 +1345,8 @@ layout::layout (diagnostic_context * context,
   calculate_linenum_width ();
   calculate_x_offset_display ();
 
-  if (context->m_source_printing.show_ruler_p)
-    show_ruler (m_x_offset_display + m_context->m_source_printing.max_width);
+  if (m_options.show_ruler_p)
+    show_ruler (m_x_offset_display + m_options.max_width);
 }
 
 
@@ -1238,7 +1354,7 @@ layout::layout (diagnostic_context * context,
    those that we can sanely print.
 
    ORIGINAL_IDX is the index of LOC_RANGE within its rich_location,
-   (for use as extrinsic state by label ranges FIXME).
+   (for use as extrinsic state by label ranges).
 
    If RESTRICT_TO_CURRENT_LINE_SPANS is true, then LOC_RANGE is also
    filtered against this layout instance's current line spans: it
@@ -1255,18 +1371,18 @@ layout::maybe_add_location_range (const location_range *loc_range,
   gcc_assert (loc_range);
 
   /* Split the "range" into caret and range information.  */
-  source_range src_range = get_range_from_loc (line_table, loc_range->m_loc);
+  source_range src_range = get_range_from_loc (m_line_table, loc_range->m_loc);
 
   /* Expand the various locations.  */
   expanded_location start
     = linemap_client_expand_location_to_spelling_point
-    (src_range.m_start, LOCATION_ASPECT_START);
+    (m_line_table, src_range.m_start, LOCATION_ASPECT_START);
   expanded_location finish
     = linemap_client_expand_location_to_spelling_point
-    (src_range.m_finish, LOCATION_ASPECT_FINISH);
+    (m_line_table, src_range.m_finish, LOCATION_ASPECT_FINISH);
   expanded_location caret
     = linemap_client_expand_location_to_spelling_point
-    (loc_range->m_loc, LOCATION_ASPECT_CARET);
+    (m_line_table, loc_range->m_loc, LOCATION_ASPECT_CARET);
 
   /* If any part of the range isn't in the same file as the primary
      location of this diagnostic, ignore the range.  */
@@ -1286,14 +1402,26 @@ layout::maybe_add_location_range (const location_range *loc_range,
 	   sanely relative to the primary location.  */
 	return false;
 
+  /* If there's no column information, then don't try to print
+     annotation lines for this range.  */
+  enum range_display_kind range_display_kind
+    = loc_range->m_range_display_kind;
+  if (start.column == 0
+      || finish.column == 0
+      || caret.column == 0)
+    range_display_kind = SHOW_LINES_WITHOUT_RANGE;
+
   /* Everything is now known to be in the correct source file,
      but it may require further sanitization.  */
-  layout_range ri (exploc_with_display_col (start, m_policy,
+  layout_range ri (exploc_with_display_col (m_file_cache,
+					    start, m_policy,
 					    LOCATION_ASPECT_START),
-		   exploc_with_display_col (finish, m_policy,
+		   exploc_with_display_col (m_file_cache,
+					    finish, m_policy,
 					    LOCATION_ASPECT_FINISH),
-		   loc_range->m_range_display_kind,
-		   exploc_with_display_col (caret, m_policy,
+		   range_display_kind,
+		   exploc_with_display_col (m_file_cache,
+					    caret, m_policy,
 					    LOCATION_ASPECT_CARET),
 		   original_idx, loc_range->m_label);
 
@@ -1363,7 +1491,7 @@ layout::will_show_line_p (linenum_type row) const
 void
 layout::print_gap_in_line_numbering ()
 {
-  gcc_assert (m_show_line_numbers_p);
+  gcc_assert (m_options.show_line_numbers_p);
 
   pp_emit_prefix (m_pp);
 
@@ -1546,7 +1674,7 @@ layout::calculate_line_spans ()
       line_span *current = &m_line_spans[m_line_spans.length () - 1];
       const line_span *next = &tmp_spans[i];
       gcc_assert (next->m_first_line >= current->m_first_line);
-      const int merger_distance = m_show_line_numbers_p ? 1 : 0;
+      const int merger_distance = m_options.show_line_numbers_p ? 1 : 0;
       if ((linenum_arith_t)next->m_first_line
 	  <= (linenum_arith_t)current->m_last_line + 1 + merger_distance)
 	{
@@ -1595,8 +1723,7 @@ layout::calculate_linenum_width ()
     m_linenum_width = MAX (m_linenum_width, 3);
   /* If there's a minimum margin width, apply it (subtracting 1 for the space
      after the line number.  */
-  m_linenum_width = MAX (m_linenum_width,
-			 m_context->m_source_printing.min_margin_width - 1);
+  m_linenum_width = MAX (m_linenum_width, m_options.min_margin_width - 1);
 }
 
 /* Calculate m_x_offset_display, which improves readability in case the source
@@ -1610,15 +1737,15 @@ layout::calculate_x_offset_display ()
 {
   m_x_offset_display = 0;
 
-  const int max_width = m_context->m_source_printing.max_width;
+  const int max_width = m_options.max_width;
   if (!max_width)
     {
       /* Nothing to do, the width is not capped.  */
       return;
     }
 
-  const char_span line = location_get_source_line (m_exploc.file,
-						   m_exploc.line);
+  const char_span line = m_file_cache.get_source_line (m_exploc.file,
+						       m_exploc.line);
   if (!line)
     {
       /* Nothing to do, we couldn't find the source line.  */
@@ -1644,7 +1771,7 @@ layout::calculate_x_offset_display ()
      with a space.  */
   const int source_display_cols = eol_display_column;
   int left_margin_size = 1;
-  if (m_show_line_numbers_p)
+  if (m_options.show_line_numbers_p)
       left_margin_size = m_linenum_width + 3;
   caret_display_column += left_margin_size;
   eol_display_column += left_margin_size;
@@ -1691,15 +1818,15 @@ layout::print_source_line (linenum_type row, const char *line, int line_bytes)
   m_colorizer.set_normal_text ();
 
   pp_emit_prefix (m_pp);
-  if (m_show_line_numbers_p)
+  if (m_options.show_line_numbers_p)
     {
       int width = num_digits (row);
       for (int i = 0; i < m_linenum_width - width; i++)
 	pp_space (m_pp);
-      pp_printf (m_pp, "%i | ", row);
+      pp_printf (m_pp, "%i |", row);
     }
-  else
-    pp_space (m_pp);
+
+  print_leftmost_column ();
 
   /* We will stop printing the source line at any trailing whitespace.  */
   line_bytes = get_line_bytes_without_trailing_whitespace (line,
@@ -1737,7 +1864,7 @@ layout::print_source_line (linenum_type row, const char *line, int line_bytes)
 	 For frontends that only generate carets, we don't colorize the
 	 characters above them, since this would look strange (e.g.
 	 colorizing just the first character in a token).  */
-      if (m_colorize_source_p)
+      if (m_options.colorize_source_p)
 	{
 	  bool in_range_p;
 	  point_state state;
@@ -1802,14 +1929,62 @@ layout::should_print_annotation_line_p (linenum_type row) const
   return false;
 }
 
-/* Begin an annotation line.  If m_show_line_numbers_p, print the left
-   margin, which is empty for annotation lines.  Otherwise, do nothing.  */
+/* Print the leftmost column after the margin, which is used for showing
+   links between labels (e.g. for CFG edges in execution paths).  */
 
 void
-layout::start_annotation_line (char margin_char) const
+layout::print_leftmost_column ()
+{
+  if (!m_options.show_event_links_p)
+    gcc_assert (m_link_lhs_state == link_lhs_state::none);
+
+  switch (m_link_lhs_state)
+    {
+    default:
+      gcc_unreachable ();
+    case link_lhs_state::none:
+      pp_space (m_pp);
+      break;
+    case link_lhs_state::rewinding_to_lhs:
+      {
+	m_colorizer.set_cfg_edge ();
+	const cppchar_t ch= m_theme.get_cppchar
+	  (text_art::theme::cell_kind::CFG_FROM_LEFT_TO_DOWN);
+	pp_unicode_character (m_pp, ch);
+	m_colorizer.set_normal_text ();
+      }
+      break;
+    case link_lhs_state::at_lhs:
+      {
+	m_colorizer.set_cfg_edge ();
+	const cppchar_t ch= m_theme.get_cppchar
+	  (text_art::theme::cell_kind::CFG_DOWN);
+	pp_unicode_character (m_pp, ch);
+	m_colorizer.set_normal_text ();
+      }
+      break;
+    case link_lhs_state::indenting_to_dest:
+      {
+	m_colorizer.set_cfg_edge ();
+	const cppchar_t ch= m_theme.get_cppchar
+	  (text_art::theme::cell_kind::CFG_FROM_DOWN_TO_RIGHT);
+	pp_unicode_character (m_pp, ch);
+	m_colorizer.set_normal_text ();
+      }
+      break;
+    }
+}
+
+/* Begin an annotation line.  If m_show_line_numbers_p, print the left
+   margin, which is empty for annotation lines.
+   After any left margin, print a leftmost column, which is used for
+   showing links between labels (e.g. for CFG edges in execution paths).  */
+
+void
+layout::start_annotation_line (char margin_char)
 {
   pp_emit_prefix (m_pp);
-  if (m_show_line_numbers_p)
+  if (m_options.show_line_numbers_p)
     {
       /* Print the margin.  If MARGIN_CHAR != ' ', then print up to 3
 	 of it, right-aligned, padded with spaces.  */
@@ -1820,6 +1995,10 @@ layout::start_annotation_line (char margin_char) const
 	pp_character (m_pp, margin_char);
       pp_string (m_pp, " |");
     }
+  if (margin_char == ' ')
+    print_leftmost_column ();
+  else
+    pp_character (m_pp, margin_char);
 }
 
 /* Print a line consisting of the caret/underlines for the given
@@ -1832,7 +2011,6 @@ layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
 				     lbounds.m_last_non_ws_disp_col);
 
   start_annotation_line ();
-  pp_space (m_pp);
 
   for (int column = 1 + m_x_offset_display; column < x_bound; column++)
     {
@@ -1852,8 +2030,7 @@ layout::print_annotation_line (linenum_type row, const line_bounds lbounds)
 	      /* Draw the caret.  */
 	      char caret_char;
 	      if (state.range_idx < rich_location::STATICALLY_ALLOCATED_RANGES)
-		caret_char
-		  = m_context->m_source_printing.caret_chars[state.range_idx];
+		caret_char = m_options.caret_chars[state.range_idx];
 	      else
 		caret_char = '^';
 	      pp_character (m_pp, caret_char);
@@ -1904,14 +2081,22 @@ struct pod_label_text
 class line_label
 {
 public:
-  line_label (const cpp_char_column_policy &policy,
-	      int state_idx, int column,
-	      label_text text)
+  line_label (int state_idx, int column,
+	      label_text text,
+	      bool has_in_edge,
+	      bool has_out_edge)
   : m_state_idx (state_idx), m_column (column),
-    m_text (std::move (text)), m_label_line (0), m_has_vbar (true)
+    m_text (std::move (text)), m_label_line (0), m_has_vbar (true),
+    m_has_in_edge (has_in_edge),
+    m_has_out_edge (has_out_edge)
   {
-    const int bytes = strlen (m_text.m_buffer);
-    m_display_width = cpp_display_width (m_text.m_buffer, bytes, policy);
+    /* Using styled_string rather than cpp_display_width here
+       lets us skip SGR formatting characters for color and URLs.
+       It doesn't handle tabs and unicode escaping, but we don't
+       expect to see either of those in labels.  */
+    text_art::style_manager sm;
+    text_art::styled_string str (sm, m_text.m_buffer);
+    m_display_width = str.calc_canvas_width ();
   }
 
   /* Sorting is primarily by column, then by state index.  */
@@ -1934,6 +2119,8 @@ public:
   size_t m_display_width;
   int m_label_line;
   bool m_has_vbar;
+  bool m_has_in_edge;
+  bool m_has_out_edge;
 };
 
 /* Print any labels in this row.  */
@@ -1971,7 +2158,9 @@ layout::print_any_labels (linenum_type row)
 	if (text.get () == NULL)
 	  continue;
 
-	labels.safe_push (line_label (m_policy, i, disp_col, std::move (text)));
+	labels.safe_push (line_label (i, disp_col, std::move (text),
+				      range->has_in_edge (),
+				      range->has_out_edge ()));
       }
   }
 
@@ -2015,6 +2204,7 @@ layout::print_any_labels (linenum_type row)
            label 1         : label line 3.  */
 
   int max_label_line = 1;
+  int label_line_with_in_edge = -1;
   {
     int next_column = INT_MAX;
     line_label *label;
@@ -2033,9 +2223,14 @@ layout::print_any_labels (linenum_type row)
 	  }
 
 	label->m_label_line = max_label_line;
+	if (m_options.show_event_links_p)
+	  if (label->m_has_in_edge)
+	    label_line_with_in_edge = max_label_line;
 	next_column = label->m_column;
       }
   }
+
+  gcc_assert (labels.length () > 0);
 
   /* Print the "label lines".  For each label within the line, print
      either a vertical bar ('|') for the labels that are lower down, or the
@@ -2043,8 +2238,13 @@ layout::print_any_labels (linenum_type row)
   {
     for (int label_line = 0; label_line <= max_label_line; label_line++)
       {
+	if (label_line == label_line_with_in_edge)
+	  {
+	    gcc_assert (m_options.show_event_links_p);
+	    m_link_lhs_state = link_lhs_state::indenting_to_dest;
+	  }
 	start_annotation_line ();
-	pp_space (m_pp);
+
 	int column = 1 + m_x_offset_display;
 	line_label *label;
 	FOR_EACH_VEC_ELT (labels, i, label)
@@ -2056,7 +2256,35 @@ layout::print_any_labels (linenum_type row)
 	    if (label_line == label->m_label_line)
 	      {
 		gcc_assert (column <= label->m_column);
-		move_to_column (&column, label->m_column, true);
+
+		if (label_line == label_line_with_in_edge)
+		  {
+		    /* Print a prefix showing an incoming
+		       link from another label.
+		       .|+----------->(10) ...to here
+		       . ^~~~~~~~~~~~~
+		       . this text.  */
+		    gcc_assert (m_options.show_event_links_p);
+		    m_colorizer.set_cfg_edge ();
+		    const cppchar_t right= m_theme.get_cppchar
+		      (text_art::theme::cell_kind::CFG_RIGHT);
+		    while (column < label->m_column - 1)
+		      {
+			pp_unicode_character (m_pp, right);
+			column++;
+		      }
+		    if (column == label->m_column - 1)
+		      {
+			pp_character (m_pp, '>');
+			column++;
+		      }
+		    m_colorizer.set_normal_text ();
+		    m_link_lhs_state = link_lhs_state::none;
+		    label_line_with_in_edge = -1;
+		  }
+		else
+		  move_to_column (&column, label->m_column, true);
+		gcc_assert (column == label->m_column);
 		/* Colorize the text, unless it's for events in a
 		   diagnostic_path.  */
 		if (!m_diagnostic_path_p)
@@ -2064,6 +2292,29 @@ layout::print_any_labels (linenum_type row)
 		pp_string (m_pp, label->m_text.m_buffer);
 		m_colorizer.set_normal_text ();
 		column += label->m_display_width;
+		if (m_options.show_event_links_p && label->m_has_out_edge)
+		  {
+		    /* Print a suffix showing the start of a linkage
+		       to another label e.g. " ->-+" which will be the
+		       first part of e.g.
+		       .      (9) following ‘false’ branch... ->-+ <- HERE
+		       .                                         |
+		       .                                         |
+		       .  */
+		    const cppchar_t right= m_theme.get_cppchar
+		      (text_art::theme::cell_kind::CFG_RIGHT);
+		    const cppchar_t from_right_to_down= m_theme.get_cppchar
+		      (text_art::theme::cell_kind::CFG_FROM_RIGHT_TO_DOWN);
+		    m_colorizer.set_cfg_edge ();
+		    pp_space (m_pp);
+		    pp_unicode_character (m_pp, right);
+		    pp_unicode_character (m_pp, '>');
+		    pp_unicode_character (m_pp, right);
+		    pp_unicode_character (m_pp, from_right_to_down);
+		    m_colorizer.set_normal_text ();
+		    column += 5;
+		    m_link_rhs_column = column - 1;
+		  }
 	      }
 	    else if (label->m_has_vbar)
 	      {
@@ -2075,8 +2326,36 @@ layout::print_any_labels (linenum_type row)
 		column++;
 	      }
 	  }
+
+	/* If we have a vertical link line on the RHS, print the
+	   '|' on this annotation line after the labels.  */
+	if (m_link_rhs_column != -1 && column < m_link_rhs_column)
+	  {
+	    move_to_column (&column, m_link_rhs_column, true);
+	    m_colorizer.set_cfg_edge ();
+	    const cppchar_t down= m_theme.get_cppchar
+	      (text_art::theme::cell_kind::CFG_DOWN);
+	    pp_unicode_character (m_pp, down);
+	    m_colorizer.set_normal_text ();
+	  }
+
 	print_newline ();
       }
+    }
+
+  /* If we have a vertical link line on the RHS, print a trailing
+     annotation line showing the vertical line.  */
+  if (m_link_rhs_column != -1)
+    {
+      int column = 1 + m_x_offset_display;
+      start_annotation_line ();
+      move_to_column (&column, m_link_rhs_column, true);
+      m_colorizer.set_cfg_edge ();
+      const cppchar_t down= m_theme.get_cppchar
+	(text_art::theme::cell_kind::CFG_DOWN);
+      pp_unicode_character (m_pp, down);
+      m_colorizer.set_normal_text ();
+      print_newline ();
     }
 
   /* Clean up.  */
@@ -2106,7 +2385,7 @@ layout::print_leading_fixits (linenum_type row)
 
       gcc_assert (hint->insertion_p ());
 
-      if (hint->affects_line_p (m_exploc.file, row))
+      if (hint->affects_line_p (m_line_table, m_exploc.file, row))
 	{
 	  /* Printing the '+' with normal colorization
 	     and the inserted line with "insert" colorization
@@ -2114,7 +2393,6 @@ layout::print_leading_fixits (linenum_type row)
 	     the surrounding text.  */
 	  m_colorizer.set_normal_text ();
 	  start_annotation_line ('+');
-	  pp_character (m_pp, '+');
 	  m_colorizer.set_fixit_insert ();
 	  /* Print all but the trailing newline of the fix-it hint.
 	     We have to print the newline separately to avoid
@@ -2256,7 +2534,8 @@ public:
 
 /* Get the range of bytes or display columns that HINT would affect.  */
 static column_range
-get_affected_range (const cpp_char_column_policy &policy,
+get_affected_range (file_cache &fc,
+		    const cpp_char_column_policy &policy,
 		    const fixit_hint *hint, enum column_unit col_unit)
 {
   expanded_location exploc_start = expand_location (hint->get_start_loc ());
@@ -2267,11 +2546,12 @@ get_affected_range (const cpp_char_column_policy &policy,
   int finish_column;
   if (col_unit == CU_DISPLAY_COLS)
     {
-      start_column = location_compute_display_column (exploc_start, policy);
+      start_column = location_compute_display_column (fc, exploc_start, policy);
       if (hint->insertion_p ())
 	finish_column = start_column - 1;
       else
-	finish_column = location_compute_display_column (exploc_finish, policy);
+	finish_column
+	  = location_compute_display_column (fc, exploc_finish, policy);
     }
   else
     {
@@ -2284,11 +2564,12 @@ get_affected_range (const cpp_char_column_policy &policy,
 /* Get the range of display columns that would be printed for HINT.  */
 
 static column_range
-get_printed_columns (const cpp_char_column_policy &policy,
+get_printed_columns (file_cache &fc,
+		     const cpp_char_column_policy &policy,
 		     const fixit_hint *hint)
 {
   expanded_location exploc = expand_location (hint->get_start_loc ());
-  int start_column = location_compute_display_column (exploc, policy);
+  int start_column = location_compute_display_column (fc, exploc, policy);
   int hint_width = cpp_display_width (hint->get_string (), hint->get_length (),
 				      policy);
   int final_hint_column = start_column + hint_width - 1;
@@ -2300,7 +2581,7 @@ get_printed_columns (const cpp_char_column_policy &policy,
     {
       exploc = expand_location (hint->get_next_loc ());
       --exploc.column;
-      int finish_column = location_compute_display_column (exploc, policy);
+      int finish_column = location_compute_display_column (fc, exploc, policy);
       return column_range (start_column,
 			   MAX (finish_column, final_hint_column));
     }
@@ -2406,15 +2687,18 @@ correction::ensure_terminated ()
 class line_corrections
 {
 public:
-  line_corrections (const char_display_policy &policy,
+  line_corrections (file_cache &fc,
+		    const char_display_policy &policy,
 		    const char *filename,
 		    linenum_type row)
-  : m_policy (policy), m_filename (filename), m_row (row)
+  : m_file_cache (fc),
+    m_policy (policy), m_filename (filename), m_row (row)
   {}
   ~line_corrections ();
 
   void add_hint (const fixit_hint *hint);
 
+  file_cache &m_file_cache;
   const char_display_policy &m_policy;
   const char *m_filename;
   linenum_type m_row;
@@ -2437,7 +2721,7 @@ line_corrections::~line_corrections ()
 class source_line
 {
 public:
-  source_line (const char *filename, int line);
+  source_line (file_cache &fc, const char *filename, int line);
 
   char_span as_span () { return char_span (chars, width); }
 
@@ -2447,9 +2731,9 @@ public:
 
 /* source_line's ctor.  */
 
-source_line::source_line (const char *filename, int line)
+source_line::source_line (file_cache &fc, const char *filename, int line)
 {
-  char_span span = location_get_source_line (filename, line);
+  char_span span = fc.get_source_line (filename, line);
   chars = span.get_buffer ();
   width = span.length ();
 }
@@ -2461,10 +2745,12 @@ source_line::source_line (const char *filename, int line)
 void
 line_corrections::add_hint (const fixit_hint *hint)
 {
-  column_range affected_bytes = get_affected_range (m_policy, hint, CU_BYTES);
-  column_range affected_columns = get_affected_range (m_policy, hint,
-						      CU_DISPLAY_COLS);
-  column_range printed_columns = get_printed_columns (m_policy, hint);
+  column_range affected_bytes
+    = get_affected_range (m_file_cache, m_policy, hint, CU_BYTES);
+  column_range affected_columns
+    = get_affected_range (m_file_cache, m_policy, hint, CU_DISPLAY_COLS);
+  column_range printed_columns
+    = get_printed_columns (m_file_cache, m_policy, hint);
 
   /* Potentially consolidate.  */
   if (!m_corrections.is_empty ())
@@ -2493,7 +2779,7 @@ line_corrections::add_hint (const fixit_hint *hint)
 				affected_bytes.start - 1);
 
 	  /* Try to read the source.  */
-	  source_line line (m_filename, m_row);
+	  source_line line (m_file_cache, m_filename, m_row);
 	  if (line.chars && between.finish < line.width)
 	    {
 	      /* Consolidate into the last correction:
@@ -2549,7 +2835,7 @@ layout::print_trailing_fixits (linenum_type row)
 {
   /* Build a list of correction instances for the line,
      potentially consolidating hints (for the sake of readability).  */
-  line_corrections corrections (m_policy, m_exploc.file, row);
+  line_corrections corrections (m_file_cache, m_policy, m_exploc.file, row);
   for (unsigned int i = 0; i < m_fixit_hints.length (); i++)
     {
       const fixit_hint *hint = m_fixit_hints[i];
@@ -2558,14 +2844,14 @@ layout::print_trailing_fixits (linenum_type row)
       if (hint->ends_with_newline_p ())
 	continue;
 
-      if (hint->affects_line_p (m_exploc.file, row))
+      if (hint->affects_line_p (m_line_table, m_exploc.file, row))
 	corrections.add_hint (hint);
     }
 
   /* Now print the corrections.  */
   unsigned i;
   correction *c;
-  int column = m_x_offset_display;
+  int column = 1 + m_x_offset_display;
 
   if (!corrections.m_corrections.is_empty ())
     start_annotation_line ();
@@ -2616,7 +2902,7 @@ layout::print_trailing_fixits (linenum_type row)
     }
 
   /* Add a trailing newline, if necessary.  */
-  move_to_column (&column, 0, false);
+  move_to_column (&column, 1 + m_x_offset_display, false);
 }
 
 /* Disable any colorization and emit a newline.  */
@@ -2733,11 +3019,15 @@ layout::move_to_column (int *column, int dest_column, bool add_left_margin)
       print_newline ();
       if (add_left_margin)
 	start_annotation_line ();
-      *column = m_x_offset_display;
+      *column = 1 + m_x_offset_display;
     }
 
   while (*column < dest_column)
     {
+      /* For debugging column issues, it can be helpful to replace this
+	 pp_space call with
+	   pp_character (m_pp, '0' + (*column % 10));
+	 to visualize the changing value of "*column".  */
       pp_space (m_pp);
       (*column)++;
     }
@@ -2747,13 +3037,12 @@ layout::move_to_column (int *column, int dest_column, bool add_left_margin)
    (after the 1-column indent).  */
 
 void
-layout::show_ruler (int max_column) const
+layout::show_ruler (int max_column)
 {
   /* Hundreds.  */
   if (max_column > 99)
     {
       start_annotation_line ();
-      pp_space (m_pp);
       for (int column = 1 + m_x_offset_display; column <= max_column; column++)
 	if (column % 10 == 0)
 	  pp_character (m_pp, '0' + (column / 100) % 10);
@@ -2764,7 +3053,6 @@ layout::show_ruler (int max_column) const
 
   /* Tens.  */
   start_annotation_line ();
-  pp_space (m_pp);
   for (int column = 1 + m_x_offset_display; column <= max_column; column++)
     if (column % 10 == 0)
       pp_character (m_pp, '0' + (column / 10) % 10);
@@ -2774,7 +3062,6 @@ layout::show_ruler (int max_column) const
 
   /* Units.  */
   start_annotation_line ();
-  pp_space (m_pp);
   for (int column = 1 + m_x_offset_display; column <= max_column; column++)
     pp_character (m_pp, '0' + (column % 10));
   pp_newline (m_pp);
@@ -2787,18 +3074,76 @@ layout::show_ruler (int max_column) const
 void
 layout::print_line (linenum_type row)
 {
-  char_span line = location_get_source_line (m_exploc.file, row);
+  char_span line = m_file_cache.get_source_line (m_exploc.file, row);
   if (!line)
     return;
 
+  print_any_right_to_left_edge_lines ();
   print_leading_fixits (row);
   const line_bounds lbounds
     = print_source_line (row, line.get_buffer (), line.length ());
   if (should_print_annotation_line_p (row))
     print_annotation_line (row, lbounds);
-  if (m_show_labels_p)
+  if (m_options.show_labels_p)
     print_any_labels (row);
   print_trailing_fixits (row);
+}
+
+/* If there's a link column in the RHS, print something like this:
+   "                                           │\n"
+   "┌──────────────────────────────────────────┘\n"
+   showing the link entering at the top right and emerging
+   at the bottom left.  */
+
+void
+layout::print_any_right_to_left_edge_lines ()
+{
+  if (m_link_rhs_column == -1)
+    /* Can also happen if the out-edge had UNKNOWN_LOCATION.  */
+    return;
+
+  gcc_assert (m_options.show_event_links_p);
+
+  /* Print the line with "|".  */
+  start_annotation_line ();
+  int column = 1 + m_x_offset_display;
+  move_to_column (&column, m_link_rhs_column, true);
+  m_colorizer.set_cfg_edge ();
+  const cppchar_t down= m_theme.get_cppchar
+    (text_art::theme::cell_kind::CFG_DOWN);
+  pp_unicode_character (m_pp, down);
+  m_colorizer.set_normal_text ();
+  pp_newline (m_pp);
+
+  /* Print the line with "┌──────────────────────────────────────────┘".  */
+  m_link_lhs_state = link_lhs_state::rewinding_to_lhs;
+  start_annotation_line ();
+  m_colorizer.set_cfg_edge ();
+  const cppchar_t left= m_theme.get_cppchar
+    (text_art::theme::cell_kind::CFG_LEFT);
+  for (int column = 1 + m_x_offset_display; column < m_link_rhs_column;
+       column++)
+    pp_unicode_character (m_pp, left);
+  const cppchar_t from_down_to_left = m_theme.get_cppchar
+    (text_art::theme::cell_kind::CFG_FROM_DOWN_TO_LEFT);
+  pp_unicode_character (m_pp, from_down_to_left);
+  m_colorizer.set_normal_text ();
+  pp_newline (m_pp);
+
+  /* We now have a link line on the LHS,
+     and no longer have one on the RHS.  */
+  m_link_lhs_state = link_lhs_state::at_lhs;
+  m_link_rhs_column = -1;
+}
+
+/* Update this layout's m_effect_info (if any) after printing this
+   layout.  */
+
+void
+layout::update_any_effects () const
+{
+  if (m_effect_info)
+    m_effect_info->m_trailing_out_edge_column = m_link_rhs_column;
 }
 
 } /* End of anonymous namespace.  */
@@ -2816,10 +3161,11 @@ gcc_rich_location::add_location_if_nearby (location_t loc,
   /* Use the layout location-handling logic to sanitize LOC,
      filtering it to the current line spans within a temporary
      layout instance.  */
-  layout layout (global_dc, this, DK_ERROR);
+  layout layout (*global_dc, *this, DK_ERROR, nullptr);
   location_range loc_range;
   loc_range.m_loc = loc;
   loc_range.m_range_display_kind = SHOW_RANGE_WITHOUT_CARET;
+  loc_range.m_label = nullptr;
   if (!layout.maybe_add_location_range (&loc_range, 0,
 					restrict_to_current_line_spans))
     return false;
@@ -2828,19 +3174,18 @@ gcc_rich_location::add_location_if_nearby (location_t loc,
   return true;
 }
 
-/* Print the physical source code corresponding to the location of
-   this diagnostic, with additional annotations.
-   If PP is non-null, then use it rather than CONTEXT's printer.  */
+/* As per diagnostic_context::show_locus, but don't print anything
+   if source printing is disabled, or if the location hasn't changed.  */
 
 void
-diagnostic_show_locus (diagnostic_context * context,
-		       rich_location *richloc,
-		       diagnostic_t diagnostic_kind,
-		       pretty_printer *pp)
+diagnostic_context::maybe_show_locus (const rich_location &richloc,
+				      diagnostic_t diagnostic_kind,
+				      pretty_printer *pp,
+				      diagnostic_source_effect_info *effects)
 {
-  location_t loc = richloc->get_loc ();
+  const location_t loc = richloc.get_loc ();
   /* Do nothing if source-printing has been disabled.  */
-  if (!context->m_source_printing.enabled)
+  if (!m_source_printing.enabled)
     return;
 
   /* Don't attempt to print source for UNKNOWN_LOCATION and for builtins.  */
@@ -2849,20 +3194,35 @@ diagnostic_show_locus (diagnostic_context * context,
 
   /* Don't print the same source location twice in a row, unless we have
      fix-it hints, or multiple locations, or a label.  */
-  if (loc == context->last_location
-      && richloc->get_num_fixit_hints () == 0
-      && richloc->get_num_locations () == 1
-      && richloc->get_range (0)->m_label == NULL)
+  if (loc == m_last_location
+      && richloc.get_num_fixit_hints () == 0
+      && richloc.get_num_locations () == 1
+      && richloc.get_range (0)->m_label == NULL)
     return;
 
-  context->last_location = loc;
+  m_last_location = loc;
 
-  layout layout (context, richloc, diagnostic_kind, pp);
+  show_locus (richloc, diagnostic_kind, pp, effects);
+}
+
+/* Print the physical source code corresponding to the location of
+   this diagnostic, with additional annotations.
+   If PP is non-null, then use it rather than this context's printer.
+   If EFFECTS is non-null, then use and update it.  */
+
+void
+diagnostic_context::show_locus (const rich_location &richloc,
+				diagnostic_t diagnostic_kind,
+				pretty_printer *pp,
+				diagnostic_source_effect_info *effects)
+{
+  layout layout (*this, richloc, diagnostic_kind, pp, effects);
+
   for (int line_span_idx = 0; line_span_idx < layout.get_num_line_spans ();
        line_span_idx++)
     {
       const line_span *line_span = layout.get_line_span (line_span_idx);
-      if (context->m_source_printing.show_line_numbers_p)
+      if (m_source_printing.show_line_numbers_p)
 	{
 	  /* With line numbers, we should show whenever the line-numbering
 	     "jumps".  */
@@ -2876,7 +3236,7 @@ diagnostic_show_locus (diagnostic_context * context,
 	    {
 	      expanded_location exploc
 		= layout.get_expanded_location (line_span);
-	      context->m_text_callbacks.start_span (context, exploc);
+	      m_text_callbacks.m_start_span (this, exploc);
 	    }
 	}
       /* Iterate over the lines within this span (using linenum_arith_t to
@@ -2886,6 +3246,8 @@ diagnostic_show_locus (diagnostic_context * context,
 	   row <= last_line; row++)
 	layout.print_line (row);
     }
+
+  layout.update_any_effects ();
 }
 
 #if CHECKING_P
@@ -2924,7 +3286,7 @@ test_display_widths ()
 
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
     char_display_policy policy (make_policy (dc, richloc));
     ASSERT_EQ (cpp_display_width (pi, strlen (pi), policy), 8);
     ASSERT_EQ (cpp_display_width (emoji, strlen (emoji), policy), 9);
@@ -2936,7 +3298,7 @@ test_display_widths ()
 
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_BYTES;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
     char_display_policy policy (make_policy (dc, richloc));
     ASSERT_EQ (cpp_display_width (pi, strlen (pi), policy), 8);
     ASSERT_EQ (cpp_display_width (emoji, strlen (emoji), policy), 16);
@@ -2969,7 +3331,7 @@ test_offset_impl (int caret_byte_col, int max_width,
   rich_location richloc (line_table,
 			 linemap_position_for_column (line_table,
 						      caret_byte_col));
-  layout test_layout (&dc, &richloc, DK_ERROR);
+  layout test_layout (dc, richloc, DK_ERROR, nullptr);
   ASSERT_EQ (left_margin - test_linenum_sep,
 	     test_layout.get_linenum_width ());
   ASSERT_EQ (expected_x_offset_display,
@@ -2999,6 +3361,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
   const int emoji_col = 102;
 
   temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  file_cache fc;
   line_table_test ltt (case_);
 
   linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 1);
@@ -3013,12 +3376,13 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
   ASSERT_EQ (1, LOCATION_LINE (line_end));
   ASSERT_EQ (line_bytes, LOCATION_COLUMN (line_end));
 
-  char_span lspan = location_get_source_line (tmp.get_filename (), 1);
+  char_span lspan = fc.get_source_line (tmp.get_filename (), 1);
   ASSERT_EQ (line_display_cols,
 	     cpp_display_width (lspan.get_buffer (), lspan.length (),
 				def_policy ()));
   ASSERT_EQ (line_display_cols,
-	     location_compute_display_column (expand_location (line_end),
+	     location_compute_display_column (fc,
+					      expand_location (line_end),
 					      def_policy ()));
   ASSERT_EQ (0, memcmp (lspan.get_buffer () + (emoji_col - 1),
 			"\xf0\x9f\x98\x82\xf0\x9f\x98\x82", 8));
@@ -3084,7 +3448,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							emoji_col));
-    layout test_layout (&dc, &richloc, DK_ERROR);
+    layout test_layout (dc, richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("     |         1         \n"
 		  "     |         1         \n"
@@ -3092,7 +3456,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
 		  "   1 | \xf0\x9f\x98\x82\xf0\x9f\x98\x82 is a pair of emojis "
 		  "that occupies 8 bytes and 4 display columns, starting at "
 		  "column #102.\n"
-		  "     | ^\n\n",
+		  "     | ^\n",
 		  pp_formatted_text (dc.printer));
   }
 
@@ -3109,7 +3473,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							emoji_col + 2));
-    layout test_layout (&dc, &richloc, DK_ERROR);
+    layout test_layout (dc, richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("     |        1         1 \n"
 		  "     |        1         2 \n"
@@ -3117,7 +3481,7 @@ test_layout_x_offset_display_utf8 (const line_table_case &case_)
 		  "   1 |  \xf0\x9f\x98\x82 is a pair of emojis "
 		  "that occupies 8 bytes and 4 display columns, starting at "
 		  "column #102.\n"
-		  "     |  ^\n\n",
+		  "     |  ^\n",
 		  pp_formatted_text (dc.printer));
   }
 
@@ -3154,6 +3518,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
   ASSERT_EQ (7, extra_width[10]);
 
   temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  file_cache fc;
   line_table_test ltt (case_);
 
   linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 1);
@@ -3165,7 +3530,7 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
     return;
 
   /* Check that cpp_display_width handles the tabs as expected.  */
-  char_span lspan = location_get_source_line (tmp.get_filename (), 1);
+  char_span lspan = fc.get_source_line (tmp.get_filename (), 1);
   ASSERT_EQ ('\t', *(lspan.get_buffer () + (tab_col - 1)));
   for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
     {
@@ -3174,7 +3539,8 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
 		 cpp_display_width (lspan.get_buffer (), lspan.length (),
 				    policy));
       ASSERT_EQ (line_bytes + extra_width[tabstop],
-		 location_compute_display_column (expand_location (line_end),
+		 location_compute_display_column (fc,
+						  expand_location (line_end),
 						  policy));
     }
 
@@ -3185,8 +3551,8 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
   for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
     {
       test_diagnostic_context dc;
-      dc.tabstop = tabstop;
-      layout test_layout (&dc, &richloc, DK_ERROR);
+      dc.m_tabstop = tabstop;
+      layout test_layout (dc, richloc, DK_ERROR, nullptr);
       test_layout.print_line (1);
       const char *out = pp_formatted_text (dc.printer);
       ASSERT_EQ (NULL, strchr (out, '\t'));
@@ -3203,13 +3569,13 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
   for (int tabstop = 1; tabstop != num_tabstops; ++tabstop)
     {
       test_diagnostic_context dc;
-      dc.tabstop = tabstop;
+      dc.m_tabstop = tabstop;
       static const int small_width = 24;
       dc.m_source_printing.max_width = small_width - 4;
       dc.m_source_printing.min_margin_width
 	= test_left_margin - test_linenum_sep + 1;
       dc.m_source_printing.show_line_numbers_p = true;
-      layout test_layout (&dc, &richloc, DK_ERROR);
+      layout test_layout (dc, richloc, DK_ERROR, nullptr);
       test_layout.print_line (1);
 
       /* We have arranged things so that two columns will be printed before
@@ -3219,11 +3585,11 @@ test_layout_x_offset_display_tab (const line_table_case &case_)
       const char *output1
 	= "   1 |   ' is a tab that occupies 1 byte and a variable number of "
 	  "display columns, starting at column #103.\n"
-	  "     |   ^\n\n";
+	  "     |   ^\n";
       const char *output2
 	= "   1 | ` ' is a tab that occupies 1 byte and a variable number of "
 	  "display columns, starting at column #103.\n"
-	  "     |   ^\n\n";
+	  "     |   ^\n";
       const char *expected_output = (extra_width[tabstop] ? output1 : output2);
       ASSERT_STREQ (expected_output, pp_formatted_text (dc.printer));
     }
@@ -3262,6 +3628,20 @@ test_one_liner_simple_caret ()
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"          ^\n",
+		pp_formatted_text (dc.printer));
+}
+
+/* No column information (column == 0).
+   No annotation line should be printed.  */
+
+static void
+test_one_liner_no_column ()
+{
+  test_diagnostic_context dc;
+  location_t caret = linemap_position_for_column (line_table, 0);
+  rich_location richloc (line_table, caret);
+  diagnostic_show_locus (&dc, &richloc, DK_ERROR);
+  ASSERT_STREQ (" foo = bar.field;\n",
 		pp_formatted_text (dc.printer));
 }
 
@@ -3816,6 +4196,7 @@ test_diagnostic_show_locus_one_liner (const line_table_case &case_)
   ASSERT_EQ (16, LOCATION_COLUMN (line_end));
 
   test_one_liner_simple_caret ();
+  test_one_liner_no_column ();
   test_one_liner_caret_and_range ();
   test_one_liner_multiple_carets_and_ranges ();
   test_one_liner_fixit_insert_before ();
@@ -4321,27 +4702,27 @@ test_one_liner_labels_utf8 ()
 
     {
       test_diagnostic_context dc;
-      dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
+      dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
       ASSERT_STREQ (" <U+1F602>_foo = <U+03C0>_bar.<U+1F602>_field<U+03C0>;\n"
 		    " ^~~~~~~~~~~~~   ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~\n"
 		    " |               |            |\n"
-		    " |               |            label 2\xcf\x80\n"
-		    " |               label 1\xcf\x80\n"
-		    " label 0\xf0\x9f\x98\x82\n",
+		    " label 0\xf0\x9f\x98\x82"
+		    /* ... */ "       label 1\xcf\x80"
+		    /* ...................*/ "     label 2\xcf\x80\n",
 		    pp_formatted_text (dc.printer));
     }
     {
       test_diagnostic_context dc;
-      dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_BYTES;
+      dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
       ASSERT_STREQ
 	(" <f0><9f><98><82>_foo = <cf><80>_bar.<f0><9f><98><82>_field<cf><80>;\n"
 	 " ^~~~~~~~~~~~~~~~~~~~   ~~~~~~~~~~~~ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 	 " |                      |            |\n"
-	 " |                      |            label 2\xcf\x80\n"
-	 " |                      label 1\xcf\x80\n"
-	 " label 0\xf0\x9f\x98\x82\n",
+	 " label 0\xf0\x9f\x98\x82"
+	 /* ... */ "              label 1\xcf\x80"
+	 /* ..........................*/ "     label 2\xcf\x80\n",
 	 pp_formatted_text (dc.printer));
     }
   }
@@ -4383,6 +4764,7 @@ test_diagnostic_show_locus_one_liner_utf8 (const line_table_case &case_)
        1111222233334444567890122223333456789999000011112222345678999900001
        Byte columns.  */
   temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  file_cache fc;
   line_table_test ltt (case_);
 
   linemap_add (line_table, LC_ENTER, false, tmp.get_filename (), 1);
@@ -4397,10 +4779,11 @@ test_diagnostic_show_locus_one_liner_utf8 (const line_table_case &case_)
   ASSERT_EQ (1, LOCATION_LINE (line_end));
   ASSERT_EQ (31, LOCATION_COLUMN (line_end));
 
-  char_span lspan = location_get_source_line (tmp.get_filename (), 1);
+  char_span lspan = fc.get_source_line (tmp.get_filename (), 1);
   ASSERT_EQ (25, cpp_display_width (lspan.get_buffer (), lspan.length (),
 				    def_policy ()));
-  ASSERT_EQ (25, location_compute_display_column (expand_location (line_end),
+  ASSERT_EQ (25, location_compute_display_column (fc,
+						  expand_location (line_end),
 						  def_policy ()));
 
   test_one_liner_simple_caret_utf8 ();
@@ -4434,7 +4817,12 @@ test_add_location_if_nearby (const line_table_case &case_)
        "  double x;\n"                              /* line 4.  */
        "  double y;\n"                              /* line 5.  */
        ";\n");                                      /* line 6.  */
-  temp_source_file tmp (SELFTEST_LOCATION, ".c", content);
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", content,
+
+			/* gcc_rich_location::add_location_if_nearby implicitly
+			   uses global_dc's file_cache, so we need to evict
+			   tmp when we're done.  */
+			&global_dc->get_file_cache ());
   line_table_test ltt (case_);
 
   const line_map_ordinary *ord_map
@@ -4742,6 +5130,7 @@ test_overlapped_fixit_printing (const line_table_case &case_)
   const char *content
     = ("  foo *f = (foo *)ptr->field;\n");
   temp_source_file tmp (SELFTEST_LOCATION, ".C", content);
+  file_cache fc;
   line_table_test ltt (case_);
 
   const line_map_ordinary *ord_map
@@ -4791,27 +5180,27 @@ test_overlapped_fixit_printing (const line_table_case &case_)
     ASSERT_EQ (3, richloc.get_num_fixit_hints ());
     const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
     ASSERT_EQ (column_range (12, 12),
-	       get_affected_range (policy, hint_0, CU_BYTES));
+	       get_affected_range (fc, policy, hint_0, CU_BYTES));
     ASSERT_EQ (column_range (12, 12),
-	       get_affected_range (policy, hint_0, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (12, 22), get_printed_columns (policy, hint_0));
+	       get_affected_range (fc, policy, hint_0, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (12, 22), get_printed_columns (fc, policy, hint_0));
     const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
     ASSERT_EQ (column_range (18, 18),
-	       get_affected_range (policy, hint_1, CU_BYTES));
+	       get_affected_range (fc, policy, hint_1, CU_BYTES));
     ASSERT_EQ (column_range (18, 18),
-	       get_affected_range (policy, hint_1, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (18, 20), get_printed_columns (policy, hint_1));
+	       get_affected_range (fc, policy, hint_1, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (18, 20), get_printed_columns (fc, policy, hint_1));
     const fixit_hint *hint_2 = richloc.get_fixit_hint (2);
     ASSERT_EQ (column_range (29, 28),
-	       get_affected_range (policy, hint_2, CU_BYTES));
+	       get_affected_range (fc, policy, hint_2, CU_BYTES));
     ASSERT_EQ (column_range (29, 28),
-	       get_affected_range (policy, hint_2, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (29, 29), get_printed_columns (policy, hint_2));
+	       get_affected_range (fc, policy, hint_2, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (29, 29), get_printed_columns (fc, policy, hint_2));
 
     /* Add each hint in turn to a line_corrections instance,
        and verify that they are consolidated into one correction instance
        as expected.  */
-    line_corrections lc (policy, tmp.get_filename (), 1);
+    line_corrections lc (fc, policy, tmp.get_filename (), 1);
 
     /* The first replace hint by itself.  */
     lc.add_hint (hint_0);
@@ -4985,6 +5374,7 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
   /* Example where 3 fix-it hints are printed as one.  */
   {
     test_diagnostic_context dc;
+    file_cache &fc = dc.get_file_cache ();
     rich_location richloc (line_table, expr);
     richloc.add_fixit_replace (open_paren, "const_cast<");
     richloc.add_fixit_replace (close_paren, "> (");
@@ -5007,27 +5397,27 @@ test_overlapped_fixit_printing_utf8 (const line_table_case &case_)
     ASSERT_EQ (3, richloc.get_num_fixit_hints ());
     const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
     ASSERT_EQ (column_range (14, 14),
-	       get_affected_range (policy, hint_0, CU_BYTES));
+	       get_affected_range (fc, policy, hint_0, CU_BYTES));
     ASSERT_EQ (column_range (12, 12),
-	       get_affected_range (policy, hint_0, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (12, 22), get_printed_columns (policy, hint_0));
+	       get_affected_range (fc, policy, hint_0, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (12, 22), get_printed_columns (fc, policy, hint_0));
     const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
     ASSERT_EQ (column_range (22, 22),
-	       get_affected_range (policy, hint_1, CU_BYTES));
+	       get_affected_range (fc, policy, hint_1, CU_BYTES));
     ASSERT_EQ (column_range (18, 18),
-	       get_affected_range (policy, hint_1, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (18, 20), get_printed_columns (policy, hint_1));
+	       get_affected_range (fc, policy, hint_1, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (18, 20), get_printed_columns (fc, policy, hint_1));
     const fixit_hint *hint_2 = richloc.get_fixit_hint (2);
     ASSERT_EQ (column_range (35, 34),
-	       get_affected_range (policy, hint_2, CU_BYTES));
+	       get_affected_range (fc, policy, hint_2, CU_BYTES));
     ASSERT_EQ (column_range (30, 29),
-	       get_affected_range (policy, hint_2, CU_DISPLAY_COLS));
-    ASSERT_EQ (column_range (30, 30), get_printed_columns (policy, hint_2));
+	       get_affected_range (fc, policy, hint_2, CU_DISPLAY_COLS));
+    ASSERT_EQ (column_range (30, 30), get_printed_columns (fc, policy, hint_2));
 
     /* Add each hint in turn to a line_corrections instance,
        and verify that they are consolidated into one correction instance
        as expected.  */
-    line_corrections lc (policy, tmp.get_filename (), 1);
+    line_corrections lc (fc, policy, tmp.get_filename (), 1);
 
     /* The first replace hint by itself.  */
     lc.add_hint (hint_0);
@@ -5215,6 +5605,7 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
   /* Two insertions, in the wrong order.  */
   {
     test_diagnostic_context dc;
+    file_cache &fc = dc.get_file_cache ();
 
     rich_location richloc (line_table, col_20);
     richloc.add_fixit_insert_before (col_23, "{");
@@ -5225,12 +5616,12 @@ test_overlapped_fixit_printing_2 (const line_table_case &case_)
     ASSERT_EQ (2, richloc.get_num_fixit_hints ());
     const fixit_hint *hint_0 = richloc.get_fixit_hint (0);
     ASSERT_EQ (column_range (23, 22),
-	       get_affected_range (policy, hint_0, CU_BYTES));
-    ASSERT_EQ (column_range (23, 23), get_printed_columns (policy, hint_0));
+	       get_affected_range (fc, policy, hint_0, CU_BYTES));
+    ASSERT_EQ (column_range (23, 23), get_printed_columns (fc, policy, hint_0));
     const fixit_hint *hint_1 = richloc.get_fixit_hint (1);
     ASSERT_EQ (column_range (21, 20),
-	       get_affected_range (policy, hint_1, CU_BYTES));
-    ASSERT_EQ (column_range (21, 21), get_printed_columns (policy, hint_1));
+	       get_affected_range (fc, policy, hint_1, CU_BYTES));
+    ASSERT_EQ (column_range (21, 21), get_printed_columns (fc, policy, hint_1));
 
     /* Verify that they're printed correctly.  */
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
@@ -5517,11 +5908,11 @@ test_tab_expansion (const line_table_case &case_)
      everything too.  */
   {
     test_diagnostic_context dc;
-    dc.tabstop = tabstop;
+    dc.m_tabstop = tabstop;
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							first_non_ws_byte_col));
-    layout test_layout (&dc, &richloc, DK_ERROR);
+    layout test_layout (dc, richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "            ^\n",
@@ -5532,11 +5923,11 @@ test_tab_expansion (const line_table_case &case_)
      as well.  */
   {
     test_diagnostic_context dc;
-    dc.tabstop = tabstop;
+    dc.m_tabstop = tabstop;
     rich_location richloc (line_table,
 			   linemap_position_for_column (line_table,
 							right_quote_byte_col));
-    layout test_layout (&dc, &richloc, DK_ERROR);
+    layout test_layout (dc, richloc, DK_ERROR, nullptr);
     test_layout.print_line (1);
     ASSERT_STREQ ("            This: `      ' is a tab.\n"
 		  "                         ^\n",
@@ -5583,7 +5974,7 @@ test_escaping_bytes_1 (const line_table_case &case_)
   richloc.set_escape_on_output (true);
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ
       (" before<U+0000><U+0001><U+0002><U+0003><U+000B><80><ff>after\n"
@@ -5592,7 +5983,7 @@ test_escaping_bytes_1 (const line_table_case &case_)
   }
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_BYTES;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" before<00><01><02><03><0b><80><ff>after\n"
 		  "       ^~~~            ~~~~\n",
@@ -5636,7 +6027,7 @@ test_escaping_bytes_2 (const line_table_case &case_)
   richloc.set_escape_on_output (true);
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_UNICODE;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_UNICODE);
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" <U+0000>after\n"
 		  " ^~~~~~~~\n",
@@ -5644,7 +6035,7 @@ test_escaping_bytes_2 (const line_table_case &case_)
   }
   {
     test_diagnostic_context dc;
-    dc.escape_format = DIAGNOSTICS_ESCAPE_FORMAT_BYTES;
+    dc.set_escape_format (DIAGNOSTICS_ESCAPE_FORMAT_BYTES);
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" <00>after\n"
 		  " ^~~~\n",

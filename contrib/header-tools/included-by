@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 import os.path
 import sys
 import shlex
@@ -43,7 +43,7 @@ for x in sys.argv[1:]:
     file_list = open (x[2:]).read().splitlines()
     scanfiles = False
   elif x[0] == "-":
-    print "Error: Unknown option " + x
+    print ("Error: Unknown option " + x)
     usage = True
   else:
     src.append (x)
@@ -89,21 +89,21 @@ if not usage:
     if len (careabout) < num_match:
         output = ""
     if output != "":
-      print output
+      print (output)
 else:
-  print "included-by [-h] [-i] [-c] [-v] [-a] [-nx] file1 [file2] ... [filen]"
-  print "find the list of all files in subdirectories that include any of "
-  print "the listed files. processed to a depth of 3 subdirs"
-  print " -h  : Show this message"
-  print " -i  : process only header files (*.h) for #include"
-  print " -c  : process only source files (*.c *.cc) for #include"
-  print "       If nothing is specified, defaults to -i -c"
-  print " -s  : Same as -c."
-  print " -v  : Show which include(s) were found"
-  print " -nx : Only list files which have at least x different matches. Default = 1"
-  print " -a  : Show only files which all listed files are included"
-  print "       This is equivilent to -nT where T == # of items in list"
-  print " -flistfile  : Show only files contained in the list of files"
+  print ("included-by [-h] [-i] [-c] [-v] [-a] [-nx] file1 [file2] ... [filen]")
+  print ("find the list of all files in subdirectories that include any of ")
+  print ("the listed files. processed to a depth of 3 subdirs")
+  print (" -h  : Show this message")
+  print (" -i  : process only header files (*.h) for #include")
+  print (" -c  : process only source files (*.c *.cc) for #include")
+  print ("       If nothing is specified, defaults to -i -c")
+  print (" -s  : Same as -c.")
+  print (" -v  : Show which include(s) were found")
+  print (" -nx : Only list files which have at least x different matches. Default = 1")
+  print (" -a  : Show only files which all listed files are included")
+  print ("       This is equivilent to -nT where T == # of items in list")
+  print (" -flistfile  : Show only files contained in the list of files")
 
  
 

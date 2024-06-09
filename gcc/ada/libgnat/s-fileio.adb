@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -350,6 +350,7 @@ package body System.File_IO is
       declare
          Filename : aliased constant String := File.Name.all;
          Is_Temporary_File : constant Boolean := File.Is_Temporary_File;
+         Encoding : constant CRTL.Filename_Encoding := File.Encoding;
 
       begin
          Close (File_Ptr);
@@ -360,7 +361,7 @@ package body System.File_IO is
          --  it's a temporary file, then closing it already unlinked it.
 
          if not Is_Temporary_File then
-            if unlink (Filename'Address) = -1 then
+            if System.CRTL.unlink (Filename'Address, Encoding) = -1 then
                raise Use_Error with OS_Lib.Errno_Message;
             end if;
          end if;

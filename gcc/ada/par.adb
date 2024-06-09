@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,6 +75,15 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    Save_Config_Attrs : Config_Switches_Type;
    --  Variable used to save values of config switches while we parse the
    --  new unit, to be restored on exit for proper recursive behavior.
+
+   Inside_Delta_Aggregate : Boolean := False;
+   --  True within a delta aggregate (but only after the "delta" token has
+   --  been scanned). Used to distinguish syntax errors from syntactically
+   --  correct "deep" delta aggregates (enabled via -gnatX0).
+   Save_Style_Checks : Style_Check_Options;
+   Save_Style_Check  : Boolean;
+   --  Variables for storing the original state of whether style checks should
+   --  be active in general and which particular ones should be checked.
 
    --------------------
    -- Error Recovery --
@@ -1022,11 +1031,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       procedure P_Aspect_Specifications
         (Decl      : Node_Id;
-         Semicolon : Boolean := True);
+         Semicolon : Boolean);
       --  This procedure scans out a series of aspect specifications. If
-      --  argument Semicolon is True, a terminating semicolon is also scanned.
-      --  If this argument is False, the scan pointer is left pointing past the
-      --  aspects and the caller must check for a proper terminator.
+      --  argument Semicolon is True, a terminating semicolon is also scanned;
+      --  if False, the scan pointer is left pointing past the aspects and the
+      --  caller must check for a proper terminator.
       --
       --  P_Aspect_Specifications is called with the current token pointing
       --  to either a WITH keyword starting an aspect specification, or an
@@ -1040,14 +1049,14 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  semicolon (with the exception that it detects WHEN used in place of
       --  WITH).
 
-      --  If Decl is Error on entry, any scanned aspect specifications are
-      --  ignored and a message is output saying aspect specifications not
-      --  permitted here. If Decl is Empty, then scanned aspect specifications
-      --  are also ignored, but no error message is given (this is used when
-      --  the caller has already taken care of the error message).
+      --  If Decl is Error or a node that does not allow aspect specifications,
+      --  then any scanned aspect specifications are ignored and a message is
+      --  output saying aspect specifications not permitted here. If Decl is
+      --  Empty, then scanned aspect specifications are also ignored, but no
+      --  error message is given (this is used when the caller has already
+      --  taken care of the error message).
 
-      function Get_Aspect_Specifications
-        (Semicolon : Boolean := True) return List_Id;
+      function Get_Aspect_Specifications (Semicolon : Boolean) return List_Id;
       --  Parse a list of aspects but do not attach them to a declaration node.
       --  Subsidiary to P_Aspect_Specifications procedure. Used when parsing
       --  a subprogram specification that may be a declaration or a body.
@@ -1596,6 +1605,11 @@ begin
    else
       Save_Config_Attrs := Save_Config_Switches;
 
+      --  Store the state of Style_Checks pragamas
+
+      Save_Style_Check := Style_Check;
+      Save_Style_Check_Options (Save_Style_Checks);
+
       --  The following loop runs more than once in syntax check mode
       --  where we allow multiple compilation units in the same file
       --  and in Multiple_Unit_Per_file mode where we skip units till
@@ -1653,6 +1667,7 @@ begin
          --  syntax mode we are interested in all units in the file.
 
          else
+
             declare
                Comp_Unit_Node : constant Node_Id := P_Compilation_Unit;
 
@@ -1738,6 +1753,13 @@ begin
 
          Restore_Config_Switches (Save_Config_Attrs);
       end loop;
+
+      --  Restore the state of Style_Checks after parsing the unit to
+      --  avoid parsed pragmas affecting other units.
+
+      Reset_Style_Check_Options;
+      Set_Style_Check_Options (Save_Style_Checks);
+      Style_Check := Save_Style_Check;
 
       --  Now that we have completely parsed the source file, we can complete
       --  the source file table entry.

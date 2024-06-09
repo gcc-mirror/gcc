@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2023 Free Software Foundation, Inc.
+# Copyright (C) 2012-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ proc asan_include_flags {} {
 # (originally from g++.exp)
 #
 
-proc asan_link_flags_1 { paths lib } {
+proc asan_link_flags_1 { paths lib need_stdcxx} {
     global srcdir
     global ld_library_path
     global shlib_ext
@@ -73,14 +73,24 @@ proc asan_link_flags_1 { paths lib } {
     set shlib_ext [get_shlib_extension]
     set ${lib}_saved_library_path $ld_library_path
 
+    # Providing -B instead of -L means that it works for targets that use
+    # spec substitution for handling -static-xxxxx, it also works for targets
+    # the use the startfile paths to provide a runpath for uninstalled test.
+    # Each -B option will produce a -L on the link line (for paths that exist).
     if { $gccpath != "" } {
       if { [file exists "${gccpath}/libsanitizer/${lib}/.libs/lib${lib}.a"]
 	   || [file exists "${gccpath}/libsanitizer/${lib}/.libs/lib${lib}.${shlib_ext}"] } {
 	  append flags " -B${gccpath}/libsanitizer/ "
 	  append flags " -B${gccpath}/libsanitizer/${lib}/ "
-	  append flags " -L${gccpath}/libsanitizer/${lib}/.libs "
+	  append flags " -B${gccpath}/libsanitizer/${lib}/.libs "
 	  append ld_library_path ":${gccpath}/libsanitizer/${lib}/.libs"
       }
+      # libasan links to libstdc++, so we must include it for C testcases.
+      if { $need_stdcxx && ( [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"]
+	   || [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] ) } {
+	append flags " -B${gccpath}/libstdc++-v3/src/.libs "
+	append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+      }      
     } else {
       global tool_root_dir
 
@@ -96,8 +106,8 @@ proc asan_link_flags_1 { paths lib } {
     return "$flags"
 }
 
-proc asan_link_flags { paths } {
-    return [asan_link_flags_1 $paths asan]
+proc asan_link_flags { paths need_stdcxx } {
+    return [asan_link_flags_1 $paths asan $need_stdcxx]
 }
 
 #
@@ -113,12 +123,13 @@ proc asan_init { args } {
 
     setenv ASAN_OPTIONS "color=never"
 
+    set needs_cxx [lindex $args 0]
     set link_flags ""
     if ![is_remote host] {
 	if [info exists TOOL_OPTIONS] {
-	    set link_flags "[asan_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	    set link_flags "[asan_link_flags [get_multilibs ${TOOL_OPTIONS}] $needs_cxx]"
 	} else {
-	    set link_flags "[asan_link_flags [get_multilibs]]"
+	    set link_flags "[asan_link_flags [get_multilibs] $needs_cxx]"
 	}
     }
 

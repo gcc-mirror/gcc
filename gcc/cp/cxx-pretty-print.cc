@@ -1,5 +1,5 @@
 /* Implementation of subroutines for the GNU C++ pretty-printer.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -553,7 +553,7 @@ cxx_pretty_printer::postfix_expression (tree t)
 	   instantiation time.  */
 	if (TREE_CODE (fun) != FUNCTION_DECL)
 	  ;
-	else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun))
+	else if (DECL_OBJECT_MEMBER_FUNCTION_P (fun))
 	  {
 	    tree object = (code == AGGR_INIT_EXPR
 			   ? (AGGR_INIT_VIA_CTOR_P (t)
@@ -1207,7 +1207,6 @@ cxx_pretty_printer::expression (tree t)
       assignment_expression (t);
       break;
 
-    case NON_DEPENDENT_EXPR:
     case MUST_NOT_THROW_EXPR:
       expression (TREE_OPERAND (t, 0));
       break;
@@ -1343,7 +1342,7 @@ cxx_pretty_printer::declaration_specifiers (tree t)
 	 do not have a type-specifier in their return types.  */
       if (DECL_CONSTRUCTOR_P (t) || DECL_CONV_FN_P (t))
 	function_specifier (t);
-      else if (DECL_NONSTATIC_MEMBER_FUNCTION_P (t))
+      else if (DECL_IOBJ_MEMBER_FUNCTION_P (t))
 	declaration_specifiers (TREE_TYPE (TREE_TYPE (t)));
       else
         c_pretty_printer::declaration_specifiers (t);
@@ -1701,7 +1700,7 @@ cxx_pretty_printer::direct_declarator (tree t)
       expression (t);
       pp_cxx_parameter_declaration_clause (this, t);
 
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (t))
+      if (DECL_IOBJ_MEMBER_FUNCTION_P (t))
 	{
 	  padding = pp_before;
 	  pp_cxx_cv_qualifier_seq (this, pp_cxx_implicit_parameter_type (t));

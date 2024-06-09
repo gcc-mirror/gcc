@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcc 3.1\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2023-02-10 22:39+0000\n"
+"POT-Creation-Date: 2024-02-16 21:34+0000\n"
 "PO-Revision-Date: 2002-05-17 15:54+0200\n"
 "Last-Translator: Ales Nyakhaychyk <nyakhaychyk@i18n.linux.by>\n"
 "Language-Team: Belarusian <i18n@tut.by>\n"
@@ -16,238 +16,258 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 
-#: charset.cc:683
+#: charset.cc:759
 #, c-format
 msgid "conversion from %s to %s not supported by iconv"
 msgstr ""
 
-#: charset.cc:686
+#: charset.cc:762
 msgid "iconv_open"
 msgstr ""
 
-#: charset.cc:696
+#: charset.cc:772
 #, c-format
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr ""
 
-#: charset.cc:794
+#: charset.cc:870
 #, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
 msgstr ""
 
-#: charset.cc:811 charset.cc:2420
+#: charset.cc:887 charset.cc:2574
 msgid "converting to execution character set"
 msgstr ""
 
-#: charset.cc:817
+#: charset.cc:893
 #, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr ""
 
-#: charset.cc:1437
+#: charset.cc:1549
 msgid "universal character names are only valid in C++ and C99"
 msgstr ""
 
-#: charset.cc:1441
+#: charset.cc:1553
 msgid "C99's universal character names are incompatible with C90"
 msgstr ""
 
-#: charset.cc:1444
+#: charset.cc:1556
 #, c-format
 msgid "the meaning of '\\%c' is different in traditional C"
 msgstr ""
 
-#: charset.cc:1483
+#: charset.cc:1595
 msgid "'\\N' not followed by '{'"
 msgstr ""
 
-#: charset.cc:1513
+#: charset.cc:1625
 msgid "empty named universal character escape sequence; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1520
+#: charset.cc:1632
 msgid "empty named universal character escape sequence"
 msgstr ""
 
-#: charset.cc:1525
+#: charset.cc:1637
 msgid "named universal character escapes are only valid in C++23"
 msgstr ""
 
-#: charset.cc:1545
+#: charset.cc:1657
 #, c-format
 msgid "\\N{%.*s} is not a valid universal character; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1551
+#: charset.cc:1663
 #, fuzzy, c-format
 msgid "\\N{%.*s} is not a valid universal character"
 msgstr "\"%s\" - гэта не пачатак дэкларацыі"
 
-#: charset.cc:1561
+#: charset.cc:1673
 #, c-format
 msgid "did you mean \\N{%s}?"
 msgstr ""
 
-#: charset.cc:1579
+#: charset.cc:1691
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1588
+#: charset.cc:1700
 #, c-format
 msgid "'\\N{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:1596
+#: charset.cc:1708
 msgid "In _cpp_valid_ucn but not a UCN"
 msgstr ""
 
-#: charset.cc:1638
+#: charset.cc:1750
 msgid "empty delimited escape sequence; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1645 charset.cc:1978 charset.cc:2081
+#: charset.cc:1757 charset.cc:2124 charset.cc:2227
 #, fuzzy
 msgid "empty delimited escape sequence"
 msgstr "невядомая ESC-паслядоўнасць '\\%c'"
 
-#: charset.cc:1649 charset.cc:1984 charset.cc:2087
+#: charset.cc:1761 charset.cc:2130 charset.cc:2233
 msgid "delimited escape sequences are only valid in C++23"
 msgstr ""
 
-#: charset.cc:1663
+#: charset.cc:1775
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s; treating it as separate tokens"
 msgstr ""
 
-#: charset.cc:1675
+#: charset.cc:1787
 #, c-format
 msgid "incomplete universal character name %.*s"
 msgstr ""
 
-#: charset.cc:1679
+#: charset.cc:1791
 #, c-format
 msgid "'\\u{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:1694
+#: charset.cc:1806
 #, fuzzy, c-format
 msgid "%.*s is not a valid universal character"
 msgstr "\"%s\" - гэта не пачатак дэкларацыі"
 
-#: charset.cc:1704 lex.cc:2079
+#: charset.cc:1816 lex.cc:2082
 msgid "'$' in identifier or number"
 msgstr ""
 
-#: charset.cc:1714
+#: charset.cc:1826
 #, c-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr ""
 
-#: charset.cc:1718
+#: charset.cc:1830
 #, c-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr ""
 
-#: charset.cc:1725
+#: charset.cc:1837
 #, c-format
 msgid "%.*s is outside the UCS codespace"
 msgstr ""
 
-#: charset.cc:1769 charset.cc:2797
+#: charset.cc:1881 charset.cc:3037
 msgid "converting UCN to source character set"
 msgstr ""
 
-#: charset.cc:1776
+#: charset.cc:1888
 msgid "converting UCN to execution character set"
 msgstr ""
 
-#: charset.cc:1840
+#: charset.cc:1952
 #, c-format
 msgid "extended character %.*s is not valid in an identifier"
 msgstr ""
 
-#: charset.cc:1857
+#: charset.cc:1969
 #, c-format
 msgid "extended character %.*s is not valid at the start of an identifier"
 msgstr ""
 
-#: charset.cc:1945
+#: charset.cc:2091
 msgid "the meaning of '\\x' is different in traditional C"
 msgstr ""
 
-#: charset.cc:1992
+#: charset.cc:2138
 msgid "\\x used with no following hex digits"
 msgstr ""
 
-#: charset.cc:1998
+#: charset.cc:2144
 #, c-format
 msgid "'\\x{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:2006
+#: charset.cc:2152
 msgid "hex escape sequence out of range"
 msgstr ""
 
-#: charset.cc:2049
+#: charset.cc:2195
 msgid "'\\o' not followed by '{'"
 msgstr ""
 
-#: charset.cc:2093
+#: charset.cc:2239
 #, c-format
 msgid "'\\o{' not terminated with '}' after %.*s"
 msgstr ""
 
-#: charset.cc:2102
+#: charset.cc:2248
 msgid "octal escape sequence out of range"
 msgstr ""
 
-#: charset.cc:2184
+#: charset.cc:2300 charset.cc:2310
+#, c-format
+msgid "numeric escape sequence in unevaluated string: '\\%c'"
+msgstr ""
+
+#: charset.cc:2338
 msgid "the meaning of '\\a' is different in traditional C"
 msgstr ""
 
-#: charset.cc:2191
+#: charset.cc:2345
 #, c-format
 msgid "non-ISO-standard escape sequence, '\\%c'"
 msgstr ""
 
-#: charset.cc:2199
+#: charset.cc:2353
 #, fuzzy, c-format
 #| msgid "unknown escape sequence '\\%c'"
 msgid "unknown escape sequence: '\\%c'"
 msgstr "невядомая ESC-паслядоўнасць '\\%c'"
 
-#: charset.cc:2209
+#: charset.cc:2363
 #, fuzzy, c-format
 #| msgid "unknown escape sequence '\\%c'"
 msgid "unknown escape sequence: '\\%s'"
 msgstr "невядомая ESC-паслядоўнасць '\\%c'"
 
-#: charset.cc:2217
+#: charset.cc:2371
 msgid "converting escape sequence to execution character set"
 msgstr ""
 
-#: charset.cc:2357
+#: charset.cc:2511
 #, fuzzy
 #| msgid "Missing identifier"
 msgid "missing open quote"
 msgstr "Прапушчан ідэнтыфікатар"
 
-#: charset.cc:2575 charset.cc:2658
-#, fuzzy
-#| msgid "character constant too long"
-msgid "character constant too long for its type"
-msgstr "сімвальная канстанта вельмі доўгая"
+#: charset.cc:2772
+msgid "character not encodable in a single execution character code unit"
+msgstr ""
 
-#: charset.cc:2578
+#: charset.cc:2777
+msgid "at least one character in a multi-character literal not encodable in a single execution character code unit"
+msgstr ""
+
+#: charset.cc:2795
+#, c-format
+msgid "multi-character literal with %ld characters exceeds 'int' size of %ld bytes"
+msgstr ""
+
+#: charset.cc:2799 charset.cc:2894
+msgid "multi-character literal cannot have an encoding prefix"
+msgstr ""
+
+#: charset.cc:2802 charset.cc:2897
+msgid "character not encodable in a single code unit"
+msgstr ""
+
+#: charset.cc:2806
 msgid "multi-character character constant"
 msgstr "мнагасімвальная сімвальная канстанта"
 
-#: charset.cc:2698
+#: charset.cc:2938
 msgid "empty character constant"
 msgstr "пустая сімвальная канстанта"
 
-#: charset.cc:2882
+#: charset.cc:3122
 #, c-format
 msgid "failure to convert %s to %s"
 msgstr ""
@@ -262,14 +282,14 @@ msgstr ""
 msgid "#%s is a GCC extension"
 msgstr ""
 
-#: directives.cc:394 directives.cc:2152 directives.cc:2191
+#: directives.cc:394 directives.cc:2163 directives.cc:2202
 #, c-format
 msgid "#%s before C++23 is a GCC extension"
 msgstr ""
 
-#: directives.cc:397 directives.cc:401 directives.cc:2156 directives.cc:2195
+#: directives.cc:397 directives.cc:401 directives.cc:2167 directives.cc:2206
 #, c-format
-msgid "#%s before C2X is a GCC extension"
+msgid "#%s before C23 is a GCC extension"
 msgstr ""
 
 #: directives.cc:407
@@ -328,205 +348,205 @@ msgstr ""
 msgid "macro names must be identifiers"
 msgstr ""
 
-#: directives.cc:694 directives.cc:699
+#: directives.cc:698 directives.cc:702
 #, c-format
 msgid "undefining \"%s\""
 msgstr ""
 
-#: directives.cc:756
+#: directives.cc:759
 msgid "missing terminating > character"
 msgstr ""
 
-#: directives.cc:815
+#: directives.cc:818
 #, c-format
 msgid "#%s expects \"FILENAME\" or <FILENAME>"
 msgstr ""
 
-#: directives.cc:861
+#: directives.cc:864
 #, c-format
 msgid "empty filename in #%s"
 msgstr ""
 
-#: directives.cc:870
+#: directives.cc:873
 #, c-format
 msgid "#include nested depth %u exceeds maximum of %u (use -fmax-include-depth=DEPTH to increase the maximum)"
 msgstr ""
 
-#: directives.cc:915
+#: directives.cc:918
 msgid "#include_next in primary source file"
 msgstr ""
 
-#: directives.cc:941
+#: directives.cc:944
 #, c-format
 msgid "invalid flag \"%s\" in line directive"
 msgstr ""
 
-#: directives.cc:1008
+#: directives.cc:1011
 msgid "unexpected end of file after #line"
 msgstr ""
 
-#: directives.cc:1011
+#: directives.cc:1014
 #, c-format
 msgid "\"%s\" after #line is not a positive integer"
 msgstr ""
 
-#: directives.cc:1017 directives.cc:1019
+#: directives.cc:1020 directives.cc:1022
 msgid "line number out of range"
 msgstr ""
 
-#: directives.cc:1032 directives.cc:1113
+#: directives.cc:1035 directives.cc:1116
 #, c-format
 msgid "\"%s\" is not a valid filename"
 msgstr ""
 
-#: directives.cc:1073
+#: directives.cc:1076
 #, c-format
 msgid "\"%s\" after # is not a positive integer"
 msgstr ""
 
-#: directives.cc:1140
+#: directives.cc:1143
 #, c-format
 msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgstr ""
 
-#: directives.cc:1218 directives.cc:1220 directives.cc:1222 directives.cc:1810
+#: directives.cc:1221 directives.cc:1223 directives.cc:1225 directives.cc:1816
 #, c-format
 msgid "%s"
 msgstr ""
 
-#: directives.cc:1246
+#: directives.cc:1249
 #, fuzzy, c-format
 msgid "invalid #%s directive"
 msgstr "нерэчаісны ініцыялізатар"
 
-#: directives.cc:1309
+#: directives.cc:1312
 #, c-format
 msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgstr ""
 
-#: directives.cc:1318
+#: directives.cc:1321
 #, c-format
 msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgstr ""
 
-#: directives.cc:1336
+#: directives.cc:1339
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgstr ""
 
-#: directives.cc:1339
+#: directives.cc:1342
 #, fuzzy, c-format
 msgid "#pragma %s %s is already registered"
 msgstr "Клас \"%s\" ужо існуе"
 
-#: directives.cc:1342
+#: directives.cc:1345
 #, c-format
 msgid "#pragma %s is already registered"
 msgstr ""
 
-#: directives.cc:1372
+#: directives.cc:1375
 msgid "registering pragma with NULL handler"
 msgstr ""
 
-#: directives.cc:1589
+#: directives.cc:1592
 msgid "#pragma once in main file"
 msgstr ""
 
-#: directives.cc:1612
+#: directives.cc:1615
 #, fuzzy
 msgid "invalid #pragma push_macro directive"
 msgstr "нерэчаісны ініцыялізатар"
 
-#: directives.cc:1669
+#: directives.cc:1672
 #, fuzzy
 msgid "invalid #pragma pop_macro directive"
 msgstr "нерэчаісны ініцыялізатар"
 
-#: directives.cc:1724
+#: directives.cc:1727
 msgid "invalid #pragma GCC poison directive"
 msgstr ""
 
-#: directives.cc:1733
+#: directives.cc:1736
 #, c-format
 msgid "poisoning existing macro \"%s\""
 msgstr ""
 
-#: directives.cc:1752
+#: directives.cc:1758
 msgid "#pragma system_header ignored outside include file"
 msgstr ""
 
-#: directives.cc:1777
+#: directives.cc:1783
 #, fuzzy, c-format
 #| msgid "cannot find source %s"
 msgid "cannot find source file %s"
 msgstr "не магу знайсці крыніцу %s"
 
-#: directives.cc:1781
+#: directives.cc:1787
 #, c-format
 msgid "current file is older than %s"
 msgstr ""
 
-#: directives.cc:1805
+#: directives.cc:1811
 #, fuzzy, c-format
 msgid "invalid \"#pragma GCC %s\" directive"
 msgstr "нерэчаісны ініцыялізатар"
 
-#: directives.cc:2008
+#: directives.cc:2019
 msgid "_Pragma takes a parenthesized string literal"
 msgstr ""
 
-#: directives.cc:2091
+#: directives.cc:2102
 msgid "#else without #if"
 msgstr ""
 
-#: directives.cc:2096
+#: directives.cc:2107
 msgid "#else after #else"
 msgstr ""
 
-#: directives.cc:2098 directives.cc:2132
+#: directives.cc:2109 directives.cc:2143
 msgid "the conditional began here"
 msgstr ""
 
-#: directives.cc:2124
+#: directives.cc:2135
 #, c-format
 msgid "#%s without #if"
 msgstr ""
 
-#: directives.cc:2129
+#: directives.cc:2140
 #, c-format
 msgid "#%s after #else"
 msgstr ""
 
-#: directives.cc:2231
+#: directives.cc:2242
 msgid "#endif without #if"
 msgstr ""
 
-#: directives.cc:2307
+#: directives.cc:2318
 msgid "missing '(' after predicate"
 msgstr ""
 
-#: directives.cc:2325
+#: directives.cc:2336
 msgid "missing ')' to complete answer"
 msgstr ""
 
-#: directives.cc:2337
+#: directives.cc:2348
 msgid "predicate's answer is empty"
 msgstr ""
 
-#: directives.cc:2367
+#: directives.cc:2378
 msgid "assertion without predicate"
 msgstr ""
 
-#: directives.cc:2370
+#: directives.cc:2381
 msgid "predicate must be an identifier"
 msgstr ""
 
-#: directives.cc:2452
+#: directives.cc:2463
 #, c-format
 msgid "\"%s\" re-asserted"
 msgstr ""
 
-#: directives.cc:2770
+#: directives.cc:2781
 #, c-format
 msgid "unterminated #%s"
 msgstr ""
@@ -540,252 +560,258 @@ msgstr ""
 msgid "stdout"
 msgstr ""
 
-#: expr.cc:646 expr.cc:763
+#: expr.cc:667 expr.cc:784
 msgid "fixed-point constants are a GCC extension"
 msgstr ""
 
-#: expr.cc:671
+#: expr.cc:692
 #, fuzzy
 #| msgid "invalid string constant `%E'"
 msgid "invalid prefix \"0b\" for floating constant"
 msgstr "`%E' - нерэчаісная нязьменная тыпу string"
 
-#: expr.cc:684
+#: expr.cc:705
 msgid "use of C++17 hexadecimal floating constant"
 msgstr ""
 
-#: expr.cc:687
+#: expr.cc:708
 msgid "use of C99 hexadecimal floating constant"
 msgstr ""
 
-#: expr.cc:731
+#: expr.cc:752
 #, fuzzy, c-format
 #| msgid "invalid string constant `%E'"
 msgid "invalid suffix \"%.*s\" on floating constant"
 msgstr "`%E' - нерэчаісная нязьменная тыпу string"
 
-#: expr.cc:742 expr.cc:809
+#: expr.cc:763 expr.cc:830
 #, c-format
 msgid "traditional C rejects the \"%.*s\" suffix"
 msgstr ""
 
-#: expr.cc:750
+#: expr.cc:771
 msgid "suffix for double constant is a GCC extension"
 msgstr ""
 
-#: expr.cc:756
+#: expr.cc:777
 #, c-format
 msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
 msgstr ""
 
-#: expr.cc:769 expr.cc:773
-msgid "decimal float constants are a C2X feature"
+#: expr.cc:790 expr.cc:794
+msgid "decimal float constants are a C23 feature"
 msgstr ""
 
-#: expr.cc:792
+#: expr.cc:813
 #, fuzzy, c-format
 #| msgid "invalid string constant `%E'"
 msgid "invalid suffix \"%.*s\" on integer constant"
 msgstr "`%E' - нерэчаісная нязьменная тыпу string"
 
-#: expr.cc:817
+#: expr.cc:838
 msgid "use of C++11 long long integer constant"
 msgstr ""
 
-#: expr.cc:818
+#: expr.cc:839
 msgid "use of C99 long long integer constant"
 msgstr ""
 
-#: expr.cc:832
+#: expr.cc:853
 msgid "use of C++23 %<size_t%> integer constant"
 msgstr ""
 
-#: expr.cc:833
+#: expr.cc:854
 msgid "use of C++23 %<make_signed_t<size_t>%> integer constant"
 msgstr ""
 
-#: expr.cc:844
+#: expr.cc:864 expr.cc:875
+#, fuzzy
+#| msgid "ISO C does not support complex integer types"
+msgid "ISO C does not support literal %<wb%> suffixes before C23"
+msgstr "ISO C не падтрымлівае комлексныя цэлалікавыя тыпы"
+
+#: expr.cc:888
 msgid "imaginary constants are a GCC extension"
 msgstr ""
 
-#: expr.cc:851
+#: expr.cc:895
 msgid "binary constants are a C++14 feature or GCC extension"
 msgstr ""
 
-#: expr.cc:853
-msgid "binary constants are a C2X feature or GCC extension"
+#: expr.cc:897
+msgid "binary constants are a C23 feature or GCC extension"
 msgstr ""
 
-#: expr.cc:858
-msgid "binary constants are a C2X feature"
+#: expr.cc:902
+msgid "binary constants are a C23 feature"
 msgstr ""
 
-#: expr.cc:954
+#: expr.cc:998
 msgid "integer constant is too large for its type"
 msgstr ""
 
-#: expr.cc:985
+#: expr.cc:1029
 msgid "integer constant is so large that it is unsigned"
 msgstr ""
 
-#: expr.cc:1080
+#: expr.cc:1124
 msgid "missing ')' after \"defined\""
 msgstr ""
 
-#: expr.cc:1087
+#: expr.cc:1131
 msgid "operator \"defined\" requires an identifier"
 msgstr ""
 
-#: expr.cc:1095
+#: expr.cc:1139
 #, c-format
 msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
 msgstr ""
 
-#: expr.cc:1108
+#: expr.cc:1152
 msgid "this use of \"defined\" may not be portable"
 msgstr ""
 
-#: expr.cc:1153
+#: expr.cc:1197
 msgid "user-defined literal in preprocessor expression"
 msgstr ""
 
-#: expr.cc:1158
+#: expr.cc:1202
 msgid "floating constant in preprocessor expression"
 msgstr ""
 
-#: expr.cc:1164
+#: expr.cc:1208
 msgid "imaginary number in preprocessor expression"
 msgstr ""
 
-#: expr.cc:1213
+#: expr.cc:1257
 #, c-format
 msgid "\"%s\" is not defined, evaluates to 0"
 msgstr ""
 
-#: expr.cc:1226
+#: expr.cc:1270
 msgid "assertions are a GCC extension"
 msgstr ""
 
-#: expr.cc:1229
+#: expr.cc:1273
 msgid "assertions are a deprecated extension"
 msgstr ""
 
-#: expr.cc:1479
+#: expr.cc:1523
 #, fuzzy, c-format
 #| msgid "unbalanced #endif"
 msgid "unbalanced stack in %s"
 msgstr "незбалансаваны #endif"
 
-#: expr.cc:1499
+#: expr.cc:1543
 #, fuzzy, c-format
 #| msgid "impossible operator '%s'"
 msgid "impossible operator '%u'"
 msgstr "немагчымы апэратар '%s'"
 
-#: expr.cc:1600
+#: expr.cc:1644
 msgid "missing ')' in expression"
 msgstr ""
 
-#: expr.cc:1629
+#: expr.cc:1673
 msgid "'?' without following ':'"
 msgstr ""
 
-#: expr.cc:1639
+#: expr.cc:1683
 msgid "integer overflow in preprocessor expression"
 msgstr ""
 
-#: expr.cc:1644
+#: expr.cc:1688
 msgid "missing '(' in expression"
 msgstr ""
 
-#: expr.cc:1676
+#: expr.cc:1720
 #, c-format
 msgid "the left operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.cc:1681
+#: expr.cc:1725
 #, c-format
 msgid "the right operand of \"%s\" changes sign when promoted"
 msgstr ""
 
-#: expr.cc:1940
+#: expr.cc:1984
 msgid "traditional C rejects the unary plus operator"
 msgstr ""
 
-#: expr.cc:2038
+#: expr.cc:2082
 msgid "comma operator in operand of #if"
 msgstr ""
 
-#: expr.cc:2174
+#: expr.cc:2218
 msgid "division by zero in #if"
 msgstr ""
 
-#: files.cc:516
+#: files.cc:520
 msgid "NULL directory in find_file"
 msgstr ""
 
-#: files.cc:570
+#: files.cc:583
 msgid "one or more PCH files were found, but they were invalid"
 msgstr ""
 
-#: files.cc:574
+#: files.cc:587
 msgid "use -Winvalid-pch for more information"
 msgstr ""
 
-#: files.cc:688
+#: files.cc:703
 #, c-format
 msgid "%s is a block device"
 msgstr "%s - гэта блёчная прылада"
 
-#: files.cc:707
+#: files.cc:722
 #, c-format
 msgid "%s is too large"
 msgstr "%s - вельмі вялікі"
 
-#: files.cc:748
+#: files.cc:763
 #, c-format
 msgid "%s is shorter than expected"
 msgstr ""
 
-#: files.cc:1060
+#: files.cc:1075
 #, c-format
 msgid "no include path in which to search for %s"
 msgstr ""
 
-#: files.cc:1578
+#: files.cc:1598
 msgid "Multiple include guards may be useful for:\n"
 msgstr ""
 
-#: init.cc:631
+#: init.cc:638
 msgid "cppchar_t must be an unsigned type"
 msgstr ""
 
-#: init.cc:635
+#: init.cc:642
 #, c-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr ""
 
-#: init.cc:642
+#: init.cc:649
 msgid "CPP arithmetic must be at least as precise as a target int"
 msgstr ""
 
-#: init.cc:645
+#: init.cc:652
 msgid "target char is less than 8 bits wide"
 msgstr ""
 
-#: init.cc:649
+#: init.cc:656
 msgid "target wchar_t is narrower than target char"
 msgstr ""
 
-#: init.cc:653
+#: init.cc:660
 msgid "target int is narrower than target char"
 msgstr ""
 
-#: init.cc:658
+#: init.cc:665
 msgid "CPP half-integer narrower than CPP character"
 msgstr ""
 
-#: init.cc:662
+#: init.cc:669
 #, c-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr ""
@@ -880,116 +906,120 @@ msgstr ""
 msgid "`%.*s' is not in NFC"
 msgstr "`%D' - гэта ня функцыя,"
 
-#: lex.cc:2141
+#: lex.cc:2144
 msgid "__VA_OPT__ is not available until C++20"
 msgstr ""
 
-#: lex.cc:2144
-msgid "__VA_OPT__ is not available until C2X"
+#: lex.cc:2147
+msgid "__VA_OPT__ is not available until C23"
 msgstr ""
 
-#: lex.cc:2152
+#: lex.cc:2155
 msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
 msgstr ""
 
-#: lex.cc:2183 lex.cc:2279
+#: lex.cc:2172
 #, c-format
 msgid "attempt to use poisoned \"%s\""
 msgstr ""
 
-#: lex.cc:2193 lex.cc:2289
+#: lex.cc:2177
+msgid "poisoned here"
+msgstr ""
+
+#: lex.cc:2187
 msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
 msgstr ""
 
-#: lex.cc:2197 lex.cc:2293
+#: lex.cc:2191
 msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
 msgstr ""
 
-#: lex.cc:2207 lex.cc:2305
+#: lex.cc:2203
 #, c-format
 msgid "identifier \"%s\" is a special operator name in C++"
 msgstr ""
 
-#: lex.cc:2345
+#: lex.cc:2372
 msgid "adjacent digit separators"
 msgstr ""
 
-#: lex.cc:2665
+#: lex.cc:2521
+msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
+msgstr ""
+
+#: lex.cc:2729
 msgid "raw string delimiter longer than 16 characters"
 msgstr ""
 
-#: lex.cc:2669
+#: lex.cc:2733
 msgid "invalid new-line in raw string delimiter"
 msgstr ""
 
-#: lex.cc:2673 lex.cc:5519
+#: lex.cc:2737 lex.cc:5576
 #, fuzzy, c-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "сімвальная канстанта вельмі доўгая"
 
-#: lex.cc:2711 lex.cc:2734
+#: lex.cc:2775 lex.cc:2798
 #, fuzzy
 #| msgid "unterminated comment"
 msgid "unterminated raw string"
 msgstr "незавершаныя каментарыі"
 
-#: lex.cc:2770 lex.cc:2922
-msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
-msgstr ""
-
-#: lex.cc:2905
+#: lex.cc:2955
 msgid "null character(s) preserved in literal"
 msgstr ""
 
-#: lex.cc:2908
+#: lex.cc:2958
 #, c-format
 msgid "missing terminating %c character"
 msgstr "прапушчан завяршаючы сімвал %c"
 
-#: lex.cc:2940
+#: lex.cc:2991
 msgid "C++11 requires a space between string literal and macro"
 msgstr ""
 
-#: lex.cc:3533
+#: lex.cc:3584
 msgid "module control-line cannot be in included file"
 msgstr ""
 
-#: lex.cc:3547
+#: lex.cc:3598
 #, c-format
 msgid "module control-line \"%s\" cannot be an object-like macro"
 msgstr ""
 
-#: lex.cc:3949 lex.cc:5352 traditional.cc:174
+#: lex.cc:4004 lex.cc:5409 traditional.cc:174
 msgid "unterminated comment"
 msgstr "незавершаныя каментарыі"
 
-#: lex.cc:3963 lex.cc:3997
+#: lex.cc:4018 lex.cc:4052
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr ""
 
-#: lex.cc:3965 lex.cc:3976 lex.cc:4000
+#: lex.cc:4020 lex.cc:4031 lex.cc:4055
 msgid "(this will be reported only once per input file)"
 msgstr ""
 
-#: lex.cc:3974
+#: lex.cc:4029
 msgid "C++ style comments are incompatible with C90"
 msgstr ""
 
-#: lex.cc:4006
+#: lex.cc:4061
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.cc:4427
+#: lex.cc:4484
 #, fuzzy, c-format
 msgid "unspellable token %s"
 msgstr "немагу адчыніць файл \"%s\""
 
-#: lex.cc:5507
+#: lex.cc:5564
 #, c-format
 msgid "raw string delimiter longer than %d characters"
 msgstr ""
 
-#: lex.cc:5577
+#: lex.cc:5634
 #, fuzzy
 #| msgid "unterminated comment"
 msgid "unterminated literal"
@@ -1038,7 +1068,7 @@ msgstr "прапушчан ініцыялізатар"
 msgid "macro \"%s\" is not used"
 msgstr ""
 
-#: macro.cc:498 macro.cc:797
+#: macro.cc:498 macro.cc:803
 #, c-format
 msgid "invalid built-in macro \"%s\""
 msgstr ""
@@ -1063,135 +1093,135 @@ msgstr "Немагчыма адчыніць файл з дадзенымі %s.\n
 msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
 msgstr ""
 
-#: macro.cc:916
+#: macro.cc:922
 msgid "invalid string literal, ignoring final '\\'"
 msgstr ""
 
-#: macro.cc:980
+#: macro.cc:986
 #, c-format
 msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
 msgstr ""
 
-#: macro.cc:1112
+#: macro.cc:1118
 msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
 msgstr ""
 
-#: macro.cc:1116
+#: macro.cc:1122
 msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
 msgstr ""
 
-#: macro.cc:1123
+#: macro.cc:1129
 #, c-format
 msgid "macro \"%s\" requires %u arguments, but only %u given"
 msgstr ""
 
-#: macro.cc:1128
+#: macro.cc:1134
 #, c-format
 msgid "macro \"%s\" passed %u arguments, but takes just %u"
 msgstr ""
 
-#: macro.cc:1132
+#: macro.cc:1138
 #, c-format
 msgid "macro \"%s\" defined here"
 msgstr ""
 
-#: macro.cc:1326 traditional.cc:822
+#: macro.cc:1332 traditional.cc:822
 #, c-format
 msgid "unterminated argument list invoking macro \"%s\""
 msgstr ""
 
-#: macro.cc:1472
+#: macro.cc:1478
 #, c-format
 msgid "function-like macro \"%s\" must be used with arguments in traditional C"
 msgstr ""
 
-#: macro.cc:2307
+#: macro.cc:2313
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr ""
 
-#: macro.cc:2315 macro.cc:2324
+#: macro.cc:2321 macro.cc:2330
 #, c-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr ""
 
-#: macro.cc:3375
+#: macro.cc:3381
 #, c-format
 msgid "duplicate macro parameter \"%s\""
 msgstr ""
 
-#: macro.cc:3457
+#: macro.cc:3463
 #, fuzzy, c-format
 msgid "expected parameter name, found \"%s\""
 msgstr "віртуальныя функцыі не могуць быць сяброўскімі"
 
-#: macro.cc:3458
+#: macro.cc:3464
 #, c-format
 msgid "expected ',' or ')', found \"%s\""
 msgstr ""
 
-#: macro.cc:3459
+#: macro.cc:3465
 #, fuzzy
 msgid "expected parameter name before end of line"
 msgstr "віртуальныя функцыі не могуць быць сяброўскімі"
 
-#: macro.cc:3460
+#: macro.cc:3466
 msgid "expected ')' before end of line"
 msgstr ""
 
-#: macro.cc:3461
+#: macro.cc:3467
 msgid "expected ')' after \"...\""
 msgstr ""
 
-#: macro.cc:3518
+#: macro.cc:3524
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr ""
 
-#: macro.cc:3519 macro.cc:3523
+#: macro.cc:3525 macro.cc:3529
 msgid "anonymous variadic macros were introduced in C99"
 msgstr ""
 
-#: macro.cc:3529
+#: macro.cc:3535
 #, fuzzy
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C89 не падтрымлівае \"long long\""
 
-#: macro.cc:3530
+#: macro.cc:3536
 msgid "ISO C does not permit named variadic macros"
 msgstr ""
 
-#: macro.cc:3576
+#: macro.cc:3582
 msgid "'##' cannot appear at either end of a macro expansion"
 msgstr ""
 
-#: macro.cc:3614
+#: macro.cc:3620
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr ""
 
-#: macro.cc:3615
+#: macro.cc:3621
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr ""
 
-#: macro.cc:3639
+#: macro.cc:3645
 #, fuzzy
 #| msgid "missing white space after number '%.*s'"
 msgid "missing whitespace after the macro name"
 msgstr "прапушчан прабел пасля нумара \"%.*s\""
 
-#: macro.cc:3692
+#: macro.cc:3698
 msgid "'#' is not followed by a macro parameter"
 msgstr ""
 
-#: macro.cc:3848
+#: macro.cc:3862
 #, c-format
 msgid "\"%s\" redefined"
 msgstr ""
 
-#: macro.cc:3853
+#: macro.cc:3867
 msgid "this is the location of the previous definition"
 msgstr ""
 
-#: macro.cc:3990
+#: macro.cc:4004
 #, c-format
 msgid "macro argument \"%s\" would be stringified in traditional C"
 msgstr ""
@@ -1226,7 +1256,7 @@ msgstr ""
 msgid "%s: not used because `__COUNTER__' is invalid"
 msgstr ""
 
-#: pch.cc:720 pch.cc:876
+#: pch.cc:720 pch.cc:883
 msgid "while reading precompiled header"
 msgstr ""
 
@@ -1239,25 +1269,30 @@ msgstr ""
 msgid "syntax error in macro parameter list"
 msgstr ""
 
+#, c-format
 #~ msgid "wrong number of arguments specified for `%s' attribute"
 #~ msgstr "памылковая колькасьць аргументаў, зададзеных для атрыбута `%s'"
 
+#, c-format
 #~ msgid "`%s' attribute ignored"
 #~ msgstr "\"%s\" атрыбут ігнарыруецца"
 
+#, c-format
 #~ msgid "unknown machine mode `%s'"
 #~ msgstr "невядомы рэжым машыны \"%s\""
 
+#, c-format
 #~ msgid "no data type for mode `%s'"
 #~ msgstr "няма тыпа дадзеных для рэжыма \"%s\""
 
+#, c-format
 #~ msgid "section of `%s' conflicts with previous declaration"
 #~ msgstr "секцыя \"%s\" канфліктуе з папярэдняй дэкларацыяй"
 
 #~ msgid "section attributes are not supported for this target"
 #~ msgstr "атрыбуты секцыі не падтрымліваюцца для гэтай мэты"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' attribute ignored for `%s'"
 #~ msgstr "\"%s\" атрыбут ігнарыруецца"
 
@@ -1292,13 +1327,15 @@ msgstr ""
 #~ msgid "invalid use of `restrict'"
 #~ msgstr "нявернае выкарыстанне \"restict\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot disable built-in function `%s'"
 #~ msgstr "не магу ініцыялізаваць сяброўскую функцыю \"%s\""
 
+#, c-format
 #~ msgid "too few arguments to function `%s'"
 #~ msgstr "нехапае аргументаў у функцыі \"%s\""
 
+#, c-format
 #~ msgid "too many arguments to function `%s'"
 #~ msgstr "вельмі шмат аргумэнтаў у функцыі `%s'"
 
@@ -1310,17 +1347,19 @@ msgstr ""
 #~ msgid "ISO C forbids taking the address of a label"
 #~ msgstr "ISO C не дазваляе пусты ізыходны файл"
 
+#, c-format
 #~ msgid "unknown C standard `%s'"
 #~ msgstr "невядомы C стандарт `%s'"
 
+#, c-format
 #~ msgid "label `%s' defined but not used"
 #~ msgstr "адмеціна `%s' вызначана, але ня выкарыстоўваецца"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "previous declaration of function `%s' with attribute noinline"
 #~ msgstr "няма папярэдняга аб'яўлення для \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "previous declaration of function `%s' was inline"
 #~ msgstr "няма папярэдняга аб'яўлення для \"%s\""
 
@@ -1332,6 +1371,7 @@ msgstr ""
 #~ msgid "a global declaration"
 #~ msgstr "Нерэчаіснае абвяшчэнне"
 
+#, c-format
 #~ msgid "duplicate label declaration `%s'"
 #~ msgstr "паўторнае абвяшчэньне адмеціны `%s'"
 
@@ -1341,9 +1381,11 @@ msgstr ""
 #~ msgid "empty declaration"
 #~ msgstr "пустое абвяшчэньне"
 
+#, c-format
 #~ msgid "`%s' is usually a function"
 #~ msgstr "`%s' - звычайна функцыя"
 
+#, c-format
 #~ msgid "parameter `%s' is initialized"
 #~ msgstr "параметр \"%s\" ініцыялізаваны"
 
@@ -1353,12 +1395,15 @@ msgstr ""
 #~ msgid "ISO C89 does not support `long long'"
 #~ msgstr "ISO C89 не падтрымлівае `long long'"
 
+#, c-format
 #~ msgid "duplicate `%s'"
 #~ msgstr "паўтарэньне `%s'"
 
+#, c-format
 #~ msgid "long, short, signed or unsigned invalid for `%s'"
 #~ msgstr "long, short, signed ці unsigned нерэчаісны для \"%s\""
 
+#, c-format
 #~ msgid "complex invalid for `%s'"
 #~ msgstr "complex нерэчаісны для \"%s\""
 
@@ -1367,9 +1412,6 @@ msgstr ""
 
 #~ msgid "ISO C does not support plain `complex' meaning `double complex'"
 #~ msgstr "ISO C не падтрымлівае просты \"complex\" у значэнні \"double complex\""
-
-#~ msgid "ISO C does not support complex integer types"
-#~ msgstr "ISO C не падтрымлівае комлексныя цэлалікавыя тыпы"
 
 #~ msgid "duplicate `const'"
 #~ msgstr "паўтарэнне \"const\""
@@ -1380,13 +1422,15 @@ msgstr ""
 #~ msgid "duplicate `volatile'"
 #~ msgstr "паўтарэнне \"volatile\""
 
+#, c-format
 #~ msgid "size of array `%s' is negative"
 #~ msgstr "памер масіва \"%s\" адмоўны"
 
+#, c-format
 #~ msgid "size of array `%s' is too large"
 #~ msgstr "памер масіва \"%s\" вельмі вялікі"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "redefinition of `struct %s'"
 #~ msgstr "перанакіраванне stdout: %s"
 
@@ -1402,27 +1446,35 @@ msgstr ""
 #~ msgid "members"
 #~ msgstr "члены"
 
+#, c-format
 #~ msgid "bit-field `%s' has invalid type"
 #~ msgstr "бітавае поле \"%s\" мае нерэчаісны тып"
 
+#, c-format
 #~ msgid "no previous prototype for `%s'"
 #~ msgstr "няма папярэдняга прататыпа для \"%s\""
 
+#, c-format
 #~ msgid "no previous declaration for `%s'"
 #~ msgstr "няма папярэдняга аб'яўлення для \"%s\""
 
+#, c-format
 #~ msgid "return type of `%s' is not `int'"
 #~ msgstr "вяртаемы тып \"%s\" не \"int\""
 
+#, c-format
 #~ msgid "first argument of `%s' should be `int'"
 #~ msgstr "першым аргументам \"%s\" павінен быць \"int\""
 
+#, c-format
 #~ msgid "second argument of `%s' should be `char **'"
 #~ msgstr "другім аргументам \"%s\" павінен быць \"char **\""
 
+#, c-format
 #~ msgid "size of return value of `%s' is %u bytes"
 #~ msgstr "памер вяртаемага значэння \"%s\" %u байт"
 
+#, c-format
 #~ msgid "size of return value of `%s' is larger than %d bytes"
 #~ msgstr "памер вяртаемага значэння \"%s\" больш чым %d байт"
 
@@ -1435,6 +1487,7 @@ msgstr ""
 #~ msgid "`O' modifier"
 #~ msgstr "'O' мадыфікатар"
 
+#, c-format
 #~ msgid "%s does not support %s"
 #~ msgstr "%s не падтрымлівае %s"
 
@@ -1452,6 +1505,7 @@ msgstr ""
 #~ msgid "first argument to __builtin_choose_expr not a constant"
 #~ msgstr "аргумент `__builtin_args_info' павінен быць канстантай"
 
+#, c-format
 #~ msgid "`%s' is not at beginning of declaration"
 #~ msgstr "\"%s\" - гэта не пачатак дэкларацыі"
 
@@ -1467,18 +1521,23 @@ msgstr ""
 #~ msgid "parse error"
 #~ msgstr "граматычная памылка"
 
+#, c-format
 #~ msgid "%s at end of input"
 #~ msgstr "%s на прыканцы ўводу"
 
+#, c-format
 #~ msgid "%s before %s'%c'"
 #~ msgstr "%s перад %s'%c'"
 
+#, c-format
 #~ msgid "%s before %s'\\x%x'"
 #~ msgstr "%s перад %s'\\x%x'"
 
+#, c-format
 #~ msgid "%s before \"%s\""
 #~ msgstr "%s перад \"%s\""
 
+#, c-format
 #~ msgid "%s before '%s' token"
 #~ msgstr "%s перад знакам '%s'"
 
@@ -1501,9 +1560,11 @@ msgstr ""
 #~ msgid "destructor needed for `%#D'"
 #~ msgstr "дэструктару неабходны \"%#D\""
 
+#, c-format
 #~ msgid "`%s' has an incomplete type"
 #~ msgstr "\"%s\" мае незавершаны тып"
 
+#, c-format
 #~ msgid "`%s' undeclared (first use in this function)"
 #~ msgstr "\"%s\" не абвешчан (першае выкарыстанне ў гэтай функцыі)"
 
@@ -1526,7 +1587,7 @@ msgstr ""
 #~ msgid "wrong type argument to increment"
 #~ msgstr "не хапае аргументаў у функцыі"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot take address of bit-field `%s'"
 #~ msgstr "не магу атрымаць адрас бітавага поля \"%s\""
 
@@ -1551,18 +1612,23 @@ msgstr ""
 #~ msgid "no arguments"
 #~ msgstr "няма аргументаў"
 
+#, c-format
 #~ msgid "%d constructor(s) found\n"
 #~ msgstr "%d канструктар(аў) знойдзен(а)\n"
 
+#, c-format
 #~ msgid "%d destructor(s)  found\n"
 #~ msgstr "%d дэструктар(аў) знойдзен(а)\n"
 
+#, c-format
 #~ msgid "[cannot find %s]"
 #~ msgstr "[нельга знайсці %s]"
 
+#, c-format
 #~ msgid "cannot find `%s'"
 #~ msgstr "нельга знайсці \"%s\""
 
+#, c-format
 #~ msgid "redirecting stdout: %s"
 #~ msgstr "перанакіраванне stdout: %s"
 
@@ -1572,19 +1638,21 @@ msgstr ""
 #~ msgid "pipe"
 #~ msgstr "канвеер"
 
+#, c-format
 #~ msgid "unable to open file '%s'"
 #~ msgstr "немагу адчыніць файл \"%s\""
 
 #~ msgid "not found\n"
 #~ msgstr "не знойдзена\n"
 
+#, c-format
 #~ msgid "bad magic number in file '%s'"
 #~ msgstr "дрэнная магічная лічба ў файле \"%s\""
 
 #~ msgid "cannot find `ldd'"
 #~ msgstr "не магу знайсці \"ldd\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "library lib%s not found"
 #~ msgstr "Бібліятэка lib%s не знойдзена"
 
@@ -1597,18 +1665,19 @@ msgstr ""
 #~ msgid "unsupported version"
 #~ msgstr "непадтрымліваемая версія"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "missing binary operator before '%s'"
 #~ msgstr "прапушчан прабел пасля нумара \"%.*s\""
 
+#, c-format
 #~ msgid "%s: Not a directory"
 #~ msgstr "%s: не дырэкторыя"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "changing search order for system directory \"%s\""
 #~ msgstr "немагчыма стварыць дырэкторыю \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument missing after %s"
 #~ msgstr "аргумент для \"%s\" прапушчан"
 
@@ -1616,40 +1685,48 @@ msgstr ""
 #~ msgid "output filename specified twice"
 #~ msgstr "не зададзены ўваходзячыя файлы"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown string token %s\n"
 #~ msgstr "невядомая назва рэгістра: %s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown escape sequence: '\\%03o'"
 #~ msgstr "невядомая ESC-паслядоўнасць '\\%c'"
 
-#, fuzzy
+#~ msgid "character constant too long"
+#~ msgstr "сімвальная канстанта вельмі доўгая"
+
+#, fuzzy, c-format
 #~ msgid "invalid option %s"
 #~ msgstr "Нерэчаісны выбар %s"
 
 #~ msgid "too many input files"
 #~ msgstr "вельмі шмат уваходзячых файлаў"
 
+#, c-format
 #~ msgid "%s:%d: warning: "
 #~ msgstr "%s:%d: увага: "
 
+#, c-format
 #~ msgid "%s: warning: "
 #~ msgstr "%s: увага: "
 
+#, c-format
 #~ msgid "%s: %s: "
 #~ msgstr "%s: %s: "
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "In member function `%s':"
 #~ msgstr "у функцыі \"%s\":"
 
+#, c-format
 #~ msgid "In function `%s':"
 #~ msgstr "у функцыі \"%s\":"
 
 #~ msgid "compilation terminated.\n"
 #~ msgstr "кампіляцыя завершана.\n"
 
+#, c-format
 #~ msgid "In file included from %s:%d"
 #~ msgstr "У файле уключаным з %s:%d"
 
@@ -1659,29 +1736,34 @@ msgstr ""
 #~ msgid "can't get current directory"
 #~ msgstr "не магу атрымаць бягучую дырэкторыю"
 
+#, c-format
 #~ msgid "abort in %s, at %s:%d"
 #~ msgstr "спынена ў %s, ля %s:%d"
 
+#, c-format
 #~ msgid "invalid %%-code"
 #~ msgstr "нерэчаісны %%-код"
 
+#, c-format
 #~ msgid "unused parameter `%s'"
 #~ msgstr "невыкарыстаемы параметр \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "missing argument to `%s' option"
 #~ msgstr "аргумент для \"%s\" прапушчан"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "extraneous argument to `%s' option"
 #~ msgstr "аргумент для \"%s\" прапушчан"
 
 #~ msgid "-pipe not supported"
 #~ msgstr "-pipe не падтрымліваецца"
 
+#, c-format
 #~ msgid "# %s %.2f %.2f\n"
 #~ msgstr "# %s %.2f %.2f\n"
 
+#, c-format
 #~ msgid "Usage: %s [options] file...\n"
 #~ msgstr "Выкарыстанне: %s [выбары] файл...\n"
 
@@ -1708,6 +1790,7 @@ msgstr ""
 #~ msgid "argument to `-x' is missing"
 #~ msgstr "аргумент для \"-x\" прапушчан"
 
+#, c-format
 #~ msgid "argument to `-%s' is missing"
 #~ msgstr "аргумент для \"-%s\" прапушчан"
 
@@ -1715,19 +1798,23 @@ msgstr ""
 #~ msgid "invalid specification!  Bug in cc"
 #~ msgstr "Нерэчаісная спецыфікацыя! Памылка ў cc."
 
+#, c-format
 #~ msgid "%s\n"
 #~ msgstr "%s\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "spec failure: unrecognized spec option '%c'"
 #~ msgstr "нераспазнаны выбар \"-%s\""
 
+#, c-format
 #~ msgid "unrecognized option `-%s'"
 #~ msgstr "нераспазнаны выбар \"-%s\""
 
+#, c-format
 #~ msgid "programs: %s\n"
 #~ msgstr "праграмы: %s\n"
 
+#, c-format
 #~ msgid "libraries: %s\n"
 #~ msgstr "бібліятэкі: %s\n"
 
@@ -1738,6 +1825,7 @@ msgstr ""
 #~ "\n"
 #~ "Інструкцыі для паведамленняў аб памылках глядзіце тут:\n"
 
+#, c-format
 #~ msgid "gcc version %s\n"
 #~ msgstr "версія gcc %s\n"
 
@@ -1745,9 +1833,11 @@ msgstr ""
 #~ msgid "no input files"
 #~ msgstr "няма ўваходзячых файлаў"
 
+#, c-format
 #~ msgid "%s: %s compiler not installed on this system"
 #~ msgstr "%s: %s кампілятар не ўсталяваны на гэтай сістэме"
 
+#, c-format
 #~ msgid "language %s not recognized"
 #~ msgstr "мова %s не распазнана"
 
@@ -1767,7 +1857,7 @@ msgstr ""
 #~ msgid "  -n, --no-output                 Do not create an output file\n"
 #~ msgstr "  -o <файл>                Памясціць вывад у <файл>\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid ""
 #~ "\n"
 #~ "For bug reporting instructions, please see:\n"
@@ -1779,24 +1869,31 @@ msgstr ""
 #~ msgid "Copyright (C) 2001 Free Software Foundation, Inc.\n"
 #~ msgstr "Copyright (C) 2001 Free Software Foundation, Inc.\n"
 
+#, c-format
 #~ msgid "can't open %s"
 #~ msgstr "немагчыма адчыніць %s"
 
+#, c-format
 #~ msgid "%s: internal abort\n"
 #~ msgstr "%s: унутраная памылка (датэрміновае завяршэньне)\n"
 
+#, c-format
 #~ msgid "%s: compiling `%s'\n"
 #~ msgstr "%s: кампілюецца \"%s\"\n"
 
+#, c-format
 #~ msgid "%s: can't delete file `%s': %s\n"
 #~ msgstr "%s: немагчыма знішчыць файл \"%s\": %s\n"
 
+#, c-format
 #~ msgid "%s: %d: warning: no extern definition for `%s'\n"
 #~ msgstr "%s: %d: увага: няма знешняга (extern) абвяшчэння для \"%s\"\n"
 
+#, c-format
 #~ msgid "%s: can't open file `%s' for reading: %s\n"
 #~ msgstr "%s: немагчыма адчыніць файл `%s' для чытаньня: %s\n"
 
+#, c-format
 #~ msgid ""
 #~ "\n"
 #~ "%s: error reading input file `%s': %s\n"
@@ -1804,18 +1901,22 @@ msgstr ""
 #~ "\n"
 #~ "%s: памылка чытаньня файла ўводу `%s': %s\n"
 
+#, c-format
 #~ msgid "%s: warning: file `%s' already saved in `%s'\n"
 #~ msgstr "%s: увага: файл \"%s\" ужо запісан у \"%s\"\n"
 
+#, c-format
 #~ msgid "%s: can't change mode of file `%s': %s\n"
 #~ msgstr "%s: немагчыма зьмяніць рэжым файла `%s': %s\n"
 
+#, c-format
 #~ msgid "%s: input file names must have .c suffixes: %s\n"
 #~ msgstr "%s: файл уводу павінен мець суфікс .c: %s\n"
 
 #~ msgid "floating point overflow"
 #~ msgstr "перапаўненьне плаваючай кропкі"
 
+#, c-format
 #~ msgid "unknown register name: %s"
 #~ msgstr "невядомая назва рэгістра: %s"
 
@@ -1827,20 +1928,23 @@ msgstr ""
 #~ msgid "unrecognizable insn:"
 #~ msgstr "нераспазнаны выбар \"-%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate asm operand name '%s'"
 #~ msgstr "паўторнае абвяшчэнне меткі \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "undefined named operand '%s'"
 #~ msgstr "нераспазнаны аператар %s"
 
+#, c-format
 #~ msgid "unused variable `%s'"
 #~ msgstr "невыкарыстоўваемая пераменная \"%s\""
 
+#, c-format
 #~ msgid "size of `%s' is %d bytes"
 #~ msgstr "памер \"%s\" - %d байт"
 
+#, c-format
 #~ msgid "size of `%s' is larger than %d bytes"
 #~ msgstr "памер \"%s\" больш чам %d байт"
 
@@ -1857,11 +1961,11 @@ msgstr ""
 #~ msgid "Do not recognize any built in functions"
 #~ msgstr "Не генерыраваць сімвальныя інструкцыі"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid option `%s'"
 #~ msgstr "Нерэчаісны выбар \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "internal error: %s"
 #~ msgstr "Унутраная памылка: %s"
 
@@ -1872,6 +1976,7 @@ msgstr ""
 #~ "\n"
 #~ "Выбары, спецыфічныя для мовы:\n"
 
+#, c-format
 #~ msgid ""
 #~ "\n"
 #~ " Options for %s:\n"
@@ -1879,7 +1984,7 @@ msgstr ""
 #~ "\n"
 #~ " Выбары для %s:\n"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unrecognized option `%s'"
 #~ msgstr "нераспазнаны выбар \"-%s\""
 
@@ -1887,12 +1992,15 @@ msgstr ""
 #~ msgid "-Wid-clash-LEN is no longer supported"
 #~ msgstr "-pipe не падтрымліваецца."
 
+#, c-format
 #~ msgid "`%s': unknown or unsupported -g option"
 #~ msgstr "\"%s\" : невядомы ці непадтрымліваемы выбар -g"
 
+#, c-format
 #~ msgid "invalid --param option: %s"
 #~ msgstr "нерэчаісны выбар --param : %s"
 
+#, c-format
 #~ msgid ""
 #~ "%s%s%s version %s (%s)\n"
 #~ "%s\tcompiled by GNU C version %s.\n"
@@ -1905,10 +2013,11 @@ msgstr ""
 #~ msgid "options enabled: "
 #~ msgstr "выбары ўключаны:"
 
+#, c-format
 #~ msgid "can't open %s for writing"
 #~ msgstr "немагчыма адчыніць %s для запісу"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "ignoring command line option '%s'"
 #~ msgstr "Нераспазнаны выбар \"%s\""
 
@@ -1924,18 +2033,23 @@ msgstr ""
 #~ msgid "-fprefetch-loop-arrays not supported for this target"
 #~ msgstr "атрыбуты секцыі не падтрымліваюцца для гэтай мэты"
 
+#, c-format
 #~ msgid "error writing to %s"
 #~ msgstr "памылка запісу ў %s"
 
+#, c-format
 #~ msgid "usage: %s [switches] input output"
 #~ msgstr "выкарыстаньне: %s [выключальнікі] увод вывад"
 
+#, c-format
 #~ msgid "#error%.*s"
 #~ msgstr "#памылка%.*s"
 
+#, c-format
 #~ msgid "#warning%.*s"
 #~ msgstr "#увага%.*s"
 
+#, c-format
 #~ msgid "invalid register name for `%s'"
 #~ msgstr "нерэчаісная назва рэгістра `%s'"
 
@@ -1945,34 +2059,43 @@ msgstr ""
 #~ msgid "optimization turned off"
 #~ msgstr "аптымізацыя выключана"
 
+#, c-format
 #~ msgid "invalid %%Q value"
 #~ msgstr "дрэннае %%Q значэнне"
 
+#, c-format
 #~ msgid "invalid %%C value"
 #~ msgstr "нерэчаіснае значэньне %%C"
 
+#, c-format
 #~ msgid "invalid %%N value"
 #~ msgstr "нерэчаіснае значэньне %%N"
 
+#, c-format
 #~ msgid "invalid %%M value"
 #~ msgstr "нерэчаіснае значэньне %%M"
 
+#, c-format
 #~ msgid "invalid %%m value"
 #~ msgstr "нерэчаіснае значэньне %%m"
 
+#, c-format
 #~ msgid "invalid %%L value"
 #~ msgstr "нерэчаіснае значэньне %%L"
 
+#, c-format
 #~ msgid "invalid %%O value"
 #~ msgstr "нерэчаіснае значэньне %%O"
 
+#, c-format
 #~ msgid "invalid %%P value"
 #~ msgstr "нерэчаіснае значэньне %%P"
 
+#, c-format
 #~ msgid "invalid %%V value"
 #~ msgstr "нерэчаіснае значэньне %%V"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "-f%s ignored for Unicos/Mk (not supported)"
 #~ msgstr "-pipe не падтрымліваецца."
 
@@ -1980,31 +2103,39 @@ msgstr ""
 #~ msgid "-mieee not supported on Unicos/Mk"
 #~ msgstr "-pipe не падтрымліваецца"
 
+#, c-format
 #~ msgid "invalid %%H value"
 #~ msgstr "нерэчаіснае значэньне %%H"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%J value"
 #~ msgstr "дрэннае %%Q значэнне"
 
+#, c-format
 #~ msgid "invalid %%r value"
 #~ msgstr "нерэчаіснае значэньне %%r"
 
+#, c-format
 #~ msgid "invalid %%R value"
 #~ msgstr "нерэчаіснае значэньне %%R"
 
+#, c-format
 #~ msgid "invalid %%h value"
 #~ msgstr "нерэчаіснае значэньне %%h"
 
+#, c-format
 #~ msgid "invalid %%U value"
 #~ msgstr "нерэчаіснае значэньне %%U"
 
+#, c-format
 #~ msgid "invalid %%s value"
 #~ msgstr "нерэчаіснае значэньне %%v"
 
+#, c-format
 #~ msgid "invalid %%E value"
 #~ msgstr "нерэчаіснае значэньне %%E"
 
+#, c-format
 #~ msgid "invalid %%xn code"
 #~ msgstr "нерэчаіснае значэньне %%xn"
 
@@ -2014,23 +2145,23 @@ msgstr ""
 #~ msgid "Do not use hardware fp"
 #~ msgstr "Не выкарыстоўваць апаратную плаваючую кропку"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument of `%s' attribute is not a string constant"
 #~ msgstr "аргумент `__builtin_args_info' павінен быць канстантай"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%R code"
 #~ msgstr "нерэчаісны %%-код"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%H/%%L code"
 #~ msgstr "нерэчаісны %%-код"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%U code"
 #~ msgstr "нерэчаісны %%-код"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%V code"
 #~ msgstr "нерэчаісны %%-код"
 
@@ -2038,7 +2169,7 @@ msgstr ""
 #~ msgid "target CPU does not support THUMB instructions"
 #~ msgstr "ISO C не падтрымлівае комлексныя цэлалікавыя тыпы"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' attribute only applies to functions"
 #~ msgstr "\"%s\" звычайна функцыя"
 
@@ -2046,6 +2177,7 @@ msgstr ""
 #~ msgid "invalid insn:"
 #~ msgstr "Нерэчаісны выбар %s"
 
+#, c-format
 #~ msgid "internal error: bad register: %d"
 #~ msgstr "унутраная памылка: дрэнны рэгістр: %d"
 
@@ -2122,11 +2254,11 @@ msgstr ""
 #~ msgid "Do not generate char instructions"
 #~ msgstr "Не генерыраваць сімвальныя інструкцыі"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument to `%s' attribute larger than %d"
 #~ msgstr "памер \"%s\" больш чам %d байт"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand code `%c'"
 #~ msgstr "Нерэчаісны выбар \"%s\""
 
@@ -2134,7 +2266,7 @@ msgstr ""
 #~ msgid "unknown insn mode"
 #~ msgstr "невядомы рэжым машыны \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' attribute only applies to variables"
 #~ msgstr "\"%s\" атрыбут ігнарыруецца"
 
@@ -2171,23 +2303,23 @@ msgstr ""
 #~ msgid "Generate code without GP reg"
 #~ msgstr "Генерыраваць код без GP reg"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid argument of `%s' attribute"
 #~ msgstr "нявернае выкарыстанне \"restict\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%s code"
 #~ msgstr "нерэчаісны %%-код"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%p code"
 #~ msgstr "нерэчаісны %%-код"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%T/%%B code"
 #~ msgstr "нерэчаісны %%-код"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid operand to %%N code"
 #~ msgstr "нерэчаісны %%-код"
 
@@ -2258,33 +2390,35 @@ msgstr ""
 #~ msgid "Generate code for a cpu32"
 #~ msgstr "Ствараць код для цп32"
 
+#, c-format
 #~ msgid "invalid %%x/X value"
 #~ msgstr "нерэчаіснае значэньне %%x/X"
 
+#, c-format
 #~ msgid "invalid %%o value"
 #~ msgstr "нерэчаіснае значэньне %%o"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%s/S value"
 #~ msgstr "дрэннае %%Q значэнне"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%P operand"
 #~ msgstr "нерэчаісны %%-код"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid %%D value"
 #~ msgstr "дрэннае %%Q значэнне"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid option `-mshort-data-%s'"
 #~ msgstr "Нерэчаісны выбар \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid option `-mstack-increment=%s'"
 #~ msgstr "Нерэчаісны выбар \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "invalid option `entry%s'"
 #~ msgstr "Нерэчаісны выбар \"%s\""
 
@@ -2352,7 +2486,7 @@ msgstr ""
 #~ msgid "Optimize for 4650"
 #~ msgstr "Аптымізаваць для 4650"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "-f%s not supported: ignored"
 #~ msgstr "-pipe не падтрымліваецца"
 
@@ -2396,7 +2530,7 @@ msgstr ""
 #~ msgid "Use DEC assembler syntax"
 #~ msgstr "Выкарыстоўваць DEC-сінтакс для асэмблера"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "unknown ABI specified: '%s'"
 #~ msgstr "невядомы рэжым машыны \"%s\""
 
@@ -2408,7 +2542,7 @@ msgstr ""
 #~ msgid "argument 1 of __builtin_altivec_predicate is out of range"
 #~ msgstr "аргумент `__builtin_args_info' выйшаў за межы"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "argument 3 of `%s' must be a 2-bit literal"
 #~ msgstr "першым аргументам \"%s\" павінен быць \"int\""
 
@@ -2436,27 +2570,35 @@ msgstr ""
 #~ msgid "Profiling is not supported on this target."
 #~ msgstr "__buitin_saveregs не падтрымліваецца гэтай мэтай"
 
+#, c-format
 #~ msgid "invalid %%Y operand"
 #~ msgstr "нерэчаісны %%Y аперанд"
 
+#, c-format
 #~ msgid "invalid %%A operand"
 #~ msgstr "нерэчаісны %%A аперанд"
 
+#, c-format
 #~ msgid "invalid %%B operand"
 #~ msgstr "нерэчаісны %%B аперанд"
 
+#, c-format
 #~ msgid "invalid %%c operand"
 #~ msgstr "нерэчаісны %%c аперанд"
 
+#, c-format
 #~ msgid "invalid %%C operand"
 #~ msgstr "нерэчаісны %%C аперанд"
 
+#, c-format
 #~ msgid "invalid %%d operand"
 #~ msgstr "нерэчаісны %%d аперанд"
 
+#, c-format
 #~ msgid "invalid %%D operand"
 #~ msgstr "нерэчаісны %%D аперанд"
 
+#, c-format
 #~ msgid "invalid %%f operand"
 #~ msgstr "нерэчаісны %%f аперанд"
 
@@ -2475,9 +2617,11 @@ msgstr ""
 #~ msgid "Optimize for SuperSparc processors"
 #~ msgstr "Аптымізацыя для SuperSparc працэсараў"
 
+#, c-format
 #~ msgid "unrecognized section name \"%s\""
 #~ msgstr "нераспазнаная назва сэкцыі \"%s\""
 
+#, c-format
 #~ msgid "%s=%s is too large"
 #~ msgstr "%s=%s вельмі вялікі"
 
@@ -2617,7 +2761,7 @@ msgstr ""
 #~ msgid "previous non-inline declaration here"
 #~ msgstr "няма папярэдняга аб'яўлення для \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "than previous declaration `%F'"
 #~ msgstr "няма папярэдняга аб'яўлення для \"%s\""
 
@@ -2757,7 +2901,7 @@ msgstr ""
 #~ msgid "ISO C++ does not support `long long'"
 #~ msgstr "ISO C++ не падтрымлівае \"long long\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "ISO C++ forbids declaration of `%s' with no type"
 #~ msgstr "ISO C не дазваляе дэкларацыі метак (label)"
 
@@ -2765,13 +2909,14 @@ msgstr ""
 #~ msgid "size of member `%D' is not constant"
 #~ msgstr "тып параметра \"%s\" не аб'яўлены"
 
+#, c-format
 #~ msgid "can't initialize friend function `%s'"
 #~ msgstr "не магу ініцыялізаваць сяброўскую функцыю \"%s\""
 
 #~ msgid "virtual functions cannot be friends"
 #~ msgstr "віртуальныя функцыі не могуць быць сяброўскімі"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't define friend function `%s' in a local class definition"
 #~ msgstr "не магу ініцыялізаваць сяброўскую функцыю \"%s\""
 
@@ -2828,7 +2973,7 @@ msgstr ""
 #~ msgid "parameter `%D' declared void"
 #~ msgstr "тып параметра \"%s\" не аб'яўлены"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate type qualifiers in %s declaration"
 #~ msgstr "паўторнае абвяшчэнне меткі \"%s\""
 
@@ -2963,7 +3108,7 @@ msgstr ""
 #~ msgid "provided for `%D'"
 #~ msgstr "дэструктару неабходны \"%#D\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "template argument %d is invalid"
 #~ msgstr "параметр \"%s\" ініцыялізаваны"
 
@@ -2989,7 +3134,7 @@ msgstr ""
 #~ msgid "duplicate explicit instantiation of `%#T'"
 #~ msgstr "паўторнае абвяшчэнне меткі \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "type of asm operand `%E' could not be determined"
 #~ msgstr "тып параметра \"%s\" не аб'яўлены"
 
@@ -2997,19 +3142,23 @@ msgstr ""
 #~ msgid "base initializer for `%T'"
 #~ msgstr "не магу ініцыялізаваць сяброўскую функцыю \"%s\""
 
+#, c-format
 #~ msgid "%s before `%s'"
 #~ msgstr "%s перад \"%s\""
 
+#, c-format
 #~ msgid "%s before `%c'"
 #~ msgstr "%s перад '%c'"
 
+#, c-format
 #~ msgid "%s before `\\%o'"
 #~ msgstr "%s перад \"\\%o\""
 
+#, c-format
 #~ msgid "%s before `%s' token"
 #~ msgstr "%s перад знакам \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%s' attribute is not supported on this platform"
 #~ msgstr "атрыбуты секцыі не падтрымліваюцца для гэтай мэты"
 
@@ -3017,7 +3166,7 @@ msgstr ""
 #~ msgid "`sizeof' applied to incomplete type `%T'"
 #~ msgstr "\"%s\" мае незавершаны тып"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "`%E' cannot be used as a function"
 #~ msgstr "\"%s\" звычайна функцыя"
 
@@ -3075,41 +3224,43 @@ msgstr ""
 #~ msgid "In statement function"
 #~ msgstr "вельмі шмат аргументаў у функцыі"
 
+#, c-format
 #~ msgid "argument to `%s' missing"
 #~ msgstr "аргумент для \"%s\" прапушчан"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Implicit declaration of `%A' at %0"
 #~ msgstr "паўторнае абвяшчэнне меткі \"%s\""
 
+#, no-c-format
 #~ msgid "Unknown escape sequence `\\%A' at %0"
 #~ msgstr "Невядомая ESC-паслядоўнасьць `\\%A' at %0"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "non-ISO escape sequence `\\%c'"
 #~ msgstr "невядомая ESC-паслядоўнасць '\\%c'"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Zero-length character constant at %0"
 #~ msgstr "пустая сімвальная канстанта"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Character constant at %0 has no closing apostrophe at %1"
 #~ msgstr "сімвальная канстанта вельмі доўгая"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Unable to open INCLUDE file `%A' at %0"
 #~ msgstr "немагу адчыніць файл \"%s\""
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Truncating characters on right side of character constant at %0"
 #~ msgstr "мнагасімвальная сімвальная канстанта"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Array `%A' at %0 is too large to handle"
 #~ msgstr "памер масіва \"%s\" вельмі вялікі"
 
-#, fuzzy
+#, fuzzy, no-c-format
 #~ msgid "Statement function `%A' defined at %0 is not used"
 #~ msgstr "метка \"%s\" вызначана, але не выкарыстоўваецца"
 
@@ -3122,41 +3273,49 @@ msgstr ""
 #~ msgid "In construct"
 #~ msgstr "У канструкцыі"
 
+#, c-format
 #~ msgid "field '%s' not found in class"
 #~ msgstr "поле \"%s\" не знойдзена ў класе"
 
 #~ msgid "abstract method in non-abstract class"
 #~ msgstr "абстрактны метад у неабстрактным класе"
 
+#, c-format
 #~ msgid "method '%s' not found in class"
 #~ msgstr "метад \"%s\" не знойдзен у класе"
 
+#, c-format
 #~ msgid "failed to find class '%s'"
 #~ msgstr "не знойдзен клас \"%s\""
 
+#, c-format
 #~ msgid "missing field '%s' in '%s'"
 #~ msgstr "прапушчана поле '%s' у '%s'"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "mismatching signature for field '%s' in '%s'"
 #~ msgstr "Прапушчана поле \"%s\" у \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't expand %s"
 #~ msgstr "не магу прачытаць з %s"
 
+#, c-format
 #~ msgid "can't close %s"
 #~ msgstr "не магу зачыніць %s"
 
+#, c-format
 #~ msgid "cannot find file for class %s"
 #~ msgstr "немагчыма знайсьці файл для кляса %s"
 
 #~ msgid "no input file specified"
 #~ msgstr "не зададзены ўваходзячыя файлы"
 
+#, c-format
 #~ msgid "can't close input file %s"
 #~ msgstr "немагчыма зачыніць уваходзячы файл %s"
 
+#, c-format
 #~ msgid "bad zip/jar file %s"
 #~ msgstr "дрэнны zip/jar файл \"%s\""
 
@@ -3164,19 +3323,22 @@ msgstr ""
 #~ msgid "field initializer type mismatch"
 #~ msgstr "нерэчаісны ініцыялізатар"
 
+#, c-format
 #~ msgid "can't create directory %s"
 #~ msgstr "немагчыма стварыць дырэкторыю \"%s\""
 
+#, c-format
 #~ msgid "can't open output file `%s'"
 #~ msgstr "немагчыма адчыніць файл уводу `%s'"
 
+#, c-format
 #~ msgid "file not found `%s'"
 #~ msgstr "файл `%s' ня знойдзен"
 
 #~ msgid "cannot create temporary file"
 #~ msgstr "немагчыма стварыць часовы файл"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "can't mangle %s"
 #~ msgstr "не магу зачыніць %s"
 
@@ -3189,32 +3351,35 @@ msgstr ""
 #~ msgid "Invalid declaration"
 #~ msgstr "Нерэчаіснае абвяшчэнне"
 
+#, c-format
 #~ msgid "unregistered operator %s"
 #~ msgstr "нераспазнаны аператар %s"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find protocol declaration for `%s'"
 #~ msgstr "Не магу знайсці дэкларацыю пратакола для \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find interface declaration for `%s'"
 #~ msgstr "Не магу знайсці дэкларацыю інтэрфейса для \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find reference tag for class `%s'"
 #~ msgstr "Не магу знайсці файл для класа %s."
 
+#, c-format
 #~ msgid "cannot find class `%s'"
 #~ msgstr "немагчыма знайсьці кляс `%s'"
 
+#, c-format
 #~ msgid "class `%s' already exists"
 #~ msgstr "кляс `%s' ужо існуе"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "cannot find interface declaration for `%s', superclass of `%s'"
 #~ msgstr "Не магу знайсці дэкларацыю інтэрфейса для \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "circular inheritance in interface declaration for `%s'"
 #~ msgstr "Не магу знайсці дэкларацыю інтэрфейса для \"%s\""
 
@@ -3222,22 +3387,22 @@ msgstr ""
 #~ msgid "cannot find class (factory) method"
 #~ msgstr "не магу знайсці метад."
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "method `%s' not implemented by protocol"
 #~ msgstr "метад \"%s\" не знойдзен у класе"
 
 #~ msgid "cannot find method"
 #~ msgstr "немагчыма знайсьці мэтад"
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate definition of class method `%s'"
 #~ msgstr "паўторнае абвяшчэнне меткі \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate declaration of class method `%s'"
 #~ msgstr "паўторнае абвяшчэнне меткі \"%s\""
 
-#, fuzzy
+#, fuzzy, c-format
 #~ msgid "duplicate declaration of instance method `%s'"
 #~ msgstr "паўторнае абвяшчэнне меткі \"%s\""
 

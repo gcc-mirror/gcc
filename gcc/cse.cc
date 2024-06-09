@@ -1,5 +1,5 @@
 /* Common subexpression elimination for GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -4128,13 +4128,17 @@ struct set
   unsigned dest_hash;
   /* The SET_DEST, with SUBREG, etc., stripped.  */
   rtx inner_dest;
-  /* Nonzero if the SET_SRC is in memory.  */
-  char src_in_memory;
-  /* Nonzero if the SET_SRC contains something
-     whose value cannot be predicted and understood.  */
-  char src_volatile;
   /* Original machine mode, in case it becomes a CONST_INT.  */
   ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
+  /* Nonzero if the SET_SRC is in memory.  */
+  unsigned int src_in_memory : 1;
+  /* Nonzero if the SET_SRC contains something
+     whose value cannot be predicted and understood.  */
+  unsigned int src_volatile : 1;
+  /* Nonzero if RTL is an artifical set that has been created to describe
+     part of an insn's effect.  Zero means that RTL appears directly in
+     the insn pattern.  */
+  unsigned int is_fake_set : 1;
   /* Hash value of constant equivalent for SET_SRC.  */
   unsigned src_const_hash;
   /* A constant equivalent for SET_SRC, if any.  */
@@ -4229,12 +4233,15 @@ try_back_substitute_reg (rtx set, rtx_insn *insn)
     }
 }
 
-/* Add an entry containing RTL X into SETS.  */
+/* Add an entry containing RTL X into SETS.  IS_FAKE_SET is true if X is
+   an artifical set that has been created to describe part of an insn's
+   effect.  */
 static inline void
-add_to_set (vec<struct set> *sets, rtx x)
+add_to_set (vec<struct set> *sets, rtx x, bool is_fake_set)
 {
   struct set entry = {};
   entry.rtl = x;
+  entry.is_fake_set = is_fake_set;
   sets->safe_push (entry);
 }
 
@@ -4271,7 +4278,7 @@ find_sets_in_insn (rtx_insn *insn, vec<struct set> *psets)
 		    && known_eq (GET_MODE_NUNITS (GET_MODE (SET_SRC (x))), 1)))
 	{
 	  /* First register the vector itself.  */
-	  add_to_set (psets, x);
+	  add_to_set (psets, x, false);
 	  rtx src = SET_SRC (x);
 	  /* Go over the constants of the CONST_VECTOR in forward order, to
 	     put them in the same order in the SETS array.  */
@@ -4281,11 +4288,12 @@ find_sets_in_insn (rtx_insn *insn, vec<struct set> *psets)
 		 used to tell CSE how to get to a particular constant.  */
 	      rtx y = simplify_gen_vec_select (SET_DEST (x), i);
 	      gcc_assert (y);
-	      add_to_set (psets, gen_rtx_SET (y, CONST_VECTOR_ELT (src, i)));
+	      rtx set = gen_rtx_SET (y, CONST_VECTOR_ELT (src, i));
+	      add_to_set (psets, set, true);
 	    }
 	}
       else
-	add_to_set (psets, x);
+	add_to_set (psets, x, false);
     }
   else if (GET_CODE (x) == PARALLEL)
     {
@@ -4306,7 +4314,7 @@ find_sets_in_insn (rtx_insn *insn, vec<struct set> *psets)
 	      else if (GET_CODE (SET_SRC (y)) == CALL)
 		;
 	      else
-		add_to_set (psets, y);
+		add_to_set (psets, y, false);
 	    }
 	}
     }
@@ -4616,6 +4624,7 @@ cse_insn (rtx_insn *insn)
       int src_related_regcost = MAX_COST;
       int src_elt_regcost = MAX_COST;
       scalar_int_mode int_mode;
+      bool is_fake_set = sets[i].is_fake_set;
 
       dest = SET_DEST (sets[i].rtl);
       src = SET_SRC (sets[i].rtl);
@@ -4627,7 +4636,7 @@ cse_insn (rtx_insn *insn)
       mode = GET_MODE (src) == VOIDmode ? GET_MODE (dest) : GET_MODE (src);
       sets[i].mode = mode;
 
-      if (src_eqv)
+      if (!is_fake_set && src_eqv)
 	{
 	  machine_mode eqvmode = mode;
 	  if (GET_CODE (dest) == STRICT_LOW_PART)
@@ -4648,7 +4657,7 @@ cse_insn (rtx_insn *insn)
       /* If this is a STRICT_LOW_PART assignment, src_eqv corresponds to the
 	 value of the INNER register, not the destination.  So it is not
 	 a valid substitution for the source.  But save it for later.  */
-      if (GET_CODE (dest) == STRICT_LOW_PART)
+      if (is_fake_set || GET_CODE (dest) == STRICT_LOW_PART)
 	src_eqv_here = 0;
       else
 	src_eqv_here = src_eqv;
@@ -4951,8 +4960,15 @@ cse_insn (rtx_insn *insn)
 	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && (extend_op = load_extend_op (int_mode)) != UNKNOWN)
 	{
+#if GCC_VERSION >= 5000
 	  struct rtx_def memory_extend_buf;
 	  rtx memory_extend_rtx = &memory_extend_buf;
+#else
+	  /* Workaround GCC < 5 bug, fixed in r5-3834 as part of PR63362
+	     fix.  */
+	  alignas (rtx_def) unsigned char memory_extended_buf[sizeof (rtx_def)];
+	  rtx memory_extend_rtx = (rtx) &memory_extended_buf[0];
+#endif
 
 	  /* Set what we are trying to extend and the operation it might
 	     have been extended with.  */
@@ -5151,7 +5167,7 @@ cse_insn (rtx_insn *insn)
 
       /* Terminate loop when replacement made.  This must terminate since
          the current contents will be tested and will always be valid.  */
-      while (1)
+      while (!is_fake_set)
 	{
 	  rtx trial;
 
@@ -5418,7 +5434,8 @@ cse_insn (rtx_insn *insn)
 	 with the head of the class.  If we do not do this, we will have
 	 both registers live over a portion of the basic block.  This way,
 	 their lifetimes will likely abut instead of overlapping.  */
-      if (REG_P (dest)
+      if (!is_fake_set
+	  && REG_P (dest)
 	  && REGNO_QTY_VALID_P (REGNO (dest)))
 	{
 	  int dest_q = REG_QTY (REGNO (dest));

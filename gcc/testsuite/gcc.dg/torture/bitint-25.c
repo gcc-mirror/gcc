@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do run { target { bitint && float16_runtime } } } */
-/* { dg-options "-std=gnu2x" } */
+/* { dg-options "-std=gnu23" } */
 /* { dg-skip-if "" { ! run_expensive_tests }  { "*" } { "-O0" "-O2" } } */
 /* { dg-skip-if "" { ! run_expensive_tests } { "-flto" } { "" } } */
 /* { dg-add-options float16 } */

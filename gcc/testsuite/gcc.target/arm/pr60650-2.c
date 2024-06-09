@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_arch_v7a_ok } */
 /* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
-/* { dg-options "-O2 -fno-omit-frame-pointer -march=armv7-a" } */
+/* { dg-options "-O2 -fno-omit-frame-pointer" } */
+/* { dg-add-options arm_arch_v7a } */
 
 int a, h, j;
 long long d, e, i;

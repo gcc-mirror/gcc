@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2022-2023 Free Software Foundation, Inc.
+# Copyright (C) 2022-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -69,6 +69,14 @@ def check_group(name, lines):
     for line in lines:
         if line.startswith(' '):
             print(f'Line should not start with space: "{line}"')
+            exit_code = 2
+
+        # Special-case some names
+        if line == 'James Norris':
+            continue
+
+        if '\t' not in line:
+            print(f'Name and email should be separated by tabs: "{line}"')
             exit_code = 2
 
     lines = [line + '\n' for line in lines]

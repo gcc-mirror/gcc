@@ -5,7 +5,7 @@
 
 /*
 ** f1:
-**	vsetivli\tzero,4,e32,m1,ta,ma
+**  ...
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vma[c-d][c-d]\.vv\tv[0-9]+,\s*v[0-9]+,\s*v[0-9]+
@@ -30,7 +30,7 @@ void f1 (void * in, void * in2, void *out)
 
 /*
 ** f2:
-**	vsetivli\tzero,4,e32,m1,tu,ma
+**  ...
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vma[c-d][c-d]\.vv\tv[0-9]+,\s*v[0-9]+,\s*v[0-9]+
@@ -55,7 +55,7 @@ void f2 (void * in, void * in2, void *out)
 
 /*
 ** f3:
-**	vsetivli\tzero,4,e32,m1,ta,ma
+**  ...
 **	vlm\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)

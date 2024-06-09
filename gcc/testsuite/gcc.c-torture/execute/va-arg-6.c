@@ -1,5 +1,9 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
+void
 f (int n, ...)
 {
   va_list args;
@@ -28,7 +32,8 @@ f (int n, ...)
   va_end(args);
 }
 
-main ()
+int
+main (void)
 {
   f (4, 10, 10000000000LL, 11, 3.14L, 12, 13, 20000000000LL, 14, 2.72);
   exit (0);

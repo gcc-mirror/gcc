@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2023, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2024, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -208,7 +208,9 @@ package body System.Interrupts is
      (Vector    : Interrupt_Vector;
       Handler   : Interrupt_Handler;
       Parameter : System.Address := System.Null_Address) return STATUS;
-   --  Profile must match VxWorks intConnect()
+   --  Profile must match VxWorks intConnect() for VxWorks prior to 7.
+   --  VxWorks 7 does not support intConnect(). The Vxbus subsystem
+   --  should be used instead.
 
    Interrupt_Connect : Interrupt_Connector :=
      System.OS_Interface.Interrupt_Connect'Access;
@@ -271,6 +273,7 @@ package body System.Interrupts is
       Check_Reserved_Interrupt (Interrupt);
       Interrupt_Manager.Attach_Handler (New_Handler, Interrupt, Static);
    end Attach_Handler;
+   pragma Obsolescent (Attach_Handler, "Use the VXBus subsystem instead");
 
    -----------------------------
    -- Bind_Interrupt_To_Entry --

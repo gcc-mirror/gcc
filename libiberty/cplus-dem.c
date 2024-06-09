@@ -1,5 +1,5 @@
 /* Demangler for GNU C++
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    Modified by Satish Pai (pai@apollo.hp.com) for HP demangling
@@ -186,7 +186,7 @@ cplus_demangle (const char *mangled, int options)
   if (GNAT_DEMANGLING)
     return ada_demangle (mangled, options);
 
-  if (DLANG_DEMANGLING)
+  if (DLANG_DEMANGLING || AUTO_DEMANGLING)
     {
       ret = dlang_demangle (mangled, options);
       if (ret)

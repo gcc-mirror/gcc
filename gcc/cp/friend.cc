@@ -1,5 +1,5 @@
 /* Help friends in C++.
-   Copyright (C) 1997-2023 Free Software Foundation, Inc.
+   Copyright (C) 1997-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -279,7 +279,8 @@ make_friend_class (tree type, tree friend_type, bool complain)
     }
 
   if (! MAYBE_CLASS_TYPE_P (friend_type)
-      && TREE_CODE (friend_type) != TEMPLATE_TEMPLATE_PARM)
+      && TREE_CODE (friend_type) != TEMPLATE_TEMPLATE_PARM
+      && TREE_CODE (friend_type) != TYPE_PACK_EXPANSION)
     {
       /* N1791: If the type specifier in a friend declaration designates a
 	 (possibly cv-qualified) class type, that class is declared as a

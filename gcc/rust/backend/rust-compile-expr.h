@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,6 +20,7 @@
 #define RUST_COMPILE_EXPR
 
 #include "rust-compile-base.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Compile {
@@ -45,7 +46,6 @@ public:
   void visit (HIR::NegationExpr &expr) override;
   void visit (HIR::TypeCastExpr &expr) override;
   void visit (HIR::IfExpr &expr) override;
-  void visit (HIR::IfExprConseqIf &expr) override;
   void visit (HIR::IfExprConseqElse &expr) override;
   void visit (HIR::BlockExpr &expr) override;
   void visit (HIR::UnsafeBlockExpr &expr) override;
@@ -72,16 +72,12 @@ public:
   // TODO
   void visit (HIR::ErrorPropagationExpr &) override {}
   void visit (HIR::RangeToInclExpr &) override {}
-  void visit (HIR::ForLoopExpr &) override {}
 
   // TODO
   // these need to be sugared in the HIR to if statements and a match
   void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::IfExprConseqIfLet &) override {}
   void visit (HIR::IfLetExpr &) override {}
   void visit (HIR::IfLetExprConseqElse &) override {}
-  void visit (HIR::IfLetExprConseqIf &) override {}
-  void visit (HIR::IfLetExprConseqIfLet &) override {}
 
   // lets not worry about async yet....
   void visit (HIR::AwaitExpr &) override {}
@@ -95,17 +91,11 @@ public:
 protected:
   tree get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
 			     TyTy::BaseType *receiver, TyTy::FnType *fntype,
-			     tree receiver_ref, Location expr_locus);
+			     tree receiver_ref, location_t expr_locus);
 
   tree get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
 			      TyTy::BaseType *receiver, TyTy::FnType *fntype,
-			      tree receiver_ref, Location expr_locus);
-
-  tree resolve_method_address (TyTy::FnType *fntype, HirId ref,
-			       TyTy::BaseType *receiver,
-			       HIR::PathIdentSegment &segment,
-			       Analysis::NodeMapping expr_mappings,
-			       Location expr_locus);
+			      tree receiver_ref, location_t expr_locus);
 
   tree
   resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
@@ -133,12 +123,13 @@ protected:
   tree compile_byte_string_literal (const HIR::LiteralExpr &expr,
 				    const TyTy::BaseType *tyty);
 
-  tree type_cast_expression (tree type_to_cast_to, tree expr, Location locus);
+  tree type_cast_expression (tree type_to_cast_to, tree expr, location_t locus);
 
-  tree array_value_expr (Location expr_locus, const TyTy::ArrayType &array_tyty,
-			 tree array_type, HIR::ArrayElemsValues &elems);
+  tree array_value_expr (location_t expr_locus,
+			 const TyTy::ArrayType &array_tyty, tree array_type,
+			 HIR::ArrayElemsValues &elems);
 
-  tree array_copied_expr (Location expr_locus,
+  tree array_copied_expr (location_t expr_locus,
 			  const TyTy::ArrayType &array_tyty, tree array_type,
 			  HIR::ArrayElemsCopied &elems);
 

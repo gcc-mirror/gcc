@@ -1,7 +1,7 @@
 /**
  * Inline assembler for the GCC D compiler.
  *
- *              Copyright (C) 2018-2023 by The D Language Foundation, All Rights Reserved
+ *              Copyright (C) 2018-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     Iain Buclaw
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/iasmgcc.d, _iasmgcc.d)
@@ -16,6 +16,7 @@ import core.stdc.string;
 import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.dscope;
+import dmd.dsymbol;
 import dmd.errors;
 import dmd.errorsink;
 import dmd.expression;
@@ -299,10 +300,10 @@ Ldone:
  * Returns:
  *      the completed gcc asm statement, or null if errors occurred
  */
-extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
+public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
 {
     //printf("GccAsmStatement.semantic()\n");
-    const bool doUnittests = global.params.useUnitTests || global.params.ddoc.doOutput || global.params.dihdr.doOutput;
+    const bool doUnittests = global.params.parsingUnittestsRequired();
     scope p = new Parser!ASTCodegen(sc._module, ";", false, global.errorSink, &global.compileEnv, doUnittests);
 
     // Make a safe copy of the token list before parsing.
@@ -330,7 +331,7 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
     s.insn = semanticString(sc, s.insn, "asm instruction template");
 
     if (s.labels && s.outputargs)
-        s.error("extended asm statements with labels cannot have output constraints");
+        error(s.loc, "extended asm statements with labels cannot have output constraints");
 
     // Analyse all input and output operands.
     if (s.args)
@@ -341,7 +342,7 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
             e = e.expressionSemantic(sc);
             // Check argument is a valid lvalue/rvalue.
             if (i < s.outputargs)
-                e = e.modifiableLvalue(sc, null);
+                e = e.modifiableLvalue(sc);
             else if (e.checkValue())
                 e = ErrorExp.get();
             (*s.args)[i] = e;
@@ -380,6 +381,26 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
     }
 
     return s;
+}
+
+/***********************************
+ * Run semantic analysis on an CAsmDeclaration.
+ * Params:
+ *      ad  = asm declaration
+ *      sc = the scope where the asm declaration is located
+ */
+public void gccAsmSemantic(CAsmDeclaration ad, Scope *sc)
+{
+    import dmd.typesem : pointerTo;
+    ad.code = semanticString(sc, ad.code, "asm definition");
+    ad.code.type = ad.code.type.nextOf().pointerTo();
+
+    // Asm definition always needs emitting into the root module.
+    import dmd.dmodule : Module;
+    if (sc._module && sc._module.isRoot())
+        return;
+    if (Module m = Module.rootModule)
+        m.members.push(ad);
 }
 
 unittest

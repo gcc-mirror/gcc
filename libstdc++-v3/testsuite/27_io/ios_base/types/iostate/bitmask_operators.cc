@@ -1,7 +1,7 @@
 // { dg-do compile }
 // -*- C++ -*-
  
-// Copyright (C) 2004-2023 Free Software Foundation, Inc.
+// Copyright (C) 2004-2024 Free Software Foundation, Inc.
  
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -27,3 +27,7 @@ int main()
 {
   __gnu_test::bitmask_operators<std::ios_base::iostate>();
 }
+// { dg-warning "ignoring return value.*operator\\|" "" { target c++17 } 0 }
+// { dg-warning "ignoring return value.*operator&" "" { target c++17 } 0 }
+// { dg-warning "ignoring return value.*operator\\^" "" { target c++17 } 0 }
+// { dg-warning "ignoring return value.*operator~" "" { target c++17 } 0 }

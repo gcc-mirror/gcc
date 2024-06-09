@@ -49,6 +49,19 @@
 #endif
 
 
+/* Specify a runpath directory, additional to those provided by the compiler
+   */
+#ifndef USED_FOR_TARGET
+#undef DARWIN_ADD_RPATH
+#endif
+
+
+/* Should add an extra runpath directory */
+#ifndef USED_FOR_TARGET
+#undef DARWIN_DO_EXTRA_RPATH
+#endif
+
+
 /* Define to enable the use of a default assembler. */
 #ifndef USED_FOR_TARGET
 #undef DEFAULT_ASSEMBLER
@@ -373,6 +386,12 @@
 #endif
 
 
+/* Define if your assembler supports conditional branch relaxation. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_COND_BRANCH_RELAXATION
+#endif
+
+
 /* Define if your assembler supports the --debug-prefix-map option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_DEBUG_PREFIX_MAP
@@ -604,6 +623,12 @@
 #endif
 
 
+/* Define if your macOS assembler supports .build_version directives */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_MACOS_BUILD_VERSION
+#endif
+
+
 /* Define if the assembler understands -march=rv*_zifencei. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MARCH_ZIFENCEI
@@ -682,6 +707,12 @@
 #endif
 
 
+/* Define if your assembler supports htm insns on power10. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_POWER10_HTM
+#endif
+
+
 /* Define if your assembler supports .ref */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_REF
@@ -703,6 +734,13 @@
 /* Define if your assembler supports .attribute. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_RISCV_ATTRIBUTE
+#endif
+
+
+/* Define 0/1 if your assembler and linker support R_X86_64_CODE_6_GOTTPOFF.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_R_X86_64_CODE_6_GOTTPOFF
 #endif
 
 
@@ -750,9 +788,21 @@
 #endif
 
 
+/* Define if your assembler supports call36 relocation. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_SUPPORT_CALL36
+#endif
+
+
 /* Define if your assembler and linker support thread-local storage. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_TLS
+#endif
+
+
+/* Define if your assembler supports tls le relocation. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_TLS_LE_RELAXATION
 #endif
 
 
@@ -795,6 +845,20 @@
 #endif
 
 
+/* Define to 1 if you have the Mac OS X function
+   CFLocaleCopyPreferredLanguages in the CoreFoundation framework. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_CFLOCALECOPYPREFERREDLANGUAGES
+#endif
+
+
+/* Define to 1 if you have the Mac OS X function CFPreferencesCopyAppValue in
+   the CoreFoundation framework. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_CFPREFERENCESCOPYAPPVALUE
+#endif
+
+
 /* Define to 1 if you have the `clearerr_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_CLEARERR_UNLOCKED
@@ -816,6 +880,13 @@
 /* Define 0/1 if your assembler and linker support COMDAT groups. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_COMDAT_GROUP
+#endif
+
+
+/* Define if the GNU dcgettext() function is already present or preinstalled.
+   */
+#ifndef USED_FOR_TARGET
+#undef HAVE_DCGETTEXT
 #endif
 
 
@@ -1274,6 +1345,12 @@
 #endif
 
 
+/* Define 0/1 if -fhardened is supported */
+#ifndef USED_FOR_TARGET
+#undef HAVE_FHARDENED_SUPPORT
+#endif
+
+
 /* Define to 1 if you have the `fileno_unlocked' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_FILENO_UNLOCKED
@@ -1491,6 +1568,12 @@
 #endif
 
 
+/* Define if the GNU gettext() function is already present or preinstalled. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GETTEXT
+#endif
+
+
 /* Define to 1 if you have the `gettimeofday' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GETTIMEOFDAY
@@ -1522,7 +1605,7 @@
 #endif
 
 
-/* Define if you have the iconv() function. */
+/* Define if you have the iconv() function and it works. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_ICONV
 #endif
@@ -1589,13 +1672,6 @@
 #endif
 
 
-/* Define 0/1 if your linker supports the SHF_MERGE flag with section
-   alignment > 1. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_LD_ALIGNED_SHF_MERGE
-#endif
-
-
 /* Define if your linker supports --as-needed/--no-as-needed or equivalent
    options. */
 #ifndef USED_FOR_TARGET
@@ -1603,10 +1679,22 @@
 #endif
 
 
+/* Define if your linker supports emulation avrxmega2_flmap. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_AVR_AVRXMEGA2_FLMAP
+#endif
+
+
 /* Define if your default avr linker script for avrxmega3 leaves .rodata in
    flash. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
+#endif
+
+
+/* Define if your linker supports emulation avrxmega4_flmap. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_AVR_AVRXMEGA4_FLMAP
 #endif
 
 
@@ -1676,6 +1764,12 @@
 #endif
 
 
+/* Define 0/1 if your linker supports -z now */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_NOW_SUPPORT
+#endif
+
+
 /* Define if your PowerPC64 linker only needs function descriptor syms. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_NO_DOT_SYMS
@@ -1716,6 +1810,12 @@
 /* Define if your linker supports --push-state/--pop-state */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_PUSHPOPSTATE_SUPPORT
+#endif
+
+
+/* Define 0/1 if your linker supports -z relro */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_RELRO_SUPPORT
 #endif
 
 
@@ -1801,12 +1901,6 @@
 /* Define to 1 if you have the `mbstowcs' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MBSTOWCS
-#endif
-
-
-/* Define if valgrind's memcheck.h header is installed. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_MEMCHECK_H
 #endif
 
 
@@ -2072,12 +2166,6 @@
 #endif
 
 
-/* Define if valgrind's valgrind/memcheck.h header is installed. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_VALGRIND_MEMCHECK_H
-#endif
-
-
 /* Define to 1 if you have the `vfork' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_VFORK
@@ -2265,6 +2353,12 @@
 /* Value to set mingw's _dowildcard to. */
 #ifndef USED_FOR_TARGET
 #undef MINGW_DOWILDCARD
+#endif
+
+
+/* Define if assembler supports %reloc. */
+#ifndef USED_FOR_TARGET
+#undef MIPS_EXPLICIT_RELOCS
 #endif
 
 
@@ -2456,12 +2550,6 @@
    DLL exports wrappers to support libstdc++ function replacement. */
 #ifndef USED_FOR_TARGET
 #undef USE_CYGWIN_LIBSTDCXX_WRAPPERS
-#endif
-
-
-/* Define 0/1 if your linker supports hidden thunks in linkonce sections. */
-#ifndef USED_FOR_TARGET
-#undef USE_HIDDEN_LINKONCE
 #endif
 
 

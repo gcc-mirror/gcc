@@ -8,7 +8,8 @@ struct rbuf
   struct s *p __attribute__ ((packed));
 } *b;
 
-f ()
+void
+f (void)
 {
   b->p = &x;
 }

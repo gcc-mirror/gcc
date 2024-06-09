@@ -1,6 +1,6 @@
 /* m2builtins.cc provides an interface to the GCC builtins.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -145,6 +145,8 @@ static struct builtin_function_entry list_of_builtins[] = {
     BUILT_IN_NORMAL, "memcpy", NULL, NULL, bf_default_lib },
   { "__builtin_isfinite", BT_FN_INT_DOUBLE, BUILT_IN_ISFINITE, BUILT_IN_NORMAL,
     "isfinite", NULL, NULL, bf_gcc },
+  { "__builtin_isnan", BT_FN_INT_DOUBLE, BUILT_IN_ISNAN, BUILT_IN_NORMAL,
+    "isnan", NULL, NULL, bf_gcc },
   { "__builtin_sinf", BT_FN_FLOAT_FLOAT, BUILT_IN_SINF, BUILT_IN_NORMAL,
     "sinf", NULL, NULL, bf_c99_c90res },
   { "__builtin_sin", BT_FN_DOUBLE_DOUBLE, BUILT_IN_SIN, BUILT_IN_NORMAL, "sin",
@@ -391,6 +393,13 @@ struct builtin_type_info
   tree (*functionHandler) (location_t, tree);
 };
 
+struct GTY(()) builtin_macro_definition
+{
+  const char *name;
+  tree function_node;
+  tree return_node;
+};
+
 static GTY (()) tree sizetype_endlink;
 static GTY (()) tree unsigned_endlink;
 static GTY (()) tree endlink;
@@ -408,6 +417,7 @@ static GTY (()) tree gm2_alloca_node;
 static GTY (()) tree gm2_memcpy_node;
 static GTY (()) tree gm2_memset_node;
 static GTY (()) tree gm2_isfinite_node;
+static GTY (()) tree gm2_isnan_node;
 static GTY (()) tree gm2_huge_valf_node;
 static GTY (()) tree gm2_huge_val_node;
 static GTY (()) tree gm2_huge_vall_node;
@@ -415,12 +425,14 @@ static GTY (()) tree long_doubleptr_type_node;
 static GTY (()) tree doubleptr_type_node;
 static GTY (()) tree floatptr_type_node;
 static GTY (()) tree builtin_ftype_int_var;
+static GTY (()) vec<builtin_macro_definition, va_gc> *builtin_macros;
 
 /* Prototypes for locally defined functions.  */
 static tree DoBuiltinAlloca (location_t location, tree n);
 static tree DoBuiltinMemCopy (location_t location, tree dest, tree src,
                               tree n);
 static tree DoBuiltinIsfinite (location_t location, tree value);
+static tree DoBuiltinIsnan (location_t location, tree value);
 static void create_function_prototype (location_t location,
                                        struct builtin_function_entry *fe);
 static tree doradix (location_t location, tree type);
@@ -830,6 +842,15 @@ m2builtins_BuiltInIsfinite (location_t location, tree expression)
   return DoBuiltinIsfinite (location, expression);
 }
 
+/* BuiltInIsnan - return integer 1 if the real expression is
+   nan otherwise return integer 0.  */
+
+tree
+m2builtins_BuiltInIsnan (location_t location, tree expression)
+{
+  return DoBuiltinIsnan (location, expression);
+}
+
 
 /* do_target_support_exists returns true if the builting function
    is supported by the target.  */
@@ -858,6 +879,8 @@ do_target_support_exists (struct builtin_function_entry *fe)
       return targetm.libc_has_function (function_c99_misc, type);
     case bf_extension_lib_floatn:
       return true;
+    case bf_c99_compl:
+      return targetm.libc_has_function (function_c99_math_complex, type);
     default:
       gcc_unreachable ();
     }
@@ -901,21 +924,45 @@ m2builtins_BuiltinExists (char *name)
     if (strcmp (name, fe->name) == 0)
       return true;
       // return target_support_exists (fe);
-
+  int length = vec_safe_length (builtin_macros);
+  for (int idx = 0; idx < length; idx++)
+    if (strcmp ((*builtin_macros)[idx].name, name) == 0)
+      return true;
   return false;
 }
 
+/* lookup_builtin_function returns a builtin macro.  */
 
-/* BuildBuiltinTree - returns a Tree containing the builtin function,
-   name.  */
-
+static
 tree
-m2builtins_BuildBuiltinTree (location_t location, char *name)
+lookup_builtin_macro (location_t location, char *name)
+{
+  int length = vec_safe_length (builtin_macros);
+  for (int idx = 0; idx < length; idx++)
+    if (strcmp ((*builtin_macros)[idx].name, name) == 0)
+      {
+        tree functype = TREE_TYPE ((*builtin_macros)[idx].function_node);
+        tree funcptr = build1 (ADDR_EXPR, build_pointer_type (functype),
+                               (*builtin_macros)[idx].function_node);
+	tree call = m2treelib_DoCall (
+	   location, (*builtin_macros)[idx].return_node,
+	   funcptr, m2statement_GetParamList ());
+        m2statement_SetLastFunction (call);
+        m2statement_SetParamList (NULL_TREE);
+        if ((*builtin_macros)[idx].return_node == void_type_node)
+          m2statement_SetLastFunction (NULL_TREE);
+        return call;
+      }
+  return NULL_TREE;
+}
+
+/* lookup_builtin_function returns a builtin function.  */
+
+static
+tree
+lookup_builtin_function (location_t location, char *name)
 {
   struct builtin_function_entry *fe;
-  tree call;
-
-  m2statement_SetLastFunction (NULL_TREE);
 
   for (fe = &list_of_builtins[0]; fe->name != NULL; fe++)
     if ((strcmp (name, fe->name) == 0) && target_support_exists (fe))
@@ -923,7 +970,7 @@ m2builtins_BuildBuiltinTree (location_t location, char *name)
         tree functype = TREE_TYPE (fe->function_node);
         tree funcptr = build1 (ADDR_EXPR, build_pointer_type (functype),
                                fe->function_node);
-	call = m2treelib_DoCall (
+	tree call = m2treelib_DoCall (
 	   location, fe->return_node, funcptr, m2statement_GetParamList ());
         m2statement_SetLastFunction (call);
         m2statement_SetParamList (NULL_TREE);
@@ -931,9 +978,29 @@ m2builtins_BuildBuiltinTree (location_t location, char *name)
           m2statement_SetLastFunction (NULL_TREE);
         return call;
       }
+  return NULL_TREE;
+}
 
-  m2statement_SetParamList (NULL_TREE);
-  return m2statement_GetLastFunction ();
+/* BuildBuiltinTree - returns a Tree containing the builtin function,
+   name.  */
+
+tree
+m2builtins_BuildBuiltinTree (location_t location, char *name)
+{
+  tree call;
+  m2statement_SetLastFunction (NULL_TREE);
+
+  call = lookup_builtin_function (location, name);
+  if (call == NULL_TREE)
+    {
+      call = lookup_builtin_macro (location, name);
+      if (call == NULL_TREE)
+	{
+	  m2statement_SetParamList (NULL_TREE);
+	  return m2statement_GetLastFunction ();
+	}
+    }
+  return call;
 }
 
 static tree
@@ -964,6 +1031,17 @@ DoBuiltinIsfinite (location_t location, tree value)
   tree functype = TREE_TYPE (gm2_isfinite_node);
   tree funcptr
       = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_isfinite_node);
+  tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, value);
+
+  return call;
+}
+
+static tree
+DoBuiltinIsnan (location_t location, tree value)
+{
+  tree functype = TREE_TYPE (gm2_isnan_node);
+  tree funcptr
+      = build1 (ADDR_EXPR, build_pointer_type (functype), gm2_isnan_node);
   tree call = m2treelib_DoCall1 (location, ptr_type_node, funcptr, value);
 
   return call;
@@ -1321,14 +1399,16 @@ set_decl_function_code (tree decl, built_in_function f)
 }
 
 /* Define a single builtin.  */
+
 static void
-define_builtin (enum built_in_function val, const char *name, tree type,
+define_builtin (enum built_in_function val, const char *name, tree prototype,
                 const char *libname, int flags)
 {
   tree decl;
+  builtin_macro_definition bmd;
 
   decl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL, get_identifier (name),
-                     type);
+                     prototype);
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   SET_DECL_ASSEMBLER_NAME (decl, get_identifier (libname));
@@ -1336,8 +1416,43 @@ define_builtin (enum built_in_function val, const char *name, tree type,
   set_decl_built_in_class (decl, BUILT_IN_NORMAL);
   set_decl_function_code (decl, val);
   set_call_expr_flags (decl, flags);
-
   set_builtin_decl (val, decl, true);
+  bmd.name = name;
+  bmd.function_node = decl;
+  bmd.return_node = TREE_TYPE (prototype);
+  vec_safe_push (builtin_macros, bmd);
+}
+
+/* Define a math type variant of the builtin function.  */
+
+static
+void
+define_builtin_ext  (enum built_in_function val, const char *name, tree type,
+		     const char *libname, int flags, const char *ext)
+{
+  char *newname = (char *) xmalloc (strlen (name) + strlen (ext) + 1);
+  char *newlibname = (char *) xmalloc (strlen (libname) + strlen (ext) + 1);
+  strcpy (newname, name);
+  strcat (newname, ext);
+  strcpy (newlibname, libname);
+  strcat (newlibname, ext);
+  define_builtin (val, newname, type, newlibname, flags);
+}
+
+/* Define all support math type versions of this builtin.  */
+
+static void
+define_builtin_math (enum built_in_function val, const char *name, tree type,
+		     const char *libname, int flags)
+{
+  /* SHORTREAL version.  */
+  define_builtin_ext (val, name, type, libname, flags, "f");
+  /* LONGREAL version.  */
+  define_builtin_ext (val, name, type, libname, flags, "l");
+  /* REAL version.  */
+  define_builtin (val, name, type, libname, flags);
+  /* Perhaps it should declare SYSTEM.def types size floating point
+     versions as well?  */
 }
 
 void
@@ -1382,20 +1497,24 @@ m2builtins_init (location_t location)
   define_builtin (BUILT_IN_TRAP, "__builtin_trap",
                   build_function_type_list (void_type_node, NULL_TREE),
                   "__builtin_trap", ECF_NOTHROW | ECF_LEAF | ECF_NORETURN);
-  define_builtin (BUILT_IN_ISGREATER, "isgreater", builtin_ftype_int_var,
-                  "__builtin_isgreater", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
-  define_builtin (BUILT_IN_ISGREATEREQUAL, "isgreaterequal",
-                  builtin_ftype_int_var, "__builtin_isgreaterequal",
-                  ECF_CONST | ECF_NOTHROW | ECF_LEAF);
-  define_builtin (BUILT_IN_ISLESS, "isless", builtin_ftype_int_var,
-                  "__builtin_isless", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
-  define_builtin (BUILT_IN_ISLESSEQUAL, "islessequal", builtin_ftype_int_var,
-                  "__builtin_islessequal", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
-  define_builtin (BUILT_IN_ISLESSGREATER, "islessgreater",
-                  builtin_ftype_int_var, "__builtin_islessgreater",
-                  ECF_CONST | ECF_NOTHROW | ECF_LEAF);
-  define_builtin (BUILT_IN_ISUNORDERED, "isunordered", builtin_ftype_int_var,
-                  "__builtin_isunordered", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+  define_builtin_math (BUILT_IN_ISGREATER, "isgreater", builtin_ftype_int_var,
+		       "__builtin_isgreater", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+  define_builtin_math (BUILT_IN_ISGREATEREQUAL, "isgreaterequal",
+		       builtin_ftype_int_var, "__builtin_isgreaterequal",
+		       ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+  define_builtin_math (BUILT_IN_ISLESS, "isless", builtin_ftype_int_var,
+		       "__builtin_isless", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+  define_builtin_math (BUILT_IN_ISLESSEQUAL, "islessequal", builtin_ftype_int_var,
+		       "__builtin_islessequal", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+  define_builtin_math (BUILT_IN_ISLESSGREATER, "islessgreater",
+		       builtin_ftype_int_var, "__builtin_islessgreater",
+		       ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+  define_builtin_math (BUILT_IN_ISUNORDERED, "isunordered", builtin_ftype_int_var,
+		       "__builtin_isunordered", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+  define_builtin_math (BUILT_IN_ISNORMAL, "isnormal", builtin_ftype_int_var,
+		       "__builtin_isnormal", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+  define_builtin_math (BUILT_IN_ISINF_SIGN, "isinf_sign", builtin_ftype_int_var,
+		       "__builtin_isinf_sign", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 
   gm2_alloca_node = find_builtin_tree ("__builtin_alloca");
   gm2_memcpy_node = find_builtin_tree ("__builtin_memcpy");
@@ -1404,6 +1523,7 @@ m2builtins_init (location_t location)
   gm2_huge_val_node = find_builtin_tree ("__builtin_huge_val");
   gm2_huge_vall_node = find_builtin_tree ("__builtin_huge_vall");
   gm2_isfinite_node = find_builtin_tree ("__builtin_isfinite");
+  gm2_isnan_node = find_builtin_tree ("__builtin_isnan");
   m2block_popGlobalScope ();
 }
 

@@ -1,3 +1,5 @@
+void exit (int);
+
 int a;
 int
 main ()

@@ -1,5 +1,5 @@
 // Access-related classes for RTL SSA                               -*- C++ -*-
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -204,6 +204,10 @@ public:
   // in the main instruction pattern.
   bool only_occurs_in_notes () const { return m_only_occurs_in_notes; }
 
+  // Return true if this is a temporary access, e.g. one created for
+  // an insn that is about to be inserted.
+  bool is_temporary () const { return m_is_temp; }
+
 protected:
   access_info (resource_info, access_kind);
 
@@ -353,6 +357,10 @@ public:
   //    next_use () && next_use ()->is_in_any_insn () ? next_use () : nullptr
   use_info *next_any_insn_use () const;
 
+  // Return the next use by a debug instruction, or null if none.
+  // This is only valid if is_in_debug_insn ().
+  use_info *next_debug_insn_use () const;
+
   // Return the previous use by a phi node in the list, or null if none.
   //
   // This is only valid if is_in_phi ().  It is equivalent to:
@@ -454,6 +462,8 @@ using reverse_use_iterator = list_iterator<use_info, &use_info::prev_use>;
 // of use in the same definition.
 using nondebug_insn_use_iterator
   = list_iterator<use_info, &use_info::next_nondebug_insn_use>;
+using debug_insn_use_iterator
+  = list_iterator<use_info, &use_info::next_debug_insn_use>;
 using any_insn_use_iterator
   = list_iterator<use_info, &use_info::next_any_insn_use>;
 using phi_use_iterator = list_iterator<use_info, &use_info::prev_phi_use>;
@@ -676,6 +686,10 @@ public:
   use_info *first_nondebug_insn_use () const;
   use_info *last_nondebug_insn_use () const;
 
+  // Return the first use of the set by debug instructions, or null if
+  // there is no such use.
+  use_info *first_debug_insn_use () const;
+
   // Return the first use of the set by any kind of instruction, or null
   // if there are no such uses.  The uses are in the order described above.
   use_info *first_any_insn_use () const;
@@ -726,6 +740,9 @@ public:
 
   // List the uses of the set by nondebug instructions, in reverse postorder.
   iterator_range<nondebug_insn_use_iterator> nondebug_insn_uses () const;
+
+  // List the uses of the set by debug instructions, in reverse postorder.
+  iterator_range<debug_insn_use_iterator> debug_insn_uses () const;
 
   // Return nondebug_insn_uses () in reverse order.
   iterator_range<reverse_use_iterator> reverse_nondebug_insn_uses () const;

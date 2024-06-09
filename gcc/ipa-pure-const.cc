@@ -1,5 +1,5 @@
 /* Callgraph based analysis of static variables.
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "symtab-thunks.h"
@@ -290,6 +292,15 @@ warn_function_cold (tree decl)
   warned_about
     = suggest_attribute (OPT_Wsuggest_attribute_cold, original_decl,
 			 true, warned_about, "cold");
+}
+
+void
+warn_function_returns_nonnull (tree decl)
+{
+  static hash_set<tree> *warned_about;
+  warned_about
+    = suggest_attribute (OPT_Wsuggest_attribute_returns_nonnull, decl,
+			 true, warned_about, "returns_nonnull");
 }
 
 /* Check to see if the use (or definition when CHECKING_WRITE is true)

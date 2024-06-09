@@ -39,4 +39,5 @@ unsigned long bar (unsigned char c)
 }
 
 /* Check that no pattern containing an AND expression was used.  */
-/* { dg-final { scan-assembler-not "\\(and:" } } */
+/* { dg-final { scan-assembler-not "\\(and:" { target { ! { s390*-*-* } } } } } */
+/* { dg-final { scan-assembler-not "\\tng?rk?\\t" { target { s390*-*-* } } } } */

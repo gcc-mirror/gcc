@@ -1,4 +1,5 @@
-main()
+int
+main(void)
 {
   static char static_char_array[1];
   static char *static_char_pointer;

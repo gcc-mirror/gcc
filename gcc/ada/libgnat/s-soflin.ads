@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -250,6 +250,22 @@ package System.Soft_Links is
    function Get_Stack_Info_NT return Stack_Checking.Stack_Access;
 
    Get_Stack_Info : Get_Stack_Access_Call := Get_Stack_Info_NT'Access;
+
+   ----------------------
+   -- Locking Soft-Links --
+   ----------------------
+
+   procedure Null_Set_Address (Addr : Address) is null;
+
+   --  Soft-Links are used for procedures that manipulate locks to avoid
+   --  dragging the tasking runtime when using access-to-controlled types.
+
+   Initialize_RTS_Lock : Set_Address_Call := Null_Set_Address'Access;
+   Finalize_RTS_Lock   : Set_Address_Call := Null_Set_Address'Access;
+   Acquire_RTS_Lock    : Set_Address_Call := Null_Set_Address'Access;
+   Release_RTS_Lock    : Set_Address_Call := Null_Set_Address'Access;
+   --  The initialization of these variables must be static because the value
+   --  needs to be overridden very early when the tasking runtime is dragged.
 
    --------------------------
    -- Master_Id Soft-Links --

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zve64d -mabi=ilp32 -fno-schedule-insns -fno-schedule-insns2 -O3 -Wno-psabi" } */
+/* { dg-options "-march=rv32gc_zve64d -mabi=ilp32 -fno-schedule-insns -fno-schedule-insns2 -O3" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include "riscv_vector.h"
@@ -11,14 +11,14 @@ void f (char*);
 **	addi\tsp,sp,-48
 **	sw\tra,12\(sp\)
 **	sw\ts0,8\(sp\)
-**	addi\ts0,sp,16
+**      addi\ts0,sp,16
 **	csrr\tt0,vlenb
-**	slli\tt1,t0,1
-**	sub\tsp,sp,t1
+**	sub\tsp,sp,t0
+**      vs1r.v\tv1,0\(sp\)
 **	...
-**	addi\ta2,a2,23
-**	andi\ta2,a2,-16
-**	sub\tsp,sp,a2
+**	addi\ta0,sp,15
+**	andi\ta0,a0,-16
+**	call\tf
 **	...
 **	lw\tra,12\(sp\)
 **	lw\ts0,8\(sp\)

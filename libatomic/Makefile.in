@@ -90,16 +90,17 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 @ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@am__append_1 = $(foreach s,$(SIZES),$(addsuffix _$(s)_1_.lo,$(SIZEOBJS)))
-@ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@am__append_2 = atomic_16.S
-@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@am__append_3 = $(foreach \
+@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@am__append_2 = $(foreach \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	s,$(SIZES),$(addsuffix \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	_$(s)_1_.lo,$(SIZEOBJS))) \
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	$(addsuffix \
-@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	_8_2_.lo,$(SIZEOBJS))
-@ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@am__append_4 = $(addsuffix _8_1_.lo,$(SIZEOBJS))
-@ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@am__append_5 = $(addsuffix _16_1_.lo,$(SIZEOBJS)) \
+@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	_8_2_.lo,$(SIZEOBJS)) \
+@ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@	tas_1_2_.lo
+@ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@am__append_3 = $(addsuffix _8_1_.lo,$(SIZEOBJS))
+@ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@am__append_4 = $(addsuffix _16_1_.lo,$(SIZEOBJS)) \
 @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@		       $(addsuffix _16_2_.lo,$(SIZEOBJS))
 
+@ARCH_AARCH64_LINUX_TRUE@am__append_5 = atomic_16.S
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -155,8 +156,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
-@ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@am__objects_1 =  \
-@ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@	atomic_16.lo
+@ARCH_AARCH64_LINUX_TRUE@am__objects_1 = atomic_16.lo
 am_libatomic_la_OBJECTS = gload.lo gstore.lo gcas.lo gexch.lo \
 	glfree.lo lock.lo init.lo fenv.lo fence.lo flag.lo \
 	$(am__objects_1)
@@ -328,6 +328,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SIZES = @SIZES@
 STRIP = @STRIP@
+SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
 VERSION = @VERSION@
 XCFLAGS = @XCFLAGS@
 XLDFLAGS = @XLDFLAGS@
@@ -416,9 +417,14 @@ noinst_LTLIBRARIES = libatomic_convenience.la
 @LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libatomic_version_dep = $(top_srcdir)/libatomic.map
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libatomic_version_dep = libatomic.map-sun
 libatomic_version_info = -version-info $(libtool_VERSION)
-libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) $(lt_host_flags)
+@ENABLE_DARWIN_AT_RPATH_TRUE@libatomic_darwin_rpath =  \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wc,-nodefaultrpaths \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
+libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
+	$(lt_host_flags) $(libatomic_darwin_rpath)
+
 libatomic_la_SOURCES = gload.c gstore.c gcas.c gexch.c glfree.c lock.c \
-	init.c fenv.c fence.c flag.c $(am__append_2)
+	init.c fenv.c fence.c flag.c $(am__append_5)
 SIZEOBJS = load store cas exch fadd fsub fand fior fxor fnand tas
 EXTRA_libatomic_la_SOURCES = $(addsuffix _n.c,$(SIZEOBJS))
 libatomic_la_DEPENDENCIES = $(libatomic_la_LIBADD) $(libatomic_version_dep)
@@ -444,8 +450,8 @@ all_c_files := $(foreach dir,$(search_path),$(wildcard $(dir)/*.c))
 # Then sort through them to find the one we want, and select the first.
 M_SRC = $(firstword $(filter %/$(M_FILE), $(all_c_files)))
 libatomic_la_LIBADD = $(foreach s,$(SIZES),$(addsuffix \
-	_$(s)_.lo,$(SIZEOBJS))) $(am__append_1) $(am__append_3) \
-	$(am__append_4) $(am__append_5)
+	_$(s)_.lo,$(SIZEOBJS))) $(am__append_1) $(am__append_2) \
+	$(am__append_3) $(am__append_4)
 @ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv8-a+lse
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=armv7-a+fp -DHAVE_KERNEL64
 @ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@IFUNC_OPTIONS = -march=i586
@@ -882,9 +888,7 @@ vpath % $(strip $(search_path))
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@		$(libatomic_la_OBJECTS) $(libatomic_la_LIBADD)
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	  $(top_srcdir)/libatomic.map \
-@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	  $(libatomic_la_OBJECTS:%.lo=.libs/%.o) \
-@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	 `echo $(libatomic_la_LIBADD) | \
-@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	    sed 's,\([^/ 	]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+@LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	  $(libatomic_la_OBJECTS) $(libatomic_la_LIBADD) \
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 -include $(wildcard $(DEPDIR)/*.Ppo)
@@ -892,12 +896,11 @@ vpath % $(strip $(search_path))
 %_.lo: Makefile
 	$(LTCOMPILE) $(M_DEPS) $(M_SIZE) $(M_IFUNC) -c -o $@ $(M_SRC)
 
-# Override the automake generated all-multi rule to guarantee that all-multi
+# Amend the automake generated all-multi rule to guarantee that all-multi
 # is not run in parallel with the %_.lo rules which generate $(DEPDIR)/*.Ppo
 # makefile fragments to avoid broken *.Ppo getting included into the Makefile
 # when it is reloaded during the build of all-multi.
 all-multi: $(libatomic_la_LIBADD)
-	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do # $(MAKE)
 
 # target overrides
 -include $(tmake_file)

@@ -55,42 +55,6 @@ class Bstatement;
 class Bvariable;
 class Ast_dump_context;
 
-// This class is used to traverse assignments made by a statement
-// which makes assignments.
-
-class Traverse_assignments
-{
- public:
-  Traverse_assignments()
-  { }
-
-  virtual ~Traverse_assignments()
-  { }
-
-  // This is called for a variable initialization.
-  virtual void
-  initialize_variable(Named_object*) = 0;
-
-  // This is called for each assignment made by the statement.  PLHS
-  // points to the left hand side, and PRHS points to the right hand
-  // side.  PRHS may be NULL if there is no associated expression, as
-  // in the bool set by a non-blocking receive.
-  virtual void
-  assignment(Expression** plhs, Expression** prhs) = 0;
-
-  // This is called for each expression which is not passed to the
-  // assignment function.  This is used for some of the statements
-  // which assign two values, for which there is no expression which
-  // describes the value.  For ++ and -- the value is passed to both
-  // the assignment method and the rhs method.  IS_STORED is true if
-  // this value is being stored directly.  It is false if the value is
-  // computed but not stored.  IS_LOCAL is true if the value is being
-  // stored in a local variable or this is being called by a return
-  // statement.
-  virtual void
-  value(Expression**, bool is_stored, bool is_local) = 0;
-};
-
 // A single statement.
 
 class Statement
@@ -207,16 +171,17 @@ class Statement
   static Statement*
   make_defer_statement(Call_expression* call, Location);
 
-  // Make a return statement.
+  // Make a return statement.  FUNCTION is a backpointer to the
+  // function that this statement is returning from.
   static Return_statement*
-  make_return_statement(Expression_list*, Location);
+  make_return_statement(Named_object* function, Expression_list*, Location);
 
   // Make a statement that returns the result of a call expression.
   // If the call does not return any results, this just returns the
   // call expression as a statement, assuming that the function will
   // end immediately afterward.
   static Statement*
-  make_return_from_call(Call_expression*, Location);
+  make_return_from_call(Named_object* function, Call_expression*, Location);
 
   // Make a break statement.
   static Statement*
@@ -253,7 +218,7 @@ class Statement
 
   // Make a type switch statement.
   static Type_switch_statement*
-  make_type_switch_statement(const std::string&, Expression*, Location);
+  make_type_switch_statement(Expression*, Location);
 
   // Make a send statement.
   static Send_statement*
@@ -292,13 +257,6 @@ class Statement
   int
   traverse_contents(Traverse*);
 
-  // If this statement assigns some values, it calls a function for
-  // each value to which this statement assigns a value, and returns
-  // true.  If this statement does not assign any values, it returns
-  // false.
-  bool
-  traverse_assignments(Traverse_assignments* tassign);
-
   // Lower a statement.  This is called immediately after parsing to
   // simplify statements for further processing.  It returns the same
   // Statement or a new one.  FUNCTION is the function containing this
@@ -321,7 +279,7 @@ class Statement
 
   // Set type information for unnamed constants.
   void
-  determine_types();
+  determine_types(Gogo*);
 
   // Check types in a statement.  This simply checks that any
   // expressions used by the statement have the right type.
@@ -486,12 +444,6 @@ class Statement
   virtual int
   do_traverse(Traverse*) = 0;
 
-  // Implemented by child class: traverse assignments.  Any statement
-  // which includes an assignment should implement this.
-  virtual bool
-  do_traverse_assignments(Traverse_assignments*)
-  { return false; }
-
   // Implemented by the child class: lower this statement to a simpler
   // one.
   virtual Statement*
@@ -508,7 +460,7 @@ class Statement
   // constants.  Any statement which includes an expression needs to
   // implement this.
   virtual void
-  do_determine_types()
+  do_determine_types(Gogo*)
   { }
 
   // Implemented by child class: check types of expressions used in a
@@ -629,18 +581,20 @@ class Assignment_statement : public Statement
   set_omit_write_barrier()
   { this->omit_write_barrier_ = true; }
 
+  // Check if we can assign RHS to LHS.  If we can, return true.  If
+  // we can't, report an error and return false.
+  static bool
+  check_assignment_types(Expression* lhs, Type* rhs_type, Location);
+
  protected:
   int
   do_traverse(Traverse* traverse);
-
-  bool
-  do_traverse_assignments(Traverse_assignments*);
 
   virtual Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -753,11 +707,8 @@ class Temporary_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*);
-
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -820,8 +771,8 @@ class Variable_declaration_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*);
+  void
+  do_determine_types(Gogo*);
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -854,9 +805,11 @@ class Variable_declaration_statement : public Statement
 class Return_statement : public Statement
 {
  public:
-  Return_statement(Expression_list* vals, Location location)
+  Return_statement(Named_object* function, Expression_list* vals,
+		   Location location)
     : Statement(STATEMENT_RETURN, location),
-      vals_(vals), is_lowered_(false)
+      function_(function), vals_(vals), types_are_determined_(false),
+      is_lowered_(false)
   { }
 
   // The list of values being returned.  This may be NULL.
@@ -869,8 +822,11 @@ class Return_statement : public Statement
   do_traverse(Traverse* traverse)
   { return this->traverse_expression_list(traverse, this->vals_); }
 
-  bool
-  do_traverse_assignments(Traverse_assignments*);
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -893,8 +849,12 @@ class Return_statement : public Statement
   do_dump_statement(Ast_dump_context*) const;
 
  private:
+  // A backpointer to the function we are returning from.
+  Named_object* function_;
   // Return values.  This may be NULL.
   Expression_list* vals_;
+  // True if types have been determined.
+  bool types_are_determined_;
   // True if this statement has been lowered.
   bool is_lowered_;
 };
@@ -916,7 +876,7 @@ class Expression_statement : public Statement
   { return this->traverse_expression(traverse, &this->expr_); }
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -983,8 +943,8 @@ class Block_statement : public Statement
   { return this->block_->traverse(traverse); }
 
   void
-  do_determine_types()
-  { this->block_->determine_types(); }
+  do_determine_types(Gogo* gogo)
+  { this->block_->determine_types(gogo); }
 
   int
   do_inlining_cost()
@@ -1033,7 +993,7 @@ class Send_statement : public Statement
   do_traverse(Traverse* traverse);
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -1106,7 +1066,7 @@ class Select_clauses
 
   // Determine types.
   void
-  determine_types();
+  determine_types(Gogo*);
 
   // Check types.
   void
@@ -1157,7 +1117,7 @@ class Select_clauses
 
     // Determine types.
     void
-    determine_types();
+    determine_types(Gogo*);
 
     // Check types.
     void
@@ -1246,14 +1206,14 @@ class Select_clauses
 
    private:
     void
-    lower_send(Block*, Expression*, Expression*);
+    lower_send(Gogo*, Block*, Expression*, Expression*);
 
     void
     lower_recv(Gogo*, Named_object*, Block*, Expression*, Expression*,
 	       Temporary_statement*);
 
     void
-    set_case(Block*, Expression*, Expression*, Expression*);
+    set_case(Gogo*, Block*, Expression*, Expression*, Expression*);
 
     // The channel.
     Expression* channel_;
@@ -1326,8 +1286,8 @@ class Select_statement : public Statement
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
   void
-  do_determine_types()
-  { this->clauses_->determine_types(); }
+  do_determine_types(Gogo* gogo)
+  { this->clauses_->determine_types(gogo); }
 
   void
   do_check_types(Gogo*)
@@ -1345,11 +1305,11 @@ class Select_statement : public Statement
  private:
   // Lower a one-case select statement.
   Statement*
-  lower_one_case(Block*);
+  lower_one_case(Gogo*, Block*);
 
   // Lower a two-case select statement with one defualt case.
   Statement*
-  lower_two_case(Block*);
+  lower_two_case(Gogo*, Block*);
 
   // The select clauses.
   Select_clauses* clauses_;
@@ -1383,11 +1343,8 @@ class Thunk_statement : public Statement
   int
   do_traverse(Traverse* traverse);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*);
-
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -1655,7 +1612,7 @@ class If_statement : public Statement
   do_traverse(Traverse*);
 
   void
-  do_determine_types();
+  do_determine_types(Gogo*);
 
   void
   do_check_types(Gogo*);
@@ -1719,9 +1676,11 @@ class For_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -1783,9 +1742,11 @@ class For_range_statement : public Statement
   int
   do_traverse(Traverse*);
 
-  bool
-  do_traverse_assignments(Traverse_assignments*)
-  { go_unreachable(); }
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
@@ -1832,7 +1793,7 @@ class For_range_statement : public Statement
 		      Block**);
 
   Statement*
-  lower_map_range_clear(Type*, Block*, Expression*, Named_object*,
+  lower_map_range_clear(Gogo*, Type*, Block*, Expression*, Named_object*,
                         Temporary_statement*, Location);
 
   Statement*
@@ -1889,12 +1850,12 @@ class Case_clauses
 
   // Lower for a nonconstant switch.
   void
-  lower(Block*, Temporary_statement*, Unnamed_label*) const;
+  lower(Gogo*, Block*, Temporary_statement*, Unnamed_label*) const;
 
   // Determine types of expressions.  The Type parameter is the type
   // of the switch value.
   void
-  determine_types(Type*);
+  determine_types(Gogo*, Type*);
 
   // Check types.  The Type parameter is the type of the switch value.
   bool
@@ -1964,11 +1925,12 @@ class Case_clauses
 
     // Lower for a nonconstant switch.
     void
-    lower(Block*, Temporary_statement*, Unnamed_label*, Unnamed_label*) const;
+    lower(Gogo*, Block*, Temporary_statement*, Unnamed_label*,
+	  Unnamed_label*) const;
 
     // Determine types.
     void
-    determine_types(Type*);
+    determine_types(Gogo*, Type*);
 
     // Check types.
     bool
@@ -2042,6 +2004,12 @@ class Switch_statement : public Statement
   int
   do_traverse(Traverse*);
 
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
+
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -2100,9 +2068,17 @@ class Type_case_clauses
   void
   check_duplicates() const;
 
+  // Determine types of expressions.
+  void
+  determine_types(Gogo*);
+
+  // Check types.
+  bool
+  check_types(Type*);
+
   // Lower to if and goto statements.
   void
-  lower(Gogo*, Type*, Block*, Temporary_statement* descriptor_temp,
+  lower(Gogo*, Block*, Temporary_statement* descriptor_temp,
 	Unnamed_label* break_label) const;
 
   // Return true if these clauses may fall through to the statements
@@ -2149,9 +2125,17 @@ class Type_case_clauses
     int
     traverse(Traverse*);
 
+    // Determine types.
+    void
+    determine_types(Gogo*);
+
+    // Check types.
+    bool
+    check_types(Type*);
+
     // Lower to if and goto statements.
     void
-    lower(Gogo*, Type*, Block*, Temporary_statement* descriptor_temp,
+    lower(Gogo*, Block*, Temporary_statement* descriptor_temp,
 	  Unnamed_label* break_label, Unnamed_label** stmts_label) const;
 
     // Return true if this clause may fall through to execute the
@@ -2191,10 +2175,9 @@ class Type_case_clauses
 class Type_switch_statement : public Statement
 {
  public:
-  Type_switch_statement(const std::string& name, Expression* expr,
-			Location location)
+  Type_switch_statement(Expression* expr, Location location)
     : Statement(STATEMENT_TYPE_SWITCH, location),
-      name_(name), expr_(expr), clauses_(NULL), break_label_(NULL)
+      expr_(expr), clauses_(NULL), break_label_(NULL)
   { }
 
   // Add the clauses.
@@ -2213,6 +2196,12 @@ class Type_switch_statement : public Statement
   int
   do_traverse(Traverse*);
 
+  void
+  do_determine_types(Gogo*);
+
+  void
+  do_check_types(Gogo*);
+
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -2227,10 +2216,7 @@ class Type_switch_statement : public Statement
   do_may_fall_through() const;
 
  private:
-  // The name of the variable declared in the type switch guard.  Empty if there
-  // is no variable declared.
-  std::string name_;
-  // The expression we are switching on if there is no variable.
+  // The expression we are switching on.
   Expression* expr_;
   // The type case clauses.
   Type_case_clauses* clauses_;

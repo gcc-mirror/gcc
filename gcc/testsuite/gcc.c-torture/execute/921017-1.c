@@ -1,5 +1,6 @@
 /* { dg-skip-if "requires alloca" { ! alloca } { "-O0" } { "" } } */
 /* { dg-require-effective-target trampolines } */
+/* { dg-additional-options "-std=gnu89" } */
 
 f(n)
 {

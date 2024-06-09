@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.cc and pe.c
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -261,6 +261,7 @@ extern void thumb_expand_cpymemqi (rtx *);
 extern rtx arm_return_addr (int, rtx);
 extern void thumb_reload_out_hi (rtx *);
 extern void thumb_set_return_address (rtx, rtx);
+extern const char *arm_output_casesi (rtx *);
 extern const char *thumb1_output_casesi (rtx *);
 extern const char *thumb2_output_casesi (rtx *);
 #endif

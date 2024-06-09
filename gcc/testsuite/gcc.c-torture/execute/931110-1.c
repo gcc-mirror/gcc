@@ -1,3 +1,5 @@
+void exit (int);
+
 typedef struct
 {
   short f:3, g:3, h:10;
@@ -9,7 +11,8 @@ struct
   small s[10];
 } x;
 
-main ()
+int
+main (void)
 {
   int i;
   for (i = 0; i < 10; i++)

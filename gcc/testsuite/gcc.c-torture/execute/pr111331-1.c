@@ -10,7 +10,7 @@ int c(int d, int e, int f) {
 int main() {
   int g = -1;
   a = c(b + 30, 29, g + 29);
-  volatile t = a;
+  volatile int t = a;
   if (t != 28)
     __builtin_abort();
   return 0;

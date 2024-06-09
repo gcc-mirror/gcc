@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,10 +62,6 @@ package Styleg is
    --  is capitalized in an appropriate manner. Reserved is set if
    --  the attribute designator is a reserved word (access, digits,
    --  delta or range) to allow differing rules for the two cases.
-
-   procedure Check_Boolean_Operator (Node : Node_Id);
-   --  Node is a node for an AND or OR operator. Check that the usage meets
-   --  the style rules.
 
    procedure Check_Box;
    --  Called after scanning out a box to check spacing
@@ -163,10 +159,6 @@ package Styleg is
    procedure Check_Xtra_Parens (N : Node_Id);
    --  Called after scanning an entire expression (N) that does not require an
    --  extra level of parentheses.
-
-   procedure Check_Xtra_Parens_Precedence (N : Node_Id);
-   --  Called after scanning a subexpression (N) that does not require an
-   --  extra level of parentheses according to operator precedence rules.
 
    function Mode_In_Check return Boolean;
    pragma Inline (Mode_In_Check);

@@ -1,5 +1,3 @@
-// TODO: remove need for the taint option:
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 
 #define LOWER_LIMIT 5

@@ -1,6 +1,6 @@
 
 ;; Code and mode itertator and attribute definitions for the ARM backend
-;; Copyright (C) 2010-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2024 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -140,6 +140,9 @@
 
 ;; Opaque structure types used in table lookups (except vtbl1/vtbx1).
 (define_mode_iterator VTAB [TI EI OI])
+
+;; Opaque structure types for x2 variants of VSTR1/VSTR1Q or VLD1/VLD1Q.
+(define_mode_iterator VMEMX2 [TI OI])
 
 ;; Widenable modes.
 (define_mode_iterator VW [V8QI V4HI V2SI])
@@ -866,6 +869,14 @@
 		 (plus "vadd")
 		 ])
 
+(define_int_attr mve_vmaxmin_safe_imp [
+		 (VMAXVQ_U "yes")
+		 (VMAXVQ_S "no")
+		 (VMAXAVQ_S "yes")
+		 (VMINVQ_U "no")
+		 (VMINVQ_S "no")
+		 (VMINAVQ_S "no")])
+
 (define_int_attr mve_cmp_op1 [
 		 (VCMPCSQ_M_U "cs")
 		 (VCMPEQQ_M_S "eq") (VCMPEQQ_M_U "eq")
@@ -1532,6 +1543,9 @@
 
 ;; vtbl<n> suffix for NEON vector modes.
 (define_mode_attr VTAB_n [(TI "2") (EI "3") (OI "4")])
+
+;; Suffix for x2 variants of vld1 and vst1.
+(define_mode_attr VMEMX2_q [(TI "") (OI "q")])
 
 ;; fp16 or bf16 marker for 16-bit float modes.
 (define_mode_attr fporbf [(HF "fp16") (BF "bf16")])
@@ -2355,7 +2369,7 @@
 		       (VSUBQ_S "s") (VSUBQ_U "u") (VADDVAQ_S "s")
 		       (VADDVAQ_U "u") (VADDLVAQ_S "s") (VADDLVAQ_U "u")
 		       (VBICQ_N_S "s") (VBICQ_N_U "u") (VMLALDAVQ_U "u")
-		       (VMLALDAVQ_S "s") (VMLALDAVXQ_U "u") (VMLALDAVXQ_S "s")
+		       (VMLALDAVQ_S "s") (VMLALDAVXQ_S "s")
 		       (VMOVNBQ_U "u") (VMOVNBQ_S "s") (VMOVNTQ_U "u")
 		       (VMOVNTQ_S "s") (VORRQ_N_S "s") (VORRQ_N_U "u")
 		       (VQMOVNBQ_U "u") (VQMOVNBQ_S "s") (VQMOVNTQ_S "s")
@@ -2397,8 +2411,8 @@
 		       (VREV16Q_M_S "s") (VREV16Q_M_U "u")
 		       (VQRSHRNTQ_N_U "u") (VMOVNTQ_M_U "u") (VMOVLBQ_M_U "u")
 		       (VMLALDAVAQ_U "u") (VQSHRNBQ_N_U "u") (VSHRNBQ_N_U "u")
-		       (VRSHRNBQ_N_U "u") (VMLALDAVXQ_P_U "u")
-		       (VMVNQ_M_N_U "u") (VQSHRNTQ_N_U "u") (VMLALDAVAXQ_U "u")
+		       (VRSHRNBQ_N_U "u")
+		       (VMVNQ_M_N_U "u") (VQSHRNTQ_N_U "u")
 		       (VQMOVNTQ_M_U "u") (VSHRNTQ_N_U "u") (VCVTMQ_M_S "s")
 		       (VCVTMQ_M_U "u") (VCVTNQ_M_S "s") (VCVTNQ_M_U "u")
 		       (VCVTPQ_M_S "s") (VCVTPQ_M_U "u") (VADDLVAQ_P_S "s")
@@ -2747,7 +2761,6 @@
 (define_int_iterator VADDLVAQ [VADDLVAQ_S VADDLVAQ_U])
 (define_int_iterator VBICQ_N [VBICQ_N_S VBICQ_N_U])
 (define_int_iterator VMLALDAVQ [VMLALDAVQ_U VMLALDAVQ_S])
-(define_int_iterator VMLALDAVXQ [VMLALDAVXQ_U VMLALDAVXQ_S])
 (define_int_iterator VMOVNBQ [VMOVNBQ_U VMOVNBQ_S])
 (define_int_iterator VMOVNTQ [VMOVNTQ_S VMOVNTQ_U])
 (define_int_iterator VORRQ_N [VORRQ_N_U VORRQ_N_S])
@@ -2802,11 +2815,9 @@
 (define_int_iterator VQSHRNBQ_N [VQSHRNBQ_N_U VQSHRNBQ_N_S])
 (define_int_iterator VSHRNBQ_N [VSHRNBQ_N_U VSHRNBQ_N_S])
 (define_int_iterator VRSHRNBQ_N [VRSHRNBQ_N_S VRSHRNBQ_N_U])
-(define_int_iterator VMLALDAVXQ_P [VMLALDAVXQ_P_U VMLALDAVXQ_P_S])
 (define_int_iterator VQMOVNTQ_M [VQMOVNTQ_M_U VQMOVNTQ_M_S])
 (define_int_iterator VMVNQ_M_N [VMVNQ_M_N_U VMVNQ_M_N_S])
 (define_int_iterator VQSHRNTQ_N [VQSHRNTQ_N_U VQSHRNTQ_N_S])
-(define_int_iterator VMLALDAVAXQ [VMLALDAVAXQ_S VMLALDAVAXQ_U])
 (define_int_iterator VSHRNTQ_N [VSHRNTQ_N_S VSHRNTQ_N_U])
 (define_int_iterator VCVTMQ_M [VCVTMQ_M_S VCVTMQ_M_U])
 (define_int_iterator VCVTNQ_M [VCVTNQ_M_S VCVTNQ_M_U])

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Renesas RL78 processors.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -366,7 +366,7 @@ rl78_option_override (void)
       && strcmp (lang_hooks.name, "GNU C")
       && strcmp (lang_hooks.name, "GNU C11")
       && strcmp (lang_hooks.name, "GNU C17")
-      && strcmp (lang_hooks.name, "GNU C2X")
+      && strcmp (lang_hooks.name, "GNU C23")
       && strcmp (lang_hooks.name, "GNU C89")
       && strcmp (lang_hooks.name, "GNU C99")
       /* Compiling with -flto results in a language of GNU GIMPLE being used... */
@@ -898,7 +898,7 @@ rl78_handle_vector_attribute (tree * node,
 #define TARGET_ATTRIBUTE_TABLE		rl78_attribute_table
 
 /* Table of RL78-specific attributes.  */
-const struct attribute_spec rl78_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (rl78_attribute_table,
 {
   /* Name, min_len, max_len, decl_req, type_req, fn_type_req,
      affects_type_identity, handler, exclude.  */
@@ -911,9 +911,8 @@ const struct attribute_spec rl78_attribute_table[] =
   { "saddr",          0, 0, true, false, false, false,
     rl78_handle_saddr_attribute, NULL },
   { "vector",         1, -1, true, false, false, false,
-	rl78_handle_vector_attribute, NULL },
-  { NULL,             0, 0, false, false, false, false, NULL, NULL }
-};
+	rl78_handle_vector_attribute, NULL }
+});
 
 
 
@@ -4973,6 +4972,11 @@ rl78_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
 }
 
 
+/* The strub runtime uses asms, and physical register allocation won't
+   deal with them, so disable it.  */
+#undef TARGET_HAVE_STRUB_SUPPORT_FOR
+#define TARGET_HAVE_STRUB_SUPPORT_FOR hook_bool_tree_false
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rl78.h"

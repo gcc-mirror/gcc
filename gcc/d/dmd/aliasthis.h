@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 2009-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 2009-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -21,7 +21,7 @@ public:
    // alias Identifier this;
     Identifier *ident;
     Dsymbol    *sym;
-    bool       isDeprecated_;
+    d_bool     isDeprecated_;
 
     AliasThis *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;

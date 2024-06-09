@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zve64d_zvl2048b -mabi=ilp32d --param riscv-autovec-preference=scalable -fdump-tree-vect-details" } */
+/* { dg-options "-march=rv32gc_zve64d_zvl2048b -mabi=ilp32d -mrvv-vector-bits=scalable -fdump-tree-vect-details" } */
 
 #include "template-1.h"
 

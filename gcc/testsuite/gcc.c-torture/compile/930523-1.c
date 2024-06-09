@@ -1,6 +1,7 @@
 int v;
 
-f ()
+void
+f (void)
 {
   unsigned long *a1, *a2;
   int vertex2;

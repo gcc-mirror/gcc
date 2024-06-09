@@ -6,7 +6,7 @@ in
 #
 # Makefile for directory with subdirs to build.
 #   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+#   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2023
 #   Free Software Foundation
 #
 # This file is free software; you can redistribute it and/or modify
@@ -146,7 +146,8 @@ BASE_EXPORTS = \
 	M4="$(M4)"; export M4; \
 	SED="$(SED)"; export SED; \
 	AWK="$(AWK)"; export AWK; \
-	MAKEINFO="$(MAKEINFO)"; export MAKEINFO;
+	MAKEINFO="$(MAKEINFO)"; export MAKEINFO; \
+	GUILE="$(GUILE)"; export GUILE;
 
 # This is the list of variables to export in the environment when
 # configuring subdirectories for the build system.
@@ -454,6 +455,8 @@ GM2FLAGS = $(CFLAGS)
 
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 
+GUILE = guile
+
 # Pass additional PGO and LTO compiler options to the PGO build.
 BUILD_CFLAGS = $(PGO_BUILD_CFLAGS) $(PGO_BUILD_LTO_CFLAGS)
 override CFLAGS += $(BUILD_CFLAGS)
@@ -561,6 +564,10 @@ STAGEtrain_TFLAGS = $(filter-out -fchecking=1,$(STAGE3_TFLAGS))
 
 STAGEfeedback_CFLAGS = $(STAGE4_CFLAGS) -fprofile-use -fprofile-reproducible=parallel-runs
 STAGEfeedback_TFLAGS = $(STAGE4_TFLAGS)
+# Disable warnings as errors for a few reasons:
+# - sources for gen* binaries do not have .gcda files available
+# - inlining decisions generate extra warnings
+STAGEfeedback_CONFIGURE_FLAGS = $(filter-out --enable-werror-always,$(STAGE_CONFIGURE_FLAGS))
 
 STAGEautoprofile_CFLAGS = $(filter-out -gtoggle,$(STAGE2_CFLAGS)) -g
 STAGEautoprofile_TFLAGS = $(STAGE2_TFLAGS)
@@ -1635,9 +1642,17 @@ cross: all-build all-gas all-ld
 @endif gcc-no-bootstrap
 
 @if gcc
+
+.PHONY: gcc-site.exp
+gcc-site.exp:
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) site.exp);
+
 [+ FOR languages +]
 .PHONY: check-gcc-[+language+] check-[+language+]
-check-gcc-[+language+]:
+check-gcc-[+language+]: gcc-site.exp
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
@@ -1961,7 +1976,7 @@ configure-target-[+module+]: maybe-all-gcc[+
    (define dep-maybe (lambda ()
       (if (exist? "hard") "" "maybe-")))
 
-   ;; dep-kind returns returns "prebootstrap" for configure or build
+   ;; dep-kind returns "prebootstrap" for configure or build
    ;; dependencies of bootstrapped modules on a build module
    ;; (e.g. all-gcc on all-build-bison); "normal" if the dependency is
    ;; on an "install" target, or if the dependence module is not
@@ -1998,6 +2013,25 @@ configure-target-[+module+]: maybe-all-gcc[+
 	 (unless (=* target "target-")
            (string-append "configure-" target ": " dep "\n"))))))
 
+   ;; Dependencies in between target modules if the dependencies
+   ;; are bootstrap target modules and the target modules which
+   ;; depend on them are emitted inside of @unless gcc-bootstrap.
+   ;; Unfortunately, some target modules like libatomic or libbacktrace
+   ;; have bootstrap flag set, but whether they are actually built
+   ;; during bootstrap or after bootstrap depends on e.g. enabled languages;
+   ;; if d is enabled, libphobos is built as target module and depends
+   ;; on libatomic and libbacktrace, which are therefore also built as
+   ;; bootstrap modules.  If d is not enabled but go is, libatomic and
+   ;; libbacktrace are just dependencies of libgo which is not a bootstrap
+   ;; target module, but we need dependencies on libatomic and libbacktrace
+   ;; in that case even when gcc-bootstrap.  This lambda emits those.
+   (define make-postboot-target-dep (lambda ()
+     (let ((target (dep-module "module")) (on (dep-module "on")))
+       (when (=* on "target-")
+	 (when (=* target "target-")
+	   (string-append "@unless " on "-bootstrap\n" (make-dep "" "")
+			  "\n@endunless " on "-bootstrap\n"))))))
+
    ;; We now build the hash table that is used by dep-kind.
    (define boot-modules (make-hash-table 113))
    (define postboot-targets (make-hash-table 113))
@@ -2028,6 +2062,11 @@ configure-target-[+module+]: maybe-all-gcc[+
 @if gcc-bootstrap
 [+ FOR dependencies +][+ CASE (dep-kind) +]
 [+ == "postbootstrap" +][+ (make-postboot-dep) +][+ ESAC +][+
+ENDFOR dependencies +]@endif gcc-bootstrap
+
+@if gcc-bootstrap
+[+ FOR dependencies +][+ CASE (dep-kind) +]
+[+ == "postbootstrap" +][+ (make-postboot-target-dep) +][+ ESAC +][+
 ENDFOR dependencies +]@endif gcc-bootstrap
 
 @unless gcc-bootstrap

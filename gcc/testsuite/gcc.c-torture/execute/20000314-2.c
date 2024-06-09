@@ -1,3 +1,6 @@
+void abort(void);
+void exit(int);
+
 typedef unsigned long long uint64;
 const uint64 bigconst = 1ULL << 34;
 
@@ -12,7 +15,8 @@ uint64 getmask(void)
       return 0;
 }
 
-main()
+int
+main(void)
 {
     uint64 f = getmask();
     if (sizeof (long long) == 8

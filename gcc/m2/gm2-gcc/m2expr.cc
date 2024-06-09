@@ -1,6 +1,6 @@
 /* m2expr.cc provides an interface to GCC expression trees.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -40,6 +40,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2treelib.h"
 #include "m2type.h"
 #include "m2linemap.h"
+#include "math.h"
 
 static void m2expr_checkRealOverflow (location_t location, enum tree_code code,
                                       tree result);
@@ -108,6 +109,14 @@ unsigned int
 m2expr_StringLength (tree string)
 {
   return TREE_STRING_LENGTH (string);
+}
+
+/* BuildCondIfExpression returns a tree containing (condition) ? (left) : right.  */
+
+tree
+m2expr_BuildCondIfExpression (tree condition, tree type, tree left, tree right)
+{
+  return fold_build3 (COND_EXPR, type, condition, left, right);
 }
 
 /* CheckAddressToCardinal if op is a pointer convert it to the ADDRESS type.  */
@@ -2758,13 +2767,10 @@ noBitsRequired (tree values)
 {
   int bits = tree_floor_log2 (values);
 
-  if (integer_pow2p (values))
-    return m2decl_BuildIntegerConstant (bits + 1);
-  else
-    return m2decl_BuildIntegerConstant (bits + 1);
+  return m2decl_BuildIntegerConstant (bits + 1);
 }
 
-/* getMax return the result of max(a, b).  */
+/* getMax return the result of max (a, b).  */
 
 static tree
 getMax (tree a, tree b)
@@ -2778,8 +2784,8 @@ getMax (tree a, tree b)
 /* calcNbits return the smallest number of bits required to
    represent: min..max.  */
 
-static tree
-calcNbits (location_t location, tree min, tree max)
+tree
+m2expr_calcNbits (location_t location, tree min, tree max)
 {
   int negative = false;
   tree t = testLimits (location, m2type_GetIntegerType (), min, max);
@@ -2832,7 +2838,7 @@ m2expr_BuildTBitSize (location_t location, tree type)
                                     TYPE_MAX_VALUE (type), false);
       min = m2convert_BuildConvert (location, m2type_GetIntegerType (),
                                     TYPE_MIN_VALUE (type), false);
-      return calcNbits (location, min, max);
+      return m2expr_calcNbits (location, min, max);
     case BOOLEAN_TYPE:
       return m2expr_GetIntegerOne (location);
     default:
@@ -3876,13 +3882,54 @@ m2expr_BuildBinaryForeachWordDo (location_t location, tree type, tree op1,
 }
 
 
-/* StrToWideInt return true if an overflow occurs when attempting to convert
-   str to an unsigned ZTYPE the value is contained in the widest_int result.
-   The value result is undefined if true is returned.  */
+/* OverflowZType returns true if the ZTYPE str will exceed the
+   internal representation.  This routine is much faster (at
+   least 2 orders of magnitude faster) than the char at a time overflow
+   detection used in ToWideInt and so it should be
+   used to filter out erroneously large constants before calling ToWideInt
+   allowing a quick fail.  */
 
 bool
-m2expr_StrToWideInt (location_t location, const char *str, unsigned int base,
-		     widest_int &result, bool issueError)
+m2expr_OverflowZType (location_t location, const char *str, unsigned int base,
+		      bool issueError)
+{
+  int length = strlen (str);
+  bool overflow = false;
+
+  switch (base)
+    {
+    case 2:
+      overflow = ((length -1) > WIDE_INT_MAX_PRECISION);
+      break;
+    case 8:
+      overflow = (((length -1) * 3) > WIDE_INT_MAX_PRECISION);
+      break;
+    case 10:
+      {
+	int str_log10 = length;
+	int bits_str = (int) (((float) (str_log10)) / log10f (2.0)) + 1;
+	overflow = (bits_str > WIDE_INT_MAX_PRECISION);
+      }
+      break;
+    case 16:
+      overflow = (((length -1) * 4) > WIDE_INT_MAX_PRECISION);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (issueError && overflow)
+    error_at (location,
+	      "constant literal %qs exceeds internal ZTYPE range", str);
+  return overflow;
+}
+
+
+/* ToWideInt converts a ZTYPE str value into result.  */
+
+static
+bool
+ToWideInt (location_t location, const char *str, unsigned int base,
+	   widest_int &result, bool issueError)
 {
   tree type = m2type_GetM2ZType ();
   unsigned int i = 0;
@@ -3990,6 +4037,20 @@ m2expr_StrToWideInt (location_t location, const char *str, unsigned int base,
 		  "constant literal %qs exceeds internal ZTYPE range", str);
       return true;
     }
+}
+
+
+/* StrToWideInt return true if an overflow occurs when attempting to convert
+   str to an unsigned ZTYPE the value is contained in the widest_int result.
+   The value result is undefined if true is returned.  */
+
+bool
+m2expr_StrToWideInt (location_t location, const char *str, unsigned int base,
+		     widest_int &result, bool issueError)
+{
+  if (m2expr_OverflowZType (location, str, base, issueError))
+    return true;
+  return ToWideInt (location, str, base, result, issueError);
 }
 
 

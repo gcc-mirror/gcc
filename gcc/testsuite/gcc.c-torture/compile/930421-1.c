@@ -2,6 +2,7 @@
 
 double q(double);
 
+void
 f (int **x, int *r, int *s, int a, int b, int c, int d)
 {
   int i, j, k, m, e, f, g, z[1024], y[2];

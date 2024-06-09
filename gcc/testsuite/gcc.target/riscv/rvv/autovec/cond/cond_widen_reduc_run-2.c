@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param riscv-autovec-preference=scalable --param riscv-autovec-lmul=m2 -fno-vect-cost-model -ffast-math" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -mrvv-max-lmul=m2 -fno-vect-cost-model -ffast-math" } */
 
 #include "cond_widen_reduc-2.c"
 

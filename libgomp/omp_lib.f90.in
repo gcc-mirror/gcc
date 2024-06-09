@@ -1,4 +1,4 @@
-!  Copyright (C) 2005-2023 Free Software Foundation, Inc.
+!  Copyright (C) 2005-2024 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU Offloading and Multi Processing Library
@@ -904,6 +904,10 @@
 
 #if _OPENMP >= 201811
 !GCC$ ATTRIBUTES DEPRECATED :: omp_get_nested, omp_set_nested
+!GCC$ ATTRIBUTES DEPRECATED :: omp_lock_hint_kind, omp_lock_hint_none
+!GCC$ ATTRIBUTES DEPRECATED :: omp_lock_hint_uncontended, omp_lock_hint_contended
+!GCC$ ATTRIBUTES DEPRECATED :: omp_lock_hint_nonspeculative
+!GCC$ ATTRIBUTES DEPRECATED :: omp_lock_hint_speculative
 #endif
 
 #if _OPENMP >= 202011

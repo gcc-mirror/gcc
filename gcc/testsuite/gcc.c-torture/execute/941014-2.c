@@ -22,7 +22,8 @@ f ()
   return foo_p;
 }
 
-main ()
+int
+main (void)
 {
   volatile foo_t *foo_p;
 

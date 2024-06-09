@@ -8,8 +8,6 @@ Source: $(DRUNTIMESRC core/internal/_array/_duplication.d)
 */
 module core.internal.array.duplication;
 
-private extern (C) void[] _d_newarrayU(const scope TypeInfo ti, size_t length) pure nothrow;
-
 U[] _dup(T, U)(scope T[] a) pure nothrow @trusted if (__traits(isPOD, T))
 {
     if (__ctfe)
@@ -22,9 +20,10 @@ U[] _dup(T, U)(scope T[] a) pure nothrow @trusted if (__traits(isPOD, T))
     else
     {
         import core.stdc.string : memcpy;
-        auto arr = _d_newarrayU(typeid(T[]), a.length);
-        memcpy(arr.ptr, cast(const(void)*) a.ptr, T.sizeof * a.length);
-        return *cast(U[]*) &arr;
+        import core.internal.array.construction: _d_newarrayUPureNothrow;
+        auto arr = _d_newarrayUPureNothrow!U(a.length, is(U == shared));
+        memcpy(cast(void*) arr.ptr, cast(const(void)*) a.ptr, T.sizeof * a.length);
+        return arr;
     }
 }
 
@@ -55,8 +54,9 @@ U[] _dup(T, U)(T[] a) if (!__traits(isPOD, T))
     else
     {
         import core.lifetime: copyEmplace;
+        import core.internal.array.construction: _d_newarrayU;
         U[] res = () @trusted {
-            auto arr = cast(U*) _d_newarrayU(typeid(T[]), a.length);
+            auto arr = cast(U*) _d_newarrayU!T(a.length, is(T == shared));
             size_t i;
             scope (failure)
             {
@@ -357,4 +357,14 @@ U[] _dup(T, U)(T[] a) if (!__traits(isPOD, T))
 
     static assert(test!Copy());
     assert(test!Copy());
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24453
+@safe unittest
+{
+    static inout(char)[] foo(ref scope return inout(char)[] s)
+    {
+        auto bla = s.idup;
+        return s;
+    }
 }

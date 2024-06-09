@@ -1,5 +1,5 @@
 /* Subroutines for the gcc driver.
-   Copyright (C) 2008-2023 Free Software Foundation, Inc.
+   Copyright (C) 2008-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,6 +44,8 @@ const char *
 host_detect_local_cpu (int argc, const char **argv)
 {
   const char *cpu = NULL;
+  /* Don't assigne any static string to ret.  If you need to do so,
+     use concat.  */
   char *ret = NULL;
   char buf[128];
   FILE *f;
@@ -90,7 +92,9 @@ host_detect_local_cpu (int argc, const char **argv)
 
 fallback_cpu:
 #if defined (__mips_nan2008)
-  ret = reconcat (ret, " -mnan=2008 ", NULL);
+  /* Put the ret to the end of list, since it may be NULL.  */
+  if (arch)
+    ret = reconcat (ret, " -mnan=2008 ", ret, NULL);
 #endif
 
 #ifdef HAVE_GETAUXVAL
@@ -104,7 +108,7 @@ fallback_cpu:
 #endif
 
   if (cpu)
-    ret = reconcat (ret, ret, "-m", argv[0], "=", cpu, NULL);
+    ret = reconcat (ret, " -m", argv[0], "=", cpu, ret, NULL);
 
   return ret;
 }

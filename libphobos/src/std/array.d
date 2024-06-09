@@ -1201,7 +1201,7 @@ private auto arrayAllocImpl(bool minimallyInitialized, T, I...)(I sizes) nothrow
     auto a2 = minimallyInitializedArray!(S2[][])(2, 2);
     assert(a2);
     enum b2 = minimallyInitializedArray!(S2[][])(2, 2);
-    assert(b2);
+    assert(b2 !is null);
     static struct S3
     {
         //this() @disable;
@@ -1210,7 +1210,7 @@ private auto arrayAllocImpl(bool minimallyInitialized, T, I...)(I sizes) nothrow
     auto a3 = minimallyInitializedArray!(S3[][])(2, 2);
     assert(a3);
     enum b3 = minimallyInitializedArray!(S3[][])(2, 2);
-    assert(b3);
+    assert(b3 !is null);
 }
 
 /++

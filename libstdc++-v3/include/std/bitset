@@ -1,6 +1,6 @@
 // <bitset> -*- C++ -*-
 
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -177,8 +177,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX14_CONSTEXPR void
       _M_do_set() _GLIBCXX_NOEXCEPT
       {
-	for (size_t __i = 0; __i < _Nw; __i++)
-	  _M_w[__i] = ~static_cast<_WordT>(0);
+#if __cplusplus >= 201402L
+	if (__builtin_is_constant_evaluated())
+	  {
+	    for (_WordT& __w : _M_w)
+	      __w = ~static_cast<_WordT>(0);;
+	    return;
+	  }
+#endif
+	__builtin_memset(_M_w, 0xFF, _Nw * sizeof(_WordT));
       }
 
       _GLIBCXX14_CONSTEXPR void
@@ -320,17 +327,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _GLIBCXX14_CONSTEXPR unsigned long long
     _Base_bitset<_Nw>::_M_do_to_ullong() const
     {
-      const bool __dw = sizeof(unsigned long long) > sizeof(unsigned long);
-      for (size_t __i = 1 + __dw; __i < _Nw; ++__i)
+#if __SIZEOF_LONG_LONG__ == __SIZEOF_LONG__
+      return _M_do_to_ulong();
+#else
+      for (size_t __i = 2; __i < _Nw; ++__i)
 	if (_M_w[__i])
 	  __throw_overflow_error(__N("_Base_bitset::_M_do_to_ullong"));
 
-      if (__dw)
-	return _M_w[0] + (static_cast<unsigned long long>(_M_w[1])
+      return _M_w[0] + (static_cast<unsigned long long>(_M_w[1])
 			  << _GLIBCXX_BITSET_BITS_PER_WORD);
-      return _M_w[0];
-    }
 #endif
+    }
+#endif // C++11
 
   template<size_t _Nw>
     _GLIBCXX14_CONSTEXPR size_t
@@ -1086,10 +1094,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator>>=(size_t __position) _GLIBCXX_NOEXCEPT
       {
 	if (__builtin_expect(__position < _Nb, 1))
-	  {
-	    this->_M_do_right_shift(__position);
-	    this->_M_do_sanitize();
-	  }
+	  this->_M_do_right_shift(__position);
 	else
 	  this->_M_do_reset();
 	return *this;

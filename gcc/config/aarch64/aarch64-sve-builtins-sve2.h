@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE (__ARM_FEATURE_SVE intrinsics)
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -47,13 +47,20 @@ namespace aarch64_sve
     extern const function_base *const svbcax;
     extern const function_base *const svbdep;
     extern const function_base *const svbext;
+    extern const function_base *const svbfmlslb;
+    extern const function_base *const svbfmlslb_lane;
+    extern const function_base *const svbfmlslt;
+    extern const function_base *const svbfmlslt_lane;
     extern const function_base *const svbgrp;
     extern const function_base *const svbsl;
     extern const function_base *const svbsl1n;
     extern const function_base *const svbsl2n;
     extern const function_base *const svcdot;
     extern const function_base *const svcdot_lane;
+    extern const function_base *const svclamp;
+    extern const function_base *const svcntp;
     extern const function_base *const svcvtlt;
+    extern const function_base *const svcvtn;
     extern const function_base *const svcvtx;
     extern const function_base *const svcvtxnt;
     extern const function_base *const sveor3;
@@ -93,13 +100,17 @@ namespace aarch64_sve
     extern const function_base *const svmullt_lane;
     extern const function_base *const svnbsl;
     extern const function_base *const svnmatch;
+    extern const function_base *const svpext;
     extern const function_base *const svpmul;
     extern const function_base *const svpmullb;
     extern const function_base *const svpmullb_pair;
     extern const function_base *const svpmullt;
     extern const function_base *const svpmullt_pair;
+    extern const function_base *const svpsel;
     extern const function_base *const svqabs;
     extern const function_base *const svqcadd;
+    extern const function_base *const svqcvt;
+    extern const function_base *const svqcvtn;
     extern const function_base *const svqdmlalb;
     extern const function_base *const svqdmlalb_lane;
     extern const function_base *const svqdmlalbt;
@@ -126,8 +137,12 @@ namespace aarch64_sve
     extern const function_base *const svqrdmlsh;
     extern const function_base *const svqrdmlsh_lane;
     extern const function_base *const svqrshl;
+    extern const function_base *const svqrshr;
+    extern const function_base *const svqrshrn;
     extern const function_base *const svqrshrnb;
     extern const function_base *const svqrshrnt;
+    extern const function_base *const svqrshru;
+    extern const function_base *const svqrshrun;
     extern const function_base *const svqrshrunb;
     extern const function_base *const svqrshrunt;
     extern const function_base *const svqshl;
@@ -144,6 +159,7 @@ namespace aarch64_sve
     extern const function_base *const svraddhnb;
     extern const function_base *const svraddhnt;
     extern const function_base *const svrax1;
+    extern const function_base *const svrevd;
     extern const function_base *const svrhadd;
     extern const function_base *const svrshl;
     extern const function_base *const svrshr;
@@ -178,7 +194,12 @@ namespace aarch64_sve
     extern const function_base *const svsubwt;
     extern const function_base *const svtbl2;
     extern const function_base *const svtbx;
+    extern const function_base *const svunpk;
     extern const function_base *const svuqadd;
+    extern const function_base *const svuzp;
+    extern const function_base *const svuzpq;
+    extern const function_base *const svzip;
+    extern const function_base *const svzipq;
     extern const function_base *const svwhilege;
     extern const function_base *const svwhilegt;
     extern const function_base *const svwhilerw;

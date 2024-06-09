@@ -1,4 +1,5 @@
 // EXTRA_SOURCES: imports/ufcs5a.d imports/ufcs5b.d imports/ufcs5c.d imports/ufcs5d.d imports/ufcs5e.d
+// UNICODE_NAMES:
 
 module ufcs;
 
@@ -677,6 +678,7 @@ void test8453()
 /*******************************************/
 // https://issues.dlang.org/show_bug.cgi?id=8503
 
+//UTF-8 chars
 void α8503(int i) {}
 
 void test8503()

@@ -1,5 +1,5 @@
 /* Function summary pass.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -75,6 +75,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-niter.h"
 #include "tree-ssa-loop.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "cfgloop.h"
@@ -513,7 +515,7 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		    }
 		  else if (!op->val[1])
 		    {
-		      Value_Range op0 (op->type);
+		      Value_Range op0 (TREE_TYPE (op->val[0]));
 		      range_op_handler handler (op->code);
 
 		      ipa_range_set_and_normalize (op0, op->val[0]);
@@ -679,8 +681,12 @@ evaluate_properties_for_edge (struct cgraph_edge *e, bool inline_p,
 		    if (!vr.undefined_p () && !vr.varying_p ())
 		      {
 			if (!avals->m_known_value_ranges.length ())
-			  avals->m_known_value_ranges.safe_grow_cleared (count,
-									 true);
+			  {
+			    avals->m_known_value_ranges.safe_grow_cleared (count,
+									   true);
+			    for (int i = 0; i < count; ++i)
+			      avals->m_known_value_ranges[i].set_type (void_type_node);
+			  }
 			avals->m_known_value_ranges[i] = vr;
 		      }
 		  }
@@ -2642,7 +2648,9 @@ points_to_local_or_readonly_memory_p (tree t)
 	return true;
       return !ptr_deref_may_alias_global_p (t, false);
     }
-  if (TREE_CODE (t) == ADDR_EXPR)
+  if (TREE_CODE (t) == ADDR_EXPR
+      && (TREE_CODE (TREE_OPERAND (t, 0)) != TARGET_MEM_REF
+	  || TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)) != INTEGER_CST))
     return refs_local_or_readonly_memory_p (TREE_OPERAND (t, 0));
   return false;
 }
@@ -5090,4 +5098,5 @@ void
 ipa_fnsummary_cc_finalize (void)
 {
   ipa_free_fn_summary ();
+  ipa_free_size_summary ();
 }

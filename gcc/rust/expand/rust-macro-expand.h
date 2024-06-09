@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -19,6 +19,7 @@
 #ifndef RUST_MACRO_EXPAND_H
 #define RUST_MACRO_EXPAND_H
 
+#include "optional.h"
 #include "rust-buffered-queue.h"
 #include "rust-parse.h"
 #include "rust-token.h"
@@ -28,6 +29,11 @@
 #include "rust-early-name-resolver.h"
 #include "rust-name-resolver.h"
 #include "rust-macro-invoc-lexer.h"
+#include "rust-proc-macro-invoc-lexer.h"
+#include "rust-token-converter.h"
+#include "rust-ast-collector.h"
+#include "rust-system.h"
+#include "libproc_macro_internal/proc_macro.h"
 
 // Provides objects and method prototypes for macro expansion
 
@@ -85,26 +91,71 @@ public:
     Repetition,
   };
 
-  MatchedFragmentContainer (std::vector<MatchedFragment> fragments,
-			    Kind kind = Kind::Repetition)
-    : fragments (fragments), kind (kind)
-  {}
+  virtual ~MatchedFragmentContainer () = default;
+
+  virtual Kind get_kind () const = 0;
+
+  virtual std::string as_string () const = 0;
 
   /**
    * Create a valid fragment matched zero times. This is useful for repetitions
    * which allow the absence of a fragment, such as * and ?
    */
-  static MatchedFragmentContainer zero ()
-  {
-    return MatchedFragmentContainer ({});
-  }
+  static std::unique_ptr<MatchedFragmentContainer> zero ();
 
   /**
    * Create a valid fragment matched one time
    */
-  static MatchedFragmentContainer metavar (MatchedFragment fragment)
+  static std::unique_ptr<MatchedFragmentContainer>
+  metavar (MatchedFragment fragment);
+
+  /**
+   * Add a matched fragment to the container
+   */
+  void add_fragment (MatchedFragment fragment);
+
+  /**
+   * Add a matched fragment to the container
+   */
+  void add_fragment (std::unique_ptr<MatchedFragmentContainer> fragment);
+
+  // const std::string &get_fragment_name () const { return fragment_name; }
+
+  bool is_single_fragment () const { return get_kind () == Kind::MetaVar; }
+
+  MatchedFragment &get_single_fragment ();
+
+  std::vector<std::unique_ptr<MatchedFragmentContainer>> &get_fragments ();
+};
+
+class MatchedFragmentContainerMetaVar : public MatchedFragmentContainer
+{
+  MatchedFragment fragment;
+
+public:
+  MatchedFragmentContainerMetaVar (const MatchedFragment &fragment)
+    : fragment (fragment)
+  {}
+
+  MatchedFragment &get_fragment () { return fragment; }
+
+  virtual Kind get_kind () const { return Kind::MetaVar; }
+
+  virtual std::string as_string () const { return fragment.as_string (); }
+};
+
+class MatchedFragmentContainerRepetition : public MatchedFragmentContainer
+{
+  std::vector<std::unique_ptr<MatchedFragmentContainer>> fragments;
+
+public:
+  MatchedFragmentContainerRepetition () {}
+
+  size_t get_match_amount () const { return fragments.size (); }
+
+  std::vector<std::unique_ptr<MatchedFragmentContainer>> &get_fragments ()
   {
-    return MatchedFragmentContainer ({fragment}, Kind::MetaVar);
+    return fragments;
   }
 
   /**
@@ -112,39 +163,31 @@ public:
    */
   void add_fragment (MatchedFragment fragment)
   {
-    rust_assert (!is_single_fragment ());
-
-    fragments.emplace_back (fragment);
+    add_fragment (metavar (fragment));
   }
 
-  size_t get_match_amount () const { return fragments.size (); }
-  const std::vector<MatchedFragment> &get_fragments () const
-  {
-    return fragments;
-  }
-  // const std::string &get_fragment_name () const { return fragment_name; }
-
-  bool is_single_fragment () const
-  {
-    return get_match_amount () == 1 && kind == Kind::MetaVar;
-  }
-
-  const MatchedFragment get_single_fragment () const
-  {
-    rust_assert (is_single_fragment ());
-
-    return fragments[0];
-  }
-
-  const Kind &get_kind () const { return kind; }
-
-private:
   /**
-   * Fragments matched `match_amount` times. This can be an empty vector
-   * in case having zero matches is allowed (i.e ? or * operators)
+   * Add a matched fragment to the container
    */
-  std::vector<MatchedFragment> fragments;
-  Kind kind;
+  void add_fragment (std::unique_ptr<MatchedFragmentContainer> fragment)
+  {
+    fragments.emplace_back (std::move (fragment));
+  }
+
+  virtual Kind get_kind () const { return Kind::Repetition; }
+
+  virtual std::string as_string () const
+  {
+    std::string acc = "[";
+    for (size_t i = 0; i < fragments.size (); i++)
+      {
+	if (i)
+	  acc += " ";
+	acc += fragments[i]->as_string ();
+      }
+    acc += "]";
+    return acc;
+  }
 };
 
 class SubstitutionScope
@@ -154,14 +197,14 @@ public:
 
   void push () { stack.push_back ({}); }
 
-  std::map<std::string, MatchedFragmentContainer> pop ()
+  std::map<std::string, std::unique_ptr<MatchedFragmentContainer>> pop ()
   {
-    auto top = stack.back ();
+    auto top = std::move (stack.back ());
     stack.pop_back ();
     return top;
   }
 
-  std::map<std::string, MatchedFragmentContainer> &peek ()
+  std::map<std::string, std::unique_ptr<MatchedFragmentContainer>> &peek ()
   {
     return stack.back ();
   }
@@ -175,10 +218,10 @@ public:
     auto it = current_map.find (fragment.fragment_ident);
 
     if (it == current_map.end ())
-      current_map.insert ({fragment.fragment_ident,
-			   MatchedFragmentContainer::metavar (fragment)});
+      current_map.emplace (fragment.fragment_ident,
+			   MatchedFragmentContainer::metavar (fragment));
     else
-      gcc_unreachable ();
+      rust_unreachable ();
   }
 
   /**
@@ -191,32 +234,57 @@ public:
     auto it = current_map.find (fragment.fragment_ident);
 
     if (it == current_map.end ())
-      current_map.insert (
-	{fragment.fragment_ident, MatchedFragmentContainer ({fragment})});
-    else
-      it->second.add_fragment (fragment);
+      it = current_map
+	     .emplace (fragment.fragment_ident,
+		       std::unique_ptr<MatchedFragmentContainer> (
+			 new MatchedFragmentContainerRepetition ()))
+	     .first;
+
+    it->second->add_fragment (fragment);
   }
 
-  void insert_matches (std::string key, MatchedFragmentContainer matches)
+  /**
+   * Append a new matched fragment to a repetition into the current substitution
+   * map
+   */
+  void append_fragment (std::string ident,
+			std::unique_ptr<MatchedFragmentContainer> fragment)
+  {
+    auto &current_map = stack.back ();
+    auto it = current_map.find (ident);
+
+    if (it == current_map.end ())
+      it = current_map
+	     .emplace (ident, std::unique_ptr<MatchedFragmentContainer> (
+				new MatchedFragmentContainerRepetition ()))
+	     .first;
+
+    it->second->add_fragment (std::move (fragment));
+  }
+
+  void insert_matches (std::string key,
+		       std::unique_ptr<MatchedFragmentContainer> matches)
   {
     auto &current_map = stack.back ();
     auto it = current_map.find (key);
     rust_assert (it == current_map.end ());
 
-    current_map.insert ({key, matches});
+    current_map.emplace (std::move (key), std::move (matches));
   }
 
 private:
-  std::vector<std::map<std::string, MatchedFragmentContainer>> stack;
+  std::vector<std::map<std::string, std::unique_ptr<MatchedFragmentContainer>>>
+    stack;
 };
 
 // Object used to store shared data (between functions) for macro expansion.
 struct MacroExpander
 {
-  enum ContextType
+  enum class ContextType
   {
     ITEM,
-    BLOCK,
+    STMT,
+    EXPR,
     EXTERN,
     TYPE,
     TRAIT,
@@ -252,13 +320,9 @@ struct MacroExpander
   void expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon);
 
   // Expands a single declarative macro.
-  AST::Fragment expand_decl_macro (Location locus, AST::MacroInvocData &invoc,
+  AST::Fragment expand_decl_macro (location_t locus, AST::MacroInvocData &invoc,
 				   AST::MacroRulesDefinition &rules_def,
 				   bool semicolon);
-
-  void expand_cfg_attrs (AST::AttrVec &attrs);
-  bool fails_cfg (const AST::AttrVec &attr) const;
-  bool fails_cfg_with_expand (AST::AttrVec &attrs) const;
 
   bool depth_exceeds_recursion_limit () const;
 
@@ -267,7 +331,7 @@ struct MacroExpander
 
   AST::Fragment transcribe_rule (
     AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
-    std::map<std::string, MatchedFragmentContainer> &matched_fragments,
+    std::map<std::string, MatchedFragmentContainer *> &matched_fragments,
     bool semicolon, ContextType ctx);
 
   bool match_fragment (Parser<MacroInvocLexer> &parser,
@@ -275,11 +339,17 @@ struct MacroExpander
 
   bool match_token (Parser<MacroInvocLexer> &parser, AST::Token &token);
 
+  void match_repetition_skipped_metavars (AST::MacroMatch &);
+  void match_repetition_skipped_metavars (AST::MacroMatchFragment &);
+  void match_repetition_skipped_metavars (AST::MacroMatchRepetition &);
+  void match_repetition_skipped_metavars (AST::MacroMatcher &);
+
   bool match_repetition (Parser<MacroInvocLexer> &parser,
 			 AST::MacroMatchRepetition &rep);
 
   bool match_matcher (Parser<MacroInvocLexer> &parser,
-		      AST::MacroMatcher &matcher, bool in_repetition = false);
+		      AST::MacroMatcher &matcher, bool in_repetition = false,
+		      bool match_delim = true);
 
   /**
    * Match any amount of matches
@@ -335,6 +405,77 @@ struct MacroExpander
     return fragment;
   }
 
+  void import_proc_macros (std::string extern_crate);
+
+  template <typename T>
+  AST::Fragment expand_derive_proc_macro (T &item, AST::SimplePath &path)
+  {
+    tl::optional<CustomDeriveProcMacro &> macro
+      = mappings->lookup_derive_proc_macro_invocation (path);
+    if (!macro.has_value ())
+      {
+	rust_error_at (path.get_locus (), "macro not found");
+	return AST::Fragment::create_error ();
+      }
+
+    AST::TokenCollector collector;
+
+    collector.visit (item);
+
+    auto c = collector.collect_tokens ();
+    std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
+
+    return parse_proc_macro_output (
+      macro.value ().get_handle () (convert (vec)));
+  }
+
+  template <typename T>
+  AST::Fragment expand_bang_proc_macro (T &item,
+					AST::MacroInvocation &invocation)
+  {
+    tl::optional<BangProcMacro &> macro
+      = mappings->lookup_bang_proc_macro_invocation (invocation);
+    if (!macro.has_value ())
+      {
+	rust_error_at (invocation.get_locus (), "macro not found");
+	return AST::Fragment::create_error ();
+      }
+
+    AST::TokenCollector collector;
+
+    collector.visit (item);
+
+    auto c = collector.collect_tokens ();
+    std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
+
+    return parse_proc_macro_output (
+      macro.value ().get_handle () (convert (vec)));
+  }
+
+  template <typename T>
+  AST::Fragment expand_attribute_proc_macro (T &item, AST::SimplePath &path)
+  {
+    tl::optional<AttributeProcMacro &> macro
+      = mappings->lookup_attribute_proc_macro_invocation (path);
+    if (!macro.has_value ())
+      {
+	rust_error_at (path.get_locus (), "macro not found");
+	return AST::Fragment::create_error ();
+      }
+
+    AST::TokenCollector collector;
+
+    collector.visit (item);
+
+    auto c = collector.collect_tokens ();
+    std::vector<const_TokenPtr> vec (c.cbegin (), c.cend ());
+
+    // FIXME: Handle attributes
+    return parse_proc_macro_output (
+      macro.value ().get_handle () (ProcMacro::TokenStream::make_tokenstream (),
+				    convert (vec)));
+  }
+
   /**
    * Has the MacroExpander expanded a macro since its state was last reset?
    */
@@ -346,10 +487,19 @@ struct MacroExpander
    */
   void reset_changed_state () { has_changed_flag = false; }
 
-  AST::MacroRulesDefinition *get_last_definition () { return last_def; }
-  AST::MacroInvocation *get_last_invocation () { return last_invoc; }
+  tl::optional<AST::MacroRulesDefinition &> &get_last_definition ()
+  {
+    return last_def;
+  }
+
+  tl::optional<AST::MacroInvocation &> &get_last_invocation ()
+  {
+    return last_invoc;
+  }
 
 private:
+  AST::Fragment parse_proc_macro_output (ProcMacro::TokenStream ts);
+
   AST::Crate &crate;
   Session &session;
   SubstitutionScope sub_stack;
@@ -357,8 +507,8 @@ private:
   AST::Fragment expanded_fragment;
   bool has_changed_flag;
 
-  AST::MacroRulesDefinition *last_def;
-  AST::MacroInvocation *last_invoc;
+  tl::optional<AST::MacroRulesDefinition &> last_def;
+  tl::optional<AST::MacroInvocation &> last_invoc;
 
 public:
   Resolver::Resolver *resolver;

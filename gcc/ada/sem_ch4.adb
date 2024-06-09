@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -718,21 +718,14 @@ package body Sem_Ch4 is
          --  illegal.
 
          if Can_Never_Be_Null (Type_Id) then
-            declare
-               Not_Null_Check : constant Node_Id :=
-                                  Make_Raise_Constraint_Error (Sloc (E),
-                                    Reason => CE_Null_Not_Allowed);
+            if Expander_Active then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "null value not allowed here??", CE_Null_Not_Allowed);
 
-            begin
-               if Expander_Active then
-                  Insert_Action (N, Not_Null_Check);
-                  Analyze (Not_Null_Check);
-
-               elsif Warn_On_Ada_2012_Compatibility then
-                  Error_Msg_N
-                    ("null value not allowed here in Ada 2012?y?", E);
-               end if;
-            end;
+            elsif Warn_On_Ada_2012_Compatibility then
+               Error_Msg_N
+                 ("null value not allowed here in Ada 2012?y?", E);
+            end if;
          end if;
 
          --  Check for missing initialization. Skip this check if the allocator
@@ -2057,8 +2050,9 @@ package body Sem_Ch4 is
       --  For the predefined case, the result is Boolean, regardless of the
       --  type of the operands. The operands may even be limited, if they are
       --  generic actuals. If they are overloaded, label the operands with the
-      --  common type that must be present, or with the type of the formal of
-      --  the user-defined function.
+      --  compare type if it is present, typically because it is a global type
+      --  in a generic instance, or with the common type that must be present,
+      --  or with the type of the formal of the user-defined function.
 
       if Present (Entity (N)) then
          Op_Id := Entity (N);
@@ -2071,7 +2065,10 @@ package body Sem_Ch4 is
 
          if Is_Overloaded (L) then
             if Ekind (Op_Id) = E_Operator then
-               Set_Etype (L, Intersect_Types (L, R));
+               Set_Etype (L,
+                 (if Present (Compare_Type (N))
+                  then Compare_Type (N)
+                  else Intersect_Types (L, R)));
             else
                Set_Etype (L, Etype (First_Formal (Op_Id)));
             end if;
@@ -2079,7 +2076,10 @@ package body Sem_Ch4 is
 
          if Is_Overloaded (R) then
             if Ekind (Op_Id) = E_Operator then
-               Set_Etype (R, Intersect_Types (L, R));
+               Set_Etype (R,
+                 (if Present (Compare_Type (N))
+                  then Compare_Type (N)
+                  else Intersect_Types (L, R)));
             else
                Set_Etype (R, Etype (Next_Formal (First_Formal (Op_Id))));
             end if;
@@ -2099,16 +2099,15 @@ package body Sem_Ch4 is
          end loop;
       end if;
 
-      --  If there was no match, and the operator is inequality, this may be
+      --  If there was no match and the operator is inequality, this may be
       --  a case where inequality has not been made explicit, as for tagged
       --  types. Analyze the node as the negation of an equality operation.
-      --  This cannot be done earlier, because before analysis we cannot rule
+      --  This cannot be done earlier because, before analysis, we cannot rule
       --  out the presence of an explicit inequality.
 
-      if Etype (N) = Any_Type
-        and then Nkind (N) = N_Op_Ne
-      then
+      if Etype (N) = Any_Type and then Nkind (N) = N_Op_Ne then
          Op_Id := Get_Name_Entity_Id (Name_Op_Eq);
+
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator then
                Find_Comparison_Equality_Types (L, R, Op_Id, N);
@@ -2298,7 +2297,9 @@ package body Sem_Ch4 is
             while Present (It.Nam) loop
                T := It.Typ;
 
-               if No (First_Formal (Base_Type (Designated_Type (T)))) then
+               if Is_Access_Type (T)
+                 and then No (First_Formal (Base_Type (Designated_Type (T))))
+               then
                   Set_Etype (P, T);
                else
                   Remove_Interp (I);
@@ -2644,7 +2645,7 @@ package body Sem_Ch4 is
                  ("\ELSE expression has}!", Else_Expr, Etype (Else_Expr));
             end if;
 
-         else
+         elsif Present (Else_Expr) then
             if Is_Overloaded (Else_Expr) then
                Error_Msg_N
                  ("no interpretation compatible with type of THEN expression",
@@ -6019,17 +6020,17 @@ package body Sem_Ch4 is
                      --  Emit appropriate message. The node will be replaced
                      --  by an appropriate raise statement.
 
-                     --  Note that in SPARK mode, as with all calls to apply a
-                     --  compile time constraint error, this will be made into
-                     --  an error to simplify the processing of the formal
-                     --  verification backend.
+                     --  Note that in GNATprove mode, as with all calls to
+                     --  apply a compile time constraint error, this will be
+                     --  made into an error to simplify the processing of the
+                     --  formal verification backend.
 
                      Apply_Compile_Time_Constraint_Error
                        (N, "component not present in }??",
                         CE_Discriminant_Check_Failed,
                         Ent          => Prefix_Type,
                         Emit_Message =>
-                          SPARK_Mode = On or not In_Instance_Not_Visible);
+                          GNATprove_Mode or not In_Instance_Not_Visible);
                      return;
                   end if;
 
@@ -8467,9 +8468,21 @@ package body Sem_Ch4 is
             --  resolution does not depend on the type of the parameter that
             --  includes the indexing operation.
 
-            elsif Nkind (Parent (Par)) in N_Subprogram_Call
-              and then Is_Entity_Name (Name (Parent (Par)))
-            then
+            elsif Nkind (Parent (Par)) in N_Subprogram_Call then
+
+               if not Is_Entity_Name (Name (Parent (Par))) then
+
+                  --  ??? We don't know what to do with an N_Selected_Component
+                  --  node for a prefixed-notation call to AA.BB where AA's
+                  --  type is known, but BB has not yet been resolved. In that
+                  --  case, the preceding Is_Entity_Name call returns False.
+                  --  Incorrectly returning False here will usually work
+                  --  better than incorrectly returning True, so that's what
+                  --  we do for now.
+
+                  return False;
+               end if;
+
                declare
                   Proc : Entity_Id;
 
@@ -9911,7 +9924,7 @@ package body Sem_Ch4 is
          if (not Is_Tagged_Type (Obj_Type)
               and then
                 (not (Core_Extensions_Allowed or Allow_Extensions)
-                  or else not Present (Primitive_Operations (Obj_Type))))
+                  or else No (Primitive_Operations (Obj_Type))))
            or else Is_Incomplete_Type (Obj_Type)
          then
             Obj_Type := Prev_Obj_Type;
@@ -10223,9 +10236,15 @@ package body Sem_Ch4 is
 
                elsif not Comes_From_Source (Visible_Op)
                  and then Alias (Visible_Op) = Op
-                 and then not Is_Hidden (Visible_Op)
                then
-                  return True;
+                  --  If Visible_Op or what it overrides is not hidden, then we
+                  --  have found what we're looking for.
+
+                  if not Is_Hidden (Visible_Op)
+                    or else not Is_Hidden (Overridden_Operation (Op))
+                  then
+                     return True;
+                  end if;
                end if;
 
                Visible_Op := Homonym (Visible_Op);

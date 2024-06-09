@@ -1,6 +1,6 @@
 ; Options for the IA-32 and AMD64 ports of the compiler.
 
-; Copyright (C) 2005-2023 Free Software Foundation, Inc.
+; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -35,6 +35,13 @@ HOST_WIDE_INT ix86_isa_flags_explicit
 
 Variable
 HOST_WIDE_INT ix86_isa_flags2_explicit
+
+; Indicate if AVX512 and AVX10.1 are explicitly set no.
+Variable
+int ix86_no_avx512_explicit = 0
+
+Variable
+int ix86_no_avx10_1_explicit = 0
 
 ; Additional target flags
 Variable
@@ -95,6 +102,14 @@ HOST_WIDE_INT x_ix86_isa_flags2_explicit
 ;; which flags were passed by the user
 TargetSave
 HOST_WIDE_INT x_ix86_isa_flags_explicit
+
+;; which flags were passed by the user
+TargetSave
+HOST_WIDE_INT x_ix86_no_avx512_explicit
+
+;; which flags were passed by the user
+TargetSave
+HOST_WIDE_INT x_ix86_no_avx10_1_explicit
 
 ;; whether -mtune was not specified
 TargetSave
@@ -282,7 +297,7 @@ Branches are this expensive (arbitrary units).
 
 mlarge-data-threshold=
 Target RejectNegative Joined UInteger Var(ix86_section_threshold) Init(DEFAULT_LARGE_SECTION_THRESHOLD)
--mlarge-data-threshold=<number>	Data greater than given threshold will go into .ldata section in x86-64 medium model.
+-mlarge-data-threshold=<number>	Data greater than given threshold will go into a large data section in x86-64 medium and large code models.
 
 mcmodel=
 Target RejectNegative Joined Enum(cmodel) Var(ix86_cmodel) Init(CM_32)
@@ -644,6 +659,10 @@ mstore-max=
 Target RejectNegative Joined Var(ix86_store_max) Enum(prefer_vector_width) Init(PVW_NONE) Save
 Maximum number of bits that can be stored to memory efficiently.
 
+mnoreturn-no-callee-saved-registers
+Target Var(ix86_noreturn_no_callee_saved_registers)
+Optimize noreturn functions by not saving callee-saved registers used in the function.
+
 ;; ISA support
 
 m32
@@ -722,14 +741,6 @@ mavx512f
 Target Mask(ISA_AVX512F) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation.
 
-mavx512pf
-Target Mask(ISA_AVX512PF) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation.
-
-mavx512er
-Target Mask(ISA_AVX512ER) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation.
-
 mavx512cd
 Target Mask(ISA_AVX512CD) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation.
@@ -753,14 +764,6 @@ Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and A
 mavx512vbmi
 Target Mask(ISA_AVX512VBMI) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation.
-
-mavx5124fmaps
-Target Mask(ISA2_AVX5124FMAPS) Var(ix86_isa_flags2) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation.
-
-mavx5124vnniw
-Target Mask(ISA2_AVX5124VNNIW) Var(ix86_isa_flags2) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124VNNIW built-in functions and code generation.
 
 mavx512vpopcntdq
 Target Mask(ISA_AVX512VPOPCNTDQ) Var(ix86_isa_flags) Save
@@ -952,10 +955,6 @@ Support RDRND built-in functions and code generation.
 mf16c
 Target Mask(ISA_F16C) Var(ix86_isa_flags) Save
 Support F16C built-in functions and code generation.
-
-mprefetchwt1
-Target Mask(ISA_PREFETCHWT1) Var(ix86_isa_flags) Save
-Support PREFETCHWT1 built-in functions and code generation.
 
 mfentry
 Target Save Var(flag_fentry)
@@ -1310,3 +1309,65 @@ Enable vectorization for gather instruction.
 mscatter
 Target Alias(mtune-ctrl=, use_scatter, ^use_scatter)
 Enable vectorization for scatter instruction.
+
+mapxf
+Target Mask(ISA2_APX_F) Var(ix86_isa_flags2) Save
+Support code generation for APX features, including EGPR, PUSH2POP2,
+NDD and PPX.
+
+mapx-features=
+Target Undocumented Joined Enum(apx_features) EnumSet Var(ix86_apx_features) Init(apx_none) Save
+
+Enum
+Name(apx_features) Type(int)
+
+EnumValue
+Enum(apx_features) String(none) Value(apx_none) Set(1)
+
+EnumValue
+Enum(apx_features) String(egpr) Value(apx_egpr) Set(2)
+
+EnumValue
+Enum(apx_features) String(push2pop2) Value(apx_push2pop2) Set(3)
+
+EnumValue
+Enum(apx_features) String(ndd) Value(apx_ndd) Set(4)
+
+EnumValue
+Enum(apx_features) String(ppx) Value(apx_ppx) Set(5)
+
+EnumValue
+Enum(apx_features) String(nf) Value(apx_nf) Set(6)
+
+EnumValue
+Enum(apx_features) String(ccmp) Value(apx_ccmp) Set(7)
+
+EnumValue
+Enum(apx_features) String(all) Value(apx_all) Set(1)
+
+mapx-inline-asm-use-gpr32
+Target Var(ix86_apx_inline_asm_use_gpr32) Init(0)
+Enable GPR32 in inline asm when APX_F enabled.
+
+mevex512
+Target Mask(ISA2_EVEX512) Var(ix86_isa_flags2) Save
+Support 512 bit vector built-in functions and code generation.
+
+musermsr
+Target Mask(ISA2_USER_MSR) Var(ix86_isa_flags2) Save
+Support USER_MSR built-in functions and code generation.
+
+mavx10.1-256
+Target Mask(ISA2_AVX10_1_256) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+and AVX10.1 built-in functions and code generation.
+
+mavx10.1-512
+Target Mask(ISA2_AVX10_1_512) Var(ix86_isa_flags2) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+and AVX10.1-512 built-in functions and code generation.
+
+mavx10.1
+Target Alias(mavx10.1-256)
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+and AVX10.1 built-in functions and code generation.

@@ -1,5 +1,5 @@
 /* Language-dependent hooks for LTO.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -94,7 +94,7 @@ static const struct attribute_spec::exclusions attr_const_pure_exclusions[] =
 };
 
 /* Table of machine-independent attributes supported in GIMPLE.  */
-const struct attribute_spec lto_attribute_table[] =
+static const attribute_spec lto_gnu_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -135,14 +135,18 @@ const struct attribute_spec lto_attribute_table[] =
   /* For internal use only.  The leading '*' both prevents its usage in
      source code and signals that it may be overridden by machine tables.  */
   { "*tm regparm",            0, 0, false, true, true, false,
-			      ignore_attribute, NULL },
-  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
+			      ignore_attribute, NULL }
+};
+
+static const scoped_attribute_specs lto_gnu_attribute_table =
+{
+  "gnu", { lto_gnu_attributes }
 };
 
 /* Give the specifications for the format attributes, used by C and all
    descendants.  */
 
-const struct attribute_spec lto_format_attribute_table[] =
+static const attribute_spec lto_format_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -150,7 +154,17 @@ const struct attribute_spec lto_format_attribute_table[] =
 			      handle_format_attribute, NULL },
   { "format_arg",             1, 1, false, true,  true, false,
 			      handle_format_arg_attribute, NULL },
-  { NULL,                     0, 0, false, false, false, false, NULL, NULL }
+};
+
+static const scoped_attribute_specs lto_format_attribute_table =
+{
+  "gnu", { lto_format_attributes }
+};
+
+static const scoped_attribute_specs *const lto_attribute_table[] =
+{
+  &lto_gnu_attribute_table,
+  &lto_format_attribute_table
 };
 
 enum built_in_attribute
@@ -247,7 +261,7 @@ static GTY(()) tree signed_size_type_node;
 int flag_isoc94;
 int flag_isoc99;
 int flag_isoc11;
-int flag_isoc2x;
+int flag_isoc23;
 
 /* Attribute handlers.  */
 
@@ -1463,10 +1477,8 @@ static void lto_init_ts (void)
 #define LANG_HOOKS_EH_PERSONALITY lto_eh_personality
 
 /* Attribute hooks.  */
-#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
-#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE lto_attribute_table
-#undef LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
-#define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE lto_format_attribute_table
+#undef LANG_HOOKS_ATTRIBUTE_TABLE
+#define LANG_HOOKS_ATTRIBUTE_TABLE lto_attribute_table
 
 #undef LANG_HOOKS_BEGIN_SECTION
 #define LANG_HOOKS_BEGIN_SECTION lto_obj_begin_section

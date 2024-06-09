@@ -1,6 +1,6 @@
 (* varargs.mod provides a basic vararg facility for GNU Modula-2.
 
-Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Copyright (C) 2015-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -108,7 +108,8 @@ BEGIN
       contents := memcpy (contents, v^.contents, size) ;
       FOR j := 0 TO nArgs DO
          offset := VAL (CARDINAL, VAL (ptrToByte, v^.contents) - VAL (ptrToByte, v^.arg[j].ptr)) ;
-         arg[j].ptr := VAL (ptrToByte, VAL (ptrToByte, contents) + offset) ;
+         arg[j].ptr := VAL (ptrToByte, contents) ;
+         INC (arg[j].ptr, offset) ;
          arg[j].len := v^.arg[j].len ;
       END
    END ;

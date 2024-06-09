@@ -126,9 +126,9 @@ __bid_fixtdbitint (UBILtype *r, SItype rprec, _Decimal128 a)
       mantissalo = limbs[BITINT_END (5, 4)];
       rem = limbs[6] | limbs[7];
 #elif BIL_TYPE_SIZE == 32
-      mantissahi = limbs[BITINT_END (8, 11)] << 32;
+      mantissahi = (UDItype) limbs[BITINT_END (8, 11)] << 32;
       mantissahi |= limbs[BITINT_END (9, 10)];
-      mantissalo = limbs[BITINT_END (10, 9)] << 32;
+      mantissalo = (UDItype) limbs[BITINT_END (10, 9)] << 32;
       mantissalo |= limbs[BITINT_END (11, 8)];
       rem = limbs[12] | limbs[13] | limbs[14] | limbs[15];
 #endif

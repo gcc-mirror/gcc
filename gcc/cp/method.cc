@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -795,13 +795,19 @@ do_build_copy_assign (tree fndecl)
   compound_stmt = begin_compound_stmt (0);
   parm = convert_from_reference (parm);
 
+  /* If we are building a defaulted xobj copy/move assignment operator then
+     current_class_ref will not have been set up.
+     Kind of an icky hack, but what can ya do?  */
+  tree const class_ref = DECL_XOBJ_MEMBER_FUNCTION_P (fndecl)
+    ? cp_build_fold_indirect_ref (DECL_ARGUMENTS (fndecl)) : current_class_ref;
+
   if (trivial
       && is_empty_class (current_class_type))
     /* Don't copy the padding byte; it might not have been allocated
        if *this is a base subobject.  */;
   else if (trivial)
     {
-      tree t = build2 (MODIFY_EXPR, void_type_node, current_class_ref, parm);
+      tree t = build2 (MODIFY_EXPR, void_type_node, class_ref, parm);
       finish_expr_stmt (t);
     }
   else
@@ -826,7 +832,7 @@ do_build_copy_assign (tree fndecl)
 	  /* Call the base class assignment operator.  */
 	  releasing_vec parmvec (make_tree_vector_single (converted_parm));
 	  finish_expr_stmt
-	    (build_special_member_call (current_class_ref,
+	    (build_special_member_call (class_ref,
 					assign_op_identifier,
 					&parmvec,
 					base_binfo,
@@ -839,7 +845,7 @@ do_build_copy_assign (tree fndecl)
 	   fields;
 	   fields = DECL_CHAIN (fields))
 	{
-	  tree comp = current_class_ref;
+	  tree comp = class_ref;
 	  tree init = parm;
 	  tree field = fields;
 	  tree expr_type;
@@ -898,7 +904,7 @@ do_build_copy_assign (tree fndecl)
 	  finish_expr_stmt (init);
 	}
     }
-  finish_return_stmt (current_class_ref);
+  finish_return_stmt (class_ref);
   finish_compound_stmt (compound_stmt);
 }
 
@@ -1187,7 +1193,7 @@ early_check_defaulted_comparison (tree fn)
 	ok = false;
     }
 
-  bool mem = DECL_NONSTATIC_MEMBER_FUNCTION_P (fn);
+  bool mem = DECL_IOBJ_MEMBER_FUNCTION_P (fn);
   if (mem && type_memfn_quals (TREE_TYPE (fn)) != TYPE_QUAL_CONST)
     {
       error_at (loc, "defaulted %qD must be %<const%>", fn);
@@ -1222,7 +1228,12 @@ early_check_defaulted_comparison (tree fn)
 	  /* Defaulted outside the class body.  */
 	  ctx = TYPE_MAIN_VARIANT (parmtype);
 	  if (!is_friend (ctx, fn))
-	    error_at (loc, "defaulted %qD is not a friend of %qT", fn, ctx);
+	    {
+	      auto_diagnostic_group d;
+	      error_at (loc, "defaulted %qD is not a friend of %qT", fn, ctx);
+	      inform (location_of (ctx), "declared here");
+	      ok = false;
+	    }
 	}
       else if (!same_type_ignoring_top_level_qualifiers_p (parmtype, ctx))
 	saw_bad = true;
@@ -1230,7 +1241,7 @@ early_check_defaulted_comparison (tree fn)
 
   if (saw_bad || (saw_byval && saw_byref))
     {
-      if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+      if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
 	error_at (loc, "defaulted member %qD must have parameter type "
 		  "%<const %T&%>", fn, ctx);
       else if (saw_bad)
@@ -1770,8 +1781,6 @@ decl_remember_implicit_trigger_p (tree decl)
 void
 synthesize_method (tree fndecl)
 {
-  bool nested = (current_function_decl != NULL_TREE);
-  tree context = decl_function_context (fndecl);
   bool need_body = true;
   tree stmt;
   location_t save_input_location = input_location;
@@ -1795,10 +1804,7 @@ synthesize_method (tree fndecl)
      it now.  */
   push_deferring_access_checks (dk_no_deferred);
 
-  if (! context)
-    push_to_top_level ();
-  else if (nested)
-    push_function_context ();
+  bool push_to_top = maybe_push_to_top_level (fndecl);
 
   input_location = DECL_SOURCE_LOCATION (fndecl);
 
@@ -1843,10 +1849,7 @@ synthesize_method (tree fndecl)
 
   input_location = save_input_location;
 
-  if (! context)
-    pop_from_top_level ();
-  else if (nested)
-    pop_function_context ();
+  maybe_pop_from_top_level (push_to_top);
 
   pop_deferring_access_checks ();
 
@@ -1923,6 +1926,141 @@ build_trait_object (tree type)
     return error_mark_node;
 
   return build_stub_object (type);
+}
+
+/* [func.require] Build an expression of INVOKE(FN_TYPE, ARG_TYPES...).  If the
+   given is not invocable, returns error_mark_node.  */
+
+tree
+build_invoke (tree fn_type, const_tree arg_types, tsubst_flags_t complain)
+{
+  if (error_operand_p (fn_type) || error_operand_p (arg_types))
+    return error_mark_node;
+
+  gcc_assert (TYPE_P (fn_type));
+  gcc_assert (TREE_CODE (arg_types) == TREE_VEC);
+
+  /* Access check is required to determine if the given is invocable.  */
+  deferring_access_check_sentinel acs (dk_no_deferred);
+
+  /* INVOKE is an unevaluated context.  */
+  cp_unevaluated cp_uneval_guard;
+
+  bool is_ptrdatamem;
+  bool is_ptrmemfunc;
+  if (TREE_CODE (fn_type) == REFERENCE_TYPE)
+    {
+      tree non_ref_fn_type = TREE_TYPE (fn_type);
+      is_ptrdatamem = TYPE_PTRDATAMEM_P (non_ref_fn_type);
+      is_ptrmemfunc = TYPE_PTRMEMFUNC_P (non_ref_fn_type);
+
+      /* Dereference fn_type if it is a pointer to member.  */
+      if (is_ptrdatamem || is_ptrmemfunc)
+	fn_type = non_ref_fn_type;
+    }
+  else
+    {
+      is_ptrdatamem = TYPE_PTRDATAMEM_P (fn_type);
+      is_ptrmemfunc = TYPE_PTRMEMFUNC_P (fn_type);
+    }
+
+  if (is_ptrdatamem && TREE_VEC_LENGTH (arg_types) != 1)
+    {
+      if (complain & tf_error)
+	error ("pointer to data member type %qT can only be invoked with "
+	       "one argument", fn_type);
+      return error_mark_node;
+    }
+  if (is_ptrmemfunc && TREE_VEC_LENGTH (arg_types) == 0)
+    {
+      if (complain & tf_error)
+	error ("pointer to member function type %qT must be invoked with "
+	       "at least one argument", fn_type);
+      return error_mark_node;
+    }
+
+  /* Construct an expression of a pointer to member.  */
+  tree ptrmem_expr;
+  if (is_ptrdatamem || is_ptrmemfunc)
+    {
+      tree datum_type = TREE_VEC_ELT (arg_types, 0);
+      tree non_ref_datum_type = datum_type;
+      if (TYPE_REF_P (datum_type))
+	non_ref_datum_type = TREE_TYPE (datum_type);
+
+      /* datum must be a class type or a pointer to a class type.  */
+      if (!CLASS_TYPE_P (non_ref_datum_type)
+	  && !(POINTER_TYPE_P (non_ref_datum_type)
+	       && CLASS_TYPE_P (TREE_TYPE (non_ref_datum_type))))
+	{
+	  if (complain & tf_error)
+	    error ("first argument type %qT of a pointer to member must be a "
+		   "class type or a pointer to a class type", datum_type);
+	  return error_mark_node;
+	}
+
+      /* 1.1 & 1.4.  */
+      tree ptrmem_class_type = TYPE_PTRMEM_CLASS_TYPE (fn_type);
+      const bool ptrmem_is_same_or_base_of_datum =
+	(same_type_ignoring_top_level_qualifiers_p (ptrmem_class_type,
+						    non_ref_datum_type)
+	 || (NON_UNION_CLASS_TYPE_P (ptrmem_class_type)
+	     && NON_UNION_CLASS_TYPE_P (non_ref_datum_type)
+	     && DERIVED_FROM_P (ptrmem_class_type, non_ref_datum_type)));
+
+      bool datum_is_refwrap = false;
+      if (!ptrmem_is_same_or_base_of_datum && CLASS_TYPE_P (non_ref_datum_type))
+	{
+	  tree datum_decl = TYPE_NAME (TYPE_MAIN_VARIANT (non_ref_datum_type));
+	  if (decl_in_std_namespace_p (datum_decl))
+	    {
+	      const_tree name = DECL_NAME (datum_decl);
+	      if (name && (id_equal (name, "reference_wrapper")))
+		{
+		  /* 1.2 & 1.5: Retrieve T from std::reference_wrapper<T>,
+		     i.e., decltype(datum.get()).  */
+		  datum_type =
+		    TREE_VEC_ELT (TYPE_TI_ARGS (non_ref_datum_type), 0);
+		  datum_is_refwrap = true;
+		}
+	    }
+	}
+
+      tree datum_expr = build_trait_object (datum_type);
+      if (!ptrmem_is_same_or_base_of_datum && !datum_is_refwrap)
+	/* 1.3 & 1.6: Try to dereference datum_expr.  */
+	datum_expr = build_x_indirect_ref (UNKNOWN_LOCATION, datum_expr,
+					   RO_UNARY_STAR, NULL_TREE, complain);
+
+      tree fn_expr = build_trait_object (fn_type);
+      ptrmem_expr = build_m_component_ref (datum_expr, fn_expr, complain);
+
+      if (error_operand_p (ptrmem_expr))
+	return error_mark_node;
+
+      if (is_ptrdatamem)
+	return ptrmem_expr;
+    }
+
+  /* Construct expressions for arguments to INVOKE.  For a pointer to member
+     function, the first argument, which is the object, is not arguments to
+     the function.  */
+  releasing_vec args;
+  for (int i = is_ptrmemfunc ? 1 : 0; i < TREE_VEC_LENGTH (arg_types); ++i)
+    {
+      tree arg_type = TREE_VEC_ELT (arg_types, i);
+      tree arg = build_trait_object (arg_type);
+      vec_safe_push (args, arg);
+    }
+
+  tree invoke_expr;
+  if (is_ptrmemfunc)
+    invoke_expr = build_offset_ref_call_from_tree (ptrmem_expr, &args,
+						   complain);
+  else  /* 1.7.  */
+    invoke_expr = finish_call_expr (build_trait_object (fn_type), &args, false,
+				    false, complain);
+  return invoke_expr;
 }
 
 /* Determine which function will be called when looking up NAME in TYPE,
@@ -2091,6 +2229,7 @@ constructible_expr (tree to, tree from)
 {
   tree expr;
   cp_unevaluated cp_uneval_guard;
+  const int len = TREE_VEC_LENGTH (from);
   if (CLASS_TYPE_P (to))
     {
       tree ctype = to;
@@ -2098,11 +2237,16 @@ constructible_expr (tree to, tree from)
       if (!TYPE_REF_P (to))
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
-      vec_alloc (args, TREE_VEC_LENGTH (from));
-      for (tree arg : tree_vec_range (from))
-	args->quick_push (build_stub_object (arg));
-      expr = build_special_member_call (ob, complete_ctor_identifier, &args,
-					ctype, LOOKUP_NORMAL, tf_none);
+      if (len == 0)
+	expr = build_value_init (ctype, tf_none);
+      else
+	{
+	  vec_alloc (args, len);
+	  for (tree arg : tree_vec_range (from))
+	    args->quick_push (build_stub_object (arg));
+	  expr = build_special_member_call (ob, complete_ctor_identifier, &args,
+					    ctype, LOOKUP_NORMAL, tf_none);
+	}
       if (expr == error_mark_node)
 	return error_mark_node;
       /* The current state of the standard vis-a-vis LWG 2116 is that
@@ -2120,7 +2264,6 @@ constructible_expr (tree to, tree from)
     }
   else
     {
-      const int len = TREE_VEC_LENGTH (from);
       if (len == 0)
 	return build_value_init (strip_array_types (to), tf_none);
       if (len > 1)
@@ -2216,7 +2359,9 @@ is_trivially_xible (enum tree_code code, tree to, tree from)
 bool
 is_nothrow_xible (enum tree_code code, tree to, tree from)
 {
+  ++cp_noexcept_operand;
   tree expr = is_xible_helper (code, to, from, /*trivial*/false);
+  --cp_noexcept_operand;
   if (expr == NULL_TREE || expr == error_mark_node)
     return false;
   return expr_noexcept_p (expr, tf_none);
@@ -2750,6 +2895,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 	return;
     }
 
+  bool push_to_top = maybe_push_to_top_level (TYPE_NAME (ctype));
   ++cp_unevaluated_operand;
   ++c_inhibit_evaluation_warnings;
   push_deferring_access_checks (dk_no_deferred);
@@ -2847,6 +2993,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   pop_deferring_access_checks ();
   --cp_unevaluated_operand;
   --c_inhibit_evaluation_warnings;
+  maybe_pop_from_top_level (push_to_top);
 }
 
 /* DECL is a defaulted function whose exception specification is now
@@ -3295,8 +3442,11 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       /* Copy constexpr from the inherited constructor even if the
 	 inheriting constructor doesn't satisfy the requirements.  */
       constexpr_p = DECL_DECLARED_CONSTEXPR_P (inherited_ctor);
+      tree inherited_ctor_fn = STRIP_TEMPLATE (inherited_ctor);
       /* Also copy any attributes.  */
-      DECL_ATTRIBUTES (fn) = clone_attrs (DECL_ATTRIBUTES (inherited_ctor));
+      DECL_ATTRIBUTES (fn) = clone_attrs (DECL_ATTRIBUTES (inherited_ctor_fn));
+      DECL_DISREGARD_INLINE_LIMITS (fn)
+	= DECL_DISREGARD_INLINE_LIMITS (inherited_ctor_fn);
     }
 
   /* Add the "this" parameter.  */
@@ -3381,10 +3531,32 @@ defaulted_late_check (tree fn)
 					    NULL, NULL);
   tree eh_spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (implicit_fn));
 
+  /* Includes special handling for a default xobj operator.  */
+  auto compare_fn_params = [](tree fn, tree implicit_fn){
+    tree fn_parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
+    tree implicit_fn_parms = TYPE_ARG_TYPES (TREE_TYPE (implicit_fn));
+
+    if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+      {
+	tree fn_obj_ref_type = TREE_VALUE (fn_parms);
+	/* We can't default xobj operators with an xobj parameter that is not
+	   an lvalue reference, even if it would correspond.  */
+	if (!TYPE_REF_P (fn_obj_ref_type)
+	    || TYPE_REF_IS_RVALUE (fn_obj_ref_type)
+	    || !object_parms_correspond (fn, implicit_fn,
+					 DECL_CONTEXT (implicit_fn)))
+	  return false;
+	/* We just compared the object parameters, skip over them before
+	   passing to compparms.  */
+	fn_parms = TREE_CHAIN (fn_parms);
+	implicit_fn_parms = TREE_CHAIN (implicit_fn_parms);
+      }
+    return compparms (fn_parms, implicit_fn_parms);
+  };
+
   if (!same_type_p (TREE_TYPE (TREE_TYPE (fn)),
 		    TREE_TYPE (TREE_TYPE (implicit_fn)))
-      || !compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
-		     TYPE_ARG_TYPES (TREE_TYPE (implicit_fn))))
+      || !compare_fn_params (fn, implicit_fn))
     {
       error ("defaulted declaration %q+D does not match the "
 	     "expected signature", fn);
@@ -3473,6 +3645,10 @@ defaultable_fn_check (tree fn)
       if (!early_check_defaulted_comparison (fn))
 	return false;
     }
+
+  /* FIXME: We need to check for xobj member functions here to give better
+     diagnostics for weird cases where unrelated xobj parameters are given.
+     We just want to do better than 'cannot be defaulted'.  */
 
   if (kind == sfk_none)
     {
@@ -3607,7 +3783,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
 tree
 skip_artificial_parms_for (const_tree fn, tree list)
 {
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
     list = TREE_CHAIN (list);
   else
     return list;
@@ -3627,7 +3803,7 @@ num_artificial_parms_for (const_tree fn)
 {
   int count = 0;
 
-  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fn))
     count++;
   else
     return 0;

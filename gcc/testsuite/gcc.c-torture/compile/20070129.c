@@ -13,6 +13,9 @@ struct regnode_string
  char string[1];
 };
 
+int regcurly (char *);
+void reguni (RExC_state_t *, unsigned, unsigned char *, unsigned long *);
+
 static void *regatom (RExC_state_t * pRExC_state, int *flagp);
 
 static void *

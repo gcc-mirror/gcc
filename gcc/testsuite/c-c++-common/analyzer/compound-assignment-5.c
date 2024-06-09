@@ -48,9 +48,8 @@ void test_3 (void)
 
   glob_arr3[7] = arr[3]; // or should the uninit warning be here?
 
-  __analyzer_eval (glob_arr3[7].x); /* { dg-warning "uninitialized" "uninit" { xfail *-*-* } } */
-  /* { dg-bogus "UNKNOWN" "unknown" { xfail *-*-* } .-1 } */
   __analyzer_eval (glob_arr3[7].y == 6); /* { dg-warning "TRUE" } */
+  __analyzer_eval (glob_arr3[7].x); /* { dg-warning "uninitialized" "uninit" } */
 }
 
 /* Symbolic bindings: copying from one array to another.  */

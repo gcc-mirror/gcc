@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,6 @@ with Exp_Ch11;       use Exp_Ch11;
 with Exp_Dbug;       use Exp_Dbug;
 with Exp_Sel;        use Exp_Sel;
 with Exp_Smem;       use Exp_Smem;
-with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
 with Hostparm;
@@ -3835,13 +3834,7 @@ package body Exp_Ch9 is
                 Expression => New_Occurrence_Of (R, Loc));
          end if;
 
-         if Has_Aspect (Pid, Aspect_Exclusive_Functions)
-           and then
-             (No (Find_Value_Of_Aspect (Pid, Aspect_Exclusive_Functions))
-               or else
-                 Is_True (Static_Boolean (Find_Value_Of_Aspect
-                   (Pid, Aspect_Exclusive_Functions))))
-         then
+         if Has_Enabled_Aspect (Pid, Aspect_Exclusive_Functions) then
             Lock_Kind := RE_Lock;
          else
             Lock_Kind := RE_Lock_Read_Only;
@@ -4032,12 +4025,18 @@ package body Exp_Ch9 is
       Nam : Node_Id;
 
    begin
-      --  If the associated protected object has entries, a protected
-      --  procedure has to service entry queues. In this case generate:
+      --  If the associated protected object has entries, the expanded
+      --  exclusive protected operation has to service entry queues. In
+      --  this case generate:
 
       --    Service_Entries (_object._object'Access);
 
-      if Nkind (Op_Spec) = N_Procedure_Specification
+      if (Nkind (Op_Spec) = N_Procedure_Specification
+            or else
+          (Nkind (Op_Spec) = N_Function_Specification
+             and then
+           Has_Enabled_Aspect
+             (Conc_Typ, Aspect_Exclusive_Functions)))
         and then Has_Entries (Conc_Typ)
       then
          case Corresponding_Runtime_Package (Conc_Typ) is
@@ -4796,70 +4795,6 @@ package body Exp_Ch9 is
    -------------------------------
 
    procedure Build_Task_Allocate_Block
-     (Actions : List_Id;
-      N       : Node_Id;
-      Args    : List_Id)
-   is
-      T      : constant Entity_Id  := Entity (Expression (N));
-      Init   : constant Entity_Id  := Base_Init_Proc (T);
-      Loc    : constant Source_Ptr := Sloc (N);
-      Chain  : constant Entity_Id  :=
-                 Make_Defining_Identifier (Loc, Name_uChain);
-      Blkent : constant Entity_Id  := Make_Temporary (Loc, 'A');
-      Block  : Node_Id;
-
-   begin
-      Block :=
-        Make_Block_Statement (Loc,
-          Identifier   => New_Occurrence_Of (Blkent, Loc),
-          Declarations => New_List (
-
-            --  _Chain : Activation_Chain;
-
-            Make_Object_Declaration (Loc,
-              Defining_Identifier => Chain,
-              Aliased_Present     => True,
-              Object_Definition   =>
-                New_Occurrence_Of (RTE (RE_Activation_Chain), Loc))),
-
-          Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-
-              Statements => New_List (
-
-                --  Init (Args);
-
-                Make_Procedure_Call_Statement (Loc,
-                  Name                   => New_Occurrence_Of (Init, Loc),
-                  Parameter_Associations => Args),
-
-                --  Activate_Tasks (_Chain);
-
-                Make_Procedure_Call_Statement (Loc,
-                  Name => New_Occurrence_Of (RTE (RE_Activate_Tasks), Loc),
-                  Parameter_Associations => New_List (
-                    Make_Attribute_Reference (Loc,
-                      Prefix         => New_Occurrence_Of (Chain, Loc),
-                      Attribute_Name => Name_Unchecked_Access))))),
-
-          Has_Created_Identifier => True,
-          Is_Task_Allocation_Block => True);
-
-      Append_To (Actions,
-        Make_Implicit_Label_Declaration (Loc,
-          Defining_Identifier => Blkent,
-          Label_Construct     => Block));
-
-      Append_To (Actions, Block);
-
-      Set_Activation_Chain_Entity (Block, Chain);
-   end Build_Task_Allocate_Block;
-
-   -----------------------------------------------
-   -- Build_Task_Allocate_Block_With_Init_Stmts --
-   -----------------------------------------------
-
-   procedure Build_Task_Allocate_Block_With_Init_Stmts
      (Actions    : List_Id;
       N          : Node_Id;
       Init_Stmts : List_Id)
@@ -4906,7 +4841,7 @@ package body Exp_Ch9 is
       Append_To (Actions, Block);
 
       Set_Activation_Chain_Entity (Block, Chain);
-   end Build_Task_Allocate_Block_With_Init_Stmts;
+   end Build_Task_Allocate_Block;
 
    -----------------------------------
    -- Build_Task_Proc_Specification --
@@ -7264,7 +7199,7 @@ package body Exp_Ch9 is
             --  Generate:
             --    if K = Ada.Tags.TK_Limited_Tagged
             --         or else K = Ada.Tags.TK_Tagged
-            --       then
+            --    then
             --       Lim_Typ_Stmts
             --    else
             --       Conc_Typ_Stmts
@@ -9470,7 +9405,8 @@ package body Exp_Ch9 is
       end loop;
 
       --  Create the declaration of an array object which contains the values
-      --  of aspect/pragma Max_Queue_Length for all entries of the protected
+      --  of any aspect/pragma Max_Queue_Length, Max_Entry_Queue_Length or
+      --  Max_EntryQueue_Depth for all entries of the protected
       --  type. This object is later passed to the appropriate protected object
       --  initialization routine.
 
@@ -9487,7 +9423,8 @@ package body Exp_Ch9 is
             Need_Array : Boolean := False;
 
          begin
-            --  First check if there is any Max_Queue_Length pragma
+            --  First check if there is any Max_Queue_Length,
+            --  Max_Entry_Queue_Length or Max_Entry_Queue_Depth pragma.
 
             Item := First_Entity (Prot_Typ);
             while Present (Item) loop
@@ -12740,7 +12677,7 @@ package body Exp_Ch9 is
          --  Generate:
          --    if K = Ada.Tags.TK_Limited_Tagged
          --         or else K = Ada.Tags.TK_Tagged
-         --       then
+         --    then
          --       Lim_Typ_Stmts
          --    else
          --       Conc_Typ_Stmts

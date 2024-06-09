@@ -1005,7 +1005,7 @@ _LT_EOF
       # darwin 5.x (macOS 10.1) onwards we only need to adjust when the
       # deployment target is forced to an earlier version.
       case ${MACOSX_DEPLOYMENT_TARGET-UNSET},$host in
-	UNSET,*-darwin[[89]]*|UNSET,*-darwin[[12]][[0123456789]]*)
+	UNSET,*-darwin[[89]]*|UNSET,*-darwin[[12]][[0-9]]*)
 	  ;;
 	10.[[012]][[,.]]*)
 	  _lt_dar_allow_undefined='${wl}-flat_namespace ${wl}-undefined ${wl}suppress'
@@ -1039,6 +1039,45 @@ _LT_EOF
 m4_defun([_LT_DARWIN_LINKER_FEATURES],
 [
   m4_require([_LT_REQUIRED_DARWIN_CHECKS])
+
+  # Publish an arg to allow the user to select that Darwin host (and target)
+  # libraries should be given install-names like @rpath/libfoo.dylib.  This
+  # requires that the user of the library then adds an 'rpath' to the DSO that
+  # needs access.
+  # NOTE: there are defaults below, for systems that support rpaths.  The person
+  # configuring can override the defaults for any system version that supports
+  # them - they are, however, forced off for system versions without support.
+  AC_ARG_ENABLE([darwin-at-rpath],
+    AS_HELP_STRING([--enable-darwin-at-rpath],
+      [install libraries with @rpath/library-name, requires rpaths to be added to executables]),
+  [if test "x$enable_darwin_at_rpath" = "xyes"; then
+    # This is not supported before macOS 10.5 / Darwin9.
+    case ${MACOSX_DEPLOYMENT_TARGET-UNSET},$host_os in
+      UNSET,darwin[[4-8]]*|UNSET,rhapsody*|10.[[0-4]][[,.]]*)
+	AC_MSG_WARN([Darwin @rpath library names are incompatible with OSX versions earlier than 10.5 (rpaths disabled)])
+	enable_darwin_at_rpath=no
+      ;;
+    esac
+   fi],
+  [case ${MACOSX_DEPLOYMENT_TARGET-UNSET},$host_os in
+    # As above, before 10.5 / Darwin9 this does not work.
+     UNSET,darwin[[4-8]]*|UNSET,rhapsody*|10.[[0-4]][[,.]]*)
+       enable_darwin_at_rpath=no
+       ;;
+
+    # We cannot build and test reliably on macOS 10.11+ (Darwin15+) without use
+    # of rpaths, since runpaths set via DYLD_LIBRARY_PATH are elided by key
+    # system executables (e.g. /bin/sh).  Force rpaths on for these systems.
+      UNSET,darwin1[[5-9]]*|UNSET,darwin2*|10.1[[1-9]][[,.]]*|1[[1-9]].*[[,.]]* )
+      AC_MSG_NOTICE([@rpath library names are needed on macOS versions later than 10.11 (rpaths have been enabled)])
+      enable_darwin_at_rpath=yes
+      ;;
+    # NOTE: we are not (yet) doing anything for 10.5 .. 10.10, since they can
+    # work with either DYLD_LIBRARY_PATH or embedded rpaths.
+
+    esac
+  ])
+
   _LT_TAGVAR(archive_cmds_need_lc, $1)=no
   _LT_TAGVAR(hardcode_direct, $1)=no
   _LT_TAGVAR(hardcode_automatic, $1)=yes
@@ -1056,13 +1095,21 @@ m4_defun([_LT_DARWIN_LINKER_FEATURES],
   esac
   if test "$_lt_dar_can_shared" = "yes"; then
     output_verbose_link_cmd=func_echo_all
-    _LT_TAGVAR(archive_cmds, $1)="\$CC -dynamiclib \$allow_undefined_flag -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name \$rpath/\$soname \$verstring $_lt_dar_single_mod${_lt_dsymutil}"
+    _lt_install_name='\$rpath/\$soname'
+    if test "x$enable_darwin_at_rpath" = "xyes"; then
+      _lt_install_name='@rpath/\$soname'
+    fi
+    _LT_TAGVAR(archive_cmds, $1)="\$CC -dynamiclib \$allow_undefined_flag -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name ${_lt_install_name} \$verstring ${_lt_dsymutil}"
     _LT_TAGVAR(module_cmds, $1)="\$CC \$allow_undefined_flag -o \$lib -bundle \$libobjs \$deplibs \$compiler_flags${_lt_dsymutil}"
-    _LT_TAGVAR(archive_expsym_cmds, $1)="sed 's,^,_,' < \$export_symbols > \$output_objdir/\${libname}-symbols.expsym~\$CC -dynamiclib \$allow_undefined_flag -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name \$rpath/\$soname \$verstring ${_lt_dar_single_mod}${_lt_dar_export_syms}${_lt_dsymutil}"
+    _LT_TAGVAR(archive_expsym_cmds, $1)="sed 's,^,_,' < \$export_symbols > \$output_objdir/\${libname}-symbols.expsym~\$CC -dynamiclib \$allow_undefined_flag -o \$lib \$libobjs \$deplibs \$compiler_flags -install_name ${_lt_install_name} \$verstring ${_lt_dar_export_syms}${_lt_dsymutil}"
     _LT_TAGVAR(module_expsym_cmds, $1)="sed -e 's,^,_,' < \$export_symbols > \$output_objdir/\${libname}-symbols.expsym~\$CC \$allow_undefined_flag -o \$lib -bundle \$libobjs \$deplibs \$compiler_flags${_lt_dar_export_syms}${_lt_dsymutil}"
     m4_if([$1], [CXX],
 [   if test "$lt_cv_apple_cc_single_mod" != "yes"; then
-      _LT_TAGVAR(archive_cmds, $1)="\$CC -r -keep_private_externs -nostdlib -o \${lib}-master.o \$libobjs~\$CC -dynamiclib \$allow_undefined_flag -o \$lib \${lib}-master.o \$deplibs \$compiler_flags -install_name \$rpath/\$soname \$verstring${_lt_dsymutil}"
+      _lt_install_name='\$rpath/\$soname'
+      if test "x$enable_darwin_at_rpath" = "xyes"; then
+        _lt_install_name='@rpath/\$soname'
+      fi
+      _LT_TAGVAR(archive_cmds, $1)="\$CC -r -keep_private_externs -nostdlib -o \${lib}-master.o \$libobjs~\$CC -dynamiclib \$allow_undefined_flag -o \$lib \${lib}-master.o \$deplibs \$compiler_flags -install_name ${_lt_install_name} \$verstring${_lt_dsymutil}"
       _LT_TAGVAR(archive_expsym_cmds, $1)="sed 's,^,_,' < \$export_symbols > \$output_objdir/\${libname}-symbols.expsym~\$CC -r -keep_private_externs -nostdlib -o \${lib}-master.o \$libobjs~\$CC -dynamiclib \$allow_undefined_flag -o \$lib \${lib}-master.o \$deplibs \$compiler_flags -install_name \$rpath/\$soname \$verstring${_lt_dar_export_syms}${_lt_dsymutil}"
     fi
 ],[])
@@ -6503,7 +6550,6 @@ fi # test "$_lt_caught_CXX_error" != yes
 
 AC_LANG_POP
 ])# _LT_LANG_CXX_CONFIG
-
 
 # _LT_SYS_HIDDEN_LIBDEPS([TAGNAME])
 # ---------------------------------

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -643,7 +643,9 @@ package body Exp_Unst is
 
                   --  Conversion case
 
-                  elsif Nkind (N) = N_Type_Conversion then
+                  elsif Nkind (N) in
+                          N_Type_Conversion | N_Unchecked_Type_Conversion
+                  then
                      Note_Uplevel_Bound (Expression (N), Ref);
                   end if;
                end Note_Uplevel_Bound;
@@ -1255,11 +1257,12 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Pragmas and component declarations are ignored. Quantified
-               --  expressions are expanded into explicit loops and the
-               --  original epression must be ignored.
+               --  Aspects, pragmas and component declarations are ignored.
+               --  Quantified expressions are expanded into explicit loops
+               --  and the original epression must be ignored.
 
-               when N_Component_Declaration
+               when N_Aspect_Specification
+                  | N_Component_Declaration
                   | N_Pragma
                   | N_Quantified_Expression
                =>

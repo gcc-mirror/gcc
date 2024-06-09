@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2023, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2024, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,11 +38,11 @@ with Ada.Unchecked_Conversion;
 
 with Interfaces.C;
 
-with System.Multiprocessors;
-with System.Tasking.Debug;
-with System.Interrupt_Management;
 with System.Float_Control;
+with System.Interrupt_Management;
+with System.Multiprocessors;
 with System.OS_Constants;
+with System.Tasking.Debug;
 
 with System.Soft_Links;
 --  We use System.Soft_Links instead of System.Tasking.Initialization
@@ -58,10 +58,12 @@ package body System.Task_Primitives.Operations is
    package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
 
-   use System.Tasking.Debug;
-   use System.Tasking;
    use System.OS_Interface;
+   use System.OS_Locks;
    use System.Parameters;
+   use System.Tasking;
+   use System.Tasking.Debug;
+
    use type Interfaces.C.int;
    use type System.OS_Interface.unsigned;
    use type System.VxWorks.Ext.t_id;

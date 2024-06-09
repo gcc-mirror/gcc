@@ -493,9 +493,8 @@ class Thread : ThreadBase
         slock.lock_nothrow();
         scope(exit) slock.unlock_nothrow();
         {
-            ++nAboutToStart;
-            pAboutToStart = cast(ThreadBase*)realloc(pAboutToStart, Thread.sizeof * nAboutToStart);
-            pAboutToStart[nAboutToStart - 1] = this;
+            incrementAboutToStart(this);
+
             version (Windows)
             {
                 if ( ResumeThread( m_hndl ) == -1 )
@@ -1626,7 +1625,7 @@ extern (C) @nogc nothrow
 }
 
 
-package extern(D) void* getStackTop() nothrow @nogc
+private extern(D) void* getStackTop() nothrow @nogc
 {
     version (D_InlineAsm_X86)
         asm pure nothrow @nogc { naked; mov EAX, ESP; ret; }
@@ -1639,7 +1638,7 @@ package extern(D) void* getStackTop() nothrow @nogc
 }
 
 
-package extern(D) void* getStackBottom() nothrow @nogc
+private extern(D) void* getStackBottom() nothrow @nogc
 {
     version (Windows)
     {
@@ -2104,6 +2103,8 @@ private extern (D) void resume(ThreadBase _t) nothrow @nogc
             t.m_curr.tstack = t.m_curr.bstack;
         }
     }
+    else
+        static assert(false, "Platform not supported.");
 }
 
 
@@ -2129,6 +2130,13 @@ extern (C) void thread_init() @nogc nothrow
         static extern(C) void initChildAfterFork()
         {
             auto thisThread = Thread.getThis();
+            if (!thisThread)
+            {
+                // It is possible that runtime was not properly initialized in the current process or thread -
+                // it may happen after `fork` call when using a dynamically loaded shared library written in D from a multithreaded non-D program.
+                // In such case getThis will return null.
+                return;
+            }
             thisThread.m_addr = pthread_self();
             assert( thisThread.m_addr != thisThread.m_addr.init );
             thisThread.m_tmach = pthread_mach_thread_np( thisThread.m_addr );

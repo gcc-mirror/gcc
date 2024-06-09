@@ -1,5 +1,7 @@
-a;
-b() {
+int a;
+int e(void);
+void f(void);
+void b(void) {
   int c = 1;
   for (; c <= 3;) {
     int d = e() && !0;

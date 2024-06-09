@@ -160,6 +160,18 @@ version (CRuntime_Glibc)
         enum RTLD_LOCAL     = 0;
         enum RTLD_NODELETE  = 0x01000;
     }
+    else version (LoongArch64)
+    {
+        // http://sourceware.org/git/?p=glibc.git;a=blob;f=bits/dlfcn.h
+        enum RTLD_LAZY      = 0x00001;
+        enum RTLD_NOW       = 0x00002;
+        enum RTLD_BINDING_MASK = 0x3;
+        enum RTLD_NOLOAD    = 0x00004;
+        enum RTLD_DEEPBIND  = 0x00008;
+        enum RTLD_GLOBAL    = 0x00100;
+        enum RTLD_LOCAL     = 0;
+        enum RTLD_NODELETE  = 0x01000;
+    }
     else
         static assert(0, "unimplemented");
 

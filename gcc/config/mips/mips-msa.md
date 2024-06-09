@@ -1,7 +1,7 @@
 ;; Machine Description for MIPS MSA ASE
 ;; Based on the MIPS MSA spec Revision 1.11 8/4/2014
 ;;
-;; Copyright (C) 2015-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2024 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -230,6 +230,10 @@
    (V8HI  "uimm4")
    (V4SI  "uimm5")
    (V2DI  "uimm6")])
+
+;; The index of sign bit in FP vector elements.
+(define_mode_attr elmsgnbit [(V2DF "63") (V4DF "63")
+			     (V4SF "31") (V8SF "31")])
 
 (define_expand "vec_init<mode><unitmode>"
   [(match_operand:MSA 0 "register_operand")
@@ -597,15 +601,23 @@
 })
 
 (define_expand "neg<mode>2"
-  [(set (match_operand:MSA 0 "register_operand")
-	(minus:MSA (match_dup 2)
-		   (match_operand:MSA 1 "register_operand")))]
+  [(set (match_operand:IMSA 0 "register_operand")
+	(minus:IMSA (match_dup 2)
+		   (match_operand:IMSA 1 "register_operand")))]
   "ISA_HAS_MSA"
 {
   rtx reg = gen_reg_rtx (<MODE>mode);
   emit_move_insn (reg, CONST0_RTX (<MODE>mode));
   operands[2] = reg;
 })
+
+(define_insn "neg<mode>2"
+  [(set (match_operand:FMSA 0 "register_operand" "=f")
+	(neg:FMSA (match_operand:FMSA 1 "register_operand" "f")))]
+  "ISA_HAS_MSA"
+  "bnegi.<msafmt>\t%w0,%w1,<elmsgnbit>"
+  [(set_attr "type" "simd_bit")
+   (set_attr "mode" "<MODE>")])
 
 (define_expand "msa_ldi<mode>"
   [(match_operand:IMSA 0 "register_operand")

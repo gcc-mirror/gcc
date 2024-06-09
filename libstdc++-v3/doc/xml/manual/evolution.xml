@@ -1100,6 +1100,18 @@ Tunables <variable>glibcxx.eh_pool.obj_count</variable> and
 <variable>glibcxx.eh_pool.obj_size</variable> were added.
 </para>
 
+<para>Static library <filename>libstdc++exp.a</filename> was added
+to provide the symbols for the experimental C++ Contracts support.</para>
+
+</section>
+
+<section xml:id="api.rel_133"><info><title><constant>13.3</constant></title></info>
+
+<para>
+Symbols for the Filesystem TS and C++23 <filename>&lt;stacktrace&gt;</filename>
+header were added to the static library <filename>libstdc++exp.a</filename>.
+</para>
+
 </section>
 
 <section xml:id="api.rel_141"><info><title><constant>14</constant></title></info>

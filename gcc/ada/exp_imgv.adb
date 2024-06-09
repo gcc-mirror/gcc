@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -159,8 +159,7 @@ package body Exp_Imgv is
                    Make_Component_Definition (Loc,
                      Aliased_Present    => False,
                      Subtype_Indication => New_Occurrence_Of (Ctyp, Loc))),
-             Expression          => Make_Aggregate (Loc, Expressions => V,
-                                      Is_Enum_Array_Aggregate => True)));
+             Expression          => Make_Aggregate (Loc, Expressions => V)));
       end Append_Table_To;
 
    --  Start of Build_Enumeration_Image_Tables
@@ -2295,7 +2294,7 @@ package body Exp_Imgv is
          --  in the range of the subtype + 1 for the space at the start. We
          --  build:
 
-         --     Tnn : constant Integer := Rtyp'Pos (Ptyp'Last)
+         --     Tnn : constant Integer := Rtyp'Pos (Ptyp'Last);
 
          --  and replace the expression by
 
@@ -2321,9 +2320,15 @@ package body Exp_Imgv is
             declare
                Tnn   : constant Entity_Id := Make_Temporary (Loc, 'T');
                Cexpr : Node_Id;
-               P     : Int;
-               M     : Int;
-               K     : Int;
+
+               P : constant Nat :=
+                 UI_To_Int (Enumeration_Pos (Entity (Type_High_Bound (Rtyp))));
+               --  The largest value that might need to be represented
+
+               K : Pos;
+               M : Pos;
+               --  K is the number of chars that will fit the image of 0..M-1;
+               --  M is the smallest number that won't fit in K chars.
 
             begin
                Insert_Action (N,
@@ -2343,14 +2348,13 @@ package body Exp_Imgv is
                              Attribute_Name => Name_Last))))));
 
                --  OK, now we need to build the if expression. First get the
-               --  value of M, the largest possible value needed.
+               --  values of K and M for the largest possible value P.
 
-               P := UI_To_Int
-                      (Enumeration_Pos (Entity (Type_High_Bound (Rtyp))));
+               K := 2;
+               M := 10;
+               --  With 2 characters we can represent values in 0..9
 
-               K := 1;
-               M := 1;
-               while M < P loop
+               while P >= M loop
                   M := M * 10;
                   K := K + 1;
                end loop;

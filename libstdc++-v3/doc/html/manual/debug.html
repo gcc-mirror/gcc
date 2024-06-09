@@ -12,7 +12,7 @@
     flags can be varied to change debugging characteristics. For
     instance, turning off all optimization via the <code class="code">-g -O0
     -fno-inline</code> flags will disable inlining and optimizations,
-    and add debugging information, so that stepping through all functions,
+    and include debugging information, so that stepping through all functions,
     (including inlined constructors and destructors) is possible. In
     addition, <code class="code">-fno-eliminate-unused-debug-types</code> can be
     used when additional debug information, such as nested class info,
@@ -30,31 +30,27 @@
   Many other options are available: please see <a class="link" href="http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html#Debugging%20Options" target="_top">"Options
   for Debugging Your Program"</a> in Using the GNU Compiler
   Collection (GCC) for a complete list.
-</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.req"></a>Debug Versions of Library Binary Files</h3></div></div></div><p>
-  If you would like debug symbols in libstdc++, there are two ways to
-  build libstdc++ with debug flags. The first is to create a separate
-  debug build by running make from the top-level of a tree
-  freshly-configured with
-</p><pre class="programlisting">
-     --enable-libstdcxx-debug
-</pre><p>and perhaps</p><pre class="programlisting">
-     --enable-libstdcxx-debug-flags='...'
-</pre><p>
-  Both the normal build and the debug build will persist, without
-  having to specify <code class="code">CXXFLAGS</code>, and the debug library will
-  be installed in a separate directory tree, in <code class="code">(prefix)/lib/debug</code>.
-  For more information, look at the
-  <a class="link" href="configure.html" title="Configure">configuration</a> section.
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.debug_mode"></a>Debug Mode</h3></div></div></div><p>
+  The <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">Debug Mode</a>
+  has compile and run-time checks for many containers.
 </p><p>
-  A second approach is to use the configuration flags
-</p><pre class="programlisting">
-     make CXXFLAGS='-g3 -fno-inline -O0' all
-</pre><p>
-  This quick and dirty approach is often sufficient for quick
-  debugging tasks, when you cannot or don't want to recompile your
-  application to use the <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">debug mode</a>.</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.memory"></a>Memory Leak Hunting</h3></div></div></div><p>
+  There are also lightweight assertions for checking function preconditions,
+  such as checking for out-of-bounds indices when accessing a
+  <code class="classname">std::vector</code>. These can be enabled without using
+  the full Debug Mode, by using <code class="option">-D_GLIBCXX_ASSERTIONS</code>
+  (see <a class="xref" href="using_macros.html" title="Macros">Macros</a>).
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.exceptions"></a>Tracking uncaught exceptions</h3></div></div></div><p>
+  The <a class="link" href="termination.html#support.termination.verbose" title="Verbose Terminate Handler">verbose
+  termination handler</a> gives information about uncaught
+  exceptions which kill the program.
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.memory"></a>Memory Leak Hunting</h3></div></div></div><p>
   On many targets GCC supports AddressSanitizer, a fast memory error detector,
   which is enabled by the <code class="option">-fsanitize=address</code> option.
+</p><p>
+  The <code class="classname">std::vector</code> implementation has additional
+  instrumentation to work with AddressSanitizer, but this has to be enabled
+  explicitly by using <code class="option">-D_GLIBCXX_SANITIZE_VECTOR</code>
+  (see <a class="xref" href="using_macros.html" title="Macros">Macros</a>).
 </p><p>
   There are also various third party memory tracing and debug utilities
   that can be used to provide detailed memory allocation information
@@ -225,14 +221,33 @@
   on-line versions of the GDB user manual in GDB's homepage, at
   <a class="link" href="http://sourceware.org/gdb/" target="_top"> "GDB: The GNU Project
   Debugger" </a>.
-</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.exceptions"></a>Tracking uncaught exceptions</h3></div></div></div><p>
-  The <a class="link" href="termination.html#support.termination.verbose" title="Verbose Terminate Handler">verbose
-  termination handler</a> gives information about uncaught
-  exceptions which kill the program.
-</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.debug_mode"></a>Debug Mode</h3></div></div></div><p> The <a class="link" href="debug_mode.html" title="Chapter 17. Debug Mode">Debug Mode</a>
-  has compile and run-time checks for many containers.
-  </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compile_time_checks"></a>Compile Time Checking</h3></div></div></div><p> The <a class="link" href="ext_compile_checks.html" title="Chapter 16. Compile Time Checks">Compile-Time
+</p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.req"></a>Debug Versions of Library Binary Files</h3></div></div></div><p>
+  As described above, libstdc++ is built with debug symbols enabled by default,
+  but because it's also built with optimizations the code can be hard to
+  follow when stepping into the library in a debugger.
+</p><p>
+  If you would like to debug <code class="filename">libstdc++.so</code> itself,
+  there are two ways to build an unoptimized libstdc++ with debug flags.
+  The first is to create a separate debug build by running make from the
+  top-level of a tree freshly-configured with
+</p><pre class="programlisting">
+     --enable-libstdcxx-debug
+</pre><p>and perhaps</p><pre class="programlisting">
+     --enable-libstdcxx-debug-flags='...'
+</pre><p>
+  Both the normal build and the debug build will persist, without
+  having to specify <code class="code">CXXFLAGS</code>, and the debug library will
+  be installed in a separate directory tree, in <code class="code">(prefix)/lib/debug</code>.
+  For more information, look at the
+  <a class="link" href="configure.html" title="Configure">configuration</a> section.
+</p><p>
+  A second approach is to use the configuration flags
+</p><pre class="programlisting">
+     make CXXFLAGS='-g3 -fno-inline -O0' all
+</pre></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="debug.compile_time_checks"></a>Compile Time Checking</h3></div></div></div><p> The <a class="link" href="ext_compile_checks.html" title="Chapter 16. Compile Time Checks">Compile-Time
   Checks</a> extension has compile-time checks for many algorithms.
+  These checks were designed for C++98 and have not been updated to work
+  with C++11 and later standards. They might be removed at a future date.
   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_exceptions.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="std_contents.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Exceptions </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Part II. 
     Standard Contents
   </td></tr></table></div></body></html>

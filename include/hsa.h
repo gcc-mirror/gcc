@@ -466,7 +466,9 @@ typedef enum {
   /**
   * String containing the ROCr build identifier.
   */
-  HSA_AMD_SYSTEM_INFO_BUILD_VERSION = 0x200
+  HSA_AMD_SYSTEM_INFO_BUILD_VERSION = 0x200,
+
+  HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT = 0x202
 } hsa_system_info_t;
 
 /**

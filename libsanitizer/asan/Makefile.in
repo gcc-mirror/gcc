@@ -264,6 +264,7 @@ ALLOC_FILE = @ALLOC_FILE@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AS_SYM_ASSIGN_DEFS = @AS_SYM_ASSIGN_DEFS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -288,7 +289,7 @@ DEFS = -D_GNU_SOURCE -D_DEBUG -D__STDC_CONSTANT_MACROS \
 	-D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS \
 	-DASAN_HAS_EXCEPTIONS=1 -DASAN_NEEDS_SEGV=1 \
 	-DCAN_SANITIZE_UB=0 -DASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION=0 \
-	$(am__append_1)
+	@AS_SYM_ASSIGN_DEFS@ $(am__append_1)
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
@@ -465,7 +466,12 @@ libasan_la_LIBADD =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
 	$(top_builddir)/lsan/libsanitizer_lsan.la $(am__append_2) \
 	$(am__append_3) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_libasan)
+@ENABLE_DARWIN_AT_RPATH_TRUE@libasan_darwin_rpath =  \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wc,-nodefaultrpaths \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
+libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+	$(link_libasan) $(libasan_darwin_rpath)
+
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

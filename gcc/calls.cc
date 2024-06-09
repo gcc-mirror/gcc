@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -847,6 +847,9 @@ flags_from_decl_or_type (const_tree exp)
 					TYPE_ATTRIBUTES (TREE_TYPE (exp))))
 	    flags |= ECF_TM_PURE;
 	}
+
+      if (lookup_attribute ("expected_throw", DECL_ATTRIBUTES (exp)))
+	flags |= ECF_XTHROW;
 
       flags = special_function_p (exp, flags);
     }
@@ -2499,7 +2502,8 @@ can_implement_as_sibling_call_p (tree exp,
 				 tree addr,
 				 const args_size &args_size)
 {
-  if (!targetm.have_sibcall_epilogue ())
+  if (!targetm.have_sibcall_epilogue ()
+      && !targetm.emit_epilogue_for_sibcall)
     {
       maybe_complain_about_tail_call
 	(exp,
@@ -2934,7 +2938,7 @@ expand_call (tree exp, rtx target, int ignore)
 	 /* Count the struct value address, if it is passed as a parm.  */
 	 + structure_value_addr_parm);
   else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
-    n_named_args = 0;
+    n_named_args = structure_value_addr_parm;
   else
     /* If we know nothing, treat all args as named.  */
     n_named_args = num_actuals;
@@ -2966,14 +2970,15 @@ expand_call (tree exp, rtx target, int ignore)
      we do not have any reliable way to pass unnamed args in
      registers, so we must force them into memory.  */
 
-  if (type_arg_types != 0
+  if ((type_arg_types != 0 || TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
       && targetm.calls.strict_argument_naming (args_so_far))
     ;
   else if (type_arg_types != 0
 	   && ! targetm.calls.pretend_outgoing_varargs_named (args_so_far))
     /* Don't include the last named arg.  */
     --n_named_args;
-  else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
+  else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype)
+	   && ! targetm.calls.pretend_outgoing_varargs_named (args_so_far))
     n_named_args = 0;
   else
     /* Treat all args as named.  */
@@ -3559,15 +3564,26 @@ expand_call (tree exp, rtx target, int ignore)
 		sibcall_failure = true;
 	    }
 
+      /* Set up the next argument register.  For sibling calls on machines
+	 with register windows this should be the incoming register.  */
+      if (pass == 0)
+	next_arg_reg = targetm.calls.function_incoming_arg
+	  (args_so_far, function_arg_info::end_marker ());
+      else
+	next_arg_reg = targetm.calls.function_arg
+	  (args_so_far, function_arg_info::end_marker ());
+
+      targetm.calls.start_call_args (args_so_far);
+
       bool any_regs = false;
       for (i = 0; i < num_actuals; i++)
 	if (args[i].reg != NULL_RTX)
 	  {
 	    any_regs = true;
-	    targetm.calls.call_args (args[i].reg, funtype);
+	    targetm.calls.call_args (args_so_far, args[i].reg, funtype);
 	  }
       if (!any_regs)
-	targetm.calls.call_args (pc_rtx, funtype);
+	targetm.calls.call_args (args_so_far, pc_rtx, funtype);
 
       /* Figure out the register where the value, if any, will come back.  */
       valreg = 0;
@@ -3629,15 +3645,6 @@ expand_call (tree exp, rtx target, int ignore)
       /* Save a pointer to the last insn before the call, so that we can
 	 later safely search backwards to find the CALL_INSN.  */
       before_call = get_last_insn ();
-
-      /* Set up next argument register.  For sibling calls on machines
-	 with register windows this should be the incoming register.  */
-      if (pass == 0)
-	next_arg_reg = targetm.calls.function_incoming_arg
-	  (args_so_far, function_arg_info::end_marker ());
-      else
-	next_arg_reg = targetm.calls.function_arg
-	  (args_so_far, function_arg_info::end_marker ());
 
       if (pass == 1 && (return_flags & ERF_RETURNS_ARG))
 	{
@@ -3937,7 +3944,7 @@ expand_call (tree exp, rtx target, int ignore)
       for (i = 0; i < num_actuals; ++i)
 	free (args[i].aligned_regs);
 
-      targetm.calls.end_call_args ();
+      targetm.calls.end_call_args (args_so_far);
 
       insns = get_insns ();
       end_sequence ();
@@ -4495,17 +4502,9 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
     }
 #endif
 
-  /* When expanding a normal call, args are stored in push order,
-     which is the reverse of what we have here.  */
-  bool any_regs = false;
-  for (int i = nargs; i-- > 0; )
-    if (argvec[i].reg != NULL_RTX)
-      {
-	targetm.calls.call_args (argvec[i].reg, NULL_TREE);
-	any_regs = true;
-      }
-  if (!any_regs)
-    targetm.calls.call_args (pc_rtx, NULL_TREE);
+  rtx call_cookie
+    = targetm.calls.function_arg (args_so_far,
+				  function_arg_info::end_marker ());
 
   /* Push the args that need to be pushed.  */
 
@@ -4582,8 +4581,8 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 		}
 	    }
 
-	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, parm_align,
-			  partial, reg, 0, argblock,
+	  emit_push_insn (val, mode, lang_hooks.types.type_for_mode (mode, 0),
+			  NULL_RTX, parm_align, partial, reg, 0, argblock,
 			  (gen_int_mode
 			   (argvec[argnum].locate.offset.constant, Pmode)),
 			  reg_parm_stack_space,
@@ -4622,6 +4621,20 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
   argnum = nargs - 1;
 
   fun = prepare_call_address (NULL, fun, NULL, &call_fusage, 0, 0);
+
+  targetm.calls.start_call_args (args_so_far);
+
+  /* When expanding a normal call, args are stored in push order,
+     which is the reverse of what we have here.  */
+  bool any_regs = false;
+  for (int i = nargs; i-- > 0; )
+    if (argvec[i].reg != NULL_RTX)
+      {
+	targetm.calls.call_args (args_so_far, argvec[i].reg, NULL_TREE);
+	any_regs = true;
+      }
+  if (!any_regs)
+    targetm.calls.call_args (args_so_far, pc_rtx, NULL_TREE);
 
   /* Now load any reg parms into their regs.  */
 
@@ -4729,10 +4742,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	       get_identifier (XSTR (orgfun, 0)),
 	       build_function_type (tfom, NULL_TREE),
 	       original_args_size.constant, args_size.constant,
-	       struct_value_size,
-	       targetm.calls.function_arg (args_so_far,
-					   function_arg_info::end_marker ()),
-	       valreg,
+	       struct_value_size, call_cookie, valreg,
 	       old_inhibit_defer_pop + 1, call_fusage, flags, args_so_far);
 
   if (flag_ipa_ra)
@@ -4752,7 +4762,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       valreg = gen_rtx_REG (TYPE_MODE (tfom), REGNO (valreg));
     }
 
-  targetm.calls.end_call_args ();
+  targetm.calls.end_call_args (args_so_far);
 
   /* For calls to `setjmp', etc., inform function.cc:setjmp_warnings
      that it should complain if nonvolatile values are live.  For

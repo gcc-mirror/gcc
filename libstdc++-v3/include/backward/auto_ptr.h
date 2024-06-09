@@ -1,6 +1,6 @@
 // auto_ptr implementation -*- C++ -*-
 
-// Copyright (C) 2007-2023 Free Software Foundation, Inc.
+// Copyright (C) 2007-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -265,7 +265,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @endcode
        *
        *  But it doesn't work, and won't be fixed. For further details see
-       *  http://cplusplus.github.io/LWG/lwg-closed.html#463
+       *  https://cplusplus.github.io/LWG/lwg-closed.html#463
        */
       auto_ptr(auto_ptr_ref<element_type> __ref) throw()
       : _M_ptr(__ref._M_ptr) { }

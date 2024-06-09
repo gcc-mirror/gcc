@@ -496,6 +496,13 @@ private extern (C) int _d_run_main2(char[][] args, size_t totalArgsLength, MainF
     {
         if (rt_init())
         {
+            version(Shared) version(CRuntime_Microsoft) version (DigitalMars)
+            {
+                auto exeHandle = handleForAddr(mainFunc);
+                if (exeHandle)
+                    if (!rt_initSharedModule(exeHandle))
+                        exeHandle = null;
+            }
             auto utResult = runModuleUnitTests();
             assert(utResult.passed <= utResult.executed);
             if (utResult.passed == utResult.executed)
@@ -520,6 +527,11 @@ private extern (C) int _d_run_main2(char[][] args, size_t totalArgsLength, MainF
                              cast(int)(utResult.executed - utResult.passed),
                              cast(int)utResult.executed);
                 result = EXIT_FAILURE;
+            }
+            version(Shared) version(CRuntime_Microsoft) version (DigitalMars)
+            {
+                if (exeHandle)
+                    rt_termSharedModule(exeHandle);
             }
         }
         else

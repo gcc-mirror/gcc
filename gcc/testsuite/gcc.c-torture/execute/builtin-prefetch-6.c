@@ -4,6 +4,8 @@
 
 #include <limits.h>
 
+void exit (int);
+
 #define ARRSIZE 65
 int *bad_addr[ARRSIZE];
 int arr_used;

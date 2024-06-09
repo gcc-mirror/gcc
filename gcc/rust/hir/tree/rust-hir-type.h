@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -33,10 +33,10 @@ class Lifetime;
 class TraitBound : public TypeParamBound
 {
   bool in_parens;
-  bool opening_question_mark;
+  BoundPolarity polarity;
   std::vector<LifetimeParam> for_lifetimes;
   TypePath type_path;
-  Location locus;
+  location_t locus;
 
   Analysis::NodeMapping mappings;
 
@@ -44,18 +44,19 @@ public:
   // Returns whether trait bound has "for" lifetimes
   bool has_for_lifetimes () const { return !for_lifetimes.empty (); }
 
-  TraitBound (Analysis::NodeMapping mapping, TypePath type_path, Location locus,
-	      bool in_parens = false, bool opening_question_mark = false,
+  TraitBound (Analysis::NodeMapping mapping, TypePath type_path,
+	      location_t locus, bool in_parens = false,
+	      BoundPolarity polarity = BoundPolarity::RegularBound,
 	      std::vector<LifetimeParam> for_lifetimes
 	      = std::vector<LifetimeParam> ())
-    : in_parens (in_parens), opening_question_mark (opening_question_mark),
+    : in_parens (in_parens), polarity (polarity),
       for_lifetimes (std::move (for_lifetimes)),
       type_path (std::move (type_path)), locus (locus), mappings (mapping)
   {}
 
   std::string as_string () const override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -63,6 +64,10 @@ public:
   {
     return mappings;
   }
+
+  std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
+  bool get_in_parens () { return in_parens; }
+  BoundPolarity get_polarity () { return polarity; }
 
   BoundType get_bound_type () const final override { return TRAITBOUND; }
 
@@ -100,7 +105,7 @@ protected:
 public:
   ImplTraitType (Analysis::NodeMapping mappings,
 		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-		 Location locus)
+		 location_t locus)
     : Type (mappings, locus), type_param_bounds (std::move (type_param_bounds))
   {}
 
@@ -131,7 +136,10 @@ public:
   ImplTraitType &operator= (ImplTraitType &&other) = default;
 
   std::string as_string () const override;
-
+  std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
+  {
+    return type_param_bounds;
+  }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 };
@@ -154,7 +162,7 @@ public:
   TraitObjectType (
     Analysis::NodeMapping mappings,
     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-    Location locus, bool is_dyn_dispatch)
+    location_t locus, bool is_dyn_dispatch)
     : Type (mappings, locus), has_dyn (is_dyn_dispatch),
       type_param_bounds (std::move (type_param_bounds))
   {}
@@ -186,7 +194,7 @@ public:
   TraitObjectType &operator= (TraitObjectType &&other) = default;
 
   std::string as_string () const override;
-
+  bool get_has_dyn () { return has_dyn; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
@@ -225,7 +233,7 @@ protected:
 public:
   // Constructor uses Type pointer for polymorphism
   ParenthesisedType (Analysis::NodeMapping mappings,
-		     std::unique_ptr<Type> type_inside_parens, Location locus)
+		     std::unique_ptr<Type> type_inside_parens, location_t locus)
     : TypeNoBounds (mappings, locus),
       type_in_parens (std::move (type_inside_parens))
   {}
@@ -263,7 +271,7 @@ public:
      * parenthesised type, it must be in parentheses. */
     return type_in_parens->to_trait_bound (true);
   }
-
+  std::unique_ptr<Type> &get_type_in_parens () { return type_in_parens; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 };
@@ -290,12 +298,12 @@ protected:
 
 public:
   ImplTraitTypeOneBound (Analysis::NodeMapping mappings, TraitBound trait_bound,
-			 Location locus)
+			 location_t locus)
     : TypeNoBounds (mappings, locus), trait_bound (std::move (trait_bound))
   {}
 
   std::string as_string () const override;
-
+  TraitBound &get_trait_bound () { return trait_bound; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 };
@@ -313,7 +321,7 @@ public:
   bool is_unit_type () const { return elems.empty (); }
 
   TupleType (Analysis::NodeMapping mappings,
-	     std::vector<std::unique_ptr<Type>> elems, Location locus)
+	     std::vector<std::unique_ptr<Type>> elems, location_t locus)
     : TypeNoBounds (mappings, locus), elems (std::move (elems))
   {}
 
@@ -382,7 +390,7 @@ protected:
   }
 
 public:
-  NeverType (Analysis::NodeMapping mappings, Location locus)
+  NeverType (Analysis::NodeMapping mappings, location_t locus)
     : TypeNoBounds (mappings, locus)
   {}
 
@@ -402,7 +410,7 @@ private:
 public:
   // Constructor requires pointer for polymorphism reasons
   RawPointerType (Analysis::NodeMapping mappings, Mutability mut,
-		  std::unique_ptr<Type> type, Location locus)
+		  std::unique_ptr<Type> type, location_t locus)
     : TypeNoBounds (mappings, locus), mut (mut), type (std::move (type))
   {}
 
@@ -475,7 +483,7 @@ public:
 
   // Constructor
   ReferenceType (Analysis::NodeMapping mappings, Mutability mut,
-		 std::unique_ptr<Type> type_no_bounds, Location locus,
+		 std::unique_ptr<Type> type_no_bounds, location_t locus,
 		 Lifetime lifetime)
     : TypeNoBounds (mappings, locus), lifetime (std::move (lifetime)),
       mut (mut), type (std::move (type_no_bounds))
@@ -539,7 +547,7 @@ class ArrayType : public TypeNoBounds
 public:
   // Constructor requires pointers for polymorphism
   ArrayType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
-	     std::unique_ptr<Expr> array_size, Location locus)
+	     std::unique_ptr<Expr> array_size, location_t locus)
     : TypeNoBounds (mappings, locus), elem_type (std::move (type)),
       size (std::move (array_size))
   {}
@@ -570,9 +578,9 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
-  Type *get_element_type () { return elem_type.get (); }
+  std::unique_ptr<Type> &get_element_type () { return elem_type; }
 
-  Expr *get_size_expr () { return size.get (); }
+  std::unique_ptr<Expr> &get_size_expr () { return size; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -596,7 +604,7 @@ class SliceType : public TypeNoBounds
 public:
   // Constructor requires pointer for polymorphism
   SliceType (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
-	     Location locus)
+	     location_t locus)
     : TypeNoBounds (mappings, locus), elem_type (std::move (type))
   {}
 
@@ -661,7 +669,7 @@ protected:
   }
 
 public:
-  InferredType (Analysis::NodeMapping mappings, Location locus)
+  InferredType (Analysis::NodeMapping mappings, location_t locus)
     : TypeNoBounds (mappings, locus)
   {}
 
@@ -690,11 +698,11 @@ private:
   ParamKind param_kind;
   Identifier name; // technically, can be an identifier or '_'
 
-  Location locus;
+  location_t locus;
 
 public:
   MaybeNamedParam (Identifier name, ParamKind param_kind,
-		   std::unique_ptr<Type> param_type, Location locus)
+		   std::unique_ptr<Type> param_type, location_t locus)
     : param_type (std::move (param_type)), param_kind (param_kind),
       name (std::move (name)), locus (locus)
   {}
@@ -730,21 +738,19 @@ public:
   // Creates an error state param.
   static MaybeNamedParam create_error ()
   {
-    return MaybeNamedParam ("", UNNAMED, nullptr, Location ());
+    return MaybeNamedParam ({""}, UNNAMED, nullptr, UNDEF_LOCATION);
   }
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
-  std::unique_ptr<Type> &get_type ()
-  {
-    rust_assert (param_type != nullptr);
-    return param_type;
-  }
+  std::unique_ptr<Type> &get_type () { return param_type; }
 
   ParamKind get_param_kind () const { return param_kind; }
 
   Identifier get_name () const { return name; }
 };
+
+std::string enum_to_str (MaybeNamedParam::ParamKind);
 
 /* A function pointer type - can be created via coercion from function items and
  * non- capturing closures. */
@@ -771,7 +777,7 @@ public:
 		    std::vector<LifetimeParam> lifetime_params,
 		    FunctionQualifiers qualifiers,
 		    std::vector<MaybeNamedParam> named_params, bool is_variadic,
-		    std::unique_ptr<Type> type, Location locus)
+		    std::unique_ptr<Type> type, location_t locus)
     : TypeNoBounds (mappings, locus),
       for_lifetimes (std::move (lifetime_params)),
       function_qualifiers (std::move (qualifiers)),
@@ -811,6 +817,10 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
+  std::vector<LifetimeParam> &get_for_lifetimes () { return for_lifetimes; }
+  bool get_is_variadic () { return is_variadic; }
+  FunctionQualifiers &get_function_qualifiers () { return function_qualifiers; }
+
   std::vector<MaybeNamedParam> &get_function_params () { return params; }
   const std::vector<MaybeNamedParam> &get_function_params () const
   {
@@ -818,11 +828,7 @@ public:
   }
 
   // TODO: would a "vis_type" be better?
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  }
+  std::unique_ptr<Type> &get_return_type () { return return_type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

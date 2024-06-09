@@ -1,1 +1,1 @@
-f(){short x=32000;}
+void f(void){short x=32000;}

@@ -12,7 +12,7 @@ export module foo;
 
 export int violation_count{0};
 export int violation_line_sum{0};
-extern "C++" export void handle_contract_violation(const std::experimental::contract_violation &violation)
+export extern "C++" void handle_contract_violation(const std::experimental::contract_violation &violation)
 {
   violation_count++;
   violation_line_sum += violation.line_number () * violation_count;

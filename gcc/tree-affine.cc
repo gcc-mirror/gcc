@@ -1,5 +1,5 @@
 /* Operations with affine combinations of trees.
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -345,7 +345,7 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 	       for below case:
 		 (T1)(X *+- CST) -> (T1)X *+- (T1)CST
 	       if X *+- CST doesn't overflow by range information.  */
-	    value_range vr;
+	    int_range_max vr;
 	    if (TYPE_UNSIGNED (itype)
 		&& TYPE_OVERFLOW_WRAPS (itype)
 		&& TREE_CODE (op1) == INTEGER_CST
@@ -805,6 +805,7 @@ aff_combination_expand (aff_tree *comb ATTRIBUTE_UNUSED,
 	      continue;
 	    }
 	  exp = XNEW (class name_expansion);
+	  ::new (static_cast<void *> (exp)) name_expansion ();
 	  exp->in_progress = 1;
 	  if (!*cache)
 	    *cache = new hash_map<tree, name_expansion *>;
@@ -860,6 +861,7 @@ tree_to_aff_combination_expand (tree expr, tree type, aff_tree *comb,
 bool
 free_name_expansion (tree const &, name_expansion **value, void *)
 {
+  (*value)->~name_expansion ();
   free (*value);
   return true;
 }

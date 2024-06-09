@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1491,6 +1491,12 @@ package body Repinfo is
 
                   else
                      Parent_Type := Base_Type (Parent_Type);
+
+                     if Is_Private_Type (Parent_Type) then
+                        Parent_Type := Full_View (Parent_Type);
+                        pragma Assert (Present (Parent_Type));
+                     end if;
+
                      if not In_Extended_Main_Source_Unit (Parent_Type) then
                         raise Not_In_Extended_Main;
                      end if;

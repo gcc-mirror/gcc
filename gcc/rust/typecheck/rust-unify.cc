@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -22,21 +22,28 @@ namespace Rust {
 namespace Resolver {
 
 UnifyRules::UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-			Location locus, bool commit_flag, bool emit_error)
+			location_t locus, bool commit_flag, bool emit_error,
+			bool infer, std::vector<CommitSite> &commits,
+			std::vector<InferenceSite> &infers)
   : lhs (lhs), rhs (rhs), locus (locus), commit_flag (commit_flag),
-    emit_error (emit_error), mappings (*Analysis::Mappings::get ()),
+    emit_error (emit_error), infer_flag (infer), commits (commits),
+    infers (infers), mappings (*Analysis::Mappings::get ()),
     context (*TypeCheckContext::get ())
 {}
 
 TyTy::BaseType *
 UnifyRules::Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
-		     Location locus, bool commit_flag, bool emit_error)
+		     location_t locus, bool commit_flag, bool emit_error,
+		     bool infer, std::vector<CommitSite> &commits,
+		     std::vector<InferenceSite> &infers)
 {
-  UnifyRules r (lhs, rhs, locus, commit_flag, emit_error);
-  TyTy::BaseType *result = r.go ();
+  UnifyRules r (lhs, rhs, locus, commit_flag, emit_error, infer, commits,
+		infers);
 
+  TyTy::BaseType *result = r.go ();
+  commits.push_back ({lhs.get_ty (), rhs.get_ty (), result});
   if (r.commit_flag)
-    r.commit (result);
+    UnifyRules::commit (lhs.get_ty (), rhs.get_ty (), result);
 
   bool failed = result->get_kind () == TyTy::TypeKind::ERROR;
   if (failed && r.emit_error)
@@ -58,19 +65,26 @@ UnifyRules::get_other ()
 }
 
 void
-UnifyRules::commit (TyTy::BaseType *resolved)
+UnifyRules::commit (TyTy::BaseType *base, TyTy::BaseType *other,
+		    TyTy::BaseType *resolved)
 {
-  resolved->append_reference (get_base ()->get_ref ());
-  resolved->append_reference (get_other ()->get_ref ());
-  for (auto ref : get_base ()->get_combined_refs ())
+  TypeCheckContext &context = *TypeCheckContext::get ();
+  Analysis::Mappings &mappings = *Analysis::Mappings::get ();
+
+  TyTy::BaseType *b = base->destructure ();
+  TyTy::BaseType *o = other->destructure ();
+
+  resolved->append_reference (b->get_ref ());
+  resolved->append_reference (o->get_ref ());
+  for (auto ref : b->get_combined_refs ())
     resolved->append_reference (ref);
-  for (auto ref : get_other ()->get_combined_refs ())
+  for (auto ref : o->get_combined_refs ())
     resolved->append_reference (ref);
 
-  get_other ()->append_reference (resolved->get_ref ());
-  get_other ()->append_reference (get_base ()->get_ref ());
-  get_base ()->append_reference (resolved->get_ref ());
-  get_base ()->append_reference (get_other ()->get_ref ());
+  o->append_reference (resolved->get_ref ());
+  o->append_reference (b->get_ref ());
+  b->append_reference (resolved->get_ref ());
+  b->append_reference (o->get_ref ());
 
   bool result_resolved = resolved->get_kind () != TyTy::TypeKind::INFER;
   bool result_is_infer_var = resolved->get_kind () == TyTy::TypeKind::INFER;
@@ -105,11 +119,24 @@ UnifyRules::emit_type_mismatch () const
   TyTy::BaseType *expected = lhs.get_ty ();
   TyTy::BaseType *expr = rhs.get_ty ();
 
-  RichLocation r (locus);
+  rich_location r (line_table, locus);
   r.add_range (lhs.get_locus ());
   r.add_range (rhs.get_locus ());
-  rust_error_at (r, "expected %<%s%> got %<%s%>",
+  rust_error_at (r, ErrorCode::E0308,
+		 "mismatched types, expected %qs but got %qs",
 		 expected->get_name ().c_str (), expr->get_name ().c_str ());
+}
+
+void
+UnifyRules::emit_abi_mismatch (const TyTy::FnType &expected,
+			       const TyTy::FnType &got) const
+{
+  rich_location r (line_table, locus);
+  r.add_range (lhs.get_locus ());
+  r.add_range (rhs.get_locus ());
+  rust_error_at (r, "mistached abi %<%s%> got %<%s%>",
+		 get_string_from_abi (expected.get_abi ()).c_str (),
+		 get_string_from_abi (got.get_abi ()).c_str ());
 }
 
 TyTy::BaseType *
@@ -125,13 +152,88 @@ UnifyRules::go ()
 	      rtype->debug_str ().c_str ());
 
   // check bounds
-  if (ltype->num_specified_bounds () > 0)
+  bool ltype_is_placeholder = ltype->get_kind () == TyTy::TypeKind::PLACEHOLDER;
+  bool rtype_is_placeholder = rtype->get_kind () == TyTy::TypeKind::PLACEHOLDER;
+  bool types_equal = ltype->is_equal (*rtype);
+  bool should_check_bounds
+    = !types_equal && !(ltype_is_placeholder || rtype_is_placeholder);
+  if (should_check_bounds)
     {
-      if (!ltype->bounds_compatible (*rtype, locus, true))
+      if (ltype->num_specified_bounds () > 0)
 	{
-	  // already emitted an error
-	  emit_error = false;
-	  return new TyTy::ErrorType (0);
+	  if (!ltype->bounds_compatible (*rtype, locus, emit_error))
+	    {
+	      // already emitted an error
+	      emit_error = false;
+	      return new TyTy::ErrorType (0);
+	    }
+	}
+      else if (rtype->num_specified_bounds () > 0)
+	{
+	  if (!rtype->bounds_compatible (*ltype, locus, emit_error))
+	    {
+	      // already emitted an error
+	      emit_error = false;
+	      return new TyTy::ErrorType (0);
+	    }
+	}
+    }
+
+  if (infer_flag)
+    {
+      bool rgot_param = rtype->get_kind () == TyTy::TypeKind::PARAM;
+      bool lhs_is_infer_var = ltype->get_kind () == TyTy::TypeKind::INFER;
+      bool lhs_is_general_infer_var
+	= lhs_is_infer_var
+	  && static_cast<TyTy::InferType *> (ltype)->get_infer_kind ()
+	       == TyTy::InferType::GENERAL;
+      bool expected_is_concrete
+	= ltype->is_concrete () && !lhs_is_general_infer_var;
+      bool rneeds_infer = expected_is_concrete && rgot_param;
+
+      bool lgot_param = ltype->get_kind () == TyTy::TypeKind::PARAM;
+      bool rhs_is_infer_var = rtype->get_kind () == TyTy::TypeKind::INFER;
+      bool rhs_is_general_infer_var
+	= rhs_is_infer_var
+	  && static_cast<TyTy::InferType *> (rtype)->get_infer_kind ()
+	       == TyTy::InferType::GENERAL;
+      bool receiver_is_concrete
+	= rtype->is_concrete () && !rhs_is_general_infer_var;
+      bool lneeds_infer = receiver_is_concrete && lgot_param;
+
+      if (rneeds_infer)
+	{
+	  TyTy::ParamType *p = static_cast<TyTy::ParamType *> (rtype);
+	  TyTy::TyVar iv
+	    = TyTy::TyVar::get_implicit_infer_var (rhs.get_locus ());
+	  rust_assert (iv.get_tyty ()->get_kind () == TyTy::TypeKind::INFER);
+	  TyTy::InferType *i = static_cast<TyTy::InferType *> (iv.get_tyty ());
+
+	  infers.push_back ({p->get_ref (), p->get_ty_ref (), p, i});
+
+	  // FIXME
+	  // this is hacky to set the implicit param lets make this a function
+	  p->set_ty_ref (i->get_ref ());
+
+	  // set the rtype now to the new inference var
+	  rtype = i;
+	}
+      else if (lneeds_infer)
+	{
+	  TyTy::ParamType *p = static_cast<TyTy::ParamType *> (ltype);
+	  TyTy::TyVar iv
+	    = TyTy::TyVar::get_implicit_infer_var (lhs.get_locus ());
+	  rust_assert (iv.get_tyty ()->get_kind () == TyTy::TypeKind::INFER);
+	  TyTy::InferType *i = static_cast<TyTy::InferType *> (iv.get_tyty ());
+
+	  infers.push_back ({p->get_ref (), p->get_ty_ref (), p, i});
+
+	  // FIXME
+	  // this is hacky to set the implicit param lets make this a function
+	  p->set_ty_ref (i->get_ref ());
+
+	  // set the rtype now to the new inference var
+	  ltype = i;
 	}
     }
 
@@ -262,7 +364,10 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 			|| (ltype->get_infer_kind ()
 			    == TyTy::InferType::InferTypeKind::INTEGRAL);
 	if (is_valid)
-	  return rtype->clone ();
+	  {
+	    ltype->apply_primitive_type_hint (*rtype);
+	    return rtype->clone ();
+	  }
       }
       break;
 
@@ -272,7 +377,10 @@ UnifyRules::expect_inference_variable (TyTy::InferType *ltype,
 			|| (ltype->get_infer_kind ()
 			    == TyTy::InferType::InferTypeKind::FLOAT);
 	if (is_valid)
-	  return rtype->clone ();
+	  {
+	    ltype->apply_primitive_type_hint (*rtype);
+	    return rtype->clone ();
+	  }
       }
       break;
 
@@ -360,7 +468,8 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
 		  = UnifyRules::Resolve (TyTy::TyWithLocation (this_field_ty),
 					 TyTy::TyWithLocation (other_field_ty),
 					 locus, commit_flag,
-					 false /* emit_error */);
+					 false /* emit_error */, infer_flag,
+					 commits, infers);
 		if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
 		  {
 		    return new TyTy::ErrorType (0);
@@ -385,7 +494,8 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
 		auto res
 		  = UnifyRules::Resolve (TyTy::TyWithLocation (pa),
 					 TyTy::TyWithLocation (pb), locus,
-					 commit_flag, false /* emit_error */);
+					 commit_flag, false /* emit_error */,
+					 infer_flag, commits, infers);
 		if (res->get_kind () == TyTy::TypeKind::ERROR)
 		  {
 		    return new TyTy::ErrorType (0);
@@ -490,7 +600,8 @@ UnifyRules::expect_reference (TyTy::ReferenceType *ltype, TyTy::BaseType *rtype)
 	TyTy::BaseType *base_resolved
 	  = UnifyRules::Resolve (TyTy::TyWithLocation (base_type),
 				 TyTy::TyWithLocation (other_base_type), locus,
-				 commit_flag, false /* emit_error */);
+				 commit_flag, false /* emit_error */,
+				 infer_flag, commits, infers);
 	if (base_resolved->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    return new TyTy::ErrorType (0);
@@ -559,7 +670,8 @@ UnifyRules::expect_pointer (TyTy::PointerType *ltype, TyTy::BaseType *rtype)
 	TyTy::BaseType *base_resolved
 	  = UnifyRules::Resolve (TyTy::TyWithLocation (base_type),
 				 TyTy::TyWithLocation (other_base_type), locus,
-				 commit_flag, false /* emit_error */);
+				 commit_flag, false /* emit_error */,
+				 infer_flag, commits, infers);
 	if (base_resolved->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    return new TyTy::ErrorType (0);
@@ -686,7 +798,7 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
 	TyTy::BaseType *element_unify = UnifyRules::Resolve (
 	  TyTy::TyWithLocation (ltype->get_element_type ()),
 	  TyTy::TyWithLocation (type.get_element_type ()), locus, commit_flag,
-	  false /* emit_error*/);
+	  false /* emit_error*/, infer_flag, commits, infers);
 
 	if (element_unify->get_kind () != TyTy::TypeKind::ERROR)
 	  {
@@ -745,7 +857,7 @@ UnifyRules::expect_slice (TyTy::SliceType *ltype, TyTy::BaseType *rtype)
 	TyTy::BaseType *element_unify = UnifyRules::Resolve (
 	  TyTy::TyWithLocation (ltype->get_element_type ()),
 	  TyTy::TyWithLocation (type.get_element_type ()), locus, commit_flag,
-	  false /* emit_error*/);
+	  false /* emit_error*/, infer_flag, commits, infers);
 
 	if (element_unify->get_kind () != TyTy::TypeKind::ERROR)
 	  {
@@ -813,22 +925,35 @@ UnifyRules::expect_fndef (TyTy::FnType *ltype, TyTy::BaseType *rtype)
 	    auto unified_param
 	      = UnifyRules::Resolve (TyTy::TyWithLocation (a),
 				     TyTy::TyWithLocation (b), locus,
-				     commit_flag, false /* emit_errors */);
+				     commit_flag, false /* emit_errors */,
+				     infer_flag, commits, infers);
 	    if (unified_param->get_kind () == TyTy::TypeKind::ERROR)
 	      {
 		return new TyTy::ErrorType (0);
 	      }
 	  }
 
-	auto unified_return
-	  = UnifyRules::Resolve (TyTy::TyWithLocation (
-				   ltype->get_return_type ()),
-				 TyTy::TyWithLocation (type.get_return_type ()),
-				 locus, commit_flag, false /* emit_errors */);
+	auto unified_return = UnifyRules::Resolve (
+	  TyTy::TyWithLocation (ltype->get_return_type ()),
+	  TyTy::TyWithLocation (type.get_return_type ()), locus, commit_flag,
+	  false /* emit_errors */, infer_flag, commits, infers);
 	if (unified_return->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    return new TyTy::ErrorType (0);
 	  }
+
+	// ABI match? see
+	// https://gcc-rust.zulipchat.com/#narrow/stream/266897-general/topic/extern.20blocks/near/346416045
+	if (ltype->get_abi () != type.get_abi ())
+	  {
+	    if (emit_error)
+	      {
+		emit_abi_mismatch (*ltype, type);
+	      }
+	    return new TyTy::ErrorType (0);
+	  }
+
+	// DEF Id match? see https://github.com/Rust-GCC/gccrs/issues/2053
 
 	return ltype->clone ();
       }
@@ -884,24 +1009,24 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 
 	for (size_t i = 0; i < ltype->num_params (); i++)
 	  {
-	    auto a = ltype->param_at (i);
-	    auto b = type.param_at (i);
+	    auto a = ltype->get_param_type_at (i);
+	    auto b = type.get_param_type_at (i);
 
 	    auto unified_param
 	      = UnifyRules::Resolve (TyTy::TyWithLocation (a),
 				     TyTy::TyWithLocation (b), locus,
-				     commit_flag, false /* emit_errors */);
+				     commit_flag, false /* emit_errors */,
+				     infer_flag, commits, infers);
 	    if (unified_param->get_kind () == TyTy::TypeKind::ERROR)
 	      {
 		return new TyTy::ErrorType (0);
 	      }
 	  }
 
-	auto unified_return
-	  = UnifyRules::Resolve (TyTy::TyWithLocation (
-				   ltype->get_return_type ()),
-				 TyTy::TyWithLocation (type.get_return_type ()),
-				 locus, commit_flag, false /* emit_errors */);
+	auto unified_return = UnifyRules::Resolve (
+	  TyTy::TyWithLocation (ltype->get_return_type ()),
+	  TyTy::TyWithLocation (type.get_return_type ()), locus, commit_flag,
+	  false /* emit_errors */, infer_flag, commits, infers);
 	if (unified_return->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    return new TyTy::ErrorType (0);
@@ -919,7 +1044,8 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 	auto unified_result
 	  = UnifyRules::Resolve (TyTy::TyWithLocation (this_ret_type),
 				 TyTy::TyWithLocation (other_ret_type), locus,
-				 commit_flag, false /*emit_errors*/);
+				 commit_flag, false /*emit_errors*/, infer_flag,
+				 commits, infers);
 	if (unified_result->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    return new TyTy::ErrorType (0);
@@ -932,13 +1058,14 @@ UnifyRules::expect_fnptr (TyTy::FnPtr *ltype, TyTy::BaseType *rtype)
 
 	for (size_t i = 0; i < ltype->num_params (); i++)
 	  {
-	    auto this_param = ltype->param_at (i);
+	    auto this_param = ltype->get_param_type_at (i);
 	    auto other_param = type.param_at (i).second;
 
 	    auto unified_param
 	      = UnifyRules::Resolve (TyTy::TyWithLocation (this_param),
 				     TyTy::TyWithLocation (other_param), locus,
-				     commit_flag, false /* emit_errors */);
+				     commit_flag, false /* emit_errors */,
+				     infer_flag, commits, infers);
 	    if (unified_param->get_kind () == TyTy::TypeKind::ERROR)
 	      {
 		return new TyTy::ErrorType (0);
@@ -1005,7 +1132,8 @@ UnifyRules::expect_tuple (TyTy::TupleType *ltype, TyTy::BaseType *rtype)
 	    TyTy::BaseType *unified_ty
 	      = UnifyRules::Resolve (TyTy::TyWithLocation (bo),
 				     TyTy::TyWithLocation (fo), locus,
-				     commit_flag, false /* emit_errors */);
+				     commit_flag, false /* emit_errors */,
+				     infer_flag, commits, infers);
 	    if (unified_ty->get_kind () == TyTy::TypeKind::ERROR)
 	      return new TyTy::ErrorType (0);
 
@@ -1054,7 +1182,10 @@ UnifyRules::expect_bool (TyTy::BoolType *ltype, TyTy::BaseType *rtype)
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
 	if (is_valid)
-	  return ltype->clone ();
+	  {
+	    r->apply_primitive_type_hint (*ltype);
+	    return ltype->clone ();
+	  }
       }
       break;
 
@@ -1098,7 +1229,10 @@ UnifyRules::expect_char (TyTy::CharType *ltype, TyTy::BaseType *rtype)
 	bool is_valid
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL;
 	if (is_valid)
-	  return ltype->clone ();
+	  {
+	    r->apply_primitive_type_hint (*ltype);
+	    return ltype->clone ();
+	  }
       }
       break;
 
@@ -1143,7 +1277,10 @@ UnifyRules::expect_int (TyTy::IntType *ltype, TyTy::BaseType *rtype)
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL
 	    || r->get_infer_kind () == TyTy::InferType::InferTypeKind::INTEGRAL;
 	if (is_valid)
-	  return ltype->clone ();
+	  {
+	    r->apply_primitive_type_hint (*ltype);
+	    return ltype->clone ();
+	  }
       }
       break;
 
@@ -1194,7 +1331,10 @@ UnifyRules::expect_uint (TyTy::UintType *ltype, TyTy::BaseType *rtype)
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL
 	    || r->get_infer_kind () == TyTy::InferType::InferTypeKind::INTEGRAL;
 	if (is_valid)
-	  return ltype->clone ();
+	  {
+	    r->apply_primitive_type_hint (*ltype);
+	    return ltype->clone ();
+	  }
       }
       break;
 
@@ -1245,7 +1385,10 @@ UnifyRules::expect_float (TyTy::FloatType *ltype, TyTy::BaseType *rtype)
 	  = r->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL
 	    || r->get_infer_kind () == TyTy::InferType::InferTypeKind::FLOAT;
 	if (is_valid)
-	  return ltype->clone ();
+	  {
+	    r->apply_primitive_type_hint (*ltype);
+	    return ltype->clone ();
+	  }
       }
       break;
 
@@ -1295,7 +1438,10 @@ UnifyRules::expect_isize (TyTy::ISizeType *ltype, TyTy::BaseType *rtype)
 	bool is_valid
 	  = r->get_infer_kind () != TyTy::InferType::InferTypeKind::FLOAT;
 	if (is_valid)
-	  return ltype->clone ();
+	  {
+	    r->apply_primitive_type_hint (*ltype);
+	    return ltype->clone ();
+	  }
       }
       break;
 
@@ -1339,7 +1485,10 @@ UnifyRules::expect_usize (TyTy::USizeType *ltype, TyTy::BaseType *rtype)
 	bool is_valid
 	  = r->get_infer_kind () != TyTy::InferType::InferTypeKind::FLOAT;
 	if (is_valid)
-	  return ltype->clone ();
+	  {
+	    r->apply_primitive_type_hint (*ltype);
+	    return ltype->clone ();
+	  }
       }
       break;
 
@@ -1432,17 +1581,8 @@ UnifyRules::expect_placeholder (TyTy::PlaceholderType *ltype,
       }
       break;
 
-      case TyTy::PLACEHOLDER: {
-	TyTy::PlaceholderType &type
-	  = *static_cast<TyTy::PlaceholderType *> (rtype);
-	bool symbol_match
-	  = ltype->get_symbol ().compare (type.get_symbol ()) == 0;
-	if (symbol_match)
-	  {
-	    return type.clone ();
-	  }
-      }
-      break;
+    case TyTy::PLACEHOLDER:
+      return ltype->clone ();
 
     case TyTy::PROJECTION:
     case TyTy::DYNAMIC:
@@ -1465,6 +1605,10 @@ UnifyRules::expect_placeholder (TyTy::PlaceholderType *ltype,
     case TyTy::USIZE:
     case TyTy::ISIZE:
     case TyTy::NEVER:
+      if (infer_flag)
+	return rtype->clone ();
+      gcc_fallthrough ();
+
     case TyTy::ERROR:
       return new TyTy::ErrorType (0);
     }
@@ -1488,7 +1632,7 @@ UnifyRules::expect_projection (TyTy::ProjectionType *ltype,
 
       // FIXME
     case TyTy::PROJECTION:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
 
     case TyTy::DYNAMIC:
@@ -1597,11 +1741,10 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
 	    return new TyTy::ErrorType (0);
 	  }
 
-	TyTy::BaseType *args_res
-	  = UnifyRules::Resolve (TyTy::TyWithLocation (
-				   &ltype->get_parameters ()),
-				 TyTy::TyWithLocation (&type.get_parameters ()),
-				 locus, commit_flag, false /* emit_error */);
+	TyTy::BaseType *args_res = UnifyRules::Resolve (
+	  TyTy::TyWithLocation (&ltype->get_parameters ()),
+	  TyTy::TyWithLocation (&type.get_parameters ()), locus, commit_flag,
+	  false /* emit_error */, infer_flag, commits, infers);
 	if (args_res->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    return new TyTy::ErrorType (0);
@@ -1610,7 +1753,7 @@ UnifyRules::expect_closure (TyTy::ClosureType *ltype, TyTy::BaseType *rtype)
 	TyTy::BaseType *res = UnifyRules::Resolve (
 	  TyTy::TyWithLocation (&ltype->get_result_type ()),
 	  TyTy::TyWithLocation (&type.get_result_type ()), locus, commit_flag,
-	  false /* emit_error */);
+	  false /* emit_error */, infer_flag, commits, infers);
 	if (res == nullptr || res->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    return new TyTy::ErrorType (0);

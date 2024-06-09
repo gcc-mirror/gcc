@@ -1,5 +1,5 @@
 // { dg-lto-do link }
-/* { dg-lto-options { "-O2 -fno-early-inlining -fno-implicit-constexpr -flto -fdump-ipa-inline-details" } } */
+/* { dg-lto-options { "-O2 -fno-early-inlining -fno-implicit-constexpr -flto -fdump-ipa-inline-details -fno-ipa-vrp" } } */
 #include "inline-crossmodule-1.h"
 int a::key ()
 {

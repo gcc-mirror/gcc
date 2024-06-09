@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020-2023, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2024, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,7 @@
 generic
 
    type Int is range <>;
+   type Uns is mod <>;
 
 package System.Image_D is
 
@@ -46,8 +47,8 @@ package System.Image_D is
       Scale : Integer);
    --  Computes fixed_type'Image (V), where V is the integer value (in units of
    --  delta) of a decimal type whose Scale is as given and stores the result
-   --  S (1 .. P), updating P to the value of L. The image is given by the
-   --  rules in RM 3.5(34) for fixed-point type image functions. The caller
+   --  S (1 .. P), updating P on return. The result is computed according to
+   --  the rules for image for fixed-point types (RM 3.5(34)). The caller
    --  guarantees that S is long enough to hold the result and has a lower
    --  bound of 1.
 

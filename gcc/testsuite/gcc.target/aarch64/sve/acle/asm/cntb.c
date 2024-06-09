@@ -51,19 +51,24 @@ PROTO (cntb_15, uint64_t, ()) { return svcntb () * 15; }
 */
 PROTO (cntb_16, uint64_t, ()) { return svcntb () * 16; }
 
-/* Other sequences would be OK.  */
 /*
 ** cntb_17:
-**	cntb	x0, all, mul #16
-**	incb	x0
+**	rdvl	x0, #17
 **	ret
 */
 PROTO (cntb_17, uint64_t, ()) { return svcntb () * 17; }
 
 /*
+** cntb_31:
+**	rdvl	x0, #31
+**	ret
+*/
+PROTO (cntb_31, uint64_t, ()) { return svcntb () * 31; }
+
+/*
 ** cntb_32:
-**	cntd	(x[0-9]+)
-**	lsl	x0, \1, 8
+**	cntb	(x[0-9]+)
+**	lsl	x0, \1, 5
 **	ret
 */
 PROTO (cntb_32, uint64_t, ()) { return svcntb () * 32; }
@@ -80,16 +85,16 @@ PROTO (cntb_33, uint64_t, ()) { return svcntb () * 33; }
 
 /*
 ** cntb_64:
-**	cntd	(x[0-9]+)
-**	lsl	x0, \1, 9
+**	cntb	(x[0-9]+)
+**	lsl	x0, \1, 6
 **	ret
 */
 PROTO (cntb_64, uint64_t, ()) { return svcntb () * 64; }
 
 /*
 ** cntb_128:
-**	cntd	(x[0-9]+)
-**	lsl	x0, \1, 10
+**	cntb	(x[0-9]+)
+**	lsl	x0, \1, 7
 **	ret
 */
 PROTO (cntb_128, uint64_t, ()) { return svcntb () * 128; }
@@ -106,45 +111,69 @@ PROTO (cntb_129, uint64_t, ()) { return svcntb () * 129; }
 
 /*
 ** cntb_m1:
-**	cntb	(x[0-9]+)
-**	neg	x0, \1
+**	rdvl	x0, #-1
 **	ret
 */
 PROTO (cntb_m1, uint64_t, ()) { return -svcntb (); }
 
 /*
 ** cntb_m13:
-**	cntb	(x[0-9]+), all, mul #13
-**	neg	x0, \1
+**	rdvl	x0, #-13
 **	ret
 */
 PROTO (cntb_m13, uint64_t, ()) { return -svcntb () * 13; }
 
 /*
 ** cntb_m15:
-**	cntb	(x[0-9]+), all, mul #15
-**	neg	x0, \1
+**	rdvl	x0, #-15
 **	ret
 */
 PROTO (cntb_m15, uint64_t, ()) { return -svcntb () * 15; }
 
 /*
 ** cntb_m16:
-**	cntb	(x[0-9]+), all, mul #16
-**	neg	x0, \1
+**	rdvl	x0, #-16
 **	ret
 */
 PROTO (cntb_m16, uint64_t, ()) { return -svcntb () * 16; }
 
-/* Other sequences would be OK.  */
 /*
 ** cntb_m17:
-**	cntb	x0, all, mul #16
-**	incb	x0
-**	neg	x0, x0
+**	rdvl	x0, #-17
 **	ret
 */
 PROTO (cntb_m17, uint64_t, ()) { return -svcntb () * 17; }
+
+/*
+** cntb_m32:
+**	rdvl	x0, #-32
+**	ret
+*/
+PROTO (cntb_m32, uint64_t, ()) { return -svcntb () * 32; }
+
+/*
+** cntb_m33:
+**	rdvl	x0, #-32
+**	decb	x0
+**	ret
+*/
+PROTO (cntb_m33, uint64_t, ()) { return -svcntb () * 33; }
+
+/*
+** cntb_m34:
+**	rdvl	(x[0-9]+), #-17
+**	lsl	x0, \1, #?1
+**	ret
+*/
+PROTO (cntb_m34, uint64_t, ()) { return -svcntb () * 34; }
+
+/*
+** cntb_m64:
+**	rdvl	(x[0-9]+), #-1
+**	lsl	x0, \1, #?6
+**	ret
+*/
+PROTO (cntb_m64, uint64_t, ()) { return -svcntb () * 64; }
 
 /*
 ** incb_1:

@@ -785,6 +785,33 @@ version (linux)
 
         alias ucontext_t = ucontext;
     }
+    else version (LoongArch64)
+    {
+        private
+        {
+            enum LARCH_NGREG  = 32;
+
+            alias ulong         greg_t;
+            alias greg_t[LARCH_NGREG] gregset_t;
+        }
+
+        struct mcontext_t
+        {
+            c_ulong __pc;
+            c_ulong[32] __gregs;
+            int __flags;
+            align(16) c_ulong[0] __extcontext;
+        }
+
+        struct ucontext_t
+        {
+            c_ulong     __uc_flags;
+            ucontext_t* uc_link;
+            stack_t     uc_stack;
+            sigset_t    uc_sigmask;
+            mcontext_t  uc_mcontext;
+        }
+    }
     else
         static assert(0, "unimplemented");
 }

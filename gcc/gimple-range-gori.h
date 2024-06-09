@@ -1,5 +1,5 @@
 /* Header file for gimple range GORI structures.
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -127,7 +127,7 @@ private:
 //   on *ANY* edge that has been seen.  FALSE indicates that the global value
 //   is applicable everywhere that has been processed.
 //
-// outgoing_edge_range_p (vrange &range, edge e, tree name)
+// edge_range_p (vrange &range, edge e, tree name)
 //   Actually does the calculation of RANGE for name on E
 //   This represents application of whatever static range effect edge E
 //   may have on NAME, not any cumulative effect.
@@ -161,13 +161,13 @@ private:
 
 class value_relation;
 
-class gori_compute : public gori_map
+class gori_compute : public gimple_outgoing_range
 {
 public:
-  gori_compute (int not_executable_flag = 0);
-  bool outgoing_edge_range_p (vrange &r, edge e, tree name, range_query &q);
-  bool condexpr_adjust (vrange &r1, vrange &r2, gimple *s, tree cond, tree op1,
-			tree op2, fur_source &src);
+  gori_compute (gori_map &map, int not_executable_flag = 0,
+		int max_sw_edges = 0);
+  virtual ~gori_compute ();
+  bool edge_range_p (vrange &r, edge e, tree name, range_query &q);
   bool has_edge_range_p (tree name, basic_block bb = NULL);
   bool has_edge_range_p (tree name, edge e);
   void dump (FILE *f);
@@ -175,6 +175,7 @@ public:
 			      tree name, class fur_source &src,
 			      value_relation *rel = NULL);
 private:
+  gori_map &m_map;
   bool refine_using_relation (tree op1, vrange &op1_range,
 			      tree op2, vrange &op2_range,
 			      fur_source &src, relation_kind k);
@@ -203,7 +204,6 @@ private:
   int_range<2> m_bool_zero;	// Boolean false cached.
   int_range<2> m_bool_one;	// Boolean true cached.
 
-  gimple_outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
   range_tracer tracer;
   int m_not_executable_flag;
 };
@@ -213,10 +213,8 @@ private:
 // ssa_cache structure).
 // GORI_NAME_ON_EDGE  is used to simply ask if NAME has a range on edge E
 
-// Fill ssa-cache R with any outgoing ranges on edge E, using OGR and QUERY.
-bool gori_on_edge (class ssa_cache &r, edge e,
-		   range_query *query = NULL,
-		   gimple_outgoing_range *ogr = NULL);
+// Fill ssa-cache R with any outgoing ranges on edge E, using QUERY.
+bool gori_on_edge (class ssa_cache &r, edge e, range_query *query = NULL);
 
 // Query if NAME has an outgoing range on edge E, and return it in R if so.
 // Note this doesnt use ranger, its a static GORI analysis of the range in
@@ -224,14 +222,14 @@ bool gori_on_edge (class ssa_cache &r, edge e,
 bool gori_name_on_edge (vrange &r, tree name, edge e, range_query *q = NULL);
 
 // For each name that is an import into BB's exports..
-#define FOR_EACH_GORI_IMPORT_NAME(gori, bb, name)			\
-  for (gori_export_iterator iter ((gori).imports ((bb)));	\
+#define FOR_EACH_GORI_IMPORT_NAME(gorimap, bb, name)			\
+  for (gori_export_iterator iter ((gorimap)->imports ((bb)));	\
        ((name) = iter.get_name ());				\
        iter.next ())
 
 // For each name possibly exported from block BB.
-#define FOR_EACH_GORI_EXPORT_NAME(gori, bb, name)		\
-  for (gori_export_iterator iter ((gori).exports ((bb)));	\
+#define FOR_EACH_GORI_EXPORT_NAME(gorimap, bb, name)		\
+  for (gori_export_iterator iter ((gorimap)->exports ((bb)));	\
        ((name) = iter.get_name ());				\
        iter.next ())
 

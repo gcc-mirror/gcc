@@ -1,6 +1,6 @@
 // Definition of the public simd interfaces -*- C++ -*-
 
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,11 +39,20 @@
 #include <functional>
 #include <iosfwd>
 #include <utility>
+#include <algorithm>
 
 #if _GLIBCXX_SIMD_X86INTRIN
 #include <x86intrin.h>
 #elif _GLIBCXX_SIMD_HAVE_NEON
+#pragma GCC diagnostic push
+// narrowing conversion of '__a' from 'uint64_t' {aka 'long long unsigned int'} to
+//   'int64x1_t' {aka 'long long int'} [-Wnarrowing]
+#pragma GCC diagnostic ignored "-Wnarrowing"
 #include <arm_neon.h>
+#pragma GCC diagnostic pop
+#endif
+#if _GLIBCXX_SIMD_HAVE_SVE
+#include <arm_sve.h>
 #endif
 
 /** @ingroup ts_simd
@@ -83,6 +92,12 @@ using __m512d [[__gnu__::__vector_size__(64)]] = double;
 using __m512i [[__gnu__::__vector_size__(64)]] = long long;
 #endif
 
+#if _GLIBCXX_SIMD_HAVE_SVE
+constexpr inline int __sve_vectorized_size_bytes = __ARM_FEATURE_SVE_BITS / 8;
+#else
+constexpr inline int __sve_vectorized_size_bytes = 0;
+#endif
+
 namespace simd_abi {
 // simd_abi forward declarations {{{
 // implementation details:
@@ -108,6 +123,9 @@ template <int _UsedBytes>
 template <int _UsedBytes>
   struct _VecBltnBtmsk;
 
+template <int _UsedBytes, int _TotalBytes = __sve_vectorized_size_bytes>
+  struct _SveAbi;
+
 template <typename _Tp, int _Np>
   using _VecN = _VecBuiltin<sizeof(_Tp) * _Np>;
 
@@ -123,6 +141,9 @@ template <int _UsedBytes = 64>
 template <int _UsedBytes = 16>
   using _Neon = _VecBuiltin<_UsedBytes>;
 
+template <int _UsedBytes = __sve_vectorized_size_bytes>
+  using _Sve = _SveAbi<_UsedBytes, __sve_vectorized_size_bytes>;
+
 // implementation-defined:
 using __sse = _Sse<>;
 using __avx = _Avx<>;
@@ -130,6 +151,7 @@ using __avx512 = _Avx512<>;
 using __neon = _Neon<>;
 using __neon128 = _Neon<16>;
 using __neon64 = _Neon<8>;
+using __sve = _Sve<>;
 
 // standard:
 template <typename _Tp, size_t _Np, typename...>
@@ -250,6 +272,9 @@ constexpr inline bool __support_neon_float =
   false;
 #endif
 
+constexpr inline bool __have_sve = _GLIBCXX_SIMD_HAVE_SVE;
+constexpr inline bool __have_sve2 = _GLIBCXX_SIMD_HAVE_SVE2;
+
 #ifdef _ARCH_PWR10
 constexpr inline bool __have_power10vec = true;
 #else
@@ -356,12 +381,14 @@ namespace __detail
 		 | (__have_avx512vnni         << 27)
 		 | (__have_avx512vpopcntdq    << 28)
 		 | (__have_avx512vp2intersect << 29);
-    else if constexpr (__have_neon)
+    else if constexpr (__have_neon || __have_sve)
       return __have_neon
 	       | (__have_neon_a32 << 1)
 	       | (__have_neon_a64 << 2)
 	       | (__have_neon_a64 << 2)
-	       | (__support_neon_float << 3);
+	       | (__support_neon_float << 3)
+	       | (__have_sve << 4)
+	       | (__have_sve2 << 5);
     else if constexpr (__have_power_vmx)
       return __have_power_vmx
 	       | (__have_power_vsx  << 1)
@@ -576,21 +603,15 @@ template <size_t _Bytes>
   constexpr auto
   __int_for_sizeof()
   {
+    static_assert(_Bytes > 0);
     if constexpr (_Bytes == sizeof(int))
       return int();
-  #ifdef __clang__
-    else if constexpr (_Bytes == sizeof(char))
-      return char();
-  #else
     else if constexpr (_Bytes == sizeof(_SChar))
       return _SChar();
-  #endif
     else if constexpr (_Bytes == sizeof(short))
       return short();
-  #ifndef __clang__
     else if constexpr (_Bytes == sizeof(long))
       return long();
-  #endif
     else if constexpr (_Bytes == sizeof(_LLong))
       return _LLong();
   #ifdef __SIZEOF_INT128__
@@ -641,7 +662,7 @@ template <size_t _Bytes>
 	return _Ip{};
       }
     else
-      static_assert(_Bytes != _Bytes, "this should be unreachable");
+      static_assert(_Bytes == 0, "this should be unreachable");
   }
 #pragma GCC diagnostic pop
 
@@ -731,6 +752,16 @@ template <typename _Abi>
   {
     constexpr auto _Bytes = __abi_bytes_v<_Abi>;
     return _Bytes <= 16 && is_same_v<simd_abi::_VecBuiltin<_Bytes>, _Abi>;
+  }
+
+// }}}
+// __is_sve_abi {{{
+template <typename _Abi>
+  constexpr bool
+  __is_sve_abi()
+  {
+    constexpr auto _Bytes = __abi_bytes_v<_Abi>;
+    return _Bytes <= __sve_vectorized_size_bytes && is_same_v<simd_abi::_Sve<_Bytes>, _Abi>;
   }
 
 // }}}
@@ -997,6 +1028,9 @@ template <typename _Tp>
   using _SimdWrapper32 = _SimdWrapper<_Tp, 32 / sizeof(_Tp)>;
 template <typename _Tp>
   using _SimdWrapper64 = _SimdWrapper<_Tp, 64 / sizeof(_Tp)>;
+
+template <typename _Tp, size_t _Width>
+  struct _SveSimdWrapper;
 
 // }}}
 // __is_simd_wrapper {{{
@@ -1610,7 +1644,29 @@ template <typename _V>
     if constexpr (__is_vector_type_v<_V>)
       return __x;
     else if constexpr (is_simd<_V>::value || is_simd_mask<_V>::value)
-      return __data(__x)._M_data;
+      {
+	if constexpr (__is_fixed_size_abi_v<typename _V::abi_type>)
+	  {
+	    static_assert(is_simd<_V>::value);
+	    static_assert(_V::abi_type::template __traits<
+			    typename _V::value_type>::_SimdMember::_S_tuple_size == 1);
+	    return __as_vector(__data(__x).first);
+	  }
+	else if constexpr (_V::size() > 1)
+	  return __data(__x)._M_data;
+	else
+	  {
+	    static_assert(is_simd<_V>::value);
+	    using _Tp = typename _V::value_type;
+#ifdef __i386__
+	    constexpr auto __bytes = sizeof(_Tp) == 8 ? 16 : sizeof(_Tp);
+	    using _RV [[__gnu__::__vector_size__(__bytes)]] = _Tp;
+#else
+	    using _RV [[__gnu__::__vector_size__(sizeof(_Tp))]] = _Tp;
+#endif
+	    return _RV{__data(__x)};
+	  }
+      }
     else if constexpr (__is_vectorizable_v<_V>)
       return __vector_type_t<_V, 2>{__x};
     else
@@ -1657,7 +1713,7 @@ template <typename _To, typename _From>
 	  __builtin_memcpy(&__r, &__v, sizeof(_To));
 	  return __r;
 	}
-#if _GLIBCXX_SIMD_X86INTRIN && !defined __clang__
+#if _GLIBCXX_SIMD_X86INTRIN && !defined _GLIBCXX_CLANG
     else if constexpr (__have_avx && sizeof(_From) == 16 && sizeof(_To) == 32)
       return reinterpret_cast<_To>(__builtin_ia32_ps256_ps(
 	reinterpret_cast<__vector_type_t<float, 4>>(__v)));
@@ -1912,7 +1968,7 @@ template <typename _TW>
 
 // }}}
 // __andnot{{{
-#if _GLIBCXX_SIMD_X86INTRIN && !defined __clang__
+#if _GLIBCXX_SIMD_X86INTRIN && !defined _GLIBCXX_CLANG
 static constexpr struct
 {
   _GLIBCXX_SIMD_INTRINSIC __v4sf
@@ -1972,7 +2028,7 @@ static constexpr struct
   operator()(__v8di __a, __v8di __b) const noexcept
   { return _mm512_andnot_si512(__a, __b); }
 } _S_x86_andnot;
-#endif // _GLIBCXX_SIMD_X86INTRIN && !__clang__
+#endif // _GLIBCXX_SIMD_X86INTRIN && !_GLIBCXX_CLANG
 
 template <typename _TW>
   _GLIBCXX_SIMD_INTRINSIC constexpr _TW
@@ -1983,7 +2039,7 @@ template <typename _TW>
 	using _TVT = conditional_t<__is_simd_wrapper_v<_TW>, _TW,
 				   _VectorTraitsImpl<_TW>>;
 	using _Tp = typename _TVT::value_type;
-#if _GLIBCXX_SIMD_X86INTRIN && !defined __clang__
+#if _GLIBCXX_SIMD_X86INTRIN && !defined _GLIBCXX_CLANG
 	if constexpr (sizeof(_TW) >= 16)
 	  {
 	    const auto __ai = __to_intrin(__a);
@@ -2019,6 +2075,72 @@ template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
     else
       return ~__a;
   }
+
+// }}}
+// __vec_shuffle{{{
+template <typename _T0, typename _T1, typename _Fun, size_t... _Is>
+  _GLIBCXX_SIMD_INTRINSIC constexpr
+  __vector_type_t<remove_reference_t<decltype(declval<_T0>()[0])>, sizeof...(_Is)>
+  __vec_shuffle(_T0 __x, _T1 __y, index_sequence<_Is...> __seq, _Fun __idx_perm)
+  {
+    constexpr int _N0 = sizeof(__x) / sizeof(__x[0]);
+    constexpr int _N1 = sizeof(__y) / sizeof(__y[0]);
+    using _Tp = remove_reference_t<decltype(declval<_T0>()[0])>;
+    using _RV [[maybe_unused]] = __vector_type_t<_Tp, sizeof...(_Is)>;
+#if __has_builtin(__builtin_shufflevector)
+#ifdef _GLIBCXX_CLANG
+    // Clang requires _T0 == _T1
+    if constexpr (sizeof(__x) > sizeof(__y) and _N1 == 1)
+      return __vec_shuffle(__x, _T0{__y[0]}, __seq, __idx_perm);
+    else if constexpr (sizeof(__x) > sizeof(__y))
+      return __vec_shuffle(__x, __intrin_bitcast<_T0>(__y), __seq, __idx_perm);
+    else if constexpr (sizeof(__x) < sizeof(__y) and _N0 == 1)
+      return __vec_shuffle(_T1{__x[0]}, __y, __seq, [=](int __i) {
+	       __i = __idx_perm(__i);
+	       return __i < _N0 ? __i : __i - _N0 + _N1;
+	     });
+    else if constexpr (sizeof(__x) < sizeof(__y))
+      return __vec_shuffle(__intrin_bitcast<_T1>(__x), __y, __seq, [=](int __i) {
+	       __i = __idx_perm(__i);
+	       return __i < _N0 ? __i : __i - _N0 + _N1;
+	     });
+    else
+#endif
+      {
+	const auto __r = __builtin_shufflevector(__x, __y, [=] {
+			   constexpr int __j = __idx_perm(_Is);
+			   static_assert(__j < _N0 + _N1);
+			   return __j;
+			 }()...);
+#ifdef __i386__
+	if constexpr (sizeof(__r) == sizeof(_RV))
+	  return __r;
+	else
+	  return _RV {__r[_Is]...};
+#else
+	return __r;
+#endif
+      }
+#else
+    return _RV {
+      [=]() -> _Tp {
+	constexpr int __j = __idx_perm(_Is);
+	static_assert(__j < _N0 + _N1);
+	if constexpr (__j < 0)
+	  return 0;
+	else if constexpr (__j < _N0)
+	  return __x[__j];
+	else
+	  return __y[__j - _N0];
+      }()...
+    };
+#endif
+  }
+
+template <typename _T0, typename _Fun, typename _Seq>
+  _GLIBCXX_SIMD_INTRINSIC constexpr auto
+  __vec_shuffle(_T0 __x, _Seq __seq, _Fun __idx_perm)
+  { return __vec_shuffle(__x, _T0(), __seq, __idx_perm); }
 
 // }}}
 // __concat{{{
@@ -2618,6 +2740,8 @@ template <typename _BuiltinType>
 
 // }}}
 // _SimdWrapper{{{
+struct _DisabledSimdWrapper;
+
 template <typename _Tp, size_t _Width>
   struct _SimdWrapper<
     _Tp, _Width,
@@ -2627,16 +2751,17 @@ template <typename _Tp, size_t _Width>
 			      == sizeof(__vector_type_t<_Tp, _Width>),
 		       __vector_type_t<_Tp, _Width>>
   {
-    using _Base
-      = _SimdWrapperBase<__has_iec559_behavior<__signaling_NaN, _Tp>::value
-			   && sizeof(_Tp) * _Width
-				== sizeof(__vector_type_t<_Tp, _Width>),
-			 __vector_type_t<_Tp, _Width>>;
+    static constexpr bool _S_need_default_init
+      = __has_iec559_behavior<__signaling_NaN, _Tp>::value
+	  and sizeof(_Tp) * _Width == sizeof(__vector_type_t<_Tp, _Width>);
+
+    using _BuiltinType = __vector_type_t<_Tp, _Width>;
+
+    using _Base = _SimdWrapperBase<_S_need_default_init, _BuiltinType>;
 
     static_assert(__is_vectorizable_v<_Tp>);
     static_assert(_Width >= 2); // 1 doesn't make sense, use _Tp directly then
 
-    using _BuiltinType = __vector_type_t<_Tp, _Width>;
     using value_type = _Tp;
 
     static inline constexpr size_t _S_full_size
@@ -2672,13 +2797,26 @@ template <typename _Tp, size_t _Width>
     _GLIBCXX_SIMD_INTRINSIC constexpr _SimdWrapper&
     operator=(_SimdWrapper&&) = default;
 
-    template <typename _V, typename = enable_if_t<disjunction_v<
-			     is_same<_V, __vector_type_t<_Tp, _Width>>,
-			     is_same<_V, __intrinsic_type_t<_Tp, _Width>>>>>
+    // Convert from exactly matching __vector_type_t
+    using _SimdWrapperBase<_S_need_default_init, _BuiltinType>::_SimdWrapperBase;
+
+    // Convert from __intrinsic_type_t if __intrinsic_type_t and __vector_type_t differ, otherwise
+    // this ctor should not exist. Making the argument type unusable is our next best solution.
+    _GLIBCXX_SIMD_INTRINSIC constexpr
+    _SimdWrapper(conditional_t<is_same_v<_BuiltinType, __intrinsic_type_t<_Tp, _Width>>,
+			       _DisabledSimdWrapper, __intrinsic_type_t<_Tp, _Width>> __x)
+    : _Base(__vector_bitcast<_Tp, _Width>(__x)) {}
+
+    // Convert from different __vector_type_t, but only if bit reinterpretation is a correct
+    // conversion of the value_type
+    template <typename _V, typename _TVT = _VectorTraits<_V>,
+	      typename = enable_if_t<sizeof(typename _TVT::value_type) == sizeof(_Tp)
+				       and sizeof(_V) == sizeof(_BuiltinType)
+				       and is_integral_v<_Tp>
+				       and is_integral_v<typename _TVT::value_type>>>
       _GLIBCXX_SIMD_INTRINSIC constexpr
       _SimdWrapper(_V __x)
-      // __vector_bitcast can convert e.g. __m128 to __vector(2) float
-      : _Base(__vector_bitcast<_Tp, _Width>(__x)) {}
+      : _Base(reinterpret_cast<_BuiltinType>(__x)) {}
 
     template <typename... _As,
 	      typename = enable_if_t<((is_same_v<simd_abi::scalar, _As> && ...)
@@ -2830,7 +2968,8 @@ namespace simd_abi {
 // most of simd_abi is defined in simd_detail.h
 template <typename _Tp>
   inline constexpr int max_fixed_size
-    = (__have_avx512bw && sizeof(_Tp) == 1) ? 64 : 32;
+    = ((__have_avx512bw && sizeof(_Tp) == 1)
+	 || (__have_sve && __sve_vectorized_size_bytes/sizeof(_Tp) >= 64)) ? 64 : 32;
 
 // compatible {{{
 #if defined __x86_64__ || defined __aarch64__
@@ -2858,6 +2997,8 @@ template <typename _Tp>
     constexpr size_t __bytes = __vectorized_sizeof<_Tp>();
     if constexpr (__bytes == sizeof(_Tp))
       return static_cast<scalar*>(nullptr);
+    else if constexpr (__have_sve)
+      return  static_cast<_SveAbi<__sve_vectorized_size_bytes>*>(nullptr);
     else if constexpr (__have_avx512vl || (__have_avx512f && __bytes == 64))
       return static_cast<_VecBltnBtmsk<__bytes>*>(nullptr);
     else
@@ -2951,6 +3092,9 @@ template <typename _Tp, typename _Abi = simd_abi::__default_abi<_Tp>>
 template <typename _Tp, size_t _Np, typename = void>
   struct __deduce_impl;
 
+template <typename _Tp, size_t _Np, typename = void>
+  struct __no_sve_deduce_impl;
+
 namespace simd_abi {
 /**
  * @tparam _Tp   The requested `value_type` for the elements.
@@ -2965,6 +3109,12 @@ template <typename _Tp, size_t _Np, typename...>
 
 template <typename _Tp, size_t _Np, typename... _Abis>
   using deduce_t = typename deduce<_Tp, _Np, _Abis...>::type;
+
+template <typename _Tp, size_t _Np, typename...>
+  struct __no_sve_deduce : __no_sve_deduce_impl<_Tp, _Np> {};
+
+template <typename _Tp, size_t _Np, typename... _Abis>
+  using __no_sve_deduce_t = typename __no_sve_deduce<_Tp, _Np, _Abis...>::type;
 } // namespace simd_abi
 
 // }}}2
@@ -2974,13 +3124,27 @@ template <typename _Tp, typename _V, typename = void>
 
 template <typename _Tp, typename _Up, typename _Abi>
   struct rebind_simd<_Tp, simd<_Up, _Abi>,
-		     void_t<simd_abi::deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>>>
-  { using type = simd<_Tp, simd_abi::deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>>; };
+		     void_t<std::conditional_t<!__is_sve_abi<_Abi>(),
+    simd_abi::__no_sve_deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>,
+    simd_abi::deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>>>>
+  {
+    using type = simd<_Tp, std::conditional_t<
+			     !__is_sve_abi<_Abi>(),
+			     simd_abi::__no_sve_deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>,
+			     simd_abi::deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>>>;
+  };
 
 template <typename _Tp, typename _Up, typename _Abi>
   struct rebind_simd<_Tp, simd_mask<_Up, _Abi>,
-		     void_t<simd_abi::deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>>>
-  { using type = simd_mask<_Tp, simd_abi::deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>>; };
+		     void_t<std::conditional_t<!__is_sve_abi<_Abi>(),
+    simd_abi::__no_sve_deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>,
+    simd_abi::deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>>>>
+  {
+    using type = simd_mask<_Tp, std::conditional_t<
+				  !__is_sve_abi<_Abi>(),
+				  simd_abi::__no_sve_deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>,
+				  simd_abi::deduce_t<_Tp, simd_size_v<_Up, _Abi>, _Abi>>>;
+  };
 
 template <typename _Tp, typename _V>
   using rebind_simd_t = typename rebind_simd<_Tp, _V>::type;
@@ -3243,7 +3407,7 @@ template <typename _Tp, typename _Up, typename _Ap>
     else if constexpr (_Tp::size() == 1)
       return __x[0];
     else if constexpr (sizeof(_Tp) == sizeof(__x)
-		       && !__is_fixed_size_abi_v<_Ap>)
+		       && !__is_fixed_size_abi_v<_Ap> && !__is_sve_abi<_Ap>())
       return {__private_init,
 	      __vector_bitcast<typename _Tp::value_type, _Tp::size()>(
 		_Ap::_S_masked(__data(__x))._M_data)};
@@ -3880,7 +4044,7 @@ template <size_t... _Sizes, typename _Tp, typename _Ap,
 // __extract_part {{{
 template <int _Index, int _Total, int _Combine = 1, typename _Tp, size_t _Np>
   _GLIBCXX_SIMD_INTRINSIC _GLIBCXX_CONST constexpr
-  _SimdWrapper<_Tp, _Np / _Total * _Combine>
+  conditional_t<_Np == _Total and _Combine == 1, _Tp, _SimdWrapper<_Tp, _Np / _Total * _Combine>>
   __extract_part(const _SimdWrapper<_Tp, _Np> __x);
 
 template <int _Index, int _Parts, int _Combine = 1, typename _Tp, typename _A0, typename... _As>
@@ -4004,18 +4168,29 @@ template <typename _V, typename _Ap,
   split(const simd<typename _V::value_type, _Ap>& __x)
   {
     using _Tp = typename _V::value_type;
+
+    auto __gen_fallback = [&]() constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	return __generate_from_n_evaluations<_Parts, array<_V, _Parts>>(
+		 [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+		   return _V([&](auto __j) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
+			     { return __x[__i * _V::size() + __j]; });
+		 });
+    };
+
     if constexpr (_Parts == 1)
       {
 	return {simd_cast<_V>(__x)};
       }
     else if (__x._M_is_constprop())
       {
-	return __generate_from_n_evaluations<_Parts, array<_V, _Parts>>(
-		 [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
-		   return _V([&](auto __j) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
-			     { return __x[__i * _V::size() + __j]; });
-		 });
+  return __gen_fallback();
       }
+#if _GLIBCXX_SIMD_HAVE_SVE
+      else if constexpr(__is_sve_abi<_Ap>)
+      {
+  return __gen_fallback();
+      }
+#endif
     else if constexpr (
       __is_fixed_size_abi_v<_Ap>
       && (is_same_v<typename _V::abi_type, simd_abi::scalar>
@@ -4115,7 +4290,8 @@ template <size_t... _Sizes, typename _Tp, typename _Ap, typename>
     constexpr size_t _N0 = _SL::template _S_at<0>();
     using _V = __deduced_simd<_Tp, _N0>;
 
-    if (__x._M_is_constprop())
+    auto __gen_fallback = [&]() constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
+    {
       return __generate_from_n_evaluations<sizeof...(_Sizes), _Tuple>(
 	       [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		 using _Vi = __deduced_simd<_Tp, _SL::_S_at(__i)>;
@@ -4124,6 +4300,14 @@ template <size_t... _Sizes, typename _Tp, typename _Ap, typename>
 			  return __x[__offset + __j];
 			});
 	       });
+    };
+
+    if (__x._M_is_constprop())
+      __gen_fallback();
+#if _GLIBCXX_SIMD_HAVE_SVE
+    else if constexpr (__have_sve)
+      __gen_fallback();
+#endif
     else if constexpr (_Np == _N0)
       {
 	static_assert(sizeof...(_Sizes) == 1);
@@ -4144,48 +4328,21 @@ template <size_t... _Sizes, typename _Tp, typename _Ap, typename>
 			 __split_wrapper(_SL::template _S_pop_front<1>(),
 					 __data(__x).second));
       }
-    else if constexpr ((!is_same_v<simd_abi::scalar,
-				   simd_abi::deduce_t<_Tp, _Sizes>> && ...)
-		       && (!__is_fixed_size_abi_v<
-			     simd_abi::deduce_t<_Tp, _Sizes>> && ...))
+    else if constexpr ((!__is_fixed_size_abi_v<simd_abi::deduce_t<_Tp, _Sizes>> && ...))
       {
-	if constexpr (((_Sizes * 2 == _Np) && ...))
-	  return {{__private_init, __extract_part<0, 2>(__data(__x))},
-		  {__private_init, __extract_part<1, 2>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 3, _Np / 3, _Np / 3>>)
-	  return {{__private_init, __extract_part<0, 3>(__data(__x))},
-		  {__private_init, __extract_part<1, 3>(__data(__x))},
-		  {__private_init, __extract_part<2, 3>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<2 * _Np / 3, _Np / 3>>)
-	  return {{__private_init, __extract_part<0, 3, 2>(__data(__x))},
-		  {__private_init, __extract_part<2, 3>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 3, 2 * _Np / 3>>)
-	  return {{__private_init, __extract_part<0, 3>(__data(__x))},
-		  {__private_init, __extract_part<1, 3, 2>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 2, _Np / 4, _Np / 4>>)
-	  return {{__private_init, __extract_part<0, 2>(__data(__x))},
-		  {__private_init, __extract_part<2, 4>(__data(__x))},
-		  {__private_init, __extract_part<3, 4>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 4, _Np / 4, _Np / 2>>)
-	  return {{__private_init, __extract_part<0, 4>(__data(__x))},
-		  {__private_init, __extract_part<1, 4>(__data(__x))},
-		  {__private_init, __extract_part<1, 2>(__data(__x))}};
-	else if constexpr (is_same_v<_SizeList<_Sizes...>,
-				     _SizeList<_Np / 4, _Np / 2, _Np / 4>>)
-	  return {{__private_init, __extract_part<0, 4>(__data(__x))},
-		  {__private_init, __extract_center(__data(__x))},
-		  {__private_init, __extract_part<3, 4>(__data(__x))}};
-	else if constexpr (((_Sizes * 4 == _Np) && ...))
-	  return {{__private_init, __extract_part<0, 4>(__data(__x))},
-		  {__private_init, __extract_part<1, 4>(__data(__x))},
-		  {__private_init, __extract_part<2, 4>(__data(__x))},
-		  {__private_init, __extract_part<3, 4>(__data(__x))}};
-	// else fall through
+	constexpr array<size_t, sizeof...(_Sizes)> __size = {_Sizes...};
+	return __generate_from_n_evaluations<sizeof...(_Sizes), _Tuple>(
+		 [&](auto __i) constexpr {
+		   constexpr size_t __offset = [&]() {
+		     size_t __r = 0;
+		     for (unsigned __j = 0; __j < __i; ++__j)
+		       __r += __size[__j];
+		     return __r;
+		   }();
+		   return __deduced_simd<_Tp, __size[__i]>(
+			    __private_init,
+			    __extract_part<__offset, _Np, __size[__i]>(__data(__x)));
+		 });
       }
 #ifdef _GLIBCXX_SIMD_USE_ALIASING_LOADS
     const __may_alias<_Tp>* const __element_ptr
@@ -4247,14 +4404,37 @@ template <typename _Tp, typename... _As, typename = __detail::__odr_helper>
   simd<_Tp, simd_abi::deduce_t<_Tp, (simd_size_v<_Tp, _As> + ...)>>
   concat(const simd<_Tp, _As>&... __xs)
   {
-    using _Rp = __deduced_simd<_Tp, (simd_size_v<_Tp, _As> + ...)>;
+    constexpr int _Np = (simd_size_v<_Tp, _As> + ...);
+    using _Abi = simd_abi::deduce_t<_Tp, _Np>;
+    using _Rp = simd<_Tp, _Abi>;
+    using _RW = typename _SimdTraits<_Tp, _Abi>::_SimdMember;
     if constexpr (sizeof...(__xs) == 1)
       return simd_cast<_Rp>(__xs...);
     else if ((... && __xs._M_is_constprop()))
-      return simd<_Tp,
-		  simd_abi::deduce_t<_Tp, (simd_size_v<_Tp, _As> + ...)>>(
-	       [&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
+      return _Rp([&](auto __i) constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA
 	       { return __subscript_in_pack<__i>(__xs...); });
+    else if constexpr (__is_simd_wrapper_v<_RW> and sizeof...(__xs) == 2)
+      {
+	return {__private_init,
+		__vec_shuffle(__as_vector(__xs)..., std::make_index_sequence<_RW::_S_full_size>(),
+			      [](int __i) {
+				constexpr int __sizes[2] = {int(simd_size_v<_Tp, _As>)...};
+				constexpr int __vsizes[2]
+				  = {int(sizeof(__as_vector(__xs)) / sizeof(_Tp))...};
+				constexpr int __padding0 = __vsizes[0] - __sizes[0];
+				return __i >= _Np ? -1 : __i < __sizes[0] ? __i : __i + __padding0;
+			      })};
+      }
+    else if constexpr (__is_simd_wrapper_v<_RW> and sizeof...(__xs) == 3)
+      return [](const auto& __x0, const auto& __x1, const auto& __x2)
+		 _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	       return concat(concat(__x0, __x1), __x2);
+	     }(__xs...);
+    else if constexpr (__is_simd_wrapper_v<_RW> and sizeof...(__xs) > 3)
+      return [](const auto& __x0, const auto& __x1, const auto&... __rest)
+		 _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
+	       return concat(concat(__x0, __x1), concat(__rest...));
+	     }(__xs...);
     else
       {
 	_Rp __r{};
@@ -4510,8 +4690,11 @@ template <template <int> class _A0, template <int> class... _Rest>
 	    // 1. The ABI tag is valid for _Tp
 	    // 2. The storage overhead is no more than padding to fill the next
 	    //    power-of-2 number of bytes
-	    if constexpr (_A0<_Bytes>::template _S_is_valid_v<
-			    _Tp> && __fullsize / 2 < _Np)
+	    if constexpr (_A0<_Bytes>::template _S_is_valid_v<_Tp>
+			    && ((__is_sve_abi<_A0<_Bytes>>() && __have_sve
+				   && (_Np <= __sve_vectorized_size_bytes/sizeof(_Tp)))
+				  || (__fullsize / 2 < _Np))
+			 )
 	      return typename __decay_abi<_A0<_Bytes>>::type{};
 	    else
 	      {
@@ -4536,7 +4719,13 @@ template <template <int> class _A0, template <int> class... _Rest>
 // the following lists all native ABIs, which makes them accessible to
 // simd_abi::deduce and select_best_vector_type_t (for fixed_size). Order
 // matters: Whatever comes first has higher priority.
-using _AllNativeAbis = _AbiList<simd_abi::_VecBltnBtmsk, simd_abi::_VecBuiltin,
+using _AllNativeAbis = _AbiList<
+#if _GLIBCXX_SIMD_HAVE_SVE
+			 simd_abi::_SveAbi,
+#endif
+			 simd_abi::_VecBltnBtmsk, simd_abi::_VecBuiltin, __scalar_abi_wrapper>;
+
+using _NoSveAllNativeAbis = _AbiList<simd_abi::_VecBltnBtmsk, simd_abi::_VecBuiltin,
 				__scalar_abi_wrapper>;
 
 // valid _SimdTraits specialization {{{1
@@ -4551,6 +4740,11 @@ template <typename _Tp, size_t _Np>
     _Tp, _Np, enable_if_t<_AllNativeAbis::template _S_has_valid_abi<_Tp, _Np>>>
   { using type = _AllNativeAbis::_FirstValidAbi<_Tp, _Np>; };
 
+template <typename _Tp, size_t _Np>
+  struct __no_sve_deduce_impl<
+	   _Tp, _Np, enable_if_t<_NoSveAllNativeAbis::template _S_has_valid_abi<_Tp, _Np>>>
+  { using type = _NoSveAllNativeAbis::_FirstValidAbi<_Tp, _Np>; };
+
 // fall back to fixed_size only if scalar and native ABIs don't match
 template <typename _Tp, size_t _Np, typename = void>
   struct __deduce_fixed_size_fallback {};
@@ -4562,6 +4756,12 @@ template <typename _Tp, size_t _Np>
 
 template <typename _Tp, size_t _Np, typename>
   struct __deduce_impl : public __deduce_fixed_size_fallback<_Tp, _Np> {};
+
+template <typename _Tp, size_t _Np, typename>
+  struct __no_sve_deduce_impl
+  : public __deduce_fixed_size_fallback<_Tp, _Np>
+  {};
+
 
 //}}}1
 /// @endcond

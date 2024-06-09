@@ -17,6 +17,7 @@
 # GNU mangling style.
 
 use FileHandle;
+use File::Basename;
 use IPC::Open2;
 
 # Enforce C locale.
@@ -37,12 +38,22 @@ my @OBJECTS = ();
 # List of shared objects to omit from processing.
 my @SHAREDOBJS = ();
 
-# Filter out those input archives that have corresponding shared objects to
-# avoid adding all symbols matched in the archive to the output map.
 foreach $file (@ARGV) {
+    # Filter out those input archives that have corresponding shared objects to
+    # avoid adding all symbols matched in the archive to the output map.
     if (($so = $file) =~ s/\.a$/.so/ && -e $so) {
 	printf STDERR "omitted $file -> $so\n";
 	push (@SHAREDOBJS, $so);
+    # Skip libraries.
+    } elsif ($file =~ /^-l/) {
+	next;
+    # Convert libtool object/archive names to underlying objects/archives.
+    } elsif ($file =~ /\.l[ao]$/) {
+	my ($name, $path, $suffix) = fileparse($file, ".l[ao]");
+	$suffix =~ s/l//;
+	# Strip leading ./ prepended by fileparse.
+	$path =~ s%^\./%%;
+	push (@OBJECTS, "$path.libs/$name$suffix")
     } else {
 	push (@OBJECTS, $file);
     }

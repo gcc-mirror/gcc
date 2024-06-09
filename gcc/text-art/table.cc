@@ -1,5 +1,5 @@
 /* Support for tabular/grid-based content.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -150,6 +150,26 @@ table::set_cell_span (rect_t span,
       }
 }
 
+/* If SPAN is unoccuped, set it to CONTENT.
+   Otherwise, discard CONTENT.  */
+
+void
+table::maybe_set_cell_span (rect_t span,
+			    table_cell_content &&content,
+			    enum x_align x_align,
+			    enum y_align y_align)
+{
+  gcc_assert (span.m_size.w > 0);
+  gcc_assert (span.m_size.h > 0);
+  for (int y = span.get_min_y (); y < span.get_next_y (); y++)
+    for (int x = span.get_min_x (); x < span.get_next_x (); x++)
+      {
+	if (m_occupancy.get (coord_t (x, y)) != -1)
+	  return;
+      }
+  set_cell_span (span, std::move (content), x_align, y_align);
+}
+
 canvas
 table::to_canvas (const theme &theme, const style_manager &sm) const
 {
@@ -187,6 +207,21 @@ table::debug () const
   style_manager sm;
   canvas canvas (to_canvas (unicode_theme (), sm));
   canvas.debug (false);
+}
+
+/* Move OTHER's content this table, starting at OFFSET.  */
+
+void
+table::add_other_table (table &&other,
+			table::coord_t offset)
+{
+  for (auto &&placement : other.m_placements)
+    {
+      set_cell_span (placement.m_rect + offset,
+		     std::move (placement.m_content),
+		     placement.m_x_align,
+		     placement.m_y_align);
+    }
 }
 
 const table::cell_placement *

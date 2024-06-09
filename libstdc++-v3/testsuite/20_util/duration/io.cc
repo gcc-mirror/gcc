@@ -1,4 +1,5 @@
 // { dg-do run { target c++20 } }
+// { dg-timeout-factor 2 }
 
 #include <chrono>
 #include <sstream>
@@ -81,7 +82,8 @@ test_format()
     char fmt[] = { '{', ':', '%', c, '}' };
     try
     {
-      (void) std::vformat(std::string_view(fmt, 5), std::make_format_args(1s));
+      auto s = 1s;
+      (void) std::vformat(std::string_view(fmt, 5), std::make_format_args(s));
       // The call above should throw for any conversion-spec not in my_specs:
       VERIFY(my_specs.find(c) != my_specs.npos);
     }
@@ -94,6 +96,10 @@ test_format()
 		    "required by the chrono-specs") != s.npos);
     }
   }
+
+  std::chrono::duration<float, std::milli> d{0.5};
+  s = std::format("{}", d);
+  VERIFY( s == "0.5ms" );
 }
 
 void
@@ -194,6 +200,18 @@ test_parse()
   VERIFY( is >> parse("%S", us) );
   VERIFY( us == 976us );
   VERIFY( is.get() == '5' );
+
+  is.clear();
+  is.str("0.5");
+  std::chrono::duration<double> ds;
+  VERIFY( is >> parse("%S", ds) );
+  VERIFY( ds == 0.5s );
+
+  is.clear();
+  is.str("0.125");
+  std::chrono::duration<double, std::milli> dms;
+  VERIFY( is >> parse("%S", dms) );
+  VERIFY( dms == 0.125s );
 }
 
 int main()

@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@
 
 #include <bits/atomic_base.h>
 #include <bits/chrono.h>
-#if __cpp_lib_atomic_wait
+#if __glibcxx_atomic_wait
 #include <bits/atomic_timed_wait.h>
 #include <ext/numeric_traits.h>
 #endif // __cpp_lib_atomic_wait
@@ -181,7 +181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 #endif // _GLIBCXX_HAVE_POSIX_SEMAPHORE
 
-#if __cpp_lib_atomic_wait
+#if __glibcxx_atomic_wait
   struct __atomic_semaphore
   {
     static constexpr ptrdiff_t _S_max = __gnu_cxx::__int_traits<int>::__max;
@@ -266,7 +266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 // Note: the _GLIBCXX_USE_POSIX_SEMAPHORE macro can be used to force the
 // use of Posix semaphores (sem_t). Doing so however, alters the ABI.
-#if defined __cpp_lib_atomic_wait && !_GLIBCXX_USE_POSIX_SEMAPHORE
+#if defined __glibcxx_atomic_wait && !_GLIBCXX_USE_POSIX_SEMAPHORE
   using __semaphore_impl = __atomic_semaphore;
 #elif _GLIBCXX_HAVE_POSIX_SEMAPHORE
   using __semaphore_impl = __platform_semaphore;

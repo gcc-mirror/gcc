@@ -1,5 +1,7 @@
 // PR c++/109172
 
+// Explicit { dg-require-effective-target exceptions_enabled } to avoid verify compiler messages FAILs for '-fno-exceptions'.
+
 class Demo
 {
   ~Demo();

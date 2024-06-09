@@ -1,6 +1,6 @@
 /* Check signed 32-bit mov instructions.  */
 /* { dg-do compile } */
-/* { dg-options "-mcpu=v4 -O2" } */
+/* { dg-options "-mcpu=v4 -O2 -masm=normal" } */
 
 int
 foo (unsigned char a, unsigned short b)

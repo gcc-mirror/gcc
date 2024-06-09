@@ -1,5 +1,5 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -474,6 +474,32 @@ bitwise_type_for_mode (machine_mode mode)
 
   gcc_checking_assert (GET_MODE_INNER (mode) == mode);
   return inner_type;
+}
+
+/* Find a mode that can be used for efficient bitwise operations on SIZE
+   bits, if one exists.  */
+
+opt_machine_mode
+bitwise_mode_for_size (poly_uint64 size)
+{
+  if (known_le (size, (unsigned int) MAX_FIXED_MODE_SIZE))
+    return mode_for_size (size, MODE_INT, true);
+
+  machine_mode mode, ret = VOIDmode;
+  FOR_EACH_MODE_FROM (mode, MIN_MODE_VECTOR_INT)
+    if (known_eq (GET_MODE_BITSIZE (mode), size)
+	&& (ret == VOIDmode || GET_MODE_INNER (mode) == QImode)
+	&& have_regs_of_mode[mode]
+	&& targetm.vector_mode_supported_p (mode))
+      {
+	if (GET_MODE_INNER (mode) == QImode)
+	  return mode;
+	else if (ret == VOIDmode)
+	  ret = mode;
+      }
+  if (ret != VOIDmode)
+    return ret;
+  return opt_machine_mode ();
 }
 
 /* Find a mode that is suitable for representing a vector with NUNITS
@@ -1219,13 +1245,18 @@ place_union_field (record_layout_info rli, tree field)
       && TYPE_TYPELESS_STORAGE (TREE_TYPE (field)))
     TYPE_TYPELESS_STORAGE (rli->t) = 1;
 
+  /* We might see a flexible array member field (with no DECL_SIZE_UNIT), use
+     zero size for such field.  */
+  tree field_size_unit = DECL_SIZE_UNIT (field)
+			 ? DECL_SIZE_UNIT (field)
+			 : build_int_cst (sizetype, 0);
   /* We assume the union's size will be a multiple of a byte so we don't
      bother with BITPOS.  */
   if (TREE_CODE (rli->t) == UNION_TYPE)
-    rli->offset = size_binop (MAX_EXPR, rli->offset, DECL_SIZE_UNIT (field));
+    rli->offset = size_binop (MAX_EXPR, rli->offset, field_size_unit);
   else if (TREE_CODE (rli->t) == QUAL_UNION_TYPE)
     rli->offset = fold_build3 (COND_EXPR, sizetype, DECL_QUALIFIER (field),
-			       DECL_SIZE_UNIT (field), rli->offset);
+			       field_size_unit, rli->offset);
 }
 
 /* A bitfield of SIZE with a required access alignment of ALIGN is allocated
@@ -2154,7 +2185,8 @@ finish_bitfield_representative (tree repr, tree field)
 	  unsigned prec = TYPE_PRECISION (TREE_TYPE (field));
 	  bool ok = targetm.c.bitint_type_info (prec, &info);
 	  gcc_assert (ok);
-	  scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+	  scalar_int_mode limb_mode
+	    = as_a <scalar_int_mode> (info.abi_limb_mode);
 	  unsigned lprec = GET_MODE_PRECISION (limb_mode);
 	  if (prec > lprec)
 	    {
@@ -2416,16 +2448,20 @@ layout_type (tree type)
 	int cnt;
 	bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
 	gcc_assert (ok);
-	scalar_int_mode limb_mode = as_a <scalar_int_mode> (info.limb_mode);
+	scalar_int_mode limb_mode
+	  = as_a <scalar_int_mode> (info.abi_limb_mode);
 	if (TYPE_PRECISION (type) <= GET_MODE_PRECISION (limb_mode))
 	  {
 	    SET_TYPE_MODE (type, limb_mode);
+	    gcc_assert (info.abi_limb_mode == info.limb_mode);
 	    cnt = 1;
 	  }
 	else
 	  {
 	    SET_TYPE_MODE (type, BLKmode);
 	    cnt = CEIL (TYPE_PRECISION (type), GET_MODE_PRECISION (limb_mode));
+	    gcc_assert (info.abi_limb_mode == info.limb_mode
+			|| !info.big_endian == !WORDS_BIG_ENDIAN);
 	  }
 	TYPE_SIZE (type) = bitsize_int (cnt * GET_MODE_BITSIZE (limb_mode));
 	TYPE_SIZE_UNIT (type) = size_int (cnt * GET_MODE_SIZE (limb_mode));

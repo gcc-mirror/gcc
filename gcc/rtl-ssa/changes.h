@@ -1,5 +1,5 @@
 // RTL SSA classes related to changing instructions                 -*- C++ -*-
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -32,6 +32,8 @@ namespace rtl_ssa {
 // something that we might do.
 class insn_change
 {
+  friend class function_info;
+
 public:
   enum delete_action { DELETE };
 

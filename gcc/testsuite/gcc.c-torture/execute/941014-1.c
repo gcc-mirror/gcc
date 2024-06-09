@@ -1,6 +1,10 @@
+void abort (void);
+void exit (int);
+
 int f (int a, int b) { }
 
-main ()
+int
+main (void)
 {
   unsigned long addr1;
   unsigned long addr2;

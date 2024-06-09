@@ -7,7 +7,7 @@
 --                                  S p e c                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---          Copyright (C) 1995-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1995-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -43,6 +43,7 @@ with Ada.Unchecked_Conversion;
 with Interfaces.C;
 
 with System.Multiprocessors;
+with System.OS_Locks;
 with System.Parameters;
 
 package System.OS_Interface is
@@ -267,7 +268,7 @@ package System.OS_Interface is
 
    subtype Thread_Id        is pthread_t;
 
-   type pthread_mutex_t     is limited private;
+   subtype pthread_mutex_t  is System.OS_Locks.pthread_mutex_t;
    type pthread_cond_t      is limited private;
    type pthread_attr_t      is limited private;
    type pthread_mutexattr_t is limited private;
@@ -596,18 +597,6 @@ private
       b_head : int;
    end record;
    pragma Convention (C, block_obj_t);
-
-   type pthread_mutex_t is record
-      m_flags      : unsigned;
-      m_owner      : tid_t;
-      m_wait       : block_obj_t;
-      m_prio_c     : int;
-      m_oldprio    : int;
-      m_count      : int;
-      m_referenced : int;
-   end record;
-   pragma Convention (C, pthread_mutex_t);
-   type pthread_mutex_t_ptr is access all pthread_mutex_t;
 
    type pthread_cond_t is record
       cv_magic   : unsigned;

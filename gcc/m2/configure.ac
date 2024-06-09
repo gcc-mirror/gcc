@@ -1,6 +1,6 @@
 # configure.ac provides gm2spec.cc with access to config values.
 
-# Copyright (C) 2001-2023 Free Software Foundation, Inc.
+# Copyright (C) 2001-2024 Free Software Foundation, Inc.
 # Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 # GCC is free software; you can redistribute it and/or modify
@@ -29,12 +29,6 @@ AC_CHECK_FUNCS([stpcpy])
 AC_CHECK_HEADERS(sys/types.h)
 AC_HEADER_DIRENT
 AC_CHECK_LIB([c],[opendir],[AC_DEFINE([HAVE_OPENDIR],[1],[found opendir])])
-
-AS_CASE([$target],[powerpc64le*],
-	[AC_DEFINE([M2C_LONGREAL_FLOAT128],[1],[use __float128 for LONGREAL])])
-
-AS_CASE([$target],[powerpc64le*],
-	[AC_DEFINE([M2C_LONGREAL_PPC64LE],[1],[target is ppc64le])])
 
 AC_CONFIG_HEADERS(gm2config.aci, [echo timestamp > stamp-h])
 AC_OUTPUT

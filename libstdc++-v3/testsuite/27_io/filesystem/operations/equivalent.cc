@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2023 Free Software Foundation, Inc.
+// Copyright (C) 2016-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,13 +34,13 @@ test01()
   bool result;
 
   result = equivalent(p1, p2, ec);
-  VERIFY( ec );
+  VERIFY( ec == std::errc::no_such_file_or_directory );
   VERIFY( !result );
 
   __gnu_test::scoped_file f1(p1);
   ec = bad_ec;
   result = equivalent(p1, p2, ec);
-  VERIFY( !ec );
+  VERIFY( ec == std::errc::no_such_file_or_directory );
   VERIFY( !result );
 
   __gnu_test::scoped_file f2(p2);

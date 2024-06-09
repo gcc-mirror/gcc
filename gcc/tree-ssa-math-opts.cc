@@ -1,5 +1,5 @@
 /* Global, SSA-based optimizations using mathematical identities.
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2552,12 +2552,48 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
 
   if (TREE_CODE (rhs) == SSA_NAME)
     {
+      /* Use tree_non_zero_bits to see if this operand is zero_extended
+	 for unsigned widening multiplications or non-negative for
+	 signed widening multiplications.  */
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && (TYPE_PRECISION (type) & 1) == 0
+	  && int_mode_for_size (TYPE_PRECISION (type) / 2, 1).exists ())
+	{
+	  unsigned int prec = TYPE_PRECISION (type);
+	  unsigned int hprec = prec / 2;
+	  wide_int bits = wide_int::from (tree_nonzero_bits (rhs), prec,
+					  TYPE_SIGN (TREE_TYPE (rhs)));
+	  if (TYPE_UNSIGNED (type)
+	      && wi::bit_and (bits, wi::mask (hprec, true, prec)) == 0)
+	    {
+	      *type_out = build_nonstandard_integer_type (hprec, true);
+	      /* X & MODE_MASK can be simplified to (T)X.  */
+	      stmt = SSA_NAME_DEF_STMT (rhs);
+	      if (is_gimple_assign (stmt)
+		  && gimple_assign_rhs_code (stmt) == BIT_AND_EXPR
+		  && TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST
+		  && wide_int::from (wi::to_wide (gimple_assign_rhs2 (stmt)),
+				     prec, TYPE_SIGN (TREE_TYPE (rhs)))
+		     == wi::mask (hprec, false, prec))
+		*new_rhs_out = gimple_assign_rhs1 (stmt);
+	      else
+		*new_rhs_out = rhs;
+	      return true;
+	    }
+	  else if (!TYPE_UNSIGNED (type)
+		   && wi::bit_and (bits, wi::mask (hprec - 1, true, prec)) == 0)
+	    {
+	      *type_out = build_nonstandard_integer_type (hprec, false);
+	      *new_rhs_out = rhs;
+	      return true;
+	    }
+	}
+
       stmt = SSA_NAME_DEF_STMT (rhs);
       if (is_gimple_assign (stmt))
 	{
-	  if (! widening_mult_conversion_strippable_p (type, stmt))
-	    rhs1 = rhs;
-	  else
+
+	  if (widening_mult_conversion_strippable_p (type, stmt))
 	    {
 	      rhs1 = gimple_assign_rhs1 (stmt);
 
@@ -2568,6 +2604,8 @@ is_widening_mult_rhs_p (tree type, tree rhs, tree *type_out,
 		  return true;
 		}
 	    }
+	  else
+	    rhs1 = rhs;
 	}
       else
 	rhs1 = rhs;
@@ -2828,20 +2866,24 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
     return false;
   if (actual_precision != TYPE_PRECISION (type1)
       || from_unsigned1 != TYPE_UNSIGNED (type1))
-    rhs1 = build_and_insert_cast (gsi, loc,
-				  build_nonstandard_integer_type
-				    (actual_precision, from_unsigned1), rhs1);
+    type1 = build_nonstandard_integer_type (actual_precision, from_unsigned1);
+  if (!useless_type_conversion_p (type1, TREE_TYPE (rhs1)))
+    {
+      if (TREE_CODE (rhs1) == INTEGER_CST)
+	rhs1 = fold_convert (type1, rhs1);
+      else
+	rhs1 = build_and_insert_cast (gsi, loc, type1, rhs1);
+    }
   if (actual_precision != TYPE_PRECISION (type2)
       || from_unsigned2 != TYPE_UNSIGNED (type2))
-    rhs2 = build_and_insert_cast (gsi, loc,
-				  build_nonstandard_integer_type
-				    (actual_precision, from_unsigned2), rhs2);
-
-  /* Handle constants.  */
-  if (TREE_CODE (rhs1) == INTEGER_CST)
-    rhs1 = fold_convert (type1, rhs1);
-  if (TREE_CODE (rhs2) == INTEGER_CST)
-    rhs2 = fold_convert (type2, rhs2);
+    type2 = build_nonstandard_integer_type (actual_precision, from_unsigned2);
+  if (!useless_type_conversion_p (type2, TREE_TYPE (rhs2)))
+    {
+      if (TREE_CODE (rhs2) == INTEGER_CST)
+	rhs2 = fold_convert (type2, rhs2);
+      else
+	rhs2 = build_and_insert_cast (gsi, loc, type2, rhs2);
+    }
 
   gimple_assign_set_rhs1 (stmt, rhs1);
   gimple_assign_set_rhs2 (stmt, rhs2);
@@ -2876,8 +2918,9 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
 
   lhs = gimple_assign_lhs (stmt);
   type = TREE_TYPE (lhs);
-  if (TREE_CODE (type) != INTEGER_TYPE
-      && TREE_CODE (type) != FIXED_POINT_TYPE)
+  if ((TREE_CODE (type) != INTEGER_TYPE
+       && TREE_CODE (type) != FIXED_POINT_TYPE)
+      || !type_has_mode_precision_p (type))
     return false;
 
   if (code == MINUS_EXPR)
@@ -3044,25 +3087,27 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   actual_precision = GET_MODE_PRECISION (actual_mode);
   if (actual_precision != TYPE_PRECISION (type1)
       || from_unsigned1 != TYPE_UNSIGNED (type1))
-    mult_rhs1 = build_and_insert_cast (gsi, loc,
-				       build_nonstandard_integer_type
-				         (actual_precision, from_unsigned1),
-				       mult_rhs1);
+    type1 = build_nonstandard_integer_type (actual_precision, from_unsigned1);
+  if (!useless_type_conversion_p (type1, TREE_TYPE (mult_rhs1)))
+    {
+      if (TREE_CODE (mult_rhs1) == INTEGER_CST)
+	mult_rhs1 = fold_convert (type1, mult_rhs1);
+      else
+	mult_rhs1 = build_and_insert_cast (gsi, loc, type1, mult_rhs1);
+    }
   if (actual_precision != TYPE_PRECISION (type2)
       || from_unsigned2 != TYPE_UNSIGNED (type2))
-    mult_rhs2 = build_and_insert_cast (gsi, loc,
-				       build_nonstandard_integer_type
-					 (actual_precision, from_unsigned2),
-				       mult_rhs2);
+    type2 = build_nonstandard_integer_type (actual_precision, from_unsigned2);
+  if (!useless_type_conversion_p (type2, TREE_TYPE (mult_rhs2)))
+    {
+      if (TREE_CODE (mult_rhs2) == INTEGER_CST)
+	mult_rhs2 = fold_convert (type2, mult_rhs2);
+      else
+	mult_rhs2 = build_and_insert_cast (gsi, loc, type2, mult_rhs2);
+    }
 
   if (!useless_type_conversion_p (type, TREE_TYPE (add_rhs)))
     add_rhs = build_and_insert_cast (gsi, loc, type, add_rhs);
-
-  /* Handle constants.  */
-  if (TREE_CODE (mult_rhs1) == INTEGER_CST)
-    mult_rhs1 = fold_convert (type1, mult_rhs1);
-  if (TREE_CODE (mult_rhs2) == INTEGER_CST)
-    mult_rhs2 = fold_convert (type2, mult_rhs2);
 
   gimple_assign_set_rhs_with_ops (gsi, wmult_code, mult_rhs1, mult_rhs2,
 				  add_rhs);
@@ -3902,6 +3947,66 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
   else
     return 0;
 
+  if (maxval
+      && ccode == RSHIFT_EXPR
+      && crhs1 == lhs
+      && TREE_CODE (crhs2) == INTEGER_CST
+      && wi::to_widest (crhs2) == TYPE_PRECISION (TREE_TYPE (maxval)))
+    {
+      tree shiftlhs = gimple_assign_lhs (use_stmt);
+      if (!shiftlhs)
+	return 0;
+      use_operand_p use;
+      if (!single_imm_use (shiftlhs, &use, &cur_use_stmt))
+	return 0;
+      if (gimple_code (cur_use_stmt) == GIMPLE_COND)
+	{
+	  ccode = gimple_cond_code (cur_use_stmt);
+	  crhs1 = gimple_cond_lhs (cur_use_stmt);
+	  crhs2 = gimple_cond_rhs (cur_use_stmt);
+	}
+      else if (is_gimple_assign (cur_use_stmt))
+	{
+	  if (gimple_assign_rhs_class (cur_use_stmt) == GIMPLE_BINARY_RHS)
+	    {
+	      ccode = gimple_assign_rhs_code (cur_use_stmt);
+	      crhs1 = gimple_assign_rhs1 (cur_use_stmt);
+	      crhs2 = gimple_assign_rhs2 (cur_use_stmt);
+	    }
+	  else if (gimple_assign_rhs_code (cur_use_stmt) == COND_EXPR)
+	    {
+	      tree cond = gimple_assign_rhs1 (cur_use_stmt);
+	      if (COMPARISON_CLASS_P (cond))
+		{
+		  ccode = TREE_CODE (cond);
+		  crhs1 = TREE_OPERAND (cond, 0);
+		  crhs2 = TREE_OPERAND (cond, 1);
+		}
+	      else
+		return 0;
+	    }
+	  else
+	    {
+	      enum tree_code sc = gimple_assign_rhs_code (cur_use_stmt);
+	      tree castlhs = gimple_assign_lhs (cur_use_stmt);
+	      if (!CONVERT_EXPR_CODE_P (sc)
+		  || !castlhs
+		  || !INTEGRAL_TYPE_P (TREE_TYPE (castlhs))
+		  || (TYPE_PRECISION (TREE_TYPE (castlhs))
+		      > TYPE_PRECISION (TREE_TYPE (maxval))))
+		return 0;
+	      return 1;
+	    }
+	}
+      else
+	return 0;
+      if ((ccode != EQ_EXPR && ccode != NE_EXPR)
+	  || crhs1 != shiftlhs
+	  || !integer_zerop (crhs2))
+	return 0;
+      return 1;
+    }
+
   if (TREE_CODE_CLASS (ccode) != tcc_comparison)
     return 0;
 
@@ -3981,6 +4086,106 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
   return 0;
 }
 
+extern bool gimple_unsigned_integer_sat_add (tree, tree*, tree (*)(tree));
+extern bool gimple_unsigned_integer_sat_sub (tree, tree*, tree (*)(tree));
+
+static void
+build_saturation_binary_arith_call (gimple_stmt_iterator *gsi, internal_fn fn,
+				    tree lhs, tree op_0, tree op_1)
+{
+  if (direct_internal_fn_supported_p (fn, TREE_TYPE (lhs), OPTIMIZE_FOR_BOTH))
+    {
+      gcall *call = gimple_build_call_internal (fn, 2, op_0, op_1);
+      gimple_call_set_lhs (call, lhs);
+      gsi_replace (gsi, call, /* update_eh_info */ true);
+    }
+}
+
+static void
+build_saturation_binary_arith_call (gimple_stmt_iterator *gsi, gphi *phi,
+				    internal_fn fn, tree lhs, tree op_0,
+				    tree op_1)
+{
+  if (direct_internal_fn_supported_p (fn, TREE_TYPE (lhs), OPTIMIZE_FOR_BOTH))
+    {
+      gcall *call = gimple_build_call_internal (fn, 2, op_0, op_1);
+      gimple_call_set_lhs (call, lhs);
+      gsi_insert_before (gsi, call, GSI_SAME_STMT);
+
+      gimple_stmt_iterator psi = gsi_for_stmt (phi);
+      remove_phi_node (&psi, /* release_lhs_p */ false);
+    }
+}
+
+/*
+ * Try to match saturation unsigned add with assign.
+ *   _7 = _4 + _6;
+ *   _8 = _4 > _7;
+ *   _9 = (long unsigned int) _8;
+ *   _10 = -_9;
+ *   _12 = _7 | _10;
+ *   =>
+ *   _12 = .SAT_ADD (_4, _6);  */
+
+static void
+match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gassign *stmt)
+{
+  tree ops[2];
+  tree lhs = gimple_assign_lhs (stmt);
+
+  if (gimple_unsigned_integer_sat_add (lhs, ops, NULL))
+    build_saturation_binary_arith_call (gsi, IFN_SAT_ADD, lhs, ops[0], ops[1]);
+}
+
+/*
+ * Try to match saturation unsigned add with PHI.
+ *   <bb 2> :
+ *   _1 = x_3(D) + y_4(D);
+ *   if (_1 >= x_3(D))
+ *     goto <bb 3>; [INV]
+ *   else
+ *     goto <bb 4>; [INV]
+ *
+ *   <bb 3> :
+ *
+ *   <bb 4> :
+ *   # _2 = PHI <255(2), _1(3)>
+ *   =>
+ *   <bb 4> [local count: 1073741824]:
+ *   _2 = .SAT_ADD (x_4(D), y_5(D));  */
+
+static void
+match_unsigned_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
+{
+  if (gimple_phi_num_args (phi) != 2)
+    return;
+
+  tree ops[2];
+  tree phi_result = gimple_phi_result (phi);
+
+  if (gimple_unsigned_integer_sat_add (phi_result, ops, NULL))
+    build_saturation_binary_arith_call (gsi, phi, IFN_SAT_ADD, phi_result,
+					ops[0], ops[1]);
+}
+
+/*
+ * Try to match saturation unsigned sub.
+ *   _1 = _4 >= _5;
+ *   _3 = _4 - _5;
+ *   _6 = _1 ? _3 : 0;
+ *   =>
+ *   _6 = .SAT_SUB (_4, _5);  */
+
+static void
+match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gassign *stmt)
+{
+  tree ops[2];
+  tree lhs = gimple_assign_lhs (stmt);
+
+  if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL))
+    build_saturation_binary_arith_call (gsi, IFN_SAT_SUB, lhs, ops[0], ops[1]);
+}
+
 /* Recognize for unsigned x
    x = y - z;
    if (x > y)
@@ -4004,6 +4209,7 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
    _8 = IMAGPART_EXPR <_7>;
    if (_8)
    and replace (utype) x with _9.
+   Or with x >> popcount (max) instead of x > max.
 
    Also recognize:
    x = ~z;
@@ -4436,10 +4642,62 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	  gcc_checking_assert (is_gimple_assign (use_stmt));
 	  if (gimple_assign_rhs_class (use_stmt) == GIMPLE_BINARY_RHS)
 	    {
-	      gimple_assign_set_rhs1 (use_stmt, ovf);
-	      gimple_assign_set_rhs2 (use_stmt, build_int_cst (type, 0));
-	      gimple_assign_set_rhs_code (use_stmt,
-					  ovf_use == 1 ? NE_EXPR : EQ_EXPR);
+	      if (gimple_assign_rhs_code (use_stmt) == RSHIFT_EXPR)
+		{
+		  g2 = gimple_build_assign (make_ssa_name (boolean_type_node),
+					    ovf_use == 1 ? NE_EXPR : EQ_EXPR,
+					    ovf, build_int_cst (type, 0));
+		  gimple_stmt_iterator gsiu = gsi_for_stmt (use_stmt);
+		  gsi_insert_before (&gsiu, g2, GSI_SAME_STMT);
+		  gimple_assign_set_rhs_with_ops (&gsiu, NOP_EXPR,
+						  gimple_assign_lhs (g2));
+		  update_stmt (use_stmt);
+		  use_operand_p use;
+		  single_imm_use (gimple_assign_lhs (use_stmt), &use,
+				  &use_stmt);
+		  if (gimple_code (use_stmt) == GIMPLE_COND)
+		    {
+		      gcond *cond_stmt = as_a <gcond *> (use_stmt);
+		      gimple_cond_set_lhs (cond_stmt, ovf);
+		      gimple_cond_set_rhs (cond_stmt, build_int_cst (type, 0));
+		    }
+		  else
+		    {
+		      gcc_checking_assert (is_gimple_assign (use_stmt));
+		      if (gimple_assign_rhs_class (use_stmt)
+			  == GIMPLE_BINARY_RHS)
+			{
+			  gimple_assign_set_rhs1 (use_stmt, ovf);
+			  gimple_assign_set_rhs2 (use_stmt,
+						  build_int_cst (type, 0));
+			}
+		      else if (gimple_assign_cast_p (use_stmt))
+			gimple_assign_set_rhs1 (use_stmt, ovf);
+		      else
+			{
+			  tree_code sc = gimple_assign_rhs_code (use_stmt);
+			  gcc_checking_assert (sc == COND_EXPR);
+			  tree cond = gimple_assign_rhs1 (use_stmt);
+			  cond = build2 (TREE_CODE (cond),
+					 boolean_type_node, ovf,
+					 build_int_cst (type, 0));
+			  gimple_assign_set_rhs1 (use_stmt, cond);
+			}
+		    }
+		  update_stmt (use_stmt);
+		  gsi_remove (&gsiu, true);
+		  gsiu = gsi_for_stmt (g2);
+		  gsi_remove (&gsiu, true);
+		  continue;
+		}
+	      else
+		{
+		  gimple_assign_set_rhs1 (use_stmt, ovf);
+		  gimple_assign_set_rhs2 (use_stmt, build_int_cst (type, 0));
+		  gimple_assign_set_rhs_code (use_stmt,
+					      ovf_use == 1
+					      ? NE_EXPR : EQ_EXPR);
+		}
 	    }
 	  else
 	    {
@@ -4581,6 +4839,7 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
   if (!INTEGRAL_TYPE_P (type) || !TYPE_UNSIGNED (type))
     return false;
 
+  auto_vec<gimple *, 2> temp_stmts;
   if (code != BIT_IOR_EXPR && code != BIT_XOR_EXPR)
     {
       /* If overflow flag is ignored on the MSB limb, we can end up with
@@ -4615,26 +4874,29 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 	      rhs[0] = gimple_assign_rhs1 (g);
 	      tree &r = rhs[2] ? rhs[3] : rhs[2];
 	      r = r2;
+	      temp_stmts.quick_push (g);
 	    }
 	  else
 	    break;
 	}
-      while (TREE_CODE (rhs[1]) == SSA_NAME && !rhs[3])
-	{
-	  gimple *g = SSA_NAME_DEF_STMT (rhs[1]);
-	  if (has_single_use (rhs[1])
-	      && is_gimple_assign (g)
-	      && gimple_assign_rhs_code (g) == PLUS_EXPR)
-	    {
-	      rhs[1] = gimple_assign_rhs1 (g);
-	      if (rhs[2])
-		rhs[3] = gimple_assign_rhs2 (g);
-	      else
-		rhs[2] = gimple_assign_rhs2 (g);
-	    }
-	  else
-	    break;
-	}
+      for (int i = 1; i <= 2; ++i)
+	while (rhs[i] && TREE_CODE (rhs[i]) == SSA_NAME && !rhs[3])
+	  {
+	    gimple *g = SSA_NAME_DEF_STMT (rhs[i]);
+	    if (has_single_use (rhs[i])
+		&& is_gimple_assign (g)
+		&& gimple_assign_rhs_code (g) == PLUS_EXPR)
+	      {
+		rhs[i] = gimple_assign_rhs1 (g);
+		if (rhs[2])
+		  rhs[3] = gimple_assign_rhs2 (g);
+		else
+		  rhs[2] = gimple_assign_rhs2 (g);
+		temp_stmts.quick_push (g);
+	      }
+	    else
+	      break;
+	  }
       /* If there are just 3 addends or one minuend and two subtrahends,
 	 check for UADDC or USUBC being pattern recognized earlier.
 	 Say r = op1 + op2 + ovf1 + ovf2; where the (ovf1 + ovf2) part
@@ -5039,7 +5301,17 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
   g = gimple_build_assign (ilhs, IMAGPART_EXPR,
 			   build1 (IMAGPART_EXPR, TREE_TYPE (ilhs), nlhs));
   if (rhs[2])
-    gsi_insert_before (gsi, g, GSI_SAME_STMT);
+    {
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      /* Remove some further statements which can't be kept in the IL because
+	 they can use SSA_NAMEs whose setter is going to be removed too.  */
+      for (gimple *g2 : temp_stmts)
+	{
+	  gsi2 = gsi_for_stmt (g2);
+	  gsi_remove (&gsi2, true);
+	  release_defs (g2);
+	}
+    }
   else
     gsi_replace (gsi, g, true);
   /* Remove some statements which can't be kept in the IL because they
@@ -5054,10 +5326,12 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 	rhs1 = gimple_assign_rhs1 (g);
 	gsi2 = gsi_for_stmt (g);
 	gsi_remove (&gsi2, true);
+	release_defs (g);
       }
   gcc_checking_assert (rhs1 == gimple_assign_lhs (im2));
   gsi2 = gsi_for_stmt (im2);
   gsi_remove (&gsi2, true);
+  release_defs (im2);
   /* Replace the re2 statement with __real__ of the newly added
      .UADDC/.USUBC call.  */
   if (re2)
@@ -5136,6 +5410,93 @@ match_uaddc_usubc (gimple_stmt_iterator *gsi, gimple *stmt, tree_code code)
 	}
     }
   return true;
+}
+
+/* Replace .POPCOUNT (x) == 1 or .POPCOUNT (x) != 1 with
+   (x & (x - 1)) > x - 1 or (x & (x - 1)) <= x - 1 if .POPCOUNT
+   isn't a direct optab.  */
+
+static void
+match_single_bit_test (gimple_stmt_iterator *gsi, gimple *stmt)
+{
+  tree clhs, crhs;
+  enum tree_code code;
+  if (gimple_code (stmt) == GIMPLE_COND)
+    {
+      clhs = gimple_cond_lhs (stmt);
+      crhs = gimple_cond_rhs (stmt);
+      code = gimple_cond_code (stmt);
+    }
+  else
+    {
+      clhs = gimple_assign_rhs1 (stmt);
+      crhs = gimple_assign_rhs2 (stmt);
+      code = gimple_assign_rhs_code (stmt);
+    }
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return;
+  if (TREE_CODE (clhs) != SSA_NAME || !integer_onep (crhs))
+    return;
+  gimple *call = SSA_NAME_DEF_STMT (clhs);
+  combined_fn cfn = gimple_call_combined_fn (call);
+  switch (cfn)
+    {
+    CASE_CFN_POPCOUNT:
+      break;
+    default:
+      return;
+    }
+  if (!has_single_use (clhs))
+    return;
+  tree arg = gimple_call_arg (call, 0);
+  tree type = TREE_TYPE (arg);
+  if (!INTEGRAL_TYPE_P (type))
+    return;
+  bool nonzero_arg = tree_expr_nonzero_p (arg);
+  if (direct_internal_fn_supported_p (IFN_POPCOUNT, type, OPTIMIZE_FOR_BOTH))
+    {
+      /* Tell expand_POPCOUNT the popcount result is only used in equality
+	 comparison with one, so that it can decide based on rtx costs.  */
+      gimple *g = gimple_build_call_internal (IFN_POPCOUNT, 2, arg,
+					      nonzero_arg ? integer_zero_node
+					      : integer_one_node);
+      gimple_call_set_lhs (g, gimple_call_lhs (call));
+      gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
+      gsi_replace (&gsi2, g, true);
+      return;
+    }
+  tree argm1 = make_ssa_name (type);
+  gimple *g = gimple_build_assign (argm1, PLUS_EXPR, arg,
+				   build_int_cst (type, -1));
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (type),
+			   nonzero_arg ? BIT_AND_EXPR : BIT_XOR_EXPR,
+			   arg, argm1);
+  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+  tree_code cmpcode;
+  if (nonzero_arg)
+    {
+      argm1 = build_zero_cst (type);
+      cmpcode = code;
+    }
+  else
+    cmpcode = code == EQ_EXPR ? GT_EXPR : LE_EXPR;
+  if (gcond *cond = dyn_cast <gcond *> (stmt))
+    {
+      gimple_cond_set_lhs (cond, gimple_assign_lhs (g));
+      gimple_cond_set_rhs (cond, argm1);
+      gimple_cond_set_code (cond, cmpcode);
+    }
+  else
+    {
+      gimple_assign_set_rhs1 (stmt, gimple_assign_lhs (g));
+      gimple_assign_set_rhs2 (stmt, argm1);
+      gimple_assign_set_rhs_code (stmt, cmpcode);
+    }
+  update_stmt (stmt);
+  gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
+  gsi_remove (&gsi2, true);
+  release_defs (call);
 }
 
 /* Return true if target has support for divmod.  */
@@ -5665,7 +6026,7 @@ optimize_spaceship (gcond *stmt)
 
   wide_int wm1 = wi::minus_one (TYPE_PRECISION (integer_type_node));
   wide_int w2 = wi::two (TYPE_PRECISION (integer_type_node));
-  value_range vr (TREE_TYPE (lhs), wm1, w2);
+  int_range<1> vr (TREE_TYPE (lhs), wm1, w2);
   set_range_info (lhs, vr);
 }
 
@@ -5738,6 +6099,13 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
   fma_deferring_state fma_state (param_avoid_fma_max_bits > 0);
 
+  for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
+    gsi_next (&psi))
+    {
+      gimple_stmt_iterator gsi = gsi_last_bb (bb);
+      match_unsigned_saturation_add (&gsi, psi.phi ());
+    }
+
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
     {
       gimple *stmt = gsi_stmt (gsi);
@@ -5787,8 +6155,19 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      break;
 
 	    case BIT_IOR_EXPR:
+	      match_unsigned_saturation_add (&gsi, as_a<gassign *> (stmt));
+	      /* fall-through  */
 	    case BIT_XOR_EXPR:
 	      match_uaddc_usubc (&gsi, stmt, code);
+	      break;
+
+	    case EQ_EXPR:
+	    case NE_EXPR:
+	      match_single_bit_test (&gsi, stmt);
+	      break;
+
+	    case COND_EXPR:
+	      match_unsigned_saturation_sub (&gsi, as_a<gassign *> (stmt));
 	      break;
 
 	    default:;
@@ -5856,7 +6235,10 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	    }
 	}
       else if (gimple_code (stmt) == GIMPLE_COND)
-	optimize_spaceship (as_a <gcond *> (stmt));
+	{
+	  match_single_bit_test (&gsi, stmt);
+	  optimize_spaceship (as_a <gcond *> (stmt));
+	}
       gsi_next (&gsi);
     }
   if (fma_state.m_deferring_p

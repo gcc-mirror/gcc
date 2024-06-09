@@ -1,5 +1,5 @@
 /* Library interface to C++ front end.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.  As it interacts with GDB through libcc1,
    they all become a single program as regards the GNU GPL's requirements.
@@ -33,6 +33,7 @@
 #undef PACKAGE_VERSION
 
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "gcc-plugin.h"
 #include "system.h"
 #include "coretypes.h"
@@ -70,8 +71,6 @@
 #include "marshall-cp.hh"
 #include "rpc.hh"
 #include "context.hh"
-
-#include <vector>
 
 using namespace cc1_plugin;
 
@@ -468,7 +467,7 @@ plugin_pragma_push_user_expression (cpp_reader *)
 	}
     }
 
-  if (unchanged_cfun || DECL_NONSTATIC_MEMBER_FUNCTION_P (changed_func_decl))
+  if (unchanged_cfun || DECL_OBJECT_MEMBER_FUNCTION_P (changed_func_decl))
     {
       /* Check whether the oracle supplies us with a "this", and if
 	 so, arrange for data members and this itself to be
@@ -2640,7 +2639,7 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
       break;
 
     case THROW_EXPR:
-      result = build_throw (input_location, op0);
+      result = build_throw (input_location, op0, tf_error);
       break;
 
     case TYPEID_EXPR:
@@ -2664,7 +2663,7 @@ plugin_build_unary_expr (cc1_plugin::connection *self,
       result = make_pack_expansion (op0);
       break;
 
-      // We're using this for sizeof...(pack).  */
+      /* We're using this for sizeof...(pack).  */
     case TYPE_PACK_EXPANSION:
       result = make_pack_expansion (op0);
       PACK_EXPANSION_SIZEOF_P (result) = true;

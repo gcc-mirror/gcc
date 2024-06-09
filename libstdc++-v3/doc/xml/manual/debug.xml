@@ -30,7 +30,7 @@
     flags can be varied to change debugging characteristics. For
     instance, turning off all optimization via the <code>-g -O0
     -fno-inline</code> flags will disable inlining and optimizations,
-    and add debugging information, so that stepping through all functions,
+    and include debugging information, so that stepping through all functions,
     (including inlined constructors and destructors) is possible. In
     addition, <code>-fno-eliminate-unused-debug-types</code> can be
     used when additional debug information, such as nested class info,
@@ -55,41 +55,30 @@
 </para>
 </section>
 
-<section xml:id="debug.req"><info><title>Debug Versions of Library Binary Files</title></info>
-
+<section xml:id="debug.debug_mode"><info><title>Debug Mode</title></info>
 
 <para>
-  If you would like debug symbols in libstdc++, there are two ways to
-  build libstdc++ with debug flags. The first is to create a separate
-  debug build by running make from the top-level of a tree
-  freshly-configured with
-</para>
-<programlisting>
-     --enable-libstdcxx-debug
-</programlisting>
-<para>and perhaps</para>
-<programlisting>
-     --enable-libstdcxx-debug-flags='...'
-</programlisting>
-<para>
-  Both the normal build and the debug build will persist, without
-  having to specify <code>CXXFLAGS</code>, and the debug library will
-  be installed in a separate directory tree, in <code>(prefix)/lib/debug</code>.
-  For more information, look at the
-  <link linkend="manual.intro.setup.configure">configuration</link> section.
+  The <link linkend="manual.ext.debug_mode">Debug Mode</link>
+  has compile and run-time checks for many containers.
 </para>
 
 <para>
-  A second approach is to use the configuration flags
+  There are also lightweight assertions for checking function preconditions,
+  such as checking for out-of-bounds indices when accessing a
+  <classname>std::vector</classname>. These can be enabled without using
+  the full Debug Mode, by using <option>-D_GLIBCXX_ASSERTIONS</option>
+  (see <xref linkend="manual.intro.using.macros"/>).
 </para>
-<programlisting>
-     make CXXFLAGS='-g3 -fno-inline -O0' all
-</programlisting>
+
+</section>
+
+<section xml:id="debug.exceptions"><info><title>Tracking uncaught exceptions</title></info>
 
 <para>
-  This quick and dirty approach is often sufficient for quick
-  debugging tasks, when you cannot or don't want to recompile your
-  application to use the <link linkend="manual.ext.debug_mode">debug mode</link>.</para>
+  The <link linkend="support.termination.verbose">verbose
+  termination handler</link> gives information about uncaught
+  exceptions which kill the program.
+</para>
 </section>
 
 <section xml:id="debug.memory"><info><title>Memory Leak Hunting</title></info>
@@ -97,6 +86,13 @@
 <para>
   On many targets GCC supports AddressSanitizer, a fast memory error detector,
   which is enabled by the <option>-fsanitize=address</option> option.
+</para>
+
+<para>
+  The <classname>std::vector</classname> implementation has additional
+  instrumentation to work with AddressSanitizer, but this has to be enabled
+  explicitly by using <option>-D_GLIBCXX_SANITIZE_VECTOR</option>
+  (see <xref linkend="manual.intro.using.macros"/>).
 </para>
 
 <para>
@@ -331,26 +327,51 @@
 
 </section>
 
-<section xml:id="debug.exceptions"><info><title>Tracking uncaught exceptions</title></info>
+<section xml:id="debug.req"><info><title>Debug Versions of Library Binary Files</title></info>
 
 <para>
-  The <link linkend="support.termination.verbose">verbose
-  termination handler</link> gives information about uncaught
-  exceptions which kill the program.
+  As described above, libstdc++ is built with debug symbols enabled by default,
+  but because it's also built with optimizations the code can be hard to
+  follow when stepping into the library in a debugger.
 </para>
+
+<para>
+  If you would like to debug <filename>libstdc++.so</filename> itself,
+  there are two ways to build an unoptimized libstdc++ with debug flags.
+  The first is to create a separate debug build by running make from the
+  top-level of a tree freshly-configured with
+</para>
+<programlisting>
+     --enable-libstdcxx-debug
+</programlisting>
+<para>and perhaps</para>
+<programlisting>
+     --enable-libstdcxx-debug-flags='...'
+</programlisting>
+<para>
+  Both the normal build and the debug build will persist, without
+  having to specify <code>CXXFLAGS</code>, and the debug library will
+  be installed in a separate directory tree, in <code>(prefix)/lib/debug</code>.
+  For more information, look at the
+  <link linkend="manual.intro.setup.configure">configuration</link> section.
+</para>
+
+<para>
+  A second approach is to use the configuration flags
+</para>
+<programlisting>
+     make CXXFLAGS='-g3 -fno-inline -O0' all
+</programlisting>
+
 </section>
 
-<section xml:id="debug.debug_mode"><info><title>Debug Mode</title></info>
-
-  <para> The <link linkend="manual.ext.debug_mode">Debug Mode</link>
-  has compile and run-time checks for many containers.
-  </para>
-</section>
 
 <section xml:id="debug.compile_time_checks"><info><title>Compile Time Checking</title></info>
 
   <para> The <link linkend="manual.ext.compile_checks">Compile-Time
   Checks</link> extension has compile-time checks for many algorithms.
+  These checks were designed for C++98 and have not been updated to work
+  with C++11 and later standards. They might be removed at a future date.
   </para>
 </section>
 

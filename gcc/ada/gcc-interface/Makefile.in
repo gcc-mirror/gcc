@@ -1,5 +1,5 @@
 # Makefile for GNU Ada Compiler (GNAT).
-#   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2024 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -794,12 +794,15 @@ gnatlib-shared-darwin:
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
 		$(SO_OPTS) \
 		-Wl,-install_name,@rpath/libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
-		$(MISCLIB)
+		-nodefaultrpaths -Wl,-rpath,@loader_path/,-rpath,@loader_path/.. \
+		-Wl,-rpath,@loader_path/../../../../ $(MISCLIB)
 	cd $(RTSDIR); $(GCC_FOR_ADA_RTS) -dynamiclib $(PICFLAG_FOR_TARGET) \
 		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
 		$(SO_OPTS) \
 		-Wl,-install_name,@rpath/libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		-nodefaultrpaths -Wl,-rpath,@loader_path/,-rpath,@loader_path/.. \
+		-Wl,-rpath,@loader_path/../../../../ \
 		$(THREADSLIB) -Wl,libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
 	cd $(RTSDIR); $(LN_S) libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		libgnat$(soext)

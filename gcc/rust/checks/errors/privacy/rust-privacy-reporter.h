@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -56,7 +56,7 @@ private:
    * @param locus Location of said expression/statement
    */
   void check_for_privacy_violation (const NodeId &use_id,
-				    const Location &locus);
+				    const location_t locus);
 
   /**
    * Internal function used by `check_type_privacy` when dealing with complex
@@ -65,7 +65,7 @@ types
    */
   void check_base_type_privacy (Analysis::NodeMapping &node_mappings,
 				const TyTy::BaseType *ty,
-				const Location &locus);
+				const location_t locus);
 
   /**
    * Check the privacy of an explicit type.
@@ -119,15 +119,10 @@ types
   virtual void visit (HIR::LoopExpr &expr);
   virtual void visit (HIR::WhileLoopExpr &expr);
   virtual void visit (HIR::WhileLetLoopExpr &expr);
-  virtual void visit (HIR::ForLoopExpr &expr);
   virtual void visit (HIR::IfExpr &expr);
   virtual void visit (HIR::IfExprConseqElse &expr);
-  virtual void visit (HIR::IfExprConseqIf &expr);
-  virtual void visit (HIR::IfExprConseqIfLet &expr);
   virtual void visit (HIR::IfLetExpr &expr);
   virtual void visit (HIR::IfLetExprConseqElse &expr);
-  virtual void visit (HIR::IfLetExprConseqIf &expr);
-  virtual void visit (HIR::IfLetExprConseqIfLet &expr);
   virtual void visit (HIR::MatchExpr &expr);
   virtual void visit (HIR::AwaitExpr &expr);
   virtual void visit (HIR::AsyncBlockExpr &expr);
@@ -155,15 +150,14 @@ types
   virtual void visit (HIR::ExternBlock &block);
   virtual void visit (HIR::EmptyStmt &stmt);
   virtual void visit (HIR::LetStmt &stmt);
-  virtual void visit (HIR::ExprStmtWithoutBlock &stmt);
-  virtual void visit (HIR::ExprStmtWithBlock &stmt);
+  virtual void visit (HIR::ExprStmt &stmt);
 
   Analysis::Mappings &mappings;
   Rust::Resolver::Resolver &resolver;
   const Rust::Resolver::TypeCheckContext &ty_ctx;
 
   // `None` means we're in the root module - the crate
-  Optional<NodeId> current_module;
+  tl::optional<NodeId> current_module;
 };
 
 } // namespace Privacy

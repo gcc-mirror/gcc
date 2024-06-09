@@ -3,7 +3,7 @@
    if -mjmp32 is not enabled.  */
 
 /* { dg-do compile } */
-/* { dg-options "-mno-jmpext -mno-jmp32" } */
+/* { dg-options "-mno-jmpext -mno-jmp32 -masm=normal" } */
 
 int foo (int a, int b)
 {

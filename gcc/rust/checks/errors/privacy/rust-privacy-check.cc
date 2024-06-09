@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -45,9 +45,7 @@ Resolver::resolve (HIR::Crate &crate)
 
   auto visitor = ReachabilityVisitor (ctx, *ty_ctx);
 
-  const auto &items = crate.items;
-
-  for (auto &item : items)
+  for (auto &item : crate.get_items ())
     {
       if (item->get_hir_kind () == HIR::Node::VIS_ITEM)
 	{

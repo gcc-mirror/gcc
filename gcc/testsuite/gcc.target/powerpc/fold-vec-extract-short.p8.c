@@ -2,8 +2,8 @@
    inputs produce the right results with a P8 (LE or BE) target.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
-/* { dg-options "-mdejagnu-cpu=power8 -O2" } */
+/* { dg-options "-mdejagnu-cpu=power8 -mvsx -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 // six tests total. Targeting P8, both LE and BE.
 // p8 (le) variable offset: rldicl, subfic, sldi, mtvsrd, xxpermdi, vslo, mfvsrd, srdi, (1:extsh/2:rlwinm)
@@ -30,9 +30,8 @@
 /* { dg-final { scan-assembler-times {\mli\M} 6 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "stxvw4x" 6 { target ilp32 } } } */
 /* add and rlwinm instructions only on the variable tests. */
-/* { dg-final { scan-assembler-times {\madd\M} 3 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times "rlwinm" 3 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\maddi\M} 9 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\maddi?\M} 9 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlha\M|\mlhz\M} 6 { target ilp32 } } } */
 
 

@@ -1,6 +1,6 @@
 /* PR c/20043 */
 /* { dg-do compile } */
-/* { dg-options "-std=gnu99" } */
+/* { dg-options "-fpermissive -std=gnu99" } */
 
 extern void f0 (int *);
 extern void f0 (int *__restrict);

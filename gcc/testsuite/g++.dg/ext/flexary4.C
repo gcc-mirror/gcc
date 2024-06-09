@@ -11,79 +11,79 @@
 #include "flexary.h"
 
 struct Sx {
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
 };
 
 // Verify that non-data members or static data members either before
 // or after a flexible array member in an otherwise empty struct don't
 // suppress the diagnostic.
 struct Sx2 {
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
   typedef int I;
 };
 
 struct Sx3 {
   typedef int I;
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
 };
 
 struct Sx4 {
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
   enum E { e };
 };
 
 struct Sx5 {
   enum E { e };
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
 };
 
 struct Sx6 {
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
   static int i;
 };
 
 struct Sx7 {
   static int i;
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
 };
 
 struct Sx8 {
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
   Sx8 () { }
 };
 
 struct Sx9 {
   Sx9 () { }
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
 };
 
 struct Sx10 {
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
   virtual ~Sx10 () { }
 };
 
 struct Sx11 {
   virtual ~Sx11 () { }
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
 };
 
 struct Sx12 {
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
   virtual void foo () = 0;
 };
 
 struct Sx13 {
   virtual void foo () = 0;
-  int a[];                  // { dg-error "in an otherwise empty" }
+  int a[];
 };
 
 struct Sx14 {
-  int a[][1];               // { dg-error "in an otherwise empty" }
+  int a[][1];
 };
 
 struct Sx15 {
   typedef int A[];
-  A a;                      // { dg-error "in an otherwise empty" }
+  A a;
 };
 
 // Verify also that a zero-size array doesn't suppress the diagnostic.
@@ -91,7 +91,7 @@ struct Sx16 {
   // a_0 below is diagnosed with -Wpedantic only and emits
   // warning: ISO C++ forbids zero-size arrays
   int a_0 [0];
-  int a_x [];               // { dg-error "in an otherwise empty" }
+  int a_x [];
 };
 
 struct Sx17 {
@@ -123,7 +123,7 @@ struct Sx19 {
 // so doesn't contribute its member to that of the enclosing struct.
 struct Sx20 {
   struct S { int i; };
-  int a_x [];               // { dg-error "in an otherwise empty" }
+  int a_x [];
 };
 
 struct Sx21 {
@@ -148,12 +148,12 @@ struct Sx24 {
 
 struct Sx25 {
   struct S { };
-  S a_x [];                 // { dg-error "flexible array member" }
+  S a_x [];
 };
 
 struct Sx26 {
   struct { }
-    a_x [];                   // { dg-error "flexible array member" }
+    a_x [];
 };
 
 struct Sx27 {
@@ -193,13 +193,13 @@ struct Sx32 {
 ASSERT_AT_END (Sx32, a);
 
 struct Sx33 {
-  int a [];                 // { dg-error "otherwise empty" }
+  int a [];
   friend int foo ();
 };
 
 struct Sx34 {
   friend int foo ();
-  int a [];                 // { dg-error "otherwise empty" }
+  int a [];
 };
 
 // Verify that intervening non-field declarations of members other
@@ -277,7 +277,7 @@ ASSERT_AT_END (Sx44, a);
 struct S_S_S_x {
   struct A {
     struct B {
-      int a[];              // { dg-error "flexible array member" }
+      int a[];
     } b;
   } a;
 };
@@ -300,7 +300,7 @@ struct NotAnon1 {
   // The following is not an anonymous struct -- the type is unnamed
   // but the object has a name.
   struct {
-    int bad[];              // { dg-error "otherwise empty" }
+    int bad[];
   } name;
 };
 
@@ -328,7 +328,7 @@ ASSERT_AT_END (Anon3, good);
 
 struct Anon4 {
   struct {
-    int in_empty_struct[];  // { dg-error "in an otherwise empty" }
+    int in_empty_struct[];
   };
 };
 
@@ -366,7 +366,7 @@ struct Six {
 ASSERT_AT_END (Six, a);
 
 class Cx {
-  int a[];                  // { dg-error "flexible array member" }
+  int a[];
 };
 
 class Cix {
@@ -390,7 +390,7 @@ struct S0i {
 
 struct S_a0_ax {
   int a0[0];
-  int ax[];                 // { dg-error "flexible array member" }
+  int ax[];
 };
 
 struct S_a0_i_ax {
@@ -417,7 +417,7 @@ struct Si_ax_a0 {
 
 struct S_u0_ax {
   union { } u[0];
-  int ax[];                 // { dg-error "flexible array member" }
+  int ax[];
 };
 
 struct S_a1_s2 {

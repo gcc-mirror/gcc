@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 #define FALSE 140
 #define TRUE 13
 

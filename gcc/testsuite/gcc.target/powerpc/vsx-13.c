@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Variations of tests that require VSX support.  This is a variation of
    the altivec-13.c testcase.  */

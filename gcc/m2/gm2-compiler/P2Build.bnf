@@ -1,7 +1,7 @@
 --
 -- m2-2.bnf grammar and associated actions for pass 2.
 --
--- Copyright (C) 2001-2023 Free Software Foundation, Inc.
+-- Copyright (C) 2001-2024 Free Software Foundation, Inc.
 -- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 --
 -- This file is part of GNU Modula-2.
@@ -23,7 +23,7 @@
 (* output from m2-2.bnf, automatically generated do not edit if these
    are the top two lines in the file.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -104,7 +104,6 @@ FROM P2SymBuild IMPORT P2StartBuildProgramModule,
                        BuildVarientSelector,
                        StartBuildVarientFieldRecord,
                        EndBuildVarientFieldRecord,
-                       BuildNulName,
                        StartBuildArray,
                        EndBuildArray,
                        BuildFieldArray, BuildArrayComma,
@@ -861,17 +860,21 @@ CaseLabelList := CaseLabels { "," CaseLabels } =:
 
 CaseLabels := ConstExpression [ ".." ConstExpression ] =:
 
-SetType :=                                                                 % VAR ispacked: BOOLEAN ; %
+SetType :=                                                                 % VAR ispacked: BOOLEAN ;
+                                                                                 setpos  : CARDINAL ; %
+                                                                           % setpos := GetTokenNo () %
                                                                            % ispacked := FALSE %
            ( "SET"                                                         % ispacked := FALSE %
                    | "PACKEDSET"                                           % ispacked := TRUE %
                                  ) "OF"                                    % BuildNulName %
-                                        SimpleType                         % BuildSetType (ispacked) %
+                                        SimpleType                         % BuildSetType (setpos, ispacked) %
          =:
 
 
-PointerType := "POINTER" "TO"                                              % BuildNulName %
-                              Type                                         % BuildPointerType %
+PointerType :=                                                             % VAR pointerpos: CARDINAL ; %
+                                                                           % pointerpos := GetTokenNo () %
+               "POINTER" "TO"                                              % BuildNulName %
+                              Type                                         % BuildPointerType (pointerpos) %
              =:
 
 ProcedureType := "PROCEDURE"                                               % BuildProcedureType ; %

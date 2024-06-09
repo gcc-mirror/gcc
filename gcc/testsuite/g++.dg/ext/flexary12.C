@@ -6,7 +6,7 @@
 // { dg-options "-Wno-pedantic" }
 
 struct A {
-  int a [];  // { dg-error "flexible array member .A::a. in an otherwise empty .struct A." }
+  int a [];
 };
 
 void f1 ()
@@ -40,7 +40,7 @@ void f2 ()
 }
 
 struct D {
-  int a [];  // { dg-error "flexible array member .D::a. in an otherwise empty .struct D." }
+  int a [];
   D ();
 };
 
@@ -52,7 +52,7 @@ D::D ():    // { dg-error "initializer for flexible array member" }
 
 template <class T>
 struct C {
-  T a [];  // { dg-error "flexible array member" }
+  T a [];
 };
 
 void f3 ()

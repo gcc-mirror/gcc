@@ -1,5 +1,5 @@
 /* Implementation of <stdarg.h> within analyzer.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MEMORY
+#define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
 #include "make-unique.h"
@@ -41,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/supergraph.h"
 #include "analyzer/diagnostic-manager.h"
 #include "analyzer/exploded-graph.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/call-details.h"
 
 #if ENABLE_ANALYZER
@@ -242,10 +242,10 @@ private:
 /* va_list_state_machine's ctor.  */
 
 va_list_state_machine::va_list_state_machine (logger *logger)
-: state_machine ("va_list", logger)
+: state_machine ("va_list", logger),
+  m_started (add_state ("started")),
+  m_ended (add_state ("ended"))
 {
-  m_started = add_state ("started");
-  m_ended = add_state ("ended");
 }
 
 /* Implementation of the various "va_*" functions for
@@ -403,11 +403,9 @@ public:
 	    && 0 == strcmp (m_usage_fnname, other.m_usage_fnname));
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
-    return warning_at (rich_loc, get_controlling_option (),
-		       "%qs after %qs", m_usage_fnname, "va_end");
+    return ctxt.warn ("%qs after %qs", m_usage_fnname, "va_end");
   }
 
   const char *get_kind () const final override
@@ -478,11 +476,9 @@ public:
     return va_list_sm_diagnostic::subclass_equal_p (other);
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
-    return warning_at (rich_loc, get_controlling_option (),
-		       "missing call to %qs", "va_end");
+    return ctxt.warn ("missing call to %qs", "va_end");
   }
 
   const char *get_kind () const final override { return "va_list_leak"; }
@@ -892,18 +888,15 @@ public:
     return OPT_Wanalyzer_va_arg_type_mismatch;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
-    diagnostic_metadata m;
     /* "CWE-686: Function Call With Incorrect Argument Type".  */
-    m.add_cwe (686);
+    ctxt.add_cwe (686);
     bool warned
-      = warning_meta (rich_loc, m, get_controlling_option (),
-		      "%<va_arg%> expected %qT but received %qT"
-		      " for variadic argument %i of %qE",
-		      m_expected_type, m_actual_type,
-		      get_variadic_index_for_diagnostic (), m_va_list_tree);
+      = ctxt.warn ("%<va_arg%> expected %qT but received %qT"
+		   " for variadic argument %i of %qE",
+		   m_expected_type, m_actual_type,
+		   get_variadic_index_for_diagnostic (), m_va_list_tree);
     return warned;
   }
 
@@ -942,15 +935,12 @@ public:
     return OPT_Wanalyzer_va_list_exhausted;
   }
 
-  bool emit (rich_location *rich_loc, logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    auto_diagnostic_group d;
-    diagnostic_metadata m;
     /* CWE-685: Function Call With Incorrect Number of Arguments.  */
-    m.add_cwe (685);
-    bool warned = warning_meta (rich_loc, m, get_controlling_option (),
-				"%qE has no more arguments (%i consumed)",
-				m_va_list_tree, get_num_consumed ());
+    ctxt.add_cwe (685);
+    bool warned = ctxt.warn ("%qE has no more arguments (%i consumed)",
+			     m_va_list_tree, get_num_consumed ());
     return warned;
   }
 
@@ -961,13 +951,43 @@ public:
   }
 };
 
-/* Return true if it's OK to copy a value from ARG_TYPE to LHS_TYPE via
+static bool
+representable_in_integral_type_p (const svalue &sval, const_tree type)
+{
+  gcc_assert (INTEGRAL_TYPE_P (type));
+
+  if (tree cst = sval.maybe_get_constant ())
+    return wi::fits_to_tree_p (wi::to_wide (cst), type);
+
+  return true;
+}
+
+/* Return true if it's OK to copy ARG_SVAL from ARG_TYPE to LHS_TYPE via
    va_arg (where argument promotion has already happened).  */
 
 static bool
-va_arg_compatible_types_p (tree lhs_type, tree arg_type)
+va_arg_compatible_types_p (tree lhs_type, tree arg_type, const svalue &arg_sval)
 {
-  return compat_types_p (arg_type, lhs_type);
+  if (compat_types_p (arg_type, lhs_type))
+    return true;
+
+  /* It's OK if both types are integer types, where one is signed and the
+     other type the corresponding unsigned type, when the value is
+     representable in both types.  */
+  if (INTEGRAL_TYPE_P (lhs_type)
+      && INTEGRAL_TYPE_P (arg_type)
+      && TYPE_UNSIGNED (lhs_type) != TYPE_UNSIGNED (arg_type)
+      && TYPE_PRECISION (lhs_type) == TYPE_PRECISION (arg_type)
+      && representable_in_integral_type_p (arg_sval, lhs_type)
+      && representable_in_integral_type_p (arg_sval, arg_type))
+    return true;
+
+  /* It's OK if one type is a pointer to void and the other is a
+     pointer to a character type.
+     This is handled by compat_types_p.  */
+
+  /* Otherwise the types are not compatible.  */
+  return false;
 }
 
 /* If AP_SVAL is a pointer to a var_arg_region, return that var_arg_region.
@@ -1033,7 +1053,7 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
 		{
 		  tree lhs_type = cd.get_lhs_type ();
 		  tree arg_type = arg_sval->get_type ();
-		  if (va_arg_compatible_types_p (lhs_type, arg_type))
+		  if (va_arg_compatible_types_p (lhs_type, arg_type, *arg_sval))
 		    cd.maybe_set_lhs (arg_sval);
 		  else
 		    {

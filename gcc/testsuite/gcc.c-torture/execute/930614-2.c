@@ -1,4 +1,8 @@
-main ()
+void abort (void);
+void exit (int);
+
+int
+main (void)
 {
   int i, j, k, l;
   float x[8][2][8][2];

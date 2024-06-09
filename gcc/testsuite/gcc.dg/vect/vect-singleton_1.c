@@ -1,7 +1,7 @@
 /* PR target/59843 ICE on function taking/returning vector of one float64_t.  */
 
 /* { dg-do compile } */
-/* { dg-options "-Warray-bounds -O2 -fno-inline -std=c99" } */
+/* { dg-additional-options "-Warray-bounds -O2 -fno-inline -std=c99" } */
 
 #define TEST(BASETYPE, VECTYPE, SUFFIX)					     \
   typedef BASETYPE VECTYPE						     \

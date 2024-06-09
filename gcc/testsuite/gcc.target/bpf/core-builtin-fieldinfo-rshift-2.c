@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -dA -gbtf -mco-re" } */
+/* { dg-options "-O0 -dA -gbtf -mco-re -masm=normal" } */
 
 struct S {
   int x;
@@ -25,8 +25,8 @@ unsigned int foo (union U *u)
   return sx + sc + i;
 }
 
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],32" 2 } } */
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],56" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],32" 2 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],56" 1 } } */
 
 /* { dg-final { scan-assembler-times "ascii \"0:1:0.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:1:1.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */

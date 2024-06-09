@@ -1,6 +1,6 @@
 // random number generation -*- C++ -*-
 
-// Copyright (C) 2009-2023 Free Software Foundation, Inc.
+// Copyright (C) 2009-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -64,6 +64,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Implementation-space details.
   namespace __detail
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
+
     template<typename _UIntType, size_t __w,
 	     bool = __w < static_cast<size_t>
 			  (std::numeric_limits<_UIntType>::digits)>
@@ -102,6 +105,108 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<int __s>
       struct _Select_uint_least_t<__s, 1>
       { __extension__ using type = unsigned __int128; };
+#elif __has_builtin(__builtin_add_overflow) \
+    && __has_builtin(__builtin_sub_overflow) \
+    && defined __UINT64_TYPE__
+    template<int __s>
+      struct _Select_uint_least_t<__s, 1>
+      {
+	// This is NOT a general-purpose 128-bit integer type.
+	// It only supports (type(a) * x + c) % m as needed by __mod.
+	struct type
+	{
+	  explicit
+	  type(uint64_t __a) noexcept : _M_lo(__a), _M_hi(0) { }
+
+	  // pre: __l._M_hi == 0
+	  friend type
+	  operator*(type __l, uint64_t __x) noexcept
+	  {
+	    // Split 64-bit values __l._M_lo and __x into high and low 32-bit
+	    // limbs and multiply those individually.
+	    // l * x = (l0 + l1) * (x0 + x1) = l0x0 + l0x1 + l1x0 + l1x1
+
+	    constexpr uint64_t __mask = 0xffffffff;
+	    uint64_t __ll[2] = { __l._M_lo >> 32, __l._M_lo & __mask };
+	    uint64_t __xx[2] = { __x >> 32, __x & __mask };
+	    uint64_t __l0x0 = __ll[0] * __xx[0];
+	    uint64_t __l0x1 = __ll[0] * __xx[1];
+	    uint64_t __l1x0 = __ll[1] * __xx[0];
+	    uint64_t __l1x1 = __ll[1] * __xx[1];
+	    // These bits are the low half of __l._M_hi
+	    // and the high half of __l._M_lo.
+	    uint64_t __mid
+	      = (__l0x1 & __mask) + (__l1x0 & __mask) + (__l1x1 >> 32);
+	    __l._M_hi = __l0x0 + (__l0x1 >> 32) + (__l1x0 >> 32) + (__mid >> 32);
+	    __l._M_lo = (__mid << 32) + (__l1x1 & __mask);
+	    return __l;
+	  }
+
+	  friend type
+	  operator+(type __l, uint64_t __c) noexcept
+	  {
+	    __l._M_hi += __builtin_add_overflow(__l._M_lo, __c, &__l._M_lo);
+	    return __l;
+	  }
+
+	  friend type
+	  operator%(type __l, uint64_t __m) noexcept
+	  {
+	    if (__builtin_expect(__l._M_hi == 0, 0))
+	      {
+		__l._M_lo %= __m;
+		return __l;
+	      }
+
+	    int __shift = __builtin_clzll(__m) + 64
+			    - __builtin_clzll(__l._M_hi);
+	    type __x(0);
+	    if (__shift >= 64)
+	      {
+		__x._M_hi = __m << (__shift - 64);
+		__x._M_lo = 0;
+	      }
+	    else
+	      {
+		__x._M_hi = __m >> (64 - __shift);
+		__x._M_lo = __m << __shift;
+	      }
+
+	    while (__l._M_hi != 0 || __l._M_lo >= __m)
+	      {
+		if (__x <= __l)
+		  {
+		    __l._M_hi -= __x._M_hi;
+		    __l._M_hi -= __builtin_sub_overflow(__l._M_lo, __x._M_lo,
+							&__l._M_lo);
+		  }
+		__x._M_lo = (__x._M_lo >> 1) | (__x._M_hi << 63);
+		__x._M_hi >>= 1;
+	      }
+	    return __l;
+	  }
+
+	  // pre: __l._M_hi == 0
+	  explicit operator uint64_t() const noexcept
+	  { return _M_lo; }
+
+	  friend bool operator<(const type& __l, const type& __r) noexcept
+	  {
+	    if (__l._M_hi < __r._M_hi)
+	      return true;
+	    else if (__l._M_hi == __r._M_hi)
+	      return __l._M_lo < __r._M_lo;
+	    else
+	      return false;
+	  }
+
+	  friend bool operator<=(const type& __l, const type& __r) noexcept
+	  { return !(__r < __l); }
+
+	  uint64_t _M_lo;
+	  uint64_t _M_hi;
+	};
+      };
 #endif
 
     // Assume a != 0, a < m, c < m, x < m.
@@ -149,14 +254,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline _Tp
       __mod(_Tp __x)
       {
-	if _GLIBCXX17_CONSTEXPR (__a == 0)
+	if constexpr (__a == 0)
 	  return __c;
-	else
-	  {
-	    // _Mod must not be instantiated with a == 0
-	    constexpr _Tp __a1 = __a ? __a : 1;
-	    return _Mod<_Tp, __m, __a1, __c>::__calc(__x);
-	  }
+	else // N.B. _Mod must not be instantiated with a == 0
+	  return _Mod<_Tp, __m, __a, __c>::__calc(__x);
       }
 
     /*
@@ -216,6 +317,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__not_<is_convertible<_Sseq, _Res>>
       >;
 
+#pragma GCC diagnostic pop
   } // namespace __detail
   /// @endcond
 

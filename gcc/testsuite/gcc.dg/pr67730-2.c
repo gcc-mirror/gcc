@@ -1,6 +1,6 @@
 /* PR c/67730 */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-fpermissive" } */
 
 #include "pr67730.h"
 

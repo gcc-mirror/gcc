@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,6 +38,7 @@ with Fname;    use Fname;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;
+with Sinfo.Nodes;
 with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stringt;  use Stringt;
@@ -1474,12 +1475,17 @@ package body Erroutc is
       if Name_Len = 2 and then Name_Buffer (1 .. 2) = "RM" then
          Set_Msg_Name_Buffer;
 
+      --  We make a similar exception for CUDA
+
+      elsif Name_Len = 4 and then Name_Buffer (1 .. 4) = "CUDA" then
+         Set_Msg_Name_Buffer;
+
       --  We make a similar exception for SPARK
 
       elsif Name_Len = 5 and then Name_Buffer (1 .. 5) = "SPARK" then
          Set_Msg_Name_Buffer;
 
-      --  Neither RM nor SPARK: case appropriately and add surrounding quotes
+      --  Otherwise, case appropriately and add surrounding quotes
 
       else
          Set_Casing (Keyword_Casing (Flag_Source), All_Lower_Case);
@@ -1607,6 +1613,12 @@ package body Erroutc is
       elsif Text = "Cpp_Vtable" then
          Set_Msg_Str ("CPP_Vtable");
 
+      elsif Text = "Cuda_Device" then
+         Set_Msg_Str ("CUDA_Device");
+
+      elsif Text = "Cuda_Global" then
+         Set_Msg_Str ("CUDA_Global");
+
       elsif Text = "Persistent_Bss" then
          Set_Msg_Str ("Persistent_BSS");
 
@@ -1650,17 +1662,19 @@ package body Erroutc is
    ------------------------------
 
    procedure Set_Specific_Warning_Off
-     (Loc    : Source_Ptr;
+     (Node   : Node_Id;
       Msg    : String;
       Reason : String_Id;
       Config : Boolean;
       Used   : Boolean := False)
    is
+      Loc : constant Source_Ptr := Sinfo.Nodes.Sloc (Node);
    begin
       Specific_Warnings.Append
         ((Start      => Loc,
           Msg        => new String'(Msg),
           Stop       => Source_Last (Get_Source_File_Index (Loc)),
+          Node       => Node,
           Reason     => Reason,
           Open       => True,
           Used       => Used,
@@ -1801,49 +1815,6 @@ package body Erroutc is
       return False;
    end Sloc_In_Range;
 
-   --------------------------------
-   -- Validate_Specific_Warnings --
-   --------------------------------
-
-   procedure Validate_Specific_Warnings (Eproc : Error_Msg_Proc) is
-   begin
-      if not Warn_On_Warnings_Off then
-         return;
-      end if;
-
-      for J in Specific_Warnings.First .. Specific_Warnings.Last loop
-         declare
-            SWE : Specific_Warning_Entry renames Specific_Warnings.Table (J);
-
-         begin
-            if not SWE.Config then
-
-               --  Warn for unmatched Warnings (Off, ...)
-
-               if SWE.Open then
-                  Eproc.all
-                    ("?.w?pragma Warnings Off with no matching Warnings On",
-                     SWE.Start);
-
-               --  Warn for ineffective Warnings (Off, ..)
-
-               elsif not SWE.Used
-
-                 --  Do not issue this warning for -Wxxx messages since the
-                 --  back-end doesn't report the information. Note that there
-                 --  is always an asterisk at the start of every message.
-
-                 and then not
-                   (SWE.Msg'Length > 3 and then SWE.Msg (2 .. 3) = "-W")
-               then
-                  Eproc.all
-                    ("?.w?no warning suppressed by this pragma", SWE.Start);
-               end if;
-            end if;
-         end;
-      end loop;
-   end Validate_Specific_Warnings;
-
    -------------------------------------
    -- Warning_Specifically_Suppressed --
    -------------------------------------
@@ -1859,7 +1830,6 @@ package body Erroutc is
       for J in Specific_Warnings.First .. Specific_Warnings.Last loop
          declare
             SWE : Specific_Warning_Entry renames Specific_Warnings.Table (J);
-
          begin
             --  Pragma applies if it is a configuration pragma, or if the
             --  location is in range of a specific non-configuration pragma.

@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "--param=riscv-autovec-preference=scalable -fno-vect-cost-model" } */
+/* { dg-additional-options "-mrvv-vector-bits=scalable -fno-vect-cost-model" } */
 
 #include "cond_fmul-2.c"
 

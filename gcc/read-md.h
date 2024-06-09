@@ -1,5 +1,5 @@
 /* MD reader definitions.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -194,7 +194,7 @@ class md_reader
   const struct ptr_loc *get_md_ptr_loc (const void *ptr);
   void copy_md_ptr_loc (const void *new_ptr, const void *old_ptr);
   void fprint_md_ptr_loc (FILE *outf, const void *ptr);
-  void print_md_ptr_loc (const void *ptr);
+  void print_md_ptr_loc (const void *ptr, FILE * = stdout);
 
   struct enum_type *lookup_enum_type (const char *name);
   void traverse_enum_types (htab_trav callback, void *info);

@@ -4,7 +4,7 @@
    Note that "normal" builtins (generic math functions, etc.) are handled
    in rs6000.c.
 
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -165,7 +165,7 @@ rs6000_builtin_is_supported (enum rs6000_gen_builtins fncode)
     case ENB_P7_64:
       return TARGET_POPCNTD && TARGET_POWERPC64;
     case ENB_P8:
-      return TARGET_DIRECT_MOVE;
+      return TARGET_POWER8;
     case ENB_P8V:
       return TARGET_P8_VECTOR;
     case ENB_P9:
@@ -845,7 +845,7 @@ rs6000_init_builtins (void)
 	  enum rs6000_gen_builtins fn_code = (enum rs6000_gen_builtins) i;
 	  if (!rs6000_builtin_is_supported (fn_code))
 	    continue;
-	  tree fntype = rs6000_builtin_info[i].fntype;
+	  tree fntype = rs6000_builtin_info_fntype[i];
 	  tree t = TREE_TYPE (fntype);
 	  fprintf (stderr, "%s %s (", rs6000_type_string (t),
 		   rs6000_builtin_info[i].bifname);
@@ -1900,7 +1900,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree lhs_type = TREE_TYPE (lhs);
 	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
 	  required alignment (power) is 4 bytes regardless of data type.  */
-	tree align_ltype = build_aligned_type (lhs_type, 4);
+	tree align_ltype = build_aligned_type (lhs_type, 32);
 	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
 	   the tree using the value from arg0.  The resulting type will match
 	   the type of arg1.  */
@@ -1944,7 +1944,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree arg2_type = ptr_type_node;
 	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
 	   required alignment (power) is 4 bytes regardless of data type.  */
-	tree align_stype = build_aligned_type (arg0_type, 4);
+	tree align_stype = build_aligned_type (arg0_type, 32);
 	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
 	   the tree using the value from arg1.  */
 	gimple_seq stmts = NULL;

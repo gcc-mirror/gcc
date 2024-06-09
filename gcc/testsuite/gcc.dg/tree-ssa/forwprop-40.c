@@ -10,5 +10,5 @@ vector int g(vector int a)
   return a;
 }
 
-/* { dg-final { scan-tree-dump-times "BIT_INSERT_EXPR" 0 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "BIT_FIELD_REF" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "BIT_INSERT_EXPR" 0 "optimized" { xfail s390_mvx } } } Xfail: PR114802 */
+/* { dg-final { scan-tree-dump-times "BIT_FIELD_REF" 0 "optimized" { xfail s390_mvx } } } Xfail: PR114802 */

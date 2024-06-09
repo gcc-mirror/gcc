@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,9 +42,6 @@ package Nlists is
    --  header is allocated in the lists table, and a List_Id value references
    --  this header, which may be used to access the nodes in the list using
    --  the set of routines that define this interface.
-
-   --  Note: node lists can contain either nodes or entities (extended nodes)
-   --  or a mixture of nodes and extended nodes.
 
    function In_Same_List (N1, N2 : Node_Or_Entity_Id) return Boolean;
    pragma Inline (In_Same_List);

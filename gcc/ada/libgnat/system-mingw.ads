@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                            (Windows Version)                             --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -153,15 +153,20 @@ private
    --  that the value of these parameters is available for analysis
    --  of the declarations here (using Rtsfind at compile time).
 
-   --  The underlying priorities table provides a generalized mechanism
+   --  The underlying priorities tables provide a generalized mechanism
    --  for mapping from Ada priorities to system priorities. In some
    --  cases a 1-1 mapping is not the convenient or optimal choice.
+
+   --  We include two different tables here - one for when
+   --  FIFO_Within_Priorites is specified and one for default behavior -
+   --  since Windows will allow a greater granularity of levels when it
+   --  is in affect.
 
    type Priorities_Mapping is array (Any_Priority) of Integer;
    pragma Suppress_Initialization (Priorities_Mapping);
    --  Suppress initialization in case gnat.adc specifies Normalize_Scalars
 
-   Underlying_Priorities : constant Priorities_Mapping :=
+   FIFO_Underlying_Priorities : constant Priorities_Mapping :=
      (Priority'First ..
       Default_Priority - 8    => -15,
       Default_Priority - 7    => -7,
@@ -181,8 +186,24 @@ private
       Priority'Last           => 6,
       Interrupt_Priority      => 15);
    --  The default mapping preserves the standard 31 priorities of the Ada
+   --  model, but maps them using compression onto the 16 priority levels
+   --  available in NT when REALTIME_PRIORITY_CLASS base class is set via
+   --  pragma Task_Dispatching_Policy (FIFO_Within_Priorities).
+
+   Underlying_Priorities : constant Priorities_Mapping :=
+     (Priority'First     => -15,  --  Thread_Priority_Idle
+      1  ..  6           =>  -2,  --  Thread_Priority_Lowest
+      7  .. 12           =>  -1,  --  Thread_Priority_Below_Normal
+      13 .. 14           =>   0,  --  Thread_Priority_Normal
+      Default_Priority   =>   0,  --  Thread_Priority_Normal
+      16 .. 18           =>   0,  --  Thread_Priority_Normal
+      19 .. 24           =>   1,  --  Thread_Priority_Above_Normal
+      25 .. 29           =>   2,  --  Thread_Priority_Highest
+      Priority'Last      =>   2,  --  Thread_Priority_Highest
+      Interrupt_Priority =>  15); --  Thread_Priority_Time_Critical
+   --  The non FIFO mapping preserves the standard 31 priorities of the Ada
    --  model, but maps them using compression onto the 7 priority levels
-   --  available in NT and on the 16 priority levels available in 2000/XP.
+   --  available in NT when pragma Task_Dispatching_Policy is unspecified.
 
    pragma Linker_Options ("-Wl,--stack=0x2000000");
    --  This is used to change the default stack (32 MB) size for non tasking

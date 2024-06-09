@@ -1,5 +1,5 @@
 /* Analyze RTL for GNU compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1637,12 +1637,15 @@ set_noop_p (const_rtx set)
     return true;
 
   if (MEM_P (dst) && MEM_P (src))
-    return rtx_equal_p (dst, src) && !side_effects_p (dst);
+    return (rtx_equal_p (dst, src)
+	    && !side_effects_p (dst)
+	    && !side_effects_p (src));
 
   if (GET_CODE (dst) == ZERO_EXTRACT)
-    return rtx_equal_p (XEXP (dst, 0), src)
-	   && !BITS_BIG_ENDIAN && XEXP (dst, 2) == const0_rtx
-	   && !side_effects_p (src);
+    return (rtx_equal_p (XEXP (dst, 0), src)
+	    && !BITS_BIG_ENDIAN && XEXP (dst, 2) == const0_rtx
+	    && !side_effects_p (src)
+	    && !side_effects_p (XEXP (dst, 0)));
 
   if (GET_CODE (dst) == STRICT_LOW_PART)
     dst = XEXP (dst, 0);
@@ -5184,7 +5187,7 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
     case FFS:
     case POPCOUNT:
       /* This is at most the number of bits in the mode.  */
-      nonzero = ((unsigned HOST_WIDE_INT) 2 << (floor_log2 (mode_width))) - 1;
+      nonzero = (HOST_WIDE_INT_UC (2) << (floor_log2 (mode_width))) - 1;
       break;
 
     case CLZ:

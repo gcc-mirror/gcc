@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                          (Hard Binding Version)                          --
 --                                                                          --
---          Copyright (C) 2004-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -326,16 +326,19 @@ private
    type LL_VUC is array (1 .. 16) of unsigned_char;
    for LL_VUC'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VUC, "vector_type");
+   pragma Universal_Aliasing (LL_VUC);
    pragma Suppress (All_Checks, LL_VUC);
 
    type LL_VSC is array (1 .. 16) of signed_char;
    for LL_VSC'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VSC, "vector_type");
+   pragma Universal_Aliasing (LL_VSC);
    pragma Suppress (All_Checks, LL_VSC);
 
    type LL_VBC is array (1 .. 16) of unsigned_char;
    for LL_VBC'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VBC, "vector_type");
+   pragma Universal_Aliasing (LL_VBC);
    pragma Suppress (All_Checks, LL_VBC);
 
    ---------------------------
@@ -345,16 +348,19 @@ private
    type LL_VUS is array (1 .. 8) of unsigned_short;
    for LL_VUS'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VUS, "vector_type");
+   pragma Universal_Aliasing (LL_VUS);
    pragma Suppress (All_Checks, LL_VUS);
 
    type LL_VSS is array (1 .. 8) of signed_short;
    for LL_VSS'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VSS, "vector_type");
+   pragma Universal_Aliasing (LL_VSS);
    pragma Suppress (All_Checks, LL_VSS);
 
    type LL_VBS is array (1 .. 8) of unsigned_short;
    for LL_VBS'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VBS, "vector_type");
+   pragma Universal_Aliasing (LL_VBS);
    pragma Suppress (All_Checks, LL_VBS);
 
    -------------------------
@@ -364,16 +370,19 @@ private
    type LL_VUI is array (1 .. 4) of unsigned_int;
    for LL_VUI'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VUI, "vector_type");
+   pragma Universal_Aliasing (LL_VUI);
    pragma Suppress (All_Checks, LL_VUI);
 
    type LL_VSI is array (1 .. 4) of signed_int;
    for LL_VSI'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VSI, "vector_type");
+   pragma Universal_Aliasing (LL_VSI);
    pragma Suppress (All_Checks, LL_VSI);
 
    type LL_VBI is array (1 .. 4) of unsigned_int;
    for LL_VBI'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VBI, "vector_type");
+   pragma Universal_Aliasing (LL_VBI);
    pragma Suppress (All_Checks, LL_VBI);
 
    ---------------------------
@@ -383,6 +392,7 @@ private
    type LL_VF is array (1 .. 4) of Float;
    for LL_VF'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VF, "vector_type");
+   pragma Universal_Aliasing (LL_VF);
    pragma Suppress (All_Checks, LL_VF);
 
    ---------------------------
@@ -392,6 +402,7 @@ private
    type LL_VP is array (1 .. 8) of pixel;
    for LL_VP'Alignment use VECTOR_ALIGNMENT;
    pragma Machine_Attribute (LL_VP, "vector_type");
+   pragma Universal_Aliasing (LL_VP);
    pragma Suppress (All_Checks, LL_VP);
 
    ------------------------------------

@@ -1,5 +1,5 @@
 ;; Machine Description for TI PRU.
-;; Copyright (C) 2014-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2024 Free Software Foundation, Inc.
 ;; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;; Based on the NIOS2 GCC port.
 ;;
@@ -248,8 +248,8 @@
 ; Forcing DI reg alignment (akin to microblaze's HARD_REGNO_MODE_OK)
 ; does not seem efficient, and will violate TI ABI.
 (define_insn "mov<mode>"
-  [(set (match_operand:MOV64 0 "nonimmediate_operand" "=m,r,r,r,r,r,r")
-	(match_operand:MOV64 1 "general_operand"      "r,m,Um,r,T,J,nF"))]
+  [(set (match_operand:MOV64 0 "nonimmediate_operand" "=m,r,r,r,r,r,r,r")
+	(match_operand:MOV64 1 "general_operand"      "r,m,Z,Um,r,T,J,nF"))]
   ""
 {
   switch (which_alternative)
@@ -259,8 +259,10 @@
     case 1:
       return "lb%B1o\\t%b0, %1, %S1";
     case 2:
-      return "fill\\t%F0, 8";
+      return "zero\\t%F0, 8";
     case 3:
+      return "fill\\t%F0, 8";
+    case 4:
       /* careful with overlapping source and destination regs.  */
       gcc_assert (GP_REG_P (REGNO (operands[0])));
       gcc_assert (GP_REG_P (REGNO (operands[1])));
@@ -268,18 +270,18 @@
 	return "mov\\t%N0, %N1\;mov\\t%F0, %F1";
       else
 	return "mov\\t%F0, %F1\;mov\\t%N0, %N1";
-    case 4:
-      return "ldi\\t%F0, %%pmem(%1)\;ldi\\t%N0, 0";
     case 5:
-      return "ldi\\t%F0, %1\;ldi\\t%N0, 0";
+      return "ldi\\t%F0, %%pmem(%1)\;ldi\\t%N0, 0";
     case 6:
+      return "ldi\\t%F0, %1\;ldi\\t%N0, 0";
+    case 7:
       return "ldi32\\t%F0, %w1\;ldi32\\t%N0, %W1";
     default:
       gcc_unreachable ();
   }
 }
-  [(set_attr "type" "st,ld,alu,alu,alu,alu,alu")
-   (set_attr "length" "4,4,4,8,8,8,16")])
+  [(set_attr "type" "st,ld,alu,alu,alu,alu,alu,alu")
+   (set_attr "length" "4,4,4,4,8,8,8,16")])
 
 ;
 ; load_multiple pattern(s).
@@ -484,22 +486,108 @@
 })
 
 ;; Bit extraction
-;; We define it solely to allow combine to choose SImode
+;; One reason to define it is to allow combine to choose SImode
 ;; for word mode when trying to match our cbranch_qbbx_* insn.
 ;;
 ;; Check how combine.cc:make_extraction() uses
 ;; get_best_reg_extraction_insn() to select the op size.
-(define_insn "extzv<mode>"
-  [(set (match_operand:QISI 0 "register_operand"	"=r")
+(define_expand "extzv<mode>"
+  [(set (match_operand:QISI 0 "register_operand")
 	  (zero_extract:QISI
-	   (match_operand:QISI 1 "register_operand"	"r")
-	   (match_operand:QISI 2 "const_int_operand"	"i")
-	   (match_operand:QISI 3 "const_int_operand"	"i")))]
+	   (match_operand:QISI 1 "register_operand")
+	   (match_operand:QISI 2 "const_int_operand")
+	   (match_operand:QISI 3 "const_int_operand")))]
   ""
-  "lsl\\t%0, %1, (%S0 * 8 - %2 - %3)\;lsr\\t%0, %0, (%S0 * 8 - %2)"
-  [(set_attr "type" "complex")
-   (set_attr "length" "8")])
+{
+  const int nbits = INTVAL (operands[2]);
+  const int bitpos = INTVAL (operands[3]);
+  const int trailing_bits = GET_MODE_BITSIZE (<MODE>mode) - nbits - bitpos;
 
+  if (bitpos == 0 && nbits <= 7)
+    {
+      emit_insn (gen_and<mode>3 (operands[0],
+				 operands[1],
+				 gen_int_mode ((HOST_WIDE_INT_1U << nbits) - 1,
+					       <MODE>mode)));
+      DONE;
+    }
+
+  rtx src = operands[1];
+  if (trailing_bits != 0)
+    {
+      emit_insn (gen_ashl<mode>3 (operands[0],
+				  operands[1],
+				  GEN_INT (trailing_bits)));
+      src = operands[0];
+    }
+  emit_insn (gen_lshr<mode>3 (operands[0],
+			      src,
+			      GEN_INT (trailing_bits + bitpos)));
+  DONE;
+})
+
+;; Bit-field insert.
+(define_expand "insv<mode>"
+  [(set (zero_extract:QISI
+	  (match_operand:QISI 0 "register_operand")
+	  (match_operand:QISI 1 "const_int_operand")
+	  (match_operand:QISI 2 "const_int_operand"))
+	(match_operand:QISI 3 "reg_or_ubyte_operand"))]
+  ""
+{
+  const int nbits = INTVAL (operands[1]);
+  const int bitpos = INTVAL (operands[2]);
+
+  if (nbits == 1)
+    {
+      rtx j;
+      rtx src = gen_reg_rtx (<MODE>mode);
+      rtx dst = operands[0];
+
+      emit_move_insn (src, operands[3]);
+
+      emit_insn (gen_and<mode>3 (dst,
+				 dst,
+				 gen_int_mode (~(HOST_WIDE_INT_1U << bitpos),
+					       <MODE>mode)));
+
+      rtx_code_label *skip_set_label = gen_label_rtx ();
+      j = emit_jump_insn (gen_cbranch_qbbx_eq<mode><mode><mode>4 (
+						  src,
+						  GEN_INT (0),
+						  skip_set_label));
+      JUMP_LABEL (j) = skip_set_label;
+      LABEL_NUSES (skip_set_label)++;
+
+      emit_insn (gen_ior<mode>3 (dst,
+				 dst,
+				 gen_int_mode (HOST_WIDE_INT_1U << bitpos,
+					       <MODE>mode)));
+      emit_label (skip_set_label);
+
+      DONE;
+    }
+
+  /* Explicitly expand in order to avoid using word_mode for PRU, and instead
+     use SI and HI modes as applicable.  */
+  rtx dst = operands[0];
+  rtx src = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_and<mode>3 (src,
+			     force_reg (<MODE>mode, operands[3]),
+			     gen_int_mode ((HOST_WIDE_INT_1U << nbits) - 1,
+					   <MODE>mode)));
+  if (bitpos > 0)
+    emit_insn (gen_ashl<mode>3 (src, src, gen_int_mode (bitpos, <MODE>mode)));
+
+  HOST_WIDE_INT vmask = ~(((HOST_WIDE_INT_1U << nbits) - 1) << bitpos);
+  emit_insn (gen_and<mode>3 (dst,
+			     dst,
+			     gen_int_mode (vmask, <MODE>mode)));
+
+  emit_insn (gen_ior<mode>3 (dst, dst, src));
+
+  DONE;
+})
 
 
 ;; Arithmetic Operations
@@ -782,7 +870,8 @@
       JUMP_LABEL (j) = skip_hiset_label;
       LABEL_NUSES (skip_hiset_label)++;
 
-      emit_insn (gen_iorsi3 (dst_lo, dst_lo, GEN_INT (1 << 31)));
+      const HOST_WIDE_INT bit31_mask = HOST_WIDE_INT_1U << 31;
+      emit_insn (gen_iorsi3 (dst_lo, dst_lo, GEN_INT (bit31_mask)));
       emit_label (skip_hiset_label);
       emit_insn (gen_rtx_SET (dst_hi,
 			      gen_rtx_LSHIFTRT (SImode, src_hi, const1_rtx)));
@@ -871,7 +960,8 @@
       JUMP_LABEL (j) = skip_hiset_label;
       LABEL_NUSES (skip_hiset_label)++;
 
-      emit_insn (gen_iorsi3 (dst_hi, dst_hi, GEN_INT (1 << 0)));
+      const HOST_WIDE_INT bit0_mask = HOST_WIDE_INT_1U << 0;
+      emit_insn (gen_iorsi3 (dst_hi, dst_hi, GEN_INT (bit0_mask)));
       emit_label (skip_hiset_label);
       emit_insn (gen_rtx_SET (dst_lo,
 			      gen_rtx_ASHIFT (SImode, src_lo, const1_rtx)));

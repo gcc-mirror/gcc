@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2023 Free Software Foundation, Inc.
+// Copyright (C) 2016-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,15 +16,17 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++17 } }
+// { dg-add-options no_pch }
 
 #include <tuple>
-#include <testsuite_hooks.h>
 
 #ifndef __cpp_lib_make_from_tuple
-# error "Feature-test macro for make_from_tuple missing."
+# error "Feature-test macro for make_from_tuple missing in <tuple>"
 #elif __cpp_lib_make_from_tuple < 201606
-# error "Feature-test macro for make_from_tuple has the wrong value."
+# error "Feature-test macro for make_from_tuple has the wrong value in <tuple>"
 #endif
+
+#include <testsuite_hooks.h>
 
 template <class T, class U, class V>
 struct ThreeParam

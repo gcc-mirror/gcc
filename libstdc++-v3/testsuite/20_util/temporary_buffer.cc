@@ -1,6 +1,6 @@
 // 2002-01-24  Phil Edwards  <pme@gcc.gnu.org>
 
-// Copyright (C) 2002-2023 Free Software Foundation, Inc.
+// Copyright (C) 2002-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,7 @@ int main(void)
       VERIFY( results.first == 0 );
   }
 
-  std::return_temporary_buffer(results.first);
+  std::return_temporary_buffer(results.first); // { dg-warning "deprecated" "" { target c++17 } }
 
   return 0;
 }

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d -fno-vect-cost-model --param riscv-autovec-preference=scalable -fdump-tree-optimized-details" } */
+/* { dg-additional-options "-march=rv32gcv_zvfh -mabi=ilp32d -fno-vect-cost-model -mrvv-vector-bits=scalable -fdump-tree-optimized-details" } */
 
 #include <stdint-gcc.h>
 

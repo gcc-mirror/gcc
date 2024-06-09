@@ -6,7 +6,7 @@
 
 /* { dg-do compile } */
 /* { dg-skip-if "doubles are floats,ints are 16bits" { "avr-*-*" } } */
-/* { dg-options " -std=c99 -pedantic -Wconversion " } */
+/* { dg-options " -std=c99 -pedantic -Wconversion -fno-trapping-math" } */
 /* { dg-require-effective-target int32plus } */
 /* { dg-require-effective-target double64plus } */
 

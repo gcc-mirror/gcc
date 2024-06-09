@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2023, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2024, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,12 +36,12 @@
 
 with Interfaces.C;
 
-with System.Multiprocessors;
-with System.Tasking.Debug;
 with System.Interrupt_Management;
+with System.Multiprocessors;
 with System.OS_Constants;
 with System.OS_Primitives;
 with System.Task_Info;
+with System.Tasking.Debug;
 
 pragma Warnings (Off);
 with System.OS_Lib;
@@ -58,12 +58,14 @@ package body System.Task_Primitives.Operations is
    package OSC renames System.OS_Constants;
    package SSL renames System.Soft_Links;
 
-   use System.Tasking.Debug;
-   use System.Tasking;
    use Interfaces.C;
+
    use System.OS_Interface;
-   use System.Parameters;
+   use System.OS_Locks;
    use System.OS_Primitives;
+   use System.Parameters;
+   use System.Tasking;
+   use System.Tasking.Debug;
 
    ----------------
    -- Local Data --
@@ -422,6 +424,7 @@ package body System.Task_Primitives.Operations is
 
    begin
       Environment_Task_Id := Environment_Task;
+      Environment_Task.Common.LL.Thread := thr_self;
 
       Interrupt_Management.Initialize;
 
@@ -866,8 +869,7 @@ package body System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : Task_Id) is
    begin
-      Self_ID.Common.LL.Thread := thr_self;
-      Self_ID.Common.LL.LWP    := lwp_self;
+      Self_ID.Common.LL.LWP := lwp_self;
 
       Set_Task_Affinity (Self_ID);
       Specific.Set (Self_ID);
@@ -995,11 +997,11 @@ package body System.Task_Primitives.Operations is
          Opts := THR_DETACHED + THR_BOUND;
       end if;
 
-      --  Note: the use of Unrestricted_Access in the following call is needed
-      --  because otherwise we have an error of getting a access-to-volatile
-      --  value which points to a non-volatile object. But in this case it is
-      --  safe to do this, since we know we have no problems with aliasing and
-      --  Unrestricted_Access bypasses this check.
+      --  The write to T.Common.LL.Thread is not racy with regard to the
+      --  created thread because the created thread will not access it until
+      --  we release the RTS lock (or the current task's lock when
+      --  Restricted.Stages is used). One can verify that by inspecting the
+      --  Task_Wrapper procedures.
 
       Result :=
         thr_create
@@ -1008,7 +1010,7 @@ package body System.Task_Primitives.Operations is
            Thread_Body_Access (Wrapper),
            To_Address (T),
            Opts,
-           T.Common.LL.Thread'Unrestricted_Access);
+           T.Common.LL.Thread'Access);
 
       Succeeded := Result = 0;
       pragma Assert
@@ -1397,7 +1399,7 @@ package body System.Task_Primitives.Operations is
       P := Self_ID.Common.LL.Locks;
 
       if P /= null then
-         L.Next := P;
+         L.Next := To_RTS_Lock_Ptr (P);
       end if;
 
       Self_ID.Common.LL.Locking := null;
@@ -1438,7 +1440,7 @@ package body System.Task_Primitives.Operations is
 
       Self_ID.Common.LL.L.Owner := null;
       P := Self_ID.Common.LL.Locks;
-      Self_ID.Common.LL.Locks := Self_ID.Common.LL.Locks.Next;
+      Self_ID.Common.LL.Locks := To_Lock_Ptr (Self_ID.Common.LL.Locks.Next);
       P.Next := null;
       return True;
    end Check_Sleep;
@@ -1466,7 +1468,7 @@ package body System.Task_Primitives.Operations is
       P := Self_ID.Common.LL.Locks;
 
       if P /= null then
-         L.Next := P;
+         L.Next := To_RTS_Lock_Ptr (P);
       end if;
 
       Self_ID.Common.LL.Locking := null;
@@ -1547,7 +1549,7 @@ package body System.Task_Primitives.Operations is
 
       L.Owner := null;
       P := Self_ID.Common.LL.Locks;
-      Self_ID.Common.LL.Locks := Self_ID.Common.LL.Locks.Next;
+      Self_ID.Common.LL.Locks := To_Lock_Ptr (Self_ID.Common.LL.Locks.Next);
       P.Next := null;
       return True;
    end Check_Unlock;

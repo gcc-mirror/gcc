@@ -15,6 +15,9 @@ typedef struct c_parser
   short tokens_avail;
 }
 c_parser;
+int c_parser_next_token_is_keyword (c_parser *, enum rid);
+tree chainon (int, tree);
+int c_parser_attributes (c_parser *);
 __inline__ c_token *
 c_parser_peek_token (c_parser * parser)
 {

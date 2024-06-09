@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo<A = f32>(A);
 
 fn main() {

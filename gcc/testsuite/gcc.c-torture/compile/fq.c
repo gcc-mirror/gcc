@@ -1,3 +1,4 @@
+void
 expand_to_ascii (int *i, int *o)
 {
   unsigned x, y, out;

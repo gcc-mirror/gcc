@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -133,6 +133,8 @@ enum class TOK : unsigned char
     // Leaf operators
     identifier,
     string_,
+    interpolated,
+    hexadecimalString,
     this_,
     super_,
     error,
@@ -389,6 +391,7 @@ enum class EXP : unsigned char
     // Leaf operators
     identifier,
     string_,
+    interpolated,
     this_,
     super_,
     halt,
@@ -460,7 +463,12 @@ struct Token
         real_t floatvalue;
 
         struct
-        {   utf8_t *ustring;     // UTF8 string
+        {
+            union
+            {
+                utf8_t *ustring;     // UTF8 string
+                void *interpolatedSet;
+            };
             unsigned len;
             unsigned char postfix;      // 'c', 'w', 'd'
         };
@@ -468,10 +476,7 @@ struct Token
         Identifier *ident;
     };
 
-    void free();
-
     Token() : next(NULL) {}
-    int isKeyword();
     const char *toChars() const;
 
     static const char *toChars(TOK value);

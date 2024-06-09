@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,9 +70,9 @@ package System.Tasking is
    --         Unlock (Y);
 
    --  Locks with lower (smaller) level number cannot be locked
-   --  while holding a lock with a higher level number. (The level
+   --  while holding a lock with a higher level number.
 
-   --  1. System.Tasking.PO_Simple.Protection.L (any PO lock)
+   --  1. System.Tasking.Protected_Objects.Protection.L (any PO lock)
    --  2. System.Tasking.Initialization.Global_Task_Lock (in body)
    --  3. System.Task_Primitives.Operations.Single_RTS_Lock
    --  4. System.Tasking.Ada_Task_Control_Block.LL.L (any TCB lock)

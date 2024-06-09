@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -235,19 +235,26 @@ package Exp_Util is
    --  Pref'Constrained.
 
    procedure Build_Allocate_Deallocate_Proc
-     (N           : Node_Id;
-      Is_Allocate : Boolean);
+     (N    : Node_Id;
+      Mark : Node_Id := Empty);
    --  Create a custom Allocate/Deallocate to be associated with an allocation
-   --  or deallocation:
+   --  or deallocation for:
    --
    --    1) controlled objects
    --    2) class-wide objects
-   --    3) any kind of object on a subpool
+   --    3) any kind of objects on a subpool
    --
-   --  N must be an allocator or the declaration of a temporary variable which
-   --  represents the expression of the original allocator node, otherwise N
-   --  must be a free statement. If flag Is_Allocate is set, the generated
-   --  routine is allocate, deallocate otherwise.
+   --  Moreover, for objects that need finalization, generate the attachment
+   --  actions to resp. detachment actions from the appropriate collection.
+   --
+   --  N must be an allocator or the declaration of a temporary initialized by
+   --  an allocator or an assignment of an allocator to a temporary, otherwise
+   --  N must be a free statement of a temporary.
+   --
+   --  Mark must be set to a mark past the initialization of the allocator if
+   --  it is initialized (the allocator itself is OK) or left empty otherwise.
+   --  It is used to determine the place where objects that need finalization
+   --  can be attached to the appropriate collection.
 
    function Build_Abort_Undefer_Block
      (Loc     : Source_Ptr;
@@ -363,35 +370,6 @@ package Exp_Util is
 
    --  This should be used when Typ can potentially be large, to avoid putting
    --  too much pressure on the primary stack, for example with storage models.
-
-   procedure Build_Transient_Object_Statements
-     (Obj_Decl     : Node_Id;
-      Fin_Call     : out Node_Id;
-      Hook_Assign  : out Node_Id;
-      Hook_Clear   : out Node_Id;
-      Hook_Decl    : out Node_Id;
-      Ptr_Decl     : out Node_Id;
-      Finalize_Obj : Boolean := True);
-   --  Subsidiary to the processing of transient objects in transient scopes,
-   --  if expressions, case expressions, and expression_with_action nodes.
-   --  Obj_Decl denotes the declaration of the transient object. Generate the
-   --  following nodes:
-   --
-   --    * Fin_Call - the call to [Deep_]Finalize which cleans up the transient
-   --    object if flag Finalize_Obj is set to True, or finalizes the hook when
-   --    the flag is False.
-   --
-   --    * Hook_Assign - the assignment statement which captures a reference to
-   --    the transient object in the hook.
-   --
-   --    * Hook_Clear - the assignment statement which resets the hook to null
-   --
-   --    * Hook_Decl - the declaration of the hook object
-   --
-   --    * Ptr_Decl - the full type declaration of the hook type
-   --
-   --  These nodes are inserted in specific places depending on the context by
-   --  the various Process_Transient_xxx routines.
 
    procedure Check_Float_Op_Overflow (N : Node_Id);
    --  Called where we could have a floating-point binary operator where we
@@ -596,6 +574,9 @@ package Exp_Util is
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
 
+   function Find_Last_Init (Decl : Node_Id) return Node_Id;
+   --  Find the last initialization call related to object declaration Decl
+
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.
    --  This function allows the use of a primitive operation which is not
@@ -669,7 +650,7 @@ package Exp_Util is
    --  of the same expression won't generate multiple side effects, whereas
    --  Force_Evaluation further guarantees that all evaluations will yield
    --  the same result. If Mode is Relaxed then calls to this subprogram have
-   --  no effect if Exp is side-effect free; if Mode is Strict and Exp is not
+   --  no effect if Exp is side-effect-free; if Mode is Strict and Exp is not
    --  a static expression then no side-effect check is performed on Exp and
    --  temporaries are unconditionally generated.
    --
@@ -753,9 +734,6 @@ package Exp_Util is
    --  chain, counting only entries in the current scope. If an entity is not
    --  overloaded, the returned number will be one.
 
-   function Inside_Init_Proc return Boolean;
-   --  Returns True if current scope is within an init proc
-
    function In_Library_Level_Package_Body (Id : Entity_Id) return Boolean;
    --  Given an arbitrary entity, determine whether it appears at the library
    --  level of a package body.
@@ -765,6 +743,13 @@ package Exp_Util is
    --  function determines if the statement appears in a context that is
    --  unconditionally executed, i.e. it is not within a loop or a conditional
    --  or a case statement etc.
+
+   function Init_Proc_Level_Formal (Proc : Entity_Id) return Entity_Id;
+   --  Return the extra formal of an initialization procedure corresponding to
+   --  the level of the object being initialized, or Empty if none is present.
+
+   function Inside_Init_Proc return Boolean;
+   --  Return True if current scope is within an init proc
 
    function Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
    --  Return a suitable standard integer type containing at least S bits and
@@ -941,9 +926,13 @@ package Exp_Util is
    function Make_Tag_Assignment_From_Type
      (Loc    : Source_Ptr;
       Target : Node_Id;
-      Typ    : Entity_Id) return Node_Id;
+      Typ    : Entity_Id) return Node_Id
+   with
+     Pre => (not Is_Concurrent_Type (Typ));
    --  Return an assignment of the tag of tagged type Typ to prefix Target,
-   --  which must be a record object of a descendant of Typ.
+   --  which must be a record object of a descendant of Typ. Typ cannot be a
+   --  concurrent type; for concurrent types, the corresponding record types
+   --  should be passed to this function instead.
 
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
@@ -1070,12 +1059,12 @@ package Exp_Util is
    --  call and is analyzed and resolved on return. Name_Req may only be set to
    --  True if Exp has the form of a name, and the effect is to guarantee that
    --  any replacement maintains the form of name. If Renaming_Req is set to
-   --  True, the routine produces an object renaming reclaration capturing the
+   --  True, the routine produces an object renaming declaration capturing the
    --  expression. If Variable_Ref is set to True, a variable is considered as
    --  side effect (used in implementing Force_Evaluation). Note: after call to
    --  Remove_Side_Effects, it is safe to call New_Copy_Tree to obtain a copy
    --  of the resulting expression. If Check_Side_Effects is set to True then
-   --  no action is performed if Exp is known to be side-effect free.
+   --  no action is performed if Exp is known to be side-effect-free.
    --
    --  Related_Id denotes the entity of the context where Expr appears. Flags
    --  Is_Low_Bound and Is_High_Bound specify whether the expression to check
@@ -1206,7 +1195,7 @@ package Exp_Util is
      (L            : List_Id;
       Name_Req     : Boolean := False;
       Variable_Ref : Boolean := False) return Boolean;
-   --  Determines if all elements of the list L are side-effect free. Name_Req
+   --  Determines if all elements of the list L are side-effect-free. Name_Req
    --  and Variable_Ref are as described above.
 
    procedure Silly_Boolean_Array_Not_Test (N : Node_Id; T : Entity_Id);
@@ -1255,9 +1244,10 @@ package Exp_Util is
    --  extension to verify legality rules on inherited conditions.
 
    function Within_Case_Or_If_Expression (N : Node_Id) return Boolean;
-   --  Determine whether arbitrary node N is immediately within a case or an if
-   --  expression. The criterion is whether temporaries created by the actions
-   --  attached to N need to outlive an enclosing case or if expression.
+   --  Determine whether arbitrary node N is immediately within a dependent
+   --  expression of a case or an if expression. The criterion is whether
+   --  temporaries created by the actions attached to N need to outlive an
+   --  enclosing case or if expression.
 
 private
    pragma Inline (Duplicate_Subexpr);

@@ -709,6 +709,8 @@ glibgo_toolexecdir
 WERROR
 WARN_FLAGS
 CC_FOR_BUILD
+ENABLE_DARWIN_AT_RPATH_FALSE
+ENABLE_DARWIN_AT_RPATH_TRUE
 enable_static
 enable_shared
 CPP
@@ -2609,7 +2611,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
-libtool_VERSION=22:0:0
+libtool_VERSION=23:0:0
 
 
 # Default to --enable-multilib
@@ -11545,7 +11547,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11548 "configure"
+#line 11550 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11651,7 +11653,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11654 "configure"
+#line 11656 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13780,6 +13782,14 @@ CC="$lt_save_CC"
 
 
 
+ if test x$enable_darwin_at_rpath = xyes; then
+  ENABLE_DARWIN_AT_RPATH_TRUE=
+  ENABLE_DARWIN_AT_RPATH_FALSE='#'
+else
+  ENABLE_DARWIN_AT_RPATH_TRUE='#'
+  ENABLE_DARWIN_AT_RPATH_FALSE=
+fi
+
 
 CC_FOR_BUILD=${CC_FOR_BUILD:-gcc}
 
@@ -14097,6 +14107,10 @@ fi
 
 
 
+if test "${GOOS}" = "unknown"; then
+   as_fn_error $? "\"could not determine GOOS from ${host}\"" "$LINENO" 5
+fi
+
 USE_DEJAGNU=no
 case ${host} in
   *-*-rtems*) USE_DEJAGNU=yes ;;
@@ -14329,6 +14343,10 @@ esac
 
 
 
+if test "${GOARCH}" = "unknown"; then
+   as_fn_error $? "\"could not determine GOARCH from ${host}\"" "$LINENO" 5
+fi
+
  if test "$GOARCH" = "386" -o "$GOARCH" = "amd64" -o "$GOARCH" = "amd64p32"; then
   LIBGO_IS_X86_TRUE=
   LIBGO_IS_X86_FALSE='#'
@@ -14398,6 +14416,7 @@ esac
 
 
   test -z "$HWCAP_CFLAGS" && HWCAP_CFLAGS=''
+
 
   # Restrict the test to Solaris, other assemblers (e.g. AIX as) have -nH
   # with a different meaning.
@@ -16387,6 +16406,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_DARWIN_AT_RPATH_TRUE}" && test -z "${ENABLE_DARWIN_AT_RPATH_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_DARWIN_AT_RPATH\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USE_LIBFFI_TRUE}" && test -z "${USE_LIBFFI_FALSE}"; then

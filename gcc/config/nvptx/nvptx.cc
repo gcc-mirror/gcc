@@ -1,5 +1,5 @@
 /* Target code for NVPTX.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -335,8 +335,9 @@ nvptx_option_override (void)
   init_machine_status = nvptx_init_machine_status;
 
   /* Via nvptx 'OPTION_DEFAULT_SPECS', '-misa' always appears on the command
-     line.  */
-  gcc_checking_assert (OPTION_SET_P (ptx_isa_option));
+     line; but handle the case that the compiler is not run via the driver.  */
+  if (!OPTION_SET_P (ptx_isa_option))
+    fatal_error (UNKNOWN_LOCATION, "%<-march=%> must be specified");
 
   handle_ptx_version_option ();
 
@@ -720,7 +721,7 @@ nvptx_function_arg_advance (cumulative_args_t cum_v, const function_arg_info &)
 
 /* Implement TARGET_FUNCTION_ARG_BOUNDARY.
 
-   For nvptx This is only used for varadic args.  The type has already
+   For nvptx This is only used for variadic args.  The type has already
    been promoted and/or converted to invisible reference.  */
 
 static unsigned
@@ -1548,7 +1549,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   if (!TARGET_SOFT_STACK)
     {
       /* Declare a local var for outgoing varargs.  */
-      if (cfun->machine->has_varadic)
+      if (cfun->machine->has_variadic)
 	init_frame (file, STACK_POINTER_REGNUM,
 		    UNITS_PER_WORD, crtl->outgoing_args_size);
 
@@ -1558,7 +1559,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 	init_frame (file, FRAME_POINTER_REGNUM, alignment,
 		    ROUND_UP (sz, GET_MODE_SIZE (DImode)));
     }
-  else if (need_frameptr || cfun->machine->has_varadic || cfun->calls_alloca
+  else if (need_frameptr || cfun->machine->has_variadic || cfun->calls_alloca
 	   || (cfun->machine->has_simtreg && !crtl->is_leaf))
     init_softstack_frame (file, alignment, sz);
 
@@ -1790,18 +1791,18 @@ nvptx_get_drap_rtx (void)
    argument to the next call.  */
 
 static void
-nvptx_call_args (rtx arg, tree fntype)
+nvptx_call_args (cumulative_args_t, rtx arg, tree fntype)
 {
   if (!cfun->machine->doing_call)
     {
       cfun->machine->doing_call = true;
-      cfun->machine->is_varadic = false;
+      cfun->machine->is_variadic = false;
       cfun->machine->num_args = 0;
 
       if (fntype && stdarg_p (fntype))
 	{
-	  cfun->machine->is_varadic = true;
-	  cfun->machine->has_varadic = true;
+	  cfun->machine->is_variadic = true;
+	  cfun->machine->has_variadic = true;
 	  cfun->machine->num_args++;
 	}
     }
@@ -1818,7 +1819,7 @@ nvptx_call_args (rtx arg, tree fntype)
    information we recorded.  */
 
 static void
-nvptx_end_call_args (void)
+nvptx_end_call_args (cumulative_args_t)
 {
   cfun->machine->doing_call = false;
   free_EXPR_LIST_list (&cfun->machine->call_args);
@@ -1871,7 +1872,7 @@ nvptx_expand_call (rtx retval, rtx address)
     }
 
   unsigned nargs = cfun->machine->num_args;
-  if (cfun->machine->is_varadic)
+  if (cfun->machine->is_variadic)
     {
       varargs = gen_reg_rtx (Pmode);
       emit_move_insn (varargs, stack_pointer_rtx);
@@ -5833,16 +5834,15 @@ nvptx_handle_shared_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 }
 
 /* Table of valid machine attributes.  */
-static const struct attribute_spec nvptx_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (nvptx_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "kernel", 0, 0, true, false,  false, false, nvptx_handle_kernel_attribute,
     NULL },
   { "shared", 0, 0, true, false,  false, false, nvptx_handle_shared_attribute,
-    NULL },
-  { NULL, 0, 0, false, false, false, false, NULL, NULL }
-};
+    NULL }
+});
 
 /* Limit vector alignments to BIGGEST_ALIGNMENT.  */
 
@@ -5918,7 +5918,13 @@ nvptx_record_offload_symbol (tree decl)
 	/* OpenMP offloading does not set this attribute.  */
 	tree dims = attr ? TREE_VALUE (attr) : NULL_TREE;
 
-	fprintf (asm_out_file, "//:FUNC_MAP \"%s\"",
+	fprintf (asm_out_file, "//:");
+	if (lookup_attribute ("omp declare target indirect",
+			      DECL_ATTRIBUTES (decl)))
+	  fprintf (asm_out_file, "IND_FUNC_MAP");
+	else
+	  fprintf (asm_out_file, "FUNC_MAP");
+	fprintf (asm_out_file, " \"%s\"",
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
 
 	for (; dims; dims = TREE_CHAIN (dims))
@@ -6397,7 +6403,8 @@ nvptx_omp_device_kind_arch_isa (enum omp_device_kind_arch_isa trait,
     case omp_device_kind:
       return strcmp (name, "gpu") == 0;
     case omp_device_arch:
-      return strcmp (name, "nvptx") == 0;
+      return (strcmp (name, "nvptx") == 0
+	      || (TARGET_ABI64 && strcmp (name, "nvptx64") == 0));
     case omp_device_isa:
 #define NVPTX_SM(XX, SEP)				\
       {							\
@@ -7784,6 +7791,9 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name, tree value)
 
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION nvptx_libc_has_function
+
+#undef TARGET_HAVE_STRUB_SUPPORT_FOR
+#define TARGET_HAVE_STRUB_SUPPORT_FOR hook_bool_tree_false
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

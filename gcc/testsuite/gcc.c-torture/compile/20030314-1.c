@@ -4,7 +4,7 @@
 /* Verify that the tree inliner doesn't mess up the types
    when passing the value of read-only constant arguments.  */
 
-static inline bar(const short int xs, const short int xe)
+static inline void bar(const short int xs, const short int xe)
 {
   if (xe && (xs < xe))
     ;

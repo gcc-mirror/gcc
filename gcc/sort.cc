@@ -1,5 +1,5 @@
 /* Platform-independent deterministic sort function.
-   Copyright (C) 2018-2023 Free Software Foundation, Inc.
+   Copyright (C) 2018-2024 Free Software Foundation, Inc.
    Contributed by Alexander Monakov.
 
 This file is part of GCC.
@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
    - deterministic (but not necessarily stable)
    - fast, especially for common cases (0-5 elements of size 8 or 4)
 
-   The implementation uses a network sort for up to 5 elements and
+   The implementation uses sorting networks for up to 5 elements and
    a merge sort on top of that.  Neither stage has branches depending on
    comparator result, trading extra arithmetic for branch mispredictions.  */
 
@@ -53,7 +53,7 @@ struct sort_ctx
   char   *out; // output buffer
   size_t n;    // number of elements
   size_t size; // element size
-  size_t nlim; // limit for network sort
+  size_t nlim; // limit for using sorting networks
 };
 
 /* Like sort_ctx, but for use with qsort_r-style comparators.  Several
@@ -151,7 +151,7 @@ cmp1 (char *e0, char *e1, sort_ctx *c)
   return x & (c->cmp (e0, e1) >> 31);
 }
 
-/* Execute network sort on 2 to 5 elements from IN, placing them into C->OUT.
+/* Apply a sorting network to 2 to 5 elements from IN, placing them into C->OUT.
    IN may be equal to C->OUT, in which case elements are sorted in place.  */
 template<typename sort_ctx>
 static void

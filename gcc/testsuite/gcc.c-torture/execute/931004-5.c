@@ -1,9 +1,13 @@
+void abort (void);
+void exit (int);
+
 struct tiny
 {
   short c;
   short d;
 };
 
+void
 f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
 {
   if (x.c != 10)
@@ -25,7 +29,8 @@ f (int n, struct tiny x, struct tiny y, struct tiny z, long l)
     abort ();
 }
 
-main ()
+int
+main (void)
 {
   struct tiny x[3];
   x[0].c = 10;

@@ -17,6 +17,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-parse.h"
 #include "rust-linemap.h"
 #include "rust-diagnostics.h"
+#include "rust-token.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 
@@ -27,7 +29,7 @@ extract_module_path (const AST::AttrVec &inner_attrs,
   AST::Attribute path_attr = AST::Attribute::create_empty ();
   for (const auto &attr : inner_attrs)
     {
-      if (attr.get_path ().as_string () == "path")
+      if (attr.get_path ().as_string () == Values::Attributes::PATH)
 	{
 	  path_attr = attr;
 	  break;
@@ -47,7 +49,7 @@ extract_module_path (const AST::AttrVec &inner_attrs,
 
   for (const auto &attr : outer_attrs)
     {
-      if (attr.get_path ().as_string () == "path")
+      if (attr.get_path ().as_string () == Values::Attributes::PATH)
 	{
 	  path_attr = attr;
 	  break;
@@ -127,7 +129,7 @@ get_front_ptr (const std::vector<std::unique_ptr<T>> &values)
 static bool
 peculiar_fragment_match_compatible_fragment (
   const AST::MacroFragSpec &last_spec, const AST::MacroFragSpec &spec,
-  Location match_locus)
+  location_t match_locus)
 {
   static std::unordered_map<AST::MacroFragSpec::Kind,
 			    std::vector<AST::MacroFragSpec::Kind>>
@@ -166,36 +168,71 @@ peculiar_fragment_match_compatible (const AST::MacroMatchFragment &last_match,
 	{MATCH_ARROW, COMMA, EQUAL, PIPE, SEMICOLON, COLON, RIGHT_ANGLE,
 	 RIGHT_SHIFT, LEFT_SQUARE, LEFT_CURLY, AS, WHERE}},
        {AST::MacroFragSpec::VIS,
-	{
-	  COMMA,
-	  IDENTIFIER /* FIXME: Other than `priv` */,
-	  LEFT_PAREN,
-	  LEFT_SQUARE,
-	  EXCLAM,
-	  ASTERISK,
-	  AMP,
-	  LOGICAL_AND,
-	  QUESTION_MARK,
-	  LIFETIME,
-	  LEFT_ANGLE,
-	  LEFT_SHIFT,
-	  SUPER,
-	  SELF,
-	  SELF_ALIAS,
-	  EXTERN_TOK,
-	  CRATE,
-	  UNDERSCORE,
-	  FOR,
-	  IMPL,
-	  FN_TOK,
-	  UNSAFE,
-	  TYPEOF,
-	  DYN
-	  // FIXME: Add Non kw identifiers
-	  // FIXME: Add $crate as valid
-	}}};
+	{COMMA,
+	 IDENTIFIER,
+	 LEFT_PAREN,
+	 LEFT_SQUARE,
+	 EXCLAM,
+	 ASTERISK,
+	 AMP,
+	 LOGICAL_AND,
+	 QUESTION_MARK,
+	 LIFETIME,
+	 LEFT_ANGLE,
+	 LEFT_SHIFT,
+	 UNDERSCORE,
+	 ABSTRACT,
+	 AS,
+	 ASYNC,
+	 AUTO,
+	 BECOME,
+	 BOX,
+	 BREAK,
+	 CONST,
+	 CONTINUE,
+	 CRATE,
+	 DO,
+	 DYN,
+	 ELSE,
+	 ENUM_KW,
+	 EXTERN_KW,
+	 FALSE_LITERAL,
+	 FINAL_KW,
+	 FN_KW,
+	 FOR,
+	 IF,
+	 IMPL,
+	 IN,
+	 LET,
+	 LOOP,
+	 MACRO,
+	 MATCH_KW,
+	 MOD,
+	 MOVE,
+	 MUT,
+	 OVERRIDE_KW,
+	 PUB,
+	 REF,
+	 RETURN_KW,
+	 SELF_ALIAS,
+	 SELF,
+	 STATIC_KW,
+	 STRUCT_KW,
+	 SUPER,
+	 TRAIT,
+	 TRUE_LITERAL,
+	 TRY,
+	 TYPE,
+	 TYPEOF,
+	 UNSAFE,
+	 UNSIZED,
+	 USE,
+	 VIRTUAL,
+	 WHERE,
+	 WHILE,
+	 YIELD}}};
 
-  Location error_locus = match.get_match_locus ();
+  location_t error_locus = match.get_match_locus ();
   std::string kind_str = "fragment";
   auto &allowed_toks = follow_set[last_match.get_frag_spec ().get_kind ()];
 
@@ -242,7 +279,7 @@ peculiar_fragment_match_compatible (const AST::MacroMatchFragment &last_match,
 	    delim_id = LEFT_CURLY;
 	    break;
 	  default:
-	    gcc_unreachable ();
+	    rust_unreachable ();
 	    break;
 	  }
 	if (contains (allowed_toks, delim_id))

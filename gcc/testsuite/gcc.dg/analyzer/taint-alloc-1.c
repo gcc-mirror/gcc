@@ -1,5 +1,3 @@
-// TODO: remove need for this option
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
 /* { dg-require-effective-target alloca } */
 
 #include "analyzer-decls.h"

@@ -1,5 +1,5 @@
 /* Subroutines common to both C and C++ pretty-printers.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -1650,6 +1650,17 @@ c_pretty_printer::postfix_expression (tree e)
       pp_c_right_bracket (this);
       break;
 
+    case OMP_ARRAY_SECTION:
+      postfix_expression (TREE_OPERAND (e, 0));
+      pp_c_left_bracket (this);
+      if (TREE_OPERAND (e, 1))
+	expression (TREE_OPERAND (e, 1));
+      pp_colon (this);
+      if (TREE_OPERAND (e, 2))
+	expression (TREE_OPERAND (e, 2));
+      pp_c_right_bracket (this);
+      break;
+
     case CALL_EXPR:
       {
 	call_expr_arg_iterator iter;
@@ -2316,6 +2327,7 @@ pp_c_cast_expression (c_pretty_printer *pp, tree e)
     case FIX_TRUNC_EXPR:
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
+    case EXCESS_PRECISION_EXPR:
       if (!location_wrapper_p (e))
 	pp_c_type_cast (pp, TREE_TYPE (e));
       pp_c_cast_expression (pp, TREE_OPERAND (e, 0));
@@ -2699,6 +2711,7 @@ c_pretty_printer::expression (tree e)
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
     case ARRAY_REF:
+    case OMP_ARRAY_SECTION:
     case CALL_EXPR:
     case COMPONENT_REF:
     case BIT_FIELD_REF:
@@ -2741,6 +2754,7 @@ c_pretty_printer::expression (tree e)
     case FIX_TRUNC_EXPR:
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
+    case EXCESS_PRECISION_EXPR:
       pp_c_cast_expression (this, e);
       break;
 

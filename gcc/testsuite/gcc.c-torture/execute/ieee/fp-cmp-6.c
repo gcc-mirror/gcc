@@ -4,8 +4,10 @@ double x = 1.0;
 
 extern void link_error (void);
 extern void abort (void);
+extern void exit (int);
 
-main ()
+int
+main (void)
 {
 #if ! defined (__vax__) && ! defined (_CRAY)
   /* NaN is an IEEE unordered operand.  All these test should be false.  */

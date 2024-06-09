@@ -10,6 +10,6 @@ foo (void)
   __builtin_memset (dst, 12, 19);
 }
 
-/* { dg-final { scan-assembler-times "vpbroadcastb" 1 } } */
+/* { dg-final { scan-assembler-times "vpbroadcastd" 1 } } */
 /* { dg-final { scan-assembler-times "vmovdqu8\[\\t \]+%xmm\[0-9\]+, \\(%\[\^,\]+\\)" 1 } } */
 /* { dg-final { scan-assembler-times "vmovd\[\\t \]+%xmm\[0-9\]+, 16\\(%\[\^,\]+\\)" 1 { xfail *-*-* } } } */

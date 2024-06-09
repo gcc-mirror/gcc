@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -19,11 +19,9 @@
 #ifndef RUST_HIR_TYPE_CHECK_BASE
 #define RUST_HIR_TYPE_CHECK_BASE
 
-#include "rust-diagnostics.h"
+#include "rust-hir-map.h"
 #include "rust-hir-type-check.h"
 #include "rust-name-resolver.h"
-#include "rust-hir-visitor.h"
-#include "rust-hir-map.h"
 
 namespace Rust {
 namespace Resolver {
@@ -34,24 +32,15 @@ class TypeCheckBase
 public:
   virtual ~TypeCheckBase () {}
 
-  static TyTy::BaseType *unify_site (HirId id, TyTy::TyWithLocation lhs,
-				     TyTy::TyWithLocation rhs,
-				     Location unify_locus);
-
-  static TyTy::BaseType *coercion_site (HirId id, TyTy::TyWithLocation lhs,
-					TyTy::TyWithLocation rhs,
-					Location coercion_locus);
-
-  static TyTy::BaseType *cast_site (HirId id, TyTy::TyWithLocation from,
-				    TyTy::TyWithLocation to,
-				    Location cast_locus);
-
 protected:
   TypeCheckBase ();
 
   TraitReference *resolve_trait_path (HIR::TypePath &);
 
-  TyTy::TypeBoundPredicate get_predicate_from_bound (HIR::TypePath &path);
+  TyTy::TypeBoundPredicate
+  get_predicate_from_bound (HIR::TypePath &path, HIR::Type *associated_self,
+			    BoundPolarity polarity
+			    = BoundPolarity::RegularBound);
 
   bool check_for_unconstrained (
     const std::vector<TyTy::SubstitutionParamMapping> &params_to_constrain,
@@ -60,14 +49,18 @@ protected:
     const TyTy::BaseType *reference);
 
   TyTy::BaseType *resolve_literal (const Analysis::NodeMapping &mappings,
-				   HIR::Literal &literal, Location locus);
+				   HIR::Literal &literal, location_t locus);
 
   TyTy::ADTType::ReprOptions parse_repr_options (const AST::AttrVec &attrs,
-						 Location locus);
+						 location_t locus);
 
   void resolve_generic_params (
-    const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+    const std::vector<std::unique_ptr<HIR::GenericParam> > &generic_params,
     std::vector<TyTy::SubstitutionParamMapping> &substitutions);
+
+  TyTy::TypeBoundPredicate
+  get_marker_predicate (Analysis::RustLangItem::ItemType item_type,
+			location_t locus);
 
   Analysis::Mappings *mappings;
   Resolver *resolver;

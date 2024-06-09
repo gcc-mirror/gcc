@@ -30,7 +30,7 @@ contains
 
     !$omp declare variant (f01) match (device={isa("avx512f")}) ! 4 or 8
     !$omp declare variant (f02) match (implementation={vendor(score(3):gnu)},device={kind(cpu)}) ! (1 or 2) + 3
-    !$omp declare variant (f03) match (user={condition(score(9):1)})
+    !$omp declare variant (f03) match (user={condition(score(9):.true.)})
     !$omp declare variant (f04) match (implementation={vendor(score(6):gnu)},device={kind(host)}) ! (1 or 2) + 6
     f05 = x
   end function

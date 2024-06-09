@@ -5,5 +5,5 @@ extern "rust-intrinsic" {
 }
 
 fn main() {
-    unsafe { not_an_intrinsic() }; // { dg-error "unknown builtin intrinsic: not_an_intrinsic" }
+    unsafe { not_an_intrinsic() }; // { dg-error "unrecognized intrinsic function: .not_an_intrinsic." }
 }

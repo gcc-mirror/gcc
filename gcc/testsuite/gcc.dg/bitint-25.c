@@ -1,6 +1,6 @@
 // PR c/102989
 // { dg-do compile { target bitint } }
-// { dg-options "-std=c11 -Wno-c11-c2x-compat -pedantic-errors" }
+// { dg-options "-std=c11 -Wno-c11-c23-compat -pedantic-errors" }
 
 _BitInt(63) a;
 signed _BitInt(15) b;

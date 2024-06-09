@@ -1,6 +1,6 @@
 (* m2configure.def exports configuration constants.
 
-Copyright (C) 2022-2023 Free Software Foundation, Inc.
+Copyright (C) 2022-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -41,38 +41,15 @@ PROCEDURE FullPathCPP () : ADDRESS ;
 
 
 (*
-   M2CLongRealFloat128 - return true if M2C_LONGREAL_FLOAT128
-                         is defined.
-                         Only one of M2CLongRealFloat128,
-                         M2CLongRealIBM128,
-                         M2CLongRealLongDouble will be set true.
+   TargetIEEEQuadDefault - return the value of TARGET_IEEEQUAD_DEFAULT.
+                           If it is undefined -1 is returned.
+                           A value of 0 indicates the default target long
+                           double uses the IBM 128 representation.
+                           A value of 1 indicates the default target long
+                           double (LONGREAL) is __float128.
 *)
 
-PROCEDURE M2CLongRealFloat128 () : BOOLEAN ;
-
-
-(*
-   M2CLongRealIBM128 - return true if M2C_LONGREAL_IBM128
-                       is defined.
-*)
-
-PROCEDURE M2CLongRealIBM128 () : BOOLEAN ;
-
-
-(*
-   M2CLongRealLongDouble - return true if M2C_LONGREAL_LONGDOUBLE
-                           is defined.  This is true if the LONGREAL
-                           maps onto the default gcc long double type.
-*)
-
-PROCEDURE M2CLongRealLongDouble () : BOOLEAN ;
-
-
-(*
-   M2CLongRealLongDoublePPC64LE - return true if the target is ppc64le.
-*)
-
-PROCEDURE M2CLongRealLongDoublePPC64LE () : BOOLEAN ;
+PROCEDURE TargetIEEEQuadDefault () : INTEGER ;
 
 
 END m2configure.

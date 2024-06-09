@@ -1,5 +1,5 @@
 /* Simple garbage collection for the GNU compiler.
-   Copyright (C) 1999-2023 Free Software Foundation, Inc.
+   Copyright (C) 1999-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -692,7 +692,7 @@ gt_pch_save (FILE *f)
     {
       gcc_assert ((uintptr_t) addr >= (uintptr_t) mmi.preferred_base
 		  && ((uintptr_t) addr + sizeof (void *)
-		      < (uintptr_t) mmi.preferred_base + mmi.size));
+		      <= (uintptr_t) mmi.preferred_base + mmi.size));
       if (addr == last_addr)
 	continue;
       if (last_addr == NULL)

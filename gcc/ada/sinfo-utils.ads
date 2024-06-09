@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 2020-2023, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2024, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -156,6 +156,22 @@ package Sinfo.Utils is
    procedure Set_Entity
      (N : N_Inclusive_Has_Entity; Val : Node_Id)
       renames Set_Entity_Or_Associated_Node;
+
+   ---------------------------------------------------
+   -- Aliases for Aggregate_Bounds_Or_Ancestor_Type --
+   ---------------------------------------------------
+
+   function Aggregate_Bounds (N : Node_Id) return Node_Id
+      renames Aggregate_Bounds_Or_Ancestor_Type;
+
+   function Ancestor_Type (N : Node_Id) return Node_Id
+      renames Aggregate_Bounds_Or_Ancestor_Type;
+
+   procedure Set_Aggregate_Bounds (N : Node_Id; Val : Node_Id)
+      renames Set_Aggregate_Bounds_Or_Ancestor_Type;
+
+   procedure Set_Ancestor_Type (N : Node_Id; Val : Node_Id)
+      renames Set_Aggregate_Bounds_Or_Ancestor_Type;
 
    ---------------
    -- Debugging --

@@ -1,5 +1,5 @@
 /* Loop manipulation code for GNU compiler.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -669,7 +669,7 @@ update_loop_exit_probability_scale_dom_bbs (class loop *loop,
 			     + old_exit_count - exit_edge->count ();
     }
   else
-    /* If there are multple blocks, just scale.  */
+    /* If there are multiple blocks, just scale.  */
     scale_dominated_blocks_in_loop (loop, exit_edge->src,
 				    exit_edge->src->count - exit_edge->count (),
 				    exit_edge->src->count - old_exit_count);

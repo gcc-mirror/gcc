@@ -1,0 +1,4 @@
+%rename link sync_sync_link
+
+*link:
+--defsym=__sync_synchronize=__sync_synchronize_none %(sync_sync_link)

@@ -2,6 +2,8 @@
 
 #include <stdarg.h>
 
+void abort (void);
+
 int fails = 0;
 struct S { float a[3]; };
 struct S a[5];

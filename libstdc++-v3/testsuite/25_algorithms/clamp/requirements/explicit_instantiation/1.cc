@@ -1,6 +1,6 @@
 // { dg-do compile { target c++17 } }
 
-// Copyright (C) 2016-2023 Free Software Foundation, Inc.
+// Copyright (C) 2016-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,12 +20,6 @@
 #include <algorithm>
 #include <functional>
 #include <testsuite_api.h>
-
-#ifndef __cpp_lib_clamp
-# error "Feature-test macro for clamp missing"
-#elif __cpp_lib_clamp != 201603
-# error "Feature-test macro for clamp has wrong value"
-#endif
 
 namespace std
 {

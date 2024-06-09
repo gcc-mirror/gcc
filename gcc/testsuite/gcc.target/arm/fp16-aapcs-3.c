@@ -1,7 +1,8 @@
 /* { dg-do compile }  */
 /* { dg-require-effective-target arm_hard_vfp_ok }  */
 /* { dg-require-effective-target arm_fp16_alternative_ok } */
-/* { dg-options "-O2 -mfp16-format=alternative" }  */
+/* { dg-options "-O2" }  */
+/* { dg-add-options arm_fp16_alternative } */
 
 /* Test __fp16 arguments and return value in registers (hard-float).  */
 

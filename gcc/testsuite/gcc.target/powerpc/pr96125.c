@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 void
 __attribute__((target("cpu=power10")))

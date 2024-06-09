@@ -1,5 +1,5 @@
 /* Support routines for the various generation passes.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -400,6 +400,45 @@ process_define_predicate (rtx desc, file_location loc)
 #undef I
 #undef N
 #undef Y
+
+/* Maps register filter conditions to the associated filter identifier.  */
+static hash_map<nofree_string_hash, unsigned int> register_filter_map;
+
+/* All register filter conditions, indexed by identifier.  */
+vec<const char *> register_filters;
+
+/* Return the unique identifier for filter condition FILTER.  Identifiers
+   are assigned automatically when the define_register_constraint is
+   parsed.  */
+
+unsigned int
+get_register_filter_id (const char *filter)
+{
+  unsigned int *slot = register_filter_map.get (filter);
+  gcc_assert (slot);
+  return *slot;
+}
+
+/* Process define_register_constraint directive DESC, at location LOC.  */
+
+static void
+process_define_register_constraint (rtx desc, file_location loc)
+{
+  /* Assign identifiers to each unique register filter condition.  */
+  if (const char *filter = XSTR (desc, 3))
+    {
+      bool existed = false;
+      unsigned int &id = register_filter_map.get_or_insert (filter, &existed);
+      if (!existed)
+	{
+	  id = register_filters.length ();
+	  if (id == 32)
+	    fatal_at (loc, "too many distinct register filters, maximum"
+		      " is 32");
+	  register_filters.safe_push (filter);
+	}
+    }
+}
 
 /* Queue PATTERN on LIST_TAIL.  Return the address of the new queue
    element.  */
@@ -1075,10 +1114,15 @@ process_rtx (rtx desc, file_location loc)
     case DEFINE_PREDICATE:
     case DEFINE_SPECIAL_PREDICATE:
       process_define_predicate (desc, loc);
-      /* Fall through.  */
+      queue_pattern (desc, &define_pred_tail, loc);
+      break;
+
+    case DEFINE_REGISTER_CONSTRAINT:
+      process_define_register_constraint (desc, loc);
+      queue_pattern (desc, &define_pred_tail, loc);
+      break;
 
     case DEFINE_CONSTRAINT:
-    case DEFINE_REGISTER_CONSTRAINT:
     case DEFINE_MEMORY_CONSTRAINT:
     case DEFINE_SPECIAL_MEMORY_CONSTRAINT:
     case DEFINE_RELAXED_MEMORY_CONSTRAINT:
@@ -3129,6 +3173,61 @@ rtx_reader *
 init_rtx_reader_args (int argc, const char **argv)
 {
   return init_rtx_reader_args_cb (argc, argv, 0);
+}
+
+/* Count the number of patterns in all queues and return the count.  */
+int
+count_patterns ()
+{
+  int count = 0, truth = 1;
+  rtx def;
+  class queue_elem *cur = define_attr_queue;
+  while (cur)
+    {
+      def = cur->data;
+
+      truth = maybe_eval_c_test (get_c_test (def));
+      if (truth || !insn_elision)
+	count++;
+      cur = cur->next;
+    }
+
+  cur = define_pred_queue;
+  while (cur)
+    {
+      def = cur->data;
+
+      truth = maybe_eval_c_test (get_c_test (def));
+      if (truth || !insn_elision)
+	count++;
+      cur = cur->next;
+    }
+
+  cur = define_insn_queue;
+  truth = 1;
+  while (cur)
+    {
+      def = cur->data;
+
+      truth = maybe_eval_c_test (get_c_test (def));
+      if (truth || !insn_elision)
+	count++;
+      cur = cur->next;
+    }
+
+  cur = other_queue;
+  truth = 1;
+  while (cur)
+    {
+      def = cur->data;
+
+      truth = maybe_eval_c_test (get_c_test (def));
+      if (truth || !insn_elision)
+	count++;
+      cur = cur->next;
+    }
+
+  return count;
 }
 
 /* Try to read a single rtx from the file.  Return true on success,

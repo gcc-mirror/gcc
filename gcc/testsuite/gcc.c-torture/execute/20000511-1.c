@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 void f (int value, int expect)
 {
   if (value != expect)

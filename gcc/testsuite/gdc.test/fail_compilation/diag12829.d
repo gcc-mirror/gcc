@@ -1,11 +1,14 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/diag12829.d(12): Error: function `diag12829.test1` is `@nogc` yet allocates closure for `test1()` with the GC
-fail_compilation/diag12829.d(15):        `diag12829.test1.__lambda2` closes over variable `x` at fail_compilation/diag12829.d(14)
-fail_compilation/diag12829.d(19):        `diag12829.test1.bar` closes over variable `x` at fail_compilation/diag12829.d(14)
-fail_compilation/diag12829.d(26): Error: function `diag12829.test2` is `@nogc` yet allocates closure for `test2()` with the GC
-fail_compilation/diag12829.d(31):        `diag12829.test2.S.foo` closes over variable `x` at fail_compilation/diag12829.d(28)
+fail_compilation/diag12829.d(15): Error: function `diag12829.test1` is `@nogc` yet allocates closure for `test1()` with the GC
+fail_compilation/diag12829.d(18):        delegate `diag12829.test1.__lambda2` closes over variable `x`
+fail_compilation/diag12829.d(17):        `x` declared here
+fail_compilation/diag12829.d(22):        function `diag12829.test1.bar` closes over variable `x`
+fail_compilation/diag12829.d(17):        `x` declared here
+fail_compilation/diag12829.d(29): Error: function `diag12829.test2` is `@nogc` yet allocates closure for `test2()` with the GC
+fail_compilation/diag12829.d(34):        function `diag12829.test2.S.foo` closes over variable `x`
+fail_compilation/diag12829.d(31):        `x` declared here
 ---
 */
 

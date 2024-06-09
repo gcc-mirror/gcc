@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU Objective-C++
-#   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 #   Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 #This file is part of GCC.
@@ -80,7 +80,7 @@ cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) \
 	@$(call LINK_PROGRESS,$(INDEX.obj-c++),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) \
-		  $(CODYLIB) $(NETLIBS) $(LIBS) $(BACKENDLIBS)
+		  $(CODYLIB) $(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.obj-c++),end)
 
 # Objective C++ language specific files.

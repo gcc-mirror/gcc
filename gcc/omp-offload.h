@@ -1,7 +1,7 @@
 /* Bits of OpenMP and OpenACC handling that is specific to device offloading
    and a lowering pass for OpenACC device directives.
 
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,7 @@ extern int oacc_fn_attrib_level (tree attr);
 
 extern GTY(()) vec<tree, va_gc> *offload_funcs;
 extern GTY(()) vec<tree, va_gc> *offload_vars;
+extern GTY(()) vec<tree, va_gc> *offload_ind_funcs;
 
 extern void omp_finish_file (void);
 extern void omp_discover_implicit_declare_target (void);

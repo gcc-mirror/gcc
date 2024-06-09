@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    tree codes used in GCC.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1230,6 +1230,14 @@ DEFTREECODE (OMP_TASKLOOP, "omp_taskloop", tcc_statement, 7)
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_LOOP, "omp_loop", tcc_statement, 7)
 
+/* OpenMP - #pragma omp tile [clause1 ... clauseN]
+   Operands like for OMP_FOR.  */
+DEFTREECODE (OMP_TILE, "omp_tile", tcc_statement, 7)
+
+/* OpenMP - #pragma omp unroll [clause1 ... clauseN]
+   Operands like for OMP_FOR.  */
+DEFTREECODE (OMP_UNROLL, "omp_unroll", tcc_statement, 7)
+
 /* OpenMP - #pragma acc loop [clause1 ... clauseN]
    Operands like for OMP_FOR.  */
 DEFTREECODE (OACC_LOOP, "oacc_loop", tcc_statement, 7)
@@ -1369,6 +1377,9 @@ DEFTREECODE (OMP_ATOMIC_CAPTURE_NEW, "omp_atomic_capture_new", tcc_statement, 2)
 
 /* OpenMP clauses.  */
 DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
+
+/* An OpenMP array section.  */
+DEFTREECODE (OMP_ARRAY_SECTION, "omp_array_section", tcc_expression, 3)
 
 /* TRANSACTION_EXPR tree code.
    Operand 0: BODY: contains body of the transaction.  */

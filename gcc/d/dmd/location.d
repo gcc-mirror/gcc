@@ -1,7 +1,7 @@
 /**
  * Encapsulates file/line/column locations.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/location.d, _location.d)
@@ -38,8 +38,8 @@ debug info etc.
 struct Loc
 {
     private uint _linnum;
-    private ushort _charnum;
-    private ushort fileIndex; // index into filenames[], starting from 1 (0 means no filename)
+    private uint _charnum;
+    private uint fileIndex; // index into filenames[], starting from 1 (0 means no filename)
     version (LocOffset)
         uint fileOffset; /// utf8 code unit index relative to start of file, starting from 0
 
@@ -64,10 +64,10 @@ nothrow:
         this.messageStyle = messageStyle;
     }
 
-    extern (D) this(const(char)* filename, uint linnum, uint charnum) @safe
+    extern (C++) this(const(char)* filename, uint linnum, uint charnum) @safe
     {
         this._linnum = linnum;
-        this._charnum = cast(ushort) charnum;
+        this._charnum = charnum;
         this.filename = filename;
     }
 
@@ -80,7 +80,7 @@ nothrow:
     /// ditto
     extern (C++) uint charnum(uint num) @nogc @safe
     {
-        return _charnum = cast(ushort) num;
+        return _charnum = num;
     }
 
     /// line number, starting from 1
@@ -114,8 +114,8 @@ nothrow:
         {
             //printf("setting %s\n", name);
             filenames.push(name);
-            fileIndex = cast(ushort)filenames.length;
-            assert(fileIndex);  // no overflow
+            fileIndex = cast(uint)filenames.length;
+            assert(fileIndex, "internal compiler error: file name index overflow");
         }
         else
             fileIndex = 0;

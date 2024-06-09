@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989-2023 Free Software Foundation, Inc.
+   Copyright (C) 1989-2024 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -145,6 +145,14 @@ struct mips_cpu_info {
 		      || TARGET_MICROMIPS)		\
 		     && mips_cb != MIPS_CB_NEVER)
 
+/* True if assembler support %gp_rel etc.  */
+#define TARGET_EXPLICIT_RELOCS \
+  (mips_opt_explicit_relocs >= MIPS_EXPLICIT_RELOCS_BASE)
+
+/* True if assembler support %pcrel_hi/%pcrel_lo.  */
+#define TARGET_EXPLICIT_RELOCS_PCREL \
+  (mips_opt_explicit_relocs >= MIPS_EXPLICIT_RELOCS_PCREL)
+
 /* True if the output file is marked as ".abicalls; .option pic0"
    (-call_nonpic).  */
 #define TARGET_ABICALLS_PIC0 \
@@ -243,7 +251,7 @@ struct mips_cpu_info {
 				     || ISA_HAS_MSA))
 
 /* ISA load/store instructions can handle unaligned address */
-#define ISA_HAS_UNALIGNED_ACCESS (TARGET_UNALIGNED_ACCESS \
+#define ISA_HAS_UNALIGNED_ACCESS (!TARGET_STRICT_ALIGN \
 				 && (mips_isa_rev >= 6))
 
 /* The ISA compression flags that are currently in effect.  */
@@ -686,6 +694,9 @@ struct mips_cpu_info {
 	builtin_define ("__mips_compact_branches_always");		\
       else 								\
 	builtin_define ("__mips_compact_branches_optimal");		\
+									\
+      if (STRICT_ALIGNMENT)						\
+	builtin_define ("__mips_strict_alignment");			\
     }									\
   while (0)
 
@@ -1250,6 +1261,8 @@ struct mips_cpu_info {
 /* ISA has data prefetch, LL and SC with limited 9-bit displacement.  */
 #define ISA_HAS_9BIT_DISPLACEMENT	(mips_isa_rev >= 6		\
 					 || ISA_HAS_MIPS16E2)
+
+#define ISA_HAS_FMIN_FMAX	(mips_isa_rev >= 6)
 
 /* ISA has data indexed prefetch instructions.  This controls use of
    'prefx', along with TARGET_HARD_FLOAT and TARGET_DOUBLE_FLOAT.

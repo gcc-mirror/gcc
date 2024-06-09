@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2023 Free Software Foundation, Inc.
+// Copyright (C) 2015-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,11 @@
 # define noreturn 1
 # define visibility 1
 #endif
+#ifndef __s390__
+// kernel-headers <asm/types.h> uses __attribute__((packed,aligned(4))) on
+// S390.
 #define packed 1
+#endif
 #define pure 1
 // glibc's sysdeps/unix/sysv/linux/arm/sys/ucontext.h uses this on ARM.
 #ifndef __arm__

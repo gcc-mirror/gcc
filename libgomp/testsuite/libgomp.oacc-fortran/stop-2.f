@@ -16,9 +16,14 @@
       END PROGRAM MAIN
 
 ! { dg-output "CheCKpOInT(\n|\r\n|\r)+" }
-! { dg-output "STOP 35(\n|\r\n|\r)+" }
-! PR85463.  The "minimal" libgfortran implementation used with nvptx
+
+! See 'stop-2-nvptx.f' regarding the nvptx offloading XFAIL.
+! { dg-output "STOP 35(\n|\r\n|\r)+" { xfail openacc_nvidia_accel_selected } }
+!
+! PR85463.  The 'exit' implementation used with nvptx
 ! offloading is a little bit different.
 ! { dg-output "libgomp: cuStreamSynchronize error.*" { target openacc_nvidia_accel_selected } }
+
 ! { dg-output "$" }
+
 ! { dg-shouldfail "" }

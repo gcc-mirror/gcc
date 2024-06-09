@@ -1,4 +1,7 @@
-// { dg-error "expected .i32. got .i8." "" { target *-*-* } 0 }
+// { dg-error "mismatched types, expected .i32. but got .i8." "" { target *-*-* } 0 }
+
+#[lang = "sized"]
+pub trait Sized {}
 
 struct GenericStruct<T>(T, usize);
 

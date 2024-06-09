@@ -209,17 +209,12 @@ AM_CONDITIONAL(LIBGFOR_USE_SYMVER, [test "x$gfortran_use_symver" != xno])
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER_GNU, [test "x$gfortran_use_symver" = xgnu])
 AM_CONDITIONAL(LIBGFOR_USE_SYMVER_SUN, [test "x$gfortran_use_symver" = xsun])
 
-# For GPU offloading, not everything in libfortran can be supported.
-# Currently, the only target that has this problem is nvptx.  The
-# following is a (partial) list of features that are unsupportable on
-# this particular target:
-# * Constructors
-# * alloca
-# * C library support for I/O, with printf as the one notable exception
-# * C library support for other features such as signal, environment
-#   variables, time functions
+# "Minimal" mode is for targets that cannot (yet) support all features of
+# libgfortran.  It avoids the need for working constructors, alloca, and C
+# library support for I/O, signals, environment variables, time functions, etc.
+# At present there are no targets that require this mode.
 
-AM_CONDITIONAL(LIBGFOR_MINIMAL, [test "x${target_cpu}" = xnvptx])
+AM_CONDITIONAL(LIBGFOR_MINIMAL, false)
 
 # Some compiler target support may have limited support for integer
 # or floating point numbers – or may want to reduce the libgfortran size
@@ -269,6 +264,7 @@ LT_LIB_M
 ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
+AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
 #AC_MSG_NOTICE([====== Finished libtool configuration]) ; sleep 10
 
 # We need gfortran to compile parts of the library
@@ -277,9 +273,10 @@ FC="$GFORTRAN"
 AC_PROG_FC(gfortran)
 
 # extra LD Flags which are required for targets
+extra_ldflags_libgfortran=
 case "${host}" in
-  *-darwin*)
-    # Darwin needs -single_module when linking libgfortran
+  *-*-darwin[[4567]]*)
+    # Earlier Darwin needs -single_module when linking libgfortran
     extra_ldflags_libgfortran=-Wl,-single_module
     ;;
 esac

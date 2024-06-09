@@ -1,6 +1,6 @@
 // Testcase for mangling of parameters used other than in a trailing return type
 // { dg-do compile { target c++11 } }
-// { dg-options "-fabi-version=5 -Wabi=4" }
+// { dg-options "-fabi-version=5 -fabi-compat-version=5 -Wabi=4" }
 
 template<class T> void f(T p, decltype(p)) { }	     // L = 1 { dg-warning "mangle" }
 template<class T> void g(T p, decltype(p) (*)()) { } // L = 1 { dg-warning "mangle" }

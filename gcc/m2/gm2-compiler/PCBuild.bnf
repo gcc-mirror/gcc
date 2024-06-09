@@ -1,7 +1,7 @@
 --
 -- m2-c.bnf grammar and associated actions for pass C.
 --
--- Copyright (C) 2001-2023 Free Software Foundation, Inc.
+-- Copyright (C) 2001-2024 Free Software Foundation, Inc.
 -- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 --
 -- This file is part of GNU Modula-2.
@@ -23,7 +23,7 @@
 (* output from m2-c.bnf, automatically generated do not edit if these
    are the top two lines in the file.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -66,7 +66,8 @@ FROM M2Quads IMPORT Top, PushT, PopT, PushTF, PopTF, PopNothing, OperandT, PushT
                     PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto,
                     BuildTypeForConstructor, BuildConstructor, BuildConstructorEnd,
                     PopConstructor,
-                    NextConstructorField, SilentBuildConstructor ;
+                    NextConstructorField, SilentBuildConstructor,
+                    PushInConstExpression, PopInConstExpression ;
 
 FROM P3SymBuild IMPORT CheckCanBeImported ;
 
@@ -603,9 +604,11 @@ ConstantDeclaration :=                                                     % VAR
 
 ConstExpression :=                                                         % VAR top: CARDINAL ; %
                                                                            % top := Top() %
+                                                                           % PushInConstExpression %
                                                                            % PushAutoOff %
                    SimpleConstExpr [ Relation SimpleConstExpr              % BuildRelationConst %
                                    ]                                       % PopAuto %
+                                                                           % PopInConstExpression %
                                                                            % Assert(top=Top()) %
                 =:
 
@@ -700,12 +703,13 @@ ConstructorOrConstActualParameters := Constructor | ConstActualParameters  % Pus
 -- the entry to Constructor
 
 ConstSetOrQualidentOrFunction :=                                           % PushAutoOff %
-                                 (
+                                                                           % VAR tokpos: CARDINAL ; %
+                                 (                                         % tokpos := GetTokenNo () %
                                    PushQualident
                                    ( ConstructorOrConstActualParameters |  % PushConstType %
                                                                            % PopNothing %
                                                                           )
-                                   |                                       % BuildTypeForConstructor %
+                                   |                                       % BuildTypeForConstructor (tokpos) %
                                      Constructor )                         % PopAuto %
                                =:
 
@@ -1003,12 +1007,14 @@ ConstructorOrSimpleDes := Constructor |                                    % Pop
                         =:
 
 SetOrDesignatorOrFunction :=                                              % PushAutoOff %
-                             (
+                                                                          % VAR tokpos: CARDINAL ; %
+
+                             (                                            % tokpos := GetTokenNo () %
                                PushQualident
                                ( ConstructorOrSimpleDes |                 % PopNothing %
                                                           )
                                 |
-                                                                          % BuildTypeForConstructor %
+                                                                          % BuildTypeForConstructor (tokpos) %
                                   Constructor
                              )                                            % PopAuto %
                           =:

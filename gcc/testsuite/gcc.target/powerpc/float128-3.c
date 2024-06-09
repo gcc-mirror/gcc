@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mvsx -mno-float128" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Test that we can use #pragma GCC target to enable -mfloat128.  */
 

@@ -1,5 +1,5 @@
 /* Pretty print support for value ranges.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -27,10 +27,9 @@ public:
   vrange_printer (pretty_printer *pp_) : pp (pp_) { }
   void visit (const unsupported_range &) const override;
   void visit (const irange &) const override;
+  void visit (const prange &) const override;
   void visit (const frange &) const override;
 private:
-  void print_irange_bound (const wide_int &w, tree type) const;
-  void print_irange_bitmasks (const irange &) const;
   void print_frange_nan (const frange &) const;
   void print_real_value (tree type, const REAL_VALUE_TYPE &r) const;
 

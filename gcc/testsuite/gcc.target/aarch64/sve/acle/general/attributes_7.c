@@ -27,6 +27,7 @@ typedef svint32x2_t bad_type_6 __attribute__ ((arm_sve_vector_bits (N))); // { d
 typedef svint8_t bad_type_7 __attribute__ ((arm_sve_vector_bits (N))) __attribute__ ((arm_sve_vector_bits (N))); // { dg-error {'arm_sve_vector_bits' applied to type 'svint8_t __attribute__\(\(arm_sve_vector_bits\([0-9]+\)\)\)', which already has a size} }
 typedef fixed_bool_t bad_type_8 __attribute__ ((arm_sve_vector_bits (N))) __attribute__ ((arm_sve_vector_bits (N))); // { dg-error {'arm_sve_vector_bits' applied to type 'fixed_bool_t' {aka 'svbool_t __attribute__\(\(arm_sve_vector_bits\([0-9]+\)\)\)'}, which already has a size} }
 typedef gnu_int8_t bad_type_9 __attribute__ ((arm_sve_vector_bits (N))) __attribute__ ((arm_sve_vector_bits (N))); // { dg-error {'arm_sve_vector_bits' applied to non-SVE type 'gnu_int8_t'} }
+typedef svcount_t bad_type_10 __attribute__ ((arm_sve_vector_bits (N))); // { dg-error {'arm_sve_vector_bits' applied to non-vector type 'svcount_t'} }
 
 void
 f (int c)
@@ -135,41 +136,41 @@ g (int c)
   diff = gs8 - gs8;
 
   fs8 = ss8; // { dg-error {invalid conversion} "" { target c++ } }
-	     // { dg-warning {incompatible pointer type} "c" { target c } .-1 }
+	     // { dg-error {incompatible pointer type} "c" { target c } .-1 }
   fs8 = fs8;
   fs8 = gs8; // { dg-error {invalid conversion} "" { target c++ } }
-	     // { dg-warning {incompatible pointer type} "c" { target c } .-1 }
+	     // { dg-error {incompatible pointer type} "c" { target c } .-1 }
 
   fs8 = su8; // { dg-error {cannot convert} "c++" { target c++ } }
-	     // { dg-warning {incompatible pointer type} "c" { target c } .-1 }
+	     // { dg-error {incompatible pointer type} "c" { target c } .-1 }
   fs8 = fu8; // { dg-error {cannot convert} "c++" { target c++ } }
-	     // { dg-warning {incompatible pointer type} "c" { target c } .-1 }
+	     // { dg-error {incompatible pointer type} "c" { target c } .-1 }
   fs8 = gu8; // { dg-error {cannot convert} "c++" { target c++ } }
-	     // { dg-warning {incompatible pointer type} "c" { target c } .-1 }
+	     // { dg-error {incompatible pointer type} "c" { target c } .-1 }
 
   fs8 = ss16; // { dg-error {cannot convert} "c++" { target c++ } }
-	      // { dg-warning {incompatible pointer type} "c" { target c } .-1 }
+	      // { dg-error {incompatible pointer type} "c" { target c } .-1 }
   fs8 = fs16; // { dg-error {cannot convert} "c++" { target c++ } }
-	      // { dg-warning {incompatible pointer type} "c" { target c } .-1 }
+	      // { dg-error {incompatible pointer type} "c" { target c } .-1 }
   fs8 = gs16; // { dg-error {cannot convert} "c++" { target c++ } }
-	      // { dg-warning {incompatible pointer type} "c" { target c } .-1 }
+	      // { dg-error {incompatible pointer type} "c" { target c } .-1 }
 
   select = c ? ss8 : ss8;
   select = c ? ss8 : fs8; // { dg-error {distinct pointer types} "" { target c++ } }
-			  // { dg-warning {pointer type mismatch} "c" { target c } .-1 }
+			  // { dg-error {pointer type mismatch} "c" { target c } .-1 }
   select = c ? ss8 : gs8; // { dg-error {distinct pointer types} "" { target c++ } }
-			  // { dg-warning {pointer type mismatch} "c" { target c } .-1 }
+			  // { dg-error {pointer type mismatch} "c" { target c } .-1 }
 
   select = c ? fs8 : ss8; // { dg-error {distinct pointer types} "" { target c++ } }
-			  // { dg-warning {pointer type mismatch} "c" { target c } .-1 }
+			  // { dg-error {pointer type mismatch} "c" { target c } .-1 }
   select = c ? fs8 : fs8;
   select = c ? fs8 : gs8; // { dg-error {distinct pointer types} "" { target c++ } }
-			  // { dg-warning {pointer type mismatch} "c" { target c } .-1 }
+			  // { dg-error {pointer type mismatch} "c" { target c } .-1 }
 
   select = c ? gs8 : ss8; // { dg-error {distinct pointer types} "" { target c++ } }
-			  // { dg-warning {pointer type mismatch} "c" { target c } .-1 }
+			  // { dg-error {pointer type mismatch} "c" { target c } .-1 }
   select = c ? gs8 : fs8; // { dg-error {distinct pointer types} "" { target c++ } }
-			  // { dg-warning {pointer type mismatch} "c" { target c } .-1 }
+			  // { dg-error {pointer type mismatch} "c" { target c } .-1 }
   select = c ? gs8 : gs8;
 
   diff = sb - sb; // { dg-error {arithmetic on pointer to SVE type 'svbool_t'} }

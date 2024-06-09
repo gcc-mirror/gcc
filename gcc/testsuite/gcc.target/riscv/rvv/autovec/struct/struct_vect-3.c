@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-std=c99 -march=rv32gcv_zvfh -mabi=ilp32d --param=riscv-autovec-preference=fixed-vlmax -funroll-all-loops -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-additional-options "-std=c99 -march=rv32gcv_zvfh -mabi=ilp32d -mrvv-vector-bits=zvl -funroll-all-loops -fno-schedule-insns -fno-schedule-insns2" } */
 
 #define TYPE uint32_t
 #include "struct_vect-1.c"

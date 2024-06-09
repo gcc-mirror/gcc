@@ -1,0 +1,6 @@
+DEFINITION MODULE FOR "C" strconst ;
+
+CONST
+   WORLD = "world" ;
+
+END strconst.

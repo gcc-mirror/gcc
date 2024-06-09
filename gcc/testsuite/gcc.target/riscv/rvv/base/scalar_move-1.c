@@ -46,8 +46,8 @@ int32_t foo3 (int32_t *base, size_t vl)
 ** vl1re32\.v\tv[0-9]+,0\([a-x0-9]+\)
 ** vsetvli\tzero,[a-x0-9]+,e32,m1,t[au],m[au]
 ** vadd.vv\tv[0-9]+,\s*v[0-9]+,\s*v[0-9]+
-** vsetvli\tzero,[a-x0-9]+,e32,m2,t[au],m[au]
 ** vmv.x.s\t[a-x0-9]+,\s*v[0-9]+
+** vsetvli\tzero,[a-x0-9]+,e32,m2,t[au],m[au]
 ** vmv.v.x\tv[0-9]+,\s*[a-x0-9]+
 ** vmv.x.s\t[a-x0-9]+,\s*v[0-9]+
 ** ret

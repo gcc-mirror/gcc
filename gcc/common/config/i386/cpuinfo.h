@@ -1,5 +1,5 @@
 /* Get CPU type and Features for x86 processors.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Sriraman Tallam (tmsriram@google.com)
 
 This file is part of GCC.
@@ -310,6 +310,22 @@ get_amd_cpu (struct __processor_model *cpu_model,
 	  cpu_model->__cpu_subtype = AMDFAM19H_ZNVER3;
 	}
       break;
+    case 0x1a:
+      cpu_model->__cpu_type = AMDFAM1AH;
+      if (model <= 0x77)
+	{
+	  cpu = "znver5";
+	  CHECK___builtin_cpu_is ("znver5");
+	  cpu_model->__cpu_subtype = AMDFAM1AH_ZNVER5;
+	}
+      else if (has_cpu_feature (cpu_model, cpu_features2,
+				FEATURE_AVX512VP2INTERSECT))
+	{
+	  cpu = "znver5";
+	  CHECK___builtin_cpu_is ("znver5");
+	  cpu_model->__cpu_subtype = AMDFAM1AH_ZNVER5;
+	}
+      break;
     default:
       break;
     }
@@ -373,18 +389,6 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu = "tremont";
       CHECK___builtin_cpu_is ("tremont");
       cpu_model->__cpu_type = INTEL_TREMONT;
-      break;
-    case 0x57:
-      /* Knights Landing.  */
-      cpu = "knl";
-      CHECK___builtin_cpu_is ("knl");
-      cpu_model->__cpu_type = INTEL_KNL;
-      break;
-    case 0x85:
-      /* Knights Mill. */
-      cpu = "knm";
-      CHECK___builtin_cpu_is ("knm");
-      cpu_model->__cpu_type = INTEL_KNM;
       break;
     case 0x1a:
     case 0x1e:
@@ -608,6 +612,20 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_type = INTEL_COREI7;
       cpu_model->__cpu_subtype = INTEL_COREI7_ARROWLAKE_S;
       break;
+    case 0xdd:
+      /* Clearwater Forest.  */
+      cpu = "clearwaterforest";
+      CHECK___builtin_cpu_is ("clearwaterforest");
+      cpu_model->__cpu_type = INTEL_CLEARWATERFOREST;
+      break;
+    case 0xcc:
+      /* Panther Lake.  */
+      cpu = "pantherlake";
+      CHECK___builtin_cpu_is ("corei7");
+      CHECK___builtin_cpu_is ("pantherlake");
+      cpu_model->__cpu_type = INTEL_COREI7;
+      cpu_model->__cpu_subtype = INTEL_COREI7_PANTHERLAKE;
+      break;
     case 0x17:
     case 0x1d:
       /* Penryn.  */
@@ -649,6 +667,12 @@ get_zhaoxin_cpu (struct __processor_model *cpu_model,
 	  reset_cpu_feature (cpu_model, cpu_features2, FEATURE_F16C);
 	  cpu_model->__cpu_subtype = ZHAOXIN_FAM7H_LUJIAZUI;
 	}
+     else if (model >= 0x5b)
+	{
+	  cpu = "yongfeng";
+	  CHECK___builtin_cpu_is ("yongfeng");
+	  cpu_model->__cpu_subtype = ZHAOXIN_FAM7H_YONGFENG;
+	}
       break;
     default:
       break;
@@ -678,6 +702,7 @@ get_available_features (struct __processor_model *cpu_model,
 #define XSTATE_HI_ZMM			0x80
 #define XSTATE_TILECFG			0x20000
 #define XSTATE_TILEDATA		0x40000
+#define XSTATE_APX_F			0x80000
 
 #define XCR_AVX_ENABLED_MASK \
   (XSTATE_SSE | XSTATE_YMM)
@@ -685,13 +710,18 @@ get_available_features (struct __processor_model *cpu_model,
   (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM)
 #define XCR_AMX_ENABLED_MASK \
   (XSTATE_TILECFG | XSTATE_TILEDATA)
+#define XCR_APX_F_ENABLED_MASK XSTATE_APX_F
 
-  /* Check if AVX and AVX512 are usable.  */
+  /* Check if AVX, AVX512 and APX are usable.  */
   int avx_usable = 0;
   int avx512_usable = 0;
   int amx_usable = 0;
+  int apx_usable = 0;
   /* Check if KL is usable.  */
   int has_kl = 0;
+  /* Record AVX10 version.  */
+  int avx10_set = 0;
+  int version = 0;
   if ((ecx & bit_OSXSAVE))
     {
       /* Check if XMM, YMM, OPMASK, upper 256 bits of ZMM0-ZMM15 and
@@ -709,6 +739,8 @@ get_available_features (struct __processor_model *cpu_model,
 	}
       amx_usable = ((xcrlow & XCR_AMX_ENABLED_MASK)
 		    == XCR_AMX_ENABLED_MASK);
+      apx_usable = ((xcrlow & XCR_APX_F_ENABLED_MASK)
+		    == XCR_APX_F_ENABLED_MASK);
     }
 
 #define set_feature(f) \
@@ -800,8 +832,6 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_CLFLUSHOPT);
       if (ebx & bit_CLWB)
 	set_feature (FEATURE_CLWB);
-      if (ecx & bit_PREFETCHWT1)
-	set_feature (FEATURE_PREFETCHWT1);
       /* NB: bit_OSPKE indicates that OS supports PKU.  */
       if (ecx & bit_OSPKE)
 	set_feature (FEATURE_PKU);
@@ -854,10 +884,6 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX512DQ);
 	  if (ebx & bit_AVX512CD)
 	    set_feature (FEATURE_AVX512CD);
-	  if (ebx & bit_AVX512PF)
-	    set_feature (FEATURE_AVX512PF);
-	  if (ebx & bit_AVX512ER)
-	    set_feature (FEATURE_AVX512ER);
 	  if (ebx & bit_AVX512IFMA)
 	    set_feature (FEATURE_AVX512IFMA);
 	  if (ecx & bit_AVX512VBMI)
@@ -870,10 +896,6 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AVX512BITALG);
 	  if (ecx & bit_AVX512VPOPCNTDQ)
 	    set_feature (FEATURE_AVX512VPOPCNTDQ);
-	  if (edx & bit_AVX5124VNNIW)
-	    set_feature (FEATURE_AVX5124VNNIW);
-	  if (edx & bit_AVX5124FMAPS)
-	    set_feature (FEATURE_AVX5124FMAPS);
 	  if (edx & bit_AVX512VP2INTERSECT)
 	    set_feature (FEATURE_AVX512VP2INTERSECT);
 	  if (edx & bit_AVX512FP16)
@@ -891,6 +913,8 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_PREFETCHI);
 	  if (eax & bit_RAOINT)
 	    set_feature (FEATURE_RAOINT);
+	  if (edx & bit_USER_MSR)
+	    set_feature (FEATURE_USER_MSR);
 	  if (avx_usable)
 	    {
 	      if (eax & bit_AVXVNNI)
@@ -914,6 +938,9 @@ get_available_features (struct __processor_model *cpu_model,
 	    {
 	      if (eax & bit_AVX512BF16)
 		set_feature (FEATURE_AVX512BF16);
+	      /* AVX10 has the same XSTATE with AVX512.  */
+	      if (edx & bit_AVX10)
+		avx10_set = 1;
 	    }
 	  if (amx_usable)
 	    {
@@ -921,6 +948,11 @@ get_available_features (struct __processor_model *cpu_model,
 		set_feature (FEATURE_AMX_FP16);
 	      if (edx & bit_AMX_COMPLEX)
 		set_feature (FEATURE_AMX_COMPLEX);
+	    }
+	  if (apx_usable)
+	    {
+	      if (edx & bit_APX_F)
+		set_feature (FEATURE_APX_F);
 	    }
 	}
     }
@@ -958,6 +990,33 @@ get_available_features (struct __processor_model *cpu_model,
 	  if (has_kl)
 	    set_feature (FEATURE_KL);
 	}
+    }
+
+  /* Get Advanced Features at level 0x24 (eax = 0x24).  */
+  if (avx10_set && max_cpuid_level >= 0x24)
+    {
+      __cpuid (0x24, eax, ebx, ecx, edx);
+      version = ebx & 0xff;
+      if (ebx & bit_AVX10_256)
+	switch (version)
+	  {
+	  case 1:
+	    set_feature (FEATURE_AVX10_1_256);
+	    break;
+	  default:
+	    set_feature (FEATURE_AVX10_1_256);
+	    break;
+	  }
+      if (ebx & bit_AVX10_512)
+	switch (version)
+	  {
+	  case 1:
+	    set_feature (FEATURE_AVX10_1_512);
+	    break;
+	  default:
+	    set_feature (FEATURE_AVX10_1_512);
+	    break;
+	  }
     }
 
   /* Check cpuid level of extended features.  */

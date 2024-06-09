@@ -1,6 +1,6 @@
 // C++ includes used for precompiling -*- C++ -*-
 
-// Copyright (C) 2003-2023 Free Software Foundation, Inc.
+// Copyright (C) 2003-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -222,12 +222,18 @@
 
 #if __cplusplus > 202002L
 #include <expected>
+#include <generator>
+#include <print>
 #include <spanstream>
 #if __has_include(<stacktrace>)
 # include <stacktrace>
 #endif
 #include <stdatomic.h>
 #include <stdfloat>
+#endif
+
+#if __cplusplus > 202302L
+#include <text_encoding>
 #endif
 
 #endif // HOSTED

@@ -1,4 +1,4 @@
-# Copyright (C) 2000-2023 Free Software Foundation, Inc.
+# Copyright (C) 2000-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -1953,4 +1953,10 @@ GCC_14.0.0 {
   __PFX__fixdfbitint
   __PFX__floatbitintsf
   __PFX__floatbitintdf
+  __PFX__hardcfr_check
+  __PFX__strub_enter
+  __PFX__strub_update
+  __PFX__strub_leave
+  __gcc_nested_func_ptr_created
+  __gcc_nested_func_ptr_deleted
 }

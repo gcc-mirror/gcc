@@ -1,3 +1,6 @@
+void abort(void);
+void exit(int);
+
 long foo(long a, long b, long c)
 {
   if (a != 12 || b != 1 || c != 11)

@@ -2,14 +2,12 @@
 /* { dg-do compile } */
 /* { dg-options "" } */
 
-union U { int a; char b[] __attribute__((aligned (2 * sizeof (int)))); };	/* { dg-error "flexible array member in union" } */
+union U { int a; char b[] __attribute__((aligned (2 * sizeof (int)))); };
 struct V { int a; union U b; };
-struct W { int a; union U b; int c; };
 
 void
-foo (union U *u, struct V *v, struct W *w)
+foo (union U *u, struct V *v)
 {
-  __builtin_clear_padding (u);
-  __builtin_clear_padding (v);
-  __builtin_clear_padding (w);
+  __builtin_clear_padding (u); /* { dg-error "flexible array member" "does not have well defined padding bits" } */
+  __builtin_clear_padding (v); /* { dg-error "flexible array member" "does not have well defined padding bits" } */
 }

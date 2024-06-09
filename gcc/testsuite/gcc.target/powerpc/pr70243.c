@@ -1,6 +1,6 @@
 /* { dg-do compile */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* PR 70423, Make sure we don't generate vmaddfp or vnmsubfp.  These
    instructions have different rounding modes than the VSX instructions

@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE (__ARM_FEATURE_SVE2 intrinsics)
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -116,6 +116,39 @@ public:
   }
 };
 
+class svclamp_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    auto mode = e.tuple_mode (0);
+    insn_code icode;
+    if (e.type_suffix (0).float_p)
+      icode = (e.vectors_per_tuple () > 1
+	       ? code_for_aarch64_sve_fclamp_single (mode)
+	       : code_for_aarch64_sve_fclamp (mode));
+    else
+      {
+	auto max = e.type_suffix (0).unsigned_p ? UMAX : SMAX;
+	icode = (e.vectors_per_tuple () > 1
+		 ? code_for_aarch64_sve_clamp_single (max, mode)
+		 : code_for_aarch64_sve_clamp (max, mode));
+      }
+    return e.use_exact_insn (icode);
+  }
+};
+
+class svcvtn_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_aarch64_sve_cvtn (e.result_mode ()));
+  }
+};
+
 class svldnt1_gather_impl : public full_width_access
 {
 public:
@@ -188,6 +221,30 @@ public:
   }
 };
 
+class svpext_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    unsigned int bits = e.type_suffix (0).element_bits;
+    return e.use_exact_insn (e.vectors_per_tuple () == 2
+			     ? code_for_aarch64_sve_pextx2 (bits)
+			     : code_for_aarch64_sve_pext (bits));
+  }
+};
+
+class svpsel_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    unsigned int bits = e.type_suffix (0).element_bits;
+    return e.use_exact_insn (code_for_aarch64_sve_psel (bits));
+  }
+};
+
 class svqcadd_impl : public function_base
 {
 public:
@@ -247,7 +304,7 @@ public:
 	       that we can use for sensible shift amounts.  */
 	    function_instance instance ("svqshl", functions::svqshl,
 					shapes::binary_int_opt_n, MODE_n,
-					f.type_suffix_ids, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred);
 	    return f.redirect_call (instance);
 	  }
 	else
@@ -255,8 +312,9 @@ public:
 	    /* The saturation has no effect, and [SU]RSHL has immediate forms
 	       that we can use for sensible shift amounts.  */
 	    function_instance instance ("svrshl", functions::svrshl,
-					shapes::binary_int_opt_n, MODE_n,
-					f.type_suffix_ids, f.pred);
+					shapes::binary_int_opt_single_n,
+					MODE_n, f.type_suffix_ids, GROUP_none,
+					f.pred);
 	    return f.redirect_call (instance);
 	  }
       }
@@ -285,7 +343,7 @@ public:
 				       -wi::to_wide (amount));
 	    function_instance instance ("svasr", functions::svasr,
 					shapes::binary_uint_opt_n, MODE_n,
-					f.type_suffix_ids, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred);
 	    if (f.type_suffix (0).unsigned_p)
 	      {
 		instance.base_name = "svlsr";
@@ -309,6 +367,9 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
+    if (f.vectors_per_tuple () > 1)
+      return nullptr;
+
     if (tree amount = uniform_integer_cst_p (gimple_call_arg (f.call, 2)))
       {
 	if (wi::to_widest (amount) >= 0)
@@ -317,7 +378,7 @@ public:
 	       that we can use for sensible shift amounts.  */
 	    function_instance instance ("svlsl", functions::svlsl,
 					shapes::binary_uint_opt_n, MODE_n,
-					f.type_suffix_ids, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred);
 	    gcall *call = as_a <gcall *> (f.redirect_call (instance));
 	    gimple_call_set_arg (call, 2, amount);
 	    return call;
@@ -330,7 +391,7 @@ public:
 				       -wi::to_wide (amount));
 	    function_instance instance ("svrshr", functions::svrshr,
 					shapes::shift_right_imm, MODE_n,
-					f.type_suffix_ids, f.pred);
+					f.type_suffix_ids, GROUP_none, f.pred);
 	    gcall *call = as_a <gcall *> (f.redirect_call (instance));
 	    gimple_call_set_arg (call, 2, amount);
 	    return call;
@@ -349,7 +410,7 @@ public:
     machine_mode mode = e.vector_mode (0);
     if (e.pred == PRED_x
 	&& aarch64_sve_sqadd_sqsub_immediate_p (mode, e.args[2], false))
-      return e.map_to_rtx_codes (UNKNOWN, US_PLUS, -1);
+      return e.map_to_rtx_codes (UNKNOWN, US_PLUS, -1, -1);
     return e.map_to_unspecs (-1, UNSPEC_USQADD, -1);
   }
 };
@@ -409,6 +470,19 @@ public:
   expand (function_expander &e) const override
   {
     return e.use_exact_insn (code_for_aarch64_sve2_tbl2 (e.vector_mode (0)));
+  }
+};
+
+class svunpk_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    optab op = (e.type_suffix (0).unsigned_p ? zext_optab : sext_optab);
+    insn_code icode = convert_optab_handler (op, e.result_mode (),
+					     GET_MODE (e.args[0]));
+    return e.use_exact_insn (icode);
   }
 };
 
@@ -474,13 +548,21 @@ FUNCTION (svaesmc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesmc))
 FUNCTION (svbcax, CODE_FOR_MODE0 (aarch64_sve2_bcax),)
 FUNCTION (svbdep, unspec_based_function, (UNSPEC_BDEP, UNSPEC_BDEP, -1))
 FUNCTION (svbext, unspec_based_function, (UNSPEC_BEXT, UNSPEC_BEXT, -1))
+FUNCTION (svbfmlslb, fixed_insn_function, (CODE_FOR_aarch64_sve_bfmlslbvnx4sf))
+FUNCTION (svbfmlslb_lane, fixed_insn_function,
+	  (CODE_FOR_aarch64_sve_bfmlslb_lanevnx4sf))
+FUNCTION (svbfmlslt, fixed_insn_function, (CODE_FOR_aarch64_sve_bfmlsltvnx4sf))
+FUNCTION (svbfmlslt_lane, fixed_insn_function,
+	  (CODE_FOR_aarch64_sve_bfmlslt_lanevnx4sf))
 FUNCTION (svbgrp, unspec_based_function, (UNSPEC_BGRP, UNSPEC_BGRP, -1))
 FUNCTION (svbsl, CODE_FOR_MODE0 (aarch64_sve2_bsl),)
 FUNCTION (svbsl1n, CODE_FOR_MODE0 (aarch64_sve2_bsl1n),)
 FUNCTION (svbsl2n, CODE_FOR_MODE0 (aarch64_sve2_bsl2n),)
 FUNCTION (svcdot, svcdot_impl,)
 FUNCTION (svcdot_lane, svcdot_lane_impl,)
+FUNCTION (svclamp, svclamp_impl,)
 FUNCTION (svcvtlt, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTLT))
+FUNCTION (svcvtn, svcvtn_impl,)
 FUNCTION (svcvtx, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTX))
 FUNCTION (svcvtxnt, CODE_FOR_MODE1 (aarch64_sve2_cvtxnt),)
 FUNCTION (sveor3, CODE_FOR_MODE0 (aarch64_sve2_eor3),)
@@ -537,13 +619,19 @@ FUNCTION (svmullt_lane, unspec_based_lane_function, (UNSPEC_SMULLT,
 						     UNSPEC_UMULLT, -1))
 FUNCTION (svnbsl, CODE_FOR_MODE0 (aarch64_sve2_nbsl),)
 FUNCTION (svnmatch, svmatch_svnmatch_impl, (UNSPEC_NMATCH))
+FUNCTION (svpext, svpext_impl,)
 FUNCTION (svpmul, CODE_FOR_MODE0 (aarch64_sve2_pmul),)
 FUNCTION (svpmullb, unspec_based_function, (-1, UNSPEC_PMULLB, -1))
 FUNCTION (svpmullb_pair, unspec_based_function, (-1, UNSPEC_PMULLB_PAIR, -1))
 FUNCTION (svpmullt, unspec_based_function, (-1, UNSPEC_PMULLT, -1))
 FUNCTION (svpmullt_pair, unspec_based_function, (-1, UNSPEC_PMULLT_PAIR, -1))
+FUNCTION (svpsel, svpsel_impl,)
 FUNCTION (svqabs, rtx_code_function, (SS_ABS, UNKNOWN, UNKNOWN))
 FUNCTION (svqcadd, svqcadd_impl,)
+FUNCTION (svqcvt, integer_conversion, (UNSPEC_SQCVT, UNSPEC_SQCVTU,
+				       UNSPEC_UQCVT, -1))
+FUNCTION (svqcvtn, integer_conversion, (UNSPEC_SQCVTN, UNSPEC_SQCVTUN,
+					UNSPEC_UQCVTN, -1))
 FUNCTION (svqdmlalb, unspec_based_qadd_function, (UNSPEC_SQDMULLB, -1, -1))
 FUNCTION (svqdmlalb_lane, unspec_based_qadd_lane_function, (UNSPEC_SQDMULLB,
 							    -1, -1))
@@ -579,10 +667,16 @@ FUNCTION (svqrdmlsh, unspec_based_function, (UNSPEC_SQRDMLSH, -1, -1))
 FUNCTION (svqrdmlsh_lane, unspec_based_lane_function, (UNSPEC_SQRDMLSH,
 						       -1, -1))
 FUNCTION (svqrshl, svqrshl_impl,)
+FUNCTION (svqrshr, unspec_based_uncond_function, (UNSPEC_SQRSHR,
+						  UNSPEC_UQRSHR, -1, 1))
+FUNCTION (svqrshrn, unspec_based_uncond_function, (UNSPEC_SQRSHRN,
+						   UNSPEC_UQRSHRN, -1, 1))
 FUNCTION (svqrshrnb, unspec_based_function, (UNSPEC_SQRSHRNB,
 					     UNSPEC_UQRSHRNB, -1))
 FUNCTION (svqrshrnt, unspec_based_function, (UNSPEC_SQRSHRNT,
 					     UNSPEC_UQRSHRNT, -1))
+FUNCTION (svqrshru, unspec_based_uncond_function, (UNSPEC_SQRSHRU, -1, -1, 1))
+FUNCTION (svqrshrun, unspec_based_uncond_function, (UNSPEC_SQRSHRUN, -1, -1, 1))
 FUNCTION (svqrshrunb, unspec_based_function, (UNSPEC_SQRSHRUNB, -1, -1))
 FUNCTION (svqrshrunt, unspec_based_function, (UNSPEC_SQRSHRUNT, -1, -1))
 FUNCTION (svqshl, svqshl_impl,)
@@ -603,6 +697,8 @@ FUNCTION (svraddhnb, unspec_based_function, (UNSPEC_RADDHNB,
 FUNCTION (svraddhnt, unspec_based_function, (UNSPEC_RADDHNT,
 					     UNSPEC_RADDHNT, -1))
 FUNCTION (svrax1, fixed_insn_function, (CODE_FOR_aarch64_sve2_rax1))
+FUNCTION (svrevd, unspec_based_function, (UNSPEC_REVD, UNSPEC_REVD,
+					  UNSPEC_REVD))
 FUNCTION (svrhadd, unspec_based_function, (UNSPEC_SRHADD, UNSPEC_URHADD, -1))
 FUNCTION (svrshl, svrshl_impl,)
 FUNCTION (svrshr, unspec_based_function, (UNSPEC_SRSHR, UNSPEC_URSHR, -1))
@@ -639,7 +735,12 @@ FUNCTION (svsubwb, unspec_based_function, (UNSPEC_SSUBWB, UNSPEC_USUBWB, -1))
 FUNCTION (svsubwt, unspec_based_function, (UNSPEC_SSUBWT, UNSPEC_USUBWT, -1))
 FUNCTION (svtbl2, svtbl2_impl,)
 FUNCTION (svtbx, CODE_FOR_MODE0 (aarch64_sve2_tbx),)
+FUNCTION (svunpk, svunpk_impl,)
 FUNCTION (svuqadd, svuqadd_impl,)
+FUNCTION (svuzp, multireg_permute, (UNSPEC_UZP))
+FUNCTION (svuzpq, multireg_permute, (UNSPEC_UZPQ))
+FUNCTION (svzip, multireg_permute, (UNSPEC_ZIP))
+FUNCTION (svzipq, multireg_permute, (UNSPEC_ZIPQ))
 FUNCTION (svwhilege, while_comparison, (UNSPEC_WHILEGE, UNSPEC_WHILEHS))
 FUNCTION (svwhilegt, while_comparison, (UNSPEC_WHILEGT, UNSPEC_WHILEHI))
 FUNCTION (svwhilerw, svwhilerw_svwhilewr_impl, (UNSPEC_WHILERW))

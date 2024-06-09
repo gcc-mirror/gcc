@@ -1,6 +1,6 @@
 /* AArch64 Non-NEON ACLE intrinsics include file.
 
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -77,6 +77,36 @@ _GCC_ARM_ACLE_DATA_FN (rev, bswap32, uint32_t, uint32_t)
 _GCC_ARM_ACLE_DATA_FN (revll, bswap64, uint64_t, uint64_t)
 
 #undef _GCC_ARM_ACLE_DATA_FN
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__pld (void const volatile *__addr)
+{
+  return __builtin_aarch64_pld (__addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__pli (void const volatile *__addr)
+{
+  return __builtin_aarch64_pli (__addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__plix (unsigned int __cache, unsigned int __rettn,
+	void const volatile *__addr)
+{
+  return __builtin_aarch64_plix (__cache, __rettn, __addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__pldx (unsigned int __access, unsigned int __cache, unsigned int __rettn,
+	void const volatile *__addr)
+{
+  return __builtin_aarch64_pldx (__access, __cache, __rettn, __addr);
+}
 
 __extension__ extern __inline unsigned long
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
@@ -311,6 +341,47 @@ __rndrrs (uint64_t *__res)
 
 #define __arm_mte_get_tag(__address) \
   __builtin_aarch64_memtag_get_tag(__address)
+
+#pragma GCC pop_options
+
+#define __arm_rsr(__regname) \
+  __builtin_aarch64_rsr (__regname)
+
+#define __arm_rsrp(__regname) \
+  __builtin_aarch64_rsrp (__regname)
+
+#define __arm_rsr64(__regname) \
+  __builtin_aarch64_rsr64 (__regname)
+
+#define __arm_rsrf(__regname) \
+  __builtin_aarch64_rsrf (__regname)
+
+#define __arm_rsrf64(__regname) \
+  __builtin_aarch64_rsrf64 (__regname)
+
+#define __arm_wsr(__regname, __value) \
+  __builtin_aarch64_wsr (__regname, __value)
+
+#define __arm_wsrp(__regname, __value) \
+  __builtin_aarch64_wsrp (__regname, __value)
+
+#define __arm_wsr64(__regname, __value) \
+  __builtin_aarch64_wsr64 (__regname, __value)
+
+#define __arm_wsrf(__regname, __value) \
+  __builtin_aarch64_wsrf (__regname, __value)
+
+#define __arm_wsrf64(__regname, __value) \
+  __builtin_aarch64_wsrf64 (__regname, __value)
+
+#pragma GCC push_options
+#pragma GCC target ("+nothing+d128")
+
+#define __arm_rsr128(__regname) \
+  __builtin_aarch64_rsr128 (__regname)
+
+#define __arm_wsr128(__regname, __value) \
+  __builtin_aarch64_wsr128 (__regname, __value)
 
 #pragma GCC pop_options
 

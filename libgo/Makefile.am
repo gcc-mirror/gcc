@@ -497,6 +497,10 @@ s-version: Makefile
 zgoarch.go: s-zgoarch; @true
 s-zgoarch: Makefile goarch.sh
 	rm -f zgoarch.go.tmp
+	if ! $(SHELL) $(srcdir)/goarch.sh $(GOARCH) family >/dev/null 2>/dev/null;  then \
+	  $(SHELL) $(srcdir)/goarch.sh $(GOARCH) family; \
+	  exit 1; \
+	fi
 	echo "package goarch" > zgoarch.go.tmp
 	echo >> zgoarch.go.tmp
 	echo 'const GOARCH = "'$(GOARCH)'"' >> zgoarch.go.tmp

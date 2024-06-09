@@ -2,6 +2,7 @@
 // arguments and other expressions in the signature.
 
 // { dg-do compile { target c++20 } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct B
 {

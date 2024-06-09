@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details" } */
+/* { dg-additional-options "-O2 -ftree-vectorize -fno-vect-cost-model -fdump-tree-vect-details" } */
 /* { dg-additional-options "-msve-vector-bits=256" { target aarch64_sve256_hw } } */
 long a[44];
 short d, e = -7;

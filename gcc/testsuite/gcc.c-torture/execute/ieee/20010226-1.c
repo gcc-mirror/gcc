@@ -1,5 +1,7 @@
 #include <float.h>
 
+void abort (void);
+
 long double dfrom = 1.1L;
 long double m1;
 long double m2;

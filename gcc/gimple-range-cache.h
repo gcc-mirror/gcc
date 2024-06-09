@@ -1,5 +1,5 @@
 /* Header file for gimple ranger SSA cache.
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -114,8 +114,6 @@ public:
 
   void register_inferred_value (const vrange &r, tree name, basic_block bb);
   void apply_inferred_ranges (gimple *s);
-  gori_compute m_gori;
-  infer_range_manager m_exit;
 
   void dump_bb (FILE *f, basic_block bb);
   virtual void dump (FILE *f) override;

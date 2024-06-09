@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -27,17 +27,24 @@ namespace Imports {
 
 ExternCrate::ExternCrate (Import::Stream &stream) : import_stream (stream) {}
 
+ExternCrate::ExternCrate (const std::string &crate_name,
+			  std::vector<ProcMacro::Procmacro> macros)
+  : proc_macros (macros), crate_name (crate_name)
+{}
+
 ExternCrate::~ExternCrate () {}
 
 bool
 ExternCrate::ok () const
 {
-  return !import_stream.saw_error ();
+  return !import_stream->get ().saw_error ();
 }
 
 bool
-ExternCrate::load (Location locus)
+ExternCrate::load (location_t locus)
 {
+  rust_assert (this->import_stream.has_value ());
+  auto &import_stream = this->import_stream->get ();
   // match header
   import_stream.require_bytes (locus, Metadata::kMagicHeader,
 			       sizeof (Metadata::kMagicHeader));
@@ -155,7 +162,7 @@ ExternCrate::get_metadata () const
 
 // Turn a string into a integer with appropriate error handling.
 bool
-ExternCrate::string_to_int (Location locus, const std::string &s,
+ExternCrate::string_to_int (location_t locus, const std::string &s,
 			    bool is_neg_ok, int *ret)
 {
   char *end;

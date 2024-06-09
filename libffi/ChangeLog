@@ -1,3 +1,35 @@
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* Makefile.am [LIBFFI_BUILD_VERSIONED_SHLIB_SUN] (libffi.map-sun):
+	Pass $(libffi_la_OBJECTS), $(libffi_la_LIBADD) to make_sunver.pl
+	unmodified.
+	* Makefile.in: Regenerate.
+
+2023-10-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/109951
+	* configure.ac: 'AC_SUBST(SYSROOT_CFLAGS_FOR_TARGET)'.
+	<local.exp>: Don't set 'CC_FOR_TARGET', 'CXX_FOR_TARGET', instead
+	set 'SYSROOT_CFLAGS_FOR_TARGET'.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+	* include/Makefile.in: Likewise.
+	* man/Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* testsuite/lib/libffi.exp (libffi_target_compile): If
+	'--with-build-sysroot=[...]' was specified, use it for build-tree
+	testing.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libffi.exp: Likewise.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Handle Darwin rpaths.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2023-08-23  Lulu Cheng  <chenglulu@loongson.cn>
 
 	PR libffi/108682

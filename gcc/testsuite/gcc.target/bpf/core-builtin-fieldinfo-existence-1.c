@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -dA -gbtf -mco-re" } */
+/* { dg-options "-O0 -dA -gbtf -mco-re -masm=normal" } */
 
 enum {
   FIELD_EXISTENCE = 2,
@@ -24,7 +24,7 @@ unsigned int foo (struct S *s)
   return c + d + u + ar;
 }
 
-/* { dg-final { scan-assembler-times "\[\t \]mov\[\t \]%r\[0-9\],1" 4 } } */
+/* { dg-final { scan-assembler-times "\[\t \]lddw\[\t \]%r\[0-9\],1" 4 } } */
 
 /* { dg-final { scan-assembler-times "ascii \"0:0.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "ascii \"0:1.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */

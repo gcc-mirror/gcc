@@ -1,6 +1,6 @@
 /* m2misc.h header file for m2misc.cc.
 
-Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Copyright (C) 2012-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -39,6 +39,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 EXTERN void m2misc_DebugTree (tree t);
 EXTERN void m2misc_printStmt (void);
 EXTERN void m2misc_DebugTreeChain (tree t);
+EXTERN void m2misc_cerror (const char *message);
+EXTERN void m2misc_error (const char *message);
+EXTERN void m2misc_warning_m2_dump_filter (const char *message, const char *rule);
 
 #undef EXTERN
 #endif /* m2misc_h.  */

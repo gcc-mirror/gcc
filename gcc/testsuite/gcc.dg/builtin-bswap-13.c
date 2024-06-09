@@ -1,6 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
+#if __SIZEOF_INT__ < 4
+#define int __INT32_TYPE__
+#endif
+
 int test_s32_0_1(int x) { return __builtin_bswap32(x) & 1; }
 int test_s32_0_2(int x) { return __builtin_bswap32(x) & 2; }
 int test_s32_0_240(int x) { return __builtin_bswap32(x) & 240; }

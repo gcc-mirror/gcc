@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2023, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2024, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -39,6 +39,7 @@
 #include "varasm.h"
 #include "toplev.h"
 #include "opts.h"
+#include "ipa-strub.h"
 #include "output.h"
 #include "debug.h"
 #include "convert.h"
@@ -130,13 +131,41 @@ static const struct attribute_spec::exclusions attr_stack_protect_exclusions[] =
   { NULL, false, false, false },
 };
 
+static const struct attribute_spec::exclusions attr_always_inline_exclusions[] =
+{
+  { "noinline", true, true, true },
+  { "target_clones", true, true, true },
+  { NULL, false, false, false },
+};
+
+static const struct attribute_spec::exclusions attr_noinline_exclusions[] =
+{
+  { "always_inline", true, true, true },
+  { NULL, false, false, false },
+};
+
+static const struct attribute_spec::exclusions attr_target_exclusions[] =
+{
+  { "target_clones", TARGET_HAS_FMV_TARGET_ATTRIBUTE,
+    TARGET_HAS_FMV_TARGET_ATTRIBUTE, TARGET_HAS_FMV_TARGET_ATTRIBUTE },
+  { NULL, false, false, false },
+};
+
+static const struct attribute_spec::exclusions attr_target_clones_exclusions[] =
+{
+  { "always_inline", true, true, true },
+  { "target", TARGET_HAS_FMV_TARGET_ATTRIBUTE, TARGET_HAS_FMV_TARGET_ATTRIBUTE,
+    TARGET_HAS_FMV_TARGET_ATTRIBUTE },
+  { NULL, false, false, false },
+};
+
 /* Fake handler for attributes we don't properly support, typically because
    they'd require dragging a lot of the common-c front-end circuitry.  */
 static tree fake_attribute_handler (tree *, tree, tree, int, bool *);
 
 /* Table of machine-independent internal attributes for Ada.  We support
    this minimal set of attributes to accommodate the needs of builtins.  */
-const struct attribute_spec gnat_internal_attribute_table[] =
+static const attribute_spec gnat_internal_attributes[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -165,7 +194,7 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "strub",	    0, 1, false, true, false, true,
     handle_strub_attribute, NULL },
   { "noinline",     0, 0,  true,  false, false, false,
-    handle_noinline_attribute, NULL },
+    handle_noinline_attribute, attr_noinline_exclusions },
   { "noclone",      0, 0,  true,  false, false, false,
     handle_noclone_attribute, NULL },
   { "no_icf",       0, 0,  true,  false, false, false,
@@ -175,7 +204,7 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "leaf",         0, 0,  true,  false, false, false,
     handle_leaf_attribute, NULL },
   { "always_inline",0, 0,  true,  false, false, false,
-    handle_always_inline_attribute, NULL },
+    handle_always_inline_attribute, attr_always_inline_exclusions },
   { "malloc",       0, 0,  true,  false, false, false,
     handle_malloc_attribute, NULL },
   { "type generic", 0, 0,  false, true,  true,  false,
@@ -192,9 +221,9 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   { "simd",         0, 1,  true,  false, false, false,
     handle_simd_attribute, NULL },
   { "target",       1, -1, true,  false, false, false,
-    handle_target_attribute, NULL },
+    handle_target_attribute, attr_target_exclusions },
   { "target_clones",1, -1, true,  false, false, false,
-    handle_target_clones_attribute, NULL },
+    handle_target_clones_attribute, attr_target_clones_exclusions },
 
   { "vector_size",  1, 1,  false, true,  false, false,
     handle_vector_size_attribute, NULL },
@@ -217,9 +246,11 @@ const struct attribute_spec gnat_internal_attribute_table[] =
   /* This is handled entirely in the front end.  */
   { "hardbool",     0, 0,  false, true, false, true,
     fake_attribute_handler, NULL },
+};
 
-  { NULL,           0, 0,  false, false, false, false,
-    NULL, NULL }
+const scoped_attribute_specs gnat_internal_attribute_table =
+{
+  "gnu", { gnat_internal_attributes }
 };
 
 /* Associates a GNAT tree node to a GCC tree node. It is used in
@@ -1485,7 +1516,14 @@ canonicalize_pad_type (tree type)
    IS_COMPONENT_TYPE is true if this is being done for the component type of
    an array.  DEFINITION is true if this type is being defined.  SET_RM_SIZE
    is true if the RM size of the resulting type is to be set to SIZE too; in
-   this case, the padded type is canonicalized before being returned.  */
+   this case, the padded type is canonicalized before being returned.
+
+   Note that, if TYPE is an array, then we pad it even if it has already got
+   an alignment of ALIGN, provided that it's larger than the alignment of the
+   element type.  This ensures that the size of the type is a multiple of its
+   alignment as required by the GCC type system, and alleviates the oddity of
+   the larger alignment, which is used to implement alignment clauses present
+   on unconstrained array types.  */
 
 tree
 maybe_pad_type (tree type, tree size, unsigned int align,
@@ -1493,7 +1531,10 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 		bool definition, bool set_rm_size)
 {
   tree orig_size = TYPE_SIZE (type);
-  unsigned int orig_align = TYPE_ALIGN (type);
+  unsigned int orig_align
+    = TREE_CODE (type) == ARRAY_TYPE
+      ? TYPE_ALIGN (TREE_TYPE (type))
+      : TYPE_ALIGN (type);
   tree record, field;
 
   /* If TYPE is a padded type, see if it agrees with any size and alignment
@@ -1515,7 +1556,10 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 
       type = TREE_TYPE (TYPE_FIELDS (type));
       orig_size = TYPE_SIZE (type);
-      orig_align = TYPE_ALIGN (type);
+      orig_align
+	= TREE_CODE (type) == ARRAY_TYPE
+	  ? TYPE_ALIGN (TREE_TYPE (type))
+	  : TYPE_ALIGN (type);
     }
 
   /* If the size is either not being changed or is being made smaller (which
@@ -1779,7 +1823,7 @@ set_reverse_storage_order_on_pad_type (tree type)
   return canonicalize_pad_type (type);
 }
 
-/* Relate the alias sets of GNU_NEW_TYPE and GNU_OLD_TYPE according to OP.
+/* Relate the alias sets of NEW_TYPE and OLD_TYPE according to OP.
    If this is a multi-dimensional array type, do this recursively.
 
    OP may be
@@ -1788,30 +1832,28 @@ set_reverse_storage_order_on_pad_type (tree type)
    - ALIAS_SET_SUBSET:   the new set is made a subset of the old one.  */
 
 void
-relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
+relate_alias_sets (tree new_type, tree old_type, enum alias_set_op op)
 {
   /* Remove any padding from GNU_OLD_TYPE.  It doesn't matter in the case
      of a one-dimensional array, since the padding has the same alias set
      as the field type, but if it's a multi-dimensional array, we need to
      see the inner types.  */
-  while (TREE_CODE (gnu_old_type) == RECORD_TYPE
-	 && (TYPE_JUSTIFIED_MODULAR_P (gnu_old_type)
-	     || TYPE_PADDING_P (gnu_old_type)))
-    gnu_old_type = TREE_TYPE (TYPE_FIELDS (gnu_old_type));
+  while (TREE_CODE (old_type) == RECORD_TYPE
+	 && (TYPE_JUSTIFIED_MODULAR_P (old_type)
+	     || TYPE_PADDING_P (old_type)))
+    old_type = TREE_TYPE (TYPE_FIELDS (old_type));
 
   /* Unconstrained array types are deemed incomplete and would thus be given
      alias set 0.  Retrieve the underlying array type.  */
-  if (TREE_CODE (gnu_old_type) == UNCONSTRAINED_ARRAY_TYPE)
-    gnu_old_type
-      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_old_type))));
-  if (TREE_CODE (gnu_new_type) == UNCONSTRAINED_ARRAY_TYPE)
-    gnu_new_type
-      = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_new_type))));
+  if (TREE_CODE (old_type) == UNCONSTRAINED_ARRAY_TYPE)
+    old_type = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (old_type))));
+  if (TREE_CODE (new_type) == UNCONSTRAINED_ARRAY_TYPE)
+    new_type = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (new_type))));
 
-  if (TREE_CODE (gnu_new_type) == ARRAY_TYPE
-      && TREE_CODE (TREE_TYPE (gnu_new_type)) == ARRAY_TYPE
-      && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_new_type)))
-    relate_alias_sets (TREE_TYPE (gnu_new_type), TREE_TYPE (gnu_old_type), op);
+  if (TREE_CODE (new_type) == ARRAY_TYPE
+      && TREE_CODE (TREE_TYPE (new_type)) == ARRAY_TYPE
+      && TYPE_MULTI_ARRAY_P (TREE_TYPE (new_type)))
+    relate_alias_sets (TREE_TYPE (new_type), TREE_TYPE (old_type), op);
 
   switch (op)
     {
@@ -1820,19 +1862,23 @@ relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
 	 aliasing settings because this can break the aliasing relationship
 	 between the array type and its element type.  */
       if (flag_checking || flag_strict_aliasing)
-	gcc_assert (!(TREE_CODE (gnu_new_type) == ARRAY_TYPE
-		      && TREE_CODE (gnu_old_type) == ARRAY_TYPE
-		      && TYPE_NONALIASED_COMPONENT (gnu_new_type)
-			 != TYPE_NONALIASED_COMPONENT (gnu_old_type)));
+	gcc_assert (!(TREE_CODE (new_type) == ARRAY_TYPE
+		      && TREE_CODE (old_type) == ARRAY_TYPE
+		      && TYPE_NONALIASED_COMPONENT (new_type)
+			 != TYPE_NONALIASED_COMPONENT (old_type)));
 
-      TYPE_ALIAS_SET (gnu_new_type) = get_alias_set (gnu_old_type);
+      /* The alias set is a property of the TYPE_CANONICAL if it exists.  */
+      if (TYPE_STRUCTURAL_EQUALITY_P (new_type))
+	TYPE_ALIAS_SET (new_type) = get_alias_set (old_type);
+      else
+	TYPE_ALIAS_SET (TYPE_CANONICAL (new_type)) = get_alias_set (old_type);
       break;
 
     case ALIAS_SET_SUBSET:
     case ALIAS_SET_SUPERSET:
       {
-	alias_set_type old_set = get_alias_set (gnu_old_type);
-	alias_set_type new_set = get_alias_set (gnu_new_type);
+	alias_set_type old_set = get_alias_set (old_type);
+	alias_set_type new_set = get_alias_set (new_type);
 
 	/* Do nothing if the alias sets conflict.  This ensures that we
 	   never call record_alias_subset several times for the same pair
@@ -1851,7 +1897,7 @@ relate_alias_sets (tree gnu_new_type, tree gnu_old_type, enum alias_set_op op)
       gcc_unreachable ();
     }
 
-  record_component_aliases (gnu_new_type);
+  record_component_aliases (new_type);
 }
 
 /* Record TYPE as a builtin type for Ada.  NAME is the name of the type.
@@ -6727,9 +6773,77 @@ handle_no_stack_protector_attribute (tree *node, tree name, tree, int,
    struct attribute_spec.handler.  */
 
 static tree
-handle_strub_attribute (tree *, tree, tree, int, bool *no_add_attrs)
+handle_strub_attribute (tree *node, tree name,
+			tree args,
+			int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  *no_add_attrs = true;
+  bool enable = true;
+
+  if (args && FUNCTION_POINTER_TYPE_P (*node))
+    *node = TREE_TYPE (*node);
+
+  if (args && FUNC_OR_METHOD_TYPE_P (*node))
+    {
+      switch (strub_validate_fn_attr_parm (TREE_VALUE (args)))
+	{
+	case 1:
+	case 2:
+	  enable = true;
+	  break;
+
+	case 0:
+	  warning (OPT_Wattributes,
+		   "%qE attribute ignored because of argument %qE",
+		   name, TREE_VALUE (args));
+	  *no_add_attrs = true;
+	  enable = false;
+	  break;
+
+	case -1:
+	case -2:
+	  enable = false;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+      args = TREE_CHAIN (args);
+    }
+
+  if (args)
+    {
+      warning (OPT_Wattributes,
+	       "ignoring attribute %qE because of excess arguments"
+	       " starting at %qE",
+	       name, TREE_VALUE (args));
+      *no_add_attrs = true;
+      enable = false;
+    }
+
+  /* Warn about unmet expectations that the strub attribute works like a
+     qualifier.  ??? Could/should we extend it to the element/field types
+     here?  */
+  if (TREE_CODE (*node) == ARRAY_TYPE
+      || VECTOR_TYPE_P (*node)
+      || TREE_CODE (*node) == COMPLEX_TYPE)
+    warning (OPT_Wattributes,
+	     "attribute %qE does not apply to elements"
+	     " of non-scalar type %qT",
+	     name, *node);
+  else if (RECORD_OR_UNION_TYPE_P (*node))
+    warning (OPT_Wattributes,
+	     "attribute %qE does not apply to fields"
+	     " of aggregate type %qT",
+	     name, *node);
+
+  /* If we see a strub-enabling attribute, and we're at the default setting,
+     implicitly or explicitly, note that the attribute was seen, so that we can
+     reduce the compile-time overhead to nearly zero when the strub feature is
+     not used.  */
+  if (enable && flag_strub < -2)
+    flag_strub += 2;
+
   return NULL_TREE;
 }
 
@@ -6742,16 +6856,7 @@ handle_noinline_attribute (tree *node, tree name,
 			   int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL)
-    {
-      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
-	{
-	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
-		   "with attribute %qs", name, "always_inline");
-	  *no_add_attrs = true;
-	}
-      else
-	DECL_UNINLINABLE (*node) = 1;
-    }
+    DECL_UNINLINABLE (*node) = 1;
   else
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
@@ -7050,12 +7155,6 @@ handle_target_attribute (tree *node, tree name, tree args, int flags,
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
-  else if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (*node)))
-    {
-      warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
-		   "with %qs attribute", name, "target_clones");
-      *no_add_attrs = true;
-    }
   else if (!targetm.target_option.valid_attribute_p (*node, name, args, flags))
     *no_add_attrs = true;
 
@@ -7083,23 +7182,8 @@ handle_target_clones_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 {
   /* Ensure we have a function type.  */
   if (TREE_CODE (*node) == FUNCTION_DECL)
-    {
-      if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (*node)))
-	{
-	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
-		   "with %qs attribute", name, "always_inline");
-	  *no_add_attrs = true;
-	}
-      else if (lookup_attribute ("target", DECL_ATTRIBUTES (*node)))
-	{
-	  warning (OPT_Wattributes, "%qE attribute ignored due to conflict "
-		   "with %qs attribute", name, "target");
-	  *no_add_attrs = true;
-	}
-      else
-	/* Do not inline functions with multiple clone targets.  */
-	DECL_UNINLINABLE (*node) = 1;
-    }
+    /* Do not inline functions with multiple clone targets.  */
+    DECL_UNINLINABLE (*node) = 1;
   else
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
@@ -7271,7 +7355,7 @@ def_builtin_1 (enum built_in_function fncode,
 static int flag_isoc94 = 0;
 static int flag_isoc99 = 0;
 static int flag_isoc11 = 0;
-static int flag_isoc2x = 0;
+static int flag_isoc23 = 0;
 
 /* Install what the common builtins.def offers plus our local additions.
 

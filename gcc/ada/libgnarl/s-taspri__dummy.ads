@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,12 +31,12 @@
 
 --  This is a no tasking version of this package
 
+with System.OS_Locks;
+
 package System.Task_Primitives is
    pragma Preelaborate;
 
    type Lock is new Integer;
-
-   type RTS_Lock is new Integer;
 
    type Suspension_Object is new Integer;
 
@@ -45,7 +45,7 @@ package System.Task_Primitives is
    type Private_Data is limited record
       Thread : aliased Integer;
       CV     : aliased Integer;
-      L      : aliased RTS_Lock;
+      L      : aliased System.OS_Locks.RTS_Lock;
    end record;
 
    subtype Task_Address is System.Address;

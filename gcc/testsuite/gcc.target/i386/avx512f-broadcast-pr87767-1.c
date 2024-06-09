@@ -3,8 +3,7 @@
 /* { dg-options "-O2 -mavx512f -mavx512dq" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
 /* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } }
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to8\\\}" 2 { target { ! ia32 } } } }  */
-/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to8\\\}" 5 { target ia32 } } } */
+/* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to8\\\}" 2 } } */
 /* { dg-final { scan-assembler-times "\[^\n\]*\\\{1to16\\\}" 2 } }  */
 /* { dg-final { scan-assembler-times "vpbroadcastd\[\\t \]+%(?:r|e)\[^\n\]*, %zmm\[0-9\]+" 3 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastq\[\\t \]+%r\[^\n\]*, %zmm\[0-9\]+" 3 { target { ! ia32 } } } } */

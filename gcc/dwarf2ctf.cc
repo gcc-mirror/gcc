@@ -1,5 +1,5 @@
 /* Generate CTF types and objects from the GCC DWARF.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -349,105 +349,97 @@ gen_ctf_pointer_type (ctf_container_ref ctfc, dw_die_ref ptr_type)
   return ptr_type_id;
 }
 
-/* Generate CTF for an array type.  */
+/* Recursively generate CTF for array dimensions starting at DIE C (of type
+   DW_TAG_subrange_type) until DIE LAST (of type DW_TAG_subrange_type) is
+   reached.  ARRAY_ELEMS_TYPE_ID is base type for the array.  */
 
 static ctf_id_t
-gen_ctf_array_type (ctf_container_ref ctfc, dw_die_ref array_type)
+gen_ctf_subrange_type (ctf_container_ref ctfc, ctf_id_t array_elems_type_id,
+		       dw_die_ref c, dw_die_ref last)
 {
-  dw_die_ref c;
+  ctf_arinfo_t arinfo;
+  ctf_id_t array_node_type_id = CTF_NULL_TYPEID;
+
+  dw_attr_node *upper_bound_at;
+  dw_die_ref array_index_type;
+  uint32_t array_num_elements;
+
+  if (dw_get_die_tag (c) == DW_TAG_subrange_type)
+    {
+      /* When DW_AT_upper_bound is used to specify the size of an
+	 array in DWARF, it is usually an unsigned constant
+	 specifying the upper bound index of the array.  However,
+	 for unsized arrays, such as foo[] or bar[0],
+	 DW_AT_upper_bound is a signed integer constant
+	 instead.  */
+
+      upper_bound_at = get_AT (c, DW_AT_upper_bound);
+      if (upper_bound_at
+	  && AT_class (upper_bound_at) == dw_val_class_unsigned_const)
+	/* This is the upper bound index.  */
+	array_num_elements = get_AT_unsigned (c, DW_AT_upper_bound) + 1;
+      else if (get_AT (c, DW_AT_count))
+	array_num_elements = get_AT_unsigned (c, DW_AT_count);
+      else
+	{
+	  /* This is a VLA of some kind.  */
+	  array_num_elements = 0;
+	}
+    }
+  else
+    gcc_unreachable ();
+
+  /* Ok, mount and register the array type.  Note how the array
+     type we register here is the type of the elements in
+     subsequent "dimensions", if there are any.  */
+  arinfo.ctr_nelems = array_num_elements;
+
+  array_index_type = ctf_get_AT_type (c);
+  arinfo.ctr_index = gen_ctf_type (ctfc, array_index_type);
+
+  if (c == last)
+    arinfo.ctr_contents = array_elems_type_id;
+  else
+    arinfo.ctr_contents = gen_ctf_subrange_type (ctfc, array_elems_type_id,
+						 dw_get_die_sib (c), last);
+
+  if (!ctf_type_exists (ctfc, c, &array_node_type_id))
+    array_node_type_id = ctf_add_array (ctfc, CTF_ADD_ROOT, &arinfo, c);
+
+  return array_node_type_id;
+}
+
+/* Generate CTF for an ARRAY_TYPE.  */
+
+static ctf_id_t
+gen_ctf_array_type (ctf_container_ref ctfc,
+		    dw_die_ref array_type)
+{
+  dw_die_ref first, last, array_elems_type;
   ctf_id_t array_elems_type_id = CTF_NULL_TYPEID;
+  ctf_id_t array_type_id = CTF_NULL_TYPEID;
 
   int vector_type_p = get_AT_flag (array_type, DW_AT_GNU_vector);
   if (vector_type_p)
     return array_elems_type_id;
 
-  dw_die_ref array_elems_type = ctf_get_AT_type (array_type);
+  /* Find the first and last array dimension DIEs.  */
+  last = dw_get_die_child (array_type);
+  first = dw_get_die_sib (last);
 
-  /* First, register the type of the array elements if needed.  */
-  array_elems_type_id = gen_ctf_type (ctfc, array_elems_type);
-
-  /* DWARF array types pretend C supports multi-dimensional arrays.
-     So for the type int[N][M], the array type DIE contains two
-     subrange_type children, the first with upper bound N-1 and the
-     second with upper bound M-1.
-
-     CTF, on the other hand, just encodes each array type in its own
-     array type CTF struct.  Therefore we have to iterate on the
-     children and create all the needed types.  */
-
-  c = dw_get_die_child (array_type);
-  gcc_assert (c);
-  do
-    {
-      ctf_arinfo_t arinfo;
-      dw_die_ref array_index_type;
-      uint32_t array_num_elements;
-
-      c = dw_get_die_sib (c);
-
-      if (dw_get_die_tag (c) == DW_TAG_subrange_type)
-	{
-	  dw_attr_node *upper_bound_at;
-
-	  array_index_type = ctf_get_AT_type (c);
-
-	  /* When DW_AT_upper_bound is used to specify the size of an
-	     array in DWARF, it is usually an unsigned constant
-	     specifying the upper bound index of the array.  However,
-	     for unsized arrays, such as foo[] or bar[0],
-	     DW_AT_upper_bound is a signed integer constant
-	     instead.  */
-
-	  upper_bound_at = get_AT (c, DW_AT_upper_bound);
-	  if (upper_bound_at
-	      && AT_class (upper_bound_at) == dw_val_class_unsigned_const)
-	    /* This is the upper bound index.  */
-	    array_num_elements = get_AT_unsigned (c, DW_AT_upper_bound) + 1;
-	  else if (get_AT (c, DW_AT_count))
-	    array_num_elements = get_AT_unsigned (c, DW_AT_count);
-	  else
-	    {
-	      /* This is a VLA of some kind.  */
-	      array_num_elements = 0;
-	    }
-	}
-      else if (dw_get_die_tag (c) == DW_TAG_enumeration_type)
-	{
-	  array_index_type = 0;
-	  array_num_elements = 0;
-	  /* XXX writeme. */
-	  gcc_assert (1);
-	}
-      else
-	gcc_unreachable ();
-
-      /* Ok, mount and register the array type.  Note how the array
-	 type we register here is the type of the elements in
-	 subsequent "dimensions", if there are any.  */
-
-      arinfo.ctr_nelems = array_num_elements;
-      if (array_index_type)
-	arinfo.ctr_index = gen_ctf_type (ctfc, array_index_type);
-      else
-	arinfo.ctr_index = gen_ctf_type (ctfc, ctf_array_index_die);
-
-      arinfo.ctr_contents = array_elems_type_id;
-      if (!ctf_type_exists (ctfc, c, &array_elems_type_id))
-	array_elems_type_id = ctf_add_array (ctfc, CTF_ADD_ROOT, &arinfo,
-					     c);
-    }
-  while (c != dw_get_die_child (array_type));
-
-#if 0
   /* Type de-duplication.
-     Consult the ctfc_types hash again before adding the CTF array type because
-     there can be cases where an array_type type may have been added by the
-     gen_ctf_type call above.  */
-  if (!ctf_type_exists (ctfc, array_type, &type_id))
-    type_id = ctf_add_array (ctfc, CTF_ADD_ROOT, &arinfo, array_type);
-#endif
+     Consult the ctfc_types before adding CTF type for the first dimension.  */
+  if (!ctf_type_exists (ctfc, first, &array_type_id))
+    {
+      array_elems_type = ctf_get_AT_type (array_type);
+      /* First, register the type of the array elements if needed.  */
+      array_elems_type_id = gen_ctf_type (ctfc, array_elems_type);
 
-  return array_elems_type_id;
+      array_type_id = gen_ctf_subrange_type (ctfc, array_elems_type_id, first,
+					     last);
+    }
+
+  return array_type_id;
 }
 
 /* Generate CTF for a typedef.  */
@@ -614,11 +606,16 @@ gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 	      if (attr)
 		bitpos += AT_unsigned (attr);
 
-	      field_type_id = ctf_add_slice (ctfc, CTF_ADD_NONROOT,
-					     field_type_id,
-					     bitpos - field_location,
-					     bitsize,
-					     c);
+	      /* This is not precisely a TBD_CTF_REPRESENTATION_LIMIT, but
+		 surely something to look at for the next format version bump
+		 for CTF.  */
+	      if (bitsize <= 255 && (bitpos - field_location) <= 255)
+		field_type_id = ctf_add_slice (ctfc, CTF_ADD_NONROOT,
+					       field_type_id,
+					       bitpos - field_location,
+					       bitsize, c);
+	      else
+		field_type_id = gen_ctf_unknown_type (ctfc);
 	    }
 
 	  /* Add the field type to the struct or union type.  */
@@ -944,7 +941,10 @@ ctf_debug_finalize (const char *filename, bool btf)
   if (btf)
     {
       btf_output (filename);
-      btf_finalize ();
+      /* btf_finalize when compiling BPF applciations gets deallocated by the
+	 BPF target in bpf_file_end.  */
+      if (btf_debuginfo_p () && !btf_with_core_debuginfo_p ())
+	btf_finalize ();
     }
 
   else
@@ -1027,11 +1027,8 @@ ctf_debug_finish (const char * filename)
   /* Emit BTF debug info here when CO-RE relocations need to be generated.
      BTF with CO-RE relocations needs to be generated when CO-RE is in effect
      for the BPF target.  */
-  if (btf_with_core_debuginfo_p ())
-    {
-      gcc_assert (btf_debuginfo_p ());
-      ctf_debug_finalize (filename, btf_debuginfo_p ());
-    }
+  if (btf_debuginfo_p () && btf_with_core_debuginfo_p ())
+    ctf_debug_finalize (filename, btf_debuginfo_p ());
 }
 
 #include "gt-dwarf2ctf.h"

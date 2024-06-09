@@ -1,5 +1,5 @@
 /* Target definitions for PowerPC running Darwin (Mac OS X).
-   Copyright (C) 1997-2023 Free Software Foundation, Inc.
+   Copyright (C) 1997-2024 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.
@@ -112,6 +112,9 @@
      %:version-compare(>< 10.3 10.4 mmacosx-version-min= -lmx)}}	\
   -lSystem								\
 }"
+
+#undef DARWIN_HEAP_T_LIB
+#define DARWIN_HEAP_T_LIB " "
 
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  The "-faltivec" option should have been

@@ -1,3 +1,5 @@
+/* See also 'self-clause-2.c'.  */
+
 /* { dg-additional-options "-fdump-tree-gimple" } */
 /* { dg-additional-options "--param=openacc-kernels=decompose" }
    { dg-additional-options "-fdump-tree-omp_oacc_kernels_decompose" } */

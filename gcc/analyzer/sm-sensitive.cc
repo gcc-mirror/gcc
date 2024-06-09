@@ -1,6 +1,6 @@
 /* An experimental state machine, for tracking exposure of sensitive
    data (e.g. through logging).
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "options.h"
 #include "diagnostic-path.h"
-#include "diagnostic-metadata.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-event-id.h"
 #include "analyzer/analyzer-logging.h"
@@ -95,15 +94,12 @@ public:
     return OPT_Wanalyzer_exposure_through_output_file;
   }
 
-  bool emit (rich_location *rich_loc,
-	     logger *) final override
+  bool emit (diagnostic_emission_context &ctxt) final override
   {
-    diagnostic_metadata m;
     /* CWE-532: Information Exposure Through Log Files */
-    m.add_cwe (532);
-    return warning_meta (rich_loc, m, get_controlling_option (),
-			 "sensitive value %qE written to output file",
-			 m_arg);
+    ctxt.add_cwe (532);
+    return ctxt.warn ("sensitive value %qE written to output file",
+		      m_arg);
   }
 
   label_text describe_state_change (const evdesc::state_change &change)
@@ -165,10 +161,10 @@ private:
 /* sensitive_state_machine's ctor.  */
 
 sensitive_state_machine::sensitive_state_machine (logger *logger)
-: state_machine ("sensitive", logger)
+: state_machine ("sensitive", logger),
+  m_sensitive (add_state ("sensitive")),
+  m_stop (add_state ("stop"))
 {
-  m_sensitive = add_state ("sensitive");
-  m_stop = add_state ("stop");
 }
 
 /* Warn about an exposure at NODE and STMT if ARG is in the "sensitive"

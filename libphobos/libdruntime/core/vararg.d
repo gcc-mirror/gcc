@@ -129,6 +129,13 @@ void va_arg()(ref va_list ap, TypeInfo ti, void* parmn)
         ap += tsize.alignUp;
         parmn[0..tsize] = p[0..tsize];
     }
+    else version (LoongArch64)
+    {
+        const tsize = ti.tsize;
+        auto p = cast(void*) ap;
+        ap += tsize.alignUp;
+        parmn[0..tsize] = p[0..tsize];
+    }
     else version (MIPS_Any)
     {
         const tsize = ti.tsize;

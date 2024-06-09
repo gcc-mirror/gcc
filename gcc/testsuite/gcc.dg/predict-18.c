@@ -33,9 +33,9 @@ void foo (int a, int b)
     global++;
 }
 
-/* { dg-final { scan-tree-dump "__builtin_expect_with_probability heuristics of edge .*->.*: 54.00%" "profile_estimate"} } */
+/* { dg-final { scan-tree-dump "combined value predictions heuristics of edge .*->.*: 54.00%" "profile_estimate"} } */
 /* { dg-final { scan-tree-dump "__builtin_expect_with_probability heuristics of edge .*->.*: 77.70%" "profile_estimate"} } */
-/* { dg-final { scan-tree-dump "__builtin_expect_with_probability heuristics of edge .*->.*: 98.96%" "profile_estimate"} } */
-/* { dg-final { scan-tree-dump "__builtin_expect_with_probability heuristics of edge .*->.*: 71.99%" "profile_estimate"} } */
+/* { dg-final { scan-tree-dump "combined value predictions heuristics of edge .*->.*: 98.96%" "profile_estimate"} } */
+/* { dg-final { scan-tree-dump "combined value predictions heuristics of edge .*->.*: 71.99%" "profile_estimate"} } */
 /* { dg-final { scan-tree-dump "__builtin_expect_with_probability heuristics of edge .*->.*: 40.00%" "profile_estimate"} } */
 /* { dg-final { scan-tree-dump "__builtin_expect_with_probability heuristics of edge .*->.*: 35.01%" "profile_estimate"} } */

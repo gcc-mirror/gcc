@@ -1,6 +1,6 @@
 (* M2Error.mod error reporting interface.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -398,10 +398,8 @@ VAR
 BEGIN
    IF AtTokenNo = UnknownTokenNo
    THEN
-      (* this could be used as a useful debugging hook as the front end
-         has forgotten the token no.  This can occur if a complex record
-         structure or array is used for example.  *)
-      AtTokenNo := GetTokenNo ()
+      (* This could be used as a useful debugging hook as the front end
+         has forgotten the token no.  *)
    END ;
    NEW(e) ;
    WITH e^ DO

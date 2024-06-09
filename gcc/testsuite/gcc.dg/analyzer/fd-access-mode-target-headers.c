@@ -1,5 +1,5 @@
-/* { dg-skip-if "" { powerpc*-*-aix* || newlib } } */
-/* { dg-skip-if "" { avr-*-* } } */
+/* { dg-skip-if "" { { powerpc*-*-aix* avr-*-* *-*-vxworks* } || newlib } } */
+/* { dg-skip-if "PR analyzer/107750" { *-*-solaris2* } } */
 
 #include <sys/stat.h>
 #include <fcntl.h>

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -funswitch-loops -fdump-tree-unswitch-optimized" } */
+/* { dg-require-effective-target int32 } */
 
 int
 foo(double *a, double *b, double *c, double *d, double *r, int size, int order)

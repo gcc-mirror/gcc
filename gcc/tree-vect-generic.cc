@@ -1,5 +1,5 @@
 /* Lower vector operations to scalar operations.
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -551,7 +551,6 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   int *shift_temps = post_shifts + nunits;
   unsigned HOST_WIDE_INT *mulc = XALLOCAVEC (unsigned HOST_WIDE_INT, nunits);
   int prec = TYPE_PRECISION (TREE_TYPE (type));
-  int dummy_int;
   unsigned int i;
   signop sign_p = TYPE_SIGN (TREE_TYPE (type));
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (TYPE_MODE (TREE_TYPE (type)));
@@ -609,11 +608,11 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      continue;
 	    }
 
-	  /* Find a suitable multiplier and right shift count
-	     instead of multiplying with D.  */
-	  mh = choose_multiplier (d, prec, prec, &ml, &post_shift, &dummy_int);
+	  /* Find a suitable multiplier and right shift count instead of
+	     directly dividing by D.  */
+	  mh = choose_multiplier (d, prec, prec, &ml, &post_shift);
 
-	  /* If the suggested multiplier is more than SIZE bits, we can
+	  /* If the suggested multiplier is more than PREC bits, we can
 	     do better for even divisors, using an initial right shift.  */
 	  if ((mh != 0 && (d & 1) == 0)
 	      || (!has_vector_shift && pre_shift != -1))
@@ -655,7 +654,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 		    }
 		  mh = choose_multiplier (d >> pre_shift, prec,
 					  prec - pre_shift,
-					  &ml, &post_shift, &dummy_int);
+					  &ml, &post_shift);
 		  gcc_assert (!mh);
 		  pre_shifts[i] = pre_shift;
 		}
@@ -699,7 +698,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	    }
 
 	  choose_multiplier (abs_d, prec, prec - 1, &ml,
-			     &post_shift, &dummy_int);
+			     &post_shift);
 	  if (ml >= HOST_WIDE_INT_1U << (prec - 1))
 	    {
 	      this_mode = 4 + (d < 0);
@@ -1343,12 +1342,16 @@ optimize_vector_constructor (gimple_stmt_iterator *gsi)
   gsi_replace (gsi, g, false);
 }
 
-/* Return a type for the widest vector mode whose components are of type
-   TYPE, or NULL_TREE if none is found.  */
+/* Return a type for the widest vector mode with the same element type as
+   type ORIGINAL_VECTOR_TYPE, with at most the same number of elements as type
+   ORIGINAL_VECTOR_TYPE and that is supported by the target for an operation
+   with optab OP, or return NULL_TREE if none is found.  */
 
 static tree
-type_for_widest_vector_mode (tree type, optab op)
+type_for_widest_vector_mode (tree original_vector_type, optab op)
 {
+  gcc_assert (VECTOR_TYPE_P (original_vector_type));
+  tree type = TREE_TYPE (original_vector_type);
   machine_mode inner_mode = TYPE_MODE (type);
   machine_mode best_mode = VOIDmode, mode;
   poly_int64 best_nunits = 0;
@@ -1371,7 +1374,9 @@ type_for_widest_vector_mode (tree type, optab op)
   FOR_EACH_MODE_FROM (mode, mode)
     if (GET_MODE_INNER (mode) == inner_mode
 	&& maybe_gt (GET_MODE_NUNITS (mode), best_nunits)
-	&& optab_handler (op, mode) != CODE_FOR_nothing)
+	&& optab_handler (op, mode) != CODE_FOR_nothing
+	&& known_le (GET_MODE_NUNITS (mode),
+		     TYPE_VECTOR_SUBPARTS (original_vector_type)))
       best_mode = mode, best_nunits = GET_MODE_NUNITS (mode);
 
   if (best_mode == VOIDmode)
@@ -1702,9 +1707,8 @@ get_compute_type (enum tree_code code, optab op, tree type)
 	  || optab_handler (op, TYPE_MODE (type)) == CODE_FOR_nothing))
     {
       tree vector_compute_type
-	= type_for_widest_vector_mode (TREE_TYPE (type), op);
+	= type_for_widest_vector_mode (type, op);
       if (vector_compute_type != NULL_TREE
-	  && subparts_gt (compute_type, vector_compute_type)
 	  && maybe_ne (TYPE_VECTOR_SUBPARTS (vector_compute_type), 1U)
 	  && (optab_handler (op, TYPE_MODE (vector_compute_type))
 	      != CODE_FOR_nothing))
@@ -1877,10 +1881,9 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
       /* Can't use get_compute_type here, as supportable_convert_operation
 	 doesn't necessarily use an optab and needs two arguments.  */
       tree vec_compute_type
-	= type_for_widest_vector_mode (TREE_TYPE (arg_type), mov_optab);
+	= type_for_widest_vector_mode (arg_type, mov_optab);
       if (vec_compute_type
-	  && VECTOR_MODE_P (TYPE_MODE (vec_compute_type))
-	  && subparts_gt (arg_type, vec_compute_type))
+	  && VECTOR_MODE_P (TYPE_MODE (vec_compute_type)))
 	{
 	  unsigned HOST_WIDE_INT nelts
 	    = constant_lower_bound (TYPE_VECTOR_SUBPARTS (vec_compute_type));

@@ -89,10 +89,6 @@ quick_check ()
 
   assert (__builtin_cpu_supports ("avx512f") >= 0);
 
-  assert (__builtin_cpu_supports ("avx5124vnniw") >= 0);
-
-  assert (__builtin_cpu_supports ("avx5124fmaps") >= 0);
-
   assert (__builtin_cpu_supports ("avx512vpopcntdq") >= 0);
 
   assert (__builtin_cpu_supports ("x86-64") >= 0);

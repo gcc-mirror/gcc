@@ -1,5 +1,5 @@
 /* Demangler for g++ V3 ABI.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -581,6 +581,7 @@ static char *d_demangle (const char *, int, size_t *);
     case DEMANGLE_COMPONENT_CONST_THIS:			\
     case DEMANGLE_COMPONENT_REFERENCE_THIS:		\
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:	\
+    case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:	\
     case DEMANGLE_COMPONENT_TRANSACTION_SAFE:		\
     case DEMANGLE_COMPONENT_NOEXCEPT:			\
     case DEMANGLE_COMPONENT_THROW_SPEC
@@ -748,6 +749,9 @@ d_dump (struct demangle_component *dc, int indent)
       break;
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
       printf ("rvalue reference this\n");
+      break;
+    case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:
+      printf ("explicit object parameter\n");
       break;
     case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
       printf ("transaction_safe this\n");
@@ -993,6 +997,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_VECTOR_TYPE:
     case DEMANGLE_COMPONENT_CLONE:
     case DEMANGLE_COMPONENT_MODULE_ENTITY:
+    case DEMANGLE_COMPONENT_CONSTRAINTS:
       if (left == NULL || right == NULL)
 	return NULL;
       break;
@@ -1345,6 +1350,22 @@ is_ctor_dtor_or_conversion (struct demangle_component *dc)
     }
 }
 
+/* [ Q <constraint-expression> ] */
+
+static struct demangle_component *
+d_maybe_constraints (struct d_info *di, struct demangle_component *dc)
+{
+  if (d_peek_char (di) == 'Q')
+    {
+      d_advance (di, 1);
+      struct demangle_component *expr = d_expression (di);
+      if (expr == NULL)
+	return NULL;
+      dc = d_make_comp (di, DEMANGLE_COMPONENT_CONSTRAINTS, dc, expr);
+    }
+  return dc;
+}
+
 /* <encoding> ::= <(function) name> <bare-function-type>
               ::= <(data) name>
               ::= <special-name>
@@ -1398,21 +1419,21 @@ d_encoding (struct d_info *di, int top_level)
 	      struct demangle_component *ftype;
 
 	      ftype = d_bare_function_type (di, has_return_type (dc));
-	      if (ftype)
-		{
-		  /* If this is a non-top-level local-name, clear the
-		     return type, so it doesn't confuse the user by
-		     being confused with the return type of whaever
-		     this is nested within.  */
-		  if (!top_level && dc->type == DEMANGLE_COMPONENT_LOCAL_NAME
-		      && ftype->type == DEMANGLE_COMPONENT_FUNCTION_TYPE)
-		    d_left (ftype) = NULL;
+	      if (!ftype)
+		return NULL;
 
-		  dc = d_make_comp (di, DEMANGLE_COMPONENT_TYPED_NAME,
-				    dc, ftype);
-		}
-	      else
-		dc = NULL;
+	      /* If this is a non-top-level local-name, clear the
+		 return type, so it doesn't confuse the user by
+		 being confused with the return type of whaever
+		 this is nested within.  */
+	      if (!top_level && dc->type == DEMANGLE_COMPONENT_LOCAL_NAME
+		  && ftype->type == DEMANGLE_COMPONENT_FUNCTION_TYPE)
+		d_left (ftype) = NULL;
+
+	      ftype = d_maybe_constraints (di, ftype);
+
+	      dc = d_make_comp (di, DEMANGLE_COMPONENT_TYPED_NAME,
+				dc, ftype);
 	    }
 	}
     }
@@ -1530,6 +1551,8 @@ d_name (struct d_info *di, int substable)
 
 /* <nested-name> ::= N [<CV-qualifiers>] [<ref-qualifier>] <prefix> <unqualified-name> E
                  ::= N [<CV-qualifiers>] [<ref-qualifier>] <template-prefix> <template-args> E
+                 ::= N H <prefix> <unqualified-name> E
+                 ::= N H <template-prefix> <template-args> E
 */
 
 static struct demangle_component *
@@ -1542,13 +1565,24 @@ d_nested_name (struct d_info *di)
   if (! d_check_char (di, 'N'))
     return NULL;
 
-  pret = d_cv_qualifiers (di, &ret, 1);
-  if (pret == NULL)
-    return NULL;
+  if (d_peek_char (di) == 'H')
+    {
+      d_advance (di, 1);
+      di->expansion += sizeof "this";
+      pret = &ret;
+      rqual = d_make_comp (di, DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION,
+			   NULL, NULL);
+    }
+  else
+    {
+      pret = d_cv_qualifiers (di, &ret, 1);
+      if (pret == NULL)
+	return NULL;
 
-  /* Parse the ref-qualifier now and then attach it
-     once we have something to attach it to.  */
-  rqual = d_ref_qualifier (di, NULL);
+      /* Parse the ref-qualifier now and then attach it
+	 once we have something to attach it to.  */
+      rqual = d_ref_qualifier (di, NULL);
+    }
 
   *pret = d_prefix (di, 1);
   if (*pret == NULL)
@@ -3023,7 +3057,7 @@ d_parmlist (struct d_info *di)
       struct demangle_component *type;
 
       char peek = d_peek_char (di);
-      if (peek == '\0' || peek == 'E' || peek == '.')
+      if (peek == '\0' || peek == 'E' || peek == '.' || peek == 'Q')
 	break;
       if ((peek == 'R' || peek == 'O')
 	  && d_peek_next_char (di) == 'E')
@@ -3259,7 +3293,7 @@ d_template_args (struct d_info *di)
   return d_template_args_1 (di);
 }
 
-/* <template-arg>* E  */
+/* <template-arg>* [Q <constraint-expression>] E  */
 
 static struct demangle_component *
 d_template_args_1 (struct d_info *di)
@@ -3295,12 +3329,16 @@ d_template_args_1 (struct d_info *di)
 	return NULL;
       pal = &d_right (*pal);
 
-      if (d_peek_char (di) == 'E')
-	{
-	  d_advance (di, 1);
-	  break;
-	}
+      char peek = d_peek_char (di);
+      if (peek == 'E' || peek == 'Q')
+	break;
     }
+
+  al = d_maybe_constraints (di, al);
+
+  if (d_peek_char (di) != 'E')
+    return NULL;
+  d_advance (di, 1);
 
   di->last_name = hold_last_name;
 
@@ -4406,6 +4444,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_CONST_THIS:
     case DEMANGLE_COMPONENT_REFERENCE_THIS:
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS:
+    case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:
     case DEMANGLE_COMPONENT_TRANSACTION_SAFE:
     case DEMANGLE_COMPONENT_NOEXCEPT:
     case DEMANGLE_COMPONENT_THROW_SPEC:
@@ -4442,6 +4481,7 @@ d_count_templates_scopes (struct d_print_info *dpi,
     case DEMANGLE_COMPONENT_PACK_EXPANSION:
     case DEMANGLE_COMPONENT_TAGGED_NAME:
     case DEMANGLE_COMPONENT_CLONE:
+    case DEMANGLE_COMPONENT_CONSTRAINTS:
     recurse_left_right:
       /* PR 89394 - Check for too much recursion.  */
       if (dpi->recursion > DEMANGLE_RECURSION_LIMIT)
@@ -5201,6 +5241,22 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 	    dpt.next = dpi->templates;
 	    dpi->templates = &dpt;
 	    dpt.template_decl = typed_name;
+
+	    /* Constraints are mangled as part of the template argument list,
+	       so they wrap the _TEMPLATE_ARGLIST.  But
+	       d_lookup_template_argument expects the RHS of _TEMPLATE to be
+	       the _ARGLIST, and constraints need to refer to these args.  So
+	       move the _CONSTRAINTS out of the _TEMPLATE and onto the type.
+	       This will result in them being printed after the () like a
+	       trailing requires-clause, but that seems like our best option
+	       given that we aren't printing a template-head.  */
+	    struct demangle_component *tnr = d_right (typed_name);
+	    if (tnr->type == DEMANGLE_COMPONENT_CONSTRAINTS)
+	      {
+		d_right (typed_name) = d_left (tnr);
+		d_left (tnr) = d_right (dc);
+		d_right (dc) = tnr;
+	      }
 	  }
 
 	d_print_comp (dpi, options, d_right (dc));
@@ -6248,6 +6304,12 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
       d_append_string (dpi, "...");
       return;
 
+    case DEMANGLE_COMPONENT_CONSTRAINTS:
+      d_print_comp (dpi, options, d_left (dc));
+      d_append_string (dpi, " requires ");
+      d_print_comp (dpi, options, d_right (dc));
+      return;
+
     default:
       d_print_error (dpi);
       return;
@@ -6477,6 +6539,8 @@ d_print_mod (struct d_print_info *dpi, int options,
     case DEMANGLE_COMPONENT_RVALUE_REFERENCE:
       d_append_string (dpi, "&&");
       return;
+    case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:
+      return;
     case DEMANGLE_COMPONENT_COMPLEX:
       d_append_string (dpi, " _Complex");
       return;
@@ -6515,11 +6579,13 @@ d_print_function_type (struct d_print_info *dpi, int options,
 {
   int need_paren;
   int need_space;
+  int xobj_memfn;
   struct d_print_mod *p;
   struct d_print_mod *hold_modifiers;
 
   need_paren = 0;
   need_space = 0;
+  xobj_memfn = 0;
   for (p = mods; p != NULL; p = p->next)
     {
       if (p->printed)
@@ -6542,7 +6608,8 @@ d_print_function_type (struct d_print_info *dpi, int options,
 	  need_space = 1;
 	  need_paren = 1;
 	  break;
-	FNQUAL_COMPONENT_CASE:
+	case DEMANGLE_COMPONENT_XOBJ_MEMBER_FUNCTION:
+	  xobj_memfn = 1;
 	  break;
 	default:
 	  break;
@@ -6573,6 +6640,8 @@ d_print_function_type (struct d_print_info *dpi, int options,
     d_append_char (dpi, ')');
 
   d_append_char (dpi, '(');
+  if (xobj_memfn)
+    d_append_string (dpi, "this ");
 
   if (d_right (dc) != NULL)
     d_print_comp (dpi, options, d_right (dc));

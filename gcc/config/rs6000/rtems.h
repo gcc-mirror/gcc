@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a PowerPC using elf.
-   Copyright (C) 1996-2023 Free Software Foundation, Inc.
+   Copyright (C) 1996-2024 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
    This file is part of GCC.
@@ -35,6 +35,10 @@
 #define TARGET_64BIT 0
 #endif
 #endif
+
+/* RTEMS configured for the 32-bit multilibs doesn't support saving and
+   restoring 64-bit regs.  */
+#define OS_MISSING_POWERPC64 !TARGET_64BIT
 
 /* Copy and paste from linux64.h and freebsd64.h */
 #undef	TARGET_AIX

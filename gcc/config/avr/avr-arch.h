@@ -1,6 +1,6 @@
 /* Definitions of types that are used to store AVR architecture and
    device information.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Georg-Johann Lay (avr@gjlay.de)
 
 This file is part of GCC.
@@ -166,7 +166,35 @@ AVR_ISA_RCALL
   assume these instructions are not available and we set the built-in
   macro __AVR_HAVE_JMP_CALL__ accordingly.  This macro is used to
   determine a rough estimate of flash size in libgcc, and AVR-LibC uses
-  this macro to determine vector sizes.  */
+  this macro to determine vector sizes.
+
+AVR_ISA_FLMAP
+  The device has the NVMCTRL_CTRLB.FLMAP bitfield.  The value of FLMAP
+  determines which 32 KiB segment of the program memory (flash) is visible
+  in the RAM address space at 0x8000.
+
+  If Binutils support emulations avrxmega2_flmap resp. avrxmega4_flmap
+  (PR31124), then  the location of the .rodata section can be determined
+  by means of option -m[no-]rodata-in-ram.  If .rodata is located in flash,
+  the user can chose which 32 KiB flash block is visible in RAM space by
+  means of defining symbol __flmap.
+
+  The startup code from AVR-LibC initializes FLMAP according to __flmap
+  provided one of the avrxmega*_flmap emulations is used. If avrxmega2/4
+  is used, then the startup code does not initialize FLMAP.
+
+  __AVR_HAVE_FLMAP__ is a macro defined in device-specs and supposed to be
+  consumed by code that sets FLMAP, like the startup code for example.
+  The macro is defined when all of the following conditions are met:
+    * The device is AVR_ISA_FLMAP.
+    * It's not known at compile time / assembler time whether or not .rodata
+      will be located in flash or in RAM. This implies Binutils PR31124.
+    * The definition of the macro is independent of -m[no-]rodata-in-ram.
+
+  AVR_ISA_FLMAP does not affect multilib layout or selection in any way.
+
+  For details on which symbols are defined in which way depending on the
+  emulation, see <Binutils>/ld/scripttempl/avr.sc.  */
 
 enum avr_device_specific_features
 {
@@ -175,9 +203,12 @@ enum avr_device_specific_features
   AVR_SHORT_SP    = 0x2, /* Stack Pointer has 8 bits width. */
   AVR_ERRATA_SKIP = 0x4, /* device has a core erratum. */
   AVR_ISA_LDS     = 0x8, /* whether LDS / STS is valid for all data in static
-                            storage.  Only useful for reduced Tiny.  */
-  AVR_ISA_RCALL   = 0x10 /* Use RJMP / RCALL even though JMP / CALL
-                            are available (-mshort-calls).  */
+			    storage.  Only useful for reduced Tiny.	 */
+  AVR_ISA_RCALL	  = 0x10, /* Use RJMP / RCALL even though JMP / CALL
+			     are available (-mshort-calls).	 */
+  AVR_ISA_FLMAP	  = 0x20  /* Has NVMCTRL_CTRLB.FLMAP to select which 32 KiB
+			     block of program memory is visible in the RAM
+			     address space.	 */
 };
 
 /* Map architecture to its texinfo string.  */
@@ -195,6 +226,7 @@ typedef struct
 
 extern const avr_arch_t avr_arch_types[];
 extern const avr_arch_t *avr_arch;
+extern const avr_arch_t *avr_get_parch (const char *mcu);
 
 extern const avr_mcu_t avr_mcu_types[];
 

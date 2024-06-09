@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -21,13 +21,13 @@
 namespace Rust {
 namespace Resolver {
 
-TypeCastRules::TypeCastRules (Location locus, TyTy::TyWithLocation from,
+TypeCastRules::TypeCastRules (location_t locus, TyTy::TyWithLocation from,
 			      TyTy::TyWithLocation to)
   : locus (locus), from (from), to (to)
 {}
 
 TypeCoercionRules::CoercionResult
-TypeCastRules::resolve (Location locus, TyTy::TyWithLocation from,
+TypeCastRules::resolve (location_t locus, TyTy::TyWithLocation from,
 			TyTy::TyWithLocation to)
 {
   TypeCastRules cast_rules (locus, from, to);
@@ -39,9 +39,17 @@ TypeCastRules::check ()
 {
   // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/cast.rs#L565-L582
   auto possible_coercion
-    = TypeCoercionRules::TryCoerce (from.get_ty (), to.get_ty (), locus);
+    = TypeCoercionRules::TryCoerce (from.get_ty (), to.get_ty (), locus,
+				    true /*allow-autoderef*/,
+				    true /*is_cast_site*/);
   if (!possible_coercion.is_error ())
-    return possible_coercion;
+    {
+      // given the attempt was ok we need to ensure we perform it so that any
+      // inference variables are unified correctly
+      return TypeCoercionRules::Coerce (from.get_ty (), to.get_ty (), locus,
+					true /*allow-autoderef*/,
+					true /*is_cast_site*/);
+    }
 
   // try the simple cast rules
   auto simple_cast = cast_rules ();
@@ -59,15 +67,15 @@ TypeCastRules::cast_rules ()
   // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/cast.rs#L596
   // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/cast.rs#L654
 
-  rust_debug ("cast_rules from={%s} to={%s}",
-	      from.get_ty ()->debug_str ().c_str (),
-	      to.get_ty ()->debug_str ().c_str ());
+  TyTy::BaseType *from_type = from.get_ty ()->destructure ();
 
-  switch (from.get_ty ()->get_kind ())
+  rust_debug ("cast_rules from={%s} to={%s}", from_type->debug_str ().c_str (),
+	      to.get_ty ()->debug_str ().c_str ());
+  switch (from_type->get_kind ())
     {
       case TyTy::TypeKind::INFER: {
 	TyTy::InferType *from_infer
-	  = static_cast<TyTy::InferType *> (from.get_ty ());
+	  = static_cast<TyTy::InferType *> (from_type);
 	switch (from_infer->get_infer_kind ())
 	  {
 	  case TyTy::InferType::InferTypeKind::GENERAL:
@@ -77,8 +85,21 @@ TypeCastRules::cast_rules ()
 	  case TyTy::InferType::InferTypeKind::INTEGRAL:
 	    switch (to.get_ty ()->get_kind ())
 	      {
-	      case TyTy::TypeKind::CHAR:
-	      case TyTy::TypeKind::BOOL:
+		case TyTy::TypeKind::CHAR: {
+		  // only u8 and char
+		  bool was_uint
+		    = from.get_ty ()->get_kind () == TyTy::TypeKind::UINT;
+		  bool was_u8
+		    = was_uint
+		      && (static_cast<TyTy::UintType *> (from.get_ty ())
+			    ->get_uint_kind ()
+			  == TyTy::UintType::UintKind::U8);
+		  if (was_u8)
+		    return TypeCoercionRules::CoercionResult{
+		      {}, to.get_ty ()->clone ()};
+		}
+		break;
+
 	      case TyTy::TypeKind::USIZE:
 	      case TyTy::TypeKind::ISIZE:
 	      case TyTy::TypeKind::UINT:
@@ -279,11 +300,33 @@ TypeCastRules::check_ptr_ptr_cast ()
 void
 TypeCastRules::emit_cast_error () const
 {
-  // error[E0604]
-  RichLocation r (locus);
+  rich_location r (line_table, locus);
   r.add_range (from.get_locus ());
   r.add_range (to.get_locus ());
-  rust_error_at (r, ErrorCode ("E0054"), "invalid cast %<%s%> to %<%s%>",
+  ErrorCode error_code;
+  std::string error_msg;
+  switch (to.get_ty ()->get_kind ())
+    {
+    case TyTy::TypeKind::BOOL:
+      error_msg = "cannot cast %qs as %qs";
+      error_code = ErrorCode::E0054;
+      break;
+    case TyTy::TypeKind::CHAR:
+      error_msg
+	+= "cannot cast %qs as %qs, only %<u8%> can be cast as %<char%>";
+      error_code = ErrorCode::E0604;
+      break;
+    case TyTy::TypeKind::SLICE:
+      error_msg = "cast to unsized type: %qs as %qs";
+      error_code = ErrorCode::E0620;
+      break;
+
+    default:
+      error_msg = "casting %qs as %qs is invalid";
+      error_code = ErrorCode::E0606;
+      break;
+    }
+  rust_error_at (r, error_code, error_msg.c_str (),
 		 from.get_ty ()->get_name ().c_str (),
 		 to.get_ty ()->get_name ().c_str ());
 }

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 struct F { int i; };
 
 void f1(struct F *x, struct F *y)
@@ -8,7 +11,8 @@ void f1(struct F *x, struct F *y)
       abort ();
 }
 
-main()
+int
+main(void)
 {
   struct F x, y;
   x.i = 0;

@@ -1,3 +1,217 @@
+2024-06-05  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* check_GNU_style_lib.py: Use raw strings for regexps.
+
+2024-05-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gcc-changelog/git_update_version.py: Add '-i'/'--ignore' argument
+	to add to-be-ignored commits via the command line.
+	(ignored_commits): Rename from IGNORED_COMMITS and change
+	type from tuple to set.
+	(prepend_to_changelog_files): Show git hash if errors occurred.
+	(update_current_branch): Mark argument as optional by defaulting
+	to None.
+
+2024-05-14  Filip Kastl  <fkastl@suse.cz>
+
+	* check-MAINTAINERS.py: Add warning about not using tabs.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Replace
+	9dbff9c05520a74e6cd337578f27b56c941f64f3 with
+	39f81924d88e3cc197fc3df74204c9b5e01e12f7 and
+	109f1b28fc94c93096506e3df0c25e331cef19d0 in IGNORED_COMMITS.
+
+2024-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	9dbff9c05520a74e6cd337578f27b56c941f64f3 to IGNORED_COMMITS.
+
+2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* make_sunver.pl: Use File::Basename;
+	Skip -lLIB args.
+	Convert libtool object/archive names to underlying
+	objects/archives.
+
+2024-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 14.
+
+2024-05-06  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* gcc-changelog/git_check_commit.py: Implement --num-commits.
+
+2024-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (active_refs): Add
+	releases/gcc-14.
+
+2024-04-18  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config-list.mk (LIST): --enable-obsolete for nios2*-*-*.
+
+2024-04-12  Filip Kastl  <fkastl@suse.cz>
+
+	* check-params-in-docs.py: Ignore target specific params.
+
+2024-04-11  Martin Jambor  <mjambor@suse.cz>
+
+	* check-params-in-docs.py (ignored): Add
+	gcn-preferred-vectorization-factor.
+
+2024-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	8057f9aa1f7e70490064de796d7a8d42d446caf8 to IGNORED_COMMITS.
+
+2024-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_libstdcxx_unicode_data.py: Fix header of generated
+	file to name the correct script.
+
+2024-03-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc_update: Add more generated files in libcc1, lto-plugin,
+	fixincludes, and libstdc++-v3.
+
+2024-03-08  Sam James  <sam@gentoo.org>
+
+	PR other/109668
+	* dg-extract-results.sh: Check for python3 before python. Check for
+	python2 last.
+
+2024-03-07  Filip Kastl  <fkastl@suse.cz>
+
+	* test_mklog.py: "Moved to..." -> "Move to..."
+
+2024-03-01  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* mklog.py: Use present tense in ChangeLog.
+
+2024-02-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc-changelog/git_commit.py (bug_components): Add libcc1.
+
+2024-02-23  Richard Biener  <rguenther@suse.de>
+
+	PR target/90785
+	* config-list.mk (LIST): --enable-obsolete for ia64*-*-*.
+
+2024-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* test_installed: Fill in HOSTCC, HOSTCXX, HOSTCFLAGS and
+	HOSTCXXFLAGS.
+
+2024-02-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_libstdcxx_unicode_data.py: Add copyright and
+	license text to the output.
+
+2024-01-11  Paul Iannetta  <piannetta@kalrayinc.com>
+
+	* dg-extract-results.py: Make the test_run regex case
+	insensitive.
+
+2024-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_libstdcxx_unicode_data.py: Print out Gcb_property
+	enumerators in the order they're seen, not alphabetical order.
+
+2024-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/README: Add notes about generating libstdc++ tables.
+	* unicode/GraphemeBreakProperty.txt: New file.
+	* unicode/emoji-data.txt: New file.
+	* unicode/gen_libstdcxx_unicode_data.py: New file.
+
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* analyze_brprob.py: Remove stray text at end of comment.
+	* analyze_brprob_spec.py: Likewise.
+	* check-params-in-docs.py: Likewise.
+	* check_GNU_style.py: Likewise.
+	* check_GNU_style_lib.py: Likewise.
+	* filter-clang-warnings.py: Likewise.
+	* gcc-changelog/git_check_commit.py: Likewise.
+	* gcc-changelog/git_commit.py: Likewise.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/git_update_version.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+	* gen_autofdo_event.py: Likewise.
+	* mark_spam.py: Likewise.
+	* unicode/gen-box-drawing-chars.py: Likewise.
+	* unicode/gen-combining-chars.py: Likewise.
+	* unicode/gen-printable-chars.py: Likewise.
+	* unicode/gen_wcwidth.py: Likewise.
+
+2024-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* unicode/gen_wcwidth.py: Add sys.argv[0] to usage error.
+
+2024-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GenericFilter): Skip gpl_v3_without_node.texi.
+	(GCCFilter): Skip GmcOptions.cc.
+
+2023-12-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* compare_tests: Add tool to test lines.  Match tabs besides
+	blanks to insert tool and target.  Don't print undefined fname.
+
+2023-12-20  Jason Merrill  <jason@redhat.com>
+
+	* gcc-git-customization.sh: Add git gcc-style alias.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* gcc_update: Add libgrust file dependencies.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* gcc-changelog/git_commit.py: Add libgrust.
+
+2023-12-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* download_prerequisites
+	<arg parse>: Parse --only-gettext.
+	(echo_archives): Check only_gettext and stop early if true.
+	(helptext): Document --only-gettext.
+
+2023-12-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config-list.mk (OPT_IN_LANGUAGES): New variable.
+	($(LIST)): Replace --enable-languages=all with a specifc list.
+	Disable fortran on bpf and mmix.  Enable the languages in
+	OPT_IN_LANGUAGES.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* unicode/README: Adjust glibc git commit hash, number of Unicode
+	data files to be updated and latest Unicode version.
+	* unicode/from_glibc/utf8_gen.py: Update from glibc.
+	* unicode/UnicodeData.txt: Update from Unicode 15.1.
+	* unicode/EastAsianWidth.txt: Likewise.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+	* unicode/NameAliases.txt: Likewise.
+	* unicode/DerivedCoreProperties.txt: Likewise.
+	* unicode/PropList.txt: Likewise.
+
+2023-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	040e5b0edbca861196d9e2ea2af5e805769c8d5d to ignored commits.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* prerequisites.sha512: Add gettext.
+	* prerequisites.md5: Add gettext.
+	* download_prerequisites: Add gettext.
+
 2023-10-05  Andrea Corallo  <andrea.corallo@arm.com>
 
 	* mdcompact/mdcompact-testsuite.el: New file.

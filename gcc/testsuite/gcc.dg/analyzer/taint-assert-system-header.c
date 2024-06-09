@@ -3,9 +3,6 @@
    (the default), where the assertion macro is defined in
    a system header.  */
 
-// TODO: remove need for this option
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
-
 /* { dg-additional-options "-fdiagnostics-show-path-depths" } */
 /* { dg-additional-options "-fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
 

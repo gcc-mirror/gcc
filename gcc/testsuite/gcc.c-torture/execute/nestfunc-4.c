@@ -5,6 +5,9 @@
    functions without parameters that each need at least one "long"
    preserved.  Exposed problems related to the MMIX port.  */
 
+void abort (void);
+void exit (int);
+
 long level = 0;
 extern long foo (void);
 extern long bar (void);

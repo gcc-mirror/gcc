@@ -1,5 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
-# Copyright (C) 2009-2023 Free Software Foundation, Inc.
+# Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -371,6 +371,7 @@ GNAT_ADA_OBJS =	\
  ada/lib-xref.o	\
  ada/lib.o	\
  ada/live.o	\
+ ada/local_restrict.o \
  ada/namet-sp.o	\
  ada/namet.o	\
  ada/nlists.o	\
@@ -571,7 +572,6 @@ GNATBIND_OBJS = \
  ada/ali-util.o   \
  ada/ali.o        \
  ada/alloc.o      \
- ada/aspects.o    \
  ada/atree.o      \
  ada/bcheck.o     \
  ada/binde.o      \
@@ -601,12 +601,10 @@ GNATBIND_OBJS = \
  ada/exit.o       \
  ada/final.o      \
  ada/fmap.o       \
- ada/fname-uf.o   \
  ada/fname.o      \
  ada/gnatbind.o   \
  ada/gnatvsn.o    \
  ada/hostparm.o   \
- ada/krunch.o     \
  ada/lib.o        \
  ada/link.o       \
  ada/namet.o      \
@@ -617,7 +615,6 @@ GNATBIND_OBJS = \
  ada/output.o     \
  ada/rident.o     \
  ada/scans.o      \
- ada/scil_ll.o    \
  ada/scng.o       \
  ada/sdefault.o   \
  ada/seinfo.o	  \
@@ -630,7 +627,6 @@ GNATBIND_OBJS = \
  ada/snames.o     \
  ada/stand.o      \
  ada/stringt.o    \
- ada/style.o      \
  ada/styleg.o     \
  ada/stylesw.o    \
  ada/switch-b.o   \
@@ -888,10 +884,6 @@ ada.install-pdf: $(ADA_PDFFILES)
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
 	done
 
-ada.html:
-
-ada.install-html:
-
 doc/gnat_ugn.dvi: ada/gnat_ugn.texi \
 	$(gcc_docdir)/include/fdl.texi	\
 	$(gcc_docdir)/include/gcc-common.texi gcc-vers.texi
@@ -915,6 +907,37 @@ doc/gnat_rm.pdf: ada/gnat_rm.texi $(gcc_docdir)/include/fdl.texi	\
 
 doc/gnat-style.pdf: ada/gnat-style.texi $(gcc_docdir)/include/fdl.texi
 	$(TEXI2PDF) -c -I $(abs_docdir)/include -o $@ $<
+
+ADA_TEXI_FILES = \
+       ada/gnat_rm.texi \
+       ada/gnat_ugn.texi \
+       $(gcc_docdir)/include/fdl.texi \
+       $(gcc_docdir)/include/gpl_v3.texi \
+       $(gcc_docdir)/include/gcc-common.texi \
+       gcc-vers.texi
+
+$(build_htmldir)/ada/index.html: $(ADA_TEXI_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/ada -o $(@D) $<
+
+ada.html: $(build_htmldir)/ada/index.html
+ada.install-html: $(build_htmldir)/ada
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
+	@for p in $(build_htmldir)/ada; do \
+	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
+	  f=$(html__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
+	  else \
+	    echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(htmldir)/$$f"; \
+	  fi; \
+	done
 
 # Install hooks:
 # gnat1 is installed elsewhere as part of $(COMPILERS).

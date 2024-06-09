@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fstack-clash-protection --param stack-clash-protection-guard-size=16 -fno-asynchronous-unwind-tables -fno-unwind-tables" } */
+/* { dg-options "-O2 -fstack-clash-protection --param stack-clash-protection-guard-size=16 -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-stack-protector" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
 
 typedef unsigned __attribute__((mode(DI))) uint64_t;

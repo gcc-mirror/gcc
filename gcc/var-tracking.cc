@@ -1,5 +1,5 @@
 /* Variable tracking routines for the GNU compiler.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -107,6 +107,8 @@
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "reload.h"
+#include "ira.h"
+#include "lra.h"
 #include "calls.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
@@ -7333,8 +7335,8 @@ dump_var (variable *var)
 
   for (i = 0; i < var->n_var_parts; i++)
     {
-      fprintf (dump_file, "    offset %ld\n",
-	       (long)(var->onepart ? 0 : VAR_PART_OFFSET (var, i)));
+      fprintf (dump_file, "    offset " HOST_WIDE_INT_PRINT_DEC "\n",
+	       var->onepart ? 0 : VAR_PART_OFFSET (var, i));
       for (node = var->var_part[i].loc_chain; node; node = node->next)
 	{
 	  fprintf (dump_file, "      ");
@@ -10131,7 +10133,9 @@ vt_initialize (void)
 #else
       reg = arg_pointer_rtx;
 #endif
-      elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
+      elim = (ira_use_lra_p
+	      ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
+	      : eliminate_regs (reg, VOIDmode, NULL_RTX));
       if (elim != reg)
 	{
 	  if (GET_CODE (elim) == PLUS)
@@ -10151,7 +10155,9 @@ vt_initialize (void)
       reg = arg_pointer_rtx;
       fp_cfa_offset = ARG_POINTER_CFA_OFFSET (current_function_decl);
 #endif
-      elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
+      elim = (ira_use_lra_p
+	      ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
+	      : eliminate_regs (reg, VOIDmode, NULL_RTX));
       if (elim != reg)
 	{
 	  if (GET_CODE (elim) == PLUS)
@@ -10183,7 +10189,9 @@ vt_initialize (void)
 #else
       reg = arg_pointer_rtx;
 #endif
-      elim = eliminate_regs (reg, VOIDmode, NULL_RTX);
+      elim = (ira_use_lra_p
+	      ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
+	      : eliminate_regs (reg, VOIDmode, NULL_RTX));
       if (elim != reg)
 	{
 	  if (GET_CODE (elim) == PLUS)

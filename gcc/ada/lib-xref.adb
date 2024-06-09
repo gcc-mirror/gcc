@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@ with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
+with Exp_Tss;        use Exp_Tss;
 with Lib.Util;       use Lib.Util;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
@@ -789,10 +790,15 @@ package body Lib.Xref is
          elsif Kind = E_In_Out_Parameter
            and then Is_Assignable (E)
          then
-            --  For sure this counts as a normal read reference
+            --  We count it as a read reference unless we're calling a
+            --  type support subprogram such as deep finalize.
 
-            Set_Referenced (E);
-            Set_Last_Assignment (E, Empty);
+            if not Is_Entity_Name (Name (Call))
+              or else Get_TSS_Name (Entity (Name (Call))) = TSS_Null
+            then
+               Set_Referenced (E);
+               Set_Last_Assignment (E, Empty);
+            end if;
 
             --  We count it as being referenced as an out parameter if the
             --  option is set to warn on all out parameters, except that we

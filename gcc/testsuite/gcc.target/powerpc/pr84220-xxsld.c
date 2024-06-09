@@ -3,8 +3,8 @@
     when calling vec_xxsldwi() and vec_xxpermdi() with invalid parameters.  */
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 

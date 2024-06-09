@@ -12,7 +12,7 @@ lbl1:
 
         if((b %= 0) * (b ? 0 : a) - 1 && (u /= 0))
         {
-            int *q = &u, **k = q;
+            int *q = &u, **k = (int **) q;
             goto lbl1;
 lbl2:
 lbl3:

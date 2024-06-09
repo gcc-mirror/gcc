@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,9 @@ package body System.Task_Primitives.Operations is
 
    use Interfaces.C;
    use Interfaces.C.Strings;
+
    use System.OS_Interface;
+   use System.OS_Locks;
    use System.OS_Primitives;
    use System.Parameters;
    use System.Task_Info;
@@ -72,30 +74,6 @@ package body System.Task_Primitives.Operations is
    --  we set the stack size for non tasking programs on System unit.
    --  Also note that under Windows XP, we use a Windows XP extension to
    --  specify the stack size on a per task basis, as done under other OSes.
-
-   ---------------------
-   -- Local Functions --
-   ---------------------
-
-   procedure InitializeCriticalSection (pCriticalSection : access RTS_Lock);
-   procedure InitializeCriticalSection
-     (pCriticalSection : access CRITICAL_SECTION);
-   pragma Import
-     (Stdcall, InitializeCriticalSection, "InitializeCriticalSection");
-
-   procedure EnterCriticalSection (pCriticalSection : access RTS_Lock);
-   procedure EnterCriticalSection
-     (pCriticalSection : access CRITICAL_SECTION);
-   pragma Import (Stdcall, EnterCriticalSection, "EnterCriticalSection");
-
-   procedure LeaveCriticalSection (pCriticalSection : access RTS_Lock);
-   procedure LeaveCriticalSection (pCriticalSection : access CRITICAL_SECTION);
-   pragma Import (Stdcall, LeaveCriticalSection, "LeaveCriticalSection");
-
-   procedure DeleteCriticalSection (pCriticalSection : access RTS_Lock);
-   procedure DeleteCriticalSection
-     (pCriticalSection : access CRITICAL_SECTION);
-   pragma Import (Stdcall, DeleteCriticalSection, "DeleteCriticalSection");
 
    ----------------
    -- Local Data --
@@ -421,7 +399,8 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock
-     (L : not null access RTS_Lock; Level : Lock_Level)
+     (L     : not null access RTS_Lock;
+      Level : Lock_Level)
    is
       pragma Unreferenced (Level);
    begin
@@ -696,7 +675,10 @@ package body System.Task_Primitives.Operations is
       Res :=
         SetThreadPriority
           (T.Common.LL.Thread,
-           Interfaces.C.int (Underlying_Priorities (Prio)));
+           Interfaces.C.int ((if Dispatching_Policy = 'F' then
+                                 FIFO_Underlying_Priorities (Prio)
+                              else
+                                 Underlying_Priorities (Prio))));
       pragma Assert (Res = Win32.TRUE);
 
       --  Note: Annex D (RM D.2.3(5/2)) requires the task to be placed at the

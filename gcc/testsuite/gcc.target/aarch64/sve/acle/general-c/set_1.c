@@ -16,8 +16,8 @@ f1 (svbool_t pg, svuint8_t u8, svuint8x2_t u8x2, svuint8x3_t u8x3, int x)
   u8x2 = svset2 (u8x3, 0, u8); /* { dg-error {passing 'svuint8x3_t' to argument 1 of 'svset2', which expects a tuple of 2 vectors} } */
   u8x2 = svset2 (pg, 0, u8); /* { dg-error {passing 'svbool_t' to argument 1 of 'svset2', which expects a tuple of 2 vectors} } */
   u8x2 = svset2 (u8x2, 0, u8x2); /* { dg-error {passing 'svuint8x2_t' to argument 3 of 'svset2', which expects a single SVE vector rather than a tuple} } */
-  u8x2 = svset2 (u8x2, 0, f64); /* { dg-error {passing 'svfloat64_t' instead of the expected 'svuint8_t' to argument 3 of 'svset2', after passing 'svuint8x2_t' to argument 1} } */
-  u8x2 = svset2 (u8x2, 0, pg); /* { dg-error {passing 'svbool_t' instead of the expected 'svuint8_t' to argument 3 of 'svset2', after passing 'svuint8x2_t' to argument 1} } */
+  u8x2 = svset2 (u8x2, 0, f64); /* { dg-error {passing 'svfloat64_t' to argument 3 of 'svset2', but argument 1 was a tuple of 'svuint8_t'} } */
+  u8x2 = svset2 (u8x2, 0, pg); /* { dg-error {passing 'svbool_t' to argument 3 of 'svset2', but argument 1 was a tuple of 'svuint8_t'} } */
   u8x2 = svset2 (u8x2, x, u8); /* { dg-error {argument 2 of 'svset2' must be an integer constant expression} } */
   u8x2 = svset2 (u8x2, 0, u8);
   f64 = svset2 (u8x2, 0, u8); /* { dg-error {incompatible types when assigning to type 'svfloat64_t' from type 'svuint8x2_t'} } */

@@ -1,5 +1,5 @@
 /* Miscellaneous SSA utility functions.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1216,6 +1216,7 @@ init_tree_ssa (struct function *fn, int size)
   fn->gimple_df = ggc_cleared_alloc<gimple_df> ();
   fn->gimple_df->default_defs = hash_table<ssa_name_hasher>::create_ggc (20);
   pt_solution_reset (&fn->gimple_df->escaped);
+  pt_solution_reset (&fn->gimple_df->escaped_return);
   init_ssanames (fn, size);
 }
 
@@ -1233,6 +1234,7 @@ delete_tree_ssa (struct function *fn)
   fn->gimple_df->default_defs->empty ();
   fn->gimple_df->default_defs = NULL;
   pt_solution_reset (&fn->gimple_df->escaped);
+  pt_solution_reset (&fn->gimple_df->escaped_return);
   if (fn->gimple_df->decls_to_pointers != NULL)
     delete fn->gimple_df->decls_to_pointers;
   fn->gimple_df->decls_to_pointers = NULL;
@@ -1783,20 +1785,39 @@ maybe_optimize_var (tree var, bitmap addresses_taken, bitmap not_reg_needs,
 	      fprintf (dump_file, "\n");
 	    }
 	}
+      else if (TREE_CODE (TREE_TYPE (var)) == BITINT_TYPE
+	       && (cfun->curr_properties & PROP_gimple_lbitint) != 0
+	       && TYPE_PRECISION (TREE_TYPE (var)) > MAX_FIXED_MODE_SIZE)
+	{
+	  /* Don't rewrite large/huge _BitInt vars after _BitInt lowering
+	     into SSA form.  */
+	  DECL_NOT_GIMPLE_REG_P (var) = 1;
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "_BitInt var after its lowering: ");
+	      print_generic_expr (dump_file, var);
+	      fprintf (dump_file, "\n");
+	    }
+	}
       else if (DECL_NOT_GIMPLE_REG_P (var))
 	{
 	  maybe_reg = true;
 	  DECL_NOT_GIMPLE_REG_P (var) = 0;
 	}
-      if (maybe_reg && is_gimple_reg (var))
+      if (maybe_reg)
 	{
-	  if (dump_file)
+	  if (is_gimple_reg (var))
 	    {
-	      fprintf (dump_file, "Now a gimple register: ");
-	      print_generic_expr (dump_file, var);
-	      fprintf (dump_file, "\n");
+	      if (dump_file)
+		{
+		  fprintf (dump_file, "Now a gimple register: ");
+		  print_generic_expr (dump_file, var);
+		  fprintf (dump_file, "\n");
+		}
+	      bitmap_set_bit (suitable_for_renaming, DECL_UID (var));
 	    }
-	  bitmap_set_bit (suitable_for_renaming, DECL_UID (var));
+	  else
+	    DECL_NOT_GIMPLE_REG_P (var) = 1;
 	}
     }
 }

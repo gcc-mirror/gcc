@@ -12,6 +12,11 @@ TEST=all-gcc
 # supply an absolute path.
 GCC_SRC_DIR=../../gcc
 
+# Define this to ,m2 if you want to build Modula-2.  Modula-2 builds target
+# objects during all-gcc, so it can only be included if you've installed
+# binutils (or an equivalent) for each target.
+OPT_IN_LANGUAGES=
+
 # Use -j / -l make arguments and nice to assure a smooth resource-efficient
 # load on the build machine, e.g. for 24 cores:
 # svn co svn://gcc.gnu.org/svn/gcc/branches/foo-branch gcc
@@ -55,8 +60,9 @@ LIST = \
   i686-pc-linux-gnu i686-pc-msdosdjgpp i686-lynxos i686-nto-qnx \
   i686-rtems i686-solaris2.11 i686-wrs-vxworks \
   i686-wrs-vxworksae \
-  i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
-  ia64-linux ia64-hpux ia64-hp-vms iq2000-elf lm32-elf \
+  i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elfOPT-enable-obsolete \
+  ia64-linuxOPT-enable-obsolete ia64-hpuxOPT-enable-obsolete \
+  ia64-hp-vmsOPT-enable-obsolete iq2000-elf lm32-elf \
   lm32-rtems lm32-uclinux \
   loongarch64-linux-gnuf64 loongarch64-linux-gnuf32 loongarch64-linux-gnusf \
   m32c-elf m32r-elf m32rle-elf \
@@ -72,7 +78,8 @@ LIST = \
   moxie-uclinux moxie-rtems \
   msp430-elf msp430-elfbare \
   nds32le-elf nds32be-elf \
-  nios2-elf nios2-linux-gnu nios2-rtems \
+  nios2-elfOPT-enable-obsolete nios2-linux-gnuOPT-enable-obsolete \
+  nios2-rtemsOPT-enable-obsolete \
   nvptx-none \
   or1k-elf or1k-linux-uclibc or1k-linux-musl or1k-rtems \
   pdp11-aout \
@@ -128,17 +135,23 @@ $(LIST): make-log-dir
 		TGT=`echo $@ | awk 'BEGIN { FS = "OPT" }; { print $$1 }'` &&			\
 		TGT=`$(GCC_SRC_DIR)/config.sub $$TGT` &&					\
 		case $$TGT in									\
-			*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix* | bpf-*-*)			\
+			bpf-*-*)								\
 				ADDITIONAL_LANGUAGES="";					\
 				;;								\
-			*)									\
+			*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)			\
+				ADDITIONAL_LANGUAGES=",fortran";				\
+				;;								\
+			mmix-*-*)								\
 				ADDITIONAL_LANGUAGES=",go";					\
+				;;								\
+			*)									\
+				ADDITIONAL_LANGUAGES=",fortran,go";				\
 				;;								\
 		esac &&										\
 		$(GCC_SRC_DIR)/configure							\
 			--target=$(subst SCRIPTS,`pwd`/../scripts/,$(subst OPT,$(empty) -,$@))	\
 			--enable-werror-always ${host_options}					\
-			--enable-languages=all,ada$$ADDITIONAL_LANGUAGES;			\
+			--enable-languages=c,ada,c++,d,lto,objc,obj-c++,rust$$ADDITIONAL_LANGUAGES$(OPT_IN_LANGUAGES); \
 	) > log/$@-config.out 2>&1
 
 $(LOGFILES) : log/%-make.out : %

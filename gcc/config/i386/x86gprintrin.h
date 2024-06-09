@@ -1,4 +1,4 @@
-/* Copyright (C) 2020-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -107,6 +107,8 @@
 #include <xtestintrin.h>
 
 #include <hresetintrin.h>
+
+#include <usermsrintrin.h>
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

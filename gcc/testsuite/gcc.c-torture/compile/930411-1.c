@@ -1,4 +1,5 @@
 /* { dg-require-effective-target untyped_assembly } */
+/* { dg-additional-options "-std=gnu89" } */
 
 int heap;
 

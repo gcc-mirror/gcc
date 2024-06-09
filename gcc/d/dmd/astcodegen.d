@@ -82,6 +82,7 @@ struct ASTCodegen
     alias Tcomplex64                = dmd.mtype.Tcomplex64;
     alias Tcomplex80                = dmd.mtype.Tcomplex80;
 
+    alias ModToStc                  = dmd.mtype.ModToStc;
     alias ParameterList             = dmd.mtype.ParameterList;
     alias VarArg                    = dmd.mtype.VarArg;
     alias STC                       = dmd.declaration.STC;
@@ -97,6 +98,6 @@ struct ASTCodegen
     alias isExpression              = dmd.dtemplate.isExpression;
     alias isTuple                   = dmd.dtemplate.isTuple;
 
-    alias IgnoreErrors              = dmd.dsymbol.IgnoreErrors;
+    alias SearchOpt                 = dmd.dsymbol.SearchOpt;
     alias PASS                      = dmd.dsymbol.PASS;
 }

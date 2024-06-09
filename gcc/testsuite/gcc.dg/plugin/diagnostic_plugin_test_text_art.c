@@ -23,7 +23,7 @@ static void
 emit_canvas (const canvas &c, const char *alt_text)
 {
   diagnostic_diagram diagram (c, alt_text);
-  diagnostic_emit_diagram (global_dc, diagram);
+  global_dc->emit_diagram (diagram);
 }
 
 static void
@@ -149,7 +149,7 @@ test_chessboard ()
 static void
 emit_table (const table &table, const style_manager &sm, const char *alt_text)
 {
-  const text_art::theme *theme = global_dc->m_diagrams.m_theme;
+  const text_art::theme *theme = global_dc->get_diagram_theme ();
   if (!theme)
     return;
   canvas c (table.to_canvas (*theme, sm));

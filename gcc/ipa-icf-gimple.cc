@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -39,9 +39,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "attribs.h"
 #include "gimple-walk.h"
+#include "tree-sra.h"
 
 #include "tree-ssa-alias-compare.h"
+#include "alloc-pool.h"
+#include "symbol-summary.h"
 #include "ipa-icf-gimple.h"
+#include "sreal.h"
+#include "ipa-cp.h"
+#include "ipa-prop.h"
 
 namespace ipa_icf_gimple {
 
@@ -59,7 +65,8 @@ func_checker::func_checker (tree source_func_decl, tree target_func_decl,
   : m_source_func_decl (source_func_decl), m_target_func_decl (target_func_decl),
     m_ignored_source_nodes (ignored_source_nodes),
     m_ignored_target_nodes (ignored_target_nodes),
-    m_ignore_labels (ignore_labels), m_tbaa (tbaa)
+    m_ignore_labels (ignore_labels), m_tbaa (tbaa),
+    m_total_scalarization_limit_known_p (false)
 {
   function *source_func = DECL_STRUCT_FUNCTION (source_func_decl);
   function *target_func = DECL_STRUCT_FUNCTION (target_func_decl);
@@ -356,6 +363,36 @@ func_checker::operand_equal_p (const_tree t1, const_tree t2,
   return operand_compare::operand_equal_p (t1, t2, flags);
 }
 
+/* Return true if either T1 and T2 cannot be totally scalarized or if doing
+   so would result in copying the same memory.  Otherwise return false.  */
+
+bool
+func_checker::safe_for_total_scalarization_p (tree t1, tree t2)
+{
+  tree type1 = TREE_TYPE (t1);
+  tree type2 = TREE_TYPE (t2);
+
+  if (!AGGREGATE_TYPE_P (type1)
+      || !AGGREGATE_TYPE_P (type2)
+      || !tree_fits_uhwi_p (TYPE_SIZE (type1))
+      || !tree_fits_uhwi_p (TYPE_SIZE (type2)))
+    return true;
+
+  if (!m_total_scalarization_limit_known_p)
+    {
+      push_cfun (DECL_STRUCT_FUNCTION (m_target_func_decl));
+      m_total_scalarization_limit = sra_get_max_scalarization_size ();
+      pop_cfun ();
+      m_total_scalarization_limit_known_p = true;
+    }
+
+  unsigned HOST_WIDE_INT sz = tree_to_uhwi (TYPE_SIZE (type1));
+  gcc_assert (sz == tree_to_uhwi (TYPE_SIZE (type2)));
+  if (sz > m_total_scalarization_limit)
+    return true;
+  return sra_total_scalarization_would_copy_same_data_p (type1, type2);
+}
+
 /* Function responsible for comparison of various operands T1 and T2
    which are accessed as ACCESS.
    If these components, from functions FUNC1 and FUNC2, are equal, true
@@ -377,7 +414,12 @@ func_checker::compare_operand (tree t1, tree t2, operand_access_type access)
 				   lto_streaming_expected_p (), m_tbaa);
 
       if (!flags)
-	return true;
+	{
+	  if (!safe_for_total_scalarization_p (t1, t2))
+	    return return_false_with_msg
+	      ("total scalarization may not be equivalent");
+	  return true;
+	}
       if (flags & SEMANTICS)
 	return return_false_with_msg
 		("compare_ao_refs failed (semantic difference)");
@@ -713,6 +755,31 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
       && t2
       && !compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
     return return_false_with_msg ("GIMPLE internal call LHS type mismatch");
+
+  if (!gimple_call_internal_p (s1))
+    {
+      cgraph_edge *e1 = cgraph_node::get (m_source_func_decl)->get_edge (s1);
+      cgraph_edge *e2 = cgraph_node::get (m_target_func_decl)->get_edge (s2);
+      class ipa_edge_args *args1 = ipa_edge_args_sum->get (e1);
+      class ipa_edge_args *args2 = ipa_edge_args_sum->get (e2);
+      if ((args1 != nullptr) != (args2 != nullptr))
+	return return_false_with_msg ("ipa_edge_args mismatch");
+      if (args1)
+	{
+	  int n1 = ipa_get_cs_argument_count (args1);
+	  int n2 = ipa_get_cs_argument_count (args2);
+	  if (n1 != n2)
+	    return return_false_with_msg ("ipa_edge_args nargs mismatch");
+	  for (int i = 0; i < n1; i++)
+	    {
+	      struct ipa_jump_func *jf1 = ipa_get_ith_jump_func (args1, i);
+	      struct ipa_jump_func *jf2 = ipa_get_ith_jump_func (args2, i);
+	      if (((jf1 != nullptr) != (jf2 != nullptr))
+		  || (jf1 && !ipa_jump_functions_equivalent_p (jf1, jf2)))
+		return return_false_with_msg ("jump function mismatch");
+	    }
+	}
+    }
 
   return compare_operand (t1, t2, get_operand_access_type (&map, t1));
 }

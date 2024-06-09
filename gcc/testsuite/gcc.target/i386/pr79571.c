@@ -15,11 +15,12 @@ struct fd
 {
   struct d *d
 } i;
-g;
-j ()
+int g;
+void
+j (void)
 {
   unsigned a = g;
-  i = (struct fd){a & 3};
+  i = (struct fd){(struct d *) (a & 3)};
   struct fd f = i;
   h = f.d->e;
 }

@@ -1,5 +1,5 @@
 /* Natural loop discovery code for GNU compiler.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1895,33 +1895,38 @@ void
 record_niter_bound (class loop *loop, const widest_int &i_bound,
 		    bool realistic, bool upper)
 {
+  if (wi::min_precision (i_bound, SIGNED) > bound_wide_int ().get_precision ())
+    return;
+
+  bound_wide_int bound = bound_wide_int::from (i_bound, SIGNED);
+
   /* Update the bounds only when there is no previous estimation, or when the
      current estimation is smaller.  */
   if (upper
       && (!loop->any_upper_bound
-	  || wi::ltu_p (i_bound, loop->nb_iterations_upper_bound)))
+	  || wi::ltu_p (bound, loop->nb_iterations_upper_bound)))
     {
       loop->any_upper_bound = true;
-      loop->nb_iterations_upper_bound = i_bound;
+      loop->nb_iterations_upper_bound = bound;
       if (!loop->any_likely_upper_bound)
 	{
 	  loop->any_likely_upper_bound = true;
-	  loop->nb_iterations_likely_upper_bound = i_bound;
+	  loop->nb_iterations_likely_upper_bound = bound;
 	}
     }
   if (realistic
       && (!loop->any_estimate
-	  || wi::ltu_p (i_bound, loop->nb_iterations_estimate)))
+	  || wi::ltu_p (bound, loop->nb_iterations_estimate)))
     {
       loop->any_estimate = true;
-      loop->nb_iterations_estimate = i_bound;
+      loop->nb_iterations_estimate = bound;
     }
   if (!realistic
       && (!loop->any_likely_upper_bound
-          || wi::ltu_p (i_bound, loop->nb_iterations_likely_upper_bound)))
+	  || wi::ltu_p (bound, loop->nb_iterations_likely_upper_bound)))
     {
       loop->any_likely_upper_bound = true;
-      loop->nb_iterations_likely_upper_bound = i_bound;
+      loop->nb_iterations_likely_upper_bound = bound;
     }
 
   /* If an upper bound is smaller than the realistic estimate of the
@@ -2018,7 +2023,7 @@ get_estimated_loop_iterations (class loop *loop, widest_int *nit)
       return false;
     }
 
-  *nit = loop->nb_iterations_estimate;
+  *nit = widest_int::from (loop->nb_iterations_estimate, SIGNED);
   return true;
 }
 
@@ -2032,7 +2037,7 @@ get_max_loop_iterations (const class loop *loop, widest_int *nit)
   if (!loop->any_upper_bound)
     return false;
 
-  *nit = loop->nb_iterations_upper_bound;
+  *nit = widest_int::from (loop->nb_iterations_upper_bound, SIGNED);
   return true;
 }
 
@@ -2066,7 +2071,7 @@ get_likely_max_loop_iterations (class loop *loop, widest_int *nit)
   if (!loop->any_likely_upper_bound)
     return false;
 
-  *nit = loop->nb_iterations_likely_upper_bound;
+  *nit = widest_int::from (loop->nb_iterations_likely_upper_bound, SIGNED);
   return true;
 }
 

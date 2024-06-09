@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-march=armv8.7-a" } */
+/* { dg-additional-options "-march=armv8.7-a+ls64" } */
 
 /* Check that ls64 builtins can be invoked using a preprocesed testcase
    without triggering bogus builtin warnings, see PR110132.

@@ -34,4 +34,5 @@ float i1(float x)
 {
   return x * (x <= 0.f ? 1.f : -1.f);
 }
-/* { dg-final { scan-tree-dump-times "ABS" 8 "gimple"} } */
+
+/* { dg-final { scan-tree-dump-times "ABS" 8 "gimple" } } */

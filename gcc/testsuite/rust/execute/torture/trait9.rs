@@ -3,6 +3,9 @@ extern "C" {
     fn printf(s: *const i8, ...);
 }
 
+#[lang = "sized"]
+pub trait Sized {}
+
 trait FnLike<A, R> {
     fn call(&self, arg: A) -> R;
 }

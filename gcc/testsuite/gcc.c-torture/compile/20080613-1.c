@@ -26,7 +26,7 @@ static sockaddr_any src_addr;
 
 inline struct cmsghdr * cmsg_put(struct cmsghdr *cm, int type, void *data, size_t len)
 {
-    memcpy(((cm)->__cmsg_data), data, len);
+    __builtin_memcpy(((cm)->__cmsg_data), data, len);
 }
 
 int hop_sendmsg(int fd) {

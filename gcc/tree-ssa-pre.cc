@@ -1,5 +1,5 @@
 /* Full and partial redundancy elimination and code hoisting on SSA GIMPLE.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dan@dberlin.org> and Steven Bosscher
    <stevenb@suse.de>
 
@@ -1666,8 +1666,9 @@ phi_translate_1 (bitmap_set_t dest,
 		if (!newoperands.exists ())
 		  newoperands = operands.copy ();
 		newref = vn_reference_insert_pieces (newvuse, ref->set,
-						     ref->base_set, ref->type,
-						     newoperands,
+						     ref->base_set,
+						     ref->offset, ref->max_size,
+						     ref->type, newoperands,
 						     result, new_val_id);
 		newoperands = vNULL;
 	      }
@@ -2684,11 +2685,15 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	       here as the element alignment may be not visible.  See
 	       PR43783.  Simply drop the element size for constant
 	       sizes.  */
-	    if (TREE_CODE (genop3) == INTEGER_CST
+	    if ((TREE_CODE (genop3) == INTEGER_CST
 		&& TREE_CODE (TYPE_SIZE_UNIT (elmt_type)) == INTEGER_CST
 		&& wi::eq_p (wi::to_offset (TYPE_SIZE_UNIT (elmt_type)),
-			     (wi::to_offset (genop3)
-			      * vn_ref_op_align_unit (currop))))
+			     (wi::to_offset (genop3) * vn_ref_op_align_unit (currop))))
+	      || (TREE_CODE (genop3) == EXACT_DIV_EXPR
+		&& TREE_CODE (TREE_OPERAND (genop3, 1)) == INTEGER_CST
+		&& operand_equal_p (TREE_OPERAND (genop3, 0), TYPE_SIZE_UNIT (elmt_type))
+		&& wi::eq_p (wi::to_offset (TREE_OPERAND (genop3, 1)),
+			     vn_ref_op_align_unit (currop))))
 	      genop3 = NULL_TREE;
 	    else
 	      {
@@ -3246,7 +3251,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	  >= TYPE_PRECISION (TREE_TYPE (expr->u.nary->op[0])))
       && SSA_NAME_RANGE_INFO (expr->u.nary->op[0]))
     {
-      value_range r;
+      int_range_max r;
       if (get_range_query (cfun)->range_of_expr (r, expr->u.nary->op[0])
 	  && !r.undefined_p ()
 	  && !r.varying_p ()
@@ -3635,10 +3640,9 @@ do_hoist_insertion (basic_block block)
     return false;
 
   /* We have multiple successors, compute ANTIC_OUT by taking the intersection
-     of all of ANTIC_IN translating through PHI nodes.  Note we do not have to
-     worry about iteration stability here so just use the expression set
-     from the first set and prune that by sorted_array_from_bitmap_set.
-     This is a simplification of what we do in compute_antic_aux.  */
+     of all of ANTIC_IN translating through PHI nodes.  Track the union
+     of the expression sets so we can pick a representative that is
+     fully generatable out of hoistable expressions.  */
   bitmap_set_t ANTIC_OUT = bitmap_set_new ();
   bool first = true;
   FOR_EACH_EDGE (e, ei, block->succs)
@@ -3653,10 +3657,15 @@ do_hoist_insertion (basic_block block)
 	  bitmap_set_t tmp = bitmap_set_new ();
 	  phi_translate_set (tmp, ANTIC_IN (e->dest), e);
 	  bitmap_and_into (&ANTIC_OUT->values, &tmp->values);
+	  bitmap_ior_into (&ANTIC_OUT->expressions, &tmp->expressions);
 	  bitmap_set_free (tmp);
 	}
       else
-	bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (e->dest)->values);
+	{
+	  bitmap_and_into (&ANTIC_OUT->values, &ANTIC_IN (e->dest)->values);
+	  bitmap_ior_into (&ANTIC_OUT->expressions,
+			   &ANTIC_IN (e->dest)->expressions);
+	}
     }
 
   /* Compute the set of hoistable expressions from ANTIC_OUT.  First compute
@@ -3697,14 +3706,12 @@ do_hoist_insertion (basic_block block)
       return false;
     }
 
-  /* Hack hoitable_set in-place so we can use sorted_array_from_bitmap_set.  */
+  /* Hack hoistable_set in-place so we can use sorted_array_from_bitmap_set.  */
   bitmap_move (&hoistable_set.values, &availout_in_some);
   hoistable_set.expressions = ANTIC_OUT->expressions;
 
   /* Now finally construct the topological-ordered expression set.  */
   vec<pre_expr> exprs = sorted_array_from_bitmap_set (&hoistable_set);
-
-  bitmap_clear (&hoistable_set.values);
 
   /* If there are candidate values for hoisting, insert expressions
      strategically to make the hoistable expressions fully redundant.  */
@@ -3735,6 +3742,13 @@ do_hoist_insertion (basic_block block)
       if (expr->kind == REFERENCE
 	  && PRE_EXPR_REFERENCE (expr)->punned
 	  && FLOAT_TYPE_P (get_expr_type (expr)))
+	continue;
+
+      /* Only hoist if the full expression is available for hoisting.
+	 This avoids hoisting values that are not common and for
+	 example evaluate an expression that's not valid to evaluate
+	 unconditionally (PR112310).  */
+      if (!valid_in_sets (&hoistable_set, AVAIL_OUT (block), expr))
 	continue;
 
       /* OK, we should hoist this value.  Perform the transformation.  */
@@ -3774,6 +3788,7 @@ do_hoist_insertion (basic_block block)
     }
 
   exprs.release ();
+  bitmap_clear (&hoistable_set.values);
   bitmap_set_free (ANTIC_OUT);
 
   return new_stuff;
@@ -4270,6 +4285,20 @@ compute_avail (function *fun)
 			    ref1->op2
 			      = wide_int_to_tree (ptr_type_node,
 						  wi::to_wide (ref1->op2));
+			}
+		      /* We also need to make sure that the access path
+			 ends in an access of the same size as otherwise
+			 we might assume an access may not trap while in
+			 fact it might.  That's independent of whether
+			 TBAA is in effect.  */
+		      if (TYPE_SIZE (ref1->type) != TYPE_SIZE (ref2->type)
+			  && (! TYPE_SIZE (ref1->type)
+			      || ! TYPE_SIZE (ref2->type)
+			      || ! operand_equal_p (TYPE_SIZE (ref1->type),
+						    TYPE_SIZE (ref2->type))))
+			{
+			  operands.release ();
+			  continue;
 			}
 		      operands.release ();
 

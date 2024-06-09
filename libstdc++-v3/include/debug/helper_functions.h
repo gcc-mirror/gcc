@@ -1,6 +1,6 @@
 // Debugging support implementation -*- C++ -*-
 
-// Copyright (C) 2003-2023 Free Software Foundation, Inc.
+// Copyright (C) 2003-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -324,6 +324,7 @@ namespace __gnu_debug
 
   /* Remove debug mode safe iterator layer, if any. */
   template<typename _Iterator>
+    _GLIBCXX_CONSTEXPR
     inline _Iterator
     __unsafe(_Iterator __it)
     { return __it; }

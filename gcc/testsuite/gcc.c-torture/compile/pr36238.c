@@ -7,6 +7,7 @@ uint16_t g_169 = 0x89E3L;
 const volatile uint32_t g_258 = 0x63AFEBCAL;
 int32_t func_11;
 int32_t func_29;
+int lshift_s_s (int32_t, int32_t);
 int32_t
 func_5 (int32_t p_6, int32_t p_8, uint16_t p_10)
 {

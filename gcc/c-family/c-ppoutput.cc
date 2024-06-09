@@ -1,5 +1,5 @@
 /* Preprocess only, using cpplib.
-   Copyright (C) 1995-2023 Free Software Foundation, Inc.
+   Copyright (C) 1995-2024 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
    This program is free software; you can redistribute it and/or modify it
@@ -162,6 +162,7 @@ init_pp_output (FILE *out_stream)
 
   cb->has_attribute = c_common_has_attribute;
   cb->has_builtin = c_common_has_builtin;
+  cb->has_feature = c_common_has_feature;
   cb->get_source_date_epoch = cb_get_source_date_epoch;
   cb->remap_filename = remap_macro_filename;
 
@@ -862,4 +863,9 @@ cb_read_pch (cpp_reader *pfile, const char *name,
 
   fprintf (print.outf, "#pragma GCC pch_preprocess \"%s\"\n", name);
   print.src_line++;
+
+  /* The process of reading the PCH has destroyed the frontend parser,
+     so ask the frontend to reinitialize it, in case we need it to
+     process any #pragma directives encountered while preprocessing.  */
+  c_init_preprocess ();
 }

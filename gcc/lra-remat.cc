@@ -1,5 +1,5 @@
 /* Rematerialize pseudos values.
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1331,6 +1331,8 @@ lra_remat (void)
   calculate_global_remat_bb_data ();
   dump_candidates_and_remat_bb_data ();
   result = do_remat ();
+  if (result)
+    lra_dump_insns_if_possible ("changed func after rematerialization");
   all_cands.release ();
   bitmap_clear (&temp_bitmap);
   bitmap_clear (&subreg_regs);

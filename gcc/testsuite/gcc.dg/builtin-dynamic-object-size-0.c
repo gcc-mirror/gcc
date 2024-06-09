@@ -1,5 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target size20plus } */
+/* { dg-additional-options "-DSKIP_STRNDUP" { target { ! strndup } } } */
 
 #include "builtin-object-size-common.h"
 
@@ -455,7 +457,6 @@ test_parmsz_simple2 (size_t sz, char obj[])
   return __builtin_dynamic_object_size (obj, 0);
 }
 
-/* Implicitly constructed access attributes not supported yet.  */
 size_t
 __attribute__ ((noinline))
 test_parmsz_simple3 (size_t sz, char obj[sz])
@@ -527,6 +528,13 @@ test_parmsz_internal3 (size_t sz1, size_t sz2, double obj[sz1][sz2])
   return __builtin_dynamic_object_size (obj, 0);
 }
 
+size_t
+__attribute__ ((noinline))
+test_parmsz_internal4 (size_t sz1, size_t sz2, double obj[sz1 + 1][4])
+{
+  return __builtin_dynamic_object_size (obj, 0);
+}
+
 /* Loops.  */
 
 size_t
@@ -559,6 +567,7 @@ test_strdup (const char *in)
   return sz;
 }
 
+#ifndef SKIP_STRNDUP
 size_t
 __attribute__ ((noinline))
 test_strndup (const char *in, size_t bound)
@@ -569,6 +578,7 @@ test_strndup (const char *in, size_t bound)
   __builtin_free (res);
   return sz;
 }
+#endif
 
 size_t
 __attribute__ ((noinline))
@@ -581,6 +591,7 @@ test_strdup_min (const char *in)
   return sz;
 }
 
+#ifndef SKIP_STRNDUP
 size_t
 __attribute__ ((noinline))
 test_strndup_min (const char *in, size_t bound)
@@ -591,6 +602,7 @@ test_strndup_min (const char *in, size_t bound)
   __builtin_free (res);
   return sz;
 }
+#endif
 
 /* Other tests.  */
 
@@ -721,8 +733,8 @@ main (int argc, char **argv)
   if (test_parmsz_simple2 (__builtin_strlen (argv[0]) + 1, argv[0])
       != __builtin_strlen (argv[0]) + 1)
     FAIL ();
-  /* Only explicitly added access attributes are supported for now.  */
-  if (test_parmsz_simple3 (__builtin_strlen (argv[0]) + 1, argv[0]) != -1)
+  if (test_parmsz_simple3 (__builtin_strlen (argv[0]) + 1, argv[0]) 
+      != __builtin_strlen (argv[0]) + 1)
     FAIL ();
   int arr[42];
   if (test_parmsz_scaled (arr, 42) != sizeof (arr))
@@ -759,6 +771,8 @@ main (int argc, char **argv)
     FAIL ();
   if (test_parmsz_internal3 (4, 4, obj) != -1)
     FAIL ();
+  if (test_parmsz_internal4 (3, 4, obj) != -1)
+    FAIL ();
   if (test_loop (arr, 42, 0, 32, 1) != 10 * sizeof (int))
     FAIL ();
   if (test_loop (arr, 42, 32, -1, -1) != 0)
@@ -778,12 +792,16 @@ main (int argc, char **argv)
   const char *str = "hello world";
   if (test_strdup (str) != __builtin_strlen (str) + 1)
     FAIL ();
+#ifndef SKIP_STRNDUP
   if (test_strndup (str, 4) != 5)
     FAIL ();
+#endif
   if (test_strdup_min (str) != __builtin_strlen (str) + 1)
     FAIL ();
+#ifndef SKIP_STRNDUP
   if (test_strndup_min (str, 4) != 1)
     FAIL ();
+#endif
 
   DONE ();
 }

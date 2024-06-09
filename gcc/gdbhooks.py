@@ -1,5 +1,5 @@
 # Python hooks for gdb for debugging GCC
-# Copyright (C) 2013-2023 Free Software Foundation, Inc.
+# Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 # Contributed by David Malcolm <dmalcolm@redhat.com>
 
@@ -642,7 +642,7 @@ class PassNames:
         self.names = []
         with open(os.path.join(srcdir, 'passes.def')) as f:
             for line in f:
-                m = re.match('\s*NEXT_PASS \(([^,]+).*\);', line)
+                m = re.match(r'\s*NEXT_PASS \(([^,]+).*\);', line)
                 if m:
                     self.names.append(m.group(1))
 

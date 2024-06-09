@@ -60,5 +60,3 @@ bar (int *p)
 	s = u;
       }
 }
-
-/* { dg-prune-output "not supported yet" } */

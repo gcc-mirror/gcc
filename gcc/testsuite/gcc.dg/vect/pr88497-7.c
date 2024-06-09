@@ -1,5 +1,5 @@
 /* { dg-require-effective-target avx512f_runtime } */
-/* { dg-options "-O2 -mavx512f -ffast-math -fdump-tree-reassoc1" } */
+/* { dg-additional-options "-O2 -mavx512f -ffast-math -fdump-tree-reassoc1" } */
 
 /* To test reassoc can undistribute vector bit_field_ref on multiple
    vector machine modes, bypass those modes with only one candidate.

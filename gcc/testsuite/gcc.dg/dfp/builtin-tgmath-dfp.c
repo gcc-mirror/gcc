@@ -1,5 +1,4 @@
 /* Test __builtin_tgmath: valid uses, decimal floating-point types.  */
-/* { dg-do run } */
 /* { dg-options "" } */
 
 extern void abort (void);

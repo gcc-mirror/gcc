@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -16,10 +16,10 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-hir-full.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-enumitem.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {
@@ -83,7 +83,8 @@ TypeCheckEnumItem::visit (HIR::EnumItem &item)
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
 				  item.get_mappings ().get_defid (),
-				  item.get_identifier (), ident, discim_expr);
+				  item.get_identifier ().as_string (), ident,
+				  discim_expr);
 }
 
 void
@@ -113,7 +114,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemDiscriminant &item)
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
 				  item.get_mappings ().get_defid (),
-				  item.get_identifier (), ident,
+				  item.get_identifier ().as_string (), ident,
 				  item.get_discriminant_expression ().get ());
 }
 
@@ -162,7 +163,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemTuple &item)
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
 				  item.get_mappings ().get_defid (),
-				  item.get_identifier (), ident,
+				  item.get_identifier ().as_string (), ident,
 				  TyTy::VariantDef::VariantType::TUPLE,
 				  discim_expr, fields);
 }
@@ -180,8 +181,8 @@ TypeCheckEnumItem::visit (HIR::EnumItemStruct &item)
 	= TypeCheckType::Resolve (field.get_field_type ().get ());
       TyTy::StructFieldType *ty_field
 	= new TyTy::StructFieldType (field.get_mappings ().get_hirid (),
-				     field.get_field_name (), field_type,
-				     field.get_locus ());
+				     field.get_field_name ().as_string (),
+				     field_type, field.get_locus ());
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
     }
@@ -210,7 +211,7 @@ TypeCheckEnumItem::visit (HIR::EnumItemStruct &item)
   RustIdent ident{*canonical_path, item.get_locus ()};
   variant = new TyTy::VariantDef (item.get_mappings ().get_hirid (),
 				  item.get_mappings ().get_defid (),
-				  item.get_identifier (), ident,
+				  item.get_identifier ().as_string (), ident,
 				  TyTy::VariantDef::VariantType::STRUCT,
 				  discrim_expr, fields);
 }

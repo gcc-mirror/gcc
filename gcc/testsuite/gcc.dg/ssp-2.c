@@ -1,6 +1,7 @@
 /* { dg-do run { target native } } */
 /* { dg-options "-fstack-protector" } */
 /* { dg-options "-fstack-protector -Wl,-multiply_defined,suppress" { target *-*-darwin* } } */
+/* { dg-prune-output "-multiply_defined is obsolete" } */
 /* { dg-require-effective-target fstack_protector } */
 
 #include <stdlib.h>

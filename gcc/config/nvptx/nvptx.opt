@@ -1,5 +1,5 @@
 ; Options for the NVPTX port
-; Copyright (C) 2014-2023 Free Software Foundation, Inc.
+; Copyright (C) 2014-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -108,7 +108,13 @@ Target RejectNegative Alias(misa=,sm_80)
 march-map=sm_87
 Target RejectNegative Alias(misa=,sm_80)
 
+march-map=sm_89
+Target RejectNegative Alias(misa=,sm_80)
+
 march-map=sm_90
+Target RejectNegative Alias(misa=,sm_80)
+
+march-map=sm_90a
 Target RejectNegative Alias(misa=,sm_80)
 
 Enum

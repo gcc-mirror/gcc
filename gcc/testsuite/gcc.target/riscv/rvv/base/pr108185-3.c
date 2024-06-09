@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gcv -mabi=lp64 -O3" } */
+// PR113249
+/* { dg-additional-options "-fno-schedule-insns -fno-schedule-insns2" } */
 
 #include "riscv_vector.h"
 
@@ -58,11 +60,11 @@ test_vbool4_then_vbool64(int8_t * restrict in, int8_t * restrict out) {
 }
 
 /* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*m2,\s*ta,\s*ma} 6 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*m8,\s*ta,\s*ma} 1 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*m4,\s*ta,\s*ma} 1 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*m1,\s*ta,\s*ma} 1 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*mf2,\s*ta,\s*ma} 1 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*mf4,\s*ta,\s*ma} 1 } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*mf8,\s*ta,\s*ma} 1 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*m8,\s*ta,\s*ma} 2 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*m4,\s*ta,\s*ma} 2 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*m1,\s*ta,\s*ma} 2 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*mf2,\s*ta,\s*ma} 2 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*mf4,\s*ta,\s*ma} 2 } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x][0-9]+,\s*zero,\s*e8,\s*mf8,\s*ta,\s*ma} 2 } } */
 /* { dg-final { scan-assembler-times {vlm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 12 } } */
 /* { dg-final { scan-assembler-times {vsm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 12 } } */

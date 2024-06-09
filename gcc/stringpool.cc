@@ -1,5 +1,5 @@
 /* String pool for GCC.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,8 +29,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
+#include "cpplib.h"
 
 struct ht *ident_hash;
+struct ht *ident_hash_extra;
 
 static hashnode alloc_node (cpp_hash_table *);
 static int mark_ident (struct cpp_reader *, hashnode, const void *);
@@ -49,11 +51,21 @@ init_stringpool (void)
      (We can't make this idempotent since identifiers contain state) */
   if (ident_hash)
     ht_destroy (ident_hash);
+  if (ident_hash_extra)
+    ht_destroy (ident_hash_extra);
 
   /* Create with 16K (2^14) entries.  */
   ident_hash = ht_create (14);
   ident_hash->alloc_node = alloc_node;
   ident_hash->alloc_subobject = stringpool_ggc_alloc;
+
+  /* Create with 64 (2^6) entries.  */
+  ident_hash_extra = ht_create (6);
+  ident_hash_extra->alloc_node = [] (cpp_hash_table *)
+  {
+    return HT_NODE (ggc_cleared_alloc<cpp_hashnode_extra> ());
+  };
+  ident_hash_extra->alloc_subobject = stringpool_ggc_alloc;
 }
 
 /* Allocate a hash node.  */
@@ -166,6 +178,12 @@ void
 ggc_mark_stringpool (void)
 {
   ht_forall (ident_hash, mark_ident, NULL);
+  ht_forall (ident_hash_extra,
+	     [] (cpp_reader *, hashnode h, const void *)
+	     {
+	       gt_ggc_m_18cpp_hashnode_extra (h);
+	       return 1;
+	     }, nullptr);
 }
 
 /* Purge the identifier hash of identifiers which are no longer
@@ -175,6 +193,11 @@ void
 ggc_purge_stringpool (void)
 {
   ht_purge (ident_hash, maybe_delete_ident, NULL);
+  ht_purge (ident_hash_extra,
+	    [] (cpp_reader *, hashnode h, const void *) -> int
+	    {
+	      return !ggc_marked_p (h);
+	    }, nullptr);
 }
 
 /* Pointer-walking routine for strings (not very interesting, since
@@ -251,7 +274,19 @@ struct GTY(()) string_pool_data {
   unsigned int nelements;
 };
 
+struct GTY (()) string_pool_data_extra
+{
+  ht_identifier_ptr *
+    GTY((length ("%h.nslots"),
+	 nested_ptr (cpp_hashnode_extra, "%h ? HT_NODE (%h) : nullptr",
+		     "(cpp_hashnode_extra *)%h")))
+    entries;
+  unsigned int nslots;
+  unsigned int nelements;
+};
+
 static GTY(()) struct string_pool_data * spd;
+static GTY(()) struct string_pool_data_extra *spd2;
 
 /* Save the stringpool data in SPD.  */
 
@@ -264,6 +299,13 @@ gt_pch_save_stringpool (void)
   spd->entries = ggc_vec_alloc<ht_identifier_ptr> (spd->nslots);
   memcpy (spd->entries, ident_hash->entries,
 	  spd->nslots * sizeof (spd->entries[0]));
+
+  spd2 = ggc_alloc<string_pool_data_extra> ();
+  spd2->nslots = ident_hash_extra->nslots;
+  spd2->nelements = ident_hash_extra->nelements;
+  spd2->entries = ggc_vec_alloc<ht_identifier_ptr> (spd2->nslots);
+  memcpy (spd2->entries, ident_hash_extra->entries,
+	  spd2->nslots * sizeof (spd2->entries[0]));
 }
 
 /* Return the stringpool to its state before gt_pch_save_stringpool
@@ -281,7 +323,10 @@ void
 gt_pch_restore_stringpool (void)
 {
   ht_load (ident_hash, spd->entries, spd->nslots, spd->nelements, false);
+  ht_load (ident_hash_extra, spd2->entries, spd2->nslots, spd2->nelements,
+	   false);
   spd = NULL;
+  spd2 = NULL;
 }
 
 #include "gt-stringpool.h"

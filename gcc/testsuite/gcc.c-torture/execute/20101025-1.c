@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 static int g_7;
 static int *volatile g_6 = &g_7;
 int g_3;

@@ -1,6 +1,6 @@
 ;; ALU operations with zero extensions
 ;;
-;; Copyright (C) 2015-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2015-2024 Free Software Foundation, Inc.
 ;; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;;
 ;; This file is part of GCC.
@@ -33,6 +33,7 @@
 
 (define_subst_attr "alu2_zext"     "alu2_zext_subst"     "_z" "_noz")
 
+(define_subst_attr "alu3_zext_op0" "alu3_zext_op0_subst" "_z0" "_noz0")
 (define_subst_attr "alu3_zext_op1" "alu3_zext_op1_subst" "_z1" "_noz1")
 (define_subst_attr "alu3_zext_op2" "alu3_zext_op2_subst" "_z2" "_noz2")
 (define_subst_attr "alu3_zext"     "alu3_zext_subst"     "_z" "_noz")
@@ -44,6 +45,7 @@
 (define_subst_attr "bitalu_zext"   "bitalu_zext_subst"   "_z" "_noz")
 
 (define_code_iterator ALUOP3 [plus minus and ior xor umin umax ashift lshiftrt])
+(define_code_iterator ALUOP3_ZEXT0 [and ior xor umin umax lshiftrt])
 (define_code_iterator ALUOP2 [neg not])
 
 ;; Arithmetic Operations
@@ -130,8 +132,9 @@
   "set\\t%0, %1, %T2"
   [(set_attr "type" "alu")])
 
-; Regular ALU ops
-(define_insn "<code>_impl<EQD:mode><EQS0:mode><EQS1:mode>_<alu3_zext><alu3_zext_op1><alu3_zext_op2>"
+; Regular ALU ops.  For all of them it is safe to present the result as
+; zero-extended, because there is no carry or shifted-out bits.
+(define_insn "<code>_impl<EQD:mode><EQS0:mode><EQS1:mode>_<alu3_zext><alu3_zext_op0><alu3_zext_op1><alu3_zext_op2>"
   [(set (match_operand:EQD 0 "register_operand" "=r")
 	(LOGICAL:EQD
 	  (zero_extend:EQD
@@ -142,14 +145,25 @@
   "<logical_asm>\\t%0, %1, %u2"
   [(set_attr "type" "alu")])
 
-; Shift ALU ops
-(define_insn "<shift_op>_impl<EQD:mode><EQS0:mode><EQS1:mode>_<alu3_zext><alu3_zext_op1><alu3_zext_op2>"
+; Shift left ALU op.  Cannot present the result as zero-extended because
+; of the shifted-out bits.
+(define_insn "ashl_impl<EQD:mode><EQS0:mode><EQS1:mode>_<alu3_zext><alu3_zext_op1><alu3_zext_op2>"
   [(set (match_operand:EQD 0 "register_operand" "=r")
-	(SHIFT:EQD
+	(ashift:EQD
 	 (zero_extend:EQD (match_operand:EQS0 1 "register_operand" "r"))
 	 (zero_extend:EQD (match_operand:EQS1 2 "shift_operand" "rL"))))]
   ""
-  "<shift_asm>\\t%0, %1, %2"
+  "lsl\\t%0, %1, %2"
+  [(set_attr "type" "alu")])
+
+; Shift right ALU op.  The result can be presented as zero-extended.
+(define_insn "lshr_impl<EQD:mode><EQS0:mode><EQS1:mode>_<alu3_zext><alu3_zext_op0><alu3_zext_op1><alu3_zext_op2>"
+  [(set (match_operand:EQD 0 "register_operand" "=r")
+	(lshiftrt:EQD
+	 (zero_extend:EQD (match_operand:EQS0 1 "register_operand" "r"))
+	 (zero_extend:EQD (match_operand:EQS1 2 "shift_operand" "rL"))))]
+  ""
+  "lsr\\t%0, %1, %2"
   [(set_attr "type" "alu")])
 
 ;; Substitutions
@@ -197,6 +211,18 @@
 	(ALUOP3:EQD (zero_extend:EQD (match_dup 1))
 		    (match_dup 2)))])
 
+;; Some ALU operations with zero-extended inputs are
+;; equivalent to doing the same ALU operation in the
+;; smaller mode, and then zero-extending the output.
+(define_subst "alu3_zext_op0_subst"
+  [(set (match_operand:EQD 0)
+	(ALUOP3_ZEXT0:EQD (zero_extend:EQD (match_operand:EQS0 1))
+			  (zero_extend:EQD (match_operand:EQS0 2))))]
+  "GET_MODE_SIZE (<EQS0:MODE>mode) < GET_MODE_SIZE (<EQD:MODE>mode)"
+  [(set (match_dup 0)
+	(zero_extend:EQD
+	  (ALUOP3_ZEXT0:EQS0 (match_dup 1)
+			     (match_dup 2))))])
 
 (define_subst "lmbd_zext_subst"
   [(set (match_operand:EQD 0)

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -19,12 +19,13 @@
 #ifndef RUST_HIR_TYPE_CHECK
 #define RUST_HIR_TYPE_CHECK
 
-#include "rust-type-util.h"
-#include "rust-hir-full-decls.h"
 #include "rust-hir-map.h"
 #include "rust-tyty.h"
 #include "rust-hir-trait-reference.h"
 #include "rust-autoderef.h"
+#include "rust-tyty-region.h"
+
+#include <stack>
 
 namespace Rust {
 namespace Resolver {
@@ -37,11 +38,19 @@ public:
     ITEM,
     IMPL_ITEM,
     TRAIT_ITEM,
+    ERROR
   };
 
   TypeCheckContextItem (HIR::Function *item);
   TypeCheckContextItem (HIR::ImplBlock *impl_block, HIR::Function *item);
   TypeCheckContextItem (HIR::TraitItemFunc *trait_item);
+  TypeCheckContextItem (const TypeCheckContextItem &other);
+
+  TypeCheckContextItem &operator= (const TypeCheckContextItem &other);
+
+  static TypeCheckContextItem get_error ();
+
+  bool is_error () const;
 
   ItemType get_type () const;
 
@@ -53,7 +62,11 @@ public:
 
   TyTy::FnType *get_context_type ();
 
+  DefId get_defid () const;
+
 private:
+  TypeCheckContextItem ();
+
   union Item
   {
     HIR::Function *item;
@@ -67,6 +80,49 @@ private:
 
   ItemType type;
   Item item;
+};
+
+/**
+ * Interned lifetime representation in TyTy
+ *
+ * On the HIR->TyTy boundary HIR::Lifetime is interned into this struct.
+ */
+class Lifetime
+{
+  uint32_t interner_index;
+
+public:
+  explicit constexpr Lifetime (uint32_t interner_index)
+    : interner_index (interner_index)
+  {}
+
+  Lifetime () = default;
+
+  WARN_UNUSED_RESULT bool is_static () const { return interner_index == 0; }
+
+  WARN_UNUSED_RESULT static constexpr Lifetime static_lifetime ()
+  {
+    return Lifetime (0);
+  }
+
+  WARN_UNUSED_RESULT static constexpr Lifetime anonymous_lifetime ()
+  {
+    return Lifetime (1);
+  }
+
+  static constexpr uint32_t FIRST_NAMED_LIFETIME = 2;
+
+  friend bool operator== (const Lifetime &lhs, const Lifetime &rhs)
+  {
+    return lhs.interner_index == rhs.interner_index;
+  }
+
+  friend bool operator!= (const Lifetime &lhs, const Lifetime &rhs)
+  {
+    return !(lhs == rhs);
+  }
+
+  WARN_UNUSED_RESULT Lifetime next () { return Lifetime (interner_index++); }
 };
 
 class TypeCheckContext
@@ -84,21 +140,23 @@ public:
 		    TyTy::BaseType *type);
   void insert_implicit_type (TyTy::BaseType *type);
   bool lookup_type (HirId id, TyTy::BaseType **type) const;
+  void clear_type (TyTy::BaseType *ty);
 
   void insert_implicit_type (HirId id, TyTy::BaseType *type);
 
   void insert_type_by_node_id (NodeId ref, HirId id);
   bool lookup_type_by_node_id (NodeId ref, HirId *id);
 
+  bool have_function_context () const;
   TyTy::BaseType *peek_return_type ();
-  TypeCheckContextItem &peek_context ();
+  TypeCheckContextItem peek_context ();
   void push_return_type (TypeCheckContextItem item,
 			 TyTy::BaseType *return_type);
   void pop_return_type ();
   void iterate (std::function<bool (HirId, TyTy::BaseType *)> cb);
 
   bool have_loop_context () const;
-  void push_new_loop_context (HirId id, Location locus);
+  void push_new_loop_context (HirId id, location_t locus);
   void push_new_while_loop_context (HirId id);
   TyTy::BaseType *peek_loop_context ();
   TyTy::BaseType *pop_loop_context ();
@@ -161,6 +219,20 @@ public:
   void trait_query_completed (DefId id);
   bool trait_query_in_progress (DefId id) const;
 
+  Lifetime intern_lifetime (const HIR::Lifetime &name);
+  WARN_UNUSED_RESULT tl::optional<Lifetime>
+  lookup_lifetime (const HIR::Lifetime &lifetime) const;
+
+  WARN_UNUSED_RESULT tl::optional<TyTy::Region>
+  lookup_and_resolve_lifetime (const HIR::Lifetime &lifetime) const;
+
+  void intern_and_insert_lifetime (const HIR::Lifetime &lifetime);
+
+  WARN_UNUSED_RESULT std::vector<TyTy::Region>
+  regions_from_generic_args (const HIR::GenericArgs &args) const;
+
+  void compute_inference_variables (bool error);
+
 private:
   TypeCheckContext ();
 
@@ -199,6 +271,183 @@ private:
   // query context lookups
   std::set<HirId> querys_in_progress;
   std::set<DefId> trait_queries_in_progress;
+
+  /** Used to resolve (interned) lifetime names to their bounding scope. */
+  class LifetimeResolver
+  {
+    /**
+     * The level of nested scopes, where the lifetime was declared.
+     *
+     * Index 0 is used for `impl` blocks and is skipped if not explicitly
+     * requested.
+     * Index 1 for the top-level of declarations of items.
+     * Index >1 is used for late-bound lifetimes.
+     */
+    using ScopeIndex = size_t;
+
+    static constexpr ScopeIndex IMPL_SCOPE = 0;
+    static constexpr ScopeIndex ITEM_SCOPE = 1;
+
+    /**
+     * A reference to a lifetime binder.
+     *
+     * This is used to resolve lifetimes to their scope.
+     */
+    struct LifetimeBinderRef
+    {
+      uint32_t scope; //> Depth of the scope where the lifetime was declared.
+      uint32_t index; //> Index of the lifetime in the scope.
+    };
+
+    /**
+     * A stack of the number of lifetimes declared in each scope.
+     *
+     * Used to pop the correct number of lifetimes when leaving a scope.
+     */
+    std::stack<uint32_t> binder_size_stack;
+
+    /**
+     * Merged stack of all lifetimes declared in all scopes.
+     *
+     * Use `binder_size_stack` to determine the number of lifetimes in each
+     * scope.
+     */
+    std::vector<std::pair<Lifetime, LifetimeBinderRef>> lifetime_lookup;
+
+    /**
+     * Whether the current scope is a function body.
+     *
+     * In function header, lifetimes are resolved as early-bound, in the body as
+     * named. This is because the header can be also used in call position.
+     */
+    bool is_body = false;
+
+    /** Return the number of the current scope. */
+    WARN_UNUSED_RESULT uint32_t get_current_scope () const
+    {
+      return binder_size_stack.size () - 1;
+    }
+
+  public:
+    /** Add new declaration of a lifetime. */
+    void insert_mapping (Lifetime placeholder)
+    {
+      lifetime_lookup.push_back (
+	{placeholder, {get_current_scope (), binder_size_stack.top ()++}});
+    }
+
+    WARN_UNUSED_RESULT tl::optional<TyTy::Region>
+    resolve (const Lifetime &placeholder) const;
+
+    /** Only to be used by the guard. */
+    void push_binder () { binder_size_stack.push (0); }
+    /** Only to be used by the guard. */
+    void pop_binder () { binder_size_stack.pop (); }
+
+    /**
+     * Switch from resolving a function header to a function body.
+     */
+    void switch_to_fn_body () { this->is_body = true; }
+
+    size_t get_num_bound_regions () const { return binder_size_stack.top (); }
+  };
+
+  // lifetime resolving
+  std::unordered_map<std::string, Lifetime> lifetime_name_interner;
+  Lifetime next_lifetime_index = Lifetime (Lifetime::FIRST_NAMED_LIFETIME);
+
+  /**
+   * Stack of lifetime resolvers.
+   *
+   * Due to the contruction of the type checker, it is possible to start
+   * resolution of a new type in the middle of resolving another type. This
+   * stack isolates the conexts in such cases.
+   */
+  std::stack<LifetimeResolver> lifetime_resolver_stack;
+
+public:
+  WARN_UNUSED_RESULT LifetimeResolver &get_lifetime_resolver ()
+  {
+    rust_assert (!lifetime_resolver_stack.empty ());
+    return lifetime_resolver_stack.top ();
+  }
+
+  WARN_UNUSED_RESULT const LifetimeResolver &get_lifetime_resolver () const
+  {
+    rust_assert (!lifetime_resolver_stack.empty ());
+    return lifetime_resolver_stack.top ();
+  }
+
+  /**
+   * A guard that pushes a new lifetime resolver on the stack and pops it
+   * when it goes out of scope.
+   */
+  class LifetimeResolverGuard
+  {
+  public:
+    /** The kind of scope that is being pushed. */
+    enum ScopeKind
+    {
+      IMPL_BLOCK_RESOLVER, //> A new `impl` block scope.
+      RESOLVER,		   //> A new scope for a function body.
+      BINDER,		   //> A new scope for late-bound lifetimes.
+    };
+
+  private:
+    TypeCheckContext &ctx;
+    ScopeKind kind;
+
+  public:
+    LifetimeResolverGuard (TypeCheckContext &ctx, ScopeKind kind)
+      : ctx (ctx), kind (kind)
+    {
+      if (kind == IMPL_BLOCK_RESOLVER)
+	{
+	  ctx.lifetime_resolver_stack.push (LifetimeResolver ());
+	}
+
+      if (kind == RESOLVER)
+	{
+	  ctx.lifetime_resolver_stack.push (LifetimeResolver ());
+	  // Skip the `impl` block scope.
+	  ctx.lifetime_resolver_stack.top ().push_binder ();
+	}
+      rust_assert (!ctx.lifetime_resolver_stack.empty ());
+      ctx.lifetime_resolver_stack.top ().push_binder ();
+    }
+
+    ~LifetimeResolverGuard ()
+    {
+      rust_assert (!ctx.lifetime_resolver_stack.empty ());
+      ctx.lifetime_resolver_stack.top ().pop_binder ();
+      if (kind == RESOLVER)
+	{
+	  ctx.lifetime_resolver_stack.pop ();
+	}
+    }
+  };
+
+  /** Start new late bound lifetime scope. */
+  WARN_UNUSED_RESULT LifetimeResolverGuard push_lifetime_binder ()
+  {
+    return LifetimeResolverGuard (*this, LifetimeResolverGuard::BINDER);
+  }
+
+  /** Start new function body scope. */
+  WARN_UNUSED_RESULT LifetimeResolverGuard
+  push_clean_lifetime_resolver (bool is_impl_block = false)
+  {
+    return LifetimeResolverGuard (*this,
+				  is_impl_block
+				    ? LifetimeResolverGuard::IMPL_BLOCK_RESOLVER
+				    : LifetimeResolverGuard::RESOLVER);
+  }
+
+  /** Switch from resolving a function header to a function body. */
+  void switch_to_fn_body ()
+  {
+    this->lifetime_resolver_stack.top ().switch_to_fn_body ();
+  }
 };
 
 class TypeResolution

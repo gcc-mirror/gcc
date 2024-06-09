@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -25,69 +25,117 @@
 namespace Rust {
 namespace Resolver {
 
-class ResolvePattern : public ResolverBase
+// Specifies whether the set of already bound patterns are related by 'Or' or
+// 'Product'. Used to check for multiple bindings to the same identifier.
+enum PatternBoundCtx
 {
-  using Rust::Resolver::ResolverBase::visit;
+  // A product pattern context (e.g. struct and tuple patterns)
+  Product,
+  // An or-pattern context (e.g. p_0 | p_1 | ...)
+  Or,
+};
+
+struct PatternBinding
+{
+  PatternBoundCtx ctx;
+  std::set<Identifier> idents;
+
+  PatternBinding (PatternBoundCtx ctx, std::set<Identifier> idents)
+    : ctx (ctx), idents (idents)
+  {}
+};
+
+// Info that gets stored in the map. Helps us detect if two bindings to the same
+// identifier have different mutability or ref states.
+class BindingTypeInfo
+{
+  Mutability mut;
+  bool is_ref;
+  location_t locus;
 
 public:
-  static void go (AST::Pattern *pattern)
+  BindingTypeInfo (Mutability mut, bool is_ref, location_t locus)
+    : mut (mut), is_ref (is_ref), locus (locus)
+  {}
+
+  BindingTypeInfo (BindingTypeInfo const &other)
+    : mut (other.mut), is_ref (other.is_ref), locus (other.get_locus ())
+  {}
+
+  BindingTypeInfo (){};
+
+  location_t get_locus () const { return locus; }
+  Mutability get_mut () const { return mut; }
+  bool get_is_ref () const { return is_ref; }
+
+  BindingTypeInfo operator= (BindingTypeInfo const &other)
   {
-    ResolvePattern resolver;
-    pattern->accept_vis (resolver);
+    mut = other.mut;
+    is_ref = other.is_ref;
+    locus = other.get_locus ();
+
+    return *this;
   }
 
-  void visit (AST::IdentifierPattern &pattern) override
+  bool operator== (BindingTypeInfo const &other)
   {
-    if (resolver->get_name_scope ().lookup (
-	  CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
-	  &resolved_node))
-      {
-	resolver->insert_resolved_name (pattern.get_node_id (), resolved_node);
-      }
+    return mut == other.mut && is_ref == other.is_ref;
   }
 
-private:
-  ResolvePattern () : ResolverBase () {}
+  bool operator!= (BindingTypeInfo const &other)
+  {
+    return !BindingTypeInfo::operator== (other);
+  }
 };
+
+typedef std::map<Identifier, BindingTypeInfo> BindingMap;
 
 class PatternDeclaration : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Pattern *pattern, Rib::ItemType type)
-  {
-    PatternDeclaration resolver (type);
-    pattern->accept_vis (resolver);
-  };
+  static void go (AST::Pattern *pattern, Rib::ItemType type);
+  static void go (AST::Pattern *pattern, Rib::ItemType type,
+		  std::vector<PatternBinding> &bindings);
 
-  void visit (AST::IdentifierPattern &pattern) override
-  {
-    // if we have a duplicate id this then allows for shadowing correctly
-    // as new refs to this decl will match back here so it is ok to overwrite
-    resolver->get_name_scope ().insert (
-      CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
-      pattern.get_node_id (), pattern.get_locus (), type);
-  }
-
-  void visit (AST::GroupedPattern &pattern) override
-  {
-    pattern.get_pattern_in_parens ()->accept_vis (*this);
-  }
-
-  // cases in a match expression
+  void visit (AST::IdentifierPattern &pattern) override;
+  void visit (AST::GroupedPattern &pattern) override;
+  void visit (AST::ReferencePattern &pattern) override;
   void visit (AST::PathInExpression &pattern) override;
-
   void visit (AST::StructPattern &pattern) override;
-
   void visit (AST::TupleStructPattern &pattern) override;
-
   void visit (AST::TuplePattern &pattern) override;
-
   void visit (AST::RangePattern &pattern) override;
+  void visit (AST::AltPattern &pattern) override;
+  void visit (AST::SlicePattern &pattern) override;
+
+  void add_new_binding (Identifier ident, NodeId node_id, BindingTypeInfo info);
+  void check_bindings_consistency (std::vector<BindingMap> &binding_maps);
 
 private:
-  PatternDeclaration (Rib::ItemType type) : ResolverBase (), type (type) {}
+  PatternDeclaration (std::vector<PatternBinding> &bindings_with_ctx,
+		      Rib::ItemType type)
+    : ResolverBase (), bindings_with_ctx (bindings_with_ctx), type (type)
+  {}
+
+  // To avoid having a separate visitor for consistency checks, we store
+  // bindings in two forms:
+
+  // 1) Bindings as a vector of context-related sets.
+  // Used for checking multiple bindings to the same identifier (i.e. E0415,
+  // E0416).
+  std::vector<PatternBinding> &bindings_with_ctx;
+
+  // 2) Bindings as a map between identifiers and binding info.
+  // Used for checking consistency between alt patterns (i.e. E0408, E0409).
+  BindingMap binding_info_map;
+
+  // we need to insert the missing and inconsistent bindings (found in
+  // check_bindings_consistency) into maps to avoid duplication of error
+  // messages.
+  BindingMap inconsistent_bindings;
+  BindingMap missing_bindings;
 
   Rib::ItemType type;
 };

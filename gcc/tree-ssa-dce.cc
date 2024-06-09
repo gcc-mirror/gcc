@@ -1,5 +1,5 @@
 /* Dead code elimination pass for the GNU compiler.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Ben Elliston <bje@redhat.com>
    and Andrew MacLeod <amacleod@redhat.com>
    Adapted to use control dependence by Steven Bosscher, SUSE Labs.
@@ -124,6 +124,55 @@ keep_all_vdefs_p ()
   return optimize_debug;
 }
 
+/* 1 if CALLEE is the function __cxa_atexit.
+   2 if CALLEE is the function __aeabi_atexit.
+   0 otherwise.   */
+
+static inline int
+is_cxa_atexit (const_tree callee)
+{
+  if (callee != NULL_TREE
+      && strcmp (IDENTIFIER_POINTER (DECL_NAME (callee)), "__cxa_atexit") == 0)
+    return 1;
+  if (callee != NULL_TREE
+      && strcmp (IDENTIFIER_POINTER (DECL_NAME (callee)), "__aeabi_atexit") == 0)
+    return 2;
+  return 0;
+}
+
+/* True if STMT is a call to __cxa_atexit (or __aeabi_atexit)
+   and the function argument to that call is a const  or pure
+   non-looping function decl.  */
+
+static inline bool
+is_removable_cxa_atexit_call (gimple *stmt)
+{
+  tree callee = gimple_call_fndecl (stmt);
+  int functype = is_cxa_atexit (callee);
+  if (!functype)
+    return false;
+  if (gimple_call_num_args (stmt) != 3)
+    return false;
+
+  /* The function argument is the 1st argument for __cxa_atexit
+     or the 2nd argument for __eabi_atexit. */
+  tree arg = gimple_call_arg (stmt, functype == 2 ? 1 : 0);
+  if (TREE_CODE (arg) != ADDR_EXPR)
+    return false;
+  arg = TREE_OPERAND (arg, 0);
+  if (TREE_CODE (arg) != FUNCTION_DECL)
+    return false;
+  int flags = flags_from_decl_or_type (arg);
+
+  /* If the function is noreturn then it cannot be removed. */
+  if (flags & ECF_NORETURN)
+    return false;
+
+  /* The function needs to be const or pure and non looping.  */
+  return (flags & (ECF_CONST|ECF_PURE))
+	  && !(flags & ECF_LOOPING_CONST_OR_PURE);
+}
+
 /* If STMT is not already marked necessary, mark it, and add it to the
    worklist if ADD_TO_WORKLIST is true.  */
 
@@ -221,6 +270,14 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 
     case GIMPLE_CALL:
       {
+	/* Never elide a noreturn call we pruned control-flow for.  */
+	if ((gimple_call_flags (stmt) & ECF_NORETURN)
+	    && gimple_call_ctrl_altering_p (stmt))
+	  {
+	    mark_stmt_necessary (stmt, true);
+	    return;
+	  }
+
 	tree callee = gimple_call_fndecl (stmt);
 	if (callee != NULL_TREE
 	    && fndecl_built_in_p (callee, BUILT_IN_NORMAL))
@@ -241,6 +298,10 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	if (callee != NULL_TREE
 	    && flag_allocation_dce
 	    && DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee))
+	  return;
+
+	/* For __cxa_atexit calls, don't mark as necessary right away. */
+	if (is_removable_cxa_atexit_call (stmt))
 	  return;
 
 	/* IFN_GOACC_LOOP calls are necessary in that they are used to
@@ -461,7 +522,8 @@ find_obviously_necessary_stmts (bool aggressive)
 static bool
 ref_may_be_aliased (tree ref)
 {
-  gcc_assert (TREE_CODE (ref) != WITH_SIZE_EXPR);
+  if (TREE_CODE (ref) == WITH_SIZE_EXPR)
+    ref = TREE_OPERAND (ref, 0);
   while (handled_component_p (ref))
     ref = TREE_OPERAND (ref, 0);
   if ((TREE_CODE (ref) == MEM_REF || TREE_CODE (ref) == TARGET_MEM_REF)
@@ -616,6 +678,8 @@ mark_all_reaching_defs_necessary_1 (ao_ref *ref ATTRIBUTE_UNUSED,
 	  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee)
 	      || DECL_IS_OPERATOR_DELETE_P (callee))
 	  && gimple_call_from_new_or_delete (call))
+	return false;
+      if (is_removable_cxa_atexit_call (call))
 	return false;
     }
 
@@ -919,6 +983,9 @@ propagate_necessity (bool aggressive)
 		  && (DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee)
 		      || DECL_IS_OPERATOR_DELETE_P (callee))
 		  && gimple_call_from_new_or_delete (call))
+		continue;
+
+	      if (is_removable_cxa_atexit_call (call))
 		continue;
 
 	      /* Calls implicitly load from memory, their arguments
@@ -1232,9 +1299,7 @@ maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
   tree arg1 = gimple_call_arg (stmt, 1);
   location_t loc = gimple_location (stmt);
   tree type = TREE_TYPE (TREE_TYPE (lhs));
-  tree utype = type;
-  if (!TYPE_UNSIGNED (type))
-    utype = build_nonstandard_integer_type (TYPE_PRECISION (type), 1);
+  tree utype = unsigned_type_for (type);
   tree result = fold_build2_loc (loc, subcode, utype,
 				 fold_convert_loc (loc, utype, arg0),
 				 fold_convert_loc (loc, utype, arg1));

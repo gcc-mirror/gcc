@@ -1,5 +1,5 @@
 ;;  Mips.md	     Machine Description for MIPS based processors
-;;  Copyright (C) 1989-2023 Free Software Foundation, Inc.
+;;  Copyright (C) 1989-2024 Free Software Foundation, Inc.
 ;;  Contributed by   A. Lichnewsky, lich@inria.inria.fr
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -96,6 +96,10 @@
   ;; Floating-point environment.
   UNSPEC_GET_FCSR
   UNSPEC_SET_FCSR
+
+  ;; Floating-point unspecs.
+  UNSPEC_FMIN
+  UNSPEC_FMAX
 
   ;; HI/LO moves.
   UNSPEC_MFHI
@@ -312,6 +316,10 @@
 ;; "11" specifies MEMMODEL_ACQUIRE.
 (define_attr "sync_memmodel" "" (const_int 10))
 
+;; Performance ratio.  Add this attr to the slow INSNs.
+;; Used by mips_insn_cost.
+(define_attr "perf_ratio" "" (const_int 0))
+
 ;; Accumulator operand for madd patterns.
 (define_attr "accum_in" "none,0,1,2,3,4,5" (const_string "none"))
 
@@ -366,6 +374,7 @@
 ;; frsqrt       floating point reciprocal square root
 ;; frsqrt1      floating point reciprocal square root step1
 ;; frsqrt2      floating point reciprocal square root step2
+;; fminmax      floating point min/max
 ;; dspmac       DSP MAC instructions not saturating the accumulator
 ;; dspmacsat    DSP MAC instructions that saturate the accumulator
 ;; accext       DSP accumulator extract instructions
@@ -383,8 +392,8 @@
    prefetch,prefetchx,condmove,mtc,mfc,mthi,mtlo,mfhi,mflo,const,arith,logical,
    shift,slt,signext,clz,pop,trap,imul,imul3,imul3nc,imadd,idiv,idiv3,move,
    fmove,fadd,fmul,fmadd,fdiv,frdiv,frdiv1,frdiv2,fabs,fneg,fcmp,fcvt,fsqrt,
-   frsqrt,frsqrt1,frsqrt2,dspmac,dspmacsat,accext,accmod,dspalu,dspalusat,
-   multi,atomic,syncloop,nop,ghost,multimem,
+   frsqrt,frsqrt1,frsqrt2,fminmax,dspmac,dspmacsat,accext,accmod,dspalu,
+   dspalusat,multi,atomic,syncloop,nop,ghost,multimem,
    simd_div,simd_fclass,simd_flog2,simd_fadd,simd_fcvt,simd_fmul,simd_fmadd,
    simd_fdiv,simd_bitins,simd_bitmov,simd_insert,simd_sld,simd_mul,simd_fcmp,
    simd_fexp2,simd_int_arith,simd_bit,simd_shift,simd_splat,simd_fill,
@@ -1772,13 +1781,7 @@
    (set_attr "mode"	"SI")
    (set_attr "insn_count" "1,1,2")
    (set (attr "enabled")
-        (cond [(and (eq_attr "alternative" "0")
-                    (match_test "!mips_lra_flag"))
-                  (const_string "yes")
-               (and (eq_attr "alternative" "1")
-                    (match_test "mips_lra_flag"))
-                  (const_string "yes")
-               (eq_attr "alternative" "2")
+        (cond [(eq_attr "alternative" "1,2")
                   (const_string "yes")]
               (const_string "no")))])
 
@@ -1802,13 +1805,7 @@
    (set_attr "mode"	"SI")
    (set_attr "insn_count" "1,1,1,2")
    (set (attr "enabled")
-        (cond [(and (eq_attr "alternative" "0")
-                    (match_test "!mips_lra_flag"))
-                  (const_string "yes")
-               (and (eq_attr "alternative" "1")
-                    (match_test "mips_lra_flag"))
-                  (const_string "yes")
-               (eq_attr "alternative" "2,3")
+        (cond [(eq_attr "alternative" "1,2,3")
                   (const_string "yes")]
               (const_string "no")))])
 
@@ -2030,13 +2027,7 @@
    (set_attr "mode"     "SI")
    (set_attr "insn_count" "1,1,2")
    (set (attr "enabled")
-        (cond [(and (eq_attr "alternative" "0")
-                    (match_test "!mips_lra_flag"))
-                  (const_string "yes")
-               (and (eq_attr "alternative" "1")
-                    (match_test "mips_lra_flag"))
-                  (const_string "yes")
-               (eq_attr "alternative" "2")
+        (cond [(eq_attr "alternative" "1,2")
                   (const_string "yes")]
               (const_string "no")))])
 
@@ -3436,16 +3427,16 @@
    (set_attr "compression" "micromips,*,*")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*ior<mode>3_mips16_asmacro"
-  [(set (match_operand:GPR 0 "register_operand" "=d,d")
-	(ior:GPR (match_operand:GPR 1 "register_operand" "%0,0")
-		 (match_operand:GPR 2 "uns_arith_operand" "d,K")))]
+(define_insn "*iorsi3_mips16_asmacro"
+  [(set (match_operand:SI 0 "register_operand" "=d,d")
+	(ior:SI (match_operand:SI 1 "register_operand" "%0,0")
+		(match_operand:SI 2 "uns_arith_operand" "d,K")))]
   "ISA_HAS_MIPS16E2"
   "@
    or\t%0,%2
    ori\t%0,%x2"
    [(set_attr "alu_type" "or")
-    (set_attr "mode" "<MODE>")
+    (set_attr "mode" "SI")
     (set_attr "extended_mips16" "*,yes")])
 
 (define_insn "*ior<mode>3_mips16"
@@ -4415,6 +4406,30 @@
   [(set_attr "type"     "arith")
    (set_attr "mode"     "SI")])
 
+(define_insn "*insqisi_extended"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+    (sign_extend:DI
+      (ior:SI (and:SI (subreg:SI (match_dup 0) 0)
+		(const_int 16777215))
+	      (ashift:SI
+		(subreg:SI (match_operand:QI 1 "register_operand" "d") 0)
+		(const_int 24)))))]
+  "TARGET_64BIT && !TARGET_MIPS16 && ISA_HAS_EXT_INS"
+  "ins\t%0,%1,24,8"
+  [(set_attr "mode" "SI")
+   (set_attr "perf_ratio" "1")])
+
+(define_insn "*inshisi_extended"
+  [(set (match_operand:DI 0 "register_operand" "=d")
+    (sign_extend:DI
+      (ior:SI
+	(ashift:SI (subreg:SI (match_operand:HI 1 "register_operand" "d") 0)
+	  (const_int 16))
+	(zero_extend:SI (subreg:HI (match_dup 0) 0)))))]
+  "TARGET_64BIT && !TARGET_MIPS16 && ISA_HAS_EXT_INS"
+  "ins\t%0,%1,16,16"
+  [(set_attr "mode" "SI")
+   (set_attr "perf_ratio" "1")])
 
 (define_expand "insvmisalign<mode>"
   [(set (zero_extract:GPR (match_operand:BLK 0 "memory_operand")
@@ -5732,7 +5747,7 @@
 
 (define_insn "rdhwr_synci_step_<mode>"
   [(set (match_operand:P 0 "register_operand" "=d")
-        (unspec_volatile [(const_int 1)]
+        (unspec_volatile:P [(const_int 1)]
         UNSPEC_RDHWR))]
   "ISA_HAS_SYNCI"
   "rdhwr\t%0,$1")
@@ -7943,6 +7958,47 @@
   [(set_attr "move_type" "load")
    (set_attr "insn_count" "2")])
 
+;;
+;;  Float point MIN/MAX
+;;
+
+(define_insn "smin<mode>3"
+  [(set (match_operand:SCALARF 0 "register_operand" "=f")
+	(smin:SCALARF (match_operand:SCALARF 1 "register_operand" "f")
+		      (match_operand:SCALARF 2 "register_operand" "f")))]
+  "ISA_HAS_FMIN_FMAX"
+  "min.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fminmax")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "smax<mode>3"
+  [(set (match_operand:SCALARF 0 "register_operand" "=f")
+	(smax:SCALARF (match_operand:SCALARF 1 "register_operand" "f")
+		      (match_operand:SCALARF 2 "register_operand" "f")))]
+  "ISA_HAS_FMIN_FMAX"
+  "max.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fminmax")
+  (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "fmin<mode>3"
+  [(set (match_operand:SCALARF 0 "register_operand" "=f")
+	(unspec:SCALARF [(use (match_operand:SCALARF 1 "register_operand" "f"))
+			 (use (match_operand:SCALARF 2 "register_operand" "f"))]
+			UNSPEC_FMIN))]
+  "ISA_HAS_FMIN_FMAX"
+  "min.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fminmax")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "fmax<mode>3"
+  [(set (match_operand:SCALARF 0 "register_operand" "=f")
+	(unspec:SCALARF [(use (match_operand:SCALARF 1 "register_operand" "f"))
+			 (use (match_operand:SCALARF 2 "register_operand" "f"))]
+			UNSPEC_FMAX))]
+  "ISA_HAS_FMIN_FMAX"
+  "max.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fminmax")
+  (set_attr "mode" "<UNITMODE>")])
 
 ;; 2 HI loads are joined.
 (define_peephole2

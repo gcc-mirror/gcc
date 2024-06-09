@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -55,9 +55,9 @@ public:
 
   // this takes the relative paths of items within a compilation unit for lookup
   void insert_name (
-    const CanonicalPath &path, NodeId id, Location locus, bool shadow,
+    const CanonicalPath &path, NodeId id, location_t locus, bool shadow,
     ItemType type,
-    std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
+    std::function<void (const CanonicalPath &, NodeId, location_t)> dup_cb);
 
   bool lookup_canonical_path (const NodeId &id, CanonicalPath *ident);
   bool lookup_name (const CanonicalPath &ident, NodeId *id);
@@ -71,14 +71,14 @@ public:
 
   CrateNum get_crate_num () const { return crate_num; }
   NodeId get_node_id () const { return node_id; }
-  std::map<NodeId, Location> &get_declarations () { return decls_within_rib; }
+  std::map<NodeId, location_t> &get_declarations () { return decls_within_rib; }
 
 private:
   CrateNum crate_num;
   NodeId node_id;
   std::map<CanonicalPath, NodeId> path_mappings;
   std::map<NodeId, CanonicalPath> reverse_path_mappings;
-  std::map<NodeId, Location> decls_within_rib;
+  std::map<NodeId, location_t> decls_within_rib;
   std::map<NodeId, std::set<NodeId>> references;
   std::map<NodeId, ItemType> decl_type_mappings;
 };
@@ -88,12 +88,12 @@ class Scope
 public:
   Scope (CrateNum crate_num);
 
-  void
-  insert (const CanonicalPath &ident, NodeId id, Location locus, bool shadow,
-	  Rib::ItemType type,
-	  std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb);
+  void insert (
+    const CanonicalPath &ident, NodeId id, location_t locus, bool shadow,
+    Rib::ItemType type,
+    std::function<void (const CanonicalPath &, NodeId, location_t)> dup_cb);
 
-  void insert (const CanonicalPath &ident, NodeId id, Location locus,
+  void insert (const CanonicalPath &ident, NodeId id, location_t locus,
 	       Rib::ItemType type = Rib::ItemType::Unknown);
   bool lookup (const CanonicalPath &ident, NodeId *id);
   bool lookup_decl_type (NodeId id, Rib::ItemType *type);

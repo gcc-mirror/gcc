@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 unsigned char lookup_table [257];
 
 static int 
@@ -6,9 +9,9 @@ build_lookup (pattern)
 {
   int m;
 
-  m = strlen (pattern) - 1;
+  m = __builtin_strlen (pattern) - 1;
   
-  memset (lookup_table, ++m, 257);
+  __builtin_memset (lookup_table, ++m, 257);
   return m;
 }
 

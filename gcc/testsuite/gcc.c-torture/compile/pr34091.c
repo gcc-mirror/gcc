@@ -1,4 +1,5 @@
 /* { dg-skip-if "too many arguments in function call" { bpf-*-* } } */
+/* { dg-additional-options "-fpermissive" } */
 
 typedef unsigned int GLenum;
 typedef unsigned char GLboolean;

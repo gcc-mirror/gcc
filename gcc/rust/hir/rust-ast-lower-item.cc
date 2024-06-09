@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -17,6 +17,16 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-lower-item.h"
+#include "rust-diagnostics.h"
+#include "rust-ast-lower.h"
+#include "rust-ast-lower-base.h"
+#include "rust-ast-lower-enumitem.h"
+#include "rust-ast-lower-type.h"
+#include "rust-ast-lower-implitem.h"
+#include "rust-ast-lower-expr.h"
+#include "rust-ast-lower-pattern.h"
+#include "rust-ast-lower-block.h"
+#include "rust-item.h"
 
 namespace Rust {
 namespace HIR {
@@ -265,11 +275,16 @@ ASTLoweringItem::visit (AST::Enum &enum_decl)
 				 mappings->get_next_hir_id (crate_num),
 				 mappings->get_next_localdef_id (crate_num));
 
-  translated = new HIR::Enum (mapping, enum_decl.get_identifier (), vis,
-			      std::move (generic_params),
-			      std::move (where_clause), /* is_unit, */
-			      std::move (items), enum_decl.get_outer_attrs (),
-			      enum_decl.get_locus ());
+  HIR::Enum *hir_enum
+    = new HIR::Enum (mapping, enum_decl.get_identifier (), vis,
+		     std::move (generic_params), std::move (where_clause),
+		     std::move (items), enum_decl.get_outer_attrs (),
+		     enum_decl.get_locus ());
+  translated = hir_enum;
+  for (auto &variant : hir_enum->get_variants ())
+    {
+      mappings->insert_hir_enumitem (hir_enum, variant.get ());
+    }
 }
 
 void
@@ -336,7 +351,7 @@ ASTLoweringItem::visit (AST::StaticItem &var)
 {
   HIR::Visibility vis = translate_visibility (var.get_visibility ());
 
-  HIR::Type *type = ASTLoweringType::translate (var.get_type ().get ());
+  HIR::Type *type = ASTLoweringType::translate (var.get_type ().get (), true);
   HIR::Expr *expr = ASTLoweringExpr::translate (var.get_expr ().get ());
 
   auto crate_num = mappings->get_current_crate ();
@@ -357,7 +372,8 @@ ASTLoweringItem::visit (AST::ConstantItem &constant)
 {
   HIR::Visibility vis = translate_visibility (constant.get_visibility ());
 
-  HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
+  HIR::Type *type
+    = ASTLoweringType::translate (constant.get_type ().get (), true);
   HIR::Expr *expr = ASTLoweringExpr::translate (constant.get_expr ().get ());
 
   auto crate_num = mappings->get_current_crate ();
@@ -398,7 +414,7 @@ ASTLoweringItem::visit (AST::Function &function)
       generic_params = lower_generic_params (function.get_generic_params ());
     }
   Identifier function_name = function.get_function_name ();
-  Location locus = function.get_locus ();
+  location_t locus = function.get_locus ();
 
   std::unique_ptr<HIR::Type> return_type
     = function.has_return_type () ? std::unique_ptr<HIR::Type> (
@@ -406,28 +422,32 @@ ASTLoweringItem::visit (AST::Function &function)
 				  : nullptr;
 
   std::vector<HIR::FunctionParam> function_params;
-  for (auto &param : function.get_function_params ())
+  for (auto &p : function.get_function_params ())
     {
+      if (p->is_variadic () || p->is_self ())
+	continue;
+      auto param = static_cast<AST::FunctionParam *> (p.get ());
+
       auto translated_pattern = std::unique_ptr<HIR::Pattern> (
-	ASTLoweringPattern::translate (param.get_pattern ().get ()));
+	ASTLoweringPattern::translate (param->get_pattern ().get ()));
       auto translated_type = std::unique_ptr<HIR::Type> (
-	ASTLoweringType::translate (param.get_type ().get ()));
+	ASTLoweringType::translate (param->get_type ().get ()));
 
       auto crate_num = mappings->get_current_crate ();
-      Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+      Analysis::NodeMapping mapping (crate_num, param->get_node_id (),
 				     mappings->get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
       auto hir_param
 	= HIR::FunctionParam (mapping, std::move (translated_pattern),
-			      std::move (translated_type), param.get_locus ());
+			      std::move (translated_type), param->get_locus ());
       function_params.push_back (std::move (hir_param));
     }
 
   bool terminated = false;
   std::unique_ptr<HIR::BlockExpr> function_body
     = std::unique_ptr<HIR::BlockExpr> (
-      ASTLoweringBlock::translate (function.get_definition ().get (),
+      ASTLoweringBlock::translate (function.get_definition ()->get (),
 				   &terminated));
 
   auto crate_num = mappings->get_current_crate ();
@@ -485,10 +505,15 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
 
 		if (t.has_type ())
 		  {
-		    // see https://github.com/rust-lang/rust/issues/36887
-		    rust_error_at (
+		    rich_location rich_locus (line_table, t.get_locus ());
+		    rich_locus.add_fixit_replace (
 		      t.get_locus (),
-		      "defaults for type parameters are not allowed here");
+		      "for more information, see issue #36887 "
+		      "<https://github.com/rust-lang/rust/issues/36887>");
+		    rust_error_at (rich_locus,
+				   "defaults for type parameters are only "
+				   "allowed in %<struct%>, %<enum%>, %<type%>, "
+				   "or %<trait%> definitions");
 		  }
 	      }
 	      break;
@@ -521,7 +546,7 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
       impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
     }
 
-  Polarity polarity = Positive;
+  BoundPolarity polarity = BoundPolarity::RegularBound;
   HIR::ImplBlock *hir_impl_block = new HIR::ImplBlock (
     mapping, std::move (impl_items), std::move (generic_params),
     std::unique_ptr<HIR::Type> (impl_type), nullptr, where_clause, polarity,
@@ -631,10 +656,15 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
 
 		if (t.has_type ())
 		  {
-		    // see https://github.com/rust-lang/rust/issues/36887
-		    rust_error_at (
-		      t.get_locus (),
-		      "defaults for type parameters are not allowed here");
+		    rich_location rich_locus (line_table, t.get_locus ());
+		    rich_locus.add_fixit_replace (
+		      t.get_locus (), "for more information, see issue #36887 "
+				      "<https://github.com/rust-lang/rust/"
+				      "issues/36887>");
+		    rust_error_at (rich_locus,
+				   "defaults for type parameters are only "
+				   "allowed in %<struct%>, %<enum%>, %<type%>, "
+				   "or %<trait%> definitions");
 		  }
 	      }
 	      break;
@@ -669,7 +699,9 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
       impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
     }
 
-  Polarity polarity = impl_block.is_exclam () ? Positive : Negative;
+  BoundPolarity polarity = impl_block.is_exclam ()
+			     ? BoundPolarity::RegularBound
+			     : BoundPolarity::NegativeBound;
   HIR::ImplBlock *hir_impl_block = new HIR::ImplBlock (
     mapping, std::move (impl_items), std::move (generic_params),
     std::unique_ptr<HIR::Type> (impl_type),
@@ -689,6 +721,12 @@ void
 ASTLoweringItem::visit (AST::ExternBlock &extern_block)
 {
   translated = lower_extern_block (extern_block);
+}
+
+void
+ASTLoweringItem::visit (AST::MacroRulesDefinition &def)
+{
+  lower_macro_definition (def);
 }
 
 HIR::SimplePath

@@ -21,6 +21,7 @@ union Lisp_Object
   }
 Lisp_Object;
 extern int initialized;
+extern void call_critical_lisp_code (Lisp_Object);
 void
 init_device_faces (int *d)
 {

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 typedef struct
 {
   short i __attribute__ ((aligned (2),packed));

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-save-temps -Wint-conversion" } */
+/* { dg-options "-save-temps -fpermissive -Wint-conversion" } */
 #include "pr60014-3.h"
 
 /* The line continuation on the next line is what triggers the problem here,

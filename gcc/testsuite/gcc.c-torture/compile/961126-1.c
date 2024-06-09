@@ -1,6 +1,9 @@
 int *p;
+int sub(void);
+int sub2(int);
 
-main()
+int
+main(void)
 {
   int i = sub ();
 

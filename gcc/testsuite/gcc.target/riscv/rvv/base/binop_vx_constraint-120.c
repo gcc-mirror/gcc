@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gcv -mabi=ilp32 -O3 -Wno-psabi" } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32 -O3" } */
 #include "riscv_vector.h"
 
 vint16mf4_t test___riscv_vwmulsu_vx_i16mf4(vbool64_t mask, vint16mf4_t merge, vint8mf8_t op1,int8_t op2,size_t vl)

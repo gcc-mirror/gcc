@@ -1,6 +1,6 @@
 (* libc.def provides an interface to the C library functions.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -227,7 +227,7 @@ PROCEDURE creat (filename: ADDRESS; mode: CARDINAL) : INTEGER;
            off_t lseek(int fildes, off_t offset, int whence);
 *)
 
-PROCEDURE lseek (fd: INTEGER; offset: LONGINT; whence: INTEGER) : LONGINT ;
+PROCEDURE lseek (fd: INTEGER; offset: CSSIZE_T; whence: INTEGER) : [ CSSIZE_T ] ;
 
 
 (*

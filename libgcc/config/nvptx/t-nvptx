@@ -1,10 +1,16 @@
 LIB2ADD=$(srcdir)/config/nvptx/reduction.c \
 	$(srcdir)/config/nvptx/mgomp.c \
-	$(srcdir)/config/nvptx/atomic.c
+	$(srcdir)/config/nvptx/atomic.c \
+	$(srcdir)/config/nvptx/unwind-nvptx.c
+
+# Until we have libstdc++-v3/libsupc++ proper.
+LIB2ADD += $(srcdir)/c++-minimal/guard.c
 
 LIB2ADDEH=
-LIB2FUNCS_EXCLUDE=__main
+LIB2FUNCS_EXCLUDE=
 
+# Wrapping of 'main'.
+LIB2FUNCS_EXCLUDE += __main
 crt0.o: $(srcdir)/config/nvptx/crt0.c
 	$(crt_compile) -c $<
 
@@ -12,3 +18,8 @@ crt0.o: $(srcdir)/config/nvptx/crt0.c
 # support it, and it may cause the build to fail, because of alloca usage, for
 # example.
 INHIBIT_LIBC_CFLAGS = -Dinhibit_libc
+
+# Support for global constructors/destructors is implemented via the
+# nvptx-tools 'ld' and the following helpers.
+LIB2ADD += $(srcdir)/config/nvptx/gbl-ctors.c
+LIB2FUNCS_EXCLUDE += _ctors

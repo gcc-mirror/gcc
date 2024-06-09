@@ -1,4 +1,4 @@
-# Copyright (C) 2023-2023 Free Software Foundation, Inc.
+# Copyright (C) 2023-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,17 +28,22 @@ if ![istarget riscv*-*-*] then {
 load_lib g++-dg.exp
 
 set gcc_march "rv64gcv_zfh"
+set gcc_mabi  "lp64d"
 if [istarget riscv32-*-*] then {
   set gcc_march "rv32gcv_zfh"
+  set gcc_mabi  "ilp32d"
 }
 
 # Initialize `dg'.
 dg-init
 
 # Main loop.
-set CFLAGS "-march=$gcc_march -O3"
+set CFLAGS "-march=$gcc_march -mabi=$gcc_mabi -O3"
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.C]] \
 	"" $CFLAGS
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[C\]]] \
+        "" $CFLAGS
 
 # All done.
 dg-finish

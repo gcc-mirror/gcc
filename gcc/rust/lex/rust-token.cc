@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -16,8 +16,10 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-system.h"
 #include "rust-token.h"
 #include "rust-diagnostics.h"
+#include "rust-unicode.h"
 
 namespace Rust {
 // Hackily defined way to get token description for enum value using x-macros
@@ -29,12 +31,14 @@ get_token_description (TokenId id)
 #define RS_TOKEN(name, descr)                                                  \
   case name:                                                                   \
     return descr;
-#define RS_TOKEN_KEYWORD(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2015(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
       RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -48,12 +52,55 @@ token_id_to_str (TokenId id)
 #define RS_TOKEN(name, _)                                                      \
   case name:                                                                   \
     return #name;
-#define RS_TOKEN_KEYWORD(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2015(x, y) RS_TOKEN (x, y)
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
       RS_TOKEN_LIST
-#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
 #undef RS_TOKEN
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
+    }
+}
+
+/* checks if a token is a keyword */
+bool
+token_id_is_keyword (TokenId id)
+{
+  switch (id)
+    {
+#define RS_TOKEN_KEYWORD_2015(name, _) case name:
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
+#define RS_TOKEN(a, b)
+      RS_TOKEN_LIST return true;
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
+#undef RS_TOKEN
+    default:
+      return false;
+    }
+}
+
+/* gets the string associated with a keyword */
+const std::string &
+token_id_keyword_string (TokenId id)
+{
+  switch (id)
+    {
+#define RS_TOKEN_KEYWORD_2015(id, str_ptr)                                     \
+    case id: {                                                                 \
+      static const std::string str (str_ptr);                                  \
+      return str;                                                              \
+    }                                                                          \
+    rust_unreachable ();
+#define RS_TOKEN_KEYWORD_2018 RS_TOKEN_KEYWORD_2015
+#define RS_TOKEN(a, b)
+      RS_TOKEN_LIST
+#undef RS_TOKEN_KEYWORD_2015
+#undef RS_TOKEN_KEYWORD_2018
+#undef RS_TOKEN
+    default:
+      rust_unreachable ();
     }
 }
 
@@ -112,9 +159,29 @@ Token::get_type_hint_str () const
   return get_type_hint_string (type_hint);
 }
 
+std::string
+nfc_normalize_token_string (location_t loc, TokenId id, const std::string &str)
+{
+  if (id == IDENTIFIER || id == LIFETIME)
+    {
+      tl::optional<Utf8String> ustring = Utf8String::make_utf8_string (str);
+      if (ustring.has_value ())
+	return ustring.value ().nfc_normalize ().as_string ();
+      else
+	rust_internal_error_at (loc,
+				"identifier '%s' is not a valid UTF-8 string",
+				str.c_str ());
+    }
+  else
+    return str;
+}
+
 const std::string &
 Token::get_str () const
 {
+  if (token_id_is_keyword (token_id))
+    return token_id_keyword_string (token_id);
+
   // FIXME: attempt to return null again
   // gcc_assert(str != NULL);
 
@@ -130,5 +197,81 @@ Token::get_str () const
       return empty;
     }
   return *str;
+}
+
+namespace {
+enum class Context
+{
+  String,
+  Char
+};
+
+const std::map<char, std::string> matches = {
+  {'\t', "\\t"}, {'\n', "\\n"},	 {'\r', "\\r"},
+  {'\0', "\\0"}, {'\\', "\\\\"}, {'\v', "\\v"},
+};
+
+std::string
+escape_special_chars (const std::string &source, Context ctx)
+{
+  std::stringstream stream;
+  decltype (matches)::const_iterator result;
+  for (char c : source)
+    {
+      // FIXME: #2411 Also replace escaped unicode values and \x digits
+      if ((result = matches.find (c)) != matches.end ())
+	stream << result->second;
+      else if (c == '\'' && ctx == Context::Char)
+	stream << "\\'";
+      else if (c == '"' && ctx == Context::String)
+	stream << "\\\"";
+      else
+	stream << c;
+    }
+
+  return stream.str ();
+}
+
+} // namespace
+
+std::string
+Token::as_string () const
+{
+  if (should_have_str ())
+    {
+      switch (get_id ())
+	{
+	case STRING_LITERAL:
+	  return "\"" + escape_special_chars (get_str (), Context::String)
+		 + "\"";
+	case BYTE_STRING_LITERAL:
+	  return "b\"" + escape_special_chars (get_str (), Context::String)
+		 + "\"";
+	case CHAR_LITERAL:
+	  return "'" + escape_special_chars (get_str (), Context::Char) + "'";
+	case BYTE_CHAR_LITERAL:
+	  return "b'" + escape_special_chars (get_str (), Context::Char) + "'";
+	case LIFETIME:
+	  return "'" + get_str ();
+	case SCOPE_RESOLUTION:
+	  return "::";
+	case INT_LITERAL:
+	  if (get_type_hint () == CORETYPE_UNKNOWN)
+	    return get_str ();
+	  else
+	    return get_str () + get_type_hint_str ();
+	case FLOAT_LITERAL:
+	  if (get_type_hint () == CORETYPE_UNKNOWN)
+	    return get_str ();
+	  else
+	    return get_str () + get_type_hint_str ();
+	default:
+	  return get_str ();
+	}
+    }
+  else
+    {
+      return get_token_description ();
+    }
 }
 } // namespace Rust

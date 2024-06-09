@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for ARC Linux.
-   Copyright (C) 2017-2023 Free Software Foundation, Inc.
+   Copyright (C) 2017-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -100,7 +100,7 @@ arc_fallback_frame_state (struct _Unwind_Context *context,
   if (pc[0] == MOV_R8_139)
     {
       rt_ = context->cfa;
-      sc = &rt_->uc.uc_mcontext;
+      sc = (struct sigcontext *) &rt_->uc.uc_mcontext;
     }
   else
     return _URC_END_OF_STACK;

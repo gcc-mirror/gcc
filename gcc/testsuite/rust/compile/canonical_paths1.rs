@@ -1,4 +1,7 @@
 // { dg-additional-options "-w -fdump-tree-gimple -frust-crate=example" }
+#[lang = "sized"]
+pub trait Sized {}
+
 struct Foo(i32);
 
 trait TR {

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,8 +79,8 @@ package System.Tasking.Protected_Objects.Entries is
    --  The following type contains the GNARL state of a protected object.
    --  The application-defined portion of the state (i.e. private objects)
    --  is maintained by the compiler-generated code. Note that there is a
-   --  simplified version of this type declared in System.Tasking.PO_Simple
-   --  that handle the simple case (no entries).
+   --  simplified version declared in System.Tasking.Protected_Objects that
+   --  handles the simple case (no entries) and is not controlled.
 
    type Protection_Entries (Num_Entries : Protected_Entry_Index) is new
      Ada.Finalization.Limited_Controlled

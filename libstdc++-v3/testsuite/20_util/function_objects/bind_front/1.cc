@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2023 Free Software Foundation, Inc.
+// Copyright (C) 2014-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,15 +16,17 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++20 } }
+// { dg-add-options no_pch }
 
 #include <functional>
-#include <testsuite_hooks.h>
 
 #ifndef __cpp_lib_bind_front
-# error "Feature test macro for bind_front is missing"
+# error "Feature test macro for bind_front is missing in <functional>"
 #elif __cpp_lib_bind_front < 201902L
-# error "Feature test macro for bind_front has wrong value"
+# error "Feature test macro for bind_front has wrong value in <functional>"
 #endif
+
+#include <testsuite_hooks.h>
 
 using std::bind_front;
 using std::is_same_v;

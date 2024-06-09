@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -84,7 +84,7 @@ NameResolution::go (AST::Crate &crate)
   // setup a dummy crate node
   resolver->get_name_scope ().insert (
     CanonicalPath::new_seg (crate.get_node_id (), "__$$crate__"),
-    crate.get_node_id (), Location ());
+    crate.get_node_id (), UNDEF_LOCATION);
 
   // setup the root scope
   resolver->push_new_module_scope (scope_node_id);

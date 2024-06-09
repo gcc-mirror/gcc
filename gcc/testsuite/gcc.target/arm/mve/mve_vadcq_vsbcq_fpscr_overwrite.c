@@ -7,7 +7,7 @@
 
 volatile int32x4_t c1;
 volatile uint32x4_t c2;
-int *carry;
+int carry;
 
 int
 main ()
@@ -21,45 +21,45 @@ main ()
   uint32x4_t inactive2 = vcreateq_u32 (0, 0);
 
   mve_pred16_t p = 0xFFFF;
-  (*carry) = 0xFFFFFFFF;
+  carry = 0xFFFFFFFF;
 
   __builtin_arm_set_fpscr_nzcvqc (0);
-  c1 = vadcq (a1, b1, carry);
+  c1 = vadcq (a1, b1, &carry);
   if (__builtin_arm_get_fpscr_nzcvqc () & !0x20000000)
     __builtin_abort ();
-  (*carry) = 0xFFFFFFFF;
+  carry = 0xFFFFFFFF;
   __builtin_arm_set_fpscr_nzcvqc (0);
-  c2 = vadcq (a2, b2, carry);
+  c2 = vadcq (a2, b2, &carry);
   if (__builtin_arm_get_fpscr_nzcvqc () & !0x20000000)
     __builtin_abort ();
-  (*carry) = 0xFFFFFFFF;
+  carry = 0xFFFFFFFF;
   __builtin_arm_set_fpscr_nzcvqc (0);
-  c1 = vsbcq (a1, b1, carry);
+  c1 = vsbcq (a1, b1, &carry);
   if (__builtin_arm_get_fpscr_nzcvqc () & !0x20000000)
     __builtin_abort ();
-  (*carry) = 0xFFFFFFFF;
+  carry = 0xFFFFFFFF;
   __builtin_arm_set_fpscr_nzcvqc (0);
-  c2 = vsbcq (a2, b2, carry);
+  c2 = vsbcq (a2, b2, &carry);
   if (__builtin_arm_get_fpscr_nzcvqc () & !0x20000000)
     __builtin_abort ();
-  (*carry) = 0xFFFFFFFF;
+  carry = 0xFFFFFFFF;
   __builtin_arm_set_fpscr_nzcvqc (0);
-  c1 = vadcq_m (inactive1, a1, b1, carry, p);
+  c1 = vadcq_m (inactive1, a1, b1, &carry, p);
   if (__builtin_arm_get_fpscr_nzcvqc () & !0x20000000)
     __builtin_abort ();
-  (*carry) = 0xFFFFFFFF;
+  carry = 0xFFFFFFFF;
   __builtin_arm_set_fpscr_nzcvqc (0);
-  c2 = vadcq_m (inactive2, a2, b2, carry, p);
+  c2 = vadcq_m (inactive2, a2, b2, &carry, p);
   if (__builtin_arm_get_fpscr_nzcvqc () & !0x20000000)
     __builtin_abort ();
-  (*carry) = 0xFFFFFFFF;
+  carry = 0xFFFFFFFF;
   __builtin_arm_set_fpscr_nzcvqc (0);
-  c1 = vsbcq_m (inactive1, a1, b1, carry, p);
+  c1 = vsbcq_m (inactive1, a1, b1, &carry, p);
   if (__builtin_arm_get_fpscr_nzcvqc () & !0x20000000)
     __builtin_abort ();
-  (*carry) = 0xFFFFFFFF;
+  carry = 0xFFFFFFFF;
   __builtin_arm_set_fpscr_nzcvqc (0);
-  c2 = vsbcq_m (inactive2, a2, b2, carry, p);
+  c2 = vsbcq_m (inactive2, a2, b2, &carry, p);
   if (__builtin_arm_get_fpscr_nzcvqc () & !0x20000000)
     __builtin_abort ();
 

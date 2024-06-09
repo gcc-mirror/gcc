@@ -14,6 +14,6 @@ int main()
   return func(100);
 }
 
-/* { dg-final { scan-assembler "jli_s 2" } } */
+/* { dg-final { scan-assembler "jli_s\\\s+2" } } */
 /* { dg-final { scan-assembler-not ".weak __jli.func" } } */
 /* { dg-final { scan-assembler-not "b\\\s+@func" } } */

@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2023 Free Software Foundation, Inc.
+   Copyright (C) 2003-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -327,6 +327,14 @@ default_cxx_get_cookie_size (tree type)
     cookie_size = type_align;
 
   return cookie_size;
+}
+
+/* Returns modified FUNCTION_TYPE for cdtor callabi.  */
+
+tree
+default_cxx_adjust_cdtor_callabi_fntype (tree fntype)
+{
+  return fntype;
 }
 
 /* Return true if a parameter must be passed by reference.  This version
@@ -781,8 +789,18 @@ hook_int_CUMULATIVE_ARGS_arg_info_0 (cumulative_args_t,
 }
 
 void
+hook_void_CUMULATIVE_ARGS (cumulative_args_t)
+{
+}
+
+void
 hook_void_CUMULATIVE_ARGS_tree (cumulative_args_t ca ATTRIBUTE_UNUSED,
 				tree ATTRIBUTE_UNUSED)
+{
+}
+
+void
+hook_void_CUMULATIVE_ARGS_rtx_tree (cumulative_args_t, rtx, tree)
 {
 }
 
@@ -1789,7 +1807,19 @@ default_target_option_valid_attribute_p (tree ARG_UNUSED (fndecl),
 					 int ARG_UNUSED (flags))
 {
   warning (OPT_Wattributes,
-	   "target attribute is not supported on this machine");
+	   "%<target%> attribute is not supported on this machine");
+
+  return false;
+}
+
+bool
+default_target_option_valid_version_attribute_p (tree ARG_UNUSED (fndecl),
+						 tree ARG_UNUSED (name),
+						 tree ARG_UNUSED (args),
+						 int ARG_UNUSED (flags))
+{
+  warning (OPT_Wattributes,
+	   "%<target_version%> attribute is not supported on this machine");
 
   return false;
 }
@@ -1904,6 +1934,14 @@ bsd_libc_has_function (enum function_class fn_class,
     return true;
 
   return false;
+}
+
+/* By default, -fhardened will add -D_FORTIFY_SOURCE=2.  */
+
+unsigned
+default_fortify_source_default_level ()
+{
+  return 2;
 }
 
 unsigned
@@ -2776,13 +2814,6 @@ default_memtag_untagged_pointer (rtx tagged_pointer, rtx target)
 					   OPTAB_DIRECT);
   gcc_assert (untagged_base);
   return untagged_base;
-}
-
-/* The default implementation of TARGET_GCOV_TYPE_SIZE.  */
-HOST_WIDE_INT
-default_gcov_type_size (void)
-{
-  return TYPE_PRECISION (long_long_integer_type_node) > 32 ? 64 : 32;
 }
 
 #include "gt-targhooks.h"

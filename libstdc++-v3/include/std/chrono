@@ -1,6 +1,6 @@
 // <chrono> -*- C++ -*-
 
-// Copyright (C) 2008-2023 Free Software Foundation, Inc.
+// Copyright (C) 2008-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,6 +49,10 @@
 # include <bits/shared_ptr.h>
 # include <bits/unique_ptr.h>
 #endif
+
+#define __glibcxx_want_chrono
+#define __glibcxx_want_chrono_udls
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -497,18 +501,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     namespace __detail
     {
-      // Compute the remainder of the Euclidean division of __n divided by __d.
-      // Euclidean division truncates toward negative infinity and always
-      // produces a remainder in the range of [0,__d-1] (whereas standard
-      // division truncates toward zero and yields a nonpositive remainder
-      // for negative __n).
-      constexpr unsigned
-      __modulo(long long __n, unsigned __d)
+      // Helper to __add_modulo and __sub_modulo.
+      template <unsigned __d, typename _Tp>
+      consteval auto
+      __modulo_offset()
       {
-	if (__n >= 0)
-	  return __n % __d;
-	else
-	  return (__d + (__n % __d)) % __d;
+	using _Up = make_unsigned_t<_Tp>;
+	auto constexpr __a = _Up(-1) - _Up(255 + __d - 2);
+	auto constexpr __b = _Up(__d * (__a / __d) - 1);
+	// Notice: b <= a - 1 <= _Up(-1) - (255 + d - 1) and b % d = d - 1.
+	return _Up(-1) - __b; // >= 255 + d - 1
+      }
+
+      // Compute the remainder of the Euclidean division of __x + __y divided by
+      // __d without overflowing.  Typically, __x <= 255 + d - 1 is sum of
+      // weekday/month with a shift in [0, d - 1] and __y is a duration count.
+      template <unsigned __d, typename _Tp>
+      constexpr unsigned
+      __add_modulo(unsigned __x, _Tp __y)
+      {
+	using _Up = make_unsigned_t<_Tp>;
+	// For __y >= 0, _Up(__y) has the same mathematical value as __y and
+	// this function simply returns (__x + _Up(__y)) % d.  Typically, this
+	// doesn't overflow since the range of _Up contains many more positive
+	// values than _Tp's.  For __y < 0, _Up(__y) has a mathematical value in
+	// the upper-half range of _Up so that adding a positive value to it
+	// might overflow.  Moreover, most likely, _Up(__y) != __y mod d.  To
+	// fix both issues we subtract from _Up(__y) an __offset >=
+	// 255 + d - 1 to make room for the addition to __x and shift the modulo
+	// to the correct value.
+	auto const __offset = __y >= 0 ? _Up(0) : __modulo_offset<__d, _Tp>();
+	return (__x + _Up(__y) - __offset) % __d;
+      }
+
+      // Similar to __add_modulo but for __x - __y.
+      template <unsigned __d, typename _Tp>
+      constexpr unsigned
+      __sub_modulo(unsigned __x, _Tp __y)
+      {
+	using _Up = make_unsigned_t<_Tp>;
+	auto const __offset = __y <= 0 ? _Up(0) : __modulo_offset<__d, _Tp>();
+	return (__x - _Up(__y) - __offset) % __d;
       }
 
       inline constexpr unsigned __days_per_month[12]
@@ -700,8 +733,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr month
       operator+(const month& __x, const months& __y) noexcept
       {
-	auto __n = static_cast<long long>(unsigned{__x}) + (__y.count() - 1);
-	return month{__detail::__modulo(__n, 12) + 1};
+	// modulo(x + (y - 1), 12) = modulo(x + (y - 1) + 12, 12)
+	//                         = modulo((x + 11) + y    , 12)
+	return month{1 + __detail::__add_modulo<12>(
+	  unsigned{__x} + 11, __y.count())};
       }
 
       friend constexpr month
@@ -710,7 +745,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr month
       operator-(const month& __x, const months& __y) noexcept
-      { return __x + -__y; }
+      {
+	// modulo(x + (-y - 1), 12) = modulo(x + (-y - 1) + 12, 12)
+	//                          = modulo((x + 11) - y     , 12)
+	return month{1 + __detail::__sub_modulo<12>(
+	  unsigned{__x} + 11, __y.count())};
+      }
 
       friend constexpr months
       operator-(const month& __x,  const month& __y) noexcept
@@ -835,29 +875,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr bool
       is_leap() const noexcept
       {
-	// Testing divisibility by 100 first gives better performance, that is,
-	// return (_M_y % 100 != 0 || _M_y % 400 == 0) && _M_y % 4 == 0;
-
-	// It gets even faster if _M_y is in [-536870800, 536870999]
-	// (which is the case here) and _M_y % 100 is replaced by
-	// __is_multiple_of_100 below.
+	// Testing divisibility by 100 first gives better performance [1], i.e.,
+	//     return _M_y % 100 == 0 ? _M_y % 400 == 0 : _M_y % 16 == 0;
+	// Furthermore, if _M_y % 100 == 0, then _M_y % 400 == 0 is equivalent
+	// to _M_y % 16 == 0, so we can simplify it to
+	//     return _M_y % 100 == 0 ? _M_y % 16 == 0 : _M_y % 4 == 0.  // #1
+	// Similarly, we can replace 100 with 25 (which is good since
+	// _M_y % 25 == 0 requires one fewer instruction than _M_y % 100 == 0
+	// [2]):
+	//     return _M_y % 25 == 0 ? _M_y % 16 == 0 : _M_y % 4 == 0.  // #2
+	// Indeed, first assume _M_y % 4 != 0.  Then _M_y % 16 != 0 and hence,
+	// _M_y % 4 == 0 and _M_y % 16 == 0 are both false.  Therefore, #2
+	// returns false as it should (regardless of _M_y % 25.) Now assume
+	// _M_y % 4 == 0.  In this case, _M_y % 25 == 0 if, and only if,
+	// _M_y % 100 == 0, that is, #1 and #2 are equivalent.  Finally, #2 is
+	// equivalent to
+	//     return (_M_y & (_M_y % 25 == 0 ? 15 : 3)) == 0.
 
 	// References:
 	// [1] https://github.com/cassioneri/calendar
-	// [2] https://accu.org/journals/overload/28/155/overload155.pdf#page=16
+	// [2] https://godbolt.org/z/55G8rn77e
+	// [3] https://gcc.gnu.org/pipermail/libstdc++/2021-June/052815.html
 
-	// Furthermore, if y%100 == 0, then y%400==0 is equivalent to y%16==0,
-	// so we can simplify it to (!mult_100 && y % 4 == 0) || y % 16 == 0,
-	// which is equivalent to (y & (mult_100 ? 15 : 3)) == 0.
-	// See https://gcc.gnu.org/pipermail/libstdc++/2021-June/052815.html
-
-	constexpr uint32_t __multiplier   = 42949673;
-	constexpr uint32_t __bound        = 42949669;
-	constexpr uint32_t __max_dividend = 1073741799;
-	constexpr uint32_t __offset       = __max_dividend / 2 / 100 * 100;
-	const bool __is_multiple_of_100
-	  = __multiplier * (_M_y + __offset) < __bound;
-	return (_M_y & (__is_multiple_of_100 ? 15 : 3)) == 0;
+	return (_M_y & (_M_y % 25 == 0 ? 15 : 3)) == 0;
       }
 
       explicit constexpr
@@ -930,8 +970,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr weekday
       _S_from_days(const days& __d)
       {
-	auto __n = __d.count();
-	return weekday(__n >= -4 ? (__n + 4) % 7 : (__n + 5) % 7 + 6);
+	return weekday{__detail::__add_modulo<7>(4, __d.count())};
       }
 
     public:
@@ -1021,8 +1060,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend constexpr weekday
       operator+(const weekday& __x, const days& __y) noexcept
       {
-	auto __n = static_cast<long long>(__x._M_wd) + __y.count();
-	return weekday{__detail::__modulo(__n, 7)};
+	return weekday{__detail::__add_modulo<7>(__x._M_wd, __y.count())};
       }
 
       friend constexpr weekday
@@ -1031,13 +1069,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       friend constexpr weekday
       operator-(const weekday& __x, const days& __y) noexcept
-      { return __x + -__y; }
+      {
+	return weekday{__detail::__sub_modulo<7>(__x._M_wd, __y.count())};
+      }
 
       friend constexpr days
       operator-(const weekday& __x, const weekday& __y) noexcept
       {
-	auto __n = static_cast<long long>(__x._M_wd) - __y._M_wd;
-	return days{__detail::__modulo(__n, 7)};
+	const auto __n = __x.c_encoding() - __y.c_encoding();
+	return static_cast<int>(__n) >= 0 ? days{__n} : days{__n + 7};
       }
     };
 
@@ -1800,22 +1840,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	const auto __m = static_cast<unsigned>(month());
 
-	// Excluding February, the last day of month __m is either 30 or 31 or,
-	// in another words, it is 30 + b = 30 | b, where b is in {0, 1}.
+	// The result is unspecified if __m < 1 or __m > 12.  Hence, assume
+	// 1 <= __m <= 12.  For __m != 2, day() == 30 or day() == 31 or, in
+	// other words, day () == 30 | b, where b is in {0, 1}.
 
-	// If __m in {1, 3, 4, 5, 6, 7}, then b is 1 if, and only if __m is odd.
-	// Hence, b = __m & 1 = (__m ^ 0) & 1.
+	// If __m in {1, 3, 4, 5, 6, 7}, then b is 1 if, and only if, __m is
+	// odd.  Hence, b = __m & 1 = (__m ^ 0) & 1.
 
-	// If __m in {8, 9, 10, 11, 12}, then b is 1 if, and only if __m is even.
-	// Hence, b = (__m ^ 1) & 1.
+	// If __m in {8, 9, 10, 11, 12}, then b is 1 if, and only if, __m is
+	// even.  Hence, b = (__m ^ 1) & 1.
 
 	// Therefore, b = (__m ^ c) & 1, where c = 0, if __m < 8, or c = 1 if
 	// __m >= 8, that is, c = __m >> 3.
 
-	// The above mathematically justifies this implementation whose
-	// performance does not depend on look-up tables being on the L1 cache.
-	return chrono::day{__m != 2 ? ((__m ^ (__m >> 3)) & 1) | 30
-				    : _M_y.is_leap() ? 29 : 28};
+	// Since 30 = (11110)_2 and __m <= 31 = (11111)_2, the "& 1" in b's
+	// calculation is unnecessary.
+
+	// The performance of this implementation does not depend on look-up
+	// tables being on the L1 cache.
+	return chrono::day{__m != 2 ? (__m ^ (__m >> 3)) | 30
+	  : _M_y.is_leap() ? 29 : 28};
       }
 
       constexpr
@@ -2736,7 +2780,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /** Remove the tzdb object _after_ the one the iterator refers to.
        *
-       * Calling this function concurently with any of `front()`, `begin()`,
+       * Calling this function concurrently with any of `front()`, `begin()`,
        * or `end()` does not cause a data race, but in general this function
        * is not thread-safe. The behaviour may be undefined if erasing an
        * element from the list while another thread is calling the same
@@ -3199,7 +3243,7 @@ namespace __detail
       };
       // The list above is known to be valid until (at least) this date
       // and only contains positive leap seconds.
-      const sys_seconds __expires(1703721600s); // 2023-12-28 00:00:00 UTC
+      const sys_seconds __expires(1735344000s); // 2024-12-28 00:00:00 UTC
 
 #if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
       if (__ss > __expires)

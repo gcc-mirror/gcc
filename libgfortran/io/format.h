@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by Janne Blomqvist
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -33,6 +33,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 struct fnode
 {
   format_token format;
+  format_token pushed;
   int repeat;
   struct fnode *next;
   char *source;

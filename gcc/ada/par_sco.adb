@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -750,6 +750,13 @@ package body Par_SCO is
       function Process_Node (N : Node_Id) return Traverse_Result is
       begin
          case Nkind (N) is
+
+            --  Aspect specifications have dedicated processings (see
+            --  Traverse_Aspects) so ignore them here, so that they are
+            --  processed only once.
+
+            when N_Aspect_Specification =>
+               return Skip;
 
             --  Logical operators, output table entries and then process
             --  operands recursively to deal with nested conditions.
@@ -1693,11 +1700,6 @@ package body Par_SCO is
          while Present (AN) loop
             AE := Expression (AN);
 
-            --  SCOs are generated before semantic analysis/expansion:
-            --  PPCs are not split yet.
-
-            pragma Assert (not Split_PPC (AN));
-
             C1 := ASCII.NUL;
 
             case Get_Aspect_Id (AN) is
@@ -2408,9 +2410,9 @@ package body Par_SCO is
                end if;
          end case;
 
-         --  Process aspects if present
-
-         Traverse_Aspects (N);
+         if Permits_Aspect_Specifications (N) then
+            Traverse_Aspects (N);
+         end if;
       end Traverse_One;
 
    --  Start of processing for Traverse_Declarations_Or_Statements

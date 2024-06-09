@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "-std=c99 -Wno-pedantic -Wno-psabi" } */
+/* { dg-additional-options "-std=c99 -Wno-pedantic" } */
 
 #include <assert.h>
 #include <limits.h>

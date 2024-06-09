@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -ftree-vectorize -mdejagnu-cpu=power7 -ffast-math" } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-final { scan-assembler "xvaddsp" } } */
 /* { dg-final { scan-assembler "xvsubsp" } } */
 /* { dg-final { scan-assembler "xvmulsp" } } */

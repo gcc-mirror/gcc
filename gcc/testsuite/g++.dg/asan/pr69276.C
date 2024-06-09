@@ -35,4 +35,5 @@ int main()
 }
 
 /* { dg-output "ERROR: AddressSanitizer: heap-buffer-overflow.*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ +in A::A()" } */
+/* { dg-output "    #0 0x\[0-9a-f\]+ +in (A::A\\\(\\\)|vnull::operator vec\\\(\\\).*(\n|\r\n|\r)" } */
+/* { dg-output "    #1 0x\[0-9a-f\]+ +in A::A\\\(\\\))" } */

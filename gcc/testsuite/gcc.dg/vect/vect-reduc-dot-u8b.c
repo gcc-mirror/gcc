@@ -45,7 +45,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected(?:(?!failed)(?!Re-trying).)*succeeded" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected(?:(?!Analysis failed).)*Analysis succeeded" 1 "vect" { target { { vect_widen_mult_qi_to_hi } || { vect_udot_qi || vect_unpack } } } } } */
 
 /* When the vectorizer is enhanced to vectorize accumulation into short for 
    targets that support accumulation into int (powerpc, ia64) we'd have:

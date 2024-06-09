@@ -1,6 +1,7 @@
 extern void malloc(__SIZE_TYPE__ size); 
 
-toto()
+void
+toto(void)
 {
     malloc(100);
 }

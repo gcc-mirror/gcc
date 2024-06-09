@@ -1,5 +1,5 @@
 ;; Machine description for RISC-V atomic operations.
-;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2024 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 
@@ -33,7 +33,7 @@
     if (model == MEMMODEL_SEQ_CST)
 	return "fence\trw,rw";
     else if (model == MEMMODEL_ACQ_REL)
-	return "fence.tso";
+	return TARGET_FENCE_TSO ? "fence.tso" : "fence\trw,rw";
     else if (model == MEMMODEL_ACQUIRE)
 	return "fence\tr,rw";
     else if (model == MEMMODEL_RELEASE)
@@ -52,7 +52,7 @@
 	    [(match_operand:GPR 1 "memory_operand" "A")
 	     (match_operand:SI 2 "const_int_operand")]  ;; model
 	 UNSPEC_ATOMIC_LOAD))]
-  "TARGET_ATOMIC && !TARGET_ZTSO"
+  "!TARGET_ZTSO"
   {
     enum memmodel model = (enum memmodel) INTVAL (operands[2]);
     model = memmodel_base (model);
@@ -78,7 +78,7 @@
 	    [(match_operand:GPR 1 "reg_or_0_operand" "rJ")
 	     (match_operand:SI 2 "const_int_operand")]  ;; model
 	 UNSPEC_ATOMIC_STORE))]
-  "TARGET_ATOMIC && !TARGET_ZTSO"
+  "!TARGET_ZTSO"
   {
     enum memmodel model = (enum memmodel) INTVAL (operands[2]);
     model = memmodel_base (model);

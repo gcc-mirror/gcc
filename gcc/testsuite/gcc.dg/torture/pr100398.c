@@ -1,4 +1,4 @@
-/* { dg-do compile { target lra } } */
+/* { dg-do compile { target asm_goto_with_outputs } } */
 
 int
 test5_limit (void)

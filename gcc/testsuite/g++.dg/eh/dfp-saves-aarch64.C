@@ -1,5 +1,6 @@
 // { dg-do run { target aarch64*-*-* } }
 // { dg-require-effective-target dfp }
+/* { dg-require-effective-target dfprt } */
 
 /* Test unwinding of AArch64 register saves.  */
 /* We cannot use #include <decimal/decimal> because it defines

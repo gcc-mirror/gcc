@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -Ofast -ftree-vectorize --param=riscv-autovec-preference=scalable -Wno-implicit-function-declaration" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -Ofast -ftree-vectorize -mrvv-vector-bits=scalable -Wno-implicit-function-declaration" } */
 
 #include <stdbool.h>
 int a, b, c, e, f, g, h, i, j, k;

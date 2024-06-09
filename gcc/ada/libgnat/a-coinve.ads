@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -63,7 +63,7 @@ is
      Variable_Indexing => Reference,
      Default_Iterator  => Iterate,
      Iterator_Element  => Element_Type,
-     Aggregate         => (Empty          => Empty_Vector,
+     Aggregate         => (Empty          => Empty,
                            Add_Unnamed    => Append,
                            New_Indexed    => New_Vector,
                            Assign_Indexed => Replace_Element);

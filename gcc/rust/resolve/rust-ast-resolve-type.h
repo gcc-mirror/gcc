@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -21,7 +21,6 @@
 
 #include "rust-ast-resolve-base.h"
 #include "rust-ast-resolve-expr.h"
-#include "rust-ast-full.h"
 
 namespace Rust {
 namespace Resolver {
@@ -174,11 +173,12 @@ public:
 	  }
       }
 
-    auto seg = CanonicalPath::new_seg (param.get_node_id (),
-				       param.get_type_representation ());
+    auto seg
+      = CanonicalPath::new_seg (param.get_node_id (),
+				param.get_type_representation ().as_string ());
     resolver->get_type_scope ().insert (
       seg, param.get_node_id (), param.get_locus (), false, Rib::ItemType::Type,
-      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rust_error_at (param.get_locus (),
 		       "generic param redefined multiple times");
 	rust_error_at (locus, "was defined here");

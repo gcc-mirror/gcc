@@ -1,7 +1,9 @@
 /* PR rtl-optimization/60663 */
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_arch_v7a_ok } */
 /* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
-/* { dg-options "-O2 -march=armv7-a" } */
+/* { dg-options "-O2" } */
+/* { dg-add-options arm_arch_v7a } */
 
 int
 foo (void)

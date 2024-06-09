@@ -1,6 +1,9 @@
 /* Copyright 2001 Free Software Foundation
    Contributed by Alexandre Oliva <aoliva@redhat.com> */
 
+void abort (void);
+void exit (int);
+
 int f(int i) {
   switch (i)
   {

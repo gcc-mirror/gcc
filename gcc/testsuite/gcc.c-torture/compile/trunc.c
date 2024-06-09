@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 main ()
 {
   printf ("%x, %x\n", (unsigned char) main, main);

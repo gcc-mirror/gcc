@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   S p e c                                --
 --                                                                          --
---            Copyright (C) 2008-2023, Free Software Foundation, Inc.       --
+--            Copyright (C) 2008-2024, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNARL is free software;  you can redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,7 +29,7 @@
 --  This package provides vxworks specific support functions needed
 --  by System.OS_Interface.
 
---  This is the VxWorks 6 kernel version of this package
+--  This is the VxWorks 7 kernel version of this package
 
 with Interfaces.C;
 

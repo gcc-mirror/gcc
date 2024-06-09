@@ -1,6 +1,6 @@
 // Utilities used throughout the library -*- C++ -*-
 
-// Copyright (C) 2004-2023 Free Software Foundation, Inc.
+// Copyright (C) 2004-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,11 +34,6 @@
 #define _GLIBCXX_UTILITY_H 1
 
 #pragma GCC system_header
-
-#define __glibcxx_want_tuple_element_t
-#define __glibcxx_want_integer_sequence
-#define __glibcxx_want_ranges_zip
-#include <bits/version.h>
 
 #if __cplusplus >= 201103L
 
@@ -135,7 +130,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 3378. tuple_size_v/tuple_element_t should be available when
 //       tuple_size/tuple_element are
-#ifdef __cpp_lib_tuple_element_t // C++ >= 14
+#ifdef __glibcxx_tuple_element_t // C++ >= 14
   template<size_t __i, typename _Tp>
     using tuple_element_t = typename tuple_element<__i, _Tp>::type;
 #endif
@@ -160,12 +155,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     };
 
-#ifdef __cpp_lib_integer_sequence // C++ >= 14
+#ifdef __glibcxx_integer_sequence // C++ >= 14
 
   /// Class template integer_sequence
   template<typename _Tp, _Tp... _Idx>
     struct integer_sequence
     {
+#if __cplusplus >= 202002L
+      static_assert(is_integral_v<_Tp>);
+#endif
       typedef _Tp value_type;
       static constexpr size_t size() noexcept { return sizeof...(_Idx); }
     };
@@ -190,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Alias template index_sequence_for
   template<typename... _Types>
     using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
-#endif // __cpp_lib_integer_sequence
+#endif // __glibcxx_integer_sequence
 
 #if __cplusplus >= 201703L
 
@@ -225,9 +223,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     using __is_in_place_type = bool_constant<__is_in_place_type_v<_Tp>>;
 
+  template<typename>
+    inline constexpr bool __is_in_place_index_v = false;
+
+  template<size_t _Nm>
+    inline constexpr bool __is_in_place_index_v<in_place_index_t<_Nm>> = true;
+
 #endif // C++17
 
-#if __has_builtin(__type_pack_element)
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__type_pack_element)
   template<size_t _Np, typename... _Types>
     struct _Nth_type
     { using type = __type_pack_element<_Np, _Types...>; };
@@ -258,10 +262,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
 #if ! __cpp_concepts // Need additional specializations to avoid ambiguities.
-  template<typename _Tp0, typename _Tp1, typename... _Rest>
-    struct _Nth_type<0, _Tp0, _Tp1, _Rest...>
-    { using type = _Tp0; };
-
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
     struct _Nth_type<0, _Tp0, _Tp1, _Tp2, _Rest...>
     { using type = _Tp0; };
@@ -270,6 +270,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Nth_type<1, _Tp0, _Tp1, _Tp2, _Rest...>
     { using type = _Tp1; };
 #endif
+#endif
+
+#if __glibcxx_ranges
+  namespace ranges::__detail
+  {
+    template<typename _Range>
+      inline constexpr bool __is_subrange = false;
+  } // namespace __detail
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

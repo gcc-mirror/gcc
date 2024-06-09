@@ -1,7 +1,7 @@
 /* Test diagnostics for bad implicit type conversions.  */
 /* Origin: Joseph Myers <jsm@polyomino.org.uk> */
 /* { dg-do compile } */
-/* { dg-options "-pedantic -ftrack-macro-expansion=0" } */
+/* { dg-options "-pedantic -fpermissive -ftrack-macro-expansion=0" } */
 
 #define TESTARG(ID, TL, TR) void ID##F(TL); void ID##F2(TR x) { ID##F(x); } extern int dummy
 #define TESTARP(ID, TL, TR) struct { void (*x)(TL); } ID##Fp; void ID##F2(TR x) { ID##Fp.x(x); } extern int dummy

@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -194,8 +194,11 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 
     set test_counter 0
     remote_expect target [timeout_value] {
-	-re {^(type|\$([0-9]+)) = ([^\n\r]*)[\n\r]+} {
-	    send_log "got: $expect_out(buffer)"
+	-re {^[\n\r]*(type|\$([0-9]+)) = ([^\n\r]*)[\n\r]+} {
+	    # Escape newlines so that we can print them.
+	    set escaped [string map {"\n" "\\n"} $expect_out(buffer)]
+	    set escaped2 [string map {"\r" "\\r"} $escaped]
+	    send_log "got: $escaped2"
 
 	    incr test_counter
 	    set first $expect_out(3,string)
@@ -251,7 +254,10 @@ proc gdb-test { marker {selector {}} {load_xmethods 0} } {
 	}
 
 	-re {^[^$][^\n\r]*[\n\r]+} {
-	    send_log "skipping: $expect_out(buffer)"
+	    # Escape newlines so that we can print them.
+	    set escaped [string map {"\n" "\\n"} $expect_out(buffer)]
+	    set escaped2 [string map {"\r" "\\r"} $escaped]
+	    send_log "skipping: $escaped2"
 	    exp_continue
 	}
 

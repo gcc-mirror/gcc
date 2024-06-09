@@ -1,5 +1,5 @@
 /* Backward propagation of indirect loads through PHIs.
-   Copyright (C) 2007-2023 Free Software Foundation, Inc.
+   Copyright (C) 2007-2024 Free Software Foundation, Inc.
    Contributed by Richard Guenther <rguenther@suse.de>
 
 This file is part of GCC.
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tree-ssa-loop.h"
 #include "tree-cfg.h"
+#include "tree-ssa-dce.h"
 
 /* This pass propagates indirect loads through the PHI node for its
    address to make the load source possibly non-addressable and to
@@ -132,12 +133,15 @@ phivn_valid_p (struct phiprop_d *phivn, tree name, basic_block bb)
 
 static tree
 phiprop_insert_phi (basic_block bb, gphi *phi, gimple *use_stmt,
-		    struct phiprop_d *phivn, size_t n)
+		    struct phiprop_d *phivn, size_t n,
+		    bitmap dce_ssa_names)
 {
   tree res;
   gphi *new_phi = NULL;
   edge_iterator ei;
   edge e;
+  tree phi_result = PHI_RESULT (phi);
+  bitmap_set_bit (dce_ssa_names, SSA_NAME_VERSION (phi_result));
 
   gcc_assert (is_gimple_assign (use_stmt)
 	      && gimple_assign_rhs_code (use_stmt) == MEM_REF);
@@ -276,7 +280,7 @@ chk_uses (tree, tree *idx, void *data)
 
 static bool
 propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
-		    size_t n)
+		    size_t n, bitmap dce_ssa_names)
 {
   tree ptr = PHI_RESULT (phi);
   gimple *use_stmt;
@@ -420,9 +424,10 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 		goto next;
 	    }
 
-	  phiprop_insert_phi (bb, phi, use_stmt, phivn, n);
+	  phiprop_insert_phi (bb, phi, use_stmt, phivn, n, dce_ssa_names);
 
-	  /* Remove old stmt.  The phi is taken care of by DCE.  */
+	  /* Remove old stmt. The phi and all of maybe its depedencies
+	     will be removed later via simple_dce_from_worklist. */
 	  gsi = gsi_for_stmt (use_stmt);
 	  /* Unlinking the VDEF here is fine as we are sure that we process
 	     stmts in execution order due to aggregate copies having VDEFs
@@ -442,16 +447,15 @@ propagate_with_phi (basic_block bb, gphi *phi, struct phiprop_d *phivn,
 	 is the first load transformation.  */
       else if (!phi_inserted)
 	{
-	  res = phiprop_insert_phi (bb, phi, use_stmt, phivn, n);
+	  res = phiprop_insert_phi (bb, phi, use_stmt, phivn, n, dce_ssa_names);
 	  type = TREE_TYPE (res);
 
 	  /* Remember the value we created for *ptr.  */
 	  phivn[SSA_NAME_VERSION (ptr)].value = res;
 	  phivn[SSA_NAME_VERSION (ptr)].vuse = vuse;
 
-	  /* Remove old stmt.  The phi is taken care of by DCE, if we
-	     want to delete it here we also have to delete all intermediate
-	     copies.  */
+	  /* Remove old stmt.  The phi and all of maybe its depedencies
+	     will be removed later via simple_dce_from_worklist. */
 	  gsi = gsi_for_stmt (use_stmt);
 	  gsi_remove (&gsi, true);
 
@@ -514,6 +518,7 @@ pass_phiprop::execute (function *fun)
   gphi_iterator gsi;
   unsigned i;
   size_t n;
+  auto_bitmap dce_ssa_names;
 
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -531,11 +536,14 @@ pass_phiprop::execute (function *fun)
       if (bb_has_abnormal_pred (bb))
 	continue;
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	did_something |= propagate_with_phi (bb, gsi.phi (), phivn, n);
+	did_something |= propagate_with_phi (bb, gsi.phi (), phivn, n, dce_ssa_names);
     }
 
   if (did_something)
-    gsi_commit_edge_inserts ();
+    {
+      gsi_commit_edge_inserts ();
+      simple_dce_from_worklist (dce_ssa_names);
+    }
 
   free (phivn);
 

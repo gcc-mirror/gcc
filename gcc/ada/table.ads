@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -217,7 +217,7 @@ package Table is
 
    private
 
-      Last_Val : Int;
+      Last_Val : Int := Int (Table_Low_Bound) - 1;
       --  Current value of Last. Note that we declare this in the private part
       --  because we don't want the client to modify Last except through one of
       --  the official interfaces (since a modification to Last may require a

@@ -5,6 +5,7 @@ int a[1];
 void (*terminate_me)(int);
 
 __attribute__((noinline,noclone))
+void
 t(int c)
 { int i;
   for (i=0;i<c;i++)
@@ -14,7 +15,8 @@ t(int c)
       a[i]=0;
     }
 }
-main()
+int
+main(void)
 {
   terminate_me = exit;
   t(100);

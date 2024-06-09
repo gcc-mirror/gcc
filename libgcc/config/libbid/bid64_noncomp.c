@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -358,7 +358,7 @@ void
 bid64_class (int *pres, UINT64 * px _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
   UINT64 x = *px;
 #else
-int
+class_t
 bid64_class (UINT64 x _EXC_MASKS_PARAM _EXC_INFO_PARAM) {
 #endif
   int res;

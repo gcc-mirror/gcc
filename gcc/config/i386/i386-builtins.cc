@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -82,6 +82,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "ifcvt.h"
 #include "symbol-summary.h"
+#include "sreal.h"
+#include "ipa-cp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
 #include "wide-int-bitmask.h"
@@ -221,7 +223,7 @@ ix86_get_builtin_func_type (enum ix86_builtin_func_type tcode)
 }
 
 /* Table for the ix86 builtin decls.  */
-static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX];
+static GTY(()) tree ix86_builtins[(int) IX86_BUILTIN_MAX + 1];
 
 struct builtin_isa ix86_builtins_isa[(int) IX86_BUILTIN_MAX];
 
@@ -295,6 +297,12 @@ def_builtin (HOST_WIDE_INT mask, HOST_WIDE_INT mask2,
 				       NULL, NULL_TREE);
 	  ix86_builtins[(int) code] = decl;
 	  ix86_builtins_isa[(int) code].set_and_not_built_p = false;
+	  if (!flag_non_call_exceptions)
+	    TREE_NOTHROW (decl) = 1;
+	  if (ix86_builtins[(int) IX86_BUILTIN_MAX] == NULL_TREE)
+	    ix86_builtins[(int) IX86_BUILTIN_MAX]
+	      = build_tree_list (get_identifier ("leaf"), NULL_TREE);
+	  DECL_ATTRIBUTES (decl) = ix86_builtins[(int) IX86_BUILTIN_MAX];
 	}
       else
 	{
@@ -393,6 +401,12 @@ ix86_add_new_builtins (HOST_WIDE_INT isa, HOST_WIDE_INT isa2)
 	    TREE_READONLY (decl) = 1;
 	  if (ix86_builtins_isa[i].pure_p)
 	    DECL_PURE_P (decl) = 1;
+	  if (!flag_non_call_exceptions)
+	    TREE_NOTHROW (decl) = 1;
+	  if (ix86_builtins[(int) IX86_BUILTIN_MAX] == NULL_TREE)
+	    ix86_builtins[(int) IX86_BUILTIN_MAX]
+	      = build_tree_list (get_identifier ("leaf"), NULL_TREE);
+	  DECL_ATTRIBUTES (decl) = ix86_builtins[(int) IX86_BUILTIN_MAX];
 	}
     }
 
@@ -784,83 +798,103 @@ ix86_init_mmx_sse_builtins (void)
 		    IX86_BUILTIN_GATHERALTDIV8SI);
 
   /* AVX512F */
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gathersiv16sf",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gathersiv16sf",
 		    V16SF_FTYPE_V16SF_PCVOID_V16SI_HI_INT,
 		    IX86_BUILTIN_GATHER3SIV16SF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gathersiv8df",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gathersiv8df",
 		    V8DF_FTYPE_V8DF_PCVOID_V8SI_QI_INT,
 		    IX86_BUILTIN_GATHER3SIV8DF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gatherdiv16sf",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gatherdiv16sf",
 		    V8SF_FTYPE_V8SF_PCVOID_V8DI_QI_INT,
 		    IX86_BUILTIN_GATHER3DIV16SF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gatherdiv8df",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gatherdiv8df",
 		    V8DF_FTYPE_V8DF_PCVOID_V8DI_QI_INT,
 		    IX86_BUILTIN_GATHER3DIV8DF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gathersiv16si",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gathersiv16si",
 		    V16SI_FTYPE_V16SI_PCVOID_V16SI_HI_INT,
 		    IX86_BUILTIN_GATHER3SIV16SI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gathersiv8di",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gathersiv8di",
 		    V8DI_FTYPE_V8DI_PCVOID_V8SI_QI_INT,
 		    IX86_BUILTIN_GATHER3SIV8DI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gatherdiv16si",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gatherdiv16si",
 		    V8SI_FTYPE_V8SI_PCVOID_V8DI_QI_INT,
 		    IX86_BUILTIN_GATHER3DIV16SI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gatherdiv8di",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gatherdiv8di",
 		    V8DI_FTYPE_V8DI_PCVOID_V8DI_QI_INT,
 		    IX86_BUILTIN_GATHER3DIV8DI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gather3altsiv8df ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gather3altsiv8df ",
 		    V8DF_FTYPE_V8DF_PCDOUBLE_V16SI_QI_INT,
 		    IX86_BUILTIN_GATHER3ALTSIV8DF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gather3altdiv16sf ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gather3altdiv16sf ",
 		    V16SF_FTYPE_V16SF_PCFLOAT_V8DI_HI_INT,
 		    IX86_BUILTIN_GATHER3ALTDIV16SF);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gather3altsiv8di ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gather3altsiv8di ",
 		    V8DI_FTYPE_V8DI_PCINT64_V16SI_QI_INT,
 		    IX86_BUILTIN_GATHER3ALTSIV8DI);
 
-  def_builtin_pure (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_gather3altdiv16si ",
+  def_builtin_pure (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+		    "__builtin_ia32_gather3altdiv16si ",
 		    V16SI_FTYPE_V16SI_PCINT_V8DI_HI_INT,
 		    IX86_BUILTIN_GATHER3ALTDIV16SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scattersiv16sf",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scattersiv16sf",
 	       VOID_FTYPE_PVOID_HI_V16SI_V16SF_INT,
 	       IX86_BUILTIN_SCATTERSIV16SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scattersiv8df",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scattersiv8df",
 	       VOID_FTYPE_PVOID_QI_V8SI_V8DF_INT,
 	       IX86_BUILTIN_SCATTERSIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatterdiv16sf",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatterdiv16sf",
 	       VOID_FTYPE_PVOID_QI_V8DI_V8SF_INT,
 	       IX86_BUILTIN_SCATTERDIV16SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatterdiv8df",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatterdiv8df",
 	       VOID_FTYPE_PVOID_QI_V8DI_V8DF_INT,
 	       IX86_BUILTIN_SCATTERDIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scattersiv16si",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scattersiv16si",
 	       VOID_FTYPE_PVOID_HI_V16SI_V16SI_INT,
 	       IX86_BUILTIN_SCATTERSIV16SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scattersiv8di",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scattersiv8di",
 	       VOID_FTYPE_PVOID_QI_V8SI_V8DI_INT,
 	       IX86_BUILTIN_SCATTERSIV8DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatterdiv16si",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatterdiv16si",
 	       VOID_FTYPE_PVOID_QI_V8DI_V8SI_INT,
 	       IX86_BUILTIN_SCATTERDIV16SI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatterdiv8di",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatterdiv8di",
 	       VOID_FTYPE_PVOID_QI_V8DI_V8DI_INT,
 	       IX86_BUILTIN_SCATTERDIV8DI);
 
@@ -1009,19 +1043,23 @@ ix86_init_mmx_sse_builtins (void)
 	       VOID_FTYPE_PVOID_QI_V2DI_V2DI_INT,
 	       IX86_BUILTIN_SCATTERDIV2DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatteraltsiv8df ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatteraltsiv8df ",
 	       VOID_FTYPE_PDOUBLE_QI_V16SI_V8DF_INT,
 	       IX86_BUILTIN_SCATTERALTSIV8DF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatteraltdiv16sf ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatteraltdiv16sf ",
 	       VOID_FTYPE_PFLOAT_HI_V8DI_V16SF_INT,
 	       IX86_BUILTIN_SCATTERALTDIV16SF);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatteraltsiv8di ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatteraltsiv8di ",
 	       VOID_FTYPE_PLONGLONG_QI_V16SI_V8DI_INT,
 	       IX86_BUILTIN_SCATTERALTSIV8DI);
 
-  def_builtin (OPTION_MASK_ISA_AVX512F, 0, "__builtin_ia32_scatteraltdiv16si ",
+  def_builtin (OPTION_MASK_ISA_AVX512F, OPTION_MASK_ISA2_EVEX512,
+	       "__builtin_ia32_scatteraltdiv16si ",
 	       VOID_FTYPE_PINT_HI_V8DI_V16SI_INT,
 	       IX86_BUILTIN_SCATTERALTDIV16SI);
 
@@ -1056,32 +1094,6 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_AVX512VL, 0, "__builtin_ia32_scatteraltdiv4si ",
 	       VOID_FTYPE_PINT_QI_V2DI_V4SI_INT,
 	       IX86_BUILTIN_SCATTERALTDIV4SI);
-
-  /* AVX512PF */
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_gatherpfdpd",
-	       VOID_FTYPE_QI_V8SI_PCVOID_INT_INT,
-	       IX86_BUILTIN_GATHERPFDPD);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_gatherpfdps",
-	       VOID_FTYPE_HI_V16SI_PCVOID_INT_INT,
-	       IX86_BUILTIN_GATHERPFDPS);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_gatherpfqpd",
-	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
-	       IX86_BUILTIN_GATHERPFQPD);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_gatherpfqps",
-	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
-	       IX86_BUILTIN_GATHERPFQPS);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_scatterpfdpd",
-	       VOID_FTYPE_QI_V8SI_PCVOID_INT_INT,
-	       IX86_BUILTIN_SCATTERPFDPD);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_scatterpfdps",
-	       VOID_FTYPE_HI_V16SI_PCVOID_INT_INT,
-	       IX86_BUILTIN_SCATTERPFDPS);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_scatterpfqpd",
-	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
-	       IX86_BUILTIN_SCATTERPFQPD);
-  def_builtin (OPTION_MASK_ISA_AVX512PF, 0, "__builtin_ia32_scatterpfqps",
-	       VOID_FTYPE_QI_V8DI_PCVOID_INT_INT,
-	       IX86_BUILTIN_SCATTERPFQPS);
 
   /* SHA */
   def_builtin_const (OPTION_MASK_ISA_SHA, 0, "__builtin_ia32_sha1msg1",
@@ -1237,6 +1249,14 @@ ix86_init_mmx_sse_builtins (void)
   def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_UINTR,
 	       "__builtin_ia32_testui",
 	       UINT8_FTYPE_VOID, IX86_BUILTIN_TESTUI);
+
+  /* USER_MSR.  */
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_USER_MSR,
+	       "__builtin_ia32_urdmsr", UINT64_FTYPE_UINT64,
+	       IX86_BUILTIN_URDMSR);
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_USER_MSR,
+	       "__builtin_ia32_uwrmsr", VOID_FTYPE_UINT64_UINT64,
+	       IX86_BUILTIN_UWRMSR);
 
   /* CLDEMOTE.  */
   def_builtin (0, OPTION_MASK_ISA2_CLDEMOTE, "__builtin_ia32_cldemote",
@@ -1651,6 +1671,10 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
 {
   bool si;
   enum ix86_builtins code;
+  const machine_mode mode = TYPE_MODE (TREE_TYPE (mem_vectype));
+
+  if ((!TARGET_AVX512F || !TARGET_EVEX512) && GET_MODE_SIZE (mode) == 64)
+    return NULL_TREE;
 
   if (! TARGET_AVX2
       || (known_eq (TYPE_VECTOR_SUBPARTS (mem_vectype), 2u)
@@ -1731,28 +1755,16 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
 	code = si ? IX86_BUILTIN_GATHERSIV8SI : IX86_BUILTIN_GATHERALTDIV8SI;
       break;
     case E_V8DFmode:
-      if (TARGET_AVX512F)
-	code = si ? IX86_BUILTIN_GATHER3ALTSIV8DF : IX86_BUILTIN_GATHER3DIV8DF;
-      else
-	return NULL_TREE;
+      code = si ? IX86_BUILTIN_GATHER3ALTSIV8DF : IX86_BUILTIN_GATHER3DIV8DF;
       break;
     case E_V8DImode:
-      if (TARGET_AVX512F)
-	code = si ? IX86_BUILTIN_GATHER3ALTSIV8DI : IX86_BUILTIN_GATHER3DIV8DI;
-      else
-	return NULL_TREE;
+      code = si ? IX86_BUILTIN_GATHER3ALTSIV8DI : IX86_BUILTIN_GATHER3DIV8DI;
       break;
     case E_V16SFmode:
-      if (TARGET_AVX512F)
-	code = si ? IX86_BUILTIN_GATHER3SIV16SF : IX86_BUILTIN_GATHER3ALTDIV16SF;
-      else
-	return NULL_TREE;
+      code = si ? IX86_BUILTIN_GATHER3SIV16SF : IX86_BUILTIN_GATHER3ALTDIV16SF;
       break;
     case E_V16SImode:
-      if (TARGET_AVX512F)
-	code = si ? IX86_BUILTIN_GATHER3SIV16SI : IX86_BUILTIN_GATHER3ALTDIV16SI;
-      else
-	return NULL_TREE;
+      code = si ? IX86_BUILTIN_GATHER3SIV16SI : IX86_BUILTIN_GATHER3ALTDIV16SI;
       break;
     default:
       return NULL_TREE;

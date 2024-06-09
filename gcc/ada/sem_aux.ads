@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -311,13 +311,20 @@ package Sem_Aux is
    --  used to set the visibility of generic formals of a generic package
    --  declared with a box or with partial parameterization.
 
+   function Is_Limited_Type (Ent : Entity_Id) return Boolean;
+   --  Ent is any entity. Returns true if Ent is a limited type (limited
+   --  private type, limited interface type, task type, protected type,
+   --  composite containing a limited component, or a subtype of any of
+   --  these types). This older routine overlaps with the next ones, this
+   --  should be cleaned up???
+
    function Is_Immutably_Limited_Type (Ent : Entity_Id) return Boolean;
    --  Implements definition in Ada 2012 RM-7.5 (8.1/3). This differs from the
    --  following predicate in that an untagged record with immutably limited
    --  components is NOT by itself immutably limited. This matters, e.g. when
    --  checking the legality of an access to the current instance.
 
-   function Is_Limited_View (Ent : Entity_Id) return Boolean;
+   function Is_Inherently_Limited_Type (Ent : Entity_Id) return Boolean;
    --  Ent is any entity. True for a type that is "inherently" limited (i.e.
    --  cannot become nonlimited). From the Ada 2005 RM-7.5(8.1/2), "a type with
    --  a part that is of a task, protected, or explicitly limited record type".
@@ -326,13 +333,6 @@ package Sem_Aux is
    --  build-in-place for function calls. Note that build-in-place is allowed
    --  for other types, too. This is also used for identifying pure procedures
    --  whose calls should not be eliminated (RM 10.2.1(18/2)).
-
-   function Is_Limited_Type (Ent : Entity_Id) return Boolean;
-   --  Ent is any entity. Returns true if Ent is a limited type (limited
-   --  private type, limited interface type, task type, protected type,
-   --  composite containing a limited component, or a subtype of any of
-   --  these types). This older routine overlaps with the previous one, this
-   --  should be cleaned up???
 
    function Nearest_Ancestor (Typ : Entity_Id) return Entity_Id;
    --  Given a subtype Typ, this function finds out the nearest ancestor from

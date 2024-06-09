@@ -1,5 +1,5 @@
 /* Prototypes of target machine for GNU compiler.  LoongArch version.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
    Based on MIPS target for GNU compiler.
 
@@ -60,7 +60,7 @@ enum loongarch_symbol_type {
 extern rtx loongarch_emit_move (rtx, rtx);
 extern HOST_WIDE_INT loongarch_initial_elimination_offset (int, int);
 extern void loongarch_expand_prologue (void);
-extern void loongarch_expand_epilogue (bool);
+extern void loongarch_expand_epilogue (int);
 extern bool loongarch_can_use_return_insn (void);
 
 extern bool loongarch_symbolic_constant_p (rtx, enum loongarch_symbol_type *);
@@ -82,23 +82,17 @@ extern rtx loongarch_legitimize_call_address (rtx);
 
 extern rtx loongarch_subword (rtx, bool);
 extern bool loongarch_split_move_p (rtx, rtx);
-extern void loongarch_split_move (rtx, rtx, rtx);
+extern void loongarch_split_move (rtx, rtx);
 extern bool loongarch_addu16i_imm12_operand_p (HOST_WIDE_INT, machine_mode);
 extern void loongarch_split_plus_constant (rtx *, machine_mode);
-extern bool loongarch_split_move_insn_p (rtx, rtx);
-extern void loongarch_split_move_insn (rtx, rtx, rtx);
 extern void loongarch_split_128bit_move (rtx, rtx);
 extern bool loongarch_split_128bit_move_p (rtx, rtx);
 extern void loongarch_split_256bit_move (rtx, rtx);
 extern bool loongarch_split_256bit_move_p (rtx, rtx);
-extern void loongarch_split_lsx_copy_d (rtx, rtx, rtx, rtx (*)(rtx, rtx, rtx));
-extern void loongarch_split_lsx_insert_d (rtx, rtx, rtx, rtx);
-extern void loongarch_split_lsx_fill_d (rtx, rtx);
 extern const char *loongarch_output_move (rtx, rtx);
-extern bool loongarch_cfun_has_cprestore_slot_p (void);
 #ifdef RTX_CODE
 extern void loongarch_expand_scc (rtx *);
-extern bool loongarch_expand_vec_cmp (rtx *);
+extern void loongarch_expand_vec_cmp (rtx *);
 extern void loongarch_expand_conditional_branch (rtx *);
 extern void loongarch_expand_conditional_move (rtx *);
 extern void loongarch_expand_conditional_trap (rtx);
@@ -137,7 +131,6 @@ extern int loongarch_class_max_nregs (enum reg_class, machine_mode);
 extern machine_mode loongarch_hard_regno_caller_save_mode (unsigned int,
 							   unsigned int,
 							   machine_mode);
-extern int loongarch_adjust_insn_length (rtx_insn *, int);
 extern const char *loongarch_output_conditional_branch (rtx_insn *, rtx *,
 							const char *,
 							const char *);
@@ -159,12 +152,12 @@ extern bool loongarch_global_symbol_noweak_p (const_rtx);
 extern bool loongarch_weak_symbol_p (const_rtx);
 extern bool loongarch_symbol_binds_local_p (const_rtx);
 
-extern const char *current_section_name (void);
 extern unsigned int current_section_flags (void);
 extern bool loongarch_use_ins_ext_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern bool loongarch_check_zero_div_p (void);
 extern bool loongarch_pre_reload_split (void);
 extern int loongarch_use_bstrins_for_ior_with_mask (machine_mode, rtx *);
+extern rtx loongarch_rewrite_mem_for_simple_ldst (rtx);
 
 union loongarch_gen_fn_ptrs
 {
@@ -199,12 +192,11 @@ extern bool loongarch_epilogue_uses (unsigned int);
 extern bool loongarch_load_store_bonding_p (rtx *, machine_mode, bool);
 extern bool loongarch_split_symbol_type (enum loongarch_symbol_type);
 
-typedef rtx (*mulsidi3_gen_fn) (rtx, rtx, rtx);
-
 extern void loongarch_register_frame_header_opt (void);
 extern void loongarch_expand_vec_cond_expr (machine_mode, machine_mode, rtx *);
 extern void loongarch_expand_vec_cond_mask_expr (machine_mode, machine_mode,
 						 rtx *);
+extern void loongarch_expand_vec_widen_hilo (rtx, rtx, rtx, bool, bool, const char *);
 
 /* Routines implemented in loongarch-c.c.  */
 void loongarch_cpu_cpp_builtins (cpp_reader *);
@@ -219,4 +211,8 @@ extern rtx loongarch_gen_const_int_vector_shuffle (machine_mode, int);
 extern tree loongarch_build_builtin_va_list (void);
 
 extern rtx loongarch_build_signbit_mask (machine_mode, bool, bool);
+extern void loongarch_emit_swrsqrtsf (rtx, rtx, machine_mode, bool);
+extern void loongarch_emit_swdivsf (rtx, rtx, rtx, machine_mode);
+extern bool loongarch_explicit_relocs_p (enum loongarch_symbol_type);
+extern bool loongarch_symbol_extreme_p (enum loongarch_symbol_type);
 #endif /* ! GCC_LOONGARCH_PROTOS_H */

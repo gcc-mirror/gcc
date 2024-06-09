@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1130,10 +1130,11 @@ package body Sem_Ch12 is
       Saved_Formal    : Node_Id;
 
       Default_Formals : constant List_Id := New_List;
-      --  If an Others_Choice is present, some of the formals may be defaulted.
-      --  To simplify the treatment of visibility in an instance, we introduce
-      --  individual defaults for each such formal. These defaults are
-      --  appended to the list of associations and replace the Others_Choice.
+      --  If an N_Others_Choice is present, some of the formals may be
+      --  defaulted. To simplify the treatment of visibility in an instance,
+      --  we introduce individual defaults for each such formal. These
+      --  defaults are appended to the list of associations and replace the
+      --  N_Others_Choice.
 
       Found_Assoc : Node_Id;
       --  Association for the current formal being match. Empty if there are
@@ -1145,9 +1146,8 @@ package body Sem_Ch12 is
       Num_Actuals    : Nat := 0;
 
       Others_Present : Boolean := False;
-      Others_Choice  : Node_Id := Empty;
       --  In Ada 2005, indicates partial parameterization of a formal
-      --  package. As usual an other association must be last in the list.
+      --  package. As usual an 'others' association must be last in the list.
 
       procedure Build_Subprogram_Wrappers;
       --  Ada 2022: AI12-0272 introduces pre/postconditions for formal
@@ -1195,7 +1195,7 @@ package body Sem_Ch12 is
       procedure Process_Default (Formal : Node_Id);
       --  Add a copy of the declaration of a generic formal to the list of
       --  associations, and add an explicit box association for its entity
-      --  if there is none yet, and the default comes from an Others_Choice.
+      --  if there is none yet, and the default comes from an N_Others_Choice.
 
       function Renames_Standard_Subprogram (Subp : Entity_Id) return Boolean;
       --  Determine whether Subp renames one of the subprograms defined in the
@@ -1314,14 +1314,8 @@ package body Sem_Ch12 is
                   Error_Msg_N
                     ("named association not allowed for overloaded formal",
                      Found_Assoc);
-
-               else
-                  Error_Msg_N
-                    ("named association not allowed for overloaded formal",
-                     Others_Choice);
+                  Abandon_Instantiation (Instantiation_Node);
                end if;
-
-               Abandon_Instantiation (Instantiation_Node);
             end if;
 
             Next (Temp_Formal);
@@ -1592,7 +1586,7 @@ package body Sem_Ch12 is
 
          Append (Decl, Assoc_List);
 
-         if No (Found_Assoc) then
+         if No (Found_Assoc) then -- i.e. 'others'
             Default :=
                Make_Generic_Association (Loc,
                  Selector_Name                     =>
@@ -1686,7 +1680,6 @@ package body Sem_Ch12 is
          while Present (Actual) loop
             if Nkind (Actual) = N_Others_Choice then
                Others_Present := True;
-               Others_Choice  := Actual;
 
                if Present (Next (Actual)) then
                   Error_Msg_N ("OTHERS must be last association", Actual);
@@ -2311,7 +2304,7 @@ package body Sem_Ch12 is
 
       --  If this is a formal package, normalize the parameter list by adding
       --  explicit box associations for the formals that are covered by an
-      --  Others_Choice.
+      --  N_Others_Choice.
 
       Append_List (Default_Formals, Formals);
 
@@ -2469,6 +2462,11 @@ package body Sem_Ch12 is
         Make_Full_Type_Declaration (Loc,
           Defining_Identifier => T,
           Type_Definition     => Def));
+
+      --  Keep the aspects from the original node
+
+      Move_Aspects (Original_Node (N), N);
+
       Analyze (N);
       Set_Is_Generic_Type (T);
    end Analyze_Formal_Derived_Interface_Type;
@@ -2519,6 +2517,11 @@ package body Sem_Ch12 is
       end if;
 
       Rewrite (N, New_N);
+
+      --  Keep the aspects from the original node
+
+      Move_Aspects (Original_Node (N), N);
+
       Analyze (N);
 
       if Unk_Disc then
@@ -2529,6 +2532,12 @@ package body Sem_Ch12 is
             Set_Has_Unknown_Discriminants (T);
             Set_Is_Constrained (T, False);
          end if;
+      end if;
+
+      if Subtype_Mark (Def) <= Empty_Or_Error then
+         pragma Assert (Serious_Errors_Detected > 0);
+         --  avoid passing bad argument to Entity
+         return;
       end if;
 
       --  If the parent type has a known size, so does the formal, which makes
@@ -2651,6 +2660,11 @@ package body Sem_Ch12 is
           Type_Definition     => Def);
 
       Rewrite (N, New_N);
+
+      --  Keep the aspects from the original node
+
+      Move_Aspects (Original_Node (N), N);
+
       Analyze (N);
       Set_Is_Generic_Type (T);
    end Analyze_Formal_Interface_Type;
@@ -2817,9 +2831,7 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
 
       if Parent_Installed then
          Remove_Parent;
@@ -3273,12 +3285,10 @@ package body Sem_Ch12 is
       Set_Has_Completion (Pack_Id, True);
 
    <<Leave>>
-      if Has_Aspects (N) then
-         --  Unclear that any other aspects may appear here, analyze them
-         --  for completion, given that the grammar allows their appearance.
+      --  Unclear that any other aspects may appear here, analyze them
+      --  for completion, given that the grammar allows their appearance.
 
-         Analyze_Aspect_Specifications (N, Pack_Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Pack_Id);
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := Save_ISMP;
    end Analyze_Formal_Package_Declaration;
@@ -3593,9 +3603,7 @@ package body Sem_Ch12 is
       end if;
 
    <<Leave>>
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Nam);
-      end if;
+      Analyze_Aspect_Specifications (N, Nam);
 
       if Parent_Installed then
          Remove_Parent;
@@ -3689,9 +3697,7 @@ package body Sem_Ch12 is
          Validate_Formal_Type_Default (N);
       end if;
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, T);
-      end if;
+      Analyze_Aspect_Specifications (N, T);
 
       if Parent_Installed then
          Remove_Parent;
@@ -3839,11 +3845,6 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
-      --  Once the contents of the generic copy and the template are swapped,
-      --  do the same for their respective aspect specifications.
-
-      Exchange_Aspects (N, New_N);
-
       --  Collect all contract-related source pragmas found within the template
       --  and attach them to the contract of the package spec. This contract is
       --  used in the capture of global references within annotations.
@@ -3881,9 +3882,7 @@ package body Sem_Ch12 is
       --  Analyze aspects now, so that generated pragmas appear in the
       --  declarations before building and analyzing the generic copy.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
 
       Push_Scope (Id);
       Enter_Generic_Scope (Id);
@@ -4003,11 +4002,6 @@ package body Sem_Ch12 is
       Set_Parent_Spec (New_N, Save_Parent);
       Rewrite (N, New_N);
 
-      --  Once the contents of the generic copy and the template are swapped,
-      --  do the same for their respective aspect specifications.
-
-      Exchange_Aspects (N, New_N);
-
       --  Collect all contract-related source pragmas found within the template
       --  and attach them to the contract of the subprogram spec. This contract
       --  is used in the capture of global references within annotations.
@@ -4112,9 +4106,7 @@ package body Sem_Ch12 is
       --  Analyze the aspects of the generic copy to ensure that all generated
       --  pragmas (if any) perform their semantic effects.
 
-      if Has_Aspects (N) then
-         Analyze_Aspect_Specifications (N, Id);
-      end if;
+      Analyze_Aspect_Specifications (N, Id);
 
       --  For a library unit, we have reconstructed the entity for the unit,
       --  and must reset it in the library tables. We also make sure that
@@ -4831,10 +4823,7 @@ package body Sem_Ch12 is
                      --  Cleanup actions are not generated within generic units
                      --  or in the formal part of generic units.
 
-                     if Inside_A_Generic
-                       or else Is_Generic_Unit (S)
-                       or else Ekind (S) = E_Void
-                     then
+                     if not Expander_Active then
                         exit;
 
                      --  For package scopes, cleanup actions are generated only
@@ -4950,9 +4939,7 @@ package body Sem_Ch12 is
             --  take into account categorization pragmas before analyzing the
             --  instance.
 
-            if Has_Aspects (N) then
-               Analyze_Aspect_Specifications (N, Act_Decl_Id);
-            end if;
+            Analyze_Aspect_Specifications (N, Act_Decl_Id);
 
             Analyze (Act_Decl);
             Set_Unit (Parent (N), N);
@@ -5065,7 +5052,7 @@ package body Sem_Ch12 is
       end if;
 
    <<Leave>>
-      if Has_Aspects (N) and then Nkind (Parent (N)) /= N_Compilation_Unit then
+      if Nkind (Parent (N)) /= N_Compilation_Unit then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
@@ -6355,14 +6342,6 @@ package body Sem_Ch12 is
 
       Rewrite (N, Act_Body);
 
-      --  Propagate the aspect specifications from the package body template to
-      --  the instantiated version of the package body.
-
-      if Has_Aspects (Act_Body) then
-         Set_Aspect_Specifications
-           (N, New_Copy_List_Tree (Aspect_Specifications (Act_Body)));
-      end if;
-
       Body_Cunit := Parent (N);
 
       --  The two compilation unit nodes are linked by the Library_Unit field
@@ -7079,9 +7058,13 @@ package body Sem_Ch12 is
          end if;
       end Check_Actual_Type;
 
+      --  Local variables
+
       Astype : Entity_Id;
       E      : Entity_Id;
       Formal : Node_Id;
+
+   --  Start of processing for Check_Generic_Actuals
 
    begin
       E := First_Entity (Instance);
@@ -7254,7 +7237,7 @@ package body Sem_Ch12 is
       Loc      : constant Source_Ptr := Sloc (Gen_Id);
       Gen_Par  : Entity_Id := Empty;
       E        : Entity_Id;
-      Inst_Par : Entity_Id;
+      Inst_Par : Entity_Id := Empty;
       S        : Node_Id;
 
       function Find_Generic_Child
@@ -7460,16 +7443,90 @@ package body Sem_Ch12 is
                --  the instance of Gpar, so this is illegal. The test below
                --  recognizes this particular case.
 
-               if Is_Child_Unit (E)
-                 and then not Comes_From_Source (Entity (Prefix (Gen_Id)))
-                 and then (not In_Instance
-                            or else Nkind (Parent (Parent (Gen_Id))) =
-                                                         N_Compilation_Unit)
-               then
-                  Error_Msg_N
-                    ("prefix of generic child unit must be instance of parent",
-                      Gen_Id);
-               end if;
+               declare
+                  --  We want to reject the final instantiation in
+                  --    generic package G1 is end G1;
+                  --    generic package G1.G2 is end G1.G2;
+                  --    with G1; package I1 is new G1;
+                  --    with G1.G2; package I1.I2 is new G1.G2;
+                  --  because the use of G1.G2 should instead be either
+                  --  I1.G2 or simply G2. However, the tree that is built
+                  --  in this case is wrong. In the expanded copy
+                  --  of G2, we need (and therefore generate) a renaming
+                  --    package G1 renames I1;
+                  --  but this renaming should not participate in resolving
+                  --  this occurrence of the name "G1.G2"; unfortunately,
+                  --  it does. Rather than correct this error, we compensate
+                  --  for it in this function.
+                  --
+                  --  We also perform another adjustment here. If we are
+                  --  currently inside a generic package, then that
+                  --  generic package needs to be treated as a package.
+                  --  For example, if a generic Aaa declares a nested generic
+                  --  Bbb (perhaps as a child unit) then Aaa can also legally
+                  --  declare an instance of Aaa.Bbb.
+
+                  function Adjusted_Inst_Par_Ekind return Entity_Kind;
+
+                  -----------------------------
+                  -- Adjusted_Inst_Par_Ekind --
+                  -----------------------------
+
+                  function Adjusted_Inst_Par_Ekind return Entity_Kind is
+                     Prefix_Entity   : Entity_Id;
+                     Inst_Par_GP     : Node_Id;
+                     Inst_Par_Parent : Node_Id := Parent (Inst_Par);
+                  begin
+                     if Nkind (Inst_Par_Parent) = N_Defining_Program_Unit_Name
+                     then
+                        Inst_Par_Parent := Parent (Inst_Par_Parent);
+                     end if;
+
+                     Inst_Par_GP := Generic_Parent (Inst_Par_Parent);
+
+                     if Nkind (Gen_Id) = N_Expanded_Name
+                       and then Present (Inst_Par_GP)
+                       and then Ekind (Inst_Par_GP) = E_Generic_Package
+                     then
+                        Prefix_Entity := Entity (Prefix (Gen_Id));
+
+                        if Present (Prefix_Entity)
+                           and then not Comes_From_Source (Prefix_Entity)
+                           and then Nkind (Parent (Prefix_Entity)) =
+                                      N_Package_Renaming_Declaration
+                           and then Chars (Prefix_Entity) = Chars (Inst_Par_GP)
+                        then
+                           return E_Generic_Package;
+                        end if;
+                     end if;
+
+                     if Ekind (Inst_Par) = E_Generic_Package
+                       and then In_Open_Scopes (Inst_Par)
+                     then
+                        --  If we are inside a generic package then
+                        --  treat it as a package.
+                        return E_Package;
+                     end if;
+
+                     --  The usual path
+                     return Ekind (Inst_Par);
+                  end Adjusted_Inst_Par_Ekind;
+
+               begin
+                  if Is_Child_Unit (E)
+                    and then (No (Inst_Par)
+                              or else Adjusted_Inst_Par_Ekind =
+                                      E_Generic_Package)
+                    and then (not In_Instance
+                              or else Nkind (Parent (Parent (Gen_Id))) =
+                                        N_Compilation_Unit)
+                  then
+                     Error_Msg_N
+                       ("prefix of generic child unit must be " &
+                          "instance of parent",
+                        Gen_Id);
+                  end if;
+               end;
 
                if not In_Open_Scopes (Inst_Par)
                  and then Nkind (Parent (Gen_Id)) not in
@@ -7702,7 +7759,9 @@ package body Sem_Ch12 is
    ------------------------
 
    procedure Check_Private_View (N : Node_Id) is
-      Typ : constant Entity_Id := Etype (N);
+      Comparison : constant Boolean := Nkind (N) in N_Op_Compare;
+      Typ        : constant Entity_Id :=
+        (if Comparison then Compare_Type (N) else Etype (N));
 
       procedure Check_Private_Type (T : Entity_Id; Private_View : Boolean);
       --  Check that the available view of T matches Private_View and, if not,
@@ -7766,10 +7825,16 @@ package body Sem_Ch12 is
            and then (not In_Open_Scopes (Scope (Typ))
                       or else Nkind (Parent (N)) = N_Subtype_Declaration)
          then
-            --  In the generic, only the private declaration was visible
+            declare
+               Assoc : constant Node_Id := Get_Associated_Node (N);
 
-            Prepend_Elmt (Typ, Exchanged_Views);
-            Exchange_Declarations (Etype (Get_Associated_Node (N)));
+            begin
+               --  In the generic, only the private declaration was visible
+
+               Prepend_Elmt (Typ, Exchanged_Views);
+               Exchange_Declarations
+                 (if Comparison then Compare_Type (Assoc) else Etype (Assoc));
+            end;
 
          --  Check that the available views of Typ match their respective flag.
          --  Note that the type of a visible discriminant is never private.
@@ -8081,14 +8146,6 @@ package body Sem_Ch12 is
 
       New_N := New_Copy (N);
 
-      --  Copy aspects if present
-
-      if Has_Aspects (N) then
-         Set_Has_Aspects (New_N, False);
-         Set_Aspect_Specifications
-           (New_N, Copy_Generic_List (Aspect_Specifications (N), Parent_Id));
-      end if;
-
       --  If we are instantiating, we want to adjust the sloc based on the
       --  current S_Adjustment. However, if this is the root node of a subunit,
       --  we need to defer that adjustment to below (see "elsif Instantiating
@@ -8190,36 +8247,6 @@ package body Sem_Ch12 is
                   if Nkind (Assoc) = Nkind (N) then
                      Set_Entity (New_N, Entity (Assoc));
                      Check_Private_View (N);
-
-                     --  For the comparison and equality operators, the Etype
-                     --  of the operator does not provide any information so,
-                     --  if one of the operands is of a universal type, we need
-                     --  to manually restore the full view of private types.
-
-                     if Nkind (N) in N_Op_Eq
-                                   | N_Op_Ge
-                                   | N_Op_Gt
-                                   | N_Op_Le
-                                   | N_Op_Lt
-                                   | N_Op_Ne
-                     then
-                        if Yields_Universal_Type (Left_Opnd (Assoc)) then
-                           if Present (Etype (Right_Opnd (Assoc)))
-                             and then
-                               Is_Private_Type (Etype (Right_Opnd (Assoc)))
-                           then
-                              Switch_View (Etype (Right_Opnd (Assoc)));
-                           end if;
-
-                        elsif Yields_Universal_Type (Right_Opnd (Assoc)) then
-                           if Present (Etype (Left_Opnd (Assoc)))
-                             and then
-                               Is_Private_Type (Etype (Left_Opnd (Assoc)))
-                           then
-                              Switch_View (Etype (Left_Opnd (Assoc)));
-                           end if;
-                        end if;
-                     end if;
 
                   --  The node is a reference to a global type and acts as the
                   --  subtype mark of a qualified expression created in order
@@ -8471,38 +8498,48 @@ package body Sem_Ch12 is
             Set_Associated_Node (N, New_N);
 
          else
-            if Present (Get_Associated_Node (N))
-              and then Nkind (Get_Associated_Node (N)) = Nkind (N)
-            then
-               --  In the generic the aggregate has some composite type. If at
-               --  the point of instantiation the type has a private view,
-               --  install the full view (and that of its ancestors, if any).
+            --  If, in the generic, the aggregate has a global composite type
+            --  and, at the point of instantiation, the type has a private view
+            --  then install the full view.
 
+            declare
+               Assoc : constant Node_Id := Get_Associated_Node (N);
+
+            begin
+               if Present (Assoc)
+                 and then Nkind (Assoc) = Nkind (N)
+                 and then Present (Etype (Assoc))
+                 and then Is_Private_Type (Etype (Assoc))
+               then
+                  Switch_View (Etype (Assoc));
+               end if;
+            end;
+
+            --  Moreover, for a full aggregate, if the type is a derived tagged
+            --  type and has a global ancestor, then also restore the full view
+            --  of this ancestor and do so up to the root type. Beware that the
+            --  Ancestor_Type field is overloaded, so test that it's an entity.
+
+            if Nkind (N) = N_Aggregate
+              and then Present (Ancestor_Type (N))
+              and then Nkind (Ancestor_Type (N)) in N_Entity
+            then
                declare
-                  T   : Entity_Id := Etype (Get_Associated_Node (N));
-                  Rt  : Entity_Id;
+                  Root_Typ : constant Entity_Id :=
+                               Root_Type (Ancestor_Type (N));
+
+                  Typ : Entity_Id := Ancestor_Type (N);
 
                begin
-                  if Present (T) and then Is_Private_Type (T) then
-                     Switch_View (T);
-                  end if;
+                  loop
+                     if Is_Private_Type (Typ) then
+                        Switch_View (Typ);
+                     end if;
 
-                  if Present (T)
-                    and then Is_Tagged_Type (T)
-                    and then Is_Derived_Type (T)
-                  then
-                     Rt := Root_Type (T);
+                     exit when Typ = Root_Typ;
 
-                     loop
-                        T := Etype (T);
-
-                        if Is_Private_Type (T) then
-                           Switch_View (T);
-                        end if;
-
-                        exit when T = Rt;
-                     end loop;
-                  end if;
+                     Typ := Etype (Typ);
+                  end loop;
                end;
             end if;
          end if;
@@ -9619,21 +9656,17 @@ package body Sem_Ch12 is
       A_Spec : Node_Id;
       A_Id   : Aspect_Id;
    begin
-      if No (A_List) then
-         return False;
-      else
-         A_Spec := First (A_List);
-         while Present (A_Spec) loop
-            A_Id := Get_Aspect_Id (A_Spec);
-            if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
-               return True;
-            end if;
+      A_Spec := First (A_List);
+      while Present (A_Spec) loop
+         A_Id := Get_Aspect_Id (A_Spec);
+         if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
+            return True;
+         end if;
 
-            Next (A_Spec);
-         end loop;
+         Next (A_Spec);
+      end loop;
 
-         return False;
-      end if;
+      return False;
    end Has_Contracts;
 
    ----------
@@ -11576,19 +11609,6 @@ package body Sem_Ch12 is
                Actual);
          end if;
 
-         --  Check actual/formal compatibility with respect to the four
-         --  volatility refinement aspects.
-
-         declare
-            Actual_Obj : constant Entity_Id :=
-              Get_Enclosing_Deep_Object (Actual);
-         begin
-            Check_Volatility_Compatibility
-              (Actual_Obj, A_Gen_Obj, "actual object",
-               "its corresponding formal object of mode in out",
-               Srcpos_Bearer => Actual);
-         end;
-
          --  The actual for a ghost generic formal IN OUT parameter should be a
          --  ghost object (SPARK RM 6.9(14)).
 
@@ -11794,22 +11814,6 @@ package body Sem_Ch12 is
          Error_Msg_Sloc := Sloc (Analyzed_Formal);
          Error_Msg_N
            ("actual must exclude null to match generic formal#", Actual);
-      end if;
-
-      --  An effectively volatile object cannot be used as an actual in a
-      --  generic instantiation (SPARK RM 7.1.3(7)). The following check is
-      --  relevant only when SPARK_Mode is on as it is not a standard Ada
-      --  legality rule, and also verifies that the actual is an object.
-
-      if SPARK_Mode = On
-        and then Present (Actual)
-        and then Is_Object_Reference (Actual)
-        and then Is_Effectively_Volatile_Object (Actual)
-        and then not Is_Effectively_Volatile (A_Gen_Obj)
-      then
-         Error_Msg_N
-           ("volatile object cannot act as actual in generic instantiation",
-            Actual);
       end if;
 
       return List;
@@ -12994,14 +12998,6 @@ package body Sem_Ch12 is
                  ("actual for& must have Independent_Components specified",
                      Actual, A_Gen_T);
             end if;
-
-            --  Check actual/formal compatibility with respect to the four
-            --  volatility refinement aspects.
-
-            Check_Volatility_Compatibility
-              (Act_T, A_Gen_T,
-               "actual type", "its corresponding formal type",
-               Srcpos_Bearer => Actual);
          end if;
       end Check_Shared_Variable_Control_Aspects;
 
@@ -13521,8 +13517,7 @@ package body Sem_Ch12 is
                Ancestor := Get_Instance_Of (Ancestor);
 
             else
-               Ancestor :=
-                 Get_Instance_Of (Base_Type (Get_Instance_Of (A_Gen_T)));
+               Ancestor := Get_Instance_Of (Etype (Get_Instance_Of (A_Gen_T)));
             end if;
 
          --  Check whether parent is a previous formal of the current generic
@@ -14051,9 +14046,10 @@ package body Sem_Ch12 is
                     and then (Ekind (Base_Type (Etype (Actual_Discr)))) =
                                 E_Anonymous_Access_Type
                     and then
-                      Get_Instance_Of
-                        (Designated_Type (Base_Type (Formal_Subt))) =
-                           Designated_Type (Base_Type (Etype (Actual_Discr)))
+                      Subtypes_Match
+                        (Get_Instance_Of
+                           (Designated_Type (Base_Type (Formal_Subt))),
+                         Designated_Type (Base_Type (Etype (Actual_Discr))))
                   then
                      null;
 
@@ -14179,124 +14175,120 @@ package body Sem_Ch12 is
       if Get_Instance_Of (A_Gen_T) /= A_Gen_T then
          Error_Msg_N ("duplicate instantiation of generic type", Actual);
          return New_List (Error);
+      end if;
 
-      elsif not Is_Entity_Name (Actual)
+      if not Is_Entity_Name (Actual)
         or else not Is_Type (Entity (Actual))
       then
          Error_Msg_NE
            ("expect valid subtype mark to instantiate &", Actual, Gen_T);
          Abandon_Instantiation (Actual);
+      end if;
 
-      else
-         Act_T := Entity (Actual);
+      Act_T := Entity (Actual);
 
-         --  Ada 2005 (AI-216): An Unchecked_Union subtype shall only be passed
-         --  as a generic actual parameter if the corresponding formal type
-         --  does not have a known_discriminant_part, or is a formal derived
-         --  type that is an Unchecked_Union type.
+      --  Ada 2005 (AI-216): An Unchecked_Union subtype shall only be passed
+      --  as a generic actual parameter if the corresponding formal type
+      --  does not have a known_discriminant_part, or is a formal derived
+      --  type that is an Unchecked_Union type.
 
-         if Is_Unchecked_Union (Base_Type (Act_T)) then
-            if not Has_Discriminants (A_Gen_T)
-              or else (Is_Derived_Type (A_Gen_T)
-                        and then Is_Unchecked_Union (A_Gen_T))
-            then
-               null;
-            else
-               Error_Msg_N ("unchecked union cannot be the actual for a "
-                            & "discriminated formal type", Act_T);
-
-            end if;
-         end if;
-
-         --  Deal with fixed/floating restrictions
-
-         if Is_Floating_Point_Type (Act_T) then
-            Check_Restriction (No_Floating_Point, Actual);
-         elsif Is_Fixed_Point_Type (Act_T) then
-            Check_Restriction (No_Fixed_Point, Actual);
-         end if;
-
-         --  Deal with error of using incomplete type as generic actual.
-         --  This includes limited views of a type, even if the non-limited
-         --  view may be available.
-
-         if Ekind (Act_T) = E_Incomplete_Type
-           or else (Is_Class_Wide_Type (Act_T)
-                     and then Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
+      if Is_Unchecked_Union (Base_Type (Act_T)) then
+         if not Has_Discriminants (A_Gen_T)
+           or else (Is_Derived_Type (A_Gen_T)
+                     and then Is_Unchecked_Union (A_Gen_T))
          then
-            --  If the formal is an incomplete type, the actual can be
-            --  incomplete as well, but if an actual incomplete type has
-            --  a full view, then we'll retrieve that.
+            null;
+         else
+            Error_Msg_N ("unchecked union cannot be the actual for a "
+                         & "discriminated formal type", Act_T);
 
-            if Ekind (A_Gen_T) = E_Incomplete_Type
-              and then No (Full_View (Act_T))
-            then
-               null;
+         end if;
+      end if;
 
-            elsif Is_Class_Wide_Type (Act_T)
-              or else No (Full_View (Act_T))
-            then
-               Error_Msg_N ("premature use of incomplete type", Actual);
-               Abandon_Instantiation (Actual);
+      --  Deal with fixed/floating restrictions
 
-            else
-               Act_T := Full_View (Act_T);
-               Set_Entity (Actual, Act_T);
+      if Is_Floating_Point_Type (Act_T) then
+         Check_Restriction (No_Floating_Point, Actual);
+      elsif Is_Fixed_Point_Type (Act_T) then
+         Check_Restriction (No_Fixed_Point, Actual);
+      end if;
 
-               if Has_Private_Component (Act_T) then
-                  Error_Msg_N
-                    ("premature use of type with private component", Actual);
-               end if;
+      --  Deal with error of using incomplete type as generic actual.
+      --  This includes limited views of a type, even if the non-limited
+      --  view may be available.
+
+      if Ekind (Act_T) = E_Incomplete_Type
+        or else (Is_Class_Wide_Type (Act_T)
+                  and then Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
+      then
+         --  If the formal is an incomplete type, the actual can be
+         --  incomplete as well, but if an actual incomplete type has
+         --  a full view, then we'll retrieve that.
+
+         if Ekind (A_Gen_T) = E_Incomplete_Type
+           and then No (Full_View (Act_T))
+         then
+            null;
+
+         elsif Is_Class_Wide_Type (Act_T)
+           or else No (Full_View (Act_T))
+         then
+            Error_Msg_N ("premature use of incomplete type", Actual);
+            Abandon_Instantiation (Actual);
+
+         else
+            Act_T := Full_View (Act_T);
+            Set_Entity (Actual, Act_T);
+
+            if Has_Private_Component (Act_T) then
+               Error_Msg_N
+                 ("premature use of type with private component", Actual);
             end if;
+         end if;
 
-         --  Deal with error of premature use of private type as generic actual
+      --  Deal with error of premature use of private type as generic actual,
+      --  which is allowed for incomplete formals.
 
-         elsif Is_Private_Type (Act_T)
+      elsif Ekind (A_Gen_T) /= E_Incomplete_Type then
+         if Is_Private_Type (Act_T)
            and then Is_Private_Type (Base_Type (Act_T))
            and then not Is_Generic_Type (Act_T)
            and then not Is_Derived_Type (Act_T)
            and then No (Full_View (Root_Type (Act_T)))
          then
-            --  If the formal is an incomplete type, the actual can be
-            --  private or incomplete as well.
-
-            if Ekind (A_Gen_T) = E_Incomplete_Type then
-               null;
-            else
-               Error_Msg_N ("premature use of private type", Actual);
-            end if;
+            Error_Msg_N ("premature use of private type", Actual);
 
          elsif Has_Private_Component (Act_T) then
             Error_Msg_N
               ("premature use of type with private component", Actual);
          end if;
+      end if;
 
-         Set_Instance_Of (A_Gen_T, Act_T);
+      Set_Instance_Of (A_Gen_T, Act_T);
 
-         --  If the type is generic, the class-wide type may also be used
+      --  If the type is generic, the class-wide type may also be used
 
-         if Is_Tagged_Type (A_Gen_T)
-           and then Is_Tagged_Type (Act_T)
-           and then not Is_Class_Wide_Type (A_Gen_T)
-         then
-            Set_Instance_Of (Class_Wide_Type (A_Gen_T),
-              Class_Wide_Type (Act_T));
-         end if;
+      if Is_Tagged_Type (A_Gen_T)
+        and then Is_Tagged_Type (Act_T)
+        and then not Is_Class_Wide_Type (A_Gen_T)
+      then
+         Set_Instance_Of (Class_Wide_Type (A_Gen_T),
+           Class_Wide_Type (Act_T));
+      end if;
 
-         if not Is_Abstract_Type (A_Gen_T)
-           and then Is_Abstract_Type (Act_T)
-         then
-            Error_Msg_N
-              ("actual of non-abstract formal cannot be abstract", Actual);
-         end if;
+      if not Is_Abstract_Type (A_Gen_T)
+        and then Is_Abstract_Type (Act_T)
+      then
+         Error_Msg_N
+           ("actual of non-abstract formal cannot be abstract", Actual);
+      end if;
 
-         --  A generic scalar type is a first subtype for which we generate
-         --  an anonymous base type. Indicate that the instance of this base
-         --  is the base type of the actual.
+      --  A generic scalar type is a first subtype for which we generate
+      --  an anonymous base type. Indicate that the instance of this base
+      --  is the base type of the actual.
 
-         if Is_Scalar_Type (A_Gen_T) then
-            Set_Instance_Of (Etype (A_Gen_T), Etype (Act_T));
-         end if;
+      if Is_Scalar_Type (A_Gen_T) then
+         Set_Instance_Of (Etype (A_Gen_T), Etype (Act_T));
       end if;
 
       Check_Shared_Variable_Control_Aspects;
@@ -16517,6 +16509,36 @@ package body Sem_Ch12 is
             if No (N2) or else No (Typ) or else not Is_Global (Typ) then
                Set_Associated_Node (N, Empty);
 
+               --  For a full aggregate, if the type is local but is a derived
+               --  tagged type of a global ancestor, we will need to have the
+               --  full view of this global ancestor available in the instance
+               --  in order to analyze the full aggregate.
+
+               if Present (N2)
+                 and then Nkind (N2) = N_Aggregate
+                 and then Present (Typ)
+                 and then Is_Tagged_Type (Typ)
+                 and then Is_Derived_Type (Typ)
+               then
+                  declare
+                     Root_Typ : constant Entity_Id := Root_Type (Typ);
+
+                     Parent_Typ : Entity_Id := Typ;
+
+                  begin
+                     loop
+                        Parent_Typ := Etype (Parent_Typ);
+
+                        if Is_Global (Parent_Typ) then
+                           Set_Ancestor_Type (N, Parent_Typ);
+                           exit;
+                        end if;
+
+                        exit when Parent_Typ = Root_Typ;
+                     end loop;
+                  end;
+               end if;
+
                --  If the aggregate is an actual in a call, it has been
                --  resolved in the current context, to some local type. The
                --  enclosing call may have been disambiguated by the aggregate,
@@ -16555,6 +16577,19 @@ package body Sem_Ch12 is
                       Subtype_Mark => Nam,
                       Expression   => Relocate_Node (N));
                end if;
+
+            --  For a full aggregate, if the type is global and a derived
+            --  tagged type, we will also need to have the full view of its
+            --  ancestor available in the instance in order to analyze the
+            --  full aggregate.
+
+            elsif Present (N2)
+              and then Nkind (N2) = N_Aggregate
+              and then Present (Typ)
+              and then Is_Tagged_Type (Typ)
+              and then Is_Derived_Type (Typ)
+            then
+               Set_Ancestor_Type (N, Etype (Typ));
             end if;
 
             if Nkind (N) = N_Aggregate then
@@ -16884,29 +16919,45 @@ package body Sem_Ch12 is
          elsif Nkind (N) = N_Pragma then
             Save_References_In_Pragma (N);
 
+         elsif Nkind (N) =  N_Aspect_Specification then
+            declare
+               P : constant Node_Id := Parent (N);
+               Expr : Node_Id;
+            begin
+
+               if Permits_Aspect_Specifications (P) then
+
+                  --  The capture of global references within aspects
+                  --  associated with generic packages, subprograms or
+                  --  their bodies must be delayed due to timing of
+                  --  annotation analysis. Global references are still
+                  --  captured in routine Save_Global_References_In_Contract.
+
+                  if Requires_Delayed_Save (Original_Node (P)) then
+                     null;
+
+                     --  Otherwise save all global references within the
+                     --  aspects
+
+                  else
+                     Expr := Expression (N);
+
+                     if Present (Expr) then
+                        Save_Global_References (Expr);
+                     end if;
+                  end if;
+               end if;
+            end;
+
+         --  Do not walk the node pointed to by Label_Construct twice
+
+         elsif Nkind (N) = N_Implicit_Label_Declaration then
+            null;
+
          else
             Save_References_In_Descendants (N);
          end if;
 
-         --  Save all global references found within the aspect specifications
-         --  of the related node.
-
-         if Permits_Aspect_Specifications (N) and then Has_Aspects (N) then
-
-            --  The capture of global references within aspects associated with
-            --  generic packages, subprograms or their bodies must be delayed
-            --  due to timing of annotation analysis. Global references are
-            --  still captured in routine Save_Global_References_In_Contract.
-
-            if Requires_Delayed_Save (N) then
-               null;
-
-            --  Otherwise save all global references within the aspects
-
-            else
-               Save_Global_References_In_Aspects (N);
-            end if;
-         end if;
       end Save_References;
 
       ---------------------
@@ -16914,10 +16965,27 @@ package body Sem_Ch12 is
       ---------------------
 
       procedure Set_Global_Type (N : Node_Id; N2 : Node_Id) is
-         Typ : constant Entity_Id := Etype (N2);
+         Comparison : constant Boolean   := Nkind (N2) in N_Op_Compare;
+         Typ        : constant Entity_Id :=
+           (if Comparison then Compare_Type (N2) else Etype (N2));
 
       begin
-         Set_Etype (N, Typ);
+         --  For a comparison (or equality) operator, the Etype is Boolean, so
+         --  it is always global. But the type subject to the Has_Private_View
+         --  processing is the Compare_Type, so we must specifically check it.
+
+         if Comparison then
+            Set_Etype (N, Etype (N2));
+
+            if not Is_Global (Typ) then
+               return;
+            end if;
+
+            Set_Compare_Type (N, Typ);
+
+         else
+            Set_Etype (N, Typ);
+         end if;
 
          --  If the entity of N is not the associated node, this is a
          --  nested generic and it has an associated node as well, whose
@@ -16952,14 +17020,21 @@ package body Sem_Ch12 is
          elsif No (Full_View (Typ)) and then Typ /= Etype (Typ) then
             null;
 
-         --  Otherwise mark the type for flipping and use the full view when
-         --  available.
+         --  Otherwise mark the type for flipping and set the full view on N2
+         --  when available, which is necessary for Check_Private_View to swap
+         --  back the views in case the full declaration of Typ is visible in
+         --  the instantiation context. Note that this will be problematic if
+         --  N2 is re-analyzed later, e.g. if it's a default value in a call.
 
          else
             Set_Has_Private_View (N);
 
             if Present (Full_View (Typ)) then
-               Set_Etype (N2, Full_View (Typ));
+               if Comparison then
+                  Set_Compare_Type (N2, Full_View (Typ));
+               else
+                  Set_Etype (N2, Full_View (Typ));
+               end if;
             end if;
          end if;
 
@@ -17332,8 +17407,14 @@ package body Sem_Ch12 is
                     and then (Ekind (Base_Type (Etype (Actual_Discr)))) =
                                 E_Anonymous_Access_Type
                     and then
-                        Designated_Type (Base_Type (Formal_Subt)) =
-                           Designated_Type (Base_Type (Etype (Actual_Discr)))
+                        Base_Type
+                          (Designated_Type (Base_Type (Formal_Subt))) =
+                        Base_Type
+                          (Designated_Type (Base_Type (Etype (Actual_Discr))))
+                    and then
+                        Subtypes_Statically_Match
+                         (Designated_Type (Base_Type (Formal_Subt)),
+                          Designated_Type (Base_Type (Etype (Actual_Discr))))
                   then
                      null;
 
@@ -17665,4 +17746,66 @@ package body Sem_Ch12 is
             raise Program_Error;
       end case;
    end Validate_Formal_Type_Default;
+
+   package body Instance_Context is
+
+      --------------------
+      -- Save_And_Reset --
+      --------------------
+
+      function Save_And_Reset return Context is
+      begin
+         return Result : Context (0 .. Integer (Generic_Renamings.Last)) do
+            for Index in Result'Range loop
+               declare
+                  Indexed_Assoc : Assoc renames Generic_Renamings.Table
+                                                  (Assoc_Ptr (Index));
+                  Result_Pair : Binding_Pair renames Result (Index);
+               begin
+                  --  If we have called Increment_Last but have not yet
+                  --  initialized the new last element of the table, then
+                  --  that last element might be invalid. Saving and
+                  --  restoring (especially restoring, it turns out) invalid
+                  --  values can result in exceptions if predicate checking
+                  --  is enabled, so replace invalid values with Empty.
+
+                  if Indexed_Assoc.Gen_Id'Valid then
+                     Result_Pair.Formal_Id := Indexed_Assoc.Gen_Id;
+                  else
+                     pragma Assert (Index = Result'Last);
+                     Result_Pair.Formal_Id := Empty;
+                  end if;
+
+                  if Indexed_Assoc.Act_Id'Valid then
+                     Result_Pair.Actual_Id := Indexed_Assoc.Act_Id;
+                  else
+                     pragma Assert (Index = Result'Last);
+                     Result_Pair.Actual_Id := Empty;
+                  end if;
+               end;
+            end loop;
+
+            Generic_Renamings.Init;
+            Generic_Renamings.Set_Last (0);
+            Generic_Renamings_HTable.Reset;
+         end return;
+      end Save_And_Reset;
+
+      -------------
+      -- Restore --
+      -------------
+
+      procedure Restore (Saved : Context) is
+      begin
+         Generic_Renamings.Init;
+         Generic_Renamings.Set_Last (0);
+         Generic_Renamings_HTable.Reset;
+         Generic_Renamings.Increment_Last;
+         for Pair of Saved loop
+            Set_Instance_Of (Pair.Formal_Id, Pair.Actual_Id);
+         end loop;
+         Generic_Renamings.Decrement_Last;
+      end Restore;
+
+   end Instance_Context;
 end Sem_Ch12;

@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 int s = 200;
 int __attribute__((noinline))
 foo (void)

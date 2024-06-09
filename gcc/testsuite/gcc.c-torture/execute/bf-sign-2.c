@@ -13,6 +13,9 @@
  implementing signed and unsigned arithmetic.
  */
 
+void abort (void);
+void exit (int);
+
 struct X {
   unsigned int	     u3:3;
     signed long int  s31:31;
@@ -26,7 +29,8 @@ struct X {
 
 struct X x;
 
-main ()
+int
+main (void)
 {
   if ((x.u3 - 2) >= 0)		/* promoted value should be signed */
     abort ();

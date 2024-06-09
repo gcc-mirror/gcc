@@ -13,5 +13,5 @@ struct B {
 const B& f ()
 {
   A a;
-  return a;			// { dg-warning "" } returning reference to temporary
+  return a;			// { dg-message "" } returning reference to temporary
 }

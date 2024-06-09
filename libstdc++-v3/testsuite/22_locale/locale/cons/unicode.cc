@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-require-iconv "ISO-8859-1" }
 
-// Copyright (C) 2006-2023 Free Software Foundation, Inc.
+// Copyright (C) 2006-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -79,7 +79,7 @@ void test01()
     { VERIFY( false ); }
 
   try 
-    { use_facet<gnu_facet>(loc13); }
+    { (void) use_facet<gnu_facet>(loc13); }
   catch(bad_cast& obj)
     { VERIFY( true ); }
   catch(...)

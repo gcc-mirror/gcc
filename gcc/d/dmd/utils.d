@@ -1,7 +1,7 @@
 /**
  * This module defines some utility functions for DMD.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/utils.d, _utils.d)
@@ -53,12 +53,6 @@ const(char)* toWinPath(const(char)* src)
  *   loc = The line number information from where the call originates
  *   filename = Path to file
  */
-Buffer readFile(Loc loc, const(char)* filename)
-{
-    return readFile(loc, filename.toDString());
-}
-
-/// Ditto
 Buffer readFile(Loc loc, const(char)[] filename)
 {
     auto result = File.read(filename);
@@ -78,15 +72,19 @@ Buffer readFile(Loc loc, const(char)[] filename)
  *   loc = The line number information from where the call originates
  *   filename = Path to file
  *   data = Full content of the file to be written
+ * Returns:
+ *   false on error
  */
-extern (D) void writeFile(Loc loc, const(char)[] filename, const void[] data)
+extern (D) bool writeFile(Loc loc, const(char)[] filename, const void[] data)
 {
-    ensurePathToNameExists(Loc.initial, filename);
+    if (!ensurePathToNameExists(Loc.initial, filename))
+        return false;
     if (!File.update(filename, data))
     {
         error(loc, "error writing file '%.*s'", cast(int) filename.length, filename.ptr);
-        fatal();
+        return false;
     }
+    return true;
 }
 
 
@@ -97,8 +95,10 @@ extern (D) void writeFile(Loc loc, const(char)[] filename, const void[] data)
  * Params:
  *   loc = The line number information from where the call originates
  *   name = a path to check (the name is stripped)
+ * Returns:
+ *      false on error
  */
-void ensurePathToNameExists(Loc loc, const(char)[] name)
+bool ensurePathToNameExists(Loc loc, const(char)[] name)
 {
     const char[] pt = FileName.path(name);
     if (pt.length)
@@ -106,10 +106,12 @@ void ensurePathToNameExists(Loc loc, const(char)[] name)
         if (!FileName.ensurePathExists(pt))
         {
             error(loc, "cannot create directory %*.s", cast(int) pt.length, pt.ptr);
-            fatal();
+            FileName.free(pt.ptr);
+            return false;
         }
     }
     FileName.free(pt.ptr);
+    return true;
 }
 
 
@@ -296,4 +298,45 @@ bool parseDigits(T)(ref T val, const(char)[] p, const T max = T.max)
     assert(i.parseDigits(int.max.stringof) && i == int.max);
     assert(i.parseDigits("420", 500) && i == 420);
     assert(!i.parseDigits("420", 400));
+}
+
+/**
+ * Cast a `ubyte[]` to an array of larger integers as if we are on a big endian architecture
+ * Params:
+ *   data = array with big endian data
+ *   size = 1 for ubyte[], 2 for ushort[], 4 for uint[], 8 for ulong[]
+ * Returns: copy of `data`, with bytes shuffled if compiled for `version(LittleEndian)`
+ */
+ubyte[] arrayCastBigEndian(const ubyte[] data, size_t size)
+{
+    ubyte[] impl(T)()
+    {
+        auto result = new T[](data.length / T.sizeof);
+        foreach (i; 0 .. result.length)
+        {
+            result[i] = 0;
+            foreach (j; 0 .. T.sizeof)
+            {
+                result[i] |= T(data[i * T.sizeof + j]) << ((T.sizeof - 1 - j) * 8);
+            }
+        }
+        return cast(ubyte[]) result;
+    }
+    switch (size)
+    {
+        case 1: return data.dup;
+        case 2: return impl!ushort;
+        case 4: return impl!uint;
+        case 8: return impl!ulong;
+        default: assert(0);
+    }
+}
+
+unittest
+{
+    ubyte[] data = [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF, 0x11, 0x22];
+    assert(cast(ulong[]) arrayCastBigEndian(data, 8) == [0xAABBCCDDEEFF1122]);
+    assert(cast(uint[]) arrayCastBigEndian(data, 4) == [0xAABBCCDD, 0xEEFF1122]);
+    assert(cast(ushort[]) arrayCastBigEndian(data, 2) == [0xAABB, 0xCCDD, 0xEEFF, 0x1122]);
+    assert(cast(ubyte[]) arrayCastBigEndian(data, 1) == data);
 }

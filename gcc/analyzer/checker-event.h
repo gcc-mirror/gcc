@@ -1,5 +1,5 @@
 /* Subclasses of diagnostic_event for analyzer diagnostics.
-   Copyright (C) 2019-2023 Free Software Foundation, Inc.
+   Copyright (C) 2019-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -23,21 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-logical-location.h"
 #include "analyzer/program-state.h"
+#include "analyzer/event-loc-info.h"
 
 namespace ana {
-
-/* A bundle of location information for a checker_event.  */
-
-struct event_loc_info
-{
-  event_loc_info (location_t loc, tree fndecl, int depth)
-  : m_loc (loc), m_fndecl (fndecl), m_depth (depth)
-  {}
-
-  location_t m_loc;
-  tree m_fndecl;
-  int m_depth;
-};
 
 /* An enum for discriminating between the concrete subclasses of
    checker_event.  */
@@ -113,10 +101,14 @@ public:
       return NULL;
   }
   meaning get_meaning () const override;
+  bool connect_to_next_event_p () const override { return false; }
   diagnostic_thread_id_t get_thread_id () const final override
   {
     return 0;
   }
+
+  void
+  maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const override;
 
   /* Additional functionality.  */
 
@@ -367,7 +359,7 @@ public:
   label_text get_desc (bool can_colorize) const final override;
   meaning get_meaning () const override;
 
-  function *get_dest_function () const
+  const function *get_dest_function () const
   {
     return m_dst_state.get_current_function ();
   }
@@ -391,6 +383,9 @@ public:
 class superedge_event : public checker_event
 {
 public:
+  void maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj)
+    const override;
+
   /* Mark this edge event as being either an interprocedural call or
      return in which VAR is in STATE, and that this is critical to the
      diagnostic (so that get_desc can attempt to get a better description
@@ -444,11 +439,13 @@ public:
   {
   }
 
-  label_text get_desc (bool can_colorize) const final override;
+  label_text get_desc (bool can_colorize) const override;
+  bool connect_to_next_event_p () const final override { return true; }
 
- private:
+protected:
   label_text maybe_describe_condition (bool can_colorize) const;
 
+private:
   static label_text maybe_describe_condition (bool can_colorize,
 					      tree lhs,
 					      enum tree_code op,
@@ -527,6 +524,7 @@ public:
 
   label_text get_desc (bool can_colorize) const final override;
   meaning get_meaning () const override;
+  bool connect_to_next_event_p () const final override { return true; }
 
  private:
   bool m_edge_sense;

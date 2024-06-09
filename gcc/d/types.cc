@@ -1,5 +1,5 @@
 /* types.cc -- Lower D frontend types to GCC trees.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -144,7 +144,7 @@ same_type_p (Type *t1, Type *t2)
     return true;
 
   /* Types are mutably the same type.  */
-  if (tb1->ty == tb2->ty && tb1->equivalent (tb2))
+  if (tb1->ty == tb2->ty && dmd::equivalent (tb1, tb2))
     return true;
 
   return false;
@@ -1230,6 +1230,11 @@ public:
 	apply_user_attributes (t->sym, t->ctype);
 	finish_aggregate_type (structsize, alignsize, t->ctype);
       }
+    else
+      {
+	build_type_decl (t->ctype, t->sym);
+	apply_user_attributes (t->sym, t->ctype);
+      }
 
     /* For structs with a user defined postblit, copy constructor, or a
        destructor, also set TREE_ADDRESSABLE on the type and all variants.
@@ -1329,7 +1334,7 @@ build_ctype (Type *t)
 	t->accept (&v);
       else
 	{
-	  Type *tb = t->castMod (0);
+	  Type *tb = dmd::castMod (t, 0);
 	  if (!tb->ctype)
 	    tb->accept (&v);
 	  t->ctype = insert_type_modifiers (tb->ctype, t->mod);

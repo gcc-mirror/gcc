@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GCC.
@@ -2392,7 +2392,7 @@ static rtx
 attr_alt_complement (rtx s)
 {
   return attr_rtx (EQ_ATTR_ALT, XWINT (s, 0),
-                   ((HOST_WIDE_INT) 1) - XWINT (s, 1));
+		   HOST_WIDE_INT_1 - XWINT (s, 1));
 }
 
 /* Return EQ_ATTR_ALT expression representing set containing elements set
@@ -2401,7 +2401,7 @@ attr_alt_complement (rtx s)
 static rtx
 mk_attr_alt (alternative_mask e)
 {
-  return attr_rtx (EQ_ATTR_ALT, (HOST_WIDE_INT) e, (HOST_WIDE_INT) 0);
+  return attr_rtx (EQ_ATTR_ALT, (HOST_WIDE_INT) e, HOST_WIDE_INT_0);
 }
 
 /* Given an expression, see if it can be simplified for a particular insn

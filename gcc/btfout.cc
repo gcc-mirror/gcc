@@ -1,5 +1,5 @@
 /* Output BTF format from GCC.
-   Copyright (C) 2021-2023 Free Software Foundation, Inc.
+   Copyright (C) 2021-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "cgraph.h"
 #include "varasm.h"
+#include "stringpool.h"  /* For lookup_attribute.  */
+#include "attribs.h" /* For lookup_attribute.  */
 #include "dwarf2out.h" /* For lookup_decl_die.  */
 
 static int btf_label_num;
@@ -158,6 +160,19 @@ get_btf_kind (uint32_t ctf_kind)
   return BTF_KIND_UNKN;
 }
 
+/* Some BTF types, like BTF_KIND_FUNC_PROTO, are anonymous.  The machinery
+   in btfout to emit BTF, may reset dtd_data->ctti_name, but does not update
+   the name in the ctf_dtdef_ref type object (deliberate choice).  This
+   interface helps abstract out that state of affairs, while giving access to
+   the name of the type as intended.  */
+
+static const char *
+get_btf_type_name (ctf_dtdef_ref dtd)
+{
+  const char *anon = "";
+  return (dtd->dtd_data.ctti_name) ? dtd->dtd_name : anon;
+}
+
 /* Helper routines to map between 'relative' and 'absolute' IDs.
 
    In BTF all records (including variables) are output in one long list, and all
@@ -255,6 +270,17 @@ btf_emit_id_p (ctf_id_t id)
 	  && (btf_id_map[id] <= BTF_MAX_TYPE));
 }
 
+/* Return true if DTD is a forward-declared enum.  The BTF representation
+   of forward declared enums is not formally defined.  */
+
+static bool
+btf_fwd_to_enum_p (ctf_dtdef_ref dtd)
+{
+  uint32_t btf_kind = get_btf_kind (CTF_V2_INFO_KIND (dtd->dtd_data.ctti_info));
+
+  return (btf_kind == BTF_KIND_FWD && dtd->dtd_data.ctti_type == CTF_K_ENUM);
+}
+
 /* Each BTF type can be followed additional, variable-length information
    completing the description of the type. Calculate the number of bytes
    of variable information required to encode a given type.  */
@@ -299,7 +325,7 @@ btf_calc_num_vbytes (ctf_dtdef_ref dtd)
       break;
 
     case BTF_KIND_ENUM:
-      vlen_bytes += (dtd->dtd_data.ctti_size == 0x8)
+      vlen_bytes += (dtd->dtd_data.ctti_size > 4)
 			? vlen * sizeof (struct btf_enum64)
 			: vlen * sizeof (struct btf_enum);
       break;
@@ -416,6 +442,11 @@ btf_collect_datasec (ctf_container_ref ctfc)
       if (dtd == NULL)
 	continue;
 
+      if (DECL_EXTERNAL (func->decl)
+	  && (lookup_attribute ("kernel_helper",
+				DECL_ATTRIBUTES (func->decl))) != NULL_TREE)
+	continue;
+
       /* Functions actually get two types: a BTF_KIND_FUNC_PROTO, and
 	 also a BTF_KIND_FUNC.  But the CTF container only allocates one
 	 type per function, which matches closely with BTF_KIND_FUNC_PROTO.
@@ -425,7 +456,9 @@ btf_collect_datasec (ctf_container_ref ctfc)
       func_dtd->dtd_data = dtd->dtd_data;
       func_dtd->dtd_data.ctti_type = dtd->dtd_type;
       func_dtd->linkage = dtd->linkage;
-      func_dtd->dtd_type = num_types_added + num_types_created;
+      func_dtd->dtd_name = dtd->dtd_name;
+      /* +1 for the sentinel type not in the types map.  */
+      func_dtd->dtd_type = num_types_added + num_types_created + 1;
 
       /* Only the BTF_KIND_FUNC type actually references the name. The
 	 BTF_KIND_FUNC_PROTO is always anonymous.  */
@@ -448,8 +481,7 @@ btf_collect_datasec (ctf_container_ref ctfc)
 
 	  struct btf_var_secinfo info;
 
-	  /* +1 for the sentinel type not in the types map.  */
-	  info.type = func_dtd->dtd_type + 1;
+	  info.type = func_dtd->dtd_type;
 
 	  /* Both zero at compile time.  */
 	  info.size = 0;
@@ -472,7 +504,15 @@ btf_collect_datasec (ctf_container_ref ctfc)
 
       /* Mark extern variables.  */
       if (DECL_EXTERNAL (node->decl))
-	dvd->dvd_visibility = BTF_VAR_GLOBAL_EXTERN;
+	{
+	  dvd->dvd_visibility = BTF_VAR_GLOBAL_EXTERN;
+
+	  /* PR112849: avoid assuming a section for extern decls without
+	     an explicit section, which would result in incorrectly
+	     emitting a BTF_KIND_DATASEC entry for them.  */
+	  if (node->get_section () == NULL)
+	    continue;
+	}
 
       const char *section_name = get_section_name (node);
       if (section_name == NULL)
@@ -698,43 +738,64 @@ btf_dmd_representable_bitfield_p (ctf_container_ref ctfc, ctf_dmdef_t *dmd)
 /* Asm'out a reference to another BTF type.  */
 
 static void
-btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ref_id)
+btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ctf_id)
 {
-  if (ref_id == BTF_VOID_TYPEID || ref_id == BTF_INVALID_TYPEID)
+  ctf_id_t btf_id = get_btf_id (ctf_id);
+  if (btf_id == BTF_VOID_TYPEID || btf_id == BTF_INVALID_TYPEID)
     {
       /* There is no explicit void type.
 	 Also handle any invalid refs that made it this far, just in case.  */
-      dw2_asm_output_data (4, ref_id, "%s: void", prefix);
-    }
-  else if (ref_id >= num_types_added + 1
-	   && ref_id < num_types_added + num_vars_added + 1)
-    {
-      /* Ref to a variable.  Should only appear in DATASEC entries.  */
-      ctf_id_t var_id = btf_relative_var_id (ref_id);
-      ctf_dvdef_ref dvd = ctfc->ctfc_vars_list[var_id];
-      dw2_asm_output_data (4, ref_id, "%s: (BTF_KIND_VAR '%s')",
-			   prefix, dvd->dvd_name);
-
-    }
-  else if (ref_id >= num_types_added + num_vars_added + 1)
-    {
-      /* Ref to a FUNC record.  */
-      size_t func_id = btf_relative_func_id (ref_id);
-      ctf_dtdef_ref ref_type = (*funcs)[func_id];
-      dw2_asm_output_data (4, ref_id, "%s: (BTF_KIND_FUNC '%s')",
-			   prefix, ref_type->dtd_name);
+      dw2_asm_output_data (4, btf_id, "%s: void", prefix);
     }
   else
     {
-      /* Ref to a standard type in the types list.  */
-      ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[ref_id];
+      gcc_assert (btf_id <= num_types_added);
+
+      /* Ref to a standard type in the types list.  Note: take care that we
+	 must index the type list by the original CTF id, not the BTF id.  */
+      ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[ctf_id];
       uint32_t ref_kind
 	= get_btf_kind (CTF_V2_INFO_KIND (ref_type->dtd_data.ctti_info));
 
-      dw2_asm_output_data (4, ref_id, "%s: (BTF_KIND_%s '%s')",
-			   prefix, btf_kind_name (ref_kind),
-			   ref_type->dtd_name);
+      const char *kind_name = btf_fwd_to_enum_p (ref_type)
+	? btf_kind_name (BTF_KIND_ENUM)
+	: btf_kind_name (ref_kind);
+
+      dw2_asm_output_data (4, btf_id, "%s: (BTF_KIND_%s '%s')",
+			   prefix, kind_name,
+			   get_btf_type_name (ref_type));
     }
+}
+
+/* Asm'out a reference to a BTF_KIND_VAR or BTF_KIND_FUNC type.  These type
+   kinds are BTF-specific, and should only be referred to by entries in
+   BTF_KIND_DATASEC records.  */
+
+static void
+btf_asm_datasec_type_ref (const char *prefix, ctf_container_ref ctfc,
+			  ctf_id_t btf_id)
+{
+  if (btf_id >= num_types_added + 1
+      && btf_id < num_types_added + num_vars_added + 1)
+    {
+      /* Ref to a variable.  Should only appear in DATASEC entries.  */
+      ctf_id_t var_id = btf_relative_var_id (btf_id);
+      ctf_dvdef_ref dvd = ctfc->ctfc_vars_list[var_id];
+      dw2_asm_output_data (4, btf_id, "%s: (BTF_KIND_VAR '%s')",
+			   prefix, dvd->dvd_name);
+
+    }
+  else if (btf_id >= num_types_added + num_vars_added + 1)
+    {
+      /* Ref to a FUNC record.  */
+      size_t func_id = btf_relative_func_id (btf_id);
+      ctf_dtdef_ref ref_type = (*funcs)[func_id];
+      dw2_asm_output_data (4, btf_id, "%s: (BTF_KIND_FUNC '%s')",
+			   prefix, get_btf_type_name (ref_type));
+    }
+  else
+    /* The caller should not be calling this.  */
+    gcc_unreachable ();
 }
 
 /* Asm'out a BTF type. This routine is responsible for the bulk of the task
@@ -743,11 +804,11 @@ btf_asm_type_ref (const char *prefix, ctf_container_ref ctfc, ctf_id_t ref_id)
 static void
 btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 {
-  uint32_t btf_kind, btf_kflag, btf_vlen, btf_size_type;
+  uint32_t btf_kind, btf_kflag, btf_vlen, btf_size;
   uint32_t ctf_info = dtd->dtd_data.ctti_info;
 
   btf_kind = get_btf_kind (CTF_V2_INFO_KIND (ctf_info));
-  btf_size_type = dtd->dtd_data.ctti_type;
+  btf_size = dtd->dtd_data.ctti_size;
   btf_vlen = CTF_V2_INFO_VLEN (ctf_info);
 
   /* By now any unrepresentable types have been removed.  */
@@ -755,7 +816,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 
   /* Size 0 integers are redundant definitions of void. None should remain
      in the types list by this point.  */
-  gcc_assert (btf_kind != BTF_KIND_INT || btf_size_type >= 1);
+  gcc_assert (btf_kind != BTF_KIND_INT || btf_size >= 1);
 
   /* Re-encode the ctti_info to BTF.  */
   /* kflag is 1 for structs/unions with a bitfield member.
@@ -776,11 +837,6 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 	  /* Set kflag if this member is a representable bitfield.  */
 	  if (btf_dmd_representable_bitfield_p (ctfc, dmd))
 	    btf_kflag = 1;
-
-	  /* Struct members that refer to unsupported types or bitfield formats
-	     shall be skipped. These are marked during preprocessing.  */
-	  else if (!btf_emit_id_p (dmd->dmd_type))
-	    btf_vlen -= 1;
 	}
     }
 
@@ -788,16 +844,26 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
      structs and forwards to unions. The dwarf2ctf conversion process stores
      the kind of the forward in ctti_type, but for BTF this must be 0 for
      forwards, with only the KIND_FLAG to distinguish.
-     At time of writing, BTF forwards to enums are unspecified.  */
-  if (btf_kind == BTF_KIND_FWD)
+     Forwards to enum types are special-cased below.  */
+  else if (btf_kind == BTF_KIND_FWD)
     {
       if (dtd->dtd_data.ctti_type == CTF_K_UNION)
 	btf_kflag = 1;
 
-      btf_size_type = 0;
+      /* PR debug/111735.  Encode foward-declared enums as BTF_KIND_ENUM
+	 with vlen=0.  A representation for these is not formally defined;
+	 this is the de-facto standard used by other tools like clang
+	 and pahole.  */
+      else if (dtd->dtd_data.ctti_type == CTF_K_ENUM)
+	{
+	  btf_kind = BTF_KIND_ENUM;
+	  btf_vlen = 0;
+	}
+
+      btf_size = 0;
     }
 
-  if (btf_kind == BTF_KIND_ENUM)
+  else if (btf_kind == BTF_KIND_ENUM)
     {
       btf_kflag = dtd->dtd_enum_unsigned
 		    ? BTF_KF_ENUM_UNSIGNED
@@ -806,10 +872,14 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 	btf_kind = BTF_KIND_ENUM64;
    }
 
+  /* PR debug/112656.  BTF_KIND_FUNC_PROTO is always anonymous.  */
+  else if (btf_kind == BTF_KIND_FUNC_PROTO)
+    dtd->dtd_data.ctti_name = 0;
+
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name,
 		       "TYPE %" PRIu64 " BTF_KIND_%s '%s'",
 		       get_btf_id (dtd->dtd_type), btf_kind_name (btf_kind),
-		       dtd->dtd_name);
+		       get_btf_type_name (dtd));
   dw2_asm_output_data (4, BTF_TYPE_INFO (btf_kind, btf_kflag, btf_vlen),
 		       "btt_info: kind=%u, kflag=%u, vlen=%u",
 		       btf_kind, btf_kflag, btf_vlen);
@@ -822,8 +892,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
     case BTF_KIND_ENUM:
     case BTF_KIND_DATASEC:
     case BTF_KIND_ENUM64:
-      dw2_asm_output_data (4, dtd->dtd_data.ctti_size, "btt_size: %uB",
-			   dtd->dtd_data.ctti_size);
+      dw2_asm_output_data (4, btf_size, "btt_size: %uB", btf_size);
       return;
     case BTF_KIND_ARRAY:
     case BTF_KIND_FWD:
@@ -835,7 +904,7 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
       break;
     }
 
-  ctf_id_t ref_id = get_btf_id (dtd->dtd_data.ctti_type);
+  ctf_id_t ref_id = dtd->dtd_data.ctti_type;
   btf_asm_type_ref ("btt_type", ctfc, ref_id);
 }
 
@@ -844,8 +913,8 @@ btf_asm_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd)
 static void
 btf_asm_array (ctf_container_ref ctfc, ctf_arinfo_t arr)
 {
-  btf_asm_type_ref ("bta_elem_type", ctfc, get_btf_id (arr.ctr_contents));
-  btf_asm_type_ref ("bta_index_type", ctfc, get_btf_id (arr.ctr_index));
+  btf_asm_type_ref ("bta_elem_type", ctfc, arr.ctr_contents);
+  btf_asm_type_ref ("bta_index_type", ctfc, arr.ctr_index);
   dw2_asm_output_data (4, arr.ctr_nelems, "bta_nelems");
 }
 
@@ -854,12 +923,11 @@ btf_asm_array (ctf_container_ref ctfc, ctf_arinfo_t arr)
 static void
 btf_asm_varent (ctf_container_ref ctfc, ctf_dvdef_ref var)
 {
-  ctf_id_t ref_id = get_btf_id (var->dvd_type);
   dw2_asm_output_data (4, var->dvd_name_offset, "TYPE %u BTF_KIND_VAR '%s'",
 		       (*(btf_var_ids->get (var)) + num_types_added + 1),
 		       var->dvd_name);
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_VAR, 0, 0), "btv_info");
-  btf_asm_type_ref ("btv_type", ctfc, ref_id);
+  btf_asm_type_ref ("btv_type", ctfc, var->dvd_type);
   dw2_asm_output_data (4, var->dvd_visibility, "btv_linkage");
 }
 
@@ -870,41 +938,39 @@ static void
 btf_asm_sou_member (ctf_container_ref ctfc, ctf_dmdef_t * dmd, unsigned int idx)
 {
   ctf_dtdef_ref ref_type = ctfc->ctfc_types_list[dmd->dmd_type];
+  ctf_id_t base_type = dmd->dmd_type;
+  uint64_t sou_offset = dmd->dmd_offset;
+
+  dw2_asm_output_data (4, dmd->dmd_name_offset,
+		       "MEMBER '%s' idx=%u",
+		       dmd->dmd_name, idx);
 
   /* Re-encode bitfields to BTF representation.  */
   if (CTF_V2_INFO_KIND (ref_type->dtd_data.ctti_info) == CTF_K_SLICE)
     {
-      ctf_id_t base_type = ref_type->dtd_u.dtu_slice.cts_type;
-      unsigned short word_offset = ref_type->dtd_u.dtu_slice.cts_offset;
-      unsigned short bits = ref_type->dtd_u.dtu_slice.cts_bits;
-      uint64_t sou_offset = dmd->dmd_offset;
+      if (btf_dmd_representable_bitfield_p (ctfc, dmd))
+	{
+	  unsigned short word_offset = ref_type->dtd_u.dtu_slice.cts_offset;
+	  unsigned short bits = ref_type->dtd_u.dtu_slice.cts_bits;
 
-      /* Pack the bit offset and bitfield size together.  */
-      sou_offset += word_offset;
+	  /* Pack the bit offset and bitfield size together.  */
+	  sou_offset += word_offset;
+	  sou_offset &= 0x00ffffff;
+	  sou_offset |= ((bits & 0xff) << 24);
 
-      /* If this bitfield cannot be represented, do not output anything.
-	 The parent struct/union 'vlen' field has already been updated.  */
-      if ((bits > 0xff) || (sou_offset > 0xffffff))
-	return;
-
-      sou_offset &= 0x00ffffff;
-      sou_offset |= ((bits & 0xff) << 24);
-
-      dw2_asm_output_data (4, dmd->dmd_name_offset,
-			   "MEMBER '%s' idx=%u",
-			   dmd->dmd_name, idx);
-      /* Refer to the base type of the slice.  */
-      btf_asm_type_ref ("btm_type", ctfc, get_btf_id (base_type));
-      dw2_asm_output_data (4, sou_offset, "btm_offset");
+	  /* Refer to the base type of the slice.  */
+	  base_type = ref_type->dtd_u.dtu_slice.cts_type;
+	}
+      else
+	{
+	  /* Bitfield cannot be represented in BTF.  Emit the member as having
+	     'void' type.  */
+	  base_type = BTF_VOID_TYPEID;
+	}
     }
-  else
-    {
-      dw2_asm_output_data (4, dmd->dmd_name_offset,
-			   "MEMBER '%s' idx=%u",
-			   dmd->dmd_name, idx);
-      btf_asm_type_ref ("btm_type", ctfc, get_btf_id (dmd->dmd_type));
-      dw2_asm_output_data (4, dmd->dmd_offset, "btm_offset");
-    }
+
+  btf_asm_type_ref ("btm_type", ctfc, base_type);
+  dw2_asm_output_data (4, sou_offset, "btm_offset");
 }
 
 /* Asm'out an enum constant following a BTF_KIND_ENUM{,64}.  */
@@ -914,8 +980,8 @@ btf_asm_enum_const (unsigned int size, ctf_dmdef_t * dmd, unsigned int idx)
 {
   dw2_asm_output_data (4, dmd->dmd_name_offset, "ENUM_CONST '%s' idx=%u",
 		       dmd->dmd_name, idx);
-  if (size == 4)
-    dw2_asm_output_data (size, dmd->dmd_value, "bte_value");
+  if (size <= 4)
+    dw2_asm_output_data (size < 4 ? 4 : size, dmd->dmd_value, "bte_value");
   else
     {
       dw2_asm_output_data (4, dmd->dmd_value & 0xffffffff, "bte_value_lo32");
@@ -939,7 +1005,7 @@ btf_asm_func_arg (ctf_container_ref ctfc, ctf_func_arg_t * farg,
 
   btf_asm_type_ref ("farg_type", ctfc, (btf_removed_type_p (farg->farg_type)
 					? BTF_VOID_TYPEID
-					: get_btf_id (farg->farg_type)));
+					: farg->farg_type));
 }
 
 /* Asm'out a BTF_KIND_FUNC type.  */
@@ -950,11 +1016,35 @@ btf_asm_func_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd, ctf_id_t id)
   ctf_id_t ref_id = dtd->dtd_data.ctti_type;
   dw2_asm_output_data (4, dtd->dtd_data.ctti_name,
 		       "TYPE %" PRIu64 " BTF_KIND_FUNC '%s'",
-		       btf_absolute_func_id (id), dtd->dtd_name);
+		       btf_absolute_func_id (id), get_btf_type_name (dtd));
   dw2_asm_output_data (4, BTF_TYPE_INFO (BTF_KIND_FUNC, 0, dtd->linkage),
 		       "btt_info: kind=%u, kflag=%u, linkage=%u",
 		       BTF_KIND_FUNC, 0, dtd->linkage);
-  btf_asm_type_ref ("btt_type", ctfc, get_btf_id (ref_id));
+  btf_asm_type_ref ("btt_type", ctfc, ref_id);
+}
+
+/* Collect the name for the DATASEC reference required to be output as a
+   symbol. */
+
+static const char *
+get_name_for_datasec_entry (ctf_container_ref ctfc, ctf_id_t ref_id)
+{
+  if (ref_id >= num_types_added + 1
+      && ref_id < num_types_added + num_vars_added + 1)
+    {
+      /* Ref to a variable.  Should only appear in DATASEC entries.  */
+      ctf_id_t var_id = btf_relative_var_id (ref_id);
+      ctf_dvdef_ref dvd = ctfc->ctfc_vars_list[var_id];
+      return dvd->dvd_name;
+    }
+  else if (ref_id >= num_types_added + num_vars_added + 1)
+    {
+      /* Ref to a FUNC record.  */
+      size_t func_id = btf_relative_func_id (ref_id);
+      ctf_dtdef_ref ref_type = (*funcs)[func_id];
+      return get_btf_type_name (ref_type);
+    }
+  return NULL;
 }
 
 /* Asm'out a variable entry following a BTF_KIND_DATASEC.  */
@@ -962,8 +1052,12 @@ btf_asm_func_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd, ctf_id_t id)
 static void
 btf_asm_datasec_entry (ctf_container_ref ctfc, struct btf_var_secinfo info)
 {
-  btf_asm_type_ref ("bts_type", ctfc, info.type);
-  dw2_asm_output_data (4, info.offset, "bts_offset");
+  const char *symbol_name = get_name_for_datasec_entry (ctfc, info.type);
+  btf_asm_datasec_type_ref ("bts_type", ctfc, info.type);
+  if (!btf_with_core_debuginfo_p () || symbol_name == NULL)
+    dw2_asm_output_data (4, info.offset, "bts_offset");
+  else
+    dw2_asm_output_offset (4, symbol_name, NULL, "bts_offset");
   dw2_asm_output_data (4, info.size, "bts_size");
 }
 
@@ -1055,17 +1149,20 @@ static void
 output_btf_strs (ctf_container_ref ctfc)
 {
   ctf_string_t * ctf_string = ctfc->ctfc_strtable.ctstab_head;
+  static int str_pos = 0;
 
   while (ctf_string)
     {
-      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_string");
+      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_string, str_pos = 0x%x", str_pos);
+      str_pos += strlen(ctf_string->cts_str) + 1;
       ctf_string = ctf_string->cts_next;
     }
 
   ctf_string = ctfc->ctfc_aux_strtable.ctstab_head;
   while (ctf_string)
     {
-      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_aux_string");
+      dw2_asm_output_nstring (ctf_string->cts_str, -1, "btf_aux_string, str_pos = 0x%x", str_pos);
+      str_pos += strlen(ctf_string->cts_str) + 1;
       ctf_string = ctf_string->cts_next;
     }
 }
@@ -1216,8 +1313,10 @@ output_btf_types (ctf_container_ref ctfc)
 static void
 output_btf_func_types (ctf_container_ref ctfc)
 {
-  for (size_t i = 0; i < vec_safe_length (funcs); i++)
-    btf_asm_func_type (ctfc, (*funcs)[i], i);
+  ctf_dtdef_ref ref;
+  unsigned i;
+  FOR_EACH_VEC_ELT (*funcs, i, ref)
+    btf_asm_func_type (ctfc, ref, i);
 }
 
 /* Output all BTF_KIND_DATASEC records.  */
@@ -1390,6 +1489,22 @@ btf_finalize (void)
   ctf_container_ref tu_ctfc = ctf_get_tu_ctfc ();
   ctfc_delete_container (tu_ctfc);
   tu_ctfc = NULL;
+}
+
+/* Traversal function for all BTF_KIND_FUNC type records.  */
+
+bool
+traverse_btf_func_types (funcs_traverse_callback callback, void *data)
+{
+  ctf_dtdef_ref ref;
+  unsigned i;
+  FOR_EACH_VEC_ELT (*funcs, i, ref)
+    {
+      bool stop = callback (ref, data);
+      if (stop == true)
+	return true;
+    }
+  return false;
 }
 
 #include "gt-btfout.h"

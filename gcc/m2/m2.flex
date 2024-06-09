@@ -1,7 +1,7 @@
 %{
 /* m2.flex implements lexical analysis for Modula-2.
 
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -160,8 +160,14 @@ extern  void  yylex                   (void);
 <COMMENTC>.                { updatepos(); skippos(); }
 <COMMENTC>\n.*             { consumeLine(); }
 <COMMENTC>"*/"             { endOfCComment(); }
-^\#.*                      { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */ BEGIN LINE0; }
-\n\#.*                     { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */ BEGIN LINE0; }
+^\#.*                      { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */
+                             if (M2Options_GetLineDirectives ())
+			        BEGIN LINE0;
+		           }
+\n\#.*                     { consumeLine(); /* printf("found: %s\n", currentLine->linebuf); */
+                             if (M2Options_GetLineDirectives ())
+			        BEGIN LINE0;
+			   }
 <LINE0>\#[ \t]*            { updatepos(); }
 <LINE0>[0-9]+[ \t]*\"      { updatepos(); lineno=atoi(yytext); BEGIN LINE1; }
 <LINE0>\n                  { m2flex_M2Error("missing initial quote after #line directive"); resetpos(); BEGIN INITIAL; }
@@ -188,12 +194,14 @@ extern  void  yylex                   (void);
 \"[^\"\n]*\"               { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_stringtok, yytext); return; }
 \"[^\"\n]*$                { updatepos();
                              m2flex_M2Error("missing terminating quote, \"");
+			     M2LexBuf_AddTokCharStar(M2Reserved_stringtok, yytext);
                              resetpos(); return;
                            }
 
 '[^'\n]*'                  { updatepos(); M2LexBuf_AddTokCharStar(M2Reserved_stringtok, yytext); return; }
 '[^'\n]*$                  { updatepos();
                              m2flex_M2Error("missing terminating quote, '");
+			     M2LexBuf_AddTokCharStar(M2Reserved_stringtok, yytext);
                              resetpos(); return;
                            }
 
@@ -483,7 +491,10 @@ EXTERN void m2flex_M2Error (const char *s)
     }
     putchar('\n');
   }
-  printf("%s:%d:%s\n", filename, currentLine->lineno, s);
+  if (s == NULL)
+    printf("%s:%d\n", filename, currentLine->lineno);
+  else
+    printf("%s:%d:%s\n", filename, currentLine->lineno, s);
 }
 
 static void poperrorskip (const char *s)
@@ -497,6 +508,35 @@ static void poperrorskip (const char *s)
     currentLine->nextpos  = nextpos;
     currentLine->tokenpos = tokenpos;
   }
+}
+
+/* skipnewline skips all '\n' at the start of the line and returns
+   the new position.  */
+
+static
+char *
+skipnewline (char *line)
+{
+  while (((*line) != (char)0) && ((*line) == '\n'))
+    line++;
+  return line;
+}
+
+/* traceLine display the source line providing -fdebug-trace-line was
+   enabled.  */
+
+static
+void
+traceLine (void)
+{
+  if (M2Options_GetDebugTraceLine ())
+    {
+      char *line = skipnewline (currentLine->linebuf);
+      if (filename == NULL)
+	printf("<stdin>:%d:%s\n", currentLine->lineno, line);
+      else
+	printf("%s:%d:%s\n", filename, currentLine->lineno, line);
+    }
 }
 
 /*
@@ -519,6 +559,7 @@ static void consumeLine (void)
   currentLine->column=0;
   START_LINE (lineno, yyleng);
   yyless(1);                  /* push back all but the \n */
+  traceLine ();
 }
 
 static void assert_location (location_t location ATTRIBUTE_UNUSED)

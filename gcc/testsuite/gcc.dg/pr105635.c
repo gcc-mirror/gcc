@@ -1,6 +1,6 @@
 /* PR c/105635 */
 /* { dg-do compile } */
-/* { dg-options "-Wall" } */
+/* { dg-options "-fpermissive -Wall" } */
 
 void foo (int, int[*]);	/* { dg-message "previous declaration of 'foo' with type" } */
 

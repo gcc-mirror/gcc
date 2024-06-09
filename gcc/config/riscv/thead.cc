@@ -1,5 +1,5 @@
 /* Subroutines used for code generation for RISC-V.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by Christoph Müllner (christoph.muellner@vrull.eu).
 
    This file is part of GCC.
@@ -25,45 +25,17 @@
 #include "coretypes.h"
 #include "target.h"
 #include "backend.h"
+#include "tree.h"
 #include "rtl.h"
+#include "insn-attr.h"
+#include "explow.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
+#include "optabs.h"
 #include "poly-int.h"
 #include "output.h"
-
-/* If MEM is in the form of "base+offset", extract the two parts
-   of address and set to BASE and OFFSET, otherwise return false
-   after clearing BASE and OFFSET.  */
-
-static bool
-extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
-{
-  rtx addr;
-
-  gcc_assert (MEM_P (mem));
-
-  addr = XEXP (mem, 0);
-
-  if (REG_P (addr))
-    {
-      *base = addr;
-      *offset = const0_rtx;
-      return true;
-    }
-
-  if (GET_CODE (addr) == PLUS
-      && REG_P (XEXP (addr, 0)) && CONST_INT_P (XEXP (addr, 1)))
-    {
-      *base = XEXP (addr, 0);
-      *offset = XEXP (addr, 1);
-      return true;
-    }
-
-  *base = NULL_RTX;
-  *offset = NULL_RTX;
-
-  return false;
-}
+#include "regs.h"
+#include "riscv-protos.h"
 
 /* If X is a PLUS of a CONST_INT, return the two terms in *BASE_PTR
    and *OFFSET_PTR.  Return X in *BASE_PTR and 0 in *OFFSET_PTR otherwise.  */
@@ -366,14 +338,15 @@ th_mempair_save_regs (rtx operands[4])
 {
   rtx set1 = gen_rtx_SET (operands[0], operands[1]);
   rtx set2 = gen_rtx_SET (operands[2], operands[3]);
+  rtx dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
   rtx insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set1, set2)));
   RTX_FRAME_RELATED_P (insn) = 1;
 
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				      copy_rtx (set1), REG_NOTES (insn));
-
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				      copy_rtx (set2), REG_NOTES (insn));
+  XVECEXP (dwarf, 0, 0) = copy_rtx (set1);
+  XVECEXP (dwarf, 0, 1) = copy_rtx (set2);
+  RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 0)) = 1;
+  RTX_FRAME_RELATED_P (XVECEXP (dwarf, 0, 1)) = 1;
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 }
 
 /* Similar like riscv_restore_reg, but restores two registers from memory
@@ -428,4 +401,831 @@ th_mempair_save_restore_regs (rtx operands[4], bool load_p,
     th_mempair_restore_regs (operands);
   else
     th_mempair_save_regs (operands);
+}
+
+/* Return true if X can be represented as signed immediate of NBITS bits.
+   The immediate is assumed to be shifted by LSHAMT bits left.  */
+
+static bool
+valid_signed_immediate (rtx x, unsigned nbits, unsigned lshamt)
+{
+  if (GET_CODE (x) != CONST_INT)
+    return false;
+
+  HOST_WIDE_INT v = INTVAL (x);
+
+  HOST_WIDE_INT vunshifted = v >> lshamt;
+
+  /* Make sure we did not shift out any bits.  */
+  if (vunshifted << lshamt != v)
+    return false;
+
+  unsigned HOST_WIDE_INT imm_reach = 1LL << nbits;
+  return ((unsigned HOST_WIDE_INT) vunshifted + imm_reach/2 < imm_reach);
+}
+
+/* Return the address RTX of a move to/from memory
+   instruction.  */
+
+static rtx
+th_get_move_mem_addr (rtx dest, rtx src, bool load)
+{
+  rtx mem;
+
+  if (load)
+    mem = src;
+  else
+    mem = dest;
+
+  gcc_assert (GET_CODE (mem) == MEM);
+  return XEXP (mem, 0);
+}
+
+/* Return true if X is a valid address for T-Head's memory addressing modes
+   with pre/post modification for machine mode MODE.
+   If it is, fill in INFO appropriately (if non-NULL).
+   If STRICT_P is true then REG_OK_STRICT is in effect.  */
+
+static bool
+th_memidx_classify_address_modify (struct riscv_address_info *info, rtx x,
+				   machine_mode mode, bool strict_p)
+{
+  if (!TARGET_XTHEADMEMIDX)
+    return false;
+
+  if (!TARGET_64BIT && mode == DImode)
+    return false;
+
+  if (!(INTEGRAL_MODE_P (mode) && GET_MODE_SIZE (mode).to_constant () <= 8))
+    return false;
+
+  if (GET_CODE (x) != POST_MODIFY
+      && GET_CODE (x) != PRE_MODIFY)
+    return false;
+
+  rtx reg = XEXP (x, 0);
+  rtx exp = XEXP (x, 1);
+  rtx expreg = XEXP (exp, 0);
+  rtx expoff = XEXP (exp, 1);
+
+  if (GET_CODE (exp) != PLUS
+      || !rtx_equal_p (expreg, reg)
+      || !CONST_INT_P (expoff)
+      || !riscv_valid_base_register_p (reg, mode, strict_p))
+    return false;
+
+  /* The offset is calculated as (sign_extend(imm5) << imm2)  */
+  const int shamt_bits = 2;
+  for (int shamt = 0; shamt < (1 << shamt_bits); shamt++)
+    {
+      const int nbits = 5;
+      if (valid_signed_immediate (expoff, nbits, shamt))
+	{
+	  if (info)
+	    {
+	      info->type = ADDRESS_REG_WB;
+	      info->reg = reg;
+	      info->offset = expoff;
+	      info->shift = shamt;
+	    }
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+/* Return TRUE if X is a MEM with a legitimate modify address.  */
+
+bool
+th_memidx_legitimate_modify_p (rtx x)
+{
+  if (!MEM_P (x))
+    return false;
+
+  /* Get the mode from the MEM and unpack it.  */
+  machine_mode mode = GET_MODE (x);
+  x = XEXP (x, 0);
+
+  return th_memidx_classify_address_modify (NULL, x, mode, reload_completed);
+}
+
+/* Return TRUE if X is a MEM with a legitimate modify address
+   and the address is POST_MODIFY (if POST is true) or a PRE_MODIFY
+   (otherwise).  */
+
+bool
+th_memidx_legitimate_modify_p (rtx x, bool post)
+{
+  if (!th_memidx_legitimate_modify_p (x))
+    return false;
+
+  /* Unpack the MEM and check the code.  */
+  x = XEXP (x, 0);
+  if (post)
+    return GET_CODE (x) == POST_MODIFY;
+  else
+    return GET_CODE (x) == PRE_MODIFY;
+}
+
+/* Provide a buffer for a th.lXia/th.lXib/th.sXia/th.sXib instruction
+   for the given MODE. If LOAD is true, a load instruction will be
+   provided (otherwise, a store instruction). If X is not suitable
+   return NULL.  */
+
+static const char *
+th_memidx_output_modify (rtx dest, rtx src, machine_mode mode, bool load)
+{
+  char format[24];
+  rtx output_operands[2];
+  rtx x = th_get_move_mem_addr (dest, src, load);
+
+  /* Validate x.  */
+  if (!th_memidx_classify_address_modify (NULL, x, mode, reload_completed))
+    return NULL;
+
+  int index = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
+  bool post = GET_CODE (x) == POST_MODIFY;
+
+  const char *const insn[][4] = {
+    {
+      "th.sbi%s\t%%z1,%%0",
+      "th.shi%s\t%%z1,%%0",
+      "th.swi%s\t%%z1,%%0",
+      "th.sdi%s\t%%z1,%%0"
+    },
+    {
+      "th.lbui%s\t%%0,%%1",
+      "th.lhui%s\t%%0,%%1",
+      "th.lwi%s\t%%0,%%1",
+      "th.ldi%s\t%%0,%%1"
+    }
+  };
+
+  snprintf (format, sizeof (format), insn[load][index], post ? "a" : "b");
+  output_operands[0] = dest;
+  output_operands[1] = src;
+  output_asm_insn (format, output_operands);
+  return "";
+}
+
+static bool
+is_memidx_mode (machine_mode mode)
+{
+  if (mode == QImode || mode == HImode || mode == SImode)
+    return true;
+
+  if (mode == DImode && TARGET_64BIT)
+    return true;
+
+  return false;
+}
+
+static bool
+is_fmemidx_mode (machine_mode mode)
+{
+  if (mode == SFmode && TARGET_HARD_FLOAT)
+    return true;
+
+  if (mode == DFmode && TARGET_DOUBLE_FLOAT)
+    return true;
+
+  return false;
+}
+
+/* Return true if X is a valid address for T-Head's memory addressing modes
+   with scaled register offsets for machine mode MODE.
+   If it is, fill in INFO appropriately (if non-NULL).
+   If STRICT_P is true then REG_OK_STRICT is in effect.  */
+
+static bool
+th_memidx_classify_address_index (struct riscv_address_info *info, rtx x,
+				  machine_mode mode, bool strict_p)
+{
+  /* Ensure that the mode is supported.  */
+  if (!(TARGET_XTHEADMEMIDX && is_memidx_mode (mode))
+      && !(TARGET_XTHEADMEMIDX
+	   && TARGET_XTHEADFMEMIDX && is_fmemidx_mode (mode)))
+    return false;
+
+  if (GET_CODE (x) != PLUS)
+    return false;
+
+  rtx reg = XEXP (x, 0);
+  enum riscv_address_type type;
+  rtx offset = XEXP (x, 1);
+  int shift;
+
+  if (!riscv_valid_base_register_p (reg, mode, strict_p))
+    return false;
+
+  /* (reg:X) */
+  if (REG_P (offset)
+      && GET_MODE (offset) == Xmode)
+    {
+      type = ADDRESS_REG_REG;
+      shift = 0;
+      offset = offset;
+    }
+  /* (zero_extend:DI (reg:SI)) */
+  else if (GET_CODE (offset) == ZERO_EXTEND
+	   && GET_MODE (offset) == DImode
+	   && GET_MODE (XEXP (offset, 0)) == SImode)
+    {
+      type = ADDRESS_REG_UREG;
+      shift = 0;
+      offset = XEXP (offset, 0);
+    }
+  /* (ashift:X (reg:X) (const_int shift)) */
+  else if (GET_CODE (offset) == ASHIFT
+	   && GET_MODE (offset) == Xmode
+	   && REG_P (XEXP (offset, 0))
+	   && GET_MODE (XEXP (offset, 0)) == Xmode
+	   && CONST_INT_P (XEXP (offset, 1))
+	   && IN_RANGE (INTVAL (XEXP (offset, 1)), 0, 3))
+    {
+      type = ADDRESS_REG_REG;
+      shift = INTVAL (XEXP (offset, 1));
+      offset = XEXP (offset, 0);
+    }
+  /* (ashift:DI (zero_extend:DI (reg:SI)) (const_int shift)) */
+  else if (GET_CODE (offset) == ASHIFT
+	   && GET_MODE (offset) == DImode
+	   && GET_CODE (XEXP (offset, 0)) == ZERO_EXTEND
+	   && GET_MODE (XEXP (offset, 0)) == DImode
+	   && GET_MODE (XEXP (XEXP (offset, 0), 0)) == SImode
+	   && CONST_INT_P (XEXP (offset, 1))
+	   && IN_RANGE(INTVAL (XEXP (offset, 1)), 0, 3))
+    {
+      type = ADDRESS_REG_UREG;
+      shift = INTVAL (XEXP (offset, 1));
+      offset = XEXP (XEXP (offset, 0), 0);
+    }
+  else
+    return false;
+
+  if (!strict_p && GET_CODE (offset) == SUBREG)
+    offset = SUBREG_REG (offset);
+
+  if (!REG_P (offset)
+      || !riscv_regno_mode_ok_for_base_p (REGNO (offset), mode, strict_p))
+    return false;
+
+  if (info)
+    {
+      info->reg = reg;
+      info->type = type;
+      info->offset = offset;
+      info->shift = shift;
+    }
+  return true;
+}
+
+/* Return TRUE if X is a MEM with a legitimate indexed address.  */
+
+bool
+th_memidx_legitimate_index_p (rtx x)
+{
+  if (!MEM_P (x))
+    return false;
+
+  /* Get the mode from the MEM and unpack it.  */
+  machine_mode mode = GET_MODE (x);
+  x = XEXP (x, 0);
+
+  return th_memidx_classify_address_index (NULL, x, mode, reload_completed);
+}
+
+/* Return TRUE if X is a MEM with a legitimate indexed address
+   and the offset register is zero-extended (if UINDEX is true)
+   or sign-extended (otherwise).  */
+
+bool
+th_memidx_legitimate_index_p (rtx x, bool uindex)
+{
+  if (!MEM_P (x))
+    return false;
+
+  /* Get the mode from the MEM and unpack it.  */
+  machine_mode mode = GET_MODE (x);
+  x = XEXP (x, 0);
+
+  struct riscv_address_info info;
+  if (!th_memidx_classify_address_index (&info, x, mode, reload_completed))
+    return false;
+
+  if (uindex)
+    return info.type == ADDRESS_REG_UREG;
+  else
+    return info.type == ADDRESS_REG_REG;
+}
+
+/* Provide a buffer for a th.lrX/th.lurX/th.srX/th.surX instruction
+   for the given MODE. If LOAD is true, a load instruction will be
+   provided (otherwise, a store instruction). If X is not suitable
+   return NULL.  */
+
+static const char *
+th_memidx_output_index (rtx dest, rtx src, machine_mode mode, bool load)
+{
+  struct riscv_address_info info;
+  char format[24];
+  rtx output_operands[2];
+  rtx x = th_get_move_mem_addr (dest, src, load);
+
+  /* Validate x.  */
+  if (!th_memidx_classify_address_index (&info, x, mode, reload_completed))
+    return NULL;
+
+  int index = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
+  bool uindex = info.type == ADDRESS_REG_UREG;
+
+  const char *const insn[][4] = {
+    {
+      "th.s%srb\t%%z1,%%0",
+      "th.s%srh\t%%z1,%%0",
+      "th.s%srw\t%%z1,%%0",
+      "th.s%srd\t%%z1,%%0"
+    },
+    {
+      "th.l%srbu\t%%0,%%1",
+      "th.l%srhu\t%%0,%%1",
+      "th.l%srw\t%%0,%%1",
+      "th.l%srd\t%%0,%%1"
+    }
+  };
+
+  snprintf (format, sizeof (format), insn[load][index], uindex ? "u" : "");
+  output_operands[0] = dest;
+  output_operands[1] = src;
+  output_asm_insn (format, output_operands);
+  return "";
+}
+
+/* Provide a buffer for a th.flX/th.fluX/th.fsX/th.fsuX instruction
+   for the given MODE. If LOAD is true, a load instruction will be
+   provided (otherwise, a store instruction). If X is not suitable
+   return NULL.  */
+
+static const char *
+th_fmemidx_output_index (rtx dest, rtx src, machine_mode mode, bool load)
+{
+  struct riscv_address_info info;
+  char format[24];
+  rtx output_operands[2];
+  rtx x = th_get_move_mem_addr (dest, src, load);
+
+  /* Validate x.  */
+  if (!th_memidx_classify_address_index (&info, x, mode, false))
+    return NULL;
+
+  int index = exact_log2 (GET_MODE_SIZE (mode).to_constant ()) - 2;
+  bool uindex = info.type == ADDRESS_REG_UREG;
+
+  const char *const insn[][2] = {
+    {
+      "th.fs%srw\t%%z1,%%0",
+      "th.fs%srd\t%%z1,%%0"
+    },
+    {
+      "th.fl%srw\t%%0,%%1",
+      "th.fl%srd\t%%0,%%1"
+    }
+  };
+
+  snprintf (format, sizeof (format), insn[load][index], uindex ? "u" : "");
+  output_operands[0] = dest;
+  output_operands[1] = src;
+  output_asm_insn (format, output_operands);
+  return "";
+}
+
+/* Return true if X is a valid address for T-Head's memory addressing modes
+   for machine mode MODE.  If it is, fill in INFO appropriately (if non-NULL).
+   If STRICT_P is true then REG_OK_STRICT is in effect.  */
+
+bool
+th_classify_address (struct riscv_address_info *info, rtx x,
+		     machine_mode mode, bool strict_p)
+{
+  switch (GET_CODE (x))
+    {
+    case PLUS:
+      if (th_memidx_classify_address_index (info, x, mode, strict_p))
+	return true;
+      break;
+
+    case POST_MODIFY:
+    case PRE_MODIFY:
+      if (th_memidx_classify_address_modify (info, x, mode, strict_p))
+	return true;
+      break;
+
+    default:
+      return false;
+  }
+
+    return false;
+}
+
+/* Provide a string containing a XTheadMemIdx instruction for the given
+   MODE from the provided SRC to the provided DEST.
+   A pointer to a NULL-terminated string containing the instruction will
+   be returned if a suitable instruction is available. Otherwise, this
+   function returns NULL.  */
+
+const char *
+th_output_move (rtx dest, rtx src)
+{
+  enum rtx_code dest_code, src_code;
+  machine_mode mode;
+  const char *insn = NULL;
+
+  dest_code = GET_CODE (dest);
+  src_code = GET_CODE (src);
+  mode = GET_MODE (dest);
+
+  if (!(mode == GET_MODE (src) || src == CONST0_RTX (mode)))
+    return NULL;
+
+  if (dest_code == REG && src_code == MEM)
+    {
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  || (GET_MODE_CLASS (mode) == MODE_FLOAT && GP_REG_P (REGNO (dest))))
+	{
+	  if ((insn = th_memidx_output_index (dest, src, mode, true)))
+	    return insn;
+	  if ((insn = th_memidx_output_modify (dest, src, mode, true)))
+	    return insn;
+	}
+      else if (GET_MODE_CLASS (mode) == MODE_FLOAT && HARDFP_REG_P (REGNO (dest)))
+	{
+	  if ((insn = th_fmemidx_output_index (dest, src, mode, true)))
+	    return insn;
+	}
+    }
+  else if (dest_code == MEM && (src_code == REG || src == CONST0_RTX (mode)))
+    {
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  || src == CONST0_RTX (mode)
+	  || (GET_MODE_CLASS (mode) == MODE_FLOAT && GP_REG_P (REGNO (src))))
+	{
+	  if ((insn = th_memidx_output_index (dest, src, mode, false)))
+	    return insn;
+	  if ((insn = th_memidx_output_modify (dest, src, mode, false)))
+	    return insn;
+	}
+      else if (GET_MODE_CLASS (mode) == MODE_FLOAT && HARDFP_REG_P (REGNO (src)))
+	{
+	  if ((insn = th_fmemidx_output_index (dest, src, mode, false)))
+	    return insn;
+	}
+    }
+  return NULL;
+}
+
+/* Define ASM_OUTPUT_OPCODE to do anything special before
+   emitting an opcode.  */
+const char *
+th_asm_output_opcode (FILE *asm_out_file, const char *p)
+{
+  /* We need to add th. prefix to all the xtheadvector
+     instructions here.*/
+  if (current_output_insn != NULL)
+    {
+      if (get_attr_type (current_output_insn) == TYPE_VSETVL)
+	{
+	  if (strstr (p, "zero"))
+	    {
+	      if (strstr (p, "zero,zero"))
+		return "th.vsetvli\tzero,zero,e%0,%m1";
+	      else
+		return "th.vsetvli\tzero,%0,e%1,%m2";
+	    }
+	  else
+	    {
+	      return "th.vsetvli\t%0,%1,e%2,%m3";
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLDE ||
+	  get_attr_type (current_output_insn) == TYPE_VSTE ||
+	  get_attr_type (current_output_insn) == TYPE_VLDFF)
+	{
+	  if (strstr (p, "e8") || strstr (p, "e16") ||
+	      strstr (p, "e32") || strstr (p, "e64"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTE
+				  ? fputs ("th.vse", asm_out_file)
+				  : fputs ("th.vle", asm_out_file);
+	      if (strstr (p, "e8"))
+		return p+4;
+	      else
+		return p+5;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLDS ||
+	  get_attr_type (current_output_insn) == TYPE_VSTS)
+	{
+	  if (strstr (p, "vle8") || strstr (p, "vse8") ||
+	      strstr (p, "vle16") || strstr (p, "vse16") ||
+	      strstr (p, "vle32") || strstr (p, "vse32") ||
+	      strstr (p, "vle64") || strstr (p, "vse64"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTS
+				  ? fputs ("th.vse", asm_out_file)
+				  : fputs ("th.vle", asm_out_file);
+	      if (strstr (p, "e8"))
+		return p+4;
+	      else
+		return p+5;
+	    }
+	  else if (strstr (p, "vlse8") || strstr (p, "vsse8") ||
+		   strstr (p, "vlse16") || strstr (p, "vsse16") ||
+		   strstr (p, "vlse32") || strstr (p, "vsse32") ||
+		   strstr (p, "vlse64") || strstr (p, "vsse64"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTS
+				  ? fputs ("th.vsse", asm_out_file)
+				  : fputs ("th.vlse", asm_out_file);
+	      if (strstr (p, "e8"))
+		return p+5;
+	      else
+		return p+6;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLDUX ||
+	  get_attr_type (current_output_insn) == TYPE_VLDOX)
+	{
+	  if (strstr (p, "ei"))
+	    {
+	      fputs ("th.vlxe", asm_out_file);
+	      if (strstr (p, "ei8"))
+		return p+7;
+	      else
+		return p+8;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VSTUX ||
+	  get_attr_type (current_output_insn) == TYPE_VSTOX)
+	{
+	  if (strstr (p, "ei"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VSTUX
+				? fputs ("th.vsuxe", asm_out_file)
+				: fputs ("th.vsxe", asm_out_file);
+	      if (strstr (p, "ei8"))
+		return p+7;
+	      else
+		return p+8;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLSEGDE ||
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTE ||
+	  get_attr_type (current_output_insn) == TYPE_VLSEGDFF)
+	{
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTE
+				? fputs ("th.vsseg", asm_out_file)
+				: fputs ("th.vlseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[5]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "e8"))
+	    return p+8;
+	  else
+	    return p+9;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLSEGDS ||
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTS)
+	{
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTS
+				? fputs ("th.vssseg", asm_out_file)
+				: fputs ("th.vlsseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[6]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "e8"))
+	    return p+9;
+	  else
+	    return p+10;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VLSEGDUX ||
+	  get_attr_type (current_output_insn) == TYPE_VLSEGDOX)
+	{
+	  fputs ("th.vlxseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[7]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "ei8"))
+	    return p+11;
+	  else
+	    return p+12;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VSSEGTUX ||
+	  get_attr_type (current_output_insn) == TYPE_VSSEGTOX)
+	{
+	  fputs ("th.vsxseg", asm_out_file);
+	  asm_fprintf (asm_out_file, "%c", p[7]);
+	  fputs ("e", asm_out_file);
+	  if (strstr (p, "ei8"))
+	    return p+11;
+	  else
+	    return p+12;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VNSHIFT)
+	{
+	  if (strstr (p, "vncvt"))
+	    {
+	      fputs ("th.vncvt.x.x.v", asm_out_file);
+	      return p+11;
+	    }
+
+	  strstr (p, "vnsrl") ? fputs ("th.vnsrl.v", asm_out_file)
+			      : fputs ("th.vnsra.v", asm_out_file);
+	  return p+7;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VNCLIP)
+	{
+	  if (strstr (p, "vnclipu"))
+	    {
+	      fputs ("th.vnclipu.v", asm_out_file);
+	      return p+9;
+	    }
+	  else
+	    {
+	      fputs ("th.vnclip.v", asm_out_file);
+	      return p+8;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VMPOP)
+	{
+	  fputs ("th.vmpopc", asm_out_file);
+	  return p+5;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VMFFS)
+	{
+	  fputs ("th.vmfirst", asm_out_file);
+	  return p+6;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFNCVTFTOI ||
+	  get_attr_type (current_output_insn) == TYPE_VFNCVTITOF)
+	{
+	  if (strstr (p, "xu"))
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VFNCVTFTOI
+			   ? fputs ("th.vfncvt.xu.f.v", asm_out_file)
+			   : fputs ("th.vfncvt.f.xu.v", asm_out_file);
+	      return p+13;
+	}
+	  else
+	    {
+	      get_attr_type (current_output_insn) == TYPE_VFNCVTFTOI
+			   ? fputs ("th.vfncvt.x.f.v", asm_out_file)
+			   : fputs ("th.vfncvt.f.x.v", asm_out_file);
+	      return p+12;
+	    }
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFNCVTFTOF)
+	{
+	  fputs ("th.vfncvt.f.f.v", asm_out_file);
+	  return p+12;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFREDU
+	  && strstr (p, "sum"))
+	{
+	  fputs ("th.vfredsum", asm_out_file);
+	  return p+9;
+	}
+
+      if (get_attr_type (current_output_insn) == TYPE_VFWREDU
+	  && strstr (p, "sum"))
+	{
+	  fputs ("th.vfwredsum", asm_out_file);
+	  return p+10;
+	}
+
+      if (p[0] == 'v')
+	fputs ("th.", asm_out_file);
+    }
+
+  return p;
+}
+
+/* Implement TARGET_PRINT_OPERAND_ADDRESS for XTheadMemIdx.  */
+
+bool
+th_print_operand_address (FILE *file, machine_mode mode, rtx x)
+{
+  struct riscv_address_info addr;
+
+  if (!th_classify_address (&addr, x, mode, reload_completed))
+    return false;
+
+  switch (addr.type)
+    {
+    case ADDRESS_REG_REG:
+    case ADDRESS_REG_UREG:
+      fprintf (file, "%s,%s,%u", reg_names[REGNO (addr.reg)],
+	       reg_names[REGNO (addr.offset)], addr.shift);
+      return true;
+
+    case ADDRESS_REG_WB:
+      fprintf (file, "(%s)," HOST_WIDE_INT_PRINT_DEC ",%u",
+	       reg_names[REGNO (addr.reg)],
+	       INTVAL (addr.offset) >> addr.shift, addr.shift);
+	return true;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  gcc_unreachable ();
+}
+
+/* Number array of registers X1, X5-X7, X10-X17, X28-X31, to be
+   operated on by instruction th.ipush/th.ipop in XTheadInt.  */
+
+int th_int_regs[] ={
+  RETURN_ADDR_REGNUM,
+  T0_REGNUM, T1_REGNUM, T2_REGNUM,
+  A0_REGNUM, A1_REGNUM, A2_REGNUM, A3_REGNUM,
+  A4_REGNUM, A5_REGNUM, A6_REGNUM, A7_REGNUM,
+  T3_REGNUM, T4_REGNUM, T5_REGNUM, T6_REGNUM,
+};
+
+/* If MASK contains registers X1, X5-X7, X10-X17, X28-X31, then
+   return the mask composed of these registers, otherwise return
+   zero.  */
+
+unsigned int
+th_int_get_mask (unsigned int mask)
+{
+  unsigned int xtheadint_mask = 0;
+
+  if (!TARGET_XTHEADINT || TARGET_64BIT)
+    return 0;
+
+  for (unsigned int i = 0; i < ARRAY_SIZE (th_int_regs); i++)
+    {
+      if (!BITSET_P (mask, th_int_regs[i]))
+	return 0;
+
+      xtheadint_mask |= (1 << th_int_regs[i]);
+    }
+
+  return xtheadint_mask; /* Usually 0xf003fce2.  */
+}
+
+/* Returns the occupied frame needed to save registers X1, X5-X7,
+   X10-X17, X28-X31.  */
+
+unsigned int
+th_int_get_save_adjustment (void)
+{
+  gcc_assert (TARGET_XTHEADINT && !TARGET_64BIT);
+  return ARRAY_SIZE (th_int_regs) * UNITS_PER_WORD;
+}
+
+rtx
+th_int_adjust_cfi_prologue (unsigned int mask)
+{
+  gcc_assert (TARGET_XTHEADINT && !TARGET_64BIT);
+
+  rtx dwarf = NULL_RTX;
+  rtx adjust_sp_rtx, reg, mem, insn;
+  int saved_size = ARRAY_SIZE (th_int_regs) * UNITS_PER_WORD;
+  int offset = saved_size;
+
+  for (int regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+    if (BITSET_P (mask, regno - GP_REG_FIRST))
+      {
+	offset -= UNITS_PER_WORD;
+	reg = gen_rtx_REG (SImode, regno);
+	mem = gen_frame_mem (SImode, plus_constant (Pmode,
+						    stack_pointer_rtx,
+						    offset));
+
+	insn = gen_rtx_SET (mem, reg);
+	dwarf = alloc_reg_note (REG_CFA_OFFSET, insn, dwarf);
+      }
+
+  /* Debug info for adjust sp.  */
+  adjust_sp_rtx =
+    gen_rtx_SET (stack_pointer_rtx,
+		 gen_rtx_PLUS (GET_MODE (stack_pointer_rtx),
+			       stack_pointer_rtx, GEN_INT (-saved_size)));
+  dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, adjust_sp_rtx, dwarf);
+
+  return dwarf;
 }

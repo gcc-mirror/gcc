@@ -1,7 +1,7 @@
 /* Routines for saving various data types to a file stream.  This deals
    with various data types like strings, integers, enums, etc.
 
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -448,6 +448,16 @@ streamer_write_vrange (struct output_block *ob, const vrange &v)
 	  streamer_write_real_value (ob, &lb);
 	  streamer_write_real_value (ob, &ub);
 	}
+      return;
+    }
+  if (is_a <prange> (v))
+    {
+      const prange &r = as_a <prange> (v);
+      streamer_write_wide_int (ob, r.lower_bound ());
+      streamer_write_wide_int (ob, r.upper_bound ());
+      irange_bitmask bm = r.get_bitmask ();
+      streamer_write_wide_int (ob, bm.value ());
+      streamer_write_wide_int (ob, bm.mask ());
       return;
     }
   gcc_unreachable ();

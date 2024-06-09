@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1991-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,6 +32,7 @@
 --  This is a NT (native) version of this package
 
 with System.OS_Interface;
+with System.OS_Locks;
 with System.Win32;
 
 package System.Task_Primitives is
@@ -39,11 +40,6 @@ package System.Task_Primitives is
 
    type Lock is limited private;
    --  Should be used for implementation of protected objects
-
-   type RTS_Lock is limited private;
-   --  Should be used inside the runtime system. The difference between Lock
-   --  and the RTS_Lock is that the later one serves only as a semaphore so
-   --  that do not check for ceiling violations.
 
    type Suspension_Object is limited private;
    --  Should be used for the implementation of Ada.Synchronous_Task_Control
@@ -67,14 +63,12 @@ package System.Task_Primitives is
 private
 
    type Lock is record
-      Mutex          : aliased System.OS_Interface.CRITICAL_SECTION;
+      Mutex          : aliased System.OS_Locks.RTS_Lock;
       Priority       : Integer;
       Owner_Priority : Integer;
    end record;
 
    type Condition_Variable is new System.Win32.HANDLE;
-
-   type RTS_Lock is new System.OS_Interface.CRITICAL_SECTION;
 
    type Suspension_Object is record
       State : Boolean;
@@ -86,7 +80,7 @@ private
       Waiting : Boolean;
       --  Flag showing if there is a task already suspended on this object
 
-      L : aliased System.OS_Interface.CRITICAL_SECTION;
+      L : aliased System.OS_Locks.RTS_Lock;
       --  Protection for ensuring mutual exclusion on the Suspension_Object
 
       CV : aliased Win32.HANDLE;
@@ -94,7 +88,7 @@ private
    end record;
 
    type Private_Data is limited record
-      Thread : aliased Win32.HANDLE;
+      Thread : aliased System.OS_Interface.Thread_Id;
       pragma Atomic (Thread);
       --  Thread field may be updated by two different threads of control.
       --  (See, Enter_Task and Create_Task in s-taprop.adb).
@@ -108,7 +102,7 @@ private
       CV : aliased Condition_Variable;
       --  Condition Variable used to implement Sleep/Wakeup
 
-      L : aliased RTS_Lock;
+      L : aliased System.OS_Locks.RTS_Lock;
       --  Protection for all components is lock L
    end record;
 

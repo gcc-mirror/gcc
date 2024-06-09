@@ -1,6 +1,7 @@
 // Verify manglinng of class literals with pointers to members.
 // Some of the mangling here is wrong.  Note the FIXME comments below.
 // { dg-do compile { target c++2a } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct A { int a[2]; };
 

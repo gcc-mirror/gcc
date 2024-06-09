@@ -1,5 +1,8 @@
 #include <stdarg.h>
 
+void abort (void);
+void exit (int);
+
 va_list global;
 
 void vat(va_list param, ...)

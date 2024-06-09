@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -51,13 +51,13 @@ CompileStructExprField::Compile (HIR::StructExprField *field, Context *ctx)
 void
 CompileStructExprField::visit (HIR::StructExprFieldIdentifierValue &field)
 {
-  translated = CompileExpr::Compile (field.get_value (), ctx);
+  translated = CompileExpr::Compile (field.get_value ().get (), ctx);
 }
 
 void
 CompileStructExprField::visit (HIR::StructExprFieldIndexValue &field)
 {
-  translated = CompileExpr::Compile (field.get_value (), ctx);
+  translated = CompileExpr::Compile (field.get_value ().get (), ctx);
 }
 
 void
@@ -69,7 +69,7 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
   Analysis::NodeMapping mappings_copy1 = field.get_mappings ();
   Analysis::NodeMapping mappings_copy2 = field.get_mappings ();
 
-  HIR::PathIdentSegment ident_seg (field.get_field_name ());
+  HIR::PathIdentSegment ident_seg (field.get_field_name ().as_string ());
   HIR::PathExprSegment seg (mappings_copy1, ident_seg, field.get_locus (),
 			    HIR::GenericArgs::create_empty ());
   HIR::PathInExpression expr (mappings_copy2, {seg}, field.get_locus (), false,

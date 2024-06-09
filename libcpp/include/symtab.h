@@ -1,5 +1,5 @@
 /* Hash tables.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -81,6 +81,12 @@ extern hashnode ht_lookup (cpp_hash_table *, const unsigned char *,
 extern hashnode ht_lookup_with_hash (cpp_hash_table *, const unsigned char *,
                                      size_t, unsigned int,
                                      enum ht_lookup_option);
+inline hashnode ht_lookup (cpp_hash_table *ht, const ht_identifier &id,
+			   ht_lookup_option opt)
+{
+  return ht_lookup_with_hash (ht, id.str, id.len, id.hash_value, opt);
+}
+
 #define HT_HASHSTEP(r, c) ((r) * 67 + ((c) - 113));
 #define HT_HASHFINISH(r, len) ((r) + (len))
 

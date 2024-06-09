@@ -1,3 +1,291 @@
+2024-05-31  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	* MAINTAINERS: Add myself to Write After Approval and DCO.
+
+2024-05-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* MAINTAINERS: Move Joern Rennecke from arc and epiphany maintainer
+	to Write After Approval.
+
+2024-05-17  Levy Hsu  <admin@levyhsu.com>
+
+	* MAINTAINERS: Add myself.
+
+2024-05-14  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Use tabs between name and email.
+
+2024-05-13  Xiao Zeng  <zengxiao@eswincomputing.com>
+
+	* MAINTAINERS: Add myself.
+
+2024-05-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* MAINTAINERS: Add myself to DCO.
+
+2024-05-06  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config-ml.in: Insert an -B option with multi-os-dir into
+	compiler commands used to build libraries.
+
+2024-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* configure.ac (have_cargo): Force to "no" in Canadian cross
+	configurations
+	* configure: Regenerate.
+
+2024-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* configure: Regenerate.
+
+2024-04-15  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* configure: Regenerate.
+	* configure.ac: Emit an error message when cargo
+	is missing.
+
+2024-04-04  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* MAINTAINERS: Update my email address.
+
+2024-04-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS: Update my email details, remove myself as arm
+	maintainer.  Add myself to DCO section.
+
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/106472
+	* Makefile.tpl (make-postboot-target-dep): New lambda.
+	Use it to add --enable-bootstrap dependencies of target modules
+	on other target modules if the latter aren't bootstrapped.
+	* Makefile.in: Regenerate.
+
+2024-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.tpl: Fix duplicated words; returns returns ->
+	returns.
+
+2024-03-08  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Fix order of names in Write After Aproval
+
+2024-03-04  demin.han  <demin.han@starfivetech.com>
+
+	* MAINTAINERS: Add myself
+
+2024-02-28  Fangrui Song  <maskray@gcc.gnu.org>
+
+	* MAINTAINERS: Add myself.
+
+2024-02-26  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* MAINTAINERS: Add myself to write after approval and DCO.
+
+2024-02-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.ac (ENABLE_GOLD): Remove loongarch*-*-* from target
+	list.
+	* configure: Regenerate.
+
+2024-02-23  Monk Chiang  <monk.chiang@sifive.com>
+
+	* MAINTAINERS: Add myself.
+
+2024-02-10  Alexander Westbrooks  <alexanderw@gcc.gnu.org>
+
+	* MAINTAINERS: Add myself to write after approval and DCO.
+
+2024-02-03  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* MAINTAINERS: Update my e-mail address.
+
+2024-02-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* MAINTAINERS: Update my e-mail address.
+
+2024-01-29  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* MAINTAINERS: Update my work email address.
+
+2024-01-25  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* MAINTAINERS: Update my work email address.
+
+2024-01-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* MAINTAINERS: Update my work email address.
+
+2024-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* MAINTAINERS: Update my email address.
+
+2024-01-23  Andrew Stubbs  <ams@baylibre.com>
+
+	* MAINTAINERS: Update
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* Makefile.def: Add a dependency to libgrust for all-gcc.
+	* Makefile.in: Regenerate the file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* Makefile.def: Add libgrust target to bootstrap.
+	* Makefile.in: Regenerate.
+
+2024-01-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* MAINTAINERS (DCO): Add myself.
+
+2024-01-09  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* SECURITY.txt: Drop "exploitable" in the hardening section.
+
+2024-01-09  Tom Tromey  <tom@tromey.com>
+
+	* Makefile.in: Rebuild.
+	* Makefile.tpl (BASE_EXPORTS): Add GUILE.
+	(GUILE): New variable.
+	* Makefile.def (flags_to_pass): Add GUILE.
+
+2024-01-08  Joseph Myers  <josmyers@redhat.com>
+
+	* MAINTAINERS: Update my email address.
+
+2023-12-30  Joseph Myers  <jsm@polyomino.org.uk>
+
+	* MAINTAINERS: Update my email address.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* Makefile.def: Add libgrust as host & target module.
+	* configure.ac: Add libgrust to host tools list. Add libgrust to
+	noconfigdirs if we're not building target libstdc++.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* MAINTAINERS: Add maintainers for libgrust.
+
+2023-12-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* Makefile.def (gettext): Disable (via missing)
+	{install-,}{pdf,html,info,dvi} and TAGS targets.  Set no_install
+	to true.  Add --disable-threads --disable-libasprintf.  Drop the
+	lib_path (as there are no shared libs).
+	* Makefile.in: Regenerate.
+
+2023-12-12  Paul Iannetta  <piannetta@kalrayinc.com>
+
+	* MAINTAINERS: Add myself to write after approval
+
+2023-12-12  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* MAINTAINERS: Update my email address
+
+2023-12-12  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* MAINTAINERS: Add myself to write after approval
+
+2023-11-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* MAINTAINERS: Add myself to write after approval and DCO
+
+2023-11-22  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* libtool.m4: Fix stray call
+
+2023-11-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Add dependency on site.exp to check-gcc-* targets
+
+2023-11-18  Petter Tomner  <tomner@bahnhof.se>
+
+	* MAINTAINERS: Update my email address.
+
+2023-11-18  Frederik Harwath  <frederik@harwath.name>
+
+	* MAINTAINERS: Change my address.
+
+2023-11-16  Michal Jires  <mjires@suse.cz>
+
+	* MAINTAINERS: Add myself.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR bootstrap/12596
+	* .gitignore: Add '/gettext*'.
+	* configure.ac (host_libs): Replace intl with gettext.
+	(hbaseargs, bbaseargs, baseargs): Split baseargs into
+	{h,b}baseargs.
+	(skip_barg): New flag.  Skips appending current flag to
+	bbaseargs.
+	<library exemptions>: Exempt --with-libintl-{type,prefix} from
+	target and build machine argument passing.
+	* configure: Regenerate.
+	* Makefile.def (host_modules): Replace intl module with gettext
+	module.
+	(configure-ld): Depend on configure-gettext.
+	* Makefile.in: Regenerate.
+
+2023-11-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	* intl/*: Remove.
+
+2023-11-09  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-11-09  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	* MAINTAINERS: Update my email address.
+
+2023-11-06  Carl Love  <cel@linux.ibm.com>
+
+	* MAINTAINERS: Update my email address.
+
+2023-11-01  Eric Gallager  <egallager@gcc.gnu.org>
+
+	* .github/CONTRIBUTING.md: Wrap lines more tightly.
+
+2023-11-01  Eric Gallager  <egallager@gcc.gnu.org>
+
+	* .github/CONTRIBUTING.md: New file.
+	* .github/PULL_REQUEST_TEMPLATE.md: New file.
+
+2023-10-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Do not add default runpaths to GCC exes
+	when we are building -static-libstdc++/-static-libgcc (the
+	default).
+	* libtool.m4: Add 'enable-darwin-at-runpath'.  Act  on the
+	enable flag to alter Darwin libraries to use @rpath names.
+
+2023-10-15  Mike Frysinger  <vapier@gentoo.org>
+
+	* Makefile.def: Add distclean-sim dependency on distclean-gnulib.
+	* Makefile.in: Regenerate.
+
+2023-10-11  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Fix name order.
+
+2023-10-10  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* MAINTAINERS: Add myself.
+
+2023-10-06  Sergei Trofimovich  <siarheit@google.com>
+
+	PR bootstrap/111663
+	* Makefile.tpl (STAGEfeedback_CONFIGURE_FLAGS): Disable -Werror.
+	* Makefile.in: Regenerate.
+
 2023-10-05  Jan Engelhardt  <jengelh@inai.de>
 
 	* SECURITY.txt: Fix up indentation.

@@ -267,10 +267,16 @@ struct ModuleGroup
                             edge[nEdges++] = *impidx;
                     }
                 }
-                // trim space to what is needed.
-                edges[i] = nEdges > 0
-                    ? (cast(int*)realloc(edge, int.sizeof * nEdges))[0 .. nEdges]
-                    : null;
+                if (nEdges > 0)
+                {
+                    // trim space to what is needed
+                    edges[i] = (cast(int*)realloc(edge, int.sizeof * nEdges))[0 .. nEdges];
+                }
+                else
+                {
+                    edges[i] = null;
+                    .free(edge);
+                }
             }
         }
 

@@ -1,5 +1,5 @@
 /* Support for plugin-supplied behaviors of known functions.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -44,6 +44,7 @@ public:
   ~known_function_manager ();
 
   void add (const char *name, std::unique_ptr<known_function> kf);
+  void add_std_ns (const char *name, std::unique_ptr<known_function> kf);
   void add (enum built_in_function name, std::unique_ptr<known_function> kf);
   void add (enum internal_fn ifn, std::unique_ptr<known_function> kf);
 
@@ -57,10 +58,14 @@ private:
   const known_function *
   get_normal_builtin (const builtin_known_function *builtin_kf) const;
   const known_function *get_by_identifier (tree identifier) const;
+  const known_function *get_by_identifier_in_std_ns (tree identifier) const;
 
   /* Map from identifier to known_function instance.
      Has ownership of the latter.  */
   hash_map<tree, known_function *> m_map_id_to_kf;
+
+  /* Likewise for C++'s std:: namespace.  */
+  hash_map<tree, known_function *> m_std_ns_map_id_to_kf;
 
   /* Array of known builtins.  */
   known_function *m_combined_fns_arr[CFN_LAST];

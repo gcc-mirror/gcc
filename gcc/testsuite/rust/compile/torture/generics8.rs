@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 struct GenericStruct<T>(T, usize);
 
 impl<T> GenericStruct<T> {

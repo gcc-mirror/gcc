@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -104,9 +104,15 @@ ASTLoweringExpr::visit (AST::IfExprConseqElse &expr)
 }
 
 void
-ASTLoweringExpr::visit (AST::IfExprConseqIf &expr)
+ASTLoweringExpr::visit (AST::IfLetExpr &expr)
 {
-  translated = ASTLoweringIfBlock::translate (&expr, &terminated);
+  translated = ASTLoweringIfLetBlock::translate (&expr);
+}
+
+void
+ASTLoweringExpr::visit (AST::IfLetExprConseqElse &expr)
+{
+  translated = ASTLoweringIfLetBlock::translate (&expr);
 }
 
 void
@@ -229,7 +235,7 @@ ASTLoweringExpr::visit (AST::IdentifierExpr &expr)
 				  UNKNOWN_LOCAL_DEFID);
   Analysis::NodeMapping mapping2 (mapping1);
 
-  HIR::PathIdentSegment ident_seg (expr.get_ident ());
+  HIR::PathIdentSegment ident_seg (expr.get_ident ().as_string ());
   HIR::PathExprSegment seg (mapping1, ident_seg, expr.get_locus (),
 			    HIR::GenericArgs::create_empty ());
   translated = new HIR::PathInExpression (mapping2, {seg}, expr.get_locus (),
@@ -455,7 +461,7 @@ ASTLoweringExpr::visit (AST::CompoundAssignmentExpr &expr)
       op = ArithmeticOrLogicalOperator::RIGHT_SHIFT;
       break;
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 
   HIR::Expr *asignee_expr
@@ -583,7 +589,8 @@ ASTLoweringExpr::visit (AST::ForLoopExpr &expr)
 void
 ASTLoweringExpr::visit (AST::BreakExpr &expr)
 {
-  HIR::Lifetime break_label = lower_lifetime (expr.get_label ());
+  HIR::Lifetime break_label
+    = lower_lifetime (expr.get_label ().get_lifetime ());
   HIR::Expr *break_expr
     = expr.has_break_expr ()
 	? ASTLoweringExpr::translate (expr.get_break_expr ().get ())
@@ -626,7 +633,7 @@ ASTLoweringExpr::visit (AST::BorrowExpr &expr)
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  HIR::BorrowExpr *borrow_expr
+  auto *borrow_expr
     = new HIR::BorrowExpr (mapping, std::unique_ptr<HIR::Expr> (borrow_lvalue),
 			   expr.get_is_mut () ? Mutability::Mut
 					      : Mutability::Imm,
@@ -634,8 +641,8 @@ ASTLoweringExpr::visit (AST::BorrowExpr &expr)
 
   if (expr.get_is_double_borrow ())
     {
-      NodeId artifical_bouble_borrow_id = mappings->get_next_node_id ();
-      Analysis::NodeMapping mapping (crate_num, artifical_bouble_borrow_id,
+      NodeId artificial_double_borrow_id = mappings->get_next_node_id ();
+      Analysis::NodeMapping mapping (crate_num, artificial_double_borrow_id,
 				     mappings->get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
 
@@ -665,6 +672,21 @@ ASTLoweringExpr::visit (AST::DereferenceExpr &expr)
     = new HIR::DereferenceExpr (mapping,
 				std::unique_ptr<HIR::Expr> (dref_lvalue),
 				expr.get_outer_attrs (), expr.get_locus ());
+}
+
+void
+ASTLoweringExpr::visit (AST::ErrorPropagationExpr &expr)
+{
+  HIR::Expr *propagating_expr
+    = ASTLoweringExpr::translate (expr.get_propagating_expr ().get ());
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+  translated = new HIR::ErrorPropagationExpr (
+    mapping, std::unique_ptr<HIR::Expr> (propagating_expr),
+    expr.get_outer_attrs (), expr.get_locus ());
 }
 
 void

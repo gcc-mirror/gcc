@@ -96,8 +96,8 @@ alias OLECHAR* BSTR;
 alias FLAGGED_WORD_BLOB* wireBSTR;
 alias BSTR* LPBSTR;
 //alias LONG SCODE; // also in winerror
-mixin DECLARE_HANDLE!("HCONTEXT");
-mixin DECLARE_HANDLE!("HMETAFILEPICT");
+alias HCONTEXT = HANDLE;
+alias HMETAFILEPICT = HANDLE;
 
 union CY {
     struct {

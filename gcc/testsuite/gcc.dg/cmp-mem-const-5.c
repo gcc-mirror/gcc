@@ -1,4 +1,4 @@
-/* { dg-do compile { target { lp64 && { ! sparc*-*-* } } } } */
+/* { dg-do compile { target { lp64 && { ! { sparc*-*-* hppa*-*-* } } } } } */
 /* Excluding sparc since there a prior optimization already reduced the
    constant, i.e., nothing left for us.  */
 /* { dg-options "-O2 -fdump-rtl-combine-details" } */

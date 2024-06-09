@@ -1,6 +1,6 @@
 // <algorithm> -*- C++ -*-
 
-// Copyright (C) 2001-2023 Free Software Foundation, Inc.
+// Copyright (C) 2001-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,7 +63,16 @@
 # include <bits/ranges_algo.h>
 #endif
 
+#define __glibcxx_want_clamp
+#define __glibcxx_want_constexpr_algorithms
+#define __glibcxx_want_freestanding_algorithm
 #define __glibcxx_want_parallel_algorithm
+#define __glibcxx_want_ranges_contains
+#define __glibcxx_want_ranges_find_last
+#define __glibcxx_want_ranges_fold
+#define __glibcxx_want_robust_nonmodifying_seq_ops
+#define __glibcxx_want_sample
+#define __glibcxx_want_shift
 #include <bits/version.h>
 
 #if __cpp_lib_parallel_algorithm // C++ >= 17 && HOSTED

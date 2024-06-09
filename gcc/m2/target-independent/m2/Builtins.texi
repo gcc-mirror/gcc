@@ -4,7 +4,14 @@ DEFINITION MODULE Builtins ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
-(* floating point intrinsic procedure functions *)
+(* Floating point intrinsic procedure functions.  *)
+
+@findex isnanf
+PROCEDURE __BUILTIN__ isnanf (x: SHORTREAL) : INTEGER ;
+@findex isnan
+PROCEDURE __BUILTIN__ isnan (x: REAL) : INTEGER ;
+@findex isnanl
+PROCEDURE __BUILTIN__ isnanl (x: LONGREAL) : INTEGER ;
 
 @findex isfinitef
 PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : INTEGER ;
@@ -113,9 +120,9 @@ PROCEDURE __BUILTIN__ nextafterf (x, y: SHORTREAL) : SHORTREAL ;
 PROCEDURE __BUILTIN__ nextafterl (x, y: LONGREAL) : LONGREAL ;
 
 @findex nexttoward
-PROCEDURE __BUILTIN__ nexttoward (x, y: REAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ nexttoward (x: REAL; y: LONGREAL) : REAL ;
 @findex nexttowardf
-PROCEDURE __BUILTIN__ nexttowardf (x, y: SHORTREAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ nexttowardf (x: SHORTREAL; y: LONGREAL) : SHORTREAL ;
 @findex nexttowardl
 PROCEDURE __BUILTIN__ nexttowardl (x, y: LONGREAL) : LONGREAL ;
 
@@ -133,7 +140,70 @@ PROCEDURE __BUILTIN__ scalbnf (x: SHORTREAL; n: INTEGER) : SHORTREAL ;
 @findex scalbnl
 PROCEDURE __BUILTIN__ scalbnl (x: LONGREAL; n: INTEGER) : LONGREAL ;
 
-(* complex arithmetic intrincic procedure functions *)
+@findex isgreater
+PROCEDURE __BUILTIN__ isgreater (x, y: REAL) : INTEGER ;
+@findex isgreaterf
+PROCEDURE __BUILTIN__ isgreaterf (x, y: SHORTREAL) : INTEGER ;
+@findex isgreaterl
+PROCEDURE __BUILTIN__ isgreaterl (x, y: LONGREAL) : INTEGER ;
+
+@findex isgreaterequal
+PROCEDURE __BUILTIN__ isgreaterequal (x, y: REAL) : INTEGER ;
+@findex isgreaterequalf
+PROCEDURE __BUILTIN__ isgreaterequalf (x, y: SHORTREAL) : INTEGER ;
+@findex isgreaterequall
+PROCEDURE __BUILTIN__ isgreaterequall (x, y: LONGREAL) : INTEGER ;
+
+@findex isless
+PROCEDURE __BUILTIN__ isless (x, y: REAL) : INTEGER ;
+@findex islessf
+PROCEDURE __BUILTIN__ islessf (x, y: SHORTREAL) : INTEGER ;
+@findex islessl
+PROCEDURE __BUILTIN__ islessl (x, y: LONGREAL) : INTEGER ;
+
+@findex islessequal
+PROCEDURE __BUILTIN__ islessequal (x, y: REAL) : INTEGER ;
+@findex islessequalf
+PROCEDURE __BUILTIN__ islessequalf (x, y: SHORTREAL) : INTEGER ;
+@findex islessequall
+PROCEDURE __BUILTIN__ islessequall (x, y: LONGREAL) : INTEGER ;
+
+@findex islessgreater
+PROCEDURE __BUILTIN__ islessgreater (x, y: REAL) : INTEGER ;
+@findex islessgreaterf
+PROCEDURE __BUILTIN__ islessgreaterf (x, y: SHORTREAL) : INTEGER ;
+@findex islessgreaterl
+PROCEDURE __BUILTIN__ islessgreaterl (x, y: LONGREAL) : INTEGER ;
+
+@findex isunordered
+PROCEDURE __BUILTIN__ isunordered (x, y: REAL) : INTEGER ;
+@findex isunorderedf
+PROCEDURE __BUILTIN__ isunorderedf (x, y: SHORTREAL) : INTEGER ;
+@findex isunorderedl
+PROCEDURE __BUILTIN__ isunorderedl (x, y: LONGREAL) : INTEGER ;
+
+@findex iseqsig
+PROCEDURE __BUILTIN__ iseqsig (x, y: REAL) : INTEGER ;
+@findex iseqsigf
+PROCEDURE __BUILTIN__ iseqsigf (x, y: SHORTREAL) : INTEGER ;
+@findex iseqsigl
+PROCEDURE __BUILTIN__ iseqsigl (x, y: LONGREAL) : INTEGER ;
+
+@findex isnormal
+PROCEDURE __BUILTIN__ isnormal (r: REAL) : INTEGER ;
+@findex isnormalf
+PROCEDURE __BUILTIN__ isnormalf (s: SHORTREAL) : INTEGER ;
+@findex isnormall
+PROCEDURE __BUILTIN__ isnormall (l: LONGREAL) : INTEGER ;
+
+@findex isinf_sign
+PROCEDURE __BUILTIN__ isinf_sign (r: REAL) : INTEGER ;
+@findex isinf_signf
+PROCEDURE __BUILTIN__ isinf_signf (s: SHORTREAL) : INTEGER ;
+@findex isinf_signl
+PROCEDURE __BUILTIN__ isinf_signl (l: LONGREAL) : INTEGER ;
+
+(* Complex arithmetic intrincic procedure functions.  *)
 
 @findex cabsf
 PROCEDURE __BUILTIN__ cabsf (z: SHORTCOMPLEX) : SHORTREAL ;

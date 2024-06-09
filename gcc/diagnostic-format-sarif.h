@@ -1,5 +1,5 @@
 /* SARIF output for diagnostics.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "json.h"
 
+class logical_location;
+
 /* Concrete subclass of json::object for SARIF property bags
    (SARIF v2.1.0 section 3.8).  */
 
@@ -41,5 +43,8 @@ class sarif_object : public json::object
 public:
   sarif_property_bag &get_or_create_properties ();
 };
+
+extern json::object *
+make_sarif_logical_location_object (const logical_location &logical_loc);
 
 #endif /* ! GCC_DIAGNOSTIC_FORMAT_SARIF_H */

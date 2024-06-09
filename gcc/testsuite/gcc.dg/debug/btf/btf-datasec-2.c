@@ -9,8 +9,12 @@
 /* { dg-final { scan-assembler-times " BTF_KIND_DATASEC '.foo_sec'\[\\r\\n\]+\[^\\r\\n\]*0xf000001\[\t \]+\[^\n\]*btt_info" 1 } } */
 /* { dg-final { scan-assembler-times " BTF_KIND_DATASEC '.bar_sec'\[\\r\\n\]+\[^\\r\\n\]*0xf000002\[\t \]+\[^\n\]*btt_info" 1 } } */
 
-/* Function entries should have offset and size of 0 at compile time.  */
-/* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bts_offset" 3 } } */
+/* Function entries should have offset with a label and size of 0 at compile time.  */
+/* { dg-final { scan-assembler-times "chacha\[\t \]+\[^\n\]*bts_offset" 1 { target { bpf-*-* } }} } */
+/* { dg-final { scan-assembler-times "bar\[\t \]+\[^\n\]*bts_offset" 1 { target { bpf-*-* } } } } */
+/* { dg-final { scan-assembler-times "foo\[\t \]+\[^\n\]*bts_offset" 1 { target { bpf-*-* } } } } */
+/* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bts_offset" 3 { target { ! bpf-*-* } } } } */
+
 /* { dg-final { scan-assembler-times "0\[\t \]+\[^\n\]*bts_size" 3 } } */
 
 extern int foo (int a) __attribute__((section(".foo_sec")));

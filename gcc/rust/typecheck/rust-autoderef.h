@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -40,26 +40,23 @@ public:
   };
 
   // ctor for all adjustments except derefs
-  Adjustment (AdjustmentType type, const TyTy::BaseType *actual,
-	      const TyTy::BaseType *expected)
-    : Adjustment (type, actual, expected, nullptr, nullptr,
-		  AdjustmentType::ERROR)
+  Adjustment (AdjustmentType type, TyTy::BaseType *actual,
+	      TyTy::BaseType *expected)
+    : Adjustment (type, actual, expected, nullptr, AdjustmentType::ERROR)
   {}
 
   static Adjustment get_op_overload_deref_adjustment (
-    AdjustmentType type, const TyTy::BaseType *actual,
-    const TyTy::BaseType *expected, TyTy::FnType *fn, HIR::ImplItem *deref_item,
-    Adjustment::AdjustmentType requires_ref_adjustment)
+    AdjustmentType type, TyTy::BaseType *actual, TyTy::BaseType *expected,
+    TyTy::FnType *fn, Adjustment::AdjustmentType requires_ref_adjustment)
   {
     rust_assert (type == DEREF || type == DEREF_MUT);
-    return Adjustment (type, actual, expected, fn, deref_item,
-		       requires_ref_adjustment);
+    return Adjustment (type, actual, expected, fn, requires_ref_adjustment);
   }
 
   AdjustmentType get_type () const { return type; }
 
-  const TyTy::BaseType *get_actual () const { return actual; }
-  const TyTy::BaseType *get_expected () const { return expected; }
+  TyTy::BaseType *get_actual () const { return actual; }
+  TyTy::BaseType *get_expected () const { return expected; }
 
   std::string as_string () const
   {
@@ -86,7 +83,7 @@ public:
       case AdjustmentType::UNSIZE:
 	return "UNSIZE";
       }
-    gcc_unreachable ();
+    rust_unreachable ();
     return "";
   }
 
@@ -107,27 +104,23 @@ public:
     return requires_ref_adjustment;
   }
 
-  HIR::ImplItem *get_deref_hir_item () const { return deref_item; }
-
 private:
-  Adjustment (AdjustmentType type, const TyTy::BaseType *actual,
-	      const TyTy::BaseType *expected, TyTy::FnType *deref_operator_fn,
-	      HIR::ImplItem *deref_item,
+  Adjustment (AdjustmentType type, TyTy::BaseType *actual,
+	      TyTy::BaseType *expected, TyTy::FnType *deref_operator_fn,
 	      Adjustment::AdjustmentType requires_ref_adjustment)
     : type (type), actual (actual), expected (expected),
-      deref_operator_fn (deref_operator_fn), deref_item (deref_item),
+      deref_operator_fn (deref_operator_fn),
       requires_ref_adjustment (requires_ref_adjustment)
   {}
 
   AdjustmentType type;
-  const TyTy::BaseType *actual;
-  const TyTy::BaseType *expected;
+  TyTy::BaseType *actual;
+  TyTy::BaseType *expected;
 
   // - only used for deref operator_overloads
   //
   // the fn that we are calling
   TyTy::FnType *deref_operator_fn;
-  HIR::ImplItem *deref_item;
   // operator overloads can requre a reference
   Adjustment::AdjustmentType requires_ref_adjustment;
 };
@@ -140,12 +133,12 @@ public:
   TyTy::BaseType *adjust_type (const std::vector<Adjustment> &adjustments);
 
   static Adjustment
-  try_deref_type (const TyTy::BaseType *ty,
+  try_deref_type (TyTy::BaseType *ty,
 		  Analysis::RustLangItem::ItemType deref_lang_item);
 
-  static Adjustment try_raw_deref_type (const TyTy::BaseType *ty);
+  static Adjustment try_raw_deref_type (TyTy::BaseType *ty);
 
-  static Adjustment try_unsize_type (const TyTy::BaseType *ty);
+  static Adjustment try_unsize_type (TyTy::BaseType *ty);
 
 private:
   const TyTy::BaseType *base;
@@ -158,15 +151,15 @@ protected:
 
   virtual ~AutoderefCycle ();
 
-  virtual bool select (const TyTy::BaseType &autoderefed) = 0;
+  virtual bool select (TyTy::BaseType &autoderefed) = 0;
 
   // optional: this is a chance to hook in to grab predicate items on the raw
   // type
   virtual void try_hook (const TyTy::BaseType &);
 
-  virtual bool cycle (const TyTy::BaseType *receiver);
+  virtual bool cycle (TyTy::BaseType *receiver);
 
-  bool try_autoderefed (const TyTy::BaseType *r);
+  bool try_autoderefed (TyTy::BaseType *r);
 
   bool autoderef_flag;
   std::vector<Adjustment> adjustments;

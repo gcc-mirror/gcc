@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2023 Free Software Foundation, Inc.
+   Copyright (C) 2001-2024 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -2218,15 +2218,36 @@ merging.",
  merge_type_attributes)
 
 /* Table of machine attributes and functions to handle them.
-   Ignored if NULL.  */
+   Ignored if empty.  */
 DEFHOOKPOD
 (attribute_table,
- "If defined, this target hook points to an array of @samp{struct\n\
-attribute_spec} (defined in @file{tree-core.h}) specifying the machine\n\
-specific attributes for this target and some of the restrictions on the\n\
-entities to which these attributes are applied and the arguments they\n\
-take.",
- const struct attribute_spec *, NULL)
+ "If defined, this target hook provides an array of\n\
+@samp{scoped_attribute_spec}s (defined in @file{attribs.h}) that specify the\n\
+machine-specific attributes for this target.  The information includes some\n\
+of the restrictions on the entities to which these attributes are applied\n\
+and the arguments that the attributes take.\n\
+\n\
+In C and C++, these attributes are associated with two syntaxes:\n\
+the traditional GNU @code{__attribute__} syntax and the standard\n\
+@samp{[[]]} syntax.  Attributes that support the GNU syntax must be\n\
+placed in the @code{gnu} namespace.  Such attributes can then also be\n\
+written @samp{[[gnu::@dots{}]]}.  Attributes that use only the standard\n\
+syntax should be placed in whichever namespace the attribute specification\n\
+requires.  For example, a target might choose to support vendor-specific\n\
+@samp{[[]]} attributes that the vendor places in their own namespace.\n\
+\n\
+Targets that only define attributes in the @code{gnu} namespace\n\
+can uase the following shorthand to define the table:\n\
+\n\
+@smallexample\n\
+TARGET_GNU_ATTRIBUTES (@var{cpu_attribute_table}, @{\n\
+  @{ \"@var{attribute1}\", @dots{} @},\n\
+  @{ \"@var{attribute2}\", @dots{} @},\n\
+  @dots{},\n\
+  @{ \"@var{attributen}\", @dots{} @},\n\
+@});\n\
+@end smallexample",
+ array_slice<const struct scoped_attribute_specs *const>,)
 
 /* Return true iff attribute NAME expects a plain identifier as its first
    argument.  */
@@ -2669,6 +2690,13 @@ DEFHOOK
 @code{(enum function_class)}@var{fcode} has a fast implementation.",
  bool, (int fcode),
  default_libc_has_fast_function)
+
+DEFHOOK
+(fortify_source_default_level,
+ "This hook determines what value _FORTIFY_SOURCE will be set to when using\n\
+the command-line option -fhardened.",
+ unsigned, (void),
+ default_fortify_source_default_level)
 
 DEFHOOK
 (libm_function_max_error,
@@ -4125,6 +4153,36 @@ returns @code{VOIDmode}.",
  machine_mode, (machine_mode m1, machine_mode m2),
  default_cc_modes_compatible)
 
+DEFHOOK
+(use_late_prologue_epilogue,
+ "Return true if the current function's prologue and epilogue should\n\
+be emitted late in the pass pipeline, instead of at the usual point.\n\
+\n\
+Normally, the prologue and epilogue sequences are introduced soon after\n\
+register allocation is complete.  The advantage of this approach is that\n\
+it allows the prologue and epilogue instructions to be optimized and\n\
+scheduled with other code in the function.  However, some targets\n\
+require the prologue and epilogue to be the first and last sequences\n\
+executed by the function, with no variation allowed.  This hook should\n\
+return true on such targets.\n\
+\n\
+The default implementation returns false, which is correct for most\n\
+targets.  The hook should only return true if there is a specific\n\
+target limitation that cannot be described in RTL.  For example,\n\
+the hook might return true if the prologue and epilogue need to switch\n\
+between instruction sets.",
+ bool, (),
+ hook_bool_void_false)
+
+DEFHOOK
+(emit_epilogue_for_sibcall,
+ "If defined, this hook emits an epilogue sequence for sibling (tail)\n\
+call instruction @var{call}.  Another way of providing epilogues\n\
+for sibling calls is to define the @code{sibcall_epilogue} instruction\n\
+pattern; the main advantage of this hook over the pattern is that it\n\
+has access to the call instruction.",
+ void, (rtx_call_insn *call), NULL)
+
 /* Do machine-dependent code transformations.  Called just before
      delayed-branch scheduling.  */
 DEFHOOK
@@ -4284,7 +4342,8 @@ DEFHOOK
 (md_asm_adjust,
  "This target hook may add @dfn{clobbers} to @var{clobbers} and\n\
 @var{clobbered_regs} for any hard regs the port wishes to automatically\n\
-clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected\n\
+clobber for an asm.  It can also add hard registers that are used by the\n\
+asm to @var{uses}.  The @var{outputs} and @var{inputs} may be inspected\n\
 to avoid clobbering a register that is already used by the asm.  @var{loc}\n\
 is the source location of the asm.\n\
 \n\
@@ -4295,7 +4354,7 @@ changes to @var{inputs} must be accompanied by the corresponding changes\n\
 to @var{input_modes}.",
  rtx_insn *,
  (vec<rtx>& outputs, vec<rtx>& inputs, vec<machine_mode>& input_modes,
-  vec<const char *>& constraints, vec<rtx>& clobbers,
+  vec<const char *>& constraints, vec<rtx>& usess, vec<rtx>& clobbers,
   HARD_REG_SET& clobbered_regs, location_t loc),
  NULL)
 
@@ -4397,6 +4456,14 @@ DEFHOOK
 otherwise return false.  The default implementation always returns true.",
  bool, (void),
  hook_bool_void_true)
+
+DEFHOOK
+(have_strub_support_for,
+ "Returns true if the target supports stack scrubbing for the given function\n\
+or type, otherwise return false.  The default implementation always returns\n\
+true.",
+ bool, (tree),
+ hook_bool_tree_true)
 
 DEFHOOK
 (have_speculation_safe_value,
@@ -4762,31 +4829,75 @@ not generate any instructions in this case.",
  default_setup_incoming_varargs)
 
 DEFHOOK
+(start_call_args,
+ "This target hook is invoked while generating RTL for a function call,\n\
+after the argument values have been computed, and after stack arguments\n\
+have been initialized, but before register arguments have been moved into\n\
+their ABI-defined hard register locations.  It precedes calls to the related\n\
+hooks @code{TARGET_CALL_ARGS} and @code{TARGET_END_CALL_ARGS}.\n\
+The significance of this position in the call expansion is that:\n\
+\n\
+@itemize @bullet\n\
+@item\n\
+No argument registers are live.\n\
+@item\n\
+Although a call sequence can in general involve subcalls (such as using\n\
+@code{memcpy} to copy large arguments), no such subcall will occur between\n\
+the call to this hook and the generation of the main call instruction.\n\
+@end itemize\n\
+\n\
+The single argument @var{complete_args} is the state of the target\n\
+function's cumulative argument information after the final call to\n\
+@code{TARGET_FUNCTION_ARG}.\n\
+\n\
+The hook can be used for things like switching processor mode, in cases\n\
+where different calls need different processor modes.  Most ports do not\n\
+need to implement anything for this hook.",
+ void, (cumulative_args_t complete_args),
+ hook_void_CUMULATIVE_ARGS)
+
+DEFHOOK
 (call_args,
  "While generating RTL for a function call, this target hook is invoked once\n\
 for each argument passed to the function, either a register returned by\n\
 @code{TARGET_FUNCTION_ARG} or a memory location.  It is called just\n\
-before the point where argument registers are stored.  The type of the\n\
-function to be called is also passed as the second argument; it is\n\
-@code{NULL_TREE} for libcalls.  The @code{TARGET_END_CALL_ARGS} hook is\n\
-invoked just after the code to copy the return reg has been emitted.\n\
-This functionality can be used to perform special setup of call argument\n\
-registers if a target needs it.\n\
+before the point where argument registers are stored.\n\
+\n\
+@var{complete_args} is the state of the target function's cumulative\n\
+argument information after the final call to @code{TARGET_FUNCTION_ARG}.\n\
+@var{loc} is the location of the argument.  @var{type} is the type of\n\
+the function being called, or @code{NULL_TREE} for libcalls.\n\
+\n\
 For functions without arguments, the hook is called once with @code{pc_rtx}\n\
 passed instead of an argument register.\n\
-Most ports do not need to implement anything for this hook.",
- void, (rtx, tree),
- hook_void_rtx_tree)
+\n\
+This functionality can be used to perform special setup of call argument\n\
+registers, if a target needs it.  Most ports do not need to implement\n\
+anything for this hook.",
+ void, (cumulative_args_t complete_args, rtx loc, tree type),
+ hook_void_CUMULATIVE_ARGS_rtx_tree)
 
 DEFHOOK
 (end_call_args,
  "This target hook is invoked while generating RTL for a function call,\n\
 just after the point where the return reg is copied into a pseudo.  It\n\
 signals that all the call argument and return registers for the just\n\
-emitted call are now no longer in use.\n\
+emitted call are now no longer in use.  @var{complete_args} is the\n\
+state of the target function's cumulative argument information after\n\
+the final call to @code{TARGET_FUNCTION_ARG}.\n\
+\n\
 Most ports do not need to implement anything for this hook.",
- void, (void),
- hook_void_void)
+ void, (cumulative_args_t complete_args),
+ hook_void_CUMULATIVE_ARGS)
+
+DEFHOOK
+(call_offset_return_label,
+ "While generating call-site debug info for a CALL insn, or a SEQUENCE\n\
+insn starting with a CALL, this target hook is invoked to compute the\n\
+offset to be added to the debug label emitted after the call to obtain\n\
+the return address that should be recorded as the return PC.",
+ int, (rtx_insn *call_insn),
+ hook_int_rtx_insn_0)
 
 DEFHOOK
 (push_argument,
@@ -6255,8 +6366,8 @@ DEFHOOK
 (bitint_type_info,
  "This target hook returns true if @code{_BitInt(@var{N})} is supported and\n\
 provides details on it.  @code{_BitInt(@var{N})} is to be represented as\n\
-series of @code{info->limb_mode}\n\
-@code{CEIL (@var{N}, GET_MODE_PRECISION (info->limb_mode))} limbs,\n\
+series of @code{info->abi_limb_mode}\n\
+@code{CEIL (@var{N}, GET_MODE_PRECISION (info->abi_limb_mode))} limbs,\n\
 ordered from least significant to most significant if\n\
 @code{!info->big_endian}, otherwise from most significant to least\n\
 significant.  If @code{info->extended} is false, the bits above or equal to\n\
@@ -6396,7 +6507,7 @@ is in effect.  The default is to return false to use @code{__cxa_atexit}.",
  hook_bool_void_false)
 
 /* Returns true if target may use atexit in the same manner as
-   __cxa_atexit  to register static destructors.  */
+   __cxa_atexit to register static destructors.  */
 DEFHOOK
 (use_atexit_for_cxa_atexit,
  "This hook returns true if the target @code{atexit} function can be used\n\
@@ -6406,6 +6517,17 @@ shared libraries are run in the correct order when the libraries are\n\
 unloaded. The default is to return false.",
  bool, (void),
  hook_bool_void_false)
+
+/* Returns modified FUNCTION_TYPE for cdtor callabi.  */
+DEFHOOK
+(adjust_cdtor_callabi_fntype,
+ "This hook returns a possibly modified @code{FUNCTION_TYPE} for arguments\n\
+to @code{__cxa_atexit}, @code{__cxa_thread_atexit} or @code{__cxa_throw}\n\
+function pointers.  ABIs like mingw32 require special attributes to be added\n\
+to function types pointed to by arguments of these functions.\n\
+The default is to return the passed argument unmodified.",
+ tree, (tree fntype),
+ default_cxx_adjust_cdtor_callabi_fntype)
 
 DEFHOOK
 (adjust_class_at_definition,
@@ -6532,6 +6654,23 @@ the function declaration to hold a pointer to a target-specific\n\
 @code{struct cl_target_option} structure.",
  bool, (tree fndecl, tree name, tree args, int flags),
  default_target_option_valid_attribute_p)
+
+/* Function to validate the attribute((target_version(...))) strings.  If
+   the option is validated, the hook should also fill in
+   DECL_FUNCTION_SPECIFIC_TARGET in the function decl node.  */
+DEFHOOK
+(valid_version_attribute_p,
+ "This hook is called to parse @code{attribute(target_version(\"...\"))},\n\
+which allows setting target-specific options on individual function versions.\n\
+These function-specific options may differ\n\
+from the options specified on the command line.  The hook should return\n\
+@code{true} if the options are valid.\n\
+\n\
+The hook should set the @code{DECL_FUNCTION_SPECIFIC_TARGET} field in\n\
+the function declaration to hold a pointer to a target-specific\n\
+@code{struct cl_target_option} structure.",
+ bool, (tree fndecl, tree name, tree args, int flags),
+ default_target_option_valid_version_attribute_p)
 
 /* Function to save any extra target state in the target options structure.  */
 DEFHOOK
@@ -7020,51 +7159,118 @@ DEFHOOK
  "Generate one or more insns to set @var{entity} to @var{mode}.\n\
 @var{hard_reg_live} is the set of hard registers live at the point where\n\
 the insn(s) are to be inserted. @var{prev_moxde} indicates the mode\n\
-to switch from. Sets of a lower numbered entity will be emitted before\n\
+to switch from, or is the number of modes if the previous mode is not\n\
+known.  Sets of a lower numbered entity will be emitted before\n\
 sets of a higher numbered entity to a mode of the same or lower priority.",
  void, (int entity, int mode, int prev_mode, HARD_REG_SET regs_live), NULL)
 
 DEFHOOK
 (needed,
  "@var{entity} is an integer specifying a mode-switched entity.\n\
-If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro\n\
-to return an integer value not larger than the corresponding element\n\
-in @code{NUM_MODES_FOR_MODE_SWITCHING}, to denote the mode that @var{entity}\n\
-must be switched into prior to the execution of @var{insn}.",
- int, (int entity, rtx_insn *insn), NULL)
+If @code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this hook\n\
+to return the mode that @var{entity} must be switched into prior to the\n\
+execution of @var{insn}, or the number of modes if @var{insn} has no\n\
+such requirement.  @var{regs_live} contains the set of hard registers\n\
+that are live before @var{insn}.",
+ int, (int entity, rtx_insn *insn, HARD_REG_SET regs_live), NULL)
 
 DEFHOOK
 (after,
  "@var{entity} is an integer specifying a mode-switched entity.\n\
-If this macro is defined, it is evaluated for every @var{insn} during mode\n\
-switching.  It determines the mode that an insn results\n\
-in (if different from the incoming mode).",
- int, (int entity, int mode, rtx_insn *insn), NULL)
+If this hook is defined, it is evaluated for every @var{insn} during mode\n\
+switching.  It returns the mode that @var{entity} is in after @var{insn}\n\
+has been executed.  @var{mode} is the mode that @var{entity} was in\n\
+before @var{insn} was executed, taking account of @var{TARGET_MODE_NEEDED}.\n\
+@var{regs_live} is the set of hard registers that are live after @var{insn}\n\
+has been executed.\n\
+\n\
+@var{mode} is equal to the number of modes defined for @var{entity}\n\
+if the mode before @var{insn} is unknown.  The hook should likewise return\n\
+the number of modes if it does not know what mode @var{entity} has after\n\
+@var{insn}.\n\
+\n\
+Not defining the hook is equivalent to returning @var{mode}.",
+ int, (int entity, int mode, rtx_insn *insn, HARD_REG_SET regs_live), NULL)
+
+DEFHOOK
+(confluence,
+ "By default, the mode-switching pass assumes that a given entity's modes\n\
+are mutually exclusive.  This means that the pass can only tell\n\
+@code{TARGET_MODE_EMIT} about an entity's previous mode if all\n\
+incoming paths of execution leave the entity in the same state.\n\
+\n\
+However, some entities might have overlapping, non-exclusive modes,\n\
+so that it is sometimes possible to represent ``mode @var{mode1} or mode\n\
+@var{mode2}'' with something more specific than ``mode not known''.\n\
+If this is true for at least one entity, you should define this hook\n\
+and make it return a mode that includes @var{mode1} and @var{mode2}\n\
+as possibilities.  (The mode can include other possibilities too.)\n\
+The hook should return the number of modes if no suitable mode exists\n\
+for the given arguments.",
+ int, (int entity, int mode1, int mode2), NULL)
+
+DEFHOOK
+(backprop,
+ "If defined, the mode-switching pass uses this hook to back-propagate mode\n\
+requirements through blocks that have no mode requirements of their own.\n\
+Specifically, @var{mode1} is the mode that @var{entity} has on exit\n\
+from a block B1 (say) and @var{mode2} is the mode that the next block\n\
+requires @var{entity} to have.  B1 does not have any mode requirements\n\
+of its own.\n\
+\n\
+The hook should return the mode that it prefers or requires @var{entity}\n\
+to have in B1, or the number of modes if there is no such requirement.\n\
+If the hook returns a required mode for more than one of B1's outgoing\n\
+edges, those modes are combined as for @code{TARGET_MODE_CONFLUENCE}.\n\
+\n\
+For example, suppose there is a ``one-shot'' entity that,\n\
+for a given execution of a function, either stays off or makes exactly\n\
+one transition from off to on.  It is safe to make the transition at any\n\
+time, but it is better not to do so unnecessarily.  This hook allows the\n\
+function to manage such an entity without having to track its state at\n\
+runtime.  Specifically. the entity would have two modes, 0 for off and\n\
+1 for on, with 2 representing ``don't know''.  The system is forbidden from\n\
+transitioning from 2 to 1, since 2 represents the possibility that the\n\
+entity is already on (and the aim is to avoid having to emit code to\n\
+check for that case).  This hook would therefore return 1 when @var{mode1}\n\
+is 2 and @var{mode2} is 1, which would force the entity to be on in the\n\
+source block.  Applying this inductively would remove all transitions\n\
+in which the previous state is unknown.",
+ int, (int entity, int mode1, int mode2), NULL)
 
 DEFHOOK
 (entry,
- "If this macro is defined, it is evaluated for every @var{entity} that\n\
-needs mode switching.  It should evaluate to an integer, which is a mode\n\
-that @var{entity} is assumed to be switched to at function entry.\n\
+ "If this hook is defined, it is evaluated for every @var{entity} that\n\
+needs mode switching.  It should return the mode that @var{entity} is\n\
+guaranteed to be in on entry to the function, or the number of modes\n\
+if there is no such guarantee.\n\
 If @code{TARGET_MODE_ENTRY} is defined then @code{TARGET_MODE_EXIT}\n\
 must be defined.",
  int, (int entity), NULL)
 
 DEFHOOK
 (exit,
- "If this macro is defined, it is evaluated for every @var{entity} that\n\
-needs mode switching.  It should evaluate to an integer, which is a mode\n\
-that @var{entity} is assumed to be switched to at function exit.\n\
+ "If this hook is defined, it is evaluated for every @var{entity} that\n\
+needs mode switching.  It should return the mode that @var{entity} must\n\
+be in on return from the function, or the number of modes if there is no\n\
+such requirement.\n\
 If @code{TARGET_MODE_EXIT} is defined then @code{TARGET_MODE_ENTRY}\n\
 must be defined.",
  int, (int entity), NULL)
 
 DEFHOOK
+(eh_handler,
+ "If this hook is defined, it should return the mode that @var{entity} is\n\
+guaranteed to be in on entry to an exception handler, or the number of modes\n\
+if there is no such guarantee.",
+ int, (int entity), NULL)
+
+DEFHOOK
 (priority,
- "This macro specifies the order in which modes for @var{entity}\n\
+ "This hook specifies the order in which modes for @var{entity}\n\
 are processed. 0 is the highest priority,\n\
 @code{NUM_MODES_FOR_MODE_SWITCHING[@var{entity}] - 1} the lowest.\n\
-The value of the macro should be an integer designating a mode\n\
+The hook returns an integer designating a mode\n\
 for @var{entity}.  For any fixed @var{entity}, @code{mode_priority}\n\
 (@var{entity}, @var{n}) shall be a bijection in 0 @dots{}\n\
 @code{num_modes_for_mode_switching[@var{entity}] - 1}.",
@@ -7176,24 +7382,20 @@ DEFHOOK
  void, (void),
  NULL)
 
-DEFHOOK
-(gcov_type_size,
- "Returns the gcov type size in bits.  This type is used for example for\n\
-counters incremented by profiling and code-coverage events.  The default\n\
-value is 64, if the type size of long long is greater than 32, otherwise the\n\
-default value is 32.  A 64-bit type is recommended to avoid overflows of the\n\
-counters.  If the @option{-fprofile-update=atomic} is used, then the\n\
-counters are incremented using atomic operations.  Targets not supporting\n\
-64-bit atomic operations may override the default value and request a 32-bit\n\
-type.",
- HOST_WIDE_INT, (void), default_gcov_type_size)
-
 /* This value represents whether the shadow call stack is implemented on
    the target platform.  */
 DEFHOOKPOD
 (have_shadow_call_stack,
  "This value is true if the target platform supports\n\
 @option{-fsanitize=shadow-call-stack}.  The default value is false.",
+ bool, false)
+
+/* This value represents whether libatomic is available on
+   the target platform.  */
+DEFHOOKPOD
+(have_libatomic,
+ "This value is true if the target platform supports\n\
+libatomic.  The default value is false.",
  bool, false)
 
 /* Close the 'struct gcc_target' definition.  */

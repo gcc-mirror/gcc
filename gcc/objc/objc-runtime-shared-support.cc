@@ -1,5 +1,5 @@
 /* Support routines shared by all runtimes.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Iain Sandoe (partially split from objc-act.cc)
 
 This file is part of GCC.
@@ -684,6 +684,7 @@ generate_strings (void)
       decl = TREE_PURPOSE (chain);
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
+      DECL_USER_ALIGN (decl) = 1;
       finish_var_decl (decl, string_expr);
     }
 
@@ -693,6 +694,7 @@ generate_strings (void)
       decl = TREE_PURPOSE (chain);
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
+      DECL_USER_ALIGN (decl) = 1;
       finish_var_decl (decl, string_expr);
     }
 
@@ -702,6 +704,7 @@ generate_strings (void)
       decl = TREE_PURPOSE (chain);
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
+      DECL_USER_ALIGN (decl) = 1;
       finish_var_decl (decl, string_expr);
     }
 
@@ -711,6 +714,7 @@ generate_strings (void)
       decl = TREE_PURPOSE (chain);
       string_expr = my_build_string (IDENTIFIER_LENGTH (string) + 1,
 				     IDENTIFIER_POINTER (string));
+      DECL_USER_ALIGN (decl) = 1;
       finish_var_decl (decl, string_expr);
     }
 }

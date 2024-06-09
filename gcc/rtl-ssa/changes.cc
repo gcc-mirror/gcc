@@ -1,5 +1,5 @@
 // RTL SSA routines for changing instructions                       -*- C++ -*-
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -34,6 +34,7 @@
 #include "emit-rtl.h"
 #include "cfghooks.h"
 #include "cfgrtl.h"
+#include "sreal.h"
 
 using namespace rtl_ssa;
 
@@ -171,18 +172,33 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 {
   unsigned int old_cost = 0;
   unsigned int new_cost = 0;
+  sreal weighted_old_cost = 0;
+  sreal weighted_new_cost = 0;
+  auto entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   for (insn_change *change : changes)
     {
       old_cost += change->old_cost ();
+      basic_block cfg_bb = change->bb ()->cfg_bb ();
+      bool for_speed = optimize_bb_for_speed_p (cfg_bb);
+      if (for_speed)
+	weighted_old_cost += (cfg_bb->count.to_sreal_scale (entry_count)
+			      * change->old_cost ());
       if (!change->is_deletion ())
 	{
-	  basic_block cfg_bb = change->bb ()->cfg_bb ();
-	  change->new_cost = insn_cost (change->rtl (),
-					optimize_bb_for_speed_p (cfg_bb));
+	  change->new_cost = insn_cost (change->rtl (), for_speed);
 	  new_cost += change->new_cost;
+	  if (for_speed)
+	    weighted_new_cost += (cfg_bb->count.to_sreal_scale (entry_count)
+				  * change->new_cost);
 	}
     }
-  bool ok_p = (strict_p ? new_cost < old_cost : new_cost <= old_cost);
+  bool ok_p;
+  if (weighted_new_cost != weighted_old_cost)
+    ok_p = weighted_new_cost < weighted_old_cost;
+  else if (strict_p)
+    ok_p = new_cost < old_cost;
+  else
+    ok_p = new_cost <= old_cost;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "original cost");
@@ -192,6 +208,8 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 	  fprintf (dump_file, " %c %d", sep, change->old_cost ());
 	  sep = '+';
 	}
+      if (weighted_old_cost != 0)
+	fprintf (dump_file, " (weighted: %f)", weighted_old_cost.to_double ());
       fprintf (dump_file, ", replacement cost");
       sep = '=';
       for (const insn_change *change : changes)
@@ -200,6 +218,8 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 	    fprintf (dump_file, " %c %d", sep, change->new_cost);
 	    sep = '+';
 	  }
+      if (weighted_new_cost != 0)
+	fprintf (dump_file, " (weighted: %f)", weighted_new_cost.to_double ());
       fprintf (dump_file, "; %s\n",
 	       ok_p ? "keeping replacement" : "rejecting replacement");
     }
@@ -207,6 +227,35 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
     return false;
 
   return true;
+}
+
+// SET has been deleted.  Clean up all remaining uses.  Such uses are
+// either dead phis or now-redundant live-out uses.
+void
+function_info::process_uses_of_deleted_def (set_info *set)
+{
+  if (!set->has_any_uses ())
+    return;
+
+  auto *use = *set->all_uses ().begin ();
+  do
+    {
+      auto *next_use = use->next_use ();
+      if (use->is_in_phi ())
+	{
+	  // This call will not recurse.
+	  process_uses_of_deleted_def (use->phi ());
+	  delete_phi (use->phi ());
+	}
+      else
+	{
+	  gcc_assert (use->is_live_out_use ());
+	  remove_use (use);
+	}
+      use = next_use;
+    }
+  while (use);
+  gcc_assert (!set->has_any_uses ());
 }
 
 // Update the REG_NOTES of INSN, whose pattern has just been changed.
@@ -345,14 +394,20 @@ move_insn (insn_change &change, insn_info *after)
   // At the moment we don't support moving instructions between EBBs,
   // but this would be worth adding if it's useful.
   insn_info *insn = change.insn ();
-  gcc_assert (after->ebb () == insn->ebb ());
+
   bb_info *bb = after->bb ();
   basic_block cfg_bb = bb->cfg_bb ();
 
-  if (insn->bb () != bb)
-    // Force DF to mark the old block as dirty.
-    df_insn_delete (rtl);
-  ::remove_insn (rtl);
+  if (!insn->is_temporary ())
+    {
+      gcc_assert (after->ebb () == insn->ebb ());
+
+      if (insn->bb () != bb)
+	// Force DF to mark the old block as dirty.
+	df_insn_delete (rtl);
+      ::remove_insn (rtl);
+    }
+
   ::add_insn_after (rtl, after_rtl, cfg_bb);
 }
 
@@ -370,8 +425,13 @@ update_insn_in_place (insn_change &change)
 // Finalize the new list of definitions and uses in CHANGE, removing
 // any uses and definitions that are no longer needed, and converting
 // pending clobbers into actual definitions.
+//
+// POS gives the final position of INSN, which hasn't yet been moved into
+// place.  Keep track of any newly-created set_infos being added with this
+// change by adding them to NEW_SETS.
 void
-function_info::finalize_new_accesses (insn_change &change)
+function_info::finalize_new_accesses (insn_change &change, insn_info *pos,
+				      hash_set<def_info *> &new_sets)
 {
   insn_info *insn = change.insn ();
 
@@ -385,12 +445,39 @@ function_info::finalize_new_accesses (insn_change &change)
       {
 	def_info *def = find_access (change.new_defs, ref.regno);
 	gcc_assert (def);
+
+	if (def->m_is_temp && is_a<set_info *> (def) && def->last_def ())
+	  {
+	    // For temporary sets being added with this change, we keep track of
+	    // the corresponding permanent def using the last_def link.
+	    //
+	    // So if we have one of these, follow it to get the permanent def.
+	    def = def->last_def ();
+	    gcc_assert (!def->m_is_temp && !def->m_has_been_superceded);
+	  }
+
 	if (def->m_is_temp)
 	  {
-	    // At present, the only temporary instruction definitions we
-	    // create are clobbers, such as those added during recog.
-	    gcc_assert (is_a<clobber_info *> (def));
-	    def = allocate<clobber_info> (change.insn (), ref.regno);
+	    if (is_a<clobber_info *> (def))
+	      def = allocate<clobber_info> (change.insn (), ref.regno);
+	    else if (is_a<set_info *> (def))
+	      {
+		// Install the permanent set in the last_def link of the
+		// temporary def.  This allows us to find the permanent def
+		// later in case we see a second write to the same resource.
+		def_info *perm_def = allocate<set_info> (change.insn (),
+							 def->resource ());
+
+		// Keep track of the new set so we remember to add it to the
+		// def chain later.
+		if (new_sets.add (perm_def))
+		  gcc_unreachable (); // We shouldn't see duplicates here.
+
+		def->set_last_def (perm_def);
+		def = perm_def;
+	      }
+	    else
+	      gcc_unreachable ();
 	  }
 	else if (!def->m_has_been_superceded)
 	  {
@@ -426,8 +513,18 @@ function_info::finalize_new_accesses (insn_change &change)
   // Also keep any explicitly-recorded call clobbers, which are deliberately
   // excluded from the vec_rtx_properties.  Calls shouldn't move, so we can
   // keep the definitions in their current position.
+  //
+  // If the change describes a set of memory, but the pattern doesn't
+  // reference memory, keep the set anyway.  This can happen if the
+  // old pattern was a parallel that contained a memory clobber, and if
+  // the new pattern was recognized without that clobber.  Keeping the
+  // set avoids a linear-complexity update to the set's users.
+  //
+  // ??? We could queue an update so that these bogus clobbers are
+  // removed later.
   for (def_info *def : change.new_defs)
-    if (def->m_has_been_superceded && def->is_call_clobber ())
+    if (def->m_has_been_superceded
+	&& (def->is_call_clobber () || def->is_mem ()))
       {
 	def->m_has_been_superceded = false;
 	def->set_insn (insn);
@@ -462,13 +559,34 @@ function_info::finalize_new_accesses (insn_change &change)
   // Add (possibly temporary) uses to m_temp_uses for each resource.
   // If there are multiple references to the same resource, aggregate
   // information in the modes and flags.
+  use_info *mem_use = nullptr;
   for (rtx_obj_reference ref : properties.refs ())
     if (ref.is_read ())
       {
 	unsigned int regno = ref.regno;
 	machine_mode mode = ref.is_reg () ? ref.mode : BLKmode;
 	use_info *use = find_access (unshared_uses, ref.regno);
-	gcc_assert (use);
+	if (!use)
+	  {
+	    // For now, we only support inferring uses of mem.
+	    gcc_assert (regno == MEM_REGNO);
+
+	    if (mem_use)
+	      {
+		mem_use->record_reference (ref, false);
+		continue;
+	      }
+
+	    resource_info resource { mode, regno };
+	    auto def = find_def (resource, pos).prev_def (pos);
+	    auto set = safe_dyn_cast <set_info *> (def);
+	    gcc_assert (set);
+	    mem_use = allocate<use_info> (insn, resource, set);
+	    mem_use->record_reference (ref, true);
+	    m_temp_uses.safe_push (mem_use);
+	    continue;
+	  }
+
 	if (use->m_has_been_superceded)
 	  {
 	    // This is the first reference to the resource.
@@ -499,19 +617,31 @@ function_info::finalize_new_accesses (insn_change &change)
 	  m_temp_uses[i] = use = allocate<use_info> (*use);
 	  use->m_is_temp = false;
 	  set_info *def = use->def ();
-	  // Handle cases in which the value was previously not used
-	  // within the block.
-	  if (def && def->m_is_temp)
+	  if (!def || !def->m_is_temp)
+	    continue;
+
+	  if (auto phi = dyn_cast<phi_info *> (def))
 	    {
-	      phi_info *phi = as_a<phi_info *> (def);
+	      // Handle cases in which the value was previously not used
+	      // within the block.
 	      gcc_assert (phi->is_degenerate ());
 	      phi = create_degenerate_phi (phi->ebb (), phi->input_value (0));
 	      use->set_def (phi);
 	    }
+	  else
+	    {
+	      // The temporary def may also be a set added with this change, in
+	      // which case the permanent set is stored in the last_def link,
+	      // and we need to update the use to refer to the permanent set.
+	      gcc_assert (is_a<set_info *> (def));
+	      auto perm_set = as_a<set_info *> (def->last_def ());
+	      gcc_assert (!perm_set->is_temporary ());
+	      use->set_def (perm_set);
+	    }
 	}
     }
 
-  // Install the new list of definitions in CHANGE.
+  // Install the new list of uses in CHANGE.
   sort_accesses (m_temp_uses);
   change.new_uses = use_array (temp_access_array (m_temp_uses));
   m_temp_uses.truncate (0);
@@ -521,9 +651,12 @@ function_info::finalize_new_accesses (insn_change &change)
 }
 
 // Copy information from CHANGE to its underlying insn_info, given that
-// the insn_info has already been placed appropriately.
+// the insn_info has already been placed appropriately.  NEW_SETS contains the
+// new set_infos that are being added as part of this change (as opposed to
+// being moved or repurposed from existing instructions).
 void
-function_info::apply_changes_to_insn (insn_change &change)
+function_info::apply_changes_to_insn (insn_change &change,
+				      hash_set<def_info *> &new_sets)
 {
   insn_info *insn = change.insn ();
   if (change.is_deletion ())
@@ -535,10 +668,11 @@ function_info::apply_changes_to_insn (insn_change &change)
   // Copy the cost.
   insn->set_cost (change.new_cost);
 
-  // Add all clobbers.  Sets and call clobbers never move relative to
-  // other definitions, so are OK as-is.
+  // Add all clobbers and newly-created sets.  Existing sets and call
+  // clobbers never move relative to other definitions, so are OK as-is.
   for (def_info *def : change.new_defs)
-    if (is_a<clobber_info *> (def) && !def->is_call_clobber ())
+    if ((is_a<clobber_info *> (def) && !def->is_call_clobber ())
+	|| (is_a<set_info *> (def) && new_sets.contains (def)))
       add_def (def);
 
   // Add all uses, now that their position is final.
@@ -563,7 +697,7 @@ function_info::apply_changes_to_insn (insn_change &change)
       insn->set_accesses (builder.finish ().begin (), num_defs, num_uses);
     }
 
-  add_reg_unused_notes (insn);
+  insn->m_is_temp = false;
 }
 
 // Add a temporary placeholder instruction after AFTER.
@@ -596,7 +730,8 @@ function_info::change_insns (array_slice<insn_change *> changes)
       if (!change->is_deletion ())
 	{
 	  // Remove any notes that are no longer relevant.
-	  update_notes (change->rtl ());
+	  if (!change->insn ()->m_is_temp)
+	    update_notes (change->rtl ());
 
 	  // Make sure that the placement of this instruction would still
 	  // leave room for previous instructions.
@@ -605,6 +740,17 @@ function_info::change_insns (array_slice<insn_change *> changes)
 	    // verify_insn_changes is supposed to make sure that this holds.
 	    gcc_unreachable ();
 	  min_insn = later_insn (min_insn, change->move_range.first);
+
+	  if (change->insn ()->m_is_temp)
+	    {
+	      change->m_insn = allocate<insn_info> (change->insn ()->bb (),
+						    change->rtl (),
+						    change->insn_uid ());
+
+	      // Set the flag again so subsequent logic is aware.
+	      // It will be cleared later on.
+	      change->m_insn->m_is_temp = true;
+	    }
 	}
     }
 
@@ -653,16 +799,34 @@ function_info::change_insns (array_slice<insn_change *> changes)
 	      placeholder = add_placeholder_after (after);
 	      following_insn = placeholder;
 	    }
-
-	  // Finalize the new list of accesses for the change.  Don't install
-	  // them yet, so that we still have access to the old lists below.
-	  finalize_new_accesses (change);
 	}
       placeholders[i] = placeholder;
     }
 
+  // We need to keep track of newly-added sets as these need adding to
+  // the def chain later.
+  hash_set<def_info *> new_sets;
+
+  // Finalize the new list of accesses for each change.  Don't install them yet,
+  // so that we still have access to the old lists below.
+  //
+  // Note that we do this forwards instead of in the backwards loop above so
+  // that any new defs being inserted are processed before new uses of those
+  // defs, so that the (initially) temporary uses referring to temporary defs
+  // can be easily updated to become permanent uses referring to permanent defs.
+  for (unsigned i = 0; i < changes.size (); i++)
+    {
+      insn_change &change = *changes[i];
+      insn_info *placeholder = placeholders[i];
+      if (!change.is_deletion ())
+	finalize_new_accesses (change,
+			       placeholder ? placeholder : change.insn (),
+			       new_sets);
+    }
+
   // Remove all definitions that are no longer needed.  After the above,
-  // such definitions should no longer have any registered users.
+  // the only uses of such definitions should be dead phis and now-redundant
+  // live-out uses.
   //
   // In particular, this means that consumers must handle debug
   // instructions before removing a set.
@@ -671,7 +835,8 @@ function_info::change_insns (array_slice<insn_change *> changes)
       if (def->m_has_been_superceded)
 	{
 	  auto *set = dyn_cast<set_info *> (def);
-	  gcc_assert (!set || !set->has_any_uses ());
+	  if (set && set->has_any_uses ())
+	    process_uses_of_deleted_def (set);
 	  remove_def (def);
 	}
 
@@ -681,7 +846,11 @@ function_info::change_insns (array_slice<insn_change *> changes)
       insn_change &change = *changes[i];
       insn_info *insn = change.insn ();
       if (change.is_deletion ())
-	remove_insn (insn);
+	{
+	  if (rtx_insn *rtl = insn->rtl ())
+	    ::remove_insn (rtl); // Remove the underlying RTL insn.
+	  remove_insn (insn);
+	}
       else if (insn_info *placeholder = placeholders[i])
 	{
 	  // Check if earlier movements turned a move into a no-op.
@@ -696,7 +865,8 @@ function_info::change_insns (array_slice<insn_change *> changes)
 	      // Remove the placeholder first so that we have a wider range of
 	      // program points when inserting INSN.
 	      insn_info *after = placeholder->prev_any_insn ();
-	      remove_insn (insn);
+	      if (!insn->is_temporary ())
+		remove_insn (insn);
 	      remove_insn (placeholder);
 	      insn->set_bb (after->bb ());
 	      add_insn_after (insn, after);
@@ -704,9 +874,14 @@ function_info::change_insns (array_slice<insn_change *> changes)
 	}
     }
 
-  // Finally apply the changes to the underlying insn_infos.
+  // Apply the changes to the underlying insn_infos.
   for (insn_change *change : changes)
-    apply_changes_to_insn (*change);
+    apply_changes_to_insn (*change, new_sets);
+
+  // Now that the insns and accesses are up to date, add any REG_UNUSED notes.
+  for (insn_change *change : changes)
+    if (!change->is_deletion ())
+      add_reg_unused_notes (change->insn ());
 }
 
 // See the comment above the declaration.
@@ -851,8 +1026,10 @@ recog_level2 (insn_change &change, add_regno_clobber_fn add_regno_clobber)
       pat = newpat;
     }
 
+  // check_asm_operands checks the constraints after RA, so we don't
+  // need to do it again.
   INSN_CODE (rtl) = icode;
-  if (reload_completed)
+  if (reload_completed && !asm_p)
     {
       extract_insn (rtl);
       if (!constrain_operands (1, get_preferred_alternatives (rtl)))
@@ -954,7 +1131,10 @@ function_info::perform_pending_updates ()
   for (insn_info *insn : m_queued_insn_updates)
     {
       rtx_insn *rtl = insn->rtl ();
-      if (JUMP_P (rtl))
+      if (NOTE_P (rtl))
+	// The insn was later optimized away, typically to a NOTE_INSN_DELETED.
+	;
+      else if (JUMP_P (rtl))
 	{
 	  if (INSN_CODE (rtl) == NOOP_MOVE_INSN_CODE)
 	    {
@@ -1007,6 +1187,28 @@ function_info::perform_pending_updates ()
     }
 
   return changed_cfg;
+}
+
+insn_info *
+function_info::create_insn (obstack_watermark &watermark,
+			    rtx_code insn_code,
+			    rtx pat)
+{
+  rtx_insn *rti = nullptr;
+
+  // TODO: extend, move in to emit-rtl.cc.
+  switch (insn_code)
+    {
+    case INSN:
+      rti = make_insn_raw (pat);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  auto insn = change_alloc<insn_info> (watermark, nullptr, rti, INSN_UID (rti));
+  insn->m_is_temp = true;
+  return insn;
 }
 
 // Print a description of CHANGE to PP.

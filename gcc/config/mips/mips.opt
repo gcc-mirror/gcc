@@ -1,6 +1,6 @@
 ; Options for the MIPS port of the compiler
 ;
-; Copyright (C) 2005-2023 Free Software Foundation, Inc.
+; Copyright (C) 2005-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -145,9 +145,30 @@ meva
 Target Var(TARGET_EVA)
 Use Enhanced Virtual Addressing instructions.
 
+Enum
+Name(mips_explicit_relocs) Type(int)
+The code model option names for -mexplicit-relocs:
+
+EnumValue
+Enum(mips_explicit_relocs) String(none) Value(MIPS_EXPLICIT_RELOCS_NONE)
+
+EnumValue
+Enum(mips_explicit_relocs) String(base) Value(MIPS_EXPLICIT_RELOCS_BASE)
+
+EnumValue
+Enum(mips_explicit_relocs) String(pcrel) Value(MIPS_EXPLICIT_RELOCS_PCREL)
+
+mexplicit-relocs=
+Target RejectNegative Joined Enum(mips_explicit_relocs) Var(mips_opt_explicit_relocs) Init(MIPS_EXPLICIT_RELOCS)
+Use %reloc() assembly operators.
+
 mexplicit-relocs
-Target Mask(EXPLICIT_RELOCS)
-Use NewABI-style %reloc() assembly operators.
+Target RejectNegative Alias(mexplicit-relocs=,base)
+Use %reloc() assembly operators (for backward compatibility).
+
+mno-explicit-relocs
+Target RejectNegative Alias(mexplicit-relocs=,none)
+Don't use %reloc() assembly operators (for backward compatibility).
 
 mextern-sdata
 Target Var(TARGET_EXTERN_SDATA) Init(1)
@@ -392,10 +413,6 @@ msynci
 Target Mask(SYNCI)
 Use synci instruction to invalidate i-cache.
 
-mlra
-Target Var(mips_lra_flag) Init(1) Save
-Use LRA instead of reload.
-
 mlxc1-sxc1
 Target Var(mips_lxc1_sxc1) Init(1)
 Use lwxc1/swxc1/ldxc1/sdxc1 instructions where applicable.
@@ -408,9 +425,17 @@ mtune=
 Target RejectNegative Joined Var(mips_tune_option) ToLower Enum(mips_arch_opt_value)
 -mtune=PROCESSOR	Optimize the output for PROCESSOR.
 
+mstrict-align
+Target Var(TARGET_STRICT_ALIGN) Init(0)
+Don't generate code with unaligned load store, only valid for MIPS R6.
+
 munaligned-access
-Target Var(TARGET_UNALIGNED_ACCESS) Init(1)
-Generate code with unaligned load store, valid for MIPS R6.
+Target RejectNegative Alias(mstrict-align) NegativeAlias
+Generate code with unaligned load store for R6 (alias of -mno-strict-align).
+
+mno-unaligned-access
+Target RejectNegative Alias(mstrict-align)
+Don't generate code with unaligned load store for R6 (alias of -mstrict-align).
 
 muninit-const-in-rodata
 Target Var(TARGET_UNINIT_CONST_IN_RODATA)

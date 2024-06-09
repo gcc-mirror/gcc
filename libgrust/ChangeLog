@@ -1,0 +1,701 @@
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro_internal/proc_macro.h (enum ProcmacroTag): Add
+	explicit value for proc macro tag enum.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/bridge.rs: Add license text.
+	* libproc_macro/bridge/ffistring.rs: Likewise.
+	* libproc_macro/bridge/group.rs: Likewise.
+	* libproc_macro/bridge/ident.rs: Likewise.
+	* libproc_macro/bridge/literal.rs: Likewise.
+	* libproc_macro/bridge/punct.rs: Likewise.
+	* libproc_macro/bridge/span.rs: Likewise.
+	* libproc_macro/bridge/token_stream.rs: Likewise.
+	* libproc_macro/group.rs: Likewise.
+	* libproc_macro/ident.rs: Likewise.
+	* libproc_macro/lib.rs: Likewise.
+	* libproc_macro/literal.rs: Likewise.
+	* libproc_macro/punct.rs: Likewise.
+	* libproc_macro/span.rs: Likewise.
+	* libproc_macro/token_stream.rs: Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro_internal/rust/bridge.rs: Moved to...
+	* libproc_macro/bridge.rs: ...here.
+	* libproc_macro_internal/rust/bridge/ffistring.rs: Moved to...
+	* libproc_macro/bridge/ffistring.rs: ...here.
+	* libproc_macro_internal/rust/bridge/group.rs: Moved to...
+	* libproc_macro/bridge/group.rs: ...here.
+	* libproc_macro_internal/rust/bridge/ident.rs: Moved to...
+	* libproc_macro/bridge/ident.rs: ...here.
+	* libproc_macro_internal/rust/bridge/literal.rs: Moved to...
+	* libproc_macro/bridge/literal.rs: ...here.
+	* libproc_macro_internal/rust/bridge/punct.rs: Moved to...
+	* libproc_macro/bridge/punct.rs: ...here.
+	* libproc_macro_internal/rust/bridge/span.rs: Moved to...
+	* libproc_macro/bridge/span.rs: ...here.
+	* libproc_macro_internal/rust/bridge/token_stream.rs: Moved to...
+	* libproc_macro/bridge/token_stream.rs: ...here.
+	* libproc_macro_internal/rust/group.rs: Moved to...
+	* libproc_macro/group.rs: ...here.
+	* libproc_macro_internal/rust/ident.rs: Moved to...
+	* libproc_macro/ident.rs: ...here.
+	* libproc_macro_internal/rust/lib.rs: Moved to...
+	* libproc_macro/lib.rs: ...here.
+	* libproc_macro_internal/rust/literal.rs: Moved to...
+	* libproc_macro/literal.rs: ...here.
+	* libproc_macro_internal/rust/punct.rs: Moved to...
+	* libproc_macro/punct.rs: ...here.
+	* libproc_macro_internal/rust/span.rs: Moved to...
+	* libproc_macro/span.rs: ...here.
+	* libproc_macro_internal/rust/token_stream.rs: Moved to...
+	* libproc_macro/token_stream.rs: ...here.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* Makefile.am: Change library name.
+	* Makefile.in: Likewise.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* libproc_macro/Makefile.am: Moved to...
+	* libproc_macro_internal/Makefile.am: ...here.
+	* libproc_macro/Makefile.in: Moved to...
+	* libproc_macro_internal/Makefile.in: ...here.
+	* libproc_macro/bridge.h: Moved to...
+	* libproc_macro_internal/bridge.h: ...here.
+	* libproc_macro/ffistring.cc: Moved to...
+	* libproc_macro_internal/ffistring.cc: ...here.
+	* libproc_macro/ffistring.h: Moved to...
+	* libproc_macro_internal/ffistring.h: ...here.
+	* libproc_macro/group.cc: Moved to...
+	* libproc_macro_internal/group.cc: ...here.
+	* libproc_macro/group.h: Moved to...
+	* libproc_macro_internal/group.h: ...here.
+	* libproc_macro/ident.cc: Moved to...
+	* libproc_macro_internal/ident.cc: ...here.
+	* libproc_macro/ident.h: Moved to...
+	* libproc_macro_internal/ident.h: ...here.
+	* libproc_macro/literal.cc: Moved to...
+	* libproc_macro_internal/literal.cc: ...here.
+	* libproc_macro/literal.h: Moved to...
+	* libproc_macro_internal/literal.h: ...here.
+	* libproc_macro/proc_macro.cc: Moved to...
+	* libproc_macro_internal/proc_macro.cc: ...here.
+	* libproc_macro/proc_macro.h: Moved to...
+	* libproc_macro_internal/proc_macro.h: ...here.
+	* libproc_macro/punct.cc: Moved to...
+	* libproc_macro_internal/punct.cc: ...here.
+	* libproc_macro/punct.h: Moved to...
+	* libproc_macro_internal/punct.h: ...here.
+	* libproc_macro/registration.h: Moved to...
+	* libproc_macro_internal/registration.h: ...here.
+	* libproc_macro/rust/bridge.rs: Moved to...
+	* libproc_macro_internal/rust/bridge.rs: ...here.
+	* libproc_macro/rust/bridge/ffistring.rs: Moved to...
+	* libproc_macro_internal/rust/bridge/ffistring.rs: ...here.
+	* libproc_macro/rust/bridge/group.rs: Moved to...
+	* libproc_macro_internal/rust/bridge/group.rs: ...here.
+	* libproc_macro/rust/bridge/ident.rs: Moved to...
+	* libproc_macro_internal/rust/bridge/ident.rs: ...here.
+	* libproc_macro/rust/bridge/literal.rs: Moved to...
+	* libproc_macro_internal/rust/bridge/literal.rs: ...here.
+	* libproc_macro/rust/bridge/punct.rs: Moved to...
+	* libproc_macro_internal/rust/bridge/punct.rs: ...here.
+	* libproc_macro/rust/bridge/span.rs: Moved to...
+	* libproc_macro_internal/rust/bridge/span.rs: ...here.
+	* libproc_macro/rust/bridge/token_stream.rs: Moved to...
+	* libproc_macro_internal/rust/bridge/token_stream.rs: ...here.
+	* libproc_macro/rust/group.rs: Moved to...
+	* libproc_macro_internal/rust/group.rs: ...here.
+	* libproc_macro/rust/ident.rs: Moved to...
+	* libproc_macro_internal/rust/ident.rs: ...here.
+	* libproc_macro/rust/lib.rs: Moved to...
+	* libproc_macro_internal/rust/lib.rs: ...here.
+	* libproc_macro/rust/literal.rs: Moved to...
+	* libproc_macro_internal/rust/literal.rs: ...here.
+	* libproc_macro/rust/punct.rs: Moved to...
+	* libproc_macro_internal/rust/punct.rs: ...here.
+	* libproc_macro/rust/span.rs: Moved to...
+	* libproc_macro_internal/rust/span.rs: ...here.
+	* libproc_macro/rust/token_stream.rs: Moved to...
+	* libproc_macro_internal/rust/token_stream.rs: ...here.
+	* libproc_macro/span.cc: Moved to...
+	* libproc_macro_internal/span.cc: ...here.
+	* libproc_macro/span.h: Moved to...
+	* libproc_macro_internal/span.h: ...here.
+	* libproc_macro/tokenstream.cc: Moved to...
+	* libproc_macro_internal/tokenstream.cc: ...here.
+	* libproc_macro/tokenstream.h: Moved to...
+	* libproc_macro_internal/tokenstream.h: ...here.
+	* libproc_macro/tokentree.cc: Moved to...
+	* libproc_macro_internal/tokentree.cc: ...here.
+	* libproc_macro/tokentree.h: Moved to...
+	* libproc_macro_internal/tokentree.h: ...here.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/literal.cc (Literal__from_string): Add
+	implementation with call to constructor.
+	(Literal::make_literal): Add new constructor which calls the
+	callback.
+	* libproc_macro/literal.h: Add new constructor's
+	prototype.
+	* libproc_macro/proc_macro.cc (bridge_is_available):
+	Change symbol name to match convention.
+	* libproc_macro/registration.h: Add lit_from_str
+	symbol.
+	* libproc_macro/tokenstream.cc (TokenStream::make_tokenstream):
+	Change symbol name to disambiguate with literal from string.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.cc: Remove type alias.
+	* libproc_macro/registration.h: Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.h (proc_macro_register_from_str):
+	Remove rogue function prototype.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.cc (not_available): Remove
+	function.
+	* libproc_macro/proc_macro.h (not_available): Remove
+	function prototype.
+	* libproc_macro/registration.h: Change symbol type.
+	* libproc_macro/bridge.h: New file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.cc (bridge_is_available):
+	Add bridge function.
+	* libproc_macro/proc_macro.h (bridge_is_available):
+	Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.cc (not_available): Add a
+	function to express bridge unavailability.
+	* libproc_macro/proc_macro.h (not_available): Likewise.
+	* libproc_macro/registration.h: Add symbol type.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.cc (Procmacro::make_bang):
+	Change symbol name.
+	* libproc_macro/registration.h: Likewise.
+	* libproc_macro/tokenstream.cc (TokenStream::make_tokenstream): Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/literal.cc (Literal__from_string):
+	Update to match rust interface.
+	* libproc_macro/literal.h (Literal__from_string):
+	Likewise.
+	* libproc_macro/tokenstream.cc (TokenStream__from_string):
+	Likewise.
+	* libproc_macro/tokenstream.h (TokenStream__from_string):
+	Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/rust/bridge/literal.rs: Change extern C
+	function argument from raw string pointer and length to
+	FFIString.
+	* libproc_macro/rust/bridge/token_stream.rs: Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/rust/bridge/ident.rs: Change raw
+	pointer string with an FFIString.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/ident.cc (Ident__new): Constructor
+	accepts an FFIString now.
+	(Ident__new_raw): Likewise.
+	(Ident::clone): Internal members change means clone also change.
+	(Ident::make_ident): Change constructor call.
+	(Ident::drop): Add call to FFIString::clone.
+	* libproc_macro/ident.h (struct Ident): Remove raw
+	pointer and length, add an FFIString inside instead.
+	(Ident__new): Change constructor.
+	(Ident__new_raw): Change constructor.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.cc (proc_macro_register_from_str):
+	Add registration function.
+	* libproc_macro/proc_macro.h (proc_macro_register_from_str):
+	Add registration function prototype.
+	* libproc_macro/tokenstream.cc (TokenStream::make_tokenstream):
+	Add a new constructor from a string that uses the registered
+	callback.
+	(TokenStream__from_string): Add call to new constructor.
+	* libproc_macro/tokenstream.h: Add registration
+	declaration.
+	* libproc_macro/registration.h: New file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/ffistring.cc (FFIString::make_ffistring):
+	Add explicit sizeof and utf-8 warning.
+	(FFIString::clone): Add explicit sizeof and utf-8 warning.
+	* libproc_macro/ident.cc (Ident::clone): Likewise.
+	(Ident::make_ident): Likewise.
+	* libproc_macro/tokenstream.cc (TokenStream::grow):
+	Fix vector growth.
+	(TokenStream__clone): Add explicit sizeof.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/tokenstream.cc (TokenStream::grow): Add
+	minimum growing capacity.
+	(TokenStream::push): Change condition.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.h (struct CustomDerivePayload):
+	Rename from CustomDerivePayload to...
+	(struct CustomDerive): ... CustomDerive
+	(struct AttrPayload): Rename from AttrPayload to ...
+	(struct Attribute): ... Attribute
+	(struct BangPayload): Rename from BangPayload to ...
+	(struct Bang): ... Bang
+	(union ProcmacroPayload): Update union with new names.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.h (struct ProcmacroArray):
+	Add ProcmacroArray definition.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/Makefile.am: Add span.cc
+	* libproc_macro/Makefile.in: Regenerate.
+	* libproc_macro/span.cc: New file.
+	* libproc_macro/span.h: New file.
+	* libproc_macro/group.cc (Group::make_group): Add span
+	argument.
+	* libproc_macro/group.h (GROUP_H): Add include
+	directive for spans.
+	* libproc_macro/ident.cc (Ident__new): Add span
+	argument.
+	(Ident__new_raw): Likewise.
+	(Ident::make_ident): Likewise.
+	* libproc_macro/ident.h (Ident__new): Likewise.
+	(Ident__new_raw): Likewise.
+	* libproc_macro/literal.cc (Literal::clone): Clone the
+	span.
+	(Literal::make_literal): Add span argument.
+	(Literal::make_u8): Likewise.
+	(Literal::make_u16): Likewise.
+	(Literal::make_u32): Likewise.
+	(Literal::make_u64): Likewise.
+	(Literal::make_i8): Likewise.
+	(Literal::make_i16): Likewise.
+	(Literal::make_i32): Likewise.
+	(Literal::make_i64): Likewise.
+	(Literal::make_string): Likewise.
+	(Literal::make_byte_string): Likewise.
+	(Literal::make_f32): Likewise.
+	(Literal::make_f64): Likewise.
+	(Literal::make_char): Likewise.
+	(Literal::make_usize): Likewise.
+	(Literal::make_isize): Likewise.
+	* libproc_macro/literal.h (struct Literal): Add span to
+	Literal structure.
+	* libproc_macro/punct.cc (Punct::make_punct): Add span
+	argument to punct constructor.
+	* libproc_macro/punct.h (struct Punct): Add span to
+	Punct structure.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/rust/bridge/group.rs: Add span member
+	to the Group structure.
+	* libproc_macro/rust/bridge/ident.rs: Likewise with the
+	Ident structure.
+	* libproc_macro/rust/bridge/literal.rs: Likewise with
+	the Literal structure.
+	* libproc_macro/rust/bridge/punct.rs: Likewise with the
+	Punct structure.
+	* libproc_macro/rust/bridge/span.rs: Add span
+	internals.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/rust/bridge/ffistring.rs: Implement
+	From trait for FFIString.
+	* libproc_macro/rust/bridge/literal.rs: Change
+	constructor call.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/ffistring.cc (FFIString::make_ffistring):
+	Add copy from source pointer.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/literal.h: Remove has_suffix member
+	attribute from Literal.
+	* libproc_macro/literal.cc: Update constructors.
+	* libproc_macro/rust/bridge/literal.rs: Remove
+	has_suffix attribute from Literal.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/Makefile.am: Add ffistring unit to
+	compiled objects list.
+	* libproc_macro/Makefile.in: Regenerate.
+	* libproc_macro/literal.cc (Literal::drop): Change with
+	a call to ffistring drop function.
+	(Literal::make_literal): Add new helper constructor
+	(Literal__drop): Remove this function.
+	(Literal__string): Likewise.
+	(Literal__byte_string): Likewise.
+	(Literal__from_string): Moved this function.
+	(Literal::make_unsigned): Changed the constructor to match the
+	new layout.
+	(Literal::make_signed): Likewise.
+	(Literal::clone): Reimplement th eclone function.
+	(Literal::make_u8): Changed the constructor, make suffixed by
+	default.
+	(Literal::make_u16): Likewise.
+	(Literal::make_u32): Likewise.
+	(Literal::make_u64): Likewise.
+	(Literal::make_i8): Likewise.
+	(Literal::make_i16): Likewise.
+	(Literal::make_i32): Likewise.
+	(Literal::make_i64): Likewise.
+	(Literal::make_string): Likewise.
+	(Literal::make_byte_string): Likewise.
+	(Literal::make_f32): Likewise.
+	(Literal::make_f64): Likewise.
+	(Literal::make_char): Likewise.
+	(Literal::make_usize): Likewise.
+	(Literal::make_isize): Likewise.
+	(LitKind::make_byte): Add new helper constructor to avoid having
+	to set the payload value.
+	(LitKind::make_char): Likewise.
+	(LitKind::make_integer): Likewise.
+	(LitKind::make_float): Likewise.
+	(LitKind::make_str): Likewise.
+	(LitKind::make_str_raw): Add a new helper constructor which
+	takes the payload value as an argument.
+	(LitKind::make_byte_str): Add new helper constructor to avoid
+	mistakes with payload value.
+	(LitKind::make_byte_str_raw): Add a new helper constructor which
+	takes the payload value as an argument.
+	* libproc_macro/literal.h: Add new functions prototype.
+	(enum UnsignedTag): Removed because it is now unused.
+	(struct Payload128): Likewise.
+	(union UnsignedPayload): Likewise.
+	(struct Unsigned): Likewise.
+	(enum SignedTag): Likewise.
+	(union SignedPayload): Likewise.
+	(struct Signed): Likewise.
+	(enum LiteralTag): Likewise.
+	(enum LitKindTag): Likewise.
+	(struct StringPayload): Likewise.
+	(struct ByteStringPayload): Likewise.
+	(union LitKindPayload): Likewise.
+	(struct UnsignedSuffixPayload): Likewise.
+	(struct LitKind): Add new literal kind struct representation to
+	match the enum on rust side.
+	(struct SignedSuffixPayload): Removed because now unused.
+	(struct UsizePayload): Likewise.
+	(struct IsizePayload): Likewise.
+	(struct Float32Payload): Likewise.
+	(struct Float64Payload): Likewise.
+	(union LiteralPayload): Likewise.
+	(struct Literal): Changed the internals of the structure.
+	(Literal__drop): Removed the drop function fom the c interface.
+	(Literal__string): Removed unused function.
+	(Literal__byte_string): Removed unused function.
+	* libproc_macro/ffistring.cc: New file.
+	* libproc_macro/ffistring.h: New file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/rust/bridge.rs: Add ffistring module.
+	* libproc_macro/rust/bridge/literal.rs: Rework type
+	internals.
+	* libproc_macro/rust/bridge/ffistring.rs: New file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.cc (Procmacro::make_derive):
+	Add custom derive macro constructor.
+	(Procmacro::make_attribute): Add attribute macro constructor.
+	(Procmacro::make_bang): Add bang macro constructor.
+	* libproc_macro/proc_macro.h (struct Procmacro):
+	Add helper function prototypes.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.h (struct CustomDerivePayload):
+	Add C compatible payload structure.
+	(struct AttrPayload): Likewise.
+	(struct BangPayload): Likewise.
+	(enum ProcmacroTag): Add tag for tagged union.
+	(union ProcmacroPayload): Proc macro payload union.
+	(struct Procmacro): Tagged union.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.h: Add Literal, Punct,
+	Group, TokenTree and Tokenstream headers.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* Makefile.am: Remove libtool forwarding.
+	* Makefile.in: Regenerate.
+	* libproc_macro/Makefile.am: Creates an archive instead
+	of using libtool.
+	* libproc_macro/Makefile.in: Regenerate.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/group.cc (Group::make_group): Remove
+	internal namespace.
+	(Group::drop): Likewise.
+	* libproc_macro/group.h (enum Delimiter): Make members
+	upercase.
+	(struct Group):
+	* libproc_macro/ident.cc (Ident::drop): Remove internal
+	namespace.
+	* libproc_macro/ident.h (Ident__clone): Likewise.
+	* libproc_macro/literal.cc (Literal::make_isize):
+	Likewise.
+	* libproc_macro/literal.h (union LiteralPayload):
+	Likewise.
+	(Literal__from_string): Likewise.
+	* libproc_macro/punct.cc (Punct::make_punct): Likewise.
+	* libproc_macro/punct.h (enum Spacing): Make members
+	uppercase.
+	* libproc_macro/tokenstream.cc (TokenStream::make_tokenstream):
+	Remove internal namespace.
+	(TokenStream::grow): Likewise.
+	(TokenStream::push): Likewise.
+	(TokenSream__push): Likewise.
+	(TokenStream__clone): Likewise.
+	(TokenStream__drop): Likewise.
+	* libproc_macro/tokenstream.h (struct TokenStream):
+	Likewise.
+	(TokenSream__push): Likewise.
+	(TokenStream__drop): Likewise.
+	* libproc_macro/tokentree.cc (TokenTree::make_tokentree):
+	Likewise.
+	(TokenTree::drop): Likewise.
+	* libproc_macro/tokentree.h (union TokenTreePayload):
+	Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/group.cc (Group::drop): Add Procmacro
+	namespace.
+	* libproc_macro/group.h: Likewise.
+	* libproc_macro/ident.cc (Ident::drop): Likewise.
+	* libproc_macro/ident.h (Ident__clone): Likewise.
+	* libproc_macro/literal.cc (Literal::make_isize):
+	Likewise.
+	* libproc_macro/literal.h (Literal__from_string):
+	Likewise.
+	* libproc_macro/punct.cc (Punct::make_punct): Likewise.
+	* libproc_macro/punct.h: Likewise.
+	* libproc_macro/tokenstream.cc (TokenStream__drop):
+	Likewise.
+	* libproc_macro/tokenstream.h (TokenStream__drop):
+	Likewise.
+	* libproc_macro/tokentree.cc (TokenTree::drop):
+	Likewise.
+	* libproc_macro/tokentree.h: Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/literal.cc (Literal::drop): Change
+	delete operator to delete[].
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/rust/bridge/token_stream.rs: Implement
+	drop.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/group.cc (Group::drop): Add drop
+	implementation.
+	* libproc_macro/group.h: Add drop prototype.
+	* libproc_macro/tokenstream.cc (TokenStream::drop): Add
+	drop implementation.
+	(TokenStream__drop): Change to a call to TokenStream::drop.
+	* libproc_macro/tokenstream.h: Add drop prototype.
+	* libproc_macro/tokentree.cc (TokenTree::drop): Add
+	drop implementation.
+	* libproc_macro/tokentree.h: Add drop prototype.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/literal.cc (Literal__drop): Replace
+	implementation by a call to Literal::drop.
+	(Literal::drop): Add drop implementation.
+	* libproc_macro/literal.h: Add function prototype.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/ident.cc (Ident__drop): Replace by call
+	to Ident::drop.
+	(Ident::drop): Add drop function.
+	* libproc_macro/ident.h: Add drop prototype.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/group.cc: New file.
+	* libproc_macro/group.h: New file.
+	* libproc_macro/tokenstream.cc: New file.
+	* libproc_macro/tokenstream.h: New file.
+	* libproc_macro/tokentree.cc: New file.
+	* libproc_macro/tokentree.h: New file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/punct.cc: New file.
+	* libproc_macro/punct.h: New file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/ident.cc (Ident::make_ident): Add Ident
+	namespace.
+	* libproc_macro/ident.h (Ident__clone): Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/ident.cc (Ident__new): Use named
+	constructor.
+	(Ident__new_raw): Use named constructor.
+	(Ident__clone): Use clone member function.
+	(Ident::clone): Make clone const.
+	(Ident::make_ident): Add named construcot.
+	* libproc_macro/ident.h (struct Ident): Add named
+	constructor prototypes.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/rust/bridge/ident.rs: Change drop
+	function interface.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/ident.cc: New file.
+	* libproc_macro/ident.h: New file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/literal.cc (Literal__string): Add call
+	to named constructor.
+	(Literal__byte_string): Likewise.
+	(Literal::make_unsigned): Add function.
+	(Literal::make_signed): Add function.
+	(Literal::clone): Likewise.
+	(Literal::make_u8): Likewise.
+	(Literal::make_u16): Likewise.
+	(Literal::make_u32): Likewise.
+	(Literal::make_u64): Likewise.
+	(Literal::make_i8): Likewise.
+	(Literal::make_i16): Likewise.
+	(Literal::make_i32): Likewise.
+	(Literal::make_i64): Likewise.
+	(Literal::make_string): Likewise.
+	(Literal::make_byte_string): Likewise.
+	(Literal::make_f32): Likewise.
+	(Literal::make_f64): Likewise.
+	(make_char): Likewise.
+	(Literal::make_char): Likewise.
+	(make_usize): Likewise.
+	(Literal::make_usize): Likewise.
+	(make_isize): Likewise.
+	(Literal::make_isize): Likewise.
+	* libproc_macro/literal.h: Add prototypes.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/literal.cc (Literal__from_string):
+	Add abort because unimplemented.
+	* libproc_macro/literal.h (Literal__from_string): Add
+	namespace.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/rust/bridge/literal.rs: Make the
+	pointer mutable.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/literal.h (Literal__drop): Implement
+	drop.
+	(Literal__string): Constructor from a string function prototype.
+	(Literal__byte_string): Constructor from a byte string function
+	prototype.
+	(Literal__from_string): Add function body, no implementation
+	yet.
+	* libproc_macro/literal.cc: New file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.h (PROC_MACRO_H): Add
+	literal header include directive.
+	* libproc_macro/literal.h: New file.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/proc_macro.cc (test): Remove dummy
+	function.
+	* libproc_macro/proc_macro.h (test): Likewise.
+
+2024-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* libproc_macro/rust/bridge.rs: New file.
+	* libproc_macro/rust/bridge/group.rs: New file.
+	* libproc_macro/rust/bridge/ident.rs: New file.
+	* libproc_macro/rust/bridge/literal.rs: New file.
+	* libproc_macro/rust/bridge/punct.rs: New file.
+	* libproc_macro/rust/bridge/span.rs: New file.
+	* libproc_macro/rust/bridge/token_stream.rs: New file.
+	* libproc_macro/rust/group.rs: New file.
+	* libproc_macro/rust/ident.rs: New file.
+	* libproc_macro/rust/lib.rs: New file.
+	* libproc_macro/rust/literal.rs: New file.
+	* libproc_macro/rust/punct.rs: New file.
+	* libproc_macro/rust/span.rs: New file.
+	* libproc_macro/rust/token_stream.rs: New file.
+
+2024-01-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR rust/113056
+	* configure.ac: 'AM_ENABLE_MULTILIB' only for target builds.
+	* configure: Regenerate.
+
+2023-12-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Makefile.am: New file.
+	* Makefile.in: Generate.
+	* configure.ac: New file.
+	* configure: Generate.
+	* aclocal.m4: Generate.
+	* libproc_macro/Makefile.am: New file.
+	* libproc_macro/proc_macro.cc: New file.
+	* libproc_macro/proc_macro.h: New file.
+	* libproc_macro/Makefile.in: Generate.
+
+
+Copyright (C) 2023-2024 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

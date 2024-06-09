@@ -1,6 +1,6 @@
 // Wrapper of C-language FILE struct -*- C++ -*-
 
-// Copyright (C) 2000-2023 Free Software Foundation, Inc.
+// Copyright (C) 2000-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -472,7 +472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return _M_cfile;
 #elif _GLIBCXX_USE__GET_OSFHANDLE
     const intptr_t handle = _M_cfile ? _get_osfhandle(fileno(_M_cfile)) : -1;
-    return reinterpret_cast<native_handle>(handle);
+    return reinterpret_cast<native_handle_type>(handle);
 #else
     return fileno(_M_cfile);
 #endif

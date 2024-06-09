@@ -20,11 +20,12 @@ module main
       !$omp & match (construct={parallel,do}, &
       !$omp & device={isa(avx512f,avx512vl),kind(host,cpu)}, &
       !$omp & implementation={vendor(score(0):gnu),unified_shared_memory}, &
-      !$omp & user={condition(score(0):0)})
+      !$omp & user={condition(score(0):.false.)})
       !$omp declare variant (bar) &
       !$omp & match (device={arch(x86_64,powerpc64),isa(avx512f,popcntb)}, &
       !$omp & implementation={atomic_default_mem_order(seq_cst),made_up_selector("foo", 13, "bar")}, &
-      !$omp & user={condition(3-3)})
+      !$omp & user={condition(.true. .AND. (.not. .true.))})
+! { dg-warning "unknown selector 'made_up_selector'" "" { target *-*-* } .-2 }
     end function
 
     subroutine quux

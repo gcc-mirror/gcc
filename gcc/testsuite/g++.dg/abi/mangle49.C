@@ -1,6 +1,6 @@
 // PR c++/49932
 // { dg-do compile { target c++11 } }
-// { dg-options "-fabi-version=0 -Wabi=2" }
+// { dg-options "-fabi-version=0 -fabi-compat-version=0 -Wabi=2" }
 
 template < typename T >
 auto

@@ -80,16 +80,16 @@ CONS2_FN (2, float);
 
 /*
 ** cons2_4_float:	{ target aarch64_little_endian }
-**	ins	v0.s\[1\], v1.s\[0\]
-**	stp	d0, d0, \[x0\]
-**	stp	d0, d0, \[x0, #?16\]
+**	uzp1	v([0-9])\.2s, v0\.2s, v1\.2s
+**	stp	d\1, d\1, \[x0\]
+**	stp	d\1, d\1, \[x0, #?16\]
 **	ret
 */
 /*
 ** cons2_4_float:	{ target aarch64_big_endian }
-**	ins	v1.s\[1\], v0.s\[0\]
-**	stp	d1, d1, \[x0\]
-**	stp	d1, d1, \[x0, #?16\]
+**	uzp1	v([0-9])\.2s, v1\.2s, v0\.2s
+**	stp	d\1, d\1, \[x0\]
+**	stp	d\1, d\1, \[x0, #?16\]
 **	ret
 */
 CONS2_FN (4, float);
@@ -125,8 +125,9 @@ CONS4_FN (2, float);
 
 /*
 ** cons4_4_float:
-**	ins	v([0-9]+)\.s.*
-**	...
+**	uzp1	v[0-9]+\.2s[^\n]+
+**	uzp1	v[0-9]+\.2s[^\n]+
+**	zip1	v([0-9]+).4s, [^\n]+
 **	stp	q\1, q\1, \[x0\]
 **	stp	q\1, q\1, \[x0, #?32\]
 **	ret

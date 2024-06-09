@@ -27,7 +27,7 @@ int main()
 {
   fun1(1, -1);
   fun1(-1, 1.0);
-  fun1(-1, "test");
+  fun1(-1, (const char *)0x1234);
 
   [[ assert: fun1(-1, -5) ]];
   [[ assert: test<int>::fun(10, -6) ]];

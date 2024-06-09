@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,27 +29,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Exceptions;           use Ada.Exceptions;
-with Ada.Unchecked_Conversion;
+with Ada.Exceptions; use Ada.Exceptions;
 
 with System.Address_Image;
-with System.Finalization_Masters; use System.Finalization_Masters;
-with System.IO;                   use System.IO;
-with System.Soft_Links;           use System.Soft_Links;
-with System.Storage_Elements;     use System.Storage_Elements;
+with System.IO;               use System.IO;
+with System.Soft_Links;       use System.Soft_Links;
+with System.Storage_Elements; use System.Storage_Elements;
 
 with System.Storage_Pools.Subpools.Finalization;
 use  System.Storage_Pools.Subpools.Finalization;
 
 package body System.Storage_Pools.Subpools is
-
-   Finalize_Address_Table_In_Use : Boolean := False;
-   --  This flag should be set only when a successful allocation on a subpool
-   --  has been performed and the associated Finalize_Address has been added to
-   --  the hash table in System.Finalization_Masters.
-
-   function Address_To_FM_Node_Ptr is
-     new Ada.Unchecked_Conversion (Address, FM_Node_Ptr);
 
    procedure Attach (N : not null SP_Node_Ptr; L : not null SP_Node_Ptr);
    --  Attach a subpool node to a pool
@@ -66,12 +56,12 @@ package body System.Storage_Pools.Subpools is
       Header_And_Padding : constant Storage_Offset :=
                              Header_Size_With_Padding (Alignment);
    begin
-      --  Expose the two hidden pointers by shifting the address from the
-      --  start of the object to the FM_Node equivalent of the pointers.
+      --  Expose the header and its padding by shifting the address from the
+      --  start of the object to the beginning of the padding.
 
       Addr := Addr - Header_And_Padding;
 
-      --  Update the size of the object to include the two pointers
+      --  Update the size to include the header and its padding
 
       Storage_Size := Storage_Size + Header_And_Padding;
    end Adjust_Controlled_Dereference;
@@ -104,42 +94,42 @@ package body System.Storage_Pools.Subpools is
    -----------------------------
 
    procedure Allocate_Any_Controlled
-     (Pool            : in out Root_Storage_Pool'Class;
-      Context_Subpool : Subpool_Handle;
-      Context_Master  : Finalization_Masters.Finalization_Master_Ptr;
-      Fin_Address     : Finalization_Masters.Finalize_Address_Ptr;
-      Addr            : out System.Address;
-      Storage_Size    : System.Storage_Elements.Storage_Count;
-      Alignment       : System.Storage_Elements.Storage_Count;
-      Is_Controlled   : Boolean;
-      On_Subpool      : Boolean)
+     (Pool          : in out Root_Storage_Pool'Class;
+      Named_Subpool : Subpool_Handle;
+      Collection    : in out
+                        Finalization_Primitives.Finalization_Collection_Ptr;
+      Addr          : out System.Address;
+      Storage_Size  : System.Storage_Elements.Storage_Count;
+      Alignment     : System.Storage_Elements.Storage_Count;
+      Is_Controlled : Boolean;
+      On_Subpool    : Boolean)
    is
+      use type System.Finalization_Primitives.Finalization_Collection_Ptr;
+
       Is_Subpool_Allocation : constant Boolean :=
                                 Pool in Root_Storage_Pool_With_Subpools'Class;
 
-      Master     : Finalization_Master_Ptr := null;
-      N_Addr     : Address;
-      N_Ptr      : FM_Node_Ptr;
-      N_Size     : Storage_Count;
-      Subpool    : Subpool_Handle := null;
-      Lock_Taken : Boolean := False;
+      N_Addr      : Address;
+      N_Alignment : Storage_Count;
+      N_Size      : Storage_Count;
+      Subpool     : Subpool_Handle;
 
       Header_And_Padding : Storage_Offset;
-      --  This offset includes the size of a FM_Node plus any additional
-      --  padding due to a larger alignment.
+      --  This offset includes the size of a header plus an additional padding
+      --  due to a larger alignment of the object.
 
    begin
       --  Step 1: Pool-related runtime checks
 
       --  Allocation on a pool_with_subpools. In this scenario there is a
-      --  master for each subpool. The master of the access type is ignored.
+      --  collection for each subpool. That of the access type is ignored.
 
       if Is_Subpool_Allocation then
 
          --  Case of an allocation without a Subpool_Handle. Dispatch to the
          --  implementation of Default_Subpool_For_Pool.
 
-         if Context_Subpool = null then
+         if Named_Subpool = null then
             Subpool :=
               Default_Subpool_For_Pool
                 (Root_Storage_Pool_With_Subpools'Class (Pool));
@@ -147,7 +137,7 @@ package body System.Storage_Pools.Subpools is
          --  Allocation with a Subpool_Handle
 
          else
-            Subpool := Context_Subpool;
+            Subpool := Named_Subpool;
          end if;
 
          --  Ensure proper ownership and chaining of the subpool
@@ -161,23 +151,23 @@ package body System.Storage_Pools.Subpools is
             raise Program_Error with "incorrect owner of subpool";
          end if;
 
-         Master := Subpool.Master'Unchecked_Access;
+         Collection := Subpool.Collection'Unchecked_Access;
 
-      --  Allocation on a simple pool. In this scenario there is a master for
-      --  each access-to-controlled type. No context subpool should be present.
+      --  Allocation on a simple pool. In this scenario there is a collection
+      --  for each access-to-controlled type. No context subpool is allowed.
 
       else
-         --  If the master is missing, then the expansion of the access type
-         --  failed to create one. This is a compiler bug.
+         --  If the collection is missing, then the expansion of the access
+         --  type has failed to create one. This is a compiler bug.
 
          pragma Assert
-           (Context_Master /= null, "missing master in pool allocation");
+           (Collection /= null, "no collection in pool allocation");
 
          --  If a subpool is present, then this is the result of erroneous
          --  allocator expansion. This is not a serious error, but it should
          --  still be detected.
 
-         if Context_Subpool /= null then
+         if Named_Subpool /= null then
             raise Program_Error
               with "subpool not required in pool allocation";
          end if;
@@ -190,51 +180,33 @@ package body System.Storage_Pools.Subpools is
             raise Program_Error
               with "pool of access type does not support subpools";
          end if;
-
-         Master := Context_Master;
       end if;
 
-      --  Step 2: Master, Finalize_Address-related runtime checks and size
-      --  calculations.
+      --  Step 2: Size and alignment calculations
 
       --  Allocation of a descendant from [Limited_]Controlled, a class-wide
       --  object or a record with controlled components.
 
       if Is_Controlled then
-
-         --  Synchronization:
-         --    Read  - allocation, finalization
-         --    Write - finalization
-
-         Lock_Taken := True;
-         Lock_Task.all;
-
-         --  Do not allow the allocation of controlled objects while the
-         --  associated master is being finalized.
-
-         if Finalization_Started (Master.all) then
-            raise Program_Error with "allocation after finalization started";
-         end if;
-
-         --  Check whether primitive Finalize_Address is available. If it is
-         --  not, then either the expansion of the designated type failed or
-         --  the expansion of the allocator failed. This is a compiler bug.
-
-         pragma Assert
-           (Fin_Address /= null, "primitive Finalize_Address not available");
-
-         --  The size must account for the hidden header preceding the object.
+         --  The size must account for the hidden header before the object.
          --  Account for possible padding space before the header due to a
-         --  larger alignment.
+         --  larger alignment of the object.
 
          Header_And_Padding := Header_Size_With_Padding (Alignment);
 
          N_Size := Storage_Size + Header_And_Padding;
 
+         --  The alignment must account for the hidden header before the object
+
+         N_Alignment :=
+           System.Storage_Elements.Storage_Count'Max
+             (Alignment, System.Finalization_Primitives.Header_Alignment);
+
       --  Non-controlled allocation
 
       else
-         N_Size := Storage_Size;
+         N_Size      := Storage_Size;
+         N_Alignment := Alignment;
       end if;
 
       --  Step 3: Allocation of object
@@ -245,104 +217,41 @@ package body System.Storage_Pools.Subpools is
       if Is_Subpool_Allocation then
          Allocate_From_Subpool
            (Root_Storage_Pool_With_Subpools'Class (Pool),
-            N_Addr, N_Size, Alignment, Subpool);
+            N_Addr, N_Size, N_Alignment, Subpool);
 
       --  For descendants of Root_Storage_Pool, dispatch to the implementation
       --  of Allocate.
 
       else
-         Allocate (Pool, N_Addr, N_Size, Alignment);
+         Allocate (Pool, N_Addr, N_Size, N_Alignment);
       end if;
 
-      --  Step 4: Attachment
+      --  Step 4: Displacement of address
 
       if Is_Controlled then
-
-         --  Note that we already did "Lock_Task.all;" in Step 2 above
-
-         --  Map the allocated memory into a FM_Node record. This converts the
-         --  top of the allocated bits into a list header. If there is padding
-         --  due to larger alignment, the header is placed right next to the
-         --  object:
-
-         --     N_Addr  N_Ptr
-         --     |       |
-         --     V       V
-         --     +-------+---------------+----------------------+
-         --     |Padding|    Header     |        Object        |
-         --     +-------+---------------+----------------------+
-         --     ^       ^               ^
-         --     |       +- Header_Size -+
-         --     |                       |
-         --     +- Header_And_Padding --+
-
-         N_Ptr :=
-           Address_To_FM_Node_Ptr (N_Addr + Header_And_Padding - Header_Size);
-
-         --  Prepend the allocated object to the finalization master
-
-         --  Synchronization:
-         --    Write - allocation, deallocation, finalization
-
-         Attach_Unprotected (N_Ptr, Objects (Master.all));
-
          --  Move the address from the hidden list header to the start of the
-         --  object. This operation effectively hides the list header.
+         --  object. If there is padding due to larger alignment of the object,
+         --  the padding is placed at the beginning. This effectively hides the
+         --  list header:
+
+         --    N_Addr                  Addr
+         --    |                       |
+         --    V                       V
+         --    +-------+---------------+----------------------+
+         --    |Padding|    Header     |        Object        |
+         --    +-------+---------------+----------------------+
+         --    ^       ^               ^
+         --    |       +- Header_Size -+
+         --    |                       |
+         --    +- Header_And_Padding --+
 
          Addr := N_Addr + Header_And_Padding;
-
-         --  Homogeneous masters service the following:
-
-         --    1) Allocations on / Deallocations from regular pools
-         --    2) Named access types
-         --    3) Most cases of anonymous access types usage
-
-         --  Synchronization:
-         --    Read  - allocation, finalization
-         --    Write - outside
-
-         if Master.Is_Homogeneous then
-
-            --  Synchronization:
-            --    Read  - finalization
-            --    Write - allocation, outside
-
-            Set_Finalize_Address_Unprotected (Master.all, Fin_Address);
-
-         --  Heterogeneous masters service the following:
-
-         --    1) Allocations on / Deallocations from subpools
-         --    2) Certain cases of anonymous access types usage
-
-         else
-            --  Synchronization:
-            --    Read  - finalization
-            --    Write - allocation, deallocation
-
-            Set_Heterogeneous_Finalize_Address_Unprotected (Addr, Fin_Address);
-            Finalize_Address_Table_In_Use := True;
-         end if;
-
-         Unlock_Task.all;
-         Lock_Taken := False;
 
       --  Non-controlled allocation
 
       else
          Addr := N_Addr;
       end if;
-
-   exception
-      when others =>
-
-         --  Unlock the task in case the allocation step failed and reraise the
-         --  exception.
-
-         if Lock_Taken then
-            Unlock_Task.all;
-         end if;
-
-         raise;
    end Allocate_Any_Controlled;
 
    ------------
@@ -379,95 +288,61 @@ package body System.Storage_Pools.Subpools is
       Alignment     : System.Storage_Elements.Storage_Count;
       Is_Controlled : Boolean)
    is
-      N_Addr : Address;
-      N_Ptr  : FM_Node_Ptr;
-      N_Size : Storage_Count;
+      N_Addr      : Address;
+      N_Alignment : Storage_Count;
+      N_Size      : Storage_Count;
 
       Header_And_Padding : Storage_Offset;
-      --  This offset includes the size of a FM_Node plus any additional
-      --  padding due to a larger alignment.
+      --  This offset includes the size of a header plus an additional padding
+      --  due to a larger alignment of the object.
 
    begin
-      --  Step 1: Detachment
+      --  Step 1: Displacement of address
 
       if Is_Controlled then
-         Lock_Task.all;
+         --  Account for possible padding space before the header due to a
+         --  larger alignment.
 
-         begin
-            --  Destroy the relation pair object - Finalize_Address since it is
-            --  no longer needed.
+         Header_And_Padding := Header_Size_With_Padding (Alignment);
 
-            if Finalize_Address_Table_In_Use then
+         --    N_Addr                  Addr
+         --    |                       |
+         --    V                       V
+         --    +-------+---------------+----------------------+
+         --    |Padding|    Header     |        Object        |
+         --    +-------+---------------+----------------------+
+         --    ^       ^               ^
+         --    |       +- Header_Size -+
+         --    |                       |
+         --    +- Header_And_Padding --+
 
-               --  Synchronization:
-               --    Read  - finalization
-               --    Write - allocation, deallocation
+         --  Move the address from the object to the beginning of the header
 
-               Delete_Finalize_Address_Unprotected (Addr);
-            end if;
+         N_Addr := Addr - Header_And_Padding;
 
-            --  Account for possible padding space before the header due to a
-            --  larger alignment.
+         --  The size of the deallocated object must include that of the header
 
-            Header_And_Padding := Header_Size_With_Padding (Alignment);
+         N_Size := Storage_Size + Header_And_Padding;
 
-            --    N_Addr  N_Ptr           Addr (from input)
-            --    |       |               |
-            --    V       V               V
-            --    +-------+---------------+----------------------+
-            --    |Padding|    Header     |        Object        |
-            --    +-------+---------------+----------------------+
-            --    ^       ^               ^
-            --    |       +- Header_Size -+
-            --    |                       |
-            --    +- Header_And_Padding --+
+         --  The alignment must account for the hidden header before the object
 
-            --  Convert the bits preceding the object into a list header
+         N_Alignment :=
+           System.Storage_Elements.Storage_Count'Max
+             (Alignment, System.Finalization_Primitives.Header_Alignment);
 
-            N_Ptr := Address_To_FM_Node_Ptr (Addr - Header_Size);
-
-            --  Detach the object from the related finalization master. This
-            --  action does not need to know the prior context used during
-            --  allocation.
-
-            --  Synchronization:
-            --    Write - allocation, deallocation, finalization
-
-            Detach_Unprotected (N_Ptr);
-
-            --  Move the address from the object to the beginning of the list
-            --  header.
-
-            N_Addr := Addr - Header_And_Padding;
-
-            --  The size of the deallocated object must include the size of the
-            --  hidden list header.
-
-            N_Size := Storage_Size + Header_And_Padding;
-
-            Unlock_Task.all;
-
-         exception
-            when others =>
-
-               --  Unlock the task in case the computations performed above
-               --  fail for some reason.
-
-               Unlock_Task.all;
-               raise;
-         end;
       else
-         N_Addr := Addr;
-         N_Size := Storage_Size;
+         N_Addr      := Addr;
+         N_Size      := Storage_Size;
+         N_Alignment := Alignment;
       end if;
 
-      --  Step 2: Deallocation
+      --  Step 2: Deallocation of object
 
       --  Dispatch to the proper implementation of Deallocate. This action
       --  covers both Root_Storage_Pool and Root_Storage_Pool_With_Subpools
       --  implementations.
 
-      Deallocate (Pool, N_Addr, N_Size, Alignment);
+      Deallocate (Pool, N_Addr, N_Size, N_Alignment);
    end Deallocate_Any_Controlled;
 
    ------------------------------
@@ -559,7 +434,7 @@ package body System.Storage_Pools.Subpools is
 
          --  Perform the following actions:
 
-         --    1) Finalize all objects chained on the subpool's master
+         --    1) Finalize all objects chained on the subpool's collection
          --    2) Remove the subpool from the owner's list of subpools
          --    3) Deallocate the doubly linked list node associated with the
          --       subpool.
@@ -577,7 +452,7 @@ package body System.Storage_Pools.Subpools is
          end;
       end loop;
 
-      --  If the finalization of a particular master failed, reraise the
+      --  If the finalization of a particular collection failed, reraise the
       --  exception now.
 
       if Raised then
@@ -593,7 +468,8 @@ package body System.Storage_Pools.Subpools is
      (Alignment : System.Storage_Elements.Storage_Count)
       return System.Storage_Elements.Storage_Count
    is
-      Size : constant Storage_Count := Header_Size;
+      Size : constant Storage_Count :=
+               System.Finalization_Primitives.Header_Size;
 
    begin
       if Size mod Alignment = 0 then
@@ -754,9 +630,9 @@ package body System.Storage_Pools.Subpools is
 
       --  Output the contents of a subpool
 
-      --    Owner : 0x123456789
-      --    Master: 0x123456789
-      --    Node  : 0x123456789
+      --    Owner     : 0x123456789
+      --    Collection: 0x123456789
+      --    Node      : 0x123456789
 
       Put ("Owner : ");
       if Subpool.Owner = null then
@@ -765,8 +641,8 @@ package body System.Storage_Pools.Subpools is
          Put_Line (Address_Image (Subpool.Owner'Address));
       end if;
 
-      Put ("Master: ");
-      Put_Line (Address_Image (Subpool.Master'Address));
+      Put ("Collection: ");
+      Put_Line (Address_Image (Subpool.Collection'Address));
 
       Put ("Node  : ");
       if Subpool.Node = null then
@@ -780,8 +656,6 @@ package body System.Storage_Pools.Subpools is
       else
          Put_Line (Address_Image (Subpool.Node'Address));
       end if;
-
-      Print_Master (Subpool.Master);
    end Print_Subpool;
 
    -------------------------
@@ -821,11 +695,6 @@ package body System.Storage_Pools.Subpools is
       Subpool.Node := N_Ptr;
 
       Attach (N_Ptr, To.Subpools'Unchecked_Access);
-
-      --  Mark the subpool's master as being a heterogeneous collection of
-      --  controlled objects.
-
-      Set_Is_Heterogeneous (Subpool.Master);
    end Set_Pool_Of_Subpool;
 
 end System.Storage_Pools.Subpools;

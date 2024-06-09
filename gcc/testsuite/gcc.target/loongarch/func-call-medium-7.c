@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "dg-require-effective-target loongarch_call36_support" { *-*-* } } */
 /* { dg-options "-mabi=lp64d -O0 -fpic -fno-plt -mexplicit-relocs -mcmodel=medium" } */
 /* { dg-final { scan-assembler "test:.*pcalau12i\t.*%got_pc_hi20\\(g\\)\n\tld\.d\t.*%got_pc_lo12\\(g\\)\n\tjirl" } } */
 /* { dg-final { scan-assembler "test1:.*pcalau12i\t.*%got_pc_hi20\\(f\\)\n\tld\.d\t.*%got_pc_lo12\\(f\\)\n\tjirl" } } */

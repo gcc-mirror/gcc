@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-fpermissive" } */
 
 /* Check compatibility of array declarations.  */
 

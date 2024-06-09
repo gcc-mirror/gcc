@@ -1,5 +1,5 @@
 /* real.cc - software floating point emulation.
-   Copyright (C) 1993-2023 Free Software Foundation, Inc.
+   Copyright (C) 1993-2024 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
    Re-written by Richard Henderson <rth@redhat.com>
 
@@ -1477,7 +1477,7 @@ real_to_integer (const REAL_VALUE_TYPE *r)
 wide_int
 real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 {
-  HOST_WIDE_INT val[2 * WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT valb[WIDE_INT_MAX_INL_ELTS], *val;
   int exp;
   int words, w;
   wide_int result;
@@ -1516,7 +1516,11 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 	 is the smallest HWI-multiple that has at least PRECISION bits.
 	 This ensures that the top bit of the significand is in the
 	 top bit of the wide_int.  */
-      words = (precision + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
+      words = ((precision + HOST_BITS_PER_WIDE_INT - 1)
+	       / HOST_BITS_PER_WIDE_INT);
+      val = valb;
+      if (UNLIKELY (words > WIDE_INT_MAX_INL_ELTS))
+	val = XALLOCAVEC (HOST_WIDE_INT, words);
       w = words * HOST_BITS_PER_WIDE_INT;
 
 #if (HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG)

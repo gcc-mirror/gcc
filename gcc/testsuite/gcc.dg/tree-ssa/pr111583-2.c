@@ -18,7 +18,7 @@ static short m(unsigned k) {
   const unsigned short *n[65];
   g = &n[4];
   k || l();
-  long a = k;
+  __INTPTR_TYPE__ a = k;
   char i = 0;
   unsigned long j = k;
   while (j--)

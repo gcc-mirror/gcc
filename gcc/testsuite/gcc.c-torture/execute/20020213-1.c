@@ -3,6 +3,7 @@
    incorrectly assumed it is safe to first write into a.a2 b-1
    and then read the original value from it.  */
 
+void abort (void);
 int bar (float);
 
 struct A {

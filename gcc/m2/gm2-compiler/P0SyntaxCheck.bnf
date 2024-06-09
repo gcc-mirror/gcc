@@ -1,7 +1,7 @@
 --
 -- m2.bnf grammar and associated actions for pass 0.
 --
--- Copyright (C) 2001-2023 Free Software Foundation, Inc.
+-- Copyright (C) 2001-2024 Free Software Foundation, Inc.
 -- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 --
 -- This file is part of GNU Modula-2.
@@ -23,7 +23,7 @@
 (* output from m2.bnf, automatically generated do not edit if these
    are the top two lines in the file.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -82,9 +82,10 @@ CONST
                                    (* giving up.                              *)
 
 VAR
-   seenError  : BOOLEAN ;
-   LastIdent  : Name ;
-   InsertCount: CARDINAL ;
+   EnableImportCheck,
+   seenError        : BOOLEAN ;
+   LastIdent        : Name ;
+   InsertCount      : CARDINAL ;
 
 
 PROCEDURE ErrorString (s: String) ;
@@ -253,12 +254,14 @@ BEGIN
          IF DebugRecover
          THEN
             printf0 ('buffer before\n') ;
-            DumpTokens ;
-            printf0 ('inserting token: buffer after\n') ;
-            DumpTokens ;
-            printf0 ('inserting token\n')
+            DumpTokens
          END ;
          InsertTokenAndRewind (t) ;
+         IF DebugRecover
+         THEN
+            printf0 ('inserting token: buffer after insertion\n') ;
+            DumpTokens
+         END ;
          RETURN TRUE
       END
    END ;
@@ -318,6 +321,21 @@ END PeepToken ;
 
 
 (*
+   DetectImport - checks whether the next token is an import or from and if so
+                  generates an error message.  This is called after an export
+                  statement to notify the user that the ordering is incorrect.
+*)
+
+PROCEDURE DetectImport ;
+BEGIN
+   IF (currenttoken = importtok) OR (currenttoken = fromtok)
+   THEN
+      ErrorArray ('an {%AkIMPORT} statement must preceed an {%kEXPORT} statement')
+   END
+END DetectImport ;
+
+
+(*
    Expect -
 *)
 
@@ -326,6 +344,10 @@ BEGIN
    IF currenttoken=t
    THEN
       GetToken ;
+      IF EnableImportCheck
+      THEN
+         DetectImport
+      END ;
       IF Pass0
       THEN
          PeepToken (stopset0, stopset1, stopset2)
@@ -345,6 +367,7 @@ END Expect ;
 PROCEDURE CompilationUnit () : BOOLEAN ;
 BEGIN
    seenError := FALSE ;
+   EnableImportCheck := FALSE ;
    InsertCount := 0 ;
    FileUnit (SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
    RETURN NOT seenError
@@ -881,7 +904,9 @@ Priority := "[" ConstExpression "]" =:
 Export := "EXPORT" ( "QUALIFIED"   IdentList |
                      "UNQUALIFIED" IdentList |
                       IdentList
-                   ) ";" =:
+                   )                                                       % EnableImportCheck := TRUE %
+                     ";"                                                   % EnableImportCheck := FALSE %
+                         =:
 
 Import :=  "FROM" Ident "IMPORT" IdentList ";" |
            "IMPORT"                                                        % PushTtok (ImportTok, GetTokenNo () -1)

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-fabi-version=0" }
+// { dg-options "-fabi-version=0 -fabi-compat-version=0" }
 
 struct A {
   template <typename T> int f ();

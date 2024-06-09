@@ -15,5 +15,5 @@ inline void widget (Cont parm)
   ssize (parm);
 }
 
-// { dg-final { scan-lang-dump {Read:-[0-9]*'s alias spec merge key \(new\) type_decl:'::make_signed_t'\n  ...  Read:-[0-9]*'s type spec merge key \(new\) type_decl:'::make_signed'\n  Read:-[0-9]*'s named merge key \(matched\) template_decl:'::template ssize'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]*'s decl spec merge key \(new\) type_decl:'::make_signed_t'\n  ...  Read:-[0-9]*'s type spec merge key \(new\) type_decl:'::make_signed'\n  Read:-[0-9]*'s named merge key \(matched\) template_decl:'::template ssize'} module } }
 

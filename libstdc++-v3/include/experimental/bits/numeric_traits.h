@@ -1,6 +1,6 @@
 // Definition of numeric_limits replacement traits P1841R1 -*- C++ -*-
 
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,6 +21,9 @@
 // a copy of the GCC Runtime Library Exception along with this program;
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
+
+#ifndef _GLIBCXX_EXPERIMENTAL_BITS_NUMERIC_TRAITS_H
+#define _GLIBCXX_EXPERIMENTAL_BITS_NUMERIC_TRAITS_H
 
 #include <type_traits>
 
@@ -565,3 +568,4 @@ template <>
 #endif // __FINITE_MATH_ONLY__
 
 } // namespace std
+#endif  // _GLIBCXX_EXPERIMENTAL_BITS_NUMERIC_TRAITS_H

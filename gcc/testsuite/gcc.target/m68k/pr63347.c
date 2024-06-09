@@ -32,13 +32,13 @@ int main(int argc, char *argv[])
     myaddr = 0x0;
     ret = print_info(&myaddr);
     if (!ret)
-        abort ();
+        __builtin_abort ();
 
     myaddr = 0x01020304;
     ret = print_info(&myaddr);
     if (ret)
-        abort ();
-    exit (0);
+        __builtin_abort ();
+    __builtin_exit (0);
 }
 
 

@@ -10,4 +10,4 @@ smaxf (float x, float y)
 
 /* { dg-final { scan-assembler-not "\t(call|tail)\tfmaxf\t" } } */
 /* { dg-final { scan-assembler-not "\tfmax\\.s\t" } } */
-/* { dg-final { scan-assembler "\tfge\\.s\t" } } */
+/* { dg-final { scan-assembler "\t(fge\\.s|flt\\.s)\t" } } */

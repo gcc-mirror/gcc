@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2023 Free Software Foundation, Inc.
+// Copyright (C) 2018-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,7 @@ test01()
   l2.push_back(2);
 
   std::equal(++l1.begin(), l1.end(), ++l2.begin());
+  // { dg-warning "ignoring return value" "" { target c++17 } 35 }
 }
 
 int

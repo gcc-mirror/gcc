@@ -1,4 +1,4 @@
-// { dg-options "-fabi-version=0" }
+// { dg-options "-fabi-version=0 -fabi-compat-version=0" }
 
 template <typename Q>
 void f (typename Q::X) {}

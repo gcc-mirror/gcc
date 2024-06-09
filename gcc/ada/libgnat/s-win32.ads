@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2008-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -315,8 +315,8 @@ package System.Win32 is
    pragma Import (Stdcall, FileTimeToLocalFileTime, "FileTimeToLocalFileTime");
 
    function LocalFileTimeToFileTime
-     (lpFileTime      : access Long_Long_Integer;
-      lpLocalFileTime : access Long_Long_Integer) return BOOL;
+     (lpLocalFileTime : access Long_Long_Integer;
+      lpFileTime      : access Long_Long_Integer) return BOOL;
    pragma Import (Stdcall, LocalFileTimeToFileTime, "LocalFileTimeToFileTime");
 
    procedure Sleep (dwMilliseconds : DWORD);

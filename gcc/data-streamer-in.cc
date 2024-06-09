@@ -1,7 +1,7 @@
 /* Routines for restoring various data types from a file stream.  This deals
    with various data types like strings, integers, enums, etc.
 
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -268,6 +268,18 @@ streamer_read_value_range (class lto_input_block *ib, data_in *data_in,
 	}
       return;
     }
+  if (is_a <prange> (vr))
+    {
+      prange &r = as_a <prange> (vr);
+      wide_int lb = streamer_read_wide_int (ib);
+      wide_int ub = streamer_read_wide_int (ib);
+      r.set (type, lb, ub);
+      wide_int value = streamer_read_wide_int (ib);
+      wide_int mask = streamer_read_wide_int (ib);
+      irange_bitmask bm (value, mask);
+      r.update_bitmask (bm);
+      return;
+    }
   gcc_unreachable ();
 }
 
@@ -277,10 +289,12 @@ streamer_read_value_range (class lto_input_block *ib, data_in *data_in,
 wide_int
 streamer_read_wide_int (class lto_input_block *ib)
 {
-  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT abuf[WIDE_INT_MAX_INL_ELTS], *a = abuf;
   int i;
   int prec = streamer_read_uhwi (ib);
   int len = streamer_read_uhwi (ib);
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    a = XALLOCAVEC (HOST_WIDE_INT, len);
   for (i = 0; i < len; i++)
     a[i] = streamer_read_hwi (ib);
   return wide_int::from_array (a, len, prec);
@@ -292,10 +306,12 @@ streamer_read_wide_int (class lto_input_block *ib)
 widest_int
 streamer_read_widest_int (class lto_input_block *ib)
 {
-  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT abuf[WIDE_INT_MAX_INL_ELTS], *a = abuf;
   int i;
   int prec ATTRIBUTE_UNUSED = streamer_read_uhwi (ib);
   int len = streamer_read_uhwi (ib);
+  if (UNLIKELY (len > WIDE_INT_MAX_INL_ELTS))
+    a = XALLOCAVEC (HOST_WIDE_INT, len);
   for (i = 0; i < len; i++)
     a[i] = streamer_read_hwi (ib);
   return widest_int::from_array (a, len);

@@ -307,7 +307,7 @@ Lret:
 
 private T tanImpl(T)(T x) @safe pure nothrow @nogc
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
     import std.math.constants : PI, PI_4;
     import std.math.rounding : floor;
     import std.math.algebraic : poly;
@@ -675,8 +675,7 @@ float atan(float x) @safe pure nothrow @nogc { return __ctfe ? cast(float) atan(
 
 private T atanImpl(T)(T x) @safe pure nothrow @nogc
 {
-    import std.math : floatTraits, RealFormat;
-    import std.math.traits : copysign, isInfinity, signbit;
+    import std.math.traits : floatTraits, RealFormat, copysign, isInfinity, signbit;
     import std.math.constants : PI_2, PI_4;
     import std.math.algebraic : poly;
 

@@ -33,4 +33,3 @@ contains
     !$omp requires unified_address ! { dg-error "must appear in the specification part of a program unit" }
   end subroutine bar
 end
-! { dg-prune-output "not yet supported" }

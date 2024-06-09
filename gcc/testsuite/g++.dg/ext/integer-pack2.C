@@ -1,5 +1,5 @@
 // { dg-do compile { target { c++11 && int32 } } }
-// { dg-options -w }
+// { dg-options "-fpermissive -w" }
 
 template<typename T, T...> struct integer_sequence { };
 template<typename T, T num>

@@ -2,6 +2,8 @@
    http://www.open-std.org/jtc1/sc22/wg14/www/docs/dr_236.htm.  However,
    there seems to be consensus that the presence of a union to aggregate
    struct s1 and struct s2 should make it conforming.  */
+void abort(void);
+
 struct s1 { double d; };
 struct s2 { double d; };
 union u { struct s1 x; struct s2 y; };

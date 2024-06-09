@@ -1,6 +1,6 @@
 ## Makefile for the C++11 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2023 Free Software Foundation, Inc.
+## Copyright (C) 1997-2024 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -159,13 +159,13 @@ limits.lo: limits.cc
 limits.o: limits.cc
 	$(CXXCOMPILE) -fchar8_t -c $<
 locale_init.lo: locale_init.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+	$(LTCXXCOMPILE) -fchar8_t -c $<
 locale_init.o: locale_init.cc
-	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+	$(CXXCOMPILE) -fchar8_t -c $<
 localename.lo: localename.cc
-	$(LTCXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+	$(LTCXXCOMPILE) -fchar8_t -c $<
 localename.o: localename.cc
-	$(CXXCOMPILE) -std=gnu++11 -fchar8_t -c $<
+	$(CXXCOMPILE) -fchar8_t -c $<
 
 if ENABLE_DUAL_ABI
 # Rewrite the type info for __ios_failure.

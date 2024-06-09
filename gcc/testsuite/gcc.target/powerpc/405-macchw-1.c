@@ -3,9 +3,13 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-O2 -mdejagnu-cpu=405" } */
-/* { dg-skip-if "other options override -mcpu=405" { ! powerpc_405_nocache } } */
 
 /* { dg-final { scan-assembler "macchw " } } */
+
+/* Ensure -mdejagnu-cpu=405 always defines __PPC405__.  */
+#ifndef __PPC405__
+#error not a PPC405
+#endif
 
 int
 f(int a, int b, int c)

@@ -1,5 +1,5 @@
 /* Warn on problematic uses of alloca and variable length arrays.
-   Copyright (C) 2016-2023 Free Software Foundation, Inc.
+   Copyright (C) 2016-2024 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -310,7 +310,7 @@ pass_walloca::execute (function *fun)
 
 	  enum opt_code wcode
 	    = is_vla ? OPT_Wvla_larger_than_ : OPT_Walloca_larger_than_;
-	  char buff[WIDE_INT_MAX_PRECISION / 4 + 4];
+	  char buff[WIDE_INT_MAX_INL_PRECISION / 4 + 4];
 	  switch (t.type)
 	    {
 	    case ALLOCA_OK:
@@ -329,6 +329,7 @@ pass_walloca::execute (function *fun)
 				      "large")))
 		    && t.limit != 0)
 		  {
+		    gcc_assert (t.limit.get_len () < WIDE_INT_MAX_INL_ELTS);
 		    print_decu (t.limit, buff);
 		    inform (loc, "limit is %wu bytes, but argument "
 				 "may be as large as %s",
@@ -347,6 +348,7 @@ pass_walloca::execute (function *fun)
 				 : G_("argument to %<alloca%> is too large")))
 		    && t.limit != 0)
 		  {
+		    gcc_assert (t.limit.get_len () < WIDE_INT_MAX_INL_ELTS);
 		    print_decu (t.limit, buff);
 		    inform (loc, "limit is %wu bytes, but argument is %s",
 			    is_vla ? warn_vla_limit : adjusted_alloca_limit,

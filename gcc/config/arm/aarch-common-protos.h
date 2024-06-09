@@ -1,6 +1,6 @@
 /* Functions and structures shared between arm and aarch64.
 
-   Copyright (C) 1991-2023 Free Software Foundation, Inc.
+   Copyright (C) 1991-2024 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -155,14 +155,26 @@ struct cpu_cost_table
 
 rtx_insn *arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 			     vec<machine_mode> & /*input_modes*/,
-			     vec<const char *> &constraints,
+			     vec<const char *> &constraints, vec<rtx> &,
 			     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs,
 			     location_t loc);
 
-/* Parsing routine for branch-protection common to AArch64 and Arm.  */
-enum aarch_parse_opt_result aarch_parse_branch_protection (const char*, char**);
+/* Specifies a -mbranch-protection= argument.  */
+struct aarch_branch_protect_type
+{
+  /* The type's name that the user passes to the branch-protection option
+     string.  */
+  const char* name;
+  /* The type can only appear alone, other types should be rejected.  */
+  int alone;
+  /* Function to handle the protection type and set global variables.  */
+  void (*handler)(void);
+  /* A list of types that can follow this type in the option string.  */
+  const struct aarch_branch_protect_type* subtypes;
+  unsigned int num_subtypes;
+};
 
-/* Validation routine for branch-protection common to AArch64 and Arm.  */
-bool aarch_validate_mbranch_protection (const char *);
+bool aarch_validate_mbranch_protection (
+  const struct aarch_branch_protect_type *, const char *, const char *);
 
 #endif /* GCC_AARCH_COMMON_PROTOS_H */

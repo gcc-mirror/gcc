@@ -1,4 +1,4 @@
-@c Copyright (C) 2000-2023 Free Software Foundation, Inc.
+@c Copyright (C) 2000-2024 Free Software Foundation, Inc.
 @c This file is part of GNU Modula-2.
 
 @c Permission is granted to copy, distribute and/or modify this document
@@ -17,7 +17,7 @@
 @section Base libraries
 
 @c README.texi describes the pim libraries.
-@c Copyright @copyright{} 2000-2023 Free Software Foundation, Inc.
+@c Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
 @c
 @c This is part of the GM2 manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.
@@ -240,7 +240,14 @@ DEFINITION MODULE Builtins ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
-(* floating point intrinsic procedure functions *)
+(* Floating point intrinsic procedure functions.  *)
+
+@findex isnanf
+PROCEDURE __BUILTIN__ isnanf (x: SHORTREAL) : INTEGER ;
+@findex isnan
+PROCEDURE __BUILTIN__ isnan (x: REAL) : INTEGER ;
+@findex isnanl
+PROCEDURE __BUILTIN__ isnanl (x: LONGREAL) : INTEGER ;
 
 @findex isfinitef
 PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : INTEGER ;
@@ -349,9 +356,9 @@ PROCEDURE __BUILTIN__ nextafterf (x, y: SHORTREAL) : SHORTREAL ;
 PROCEDURE __BUILTIN__ nextafterl (x, y: LONGREAL) : LONGREAL ;
 
 @findex nexttoward
-PROCEDURE __BUILTIN__ nexttoward (x, y: REAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ nexttoward (x: REAL; y: LONGREAL) : REAL ;
 @findex nexttowardf
-PROCEDURE __BUILTIN__ nexttowardf (x, y: SHORTREAL) : LONGREAL ;
+PROCEDURE __BUILTIN__ nexttowardf (x: SHORTREAL; y: LONGREAL) : SHORTREAL ;
 @findex nexttowardl
 PROCEDURE __BUILTIN__ nexttowardl (x, y: LONGREAL) : LONGREAL ;
 
@@ -369,7 +376,70 @@ PROCEDURE __BUILTIN__ scalbnf (x: SHORTREAL; n: INTEGER) : SHORTREAL ;
 @findex scalbnl
 PROCEDURE __BUILTIN__ scalbnl (x: LONGREAL; n: INTEGER) : LONGREAL ;
 
-(* complex arithmetic intrincic procedure functions *)
+@findex isgreater
+PROCEDURE __BUILTIN__ isgreater (x, y: REAL) : INTEGER ;
+@findex isgreaterf
+PROCEDURE __BUILTIN__ isgreaterf (x, y: SHORTREAL) : INTEGER ;
+@findex isgreaterl
+PROCEDURE __BUILTIN__ isgreaterl (x, y: LONGREAL) : INTEGER ;
+
+@findex isgreaterequal
+PROCEDURE __BUILTIN__ isgreaterequal (x, y: REAL) : INTEGER ;
+@findex isgreaterequalf
+PROCEDURE __BUILTIN__ isgreaterequalf (x, y: SHORTREAL) : INTEGER ;
+@findex isgreaterequall
+PROCEDURE __BUILTIN__ isgreaterequall (x, y: LONGREAL) : INTEGER ;
+
+@findex isless
+PROCEDURE __BUILTIN__ isless (x, y: REAL) : INTEGER ;
+@findex islessf
+PROCEDURE __BUILTIN__ islessf (x, y: SHORTREAL) : INTEGER ;
+@findex islessl
+PROCEDURE __BUILTIN__ islessl (x, y: LONGREAL) : INTEGER ;
+
+@findex islessequal
+PROCEDURE __BUILTIN__ islessequal (x, y: REAL) : INTEGER ;
+@findex islessequalf
+PROCEDURE __BUILTIN__ islessequalf (x, y: SHORTREAL) : INTEGER ;
+@findex islessequall
+PROCEDURE __BUILTIN__ islessequall (x, y: LONGREAL) : INTEGER ;
+
+@findex islessgreater
+PROCEDURE __BUILTIN__ islessgreater (x, y: REAL) : INTEGER ;
+@findex islessgreaterf
+PROCEDURE __BUILTIN__ islessgreaterf (x, y: SHORTREAL) : INTEGER ;
+@findex islessgreaterl
+PROCEDURE __BUILTIN__ islessgreaterl (x, y: LONGREAL) : INTEGER ;
+
+@findex isunordered
+PROCEDURE __BUILTIN__ isunordered (x, y: REAL) : INTEGER ;
+@findex isunorderedf
+PROCEDURE __BUILTIN__ isunorderedf (x, y: SHORTREAL) : INTEGER ;
+@findex isunorderedl
+PROCEDURE __BUILTIN__ isunorderedl (x, y: LONGREAL) : INTEGER ;
+
+@findex iseqsig
+PROCEDURE __BUILTIN__ iseqsig (x, y: REAL) : INTEGER ;
+@findex iseqsigf
+PROCEDURE __BUILTIN__ iseqsigf (x, y: SHORTREAL) : INTEGER ;
+@findex iseqsigl
+PROCEDURE __BUILTIN__ iseqsigl (x, y: LONGREAL) : INTEGER ;
+
+@findex isnormal
+PROCEDURE __BUILTIN__ isnormal (r: REAL) : INTEGER ;
+@findex isnormalf
+PROCEDURE __BUILTIN__ isnormalf (s: SHORTREAL) : INTEGER ;
+@findex isnormall
+PROCEDURE __BUILTIN__ isnormall (l: LONGREAL) : INTEGER ;
+
+@findex isinf_sign
+PROCEDURE __BUILTIN__ isinf_sign (r: REAL) : INTEGER ;
+@findex isinf_signf
+PROCEDURE __BUILTIN__ isinf_signf (s: SHORTREAL) : INTEGER ;
+@findex isinf_signl
+PROCEDURE __BUILTIN__ isinf_signl (l: LONGREAL) : INTEGER ;
+
+(* Complex arithmetic intrincic procedure functions.  *)
 
 @findex cabsf
 PROCEDURE __BUILTIN__ cabsf (z: SHORTCOMPLEX) : SHORTREAL ;
@@ -662,10 +732,10 @@ DEFINITION MODULE DynamicStrings ;
 FROM SYSTEM IMPORT ADDRESS ;
 EXPORT QUALIFIED String,
                  InitString, KillString, Fin, InitStringCharStar,
-                 InitStringChar, Index, RIndex,
+                 InitStringChar, Index, RIndex, ReverseIndex,
                  Mark, Length, ConCat, ConCatChar, Assign, Dup, Add,
                  Equal, EqualCharStar, EqualArray, ToUpper, ToLower,
-                 CopyOut, Mult, Slice,
+                 CopyOut, Mult, Slice, ReplaceChar,
                  RemoveWhitePrefix, RemoveWhitePostfix, RemoveComment,
                  char, string,
                  InitStringDB, InitStringCharStarDB, InitStringCharDB,
@@ -767,6 +837,15 @@ PROCEDURE Assign (a, b: String) : String ;
 
 
 (*
+   ReplaceChar - returns string s after it has changed all
+                 occurances of from to to.
+*)
+
+@findex ReplaceChar
+PROCEDURE ReplaceChar (s: String; from, to: CHAR) : String ;
+
+
+(*
    Dup - duplicate a String, s, returning the copy of s.
 *)
 
@@ -845,12 +924,27 @@ PROCEDURE Index (s: String; ch: CHAR; o: CARDINAL) : INTEGER ;
 
 (*
    RIndex - returns the indice of the last occurance of, ch,
-            in String, s. The search starts at position, o.
-            -1 is returned if, ch, is not found.
+            in String, s.  The search starts at position, o.
+            -1 is returned if ch is not found.  The search
+            is performed left to right.
 *)
 
 @findex RIndex
 PROCEDURE RIndex (s: String; ch: CHAR; o: CARDINAL) : INTEGER ;
+
+
+(*
+   ReverseIndex - returns the indice of the last occurance of ch
+                  in String s.  The search starts at position o
+                  and searches from right to left.  The start position
+                  may be indexed negatively from the right (-1 is the
+                  last index).
+                  The return value if ch is found will always be positive.
+                  -1 is returned if ch is not found.
+*)
+
+@findex ReverseIndex
+PROCEDURE ReverseIndex (s: String; ch: CHAR; o: INTEGER) : INTEGER ;
 
 
 (*
@@ -1241,7 +1335,7 @@ PROCEDURE ReadNBytes (f: File; nBytes: CARDINAL;
 
 
 (*
-   ReadAny - reads HIGH(a) bytes into, a. All input
+   ReadAny - reads HIGH (a) + 1 bytes into, a.  All input
              is fully buffered, unlike ReadNBytes and thus is more
              suited to small reads.
 *)
@@ -1264,7 +1358,7 @@ PROCEDURE WriteNBytes (f: File; nBytes: CARDINAL;
 
 
 (*
-   WriteAny - writes HIGH(a) bytes onto, file, f. All output
+   WriteAny - writes HIGH (a) + 1 bytes onto, file, f.  All output
               is fully buffered, unlike WriteNBytes and thus is more
               suited to small writes.
 *)
@@ -1593,7 +1687,7 @@ TYPE
 
 (*
    GetOpt - call C getopt and fill in the parameters:
-            optarg, optind, opterr and optop.
+            optarg, optind, opterr and optopt.
 *)
 
 @findex GetOpt
@@ -1638,14 +1732,13 @@ PROCEDURE InitLongOptions () : LongOptions ;
        val    is the value to return, or to load into the variable
               pointed to by flag.
 
-       The last element of the array has to be filled with zeros.
+       The last element of the array must be filled with zeros.
 *)
 
 @findex AddLongOption
-PROCEDURE AddLongOption (lo: LongOptions;
+PROCEDURE AddLongOption (lo: LongOptions; index: CARDINAL;
                          name: String; has_arg: INTEGER;
-                         flag: PtrToInteger;
-                         val: INTEGER) : LongOptions ;
+                         VAR flag: INTEGER; val: INTEGER) : LongOptions ;
 
 
 (*
@@ -1664,8 +1757,8 @@ PROCEDURE KillLongOptions (lo: LongOptions) : LongOptions ;
 *)
 
 @findex GetOptLong
-PROCEDURE GetOptLong (argc: INTEGER; argv: ADDRESS; optstring: String;
-                      longopts: LongOptions;
+PROCEDURE GetOptLong (argc: INTEGER; argv: ADDRESS;
+                      optstring: String; longopts: LongOptions;
                       VAR longindex: INTEGER) : INTEGER ;
 
 
@@ -1759,16 +1852,24 @@ END IO.
 DEFINITION MODULE Indexing ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-EXPORT QUALIFIED Index, InitIndex, KillIndex, GetIndice, PutIndice,
-                 HighIndice, LowIndice, InBounds, IsIndiceInIndex,
-                 RemoveIndiceFromIndex, IncludeIndiceIntoIndex,
-                 ForeachIndiceInIndexDo, DeleteIndice, DebugIndex ;
+
 
 TYPE
 @findex Index (type)
    Index ;
 @findex IndexProcedure (type)
    IndexProcedure = PROCEDURE (ADDRESS) ;
+
+
+(*
+   InitIndexTuned - creates a dynamic array with low indice.
+                    minsize is the initial number of elements the
+                    array is allocated and growfactor determines how
+                    it will be resized once it becomes full.
+*)
+
+@findex InitIndexTuned
+PROCEDURE InitIndexTuned (low, minsize, growfactor: CARDINAL) : Index ;
 
 
 (*
@@ -1877,6 +1978,14 @@ PROCEDURE IncludeIndiceIntoIndex (i: Index; a: ADDRESS) ;
 PROCEDURE ForeachIndiceInIndexDo (i: Index; p: IndexProcedure) ;
 
 
+(*
+   IsEmpty - return TRUE if the array has no entries it.
+*)
+
+@findex IsEmpty
+PROCEDURE IsEmpty (i: Index) : BOOLEAN ;
+
+
 END Indexing.
 @end example
 @page
@@ -1973,6 +2082,46 @@ PROCEDURE RegisterModule (modulename, libname: ADDRESS;
 @findex RequestDependant
 PROCEDURE RequestDependant (modulename, libname,
                             dependantmodule, dependantlibname: ADDRESS) ;
+
+
+(*
+   InstallTerminationProcedure - installs a procedure, p, which will
+                                 be called when the procedure
+                                 ExecuteTerminationProcedures
+                                 is invoked.  It returns TRUE is the
+                                 procedure is installed.
+*)
+
+@findex InstallTerminationProcedure
+PROCEDURE InstallTerminationProcedure (p: PROC) : BOOLEAN ;
+
+
+(*
+   ExecuteInitialProcedures - executes the initial procedures installed
+                              by InstallInitialProcedure.
+*)
+
+@findex ExecuteInitialProcedures
+PROCEDURE ExecuteInitialProcedures ;
+
+
+(*
+   InstallInitialProcedure - installs a procedure to be executed just
+                             before the BEGIN code section of the main
+                             program module.
+*)
+
+@findex InstallInitialProcedure
+PROCEDURE InstallInitialProcedure (p: PROC) : BOOLEAN ;
+
+
+(*
+   ExecuteTerminationProcedures - calls each installed termination procedure
+                                  in reverse order.
+*)
+
+@findex ExecuteTerminationProcedures
+PROCEDURE ExecuteTerminationProcedures ;
 
 
 END M2Dependent.
@@ -4428,9 +4577,9 @@ PROCEDURE nextafterf (x, y: SHORTREAL) : SHORTREAL ;
 PROCEDURE nextafterl (x, y: LONGREAL) : LONGREAL ;
 
 @findex nexttoward
-PROCEDURE nexttoward (x, y: REAL) : REAL ;
+PROCEDURE nexttoward (x: REAL; y: LONGREAL) : REAL ;
 @findex nexttowardf
-PROCEDURE nexttowardf (x, y: SHORTREAL) : SHORTREAL ;
+PROCEDURE nexttowardf (x: SHORTREAL; y: LONGREAL) : SHORTREAL ;
 @findex nexttowardl
 PROCEDURE nexttowardl (x, y: LONGREAL) : LONGREAL ;
 
@@ -4595,7 +4744,6 @@ DEFINITION MODULE cgetopt ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
-
 TYPE
 @findex Options (type)
    Options = ADDRESS ;
@@ -4670,7 +4818,7 @@ PROCEDURE KillOptions (o: Options) : Options ;
 
 @findex SetOption
 PROCEDURE SetOption (o: Options; index: CARDINAL;
-                     name: ADDRESS; has_arg: BOOLEAN;
+                     name: ADDRESS; has_arg: INTEGER;
                      VAR flag: INTEGER; val: INTEGER) ;
 
 
@@ -5092,7 +5240,7 @@ PROCEDURE creat (filename: ADDRESS; mode: CARDINAL) : INTEGER;
 *)
 
 @findex lseek
-PROCEDURE lseek (fd: INTEGER; offset: LONGINT; whence: INTEGER) : LONGINT ;
+PROCEDURE lseek (fd: INTEGER; offset: CSSIZE_T; whence: INTEGER) : [ CSSIZE_T ] ;
 
 
 (*
@@ -5902,11 +6050,6 @@ DEFINITION MODULE wrapc ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
-EXPORT QUALIFIED strtime, filesize, fileinode,
-                 getrand, getusername, filemtime,
-                 getnameuidgid, signbit, signbitf, signbitl,
-		 isfinite, isfinitel, isfinitef ;
-
 
 (*
    strtime - returns the C string for the equivalent C asctime
@@ -6008,6 +6151,65 @@ PROCEDURE isfinitef (x: SHORTREAL) : INTEGER ;
 PROCEDURE isfinitel (x: LONGREAL) : INTEGER ;
 
 
+(*
+   isnan - provide non builtin alternative to the gcc builtin isnan.
+           Returns 1 if x is a NaN otherwise return 0.
+*)
+
+@findex isnan
+PROCEDURE isnan (x: REAL) : INTEGER ;
+
+
+(*
+   isnanf - provide non builtin alternative to the gcc builtin isnanf.
+            Returns 1 if x is a NaN otherwise return 0.
+*)
+
+@findex isnanf
+PROCEDURE isnanf (x: SHORTREAL) : INTEGER ;
+
+
+(*
+   isnanl - provide non builtin alternative to the gcc builtin isnanl.
+            Returns 1 if x is a NaN otherwise return 0.
+*)
+
+@findex isnanl
+PROCEDURE isnanl (x: LONGREAL) : INTEGER ;
+
+
+(*
+   SeekSet - return the system libc SEEK_SET value.
+*)
+
+@findex SeekSet
+PROCEDURE SeekSet () : INTEGER ;
+
+
+(*
+    SeekEnd - return the system libc SEEK_END value.
+*)
+
+@findex SeekEnd
+PROCEDURE SeekEnd () : INTEGER ;
+
+
+(*
+   ReadOnly - return the system value of O_RDONLY.
+*)
+
+@findex ReadOnly
+PROCEDURE ReadOnly () : BITSET ;
+
+
+(*
+   WriteOnly - return the system value of O_WRONLY.
+*)
+
+@findex WriteOnly
+PROCEDURE WriteOnly () : BITSET ;
+
+
 END wrapc.
 @end example
 @page
@@ -6018,7 +6220,7 @@ END wrapc.
 @section PIM and Logitech 3.0 Compatible
 
 @c README.texi describes the additional PIM libraries.
-@c Copyright @copyright{} 2000-2023 Free Software Foundation, Inc.
+@c Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
 @c
 @c This is part of the GM2 manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.
@@ -8195,7 +8397,7 @@ END TimeDate.
 @section PIM coroutine support
 
 @c README.texi describes the PIM coroutine libraries.
-@c Copyright @copyright{} 2000-2023 Free Software Foundation, Inc.
+@c Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
 @c
 @c This is part of the GM2 manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.
@@ -8783,7 +8985,7 @@ END TimerHandler.
 @section M2 ISO Libraries
 
 @c README.texi describes the ISO libraries.
-@c Copyright @copyright{} 2000-2023 Free Software Foundation, Inc.
+@c Copyright @copyright{} 2000-2024 Free Software Foundation, Inc.
 @c
 @c This is part of the GM2 manual.
 @c For copying conditions, see the file gcc/doc/include/fdl.texi.
@@ -8869,6 +9071,7 @@ coexist with their PIM counterparts.
 * gm2-libs-iso/ComplexMath::ComplexMath.def
 * gm2-libs-iso/ConvStringLong::ConvStringLong.def
 * gm2-libs-iso/ConvStringReal::ConvStringReal.def
+* gm2-libs-iso/ConvStringShort::ConvStringShort.def
 * gm2-libs-iso/ConvTypes::ConvTypes.def
 * gm2-libs-iso/EXCEPTIONS::EXCEPTIONS.def
 * gm2-libs-iso/ErrnoCategory::ErrnoCategory.def
@@ -8919,7 +9122,10 @@ coexist with their PIM counterparts.
 * gm2-libs-iso/Semaphores::Semaphores.def
 * gm2-libs-iso/SeqFile::SeqFile.def
 * gm2-libs-iso/ShortComplexMath::ShortComplexMath.def
+* gm2-libs-iso/ShortConv::ShortConv.def
 * gm2-libs-iso/ShortIO::ShortIO.def
+* gm2-libs-iso/ShortMath::ShortMath.def
+* gm2-libs-iso/ShortStr::ShortStr.def
 * gm2-libs-iso/ShortWholeIO::ShortWholeIO.def
 * gm2-libs-iso/SimpleCipher::SimpleCipher.def
 * gm2-libs-iso/StdChans::StdChans.def
@@ -8935,6 +9141,7 @@ coexist with their PIM counterparts.
 * gm2-libs-iso/WholeConv::WholeConv.def
 * gm2-libs-iso/WholeIO::WholeIO.def
 * gm2-libs-iso/WholeStr::WholeStr.def
+* gm2-libs-iso/wrapclock::wrapclock.def
 * gm2-libs-iso/wrapsock::wrapsock.def
 * gm2-libs-iso/wraptime::wraptime.def
 @end menu
@@ -9345,7 +9552,7 @@ END ConvStringLong.
 @end example
 @page
 
-@node gm2-libs-iso/ConvStringReal, gm2-libs-iso/ConvTypes, gm2-libs-iso/ConvStringLong, M2 ISO Libraries
+@node gm2-libs-iso/ConvStringReal, gm2-libs-iso/ConvStringShort, gm2-libs-iso/ConvStringLong, M2 ISO Libraries
 @subsection gm2-libs-iso/ConvStringReal
 
 @example
@@ -9389,7 +9596,51 @@ END ConvStringReal.
 @end example
 @page
 
-@node gm2-libs-iso/ConvTypes, gm2-libs-iso/EXCEPTIONS, gm2-libs-iso/ConvStringReal, M2 ISO Libraries
+@node gm2-libs-iso/ConvStringShort, gm2-libs-iso/ConvTypes, gm2-libs-iso/ConvStringReal, M2 ISO Libraries
+@subsection gm2-libs-iso/ConvStringShort
+
+@example
+DEFINITION MODULE ConvStringShort ;
+
+FROM DynamicStrings IMPORT String ;
+
+
+(*
+   RealToFloatString - converts a real with, sigFigs, into a string
+                       and returns the result as a string.
+*)
+
+@findex RealToFloatString
+PROCEDURE RealToFloatString (real: SHORTREAL; sigFigs: CARDINAL) : String ;
+
+
+(*
+   RealToEngString - converts the value of real to floating-point
+                     string form, with sigFigs significant figures.
+                     The number is scaled with one to three digits
+                     in the whole number part and with an exponent
+                     that is a multiple of three.
+*)
+
+@findex RealToEngString
+PROCEDURE RealToEngString (real: SHORTREAL; sigFigs: CARDINAL) : String ;
+
+
+(*
+   RealToFixedString - returns the number of characters in the fixed-point
+                       string representation of real rounded to the given
+                       place relative to the decimal point.
+*)
+
+@findex RealToFixedString
+PROCEDURE RealToFixedString (real: SHORTREAL; place: INTEGER) : String ;
+
+
+END ConvStringShort.
+@end example
+@page
+
+@node gm2-libs-iso/ConvTypes, gm2-libs-iso/EXCEPTIONS, gm2-libs-iso/ConvStringShort, M2 ISO Libraries
 @subsection gm2-libs-iso/ConvTypes
 
 @example
@@ -13492,7 +13743,7 @@ END SeqFile.
 @end example
 @page
 
-@node gm2-libs-iso/ShortComplexMath, gm2-libs-iso/ShortIO, gm2-libs-iso/SeqFile, M2 ISO Libraries
+@node gm2-libs-iso/ShortComplexMath, gm2-libs-iso/ShortConv, gm2-libs-iso/SeqFile, M2 ISO Libraries
 @subsection gm2-libs-iso/ShortComplexMath
 
 @example
@@ -13580,7 +13831,69 @@ END ShortComplexMath.
 @end example
 @page
 
-@node gm2-libs-iso/ShortIO, gm2-libs-iso/ShortWholeIO, gm2-libs-iso/ShortComplexMath, M2 ISO Libraries
+@node gm2-libs-iso/ShortConv, gm2-libs-iso/ShortIO, gm2-libs-iso/ShortComplexMath, M2 ISO Libraries
+@subsection gm2-libs-iso/ShortConv
+
+@example
+DEFINITION MODULE ShortConv;
+
+IMPORT
+  ConvTypes;
+
+TYPE
+@findex ConvResults (type)
+  ConvResults = ConvTypes.ConvResults; (* strAllRight, strOutOfRange,
+                                          strWrongFormat, strEmpty *)
+
+@findex ScanReal
+PROCEDURE ScanReal (inputCh: CHAR; VAR chClass: ConvTypes.ScanClass;
+                    VAR nextState: ConvTypes.ScanState);
+  (* Represents the start state of a finite state scanner for real
+     numbers - assigns class of inputCh to chClass and a procedure
+     representing the next state to nextState.
+  *)
+
+@findex FormatReal
+PROCEDURE FormatReal (str: ARRAY OF CHAR): ConvResults;
+  (* Returns the format of the string value for conversion to LONGREAL. *)
+
+@findex ValueReal
+PROCEDURE ValueReal (str: ARRAY OF CHAR): SHORTREAL;
+  (* Returns the value corresponding to the real number string value
+     str if str is well-formed; otherwise raises the ShortConv exception.
+  *)
+
+@findex LengthFloatReal
+PROCEDURE LengthFloatReal (real: SHORTREAL; sigFigs: CARDINAL): CARDINAL;
+  (* Returns the number of characters in the floating-point string
+     representation of real with sigFigs significant figures.
+  *)
+
+@findex LengthEngReal
+PROCEDURE LengthEngReal (real: SHORTREAL; sigFigs: CARDINAL): CARDINAL;
+  (* Returns the number of characters in the floating-point engineering
+     string representation of real with sigFigs significant figures.
+  *)
+
+@findex LengthFixedReal
+PROCEDURE LengthFixedReal (real: SHORTREAL; place: INTEGER): CARDINAL;
+  (* Returns the number of characters in the fixed-point string
+     representation of real rounded to the given place relative to the
+     decimal point.
+  *)
+
+@findex IsRConvException
+PROCEDURE IsRConvException (): BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional
+     execution state because of the raising of an exception in a
+     routine from this module; otherwise returns FALSE.
+  *)
+
+END ShortConv.
+@end example
+@page
+
+@node gm2-libs-iso/ShortIO, gm2-libs-iso/ShortMath, gm2-libs-iso/ShortConv, M2 ISO Libraries
 @subsection gm2-libs-iso/ShortIO
 
 @example
@@ -13648,7 +13961,152 @@ END ShortIO.
 @end example
 @page
 
-@node gm2-libs-iso/ShortWholeIO, gm2-libs-iso/SimpleCipher, gm2-libs-iso/ShortIO, M2 ISO Libraries
+@node gm2-libs-iso/ShortMath, gm2-libs-iso/ShortStr, gm2-libs-iso/ShortIO, M2 ISO Libraries
+@subsection gm2-libs-iso/ShortMath
+
+@example
+DEFINITION MODULE ShortMath;
+
+  (* Mathematical functions for the type LONGREAL *)
+
+CONST
+@findex pi (const)
+  pi   = 3.1415926535897932384626433832795028841972;
+@findex exp1 (const)
+  exp1 = 2.7182818284590452353602874713526624977572;
+
+@findex sqrt
+PROCEDURE __BUILTIN__ sqrt (x: SHORTREAL): SHORTREAL;
+  (* Returns the positive square root of x *)
+
+@findex exp
+PROCEDURE __BUILTIN__ exp (x: SHORTREAL): SHORTREAL;
+  (* Returns the exponential of x *)
+
+@findex ln
+PROCEDURE __BUILTIN__ ln (x: SHORTREAL): SHORTREAL;
+  (* Returns the natural logarithm of x *)
+
+  (* The angle in all trigonometric functions is measured in radians *)
+
+@findex sin
+PROCEDURE __BUILTIN__ sin (x: SHORTREAL): SHORTREAL;
+  (* Returns the sine of x *)
+
+@findex cos
+PROCEDURE __BUILTIN__ cos (x: SHORTREAL): SHORTREAL;
+  (* Returns the cosine of x *)
+
+@findex tan
+PROCEDURE tan (x: SHORTREAL): SHORTREAL;
+  (* Returns the tangent of x *)
+
+@findex arcsin
+PROCEDURE arcsin (x: SHORTREAL): SHORTREAL;
+  (* Returns the arcsine of x *)
+
+@findex arccos
+PROCEDURE arccos (x: SHORTREAL): SHORTREAL;
+  (* Returns the arccosine of x *)
+
+@findex arctan
+PROCEDURE arctan (x: SHORTREAL): SHORTREAL;
+  (* Returns the arctangent of x *)
+
+@findex power
+PROCEDURE power (base, exponent: SHORTREAL): SHORTREAL;
+  (* Returns the value of the number base raised to the power exponent *)
+
+@findex round
+PROCEDURE round (x: SHORTREAL): INTEGER;
+  (* Returns the value of x rounded to the nearest integer *)
+
+@findex IsRMathException
+PROCEDURE IsRMathException (): BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional
+     execution state because of the raising of an exception in a
+     routine from this module; otherwise returns FALSE.
+  *)
+
+END ShortMath.
+@end example
+@page
+
+@node gm2-libs-iso/ShortStr, gm2-libs-iso/ShortWholeIO, gm2-libs-iso/ShortMath, M2 ISO Libraries
+@subsection gm2-libs-iso/ShortStr
+
+@example
+DEFINITION MODULE ShortStr;
+
+  (* SHORTREAL/string conversions *)
+
+IMPORT
+   ConvTypes;
+
+TYPE
+   (* strAllRight, strOutOfRange, strWrongFormat, strEmpty *)
+@findex ConvResults (type)
+   ConvResults = ConvTypes.ConvResults;
+
+(* the string form of a signed fixed-point real number is
+     ["+" | "-"], decimal digit, @{decimal digit@}, [".",
+     @{decimal digit@}]
+*)
+
+(* the string form of a signed floating-point real number is
+     signed fixed-point real number, "E", ["+" | "-"],
+     decimal digit, @{decimal digit@}
+*)
+
+@findex StrToReal
+PROCEDURE StrToReal (str: ARRAY OF CHAR; VAR real: SHORTREAL;
+                     VAR res: ConvResults);
+  (* Ignores any leading spaces in str. If the subsequent characters
+     in str are in the format of a signed real number, assigns a
+     corresponding value to real.  Assigns a value indicating the
+     format of str to res.
+  *)
+
+@findex RealToFloat
+PROCEDURE RealToFloat (real: SHORTREAL; sigFigs: CARDINAL;
+                       VAR str: ARRAY OF CHAR);
+  (* Converts the value of real to floating-point string form, with
+     sigFigs significant figures, and copies the possibly truncated
+     result to str.
+  *)
+
+@findex RealToEng
+PROCEDURE RealToEng (real: SHORTREAL; sigFigs: CARDINAL;
+                     VAR str: ARRAY OF CHAR);
+  (* Converts the value of real to floating-point string form, with
+     sigFigs significant figures, and copies the possibly truncated
+     result to str. The number is scaled with one to three digits
+     in the whole number part and with an exponent that is a
+     multiple of three.
+  *)
+
+@findex RealToFixed
+PROCEDURE RealToFixed (real: SHORTREAL; place: INTEGER;
+                       VAR str: ARRAY OF CHAR);
+  (* Converts the value of real to fixed-point string form, rounded
+     to the given place relative to the decimal point, and copies
+     the possibly truncated result to str.
+  *)
+
+@findex RealToStr
+PROCEDURE RealToStr (real: SHORTREAL; VAR str: ARRAY OF CHAR);
+  (* Converts the value of real as RealToFixed if the sign and
+     magnitude can be shown within the capacity of str, or
+     otherwise as RealToFloat, and copies the possibly truncated
+     result to str. The number of places or significant digits
+     depend on the capacity of str.
+  *)
+
+END ShortStr.
+@end example
+@page
+
+@node gm2-libs-iso/ShortWholeIO, gm2-libs-iso/SimpleCipher, gm2-libs-iso/ShortStr, M2 ISO Libraries
 @subsection gm2-libs-iso/ShortWholeIO
 
 @example
@@ -14567,7 +15025,7 @@ END WholeIO.
 @end example
 @page
 
-@node gm2-libs-iso/WholeStr, gm2-libs-iso/wrapsock, gm2-libs-iso/WholeIO, M2 ISO Libraries
+@node gm2-libs-iso/WholeStr, gm2-libs-iso/wrapclock, gm2-libs-iso/WholeIO, M2 ISO Libraries
 @subsection gm2-libs-iso/WholeStr
 
 @example
@@ -14624,7 +15082,139 @@ END WholeStr.
 @end example
 @page
 
-@node gm2-libs-iso/wrapsock, gm2-libs-iso/wraptime, gm2-libs-iso/WholeStr, M2 ISO Libraries
+@node gm2-libs-iso/wrapclock, gm2-libs-iso/wrapsock, gm2-libs-iso/WholeStr, M2 ISO Libraries
+@subsection gm2-libs-iso/wrapclock
+
+@example
+DEFINITION MODULE wrapclock ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+@findex timespec (type)
+   timespec = ADDRESS ;
+
+
+(*
+   timezone - return the glibc timezone value.
+              This contains the difference between UTC and the latest
+              local standard time, in seconds west of UTC.
+              If the underlying timezone is unavailable and
+              clock_gettime, localtime_r, tm_gmtoff
+              is unavailable then 0 is returned.
+*)
+
+@findex timezone
+PROCEDURE timezone () : LONGINT ;
+
+
+(*
+   istimezone returns 1 if timezone in wrapclock.cc can resolve the
+              timezone value using the timezone C library call or by using
+              clock_gettime, localtime_r and tm_gmtoff.
+*)
+
+@findex istimezone
+PROCEDURE istimezone () : INTEGER ;
+
+
+(*
+   daylight - return the glibc daylight value.
+              This variable has a nonzero value if Daylight Saving
+              Time rules apply.
+              A nonzero value does not necessarily mean that Daylight
+              Saving Time is now in effect; it means only that Daylight
+              Saving Time is sometimes in effect.
+*)
+
+@findex daylight
+PROCEDURE daylight () : INTEGER ;
+
+
+(*
+   isdst - returns 1 if daylight saving time is currently in effect and
+           returns 0 if it is not.
+*)
+
+@findex isdst
+PROCEDURE isdst () : INTEGER ;
+
+
+(*
+   tzname - returns the string associated with the local timezone.
+            The daylight value is 0 or 1.  The value 0 returns the non
+            daylight saving timezone string and the value of 1 returns
+            the daylight saving timezone string.
+*)
+
+@findex tzname
+PROCEDURE tzname (daylight: INTEGER) : ADDRESS ;
+
+
+(*
+   InitTimespec - returns a newly created opaque type.
+*)
+
+@findex InitTimespec
+PROCEDURE InitTimespec () : timespec ;
+
+
+(*
+   KillTimespec - deallocates the memory associated with an
+                  opaque type.
+*)
+
+@findex KillTimespec
+PROCEDURE KillTimespec (tv: timespec) : timespec ;
+
+
+(*
+   GetTimespec - retrieves the number of seconds and nanoseconds
+                 from the timespec.  A return value of 0 means timespec
+                 is unavailable and a return value of 1 indicates success.
+*)
+
+@findex GetTimespec
+PROCEDURE GetTimespec (ts: timespec; VAR sec, nano: LONGCARD) : INTEGER ;
+
+
+(*
+   SetTimespec - sets the number of seconds and nanoseconds
+                 into timespec.  A return value of 0 means timespec
+                 is unavailable and a return value of 1 indicates success.
+*)
+
+@findex SetTimespec
+PROCEDURE SetTimespec (ts: timespec; sec, nano: LONGCARD) : INTEGER ;
+
+
+(*
+   GetTimeRealtime - performs return gettime (CLOCK_REALTIME, ts).
+                     gettime returns 0 on success and -1 on failure.
+                     If the underlying system does not have gettime
+                     then GetTimeRealtime returns 1.
+*)
+
+@findex GetTimeRealtime
+PROCEDURE GetTimeRealtime (ts: timespec) : INTEGER ;
+
+
+(*
+   SetTimeRealtime - performs return settime (CLOCK_REALTIME, ts).
+                     gettime returns 0 on success and -1 on failure.
+                     If the underlying system does not have gettime
+                     then SetTimeRealtime returns 1.
+*)
+
+@findex SetTimeRealtime
+PROCEDURE SetTimeRealtime (ts: timespec) : INTEGER ;
+
+
+END wrapclock.
+@end example
+@page
+
+@node gm2-libs-iso/wrapsock, gm2-libs-iso/wraptime, gm2-libs-iso/wrapclock, M2 ISO Libraries
 @subsection gm2-libs-iso/wrapsock
 
 @example

@@ -1,6 +1,6 @@
 \input texinfo
 @c -*-texinfo-*-
-@c Copyright (C) 2001-2023 Free Software Foundation, Inc.
+@c Copyright (C) 2001-2024 Free Software Foundation, Inc.
 @c This is part of the GM2 manual.
 
 @c User level documentation for GNU Modula-2
@@ -15,7 +15,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-gm2 1999-2023
+@set copyrights-gm2 1999-2024
 
 @copying
 @c man begin COPYRIGHT
@@ -92,8 +92,8 @@ Boston, MA 02110-1301, USA@*
 @node What is GNU Modula-2, Why use GNU Modula-2, , Overview
 @section What is GNU Modula-2
 
-GNU Modula-2 is a @uref{http://gcc.gnu.org/frontends.html, front end}
-for the GNU Compiler Collection (@uref{http://gcc.gnu.org/, GCC}).
+GNU Modula-2 is a @uref{https://gcc.gnu.org/frontends.html, front end}
+for the GNU Compiler Collection (@uref{https://gcc.gnu.org, GCC}).
 The GNU Modula-2 compiler is compliant with the PIM2, PIM3, PIM4 and
 ISO dialects.  Also implemented are a complete set of free ISO
 libraries and PIM libraries.
@@ -291,7 +291,7 @@ This manual only documents the options specific to @command{gm2}.
 
 This section describes how to compile and link a simple hello world
 program.  It provides a few examples of using the different options
-mentioned in @pxref{Compiler options, , ,gm2}.  Assuming that you have
+mentioned in @pxref{Compiler options}.  Assuming that you have
 a file called @file{hello.mod} in your current directory which
 contains:
 
@@ -398,14 +398,6 @@ it allows users to single step code into an intrinsic function.
 @c Modula-2
 @c turn on internal debugging of the compiler (internal switch)
 
-@c fdebug-trace-quad
-@c Modula-2
-@c turn on quadruple tracing (internal switch)
-
-@c fdebug-trace-api
-@c Modula-2
-@c turn on the Modula-2 api tracing (internal switch)
-
 @c fdebug-function-line-numbers
 @c Modula-2
 @c turn on the Modula-2 function line number generation (internal switch)
@@ -450,7 +442,7 @@ turn on ISO standard features.  Currently this enables the ISO
 @code{SYSTEM} module and alters the default library search path so
 that the ISO libraries are searched before the PIM libraries.  It also
 effects the behavior of @code{DIV} and @code{MOD} operators.
-@xref{Dialect, , ,gm2}.
+@xref{Dialect}.
 
 @item -flibs=
 modifies the default library search path.  The libraries supplied are:
@@ -474,6 +466,40 @@ this option forces the use of the static version.
 @c Modula-2 Joined
 @c set all location values to a specific value (internal switch)
 
+@item -fm2-debug-trace=
+turn on trace debugging using a comma separated list:
+@samp{line,token,quad,all}.  This is an internal command line option.
+
+@item -fm2-dump=
+enable dumping of modula-2 internal representation of data structures
+using a comma separated list.  The list can contain:
+@samp{quad,gimple,decl,all}.
+
+@item -fm2-dump-decl=@file{filestem}
+dump the modula-2 representation of a symbol to the @file{filestem}
+specified.  This option only takes effect if the
+@samp{-fm2-dump-filter} is specified.
+
+@item -fm2-dump-gimple=@file{filestem}
+dump modula-2 gimple representation to the @file{filestem} specified.
+
+@item -fm2-dump-quad=@file{filestem}
+dump quadruple representation to the @file{filestem} specified.
+
+@item -fm2-dump-filter=@samp{rules}
+filter the language dumps @samp{-fdump-lang-decl},
+@samp{-fdump-lang-gimple} and@samp{-fdump-lang-quad}
+on @samp{rules}.  @samp{rules} must be a comma
+separated list which can take three forms: the full decl textual name
+of a procedure, @samp{[libname.]module.ident} or
+@samp{[filename:]module.ident}.  This is an internal command line
+option.  Currently it only filters on procedure names and regexp
+matching is not implemented.  Three examples of its use following
+the previous forms could be:
+@code{-fm2-dump-filter=_M2_hello_init},
+@code{-fm2-dump-filter=m2pim.StrIO.WriteString} and
+@code{-fm2-dump-filter=StrLib.mod:StrIO.WriteString}.
+
 @item -fm2-g
 improve the debugging experience for new programmers at the expense
 of generating @code{nop} instructions if necessary to ensure single
@@ -490,7 +516,7 @@ specify the module mangled prefix name for all modules in the
 following include paths.
 
 @item -fm2-pathnameI
-for internal use only: used by the driver to copy the user facing -I
+for internal use only: used by the driver to copy the user facing @samp{-I}
 option.
 
 @item -fm2-plugin
@@ -532,30 +558,30 @@ turn on PIM standard features.  Currently this enables the PIM
 @code{SYSTEM} module and determines which identifiers are pervasive
 (declared in the base module).  If no other @samp{-fpim[234]} switch is
 used then division and modulus operators behave as defined in PIM4.
-@xref{Dialect, , ,gm2}.
+@xref{Dialect}.
 
 @item -fpim2
 turn on PIM-2 standard features.  Currently this removes @code{SIZE}
 from being a pervasive identifier (declared in the base module).  It
 places @code{SIZE} in the @code{SYSTEM} module.  It also effects the
 behavior of @code{DIV} and @code{MOD} operators.
-@xref{Dialect, , ,gm2}.
+@xref{Dialect}.
 
 @item -fpim3
 turn on PIM-3 standard features.  Currently this only effects the
 behavior of @code{DIV} and @code{MOD} operators.
-@xref{Dialect, , ,gm2}.
+@xref{Dialect}.
 
 @item -fpim4
 turn on PIM-4 standard features.  Currently this only effects the
 behavior of @code{DIV} and @code{MOD} operators.
-@xref{Dialect, , ,gm2}.
+@xref{Dialect}.
 
 @item -fpositive-mod-floor-div
 forces the @code{DIV} and @code{MOD} operators to behave as defined by PIM4.
 All modulus results are positive and the results from the division are
 rounded to the floor.
-@xref{Dialect, , ,gm2}.
+@xref{Dialect}.
 
 @item -fpthread
 link against the pthread library.  By default this option is on.  It
@@ -850,8 +876,8 @@ LONGCOMPLEX               complex long double
 
 Note that GNU Modula-2 also supports fixed sized data types which are
 exported from the @code{SYSTEM} module.
-@xref{The PIM system module, , ,gm2}.
-@xref{The ISO system module, , ,gm2}.
+@xref{The PIM system module}.
+@xref{The ISO system module}.
 
 @node Standard procedures, High procedure function, Elementary data types, Using
 @section Permanently accessible base procedures.
@@ -1602,7 +1628,7 @@ This section introduces the GNU Modula-2 language extensions.
 The GNU Modula-2 compiler allows abstract data types to be any type,
 not just restricted to a pointer type providing the
 @samp{-fextended-opaque} option is supplied
-@xref{Compiler options, , ,gm2}.
+@xref{Compiler options}.
 
 Declarations can be made in any order, whether they are
 types, constants, procedures, nested modules or variables.
@@ -1657,7 +1683,8 @@ The preprocessor @samp{cpp} can be invoked via the @samp{-fcpp}
 command line option.  This in turn invokes @samp{cpp} with the
 following arguments @samp{-traditional -lang-asm}.  These options
 preserve comments and all quotations.  @samp{gm2} treats a @samp{#}
-character in the first column as a preprocessor directive.
+character in the first column as a preprocessor directive unless
+@samp{-fno-cpp} is supplied.
 
 For example here is a module which calls @code{FatalError}
 via the macro @code{ERROR}.
@@ -1802,8 +1829,8 @@ program module.
 
 GNU Modula-2 also provides additional fixed sized data types which
 are all exported from the @code{SYSTEM} module.
-@xref{The PIM system module, , ,gm2}.
-@xref{The ISO system module, , ,gm2}.
+@xref{The PIM system module}.
+@xref{The ISO system module}.
 
 @node Type compatibility, Unbounded by reference, Extensions, Using
 @section Type compatibility
@@ -2178,7 +2205,7 @@ $ python3 testnum.py
 1234 x 2 = 2468
 @end example
 
-@xref{Producing a Python module, , ,gm2} for another example which
+@xref{Producing a Python module} for another example which
 uses the @code{UNQUALIFIED} keyword to reduce the module name clutter
 from the viewport of Python3.
 
@@ -2995,7 +3022,7 @@ The mailing list contents can be viewed
 @section Other languages for GCC
 
 These exist and can be found on the frontends web page on the
-@uref{http://gcc.gnu.org/frontends.html, gcc web site}.
+@uref{https://gcc.gnu.org/frontends.html, GCC web site}.
 
 @node License, Copying, Using, Top
 @section License of GNU Modula-2

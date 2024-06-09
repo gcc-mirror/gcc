@@ -1,4 +1,4 @@
-/* Test various erroneous or ignored uses of C2X attribute syntax.  */
+/* Test various erroneous or ignored uses of C23 attribute syntax.  */
 /* { dg-do compile } */
 /* { dg-options "-fgnu-tm" } */
 

@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997-2023 Free Software Foundation, Inc.
+   Copyright (C) 1997-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -781,7 +781,10 @@ bitmap_alloc (bitmap_obstack *bit_obstack MEM_STAT_DECL)
   bitmap map;
 
   if (!bit_obstack)
-    bit_obstack = &bitmap_default_obstack;
+    {
+      gcc_assert (bitmap_default_obstack_depth > 0);
+      bit_obstack = &bitmap_default_obstack;
+    }
   map = bit_obstack->heads;
   if (map)
     bit_obstack->heads = (class bitmap_head *) map->first;
@@ -2706,7 +2709,7 @@ bitmap_hash (const_bitmap head)
       for (ix = 0; ix != BITMAP_ELEMENT_WORDS; ix++)
 	hash ^= ptr->bits[ix];
     }
-  return (hashval_t)hash;
+  return iterative_hash (&hash, sizeof (hash), 0);
 }
 
 

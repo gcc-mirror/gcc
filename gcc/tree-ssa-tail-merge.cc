@@ -1,5 +1,5 @@
 /* Tail merging for gimple.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
    Contributed by Tom de Vries (tom@codesourcery.com)
 
 This file is part of GCC.
@@ -474,6 +474,9 @@ same_succ_hash (const same_succ *e)
        !gsi_end_p (gsi); gsi_next_nondebug (&gsi))
     {
       stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	continue;
+
       stmt_update_dep_bb (stmt);
       if (stmt_local_def (stmt))
 	continue;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1085,6 +1085,62 @@ begin
       when Pragma_Suppress_All =>
          Set_Has_Pragma_Suppress_All (Cunit (Current_Source_Unit));
 
+      -----------------------------------
+      -- User_Aspect_Definition (GNAT) --
+      -----------------------------------
+
+      --  pragma User_Aspect_Definition
+      --    (Identifier, {, Identifier [(Identifier {, Identifier})]});
+
+      when Pragma_User_Aspect_Definition =>
+         if Arg_Count < 1 then
+            Check_Arg_Count (1);
+         end if;
+         declare
+            OK   : Boolean := True;
+            Expr : Node_Id;
+
+            function All_Identifiers (L : List_Id) return Boolean;
+            --  Return True if every list element has Nkind = N_Identifier.
+
+            ---------------------
+            -- All_Identifiers --
+            ---------------------
+            function All_Identifiers (L : List_Id) return Boolean is
+               N : Node_Id := First (L);
+            begin
+               while Present (N) loop
+                  if Nkind (N) /= N_Identifier then
+                     return False;
+                  end if;
+                  Next (N);
+               end loop;
+               return True;
+            end All_Identifiers;
+
+         begin
+            Arg_Node := Arg1;
+            while Present (Arg_Node) and OK loop
+               Check_No_Identifier (Arg_Node);
+               Expr := Expression (Arg_Node);
+               case Nkind (Expr) is
+                  when N_Identifier =>
+                     OK := True;
+                  when N_Indexed_Component =>
+                     OK := Arg_Node /= Arg1 -- first arg must be identifier
+                             and then Nkind (Prefix (Expr)) = N_Identifier
+                             and then All_Identifiers (Expressions (Expr));
+                  when others =>
+                     OK := False;
+               end case;
+               Next (Arg_Node);
+            end loop;
+            if not OK then
+               Error_Msg_N ("incorrect argument for pragma%", Arg_Node);
+               raise Error_Resync;
+            end if;
+         end;
+
       ----------------------
       -- Warning_As_Error --
       ----------------------
@@ -1488,6 +1544,7 @@ begin
          | Pragma_Rename_Pragma
          | Pragma_Restricted_Run_Time
          | Pragma_Reviewable
+         | Pragma_Side_Effects
          | Pragma_SPARK_Mode
          | Pragma_Secondary_Stack_Size
          | Pragma_Share_Generic

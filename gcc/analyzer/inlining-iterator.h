@@ -1,5 +1,5 @@
 /* Iterator for walking a chain of inlining locations.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -104,6 +104,46 @@ private:
   location_t m_callsite;
   tree m_fndecl;
   tree m_next_abstract_origin;
+};
+
+/* A class for fixing up fndecls and stack depths in checker_event, based
+   on inlining records.
+
+   The early inliner runs before the analyzer, which can lead to confusing
+   output.
+
+   Tne base fndecl and depth within a checker_event are from call strings
+   in program_points, which reflect the call strings after inlining.
+   This class lets us offset the depth and fix up the reported fndecl and
+   stack depth to better reflect the user's original code.  */
+
+class inlining_info
+{
+public:
+  inlining_info (location_t loc)
+  {
+    inlining_iterator iter (loc);
+    m_inner_fndecl = iter.get_fndecl ();
+    int num_frames = 0;
+    while (!iter.done_p ())
+      {
+	m_outer_fndecl = iter.get_fndecl ();
+	num_frames++;
+	iter.next ();
+      }
+    if (num_frames > 1)
+      m_extra_frames = num_frames - 1;
+    else
+      m_extra_frames = 0;
+  }
+
+  tree get_inner_fndecl () const { return m_inner_fndecl; }
+  int get_extra_frames () const { return m_extra_frames; }
+
+private:
+  tree m_outer_fndecl;
+  tree m_inner_fndecl;
+  int m_extra_frames;
 };
 
 #endif /* GCC_ANALYZER_INLINING_ITERATOR_H */

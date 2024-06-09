@@ -1,7 +1,7 @@
 /**
  * Performs the semantic2 stage, which deals with initializer expressions.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/semantic2.d, _semantic2.d)
@@ -55,7 +55,7 @@ import dmd.parse;
 import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.utf;
 import dmd.sideeffect;
 import dmd.statementsem;
@@ -73,7 +73,7 @@ enum LOG = false;
 /*************************************
  * Does semantic analysis on initializers and members of aggregates.
  */
-extern(C++) void semantic2(Dsymbol dsym, Scope* sc)
+void semantic2(Dsymbol dsym, Scope* sc)
 {
     scope v = new Semantic2Visitor(sc);
     dsym.accept(v);
@@ -93,6 +93,13 @@ private extern(C++) final class Semantic2Visitor : Visitor
     override void visit(StaticAssert sa)
     {
         //printf("StaticAssert::semantic2() %s\n", sa.toChars());
+        if (const e = sa.exp.isStringExp())
+        {
+            // deprecated in 2.107
+            deprecation(e.loc, "static assert condition cannot be a string literal");
+            deprecationSupplemental(e.loc, "If intentional, use `%s !is null` instead to preserve behaviour",
+                e.toChars());
+        }
         auto sds = new ScopeDsymbol();
         sc = sc.push(sds);
         sc.tinst = null;
@@ -195,7 +202,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
             if (!tempinst.errors)
             {
                 if (!tempdecl.literal)
-                    tempinst.error(tempinst.loc, "error instantiating");
+                    .error(tempinst.loc, "%s `%s` error instantiating", tempinst.kind, tempinst.toPrettyChars);
                 if (tempinst.tinst)
                     tempinst.tinst.printInstantiationTrace();
             }
@@ -275,6 +282,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
             // https://issues.dlang.org/show_bug.cgi?id=20417
             // Don't run CTFE for the temporary variables inside typeof or __traits(compiles)
             vd._init = vd._init.initializerSemantic(sc, vd.type, sc.intypeof == 1 || sc.flags & SCOPE.compile ? INITnointerpret : INITinterpret);
+            lowerStaticAAs(vd, sc);
             vd.inuse--;
         }
         if (vd._init && vd.storage_class & STC.manifest)
@@ -314,7 +322,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
                 }
 
                 if (hasInvalidEnumInitializer(ei.exp))
-                    vd.error(": Unable to initialize enum with class or pointer to struct. Use static const variable instead.");
+                    .error(vd.loc, "%s `%s` : Unable to initialize enum with class or pointer to struct. Use static const variable instead.", vd.kind, vd.toPrettyChars);
             }
         }
         else if (vd._init && vd.isThreadlocal())
@@ -325,13 +333,13 @@ private extern(C++) final class Semantic2Visitor : Visitor
             {
                 ExpInitializer ei = vd._init.isExpInitializer();
                 if (ei && ei.exp.op == EXP.classReference)
-                    vd.error("is a thread-local class and cannot have a static initializer. Use `static this()` to initialize instead.");
+                    .error(vd.loc, "%s `%s` is a thread-local class and cannot have a static initializer. Use `static this()` to initialize instead.", vd.kind, vd.toPrettyChars);
             }
             else if (vd.type.ty == Tpointer && vd.type.nextOf().ty == Tstruct && vd.type.nextOf().isMutable() && !vd.type.nextOf().isShared())
             {
                 ExpInitializer ei = vd._init.isExpInitializer();
                 if (ei && ei.exp.op == EXP.address && (cast(AddrExp)ei.exp).e1.op == EXP.structLiteral)
-                    vd.error("is a thread-local pointer to struct and cannot have a static initializer. Use `static this()` to initialize instead.");
+                    .error(vd.loc, "%s `%s` is a thread-local pointer to struct and cannot have a static initializer. Use `static this()` to initialize instead.", vd.kind, vd.toPrettyChars);
             }
         }
         vd.semanticRun = PASS.semantic2done;
@@ -453,7 +461,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
                     (!sameAttr || !sameParams)
                 )
                 {
-                    f2.error("cannot overload `extern(%s)` function at %s",
+                    .error(f2.loc, "%s `%s` cannot overload `extern(%s)` function at %s", f2.kind, f2.toPrettyChars,
                             linkageToChars(f1._linkage),
                             f1.loc.toChars());
                     return 0;
@@ -472,14 +480,14 @@ private extern(C++) final class Semantic2Visitor : Visitor
                     // this condition, as well as the error for extern(C) functions above.
                     if (sameAttr != tf1.attributesEqual(tf2))
                     {
-                        f2.deprecation("cannot overload `extern(%s)` function at %s",
+                        .deprecation(f2.loc, "%s `%s` cannot overload `extern(%s)` function at %s", f2.kind, f2.toPrettyChars,
                                 linkageToChars(f1._linkage),
                                 f1.loc.toChars());
                     }
                     return 0;
                 }
 
-                error(f2.loc, "%s `%s%s` conflicts with previous declaration at %s",
+                .error(f2.loc, "%s `%s%s` conflicts with previous declaration at %s",
                         f2.kind(),
                         f2.toPrettyChars(),
                         parametersTypeToChars(tf2.parameterList),
@@ -630,7 +638,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
 
         if (ad._scope)
         {
-            ad.error("has forward references");
+            .error(ad.loc, "%s `%s` has forward references", ad.kind, ad.toPrettyChars);
             return;
         }
 
@@ -684,20 +692,20 @@ private extern(C++) final class Semantic2Visitor : Visitor
                         //printf("            found\n");
                         // Check that calling conventions match
                         if (fd._linkage != ifd._linkage)
-                            fd.error("linkage doesn't match interface function");
+                            .error(fd.loc, "%s `%s` linkage doesn't match interface function", fd.kind, fd.toPrettyChars);
 
                         // Check that it is current
                         //printf("newinstance = %d fd.toParent() = %s ifd.toParent() = %s\n",
                             //newinstance, fd.toParent().toChars(), ifd.toParent().toChars());
                         if (fd.toParent() != cd && ifd.toParent() == base.sym)
-                            cd.error("interface function `%s` is not implemented", ifd.toFullSignature());
+                            .error(cd.loc, "%s `%s` interface function `%s` is not implemented", cd.kind, cd.toPrettyChars, ifd.toFullSignature());
                     }
                     else
                     {
                         //printf("            not found %p\n", fd);
                         // BUG: should mark this class as abstract?
                         if (!cd.isAbstract())
-                            cd.error("interface function `%s` is not implemented", ifd.toFullSignature());
+                            .error(cd.loc, "%s `%s` interface function `%s` is not implemented", cd.kind, cd.toPrettyChars, ifd.toFullSignature());
                     }
                 }
             }
@@ -747,7 +755,7 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
     // When `@gnuAbiTag` is used, the type will be the UDA, not the struct literal
     if (e.op == EXP.type)
     {
-        e.error("`@%s` at least one argument expected", Id.udaGNUAbiTag.toChars());
+        error(e.loc, "`@%s` at least one argument expected", Id.udaGNUAbiTag.toChars());
         return;
     }
 
@@ -765,7 +773,7 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
     auto ale = (*sle.elements)[0].isArrayLiteralExp();
     if (ale is null)
     {
-        e.error("`@%s` at least one argument expected", Id.udaGNUAbiTag.toChars());
+        error(e.loc, "`@%s` at least one argument expected", Id.udaGNUAbiTag.toChars());
         return;
     }
 
@@ -774,8 +782,8 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
     {
         const str1 = (*lastTag.isStructLiteralExp().elements)[0].toString();
         const str2 = ale.toString();
-        e.error("only one `@%s` allowed per symbol", Id.udaGNUAbiTag.toChars());
-        e.errorSupplemental("instead of `@%s @%s`, use `@%s(%.*s, %.*s)`",
+        error(e.loc, "only one `@%s` allowed per symbol", Id.udaGNUAbiTag.toChars());
+        errorSupplemental(e.loc, "instead of `@%s @%s`, use `@%s(%.*s, %.*s)`",
             lastTag.toChars(), e.toChars(), Id.udaGNUAbiTag.toChars(),
             // Avoid [ ... ]
             cast(int)str1.length - 2, str1.ptr + 1,
@@ -791,7 +799,7 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
         const str = elem.toStringExp().peekString();
         if (!str.length)
         {
-            e.error("argument `%d` to `@%s` cannot be %s", cast(int)(idx + 1),
+            error(e.loc, "argument `%d` to `@%s` cannot be %s", cast(int)(idx + 1),
                     Id.udaGNUAbiTag.toChars(),
                     elem.isNullExp() ? "`null`".ptr : "empty".ptr);
             continue;
@@ -801,7 +809,7 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
         {
             if (!c.isValidMangling())
             {
-                e.error("`@%s` char `0x%02x` not allowed in mangling",
+                error(e.loc, "`@%s` char `0x%02x` not allowed in mangling",
                         Id.udaGNUAbiTag.toChars(), c);
                 break;
             }
@@ -818,4 +826,65 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
         return (cast(Expression*)e1).toStringExp().compare((cast(Expression*)e2).toStringExp());
     }
     ale.elements.sort!predicate;
+}
+
+/**
+ * Try lower a variable's Associative Array initializer to a newaa struct
+ * so it can be put in static data.
+ * Params:
+ *   vd = Variable to lower
+ *   sc = Scope
+ */
+void lowerStaticAAs(VarDeclaration vd, Scope* sc)
+{
+    if (vd.storage_class & STC.manifest)
+        return;
+    if (auto ei = vd._init.isExpInitializer())
+        lowerStaticAAs(ei.exp, sc);
+}
+
+/**
+ * Try lower all Associative Array literals in an expression to a newaa struct
+ * so it can be put in static data.
+ * Params:
+ *   e = Expression to traverse
+ *   sc = Scope
+ */
+void lowerStaticAAs(Expression e, Scope* sc)
+{
+    scope v = new StaticAAVisitor(sc);
+    e.accept(v);
+}
+
+/// Visit Associative Array literals and lower them to structs for static initialization
+private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
+{
+    alias visit = SemanticTimeTransitiveVisitor.visit;
+    Scope* sc;
+
+    this(Scope* sc) scope @safe
+    {
+        this.sc = sc;
+    }
+
+    override void visit(AssocArrayLiteralExp aaExp)
+    {
+        if (!verifyHookExist(aaExp.loc, *sc, Id._aaAsStruct, "initializing static associative arrays", Id.object))
+            return;
+
+        Expression hookFunc = new IdentifierExp(aaExp.loc, Id.empty);
+        hookFunc = new DotIdExp(aaExp.loc, hookFunc, Id.object);
+        hookFunc = new DotIdExp(aaExp.loc, hookFunc, Id._aaAsStruct);
+        auto arguments = new Expressions();
+        arguments.push(aaExp);
+        Expression loweredExp = new CallExp(aaExp.loc, hookFunc, arguments);
+
+        sc = sc.startCTFE();
+        loweredExp = loweredExp.expressionSemantic(sc);
+        loweredExp = resolveProperties(sc, loweredExp);
+        sc = sc.endCTFE();
+        loweredExp = loweredExp.ctfeInterpret();
+
+        aaExp.lowering = loweredExp;
+    }
 }

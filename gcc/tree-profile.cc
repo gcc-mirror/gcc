@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts.
-   Copyright (C) 1990-2023 Free Software Foundation, Inc.
+   Copyright (C) 1990-2024 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "symtab-thunks.h"
+#include "cfganal.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;
@@ -72,6 +73,1105 @@ static GTY(()) tree tree_time_profiler_counter;
 static GTY(()) tree ic_tuple_var;
 static GTY(()) tree ic_tuple_counters_field;
 static GTY(()) tree ic_tuple_callee_field;
+
+/* Types of counter update methods.
+
+   By default, the counter updates are done for a single threaded system
+   (COUNTER_UPDATE_SINGLE_THREAD).
+
+   If the user selected atomic profile counter updates
+   (-fprofile-update=atomic), then the counter updates will be done atomically
+   on a best-effort basis.  One of three methods to do the counter updates is
+   selected according to the target capabilities.
+
+   Ideally, the counter updates are done through atomic operations in hardware
+   (COUNTER_UPDATE_ATOMIC_BUILTIN).
+
+   If the target supports only 32-bit atomic increments and gcov_type_node is a
+   64-bit integer type, then for the profile edge counters the increment is
+   performed through two separate 32-bit atomic increments
+   (COUNTER_UPDATE_ATOMIC_SPLIT or COUNTER_UPDATE_ATOMIC_PARTIAL).  If the
+   target supports libatomic (targetm.have_libatomic), then other counter
+   updates are carried out by libatomic calls (COUNTER_UPDATE_ATOMIC_SPLIT).
+   If the target does not support libatomic, then the other counter updates are
+   not done atomically (COUNTER_UPDATE_ATOMIC_PARTIAL) and a warning is
+   issued.
+
+   If the target does not support atomic operations in hardware, however,  it
+   supports libatomic, then all updates are carried out by libatomic calls
+   (COUNTER_UPDATE_ATOMIC_BUILTIN).  */
+enum counter_update_method {
+  COUNTER_UPDATE_SINGLE_THREAD,
+  COUNTER_UPDATE_ATOMIC_BUILTIN,
+  COUNTER_UPDATE_ATOMIC_SPLIT,
+  COUNTER_UPDATE_ATOMIC_PARTIAL
+};
+
+static counter_update_method counter_update = COUNTER_UPDATE_SINGLE_THREAD;
+
+/* These functions support measuring modified conditition/decision coverage
+   (MC/DC).  MC/DC requires all of the below during testing:
+
+   - Each entry and exit point is invoked
+   - Each decision takes every possible outcome
+   - Each condition in a decision takes every possible outcome
+   - Each condition in a decision is shown to independently affect the outcome
+     of the decision
+
+   Independence of a condition is shown by recording it being evaluated to a
+   value (true/false) and not being made irrelevant ("masked") by a later term.
+   This feature adds some instrumentation code, a few bitwise operators, that
+   records the branches taken in conditions and applies a filter for the
+   masking effect.  Masking is essentially short-circuiting in reverse: a
+   condition does not contribute to the outcome if it would short circuit the
+   (sub) expression if it was evaluated right-to-left, (_ && false) and (_ ||
+   true).
+
+   The program is essentially rewritten this way:
+
+   - if (a || b) { fn () }
+   + if (a) { _t |= 0x1; goto _then; }
+   + else   { _f |= 0x1;
+   +	if (b) { _t |= 0x2; _mask |= 0x1; goto _then; }
+   +	else   { _f |= 0x2; goto _else; }
+   + _then:
+   + _gcov_t |= (_t & _mask);
+   + _gcov_f |= (_f & _mask);
+   + fn (); goto _end;
+   + _else:
+   + _gcov_t |= (_t & _mask);
+   + _gcov_f |= (_f & _mask);
+   + fn ();
+   + _end:
+
+   It is assumed the front end will provide discrimnators so that conditional
+   basic blocks (basic block with a conditional jump and outgoing true/false
+   edges) that belong to the same Boolean expression have the same
+   discriminator.  Masking is determined by analyzing these expressions as a
+   reduced order binary decision diagram.  */
+namespace
+{
+/* Some context and reused instances between function calls.  Large embedded
+   buffers are used to up-front request enough memory for most programs and
+   merge them into a single allocation at the cost of using more memory in the
+   average case.  Some numbers from linux v5.13 which is assumed to be a
+   reasonably diverse code base: 75% of the functions in linux have less than
+   16 nodes in the CFG and approx 2.5% have more than 64 nodes.  The functions
+   that go beyond a few dozen nodes tend to be very large (>100) and so 64
+   seems like a good balance.
+
+   This is really just a performance balance of the cost of allocation and
+   wasted memory.  */
+struct conds_ctx
+{
+    /* This is both a reusable shared allocation which is also used to return
+       single expressions, which means it for most code should only hold a
+       couple of elements.  */
+    auto_vec<basic_block, 64> blocks;
+
+    /* Index for the topological order indexed by basic_block->index to an
+       ordering so that expression (a || b && c) => top_index[a] < top_index[b]
+       < top_index[c].  */
+    auto_vec<int, 256> top_index;
+
+    /* Pre-allocate bitmaps and vectors for per-function book keeping.  This is
+       pure instance reuse and the bitmaps carry no data between function
+       calls.  */
+    auto_vec<basic_block, 64> B1;
+    auto_vec<basic_block, 64> B2;
+    auto_sbitmap G1;
+    auto_sbitmap G2;
+    auto_sbitmap G3;
+
+    explicit conds_ctx (unsigned size) noexcept (true) : G1 (size), G2 (size),
+    G3 (size)
+    {
+    }
+};
+
+/* Only instrument terms with fewer than number of bits in a (wide) gcov
+   integer, which is probably 64.  The algorithm itself does not impose this
+   limitation, but it makes for a simpler implementation.
+
+   * Allocating the output data structure (coverage_counter_alloc ()) can
+     assume pairs of gcov_type_unsigned and not use a separate length field.
+   * A pair gcov_type_unsigned can be used as accumulators.
+   * Updating accumulators is can use the bitwise operations |=, &= and not
+     custom operators that work for arbitrary-sized bit-sets.
+
+   Most real-world code should be unaffected by this, but it is possible
+   (especially for generated code) to exceed this limit.  */
+#define CONDITIONS_MAX_TERMS (TYPE_PRECISION (gcov_type_node))
+#define EDGE_CONDITION (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)
+
+/* Compare two basic blocks by their order in the expression i.e. for (a || b)
+   then topological_cmp (a, b, ...) < 0.  The result is undefined if LHS, RHS
+   belong to different expressions.  The TOP_INDEX argument should be the
+   top_index vector from ctx.  */
+int
+topological_cmp (const void *lhs, const void *rhs, void *top_index)
+{
+    const_basic_block l = *(const basic_block*) lhs;
+    const_basic_block r = *(const basic_block*) rhs;
+    const vec<int>* im = (const vec<int>*) top_index;
+    return (*im)[l->index] - (*im)[r->index];
+}
+
+/* Find the index of NEEDLE in BLOCKS; return -1 if not found.  This has two
+   uses, sometimes for the index and sometimes for set member checks.  Sets are
+   typically very small (number of conditions, >8 is uncommon) so linear search
+   should be very fast.  */
+int
+index_of (const basic_block needle, array_slice<basic_block> blocks)
+{
+    for (size_t i = 0; i < blocks.size (); i++)
+	if (blocks[i] == needle)
+	    return int (i);
+    return -1;
+}
+
+/* Special cases of the single_*_p and single_*_edge functions in basic-block.h
+   that don't consider exception handling or other complex edges.  This helps
+   create a view of the CFG with only normal edges - if a basic block has both
+   an outgoing fallthrough and exceptional edge, it should be considered a
+   single-successor.  */
+bool
+single_p (const vec<edge, va_gc> *edges)
+{
+    int n = EDGE_COUNT (edges);
+    if (n == 0)
+	return false;
+
+    for (edge e : edges)
+	if (e->flags & EDGE_COMPLEX)
+	    n -= 1;
+
+    return n == 1;
+}
+
+/* Get the single, non-complex edge.  Behavior is undefined edges have more
+   than 1 non-complex edges.  */
+edge
+single_edge (const vec<edge, va_gc> *edges)
+{
+    gcc_checking_assert (single_p (edges));
+    for (edge e : edges)
+    {
+	if (e->flags & EDGE_COMPLEX)
+	    continue;
+	return e;
+    }
+    return NULL;
+}
+
+/* Sometimes, for example with function calls, goto labels, and C++
+   destructors, the CFG gets extra nodes that are essentially single-entry
+   single-exit in the middle of boolean expressions.  For example:
+
+   x || can_throw (y)
+
+         A
+        /|
+       / |
+      B  |
+      |  |
+      C  |
+     / \ |
+    /   \|
+   F     T
+
+   Without the extra node inserted by the function + exception it becomes a
+   proper 2-term graph, not 2 single-term graphs.
+
+       A
+      /|
+     C |
+    / \|
+   F   T
+
+   This function finds the source edge of these paths.  This is often the
+   identity function.  */
+edge
+contract_edge_up (edge e)
+{
+    while (true)
+    {
+	basic_block src = e->src;
+	if (!single_p (src->preds))
+	    return e;
+	if (!single_p (src->succs))
+	    return e;
+	e = single_edge (src->preds);
+    }
+}
+
+/* A simple struct for storing/returning outcome block pairs.  Either both
+   blocks are set or both are NULL.  */
+struct outcomes
+{
+    basic_block t = NULL;
+    basic_block f = NULL;
+
+    operator bool () const noexcept (true)
+    {
+	return t && f;
+    }
+};
+
+/* Get the true/false successors of a basic block.  If b is not a conditional
+   block both edges are NULL.  */
+outcomes
+conditional_succs (const basic_block b)
+{
+    outcomes c;
+    for (edge e : b->succs)
+    {
+	if (e->flags & EDGE_TRUE_VALUE)
+	    c.t = e->dest;
+	if (e->flags & EDGE_FALSE_VALUE)
+	    c.f = e->dest;
+    }
+
+    gcc_assert ((c.t && c.f) || (!c.t && !c.f));
+    return c;
+}
+
+/* Get the index or offset of a conditional flag, 0 for true and 1 for false.
+   These indices carry no semantics but must be consistent as they are used to
+   index into data structures in code generation and gcov.  */
+unsigned
+condition_index (unsigned flag)
+{
+    return (flag & EDGE_CONDITION) == EDGE_TRUE_VALUE ? 0 : 1;
+}
+
+/* Returns the condition identifier for the basic block if set, otherwise 0.
+   This is only meaningful in GIMPLE and is used for condition coverage.
+
+   There may be conditions created that did not get an uid, such as those
+   implicitly created by destructors.  We could include them in the condition
+   coverage for completeness (i.e. condition coverage implies (implicit) branch
+   coverage), but they have no natural buckets and should all be single-term.
+   For now these are ignored and given uid = 0, and branch coverage is left to
+   -fprofile-arcs.
+
+   Under optimization, COND_EXPRs may be folded, replaced with switches,
+   min-max, etc., which leaves ghost identifiers in basic blocks that do not
+   end with a conditional jump.  They are not really meaningful for condition
+   coverage anymore, but since coverage is unreliable under optimization anyway
+   this is not a big problem.
+
+   The cond_uids map in FN cannot be expected to exist.  It will only be
+   created if it is needed, and a function may have gconds even though there
+   are none in source.  This can be seen in PR gcov-profile/114601, when
+   -finstrument-functions-once is used and the function has no conditions.  */
+unsigned
+condition_uid (struct function *fn, basic_block b)
+{
+    gimple *stmt = gsi_stmt (gsi_last_bb (b));
+    if (!safe_is_a <gcond*> (stmt) || !fn->cond_uids)
+	return 0;
+
+    unsigned *v = fn->cond_uids->get (as_a <gcond*> (stmt));
+    return v ? *v : 0;
+}
+
+/* Compute the masking table.
+
+   Masking and short circuiting are deeply connected - masking occurs when
+   control flow reaches a state that is also reachable with short circuiting.
+   In fact, masking corresponds to short circuiting for the reversed
+   expression.  This means we can find the limits, the last term in preceeding
+   subexpressions, by following the edges that short circuit to the same
+   outcome.  The algorithm treats the CFG as a reduced order binary decision
+   diagram (see Randall E. Bryant's Graph Based Algorithms for Boolean
+   Function Manipulation (1987)).
+
+   In the simplest case a || b:
+
+   a
+   |\
+   | b
+   |/ \
+   T   F
+
+   T has multiple incoming edges and is the outcome of a short circuit,
+   with top = a, bot = b.  The top node (a) is masked when the edge (b, T) is
+   taken.
+
+   The names "top" and "bot" refer to a pair of nodes with a shared
+   successor.  The top is always the node corresponding to the left-most
+   operand of the two, and it holds that top < bot in a topological ordering.
+
+   Now consider (a && b) || (c && d) and its masking table:
+
+   a
+   |\
+   b \
+   |\|
+   | c
+   | |\
+   | d \
+   |/ \|
+   T   F
+
+   a[0] = {}
+   a[1] = {}
+   b[0] = {a}
+   b[1] = {}
+   c[0] = {}
+   c[1] = {}
+   d[0] = {c}
+   d[1] = {a,b}
+
+   Note that 0 and 1 are indices and not boolean values - a[0] is the index in
+   the masking vector when a takes the true edge.
+
+   b[0] and d[0] are identical to the a || b example, and d[1] is the bot in
+   the triangle [d, b] -> T.  b is the top node in the [d, b] relationship and
+   last term in (a && b).  To find the other terms masked we use the fact that
+   all paths in an expression go through either of the outcomes, found by
+   collecting all non-complex edges that go out of the expression (the
+   neighborhood).  In some cases the outgoing edge go through intermediate (or
+   bypass) nodes, and we collect these paths too (see contract_edge_up).
+
+   We find the terms by marking the outcomes (in this case c, T) and walk the
+   predecessors starting at top (in this case b) and masking nodes when both
+   successors are marked.
+
+   The masking table is represented as two bitfields per term in the expression
+   with the index corresponding to the term in the Boolean expression.
+   a || b && c becomes the term vector [a b c] and the masking table [a[0]
+   a[1] b[0] ...].  The kth bit of a masking vector is set if the kth term
+   is masked by taking the edge.
+
+   The out masks are in uint64_t (the practical maximum for gcov_type_node for
+   any target) as it has to be big enough to store the target size gcov types
+   independent of the host.  */
+void
+masking_vectors (conds_ctx& ctx, array_slice<basic_block> blocks,
+		 array_slice<sbitmap> maps, array_slice<uint64_t> masks)
+{
+    gcc_assert (blocks.is_valid ());
+    gcc_assert (!blocks.empty ());
+    gcc_assert (maps.is_valid ());
+    gcc_assert (masks.is_valid ());
+    gcc_assert (sizeof (masks[0]) * BITS_PER_UNIT >= CONDITIONS_MAX_TERMS);
+
+    if (bitmap_count_bits (maps[0]) == 1)
+	return;
+
+    sbitmap marks = ctx.G1;
+    const sbitmap core = maps[0];
+    const sbitmap allg = maps[1];
+    vec<basic_block>& queue = ctx.B1;
+    vec<basic_block>& body = ctx.B2;
+    const vec<int>& top_index = ctx.top_index;
+
+    /* Set up for the iteration - include the outcome nodes in the traversal.
+       The algorithm compares pairs of nodes and is not really sensitive to
+       traversal order, but need to maintain topological order because the
+       index of masking nodes maps to the index in the accumulators.  We must
+       also check the incoming-to-outcome pairs.  These edges may in turn be
+       split (this happens with labels on top of then/else blocks) so we must
+       follow any single-in single-out path.  The non-condition blocks do not
+       have to be in order as they are non-condition blocks and will not be
+       considered for the set-bit index.  */
+    body.truncate (0);
+    body.reserve (blocks.size () + 2);
+    for (const basic_block b : blocks)
+	if (bitmap_bit_p (core, b->index))
+	    body.quick_push (b);
+
+    for (basic_block b : blocks)
+    {
+	if (!bitmap_bit_p (core, b->index))
+	    continue;
+
+	for (edge e : b->succs)
+	{
+	    if (e->flags & EDGE_COMPLEX)
+		continue;
+	    if (bitmap_bit_p (allg, e->dest->index))
+		continue;
+	    body.safe_push (e->dest);
+
+	    /* There may be multiple nodes between the condition edge and the
+	       actual outcome, and we need to know when these paths join to
+	       determine if there is short circuit/masking.  This is
+	       effectively creating a virtual edge from the condition node to
+	       the real outcome.  */
+	    while (!(e->flags & EDGE_DFS_BACK) && single_p (e->dest->succs))
+	    {
+		e = single_edge (e->dest->succs);
+		body.safe_push (e->dest);
+	    }
+	}
+    }
+
+    /* Find the masking.  The leftmost element cannot mask anything, so
+       start at 1.  */
+    for (size_t i = 1; i != body.length (); i++)
+    {
+	const basic_block b = body[i];
+	for (edge e1 : b->preds)
+	for (edge e2 : b->preds)
+	{
+	    if (e1 == e2)
+		continue;
+	    if ((e1->flags | e2->flags) & EDGE_COMPLEX)
+		continue;
+
+	    edge etop = contract_edge_up (e1);
+	    edge ebot = contract_edge_up (e2);
+	    gcc_assert (etop != ebot);
+
+	    const basic_block top = etop->src;
+	    const basic_block bot = ebot->src;
+	    const unsigned cond = etop->flags & ebot->flags & EDGE_CONDITION;
+	    if (!cond)
+		continue;
+	    if (top_index[top->index] > top_index[bot->index])
+		continue;
+	    if (!bitmap_bit_p (core, top->index))
+		continue;
+	    if (!bitmap_bit_p (core, bot->index))
+		continue;
+
+	    outcomes out = conditional_succs (top);
+	    gcc_assert (out);
+	    bitmap_clear (marks);
+	    bitmap_set_bit (marks, out.t->index);
+	    bitmap_set_bit (marks, out.f->index);
+	    queue.truncate (0);
+	    queue.safe_push (top);
+
+	    // The edge bot -> outcome triggers the masking
+	    const int m = 2*index_of (bot, body) + condition_index (cond);
+	    gcc_assert (m >= 0);
+	    while (!queue.is_empty ())
+	    {
+		basic_block q = queue.pop ();
+		/* q may have been processed & completed by being added to the
+		   queue multiple times, so check that there is still work to
+		   do before continuing.  */
+		if (bitmap_bit_p (marks, q->index))
+		    continue;
+
+		outcomes succs = conditional_succs (q);
+		if (!bitmap_bit_p (marks, succs.t->index))
+		    continue;
+		if (!bitmap_bit_p (marks, succs.f->index))
+		    continue;
+
+		const int index = index_of (q, body);
+		gcc_assert (index != -1);
+		masks[m] |= uint64_t (1) << index;
+		bitmap_set_bit (marks, q->index);
+
+		for (edge e : q->preds)
+		{
+		    e = contract_edge_up (e);
+		    if (e->flags & EDGE_DFS_BACK)
+			continue;
+		    if (bitmap_bit_p (marks, e->src->index))
+			continue;
+		    if (!bitmap_bit_p (core, e->src->index))
+			continue;
+		    queue.safe_push (e->src);
+		}
+	    }
+	}
+    }
+}
+
+/* Emit LHS = RHS on edges.  This is just a short hand that automates the
+   building of the assign and immediately puts it on the edge, which becomes
+   noisy.  */
+tree
+emit_assign (edge e, tree lhs, tree rhs)
+{
+    gassign *w = gimple_build_assign (lhs, rhs);
+    gsi_insert_on_edge (e, w);
+    return lhs;
+}
+
+/* Emit lhs = RHS on edges.  The lhs is created.  */
+tree
+emit_assign (edge e, tree rhs)
+{
+    return emit_assign (e, make_ssa_name (gcov_type_node), rhs);
+}
+
+/* Emit LHS = OP1 <OP> OP2 on edges.  */
+tree
+emit_bitwise_op (edge e, tree op1, tree_code op, tree op2 = NULL_TREE)
+{
+    tree lhs = make_ssa_name (gcov_type_node);
+    gassign *w = gimple_build_assign (lhs, op, op1, op2);
+    gsi_insert_on_edge (e, w);
+    return lhs;
+}
+
+/* Visitor for make_top_index.  */
+void
+make_top_index_visit (basic_block b, vec<basic_block>& L, vec<int>& marks)
+{
+    if (marks[b->index])
+	return;
+
+    /* Follow the false edge first, if it exists, so that true paths are given
+       the lower index in the ordering.  Any iteration order
+       would yield a valid and useful topological ordering, but making sure the
+       true branch has the lower index first makes reporting work better for
+       expressions with ternaries.  Walk the false branch first because the
+       array will be reversed to finalize the topological order.
+
+       With the wrong ordering (a ? b : c) && d could become [a c b d], but the
+       (expected) order is really [a b c d].  */
+
+    const unsigned false_fwd = EDGE_DFS_BACK | EDGE_FALSE_VALUE;
+    for (edge e : b->succs)
+	if ((e->flags & false_fwd) == EDGE_FALSE_VALUE)
+	    make_top_index_visit (e->dest, L, marks);
+
+    for (edge e : b->succs)
+	if (!(e->flags & false_fwd))
+	    make_top_index_visit (e->dest, L, marks);
+
+    marks[b->index] = 1;
+    L.quick_push (b);
+}
+
+/* Find a topological sorting of the blocks in a function so that left operands
+   are before right operands including subexpressions.  Sorting on block index
+   does not guarantee this property and the syntactical order of terms is very
+   important to the condition coverage.  The sorting algorithm is from Cormen
+   et al (2001) but with back-edges ignored and thus there is no need for
+   temporary marks (for cycle detection).  The L argument is a buffer/working
+   memory, and the output will be written to TOP_INDEX.
+
+   For the expression (a || (b && c) || d) the blocks should be [a b c d].  */
+void
+make_top_index (array_slice<basic_block> blocks, vec<basic_block>& L,
+		vec<int>& top_index)
+{
+    L.truncate (0);
+    L.reserve (blocks.size ());
+
+    /* Use of the output map as a temporary for tracking visited status.  */
+    top_index.truncate (0);
+    top_index.safe_grow_cleared (blocks.size ());
+    for (const basic_block b : blocks)
+	make_top_index_visit (b, L, top_index);
+
+    /* Insert canaries - if there are unreachable nodes (for example infinite
+       loops) then the unreachable nodes should never be needed for comparison,
+       and L.length () < max_index.  An index mapping should also never be
+       recorded twice.  */
+    for (unsigned i = 0; i != top_index.length (); i++)
+	top_index[i] = -1;
+
+    gcc_assert (blocks.size () == L.length ());
+    L.reverse ();
+    const unsigned nblocks = L.length ();
+    for (unsigned i = 0; i != nblocks; i++)
+    {
+	gcc_assert (L[i]->index != -1);
+	top_index[L[i]->index] = int (i);
+    }
+}
+
+/* Find all nodes including non-conditions in a Boolean expression.  We need to
+   know the paths through the expression so that the masking and
+   instrumentation phases can limit searches and know what subgraphs must be
+   threaded through, but not counted, such as the (b || c) in
+   a && fn (b || c) && d.
+
+   It is essentially the intersection of downwards paths from the expression
+   nodes EXPR to the post-dominator and upwards from the post-dominator.
+   Finding the dominator is slightly more involved than picking the first/last,
+   particularly under optimization, because both incoming and outgoing paths
+   may have multiple entries/exits.
+
+   It is assumed GRAPH is an array_slice of the basic blocks of this function
+   sorted by the basic block index.  */
+vec<basic_block>&
+paths_between (conds_ctx &ctx, array_slice<basic_block> graph,
+	       const vec<basic_block>& expr)
+{
+    if (expr.length () == 1)
+    {
+	ctx.blocks.truncate (0);
+	ctx.blocks.safe_push (expr[0]);
+	return ctx.blocks;
+    }
+
+    basic_block dom;
+    sbitmap up = ctx.G1;
+    sbitmap down = ctx.G2;
+    sbitmap paths = ctx.G3;
+    vec<basic_block>& queue = ctx.B1;
+
+    queue.truncate (0);
+    bitmap_clear (down);
+    dom = get_immediate_dominator (CDI_POST_DOMINATORS, expr[0]);
+    for (basic_block b : expr)
+	if (dom != b)
+	    dom = nearest_common_dominator (CDI_POST_DOMINATORS, dom, b);
+    queue.safe_splice (expr);
+    while (!queue.is_empty ())
+    {
+	basic_block b = queue.pop ();
+	if (!bitmap_set_bit (down, b->index))
+	    continue;
+	if (b == dom)
+	    continue;
+	for (edge e : b->succs)
+	    if (!(e->flags & (EDGE_COMPLEX | EDGE_DFS_BACK)))
+		queue.safe_push (e->dest);
+    }
+
+    queue.truncate (0);
+    bitmap_clear (up);
+    dom = expr[0];
+    for (basic_block b : expr)
+	if (dom != b)
+	    dom = nearest_common_dominator (CDI_DOMINATORS, dom, b);
+    queue.safe_splice (expr);
+    while (!queue.is_empty ())
+    {
+	basic_block b = queue.pop ();
+	if (!bitmap_set_bit (up, b->index))
+	    continue;
+	if (b == dom)
+	    continue;
+	for (edge e : b->preds)
+	    if (!(e->flags & (EDGE_COMPLEX | EDGE_DFS_BACK)))
+		queue.safe_push (e->src);
+    }
+
+    bitmap_and (paths, up, down);
+    vec<basic_block>& blocks = ctx.blocks;
+    blocks.truncate (0);
+    blocks.reserve (graph.size ());
+    sbitmap_iterator itr;
+    unsigned index;
+    EXECUTE_IF_SET_IN_BITMAP (paths, 0, index, itr)
+	blocks.quick_push (graph[index]);
+    return blocks;
+}
+
+}
+
+/* Context object for the condition coverage.  This stores conds_ctx (the
+   buffers reused when analyzing the cfg) and the output arrays.  This is
+   designed to be heap allocated and aggressively preallocates large buffers to
+   avoid having to reallocate for most programs.  */
+struct condcov
+{
+    explicit condcov (unsigned nblocks) noexcept (true) : ctx (nblocks),
+    m_maps (sbitmap_vector_alloc (2 * nblocks, nblocks))
+    {
+	bitmap_vector_clear (m_maps, 2 * nblocks);
+    }
+    auto_vec<size_t, 128> m_index;
+    auto_vec<basic_block, 256> m_blocks;
+    auto_vec<uint64_t, 512> m_masks;
+    conds_ctx ctx;
+    sbitmap *m_maps;
+};
+
+/* Get the length, that is the number of Boolean expression found.  cov_length
+   is the one-past index for cov_{blocks,masks,maps}.  */
+size_t
+cov_length (const struct condcov* cov)
+{
+    if (cov->m_index.is_empty ())
+	return 0;
+    return cov->m_index.length () - 1;
+}
+
+/* The subgraph, exluding intermediates, for the nth Boolean expression.  */
+array_slice<basic_block>
+cov_blocks (struct condcov* cov, size_t n)
+{
+    if (n >= cov->m_index.length ())
+	return array_slice<basic_block>::invalid ();
+
+    basic_block *begin = cov->m_blocks.begin () + cov->m_index[n];
+    basic_block *end = cov->m_blocks.begin () + cov->m_index[n + 1];
+    return array_slice<basic_block> (begin, end - begin);
+}
+
+/* The masks for the nth Boolean expression.  */
+array_slice<uint64_t>
+cov_masks (struct condcov* cov, size_t n)
+{
+    if (n >= cov->m_index.length ())
+	return array_slice<uint64_t>::invalid ();
+
+    uint64_t *begin = cov->m_masks.begin () + 2*cov->m_index[n];
+    uint64_t *end = cov->m_masks.begin () + 2*cov->m_index[n + 1];
+    return array_slice<uint64_t> (begin, end - begin);
+}
+
+/* The maps for the nth Boolean expression.  */
+array_slice<sbitmap>
+cov_maps (struct condcov* cov, size_t n)
+{
+    if (n >= cov->m_index.length ())
+	return array_slice<sbitmap>::invalid ();
+
+    sbitmap *begin = cov->m_maps + 2*n;
+    sbitmap *end = begin + 2;
+    return array_slice<sbitmap> (begin, end - begin);
+}
+
+/* Deleter for condcov.  */
+void
+cov_free (struct condcov* cov)
+{
+    sbitmap_vector_free (cov->m_maps);
+    delete cov;
+}
+
+/* Condition coverage (MC/DC)
+
+   Whalen, Heimdahl, De Silva in "Efficient Test Coverage Measurement for
+   MC/DC" describe an algorithm for modified condition/decision coverage based
+   on AST analysis.  This algorithm does analyzes the control flow graph
+   (interpreted as a binary decision diagram) to determine the masking vectors.
+   The individual phases are described in more detail closer to the
+   implementation.
+
+   The coverage only considers the positions, not the symbols, in a
+   conditional, e.g. !A || (!B && A) is a 3-term conditional even though A
+   appears twice.  Subexpressions have no effect on term ordering:
+   (a && (b || (c && d)) || e) comes out as [a b c d e].  Functions whose
+   arguments are Boolean expressions are treated as separate expressions, that
+   is, a && fn (b || c) && d is treated as [a _fn d] and [b c], not [a b c d].
+
+   The output for gcov is a vector of pairs of unsigned integers, interpreted
+   as bit-sets, where the bit index corresponds to the index of the condition
+   in the expression.
+
+   The returned condcov should be released by the caller with cov_free.  */
+struct condcov*
+find_conditions (struct function *fn)
+{
+    mark_dfs_back_edges (fn);
+    const bool have_dom = dom_info_available_p (fn, CDI_DOMINATORS);
+    const bool have_post_dom = dom_info_available_p (fn, CDI_POST_DOMINATORS);
+    if (!have_dom)
+	calculate_dominance_info (CDI_DOMINATORS);
+    if (!have_post_dom)
+	calculate_dominance_info (CDI_POST_DOMINATORS);
+
+    const unsigned nblocks = n_basic_blocks_for_fn (fn);
+    basic_block *fnblocksp = basic_block_info_for_fn (fn)->address ();
+    condcov *cov = new condcov (nblocks);
+    conds_ctx& ctx = cov->ctx;
+    array_slice<basic_block> fnblocks (fnblocksp, nblocks);
+    make_top_index (fnblocks, ctx.B1, ctx.top_index);
+
+    /* Bin the Boolean expressions so that exprs[id] -> [x1, x2, ...].  */
+    hash_map<int_hash<unsigned, 0>, vec<basic_block>> exprs;
+    for (basic_block b : fnblocks)
+    {
+	const unsigned uid = condition_uid (fn, b);
+	if (uid == 0)
+	    continue;
+	exprs.get_or_insert (uid).safe_push (b);
+    }
+
+    /* Visit all reachable nodes and collect conditions.  Topological order is
+       important so the first node of a boolean expression is visited first
+       (it will mark subsequent terms).  */
+    cov->m_index.safe_push (0);
+    for (auto expr : exprs)
+    {
+	vec<basic_block>& conds = expr.second;
+	if (conds.length () > CONDITIONS_MAX_TERMS)
+	{
+	    location_t loc = gimple_location (gsi_stmt (gsi_last_bb (conds[0])));
+	    warning_at (loc, OPT_Wcoverage_too_many_conditions,
+			"Too many conditions (found %u); giving up coverage",
+			conds.length ());
+	    continue;
+	}
+	conds.sort (topological_cmp, &ctx.top_index);
+	vec<basic_block>& subgraph = paths_between (ctx, fnblocks, conds);
+	subgraph.sort (topological_cmp, &ctx.top_index);
+	const unsigned index = cov->m_index.length () - 1;
+	sbitmap condm = cov->m_maps[0 + 2*index];
+	sbitmap subgm = cov->m_maps[1 + 2*index];
+	for (basic_block b : conds)
+	    bitmap_set_bit (condm, b->index);
+	for (basic_block b : subgraph)
+	    bitmap_set_bit (subgm, b->index);
+	cov->m_blocks.safe_splice (subgraph);
+	cov->m_index.safe_push (cov->m_blocks.length ());
+    }
+
+    if (!have_dom)
+	free_dominance_info (fn, CDI_DOMINATORS);
+    if (!have_post_dom)
+	free_dominance_info (fn, CDI_POST_DOMINATORS);
+
+    cov->m_masks.safe_grow_cleared (2 * cov->m_index.last ());
+    const size_t length = cov_length (cov);
+    for (size_t i = 0; i != length; i++)
+	masking_vectors (ctx, cov_blocks (cov, i), cov_maps (cov, i),
+			 cov_masks (cov, i));
+
+    return cov;
+}
+
+namespace
+{
+
+/* Stores the incoming edge and previous counters (in SSA form) on that edge
+   for the node e->deston that edge for the node e->dest.  The counters record
+   the seen-true (0), seen-false (1), and current-mask (2).  They are stored in
+   an array rather than proper members for access-by-index as the code paths
+   tend to be identical for the different counters.  */
+struct counters
+{
+    edge e;
+    tree counter[3];
+    tree& operator [] (size_t i) { return counter[i]; }
+};
+
+/* Find the counters for the incoming edge e, or NULL if the edge has not been
+   recorded (could be for complex incoming edges).  */
+counters*
+find_counters (vec<counters>& candidates, edge e)
+{
+    for (counters& candidate : candidates)
+	if (candidate.e == e)
+	    return &candidate;
+    return NULL;
+}
+
+/* Resolve the SSA for a specific counter KIND.  If it is not modified by any
+   incoming edges, simply forward it, otherwise create a phi node of all the
+   candidate counters and return it.  */
+tree
+resolve_counter (vec<counters>& cands, size_t kind)
+{
+    gcc_assert (!cands.is_empty ());
+    gcc_assert (kind < 3);
+
+    counters& fst = cands[0];
+
+    if (!fst.e || fst.e->dest->preds->length () == 1)
+    {
+	gcc_assert (cands.length () == 1);
+	return fst[kind];
+    }
+
+    tree zero0 = build_int_cst (gcov_type_node, 0);
+    tree ssa = make_ssa_name (gcov_type_node);
+    gphi *phi = create_phi_node (ssa, fst.e->dest);
+    for (edge e : fst.e->dest->preds)
+    {
+	counters *prev = find_counters (cands, e);
+	if (prev)
+	    add_phi_arg (phi, (*prev)[kind], e, UNKNOWN_LOCATION);
+	else
+	{
+	    tree zero = make_ssa_name (gcov_type_node);
+	    gimple_stmt_iterator gsi = gsi_after_labels (e->src);
+	    gassign *set = gimple_build_assign (zero, zero0);
+	    gsi_insert_before (&gsi, set, GSI_NEW_STMT);
+	    add_phi_arg (phi, zero, e, UNKNOWN_LOCATION);
+	}
+    }
+    return ssa;
+}
+
+/* Resolve all the counters for a node.  Note that the edge is undefined, as
+   the counters are intended to form the base to push to the successors, and
+   because the is only meaningful for nodes with a single predecessor.  */
+counters
+resolve_counters (vec<counters>& cands)
+{
+    counters next;
+    next[0] = resolve_counter (cands, 0);
+    next[1] = resolve_counter (cands, 1);
+    next[2] = resolve_counter (cands, 2);
+    return next;
+}
+
+}
+
+/* Add instrumentation to a decision subgraph.  EXPR should be the
+   (topologically sorted) block of nodes returned by cov_blocks, MAPS the
+   bitmaps returned by cov_maps, and MASKS the block of bitsets returned by
+   cov_masks.  CONDNO should be the index of this condition in the function,
+   i.e. the same argument given to cov_{masks,graphs}.  EXPR may contain nodes
+   in-between the conditions, e.g.  when an operand contains a function call,
+   or there is a setjmp and the cfg is filled with complex edges.
+
+   Every node is annotated with three counters; the true, false, and mask
+   value.  First, walk the graph and determine what if there are multiple
+   possible values for either accumulator depending on the path taken, in which
+   case a phi node is created and registered as the accumulator.  Then, those
+   values are pushed as accumulators to the immediate successors.  For some
+   very particular programs there may be multiple paths into the expression
+   (e.g. when prior terms are determined by a surrounding conditional) in which
+   case the default zero-counter is pushed, otherwise all predecessors will
+   have been considered before the successor because of topologically ordered
+   traversal.  Finally, expr is traversed again to look for edges to the
+   outcomes, that is, edges with a destination outside of expr, and the local
+   accumulators are flushed to the global gcov counters on these edges.  In
+   some cases there are edge splits that cause 3+ edges to the two outcome
+   nodes.
+
+   If a complex edge is taken (e.g. on a longjmp) the accumulators are
+   attempted poisoned so that there would be no change to the global counters,
+   but this has proven unreliable in the presence of undefined behavior, see
+   the setjmp003 test.
+
+   It is important that the flushes happen on the basic condition outgoing
+   edge, otherwise flushes could be lost to exception handling or other
+   abnormal control flow.  */
+size_t
+instrument_decisions (array_slice<basic_block> expr, size_t condno,
+		      array_slice<sbitmap> maps, array_slice<uint64_t> masks)
+{
+    tree zero = build_int_cst (gcov_type_node, 0);
+    tree poison = build_int_cst (gcov_type_node, ~0ULL);
+    const sbitmap core = maps[0];
+    const sbitmap allg = maps[1];
+
+    hash_map<basic_block, vec<counters>> table;
+    counters zerocounter;
+    zerocounter.e = NULL;
+    zerocounter[0] = zero;
+    zerocounter[1] = zero;
+    zerocounter[2] = zero;
+
+    unsigned xi = 0;
+    bool increment = false;
+    tree rhs = build_int_cst (gcov_type_node, 1ULL << xi);
+    for (basic_block current : expr)
+    {
+	vec<counters>& candidates = table.get_or_insert (current);
+	if (candidates.is_empty ())
+	    candidates.safe_push (zerocounter);
+	counters prev = resolve_counters (candidates);
+
+	if (increment)
+	{
+	    xi += 1;
+	    gcc_checking_assert (xi < sizeof (uint64_t) * BITS_PER_UNIT);
+	    rhs = build_int_cst (gcov_type_node, 1ULL << xi);
+	    increment = false;
+	}
+
+	for (edge e : current->succs)
+	{
+	    counters next = prev;
+	    next.e = e;
+
+	    if (bitmap_bit_p (core, e->src->index) && (e->flags & EDGE_CONDITION))
+	    {
+		const int k = condition_index (e->flags);
+		next[k] = emit_bitwise_op (e, prev[k], BIT_IOR_EXPR, rhs);
+		if (masks[2*xi + k])
+		{
+		    tree m = build_int_cst (gcov_type_node, masks[2*xi + k]);
+		    next[2] = emit_bitwise_op (e, prev[2], BIT_IOR_EXPR, m);
+		}
+		increment = true;
+	    }
+	    else if (e->flags & EDGE_COMPLEX)
+	    {
+		/* A complex edge has been taken - wipe the accumulators and
+		   poison the mask so that this path does not contribute to
+		   coverage.  */
+		next[0] = poison;
+		next[1] = poison;
+		next[2] = poison;
+	    }
+	    table.get_or_insert (e->dest).safe_push (next);
+	}
+    }
+
+    /* Since this is also the return value, the number of conditions, make sure
+       to include the increment of the last basic block.  */
+    if (increment)
+	xi += 1;
+
+    gcc_assert (xi == bitmap_count_bits (core));
+
+    const tree relaxed = build_int_cst (integer_type_node, MEMMODEL_RELAXED);
+    const bool atomic = flag_profile_update == PROFILE_UPDATE_ATOMIC;
+    const tree atomic_ior = builtin_decl_explicit
+	(TYPE_PRECISION (gcov_type_node) > 32
+	 ? BUILT_IN_ATOMIC_FETCH_OR_8
+	 : BUILT_IN_ATOMIC_FETCH_OR_4);
+
+    /* Flush to the gcov accumulators.  */
+    for (const basic_block b : expr)
+    {
+	if (!bitmap_bit_p (core, b->index))
+	    continue;
+
+	for (edge e : b->succs)
+	{
+	    /* Flush the accumulators on leaving the Boolean function.  The
+	       destination may be inside the function only when it returns to
+	       the loop header, such as do { ... } while (x);  */
+	    if (bitmap_bit_p (allg, e->dest->index)) {
+		if (!(e->flags & EDGE_DFS_BACK))
+		    continue;
+		if (e->dest != expr[0])
+		    continue;
+	    }
+
+	    vec<counters> *cands = table.get (e->dest);
+	    gcc_assert (cands);
+	    counters *prevp = find_counters (*cands, e);
+	    gcc_assert (prevp);
+	    counters prev = *prevp;
+
+	    /* _true &= ~mask, _false &= ~mask  */
+	    counters next;
+	    next[2] = emit_bitwise_op (e, prev[2], BIT_NOT_EXPR);
+	    next[0] = emit_bitwise_op (e, prev[0], BIT_AND_EXPR, next[2]);
+	    next[1] = emit_bitwise_op (e, prev[1], BIT_AND_EXPR, next[2]);
+
+	    /* _global_true |= _true, _global_false |= _false  */
+	    for (size_t k = 0; k != 2; ++k)
+	    {
+		tree ref = tree_coverage_counter_ref (GCOV_COUNTER_CONDS,
+						      2*condno + k);
+		if (atomic)
+		{
+		    ref = unshare_expr (ref);
+		    gcall *flush = gimple_build_call (atomic_ior, 3,
+						      build_addr (ref),
+						      next[k], relaxed);
+		    gsi_insert_on_edge (e, flush);
+		}
+		else
+		{
+		    tree get = emit_assign (e, ref);
+		    tree put = emit_bitwise_op (e, next[k], BIT_IOR_EXPR, get);
+		    emit_assign (e, unshare_expr (ref), put);
+		}
+	    }
+	}
+    }
+
+    return xi;
+}
+
+#undef CONDITIONS_MAX_TERMS
+#undef EDGE_CONDITION
 
 /* Do initialization work for the edge profiler.  */
 
@@ -235,45 +1335,112 @@ gimple_init_gcov_profiler (void)
     }
 }
 
+/* If RESULT is not null, then output instructions as GIMPLE trees to assign
+   the updated counter from CALL of FUNC to RESULT.  Insert the CALL and the
+   optional assignment instructions to GSI.  Use NAME for temporary values.  */
+
+static inline void
+gen_assign_counter_update (gimple_stmt_iterator *gsi, gcall *call, tree func,
+			   tree result, const char *name)
+{
+  if (result)
+    {
+      tree result_type = TREE_TYPE (TREE_TYPE (func));
+      tree tmp1 = make_temp_ssa_name (result_type, NULL, name);
+      gimple_set_lhs (call, tmp1);
+      gsi_insert_after (gsi, call, GSI_NEW_STMT);
+      tree tmp2 = make_temp_ssa_name (TREE_TYPE (result), NULL, name);
+      gassign *assign = gimple_build_assign (tmp2, NOP_EXPR, tmp1);
+      gsi_insert_after (gsi, assign, GSI_NEW_STMT);
+      assign = gimple_build_assign (result, tmp2);
+      gsi_insert_after (gsi, assign, GSI_NEW_STMT);
+    }
+  else
+    gsi_insert_after (gsi, call, GSI_NEW_STMT);
+}
+
+/* Output instructions as GIMPLE trees to increment the COUNTER.  If RESULT is
+   not null, then assign the updated counter value to RESULT.  Insert the
+   instructions to GSI.  Use NAME for temporary values.  */
+
+static inline void
+gen_counter_update (gimple_stmt_iterator *gsi, tree counter, tree result,
+		    const char *name)
+{
+  tree type = gcov_type_node;
+  tree addr = build_fold_addr_expr (counter);
+  tree one = build_int_cst (type, 1);
+  tree relaxed = build_int_cst (integer_type_node, MEMMODEL_RELAXED);
+
+  if (counter_update == COUNTER_UPDATE_ATOMIC_BUILTIN
+      || (result && counter_update == COUNTER_UPDATE_ATOMIC_SPLIT))
+    {
+      /* __atomic_fetch_add (&counter, 1, MEMMODEL_RELAXED); */
+      tree f = builtin_decl_explicit (TYPE_PRECISION (type) > 32
+				      ? BUILT_IN_ATOMIC_ADD_FETCH_8
+				      : BUILT_IN_ATOMIC_ADD_FETCH_4);
+      gcall *call = gimple_build_call (f, 3, addr, one, relaxed);
+      gen_assign_counter_update (gsi, call, f, result, name);
+    }
+  else if (!result && (counter_update == COUNTER_UPDATE_ATOMIC_SPLIT
+		       || counter_update == COUNTER_UPDATE_ATOMIC_PARTIAL))
+    {
+      /* low = __atomic_add_fetch_4 (addr, 1, MEMMODEL_RELAXED);
+	 high_inc = low == 0 ? 1 : 0;
+	 __atomic_add_fetch_4 (addr_high, high_inc, MEMMODEL_RELAXED); */
+      tree zero32 = build_zero_cst (uint32_type_node);
+      tree one32 = build_one_cst (uint32_type_node);
+      tree addr_high = make_temp_ssa_name (TREE_TYPE (addr), NULL, name);
+      tree four = build_int_cst (size_type_node, 4);
+      gassign *assign1 = gimple_build_assign (addr_high, POINTER_PLUS_EXPR,
+					      addr, four);
+      gsi_insert_after (gsi, assign1, GSI_NEW_STMT);
+      if (WORDS_BIG_ENDIAN)
+	std::swap (addr, addr_high);
+      tree f = builtin_decl_explicit (BUILT_IN_ATOMIC_ADD_FETCH_4);
+      gcall *call1 = gimple_build_call (f, 3, addr, one, relaxed);
+      tree low = make_temp_ssa_name (uint32_type_node, NULL, name);
+      gimple_call_set_lhs (call1, low);
+      gsi_insert_after (gsi, call1, GSI_NEW_STMT);
+      tree is_zero = make_temp_ssa_name (boolean_type_node, NULL, name);
+      gassign *assign2 = gimple_build_assign (is_zero, EQ_EXPR, low,
+					      zero32);
+      gsi_insert_after (gsi, assign2, GSI_NEW_STMT);
+      tree high_inc = make_temp_ssa_name (uint32_type_node, NULL, name);
+      gassign *assign3 = gimple_build_assign (high_inc, COND_EXPR,
+					      is_zero, one32, zero32);
+      gsi_insert_after (gsi, assign3, GSI_NEW_STMT);
+      gcall *call2 = gimple_build_call (f, 3, addr_high, high_inc,
+					relaxed);
+      gsi_insert_after (gsi, call2, GSI_NEW_STMT);
+    }
+  else
+    {
+      tree tmp1 = make_temp_ssa_name (type, NULL, name);
+      gassign *assign1 = gimple_build_assign (tmp1, counter);
+      gsi_insert_after (gsi, assign1, GSI_NEW_STMT);
+      tree tmp2 = make_temp_ssa_name (type, NULL, name);
+      gassign *assign2 = gimple_build_assign (tmp2, PLUS_EXPR, tmp1, one);
+      gsi_insert_after (gsi, assign2, GSI_NEW_STMT);
+      gassign *assign3 = gimple_build_assign (unshare_expr (counter), tmp2);
+      gsi_insert_after (gsi, assign3, GSI_NEW_STMT);
+      if (result)
+	{
+	  gassign *assign4 = gimple_build_assign (result, tmp2);
+	  gsi_insert_after (gsi, assign4, GSI_NEW_STMT);
+	}
+    }
+}
+
 /* Output instructions as GIMPLE trees to increment the edge
-   execution count, and insert them on E.  We rely on
-   gsi_insert_on_edge to preserve the order.  */
+   execution count, and insert them on E.  */
 
 void
 gimple_gen_edge_profiler (int edgeno, edge e)
 {
-  tree one;
-
-  one = build_int_cst (gcov_type_node, 1);
-
-  if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
-    {
-      /* __atomic_fetch_add (&counter, 1, MEMMODEL_RELAXED); */
-      tree addr = tree_coverage_counter_addr (GCOV_COUNTER_ARCS, edgeno);
-      tree f = builtin_decl_explicit (TYPE_PRECISION (gcov_type_node) > 32
-				      ? BUILT_IN_ATOMIC_FETCH_ADD_8:
-				      BUILT_IN_ATOMIC_FETCH_ADD_4);
-      gcall *stmt = gimple_build_call (f, 3, addr, one,
-				       build_int_cst (integer_type_node,
-						      MEMMODEL_RELAXED));
-      gsi_insert_on_edge (e, stmt);
-    }
-  else
-    {
-      tree ref = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
-      tree gcov_type_tmp_var = make_temp_ssa_name (gcov_type_node,
-						   NULL, "PROF_edge_counter");
-      gassign *stmt1 = gimple_build_assign (gcov_type_tmp_var, ref);
-      gcov_type_tmp_var = make_temp_ssa_name (gcov_type_node,
-					      NULL, "PROF_edge_counter");
-      gassign *stmt2 = gimple_build_assign (gcov_type_tmp_var, PLUS_EXPR,
-					    gimple_assign_lhs (stmt1), one);
-      gassign *stmt3 = gimple_build_assign (unshare_expr (ref),
-					    gimple_assign_lhs (stmt2));
-      gsi_insert_on_edge (e, stmt1);
-      gsi_insert_on_edge (e, stmt2);
-      gsi_insert_on_edge (e, stmt3);
-    }
+  gimple_stmt_iterator gsi = gsi_last (PENDING_STMT (e));
+  tree counter = tree_coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
+  gen_counter_update (&gsi, counter, NULL_TREE, "PROF_edge_counter");
 }
 
 /* Emits code to get VALUE to instrument at GSI, and returns the
@@ -418,7 +1585,13 @@ gimple_gen_ic_func_profiler (void)
   gcall *stmt1;
   tree tree_uid, cur_func, void0;
 
-  if (c_node->only_called_directly_p ())
+  /* Disable indirect call profiling for an IFUNC resolver and its
+     callees since it requires TLS which hasn't been set up yet when
+     the dynamic linker is resolving IFUNC symbols.  See
+     https://gcc.gnu.org/bugzilla/show_bug.cgi?id=114115
+   */
+  if (c_node->only_called_directly_p ()
+      || c_node->called_by_ifunc_resolver)
     return;
 
   gimple_init_gcov_profiler ();
@@ -507,56 +1680,16 @@ gimple_gen_time_profiler (unsigned tag)
   tree original_ref = tree_coverage_counter_ref (tag, 0);
   tree ref = force_gimple_operand_gsi (&gsi, original_ref, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
-  tree one = build_int_cst (type, 1);
 
   /* Emit: if (counters[0] != 0).  */
   gcond *cond = gimple_build_cond (EQ_EXPR, ref, build_int_cst (type, 0),
 				   NULL, NULL);
   gsi_insert_before (&gsi, cond, GSI_NEW_STMT);
 
-  gsi = gsi_start_bb (update_bb);
-
   /* Emit: counters[0] = ++__gcov_time_profiler_counter.  */
-  if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
-    {
-      tree ptr = make_temp_ssa_name (build_pointer_type (type), NULL,
-				     "PROF_time_profiler_counter_ptr");
-      tree addr = build1 (ADDR_EXPR, TREE_TYPE (ptr),
-			  tree_time_profiler_counter);
-      gassign *assign = gimple_build_assign (ptr, NOP_EXPR, addr);
-      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
-      tree f = builtin_decl_explicit (TYPE_PRECISION (gcov_type_node) > 32
-				      ? BUILT_IN_ATOMIC_ADD_FETCH_8:
-				      BUILT_IN_ATOMIC_ADD_FETCH_4);
-      gcall *stmt = gimple_build_call (f, 3, ptr, one,
-				       build_int_cst (integer_type_node,
-						      MEMMODEL_RELAXED));
-      tree result_type = TREE_TYPE (TREE_TYPE (f));
-      tree tmp = make_temp_ssa_name (result_type, NULL, "PROF_time_profile");
-      gimple_set_lhs (stmt, tmp);
-      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
-      tmp = make_temp_ssa_name (type, NULL, "PROF_time_profile");
-      assign = gimple_build_assign (tmp, NOP_EXPR,
-				    gimple_call_lhs (stmt));
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-      assign = gimple_build_assign (original_ref, tmp);
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-    }
-  else
-    {
-      tree tmp = make_temp_ssa_name (type, NULL, "PROF_time_profile");
-      gassign *assign = gimple_build_assign (tmp, tree_time_profiler_counter);
-      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
-
-      tmp = make_temp_ssa_name (type, NULL, "PROF_time_profile");
-      assign = gimple_build_assign (tmp, PLUS_EXPR, gimple_assign_lhs (assign),
-				    one);
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-      assign = gimple_build_assign (original_ref, tmp);
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-      assign = gimple_build_assign (tree_time_profiler_counter, tmp);
-      gsi_insert_after (&gsi, assign, GSI_NEW_STMT);
-    }
+  gsi = gsi_start_bb (update_bb);
+  gen_counter_update (&gsi, tree_time_profiler_counter, original_ref,
+		      "PROF_time_profile");
 }
 
 /* Output instructions as GIMPLE trees to increment the average histogram
@@ -698,15 +1831,24 @@ tree_profiling (void)
   struct cgraph_node *node;
 
   /* Verify whether we can utilize atomic update operations.  */
-  bool can_support_atomic = false;
+  bool can_support_atomic = targetm.have_libatomic;
   unsigned HOST_WIDE_INT gcov_type_size
     = tree_to_uhwi (TYPE_SIZE_UNIT (get_gcov_type ()));
-  if (gcov_type_size == 4)
-    can_support_atomic
-      = HAVE_sync_compare_and_swapsi || HAVE_atomic_compare_and_swapsi;
-  else if (gcov_type_size == 8)
-    can_support_atomic
-      = HAVE_sync_compare_and_swapdi || HAVE_atomic_compare_and_swapdi;
+  bool have_atomic_4
+    = HAVE_sync_compare_and_swapsi || HAVE_atomic_compare_and_swapsi;
+  bool have_atomic_8
+    = HAVE_sync_compare_and_swapdi || HAVE_atomic_compare_and_swapdi;
+  bool needs_split = gcov_type_size == 8 && !have_atomic_8 && have_atomic_4;
+  if (!can_support_atomic)
+    {
+      if (gcov_type_size == 4)
+	can_support_atomic = have_atomic_4;
+      else if (gcov_type_size == 8)
+	can_support_atomic = have_atomic_8;
+    }
+
+  if (flag_profile_update != PROFILE_UPDATE_SINGLE && needs_split)
+    counter_update = COUNTER_UPDATE_ATOMIC_PARTIAL;
 
   if (flag_profile_update == PROFILE_UPDATE_ATOMIC
       && !can_support_atomic)
@@ -716,8 +1858,16 @@ tree_profiling (void)
       flag_profile_update = PROFILE_UPDATE_SINGLE;
     }
   else if (flag_profile_update == PROFILE_UPDATE_PREFER_ATOMIC)
-    flag_profile_update = can_support_atomic
-      ? PROFILE_UPDATE_ATOMIC : PROFILE_UPDATE_SINGLE;
+    flag_profile_update
+      = can_support_atomic ? PROFILE_UPDATE_ATOMIC : PROFILE_UPDATE_SINGLE;
+
+  if (flag_profile_update == PROFILE_UPDATE_ATOMIC)
+    {
+      if (needs_split)
+	counter_update = COUNTER_UPDATE_ATOMIC_SPLIT;
+      else
+	counter_update = COUNTER_UPDATE_ATOMIC_BUILTIN;
+    }
 
   /* This is a small-ipa pass that gets called only once, from
      cgraphunit.cc:ipa_passes().  */
@@ -758,7 +1908,7 @@ tree_profiling (void)
 	  thunk = true;
 	  /* When generate profile, expand thunk to gimple so it can be
 	     instrumented same way as other functions.  */
-	  if (profile_arc_flag)
+	  if (profile_arc_flag || condition_coverage_flag)
 	    expand_thunk (node, false, true);
 	  /* Read cgraph profile but keep function as thunk at profile-use
 	     time.  */
@@ -803,7 +1953,7 @@ tree_profiling (void)
   release_profile_file_filtering ();
 
   /* Drop pure/const flags from instrumented functions.  */
-  if (profile_arc_flag || flag_test_coverage)
+  if (profile_arc_flag || condition_coverage_flag || flag_test_coverage)
     FOR_EACH_DEFINED_FUNCTION (node)
       {
 	if (!gimple_has_body_p (node->decl)
@@ -835,7 +1985,7 @@ tree_profiling (void)
 
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
-      if (profile_arc_flag || flag_test_coverage)
+      if (profile_arc_flag || condition_coverage_flag || flag_test_coverage)
 	FOR_EACH_BB_FN (bb, cfun)
 	  {
 	    gimple_stmt_iterator gsi;
@@ -920,7 +2070,7 @@ pass_ipa_tree_profile::gate (function *)
      disabled.  */
   return (!in_lto_p && !flag_auto_profile
 	  && (flag_branch_probabilities || flag_test_coverage
-	      || profile_arc_flag));
+	      || profile_arc_flag || condition_coverage_flag));
 }
 
 } // anon namespace

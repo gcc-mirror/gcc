@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -463,8 +463,8 @@ package Lib is
    function No_Elab_Code_All (U : Unit_Number_Type) return Boolean;
    function OA_Setting       (U : Unit_Number_Type) return Character;
    function Primary_Stack_Count
-                             (U : Unit_Number_Type) return Int;
-   function Sec_Stack_Count  (U : Unit_Number_Type) return Int;
+                             (U : Unit_Number_Type) return Nat;
+   function Sec_Stack_Count  (U : Unit_Number_Type) return Nat;
    function Source_Index     (U : Unit_Number_Type) return Source_File_Index;
    function Unit_File_Name   (U : Unit_Number_Type) return File_Name_Type;
    function Unit_Name        (U : Unit_Number_Type) return Unit_Name_Type;
@@ -686,11 +686,11 @@ package Lib is
    --  source unit, the criterion being that Get_Source_Unit yields the
    --  same value for each argument.
 
-   procedure Increment_Primary_Stack_Count (Increment : Int);
+   procedure Increment_Primary_Stack_Count (Increment : Nat);
    --  Increment the Primary_Stack_Count field for the current unit by
    --  Increment.
 
-   procedure Increment_Sec_Stack_Count (Increment : Int);
+   procedure Increment_Sec_Stack_Count (Increment : Nat);
    --  Increment the Sec_Stack_Count field for the current unit by Increment
 
    function Increment_Serial_Number return Nat;
@@ -861,8 +861,8 @@ private
       Ident_String           : Node_Id;
       Main_Priority          : Int;
       Main_CPU               : Int;
-      Primary_Stack_Count    : Int;
-      Sec_Stack_Count        : Int;
+      Primary_Stack_Count    : Nat;
+      Sec_Stack_Count        : Nat;
       Serial_Number          : Nat;
       Version                : Word;
       Error_Location         : Source_Ptr;

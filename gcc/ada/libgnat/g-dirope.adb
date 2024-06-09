@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2023, AdaCore                     --
+--                     Copyright (C) 1998-2024, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,6 @@ with Ada.Characters.Handling;
 with Ada.Strings.Fixed;
 
 with Ada.Unchecked_Deallocation;
-with Ada.Unchecked_Conversion;
 
 with System;      use System;
 with System.CRTL; use System.CRTL;
@@ -676,26 +675,17 @@ package body GNAT.Directory_Operations is
          return;
       end if;
 
-      Last :=
-        (if Str'Length > Filename_Len then Str'First + Filename_Len - 1
-         else Str'Last);
-
       declare
-         subtype Path_String is String (1 .. Filename_Len);
-         type    Path_String_Access is access Path_String;
-
-         function Address_To_Access is new
-           Ada.Unchecked_Conversion
-             (Source => Address,
-              Target => Path_String_Access);
-
-         Path_Access : constant Path_String_Access :=
-                         Address_To_Access (Filename_Addr);
-
+         Filename : constant String (1 .. Filename_Len)
+           with Import, Address => Filename_Addr;
       begin
-         for J in Str'First .. Last loop
-            Str (J) := Path_Access (J - Str'First + 1);
-         end loop;
+         if Str'Length > Filename_Len then
+            Last := Str'First + Filename_Len - 1;
+            Str (Str'First .. Last) := Filename;
+         else
+            Last := Str'Last;
+            Str := Filename (1 .. Str'Length);
+         end if;
       end;
    end Read;
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2024 Free Software Foundation, Inc.
    Contributed by Andy Vaught and Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -28,14 +28,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
-#endif
-
-
-#if __nvptx__
-/* Map "exit" to "abort"; see PR85463 '[nvptx] "exit" in offloaded region
-   doesn't terminate process'.  */
-# undef exit
-# define exit(status) do { (void) (status); abort (); } while (0)
 #endif
 
 

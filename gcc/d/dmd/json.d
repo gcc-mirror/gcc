@@ -1,7 +1,7 @@
 /**
  * Code for generating .json descriptions of the module when passing the `-X` flag to dmd.
  *
- * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2024 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/json.d, _json.d)
@@ -35,7 +35,7 @@ import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
 import dmd.common.outbuffer;
-import dmd.root.rootobject;
+import dmd.rootobject;
 import dmd.root.string;
 import dmd.target;
 import dmd.visitor;
@@ -788,7 +788,7 @@ public:
         objectStart();
         jsonProperties(d);
         if (d._init)
-            property("init", d._init.toString());
+            property("init", toString(d._init));
         if (d.isField())
             property("offset", d.offset);
         if (!d.alignment.isUnknown() && !d.alignment.isDefault())
@@ -810,17 +810,14 @@ public:
     Params:
      modules = array of the "root modules"
     */
-    private void generateModules(Modules* modules)
+    private void generateModules(ref Modules modules)
     {
         arrayStart();
-        if (modules)
+        foreach (m; modules)
         {
-            foreach (m; *modules)
-            {
-                if (global.params.verbose)
-                    message("json gen %s", m.toChars());
-                m.accept(this);
-            }
+            if (global.params.v.verbose)
+                message("json gen %s", m.toChars());
+            m.accept(this);
         }
         arrayEnd();
     }
@@ -876,12 +873,9 @@ public:
 
         propertyStart("predefinedVersions");
         arrayStart();
-        if (global.versionids)
+        foreach (const versionid; global.versionids)
         {
-            foreach (const versionid; *global.versionids)
-            {
-                item(versionid.toString());
-            }
+            item(versionid.toString());
         }
         arrayEnd();
 
@@ -908,12 +902,9 @@ public:
 
         propertyStart("importPaths");
         arrayStart();
-        if (global.params.imppath)
+        foreach (importPath; global.params.imppath[])
         {
-            foreach (importPath; *global.params.imppath)
-            {
-                item(importPath.toDString);
-            }
+            item(importPath.toDString);
         }
         arrayEnd();
 
@@ -981,9 +972,15 @@ public:
     }
 }
 
-extern (C++) void json_generate(OutBuffer* buf, Modules* modules)
+/***********************************
+ * Generate json for the modules.
+ * Params:
+ *      modules = array of Modules
+ *      buf = write json output to buf
+ */
+void json_generate(ref Modules modules, ref OutBuffer buf)
 {
-    scope ToJsonVisitor json = new ToJsonVisitor(buf);
+    scope ToJsonVisitor json = new ToJsonVisitor(&buf);
     // write trailing newline
     scope(exit) buf.writeByte('\n');
 
@@ -1050,7 +1047,7 @@ Params:
 Returns: JsonFieldFlags.none on error, otherwise the JsonFieldFlags value
          corresponding to the given fieldName.
 */
-extern (C++) JsonFieldFlags tryParseJsonField(const(char)* fieldName)
+JsonFieldFlags tryParseJsonField(const(char)* fieldName)
 {
     auto fieldNameString = fieldName.toDString();
     foreach (idx, enumName; __traits(allMembers, JsonFieldFlags))

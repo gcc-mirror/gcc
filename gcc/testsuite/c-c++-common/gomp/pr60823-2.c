@@ -3,7 +3,11 @@
 /* { dg-require-effective-target vect_simd_clones } */
 /* { dg-options "-O2 -fopenmp-simd" } */
 
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(2) notinbranch
+#else
 #pragma omp declare simd simdlen(4) notinbranch
+#endif
 __attribute__((noinline)) int
 foo (double c1, double c2)
 {

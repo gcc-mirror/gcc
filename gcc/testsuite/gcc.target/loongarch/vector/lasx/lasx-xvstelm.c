@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mlasx" } */
+/* { dg-options "-O3 -mlasx -fno-vect-cost-model" } */
 /* { dg-final { scan-assembler-times "xvstelm.w" 8} } */
 
 #define LEN 256

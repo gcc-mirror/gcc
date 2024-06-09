@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fcompare-debug -w" } */
+/* { dg-options "-O3 -fcompare-debug -fpermissive -w" } */
 
 extern void rt_mutex_owner (void);
 extern void rt_mutex_deadlock_account_lock (int);

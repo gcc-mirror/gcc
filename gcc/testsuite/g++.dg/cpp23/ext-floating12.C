@@ -1,6 +1,8 @@
 // P1467R9 - Extended floating-point types and standard names.
 // { dg-do compile { target { c++23 && { i?86-*-linux* x86_64-*-linux* } } } }
 // { dg-options "" }
+// { dg-add-options float16 }
+// { dg-add-options bfloat16 }
 
 #include <complex>
 #include <stdfloat>

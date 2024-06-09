@@ -1,5 +1,5 @@
 /* Selftests for text art.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -42,6 +42,7 @@ selftest::text_art_tests ()
   text_art_ruler_cc_tests ();
   text_art_table_cc_tests ();
   text_art_widget_cc_tests ();
+  text_art_tree_widget_cc_tests ();
 }
 
 /* Implementation detail of ASSERT_CANVAS_STREQ.  */

@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_OPTS_H
 #define GCC_OPTS_H
 
+#include "rich-location.h"
 #include "obstack.h"
 
 /* Specifies how a switch's VAR_VALUE relates to its FLAG_VAR.  */
@@ -152,6 +153,10 @@ struct cl_option_state {
 
 extern const struct cl_option cl_options[];
 extern const unsigned int cl_options_count;
+
+extern const char *
+get_opt_url_suffix (int option_index, unsigned lang_mask);
+
 #ifdef ENABLE_PLUGIN
 extern const struct cl_var cl_vars[];
 #endif
@@ -344,6 +349,7 @@ struct cl_option_handlers
 /* Hold command-line options associated with stack limitation.  */
 extern const char *opt_fstack_limit_symbol_arg;
 extern int opt_fstack_limit_register_no;
+extern bool flag_stack_protector_set_by_fhardened_p;
 
 /* Input file names.  */
 
@@ -485,6 +491,9 @@ extern const struct zero_call_used_regs_opts_s
 
 extern vec<const char *> help_option_arguments;
 
+extern const char *get_option_prefix_remapping (const char *p, size_t sz,
+						const char **out_new_prefix);
+
 extern void add_misspelling_candidates (auto_vec<char *> *candidates,
 					const struct cl_option *option,
 					const char *base_option);
@@ -563,5 +572,8 @@ struct switchstr
   bool validated;
   bool ordering;
 };
+
+extern label_text
+get_option_url_suffix (int option_index, unsigned lang_mask);
 
 #endif

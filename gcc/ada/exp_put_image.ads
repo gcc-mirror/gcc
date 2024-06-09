@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2020-2023, Free Software Foundation, Inc.      --
+--             Copyright (C) 2020-2024, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -70,18 +70,14 @@ package Exp_Put_Image is
    --  the declaration and name (entity) of the procedure.
 
    procedure Build_Array_Put_Image_Procedure
-     (Nod  : Node_Id;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
-   --  Nod provides the Sloc value for the generated code
 
    procedure Build_Record_Put_Image_Procedure
-     (Loc  : Source_Ptr;
-      Typ  : Entity_Id;
+     (Typ  : Entity_Id;
       Decl : out Node_Id;
       Pnam : out Entity_Id);
-   --  Loc is the location of the subprogram declaration
 
    function Build_Unknown_Put_Image_Call (N : Node_Id) return Node_Id;
    --  Build a call to Put_Image_Unknown

@@ -35,7 +35,7 @@ void test_double_bind (int fd, const char *sockname)
   addr.sun_family = AF_UNIX;
   strncpy (addr.sun_path, sockname, sizeof(addr.sun_path) - 1);
   bind (fd, (struct sockaddr *)&addr, sizeof (addr));
-  bind (fd, (struct sockaddr *)&addr, sizeof (addr)); /* { dg-warning "'bind' on file descriptor 'fd' in wrong phase \\\[-Wanalyzer-fd-phase-mismatch\\\]" "warning" } */
+  bind (fd, (struct sockaddr *)&addr, sizeof (addr)); /* { dg-warning "'bind' on file descriptor 'fd' in wrong phase \\\[CWE-666\\\] \\\[-Wanalyzer-fd-phase-mismatch\\\]" "warning" } */
   /* { dg-message "'bind' expects a new socket file descriptor but 'fd' has already been bound" "final event" { target *-*-* } .-1 } */
 }
 
@@ -71,7 +71,7 @@ void test_bind_after_accept (int fd, const char *sockname)
   memset (&addr, 0, sizeof (addr));
   addr.sun_family = AF_UNIX;
   strncpy (addr.sun_path, sockname, sizeof(addr.sun_path) - 1);
-  bind (afd, (struct sockaddr *)&addr, sizeof (addr)); /* { dg-warning "'bind' on file descriptor 'afd' in wrong phase \\\[-Wanalyzer-fd-phase-mismatch\\\]" "warning" } */
+  bind (afd, (struct sockaddr *)&addr, sizeof (addr)); /* { dg-warning "'bind' on file descriptor 'afd' in wrong phase \\\[CWE-666\\\] \\\[-Wanalyzer-fd-phase-mismatch\\\]" "warning" } */
   /* { dg-message "'bind' expects a new socket file descriptor but 'afd' is already connected" "final event" { target *-*-* } .-1 } */
 
   close (afd);

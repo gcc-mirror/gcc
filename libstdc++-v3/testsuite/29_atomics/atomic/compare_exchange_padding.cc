@@ -1,8 +1,10 @@
 // { dg-do run { target c++20 } }
-// { dg-require-thread-fence "" }
+// { dg-require-atomic-cmpxchg-word "" }
 // { dg-add-options libatomic }
+// { dg-additional-options "-fno-tree-sra" }
 
 #include <atomic>
+#include <cstring>
 
 #include <testsuite_hooks.h>
 
@@ -10,11 +12,11 @@ struct S { char c; short s; };
 
 void __attribute__((noinline,noipa))
 fill_struct(S& s)
-{ __builtin_memset(&s, 0xff, sizeof(S)); }
+{ std::memset(&s, 0xff, sizeof(S)); }
 
 bool
 compare_struct(const S& a, const S& b)
-{ return __builtin_memcmp(&a, &b, sizeof(S)) == 0; }
+{ return std::memcmp(&a, &b, sizeof(S)) == 0; }
 
 int
 main ()
@@ -25,10 +27,10 @@ main ()
   s.s = 42;
 
   std::atomic<S> as{ s };
-  auto ts = as.load();
+  auto ts = as.load(); // SRA might prevent copying of padding bits here.
   VERIFY( !compare_struct(s, ts) ); // padding cleared on construction
   as.exchange(s);
-  auto es = as.load();
+  auto es = as.load(); // SRA might prevent copying of padding bits here.
   VERIFY( compare_struct(ts, es) ); // padding cleared on exchange
 
   S n;

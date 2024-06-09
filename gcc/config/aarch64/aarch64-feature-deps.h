@@ -1,5 +1,5 @@
 /* Feature dependency helpers for AArch64.
-   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Copyright (C) 2022-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -71,6 +71,9 @@ template<aarch64_feature> struct info;
     static constexpr auto enable = flag | get_enable REQUIRES;		\
     static constexpr auto explicit_on = enable | get_enable EXPLICIT_ON; \
   };									\
+  constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::flag;	\
+  constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::enable;	\
+  constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::explicit_on; \
   constexpr info<aarch64_feature::IDENT> IDENT ()			\
   {									\
     return info<aarch64_feature::IDENT> ();				\
@@ -114,6 +117,13 @@ get_flags_off (aarch64_feature_flags mask)
 #define AARCH64_CORE(A, CORE_IDENT, C, ARCH_IDENT, FEATURES, F, G, H, I) \
   constexpr auto cpu_##CORE_IDENT = ARCH_IDENT ().enable | get_enable FEATURES;
 #include "config/aarch64/aarch64-cores.def"
+
+/* Define fmv_deps_<NAME> variables for each FMV feature, giving the transitive
+   closure of all the features that the FMV feature enables.  */
+#define AARCH64_FMV_FEATURE(A, FEAT_NAME, OPT_FLAGS) \
+  constexpr auto fmv_deps_##FEAT_NAME = get_enable OPT_FLAGS;
+#include "config/aarch64/aarch64-option-extensions.def"
+
 
 }
 }

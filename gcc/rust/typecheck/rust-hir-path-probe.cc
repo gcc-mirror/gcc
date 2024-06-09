@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -17,8 +17,10 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-path-probe.h"
-#include "rust-hir-type-check-item.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-type-util.h"
+#include "rust-hir-type-bounds.h"
+#include "rust-hir-full.h"
 
 namespace Rust {
 namespace Resolver {
@@ -37,18 +39,19 @@ PathProbeCandidate::Candidate::Candidate (TraitItemCandidate trait)
 {}
 
 PathProbeCandidate::PathProbeCandidate (CandidateType type, TyTy::BaseType *ty,
-					Location locus,
+					location_t locus,
 					EnumItemCandidate enum_field)
   : type (type), ty (ty), locus (locus), item (enum_field)
 {}
 
 PathProbeCandidate::PathProbeCandidate (CandidateType type, TyTy::BaseType *ty,
-					Location locus, ImplItemCandidate impl)
+					location_t locus,
+					ImplItemCandidate impl)
   : type (type), ty (ty), locus (locus), item (impl)
 {}
 
 PathProbeCandidate::PathProbeCandidate (CandidateType type, TyTy::BaseType *ty,
-					Location locus,
+					location_t locus,
 					TraitItemCandidate trait)
   : type (type), ty (ty), locus (locus), item (trait)
 {}
@@ -87,7 +90,7 @@ PathProbeCandidate::is_full_trait_item_candidate () const
 PathProbeCandidate
 PathProbeCandidate::get_error ()
 {
-  return PathProbeCandidate (ERROR, nullptr, Location (),
+  return PathProbeCandidate (ERROR, nullptr, UNDEF_LOCATION,
 			     ImplItemCandidate{nullptr, nullptr});
 }
 
@@ -205,7 +208,7 @@ void
 PathProbeType::visit (HIR::TypeAlias &alias)
 {
   Identifier name = alias.get_new_type_name ();
-  if (search.as_string ().compare (name) == 0)
+  if (search.as_string ().compare (name.as_string ()) == 0)
     {
       HirId tyid = alias.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
@@ -225,7 +228,7 @@ void
 PathProbeType::visit (HIR::ConstantItem &constant)
 {
   Identifier name = constant.get_identifier ();
-  if (search.as_string ().compare (name) == 0)
+  if (search.as_string ().compare (name.as_string ()) == 0)
     {
       HirId tyid = constant.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
@@ -245,7 +248,7 @@ void
 PathProbeType::visit (HIR::Function &function)
 {
   Identifier name = function.get_function_name ();
-  if (search.as_string ().compare (name) == 0)
+  if (search.as_string ().compare (name.as_string ()) == 0)
     {
       HirId tyid = function.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
@@ -337,40 +340,21 @@ PathProbeType::process_associated_trait_for_candidates (
 
     case TraitItemReference::TraitItemType::ERROR:
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 
-  TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ();
+  const TyTy::TypeBoundPredicate p (*trait_ref, BoundPolarity::RegularBound,
+				    UNDEF_LOCATION);
+  TyTy::TypeBoundPredicateItem item (&p, trait_item_ref);
 
-  // we can substitute the Self with the receiver here
-  if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
-    {
-      TyTy::FnType *fn = static_cast<TyTy::FnType *> (trait_item_tyty);
-      TyTy::SubstitutionParamMapping *param = nullptr;
-      for (auto &param_mapping : fn->get_substs ())
-	{
-	  const HIR::TypeParam &type_param = param_mapping.get_generic_param ();
-	  if (type_param.get_type_representation ().compare ("Self") == 0)
-	    {
-	      param = &param_mapping;
-	      break;
-	    }
-	}
-      rust_assert (param != nullptr);
-
-      std::vector<TyTy::SubstitutionArg> mappings;
-      mappings.push_back (TyTy::SubstitutionArg (param, receiver->clone ()));
-
-      Location locus; // FIXME
-      TyTy::SubstitutionArgumentMappings args (std::move (mappings), {}, locus);
-      trait_item_tyty = SubstMapperInternal::Resolve (trait_item_tyty, args);
-    }
+  TyTy::BaseType *trait_item_tyty = item.get_raw_item ()->get_tyty ();
+  if (receiver->get_kind () != TyTy::DYNAMIC)
+    trait_item_tyty = item.get_tyty_for_receiver (receiver);
 
   PathProbeCandidate::TraitItemCandidate trait_item_candidate{trait_ref,
 							      trait_item_ref,
 							      impl};
-
   PathProbeCandidate candidate{candidate_type, trait_item_tyty,
 			       trait_item_ref->get_locus (),
 			       trait_item_candidate};
@@ -407,11 +391,14 @@ PathProbeType::process_predicate_for_candidates (
 
     case TraitItemReference::TraitItemType::ERROR:
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
       break;
     }
 
-  TyTy::BaseType *trait_item_tyty = item.get_tyty_for_receiver (receiver);
+  TyTy::BaseType *trait_item_tyty = item.get_raw_item ()->get_tyty ();
+  if (receiver->get_kind () != TyTy::DYNAMIC)
+    trait_item_tyty = item.get_tyty_for_receiver (receiver);
+
   PathProbeCandidate::TraitItemCandidate trait_item_candidate{trait_ref,
 							      trait_item_ref,
 							      nullptr};

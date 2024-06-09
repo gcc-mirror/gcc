@@ -1,6 +1,6 @@
 // Simd fixed_size ABI specific implementations -*- C++ -*-
 
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -927,7 +927,9 @@ template <int _Index, int _Total, int _Combine, typename _Tp, typename _A0, type
     using _RetAbi = simd_abi::deduce_t<_Tp, __return_size>;
 
     // handle (optimize) the simple cases
-    if constexpr (_Index == 0 && _Tuple::_S_first_size == __return_size)
+    if constexpr (__return_size == 1)
+      return __x[integral_constant<size_t, __values_to_skip>()];
+    else if constexpr (_Index == 0 && _Tuple::_S_first_size == __return_size)
       return __x.first._M_data;
     else if constexpr (_Index == 0 && _Total == _Combine)
       return __x;

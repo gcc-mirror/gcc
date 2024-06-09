@@ -20,13 +20,13 @@ f1 (svbool_t pg, signed char *s8_ptr, short *s16_ptr,
   svst1_scatter_index (pg, 0, s32, s32);
   svst1_scatter_index (pg, (int32_t *) 0, s32, s32);
   svst1_scatter_index (pg, void_ptr, s32, s32);
-  svst1_scatter_index (pg, s_ptr, s32, s32); /* { dg-warning "passing argument 2 of 'svst1_scatter_s32index_s32' from incompatible pointer type" } */
-  svst1_scatter_index (pg, f32_ptr, s32, s32); /* { dg-warning "passing argument 2 of 'svst1_scatter_s32index_s32' from incompatible pointer type" } */
+  svst1_scatter_index (pg, s_ptr, s32, s32); /* { dg-error "passing argument 2 of 'svst1_scatter_s32index_s32' from incompatible pointer type" } */
+  svst1_scatter_index (pg, f32_ptr, s32, s32); /* { dg-error "passing argument 2 of 'svst1_scatter_s32index_s32' from incompatible pointer type" } */
   svst1_scatter_index (pg, f32_ptr, s32, f32);
-  svst1_scatter_index (pg, cf32_ptr, s32, f32); /* { dg-warning "passing argument 2 of 'svst1_scatter_s32index_f32' from incompatible pointer type" } */
+  svst1_scatter_index (pg, cf32_ptr, s32, f32); /* { dg-error "passing argument 2 of 'svst1_scatter_s32index_f32' from incompatible pointer type" } */
   svst1_scatter_index (pg, s, s32, s32); /* { dg-error {passing 'struct s' to argument 2 of 'svst1_scatter_index', which expects a vector or pointer base address} } */
 
-  svst1_scatter_index (pg, u32, void_ptr, s32); /* { dg-warning "passing argument 3 of 'svst1_scatter_u32base_index_s32' makes integer from pointer without a cast" } */
+  svst1_scatter_index (pg, u32, void_ptr, s32); /* { dg-error "passing argument 3 of 'svst1_scatter_u32base_index_s32' makes integer from pointer without a cast" } */
   svst1_scatter_index (pg, u32, pg, s32); /* { dg-error {passing 'svbool_t' to argument 3 of 'svst1_scatter_index', which expects 'int64_t'} } */
   svst1_scatter_index (pg, u32, s32, s32); /* { dg-error {passing 'svint32_t' to argument 3 of 'svst1_scatter_index', which expects 'int64_t'} } */
 

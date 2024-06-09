@@ -1,7 +1,7 @@
 /* PR target/83399 */
 /* { dg-do compile { target { powerpc*-*-linux* } } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O1 -mabi=elfv2 -mlittle -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 typedef __attribute__((altivec(vector__))) int v4si_t;
 int

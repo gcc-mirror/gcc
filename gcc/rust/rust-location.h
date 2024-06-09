@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -21,85 +21,12 @@
 #ifndef RUST_LOCATION_H
 #define RUST_LOCATION_H
 
+#include "rich-location.h"
 #include "rust-system.h"
 
 // A location in an input source file.
 
-class Location
-{
-public:
-  Location () : gcc_loc_ (UNKNOWN_LOCATION) {}
-
-  explicit Location (location_t loc) : gcc_loc_ (loc) {}
-
-  location_t gcc_location () const { return gcc_loc_; }
-
-  Location operator+= (location_t rhs)
-  {
-    gcc_loc_ += rhs;
-    return *this;
-  }
-
-  Location operator-= (location_t rhs)
-  {
-    gcc_loc_ -= rhs;
-    return *this;
-  }
-
-  bool operator== (location_t rhs) { return rhs == gcc_loc_; }
-
-private:
-  location_t gcc_loc_;
-};
-
-// The Rust frontend requires the ability to compare Locations.
-
-inline bool
-operator< (Location loca, Location locb)
-{
-  return loca.gcc_location () < locb.gcc_location ();
-}
-
-inline bool
-operator== (Location loca, Location locb)
-{
-  return loca.gcc_location () == locb.gcc_location ();
-}
-
-inline Location
-operator+ (Location lhs, location_t rhs)
-{
-  lhs += rhs;
-  return lhs;
-}
-
-inline Location
-operator- (Location lhs, location_t rhs)
-{
-  lhs -= rhs;
-  return lhs;
-}
-
-class RichLocation
-{
-public:
-  RichLocation (Location root);
-  ~RichLocation ();
-
-  void add_range (Location loc);
-
-  void add_fixit_insert_before (const std::string &new_parent);
-
-  void add_fixit_insert_before (Location where, const std::string &new_parent);
-
-  void add_fixit_insert_after (const std::string &new_parent);
-
-  void add_fixit_insert_after (Location where, const std::string &new_parent);
-
-  const rich_location &get () const { return gcc_rich_loc; }
-
-private:
-  rich_location gcc_rich_loc;
-};
+// Used to replace Location default constructor
+#define UNDEF_LOCATION UNKNOWN_LOCATION
 
 #endif // !defined(RUST_LOCATION_H)

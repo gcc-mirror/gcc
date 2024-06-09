@@ -1,7 +1,7 @@
 /* PR c/71858 */
 /* Make sure anticipated builtins are not considered before they are declared.  */
 /* { dg-do compile } */
-/* { dg-options "-Wimplicit-function-declaration -fdiagnostics-show-caret" } */
+/* { dg-options "-fpermissive -Wimplicit-function-declaration -fdiagnostics-show-caret" } */
 
 int sscafn (const char *, const char *, ...);
 

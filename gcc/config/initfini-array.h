@@ -1,6 +1,6 @@
 /* Definitions for ELF systems with .init_array/.fini_array section
    support.
-   Copyright (C) 2011-2023 Free Software Foundation, Inc.
+   Copyright (C) 2011-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

@@ -1,6 +1,6 @@
 ## Makefile for the GNU C++ Support library.
 ##
-## Copyright (C) 2000-2023 Free Software Foundation, Inc.
+## Copyright (C) 2000-2024 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##
@@ -131,6 +131,14 @@ cp-demangle.o: cp-demangle.c
 atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 atomicity.cc: ${atomicity_file}
 	$(LN_S) ${atomicity_file} ./atomicity.cc || true
+
+if OS_IS_DARWIN
+# See PR 112397
+new_opvnt.lo: new_opvnt.cc
+	$(LTCXXCOMPILE) -fno-reorder-blocks-and-partition -I. -c $<
+new_opvnt.o: new_opvnt.cc
+	$(CXXCOMPILE) -fno-reorder-blocks-and-partition -I. -c $<
+endif
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

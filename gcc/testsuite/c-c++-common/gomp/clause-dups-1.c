@@ -107,10 +107,10 @@ f1 (int *p)
   #pragma omp taskloop num_tasks (2) num_tasks (2)		/* { dg-error "too many 'num_tasks' clauses" } */
   for (i = 0; i < 8; ++i)
     f0 ();
-  #pragma omp taskloop num_tasks (1) grainsize (2)
+  #pragma omp taskloop num_tasks (1) grainsize (2)		/* { dg-error "'grainsize' clause must not be used together with 'num_tasks' clause" } */
   for (i = 0; i < 8; ++i)
     f0 ();
-  #pragma omp taskloop grainsize (2) num_tasks (2)
+  #pragma omp taskloop grainsize (2) num_tasks (2)		/* { dg-error "'grainsize' clause must not be used together with 'num_tasks' clause" } */
   for (i = 0; i < 8; ++i)
     f0 ();
   #pragma omp taskloop collapse (1) collapse (1)		/* { dg-error "too many 'collapse' clauses" } */

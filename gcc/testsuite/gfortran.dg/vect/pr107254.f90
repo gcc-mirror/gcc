@@ -1,5 +1,3 @@
-! { dg-do run }
-
 subroutine dlartg( f, g, s, r )
   implicit none
   double precision :: f, g, r, s

@@ -1,5 +1,5 @@
 /* Prototypes.
-   Copyright (C) 2013-2023 Free Software Foundation, Inc.
+   Copyright (C) 2013-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -22,3 +22,4 @@ extern bool linux_has_ifunc_p (void);
 extern bool linux_libc_has_function (enum function_class fn_class, tree);
 
 extern unsigned linux_libm_function_max_error (unsigned, machine_mode, bool);
+extern unsigned linux_fortify_source_default_level ();

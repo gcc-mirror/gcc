@@ -1,7 +1,7 @@
 ! { dg-do compile }
 ! { dg-options "-O1 -floop-parallelize-all -ftree-parallelize-loops=2" }
 
-      SUBROUTINE FNC (F)
+      SUBROUTINE FNC (F,N)
 
       IMPLICIT REAL (A-H)
       DIMENSION F(N)

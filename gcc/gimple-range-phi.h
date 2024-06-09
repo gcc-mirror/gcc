@@ -1,5 +1,5 @@
 /* Header file for gimple range phi analysis.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2024 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -87,6 +87,7 @@ protected:
 
   bitmap m_simple;       // Processed, not part of a group.
   bitmap m_current;	 // Potential group currently being analyzed.
+  vec<phi_group *> m_phi_groups;
   vec<phi_group *> m_tab;
   bitmap_obstack m_bitmaps;
 };

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -19,19 +19,7 @@
 #ifndef RUST_AST_LOWER_ITEM
 #define RUST_AST_LOWER_ITEM
 
-#include "rust-diagnostics.h"
-
-#include "rust-ast-lower.h"
 #include "rust-ast-lower-base.h"
-#include "rust-ast-lower-enumitem.h"
-#include "rust-ast-lower-type.h"
-#include "rust-ast-lower-implitem.h"
-#include "rust-ast-lower-stmt.h"
-#include "rust-ast-lower-expr.h"
-#include "rust-ast-lower-pattern.h"
-#include "rust-ast-lower-block.h"
-#include "rust-ast-lower-extern.h"
-#include "rust-hir-full-decls.h"
 
 namespace Rust {
 namespace HIR {
@@ -56,6 +44,7 @@ public:
   void visit (AST::Trait &trait) override;
   void visit (AST::TraitImpl &impl_block) override;
   void visit (AST::ExternBlock &extern_block) override;
+  void visit (AST::MacroRulesDefinition &rules_def) override;
 
 private:
   ASTLoweringItem () : translated (nullptr) {}

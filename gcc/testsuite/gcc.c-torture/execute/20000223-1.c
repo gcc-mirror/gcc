@@ -5,6 +5,8 @@
    eg, sizeof(long double) might be 12, but that means it must be alignable
    on a 4 byte boundary. */
 
+void abort (void);
+
 void check (char const *type, int align)
 {
   if ((align & -align) != align)

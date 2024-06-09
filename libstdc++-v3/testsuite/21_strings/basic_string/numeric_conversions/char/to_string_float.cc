@@ -1,9 +1,27 @@
 // { dg-do run { target c++11 } }
 // { dg-require-namedlocale "de_DE.ISO8859-15" }
+// { dg-add-options no_pch }
 
 // C++11 21.5 Numeric Conversions [string.conversions]
 
 #include <string>
+
+#if __cplusplus > 202302L
+
+#ifndef __cpp_lib_to_string
+# error "Feature-test macro for std::to_string missing in <string>"
+#elif __cpp_lib_to_string != 202306L
+# error "Feature-test macro for std::to_string has wrong value in <string>"
+#endif
+
+#else
+
+#ifdef __cpp_lib_to_string
+# error "__cpp_lib_to_string should not be defined for C++23"
+#endif
+
+#endif
+
 #include <format>
 #include <limits>
 #include <locale>
@@ -14,24 +32,11 @@ namespace test
 {
 // Canonical version of std::to_string(double) as specified in the standard.
 
-#if __cplusplus > 202302L
-
-#ifndef __cpp_lib_to_string
-# error "Feature-test macro for std::to_string missing in <string>"
-#elif __cpp_lib_to_string != 202306L
-# error "Feature-test macro for std::to_string has wrong value in <string>"
-#endif
-
+#if __cpp_lib_to_string
 static std::string to_string(float val) { return std::format("{}", val); }
 static std::string to_string(double val) { return std::format("{}", val); }
 static std::string to_string(long double val) { return std::format("{}", val); }
-
 #else
-
-#ifdef __cpp_lib_to_string
-# error "__cpp_lib_to_string should not be defined for C++23"
-#endif
-
 static std::string to_string(double val)
 {
   std::string str(100, '9');

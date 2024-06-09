@@ -1,5 +1,5 @@
 /* Separate lexical analyzer for GNU C++.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 
 static int interface_strcmp (const char *);
+static void init_cp_traits (void);
 static void init_cp_pragma (void);
 
 static tree parse_strconst_pragma (const char *, int);
@@ -96,6 +97,19 @@ ovl_op_info_t ovl_op_info[2][OVL_OP_MAX] =
   };
 unsigned char ovl_op_mapping[MAX_TREE_CODES];
 unsigned char ovl_op_alternate[OVL_OP_MAX];
+
+/* The trait table, declared in cp-tree.h.  */
+const cp_trait cp_traits[] =
+{
+#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
+  { NAME, CPTK_##CODE, ARITY, (TCC == tcc_type) },
+#include "cp-trait.def"
+#undef DEFTRAIT
+};
+/* The trait table cannot have more than 255 (addr_space_t) entries since
+   the index is retrieved through IDENTIFIER_CP_INDEX.  */
+static_assert(ARRAY_SIZE (cp_traits) <= 255,
+	      "cp_traits array cannot have more than 255 entries");
 
 /* Get the name of the kind of identifier T.  */
 
@@ -283,6 +297,25 @@ init_reswords (void)
     }
 }
 
+/* Initialize the C++ traits.  */
+static void
+init_cp_traits (void)
+{
+  tree id;
+
+  for (unsigned int i = 0; i < ARRAY_SIZE (cp_traits); ++i)
+    {
+      id = get_identifier (cp_traits[i].name);
+      IDENTIFIER_CP_INDEX (id) = cp_traits[i].kind;
+      set_identifier_kind (id, cik_trait);
+    }
+
+  /* An alias for __is_same.  */
+  id = get_identifier ("__is_same_as");
+  IDENTIFIER_CP_INDEX (id) = CPTK_IS_SAME;
+  set_identifier_kind (id, cik_trait);
+}
+
 static void
 init_cp_pragma (void)
 {
@@ -324,6 +357,7 @@ cxx_init (void)
   input_location = BUILTINS_LOCATION;
 
   init_reswords ();
+  init_cp_traits ();
   init_tree ();
   init_cp_semantics ();
   init_operators ();

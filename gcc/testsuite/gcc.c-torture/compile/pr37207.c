@@ -1,3 +1,6 @@
+int func_81 (int);
+void func_98 (int);
+
 void
 func_18 ( int t )
 {

@@ -9,8 +9,11 @@ void bar (char *, double *);
 struct S { char c[sizeof (double)]; };
 void baz (struct S, struct S);
 union U { struct S s; double d; };
-
+#ifdef __aarch64__
+#pragma omp declare simd simdlen(2) notinbranch
+#else
 #pragma omp declare simd simdlen(4) notinbranch
+#endif
 __attribute__((noinline)) int
 foo (double c1, double c2)
 {
@@ -28,6 +31,5 @@ foo (double c1, double c2)
   baz (*(struct S *)&c1, *(struct S *)&c2);
   return c1 + c2 + ((struct S *)&c1)->c[1];
 }
-/* { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-16 } */
 
 #endif

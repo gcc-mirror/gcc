@@ -1,5 +1,5 @@
 /* Various diagnostic subroutines for the GNU C language.
-   Copyright (C) 2000-2023 Free Software Foundation, Inc.
+   Copyright (C) 2000-2024 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -25,11 +25,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-tree.h"
 #include "opts.h"
 
-/* Issue an ISO C11 pedantic warning MSGID if -pedantic outside C2X mode,
-   otherwise issue warning MSGID if -Wc11-c2X-compat is specified.
+/* Issue an ISO C11 pedantic warning MSGID if -pedantic outside C23 mode,
+   otherwise issue warning MSGID if -Wc11-c23-compat is specified.
    This function is supposed to be used for matters that are allowed in
-   ISO C2X but not supported in ISO C11, thus we explicitly don't pedwarn
-   when C2X is specified.  */
+   ISO C23 but not supported in ISO C11, thus we explicitly don't pedwarn
+   when C23 is specified.  */
 
 bool
 pedwarn_c11 (location_t location, int opt, const char *gmsgid, ...)
@@ -40,21 +40,21 @@ pedwarn_c11 (location_t location, int opt, const char *gmsgid, ...)
   rich_location richloc (line_table, location);
 
   va_start (ap, gmsgid);
-  /* If desired, issue the C11/C2X compat warning, which is more specific
+  /* If desired, issue the C11/C23 compat warning, which is more specific
      than -pedantic.  */
-  if (warn_c11_c2x_compat > 0)
+  if (warn_c11_c23_compat > 0)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
-			   (pedantic && !flag_isoc2x)
+			   (pedantic && !flag_isoc23)
 			   ? DK_PEDWARN : DK_WARNING);
-      diagnostic.option_index = OPT_Wc11_c2x_compat;
+      diagnostic.option_index = OPT_Wc11_c23_compat;
       warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
     }
-  /* -Wno-c11-c2x-compat suppresses even the pedwarns.  */
-  else if (warn_c11_c2x_compat == 0)
+  /* -Wno-c11-c23-compat suppresses even the pedwarns.  */
+  else if (warn_c11_c23_compat == 0)
     ;
-  /* For -pedantic outside C2X, issue a pedwarn.  */
-  else if (pedantic && !flag_isoc2x)
+  /* For -pedantic outside C23, issue a pedwarn.  */
+  else if (pedantic && !flag_isoc23)
     {
       diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
       diagnostic.option_index = opt;

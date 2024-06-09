@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -25,14 +25,14 @@ namespace Rust {
 namespace Compile {
 
 CompileFnParam::CompileFnParam (Context *ctx, tree fndecl, tree decl_type,
-				Location locus)
+				location_t locus)
   : HIRCompileBase (ctx), fndecl (fndecl), decl_type (decl_type), locus (locus),
-    compiled_param (ctx->get_backend ()->error_variable ())
+    compiled_param (Bvariable::error_variable ())
 {}
 
 Bvariable *
 CompileFnParam::compile (Context *ctx, tree fndecl, HIR::FunctionParam *param,
-			 tree decl_type, Location locus)
+			 tree decl_type, location_t locus)
 {
   CompileFnParam compiler (ctx, fndecl, decl_type, locus);
   param->get_param_name ()->accept_vis (compiler);
@@ -41,7 +41,7 @@ CompileFnParam::compile (Context *ctx, tree fndecl, HIR::FunctionParam *param,
 
 Bvariable *
 CompileFnParam::compile (Context *ctx, tree fndecl, HIR::Pattern *param,
-			 tree decl_type, Location locus)
+			 tree decl_type, location_t locus)
 {
   CompileFnParam compiler (ctx, fndecl, decl_type, locus);
   param->accept_vis (compiler);
@@ -52,69 +52,68 @@ void
 CompileFnParam::visit (HIR::IdentifierPattern &pattern)
 {
   if (!pattern.is_mut ())
-    decl_type = ctx->get_backend ()->immutable_type (decl_type);
+    decl_type = Backend::immutable_type (decl_type);
 
   compiled_param
-    = ctx->get_backend ()->parameter_variable (fndecl,
-					       pattern.get_identifier (),
-					       decl_type, locus);
+    = Backend::parameter_variable (fndecl,
+				   pattern.get_identifier ().as_string (),
+				   decl_type, locus);
 }
 
 void
 CompileFnParam::visit (HIR::WildcardPattern &pattern)
 {
-  decl_type = ctx->get_backend ()->immutable_type (decl_type);
+  decl_type = Backend::immutable_type (decl_type);
 
-  compiled_param
-    = ctx->get_backend ()->parameter_variable (fndecl, "_", decl_type, locus);
+  compiled_param = Backend::parameter_variable (fndecl, "_", decl_type, locus);
 }
 
 void
 CompileFnParam::visit (HIR::StructPattern &pattern)
 {
-  // generate the anon param
-  tree tmp_ident = create_tmp_var_name ("RSTPRM");
-  std::string cpp_str_identifier = std::string (IDENTIFIER_POINTER (tmp_ident));
-
-  decl_type = ctx->get_backend ()->immutable_type (decl_type);
-  compiled_param
-    = ctx->get_backend ()->parameter_variable (fndecl, cpp_str_identifier,
-					       decl_type, locus);
-
-  // setup the pattern bindings
-  tree anon_param = ctx->get_backend ()->var_expression (compiled_param, locus);
-  CompilePatternBindings::Compile (&pattern, anon_param, ctx);
+  tree tmp_param_var = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (&pattern, tmp_param_var, ctx);
 }
 
 void
 CompileFnParam::visit (HIR::TupleStructPattern &pattern)
 {
-  // generate the anon param
-  tree tmp_ident = create_tmp_var_name ("RSTPRM");
-  std::string cpp_str_identifier = std::string (IDENTIFIER_POINTER (tmp_ident));
+  tree tmp_param_var = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (&pattern, tmp_param_var, ctx);
+}
 
-  decl_type = ctx->get_backend ()->immutable_type (decl_type);
-  compiled_param
-    = ctx->get_backend ()->parameter_variable (fndecl, cpp_str_identifier,
-					       decl_type, locus);
-
-  // setup the pattern bindings
-  tree anon_param = ctx->get_backend ()->var_expression (compiled_param, locus);
-  CompilePatternBindings::Compile (&pattern, anon_param, ctx);
+void
+CompileFnParam::visit (HIR::ReferencePattern &pattern)
+{
+  tree tmp_param_var = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (&pattern, tmp_param_var, ctx);
 }
 
 Bvariable *
 CompileSelfParam::compile (Context *ctx, tree fndecl, HIR::SelfParam &self,
-			   tree decl_type, Location locus)
+			   tree decl_type, location_t locus)
 {
   bool is_immutable
     = self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM
       || self.get_self_kind () == HIR::SelfParam::ImplicitSelfKind::IMM_REF;
   if (is_immutable)
-    decl_type = ctx->get_backend ()->immutable_type (decl_type);
+    decl_type = Backend::immutable_type (decl_type);
 
-  return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
-						  locus);
+  return Backend::parameter_variable (fndecl, "self", decl_type, locus);
+}
+
+tree
+CompileFnParam::create_tmp_param_var (tree decl_type)
+{
+  // generate the anon param
+  tree tmp_ident = create_tmp_var_name ("RSTPRM");
+  std::string cpp_str_identifier = std::string (IDENTIFIER_POINTER (tmp_ident));
+
+  decl_type = Backend::immutable_type (decl_type);
+  compiled_param = Backend::parameter_variable (fndecl, cpp_str_identifier,
+						decl_type, locus);
+
+  return Backend::var_expression (compiled_param, locus);
 }
 
 } // namespace Compile

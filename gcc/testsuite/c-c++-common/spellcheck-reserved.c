@@ -29,7 +29,7 @@ SOME_MACRO foo; /* { dg-bogus "__SOME_MACRO" } */
 void test (const char *buf, char ch)
 {
   __builtin_strtchr (buf, ch); /* { dg-line misspelled_reserved } */
-  /* { dg-warning "did you mean '__builtin_strchr'" "" { target c } misspelled_reserved } */
+  /* { dg-error "did you mean '__builtin_strchr'" "" { target c } misspelled_reserved } */
   /* { dg-error "'__builtin_strtchr' was not declared in this scope; did you mean '__builtin_strrchr'\\?" "" { target c++ } misspelled_reserved } */
 }
 
@@ -38,7 +38,7 @@ void test (const char *buf, char ch)
 void test_2 (const char *buf, char ch)
 {
   _builtin_strchr (buf, ch); /* { dg-line misspelled_one_underscore } */
-  /* { dg-warning "did you mean '__builtin_strchr'" "" { target c } misspelled_one_underscore } */
+  /* { dg-error "did you mean '__builtin_strchr'" "" { target c } misspelled_one_underscore } */
   /* { dg-error "'_builtin_strchr' was not declared in this scope; did you mean '__builtin_strchr'\\?" "" { target c++ } misspelled_one_underscore } */
 }
 

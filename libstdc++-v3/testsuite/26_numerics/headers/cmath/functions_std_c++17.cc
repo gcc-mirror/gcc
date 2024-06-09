@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2023 Free Software Foundation, Inc.
+// Copyright (C) 2016-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,51 @@ namespace gnu
   using std::sqrt;
   using std::tan;
   using std::tanh;
+
+  using std::acosf;
+  using std::acosl;
+  using std::asinf;
+  using std::asinl;
+  using std::atanf;
+  using std::atanl;
+  using std::atan2f;
+  using std::atan2l;
+  using std::ceilf;
+  using std::ceill;
+  using std::cosf;
+  using std::cosl;
+  using std::coshf;
+  using std::coshl;
+  using std::expf;
+  using std::expl;
+  using std::fabsf;
+  using std::fabsl;
+  using std::floorf;
+  using std::floorl;
+  using std::fmodf;
+  using std::fmodl;
+  using std::frexpf;
+  using std::frexpl;
+  using std::ldexpf;
+  using std::ldexpl;
+  using std::logf;
+  using std::logl;
+  using std::log10f;
+  using std::log10l;
+  using std::modff;
+  using std::modfl;
+  using std::powf;
+  using std::powl;
+  using std::sinf;
+  using std::sinl;
+  using std::sinhf;
+  using std::sinhl;
+  using std::sqrtf;
+  using std::sqrtl;
+  using std::tanf;
+  using std::tanl;
+  using std::tanhf;
+  using std::tanhl;
 
   using std::assoc_laguerre;
   using std::assoc_laguerref;

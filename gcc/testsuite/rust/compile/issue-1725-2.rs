@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 mod core {
     mod ops {
         #[lang = "add"]
@@ -23,6 +26,6 @@ pub fn foo<T: core::ops::Add<Output = i32>>(a: T) -> i32 {
 
 pub fn main() {
     foo(123f32);
-    // { dg-error "expected .i32. got .f32." "" { target *-*-* } .-1 }
+    // { dg-error "type mismatch, expected .i32. but got .f32." "" { target *-*-* } .-1 }
     // { dg-error "bounds not satisfied for f32 .Add. is not satisfied" "" { target *-*-* } .-2 }
 }

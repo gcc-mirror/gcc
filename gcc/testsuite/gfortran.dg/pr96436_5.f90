@@ -17,9 +17,9 @@ write(buffer,fmt) ">", 3.0, "<"
 if (buffer.ne.">0.30E+1<") stop 4
 fmt = "(1a1,en0.2,1a1)"
 write(buffer,fmt) ">", 3.0, "<"
-if (buffer.ne.">3.00<") stop 5
+if (buffer.ne.">3.00E+0<") stop 5
 fmt = "(1a1,es0.2,1a1)"
 write(buffer,fmt) ">", 3.0, "<"
-if (buffer.ne.">3.00<") stop 6
+if (buffer.ne.">3.00E+0<") stop 6
 end
 

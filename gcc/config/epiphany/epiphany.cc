@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the EPIPHANY cpu.
-   Copyright (C) 1994-2023 Free Software Foundation, Inc.
+   Copyright (C) 1994-2024 Free Software Foundation, Inc.
    Contributed by Embecosm on behalf of Adapteva, Inc.
 
 This file is part of GCC.
@@ -458,7 +458,7 @@ epiphany_init_reg_tables (void)
                      They unmask them while calling an interruptible
 		     function, though.  */
 
-static const struct attribute_spec epiphany_attribute_table[] =
+TARGET_GNU_ATTRIBUTES (epiphany_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
@@ -468,9 +468,8 @@ static const struct attribute_spec epiphany_attribute_table[] =
     epiphany_handle_forwarder_attribute, NULL },
   { "long_call",  0, 0, false, true, true, false, NULL, NULL },
   { "short_call", 0, 0, false, true, true, false, NULL, NULL },
-  { "disinterrupt", 0, 0, false, true, true, true, NULL, NULL },
-  { NULL,         0, 0, false, false, false, false, NULL, NULL }
-};
+  { "disinterrupt", 0, 0, false, true, true, true, NULL, NULL }
+});
 
 /* Handle an "interrupt" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -729,7 +728,8 @@ epiphany_setup_incoming_varargs (cumulative_args_t cum,
     gcc_assert (arg.mode != BLKmode);
 
   next_cum = *get_cumulative_args (cum);
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
     next_cum = (ROUND_ADVANCE_CUM (next_cum, arg.mode, arg.type)
 		+ ROUND_ADVANCE_ARG (arg.mode, arg.type));
   first_anon_arg = next_cum;
@@ -2400,7 +2400,7 @@ epiphany_mode_priority (int entity, int priority)
 }
 
 int
-epiphany_mode_needed (int entity, rtx_insn *insn)
+epiphany_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET)
 {
   enum attr_fp_mode mode;
 
@@ -2437,7 +2437,7 @@ epiphany_mode_needed (int entity, rtx_insn *insn)
     return 2;
   case EPIPHANY_MSW_ENTITY_ROUND_KNOWN:
     if (recog_memoized (insn) == CODE_FOR_set_fp_mode)
-      mode = (enum attr_fp_mode) epiphany_mode_after (entity, mode, insn);
+      mode = (enum attr_fp_mode) epiphany_mode_after (entity, mode, insn, {});
     /* Fall through.  */
   case EPIPHANY_MSW_ENTITY_NEAREST:
   case EPIPHANY_MSW_ENTITY_TRUNC:
@@ -2498,7 +2498,8 @@ epiphany_mode_entry_exit (int entity, bool exit)
 }
 
 int
-epiphany_mode_after (int entity, int last_mode, rtx_insn *insn)
+epiphany_mode_after (int entity, int last_mode, rtx_insn *insn,
+		     HARD_REG_SET)
 {
   /* We have too few call-saved registers to hope to keep the masks across
      calls.  */

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -28,9 +28,9 @@ Rib::Rib (CrateNum crateNum, NodeId node_id)
 
 void
 Rib::insert_name (
-  const CanonicalPath &path, NodeId id, Location locus, bool shadow,
+  const CanonicalPath &path, NodeId id, location_t locus, bool shadow,
   ItemType type,
-  std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
+  std::function<void (const CanonicalPath &, NodeId, location_t)> dup_cb)
 {
   auto it = path_mappings.find (path);
   bool path_already_exists = it != path_mappings.end ();
@@ -139,19 +139,19 @@ Scope::Scope (CrateNum crate_num) : crate_num (crate_num) {}
 
 void
 Scope::insert (
-  const CanonicalPath &ident, NodeId id, Location locus, bool shadow,
+  const CanonicalPath &ident, NodeId id, location_t locus, bool shadow,
   Rib::ItemType type,
-  std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
+  std::function<void (const CanonicalPath &, NodeId, location_t)> dup_cb)
 {
   peek ()->insert_name (ident, id, locus, shadow, type, dup_cb);
 }
 
 void
-Scope::insert (const CanonicalPath &ident, NodeId id, Location locus,
+Scope::insert (const CanonicalPath &ident, NodeId id, location_t locus,
 	       Rib::ItemType type)
 {
   peek ()->insert_name (ident, id, locus, true, type,
-			[] (const CanonicalPath &, NodeId, Location) -> void {
+			[] (const CanonicalPath &, NodeId, location_t) -> void {
 			});
 }
 
@@ -366,10 +366,10 @@ Resolver::insert_builtin_types (Rib *r)
       CanonicalPath builtin_path
 	= CanonicalPath::new_seg (builtin->get_node_id (),
 				  builtin->as_string ());
-      r->insert_name (builtin_path, builtin->get_node_id (),
-		      Linemap::predeclared_location (), false,
-		      Rib::ItemType::Type,
-		      [] (const CanonicalPath &, NodeId, Location) -> void {});
+      r->insert_name (builtin_path, builtin->get_node_id (), BUILTINS_LOCATION,
+		      false, Rib::ItemType::Type,
+		      [] (const CanonicalPath &, NodeId, location_t) -> void {
+		      });
     }
 }
 
@@ -436,7 +436,7 @@ Resolver::generate_builtins ()
     = TyTy::TupleType::get_unit_type (mappings->get_next_hir_id ());
   std::vector<std::unique_ptr<AST::Type> > elems;
   AST::TupleType *unit_type
-    = new AST::TupleType (std::move (elems), Linemap::predeclared_location ());
+    = new AST::TupleType (std::move (elems), BUILTINS_LOCATION);
   builtins.push_back (unit_type);
   tyctx->insert_builtin (unit_tyty->get_ref (), unit_type->get_node_id (),
 			 unit_tyty);
@@ -446,15 +446,13 @@ Resolver::generate_builtins ()
 void
 Resolver::setup_builtin (const std::string &name, TyTy::BaseType *tyty)
 {
-  AST::PathIdentSegment seg (name, Linemap::predeclared_location ());
+  AST::PathIdentSegment seg (name, BUILTINS_LOCATION);
   auto typePath = ::std::unique_ptr<AST::TypePathSegment> (
-    new AST::TypePathSegment (::std::move (seg), false,
-			      Linemap::predeclared_location ()));
+    new AST::TypePathSegment (::std::move (seg), false, BUILTINS_LOCATION));
   ::std::vector< ::std::unique_ptr<AST::TypePathSegment> > segs;
   segs.push_back (::std::move (typePath));
   auto builtin_type
-    = new AST::TypePath (::std::move (segs), Linemap::predeclared_location (),
-			 false);
+    = new AST::TypePath (::std::move (segs), BUILTINS_LOCATION, false);
   builtins.push_back (builtin_type);
   tyctx->insert_builtin (tyty->get_ref (), builtin_type->get_node_id (), tyty);
   mappings->insert_node_to_hir (builtin_type->get_node_id (), tyty->get_ref ());

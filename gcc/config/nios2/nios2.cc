@@ -1,5 +1,5 @@
 /* Target machine subroutines for Altera Nios II.
-   Copyright (C) 2012-2023 Free Software Foundation, Inc.
+   Copyright (C) 2012-2024 Free Software Foundation, Inc.
    Contributed by Jonah Graham (jgraham@altera.com), 
    Will Reece (wreece@altera.com), and Jeff DaSilva (jdasilva@altera.com).
    Contributed by Mentor Graphics, Inc.
@@ -3525,7 +3525,8 @@ nios2_setup_incoming_varargs (cumulative_args_t cum_v,
 
   cfun->machine->uses_anonymous_args = 1;
   local_cum = *cum;
-  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl))
+      || arg.type != NULL_TREE)
     nios2_function_arg_advance (local_cum_v, arg);
 
   regs_to_push = NUM_ARG_REGS - local_cum.regs_used;

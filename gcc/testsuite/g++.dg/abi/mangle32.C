@@ -4,6 +4,7 @@
 // are distinct.
 
 // { dg-do compile { target c++11 } }
+// { dg-additional-options -fabi-compat-version=0 }
 
 typedef struct { } *A;
 typedef struct { } *B;

@@ -1,6 +1,6 @@
 // std::mutex implementation -*- C++ -*-
 
-// Copyright (C) 2003-2023 Free Software Foundation, Inc.
+// Copyright (C) 2003-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -245,9 +245,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       typedef _Mutex mutex_type;
 
+      [[__nodiscard__]]
       explicit lock_guard(mutex_type& __m) : _M_device(__m)
       { _M_device.lock(); }
 
+      [[__nodiscard__]]
       lock_guard(mutex_type& __m, adopt_lock_t) noexcept : _M_device(__m)
       { } // calling thread owns mutex
 

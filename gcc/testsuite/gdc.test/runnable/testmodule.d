@@ -1,4 +1,5 @@
 // PERMUTE_ARGS:
+// UNICODE_NAMES:
 
 // $HeadURL$
 // $Date$
@@ -11,6 +12,7 @@
 
 module run.unicode_06_哪里;
 
+//UTF-8 chars
 int 哪里(int ö){
         return ö+2;
 }

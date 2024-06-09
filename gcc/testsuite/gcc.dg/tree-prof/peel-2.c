@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fdump-tree-cunroll-details -fno-unroll-loops -fpeel-loops -fdump-tree-ch2-details-blocks" } */
+/* { dg-options "-O3 -fdump-tree-cunroll-details -fno-unroll-loops -fpeel-loops -fdump-tree-ch2-details-blocks -fno-tree-loop-distribute-patterns" } */
 int a[100];
 int n = 1000000;
 int zeroc;

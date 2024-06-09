@@ -26,6 +26,7 @@ avx512bw_test ()
 
   foo (N);
 
+#pragma GCC novector
   for (i = 0; i < N; i++)
     if ( (unsigned char)(2*i+1) != yy [i] )
       abort ();

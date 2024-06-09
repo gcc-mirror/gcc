@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,9 +41,18 @@ test02()
   VERIFY( t - s < 1s );
 }
 
+void
+test03()
+{
+  using namespace std::chrono;
+  auto st = sys_days(2024y/January/21);
+  VERIFY( file_clock::to_sys(file_clock::from_sys(st)) == st );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

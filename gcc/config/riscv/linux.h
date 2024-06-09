@@ -1,5 +1,5 @@
 /* Definitions for RISC-V GNU/Linux systems with ELF format.
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -50,14 +50,16 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SPEC "\
 -melf" XLEN_SPEC DEFAULT_ENDIAN_SPEC "riscv" LD_EMUL_SUFFIX " \
 %{mno-relax:--no-relax} \
+-X \
 %{mbig-endian:-EB} \
 %{mlittle-endian:-EL} \
 %{shared} \
   %{!shared: \
     %{!static: \
-      %{rdynamic:-export-dynamic} \
-      -dynamic-linker " GNU_USER_DYNAMIC_LINKER "} \
-    %{static:-static}}"
+      %{!static-pie: \
+	%{rdynamic:-export-dynamic} \
+	-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
+    %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
 
 #define STARTFILE_PREFIX_SPEC 			\
    "/lib" XLEN_SPEC "/" ABI_SPEC "/ "		\

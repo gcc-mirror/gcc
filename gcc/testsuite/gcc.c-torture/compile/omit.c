@@ -1,3 +1,5 @@
+/* { dg-additional-options "-std=gnu89" } */
+
 omit (a, b)
     char a;
     char *b;

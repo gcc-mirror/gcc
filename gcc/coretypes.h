@@ -1,5 +1,5 @@
 /* GCC core type declarations.
-   Copyright (C) 2002-2023 Free Software Foundation, Inc.
+   Copyright (C) 2002-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -156,7 +156,8 @@ struct cl_optimization;
 struct cl_option;
 struct cl_decoded_option;
 struct cl_option_handlers;
-struct diagnostic_context;
+class rich_location;
+class diagnostic_context;
 class pretty_printer;
 class diagnostic_event_id_t;
 typedef const char * (*diagnostic_input_charset_callback)(const char *);
@@ -202,6 +203,12 @@ enum tls_model {
   TLS_MODEL_LOCAL_DYNAMIC,
   TLS_MODEL_INITIAL_EXEC,
   TLS_MODEL_LOCAL_EXEC
+};
+
+/* Types of trampoline implementation.  */
+enum trampoline_impl {
+  TRAMPOLINE_IMPL_STACK,
+  TRAMPOLINE_IMPL_HEAP
 };
 
 /* Types of ABI for an offload compiler.  */
@@ -404,7 +411,7 @@ enum function_class {
   function_c99_math_complex,
   function_sincos,
   function_c11_misc,
-  function_c2x_misc
+  function_c23_misc
 };
 
 /* Enumerate visibility settings.  This is deliberately ordered from most

@@ -1,6 +1,6 @@
 /* Header file for routines that straddle the border between GIMPLE and
    SSA in gimple.
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -76,8 +76,10 @@ struct GTY(()) gimple_df {
   /* Artificial variable used for the virtual operand FUD chain.  */
   tree vop;
 
-  /* The PTA solution for the ESCAPED artificial variable.  */
+  /* The PTA solution for the ESCAPED and ESCAPED_RETURN artificial
+     variables.  */
   struct pt_solution escaped;
+  struct pt_solution escaped_return;
 
   /* A map of decls to artificial ssa-names that point to the partition
      of the decl.  */

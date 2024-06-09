@@ -1,5 +1,5 @@
 ## Makefile for the Phobos standard library.
-## Copyright (C) 2012-2023 Free Software Foundation, Inc.
+## Copyright (C) 2012-2024 Free Software Foundation, Inc.
 ##
 ## GCC is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -44,8 +44,11 @@ toolexeclib_DATA = libgphobos.spec
 toolexeclib_LTLIBRARIES = libgphobos.la
 libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES)
 libgphobos_la_LIBTOOLFLAGS =
+if ENABLE_DARWIN_AT_RPATH
+libgphobos_darwin_rpath = -Wl,-rpath,@loader_path
+endif
 libgphobos_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../libdruntime/gcc \
-    -version-info $(libtool_VERSION)
+    -version-info $(libtool_VERSION) $(libgphobos_darwin_rpath)
 if ENABLE_LIBDRUNTIME_ONLY
 libgphobos_la_LIBADD = ../libdruntime/libgdruntime_convenience.la
 else

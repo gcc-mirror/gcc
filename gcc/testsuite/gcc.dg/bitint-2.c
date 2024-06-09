@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x -pedantic-errors" } */
+/* { dg-options "-std=c23 -pedantic-errors" } */
 
 #define expr_has_type(e, t) _Generic (e, default : 0, t : 1)
 

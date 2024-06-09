@@ -1,5 +1,5 @@
 /* Structured Exception Handling (SEH) runtime interface routines.
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -395,9 +395,9 @@ _Unwind_Reason_Code
 _Unwind_Resume_or_Rethrow (struct _Unwind_Exception *exc)
 {
   if (exc->private_[0] == 0)
-    _Unwind_RaiseException (exc);
-  else
-    _Unwind_ForcedUnwind_Phase2 (exc);
+    return _Unwind_RaiseException (exc);
+
+  _Unwind_ForcedUnwind_Phase2 (exc);
   abort ();
 }
 

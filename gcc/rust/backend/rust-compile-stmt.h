@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,6 +20,7 @@
 #define RUST_COMPILE_STMT
 
 #include "rust-compile-base.h"
+#include "rust-hir-visitor.h"
 
 namespace Rust {
 namespace Compile {
@@ -29,8 +30,7 @@ class CompileStmt : private HIRCompileBase, protected HIR::HIRStmtVisitor
 public:
   static tree Compile (HIR::Stmt *stmt, Context *ctx);
 
-  void visit (HIR::ExprStmtWithBlock &stmt) override;
-  void visit (HIR::ExprStmtWithoutBlock &stmt) override;
+  void visit (HIR::ExprStmt &stmt) override;
   void visit (HIR::LetStmt &stmt) override;
 
   // Empty visit for unused Stmt HIR nodes.

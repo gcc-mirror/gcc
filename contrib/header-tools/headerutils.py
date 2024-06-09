@@ -1,4 +1,4 @@
-#! /usr/bin/python2
+#! /usr/bin/python3
 import os.path
 import sys
 import shlex
@@ -10,7 +10,7 @@ import pickle
 import multiprocessing 
 
 def find_pound_include (line, use_outside, use_slash):
-  inc = re.findall (ur"^\s*#\s*include\s*\"(.+?)\"", line)
+  inc = re.findall (r"^\s*#\s*include\s*\"(.+?)\"", line)
   if len(inc) == 1:
     nm = inc[0]
     if use_outside or os.path.exists (nm):
@@ -19,17 +19,17 @@ def find_pound_include (line, use_outside, use_slash):
   return ""
 
 def find_system_include (line):
-  inc = re.findall (ur"^\s*#\s*include\s*<(.+?)>", line)
+  inc = re.findall (r"^\s*#\s*include\s*<(.+?)>", line)
   if len(inc) == 1:
     return inc[0]
   return ""
   
 def find_pound_define (line):
-  inc = re.findall (ur"^\s*#\s*define ([A-Za-z0-9_]+)", line)
+  inc = re.findall (r"^\s*#\s*define ([A-Za-z0-9_]+)", line)
   if len(inc) != 0:
     if len(inc) > 1:
-      print "What? more than 1 match in #define??"
-      print inc
+      print ("What? more than 1 match in #define??")
+      print (inc)
       sys.exit(5)
     return inc[0];
   return ""
@@ -49,26 +49,26 @@ def is_pound_endif (line):
   return False
 
 def find_pound_if (line):
-  inc = re.findall (ur"^\s*#\s*if\s+(.*)", line)
+  inc = re.findall (r"^\s*#\s*if\s+(.*)", line)
   if len(inc) == 0:
-    inc = re.findall (ur"^\s*#\s*elif\s+(.*)", line)
+    inc = re.findall (r"^\s*#\s*elif\s+(.*)", line)
   if len(inc) > 0:
-    inc2 = re.findall (ur"defined\s*\((.+?)\)", inc[0])
-    inc3 = re.findall (ur"defined\s+([a-zA-Z0-9_]+)", inc[0])
+    inc2 = re.findall (r"defined\s*\((.+?)\)", inc[0])
+    inc3 = re.findall (r"defined\s+([a-zA-Z0-9_]+)", inc[0])
     for yy in inc3:
       inc2.append (yy)
     return inc2
   else:
-    inc = re.findall (ur"^\s*#\s*ifdef\s(.*)", line)
+    inc = re.findall (r"^\s*#\s*ifdef\s(.*)", line)
     if len(inc) == 0:
-      inc = re.findall (ur"^\s*#\s*ifndef\s(.*)", line)
+      inc = re.findall (r"^\s*#\s*ifndef\s(.*)", line)
     if len(inc) > 0:
       inc2 = re.findall ("[A-Za-z_][A-Za-z_0-9]*", inc[0])
       return inc2
   if len(inc) == 0:
     return list ()
-  print "WTF. more than one line returned for find_pound_if"
-  print inc
+  print ("WTF. more than one line returned for find_pound_if")
+  print (inc)
   sys.exit(5)
 
 
@@ -248,8 +248,8 @@ def find_gcc_bld_dir (path):
     for y in files:
       p = os.path.dirname (y)
       if os.path.basename (p) == "gcc":
-	blddir = p
-	break
+        blddir = p
+        break
 
   return blddir
 
@@ -424,7 +424,7 @@ def find_replace_include (find, replace, src):
 # pass in a require and provide dictionary to be read in.
 def read_require_provides (require, provide):
   if not os.path.exists ("require-provide.master"):
-    print "require-provide.master file is not available. please run data collection."
+    print ("require-provide.master file is not available. please run data collection.")
     sys.exit(1)
   incl_list = open("require-provide.master").read().splitlines()
   for f in incl_list:
@@ -501,7 +501,7 @@ def spawn_makes (command_list):
     c = subprocess.Popen(command, bufsize=-1, stdout=devnull, stderr=subprocess.PIPE, shell=True)
     proc_res.append ((c, tname))
 
-  print text[:-2]
+  print (text[:-2])
 
   for p in proc_res:
     output = p[0].communicate()

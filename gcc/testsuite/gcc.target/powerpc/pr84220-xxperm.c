@@ -2,8 +2,8 @@
 /* Test to ensure we generate invalid parameter errors rather than an ICE
     when calling vec_xxpermdi() with invalid parameters.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O2 -mvsx" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
 void abort (void);

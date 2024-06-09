@@ -1,6 +1,6 @@
 /* PR c/102989 */
 /* { dg-do compile { target { bitint && exceptions } } } */
-/* { dg-options "-O2 -std=gnu2x -fnon-call-exceptions -fexceptions" } */
+/* { dg-options "-O2 -std=gnu23 -fnon-call-exceptions -fexceptions" } */
 
 __attribute__((noipa)) void
 baz (int *p)

@@ -1,6 +1,6 @@
 (* FileSystem.mod provides a PIM [234] FileSystem module.
 
-Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Copyright (C) 2004-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -28,9 +28,9 @@ IMPLEMENTATION MODULE FileSystem ;
 
 FROM M2RTS IMPORT InstallTerminationProcedure ;
 FROM Storage IMPORT ALLOCATE ;
-FROM SYSTEM IMPORT WORD, BYTE, ADDRESS, ADR ;
-IMPORT FIO, SFIO, libc, wrapc ;
-FROM DynamicStrings IMPORT String, InitString, ConCat, ConCatChar, KillString, string ;
+FROM SYSTEM IMPORT ADR ;
+IMPORT SFIO, libc, wrapc ;
+FROM DynamicStrings IMPORT InitString, ConCat, ConCatChar, KillString, string ;
 FROM FormatStrings IMPORT Sprintf2 ;
 
 CONST

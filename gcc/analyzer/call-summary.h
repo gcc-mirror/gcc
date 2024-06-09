@@ -68,7 +68,7 @@ class call_summary_replay
 {
 public:
   call_summary_replay (const call_details &cd,
-		       function *called_fn,
+		       const function &called_fn,
 		       call_summary *m_summary,
 		       const extrinsic_state &ext_state);
 

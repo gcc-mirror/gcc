@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -97,7 +97,7 @@ package Exp_Ch4 is
    --  individually to yield the required Boolean result. Loc is the
    --  location for the generated nodes. Typ is the type of the record, and
    --  Lhs, Rhs are the record expressions to be compared, these
-   --  expressions need not be analyzed but have to be side-effect free.
+   --  expressions need not be analyzed but have to be side-effect-free.
    --  Nod provides the Sloc value for generated code.
 
    procedure Expand_Set_Membership (N : Node_Id);

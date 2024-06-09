@@ -1,4 +1,4 @@
-# Copyright (C) 1992-2023 Free Software Foundation, Inc.
+# Copyright (C) 1992-2024 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -326,7 +326,7 @@ proc g++_target_compile { source dest type options } {
         append board_info($tboard,multilib_flags) " $flags_to_postpone"
     }
 
-    set options [dg-additional-files-options $options $source]
+    set options [dg-additional-files-options $options $source $dest $type]
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"

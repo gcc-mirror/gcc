@@ -6,6 +6,7 @@
    standard, but was fixed in TC2 and C99; see DRs #060, #092.
 */
 extern void abort (void);
+extern void exit (int);
 
 int
 foo (void)

@@ -383,6 +383,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SYSROOT_CFLAGS_FOR_TARGET = @SYSROOT_CFLAGS_FOR_TARGET@
 TARGET = @TARGET@
 TARGETDIR = @TARGETDIR@
 TARGET_OBJ = @TARGET_OBJ@
@@ -597,7 +598,11 @@ AM_CFLAGS = -Wall -g -fexceptions $(CET_FLAGS) $(am__append_2)
 @LIBFFI_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_dep = libffi.map
 @LIBFFI_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@libffi_version_dep = libffi.map-sun
 libffi_version_info = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
-libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) $(libffi_version_script) $(LTLDFLAGS) $(AM_LTLDFLAGS)
+@ENABLE_DARWIN_AT_RPATH_TRUE@libffi_darwin_rpath = -Wl,-rpath,@loader_path
+libffi_la_LDFLAGS = -no-undefined $(libffi_version_info) \
+	$(libffi_version_script) $(LTLDFLAGS) $(AM_LTLDFLAGS) \
+	$(libffi_darwin_rpath)
+
 libffi_la_DEPENDENCIES = $(libffi_la_LIBADD) $(libffi_version_dep)
 AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
 AM_CCASFLAGS = $(AM_CPPFLAGS) $(CET_FLAGS)
@@ -1935,8 +1940,7 @@ stamp-build-info: doc/libffi.texi $(srcdir)/doc/version.texi doc/$(am__dirstamp)
 @LIBFFI_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@libffi.map-sun : libffi.map $(top_srcdir)/../contrib/make_sunver.pl \
 @LIBFFI_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@		 $(libffi_la_OBJECTS) $(libffi_la_LIBADD)
 @LIBFFI_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl libffi.map \
-@LIBFFI_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@	 `echo $(libffi_la_OBJECTS) $(libffi_la_LIBADD) | \
-@LIBFFI_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@	    sed 's,\([^/        ]*\)\.l\([ao]\),.libs/\1.\2,g'` \
+@LIBFFI_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@	 $(libffi_la_OBJECTS) $(libffi_la_LIBADD) \
 @LIBFFI_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBFFI_BUILD_VERSIONED_SHLIB_TRUE@	 > $@ || (rm -f $@ ; exit 1)
 
 libffi.map: $(top_srcdir)/libffi.map.in

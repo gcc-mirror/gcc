@@ -1,6 +1,7 @@
 // PERMUTE_ARGS:
 // EXTRA_SOURCES: imports/mangle10077.d
 // EXTRA_FILES: imports/testmangle.d
+// UNICODE_NAMES:
 /*
 TEST_OUTPUT:
 ---

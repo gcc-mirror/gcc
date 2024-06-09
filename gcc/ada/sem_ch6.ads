@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -50,6 +50,10 @@ package Sem_Ch6 is
    --  Analyze subprogram specification in both subprogram declarations
    --  and body declarations. Returns the defining entity for the
    --  specification N.
+
+   procedure Analyze_SPARK_Subprogram_Specification (N : Node_Id);
+   --  Check SPARK legality rules that require that the specification has been
+   --  analyzed already.
 
    function Can_Override_Operator (Subp : Entity_Id) return Boolean;
    --  Returns true if Subp can override a predefined operator

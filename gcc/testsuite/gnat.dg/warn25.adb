@@ -1,5 +1,6 @@
 --  { dg-do compile }
 --  { dg-options "-gnatwa" }
+--  { dg-xfail-if "expected regression" { *-*-* } }
 
 with Ada.Exceptions;
 procedure Warn25 is

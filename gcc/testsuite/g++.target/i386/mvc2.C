@@ -3,7 +3,7 @@
 
 __attribute__((target_clones("avx","arch=slm","default")))
 __attribute__((target("avx")))
-int foo (); /* { dg-warning "'target' attribute ignored due to conflict with 'target_clones' attribute" } */
+int foo (); /* { dg-warning "ignoring attribute 'target' because it conflicts with attribute 'target_clones'" } */
 
 __attribute__((target_clones("avx","arch=slm","default"),always_inline))
-int bar (); /* { dg-warning "'always_inline' attribute ignored due to conflict with 'target_clones' attribute" } */
+int bar (); /* { dg-warning "ignoring attribute 'always_inline' because it conflicts with attribute 'target_clones'" } */

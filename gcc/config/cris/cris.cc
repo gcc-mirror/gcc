@@ -1,5 +1,5 @@
 /* Definitions for GCC.  Part of the machine description for CRIS.
-   Copyright (C) 1998-2023 Free Software Foundation, Inc.
+   Copyright (C) 1998-2024 Free Software Foundation, Inc.
    Contributed by Axis Communications.  Written by Hans-Peter Nilsson.
 
 This file is part of GCC.
@@ -152,7 +152,8 @@ static void cris_function_arg_advance (cumulative_args_t,
 				       const function_arg_info &);
 static rtx_insn *cris_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 				     vec<machine_mode> &, vec<const char *> &,
-				     vec<rtx> &, HARD_REG_SET &, location_t);
+				     vec<rtx> &, vec<rtx> &,
+				     HARD_REG_SET &, location_t);
 
 static void cris_option_override (void);
 
@@ -1379,6 +1380,22 @@ cris_return_addr_rtx (int count, rtx frameaddr ATTRIBUTE_UNUSED)
   return count == 0
     ? gen_rtx_MEM (Pmode, plus_constant (Pmode, virtual_incoming_args_rtx, -4))
     : NULL_RTX;
+}
+
+/* Setting the EH return return address is done by a *store* to a memory
+   address expressed as relative to "*incoming* args".  That store will
+   be optimized away, unless the MEM is marked as volatile.  N.B.: no
+   optimization opportunities are expected to be lost due to this hack;
+   __builtin_eh_return isn't called from elsewhere than the EH machinery
+   in libgcc.  */
+
+rtx
+cris_eh_return_handler_rtx ()
+{
+  rtx ret = cris_return_addr_rtx (0, NULL_RTX);
+  gcc_assert (MEM_P (ret));
+  MEM_VOLATILE_P (ret) = true;
+  return ret;
 }
 
 /* Accessor used in cris.md:return because cfun->machine isn't available
@@ -3646,7 +3663,8 @@ cris_function_arg_advance (cumulative_args_t ca_v,
 static rtx_insn *
 cris_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 		    vec<machine_mode> & /*input_modes*/,
-		    vec<const char *> &constraints, vec<rtx> &clobbers,
+		    vec<const char *> &constraints,
+		    vec<rtx> &/*uses*/, vec<rtx> &clobbers,
 		    HARD_REG_SET &clobbered_regs, location_t /*loc*/)
 {
   /* For the time being, all asms clobber condition codes.

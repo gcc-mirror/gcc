@@ -10,4 +10,4 @@ sminf (float x, float y)
 
 /* { dg-final { scan-assembler-not "\t(call|tail)\tfminf\t" } } */
 /* { dg-final { scan-assembler-not "\tfmin\\.s\t" } } */
-/* { dg-final { scan-assembler "\tfle\\.s\t" } } */
+/* { dg-final { scan-assembler "\t(fgt\\.s|fle\\.s)\t" } } */

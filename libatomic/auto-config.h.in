@@ -105,6 +105,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Have LSE128 support for 16 byte integers. */
+#undef HAVE_FEAT_LSE128
+
 /* Define to 1 if you have the <fenv.h> header file. */
 #undef HAVE_FENV_H
 

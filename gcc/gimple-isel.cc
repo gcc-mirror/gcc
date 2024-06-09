@@ -1,5 +1,5 @@
 /* Schedule GIMPLE vector statements.
-   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -104,7 +104,8 @@ gimple_expand_vec_set_extract_expr (struct function *fun,
       machine_mode outermode = TYPE_MODE (TREE_TYPE (view_op0));
       machine_mode extract_mode = TYPE_MODE (TREE_TYPE (ref));
 
-      if (auto_var_in_fn_p (view_op0, fun->decl)
+      if ((auto_var_in_fn_p (view_op0, fun->decl)
+	   || (VAR_P (view_op0) && DECL_HARD_REGISTER (view_op0)))
 	  && !TREE_ADDRESSABLE (view_op0)
 	  && ((!is_extract && can_vec_set_var_idx_p (outermode))
 	      || (is_extract

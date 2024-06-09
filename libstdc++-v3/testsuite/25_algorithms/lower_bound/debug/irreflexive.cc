@@ -1,4 +1,4 @@
-// Copyright (C) 2015-2023 Free Software Foundation, Inc.
+// Copyright (C) 2015-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,4 +44,5 @@ void test01()
 {
   A as[] = { 0, 1, 2, 3 };
   std::lower_bound(as, as + 4, 1, A_int_comparer());
+  // { dg-warning "ignoring return value" "" { target c++17 } 46 }
 }

@@ -2,8 +2,8 @@
    inputs produce the right code with a P8 (LE or BE) target.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 // Targeting P7. six tests total.
 // P7 (m64) with constants: xxpermdi, stfd, ld

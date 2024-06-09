@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-ipa-profile -fprofile-update=atomic" } */
+/* { dg-options "-O2 -fdump-ipa-profile -fprofile-update=atomic -fno-ipa-vrp" } */
 /* { dg-require-effective-target profile_update_atomic } */
 
 __attribute__ ((noinline))

@@ -1,4 +1,4 @@
-/* Copyright (C) 2020-2023 Free Software Foundation, Inc.
+/* Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -39,14 +39,14 @@ extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _tile_loadconfig (const void *__config)
 {
-  __asm__ volatile ("ldtilecfg\t%X0" :: "m" (*((const void **)__config)));
+  __builtin_ia32_ldtilecfg (__config);
 }
 
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _tile_storeconfig (void *__config)
 {
-  __asm__ volatile ("sttilecfg\t%X0" : "=m" (*((void **)__config)));
+  __builtin_ia32_sttilecfg (__config);
 }
 
 extern __inline void

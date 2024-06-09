@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C++ compiler.
-   Copyright (C) 1987-2023 Free Software Foundation, Inc.
+   Copyright (C) 1987-2024 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-ubsan.h"
-#include "gcc-rich-location.h"
+#include "c-family/c-type-mismatch.h"
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
@@ -1227,7 +1227,9 @@ comp_except_specs (const_tree t1, const_tree t2, int exact)
   if ((t1 && TREE_PURPOSE (t1))
       || (t2 && TREE_PURPOSE (t2)))
     return (t1 && t2
-	    && cp_tree_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2)));
+	    && (exact == ce_exact
+		? TREE_PURPOSE (t1) == TREE_PURPOSE (t2)
+		: cp_tree_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2))));
 
   if (t1 == NULL_TREE)			   /* T1 is ...  */
     return t2 == NULL_TREE || exact == ce_derived;
@@ -1573,8 +1575,8 @@ structural_comptypes (tree t1, tree t2, int strict)
 	return false;
       /* If T1 and T2 don't represent the same class template deduction,
          they aren't equal.  */
-      if (CLASS_PLACEHOLDER_TEMPLATE (t1)
-	  != CLASS_PLACEHOLDER_TEMPLATE (t2))
+      if (!cp_tree_equal (CLASS_PLACEHOLDER_TEMPLATE (t1),
+			  CLASS_PLACEHOLDER_TEMPLATE (t2)))
 	return false;
       /* Constrained 'auto's are distinct from parms that don't have the same
 	 constraints.  */
@@ -2352,7 +2354,7 @@ invalid_nonstatic_memfn_p (location_t loc, tree expr, tsubst_flags_t complain)
   if (is_overloaded_fn (expr) && !really_overloaded_fn (expr))
     expr = get_first_fn (expr);
   if (TREE_TYPE (expr)
-      && DECL_NONSTATIC_MEMBER_FUNCTION_P (expr))
+      && DECL_IOBJ_MEMBER_FUNCTION_P (expr))
     {
       if (complain & tf_error)
 	{
@@ -2400,6 +2402,7 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
     case NEGATE_EXPR:
     case NON_LVALUE_EXPR:
     case BIT_NOT_EXPR:
+    case CLEANUP_POINT_EXPR:
       return is_bitfield_expr_with_lowered_type (TREE_OPERAND (exp, 0));
 
     case COMPONENT_REF:
@@ -2531,15 +2534,6 @@ decay_conversion (tree exp,
 	{
 	  if (complain & tf_error)
 	    error_at (loc, "invalid use of non-lvalue array");
-	  return error_mark_node;
-	}
-
-      /* Don't let an array compound literal decay to a pointer.  It can
-	 still be used to initialize an array or bind to a reference.  */
-      if (TREE_CODE (exp) == TARGET_EXPR)
-	{
-	  if (complain & tf_error)
-	    error_at (loc, "taking address of temporary array");
 	  return error_mark_node;
 	}
 
@@ -3031,6 +3025,8 @@ build_class_member_access_expr (cp_expr object, tree member,
 	 know the type of the expression.  Otherwise, we must wait
 	 until overload resolution has been performed.  */
       functions = BASELINK_FUNCTIONS (member);
+      if (TREE_CODE (functions) == OVERLOAD && OVL_SINGLE_P (functions))
+	functions = OVL_FIRST (functions);
       if (TREE_CODE (functions) == FUNCTION_DECL
 	  && DECL_STATIC_FUNCTION_P (functions))
 	type = TREE_TYPE (functions);
@@ -3385,7 +3381,6 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	  return build_min_nt_loc (UNKNOWN_LOCATION, COMPONENT_REF,
 				   orig_object, orig_name, NULL_TREE);
 	}
-      object = build_non_dependent_expr (object);
     }
   else if (c_dialect_objc ()
 	   && identifier_p (name)
@@ -3477,7 +3472,7 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 			   name, scope);
 		  return error_mark_node;
 		}
-	      
+
 	      if (TREE_SIDE_EFFECTS (object))
 		val = build2 (COMPOUND_EXPR, TREE_TYPE (val), object, val);
 	      return val;
@@ -3494,9 +3489,24 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	      return error_mark_node;
 	    }
 
+	  /* NAME may refer to a static data member, in which case there is
+	     one copy of the data member that is shared by all the objects of
+	     the class.  So NAME can be unambiguously referred to even if
+	     there are multiple indirect base classes containing NAME.  */
+	  const base_access ba = [scope, name] ()
+	    {
+	      if (identifier_p (name))
+		{
+		  tree m = lookup_member (scope, name, /*protect=*/0,
+					  /*want_type=*/false, tf_none);
+		  if (!m || shared_member_p (m))
+		    return ba_any;
+		}
+	      return ba_check;
+	    } ();
+
 	  /* Find the base of OBJECT_TYPE corresponding to SCOPE.  */
-	  access_path = lookup_base (object_type, scope, ba_check,
-				     NULL, complain);
+	  access_path = lookup_base (object_type, scope, ba, NULL, complain);
 	  if (access_path == error_mark_node)
 	    return error_mark_node;
 	  if (!access_path)
@@ -3743,7 +3753,6 @@ build_x_indirect_ref (location_t loc, tree expr, ref_operator errorstring,
 	    = build_dependent_operator_type (lookups, INDIRECT_REF, false);
 	  return expr;
 	}
-      expr = build_non_dependent_expr (expr);
     }
 
   rval = build_new_op (loc, INDIRECT_REF, LOOKUP_NORMAL, expr,
@@ -3928,13 +3937,14 @@ cp_build_indirect_ref (location_t loc, tree ptr, ref_operator errorstring,
    If INDEX is of some user-defined type, it must be converted to
    integer type.  Otherwise, to make a compatible PLUS_EXPR, it
    will inherit the type of the array, which will be some pointer type.
-   
+
    LOC is the location to use in building the array reference.  */
 
 tree
 cp_build_array_ref (location_t loc, tree array, tree idx,
 		    tsubst_flags_t complain)
 {
+  tree first = NULL_TREE;
   tree ret;
 
   if (idx == 0)
@@ -3978,6 +3988,14 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
     }
 
   bool non_lvalue = convert_vector_to_array_for_subscript (loc, &array, idx);
+
+  /* 0[array] */
+  if (TREE_CODE (TREE_TYPE (idx)) == ARRAY_TYPE)
+    {
+      std::swap (array, idx);
+      if (flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (array))
+	idx = first = save_expr (idx);
+    }
 
   if (TREE_CODE (TREE_TYPE (array)) == ARRAY_TYPE)
     {
@@ -4054,15 +4072,16 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       protected_set_expr_location (ret, loc);
       if (non_lvalue)
 	ret = non_lvalue_loc (loc, ret);
+      if (first)
+	ret = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (ret), first, ret);
       return ret;
     }
 
   {
     tree ar = cp_default_conversion (array, complain);
     tree ind = cp_default_conversion (idx, complain);
-    tree first = NULL_TREE;
 
-    if (flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (ind))
+    if (!first && flag_strong_eval_order == 2 && TREE_SIDE_EFFECTS (ind))
       ar = first = save_expr (ar);
 
     /* Put the integer in IND to simplify error checking.  */
@@ -4712,8 +4731,6 @@ build_x_binary_op (const op_location_t &loc, enum tree_code code, tree arg1,
 	    = build_dependent_operator_type (lookups, code, false);
 	  return expr;
 	}
-      arg1 = build_non_dependent_expr (arg1);
-      arg2 = build_non_dependent_expr (arg2);
     }
 
   if (code == DOTSTAR_EXPR)
@@ -4767,8 +4784,6 @@ build_x_array_ref (location_t loc, tree arg1, tree arg2,
 	  || type_dependent_expression_p (arg2))
 	return build_min_nt_loc (loc, ARRAY_REF, arg1, arg2,
 				 NULL_TREE, NULL_TREE);
-      arg1 = build_non_dependent_expr (arg1);
-      arg2 = build_non_dependent_expr (arg2);
     }
 
   expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, arg1, arg2,
@@ -4784,6 +4799,56 @@ build_x_array_ref (location_t loc, tree arg1, tree arg2,
 				NULL_TREE, NULL_TREE);
     }
   return expr;
+}
+
+/* Build an OpenMP array section reference, creating an exact type for the
+   resulting expression based on the element type and bounds if possible.  If
+   we have variable bounds, create an incomplete array type for the result
+   instead.  */
+
+tree
+build_omp_array_section (location_t loc, tree array_expr, tree index,
+			 tree length)
+{
+  tree type = TREE_TYPE (array_expr);
+  gcc_assert (type);
+  type = non_reference (type);
+
+  tree sectype, eltype = TREE_TYPE (type);
+
+  /* It's not an array or pointer type.  Just reuse the type of the
+     original expression as the type of the array section (an error will be
+     raised anyway, later).  */
+  if (eltype == NULL_TREE)
+    sectype = TREE_TYPE (array_expr);
+  else
+    {
+      tree idxtype = NULL_TREE;
+
+      /* If we know the integer bounds, create an index type with exact
+	 low/high (or zero/length) bounds.  Otherwise, create an incomplete
+	 array type.  (This mostly only affects diagnostics.)  */
+      if (index != NULL_TREE
+	  && length != NULL_TREE
+	  && TREE_CODE (index) == INTEGER_CST
+	  && TREE_CODE (length) == INTEGER_CST)
+	{
+	  tree low = fold_convert (sizetype, index);
+	  tree high = fold_convert (sizetype, length);
+	  high = size_binop (PLUS_EXPR, low, high);
+	  high = size_binop (MINUS_EXPR, high, size_one_node);
+	  idxtype = build_range_type (sizetype, low, high);
+	}
+      else if ((index == NULL_TREE || integer_zerop (index))
+	       && length != NULL_TREE
+	       && TREE_CODE (length) == INTEGER_CST)
+	idxtype = build_index_type (length);
+
+      sectype = build_array_type (eltype, idxtype);
+    }
+
+  return build3_loc (loc, OMP_ARRAY_SECTION, sectype, array_expr, index,
+		     length);
 }
 
 /* Return whether OP is an expression of enum type cast to integer
@@ -4826,7 +4891,7 @@ build_vec_cmp (tree_code code, tree type,
 {
   tree zero_vec = build_zero_cst (type);
   tree minus_one_vec = build_minus_one_cst (type);
-  tree cmp_type = truth_type_for (type);
+  tree cmp_type = truth_type_for (TREE_TYPE (arg0));
   tree cmp = build2 (code, cmp_type, arg0, arg1);
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
@@ -4843,9 +4908,6 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
       || from_macro_expansion_at (location)
       || warning_suppressed_p (op, OPT_Waddress))
     return;
-
-  if (TREE_CODE (op) == NON_DEPENDENT_EXPR)
-    op = TREE_OPERAND (op, 0);
 
   tree cop = fold_for_warn (op);
 
@@ -4949,16 +5011,25 @@ warn_for_null_address (location_t location, tree op, tsubst_flags_t complain)
    type, this behavior is deprecated ([depr.arith.conv.enum]).  CODE is the
    code of the binary operation, TYPE0 and TYPE1 are the types of the operands,
    and LOC is the location for the whole binary expression.
+   For C++26 this is ill-formed rather than deprecated.
+   Return true for SFINAE errors.
    TODO: Consider combining this with -Wenum-compare in build_new_op_1.  */
 
-static void
+static bool
 do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
-			  tree type1)
+			  tree type1, tsubst_flags_t complain)
 {
   if (TREE_CODE (type0) == ENUMERAL_TYPE
       && TREE_CODE (type1) == ENUMERAL_TYPE
       && TYPE_MAIN_VARIANT (type0) != TYPE_MAIN_VARIANT (type1))
     {
+      if (cxx_dialect >= cxx26)
+	{
+	  if ((complain & tf_warning_or_error) == 0)
+	    return true;
+	}
+      else if ((complain & tf_warning) == 0)
+	return false;
       /* In C++20, -Wdeprecated-enum-enum-conversion is on by default.
 	 Otherwise, warn if -Wenum-conversion is on.  */
       enum opt_code opt;
@@ -4967,7 +5038,7 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
       else if (warn_enum_conversion)
 	opt = OPT_Wenum_conversion;
       else
-	return;
+	return false;
 
       switch (code)
 	{
@@ -4978,21 +5049,29 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	case EQ_EXPR:
 	case NE_EXPR:
 	  /* Comparisons are handled by -Wenum-compare.  */
-	  return;
+	  return false;
 	case SPACESHIP_EXPR:
 	  /* This is invalid, don't warn.  */
-	  return;
+	  return false;
 	case BIT_AND_EXPR:
 	case BIT_IOR_EXPR:
 	case BIT_XOR_EXPR:
-	  warning_at (loc, opt, "bitwise operation between different "
-		      "enumeration types %qT and %qT is deprecated",
-		      type0, type1);
-	  return;
+	  if (cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "bitwise operation between different "
+		     "enumeration types %qT and %qT", type0, type1);
+	  else
+	    warning_at (loc, opt, "bitwise operation between different "
+			"enumeration types %qT and %qT is deprecated",
+			type0, type1);
+	  return false;
 	default:
-	  warning_at (loc, opt, "arithmetic between different enumeration "
-		      "types %qT and %qT is deprecated", type0, type1);
-	  return;
+	  if (cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "arithmetic between different enumeration "
+		     "types %qT and %qT", type0, type1);
+	  else
+	    warning_at (loc, opt, "arithmetic between different enumeration "
+			"types %qT and %qT is deprecated", type0, type1);
+	  return false;
 	}
     }
   else if ((TREE_CODE (type0) == ENUMERAL_TYPE
@@ -5000,6 +5079,13 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	   || (SCALAR_FLOAT_TYPE_P (type0)
 	       && TREE_CODE (type1) == ENUMERAL_TYPE))
     {
+      if (cxx_dialect >= cxx26)
+	{
+	  if ((complain & tf_warning_or_error) == 0)
+	    return true;
+	}
+      else if ((complain & tf_warning) == 0)
+	return false;
       const bool enum_first_p = TREE_CODE (type0) == ENUMERAL_TYPE;
       /* In C++20, -Wdeprecated-enum-float-conversion is on by default.
 	 Otherwise, warn if -Wenum-conversion is on.  */
@@ -5009,7 +5095,7 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
       else if (warn_enum_conversion)
 	opt = OPT_Wenum_conversion;
       else
-	return;
+	return false;
 
       switch (code)
 	{
@@ -5019,7 +5105,13 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	case LE_EXPR:
 	case EQ_EXPR:
 	case NE_EXPR:
-	  if (enum_first_p)
+	  if (enum_first_p && cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "comparison of enumeration type %qT with "
+		     "floating-point type %qT", type0, type1);
+	  else if (cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "comparison of floating-point type %qT "
+		      "with enumeration type %qT", type0, type1);
+	  else if (enum_first_p)
 	    warning_at (loc, opt, "comparison of enumeration type %qT with "
 			"floating-point type %qT is deprecated",
 			type0, type1);
@@ -5027,12 +5119,18 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	    warning_at (loc, opt, "comparison of floating-point type %qT "
 			"with enumeration type %qT is deprecated",
 			type0, type1);
-	  return;
+	  return false;
 	case SPACESHIP_EXPR:
 	  /* This is invalid, don't warn.  */
-	  return;
+	  return false;
 	default:
-	  if (enum_first_p)
+	  if (enum_first_p && cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "arithmetic between enumeration type %qT "
+		     "and floating-point type %qT", type0, type1);
+	  else if (cxx_dialect >= cxx26)
+	    pedwarn (loc, opt, "arithmetic between floating-point type %qT "
+		     "and enumeration type %qT", type0, type1);
+	  else if (enum_first_p)
 	    warning_at (loc, opt, "arithmetic between enumeration type %qT "
 			"and floating-point type %qT is deprecated",
 			type0, type1);
@@ -5040,9 +5138,10 @@ do_warn_enum_conversions (location_t loc, enum tree_code code, tree type0,
 	    warning_at (loc, opt, "arithmetic between floating-point type %qT "
 			"and enumeration type %qT is deprecated",
 			type0, type1);
-	  return;
+	  return false;
 	}
     }
+  return false;
 }
 
 /* Build a binary-operation expression without default conversions.
@@ -5405,7 +5504,10 @@ cp_build_binary_op (const op_location_t &location,
 	    type0 = TREE_TYPE (type0);
 	  if (!TYPE_P (type1))
 	    type1 = TREE_TYPE (type1);
-	  if (INDIRECT_TYPE_P (type0) && same_type_p (TREE_TYPE (type0), type1))
+	  if (type0
+	      && type1
+	      && INDIRECT_TYPE_P (type0)
+	      && same_type_p (TREE_TYPE (type0), type1))
 	    {
 	      if (!(TREE_CODE (first_arg) == PARM_DECL
 		    && DECL_ARRAY_PARAMETER_P (first_arg)
@@ -5422,7 +5524,9 @@ cp_build_binary_op (const op_location_t &location,
 			      "first %<sizeof%> operand was declared here");
 		}
 	    }
-	  else if (TREE_CODE (type0) == ARRAY_TYPE
+	  else if (!dependent_type_p (type0)
+		   && !dependent_type_p (type1)
+		   && TREE_CODE (type0) == ARRAY_TYPE
 		   && !char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type0)))
 		   /* Set by finish_parenthesized_expr.  */
 		   && !warning_suppressed_p (op1, OPT_Wsizeof_array_div)
@@ -6168,15 +6272,13 @@ cp_build_binary_op (const op_location_t &location,
 	  return error_mark_node;
 	}
       if (complain & tf_warning)
-	{
-	  do_warn_double_promotion (result_type, type0, type1,
-				    "implicit conversion from %qH to %qI "
-				    "to match other operand of binary "
-				    "expression",
-				    location);
-	  do_warn_enum_conversions (location, code, TREE_TYPE (orig_op0),
-				    TREE_TYPE (orig_op1));
-	}
+	do_warn_double_promotion (result_type, type0, type1,
+				  "implicit conversion from %qH to %qI "
+				  "to match other operand of binary "
+				  "expression", location);
+      if (do_warn_enum_conversions (location, code, TREE_TYPE (orig_op0),
+				    TREE_TYPE (orig_op1), complain))
+	return error_mark_node;
     }
   if (may_need_excess_precision
       && (orig_type0 != type0 || orig_type1 != type1)
@@ -6600,10 +6702,6 @@ build_x_vec_perm_expr (location_t loc,
 	  || type_dependent_expression_p (arg1)
 	  || type_dependent_expression_p (arg2))
 	return build_min_nt_loc (loc, VEC_PERM_EXPR, arg0, arg1, arg2);
-      arg0 = build_non_dependent_expr (arg0);
-      if (arg1)
-	arg1 = build_non_dependent_expr (arg1);
-      arg2 = build_non_dependent_expr (arg2);
     }
   tree exp = c_build_vec_perm_expr (loc, arg0, arg1, arg2, complain & tf_error);
   if (processing_template_decl && exp != error_mark_node)
@@ -6631,9 +6729,6 @@ build_x_shufflevector (location_t loc, vec<tree, va_gc> *args,
 	    CALL_EXPR_IFN (exp) = IFN_SHUFFLEVECTOR;
 	    return exp;
 	  }
-      arg0 = build_non_dependent_expr (arg0);
-      arg1 = build_non_dependent_expr (arg1);
-      /* ???  Nothing needed for the index arguments?  */
     }
   auto_vec<tree, 16> mask;
   for (unsigned i = 2; i < args->length (); ++i)
@@ -6803,8 +6898,6 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
 	  TREE_TYPE (e) = build_dependent_operator_type (lookups, code, false);
 	  return e;
 	}
-
-      xarg = build_non_dependent_expr (xarg);
     }
 
   exp = NULL_TREE;
@@ -6922,8 +7015,6 @@ cp_build_addressof (location_t loc, tree arg, tsubst_flags_t complain)
     {
       if (type_dependent_expression_p (arg))
 	return build_min_nt_loc (loc, ADDRESSOF_EXPR, arg, NULL_TREE);
-
-      arg = build_non_dependent_expr (arg);
     }
 
   tree exp = cp_build_addr_expr_strict (arg, complain);
@@ -7044,26 +7135,47 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
       tree fn = get_first_fn (TREE_OPERAND (arg, 1));
       if (!mark_used (fn, complain) && !(complain & tf_error))
 	return error_mark_node;
-
-      if (! flag_ms_extensions)
+      /* Until microsoft headers are known to incorrectly take the address of
+	 unqualified xobj member functions we should not support this
+	 extension.
+	 See comment in class.cc:resolve_address_of_overloaded_function for
+	 the extended reasoning.  */
+      if (!flag_ms_extensions || DECL_XOBJ_MEMBER_FUNCTION_P (fn))
 	{
+	  auto_diagnostic_group d;
 	  tree name = DECL_NAME (fn);
 	  if (!(complain & tf_error))
 	    return error_mark_node;
 	  else if (current_class_type
 		   && TREE_OPERAND (arg, 0) == current_class_ref)
 	    /* An expression like &memfn.  */
-	    permerror (loc,
-		       "ISO C++ forbids taking the address of an unqualified"
-		       " or parenthesized non-static member function to form"
-		       " a pointer to member function.  Say %<&%T::%D%>",
-		       base, name);
+	    if (!DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+	      permerror (loc,
+			 "ISO C++ forbids taking the address of an unqualified"
+			 " or parenthesized non-static member function to form"
+			 " a pointer to member function.  Say %<&%T::%D%>",
+			 base, name);
+	    else
+	      error_at (loc,
+			"ISO C++ forbids taking the address of an unqualified"
+			" or parenthesized non-static member function to form"
+			" a pointer to explicit object member function");
 	  else
-	    permerror (loc,
-		       "ISO C++ forbids taking the address of a bound member"
-		       " function to form a pointer to member function."
-		       "  Say %<&%T::%D%>",
-		       base, name);
+	    if (!DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+	      permerror (loc,
+			 "ISO C++ forbids taking the address of a bound member"
+			 " function to form a pointer to member function."
+			 "  Say %<&%T::%D%>",
+			 base, name);
+	    else
+	      error_at (loc,
+			"ISO C++ forbids taking the address of a bound member"
+			" function to form a pointer to explicit object member"
+			" function");
+	  if (DECL_XOBJ_MEMBER_FUNCTION_P (fn))
+	    inform (loc,
+		    "a pointer to explicit object member function can only be "
+		    "formed with %<&%T::%D%>", base, name);
 	}
       arg = build_offset_ref (base, fn, /*address_p=*/true, complain);
     }
@@ -7180,6 +7292,15 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 	    && !mark_used (t, complain) && !(complain & tf_error))
 	  return error_mark_node;
 
+	/* Pull out the function_decl for a single xobj member function, and
+	   let the rest of this function handle it.  This is similar to how
+	   static member functions are handled in the BASELINK case above.  */
+	if (DECL_XOBJ_MEMBER_FUNCTION_P (t))
+	  {
+	    arg = t;
+	    break;
+	  }
+
 	type = build_ptrmem_type (context_for_name_lookup (t),
 				  TREE_TYPE (t));
 	t = make_ptrmem_cst (type, t);
@@ -7214,6 +7335,9 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
     {
       tree fn = BASELINK_FUNCTIONS (TREE_OPERAND (arg, 1));
 
+      if (TREE_CODE (fn) == OVERLOAD && OVL_SINGLE_P (fn))
+	fn = OVL_FIRST (fn);
+
       /* We can only get here with a single static member
 	 function.  */
       gcc_assert (TREE_CODE (fn) == FUNCTION_DECL
@@ -7244,11 +7368,9 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 			      complain);
     }
 
-  /* For addresses of immediate functions ensure we have EXPR_LOCATION
-     set for possible later diagnostics.  */
+  /* Ensure we have EXPR_LOCATION set for possible later diagnostics.  */
   if (TREE_CODE (val) == ADDR_EXPR
-      && TREE_CODE (TREE_OPERAND (val, 0)) == FUNCTION_DECL
-      && DECL_IMMEDIATE_FUNCTION_P (TREE_OPERAND (val, 0)))
+      && TREE_CODE (TREE_OPERAND (val, 0)) == FUNCTION_DECL)
     SET_EXPR_LOCATION (val, input_location);
 
   return val;
@@ -7399,6 +7521,8 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 					 complain);
       if (arg != error_mark_node)
 	{
+	  if (processing_template_decl)
+	    return build1_loc (location, TRUTH_NOT_EXPR, boolean_type_node, arg);
 	  val = invert_truthvalue_loc (location, arg);
 	  if (obvalue_p (val))
 	    val = non_lvalue_loc (location, val);
@@ -7856,10 +7980,6 @@ build_x_conditional_expr (location_t loc, tree ifexp, tree op1, tree op2,
 	  || (op1 && type_dependent_expression_p (op1))
 	  || type_dependent_expression_p (op2))
 	return build_min_nt_loc (loc, COND_EXPR, ifexp, op1, op2);
-      ifexp = build_non_dependent_expr (ifexp);
-      if (op1)
-	op1 = build_non_dependent_expr (op1);
-      op2 = build_non_dependent_expr (op2);
     }
 
   expr = build_conditional_expr (loc, ifexp, op1, op2, complain);
@@ -7980,8 +8100,6 @@ build_x_compound_expr (location_t loc, tree op1, tree op2,
 	    = build_dependent_operator_type (lookups, COMPOUND_EXPR, false);
 	  return result;
 	}
-      op1 = build_non_dependent_expr (op1);
-      op2 = build_non_dependent_expr (op2);
     }
 
   result = build_new_op (loc, COMPOUND_EXPR, LOOKUP_NORMAL, op1, op2,
@@ -8425,6 +8543,13 @@ build_static_cast_1 (location_t loc, tree type, tree expr, bool c_cast_p,
 	return expr;
       if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
 	expr = TREE_OPERAND (expr, 0);
+      /* [expr.static.cast]: "If the value is not a bit-field, the result
+	 refers to the object or the specified base class subobject thereof;
+	 otherwise, the lvalue-to-rvalue conversion is applied to the
+	 bit-field and the resulting prvalue is used as the operand of the
+	 static_cast."  There are no prvalue bit-fields; the l-to-r conversion
+	 will give us an object of the underlying type of the bit-field.  */
+      expr = decay_conversion (expr, complain);
       return ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL, complain);
     }
 
@@ -8553,8 +8678,6 @@ build_static_cast (location_t loc, tree type, tree oexpr,
       protected_set_expr_location (result, loc);
       return result;
     }
-  else if (processing_template_decl)
-    expr = build_non_dependent_expr (expr);
 
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Strip such NOP_EXPRs if VALUE is being used in non-lvalue context.  */
@@ -9189,6 +9312,8 @@ cp_build_c_cast (location_t loc, tree type, tree expr,
 	  maybe_warn_about_useless_cast (loc, type, value, complain);
 	  maybe_warn_about_cast_ignoring_quals (loc, type, complain);
 	}
+      else if (complain & tf_error)
+	build_const_cast_1 (loc, type, value, tf_error, &valid_p);
       return result;
     }
 
@@ -9224,7 +9349,7 @@ cp_build_c_cast (location_t loc, tree type, tree expr,
 	 to succeed.  */
       if (!same_type_p (non_reference (type), non_reference (result_type)))
 	{
-	  result = build_const_cast_1 (loc, type, result, false, &valid_p);
+	  result = build_const_cast_1 (loc, type, result, tf_none, &valid_p);
 	  gcc_assert (valid_p);
 	}
       return result;
@@ -9235,27 +9360,27 @@ cp_build_c_cast (location_t loc, tree type, tree expr,
 
 /* Warn when a value is moved to itself with std::move.  LHS is the target,
    RHS may be the std::move call, and LOC is the location of the whole
-   assignment.  */
+   assignment.  Return true if we warned.  */
 
-static void
+bool
 maybe_warn_self_move (location_t loc, tree lhs, tree rhs)
 {
   if (!warn_self_move)
-    return;
+    return false;
 
   /* C++98 doesn't know move.  */
   if (cxx_dialect < cxx11)
-    return;
+    return false;
 
   if (processing_template_decl)
-    return;
+    return false;
 
   if (!REFERENCE_REF_P (rhs)
       || TREE_CODE (TREE_OPERAND (rhs, 0)) != CALL_EXPR)
-    return;
+    return false;
   tree fn = TREE_OPERAND (rhs, 0);
   if (!is_std_move_p (fn))
-    return;
+    return false;
 
   /* Just a little helper to strip * and various NOPs.  */
   auto extract_op = [] (tree &op) {
@@ -9273,13 +9398,17 @@ maybe_warn_self_move (location_t loc, tree lhs, tree rhs)
   tree type = TREE_TYPE (lhs);
   tree orig_lhs = lhs;
   extract_op (lhs);
-  if (cp_tree_equal (lhs, arg))
-    {
-      auto_diagnostic_group d;
-      if (warning_at (loc, OPT_Wself_move,
-		      "moving %qE of type %qT to itself", orig_lhs, type))
-	inform (loc, "remove %<std::move%> call");
-    }
+  if (cp_tree_equal (lhs, arg)
+      /* Also warn in a member-initializer-list, as in : i(std::move(i)).  */
+      || (TREE_CODE (lhs) == FIELD_DECL
+	  && TREE_CODE (arg) == COMPONENT_REF
+	  && cp_tree_equal (TREE_OPERAND (arg, 0), current_class_ref)
+	  && TREE_OPERAND (arg, 1) == lhs))
+    if (warning_at (loc, OPT_Wself_move,
+		    "moving %qE of type %qT to itself", orig_lhs, type))
+      return true;
+
+  return false;
 }
 
 /* For use from the C common bits.  */
@@ -9734,9 +9863,6 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	      = build_dependent_operator_type (lookups, modifycode, true);
 	  return rval;
 	}
-
-      lhs = build_non_dependent_expr (lhs);
-      rhs = build_non_dependent_expr (rhs);
     }
 
   tree rval;
@@ -10354,21 +10480,11 @@ convert_for_assignment (tree type, tree rhs,
 	  }
     }
 
-  /* If -Wparentheses, warn about a = b = c when a has type bool and b
-     does not.  */
-  if (warn_parentheses
-      && TREE_CODE (type) == BOOLEAN_TYPE
-      && TREE_CODE (rhs) == MODIFY_EXPR
-      && !warning_suppressed_p (rhs, OPT_Wparentheses)
-      && TREE_CODE (TREE_TYPE (rhs)) != BOOLEAN_TYPE
-      && (complain & tf_warning)
-      && warning_at (rhs_loc, OPT_Wparentheses,
-		     "suggest parentheses around assignment used as "
-		     "truth value"))
-    suppress_warning (rhs, OPT_Wparentheses);
+  if (TREE_CODE (type) == BOOLEAN_TYPE)
+    maybe_warn_unparenthesized_assignment (rhs, /*nested_p=*/true, complain);
 
   if (complain & tf_warning)
-    warn_for_address_or_pointer_of_packed_member (type, rhs);
+    warn_for_address_of_packed_member (type, rhs);
 
   return perform_implicit_conversion_flags (strip_top_quals (type), rhs,
 					    complain, flags);
@@ -10523,8 +10639,13 @@ maybe_warn_about_returning_address_of_local (tree retval, location_t loc)
       || TREE_CODE (whats_returned) == TARGET_EXPR)
     {
       if (TYPE_REF_P (valtype))
+	/* P2748 made this an error in C++26.  */
+	emit_diagnostic (cxx_dialect >= cxx26 ? DK_PERMERROR : DK_WARNING,
+			 loc, OPT_Wreturn_local_addr,
+			 "returning reference to temporary");
+      else if (TYPE_PTR_P (valtype))
 	warning_at (loc, OPT_Wreturn_local_addr,
-		    "returning reference to temporary");
+		    "returning pointer to temporary");
       else if (is_std_init_list (valtype))
 	warning_at (loc, OPT_Winit_list_lifetime,
 		    "returning temporary %<initializer_list%> does not extend "
@@ -10541,8 +10662,7 @@ maybe_warn_about_returning_address_of_local (tree retval, location_t loc)
       && !(TREE_STATIC (whats_returned)
 	   || TREE_PUBLIC (whats_returned)))
     {
-      if (VAR_P (whats_returned)
-	  && DECL_DECOMPOSITION_P (whats_returned)
+      if (DECL_DECOMPOSITION_P (whats_returned)
 	  && DECL_DECOMP_BASE (whats_returned)
 	  && DECL_HAS_VALUE_EXPR_P (whats_returned))
 	{
@@ -10731,35 +10851,39 @@ treat_lvalue_as_rvalue_p (tree expr, bool return_p)
      parenthesized) id-expression that names an implicitly movable entity
      declared in the body or parameter-declaration-clause of the innermost
      enclosing function or lambda-expression, */
-  if (DECL_CONTEXT (retval) != current_function_decl)
-    return NULL_TREE;
   if (return_p)
     {
+      if (DECL_CONTEXT (retval) != current_function_decl)
+	return NULL_TREE;
       expr = move (expr);
       if (expr == error_mark_node)
 	return NULL_TREE;
       return set_implicit_rvalue_p (expr);
     }
 
-  /* if the operand of a throw-expression is a (possibly parenthesized)
-     id-expression that names an implicitly movable entity whose scope does not
-     extend beyond the compound-statement of the innermost try-block or
-     function-try-block (if any) whose compound-statement or ctor-initializer
-     encloses the throw-expression, */
+  /* if the id-expression (possibly parenthesized) is the operand of
+     a throw-expression, and names an implicitly movable entity that belongs
+     to a scope that does not contain the compound-statement of the innermost
+     lambda-expression, try-block, or function-try-block (if any) whose
+     compound-statement or ctor-initializer contains the throw-expression.  */
 
   /* C++20 added move on throw of parms.  */
   if (TREE_CODE (retval) == PARM_DECL && cxx_dialect < cxx20)
     return NULL_TREE;
 
+  /* We don't check for lambda-expression here, because we should not get past
+     the DECL_HAS_VALUE_EXPR_P check above.  */
   for (cp_binding_level *b = current_binding_level;
-       ; b = b->level_chain)
+       b->kind != sk_namespace; b = b->level_chain)
     {
       for (tree decl = b->names; decl; decl = TREE_CHAIN (decl))
 	if (decl == retval)
 	  return set_implicit_rvalue_p (move (expr));
-      if (b->kind == sk_function_parms || b->kind == sk_try)
+      if (b->kind == sk_try)
 	return NULL_TREE;
     }
+
+  return set_implicit_rvalue_p (move (expr));
 }
 
 /* Warn about dubious usage of std::move (in a return statement, if RETURN_P
@@ -11226,9 +11350,6 @@ check_return_expr (tree retval, bool *no_warning, bool *dangling)
 	 was an incomplete type.  Just treat this as 'return;' */
       if (VOID_TYPE_P (functype))
 	return error_mark_node;
-
-      if (processing_template_decl)
-	retval = build_non_dependent_expr (retval);
 
       /* Under C++11 [12.8/32 class.copy], a returned lvalue is sometimes
 	 treated as an rvalue for the purposes of overload resolution to

@@ -5,6 +5,9 @@
    data prefetch.  Check changes to pointers and to array indices that are
    either global variables or arguments.  */
 
+void abort (void);
+void exit (int);
+
 #define ARRSIZE 100
 
 int arr[ARRSIZE];

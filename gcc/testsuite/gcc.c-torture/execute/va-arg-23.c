@@ -5,6 +5,8 @@
 
 #include <stdarg.h>
 
+void abort(void);
+
 struct two { long x, y; };
 
 void foo(int a, int b, int c, int d, int e, struct two f, int g, ...)

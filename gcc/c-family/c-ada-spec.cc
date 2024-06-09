@@ -1,6 +1,6 @@
 /* Print GENERIC declaration (functions, variables, types) trees coming from
    the C and C++ front-ends as well as macros in Ada syntax.
-   Copyright (C) 2010-2023 Free Software Foundation, Inc.
+   Copyright (C) 2010-2024 Free Software Foundation, Inc.
    Adapted from tree-pretty-print.cc by Arnaud Charlet  <charlet@adacore.com>
 
 This file is part of GCC.
@@ -113,6 +113,26 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
   (*buffer_len)++;
 }
 
+/* Return true if NUMBER is a preprocessing floating-point number.  */
+
+static bool
+is_cpp_float (unsigned char *number)
+{
+  /* In C, a floating constant need not have a point.  */
+  while (*number != '\0')
+    {
+      if (*number == '.')
+	return true;
+      else if ((*number == 'e' || *number == 'E')
+	       && (*(number + 1) == '+' || *(number + 1) == '-'))
+	return true;
+      else
+	number++;
+    }
+
+  return false;
+}
+
 /* Dump all digits/hex chars from NUMBER to BUFFER and return a pointer
    to the character after the last character written.  If FLOAT_P is true,
    this is a floating-point number.  */
@@ -120,12 +140,45 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
 static unsigned char *
 dump_number (unsigned char *number, unsigned char *buffer, bool float_p)
 {
-  while (*number != '\0'
-	 && *number != (float_p ? 'F' : 'U')
-	 && *number != (float_p ? 'f' : 'u')
-	 && *number != 'l'
-	 && *number != 'L')
-    *buffer++ = *number++;
+  /* In Ada, a real literal is a numeric literal that includes a point.  */
+  if (float_p)
+    {
+      bool point_seen = false;
+
+      while (*number != '\0')
+	{
+	  if (ISDIGIT (*number))
+	    *buffer++ = *number++;
+	  else if (*number == '.')
+	    {
+	      *buffer++ = *number++;
+	      point_seen = true;
+	    }
+	  else if ((*number == 'e' || *number == 'E')
+		   && (*(number + 1) == '+' || *(number + 1) == '-'))
+	    {
+	      if (!point_seen)
+		{
+		  *buffer++ = '.';
+		  *buffer++ = '0';
+		  point_seen = true;
+		}
+	       *buffer++ = *number++;
+	       *buffer++ = *number++;
+	    }
+	  else
+	    break;
+	}
+    }
+
+  /* An integer literal is a numeric literal without a point.  */
+  else
+    while (*number != '\0'
+	   && *number != 'U'
+	   && *number != 'u'
+	   && *number != 'l'
+	   && *number != 'L')
+      *buffer++ = *number++;
 
   return buffer;
 }
@@ -450,7 +503,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 
 			      default:
 				/* Dump floating-point constant unmodified.  */
-				if (strchr ((const char *)tmp, '.'))
+				if (is_cpp_float (tmp))
 				  buffer = dump_number (tmp, buffer, true);
 				else
 				  {
@@ -480,8 +533,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 
 			default:
 			  buffer
-			    = dump_number (tmp, buffer,
-					   strchr ((const char *)tmp, '.'));
+			    = dump_number (tmp, buffer, is_cpp_float (tmp));
 			  break;
 		      }
 		    break;
@@ -699,6 +751,8 @@ compare_comment (const void *lp, const void *rp)
 
 static tree *to_dump = NULL;
 static int to_dump_count = 0;
+static bool bitfield_used = false;
+static bool packed_layout = false;
 
 /* Collect a list of declarations from T relevant to SOURCE_FILE to be dumped
    by a subsequent call to dump_ada_nodes.  */
@@ -1556,7 +1610,7 @@ check_type_name_conflict (pretty_printer *buffer, tree t)
   while (TREE_CODE (tmp) == POINTER_TYPE && !TYPE_NAME (tmp))
     tmp = TREE_TYPE (tmp);
 
-  if (TREE_CODE (tmp) != FUNCTION_TYPE)
+  if (TREE_CODE (tmp) != FUNCTION_TYPE && tmp != error_mark_node)
     {
       const char *s;
 
@@ -1566,6 +1620,8 @@ check_type_name_conflict (pretty_printer *buffer, tree t)
 	s = "";
       else if (TREE_CODE (TYPE_NAME (tmp)) == IDENTIFIER_NODE)
 	s = IDENTIFIER_POINTER (TYPE_NAME (tmp));
+      else if (!DECL_NAME (TYPE_NAME (tmp)))
+	s = "";
       else
 	s = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (tmp)));
 
@@ -1784,17 +1840,9 @@ dump_sloc (pretty_printer *buffer, tree node)
 static bool
 is_char_array (tree t)
 {
-  int num_dim = 0;
-
-  while (TREE_CODE (t) == ARRAY_TYPE)
-    {
-      num_dim++;
-      t = TREE_TYPE (t);
-    }
-
-  return num_dim == 1
-	 && TREE_CODE (t) == INTEGER_TYPE
-	 && id_equal (DECL_NAME (TYPE_NAME (t)), "char");
+  return TREE_CODE (t) == ARRAY_TYPE
+	 && TREE_CODE (TREE_TYPE (t)) == INTEGER_TYPE
+	 && id_equal (DECL_NAME (TYPE_NAME (TREE_TYPE (t))), "char");
 }
 
 /* Dump in BUFFER an array type NODE in Ada syntax.  SPC is the indentation
@@ -1817,13 +1865,11 @@ dump_ada_array_type (pretty_printer *buffer, tree node, int spc)
   /* Print the component type.  */
   if (!char_array)
     {
-      tree tmp = node;
-      while (TREE_CODE (tmp) == ARRAY_TYPE)
-	tmp = TREE_TYPE (tmp);
+      tree tmp = strip_array_types (node);
 
       pp_string (buffer, " of ");
 
-      if (TREE_CODE (tmp) != POINTER_TYPE)
+      if (TREE_CODE (tmp) != POINTER_TYPE && !packed_layout)
 	pp_string (buffer, "aliased ");
 
       if (TYPE_NAME (tmp)
@@ -1850,7 +1896,8 @@ dump_template_types (pretty_printer *buffer, tree types, int spc)
       if (!dump_ada_node (buffer, elem, NULL_TREE, spc, false, true))
 	{
 	  pp_string (buffer, "unknown");
-	  pp_scalar (buffer, "%lu", (unsigned long) TREE_HASH (elem));
+	  pp_scalar (buffer, HOST_SIZE_T_PRINT_UNSIGNED,
+		     (fmt_size_t) TREE_HASH (elem));
 	}
     }
 }
@@ -2079,9 +2126,6 @@ is_float128 (tree node)
 	 || id_equal (name, "_Float128")
 	 || id_equal (name, "_Float128x");
 }
-
-static bool bitfield_used = false;
-static bool packed_layout = false;
 
 /* Recursively dump in BUFFER Ada declarations corresponding to NODE of type
    TYPE.  SPC is the indentation level.  LIMITED_ACCESS indicates whether NODE
@@ -2347,6 +2391,11 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		      && TREE_CODE (DECL_CHAIN (stub)) == TYPE_DECL
 		      && DECL_ORIGINAL_TYPE (DECL_CHAIN (stub)) == ref_type)
 		    ref_type = TREE_TYPE (DECL_CHAIN (stub));
+
+		  /* If this is a pointer to an anonymous array type, then use
+		     the name of the component type.  */
+		  else if (!type_name && is_access)
+		    ref_type = strip_array_types (ref_type);
 
 		  /* Generate "access <type>" instead of "access <subtype>"
 		     if the subtype comes from another file, because subtype
@@ -2637,10 +2686,7 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, int spc)
       if (!bitmap_set_bit (dumped_anonymous_types, TYPE_UID (field_type)))
 	return;
 
-      /* Recurse on the element type if need be.  */
-      tmp = TREE_TYPE (field_type);
-      while (TREE_CODE (tmp) == ARRAY_TYPE)
-	tmp = TREE_TYPE (tmp);
+      tmp = strip_array_types (field_type);
       decl = get_underlying_decl (tmp);
       if (decl
 	  && !DECL_NAME (decl)

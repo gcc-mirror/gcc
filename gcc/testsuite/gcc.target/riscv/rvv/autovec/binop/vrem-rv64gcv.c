@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-std=c99 -fno-vect-cost-model -march=rv64gcv -mabi=lp64d --param=riscv-autovec-preference=fixed-vlmax -fdump-tree-optimized-details" } */
+/* { dg-additional-options "-std=c99 -fno-vect-cost-model -march=rv64gcv -mabi=lp64d -mrvv-vector-bits=zvl -fdump-tree-optimized-details" } */
 
 #include "vrem-template.h"
 

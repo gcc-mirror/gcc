@@ -1,4 +1,4 @@
-# Copyright (C) 2021-2023 Free Software Foundation, Inc.
+# Copyright (C) 2021-2024 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,9 +16,12 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TM_H += loongarch-multilib.h $(srcdir)/config/loongarch/loongarch-driver.h
-OPTIONS_H_EXTRA += $(srcdir)/config/loongarch/loongarch-def.h \
-		   $(srcdir)/config/loongarch/loongarch-tune.h
+
+GTM_H += loongarch-multilib.h
+OPTIONS_H_EXTRA += $(srcdir)/config/loongarch/loongarch-def.h	    \
+		   $(srcdir)/config/loongarch/loongarch-def-array.h \
+		   $(srcdir)/config/loongarch/loongarch-tune.h	    \
+		   $(srcdir)/config/loongarch/loongarch-evolution.h
 
 # Canonical target triplet from config.gcc
 LA_MULTIARCH_TRIPLET = $(patsubst LA_MULTIARCH_TRIPLET=%,%,$\
@@ -30,7 +33,8 @@ LA_STR_H = $(srcdir)/config/loongarch/loongarch-str.h
 # String definition header
 $(LA_STR_H): s-loongarch-str ; @true
 s-loongarch-str: $(srcdir)/config/loongarch/genopts/genstr.sh \
-	$(srcdir)/config/loongarch/genopts/loongarch-strings
+	$(srcdir)/config/loongarch/genopts/loongarch-strings  \
+	$(srcdir)/config/loongarch/genopts/isa-evolution.in
 	$(SHELL) $(srcdir)/config/loongarch/genopts/genstr.sh header \
     $(srcdir)/config/loongarch/genopts/loongarch-strings > \
     tmp-loongarch-str.h
@@ -57,15 +61,25 @@ loongarch-driver.o : $(srcdir)/config/loongarch/loongarch-driver.cc $(LA_STR_H) 
 loongarch-opts.o: $(srcdir)/config/loongarch/loongarch-opts.cc $(LA_STR_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-loongarch-cpu.o: $(srcdir)/config/loongarch/loongarch-cpu.cc $(LA_STR_H)
+loongarch-cpu.o: $(srcdir)/config/loongarch/loongarch-cpu.cc $(LA_STR_H) \
+		 $(srcdir)/config/loongarch/loongarch-evolution.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
-loongarch-def.o: $(srcdir)/config/loongarch/loongarch-def.c $(LA_STR_H)
-	$(CC) -c $(ALL_CFLAGS) $(INCLUDES) $<
+loongarch-evolution.o: $(srcdir)/config/loongarch/loongarch-evolution.cc $(LA_STR_H) \
+	$(srcdir)/config/loongarch/loongarch-evolution.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+loongarch-def.o: $(srcdir)/config/loongarch/loongarch-def.cc $(LA_STR_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+loongarch-d.o: $(srcdir)/config/loongarch/loongarch-d.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
 
 $(srcdir)/config/loongarch/loongarch.opt: s-loongarch-opt ; @true
 s-loongarch-opt: $(srcdir)/config/loongarch/genopts/genstr.sh \
 	$(srcdir)/config/loongarch/genopts/loongarch.opt.in \
+	$(srcdir)/config/loongarch/genopts/isa-evolution.in \
 	$(srcdir)/config/loongarch/genopts/loongarch-strings $(LA_STR_H)
 	$(SHELL) $(srcdir)/config/loongarch/genopts/genstr.sh opt \
     $(srcdir)/config/loongarch/genopts/loongarch.opt.in \
@@ -73,3 +87,18 @@ s-loongarch-opt: $(srcdir)/config/loongarch/genopts/genstr.sh \
 	$(SHELL) $(srcdir)/../move-if-change tmp-loongarch.opt \
     $(srcdir)/config/loongarch/loongarch.opt
 	$(STAMP) s-loongarch-opt
+
+$(srcdir)/config/loongarch/loongarch-evolution.h: s-loongarch-evolution
+	@true
+$(srcdir)/config/loongarch/loongarch-evolution.cc: s-loongarch-evolution
+	@true
+s-loongarch-evolution: $(srcdir)/config/loongarch/genopts/genstr.sh \
+	$(srcdir)/config/loongarch/genopts/isa-evolution.in \
+	$(srcdir)/config/loongarch/genopts/gen-evolution.awk
+	$(SHELL) $< evolution_h > tmp-isa-evo.h
+	$(SHELL) $< evolution_c > tmp-isa-evo.cc
+	$(SHELL) $(srcdir)/../move-if-change tmp-isa-evo.h \
+	    $(srcdir)/config/loongarch/loongarch-evolution.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-isa-evo.cc \
+	    $(srcdir)/config/loongarch/loongarch-evolution.cc
+	$(STAMP) $@

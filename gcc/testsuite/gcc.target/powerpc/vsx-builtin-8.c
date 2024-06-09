@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7 -Wno-deprecated" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* Test the various load/store varients.  */
 

@@ -102,5 +102,5 @@ spill_9 (int64_t *in, int64_t *out)
 /* { dg-final { scan-assembler-times {addi\tsp,sp,-256} 1 } } */
 /* { dg-final { scan-assembler-times {addi\tsp,sp,-512} 1 } } */
 /* { dg-final { scan-assembler-times {addi\tsp,sp,-1024} 1 } } */
-/* { dg-final { scan-assembler-times {addi\tsp,sp,-2048} 1 } } */
-/* { dg-final { scan-assembler-times {li\t[a-x0-9]+,-4096\s+add\tsp,sp,[a-x0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {addi\tsp,sp,-2048} 3 } } */
+/* { dg-final { scan-assembler-times {addi\tsp,sp,2032} 1 } } */

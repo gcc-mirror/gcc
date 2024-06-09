@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 trait Valuable {
     const VALUE: i32;
 }

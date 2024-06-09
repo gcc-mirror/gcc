@@ -1,6 +1,6 @@
 ; Parameter options of the compiler.
 
-; Copyright (C) 2019-2023 Free Software Foundation, Inc.
+; Copyright (C) 2019-2024 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -134,6 +134,13 @@ Maximal estimated growth of function body caused by early inlining of single cal
 Common Joined UInteger Var(param_fsm_scale_path_stmts) Init(2) IntegerRange(1, 10) Param Optimization
 Scale factor to apply to the number of statements in a threading path crossing a loop backedge when comparing to max-jump-thread-duplication-stmts.
 
+-param=fully-pipelined-fma=
+Common Joined UInteger Var(param_fully_pipelined_fma) Init(0) IntegerRange(0, 1) Param Optimization
+Whether the target fully pipelines FMA instructions.  If non-zero,
+reassociation considers the benefit of parallelizing FMA's multiplication
+part and addition part, assuming FMUL and FMA use the same units that can
+also do FADD.
+
 -param=gcse-after-reload-critical-fraction=
 Common Joined UInteger Var(param_gcse_after_reload_critical_fraction) Init(10) Param Optimization
 The threshold ratio of critical edges execution count that permit performing redundancy elimination after reload.
@@ -173,6 +180,14 @@ Maximum number of arrays per SCoP.
 -param=graphite-max-nb-scop-params=
 Common Joined UInteger Var(param_graphite_max_nb_scop_params) Init(10) Param Optimization
 Maximum number of parameters in a SCoP.
+
+-param=hardcfr-max-blocks=
+Common Joined UInteger Var(param_hardcfr_max_blocks) Init(0) Param Optimization
+Maximum number of blocks for -fharden-control-flow-redundancy.
+
+-param=hardcfr-max-inline-blocks=
+Common Joined UInteger Var(param_hardcfr_max_inline_blocks) Init(16) Param Optimization
+Maximum number of blocks for in-line -fharden-control-flow-redundancy.
 
 -param=hash-table-verification-limit=
 Common Joined UInteger Var(param_hash_table_verification_limit) Init(10) Param
@@ -248,7 +263,7 @@ Maximum size of a list of values associated with each parameter for interprocedu
 
 -param=ipa-cp-profile-count-base=
 Common Joined UInteger Var(param_ipa_cp_profile_count_base) Init(10) IntegerRange(0, 100) Param Optimization
-When using profile feedback, use the edge at this percentage position in frequncy histogram as the bases for IPA-CP heuristics.
+When using profile feedback, use the edge at this percentage position in frequency histogram as the bases for IPA-CP heuristics.
 
 -param=ipa-jump-function-lookups=
 Common Joined UInteger Var(param_ipa_jump_function_lookups) Init(8) Param Optimization
@@ -771,7 +786,7 @@ Common Joined UInteger Var(param_min_loop_cond_split_prob) Init(30) IntegerRange
 The minimum threshold for probability of semi-invariant condition statement to trigger loop split.
 
 -param=min-nondebug-insn-uid=
-Common Joined UInteger Var(param_min_nondebug_insn_uid) Param
+Common Joined UInteger Var(param_min_nondebug_insn_uid) Param IntegerRange(0, 1073741824)
 The minimum UID to be used for a nondebug insn.
 
 -param=min-size-for-stack-sharing=

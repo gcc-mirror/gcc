@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for PowerPC and PowerPC64 Linux.
-   Copyright (C) 2004-2023 Free Software Foundation, Inc.
+   Copyright (C) 2004-2024 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -272,17 +272,6 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
 
   fs->regs.how[R_VRSAVE] = REG_SAVED_OFFSET;
   fs->regs.reg[R_VRSAVE].loc.offset = (long) &vregs->vsave - new_cfa;
-
-  /* If we have SPE register high-parts... we check at compile-time to
-     avoid expanding the code for all other PowerPC.  */
-#ifdef __SPE__
-  for (i = 14; i < 32; i++)
-    {
-      fs->regs.how[i + FIRST_SPE_HIGH_REGNO - 4] = REG_SAVED_OFFSET;
-      fs->regs.reg[i + FIRST_SPE_HIGH_REGNO - 4].loc.offset
-	= (long) &regs->vregs - new_cfa + 4 * i;
-    }
-#endif
 
   return _URC_NO_REASON;
 }

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv32gc_zve32f_zvfh -mabi=ilp32f -O3 -Wno-psabi" } */
+/* { dg-options "-march=rv32gc_zve32f_zvfh -mabi=ilp32f -O3" } */
 
 #include "pr110277-1.h"
 

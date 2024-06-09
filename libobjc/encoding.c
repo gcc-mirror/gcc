@@ -1,5 +1,5 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993-2023 Free Software Foundation, Inc.
+   Copyright (C) 1993-2024 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
    Bitfield support by Ovidiu Predescu
 
@@ -1088,7 +1088,7 @@ objc_layout_structure (const char *type,
          && *ntype++ != '=')
     /* do nothing */;
 
-  /* If there's a "<name>=", ntype - 1 points to '='; skip the the name */
+  /* If there's a "<name>=", ntype - 1 points to '='; skip the name.  */
   if (*(ntype - 1) == '=')
     type = ntype;
 

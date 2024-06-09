@@ -2,9 +2,6 @@
    -Wanalyzer-tainted-assertion with macro-tracking enabled
    (the default).  */
 
-// TODO: remove need for this option
-/* { dg-additional-options "-fanalyzer-checker=taint" } */
-
 /* { dg-additional-options "-fdiagnostics-show-path-depths" } */
 /* { dg-additional-options "-fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
 

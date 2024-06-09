@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -29,22 +29,21 @@ Feature::create (Feature::Name name)
     case Feature::Name::ASSOCIATED_TYPE_BOUNDS:
       return Feature (Feature::Name::ASSOCIATED_TYPE_BOUNDS,
 		      Feature::State::ACCEPTED, "associated_type_bounds",
-		      "1.34.0", 52662,
-		      Optional<CompileOptions::Edition>::none (), "");
+		      "1.34.0", 52662, tl::nullopt, "");
     case Feature::Name::INTRINSICS:
       return Feature (Feature::Name::INTRINSICS, Feature::State::ACCEPTED,
-		      "intrinsics", "1.0.0", 0,
-		      Optional<CompileOptions::Edition>::none (), "");
+		      "intrinsics", "1.0.0", 0, tl::nullopt, "");
     case Feature::Name::RUSTC_ATTRS:
       return Feature (Feature::Name::RUSTC_ATTRS, Feature::State::ACCEPTED,
-		      "rustc_attrs", "1.0.0", 0,
-		      Optional<CompileOptions::Edition>::none (), "");
+		      "rustc_attrs", "1.0.0", 0, tl::nullopt, "");
     case Feature::Name::DECL_MACRO:
       return Feature (Feature::Name::DECL_MACRO, Feature::State::ACCEPTED,
-		      "decl_macro", "1.0.0", 0,
-		      Optional<CompileOptions::Edition>::none (), "");
+		      "decl_macro", "1.0.0", 0, tl::nullopt, "");
+    case Feature::Name::EXTERN_TYPES:
+      return Feature (Feature::Name::EXTERN_TYPES, Feature::State::ACTIVE,
+		      "extern_types", "1.23.0", 43467, tl::nullopt, "");
     default:
-      gcc_unreachable ();
+      rust_unreachable ();
     }
 }
 
@@ -53,14 +52,21 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"intrinsics", Feature::Name::INTRINSICS},
   {"rustc_attrs", Feature::Name::RUSTC_ATTRS},
   {"decl_macro", Feature::Name::DECL_MACRO},
-};
+  // TODO: Rename to "auto_traits" when supporting
+  // later Rust versions
+  {"optin_builtin_traits", Feature::Name::AUTO_TRAITS},
+  {"extern_types", Feature::Name::EXTERN_TYPES},
+  {"lang_items", Feature::Name::LANG_ITEMS},
+  {"no_core", Feature::Name::NO_CORE},
+}; // namespace Rust
 
-Optional<Feature::Name>
+tl::optional<Feature::Name>
 Feature::as_name (const std::string &name)
 {
   if (Feature::name_hash_map.count (name))
-    return Optional<Feature::Name>::some (Feature::name_hash_map.at (name));
-  return Optional<Feature::Name>::none ();
+    return Feature::name_hash_map.at (name);
+
+  return tl::nullopt;
 }
 
 } // namespace Rust

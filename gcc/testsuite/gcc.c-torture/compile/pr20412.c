@@ -1,3 +1,7 @@
+int bar1(void);
+int bar2(void);
+int bar3(void);
+
 int
 foo(void)
 {

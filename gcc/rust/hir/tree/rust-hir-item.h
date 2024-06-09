@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -22,6 +22,7 @@
 #include "rust-abi.h"
 #include "rust-ast-full-decls.h"
 #include "rust-common.h"
+#include "rust-hir-expr.h"
 #include "rust-hir.h"
 #include "rust-hir-path.h"
 
@@ -48,7 +49,7 @@ class TypeParam : public GenericParam
   // bool has_type;
   std::unique_ptr<Type> type;
 
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether the type of the type param has been specified.
@@ -59,9 +60,10 @@ public:
 
   // Returns whether the type param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attr.is_empty (); }
+  AST::Attribute &get_outer_attribute () { return outer_attr; }
 
   TypeParam (Analysis::NodeMapping mappings, Identifier type_representation,
-	     Location locus = Location (),
+	     location_t locus = UNDEF_LOCATION,
 	     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds
 	     = std::vector<std::unique_ptr<TypeParamBound>> (),
 	     std::unique_ptr<Type> type = nullptr,
@@ -112,17 +114,13 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
 
   Identifier get_type_representation () const { return type_representation; }
 
-  std::unique_ptr<Type> &get_type ()
-  {
-    rust_assert (type != nullptr);
-    return type;
-  }
+  std::unique_ptr<Type> &get_type () { return type; }
 
   Analysis::NodeMapping get_type_mappings () const
   {
@@ -145,7 +143,7 @@ protected:
 
 /* "where" clause item base. Abstract - use LifetimeWhereClauseItem,
  * TypeBoundWhereClauseItem */
-class WhereClauseItem
+class WhereClauseItem : public FullVisitable
 {
 public:
   enum ItemType
@@ -180,13 +178,13 @@ class LifetimeWhereClauseItem : public WhereClauseItem
 {
   Lifetime lifetime;
   std::vector<Lifetime> lifetime_bounds;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   LifetimeWhereClauseItem (Analysis::NodeMapping mappings, Lifetime lifetime,
 			   std::vector<Lifetime> lifetime_bounds,
-			   Location locus)
+			   location_t locus)
     : lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)), locus (locus),
       mappings (std::move (mappings))
@@ -225,7 +223,7 @@ class TypeBoundWhereClauseItem : public WhereClauseItem
   std::unique_ptr<Type> bound_type;
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   Analysis::NodeMapping mappings;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether the item has ForLifetimes
@@ -238,7 +236,7 @@ public:
     Analysis::NodeMapping mappings, std::vector<LifetimeParam> for_lifetimes,
     std::unique_ptr<Type> bound_type,
     std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-    Location locus)
+    location_t locus)
     : for_lifetimes (std::move (for_lifetimes)),
       bound_type (std::move (bound_type)),
       type_param_bounds (std::move (type_param_bounds)),
@@ -272,6 +270,8 @@ public:
   TypeBoundWhereClauseItem (TypeBoundWhereClauseItem &&other) = default;
   TypeBoundWhereClauseItem &operator= (TypeBoundWhereClauseItem &&other)
     = default;
+
+  location_t get_locus () const { return locus; }
 
   std::string as_string () const override;
 
@@ -377,7 +377,7 @@ private:
   ImplicitSelfKind self_kind;
   Lifetime lifetime;
   std::unique_ptr<Type> type;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
   SelfParam (Analysis::NodeMapping mappings, ImplicitSelfKind self_kind,
@@ -389,7 +389,7 @@ private:
 public:
   // Type-based self parameter (not ref, no lifetime)
   SelfParam (Analysis::NodeMapping mappings, std::unique_ptr<Type> type,
-	     bool is_mut, Location locus)
+	     bool is_mut, location_t locus)
     : self_kind (is_mut ? ImplicitSelfKind::MUT : ImplicitSelfKind::IMM),
       lifetime (
 	Lifetime (mappings, AST::Lifetime::LifetimeType::NAMED, "", locus)),
@@ -398,7 +398,7 @@ public:
 
   // Lifetime-based self parameter (is ref, no type)
   SelfParam (Analysis::NodeMapping mappings, Lifetime lifetime, bool is_mut,
-	     Location locus)
+	     location_t locus)
     : self_kind (is_mut ? ImplicitSelfKind::MUT_REF
 			: ImplicitSelfKind::IMM_REF),
       lifetime (std::move (lifetime)), locus (locus), mappings (mappings)
@@ -443,20 +443,18 @@ public:
   // Returns whether the self-param has a valid lifetime.
   bool has_lifetime () const { return !lifetime.is_error (); }
 
+  const Lifetime &get_lifetime () const { return lifetime; }
+
   // Returns whether the self-param is in an error state.
   bool is_error () const { return self_kind == ImplicitSelfKind::NONE; }
 
   std::string as_string () const;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   ImplicitSelfKind get_self_kind () const { return self_kind; }
 
-  std::unique_ptr<Type> &get_type ()
-  {
-    rust_assert (has_type ());
-    return type;
-  }
+  std::unique_ptr<Type> &get_type () { return type; }
 
   Analysis::NodeMapping get_mappings () { return mappings; }
 
@@ -485,24 +483,26 @@ public:
 struct FunctionQualifiers
 {
 private:
-  AsyncConstStatus const_status;
+  Async async_status;
+  Const const_status;
   Unsafety unsafety;
   bool has_extern;
   ABI abi;
 
 public:
-  FunctionQualifiers (AsyncConstStatus const_status, Unsafety unsafety,
+  FunctionQualifiers (Async async_status, Const const_status, Unsafety unsafety,
 		      bool has_extern, ABI abi)
-    : const_status (const_status), unsafety (unsafety), has_extern (has_extern),
-      abi (abi)
+    : async_status (async_status), const_status (const_status),
+      unsafety (unsafety), has_extern (has_extern), abi (abi)
   {}
 
   std::string as_string () const;
 
-  AsyncConstStatus get_status () const { return const_status; }
+  Const get_const_status () const { return const_status; }
 
-  bool is_const () const { return const_status == AsyncConstStatus::CONST_FN; }
+  bool is_const () const { return const_status == Const::Yes; }
   bool is_unsafe () const { return unsafety == Unsafety::Unsafe; }
+  bool is_async () const { return async_status == Async::Yes; }
 
   ABI get_abi () const { return abi; }
 };
@@ -512,13 +512,13 @@ struct FunctionParam
 {
   std::unique_ptr<Pattern> param_name;
   std::unique_ptr<Type> type;
-  Location locus;
+  location_t locus;
   Analysis::NodeMapping mappings;
 
 public:
   FunctionParam (Analysis::NodeMapping mappings,
 		 std::unique_ptr<Pattern> param_name,
-		 std::unique_ptr<Type> param_type, Location locus)
+		 std::unique_ptr<Type> param_type, location_t locus)
     : param_name (std::move (param_name)), type (std::move (param_type)),
       locus (locus), mappings (mappings)
   {}
@@ -547,11 +547,11 @@ public:
 
   std::string as_string () const;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
-  Pattern *get_param_name () { return param_name.get (); }
+  std::unique_ptr<Pattern> &get_param_name () { return param_name; }
 
-  Type *get_type () { return type.get (); }
+  std::unique_ptr<Type> &get_type () { return type; }
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
@@ -571,14 +571,14 @@ public:
 private:
   VisType vis_type;
   HIR::SimplePath path;
-  Location locus;
+  location_t locus;
 
   // should this store location info?
 
 public:
   Visibility (VisType vis_type,
 	      HIR::SimplePath path = HIR::SimplePath::create_empty (),
-	      Location locus = Location ())
+	      location_t locus = UNDEF_LOCATION)
     : vis_type (vis_type), path (std::move (path)), locus (locus)
   {}
 
@@ -657,12 +657,10 @@ public:
 };
 
 // Rust module item - abstract base class
-class Module : public VisItem
+class Module : public VisItem, public WithInnerAttrs
 {
   Identifier module_name;
-  Location locus;
-  // bool has_inner_attrs;
-  AST::AttrVec inner_attrs;
+  location_t locus;
   // bool has_items;
   std::vector<std::unique_ptr<Item>> items;
 
@@ -672,24 +670,21 @@ public:
   // Returns whether the module has items in its body.
   bool has_items () const { return !items.empty (); }
 
-  // Returns whether the module has any inner attributes.
-  bool has_inner_attrs () const { return !inner_attrs.empty (); }
-
   // Full constructor
   Module (Analysis::NodeMapping mappings, Identifier module_name,
-	  Location locus, std::vector<std::unique_ptr<Item>> items,
+	  location_t locus, std::vector<std::unique_ptr<Item>> items,
 	  Visibility visibility = Visibility::create_error (),
 	  AST::AttrVec inner_attrs = AST::AttrVec (),
 	  AST::AttrVec outer_attrs = AST::AttrVec ())
     : VisItem (std::move (mappings), std::move (visibility),
 	       std::move (outer_attrs)),
-      module_name (module_name), locus (locus),
-      inner_attrs (std::move (inner_attrs)), items (std::move (items))
+      WithInnerAttrs (std::move (inner_attrs)), module_name (module_name),
+      locus (locus), items (std::move (items))
   {}
 
   // Copy constructor with vector clone
   Module (Module const &other)
-    : VisItem (other), inner_attrs (other.inner_attrs)
+    : VisItem (other), WithInnerAttrs (other.inner_attrs), module_name ("")
   {
     items.reserve (other.items.size ());
     for (const auto &e : other.items)
@@ -717,13 +712,14 @@ public:
   void accept_vis (HIRStmtVisitor &vis) override;
   void accept_vis (HIRVisItemVisitor &vis) override;
 
+  Identifier get_module_name () const { return module_name; }
   std::vector<std::unique_ptr<Item>> &get_items () { return items; };
 
   /* Override that runs the function recursively on all items contained within
    * the module. */
   void add_crate_name (std::vector<std::string> &names) const override;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   ItemKind get_item_kind () const override { return ItemKind::Module; }
 
@@ -749,7 +745,7 @@ class ExternCrate : public VisItem
   // this is either an identifier or "_", with _ parsed to string
   std::string as_clause_name;
 
-  Location locus;
+  location_t locus;
 
   /* e.g.
       "extern crate foo as _"
@@ -767,17 +763,19 @@ public:
 
   // Constructor
   ExternCrate (Analysis::NodeMapping mappings, std::string referenced_crate,
-	       Visibility visibility, AST::AttrVec outer_attrs, Location locus,
-	       std::string as_clause_name = std::string ())
+	       Visibility visibility, AST::AttrVec outer_attrs,
+	       location_t locus, std::string as_clause_name = std::string ())
     : VisItem (std::move (mappings), std::move (visibility),
 	       std::move (outer_attrs)),
       referenced_crate (std::move (referenced_crate)),
       as_clause_name (std::move (as_clause_name)), locus (locus)
   {}
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   ItemKind get_item_kind () const override { return ItemKind::ExternCrate; }
+  std::string get_referenced_crate () { return referenced_crate; }
+  std::string get_as_clause_name () { return as_clause_name; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -805,9 +803,9 @@ protected:
 };
 
 // The path-ish thing referred to in a use declaration - abstract base class
-class UseTree
+class UseTree : public FullVisitable
 {
-  Location locus;
+  location_t locus;
 
 public:
   virtual ~UseTree () {}
@@ -820,15 +818,13 @@ public:
 
   virtual std::string as_string () const = 0;
 
-  Location get_locus () const { return locus; }
-
-  virtual void accept_vis (HIRFullVisitor &vis) = 0;
+  location_t get_locus () const { return locus; }
 
 protected:
   // Clone function implementation as pure virtual method
   virtual UseTree *clone_use_tree_impl () const = 0;
 
-  UseTree (Location locus) : locus (locus) {}
+  UseTree (location_t locus) : locus (locus) {}
 };
 
 // Use tree with a glob (wildcard) operator
@@ -847,7 +843,7 @@ private:
   AST::SimplePath path;
 
 public:
-  UseTreeGlob (PathType glob_type, AST::SimplePath path, Location locus)
+  UseTreeGlob (PathType glob_type, AST::SimplePath path, location_t locus)
     : UseTree (locus), glob_type (glob_type), path (std::move (path))
   {
     if (this->glob_type != PATH_PREFIXED)
@@ -863,6 +859,9 @@ public:
   /* Returns whether has path. Should be made redundant by PathType
    * PATH_PREFIXED. */
   bool has_path () const { return !path.is_empty (); }
+
+  PathType get_glob_type () { return glob_type; }
+  AST::SimplePath get_path () { return path; };
 
   std::string as_string () const override;
 
@@ -898,7 +897,7 @@ private:
 
 public:
   UseTreeList (PathType path_type, AST::SimplePath path,
-	       std::vector<std::unique_ptr<UseTree>> trees, Location locus)
+	       std::vector<std::unique_ptr<UseTree>> trees, location_t locus)
     : UseTree (locus), path_type (path_type), path (std::move (path)),
       trees (std::move (trees))
   {
@@ -949,6 +948,10 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
 
+  PathType get_path_type () { return path_type; }
+  AST::SimplePath get_path () { return path; }
+  std::vector<std::unique_ptr<UseTree>> &get_trees () { return trees; }
+
   // TODO: find way to ensure only PATH_PREFIXED path_type has path - factory
   // methods?
 protected:
@@ -978,7 +981,7 @@ private:
   Identifier identifier; // only if NewBindType is IDENTIFIER
 
 public:
-  UseTreeRebind (NewBindType bind_type, AST::SimplePath path, Location locus,
+  UseTreeRebind (NewBindType bind_type, AST::SimplePath path, location_t locus,
 		 Identifier identifier = std::string ())
     : UseTree (locus), path (std::move (path)), bind_type (bind_type),
       identifier (std::move (identifier))
@@ -986,6 +989,12 @@ public:
 
   // Returns whether has path (this should always be true).
   bool has_path () const { return !path.is_empty (); }
+
+  AST::SimplePath get_path () { return path; }
+
+  Identifier get_identifier () const { return identifier; }
+
+  NewBindType get_bind_type () const { return bind_type; }
 
   // Returns whether has identifier (or, rather, is allowed to).
   bool has_identifier () const { return bind_type == IDENTIFIER; }
@@ -1005,18 +1014,20 @@ protected:
   }
 };
 
+std::string enum_to_str (UseTreeRebind::NewBindType);
+
 // Rust use declaration (i.e. for modules) HIR node
 class UseDeclaration : public VisItem
 {
   std::unique_ptr<UseTree> use_tree;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
 
   UseDeclaration (Analysis::NodeMapping mappings,
 		  std::unique_ptr<UseTree> use_tree, Visibility visibility,
-		  AST::AttrVec outer_attrs, Location locus)
+		  AST::AttrVec outer_attrs, location_t locus)
     : VisItem (std::move (mappings), std::move (visibility),
 	       std::move (outer_attrs)),
       use_tree (std::move (use_tree)), locus (locus)
@@ -1044,9 +1055,10 @@ public:
   UseDeclaration (UseDeclaration &&other) = default;
   UseDeclaration &operator= (UseDeclaration &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
   ItemKind get_item_kind () const override { return ItemKind::UseDeclaration; }
 
+  std::unique_ptr<UseTree> &get_use_tree () { return use_tree; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
   void accept_vis (HIRVisItemVisitor &vis) override;
@@ -1079,7 +1091,7 @@ class Function : public VisItem, public ImplItem
   WhereClause where_clause;
   std::unique_ptr<BlockExpr> function_body;
   SelfParam self;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -1110,7 +1122,7 @@ public:
 	    std::vector<FunctionParam> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	    AST::AttrVec outer_attrs, SelfParam self, Location locus)
+	    AST::AttrVec outer_attrs, SelfParam self, location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       qualifiers (std::move (qualifiers)),
       function_name (std::move (function_name)),
@@ -1172,7 +1184,7 @@ public:
   Function (Function &&other) = default;
   Function &operator= (Function &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRImplVisitor &vis) override;
@@ -1200,11 +1212,7 @@ public:
   }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<BlockExpr> &get_definition ()
-  {
-    rust_assert (function_body != nullptr);
-    return function_body;
-  }
+  std::unique_ptr<BlockExpr> &get_definition () { return function_body; }
 
   const FunctionQualifiers &get_qualifiers () const { return qualifiers; }
 
@@ -1216,11 +1224,7 @@ public:
   bool has_return_type () const { return return_type != nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  }
+  std::unique_ptr<Type> &get_return_type () { return return_type; }
 
   bool is_method () const { return !self.is_error (); }
 
@@ -1228,7 +1232,7 @@ public:
 
   std::string get_impl_item_name () const override final
   {
-    return get_function_name ();
+    return get_function_name ().as_string ();
   }
 
 protected:
@@ -1258,7 +1262,7 @@ class TypeAlias : public VisItem, public ImplItem
 
   std::unique_ptr<Type> existing_type;
 
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -1278,7 +1282,7 @@ public:
   TypeAlias (Analysis::NodeMapping mappings, Identifier new_type_name,
 	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     WhereClause where_clause, std::unique_ptr<Type> existing_type,
-	     Visibility vis, AST::AttrVec outer_attrs, Location locus)
+	     Visibility vis, AST::AttrVec outer_attrs, location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       new_type_name (std::move (new_type_name)),
       generic_params (std::move (generic_params)),
@@ -1317,7 +1321,7 @@ public:
   TypeAlias (TypeAlias &&other) = default;
   TypeAlias &operator= (TypeAlias &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRImplVisitor &vis) override;
@@ -1335,11 +1339,7 @@ public:
 
   WhereClause &get_where_clause () { return where_clause; }
 
-  std::unique_ptr<Type> &get_type_aliased ()
-  {
-    rust_assert (existing_type != nullptr);
-    return existing_type;
-  }
+  std::unique_ptr<Type> &get_type_aliased () { return existing_type; }
 
   Identifier get_new_type_name () const { return new_type_name; }
 
@@ -1352,7 +1352,7 @@ public:
 
   std::string get_impl_item_name () const override final
   {
-    return get_new_type_name ();
+    return get_new_type_name ().as_string ();
   }
 
 protected:
@@ -1382,7 +1382,7 @@ protected:
   // bool has_where_clause;
   WhereClause where_clause;
 
-  Location locus;
+  location_t locus;
 
 public:
   Identifier get_identifier () const { return struct_name; }
@@ -1393,7 +1393,7 @@ public:
   // Returns whether struct has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
   ItemKind get_item_kind () const override { return ItemKind::Struct; }
 
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
@@ -1406,7 +1406,7 @@ public:
 protected:
   Struct (Analysis::NodeMapping mappings, Identifier struct_name,
 	  std::vector<std::unique_ptr<GenericParam>> generic_params,
-	  WhereClause where_clause, Visibility vis, Location locus,
+	  WhereClause where_clause, Visibility vis, location_t locus,
 	  AST::AttrVec outer_attrs = AST::AttrVec ())
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       struct_name (std::move (struct_name)),
@@ -1445,7 +1445,8 @@ protected:
 };
 
 // A single field in a struct
-struct StructField
+// FIXME can't this be a TupleStruct + field_name?
+class StructField
 {
 public:
   // bool has_outer_attributes;
@@ -1459,7 +1460,7 @@ public:
 
   Analysis::NodeMapping mappings;
 
-  Location locus;
+  location_t locus;
 
   // Returns whether struct field has any outer attributes.
   bool has_outer_attributes () const { return !outer_attrs.empty (); }
@@ -1468,8 +1469,8 @@ public:
   bool has_visibility () const { return !visibility.is_error (); }
 
   StructField (Analysis::NodeMapping mappings, Identifier field_name,
-	       std::unique_ptr<Type> field_type, Visibility vis, Location locus,
-	       AST::AttrVec outer_attrs = AST::AttrVec ())
+	       std::unique_ptr<Type> field_type, Visibility vis,
+	       location_t locus, AST::AttrVec outer_attrs = AST::AttrVec ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       field_name (std::move (field_name)), field_type (std::move (field_type)),
       mappings (mappings), locus (locus)
@@ -1504,16 +1505,12 @@ public:
 
   Identifier get_field_name () const { return field_name; }
 
-  std::unique_ptr<Type> &get_field_type ()
-  {
-    rust_assert (field_type != nullptr);
-    return field_type;
-  }
+  std::unique_ptr<Type> &get_field_type () { return field_type; }
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
-  Location get_locus () { return locus; }
-
+  location_t get_locus () { return locus; }
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
   Visibility &get_visibility () { return visibility; }
 };
 
@@ -1531,7 +1528,7 @@ public:
 		Identifier struct_name,
 		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		WhereClause where_clause, bool is_unit, Visibility vis,
-		AST::AttrVec outer_attrs, Location locus)
+		AST::AttrVec outer_attrs, location_t locus)
     : Struct (std::move (mappings), std::move (struct_name),
 	      std::move (generic_params), std::move (where_clause),
 	      std::move (vis), locus, std::move (outer_attrs)),
@@ -1542,7 +1539,7 @@ public:
   StructStruct (Analysis::NodeMapping mappings, Identifier struct_name,
 		std::vector<std::unique_ptr<GenericParam>> generic_params,
 		WhereClause where_clause, Visibility vis,
-		AST::AttrVec outer_attrs, Location locus)
+		AST::AttrVec outer_attrs, location_t locus)
     : Struct (std::move (mappings), std::move (struct_name),
 	      std::move (generic_params), std::move (where_clause),
 	      std::move (vis), locus, std::move (outer_attrs)),
@@ -1577,7 +1574,7 @@ protected:
 };
 
 // A single field in a tuple
-struct TupleField
+class TupleField
 {
 private:
   // bool has_outer_attributes;
@@ -1588,7 +1585,7 @@ private:
 
   std::unique_ptr<Type> field_type;
 
-  Location locus;
+  location_t locus;
 
   Analysis::NodeMapping mappings;
 
@@ -1602,7 +1599,7 @@ public:
 
   // Complete constructor
   TupleField (Analysis::NodeMapping mapping, std::unique_ptr<Type> field_type,
-	      Visibility vis, Location locus,
+	      Visibility vis, location_t locus,
 	      AST::AttrVec outer_attrs = AST::AttrVec ())
     : outer_attrs (std::move (outer_attrs)), visibility (std::move (vis)),
       field_type (std::move (field_type)), locus (locus), mappings (mapping)
@@ -1640,8 +1637,11 @@ public:
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
-  Location get_locus () const { return locus; }
+  Visibility &get_visibility () { return visibility; }
 
+  location_t get_locus () const { return locus; }
+
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
   std::unique_ptr<HIR::Type> &get_field_type () { return field_type; }
 };
 
@@ -1658,7 +1658,7 @@ public:
 	       Identifier struct_name,
 	       std::vector<std::unique_ptr<GenericParam>> generic_params,
 	       WhereClause where_clause, Visibility vis,
-	       AST::AttrVec outer_attrs, Location locus)
+	       AST::AttrVec outer_attrs, location_t locus)
     : Struct (std::move (mappings), std::move (struct_name),
 	      std::move (generic_params), std::move (where_clause),
 	      std::move (vis), locus, std::move (outer_attrs)),
@@ -1694,7 +1694,7 @@ protected:
 class EnumItem : public Item
 {
   Identifier variant_name;
-  Location locus;
+  location_t locus;
 
 public:
   virtual ~EnumItem () {}
@@ -1708,7 +1708,7 @@ public:
   };
 
   EnumItem (Analysis::NodeMapping mappings, Identifier variant_name,
-	    AST::AttrVec outer_attrs, Location locus)
+	    AST::AttrVec outer_attrs, location_t locus)
     : Item (std::move (mappings), std::move (outer_attrs)),
       variant_name (std::move (variant_name)), locus (locus)
   {}
@@ -1727,7 +1727,7 @@ public:
   void accept_vis (HIRStmtVisitor &vis) override;
   // void accept_vis (HIRVisItemVisitor &vis) override;
 
-  Location get_locus () const override { return locus; }
+  location_t get_locus () const override { return locus; }
 
   Identifier get_identifier () const { return variant_name; }
 
@@ -1754,7 +1754,7 @@ public:
 
   EnumItemTuple (Analysis::NodeMapping mappings, Identifier variant_name,
 		 std::vector<TupleField> tuple_fields, AST::AttrVec outer_attrs,
-		 Location locus)
+		 location_t locus)
     : EnumItem (std::move (mappings), std::move (variant_name),
 		std::move (outer_attrs), locus),
       tuple_fields (std::move (tuple_fields))
@@ -1792,7 +1792,7 @@ public:
 
   EnumItemStruct (Analysis::NodeMapping mappings, Identifier variant_name,
 		  std::vector<StructField> struct_fields,
-		  AST::AttrVec outer_attrs, Location locus)
+		  AST::AttrVec outer_attrs, location_t locus)
     : EnumItem (std::move (mappings), std::move (variant_name),
 		std::move (outer_attrs), locus),
       struct_fields (std::move (struct_fields))
@@ -1821,7 +1821,7 @@ class EnumItemDiscriminant : public EnumItem
 public:
   EnumItemDiscriminant (Analysis::NodeMapping mappings, Identifier variant_name,
 			std::unique_ptr<Expr> expr, AST::AttrVec outer_attrs,
-			Location locus)
+			location_t locus)
     : EnumItem (std::move (mappings), std::move (variant_name),
 		std::move (outer_attrs), locus),
       expression (std::move (expr))
@@ -1881,7 +1881,7 @@ class Enum : public VisItem
 
   std::vector<std::unique_ptr<EnumItem>> items;
 
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -1900,7 +1900,7 @@ public:
   Enum (Analysis::NodeMapping mappings, Identifier enum_name, Visibility vis,
 	std::vector<std::unique_ptr<GenericParam>> generic_params,
 	WhereClause where_clause, std::vector<std::unique_ptr<EnumItem>> items,
-	AST::AttrVec outer_attrs, Location locus)
+	AST::AttrVec outer_attrs, location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       enum_name (std::move (enum_name)),
       generic_params (std::move (generic_params)),
@@ -1947,7 +1947,7 @@ public:
   Enum (Enum &&other) = default;
   Enum &operator= (Enum &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -1965,6 +1965,9 @@ public:
   {
     return items;
   }
+
+  std::vector<std::unique_ptr<EnumItem>> &get_variants () { return items; }
+  WhereClause &get_where_clause () { return where_clause; }
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -1992,7 +1995,7 @@ class Union : public VisItem
 
   std::vector<StructField> variants;
 
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -2006,7 +2009,7 @@ public:
   Union (Analysis::NodeMapping mappings, Identifier union_name, Visibility vis,
 	 std::vector<std::unique_ptr<GenericParam>> generic_params,
 	 WhereClause where_clause, std::vector<StructField> variants,
-	 AST::AttrVec outer_attrs, Location locus)
+	 AST::AttrVec outer_attrs, location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       union_name (std::move (union_name)),
       generic_params (std::move (generic_params)),
@@ -2052,7 +2055,7 @@ public:
 
   Identifier get_identifier () const { return union_name; }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -2075,7 +2078,7 @@ class ConstantItem : public VisItem, public ImplItem
   Identifier identifier;
   std::unique_ptr<Type> type;
   std::unique_ptr<Expr> const_expr;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -2083,7 +2086,7 @@ public:
   ConstantItem (Analysis::NodeMapping mappings, Identifier ident,
 		Visibility vis, std::unique_ptr<Type> type,
 		std::unique_ptr<Expr> const_expr, AST::AttrVec outer_attrs,
-		Location locus)
+		location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       identifier (std::move (ident)), type (std::move (type)),
       const_expr (std::move (const_expr)), locus (locus)
@@ -2113,20 +2116,23 @@ public:
 
   // Returns whether constant item is an "unnamed" (wildcard underscore used
   // as identifier) constant.
-  bool is_unnamed () const { return identifier == std::string ("_"); }
+  bool is_unnamed () const
+  {
+    return identifier.as_string () == std::string ("_");
+  }
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
   void accept_vis (HIRImplVisitor &vis) override;
   void accept_vis (HIRVisItemVisitor &vis) override;
 
-  Type *get_type () { return type.get (); }
+  std::unique_ptr<Type> &get_type () { return type; }
 
-  Expr *get_expr () { return const_expr.get (); }
+  std::unique_ptr<Expr> &get_expr () { return const_expr; }
 
-  std::string get_identifier () const { return identifier; }
+  Identifier get_identifier () const { return identifier; }
 
   Analysis::NodeMapping get_impl_mappings () const override
   {
@@ -2142,7 +2148,7 @@ public:
 
   std::string get_impl_item_name () const override final
   {
-    return get_identifier ();
+    return get_identifier ().as_string ();
   }
 
 protected:
@@ -2169,14 +2175,14 @@ class StaticItem : public VisItem
   Identifier name;
   std::unique_ptr<Type> type;
   std::unique_ptr<Expr> expr;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
 
   StaticItem (Analysis::NodeMapping mappings, Identifier name, Mutability mut,
 	      std::unique_ptr<Type> type, std::unique_ptr<Expr> expr,
-	      Visibility vis, AST::AttrVec outer_attrs, Location locus)
+	      Visibility vis, AST::AttrVec outer_attrs, location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       mut (mut), name (std::move (name)), type (std::move (type)),
       expr (std::move (expr)), locus (locus)
@@ -2206,7 +2212,7 @@ public:
   StaticItem (StaticItem &&other) = default;
   StaticItem &operator= (StaticItem &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -2218,9 +2224,9 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
-  Expr *get_expr () { return expr.get (); }
+  std::unique_ptr<Expr> &get_expr () { return expr; }
 
-  Type *get_type () { return type.get (); }
+  std::unique_ptr<Type> &get_type () { return type; }
 
   ItemKind get_item_kind () const override { return ItemKind::Static; }
 
@@ -2232,7 +2238,7 @@ protected:
 };
 
 // Function declaration in traits
-struct TraitFunctionDecl
+class TraitFunctionDecl
 {
 private:
   FunctionQualifiers qualifiers;
@@ -2307,6 +2313,8 @@ public:
   // Returns whether function has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
+  WhereClause &get_where_clause () { return where_clause; }
+
   bool is_method () const { return !self.is_error (); }
 
   SelfParam &get_self () { return self; }
@@ -2318,11 +2326,7 @@ public:
     return generic_params;
   }
 
-  std::unique_ptr<Type> &get_return_type ()
-  {
-    rust_assert (has_return_type ());
-    return return_type;
-  }
+  std::unique_ptr<Type> &get_return_type () { return return_type; }
 
   std::vector<FunctionParam> &get_function_params () { return function_params; }
 
@@ -2335,7 +2339,7 @@ class TraitItemFunc : public TraitItem
   AST::AttrVec outer_attrs;
   TraitFunctionDecl decl;
   std::unique_ptr<BlockExpr> block_expr;
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether function has a definition or is just a declaration.
@@ -2343,7 +2347,7 @@ public:
 
   TraitItemFunc (Analysis::NodeMapping mappings, TraitFunctionDecl decl,
 		 std::unique_ptr<BlockExpr> block_expr,
-		 AST::AttrVec outer_attrs, Location locus)
+		 AST::AttrVec outer_attrs, location_t locus)
     : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
       decl (std::move (decl)), block_expr (std::move (block_expr)),
       locus (locus)
@@ -2378,7 +2382,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTraitItemVisitor &vis) override;
@@ -2389,15 +2393,11 @@ public:
 
   bool has_block_defined () const { return block_expr != nullptr; }
 
-  std::unique_ptr<BlockExpr> &get_block_expr ()
-  {
-    rust_assert (has_block_defined ());
-    return block_expr;
-  }
+  std::unique_ptr<BlockExpr> &get_block_expr () { return block_expr; }
 
   const std::string trait_identifier () const override final
   {
-    return decl.get_function_name ();
+    return decl.get_function_name ().as_string ();
   }
 
   TraitItemKind get_item_kind () const override final
@@ -2411,7 +2411,7 @@ public:
     return outer_attrs;
   }
 
-  Location get_trait_locus () const override { return get_locus (); }
+  location_t get_trait_locus () const override { return get_locus (); }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2428,7 +2428,7 @@ class TraitItemConst : public TraitItem
   Identifier name;
   std::unique_ptr<Type> type;
   std::unique_ptr<Expr> expr;
-  Location locus;
+  location_t locus;
 
 public:
   // Whether the constant item has an associated expression.
@@ -2436,7 +2436,7 @@ public:
 
   TraitItemConst (Analysis::NodeMapping mappings, Identifier name,
 		  std::unique_ptr<Type> type, std::unique_ptr<Expr> expr,
-		  AST::AttrVec outer_attrs, Location locus)
+		  AST::AttrVec outer_attrs, location_t locus)
     : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
       name (std::move (name)), type (std::move (type)), expr (std::move (expr)),
       locus (locus)
@@ -2469,7 +2469,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTraitItemVisitor &vis) override;
@@ -2480,13 +2480,12 @@ public:
 
   std::unique_ptr<Type> &get_type () { return type; }
 
-  std::unique_ptr<Expr> &get_expr ()
-  {
-    rust_assert (has_expr ());
-    return expr;
-  }
+  std::unique_ptr<Expr> &get_expr () { return expr; }
 
-  const std::string trait_identifier () const override final { return name; }
+  const std::string trait_identifier () const override final
+  {
+    return name.as_string ();
+  }
 
   TraitItemKind get_item_kind () const override final
   {
@@ -2499,7 +2498,7 @@ public:
     return outer_attrs;
   }
 
-  Location get_trait_locus () const override { return get_locus (); }
+  location_t get_trait_locus () const override { return get_locus (); }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2517,7 +2516,7 @@ class TraitItemType : public TraitItem
   Identifier name;
   std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
-  Location locus;
+  location_t locus;
 
 public:
   // Returns whether trait item type has type param bounds.
@@ -2525,7 +2524,7 @@ public:
 
   TraitItemType (Analysis::NodeMapping mappings, Identifier name,
 		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
-		 AST::AttrVec outer_attrs, Location locus)
+		 AST::AttrVec outer_attrs, location_t locus)
     : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
       name (std::move (name)),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
@@ -2563,7 +2562,7 @@ public:
 
   std::string as_string () const override;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTraitItemVisitor &vis) override;
@@ -2575,7 +2574,10 @@ public:
     return type_param_bounds;
   }
 
-  const std::string trait_identifier () const override final { return name; }
+  const std::string trait_identifier () const override final
+  {
+    return name.as_string ();
+  }
 
   TraitItemKind get_item_kind () const override final
   {
@@ -2588,7 +2590,7 @@ public:
     return outer_attrs;
   }
 
-  Location get_trait_locus () const override { return get_locus (); }
+  location_t get_trait_locus () const override { return get_locus (); }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2607,7 +2609,7 @@ class Trait : public VisItem
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   WhereClause where_clause;
   std::vector<std::unique_ptr<TraitItem>> trait_items;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
@@ -2629,7 +2631,10 @@ public:
     return trait_items;
   }
 
+  WhereClause &get_where_clause () { return where_clause; }
+
   Identifier get_name () const { return name; }
+  bool is_unsafe () const { return unsafety == Unsafety::Unsafe; }
 
   // Mega-constructor
   Trait (Analysis::NodeMapping mappings, Identifier name, Unsafety unsafety,
@@ -2637,7 +2642,7 @@ public:
 	 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 	 WhereClause where_clause,
 	 std::vector<std::unique_ptr<TraitItem>> trait_items, Visibility vis,
-	 AST::AttrVec outer_attrs, Location locus)
+	 AST::AttrVec outer_attrs, location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
       unsafety (unsafety), name (std::move (name)),
       generic_params (std::move (generic_params)),
@@ -2692,7 +2697,7 @@ public:
   Trait (Trait &&other) = default;
   Trait &operator= (Trait &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -2727,15 +2732,14 @@ protected:
   Trait *clone_item_impl () const override { return new Trait (*this); }
 };
 
-class ImplBlock : public VisItem
+class ImplBlock : public VisItem, public WithInnerAttrs
 {
   std::vector<std::unique_ptr<GenericParam>> generic_params;
   std::unique_ptr<Type> impl_type;
   std::unique_ptr<TypePath> trait_ref;
   WhereClause where_clause;
-  Polarity polarity;
-  AST::AttrVec inner_attrs;
-  Location locus;
+  BoundPolarity polarity;
+  location_t locus;
   std::vector<std::unique_ptr<ImplItem>> impl_items;
 
 public:
@@ -2744,20 +2748,21 @@ public:
 	     std::vector<std::unique_ptr<GenericParam>> generic_params,
 	     std::unique_ptr<Type> impl_type,
 	     std::unique_ptr<TypePath> trait_ref, WhereClause where_clause,
-	     Polarity polarity, Visibility vis, AST::AttrVec inner_attrs,
-	     AST::AttrVec outer_attrs, Location locus)
+	     BoundPolarity polarity, Visibility vis, AST::AttrVec inner_attrs,
+	     AST::AttrVec outer_attrs, location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
+      WithInnerAttrs (std::move (inner_attrs)),
       generic_params (std::move (generic_params)),
       impl_type (std::move (impl_type)), trait_ref (std::move (trait_ref)),
       where_clause (std::move (where_clause)), polarity (polarity),
-      inner_attrs (std::move (inner_attrs)), locus (locus),
-      impl_items (std::move (impl_items))
+      locus (locus), impl_items (std::move (impl_items))
   {}
 
   ImplBlock (ImplBlock const &other)
-    : VisItem (other), impl_type (other.impl_type->clone_type ()),
+    : VisItem (other), WithInnerAttrs (other.inner_attrs),
+      impl_type (other.impl_type->clone_type ()),
       where_clause (other.where_clause), polarity (other.polarity),
-      inner_attrs (other.inner_attrs), locus (other.locus)
+      locus (other.locus)
   {
     generic_params.reserve (other.generic_params.size ());
     for (const auto &e : other.generic_params)
@@ -2817,12 +2822,9 @@ public:
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
   // Returns the polarity of the impl.
-  Polarity get_polarity () const { return polarity; }
+  BoundPolarity get_polarity () const { return polarity; }
 
-  // Returns whether impl has inner attributes.
-  bool has_inner_attrs () const { return !inner_attrs.empty (); }
-
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   std::unique_ptr<Type> &get_type () { return impl_type; };
 
@@ -2833,11 +2835,7 @@ public:
 
   bool has_trait_ref () const { return trait_ref != nullptr; }
 
-  std::unique_ptr<TypePath> &get_trait_ref ()
-  {
-    rust_assert (has_trait_ref ());
-    return trait_ref;
-  }
+  std::unique_ptr<TypePath> &get_trait_ref () { return trait_ref; }
 
   WhereClause &get_where_clause () { return where_clause; }
 
@@ -2854,7 +2852,7 @@ class ExternalItem : public Node
   AST::AttrVec outer_attrs;
   Visibility visibility;
   Identifier item_name;
-  Location locus;
+  location_t locus;
 
 public:
   enum class ExternKind
@@ -2883,11 +2881,12 @@ public:
 
   virtual std::string as_string () const;
 
-  Location get_locus () const { return locus; }
+  location_t get_locus () const { return locus; }
 
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
   virtual void accept_vis (HIRExternalItemVisitor &vis) = 0;
 
+  Visibility &get_visibility () { return visibility; }
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
   Identifier get_item_name () const { return item_name; }
@@ -2896,7 +2895,7 @@ public:
 
 protected:
   ExternalItem (Analysis::NodeMapping mappings, Identifier item_name,
-		Visibility vis, AST::AttrVec outer_attrs, Location locus)
+		Visibility vis, AST::AttrVec outer_attrs, location_t locus)
     : mappings (mappings), outer_attrs (std::move (outer_attrs)),
       visibility (std::move (vis)), item_name (std::move (item_name)),
       locus (locus)
@@ -2938,7 +2937,8 @@ class ExternalStaticItem : public ExternalItem
 public:
   ExternalStaticItem (Analysis::NodeMapping mappings, Identifier item_name,
 		      std::unique_ptr<Type> item_type, Mutability mut,
-		      Visibility vis, AST::AttrVec outer_attrs, Location locus)
+		      Visibility vis, AST::AttrVec outer_attrs,
+		      location_t locus)
     : ExternalItem (std::move (mappings), std::move (item_name),
 		    std::move (vis), std::move (outer_attrs), locus),
       mut (mut), item_type (std::move (item_type))
@@ -2995,7 +2995,7 @@ private:
   Analysis::NodeMapping mappings;
 
 public:
-  bool has_name () const { return name != "_"; }
+  bool has_name () const { return name.as_string () != "_"; }
 
   NamedFunctionParam (Analysis::NodeMapping mappings, Identifier name,
 		      std::unique_ptr<Type> param_type)
@@ -3062,12 +3062,17 @@ public:
   // Returns whether item has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
+  WARN_UNUSED_RESULT const WhereClause &get_where_clause () const
+  {
+    return where_clause;
+  }
+
   ExternalFunctionItem (
     Analysis::NodeMapping mappings, Identifier item_name,
     std::vector<std::unique_ptr<GenericParam>> generic_params,
     std::unique_ptr<Type> return_type, WhereClause where_clause,
     std::vector<NamedFunctionParam> function_params, bool has_variadics,
-    Visibility vis, AST::AttrVec outer_attrs, Location locus)
+    Visibility vis, AST::AttrVec outer_attrs, location_t locus)
     : ExternalItem (std::move (mappings), std::move (item_name),
 		    std::move (vis), std::move (outer_attrs), locus),
       generic_params (std::move (generic_params)),
@@ -3140,18 +3145,14 @@ protected:
 };
 
 // An extern block HIR node
-class ExternBlock : public VisItem
+class ExternBlock : public VisItem, public WithInnerAttrs
 {
   ABI abi;
-  AST::AttrVec inner_attrs;
   std::vector<std::unique_ptr<ExternalItem>> extern_items;
-  Location locus;
+  location_t locus;
 
 public:
   std::string as_string () const override;
-
-  // Returns whether extern block has inner attributes.
-  bool has_inner_attrs () const { return !inner_attrs.empty (); }
 
   // Returns whether extern block has extern items.
   bool has_extern_items () const { return !extern_items.empty (); }
@@ -3161,15 +3162,15 @@ public:
   ExternBlock (Analysis::NodeMapping mappings, ABI abi,
 	       std::vector<std::unique_ptr<ExternalItem>> extern_items,
 	       Visibility vis, AST::AttrVec inner_attrs,
-	       AST::AttrVec outer_attrs, Location locus)
+	       AST::AttrVec outer_attrs, location_t locus)
     : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
-      abi (abi), inner_attrs (std::move (inner_attrs)),
+      WithInnerAttrs (std::move (inner_attrs)), abi (abi),
       extern_items (std::move (extern_items)), locus (locus)
   {}
 
   // Copy constructor with vector clone
   ExternBlock (ExternBlock const &other)
-    : VisItem (other), abi (other.abi), inner_attrs (other.inner_attrs),
+    : VisItem (other), WithInnerAttrs (other.inner_attrs), abi (other.abi),
       locus (other.locus)
   {
     extern_items.reserve (other.extern_items.size ());
@@ -3196,7 +3197,7 @@ public:
   ExternBlock (ExternBlock &&other) = default;
   ExternBlock &operator= (ExternBlock &&other) = default;
 
-  Location get_locus () const override final { return locus; }
+  location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;

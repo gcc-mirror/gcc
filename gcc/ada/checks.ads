@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -256,13 +256,14 @@ package Checks is
    --  results.
 
    procedure Apply_Predicate_Check
-     (N   : Node_Id;
-      Typ : Entity_Id;
-      Fun : Entity_Id := Empty);
+     (N     : Node_Id;
+      Typ   : Entity_Id;
+      Deref : Boolean := False;
+      Fun   : Entity_Id := Empty);
    --  N is an expression to which a predicate check may need to be applied for
-   --  Typ, if Typ has a predicate function. When N is an actual in a call, Fun
-   --  is the function being called, which is used to generate a better warning
-   --  if the call leads to an infinite recursion.
+   --  Typ if Typ has a predicate function, after dereference if Deref is True.
+   --  When N is an actual in a call, Fun is the function being called, which
+   --  is used to generate a warning if the call leads to infinite recursion.
 
    procedure Apply_Type_Conversion_Checks (N : Node_Id);
    --  N is an N_Type_Conversion node. A type conversion actually involves
@@ -979,7 +980,7 @@ package Checks is
 private
 
    type Check_Result is array (Positive range 1 .. 2) of Node_Id;
-   --  There are two cases for the result returned by Range_Check:
+   --  There are two cases for the result returned by Get_Range_Checks:
    --
    --    For the static case the result is one or two nodes that should cause
    --    a Constraint_Error. Typically these will include Expr itself or the

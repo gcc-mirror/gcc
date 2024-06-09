@@ -1,5 +1,5 @@
 int _IO_getc(int*);
-read_long(int *fp)
+int read_long(int *fp)
 {
   unsigned char b0, b1, b2, b3;
   b0 = _IO_getc (fp);

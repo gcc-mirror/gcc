@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-options "-O3 -mdejagnu-cpu=power7 -funroll-loops -ffast-math -mupdate -fno-auto-inc-dec" } */
+/* { dg-require-effective-target powerpc_vsx } */
 
 /* PR 77289: LRA ICEs due to invalid constraint checking.  */
 

@@ -1,5 +1,5 @@
 /* Unit tests for function-handling.
-   Copyright (C) 2015-2023 Free Software Foundation, Inc.
+   Copyright (C) 2015-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -76,6 +76,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "cgraph.h"
 #include "selftest.h"
+#include "selftest-tree.h"
 #include "print-rtl.h"
 
 #if CHECKING_P

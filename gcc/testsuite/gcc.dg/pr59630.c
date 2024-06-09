@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "-fpermissive -O" } */
 
 _Bool foo()
 {

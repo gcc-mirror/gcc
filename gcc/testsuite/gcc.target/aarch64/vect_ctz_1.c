@@ -9,7 +9,7 @@ count_tz_##name (unsigned *__restrict a, int *__restrict b) \
 { \
   int i; \
   for (i = 0; i < count; i++) \
-    b[i] = __builtin_##subname (a[i]); \
+    b[i] = __builtin_##subname##g (a[i], 32); \
 }
 
 #define CHECK(name, count, input, output) \

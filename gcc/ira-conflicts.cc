@@ -1,5 +1,5 @@
 /* IRA conflict builder.
-   Copyright (C) 2006-2023 Free Software Foundation, Inc.
+   Copyright (C) 2006-2024 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -115,10 +115,10 @@ build_conflict_bit_table (void)
 	    > (uint64_t) param_ira_max_conflict_table_size * 1024 * 1024)
 	  {
 	    if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
-	      fprintf
-		(ira_dump_file,
-		 "+++Conflict table will be too big(>%dMB) -- don't use it\n",
-		 param_ira_max_conflict_table_size);
+	      fprintf (ira_dump_file,
+		       "+++Conflict table will be too big(>%dMB) "
+		       "-- don't use it\n",
+		       param_ira_max_conflict_table_size);
 	    return false;
 	  }
       }
@@ -148,11 +148,13 @@ build_conflict_bit_table (void)
 
   object_set_words = (ira_objects_num + IRA_INT_BITS - 1) / IRA_INT_BITS;
   if (internal_flag_ira_verbose > 0 && ira_dump_file != NULL)
-    fprintf
-      (ira_dump_file,
-       "+++Allocating %ld bytes for conflict table (uncompressed size %ld)\n",
-       (long) allocated_words_num * sizeof (IRA_INT_TYPE),
-       (long) object_set_words * ira_objects_num * sizeof (IRA_INT_TYPE));
+    fprintf (ira_dump_file,
+	     "+++Allocating " HOST_SIZE_T_PRINT_UNSIGNED
+	     " bytes for conflict table (uncompressed size "
+	     HOST_SIZE_T_PRINT_UNSIGNED ")\n",
+	     (fmt_size_t) (sizeof (IRA_INT_TYPE) * allocated_words_num),
+	     (fmt_size_t) (sizeof (IRA_INT_TYPE) * object_set_words
+			   * ira_objects_num));
 
   objects_live = sparseset_alloc (ira_objects_num);
   for (i = 0; i < ira_max_point; i++)
@@ -225,8 +227,9 @@ go_through_subreg (rtx x, int *offset)
   if (REGNO (reg) < FIRST_PSEUDO_REGISTER)
     *offset = subreg_regno_offset (REGNO (reg), GET_MODE (reg),
 				   SUBREG_BYTE (x), GET_MODE (x));
+  /* The offset is always 0 for paradoxical subregs.  */
   else if (!can_div_trunc_p (SUBREG_BYTE (x),
-			     REGMODE_NATURAL_SIZE (GET_MODE (x)), offset))
+			     REGMODE_NATURAL_SIZE (GET_MODE (reg)), offset))
     /* Checked by validate_subreg.  We must know at compile time which
        inner hard registers are being accessed.  */
     gcc_unreachable ();

@@ -1,5 +1,5 @@
 /* Support routines for Value Range Propagation (VRP).
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>.
 
 This file is part of GCC.
@@ -52,6 +52,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "tree-dfa.h"
 #include "tree-ssa-dce.h"
+#include "alloc-pool.h"
+#include "cgraph.h"
+#include "symbol-summary.h"
+#include "ipa-utils.h"
+#include "sreal.h"
+#include "ipa-cp.h"
+#include "ipa-prop.h"
+#include "attribs.h"
 
 // This class is utilized by VRP and ranger to remove __builtin_unreachable
 // calls, and reflect any resulting global ranges.
@@ -77,14 +85,15 @@ along with GCC; see the file COPYING3.  If not see
 
 class remove_unreachable {
 public:
-  remove_unreachable (gimple_ranger &r, bool all) : m_ranger (r), final_p (all)
+  remove_unreachable (range_query &r, bool all) : m_ranger (r), final_p (all)
     { m_list.create (30); }
   ~remove_unreachable () { m_list.release (); }
   void handle_early (gimple *s, edge e);
   void maybe_register (gimple *s);
+  bool remove ();
   bool remove_and_update_globals ();
   vec<std::pair<int, int> > m_list;
-  gimple_ranger &m_ranger;
+  range_query &m_ranger;
   bool final_p;
 };
 
@@ -123,7 +132,7 @@ remove_unreachable::maybe_register (gimple *s)
     m_list.safe_push (std::make_pair (e->src->index, e->dest->index));
 }
 
-// Return true if all uses of NAME are dominated by by block BB.  1 use
+// Return true if all uses of NAME are dominated by block BB.  1 use
 // is allowed in block BB, This is one we hope to remove.
 // ie
 //  _2 = _1 & 7;
@@ -187,6 +196,9 @@ fully_replaceable (tree name, basic_block bb)
 void
 remove_unreachable::handle_early (gimple *s, edge e)
 {
+  // If there is no gori_ssa, there is no early processsing.
+  if (!m_ranger.gori_ssa ())
+    return ;
   bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;
   bool rhs_p = TREE_CODE (gimple_cond_rhs (s)) == SSA_NAME;
   // Do not remove __builtin_unreachable if it confers a relation, or
@@ -202,14 +214,14 @@ remove_unreachable::handle_early (gimple *s, edge e)
 
   // Check if every export use is dominated by this branch.
   tree name;
-  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori_ssa (), e->src, name)
     {
       if (!fully_replaceable (name, e->src))
 	return;
     }
 
   // Set the global value for each.
-  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori_ssa (), e->src, name)
     {
       Value_Range r (TREE_TYPE (name));
       m_ranger.range_on_entry (r, e->dest, name);
@@ -245,6 +257,41 @@ remove_unreachable::handle_early (gimple *s, edge e)
     }
 }
 
+// Process the edges in the list, change the conditions and removing any
+// dead code feeding those conditions.   This removes the unreachables, but
+// makes no attempt to set globals values.
+
+bool
+remove_unreachable::remove ()
+{
+  if (!final_p || m_list.length () == 0)
+    return false;
+
+  bool change = false;
+  unsigned i;
+  for (i = 0; i < m_list.length (); i++)
+    {
+      auto eb = m_list[i];
+      basic_block src = BASIC_BLOCK_FOR_FN (cfun, eb.first);
+      basic_block dest = BASIC_BLOCK_FOR_FN (cfun, eb.second);
+      if (!src || !dest)
+	continue;
+      edge e = find_edge (src, dest);
+      gimple *s = gimple_outgoing_range_stmt_p (e->src);
+      gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
+
+      change = true;
+      // Rewrite the condition.
+      if (e->flags & EDGE_TRUE_VALUE)
+	gimple_cond_make_true (as_a<gcond *> (s));
+      else
+	gimple_cond_make_false (as_a<gcond *> (s));
+      update_stmt (s);
+    }
+
+  return change;
+}
+
 
 // Process the edges in the list, change the conditions and removing any
 // dead code feeding those conditions.  Calculate the range of any
@@ -257,6 +304,10 @@ remove_unreachable::remove_and_update_globals ()
 {
   if (m_list.length () == 0)
     return false;
+
+  // If there is no import/export info, just remove unreachables if necessary.
+  if (!m_ranger.gori_ssa ())
+    return remove ();
 
   // Ensure the cache in SCEV has been cleared before processing
   // globals to be removed.
@@ -279,7 +330,7 @@ remove_unreachable::remove_and_update_globals ()
       gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
 
       bool dominate_exit_p = true;
-      FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
+      FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori_ssa (), e->src, name)
 	{
 	  // Ensure the cache is set for NAME in the succ block.
 	  Value_Range r(TREE_TYPE (name));
@@ -296,7 +347,8 @@ remove_unreachable::remove_and_update_globals ()
       // If the exit is dominated, add to the export list.  Otherwise if this
       // isn't the final VRP pass, leave the call in the IL.
       if (dominate_exit_p)
-	bitmap_ior_into (all_exports, m_ranger.gori ().exports (e->src));
+	bitmap_ior_into (all_exports,
+			 m_ranger.gori_ssa ()->exports (e->src));
       else if (!final_p)
 	continue;
 
@@ -886,8 +938,6 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
   size_t i, j;
   tree op = gimple_switch_index (switch_stmt);
   tree type = TREE_TYPE (op);
-  unsigned prec = TYPE_PRECISION (type);
-  signop sign = TYPE_SIGN (type);
   tree tmin = wide_int_to_tree (type, range_of_op->lower_bound ());
   tree tmax = wide_int_to_tree (type, range_of_op->upper_bound ());
   find_case_label_range (switch_stmt, tmin, tmax, &i, &j);
@@ -900,9 +950,7 @@ find_case_label_range (gswitch *switch_stmt, const irange *range_of_op)
 	= CASE_HIGH (label) ? CASE_HIGH (label) : CASE_LOW (label);
       wide_int wlow = wi::to_wide (CASE_LOW (label));
       wide_int whigh = wi::to_wide (case_high);
-      int_range_max label_range (type,
-				 wide_int::from (wlow, prec, sign),
-				 wide_int::from (whigh, prec, sign));
+      int_range_max label_range (TREE_TYPE (case_high), wlow, whigh);
       if (!types_compatible_p (label_range.type (), range_of_op->type ()))
 	range_cast (label_range, range_of_op->type ());
       label_range.intersect (*range_of_op);
@@ -1083,6 +1131,51 @@ execute_ranger_vrp (struct function *fun, bool warn_array_bounds_p,
       scev_reset ();
       array_bounds_checker array_checker (fun, ranger);
       array_checker.check ();
+    }
+
+
+  if (Value_Range::supports_type_p (TREE_TYPE
+				     (TREE_TYPE (current_function_decl)))
+      && flag_ipa_vrp
+      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
+    {
+      edge e;
+      edge_iterator ei;
+      bool found = false;
+      Value_Range return_range (TREE_TYPE (TREE_TYPE (current_function_decl)));
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+	if (greturn *ret = dyn_cast <greturn *> (*gsi_last_bb (e->src)))
+	  {
+	    tree retval = gimple_return_retval (ret);
+	    if (!retval)
+	      {
+		return_range.set_varying (TREE_TYPE (TREE_TYPE (current_function_decl)));
+		found = true;
+		continue;
+	      }
+	    Value_Range r (TREE_TYPE (retval));
+	    if (ranger->range_of_expr (r, retval, ret)
+		&& !r.undefined_p ()
+		&& !r.varying_p ())
+	      {
+		if (!found)
+		  return_range = r;
+		else
+		  return_range.union_ (r);
+	      }
+	    else
+	      return_range.set_varying (TREE_TYPE (retval));
+	    found = true;
+	  }
+      if (found && !return_range.varying_p ())
+	{
+	  ipa_record_return_value_range (return_range);
+	  if (POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl)))
+	      && return_range.nonzero_p ()
+	      && cgraph_node::get (current_function_decl)
+			->add_detected_attribute ("returns_nonnull"))
+	    warn_function_returns_nonnull (current_function_decl);
+	}
     }
 
   phi_analysis_finalize ();

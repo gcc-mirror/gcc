@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2024 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1582,6 +1582,13 @@ less than or equal to @code{HOST_BITS_PER_INT}.
 @item GET_MODE_ALIGNMENT (@var{m})
 Return the required alignment, in bits, for an object of mode @var{m}.
 
+@findex GET_MODE_INNER
+@item GET_MODE_INNER (@var{m})
+Returns the mode of the basic parts of mode @var{m}.  For vector modes
+this is the mode of the vector elements.  For complex modes it is the
+mode of the real and imaginary parts.  For other modes it is mode @var{m}
+itself.
+
 @findex GET_MODE_UNIT_SIZE
 @item GET_MODE_UNIT_SIZE (@var{m})
 Returns the size in bytes of the subunits of a datum of mode @var{m}.
@@ -1843,7 +1850,7 @@ vector.  For example @{ 0, 1 @} could be seen as two patterns with
 one element each or one pattern with two elements (@var{base0} and
 @var{base1}).  The canonical encoding is always the one with the
 fewest patterns or (if both encodings have the same number of
-petterns) the one with the fewest encoded elements.
+patterns) the one with the fewest encoded elements.
 
 @samp{const_vector_encoding_nelts (@var{v})} gives the total number of
 encoded elements in @var{v}, which is 6 in the example above.

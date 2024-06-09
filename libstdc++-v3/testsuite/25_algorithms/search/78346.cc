@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2023 Free Software Foundation, Inc.
+// Copyright (C) 2017-2024 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -109,6 +109,7 @@ test01()
 {
   value s[] = { 0, 1, 2, 3, 4, 5 };
   std::search(s, s+6, stashing_iterator(s), stashing_iterator(s+4));
+  // { dg-warning "ignoring return value" "" { target c++17 } 111 }
 }
 
 int

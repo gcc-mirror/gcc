@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2024, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -238,6 +238,9 @@ package body Sem_Ch10 is
    --  Reset all visibility flags on unit after compiling it, either as a main
    --  unit or as a unit in the context.
 
+   procedure Replace (Old_E, New_E : Entity_Id);
+   --  Replace Old_E by New_E on visibility list
+
    procedure Unchain (E : Entity_Id);
    --  Remove single entity from visibility list
 
@@ -288,6 +291,18 @@ package body Sem_Ch10 is
       --  clauses, set Context_Items to the context list of the body and
       --  Spec_Context_Items to that of the spec. Parent packages are not
       --  examined for documentation purposes.
+
+      function Install_Inherited_Policy_Pragmas
+        (Comp_Unit : Node_Id) return Node_Id;
+      --  Install assertion_policy pragmas placed at the start of the spec of
+      --  the given compilation unit (and the spec of its parent units). Return
+      --  the last pragma found in the check policy list before installing
+      --  these pragmas; used to remove the installed pragmas.
+
+      procedure Remove_Inherited_Policy_Pragmas (Last_Pragma : Node_Id);
+      --  Remove assertion_policy pragmas installed after the given pragma. If
+      --  Last_Pragma is empty then remove all the pragmas installed in the
+      --  check policy list (if any).
 
       ---------------------------
       -- Check_Redundant_Withs --
@@ -628,6 +643,186 @@ package body Sem_Ch10 is
          end loop;
       end Check_Redundant_Withs;
 
+      --------------------------------------
+      -- Install_Inherited_Policy_Pragmas --
+      --------------------------------------
+
+      --  Opt.Check_Policy_List is handled as a stack; assertion policy
+      --  pragmas defined at inner scopes are placed at the beginning of
+      --  the list. Therefore, policy pragmas defined at the start of
+      --  parent units must be appended to the end of this list.
+
+      --  When the compilation unit is a package body (or a subprogram body
+      --  that does not act as its spec) we recursively traverse to its spec
+      --  (and from there to its ultimate parent); when the compilation unit
+      --  is a child package (or subprogram) spec we recursively climb until
+      --  its ultimate parent. In both cases policy pragmas defined at the
+      --  beginning of all these traversed units are appended to the check
+      --  policy list in the way back to the current compilation unit (and
+      --  they are left installed in reverse order). For example:
+      --
+      --     pragma Assertion_Policy (...) -- [policy-1]
+      --     package Pkg is ...
+      --
+      --     pragma Assertion_Policy (...) -- [policy-2]
+      --     package Pkg.Child is ...
+      --
+      --     pragma Assertion_Policy (...) -- [policy-3]
+      --     package body Pkg.Child is ...
+      --
+      --  When the compilation unit Pkg.Child is analyzed, and its context
+      --  clauses are analyzed, these are the contents of Check_Policy_List:
+      --
+      --     Opt.Check_Policy_List -> [policy-3]
+      --                                  ^
+      --                               last_policy_pragma
+      --
+      --  After climbing to the ultimate parent spec, these are the contents
+      --  of Check_Policy_List:
+      --
+      --     Opt.Check_Policy_List -> [policy-3] -> [policy-2] -> [policy-1]
+      --                                  ^
+      --                               last_policy_pragma
+      --
+      --  The reference to the last policy pragma in the initial contents of
+      --  the list is used later to remove installed inherited pragmas.
+
+      function Install_Inherited_Policy_Pragmas
+        (Comp_Unit : Node_Id) return Node_Id
+      is
+         Last_Policy_Pragma : Node_Id;
+
+         procedure Install_Parent_Policy_Pragmas (N : Node_Id);
+         --  Recursively climb to the ultimate parent and install their policy
+         --  pragmas after Last_Policy_Pragma.
+
+         -----------------------------------
+         -- Install_Parent_Policy_Pragmas --
+         -----------------------------------
+
+         procedure Install_Parent_Policy_Pragmas (N : Node_Id) is
+            Lib_Unit : constant Node_Id := Unit (N);
+            Item     : Node_Id;
+
+         begin
+            if Is_Child_Spec (Lib_Unit) then
+               Install_Parent_Policy_Pragmas (Parent_Spec (Lib_Unit));
+
+            elsif Nkind (Lib_Unit) = N_Package_Body then
+               Install_Parent_Policy_Pragmas (Library_Unit (N));
+
+            elsif Nkind (Lib_Unit) = N_Subprogram_Body
+               and then not Acts_As_Spec (N)
+            then
+               Install_Parent_Policy_Pragmas (Library_Unit (N));
+            end if;
+
+            --  Search for check policy pragmas defined at the start of the
+            --  context items. They are not part of the context clause, but
+            --  that is where the parser places them.
+
+            Item := First (Context_Items (N));
+            while Present (Item)
+              and then Nkind (Item) = N_Pragma
+              and then Pragma_Name (Item) in Configuration_Pragma_Names
+            loop
+               if Pragma_Name (Item) = Name_Check_Policy then
+                  if No (Last_Policy_Pragma) then
+                     Set_Next_Pragma (Item, Opt.Check_Policy_List);
+                     Opt.Check_Policy_List := Item;
+
+                  else
+                     Set_Next_Pragma (Item, Next_Pragma (Last_Policy_Pragma));
+                     Set_Next_Pragma (Last_Policy_Pragma, Item);
+                  end if;
+               end if;
+
+               Next (Item);
+            end loop;
+         end Install_Parent_Policy_Pragmas;
+
+         --  Local variables
+
+         Lib_Unit : constant Node_Id := Unit (Comp_Unit);
+
+      --  Start of processing for Install_Inherited_Policy_Pragmas
+
+      begin
+         --  Search for the last configuration pragma of the current
+         --  compilation unit in the check policy list. These pragmas were
+         --  added to the ckeck policy list as part of the analysis of the
+         --  context of the current compilation unit (because, although
+         --  configuration pragmas are not part of the context clauses,
+         --  they are placed there by the parser).
+
+         Last_Policy_Pragma := Opt.Check_Policy_List;
+
+         if Present (Last_Policy_Pragma) then
+            while Present (Next_Pragma (Last_Policy_Pragma)) loop
+               Last_Policy_Pragma := Next_Pragma (Last_Policy_Pragma);
+            end loop;
+         end if;
+
+         --  We must not install configuration pragmas of the current unit
+         --  because they have been installed by Analyze_Context (see previous
+         --  comment).
+
+         if Is_Child_Spec (Lib_Unit) then
+            Install_Parent_Policy_Pragmas (Parent_Spec (Lib_Unit));
+
+         elsif Nkind (Lib_Unit) = N_Package_Body then
+            Install_Parent_Policy_Pragmas (Library_Unit (Comp_Unit));
+
+         elsif Nkind (Lib_Unit) = N_Subprogram_Body
+            and then not Acts_As_Spec (Comp_Unit)
+         then
+            Install_Parent_Policy_Pragmas (Library_Unit (Comp_Unit));
+         end if;
+
+         return Last_Policy_Pragma;
+      end Install_Inherited_Policy_Pragmas;
+
+      -------------------------------------
+      -- Remove_Inherited_Policy_Pragmas --
+      -------------------------------------
+
+      procedure Remove_Inherited_Policy_Pragmas (Last_Pragma : Node_Id) is
+         Curr_Prag : Node_Id;
+         Next_Prag : Node_Id;
+
+      begin
+         if No (Opt.Check_Policy_List) then
+            return;
+         end if;
+
+         --  If this unit does not have assertion_policy pragmas, then all the
+         --  pragmas installed in the check policy list were inherited and must
+         --  be removed from the list.
+
+         if No (Last_Pragma) then
+            Curr_Prag := Opt.Check_Policy_List;
+
+         --  Otherwise, pragmas installed after Last_Pragma must be removed.
+
+         else
+            Curr_Prag := Last_Pragma;
+         end if;
+
+         --  Remove pragmas from the list
+
+         Next_Prag := Next_Pragma (Curr_Prag);
+         while Present (Next_Prag) loop
+            Set_Next_Pragma (Curr_Prag, Empty);
+
+            Curr_Prag := Next_Prag;
+            Next_Prag := Next_Pragma (Curr_Prag);
+         end loop;
+
+         if No (Last_Pragma) then
+            Opt.Check_Policy_List := Empty;
+         end if;
+      end Remove_Inherited_Policy_Pragmas;
+
       --  Local variables
 
       Main_Cunit    : constant Node_Id := Cunit (Main_Unit);
@@ -635,6 +830,13 @@ package body Sem_Ch10 is
       Par_Spec_Name : Unit_Name_Type;
       Spec_Id       : Entity_Id;
       Unum          : Unit_Number_Type;
+      Options       : Style_Check_Options;
+
+      Last_Policy_Pragma : Node_Id;
+      --  Last policy pragma of this compilation unit installed in the check
+      --  policy list when its context is analyzed (see Analyze_Context); this
+      --  node is used as a reference to remove from this list policy pragmas
+      --  inherited from parent units.
 
    --  Start of processing for Analyze_Compilation_Unit
 
@@ -713,6 +915,11 @@ package body Sem_Ch10 is
       else
          Set_Context_Pending (N);
       end if;
+
+      --  Store the style check options before analyzing context pragmas that
+      --  might change them for this compilation unit.
+
+      Save_Style_Check_Options (Options);
 
       Analyze_Context (N);
 
@@ -901,11 +1108,16 @@ package body Sem_Ch10 is
          end;
       end if;
 
-      --  With the analysis done, install the context. Note that we can't
-      --  install the context from the with clauses as we analyze them, because
-      --  each with clause must be analyzed in a clean visibility context, so
-      --  we have to wait and install them all at once.
+      --  With the analysis done, install assertion_policy pragmas defined at
+      --  the start of the specification of this unit (and recursively the
+      --  assertion policy pragmas defined at the start of the specification
+      --  of its parent units); install also the context of this compilation
+      --  unit. Note that we can't install the context from the with clauses
+      --  as we analyze them, because each with clause must be analyzed in a
+      --  clean visibility context, so we have to wait and install them all
+      --  at once.
 
+      Last_Policy_Pragma := Install_Inherited_Policy_Pragmas (N);
       Install_Context (N);
 
       if Is_Child_Spec (Unit_Node) then
@@ -1068,6 +1280,7 @@ package body Sem_Ch10 is
       --  the unit just compiled.
 
       Remove_Context (N);
+      Remove_Inherited_Policy_Pragmas (Last_Policy_Pragma);
 
       --  When generating code for a non-generic main unit, check that withed
       --  generic units have a body if they need it, even if the units have not
@@ -1392,6 +1605,10 @@ package body Sem_Ch10 is
          Pop_Scope;
       end if;
 
+      --  Finally restore all the original style check options
+
+      Set_Style_Check_Options (Options);
+
       --  If No_Elaboration_Code_All was encountered, this is where we do the
       --  transitive test of with'ed units to make sure they have the aspect.
       --  This is delayed till the end of analyzing the compilation unit to
@@ -1684,9 +1901,7 @@ package body Sem_Ch10 is
          Mutate_Ekind (Id, E_Package_Body);
          Set_Etype (Id, Standard_Void_Type);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Id);
 
          Set_Has_Completion (Nam);
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2026,9 +2241,7 @@ package body Sem_Ch10 is
          Mutate_Ekind (Id, E_Protected_Body);
          Set_Etype (Id, Standard_Void_Type);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Id);
 
          Set_Has_Completion (Etype (Nam));
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -2680,9 +2893,7 @@ package body Sem_Ch10 is
          Mutate_Ekind (Id, E_Task_Body);
          Set_Etype (Id, Standard_Void_Type);
 
-         if Has_Aspects (N) then
-            Analyze_Aspect_Specifications (N, Id);
-         end if;
+         Analyze_Aspect_Specifications (N, Id);
 
          Generate_Reference (Nam, Id, 'b');
          Set_Corresponding_Spec_Of_Stub (N, Nam);
@@ -3418,17 +3629,15 @@ package body Sem_Ch10 is
       --  Local variables
 
       Ent   : constant Entity_Id  := Entity (Nam);
-      Withn : Node_Id;
+      Withn : constant Node_Id :=
+        Make_With_Clause
+          (Loc, Name => Build_Unit_Name (Nam),
+           First_Name => True, Last_Name => True);
 
    --  Start of processing for Expand_With_Clause
 
    begin
-      Withn :=
-        Make_With_Clause (Loc,
-          Name => Build_Unit_Name (Nam));
-
       Set_Corresponding_Spec (Withn, Ent);
-      Set_First_Name         (Withn);
       Set_Implicit_With      (Withn);
       Set_Library_Unit       (Withn, Parent (Unit_Declaration_Node (Ent)));
       Set_Parent_With        (Withn);
@@ -3563,7 +3772,6 @@ package body Sem_Ch10 is
       P      : constant Node_Id    := Parent_Spec (Child_Unit);
       P_Unit : Node_Id             := Unit (P);
       P_Name : constant Entity_Id  := Get_Parent_Entity (P_Unit);
-      Withn  : Node_Id;
 
       function Build_Ancestor_Name (P : Node_Id) return Node_Id;
       --  Build prefix of child unit name. Recurse if needed
@@ -3648,21 +3856,25 @@ package body Sem_Ch10 is
          return;
       end if;
 
-      Withn := Make_With_Clause (Loc, Name => Build_Unit_Name);
+      declare
+         Withn : constant Node_Id :=
+           Make_With_Clause
+             (Loc, Name => Build_Unit_Name,
+              First_Name => True, Last_Name => True);
+      begin
+         Set_Corresponding_Spec (Withn, P_Name);
+         Set_Implicit_With      (Withn);
+         Set_Library_Unit       (Withn, P);
+         Set_Parent_With        (Withn);
 
-      Set_Corresponding_Spec (Withn, P_Name);
-      Set_First_Name         (Withn);
-      Set_Implicit_With      (Withn);
-      Set_Library_Unit       (Withn, P);
-      Set_Parent_With        (Withn);
+         --  Node is placed at the beginning of the context items, so that
+         --  subsequent use clauses on the parent can be validated.
 
-      --  Node is placed at the beginning of the context items, so that
-      --  subsequent use clauses on the parent can be validated.
+         Prepend (Withn, Context_Items (N));
+         Mark_Rewrite_Insertion (Withn);
 
-      Prepend (Withn, Context_Items (N));
-      Mark_Rewrite_Insertion (Withn);
-
-      Install_With_Clause (Withn);
+         Install_With_Clause (Withn);
+      end;
 
       if Is_Child_Spec (P_Unit) then
          Implicit_With_On_Parent (P_Unit, N);
@@ -4517,13 +4729,21 @@ package body Sem_Ch10 is
       if Nkind (Parent (Decl)) = N_Compilation_Unit then
          Item := First (Context_Items (Parent (Decl)));
          while Present (Item) loop
+            --  If Item is a private with clause, install it, but do not
+            --  install implicit private with's that come from (for example)
+            --  with's on instantiated generics. DO install implicit private
+            --  with's that come from parents, which is necessary in general,
+            --  but ???not quite right if the former (generic) case also
+            --  applies.
+
             if Nkind (Item) = N_With_Clause
               and then Private_Present (Item)
+              and then (not Implicit_With (Item) or else Parent_With (Item))
             then
                --  If the unit is an ancestor of the current one, it is the
                --  case of a private limited with clause on a child unit, and
-               --  the compilation of one of its descendants, In that case the
-               --  limited view is errelevant.
+               --  the compilation of one of its descendants, in that case the
+               --  limited view is irrelevant.
 
                if Limited_Present (Item) then
                   if not Limited_View_Installed (Item)
@@ -5310,15 +5530,12 @@ package body Sem_Ch10 is
               and then not Is_Child_Unit (Lim_Typ)
             then
                declare
-                  Non_Lim_View : constant Entity_Id :=
-                                   Non_Limited_View (Lim_Typ);
+                  Typ : constant Entity_Id := Non_Limited_View (Lim_Typ);
 
                   Prev : Entity_Id;
 
                begin
-                  Prev := Current_Entity (Lim_Typ);
-
-                  --  Replace Non_Lim_View in the homonyms list, so that the
+                  --  Replace Typ by Lim_Typ in the homonyms list, so that the
                   --  limited view becomes available.
 
                   --  If the nonlimited view is a record with an anonymous
@@ -5350,38 +5567,47 @@ package body Sem_Ch10 is
                   --
                   --  [*] denotes the visible entity (Current_Entity)
 
-                  if Prev = Non_Lim_View
-                    or else
-                      (Ekind (Prev) = E_Incomplete_Type
-                        and then Full_View (Prev) = Non_Lim_View)
-                    or else
-                      (Ekind (Prev) = E_Incomplete_Type
-                        and then From_Limited_With (Prev)
-                        and then
-                          Ekind (Non_Limited_View (Prev)) = E_Incomplete_Type
-                        and then
-                          Full_View (Non_Limited_View (Prev)) = Non_Lim_View)
-                  then
-                     Set_Current_Entity (Lim_Typ);
+                  Prev := Current_Entity (Lim_Typ);
 
-                  else
-                     while Present (Homonym (Prev))
-                       and then Homonym (Prev) /= Non_Lim_View
-                     loop
-                        Prev := Homonym (Prev);
-                     end loop;
+                  while Present (Prev) loop
+                     --  This is a regular replacement
 
-                     Set_Homonym (Prev, Lim_Typ);
-                  end if;
+                     if Prev = Typ
+                       or else (Ekind (Prev) = E_Incomplete_Type
+                                 and then Full_View (Prev) = Typ)
+                     then
+                        Replace (Prev, Lim_Typ);
 
-                  Set_Homonym (Lim_Typ, Homonym (Non_Lim_View));
+                        if Debug_Flag_I then
+                           Write_Str ("   (homonym) replace ");
+                           Write_Name (Chars (Typ));
+                           Write_Eol;
+                        end if;
+
+                        exit;
+
+                     --  This is where E1 is replaced with E4
+
+                     elsif Ekind (Prev) = E_Incomplete_Type
+                       and then From_Limited_With (Prev)
+                       and then
+                         Ekind (Non_Limited_View (Prev)) = E_Incomplete_Type
+                       and then Full_View (Non_Limited_View (Prev)) = Typ
+                     then
+                        Replace (Prev, Lim_Typ);
+
+                        if Debug_Flag_I then
+                           Write_Str ("   (homonym) E1 -> E4 ");
+                           Write_Name (Chars (Typ));
+                           Write_Eol;
+                        end if;
+
+                        exit;
+                     end if;
+
+                     Prev := Homonym (Prev);
+                  end loop;
                end;
-
-               if Debug_Flag_I then
-                  Write_Str ("   (homonym) chain ");
-                  Write_Name (Chars (Lim_Typ));
-                  Write_Eol;
-               end if;
             end if;
 
             Next_Entity (Lim_Typ);
@@ -5474,6 +5700,10 @@ package body Sem_Ch10 is
       if Debug_Flag_I then
          if Private_Present (With_Clause) then
             Write_Str ("install private withed unit ");
+         elsif Parent_With (With_Clause) then
+            Write_Str ("install parent withed unit ");
+         elsif Implicit_With (With_Clause) then
+            Write_Str ("install implicit withed unit ");
          else
             Write_Str ("install withed unit ");
          end if;
@@ -6816,9 +7046,10 @@ package body Sem_Ch10 is
          ------------------------------
 
          procedure Restore_Chain_For_Shadow (Shadow : Entity_Id) is
-            Is_E3 : Boolean;
+            Typ : constant Entity_Id := Non_Limited_View (Shadow);
+            pragma Assert (not In_Chain (Typ));
+
             Prev  : Entity_Id;
-            Typ   : Entity_Id;
 
          begin
             --  If the package has incomplete types, the limited view of the
@@ -6827,9 +7058,8 @@ package body Sem_Ch10 is
             --  the incomplete type at stake. This in turn has a full view
             --  E3 that is the full declaration, with a corresponding
             --  shadow entity E4. When reinstalling the nonlimited view,
-            --  the nonvisible entity E1 is first replaced with E2, but then
-            --  E3 must *not* become the visible entity as it is replacing E4
-            --  in the homonyms list and simply be ignored.
+            --  the visible entity E4 is replaced directly with E2 in the
+            --  the homonyms list and E3 is simply ignored.
             --
             --           regular views          limited views
             --
@@ -6842,40 +7072,42 @@ package body Sem_Ch10 is
             --
             --  [*] denotes the visible entity (Current_Entity)
 
-            Typ := Non_Limited_View (Shadow);
-            pragma Assert (not In_Chain (Typ));
-
-            Is_E3 := Nkind (Parent (Typ)) = N_Full_Type_Declaration
-              and then Present (Incomplete_View (Parent (Typ)));
-
             Prev := Current_Entity (Shadow);
 
-            if Prev = Shadow then
-               if Is_E3 then
-                  Set_Name_Entity_Id (Chars (Prev), Homonym (Prev));
-                  return;
+            while Present (Prev) loop
+               --  This is a regular replacement
 
-               else
-                  Set_Current_Entity (Typ);
+               if Prev = Shadow then
+                  Replace (Prev, Typ);
+
+                  if Debug_Flag_I then
+                     Write_Str ("   (homonym) replace ");
+                     Write_Name (Chars (Typ));
+                     Write_Eol;
+                  end if;
+
+                  exit;
+
+               --  This is where E4 is replaced with E2
+
+               elsif Ekind (Prev) = E_Incomplete_Type
+                 and then From_Limited_With (Prev)
+                 and then Ekind (Typ) = E_Incomplete_Type
+                 and then Full_View (Typ) = Non_Limited_View (Prev)
+               then
+                  Replace (Prev, Typ);
+
+                  if Debug_Flag_I then
+                     Write_Str ("   (homonym) E4 -> E2 ");
+                     Write_Name (Chars (Typ));
+                     Write_Eol;
+                  end if;
+
+                  exit;
                end if;
 
-            else
-               while Present (Homonym (Prev))
-                 and then Homonym (Prev) /= Shadow
-               loop
-                  Prev := Homonym (Prev);
-               end loop;
-
-               if Is_E3 then
-                  Set_Homonym (Prev, Homonym (Shadow));
-                  return;
-
-               else
-                  Set_Homonym (Prev, Typ);
-               end if;
-            end if;
-
-            Set_Homonym (Typ, Homonym (Shadow));
+               Prev := Homonym (Prev);
+            end loop;
          end Restore_Chain_For_Shadow;
 
          --------------------
@@ -7176,6 +7408,35 @@ package body Sem_Ch10 is
    begin
       null;
    end sm;
+
+   -------------
+   -- Replace --
+   -------------
+
+   procedure Replace (Old_E, New_E : Entity_Id) is
+      Prev : Entity_Id;
+
+   begin
+      Prev := Current_Entity (Old_E);
+
+      if No (Prev) then
+         return;
+
+      elsif Prev = Old_E then
+         Set_Current_Entity (New_E);
+         Set_Homonym (New_E, Homonym (Old_E));
+
+      else
+         while Present (Prev) and then Homonym (Prev) /= Old_E loop
+            Prev := Homonym (Prev);
+         end loop;
+
+         if Present (Prev) then
+            Set_Homonym (Prev, New_E);
+            Set_Homonym (New_E, Homonym (Old_E));
+         end if;
+      end if;
+   end Replace;
 
    -------------
    -- Unchain --

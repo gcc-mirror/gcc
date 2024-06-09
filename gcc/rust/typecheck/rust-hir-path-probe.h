@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,10 +20,8 @@
 #define RUST_HIR_PATH_PROBE_H
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
+#include "rust-hir-visitor.h"
 #include "rust-tyty.h"
-#include "rust-substitution-mapper.h"
-#include "rust-hir-type-bounds.h"
 
 namespace Rust {
 namespace Resolver {
@@ -66,7 +64,7 @@ struct PathProbeCandidate
 
   CandidateType type;
   TyTy::BaseType *ty;
-  Location locus;
+  location_t locus;
   union Candidate
   {
     EnumItemCandidate enum_field;
@@ -78,13 +76,13 @@ struct PathProbeCandidate
     Candidate (TraitItemCandidate trait);
   } item;
 
-  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
+  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, location_t locus,
 		      EnumItemCandidate enum_field);
 
-  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
+  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, location_t locus,
 		      ImplItemCandidate impl);
 
-  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, Location locus,
+  PathProbeCandidate (CandidateType type, TyTy::BaseType *ty, location_t locus,
 		      TraitItemCandidate trait);
 
   std::string as_string () const;
@@ -160,13 +158,18 @@ class ReportMultipleCandidateError : private TypeCheckBase
 {
 public:
   static void Report (std::set<PathProbeCandidate> &candidates,
-		      const HIR::PathIdentSegment &query, Location query_locus)
+		      const HIR::PathIdentSegment &query,
+		      location_t query_locus)
   {
-    RichLocation r (query_locus);
+    rich_location r (line_table, query_locus);
     for (auto &c : candidates)
       r.add_range (c.locus);
 
-    rust_error_at (r, "multiple applicable items in scope for: %s",
+    std::string rich_msg = "multiple " + query.as_string () + " found";
+    r.add_fixit_replace (rich_msg.c_str ());
+
+    rust_error_at (r, ErrorCode::E0034,
+		   "multiple applicable items in scope for: %qs",
 		   query.as_string ().c_str ());
   }
 };

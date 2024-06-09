@@ -23,11 +23,11 @@ f1 (svbool_t pg, svint8_t s8, svuint8_t u8,
   svaddlb (u64, u64); /* { dg-error {'svaddlb' has no form that takes 'svuint64_t' arguments} } */
   svaddlb (s64, s64); /* { dg-error {'svaddlb' has no form that takes 'svint64_t' arguments} } */
   svaddlb (f16, f16); /* { dg-error {'svaddlb' has no form that takes 'svfloat16_t' arguments} } */
-  svaddlb (1, u8); /* { dg-error {passing 'int' to argument 1 of 'svaddlb', which expects an SVE vector type} } */
-  svaddlb (u8, s8); /* { dg-error {passing 'svint8_t' to argument 2 of 'svaddlb', but previous arguments had type 'svuint8_t'} } */
-  svaddlb (u8, s16); /* { dg-error {passing 'svint16_t' to argument 2 of 'svaddlb', but previous arguments had type 'svuint8_t'} } */
-  svaddlb (u8, u16); /* { dg-error {passing 'svuint16_t' to argument 2 of 'svaddlb', but previous arguments had type 'svuint8_t'} } */
-  svaddlb (u16, pg); /* { dg-error {passing 'svbool_t' to argument 2 of 'svaddlb', but previous arguments had type 'svuint16_t'} } */
+  svaddlb (1, u8); /* { dg-error {passing 'int' to argument 1 of 'svaddlb', which expects an SVE type rather than a scalar} } */
+  svaddlb (u8, s8); /* { dg-error {passing 'svint8_t' to argument 2 of 'svaddlb', but argument 1 had type 'svuint8_t'} } */
+  svaddlb (u8, s16); /* { dg-error {passing 'svint16_t' to argument 2 of 'svaddlb', but argument 1 had type 'svuint8_t'} } */
+  svaddlb (u8, u16); /* { dg-error {passing 'svuint16_t' to argument 2 of 'svaddlb', but argument 1 had type 'svuint8_t'} } */
+  svaddlb (u16, pg); /* { dg-error {passing 'svbool_t' to argument 2 of 'svaddlb', but argument 1 had type 'svuint16_t'} } */
   svaddlb (u8, 0);
   svaddlb (u16, 0);
   svaddlb (u32, 0);

@@ -1,4 +1,4 @@
-/* Test for printf formats: rejection of C2X (and C2X-recommended) formats in
+/* Test for printf formats: rejection of C23 (and C23-recommended) formats in
    pedantic mode.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c11 -pedantic -Wformat" } */

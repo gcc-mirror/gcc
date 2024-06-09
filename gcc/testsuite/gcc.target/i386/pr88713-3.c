@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -mno-avx512er -march=skylake-avx512" } */
+/* { dg-options "-Ofast -march=skylake-avx512" } */
 
 #include <math.h>
 

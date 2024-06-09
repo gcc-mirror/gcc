@@ -1,3 +1,5 @@
+void abort (void);
+
 typedef int new_int __attribute__ ((aligned(16)));
 struct S { int x; };
  

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2020-2023, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2024, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -200,6 +200,11 @@ package body Einfo.Utils is
       return Is_Access_Type (Id)
         and then Ekind (Directly_Designated_Type (Id)) = E_Subprogram_Type;
    end Is_Access_Subprogram_Type;
+
+   function Is_Address_Compatible_Type          (Id : E) return B is
+   begin
+      return Is_Descendant_Of_Address (Id) or else Id = Standard_Address;
+   end Is_Address_Compatible_Type;
 
    function Is_Aggregate_Type                   (Id : E) return B is
    begin
@@ -1012,6 +1017,7 @@ package body Einfo.Utils is
                  Id = Pragma_Refined_Depends            or else
                  Id = Pragma_Refined_Global             or else
                  Id = Pragma_Refined_State              or else
+                 Id = Pragma_Side_Effects               or else
                  Id = Pragma_Volatile_Function;
 
       --  Contract / subprogram variant / test case pragmas
@@ -1642,20 +1648,6 @@ package body Einfo.Utils is
         Is_Concurrent_Record_Type (Id)
           and then Is_Protected_Type (Corresponding_Concurrent_Type (Id));
    end Is_Protected_Record_Type;
-
-   -------------------------------------
-   -- Is_Relaxed_Initialization_State --
-   -------------------------------------
-
-   function Is_Relaxed_Initialization_State (Id : E) return B is
-   begin
-      --  To qualify, the abstract state must appear with simple option
-      --  "Relaxed_Initialization" (SPARK RM 6.10).
-
-      return
-        Ekind (Id) = E_Abstract_State
-          and then Has_Option (Id, Name_Relaxed_Initialization);
-   end Is_Relaxed_Initialization_State;
 
    --------------------------------
    -- Is_Standard_Character_Type --

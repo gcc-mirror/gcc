@@ -1,3 +1,6 @@
+void abort (void);
+void exit (int);
+
 static char *
 begfield (int tab, char *ptr, char *lim, int sword, int schar)
 {
@@ -23,7 +26,8 @@ begfield (int tab, char *ptr, char *lim, int sword, int schar)
   return ptr;
 }
 
-main ()
+int
+main (void)
 {
   char *s = ":ab";
   char *lim = s + 3;

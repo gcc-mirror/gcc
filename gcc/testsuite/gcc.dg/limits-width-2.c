@@ -1,6 +1,6 @@
-/* Test C2X width macros in <limits.h>.  */
+/* Test C23 width macros in <limits.h>.  */
 /* { dg-do compile } */
-/* { dg-options "-std=c2x" } */
+/* { dg-options "-std=c23" } */
 
 #include <limits.h>
 

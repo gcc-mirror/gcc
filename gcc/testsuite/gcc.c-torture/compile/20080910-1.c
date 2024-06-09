@@ -1,5 +1,6 @@
 /* This used to crash IRA with -O3 -fPIC.
   See PR 37333.  */
+/* { dg-additional-options "-fpermissive" } */
 struct yy_buffer_state  {
   int yy_is_interactive;
 };

@@ -1,6 +1,6 @@
 /* Communication between GCC and libgomp.
 
-   Copyright (C) 2014-2023 Free Software Foundation, Inc.
+   Copyright (C) 2014-2024 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -153,6 +153,12 @@ enum gomp_map_kind
        (address of the last adjacent entry plus its size).  */
     GOMP_MAP_STRUCT =			(GOMP_MAP_FLAG_SPECIAL_2
 					 | GOMP_MAP_FLAG_SPECIAL | 0),
+    /* As above, but followed by an unordered list of adjacent entries.
+       At present, this is used only to diagnose incorrect usage of variable
+       indices into arrays of structs.  */
+    GOMP_MAP_STRUCT_UNORD =		(GOMP_MAP_FLAG_SPECIAL_4
+					 | GOMP_MAP_FLAG_SPECIAL_2
+					 | GOMP_MAP_FLAG_SPECIAL | 0),
     /* On a location of a pointer/reference that is assumed to be already mapped
        earlier, store the translated address of the preceeding mapping.
        No refcount is bumped by this, and the store is done unconditionally.  */
@@ -304,6 +310,8 @@ enum gomp_map_kind
 
 /* Force host fallback execution.  */
 #define GOACC_FLAG_HOST_FALLBACK	(1 << 0)
+/* Execute on local device (i.e. host multicore CPU).  */
+#define GOACC_FLAG_LOCAL_DEVICE 	(1 << 1)
 
 /* For legacy reasons, in the ABI, the GOACC_FLAGs are encoded as an inverted
    bitmask.  */
@@ -314,13 +322,15 @@ enum gomp_map_kind
 /* Versions of libgomp and device-specific plugins.  GOMP_VERSION
    should be incremented whenever an ABI-incompatible change is introduced
    to the plugin interface defined in libgomp/libgomp.h.  */
-#define GOMP_VERSION	2
+#define GOMP_VERSION	3
 #define GOMP_VERSION_NVIDIA_PTX 1
 #define GOMP_VERSION_GCN 3
 
 #define GOMP_VERSION_PACK(LIB, DEV) (((LIB) << 16) | (DEV))
 #define GOMP_VERSION_LIB(PACK) (((PACK) >> 16) & 0xffff)
 #define GOMP_VERSION_DEV(PACK) ((PACK) & 0xffff)
+
+#define GOMP_VERSION_SUPPORTS_INDIRECT_FUNCS(VER) (GOMP_VERSION_LIB(VER) >= 3)
 
 #define GOMP_DIM_GANG	0
 #define GOMP_DIM_WORKER	1

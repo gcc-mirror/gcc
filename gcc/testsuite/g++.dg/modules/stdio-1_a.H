@@ -10,5 +10,5 @@
 #endif
 // There should be *lots* of depsets (209 for glibc today)
 // { dg-final { scan-lang-dump {Writing section:60 } module } }
-// { dg-final { scan-lang-dump {Depset:0 decl entity:[0-9]* function_decl:'::printf'} module } }
+// { dg-final { scan-lang-dump {Depset:0 decl entity:[0-9]* function_decl:'(::std)?::printf'} module } }
 // { dg-final { scan-lang-dump {Depset:1 binding namespace_decl:'::printf'} module } }

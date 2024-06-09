@@ -551,7 +551,7 @@ long lrint(real x) @trusted pure nothrow @nogc
     }
     else
     {
-        import std.math : floatTraits, RealFormat, MANTISSA_MSB, MANTISSA_LSB;
+        import std.math.traits : floatTraits, RealFormat, MANTISSA_MSB, MANTISSA_LSB;
 
         alias F = floatTraits!(real);
         static if (F.realFormat == RealFormat.ieeeDouble)
@@ -896,7 +896,7 @@ long rndtol(float x) @safe pure nothrow @nogc { return rndtol(cast(real) x); }
 // Helper for floor/ceil
 T floorImpl(T)(const T x) @trusted pure nothrow @nogc
 {
-    import std.math : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat;
 
     alias F = floatTraits!(T);
     // Take care not to trigger library calls from the compiler,

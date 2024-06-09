@@ -1,6 +1,6 @@
 (* SArgs.mod provides a String interface to the command line arguments.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2024 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -60,15 +60,16 @@ if defined(GM2_DEBUG_SARGS)
 PROCEDURE GetArg (VAR s: String; n: CARDINAL) : BOOLEAN ;
 VAR
    i  : INTEGER ;
+   a  : ADDRESS ;
    ppc: PtrToPtrToChar ;
 BEGIN
    i := VAL (INTEGER, n) ;
    IF i < GetArgC ()
    THEN
-      (* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ; *)
-      ppc := ADDRESS (PtrToChar (GetArgV ()) + (n * TSIZE (PtrToChar))) ;
+      a := ADDRESS (GetArgV ()) ;
+      INC (a, n * TSIZE (PtrToChar)) ;
+      ppc := a ;
       s   := InitStringCharStar (ppc^) ;
-
       RETURN TRUE
    ELSE
       s := NIL ;

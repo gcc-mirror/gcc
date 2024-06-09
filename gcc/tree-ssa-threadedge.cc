@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005-2023 Free Software Foundation, Inc.
+   Copyright (C) 2005-2024 Free Software Foundation, Inc.
    Contributed by Jeff Law  <law@redhat.com>
 
 This file is part of GCC.
@@ -1446,10 +1446,8 @@ hybrid_jt_simplifier::compute_exit_dependencies (bitmap dependencies,
 						 const vec<basic_block> &path,
 						 gimple *stmt)
 {
-  gori_compute &gori = m_ranger->gori ();
-
   // Start with the imports to the final conditional.
-  bitmap_copy (dependencies, gori.imports (path[0]));
+  bitmap_copy (dependencies, m_ranger->gori_ssa ()->imports (path[0]));
 
   // Add any other interesting operands we may have missed.
   if (gimple_bb (stmt) != path[0])

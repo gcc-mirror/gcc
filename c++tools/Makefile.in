@@ -1,5 +1,5 @@
 # Makefile for c++tools
-#   Copyright (C) 2020-2023 Free Software Foundation, Inc.
+#   Copyright (C) 2020-2024 Free Software Foundation, Inc.
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@ CXXOPTS := $(CXXFLAGS) $(PICFLAG) -fno-exceptions -fno-rtti
 LDFLAGS := @LDFLAGS@
 exeext := @EXEEXT@
 LIBIBERTY := ../libiberty/libiberty.a
-NETLIBS := @NETLIBS@
 VERSION.O := ../gcc/version.o
 
 all::
@@ -99,7 +98,7 @@ MAPPER.O := server.o resolver.o
 CODYLIB = ../libcody/libcody.a
 CXXINC += -I$(srcdir)/../libcody -I$(srcdir)/../include -I$(srcdir)/../gcc -I. -I../gcc
 g++-mapper-server$(exeext): $(MAPPER.O) $(CODYLIB)
-	+$(CXX) $(LDFLAGS) $(PICFLAG) $(LD_PICFLAG) -o $@ $^ $(LIBIBERTY) $(NETLIBS)
+	+$(CXX) $(LDFLAGS) $(PICFLAG) $(LD_PICFLAG) -o $@ $^ $(LIBIBERTY)
 
 # copy to gcc dir so tests there can run
 all::../gcc/g++-mapper-server$(exeext)

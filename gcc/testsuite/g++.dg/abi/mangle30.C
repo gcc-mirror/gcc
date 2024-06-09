@@ -1,4 +1,5 @@
 // Test for mangling of template args in a typename type.
+// { dg-additional-options -fabi-compat-version=0 }
 
 struct A
 {

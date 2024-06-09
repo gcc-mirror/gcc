@@ -1,6 +1,6 @@
 /* LTO IL compression streams.
 
-   Copyright (C) 2009-2023 Free Software Foundation, Inc.
+   Copyright (C) 2009-2024 Free Software Foundation, Inc.
    Contributed by Simon Baldwin <simonb@google.com>
 
 This file is part of GCC.
@@ -408,7 +408,7 @@ lto_end_uncompression (struct lto_compression_stream *stream,
     }
 #endif
   if (compression == ZSTD)
-    internal_error ("compiler does not support ZSTD LTO compression");
+    fatal_error (UNKNOWN_LOCATION, "compiler does not support ZSTD LTO compression");
 
   lto_uncompression_zlib (stream);
 }

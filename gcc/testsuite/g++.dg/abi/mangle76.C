@@ -1,6 +1,6 @@
 // PR c++/98545
 // { dg-do compile { target c++11 } }
-// { dg-options "-Wabi=14" }
+// { dg-options "-Wabi=14 -fabi-compat-version=0" }
 
 class a {
 public:

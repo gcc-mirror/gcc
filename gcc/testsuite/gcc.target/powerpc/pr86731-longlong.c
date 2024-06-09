@@ -2,9 +2,10 @@
    left shift properly.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-options "-maltivec -O3 -mvsx " } */
+/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
+/* { dg-require-effective-target powerpc_vsx } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-maltivec -O3 -mpower8-vector " } */
 
 #include <altivec.h>
 

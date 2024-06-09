@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -25,17 +25,17 @@ namespace HIR {
 ASTLoweringPattern::ASTLoweringPattern () : translated (nullptr) {}
 
 HIR::Pattern *
-ASTLoweringPattern::translate (AST::Pattern *pattern)
+ASTLoweringPattern::translate (AST::Pattern *pattern, bool is_let_top_level)
 {
   ASTLoweringPattern resolver;
+  resolver.is_let_top_level = is_let_top_level;
   pattern->accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
 
   resolver.mappings->insert_hir_pattern (resolver.translated);
   resolver.mappings->insert_location (
-    resolver.translated->get_pattern_mappings ().get_hirid (),
-    pattern->get_locus ());
+    resolver.translated->get_mappings ().get_hirid (), pattern->get_locus ());
 
   return resolver.translated;
 }
@@ -75,7 +75,7 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
     {
       case AST::TupleStructItems::RANGE: {
 	// TODO
-	gcc_unreachable ();
+	rust_unreachable ();
       }
       break;
 
@@ -83,7 +83,7 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
 	AST::TupleStructItemsNoRange &items_no_range
 	  = static_cast<AST::TupleStructItemsNoRange &> (*items.get ());
 
-	std::vector<std::unique_ptr<HIR::Pattern> > patterns;
+	std::vector<std::unique_ptr<HIR::Pattern>> patterns;
 	for (auto &inner_pattern : items_no_range.get_patterns ())
 	  {
 	    HIR::Pattern *p
@@ -114,21 +114,51 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
   auto &raw_elems = pattern.get_struct_pattern_elems ();
   rust_assert (!raw_elems.has_etc ());
 
-  std::vector<std::unique_ptr<HIR::StructPatternField> > fields;
+  std::vector<std::unique_ptr<HIR::StructPatternField>> fields;
   for (auto &field : raw_elems.get_struct_pattern_fields ())
     {
       HIR::StructPatternField *f = nullptr;
       switch (field->get_item_type ())
 	{
 	  case AST::StructPatternField::ItemType::TUPLE_PAT: {
-	    // TODO
-	    gcc_unreachable ();
+	    AST::StructPatternFieldTuplePat &tuple
+	      = static_cast<AST::StructPatternFieldTuplePat &> (*field);
+
+	    auto crate_num = mappings->get_current_crate ();
+	    Analysis::NodeMapping mapping (crate_num, tuple.get_node_id (),
+					   mappings->get_next_hir_id (
+					     crate_num),
+					   UNKNOWN_LOCAL_DEFID);
+
+	    std::unique_ptr<HIR::Pattern> pat (ASTLoweringPattern::translate (
+	      tuple.get_index_pattern ().get ()));
+
+	    f = new HIR::StructPatternFieldTuplePat (mapping,
+						     tuple.get_index (),
+						     std::move (pat),
+						     tuple.get_outer_attrs (),
+						     tuple.get_locus ());
 	  }
 	  break;
 
 	  case AST::StructPatternField::ItemType::IDENT_PAT: {
-	    // TODO
-	    gcc_unreachable ();
+	    AST::StructPatternFieldIdentPat &ident
+	      = static_cast<AST::StructPatternFieldIdentPat &> (*field);
+
+	    auto crate_num = mappings->get_current_crate ();
+	    Analysis::NodeMapping mapping (crate_num, ident.get_node_id (),
+					   mappings->get_next_hir_id (
+					     crate_num),
+					   UNKNOWN_LOCAL_DEFID);
+
+	    std::unique_ptr<HIR::Pattern> pat (ASTLoweringPattern::translate (
+	      ident.get_ident_pattern ().get ()));
+
+	    f = new HIR::StructPatternFieldIdentPat (mapping,
+						     ident.get_identifier (),
+						     std::move (pat),
+						     ident.get_outer_attrs (),
+						     ident.get_locus ());
 	  }
 	  break;
 
@@ -275,6 +305,53 @@ ASTLoweringPattern::visit (AST::ReferencePattern &pattern)
 	= new HIR::ReferencePattern (mapping2,
 				     std::unique_ptr<HIR::Pattern> (translated),
 				     Mutability::Imm, pattern.get_locus ());
+    }
+}
+
+void
+ASTLoweringPattern::visit (AST::SlicePattern &pattern)
+{
+  std::vector<std::unique_ptr<HIR::Pattern>> items;
+  for (auto &p : pattern.get_items ())
+    {
+      HIR::Pattern *item = ASTLoweringPattern::translate (p.get ());
+      items.push_back (std::unique_ptr<HIR::Pattern> (item));
+    }
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated
+    = new HIR::SlicePattern (mapping, std::move (items), pattern.get_locus ());
+}
+
+void
+ASTLoweringPattern::visit (AST::AltPattern &pattern)
+{
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  std::vector<std::unique_ptr<HIR::Pattern>> alts;
+
+  for (auto &alt : pattern.get_alts ())
+    {
+      alts.push_back (std::unique_ptr<HIR::Pattern> (
+	ASTLoweringPattern::translate (alt.get ())));
+    }
+
+  translated
+    = new HIR::AltPattern (mapping, std::move (alts), pattern.get_locus ());
+
+  if (is_let_top_level)
+    {
+      rich_location richloc (line_table, pattern.get_locus ());
+      richloc.add_fixit_replace ("use an outer grouped pattern");
+      rust_error_at (
+	richloc, "top level or-patterns are not allowed for %<let%> bindings");
     }
 }
 

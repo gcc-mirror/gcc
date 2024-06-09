@@ -1,6 +1,6 @@
 /* Routines required for instrumenting a program.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2024 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,6 +31,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef L_gcov_merge_add
 void __gcov_merge_add (gcov_type *counters  __attribute__ ((unused)),
                        unsigned n_counters __attribute__ ((unused))) {}
+#endif
+
+#ifdef L_gcov_merge_ior
+void __gcov_merge_ior (gcov_type *counters  __attribute__ ((unused)),
+		       unsigned n_counters __attribute__ ((unused))) {}
 #endif
 
 #ifdef L_gcov_merge_topn

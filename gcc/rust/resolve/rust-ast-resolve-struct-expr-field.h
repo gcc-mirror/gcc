@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2023 Free Software Foundation, Inc.
+// Copyright (C) 2020-2024 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -20,7 +20,6 @@
 #define RUST_AST_RESOLVE_STRUCT_EXPR_FIELD
 
 #include "rust-ast-resolve-base.h"
-#include "rust-ast-full.h"
 
 namespace Rust {
 namespace Resolver {

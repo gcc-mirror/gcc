@@ -1,3 +1,6 @@
+#[lang = "sized"]
+pub trait Sized {}
+
 trait Foo<'a> {}
 
 trait Bar {

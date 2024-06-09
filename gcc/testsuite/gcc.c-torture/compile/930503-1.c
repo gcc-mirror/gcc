@@ -1,3 +1,4 @@
+void
 f (const char *s, char *d, unsigned l)
 {
   if (0)
