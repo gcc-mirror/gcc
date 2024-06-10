@@ -60,8 +60,7 @@ namespace tr2
 	      this->_M_w[__wshift] = this->_M_w[0] << __offset;
 	    }
 
-	  //// std::fill(this->_M_w.begin(), this->_M_w.begin() + __wshift,
-	  ////          static_cast<_WordT>(0));
+	  std::fill_n(this->_M_w.begin(), __wshift, _WordT(0));
 	}
     }
 
@@ -88,8 +87,7 @@ namespace tr2
 	      this->_M_w[__limit] = this->_M_w[_M_w.size()-1] >> __offset;
 	    }
 
-	  ////std::fill(this->_M_w.begin() + __limit + 1, this->_M_w.end(),
-	  ////          static_cast<_WordT>(0));
+	  std::fill_n(this->_M_w.end() - __wshift, __wshift, _WordT(0));
 	}
     }
 
