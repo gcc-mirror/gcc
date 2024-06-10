@@ -181,7 +181,7 @@ extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_conj_pch (__m256h __A)
 {
-  return (__m256h) _mm256_xor_epi32 ((__m256i) __A, _mm256_avx512_set1_epi32 (1<<31));
+  return (__m256h) _mm256_xor_epi32 ((__m256i) __A, _mm256_avx512_set1_epi32 (1U<<31));
 }
 
 extern __inline __m256h
@@ -209,7 +209,7 @@ extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_conj_pch (__m128h __A)
 {
-  return (__m128h) _mm_xor_epi32 ((__m128i) __A, _mm_avx512_set1_epi32 (1<<31));
+  return (__m128h) _mm_xor_epi32 ((__m128i) __A, _mm_avx512_set1_epi32 (1U<<31));
 }
 
 extern __inline __m128h
