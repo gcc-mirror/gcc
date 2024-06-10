@@ -2513,8 +2513,17 @@ Test system has an integer register width of 32 bits.
 @item rv64
 Test system has an integer register width of 64 bits.
 
-@item cv_bi
-Test system has support for the CORE-V BI extension.
+@item riscv_a
+Test target architecture has support for the A extension.
+
+@item riscv_zaamo
+Test target architecture has support for the zaamo extension.
+
+@item riscv_zlrsc
+Test target architecture has support for the zalrsc extension.
+
+@item riscv_ztso
+Test target architecture has support for the ztso extension.
 
 @end table
 
@@ -2533,6 +2542,9 @@ Test system has support for the CORE-V ELW extension.
 
 @item cv_simd
 Test system has support for the CORE-V SIMD extension.
+
+@item cv_bi
+Test system has support for the CORE-V BI extension.
 
 @end table
 

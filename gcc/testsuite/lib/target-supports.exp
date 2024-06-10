@@ -1889,6 +1889,28 @@ proc check_effective_target_riscv_a { } {
     }]
 }
 
+# Return 1 if the target arch supports the atomic LRSC extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zalrsc { } {
+    return [check_no_compiler_messages riscv_ext_zalrsc assembly {
+       #ifndef __riscv_zalrsc
+       #error "Not __riscv_zalrsc"
+       #endif
+    }]
+}
+
+# Return 1 if the target arch supports the atomic AMO extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_zaamo { } {
+    return [check_no_compiler_messages riscv_ext_zaamo assembly {
+       #ifndef __riscv_zaamo
+       #error "Not __riscv_zaamo"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the double precision floating point
 # extension, 0 otherwise.  Cache the result.
 
@@ -2107,7 +2129,7 @@ proc check_effective_target_riscv_v_misalign_ok { } {
 proc riscv_get_arch { } {
     set gcc_march ""
     # ??? do we neeed to add more extensions to the list below?
-    foreach ext { i m a f d q c v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso } {
+    foreach ext { i m a f d q c v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso zaamo zalrsc } {
 	if { [check_no_compiler_messages  riscv_ext_$ext assembly [string map [list DEF __riscv_$ext] {
 		#ifndef DEF
 		#error "Not DEF"
@@ -2164,6 +2186,30 @@ proc add_options_for_riscv_v { flags } {
 	return "$flags"
     }
     return "$flags -march=[regsub {[[:alnum:]]*} [riscv_get_arch] &v]"
+}
+
+proc add_options_for_riscv_zaamo { flags } {
+    if { [lsearch $flags -march=*] >= 0 } {
+	# If there are multiple -march flags, we have to adjust all of them.
+	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zaamo ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zaamo[[:alnum:]_.]*)_zaamo} $flags \\1 ]
+    }
+    if { [check_effective_target_riscv_zaamo] } {
+	return "$flags"
+    }
+    return "$flags -march=[riscv_get_arch]_zaamo"
+}
+
+proc add_options_for_riscv_zalrsc { flags } {
+    if { [lsearch $flags -march=*] >= 0 } {
+	# If there are multiple -march flags, we have to adjust all of them.
+	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zalrsc ]
+	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zalrsc[[:alnum:]_.]*)_zalrsc} $flags \\1 ]
+    }
+    if { [check_effective_target_riscv_zalrsc] } {
+	return "$flags"
+    }
+    return "$flags -march=[riscv_get_arch]_zalrsc"
 }
 
 proc add_options_for_riscv_zfh { flags } {
