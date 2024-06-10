@@ -2935,9 +2935,9 @@ you wish to see something different please email
 @node Documentation, Regression tests, Release map, Using
 @section Documentation
 
-The GNU Modula-2 documentation is available on line
-@url{https://gcc.gnu.org/onlinedocs}
-or in the pdf, info, html file format.
+The GNU Modula-2 documentation is available online at
+@url{https://gcc.gnu.org/onlinedocs/}
+in the PDF, info, and HTML file formats.
 
 @node Regression tests, Limitations, Documentation, Using
 @section Regression tests for gm2 in the repository
