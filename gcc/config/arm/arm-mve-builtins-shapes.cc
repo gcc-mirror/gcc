@@ -1408,12 +1408,6 @@ struct create_def : public nonoverloaded_base
   {
     build_all (b, "v0,su64,su64", group, MODE_none, preserve_user_namespace);
   }
-
-  tree
-  resolve (function_resolver &r) const override
-  {
-    return r.resolve_uniform (0, 2);
-  }
 };
 SHAPE (create)
 
