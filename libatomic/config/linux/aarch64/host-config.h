@@ -33,6 +33,9 @@
 #ifndef HWCAP_USCAT
 # define HWCAP_USCAT	(1 << 25)
 #endif
+#ifndef HWCAP2_LRCPC3
+# define HWCAP2_LRCPC3	(1UL << 46)
+#endif
 #ifndef HWCAP2_LSE128
 # define HWCAP2_LSE128	(1UL << 47)
 #endif
@@ -54,7 +57,7 @@ typedef struct __ifunc_arg_t {
 #if defined (LAT_CAS_N)
 # define LSE_ATOP
 #elif defined (LAT_LOAD_N) || defined (LAT_STORE_N)
-# define LSE2_ATOP
+# define LSE2_LRCPC3_ATOP
 #elif defined (LAT_EXCH_N) || defined (LAT_FIOR_N) || defined (LAT_FAND_N)
 # define LSE128_ATOP
 #endif
@@ -63,9 +66,10 @@ typedef struct __ifunc_arg_t {
 #  if defined (LSE_ATOP)
 #   define IFUNC_NCOND(N)	1
 #   define IFUNC_COND_1	(hwcap & HWCAP_ATOMICS)
-#  elif defined (LSE2_ATOP)
-#   define IFUNC_NCOND(N)	1
-#   define IFUNC_COND_1	(has_lse2 (hwcap, features))
+#  elif defined (LSE2_LRCPC3_ATOP)
+#   define IFUNC_NCOND(N)	2
+#   define IFUNC_COND_1	(has_rcpc3 (hwcap, features))
+#   define IFUNC_COND_2	(has_lse2 (hwcap, features))
 #  elif defined (LSE128_ATOP)
 #   define IFUNC_NCOND(N)	1
 #   define IFUNC_COND_1	(has_lse128 (hwcap, features))
@@ -127,6 +131,28 @@ has_lse128 (unsigned long hwcap, const __ifunc_arg_t *features)
   unsigned long isar0;
   asm volatile ("mrs %0, ID_AA64ISAR0_EL1" : "=r" (isar0));
   if (AT_FEAT_FIELD (isar0) >= 3)
+    return true;
+  return false;
+}
+
+/* LRCPC atomic support encoded in ID_AA64ISAR1_EL1.Atomic, bits[23:20].  The
+   expected value is 0b0011.  Check that.  */
+
+static inline bool
+has_rcpc3 (unsigned long hwcap, const __ifunc_arg_t *features)
+{
+  if (hwcap & _IFUNC_ARG_HWCAP
+      && features->_hwcap2 & HWCAP2_LRCPC3)
+    return true;
+  /* Try fallback feature check method to guarantee LRCPC3 is not implemented.
+
+     In the absence of HWCAP_CPUID, we are unable to check for RCPC3, return.
+     If feature check available, check LSE2 prerequisite before proceeding.  */
+  if (!(hwcap & HWCAP_CPUID) || !(hwcap & HWCAP_USCAT))
+    return false;
+  unsigned long isar1;
+  asm volatile ("mrs %0, ID_AA64ISAR1_EL1" : "=r" (isar1));
+  if (AT_FEAT_FIELD (isar1) >= 3)
     return true;
   return false;
 }
