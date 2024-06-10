@@ -369,6 +369,9 @@ extern unsigned int ctfc_get_num_ctf_vars (ctf_container_ref);
 
 extern ctf_strtable_t * ctfc_get_strtab (ctf_container_ref, int);
 
+extern void init_ctf_strtable (ctf_strtable_t *);
+extern void ctfc_delete_strtab (ctf_strtable_t *);
+
 /* Get the length of the specified string table in the CTF container.  */
 
 extern size_t ctfc_get_strtab_len (ctf_container_ref, int);

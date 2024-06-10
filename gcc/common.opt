@@ -3539,6 +3539,10 @@ gbtf
 Common Driver RejectNegative JoinedOrMissing
 Generate BTF debug information at default level.
 
+gprune-btf
+Common Driver Var(debug_prune_btf) Init(0)
+Generate pruned BTF when emitting BTF info.
+
 gdwarf
 Common Driver JoinedOrMissing RejectNegative
 Generate debug information in default version of DWARF format.

@@ -522,6 +522,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Debugging Options,,Options for Debugging Your Program}.
 @gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version}
 -gbtf -gctf  -gctf@var{level}
+-gprune-btf -gno-prune-btf
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches
 -gstrict-dwarf  -gno-strict-dwarf
 -gas-loc-support  -gno-as-loc-support
@@ -12023,6 +12024,25 @@ Request BTF debug information.  BTF is the default debugging format for the
 eBPF target.  On other targets, like x86, BTF debug information can be
 generated along with DWARF debug information when both of the debug formats are
 enabled explicitly via their respective command line options.
+
+@opindex gprune-btf
+@opindex gno-prune-btf
+@item -gprune-btf
+@itemx -gno-prune-btf
+Prune BTF information before emission.  When pruning, only type
+information for types used by global variables and file-scope functions
+will be emitted.  If compiling for the BPF target with BPF CO-RE
+enabled, type information will also be emitted for types used in BPF
+CO-RE relocations.  In addition, struct and union types which are only
+referred to via pointers from members of other struct or union types
+shall be pruned and replaced with BTF_KIND_FWD, as though those types
+were only present in the input as forward declarations.
+
+This option substantially reduces the size of produced BTF information,
+but at significant loss in the amount of detailed type information.
+It is primarily useful when compiling for the BPF target, to minimize
+the size of the resulting object, and to eliminate BTF information
+which is not immediately relevant to the BPF program loading process.
 
 @opindex gctf
 @item -gctf

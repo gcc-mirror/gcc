@@ -828,7 +828,10 @@ output_btf_types (ctf_container_ref ctfc)
 {
   size_t i;
   size_t num_types;
-  num_types = ctfc->ctfc_types->elements ();
+  if (debug_prune_btf)
+    num_types = max_translated_id;
+  else
+    num_types = ctfc->ctfc_types->elements ();
 
   if (num_types)
     {
@@ -957,6 +960,212 @@ btf_add_func_records (ctf_container_ref ctfc)
     }
 }
 
+/* The set of types used directly in the source program, and any types manually
+   marked as used.  This is the set of types which will be emitted when
+   flag_prune_btf is set.  */
+static GTY (()) hash_set<ctf_dtdef_ref> *btf_used_types;
+
+/* Fixup used to avoid unnecessary pointer chasing for types.  A fixup is
+   created when a structure or union member is a pointer to another struct
+   or union type.  In such cases, avoid emitting full type information for
+   the pointee struct or union type (which may be quite large), unless that
+   type is used directly elsewhere.  */
+struct btf_fixup
+{
+  ctf_dtdef_ref pointer_dtd; /* Type node to which the fixup is applied.  */
+  ctf_dtdef_ref pointee_dtd; /* Original type node referred to by pointer_dtd.
+				If this concrete type is not otherwise used,
+				then a forward is created.  */
+};
+
+/* Stores fixups while processing types.  */
+static vec<struct btf_fixup> fixups;
+
+/* For fixups where the underlying type is not used in the end, a BTF_KIND_FWD
+   is created and emitted.  This vector stores them.  */
+static GTY (()) vec<ctf_dtdef_ref, va_gc> *forwards;
+
+/* Recursively add type DTD and any types it references to the used set.
+   Return a type that should be used for references to DTD - usually DTD itself,
+   but may be NULL if DTD corresponds to a type which will not be emitted.
+   CHECK_PTR is true if one of the predecessors in recursive calls is a struct
+   or union member.  SEEN_PTR is true if CHECK_PTR is true AND one of the
+   predecessors was a pointer type.  These two flags are used to avoid chasing
+   pointers to struct/union only used from pointer members.  For such types, we
+   will emit a forward instead of the full type information, unless
+   CREATE_FIXUPS is false.  */
+
+static ctf_dtdef_ref
+btf_add_used_type (ctf_container_ref ctfc, ctf_dtdef_ref dtd,
+		   bool check_ptr, bool seen_ptr, bool create_fixups)
+{
+  if (dtd == NULL)
+    return NULL;
+
+  uint32_t ctf_kind = CTF_V2_INFO_KIND (dtd->dtd_data.ctti_info);
+  uint32_t kind = get_btf_kind (ctf_kind);
+
+  /* Check whether the type has already been added.  */
+  if (btf_used_types->contains (dtd))
+    {
+      /* It's possible the type was already added as a fixup, but that we now
+	 have a concrete use of it.  */
+      switch (kind)
+	{
+	case BTF_KIND_PTR:
+	case BTF_KIND_TYPEDEF:
+	case BTF_KIND_CONST:
+	case BTF_KIND_VOLATILE:
+	case BTF_KIND_RESTRICT:
+	  if (check_ptr)
+	    /* Type was previously added as a fixup, and that's OK.  */
+	    return dtd;
+	  else
+	    {
+	      /* The type was previously added as a fixup, but now we have
+		 a concrete use of it.  Remove the fixup.  */
+	      for (size_t i = 0; i < fixups.length (); i++)
+		if (fixups[i].pointer_dtd == dtd)
+		  fixups.unordered_remove (i);
+
+	      /* Add the concrete base type.  */
+	      dtd->ref_type = btf_add_used_type (ctfc, dtd->ref_type, check_ptr,
+						 seen_ptr, create_fixups);
+	      return dtd;
+	    }
+	default:
+	  return dtd;
+	}
+    }
+
+  if (ctf_kind == CTF_K_SLICE)
+    {
+      /* Bitfield.  Add the underlying type to the used set, but leave
+	 the reference to the bitfield.  The slice type won't be emitted,
+	 but we need the information in it when writing out the bitfield
+	 encoding.  */
+      btf_add_used_type (ctfc, dtd->dtd_u.dtu_slice.cts_type,
+			 check_ptr, seen_ptr, create_fixups);
+      return dtd;
+    }
+
+  /* Skip redundant definitions of void and types with no BTF encoding.  */
+  if ((kind == BTF_KIND_INT && dtd->dtd_data.ctti_size == 0)
+      || (kind == BTF_KIND_UNKN))
+    return NULL;
+
+  /* Add the type itself, and assign its id.
+     Do this before recursing to handle things like linked list structures.  */
+  gcc_assert (ctfc->ctfc_nextid <= BTF_MAX_TYPE);
+  dtd->dtd_type = ctfc->ctfc_nextid++;
+  btf_used_types->add (dtd);
+  ctf_add_string (ctfc, dtd->dtd_name, &(dtd->dtd_data.ctti_name), CTF_STRTAB);
+  ctfc->ctfc_num_types++;
+  ctfc->ctfc_num_vlen_bytes += btf_calc_num_vbytes (dtd);
+
+  /* Recursively add types referenced by this type.  */
+  switch (kind)
+    {
+    case BTF_KIND_INT:
+    case BTF_KIND_FLOAT:
+    case BTF_KIND_FWD:
+      /* Leaf kinds which do not refer to any other types.  */
+      break;
+
+    case BTF_KIND_FUNC:
+    case BTF_KIND_VAR:
+      /* Root kinds; no type we are visiting may refer to these.  */
+      gcc_unreachable ();
+
+    case BTF_KIND_PTR:
+    case BTF_KIND_TYPEDEF:
+    case BTF_KIND_CONST:
+    case BTF_KIND_VOLATILE:
+    case BTF_KIND_RESTRICT:
+      {
+	/* These type kinds refer to exactly one other type.  */
+	if (check_ptr && !seen_ptr)
+	  seen_ptr = (kind == BTF_KIND_PTR);
+
+	/* Try to avoid chasing pointers to struct/union types if the
+	   underlying type isn't used.  */
+	if (check_ptr && seen_ptr && create_fixups)
+	  {
+	    ctf_dtdef_ref ref = dtd->ref_type;
+	    uint32_t ref_kind = btf_dtd_kind (ref);
+
+	    if ((ref_kind == BTF_KIND_STRUCT || ref_kind == BTF_KIND_UNION)
+		&& !btf_used_types->contains (ref))
+	      {
+		struct btf_fixup fixup;
+		fixup.pointer_dtd = dtd;
+		fixup.pointee_dtd = ref;
+		fixups.safe_push (fixup);
+		break;
+	      }
+	  }
+
+	/* Add the type to which this type refers.  */
+	dtd->ref_type = btf_add_used_type (ctfc, dtd->ref_type, check_ptr,
+					   seen_ptr, create_fixups);
+	break;
+      }
+    case BTF_KIND_ARRAY:
+      {
+	/* Add element and index types.  */
+	ctf_arinfo_t *arr = &(dtd->dtd_u.dtu_arr);
+	arr->ctr_contents = btf_add_used_type (ctfc, arr->ctr_contents, false,
+					       false, create_fixups);
+	arr->ctr_index = btf_add_used_type (ctfc, arr->ctr_index, false, false,
+					    create_fixups);
+	break;
+      }
+    case BTF_KIND_STRUCT:
+    case BTF_KIND_UNION:
+    case BTF_KIND_ENUM:
+    case BTF_KIND_ENUM64:
+      {
+	/* Add members.  */
+	ctf_dmdef_t *dmd;
+	for (dmd = dtd->dtd_u.dtu_members;
+	     dmd != NULL; dmd = (ctf_dmdef_t *) ctf_dmd_list_next (dmd))
+	  {
+	    /* Add member type for struct/union members.  For enums, only the
+	       enumerator names are needed.  */
+	    if (kind == BTF_KIND_STRUCT || kind == BTF_KIND_UNION)
+	      dmd->dmd_type = btf_add_used_type (ctfc, dmd->dmd_type, true,
+						 false, create_fixups);
+	    ctf_add_string (ctfc, dmd->dmd_name, &(dmd->dmd_name_offset),
+			    CTF_STRTAB);
+	  }
+	break;
+      }
+    case BTF_KIND_FUNC_PROTO:
+      {
+	/* Add return type.  */
+	dtd->ref_type = btf_add_used_type (ctfc, dtd->ref_type, false, false,
+					   create_fixups);
+
+	/* Add arg types.  */
+	ctf_func_arg_t * farg;
+	for (farg = dtd->dtd_u.dtu_argv;
+	     farg != NULL; farg = (ctf_func_arg_t *) ctf_farg_list_next (farg))
+	  {
+	    farg->farg_type = btf_add_used_type (ctfc, farg->farg_type, false,
+						 false, create_fixups);
+	    /* Note: argument names are stored in the auxilliary string table,
+	       since CTF does not include arg names.  That table has not been
+	       cleared, so no need to re-add argument names here.  */
+	  }
+	break;
+      }
+    default:
+      return NULL;
+    }
+
+  return dtd;
+}
+
 /* Initial entry point of BTF generation, called at early_finish () after
    CTF information has possibly been output.  Translate all CTF information
    to BTF, and do any processing that must be done early, such as creating
@@ -975,6 +1184,26 @@ btf_early_finish (void)
      be emitted before starting the translation to BTF.  */
   btf_add_const_void (tu_ctfc);
   btf_add_func_records (tu_ctfc);
+
+  /* These fields are reset to count BTF types etc.  */
+  tu_ctfc->ctfc_num_types = 0;
+  tu_ctfc->ctfc_num_vlen_bytes = 0;
+  tu_ctfc->ctfc_vars_list_count = 0;
+
+  if (debug_prune_btf)
+    {
+      btf_used_types
+	= hash_set<ctf_dtdef_ref>::create_ggc (tu_ctfc->ctfc_types->elements ());
+      tu_ctfc->ctfc_nextid = 1;
+      fixups.create (1);
+
+      /* Empty the string table, which was already populated with strings for
+	 all types translated from DWARF.  We may only need a very small subset
+	 of these strings; those will be re-added below.  */
+      ctfc_delete_strtab (&tu_ctfc->ctfc_strtable);
+      init_ctf_strtable (&tu_ctfc->ctfc_strtable);
+      tu_ctfc->ctfc_strlen++;
+    }
 }
 
 /* Push a BTF datasec entry ENTRY into the datasec named SECNAME,
@@ -1157,6 +1386,25 @@ btf_add_vars (ctf_container_ref ctfc)
 
       /* Add a BTF_KIND_DATASEC entry for the variable.  */
       btf_datasec_add_var (ctfc, var, dvd);
+
+      const char *section = var->get_section ();
+      if (section && (strcmp (section, ".maps") == 0) && debug_prune_btf)
+	{
+	  /* The .maps section has special meaning in BTF: it is used for BPF
+	     map definitions.  These definitions should be structs.  We must
+	     collect pointee types used in map members as though they are used
+	     directly, effectively ignoring (from the pruning perspective) that
+	     they are struct members.  */
+	  ctf_dtdef_ref dtd = dvd->dvd_type;
+	  uint32_t kind = btf_dtd_kind (dvd->dvd_type);
+	  if (kind == BTF_KIND_STRUCT)
+	    {
+	      ctf_dmdef_t *dmd;
+	      for (dmd = dtd->dtd_u.dtu_members;
+		   dmd != NULL; dmd = (ctf_dmdef_t *) ctf_dmd_list_next (dmd))
+		btf_add_used_type (ctfc, dmd->dmd_type, false, false, true);
+	    }
+	}
     }
 }
 
@@ -1255,6 +1503,86 @@ btf_assign_datasec_ids (ctf_container_ref ctfc)
     }
 }
 
+/* Callback used for assembling the only-used-types list.  Note that this is
+   the same as btf_type_list_cb above, but the hash_set traverse requires a
+   different function signature.  */
+
+static bool
+btf_used_type_list_cb (const ctf_dtdef_ref& dtd, ctf_container_ref ctfc)
+{
+  ctfc->ctfc_types_list[dtd->dtd_type] = dtd;
+  return true;
+}
+
+/* Collect the set of types reachable from global variables and functions.
+   This is the minimal set of types, used when generating pruned BTF.  */
+
+static void
+btf_collect_pruned_types (ctf_container_ref ctfc)
+{
+  vec_alloc (forwards, 1);
+
+  /* Add types used from functions.  */
+  ctf_dtdef_ref dtd;
+  size_t i;
+  FOR_EACH_VEC_ELT (*funcs, i, dtd)
+    {
+      btf_add_used_type (ctfc, dtd->ref_type, false, false, true);
+      ctf_add_string (ctfc, dtd->dtd_name, &(dtd->dtd_data.ctti_name),
+		      CTF_STRTAB);
+    }
+
+  /* Add types used from global variables.  */
+  for (i = 0; i < ctfc->ctfc_vars_list_count; i++)
+    {
+      ctf_dvdef_ref dvd = ctfc->ctfc_vars_list[i];
+      btf_add_used_type (ctfc, dvd->dvd_type, false, false, true);
+      ctf_add_string (ctfc, dvd->dvd_name, &(dvd->dvd_name_offset), CTF_STRTAB);
+    }
+
+  /* Process fixups.  If the base type was never added, create a forward for it
+     and adjust the reference to point to that.  If it was added, then nothing
+     needs to change.  */
+  for (i = 0; i < fixups.length (); i++)
+    {
+      struct btf_fixup *fx = &fixups[i];
+      if (!btf_used_types->contains (fx->pointee_dtd))
+	{
+	  /* The underlying type is not used.  Create a forward.  */
+	  ctf_dtdef_ref fwd = ggc_cleared_alloc<ctf_dtdef_t> ();
+	  ctf_id_t id = ctfc->ctfc_nextid++;
+	  gcc_assert (id <= BTF_MAX_TYPE);
+
+	  bool union_p = (btf_dtd_kind (fx->pointee_dtd) == BTF_KIND_UNION);
+
+	  fwd->dtd_name = fx->pointee_dtd->dtd_name;
+	  fwd->dtd_data.ctti_info = CTF_TYPE_INFO (CTF_K_FORWARD, union_p, 0);
+	  fwd->dtd_type = id;
+	  ctfc->ctfc_num_types++;
+	  ctfc->ctfc_num_vlen_bytes += btf_calc_num_vbytes (fwd);
+	  ctf_add_string (ctfc, fwd->dtd_name, &(fwd->dtd_data.ctti_name),
+			  CTF_STRTAB);
+
+	  /* Update the pointer to point to the forward.  */
+	  fx->pointer_dtd->ref_type = fwd;
+	  vec_safe_push (forwards, fwd);
+	}
+    }
+
+  /* Construct the resulting pruned type list.  */
+  ctfc->ctfc_types_list
+    = ggc_vec_alloc<ctf_dtdef_ref> (btf_used_types->elements () + 1
+				    + vec_safe_length (forwards));
+
+  btf_used_types->traverse<ctf_container_ref, btf_used_type_list_cb> (ctfc);
+
+  /* Insert the newly created forwards into the regular types list too.  */
+  FOR_EACH_VEC_ELT (*forwards, i, dtd)
+    ctfc->ctfc_types_list[dtd->dtd_type] = dtd;
+
+  max_translated_id = btf_used_types->elements () + vec_safe_length (forwards);
+}
+
 /* Late entry point for BTF generation, called from dwarf2out_finish ().
    Complete and emit BTF information.  */
 
@@ -1266,13 +1594,22 @@ btf_finish (void)
 
   datasecs.create (0);
 
-  tu_ctfc->ctfc_num_types = 0;
-  tu_ctfc->ctfc_num_vlen_bytes = 0;
-  tu_ctfc->ctfc_vars_list_count = 0;
-
   btf_add_vars (tu_ctfc);
-  btf_collect_translated_types (tu_ctfc);
+  if (debug_prune_btf)
+    {
+      /* Collect pruned set of BTF types and prepare for emission.
+	 This includes only types directly used in file-scope variables and
+	 function return/argument types.  */
+      btf_collect_pruned_types (tu_ctfc);
+    }
+  else
+    {
+      /* Collect all BTF types and prepare for emission.
+	 This includes all types translated from DWARF.  */
+      btf_collect_translated_types (tu_ctfc);
+    }
   btf_add_func_datasec_entries (tu_ctfc);
+
   btf_assign_var_ids (tu_ctfc);
   btf_assign_func_ids (tu_ctfc);
   btf_assign_datasec_ids (tu_ctfc);
@@ -1304,6 +1641,15 @@ btf_finalize (void)
   funcs = NULL;
   func_map->empty ();
   func_map = NULL;
+
+  if (debug_prune_btf)
+    {
+      btf_used_types->empty ();
+      btf_used_types = NULL;
+
+      fixups.release ();
+      forwards = NULL;
+    }
 
   ctf_container_ref tu_ctfc = ctf_get_tu_ctfc ();
   ctfc_delete_container (tu_ctfc);

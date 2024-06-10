@@ -909,7 +909,7 @@ ctfc_get_dvd_srcloc (ctf_dvdef_ref dvd, ctf_srcloc_ref loc)
 /* Initialize the CTF string table.
    The first entry in the CTF string table (empty string) is added.  */
 
-static void
+void
 init_ctf_strtable (ctf_strtable_t * strtab)
 {
   strtab->ctstab_head = NULL;
