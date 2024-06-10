@@ -754,6 +754,18 @@
   "operands[1] = gen_lowpart (word_mode, operands[1]);"
   [(set_attr "type" "bitmanip")])
 
+;; The logical-and against 0x1 implicitly extends the result.   So we can treat
+;; an SImode bext as-if it's DImode without any explicit extension.
+(define_insn "*bextdisi"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+    (and:DI (subreg:DI (lshiftrt:SI
+			 (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:QI 2 "register_operand" "r")) 0)
+            (const_int 1)))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
 ;; When performing `(a & (1UL << bitno)) ? 0 : -1` the combiner
 ;; usually has the `bitno` typed as X-mode (i.e. no further
 ;; zero-extension is performed around the bitno).
