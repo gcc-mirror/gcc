@@ -78,6 +78,8 @@ namespace arm_mve
     extern const function_shape *const unary_widen;
     extern const function_shape *const unary_widen_acc;
     extern const function_shape *const vcvt;
+    extern const function_shape *const vcvt_f16_f32;
+    extern const function_shape *const vcvt_f32_f16;
     extern const function_shape *const vpsel;
 
   } /* end namespace arm_mve::shapes */

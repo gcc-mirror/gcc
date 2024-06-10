@@ -2081,6 +2081,41 @@ struct vcvt_def : public overloaded_base<0>
 };
 SHAPE (vcvt)
 
+/* float16x8_t foo_f16_f32(float16x8_t, float32x4_t)
+
+   Example: vcvttq_f16_f32.
+   float16x8_t [__arm_]vcvttq_f16_f32(float16x8_t a, float32x4_t b)
+   float16x8_t [__arm_]vcvttq_m_f16_f32(float16x8_t a, float32x4_t b, mve_pred16_t p)
+*/
+struct vcvt_f16_f32_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "v0,v0,v1", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (vcvt_f16_f32)
+
+/* float32x4_t foo_f32_f16(float16x8_t)
+
+   Example: vcvttq_f32_f16.
+   float32x4_t [__arm_]vcvttq_f32_f16(float16x8_t a)
+   float32x4_t [__arm_]vcvttq_m_f32_f16(float32x4_t inactive, float16x8_t a, mve_pred16_t p)
+   float32x4_t [__arm_]vcvttq_x_f32_f16(float16x8_t a, mve_pred16_t p)
+*/
+struct vcvt_f32_f16_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "v0,v1", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (vcvt_f32_f16)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, mve_pred16_t)
 
    i.e. a version of the standard ternary shape in which
