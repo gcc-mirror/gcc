@@ -684,6 +684,23 @@
 }
 [(set_attr "type" "bitmanip")])
 
+;; An outer AND with a constant where bits 31..63 are 0 can be seen as
+;; a virtual zero extension from 31 to 64 bits.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+    (and:DI (not:DI (subreg:DI
+		      (ashift:SI (const_int 1)
+				 (match_operand:QI 1 "register_operand")) 0))
+            (match_operand:DI 2 "arith_operand")))
+   (clobber (match_operand:DI 3 "register_operand"))]
+  "TARGET_64BIT && TARGET_ZBS
+   && clz_hwi (INTVAL (operands[2])) >= 33"
+  [(set (match_dup 3)
+        (match_dup 2))
+   (set (match_dup 0)
+	  (and:DI (rotate:DI (const_int -2) (match_dup 1))
+		  (match_dup 3)))])
+
 (define_insn "*binv<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(xor:X (ashift:X (const_int 1)
