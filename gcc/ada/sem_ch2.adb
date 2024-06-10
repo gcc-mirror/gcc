@@ -38,6 +38,8 @@ with Rident;         use Rident;
 with Sem;            use Sem;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Dim;        use Sem_Dim;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
@@ -135,20 +137,96 @@ package body Sem_Ch2 is
    -----------------------------------------
 
    procedure Analyze_Interpolated_String_Literal (N : Node_Id) is
+
+      procedure Check_Ambiguous_Parameterless_Call (Func_Call : Node_Id);
+      --  Examine the interpretations of the call to the given parameterless
+      --  function call and report the location of each interpretation.
+
+      ----------------------------------------
+      -- Check_Ambiguous_Parameterless_Call --
+      ----------------------------------------
+
+      procedure Check_Ambiguous_Parameterless_Call (Func_Call : Node_Id) is
+
+         procedure Report_Interpretation (E : Entity_Id);
+         --  Report an interpretation of the function call
+
+         ---------------------------
+         -- Report_Interpretation --
+         ---------------------------
+
+         procedure Report_Interpretation (E : Entity_Id) is
+         begin
+            Error_Msg_Sloc := Sloc (E);
+
+            if Nkind (Parent (E)) = N_Full_Type_Declaration then
+               Error_Msg_N ("interpretation (inherited) #!", Func_Call);
+            else
+               Error_Msg_N ("interpretation #!", Func_Call);
+            end if;
+         end Report_Interpretation;
+
+         --  Local variables
+
+         Error_Reported : Boolean;
+         I              : Interp_Index;
+         It             : Interp;
+
+      --  Start of processing for Check_Ambiguous_Parameterless_Call
+
+      begin
+         Error_Reported := False;
+
+         --  Examine possible interpretations
+
+         Get_First_Interp (Name (Func_Call), I, It);
+         while Present (It.Nam) loop
+            if It.Nam /= Entity (Name (Func_Call))
+              and then Ekind (It.Nam) = E_Function
+              and then No (First_Formal (It.Nam))
+            then
+               if not Error_Reported then
+                  Error_Msg_NE
+                    ("ambiguous call to&", Func_Call,
+                     Entity (Name (Func_Call)));
+                  Report_Interpretation (Entity (Name (Func_Call)));
+                  Error_Reported := True;
+               end if;
+
+               Report_Interpretation (It.Nam);
+            end if;
+
+            Get_Next_Interp (I, It);
+         end loop;
+      end Check_Ambiguous_Parameterless_Call;
+
+      --  Local variables
+
       Str_Elem : Node_Id;
+
+   --  Start of processing for Analyze_Interpolated_String_Literal
 
    begin
       Set_Etype (N, Any_String);
 
       Str_Elem := First (Expressions (N));
       while Present (Str_Elem) loop
+
+         --  Before analyzed, a function call that has parameter is an
+         --  N_Indexed_Component node, and a call to a function that has
+         --  no parameters is an N_Identifier node.
+
          Analyze (Str_Elem);
+
+         --  After analyzed, if it is still an N_Identifier node then we
+         --  found ambiguity and could not rewrite it as N_Function_Call.
 
          if Nkind (Str_Elem) = N_Identifier
            and then Ekind (Entity (Str_Elem)) = E_Function
            and then Is_Overloaded (Str_Elem)
          then
-            Error_Msg_NE ("ambiguous call to&", Str_Elem, Entity (Str_Elem));
+            Check_Parameterless_Call (Str_Elem);
+            Check_Ambiguous_Parameterless_Call (Str_Elem);
          end if;
 
          Next (Str_Elem);
