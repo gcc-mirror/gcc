@@ -1,3 +1,38 @@
+2024-06-09  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/freebsd-spec.h: Change fbsd-lib-spec for FreeBSD > 13,
+	do not link against profiled system libraries if -pg is invoked.
+	Add a define to note about this change.
+	* config/aarch64/aarch64-freebsd.h: Use the note to inform if
+	-pg is invoked on FreeBSD > 13.
+	* config/arm/freebsd.h: Likewise.
+	* config/i386/freebsd.h: Likewise.
+	* config/i386/freebsd64.h: Likewise.
+	* config/riscv/freebsd.h: Likewise.
+	* config/rs6000/freebsd64.h: Likewise.
+	* config/rs6000/sysv4.h: Likeise.
+
+2024-06-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_move_integer): Initialize "x".
+
+2024-06-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112600
+	* config/i386/i386.md (ussub<mode>3): New expander.
+	(sub<mode>_3): Ditto.
+
+2024-06-09  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (avr): Remove link to www.amelek.gda.pl/avr/.
+
+2024-06-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expmed.cc (expand_shift_1): Use add_optab instead of ior_optab
+	to generate PLUS instead or IOR when unioning disjoint bitfields.
+	* optabs.cc (expand_subword_shift): Likewise.
+	(expand_binop): Likewise for double-word rotate.
+
 2024-06-08  Peter Bergner  <bergner@linux.ibm.com>
 
 	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Update comment.
