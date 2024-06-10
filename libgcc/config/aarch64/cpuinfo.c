@@ -146,6 +146,9 @@ struct {
 #define HWCAP_PACG (1UL << 31)
 #endif
 
+#ifndef AT_HWCAP2
+#define AT_HWCAP2 26
+#endif
 #ifndef HWCAP2_DCPODP
 #define HWCAP2_DCPODP (1 << 0)
 #endif
