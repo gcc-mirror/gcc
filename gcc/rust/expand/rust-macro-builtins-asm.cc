@@ -221,10 +221,6 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	}
     }
 
-  token = parser.peek_current_token ();
-  rust_debug_loc (token->get_locus (), "Got pass identifier checking with %s",
-		  token->as_string ().c_str ());
-
   bool is_global_asm = inline_asm.is_global_asm;
 
   // For the keyword IN, currently we count it as a seperate keyword called
@@ -243,21 +239,11 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	}
 
       auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
-      reg_operand.register_type = AST::InlineAsmOperand::RegisterType::In;
 
-      // Since reg is of type optional<T>, we need to check if it is not
-      // optional first.
-      // TODO: We don't throw any errors since we should have throw any
-      // encountered parsing error in parse_reg
-      if (reg)
-	{
-	  reg_operand.in.reg = reg.value ();
-	}
-
-      // Only clone_expr() if we know that we have parse an expression
-      // successfully if (expr) {
-      //   reg_operand.in.expr = expr->clone_expr();
-      // }
+      // TODO: When we've succesfully parse an expr, remember to clone_expr()
+      // instead of nullptr
+      struct AST::InlineAsmOperand::In in (reg, nullptr);
+      reg_operand.set_in (in);
 
       return reg_operand;
     }
@@ -268,16 +254,11 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       auto reg = parse_reg (parser, last_token_id, inline_asm_ctx);
 
       auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
-      reg_operand.register_type = AST::InlineAsmOperand::RegisterType::Out;
 
-      // Since reg is of type optional<T>, we need to check if it is not
-      // optional first.
-      // TODO: We don't throw any errors since we should have throw any
-      // encountered parsing error in parse_reg
-      if (reg)
-	{
-	  reg_operand.in.reg = reg.value ();
-	}
+      // TODO: When we've succesfully parse an expr, remember to clone_expr()
+      // instead of nullptr
+      struct AST::InlineAsmOperand::Out out (reg, false, nullptr);
+      reg_operand.set_out (out);
 
       return reg_operand;
     }
@@ -315,36 +296,80 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	      // out_expr = parser.parse_expr();
 	    }
 
-	  reg_operand.register_type
-	    = AST::InlineAsmOperand::RegisterType::SplitInOut;
-	  // reg_operand.split_in_out.in_expr = expr->clone_expr();
-	  // reg_operand.split_in_out.out_expr = out_expr->clone_expr();
-	  // reg_operand.split_in_out.late = false;
+	  // TODO: Rembmer to pass in clone_expr() instead of nullptr
+	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L135
+	  // RUST VERSION: ast::InlineAsmOperand::SplitInOut { reg, in_expr:
+	  // expr, out_expr, late: false }
+	  struct AST::InlineAsmOperand::SplitInOut split_in_out (reg, false,
+								 nullptr,
+								 nullptr);
+	  reg_operand.set_split_in_out (split_in_out);
+
 	  return reg_operand;
 	}
       else
 	{
-	  reg_operand.register_type
-	    = AST::InlineAsmOperand::RegisterType::InOut;
-	  // reg_operand.in_out.expr = expr->clone_expr();
-	  // reg_operand.in_out.late = false;
+	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L137
+	  // RUST VERSION: ast::InlineAsmOperand::InOut { reg, expr, late: false
+	  // }
+	  struct AST::InlineAsmOperand::InOut inout (reg, false, nullptr);
+	  reg_operand.set_in_out (inout);
+
 	  return reg_operand;
 	}
-      //  if p.eat(&token::FatArrow) {
-      //             let out_expr =
-      //                 if p.eat_keyword(kw::Underscore) { None } else {
-      //                 Some(p.parse_expr()?) };
-      //             ast::InlineAsmOperand::SplitInOut { reg, in_expr: expr,
-      //             out_expr, late: false }
-      //         } else {
-      //             ast::InlineAsmOperand::InOut { reg, expr, late: false }
-      //         }
-      return tl::nullopt;
     }
   else if (!is_global_asm && check_identifier (parser, "inlateout"))
+    // For reviewers, the parsing of inout and inlateout is exactly the same,
+    // Except here, the late flag is set to true.
     {
-      rust_unreachable ();
-      return tl::nullopt;
+      rust_debug ("Enter parse_reg_operand inout");
+
+      auto reg = parse_reg (parser, last_token_id, inline_asm_ctx);
+
+      if (parser.skip_token (UNDERSCORE))
+	{
+	  // We are sure to be failing a test here, based on asm.rs
+	  // https://github.com/rust-lang/rust/blob/a330e49593ee890f9197727a3a558b6e6b37f843/compiler/rustc_builtin_macros/src/asm.rs#L112
+	  rust_unreachable ();
+	}
+
+      // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
+      // doing a lot of work.
+      // TODO: Not sure how to use parse_expr
+      auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
+
+      std::unique_ptr<AST::Expr> out_expr;
+
+      if (parser.skip_token (MATCH_ARROW))
+	{
+	  rust_debug ("Matched MATCH_ARROW");
+	  if (!parser.skip_token (UNDERSCORE))
+	    {
+	      parse_format_string (parser, last_token_id, inline_asm_ctx);
+	      // out_expr = parser.parse_expr();
+	    }
+
+	  // TODO: Rembmer to pass in clone_expr() instead of nullptr
+	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L149
+	  // RUST VERSION: ast::InlineAsmOperand::SplitInOut { reg, in_expr:
+	  // expr, out_expr, late: true }
+	  struct AST::InlineAsmOperand::SplitInOut split_in_out (reg, true,
+								 nullptr,
+								 nullptr);
+	  reg_operand.set_split_in_out (split_in_out);
+
+	  return reg_operand;
+	}
+      else
+	{
+	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L151
+	  // RUST VERSION: ast::InlineAsmOperand::InOut { reg, expr, late: true
+	  // }
+	  struct AST::InlineAsmOperand::InOut inout (reg, true, nullptr);
+	  reg_operand.set_in_out (inout);
+
+	  return reg_operand;
+	}
     }
   else if (parser.peek_current_token ()->get_id () == CONST)
     {

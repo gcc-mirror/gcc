@@ -4781,10 +4781,15 @@ struct InlineAsmOperand
 
   struct In
   {
-    InlineAsmRegOrRegClass reg;
+    tl::optional<InlineAsmRegOrRegClass> reg;
     std::unique_ptr<Expr> expr;
 
     In () {}
+    In (tl::optional<struct InlineAsmRegOrRegClass> &reg,
+	std::unique_ptr<Expr> expr)
+      : reg (reg), expr (std::move (expr))
+    {}
+
     In (const struct In &other)
     {
       reg = other.reg;
@@ -4804,11 +4809,17 @@ struct InlineAsmOperand
 
   struct Out
   {
-    InlineAsmRegOrRegClass reg;
+    tl::optional<InlineAsmRegOrRegClass> reg;
     bool late;
     std::unique_ptr<Expr> expr; // can be null
 
     Out () {}
+
+    Out (tl::optional<struct InlineAsmRegOrRegClass> &reg, bool late,
+	 std::unique_ptr<Expr> expr)
+      : reg (reg), late (late), expr (std::move (expr))
+    {}
+
     Out (const struct Out &other)
     {
       reg = other.reg;
@@ -4829,11 +4840,16 @@ struct InlineAsmOperand
 
   struct InOut
   {
-    InlineAsmRegOrRegClass reg;
+    tl::optional<InlineAsmRegOrRegClass> reg;
     bool late;
     std::unique_ptr<Expr> expr; // this can't be null
 
     InOut () {}
+    InOut (tl::optional<struct InlineAsmRegOrRegClass> &reg, bool late,
+	   std::unique_ptr<Expr> expr)
+      : reg (reg), late (late), expr (std::move (expr))
+    {}
+
     InOut (const struct InOut &other)
     {
       reg = other.reg;
@@ -4855,12 +4871,19 @@ struct InlineAsmOperand
 
   struct SplitInOut
   {
-    InlineAsmRegOrRegClass reg;
+    tl::optional<InlineAsmRegOrRegClass> reg;
     bool late;
     std::unique_ptr<Expr> in_expr;
     std::unique_ptr<Expr> out_expr; // could be null
 
     SplitInOut () {}
+
+    SplitInOut (tl::optional<struct InlineAsmRegOrRegClass> &reg, bool late,
+		std::unique_ptr<Expr> in_expr, std::unique_ptr<Expr> out_expr)
+      : reg (reg), late (late), in_expr (std::move (in_expr)),
+	out_expr (std::move (out_expr))
+    {}
+
     SplitInOut (const struct SplitInOut &other)
     {
       reg = other.reg;
@@ -4924,6 +4947,50 @@ struct InlineAsmOperand
     : in (other.in), out (other.out), in_out (other.in_out),
       split_in_out (other.split_in_out), cnst (other.cnst), sym (other.sym)
   {}
+
+  void set_in (const tl::optional<struct In> &reg)
+  {
+    this->register_type = In;
+
+    if (reg.has_value ())
+      this->in = reg.value ();
+  }
+
+  void set_out (const tl::optional<struct Out> &reg)
+  {
+    this->register_type = Out;
+
+    if (reg.has_value ())
+      this->out = reg.value ();
+  }
+
+  void set_in_out (const tl::optional<struct InOut> &reg)
+  {
+    this->register_type = InOut;
+    if (reg.has_value ())
+      this->in_out = reg.value ();
+  }
+
+  void set_split_in_out (const tl::optional<struct SplitInOut> &reg)
+  {
+    this->register_type = SplitInOut;
+    if (reg.has_value ())
+      this->split_in_out = reg.value ();
+  }
+
+  void set_cnst (const tl::optional<struct Const> &reg)
+  {
+    this->register_type = Const;
+    if (reg.has_value ())
+      this->cnst = reg.value ();
+  }
+
+  void set_sym (const tl::optional<struct Sym> &reg)
+  {
+    this->register_type = Sym;
+    if (reg.has_value ())
+      this->sym = reg.value ();
+  }
 
   location_t locus;
 };
