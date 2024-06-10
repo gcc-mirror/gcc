@@ -304,6 +304,60 @@ public:
   }
 };
 
+  /* Implements vcvt[bt]q_f32_f16 and vcvt[bt]q_f16_f32
+     intrinsics.  */
+class vcvtxq_impl : public function_base
+{
+public:
+  CONSTEXPR vcvtxq_impl (int unspec_f16_f32, int unspec_for_m_f16_f32,
+			 int unspec_f32_f16, int unspec_for_m_f32_f16)
+    : m_unspec_f16_f32 (unspec_f16_f32),
+      m_unspec_for_m_f16_f32 (unspec_for_m_f16_f32),
+      m_unspec_f32_f16 (unspec_f32_f16),
+      m_unspec_for_m_f32_f16 (unspec_for_m_f32_f16)
+  {}
+
+  /* The unspec code associated with vcvt[bt]q.  */
+  int m_unspec_f16_f32;
+  int m_unspec_for_m_f16_f32;
+  int m_unspec_f32_f16;
+  int m_unspec_for_m_f32_f16;
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code code;
+    switch (e.pred)
+      {
+      case PRED_none:
+	/* No predicate.  */
+	if (e.type_suffix (0).element_bits == 16)
+	  code = code_for_mve_q_f16_f32v8hf (m_unspec_f16_f32);
+	else
+	  code = code_for_mve_q_f32_f16v4sf (m_unspec_f32_f16);
+	return e.use_exact_insn (code);
+
+      case PRED_m:
+      case PRED_x:
+	/* "m" or "x" predicate.  */
+	if (e.type_suffix (0).element_bits == 16)
+	  code = code_for_mve_q_m_f16_f32v8hf (m_unspec_for_m_f16_f32);
+	else
+	  code = code_for_mve_q_m_f32_f16v4sf (m_unspec_for_m_f32_f16);
+
+	if (e.pred == PRED_m)
+	  return e.use_cond_insn (code, 0);
+	else
+	  return e.use_pred_x_insn (code);
+
+      default:
+	gcc_unreachable ();
+      }
+
+    gcc_unreachable ();
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace arm_mve {
@@ -504,7 +558,9 @@ FUNCTION (vcmpltq, unspec_based_mve_function_exact_insn_vcmp, (LT, UNKNOWN, LT, 
 FUNCTION (vcmpcsq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GEU, UNKNOWN, UNKNOWN, VCMPCSQ_M_U, UNKNOWN, UNKNOWN, VCMPCSQ_M_N_U, UNKNOWN))
 FUNCTION (vcmphiq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GTU, UNKNOWN, UNKNOWN, VCMPHIQ_M_U, UNKNOWN, UNKNOWN, VCMPHIQ_M_N_U, UNKNOWN))
 FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)
+FUNCTION (vcvtbq, vcvtxq_impl, (VCVTBQ_F16_F32, VCVTBQ_M_F16_F32, VCVTBQ_F32_F16, VCVTBQ_M_F32_F16))
 FUNCTION (vcvtq, vcvtq_impl,)
+FUNCTION (vcvttq, vcvtxq_impl, (VCVTTQ_F16_F32, VCVTTQ_M_F16_F32, VCVTTQ_F32_F16, VCVTTQ_M_F32_F16))
 FUNCTION (vdupq, vdupq_impl, (VDUPQ_M_N_S, VDUPQ_M_N_U, VDUPQ_M_N_F))
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION (vfmaq, unspec_mve_function_exact_insn, (-1, -1, VFMAQ_F, -1, -1, VFMAQ_N_F, -1, -1, VFMAQ_M_F, -1, -1, VFMAQ_M_N_F))

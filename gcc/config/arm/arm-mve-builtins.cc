@@ -219,6 +219,14 @@ CONSTEXPR const type_suffix_info type_suffixes[NUM_TYPE_SUFFIXES + 1] = {
   D (u16, f16), \
   D (u32, f32)
 
+/* vcvt[bt]q_f16_f132.  */
+#define TYPES_cvt_f16_f32(S, D) \
+  D (f16, f32)
+
+/* vcvt[bt]q_f32_f16.  */
+#define TYPES_cvt_f32_f16(S, D) \
+  D (f32, f16)
+
 #define TYPES_reinterpret_signed1(D, A) \
   D (A, s8), D (A, s16), D (A, s32), D (A, s64)
 
@@ -299,6 +307,8 @@ DEF_MVE_TYPES_ARRAY (poly_8_16);
 DEF_MVE_TYPES_ARRAY (signed_16_32);
 DEF_MVE_TYPES_ARRAY (signed_32);
 DEF_MVE_TYPES_ARRAY (cvt);
+DEF_MVE_TYPES_ARRAY (cvt_f16_f32);
+DEF_MVE_TYPES_ARRAY (cvt_f32_f16);
 DEF_MVE_TYPES_ARRAY (reinterpret_integer);
 DEF_MVE_TYPES_ARRAY (reinterpret_float);
 
@@ -730,6 +740,8 @@ function_instance::has_inactive_argument () const
       || base == functions::vcmpltq
       || base == functions::vcmpcsq
       || base == functions::vcmphiq
+      || (base == functions::vcvtbq && type_suffix (0).element_bits == 16)
+      || (base == functions::vcvttq && type_suffix (0).element_bits == 16)
       || base == functions::vfmaq
       || base == functions::vfmasq
       || base == functions::vfmsq
