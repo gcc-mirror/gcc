@@ -6030,25 +6030,14 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
   tree induc_val = NULL_TREE;
   tree adjustment_def = NULL;
-  if (slp_node)
-    {
-      /* Optimize: for induction condition reduction, if we can't use zero
-	 for induc_val, use initial_def.  */
-      if (STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
-	induc_val = STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info);
-      /* ???  Coverage for 'else' isn't clear.  */
-    }
+  /* Optimize: for induction condition reduction, if we can't use zero
+     for induc_val, use initial_def.  */
+  if (STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
+    induc_val = STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info);
+  else if (double_reduc)
+    ;
   else
-    {
-      /* Optimize: for induction condition reduction, if we can't use zero
-         for induc_val, use initial_def.  */
-      if (STMT_VINFO_REDUC_TYPE (reduc_info) == INTEGER_INDUC_COND_REDUCTION)
-	induc_val = STMT_VINFO_VEC_INDUC_COND_INITIAL_VAL (reduc_info);
-      else if (double_reduc)
-	;
-      else
-	adjustment_def = STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT (reduc_info);
-    }
+    adjustment_def = STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT (reduc_info);
 
   stmt_vec_info single_live_out_stmt[] = { stmt_info };
   array_slice<const stmt_vec_info> live_out_stmts = single_live_out_stmt;
@@ -6873,7 +6862,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
   if (adjustment_def)
     {
-      gcc_assert (!slp_reduc);
+      gcc_assert (!slp_reduc || group_size == 1);
       gimple_seq stmts = NULL;
       if (double_reduc)
 	{
