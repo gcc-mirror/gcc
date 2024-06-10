@@ -2036,15 +2036,10 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	first_dr_info
 	  = STMT_VINFO_DR_INFO (SLP_TREE_SCALAR_STMTS (slp_node)[0]);
       if (STMT_VINFO_STRIDED_P (first_stmt_info))
-	{
-	  /* Try to use consecutive accesses of DR_GROUP_SIZE elements,
-	     separated by the stride, until we have a complete vector.
-	     Fall back to scalar accesses if that isn't possible.  */
-	  if (multiple_p (nunits, group_size))
-	    *memory_access_type = VMAT_STRIDED_SLP;
-	  else
-	    *memory_access_type = VMAT_ELEMENTWISE;
-	}
+	/* Try to use consecutive accesses of as many elements as possible,
+	   separated by the stride, until we have a complete vector.
+	   Fall back to scalar accesses if that isn't possible.  */
+	*memory_access_type = VMAT_STRIDED_SLP;
       else
 	{
 	  int cmp = compare_step_with_zero (vinfo, stmt_info);
@@ -8506,58 +8501,8 @@ vectorizable_store (vec_info *vinfo,
       tree lvectype = vectype;
       if (slp)
 	{
-	  if (group_size < const_nunits
-	      && const_nunits % group_size == 0)
-	    {
-	      nstores = const_nunits / group_size;
-	      lnel = group_size;
-	      ltype = build_vector_type (elem_type, group_size);
-	      lvectype = vectype;
-
-	      /* First check if vec_extract optab doesn't support extraction
-		 of vector elts directly.  */
-	      scalar_mode elmode = SCALAR_TYPE_MODE (elem_type);
-	      machine_mode vmode;
-	      if (!VECTOR_MODE_P (TYPE_MODE (vectype))
-		  || !related_vector_mode (TYPE_MODE (vectype), elmode,
-					   group_size).exists (&vmode)
-		  || (convert_optab_handler (vec_extract_optab,
-					     TYPE_MODE (vectype), vmode)
-		      == CODE_FOR_nothing))
-		{
-		  /* Try to avoid emitting an extract of vector elements
-		     by performing the extracts using an integer type of the
-		     same size, extracting from a vector of those and then
-		     re-interpreting it as the original vector type if
-		     supported.  */
-		  unsigned lsize
-		    = group_size * GET_MODE_BITSIZE (elmode);
-		  unsigned int lnunits = const_nunits / group_size;
-		  /* If we can't construct such a vector fall back to
-		     element extracts from the original vector type and
-		     element size stores.  */
-		  if (int_mode_for_size (lsize, 0).exists (&elmode)
-		      && VECTOR_MODE_P (TYPE_MODE (vectype))
-		      && related_vector_mode (TYPE_MODE (vectype), elmode,
-					      lnunits).exists (&vmode)
-		      && (convert_optab_handler (vec_extract_optab,
-						 vmode, elmode)
-			  != CODE_FOR_nothing))
-		    {
-		      nstores = lnunits;
-		      lnel = group_size;
-		      ltype = build_nonstandard_integer_type (lsize, 1);
-		      lvectype = build_vector_type (ltype, nstores);
-		    }
-		  /* Else fall back to vector extraction anyway.
-		     Fewer stores are more important than avoiding spilling
-		     of the vector we extract from.  Compared to the
-		     construction case in vectorizable_load no store-forwarding
-		     issue exists here for reasonable archs.  */
-		}
-	    }
-	  else if (group_size >= const_nunits
-		   && group_size % const_nunits == 0)
+	  HOST_WIDE_INT n = gcd (group_size, const_nunits);
+	  if (n == const_nunits)
 	    {
 	      int mis_align = dr_misalignment (first_dr_info, vectype);
 	      dr_alignment_support dr_align
@@ -8572,6 +8517,55 @@ vectorizable_store (vec_info *vinfo,
 		  lvectype = vectype;
 		  alignment_support_scheme = dr_align;
 		  misalignment = mis_align;
+		}
+	    }
+	  else if (n > 1)
+	    {
+	      nstores = const_nunits / n;
+	      lnel = n;
+	      ltype = build_vector_type (elem_type, n);
+	      lvectype = vectype;
+
+	      /* First check if vec_extract optab doesn't support extraction
+		 of vector elts directly.  */
+	      scalar_mode elmode = SCALAR_TYPE_MODE (elem_type);
+	      machine_mode vmode;
+	      if (!VECTOR_MODE_P (TYPE_MODE (vectype))
+		  || !related_vector_mode (TYPE_MODE (vectype), elmode,
+					   n).exists (&vmode)
+		  || (convert_optab_handler (vec_extract_optab,
+					     TYPE_MODE (vectype), vmode)
+		      == CODE_FOR_nothing))
+		{
+		  /* Try to avoid emitting an extract of vector elements
+		     by performing the extracts using an integer type of the
+		     same size, extracting from a vector of those and then
+		     re-interpreting it as the original vector type if
+		     supported.  */
+		  unsigned lsize
+		    = n * GET_MODE_BITSIZE (elmode);
+		  unsigned int lnunits = const_nunits / n;
+		  /* If we can't construct such a vector fall back to
+		     element extracts from the original vector type and
+		     element size stores.  */
+		  if (int_mode_for_size (lsize, 0).exists (&elmode)
+		      && VECTOR_MODE_P (TYPE_MODE (vectype))
+		      && related_vector_mode (TYPE_MODE (vectype), elmode,
+					      lnunits).exists (&vmode)
+		      && (convert_optab_handler (vec_extract_optab,
+						 vmode, elmode)
+			  != CODE_FOR_nothing))
+		    {
+		      nstores = lnunits;
+		      lnel = n;
+		      ltype = build_nonstandard_integer_type (lsize, 1);
+		      lvectype = build_vector_type (ltype, nstores);
+		    }
+		  /* Else fall back to vector extraction anyway.
+		     Fewer stores are more important than avoiding spilling
+		     of the vector we extract from.  Compared to the
+		     construction case in vectorizable_load no store-forwarding
+		     issue exists here for reasonable archs.  */
 		}
 	    }
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (elem_type));
@@ -10353,34 +10347,32 @@ vectorizable_load (vec_info *vinfo,
       auto_vec<tree> dr_chain;
       if (memory_access_type == VMAT_STRIDED_SLP)
 	{
-	  if (group_size < const_nunits)
-	    {
-	      /* First check if vec_init optab supports construction from vector
-		 elts directly.  Otherwise avoid emitting a constructor of
-		 vector elements by performing the loads using an integer type
-		 of the same size, constructing a vector of those and then
-		 re-interpreting it as the original vector type.  This avoids a
-		 huge runtime penalty due to the general inability to perform
-		 store forwarding from smaller stores to a larger load.  */
-	      tree ptype;
-	      tree vtype
-		= vector_vector_composition_type (vectype,
-						  const_nunits / group_size,
-						  &ptype);
-	      if (vtype != NULL_TREE)
-		{
-		  nloads = const_nunits / group_size;
-		  lnel = group_size;
-		  lvectype = vtype;
-		  ltype = ptype;
-		}
-	    }
-	  else
+	  HOST_WIDE_INT n = gcd (group_size, const_nunits);
+	  /* Use the target vector type if the group size is a multiple
+	     of it.  */
+	  if (n == const_nunits)
 	    {
 	      nloads = 1;
 	      lnel = const_nunits;
 	      ltype = vectype;
 	    }
+	  /* Else use the biggest vector we can load the group without
+	     accessing excess elements.  */
+	  else if (n > 1)
+	    {
+	      tree ptype;
+	      tree vtype
+		= vector_vector_composition_type (vectype, const_nunits / n,
+						  &ptype);
+	      if (vtype != NULL_TREE)
+		{
+		  nloads = const_nunits / n;
+		  lnel = n;
+		  lvectype = vtype;
+		  ltype = ptype;
+		}
+	    }
+	  /* Else fall back to the default element-wise access.  */
 	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
 	}
       /* Load vector(1) scalar_type if it's 1 element-wise vectype.  */
