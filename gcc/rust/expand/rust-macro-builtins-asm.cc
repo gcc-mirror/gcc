@@ -373,19 +373,30 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     }
   else if (parser.peek_current_token ()->get_id () == CONST)
     {
-      // TODO: Please handle const
+      // TODO: Please handle const with parse_expr instead.
+      auto anon_const
+	= parse_format_string (parser, last_token_id, inline_asm_ctx);
+      reg_operand.set_cnst (tl::nullopt);
+      return reg_operand;
+    }
+  else if (check_identifier (parser, "sym"))
+    {
+      // TODO: Please handle sym, which needs ExprKind::Path in Rust's asm.rs
       rust_unreachable ();
       return tl::nullopt;
     }
-  else if (false && check_identifier (parser, "sym"))
+  else if (auto label_str = parse_label (parser, last_token_id, inline_asm_ctx))
     {
-      // TODO: Please handle sym
-      rust_unreachable ();
-      return tl::nullopt;
+      auto block = parser.parse_block_expr ();
+      struct AST::InlineAsmOperand::Label label (label_str,
+						 block ? block->clone_expr ()
+						       : nullptr);
+      reg_operand.set_label (label);
+      return reg_operand;
     }
-  else if (false && check_identifier (parser, "label"))
+  else if (inline_asm_ctx.allows_templates ())
     {
-      // TODO: Please handle label
+      // TODO: If we allow templating, do sth here
       rust_unreachable ();
       return tl::nullopt;
     }
@@ -701,4 +712,41 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   return fragment_ast;
 }
 
+tl::optional<std::string>
+parse_label (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
+	     InlineAsmContext &inline_asm_ctx)
+{
+  auto token = parser.peek_current_token ();
+
+  if (token->get_id () != last_token_id && token->get_id () == STRING_LITERAL)
+    {
+      // very nice, we got a string.
+      auto label = token->as_string ();
+
+      bool flag = true;
+      if (label.empty () || label.back () != ':')
+	flag = false; // Check if string is empty or does not end with a colon
+
+      // Check if all characters before the last colon are digits
+      for (int i = 0; i < label.length () - 1 && flag == true; i++)
+	{
+	  if (label[i] < '0' || label[i] > '9')
+	    flag = false;
+	}
+
+      if (flag == true)
+	{
+	  parser.skip_token ();
+	  return token->as_string ();
+	}
+      else
+	{
+	  return tl::nullopt;
+	}
+    }
+  else
+    {
+      return tl::nullopt;
+    }
+}
 } // namespace Rust

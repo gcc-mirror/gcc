@@ -7,6 +7,7 @@
 #include "rust-macro.h"
 #include "rust-operators.h"
 #include "rust-system.h"
+#include <memory>
 
 namespace Rust {
 namespace AST {
@@ -4777,6 +4778,7 @@ struct InlineAsmOperand
     SplitInOut,
     Const,
     Sym,
+    Label,
   };
 
   struct In
@@ -4933,6 +4935,34 @@ struct InlineAsmOperand
       return *this;
     }
   };
+
+  struct Label
+  {
+    std::string label_name;
+    std::unique_ptr<Expr> expr;
+
+    Label () {}
+
+    Label (tl::optional<std::string> label_name, std::unique_ptr<Expr> expr)
+      : expr (std::move (expr))
+    {
+      if (label_name.has_value ())
+	this->label_name = label_name.value ();
+    }
+    Label (const struct Label &other)
+    {
+      if (other.expr)
+	expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+    }
+
+    Label operator= (const struct Label &other)
+    {
+      if (other.expr)
+	expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+      return *this;
+    }
+  };
+
   RegisterType register_type;
 
   struct In in;
@@ -4941,6 +4971,7 @@ struct InlineAsmOperand
   struct SplitInOut split_in_out;
   struct Const cnst;
   struct Sym sym;
+  struct Label label;
 
   InlineAsmOperand () {}
   InlineAsmOperand (const InlineAsmOperand &other)
@@ -4990,6 +5021,13 @@ struct InlineAsmOperand
     this->register_type = Sym;
     if (reg.has_value ())
       this->sym = reg.value ();
+  }
+
+  void set_label (const tl::optional<struct Label> &reg)
+  {
+    this->register_type = Label;
+    if (reg.has_value ())
+      this->label = reg.value ();
   }
 
   location_t locus;
