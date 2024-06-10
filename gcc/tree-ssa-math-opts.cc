@@ -6102,7 +6102,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
   for (gphi_iterator psi = gsi_start_phis (bb); !gsi_end_p (psi);
     gsi_next (&psi))
     {
-      gimple_stmt_iterator gsi = gsi_last_bb (bb);
+      gimple_stmt_iterator gsi = gsi_start_bb (bb);
       match_unsigned_saturation_add (&gsi, psi.phi ());
     }
 
