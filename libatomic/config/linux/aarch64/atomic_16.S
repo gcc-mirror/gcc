@@ -40,8 +40,6 @@
 
 #include "auto-config.h"
 
-#define HAVE_FEAT_LSE2	HAVE_IFUNC
-
 	.arch	armv8-a+lse
 
 #define LSE128(NAME)	libat_##NAME##_i1
@@ -116,6 +114,9 @@ NAME:				\
 #define SEQ_CST 5
 
 
+/* Core implementations: Not dependent on the presence of further architectural
+   extensions.  */
+
 ENTRY (load_16)
 	mov	x5, x0
 	cbnz	w1, 2f
@@ -134,31 +135,6 @@ ENTRY (load_16)
 END (load_16)
 
 
-#if HAVE_FEAT_LSE2
-ENTRY_FEAT (load_16, LSE2)
-	cbnz	w1, 1f
-
-	/* RELAXED.  */
-	ldp	res0, res1, [x0]
-	ret
-1:
-	cmp	w1, SEQ_CST
-	b.eq	2f
-
-	/* ACQUIRE/CONSUME (Load-AcquirePC semantics).  */
-	ldp	res0, res1, [x0]
-	dmb	ishld
-	ret
-
-	/* SEQ_CST.  */
-2:	ldar	tmp0, [x0]	/* Block reordering with Store-Release instr.  */
-	ldp	res0, res1, [x0]
-	dmb	ishld
-	ret
-END_FEAT (load_16, LSE2)
-#endif
-
-
 ENTRY (store_16)
 	cbnz	w4, 2f
 
@@ -174,23 +150,6 @@ ENTRY (store_16)
 	cbnz	w4, 2b
 	ret
 END (store_16)
-
-
-#if HAVE_FEAT_LSE2
-ENTRY_FEAT (store_16, LSE2)
-	cbnz	w4, 1f
-
-	/* RELAXED.  */
-	stp	in0, in1, [x0]
-	ret
-
-	/* RELEASE/SEQ_CST.  */
-1:	ldxp	xzr, tmp0, [x0]
-	stlxp	w4, in0, in1, [x0]
-	cbnz	w4, 1b
-	ret
-END_FEAT (store_16, LSE2)
-#endif
 
 
 ENTRY (exchange_16)
@@ -218,32 +177,6 @@ ENTRY (exchange_16)
 	cbnz	w4, 4b
 	ret
 END (exchange_16)
-
-
-ENTRY_FEAT (exchange_16, LSE128)
-	mov	tmp0, x0
-	mov	res0, in0
-	mov	res1, in1
-	cbnz	w4, 1f
-
-	/* RELAXED.  */
-	/* swpp res0, res1, [tmp0]  */
-	.inst	0x192180c0
-	ret
-1:
-	cmp	w4, ACQUIRE
-	b.hi	2f
-
-	/* ACQUIRE/CONSUME.  */
-	/* swppa res0, res1, [tmp0]  */
-	.inst	0x19a180c0
-	ret
-
-	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	/* swppal res0, res1, [tmp0]  */
-	.inst	0x19e180c0
-	ret
-END_FEAT (exchange_16, LSE128)
 
 
 ENTRY (compare_exchange_16)
@@ -293,42 +226,6 @@ ENTRY (compare_exchange_16)
 END (compare_exchange_16)
 
 
-#if HAVE_FEAT_LSE2
-ENTRY_FEAT (compare_exchange_16, LSE)
-	ldp	exp0, exp1, [x1]
-	mov	tmp0, exp0
-	mov	tmp1, exp1
-	cbz	w4, 2f
-	cmp	w4, RELEASE
-	b.hs	3f
-
-	/* ACQUIRE/CONSUME.  */
-	caspa	exp0, exp1, in0, in1, [x0]
-0:
-	cmp	exp0, tmp0
-	ccmp	exp1, tmp1, 0, eq
-	bne	1f
-	mov	x0, 1
-	ret
-1:
-	stp	exp0, exp1, [x1]
-	mov	x0, 0
-	ret
-
-	/* RELAXED.  */
-2:	casp	exp0, exp1, in0, in1, [x0]
-	b	0b
-
-	/* RELEASE.  */
-3:	b.hi	4f
-	caspl	exp0, exp1, in0, in1, [x0]
-	b	0b
-
-	/* ACQ_REL/SEQ_CST.  */
-4:	caspal	exp0, exp1, in0, in1, [x0]
-	b	0b
-END_FEAT (compare_exchange_16, LSE)
-#endif
 
 
 ENTRY_ALIASED (fetch_add_16)
@@ -441,32 +338,6 @@ ENTRY (fetch_or_16)
 END (fetch_or_16)
 
 
-ENTRY_FEAT (fetch_or_16, LSE128)
-	mov	tmp0, x0
-	mov	res0, in0
-	mov	res1, in1
-	cbnz	w4, 1f
-
-	/* RELAXED.  */
-	/* ldsetp res0, res1, [tmp0]  */
-	.inst	0x192130c0
-	ret
-1:
-	cmp	w4, ACQUIRE
-	b.hi	2f
-
-	/* ACQUIRE/CONSUME.  */
-	/* ldsetpa res0, res1, [tmp0]  */
-	.inst	0x19a130c0
-	ret
-
-	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	/* ldsetpal res0, res1, [tmp0]  */
-	.inst	0x19e130c0
-	ret
-END_FEAT (fetch_or_16, LSE128)
-
-
 ENTRY (or_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
@@ -487,37 +358,6 @@ ENTRY (or_fetch_16)
 	cbnz	w4, 2b
 	ret
 END (or_fetch_16)
-
-
-ENTRY_FEAT (or_fetch_16, LSE128)
-	cbnz	w4, 1f
-	mov	tmp0, in0
-	mov	tmp1, in1
-
-	/* RELAXED.  */
-	/* ldsetp in0, in1, [x0]  */
-	.inst	0x19233002
-	orr	res0, in0, tmp0
-	orr	res1, in1, tmp1
-	ret
-1:
-	cmp	w4, ACQUIRE
-	b.hi	2f
-
-	/* ACQUIRE/CONSUME.  */
-	/* ldsetpa in0, in1, [x0]  */
-	.inst	0x19a33002
-	orr	res0, in0, tmp0
-	orr	res1, in1, tmp1
-	ret
-
-	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	/* ldsetpal in0, in1, [x0]  */
-	.inst	0x19e33002
-	orr	res0, in0, tmp0
-	orr	res1, in1, tmp1
-	ret
-END_FEAT (or_fetch_16, LSE128)
 
 
 ENTRY (fetch_and_16)
@@ -542,33 +382,6 @@ ENTRY (fetch_and_16)
 END (fetch_and_16)
 
 
-ENTRY_FEAT (fetch_and_16, LSE128)
-	mov	tmp0, x0
-	mvn	res0, in0
-	mvn	res1, in1
-	cbnz	w4, 1f
-
-	/* RELAXED.  */
-	/* ldclrp res0, res1, [tmp0]  */
-	.inst	0x192110c0
-	ret
-
-1:
-	cmp	w4, ACQUIRE
-	b.hi	2f
-
-	/* ACQUIRE/CONSUME.  */
-	/* ldclrpa res0, res1, [tmp0]  */
-	.inst	0x19a110c0
-	ret
-
-	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	/* ldclrpal res0, res1, [tmp0]  */
-	.inst	0x19e110c0
-	ret
-END_FEAT (fetch_and_16, LSE128)
-
-
 ENTRY (and_fetch_16)
 	mov	x5, x0
 	cbnz	w4, 2f
@@ -589,38 +402,6 @@ ENTRY (and_fetch_16)
 	cbnz	w4, 2b
 	ret
 END (and_fetch_16)
-
-
-ENTRY_FEAT (and_fetch_16, LSE128)
-	mvn	tmp0, in0
-	mvn	tmp0, in1
-	cbnz	w4, 1f
-
-	/* RELAXED.  */
-	/* ldclrp tmp0, tmp1, [x0]  */
-	.inst	0x19271006
-	and	res0, tmp0, in0
-	and	res1, tmp1, in1
-	ret
-
-1:
-	cmp	w4, ACQUIRE
-	b.hi	2f
-
-	/* ACQUIRE/CONSUME.  */
-	/* ldclrpa tmp0, tmp1, [x0]  */
-	.inst	0x19a71006
-	and	res0, tmp0, in0
-	and	res1, tmp1, in1
-	ret
-
-	/* RELEASE/ACQ_REL/SEQ_CST.  */
-2:	/* ldclrpal	tmp0, tmp1, [x5]  */
-	.inst	0x19e710a6
-	and	res0, tmp0, in0
-	and	res1, tmp1, in1
-	ret
-END_FEAT (and_fetch_16, LSE128)
 
 
 ENTRY_ALIASED (fetch_xor_16)
@@ -727,6 +508,226 @@ ENTRY_ALIASED (test_and_set_16)
 	ret
 END (test_and_set_16)
 
+
+#if HAVE_IFUNC
+/* ifunc implementations: Carries run-time dependence on the presence of further
+   architectural extensions.  */
+
+ENTRY_FEAT (exchange_16, LSE128)
+	mov	tmp0, x0
+	mov	res0, in0
+	mov	res1, in1
+	cbnz	w4, 1f
+
+	/* RELAXED.  */
+	/* swpp res0, res1, [tmp0]  */
+	.inst	0x192180c0
+	ret
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	/* swppa res0, res1, [tmp0]  */
+	.inst	0x19a180c0
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	/* swppal res0, res1, [tmp0]  */
+	.inst	0x19e180c0
+	ret
+END_FEAT (exchange_16, LSE128)
+
+
+ENTRY_FEAT (fetch_or_16, LSE128)
+	mov	tmp0, x0
+	mov	res0, in0
+	mov	res1, in1
+	cbnz	w4, 1f
+
+	/* RELAXED.  */
+	/* ldsetp res0, res1, [tmp0]  */
+	.inst	0x192130c0
+	ret
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	/* ldsetpa res0, res1, [tmp0]  */
+	.inst	0x19a130c0
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	/* ldsetpal res0, res1, [tmp0]  */
+	.inst	0x19e130c0
+	ret
+END_FEAT (fetch_or_16, LSE128)
+
+
+ENTRY_FEAT (or_fetch_16, LSE128)
+	cbnz	w4, 1f
+	mov	tmp0, in0
+	mov	tmp1, in1
+
+	/* RELAXED.  */
+	/* ldsetp in0, in1, [x0]  */
+	.inst	0x19233002
+	orr	res0, in0, tmp0
+	orr	res1, in1, tmp1
+	ret
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	/* ldsetpa in0, in1, [x0]  */
+	.inst	0x19a33002
+	orr	res0, in0, tmp0
+	orr	res1, in1, tmp1
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	/* ldsetpal in0, in1, [x0]  */
+	.inst	0x19e33002
+	orr	res0, in0, tmp0
+	orr	res1, in1, tmp1
+	ret
+END_FEAT (or_fetch_16, LSE128)
+
+
+ENTRY_FEAT (fetch_and_16, LSE128)
+	mov	tmp0, x0
+	mvn	res0, in0
+	mvn	res1, in1
+	cbnz	w4, 1f
+
+	/* RELAXED.  */
+	/* ldclrp res0, res1, [tmp0]  */
+	.inst	0x192110c0
+	ret
+
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	/* ldclrpa res0, res1, [tmp0]  */
+	.inst	0x19a110c0
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	/* ldclrpal res0, res1, [tmp0]  */
+	.inst	0x19e110c0
+	ret
+END_FEAT (fetch_and_16, LSE128)
+
+
+ENTRY_FEAT (and_fetch_16, LSE128)
+	mvn	tmp0, in0
+	mvn	tmp0, in1
+	cbnz	w4, 1f
+
+	/* RELAXED.  */
+	/* ldclrp tmp0, tmp1, [x0]  */
+	.inst	0x19271006
+	and	res0, tmp0, in0
+	and	res1, tmp1, in1
+	ret
+
+1:
+	cmp	w4, ACQUIRE
+	b.hi	2f
+
+	/* ACQUIRE/CONSUME.  */
+	/* ldclrpa tmp0, tmp1, [x0]  */
+	.inst	0x19a71006
+	and	res0, tmp0, in0
+	and	res1, tmp1, in1
+	ret
+
+	/* RELEASE/ACQ_REL/SEQ_CST.  */
+2:	/* ldclrpal	tmp0, tmp1, [x5]  */
+	.inst	0x19e710a6
+	and	res0, tmp0, in0
+	and	res1, tmp1, in1
+	ret
+END_FEAT (and_fetch_16, LSE128)
+
+
+ENTRY_FEAT (load_16, LSE2)
+	cbnz	w1, 1f
+
+	/* RELAXED.  */
+	ldp	res0, res1, [x0]
+	ret
+1:
+	cmp	w1, SEQ_CST
+	b.eq	2f
+
+	/* ACQUIRE/CONSUME (Load-AcquirePC semantics).  */
+	ldp	res0, res1, [x0]
+	dmb	ishld
+	ret
+
+	/* SEQ_CST.  */
+2:	ldar	tmp0, [x0]	/* Block reordering with Store-Release instr.  */
+	ldp	res0, res1, [x0]
+	dmb	ishld
+	ret
+END_FEAT (load_16, LSE2)
+
+
+ENTRY_FEAT (store_16, LSE2)
+	cbnz	w4, 1f
+
+	/* RELAXED.  */
+	stp	in0, in1, [x0]
+	ret
+
+	/* RELEASE/SEQ_CST.  */
+1:	ldxp	xzr, tmp0, [x0]
+	stlxp	w4, in0, in1, [x0]
+	cbnz	w4, 1b
+	ret
+END_FEAT (store_16, LSE2)
+
+
+ENTRY_FEAT (compare_exchange_16, LSE)
+	ldp	exp0, exp1, [x1]
+	mov	tmp0, exp0
+	mov	tmp1, exp1
+	cbz	w4, 2f
+	cmp	w4, RELEASE
+	b.hs	3f
+
+	/* ACQUIRE/CONSUME.  */
+	caspa	exp0, exp1, in0, in1, [x0]
+0:
+	cmp	exp0, tmp0
+	ccmp	exp1, tmp1, 0, eq
+	bne	1f
+	mov	x0, 1
+	ret
+1:
+	stp	exp0, exp1, [x1]
+	mov	x0, 0
+	ret
+
+	/* RELAXED.  */
+2:	casp	exp0, exp1, in0, in1, [x0]
+	b	0b
+
+	/* RELEASE.  */
+3:	b.hi	4f
+	caspl	exp0, exp1, in0, in1, [x0]
+	b	0b
+
+	/* ACQ_REL/SEQ_CST.  */
+4:	caspal	exp0, exp1, in0, in1, [x0]
+	b	0b
+END_FEAT (compare_exchange_16, LSE)
+#endif
 
 /* GNU_PROPERTY_AARCH64_* macros from elf.h for use in asm code.  */
 #define FEATURE_1_AND 0xc0000000
