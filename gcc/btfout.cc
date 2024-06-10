@@ -1503,6 +1503,28 @@ btf_assign_datasec_ids (ctf_container_ref ctfc)
     }
 }
 
+
+/* Manually mark that type T is used to ensure it will not be pruned.
+   Used by the BPF backend when generating BPF CO-RE to mark types used
+   in CO-RE relocations.  */
+
+void
+btf_mark_type_used (tree t)
+{
+  /* If we are not going to prune anyway, this is a no-op.  */
+  if (!debug_prune_btf)
+    return;
+
+  gcc_assert (TYPE_P (t));
+  ctf_container_ref ctfc = ctf_get_tu_ctfc ();
+  ctf_dtdef_ref dtd = ctf_lookup_tree_type (ctfc, t);
+
+  if (!dtd)
+    return;
+
+  btf_add_used_type (ctfc, dtd, false, false, true);
+}
+
 /* Callback used for assembling the only-used-types list.  Note that this is
    the same as btf_type_list_cb above, but the hash_set traverse requires a
    different function signature.  */

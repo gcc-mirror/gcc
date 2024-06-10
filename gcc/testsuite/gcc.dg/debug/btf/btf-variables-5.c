@@ -11,9 +11,11 @@
 /* { dg-final { scan-assembler-times "\[\t \]0xe000000\[\t \]+\[^\n\]*btv_info" 1 } } */
 /* { dg-final { scan-assembler-times "\[\t \]0x1\[\t \]+\[^\n\]*btv_linkage" 1 } } */
 
-/* Expect 2 array types, one of which is unsized.  */
+/* Expect 2 array types, one of which is unsized.  For BPF target, -gprune-btf
+   is the default and will remove the unsized array type.  */
 /* { dg-final { scan-assembler-times "\[\t \]0x4\[\t \]+\[^\n\]*bta_nelems" 1 } } */
-/* { dg-final { scan-assembler-times "\[\t \]0\[\t \]+\[^\n\]*bta_nelems" 1 } } */
+/* { dg-final { scan-assembler-times "\[\t \]0\[\t \]+\[^\n\]*bta_nelems" 1 { target { !bpf-*-* } } } } */
+/* { dg-final { scan-assembler-times "\[\t \]0\[\t \]+\[^\n\]*bta_nelems" 0 { target { bpf-*-* } } } } */
 
 extern const char FOO[];
 const char FOO[] = "foo";

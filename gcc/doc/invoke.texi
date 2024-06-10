@@ -12044,6 +12044,9 @@ It is primarily useful when compiling for the BPF target, to minimize
 the size of the resulting object, and to eliminate BTF information
 which is not immediately relevant to the BPF program loading process.
 
+This option is enabled by default for the BPF target when generating
+BTF information.
+
 @opindex gctf
 @item -gctf
 @itemx -gctf@var{level}

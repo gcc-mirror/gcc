@@ -457,6 +457,7 @@ extern ctf_dtdef_ref ctf_lookup_tree_type (ctf_container_ref, const tree);
 
 typedef bool (*funcs_traverse_callback) (ctf_dtdef_ref, void *);
 bool traverse_btf_func_types (funcs_traverse_callback, void *);
+extern void btf_mark_type_used (tree);
 
 /* CTF section does not emit location information; at this time, location
    information is needed for BTF CO-RE use-cases.  */
