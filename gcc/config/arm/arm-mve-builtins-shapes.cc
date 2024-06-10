@@ -2116,6 +2116,65 @@ struct vcvt_f32_f16_def : public nonoverloaded_base
 };
 SHAPE (vcvt_f32_f16)
 
+/* <T0>_t foo_t0[_t1](<T1>_t)
+
+   Example: vcvtaq.
+   int16x8_t [__arm_]vcvtaq_s16_f16(float16x8_t a)
+   int16x8_t [__arm_]vcvtaq_m[_s16_f16](int16x8_t inactive, float16x8_t a, mve_pred16_t p)
+   int16x8_t [__arm_]vcvtaq_x_s16_f16(float16x8_t a, mve_pred16_t p)
+*/
+struct vcvtx_def : public overloaded_base<0>
+{
+  bool
+  explicit_type_suffix_p (unsigned int, enum predication_index pred,
+			  enum mode_suffix_index,
+			  type_suffix_info) const override
+  {
+    return pred != PRED_m;
+  }
+
+  bool
+  skip_overload_p (enum predication_index pred, enum mode_suffix_index)
+    const override
+  {
+    return pred != PRED_m;
+  }
+
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    b.add_overloaded_functions (group, MODE_none, preserve_user_namespace);
+    build_all (b, "v0,v1", group, MODE_none, preserve_user_namespace);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index from_type;
+    tree res;
+
+    if (!r.check_gp_argument (1, i, nargs)
+	|| (from_type
+	    = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    type_suffix_index to_type;
+
+    gcc_assert (r.pred == PRED_m);
+
+    /* Get the return type from the 'inactive' argument.  */
+    to_type = r.infer_vector_type (0);
+
+    if ((res = r.lookup_form (r.mode_suffix_id, to_type, from_type)))
+	return res;
+
+    return r.report_no_such_form (from_type);
+  }
+};
+SHAPE (vcvtx)
+
 /* <T0>_t vfoo[_t0](<T0>_t, <T0>_t, mve_pred16_t)
 
    i.e. a version of the standard ternary shape in which
