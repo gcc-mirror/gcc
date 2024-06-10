@@ -2,7 +2,7 @@
 
 int printf(const char *, ...);
 int a[10], b, c, d[0], h, i, j, k, l;
-char e = -1, g;
+signed char e = -1, g;
 volatile int f;
 static void n() {
   while (e >= 0)
