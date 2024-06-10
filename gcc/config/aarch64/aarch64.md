@@ -5341,9 +5341,9 @@
 ;; MOV	w0, v2.b[0]
 
 (define_expand "popcount<mode>2"
-  [(set (match_operand:GPI 0 "register_operand")
-	(popcount:GPI (match_operand:GPI 1 "register_operand")))]
-  "TARGET_CSSC || TARGET_SIMD"
+  [(set (match_operand:ALLI 0 "register_operand")
+	(popcount:ALLI (match_operand:ALLI 1 "register_operand")))]
+  "TARGET_CSSC ? GET_MODE_BITSIZE (<MODE>mode) >= 32 : TARGET_SIMD"
 {
   if (!TARGET_CSSC)
     {
@@ -5351,18 +5351,29 @@
       rtx v1 = gen_reg_rtx (V8QImode);
       rtx in = operands[1];
       rtx out = operands[0];
-      if(<MODE>mode == SImode)
-	{
-	  rtx tmp;
-	  tmp = gen_reg_rtx (DImode);
-	  /* If we have SImode, zero extend to DImode, pop count does
-	     not change if we have extra zeros. */
-	  emit_insn (gen_zero_extendsidi2 (tmp, in));
-	  in = tmp;
-	}
+      /* SImode and HImode should be zero extended to DImode.
+	 popcount does not change if we have extra zeros.  */
+      if (<MODE>mode == SImode || <MODE>mode == HImode)
+	in = convert_to_mode (DImode, in, true);
+
       emit_move_insn (v, gen_lowpart (V8QImode, in));
       emit_insn (gen_popcountv8qi2 (v1, v));
-      emit_insn (gen_aarch64_zero_extend<mode>_reduc_plus_v8qi (out, v1));
+      /* QImode, just extract from the v8qi vector.  */
+      if (<MODE>mode == QImode)
+	emit_move_insn (out, gen_lowpart (QImode, v1));
+      /* HI and SI, reduction is zero extended to SImode. */
+      else if (<MODE>mode == SImode || <MODE>mode == HImode)
+	{
+	  rtx out1 = gen_reg_rtx (SImode);
+	  emit_insn (gen_aarch64_zero_extendsi_reduc_plus_v8qi (out1, v1));
+	  emit_move_insn (out, gen_lowpart (<MODE>mode, out1));
+	}
+      /* DImode, reduction is zero extended to DImode. */
+      else
+	{
+	  gcc_assert (<MODE>mode == DImode);
+	  emit_insn (gen_aarch64_zero_extenddi_reduc_plus_v8qi (out, v1));
+	}
       DONE;
     }
 })
