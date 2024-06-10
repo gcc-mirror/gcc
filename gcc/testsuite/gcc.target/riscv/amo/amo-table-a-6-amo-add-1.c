@@ -10,7 +10,7 @@
 **	amoadd\.w\tzero,a1,0\(a0\)
 **	ret
 */
-void foo (int* bar, int* baz)
+void foo (int* bar, int baz)
 {
   __atomic_add_fetch(bar, baz, __ATOMIC_RELAXED);
 }

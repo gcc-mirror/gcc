@@ -13,7 +13,7 @@
 **      bnez\t[atx][0-9]+, 1b
 **	ret
 */
-void foo (int* bar, int* baz)
+void foo (int* bar, int baz)
 {
   __atomic_add_fetch(bar, baz, __ATOMIC_RELAXED);
 }

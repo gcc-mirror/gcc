@@ -5,7 +5,7 @@
 /* { dg-final { scan-assembler-times "lr.w\t" 1 } } */
 /* { dg-final { scan-assembler-times "sc.w\t" 1 } } */
 
-void foo (short* bar, short* baz)
+void foo (short* bar, short baz)
 {
   __atomic_add_fetch(bar, baz, __ATOMIC_ACQ_REL);
 }
