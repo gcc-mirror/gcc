@@ -17940,7 +17940,8 @@ expand_perm_as_replicate (const struct expand_vec_perm_d &d)
   unsigned char i;
   unsigned char elem;
   rtx base = d.op0;
-  rtx insn;
+  rtx insn = NULL_RTX;
+
   /* Needed to silence maybe-uninitialized warning.  */
   gcc_assert (d.nelt > 0);
   elem = d.perm[0];
@@ -17954,7 +17955,19 @@ expand_perm_as_replicate (const struct expand_vec_perm_d &d)
 	  base = d.op1;
 	  elem -= d.nelt;
 	}
-      insn = maybe_gen_vec_splat (d.vmode, d.target, base, GEN_INT (elem));
+      if (memory_operand (base, d.vmode))
+	{
+	  /* Try to use vector load and replicate.  */
+	  rtx new_base = adjust_address (base, GET_MODE_INNER (d.vmode),
+					 elem * GET_MODE_UNIT_SIZE (d.vmode));
+	  insn = maybe_gen_vec_splats (d.vmode, d.target, new_base);
+	}
+      if (insn == NULL_RTX)
+	{
+	  base = force_reg (d.vmode, base);
+	  insn = maybe_gen_vec_splat (d.vmode, d.target, base, GEN_INT (elem));
+	}
+
       if (insn == NULL_RTX)
 	return false;
       emit_insn (insn);

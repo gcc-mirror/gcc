@@ -145,7 +145,7 @@
   DONE;
 })
 
-(define_expand "vec_splats<mode>"
+(define_expand "@vec_splats<mode>"
   [(set (match_operand:VEC_HW                          0 "register_operand" "")
 	(vec_duplicate:VEC_HW (match_operand:<non_vec> 1 "general_operand"  "")))]
   "TARGET_VX")
