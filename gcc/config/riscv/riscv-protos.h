@@ -638,6 +638,7 @@ void expand_vec_lround (rtx, rtx, machine_mode, machine_mode, machine_mode);
 void expand_vec_lceil (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_lfloor (rtx, rtx, machine_mode, machine_mode);
 void expand_vec_usadd (rtx, rtx, rtx, machine_mode);
+void expand_vec_ussub (rtx, rtx, rtx, machine_mode);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode,
 			  bool, void (*)(rtx *, rtx), enum avl_type);
