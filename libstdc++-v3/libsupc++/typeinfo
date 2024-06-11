@@ -188,6 +188,9 @@ namespace std
 #endif
 
 #if __GXX_TYPEINFO_EQUALITY_INLINE || __cplusplus > 202002L
+# if ! __GXX_TYPEINFO_EQUALITY_INLINE
+  [[__gnu__::__always_inline__]]
+# endif
   _GLIBCXX23_CONSTEXPR inline bool
   type_info::operator==(const type_info& __arg) const _GLIBCXX_NOEXCEPT
   {
