@@ -1,3 +1,16 @@
+2024-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114708
+	* exp_util.adb (Finalize_Address): Add guard for incomplete types.
+
+2024-06-10  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Might_Need_BIP_Task_Actuals): Add support
+	for access-to-subprogram parameter types.
+	* exp_ch6.adb (Add_Task_Actuals_To_Build_In_Place_Call):
+	Add dummy BIP parameters to access-to-subprogram types
+	that may reference a function that has BIP parameters.
+
 2024-05-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/115270

@@ -1,3 +1,22 @@
+2024-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115378
+	* g++.dg/cpp1y/decltype-auto-103497.C: Adjust expected diagnostic.
+	* g++.dg/template/pr95672.C: Likewise.
+	* g++.dg/cpp2a/lambda-targ5.C: New test.
+
+2024-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/incomplete8.adb: New test.
+
+2024-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114398
+	* gnat.dg/access11.adb: New test.
+
 2024-06-08  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
