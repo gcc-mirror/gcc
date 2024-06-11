@@ -599,6 +599,54 @@ gfc_reset_vptr (stmtblock_t *block, gfc_expr *e, tree class_container,
 }
 
 
+/* Set the vptr of a class in to from the type given in from.  If from is NULL,
+   then reset the vptr to the default or to.  */
+
+void
+gfc_class_set_vptr (stmtblock_t *block, tree to, tree from)
+{
+  tree tmp, vptr_ref;
+
+  vptr_ref = gfc_get_vptr_from_expr (to);
+  if (POINTER_TYPE_P (TREE_TYPE (from))
+      && GFC_CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (from))))
+    {
+      gfc_add_modify (block, vptr_ref,
+		      fold_convert (TREE_TYPE (vptr_ref),
+				    gfc_get_vptr_from_expr (from)));
+    }
+  else if (VAR_P (from)
+	   && strncmp (IDENTIFIER_POINTER (DECL_NAME (from)), "__vtab", 6) == 0)
+    {
+      gfc_add_modify (block, vptr_ref,
+		      gfc_build_addr_expr (TREE_TYPE (vptr_ref), from));
+    }
+  else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (from)))
+	   && GFC_CLASS_TYPE_P (
+	     TREE_TYPE (TREE_OPERAND (TREE_OPERAND (from, 0), 0))))
+    {
+      gfc_add_modify (block, vptr_ref,
+		      fold_convert (TREE_TYPE (vptr_ref),
+				    gfc_get_vptr_from_expr (TREE_OPERAND (
+				      TREE_OPERAND (from, 0), 0))));
+    }
+  else
+    {
+      tree vtab;
+      gfc_symbol *type;
+      tmp = TREE_TYPE (from);
+      if (POINTER_TYPE_P (tmp))
+	tmp = TREE_TYPE (tmp);
+      gfc_find_symbol (IDENTIFIER_POINTER (TYPE_NAME (tmp)), gfc_current_ns, 1,
+		       &type);
+      vtab = gfc_find_derived_vtab (type)->backend_decl;
+      gcc_assert (vtab);
+      gfc_add_modify (block, vptr_ref,
+		      gfc_build_addr_expr (TREE_TYPE (vptr_ref), vtab));
+    }
+}
+
+
 /* Reset the len for unlimited polymorphic objects.  */
 
 void
