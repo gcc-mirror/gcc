@@ -1,7 +1,7 @@
 /* PR target/112600 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler-times "sbb" 4 } } */
+/* { dg-final { scan-assembler-times "sbb|cmov" 4 } } */
 
 unsigned char
 sub_sat_char (unsigned char x, unsigned char y)
