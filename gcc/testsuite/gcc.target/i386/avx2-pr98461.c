@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mavx2 -masm=att" } */
 /* { dg-final { scan-assembler-times "\tvpmovmskb\t" 6 } } */
-/* { dg-final { scan-assembler-times "\tnotl\t" 6 } } */
+/* { dg-final { scan-assembler-times "\t(?:notl|vpternlog\[dq\])\t" 6 } } */
 /* { dg-final { scan-assembler-not "\tvpcmpeq" } } */
 /* { dg-final { scan-assembler-not "\tvpxor" } } */
 /* { dg-final { scan-assembler-not "\tvpandn" } } */

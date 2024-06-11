@@ -21571,6 +21571,31 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     = speed ? ix86_tune_cost : &ix86_size_cost;
   int src_cost;
 
+  /* Handling different vternlog variants.  */
+  if ((GET_MODE_SIZE (mode) == 64
+       ? (TARGET_AVX512F && TARGET_EVEX512)
+       : (TARGET_AVX512VL
+	  || (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)))
+      && GET_MODE_SIZE (mode) >= 16
+      && outer_code_i == SET
+      && ternlog_operand (x, mode))
+    {
+      rtx args[3];
+
+      args[0] = NULL_RTX;
+      args[1] = NULL_RTX;
+      args[2] = NULL_RTX;
+      int idx = ix86_ternlog_idx (x, args);
+      gcc_assert (idx >= 0);
+
+      *total = cost->sse_op;
+      for (int i = 0; i != 3; i++)
+	if (args[i])
+	  *total += rtx_cost (args[i], GET_MODE (args[i]), UNSPEC, i, speed);
+      return true;
+    }
+
+
   switch (code)
     {
     case SET:
@@ -22233,6 +22258,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else if (XINT (x, 1) == UNSPEC_VTERNLOG)
 	{
 	  *total = cost->sse_op;
+	  *total += rtx_cost (XVECEXP (x, 0, 0), mode, code, 0, speed);
+	  *total += rtx_cost (XVECEXP (x, 0, 1), mode, code, 1, speed);
+	  *total += rtx_cost (XVECEXP (x, 0, 2), mode, code, 2, speed);
 	  return true;
 	}
       else if (XINT (x, 1) == UNSPEC_PTEST)
@@ -22260,12 +22288,21 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
     case VEC_SELECT:
     case VEC_CONCAT:
-    case VEC_DUPLICATE:
       /* ??? Assume all of these vector manipulation patterns are
 	 recognizable.  In which case they all pretty much have the
 	 same cost.  */
      *total = cost->sse_op;
      return true;
+    case VEC_DUPLICATE:
+      *total = rtx_cost (XEXP (x, 0),
+			 GET_MODE (XEXP (x, 0)),
+			 VEC_DUPLICATE, 0, speed);
+      /* It's broadcast instruction, not embedded broadcasting.  */
+      if (outer_code == SET)
+	*total += cost->sse_op;
+
+     return true;
+
     case VEC_MERGE:
       mask = XEXP (x, 2);
       /* This is masked instruction, assume the same cost,

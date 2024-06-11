@@ -1,5 +1,5 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-O2 -msse2" } */
+/* { dg-options "-O2 -msse2 -mno-avx512f" } */
 typedef unsigned __int128 uv1ti __attribute__ ((__vector_size__ (16)));
 typedef unsigned long long uv2di __attribute__ ((__vector_size__ (16)));
 typedef unsigned int uv4si __attribute__ ((__vector_size__ (16)));
