@@ -14690,6 +14690,7 @@ cost_plus:
 	return true;
       }
 
+    case BITREVERSE:
     case BSWAP:
       *cost = COSTS_N_INSNS (1);
 
@@ -15336,14 +15337,6 @@ cost_plus:
         {
           if (speed)
             *cost += extra_cost->fp[mode == DFmode].roundint;
-
-          return false;
-        }
-
-      if (XINT (x, 1) == UNSPEC_RBIT)
-        {
-          if (speed)
-            *cost += extra_cost->alu.rev;
 
           return false;
         }

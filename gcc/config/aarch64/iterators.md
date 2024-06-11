@@ -2525,6 +2525,7 @@
 
 ;; SVE integer unary operations.
 (define_code_iterator SVE_INT_UNARY [abs neg not clrsb clz popcount
+				     bitreverse
 				     (ss_abs "TARGET_SVE2")
 				     (ss_neg "TARGET_SVE2")])
 
@@ -2573,6 +2574,7 @@
 			 (clrsb "clrsb")
 			 (clz "clz")
 			 (popcount "popcount")
+			 (bitreverse "rbit")
 			 (and "and")
 			 (ior "ior")
 			 (xor "xor")
@@ -2785,6 +2787,7 @@
 			      (clrsb "cls")
 			      (clz "clz")
 			      (popcount "cnt")
+			      (bitreverse "rbit")
 			      (ss_plus "sqadd")
 			      (us_plus "uqadd")
 			      (ss_minus "sqsub")
@@ -2990,7 +2993,7 @@
 
 (define_int_iterator LAST [UNSPEC_LASTA UNSPEC_LASTB])
 
-(define_int_iterator SVE_INT_UNARY [UNSPEC_RBIT UNSPEC_REVB
+(define_int_iterator SVE_INT_UNARY [UNSPEC_REVB
 				    UNSPEC_REVH UNSPEC_REVW])
 
 (define_int_iterator SVE_FP_UNARY [UNSPEC_FRECPE UNSPEC_RSQRTE])
@@ -3568,7 +3571,6 @@
 			(UNSPEC_FRECPS "frecps")
 			(UNSPEC_RSQRTE "frsqrte")
 			(UNSPEC_RSQRTS "frsqrts")
-			(UNSPEC_RBIT "rbit")
 			(UNSPEC_REVB "revb")
 			(UNSPEC_REVD "revd")
 			(UNSPEC_REVH "revh")
@@ -4039,7 +4041,6 @@
 			     (UNSPEC_PMULLT_PAIR "pmullt")
 			     (UNSPEC_RADDHNB "raddhnb")
 			     (UNSPEC_RADDHNT "raddhnt")
-			     (UNSPEC_RBIT "rbit")
 			     (UNSPEC_REVB "revb")
 			     (UNSPEC_REVH "revh")
 			     (UNSPEC_REVW "revw")
@@ -4416,8 +4417,7 @@
 				(UNSPEC_PFIRST "8") (UNSPEC_PNEXT "64")])
 
 ;; The minimum number of element bits that an instruction can handle.
-(define_int_attr min_elem_bits [(UNSPEC_RBIT "8")
-				(UNSPEC_REVB "16")
+(define_int_attr min_elem_bits [(UNSPEC_REVB "16")
 				(UNSPEC_REVH "32")
 				(UNSPEC_REVW "64")])
 
