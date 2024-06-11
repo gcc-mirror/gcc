@@ -790,8 +790,10 @@ ConstAttributeExpression :=
                                                               ">"
                           =:
 
-ByteAlignment := '<*'                                                      % PushAutoOn %
-                      AttributeExpression                                  % BuildAlignment %
+ByteAlignment :=                                                           % VAR tokpos: CARDINAL ; %
+                 '<*'                                                      % PushAutoOn %
+                                                                           % tokpos := GetTokenNo () %
+                      AttributeExpression                                  % BuildAlignment (tokpos) %
                                           '*>'                             % PopAuto %
                =:
 

@@ -48,9 +48,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _RTint_H
 #define _RTint_C
 
+#include "GRTint.h"
 #   include "GM2RTS.h"
 #   include "GStorage.h"
 #   include "GRTco.h"
@@ -72,13 +72,10 @@ typedef struct RTint__T2_a RTint__T2;
 
 typedef enum {RTint_input, RTint_output, RTint_time} RTint_VectorType;
 
-typedef void (*RTint_DispatchVector_t) (unsigned int, unsigned int, void *);
-struct RTint_DispatchVector_p { RTint_DispatchVector_t proc; };
-
 struct RTint__T1_r {
                      RTint_VectorType type;
                      unsigned int priority;
-                     void *arg;
+                     void * arg;
                      RTint_Vector pending;
                      RTint_Vector exists;
                      unsigned int no;
@@ -354,7 +351,7 @@ static void AddFd (Selective_SetOfFd *set, int *max, int fd)
 {
   if (fd < 0)
     {
-      return ;
+      return;
     }
   (*max) = Max (fd, (*max));
   if ((*set) == NULL)
@@ -1011,7 +1008,7 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
           /* no file descriptors to be selected upon.  */
           timeval = Selective_KillTime (timeval);
           RTco_signal (lock);
-          return ;
+          return;
         }
       else
         {
@@ -1140,11 +1137,11 @@ extern "C" void RTint_Init (void)
     }
 }
 
-extern "C" void _M2_RTint_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_RTint_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   RTint_Init ();
 }
 
-extern "C" void _M2_RTint_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_RTint_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

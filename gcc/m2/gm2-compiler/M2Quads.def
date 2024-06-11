@@ -1012,7 +1012,7 @@ PROCEDURE BuildAssignConstant (equalsTokNo: CARDINAL) ;
                             |---------------|       empty
 *)
 
-PROCEDURE BuildAlignment ;
+PROCEDURE BuildAlignment (tokno: CARDINAL) ;
 
 
 (*
@@ -1030,7 +1030,7 @@ PROCEDURE BuildAlignment ;
                            |------------|          empty
 *)
 
-PROCEDURE BuildBitLength ;
+PROCEDURE BuildBitLength (tokno: CARDINAL) ;
 
 
 (*

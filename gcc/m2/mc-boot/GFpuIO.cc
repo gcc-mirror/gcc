@@ -42,9 +42,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#define _FpuIO_H
 #define _FpuIO_C
 
+#include "GFpuIO.h"
 #   include "GStrIO.h"
 #   include "GStrLib.h"
 #   include "GASCII.h"
@@ -328,10 +328,10 @@ extern "C" void FpuIO_LongIntToStr (long int x, unsigned int n, char *a, unsigne
   s = DynamicStrings_KillString (s);
 }
 
-extern "C" void _M2_FpuIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_FpuIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_FpuIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_FpuIO_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

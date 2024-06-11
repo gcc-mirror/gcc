@@ -1,0 +1,10 @@
+DEFINITION MODULE opaquestr ;  (*!m2pim*)
+
+TYPE
+   String ;
+
+PROCEDURE initString () : String ;
+PROCEDURE concat (left, right: String) : String ;
+
+
+END opaquestr.

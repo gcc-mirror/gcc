@@ -42,9 +42,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _wlists_H
 #define _wlists_C
 
+#include "Gwlists.h"
 #   include "GStorage.h"
 
 typedef struct wlists_performOperation_p wlists_performOperation;
@@ -54,16 +54,13 @@ typedef struct wlists__T1_r wlists__T1;
 
 typedef struct wlists__T2_a wlists__T2;
 
-typedef wlists__T1 *wlists_wlist;
-
-typedef void (*wlists_performOperation_t) (unsigned int);
-struct wlists_performOperation_p { wlists_performOperation_t proc; };
+typedef wlists__T1 *wlists_wlist__opaque;
 
 struct wlists__T2_a { unsigned int array[maxNoOfElements-1+1]; };
 struct wlists__T1_r {
                       unsigned int noOfElements;
                       wlists__T2 elements;
-                      wlists_wlist next;
+                      wlists_wlist__opaque next;
                     };
 
 
@@ -149,14 +146,14 @@ extern "C" wlists_wlist wlists_duplicateList (wlists_wlist l);
    removeItem - remove an element at index, i, from the wlist data type.
 */
 
-static void removeItem (wlists_wlist p, wlists_wlist l, unsigned int i);
+static void removeItem (wlists_wlist__opaque p, wlists_wlist__opaque l, unsigned int i);
 
 
 /*
    removeItem - remove an element at index, i, from the wlist data type.
 */
 
-static void removeItem (wlists_wlist p, wlists_wlist l, unsigned int i)
+static void removeItem (wlists_wlist__opaque p, wlists_wlist__opaque l, unsigned int i)
 {
   l->noOfElements -= 1;
   while (i <= l->noOfElements)
@@ -178,12 +175,12 @@ static void removeItem (wlists_wlist p, wlists_wlist l, unsigned int i)
 
 extern "C" wlists_wlist wlists_initList (void)
 {
-  wlists_wlist l;
+  wlists_wlist__opaque l;
 
   Storage_ALLOCATE ((void **) &l, sizeof (wlists__T1));
   l->noOfElements = 0;
-  l->next = NULL;
-  return l;
+  l->next = static_cast<wlists_wlist__opaque> (NULL);
+  return static_cast<wlists_wlist> (l);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -197,9 +194,9 @@ extern "C" void wlists_killList (wlists_wlist *l)
 {
   if ((*l) != NULL)
     {
-      if ((*l)->next != NULL)
+      if (static_cast<wlists_wlist__opaque> ((*l))->next != NULL)
         {
-          wlists_killList (&(*l)->next);
+          wlists_killList (reinterpret_cast<wlists_wlist *> (&static_cast<wlists_wlist__opaque> ((*l))->next));
         }
       Storage_DEALLOCATE ((void **) &(*l), sizeof (wlists__T1));
     }
@@ -212,21 +209,21 @@ extern "C" void wlists_killList (wlists_wlist *l)
 
 extern "C" void wlists_putItemIntoList (wlists_wlist l, unsigned int c)
 {
-  if (l->noOfElements < maxNoOfElements)
+  if (static_cast<wlists_wlist__opaque> (l)->noOfElements < maxNoOfElements)
     {
-      l->noOfElements += 1;
-      l->elements.array[l->noOfElements-1] = c;
+      static_cast<wlists_wlist__opaque> (l)->noOfElements += 1;
+      static_cast<wlists_wlist__opaque> (l)->elements.array[static_cast<wlists_wlist__opaque> (l)->noOfElements-1] = c;
     }
-  else if (l->next != NULL)
+  else if (static_cast<wlists_wlist__opaque> (l)->next != NULL)
     {
       /* avoid dangling else.  */
-      wlists_putItemIntoList (l->next, c);
+      wlists_putItemIntoList (static_cast<wlists_wlist> (static_cast<wlists_wlist__opaque> (l)->next), c);
     }
   else
     {
       /* avoid dangling else.  */
-      l->next = wlists_initList ();
-      wlists_putItemIntoList (l->next, c);
+      static_cast<wlists_wlist__opaque> (l)->next = static_cast<wlists_wlist__opaque> (wlists_initList ());
+      wlists_putItemIntoList (static_cast<wlists_wlist> (static_cast<wlists_wlist__opaque> (l)->next), c);
     }
 }
 
@@ -239,15 +236,15 @@ extern "C" unsigned int wlists_getItemFromList (wlists_wlist l, unsigned int n)
 {
   while (l != NULL)
     {
-      if (n <= l->noOfElements)
+      if (n <= static_cast<wlists_wlist__opaque> (l)->noOfElements)
         {
-          return l->elements.array[n-1];
+          return static_cast<wlists_wlist__opaque> (l)->elements.array[n-1];
         }
       else
         {
-          n -= l->noOfElements;
+          n -= static_cast<wlists_wlist__opaque> (l)->noOfElements;
         }
-      l = l->next;
+      l = static_cast<wlists_wlist> (static_cast<wlists_wlist__opaque> (l)->next);
     }
   return static_cast<unsigned int> (0);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -272,9 +269,9 @@ extern "C" unsigned int wlists_getIndexOfList (wlists_wlist l, unsigned int c)
   else
     {
       i = 1;
-      while (i <= l->noOfElements)
+      while (i <= static_cast<wlists_wlist__opaque> (l)->noOfElements)
         {
-          if (l->elements.array[i-1] == c)
+          if (static_cast<wlists_wlist__opaque> (l)->elements.array[i-1] == c)
             {
               return i;
             }
@@ -283,7 +280,7 @@ extern "C" unsigned int wlists_getIndexOfList (wlists_wlist l, unsigned int c)
               i += 1;
             }
         }
-      return l->noOfElements+(wlists_getIndexOfList (l->next, c));
+      return static_cast<wlists_wlist__opaque> (l)->noOfElements+(wlists_getIndexOfList (static_cast<wlists_wlist> (static_cast<wlists_wlist__opaque> (l)->next), c));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -306,8 +303,8 @@ extern "C" unsigned int wlists_noOfItemsInList (wlists_wlist l)
     {
       t = 0;
       do {
-        t += l->noOfElements;
-        l = l->next;
+        t += static_cast<wlists_wlist__opaque> (l)->noOfElements;
+        l = static_cast<wlists_wlist> (static_cast<wlists_wlist__opaque> (l)->next);
       } while (! (l == NULL));
       return t;
     }
@@ -337,33 +334,33 @@ extern "C" void wlists_includeItemIntoList (wlists_wlist l, unsigned int c)
 
 extern "C" void wlists_removeItemFromList (wlists_wlist l, unsigned int c)
 {
-  wlists_wlist p;
+  wlists_wlist__opaque p;
   unsigned int i;
   bool found;
 
   if (l != NULL)
     {
       found = false;
-      p = NULL;
+      p = static_cast<wlists_wlist__opaque> (NULL);
       do {
         i = 1;
-        while ((i <= l->noOfElements) && (l->elements.array[i-1] != c))
+        while ((i <= static_cast<wlists_wlist__opaque> (l)->noOfElements) && (static_cast<wlists_wlist__opaque> (l)->elements.array[i-1] != c))
           {
             i += 1;
           }
-        if ((i <= l->noOfElements) && (l->elements.array[i-1] == c))
+        if ((i <= static_cast<wlists_wlist__opaque> (l)->noOfElements) && (static_cast<wlists_wlist__opaque> (l)->elements.array[i-1] == c))
           {
             found = true;
           }
         else
           {
-            p = l;
-            l = l->next;
+            p = static_cast<wlists_wlist__opaque> (l);
+            l = static_cast<wlists_wlist> (static_cast<wlists_wlist__opaque> (l)->next);
           }
       } while (! ((l == NULL) || found));
       if (found)
         {
-          removeItem (p, l, i);
+          removeItem (p, static_cast<wlists_wlist__opaque> (l), i);
         }
     }
 }
@@ -379,15 +376,15 @@ extern "C" void wlists_replaceItemInList (wlists_wlist l, unsigned int n, unsign
 {
   while (l != NULL)
     {
-      if (n <= l->noOfElements)
+      if (n <= static_cast<wlists_wlist__opaque> (l)->noOfElements)
         {
-          l->elements.array[n-1] = w;
+          static_cast<wlists_wlist__opaque> (l)->elements.array[n-1] = w;
         }
       else
         {
-          n -= l->noOfElements;
+          n -= static_cast<wlists_wlist__opaque> (l)->noOfElements;
         }
-      l = l->next;
+      l = static_cast<wlists_wlist> (static_cast<wlists_wlist__opaque> (l)->next);
     }
 }
 
@@ -402,9 +399,9 @@ extern "C" bool wlists_isItemInList (wlists_wlist l, unsigned int c)
 
   do {
     i = 1;
-    while (i <= l->noOfElements)
+    while (i <= static_cast<wlists_wlist__opaque> (l)->noOfElements)
       {
-        if (l->elements.array[i-1] == c)
+        if (static_cast<wlists_wlist__opaque> (l)->elements.array[i-1] == c)
           {
             return true;
           }
@@ -413,7 +410,7 @@ extern "C" bool wlists_isItemInList (wlists_wlist l, unsigned int c)
             i += 1;
           }
       }
-    l = l->next;
+    l = static_cast<wlists_wlist> (static_cast<wlists_wlist__opaque> (l)->next);
   } while (! (l == NULL));
   return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -446,27 +443,27 @@ extern "C" void wlists_foreachItemInListDo (wlists_wlist l, wlists_performOperat
 
 extern "C" wlists_wlist wlists_duplicateList (wlists_wlist l)
 {
-  wlists_wlist m;
+  wlists_wlist__opaque m;
   unsigned int n;
   unsigned int i;
 
-  m = wlists_initList ();
+  m = static_cast<wlists_wlist__opaque> (wlists_initList ());
   n = wlists_noOfItemsInList (l);
   i = 1;
   while (i <= n)
     {
-      wlists_putItemIntoList (m, wlists_getItemFromList (l, i));
+      wlists_putItemIntoList (static_cast<wlists_wlist> (m), wlists_getItemFromList (l, i));
       i += 1;
     }
-  return m;
+  return static_cast<wlists_wlist> (m);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_wlists_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_wlists_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_wlists_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_wlists_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

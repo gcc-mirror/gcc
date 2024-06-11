@@ -31,16 +31,16 @@ Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcStack_H
 #define _mcStack_C
 
+#include "GmcStack.h"
 #   include "GStorage.h"
 #   include "GIndexing.h"
 #   include "GM2RTS.h"
 
 typedef struct mcStack__T1_r mcStack__T1;
 
-typedef mcStack__T1 *mcStack_stack;
+typedef mcStack__T1 *mcStack_stack__opaque;
 
 struct mcStack__T1_r {
                        Indexing_Index list;
@@ -101,12 +101,12 @@ extern "C" void * mcStack_access (mcStack_stack s, unsigned int i);
 
 extern "C" mcStack_stack mcStack_init (void)
 {
-  mcStack_stack s;
+  mcStack_stack__opaque s;
 
   Storage_ALLOCATE ((void **) &s, sizeof (mcStack__T1));
   s->list = Indexing_InitIndex (1);
   s->count = 0;
-  return s;
+  return static_cast<mcStack_stack> (s);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -118,9 +118,9 @@ extern "C" mcStack_stack mcStack_init (void)
 
 extern "C" void mcStack_kill (mcStack_stack *s)
 {
-  (*s)->list = Indexing_KillIndex ((*s)->list);
+  static_cast<mcStack_stack__opaque> ((*s))->list = Indexing_KillIndex (static_cast<mcStack_stack__opaque> ((*s))->list);
   Storage_DEALLOCATE ((void **) &(*s), sizeof (mcStack__T1));
-  (*s) = NULL;
+  (*s) = static_cast<mcStack_stack> (NULL);
 }
 
 
@@ -131,15 +131,15 @@ extern "C" void mcStack_kill (mcStack_stack *s)
 
 extern "C" void * mcStack_push (mcStack_stack s, void * a)
 {
-  if (s->count == 0)
+  if (static_cast<mcStack_stack__opaque> (s)->count == 0)
     {
-      Indexing_PutIndice (s->list, Indexing_LowIndice (s->list), a);
+      Indexing_PutIndice (static_cast<mcStack_stack__opaque> (s)->list, Indexing_LowIndice (static_cast<mcStack_stack__opaque> (s)->list), a);
     }
   else
     {
-      Indexing_PutIndice (s->list, (Indexing_HighIndice (s->list))+1, a);
+      Indexing_PutIndice (static_cast<mcStack_stack__opaque> (s)->list, (Indexing_HighIndice (static_cast<mcStack_stack__opaque> (s)->list))+1, a);
     }
-  s->count += 1;
+  static_cast<mcStack_stack__opaque> (s)->count += 1;
   return a;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -154,16 +154,16 @@ extern "C" void * mcStack_pop (mcStack_stack s)
 {
   void * a;
 
-  if (s->count == 0)
+  if (static_cast<mcStack_stack__opaque> (s)->count == 0)
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
   else
     {
-      s->count -= 1;
-      a = Indexing_GetIndice (s->list, Indexing_HighIndice (s->list));
-      Indexing_DeleteIndice (s->list, Indexing_HighIndice (s->list));
+      static_cast<mcStack_stack__opaque> (s)->count -= 1;
+      a = Indexing_GetIndice (static_cast<mcStack_stack__opaque> (s)->list, Indexing_HighIndice (static_cast<mcStack_stack__opaque> (s)->list));
+      Indexing_DeleteIndice (static_cast<mcStack_stack__opaque> (s)->list, Indexing_HighIndice (static_cast<mcStack_stack__opaque> (s)->list));
       return a;
     }
   ReturnException ("../../gcc/m2/mc/mcStack.def", 20, 1);
@@ -192,7 +192,7 @@ extern "C" void * mcStack_replace (mcStack_stack s, void * a)
 
 extern "C" unsigned int mcStack_depth (mcStack_stack s)
 {
-  return s->count;
+  return static_cast<mcStack_stack__opaque> (s)->count;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -207,23 +207,23 @@ extern "C" unsigned int mcStack_depth (mcStack_stack s)
 
 extern "C" void * mcStack_access (mcStack_stack s, unsigned int i)
 {
-  if ((i > s->count) || (i == 0))
+  if ((i > static_cast<mcStack_stack__opaque> (s)->count) || (i == 0))
     {
       M2RTS_HALT (-1);
       __builtin_unreachable ();
     }
   else
     {
-      return Indexing_GetIndice (s->list, i);
+      return Indexing_GetIndice (static_cast<mcStack_stack__opaque> (s)->list, i);
     }
   ReturnException ("../../gcc/m2/mc/mcStack.def", 20, 1);
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcStack_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcStack_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcStack_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcStack_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

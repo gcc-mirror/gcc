@@ -35,13 +35,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   endif
 
 #   include "Gmcrts.h"
-#define _M2EXCEPTION_H
 #define _M2EXCEPTION_C
 
+#include "GM2EXCEPTION.h"
 #   include "GSYSTEM.h"
 #   include "GRTExceptions.h"
-
-typedef enum {M2EXCEPTION_indexException, M2EXCEPTION_rangeException, M2EXCEPTION_caseSelectException, M2EXCEPTION_invalidLocation, M2EXCEPTION_functionException, M2EXCEPTION_wholeValueException, M2EXCEPTION_wholeDivException, M2EXCEPTION_realValueException, M2EXCEPTION_realDivException, M2EXCEPTION_complexValueException, M2EXCEPTION_complexDivException, M2EXCEPTION_protException, M2EXCEPTION_sysException, M2EXCEPTION_coException, M2EXCEPTION_exException} M2EXCEPTION_M2Exceptions;
 
 extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void);
 extern "C" bool M2EXCEPTION_IsM2Exception (void);
@@ -58,7 +56,7 @@ extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
   n = RTExceptions_GetNumber (e);
   if (n == (UINT_MAX))
     {
-      RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (reinterpret_cast<const void*>("../../gcc/m2/gm2-libs/M2EXCEPTION.mod")), 47, 6, const_cast<void*> (reinterpret_cast<const void*>("M2Exception")), const_cast<void*> (reinterpret_cast<const void*>("current coroutine is not in the exceptional execution state")));
+      RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (static_cast<const void*>("../../gcc/m2/gm2-libs/M2EXCEPTION.mod")), 47, 6, const_cast<void*> (static_cast<const void*>("M2Exception")), const_cast<void*> (static_cast<const void*>("current coroutine is not in the exceptional execution state")));
     }
   else
     {
@@ -80,11 +78,11 @@ extern "C" bool M2EXCEPTION_IsM2Exception (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_M2EXCEPTION_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2EXCEPTION_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   RTExceptions_SetExceptionBlock (RTExceptions_InitExceptionBlock ());
 }
 
-extern "C" void _M2_M2EXCEPTION_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2EXCEPTION_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

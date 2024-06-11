@@ -42,9 +42,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _alists_H
 #define _alists_C
 
+#include "Galists.h"
 #   include "GStorage.h"
 
 typedef struct alists_performOperation_p alists_performOperation;
@@ -54,16 +54,13 @@ typedef struct alists__T1_r alists__T1;
 
 typedef struct alists__T2_a alists__T2;
 
-typedef alists__T1 *alists_alist;
-
-typedef void (*alists_performOperation_t) (void *);
-struct alists_performOperation_p { alists_performOperation_t proc; };
+typedef alists__T1 *alists_alist__opaque;
 
 struct alists__T2_a { void * array[MaxnoOfelements-1+1]; };
 struct alists__T1_r {
                       unsigned int noOfelements;
                       alists__T2 elements;
-                      alists_alist next;
+                      alists_alist__opaque next;
                     };
 
 
@@ -147,14 +144,14 @@ extern "C" bool alists_equalList (alists_alist left, alists_alist right);
    removeItem - remove an element at index, i, from the alist data type.
 */
 
-static void removeItem (alists_alist p, alists_alist l, unsigned int i);
+static void removeItem (alists_alist__opaque p, alists_alist__opaque l, unsigned int i);
 
 
 /*
    removeItem - remove an element at index, i, from the alist data type.
 */
 
-static void removeItem (alists_alist p, alists_alist l, unsigned int i)
+static void removeItem (alists_alist__opaque p, alists_alist__opaque l, unsigned int i)
 {
   l->noOfelements -= 1;
   while (i <= l->noOfelements)
@@ -176,12 +173,12 @@ static void removeItem (alists_alist p, alists_alist l, unsigned int i)
 
 extern "C" alists_alist alists_initList (void)
 {
-  alists_alist l;
+  alists_alist__opaque l;
 
   Storage_ALLOCATE ((void **) &l, sizeof (alists__T1));
   l->noOfelements = 0;
-  l->next = NULL;
-  return l;
+  l->next = static_cast<alists_alist__opaque> (NULL);
+  return static_cast<alists_alist> (l);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -195,9 +192,9 @@ extern "C" void alists_killList (alists_alist *l)
 {
   if ((*l) != NULL)
     {
-      if ((*l)->next != NULL)
+      if (static_cast<alists_alist__opaque> ((*l))->next != NULL)
         {
-          alists_killList (&(*l)->next);
+          alists_killList (reinterpret_cast<alists_alist *> (&static_cast<alists_alist__opaque> ((*l))->next));
         }
       Storage_DEALLOCATE ((void **) &(*l), sizeof (alists__T1));
     }
@@ -210,21 +207,21 @@ extern "C" void alists_killList (alists_alist *l)
 
 extern "C" void alists_putItemIntoList (alists_alist l, void * c)
 {
-  if (l->noOfelements < MaxnoOfelements)
+  if (static_cast<alists_alist__opaque> (l)->noOfelements < MaxnoOfelements)
     {
-      l->noOfelements += 1;
-      l->elements.array[l->noOfelements-1] = c;
+      static_cast<alists_alist__opaque> (l)->noOfelements += 1;
+      static_cast<alists_alist__opaque> (l)->elements.array[static_cast<alists_alist__opaque> (l)->noOfelements-1] = c;
     }
-  else if (l->next != NULL)
+  else if (static_cast<alists_alist__opaque> (l)->next != NULL)
     {
       /* avoid dangling else.  */
-      alists_putItemIntoList (l->next, c);
+      alists_putItemIntoList (static_cast<alists_alist> (static_cast<alists_alist__opaque> (l)->next), c);
     }
   else
     {
       /* avoid dangling else.  */
-      l->next = alists_initList ();
-      alists_putItemIntoList (l->next, c);
+      static_cast<alists_alist__opaque> (l)->next = static_cast<alists_alist__opaque> (alists_initList ());
+      alists_putItemIntoList (static_cast<alists_alist> (static_cast<alists_alist__opaque> (l)->next), c);
     }
 }
 
@@ -237,17 +234,17 @@ extern "C" void * alists_getItemFromList (alists_alist l, unsigned int n)
 {
   while (l != NULL)
     {
-      if (n <= l->noOfelements)
+      if (n <= static_cast<alists_alist__opaque> (l)->noOfelements)
         {
-          return l->elements.array[n-1];
+          return static_cast<alists_alist__opaque> (l)->elements.array[n-1];
         }
       else
         {
-          n -= l->noOfelements;
+          n -= static_cast<alists_alist__opaque> (l)->noOfelements;
         }
-      l = l->next;
+      l = static_cast<alists_alist> (static_cast<alists_alist__opaque> (l)->next);
     }
-  return reinterpret_cast<void *> (0);
+  return static_cast<void *> (0);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -270,9 +267,9 @@ extern "C" unsigned int alists_getIndexOfList (alists_alist l, void * c)
   else
     {
       i = 1;
-      while (i <= l->noOfelements)
+      while (i <= static_cast<alists_alist__opaque> (l)->noOfelements)
         {
-          if (l->elements.array[i-1] == c)
+          if (static_cast<alists_alist__opaque> (l)->elements.array[i-1] == c)
             {
               return i;
             }
@@ -281,7 +278,7 @@ extern "C" unsigned int alists_getIndexOfList (alists_alist l, void * c)
               i += 1;
             }
         }
-      return l->noOfelements+(alists_getIndexOfList (l->next, c));
+      return static_cast<alists_alist__opaque> (l)->noOfelements+(alists_getIndexOfList (static_cast<alists_alist> (static_cast<alists_alist__opaque> (l)->next), c));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -304,8 +301,8 @@ extern "C" unsigned int alists_noOfItemsInList (alists_alist l)
     {
       t = 0;
       do {
-        t += l->noOfelements;
-        l = l->next;
+        t += static_cast<alists_alist__opaque> (l)->noOfelements;
+        l = static_cast<alists_alist> (static_cast<alists_alist__opaque> (l)->next);
       } while (! (l == NULL));
       return t;
     }
@@ -335,33 +332,33 @@ extern "C" void alists_includeItemIntoList (alists_alist l, void * c)
 
 extern "C" void alists_removeItemFromList (alists_alist l, void * c)
 {
-  alists_alist p;
+  alists_alist__opaque p;
   unsigned int i;
   bool found;
 
   if (l != NULL)
     {
       found = false;
-      p = NULL;
+      p = static_cast<alists_alist__opaque> (NULL);
       do {
         i = 1;
-        while ((i <= l->noOfelements) && (l->elements.array[i-1] != c))
+        while ((i <= static_cast<alists_alist__opaque> (l)->noOfelements) && (static_cast<alists_alist__opaque> (l)->elements.array[i-1] != c))
           {
             i += 1;
           }
-        if ((i <= l->noOfelements) && (l->elements.array[i-1] == c))
+        if ((i <= static_cast<alists_alist__opaque> (l)->noOfelements) && (static_cast<alists_alist__opaque> (l)->elements.array[i-1] == c))
           {
             found = true;
           }
         else
           {
-            p = l;
-            l = l->next;
+            p = static_cast<alists_alist__opaque> (l);
+            l = static_cast<alists_alist> (static_cast<alists_alist__opaque> (l)->next);
           }
       } while (! ((l == NULL) || found));
       if (found)
         {
-          removeItem (p, l, i);
+          removeItem (p, static_cast<alists_alist__opaque> (l), i);
         }
     }
 }
@@ -377,9 +374,9 @@ extern "C" bool alists_isItemInList (alists_alist l, void * c)
 
   do {
     i = 1;
-    while (i <= l->noOfelements)
+    while (i <= static_cast<alists_alist__opaque> (l)->noOfelements)
       {
-        if (l->elements.array[i-1] == c)
+        if (static_cast<alists_alist__opaque> (l)->elements.array[i-1] == c)
           {
             return true;
           }
@@ -388,7 +385,7 @@ extern "C" bool alists_isItemInList (alists_alist l, void * c)
             i += 1;
           }
       }
-    l = l->next;
+    l = static_cast<alists_alist> (static_cast<alists_alist__opaque> (l)->next);
   } while (! (l == NULL));
   return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -421,19 +418,19 @@ extern "C" void alists_foreachItemInListDo (alists_alist l, alists_performOperat
 
 extern "C" alists_alist alists_duplicateList (alists_alist l)
 {
-  alists_alist m;
+  alists_alist__opaque m;
   unsigned int n;
   unsigned int i;
 
-  m = alists_initList ();
+  m = static_cast<alists_alist__opaque> (alists_initList ());
   n = alists_noOfItemsInList (l);
   i = 1;
   while (i <= n)
     {
-      alists_putItemIntoList (m, alists_getItemFromList (l, i));
+      alists_putItemIntoList (static_cast<alists_alist> (m), alists_getItemFromList (l, i));
       i += 1;
     }
-  return m;
+  return static_cast<alists_alist> (m);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -475,10 +472,10 @@ extern "C" bool alists_equalList (alists_alist left, alists_alist right)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_alists_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_alists_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_alists_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_alists_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

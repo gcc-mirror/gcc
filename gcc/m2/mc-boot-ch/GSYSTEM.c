@@ -27,12 +27,12 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 EXTERN
 void
-_M2_SYSTEM_init (int argc, char *p)
+_M2_SYSTEM_init (int argc, char *argv[], char *envp[])
 {
 }
 
 EXTERN
 void
-_M2_SYSTEM_fini (int argc, char *p)
+_M2_SYSTEM_fini (int argc, char *argv[], char *envp[])
 {
 }

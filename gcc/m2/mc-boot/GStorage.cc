@@ -34,9 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _Storage_H
 #define _Storage_C
 
+#include "GStorage.h"
 #   include "GSysStorage.h"
 
 extern "C" void Storage_ALLOCATE (void * *a, unsigned int Size);
@@ -66,10 +66,10 @@ extern "C" bool Storage_Available (unsigned int Size)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_Storage_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Storage_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_Storage_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Storage_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

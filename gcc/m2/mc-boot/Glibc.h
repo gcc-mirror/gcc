@@ -70,7 +70,7 @@ struct libc_tm_r {
                    int tm_yday;
                    int tm_isdst;
                    long int tm_gmtoff;
-                   void *tm_zone;
+                   void * tm_zone;
                  };
 
 struct libc_timeb_r {

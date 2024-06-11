@@ -41,9 +41,9 @@ see <https://www.gnu.org/licenses/>.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcp3_H
 #define _mcp3_C
 
+#include "Gmcp3.h"
 #   include "GDynamicStrings.h"
 #   include "GmcError.h"
 #   include "GnameKey.h"
@@ -7846,10 +7846,10 @@ extern "C" bool mcp3_CompilationUnit (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcp3_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp3_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcp3_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcp3_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

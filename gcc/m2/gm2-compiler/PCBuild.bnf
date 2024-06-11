@@ -704,7 +704,8 @@ ConstructorOrConstActualParameters := Constructor | ConstActualParameters  % Pus
 
 ConstSetOrQualidentOrFunction :=                                           % PushAutoOff %
                                                                            % VAR tokpos: CARDINAL ; %
-                                 (                                         % tokpos := GetTokenNo () %
+                                                                           % tokpos := GetTokenNo () %
+                                 (
                                    PushQualident
                                    ( ConstructorOrConstActualParameters |  % PushConstType %
                                                                            % PopNothing %
@@ -1008,8 +1009,8 @@ ConstructorOrSimpleDes := Constructor |                                    % Pop
 
 SetOrDesignatorOrFunction :=                                              % PushAutoOff %
                                                                           % VAR tokpos: CARDINAL ; %
-
-                             (                                            % tokpos := GetTokenNo () %
+                                                                          % tokpos := GetTokenNo () %
+                             (
                                PushQualident
                                ( ConstructorOrSimpleDes |                 % PopNothing %
                                                           )

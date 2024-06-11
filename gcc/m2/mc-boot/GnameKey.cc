@@ -43,9 +43,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _nameKey_H
 #define _nameKey_C
 
+#include "GnameKey.h"
 #   include "GSYSTEM.h"
 #   include "GStorage.h"
 #   include "GIndexing.h"
@@ -394,13 +394,13 @@ extern "C" void nameKey_getKey (nameKey_Name key, char *a, unsigned int _a_high)
   higha = _a_high;
   while (((p != NULL) && (i <= higha)) && ((*p) != ASCII_nul))
     {
-      a[i] = (*p);
+      const_cast<char *>(a)[i] = (*p);
       p += 1;
       i += 1;
     }
   if (i <= higha)
     {
-      a[i] = ASCII_nul;
+      const_cast<char *>(a)[i] = ASCII_nul;
     }
 }
 
@@ -572,7 +572,7 @@ extern "C" void * nameKey_keyToCharStar (nameKey_Name key)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   lastIndice = 0;
   keyIndex = Indexing_InitIndex (1);
@@ -580,6 +580,6 @@ extern "C" void _M2_nameKey_init (__attribute__((unused)) int argc,__attribute__
   binaryTree->left = NULL;
 }
 
-extern "C" void _M2_nameKey_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_nameKey_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

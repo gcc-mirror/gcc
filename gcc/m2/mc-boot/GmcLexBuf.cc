@@ -42,9 +42,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcLexBuf_H
 #define _mcLexBuf_C
 
+#include "GmcLexBuf.h"
 #   include "Gmcflex.h"
 #   include "Glibc.h"
 #   include "GSYSTEM.h"
@@ -58,12 +58,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   include "GmcDebug.h"
 #   include "GM2RTS.h"
 
-mcComment_commentDesc mcLexBuf_currentcomment;
-mcComment_commentDesc mcLexBuf_lastcomment;
-int mcLexBuf_currentinteger;
-unsigned int mcLexBuf_currentcolumn;
-void * mcLexBuf_currentstring;
-mcReserved_toktype mcLexBuf_currenttoken;
 #   define MaxBucketSize 100
 #   define Debugging false
 typedef struct mcLexBuf_tokenDesc_r mcLexBuf_tokenDesc;
@@ -1152,7 +1146,7 @@ static void doGetToken (void)
               /* call the lexical phase to place a new token into the last bucket.  */
               a = mcflex_getToken ();
               mcLexBuf_getToken ();  /* and call ourselves again to collect the token from bucket.  */
-              return ;  /* and call ourselves again to collect the token from bucket.  */
+              return;  /* and call ourselves again to collect the token from bucket.  */
             }
         }
       else
@@ -1840,11 +1834,11 @@ extern "C" void mcLexBuf_popFile (void * filename)
   /* source file list is empty, cannot pop an include..  */
 }
 
-extern "C" void _M2_mcLexBuf_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcLexBuf_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   init ();
 }
 
-extern "C" void _M2_mcLexBuf_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcLexBuf_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
