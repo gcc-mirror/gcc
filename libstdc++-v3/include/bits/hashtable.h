@@ -210,6 +210,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_same<typename _Alloc::value_type, _Value>{},
 	  "unordered container must have the same value_type as its allocator");
 #endif
+      static_assert(is_copy_constructible<_Hash>::value,
+	  "hash function must be copy constructible");
 
       using __traits_type = _Traits;
       using __hash_cached = typename __traits_type::__hash_cached;
