@@ -5969,7 +5969,7 @@ stabilize_expr (tree exp, tree* initp)
     }
   *initp = init_expr;
 
-  gcc_assert (!TREE_SIDE_EFFECTS (exp));
+  gcc_assert (!TREE_SIDE_EFFECTS (exp) || TREE_THIS_VOLATILE (exp));
   return exp;
 }
 
