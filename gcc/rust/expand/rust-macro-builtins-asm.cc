@@ -385,21 +385,6 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       rust_unreachable ();
       return tl::nullopt;
     }
-  else if (auto label_str = parse_label (parser, last_token_id, inline_asm_ctx))
-    {
-      auto block = parser.parse_block_expr ();
-      struct AST::InlineAsmOperand::Label label (label_str,
-						 block ? block->clone_expr ()
-						       : nullptr);
-      reg_operand.set_label (label);
-      return reg_operand;
-    }
-  else if (inline_asm_ctx.allows_templates ())
-    {
-      // TODO: If we allow templating, do sth here
-      rust_unreachable ();
-      return tl::nullopt;
-    }
   else
     {
       // TODO: It is  weird that we can't seem to match any identifier,
@@ -725,43 +710,22 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
     }
 }
 
-tl::optional<std::string>
-parse_label (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	     InlineAsmContext &inline_asm_ctx)
-{
-  auto token = parser.peek_current_token ();
+// bool
+// is_label (const std::string &potential_label)
+// {
 
-  if (token->get_id () != last_token_id && token->get_id () == STRING_LITERAL)
-    {
-      // very nice, we got a string.
-      auto label = token->as_string ();
+//   if (potential_label.empty () || potential_label.back () != ':')
+//     return false;
 
-      bool flag = true;
-      if (label.empty () || label.back () != ':')
-	flag = false; // Check if string is empty or does not end with a colon
+//   // Check if all characters before the last colon are digits
+//   for (size_t i = 0; i < potential_label.length () - 1; i++)
+//   {
+//     if (potential_label[i] < '0' || potential_label[i] > '9')
+//       return false;
+//   }
 
-      // Check if all characters before the last colon are digits
-      for (int i = 0; i < label.length () - 1 && flag == true; i++)
-	{
-	  if (label[i] < '0' || label[i] > '9')
-	    flag = false;
-	}
-
-      if (flag == true)
-	{
-	  parser.skip_token ();
-	  return token->as_string ();
-	}
-      else
-	{
-	  return tl::nullopt;
-	}
-    }
-  else
-    {
-      return tl::nullopt;
-    }
-}
+//   return true;
+// }
 
 bool
 validate (InlineAsmContext &inline_asm_ctx)
