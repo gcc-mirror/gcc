@@ -1,3 +1,12 @@
+2024-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/incomplete8.adb: New test.
+
+2024-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114398
+	* gnat.dg/access11.adb: New test.
+
 2024-06-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
