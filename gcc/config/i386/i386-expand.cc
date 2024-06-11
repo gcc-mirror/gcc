@@ -26041,8 +26041,9 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
       tmp2 = ix86_gen_bcst_mem (mode, op2);
       if (!tmp2)
 	{
-	  tmp2 = validize_mem (force_const_mem (mode, op2));
+	  tmp2 = force_const_mem (mode, op2);
 	  rtx bcast = ix86_broadcast_from_constant (mode, tmp2);
+	  tmp2 = validize_mem (tmp2);
 	  if (bcast)
 	    {
 	      rtx reg2 = gen_reg_rtx (mode);
