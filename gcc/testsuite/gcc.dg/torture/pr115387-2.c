@@ -1,6 +1,5 @@
 /* Test there is no ICE when compile.  */
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3" } */
 
 #include <stddef.h>
 #include <stdint-gcc.h>
