@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_SSTREAM
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
@@ -29,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-builtins.h"
 #include "jit-recording.h"
 #include "jit-playback.h"
-#include <sstream>
 
 namespace gcc {
 namespace jit {
