@@ -121,6 +121,7 @@ static void set_std_c99 (int);
 static void set_std_c11 (int);
 static void set_std_c17 (int);
 static void set_std_c23 (int);
+static void set_std_c2y (int);
 static void check_deps_environment_vars (void);
 static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
@@ -741,6 +742,16 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_std_gnu23:
       if (!preprocessing_asm_p)
 	set_std_c23 (false /* ISO */);
+      break;
+
+    case OPT_std_c2y:
+      if (!preprocessing_asm_p)
+	set_std_c2y (true /* ISO */);
+      break;
+
+    case OPT_std_gnu2y:
+      if (!preprocessing_asm_p)
+	set_std_c2y (false /* ISO */);
       break;
 
     case OPT_trigraphs:
@@ -1782,6 +1793,7 @@ set_std_c89 (int c94, int iso)
   flag_isoc99 = 0;
   flag_isoc11 = 0;
   flag_isoc23 = 0;
+  flag_isoc2y = 0;
   lang_hooks.name = "GNU C89";
 }
 
@@ -1793,6 +1805,7 @@ set_std_c99 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2y = 0;
   flag_isoc23 = 0;
   flag_isoc11 = 0;
   flag_isoc99 = 1;
@@ -1808,6 +1821,7 @@ set_std_c11 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2y = 0;
   flag_isoc23 = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
@@ -1823,6 +1837,7 @@ set_std_c17 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2y = 0;
   flag_isoc23 = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
@@ -1830,7 +1845,7 @@ set_std_c17 (int iso)
   lang_hooks.name = "GNU C17";
 }
 
-/* Set the C 2X standard (without GNU extensions if ISO).  */
+/* Set the C 23 standard (without GNU extensions if ISO).  */
 static void
 set_std_c23 (int iso)
 {
@@ -1838,11 +1853,28 @@ set_std_c23 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2y = 0;
   flag_isoc23 = 1;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
   lang_hooks.name = "GNU C23";
+}
+
+/* Set the C 2Y standard (without GNU extensions if ISO).  */
+static void
+set_std_c2y (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_STDC23: CLK_GNUC23);
+  flag_no_asm = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  flag_isoc2y = 1;
+  flag_isoc23 = 1;
+  flag_isoc11 = 1;
+  flag_isoc99 = 1;
+  flag_isoc94 = 1;
+  lang_hooks.name = "GNU C2Y";
 }
 
 

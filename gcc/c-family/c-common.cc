@@ -216,17 +216,21 @@ int flag_cond_mismatch;
 
 int flag_isoc94;
 
-/* Nonzero means use the ISO C99 (or C11) dialect of C.  */
+/* Nonzero means use the ISO C99 (or later) dialect of C.  */
 
 int flag_isoc99;
 
-/* Nonzero means use the ISO C11 dialect of C.  */
+/* Nonzero means use the ISO C11 (or later) dialect of C.  */
 
 int flag_isoc11;
 
-/* Nonzero means use the ISO C23 dialect of C.  */
+/* Nonzero means use the ISO C23 (or later) dialect of C.  */
 
 int flag_isoc23;
+
+/* Nonzero means use the ISO C2Y (or later) dialect of C.  */
+
+int flag_isoc2y;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 

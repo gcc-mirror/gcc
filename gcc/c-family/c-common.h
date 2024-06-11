@@ -531,7 +531,7 @@ extern GTY(()) tree c_global_trees[CTI_MAX];
 
 enum c_language_kind
 {
-  clk_c		= 0,		/* C90, C94, C99, C11 or C23 */
+  clk_c		= 0,		/* C without ObjC features.  */
   clk_objc	= 1,		/* clk_c with ObjC features.  */
   clk_cxx	= 2,		/* ANSI/ISO C++ */
   clk_objcxx	= 3		/* clk_cxx with ObjC features.  */
@@ -676,9 +676,13 @@ extern int flag_isoc99;
 
 extern int flag_isoc11;
 
-/* Nonzero means use the ISO C23 dialect of C.  */
+/* Nonzero means use the ISO C23 (or later) dialect of C.  */
 
 extern int flag_isoc23;
+
+/* Nonzero means use the ISO C2Y (or later) dialect of C.  */
+
+extern int flag_isoc2y;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 

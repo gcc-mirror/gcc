@@ -441,6 +441,10 @@ Wc11-c2x-compat
 C ObjC Alias(Wc11-c23-compat)
 Deprecated in favor of -Wc11-c23-compat.
 
+Wc23-c2y-compat
+C ObjC Var(warn_c23_c2y_compat) Init(-1) Warning
+Warn about features not present in ISO C23, but present in ISO C2Y.
+
 Wc90-c99-compat
 C ObjC CPP(cpp_warn_c90_c99_compat) CppReason(CPP_W_C90_C99_COMPAT) Var(warn_c90_c99_compat) Init(-1) Warning
 Warn about features not present in ISO C90, but present in ISO C99.
@@ -2515,6 +2519,10 @@ std=c2x
 C ObjC Alias(std=c23)
 Deprecated in favor of -std=c23.
 
+std=c2y
+C ObjC
+Conform to the ISO 202Y C standard draft (experimental and incomplete support).
+
 std=c89
 C ObjC Alias(std=c90)
 Conform to the ISO 1990 C standard.
@@ -2612,6 +2620,10 @@ Conform to the ISO 2023 C standard draft (expected to be published in 2024) with
 std=gnu2x
 C ObjC Alias(std=gnu23)
 Deprecated in favor of -std=gnu23.
+
+std=gnu2y
+C ObjC
+Conform to the ISO 202Y C standard draft with GNU extensions (experimental and incomplete support).
 
 std=gnu89
 C ObjC Alias(std=gnu90)

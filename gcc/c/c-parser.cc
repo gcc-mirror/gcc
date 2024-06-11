@@ -1534,6 +1534,9 @@ disable_extension_diagnostics (void)
 	     /* Similarly for warn_c11_c23_compat.  */
 	     | ((warn_c11_c23_compat == 1) << 11)
 	     | ((warn_c11_c23_compat == -1) << 12)
+	     /* Similarly for warn_c23_c2y_compat.  */
+	     | ((warn_c23_c2y_compat == 1) << 13)
+	     | ((warn_c23_c2y_compat == -1) << 14)
 	     );
   cpp_opts->cpp_pedantic = pedantic = 0;
   warn_pointer_arith = 0;
@@ -1545,6 +1548,7 @@ disable_extension_diagnostics (void)
   warn_c90_c99_compat = 0;
   warn_c99_c11_compat = 0;
   warn_c11_c23_compat = 0;
+  warn_c23_c2y_compat = 0;
   return ret;
 }
 
@@ -1565,6 +1569,7 @@ restore_extension_diagnostics (int flags)
   warn_c90_c99_compat = (flags >> 7) & 1 ? 1 : ((flags >> 8) & 1 ? -1 : 0);
   warn_c99_c11_compat = (flags >> 9) & 1 ? 1 : ((flags >> 10) & 1 ? -1 : 0);
   warn_c11_c23_compat = (flags >> 11) & 1 ? 1 : ((flags >> 12) & 1 ? -1 : 0);
+  warn_c23_c2y_compat = (flags >> 13) & 1 ? 1 : ((flags >> 14) & 1 ? -1 : 0);
 }
 
 /* Helper data structure for parsing #pragma acc routine.  */
@@ -10273,8 +10278,14 @@ struct c_generic_association
 /* Parse a generic-selection.  (C11 6.5.1.1).
    
    generic-selection:
-     _Generic ( assignment-expression , generic-assoc-list )
-     
+     _Generic ( generic-controlling-operand , generic-assoc-list )
+
+  generic-controlling-operand:
+    assignment-expression
+    type-name
+
+  (The use of a type-name is new in C2Y.)
+
    generic-assoc-list:
      generic-association
      generic-assoc-list , generic-association
@@ -10314,30 +10325,43 @@ c_parser_generic_selection (c_parser *parser)
   if (!parens.require_open (parser))
     return error_expr;
 
-  c_inhibit_evaluation_warnings++;
   selector_loc = c_parser_peek_token (parser)->location;
-  selector = c_parser_expr_no_commas (parser, NULL);
-  selector = default_function_array_conversion (selector_loc, selector);
-  c_inhibit_evaluation_warnings--;
-
-  if (selector.value == error_mark_node)
+  if (c_parser_next_tokens_start_typename (parser, cla_prefer_id))
     {
-      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
-      return selector;
+      c_inhibit_evaluation_warnings++;
+      pedwarn_c23 (selector_loc, OPT_Wpedantic,
+		   "ISO C does not support use of type name as %<_Generic%> "
+		   "controlling operand before C2Y");
+      struct c_type_name *type = c_parser_type_name (parser);
+      selector_type = groktypename (type, NULL, NULL);
+      c_inhibit_evaluation_warnings--;
     }
-  mark_exp_read (selector.value);
-  selector_type = TREE_TYPE (selector.value);
-  /* In ISO C terms, rvalues (including the controlling expression of
-     _Generic) do not have qualified types.  */
-  if (TREE_CODE (selector_type) != ARRAY_TYPE)
-    selector_type = TYPE_MAIN_VARIANT (selector_type);
-  /* In ISO C terms, _Noreturn is not part of the type of expressions
-     such as &abort, but in GCC it is represented internally as a type
-     qualifier.  */
-  if (FUNCTION_POINTER_TYPE_P (selector_type)
-      && TYPE_QUALS (TREE_TYPE (selector_type)) != TYPE_UNQUALIFIED)
-    selector_type
-      = build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (selector_type)));
+  else
+    {
+      c_inhibit_evaluation_warnings++;
+      selector = c_parser_expr_no_commas (parser, NULL);
+      selector = default_function_array_conversion (selector_loc, selector);
+      c_inhibit_evaluation_warnings--;
+
+      if (selector.value == error_mark_node)
+	{
+	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+	  return selector;
+	}
+      mark_exp_read (selector.value);
+      selector_type = TREE_TYPE (selector.value);
+      /* In ISO C terms, rvalues (including the controlling expression
+	 of _Generic) do not have qualified types.  */
+      if (TREE_CODE (selector_type) != ARRAY_TYPE)
+	selector_type = TYPE_MAIN_VARIANT (selector_type);
+      /* In ISO C terms, _Noreturn is not part of the type of expressions
+	 such as &abort, but in GCC it is represented internally as a type
+	 qualifier.  */
+      if (FUNCTION_POINTER_TYPE_P (selector_type)
+	  && TYPE_QUALS (TREE_TYPE (selector_type)) != TYPE_UNQUALIFIED)
+	selector_type
+	  = build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (selector_type)));
+    }
 
   if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
     {
@@ -10376,11 +10400,13 @@ c_parser_generic_selection (c_parser *parser)
 	    }
 
 	  if (TREE_CODE (assoc.type) == FUNCTION_TYPE)
-	    error_at (assoc.type_location,
-		      "%<_Generic%> association has function type");
+	    pedwarn_c23 (assoc.type_location, OPT_Wpedantic,
+			 "ISO C does not support %<_Generic%> association with "
+			 "function type before C2Y");
 	  else if (!COMPLETE_TYPE_P (assoc.type))
-	    error_at (assoc.type_location,
-		      "%<_Generic%> association has incomplete type");
+	    pedwarn_c23 (assoc.type_location, OPT_Wpedantic,
+			 "ISO C does not support %<_Generic%> association with "
+			 "incomplete type before C2Y");
 
 	  if (c_type_variably_modified_p (assoc.type))
 	    error_at (assoc.type_location,

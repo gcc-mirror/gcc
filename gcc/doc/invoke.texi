@@ -340,7 +340,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare  -Wbool-operation
 -Wno-builtin-declaration-mismatch
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat
--Wc11-c23-compat
+-Wc11-c23-compat  -Wc23-c2y-compat
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat
 -Wc++20-compat
 -Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
@@ -2472,6 +2472,10 @@ ISO C23, the 2023 revision of the ISO C standard (expected to be
 published in 2024).  The support for this version is experimental and
 incomplete.  The name @samp{c2x} is deprecated.
 
+@item c2y
+The next version of the ISO C standard, still under development.  The
+support for this version is experimental and incomplete.
+
 @item gnu90
 @itemx gnu89
 GNU dialect of ISO C90 (including some C99 features).
@@ -2491,6 +2495,10 @@ GNU dialect of ISO C17.  This is the default for C code.
 
 @item gnu23
 @itemx gnu2x
+GNU dialect of ISO C23.  The support for this version is experimental
+and incomplete.  The name @samp{gnu2x} is deprecated.
+
+@item gnu2y
 The next version of the ISO C standard, still under development, plus
 GNU extensions.  The support for this version is experimental and
 incomplete.  The name @samp{gnu2x} is deprecated.
@@ -9324,6 +9332,19 @@ standards mode.  Warnings are disabled in the expression that follows
 deprecated.
 
 When not compiling in C23 mode, these warnings are upgraded to errors
+by @option{-pedantic-errors}.
+
+@opindex Wc23-c2y-compat
+@opindex Wno-c23-c2y-compat
+@item -Wc23-c2y-compat @r{(C and Objective-C only)}
+@itemx -Wc23-c2y-compat @r{(C and Objective-C only)}
+Warn about features not present in ISO C23, but present in ISO C2Y.
+For instance, warn about @code{_Generic} selecting with a type name
+instead of an expression.  This option is independent of the standards
+mode.  Warnings are disabled in the expression that follows
+@code{__extension__}.
+
+When not compiling in C2Y mode, these warnings are upgraded to errors
 by @option{-pedantic-errors}.
 
 @opindex Wc++-compat

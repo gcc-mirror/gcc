@@ -160,6 +160,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wbuiltin-macro-redefined)
 Wc11-c23-compat
 UrlSuffix(gcc/Warning-Options.html#index-Wc11-c23-compat)
 
+Wc23-c2y-compat
+UrlSuffix(gcc/Warning-Options.html#index-Wc23-c2y-compat)
+
 Wc90-c99-compat
 UrlSuffix(gcc/Warning-Options.html#index-Wc90-c99-compat)
 

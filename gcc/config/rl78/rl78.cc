@@ -367,6 +367,7 @@ rl78_option_override (void)
       && strcmp (lang_hooks.name, "GNU C11")
       && strcmp (lang_hooks.name, "GNU C17")
       && strcmp (lang_hooks.name, "GNU C23")
+      && strcmp (lang_hooks.name, "GNU C2Y")
       && strcmp (lang_hooks.name, "GNU C89")
       && strcmp (lang_hooks.name, "GNU C99")
       /* Compiling with -flto results in a language of GNU GIMPLE being used... */
