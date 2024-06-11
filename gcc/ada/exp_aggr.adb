@@ -1486,14 +1486,16 @@ package body Exp_Aggr is
          --  object creation that will invoke it otherwise.
 
          else
-            if Present (Base_Init_Proc (Base_Type (Ctype)))
-              or else Has_Task (Base_Type (Ctype))
-            then
-               Append_List_To (Stmts,
-                 Build_Initialization_Call (N,
-                   Id_Ref            => Indexed_Comp,
-                   Typ               => Ctype,
-                   With_Default_Init => True));
+            if Present (Base_Init_Proc (Ctype)) then
+               Check_Restriction (No_Default_Initialization, N);
+
+               if not Restriction_Active (No_Default_Initialization) then
+                  Append_List_To (Stmts,
+                    Build_Initialization_Call (N,
+                      Id_Ref            => Indexed_Comp,
+                      Typ               => Ctype,
+                      With_Default_Init => True));
+               end if;
 
                --  If the component type has invariants, add an invariant
                --  check after the component is default-initialized. It will
@@ -3185,6 +3187,8 @@ package body Exp_Aggr is
          elsif Box_Present (Comp)
            and then Has_Non_Null_Base_Init_Proc (Etype (Selector))
          then
+            Check_Restriction (No_Default_Initialization, N);
+
             if Ekind (Selector) /= E_Discriminant then
                Generate_Finalization_Actions;
             end if;
@@ -3216,15 +3220,18 @@ package body Exp_Aggr is
                end if;
             end;
 
-            Append_List_To (L,
-              Build_Initialization_Call (N,
-                Id_Ref            => Make_Selected_Component (Loc,
-                                       Prefix        => New_Copy_Tree (Target),
-                                       Selector_Name =>
-                                         New_Occurrence_Of (Selector, Loc)),
-                Typ               => Etype (Selector),
-                Enclos_Type       => Typ,
-                With_Default_Init => True));
+            if not Restriction_Active (No_Default_Initialization) then
+               Append_List_To (L,
+                 Build_Initialization_Call (N,
+                   Id_Ref            => Make_Selected_Component (Loc,
+                                          Prefix        =>
+                                            New_Copy_Tree (Target),
+                                          Selector_Name =>
+                                            New_Occurrence_Of (Selector, Loc)),
+                   Typ               => Etype (Selector),
+                   Enclos_Type       => Typ,
+                   With_Default_Init => True));
+            end if;
 
          --  Prepare for component assignment
 

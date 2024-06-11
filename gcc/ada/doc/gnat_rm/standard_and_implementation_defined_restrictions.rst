@@ -163,8 +163,8 @@ No_Default_Initialization
 .. index:: No_Default_Initialization
 
 [GNAT] This restriction prohibits any instance of default initialization
-of variables.  The binder implements a consistency rule which prevents
-any unit compiled without the restriction from with'ing a unit with the
+of variables or components. The binder implements a consistency check that
+prevents any unit without the restriction from with'ing a unit with the
 restriction (this allows the generation of initialization procedures to
 be skipped, since you can be sure that no call is ever generated to an
 initialization procedure in a unit with the restriction active). If used
