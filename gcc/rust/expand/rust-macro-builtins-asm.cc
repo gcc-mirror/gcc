@@ -703,13 +703,26 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   // operands stream, also handles the optional ","
   parse_asm_arg (parser, last_token_id, inline_asm_ctx);
 
-  AST::SingleASTNode single = AST::SingleASTNode (
-    inline_asm_ctx.inline_asm.clone_expr_without_block ());
-  std::vector<AST::SingleASTNode> single_vec = {single};
+  // TODO: I'm putting the validation here because the rust reference put it
+  // here Per Arthur's advice we would actually do the validation in a different
+  // stage. and visit on the InlineAsm AST instead of it's context.
+  auto is_valid = validate (inline_asm_ctx);
 
-  AST::Fragment fragment_ast
-    = AST::Fragment (single_vec, std::vector<std::unique_ptr<AST::Token>> ());
-  return fragment_ast;
+  if (is_valid)
+    {
+      AST::SingleASTNode single = AST::SingleASTNode (
+	inline_asm_ctx.inline_asm.clone_expr_without_block ());
+      std::vector<AST::SingleASTNode> single_vec = {single};
+
+      AST::Fragment fragment_ast
+	= AST::Fragment (single_vec,
+			 std::vector<std::unique_ptr<AST::Token>> ());
+      return fragment_ast;
+    }
+  else
+    {
+      return tl::nullopt;
+    }
 }
 
 tl::optional<std::string>
@@ -748,5 +761,11 @@ parse_label (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       return tl::nullopt;
     }
+}
+
+bool
+validate (InlineAsmContext &inline_asm_ctx)
+{
+  return true;
 }
 } // namespace Rust
