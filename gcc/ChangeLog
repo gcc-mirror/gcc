@@ -1,3 +1,68 @@
+2024-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/gm2.texi (Documentation): Fix typos, grammar, and a link.
+
+2024-06-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-array-bounds.cc (array_bounds_checker::array_bounds_checker):
+	Always use current range_query.
+	(pass_data_array_bounds): New.
+	(pass_array_bounds): New.
+	(make_pass_array_bounds): New.
+	* gimple-array-bounds.h  (array_bounds_checker): Adjust prototype.
+	* passes.def (pass_array_bounds): New.  Add after VRP1.
+	* timevar.def (TV_TREE_ARRAY_BOUNDS): New timevar.
+	* tree-pass.h (make_pass_array_bounds): Add prototype.
+	* tree-vrp.cc (execute_ranger_vrp): Remove warning param and do
+	not invoke array bounds warning pass.
+	(pass_vrp::pass_vrp): Adjust params.
+	(pass_vrp::close): Adjust parameters.
+	(pass_vrp::warn_array_bounds_p): Remove.
+	(make_pass_vrp): Remove warning param.
+	(make_pass_early_vrp): Remove warning param.
+	(make_pass_fast_vrp): Remove warning param.
+
+2024-06-10  Raphael Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (*bextdisi): New pattern.
+
+2024-06-10  Pan Li  <pan2.li@intel.com>
+
+	PR target/115387
+	* tree-ssa-math-opts.cc (math_opts_dom_walker::after_dom_children): Take
+	the gsi of start_bb instead of last_bb.
+
+2024-06-10  Raphael Zinsly  <rzinsly@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (*bextdisi): New pattern.
+
+2024-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115388
+	* tree-ssa-dse.cc (dse_classify_store): Handle irreducible
+	regions.
+	(pass_dse::execute): Make sure to mark backedges.
+
+2024-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115395
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Handle STMT_VINFO_REDUC_EPILOGUE_ADJUSTMENT also for SLP
+	reductions of group_size one.
+
+2024-06-10  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.cc (expand_perm_as_replicate): Handle memory
+	operands.
+	* config/s390/vx-builtins.md (vec_splats<mode>): Turn into parameterized expander.
+	(@vec_splats<mode>): New expander.
+
+2024-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115383
+	* tree-vect-stmts.cc (vectorizable_condition): Handle
+	generating a chain of .FOLD_EXTRACT_LAST.
+
 2024-06-09  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/freebsd-spec.h: Change fbsd-lib-spec for FreeBSD > 13,

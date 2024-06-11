@@ -1,3 +1,58 @@
+2024-06-10  Raphael Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/zbs-ext.c: New test.
+
+2024-06-10  Pan Li  <pan2.li@intel.com>
+
+	PR target/115387
+	* gcc.target/riscv/pr115387-1.c: New test.
+	* gcc.target/riscv/pr115387-2.c: New test.
+
+2024-06-10  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/115415
+	PR tree-optimization/115388
+	* gcc.dg/torture/pr115388.c: Use `signed char` directly instead
+	of plain `char`.
+
+2024-06-10  Raphael Zinsly  <rzinsly@ventanamicro.com>
+
+	* gcc.target/riscv/bext-ext.c: New test.
+
+2024-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115388
+	* gcc.dg/torture/pr115388.c: New testcase.
+
+2024-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114708
+	* gnat.dg/incomplete8.adb: New test.
+
+2024-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114398
+	* gnat.dg/access11.adb: New test.
+
+2024-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115395
+	* gcc.dg/vect/pr115395.c: New testcase.
+
+2024-06-10  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* g++.dg/torture/vshuf-mem.C: New test.
+
+2024-06-10  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/r10k-cache-barrier-13.c: Add -mno-branch-likely
+	option.
+
+2024-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115383
+	* gcc.dg/vect/pr115383.c: New testcase.
+
 2024-06-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/112600

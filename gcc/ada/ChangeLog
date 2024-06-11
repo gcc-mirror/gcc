@@ -1,3 +1,222 @@
+2024-06-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Nonbinary_Modular_Op): Create an explicit Mod
+	for additive operations if No_Implicit_Conditionals is in effect.
+	(Expand_Modular_Addition): Likewise.
+	(Expand_Modular_Subtraction): Likewise.
+	(Expand_Modular_Op): Always use an unsigned type obtained by calling
+	Small_Integer_Type_For on the required size.
+
+2024-06-10  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Might_Need_BIP_Task_Actuals): Add support
+	for access-to-subprogram parameter types.
+	* exp_ch6.adb (Add_Task_Actuals_To_Build_In_Place_Call):
+	Add dummy BIP parameters to access-to-subprogram types
+	that may reference a function that has BIP parameters.
+
+2024-06-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_prag.adb (Set_Convention_From_Pragma): If the specified convention on
+	a record type is not C_Pass_By_Copy, then force the C_Pass_By_Copy flag to
+	False, to ensure that it's overridden.
+
+2024-06-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Association): Change "not Present"
+	to "No" in test of Add_Named_Subp.
+
+2024-06-10  Steve Baird  <baird@adacore.com>
+
+	* freeze.adb
+	(Should_Freeze_Type.Is_Dispatching_Call_Or_Aggregate): Treat an extension
+	aggregate or a delta aggregate like a regular aggregate.
+
+2024-06-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_aggr.adb (Resolve_Iterated_Association): In the case of
+	N_Iterated_Element_Associations that have a key expression, issue
+	an error if the aggregate type does not have an Add_Named
+	operation, and include a reference to RM22 4.3.5(24) in the error
+	message. In the case of an N_Component_Association with a
+	Defining_Identifer where the "choice" is given by a function call,
+	in the creation of the iterator_specification associate a copy of
+	Choice as its Name, and remove the call to
+	Analyze_Iterator_Specification, which was causing problems with
+	the reanalysis of function calls originally given in prefixed form
+	that were transformed into function calls in normal (infix) form.
+	The iterator_specification will be analyzed later in any case, so
+	that call should not be done here. Remove the with and use of
+	Sem_Ch5.
+
+2024-06-10  Justin Squirek  <squirek@adacore.com>
+
+	* ali.adb (Get_Nat): Remove unnecessary parentheses.
+	* exp_ch11.adb (Expand_Local_Exception_Handlers): Remove
+	unnecessary parentheses.
+	* freeze.adb (Freeze_Entity): Remove unnecessary parentheses.
+	* lib-list.adb (List): Remove unnecessary parentheses.
+	* par-ch5.adb (P_Condition): Add extra parentheses checks on
+	condition operands.
+	* sem_ch3.adb (Add_Interface_Tag_Components): Remove unnecessary
+	parentheses.
+	(Check_Delta_Expression): Remove unnecessary parenthesis.
+	(Check_Digits_Expression): Remove unnecessary parentheses.
+	* sem_ch12.adb (Validate_Array_Type_Instance): Remove unnecessary
+	parentheses.
+
+2024-06-10  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Element_Loop): Add
+	expansion of filter condition.
+	(Expand_Formal_Container_Loop): Add expansion of filter condition.
+
+2024-06-10  Justin Squirek  <squirek@adacore.com>
+
+	* accessibility.adb (Accessibility_Level): Use Get_Full_View to
+	avoid crashes when calculating scope.
+
+2024-06-10  Justin Squirek  <squirek@adacore.com>
+
+	* sem_warn.adb (Warn_On_Unreferenced_Entity): Add a condition to
+	ignore warnings on unreferenced abstract subprogram.
+
+2024-06-10  Justin Squirek  <squirek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Add check for interface parent
+	types.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads, exp_attr.adb, exp_ch4.adb, exp_ch7.adb,
+	lib-writ.adb, libgnat/a-stbuut.ads, sem_ch13.adb, sem_ch3.adb,
+	sem_ch7.adb: Use "RM" in comments.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb
+	(Immediate_Context_Implies_Is_Potentially_Unevaluated): Use
+	collective subtypes in membership tests.
+	(Is_Known_On_Entry): Require all alternatives in a case statement
+	to return; this change could prevent a recently fixed glitch,
+	where one of the alternatives relied on the return statement
+	afterwards (also, the new code is shorter).
+	* sem_util.ads (Is_Potentially_Unevaluated): Clarify that this
+	routine applies to Ada 2012.
+
+2024-06-10  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-chtgfo.adb (Generic_Read, Generic_Write): Remove.
+	* libgnat/a-chtgfo.ads: Same. Remove dependency on Ada.Streams.
+
+2024-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-taprop__mingw.adb (Set_Task_Affinity): Fix usage of
+	SetThreadAffinityMask.
+	* libgnat/s-winext.ads (SetThreadAffinityMask): Fix binding
+	signature.
+
+2024-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-taprop__mingw.adb (Set_Task_Affinity): Fix usage
+	of SetThreadIdealProcessor.
+
+2024-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-os_lib.adb (Normalize_Pathname): Remove incorrect
+	assert statement.
+	(Missed_Drive_Letter): Rename into...
+	(Drive_Letter_Omitted): This.
+
+2024-06-10  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gnatlink.adb (Check_File_Name): Fix incorrect assumption.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Use constants
+	declared at the beginning of subprogram; tune layout.
+	* exp_ch3.adb (Predefined_Primitive_Bodies): Tune layout.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(No_Tagged_Streams): Move documentation.
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst
+	(No_Streams): Likewise.
+	* exp_disp.adb (Make_DT): Extend comment.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Use fully qualified name
+	without a NUL, so that it doesn't need to be skipped afterwards.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Stream_Operation_OK): Check restriction
+	No_Default_Stream_Attributes before call to
+	Type_Without_Stream_Operation.
+	* sem_util.adb (Type_Without_Stream_Operation): Remove static
+	condition from recursive routine
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Has_Single_Return_In_GNATprove_Mode): Remove.
+	(Process_Formals): When rewriting an occurrence of a formal
+	parameter, use location of the occurrence, not of the inlined
+	call.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* debug.adb (d_k): Use first available debug switch.
+	* gnat1drv.adb (Adjust_Global_Switches): If new debug switch is
+	active then don't expand assertion expressions by default.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (Install_Class_Preconditions_Check): Refactor
+	common code for checking if precondition fails, since the
+	difference is only in raising an exception or calling the
+	Raise_Assert_Failure procedure.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch6.adb (Build_Dynamic_Check_Helper_Call): Remove unused
+	iteration over formal parameters.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): Make
+	discriminants visible when analyzing aspect Interrupt_Priority.
+	(Freeze_Entity_Checks): Likewise.
+	(Resolve_Aspect_Expressions): Likewise for both aspects CPU and
+	Interrupt_Priority.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Report_Extra_Clauses): Remove redundant check
+	for empty list, because First works also for No_List.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Check_Dependency_Clause, Check_Output_States,
+	Report_Extra_Clauses): Remove multiple checks for being inside
+	an instance.
+	(Analyze_Refined_Depends_In_Decl_Part): Add single check for
+	being inside an instance.
+
+2024-06-10  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Check_In_Out_States, Check_Input_States,
+	Check_Output_States, Check_Proof_In_States,
+	Check_Refined_Global_List, Report_Extra_Constituents,
+	Report_Missing_Items): Remove multiple checks for being inside
+	an instance.
+	(Analyze_Refined_Global_In_Decl_Part): Add single check for
+	being inside an instance.
+
 2024-06-05  Kewen Lin  <linkw@linux.ibm.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity): Use TYPE_PRECISION of

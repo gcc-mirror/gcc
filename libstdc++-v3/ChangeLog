@@ -1,3 +1,8 @@
+2024-06-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable.h (~_Hashtable()): Replace clear call with
+	a _M_deallocate_nodes call.
+
 2024-06-08  Deev Patel  <dkp10000@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 
