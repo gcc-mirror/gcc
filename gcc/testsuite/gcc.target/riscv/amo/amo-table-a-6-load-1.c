@@ -6,8 +6,8 @@
 
 /*
 ** foo:
-**	lw\ta[0-9]+,0\(a0\)
-**	sw\ta[0-9]+,0\(a1\)
+**	lw\t[atx][0-9]+,0\(a0\)
+**	sw\t[atx][0-9]+,0\(a1\)
 **	ret
 */
 void foo (int* bar, int* baz)

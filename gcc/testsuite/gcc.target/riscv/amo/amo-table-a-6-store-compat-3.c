@@ -6,9 +6,9 @@
 
 /*
 ** foo:
-**	lw\ta[0-9]+,0\(a1\)
+**	lw\t[atx][0-9]+,0\(a1\)
 **	fence\trw,w
-**	sw\ta[0-9]+,0\(a0\)
+**	sw\t[atx][0-9]+,0\(a0\)
 **	fence\trw,rw
 **	ret
 */
