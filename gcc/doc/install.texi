@@ -5104,8 +5104,6 @@ both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
 @end html
 @anchor{x86-64-x-solaris2}
 @heading x86_64-*-solaris2*
-GCC also supports the x86-64 architecture implemented by the AMD64
-processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}).
 Unlike other systems, without special options a
 bi-arch compiler is built which generates 32-bit code by default, but
 can generate 64-bit x86-64 code with the @option{-m64} switch.  Since
