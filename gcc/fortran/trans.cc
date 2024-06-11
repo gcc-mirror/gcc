@@ -1838,7 +1838,8 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 	  else
 	    caf_dereg_type = (enum gfc_coarray_deregtype) coarray_dealloc_mode;
 	}
-      else if (flag_coarray == GFC_FCOARRAY_SINGLE)
+      else if (flag_coarray == GFC_FCOARRAY_SINGLE
+	       && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (pointer)))
 	pointer = gfc_conv_descriptor_data_get (pointer);
     }
   else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (pointer)))
