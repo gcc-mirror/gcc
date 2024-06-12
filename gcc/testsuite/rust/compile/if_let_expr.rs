@@ -7,8 +7,9 @@ pub enum Option<T> {
 }
 
 fn main() {
-    let x = Option::Some(3); // { dg-warning "unused name" }
-    let a = if let Option::Some(1) = x {
+    let x = Option::Some(3);
+
+    let a = if let Option::Some(1) = x {// { dg-warning "unused name" }
         1
     } else if x == Option::Some(2) {
         2

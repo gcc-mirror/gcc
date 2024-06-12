@@ -390,22 +390,6 @@ PatternChecker::visit (IfExprConseqElse &expr)
 }
 
 void
-PatternChecker::visit (IfLetExpr &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-}
-
-void
-PatternChecker::visit (IfLetExprConseqElse &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-
-  expr.get_else_block ()->accept_vis (*this);
-}
-
-void
 PatternChecker::visit (MatchExpr &expr)
 {
   expr.get_scrutinee_expr ()->accept_vis (*this);

@@ -119,8 +119,6 @@ public:
   void visit (HIR::WhileLetLoopExpr &expr) override {}
   void visit (HIR::IfExpr &expr) override {}
   void visit (HIR::IfExprConseqElse &expr) override {}
-  void visit (HIR::IfLetExpr &expr) override {}
-  void visit (HIR::IfLetExprConseqElse &expr) override {}
   void visit (HIR::MatchExpr &expr) override {}
   void visit (HIR::AwaitExpr &expr) override {}
   void visit (HIR::AsyncBlockExpr &expr) override {}

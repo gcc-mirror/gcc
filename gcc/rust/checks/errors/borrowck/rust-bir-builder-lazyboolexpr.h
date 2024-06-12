@@ -193,14 +193,6 @@ public:
   {
     return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
   }
-  void visit (HIR::IfLetExpr &expr) override
-  {
-    return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
-  }
-  void visit (HIR::IfLetExprConseqElse &expr) override
-  {
-    return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
-  }
   void visit (HIR::MatchExpr &expr) override
   {
     return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());

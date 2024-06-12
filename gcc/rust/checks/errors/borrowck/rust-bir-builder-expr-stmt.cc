@@ -612,18 +612,6 @@ ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
 }
 
 void
-ExprStmtBuilder::visit (HIR::IfLetExpr &expr)
-{
-  rust_sorry_at (expr.get_locus (), "if let expressions are not supported");
-}
-
-void
-ExprStmtBuilder::visit (HIR::IfLetExprConseqElse &expr)
-{
-  rust_sorry_at (expr.get_locus (), "if let expressions are not supported");
-}
-
-void
 ExprStmtBuilder::visit (HIR::MatchExpr &expr)
 {
   rust_sorry_at (expr.get_locus (), "match expressions are not supported");

@@ -464,17 +464,6 @@ Dump::do_baseloopexpr (BaseLoopExpr &e)
 }
 
 void
-Dump::do_ifletexpr (IfLetExpr &e)
-{
-  do_expr (e);
-
-  visit_collection ("match_arm_patterns", e.get_patterns ());
-
-  visit_field ("value", e.get_scrutinee_expr ());
-  visit_field ("if_block", e.get_if_block ());
-}
-
-void
 Dump::do_struct (Struct &e)
 {
   do_vis_item (e);
@@ -1439,23 +1428,6 @@ Dump::visit (IfExprConseqElse &e)
   visit_field ("else_block", e.get_else_block ());
 
   end ("IfExprConseqElse");
-}
-
-void
-Dump::visit (IfLetExpr &e)
-{
-  begin ("IfLetExpr");
-  do_ifletexpr (e);
-  end ("IfLetExpr");
-}
-
-void
-Dump::visit (IfLetExprConseqElse &e)
-{
-  begin ("IfLetExprConseqElse");
-  do_ifletexpr (e);
-  visit_field ("else_block", e.get_else_block ());
-  end ("IfLetExprConseqElse");
 }
 
 void

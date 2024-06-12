@@ -1572,41 +1572,6 @@ IfExprConseqElse::as_string () const
 }
 
 std::string
-IfLetExpr::as_string () const
-{
-  std::string str ("IfLetExpr: ");
-
-  str += "\n Condition match arm patterns: ";
-  if (match_arm_patterns.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &pattern : match_arm_patterns)
-	{
-	  str += "\n  " + pattern->as_string ();
-	}
-    }
-
-  str += "\n Scrutinee expr: " + value->as_string ();
-
-  str += "\n If let block expr: " + if_block->as_string ();
-
-  return str;
-}
-
-std::string
-IfLetExprConseqElse::as_string () const
-{
-  std::string str = IfLetExpr::as_string ();
-
-  str += "\n Else expr: " + else_block->as_string ();
-
-  return str;
-}
-
-std::string
 RangeFromToInclExpr::as_string () const
 {
   return from->as_string () + "..=" + to->as_string ();
@@ -4150,18 +4115,6 @@ IfExprConseqElse::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-IfLetExpr::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqElse::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 MatchExpr::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -4907,18 +4860,6 @@ CallExpr::accept_vis (HIRExpressionVisitor &vis)
 
 void
 RangeFromToInclExpr::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqElse::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExpr::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
 }

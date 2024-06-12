@@ -113,8 +113,6 @@ class WhileLoopExpr;
 class WhileLetLoopExpr;
 class IfExpr;
 class IfExprConseqElse;
-class IfLetExpr;
-class IfLetExprConseqElse;
 struct MatchArm;
 // class MatchCase;
 // class MatchCaseBlockExpr;

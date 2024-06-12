@@ -77,8 +77,6 @@ public:
   // TODO
   // these need to be sugared in the HIR to if statements and a match
   void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::IfLetExpr &) override {}
-  void visit (HIR::IfLetExprConseqElse &) override {}
 
   // lets not worry about async yet....
   void visit (HIR::AwaitExpr &) override {}
