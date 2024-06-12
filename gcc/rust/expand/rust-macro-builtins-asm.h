@@ -30,14 +30,6 @@ public:
       parser (parser), last_token_id (last_token_id)
   {}
 
-  // InlineAsmContext (InlineAsmContext && inline_asm_ctx)
-  // : allow_templates(inline_asm_ctx.allow_templates),
-  //   is_explicit(inline_asm_ctx.is_explicit),
-  //   consumed_comma_without_formatted_string(inline_asm_ctx.consumed_comma_without_formatted_string),
-  //   inline_asm(inline_asm_ctx.inline_asm),
-  //   parser(inline_asm_ctx.parser),
-  //   last_token_id(inline_asm_ctx.last_token_id) {}
-
   bool is_global_asm () { return inline_asm.is_global_asm; }
 
   bool allows_templates () { return allow_templates; }
@@ -58,6 +50,13 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx);
 tl::expected<InlineAsmContext, std::string>
 parse_format_strings (InlineAsmContext inline_asm_ctx);
 
+tl::expected<InlineAsmContext, std::string>
+parse_clobber_abi (InlineAsmContext inline_asm_ctx);
+
+// From rustc
+tl::expected<InlineAsmContext, std::string>
+parse_reg_operand (InlineAsmContext inline_asm_ctx);
+
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	   bool is_global_asm);
@@ -67,13 +66,6 @@ check_identifier (Parser<MacroInvocLexer> &parser, std::string ident);
 
 void
 check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option);
-// From rustc
-int
-parse_operand (InlineAsmContext &inline_asm_ctx);
-
-// From rustc
-tl::optional<AST::InlineAsmOperand>
-parse_reg_operand (InlineAsmContext &inline_asm_ctx);
 
 // From rustc
 int
@@ -82,9 +74,6 @@ parse_options (InlineAsmContext &inline_asm_ctx);
 // From rustc
 tl::optional<AST::InlineAsmRegOrRegClass>
 parse_reg (InlineAsmContext &inline_asm_ctx);
-
-int
-parse_clobber_abi (InlineAsmContext &inline_asm_ctx);
 
 tl::optional<std::string>
 parse_format_string (InlineAsmContext &inline_asm_ctx);

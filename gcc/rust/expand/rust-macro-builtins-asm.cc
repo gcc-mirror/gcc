@@ -31,14 +31,8 @@ std::map<AST::InlineAsmOption, std::string> InlineAsmOptionMap{
   {AST::InlineAsmOption::RAW, "raw"},
 };
 
-int
-parseDirSpec (Parser<MacroInvocLexer> &parser, TokenId last_token_id)
-{
-  return 0;
-}
-
-int
-parse_clobber_abi (InlineAsmContext &inline_asm_ctx)
+tl::expected<InlineAsmContext, std::string>
+parse_clobber_abi (InlineAsmContext inline_asm_ctx)
 {
   // clobber_abi := "clobber_abi(" <abi> *("," <abi>) [","] ")"
   // PARSE EVERYTHING COMMITTEDLY IN THIS FUNCTION, WE CONFIRMED VIA clobber_abi
@@ -59,14 +53,16 @@ parse_clobber_abi (InlineAsmContext &inline_asm_ctx)
 	{
 	  rust_error_at (token->get_locus (),
 			 "expected %<(%>, found end of macro arguments");
-	  return -1;
+	  return tl::unexpected<std::string> (
+	    "Expected something else instead of end of macro arguments");
 	}
       else
 	{
 	  rust_error_at (token->get_locus (), "expected %<(%>, found %qs",
 			 token->get_token_description ());
 	}
-      return -1;
+      return tl::unexpected<std::string> (
+	"Expected left parenthesis instead of something else");
     }
 
   if (parser.skip_token (RIGHT_PAREN))
@@ -76,7 +72,8 @@ parse_clobber_abi (InlineAsmContext &inline_asm_ctx)
       rust_error_at (
 	parser.peek_current_token ()->get_locus (),
 	"at least one abi must be provided as an argument to %<clobber_abi%>");
-      return -1;
+      return tl::unexpected<std::string> (
+	"at least one abi must be provided as an argument to %<clobber_abi%>");
     }
 
   std::vector<AST::TupleClobber> new_abis;
@@ -109,7 +106,7 @@ parse_clobber_abi (InlineAsmContext &inline_asm_ctx)
 	  // TODO: If the skip of comma is unsuccessful, which should be
 	  // illegal, pleaes emit the correct error.
 	  rust_unreachable ();
-	  return -1;
+	  return tl::unexpected<std::string> ("SKIP OF COMMA UNSUCCESSFUL");
 	}
 
       token = parser.peek_current_token ();
@@ -123,7 +120,7 @@ parse_clobber_abi (InlineAsmContext &inline_asm_ctx)
       inline_asm.clobber_abi.push_back (abi);
     }
 
-  return 0;
+  return inline_asm_ctx;
 }
 
 tl::optional<AST::InlineAsmRegOrRegClass>
@@ -183,15 +180,9 @@ parse_reg (InlineAsmContext &inline_asm_ctx)
   return reg_class;
 }
 
-int
-parse_operand (InlineAsmContext &inline_asm_ctx)
-{
-  return 0;
-}
-
 // From rustc
-tl::optional<AST::InlineAsmOperand>
-parse_reg_operand (InlineAsmContext &inline_asm_ctx)
+tl::expected<InlineAsmContext, std::string>
+parse_reg_operand (InlineAsmContext inline_asm_ctx)
 {
   // let name = if p.token.is_ident() && p.look_ahead(1, |t| *t == token::Eq) {
   //           let (ident, _) = p.token.ident().unwrap();
@@ -204,15 +195,11 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
   //       };
   auto &parser = inline_asm_ctx.parser;
   AST::InlineAsmOperand reg_operand;
-  rust_debug ("Enter parse_reg_operand");
   auto token = parser.peek_current_token ();
   auto iden_token = parser.peek_current_token ();
   auto &inline_asm = inline_asm_ctx.inline_asm;
   if (check_identifier (parser, ""))
     {
-      rust_debug ("Didn't get passed identifier checking, %s",
-		  token->as_string ().c_str ());
-
       auto equal_token = parser.peek_current_token ();
       if (!parser.skip_token (EQUAL))
 	{
@@ -227,8 +214,6 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
   // Rust::IN search for #define RS_TOKEN_LIST in code base.
   if (!is_global_asm && parser.skip_token (IN))
     {
-      rust_debug ("Enter parse_reg_operand in");
-
       auto reg = parse_reg (inline_asm_ctx);
 
       if (parser.skip_token (UNDERSCORE))
@@ -244,13 +229,11 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
       // instead of nullptr
       struct AST::InlineAsmOperand::In in (reg, nullptr);
       reg_operand.set_in (in);
-
-      return reg_operand;
+      inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
+      return inline_asm_ctx;
     }
   else if (!is_global_asm && check_identifier (parser, "out"))
     {
-      rust_debug ("Enter parse_reg_operand out");
-
       auto reg = parse_reg (inline_asm_ctx);
 
       auto expr = parse_format_string (inline_asm_ctx);
@@ -259,18 +242,17 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
       // instead of nullptr
       struct AST::InlineAsmOperand::Out out (reg, false, nullptr);
       reg_operand.set_out (out);
+      inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
 
-      return reg_operand;
+      return inline_asm_ctx;
     }
   else if (!is_global_asm && check_identifier (parser, "lateout"))
     {
       rust_unreachable ();
-      return tl::nullopt;
+      return inline_asm_ctx;
     }
   else if (!is_global_asm && check_identifier (parser, "inout"))
     {
-      rust_debug ("Enter parse_reg_operand inout");
-
       auto reg = parse_reg (inline_asm_ctx);
 
       if (parser.skip_token (UNDERSCORE))
@@ -289,7 +271,6 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
 
       if (parser.skip_token (MATCH_ARROW))
 	{
-	  rust_debug ("Matched MATCH_ARROW");
 	  if (!parser.skip_token (UNDERSCORE))
 	    {
 	      parse_format_string (inline_asm_ctx);
@@ -304,8 +285,9 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
 								 nullptr,
 								 nullptr);
 	  reg_operand.set_split_in_out (split_in_out);
+	  inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
 
-	  return reg_operand;
+	  return inline_asm_ctx;
 	}
       else
 	{
@@ -314,16 +296,14 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
 	  // }
 	  struct AST::InlineAsmOperand::InOut inout (reg, false, nullptr);
 	  reg_operand.set_in_out (inout);
-
-	  return reg_operand;
+	  inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
+	  return inline_asm_ctx;
 	}
     }
   else if (!is_global_asm && check_identifier (parser, "inlateout"))
     // For reviewers, the parsing of inout and inlateout is exactly the same,
     // Except here, the late flag is set to true.
     {
-      rust_debug ("Enter parse_reg_operand inout");
-
       auto reg = parse_reg (inline_asm_ctx);
 
       if (parser.skip_token (UNDERSCORE))
@@ -342,7 +322,6 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
 
       if (parser.skip_token (MATCH_ARROW))
 	{
-	  rust_debug ("Matched MATCH_ARROW");
 	  if (!parser.skip_token (UNDERSCORE))
 	    {
 	      parse_format_string (inline_asm_ctx);
@@ -357,8 +336,8 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
 								 nullptr,
 								 nullptr);
 	  reg_operand.set_split_in_out (split_in_out);
-
-	  return reg_operand;
+	  inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
+	  return inline_asm_ctx;
 	}
       else
 	{
@@ -367,8 +346,8 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
 	  // }
 	  struct AST::InlineAsmOperand::InOut inout (reg, true, nullptr);
 	  reg_operand.set_in_out (inout);
-
-	  return reg_operand;
+	  inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
+	  return inline_asm_ctx;
 	}
     }
   else if (parser.peek_current_token ()->get_id () == CONST)
@@ -376,13 +355,14 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
       // TODO: Please handle const with parse_expr instead.
       auto anon_const = parse_format_string (inline_asm_ctx);
       reg_operand.set_cnst (tl::nullopt);
-      return reg_operand;
+      rust_unreachable ();
+      return inline_asm_ctx;
     }
   else if (check_identifier (parser, "sym"))
     {
       // TODO: Please handle sym, which needs ExprKind::Path in Rust's asm.rs
       rust_unreachable ();
-      return tl::nullopt;
+      return inline_asm_ctx;
     }
   else
     {
@@ -390,9 +370,9 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
       // something must be wrong. consult compiler code in asm.rs or rust online
       // compiler.
       rust_unreachable ();
-      return tl::nullopt;
+      return inline_asm_ctx;
     }
-  return reg_operand;
+  return inline_asm_ctx;
 }
 void
 check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
@@ -593,7 +573,6 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 	}
 
       // And if that token comma is also the trailing comma, we break
-      // TODO: Check with mentor see what last_token_id means
       token = parser.peek_current_token ();
       if (token->get_id () == COMMA && token->get_id () == last_token_id)
 	{
