@@ -26,7 +26,7 @@ constexpr std::string_view genclobber ()
 void f()
 {
   int a;
-  asm(genfoo () : /* { dg-error "expected string-literal or constexpr in brackets" } */
+  asm(genfoo () : /* { dg-error "expected string-literal or constexpr in parentheses" } */
       genoutput() (a) :
       geninput() (1) :
       genclobber());

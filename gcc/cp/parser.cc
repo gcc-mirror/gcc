@@ -22863,7 +22863,7 @@ cp_parser_asm_string_expression (cp_parser *parser)
   else if (!cp_parser_is_string_literal (tok))
     {
       error_at (tok->location,
-		"expected string-literal or constexpr in brackets");
+		"expected string-literal or constexpr in parentheses");
       return error_mark_node;
     }
   return cp_parser_string_literal (parser, false, false);
