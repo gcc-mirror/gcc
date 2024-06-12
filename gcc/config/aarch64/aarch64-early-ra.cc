@@ -3446,7 +3446,7 @@ early_ra::process_block (basic_block bb, bool is_isolated)
 	    fprintf (dump_file, "\nBlock %d:\n", bb->index);
 	  fprintf (dump_file, "%6d:", m_current_point);
 	  pretty_printer rtl_slim_pp;
-	  rtl_slim_pp.buffer->stream = dump_file;
+	  rtl_slim_pp.set_output_stream (dump_file);
 	  print_insn (&rtl_slim_pp, insn, 1);
 	  pp_flush (&rtl_slim_pp);
 	  fprintf (dump_file, "\n");
