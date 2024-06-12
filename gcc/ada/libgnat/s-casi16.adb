@@ -29,8 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Address_Operations; use System.Address_Operations;
-with System.Storage_Elements;   use System.Storage_Elements;
+with System.Storage_Elements; use System.Storage_Elements;
 
 with Ada.Unchecked_Conversion;
 
@@ -78,7 +77,9 @@ package body System.Compare_Array_Signed_16 is
    begin
       --  Go by words if possible
 
-      if ModA (OrA (Left, Right), 4) = 0 then
+      if Left mod Storage_Offset (4) = 0
+        and then Right mod Storage_Offset (4) = 0
+      then
          while Clen > 1
            and then W (L).all = W (R).all
          loop
@@ -90,7 +91,9 @@ package body System.Compare_Array_Signed_16 is
 
       --  Case of going by aligned half words
 
-      if ModA (OrA (Left, Right), 2) = 0 then
+      if Left mod Storage_Offset (2) = 0
+        and then Right mod Storage_Offset (2) = 0
+      then
          while Clen /= 0 loop
             if H (L).all /= H (R).all then
                if H (L).all > H (R).all then
