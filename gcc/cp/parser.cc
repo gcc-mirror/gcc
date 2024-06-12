@@ -22862,12 +22862,9 @@ cp_parser_asm_string_expression (cp_parser *parser)
       cexpr_str cstr (string);
       if (!cstr.type_check (tok->location))
 	return error_mark_node;
-      const char *msg;
-      int len;
-      if (!cstr.extract (tok->location, msg, len))
+      if (!cstr.extract (tok->location, string))
 	return error_mark_node;
       parens.require_close (parser);
-      string = build_string (len, msg);
       return string;
     }
   else if (!cp_parser_is_string_literal (tok))

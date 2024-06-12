@@ -9026,6 +9026,7 @@ public:
 
   bool type_check (location_t location);
   bool extract (location_t location, const char * & msg, int &len);
+  bool extract (location_t location, tree &str);
   tree message;
 private:
   tree message_data = NULL_TREE;

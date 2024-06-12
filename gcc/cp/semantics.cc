@@ -11728,6 +11728,20 @@ cexpr_str::type_check (location_t location)
   return true;
 }
 
+/* Extract constant string at LOCATON into output string STR.
+   Returns true if successful, otherwise false.  */
+
+bool
+cexpr_str::extract (location_t location, tree &str)
+{
+  const char *msg;
+  int len;
+  if (!extract (location, msg, len))
+    return false;
+  str = build_string (len, msg);
+  return true;
+}
+
 /* Extract constant string at LOCATION into output string MSG with LEN.
    Returns true if successful, otherwise false.  */
 
