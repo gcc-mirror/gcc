@@ -243,6 +243,7 @@ optimize_successive_divisions_p (tree divisor, tree inner_div)
   gimple_bitwise_equal_p (expr1, expr2, valueize)
 
 bool gimple_nop_convert (tree, tree *, tree (*) (tree));
+bool gimple_maybe_truncate (tree, tree *, tree (*) (tree));
 
 /* Helper function for bitwise_equal_p macro.  */
 
@@ -270,6 +271,10 @@ gimple_bitwise_equal_p (tree expr1, tree expr2, tree (*valueize) (tree))
 	return true;
     }
   if (expr2 != expr4 && operand_equal_p (expr1, expr4, 0))
+    return true;
+  if (gimple_maybe_truncate (expr3, &expr3, valueize)
+      && gimple_maybe_truncate (expr4, &expr4, valueize)
+      && operand_equal_p (expr3, expr4, 0))
     return true;
   return false;
 }
@@ -318,21 +323,13 @@ gimple_bitwise_inverted_equal_p (tree expr1, tree expr2, bool &wascmp, tree (*va
   /* Try if EXPR1 was defined as ~EXPR2. */
   if (gimple_bit_not_with_nop (expr1, &other, valueize))
     {
-      if (operand_equal_p (other, expr2, 0))
-	return true;
-      tree expr4;
-      if (gimple_nop_convert (expr2, &expr4, valueize)
-	  && operand_equal_p (other, expr4, 0))
+      if (gimple_bitwise_equal_p (other, expr2, valueize))
 	return true;
     }
   /* Try if EXPR2 was defined as ~EXPR1. */
   if (gimple_bit_not_with_nop (expr2, &other, valueize))
     {
-      if (operand_equal_p (other, expr1, 0))
-	return true;
-      tree expr3;
-      if (gimple_nop_convert (expr1, &expr3, valueize)
-	  && operand_equal_p (other, expr3, 0))
+      if (gimple_bitwise_equal_p (other, expr1, valueize))
 	return true;
     }
 
