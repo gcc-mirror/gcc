@@ -1239,29 +1239,53 @@ private:
   std::vector<run> m_phase_3_quotes;
 };
 
-static void
-on_begin_quote (const output_buffer &buf,
-		unsigned chunk_idx,
-		const urlifier *urlifier)
+/* Adds a chunk to the end of formatted output, so that it
+   will be printed by pp_output_formatted_text.  */
+
+void
+chunk_info::append_formatted_chunk (const char *content)
 {
-  if (!urlifier)
-    return;
-  if (!buf.cur_chunk_array->m_quotes)
-    buf.cur_chunk_array->m_quotes = new quoting_info ();
-  buf.cur_chunk_array->m_quotes->on_begin_quote (buf, chunk_idx);
+  unsigned int chunk_idx;
+  for (chunk_idx = 0; m_args[chunk_idx]; chunk_idx++)
+    ;
+  m_args[chunk_idx++] = content;
+  m_args[chunk_idx] = nullptr;
 }
 
-static void
-on_end_quote (pretty_printer *pp,
-	      output_buffer &buf,
-	      unsigned chunk_idx,
-	      const urlifier *urlifier)
+/* Deallocate the current chunk structure and everything after it (i.e. the
+   associated series of formatted strings).  */
+
+void
+chunk_info::pop_from_output_buffer (output_buffer &buf)
+{
+  delete m_quotes;
+  buf.cur_chunk_array = m_prev;
+  obstack_free (&buf.chunk_obstack, this);
+}
+
+void
+chunk_info::on_begin_quote (const output_buffer &buf,
+			    unsigned chunk_idx,
+			    const urlifier *urlifier)
 {
   if (!urlifier)
     return;
-  if (!buf.cur_chunk_array->m_quotes)
-    buf.cur_chunk_array->m_quotes = new quoting_info ();
-  buf.cur_chunk_array->m_quotes->on_end_quote (pp, buf, chunk_idx, *urlifier);
+  if (!m_quotes)
+    m_quotes = new quoting_info ();
+  m_quotes->on_begin_quote (buf, chunk_idx);
+}
+
+void
+chunk_info::on_end_quote (pretty_printer *pp,
+			  output_buffer &buf,
+			  unsigned chunk_idx,
+			  const urlifier *urlifier)
+{
+  if (!urlifier)
+    return;
+  if (!m_quotes)
+    m_quotes = new quoting_info ();
+  m_quotes->on_end_quote (pp, buf, chunk_idx, *urlifier);
 }
 
 /* The following format specifiers are recognized as being client independent:
@@ -1333,13 +1357,12 @@ pretty_printer::format (text_info *text,
   const char **formatters[PP_NL_ARGMAX];
 
   /* Allocate a new chunk structure.  */
-  struct chunk_info *new_chunk_array
-    = XOBNEW (&buffer->chunk_obstack, struct chunk_info);
+  chunk_info *new_chunk_array = XOBNEW (&buffer->chunk_obstack, chunk_info);
 
-  new_chunk_array->prev = buffer->cur_chunk_array;
+  new_chunk_array->m_prev = buffer->cur_chunk_array;
   new_chunk_array->m_quotes = nullptr;
   buffer->cur_chunk_array = new_chunk_array;
-  const char **args = new_chunk_array->args;
+  const char **args = new_chunk_array->m_args;
 
   /* Formatting phase 1: split up TEXT->format_spec into chunks in
      pp_buffer (PP)->args[].  Even-numbered chunks are to be output
@@ -1380,13 +1403,13 @@ pretty_printer::format (text_info *text,
 	    obstack_grow (&buffer->chunk_obstack, colorstr, strlen (colorstr));
 	    p++;
 
-	    on_begin_quote (*buffer, chunk, urlifier);
+	    buffer->cur_chunk_array->on_begin_quote (*buffer, chunk, urlifier);
 	    continue;
 	  }
 
 	case '>':
 	  {
-	    on_end_quote (this, *buffer, chunk, urlifier);
+	    buffer->cur_chunk_array->on_end_quote (this, *buffer, chunk, urlifier);
 
 	    const char *colorstr = colorize_stop (m_show_color);
 	    obstack_grow (&buffer->chunk_obstack, colorstr, strlen (colorstr));
@@ -1584,7 +1607,7 @@ pretty_printer::format (text_info *text,
       if (quote)
 	{
 	  pp_begin_quote (this, m_show_color);
-	  on_begin_quote (*buffer, chunk, urlifier);
+	  buffer->cur_chunk_array->on_begin_quote (*buffer, chunk, urlifier);
 	}
 
       switch (*p)
@@ -1756,7 +1779,8 @@ pretty_printer::format (text_info *text,
 
       if (quote)
 	{
-	  on_end_quote (this, *buffer, chunk, urlifier);
+	  buffer->cur_chunk_array->on_end_quote (this, *buffer,
+						 chunk, urlifier);
 	  pp_end_quote (this, m_show_color);
 	}
 
@@ -1840,8 +1864,9 @@ quoting_info::handle_phase_3 (pretty_printer *pp,
 {
   unsigned int chunk;
   output_buffer * const buffer = pp_buffer (pp);
-  struct chunk_info *chunk_array = buffer->cur_chunk_array;
-  const char **args = chunk_array->args;
+  chunk_info *chunk_array = buffer->cur_chunk_array;
+  const char * const *args = chunk_array->get_args ();
+  quoting_info *quoting = chunk_array->get_quoting_info ();
 
   /* We need to construct the string into an intermediate buffer
      for this case, since using pp_string can introduce prefixes
@@ -1856,9 +1881,9 @@ quoting_info::handle_phase_3 (pretty_printer *pp,
      correspond to.  */
   size_t start_of_run_byte_offset = 0;
   std::vector<quoting_info::run>::const_iterator iter_run
-    = buffer->cur_chunk_array->m_quotes->m_phase_3_quotes.begin ();
+    = quoting->m_phase_3_quotes.begin ();
   std::vector<quoting_info::run>::const_iterator end_runs
-    = buffer->cur_chunk_array->m_quotes->m_phase_3_quotes.end ();
+    = quoting->m_phase_3_quotes.end ();
   for (chunk = 0; args[chunk]; chunk++)
     {
       size_t start_of_chunk_idx = combined_buf.object_size ();
@@ -1913,8 +1938,9 @@ pp_output_formatted_text (pretty_printer *pp,
 {
   unsigned int chunk;
   output_buffer * const buffer = pp_buffer (pp);
-  struct chunk_info *chunk_array = buffer->cur_chunk_array;
-  const char **args = chunk_array->args;
+  chunk_info *chunk_array = buffer->cur_chunk_array;
+  const char * const *args = chunk_array->get_args ();
+  quoting_info *quoting = chunk_array->get_quoting_info ();
 
   gcc_assert (buffer->obstack == &buffer->formatted_obstack);
 
@@ -1924,18 +1950,14 @@ pp_output_formatted_text (pretty_printer *pp,
   /* If we have any deferred urlification, handle it now.  */
   if (urlifier
       && pp->supports_urls_p ()
-      && buffer->cur_chunk_array->m_quotes
-      && buffer->cur_chunk_array->m_quotes->has_phase_3_quotes_p ())
-    buffer->cur_chunk_array->m_quotes->handle_phase_3 (pp, *urlifier);
+      && quoting
+      && quoting->has_phase_3_quotes_p ())
+    quoting->handle_phase_3 (pp, *urlifier);
   else
     for (chunk = 0; args[chunk]; chunk++)
       pp_string (pp, args[chunk]);
 
-  /* Deallocate the chunk structure and everything after it (i.e. the
-     associated series of formatted strings).  */
-  delete buffer->cur_chunk_array->m_quotes;
-  buffer->cur_chunk_array = chunk_array->prev;
-  obstack_free (&buffer->chunk_obstack, chunk_array);
+  chunk_array->pop_from_output_buffer (*buffer);
 }
 
 /* Helper subroutine of output_verbatim and verbatim. Do the appropriate

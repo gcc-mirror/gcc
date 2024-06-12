@@ -4307,14 +4307,8 @@ static void
 append_formatted_chunk (pretty_printer *pp, const char *content)
 {
   output_buffer *buffer = pp_buffer (pp);
-  struct chunk_info *chunk_array = buffer->cur_chunk_array;
-  const char **args = chunk_array->args;
-
-  unsigned int chunk_idx;
-  for (chunk_idx = 0; args[chunk_idx]; chunk_idx++)
-    ;
-  args[chunk_idx++] = content;
-  args[chunk_idx] = NULL;
+  chunk_info *chunk_array = buffer->cur_chunk_array;
+  chunk_array->append_formatted_chunk (content);
 }
 
 /* Create a copy of CONTENT, with quotes added, and,
