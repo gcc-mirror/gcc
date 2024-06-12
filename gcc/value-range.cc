@@ -282,23 +282,23 @@ vrange::operator== (const vrange &src) const
 void
 vrange::dump (FILE *file) const
 {
-  pretty_printer buffer;
-  pp_needs_newline (&buffer) = true;
-  buffer.buffer->stream = file;
-  vrange_printer vrange_pp (&buffer);
+  pretty_printer pp;
+  pp_needs_newline (&pp) = true;
+  pp.buffer->stream = file;
+  vrange_printer vrange_pp (&pp);
   this->accept (vrange_pp);
-  pp_flush (&buffer);
+  pp_flush (&pp);
 }
 
 void
 irange_bitmask::dump (FILE *file) const
 {
   char buf[WIDE_INT_PRINT_BUFFER_SIZE], *p;
-  pretty_printer buffer;
+  pretty_printer pp;
 
-  pp_needs_newline (&buffer) = true;
-  buffer.buffer->stream = file;
-  pp_string (&buffer, "MASK ");
+  pp_needs_newline (&pp) = true;
+  pp.buffer->stream = file;
+  pp_string (&pp, "MASK ");
   unsigned len_mask, len_val;
   if (print_hex_buf_size (m_mask, &len_mask)
       | print_hex_buf_size (m_value, &len_val))
@@ -306,11 +306,11 @@ irange_bitmask::dump (FILE *file) const
   else
     p = buf;
   print_hex (m_mask, p);
-  pp_string (&buffer, p);
-  pp_string (&buffer, " VALUE ");
+  pp_string (&pp, p);
+  pp_string (&pp, " VALUE ");
   print_hex (m_value, p);
-  pp_string (&buffer, p);
-  pp_flush (&buffer);
+  pp_string (&pp, p);
+  pp_flush (&pp);
 }
 
 namespace inchash
