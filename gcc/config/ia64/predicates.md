@@ -347,7 +347,7 @@
 	   allows reload the opportunity to avoid spilling addresses to
 	   the stack, and instead simply substitute in the value from a
 	   REG_EQUIV.  We'll split this up again when splitting the insn.  */
-	if (reload_in_progress || reload_completed)
+	if (lra_in_progress || reload_completed)
 	  return true;
 
 	/* Some symbol types we allow to use with any offset.  */

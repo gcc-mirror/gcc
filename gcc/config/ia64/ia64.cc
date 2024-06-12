@@ -619,9 +619,6 @@ static const scoped_attribute_specs *const ia64_attribute_table[] =
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P ia64_legitimate_address_p
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
-
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM ia64_cannot_force_const_mem
 
@@ -1333,7 +1330,7 @@ ia64_expand_move (rtx op0, rtx op1)
 {
   machine_mode mode = GET_MODE (op0);
 
-  if (!reload_in_progress && !reload_completed && !ia64_move_ok (op0, op1))
+  if (!lra_in_progress && !reload_completed && !ia64_move_ok (op0, op1))
     op1 = force_reg (mode, op1);
 
   if ((mode == Pmode || mode == ptr_mode) && symbolic_operand (op1, VOIDmode))
@@ -1780,7 +1777,7 @@ ia64_expand_movxf_movrf (machine_mode mode, rtx operands[])
 	}
     }
 
-  if (!reload_in_progress && !reload_completed)
+  if (!lra_in_progress && !reload_completed)
     {
       operands[1] = spill_xfmode_rfmode_operand (operands[1], 0, mode);
 
