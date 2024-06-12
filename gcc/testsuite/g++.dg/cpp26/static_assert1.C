@@ -286,14 +286,14 @@ namespace NN
   };
   static_assert (true, M{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
   static_assert (false, M{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
-					// { dg-error "'constexpr string 'size\\\(\\\)' must be a constant expression" "" { target c++23 } .-1 }
+					// { dg-error "constexpr string 'size\\\(\\\)' must be a constant expression" "" { target c++23 } .-1 }
   struct N {
     static constexpr int size () { return 4; }
     static constexpr const char *data () { if consteval { throw 1; } else { return "test"; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23 } }
   };
   static_assert (true, N{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
   static_assert (false, N{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
-					// { dg-error "'constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++23 } .-1 }
+					// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++23 } .-1 }
 #endif
   struct O { constexpr int operator () () const { return 12; } };
   struct P { constexpr const char *operator () () const { return "another test"; } };
