@@ -13253,8 +13253,11 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
       data->met_namespace = true;
       if (data->hash->add_namespace_entities (decl, data->partitions))
 	{
-	  /* It contains an exported thing, so it is exported.  */
-	  gcc_checking_assert (DECL_MODULE_PURVIEW_P (decl));
+	  /* It contains an exported thing, so it is exported.
+	     We used to assert DECL_MODULE_PURVIEW_P, but that fails for a
+	     namespace like std::__exception_ptr which is never opened in
+	     module purview; the exporting using finds another using.  */
+	  DECL_MODULE_PURVIEW_P (decl) = true;
 	  DECL_MODULE_EXPORT_P (decl) = true;
 	}
 
