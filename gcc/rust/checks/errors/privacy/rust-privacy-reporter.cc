@@ -595,21 +595,6 @@ PrivacyReporter::visit (HIR::IfExprConseqElse &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::IfLetExpr &)
-{
-  // TODO: We need to visit the if_let_expr
-  // TODO: We need to visit the block as well
-}
-
-void
-PrivacyReporter::visit (HIR::IfLetExprConseqElse &)
-{
-  // TODO: We need to visit the if_let_expr
-  // TODO: We need to visit the if_block as well
-  // TODO: We need to visit the else_block as well
-}
-
-void
 PrivacyReporter::visit (HIR::MatchExpr &expr)
 {
   expr.get_scrutinee_expr ()->accept_vis (*this);

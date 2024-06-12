@@ -32,7 +32,7 @@ namespace HIR {
 // TODO: inline?
 class LoopLabel /*: public Node*/
 {
-  Lifetime label; // or type LIFETIME_OR_LABEL
+  Lifetime label; // of type LIFETIME_OR_LABEL
 
   location_t locus;
 
@@ -3108,9 +3108,6 @@ protected:
   }
 };
 
-// forward decl for IfExpr
-class IfLetExpr;
-
 // Base if expression with no "else" or "if let" HIR node
 class IfExpr : public ExprWithBlock
 {
@@ -3255,177 +3252,6 @@ protected:
   IfExprConseqElse *clone_if_expr_impl () const override
   {
     return new IfExprConseqElse (*this);
-  }
-};
-
-// Basic "if let" expression HIR node with no else
-class IfLetExpr : public ExprWithBlock
-{
-  // MatchArmPatterns patterns;
-  std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
-  std::unique_ptr<Expr> value;
-  std::unique_ptr<BlockExpr> if_block;
-
-  location_t locus;
-
-public:
-  std::string as_string () const override;
-
-  IfLetExpr (Analysis::NodeMapping mappings,
-	     std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
-	     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
-	     location_t locus)
-    : ExprWithBlock (std::move (mappings), AST::AttrVec ()),
-      match_arm_patterns (std::move (match_arm_patterns)),
-      value (std::move (value)), if_block (std::move (if_block)), locus (locus)
-  {}
-  // outer attributes not allowed on if let exprs either
-
-  // copy constructor with clone
-  IfLetExpr (IfLetExpr const &other)
-    : ExprWithBlock (other),
-      /*match_arm_patterns(other.match_arm_patterns),*/ value (
-	other.value->clone_expr ()),
-      if_block (other.if_block->clone_block_expr ()), locus (other.locus)
-  {
-    match_arm_patterns.reserve (other.match_arm_patterns.size ());
-    for (const auto &e : other.match_arm_patterns)
-      match_arm_patterns.push_back (e->clone_pattern ());
-  }
-
-  // overload assignment operator to clone
-  IfLetExpr &operator= (IfLetExpr const &other)
-  {
-    ExprWithBlock::operator= (other);
-    // match_arm_patterns = other.match_arm_patterns;
-    value = other.value->clone_expr ();
-    if_block = other.if_block->clone_block_expr ();
-    locus = other.locus;
-
-    match_arm_patterns.reserve (other.match_arm_patterns.size ());
-    for (const auto &e : other.match_arm_patterns)
-      match_arm_patterns.push_back (e->clone_pattern ());
-
-    return *this;
-  }
-
-  // move constructors
-  IfLetExpr (IfLetExpr &&other) = default;
-  IfLetExpr &operator= (IfLetExpr &&other) = default;
-
-  // Unique pointer custom clone function
-  std::unique_ptr<IfLetExpr> clone_if_let_expr () const
-  {
-    return std::unique_ptr<IfLetExpr> (clone_if_let_expr_impl ());
-  }
-
-  location_t get_locus () const override final { return locus; }
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRExpressionVisitor &vis) override;
-
-  std::unique_ptr<Expr> &get_scrutinee_expr () { return value; }
-
-  std::vector<std::unique_ptr<Pattern> > &get_patterns ()
-  {
-    return match_arm_patterns;
-  }
-
-  std::unique_ptr<BlockExpr> &get_if_block () { return if_block; }
-
-  ExprType get_expression_type () const final override
-  {
-    return ExprType::IfLet;
-  }
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExpr *clone_expr_impl () const override { return new IfLetExpr (*this); }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExpr *clone_expr_with_block_impl () const override
-  {
-    return new IfLetExpr (*this);
-  }
-
-  // Base clone function but still concrete as concrete base class
-  virtual IfLetExpr *clone_if_let_expr_impl () const
-  {
-    return new IfLetExpr (*this);
-  }
-};
-
-/* HIR node representing "if let" expression with an "else" expression at the
- * end */
-class IfLetExprConseqElse : public IfLetExpr
-{
-  std::unique_ptr<ExprWithBlock> else_block;
-
-public:
-  std::string as_string () const override;
-
-  IfLetExprConseqElse (
-    Analysis::NodeMapping mappings,
-    std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
-    std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
-    std::unique_ptr<ExprWithBlock> else_block, location_t locus)
-    : IfLetExpr (std::move (mappings), std::move (match_arm_patterns),
-		 std::move (value), std::move (if_block), locus),
-      else_block (std::move (else_block))
-  {}
-  // outer attributes not allowed
-
-  // copy constructor with clone
-  IfLetExprConseqElse (IfLetExprConseqElse const &other)
-    : IfLetExpr (other), else_block (other.else_block->clone_expr_with_block ())
-  {}
-
-  // overload assignment operator to clone
-  IfLetExprConseqElse &operator= (IfLetExprConseqElse const &other)
-  {
-    IfLetExpr::operator= (other);
-    // match_arm_patterns = other.match_arm_patterns;
-    // value = other.value->clone_expr();
-    // if_block = other.if_block->clone_block_expr();
-    else_block = other.else_block->clone_expr_with_block ();
-    // outer_attrs = other.outer_attrs;
-
-    return *this;
-  }
-
-  // move constructors
-  IfLetExprConseqElse (IfLetExprConseqElse &&other) = default;
-  IfLetExprConseqElse &operator= (IfLetExprConseqElse &&other) = default;
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRExpressionVisitor &vis) override;
-
-  void vis_else_block (HIRFullVisitor &vis) { else_block->accept_vis (vis); }
-
-  std::unique_ptr<ExprWithBlock> &get_else_block () { return else_block; }
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExprConseqElse *clone_expr_impl () const override
-  {
-    return new IfLetExprConseqElse (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExprConseqElse *clone_expr_with_block_impl () const override
-  {
-    return new IfLetExprConseqElse (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfLetExprConseqElse *clone_if_let_expr_impl () const override
-  {
-    return new IfLetExprConseqElse (*this);
   }
 };
 

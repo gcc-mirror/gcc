@@ -110,8 +110,6 @@ private:
   virtual void visit (WhileLetLoopExpr &expr) override;
   virtual void visit (IfExpr &expr) override;
   virtual void visit (IfExprConseqElse &expr) override;
-  virtual void visit (IfLetExpr &expr) override;
-  virtual void visit (IfLetExprConseqElse &expr) override;
   virtual void visit (MatchExpr &expr) override;
   virtual void visit (AwaitExpr &expr) override;
   virtual void visit (AsyncBlockExpr &expr) override;

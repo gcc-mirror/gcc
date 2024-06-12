@@ -115,7 +115,7 @@ class ASTLoweringIfLetBlock : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::IfLetExpr *translate (AST::IfLetExpr &expr)
+  static HIR::MatchExpr *translate (AST::IfLetExpr &expr)
   {
     ASTLoweringIfLetBlock resolver;
     expr.accept_vis (resolver);
@@ -135,7 +135,10 @@ public:
 private:
   ASTLoweringIfLetBlock () : ASTLoweringBase (), translated (nullptr) {}
 
-  HIR::IfLetExpr *translated;
+  void desugar_iflet (AST::IfLetExpr &, HIR::Expr **, HIR::Expr *,
+		      std::vector<HIR::MatchCase> &);
+
+  HIR::MatchExpr *translated;
 };
 
 class ASTLoweringExprWithBlock : public ASTLoweringBase
@@ -149,9 +152,7 @@ public:
     ASTLoweringExprWithBlock resolver;
     expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
-      {
-	resolver.mappings.insert_hir_expr (resolver.translated);
-      }
+      resolver.mappings.insert_hir_expr (resolver.translated);
 
     *terminated = resolver.terminated;
     return resolver.translated;

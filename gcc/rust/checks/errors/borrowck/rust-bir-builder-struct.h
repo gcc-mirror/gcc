@@ -149,8 +149,6 @@ protected:
   void visit (HIR::WhileLetLoopExpr &expr) override { rust_unreachable (); }
   void visit (HIR::IfExpr &expr) override { rust_unreachable (); }
   void visit (HIR::IfExprConseqElse &expr) override { rust_unreachable (); }
-  void visit (HIR::IfLetExpr &expr) override { rust_unreachable (); }
-  void visit (HIR::IfLetExprConseqElse &expr) override { rust_unreachable (); }
   void visit (HIR::MatchExpr &expr) override { rust_unreachable (); }
   void visit (HIR::AwaitExpr &expr) override { rust_unreachable (); }
   void visit (HIR::AsyncBlockExpr &expr) override { rust_unreachable (); }

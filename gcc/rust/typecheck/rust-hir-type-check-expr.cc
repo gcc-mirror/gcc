@@ -504,67 +504,6 @@ TypeCheckExpr::visit (HIR::IfExprConseqElse &expr)
 }
 
 void
-TypeCheckExpr::visit (HIR::IfLetExpr &expr)
-{
-  // this needs to perform a least upper bound coercion on the blocks and then
-  // unify the scruintee and arms
-  TyTy::BaseType *scrutinee_tyty
-    = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ().get ());
-
-  for (auto &pattern : expr.get_patterns ())
-    {
-      TyTy::BaseType *kase_arm_ty
-	= TypeCheckPattern::Resolve (pattern.get (), scrutinee_tyty);
-
-      unify_site (expr.get_mappings ().get_hirid (),
-		  TyTy::TyWithLocation (scrutinee_tyty),
-		  TyTy::TyWithLocation (kase_arm_ty, pattern->get_locus ()),
-		  expr.get_locus ());
-    }
-
-  TypeCheckExpr::Resolve (expr.get_if_block ().get ());
-
-  infered = TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
-}
-
-void
-TypeCheckExpr::visit (HIR::IfLetExprConseqElse &expr)
-{
-  TyTy::BaseType *scrutinee_tyty
-    = TypeCheckExpr::Resolve (expr.get_scrutinee_expr ().get ());
-
-  for (auto &pattern : expr.get_patterns ())
-    {
-      TyTy::BaseType *kase_arm_ty
-	= TypeCheckPattern::Resolve (pattern.get (), scrutinee_tyty);
-
-      unify_site (expr.get_mappings ().get_hirid (),
-		  TyTy::TyWithLocation (scrutinee_tyty),
-		  TyTy::TyWithLocation (kase_arm_ty, pattern->get_locus ()),
-		  expr.get_locus ());
-    }
-
-  auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ().get ());
-  auto else_blk_resolved
-    = TypeCheckExpr::Resolve (expr.get_else_block ().get ());
-
-  if (if_blk_resolved->get_kind () == TyTy::NEVER)
-    infered = else_blk_resolved;
-  else if (else_blk_resolved->get_kind () == TyTy::NEVER)
-    infered = if_blk_resolved;
-  else
-    {
-      infered = unify_site (
-	expr.get_mappings ().get_hirid (),
-	TyTy::TyWithLocation (if_blk_resolved,
-			      expr.get_if_block ()->get_locus ()),
-	TyTy::TyWithLocation (else_blk_resolved,
-			      expr.get_else_block ()->get_locus ()),
-	expr.get_locus ());
-    }
-}
-
-void
 TypeCheckExpr::visit (HIR::UnsafeBlockExpr &expr)
 {
   infered = TypeCheckExpr::Resolve (expr.get_block_expr ().get ());
