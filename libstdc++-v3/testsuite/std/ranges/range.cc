@@ -83,3 +83,9 @@ static_assert( same_as<std::ranges::range_rvalue_reference_t<I>,
 		       char&&> );
 static_assert( same_as<std::ranges::range_rvalue_reference_t<O>,
 		      WritableObject<char>> );
+
+// LWG 3860. range_common_reference_t is missing
+static_assert( same_as<std::ranges::range_common_reference_t<C>,
+		       char&> );
+static_assert( same_as<std::ranges::range_common_reference_t<I>,
+		       char&> );
