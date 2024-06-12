@@ -1105,7 +1105,7 @@ fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &)
     }
 
   // If there is an LHS, intersect that with what is known.
-  if (lhs)
+  if (gimple_range_ssa_p (lhs))
     {
       Value_Range def (TREE_TYPE (lhs));
       gimple_range_global (def, lhs);
