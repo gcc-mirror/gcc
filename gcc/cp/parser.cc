@@ -22856,7 +22856,7 @@ cp_parser_asm_string_expression (cp_parser *parser)
       if (!cstr.type_check (tok->location))
 	return error_mark_node;
       if (!cstr.extract (tok->location, string))
-	return error_mark_node;
+	string = error_mark_node;
       parens.require_close (parser);
       return string;
     }
