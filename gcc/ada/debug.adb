@@ -67,6 +67,7 @@ package body Debug is
    --  dG   Generate all warnings including those normally suppressed
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
+   --  dJ
    --  dK   Kill all error messages
    --  dL   Ignore external calls from instances for elaboration
    --  dM   Assume all variables are modified (no current values)
