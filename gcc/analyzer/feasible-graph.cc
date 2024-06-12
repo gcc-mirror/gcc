@@ -301,7 +301,7 @@ feasible_graph::dump_feasible_path (const feasible_node &dst_fnode,
   FILE *fp = fopen (filename, "w");
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_feasible_path (dst_fnode, &pp);
   pp_flush (&pp);
   fclose (fp);

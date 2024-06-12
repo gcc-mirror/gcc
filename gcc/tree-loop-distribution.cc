@@ -347,7 +347,7 @@ dot_rdg_1 (FILE *file, struct graph *rdg)
   int i;
   pretty_printer pp;
   pp_needs_newline (&pp) = false;
-  pp.buffer->stream = file;
+  pp.set_output_stream (file);
 
   fprintf (file, "digraph RDG {\n");
 

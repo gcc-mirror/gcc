@@ -110,7 +110,7 @@ uncertainty_t::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -147,7 +147,7 @@ binding_key::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -231,7 +231,7 @@ DEBUG_FUNCTION void
 bit_range::dump () const
 {
   pretty_printer pp;
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -507,7 +507,7 @@ DEBUG_FUNCTION void
 byte_range::dump () const
 {
   pretty_printer pp;
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -776,7 +776,7 @@ binding_map::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple, true);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -1403,7 +1403,7 @@ binding_cluster::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   pp_string (&pp, "  cluster for: ");
   m_base_region->dump_to_pp (&pp, simple);
   pp_string (&pp, ": ");
@@ -2639,7 +2639,7 @@ store::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple, true, NULL);
   pp_newline (&pp);
   pp_flush (&pp);

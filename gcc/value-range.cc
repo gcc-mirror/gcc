@@ -284,7 +284,7 @@ vrange::dump (FILE *file) const
 {
   pretty_printer pp;
   pp_needs_newline (&pp) = true;
-  pp.buffer->stream = file;
+  pp.set_output_stream (file);
   vrange_printer vrange_pp (&pp);
   this->accept (vrange_pp);
   pp_flush (&pp);
@@ -297,7 +297,7 @@ irange_bitmask::dump (FILE *file) const
   pretty_printer pp;
 
   pp_needs_newline (&pp) = true;
-  pp.buffer->stream = file;
+  pp.set_output_stream (file);
   pp_string (&pp, "MASK ");
   unsigned len_mask, len_val;
   if (print_hex_buf_size (m_mask, &len_mask)

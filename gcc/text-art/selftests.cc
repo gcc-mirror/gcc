@@ -71,7 +71,7 @@ selftest::assert_canvas_streq (const location &loc,
   if (styled)
     {
       pp_show_color (&pp) = true;
-      pp.url_format = URL_FORMAT_DEFAULT;
+      pp.set_url_format (URL_FORMAT_DEFAULT);
     }
   assert_canvas_streq (loc, canvas, &pp, expected_str);
 }

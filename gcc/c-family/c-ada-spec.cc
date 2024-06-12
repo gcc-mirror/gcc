@@ -3556,7 +3556,7 @@ dump_ads (const char *source_file,
       pretty_printer pp;
 
       pp_needs_newline (&pp) = true;
-      pp.buffer->stream = f;
+      pp.set_output_stream (f);
 
       /* Dump all relevant macros.  */
       dump_ada_macros (&pp, source_file);

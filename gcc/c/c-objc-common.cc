@@ -252,7 +252,7 @@ print_type (c_pretty_printer *cpp, tree t, bool *quoted)
       c_pretty_printer cpp2;
       /* Print the stripped version into a temporary printer.  */
       cpp2.type_id (aka_type);
-      struct obstack *ob2 = cpp2.buffer->obstack;
+      struct obstack *ob2 = pp_buffer (&cpp2)->obstack;
       /* Get the stripped version from the temporary printer.  */
       const char *aka = (char *) obstack_base (ob2);
       int aka_len = obstack_object_size (ob2);
@@ -301,7 +301,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   tree t = NULL_TREE;
   // FIXME: the next cast should be a dynamic_cast, when it is permitted.
   c_pretty_printer *cpp = (c_pretty_printer *) pp;
-  pp->padding = pp_none;
+  pp->set_padding (pp_none);
 
   if (precision != 0 || wide)
     return false;

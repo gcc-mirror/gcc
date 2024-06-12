@@ -924,10 +924,10 @@ static void
 gfc_clear_pp_buffer (output_buffer *this_buffer)
 {
   pretty_printer *pp = global_dc->printer;
-  output_buffer *tmp_buffer = pp->buffer;
-  pp->buffer = this_buffer;
+  output_buffer *tmp_buffer = pp_buffer (pp);
+  pp_buffer (pp) = this_buffer;
   pp_clear_output_area (pp);
-  pp->buffer = tmp_buffer;
+  pp_buffer (pp) = tmp_buffer;
   /* We need to reset last_location, otherwise we may skip caret lines
      when we actually give a diagnostic.  */
   global_dc->m_last_location = UNKNOWN_LOCATION;
@@ -964,13 +964,13 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
   rich_location rich_loc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->m_fatal_errors;
   pretty_printer *pp = global_dc->printer;
-  output_buffer *tmp_buffer = pp->buffer;
+  output_buffer *tmp_buffer = pp_buffer (pp);
 
   gfc_clear_pp_buffer (pp_warning_buffer);
 
   if (buffered_p)
     {
-      pp->buffer = pp_warning_buffer;
+      pp_buffer (pp) = pp_warning_buffer;
       global_dc->m_fatal_errors = false;
       /* To prevent -fmax-errors= triggering.  */
       --werrorcount;
@@ -983,7 +983,7 @@ gfc_warning (int opt, const char *gmsgid, va_list ap)
 
   if (buffered_p)
     {
-      pp->buffer = tmp_buffer;
+      pp_buffer (pp) = tmp_buffer;
       global_dc->m_fatal_errors = fatal_errors;
 
       warningcount_buffered = 0;
@@ -1461,13 +1461,13 @@ gfc_warning_check (void)
   if (! gfc_output_buffer_empty_p (pp_warning_buffer))
     {
       pretty_printer *pp = global_dc->printer;
-      output_buffer *tmp_buffer = pp->buffer;
-      pp->buffer = pp_warning_buffer;
+      output_buffer *tmp_buffer = pp_buffer (pp);
+      pp_buffer (pp) = pp_warning_buffer;
       pp_really_flush (pp);
       warningcount += warningcount_buffered;
       werrorcount += werrorcount_buffered;
       gcc_assert (warningcount_buffered + werrorcount_buffered == 1);
-      pp->buffer = tmp_buffer;
+      pp_buffer (pp) = tmp_buffer;
       diagnostic_action_after_output (global_dc,
 				      warningcount_buffered
 				      ? DK_WARNING : DK_ERROR);
@@ -1502,7 +1502,7 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   bool fatal_errors = global_dc->m_fatal_errors;
   pretty_printer *pp = global_dc->printer;
-  output_buffer *tmp_buffer = pp->buffer;
+  output_buffer *tmp_buffer = pp_buffer (pp);
 
   gfc_clear_pp_buffer (pp_error_buffer);
 
@@ -1512,7 +1512,7 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
 	 save abort_on_error and restore it below.  */
       saved_abort_on_error = global_dc->m_abort_on_error;
       global_dc->m_abort_on_error = false;
-      pp->buffer = pp_error_buffer;
+      pp_buffer (pp) = pp_error_buffer;
       global_dc->m_fatal_errors = false;
       /* To prevent -fmax-errors= triggering, we decrease it before
 	 report_diagnostic increases it.  */
@@ -1524,7 +1524,7 @@ gfc_error_opt (int opt, const char *gmsgid, va_list ap)
 
   if (buffered_p)
     {
-      pp->buffer = tmp_buffer;
+      pp_buffer (pp) = tmp_buffer;
       global_dc->m_fatal_errors = fatal_errors;
       global_dc->m_abort_on_error = saved_abort_on_error;
 
@@ -1609,12 +1609,12 @@ gfc_error_check (void)
     {
       error_buffer.flag = false;
       pretty_printer *pp = global_dc->printer;
-      output_buffer *tmp_buffer = pp->buffer;
-      pp->buffer = pp_error_buffer;
+      output_buffer *tmp_buffer = pp_buffer (pp);
+      pp_buffer (pp) = pp_error_buffer;
       pp_really_flush (pp);
       ++errorcount;
       gcc_assert (gfc_output_buffer_empty_p (pp_error_buffer));
-      pp->buffer = tmp_buffer;
+      pp_buffer (pp) = tmp_buffer;
       diagnostic_action_after_output (global_dc, DK_ERROR);
       diagnostic_check_max_errors (global_dc, true);
       return true;

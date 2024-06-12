@@ -155,7 +155,7 @@ print_gimple_stmt (FILE *file, gimple *g, int spc, dump_flags_t flags)
 {
   pretty_printer pp;
   pp_needs_newline (&pp) = true;
-  pp.buffer->stream = file;
+  pp.set_output_stream (file);
   pp_gimple_stmt_1 (&pp, g, spc, flags);
   pp_newline_and_flush (&pp);
 }
@@ -186,7 +186,7 @@ print_gimple_expr (FILE *file, gimple *g, int spc, dump_flags_t flags)
   flags |= TDF_RHS_ONLY;
   pretty_printer pp;
   pp_needs_newline (&pp) = true;
-  pp.buffer->stream = file;
+  pp.set_output_stream (file);
   pp_gimple_stmt_1 (&pp, g, spc, flags);
   pp_flush (&pp);
 }
@@ -222,7 +222,7 @@ print_gimple_seq (FILE *file, gimple_seq seq, int spc, dump_flags_t flags)
 {
   pretty_printer pp;
   pp_needs_newline (&pp) = true;
-  pp.buffer->stream = file;
+  pp.set_output_stream (file);
   dump_gimple_seq (&pp, seq, spc, flags);
   pp_newline_and_flush (&pp);
 }
@@ -2377,7 +2377,7 @@ dump_ssaname_info_to_file (FILE *file, tree node, int spc)
 {
   pretty_printer pp;
   pp_needs_newline (&pp) = true;
-  pp.buffer->stream = file;
+  pp.set_output_stream (file);
   dump_ssaname_info (&pp, node, spc);
   pp_flush (&pp);
 }
@@ -3095,7 +3095,7 @@ gimple_dump_bb (FILE *file, basic_block bb, int indent, dump_flags_t flags)
     {
       pretty_printer pp;
       pp_needs_newline (&pp) = true;
-      pp.buffer->stream = file;
+      pp.set_output_stream (file);
       gimple_dump_bb_buff (&pp, bb, indent, flags);
     }
   dump_gimple_bb_footer (file, bb, indent, flags);

@@ -80,8 +80,8 @@ canvas::print_to_pp (pretty_printer *pp,
 	pp_string (pp, per_line_prefix);
 
       pretty_printer line_pp;
-      line_pp.show_color = pp->show_color;
-      line_pp.url_format = pp->url_format;
+      pp_show_color (&line_pp) = pp_show_color (pp);
+      line_pp.set_url_format (pp->get_url_format ());
       const int final_x_in_row = get_final_x_in_row (y);
       for (int x = 0; x <= final_x_in_row; x++)
 	{
@@ -133,7 +133,7 @@ canvas::debug (bool styled) const
   if (styled)
     {
       pp_show_color (&pp) = true;
-      pp.url_format = determine_url_format (DIAGNOSTICS_URL_AUTO);
+      pp.set_url_format (determine_url_format (DIAGNOSTICS_URL_AUTO));
     }
   print_to_pp (&pp);
   fprintf (stderr, "%s\n", pp_formatted_text (&pp));
@@ -383,7 +383,7 @@ test_canvas_urls ()
   {
     pretty_printer pp;
     pp_show_color (&pp) = true;
-    pp.url_format = URL_FORMAT_ST;
+    pp.set_url_format (URL_FORMAT_ST);
     assert_canvas_streq (SELFTEST_LOCATION, canvas, &pp,
 			 (/* Line 1.  */
 			  "\n"
@@ -400,7 +400,7 @@ test_canvas_urls ()
   {
     pretty_printer pp;
     pp_show_color (&pp) = true;
-    pp.url_format = URL_FORMAT_BEL;
+    pp.set_url_format (URL_FORMAT_BEL);
     assert_canvas_streq (SELFTEST_LOCATION, canvas, &pp,
 			 (/* Line 1.  */
 			  "\n"

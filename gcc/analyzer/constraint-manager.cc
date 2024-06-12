@@ -185,7 +185,7 @@ range::dump () const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -448,7 +448,7 @@ bounded_range::dump (bool show_types) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, show_types);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -721,7 +721,7 @@ bounded_ranges::dump (bool show_types) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, show_types);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -1772,7 +1772,7 @@ constraint_manager::dump (FILE *fp) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_to_pp (&pp, true);
   pp_flush (&pp);
 }

@@ -4410,7 +4410,7 @@ recording::function::dump_to_dot (const char *path)
     return;
 
   pretty_printer the_pp;
-  the_pp.buffer->stream = fp;
+  the_pp.set_output_stream (fp);
 
   pretty_printer *pp = &the_pp;
 

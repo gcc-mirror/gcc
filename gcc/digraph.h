@@ -201,7 +201,7 @@ digraph<GraphTraits>::dump_dot_to_file (FILE *fp,
   pretty_printer pp;
   // TODO:
   pp_format_decoder (&pp) = default_tree_printer;
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_dot_to_pp (&pp, root_cluster, args);
   pp_flush (&pp);
 }

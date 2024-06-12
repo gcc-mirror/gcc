@@ -955,7 +955,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  fprintf (file, "def_stmt ");
 	  {
 	    pretty_printer pp;
-	    pp.buffer->stream = file;
+	    pp.set_output_stream (file);
 	    pp_gimple_stmt_1 (&pp, SSA_NAME_DEF_STMT (node), indent + 4,
 			      TDF_NONE);
 	    pp_flush (&pp);

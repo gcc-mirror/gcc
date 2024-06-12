@@ -860,6 +860,7 @@ dump_pretty_printer::emit_items (optinfo *dest)
 void
 dump_pretty_printer::emit_any_pending_textual_chunks (optinfo *dest)
 {
+  output_buffer *const buffer = pp_buffer (this);
   gcc_assert (buffer->obstack == &buffer->formatted_obstack);
 
   /* Don't emit an item if the pending text is empty.  */

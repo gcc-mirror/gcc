@@ -4814,7 +4814,7 @@ maybe_init_pretty_print (FILE *file)
       pp_translate_identifiers (tree_pp) = false;
     }
 
-  tree_pp->buffer->stream = file;
+  tree_pp->set_output_stream (file);
 }
 
 static void

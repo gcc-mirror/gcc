@@ -443,7 +443,7 @@ supergraph::dump_dot_to_file (FILE *fp, const dump_args_t &dump_args) const
      trying to prettify things by showing the underlying var.  */
   pp_format_decoder (pp) = default_tree_printer;
 
-  pp->buffer->stream = fp;
+  pp->set_output_stream (fp);
   dump_dot_to_pp (pp, dump_args);
   pp_flush (pp);
   delete pp;
@@ -902,7 +902,7 @@ superedge::dump () const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump (&pp);
   pp_newline (&pp);
   pp_flush (&pp);

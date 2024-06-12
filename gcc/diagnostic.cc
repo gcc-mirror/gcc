@@ -342,8 +342,8 @@ diagnostic_context::urls_init (int value)
 	value = DIAGNOSTICS_URLS_DEFAULT;
     }
 
-  this->printer->url_format
-    = determine_url_format ((diagnostic_url_rule_t) value);
+  this->printer->set_url_format
+    (determine_url_format ((diagnostic_url_rule_t) value));
 }
 
 /* Create the file_cache, if not already created, and tell it how to
@@ -1354,7 +1354,7 @@ diagnostic_context::print_any_cwe (const diagnostic_info &diagnostic)
       pp_string (pp, " [");
       pp_string (pp, colorize_start (pp_show_color (pp),
 				     diagnostic_kind_color[diagnostic.kind]));
-      if (pp->url_format != URL_FORMAT_NONE)
+      if (pp->supports_urls_p ())
 	{
 	  char *cwe_url = get_cwe_url (cwe);
 	  pp_begin_url (pp, cwe_url);
@@ -1362,7 +1362,7 @@ diagnostic_context::print_any_cwe (const diagnostic_info &diagnostic)
 	}
       pp_printf (pp, "CWE-%i", cwe);
       pp_set_prefix (pp, saved_prefix);
-      if (pp->url_format != URL_FORMAT_NONE)
+      if (pp->supports_urls_p ())
 	pp_end_url (pp);
       pp_string (pp, colorize_stop (pp_show_color (pp)));
       pp_character (pp, ']');
@@ -1394,7 +1394,7 @@ diagnostic_context::print_any_rules (const diagnostic_info &diagnostic)
 		     colorize_start (pp_show_color (pp),
 				     diagnostic_kind_color[diagnostic.kind]));
 	  char *url = NULL;
-	  if (pp->url_format != URL_FORMAT_NONE)
+	  if (pp->supports_urls_p ())
 	    {
 	      url = rule.make_url ();
 	      if (url)
@@ -1402,7 +1402,7 @@ diagnostic_context::print_any_rules (const diagnostic_info &diagnostic)
 	    }
 	  pp_string (pp, desc);
 	  pp_set_prefix (pp, saved_prefix);
-	  if (pp->url_format != URL_FORMAT_NONE)
+	  if (pp->supports_urls_p ())
 	    if (url)
 	      pp_end_url (pp);
 	  free (url);
@@ -1425,7 +1425,7 @@ diagnostic_context::print_option_information (const diagnostic_info &diagnostic,
 					    orig_diag_kind, diagnostic.kind))
     {
       char *option_url = nullptr;
-      if (this->printer->url_format != URL_FORMAT_NONE)
+      if (this->printer->supports_urls_p ())
 	option_url = make_option_url (diagnostic.option_index);
       pretty_printer * const pp = this->printer;
       pp_string (pp, " [");

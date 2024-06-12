@@ -49,7 +49,7 @@ pp_cxx_nonconsecutive_character (cxx_pretty_printer *pp, int c)
   if (p != NULL && *p == c)
     pp_cxx_whitespace (pp);
   pp_character (pp, c);
-  pp->padding = pp_none;
+  pp->set_padding (pp_none);
 }
 
 #define pp_cxx_expression_list(PP, T)    \
@@ -65,7 +65,7 @@ void
 pp_cxx_colon_colon (cxx_pretty_printer *pp)
 {
   pp_colon_colon (pp);
-  pp->padding = pp_none;
+  pp->set_padding (pp_none);
 }
 
 void
@@ -84,7 +84,7 @@ void
 pp_cxx_separate_with (cxx_pretty_printer *pp, int c)
 {
   pp_separate_with (pp, c);
-  pp->padding = pp_none;
+  pp->set_padding (pp_none);
 }
 
 /* Expressions.  */
@@ -1702,7 +1702,7 @@ cxx_pretty_printer::direct_declarator (tree t)
 
       if (DECL_IOBJ_MEMBER_FUNCTION_P (t))
 	{
-	  padding = pp_before;
+	  set_padding (pp_before);
 	  pp_cxx_cv_qualifier_seq (this, pp_cxx_implicit_parameter_type (t));
 	}
 
@@ -1859,7 +1859,7 @@ cxx_pretty_printer::direct_abstract_declarator (tree t)
       direct_abstract_declarator (TREE_TYPE (t));
       if (TREE_CODE (t) == METHOD_TYPE)
 	{
-	  padding = pp_before;
+	  set_padding (pp_before);
 	  pp_cxx_cv_qualifier_seq (this, class_of_this_parm (t));
 	}
       pp_cxx_exception_specification (this, t);
@@ -2685,7 +2685,7 @@ pp_cxx_requires_clause (cxx_pretty_printer *pp, tree t)
 {
   if (!t)
     return;
-  pp->padding = pp_before;
+  pp->set_padding (pp_before);
   pp_cxx_ws_string (pp, "requires");
   pp_space (pp);
   pp->expression (t);

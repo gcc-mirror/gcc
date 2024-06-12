@@ -2284,7 +2284,7 @@ control_flow_tests (const line_table_case &case_)
 {
   std::unique_ptr<pretty_printer> event_pp
     = std::unique_ptr<pretty_printer> (global_dc->printer->clone ());
-  pp_show_color (event_pp) = 0;
+  pp_show_color (event_pp.get ()) = false;
 
   test_control_flow_1 (case_, event_pp.get ());
   test_control_flow_2 (case_, event_pp.get ());

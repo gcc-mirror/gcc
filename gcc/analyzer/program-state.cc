@@ -86,7 +86,7 @@ extrinsic_state::dump_to_file (FILE *outf) const
   pretty_printer pp;
   if (outf == stderr)
     pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = outf;
+  pp.set_output_stream (outf);
   dump_to_pp (&pp);
   pp_flush (&pp);
 }
@@ -274,7 +274,7 @@ sm_state_map::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   print (NULL, simple, true, &pp);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -1169,7 +1169,7 @@ program_state::dump_to_file (const extrinsic_state &ext_state,
   pp_format_decoder (&pp) = default_tree_printer;
   if (outf == stderr)
     pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = outf;
+  pp.set_output_stream (outf);
   dump_to_pp (ext_state, summarize, multiline, &pp);
   pp_flush (&pp);
 }
