@@ -2,6 +2,7 @@
 // { dg-options "-ltbb" }
 // { dg-do run { target c++17 } }
 // { dg-timeout-factor 3 }
+// { dg-timeout-factor 5 { target debug_mode } }
 // { dg-require-effective-target tbb_backend }
 
 //===-- transform_binary.pass.cpp -----------------------------------------===//
