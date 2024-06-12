@@ -22852,13 +22852,6 @@ cp_parser_asm_string_expression (cp_parser *parser)
       tree string = cp_parser_constant_expression (parser);
       if (string != error_mark_node)
 	string = cxx_constant_value (string, tf_error);
-      if (TREE_CODE (string) == NOP_EXPR)
-	string = TREE_OPERAND (string, 0);
-      if (TREE_CODE (string) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (string, 0)) == STRING_CST)
-	string = TREE_OPERAND (string, 0);
-      if (TREE_CODE (string) == VIEW_CONVERT_EXPR)
-	string = TREE_OPERAND (string, 0);
       cexpr_str cstr (string);
       if (!cstr.type_check (tok->location))
 	return error_mark_node;

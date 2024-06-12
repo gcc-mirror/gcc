@@ -1,22 +1,24 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu++11" } */
+/* { dg-options "-std=gnu++17" } */
 
-constexpr const char *genfoo ()
+#include <string>
+
+constexpr std::string_view genfoo ()
 {
   return "foo %1,%0";
 }
 
-constexpr const char *genoutput ()
+constexpr std::string_view genoutput ()
 {
   return "=r";
 }
 
-constexpr const char *geninput ()
+constexpr std::string_view geninput ()
 {
   return "r";
 }
 
-constexpr const char *genclobber ()
+constexpr std::string_view genclobber ()
 {
   return "memory";
 }

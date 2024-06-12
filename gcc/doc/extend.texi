@@ -10716,7 +10716,8 @@ message. Any string is converted to the character set of the source code.
 When this feature is available the @code{__GXX_CONSTEXPR_ASM__} cpp symbol is defined.
 
 @example
-constexpr const char *genfoo() @{ return "foo"; @}
+#include <string>
+constexpr std::string_view genfoo() @{ return "foo"; @}
 
 void function()
 @{
