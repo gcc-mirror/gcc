@@ -17,7 +17,7 @@
 
 // { dg-do run { target c++23 } }
 // { dg-add-options ieee }
-// { dg-additional-options "-DSKIP_LONG_DOUBLE" { target aarch64-*-vxworks* } }
+// { dg-additional-options "-DSKIP_LONG_DOUBLE" { target aarch64-*-vxworks* aarch64-*-rtems* } }
 
 #include <charconv>
 #include <string>
