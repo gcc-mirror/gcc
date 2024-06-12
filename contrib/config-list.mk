@@ -61,7 +61,7 @@ LIST = \
   i686-rtems i686-solaris2.11 i686-wrs-vxworks \
   i686-wrs-vxworksae \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elfOPT-enable-obsolete \
-  ia64-linuxOPT-enable-obsolete ia64-hpuxOPT-enable-obsolete \
+  ia64-linux ia64-hpuxOPT-enable-obsolete \
   ia64-hp-vmsOPT-enable-obsolete iq2000-elf lm32-elf \
   lm32-rtems lm32-uclinux \
   loongarch64-linux-gnuf64 loongarch64-linux-gnuf32 loongarch64-linux-gnusf \

@@ -272,7 +272,7 @@ esac
 
 # Obsolete configurations.
 case ${target} in
-     ia64*-*-*				\
+     ia64*-*-hpux* | ia64*-*-*vms* | ia64*-*-elf*	\
    | nios2*-*-*				\
  )
     if test "x$enable_obsolete" != xyes; then
