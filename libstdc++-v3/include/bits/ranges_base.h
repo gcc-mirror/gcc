@@ -537,6 +537,12 @@ namespace ranges
     using range_rvalue_reference_t
       = iter_rvalue_reference_t<iterator_t<_Range>>;
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3860. range_common_reference_t is missing
+  template<range _Range>
+    using range_common_reference_t
+      = iter_common_reference_t<iterator_t<_Range>>;
+
   /// [range.sized] The sized_range concept.
   template<typename _Tp>
     concept sized_range = range<_Tp>
