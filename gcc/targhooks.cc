@@ -1887,6 +1887,12 @@ default_have_conditional_execution (void)
   return HAVE_conditional_execution;
 }
 
+bool
+default_have_ccmp (void)
+{
+  return targetm.gen_ccmp_first != NULL;
+}
+
 /* By default we assume that c99 functions are present at the runtime,
    but sincos is not.  */
 bool

@@ -12354,6 +12354,13 @@ This function prepares to emit a conditional comparison within a sequence
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_HAVE_CCMP (void)
+This target hook returns true if the target supports conditional compare.
+This target hook is required only when the ccmp support is conditionally
+enabled, such as in response to command-line flags. The default implementation
+returns true iff @code{TARGET_GEN_CCMP_FIRST} is defined.
+@end deftypefn
+
 @deftypefn {Target Hook} unsigned TARGET_LOOP_UNROLL_ADJUST (unsigned @var{nunroll}, class loop *@var{loop})
 This target hook returns a new value for the number of times @var{loop}
 should be unrolled. The parameter @var{nunroll} is the number of times

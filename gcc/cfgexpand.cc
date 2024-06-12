@@ -2646,7 +2646,7 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
 	  /* If jumps are cheap and the target does not support conditional
 	     compare, turn some more codes into jumpy sequences.  */
 	  else if (BRANCH_COST (optimize_insn_for_speed_p (), false) < 4
-		   && targetm.gen_ccmp_first == NULL)
+		   && !targetm.have_ccmp ())
 	    {
 	      if ((code2 == BIT_AND_EXPR
 		   && TYPE_PRECISION (TREE_TYPE (op0)) == 1

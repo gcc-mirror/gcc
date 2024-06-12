@@ -11089,7 +11089,7 @@ expand_expr_real_gassign (gassign *g, rtx target, machine_mode tmode,
       ops.op1 = gimple_assign_rhs2 (g);
 
       /* Try to expand conditonal compare.  */
-      if (targetm.gen_ccmp_first)
+      if (targetm.have_ccmp ())
 	{
 	  gcc_checking_assert (targetm.gen_ccmp_next != NULL);
 	  r = expand_ccmp_expr (g, TYPE_MODE (ops.type));

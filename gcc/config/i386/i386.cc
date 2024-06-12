@@ -26204,6 +26204,13 @@ ix86_memtag_add_tag (rtx base, poly_int64 offset, unsigned char tag_offset)
   return plus_constant (Pmode, tagged_addr, offset);
 }
 
+/* Implement TARGET_HAVE_CCMP.  */
+static bool
+ix86_have_ccmp ()
+{
+  return (bool) TARGET_APX_CCMP;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -27043,6 +27050,8 @@ ix86_libgcc_floating_mode_supported_p
 #undef TARGET_GEN_CCMP_NEXT
 #define TARGET_GEN_CCMP_NEXT ix86_gen_ccmp_next
 
+#undef TARGET_HAVE_CCMP
+#define TARGET_HAVE_CCMP ix86_have_ccmp
 
 static bool
 ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)

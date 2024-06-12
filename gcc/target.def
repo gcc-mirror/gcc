@@ -2783,6 +2783,16 @@ DEFHOOK
  rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev, rtx_code cmp_code, tree op0, tree op1, rtx_code bit_code),
  NULL)
 
+/* Return true if the target supports conditional compare.  */
+DEFHOOK
+(have_ccmp,
+ "This target hook returns true if the target supports conditional compare.\n\
+This target hook is required only when the ccmp support is conditionally\n\
+enabled, such as in response to command-line flags. The default implementation\n\
+returns true iff @code{TARGET_GEN_CCMP_FIRST} is defined.",
+ bool, (void),
+ default_have_ccmp)
+
 /* Return a new value for loop unroll size.  */
 DEFHOOK
 (loop_unroll_adjust,
