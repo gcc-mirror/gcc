@@ -1,3 +1,9 @@
+2024-06-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR jit/115442
+	* jit-recording.cc: Define INCLUDE_SSTREAM before including
+	system.h and don't directly incldue sstream.
+
 2024-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* docs/topics/expressions.rst (Constructor expressions): Fix

@@ -1,3 +1,9 @@
+2024-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def (math_exception): Bypass on __cplusplus.
+	* tests/base/math.h: Regenerate.
+
 2024-06-07  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* fixincl.x: Regenerate.

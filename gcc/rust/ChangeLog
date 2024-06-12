@@ -1,3 +1,8 @@
+2024-06-11  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Remove overazealous LIBS = -ldl -lpthread line, link
+	crab1 against CRAB1_LIBS.
+
 2024-04-15  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* Make-lang.in (RUST_LIBDEPS): Inline into single user.

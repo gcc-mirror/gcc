@@ -1,3 +1,10 @@
+2024-06-11  Joseph Myers  <josmyers@redhat.com>
+
+	* include/cpplib.h (CLK_GNUC2Y, CLK_STDC2Y): New.
+	* init.cc (lang_defaults): Add GNUC2Y and STDC2Y entries.
+	(cpp_init_builtins): Define __STDC_VERSION__ to 202500L for GNUC2Y
+	and STDC2Y.
+
 2024-06-07  Jason Merrill  <jason@redhat.com>
 
 	* files.cc (_cpp_stack_file): LC_ENTER for -include header unit.

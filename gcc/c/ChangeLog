@@ -1,3 +1,14 @@
+2024-06-11  Joseph Myers  <josmyers@redhat.com>
+
+	* c-errors.cc (pedwarn_c23): New.
+	* c-parser.cc (disable_extension_diagnostics)
+	(restore_extension_diagnostics): Save and restore
+	warn_c23_c2y_compat.
+	(c_parser_generic_selection): Handle type name as controlling
+	operand.  Allow incomplete and function types subject to
+	pedwarn_c23 calls.
+	* c-tree.h (pedwarn_c23): New.
+
 2024-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/114493

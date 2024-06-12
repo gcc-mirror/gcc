@@ -1,3 +1,20 @@
+2024-06-11  Andi Kleen  <ak@linux.intel.com>
+
+	* parser.cc (cp_parser_asm_string_expression): New function
+	to handle constexpr strings for asm.
+	(cp_parser_asm_definition): Use cp_parser_asm_string_expression.
+	(cp_parser_yield_expression): Dito.
+	(cp_parser_asm_specification_opt): Dito.
+	(cp_parser_asm_operand_list): Dito.
+	(cp_parser_asm_clobber_list): Dito.
+
+2024-06-11  Andi Kleen  <ak@linux.intel.com>
+
+	* cp-tree.h (class cexpr_str): Add.
+	* semantics.cc (finish_static_assert): Convert to use cexpr_str.
+	(cexpr_str::type_check): Extract constexpr string code to here.
+	(cexpr_str::extract): ... and here.
+
 2024-06-08  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/108438

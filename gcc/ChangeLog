@@ -1,3 +1,106 @@
+2024-06-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115384
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Only do the simplification of (AND (ASHIFTRT A imm) mask)
+	to (LSHIFTRT A imm) when the component of const_vector is
+	CONST_INT_P.
+
+2024-06-11  Joseph Myers  <josmyers@redhat.com>
+
+	* doc/cpp.texi (__STDC_VERSION__): Document C2Y handling.
+	* doc/invoke.texi (-Wc23-c2y-compat, -std=c2y, -std=gnu2y):
+	Document options.
+	(-std=gnu23): Update documentation.
+	* doc/standards.texi (C Language): Document C2Y.  Update C23
+	description.
+	* config/rl78/rl78.cc (rl78_option_override): Handle "GNU C2Y"
+	language name.
+	* dwarf2out.cc (highest_c_language, gen_compile_unit_die):
+	Likewise.
+
+2024-06-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <x86_64-*-solaris2*>: Remove
+	redundant introduction of x86-64.
+
+2024-06-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/115382
+	* tree-vect-loop.cc (vectorize_fold_left_reduction): Use
+	prepare_vec_mask.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Remove static of prepare_vec_mask.
+	* tree-vectorizer.h (prepare_vec_mask): Export.
+
+2024-06-11  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md (atomic_<atomic_optab><mode>): New expand pattern.
+	(amo_atomic_<atomic_optab><mode>): Rename amo pattern.
+	(atomic_fetch_<atomic_optab><mode>): New lrsc sequence pattern.
+	(lrsc_atomic_<atomic_optab><mode>): New expand pattern.
+	(amo_atomic_fetch_<atomic_optab><mode>): Rename amo pattern.
+	(lrsc_atomic_fetch_<atomic_optab><mode>): New lrsc sequence pattern.
+	(atomic_exchange<mode>): New expand pattern.
+	(amo_atomic_exchange<mode>): Rename amo pattern.
+	(lrsc_atomic_exchange<mode>): New lrsc sequence pattern.
+
+2024-06-11  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* doc/sourcebuild.texi: Add docs for atomic extension testsuite infra.
+
+2024-06-11  Edwin Lu  <ewlu@rivosinc.com>
+	    Patrick O'Neill  <patrick@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc: Add Zaamo and Zalrsc.
+	* config/riscv/arch-canonicalize: Make A imply Zaamo and Zalrsc.
+	* config/riscv/riscv.opt: Add Zaamo and Zalrsc
+	* config/riscv/sync.md: Convert TARGET_ATOMIC to TARGET_ZAAMO and
+	TARGET_ZALRSC.
+
+2024-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112600
+	* config/i386/i386.md (usadd<mode>3): Emit insn sequence
+	involving conditional move for TARGET_CMOVE targets.
+	(ussub<mode>3): Ditto.
+
+2024-06-11  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	* config/aarch64/aarch64-builtins.cc (VAR1): Remap float_truncate_lo_
+	builtin codes to standard optab ones.
+	* config/aarch64/aarch64-simd.md (aarch64_float_truncate_lo_<mode><vczle><vczbe>):
+	Rename to...
+	(trunc<Vwide><mode>2<vczle><vczbe>): ... This.
+
+2024-06-11  Andi Kleen  <ak@linux.intel.com>
+
+	* doc/extend.texi: Document constexpr asm.
+
+2024-06-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (range_of_ssa_name_with_loop_info): Issue a
+	message if SCEV is not invoked due to a mismatch.
+
+2024-06-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/115397
+	* config/i386/i386-expand.cc (ix86_expand_ternlog): Move call to
+	ix86_broadcast_from_constant before call to validize_mem, but after
+	call to force_const_mem.
+
+2024-06-11  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec.md (ussub<mode>3): Add new pattern impl
+	for the unsigned vector modes.
+	* config/riscv/riscv-protos.h (expand_vec_ussub): Add new func
+	decl to expand .SAT_SUB for vector mode.
+	* config/riscv/riscv-v.cc (emit_vec_saddu): Add new func impl
+	to expand .SAT_SUB for vector mode.
+	(emit_vec_binary_alu): Add new helper func to emit binary alu.
+	(expand_vec_ussub): Leverage above helper func.
+
 2024-06-10  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/gm2.texi (Documentation): Fix typos, grammar, and a link.

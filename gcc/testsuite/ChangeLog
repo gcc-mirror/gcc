@@ -1,3 +1,169 @@
+2024-06-12  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr115384.c: New test.
+
+2024-06-11  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c23-generic-1.c, gcc.dg/c23-generic-2.c,
+	gcc.dg/c23-generic-3.c, gcc.dg/c23-generic-4.c,
+	gcc.dg/c2y-generic-1.c, gcc.dg/c2y-generic-2.c,
+	gcc.dg/c2y-generic-3.c, gcc.dg/gnu2y-generic-1.c: New tests.
+	* gcc.dg/c23-tag-6.c: Use -pedantic-errors.
+
+2024-06-11  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-zaamo-preferred-over-zalrsc.c: New test.
+	* gcc.target/riscv/amo-zalrsc-amo-add-1.c: New test.
+	* gcc.target/riscv/amo-zalrsc-amo-add-2.c: New test.
+	* gcc.target/riscv/amo-zalrsc-amo-add-3.c: New test.
+	* gcc.target/riscv/amo-zalrsc-amo-add-4.c: New test.
+	* gcc.target/riscv/amo-zalrsc-amo-add-5.c: New test.
+
+2024-06-11  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-a-6-amo-add-1.c: Use Zaamo rather than A.
+	* gcc.target/riscv/amo-table-a-6-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-1.c: Use Zalrsc rather
+	than A.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-2.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-3.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-4.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-5.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-6.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-7.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-1.c: Use Zaamo rather
+	than A.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-1.c: Add Zaamo option.
+	* gcc.target/riscv/amo-table-ztso-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-1.c: Use Zalrsc rather
+	than A.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-5.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-6.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-7.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-5.c: Ditto.
+	* lib/target-supports.exp: Add testsuite infrastructure support for
+	Zaamo and Zalrsc.
+
+2024-06-11  Edwin Lu  <ewlu@rivosinc.com>
+	    Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/attribute-15.c: Adjust expected arch string.
+	* gcc.target/riscv/attribute-16.c: Ditto.
+	* gcc.target/riscv/attribute-17.c: Ditto.
+	* gcc.target/riscv/attribute-18.c: Ditto.
+	* gcc.target/riscv/pr110696.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr114352-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr114352-3.c: Ditto.
+
+2024-06-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/112600
+	* gcc.target/i386/pr112600-a.c: Also scan for cmov.
+	* gcc.target/i386/pr112600-b.c: Ditto.
+
+2024-06-11  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	* gcc.target/aarch64/trunc-vec.c: New test.
+
+2024-06-11  Andi Kleen  <ak@linux.intel.com>
+
+	* g++.dg/ext/asm11.C: Adjust to new error message.
+	* g++.dg/ext/asm9.C: Dito.
+	* g++.dg/parse/asm1.C: Dito.
+	* g++.dg/parse/asm2.C: Dito.
+	* g++.dg/parse/asm3.C: Dito.
+	* g++.dg/cpp1z/constexpr-asm-1.C: New test.
+	* g++.dg/cpp1z/constexpr-asm-2.C: New test.
+	* g++.dg/cpp1z/constexpr-asm-3.C: New test.
+
+2024-06-11  Andi Kleen  <ak@linux.intel.com>
+
+	* g++.dg/cpp26/static_assert1.C: Update to new error message.
+	* g++.dg/cpp0x/udlit-error1.C: Dito.
+
+2024-06-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114529
+	* gm2/base-lang/pass/SYSTEM.def: New test.
+	* gm2/base-lang/pass/base-lang-test.sh: New test.
+	* gm2/base-lang/pass/globalproctype.def: New test.
+	* gm2/base-lang/pass/globalproctype.mod: New test.
+	* gm2/base-lang/pass/globalvar.def: New test.
+	* gm2/base-lang/pass/globalvar.mod: New test.
+	* gm2/base-lang/pass/globalvarassign.def: New test.
+	* gm2/base-lang/pass/globalvarassign.mod: New test.
+	* gm2/base-lang/pass/localproctype.def: New test.
+	* gm2/base-lang/pass/localproctype.mod: New test.
+	* gm2/base-lang/pass/localvar.def: New test.
+	* gm2/base-lang/pass/localvar.mod: New test.
+	* gm2/base-lang/pass/localvarassign.def: New test.
+	* gm2/base-lang/pass/localvarassign.mod: New test.
+	* gm2/base-lang/pass/opaquefield.def: New test.
+	* gm2/base-lang/pass/opaquefield.mod: New test.
+	* gm2/base-lang/pass/opaquenew.def: New test.
+	* gm2/base-lang/pass/opaquenew.mod: New test.
+	* gm2/base-lang/pass/opaqueparam.def: New test.
+	* gm2/base-lang/pass/opaqueparam.mod: New test.
+	* gm2/base-lang/pass/opaquestr.def: New test.
+	* gm2/base-lang/pass/opaqueuse.def: New test.
+	* gm2/base-lang/pass/opaqueuse.mod: New test.
+	* gm2/base-lang/pass/opaqueusestr.def: New test.
+	* gm2/base-lang/pass/opaqueusestr.mod: New test.
+	* gm2/base-lang/pass/opaquevariant.def: New test.
+	* gm2/base-lang/pass/opaquevariant.mod: New test.
+	* gm2/base-lang/pass/opaquevarparam.def: New test.
+	* gm2/base-lang/pass/opaquevarparam.mod: New test.
+	* gm2/base-lang/pass/simplelist.def: New test.
+	* gm2/base-lang/pass/simplelist.mod: New test.
+	* gm2/base-lang/pass/simplelistiter.def: New test.
+	* gm2/base-lang/pass/simplelistiter.mod: New test.
+	* gm2/base-lang/pass/simpleopaque.def: New test.
+	* gm2/base-lang/pass/simpleopaque.mod: New test.
+	* gm2/base-lang/pass/straddress.def: New test.
+	* gm2/base-lang/pass/straddress.mod: New test.
+	* gm2/base-lang/pass/straddressexport.def: New test.
+	* gm2/base-lang/pass/straddressexport.mod: New test.
+	* gm2/base-lang/pass/unboundedarray.def: New test.
+	* gm2/base-lang/pass/unboundedarray.mod: New test.
+
+2024-06-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/115397
+	* gcc.target/i386/pr115397.c: New test case.
+
+2024-06-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macros for test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-4.c: New test.
+
+2024-06-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/round_32.c: Delete.
+
 2024-06-10  Raphael Zinsly  <rzinsly@ventanamicro.com>
 
 	* gcc.target/riscv/zbs-ext.c: New test.

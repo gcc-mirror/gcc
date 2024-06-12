@@ -1,3 +1,8 @@
+2024-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (leap_seconds): Add comment.
+	* testsuite/std/time/leap_seconds/io.cc: New test.
+
 2024-06-10  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable.h (~_Hashtable()): Replace clear call with
