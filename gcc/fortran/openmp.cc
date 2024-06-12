@@ -7423,8 +7423,9 @@ resolve_omp_udr_clause (gfc_omp_namelist *n, gfc_namespace *ns,
 }
 
 /* Assume that a constant expression in the range 1 (omp_default_mem_alloc)
-   to 8 (omp_thread_mem_alloc) range is fine.  The original symbol name is
-   already lost during matching via gfc_match_expr.  */
+   to 8 (omp_thread_mem_alloc) range, or 200 (ompx_gnu_pinned_mem_alloc) is
+   fine.  The original symbol name is already lost during matching via
+   gfc_match_expr.  */
 static bool
 is_predefined_allocator (gfc_expr *expr)
 {
@@ -7433,8 +7434,10 @@ is_predefined_allocator (gfc_expr *expr)
 	  && expr->ts.type == BT_INTEGER
 	  && expr->ts.kind == gfc_c_intptr_kind
 	  && expr->expr_type == EXPR_CONSTANT
-	  && mpz_sgn (expr->value.integer) > 0
-	  && mpz_cmp_si (expr->value.integer, 8) <= 0);
+	  && ((mpz_sgn (expr->value.integer) > 0
+	       && mpz_cmp_si (expr->value.integer, 8) <= 0)
+	      || (mpz_cmp_si (expr->value.integer, 200) >= 0
+		  && mpz_cmp_si (expr->value.integer, 200) <= 0)));
 }
 
 /* Resolve declarative ALLOCATE statement. Note: Common block vars only appear
