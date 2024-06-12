@@ -5316,14 +5316,13 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       /* FIXME: Handle exporting declarations from a different scope
 	 without also marking those declarations as exported.
 	 This will require not just binding directly to the underlying
-	 value; see c++/114863 and c++/114865.  We allow this for purview
-	 declarations for now as this doesn't (currently) cause ICEs
+	 value; see c++/114683 and c++/114685.  We allow the extra exports
+	 for now as this doesn't (currently) cause ICEs
 	 later down the line, but this should be revisited.  */
       if (revealing_p)
 	{
 	  if (module_exporting_p ()
 	      && check_can_export_using_decl (lookup.value)
-	      && lookup.value == value
 	      && !DECL_MODULE_EXPORT_P (lookup.value))
 	    {
 	      /* We're redeclaring the same value, but this time as
