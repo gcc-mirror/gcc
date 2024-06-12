@@ -131,7 +131,6 @@ parse_reg (InlineAsmContext &inline_asm_ctx)
 {
   using RegType = AST::InlineAsmRegOrRegClass::Type;
   auto &parser = inline_asm_ctx.parser;
-  auto last_token_id = inline_asm_ctx.last_token_id;
 
   if (!parser.skip_token (LEFT_PAREN))
     {
@@ -204,7 +203,6 @@ parse_reg_operand (InlineAsmContext &inline_asm_ctx)
   //           None
   //       };
   auto &parser = inline_asm_ctx.parser;
-  auto last_token_id = inline_asm_ctx.last_token_id;
   AST::InlineAsmOperand reg_operand;
   rust_debug ("Enter parse_reg_operand");
   auto token = parser.peek_current_token ();
@@ -562,8 +560,8 @@ MacroBuiltin::asm_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
   return parse_asm (invoc_locus, invoc, is_global_asm);
 }
 
-int
-parse_asm_arg (InlineAsmContext &inline_asm_ctx)
+tl::expected<InlineAsmContext, std::string>
+parse_asm_arg (InlineAsmContext inline_asm_ctx)
 {
   auto &parser = inline_asm_ctx.parser;
   auto last_token_id = inline_asm_ctx.last_token_id;
@@ -625,7 +623,7 @@ parse_asm_arg (InlineAsmContext &inline_asm_ctx)
       // std::cout << "reg_operand" << std::endl;
       auto operand = parse_reg_operand (inline_asm_ctx);
     }
-  return 0;
+  return tl::expected<InlineAsmContext, std::string> (inline_asm_ctx);
 }
 
 tl::optional<AST::Fragment>
@@ -655,14 +653,48 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   AST::InlineAsm inline_asm (invoc_locus, is_global_asm);
   auto inline_asm_ctx = InlineAsmContext (inline_asm, parser, last_token_id);
 
+  // operands stream, also handles the optional ","
+  tl::expected<InlineAsmContext, std::string> resulting_context
+    = tl::expected<InlineAsmContext, std::string> (inline_asm_ctx);
+  resulting_context.and_then (parse_format_strings)
+    .and_then (parse_asm_arg)
+    .and_then (validate);
+
+  // TODO: I'm putting the validation here because the rust reference put it
+  // here Per Arthur's advice we would actually do the validation in a different
+  // stage. and visit on the InlineAsm AST instead of it's context.
+  auto is_valid = (bool) resulting_context;
+
+  if (is_valid)
+    {
+      AST::SingleASTNode single = AST::SingleASTNode (
+	inline_asm_ctx.inline_asm.clone_expr_without_block ());
+      std::vector<AST::SingleASTNode> single_vec = {single};
+
+      AST::Fragment fragment_ast
+	= AST::Fragment (single_vec,
+			 std::vector<std::unique_ptr<AST::Token>> ());
+      return fragment_ast;
+    }
+  else
+    {
+      return tl::nullopt;
+    }
+}
+
+tl::expected<InlineAsmContext, std::string>
+parse_format_strings (InlineAsmContext inline_asm_ctx)
+{
   // Parse the first ever formatted string, success or not, will skip 1 token
+  auto parser = inline_asm_ctx.parser;
+  auto last_token_id = inline_asm_ctx.last_token_id;
   auto fm_string = parse_format_string (inline_asm_ctx);
 
   if (fm_string == tl::nullopt)
     {
       rust_error_at (parser.peek_current_token ()->get_locus (),
 		     "%s template must be a string literal", "asm");
-      return tl::nullopt;
+      return tl::unexpected<std::string> ("ERROR");
     }
 
   // formatted string stream
@@ -685,29 +717,7 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	}
     }
 
-  // operands stream, also handles the optional ","
-  parse_asm_arg (inline_asm_ctx);
-
-  // TODO: I'm putting the validation here because the rust reference put it
-  // here Per Arthur's advice we would actually do the validation in a different
-  // stage. and visit on the InlineAsm AST instead of it's context.
-  auto is_valid = validate (inline_asm_ctx);
-
-  if (is_valid)
-    {
-      AST::SingleASTNode single = AST::SingleASTNode (
-	inline_asm_ctx.inline_asm.clone_expr_without_block ());
-      std::vector<AST::SingleASTNode> single_vec = {single};
-
-      AST::Fragment fragment_ast
-	= AST::Fragment (single_vec,
-			 std::vector<std::unique_ptr<AST::Token>> ());
-      return fragment_ast;
-    }
-  else
-    {
-      return tl::nullopt;
-    }
+  return tl::expected<InlineAsmContext, std::string> (inline_asm_ctx);
 }
 
 // bool
@@ -727,9 +737,9 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 //   return true;
 // }
 
-bool
-validate (InlineAsmContext &inline_asm_ctx)
+tl::expected<InlineAsmContext, std::string>
+validate (InlineAsmContext inline_asm_ctx)
 {
-  return true;
+  return tl::expected<InlineAsmContext, std::string> (inline_asm_ctx);
 }
 } // namespace Rust

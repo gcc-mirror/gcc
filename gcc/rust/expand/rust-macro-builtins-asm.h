@@ -1,6 +1,7 @@
 
 #include "rust-macro-builtins.h"
 #include "rust-macro-builtins-helpers.h"
+#include "expected.h"
 #include "rust-macro-invoc-lexer.h"
 #include "rust/ast/rust-expr.h"
 namespace Rust {
@@ -29,6 +30,14 @@ public:
       parser (parser), last_token_id (last_token_id)
   {}
 
+  // InlineAsmContext (InlineAsmContext && inline_asm_ctx)
+  // : allow_templates(inline_asm_ctx.allow_templates),
+  //   is_explicit(inline_asm_ctx.is_explicit),
+  //   consumed_comma_without_formatted_string(inline_asm_ctx.consumed_comma_without_formatted_string),
+  //   inline_asm(inline_asm_ctx.inline_asm),
+  //   parser(inline_asm_ctx.parser),
+  //   last_token_id(inline_asm_ctx.last_token_id) {}
+
   bool is_global_asm () { return inline_asm.is_global_asm; }
 
   bool allows_templates () { return allow_templates; }
@@ -39,8 +48,15 @@ public:
   }
 };
 
-int
-parse_asm_arg (InlineAsmContext &inline_asm_ctx);
+// Expected calls
+tl::expected<InlineAsmContext, std::string>
+validate (InlineAsmContext inline_asm_ctx);
+
+tl::expected<InlineAsmContext, std::string>
+parse_asm_arg (InlineAsmContext inline_asm_ctx);
+
+tl::expected<InlineAsmContext, std::string>
+parse_format_strings (InlineAsmContext inline_asm_ctx);
 
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
@@ -76,8 +92,7 @@ parse_format_string (InlineAsmContext &inline_asm_ctx);
 tl::optional<std::string>
 parse_label (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	     InlineAsmContext &inline_asm_ctx);
-bool
-validate (InlineAsmContext &inline_asm_ctx);
+
 std::set<std::string> potentially_nonpromoted_keywords
   = {"in", "out", "lateout", "inout", "inlateout", "const", "sym", "label"};
 
