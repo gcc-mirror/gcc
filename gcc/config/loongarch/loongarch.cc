@@ -5352,7 +5352,7 @@ loongarch_expand_conditional_move (rtx *operands)
     loongarch_emit_float_compare (&code, &op0, &op1);
   else
     {
-      if (GET_MODE_SIZE (GET_MODE (op0)) < word_mode)
+      if (GET_MODE_SIZE (GET_MODE (op0)) < UNITS_PER_WORD)
 	{
 	  promote_op[0] = (REG_P (op0) && REG_P (operands[2]) &&
 			   REGNO (op0) == REGNO (operands[2]));
