@@ -38,12 +38,13 @@ parseDirSpec (Parser<MacroInvocLexer> &parser, TokenId last_token_id)
 }
 
 int
-parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-		   InlineAsmContext &inline_asm_ctx)
+parse_clobber_abi (InlineAsmContext &inline_asm_ctx)
 {
   // clobber_abi := "clobber_abi(" <abi> *("," <abi>) [","] ")"
   // PARSE EVERYTHING COMMITTEDLY IN THIS FUNCTION, WE CONFIRMED VIA clobber_abi
   // identifier keyword
+  auto &parser = inline_asm_ctx.parser;
+  auto last_token_id = inline_asm_ctx.last_token_id;
   auto &inline_asm = inline_asm_ctx.inline_asm;
   auto token = parser.peek_current_token ();
   if (!parser.skip_token (LEFT_PAREN))
@@ -126,10 +127,12 @@ parse_clobber_abi (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 }
 
 tl::optional<AST::InlineAsmRegOrRegClass>
-parse_reg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	   InlineAsmContext &inline_asm_ctx)
+parse_reg (InlineAsmContext &inline_asm_ctx)
 {
   using RegType = AST::InlineAsmRegOrRegClass::Type;
+  auto &parser = inline_asm_ctx.parser;
+  auto last_token_id = inline_asm_ctx.last_token_id;
+
   if (!parser.skip_token (LEFT_PAREN))
     {
       // TODO: we expect a left parenthesis here, please return the correct
@@ -182,16 +185,14 @@ parse_reg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 }
 
 int
-parse_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	       InlineAsmContext &inline_asm_ctx)
+parse_operand (InlineAsmContext &inline_asm_ctx)
 {
   return 0;
 }
 
 // From rustc
 tl::optional<AST::InlineAsmOperand>
-parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-		   InlineAsmContext &inline_asm_ctx)
+parse_reg_operand (InlineAsmContext &inline_asm_ctx)
 {
   // let name = if p.token.is_ident() && p.look_ahead(1, |t| *t == token::Eq) {
   //           let (ident, _) = p.token.ident().unwrap();
@@ -202,7 +203,8 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   //       } else {
   //           None
   //       };
-
+  auto &parser = inline_asm_ctx.parser;
+  auto last_token_id = inline_asm_ctx.last_token_id;
   AST::InlineAsmOperand reg_operand;
   rust_debug ("Enter parse_reg_operand");
   auto token = parser.peek_current_token ();
@@ -229,7 +231,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       rust_debug ("Enter parse_reg_operand in");
 
-      auto reg = parse_reg (parser, last_token_id, inline_asm_ctx);
+      auto reg = parse_reg (inline_asm_ctx);
 
       if (parser.skip_token (UNDERSCORE))
 	{
@@ -238,7 +240,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	  rust_unreachable ();
 	}
 
-      auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
+      auto expr = parse_format_string (inline_asm_ctx);
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
@@ -251,9 +253,9 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       rust_debug ("Enter parse_reg_operand out");
 
-      auto reg = parse_reg (parser, last_token_id, inline_asm_ctx);
+      auto reg = parse_reg (inline_asm_ctx);
 
-      auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
+      auto expr = parse_format_string (inline_asm_ctx);
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
@@ -271,7 +273,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       rust_debug ("Enter parse_reg_operand inout");
 
-      auto reg = parse_reg (parser, last_token_id, inline_asm_ctx);
+      auto reg = parse_reg (inline_asm_ctx);
 
       if (parser.skip_token (UNDERSCORE))
 	{
@@ -283,7 +285,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
       // doing a lot of work.
       // TODO: Not sure how to use parse_expr
-      auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
+      auto expr = parse_format_string (inline_asm_ctx);
 
       std::unique_ptr<AST::Expr> out_expr;
 
@@ -292,7 +294,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	  rust_debug ("Matched MATCH_ARROW");
 	  if (!parser.skip_token (UNDERSCORE))
 	    {
-	      parse_format_string (parser, last_token_id, inline_asm_ctx);
+	      parse_format_string (inline_asm_ctx);
 	      // out_expr = parser.parse_expr();
 	    }
 
@@ -324,7 +326,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       rust_debug ("Enter parse_reg_operand inout");
 
-      auto reg = parse_reg (parser, last_token_id, inline_asm_ctx);
+      auto reg = parse_reg (inline_asm_ctx);
 
       if (parser.skip_token (UNDERSCORE))
 	{
@@ -336,7 +338,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
       // doing a lot of work.
       // TODO: Not sure how to use parse_expr
-      auto expr = parse_format_string (parser, last_token_id, inline_asm_ctx);
+      auto expr = parse_format_string (inline_asm_ctx);
 
       std::unique_ptr<AST::Expr> out_expr;
 
@@ -345,7 +347,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	  rust_debug ("Matched MATCH_ARROW");
 	  if (!parser.skip_token (UNDERSCORE))
 	    {
-	      parse_format_string (parser, last_token_id, inline_asm_ctx);
+	      parse_format_string (inline_asm_ctx);
 	      // out_expr = parser.parse_expr();
 	    }
 
@@ -374,8 +376,7 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   else if (parser.peek_current_token ()->get_id () == CONST)
     {
       // TODO: Please handle const with parse_expr instead.
-      auto anon_const
-	= parse_format_string (parser, last_token_id, inline_asm_ctx);
+      auto anon_const = parse_format_string (inline_asm_ctx);
       reg_operand.set_cnst (tl::nullopt);
       return reg_operand;
     }
@@ -396,9 +397,9 @@ parse_reg_operand (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
   return reg_operand;
 }
 void
-check_and_set (Parser<MacroInvocLexer> &parser,
-	       InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
+check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
 {
+  auto &parser = inline_asm_ctx.parser;
   auto &inline_asm = inline_asm_ctx.inline_asm;
   if (inline_asm.options.count (option) != 0)
     {
@@ -414,9 +415,10 @@ check_and_set (Parser<MacroInvocLexer> &parser,
     }
 }
 int
-parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	       InlineAsmContext &inline_asm_ctx)
+parse_options (InlineAsmContext &inline_asm_ctx)
 {
+  auto &parser = inline_asm_ctx.parser;
+  auto last_token_id = inline_asm_ctx.last_token_id;
   bool is_global_asm = inline_asm_ctx.inline_asm.is_global_asm;
   // Parse everything commitedly
   if (!parser.skip_token (LEFT_PAREN))
@@ -432,44 +434,39 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
     {
       if (!is_global_asm && check_identifier (parser, "pure"))
 	{
-	  check_and_set (parser, inline_asm_ctx, AST::InlineAsmOption::PURE);
+	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::PURE);
 	}
       else if (!is_global_asm && check_identifier (parser, "nomem"))
 	{
-	  check_and_set (parser, inline_asm_ctx, AST::InlineAsmOption::NOMEM);
+	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::NOMEM);
 	}
       else if (!is_global_asm && check_identifier (parser, "readonly"))
 	{
-	  check_and_set (parser, inline_asm_ctx,
-			 AST::InlineAsmOption::READONLY);
+	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::READONLY);
 	}
       else if (!is_global_asm && check_identifier (parser, "preserves_flags"))
 	{
-	  check_and_set (parser, inline_asm_ctx,
-			 AST::InlineAsmOption::PRESERVES_FLAGS);
+	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::PRESERVES_FLAGS);
 	}
       else if (!is_global_asm && check_identifier (parser, "noreturn"))
 	{
-	  check_and_set (parser, inline_asm_ctx,
-			 AST::InlineAsmOption::NORETURN);
+	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::NORETURN);
 	}
       else if (!is_global_asm && check_identifier (parser, "nostack"))
 	{
-	  check_and_set (parser, inline_asm_ctx, AST::InlineAsmOption::NOSTACK);
+	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::NOSTACK);
 	}
       else if (!is_global_asm && check_identifier (parser, "may_unwind"))
 	{
-	  check_and_set (parser, inline_asm_ctx,
-			 AST::InlineAsmOption::MAY_UNWIND);
+	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::MAY_UNWIND);
 	}
       else if (check_identifier (parser, "att_syntax"))
 	{
-	  check_and_set (parser, inline_asm_ctx,
-			 AST::InlineAsmOption::ATT_SYNTAX);
+	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::ATT_SYNTAX);
 	}
       else if (check_identifier (parser, "raw"))
 	{
-	  check_and_set (parser, inline_asm_ctx, AST::InlineAsmOption::RAW);
+	  check_and_set (inline_asm_ctx, AST::InlineAsmOption::RAW);
 	}
       else
 	{
@@ -507,6 +504,7 @@ parse_options (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 
   return 0;
 }
+
 bool
 check_identifier (Parser<MacroInvocLexer> &p, std::string ident)
 {
@@ -539,9 +537,10 @@ check_identifier (Parser<MacroInvocLexer> &p, std::string ident)
 }
 
 tl::optional<std::string>
-parse_format_string (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-		     InlineAsmContext &inline_asm_ctx)
+parse_format_string (InlineAsmContext &inline_asm_ctx)
 {
+  auto &parser = inline_asm_ctx.parser;
+  auto last_token_id = inline_asm_ctx.last_token_id;
   auto token = parser.peek_current_token ();
 
   if (token->get_id () != last_token_id && token->get_id () == STRING_LITERAL)
@@ -564,9 +563,10 @@ MacroBuiltin::asm_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
 }
 
 int
-parse_asm_arg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
-	       InlineAsmContext &inline_asm_ctx)
+parse_asm_arg (InlineAsmContext &inline_asm_ctx)
 {
+  auto &parser = inline_asm_ctx.parser;
+  auto last_token_id = inline_asm_ctx.last_token_id;
   auto token = parser.peek_current_token ();
   tl::optional<std::string> fm_string;
   while (token->get_id () != last_token_id)
@@ -609,21 +609,21 @@ parse_asm_arg (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
       // TODO: Parse clobber abi, eat the identifier named "clobber_abi" if true
       if (check_identifier (parser, "clobber_abi"))
 	{
-	  parse_clobber_abi (parser, last_token_id, inline_asm_ctx);
+	  parse_clobber_abi (inline_asm_ctx);
 	  continue;
 	}
 
       // TODO: Parse options
       if (check_identifier (parser, "options"))
 	{
-	  parse_options (parser, last_token_id, inline_asm_ctx);
+	  parse_options (inline_asm_ctx);
 	  continue;
 	}
 
       // Ok after we have check that neither clobber_abi nor options works, the
       // only other logical choice is reg_operand
       // std::cout << "reg_operand" << std::endl;
-      auto operand = parse_reg_operand (parser, last_token_id, inline_asm_ctx);
+      auto operand = parse_reg_operand (inline_asm_ctx);
     }
   return 0;
 }
@@ -653,10 +653,10 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   auto last_token_id = macro_end_token (invoc.get_delim_tok_tree (), parser);
 
   AST::InlineAsm inline_asm (invoc_locus, is_global_asm);
-  auto inline_asm_ctx = InlineAsmContext (inline_asm);
+  auto inline_asm_ctx = InlineAsmContext (inline_asm, parser, last_token_id);
 
   // Parse the first ever formatted string, success or not, will skip 1 token
-  auto fm_string = parse_format_string (parser, last_token_id, inline_asm_ctx);
+  auto fm_string = parse_format_string (inline_asm_ctx);
 
   if (fm_string == tl::nullopt)
     {
@@ -677,7 +677,7 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
       // in here, which is formatted string in ABNF
       inline_asm_ctx.consumed_comma_without_formatted_string = false;
 
-      fm_string = parse_format_string (parser, last_token_id, inline_asm_ctx);
+      fm_string = parse_format_string (inline_asm_ctx);
       if (fm_string == tl::nullopt)
 	{
 	  inline_asm_ctx.consumed_comma_without_formatted_string = true;
@@ -686,7 +686,7 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
     }
 
   // operands stream, also handles the optional ","
-  parse_asm_arg (parser, last_token_id, inline_asm_ctx);
+  parse_asm_arg (inline_asm_ctx);
 
   // TODO: I'm putting the validation here because the rust reference put it
   // here Per Arthur's advice we would actually do the validation in a different
