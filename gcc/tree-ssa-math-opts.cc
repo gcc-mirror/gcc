@@ -4186,6 +4186,36 @@ match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gassign *stmt)
     build_saturation_binary_arith_call (gsi, IFN_SAT_SUB, lhs, ops[0], ops[1]);
 }
 
+/*
+ * Try to match saturation unsigned sub.
+ *  <bb 2> [local count: 1073741824]:
+ *  if (x_2(D) > y_3(D))
+ *    goto <bb 3>; [50.00%]
+ *  else
+ *    goto <bb 4>; [50.00%]
+ *
+ *  <bb 3> [local count: 536870912]:
+ *  _4 = x_2(D) - y_3(D);
+ *
+ *  <bb 4> [local count: 1073741824]:
+ *  # _1 = PHI <0(2), _4(3)>
+ *  =>
+ *  <bb 4> [local count: 1073741824]:
+ *  _1 = .SAT_SUB (x_2(D), y_3(D));  */
+static void
+match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gphi *phi)
+{
+  if (gimple_phi_num_args (phi) != 2)
+    return;
+
+  tree ops[2];
+  tree phi_result = gimple_phi_result (phi);
+
+  if (gimple_unsigned_integer_sat_sub (phi_result, ops, NULL))
+    build_saturation_binary_arith_call (gsi, phi, IFN_SAT_SUB, phi_result,
+					ops[0], ops[1]);
+}
+
 /* Recognize for unsigned x
    x = y - z;
    if (x > y)
@@ -6104,6 +6134,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
     {
       gimple_stmt_iterator gsi = gsi_after_labels (bb);
       match_unsigned_saturation_add (&gsi, psi.phi ());
+      match_unsigned_saturation_sub (&gsi, psi.phi ());
     }
 
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
@@ -6129,6 +6160,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 		  continue;
 		}
 	      match_arith_overflow (&gsi, stmt, code, m_cfg_changed_p);
+	      match_unsigned_saturation_sub (&gsi, as_a<gassign *> (stmt));
 	      break;
 
 	    case PLUS_EXPR:
@@ -6167,6 +6199,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      break;
 
 	    case COND_EXPR:
+	    case BIT_AND_EXPR:
 	      match_unsigned_saturation_sub (&gsi, as_a<gassign *> (stmt));
 	      break;
 
