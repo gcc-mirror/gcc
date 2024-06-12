@@ -2526,11 +2526,15 @@ lookup_maybe_add (tree fns, tree lookup, bool deduping)
 	       predecessors onto the lookup.  */
 	    for (; fns != probe; fns = OVL_CHAIN (fns))
 	      {
-		lookup = lookup_add (OVL_FUNCTION (fns), lookup);
 		/* Propagate OVL_USING, but OVL_HIDDEN &
 		   OVL_DEDUP_P don't matter.  */
 		if (OVL_USING_P (fns))
-		  OVL_USING_P (lookup) = true;
+		  {
+		    lookup = ovl_make (OVL_FUNCTION (fns), lookup);
+		    OVL_USING_P (lookup) = true;
+		  }
+		else
+		  lookup = lookup_add (OVL_FUNCTION (fns), lookup);
 	      }
 
 	    /* And now skip this function.  */
