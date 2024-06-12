@@ -1,3 +1,11 @@
+2024-06-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-05-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115281
+	* gfortran.dg/pr115281.f90: New test.
+
 2024-06-10  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

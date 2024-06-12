@@ -1,3 +1,12 @@
+2024-06-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-05-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115281
+	* ira-conflicts.cc (go_through_subreg): Use the natural size of
+	the inner mode rather than the outer mode.
+
 2024-06-07  Richard Ball  <richard.ball@arm.com>
 
 	Backported from master:
