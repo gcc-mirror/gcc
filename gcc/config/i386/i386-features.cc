@@ -1054,7 +1054,7 @@ scalar_chain::convert_op (rtx *op, rtx_insn *insn)
 
       if (dump_file)
 	fprintf (dump_file, "  Preloading operand for insn %d into r%d\n",
-		 INSN_UID (insn), REGNO (tmp));
+		 INSN_UID (insn), reg_or_subregno (tmp));
     }
   else if (REG_P (*op))
     *op = gen_rtx_SUBREG (vmode, *op, 0);
