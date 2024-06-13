@@ -827,6 +827,17 @@ name_lookup::process_module_binding (tree new_val, tree new_type,
       marker |= 2;
     }
 
+  /* add_binding_entity wraps decls brought in by 'using' in an OVERLOAD even
+     for non-functions; strip it now.
+     ??? Why isn't it represented with a USING_DECL?  Or do we want to use
+     OVERLOAD for using more widely to address 114683?  */
+  if (new_val && TREE_CODE (new_val) == OVERLOAD
+      && !DECL_DECLARES_FUNCTION_P (OVL_FUNCTION (new_val)))
+    {
+      gcc_checking_assert (OVL_USING_P (new_val) && !OVL_CHAIN (new_val));
+      new_val = OVL_FUNCTION (new_val);
+    }
+
   if (new_type || new_val)
     marker |= process_binding (new_val, new_type);
 
