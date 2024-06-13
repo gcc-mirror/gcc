@@ -30698,3 +30698,38 @@
   "TARGET_AVXVNNIINT16"
   "vpdp<vpdpwprodtype>\t{%3, %2, %0|%0, %2, %3}"
    [(set_attr "prefix" "vex")])
+
+(define_mode_attr hi_cvt_bf
+  [(V8HI "v8bf") (V16HI "v16bf") (V32HI "v32bf")])
+
+(define_mode_attr HI_CVT_BF
+  [(V8HI "V8BF") (V16HI "V16BF") (V32HI "V32BF")])
+
+(define_insn_and_split "vpermt2_sepcial_bf16_shuffle_<mode>"
+  [(set (match_operand:VI2_AVX512F 0 "register_operand")
+	(unspec:VI2_AVX512F
+	  [(match_operand:VI2_AVX512F 1 "vcvtne2ps2bf_parallel")
+	   (match_operand:VI2_AVX512F 2 "register_operand")
+	   (match_operand:VI2_AVX512F 3 "nonimmediate_operand")]
+	   UNSPEC_VPERMT2))]
+  "TARGET_AVX512VL && TARGET_AVX512BF16 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx op0 = gen_reg_rtx (<HI_CVT_BF>mode);
+  operands[2] = lowpart_subreg (<ssePSmode>mode,
+				force_reg (<MODE>mode, operands[2]),
+				<MODE>mode);
+  operands[3] = lowpart_subreg (<ssePSmode>mode,
+				force_reg (<MODE>mode, operands[3]),
+				<MODE>mode);
+
+  emit_insn (gen_avx512f_cvtne2ps2bf16_<hi_cvt_bf>(op0,
+						   operands[3],
+						   operands[2]));
+  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, op0,
+					       <HI_CVT_BF>mode));
+  DONE;
+}
+[(set_attr "mode" "<sseinsnmode>")])

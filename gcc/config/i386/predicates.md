@@ -2322,3 +2322,14 @@
 
   return true;
 })
+
+;; Check that each element is odd and incrementally increasing from 1
+(define_predicate "vcvtne2ps2bf_parallel"
+  (and (match_code "const_vector")
+       (match_code "const_int" "a"))
+{
+  for (int i = 0; i < XVECLEN (op, 0); ++i)
+    if (INTVAL (XVECEXP (op, 0, i)) != (2 * i + 1))
+      return false;
+  return true;
+})

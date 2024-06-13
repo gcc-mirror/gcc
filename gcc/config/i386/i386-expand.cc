@@ -23657,8 +23657,8 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   if (GET_MODE_SIZE (vmode) == 64 && !TARGET_EVEX512)
     return false;
 
-  /* For HF mode vector, convert it to HI using subreg.  */
-  if (GET_MODE_INNER (vmode) == HFmode)
+  /* For HF and BF mode vector, convert it to HI using subreg.  */
+  if (GET_MODE_INNER (vmode) == HFmode || GET_MODE_INNER (vmode) == BFmode)
     {
       machine_mode orig_mode = vmode;
       vmode = mode_for_vector (HImode,
