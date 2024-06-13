@@ -3461,7 +3461,7 @@
   [(set_attr "type" "neon_reduc_add<VDQV_L:q>")]
 )
 
-(define_expand "aarch64_<su>addlp<mode>"
+(define_expand "@aarch64_<su>addlp<mode>"
   [(set (match_operand:<VDBLW> 0 "register_operand")
 	(plus:<VDBLW>
 	  (vec_select:<VDBLW>
@@ -3515,6 +3515,45 @@
   "TARGET_SIMD"
   "cnt\\t%0.<Vbtype>, %1.<Vbtype>"
   [(set_attr "type" "neon_cnt<q>")]
+)
+
+(define_expand "popcount<mode>2"
+  [(set (match_operand:VDQHSD 0 "register_operand")
+	(popcount:VDQHSD (match_operand:VDQHSD 1 "register_operand")))]
+  "TARGET_SIMD"
+  {
+    /* Generate a byte popcount.  */
+    machine_mode mode = <bitsize> == 64 ? V8QImode : V16QImode;
+    rtx tmp = gen_reg_rtx (mode);
+    auto icode = optab_handler (popcount_optab, mode);
+    emit_insn (GEN_FCN (icode) (tmp, gen_lowpart (mode, operands[1])));
+
+    if (TARGET_DOTPROD
+	&& (<VEL>mode == SImode || <VEL>mode == DImode))
+      {
+	/* For V4SI and V2SI, we can generate a UDOT with a 0 accumulator and a
+	   1 multiplicand.  For V2DI, another UAADDLP is needed.  */
+	rtx ones = force_reg (mode, CONST1_RTX (mode));
+	auto icode = optab_handler (udot_prod_optab, mode);
+	mode = <bitsize> == 64 ? V2SImode : V4SImode;
+	rtx dest = mode == <MODE>mode ? operands[0] : gen_reg_rtx (mode);
+	rtx zeros = force_reg (mode, CONST0_RTX (mode));
+	emit_insn (GEN_FCN (icode) (dest, tmp, ones, zeros));
+	tmp = dest;
+      }
+
+    /* Use a sequence of UADDLPs to accumulate the counts.  Each step doubles
+       the element size and halves the number of elements.  */
+    while (mode != <MODE>mode)
+      {
+	auto icode = code_for_aarch64_addlp (ZERO_EXTEND, GET_MODE (tmp));
+	mode = insn_data[icode].operand[0].mode;
+	rtx dest = mode == <MODE>mode ? operands[0] : gen_reg_rtx (mode);
+	emit_insn (GEN_FCN (icode) (dest, tmp));
+	tmp = dest;
+      }
+    DONE;
+  }
 )
 
 ;; 'across lanes' max and min ops.
