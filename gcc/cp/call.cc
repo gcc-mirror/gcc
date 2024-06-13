@@ -13488,7 +13488,8 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 	{
 	  previous_worse_champ = nullptr;
 	  champ = &(*challenger)->next;
-	  if (!*champ || !(*champ)->viable)
+	  if (!*champ || !(*champ)->viable
+	      || (*champ)->viable < (*challenger)->viable)
 	    {
 	      champ = nullptr;
 	      break;
