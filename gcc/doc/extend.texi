@@ -4627,14 +4627,14 @@ the same behavior as that of the command-line option
 Indicates that the workaround for the Cortex-A53 erratum 835769 should be
 applied to this function.  To explicitly disable the workaround for this
 function specify the negated form: @code{no-fix-cortex-a53-835769}.
-This corresponds to the behavior of the command line options
+This corresponds to the behavior of the command-line options
 @option{-mfix-cortex-a53-835769} and @option{-mno-fix-cortex-a53-835769}.
 
 @cindex @code{cmodel=} function attribute, AArch64
 @item cmodel=
 Indicates that code should be generated for a particular code model for
 this function.  The behavior and permissible arguments are the same as
-for the command line option @option{-mcmodel=}.
+for the command-line option @option{-mcmodel=}.
 
 @cindex @code{strict-align} function attribute, AArch64
 @item strict-align
@@ -4694,7 +4694,7 @@ behavior and permissible arguments are the same as for the command-line option
 @cindex @code{outline-atomics} function attribute, AArch64
 @item outline-atomics
 Enable or disable calls to out-of-line helpers to implement atomic operations.
-This corresponds to the behavior of the command line options
+This corresponds to the behavior of the command-line options
 @option{-moutline-atomics} and @option{-mno-outline-atomics}.
 
 @end table
@@ -8456,7 +8456,7 @@ volatile int porta __attribute__((address (0x600)));
 
 This attribute can also be used to define symbols in C/C++
 code which otherwise would require assembly, a linker description file
-or command line options like @code{-Wl,--defsym,a_symbol=@var{value}}.
+or command-line options like @code{-Wl,--defsym,a_symbol=@var{value}}.
 For example,
 @smallexample
 int a_symbol __attribute__((weak, address (1234)));
@@ -9473,7 +9473,7 @@ bat (void)
 @end example
 
 @cindex strub eligibility and viability
-Some @option{-fstrub=*} command line options enable @code{strub} modes
+Some @option{-fstrub=*} command-line options enable @code{strub} modes
 implicitly where viable.  A @code{strub} mode is only viable for a
 function if the function is eligible for that mode, and if other
 conditions, detailed below, are satisfied.  If it's not eligible for a
