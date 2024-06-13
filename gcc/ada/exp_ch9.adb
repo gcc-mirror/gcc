@@ -8316,6 +8316,11 @@ package body Exp_Ch9 is
       --     <protected-procedure-name>P (Param1 .. ParamN);
       --  end <protected-procedure-name>
 
+      procedure Unanalyze_Use_Clauses (Op_Body : Node_Id);
+      --  Use and Use_Type clauses in the tree rooted at Op_Body
+      --  that have already been analyzed need to be marked as unanalyzed
+      --  because otherwise they will be ineffective in their new context.
+
       ---------------------------------------
       -- Build_Dispatching_Subprogram_Body --
       ---------------------------------------
@@ -8377,6 +8382,31 @@ package body Exp_Ch9 is
                Make_Handled_Sequence_Of_Statements (Loc, Stmts));
       end Build_Dispatching_Subprogram_Body;
 
+      ---------------------------
+      -- Unanalyze_Use_Clauses --
+      ---------------------------
+
+      procedure Unanalyze_Use_Clauses (Op_Body : Node_Id) is
+
+         function Process_One_Node (N : Node_Id) return Traverse_Result;
+         --  If N is a use or use type node then unanalyze it.
+
+         procedure Process_Tree is new Traverse_Proc (Process_One_Node);
+
+         function Process_One_Node (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) in N_Use_Package_Clause | N_Use_Type_Clause then
+               Set_Analyzed (N, False);
+            end if;
+            return OK; --  return Skip if Is_Analyzed (N) ?
+         end Process_One_Node;
+
+      --  Start of processing for Analyze_Use_Clauses
+
+      begin
+         Process_Tree (Op_Body);
+      end Unanalyze_Use_Clauses;
+
    --  Start of processing for Expand_N_Protected_Body
 
    begin
@@ -8425,6 +8455,17 @@ package body Exp_Ch9 is
                      New_Op_Body :=
                        Build_Unprotected_Subprogram_Body (Op_Body, Pid);
                   end if;
+
+                  --  Ugly.
+                  --  We are going to perform name resolution in analysis of
+                  --  this new body, but any already-analyzed use clauses
+                  --  will be ineffective in this new context unless we take
+                  --  action to "reactivate" them. So that's what we do here.
+                  --  We arguably shouldn't be performing name resolution
+                  --  here (just like we shouldn't perform name resolution in
+                  --  an expanded instance body), but that's a larger issue.
+
+                  Unanalyze_Use_Clauses (New_Op_Body);
 
                   Insert_After (Current_Node, New_Op_Body);
                   Current_Node := New_Op_Body;
