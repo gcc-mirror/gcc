@@ -109,6 +109,7 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 #define RVV_REQUIRE_FULL_V (1 << 4) /* Require Full 'V' extension.  */
 #define RVV_REQUIRE_MIN_VLEN_64 (1 << 5)	/* Require TARGET_MIN_VLEN >= 64.  */
 #define RVV_REQUIRE_ELEN_FP_16 (1 << 6) /* Require FP ELEN >= 32.  */
+#define RVV_REQUIRE_ELEN_BF_16 (1 << 7) /* Require BF16.  */
 
 /* Enumerates the required extensions.  */
 enum required_ext
