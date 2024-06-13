@@ -1,3 +1,29 @@
+2024-06-12  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2023-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/111497
+	* g++.target/i386/pr111497.C: new test.
+
+2024-06-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/40635
+	* gcc.dg/uninit-pr40635.c: New testcase.
+
+2024-06-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-06-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+		    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	PR target/115253
+	* gcc.target/arm/cmse/extend-return.c: Update test case
+	condition for Armv8.1-M.
+
 2024-06-11  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

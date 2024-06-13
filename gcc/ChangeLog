@@ -1,3 +1,53 @@
+2024-06-12  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2024-05-03  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/114924
+	* cfgrtl.cc (duplicate_insn_chain): When updating MEM_EXPRs,
+	don't strip (e.g.) ARRAY_REFs from the final MEM_EXPR.
+
+2024-06-12  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2023-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/111497
+	* lra-constraints.cc (lra_constraints): Copy substituted
+	equivalence.
+	* lra.cc (lra): Change comment for calling unshare_all_rtl_again.
+
+2024-06-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/40635
+	* tree-into-ssa.cc (rewrite_update_phi_arguments): Only
+	update the argument when the reaching definition is different
+	from the current argument.  Keep an existing argument
+	location.
+
+2024-06-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-02-19  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/54052
+	* rtl-ssa/blocks.cc (function_info::place_phis): Filter
+	local defs by LR_OUT.
+
+2024-06-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2024-06-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+		    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	PR target/115253
+	* config/arm/arm.cc (cmse_nonsecure_call_inline_register_clear):
+	Sign extend for Thumb1.
+	(thumb1_expand_prologue): Add zero/sign extend.
+
 2024-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:
