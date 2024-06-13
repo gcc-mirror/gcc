@@ -745,6 +745,21 @@ force_reg (machine_mode mode, rtx x)
   return temp;
 }
 
+/* Like simplify_gen_subreg, but force OP into a new register if the
+   subreg cannot be formed directly.  */
+
+rtx
+force_subreg (machine_mode outermode, rtx op,
+	      machine_mode innermode, poly_uint64 byte)
+{
+  rtx x = simplify_gen_subreg (outermode, op, innermode, byte);
+  if (x)
+    return x;
+
+  op = copy_to_mode_reg (innermode, op);
+  return simplify_gen_subreg (outermode, op, innermode, byte);
+}
+
 /* If X is a memory ref, copy its contents to a new temp reg and return
    that reg.  Otherwise, return X.  */
 
