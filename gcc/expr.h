@@ -53,6 +53,8 @@ typedef struct separate_ops
   tree type;
   tree op0, op1, op2;
 } *sepops;
+
+typedef const struct separate_ops *const_sepops;
 
 /* This is run during target initialization to set up which modes can be
    used directly in memory and to initialize the block move optab.  */
@@ -305,7 +307,7 @@ extern rtx expand_expr_real (tree, rtx, machine_mode,
 			     enum expand_modifier, rtx *, bool);
 extern rtx expand_expr_real_1 (tree, rtx, machine_mode,
 			       enum expand_modifier, rtx *, bool);
-extern rtx expand_expr_real_2 (sepops, rtx, machine_mode,
+extern rtx expand_expr_real_2 (const_sepops, rtx, machine_mode,
 			       enum expand_modifier);
 extern rtx expand_expr_real_gassign (gassign *, rtx, machine_mode,
 				     enum expand_modifier modifier,

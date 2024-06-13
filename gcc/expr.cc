@@ -94,7 +94,7 @@ static unsigned HOST_WIDE_INT highest_pow2_factor_for_target (const_tree, const_
 
 static bool is_aligning_offset (const_tree, const_tree);
 static rtx reduce_to_bit_field_precision (rtx, rtx, tree);
-static rtx do_store_flag (sepops, rtx, machine_mode);
+static rtx do_store_flag (const_sepops, rtx, machine_mode);
 #ifdef PUSH_ROUNDING
 static void emit_single_push_insn (machine_mode, rtx, tree);
 #endif
@@ -9643,7 +9643,7 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
 }
 
 rtx
-expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
+expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 		    enum expand_modifier modifier)
 {
   rtx op0, op1, op2, temp;
@@ -13504,7 +13504,7 @@ expand_single_bit_test (location_t loc, enum tree_code code,
    set/jump/set sequence.  */
 
 static rtx
-do_store_flag (sepops ops, rtx target, machine_mode mode)
+do_store_flag (const_sepops ops, rtx target, machine_mode mode)
 {
   enum rtx_code code;
   tree arg0, arg1, type;
@@ -13566,7 +13566,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
       if (new_code != ops->code)
 	{
 	  struct separate_ops nops = *ops;
-	  nops.code = ops->code = new_code;
+	  nops.code = new_code;
 	  nops.op0 = arg0;
 	  nops.op1 = arg1;
 	  nops.type = TREE_TYPE (arg0);

@@ -253,7 +253,7 @@ widen_operand (rtx op, machine_mode mode, machine_mode oldmode,
    type-promotion (vec-unpack)  1       oprnd0  -       -  */
 
 rtx
-expand_widen_pattern_expr (sepops ops, rtx op0, rtx op1, rtx wide_op,
+expand_widen_pattern_expr (const_sepops ops, rtx op0, rtx op1, rtx wide_op,
 			   rtx target, int unsignedp)
 {
   class expand_operand eops[4];
