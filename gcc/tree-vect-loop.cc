@@ -8320,7 +8320,11 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
    participating.  When unrolling we want each unrolled iteration to have its
    own reduction accumulator since one of the main goals of unrolling a
    reduction is to reduce the aggregate loop-carried latency.  */
-  if (ncopies > 1
+  if ((ncopies > 1
+       || (slp_node
+	   && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	   && SLP_TREE_LANES (slp_node) == 1
+	   && vect_get_num_copies (loop_vinfo, vectype_in) > 1))
       && (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
       && reduc_chain_length == 1
       && loop_vinfo->suggested_unroll_factor == 1)
@@ -8373,6 +8377,10 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	    single_defuse_cycle = false;
 	}
     }
+  if (dump_enabled_p () && single_defuse_cycle)
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "using single def-use cycle for reduction by reducing "
+		     "multiple vectors to one in the loop body\n");
   STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info) = single_defuse_cycle;
 
   /* If the reduction stmt is one of the patterns that have lane
@@ -8528,9 +8536,8 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 {
   tree vectype_out = STMT_VINFO_VECTYPE (stmt_info);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  int i;
-  int ncopies;
-  int vec_num;
+  unsigned ncopies;
+  unsigned vec_num;
 
   stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
   gcc_assert (reduc_info->is_reduc_info);
@@ -8577,7 +8584,6 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   auto_vec<tree> vec_oprnds0;
   auto_vec<tree> vec_oprnds1;
   auto_vec<tree> vec_oprnds2;
-  tree def0;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform reduction.\n");
@@ -8652,20 +8658,21 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
      definition.  */
   if (single_defuse_cycle)
     {
-      gcc_assert (!slp_node);
-      vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, 1,
-				     op.ops[reduc_index],
-				     reduc_index == 0 ? &vec_oprnds0
-				     : (reduc_index == 1 ? &vec_oprnds1
-					: &vec_oprnds2));
+      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, 1,
+			 reduc_index == 0 ? op.ops[0] : NULL_TREE, &vec_oprnds0,
+			 reduc_index == 1 ? op.ops[1] : NULL_TREE, &vec_oprnds1,
+			 reduc_index == 2 ? op.ops[2] : NULL_TREE,
+			 &vec_oprnds2);
     }
 
   bool emulated_mixed_dot_prod = vect_is_emulated_mixed_dot_prod (stmt_info);
 
-  FOR_EACH_VEC_ELT (vec_oprnds0, i, def0)
+  unsigned num = (reduc_index == 0
+		  ? vec_oprnds1.length () : vec_oprnds0.length ());
+  for (unsigned i = 0; i < num; ++i)
     {
       gimple *new_stmt;
-      tree vop[3] = { def0, vec_oprnds1[i], NULL_TREE };
+      tree vop[3] = { vec_oprnds0[i], vec_oprnds1[i], NULL_TREE };
       if (masked_loop_p && !mask_by_cond_expr)
 	{
 	  /* No conditional ifns have been defined for dot-product yet.  */
@@ -8720,10 +8727,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	  vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt, gsi);
 	}
 
-      if (slp_node)
-	slp_node->push_vec_def (new_stmt);
-      else if (single_defuse_cycle
-	       && i < ncopies - 1)
+      if (single_defuse_cycle && i < num - 1)
 	{
 	  if (reduc_index == 0)
 	    vec_oprnds0.safe_push (gimple_get_lhs (new_stmt));
@@ -8732,6 +8736,8 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	  else if (reduc_index == 2)
 	    vec_oprnds2.safe_push (gimple_get_lhs (new_stmt));
 	}
+      else if (slp_node)
+	slp_node->push_vec_def (new_stmt);
       else
 	STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
     }
@@ -8795,7 +8801,10 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
   /* Check whether we should use a single PHI node and accumulate
      vectors to one before the backedge.  */
   if (STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info))
-    ncopies = 1;
+    {
+      ncopies = 1;
+      vec_num = 1;
+    }
 
   /* Create the destination vector  */
   gphi *phi = as_a <gphi *> (stmt_info->stmt);
