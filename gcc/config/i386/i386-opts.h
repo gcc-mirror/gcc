@@ -142,8 +142,9 @@ enum apx_features {
   apx_ppx = 1 << 3,
   apx_nf = 1 << 4,
   apx_ccmp = 1 << 5,
+  apx_zu = 1 << 6,
   apx_all = apx_egpr | apx_push2pop2 | apx_ndd
-	    | apx_ppx | apx_nf | apx_ccmp,
+	    | apx_ppx | apx_nf | apx_ccmp | apx_zu,
 };
 
 #endif
