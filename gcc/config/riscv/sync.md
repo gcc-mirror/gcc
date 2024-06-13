@@ -57,8 +57,8 @@
 ;; Atomic memory operations.
 
 (define_expand "atomic_load<mode>"
-  [(match_operand:GPR 0 "register_operand")
-   (match_operand:GPR 1 "memory_operand")
+  [(match_operand:ANYI 0 "register_operand")
+   (match_operand:ANYI 1 "memory_operand")
    (match_operand:SI 2 "const_int_operand")] ;; model
   ""
   {
@@ -72,8 +72,8 @@
   })
 
 (define_expand "atomic_store<mode>"
-  [(match_operand:GPR 0 "memory_operand")
-   (match_operand:GPR 1 "reg_or_0_operand")
+  [(match_operand:ANYI 0 "memory_operand")
+   (match_operand:ANYI 1 "reg_or_0_operand")
    (match_operand:SI 2 "const_int_operand")] ;; model
   ""
   {

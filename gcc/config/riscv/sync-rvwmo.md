@@ -47,9 +47,9 @@
 ;; Atomic memory operations.
 
 (define_insn "atomic_load_rvwmo<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=r")
-	(unspec_volatile:GPR
-	    [(match_operand:GPR 1 "memory_operand" "A")
+  [(set (match_operand:ANYI 0 "register_operand" "=r")
+	(unspec_volatile:ANYI
+	    [(match_operand:ANYI 1 "memory_operand" "A")
 	     (match_operand:SI 2 "const_int_operand")]  ;; model
 	 UNSPEC_ATOMIC_LOAD))]
   "!TARGET_ZTSO"
@@ -59,13 +59,13 @@
 
     if (model == MEMMODEL_SEQ_CST)
       return "fence\trw,rw\;"
-	     "l<amo>\t%0,%1\;"
+	     "<load>\t%0,%1\;"
 	     "fence\tr,rw";
     if (model == MEMMODEL_ACQUIRE)
-      return "l<amo>\t%0,%1\;"
+      return "<load>\t%0,%1\;"
 	     "fence\tr,rw";
     else
-      return "l<amo>\t%0,%1";
+      return "<load>\t%0,%1";
   }
   [(set_attr "type" "multi")
    (set (attr "length") (const_int 12))])
@@ -73,9 +73,9 @@
 ;; Implement atomic stores with conservative fences.
 ;; This allows us to be compatible with the ISA manual Table A.6 and Table A.7.
 (define_insn "atomic_store_rvwmo<mode>"
-  [(set (match_operand:GPR 0 "memory_operand" "=A")
-	(unspec_volatile:GPR
-	    [(match_operand:GPR 1 "reg_or_0_operand" "rJ")
+  [(set (match_operand:ANYI 0 "memory_operand" "=A")
+	(unspec_volatile:ANYI
+	    [(match_operand:ANYI 1 "reg_or_0_operand" "rJ")
 	     (match_operand:SI 2 "const_int_operand")]  ;; model
 	 UNSPEC_ATOMIC_STORE))]
   "!TARGET_ZTSO"
@@ -85,13 +85,13 @@
 
     if (model == MEMMODEL_SEQ_CST)
       return "fence\trw,w\;"
-	     "s<amo>\t%z1,%0\;"
+	     "<store>\t%z1,%0\;"
 	     "fence\trw,rw";
     if (model == MEMMODEL_RELEASE)
       return "fence\trw,w\;"
-	     "s<amo>\t%z1,%0";
+	     "<store>\t%z1,%0";
     else
-      return "s<amo>\t%z1,%0";
+      return "<store>\t%z1,%0";
   }
   [(set_attr "type" "multi")
    (set (attr "length") (const_int 12))])
