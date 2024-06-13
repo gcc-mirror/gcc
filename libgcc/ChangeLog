@@ -1,3 +1,11 @@
+2024-06-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2024-06-06  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/115360
+	* config/arm/cmse_nonsecure_call.S: Add .type and .size directives.
+
 2024-06-10  Jan Beulich  <jbeulich@suse.com>
 
 	* config/aarch64/cpuinfo.c: Provide AT_HWCAP2.
