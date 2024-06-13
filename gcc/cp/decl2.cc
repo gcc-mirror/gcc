@@ -2710,9 +2710,10 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
       break;
 
     case TEMPLATE_DECL:
-      if (DECL_ALIAS_TEMPLATE_P (t))
+      if (DECL_ALIAS_TEMPLATE_P (t) || standard_concept_p (t))
 	/* FIXME: We don't maintain TREE_PUBLIC / DECL_VISIBILITY for
-	   alias templates so we can't trust it here (PR107906).  */
+	   alias templates so we can't trust it here (PR107906).  Ditto
+	   for concepts.  */
 	break;
       t = DECL_TEMPLATE_RESULT (t);
       /* Fall through.  */
