@@ -1,3 +1,9 @@
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.cc (print_type): Update for fields of
+	pretty_printer becoming private.
+	(c_tree_printer): Likewise.
+
 2024-06-11  Joseph Myers  <josmyers@redhat.com>
 
 	* c-errors.cc (pedwarn_c23): New.

@@ -1,3 +1,11 @@
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_clear_pp_buffer): Likewise.
+	(gfc_warning): Likewise.
+	(gfc_warning_check): Likewise.
+	(gfc_error_opt): Likewise.
+	(gfc_error_check): Likewise.
+
 2024-06-07  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/90068

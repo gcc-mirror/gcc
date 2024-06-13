@@ -1,3 +1,8 @@
+2024-06-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_field): Use unpacked type
+	as the debug type for packed fields.
+
 2024-06-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_Nonbinary_Modular_Op): Create an explicit Mod

@@ -1,3 +1,257 @@
+2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115283
+	* g++.dg/template/linkage5.C: New test.
+
+2024-06-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/using-21_a.C: New test.
+
+2024-06-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/using-20_a.C: New test.
+
+2024-06-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp26/static_assert1.C: Fix diagnostic typos.
+
+2024-06-12  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* lib/target-supports.exp: Cleanup whitespace.
+
+2024-06-12  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo/amo-table-a-6-load-1.c: Update temp register regex.
+	* gcc.target/riscv/amo/amo-table-a-6-load-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-load-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-store-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-store-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-store-compat-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-load-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-load-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-load-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-store-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-store-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-store-3.c: Ditto.
+
+2024-06-12  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-1.c: Update
+	__atomic_add_fetch args.
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-5.c: Ditto.
+	* gcc.target/riscv/amo/amo-zaamo-preferred-over-zalrsc.c: Ditto.
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-4.c: Ditto.
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-5.c: Ditto.
+
+2024-06-12  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-a-6-amo-add-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-1.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-amo-add-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-2.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-amo-add-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-3.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-amo-add-4.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-4.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-amo-add-5.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-amo-add-5.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-compare-exchange-1.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-compare-exchange-2.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-compare-exchange-3.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-4.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-compare-exchange-4.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-5.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-compare-exchange-5.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-6.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-compare-exchange-6.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-7.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-compare-exchange-7.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-fence-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-fence-1.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-fence-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-fence-2.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-fence-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-fence-3.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-fence-4.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-fence-4.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-fence-5.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-fence-5.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-load-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-load-1.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-load-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-load-2.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-load-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-load-3.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-store-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-store-1.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-store-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-store-2.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-store-compat-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-store-compat-3.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-1.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-2.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-3.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-4.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-4.c: ...here.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-5.c: Move to...
+	* gcc.target/riscv/amo/amo-table-a-6-subword-amo-add-5.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-amo-add-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-1.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-amo-add-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-2.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-amo-add-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-3.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-amo-add-4.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-4.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-amo-add-5.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-amo-add-5.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-compare-exchange-1.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-compare-exchange-2.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-compare-exchange-3.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-4.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-compare-exchange-4.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-5.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-compare-exchange-5.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-6.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-compare-exchange-6.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-compare-exchange-7.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-compare-exchange-7.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-fence-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-fence-1.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-fence-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-fence-2.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-fence-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-fence-3.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-fence-4.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-fence-4.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-fence-5.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-fence-5.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-load-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-load-1.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-load-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-load-2.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-load-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-load-3.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-store-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-store-1.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-store-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-store-2.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-store-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-store-3.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-1.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-1.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-2.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-2.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-3.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-3.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-4.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-4.c: ...here.
+	* gcc.target/riscv/amo-table-ztso-subword-amo-add-5.c: Move to...
+	* gcc.target/riscv/amo/amo-table-ztso-subword-amo-add-5.c: ...here.
+	* gcc.target/riscv/amo-zaamo-preferred-over-zalrsc.c: Move to...
+	* gcc.target/riscv/amo/amo-zaamo-preferred-over-zalrsc.c: ...here.
+	* gcc.target/riscv/amo-zalrsc-amo-add-1.c: Move to...
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-1.c: ...here.
+	* gcc.target/riscv/amo-zalrsc-amo-add-2.c: Move to...
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-2.c: ...here.
+	* gcc.target/riscv/amo-zalrsc-amo-add-3.c: Move to...
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-3.c: ...here.
+	* gcc.target/riscv/amo-zalrsc-amo-add-4.c: Move to...
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-4.c: ...here.
+	* gcc.target/riscv/amo-zalrsc-amo-add-5.c: Move to...
+	* gcc.target/riscv/amo/amo-zalrsc-amo-add-5.c: ...here.
+	* gcc.target/riscv/inline-atomics-1.c: Move to...
+	* gcc.target/riscv/amo/inline-atomics-1.c: ...here.
+	* gcc.target/riscv/inline-atomics-2.c: Move to...
+	* gcc.target/riscv/amo/inline-atomics-2.c: ...here.
+	* gcc.target/riscv/inline-atomics-3.c: Move to...
+	* gcc.target/riscv/amo/inline-atomics-3.c: ...here.
+	* gcc.target/riscv/inline-atomics-4.c: Move to...
+	* gcc.target/riscv/amo/inline-atomics-4.c: ...here.
+	* gcc.target/riscv/inline-atomics-5.c: Move to...
+	* gcc.target/riscv/amo/inline-atomics-5.c: ...here.
+	* gcc.target/riscv/inline-atomics-6.c: Move to...
+	* gcc.target/riscv/amo/inline-atomics-6.c: ...here.
+	* gcc.target/riscv/inline-atomics-7.c: Move to...
+	* gcc.target/riscv/amo/inline-atomics-7.c: ...here.
+	* gcc.target/riscv/inline-atomics-8.c: Move to...
+	* gcc.target/riscv/amo/inline-atomics-8.c: ...here.
+	* gcc.target/riscv/pr114130.c: Move to...
+	* gcc.target/riscv/amo/pr114130.c: ...here.
+	* gcc.target/riscv/pr89835.c: Move to...
+	* gcc.target/riscv/amo/pr89835.c: ...here.
+	* gcc.target/riscv/amo/amo.exp: New file.
+
+2024-06-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115449
+	* gcc.dg/tree-ssa/bitops-10.c: New test.
+
+2024-06-12  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.dg/vect/vect-prefetch-drop.c: New test.
+	* gcc.target/aarch64/vect-prefetch-drop.c: Likewise.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.c (dump_refcnt_info):
+	Update for fields of pretty_printer becoming private.
+
+2024-06-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/bstrins-1.c: New test.
+	* gcc.target/loongarch/bstrins-2.c: New test.
+
+2024-06-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	PR target/115253
+	* gcc.target/arm/cmse/extend-return.c: Update test case
+	condition for Armv8.1-M.
+
+2024-06-12  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/113681
+	* c-c++-common/strub-pr113681.c: New.
+
+2024-06-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/multilib.exp: Skip based on board cflags too.
+
+2024-06-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* gnat.dg/bias1.adb: Count occurrences of -7.*DW_AT_GNU_bias.
+
 2024-06-12  liuhongt  <hongtao.liu@intel.com>
 
 	* gcc.target/i386/pr115384.c: New test.

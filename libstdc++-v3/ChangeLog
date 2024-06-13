@@ -1,3 +1,35 @@
+2024-06-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/26_numerics/headers/cmath/constexpr_std_c++23.cc:
+	Require cmath.
+	* testsuite/26_numerics/headers/cmath/functions_std_c++23.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cmath/nextafter_c++23.cc:
+	Likewise.
+
+2024-06-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/20_util/from_chars/8.cc: Skip float128_t testing
+	on aarch64-rtems*.
+	* testsuite/20_util/to_chars/float128_c++23.cc: Xfail run on
+	aarch64-rtems*.
+
+2024-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115399
+	* include/tr2/dynamic_bitset (operator>>=): Remove redundant
+	call to _M_do_sanitize.
+	* include/tr2/dynamic_bitset.tcc (_M_do_left_shift): Zero out
+	low bits in words that should no longer be populated.
+	(_M_do_right_shift): Likewise for high bits.
+	* testsuite/tr2/dynamic_bitset/pr115399.cc: New test.
+
+2024-06-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable::clear): Do not use
+	memset to zero out bucket pointers.
+	(_Hashtable::_M_assign_elements): Likewise.
+
 2024-06-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/chrono (leap_seconds): Add comment.

@@ -1,3 +1,14 @@
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-ada-spec.cc (dump_ads): Update for fields of pretty_printer
+	becoming private.
+	* c-pretty-print.cc: Likewise throughout.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-ada-spec.cc: Rename pretty_printer "buffer" to "pp"
+	throughout.
+
 2024-06-11  Joseph Myers  <josmyers@redhat.com>
 
 	* c-common.cc (flag_isoc2y): New.

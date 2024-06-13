@@ -1,3 +1,55 @@
+2024-06-12  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/linux/aarch64/atomic_16.S: Reorganize functions in
+	file.
+	(HAVE_FEAT_LSE2): Delete.
+
+2024-06-12  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/linux/aarch64/atomic_16.S: Remove unnecessary
+	aliasing.
+	(LSE): New.
+	(ENTRY_ALIASED): Likewise.
+	* config/linux/aarch64/host-config.h (LSE_ATOP): New.
+	(LSE2_ATOP): Likewise.
+	(LSE128_ATOP): Likewise.
+	(IFUNC_COND_1): Make its definition conditional on above 3
+	macros.
+	(IFUNC_NCOND): Likewise.
+
+2024-06-12  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* cas_n.c (LAT_CAS_N): New.
+	* exch_n.c (LAT_EXCH_N): Likewise.
+	* fadd_n.c (LAT_FADD_N): Likewise.
+	* fand_n.c (LAT_FAND_N): Likewise.
+	* fence.c (LAT_FENCE): Likewise.
+	* fenv.c (LAT_FENV): Likewise.
+	* fior_n.c (LAT_FIOR_N): Likewise.
+	* flag.c (LAT_FLAG): Likewise.
+	* fnand_n.c (LAT_FNAND_N): Likewise.
+	* fop_n.c (LAT_FOP_N): Likewise
+	* fsub_n.c (LAT_FSUB_N): Likewise.
+	* fxor_n.c (LAT_FXOR_N): Likewise.
+	* gcas.c (LAT_GCAS): Likewise.
+	* gexch.c (LAT_GEXCH): Likewise.
+	* glfree.c (LAT_GLFREE): Likewise.
+	* gload.c (LAT_GLOAD): Likewise.
+	* gstore.c (LAT_GSTORE): Likewise.
+	* load_n.c (LAT_LOAD_N): Likewise.
+	* store_n.c (LAT_STORE_N): Likewise.
+	* tas_n.c (LAT_TAS_N): Likewise.
+
+2024-06-12  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* acinclude.m4 (LIBAT_TEST_FEAT_AARCH64_LSE128): Delete.
+	* auto-config.h.in (HAVE_FEAT_LSE128): Likewise
+	* config/linux/aarch64/atomic_16.S: Replace all LSE128
+	instructions with equivalent `.inst' directives.
+	(HAVE_FEAT_LSE128): Remove all references.
+	* configure: Regenerate.
+	* configure.ac: Remove call to LIBAT_TEST_FEAT_AARCH64_LSE128.
+
 2024-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/115294

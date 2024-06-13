@@ -1,3 +1,36 @@
+2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115283
+	* decl2.cc (min_vis_expr_r) <case TEMPLATE_DECL>: Ignore
+	concepts.
+
+2024-06-12  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (lookup_maybe_add): Use ovl_make when setting OVL_USING_P.
+
+2024-06-12  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (depset::hash::add_binding_entity): Set
+	DECL_MODULE_PURVIEW_P instead of asserting.
+
+2024-06-12  Andi Kleen  <ak@linux.intel.com>
+
+	* cp-tree.h (extract): Add new overload to return tree.
+	* parser.cc (cp_parser_asm_string_expression): Use tree extract.
+	* semantics.cc (cexpr_str::extract): Add new overload to return
+	tree.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (append_formatted_chunk): Move part of body into
+	chunk_info::append_formatted_chunk.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* cxx-pretty-print.cc: Update throughout for fields of
+	pretty_printer becoming private.
+	* error.cc: Likewise.
+
 2024-06-11  Andi Kleen  <ak@linux.intel.com>
 
 	* parser.cc (cp_parser_asm_string_expression): New function

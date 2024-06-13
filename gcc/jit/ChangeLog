@@ -1,3 +1,8 @@
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.cc (recording::function::dump_to_dot): Update for
+	fields of pretty_printer becoming private.
+
 2024-06-11  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR jit/115442

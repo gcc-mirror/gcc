@@ -1,3 +1,297 @@
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR bootstrap/115465
+	* config/aarch64/aarch64-early-ra.cc (early_ra::process_block):
+	Update for fields of pretty_printer becoming private in
+	r15-1209-gc5e3be456888aa.
+
+2024-06-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/115176
+	* config/aarch64/aarch64-simd.md (aarch64_rbit<mode><vczle><vczbe>): Use
+	bitreverse instead of unspec.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svrbit): Convert over to using
+	rtx_code_function instead of unspec_based_function.
+	* config/aarch64/aarch64-sve.md: Update comment where RBIT is included.
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs): Handle BITREVERSE like BSWAP.
+	Remove UNSPEC_RBIT support.
+	* config/aarch64/aarch64.md (unspec): Remove UNSPEC_RBIT.
+	(aarch64_rbit<mode>): Use bitreverse instead of unspec.
+	* config/aarch64/iterators.md (SVE_INT_UNARY): Add bitreverse.
+	(optab): Likewise.
+	(sve_int_op): Likewise.
+	(SVE_INT_UNARY): Remove UNSPEC_RBIT.
+	(optab): Likewise.
+	(sve_int_op): Likewise.
+	(min_elem_bits): Likewise.
+
+2024-06-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115449
+	* gimple-match-head.cc (gimple_maybe_truncate): New declaration.
+	(gimple_bitwise_equal_p): Match truncations that differ only
+	in types with the same precision.
+	(gimple_bitwise_inverted_equal_p): For matching after bit_not_with_nop
+	call gimple_bitwise_equal_p.
+	* match.pd (maybe_truncate): New match pattern.
+
+2024-06-12  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR tree-optimization/114061
+	* tree-data-ref.cc (get_references_in_stmt): set
+	`clobbers_memory' to false for __builtin_prefetch.
+	* tree-vect-loop.cc (vect_transform_loop): Drop all
+	__builtin_prefetch calls from loops.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.cc (dump_pretty_printer::emit_items): Update for
+	changes to chunk_info.
+	* pretty-print.cc (chunk_info::append_formatted_chunk): New, based
+	on code in cp/error.cc's append_formatted_chunk.
+	(chunk_info::pop_from_output_buffer): New, based on code in
+	pp_output_formatted_text and dump_pretty_printer::emit_items.
+	(on_begin_quote): Convert to...
+	(chunk_info::on_begin_quote): ...this.
+	(on_end_quote): Convert to...
+	(chunk_info::on_end_quote): ...this.
+	(pretty_printer::format): Update for chunk_info becoming a class
+	and its fields gaining "m_" prefixes.  Update for on_begin_quote
+	and on_end_quote moving to chunk_info.
+	(quoting_info::handle_phase_3): Update for changes to chunk_info.
+	(pp_output_formatted_text): Likewise.  Move cleanup code to
+	chunk_info::pop_from_output_buffer.
+	* pretty-print.h (class output_buffer): New forward decl.
+	(class urlifier): New forward decl.
+	(struct chunk_info): Convert to...
+	(class chunk_info): ...this.  Add friend class pretty_printer.
+	(chunk_info::get_args): New accessor.
+	(chunk_info::get_quoting_info): New accessor.
+	(chunk_info::append_formatted_chunk): New decl.
+	(chunk_info::pop_from_output_buffer): New decl.
+	(chunk_info::on_begin_quote): New decl.
+	(chunk_info::on_end_quote): New decl.
+	(chunk_info::prev): Rename to...
+	(chunk_info::m_prev): ...this.
+	(chunk_info::args): Rename to...
+	(chunk_info::m_args): ...this.
+	(output_buffer::cur_chunk_array): Drop "struct" from decl.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc (diagnostic_context::urls_init): Update for fields
+	of pretty_printer becoming private.
+	(diagnostic_context::print_any_cwe): Likewise.
+	(diagnostic_context::print_any_rules): Likewise.
+	(diagnostic_context::print_option_information): Likewise.
+	* diagnostic.h (diagnostic_format_decoder): Likewise.
+	(diagnostic_prefixing_rule): Likewise, fixing typo.
+	* digraph.cc (test_dump_to_dot): Likewise.
+	* digraph.h (digraph<GraphTraits>::dump_dot_to_file): Likewise.
+	* dumpfile.cc
+	(dump_pretty_printer::emit_any_pending_textual_chunks): Likewise.
+	* gimple-pretty-print.cc (print_gimple_stmt): Likewise.
+	(print_gimple_expr): Likewise.
+	(print_gimple_seq): Likewise.
+	(dump_ssaname_info_to_file): Likewise.
+	(gimple_dump_bb): Likewise.
+	* graph.cc (print_graph_cfg): Likewise.
+	(start_graph_dump): Likewise.
+	* langhooks.cc (lhd_print_error_function): Likewise.
+	* lto-wrapper.cc (print_lto_docs_link): Likewise.
+	* pretty-print.cc (pp_set_real_maximum_length): Convert to...
+	(pretty_printer::set_real_maximum_length): ...this.
+	(pp_clear_state): Convert to...
+	(pretty_printer::clear_state): ...this.
+	(pp_wrap_text): Update for pp_remaining_character_count_for_line
+	becoming a member function.
+	(urlify_quoted_string): Update for fields of pretty_printer becoming
+	private.
+	(pp_format): Convert to...
+	(pretty_printer::format): ...this.  Reduce the scope of local
+	variables "old_line_length" and "old_wrapping_mode" and make
+	const.  Reduce the scope of locals "args", "new_chunk_array",
+	"curarg", "any_unnumbered", and "any_numbered".
+	(pp_output_formatted_text): Update for fields of pretty_printer
+	becoming private.
+	(pp_flush): Likewise.
+	(pp_really_flush): Likewise.
+	(pp_set_line_maximum_length): Likewise.
+	(pp_set_prefix): Convert to...
+	(pretty_printer::set_prefix): ...this.
+	(pp_take_prefix): Update for fields of pretty_printer gaining
+	"m_" prefixes.
+	(pp_destroy_prefix): Likewise.
+	(pp_emit_prefix): Convert to...
+	(pretty_printer::emit_prefix): ...this.
+	(pretty_printer::pretty_printer): Update both ctors for fields
+	gaining "m_"  prefixes.
+	(pretty_printer::~pretty_printer): Likewise for dtor.
+	(pp_append_text): Update for pp_emit_prefix becoming
+	pretty_printer::emit_prefix.
+	(pp_remaining_character_count_for_line): Convert to...
+	(pretty_printer::remaining_character_count_for_line): ...this.
+	(pp_character): Update for above change.
+	(pp_maybe_space): Convert to...
+	(pretty_printer::maybe_space): ...this.
+	(pp_begin_url): Convert to...
+	(pretty_printer::begin_url): ...this.
+	(get_end_url_string): Update for fields of pretty_printer
+	becoming private.
+	(pp_end_url): Convert to...
+	(pretty_printer::end_url): ...this.
+	(selftest::test_pretty_printer::test_pretty_printer): Update for
+	fields of pretty_printer becoming private.
+	(selftest::test_urls): Likewise.
+	(selftest::test_null_urls): Likewise.
+	(selftest::test_urlification): Likewise.
+	* pretty-print.h (pp_line_cutoff): Convert from macro to inline
+	function.
+	(pp_prefixing_rule): Likewise.
+	(pp_wrapping_mode): Likewise.
+	(pp_format_decoder): Likewise.
+	(pp_needs_newline): Likewise.
+	(pp_indentation): Likewise.
+	(pp_translate_identifiers): Likewise.
+	(pp_show_color): Likewise.
+	(pp_buffer): Likewise.
+	(pp_get_prefix): Add forward decl to allow friend decl.
+	(pp_take_prefix): Likewise.
+	(pp_destroy_prefix): Likewise.
+	(class pretty_printer): Fix typo in leading comment.  Add
+	"friend" decls for the various new accessor functions that were
+	formerly macros and for pp_get_prefix, pp_take_prefix, and
+	pp_destroy_prefix.  Make all fields private.
+	(pretty_printer::set_output_stream): New.
+	(pretty_printer::set_prefix): New decl.
+	(pretty_printer::emit_prefix): New decl.
+	(pretty_printer::format): New decl.
+	(pretty_printer::maybe_space): New decl.
+	(pretty_printer::supports_urls_p): New.
+	(pretty_printer::get_url_format): New.
+	(pretty_printer::set_url_format): New.
+	(pretty_printer::begin_url): New decl.
+	(pretty_printer::end_url): New decl.
+	(pretty_printer::set_verbatim_wrapping): New.
+	(pretty_printer::set_padding): New.
+	(pretty_printer::get_padding): New.
+	(pretty_printer::clear_state): New decl.
+	(pretty_printer::set_real_maximum_length): New decl.
+	(pretty_printer::remaining_character_count_for_line): New decl.
+	(pretty_printer::buffer): Rename to...
+	(pretty_printer::m_buffer): ...this.
+	(pretty_printer::prefix): Rename to...
+	(pretty_printer::m_prefix): ...this;
+	(pretty_printer::padding): Rename to...
+	(pretty_printer::m_padding): ...this;
+	(pretty_printer::maximum_length): Rename to...
+	(pretty_printer::m_maximum_length): ...this;
+	(pretty_printer::indent_skip): Rename to...
+	(pretty_printer::m_indent_skip): ...this;
+	(pretty_printer::wrapping): Rename to...
+	(pretty_printer::m_wrapping): ...this;
+	(pretty_printer::format_decoder): Rename to...
+	(pretty_printer::m_format_decoder): ...this;
+	(pretty_printer::emitted_prefix): Rename to...
+	(pretty_printer::m_emitted_prefix): ...this;
+	(pretty_printer::need_newline): Rename to...
+	(pretty_printer::m_need_newline): ...this;
+	(pretty_printer::translate_identifiers): Rename to...
+	(pretty_printer::m_translate_identifiers): ...this;
+	(pretty_printer::show_color): Rename to...
+	(pretty_printer::m_show_color): ...this;
+	(pretty_printer::url_format): Rename to...
+	(pretty_printer::m_url_format): ...this;
+	(pp_get_prefix): Reformat.
+	(pp_format_postprocessor): New inline function.
+	(pp_take_prefix): Move decl to before class pretty_printer.
+	(pp_destroy_prefix): Likewise.
+	(pp_set_prefix): Convert to inline function.
+	(pp_emit_prefix): Convert to inline function.
+	(pp_format): Convert to inline function.
+	(pp_maybe_space): Convert to inline function.
+	(pp_begin_url): Convert to inline function.
+	(pp_end_url): Convert to inline function.
+	(pp_set_verbatim_wrapping): Convert from macro to inline
+	function, renaming...
+	(pp_set_verbatim_wrapping_): ...this.
+	* print-rtl.cc (dump_value_slim): Update for fields of
+	pretty_printer becoming private.
+	(dump_insn_slim): Likewise.
+	(dump_rtl_slim): Likewise.
+	* print-tree.cc (print_node): Likewise.
+	* sched-rgn.cc (dump_rgn_dependencies_dot): Likewise.
+	* text-art/canvas.cc (canvas::print_to_pp): Likewise.
+	(canvas::debug): Likewise.
+	(selftest::test_canvas_urls): Likewise.
+	* text-art/dump.h (dump_to_file): Likewise.
+	* text-art/selftests.cc (selftest::assert_canvas_streq): Likewise.
+	* text-art/style.cc (style::print_changes): Likewise.
+	* text-art/styled-string.cc (styled_string::from_fmt_va):
+	Likewise.
+	* tree-diagnostic-path.cc (control_flow_tests): Update for
+	pp_show_color becoming an inline function.
+	* tree-loop-distribution.cc (dot_rdg_1): Update for fields of
+	pretty_printer becoming private.
+	* tree-pretty-print.cc (maybe_init_pretty_print): Likewise.
+	* value-range.cc (vrange::dump): Likewise.
+	(irange_bitmask::dump): Likewise.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* gimple-pretty-print.cc: Rename pretty_printer "buffer" to "pp"
+	throughout.
+	* print-tree.cc (print_node): Likewise.
+	* tree-loop-distribution.cc (dot_rdg_1): Likewise.
+	* tree-pretty-print.h (dump_location): Likewise.
+	* value-range.cc (vrange::dump): Likewise.
+	(irange_bitmask::dump): Likewise.
+
+2024-06-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/predicates.md (high_bitmask_operand): New
+	predicate.
+	* config/loongarch/constraints.md (Yy): New constriant.
+	* config/loongarch/loongarch.md (and<mode>3_align): New
+	define_insn_and_split.
+
+2024-06-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_conditional_move): Compare mode size with
+	UNITS_PER_WORD instead of word_mode.
+
+2024-06-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+	    Yvan ROUX  <yvan.roux@foss.st.com>
+
+	PR target/115253
+	* config/arm/arm.cc (cmse_nonsecure_call_inline_register_clear):
+	Sign extend for Thumb1.
+	(thumb1_expand_prologue): Add zero/sign extend.
+
+2024-06-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <*-*-cygwin>: Update web link.
+
+2024-06-12  Pan Li  <pan2.li@intel.com>
+
+	* tree-ssa-math-opts.cc (math_opts_dom_walker::after_dom_children):
+	Leverage gsi_after_labels instead of gsi_start_bb to skip the
+	leading labels of bb.
+
+2024-06-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific) <*-*-linux-gnu>: Do not list
+	glibc 2.1 and binutils 2.12 as minimum dependencies.
+
+2024-06-12  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/113681
+	* tree-profile.cc (pass_ipa_tree_profile::gate): Skip if
+	seen_errors.
+
 2024-06-12  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/115384
