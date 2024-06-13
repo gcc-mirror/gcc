@@ -87,6 +87,7 @@ public:
   virtual bool get_range (vrange &r, tree name) const;
   virtual void clear_range (tree name);
   virtual void clear ();
+  void merge (const ssa_lazy_cache &);
 protected:
   bitmap active_p;
 };

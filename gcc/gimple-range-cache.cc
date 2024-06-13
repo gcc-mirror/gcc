@@ -729,6 +729,24 @@ ssa_lazy_cache::merge_range (tree name, const vrange &r)
   return true;
 }
 
+// Merge all elements of CACHE with this cache.
+// Any names in CACHE that are not in this one are added.
+// Any names in both are merged via merge_range..
+
+void
+ssa_lazy_cache::merge (const ssa_lazy_cache &cache)
+{
+  unsigned x;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (cache.active_p, 0, x, bi)
+    {
+      tree name = ssa_name (x);
+      Value_Range r(TREE_TYPE (name));
+      cache.get_range (r, name);
+      merge_range (ssa_name (x), r);
+    }
+}
+
 // Return TRUE if NAME has a range, and return it in R.
 
 bool
