@@ -10881,20 +10881,7 @@ package body Sem_Elab is
          Spec_Id : Entity_Id;
 
       begin
-         Spec_Id := Subp_Id;
-
-         --  The elaboration target denotes an internal function that returns a
-         --  constrained array type in a SPARK-to-C compilation. In this case
-         --  the function receives a corresponding procedure which has an out
-         --  parameter. The proper body for ABE checks and diagnostics is that
-         --  of the procedure.
-
-         if Ekind (Spec_Id) = E_Function
-           and then Rewritten_For_C (Spec_Id)
-         then
-            Spec_Id := Corresponding_Procedure (Spec_Id);
-         end if;
-
+         Spec_Id  := Subp_Id;
          Rec.Kind := Subprogram_Target;
 
          Spec_And_Body_From_Entity

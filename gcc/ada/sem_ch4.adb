@@ -4709,13 +4709,6 @@ package body Sem_Ch4 is
       begin
          if Warn_On_Suspicious_Contract
            and then not Is_Internal_Name (Chars (Loop_Id))
-
-           --  Generating C, this check causes spurious warnings on inlined
-           --  postconditions; we can safely disable it because this check
-           --  was previously performed when analyzing the internally built
-           --  postconditions procedure.
-
-           and then not (Modify_Tree_For_C and In_Inlined_Body)
          then
             if not Referenced (Loop_Id, Cond) then
                Error_Msg_N ("?.t?unused variable &", Loop_Id);

@@ -8965,9 +8965,7 @@ package body Sem_Ch12 is
          --  are inlined by the front end, and the front-end inlining machinery
          --  relies on this routine to perform inlining.
 
-         elsif From_Aspect_Specification (N)
-           and then not Modify_Tree_For_C
-         then
+         elsif From_Aspect_Specification (N) then
             New_N := Make_Null_Statement (Sloc (N));
 
          else

@@ -997,7 +997,6 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Anonymous_Collections, Elist_Id),
         Sm (Corresponding_Equality, Node_Id,
             Pre => "not Comes_From_Source (N) and then Chars (N) = Name_Op_Ne"),
-        Sm (Corresponding_Procedure, Node_Id),
         Sm (DT_Position, Uint,
             Pre_Get => "Present (DTC_Entity (N))"),
         Sm (DTC_Entity, Node_Id),
@@ -1025,7 +1024,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Protected_Subprogram, Node_Id),
         Sm (Protection_Object, Node_Id),
         Sm (Related_Expression, Node_Id),
-        Sm (Rewritten_For_C, Flag),
         Sm (Thunk_Entity, Node_Id,
             Pre => "Is_Thunk (N)"),
         Sm (Wrapped_Entity, Node_Id,
@@ -1045,7 +1043,6 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  body that acts as its own declaration.
        (Sm (Anonymous_Collections, Elist_Id),
         Sm (Associated_Node_For_Itype, Node_Id),
-        Sm (Corresponding_Function, Node_Id),
         Sm (DT_Position, Uint,
             Pre_Get => "Present (DTC_Entity (N))"),
         Sm (DTC_Entity, Node_Id),

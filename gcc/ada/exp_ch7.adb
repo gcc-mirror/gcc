@@ -3870,17 +3870,13 @@ package body Exp_Ch7 is
                   end if;
                end;
 
-            elsif Nkind (Decl_Or_Stmt) = N_Package_Declaration
-              and then not Modify_Tree_For_C
-            then
+            elsif Nkind (Decl_Or_Stmt) = N_Package_Declaration then
                Check_Unnesting_In_Decls_Or_Stmts
                  (Visible_Declarations (Specification (Decl_Or_Stmt)));
                Check_Unnesting_In_Decls_Or_Stmts
                  (Private_Declarations (Specification (Decl_Or_Stmt)));
 
-            elsif Nkind (Decl_Or_Stmt) = N_Package_Body
-              and then not Modify_Tree_For_C
-            then
+            elsif Nkind (Decl_Or_Stmt) = N_Package_Body then
                Check_Unnesting_In_Decls_Or_Stmts (Declarations (Decl_Or_Stmt));
                if Present (Statements
                     (Handled_Statement_Sequence (Decl_Or_Stmt)))

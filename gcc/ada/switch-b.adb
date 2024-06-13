@@ -362,12 +362,6 @@ package body Switch.B is
                Debugger_Level := 2;
             end if;
 
-         --  Processing for G switch
-
-         when 'G' =>
-            Ptr := Ptr + 1;
-            Generate_C_Code := True;
-
          --  Processing for h switch
 
          when 'h' =>

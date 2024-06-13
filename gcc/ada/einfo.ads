@@ -748,17 +748,6 @@ package Einfo is
 --       other function entities, only in implicit inequality routines,
 --       where Comes_From_Source is always False.
 
---    Corresponding_Function
---       Defined on procedures internally built with an extra out parameter
---       to return a constrained array type, when Modify_Tree_For_C is set.
---       Denotes the function that returns the constrained array type for
---       which this procedure was built.
-
---    Corresponding_Procedure
---       Defined on functions that return a constrained array type, when
---       Modify_Tree_For_C is set. Denotes the internally built procedure
---       with an extra out parameter created for it.
-
 --    Corresponding_Record_Component
 --       Defined in components of a derived untagged record type, including
 --       discriminants. For a regular component or a stored discriminant,
@@ -4285,12 +4274,6 @@ package Einfo is
 --       the Bit_Order aspect must be set to the same value (either explicitly
 --       or as the target default value).
 
---    Rewritten_For_C
---       Defined on functions that return a constrained array type, when
---       Modify_Tree_For_C is set. Indicates that a procedure with an extra
---       out parameter has been created for it, and calls must be rewritten as
---       calls to the new procedure.
-
 --    RM_Size
 --       Defined in all type and subtype entities. Contains the value of
 --       type'Size as defined in the RM. See also the Esize field and
@@ -5522,7 +5505,6 @@ package Einfo is
    --    Anonymous_Collections                (non-generic case only)
    --    Corresponding_Equality               (implicit /= only)
    --    Thunk_Entity                         (thunk case only)
-   --    Corresponding_Procedure              (generate C code only)
    --    Linker_Section_Pragma
    --    Contract
    --    Import_Pragma                        (non-generic case only)
@@ -5586,7 +5568,6 @@ package Einfo is
    --    Requires_Overriding                  (non-generic case only)
    --    Return_Present
    --    Returns_By_Ref
-   --    Rewritten_For_C                      (generate C code only)
    --    Sec_Stack_Needed_For_Return
    --    SPARK_Pragma_Inherited
    --    Uses_Sec_Stack
@@ -5883,7 +5864,6 @@ package Einfo is
    --    Anonymous_Collections                (non-generic case only)
    --    Static_Initialization                (init_proc only)
    --    Thunk_Entity                         (thunk case only)
-   --    Corresponding_Function               (generate C code only)
    --    Linker_Section_Pragma
    --    Contract
    --    Import_Pragma                        (non-generic case only)

@@ -2686,22 +2686,6 @@ package body Sem_Ch6 is
 
          Analyze (Subp_Decl);
 
-         --  Propagate the attributes Rewritten_For_C and Corresponding_Proc to
-         --  the body since the expander may generate calls using that entity.
-         --  Required to ensure that Expand_Call rewrites calls to this
-         --  function by calls to the built procedure.
-
-         if Transform_Function_Array
-           and then Nkind (Body_Spec) = N_Function_Specification
-           and then
-             Rewritten_For_C (Defining_Entity (Specification (Subp_Decl)))
-         then
-            Set_Rewritten_For_C (Defining_Entity (Body_Spec));
-            Set_Corresponding_Procedure (Defining_Entity (Body_Spec),
-              Corresponding_Procedure
-                (Defining_Entity (Specification (Subp_Decl))));
-         end if;
-
          --  Analyze any relocated source pragmas or pragmas created for aspect
          --  specifications.
 
@@ -3740,18 +3724,6 @@ package body Sem_Ch6 is
                  and then not Inside_A_Generic
                then
                   Build_Subprogram_Declaration;
-
-               --  If this is a function that returns a constrained array, and
-               --  Transform_Function_Array is set, create subprogram
-               --  declaration to simplify e.g. subsequent C generation.
-
-               elsif No (Spec_Id)
-                 and then Transform_Function_Array
-                 and then Nkind (Body_Spec) = N_Function_Specification
-                 and then Is_Array_Type (Etype (Body_Id))
-                 and then Is_Constrained (Etype (Body_Id))
-               then
-                  Build_Subprogram_Declaration;
                end if;
             end if;
 
@@ -3828,60 +3800,6 @@ package body Sem_Ch6 is
         and then Is_Protected_Type (Current_Scope)
       then
          Spec_Id := Build_Internal_Protected_Declaration (N);
-      end if;
-
-      --  If Transform_Function_Array is set and this is a function returning a
-      --  constrained array type for which we must create a procedure with an
-      --  extra out parameter, build and analyze the body now. The procedure
-      --  declaration has already been created. We reuse the source body of the
-      --  function, because in an instance it may contain global references
-      --  that cannot be reanalyzed. The source function itself is not used any
-      --  further, so we mark it as having a completion. If the subprogram is a
-      --  stub the transformation is done later, when the proper body is
-      --  analyzed.
-
-      if Expander_Active
-        and then Transform_Function_Array
-        and then Nkind (N) /= N_Subprogram_Body_Stub
-      then
-         declare
-            S         : constant Entity_Id :=
-                          (if Present (Spec_Id)
-                           then Spec_Id
-                           else Defining_Unit_Name (Specification (N)));
-            Proc_Body : Node_Id;
-
-         begin
-            if Ekind (S) = E_Function and then Rewritten_For_C (S) then
-               Set_Has_Completion (S);
-               Proc_Body := Build_Procedure_Body_Form (S, N);
-
-               if Present (Spec_Id) then
-                  Rewrite (N, Proc_Body);
-                  Analyze (N);
-
-                  --  The entity for the created procedure must remain
-                  --  invisible, so it does not participate in resolution of
-                  --  subsequent references to the function.
-
-                  Set_Is_Immediately_Visible (Corresponding_Spec (N), False);
-
-               --  If we do not have a separate spec for N, build one and
-               --  insert the new body right after.
-
-               else
-                  Rewrite (N,
-                    Make_Subprogram_Declaration (Loc,
-                      Specification => Relocate_Node (Specification (N))));
-                  Analyze (N);
-                  Insert_After_And_Analyze (N, Proc_Body);
-                  Set_Is_Immediately_Visible
-                    (Corresponding_Spec (Proc_Body), False);
-               end if;
-
-               goto Leave;
-            end if;
-         end;
       end if;
 
       --  If a separate spec is present, then deal with freezing issues

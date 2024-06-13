@@ -1376,9 +1376,8 @@ package Snames is
 
    --  Other miscellaneous names used in front end
    --  Note that the UP_ prefix means use the rest of the name in uppercase,
-   --  e.g. Name_UP_RESULT corresponds to the name "RESULT".
+   --  e.g. Name_UP_RESULT maps to "RESULT".
 
-   Name_UP_RESULT                        : constant Name_Id := N + $;
    Name_Synchronous_Task_Control         : constant Name_Id := N + $;
 
    --  Names used to implement iterators over predefined containers

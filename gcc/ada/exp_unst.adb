@@ -29,7 +29,6 @@ with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
-with Exp_Util;       use Exp_Util;
 with Lib;            use Lib;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
@@ -281,13 +280,6 @@ package body Exp_Unst is
 
          if E = Sub and then Present (Protected_Body_Subprogram (E)) then
             E := Protected_Body_Subprogram (E);
-         end if;
-
-         if Ekind (E) = E_Function
-           and then Rewritten_For_C (E)
-           and then Present (Corresponding_Procedure (E))
-         then
-            E := Corresponding_Procedure (E);
          end if;
       end if;
 
@@ -784,16 +776,6 @@ package body Exp_Unst is
                --  Nothing to do if Caller and Callee are the same
 
                if Caller = Callee then
-                  return;
-
-               --  Callee may be a function that returns an array, and that has
-               --  been rewritten as a procedure. If caller is that procedure,
-               --  nothing to do either.
-
-               elsif Ekind (Callee) = E_Function
-                 and then Rewritten_For_C (Callee)
-                 and then Corresponding_Procedure (Callee) = Caller
-               then
                   return;
 
                elsif Ekind (Callee) in E_Entry | E_Entry_Family then
@@ -2223,13 +2205,15 @@ package body Exp_Unst is
             --  Also ignore if no reference was specified or if the rewriting
             --  has already been done (this can happen if the N_Identifier
             --  occurs more than one time in the tree). Also ignore references
-            --  when not generating C code (in particular for the case of LLVM,
-            --  since GNAT-LLVM will handle the processing for up-level refs).
+            --  with GNAT-LLVM (CCG_Mode), since it will handle the processing
+            --  for up-level refs).
+            --  ??? At this stage, only GNAT LLVM uses front-end unnesting, so
+            --  consider remove the code below.
 
             if No (UPJ.Ref)
               or else not Is_Entity_Name (UPJ.Ref)
               or else No (Entity (UPJ.Ref))
-              or else not Opt.Generate_C_Code
+              or else Opt.CCG_Mode
             then
                goto Continue;
             end if;
@@ -2390,17 +2374,6 @@ package body Exp_Unst is
                --  expect any exceptions)
 
                Analyze_And_Resolve (UPJ.Ref, Typ, Suppress => All_Checks);
-
-               --  Generate an extra temporary to facilitate the C backend
-               --  processing this dereference
-
-               if Opt.Modify_Tree_For_C
-                 and then Nkind (Parent (UPJ.Ref)) in
-                            N_Type_Conversion | N_Unchecked_Type_Conversion
-               then
-                  Force_Evaluation (UPJ.Ref, Mode => Strict);
-               end if;
-
                Pop_Scope;
             end Rewrite_One_Ref;
          end;

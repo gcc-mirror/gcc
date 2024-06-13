@@ -4650,14 +4650,6 @@ package body Exp_Ch3 is
 
          Set_Is_Inlined (Proc_Id, Inline_Init_Proc (Rec_Type));
 
-         --  Do not build an aggregate if Modify_Tree_For_C, this isn't
-         --  needed and may generate early references to non frozen types
-         --  since we expand aggregate much more systematically.
-
-         if Modify_Tree_For_C then
-            return;
-         end if;
-
          declare
             Agg : constant Node_Id :=
                     Build_Equivalent_Record_Aggregate (Rec_Type);
@@ -7690,13 +7682,11 @@ package body Exp_Ch3 is
             --  An aggregate that must be built in place is not resolved and
             --  expanded until the enclosing construct is expanded. This will
             --  happen when the aggregate is limited and the declared object
-            --  has a following address clause; it happens also when generating
-            --  C code for an aggregate that has an alignment or address clause
-            --  (see Analyze_Object_Declaration). Resolution is done without
+            --  has a following address clause. Resolution is done without
             --  expansion because it will take place when the declaration
             --  itself is expanded.
 
-            if (Is_Limited_Type (Typ) or else Modify_Tree_For_C)
+            if Is_Limited_Type (Typ)
               and then not Analyzed (Expr)
             then
                Expander_Mode_Save_And_Set (False);

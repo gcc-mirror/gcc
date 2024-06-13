@@ -10314,18 +10314,6 @@ package body Freeze is
       then
          Check_Overriding_Indicator (E, Empty, Is_Primitive (E));
       end if;
-
-      Retype := Get_Fullest_View (Etype (E));
-
-      if Transform_Function_Array
-        and then Nkind (Parent (E)) = N_Function_Specification
-        and then Is_Array_Type (Retype)
-        and then Is_Constrained (Retype)
-        and then not Is_Unchecked_Conversion_Instance (E)
-        and then not Rewritten_For_C (E)
-      then
-         Build_Procedure_Form (Unit_Declaration_Node (E));
-      end if;
    end Freeze_Subprogram;
 
    ----------------------

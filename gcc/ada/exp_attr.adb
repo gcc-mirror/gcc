@@ -224,8 +224,7 @@ package body Exp_Attr is
    --  loop may be converted into a conditional block. See body for details.
 
    procedure Expand_Min_Max_Attribute (N : Node_Id);
-   --  Handle the expansion of attributes 'Max and 'Min, including expanding
-   --  then out if we are in Modify_Tree_For_C mode.
+   --  Handle the expansion of attributes 'Max and 'Min
 
    procedure Expand_Pred_Succ_Attribute (N : Node_Id);
    --  Handles expansion of Pred or Succ attributes for case of non-real
@@ -5144,19 +5143,6 @@ package body Exp_Attr is
          use Old_Attr_Util.Conditional_Evaluation;
          use Old_Attr_Util.Indirect_Temps;
       begin
-         --  Generating C code we don't need to expand this attribute when
-         --  we are analyzing the internally built nested _Wrapped_Statements
-         --  procedure since it will be expanded inline (and later it will
-         --  be removed by Expand_N_Subprogram_Body). It this expansion is
-         --  performed in such case then the compiler generates unreferenced
-         --  extra temporaries.
-
-         if Modify_Tree_For_C
-           and then Chars (Current_Scope) = Name_uWrapped_Statements
-         then
-            return;
-         end if;
-
          --  'Old can only appear in the case where local contract-related
          --  wrapper has been generated with the purpose of wrapping the
          --  original declarations and statements.
@@ -7546,93 +7532,84 @@ package body Exp_Attr is
             --  Start of processing for Float_Valid
 
             begin
-               --  The C back end handles Valid for floating-point types
+               Find_Fat_Info (Ptyp, Ftp, Pkg);
 
-               if Modify_Tree_For_C then
-                  Analyze_And_Resolve (Pref, Ptyp);
-                  Set_Etype (N, Standard_Boolean);
-                  Set_Analyzed (N);
+               --  If the prefix is a reverse SSO component, or is possibly
+               --  unaligned, first create a temporary copy that is in
+               --  native SSO, and properly aligned. Make it Volatile to
+               --  prevent folding in the back-end. Note that we use an
+               --  intermediate constrained string type to initialize the
+               --  temporary, as the value at hand might be invalid, and in
+               --  that case it cannot be copied using a floating point
+               --  register.
 
-               else
-                  Find_Fat_Info (Ptyp, Ftp, Pkg);
+               if In_Reverse_Storage_Order_Object (Pref)
+                 or else Is_Possibly_Unaligned_Object (Pref)
+               then
+                  declare
+                     Temp : constant Entity_Id :=
+                              Make_Temporary (Loc, 'F');
 
-                  --  If the prefix is a reverse SSO component, or is possibly
-                  --  unaligned, first create a temporary copy that is in
-                  --  native SSO, and properly aligned. Make it Volatile to
-                  --  prevent folding in the back-end. Note that we use an
-                  --  intermediate constrained string type to initialize the
-                  --  temporary, as the value at hand might be invalid, and in
-                  --  that case it cannot be copied using a floating point
-                  --  register.
+                     Fat_S : constant Entity_Id :=
+                               Get_Fat_Entity (Name_S);
+                     --  Constrained string subtype of appropriate size
 
-                  if In_Reverse_Storage_Order_Object (Pref)
-                    or else Is_Possibly_Unaligned_Object (Pref)
-                  then
-                     declare
-                        Temp : constant Entity_Id :=
-                                 Make_Temporary (Loc, 'F');
+                     Fat_P : constant Entity_Id :=
+                               Get_Fat_Entity (Name_P);
+                     --  Access to Fat_S
 
-                        Fat_S : constant Entity_Id :=
-                                  Get_Fat_Entity (Name_S);
-                        --  Constrained string subtype of appropriate size
-
-                        Fat_P : constant Entity_Id :=
-                                  Get_Fat_Entity (Name_P);
-                        --  Access to Fat_S
-
-                        Decl : constant Node_Id :=
-                                 Make_Object_Declaration (Loc,
+                     Decl : constant Node_Id :=
+                              Make_Object_Declaration (Loc,
                                    Defining_Identifier => Temp,
                                    Aliased_Present     => True,
-                                   Object_Definition   =>
-                                     New_Occurrence_Of (Ptyp, Loc));
+                                Object_Definition   =>
+                                  New_Occurrence_Of (Ptyp, Loc));
 
-                     begin
-                        Set_Aspect_Specifications (Decl, New_List (
-                          Make_Aspect_Specification (Loc,
-                            Identifier =>
-                              Make_Identifier (Loc, Name_Volatile))));
+                  begin
+                     Set_Aspect_Specifications (Decl, New_List (
+                       Make_Aspect_Specification (Loc,
+                         Identifier =>
+                           Make_Identifier (Loc, Name_Volatile))));
 
-                        Insert_Actions (N,
-                          New_List (
-                            Decl,
+                     Insert_Actions (N,
+                       New_List (
+                         Decl,
 
-                            Make_Assignment_Statement (Loc,
-                              Name =>
-                                Make_Explicit_Dereference (Loc,
-                                  Prefix =>
-                                    Unchecked_Convert_To (Fat_P,
-                                      Make_Attribute_Reference (Loc,
-                                        Prefix =>
-                                          New_Occurrence_Of (Temp, Loc),
-                                        Attribute_Name =>
-                                          Name_Unrestricted_Access))),
-                              Expression =>
-                                Unchecked_Convert_To (Fat_S,
-                                  Relocate_Node (Pref)))),
+                         Make_Assignment_Statement (Loc,
+                           Name =>
+                             Make_Explicit_Dereference (Loc,
+                               Prefix =>
+                                 Unchecked_Convert_To (Fat_P,
+                                   Make_Attribute_Reference (Loc,
+                                     Prefix =>
+                                       New_Occurrence_Of (Temp, Loc),
+                                     Attribute_Name =>
+                                       Name_Unrestricted_Access))),
+                           Expression =>
+                             Unchecked_Convert_To (Fat_S,
+                               Relocate_Node (Pref)))),
 
-                          Suppress => All_Checks);
+                       Suppress => All_Checks);
 
-                        Rewrite (Pref, New_Occurrence_Of (Temp, Loc));
-                     end;
-                  end if;
-
-                  --  We now have an object of the proper endianness and
-                  --  alignment, and can construct a Valid attribute.
-
-                  --  We make sure the prefix of this valid attribute is
-                  --  marked as not coming from source, to avoid losing
-                  --  warnings from 'Valid looking like a possible update.
-
-                  Set_Comes_From_Source (Pref, False);
-
-                  Expand_Fpt_Attribute
-                    (N, Pkg, Name_Valid,
-                     New_List (
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => Unchecked_Convert_To (Ftp, Pref),
-                         Attribute_Name => Name_Unrestricted_Access)));
+                     Rewrite (Pref, New_Occurrence_Of (Temp, Loc));
+                  end;
                end if;
+
+               --  We now have an object of the proper endianness and
+               --  alignment, and can construct a Valid attribute.
+
+               --  We make sure the prefix of this valid attribute is
+               --  marked as not coming from source, to avoid losing
+               --  warnings from 'Valid looking like a possible update.
+
+               Set_Comes_From_Source (Pref, False);
+
+               Expand_Fpt_Attribute
+                 (N, Pkg, Name_Valid,
+                  New_List (
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => Unchecked_Convert_To (Ftp, Pref),
+                      Attribute_Name => Name_Unrestricted_Access)));
 
                --  One more task, we still need a range check. Required
                --  only if we have a constraint, since the Valid routine
@@ -9336,8 +9313,7 @@ package body Exp_Attr is
 
       function Is_GCC_Target return Boolean is
       begin
-         return not CodePeer_Mode
-           and then not Modify_Tree_For_C;
+         return not CodePeer_Mode;
       end Is_GCC_Target;
 
    --  Start of processing for Is_Inline_Floating_Point_Attribute

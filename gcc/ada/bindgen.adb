@@ -2113,7 +2113,6 @@ package body Bindgen is
       if Bind_Main_Program
         and then not Minimal_Binder
         and then not CodePeer_Mode
-        and then not Generate_C_Code
       then
          WBI ("      Ensure_Reference : aliased System.Address := " &
               "Ada_Main_Program_Name'Address;");

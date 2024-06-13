@@ -616,7 +616,7 @@ package body Switch.C is
                      Ptr := Ptr + 1;
                      Check_Float_Overflow := not Machine_Overflows_On_Target;
 
-                  --  -gnateg (generate C code)
+                  --  -gnateg (generate C header)
 
                   when 'g' =>
                      --  Special check, -gnateg must occur after -gnatc
@@ -626,7 +626,7 @@ package body Switch.C is
                           ("gnateg requires previous occurrence of -gnatc");
                      end if;
 
-                     Generate_C_Code := True;
+                     Generate_C_Header := True;
                      Ptr := Ptr + 1;
 
                   --  -gnateG (save preprocessor output)

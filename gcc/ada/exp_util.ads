@@ -318,10 +318,6 @@ package Exp_Util is
    --  type Typ at runtime. Flag Partial_Invariant should be set when building
    --  the invariant procedure for a private type.
 
-   procedure Build_Procedure_Form (N : Node_Id);
-   --  Create a procedure declaration which emulates the behavior of a function
-   --  that returns an array type, for C-compatible generation.
-
    function Build_Runtime_Call (Loc : Source_Ptr; RE : RE_Id) return Node_Id;
    --  Build an N_Procedure_Call_Statement calling the given runtime entity.
    --  The call has no parameters. The first argument provides the location

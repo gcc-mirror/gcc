@@ -4551,11 +4551,7 @@ package body Sem_Ch3 is
             --  If the aggregate is limited it will be built in place, and its
             --  expansion is deferred until the object declaration is expanded.
 
-            --  This is also required when generating C code to ensure that an
-            --  object with an alignment or address clause can be initialized
-            --  by means of component by component assignments.
-
-            if Is_Limited_Type (T) or else Modify_Tree_For_C then
+            if Is_Limited_Type (T) then
                Set_Expansion_Delayed (E);
             end if;
 

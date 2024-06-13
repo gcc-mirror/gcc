@@ -4061,91 +4061,6 @@ package body Exp_Util is
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Build_Invariant_Procedure_Declaration;
 
-   --------------------------
-   -- Build_Procedure_Form --
-   --------------------------
-
-   procedure Build_Procedure_Form (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Subp : constant Entity_Id := Defining_Entity (N);
-
-      Func_Formal  : Entity_Id;
-      Proc_Formals : List_Id;
-      Proc_Decl    : Node_Id;
-
-   begin
-      --  No action needed if this transformation was already done, or in case
-      --  of subprogram renaming declarations.
-
-      if Nkind (Specification (N)) = N_Procedure_Specification
-        or else Nkind (N) = N_Subprogram_Renaming_Declaration
-      then
-         return;
-      end if;
-
-      --  Ditto when dealing with an expression function, where both the
-      --  original expression and the generated declaration end up being
-      --  expanded here.
-
-      if Rewritten_For_C (Subp) then
-         return;
-      end if;
-
-      Proc_Formals := New_List;
-
-      --  Create a list of formal parameters with the same types as the
-      --  function.
-
-      Func_Formal := First_Formal (Subp);
-      while Present (Func_Formal) loop
-         Append_To (Proc_Formals,
-           Make_Parameter_Specification (Loc,
-             Defining_Identifier =>
-               Make_Defining_Identifier (Loc, Chars (Func_Formal)),
-             Parameter_Type      =>
-               New_Occurrence_Of (Etype (Func_Formal), Loc)));
-
-         Next_Formal (Func_Formal);
-      end loop;
-
-      --  Add an extra out parameter to carry the function result
-
-      Append_To (Proc_Formals,
-        Make_Parameter_Specification (Loc,
-          Defining_Identifier =>
-            Make_Defining_Identifier (Loc, Name_UP_RESULT),
-          Out_Present         => True,
-          Parameter_Type      => New_Occurrence_Of (Etype (Subp), Loc)));
-
-      --  The new procedure declaration is inserted before the function
-      --  declaration. The processing in Build_Procedure_Body_Form relies on
-      --  this order. Note that we insert before because in the case of a
-      --  function body with no separate spec, we do not want to insert the
-      --  new spec after the body which will later get rewritten.
-
-      Proc_Decl :=
-        Make_Subprogram_Declaration (Loc,
-          Specification =>
-            Make_Procedure_Specification (Loc,
-              Defining_Unit_Name       =>
-                Make_Defining_Identifier (Loc, Chars (Subp)),
-              Parameter_Specifications => Proc_Formals));
-
-      Insert_Before_And_Analyze (Unit_Declaration_Node (Subp), Proc_Decl);
-
-      --  Entity of procedure must remain invisible so that it does not
-      --  overload subsequent references to the original function.
-
-      Set_Is_Immediately_Visible (Defining_Entity (Proc_Decl), False);
-
-      --  Mark the function as having a procedure form and link the function
-      --  and its internally built procedure.
-
-      Set_Rewritten_For_C (Subp);
-      Set_Corresponding_Procedure (Subp, Defining_Entity (Proc_Decl));
-      Set_Corresponding_Function (Defining_Entity (Proc_Decl), Subp);
-   end Build_Procedure_Form;
-
    ------------------------
    -- Build_Runtime_Call --
    ------------------------
@@ -12451,16 +12366,6 @@ package body Exp_Util is
         and then Side_Effect_Free (Exp, Name_Req, Variable_Ref)
       then
          return;
-
-      --  Generating C code we cannot remove side effect of function returning
-      --  class-wide types since there is no secondary stack (required to use
-      --  'reference).
-
-      elsif Modify_Tree_For_C
-        and then Nkind (Exp) = N_Function_Call
-        and then Is_Class_Wide_Type (Etype (Exp))
-      then
-         return;
       end if;
 
       --  The remaining processing is done with all checks suppressed
@@ -12603,30 +12508,7 @@ package body Exp_Util is
         and then Etype (Expression (Exp)) /= Universal_Integer
       then
          Remove_Side_Effects (Expression (Exp), Name_Req, Variable_Ref);
-
-         --  Generating C code the type conversion of an access to constrained
-         --  array type into an access to unconstrained array type involves
-         --  initializing a fat pointer and the expression must be free of
-         --  side effects to safely compute its bounds.
-
-         if Modify_Tree_For_C
-           and then Is_Access_Type (Etype (Exp))
-           and then Is_Array_Type (Designated_Type (Etype (Exp)))
-           and then not Is_Constrained (Designated_Type (Etype (Exp)))
-         then
-            Def_Id := Build_Temporary (Loc, 'R', Exp);
-            Set_Etype (Def_Id, Exp_Type);
-            Res := New_Occurrence_Of (Def_Id, Loc);
-
-            Insert_Action (Exp,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Object_Definition   => New_Occurrence_Of (Exp_Type, Loc),
-                Constant_Present    => True,
-                Expression          => Relocate_Node (Exp)));
-         else
-            goto Leave;
-         end if;
+         goto Leave;
 
       --  If this is an unchecked conversion that Gigi can't handle, make
       --  a copy or a use a renaming to capture the value.
@@ -12712,30 +12594,6 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the expression
 
       else
-         --  When generating C code we cannot consider side-effect-free object
-         --  declarations that have discriminants and are initialized by means
-         --  of a function call since on this target there is no secondary
-         --  stack to store the return value and the expander may generate an
-         --  extra call to the function to compute the discriminant value. In
-         --  addition, for targets that have secondary stack, the expansion of
-         --  functions with side effects involves the generation of an access
-         --  type to capture the return value stored in the secondary stack;
-         --  by contrast when generating C code such expansion generates an
-         --  internal object declaration (no access type involved) which must
-         --  be identified here to avoid entering into a never-ending loop
-         --  generating internal object declarations.
-
-         if Modify_Tree_For_C
-           and then Nkind (Parent (Exp)) = N_Object_Declaration
-           and then
-             (Nkind (Exp) /= N_Function_Call
-                or else not Has_Discriminants (Exp_Type)
-                or else Is_Internal_Name
-                          (Chars (Defining_Identifier (Parent (Exp)))))
-         then
-            goto Leave;
-         end if;
-
          --  Special processing for function calls that return a limited type.
          --  We need to build a declaration that will enable build-in-place
          --  expansion of the call. This is not done if the context is already
@@ -12774,10 +12632,8 @@ package body Exp_Util is
          --  the secondary stack. Since SPARK (and why) cannot process access
          --  types, use a different approach which ignores the secondary stack
          --  and "copies" the returned object.
-         --  When generating C code, no need for a 'reference since the
-         --  secondary stack is not supported.
 
-         if GNATprove_Mode or Modify_Tree_For_C then
+         if GNATprove_Mode then
             Res := New_Occurrence_Of (Def_Id, Loc);
             Ref_Type := Exp_Type;
 
@@ -12812,10 +12668,10 @@ package body Exp_Util is
          else
             E := Relocate_Node (E);
 
-            --  Do not generate a 'reference in SPARK mode or C generation
-            --  since the access type is not created in the first place.
+            --  Do not generate a 'reference in SPARK mode since the access
+            --  type is not created in the first place.
 
-            if GNATprove_Mode or Modify_Tree_For_C then
+            if GNATprove_Mode then
                New_Exp := E;
 
             --  Otherwise generate reference, marking the value as non-null
@@ -12875,39 +12731,12 @@ package body Exp_Util is
             Set_Analyzed (E, False);
          end if;
 
-         --  Generating C code of object declarations that have discriminants
-         --  and are initialized by means of a function call we propagate the
-         --  discriminants of the parent type to the internally built object.
-         --  This is needed to avoid generating an extra call to the called
-         --  function.
-
-         --  For example, if we generate here the following declaration, it
-         --  will be expanded later adding an extra call to evaluate the value
-         --  of the discriminant (needed to compute the size of the object).
-         --
-         --     type Rec (D : Integer) is ...
-         --     Obj : constant Rec := SomeFunc;
-
-         if Modify_Tree_For_C
-           and then Nkind (Parent (Exp)) = N_Object_Declaration
-           and then Has_Discriminants (Exp_Type)
-           and then Nkind (Exp) = N_Function_Call
-         then
-            Insert_Action (Exp,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Object_Definition   => New_Copy_Tree
-                                         (Object_Definition (Parent (Exp))),
-                Constant_Present    => True,
-                Expression          => New_Exp));
-         else
-            Insert_Action (Exp,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Def_Id,
-                Object_Definition   => New_Occurrence_Of (Ref_Type, Loc),
-                Constant_Present    => True,
-                Expression          => New_Exp));
-         end if;
+         Insert_Action (Exp,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Def_Id,
+             Object_Definition   => New_Occurrence_Of (Ref_Type, Loc),
+             Constant_Present    => True,
+             Expression          => New_Exp));
       end if;
 
       --  Preserve the Assignment_OK flag in all copies, since at least one
@@ -14306,19 +14135,6 @@ package body Exp_Util is
         and then Is_Class_Wide_Type (Typ)
       then
          return True;
-
-      --  Generating C the type conversion of an access to constrained array
-      --  type into an access to unconstrained array type involves initializing
-      --  a fat pointer and the expression cannot be assumed to be free of side
-      --  effects since it must referenced several times to compute its bounds.
-
-      elsif Modify_Tree_For_C
-        and then Nkind (N) = N_Type_Conversion
-        and then Is_Access_Type (Typ)
-        and then Is_Array_Type (Designated_Type (Typ))
-        and then not Is_Constrained (Designated_Type (Typ))
-      then
-         return False;
       end if;
 
       --  For other than entity names and compile time known values,
