@@ -1582,6 +1582,13 @@ package body Sem_Attr is
             then
                Error_Msg_Ada_2022_Feature ("nonscalar ''Image", Sloc (P));
                Error_Attr;
+
+            elsif Present (Image_Type)
+              and then Ekind (Image_Type) = E_Access_Attribute_Type
+            then
+               --  reject Some_Object'[Unchecked_]Access'[Wide_[Wide_]]Image
+               Error_Msg_N ("illegal Image attribute prefix", N);
+               Error_Attr;
             end if;
          end Check_Image_Type;
 
