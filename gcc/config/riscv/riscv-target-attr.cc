@@ -109,7 +109,7 @@ riscv_target_attr_parser::parse_arch (const char *str)
     {
       /* Parsing the extension list like "+<ext>[,+<ext>]*".  */
       size_t len = strlen (str);
-      std::unique_ptr<char[]> buf (new char[len]);
+      std::unique_ptr<char[]> buf (new char[len+1]);
       char *str_to_check = buf.get ();
       strcpy (str_to_check, str);
       const char *token = strtok_r (str_to_check, ",", &str_to_check);
@@ -247,7 +247,7 @@ riscv_process_one_target_attr (char *arg_str,
       return false;
     }
 
-  std::unique_ptr<char[]> buf (new char[len]);
+  std::unique_ptr<char[]> buf (new char[len+1]);
   char *str_to_check = buf.get();
   strcpy (str_to_check, arg_str);
 
@@ -334,7 +334,7 @@ riscv_process_target_attr (tree fndecl, tree args, location_t loc,
       return false;
     }
 
-  std::unique_ptr<char[]> buf (new char[len]);
+  std::unique_ptr<char[]> buf (new char[len+1]);
   char *str_to_check = buf.get ();
   strcpy (str_to_check, TREE_STRING_POINTER (args));
 
