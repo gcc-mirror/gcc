@@ -817,17 +817,16 @@ rs6000_stack_info (void)
 	  gcc_assert (info->altivec_size == 0
 		      || info->altivec_save_offset % 16 == 0);
 
-	  /* Adjust for AltiVec case.  */
-	  info->ehrd_offset = info->altivec_save_offset - ehrd_size;
-
 	  /* Adjust for ROP protection.  */
 	  info->rop_hash_save_offset
 	    = info->altivec_save_offset - info->rop_hash_size;
-	  info->ehrd_offset -= info->rop_hash_size;
 	}
       else
-	info->ehrd_offset = info->gp_save_offset - ehrd_size;
+	  /* Adjust for ROP protection.  */
+	  info->rop_hash_save_offset
+	    = info->gp_save_offset - info->rop_hash_size;
 
+      info->ehrd_offset = info->rop_hash_save_offset - ehrd_size;
       info->ehcr_offset = info->ehrd_offset - ehcr_size;
       info->cr_save_offset = reg_size; /* first word when 64-bit.  */
       info->lr_save_offset = 2*reg_size;
