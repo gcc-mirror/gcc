@@ -35,7 +35,7 @@ std::map<AST::InlineAsmOption, std::string> InlineAsmOptionMap{
   {AST::InlineAsmOption::RAW, "raw"},
 };
 
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_clobber_abi (InlineAsmContext inline_asm_ctx)
 {
   // clobber_abi := "clobber_abi(" <abi> *("," <abi>) [","] ")"
@@ -57,16 +57,14 @@ parse_clobber_abi (InlineAsmContext inline_asm_ctx)
 	{
 	  rust_error_at (token->get_locus (),
 			 "expected %<(%>, found end of macro arguments");
-	  return tl::unexpected<std::string> (
-	    "Expected something else instead of end of macro arguments");
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
       else
 	{
 	  rust_error_at (token->get_locus (), "expected %<(%>, found %qs",
 			 token->get_token_description ());
 	}
-      return tl::unexpected<std::string> (
-	"Expected left parenthesis instead of something else");
+      return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
 
   if (parser.skip_token (RIGHT_PAREN))
@@ -76,8 +74,7 @@ parse_clobber_abi (InlineAsmContext inline_asm_ctx)
       rust_error_at (
 	parser.peek_current_token ()->get_locus (),
 	"at least one abi must be provided as an argument to %<clobber_abi%>");
-      return tl::unexpected<std::string> (
-	"at least one abi must be provided as an argument to %<clobber_abi%>");
+      return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
 
   std::vector<AST::TupleClobber> new_abis;
@@ -110,7 +107,7 @@ parse_clobber_abi (InlineAsmContext inline_asm_ctx)
 	  // TODO: If the skip of comma is unsuccessful, which should be
 	  // illegal, pleaes emit the correct error.
 	  rust_unreachable ();
-	  return tl::unexpected<std::string> ("SKIP OF COMMA UNSUCCESSFUL");
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
 
       token = parser.peek_current_token ();
@@ -185,7 +182,7 @@ parse_reg (InlineAsmContext &inline_asm_ctx)
 }
 
 // From rustc
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_reg_operand (InlineAsmContext inline_asm_ctx)
 {
   // let name = if p.token.is_ident() && p.look_ahead(1, |t| *t == token::Eq) {
@@ -201,7 +198,6 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
   AST::InlineAsmOperand reg_operand;
   auto token = parser.peek_current_token ();
   auto iden_token = parser.peek_current_token ();
-  auto &inline_asm = inline_asm_ctx.inline_asm;
   if (check_identifier (parser, ""))
     {
       auto equal_token = parser.peek_current_token ();
@@ -212,11 +208,55 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
 	}
     }
 
-  bool is_global_asm = inline_asm.is_global_asm;
-
   // For the keyword IN, currently we count it as a seperate keyword called
   // Rust::IN search for #define RS_TOKEN_LIST in code base.
-  if (!is_global_asm && parser.skip_token (IN))
+  tl::expected<InlineAsmContext, InlineAsmParseError> parsing_operand
+    = tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
+
+  // PARSING WITH IN
+  parsing_operand.map (parse_reg_operand_in);
+  if (parsing_operand || parsing_operand.error () == COMMITTED)
+    return parsing_operand;
+
+  // KEEP ON PARSING WITH OUT
+  parsing_operand.emplace (inline_asm_ctx);
+  parsing_operand.map (parse_reg_operand_out);
+  if (parsing_operand || parsing_operand.error () == COMMITTED)
+    return parsing_operand;
+
+  // KEEP ON PARSING WITH LATEOUT
+  parsing_operand.emplace (inline_asm_ctx);
+  parsing_operand.map (parse_reg_operand_lateout);
+  if (parsing_operand || parsing_operand.error () == COMMITTED)
+    return parsing_operand;
+
+  // KEEP ON PARSING WITH INOUT
+  parsing_operand.emplace (inline_asm_ctx);
+  parsing_operand.map (parse_reg_operand_inout);
+  if (parsing_operand || parsing_operand.error () == COMMITTED)
+    return parsing_operand;
+
+  // KEEP ON PARSING WITH INOUT
+  parsing_operand.emplace (inline_asm_ctx);
+  parsing_operand.map (parse_reg_operand_const);
+  if (parsing_operand || parsing_operand.error () == COMMITTED)
+    return parsing_operand;
+
+  // TODO: It is  weird that we can't seem to match any identifier,
+  // something must be wrong. consult compiler code in asm.rs or rust online
+  // compiler.
+  rust_unreachable ();
+
+  rust_error_at (token->get_locus (), "ERROR RIGHT HERE");
+  return tl::unexpected<InlineAsmParseError> (COMMITTED);
+}
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_in (InlineAsmContext inline_asm_ctx)
+{
+  AST::InlineAsmOperand reg_operand;
+  auto &parser = inline_asm_ctx.parser;
+  if (!inline_asm_ctx.is_global_asm () && parser.skip_token (IN))
     {
       auto reg = parse_reg (inline_asm_ctx);
 
@@ -225,6 +265,7 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
 	  // We are sure to be failing a test here, based on asm.rs
 	  // https://github.com/rust-lang/rust/blob/a330e49593ee890f9197727a3a558b6e6b37f843/compiler/rustc_builtin_macros/src/asm.rs#L112
 	  rust_unreachable ();
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
 
       auto expr = parse_format_string (inline_asm_ctx);
@@ -236,7 +277,15 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
       inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
       return inline_asm_ctx;
     }
-  else if (!is_global_asm && check_identifier (parser, "out"))
+  return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
+}
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_out (InlineAsmContext inline_asm_ctx)
+{
+  auto &parser = inline_asm_ctx.parser;
+  AST::InlineAsmOperand reg_operand;
+  if (!inline_asm_ctx.is_global_asm () && check_identifier (parser, "out"))
     {
       auto reg = parse_reg (inline_asm_ctx);
 
@@ -250,12 +299,34 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
 
       return inline_asm_ctx;
     }
-  else if (!is_global_asm && check_identifier (parser, "lateout"))
+
+  return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
+}
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_lateout (InlineAsmContext inline_asm_ctx)
+{
+  auto &parser = inline_asm_ctx.parser;
+  auto token = parser.peek_current_token ();
+  if (!inline_asm_ctx.is_global_asm () && check_identifier (parser, "lateout"))
     {
+      rust_error_at (token->get_locus (),
+		     "The lateout feature is not implemented");
       rust_unreachable ();
-      return inline_asm_ctx;
+      return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
-  else if (!is_global_asm && check_identifier (parser, "inout"))
+
+  return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
+}
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_const (InlineAsmContext inline_asm_ctx)
+{
+  auto &parser = inline_asm_ctx.parser;
+  auto token = parser.peek_current_token ();
+
+  AST::InlineAsmOperand reg_operand;
+  if (!inline_asm_ctx.is_global_asm () && check_identifier (parser, "inout"))
     {
       auto reg = parse_reg (inline_asm_ctx);
 
@@ -263,7 +334,10 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
 	{
 	  // We are sure to be failing a test here, based on asm.rs
 	  // https://github.com/rust-lang/rust/blob/a330e49593ee890f9197727a3a558b6e6b37f843/compiler/rustc_builtin_macros/src/asm.rs#L112
+	  rust_error_at (token->get_locus (),
+			 "The lateout feature is not implemented");
 	  rust_unreachable ();
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
 
       // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
@@ -304,79 +378,39 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
 	  return inline_asm_ctx;
 	}
     }
-  else if (!is_global_asm && check_identifier (parser, "inlateout"))
-    // For reviewers, the parsing of inout and inlateout is exactly the same,
-    // Except here, the late flag is set to true.
-    {
-      auto reg = parse_reg (inline_asm_ctx);
 
-      if (parser.skip_token (UNDERSCORE))
-	{
-	  // We are sure to be failing a test here, based on asm.rs
-	  // https://github.com/rust-lang/rust/blob/a330e49593ee890f9197727a3a558b6e6b37f843/compiler/rustc_builtin_macros/src/asm.rs#L112
-	  rust_unreachable ();
-	}
+  return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
+}
 
-      // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
-      // doing a lot of work.
-      // TODO: Not sure how to use parse_expr
-      auto expr = parse_format_string (inline_asm_ctx);
-
-      std::unique_ptr<AST::Expr> out_expr;
-
-      if (parser.skip_token (MATCH_ARROW))
-	{
-	  if (!parser.skip_token (UNDERSCORE))
-	    {
-	      parse_format_string (inline_asm_ctx);
-	      // out_expr = parser.parse_expr();
-	    }
-
-	  // TODO: Rembmer to pass in clone_expr() instead of nullptr
-	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L149
-	  // RUST VERSION: ast::InlineAsmOperand::SplitInOut { reg, in_expr:
-	  // expr, out_expr, late: true }
-	  struct AST::InlineAsmOperand::SplitInOut split_in_out (reg, true,
-								 nullptr,
-								 nullptr);
-	  reg_operand.set_split_in_out (split_in_out);
-	  inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
-	  return inline_asm_ctx;
-	}
-      else
-	{
-	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L151
-	  // RUST VERSION: ast::InlineAsmOperand::InOut { reg, expr, late: true
-	  // }
-	  struct AST::InlineAsmOperand::InOut inout (reg, true, nullptr);
-	  reg_operand.set_in_out (inout);
-	  inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
-	  return inline_asm_ctx;
-	}
-    }
-  else if (parser.peek_current_token ()->get_id () == CONST)
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
+{
+  auto &parser = inline_asm_ctx.parser;
+  AST::InlineAsmOperand reg_operand;
+  if (parser.peek_current_token ()->get_id () == CONST)
     {
       // TODO: Please handle const with parse_expr instead.
       auto anon_const = parse_format_string (inline_asm_ctx);
       reg_operand.set_cnst (tl::nullopt);
       rust_unreachable ();
-      return inline_asm_ctx;
+      return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
-  else if (check_identifier (parser, "sym"))
+
+  return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
+}
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_sym (InlineAsmContext inline_asm_ctx)
+{
+  auto &parser = inline_asm_ctx.parser;
+
+  if (check_identifier (parser, "sym"))
     {
       // TODO: Please handle sym, which needs ExprKind::Path in Rust's asm.rs
       rust_unreachable ();
-      return inline_asm_ctx;
+      return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
-  else
-    {
-      // TODO: It is  weird that we can't seem to match any identifier,
-      // something must be wrong. consult compiler code in asm.rs or rust online
-      // compiler.
-      rust_unreachable ();
-      return inline_asm_ctx;
-    }
-  return inline_asm_ctx;
+  return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
 }
 void
 check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
@@ -544,7 +578,7 @@ MacroBuiltin::asm_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
   return parse_asm (invoc_locus, invoc, semicolon, is_global_asm);
 }
 
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_asm_arg (InlineAsmContext inline_asm_ctx)
 {
   auto &parser = inline_asm_ctx.parser;
@@ -604,9 +638,11 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
       // Ok after we have check that neither clobber_abi nor options works, the
       // only other logical choice is reg_operand
       // std::cout << "reg_operand" << std::endl;
+
+      // TODO: BUBBLE UP THIS EXPECTED(...)
       auto operand = parse_reg_operand (inline_asm_ctx);
     }
-  return tl::expected<InlineAsmContext, std::string> (inline_asm_ctx);
+  return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 }
 
 tl::optional<AST::Fragment>
@@ -638,8 +674,8 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   auto inline_asm_ctx = InlineAsmContext (inline_asm, parser, last_token_id);
 
   // operands stream, also handles the optional ","
-  tl::expected<InlineAsmContext, std::string> resulting_context
-    = tl::expected<InlineAsmContext, std::string> (inline_asm_ctx);
+  tl::expected<InlineAsmContext, InlineAsmParseError> resulting_context
+    = tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
   resulting_context.and_then (parse_format_strings)
     .and_then (parse_asm_arg)
     .and_then (validate);
@@ -676,11 +712,11 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
     }
 }
 
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_format_strings (InlineAsmContext inline_asm_ctx)
 {
   // Parse the first ever formatted string, success or not, will skip 1 token
-  auto parser = inline_asm_ctx.parser;
+  auto &parser = inline_asm_ctx.parser;
   auto last_token_id = inline_asm_ctx.last_token_id;
   auto fm_string = parse_format_string (inline_asm_ctx);
 
@@ -688,7 +724,7 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
     {
       rust_error_at (parser.peek_current_token ()->get_locus (),
 		     "%s template must be a string literal", "asm");
-      return tl::unexpected<std::string> ("ERROR");
+      return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
 
   // formatted string stream
@@ -711,7 +747,7 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
 	}
     }
 
-  return tl::expected<InlineAsmContext, std::string> (inline_asm_ctx);
+  return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 }
 
 // bool
@@ -731,9 +767,9 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
 //   return true;
 // }
 
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 validate (InlineAsmContext inline_asm_ctx)
 {
-  return tl::expected<InlineAsmContext, std::string> (inline_asm_ctx);
+  return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 }
 } // namespace Rust
