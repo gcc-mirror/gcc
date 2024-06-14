@@ -2148,15 +2148,17 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	    {
 	      /* But peeling a single scalar iteration is enough if
 		 we can use the next power-of-two sized partial
-		 access.  */
+		 access and that is sufficiently small to be covered
+		 by the single scalar iteration.  */
 	      unsigned HOST_WIDE_INT cnunits, cvf, cremain, cpart_size;
 	      if (!nunits.is_constant (&cnunits)
 		  || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&cvf)
-		  || ((cremain = remain.to_constant (), true)
+		  || (((cremain = group_size * cvf - gap % cnunits), true)
 		      && ((cpart_size = (1 << ceil_log2 (cremain))) != cnunits)
-		      && vector_vector_composition_type
-			   (vectype, cnunits / cpart_size,
-			    &half_vtype) == NULL_TREE))
+		      && (cremain + group_size < cpart_size
+			  || vector_vector_composition_type
+			       (vectype, cnunits / cpart_size,
+				&half_vtype) == NULL_TREE)))
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

@@ -1,4 +1,5 @@
 /* { dg-require-effective-target mmap } */
+/* { dg-additional-options "-mavx2" { target avx2_runtime } } */
 
 #include <sys/mman.h>
 #include <stdio.h>
