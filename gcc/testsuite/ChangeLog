@@ -1,3 +1,130 @@
+2024-06-14  Alexandre Oliva  <oliva@gnu.org>
+
+	Revert:
+	2024-06-14  Alexandre Oliva  <oliva@adacore.com>
+
+	* gnat.dg/bias1.adb: Count occurrences of -7.*DW_AT_GNU_bias.
+
+2024-06-13  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo/amo-table-a-6-load-1.c: Increase test coverage to
+	include longs, shorts, chars, and bools.
+	* gcc.target/riscv/amo/amo-table-a-6-load-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-load-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-store-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-store-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-a-6-store-compat-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-load-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-load-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-load-3.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-store-1.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-store-2.c: Ditto.
+	* gcc.target/riscv/amo/amo-table-ztso-store-3.c: Ditto.
+
+2024-06-13  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c23-complex-1.c, gcc.dg/c23-complex-2.c,
+	gcc.dg/c23-complex-3.c, gcc.dg/c23-complex-4.c,
+	gcc.dg/c2y-complex-1.c, gcc.dg/c2y-complex-2.c: New tests.
+
+2024-06-13  Carl Love  <cel@linux.ibm.com>
+
+	* gcc.target/powerpc/altivec-2-runnable.c: Change dg-do
+	argument to run.
+
+2024-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114683
+	* g++.dg/modules/using-22_a.C: New test.
+	* g++.dg/modules/using-22_b.C: New test.
+
+2024-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115194
+	* g++.dg/modules/using-23_a.C: New test.
+	* g++.dg/modules/using-23_b.C: New test.
+
+2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99678
+	* g++.dg/cpp2a/concepts-requires38.C: New test.
+
+2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115239
+	* g++.dg/overload/error7.C: New test.
+
+2024-06-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115464
+	* gcc.target/aarch64/sve/acle/general/pr115464.c: New test.
+
+2024-06-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/115456
+	* gcc.target/riscv/rvv/base/pr115456-1.c: New test.
+
+2024-06-13  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ccmp-1.c: Adjust output to scan ctest.
+	* gcc.target/i386/apx-ccmp-2.c: Adjust some condition to
+	compare with 0.
+
+2024-06-13  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-strided-1.c: New testcase.
+	* gcc.target/i386/vect-strided-2.c: Likewise.
+	* gcc.target/i386/vect-strided-3.c: Likewise.
+	* gcc.target/i386/vect-strided-4.c: Likewise.
+
+2024-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115385
+	* gcc.dg/vect/pr115385.c: New testcase.
+	* gcc.target/i386/vect-pr115385.c: Likewise.
+
+2024-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114107
+	PR tree-optimization/110445
+	* gcc.dg/vect/pr114107.c: New testcase.
+	* gcc.dg/vect/pr103116-1.c: Adjust.
+	* gcc.dg/vect/pr103116-2.c: Likewise.
+
+2024-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* g++.dg/cpp1z/constexpr-asm-3.C: Adjust for new message.
+
+2024-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* g++.dg/cpp1z/constexpr-asm-1.C: Use std::std_string_view.
+	* g++.dg/cpp1z/constexpr-asm-3.C: Dito.
+
+2024-06-13  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr115452.c: New test.
+
+2024-06-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/pr115387-1.c: Move to...
+	* gcc.dg/torture/pr115387-1.c: ...here.
+	* gcc.target/riscv/pr115387-2.c: Move to...
+	* gcc.dg/torture/pr115387-2.c: ...here.
+
+2024-06-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR testsuite/115262
+	* gcc.target/powerpc/pr66144-3.c (dg-do): Compile for all targets.
+	(dg-options): Add -fno-unroll-loops and remove -mvsx.
+	(scan-assembler): Change from this...
+	(scan-assembler-times): ...to this.  Tweak regex to accept multiple
+	allowable instructions.
+
+2024-06-13  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-zu-1.c: New test.
+	* gcc.target/i386/apx-zu-2.c: New test.
+
 2024-06-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/115283

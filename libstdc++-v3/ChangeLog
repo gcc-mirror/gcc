@@ -1,3 +1,117 @@
+2024-06-13  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/114359
+	* testsuite/26_numerics/random/binomial_distribution/114359.cc:
+	Require cmath.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (__add_rval_ref_t): Use
+	__add_rvalue_reference built-in trait.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (__add_lval_ref_t): Use
+	__add_lvalue_reference built-in trait.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h (__is_pointer): Use
+	__is_pointer built-in trait.
+	* include/std/type_traits (is_pointer): Likewise.  Optimize its
+	implementation.
+	(is_pointer_v): Likewise.
+
+2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (range_common_reference_t): New
+	alias template, as per LWG 3860.
+	* testsuite/std/ranges/range.cc: Check it.
+
+2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (const_iterator_t): Change
+	preprocessor condition to use __glibcxx_ranges_as_const.
+	(const_sentinel_t, range_const_reference_t): Likewise.
+	(__access::__possibly_const_range, cbegin, cend, crbegin)
+	(crend, cdata): Likewise.
+	* include/bits/stl_iterator.h (iter_const_reference_t)
+	(basic_const_iterator, const_iterator, const_sentinel)
+	(make_const_iterator): Likewise.
+
+2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115420
+	* include/bits/hashtable.h (_Hashtable): Add static_assert to
+	check that hash function is copy constructible.
+	* testsuite/23_containers/unordered_map/115420.cc: New test.
+
+2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113376
+	* include/pstl/pstl_config.h: Use #if instead of #ifdef to test
+	the _PSTL_USAGE_WARNINGS macro.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_nothrow_invocable): Use
+	__is_nothrow_invocable built-in trait.
+	* testsuite/20_util/is_nothrow_invocable/incomplete_args_neg.cc:
+	Handle the new error from __is_nothrow_invocable.
+	* testsuite/20_util/is_nothrow_invocable/incomplete_neg.cc:
+	Likewise.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_invocable): Use __is_invocable
+	built-in trait.
+	* testsuite/20_util/is_invocable/incomplete_args_neg.cc: Handle
+	the new error from __is_invocable.
+	* testsuite/20_util/is_invocable/incomplete_neg.cc: Likewise.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (rank): Use __array_rank built-in
+	trait.
+	(rank_v): Likewise.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (decay): Use __decay built-in trait.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (remove_all_extents): Use
+	__remove_all_extents built-in trait.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (remove_extent): Use __remove_extent
+	built-in trait.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (add_pointer): Use __add_pointer
+	built-in trait.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_unbounded_array_v): Use
+	__is_unbounded_array built-in trait.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_volatile): Use __is_volatile
+	built-in trait.
+	(is_volatile_v): Likewise.
+
+2024-06-13  Ken Matsui  <kmatsui@gcc.gnu.org>
+
+	* include/std/type_traits (is_const): Use __is_const built-in
+	trait.
+	(is_const_v): Likewise.
+
 2024-06-12  Alexandre Oliva  <oliva@adacore.com>
 
 	* testsuite/26_numerics/headers/cmath/constexpr_std_c++23.cc:

@@ -1,3 +1,264 @@
+2024-06-14  Alexandre Oliva  <oliva@gnu.org>
+
+	Revert:
+	2024-06-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_field): Use unpacked type
+	as the debug type for packed fields.
+
+2024-06-13  Steve Baird  <baird@adacore.com>
+
+	* exp_util.adb
+	(Insert_Actions): Code was relying on an incorrect assumption that an
+	N_Itype_Reference cannot occur in declaration list or a statement
+	list.  Fix the code to handle this case.
+
+2024-06-13  Viljar Indus  <indus@adacore.com>
+
+	* debug.adb: Remove mentions of -gnatdJ.
+	* errout.adb: Remove printing subprogram names to JSON.
+	* erroutc.adb: Remove printing subprogram names in messages.
+	* erroutc.ads: Remove Node and Subprogram_Name_Ptr used for -gnatdJ.
+	* errutil.adb: Remove Node used for -gnatdJ
+	* gnat1drv.adb: Remove references of -gnatdJ and
+	Include_Subprgram_In_Messages.
+	* opt.ads: Remove Include_Subprgram_In_Messages
+	* par-util.adb: Remove behavior related to
+	Include_Subprgram_In_Messages.
+	* sem_util.adb: Remove Subprogram_Name used for -gnatdJ
+
+2024-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Attach_Object_To_Master_Node): Fix formatting.
+	(Build_Finalizer.Process_Object_Declaration): Synthesize a local
+	Finalize_Address primitive if the object's subtype is an array
+	that has a constrained first subtype and is not this first subtype.
+	* exp_util.adb (Find_Last_Init): Get again to the base type in the
+	indirect case.
+
+2024-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst (Iterable):
+	Delete entry.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-06-13  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Check_Ambiguous_Aggregate): Fix test.
+
+2024-06-13  Javier Miranda  <miranda@adacore.com>
+
+	* freeze.ads (Check_Condition_Entities): Complete documentation.
+	* freeze.adb (Check_Inherited_Conditions): Extend its functionality to
+	build two kind of wrappers: the existing LSP wrappers, and wrappers
+	required to handle postconditions of interface primitives implemented
+	by inherited primitives.
+	(Build_Inherited_Condition_Pragmas): Rename formal.
+	(Freeze_Record_Type): For derived tagged types, move call to
+	Check_Inherited_Conditions to subprogram Freeze_Entity_Checks;
+	done to improve the performance of Check_Inherited_Conditions since it
+	can rely on the internal entities that link interface primitives with
+	tagged type primitives that implement them.
+	(Check_Interface_Primitives_Strub_Mode): New subprogram.
+	* sem_ch13.adb (Freeze_Entity_Checks): Call Check_Inherited_Conditions.
+	Call Check_Inherited_Conditions with derived interface types to check
+	strub mode compatibility of their primitives.
+	* sem_disp.adb (Check_Dispatching_Operation): Adjust assertion to accept
+	wrappers of interface primitives that have classwide postconditions.
+	* exp_disp.adb (Write_DT): Adding text to identify wrappers.
+
+2024-06-13  Viljar Indus  <indus@adacore.com>
+
+	* sem_res.adb (Resolve_Call): add warning insertion
+	character into the info message.
+
+2024-06-13  Steve Baird  <baird@adacore.com>
+
+	* sem_util.adb
+	(New_Copy_Tree.Visit_Entity): Delete code that prevented copying some entities.
+
+2024-06-13  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb (Check_Fixed_Point_Actual): Minor rewording; it seems
+	more proper to say "operator" rather than "operation".
+	(Matching_Actual): Give an error for <> in positional notation.
+	This is a syntax error. Disable this for now.
+	(Analyze_Associations): Copy the use clause in all cases.
+	The "mustn't recopy" comment seems wrong, because New_Copy_Tree
+	preserves Slocs.
+	* libgnat/a-ticoau.ads: Fix violation of new postion-box error.
+	* libgnat/a-wtcoau.ads: Likewise.
+	* libgnat/a-ztcoau.ads: Likewise.
+
+2024-06-13  Viljar Indus  <indus@adacore.com>
+
+	* par-labl.adb (Rewrite_As_Loop): Remove info message
+
+2024-06-13  Viljar Indus  <indus@adacore.com>
+
+	* par-ch7.adb: Remove warning characters from info message
+	* par-endh.adb: Remove warning characters from info message
+	* sem_res.adb: Remove warning characters from info message
+
+2024-06-13  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_End_Of_Declarations): change the
+	info message to a continuation message.
+
+2024-06-13  Viljar Indus  <indus@adacore.com>
+
+	* inline.adb (Cannot_Inline): Simplify string handling logic.
+
+2024-06-13  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Container): Skip entities
+	of kind E_Subprogram_Body.
+	* repinfo.adb (List_Entities): Remove special case for subprogram
+	bodies.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): List subprogram
+	body entities in the enclosing scope.
+
+2024-06-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch4.adb (Traverse_Interfaces): Add missing support
+	for climbing to parents of interface types.
+
+2024-06-13  Steve Baird  <baird@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst:
+	Update Super attribute documentation.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2024-06-13  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_ch7.adb (Build_Cleanup_Statements): Adapt to changes
+	made to Build_Protected_Subprogram_Call_Cleanup.
+	* exp_ch9.adb (Make_Unlock_Statement, Wrap_Unprotected_Call):
+	New functions.
+	(Build_Protected_Subprogram_Body): Fix resource management in
+	generated code.
+	(Build_Protected_Subprogram_Call_Cleanup): Make use of newly
+	introduced Make_Unlock_Statement.
+
+2024-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114710
+	* exp_util.adb (Find_Renamed_Object): Recurse for any renaming.
+
+2024-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Check_Mode_Restriction_In_Enclosing_Context):
+	Iterate over encapsulating abstract states.
+
+2024-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-imad32$(objext),
+	s-imad64$(objext) and s-imagea$(objext).
+	* exp_atag.ads (Build_Set_Size_Function): Replace Tag_Node parameter
+	with Typ parameter.
+	* exp_atag.adb: Add clauses for Sinfo.Utils.
+	(Build_Set_Size_Function): Retrieve the TSD object statically.
+	* exp_disp.adb: Add clauses for Ttypes.
+	(Make_DT): Call Address_Image{32,64] instead of Address_Image.
+	(Register_Primitive): Pass Tag_Typ to Build_Set_Size_Function.
+	* rtsfind.ads (RTU_Id): Remove System_Address_Image and add
+	System_Img_Address_{32;64}.
+	(RE_Id): Remove entry for RE_Address_Image and add entries for
+	RE_Address_Image{32,64}.
+	* rtsfind.adb (System_Descendant): Adjust to above changes.
+	* libgnat/a-tags.ads (Address_Array): Suppress initialization.
+	* libgnat/s-addima.adb (System.Address_Image): Call the appropriate
+	routine based on the address size.
+	* libgnat/s-imad32.ads: New file.
+	* libgnat/s-imad64.ads: Likewise.
+	* libgnat/s-imagea.ads: Likewise.
+	* libgnat/s-imagea.adb: Likewise.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS) [$(STAGE1)=False]: Add
+	ada/libgnat/s-imad32.o and ada/libgnat/s-imad64.o.
+
+2024-06-13  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Do not inline
+	when constant with address clause is found.
+
+2024-06-13  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gnatlink.adb (Gnatlink): Fix incorrect lower bound assumption.
+	(Is_Prefix): New function.
+
+2024-06-13  Steve Baird  <baird@adacore.com>
+
+	* sem_ch7.adb
+	(Requires_Completion_In_Body): Modify the Comes_From_Source test so that
+	the implicit declaration of an inherited subprogram does not cause
+	an incorrect result of True.
+
+2024-06-13  Richard Kenner  <kenner@adacore.com>
+
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Inline if -gnatn in
+	CCG mode even if -O0.
+
+2024-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114710
+	* exp_util.adb (Find_Renamed_Object): Recurse if the renamed object
+	is itself a renaming.
+
+2024-06-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Enhance support for
+	using 'Old with a prefix that references an overloaded
+	function that has no parameters; add missing support
+	for the use of 'Old within qualified expressions.
+	* sem_util.ads (Preanalyze_And_Resolve_Without_Errors):
+	New subprogram.
+	* sem_util.adb (Preanalyze_And_Resolve_Without_Errors):
+	New subprogram.
+
+2024-06-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* layout.adb (Layout_Type): Use high-level wrapper routine.
+	* sem_ch13.adb (Inherit_Delayed_Rep_Aspects): Likewise.
+	* sem_ch3.adb (Analyze_Object_Declaration): Likewise.
+
+2024-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-tsmona__linux.adb (Get): Move down descriptive comment.
+	* libgnat/s-tsmona__mingw.adb: Add with clause and use clause for
+	System.Storage_Elements.
+	(Get): Pass GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT in the call
+	to GetModuleHandleEx and remove the subsequent call to FreeLibrary.
+	Upon success, set Load_Addr to the base address of the module.
+	* libgnat/s-win32.ads (GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS): Use
+	shorter literal.
+	(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT): New constant.
+
+2024-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/114710
+	* exp_ch7.adb (Build_Finalizer.Process_Declarations): Remove dead
+	code dealing with renamings.
+	* exp_util.ads (Is_Finalizable_Transient): Rename Rel_Node to N.
+	* exp_util.adb (Is_Finalizable_Transient): Likewise.
+	(Is_Aliased): Remove obsolete code dealing wih EWA nodes and only
+	consider renamings present in N itself.
+	(Requires_Cleanup_Actions): Remove dead code dealing with renamings.
+
+2024-06-13  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): Set the applicable policy
+	of a type declaration when its aspect Dynamic_Predicate is
+	analyzed.
+	* sem_prag.adb (Handle_Dynamic_Predicate_Check): New subprogram
+	that enables or ignores dynamic predicate checks depending on
+	whether dynamic checks are enabled in the context where the
+	associated type declaration is defined; used in the analysis
+	of pragma check. In addition, for pragma Predicate, do not
+	disable it when the aspect was internally build as part of
+	processing a dynamic predicate aspect.
+
 2024-06-12  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_field): Use unpacked type

@@ -1,3 +1,133 @@
+2024-06-13  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync-rvwmo.md: Add support for subword fenced
+	loads/stores.
+	* config/riscv/sync-ztso.md: Ditto.
+	* config/riscv/sync.md: Ditto.
+
+2024-06-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (AArch64 Function Attributes): Add
+	(AVR Variable Attributes): Ditto.
+	(Common Type Attributes): Ditto.
+
+2024-06-13  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/115370
+	PR target/115463
+	* target.def (have_ccmp): New target hook.
+	* targhooks.cc (default_have_ccmp): New function.
+	* targhooks.h (default_have_ccmp): New prototype.
+	* doc/tm.texi.in: Add TARGET_HAVE_CCMP.
+	* doc/tm.texi: Regenerate.
+	* cfgexpand.cc (expand_gimple_cond): Call targetm.have_ccmp
+	instead of checking if targetm.gen_ccmp_first exists.
+	* expr.cc (expand_expr_real_gassign): Likewise.
+	* config/i386/i386.cc (ix86_have_ccmp): New target hook to
+	check if APX_CCMP enabled.
+	(TARGET_HAVE_CCMP): Define.
+
+2024-06-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115464
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Don't try
+	to fold two subregs together if their relationship isn't known
+	at compile time.
+	* explow.h (force_subreg): Declare.
+	* explow.cc (force_subreg): New function.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svset_neonq_impl::expand): Use it instead of simplify_gen_subreg.
+
+2024-06-13  Pan Li  <pan2.li@intel.com>
+
+	PR target/115456
+	* config/riscv/autovec.md: Take ZVFH mode iterator instead of
+	the ZVFHMIN for the alignment.
+	* config/riscv/vector-iterators.md: Add 2 new iterator
+	V_VLS_ZVFH and VLS_ZVFH.
+
+2024-06-13  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (@ccmp<mode>): Add new alternative
+	<r>,C and adjust output templates. Also adjust UNSPEC mode
+	to CCmode.
+
+2024-06-13  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR other/69374
+	* doc/install.texi (Prerequisites): Simplify note on the C++
+	compiler required. Drop requirements for versions of GCC prior
+	to 3.4. Fix grammar.
+
+2024-06-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Consistently
+	use VMAT_STRIDED_SLP for strided SLP accesses and not
+	VMAT_ELEMENTWISE.
+	(vectorizable_store): Adjust VMAT_STRIDED_SLP handling to
+	allow not only half-size but also smaller accesses.
+	(vectorizable_load): Likewise.
+
+2024-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115385
+	* tree-vect-stmts.cc (get_group_load_store_type): Peeling
+	of a single scalar iteration is sufficient if we can narrow
+	the access to the next power of two of the bits in the last
+	access.
+	(vectorizable_load): Ensure that the last access is narrowed.
+
+2024-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114107
+	PR tree-optimization/110445
+	* tree-vect-stmts.cc (get_group_load_store_type): Refactor
+	contiguous access case.  Make sure peeling for gap constraints
+	are always tested and consistently relax when we know we can
+	avoid touching excess elements during code generation.  But
+	rewrite the check poly-int aware.
+
+2024-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* doc/extend.texi: Use std::string_view in asm constexpr
+	example.
+
+2024-06-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115452
+	* config/i386/i386-features.cc (scalar_chain::convert_op): Use
+	reg_or_subregno instead of REGNO to avoid ICE.
+
+2024-06-13  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips-cpus.def: Use PROCESSOR_24KF1_1 for mips32;
+	Use PROCESSOR_5KF for mips64/mips64r2/mips64r3/mips64r5.
+
+2024-06-13  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips-modes.def: New CC_MODE CCE.
+	* config/mips/mips-protos.h(mips_output_compare): New function.
+	* config/mips/mips.cc(mips_allocate_fcc): Set CCEmode count=1.
+	(mips_emit_compare): Use CCEmode for LTGT/LT/LE for pre-R6.
+	(mips_output_compare): New function. Convert lt/le to slt/sle
+	for R6; convert ueq to ngl for CCEmode.
+	(mips_hard_regno_mode_ok_uncached): Mention CCEmode.
+	* config/mips/mips.h: Mention CCEmode for LOAD_EXTEND_OP.
+	* config/mips/mips.md(FPCC): Add CCE.
+	(define_mode_iterator MOVECC): Mention CCE.
+	(define_mode_attr reg): Add CCE with "z".
+	(define_mode_attr fpcmp): Add CCE with "c".
+	(define_code_attr fcond): ltgt should use sne instead of ne.
+	(s<code>_<SCALARF:mode>_using_<FPCC:mode>): call mips_output_compare.
+
+2024-06-13  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386-opts.h (enum apx_features): Add apx_zu.
+	* config/i386/i386.h (TARGET_APX_ZU): Define.
+	* config/i386/i386.md (*imulhi<mode>zu): New define_insn.
+	(*setcc_<mode>_zu): Ditto.
+	* config/i386/i386.opt: Add enum value for zu.
+
 2024-06-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR bootstrap/115465

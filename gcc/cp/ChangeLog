@@ -1,3 +1,47 @@
+2024-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114683
+	* name-lookup.cc (do_nonmember_using_decl): Allow exporting
+	a newly inserted decl.
+
+2024-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115194
+	* name-lookup.cc (name_lookup::process_module_binding): Strip an
+	OVERLOAD from a non-function.
+
+2024-06-13  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (depset::hash::add_binding_entity): Adjust comment.
+
+2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99678
+	* parser.cc (cp_parser_constraint_primary_expression): Diagnose
+	a bare unresolved unqualified-id.
+
+2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115239
+	* call.cc (tourney): Don't consider a non-strictly viable
+	candidate as the champ if there was ambiguity between two
+	strictly viable candidates.
+
+2024-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* parser.cc (cp_parser_asm_string_expression): Use correct error
+	message.
+
+2024-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* parser.cc (cp_parser_asm_string_expression): Parse close
+	parent when constexpr extraction fails.
+
+2024-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* parser.cc (cp_parser_asm_string_expression): Remove support
+	for const char * for asm constexpr.
+
 2024-06-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/115283
