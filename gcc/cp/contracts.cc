@@ -2214,6 +2214,7 @@ finish_function_contracts (tree fndecl)
       DECL_PENDING_INLINE_P (pre) = false;
       start_preparsed_function (pre, DECL_ATTRIBUTES (pre), flags);
       remap_and_emit_conditions (fndecl, pre, PRECONDITION_STMT);
+      finish_return_stmt (NULL_TREE);
       tree finished_pre = finish_function (false);
       expand_or_defer_fn (finished_pre);
     }
@@ -2227,6 +2228,8 @@ finish_function_contracts (tree fndecl)
       remap_and_emit_conditions (fndecl, post, POSTCONDITION_STMT);
       if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post))))
 	finish_return_stmt (get_postcondition_result_parameter (fndecl));
+      else
+	finish_return_stmt (NULL_TREE);
 
       tree finished_post = finish_function (false);
       expand_or_defer_fn (finished_post);
