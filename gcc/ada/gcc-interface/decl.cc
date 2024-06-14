@@ -7786,7 +7786,6 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   /* If a size is specified, adjust the field's type to it.  */
   if (gnu_size)
     {
-      tree debug_field_type = gnu_field_type;
       tree orig_field_type;
 
       /* If the field's type is justified modular, we would need to remove
@@ -7845,9 +7844,6 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	  && !DECL_P (TYPE_NAME (gnu_field_type)))
 	create_type_decl (TYPE_NAME (gnu_field_type), gnu_field_type, true,
 			  debug_info_p, gnat_field);
-
-      if (debug_info_p && gnu_field_type != debug_field_type)
-	SET_TYPE_DEBUG_TYPE (gnu_field_type, debug_field_type);
     }
 
   /* Otherwise (or if there was an error), don't specify a position.  */
