@@ -50,6 +50,7 @@
 #include "rtx-vector-builder.h"
 #include "targhooks.h"
 #include "predict.h"
+#include "errors.h"
 
 using namespace riscv_vector;
 
@@ -290,11 +291,17 @@ public:
 	   always Pmode.  */
 	if (mode == VOIDmode)
 	  mode = Pmode;
-	else
-	  /* Early assertion ensures same mode since maybe_legitimize_operand
-	     will check this.  */
-	  gcc_assert (GET_MODE (ops[opno]) == VOIDmode
-		      || GET_MODE (ops[opno]) == mode);
+
+	/* Early assertion ensures same mode since maybe_legitimize_operand
+	   will check this.  */
+	machine_mode required_mode = GET_MODE (ops[opno]);
+	if (required_mode != VOIDmode && required_mode != mode)
+	  internal_error ("expected mode %s for operand %d of "
+			  "insn %s but got mode %s.\n",
+			  GET_MODE_NAME (mode),
+			  opno,
+			  insn_data[(int) icode].name,
+			  GET_MODE_NAME (required_mode));
 
 	add_input_operand (ops[opno], mode);
       }
@@ -346,7 +353,13 @@ public:
     else if (m_insn_flags & VXRM_RDN_P)
       add_rounding_mode_operand (VXRM_RDN);
 
-    gcc_assert (insn_data[(int) icode].n_operands == m_opno);
+
+    if (insn_data[(int) icode].n_operands != m_opno)
+      internal_error ("invalid number of operands for insn %s, "
+		      "expected %d but got %d.\n",
+		      insn_data[(int) icode].name,
+		      insn_data[(int) icode].n_operands, m_opno);
+
     expand (icode, any_mem_p);
   }
 
