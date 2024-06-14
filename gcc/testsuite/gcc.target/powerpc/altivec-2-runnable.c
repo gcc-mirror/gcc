@@ -1,6 +1,6 @@
-/* { dg-do run } */
-/* { dg-options "-mvsx" } */
-/* { dg-additional-options "-mdejagnu-cpu=power8" { target { ! has_arch_pwr8 } } } */
+/* { dg-do run { target p8vector_hw } } */
+/* { dg-do compile { target { ! p8vector_hw } } } */
+/* { dg-options "-O2  -mdejagnu-cpu=power8" } */
 /* { dg-require-effective-target powerpc_vsx } */
 
 #include <altivec.h>
