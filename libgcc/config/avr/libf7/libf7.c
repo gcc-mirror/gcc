@@ -440,11 +440,21 @@ f7_double_t f7_get_double (const f7_t *aa)
 
   mant &= 0x00ffffffffffffff;
 
-  // FIXME: For subnormals, rounding is premature and should be
-  //	    done *after* the mantissa has been shifted into place
-  //	    (or the round value be shifted left accordingly).
-  // Round.
-  mant += 1u << (F7_MANT_BITS - (1 + DBL_DIG_MANT) - 1);
+  // PR115419: The least significant nibble tells how to round:
+  // Tie breaks are rounded to even (Banker's rounding).
+  uint8_t lsn = mant & 0xff;
+  lsn &= 0xf;
+  // The LSB of the outgoing double is at bit 3.
+  if (lsn & (1 << 3))
+    ++lsn;
+  if (lsn > (1 << 2))
+    {
+      // FIXME: For subnormals, rounding is premature and should be
+      //        done *after* the mantissa has been shifted into place
+      //        (or the round value be shifted left accordingly).
+      // Round.
+      mant += 1u << (F7_MANT_BITS - (1 + DBL_DIG_MANT) - 1);
+    }
 
   uint8_t dex;
   register uint64_t r18 __asm ("r18") = mant;
