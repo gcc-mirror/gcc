@@ -664,9 +664,7 @@ DefaultASTVisitor::visit (AST::AsyncBlockExpr &expr)
 
 void
 DefaultASTVisitor::visit (AST::InlineAsm &expr)
-{
-  rust_unreachable ();
-}
+{}
 
 void
 DefaultASTVisitor::visit (AST::TypeParam &param)

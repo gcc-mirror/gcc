@@ -4659,7 +4659,6 @@ AsyncBlockExpr::accept_vis (ASTVisitor &vis)
 void
 InlineAsm::accept_vis (ASTVisitor &vis)
 {
-  rust_unreachable ();
   vis.visit (*this);
 }
 

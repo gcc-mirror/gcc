@@ -115,7 +115,7 @@ format_args_parse_arguments (AST::MacroInvocData &invoc)
 
 tl::optional<AST::Fragment>
 MacroBuiltin::format_args_handler (location_t invoc_locus,
-				   AST::MacroInvocData &invoc,
+				   AST::MacroInvocData &invoc, bool semicolon,
 				   AST::FormatArgs::Newline nl)
 {
   auto input = format_args_parse_arguments (invoc);

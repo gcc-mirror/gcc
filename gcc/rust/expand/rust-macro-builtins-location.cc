@@ -21,7 +21,7 @@
 
 namespace Rust {
 tl::optional<AST::Fragment>
-MacroBuiltin::file_handler (location_t invoc_locus, AST::MacroInvocData &)
+MacroBuiltin::file_handler (location_t invoc_locus, AST::MacroInvocData &, bool)
 {
   auto current_file = LOCATION_FILE (invoc_locus);
   auto file_str = AST::SingleASTNode (make_string (invoc_locus, current_file));
@@ -32,7 +32,8 @@ MacroBuiltin::file_handler (location_t invoc_locus, AST::MacroInvocData &)
 }
 
 tl::optional<AST::Fragment>
-MacroBuiltin::column_handler (location_t invoc_locus, AST::MacroInvocData &)
+MacroBuiltin::column_handler (location_t invoc_locus, AST::MacroInvocData &,
+			      bool)
 {
   auto current_column = LOCATION_COLUMN (invoc_locus);
 
@@ -46,7 +47,7 @@ MacroBuiltin::column_handler (location_t invoc_locus, AST::MacroInvocData &)
 }
 
 tl::optional<AST::Fragment>
-MacroBuiltin::line_handler (location_t invoc_locus, AST::MacroInvocData &)
+MacroBuiltin::line_handler (location_t invoc_locus, AST::MacroInvocData &, bool)
 {
   auto current_line = LOCATION_LINE (invoc_locus);
 

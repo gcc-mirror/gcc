@@ -482,7 +482,7 @@ private:
    * should make use of the actual rules. If the macro is builtin, then another
    * associated transcriber should be used
    */
-  static Fragment dummy_builtin (location_t, MacroInvocData &)
+  static Fragment dummy_builtin (location_t, MacroInvocData &, bool)
   {
     rust_unreachable ();
     return Fragment::create_error ();

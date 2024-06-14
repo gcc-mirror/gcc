@@ -43,9 +43,10 @@ MacroExpander::expand_decl_macro (location_t invoc_locus,
 
   /* probably something here about parsing invoc and rules def token trees to
    * token stream. if not, how would parser handle the captures of exprs and
-   * stuff? on the other hand, token trees may be kind of useful in rules def as
-   * creating a point where recursion can occur (like having
-   * "compare_macro_match" and then it calling itself when it finds delimiters)
+   * stuff? on the other hand, token trees may be kind of useful in rules def
+   * as creating a point where recursion can occur (like having
+   * "compare_macro_match" and then it calling itself when it finds
+   * delimiters)
    */
 
   /* find matching rule to invoc token tree, based on macro rule's matcher. if
@@ -70,9 +71,10 @@ MacroExpander::expand_decl_macro (location_t invoc_locus,
 
   /* TODO: it is probably better to modify AST::Token to store a pointer to a
    * Lexer::Token (rather than being converted) - i.e. not so much have
-   * AST::Token as a Token but rather a TokenContainer (as it is another type of
-   * TokenTree). This will prevent re-conversion of Tokens between each type
-   * all the time, while still allowing the heterogenous storage of token trees.
+   * AST::Token as a Token but rather a TokenContainer (as it is another type
+   * of TokenTree). This will prevent re-conversion of Tokens between each
+   * type all the time, while still allowing the heterogenous storage of token
+   * trees.
    */
 
   AST::DelimTokenTree &invoc_token_tree = invoc.get_delim_tok_tree ();
@@ -286,8 +288,12 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
   last_invoc = *invoc.clone_macro_invocation_impl ();
   last_def = *rdef;
 
+  rust_debug ("[ARTHUR] semicolon: %s", has_semicolon ? "yes" : "no");
+
   if (rdef->is_builtin ())
-    fragment = rdef->get_builtin_transcriber () (invoc.get_locus (), invoc_data)
+    fragment = rdef
+		 ->get_builtin_transcriber () (invoc.get_locus (), invoc_data,
+					       has_semicolon)
 		 .value_or (AST::Fragment::create_empty ());
   else
     fragment = expand_decl_macro (invoc.get_locus (), invoc_data, *rdef,
