@@ -1605,11 +1605,14 @@ gori_calc_operands (vrange &lhs, gimple *stmt, ssa_cache &r, range_query *q)
       tmp.set_type (TREE_TYPE (si.ssa1));
       if (si.calc_op1 (tmp, lhs, si.op2_range))
 	si.op1_range.intersect (tmp);
-      r.set_range (si.ssa1, si.op1_range);
-      gimple *src = SSA_NAME_DEF_STMT (si.ssa1);
-      // If defintion is in the same basic lock, evaluate it.
-      if (src && gimple_bb (src) == gimple_bb (stmt))
-	gori_calc_operands (si.op1_range, src, r, q);
+      if (!si.op1_range.varying_p ())
+	{
+	  r.set_range (si.ssa1, si.op1_range);
+	  gimple *src = SSA_NAME_DEF_STMT (si.ssa1);
+	  // If defintion is in the same basic lock, evaluate it.
+	  if (src && gimple_bb (src) == gimple_bb (stmt))
+	    gori_calc_operands (si.op1_range, src, r, q);
+	}
     }
 
   if (si.ssa2 && !r.has_range (si.ssa2))
@@ -1617,10 +1620,13 @@ gori_calc_operands (vrange &lhs, gimple *stmt, ssa_cache &r, range_query *q)
       tmp.set_type (TREE_TYPE (si.ssa2));
       if (si.calc_op2 (tmp, lhs, si.op1_range))
 	si.op2_range.intersect (tmp);
-      r.set_range (si.ssa2, si.op2_range);
-      gimple *src = SSA_NAME_DEF_STMT (si.ssa2);
-      if (src && gimple_bb (src) == gimple_bb (stmt))
-	gori_calc_operands (si.op2_range, src, r, q);
+      if (!si.op2_range.varying_p ())
+	{
+	  r.set_range (si.ssa2, si.op2_range);
+	  gimple *src = SSA_NAME_DEF_STMT (si.ssa2);
+	  if (src && gimple_bb (src) == gimple_bb (stmt))
+	    gori_calc_operands (si.op2_range, src, r, q);
+	}
     }
 }
 
