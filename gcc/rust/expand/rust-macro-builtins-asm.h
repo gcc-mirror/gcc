@@ -9,11 +9,10 @@ namespace Rust {
 // All the operands are called asm_args in rustc asm.rs, we create a struct that
 // can store all of these AsmArgs This replaces the phase where we have to parse
 // all operands.
-class InlineAsmParseError
+enum InlineAsmParseError
 {
-public:
-  location_t locus;
-  std::string message;
+  COMMITTED,
+  NONCOMMITED,
 };
 class InlineAsmContext
 {
@@ -24,12 +23,39 @@ public:
   AST::InlineAsm &inline_asm;
   Parser<MacroInvocLexer> &parser;
   int last_token_id;
+
   InlineAsmContext (AST::InlineAsm &inline_asm, Parser<MacroInvocLexer> &parser,
 		    int last_token_id)
     : allow_templates (true), is_explicit (false),
       consumed_comma_without_formatted_string (false), inline_asm (inline_asm),
       parser (parser), last_token_id (last_token_id)
   {}
+
+  // InlineAsmContext (const InlineAsmContext& inline_asm_ctx)
+  //   : allow_templates (inline_asm_ctx.allow_templates), is_explicit
+  //   (inline_asm_ctx.is_explicit),
+  //     consumed_comma_without_formatted_string (false), inline_asm
+  //     (inline_asm_ctx.inline_asm), parser (inline_asm_ctx.parser),
+  //     last_token_id (inline_asm_ctx.last_token_id)
+  // {}
+  // explicit InlineAsmContext (InlineAsmContext&& inline_asm_ctx)
+  //   : allow_templates (inline_asm_ctx.allow_templates), is_explicit
+  //   (inline_asm_ctx.is_explicit),
+  //     consumed_comma_without_formatted_string (false), inline_asm
+  //     (inline_asm_ctx.inline_asm), parser (inline_asm_ctx.parser),
+  //     last_token_id (inline_asm_ctx.last_token_id)
+  // {}
+
+  // InlineAsmContext(tl::expected<InlineAsmContext, InlineAsmParseError>
+  // &expected)
+  //     : allow_templates(expected->allow_templates),
+  //     is_explicit(expected->is_explicit),
+  //       consumed_comma_without_formatted_string(expected->consumed_comma_without_formatted_string),
+  //       inline_asm(expected->inline_asm), parser(expected->parser),
+  //       last_token_id(expected->last_token_id)
+  // {
+
+  // }
 
   bool is_global_asm () { return inline_asm.is_global_asm; }
 
@@ -42,21 +68,42 @@ public:
 };
 
 // Expected calls
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 validate (InlineAsmContext inline_asm_ctx);
 
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_asm_arg (InlineAsmContext inline_asm_ctx);
 
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_format_strings (InlineAsmContext inline_asm_ctx);
 
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_clobber_abi (InlineAsmContext inline_asm_ctx);
 
 // From rustc
-tl::expected<InlineAsmContext, std::string>
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_reg_operand (InlineAsmContext inline_asm_ctx);
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_in (InlineAsmContext inline_asm_ctx);
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_out (InlineAsmContext inline_asm_ctx);
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_lateout (InlineAsmContext inline_asm_ctx);
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_inout (InlineAsmContext inline_asm_ctx);
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_inlateout (InlineAsmContext inline_asm_ctx);
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_const (InlineAsmContext inline_asm_ctx);
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_sym (InlineAsmContext inline_asm_ctx);
 
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
