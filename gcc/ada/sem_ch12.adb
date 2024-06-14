@@ -18095,7 +18095,7 @@ package body Sem_Ch12 is
             end loop;
 
             Generic_Renamings.Init;
-            Generic_Renamings.Set_Last (0);
+            Generic_Renamings.Set_Last (-1);
             Generic_Renamings_HTable.Reset;
          end return;
       end Save_And_Reset;
