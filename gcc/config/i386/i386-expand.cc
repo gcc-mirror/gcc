@@ -26041,6 +26041,69 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
       tmp2 = ix86_gen_bcst_mem (mode, op2);
       if (!tmp2)
 	{
+	  machine_mode bcst32_mode = mode;
+	  machine_mode bcst64_mode = mode;
+	  switch (mode)
+	    {
+	    case V1TImode:
+	    case V4SImode:
+	    case V4SFmode:
+	    case V8HImode:
+	    case V16QImode:
+	      bcst32_mode = V4SImode;
+	      bcst64_mode = V2DImode;
+	      break;
+
+	    case V2TImode:
+	    case V8SImode:
+	    case V8SFmode:
+	    case V16HImode:
+	    case V32QImode:
+	      bcst32_mode = V8SImode;
+	      bcst64_mode = V4DImode;
+	      break;
+
+	    case V4TImode:
+	    case V16SImode:
+	    case V16SFmode:
+	    case V32HImode:
+	    case V64QImode:
+	      bcst32_mode = V16SImode;
+	      bcst64_mode = V8DImode;
+	      break;
+
+	    default:
+	      break;
+	    }
+
+	  if (bcst32_mode != mode)
+	    {
+	      tmp2 = gen_lowpart (bcst32_mode, op2);
+	      if (ix86_gen_bcst_mem (bcst32_mode, tmp2))
+		{
+		  tmp2 = ix86_expand_ternlog (bcst32_mode,
+					      gen_lowpart (bcst32_mode, tmp0),
+					      gen_lowpart (bcst32_mode, tmp1),
+					      tmp2, idx, NULL_RTX);
+		  emit_move_insn (target, gen_lowpart (mode, tmp2));
+		  return target;
+		}
+	    }
+
+	  if (bcst64_mode != mode)
+	    {
+	      tmp2 = gen_lowpart (bcst64_mode, op2);
+	      if (ix86_gen_bcst_mem (bcst64_mode, tmp2))
+		{
+		  tmp2 = ix86_expand_ternlog (bcst64_mode,
+					      gen_lowpart (bcst64_mode, tmp0),
+					      gen_lowpart (bcst64_mode, tmp1),
+					      tmp2, idx, NULL_RTX);
+		  emit_move_insn (target, gen_lowpart (mode, tmp2));
+		  return target;
+		}
+	    }
+
 	  tmp2 = force_const_mem (mode, op2);
 	  rtx bcast = ix86_broadcast_from_constant (mode, tmp2);
 	  tmp2 = validize_mem (tmp2);
