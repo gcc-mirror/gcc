@@ -1451,7 +1451,7 @@ binding_cluster::to_json () const
   return cluster_obj;
 }
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 binding_cluster::make_dump_widget (const text_art::dump_widget_info &dwi,
 				   store_manager *mgr) const
 {
@@ -1489,7 +1489,7 @@ binding_cluster::make_dump_widget (const text_art::dump_widget_info &dwi,
 
       m_map.add_to_tree_widget (*cluster_widget, dwi);
 
-      return std::move (cluster_widget);
+      return cluster_widget;
     }
 }
 
@@ -2710,7 +2710,7 @@ store::to_json () const
   return store_obj;
 }
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 store::make_dump_widget (const text_art::dump_widget_info &dwi,
 			 store_manager *mgr) const
 {
@@ -2769,7 +2769,7 @@ store::make_dump_widget (const text_art::dump_widget_info &dwi,
       store_widget->add_child (std::move (parent_reg_widget));
     }
 
-  return std::move (store_widget);
+  return store_widget;
 }
 
 /* Get any svalue bound to REG, or NULL.  */

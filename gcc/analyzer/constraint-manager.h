@@ -273,7 +273,7 @@ public:
 
   json::object *to_json () const;
 
-  std::unique_ptr<text_art::widget>
+  std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi,
 		    unsigned id) const;
 
@@ -408,7 +408,7 @@ public:
 
   void add_to_hash (inchash::hash *hstate) const;
 
-  std::unique_ptr<text_art::widget>
+  std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi) const;
 
   equiv_class_id m_ec_id;
@@ -444,7 +444,7 @@ public:
 
   json::object *to_json () const;
 
-  std::unique_ptr<text_art::widget>
+  std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi) const;
 
   const equiv_class &get_equiv_class_by_index (unsigned idx) const

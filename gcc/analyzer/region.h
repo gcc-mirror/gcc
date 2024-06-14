@@ -182,7 +182,7 @@ public:
   bool maybe_print_for_user (pretty_printer *pp,
 			     const region_model &model) const;
 
-  std::unique_ptr<text_art::widget>
+  std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi,
 		    const char *prefix = nullptr) const;
 

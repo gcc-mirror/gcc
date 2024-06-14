@@ -107,7 +107,7 @@ public:
 
   json::value *to_json () const;
 
-  std::unique_ptr<text_art::widget>
+  std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const dump_widget_info &dwi,
 		    const char *prefix = nullptr) const;
 

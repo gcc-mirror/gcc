@@ -309,7 +309,7 @@ sm_state_map::to_json () const
 /* Make a text_art::tree_widget describing this sm_state_map,
    using MODEL if non-null to describe svalues.  */
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 sm_state_map::make_dump_widget (const text_art::dump_widget_info &dwi,
 				const region_model *model) const
 {
@@ -382,7 +382,7 @@ sm_state_map::make_dump_widget (const text_art::dump_widget_info &dwi,
       state_widget->add_child (tree_widget::make (dwi, pp));
     }
 
-  return std::move (state_widget);
+  return state_widget;
 }
 
 /* Return true if no states have been set within this map
@@ -1229,7 +1229,7 @@ program_state::to_json (const extrinsic_state &ext_state) const
 }
 
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 program_state::make_dump_widget (const text_art::dump_widget_info &dwi) const
 {
   using text_art::tree_widget;
@@ -1247,7 +1247,7 @@ program_state::make_dump_widget (const text_art::dump_widget_info &dwi) const
 	state_widget->add_child (smap->make_dump_widget (dwi, m_region_model));
   }
 
-  return std::move (state_widget);
+  return state_widget;
 }
 
 /* Update this program_state to reflect a top-level call to FUN.

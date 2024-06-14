@@ -119,7 +119,7 @@ public:
 
   json::object *to_json () const;
 
-  std::unique_ptr<text_art::widget>
+  std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi,
 		    const region_model *model) const;
 
@@ -233,7 +233,7 @@ public:
 
   json::object *to_json (const extrinsic_state &ext_state) const;
 
-  std::unique_ptr<text_art::widget>
+  std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi) const;
 
   void push_frame (const extrinsic_state &ext_state, const function &fun);

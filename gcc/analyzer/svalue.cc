@@ -230,7 +230,7 @@ svalue::maybe_print_for_user (pretty_printer *pp,
    (a) print_dump_widget_label, to populate the text of a tree_widget, and
    (b) add_dump_widget_children, to add children to the tree_widget.  */
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 svalue::make_dump_widget (const text_art::dump_widget_info &dwi,
 			  const char *prefix) const
 {
@@ -252,7 +252,7 @@ svalue::make_dump_widget (const text_art::dump_widget_info &dwi,
 
   add_dump_widget_children (*w, dwi);
 
-  return std::move (w);
+  return w;
 }
 
 /* If this svalue is a constant_svalue, return the underlying tree constant.

@@ -1076,7 +1076,7 @@ region::maybe_print_for_user (pretty_printer *pp,
 /* Use DWI to create a text_art::widget describing this region in
    a tree-like form, using PREFIX as a prefix (e.g. for field names).  */
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 region::make_dump_widget (const text_art::dump_widget_info &dwi,
 			  const char *prefix) const
 {
@@ -1101,7 +1101,7 @@ region::make_dump_widget (const text_art::dump_widget_info &dwi,
   if (m_parent)
     w->add_child (m_parent->make_dump_widget (dwi, "parent"));
 
-  return std::move (w);
+  return w;
 }
 
 void

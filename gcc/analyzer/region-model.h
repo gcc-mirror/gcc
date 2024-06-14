@@ -179,7 +179,7 @@ public:
 
   json::object *to_json () const;
 
-  std::unique_ptr<text_art::widget>
+  std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi) const;
 
   bool can_merge_with_p (const region_to_value_map &other,
@@ -288,7 +288,7 @@ class region_model
 
   json::object *to_json () const;
 
-  std::unique_ptr<text_art::widget>
+  std::unique_ptr<text_art::tree_widget>
   make_dump_widget (const text_art::dump_widget_info &dwi) const;
 
   void validate () const;

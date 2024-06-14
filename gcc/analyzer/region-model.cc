@@ -258,7 +258,7 @@ region_to_value_map::to_json () const
   return map_obj;
 }
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 region_to_value_map::
 make_dump_widget (const text_art::dump_widget_info &dwi) const
 {
@@ -288,7 +288,7 @@ make_dump_widget (const text_art::dump_widget_info &dwi) const
       sval->dump_to_pp (pp, true);
       w->add_child (text_art::tree_widget::make (dwi, pp));
     }
-  return std::move (w);
+  return w;
 }
 
 /* Attempt to merge THIS with OTHER, writing the result
@@ -532,7 +532,7 @@ region_model::to_json () const
   return model_obj;
 }
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 region_model::make_dump_widget (const text_art::dump_widget_info &dwi) const
 {
   using text_art::tree_widget;
@@ -556,7 +556,7 @@ region_model::make_dump_widget (const text_art::dump_widget_info &dwi) const
 			       m_mgr->get_store_manager ()));
   model_widget->add_child (m_constraints->make_dump_widget (dwi));
   model_widget->add_child (m_dynamic_extents.make_dump_widget (dwi));
-  return std::move (model_widget);
+  return model_widget;
 }
 
 /* Assert that this object is valid.  */
