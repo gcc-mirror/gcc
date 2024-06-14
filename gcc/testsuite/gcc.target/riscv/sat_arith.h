@@ -129,6 +129,15 @@ sat_u_sub_##T##_fmt_7 (T x, T y)                    \
   return ret & (T)(overflow - 1);                   \
 }
 
+#define DEF_SAT_U_SUB_FMT_8(T)                      \
+T __attribute__((noinline))                         \
+sat_u_sub_##T##_fmt_8 (T x, T y)                    \
+{                                                   \
+  T ret;                                            \
+  T overflow = __builtin_sub_overflow (x, y, &ret); \
+  return ret & (T)-(!overflow);                     \
+}
+
 #define RUN_SAT_U_SUB_FMT_1(T, x, y) sat_u_sub_##T##_fmt_1(x, y)
 #define RUN_SAT_U_SUB_FMT_2(T, x, y) sat_u_sub_##T##_fmt_2(x, y)
 #define RUN_SAT_U_SUB_FMT_3(T, x, y) sat_u_sub_##T##_fmt_3(x, y)
@@ -136,6 +145,7 @@ sat_u_sub_##T##_fmt_7 (T x, T y)                    \
 #define RUN_SAT_U_SUB_FMT_5(T, x, y) sat_u_sub_##T##_fmt_5(x, y)
 #define RUN_SAT_U_SUB_FMT_6(T, x, y) sat_u_sub_##T##_fmt_6(x, y)
 #define RUN_SAT_U_SUB_FMT_7(T, x, y) sat_u_sub_##T##_fmt_7(x, y)
+#define RUN_SAT_U_SUB_FMT_8(T, x, y) sat_u_sub_##T##_fmt_8(x, y)
 
 #define DEF_VEC_SAT_U_SUB_FMT_1(T)                                   \
 void __attribute__((noinline))                                       \
