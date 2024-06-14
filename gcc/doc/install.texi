@@ -5178,8 +5178,7 @@ SuperH (sh-wince-pe), and MIPS (mips-wince-pe).
 @subheading Other Windows Platforms
 GCC no longer supports Windows NT on the Alpha or PowerPC.
 
-GCC no longer supports the Windows POSIX subsystem.  However, it does
-support the Interix subsystem.  See above.
+GCC no longer supports the Windows POSIX subsystem.
 
 Old target names including *-*-winnt and *-*-windowsnt are no longer used.
 
