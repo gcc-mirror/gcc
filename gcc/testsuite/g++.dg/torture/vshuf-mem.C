@@ -1,4 +1,4 @@
-// { dg-options "-std=c++11" }
+// { dg-options "-std=c++11 -Wno-psabi" }
 // { dg-do run }
 // { dg-additional-options "-march=z14" { target s390*-*-* } }
 
