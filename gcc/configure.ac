@@ -1320,7 +1320,7 @@ AC_SUBST(HAVE_PYTHON)
 # NM
 if test x${build} = x${host} && test -f $srcdir/../binutils/nm.c \
   && test -d ../binutils ; then
-  NM='${objdir}/../binutils/nm-new'
+  NM='../binutils/nm-new'
 else
   AC_CHECK_PROG(NM, nm, nm, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing nm)
 fi
@@ -1328,7 +1328,7 @@ fi
 # AR
 if test x${build} = x${host} && test -f $srcdir/../binutils/ar.c \
   && test -d ../binutils ; then
-  AR='${objdir}/../binutils/ar'
+  AR='../binutils/ar'
 else
   AC_CHECK_PROG(AR, ar, ar, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing ar)
 fi
@@ -3108,8 +3108,8 @@ AC_DEFINE_UNQUOTED(HAVE_GNU_INDIRECT_FUNCTION, $gif,
 
 
 changequote(,)dnl
+ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`
 if test $in_tree_ld != yes ; then
-  ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`
   if echo "$ld_ver" | grep GNU > /dev/null; then
     if test x"$ld_is_gold" = xyes; then
       # GNU gold --version looks like this:
