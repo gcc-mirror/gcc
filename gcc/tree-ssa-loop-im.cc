@@ -2298,7 +2298,7 @@ execute_sm (class loop *loop, im_mem_ref *ref,
   bool always_stored = ref_always_accessed_p (loop, ref, true);
   if (maybe_mt
       && (bb_in_transaction (loop_preheader_edge (loop)->src)
-	  || (! flag_store_data_races && ! always_stored)))
+	  || (ref_can_have_store_data_races (ref->mem.ref) && ! always_stored)))
     multi_threaded_model_p = true;
 
   if (multi_threaded_model_p && !use_other_flag_var)
