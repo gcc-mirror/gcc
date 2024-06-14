@@ -128,7 +128,8 @@ private:
  * rust-macro-builtins.{h,cc}.
  */
 using MacroTranscriberFunc
-  = std::function<tl::optional<Fragment> (location_t, MacroInvocData &)>;
+  = std::function<tl::optional<Fragment> (location_t, MacroInvocData &,
+					  bool semicolon)>;
 
 } // namespace AST
 } // namespace Rust

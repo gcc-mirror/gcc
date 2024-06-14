@@ -26,7 +26,7 @@ namespace Rust {
    during the compile time. */
 tl::optional<AST::Fragment>
 MacroBuiltin::compile_error_handler (location_t invoc_locus,
-				     AST::MacroInvocData &invoc)
+				     AST::MacroInvocData &invoc, bool semicolon)
 {
   auto lit_expr
     = parse_single_string_literal (BuiltinMacro::CompileError,
@@ -87,7 +87,7 @@ MacroBuiltin::compile_error_handler (location_t invoc_locus,
 // Can we do that easily?
 tl::optional<AST::Fragment>
 MacroBuiltin::concat_handler (location_t invoc_locus,
-			      AST::MacroInvocData &invoc)
+			      AST::MacroInvocData &invoc, bool semicolon)
 {
   auto invoc_token_tree = invoc.get_delim_tok_tree ();
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
@@ -151,7 +151,8 @@ MacroBuiltin::concat_handler (location_t invoc_locus,
 /* Expand builtin macro env!(), which inspects an environment variable at
    compile time. */
 tl::optional<AST::Fragment>
-MacroBuiltin::env_handler (location_t invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::env_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
+			   bool semicolon)
 {
   auto invoc_token_tree = invoc.get_delim_tok_tree ();
   MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
@@ -224,7 +225,8 @@ MacroBuiltin::env_handler (location_t invoc_locus, AST::MacroInvocData &invoc)
 }
 
 tl::optional<AST::Fragment>
-MacroBuiltin::cfg_handler (location_t invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::cfg_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
+			   bool semicolon)
 {
   // only parse if not already parsed
   if (!invoc.is_parsed ())
@@ -263,7 +265,7 @@ MacroBuiltin::cfg_handler (location_t invoc_locus, AST::MacroInvocData &invoc)
 
 tl::optional<AST::Fragment>
 MacroBuiltin::stringify_handler (location_t invoc_locus,
-				 AST::MacroInvocData &invoc)
+				 AST::MacroInvocData &invoc, bool semicolon)
 {
   std::string content;
   auto invoc_token_tree = invoc.get_delim_tok_tree ();

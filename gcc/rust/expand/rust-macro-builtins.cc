@@ -87,8 +87,8 @@ const BiMap<std::string, BuiltinMacro> MacroBuiltin::builtins = {{
 AST::MacroTranscriberFunc
 format_args_maker (AST::FormatArgs::Newline nl)
 {
-  return [nl] (location_t loc, AST::MacroInvocData &invoc) {
-    return MacroBuiltin::format_args_handler (loc, invoc, nl);
+  return [nl] (location_t loc, AST::MacroInvocData &invoc, bool semicolon) {
+    return MacroBuiltin::format_args_handler (loc, invoc, semicolon, nl);
   };
 }
 
@@ -103,9 +103,10 @@ inline_asm_maker (isGlobalAsm is_global_asm)
 {
   bool global_asm = is_global_asm == isGlobalAsm::Global ? true : false;
 
-  return [global_asm] (location_t loc, AST::MacroInvocData &invoc) {
-    return MacroBuiltin::asm_handler (loc, invoc, global_asm);
-  };
+  return
+    [global_asm] (location_t loc, AST::MacroInvocData &invoc, bool semicolon) {
+      return MacroBuiltin::asm_handler (loc, invoc, semicolon, global_asm);
+    };
 }
 
 std::unordered_map<std::string, AST::MacroTranscriberFunc>
@@ -167,7 +168,8 @@ builtin_macro_from_string (const std::string &identifier)
 }
 
 tl::optional<AST::Fragment>
-MacroBuiltin::sorry (location_t invoc_locus, AST::MacroInvocData &invoc)
+MacroBuiltin::sorry (location_t invoc_locus, AST::MacroInvocData &invoc,
+		     bool semicolon)
 {
   rust_sorry_at (invoc_locus, "unimplemented builtin macro: %qs",
 		 invoc.get_path ().as_string ().c_str ());
@@ -177,7 +179,7 @@ MacroBuiltin::sorry (location_t invoc_locus, AST::MacroInvocData &invoc)
 
 tl::optional<AST::Fragment>
 MacroBuiltin::proc_macro_builtin (location_t invoc_locus,
-				  AST::MacroInvocData &invoc)
+				  AST::MacroInvocData &invoc, bool semicolon)
 {
   rust_error_at (invoc_locus, "cannot invoke derive macro: %qs",
 		 invoc.get_path ().as_string ().c_str ());

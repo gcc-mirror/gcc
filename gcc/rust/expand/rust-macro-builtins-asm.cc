@@ -17,6 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-macro-builtins-asm.h"
+#include "rust-ast.h"
+#include "rust-stmt.h"
 
 namespace Rust {
 std::map<AST::InlineAsmOption, std::string> InlineAsmOptionMap{
@@ -535,9 +537,9 @@ parse_format_string (InlineAsmContext &inline_asm_ctx)
 
 tl::optional<AST::Fragment>
 MacroBuiltin::asm_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
-			   bool is_global_asm)
+			   bool semicolon, bool is_global_asm)
 {
-  return parse_asm (invoc_locus, invoc, is_global_asm);
+  return parse_asm (invoc_locus, invoc, is_global_asm, semicolon);
 }
 
 tl::expected<InlineAsmContext, std::string>
@@ -607,7 +609,7 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
-	   bool is_global_asm)
+	   bool is_global_asm, bool semicolon)
 {
   // From the rule of asm.
   // We first peek and see if it is a format string or not.
@@ -646,9 +648,18 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 
   if (is_valid)
     {
-      AST::SingleASTNode single = AST::SingleASTNode (
-	inline_asm_ctx.inline_asm.clone_expr_without_block ());
-      std::vector<AST::SingleASTNode> single_vec = {single};
+      auto node = inline_asm_ctx.inline_asm.clone_expr_without_block ();
+
+      std::vector<AST::SingleASTNode> single_vec = {};
+
+      // If the macro invocation has a semicolon (`asm!("...");`), then we need
+      // to make it a statement. This way, it will be expanded properly.
+      if (semicolon)
+	single_vec.emplace_back (
+	  AST::SingleASTNode (std::unique_ptr<AST::Stmt> (
+	    new AST::ExprStmt (std::move (node), invoc_locus, semicolon))));
+      else
+	single_vec.emplace_back (AST::SingleASTNode (std::move (node)));
 
       AST::Fragment fragment_ast
 	= AST::Fragment (single_vec,

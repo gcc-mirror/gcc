@@ -22,7 +22,7 @@
 namespace Rust {
 tl::optional<AST::Fragment>
 MacroBuiltin::assert_handler (location_t invoc_locus,
-			      AST::MacroInvocData &invoc)
+			      AST::MacroInvocData &invoc, bool semicolon)
 {
   rust_debug ("assert!() called");
 
