@@ -2339,29 +2339,29 @@ template <typename _Abi>
 		  __assert_unreachable<_Tp>();
 	      }
 	    else if constexpr (sizeof(__xi) == 64 && sizeof(_Tp) == 8)
-	      return ~_mm512_mask_cmpeq_epi64_mask(__k1, __xi, __yi);
+	      return _mm512_mask_cmpneq_epi64_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 64 && sizeof(_Tp) == 4)
-	      return ~_mm512_mask_cmpeq_epi32_mask(__k1, __xi, __yi);
+	      return _mm512_mask_cmpneq_epi32_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 64 && sizeof(_Tp) == 2)
-	      return ~_mm512_mask_cmpeq_epi16_mask(__k1, __xi, __yi);
+	      return _mm512_mask_cmpneq_epi16_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 64 && sizeof(_Tp) == 1)
-	      return ~_mm512_mask_cmpeq_epi8_mask(__k1, __xi, __yi);
+	      return _mm512_mask_cmpneq_epi8_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 32 && sizeof(_Tp) == 8)
-	      return ~_mm256_mask_cmpeq_epi64_mask(__k1, __xi, __yi);
+	      return _mm256_mask_cmpneq_epi64_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 32 && sizeof(_Tp) == 4)
-	      return ~_mm256_mask_cmpeq_epi32_mask(__k1, __xi, __yi);
+	      return _mm256_mask_cmpneq_epi32_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 32 && sizeof(_Tp) == 2)
-	      return ~_mm256_mask_cmpeq_epi16_mask(__k1, __xi, __yi);
+	      return _mm256_mask_cmpneq_epi16_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 32 && sizeof(_Tp) == 1)
-	      return ~_mm256_mask_cmpeq_epi8_mask(__k1, __xi, __yi);
+	      return _mm256_mask_cmpneq_epi8_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 16 && sizeof(_Tp) == 8)
-	      return ~_mm_mask_cmpeq_epi64_mask(__k1, __xi, __yi);
+	      return _mm_mask_cmpneq_epi64_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 16 && sizeof(_Tp) == 4)
-	      return ~_mm_mask_cmpeq_epi32_mask(__k1, __xi, __yi);
+	      return _mm_mask_cmpneq_epi32_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 16 && sizeof(_Tp) == 2)
-	      return ~_mm_mask_cmpeq_epi16_mask(__k1, __xi, __yi);
+	      return _mm_mask_cmpneq_epi16_mask(__k1, __xi, __yi);
 	    else if constexpr (sizeof(__xi) == 16 && sizeof(_Tp) == 1)
-	      return ~_mm_mask_cmpeq_epi8_mask(__k1, __xi, __yi);
+	      return _mm_mask_cmpneq_epi8_mask(__k1, __xi, __yi);
 	    else
 	      __assert_unreachable<_Tp>();
 	  }                                                   // }}}
@@ -5291,7 +5291,7 @@ template <typename _Abi>
       _S_find_last_set(simd_mask<_Tp, _Abi> __k)
       {
 	if constexpr (__is_avx512_abi<_Abi>())
-	  return std::__bit_width(__k._M_data._M_data) - 1;
+	  return std::__bit_width(_Abi::_S_masked(__k._M_data)._M_data) - 1;
 	else
 	  return _Base::_S_find_last_set(__k);
       }
