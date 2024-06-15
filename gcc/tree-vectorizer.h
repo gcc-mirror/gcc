@@ -2169,10 +2169,22 @@ vect_apply_runtime_profitability_check_p (loop_vec_info loop_vinfo)
 	  && th >= vect_vf_for_cost (loop_vinfo));
 }
 
+/* Return true if CODE is a lane-reducing opcode.  */
+
 inline bool
 lane_reducing_op_p (code_helper code)
 {
   return code == DOT_PROD_EXPR || code == WIDEN_SUM_EXPR || code == SAD_EXPR;
+}
+
+/* Return true if STMT is a lane-reducing statement.  */
+
+inline bool
+lane_reducing_stmt_p (gimple *stmt)
+{
+  if (auto *assign = dyn_cast <gassign *> (stmt))
+    return lane_reducing_op_p (gimple_assign_rhs_code (assign));
+  return false;
 }
 
 /* Source location + hotness information. */

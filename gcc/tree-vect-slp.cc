@@ -3919,7 +3919,6 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 	  scalar_stmts.create (loop_vinfo->reductions.length ());
 	  for (auto next_info : loop_vinfo->reductions)
 	    {
-	      gassign *g;
 	      next_info = vect_stmt_to_vectorize (next_info);
 	      if ((STMT_VINFO_RELEVANT_P (next_info)
 		   || STMT_VINFO_LIVE_P (next_info))
@@ -3931,8 +3930,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 		{
 		  /* Do not discover SLP reductions combining lane-reducing
 		     ops, that will fail later.  */
-		  if (!(g = dyn_cast <gassign *> (STMT_VINFO_STMT (next_info)))
-		      || !lane_reducing_op_p (gimple_assign_rhs_code (g)))
+		  if (!lane_reducing_stmt_p (STMT_VINFO_STMT (next_info)))
 		    scalar_stmts.quick_push (next_info);
 		  else
 		    {
