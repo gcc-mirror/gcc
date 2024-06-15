@@ -1,3 +1,93 @@
+2024-06-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_calc_operands): Do not continue nor
+	add the range when VARYING is produced for an operand.
+
+2024-06-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_lazy_cache::merge): New.
+	* gimple-range-cache.h (ssa_lazy_cache::merge): New prototype.
+
+2024-06-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_call): Ensure
+	LHS is an SSA_NAME before invoking gimple_range_global.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add more match for unsigned sat_sub.
+	* tree-ssa-math-opts.cc (match_unsigned_saturation_sub): Add new
+	func impl to match phi node for .SAT_SUB.
+	(math_opts_dom_walker::after_dom_children): Try match .SAT_SUB
+	for the phi node, MULT_EXPR, BIT_XOR_EXPR and BIT_AND_EXPR.
+
+2024-06-14  Jan Beulich  <jbeulich@suse.com>
+
+	* configure.ac: Drop ${objdir}/ from NM and AR. Move setting of
+	ld_ver out of conditional.
+	* configure: Re-generate.
+
+2024-06-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Allow
+	single-def-use cycles with SLP.
+	(vect_transform_reduction): Handle SLP single def-use cycles.
+	(vect_transform_cycle_phi): Likewise.
+
+2024-06-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (x86 Options): Consolidate duplicate MOVBE
+	listings for haswell, broadwell, skylake, skylake-avx512,
+	cannonlake, icelake-client, icelake-server, cascadelake,
+	cooperlake, tigerlake, sapphirerapids, rocketlake, graniterapids,
+	and graniterapids-d options to -march.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	PR target/115456
+	* config/riscv/vector-iterators.md: Leverage V_ZVFH instead of V
+	which contains the VF_ZVFHMIN for alignment.
+
+2024-06-14  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific): Remove stale reference to Interix.
+
+2024-06-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (get_group_load_store_type): Do not
+	re-use poly-int remain but re-compute with non-poly values.
+	Verify the shortened load is good enough to be covered with
+	a single scalar gap iteration before accepting it.
+
+2024-06-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_rtx_costs): Adjust rtx_cost for
+	pternlog_operand under AVX512, also adjust VEC_DUPLICATE
+	according since vec_dup:mem can't be that cheap.
+
+2024-06-14  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_ONE_IF_CONV_INSN): Remove
+	latest Intel processors.
+	Co-authored by: Lingling Kong <lingling.kong@intel.com>
+
+2024-06-14  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_ternlog): Try performing
+	logic operation in a different vector mode if that enables use of
+	a 32-bit or 64-bit broadcast addressing mode.
+
+2024-06-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/113212
+	* expr.h (const_seqpops): New typedef.
+	(expand_expr_real_2): Constify the first argument.
+	* optabs.cc (expand_widen_pattern_expr): Likewise.
+	* optabs.h (expand_widen_pattern_expr): Likewise.
+	* expr.cc (expand_expr_real_2):  Likewise
+	(do_store_flag): Likewise. Remove incorrect store to ops->code.
+
 2024-06-13  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* config/riscv/sync-rvwmo.md: Add support for subword fenced

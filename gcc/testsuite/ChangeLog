@@ -1,3 +1,137 @@
+2024-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/torture/vshuf-mem.C: Add -Wno-psabi to dg-options.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for test.
+	* gcc.target/riscv/sat_u_sub-37.c: New test.
+	* gcc.target/riscv/sat_u_sub-38.c: New test.
+	* gcc.target/riscv/sat_u_sub-39.c: New test.
+	* gcc.target/riscv/sat_u_sub-40.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-37.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-38.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-39.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-40.c: New test.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for test.
+	* gcc.target/riscv/sat_u_sub-33.c: New test.
+	* gcc.target/riscv/sat_u_sub-34.c: New test.
+	* gcc.target/riscv/sat_u_sub-35.c: New test.
+	* gcc.target/riscv/sat_u_sub-36.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-33.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-34.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-35.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-36.c: New test.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for test.
+	* gcc.target/riscv/sat_u_sub-29.c: New test.
+	* gcc.target/riscv/sat_u_sub-30.c: New test.
+	* gcc.target/riscv/sat_u_sub-31.c: New test.
+	* gcc.target/riscv/sat_u_sub-32.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-29.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-30.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-31.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-32.c: New test.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for test.
+	* gcc.target/riscv/sat_u_sub-25.c: New test.
+	* gcc.target/riscv/sat_u_sub-26.c: New test.
+	* gcc.target/riscv/sat_u_sub-27.c: New test.
+	* gcc.target/riscv/sat_u_sub-28.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-25.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-26.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-27.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-28.c: New test.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for test.
+	* gcc.target/riscv/sat_u_sub-21.c: New test.
+	* gcc.target/riscv/sat_u_sub-22.c: New test.
+	* gcc.target/riscv/sat_u_sub-23.c: New test.
+	* gcc.target/riscv/sat_u_sub-24.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-21.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-22.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-23.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-24.c: New test.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for test.
+	* gcc.target/riscv/sat_u_sub-17.c: New test.
+	* gcc.target/riscv/sat_u_sub-18.c: New test.
+	* gcc.target/riscv/sat_u_sub-19.c: New test.
+	* gcc.target/riscv/sat_u_sub-20.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-17.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-18.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-19.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-20.c: New test.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for test.
+	* gcc.target/riscv/sat_u_sub-13.c: New test.
+	* gcc.target/riscv/sat_u_sub-14.c: New test.
+	* gcc.target/riscv/sat_u_sub-15.c: New test.
+	* gcc.target/riscv/sat_u_sub-16.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-13.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-14.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-15.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-16.c: New test.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for test.
+	* gcc.target/riscv/sat_u_sub-10.c: New test.
+	* gcc.target/riscv/sat_u_sub-11.c: New test.
+	* gcc.target/riscv/sat_u_sub-12.c: New test.
+	* gcc.target/riscv/sat_u_sub-9.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-10.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-11.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-12.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-9.c: New test.
+
+2024-06-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/vect-strided-3.c: Disable SSE4 instead of AVX.
+
+2024-06-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-reduc-12.c: New testcase.
+
+2024-06-14  Pan Li  <pan2.li@intel.com>
+
+	PR target/115456
+	* gcc.target/riscv/rvv/base/pr115456-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr115456-3.c: New test.
+
+2024-06-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr115385.c: Enable AVX2 if available.
+
+2024-06-14  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx2-pr98461.c: Scan either notl or
+	vpternlog.
+	* gcc.target/i386/avx512f-pr96891-3.c: Also scan for inversed
+	condition.
+	* gcc.target/i386/avx512f-vpternlogd-3.c: Adjust vpternlog
+	number to 673.
+	* gcc.target/i386/avx512f-vpternlogd-4.c: Ditto.
+	* gcc.target/i386/avx512f-vpternlogd-5.c: Ditto.
+	* gcc.target/i386/sse2-v1ti-vne.c: Add -mno-avx512f.
+
+2024-06-14  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr115407.c: New test case.
+
 2024-06-14  Alexandre Oliva  <oliva@gnu.org>
 
 	Revert:

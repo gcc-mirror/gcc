@@ -1,3 +1,16 @@
+2024-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110572
+	* libsupc++/typeinfo (type_info::operator==): Add always_inline
+	attribute for targets where the ABI requries equality to be
+	non-inline.
+	* testsuite/18_support/type_info/110572.cc: New test.
+
+2024-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opa.cc [!_GLIBCXX_HOSTED]: Fix declaration of
+	posix_memalign.
+
 2024-06-13  Alexandre Oliva  <oliva@adacore.com>
 
 	PR libstdc++/114359

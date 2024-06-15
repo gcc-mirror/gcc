@@ -1,3 +1,235 @@
+2024-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (tmake_file): Remove all references.
+
+2024-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc: Include function.h.
+	(gnat_to_gnu_param): Minor comment tweaks.
+	(gnat_to_gnu_subprog_type): Take into account the default for the
+	computation of the return mechanism.  Give a warning if a by-copy
+	specified mechanism cannot be honored.
+
+2024-06-14  Yannick Moy  <moy@adacore.com>
+
+	* gcc-interface/trans.cc (elaborate_all_entities_for_package)
+	(process_freeze_entity): Skip entities of kind E_Subprogram_Body.
+
+2024-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/109817
+	* gcc-interface/trans.cc (maybe_make_gnu_thunk): Create an alias
+	instead of a null thunk.
+
+2024-06-14  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Typo fix.
+	(gnat_to_gnu_component_type): Indent fix.
+	* gcc-interface/gigi.h (build_call_alloc_dealloc): Typo fix.
+	* gcc-interface/utils.cc (make_dummy_type): Typo fix.
+	* gcc-interface/utils2.cc (gnat_protect_expr): Indent fix.
+
+2024-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* aspects.ads (Aspect_Id): Alphabetize, remove the GNAT tag from
+	Default_Initial_Condition and Object_Size, move No_Controlled_Parts
+	and No_Task_Parts to boolean subclass.
+	(Nonoverridable_Aspect_Id): Add missing Ada 2022 aspects.
+	(Implementation_Defined_Aspect): Add all missing aspects, remove
+	Max_Entry_Queue_Length and Object_Size
+	(Aspect_Argument): Remove specific entries for No_Controlled_Parts
+	and No_Task_Parts, list boolean aspects last.
+	(Is_Representation_Aspect ): Move boolean aspects last.
+	(Aspect_Names): Alphabetize.
+	* sem_ch13.adb (Analyze_Aspect_Disable_Controlled): Adjust.
+	(Analyze_Aspect_Specifications): Move around processing for
+	No_Controlled_Parts and No_Task_Parts.
+	(Check_Aspect_At_Freeze_Point): Remove specific entries for
+	No_Controlled_Parts and No_Task_Parts
+
+2024-06-14  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb
+	(Expand_Loop_Entry_Attribute):
+	Ensure that Etype of the saved expression is set correctly.
+
+2024-06-14  Jerome Guitton  <guitton@adacore.com>
+
+	* sysdep.c (S_dosFsLib_FILE_NOT_FOUND, S_nfsLib_NFSERR_NOENT):
+	New macros, falback to ENOENT when not already defined.
+	(__gnat_is_file_not_found_error): Use these new macros to remove
+	tests against VxWorks flavors.
+
+2024-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* snames.ads-tmpl (Name_Present): Move to Repinfo section.
+
+2024-06-14  Justin Squirek  <squirek@adacore.com>
+
+	* doc/gnat_rm/gnat_language_extensions.rst: Add documentation for
+	mutably tagged type feature.
+	* aspects.ads: Add registration for 'Size'Class.
+	* einfo.ads: Add documentation for new components
+	Class_Wide_Equivalent_Type and Is_Mutably_Tagged_Type.
+	* exp_aggr.adb (Gen_Assign): Assume associated mutably tagged type
+	when class-wide equivalent type is encountered.
+	(Contains_Mutably_Tagged_Type): New subprogram.
+	(Convert_To_Positional): Assume associated mutably tagged type
+	when class-wide equivalent type is encountered.
+	(Is_Static_Element): Assume associated mutably tagged type when
+	class-wide equivalent type is encountered.
+	(Expand_Array_Aggregate): Assume associated mutably tagged type
+	when class-wide equivalent type is encountered.
+	(Expand_Record_Aggregate): Force mutably tagged records to be
+	expanded into assignments.
+	* exp_ch3.adb (Build_Array_Init_Proc): Assume associated mutably
+	tagged type when class-wide equivalent type is encountered.
+	(Simple_Initialization_OK): Disallow simple initialization for
+	class-wide equivalent types.
+	(Build_Init_Statements): Assume associated mutably tagged type
+	when class-wide equivalent type is encountered.
+	(Expand_Freeze_Array_Type): Ignore building of record init procs
+	for mutably tagged types.
+	(Expand_N_Full_Type_Declaration): Replace mutably tagged type
+	declarations with their associated class-wide equivalent types.
+	(Default_Initialize_Object): Add special handling for mutably
+	tagged types.
+	* exp_ch4.adb (Expand_N_Allocator): Add initialization for mutably
+	tagged types.
+	(Expand_Record_Equality): Generate mutably tagged unchecked
+	conversions.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Generate a special
+	assignment case for class-wide equivalent types which does tag
+	assignments and ignores certain checks.
+	* exp_ch6.adb (Expand_Call_Helper): Propagate constrained extra
+	formal actuals for mutably tagged types.
+	* exp_ch7.adb (Make_Init_Call): Handle mutably tagged type
+	initialization.
+	* exp_util.adb (Make_CW_Equivalent_Type): Modify to handle mutably
+	tagged objects which contain no initialization expression.
+	(Make_Subtype_From_Expr): Modify call to Make_CW_Equivalent_Type.
+	* exp_util.ads (Make_CW_Equivalent_Type): Move declaration from
+	body to spec.
+	* freeze.adb (Size_Known): No longer return false automatically
+	when a class-wide type is encountered.
+	(Freeze_Entity): Ignore error messages about size not being known
+	for mutably tagged types.
+	* gen_il-fields.ads: Register new fields
+	Class_Wide_Equivalent_Type and Is_Mutably_Tagged_Type.
+	* gen_il-gen-gen_entities.adb: Register new fields
+	Class_Wide_Equivalent_Type and Is_Mutably_Tagged_Type for type
+	entities.
+	* mutably_tagged.adb, mutably_tagged.ads
+	(Corresponding_Mutably_Tagged_Type): New subprogram.
+	(Depends_On_Mutably_Tagged_Ext_Comp): New subprogram.
+	(Get_Corresponding_Mutably_Tagged_Type_If_Present): New
+	subprogram.
+	(Get_Corresponding_Tagged_Type_If_Present): New subprogram.
+	(Is_Mutably_Tagged_Conversion): New subprogram.
+	(Is_Mutably_Tagged_CW_Equivalent_Type): New subprogram.
+	(Make_Mutably_Tagged_Conversion): New subprogram.
+	(Make_CW_Size_Compile_Check): New subprogram.
+	(Make_Mutably_Tagged_CW_Check): New subprogram.
+	* sem_aggr.adb (Resolve_Array_Aggregate): Skip tag checks for
+	class-wide equivalent types.
+	(Resolve_Aggr_Expr): Assume associated mutably tagged type when
+	class-wide equivalent type is encountered.
+	* sem_attr.adb (Analyze_Attribute): Allow 'Tag on mutably tagged
+	types.
+	(Resolve_Attribute): Detect errors for dependence of mutably
+	tagged extension type component.
+	* sem_ch12.adb (Instantiate_Object): Detect errors for dependence
+	of mutably tagged extension type component.
+	* sem_ch13.adb (Analyze_One_Aspect): Propagate 'Size'Class to
+	class-wide type.
+	(Analyze_Attribute_Definition_Clause): Add handling of 'Size'Class
+	by generating class-wide equivalent types and checking for illegal
+	uses.
+	* sem_ch2.adb (Analyze_Identifier): Generate unchecked conversion
+	for class-wide equivalent types.
+	* sem_ch3.adb (Analyze_Component_Declaration): Avoid unconstrained
+	errors on mutably tagged types.
+	(Analyze_Object_Declaration): Rewrite declarations of mutably
+	tagged types to use class-wide equivalent types.
+	(Array_Type_Declaration): Modify arrays of mutably tagged types to
+	use their corresponding class-wide equivalent types.
+	(Derived_Type_Declaration): Add various checks for mutably tagged
+	derived types.
+	* sem_ch4.adb (Analyze_Allocator): Replace reference to mutably
+	tagged type with cooresponding tagged type.
+	(Process_Indexed_Component): Generate unchecked conversion for
+	class-wide equivalent type.
+	(Analyze_One_Call): Generate unchecked conversion for class-wide
+	equivalent types.
+	(Analyze_Selected_Component): Assume reference to class-wide
+	equivalent type is associated mutably tagged type.
+	(Analyze_Type_Conversion): Generate unchecked conversion for
+	class-wide equivalent type.
+	* sem_ch5.adb (Analyze_Assignment): Assume associated mutably
+	tagged type when class-wide equivalent type is encountered.
+	(Analyze_Iterator_Specification): Detect errors for dependence of
+	mutably tagged extension type component.
+	* sem_ch6.adb (Create_Extra_Formals): Add code to generate extra
+	formal for mutably tagged types to signal if they are constrained.
+	* sem_ch8.adb (Analyze_Object_Renaming): Detect error on renaming
+	of mutably tagged extension type component.
+	(Analyze_Renaming_Primitive_Operation): Detect error on renaming
+	of mutably tagged extension type component.
+	* sem_res.adb (Resolve_Actuals): Allow class-wide arguments on
+	class-wide equivalent types.
+	(Valid_Conversion): Assume associated mutably tagged type when
+	class-wide equivalent type is encountered.
+	* sem_util.adb (Is_Fully_Initialized_Type): Flag mutably tagged
+	types as fully initialized.
+	(Needs_Simple_Initalization): Flag class-wide equivalent types as
+	needing initialization.
+	* gnat_rm.texi: Regenerate.
+	* gcc-interface/Make-lang.in: Add entry for mutably_tagged.o.
+
+2024-06-14  Justin Squirek  <squirek@adacore.com>
+
+	* accessibility.adb:
+	(Accessibility_Level): Replace call Get_Full_View with call to
+	Full_View since Get_Full_View only works with incomplete types.
+
+2024-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* aspects.ads (Operational_Aspect): Alphabetize.
+	* sem_ch13.ads (Analyze_Aspects_At_Freeze_Point): Fix description.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point) <Aggregate>: Give
+	the error for array types here instead of...
+	(Analyze_Aspect_Specifications) <Aggregate>: Adjust comment.
+	(Check_Aspect_At_Freeze_Point) <Aggregate>: ...here.
+
+2024-06-14  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Must_Slide): Add missing support for
+	multidimensional arrays.
+
+2024-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_All): Call Check_Aspects_At_End_Of_Declarations
+	to perform the visibility check for aspects.
+	* sem_ch13.ads (Check_Aspects_At_End_Of_Declarations): Declare.
+	(Check_Aspect_At_Freeze_Point): Move to...
+	(Check_Aspect_At_End_Of_Declarations): Move to...
+	* sem_ch13.adb 	(Check_Aspect_At_Freeze_Point): ...here.
+	(Check_Aspect_At_End_Of_Declarations): ...here.
+	(Analyze_Aspect_Specifications): Remove peculiar processing for
+	Stable_Properties, Designated_Storage_Model, Storage_Model_Type
+	and Aggregate.  Move that of Local_Restrictions around.  Reset
+	Aitem at the beginning of the loop for each aspect.
+	(Check_Aspects_At_End_Of_Declarations): New procedure.
+
+2024-06-14  Justin Squirek  <squirek@adacore.com>
+
+	* sem_attr.adb:
+	(Analyze_Attribute): Add check for dereference.
+
+2024-06-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* snames.ads-tmpl (Name_Storage_Model): Delete.
+
 2024-06-14  Alexandre Oliva  <oliva@gnu.org>
 
 	Revert:
