@@ -3681,6 +3681,27 @@ loongarch_set_reg_reg_piece_cost (machine_mode mode, unsigned int units)
   return COSTS_N_INSNS ((GET_MODE_SIZE (mode) + units - 1) / units);
 }
 
+static int
+loongarch_use_bstrins_for_ior_with_mask_1 (machine_mode mode,
+					   unsigned HOST_WIDE_INT mask1,
+					   unsigned HOST_WIDE_INT mask2)
+{
+  if (mask1 != ~mask2 || !mask1 || !mask2)
+    return 0;
+
+  /* Try to avoid a right-shift.  */
+  if (low_bitmask_len (mode, mask1) != -1)
+    return -1;
+
+  if (low_bitmask_len (mode, mask2 >> (ffs_hwi (mask2) - 1)) != -1)
+    return 1;
+
+  if (low_bitmask_len (mode, mask1 >> (ffs_hwi (mask1) - 1)) != -1)
+    return -1;
+
+  return 0;
+}
+
 /* Return the cost of moving between two registers of mode MODE.  */
 
 static int
@@ -3812,6 +3833,38 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
       /* Fall through.  */
 
     case IOR:
+      {
+	rtx op[2] = {XEXP (x, 0), XEXP (x, 1)};
+	if (GET_CODE (op[0]) == AND && GET_CODE (op[1]) == AND
+	    && (mode == SImode || (TARGET_64BIT && mode == DImode)))
+	  {
+	    rtx rtx_mask0 = XEXP (op[0], 1), rtx_mask1 = XEXP (op[1], 1);
+	    if (CONST_INT_P (rtx_mask0) && CONST_INT_P (rtx_mask1))
+	      {
+		unsigned HOST_WIDE_INT mask0 = UINTVAL (rtx_mask0);
+		unsigned HOST_WIDE_INT mask1 = UINTVAL (rtx_mask1);
+		if (loongarch_use_bstrins_for_ior_with_mask_1 (mode,
+							       mask0,
+							       mask1))
+		  {
+		    /* A bstrins instruction */
+		    *total = COSTS_N_INSNS (1);
+
+		    /* A srai instruction */
+		    if (low_bitmask_len (mode, mask0) == -1
+			&& low_bitmask_len (mode, mask1) == -1)
+		      *total += COSTS_N_INSNS (1);
+
+		    for (int i = 0; i < 2; i++)
+		      *total += set_src_cost (XEXP (op[i], 0), mode, speed);
+
+		    return true;
+		  }
+	      }
+	  }
+      }
+
+      /* Fall through.  */
     case XOR:
       /* Double-word operations use two single-word operations.  */
       *total = loongarch_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (2),
@@ -5796,23 +5849,9 @@ bool loongarch_pre_reload_split (void)
 int
 loongarch_use_bstrins_for_ior_with_mask (machine_mode mode, rtx *op)
 {
-  unsigned HOST_WIDE_INT mask1 = UINTVAL (op[2]);
-  unsigned HOST_WIDE_INT mask2 = UINTVAL (op[4]);
-
-  if (mask1 != ~mask2 || !mask1 || !mask2)
-    return 0;
-
-  /* Try to avoid a right-shift.  */
-  if (low_bitmask_len (mode, mask1) != -1)
-    return -1;
-
-  if (low_bitmask_len (mode, mask2 >> (ffs_hwi (mask2) - 1)) != -1)
-    return 1;
-
-  if (low_bitmask_len (mode, mask1 >> (ffs_hwi (mask1) - 1)) != -1)
-    return -1;
-
-  return 0;
+  return loongarch_use_bstrins_for_ior_with_mask_1 (mode,
+						    UINTVAL (op[2]),
+						    UINTVAL (op[4]));
 }
 
 /* Rewrite a MEM for simple load/store under -mexplicit-relocs=auto
