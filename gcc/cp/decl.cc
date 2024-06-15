@@ -18564,15 +18564,18 @@ finish_function (bool inline_p)
   tree fndecl = current_function_decl;
   tree fntype, ctype = NULL_TREE;
   tree resumer = NULL_TREE, destroyer = NULL_TREE;
-  bool coro_p = flag_coroutines
-		&& !processing_template_decl
-		&& DECL_COROUTINE_P (fndecl);
-  bool coro_emit_helpers = false;
 
   /* When we get some parse errors, we can end up without a
      current_function_decl, so cope.  */
-  if (fndecl == NULL_TREE)
+  if (fndecl == NULL_TREE || fndecl == error_mark_node)
     return error_mark_node;
+
+  bool coro_p = (flag_coroutines
+		 && !processing_template_decl
+		 && DECL_COROUTINE_P (fndecl));
+  bool coro_emit_helpers = false;
+  bool do_contracts = (DECL_HAS_CONTRACTS_P (fndecl)
+		       && !processing_template_decl);
 
   if (!DECL_OMP_DECLARE_REDUCTION_P (fndecl))
     finish_lambda_scope ();
@@ -18609,6 +18612,10 @@ finish_function (bool inline_p)
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (fndecl)),
 			      current_eh_spec_block);
+
+     /* If outlining succeeded, then add contracts handling if needed.  */
+     if (coro_emit_helpers && do_contracts)
+	maybe_apply_function_contracts (fndecl);
     }
   else
   /* For a cloned function, we've already got all the code we need;
@@ -18624,6 +18631,10 @@ finish_function (bool inline_p)
 	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
 			      (TREE_TYPE (current_function_decl)),
 			      current_eh_spec_block);
+
+     if (do_contracts)
+	maybe_apply_function_contracts (current_function_decl);
+
     }
 
   /* If we're saving up tree structure, tie off the function now.  */
@@ -18876,10 +18887,10 @@ finish_function (bool inline_p)
   --function_depth;
 
   /* Clean up.  */
-  current_function_decl = NULL_TREE;
-
   invoke_plugin_callbacks (PLUGIN_FINISH_PARSE_FUNCTION, fndecl);
 
+  /* If we have used outlined contracts checking functions, build and emit
+     them here.  */
   finish_function_contracts (fndecl);
 
   return fndecl;

@@ -7876,6 +7876,14 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 				      non_constant_p, overflow_p);
       break;
 
+    case EH_ELSE_EXPR:
+      /* Evaluate any cleanup that applies to non-EH exits.  */
+      cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0), vc_discard,
+				    non_constant_p, overflow_p);
+
+      /* We do not have constexpr exceptions yet, so skip the EH path.  */
+      break;
+
     case CLEANUP_STMT:
       r = cxx_eval_constant_expression (ctx, CLEANUP_BODY (t), lval,
 					non_constant_p, overflow_p,
