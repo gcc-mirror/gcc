@@ -1,3 +1,11 @@
+2024-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opa.cc [!_GLIBCXX_HOSTED]: Fix declaration of
+	posix_memalign.
+
 2024-06-10  Matthias Kretz  <m.kretz@gsi.de>
 
 	Backported from master:
