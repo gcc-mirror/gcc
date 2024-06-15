@@ -1,7 +1,7 @@
 /* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-std=c99" } */
 
-#include "../../../sat_arith.h"
+#include "vec_sat_arith.h"
 
 #define T                  uint8_t
 #define N                  16
