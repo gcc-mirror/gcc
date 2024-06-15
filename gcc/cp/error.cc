@@ -1936,6 +1936,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 	dump_type_suffix (pp, ret, flags);
       else if (deduction_guide_p (t))
 	{
+	  pp->set_padding (pp_before);
 	  pp_cxx_ws_string (pp, "->");
 	  dump_type (pp, TREE_TYPE (TREE_TYPE (t)), flags);
 	}

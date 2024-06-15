@@ -2589,6 +2589,9 @@ public:
     void add_partial_entities (vec<tree, va_gc> *);
     void add_class_entities (vec<tree, va_gc> *);
 
+  private:
+    void add_deduction_guides (tree decl);
+
   public:    
     void find_dependencies (module_state *);
     bool finalize_dependencies ();
@@ -13172,6 +13175,15 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	/* Ignore NTTP objects.  */
 	return false;
 
+      if (deduction_guide_p (decl))
+	{
+	  /* Ignore deduction guides, bindings for them will be created within
+	     find_dependencies for their class template.  But still build a dep
+	     for them so that we don't discard them.  */
+	  data->hash->make_dependency (decl, EK_FOR_BINDING);
+	  return false;
+	}
+
       if (!(flags & WMB_Using) && CP_DECL_CONTEXT (decl) != data->ns)
 	{
 	  /* An unscoped enum constant implicitly brought into the containing
@@ -13600,6 +13612,50 @@ find_pending_key (tree decl, tree *decl_p = nullptr)
   return ns;
 }
 
+/* Creates bindings and dependencies for all deduction guides of
+   the given class template DECL as needed.  */
+
+void
+depset::hash::add_deduction_guides (tree decl)
+{
+  /* Alias templates never have deduction guides.  */
+  if (DECL_ALIAS_TEMPLATE_P (decl))
+    return;
+
+  /* We don't need to do anything for class-scope deduction guides,
+     as they will be added as members anyway.  */
+  if (!DECL_NAMESPACE_SCOPE_P (decl))
+    return;
+
+  tree ns = CP_DECL_CONTEXT (decl);
+  tree name = dguide_name (decl);
+
+  /* We always add all deduction guides with a given name at once,
+     so if there's already a binding there's nothing to do.  */
+  if (find_binding (ns, name))
+    return;
+
+  tree guides = lookup_qualified_name (ns, name, LOOK_want::NORMAL,
+				       /*complain=*/false);
+  if (guides == error_mark_node)
+    return;
+
+  /* We have bindings to add.  */
+  depset *binding = make_binding (ns, name);
+  add_namespace_context (binding, ns);
+
+  depset **slot = binding_slot (ns, name, /*insert=*/true);
+  *slot = binding;
+
+  for (lkp_iterator it (guides); it; ++it)
+    {
+      gcc_checking_assert (!TREE_VISITED (*it));
+      depset *dep = make_dependency (*it, EK_FOR_BINDING);
+      binding->deps.safe_push (dep);
+      dep->deps.safe_push (binding);
+    }
+}
+
 /* Iteratively find dependencies.  During the walk we may find more
    entries on the same binding that need walking.  */
 
@@ -13658,6 +13714,10 @@ depset::hash::find_dependencies (module_state *module)
 		    walker.write_definition (decl);
 		}
 	      walker.end ();
+
+	      if (!walker.is_key_order ()
+		  && DECL_CLASS_TEMPLATE_P (decl))
+		add_deduction_guides (decl);
 
 	      if (!walker.is_key_order ()
 		  && TREE_CODE (decl) == TEMPLATE_DECL
@@ -15157,6 +15217,11 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		    if (dep->is_hidden ())
 		      flags |= cbf_hidden;
 		    else if (DECL_MODULE_EXPORT_P (STRIP_TEMPLATE (bound)))
+		      flags |= cbf_export;
+		    else if (deduction_guide_p (bound))
+		      /* Deduction guides are always exported so that they are
+			 visible to name lookup whenever their class template
+			 is reachable.  */
 		      flags |= cbf_export;
 		  }
 
