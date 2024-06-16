@@ -31656,9 +31656,6 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   condition = cp_parser_conditional_expression (parser);
   --processing_contract_condition;
 
-  /* revert (any) constification of the current class object */
-  current_class_ref = saved_ccr;
-
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
       error_at (input_location,
 		"expected conditional-expression");
