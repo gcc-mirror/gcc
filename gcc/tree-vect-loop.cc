@@ -7868,10 +7868,10 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   if (lane_reducing)
     STMT_VINFO_REDUC_VECTYPE_IN (stmt_info) = vectype_in;
 
-  enum vect_reduction_type v_reduc_type = STMT_VINFO_REDUC_TYPE (phi_info);
-  STMT_VINFO_REDUC_TYPE (reduc_info) = v_reduc_type;
+  enum vect_reduction_type reduction_type = STMT_VINFO_REDUC_TYPE (phi_info);
+  STMT_VINFO_REDUC_TYPE (reduc_info) = reduction_type;
   /* If we have a condition reduction, see if we can simplify it further.  */
-  if (v_reduc_type == COND_REDUCTION)
+  if (reduction_type == COND_REDUCTION)
     {
       if (slp_node && SLP_TREE_LANES (slp_node) != 1)
 	return false;
@@ -8038,7 +8038,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   STMT_VINFO_REDUC_CODE (reduc_info) = orig_code;
 
-  vect_reduction_type reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
+  reduction_type = STMT_VINFO_REDUC_TYPE (reduc_info);
   if (reduction_type == TREE_CODE_REDUCTION)
     {
       /* Check whether it's ok to change the order of the computation.
