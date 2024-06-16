@@ -627,6 +627,21 @@
   "bseti\t%0,%1,%S2"
   [(set_attr "type" "bitmanip")])
 
+;; We can easily handle zero extensions
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+    (any_or:DI (zero_extend:DI
+		 (ashift:SI (const_int 1)
+			    (match_operand:QI 1 "register_operand")))
+	       (match_operand:DI 2 "single_bit_mask_operand")))
+   (clobber (match_operand:DI 3 "register_operand"))]
+  "TARGET_64BIT && TARGET_ZBS"
+  [(set (match_dup 3)
+        (match_dup 2))
+   (set (match_dup 0)
+     (any_or:DI (ashift:DI (const_int 1) (match_dup 1))
+		(match_dup 3)))])
+
 (define_insn "*bclr<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (rotate:X (const_int -2)
