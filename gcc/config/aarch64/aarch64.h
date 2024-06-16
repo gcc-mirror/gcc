@@ -1059,7 +1059,7 @@ typedef struct GTY (()) machine_function
 {
   struct aarch64_frame frame;
   /* One entry for each hard register.  */
-  bool reg_is_wrapped_separately[LAST_SAVED_REGNUM];
+  bool reg_is_wrapped_separately[LAST_SAVED_REGNUM + 1];
   /* One entry for each general purpose register.  */
   rtx call_via[SP_REGNUM];
 
