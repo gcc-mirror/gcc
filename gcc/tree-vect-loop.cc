@@ -8618,7 +8618,8 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
     }
 
   bool single_defuse_cycle = STMT_VINFO_FORCE_SINGLE_CYCLE (reduc_info);
-  gcc_assert (single_defuse_cycle || lane_reducing_op_p (code));
+  bool lane_reducing = lane_reducing_op_p (code);
+  gcc_assert (single_defuse_cycle || lane_reducing);
 
   /* Create the destination vector  */
   tree scalar_dest = gimple_get_lhs (stmt_info->stmt);
@@ -8674,8 +8675,9 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
       tree vop[3] = { vec_oprnds[0][i], vec_oprnds[1][i], NULL_TREE };
       if (masked_loop_p && !mask_by_cond_expr)
 	{
-	  /* No conditional ifns have been defined for dot-product yet.  */
-	  gcc_assert (code != DOT_PROD_EXPR);
+	  /* No conditional ifns have been defined for lane-reducing op
+	     yet.  */
+	  gcc_assert (!lane_reducing);
 
 	  /* Make sure that the reduction accumulator is vop[0].  */
 	  if (reduc_index == 1)
