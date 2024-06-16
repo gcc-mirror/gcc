@@ -31563,20 +31563,11 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	  ++processing_template_decl;
 	}
 
-      /* if we have a current class object, constify it before processing
-       *  the contract condition */
-      tree current_class_ref_copy = current_class_ref;
-      if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst && current_class_ref)
-        current_class_ref = view_as_const (current_class_ref);
-
       /* Parse the condition, ensuring that parameters or the return variable
 	 aren't flagged for use outside the body of a function.  */
       ++processing_contract_condition;
       cp_expr condition = cp_parser_conditional_expression (parser);
       --processing_contract_condition;
-
-      /* revert (any) constification of the current class object */
-      current_class_ref = current_class_ref_copy;
 
       if (!attr_mode)
 	  parens.require_close (parser);
