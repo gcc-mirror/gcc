@@ -31657,7 +31657,6 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 
   /* if we have a current class object, constify it before processing
    *  the contract condition */
-  tree current_class_ref_copy = current_class_ref;
   if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst && current_class_ref)
     current_class_ref = view_as_const (current_class_ref);
 
@@ -31668,7 +31667,7 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   --processing_contract_condition;
 
   /* revert (any) constification of the current class object */
-  current_class_ref = current_class_ref_copy;
+  current_class_ref = saved_ccr;
 
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
       error_at (input_location,
