@@ -8580,9 +8580,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 
   /* Transform.  */
   tree new_temp = NULL_TREE;
-  auto_vec<tree> vec_oprnds0;
-  auto_vec<tree> vec_oprnds1;
-  auto_vec<tree> vec_oprnds2;
+  auto_vec<tree> vec_oprnds[3];
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform reduction.\n");
@@ -8630,14 +8628,15 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
      definition.  */
   if (!cond_fn_p)
     {
+      gcc_assert (reduc_index >= 0 && reduc_index <= 2);
       vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
 			 single_defuse_cycle && reduc_index == 0
-			 ? NULL_TREE : op.ops[0], &vec_oprnds0,
+			 ? NULL_TREE : op.ops[0], &vec_oprnds[0],
 			 single_defuse_cycle && reduc_index == 1
-			 ? NULL_TREE : op.ops[1], &vec_oprnds1,
+			 ? NULL_TREE : op.ops[1], &vec_oprnds[1],
 			 op.num_ops == 3
 			 && !(single_defuse_cycle && reduc_index == 2)
-			 ? op.ops[2] : NULL_TREE, &vec_oprnds2);
+			 ? op.ops[2] : NULL_TREE, &vec_oprnds[2]);
     }
   else
     {
@@ -8645,12 +8644,12 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	 vectype.  */
       gcc_assert (single_defuse_cycle
 		  && (reduc_index == 1 || reduc_index == 2));
-      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
-			 op.ops[0], truth_type_for (vectype_in), &vec_oprnds0,
+      vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies, op.ops[0],
+			 truth_type_for (vectype_in), &vec_oprnds[0],
 			 reduc_index == 1 ? NULL_TREE : op.ops[1],
-			 NULL_TREE, &vec_oprnds1,
+			 NULL_TREE, &vec_oprnds[1],
 			 reduc_index == 2 ? NULL_TREE : op.ops[2],
-			 NULL_TREE, &vec_oprnds2);
+			 NULL_TREE, &vec_oprnds[2]);
     }
 
   /* For single def-use cycles get one copy of the vectorized reduction
@@ -8658,20 +8657,21 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   if (single_defuse_cycle)
     {
       vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, 1,
-			 reduc_index == 0 ? op.ops[0] : NULL_TREE, &vec_oprnds0,
-			 reduc_index == 1 ? op.ops[1] : NULL_TREE, &vec_oprnds1,
+			 reduc_index == 0 ? op.ops[0] : NULL_TREE,
+			 &vec_oprnds[0],
+			 reduc_index == 1 ? op.ops[1] : NULL_TREE,
+			 &vec_oprnds[1],
 			 reduc_index == 2 ? op.ops[2] : NULL_TREE,
-			 &vec_oprnds2);
+			 &vec_oprnds[2]);
     }
 
   bool emulated_mixed_dot_prod = vect_is_emulated_mixed_dot_prod (stmt_info);
+  unsigned num = vec_oprnds[reduc_index == 0 ? 1 : 0].length ();
 
-  unsigned num = (reduc_index == 0
-		  ? vec_oprnds1.length () : vec_oprnds0.length ());
   for (unsigned i = 0; i < num; ++i)
     {
       gimple *new_stmt;
-      tree vop[3] = { vec_oprnds0[i], vec_oprnds1[i], NULL_TREE };
+      tree vop[3] = { vec_oprnds[0][i], vec_oprnds[1][i], NULL_TREE };
       if (masked_loop_p && !mask_by_cond_expr)
 	{
 	  /* No conditional ifns have been defined for dot-product yet.  */
@@ -8696,7 +8696,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
       else
 	{
 	  if (op.num_ops >= 3)
-	    vop[2] = vec_oprnds2[i];
+	    vop[2] = vec_oprnds[2][i];
 
 	  if (masked_loop_p && mask_by_cond_expr)
 	    {
@@ -8727,14 +8727,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	}
 
       if (single_defuse_cycle && i < num - 1)
-	{
-	  if (reduc_index == 0)
-	    vec_oprnds0.safe_push (gimple_get_lhs (new_stmt));
-	  else if (reduc_index == 1)
-	    vec_oprnds1.safe_push (gimple_get_lhs (new_stmt));
-	  else if (reduc_index == 2)
-	    vec_oprnds2.safe_push (gimple_get_lhs (new_stmt));
-	}
+	vec_oprnds[reduc_index].safe_push (gimple_get_lhs (new_stmt));
       else if (slp_node)
 	slp_node->push_vec_def (new_stmt);
       else
