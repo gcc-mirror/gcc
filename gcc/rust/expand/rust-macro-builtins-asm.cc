@@ -35,6 +35,8 @@ std::map<AST::InlineAsmOption, std::string> InlineAsmOptionMap{
   {AST::InlineAsmOption::RAW, "raw"},
 };
 
+std::set<std::string> potentially_nonpromoted_keywords
+  = {"in", "out", "lateout", "inout", "inlateout", "const", "sym", "label"};
 tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_clobber_abi (InlineAsmContext inline_asm_ctx)
 {
@@ -426,11 +428,10 @@ check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
       inline_asm.options.insert (option);
     }
 }
-int
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_options (InlineAsmContext &inline_asm_ctx)
 {
   auto &parser = inline_asm_ctx.parser;
-  auto last_token_id = inline_asm_ctx.last_token_id;
   bool is_global_asm = inline_asm_ctx.inline_asm.is_global_asm;
   // Parse everything commitedly
   if (!parser.skip_token (LEFT_PAREN))
@@ -438,11 +439,11 @@ parse_options (InlineAsmContext &inline_asm_ctx)
       // We have shifted `options` to search for the left parenthesis next, we
       // should error out if this is not possible.
       // TODO: report some error.
-      return -1;
+      return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
 
   auto token = parser.peek_current_token ();
-  while (token->get_id () != last_token_id && token->get_id () != RIGHT_PAREN)
+  while (!parser.skip_token (RIGHT_PAREN))
     {
       if (!is_global_asm && check_identifier (parser, "pure"))
 	{
@@ -489,7 +490,7 @@ parse_options (InlineAsmContext &inline_asm_ctx)
 			 ")", "att_syntax", "may_unwind", "nomem", "noreturn",
 			 "nostack", "preserves_flags", "pure", "raw",
 			 "readonly", token->as_string ().c_str ());
-	  return -1;
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
       if (parser.skip_token (RIGHT_PAREN))
 	{
@@ -505,7 +506,8 @@ parse_options (InlineAsmContext &inline_asm_ctx)
 	{
 	  rust_unreachable ();
 	  token = parser.peek_current_token ();
-	  return -1;
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
+	  ;
 	}
     }
 
@@ -514,7 +516,7 @@ parse_options (InlineAsmContext &inline_asm_ctx)
   // let new_span = span_start.to(p.prev_token.span);
   // args.options_spans.push(new_span);
 
-  return 0;
+  return inline_asm_ctx;
 }
 
 bool
@@ -599,10 +601,14 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 	  inline_asm_ctx.consumed_comma_without_formatted_string = false;
 	  parser.skip_token ();
 	}
-      else
+      else if (token->get_id () == COMMA
+	       && inline_asm_ctx.consumed_comma_without_formatted_string)
 	{
-	  // TODO: we consumed comma, and there happens to also be a comma
+	  // We consumed comma, and there happens to also be a comma
 	  // error should be: expected expression, found `,`
+	  rust_error_at (token->get_locus (), "expected expression, found %qs",
+			 ",");
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	  break;
 	}
 
@@ -620,14 +626,20 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
       // TODO: Parse clobber abi, eat the identifier named "clobber_abi" if true
       if (check_identifier (parser, "clobber_abi"))
 	{
-	  parse_clobber_abi (inline_asm_ctx);
+	  auto expected = parse_clobber_abi (inline_asm_ctx);
+	  if (expected || expected.error () == COMMITTED)
+	    return expected;
+
 	  continue;
 	}
 
       // TODO: Parse options
       if (check_identifier (parser, "options"))
 	{
-	  parse_options (inline_asm_ctx);
+	  auto expected = parse_options (inline_asm_ctx);
+	  if (expected || expected.error () == COMMITTED)
+	    return expected;
+
 	  continue;
 	}
 
@@ -636,7 +648,10 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
       // std::cout << "reg_operand" << std::endl;
 
       // TODO: BUBBLE UP THIS EXPECTED(...)
-      auto operand = parse_reg_operand (inline_asm_ctx);
+      auto expected = parse_reg_operand (inline_asm_ctx);
+      if (expected || expected.error () == COMMITTED)
+	return expected;
+      continue;
     }
   return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 }
