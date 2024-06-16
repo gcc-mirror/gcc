@@ -1,3 +1,36 @@
+2024-06-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-8.c: New test.
+
+2024-06-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-1.c: Leverage
+	the new header file for vector part.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-4.c: Ditto.
+	* gcc.target/riscv/sat_arith.h: Move vector part out.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: New test.
+
 2024-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/torture/vshuf-mem.C: Add -Wno-psabi to dg-options.

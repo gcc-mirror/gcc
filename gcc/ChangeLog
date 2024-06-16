@@ -1,3 +1,16 @@
+2024-06-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Fix allocation size of buffer.
+	(riscv_process_one_target_attr): Likewise.
+	(riscv_process_target_attr): Likewise.
+
+2024-06-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific): Remove pointer to old versions
+	of binutils.
+
 2024-06-14  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-gori.cc (gori_calc_operands): Do not continue nor
