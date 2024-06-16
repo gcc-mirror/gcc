@@ -208,52 +208,34 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
 	}
     }
 
-  // For the keyword IN, currently we count it as a seperate keyword called
-  // Rust::IN search for #define RS_TOKEN_LIST in code base.
   tl::expected<InlineAsmContext, InlineAsmParseError> parsing_operand
     = tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 
-  // PARSING WITH IN
-  parsing_operand.map (parse_reg_operand_in);
-  if (parsing_operand || parsing_operand.error () == COMMITTED)
-    return parsing_operand;
+  // Here is all parse_reg_operand functions we're using in a for loop
+  auto parse_funcs = {parse_reg_operand_in,	   parse_reg_operand_out,
+		      parse_reg_operand_lateout,   parse_reg_operand_inout,
+		      parse_reg_operand_const,	   parse_reg_operand_sym,
+		      parse_reg_operand_unexpected};
 
-  // KEEP ON PARSING WITH OUT
-  parsing_operand.emplace (inline_asm_ctx);
-  parsing_operand.map (parse_reg_operand_out);
-  if (parsing_operand || parsing_operand.error () == COMMITTED)
-    return parsing_operand;
+  // Loop over and execute the parsing functions, if the parser successfullly
+  // parses or if the parser fails to parse while it has committed to a token,
+  // we propogate the result.
+  for (auto &parse_func : parse_funcs)
+    {
+      parsing_operand.emplace (inline_asm_ctx);
+      parsing_operand.map (parse_func);
+      if (parsing_operand || parsing_operand.error () == COMMITTED)
+	return parsing_operand;
+    }
 
-  // KEEP ON PARSING WITH LATEOUT
-  parsing_operand.emplace (inline_asm_ctx);
-  parsing_operand.map (parse_reg_operand_lateout);
-  if (parsing_operand || parsing_operand.error () == COMMITTED)
-    return parsing_operand;
-
-  // KEEP ON PARSING WITH INOUT
-  parsing_operand.emplace (inline_asm_ctx);
-  parsing_operand.map (parse_reg_operand_inout);
-  if (parsing_operand || parsing_operand.error () == COMMITTED)
-    return parsing_operand;
-
-  // KEEP ON PARSING WITH INOUT
-  parsing_operand.emplace (inline_asm_ctx);
-  parsing_operand.map (parse_reg_operand_const);
-  if (parsing_operand || parsing_operand.error () == COMMITTED)
-    return parsing_operand;
-
-  // TODO: It is  weird that we can't seem to match any identifier,
-  // something must be wrong. consult compiler code in asm.rs or rust online
-  // compiler.
-  rust_unreachable ();
-
-  rust_error_at (token->get_locus (), "ERROR RIGHT HERE");
-  return tl::unexpected<InlineAsmParseError> (COMMITTED);
+  return parsing_operand;
 }
 
 tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_reg_operand_in (InlineAsmContext inline_asm_ctx)
 {
+  // For the keyword IN, currently we count it as a seperate keyword called
+  // Rust::IN search for #define RS_TOKEN_LIST in code base.
   AST::InlineAsmOperand reg_operand;
   auto &parser = inline_asm_ctx.parser;
   if (!inline_asm_ctx.is_global_asm () && parser.skip_token (IN))
@@ -412,6 +394,20 @@ parse_reg_operand_sym (InlineAsmContext inline_asm_ctx)
     }
   return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
 }
+
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_unexpected (InlineAsmContext inline_asm_ctx)
+{
+  auto token = inline_asm_ctx.parser.peek_current_token ();
+  // TODO: It is  weird that we can't seem to match any identifier,
+  // something must be wrong. consult compiler code in asm.rs or rust online
+  // compiler.
+  rust_unreachable ();
+
+  rust_error_at (token->get_locus (), "ERROR RIGHT HERE");
+  return tl::unexpected<InlineAsmParseError> (COMMITTED);
+}
+
 void
 check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option)
 {

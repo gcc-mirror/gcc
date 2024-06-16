@@ -105,6 +105,9 @@ parse_reg_operand_const (InlineAsmContext inline_asm_ctx);
 tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_reg_operand_sym (InlineAsmContext inline_asm_ctx);
 
+tl::expected<InlineAsmContext, InlineAsmParseError>
+parse_reg_operand_unexpected (InlineAsmContext inline_asm_ctx);
+
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	   AST::InvocKind semicolon, AST::AsmKind is_global_asm);
