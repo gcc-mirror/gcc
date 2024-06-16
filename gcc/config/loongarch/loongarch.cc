@@ -6132,21 +6132,13 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
    'T'	Print 'f' for (eq:CC ...), 't' for (ne:CC ...),
 	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
    't'	Like 'T', but with the EQ/NE cases reversed
-   'F'	Print the FPU branch condition for comparison OP.
-   'W'	Print the inverse of the FPU branch condition for comparison OP.
-   'w'	Print a LSX register.
    'u'	Print a LASX register.
-   'T'	Print 'f' for (eq:CC ...), 't' for (ne:CC ...),
-	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
-   't'	Like 'T', but with the EQ/NE cases reversed
-   'Y'	Print loongarch_fp_conditions[INTVAL (OP)]
-   'Z'	Print OP and a comma for 8CC, otherwise print nothing.
-   'z'	Print $0 if OP is zero, otherwise print OP normally.
    'v'	Print the insn size suffix b, h, w or d for vector modes V16QI, V8HI,
 	  V4SI, V2SI, and w, d for vector modes V4SF, V2DF respectively.
    'V'	Print exact log2 of CONST_INT OP element 0 of a replicated
 	  CONST_VECTOR in decimal.
    'W'	Print the inverse of the FPU branch condition for comparison OP.
+   'w'	Print a LSX register.
    'X'	Print CONST_INT OP in hexadecimal format.
    'x'	Print the low 16 bits of CONST_INT OP in hexadecimal format.
    'Y'	Print loongarch_fp_conditions[INTVAL (OP)]
