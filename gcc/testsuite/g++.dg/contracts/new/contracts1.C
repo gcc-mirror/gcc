@@ -65,3 +65,12 @@ int main()
 
   return 0;
 }
+
+struct Baz
+{
+  void f(int x) pre(x = 0); // { dg-error "expected conditional-expression" }
+  void g(int x) pre(x, x); // { dg-error "expected conditional-expression" }
+  void h(int x) post(x = 0); // { dg-error "expected conditional-expression" }
+  void i(int x) post(x, x); // { dg-error "expected conditional-expression" }
+};
+		  
