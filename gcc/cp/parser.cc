@@ -31531,14 +31531,15 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	    return error_mark_node;
 	}
       else
-	{
 	  cp_parser_skip_to_closing_parenthesis_1 (parser,
 						   /*recovering=*/false,
 						   CPP_CLOSE_PAREN,
 						   /*consume_paren=*/false);
-	  parens.require_close (parser);
-	  }
+
       cp_token *last = cp_lexer_peek_token (parser->lexer);
+
+      if (!attr_mode)
+	  parens.require_close (parser);
 
       /* Build a deferred-parse node.  */
       tree condition = make_node (DEFERRED_PARSE);
@@ -31674,6 +31675,10 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 
   /* revert (any) constification of the current class object */
   current_class_ref = current_class_ref_copy;
+
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
+      error_at (input_location,
+		"expected conditional-expression");
 
   /* Revert to the main lexer.  */
   cp_parser_pop_lexer (parser);

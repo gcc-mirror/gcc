@@ -72,3 +72,8 @@ int f12()
   return; // { dg-error "return-statement with no value" }
 }
 
+struct Baz
+{
+  void f(int x) [[post: x = 0]]; // { dg-error "expected conditional-expression" }
+  void g(int x) [[post: x, x]]; // { dg-error "expected conditional-expression" }
+};
