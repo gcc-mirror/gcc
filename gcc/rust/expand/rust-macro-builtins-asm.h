@@ -119,7 +119,7 @@ void
 check_and_set (InlineAsmContext &inline_asm_ctx, AST::InlineAsmOption option);
 
 // From rustc
-int
+tl::expected<InlineAsmContext, InlineAsmParseError>
 parse_options (InlineAsmContext &inline_asm_ctx);
 
 // From rustc
@@ -132,8 +132,5 @@ parse_format_string (InlineAsmContext &inline_asm_ctx);
 tl::optional<std::string>
 parse_label (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	     InlineAsmContext &inline_asm_ctx);
-
-std::set<std::string> potentially_nonpromoted_keywords
-  = {"in", "out", "lateout", "inout", "inlateout", "const", "sym", "label"};
 
 } // namespace Rust
