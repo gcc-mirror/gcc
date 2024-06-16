@@ -10093,6 +10093,25 @@
   [(set (reg:SI T_REG) (zero_extract:SI (xor:SI (match_dup 0) (match_dup 1))
 				    	(const_int 1) (match_dup 2)))])
 
+;; Same thing, but when we use a PLUS rather than IOR/XOR for the rotation
+;; which causes things to simplify somewhat differently.
+(define_insn_and_split "*neg_zero_extract_4b"
+  [(set (reg:SI T_REG)
+	(and:SI (not:SI (plus:SI
+		  (lshiftrt:SI (match_operand:SI 0 "arith_reg_operand")
+			       (match_operand 1 "const_int_operand"))
+		  (ashift:SI (match_operand:SI 2 "arith_reg_operand")
+			     (match_operand 3 "const_int_operand"))))
+		(const_int 1)))]
+  "TARGET_SH1 && can_create_pseudo_p ()
+   && INTVAL (operands[3]) > 0
+   && INTVAL (operands[1]) + INTVAL (operands[3]) == 32"
+  "#"
+  "&& 1"
+  [(set (reg:SI T_REG) (zero_extract:SI (xor:SI (match_dup 0) (match_dup 4))
+					(const_int 1) (match_dup 1)))]
+  { operands[4] = GEN_INT (1 << INTVAL (operands[1])); })
+
 (define_insn_and_split "*neg_zero_extract_5"
   [(set (reg:SI T_REG)
 	(and:SI (not:SI (subreg:SI
