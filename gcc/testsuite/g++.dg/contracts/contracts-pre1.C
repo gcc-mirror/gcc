@@ -34,3 +34,8 @@ void f7(int x) [[ pre: x > 0 ]; // { dg-error "expected .]." }
 void f8(int x) [[ pre: x > 0 { }; // { dg-error "expected .]." }
 void f9(int x) [[ pre: x > 0 ] { }; // { dg-error "expected .]." }
 
+struct Baz
+{
+  void f(int x) [[pre: x = 0]]; // { dg-error "expected conditional-expression" }
+  void g(int x) [[pre: x, x]]; // { dg-error "expected conditional-expression" }
+};
