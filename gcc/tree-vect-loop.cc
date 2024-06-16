@@ -7815,11 +7815,9 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 			     "use not simple.\n");
 	  return false;
 	}
-      if (i == STMT_VINFO_REDUC_IDX (stmt_info))
-	continue;
 
-      /* For an IFN_COND_OP we might hit the reduction definition operand
-	 twice (once as definition, once as else).  */
+      /* Skip reduction operands, and for an IFN_COND_OP we might hit the
+	 reduction operand twice (once as definition, once as else).  */
       if (op.ops[i] == op.ops[STMT_VINFO_REDUC_IDX (stmt_info)])
 	continue;
 
