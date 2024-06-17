@@ -524,6 +524,7 @@ add_misspelling_candidates (auto_vec<char *> *candidates,
   for (unsigned i = 0; i < ARRAY_SIZE (option_map); i++)
     {
       const char *opt0 = option_map[i].opt0;
+      const char *opt1 = option_map[i].opt1;
       const char *new_prefix = option_map[i].new_prefix;
       size_t new_prefix_len = strlen (new_prefix);
 
@@ -532,8 +533,9 @@ add_misspelling_candidates (auto_vec<char *> *candidates,
 
       if (strncmp (opt_text, new_prefix, new_prefix_len) == 0)
 	{
-	  char *alternative = concat (opt0 + 1, opt_text + new_prefix_len,
-				      NULL);
+	  char *alternative
+	    = concat (opt0 + 1, opt1 ? " " : "", opt1 ? opt1 : "",
+		      opt_text + new_prefix_len, NULL);
 	  candidates->safe_push (alternative);
 	}
     }
