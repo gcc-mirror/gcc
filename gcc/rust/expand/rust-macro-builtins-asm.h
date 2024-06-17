@@ -6,11 +6,19 @@
 #include "rust-macro-invoc-lexer.h"
 #include "rust/ast/rust-expr.h"
 namespace Rust {
-// All the operands are called asm_args in rustc asm.rs, we create a struct that
-// can store all of these AsmArgs This replaces the phase where we have to parse
-// all operands.
+
 enum InlineAsmParseError
 {
+  // Enum for InlineAsmParseError
+
+  // Currently with two error, COMMITTED AND NONCOMMITTED (to a token),
+  // which directs the parser to either bubbles the error up, or keep on going
+  // (vertical or horizontal)
+
+  // COMMITTED can be use as a way for parser to bubble up
+  // after it has exhausted its search space despite it not having committed to
+  // any token
+
   COMMITTED,
   NONCOMMITED,
 };
