@@ -3144,6 +3144,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c @0 @1)) integer_zerop)
   integer_minus_onep (usadd_left_part_2 @0 @1)))
 
+/* Unsigned saturation add, case 7 (branch with le):
+   SAT_ADD = x <= (X + Y) ? (X + Y) : -1.  */
+(match (unsigned_integer_sat_add @0 @1)
+ (cond^ (le @0 (usadd_left_part_1@2 @0 @1)) @2 integer_minus_onep))
+
+/* Unsigned saturation add, case 8 (branch with gt):
+   SAT_ADD = x > (X + Y) ? -1 : (X + Y).  */
+(match (unsigned_integer_sat_add @0 @1)
+ (cond^ (gt @0 (usadd_left_part_1@2 @0 @1)) integer_minus_onep @2))
+
 /* Unsigned saturation sub, case 1 (branch with gt):
    SAT_U_SUB = X > Y ? X - Y : 0  */
 (match (unsigned_integer_sat_sub @0 @1)
