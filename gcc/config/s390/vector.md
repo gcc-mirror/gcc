@@ -895,6 +895,17 @@
   "vmrhf\t%0,%1,%2";
   [(set_attr "op_type" "VRR")])
 
+(define_insn "*vmrhf_half<mode>"
+  [(set (match_operand:V_HW_4                                0 "register_operand" "=v")
+	(vec_select:V_HW_4
+	 (vec_concat:V_HW_4 (match_operand:<vec_halfnumelts> 1 "register_operand"  "v")
+			    (match_operand:<vec_halfnumelts> 2 "register_operand"  "v"))
+	 (parallel [(const_int 0) (const_int 2)
+		    (const_int 1) (const_int 3)])))]
+  "TARGET_VX"
+  "vmrhf\t%0,%1,%2";
+  [(set_attr "op_type" "VRR")])
+
 (define_insn "*vmrlf"
   [(set (match_operand:V_HW_4                              0 "register_operand" "=v")
         (vec_select:V_HW_4
@@ -2393,6 +2404,23 @@
   "TARGET_VX"
   "vup<zero_extend>h<bhfgq>\t%0,%1"
   [(set_attr "op_type" "VRR")])
+
+(define_expand "extendv2sfv2df2"
+  [(set (match_dup 2)
+	(vec_select:V4SF
+	 (vec_concat:V4SF (match_operand:V2SF 1 "register_operand")
+			  (match_dup 1))
+	 (parallel [(const_int 0) (const_int 2)
+		    (const_int 1) (const_int 3)])))
+   (set (match_operand:V2DF 0 "register_operand")
+	(float_extend:V2DF
+	 (vec_select:V2SF
+	  (match_dup 2)
+	  (parallel [(const_int 0) (const_int 2)]))))]
+  "TARGET_VX"
+{
+  operands[2] = gen_reg_rtx (V4SFmode);
+})
 
 ;; vector unpack v16qi
 
