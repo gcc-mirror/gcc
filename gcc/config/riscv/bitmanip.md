@@ -654,6 +654,23 @@
      (any_or:DI (ashift:DI (const_int 1) (match_dup 1))
 		(match_dup 3)))])
 
+;; Yet another form of a bset/bclr that can be created by combine.
+(define_insn "*bsetclr_zero_extract"
+  [(set (zero_extract:X (match_operand:X 0 "register_operand" "+r")
+			(const_int 1)
+			(zero_extend:X
+			  (match_operand:QI 1 "register_operand" "r")))
+	(match_operand 2 "immediate_operand" "n"))]
+  "TARGET_ZBS
+   && (operands[2] == CONST0_RTX (<MODE>mode)
+       || operands[2] == CONST1_RTX (<MODE>mode))"
+  {
+    return (operands[2] == CONST0_RTX (<MODE>mode)
+	    ? "bclr\t%0,%0,%1"
+	    : "bset\t%0,%0,%1");
+  }
+  [(set_attr "type" "bitmanip")])
+
 (define_insn "*bclr<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (rotate:X (const_int -2)
