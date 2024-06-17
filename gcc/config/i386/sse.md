@@ -23079,6 +23079,32 @@
    (set_attr "btver2_decode" "vector,vector,vector") 
    (set_attr "mode" "<MODE>")])
 
+(define_insn_and_split "*<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>_gt"
+  [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")
+	(unspec:VF_128_256
+	  [(match_operand:VF_128_256 1 "vector_operand" "Yrja,*xja,xjm")
+	   (match_operand:VF_128_256 2 "register_operand" "0,0,x")
+	   (gt:VF_128_256
+	     (match_operand:<sseintvecmode> 3 "register_operand" "Yz,Yz,x")
+	     (match_operand:<sseintvecmode> 4 "vector_all_ones_operand"))]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(unspec:VF_128_256
+	 [(match_dup 2) (match_dup 1) (match_dup 3)] UNSPEC_BLENDV))]
+  "operands[3] = gen_lowpart (<MODE>mode, operands[3]);"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "addr" "gpr16")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector,vector,vector")
+   (set_attr "mode" "<MODE>")])
+
 (define_mode_attr ssefltmodesuffix
   [(V2DI "pd") (V4DI "pd") (V4SI "ps") (V8SI "ps")
    (V2DF "pd") (V4DF "pd") (V4SF "ps") (V8SF "ps")])
@@ -23118,6 +23144,38 @@
    (set_attr "btver2_decode" "vector,vector,vector") 
    (set_attr "mode" "<ssefltvecmode>")])
 
+(define_insn_and_split "*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_gtint"
+  [(set (match_operand:<ssebytemode> 0 "register_operand" "=Yr,*x,x")
+	(unspec:<ssebytemode>
+	  [(match_operand:<ssebytemode> 1 "vector_operand" "Yrja,*xja,xjm")
+	   (match_operand:<ssebytemode> 2 "register_operand" "0,0,x")
+	   (subreg:<ssebytemode>
+	     (gt:VI48_AVX
+	       (match_operand:VI48_AVX 3 "register_operand" "Yz,Yz,x")
+	       (match_operand:VI48_AVX 4 "vector_all_ones_operand")) 0)]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(unspec:<ssefltvecmode>
+	 [(match_dup 2) (match_dup 1) (match_dup 3)] UNSPEC_BLENDV))]
+{
+  operands[0] = gen_lowpart (<ssefltvecmode>mode, operands[0]);
+  operands[1] = gen_lowpart (<ssefltvecmode>mode, operands[1]);
+  operands[2] = gen_lowpart (<ssefltvecmode>mode, operands[2]);
+  operands[3] = gen_lowpart (<ssefltvecmode>mode, operands[3]);
+}
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "addr" "gpr16")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector,vector,vector")
+   (set_attr "mode" "<ssefltvecmode>")])
+
 ;; PR target/100738: Transform vpcmpeqd + vpxor + vblendvps to vblendvps for inverted mask;
 (define_insn_and_split "*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_not_ltint"
   [(set (match_operand:<ssebytemode> 0 "register_operand")
@@ -23142,6 +23200,32 @@
   operands[1] = gen_lowpart (<ssefltvecmode>mode, operands[1]);
   operands[2] = force_reg (<ssefltvecmode>mode,
 			   gen_lowpart (<ssefltvecmode>mode, operands[2]));
+  operands[3] = gen_lowpart (<ssefltvecmode>mode, operands[3]);
+})
+
+(define_insn_and_split "*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_not_gtint"
+  [(set (match_operand:<ssebytemode> 0 "register_operand")
+	(unspec:<ssebytemode>
+	  [(match_operand:<ssebytemode> 1 "vector_operand")
+	   (match_operand:<ssebytemode> 2 "register_operand")
+	   (subreg:<ssebytemode>
+	     (gt:VI48_AVX
+	       (subreg:VI48_AVX
+	       (not:<ssebytemode>
+		 (match_operand:<ssebytemode> 3 "register_operand")) 0)
+	       (match_operand:VI48_AVX 4 "vector_all_ones_operand")) 0)]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:<ssefltvecmode>
+	 [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPEC_BLENDV))]
+{
+  operands[0] = gen_lowpart (<ssefltvecmode>mode, operands[0]);
+  operands[2] = gen_lowpart (<ssefltvecmode>mode, operands[2]);
+  operands[1] = force_reg (<ssefltvecmode>mode,
+			   gen_lowpart (<ssefltvecmode>mode, operands[1]));
   operands[3] = gen_lowpart (<ssefltvecmode>mode, operands[3]);
 })
 
@@ -23299,6 +23383,30 @@
    (set_attr "btver2_decode" "vector,vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn_and_split "*<sse4_1_avx2>_pblendvb_gt"
+  [(set (match_operand:VI1_AVX2 0 "register_operand" "=Yr,*x,x")
+	(unspec:VI1_AVX2
+	  [(match_operand:VI1_AVX2 1 "vector_operand" "Yrja,*xja,xjm")
+	   (match_operand:VI1_AVX2 2 "register_operand" "0,0,x")
+	   (gt:VI1_AVX2 (match_operand:VI1_AVX2 3 "register_operand" "Yz,Yz,x")
+			(match_operand:VI1_AVX2 4 "vector_all_ones_operand"))]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	 [(match_dup 2) (match_dup 1) (match_dup 3)] UNSPEC_BLENDV))]
+  ""
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "addr" "gpr16")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "*,*,1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector,vector,vector")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn_and_split "*<sse4_1_avx2>_pblendvb_lt_subreg_not"
   [(set (match_operand:VI1_AVX2 0 "register_operand")
 	(unspec:VI1_AVX2
@@ -23319,6 +23427,28 @@
 	(unspec:VI1_AVX2
 	 [(match_dup 1) (match_dup 2)
 	  (lt:VI1_AVX2 (match_dup 3) (match_dup 4))] UNSPEC_BLENDV))]
+  "operands[3] = gen_lowpart (<MODE>mode, operands[3]);")
+
+(define_insn_and_split "*<sse4_1_avx2>_pblendvb_gt_subreg_not"
+  [(set (match_operand:VI1_AVX2 0 "register_operand")
+	(unspec:VI1_AVX2
+	  [(match_operand:VI1_AVX2 2 "register_operand")
+	   (match_operand:VI1_AVX2 1 "vector_operand")
+	   (gt:VI1_AVX2
+	     (subreg:VI1_AVX2
+	       (not (match_operand 3 "register_operand")) 0)
+	     (match_operand:VI1_AVX2 4 "vector_all_ones_operand"))]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1
+   && GET_MODE_CLASS (GET_MODE (operands[3])) == MODE_VECTOR_INT
+   && GET_MODE_SIZE (GET_MODE (operands[3])) == <MODE_SIZE>
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	 [(match_dup 1) (match_dup 2)
+	  (gt:VI1_AVX2 (match_dup 3) (match_dup 4))] UNSPEC_BLENDV))]
   "operands[3] = gen_lowpart (<MODE>mode, operands[3]);")
 
 (define_insn "sse4_1_pblend<ssemodesuffix>"
