@@ -6014,11 +6014,14 @@ riscv_validate_vector_type (const_tree type, const char *hint)
   bool float_type_p = riscv_vector_float_type_p (type);
 
   if (float_type_p && element_bitsize == 16
-    && !TARGET_VECTOR_ELEN_FP_16_P (riscv_vector_elen_flags))
+      && (!TARGET_VECTOR_ELEN_FP_16_P (riscv_vector_elen_flags)
+	  && !TARGET_VECTOR_ELEN_BF_16_P (riscv_vector_elen_flags)))
     {
-      error_at (input_location,
-		"%s %qT requires the zvfhmin or zvfh ISA extension",
-		hint, type);
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+      if (strstr (name, "vfloat"))
+	error_at (input_location,
+		  "%s %qT requires the zvfhmin or zvfh ISA extension",
+		  hint, type);
       return;
     }
 
