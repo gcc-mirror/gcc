@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-pass.h"
 #include "ssa.h"
+#include "gimple-pretty-print.h"
 #include "gimple-iterator.h"
 #include "stor-layout.h"
 #include "tree-into-ssa.h"
@@ -425,23 +426,34 @@ set_range_info (tree name, const vrange &r)
       struct ptr_info_def *pi = get_ptr_info (name);
       // If R is nonnull and pi is not, set nonnull.
       if (r.nonzero_p () && (!pi || pi->pt.null))
-	{
-	  set_ptr_nonnull (name);
-	  return true;
-	}
-      return false;
+	set_ptr_nonnull (name);
+      else
+	return false;
     }
-
-  value_range tmp (type);
-  if (range_info_p (name))
-    range_info_get_range (name, tmp);
   else
-    tmp.set_varying (type);
-  // If the result doesn't change, or is undefined, return false.
-  if (!tmp.intersect (r) || tmp.undefined_p ())
-    return false;
-
-  return range_info_set_range (name, tmp);
+    {
+      value_range tmp (type);
+      if (range_info_p (name))
+	range_info_get_range (name, tmp);
+      else
+	tmp.set_varying (type);
+      // If the result doesn't change, or is undefined, return false.
+      if (!tmp.intersect (r) || tmp.undefined_p ())
+	return false;
+      if (!range_info_set_range (name, tmp))
+	return false;
+    }
+  if (dump_file)
+    {
+      value_range tmp (type);
+      fprintf (dump_file, "Global Exported: ");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, " = ");
+      gimple_range_global (tmp, name);
+      tmp.dump (dump_file);
+      fputc ('\n', dump_file);
+    }
+  return true;
 }
 
 /* Set nonnull attribute to pointer NAME.  */

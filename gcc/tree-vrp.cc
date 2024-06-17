@@ -228,15 +228,6 @@ remove_unreachable::handle_early (gimple *s, edge e)
       // Nothing at this late stage we can do if the write fails.
       if (!set_range_info (name, r))
 	continue;
-      if (dump_file)
-	{
-	  fprintf (dump_file, "Global Exported (via early unreachable): ");
-	  print_generic_expr (dump_file, name, TDF_SLIM);
-	  fprintf (dump_file, " = ");
-	  gimple_range_global (r, name);
-	  r.dump (dump_file);
-	  fputc ('\n', dump_file);
-	}
     }
 
   tree ssa = lhs_p ? gimple_cond_lhs (s) : gimple_cond_rhs (s);
@@ -287,16 +278,8 @@ remove_unreachable::remove ()
       if (name && fully_replaceable (name, src))
 	{
 	  value_range r (TREE_TYPE (name));
-	  if (gori_name_on_edge (r, name, e, &m_ranger)
-	      && set_range_info (name, r) &&(dump_file))
-	    {
-	      fprintf (dump_file, "Global Exported (via unreachable): ");
-	      print_generic_expr (dump_file, name, TDF_SLIM);
-	      fprintf (dump_file, " = ");
-	      gimple_range_global (r, name);
-	      r.dump (dump_file);
-	      fputc ('\n', dump_file);
-	    }
+	  if (gori_name_on_edge (r, name, e, &m_ranger))
+	    set_range_info (name, r);
 	}
 
       change = true;
@@ -419,15 +402,6 @@ remove_unreachable::remove_and_update_globals ()
       if (!set_range_info (name, r))
 	continue;
       change = true;
-      if (dump_file)
-	{
-	  fprintf (dump_file, "Global Exported (via unreachable): ");
-	  print_generic_expr (dump_file, name, TDF_SLIM);
-	  fprintf (dump_file, " = ");
-	  gimple_range_global (r, name);
-	  r.dump (dump_file);
-	  fputc ('\n', dump_file);
-	}
     }
   return change;
 }
@@ -1404,18 +1378,9 @@ public:
 	  if (!value_range::supports_type_p (type))
 	    continue;
 	  value_range assume_range (type);
+	  // Set the global range of NAME to anything calculated.
 	  if (query.assume_range_p (assume_range, name))
-	    {
-	      // Set the global range of NAME to anything calculated.
-	      set_range_info (name, assume_range);
-	      if (dump_file)
-		{
-		  print_generic_expr (dump_file, name, TDF_SLIM);
-		  fprintf (dump_file, " -> ");
-		  assume_range.dump (dump_file);
-		  fputc ('\n', dump_file);
-		}
-	    }
+	    set_range_info (name, assume_range);
 	}
       if (dump_file)
 	{

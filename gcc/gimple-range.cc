@@ -495,15 +495,8 @@ gimple_ranger::register_inferred_ranges (gimple *s)
   if (lhs)
     {
       value_range tmp (TREE_TYPE (lhs));
-      if (range_of_stmt (tmp, s, lhs) && !tmp.varying_p ()
-	  && set_range_info (lhs, tmp) && dump_file)
-	{
-	  fprintf (dump_file, "Global Exported: ");
-	  print_generic_expr (dump_file, lhs, TDF_SLIM);
-	  fprintf (dump_file, " = ");
-	  tmp.dump (dump_file);
-	  fputc ('\n', dump_file);
-	}
+      if (range_of_stmt (tmp, s, lhs) && !tmp.varying_p ())
+	set_range_info (lhs, tmp);
     }
   m_cache.apply_inferred_ranges (s);
 }
@@ -562,38 +555,25 @@ gimple_ranger::register_transitive_inferred_ranges (basic_block bb)
 void
 gimple_ranger::export_global_ranges ()
 {
-  /* Cleared after the table header has been printed.  */
-  bool print_header = true;
+  if (dump_file)
+    {
+      /* Print the header only when there's something else
+	 to print below.  */
+      fprintf (dump_file, "Exporting new  global ranges:\n");
+      fprintf (dump_file, "============================\n");
+    }
   for (unsigned x = 1; x < num_ssa_names; x++)
     {
       tree name = ssa_name (x);
       if (!name)
 	continue;
       value_range r (TREE_TYPE (name));
-      if (name && !SSA_NAME_IN_FREE_LIST (name)
-	  && gimple_range_ssa_p (name)
-	  && m_cache.get_global_range (r, name)
-	  && !r.varying_p())
-	{
-	  bool updated = set_range_info (name, r);
-	  if (!updated || !dump_file)
-	    continue;
-
-	  if (print_header)
-	    {
-	      /* Print the header only when there's something else
-		 to print below.  */
-	      fprintf (dump_file, "Exported global range table:\n");
-	      fprintf (dump_file, "============================\n");
-	      print_header = false;
-	    }
-
-	  print_generic_expr (dump_file, name , TDF_SLIM);
-	  fprintf (dump_file, "  : ");
-	  r.dump (dump_file);
-	  fprintf (dump_file, "\n");
-	}
+      if (name && !SSA_NAME_IN_FREE_LIST (name) && gimple_range_ssa_p (name)
+	  && m_cache.get_global_range (r, name) && !r.varying_p())
+	set_range_info (name, r);
     }
+  if (dump_file)
+    fprintf (dump_file, "========= Done =============\n");
 }
 
 // Print the known table values to file F.
@@ -1069,16 +1049,8 @@ dom_ranger::range_of_stmt (vrange &r, gimple *s, tree name)
   // If there is a new calculated range and it is not varying, set
   // a global range.
   if (ret && name && m_global.merge_range (name, r) && !r.varying_p ())
-    {
-      if (set_range_info (name, r) && dump_file)
-	{
-	  fprintf (dump_file, "Global Exported: ");
-	  print_generic_expr (dump_file, name, TDF_SLIM);
-	  fprintf (dump_file, " = ");
-	  r.dump (dump_file);
-	  fputc ('\n', dump_file);
-	}
-    }
+    set_range_info (name, r);
+
   if (idx)
     tracer.trailer (idx, " ", ret, name, r);
   return ret;
