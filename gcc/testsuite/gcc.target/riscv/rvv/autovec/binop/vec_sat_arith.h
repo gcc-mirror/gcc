@@ -32,11 +32,29 @@ vec_sat_u_add_##T##_fmt_2 (T *out, T *op_1, T *op_2, unsigned limit) \
     }                                                                \
 }
 
+#define DEF_VEC_SAT_U_ADD_FMT_3(T)                                   \
+void __attribute__((noinline))                                       \
+vec_sat_u_add_##T##_fmt_3 (T *out, T *op_1, T *op_2, unsigned limit) \
+{                                                                    \
+  unsigned i;                                                        \
+  for (i = 0; i < limit; i++)                                        \
+    {                                                                \
+      T x = op_1[i];                                                 \
+      T y = op_2[i];                                                 \
+      T ret;                                                         \
+      T overflow = __builtin_add_overflow (x, y, &ret);              \
+      out[i] = (T)(-overflow) | ret;                                 \
+    }                                                                \
+}
+
 #define RUN_VEC_SAT_U_ADD_FMT_1(T, out, op_1, op_2, N) \
   vec_sat_u_add_##T##_fmt_1(out, op_1, op_2, N)
 
 #define RUN_VEC_SAT_U_ADD_FMT_2(T, out, op_1, op_2, N) \
   vec_sat_u_add_##T##_fmt_2(out, op_1, op_2, N)
+
+#define RUN_VEC_SAT_U_ADD_FMT_3(T, out, op_1, op_2, N) \
+  vec_sat_u_add_##T##_fmt_3(out, op_1, op_2, N)
 
 /******************************************************************************/
 /* Saturation Sub (Unsigned and Signed)                                       */
