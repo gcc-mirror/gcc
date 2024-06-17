@@ -6843,8 +6843,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	     with the original initial value, unless induc_val is
 	     the same as initial_def already.  */
 	  tree zcompare = make_ssa_name (boolean_type_node);
-	  epilog_stmt = gimple_build_assign (zcompare, EQ_EXPR, new_temp,
-					     induc_val);
+	  epilog_stmt = gimple_build_assign (zcompare, EQ_EXPR,
+					     scalar_results[0], induc_val);
 	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	  tree initial_def = reduc_info->reduc_initial_values[0];
 	  tree tmp = make_ssa_name (new_scalar_dest);
