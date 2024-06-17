@@ -16849,6 +16849,9 @@ this parameter.  The default value of this parameter is 50.
 @item vect-induction-float
 Enable loop vectorization of floating point inductions.
 
+@item vrp-block-limit
+Maximum number of basic blocks before VRP switches to a lower memory algorithm.
+
 @item vrp-sparse-threshold
 Maximum number of basic blocks before VRP uses a sparse bitmap cache.
 
