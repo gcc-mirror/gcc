@@ -3186,10 +3186,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
 
-/* Unsigned saturation sub, case 7 (branch with .SUB_OVERFLOW).  */
+/* Unsigned saturation sub, case 7 (branch eq with .SUB_OVERFLOW).  */
 (match (unsigned_integer_sat_sub @0 @1)
  (cond^ (eq (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
   (realpart @2) integer_zerop)
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1))))
+
+/* Unsigned saturation sub, case 8 (branch ne with .SUB_OVERFLOW).  */
+(match (unsigned_integer_sat_sub @0 @1)
+ (cond^ (ne (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
+   integer_zerop (realpart @2))
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
 
