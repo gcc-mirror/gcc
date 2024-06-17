@@ -3972,7 +3972,9 @@ c_sizeof_or_alignof_type (location_t loc,
       value = size_one_node;
     }
   else if (!COMPLETE_TYPE_P (type)
-	   && (!c_dialect_cxx () || is_sizeof || type_code != ARRAY_TYPE))
+	   && ((!c_dialect_cxx () && !flag_isoc2y)
+	       || is_sizeof
+	       || type_code != ARRAY_TYPE))
     {
       if (complain)
 	error_at (loc, "invalid application of %qs to incomplete type %qT",
