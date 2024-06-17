@@ -3806,20 +3806,16 @@ package body Sem_Ch5 is
                Rng_Typ := Etype (Rng_Copy);
 
                --  Wrap the loop statement within a block in order to manage
-               --  the secondary stack when the discrete range is
+               --  the secondary stack when the discrete range:
                --
-               --    * Either a Forward_Iterator or a Reverse_Iterator
+               --    * is either a Forward_Iterator or a Reverse_Iterator
+               --  or
                --
-               --    * Function call whose return type requires finalization
-               --      actions.
-
-               --  ??? it is unclear why using Has_Sec_Stack_Call directly on
-               --  the discrete range causes the freeze node of an itype to be
-               --  in the wrong scope in complex assertion expressions.
+               --    * contains a function call that returns on the secondary
+               --      stack.
 
                if Is_Iterator (Rng_Typ)
-                 or else (Nkind (Rng_Copy) = N_Function_Call
-                           and then Needs_Finalization (Rng_Typ))
+                 or else Has_Sec_Stack_Call (Rng_Copy)
                then
                   Wrap_Loop_Statement (Manage_Sec_Stack => True);
                   Stop_Processing := True;
