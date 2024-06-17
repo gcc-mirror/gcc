@@ -1284,11 +1284,13 @@ execute_fast_vrp (struct function *fun, bool final_p)
 
   gcc_checking_assert (!fun->x_range_query);
   fun->x_range_query = &dr;
+  get_range_query (fun)->create_relation_oracle ();
 
   folder.substitute_and_fold ();
   if (folder.m_unreachable)
     folder.m_unreachable->remove ();
 
+  get_range_query (fun)->destroy_relation_oracle ();
   fun->x_range_query = NULL;
   return 0;
 }
