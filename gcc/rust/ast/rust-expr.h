@@ -5072,9 +5072,21 @@ private:
   std::vector<Attribute> outer_attrs;
 
 public:
+  // https://github.com/rust-lang/rust/blob/55cac26a9ef17da1c9c77c0816e88e178b7cc5dd/compiler/rustc_builtin_macros/src/asm.rs#L56C1-L64C7
+  //   let mut args = AsmArgs {
+  //     templates: vec![first_template],
+  //     operands: vec![],
+  //     named_args: Default::default(),
+  //     reg_args: Default::default(),
+  //     clobber_abis: Vec::new(),
+  //     options: ast::InlineAsmOptions::empty(),
+  //     options_spans: vec![],
+  // };
   std::vector<InlineAsmTemplatePiece> template_;
   std::vector<TupleTemplateStr> template_strs;
   std::vector<InlineAsmOperand> operands;
+  std::map<std::string, int> named_args;
+  std::set<int> reg_args;
   std::vector<TupleClobber> clobber_abi;
   std::set<InlineAsmOption> options;
 
