@@ -1,3 +1,7 @@
+2024-06-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zbs-zext.c: New test.
+
 2024-06-15  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-5.c: New test.

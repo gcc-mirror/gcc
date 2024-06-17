@@ -1,3 +1,8 @@
+2024-06-16  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_fetch_bits_backward) Don't fail if no bits are
+	available.
+
 2024-05-03  Ian Lance Taylor  <iant@golang.org>
 
 	* pecoff.c (struct dll_notification_data): Define.

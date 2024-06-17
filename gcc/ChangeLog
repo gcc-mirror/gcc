@@ -1,3 +1,35 @@
+2024-06-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/100211
+	* config/aarch64/aarch64.h (machine_function): Fix the size
+	of reg_is_wrapped_separately.
+
+2024-06-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md ((1 << N) | C): New splitter for IOR/XOR
+	of a single bit an a DImode object.
+
+2024-06-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/sh/sh.md (neg_zero_extract_4b): New pattern.
+
+2024-06-16  Peter Damianov  <peter0x44@disroot.org>
+
+	* pretty-print.cc (mingw_ansi_fputs): Don't translate escape sequences if
+	the console has ENABLE_VIRTUAL_TERMINAL_PROCESSING.
+
+2024-06-16  Peter Damianov  <peter0x44@disroot.org>
+
+	* diagnostic-color.cc (auto_enable_urls): Don't hardcode to return
+	false on mingw hosts.
+	(auto_enable_urls): Return true if console
+	supports ansi escape sequences.
+
+2024-06-16  Peter Damianov  <peter0x44@disroot.org>
+
+	* diagnostic-color.cc (should_colorize): Enable processing of VT100
+	escape sequences on windows consoles
+
 2024-06-15  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
