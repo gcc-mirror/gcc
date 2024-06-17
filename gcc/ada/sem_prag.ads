@@ -216,6 +216,7 @@ package Sem_Prag is
       Pragma_Contract_Cases      => True,
       Pragma_Depends             => True,
       Pragma_Exceptional_Cases   => True,
+      Pragma_Extensions_Visible  => True,
       Pragma_Ghost               => True,
       Pragma_Global              => True,
       Pragma_Inline              => True,
@@ -237,6 +238,15 @@ package Sem_Prag is
       Pragma_Volatile            => True,
       Pragma_Volatile_Function   => True,
       others                     => False);
+
+   --  The following table lists all pragmas which are relevant to the analysis
+   --  of subprogram bodies and should be analyzed first, because the analysis
+   --  of other pragmas relevant to subprogram bodies depend on them.
+
+   Pragma_Significant_To_Subprograms_Analyzed_First :
+     constant array (Pragma_Id) of Boolean :=
+     (Pragma_Extensions_Visible => True,
+      others                    => False);
 
    -----------------
    -- Subprograms --

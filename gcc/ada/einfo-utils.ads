@@ -448,6 +448,7 @@ package Einfo.Utils is
    --    Effective_Reads
    --    Effective_Writes
    --    Exceptional_Cases
+   --    Extensions_Visible
    --    Global
    --    Initial_Condition
    --    Initializes
