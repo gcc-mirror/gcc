@@ -597,6 +597,18 @@
   "bset\t%0,x0,%1"
   [(set_attr "type" "bitmanip")])
 
+;; The result will always have bits 32..63 clear, so the zero-extend
+;; is redundant.  We could split it to bset<mode>_1, but it seems
+;; unnecessary.
+(define_insn "*bsetdi_2"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (ashift:SI (const_int 1)
+		     (match_operand:QI 1 "register_operand" "r"))))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "bset\t%0,x0,%1"
+  [(set_attr "type" "bitmanip")])
+
 (define_insn "*bset<mode>_1_mask"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(ashift:X (const_int 1)
