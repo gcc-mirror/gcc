@@ -5,6 +5,9 @@
 
 int main(void)
 {
+  if (!__builtin_cpu_supports ("apxf"))
+    return 0;
+
   if (foo0 (0))
     __builtin_abort ();
   if (foo1 (3, 2))

@@ -9,26 +9,32 @@
 /* { dg-final { scan-assembler-times "setzue" 1} } */
 /* { dg-final { scan-assembler-times "setzuge" 1} } */
 /* { dg-final { scan-assembler "imulzu"} } */
+
+__attribute__((noinline, noclone, target("apxf")))
 long long foo0 (int a)
 {
   return a == 0 ? 0 : 1;
 }
 
+__attribute__((noinline, noclone, target("apxf")))
 long foo1 (int a, int b)
 {
   return a > b ? 0 : 1;
 }
 
+__attribute__((noinline, noclone, target("apxf")))
 int foo2 (int a, int b)
 {
   return a != b ? 0 : 1;
 }
 
+__attribute__((noinline, noclone, target("apxf")))
 short foo3 (int a, int b)
 {
   return a < b ? 0 : 1;
 }
 
+__attribute__((noinline, noclone, target("apxf")))
 unsigned long
 f1(unsigned short x)
 {
