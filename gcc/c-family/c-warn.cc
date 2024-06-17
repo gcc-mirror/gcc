@@ -3830,11 +3830,16 @@ do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
       /* C doesn't allow +arr.  */
       if (c_dialect_cxx ())
 	inform (location, "use unary %<+%> which decays operands to pointers "
-		"or %<&%D[0] %s &%D[0]%> to compare the addresses",
-		op0, op_symbol_code (code), op1);
+		"or %<&%s%E%s[0] %s &%s%E%s[0]%> to compare the addresses",
+		DECL_P (op0) ? "" : "(", op0, DECL_P (op0) ? "" : ")",
+		op_symbol_code (code),
+		DECL_P (op1) ? "" : "(", op1, DECL_P (op1) ? "" : ")");
       else
-	inform (location, "use %<&%D[0] %s &%D[0]%> to compare the addresses",
-		op0, op_symbol_code (code), op1);
+	inform (location,
+		"use %<&%s%E%s[0] %s &%s%E%s[0]%> to compare the addresses",
+		DECL_P (op0) ? "" : "(", op0, DECL_P (op0) ? "" : ")",
+		op_symbol_code (code),
+		DECL_P (op1) ? "" : "(", op1, DECL_P (op1) ? "" : ")");
     }
 }
 
