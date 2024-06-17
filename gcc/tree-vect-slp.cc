@@ -9395,6 +9395,7 @@ vect_schedule_slp_node (vec_info *vinfo,
 	  si = gsi_after_labels (as_a <bb_vec_info> (vinfo)->bbs[0]);
 	}
       else if (is_a <bb_vec_info> (vinfo)
+	       && SLP_TREE_CODE (node) != VEC_PERM_EXPR
 	       && gimple_bb (last_stmt) != gimple_bb (stmt_info->stmt)
 	       && gimple_could_trap_p (stmt_info->stmt))
 	{
