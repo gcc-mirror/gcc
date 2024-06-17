@@ -563,12 +563,16 @@ package body Exp_Ch7 is
    --  Check recursively whether a loop or block contains a subprogram that
    --  may need an activation record.
 
-   function Convert_View (Proc : Entity_Id; Arg  : Node_Id) return Node_Id;
-   --  Proc is one of the Initialize/Adjust/Finalize operations, and Arg is the
-   --  argument being passed to it. This function will, if necessary, generate
-   --  a conversion between the partial and full view of Arg to match the type
-   --  of the formal of Proc, or force a conversion to the class-wide type in
-   --  the case where the operation is abstract.
+   function Convert_View
+     (Proc : Entity_Id;
+      Arg  : Node_Id;
+      Typ  : Entity_Id) return Node_Id;
+   --  Proc is one of the Initialize/Adjust/Finalize operations, Arg is the one
+   --  argument being passed to it, and Typ is its expected type. This function
+   --  will, if necessary, generate a conversion between the partial and full
+   --  views of Arg to match the type of the formal of Proc, or else force a
+   --  conversion to the class-wide type in the case where the operation is
+   --  abstract.
 
    function Make_Call
      (Loc       : Source_Ptr;
@@ -4023,7 +4027,11 @@ package body Exp_Ch7 is
    -- Convert_View --
    ------------------
 
-   function Convert_View (Proc : Entity_Id; Arg  : Node_Id) return Node_Id is
+   function Convert_View
+     (Proc : Entity_Id;
+      Arg  : Node_Id;
+      Typ  : Entity_Id) return Node_Id
+   is
       Ftyp : constant Entity_Id := Etype (First_Formal (Proc));
 
       Atyp : Entity_Id;
@@ -4031,8 +4039,10 @@ package body Exp_Ch7 is
    begin
       if Nkind (Arg) in N_Type_Conversion | N_Unchecked_Type_Conversion then
          Atyp := Entity (Subtype_Mark (Arg));
-      else
+      elsif Present (Etype (Arg)) then
          Atyp := Etype (Arg);
+      else
+         Atyp := Typ;
       end if;
 
       if Is_Abstract_Subprogram (Proc) and then Is_Tagged_Type (Ftyp) then
@@ -5452,21 +5462,11 @@ package body Exp_Ch7 is
       end if;
 
       if Present (Adj_Id) then
-
-         --  If the object is unanalyzed, set its expected type for use in
-         --  Convert_View in case an additional conversion is needed.
-
-         if No (Etype (Ref))
-           and then Nkind (Ref) /= N_Unchecked_Type_Conversion
-         then
-            Set_Etype (Ref, Typ);
-         end if;
-
          --  The object reference may need another conversion depending on the
          --  type of the formal and that of the actual.
 
          if not Is_Class_Wide_Type (Typ) then
-            Ref := Convert_View (Adj_Id, Ref);
+            Ref := Convert_View (Adj_Id, Ref, Typ);
          end if;
 
          return
@@ -7849,16 +7849,7 @@ package body Exp_Ch7 is
                end if;
             end;
 
-            --  If the object is unanalyzed, set its expected type for use in
-            --  Convert_View in case an additional conversion is needed.
-
-            if No (Etype (Ref))
-              and then Nkind (Ref) /= N_Unchecked_Type_Conversion
-            then
-               Set_Etype (Ref, Typ);
-            end if;
-
-            Ref := Convert_View (Fin_Id, Ref);
+            Ref := Convert_View (Fin_Id, Ref, Typ);
          end if;
 
          return
@@ -8314,7 +8305,7 @@ package body Exp_Ch7 is
       --  The object reference may need another conversion depending on the
       --  type of the formal and that of the actual.
 
-      Ref := Convert_View (Proc, Ref);
+      Ref := Convert_View (Proc, Ref, Typ);
 
       --  Generate:
       --    [Deep_]Initialize (Ref);
