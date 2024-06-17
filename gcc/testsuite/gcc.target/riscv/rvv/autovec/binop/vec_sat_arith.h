@@ -75,6 +75,19 @@ vec_sat_u_add_##T##_fmt_5 (T *out, T *op_1, T *op_2, unsigned limit) \
     }                                                                \
 }
 
+#define DEF_VEC_SAT_U_ADD_FMT_6(T)                                   \
+void __attribute__((noinline))                                       \
+vec_sat_u_add_##T##_fmt_6 (T *out, T *op_1, T *op_2, unsigned limit) \
+{                                                                    \
+  unsigned i;                                                        \
+  for (i = 0; i < limit; i++)                                        \
+    {                                                                \
+      T x = op_1[i];                                                 \
+      T y = op_2[i];                                                 \
+      out[i] = x <= (T)(x + y) ? (x + y) : -1;                       \
+    }                                                                \
+}
+
 #define RUN_VEC_SAT_U_ADD_FMT_1(T, out, op_1, op_2, N) \
   vec_sat_u_add_##T##_fmt_1(out, op_1, op_2, N)
 
@@ -89,6 +102,9 @@ vec_sat_u_add_##T##_fmt_5 (T *out, T *op_1, T *op_2, unsigned limit) \
 
 #define RUN_VEC_SAT_U_ADD_FMT_5(T, out, op_1, op_2, N) \
   vec_sat_u_add_##T##_fmt_5(out, op_1, op_2, N)
+
+#define RUN_VEC_SAT_U_ADD_FMT_6(T, out, op_1, op_2, N) \
+  vec_sat_u_add_##T##_fmt_6(out, op_1, op_2, N)
 
 /******************************************************************************/
 /* Saturation Sub (Unsigned and Signed)                                       */
