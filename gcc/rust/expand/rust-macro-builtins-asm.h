@@ -31,13 +31,13 @@ public:
       parser (parser), last_token_id (last_token_id)
   {}
 
-  // InlineAsmContext (const InlineAsmContext& inline_asm_ctx)
-  //   : allow_templates (inline_asm_ctx.allow_templates), is_explicit
-  //   (inline_asm_ctx.is_explicit),
-  //     consumed_comma_without_formatted_string (false), inline_asm
-  //     (inline_asm_ctx.inline_asm), parser (inline_asm_ctx.parser),
-  //     last_token_id (inline_asm_ctx.last_token_id)
-  // {}
+  InlineAsmContext (const InlineAsmContext &inline_asm_ctx)
+    : allow_templates (inline_asm_ctx.allow_templates),
+      is_explicit (inline_asm_ctx.is_explicit),
+      consumed_comma_without_formatted_string (false),
+      inline_asm (inline_asm_ctx.inline_asm), parser (inline_asm_ctx.parser),
+      last_token_id (inline_asm_ctx.last_token_id)
+  {}
   // explicit InlineAsmContext (InlineAsmContext&& inline_asm_ctx)
   //   : allow_templates (inline_asm_ctx.allow_templates), is_explicit
   //   (inline_asm_ctx.is_explicit),

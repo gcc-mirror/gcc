@@ -143,7 +143,6 @@ parse_reg (InlineAsmContext &inline_asm_ctx)
   // after successful left parenthesis parsing, we should return ast of
   // InlineAsmRegOrRegClass of reg or reg class
   auto token = parser.peek_current_token ();
-  auto tok_id = token->get_id ();
   AST::InlineAsmRegOrRegClass reg_class;
   if (parser.skip_token (IDENTIFIER))
     {
@@ -151,7 +150,7 @@ parse_reg (InlineAsmContext &inline_asm_ctx)
       reg_class.type = RegType::RegClass;
       reg_class.reg_class.Symbol = token->as_string ();
     }
-  else if (tok_id == STRING_LITERAL)
+  else if (parser.skip_token (STRING_LITERAL))
     {
       // TODO: there is STRING_LITERAL, and BYTE_STRING_LITERAL, should we check
       // for both?
@@ -200,18 +199,29 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
   AST::InlineAsmOperand reg_operand;
   auto token = parser.peek_current_token ();
   auto iden_token = parser.peek_current_token ();
+
+  tl::optional<std::string> name = tl::nullopt;
   if (check_identifier (parser, ""))
     {
       auto equal_token = parser.peek_current_token ();
-      if (!parser.skip_token (EQUAL))
+
+      if (parser.skip_token (EQUAL))
 	{
-	  // TODO: Please handle this.
-	  rust_unreachable ();
+	  name = token->as_string ();
+	}
+      else
+	{
+	  rust_error_at (token->get_locus (),
+			 "expected operand, clobber_abi, options, or "
+			 "additional template string");
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
     }
 
   tl::expected<InlineAsmContext, InlineAsmParseError> parsing_operand
     = tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
+
+  int slot = inline_asm_ctx.inline_asm.operands.size ();
 
   // Here is all parse_reg_operand functions we're using in a for loop
   auto parse_funcs = {parse_reg_operand_in,	   parse_reg_operand_out,
@@ -226,8 +236,53 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
     {
       parsing_operand.emplace (inline_asm_ctx);
       parsing_operand.map (parse_func);
-      if (parsing_operand || parsing_operand.error () == COMMITTED)
+
+      // Per rust's asm.rs's structure
+      // After we've parse successfully, we break out and do a local validation
+      // of named, positional & explicit register operands
+
+      if (parsing_operand.has_value ())
+	break;
+      if (parsing_operand.error () == COMMITTED)
 	return parsing_operand;
+    }
+
+  auto &inline_asm = inline_asm_ctx.inline_asm;
+
+  token = inline_asm_ctx.parser.peek_current_token ();
+  rust_debug_loc (token->get_locus (), "Here\n");
+  if (inline_asm_ctx.is_explicit)
+    {
+      if (name != tl::nullopt)
+	{
+	  rust_error_at (token->get_locus (),
+			 "explicit register arguments cannot have names");
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
+	}
+      inline_asm.reg_args.insert (slot);
+    }
+  else if (name != tl::nullopt)
+    {
+      if (inline_asm.named_args.find (name.value ())
+	  != inline_asm.named_args.end ())
+	{
+	  rust_error_at (token->get_locus (), "duplicate argument named %qs",
+			 name.value ().c_str ());
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
+	}
+      inline_asm.named_args[name.value ()] = slot;
+    }
+  else
+    {
+      if (!inline_asm.named_args.empty () || !inline_asm.reg_args.empty ())
+	{
+	  // positional arguments cannot follow named arguments or explicit
+	  // register arguments
+	  rust_error_at (token->get_locus (),
+			 "positional arguments cannot follow named arguments "
+			 "or explicit register arguments");
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
+	}
     }
 
   return parsing_operand;
@@ -304,7 +359,7 @@ parse_reg_operand_lateout (InlineAsmContext inline_asm_ctx)
 }
 
 tl::expected<InlineAsmContext, InlineAsmParseError>
-parse_reg_operand_const (InlineAsmContext inline_asm_ctx)
+parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 {
   auto &parser = inline_asm_ctx.parser;
   auto token = parser.peek_current_token ();
@@ -367,7 +422,7 @@ parse_reg_operand_const (InlineAsmContext inline_asm_ctx)
 }
 
 tl::expected<InlineAsmContext, InlineAsmParseError>
-parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
+parse_reg_operand_const (InlineAsmContext inline_asm_ctx)
 {
   auto &parser = inline_asm_ctx.parser;
   AST::InlineAsmOperand reg_operand;
@@ -651,7 +706,6 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
       auto expected = parse_reg_operand (inline_asm_ctx);
       if (expected || expected.error () == COMMITTED)
 	return expected;
-      continue;
     }
   return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 }
