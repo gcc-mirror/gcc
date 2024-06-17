@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "context.h"
 #include "builtins.h"
+#include "ifcvt.h"
 #include "rtl-iter.h"
 #include "intl.h"
 #include "tm-constrs.h"
@@ -18037,6 +18038,34 @@ s390_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   return vectorize_vec_perm_const_1 (d);
 }
 
+/* Consider a NOCE conversion as profitable if there is at least one
+   conditional move.  */
+
+static bool
+s390_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
+{
+  if (if_info->speed_p)
+    {
+      for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
+	{
+	  rtx set = single_set (insn);
+	  if (set == NULL)
+	    continue;
+	  if (GET_CODE (SET_SRC (set)) != IF_THEN_ELSE)
+	    continue;
+	  rtx src = SET_SRC (set);
+	  machine_mode mode = GET_MODE (src);
+	  if (GET_MODE_CLASS (mode) != MODE_INT
+	      && GET_MODE_CLASS (mode) != MODE_FLOAT)
+	    continue;
+	  if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	    continue;
+	  return true;
+	}
+    }
+  return default_noce_conversion_profitable_p (seq, if_info);
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -18349,6 +18378,9 @@ s390_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 
 #undef TARGET_VECTORIZE_VEC_PERM_CONST
 #define TARGET_VECTORIZE_VEC_PERM_CONST s390_vectorize_vec_perm_const
+
+#undef TARGET_NOCE_CONVERSION_PROFITABLE_P
+#define TARGET_NOCE_CONVERSION_PROFITABLE_P s390_noce_conversion_profitable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
