@@ -1,6 +1,6 @@
 // { dg-options "-std=c++11 -Wno-psabi" }
 // { dg-do run }
-// { dg-additional-options "-march=z14" { target s390*-*-* } }
+// { dg-additional-options "-march=z14" { target s390_vxe } }
 
 /* This used to trigger (2024-05-28) the vectorize_vec_perm_const
    backend hook to be invoked with a MEM source operand.  Extracted
