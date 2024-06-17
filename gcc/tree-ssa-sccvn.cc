@@ -1201,14 +1201,8 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	case STRING_CST:
 	  /* This can show up in ARRAY_REF bases.  */
 	case INTEGER_CST:
-	  *op0_p = op->op0;
-	  op0_p = NULL;
-	  break;
-
 	case SSA_NAME:
-	  /* SSA names we have to get at one available since it contains
-	     flow-sensitive info.  */
-	  *op0_p = vn_valueize (op->op0);
+	  *op0_p = op->op0;
 	  op0_p = NULL;
 	  break;
 
@@ -2731,6 +2725,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  copy_reference_ops_from_ref (lhs, &lhs_ops);
 	  valueize_refs_1 (&lhs_ops, &valueized_anything, true);
 	}
+      vn_context_bb = saved_rpo_bb;
       ao_ref_init (&lhs_ref, lhs);
       lhs_ref_ok = true;
       if (valueized_anything
@@ -2739,11 +2734,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		ao_ref_base_alias_set (&lhs_ref), TREE_TYPE (lhs), lhs_ops)
 	  && !refs_may_alias_p_1 (ref, &lhs_ref, data->tbaa_p))
 	{
-	  vn_context_bb = saved_rpo_bb;
 	  *disambiguate_only = TR_VALUEIZE_AND_DISAMBIGUATE;
 	  return NULL;
 	}
-      vn_context_bb = saved_rpo_bb;
 
       /* When the def is a CLOBBER we can optimistically disambiguate
 	 against it since any overlap it would be undefined behavior.
@@ -3641,19 +3634,13 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Adjust *ref from the new operands.  */
       ao_ref rhs1_ref;
       ao_ref_init (&rhs1_ref, rhs1);
-      basic_block saved_rpo_bb = vn_context_bb;
-      vn_context_bb = gimple_bb (def_stmt);
       if (!ao_ref_init_from_vn_reference (&r,
 					  force_no_tbaa ? 0
 					  : ao_ref_alias_set (&rhs1_ref),
 					  force_no_tbaa ? 0
 					  : ao_ref_base_alias_set (&rhs1_ref),
 					  vr->type, vr->operands))
-	{
-	  vn_context_bb = saved_rpo_bb;
-	  return (void *)-1;
-	}
-      vn_context_bb = saved_rpo_bb;
+	return (void *)-1;
       /* This can happen with bitfields.  */
       if (maybe_ne (ref->size, r.size))
 	{
@@ -3852,14 +3839,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	return data->finish (0, 0, val);
 
       /* Adjust *ref from the new operands.  */
-      basic_block saved_rpo_bb = vn_context_bb;
-      vn_context_bb = gimple_bb (def_stmt);
       if (!ao_ref_init_from_vn_reference (&r, 0, 0, vr->type, vr->operands))
-	{
-	  vn_context_bb = saved_rpo_bb;
-	  return (void *)-1;
-	}
-      vn_context_bb = saved_rpo_bb;
+	return (void *)-1;
       /* This can happen with bitfields.  */
       if (maybe_ne (ref->size, r.size))
 	return (void *)-1;
@@ -3947,13 +3928,31 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
       unsigned limit = param_sccvn_max_alias_queries_per_access;
       vn_walk_cb_data data (&vr1, NULL_TREE, NULL, kind, true, NULL_TREE,
 			    false);
+      vec<vn_reference_op_s> ops_for_ref;
+      if (!valueized_p)
+	ops_for_ref = vr1.operands;
+      else
+	{
+	  /* For ao_ref_from_mem we have to ensure only available SSA names
+	     end up in base and the only convenient way to make this work
+	     for PRE is to re-valueize with that in mind.  */
+	  ops_for_ref.create (operands.length ());
+	  ops_for_ref.quick_grow (operands.length ());
+	  memcpy (ops_for_ref.address (),
+		  operands.address (),
+		  sizeof (vn_reference_op_s)
+		  * operands.length ());
+	  valueize_refs_1 (&ops_for_ref, &valueized_p, true);
+	}
       if (ao_ref_init_from_vn_reference (&r, set, base_set, type,
-					 vr1.operands))
+					 ops_for_ref))
 	*vnresult
 	  = ((vn_reference_t)
 	     walk_non_aliased_vuses (&r, vr1.vuse, true, vn_reference_lookup_2,
 				     vn_reference_lookup_3, vuse_valueize,
 				     limit, &data));
+      if (ops_for_ref != shared_lookup_references)
+	ops_for_ref.release ();
       gcc_checking_assert (vr1.operands == shared_lookup_references);
       if (*vnresult
 	  && data.same_val
@@ -4054,9 +4053,18 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
       vn_reference_t wvnresult;
       ao_ref r;
       unsigned limit = param_sccvn_max_alias_queries_per_access;
+      auto_vec<vn_reference_op_s> ops_for_ref;
+      if (valueized_anything)
+	{
+	  copy_reference_ops_from_ref (op, &ops_for_ref);
+	  bool tem;
+	  valueize_refs_1 (&ops_for_ref, &tem, true);
+	}
+      /* Make sure to use a valueized reference if we valueized anything.
+         Otherwise preserve the full reference for advanced TBAA.  */
       if (!valueized_anything
 	  || !ao_ref_init_from_vn_reference (&r, vr1.set, vr1.base_set,
-					     vr1.type, vr1.operands))
+					     vr1.type, ops_for_ref))
 	{
 	  ao_ref_init (&r, op);
 	  /* Record the extra info we're getting from the full ref.  */
