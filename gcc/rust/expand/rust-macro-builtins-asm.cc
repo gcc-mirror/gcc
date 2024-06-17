@@ -49,8 +49,6 @@ parse_clobber_abi (InlineAsmContext inline_asm_ctx)
   auto token = parser.peek_current_token ();
   if (!parser.skip_token (LEFT_PAREN))
     {
-      // TODO: Raise error exactly like rustc if left parenthesis is not
-      // encountered.
       token = parser.peek_current_token ();
 
       // TODO: Error reporting shifted to the left 1 character, I'm not sure
@@ -71,8 +69,6 @@ parse_clobber_abi (InlineAsmContext inline_asm_ctx)
 
   if (parser.skip_token (RIGHT_PAREN))
     {
-      // TODO: We encountered a "clobber_abi()", which should be illegal?
-      // https://github.com/rust-lang/rust/blob/c00957a3e269219413041a4e3565f33b1f9d0779/compiler/rustc_builtin_macros/src/asm.rs#L381
       rust_error_at (
 	parser.peek_current_token ()->get_locus (),
 	"at least one abi must be provided as an argument to %<clobber_abi%>");
@@ -491,9 +487,9 @@ parse_options (InlineAsmContext &inline_asm_ctx)
   // Parse everything commitedly
   if (!parser.skip_token (LEFT_PAREN))
     {
-      // We have shifted `options` to search for the left parenthesis next, we
-      // should error out if this is not possible.
-      // TODO: report some error.
+      auto local_token = parser.peek_current_token ();
+      rust_error_at (local_token->get_locus (), "expected %qs, found %qs", "(",
+		     local_token->as_string ().c_str ());
       return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
 
@@ -538,7 +534,6 @@ parse_options (InlineAsmContext &inline_asm_ctx)
 	}
       else
 	{
-	  // TODO: Unexpected error, please return the correct error
 	  rust_error_at (token->get_locus (),
 			 "expected one of %qs, %qs, %qs, %qs, %qs, %qs, %qs, "
 			 "%qs, %qs, or %qs, found %qs",
@@ -562,7 +557,6 @@ parse_options (InlineAsmContext &inline_asm_ctx)
 	  rust_unreachable ();
 	  token = parser.peek_current_token ();
 	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
-	  ;
 	}
     }
 
@@ -678,34 +672,45 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
       // Ok after the left paren is good, we better be parsing correctly
       // everything in here, which is operand in ABNF
 
-      // TODO: Parse clobber abi, eat the identifier named "clobber_abi" if true
+      // Parse clobber abi, eat the identifier named "clobber_abi" if true
       if (check_identifier (parser, "clobber_abi"))
 	{
 	  auto expected = parse_clobber_abi (inline_asm_ctx);
 	  if (expected || expected.error () == COMMITTED)
 	    return expected;
 
-	  continue;
+	  // The error type is definitely non-committed (we have checked above),
+	  // we are allowed to keep on parsing
 	}
 
-      // TODO: Parse options
       if (check_identifier (parser, "options"))
 	{
 	  auto expected = parse_options (inline_asm_ctx);
 	  if (expected || expected.error () == COMMITTED)
 	    return expected;
 
-	  continue;
+	  // The error type is definitely non-committed (we have checked above),
+	  // we are allowed to keep on parsing
 	}
 
       // Ok after we have check that neither clobber_abi nor options works, the
       // only other logical choice is reg_operand
-      // std::cout << "reg_operand" << std::endl;
 
-      // TODO: BUBBLE UP THIS EXPECTED(...)
       auto expected = parse_reg_operand (inline_asm_ctx);
       if (expected || expected.error () == COMMITTED)
 	return expected;
+
+      // Since parse_reg_operand is the last thing we've considered,
+      // The non-committed parse error type means that we have exhausted our
+      // search path
+
+      // We then should return the error of COMMITTED, even though we have not
+      // committed to anything So that the error bubbles up and we recover from
+      // this error gracefully
+      rust_error_at (token->get_locus (),
+		     "expected operand, clobber_abi, options, or additional "
+		     "template string");
+      return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
   return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 }
@@ -715,19 +720,12 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 	   AST::InvocKind semicolon, AST::AsmKind is_global_asm)
 {
   // From the rule of asm.
-  // We first peek and see if it is a format string or not.
-  // If yes, we process the first ever format string, and move on to the
-  // recurrent of format string Else we exit out
+  // We first parse all formatted strings. If we fail, then we return
+  // tl::nullopt
 
-  // After that, we peek and see if it is a reoccuring stream of format string
-  // or not. If it is, keep on going to do this format string. Else, move on
+  // We then parse the asm arguments. If we fail, then we return tl::nullopt
 
-  // After that, we peek and see if it is a reoccuring stream of operands or not
-  // If it is, keep on going to do this operand thingy.
-  // Else, move on
-
-  // We check if there is an optional "," at the end, per ABNF spec.
-  // If it is, consume it.
+  // We then validate. If we fail, then we return tl::nullopt
 
   // Done
   MacroInvocLexer lex (invoc.get_delim_tok_tree ().to_token_stream ());
@@ -738,7 +736,6 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 			     is_global_asm == AST::AsmKind::Global);
   auto inline_asm_ctx = InlineAsmContext (inline_asm, parser, last_token_id);
 
-  // operands stream, also handles the optional ","
   tl::expected<InlineAsmContext, InlineAsmParseError> resulting_context
     = tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
   resulting_context.and_then (parse_format_strings)
