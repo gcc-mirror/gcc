@@ -916,6 +916,7 @@ riscv_subset_list::to_string (bool version_p) const
   riscv_subset_t *subset;
 
   bool skip_zifencei = false;
+  bool skip_zaamo_zalrsc = false;
   bool skip_zicsr = false;
   bool i2p0 = false;
 
@@ -943,6 +944,10 @@ riscv_subset_list::to_string (bool version_p) const
      a mistake in that binutils 2.35 supports zicsr but not zifencei.  */
   skip_zifencei = true;
 #endif
+#ifndef HAVE_AS_MARCH_ZAAMO_ZALRSC
+  /* Skip since binutils 2.42 and earlier don't recognize zaamo/zalrsc.  */
+  skip_zaamo_zalrsc = true;
+#endif
 
   for (subset = m_head; subset != NULL; subset = subset->next)
     {
@@ -952,6 +957,12 @@ riscv_subset_list::to_string (bool version_p) const
 
       if (((subset->implied_p && skip_zicsr) || i2p0) &&
 	  subset->name == "zicsr")
+	continue;
+
+      if (skip_zaamo_zalrsc && subset->name == "zaamo")
+	continue;
+
+      if (skip_zaamo_zalrsc && subset->name == "zalrsc")
 	continue;
 
       /* For !version_p, we only separate extension with underline for
