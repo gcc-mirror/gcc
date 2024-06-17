@@ -283,7 +283,7 @@ find_common_type (tree t1, tree t2)
    tests in as efficient a manner as possible.  */
 
 static tree
-compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
+compare_arrays_for_equality (location_t loc, tree result_type, tree a1, tree a2)
 {
   tree result = convert (result_type, boolean_true_node);
   tree a1_is_null = convert (result_type, boolean_false_node);
@@ -357,8 +357,6 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 	  ub1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (ub1, a1);
 
 	  comparison = fold_build2_loc (loc, LT_EXPR, result_type, ub1, lb1);
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, loc);
 
 	  this_a1_is_null = comparison;
 	  this_a2_is_null = convert (result_type, boolean_true_node);
@@ -380,9 +378,6 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 						ub1, lb1),
 			       build_binary_op (MINUS_EXPR, base_type,
 						ub2, lb2));
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, loc);
-
 	  this_a1_is_null
 	    = fold_build2_loc (loc, LT_EXPR, result_type, ub1, lb1);
 
@@ -397,8 +392,6 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 
 	  comparison
 	    = fold_build2_loc (loc, EQ_EXPR, result_type, length1, length2);
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, loc);
 
 	  lb1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (lb1, a1);
 	  ub1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (ub1, a1);
@@ -451,6 +444,89 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 			    build_binary_op (TRUTH_ANDIF_EXPR, result_type,
 					     a1_is_null, a2_is_null),
 			    result);
+
+  /* If the operands have side-effects, they need to be evaluated before
+     doing the tests above since the place they otherwise would end up
+     being evaluated at run time could be wrong.  */
+  if (a1_side_effects_p)
+    result = build2 (COMPOUND_EXPR, result_type, a1, result);
+
+  if (a2_side_effects_p)
+    result = build2 (COMPOUND_EXPR, result_type, a2, result);
+
+  return result;
+}
+
+/* Return an expression tree representing an ordering comparison of A1 and A2,
+   two objects of type ARRAY_TYPE.  The result should be of type RESULT_TYPE.
+
+   A1 is less than A2 according to the following alternative:
+     - when A1's length is less than A2'length: if every element of A1 is equal
+       to its counterpart in A2 or the first differing is lesser in A1 than A2,
+     - otherwise: if not every element of A2 is equal to its counterpart in A1
+       and the first differing is lesser in A1 than A2.
+
+   The other 3 ordering comparisons can be easily deduced from this one.  */
+
+static tree
+compare_arrays_for_ordering (location_t loc, tree result_type, tree a1, tree a2)
+{
+  const bool a1_side_effects_p = TREE_SIDE_EFFECTS (a1);
+  const bool a2_side_effects_p = TREE_SIDE_EFFECTS (a2);
+  tree t1 = TREE_TYPE (a1);
+  tree t2 = TREE_TYPE (a2);
+  tree dom1 = TYPE_DOMAIN (t1);
+  tree dom2 = TYPE_DOMAIN (t2);
+  tree length1 = size_binop (PLUS_EXPR,
+			     size_binop (MINUS_EXPR,
+					 TYPE_MAX_VALUE (dom1),
+					 TYPE_MIN_VALUE (dom1)),
+			     size_one_node);
+  tree length2 = size_binop (PLUS_EXPR,
+			     size_binop (MINUS_EXPR,
+					 TYPE_MAX_VALUE (dom2),
+					 TYPE_MIN_VALUE (dom2)),
+			     size_one_node);
+  tree addr1, addr2, fndecl, result;
+
+  /* If the lengths are known at compile time, fold the alternative and let the
+     gimplifier optimize the case of power-of-two lengths.  */
+  if (TREE_CODE (length1) == INTEGER_CST && TREE_CODE (length2) == INTEGER_CST)
+    return tree_int_cst_compare (length1, length2) < 0
+	   ? fold_build2_loc (loc, LE_EXPR, result_type, a1, convert (t1, a2))
+	   : fold_build2_loc (loc, LT_EXPR, result_type, convert (t2, a1), a2);
+
+  /* If the operands have side-effects, they need to be evaluated only once
+     in spite of the multiple references in the comparison.  */
+  if (a1_side_effects_p)
+    a1 = gnat_protect_expr (a1);
+
+  if (a2_side_effects_p)
+    a2 = gnat_protect_expr (a2);
+
+  length1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length1, a1);
+  length2 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length2, a2);
+
+  /* If the lengths are not known at compile time, call memcmp directly with
+     the actual lengths since a1 and a2 may have the same nominal subtype.  */
+  addr1 = build_fold_addr_expr_loc (loc, a1);
+  addr2 = build_fold_addr_expr_loc (loc, a2);
+  fndecl = builtin_decl_implicit (BUILT_IN_MEMCMP);
+
+  result
+    = fold_build3_loc (loc, COND_EXPR, result_type,
+		       fold_build2_loc (loc, LT_EXPR, boolean_type_node,
+				        length1, length2),
+		       fold_build2_loc (loc, LE_EXPR, result_type,
+				        build_call_expr_loc (loc, fndecl, 3,
+							     addr1, addr2,
+							     length1),
+					integer_zero_node),
+		       fold_build2_loc (loc, LT_EXPR, result_type,
+					build_call_expr_loc (loc, fndecl, 3,
+							     addr1, addr2,
+							     length2),
+					integer_zero_node));
 
   /* If the operands have side-effects, they need to be evaluated before
      doing the tests above since the place they otherwise would end up
@@ -1176,12 +1252,32 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      || (TREE_CODE (right_type) == INTEGER_TYPE
 		  && TYPE_HAS_ACTUAL_BOUNDS_P (right_type))))
 	{
-	  result = compare_arrays (input_location,
-				   result_type, left_operand, right_operand);
-	  if (op_code == NE_EXPR)
-	    result = invert_truthvalue_loc (EXPR_LOCATION (result), result);
+          if (op_code == EQ_EXPR || op_code == NE_EXPR)
+	    {
+	      result
+		= compare_arrays_for_equality (input_location, result_type,
+					       left_operand, right_operand);
+	      if (op_code == NE_EXPR)
+		result = invert_truthvalue_loc (input_location, result);
+	    }
+
 	  else
-	    gcc_assert (op_code == EQ_EXPR);
+	    {
+	      /* Swap the operands to canonicalize to LT_EXPR or GE_EXPR.  */
+	      if (op_code == GT_EXPR || op_code == LE_EXPR)
+		result
+		  = compare_arrays_for_ordering (input_location, result_type,
+						 right_operand, left_operand);
+
+	      else
+		result
+		  = compare_arrays_for_ordering (input_location, result_type,
+						 left_operand, right_operand);
+
+	      /* GE_EXPR is (not LT_EXPR) for discrete array types.  */
+	      if (op_code == GE_EXPR || op_code == LE_EXPR)
+		result = invert_truthvalue_loc (input_location, result);
+	    }
 
 	  return result;
 	}

@@ -1162,9 +1162,6 @@ package body Exp_Ch4 is
 
       Comp : RE_Id;
 
-      Byte_Addressable : constant Boolean := System_Storage_Unit = Byte'Size;
-      --  True for byte addressable target
-
       function Length_Less_Than_4 (Opnd : Node_Id) return Boolean;
       --  Returns True if the length of the given operand is known to be less
       --  than 4. Returns False if this length is known to be four or greater
@@ -1198,11 +1195,12 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Array_Comparison
 
    begin
-      --  Deal first with unpacked case, where we can call a runtime routine
-      --  except that we avoid this for targets for which are not addressable
-      --  by bytes.
+      --  Deal first with unpacked case, where we can call a runtime routine,
+      --  except if the component type is a byte (unsigned) where we can use
+      --  a byte-wise comparison if supported on the target (this is disabled
+      --  for now in Unnest_Subprogram_Mode for LLVM).
 
-      if not Is_Bit_Packed_Array (Typ1) and then Byte_Addressable then
+      if not Is_Bit_Packed_Array (Typ1) then
          --  The call we generate is:
 
          --  Compare_Array_xn[_Unaligned]
@@ -1214,9 +1212,18 @@ package body Exp_Ch4 is
          --  <op> is the standard comparison operator
 
          if Component_Size (Typ1) = 8 then
-            if Length_Less_Than_4 (Op1)
-                 or else
-               Length_Less_Than_4 (Op2)
+            if Is_Unsigned_Type (Ctyp)
+              and then not Is_Possibly_Unaligned_Object (Op1)
+              and then not Is_Possibly_Unaligned_Slice (Op1)
+              and then not Is_Possibly_Unaligned_Object (Op2)
+              and then not Is_Possibly_Unaligned_Slice (Op2)
+              and then Support_Composite_Compare_On_Target
+              and then not Unnest_Subprogram_Mode
+            then
+               return;
+
+            elsif Length_Less_Than_4 (Op1)
+              or else Length_Less_Than_4 (Op2)
             then
                if Is_Unsigned_Type (Ctyp) then
                   Comp := RE_Compare_Array_U8_Unaligned;
@@ -1261,11 +1268,10 @@ package body Exp_Ch4 is
             end if;
          end if;
 
+         --  Expand to a call only if the runtime function is available,
+         --  otherwise fall back to inline code.
+
          if RTE_Available (Comp) then
-
-            --  Expand to a call only if the runtime function is available,
-            --  otherwise fall back to inline code.
-
             Remove_Side_Effects (Op1, Name_Req => True);
             Remove_Side_Effects (Op2, Name_Req => True);
 
@@ -1292,8 +1298,7 @@ package body Exp_Ch4 is
                        Attribute_Name => Name_Length)));
 
                Zero : constant Node_Id :=
-                 Make_Integer_Literal (Loc,
-                   Intval => Uint_0);
+                 Make_Integer_Literal (Loc, Intval => Uint_0);
 
                Comp_Op : Node_Id;
 
@@ -8230,8 +8235,8 @@ package body Exp_Ch4 is
          then
             Expand_Packed_Eq (N);
 
-         --  Where the component type is elementary we can use a block bit
-         --  comparison (if supported on the target) exception in the case
+         --  When the component type is elementary, we can use a byte-wise
+         --  comparison if supported on the target, except in the cases
          --  of floating-point (negative zero issues require element by
          --  element comparison), and full access types (where we must be sure
          --  to load elements independently) and possibly unaligned arrays.
