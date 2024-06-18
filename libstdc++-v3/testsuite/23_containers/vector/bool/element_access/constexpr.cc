@@ -115,4 +115,4 @@ template<typename T = bool>
   constexpr std::true_type
   access_empty_front() { return {}; }
 
-static_assert( ! access_empty_front() ); // { dg-error "ambiguous" "PR 103191" { target { ! debug_mode } } }
+static_assert( ! access_empty_front() );

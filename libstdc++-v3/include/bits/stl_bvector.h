@@ -1084,12 +1084,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       operator[](size_type __n)
-      { return begin()[__n]; }
+      {
+	__glibcxx_requires_subscript(__n);
+	return begin()[__n];
+      }
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       operator[](size_type __n) const
-      { return begin()[__n]; }
+      {
+	__glibcxx_requires_subscript(__n);
+	return begin()[__n];
+      }
 
     protected:
       _GLIBCXX20_CONSTEXPR
@@ -1133,22 +1139,34 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       front()
-      { return *begin(); }
+      {
+	__glibcxx_requires_nonempty();
+	return *begin();
+      }
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       front() const
-      { return *begin(); }
+      {
+	__glibcxx_requires_nonempty();
+	return *begin();
+      }
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       reference
       back()
-      { return *(end() - 1); }
+      {
+	__glibcxx_requires_nonempty();
+	return *(end() - 1);
+      }
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
       const_reference
       back() const
-      { return *(end() - 1); }
+      {
+	__glibcxx_requires_nonempty();
+	return *(end() - 1);
+      }
 
       _GLIBCXX20_CONSTEXPR
       void
