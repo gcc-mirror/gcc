@@ -2579,8 +2579,7 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
   int lane = INTVAL (lane_idx);
 
   if (lane < nunits / 4)
-    op2 = simplify_gen_subreg (d->mode, op2, quadmode,
-			       subreg_lowpart_offset (d->mode, quadmode));
+    op2 = force_lowpart_subreg (d->mode, op2, quadmode);
   else
     {
       /* Select the upper 64 bits, either a V2SF or V4HF, this however
@@ -2590,8 +2589,7 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
 	 gen_highpart_mode generates code that isn't optimal.  */
       rtx temp1 = gen_reg_rtx (d->mode);
       rtx temp2 = gen_reg_rtx (DImode);
-      temp1 = simplify_gen_subreg (d->mode, op2, quadmode,
-				   subreg_lowpart_offset (d->mode, quadmode));
+      temp1 = force_lowpart_subreg (d->mode, op2, quadmode);
       temp1 = force_subreg (V2DImode, temp1, d->mode, 0);
       if (BYTES_BIG_ENDIAN)
 	emit_insn (gen_aarch64_get_lanev2di (temp2, temp1, const0_rtx));
@@ -2836,7 +2834,7 @@ aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
 	case AARCH64_WSR64:
 	case AARCH64_WSRF64:
 	case AARCH64_WSR128:
-	  subreg = lowpart_subreg (sysreg_mode, input_val, mode);
+	  subreg = force_lowpart_subreg (sysreg_mode, input_val, mode);
 	  break;
 	case AARCH64_WSRF:
 	  subreg = gen_lowpart_SUBREG (SImode, input_val);
@@ -2871,7 +2869,8 @@ aarch64_expand_rwsr_builtin (tree exp, rtx target, int fcode)
     case AARCH64_RSR64:
     case AARCH64_RSRF64:
     case AARCH64_RSR128:
-      return lowpart_subreg (TYPE_MODE (TREE_TYPE (exp)), target, sysreg_mode);
+      return force_lowpart_subreg (TYPE_MODE (TREE_TYPE (exp)),
+				   target, sysreg_mode);
     case AARCH64_RSRF:
       subreg = gen_lowpart_SUBREG (SImode, target);
       return gen_lowpart_SUBREG (SFmode, subreg);

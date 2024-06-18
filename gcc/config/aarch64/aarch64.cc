@@ -3288,7 +3288,7 @@ aarch64_sve_reinterpret (machine_mode mode, rtx x)
   /* can_change_mode_class must only return true if subregs and svreinterprets
      have the same semantics.  */
   if (targetm.can_change_mode_class (GET_MODE (x), mode, FP_REGS))
-    return lowpart_subreg (mode, x, GET_MODE (x));
+    return force_lowpart_subreg (mode, x, GET_MODE (x));
 
   rtx res = gen_reg_rtx (mode);
   x = force_reg (GET_MODE (x), x);
@@ -26870,9 +26870,8 @@ aarch64_addti_scratch_regs (rtx op1, rtx op2, rtx *low_dest,
 			    rtx *high_in2)
 {
   *low_dest = gen_reg_rtx (DImode);
-  *low_in1 = gen_lowpart (DImode, op1);
-  *low_in2 = simplify_gen_subreg (DImode, op2, TImode,
-				  subreg_lowpart_offset (DImode, TImode));
+  *low_in1 = force_lowpart_subreg (DImode, op1, TImode);
+  *low_in2 = force_lowpart_subreg (DImode, op2, TImode);
   *high_dest = gen_reg_rtx (DImode);
   *high_in1 = gen_highpart (DImode, op1);
   *high_in2 = simplify_gen_subreg (DImode, op2, TImode,
@@ -26904,11 +26903,8 @@ aarch64_subvti_scratch_regs (rtx op1, rtx op2, rtx *low_dest,
 			     rtx *high_in2)
 {
   *low_dest = gen_reg_rtx (DImode);
-  *low_in1 = simplify_gen_subreg (DImode, op1, TImode,
-				  subreg_lowpart_offset (DImode, TImode));
-
-  *low_in2 = simplify_gen_subreg (DImode, op2, TImode,
-				  subreg_lowpart_offset (DImode, TImode));
+  *low_in1 = force_lowpart_subreg (DImode, op1, TImode);
+  *low_in2 = force_lowpart_subreg (DImode, op2, TImode);
   *high_dest = gen_reg_rtx (DImode);
 
   *high_in1 = simplify_gen_subreg (DImode, op1, TImode,
