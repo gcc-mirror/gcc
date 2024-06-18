@@ -554,6 +554,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ValueType>
     inline const _ValueType* any_cast(const any* __any) noexcept
     {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3305. any_cast<void>
+      static_assert(!is_void_v<_ValueType>);
+
+      // As an optimization, don't bother instantiating __any_caster for
+      // function types, since std::any can only hold objects.
       if constexpr (is_object_v<_ValueType>)
 	if (__any)
 	  return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
@@ -563,6 +569,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ValueType>
     inline _ValueType* any_cast(any* __any) noexcept
     {
+      static_assert(!is_void_v<_ValueType>);
+
       if constexpr (is_object_v<_ValueType>)
 	if (__any)
 	  return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
