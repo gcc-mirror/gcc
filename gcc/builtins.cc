@@ -2940,8 +2940,7 @@ expand_builtin_issignaling (tree exp, rtx target)
 	  {
 	    hi = simplify_gen_subreg (imode, temp, fmode,
 				      subreg_highpart_offset (imode, fmode));
-	    lo = simplify_gen_subreg (imode, temp, fmode,
-				      subreg_lowpart_offset (imode, fmode));
+	    lo = force_lowpart_subreg (imode, temp, fmode);
 	    if (!hi || !lo)
 	      {
 		scalar_int_mode imode2;
@@ -2951,9 +2950,7 @@ expand_builtin_issignaling (tree exp, rtx target)
 		    hi = simplify_gen_subreg (imode, temp2, imode2,
 					      subreg_highpart_offset (imode,
 								      imode2));
-		    lo = simplify_gen_subreg (imode, temp2, imode2,
-					      subreg_lowpart_offset (imode,
-								     imode2));
+		    lo = force_lowpart_subreg (imode, temp2, imode2);
 		  }
 	      }
 	    if (!hi || !lo)

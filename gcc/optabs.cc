@@ -1085,7 +1085,7 @@ expand_doubleword_mod (machine_mode mode, rtx op0, rtx op1, bool unsignedp)
 					 NULL_RTX, 1, OPTAB_DIRECT);
 	      if (v == NULL_RTX)
 		return NULL_RTX;
-	      v = lowpart_subreg (word_mode, v, mode);
+	      v = force_lowpart_subreg (word_mode, v, mode);
 	      if (v == NULL_RTX)
 		return NULL_RTX;
 	      if (i != count - 1)

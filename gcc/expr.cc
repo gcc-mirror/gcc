@@ -423,7 +423,8 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 					0).exists (&toi_mode))
 		{
 		  start_sequence ();
-		  rtx fromi = lowpart_subreg (fromi_mode, from, from_mode);
+		  rtx fromi = force_lowpart_subreg (fromi_mode, from,
+						    from_mode);
 		  rtx tof = NULL_RTX;
 		  if (fromi)
 		    {
@@ -443,7 +444,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 					      NULL_RTX, 1);
 		      if (toi)
 			{
-			  tof = lowpart_subreg (to_mode, toi, toi_mode);
+			  tof = force_lowpart_subreg (to_mode, toi, toi_mode);
 			  if (tof)
 			    emit_move_insn (to, tof);
 			}
@@ -475,7 +476,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 				    0).exists (&toi_mode))
 	    {
 	      start_sequence ();
-	      rtx fromi = lowpart_subreg (fromi_mode, from, from_mode);
+	      rtx fromi = force_lowpart_subreg (fromi_mode, from, from_mode);
 	      rtx tof = NULL_RTX;
 	      do
 		{
@@ -510,11 +511,11 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 						  temp4, shift, NULL_RTX, 1);
 		  if (!temp5)
 		    break;
-		  rtx temp6 = lowpart_subreg (toi_mode, temp5, fromi_mode);
+		  rtx temp6 = force_lowpart_subreg (toi_mode, temp5,
+						    fromi_mode);
 		  if (!temp6)
 		    break;
-		  tof = lowpart_subreg (to_mode, force_reg (toi_mode, temp6),
-					toi_mode);
+		  tof = force_lowpart_subreg (to_mode, temp6, toi_mode);
 		  if (tof)
 		    emit_move_insn (to, tof);
 		}
@@ -9784,9 +9785,9 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 	    inner_mode = TYPE_MODE (inner_type);
 
 	  if (modifier == EXPAND_INITIALIZER)
-	    op0 = lowpart_subreg (mode, op0, inner_mode);
+	    op0 = force_lowpart_subreg (mode, op0, inner_mode);
 	  else
-	    op0=  convert_modes (mode, inner_mode, op0,
+	    op0 = convert_modes (mode, inner_mode, op0,
 				 TYPE_UNSIGNED (inner_type));
 	}
 
