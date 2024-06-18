@@ -301,7 +301,7 @@ convert_move (rtx to, rtx from, int unsignedp)
 			    GET_MODE_BITSIZE (to_mode)));
 
       if (VECTOR_MODE_P (to_mode))
-	from = simplify_gen_subreg (to_mode, from, GET_MODE (from), 0);
+	from = force_subreg (to_mode, from, GET_MODE (from), 0);
       else
 	to = simplify_gen_subreg (from_mode, to, GET_MODE (to), 0);
 
@@ -935,7 +935,7 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
     {
       gcc_assert (known_eq (GET_MODE_BITSIZE (mode),
 			    GET_MODE_BITSIZE (oldmode)));
-      return simplify_gen_subreg (mode, x, oldmode, 0);
+      return force_subreg (mode, x, oldmode, 0);
     }
 
   temp = gen_reg_rtx (mode);
@@ -3072,8 +3072,8 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type,
 	    }
 	}
       else if (CONSTANT_P (src) && GET_MODE (dst) != BLKmode
-               && XVECLEN (dst, 0) > 1)
-        tmps[i] = simplify_gen_subreg (mode, src, GET_MODE (dst), bytepos);
+	       && XVECLEN (dst, 0) > 1)
+	tmps[i] = force_subreg (mode, src, GET_MODE (dst), bytepos);
       else if (CONSTANT_P (src))
 	{
 	  if (known_eq (bytelen, ssize))
@@ -3297,7 +3297,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0, start), 1)),
 			bytepos))
 	    {
-	      temp = simplify_gen_subreg (outer, tmps[start], inner, 0);
+	      temp = force_subreg (outer, tmps[start], inner, 0);
 	      if (temp)
 		{
 		  emit_move_insn (dst, temp);
@@ -3317,7 +3317,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 							  finish - 1), 1)),
 			bytepos))
 	    {
-	      temp = simplify_gen_subreg (outer, tmps[finish - 1], inner, 0);
+	      temp = force_subreg (outer, tmps[finish - 1], inner, 0);
 	      if (temp)
 		{
 		  emit_move_insn (dst, temp);
@@ -6191,11 +6191,9 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		  to_mode = GET_MODE_INNER (to_mode);
 		  machine_mode from_mode = GET_MODE_INNER (GET_MODE (result));
 		  rtx from_real
-		    = simplify_gen_subreg (to_mode, XEXP (result, 0),
-					   from_mode, 0);
+		    = force_subreg (to_mode, XEXP (result, 0), from_mode, 0);
 		  rtx from_imag
-		    = simplify_gen_subreg (to_mode, XEXP (result, 1),
-					   from_mode, 0);
+		    = force_subreg (to_mode, XEXP (result, 1), from_mode, 0);
 		  if (!from_real || !from_imag)
 		    goto concat_store_slow;
 		  emit_move_insn (XEXP (to_rtx, 0), from_real);
@@ -6211,8 +6209,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		  if (MEM_P (result))
 		    from_rtx = change_address (result, to_mode, NULL_RTX);
 		  else
-		    from_rtx
-		      = simplify_gen_subreg (to_mode, result, from_mode, 0);
+		    from_rtx = force_subreg (to_mode, result, from_mode, 0);
 		  if (from_rtx)
 		    {
 		      emit_move_insn (XEXP (to_rtx, 0),
@@ -6224,10 +6221,10 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		    {
 		      to_mode = GET_MODE_INNER (to_mode);
 		      rtx from_real
-			= simplify_gen_subreg (to_mode, result, from_mode, 0);
+			= force_subreg (to_mode, result, from_mode, 0);
 		      rtx from_imag
-			= simplify_gen_subreg (to_mode, result, from_mode,
-					       GET_MODE_SIZE (to_mode));
+			= force_subreg (to_mode, result, from_mode,
+					GET_MODE_SIZE (to_mode));
 		      if (!from_real || !from_imag)
 			goto concat_store_slow;
 		      emit_move_insn (XEXP (to_rtx, 0), from_real);
