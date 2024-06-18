@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-diagnostic.h"
 #include "intl.h"
 #include "diagnostic-path.h"
-#include "json.h"
 #include "gcc-rich-location.h"
 #include "diagnostic-color.h"
 #include "diagnostic-event-id.h"
@@ -952,37 +951,6 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
       }
       break;
     }
-}
-
-/* This has to be here, rather than diagnostic-format-json.cc,
-   since diagnostic-format-json.o is within OBJS-libcommon and thus
-   doesn't have access to trees (for m_fndecl).  */
-
-json::value *
-default_tree_make_json_for_path (diagnostic_context *context,
-				 const diagnostic_path *path)
-{
-  json::array *path_array = new json::array ();
-  for (unsigned i = 0; i < path->num_events (); i++)
-    {
-      const diagnostic_event &event = path->get_event (i);
-
-      json::object *event_obj = new json::object ();
-      if (event.get_location ())
-	event_obj->set ("location",
-			json_from_expanded_location (context,
-						     event.get_location ()));
-      label_text event_text (event.get_desc (false));
-      event_obj->set_string ("description", event_text.get ());
-      if (const logical_location *logical_loc = event.get_logical_location ())
-	{
-	  label_text name (logical_loc->get_name_for_path_output ());
-	  event_obj->set_string ("function", name.get ());
-	}
-      event_obj->set_integer ("depth", event.get_stack_depth ());
-      path_array->append (event_obj);
-    }
-  return path_array;
 }
 
 #if CHECKING_P

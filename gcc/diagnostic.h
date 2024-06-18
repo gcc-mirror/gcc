@@ -713,8 +713,6 @@ private:
 
 public:
   void (*m_print_path) (diagnostic_context *, const diagnostic_path *);
-  json::value *(*m_make_json_for_path) (diagnostic_context *,
-					const diagnostic_path *);
 
   /* Auxiliary data for client.  */
   void *m_client_aux_data;
