@@ -8083,13 +8083,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   if ((reduction_type == COND_REDUCTION
        || reduction_type == INTEGER_INDUC_COND_REDUCTION
-       || reduction_type == CONST_COND_REDUCTION)
+       || reduction_type == CONST_COND_REDUCTION
+       || reduction_type == EXTRACT_LAST_REDUCTION)
       && slp_node
       && SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) > 1)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "multiple types in condition reduction reduction.\n");
+			 "multiple types in condition reduction.\n");
       return false;
     }
 
