@@ -1,3 +1,13 @@
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2024-05-23  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR target/109549
+	* config/s390/s390.cc (TARGET_NOCE_CONVERSION_PROFITABLE_P):
+	Define.
+	(s390_noce_conversion_profitable_p): Implement.
+
 2024-06-15  Christoph Müllner  <christoph.muellner@vrull.eu>
 
 	Backported from master:

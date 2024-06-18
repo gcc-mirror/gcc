@@ -1,3 +1,59 @@
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115290
+	* c-c++-common/Warray-compare-3.c: New test.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111343
+	PR c++/115511
+	* g++.dg/cpp23/ext-floating18.C: New test.
+
+2024-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99678
+	* g++.dg/cpp2a/concepts-requires38.C: New test.
+
+2024-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115239
+	* g++.dg/overload/error7.C: New test.
+
+2024-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115283
+	* g++.dg/template/linkage5.C: New test.
+
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-one-insn-bool.c: Fix loc.
+
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2024-05-23  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/ccor.c: Order of loads are reversed, now, as a
+	consequence the condition has to be reversed.
+
 2024-06-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:

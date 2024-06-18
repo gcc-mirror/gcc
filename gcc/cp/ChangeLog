@@ -1,3 +1,42 @@
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111343
+	PR c++/115511
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): If an
+	extended floating point type mv1 has same set of values as more
+	than one standard floating point type and mv2 is float, return 2.
+
+2024-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99678
+	* parser.cc (cp_parser_constraint_primary_expression): Diagnose
+	a bare unresolved unqualified-id.
+
+2024-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115239
+	* call.cc (tourney): Don't consider a non-strictly viable
+	candidate as the champ if there was ambiguity between two
+	strictly viable candidates.
+
+2024-06-17  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115283
+	* decl2.cc (min_vis_expr_r) <case TEMPLATE_DECL>: Ignore
+	concepts.
+
 2024-06-10  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

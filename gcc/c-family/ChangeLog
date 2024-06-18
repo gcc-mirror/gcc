@@ -1,3 +1,13 @@
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115290
+	* c-warn.cc (do_warn_array_compare): Use %E rather than %D for
+	printing op0 and op1; if those operands aren't decls, also print
+	parens around them.
+
 2024-05-15  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
