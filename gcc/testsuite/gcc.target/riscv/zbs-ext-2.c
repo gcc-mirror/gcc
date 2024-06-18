@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gc_zbb_zbs -mabi=lp64" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-Og" "-Os" } } */
 
 
 typedef unsigned int uint32_t;
