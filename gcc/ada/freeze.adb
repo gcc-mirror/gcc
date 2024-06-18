@@ -9137,6 +9137,7 @@ package body Freeze is
          --  that type is not attached to an entity in the construct.
 
          elsif Nkind (Node) in N_Has_Etype
+           and then Present (Etype (Node))
            and then Nkind (Parent (Node)) = N_Iterator_Specification
            and then Node = Name (Parent (Node))
          then
