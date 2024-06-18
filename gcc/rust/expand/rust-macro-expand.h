@@ -20,6 +20,7 @@
 #define RUST_MACRO_EXPAND_H
 
 #include "optional.h"
+#include "rust-ast-fragment.h"
 #include "rust-buffered-queue.h"
 #include "rust-parse.h"
 #include "rust-token.h"
@@ -317,12 +318,12 @@ struct MacroExpander
   /* Expands a macro invocation - possibly make both
    * have similar duck-typed interface and use templates?*/
   // should this be public or private?
-  void expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon);
+  void expand_invoc (AST::MacroInvocation &invoc, AST::InvocKind semicolon);
 
   // Expands a single declarative macro.
   AST::Fragment expand_decl_macro (location_t locus, AST::MacroInvocData &invoc,
 				   AST::MacroRulesDefinition &rules_def,
-				   bool semicolon);
+				   AST::InvocKind semicolon);
 
   bool depth_exceeds_recursion_limit () const;
 
@@ -332,7 +333,7 @@ struct MacroExpander
   AST::Fragment transcribe_rule (
     AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
     std::map<std::string, MatchedFragmentContainer *> &matched_fragments,
-    bool semicolon, ContextType ctx);
+    AST::InvocKind invoc_kind, ContextType ctx);
 
   bool match_fragment (Parser<MacroInvocLexer> &parser,
 		       AST::MacroMatchFragment &fragment);

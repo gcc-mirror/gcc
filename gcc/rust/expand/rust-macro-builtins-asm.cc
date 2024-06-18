@@ -16,7 +16,9 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-make-unique.h"
 #include "rust-macro-builtins-asm.h"
+#include "rust-ast-fragment.h"
 #include "rust-ast.h"
 #include "rust-stmt.h"
 
@@ -537,9 +539,9 @@ parse_format_string (InlineAsmContext &inline_asm_ctx)
 
 tl::optional<AST::Fragment>
 MacroBuiltin::asm_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
-			   bool semicolon, bool is_global_asm)
+			   AST::InvocKind semicolon, AST::AsmKind is_global_asm)
 {
-  return parse_asm (invoc_locus, invoc, is_global_asm, semicolon);
+  return parse_asm (invoc_locus, invoc, semicolon, is_global_asm);
 }
 
 tl::expected<InlineAsmContext, std::string>
@@ -609,7 +611,7 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
 
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
-	   bool is_global_asm, bool semicolon)
+	   AST::InvocKind semicolon, AST::AsmKind is_global_asm)
 {
   // From the rule of asm.
   // We first peek and see if it is a format string or not.
@@ -631,7 +633,8 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   Parser<MacroInvocLexer> parser (lex);
   auto last_token_id = macro_end_token (invoc.get_delim_tok_tree (), parser);
 
-  AST::InlineAsm inline_asm (invoc_locus, is_global_asm);
+  AST::InlineAsm inline_asm (invoc_locus,
+			     is_global_asm == AST::AsmKind::Global);
   auto inline_asm_ctx = InlineAsmContext (inline_asm, parser, last_token_id);
 
   // operands stream, also handles the optional ","
@@ -654,10 +657,11 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 
       // If the macro invocation has a semicolon (`asm!("...");`), then we need
       // to make it a statement. This way, it will be expanded properly.
-      if (semicolon)
-	single_vec.emplace_back (
-	  AST::SingleASTNode (std::unique_ptr<AST::Stmt> (
-	    new AST::ExprStmt (std::move (node), invoc_locus, semicolon))));
+      if (semicolon == AST::InvocKind::Semicoloned)
+	single_vec.emplace_back (AST::SingleASTNode (
+	  Rust::make_unique<AST::ExprStmt> (std::move (node), invoc_locus,
+					    semicolon
+					      == AST::InvocKind::Semicoloned)));
       else
 	single_vec.emplace_back (AST::SingleASTNode (std::move (node)));
 

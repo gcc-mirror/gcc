@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-expand-visitor.h"
+#include "rust-ast-fragment.h"
 #include "rust-proc-macro.h"
 #include "rust-attributes.h"
 #include "rust-ast.h"
@@ -467,7 +468,9 @@ void
 ExpandVisitor::visit (AST::MacroInvocation &macro_invoc)
 {
   // TODO: Can we do the AST fragment replacing here? Probably not, right?
-  expander.expand_invoc (macro_invoc, macro_invoc.has_semicolon ());
+  expander.expand_invoc (macro_invoc, macro_invoc.has_semicolon ()
+					? AST::InvocKind::Semicoloned
+					: AST::InvocKind::Expr);
 }
 
 void
