@@ -130,10 +130,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __false_type __type;
     };
 
-  // Thirteen specializations (yes there are eleven standard integer
-  // types; <em>long long</em> and <em>unsigned long long</em> are
-  // supported as extensions).  Up to four target-specific __int<N>
-  // types are supported as well.
+  // Explicit specializations for the standard integer types.
+  // Up to four target-specific __int<N> types are supported as well.
   template<>
     struct __is_integer<bool>
     {
