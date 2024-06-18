@@ -16,12 +16,14 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-ast-fragment.h"
 #include "rust-macro-builtins.h"
 #include "rust-macro-builtins-helpers.h"
 
 namespace Rust {
 tl::optional<AST::Fragment>
-MacroBuiltin::file_handler (location_t invoc_locus, AST::MacroInvocData &, bool)
+MacroBuiltin::file_handler (location_t invoc_locus, AST::MacroInvocData &,
+			    AST::InvocKind)
 {
   auto current_file = LOCATION_FILE (invoc_locus);
   auto file_str = AST::SingleASTNode (make_string (invoc_locus, current_file));
@@ -33,7 +35,7 @@ MacroBuiltin::file_handler (location_t invoc_locus, AST::MacroInvocData &, bool)
 
 tl::optional<AST::Fragment>
 MacroBuiltin::column_handler (location_t invoc_locus, AST::MacroInvocData &,
-			      bool)
+			      AST::InvocKind)
 {
   auto current_column = LOCATION_COLUMN (invoc_locus);
 
@@ -47,7 +49,8 @@ MacroBuiltin::column_handler (location_t invoc_locus, AST::MacroInvocData &,
 }
 
 tl::optional<AST::Fragment>
-MacroBuiltin::line_handler (location_t invoc_locus, AST::MacroInvocData &, bool)
+MacroBuiltin::line_handler (location_t invoc_locus, AST::MacroInvocData &,
+			    AST::InvocKind)
 {
   auto current_line = LOCATION_LINE (invoc_locus);
 

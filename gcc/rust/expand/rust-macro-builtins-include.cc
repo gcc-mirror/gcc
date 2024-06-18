@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-ast-fragment.h"
 #include "rust-common.h"
 #include "rust-macro-builtins.h"
 #include "rust-macro-builtins-helpers.h"
@@ -27,7 +28,8 @@ of the given file as reference to a byte array. Yields an expression of type
 
 tl::optional<AST::Fragment>
 MacroBuiltin::include_bytes_handler (location_t invoc_locus,
-				     AST::MacroInvocData &invoc, bool semicolon)
+				     AST::MacroInvocData &invoc,
+				     AST::InvocKind semicolon)
 {
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
@@ -93,7 +95,8 @@ MacroBuiltin::include_bytes_handler (location_t invoc_locus,
 
 tl::optional<AST::Fragment>
 MacroBuiltin::include_str_handler (location_t invoc_locus,
-				   AST::MacroInvocData &invoc, bool semicolon)
+				   AST::MacroInvocData &invoc,
+				   AST::InvocKind semicolon)
 {
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
@@ -182,7 +185,8 @@ scope compile time. */
 
 tl::optional<AST::Fragment>
 MacroBuiltin::include_handler (location_t invoc_locus,
-			       AST::MacroInvocData &invoc, bool semicolon)
+			       AST::MacroInvocData &invoc,
+			       AST::InvocKind semicolon)
 {
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */

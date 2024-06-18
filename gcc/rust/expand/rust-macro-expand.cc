@@ -18,6 +18,7 @@
 
 #include "rust-macro-expand.h"
 #include "optional.h"
+#include "rust-ast-fragment.h"
 #include "rust-macro-substitute-ctx.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
@@ -34,7 +35,7 @@ AST::Fragment
 MacroExpander::expand_decl_macro (location_t invoc_locus,
 				  AST::MacroInvocData &invoc,
 				  AST::MacroRulesDefinition &rules_def,
-				  bool semicolon)
+				  AST::InvocKind semicolon)
 {
   // ensure that both invocation and rules are in a valid state
   rust_assert (!invoc.is_marked_for_strip ());
@@ -201,7 +202,7 @@ MacroExpander::expand_eager_invocations (AST::MacroInvocation &invoc)
   for (auto kv : substitution_map)
     {
       auto &to_expand = kv.second;
-      expand_invoc (*to_expand, false);
+      expand_invoc (*to_expand, AST::InvocKind::Expr);
 
       auto fragment = take_expanded_fragment ();
       auto &new_tokens = fragment.get_tokens ();
@@ -239,7 +240,8 @@ MacroExpander::expand_eager_invocations (AST::MacroInvocation &invoc)
 }
 
 void
-MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
+MacroExpander::expand_invoc (AST::MacroInvocation &invoc,
+			     AST::InvocKind semicolon)
 {
   if (depth_exceeds_recursion_limit ())
     {
@@ -288,16 +290,14 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
   last_invoc = *invoc.clone_macro_invocation_impl ();
   last_def = *rdef;
 
-  rust_debug ("[ARTHUR] semicolon: %s", has_semicolon ? "yes" : "no");
-
   if (rdef->is_builtin ())
     fragment = rdef
 		 ->get_builtin_transcriber () (invoc.get_locus (), invoc_data,
-					       has_semicolon)
+					       semicolon)
 		 .value_or (AST::Fragment::create_empty ());
   else
-    fragment = expand_decl_macro (invoc.get_locus (), invoc_data, *rdef,
-				  has_semicolon);
+    fragment
+      = expand_decl_macro (invoc.get_locus (), invoc_data, *rdef, semicolon);
 
   set_expanded_fragment (std::move (fragment));
 }
@@ -1021,8 +1021,10 @@ AST::Fragment
 MacroExpander::transcribe_rule (
   AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
   std::map<std::string, MatchedFragmentContainer *> &matched_fragments,
-  bool semicolon, ContextType ctx)
+  AST::InvocKind invoc_kind, ContextType ctx)
 {
+  bool semicolon = invoc_kind == AST::InvocKind::Semicoloned;
+
   // we can manipulate the token tree to substitute the dollar identifiers so
   // that when we call parse its already substituted for us
   AST::MacroTranscriber &transcriber = match_rule.get_transcriber ();

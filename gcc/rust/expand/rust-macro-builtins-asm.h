@@ -1,4 +1,5 @@
 
+#include "rust-ast-fragment.h"
 #include "rust-macro-builtins.h"
 #include "rust-macro-builtins-helpers.h"
 #include "expected.h"
@@ -59,7 +60,7 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx);
 
 tl::optional<AST::Fragment>
 parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
-	   bool is_global_asm, bool semicolon);
+	   AST::InvocKind semicolon, AST::AsmKind is_global_asm);
 
 bool
 check_identifier (Parser<MacroInvocLexer> &parser, std::string ident);

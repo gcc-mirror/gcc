@@ -123,13 +123,25 @@ private:
   void assert_single_fragment (SingleASTNode::NodeType expected) const;
 };
 
+enum class InvocKind
+{
+  Expr,
+  Semicoloned,
+};
+
+enum class AsmKind
+{
+  Global,
+  Inline
+};
+
 /**
  * This is the type for transcriber functions found in
  * rust-macro-builtins.{h,cc}.
  */
 using MacroTranscriberFunc
   = std::function<tl::optional<Fragment> (location_t, MacroInvocData &,
-					  bool semicolon)>;
+					  InvocKind semicolon)>;
 
 } // namespace AST
 } // namespace Rust
