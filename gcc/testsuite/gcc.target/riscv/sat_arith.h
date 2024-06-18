@@ -2,6 +2,7 @@
 #define HAVE_SAT_ARITH
 
 #include <stdint-gcc.h>
+#include <stdbool.h>
 
 /******************************************************************************/
 /* Saturation Add (unsigned and signed)                                       */
@@ -140,6 +141,15 @@ sat_u_sub_##T##_fmt_10 (T x, T y)                   \
   return !overflow ? ret : 0;                       \
 }
 
+#define DEF_SAT_U_SUB_FMT_11(T)                        \
+T __attribute__((noinline))                            \
+sat_u_sub_##T##_fmt_11 (T x, T y)                      \
+{                                                      \
+  T ret;                                               \
+  bool overflow = __builtin_sub_overflow (x, y, &ret); \
+  return overflow ? 0 : ret;                           \
+}
+
 #define RUN_SAT_U_SUB_FMT_1(T, x, y) sat_u_sub_##T##_fmt_1(x, y)
 #define RUN_SAT_U_SUB_FMT_2(T, x, y) sat_u_sub_##T##_fmt_2(x, y)
 #define RUN_SAT_U_SUB_FMT_3(T, x, y) sat_u_sub_##T##_fmt_3(x, y)
@@ -150,5 +160,6 @@ sat_u_sub_##T##_fmt_10 (T x, T y)                   \
 #define RUN_SAT_U_SUB_FMT_8(T, x, y) sat_u_sub_##T##_fmt_8(x, y)
 #define RUN_SAT_U_SUB_FMT_9(T, x, y) sat_u_sub_##T##_fmt_9(x, y)
 #define RUN_SAT_U_SUB_FMT_10(T, x, y) sat_u_sub_##T##_fmt_10(x, y)
+#define RUN_SAT_U_SUB_FMT_11(T, x, y) sat_u_sub_##T##_fmt_11(x, y)
 
 #endif
