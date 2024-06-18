@@ -3012,6 +3012,11 @@ rs6000_emit_prologue (void)
                            && (lookup_attribute ("no_split_stack",
                                                  DECL_ATTRIBUTES (cfun->decl))
                                == NULL));
+  /* If we are inserting ROP-protect hash instructions, disable shrink-wrap
+     until the bug where the hashst insn is emitted in the wrong location
+     is fixed.  See PR101324 for details.  */
+  if (info->rop_hash_size)
+    flag_shrink_wrap = 0;
 
   frame_pointer_needed_indeed
     = frame_pointer_needed && df_regs_ever_live_p (HARD_FRAME_POINTER_REGNUM);
