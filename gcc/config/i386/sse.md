@@ -10008,6 +10008,24 @@
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn_and_split "*<avx512>_cvtmask2<ssemodesuffix><mode>_not"
+  [(set (match_operand:VI12_AVX512VL 0 "register_operand")
+	(vec_merge:VI12_AVX512VL
+	  (match_operand:VI12_AVX512VL 2 "const0_operand")
+	  (match_operand:VI12_AVX512VL 3 "vector_all_ones_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512BW && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 4)
+	(not:<avx512fmaskmode> (match_dup 1)))
+   (set (match_dup 0)
+	(vec_merge:VI12_AVX512VL
+	  (match_dup 3)
+	  (match_dup 2)
+	  (match_dup 4)))]
+  "operands[4] = gen_reg_rtx (<avx512fmaskmode>mode);")
+
 (define_expand "<avx512>_cvtmask2<ssemodesuffix><mode>"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand")
 	(vec_merge:VI48_AVX512VL
@@ -10045,6 +10063,24 @@
    (set_attr "length_immediate" "0,1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn_and_split "*<avx512>_cvtmask2<ssemodesuffix><mode>_not"
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand")
+	(vec_merge:VI48_AVX512VL
+	  (match_operand:VI48_AVX512VL 2 "const0_operand")
+	  (match_operand:VI48_AVX512VL 3 "vector_all_ones_operand")
+	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
+  "TARGET_AVX512F && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 4)
+	(not:<avx512fmaskmode> (match_dup 1)))
+   (set (match_dup 0)
+	(vec_merge:VI48_AVX512VL
+	  (match_dup 3)
+	  (match_dup 2)
+	  (match_dup 4)))]
+  "operands[4] = gen_reg_rtx (<avx512fmaskmode>mode);")
 
 (define_insn "*<avx512>_cvtmask2<ssemodesuffix><mode>_pternlog_false_dep"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
@@ -17736,6 +17772,67 @@
 {
   if (INTVAL (operands[5]) == 5)
     std::swap (operands[1], operands[2]);
+})
+
+(define_int_attr pcmp_usmin
+  [(UNSPEC_PCMP "smin") (UNSPEC_UNSIGNED_PCMP "umin")])
+
+(define_insn_and_split "*avx2_pcmp<mode>3_6"
+ [(set (match_operand:VI_128_256  0 "register_operand")
+	(vec_merge:VI_128_256
+	  (match_operand:VI_128_256 1 "vector_all_ones_operand")
+	  (match_operand:VI_128_256 2 "const0_operand")
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:VI_128_256 3 "nonimmediate_operand")
+	     (match_operand:VI_128_256 4 "nonimmediate_operand")
+	     (match_operand:SI 5 "const_0_to_7_operand")]
+	     UNSPEC_PCMP_ITER)))]
+  "TARGET_AVX512VL && ix86_pre_reload_split ()
+   && (INTVAL (operands[5]) == 2 || INTVAL (operands[5]) == 5)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  rtx dst_min = gen_reg_rtx (<MODE>mode);
+
+  if (MEM_P (operands[3]) && MEM_P (operands[4]))
+    operands[3] = force_reg (<MODE>mode, operands[3]);
+  emit_insn (gen_<pcmp_usmin><mode>3 (dst_min, operands[3], operands[4]));
+  rtx eq_op = INTVAL (operands[5]) == 2 ? operands[3] : operands[4];
+  emit_move_insn (operands[0], gen_rtx_EQ (<MODE>mode, eq_op, dst_min));
+  DONE;
+})
+
+(define_insn_and_split "*avx2_pcmp<mode>3_7"
+ [(set (match_operand:VI_128_256  0 "register_operand")
+	(vec_merge:VI_128_256
+	  (match_operand:VI_128_256 1 "const0_operand")
+	  (match_operand:VI_128_256 2 "vector_all_ones_operand")
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:VI_128_256 3 "nonimmediate_operand")
+	     (match_operand:VI_128_256 4 "nonimmediate_operand")
+	     (match_operand:SI 5 "const_0_to_7_operand")]
+	     UNSPEC_PCMP_ITER)))]
+  "TARGET_AVX512VL && ix86_pre_reload_split ()
+     /* NE is commutative.  */
+   && (INTVAL (operands[5]) == 4
+	  /* LE, 3 must be register.  */
+       || INTVAL (operands[5]) == 2
+	  /* NLT aka GE, 4 must be register and we swap operands.  */
+       || INTVAL (operands[5]) == 5)"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  if (INTVAL (operands[5]) == 5)
+    std::swap (operands[3], operands[4]);
+
+  if (MEM_P (operands[3]))
+    operands[3] = force_reg (<MODE>mode, operands[3]);
+  enum rtx_code code = INTVAL (operands[5]) != 4 ? GT : EQ;
+  emit_move_insn (operands[0], gen_rtx_fmt_ee (code, <MODE>mode,
+					       operands[3], operands[4]));
+  DONE;
 })
 
 (define_expand "<avx512>_eq<mode>3<mask_scalar_merge_name>"
