@@ -344,6 +344,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit(__not_<__and_<__is_implicitly_default_constructible<_T1>,
 			     __is_implicitly_default_constructible<_T2>>>())
       pair()
+      noexcept(is_nothrow_default_constructible_v<_T1>
+		&& is_nothrow_default_constructible_v<_T2>)
       requires is_default_constructible_v<_T1>
 	       && is_default_constructible_v<_T2>
       : first(), second()
