@@ -27,13 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tree.h"
 #include "diagnostic.h"
-#include "tree-pretty-print.h"
-#include "gimple-pretty-print.h"
 #include "tree-diagnostic.h"
-#include "langhooks.h"
 #include "intl.h"
 #include "diagnostic-path.h"
-#include "simple-diagnostic-path.h"
 #include "json.h"
 #include "gcc-rich-location.h"
 #include "diagnostic-color.h"
@@ -41,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-label-effects.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
+#include "selftest-diagnostic-path.h"
 #include "text-art/theme.h"
 
 /* Disable warnings about missing quoting in GCC diagnostics for the print
@@ -1013,38 +1010,6 @@ path_events_have_column_data_p (const diagnostic_path &path)
   return true;
 }
 
-/* A subclass of simple_diagnostic_path that adds member functions
-   for adding test events and suppresses translation of these events.  */
-
-class test_diagnostic_path : public simple_diagnostic_path
-{
- public:
-  test_diagnostic_path (pretty_printer *event_pp)
-  : simple_diagnostic_path (event_pp)
-  {
-    disable_event_localization ();
-  }
-
-  void add_entry (tree fndecl, int stack_depth)
-  {
-    add_event (UNKNOWN_LOCATION, fndecl, stack_depth,
-	       "entering %qE", fndecl);
-  }
-
-  void add_return (tree fndecl, int stack_depth)
-  {
-    add_event (UNKNOWN_LOCATION, fndecl, stack_depth,
-	       "returning to %qE", fndecl);
-  }
-
-  void add_call (tree caller, int caller_stack_depth, tree callee)
-  {
-    add_event (UNKNOWN_LOCATION, caller, caller_stack_depth,
-	       "calling %qE", callee);
-    add_entry (callee, caller_stack_depth + 1);
-  }
-};
-
 /* Verify that empty paths are handled gracefully.  */
 
 static void
@@ -1067,13 +1032,10 @@ test_empty_path (pretty_printer *event_pp)
 static void
 test_intraprocedural_path (pretty_printer *event_pp)
 {
-  tree fntype_void_void
-    = build_function_type_array (void_type_node, 0, NULL);
-  tree fndecl_foo = build_fn_decl ("foo", fntype_void_void);
-
   test_diagnostic_path path (event_pp);
-  path.add_event (UNKNOWN_LOCATION, fndecl_foo, 0, "first %qs", "free");
-  path.add_event (UNKNOWN_LOCATION, fndecl_foo, 0, "double %qs", "free");
+  const char *const funcname = "foo";
+  path.add_event (UNKNOWN_LOCATION, funcname, 0, "first %qs", "free");
+  path.add_event (UNKNOWN_LOCATION, funcname, 0, "double %qs", "free");
 
   ASSERT_FALSE (path.interprocedural_p ());
 
@@ -1093,33 +1055,20 @@ test_intraprocedural_path (pretty_printer *event_pp)
 static void
 test_interprocedural_path_1 (pretty_printer *event_pp)
 {
-  /* Build fndecls.  The types aren't quite right, but that
-     doesn't matter for the purposes of this test.  */
-  tree fntype_void_void
-    = build_function_type_array (void_type_node, 0, NULL);
-  tree fndecl_test = build_fn_decl ("test", fntype_void_void);
-  tree fndecl_make_boxed_int
-    = build_fn_decl ("make_boxed_int", fntype_void_void);
-  tree fndecl_wrapped_malloc
-    = build_fn_decl ("wrapped_malloc", fntype_void_void);
-  tree fndecl_free_boxed_int
-    = build_fn_decl ("free_boxed_int", fntype_void_void);
-  tree fndecl_wrapped_free
-    = build_fn_decl ("wrapped_free", fntype_void_void);
-
   test_diagnostic_path path (event_pp);
-  path.add_entry (fndecl_test, 0);
-  path.add_call (fndecl_test, 0, fndecl_make_boxed_int);
-  path.add_call (fndecl_make_boxed_int, 1, fndecl_wrapped_malloc);
-  path.add_event (UNKNOWN_LOCATION, fndecl_wrapped_malloc, 2, "calling malloc");
-  path.add_return (fndecl_test, 0);
-  path.add_call (fndecl_test, 0, fndecl_free_boxed_int);
-  path.add_call (fndecl_free_boxed_int, 1, fndecl_wrapped_free);
-  path.add_event (UNKNOWN_LOCATION, fndecl_wrapped_free, 2, "calling free");
-  path.add_return (fndecl_test, 0);
-  path.add_call (fndecl_test, 0, fndecl_free_boxed_int);
-  path.add_call (fndecl_free_boxed_int, 1, fndecl_wrapped_free);
-  path.add_event (UNKNOWN_LOCATION, fndecl_wrapped_free, 2, "calling free");
+  path.add_entry ("test", 0);
+  path.add_call ("test", 0, "make_boxed_int");
+  path.add_call ("make_boxed_int", 1, "wrapped_malloc");
+  path.add_event (UNKNOWN_LOCATION,
+		  "wrapped_malloc", 2, "calling malloc");
+  path.add_return ("test", 0);
+  path.add_call ("test", 0, "free_boxed_int");
+  path.add_call ("free_boxed_int", 1, "wrapped_free");
+  path.add_event (UNKNOWN_LOCATION, "wrapped_free", 2, "calling free");
+  path.add_return ("test", 0);
+  path.add_call ("test", 0, "free_boxed_int");
+  path.add_call ("free_boxed_int", 1, "wrapped_free");
+  path.add_event (UNKNOWN_LOCATION, "wrapped_free", 2, "calling free");
   ASSERT_EQ (path.num_events (), 18);
 
   ASSERT_TRUE (path.interprocedural_p ());
@@ -1248,20 +1197,12 @@ test_interprocedural_path_1 (pretty_printer *event_pp)
 static void
 test_interprocedural_path_2 (pretty_printer *event_pp)
 {
-  /* Build fndecls.  The types aren't quite right, but that
-     doesn't matter for the purposes of this test.  */
-  tree fntype_void_void
-    = build_function_type_array (void_type_node, 0, NULL);
-  tree fndecl_foo = build_fn_decl ("foo", fntype_void_void);
-  tree fndecl_bar = build_fn_decl ("bar", fntype_void_void);
-  tree fndecl_baz = build_fn_decl ("baz", fntype_void_void);
-
   test_diagnostic_path path (event_pp);
-  path.add_entry (fndecl_foo, 0);
-  path.add_call (fndecl_foo, 0, fndecl_bar);
-  path.add_call (fndecl_bar, 1, fndecl_baz);
-  path.add_return (fndecl_bar, 1);
-  path.add_call (fndecl_bar, 1, fndecl_baz);
+  path.add_entry ("foo", 0);
+  path.add_call ("foo", 0, "bar");
+  path.add_call ("bar", 1, "baz");
+  path.add_return ("bar", 1);
+  path.add_call ("bar", 1, "baz");
   ASSERT_EQ (path.num_events (), 8);
 
   ASSERT_TRUE (path.interprocedural_p ());
@@ -1341,14 +1282,10 @@ test_interprocedural_path_2 (pretty_printer *event_pp)
 static void
 test_recursion (pretty_printer *event_pp)
 {
-  tree fntype_void_void
-    = build_function_type_array (void_type_node, 0, NULL);
-  tree fndecl_factorial = build_fn_decl ("factorial", fntype_void_void);
-
  test_diagnostic_path path (event_pp);
-  path.add_entry (fndecl_factorial, 0);
+  path.add_entry ("factorial", 0);
   for (int depth = 0; depth < 3; depth++)
-    path.add_call (fndecl_factorial, depth, fndecl_factorial);
+    path.add_call ("factorial", depth, "factorial");
   ASSERT_EQ (path.num_events (), 7);
 
   ASSERT_TRUE (path.interprocedural_p ());
@@ -1485,14 +1422,14 @@ test_control_flow_1 (const line_table_case &case_,
   const location_t cfg_dest = t.get_line_and_column (5, 10);
 
   test_diagnostic_path path (event_pp);
-  path.add_event (conditional, NULL_TREE, 0,
+  path.add_event (conditional, nullptr, 0,
 		  "following %qs branch (when %qs is NULL)...",
 		  "false", "p");
   path.connect_to_next_event ();
 
-  path.add_event (cfg_dest, NULL_TREE, 0,
+  path.add_event (cfg_dest, nullptr, 0,
 		  "...to here");
-  path.add_event (cfg_dest, NULL_TREE, 0,
+  path.add_event (cfg_dest, nullptr, 0,
 		  "dereference of NULL %qs",
 		  "p");
 
@@ -1665,17 +1602,17 @@ test_control_flow_2 (const line_table_case &case_,
   const location_t loop_body_end = t.get_line_and_columns (5, 5, 9, 17);
 
   test_diagnostic_path path (event_pp);
-  path.add_event (iter_test, NULL_TREE, 0, "infinite loop here");
+  path.add_event (iter_test, nullptr, 0, "infinite loop here");
 
-  path.add_event (iter_test, NULL_TREE, 0, "looping from here...");
+  path.add_event (iter_test, nullptr, 0, "looping from here...");
   path.connect_to_next_event ();
 
-  path.add_event (loop_body_start, NULL_TREE, 0, "...to here");
+  path.add_event (loop_body_start, nullptr, 0, "...to here");
 
-  path.add_event (loop_body_end, NULL_TREE, 0, "looping back...");
+  path.add_event (loop_body_end, nullptr, 0, "looping back...");
   path.connect_to_next_event ();
 
-  path.add_event (iter_test, NULL_TREE, 0, "...to here");
+  path.add_event (iter_test, nullptr, 0, "...to here");
 
   if (!path_events_have_column_data_p (path))
     return;
@@ -1751,17 +1688,17 @@ test_control_flow_3 (const line_table_case &case_,
   const location_t iter_next = t.get_line_and_columns (3, 22, 24);
 
   test_diagnostic_path path (event_pp);
-  path.add_event (iter_test, NULL_TREE, 0, "infinite loop here");
+  path.add_event (iter_test, nullptr, 0, "infinite loop here");
 
-  path.add_event (iter_test, NULL_TREE, 0, "looping from here...");
+  path.add_event (iter_test, nullptr, 0, "looping from here...");
   path.connect_to_next_event ();
 
-  path.add_event (iter_next, NULL_TREE, 0, "...to here");
+  path.add_event (iter_next, nullptr, 0, "...to here");
 
-  path.add_event (iter_next, NULL_TREE, 0, "looping back...");
+  path.add_event (iter_next, nullptr, 0, "looping back...");
   path.connect_to_next_event ();
 
-  path.add_event (iter_test, NULL_TREE, 0, "...to here");
+  path.add_event (iter_test, nullptr, 0, "...to here");
 
   if (!path_events_have_column_data_p (path))
     return;
@@ -1816,10 +1753,10 @@ assert_cfg_edge_path_streq (const location &loc,
 			    const char *expected_str)
 {
   test_diagnostic_path path (event_pp);
-  path.add_event (src_loc, NULL_TREE, 0, "from here...");
+  path.add_event (src_loc, nullptr, 0, "from here...");
   path.connect_to_next_event ();
 
-  path.add_event (dst_loc, NULL_TREE, 0, "...to here");
+  path.add_event (dst_loc, nullptr, 0, "...to here");
 
   if (!path_events_have_column_data_p (path))
     return;
@@ -2120,27 +2057,27 @@ test_control_flow_5 (const line_table_case &case_,
 
   test_diagnostic_path path (event_pp);
   /* (1) */
-  path.add_event (t.get_line_and_column (1, 6), NULL_TREE, 0,
+  path.add_event (t.get_line_and_column (1, 6), nullptr, 0,
 		  "following %qs branch (when %qs is non-NULL)...",
 		  "false", "arr");
   path.connect_to_next_event ();
 
   /* (2) */
-  path.add_event (t.get_line_and_columns (4, 8, 10, 12), NULL_TREE, 0,
+  path.add_event (t.get_line_and_columns (4, 8, 10, 12), nullptr, 0,
 		  "...to here");
 
   /* (3) */
-  path.add_event (t.get_line_and_columns (4, 15, 17, 19), NULL_TREE, 0,
+  path.add_event (t.get_line_and_columns (4, 15, 17, 19), nullptr, 0,
 		  "following %qs branch (when %qs)...",
 		  "true", "i < n");
   path.connect_to_next_event ();
 
   /* (4) */
-  path.add_event (t.get_line_and_column (5, 13), NULL_TREE, 0,
+  path.add_event (t.get_line_and_column (5, 13), nullptr, 0,
 		  "...to here");
 
   /* (5) */
-  path.add_event (t.get_line_and_columns (5, 33, 58), NULL_TREE, 0,
+  path.add_event (t.get_line_and_columns (5, 33, 58), nullptr, 0,
 		  "allocated here");
 
   if (!path_events_have_column_data_p (path))
@@ -2208,27 +2145,27 @@ test_control_flow_6 (const line_table_case &case_,
 
   test_diagnostic_path path (event_pp);
   /* (1) */
-  path.add_event (t.get_line_and_columns (6, 25, 35), NULL_TREE, 0,
+  path.add_event (t.get_line_and_columns (6, 25, 35), nullptr, 0,
 		  "allocated here");
 
   /* (2) */
-  path.add_event (t.get_line_and_columns (8, 13, 14, 17), NULL_TREE, 0,
+  path.add_event (t.get_line_and_columns (8, 13, 14, 17), nullptr, 0,
 		  "following %qs branch (when %qs)...",
 		  "true", "i <= 254");
   path.connect_to_next_event ();
 
   /* (3) */
-  path.add_event (t.get_line_and_columns (9, 5, 15, 17), NULL_TREE, 0,
+  path.add_event (t.get_line_and_columns (9, 5, 15, 17), nullptr, 0,
 		  "...to here");
 
   /* (4) */
-  path.add_event (t.get_line_and_columns (8, 13, 14, 17), NULL_TREE, 0,
+  path.add_event (t.get_line_and_columns (8, 13, 14, 17), nullptr, 0,
 		  "following %qs branch (when %qs)...",
 		  "true", "i <= 254");
   path.connect_to_next_event ();
 
   /* (5) */
-  path.add_event (t.get_line_and_columns (9, 5, 15, 17), NULL_TREE, 0,
+  path.add_event (t.get_line_and_columns (9, 5, 15, 17), nullptr, 0,
 		  "...to here");
 
   if (!path_events_have_column_data_p (path))

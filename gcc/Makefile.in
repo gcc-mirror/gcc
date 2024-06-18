@@ -1700,6 +1700,8 @@ OBJS = \
 	ubsan.o \
 	sanopt.o \
 	sancov.o \
+	selftest-diagnostic-path.o \
+	selftest-logical-location.o \
 	simple-diagnostic-path.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
