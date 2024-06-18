@@ -3424,10 +3424,6 @@ rs6000_override_options_after_change (void)
     }
   else if (!OPTION_SET_P (flag_cunroll_grow_size))
     flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
-
-  /* If we are inserting ROP-protect instructions, disable shrink wrap.  */
-  if (rs6000_rop_protect)
-    flag_shrink_wrap = 0;
 }
 
 #ifdef TARGET_USES_LINUX64_OPT
