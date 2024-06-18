@@ -52,7 +52,7 @@ docs, and the testsuite related to that.
 aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
 aarch64 port		Richard Sandiford	<richard.sandiford@arm.com>
 aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
-aarch64 port		Kyrylo Tkachov		<ktkachov@gcc.gnu.org>
+aarch64 port		Kyrylo Tkachov		<ktkachov@nvidia.com>
 alpha port		Richard Henderson	<rth@gcc.gnu.org>
 amdgcn port		Julian Brown		<julian@codesourcery.com>
 amdgcn port		Andrew Stubbs		<ams@baylibre.com>
@@ -784,7 +784,7 @@ Nathaniel Shead					<nathanieloshead@gmail.org>
 Nathan Sidwell					<nathan@acm.org>
 Edward Smith-Rowland				<esmithrowland@gmail.com>
 Fangrui Song	                                <maskray@gcc.gnu.org>
-Kyrylo Tkachov					<ktkachov@gcc.gnu.org>
+Kyrylo Tkachov					<ktkachov@nvidia.com>
 Petter Tomner					<tomner@bahnhof.se>
 Martin Uecker					<uecker@gcc.gnu.org>
 Jonathan Wakely					<jwakely@redhat.com>
