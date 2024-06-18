@@ -38,6 +38,7 @@
 #include "print-tree.h"
 #include "gcc-rich-location.h"
 #include "cgraph.h"
+#include "simple-diagnostic-path.h"
 
 int plugin_is_GPL_compatible;
 

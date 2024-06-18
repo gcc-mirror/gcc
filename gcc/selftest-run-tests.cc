@@ -103,6 +103,7 @@ selftest::run_tests ()
   spellcheck_tree_cc_tests ();
   tree_cfg_cc_tests ();
   tree_diagnostic_path_cc_tests ();
+  simple_diagnostic_path_cc_tests ();
   attribs_cc_tests ();
 
   /* This one relies on most of the above.  */

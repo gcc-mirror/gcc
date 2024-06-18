@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_CHECKER_PATH_H
 
 #include "analyzer/checker-event.h"
+#include "simple-diagnostic-path.h"
 
 namespace ana {
 

@@ -1700,6 +1700,7 @@ OBJS = \
 	ubsan.o \
 	sanopt.o \
 	sancov.o \
+	simple-diagnostic-path.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
 	tree-cfgcleanup.o \

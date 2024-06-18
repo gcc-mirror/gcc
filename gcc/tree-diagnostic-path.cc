@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "intl.h"
 #include "diagnostic-path.h"
+#include "simple-diagnostic-path.h"
 #include "json.h"
 #include "gcc-rich-location.h"
 #include "diagnostic-color.h"
