@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* Check that "volatile" type qualifier is propagated to vector type.  */
 

@@ -1,8 +1,8 @@
 /* Copyright (C) 2007 Free Software Foundation, Inc.  */
 
 /* { dg-do preprocess } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* Conditional macros should not be expanded by pragmas.  */
 #pragma __vector

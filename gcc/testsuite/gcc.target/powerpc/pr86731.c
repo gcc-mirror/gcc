@@ -2,9 +2,9 @@
    left shift properly.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-maltivec -O3" } */
+/* { dg-require-effective-target powerpc_altivec } */
+/* { dg-require-effective-target lp64 } */
 
 #include <altivec.h>
 /* The original test as reported.  */

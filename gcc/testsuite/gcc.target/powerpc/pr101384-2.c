@@ -1,7 +1,7 @@
 /* PR target/101384 */
 /* { dg-do compile { target be } } */
 /* { dg-options "-O2 -maltivec" } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* { dg-final { scan-assembler-times {\mvspltis[whb] [^\n\r]*,-1\M|\mxxspltib [^\n\r]*,255\M} 9 } } */
 /* { dg-final { scan-assembler-times {\mvslw\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mvslh\M} 3 } } */

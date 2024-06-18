@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* { dg-final { scan-assembler "vcmpgtub" { target *-*-linux* } } } */
 /* { dg-final { scan-assembler "vcmpgtsb" { target *-*-darwin* } } } */
 /* { dg-final { scan-assembler "vcmpgtsh" } } */

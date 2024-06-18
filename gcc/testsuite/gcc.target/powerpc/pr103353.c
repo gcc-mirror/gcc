@@ -1,8 +1,8 @@
-/* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-options "-maltivec -mdejagnu-cpu=power6" } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* If the default cpu type is power10 or later, MMA is enabled by default.
    To keep the test point available all the time, this case specifies
    -mdejagnu-cpu=power6 to make it be tested without MMA.  */
-/* { dg-options "-maltivec -mdejagnu-cpu=power6" } */
 
 /* Verify there is no ICE and don't check the error messages on MMA
    requirement since they could be fragile and are not test points

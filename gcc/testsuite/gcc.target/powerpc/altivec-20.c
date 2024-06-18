@@ -1,5 +1,7 @@
-/* { dg-do compile { target powerpc_altivec_ok } } */
+/* { dg-do compile } */
 /* { dg-options "-maltivec -mdejagnu-cpu=G5 -O2 -Wno-deprecated" } */
+/* { dg-require-effective-target powerpc_altivec } */
+
 
 #include <altivec.h>
 

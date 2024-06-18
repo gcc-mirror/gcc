@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #define f0(type) void x0##type (vector _Bool type x) { }
 f0 (int)

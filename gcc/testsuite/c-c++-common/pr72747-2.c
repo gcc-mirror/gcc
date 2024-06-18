@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-c -maltivec -fdump-tree-gimple" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* PR 72747: test that cascaded definition is happening for non constants. */
 

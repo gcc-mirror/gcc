@@ -2,8 +2,8 @@
 /* This test covers the shift left tests with the -fwrapv option. */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -O2 -fwrapv" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

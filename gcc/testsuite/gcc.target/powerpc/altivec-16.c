@@ -1,8 +1,8 @@
 /* This is a compile-only test for interaction of "-maltivec" and "-save-temps".  */
 /* Author:  Ziemowit Laski  <zlaski@apple.com>.  */
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-save-temps -maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

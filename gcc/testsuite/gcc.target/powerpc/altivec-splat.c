@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec -O2" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* Testcase by Richard Guenther and Steven Bosscher.
    Check that "easy" AltiVec constants are correctly synthesized

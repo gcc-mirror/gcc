@@ -2,9 +2,9 @@
    double inputs produce the right code.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-mdejagnu-cpu=power7 -O2" } */
 /* { dg-additional-options "-mbig-endian" { target powerpc*-*-linux* } } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 // targeting P7 (BE), 2 tests.
 // P7 constants: xxpermdi

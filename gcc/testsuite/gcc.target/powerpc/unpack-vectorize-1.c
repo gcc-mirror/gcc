@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -O2 -ftree-vectorize -fno-vect-cost-model -fno-unroll-loops -fdump-tree-vect-details" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* Test if unpack vectorization succeeds for type signed/unsigned
    short and char.  */

@@ -1,5 +1,6 @@
-/* { dg-do compile { target powerpc_altivec_ok } } */
+/* { dg-do compile } */
 /* { dg-options "-O -gdwarf-2 -dA -maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* { dg-final { scan-assembler "DW_AT_const_value" } } */
 
 typedef float FloatVect __attribute__((__vector_size__(16)));

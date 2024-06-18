@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mno-vsx" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* This test was added for an internal compiler error.  The number and
    content of error messages is irrelevant.  */

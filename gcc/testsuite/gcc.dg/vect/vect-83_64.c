@@ -1,6 +1,7 @@
-/* { dg-do run { target { { powerpc*-*-* && lp64 } && powerpc_altivec_ok } } } */
-/* { dg-do compile { target { { powerpc*-*-* && ilp32 } && powerpc_altivec_ok } } } */
+/* { dg-do run { target { powerpc*-*-* && lp64 } } } */
+/* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
 /* { dg-additional-options "-mpowerpc64 -maltivec -fdump-tree-optimized-details-blocks" } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* { dg-skip-if "" { powerpc-ibm-aix* } } */
 
 #include <stdarg.h>

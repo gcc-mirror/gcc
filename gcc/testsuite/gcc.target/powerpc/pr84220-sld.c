@@ -2,8 +2,8 @@
 /* Test to ensure we generate invalid parameter errors rather than an ICE
     when calling builtin_vec_sld() with invalid parameters.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

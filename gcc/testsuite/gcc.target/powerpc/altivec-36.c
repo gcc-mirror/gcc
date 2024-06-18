@@ -1,7 +1,7 @@
 /* PR target/70296 */
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -std=gnu11" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #define c(x) x
 #define f(x)
