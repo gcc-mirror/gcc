@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "toplev.h"
 #include "langhooks.h"
-#include "tree-diagnostic.h" /* for virt_loc_aware_diagnostic_finalizer */
+#include "diagnostic-macro-unwinding.h" /* for virt_loc_aware_diagnostic_finalizer */
 #include "intl.h"
 #include "cppdefault.h"
 #include "incpath.h"

@@ -50,8 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 
 void diagnostic_report_current_function (diagnostic_context *,
 					 const diagnostic_info *);
-void virt_loc_aware_diagnostic_finalizer (diagnostic_context *,
-					  const diagnostic_info *);
 
 void tree_diagnostics_defaults (diagnostic_context *context);
 bool default_tree_printer (pretty_printer *, text_info *, const char *,
@@ -59,8 +57,5 @@ bool default_tree_printer (pretty_printer *, text_info *, const char *,
 
 extern void default_tree_diagnostic_path_printer (diagnostic_context *,
 						  const diagnostic_path *);
-
-extern void maybe_unwind_expanded_macro_loc (diagnostic_context *context,
-					     location_t where);
 
 #endif /* ! GCC_TREE_DIAGNOSTIC_H */

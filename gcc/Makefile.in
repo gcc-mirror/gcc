@@ -1826,6 +1826,7 @@ OBJS = \
 OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-format-json.o \
 	diagnostic-format-sarif.o \
+	diagnostic-macro-unwinding.o \
 	diagnostic-show-locus.o \
 	edit-context.o \
 	pretty-print.o intl.o \
