@@ -53,7 +53,7 @@
 (define_insn_reservation "vec_fcmp" 3
   (eq_attr "type" "vfrecp,vfminmax,vfcmp,vfsgnj,vfclass,vfcvtitof,\
                    vfcvtftoi,vfwcvtitof,vfwcvtftoi,vfwcvtftof,vfncvtitof,\
-                   vfncvtftoi,vfncvtftof")
+                   vfncvtftoi,vfncvtftof,vfncvtbf16,vfwcvtbf16")
   "vxu_ooo_issue,vxu_ooo_alu")
 
 ;; Vector integer multiplication.
@@ -69,7 +69,7 @@
 
 ;; Vector float multiplication and FMA.
 (define_insn_reservation "vec_fmul" 6
-  (eq_attr "type" "vfmul,vfwmul,vfmuladd,vfwmuladd")
+  (eq_attr "type" "vfmul,vfwmul,vfmuladd,vfwmuladd,vfwmaccbf16")
   "vxu_ooo_issue,vxu_ooo_alu")
 
 ;; Vector crypto, assumed to be a generic operation for now.

@@ -200,6 +200,7 @@
   RVVMF64BI,RVVMF32BI,RVVMF16BI,RVVMF8BI,RVVMF4BI,RVVMF2BI,RVVM1BI,
   RVVM8QI,RVVM4QI,RVVM2QI,RVVM1QI,RVVMF2QI,RVVMF4QI,RVVMF8QI,
   RVVM8HI,RVVM4HI,RVVM2HI,RVVM1HI,RVVMF2HI,RVVMF4HI,
+  RVVM8BF,RVVM4BF,RVVM2BF,RVVM1BF,RVVMF2BF,RVVMF4BF,
   RVVM8HF,RVVM4HF,RVVM2HF,RVVM1HF,RVVMF2HF,RVVMF4HF,
   RVVM8SI,RVVM4SI,RVVM2SI,RVVM1SI,RVVMF2SI,
   RVVM8SF,RVVM4SF,RVVM2SF,RVVM1SF,RVVMF2SF,
@@ -219,6 +220,11 @@
   RVVM2x4HI,RVVM1x4HI,RVVMF2x4HI,RVVMF4x4HI,
   RVVM2x3HI,RVVM1x3HI,RVVMF2x3HI,RVVMF4x3HI,
   RVVM4x2HI,RVVM2x2HI,RVVM1x2HI,RVVMF2x2HI,RVVMF4x2HI,
+  RVVM1x8BF,RVVMF2x8BF,RVVMF4x8BF,RVVM1x7BF,RVVMF2x7BF,
+  RVVMF4x7BF,RVVM1x6BF,RVVMF2x6BF,RVVMF4x6BF,RVVM1x5BF,
+  RVVMF2x5BF,RVVMF4x5BF,RVVM2x4BF,RVVM1x4BF,RVVMF2x4BF,
+  RVVMF4x4BF,RVVM2x3BF,RVVM1x3BF,RVVMF2x3BF,RVVMF4x3BF,
+  RVVM4x2BF,RVVM2x2BF,RVVM1x2BF,RVVMF2x2BF,RVVMF4x2BF,
   RVVM1x8HF,RVVMF2x8HF,RVVMF4x8HF,RVVM1x7HF,RVVMF2x7HF,
   RVVMF4x7HF,RVVM1x6HF,RVVMF2x6HF,RVVMF4x6HF,RVVM1x5HF,
   RVVMF2x5HF,RVVMF4x5HF,RVVM2x4HF,RVVM1x4HF,RVVMF2x4HF,
@@ -462,6 +468,10 @@
 ;; vsm4r        crypto vector SM4 Rounds instructions
 ;; vsm3me       crypto vector SM3 Message Expansion instructions
 ;; vsm3c        crypto vector SM3 Compression instructions
+;; 18.Vector BF16 instrctions
+;; vfncvtbf16  vector narrowing single floating-point to brain floating-point instruction
+;; vfwcvtbf16  vector widening brain floating-point to single floating-point instruction
+;; vfwmaccbf16  vector BF16 widening multiply-accumulate
 (define_attr "type"
   "unknown,branch,jump,jalr,ret,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
@@ -483,7 +493,7 @@
    vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
    vgather,vcompress,vmov,vector,vandn,vbrev,vbrev8,vrev8,vclz,vctz,vcpop,vrol,vror,vwsll,
    vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,vaeskf1,vaeskf2,vaesz,
-   vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c"
+   vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,vfncvtbf16,vfwcvtbf16,vfwmaccbf16"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -4373,6 +4383,7 @@
 (include "generic-ooo.md")
 (include "vector.md")
 (include "vector-crypto.md")
+(include "vector-bfloat16.md")
 (include "zicond.md")
 (include "sfb.md")
 (include "zc.md")
