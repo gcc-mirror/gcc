@@ -401,6 +401,7 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 /* Combine extensions defined in this table  */
 static const struct riscv_ext_version riscv_combine_info[] =
 {
+  {"a", ISA_SPEC_CLASS_20191213, 2, 1},
   {"zk",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkn",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zks",  ISA_SPEC_CLASS_NONE, 1, 0},
