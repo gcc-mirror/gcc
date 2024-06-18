@@ -1,3 +1,20 @@
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115290
+	* c-c++-common/Warray-compare-3.c: New test.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111343
+	PR c++/115511
+	* g++.dg/cpp23/ext-floating18.C: New test.
+
 2024-06-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
