@@ -609,6 +609,42 @@
   "bset\t%0,x0,%1"
   [(set_attr "type" "bitmanip")])
 
+;; These two splitters take advantage of the limited range of the
+;; shift constant.  With the limited range we know the SImode sign
+;; bit is never set, thus we can treat this as zero extending and
+;; generate the bsetdi_2 pattern.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(any_extend:DI
+	 (ashift:SI (const_int 1)
+		    (subreg:QI
+		      (and:DI (not:DI (match_operand:DI 1 "register_operand"))
+			      (match_operand 2 "const_int_operand")) 0))))
+   (clobber (match_operand:DI 3 "register_operand"))]
+  "TARGET_64BIT
+   && TARGET_ZBS
+   && (TARGET_ZBB || TARGET_ZBKB)
+   && (INTVAL (operands[2]) & 0x1f) != 0x1f"
+   [(set (match_dup 0) (and:DI (not:DI (match_dup 1)) (match_dup 2)))
+    (set (match_dup 0) (zero_extend:DI (ashift:SI
+				       (const_int 1)
+				       (subreg:QI (match_dup 0) 0))))])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+       (any_extend:DI
+	 (ashift:SI (const_int 1)
+		    (subreg:QI
+		      (and:DI (match_operand:DI 1 "register_operand")
+			      (match_operand 2 "const_int_operand")) 0))))]
+  "TARGET_64BIT
+   && TARGET_ZBS
+   && (INTVAL (operands[2]) & 0x1f) != 0x1f"
+   [(set (match_dup 0) (and:DI (match_dup 1) (match_dup 2)))
+    (set (match_dup 0) (zero_extend:DI (ashift:SI
+				       (const_int 1)
+				       (subreg:QI (match_dup 0) 0))))])
+
 (define_insn "*bset<mode>_1_mask"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(ashift:X (const_int 1)
