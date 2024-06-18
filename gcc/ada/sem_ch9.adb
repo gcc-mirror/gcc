@@ -28,6 +28,8 @@ with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
 with Contracts;      use Contracts;
+with Debug;          use Debug;
+with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -68,7 +70,6 @@ with Style;
 with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
-
 package body Sem_Ch9 is
 
    -----------------------
@@ -2222,10 +2223,18 @@ package body Sem_Ch9 is
                --  Pragma case
 
                else
-                  Error_Msg_Name_1 := Pragma_Name (Prio_Item);
-                  Error_Msg_NE
-                    ("pragma% for & has no effect when Lock_Free given??",
-                     Prio_Item, Id);
+                  if Debug_Flag_Underscore_DD then
+                     Record_Pragma_No_Effect_With_Lock_Free_Warning
+                       (Pragma_Node     => Prio_Item,
+                        Pragma_Name     => Pragma_Name (Prio_Item),
+                        Lock_Free_Node  => Id,
+                        Lock_Free_Range => Parent (Id));
+                  else
+                     Error_Msg_Name_1 := Pragma_Name (Prio_Item);
+                     Error_Msg_NE
+                       ("pragma% for & has no effect when Lock_Free given??",
+                        Prio_Item, Id);
+                  end if;
                end if;
             end if;
          end;

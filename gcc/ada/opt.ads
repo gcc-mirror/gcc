@@ -1340,6 +1340,19 @@ package Opt is
    --  GNATMAKE, GNATLINK
    --  Set to False when no run_path_option should be issued to the linker
 
+   SARIF_File : Boolean := False;
+   --  GNAT
+   --  Output error and warning messages in SARIF format. Set to true when the
+   --  backend option "-fdiagnostics-format=sarif-file" is found on the
+   --  command line. The SARIF file is written to the file named:
+   --  <source_file>.gnat.sarif
+
+   SARIF_Output : Boolean := False;
+   --  GNAT
+   --  Output error and warning messages in SARIF format. Set to true when the
+   --  backend option "-fdiagnostics-format=sarif-stderr" is found on the
+   --  command line.
+
    Search_Directory_Present : Boolean := False;
    --  GNAT
    --  Set to True when argument is -I. Reset to False when next argument, a

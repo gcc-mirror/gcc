@@ -65,6 +65,21 @@ package body Backend_Utils is
       elsif Switch_Chars (First .. Last) = "fdiagnostics-format=json" then
          Opt.JSON_Output := True;
 
+      --  Back end switch -fdiagnostics-format=sarif-file tells the frontend
+      --  to output its error and warning messages in the sarif format. The
+      --  messages from gnat are written to a file <source_file>.gnat.sarif.
+
+      elsif Switch_Chars (First .. Last) = "fdiagnostics-format=sarif-file"
+      then
+         Opt.SARIF_File := True;
+
+      --  Back end switch -fdiagnostics-format=sarif-stderr tells the frontend
+      --  to output its error and warning messages in the sarif format.
+
+      elsif Switch_Chars (First .. Last) = "fdiagnostics-format=sarif-stderr"
+      then
+         Opt.SARIF_Output := True;
+
       --  Back-end switch -fno-inline also sets the front end flags to entirely
       --  inhibit all inlining. So we store it and set the appropriate
       --  flags.

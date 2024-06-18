@@ -29,6 +29,7 @@ with Atree;            use Atree;
 with Checks;           use Checks;
 with Contracts;        use Contracts;
 with Debug;            use Debug;
+with Diagnostics.Constructors; use Diagnostics.Constructors;
 with Einfo;            use Einfo;
 with Einfo.Entities;   use Einfo.Entities;
 with Einfo.Utils;      use Einfo.Utils;
@@ -5757,13 +5758,18 @@ package body Sem_Ch13 is
 
             if not Check_Primitive_Function (Subp) then
                if Present (Ref_Node) then
-                  Error_Msg_N ("improper function for default iterator!",
-                     Ref_Node);
-                  Error_Msg_Sloc := Sloc (Subp);
-                  Error_Msg_NE
-                     ("\\default iterator defined # "
-                     & "must be a primitive function",
-                     Ref_Node, Subp);
+                  if Debug_Flag_Underscore_DD then
+                     Record_Default_Iterator_Not_Primitive_Error
+                       (Ref_Node, Subp);
+                  else
+                     Error_Msg_N ("improper function for default iterator!",
+                        Ref_Node);
+                     Error_Msg_Sloc := Sloc (Subp);
+                     Error_Msg_NE
+                        ("\\default iterator defined # "
+                        & "must be a primitive function",
+                        Ref_Node, Subp);
+                  end if;
                end if;
 
                return False;
@@ -15519,20 +15525,41 @@ package body Sem_Ch13 is
       --------------
 
       procedure Too_Late is
+         S : Entity_Id;
       begin
          --  Other compilers seem more relaxed about rep items appearing too
          --  late. Since analysis tools typically don't care about rep items
          --  anyway, no reason to be too strict about this.
 
          if not Relaxed_RM_Semantics then
-            Error_Msg_N ("|representation item appears too late!", N);
+            if Debug_Flag_Underscore_DD then
+
+               S := First_Subtype (T);
+               if Present (Freeze_Node (S)) then
+                  Record_Representation_Too_Late_Error
+                    (Rep    => N,
+                     Freeze => Freeze_Node (S),
+                     Def    => S);
+               else
+                  Error_Msg_N ("|representation item appears too late!", N);
+               end if;
+
+            else
+               Error_Msg_N ("|representation item appears too late!", N);
+
+               S := First_Subtype (T);
+               if Present (Freeze_Node (S)) then
+                  Error_Msg_NE
+                    ("??no more representation items for }",
+                     Freeze_Node (S), S);
+               end if;
+            end if;
          end if;
       end Too_Late;
 
       --  Local variables
 
       Parent_Type : Entity_Id;
-      S           : Entity_Id;
 
    --  Start of processing for Rep_Item_Too_Late
 
@@ -15566,14 +15593,6 @@ package body Sem_Ch13 is
          end if;
 
          Too_Late;
-         S := First_Subtype (T);
-
-         if Present (Freeze_Node (S)) then
-            if not Relaxed_RM_Semantics then
-               Error_Msg_NE
-                 ("??no more representation items for }", Freeze_Node (S), S);
-            end if;
-         end if;
 
          return True;
 
