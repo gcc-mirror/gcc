@@ -179,7 +179,6 @@ tree_diagnostics_defaults (diagnostic_context *context)
   diagnostic_starter (context) = default_tree_diagnostic_starter;
   diagnostic_finalizer (context) = default_diagnostic_finalizer;
   diagnostic_format_decoder (context) = default_tree_printer;
-  context->m_print_path = default_tree_diagnostic_path_printer;
   context->set_set_locations_callback (set_inlining_locations);
   context->set_client_data_hooks (make_compiler_data_hooks ());
 }

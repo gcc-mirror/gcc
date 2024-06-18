@@ -884,17 +884,16 @@ print_path_summary_as_text (const path_summary *ps, diagnostic_context *dc,
 
 } /* end of anonymous namespace for path-printing code.  */
 
-/* Print PATH to CONTEXT, according to CONTEXT's path_format.  */
+/* Print PATH according to this context's path_format.  */
 
 void
-default_tree_diagnostic_path_printer (diagnostic_context *context,
-				      const diagnostic_path *path)
+diagnostic_context::print_path (const diagnostic_path *path)
 {
   gcc_assert (path);
 
   const unsigned num_events = path->num_events ();
 
-  switch (context->get_path_format ())
+  switch (get_path_format ())
     {
     case DPF_NONE:
       /* Do nothing.  */
@@ -909,7 +908,7 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	    label_text event_text (event.get_desc (false));
 	    gcc_assert (event_text.get ());
 	    diagnostic_event_id_t event_id (i);
-	    if (context->show_path_depths_p ())
+	    if (this->show_path_depths_p ())
 	      {
 		int stack_depth = event.get_stack_depth ();
 		/* -fdiagnostics-path-format=separate-events doesn't print
@@ -941,13 +940,13 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
       {
 	/* Consolidate related events.  */
 	path_summary summary (*path, true,
-			      context->m_source_printing.show_event_links_p);
-	char *saved_prefix = pp_take_prefix (context->printer);
-	pp_set_prefix (context->printer, NULL);
-	print_path_summary_as_text (&summary, context,
-				    context->show_path_depths_p ());
-	pp_flush (context->printer);
-	pp_set_prefix (context->printer, saved_prefix);
+			      m_source_printing.show_event_links_p);
+	char *saved_prefix = pp_take_prefix (this->printer);
+	pp_set_prefix (this->printer, NULL);
+	print_path_summary_as_text (&summary, this,
+				    show_path_depths_p ());
+	pp_flush (this->printer);
+	pp_set_prefix (this->printer, saved_prefix);
       }
       break;
     }

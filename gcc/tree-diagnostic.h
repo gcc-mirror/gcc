@@ -55,7 +55,4 @@ void tree_diagnostics_defaults (diagnostic_context *context);
 bool default_tree_printer (pretty_printer *, text_info *, const char *,
 			   int, bool, bool, bool, bool *, const char **);
 
-extern void default_tree_diagnostic_path_printer (diagnostic_context *,
-						  const diagnostic_path *);
-
 #endif /* ! GCC_TREE_DIAGNOSTIC_H */

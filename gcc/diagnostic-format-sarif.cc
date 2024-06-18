@@ -1991,8 +1991,10 @@ private:
 static void
 diagnostic_output_format_init_sarif (diagnostic_context *context)
 {
+  /* Suppress normal textual path output.  */
+  context->set_path_format (DPF_NONE);
+
   /* Override callbacks.  */
-  context->m_print_path = nullptr; /* handled in sarif_end_diagnostic.  */
   context->set_ice_handler_callback (sarif_ice_handler);
 
   /* The metadata is handled in SARIF format, rather than as text.  */

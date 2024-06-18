@@ -583,6 +583,8 @@ private:
 		   pretty_printer *pp,
 		   diagnostic_source_effect_info *effect_info);
 
+  void print_path (const diagnostic_path *path);
+
   /* Data members.
      Ideally, all of these would be private and have "m_" prefixes.  */
 
@@ -712,8 +714,6 @@ private:
   urlifier *m_urlifier;
 
 public:
-  void (*m_print_path) (diagnostic_context *, const diagnostic_path *);
-
   /* Auxiliary data for client.  */
   void *m_client_aux_data;
 

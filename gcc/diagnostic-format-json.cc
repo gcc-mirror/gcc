@@ -395,8 +395,8 @@ private:
 static void
 diagnostic_output_format_init_json (diagnostic_context *context)
 {
-  /* Override callbacks.  */
-  context->m_print_path = nullptr; /* handled in json_end_diagnostic.  */
+  /* Suppress normal textual path output.  */
+  context->set_path_format (DPF_NONE);
 
   /* The metadata is handled in JSON format, rather than as text.  */
   context->set_show_cwe (false);

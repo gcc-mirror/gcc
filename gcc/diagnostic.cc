@@ -915,8 +915,7 @@ diagnostic_context::show_any_path (const diagnostic_info &diagnostic)
   if (!path)
     return;
 
-  if (m_print_path)
-    m_print_path (this, path);
+  print_path (path);
 }
 
 /* class diagnostic_event.  */
