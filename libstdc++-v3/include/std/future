@@ -532,7 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  static_assert(is_void<_Res>::value, "Only used for promise<void>");
 
-	  typename promise<_Res>::_Ptr_type operator()() const
+	  typename promise<_Res>::_Ptr_type operator()() const noexcept
 	  { return std::move(_M_promise->_M_storage); }
 
 	  promise<_Res>*    _M_promise;
@@ -545,7 +545,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         struct _Setter<_Res, __exception_ptr_tag>
         {
 	  // Used by std::promise to store an exception as the result.
-          typename promise<_Res>::_Ptr_type operator()() const
+          typename promise<_Res>::_Ptr_type operator()() const noexcept
           {
             _M_promise->_M_storage->_M_error = *_M_ex;
             return std::move(_M_promise->_M_storage);
