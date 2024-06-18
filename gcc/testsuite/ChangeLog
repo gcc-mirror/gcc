@@ -1,3 +1,121 @@
+2024-06-17  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/97405
+	* gcc.target/aarch64/sve/pr97405-1.c: New test.
+
+2024-06-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zbs-zext-3.c: New test.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/115440
+	* g++.dg/cpp1z/pr115440.C: New test.
+
+2024-06-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* g++.dg/torture/vshuf-mem.C: Use -march=z14 only, if the we are
+	on a machine which can actually run it.
+
+2024-06-17  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c23-align-10.c, gcc.dg/c2y-align-1.c,
+	gcc.dg/c2y-align-2.c: New tests.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115290
+	* c-c++-common/Warray-compare-3.c: New test.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111343
+	PR c++/115511
+	* g++.dg/cpp23/ext-floating18.C: New test.
+
+2024-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/115389
+	* gcc.target/powerpc/pr115389.c: New test.
+
+2024-06-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zbs-zext-2.c: New test.
+
+2024-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115508
+	* gcc.target/i386/pr115508.c: New testcase.
+
+2024-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115492
+	* gcc.dg/torture/pr115492.c: New testcase.
+
+2024-06-17  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-zu-1.c: Add attribute for noinline,
+	and target apx.
+	* gcc.target/i386/apx-zu-2.c: Add target-support check.
+
+2024-06-17  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/115161
+	* gcc.target/i386/pr115161-1.c: New test.
+
+2024-06-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_alloc_comp_3.f08: Moved to...
+	* gfortran.dg/coarray/alloc_comp_8.f90: ...here.
+	Should be tested for both -fcoarray=single and lib, resp.
+	* gfortran.dg/coarray_alloc_comp_4.f08: Fix program name.
+
+2024-06-17  Levy Hsu  <admin@levyhsu.com>
+
+	* gcc.target/i386/vpermt2-special-bf16-shufflue.c: New test.
+
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/vector/vgm-df-1.c: Removed.
+	* gcc.target/s390/vector/vgm-di-1.c: Removed.
+	* gcc.target/s390/vector/vgm-hi-1.c: Removed.
+	* gcc.target/s390/vector/vgm-int128-1.c: Removed.
+	* gcc.target/s390/vector/vgm-longdouble-1.c: Removed.
+	* gcc.target/s390/vector/vgm-qi-1.c: Removed.
+	* gcc.target/s390/vector/vgm-sf-1.c: Removed.
+	* gcc.target/s390/vector/vgm-si-1.c: Removed.
+	* gcc.target/s390/vector/vgm-ti-1.c: Removed.
+
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-extend-3.c: New test.
+	* gcc.target/s390/vector/vgm-df-1.c: New file.
+	* gcc.target/s390/vector/vgm-di-1.c: New file.
+	* gcc.target/s390/vector/vgm-hi-1.c: New file.
+	* gcc.target/s390/vector/vgm-int128-1.c: New file.
+	* gcc.target/s390/vector/vgm-longdouble-1.c: New file.
+	* gcc.target/s390/vector/vgm-qi-1.c: New file.
+	* gcc.target/s390/vector/vgm-sf-1.c: New file.
+	* gcc.target/s390/vector/vgm-si-1.c: New file.
+	* gcc.target/s390/vector/vgm-ti-1.c: New file.
+
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/vector/vec-extend-1.c: New test.
+	* gcc.target/s390/vector/vec-extend-2.c: New test.
+
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/nobp-table-jump-inline-z10.c: Do not perform
+	IPA.
+	* gcc.target/s390/nobp-table-jump-inline-z900.c: Dito.
+	* gcc.target/s390/nobp-table-jump-z10.c: Dito.
+	* gcc.target/s390/nobp-table-jump-z900.c: Dito.
+
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-one-insn-bool.c: Fix loc.
+
 2024-06-16  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/zbs-zext.c: New test.

@@ -1,3 +1,257 @@
+2024-06-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (bsetclr_zero_extract): New pattern.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/115440
+	* opts-common.cc (add_misspelling_candidates): If opt1 is non-NULL,
+	add a space and opt1 to the alternative suggestion text.
+
+2024-06-17  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_subset_list::to_string): Skip zaamo/zalrsc when not
+	supported by the assembler.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add zaamo/zalrsc assmeber check.
+
+2024-06-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Configuration): Mark up __cxa_atexit as @code.
+
+2024-06-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/115389
+	* config/rs6000/rs6000-logue.cc (rs6000_stack_info): Compute
+	rop_hash_save_offset for non-Altivec compiles.
+
+2024-06-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (bsetdi_2): New pattern.
+
+2024-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115508
+	* tree-vect-slp.cc (vect_schedule_slp_node): Guard check on
+	representative.
+
+2024-06-17  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2024-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100923
+	* tree-ssa-sccvn.cc (ao_ref_init_from_vn_reference): Valueize
+	base SSA_NAME.
+	(vn_reference_lookup_3): Adjust vn_context_bb around calls
+	to ao_ref_init_from_vn_reference.
+	(vn_reference_lookup_pieces): Revert original PR100923 fix.
+	(vn_reference_lookup): Likewise.
+
+2024-06-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* data-streamer-in.cc (streamer_read_value_range): Rename
+	Value_Range to value_range.
+	* data-streamer.h (streamer_read_value_range): Same.
+	* gimple-pretty-print.cc (dump_ssaname_info): Same.
+	* gimple-range-cache.cc (ssa_block_ranges::dump): Same.
+	(ssa_lazy_cache::merge): Same.
+	(block_range_cache::dump): Same.
+	(ssa_cache::merge_range): Same.
+	(ssa_cache::dump): Same.
+	(ranger_cache::edge_range): Same.
+	(ranger_cache::propagate_cache): Same.
+	(ranger_cache::fill_block_cache): Same.
+	(ranger_cache::resolve_dom): Same.
+	(ranger_cache::range_from_dom): Same.
+	(ranger_cache::register_inferred_value): Same.
+	* gimple-range-fold.cc (op1_range): Same.
+	(op2_range): Same.
+	(fold_relations): Same.
+	(fold_using_range::range_of_range_op): Same.
+	(fold_using_range::range_of_phi): Same.
+	(fold_using_range::range_of_call): Same.
+	(fold_using_range::condexpr_adjust): Same.
+	(fold_using_range::range_of_cond_expr): Same.
+	(fur_source::register_outgoing_edges): Same.
+	* gimple-range-fold.h (gimple_range_type): Same.
+	(gimple_range_ssa_p): Same.
+	* gimple-range-gori.cc (gori_compute::compute_operand_range): Same.
+	(gori_compute::logical_combine): Same.
+	(gori_compute::refine_using_relation): Same.
+	(gori_compute::compute_operand1_range): Same.
+	(gori_compute::compute_operand2_range): Same.
+	(gori_compute::compute_operand1_and_operand2_range): Same.
+	(gori_calc_operands): Same.
+	(gori_name_helper): Same.
+	* gimple-range-infer.cc (gimple_infer_range::check_assume_func): Same.
+	(gimple_infer_range::gimple_infer_range): Same.
+	(infer_range_manager::maybe_adjust_range): Same.
+	(infer_range_manager::add_range): Same.
+	* gimple-range-infer.h: Same.
+	* gimple-range-op.cc
+	(gimple_range_op_handler::gimple_range_op_handler): Same.
+	(gimple_range_op_handler::calc_op1): Same.
+	(gimple_range_op_handler::calc_op2): Same.
+	(gimple_range_op_handler::maybe_builtin_call): Same.
+	* gimple-range-path.cc (path_range_query::internal_range_of_expr): Same.
+	(path_range_query::ssa_range_in_phi): Same.
+	(path_range_query::compute_ranges_in_phis): Same.
+	(path_range_query::compute_ranges_in_block): Same.
+	(path_range_query::add_to_exit_dependencies): Same.
+	* gimple-range-trace.cc (debug_seed_ranger): Same.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Same.
+	(gimple_ranger::range_on_entry): Same.
+	(gimple_ranger::range_on_edge): Same.
+	(gimple_ranger::range_of_stmt): Same.
+	(gimple_ranger::prefill_stmt_dependencies): Same.
+	(gimple_ranger::register_inferred_ranges): Same.
+	(gimple_ranger::register_transitive_inferred_ranges): Same.
+	(gimple_ranger::export_global_ranges): Same.
+	(gimple_ranger::dump_bb): Same.
+	(assume_query::calculate_op): Same.
+	(assume_query::calculate_phi): Same.
+	(assume_query::dump): Same.
+	(dom_ranger::range_of_stmt): Same.
+	* ipa-cp.cc (ipcp_vr_lattice::meet_with_1): Same.
+	(ipa_vr_operation_and_type_effects): Same.
+	(ipa_value_range_from_jfunc): Same.
+	(propagate_bits_across_jump_function): Same.
+	(propagate_vr_across_jump_function): Same.
+	(ipcp_store_vr_results): Same.
+	* ipa-cp.h: Same.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Same.
+	(evaluate_properties_for_edge): Same.
+	* ipa-prop.cc (struct ipa_vr_ggc_hash_traits): Same.
+	(ipa_vr::get_vrange): Same.
+	(ipa_vr::streamer_read): Same.
+	(ipa_vr::streamer_write): Same.
+	(ipa_vr::dump): Same.
+	(ipa_set_jfunc_vr): Same.
+	(ipa_compute_jump_functions_for_edge): Same.
+	(ipcp_get_parm_bits): Same.
+	(ipcp_update_vr): Same.
+	(ipa_record_return_value_range): Same.
+	(ipa_return_value_range): Same.
+	* ipa-prop.h (ipa_return_value_range): Same.
+	(ipa_record_return_value_range): Same.
+	* range-op.h (range_cast): Same.
+	* tree-ssa-dom.cc
+	(dom_opt_dom_walker::set_global_ranges_from_unreachable_edges): Same.
+	(cprop_operand): Same.
+	* tree-ssa-loop-ch.cc (loop_static_stmt_p): Same.
+	* tree-ssa-loop-niter.cc (record_nonwrapping_iv): Same.
+	* tree-ssa-loop-split.cc (split_at_bb_p): Same.
+	* tree-ssa-phiopt.cc (value_replacement): Same.
+	* tree-ssa-strlen.cc (get_range): Same.
+	* tree-ssa-threadedge.cc (hybrid_jt_simplifier::simplify): Same.
+	(hybrid_jt_simplifier::compute_exit_dependencies): Same.
+	* tree-ssanames.cc (set_range_info): Same.
+	(duplicate_ssa_name_range_info): Same.
+	* tree-vrp.cc (remove_unreachable::handle_early): Same.
+	(remove_unreachable::remove_and_update_globals): Same.
+	(execute_ranger_vrp): Same.
+	* value-query.cc (range_query::value_of_expr): Same.
+	(range_query::value_on_edge): Same.
+	(range_query::value_of_stmt): Same.
+	(range_query::value_on_entry): Same.
+	(range_query::value_on_exit): Same.
+	(range_query::get_tree_range): Same.
+	* value-range-storage.cc (vrange_storage::set_vrange): Same.
+	* value-range.cc (Value_Range::dump): Same.
+	(value_range::dump): Same.
+	(debug): Same.
+	* value-range.h (enum value_range_discriminator): Same.
+	(class vrange): Same.
+	(class Value_Range): Same.
+	(class value_range): Same.
+	(Value_Range::Value_Range): Same.
+	(value_range::value_range): Same.
+	(Value_Range::~Value_Range): Same.
+	(value_range::~value_range): Same.
+	(Value_Range::set_type): Same.
+	(value_range::set_type): Same.
+	(Value_Range::init): Same.
+	(value_range::init): Same.
+	(Value_Range::operator=): Same.
+	(value_range::operator=): Same.
+	(Value_Range::operator==): Same.
+	(value_range::operator==): Same.
+	(Value_Range::operator!=): Same.
+	(value_range::operator!=): Same.
+	(Value_Range::supports_type_p): Same.
+	(value_range::supports_type_p): Same.
+	* vr-values.cc (simplify_using_ranges::fold_cond_with_ops): Same.
+	(simplify_using_ranges::legacy_fold_cond): Same.
+
+2024-06-17  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/115161
+	* config/i386/i386-builtin.def: Change CODE_FOR_* for cvtt*'s builtins.
+	* config/i386/sse.md:
+	(unspec_avx512fp16_fix<vcvtt_uns_suffix>
+	_trunc<mode>2<mask_name><round_saeonly_name>):
+	Use UNSPEC instead of FIX/UNSIGNED_FIX.
+	(unspec_avx512fp16_fix<vcvtt_uns_suffix>_trunc<mode>2<mask_name>):
+	Ditto.
+	(unspec_avx512fp16_fix<vcvtt_uns_suffix>_truncv2di2<mask_name>): Ditto.
+	(unspec_avx512fp16_fix<vcvtt_uns_suffix>_trunc<mode>2<round_saeonly_name>):
+	Ditto.
+	(unspec_sse_cvttps2pi): Ditto.
+	(unspec_sse_cvttss2si<rex64namesuffix><round_saeonly_name>): Ditto.
+	(unspec_fix<vcvtt_uns_suffix>_truncv16sfv16si2<mask_name><round_saeonly_name>):
+	Ditto.
+	(unspec_fix_truncv8sfv8si2<mask_name>): Ditto.
+	(unspec_fix_truncv4sfv4si2<mask_name>): Ditto.
+	(unspec_sse2_cvttpd2pi): Ditto.
+	(unspec_fixuns_truncv2dfv2si2): Ditto.
+	(unspec_avx512f_vcvttss2usi<rex64namesuffix><round_saeonly_name>):
+	Ditto.
+	(unspec_avx512f_vcvttsd2usi<rex64namesuffix><round_saeonly_name>):
+	Ditto.
+	(unspec_sse2_cvttsd2si<rex64namesuffix><round_saeonly_name>): Ditto.
+	(unspec_fix<vcvtt_uns_suffix>_truncv8dfv8si2<mask_name><round_saeonly_name>):
+	Ditto.
+	(*unspec_fixuns_truncv2dfv2si2): Ditto.
+	(unspec_fixuns_truncv2dfv2si2_mask): Ditto.
+	(unspec_fix_truncv4dfv4si2<mask_name>): Ditto.
+	(unspec_fixuns_truncv4dfv4si2<mask_name>): Ditto.
+	(unspec_fix<vcvtt_uns_suffix>
+	_trunc<mode><sseintvecmodelower>2<mask_name><round_saeonly_name>):
+	Ditto.
+	(unspec_fix<vcvtt_uns_suffix>
+	_trunc<mode><sselongvecmodelower>2<mask_name><round_saeonly_name>):
+	Ditto.
+	(unspec_avx512dq_fix<vcvtt_uns_suffix>_truncv2sfv2di2<mask_name>):
+	Ditto.
+	(<mask_codefor>unspec_fixuns_trunc<mode><sseintvecmodelower>2<mask_name>):
+	Ditto.
+	(unspec_sse2_cvttpd2dq<mask_name>): Ditto.
+
+2024-06-17  Levy Hsu  <admin@levyhsu.com>
+
+	* config/i386/i386-expand.cc
+	(ix86_vectorize_vec_perm_const): Convert BF to HI using subreg.
+	* config/i386/predicates.md
+	(vcvtne2ps2bf_parallel): New define_insn_and_split.
+	* config/i386/sse.md
+	(vpermt2_sepcial_bf16_shuffle_<mode>): New predicates matches odd increasing perm.
+
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/vector.md (*vmrhf_half<mode>): New.
+	(extendv2sfv2df2): New.
+
+2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR target/115261
+	* config/s390/s390.md (any_extend,extend_insn,zero_extend):
+	New code attributes and code iterator.
+	* config/s390/vector.md (V_EXTEND): New mode iterator.
+	(<extend_insn><V_EXTEND:mode><vec_2x_wide>2): New insn.
+
 2024-06-16  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR target/100211

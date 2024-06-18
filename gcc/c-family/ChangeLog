@@ -1,3 +1,20 @@
+2024-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (is_float16): New predicate.
+	(dump_ada_node) <REAL_TYPE>: Call it.
+
+2024-06-17  Joseph Myers  <josmyers@redhat.com>
+
+	* c-common.cc (c_sizeof_or_alignof_type): Allow alignof on an
+	incomplete array type for C2Y.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115290
+	* c-warn.cc (do_warn_array_compare): Use %E rather than %D for
+	printing op0 and op1; if those operands aren't decls, also print
+	parens around them.
+
 2024-06-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-ada-spec.cc (dump_ads): Update for fields of pretty_printer

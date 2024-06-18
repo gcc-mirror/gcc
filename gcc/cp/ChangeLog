@@ -1,3 +1,11 @@
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111343
+	PR c++/115511
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): If an
+	extended floating point type mv1 has same set of values as more
+	than one standard floating point type and mv2 is float, return 2.
+
 2024-06-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/114683

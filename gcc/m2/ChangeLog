@@ -1,3 +1,10 @@
+2024-06-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gm2-gcc/m2type.cc (build_m2_short_real_node): Adjust assertion with
+	TYPE_SIZE check.
+	(build_m2_real_node): Likewise.
+	(build_m2_long_real_node): Add assertion with TYPE_SIZE check.
+
 2024-06-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/114529

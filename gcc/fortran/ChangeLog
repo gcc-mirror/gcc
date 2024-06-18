@@ -1,3 +1,8 @@
+2024-06-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans.cc (gfc_deallocate_with_status): Check that object to deref
+	is an array, before applying array deref.
+
 2024-06-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* error.cc (gfc_clear_pp_buffer): Likewise.
