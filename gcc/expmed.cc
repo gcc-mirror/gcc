@@ -5784,9 +5784,7 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  rtx op0h;
 
 	  /* If testing the sign bit, can just test on high word.  */
-	  op0h = simplify_gen_subreg (word_mode, op0, int_mode,
-				      subreg_highpart_offset (word_mode,
-							      int_mode));
+	  op0h = force_highpart_subreg (word_mode, op0, int_mode);
 	  tem = emit_store_flag (NULL_RTX, code, op0h, op1, word_mode,
 				 unsignedp, normalizep);
 	}
