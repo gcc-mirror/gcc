@@ -2592,12 +2592,12 @@ aarch64_expand_fcmla_builtin (tree exp, rtx target, int fcode)
       rtx temp2 = gen_reg_rtx (DImode);
       temp1 = simplify_gen_subreg (d->mode, op2, quadmode,
 				   subreg_lowpart_offset (d->mode, quadmode));
-      temp1 = simplify_gen_subreg (V2DImode, temp1, d->mode, 0);
+      temp1 = force_subreg (V2DImode, temp1, d->mode, 0);
       if (BYTES_BIG_ENDIAN)
 	emit_insn (gen_aarch64_get_lanev2di (temp2, temp1, const0_rtx));
       else
 	emit_insn (gen_aarch64_get_lanev2di (temp2, temp1, const1_rtx));
-      op2 = simplify_gen_subreg (d->mode, temp2, GET_MODE (temp2), 0);
+      op2 = force_subreg (d->mode, temp2, GET_MODE (temp2), 0);
 
       /* And recalculate the index.  */
       lane -= nunits / 4;

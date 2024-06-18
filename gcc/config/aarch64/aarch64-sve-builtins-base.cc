@@ -1121,9 +1121,8 @@ public:
   expand (function_expander &e) const override
   {
     /* Fold the access into a subreg rvalue.  */
-    return simplify_gen_subreg (e.vector_mode (0), e.args[0],
-				GET_MODE (e.args[0]),
-				INTVAL (e.args[1]) * BYTES_PER_SVE_VECTOR);
+    return force_subreg (e.vector_mode (0), e.args[0], GET_MODE (e.args[0]),
+			 INTVAL (e.args[1]) * BYTES_PER_SVE_VECTOR);
   }
 };
 
@@ -1157,8 +1156,7 @@ public:
 	e.add_fixed_operand (indices);
 	return e.generate_insn (icode);
       }
-    return simplify_gen_subreg (e.result_mode (), e.args[0],
-				GET_MODE (e.args[0]), 0);
+    return force_subreg (e.result_mode (), e.args[0], GET_MODE (e.args[0]), 0);
   }
 };
 
