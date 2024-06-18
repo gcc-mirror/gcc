@@ -3096,26 +3096,6 @@ expand_ffs (scalar_int_mode mode, rtx op0, rtx target)
   return 0;
 }
 
-/* Extract the OMODE lowpart from VAL, which has IMODE.  Under certain
-   conditions, VAL may already be a SUBREG against which we cannot generate
-   a further SUBREG.  In this case, we expect forcing the value into a
-   register will work around the situation.  */
-
-static rtx
-lowpart_subreg_maybe_copy (machine_mode omode, rtx val,
-			   machine_mode imode)
-{
-  rtx ret;
-  ret = lowpart_subreg (omode, val, imode);
-  if (ret == NULL)
-    {
-      val = force_reg (imode, val);
-      ret = lowpart_subreg (omode, val, imode);
-      gcc_assert (ret != NULL);
-    }
-  return ret;
-}
-
 /* Expand a floating point absolute value or negation operation via a
    logical operation on the sign bit.  */
 
@@ -3204,7 +3184,7 @@ expand_absneg_bit (enum rtx_code code, scalar_float_mode mode,
 			   gen_lowpart (imode, op0),
 			   immed_wide_int_const (mask, imode),
 		           gen_lowpart (imode, target), 1, OPTAB_LIB_WIDEN);
-      target = lowpart_subreg_maybe_copy (mode, temp, imode);
+      target = force_lowpart_subreg (mode, temp, imode);
 
       set_dst_reg_note (get_last_insn (), REG_EQUAL,
 			gen_rtx_fmt_e (code, mode, copy_rtx (op0)),
@@ -4043,7 +4023,7 @@ expand_copysign_bit (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
 
       temp = expand_binop (imode, ior_optab, op0, op1,
 			   gen_lowpart (imode, target), 1, OPTAB_LIB_WIDEN);
-      target = lowpart_subreg_maybe_copy (mode, temp, imode);
+      target = force_lowpart_subreg (mode, temp, imode);
     }
 
   return target;
