@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
-#include "tree.h"
 #include "diagnostic.h"
 #include "diagnostic-macro-unwinding.h"
 #include "intl.h"
@@ -2199,7 +2198,7 @@ control_flow_tests (const line_table_case &case_)
 /* Run all of the selftests within this file.  */
 
 void
-tree_diagnostic_path_cc_tests ()
+diagnostic_path_cc_tests ()
 {
   /* In a few places we use the global dc's printer to determine
      colorization so ensure this off during the tests.  */
