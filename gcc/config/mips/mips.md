@@ -7459,7 +7459,7 @@
 
 ;; MIPS4 Conditional move instructions.
 
-(define_insn "*mov<GPR:mode>_on_<MOVECC:mode>"
+(define_insn "mov<GPR:mode>_on_<MOVECC:mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
 	(if_then_else:GPR
 	 (match_operator 4 "equality_operator"
@@ -7474,7 +7474,7 @@
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*mov<GPR:mode>_on_<MOVECC:mode>_mips16e2"
+(define_insn "mov<GPR:mode>_on_<MOVECC:mode>_mips16e2"
   [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d")
 	(if_then_else:GPR
 	 (match_operator 4 "equality_operator"
@@ -7492,7 +7492,7 @@
    (set_attr "mode" "<GPR:MODE>")
    (set_attr "extended_mips16" "yes")])
 
-(define_insn "*mov<GPR:mode>_on_<GPR2:mode>_ne"
+(define_insn "mov<GPR:mode>_on_<GPR2:mode>_ne"
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
        (if_then_else:GPR
         (match_operand:GPR2 1 "register_operand" "<GPR2:reg>,<GPR2:reg>")
@@ -7505,7 +7505,7 @@
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*mov<GPR:mode>_on_<GPR2:mode>_ne_mips16e2"
+(define_insn "mov<GPR:mode>_on_<GPR2:mode>_ne_mips16e2"
   [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d")
 	   (if_then_else:GPR
 		(match_operand:GPR2 1 "register_operand" "<GPR2:reg>,<GPR2:reg>,t,t")

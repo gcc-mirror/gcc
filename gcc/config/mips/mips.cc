@@ -4692,6 +4692,30 @@ mips_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = mips_set_reg_reg_cost (GET_MODE (SET_DEST (x)));
 	  return true;
 	}
+      int insn_code;
+      if (register_operand (SET_DEST (x), VOIDmode)
+	  && GET_CODE (SET_SRC (x)) == IF_THEN_ELSE)
+	insn_code = recog_memoized (make_insn_raw (x));
+      else
+	insn_code = -1;
+      switch (insn_code)
+	{
+	/* MIPS16e2 ones may be listed here, while the only known CPU core
+	   that implements MIPS16e2 is interAptiv.  The Dependency delays
+	   of MOVN/MOVZ on interAptiv is 3.  */
+	case CODE_FOR_movsi_on_si:
+	case CODE_FOR_movdi_on_si:
+	case CODE_FOR_movsi_on_di:
+	case CODE_FOR_movdi_on_di:
+	case CODE_FOR_movsi_on_si_ne:
+	case CODE_FOR_movdi_on_si_ne:
+	case CODE_FOR_movsi_on_di_ne:
+	case CODE_FOR_movdi_on_di_ne:
+	  *total = mips_set_reg_reg_cost (GET_MODE (SET_DEST (x)));
+	  return true;
+	default:
+	  break;
+	}
       return false;
 
     default:
