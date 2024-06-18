@@ -43,6 +43,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-diagnostic.h"
 #include "text-art/theme.h"
 
+/* Disable warnings about missing quoting in GCC diagnostics for the print
+   calls below.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 /* Anonymous namespace for path-printing code.  */
 
 namespace {
@@ -153,14 +160,17 @@ class path_label : public range_label
    when printing a diagnostic_path.  */
 
 static bool
-can_consolidate_events (const diagnostic_event &e1,
+can_consolidate_events (const diagnostic_path &path,
+			const diagnostic_event &e1,
+			unsigned ev1_idx,
 			const diagnostic_event &e2,
+			unsigned ev2_idx,
 			bool check_locations)
 {
   if (e1.get_thread_id () != e2.get_thread_id ())
     return false;
 
-  if (e1.get_fndecl () != e2.get_fndecl ())
+  if (!path.same_function_p (ev1_idx, ev2_idx))
     return false;
 
   if (e1.get_stack_depth () != e2.get_stack_depth ())
@@ -196,8 +206,10 @@ class thread_event_printer;
 class per_thread_summary
 {
 public:
-  per_thread_summary (label_text name, unsigned swimlane_idx)
-  : m_name (std::move (name)),
+  per_thread_summary (const diagnostic_path &path,
+		      label_text name, unsigned swimlane_idx)
+  : m_path (path),
+    m_name (std::move (name)),
     m_swimlane_idx (swimlane_idx),
     m_last_event (nullptr),
     m_min_depth (INT_MAX),
@@ -221,6 +233,8 @@ private:
   friend struct path_summary;
   friend class thread_event_printer;
   friend struct event_range;
+
+  const diagnostic_path &m_path;
 
   const label_text m_name;
 
@@ -333,7 +347,7 @@ struct event_range
 	       bool show_event_links)
   : m_path (path),
     m_initial_event (initial_event),
-    m_fndecl (initial_event.get_fndecl ()),
+    m_logical_loc (initial_event.get_logical_location ()),
     m_stack_depth (initial_event.get_stack_depth ()),
     m_start_idx (start_idx), m_end_idx (start_idx),
     m_path_label (path, start_idx),
@@ -373,10 +387,13 @@ struct event_range
     return result;
   }
 
-  bool maybe_add_event (const diagnostic_event &new_ev, unsigned idx,
+  bool maybe_add_event (const diagnostic_event &new_ev,
+			unsigned new_ev_idx,
 			bool check_rich_locations)
   {
-    if (!can_consolidate_events (m_initial_event, new_ev,
+    if (!can_consolidate_events (*m_path,
+				 m_initial_event, m_start_idx,
+				 new_ev, new_ev_idx,
 				 check_rich_locations))
       return false;
 
@@ -388,8 +405,8 @@ struct event_range
     per_source_line_info &source_line_info
       = get_per_source_line_info (exploc.line);
     const diagnostic_event *prev_event = nullptr;
-    if (idx > 0)
-      prev_event = &m_path->get_event (idx - 1);
+    if (new_ev_idx > 0)
+      prev_event = &m_path->get_event (new_ev_idx - 1);
     const bool has_in_edge = (prev_event
 			      ? prev_event->connect_to_next_event_p ()
 			      : false);
@@ -406,7 +423,7 @@ struct event_range
 					     false, &m_path_label))
 	return false;
 
-    m_end_idx = idx;
+    m_end_idx = new_ev_idx;
     m_per_thread_summary.m_last_event = &new_ev;
 
     if (m_show_event_links)
@@ -470,7 +487,7 @@ struct event_range
 
   const diagnostic_path *m_path;
   const diagnostic_event &m_initial_event;
-  tree m_fndecl;
+  const logical_location *m_logical_loc;
   int m_stack_depth;
   unsigned m_start_idx;
   unsigned m_end_idx;
@@ -518,8 +535,10 @@ private:
       return **slot;
 
     const diagnostic_thread &thread = path.get_thread (tid);
-    per_thread_summary *pts = new per_thread_summary (thread.get_name (false),
-						m_per_thread_summary.length ());
+    per_thread_summary *pts
+      = new per_thread_summary (path,
+				thread.get_name (false),
+				m_per_thread_summary.length ());
     m_thread_id_to_events.put (tid, pts);
     m_per_thread_summary.safe_push (pts);
     return *pts;
@@ -534,12 +553,12 @@ per_thread_summary::interprocedural_p () const
 {
   if (m_event_ranges.is_empty ())
     return false;
-  tree first_fndecl = m_event_ranges[0]->m_fndecl;
   int first_stack_depth = m_event_ranges[0]->m_stack_depth;
   for (auto range : m_event_ranges)
     {
-      if (range->m_fndecl != first_fndecl)
-	return true;
+      if (!m_path.same_function_p (m_event_ranges[0]->m_start_idx,
+				   range->m_start_idx))
+	  return true;
       if (range->m_stack_depth != first_stack_depth)
 	return true;
     }
@@ -583,23 +602,6 @@ write_indent (pretty_printer *pp, int spaces)
 {
   for (int i = 0; i < spaces; i++)
     pp_space (pp);
-}
-
-/* Print FNDDECL to PP, quoting it if QUOTED is true.
-
-   We can't use "%qE" here since we can't guarantee the capabilities
-   of PP.  */
-
-static void
-print_fndecl (pretty_printer *pp, tree fndecl, bool quoted)
-{
-  const char *n = DECL_NAME (fndecl)
-    ? identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2))
-    : _("<anonymous>");
-  if (quoted)
-    pp_printf (pp, "%qs", n);
-  else
-    pp_string (pp, n);
 }
 
 static const int base_indent = 2;
@@ -684,10 +686,10 @@ public:
 	    m_cur_indent += 5;
 	  }
       }
-    if (range->m_fndecl)
+    if (const logical_location *logical_loc = range->m_logical_loc)
       {
-	print_fndecl (pp, range->m_fndecl, true);
-	pp_string (pp, ": ");
+	label_text name (logical_loc->get_name_for_path_output ());
+	pp_printf (pp, "%qs: ", name.get ());
       }
     if (range->m_start_idx == range->m_end_idx)
       pp_printf (pp, "event %i",
@@ -914,15 +916,18 @@ default_tree_diagnostic_path_printer (diagnostic_context *context,
 	    if (context->show_path_depths_p ())
 	      {
 		int stack_depth = event.get_stack_depth ();
-		tree fndecl = event.get_fndecl ();
 		/* -fdiagnostics-path-format=separate-events doesn't print
 		   fndecl information, so with -fdiagnostics-show-path-depths
 		   print the fndecls too, if any.  */
-		if (fndecl)
-		  inform (event.get_location (),
-			  "%@ %s (fndecl %qD, depth %i)",
-			  &event_id, event_text.get (),
-			  fndecl, stack_depth);
+		if (const logical_location *logical_loc
+		      = event.get_logical_location ())
+		  {
+		    label_text name (logical_loc->get_name_for_path_output ());
+		    inform (event.get_location (),
+			    "%@ %s (fndecl %qs, depth %i)",
+			    &event_id, event_text.get (),
+			    name.get (), stack_depth);
+		  }
 		else
 		  inform (event.get_location (),
 			  "%@ %s (depth %i)",
@@ -972,11 +977,10 @@ default_tree_make_json_for_path (diagnostic_context *context,
 						     event.get_location ()));
       label_text event_text (event.get_desc (false));
       event_obj->set_string ("description", event_text.get ());
-      if (tree fndecl = event.get_fndecl ())
+      if (const logical_location *logical_loc = event.get_logical_location ())
 	{
-	  const char *function
-	    = identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2));
-	  event_obj->set_string ("function", function);
+	  label_text name (logical_loc->get_name_for_path_output ());
+	  event_obj->set_string ("function", name.get ());
 	}
       event_obj->set_integer ("depth", event.get_stack_depth ());
       path_array->append (event_obj);
@@ -985,13 +989,6 @@ default_tree_make_json_for_path (diagnostic_context *context,
 }
 
 #if CHECKING_P
-
-/* Disable warnings about missing quoting in GCC diagnostics for the print
-   calls in the tests below.  */
-#if __GNUC__ >= 10
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wformat-diag"
-#endif
 
 namespace selftest {
 

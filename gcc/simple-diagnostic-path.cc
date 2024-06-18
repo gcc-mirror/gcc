@@ -72,6 +72,14 @@ simple_diagnostic_path::get_thread (diagnostic_thread_id_t idx) const
   return *m_threads[idx];
 }
 
+bool
+simple_diagnostic_path::same_function_p (int event_idx_a,
+					 int event_idx_b) const
+{
+  return (m_events[event_idx_a]->get_fndecl ()
+	  == m_events[event_idx_b]->get_fndecl ());
+}
+
 diagnostic_thread_id_t
 simple_diagnostic_path::add_thread (const char *name)
 {
@@ -169,7 +177,8 @@ simple_diagnostic_event (location_t loc,
 			 int depth,
 			 const char *desc,
 			 diagnostic_thread_id_t thread_id)
-: m_loc (loc), m_fndecl (fndecl), m_depth (depth), m_desc (xstrdup (desc)),
+: m_loc (loc), m_fndecl (fndecl), m_logical_loc (fndecl),
+  m_depth (depth), m_desc (xstrdup (desc)),
   m_connected_to_next_event (false),
   m_thread_id (thread_id)
 {

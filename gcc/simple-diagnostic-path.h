@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_SIMPLE_DIAGNOSTIC_PATH_H
 
 #include "diagnostic-path.h"
+#include "tree-logical-location.h"
 
 /* Concrete subclasses of the abstract base classes
    declared in diagnostic-path.h.  */
@@ -37,7 +38,6 @@ class simple_diagnostic_event : public diagnostic_event
   ~simple_diagnostic_event ();
 
   location_t get_location () const final override { return m_loc; }
-  tree get_fndecl () const final override { return m_fndecl; }
   int get_stack_depth () const final override { return m_depth; }
   label_text get_desc (bool) const final override
   {
@@ -45,7 +45,10 @@ class simple_diagnostic_event : public diagnostic_event
   }
   const logical_location *get_logical_location () const final override
   {
-    return NULL;
+    if (m_fndecl)
+      return &m_logical_loc;
+    else
+      return nullptr;
   }
   meaning get_meaning () const final override
   {
@@ -65,9 +68,12 @@ class simple_diagnostic_event : public diagnostic_event
     m_connected_to_next_event = true;
   }
 
+  tree get_fndecl () const { return m_fndecl; }
+
  private:
   location_t m_loc;
   tree m_fndecl;
+  tree_logical_location m_logical_loc;
   int m_depth;
   char *m_desc; // has been i18n-ed and formatted
   bool m_connected_to_next_event;
@@ -102,6 +108,9 @@ class simple_diagnostic_path : public diagnostic_path
   unsigned num_threads () const final override;
   const diagnostic_thread &
   get_thread (diagnostic_thread_id_t) const final override;
+  bool
+  same_function_p (int event_idx_a,
+		   int event_idx_b) const final override;
 
   diagnostic_thread_id_t add_thread (const char *name);
 

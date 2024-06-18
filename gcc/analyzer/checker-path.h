@@ -63,6 +63,10 @@ public:
     return m_events[idx];
   }
 
+  bool
+  same_function_p (int event_idx_a,
+		   int event_idx_b) const final override;
+
   void dump (pretty_printer *pp) const;
   void debug () const;
 

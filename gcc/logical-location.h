@@ -67,6 +67,11 @@ public:
 
   /* Get what kind of SARIF logicalLocation this is (if any).  */
   virtual enum logical_location_kind get_kind () const = 0;
+
+  /* Get a string for this location in a form suitable for path output.  */
+  virtual label_text get_name_for_path_output () const = 0;
+
+  bool function_p () const;
 };
 
 #endif /* GCC_LOGICAL_LOCATION_H.  */

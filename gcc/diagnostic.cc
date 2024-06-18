@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "text-art/theme.h"
 #include "pretty-print-urlifier.h"
+#include "logical-location.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -1028,9 +1029,9 @@ diagnostic_event::meaning::maybe_get_property_str (enum property p)
 
 /* class diagnostic_path.  */
 
-/* Subroutint of diagnostic_path::interprocedural_p.
+/* Subroutine of diagnostic_path::interprocedural_p.
    Look for the first event in this path that is within a function
-   i.e. has a non-NULL fndecl, and a non-zero stack depth.
+   i.e. has a non-null logical location for which function_p is true.
    If found, write its index to *OUT_IDX and return true.
    Otherwise return false.  */
 
@@ -1040,12 +1041,13 @@ diagnostic_path::get_first_event_in_a_function (unsigned *out_idx) const
   const unsigned num = num_events ();
   for (unsigned i = 0; i < num; i++)
     {
-      if (!(get_event (i).get_fndecl () == NULL
-	    && get_event (i).get_stack_depth () == 0))
-	{
-	  *out_idx = i;
-	  return true;
-	}
+      const diagnostic_event &event = get_event (i);
+      if (const logical_location *logical_loc = event.get_logical_location ())
+	if (logical_loc->function_p ())
+	  {
+	    *out_idx = i;
+	    return true;
+	  }
     }
   return false;
 }
@@ -1062,18 +1064,43 @@ diagnostic_path::interprocedural_p () const
     return false;
 
   const diagnostic_event &first_fn_event = get_event (first_fn_event_idx);
-  tree first_fndecl = first_fn_event.get_fndecl ();
   int first_fn_stack_depth = first_fn_event.get_stack_depth ();
 
   const unsigned num = num_events ();
   for (unsigned i = first_fn_event_idx + 1; i < num; i++)
     {
-      if (get_event (i).get_fndecl () != first_fndecl)
+      if (!same_function_p (first_fn_event_idx, i))
 	return true;
       if (get_event (i).get_stack_depth () != first_fn_stack_depth)
 	return true;
     }
   return false;
+}
+
+/* class logical_location.  */
+
+/* Return true iff this is a function or method.  */
+
+bool
+logical_location::function_p () const
+{
+  switch (get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case LOGICAL_LOCATION_KIND_UNKNOWN:
+    case LOGICAL_LOCATION_KIND_MODULE:
+    case LOGICAL_LOCATION_KIND_NAMESPACE:
+    case LOGICAL_LOCATION_KIND_TYPE:
+    case LOGICAL_LOCATION_KIND_RETURN_TYPE:
+    case LOGICAL_LOCATION_KIND_PARAMETER:
+    case LOGICAL_LOCATION_KIND_VARIABLE:
+      return false;
+
+    case LOGICAL_LOCATION_KIND_FUNCTION:
+    case LOGICAL_LOCATION_KIND_MEMBER:
+      return true;
+    }
 }
 
 void

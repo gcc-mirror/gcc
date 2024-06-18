@@ -142,8 +142,6 @@ class diagnostic_event
 
   virtual location_t get_location () const = 0;
 
-  virtual tree get_fndecl () const = 0;
-
   /* Stack depth, so that consumers can visualize the interprocedural
      calls, returns, and frame nesting.  */
   virtual int get_stack_depth () const = 0;
@@ -151,7 +149,7 @@ class diagnostic_event
   /* Get a localized (and possibly colorized) description of this event.  */
   virtual label_text get_desc (bool can_colorize) const = 0;
 
-  /* Get a logical_location for this event, or NULL.  */
+  /* Get a logical_location for this event, or nullptr if there is none.  */
   virtual const logical_location *get_logical_location () const = 0;
 
   virtual meaning get_meaning () const = 0;
@@ -193,6 +191,12 @@ class diagnostic_path
   virtual unsigned num_threads () const = 0;
   virtual const diagnostic_thread &
   get_thread (diagnostic_thread_id_t) const = 0;
+
+  /* Return true iff the two events are both within the same function,
+     or both outside of any function.  */
+  virtual bool
+  same_function_p (int event_idx_a,
+		   int event_idx_b) const = 0;
 
   bool interprocedural_p () const;
   bool multithreaded_p () const;
