@@ -4637,7 +4637,9 @@ trivial_type_p (const_tree t)
   t = strip_array_types (CONST_CAST_TREE (t));
 
   if (CLASS_TYPE_P (t))
-    return (TYPE_HAS_TRIVIAL_DFLT (t)
+    /* A trivial class is a class that is trivially copyable and has one or
+       more eligible default constructors, all of which are trivial.  */
+    return (type_has_non_deleted_trivial_default_ctor (CONST_CAST_TREE (t))
 	    && trivially_copyable_p (t));
   else
     return scalarish_type_p (t);

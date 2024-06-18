@@ -5918,7 +5918,8 @@ type_has_virtual_destructor (tree type)
 /* True iff class TYPE has a non-deleted trivial default
    constructor.  */
 
-bool type_has_non_deleted_trivial_default_ctor (tree type)
+bool
+type_has_non_deleted_trivial_default_ctor (tree type)
 {
   return TYPE_HAS_TRIVIAL_DFLT (type) && locate_ctor (type);
 }
