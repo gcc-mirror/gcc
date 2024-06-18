@@ -7056,8 +7056,8 @@ gfc_conv_cfi_to_gfc (stmtblock_t *init, stmtblock_t *finally,
   if (sym->ts.type == BT_CHARACTER
       && !INTEGER_CST_P (sym->ts.u.cl->backend_decl))
     {
-      gfc_conv_string_length (sym->ts.u.cl, NULL, init);
-      gfc_trans_vla_type_sizes (sym, init);
+      gfc_conv_string_length (sym->ts.u.cl, NULL, &block);
+      gfc_trans_vla_type_sizes (sym, &block);
     }
 
   /* gfc->data = cfi->base_addr - or for scalars: gfc = cfi->base_addr.
