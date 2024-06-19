@@ -38,3 +38,9 @@ int main()
     abort ();
   return 0;
 }
+
+/* This is a weak test but we want to re-use the arithmetic for both the
+   store and the reduction.  */
+/* { dg-final { scan-tree-dump "re-using SLP tree" "slp2" { target { x86_64-*-* i?86-*-* } } } } */
+/* On i386 we vectorize both the store and the reduction.  */
+/* { dg-final { scan-tree-dump-times "basic block part vectorized" 2 "slp2" { target { x86_64-*-* i?86-*-* } } } } */

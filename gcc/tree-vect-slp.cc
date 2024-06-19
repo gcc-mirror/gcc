@@ -1585,6 +1585,23 @@ bst_traits::equal (value_type existing, value_type candidate)
   return true;
 }
 
+typedef hash_map <vec <stmt_vec_info>, slp_tree,
+		  simple_hashmap_traits <bst_traits, slp_tree> >
+  scalar_stmts_to_slp_tree_map_t;
+
+/* Release BST_MAP.  */
+
+static void
+release_scalar_stmts_to_slp_tree_map (scalar_stmts_to_slp_tree_map_t *bst_map)
+{
+  /* The map keeps a reference on SLP nodes built, release that.  */
+  for (scalar_stmts_to_slp_tree_map_t::iterator it = bst_map->begin ();
+       it != bst_map->end (); ++it)
+    if ((*it).second)
+      vect_free_slp_tree ((*it).second);
+  delete bst_map;
+}
+
 /* ???  This was std::pair<std::pair<tree_code, vect_def_type>, tree>
    but then vec::insert does memmove and that's not compatible with
    std::pair.  */
@@ -1682,10 +1699,6 @@ vect_slp_linearize_chain (vec_info *vinfo,
 	}
     }
 }
-
-typedef hash_map <vec <stmt_vec_info>, slp_tree,
-		  simple_hashmap_traits <bst_traits, slp_tree> >
-  scalar_stmts_to_slp_tree_map_t;
 
 static slp_tree
 vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
@@ -4003,14 +4016,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 	}
     }
 
-
-
-  /* The map keeps a reference on SLP nodes built, release that.  */
-  for (scalar_stmts_to_slp_tree_map_t::iterator it = bst_map->begin ();
-       it != bst_map->end (); ++it)
-    if ((*it).second)
-      vect_free_slp_tree ((*it).second);
-  delete bst_map;
+  release_scalar_stmts_to_slp_tree_map (bst_map);
 
   if (pattern_found && dump_enabled_p ())
     {
@@ -6068,6 +6074,43 @@ vect_optimize_slp_pass::run ()
   free_graph (m_slpg);
 }
 
+/* Apply CSE to NODE and its children using BST_MAP.  */
+
+static void
+vect_cse_slp_nodes (scalar_stmts_to_slp_tree_map_t *bst_map, slp_tree& node)
+{
+  if (SLP_TREE_DEF_TYPE (node) == vect_internal_def
+      && SLP_TREE_CODE (node) != VEC_PERM_EXPR
+      /* Besides some VEC_PERM_EXPR, two-operator nodes also
+	 lack scalar stmts and thus CSE doesn't work via bst_map.  Ideally
+	 we'd have sth that works for all internal and external nodes.  */
+      && !SLP_TREE_SCALAR_STMTS (node).is_empty ())
+    {
+      if (slp_tree *leader = bst_map->get (SLP_TREE_SCALAR_STMTS (node)))
+	{
+	  if (*leader != node)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "re-using SLP tree %p for %p\n",
+				 (void *)*leader, (void *)node);
+	      vect_free_slp_tree (node);
+	      (*leader)->refcnt += 1;
+	      node = *leader;
+	    }
+	  return;
+	}
+
+      bst_map->put (SLP_TREE_SCALAR_STMTS (node).copy (), node);
+      node->refcnt += 1;
+      /* And recurse.  */
+    }
+
+  for (slp_tree &child : SLP_TREE_CHILDREN (node))
+    if (child)
+      vect_cse_slp_nodes (bst_map, child);
+}
+
 /* Optimize the SLP graph of VINFO.  */
 
 void
@@ -6076,6 +6119,15 @@ vect_optimize_slp (vec_info *vinfo)
   if (vinfo->slp_instances.is_empty ())
     return;
   vect_optimize_slp_pass (vinfo).run ();
+
+  /* Apply CSE again to nodes after permute optimization.  */
+  scalar_stmts_to_slp_tree_map_t *bst_map
+    = new scalar_stmts_to_slp_tree_map_t ();
+
+  for (auto inst : vinfo->slp_instances)
+    vect_cse_slp_nodes (bst_map, SLP_INSTANCE_TREE (inst));
+
+  release_scalar_stmts_to_slp_tree_map (bst_map);
 }
 
 /* Gather loads reachable from the individual SLP graph entries.  */
