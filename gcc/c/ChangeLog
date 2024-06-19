@@ -1,3 +1,10 @@
+2024-06-18  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/115109
+	* c-decl.cc (build_enumerator): When redeclaring an
+	enumerator convert value to previous type.  For redeclared
+	enumerators use underlying type for computing the next value.
+
 2024-06-13  Joseph Myers  <josmyers@redhat.com>
 
 	* c-typeck.cc (build_unary_op): Use pedwarn_c23 for complex

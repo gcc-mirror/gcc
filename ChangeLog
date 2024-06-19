@@ -1,3 +1,8 @@
+2024-06-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* MAINTAINERS (aarch64 port): Update my email address.
+	(DCO section): Likewise.
+
 2024-06-11  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* Makefile.tpl: Add CRAB1_LIBS variable.

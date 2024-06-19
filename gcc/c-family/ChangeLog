@@ -1,3 +1,8 @@
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-opts.cc: Replace include of "tree-diagnostic.h" with
+	"diagnostic-macro-unwinding.h".
+
 2024-06-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.cc (is_float16): New predicate.

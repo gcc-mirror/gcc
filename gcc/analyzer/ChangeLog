@@ -1,3 +1,43 @@
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.h (checker_event::fndecl): Drop "final" and
+	"override", converting from a vfunc implementation to a plain
+	accessor.
+	* checker-path.cc (checker_path::same_function_p): New.
+	* checker-path.h (checker_path::same_function_p): New decl.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.h: Include "simple-diagnostic-path.h".
+
+2024-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* constraint-manager.cc (equiv_class::make_dump_widget): Change
+	return type to match return value and do not use std::move on
+	return value.
+	(bounded_ranges_constraint::make_dump_widget): Likewise.
+	(constraint_manager::make_dump_widget): Likewise.
+	* constraint-manager.h (equiv_class::make_dump_widget): Change
+	return type.
+	(bounded_ranges_constraint::make_dump_widget): Likewise.
+	(constraint_manager::make_dump_widget): Likewise.
+	* program-state.cc (sm_state_map::make_dump_widget): Likewise.
+	(program_state::make_dump_widget): Likewise.
+	* program-state.h (sm_state_map::make_dump_widget): Likewise.
+	(program_state::make_dump_widget): Likewise.
+	* region-model.cc (region_to_value_map::make_dump_widget): Likewise.
+	(region_model::make_dump_widget): Likewise.
+	* region-model.h (region_to_value_map::make_dump_widget): Likewise.
+	(region_model::make_dump_widget): Likewise.
+	* region.cc (region::make_dump_widget): Likewise.
+	* region.h (region::make_dump_widget): Likewise.
+	* store.cc (binding_cluster::make_dump_widget): Likewise.
+	(store::make_dump_widget): Likewise.
+	* store.h (binding_cluster::make_dump_widget): Likewise.
+	(store::make_dump_widget): Likewise.
+	* svalue.cc (svalue::make_dump_widget): Likewise.
+	* svalue.h (svalue::make_dump_widget): Likewise.
+
 2024-06-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* access-diagram.cc (access_range::dump): Update for fields of

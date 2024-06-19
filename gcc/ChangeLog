@@ -1,3 +1,370 @@
+2024-06-18  Edwin Lu  <ewlu@rivosinc.com>
+	    Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc: Move assert out of conditional block
+
+2024-06-18  Edwin Lu  <ewlu@rivosinc.com>
+	    Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec-opt.md: Fix mode mismatch
+
+2024-06-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-cores.def: Add comment
+	saying thunderxt81/t83 are aliases of octeontx81/83.
+
+2024-06-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* config/aarch64/aarch64-cores.def (thunderxt88p1): Make an alias of thunderxt88 and
+	move below thunderxt88.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Move selftest-diagnostic-path.o,
+	selftest-logical-location.o, and tree-diagnostic-path.o to...
+	(OBJS-libcommon): ...here, renaming tree-diagnostic-path.o to
+	diagnostic-path.o.
+	* tree-diagnostic-path.cc: Rename to...
+	* diagnostic-path.cc: ...this.  Drop include of "tree.h".
+	(tree_diagnostic_path_cc_tests): Rename to...
+	(diagnostic_path_cc_tests): ...this.
+	* selftest-run-tests.cc (selftest::run_tests): Update for above
+	renaming.
+	* selftest.h (tree_diagnostic_path_cc_tests): Rename decl to...
+	(diagnostic_path_cc_tests): ...this.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc (diagnostic_output_format_init_json):
+	Replace clearing of diagnostic_context::m_print_path callback with
+	setting the path format to DPF_NONE.
+	* diagnostic-format-sarif.cc
+	(diagnostic_output_format_init_sarif): Likewise.
+	* diagnostic.cc (diagnostic_context::show_any_path): Replace call
+	to diagnostic_context::m_print_path callback with a direct call to
+	diagnostic_context::print_path.
+	* diagnostic.h (diagnostic_context::print_path): New decl.
+	(diagnostic_context::m_print_path): Delete callback.
+	* tree-diagnostic-path.cc (default_tree_diagnostic_path_printer):
+	Convert to...
+	(diagnostic_context::print_path): ...this.
+	* tree-diagnostic.cc (tree_diagnostics_defaults): Delete
+	initialization of m_print_path.
+	* tree-diagnostic.h (default_tree_diagnostic_path_printer): Delete
+	decl.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-macro-unwinding.cc: New file, with material taken
+	from tree-diagnostic.cc.
+	* diagnostic-macro-unwinding.h: New file, with material taken
+	from tree-diagnostic.h.
+	* tree-diagnostic-path.cc: Repalce include of "tree-diagnostic.h"
+	with "diagnostic-macro-unwinding.h".
+	* tree-diagnostic.cc (struct loc_map_pair): Move to
+	diagnostic-macro-unwinding.cc.
+	(maybe_unwind_expanded_macro_loc): Likewise.
+	(virt_loc_aware_diagnostic_finalizer): Likewise.
+	* tree-diagnostic.h (virt_loc_aware_diagnostic_finalizer): Move
+	decl to diagnostic-macro-unwinding.h.
+	(maybe_unwind_expanded_macro_loc): Likewise.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add diagnostic-macro-unwinding.o.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc: Include "diagnostic-path.h" and
+	"logical-location.h".
+	(make_json_for_path): Move tree-diagnostic-path.cc's
+	default_tree_make_json_for_path here, renaming it and making it
+	static.
+	(json_output_format::on_end_diagnostic): Replace call of
+	m_context's m_make_json_for_path callback with a direct call to
+	make_json_for_path.
+	* diagnostic.h (diagnostic_context::m_make_json_for_path): Drop
+	field.
+	* tree-diagnostic-path.cc: Drop include of "json.h".
+	(default_tree_make_json_for_path): Rename to make_json_for_path
+	and move to diagnostic-format-json.cc.
+	* tree-diagnostic.cc (tree_diagnostics_defaults): Drop
+	initialization of m_make_json_for_path.
+	* tree-diagnostic.h (default_tree_make_json_for): Delete decl.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add selftest-diagnostic-path.o and
+	selftest-logical-location.o.
+	* logical-location.h: Include "label-text.h".
+	(class logical_location): Update leading comment.
+	* selftest-diagnostic-path.cc: New file, adapted from
+	simple-diagnostic-path.cc and from material in
+	tree-diagnostic-path.cc.
+	* selftest-diagnostic-path.h: New file, adapted from
+	simple-diagnostic-path.h and from material in
+	tree-diagnostic-path.cc.
+	* selftest-logical-location.cc: New file.
+	* selftest-logical-location.h: New file.
+	* tree-diagnostic-path.cc: Remove includes of "tree-pretty-print.h",
+	"langhooks.h", and "simple-diagnostic-path.h".  Add include of
+	"selftest-diagnostic-path.h".
+	(class test_diagnostic_path): Delete, in favor of new
+	implementation in selftest-diagnostic-path.{h,cc}, which is
+	directly derived from diagnostic_path, rather than from
+	simple_diagnostic_path.
+	(selftest::test_intraprocedural_path): Eliminate tree usage,
+	via change to test_diagnostic_path, using strings rather than
+	function_decls for identifying functions in the test.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+	(selftest::test_control_flow_1): Likewise.
+	(selftest::test_control_flow_2): Likewise.
+	(selftest::test_control_flow_3): Likewise.
+	(selftest::assert_cfg_edge_path_streq): Likewise.
+	(selftest::test_control_flow_5): Likewise.
+	(selftest::test_control_flow_6): Likewise.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.cc: Include "logical-location.h".
+	(diagnostic_path::get_first_event_in_a_function): Fix typo in
+	leading comment.  Rewrite to use logical_location rather than
+	tree.  Drop test on stack depth.
+	(diagnostic_path::interprocedural_p): Rewrite to use
+	logical_location rather than tree.
+	(logical_location::function_p): New.
+	* diagnostic-path.h (diagnostic_event::get_fndecl): Eliminate
+	vfunc.
+	(diagnostic_path::same_function_p): New pure virtual func.
+	* logical-location.h (logical_location::get_name_for_path_output):
+	New pure virtual func.
+	* simple-diagnostic-path.cc
+	(simple_diagnostic_path::same_function_p): New.
+	(simple_diagnostic_event::simple_diagnostic_event): Initialize
+	m_logical_loc.
+	* simple-diagnostic-path.h: Include "tree-logical-location.h".
+	(simple_diagnostic_event::get_fndecl): Convert from a vfunc
+	implementation to an accessor.
+	(simple_diagnostic_event::get_logical_location): Use
+	m_logical_loc.
+	(simple_diagnostic_event::m_logical_loc): New field.
+	(simple_diagnostic_path::same_function_p): New decl.
+	* tree-diagnostic-path.cc: Move pragma disabling -Wformat-diag to
+	cover the whole file.
+	(can_consolidate_events): Add params "path", "ev1_idx", and
+	"ev2_idx".  Rewrite to use diagnostic_path::same_function_p rather
+	than tree.
+	(per_thread_summary::per_thread_summary): Add "path" param
+	(per_thread_summary::m_path): New field.
+	(event_range::event_range): Update for conversion of m_fndecl to
+	m_logical_loc.
+	(event_range::maybe_add_event): Rename param "idx" to
+	"new_ev_idx".  Update call to can_consolidate_events to pass in
+	"m_path", "m_start_idx", and "new_ev_idx".
+	(event_range::m_fndecl): Replace with...
+	(event_range::m_logical_loc): ...this.
+	(path_summary::get_or_create_events_for_thread_id): Pass "path" to
+	per_thread_summary ctor.
+	(per_thread_summary::interprocedural_p): Rewrite to use
+	diagnostic_path::same_function_p rather than tree.
+	(print_fndecl): Delete.
+	(thread_event_printer::print_swimlane_for_event_range): Update for
+	conversion from tree to logical_location.
+	(default_tree_diagnostic_path_printer): Likewise.
+	(default_tree_make_json_for_path): Likewise.
+	* tree-logical-location.cc: Include "intl.h".
+	(compiler_logical_location::get_name_for_tree_for_path_output):
+	New.
+	(tree_logical_location::get_name_for_path_output): New.
+	(current_fndecl_logical_location::get_name_for_path_output): New.
+	* tree-logical-location.h
+	(compiler_logical_location::get_name_for_tree_for_path_output):
+	New decl.
+	(tree_logical_location::get_name_for_path_output): New decl.
+	(current_fndecl_logical_location::get_name_for_path_output): New
+	decl.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add simple-diagnostic-path.o.
+	* diagnostic-path.h (class simple_diagnostic_event): Move to
+	simple-diagnostic-path.h.
+	(class simple_diagnostic_thread): Likewise.
+	(class simple_diagnostic_path): Likewise.
+	* diagnostic.cc (simple_diagnostic_path::simple_diagnostic_path):
+	Move to simple-diagnostic-path.cc.
+	(simple_diagnostic_path::num_events): Likewise.
+	(simple_diagnostic_path::get_event): Likewise.
+	(simple_diagnostic_path::num_threads): Likewise.
+	(simple_diagnostic_path::get_thread): Likewise.
+	(simple_diagnostic_path::add_thread): Likewise.
+	(simple_diagnostic_path::add_event): Likewise.
+	(simple_diagnostic_path::add_thread_event): Likewise.
+	(simple_diagnostic_path::connect_to_next_event): Likewise.
+	(simple_diagnostic_event::simple_diagnostic_event): Likewise.
+	(simple_diagnostic_event::~simple_diagnostic_event): Likewise.
+	* selftest-run-tests.cc (selftest::run_tests): Call
+	selftest::simple_diagnostic_path_cc_tests.
+	* selftest.h (selftest::simple_diagnostic_path_cc_tests): New
+	decl.
+	* simple-diagnostic-path.cc: New file, from the above material.
+	* simple-diagnostic-path.h: New file, from the above material
+	from diagnostic-path.h.
+	* tree-diagnostic-path.cc: Include "simple-diagnostic-path.h".
+
+2024-06-18  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add form 7 and 8 for the unsigned .SAT_ADD match.
+
+2024-06-18  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add form 11 match pattern for .SAT_SUB.
+
+2024-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115537
+	* tree-vect-loop.cc (vectorizable_reduction): Also reject
+	SLP condition reductions of EXTRACT_LAST kind when multiple
+	statement copies are involved.
+
+2024-06-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (bset splitters): New patterns for
+	generating bset when bit position is limited.
+
+2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_addti_scratch_regs): Use
+	force_highpart_subreg instead of gen_highpart and simplify_gen_subreg.
+	(aarch64_subvti_scratch_regs): Likewise.
+
+2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* explow.h (force_highpart_subreg): Declare.
+	* explow.cc (force_highpart_subreg): New function.
+	* builtins.cc (expand_builtin_issignaling): Use it.
+	* expmed.cc (emit_store_flag_1): Likewise.
+
+2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* builtins.cc (expand_builtin_issignaling): Use force_lowpart_subreg
+	instead of simplify_gen_subreg and lowpart_subreg.
+	* expr.cc (convert_mode_scalar, expand_expr_real_2): Likewise.
+	* optabs.cc (expand_doubleword_mod): Likewise.
+
+2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115464
+	* config/aarch64/aarch64-builtins.cc (aarch64_expand_fcmla_builtin)
+	(aarch64_expand_rwsr_builtin): Use force_lowpart_subreg instead of
+	simplify_gen_subreg and lowpart_subreg.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svset_neonq_impl::expand): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.cc
+	(add_load_store_slice_operand): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_sve_reinterpret): Likewise.
+	(aarch64_addti_scratch_regs, aarch64_subvti_scratch_regs): Likewise.
+
+2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* explow.h (force_lowpart_subreg): Declare.
+	* explow.cc (force_lowpart_subreg): New function.
+	* optabs.cc (lowpart_subreg_maybe_copy): Delete.
+	(expand_absneg_bit): Use force_lowpart_subreg instead of
+	lowpart_subreg_maybe_copy.
+	(expand_copysign_bit): Likewise.
+
+2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* expmed.cc (store_bit_field_using_insv): Use force_subreg
+	instead of simplify_gen_subreg.
+	(store_bit_field_1): Likewise.
+	(extract_bit_field_as_subreg): Likewise.
+	(extract_integral_bit_field): Likewise.
+	(emit_store_flag_1): Likewise.
+	* expr.cc (convert_move): Likewise.
+	(convert_modes): Likewise.
+	(emit_group_load_1): Likewise.
+	(emit_group_store): Likewise.
+	(expand_assignment): Likewise.
+
+2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (aarch64_expand_fcmla_builtin):
+	Use force_subreg instead of simplify_gen_subreg.
+	* config/aarch64/aarch64-simd.md (ctz<mode>2): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svget_impl::expand): Likewise.
+	(svget_neonq_impl::expand): Likewise.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(multireg_permute::expand): Likewise.
+
+2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* explow.cc (force_subreg): Emit no instructions on failure.
+
+2024-06-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/115324
+	* config/rs6000/rs6000-gen-builtins.cc (write_decls): Change
+	declaration of rs6000_init_generated_builtins from no arguments
+	to 4 pointer arguments.
+	(write_init_bif_table): Change rs6000_builtin_info_fntype to
+	builtin_info_fntype and rs6000_builtin_decls to builtin_decls.
+	(write_init_ovld_table): Change rs6000_instance_info_fntype to
+	instance_info_fntype, rs6000_builtin_decls to builtin_decls and
+	rs6000_overload_info to overload_info.
+	(write_init_file): Add __noipa__ attribute to
+	rs6000_init_generated_builtins for GCC 8.1+ and change the function
+	from no arguments to 4 pointer arguments.  Change rs6000_builtin_decls
+	to builtin_decls.
+	* config/rs6000/rs6000-builtin.cc (rs6000_init_builtins): Adjust
+	rs6000_init_generated_builtins caller.
+
+2024-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115493
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Use
+	the first scalar result.
+
+2024-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/111793
+	* tree-ssa-alias.h (ref_can_have_store_data_races): Declare.
+	* tree-ssa-alias.cc (ref_can_have_store_data_races): New
+	function.
+	* tree-if-conv.cc (ifcvt_memrefs_wont_trap): Use
+	ref_can_have_store_data_races to allow more unconditional
+	stores.
+	* tree-ssa-loop-im.cc (execute_sm): Likewise.
+	* tree-ssa-phiopt.cc (cond_store_replacement): Likewise.
+
+2024-06-18  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/avxintrin.h: Move cmp[p|s][s|d] to [e|x]mmintrin.h,
+	and move macros to xmmintrin.h
+	* config/i386/emmintrin.h: Add cmp[p|s]s intrins.
+	* config/i386/i386-builtin.def: Modify __builtin_ia32_cmp[p|s][s|d].
+	* config/i386/i386-expand.cc
+	(ix86_expand_args_builtin): Raise error when imm is in range of
+	[8, 32] without avx.
+	* config/i386/predicates.md (cmpps_imm_operand): New predicate.
+	* config/i386/sse.md (avx_cmp<mode>3): Modefy define_insn.
+	(avx_vmcmp<mode>3): Ditto.
+	* config/i386/xmmintrin.h (_CMP_EQ_OQ): New macro for sse/sse2.
+	(_CMP_LT_OS): Ditto
+	(_CMP_LE_OS): Ditto
+	(_CMP_UNORD_Q): Ditto
+	(_CMP_NEQ_UQ): Ditto
+	(_CMP_NLT_US): Ditto
+	(_CMP_NLE_US): Ditto
+	(_CMP_ORD_Q): Ditto
+	(_mm_cmp_ps): Move intrin from avxintrin.h to xmmintrin.h
+	(_mm_cmp_ss): Ditto.
+
 2024-06-17  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/bitmanip.md (bsetclr_zero_extract): New pattern.

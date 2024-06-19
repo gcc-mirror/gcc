@@ -1,3 +1,8 @@
+2024-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cpp_type_traits.h: Fix outdated comment about the
+	number of standard integer types.
+
 2024-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/110572
