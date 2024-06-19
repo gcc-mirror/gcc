@@ -62,105 +62,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __valarray_release_memory(void* __p)
   { operator delete(__p); }
 
-  // Turn a raw-memory into an array of _Tp filled with _Tp()
-  // This is required in 'valarray<T> v(n);'
-  template<typename _Tp, bool>
-    struct _Array_default_ctor
-    {
-      // Please note that this isn't exception safe.  But
-      // valarrays aren't required to be exception safe.
-      inline static void
-      _S_do_it(_Tp* __b, _Tp* __e)
-      {
-	while (__b != __e)
-	  new(__b++) _Tp();
-      }
-    };
-
-  template<typename _Tp>
-    struct _Array_default_ctor<_Tp, true>
-    {
-      // For trivial types, it suffices to say 'memset()'
-      inline static void
-      _S_do_it(_Tp* __b, _Tp* __e)
-      { __builtin_memset(__b, 0, (__e - __b) * sizeof(_Tp)); }
-    };
-
+  // Turn raw-memory into an array of _Tp filled with _Tp().
+  // This is used in `valarray<T> v(n);` and in `valarray<T>::shift(n)`.
   template<typename _Tp>
     inline void
     __valarray_default_construct(_Tp* __b, _Tp* __e)
     {
-      _Array_default_ctor<_Tp, __is_trivial(_Tp)>::_S_do_it(__b, __e);
+      if _GLIBCXX17_CONSTEXPR (__is_trivial(_Tp))
+	__builtin_memset(__b, 0, (__e - __b) * sizeof(_Tp));
+      else
+	while (__b != __e)
+	  ::new(static_cast<void*>(__b++)) _Tp();
     }
 
   // Turn a raw-memory into an array of _Tp filled with __t
   // This is the required in valarray<T> v(n, t).  Also
   // used in valarray<>::resize().
-  template<typename _Tp, bool>
-    struct _Array_init_ctor
-    {
-      // Please note that this isn't exception safe.  But
-      // valarrays aren't required to be exception safe.
-      inline static void
-      _S_do_it(_Tp* __b, _Tp* __e, const _Tp __t)
-      {
-	while (__b != __e)
-	  new(__b++) _Tp(__t);
-      }
-    };
-
-  template<typename _Tp>
-    struct _Array_init_ctor<_Tp, true>
-    {
-      inline static void
-      _S_do_it(_Tp* __b, _Tp* __e, const _Tp __t)
-      {
-	while (__b != __e)
-	  *__b++ = __t;
-      }
-    };
-
   template<typename _Tp>
     inline void
     __valarray_fill_construct(_Tp* __b, _Tp* __e, const _Tp __t)
     {
-      _Array_init_ctor<_Tp, __is_trivial(_Tp)>::_S_do_it(__b, __e, __t);
+      while (__b != __e)
+	::new(static_cast<void*>(__b++)) _Tp(__t);
     }
 
-  //
   // copy-construct raw array [__o, *) from plain array [__b, __e)
-  // We can't just say 'memcpy()'
-  //
-  template<typename _Tp, bool>
-    struct _Array_copy_ctor
-    {
-      // Please note that this isn't exception safe.  But
-      // valarrays aren't required to be exception safe.
-      inline static void
-      _S_do_it(const _Tp* __b, const _Tp* __e, _Tp* __restrict__ __o)
-      {
-	while (__b != __e)
-	  new(__o++) _Tp(*__b++);
-      }
-    };
-
-  template<typename _Tp>
-    struct _Array_copy_ctor<_Tp, true>
-    {
-      inline static void
-      _S_do_it(const _Tp* __b, const _Tp* __e, _Tp* __restrict__ __o)
-      {
-	if (__b)
-	  __builtin_memcpy(__o, __b, (__e - __b) * sizeof(_Tp));
-      }
-    };
-
   template<typename _Tp>
     inline void
     __valarray_copy_construct(const _Tp* __b, const _Tp* __e,
 			      _Tp* __restrict__ __o)
     {
-      _Array_copy_ctor<_Tp, __is_trivial(_Tp)>::_S_do_it(__b, __e, __o);
+      if _GLIBCXX17_CONSTEXPR (__is_trivial(_Tp))
+	{
+	  if (__b)
+	    __builtin_memcpy(__o, __b, (__e - __b) * sizeof(_Tp));
+	}
+      else
+	while (__b != __e)
+	  ::new(static_cast<void*>(__o++)) _Tp(*__b++);
     }
 
   // copy-construct raw array [__o, *) from strided array __a[<__n : __s>]
@@ -169,7 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __valarray_copy_construct (const _Tp* __restrict__ __a, size_t __n,
 			       size_t __s, _Tp* __restrict__ __o)
     {
-      if (__is_trivial(_Tp))
+      if _GLIBCXX17_CONSTEXPR (__is_trivial(_Tp))
 	while (__n--)
 	  {
 	    *__o++ = *__a;
