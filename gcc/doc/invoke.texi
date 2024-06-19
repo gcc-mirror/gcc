@@ -21324,8 +21324,8 @@ performance of the code.  Permissible values for this option are:
 @samp{cortex-a78}, @samp{cortex-a78ae}, @samp{cortex-a78c},
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{neoverse-512tvb}, @samp{neoverse-e1}, @samp{neoverse-n1},
-@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{qdf24xx},
-@samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
+@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{grace},
+@samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
 @samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
 @samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},

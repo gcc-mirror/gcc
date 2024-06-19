@@ -189,6 +189,8 @@ AARCH64_CORE("neoverse-n2", neoversen2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPER
 AARCH64_CORE("cobalt-100",   cobalt100, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversen2, 0x6d, 0xd49, -1)
 
 AARCH64_CORE("neoverse-v2", neoversev2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
+AARCH64_CORE("grace", grace, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, SVE2_AES, SVE2_SHA3, SVE2_SM4, PROFILE), neoversev2, 0x41, 0xd4f, -1)
+
 AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 
 /* Generic Architecture Processors.  */
