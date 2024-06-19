@@ -2053,7 +2053,7 @@ fi
 
 if test "$ac_cv_search_pthread_create" = -lpthread; then
     CRAB1_LIBS="$CRAB1_LIBS -lpthread"
-elif test "$ac_cv_search_pthread_create" = no; then
+elif test "$ac_cv_search_pthread_crate" = no; then
     missing_rust_dynlibs="$missing_rust_dynlibs, libpthread"
 fi
 
