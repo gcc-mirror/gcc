@@ -30239,7 +30239,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_mips_explicit_relocs_pcrel" >&5
 $as_echo "$gcc_cv_as_mips_explicit_relocs_pcrel" >&6; }
-if test "x$gcc_cv_as_mips_explicit_relocs_pcrel" = "xyes"; then
+if test $gcc_cv_as_mips_explicit_relocs_pcrel = yes; then
 
 $as_echo "#define MIPS_EXPLICIT_RELOCS MIPS_EXPLICIT_RELOCS_PCREL" >>confdefs.h
 
