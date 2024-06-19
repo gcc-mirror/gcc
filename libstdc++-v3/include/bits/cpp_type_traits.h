@@ -344,44 +344,11 @@ __INT_N(__GLIBCXX_TYPE_INT_N_3)
 #endif
 
   //
-  // Pointer types
-  //
-#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_pointer)
-  template<typename _Tp, bool _IsPtr = __is_pointer(_Tp)>
-    struct __is_pointer : __truth_type<_IsPtr>
-    {
-      enum { __value = _IsPtr };
-    };
-#else
-  template<typename _Tp>
-    struct __is_pointer
-    {
-      enum { __value = 0 };
-      typedef __false_type __type;
-    };
-
-  template<typename _Tp>
-    struct __is_pointer<_Tp*>
-    {
-      enum { __value = 1 };
-      typedef __true_type __type;
-    };
-#endif
-
-  //
   // An arithmetic type is an integer type or a floating point type
   //
   template<typename _Tp>
     struct __is_arithmetic
     : public __traitor<__is_integer<_Tp>, __is_floating<_Tp> >
-    { };
-
-  //
-  // A scalar type is an arithmetic type or a pointer type
-  // 
-  template<typename _Tp>
-    struct __is_scalar
-    : public __traitor<__is_arithmetic<_Tp>, __is_pointer<_Tp> >
     { };
 
   //
