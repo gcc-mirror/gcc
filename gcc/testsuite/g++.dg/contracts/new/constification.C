@@ -7,8 +7,9 @@
 //   ensure that a missing colon after contract level errors
 //   ensure that an invalid contract role 'invalid' errors
 //   ensure that a missing colon after contract role errors
+// { dg-options "-std=c++2b -fcontracts -fcontracts-nonattr " }
 // { dg-do compile }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr " }
+
 
 static_assert (__cpp_contracts >= 201906);
 static_assert (__cpp_contracts_literal_semantics >= 201906);
@@ -53,6 +54,30 @@ struct S{
   }
 
 };
+
+template <class T> void perfect_forward(T&& t) pre(++t) {} // { dg-error "increment of read-only" }
+
+struct S2
+{
+  int i = 0;
+  template <class Self> void perfect_forward(this Self&& self) pre(++self.i) {} // { dg-error "increment of member.*in read-only object" }
+};
+
+void template_related_tests()
+{
+  int i = 0;
+  const int ci = 42;
+  perfect_forward(i);
+  perfect_forward(666);
+  perfect_forward(ci);
+  perfect_forward((const int&&) ci);
+  S2 s;
+  const S2 cs;
+  s.perfect_forward();
+  cs.perfect_forward();
+  S2().perfect_forward();
+  ((const S2&&)S2()).perfect_forward();
+}
 
 void class_related_tests()
 {
