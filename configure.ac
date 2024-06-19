@@ -2045,15 +2045,15 @@ missing_rust_dynlibs=none
 AC_SEARCH_LIBS([dlopen], [dl])
 AC_SEARCH_LIBS([pthread_create], [pthread])
 
-if test $ac_cv_search_dlopen = -ldl; then
+if test "$ac_cv_search_dlopen" = -ldl; then
     CRAB1_LIBS="$CRAB1_LIBS -ldl"
-elif test $ac_cv_search_dlopen = no; then
+elif test "$ac_cv_search_dlopen" = no; then
     missing_rust_dynlibs="libdl"
 fi
 
-if test $ac_cv_search_pthread_create = -lpthread; then
+if test "$ac_cv_search_pthread_create" = -lpthread; then
     CRAB1_LIBS="$CRAB1_LIBS -lpthread"
-elif test $ac_cv_search_pthread_crate = no; then
+elif test "$ac_cv_search_pthread_create" = no; then
     missing_rust_dynlibs="$missing_rust_dynlibs, libpthread"
 fi
 
