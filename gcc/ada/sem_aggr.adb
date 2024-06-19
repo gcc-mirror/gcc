@@ -468,6 +468,12 @@ package body Sem_Aggr is
       --  corresponding to the same dimension are static and found to differ,
       --  then emit a warning, and mark N as raising Constraint_Error.
 
+      procedure Retrieve_Aggregate_Bounds (This_Range : Node_Id);
+      --  In some cases, an appropriate list of aggregate bounds has been
+      --  created during resolution. Populate Aggr_Range with that list, and
+      --  remove the elements from the list so they can be added to another
+      --  list later.
+
       -------------------------
       -- Collect_Aggr_Bounds --
       -------------------------
@@ -631,6 +637,24 @@ package body Sem_Aggr is
          end if;
       end Collect_Aggr_Bounds;
 
+      -------------------------------
+      -- Retrieve_Aggregate_Bounds --
+      -------------------------------
+
+      procedure Retrieve_Aggregate_Bounds (This_Range : Node_Id) is
+         R : Node_Id := This_Range;
+      begin
+         for J in 1 .. Aggr_Dimension loop
+            Aggr_Range (J) := R;
+            Next_Index (R);
+
+            --  Remove bounds from the list, so they can be reattached as
+            --  the First_Index/Next_Index again.
+
+            Remove (Aggr_Range (J));
+         end loop;
+      end Retrieve_Aggregate_Bounds;
+
       --  Array_Aggr_Subtype variables
 
       Itype : Entity_Id;
@@ -655,25 +679,17 @@ package body Sem_Aggr is
 
       Set_Parent (Index_Constraints, N);
 
+      if Is_Rewrite_Substitution (N)
+        and then Present (Component_Associations (Original_Node (N)))
+      then
+         Retrieve_Aggregate_Bounds (First_Index (Etype (Original_Node (N))));
+
       --  When resolving a null aggregate we created a list of aggregate bounds
       --  for the consecutive dimensions. The bounds for the first dimension
       --  are attached as the Aggregate_Bounds of the aggregate node.
 
-      if Is_Null_Aggregate (N) then
-         declare
-            This_Range : Node_Id := Aggregate_Bounds (N);
-         begin
-            for J in 1 .. Aggr_Dimension loop
-               Aggr_Range (J) := This_Range;
-               Next_Index (This_Range);
-
-               --  Remove bounds from the list, so they can be reattached as
-               --  the First_Index/Next_Index again by the code that also
-               --  handles non-null aggregates.
-
-               Remove (Aggr_Range (J));
-            end loop;
-         end;
+      elsif Is_Null_Aggregate (N) then
+         Retrieve_Aggregate_Bounds (Aggregate_Bounds (N));
       else
          Collect_Aggr_Bounds (N, 1);
       end if;
@@ -1378,6 +1394,7 @@ package body Sem_Aggr is
            and then Is_OK_Static_Subtype (Component_Type (Typ))
            and then Base_Type (Etype (First_Index (Typ))) =
                       Base_Type (Standard_Integer)
+           and then not Has_Static_Empty_Array_Bounds (Typ)
          then
             declare
                Expr : Node_Id;
@@ -3595,10 +3612,12 @@ package body Sem_Aggr is
       --  If the aggregate already has bounds attached to it, it means this is
       --  a positional aggregate created as an optimization by
       --  Exp_Aggr.Convert_To_Positional, so we don't want to change those
-      --  bounds.
+      --  bounds, unless they depend on discriminants. If they do, we have to
+      --  perform analysis in the current context.
 
       if Present (Aggregate_Bounds (N))
-        and then not Others_Allowed
+        and then No (Others_N)
+        and then not Depends_On_Discriminant (Aggregate_Bounds (N))
         and then not Comes_From_Source (N)
       then
          Aggr_Low  := Low_Bound  (Aggregate_Bounds (N));

@@ -4657,8 +4657,7 @@ package body Exp_Aggr is
          --  present we can proceed since the bounds can be obtained from the
          --  aggregate.
 
-         if Hiv < Lov
-           or else (not Compile_Time_Known_Value (Blo) and then Others_Present)
+         if not Compile_Time_Known_Value (Blo) and then Others_Present
          then
             return False;
          end if;
@@ -4801,6 +4800,9 @@ package body Exp_Aggr is
 
                      if Rep_Count = 0
                        and then Warn_On_Redundant_Constructs
+                       -- We don't emit warnings on null arrays initialized
+                       -- with an aggregate of the form "(others => ...)".
+                       and then Vals'Length > 0
                      then
                         Error_Msg_N ("there are no others?r?", Elmt);
                      end if;
