@@ -3078,7 +3078,17 @@ print_operand (FILE *file, rtx x, int letter)
 	  /* For a volatile memory reference, emit a MEMW before the
 	     load or store.  */
 	  if (MEM_VOLATILE_P (x) && TARGET_SERIALIZE_VOLATILE)
-	    fprintf (file, "memw\n\t");
+	    {
+	      rtx_insn *prev_insn
+			= prev_nonnote_nondebug_insn (current_output_insn);
+	      rtx pat, src;
+
+	      if (! (prev_insn && NONJUMP_INSN_P (prev_insn)
+		     && GET_CODE (pat = PATTERN (prev_insn)) == SET
+		     && GET_CODE (src = SET_SRC (pat)) == UNSPEC
+		     && XINT (src, 1) == UNSPEC_MEMW))
+		fprintf (file, "memw\n\t");
+	    }
 	}
       else
 	output_operand_lossage ("invalid %%v value");
