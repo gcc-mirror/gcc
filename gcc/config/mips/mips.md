@@ -1245,7 +1245,7 @@
 				 (match_operand:GPR 2 "reg_or_0_operand" "dJ")])
 	    (const_int 0))]
   "ISA_HAS_COND_TRAP && !ISA_HAS_COND_TRAPI"
-  "t%C0\t%z1,%2"
+  "t%C0\t%z1,%z2"
   [(set_attr "type" "trap")])
 
 (define_insn "*conditional_trap<mode>"
