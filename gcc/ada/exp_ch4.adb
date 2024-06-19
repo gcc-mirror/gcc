@@ -2837,13 +2837,32 @@ package body Exp_Ch4 is
             if not Set then
                NN := NN + 1;
 
-               --  Capture operand bounds
+               --  Set low bound of operand and check first the constrained
+               --  case with known bound
 
-               Opnd_Low_Bound (NN) :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix         =>
-                     Duplicate_Subexpr (Opnd, Name_Req => True),
-                   Attribute_Name => Name_First);
+               if Is_Constrained (Opnd_Typ) then
+                  declare
+                     Low_Bound : constant Node_Id
+                       := Type_Low_Bound
+                            (Underlying_Type (Etype (First_Index (Opnd_Typ))));
+
+                  begin
+                     if Compile_Time_Known_Value (Low_Bound) then
+                        Opnd_Low_Bound (NN) := New_Copy_Tree (Low_Bound);
+                        Set := True;
+                     end if;
+                  end;
+               end if;
+
+               --  Otherwise fall back to the general expression
+
+               if not Set then
+                  Opnd_Low_Bound (NN) :=
+                    Make_Attribute_Reference (Loc,
+                      Prefix         =>
+                        Duplicate_Subexpr (Opnd, Name_Req => True),
+                      Attribute_Name => Name_First);
+               end if;
 
                --  Capture last operand bounds if result could be null
 
@@ -3018,6 +3037,8 @@ package body Exp_Ch4 is
       --  take unconditionally whether or not it is null. It's easiest to do
       --  this with a recursive procedure:
 
+      --  We fold the common case where all the low bounds are the same
+
       else
          declare
             function Get_Known_Bound (J : Nat) return Node_Id;
@@ -3033,32 +3054,54 @@ package body Exp_Ch4 is
                   return New_Copy_Tree (Opnd_Low_Bound (J));
 
                else
-                  return
-                    Make_If_Expression (Loc,
-                      Expressions => New_List (
+                  declare
+                     Known_Bound : constant Node_Id := Get_Known_Bound (J + 1);
+                     Comparison  : constant Compare_Result
+                                     := Compile_Time_Compare
+                                          (Opnd_Low_Bound (J),
+                                           Known_Bound,
+                                           Assume_Valid => True);
 
-                        Make_Op_Ne (Loc,
-                          Left_Opnd  =>
-                            New_Occurrence_Of (Var_Length (J), Loc),
-                          Right_Opnd =>
-                            Make_Integer_Literal (Loc, 0)),
+                  begin
+                     if Comparison = EQ then
+                        return Known_Bound;
 
-                        New_Copy_Tree (Opnd_Low_Bound (J)),
-                        Get_Known_Bound (J + 1)));
+                     else
+                        return
+                          Make_If_Expression (Loc,
+                            Expressions => New_List (
+
+                              Make_Op_Ne (Loc,
+                                Left_Opnd  =>
+                                  New_Occurrence_Of (Var_Length (J), Loc),
+                                Right_Opnd =>
+                                  Make_Integer_Literal (Loc, 0)),
+
+                              New_Copy_Tree (Opnd_Low_Bound (J)),
+                              Known_Bound));
+                     end if;
+                  end;
                end if;
             end Get_Known_Bound;
 
+            Known_Bound : constant Node_Id := Get_Known_Bound (1);
+
          begin
-            Ent := Make_Temporary (Loc, 'L');
+            if Nkind (Known_Bound) /= N_If_Expression then
+               Low_Bound := Known_Bound;
 
-            Append_To (Actions,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Ent,
-                Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of (Ityp, Loc),
-                Expression          => Get_Known_Bound (1)));
+            else
+               Ent := Make_Temporary (Loc, 'L');
 
-            Low_Bound := New_Occurrence_Of (Ent, Loc);
+               Append_To (Actions,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Ent,
+                   Constant_Present    => True,
+                   Object_Definition   => New_Occurrence_Of (Ityp, Loc),
+                   Expression          => Known_Bound));
+
+               Low_Bound := New_Occurrence_Of (Ent, Loc);
+            end if;
          end;
       end if;
 
