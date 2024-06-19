@@ -80,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct _Array_default_ctor<_Tp, true>
     {
-      // For fundamental types, it suffices to say 'memset()'
+      // For trivial types, it suffices to say 'memset()'
       inline static void
       _S_do_it(_Tp* __b, _Tp* __e)
       { __builtin_memset(__b, 0, (__e - __b) * sizeof(_Tp)); }
@@ -90,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     __valarray_default_construct(_Tp* __b, _Tp* __e)
     {
-      _Array_default_ctor<_Tp, __is_scalar<_Tp>::__value>::_S_do_it(__b, __e);
+      _Array_default_ctor<_Tp, __is_trivial(_Tp)>::_S_do_it(__b, __e);
     }
 
   // Turn a raw-memory into an array of _Tp filled with __t
