@@ -1271,18 +1271,21 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	_GLIBCXX_STD_C::_Deque_iterator<_Tp1, _Ref, _Ptr> __last1,
 	const _Tp2* __first2, const _Tp2* __last2)
     {
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_pointer)
       const bool __simple =
 	(__is_memcmp_ordered_with<_Tp1, _Tp2>::__value
-	 && __is_pointer<_Ptr>::__value
+	 && __is_pointer(_Ptr)
 #if __cplusplus > 201703L && __cpp_lib_concepts
 	 // For C++20 iterator_traits<volatile T*>::value_type is non-volatile
 	 // so __is_byte<T> could be true, but we can't use memcmp with
 	 // volatile data.
-	 && !is_volatile_v<_Tp1>
-	 && !is_volatile_v<_Tp2>
+	 && !is_volatile_v<_Tp1> && !is_volatile_v<_Tp2>
 #endif
 	 );
       typedef std::__lexicographical_compare<__simple> _Lc;
+#else
+      typedef std::__lexicographical_compare<false> _Lc;
+#endif
 
       while (__first1._M_node != __last1._M_node)
 	{
@@ -1327,19 +1330,21 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 		_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2> __first2,
 		_GLIBCXX_STD_C::_Deque_iterator<_Tp2, _Ref2, _Ptr2> __last2)
     {
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_pointer)
       const bool __simple =
 	(__is_memcmp_ordered_with<_Tp1, _Tp2>::__value
-	 && __is_pointer<_Ptr1>::__value
-	 && __is_pointer<_Ptr2>::__value
+	 && __is_pointer(_Ptr1) && __is_pointer(_Ptr2)
 #if __cplusplus > 201703L && __cpp_lib_concepts
 	 // For C++20 iterator_traits<volatile T*>::value_type is non-volatile
 	 // so __is_byte<T> could be true, but we can't use memcmp with
 	 // volatile data.
-	 && !is_volatile_v<_Tp1>
-	 && !is_volatile_v<_Tp2>
+	 && !is_volatile_v<_Tp1> && !is_volatile_v<_Tp2>
 #endif
 	 );
       typedef std::__lexicographical_compare<__simple> _Lc;
+#else
+      typedef std::__lexicographical_compare<false> _Lc;
+#endif
 
       while (__first1 != __last1)
 	{

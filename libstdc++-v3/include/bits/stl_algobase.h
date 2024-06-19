@@ -1256,8 +1256,10 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     {
       typedef typename iterator_traits<_II1>::value_type _ValueType1;
       const bool __simple = ((__is_integer<_ValueType1>::__value
-			      || __is_pointer<_ValueType1>::__value)
-			     && __memcmpable<_II1, _II2>::__value);
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_pointer)
+			      || __is_pointer(_ValueType1)
+#endif
+			     ) && __memcmpable<_II1, _II2>::__value);
       return std::__equal<__simple>::equal(__first1, __last1, __first2);
     }
 
@@ -1420,10 +1422,10 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     {
       typedef typename iterator_traits<_II1>::value_type _ValueType1;
       typedef typename iterator_traits<_II2>::value_type _ValueType2;
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_pointer)
       const bool __simple =
 	(__is_memcmp_ordered_with<_ValueType1, _ValueType2>::__value
-	 && __is_pointer<_II1>::__value
-	 && __is_pointer<_II2>::__value
+	 && __is_pointer(_II1) && __is_pointer(_II2)
 #if __cplusplus > 201703L && __glibcxx_concepts
 	 // For C++20 iterator_traits<volatile T*>::value_type is non-volatile
 	 // so __is_byte<T> could be true, but we can't use memcmp with
@@ -1432,6 +1434,9 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	 && !is_volatile_v<remove_reference_t<iter_reference_t<_II2>>>
 #endif
 	 );
+#else
+      const bool __simple = false;
+#endif
 
       return std::__lexicographical_compare<__simple>::__lc(__first1, __last1,
 							    __first2, __last2);
