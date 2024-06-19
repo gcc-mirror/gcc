@@ -668,6 +668,12 @@ static const scoped_attribute_specs *const arm_attribute_table[] =
 #undef TARGET_HAVE_CONDITIONAL_EXECUTION
 #define TARGET_HAVE_CONDITIONAL_EXECUTION arm_have_conditional_execution
 
+#undef TARGET_LOOP_UNROLL_ADJUST
+#define TARGET_LOOP_UNROLL_ADJUST arm_loop_unroll_adjust
+
+#undef TARGET_PREDICT_DOLOOP_P
+#define TARGET_PREDICT_DOLOOP_P arm_predict_doloop_p
+
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P arm_legitimate_constant_p
 
@@ -34659,19 +34665,1236 @@ arm_invalid_within_doloop (const rtx_insn *insn)
 }
 
 bool
-arm_target_insn_ok_for_lob (rtx insn)
+arm_target_bb_ok_for_lob (basic_block bb)
 {
-  basic_block bb = BLOCK_FOR_INSN (insn);
-  /* Make sure the basic block of the target insn is a simple latch
-     having as single predecessor and successor the body of the loop
-     itself.  Only simple loops with a single basic block as body are
-     supported for 'low over head loop' making sure that LE target is
-     above LE itself in the generated code.  */
+  /* Make sure the basic block is a simple latch having as the single
+     predecessor and successor the body of the loop itself.
+     Only simple loops with a single basic block as body are supported for
+     low over head loops, making sure that LE target is above LE instruction
+     in the generated code.  */
+  return (single_succ_p (bb)
+	  && single_pred_p (bb)
+	  && single_succ_edge (bb)->dest == single_pred_edge (bb)->src);
+}
 
-  return single_succ_p (bb)
-    && single_pred_p (bb)
-    && single_succ_edge (bb)->dest == single_pred_edge (bb)->src
-    && contains_no_active_insn_p (bb);
+/* Utility fuction: Given a VCTP or a VCTP_M insn, return the number of MVE
+   lanes based on the machine mode being used.  */
+
+static int
+arm_mve_get_vctp_lanes (rtx_insn *insn)
+{
+  rtx insn_set = single_set (insn);
+  if (insn_set
+      && GET_CODE (SET_SRC (insn_set)) == UNSPEC
+      && (XINT (SET_SRC (insn_set), 1) == VCTP
+	  || XINT (SET_SRC (insn_set), 1) == VCTP_M))
+    {
+      machine_mode mode = GET_MODE (SET_SRC (insn_set));
+      return ((VECTOR_MODE_P (mode) && VALID_MVE_PRED_MODE (mode))
+	      ? GET_MODE_NUNITS (mode) : 0);
+    }
+  return 0;
+}
+
+enum arm_dl_usage_type { DL_USAGE_ANY = 0,
+			 DL_USAGE_READ = 1,
+			 DL_USAGE_WRITE = 2 };
+
+/* Check if INSN requires the use of the VPR reg, if it does, return the
+   sub-rtx of the VPR reg.  The TYPE argument controls whether
+   this function should:
+   * For TYPE == DL_USAGE_ANY, check all operands, including the OUT operands,
+     and return the first occurrence of the VPR reg.
+   * For TYPE == DL_USAGE_READ, only check the input operands.
+   * For TYPE == DL_USAGE_WRITE, only check the output operands.
+   (INOUT operands are considered both as input and output operands)
+*/
+static rtx
+arm_get_required_vpr_reg (rtx_insn *insn,
+			  arm_dl_usage_type type = DL_USAGE_ANY)
+{
+  gcc_assert (type < 3);
+  if (!NONJUMP_INSN_P (insn))
+    return NULL_RTX;
+
+  bool requires_vpr;
+  extract_constrain_insn (insn);
+  int n_operands = recog_data.n_operands;
+  if (recog_data.n_alternatives == 0)
+    return NULL_RTX;
+
+  /* Fill in recog_op_alt with information about the constraints of
+     this insn.  */
+  preprocess_constraints (insn);
+
+  for (int op = 0; op < n_operands; op++)
+    {
+      requires_vpr = true;
+      if (type == DL_USAGE_READ
+	  && recog_data.operand_type[op] == OP_OUT)
+	continue;
+      else if (type == DL_USAGE_WRITE
+	       && recog_data.operand_type[op] == OP_IN)
+	continue;
+
+      /* Iterate through alternatives of operand "op" in recog_op_alt and
+	 identify if the operand is required to be the VPR.  */
+      for (int alt = 0; alt < recog_data.n_alternatives; alt++)
+	{
+	  const operand_alternative *op_alt
+	      = &recog_op_alt[alt * n_operands];
+	  /* Fetch the reg_class for each entry and check it against the
+	     VPR_REG reg_class.  */
+	  if (alternative_class (op_alt, op) != VPR_REG)
+	    requires_vpr = false;
+	}
+      /* If all alternatives of the insn require the VPR reg for this operand,
+	 it means that either this is VPR-generating instruction, like a vctp,
+	 vcmp, etc., or it is a VPT-predicated insruction.  Return the subrtx
+	 of the VPR reg operand.  */
+      if (requires_vpr)
+	return recog_data.operand[op];
+    }
+  return NULL_RTX;
+}
+
+/* Wrapper function of arm_get_required_vpr_reg with TYPE == DL_USAGE_READ,
+   so return the VPR only if it is an input operand to the insn.  */
+
+static rtx
+arm_get_required_vpr_reg_param (rtx_insn *insn)
+{
+  return arm_get_required_vpr_reg (insn, DL_USAGE_READ);
+}
+
+/* Wrapper function of arm_get_required_vpr_reg with TYPE == DL_USAGE_WRITE,
+   so return the VPR only if it is the return value, an output of, or is
+   clobbered by the insn.  */
+
+static rtx
+arm_get_required_vpr_reg_ret_val (rtx_insn *insn)
+{
+  return arm_get_required_vpr_reg (insn, DL_USAGE_WRITE);
+}
+
+/* Return the first VCTP instruction in BB, if it exists, or NULL otherwise.  */
+
+static rtx_insn *
+arm_mve_get_loop_vctp (basic_block bb)
+{
+  rtx_insn *insn = BB_HEAD (bb);
+
+  /* Now scan through all the instruction patterns and pick out the VCTP
+     instruction.  We require arm_get_required_vpr_reg_param to be false
+     to make sure we pick up a VCTP, rather than a VCTP_M.  */
+  FOR_BB_INSNS (bb, insn)
+    if (NONDEBUG_INSN_P (insn))
+      if (arm_get_required_vpr_reg_ret_val (insn)
+	  && (arm_mve_get_vctp_lanes (insn) != 0)
+	  && !arm_get_required_vpr_reg_param (insn))
+	return insn;
+  return NULL;
+}
+
+/* Return true if INSN is a MVE instruction that is VPT-predicable and is
+   predicated on VPR_REG.  */
+
+static bool
+arm_mve_insn_predicated_by (rtx_insn *insn, rtx vpr_reg)
+{
+  rtx insn_vpr_reg_operand = (MVE_VPT_PREDICATED_INSN_P (insn)
+			      ? arm_get_required_vpr_reg_param (insn)
+			      : NULL_RTX);
+  return (insn_vpr_reg_operand
+	  && rtx_equal_p (vpr_reg, insn_vpr_reg_operand));
+}
+
+/* Utility function to identify if INSN is an MVE instruction that performs
+   some across lane operation (and as a result does not align with normal
+   lane predication rules).  All such instructions give one only scalar
+   output, except for vshlcq which gives a PARALLEL of a vector and a scalar
+   (one vector result and one carry output).  */
+
+static bool
+arm_mve_across_lane_insn_p (rtx_insn* insn)
+{
+  df_ref insn_defs = NULL;
+  if (!MVE_VPT_PREDICABLE_INSN_P (insn))
+    return false;
+
+  FOR_EACH_INSN_DEF (insn_defs, insn)
+    if (!VALID_MVE_MODE (GET_MODE (DF_REF_REG (insn_defs)))
+	&& !arm_get_required_vpr_reg_ret_val (insn))
+      return true;
+
+  return false;
+}
+
+/* Utility function to identify if INSN is an MVE load or store instruction.
+   * For TYPE == DL_USAGE_ANY, check all operands.  If the function returns
+     true, INSN is a load or a store insn.
+   * For TYPE == DL_USAGE_READ, only check the input operands.  If the
+     function returns true, INSN is a load insn.
+   * For TYPE == DL_USAGE_WRITE, only check the output operands.  If the
+     function returns true, INSN is a store insn.  */
+
+static bool
+arm_mve_load_store_insn_p (rtx_insn* insn,
+			   arm_dl_usage_type type = DL_USAGE_ANY)
+{
+  gcc_assert (type < 3);
+  int n_operands = recog_data.n_operands;
+  extract_insn (insn);
+
+  for (int op = 0; op < n_operands; op++)
+    {
+      if (type == DL_USAGE_READ && recog_data.operand_type[op] == OP_OUT)
+	continue;
+      else if (type == DL_USAGE_WRITE && recog_data.operand_type[op] == OP_IN)
+	continue;
+      if (mve_memory_operand (recog_data.operand[op],
+			      GET_MODE (recog_data.operand[op])))
+	return true;
+    }
+  return false;
+}
+
+/* Return TRUE if INSN is validated for implicit predication by how its outputs
+   are used.
+
+   If INSN is a MVE operation across lanes that is not predicated by
+   VCTP_VPR_GENERATED it can not be validated by the use of its ouputs.
+
+   Any other INSN is safe to implicit predicate if we don't use its outputs
+   outside the loop.  The instructions that use this INSN's outputs will be
+   validated as we go through the analysis.  */
+
+static bool
+arm_mve_impl_pred_on_outputs_p (rtx_insn *insn, rtx vctp_vpr_generated)
+{
+  /* Reject any unpredicated across lane operation.  */
+  if (!arm_mve_insn_predicated_by (insn, vctp_vpr_generated)
+      && arm_mve_across_lane_insn_p (insn))
+    return false;
+
+  /* Next, scan forward to the various USEs of the DEFs in this insn.  */
+  df_ref insn_def = NULL;
+  basic_block insn_bb = BLOCK_FOR_INSN (insn);
+  FOR_EACH_INSN_DEF (insn_def, insn)
+    {
+      for (df_ref use = DF_REG_USE_CHAIN (DF_REF_REGNO (insn_def));
+	   use;
+	   use = DF_REF_NEXT_REG (use))
+	{
+	  rtx_insn *next_use_insn = DF_REF_INSN (use);
+	  if (!INSN_P (next_use_insn) || DEBUG_INSN_P (next_use_insn))
+	    continue;
+
+	  if (insn_bb != BLOCK_FOR_INSN (next_use_insn))
+	    return false;
+	}
+    }
+  return true;
+}
+
+
+/* Returns the prevailing definition of OP before CUR_INSN in the same
+   basic block as CUR_INSN, if one exists, returns NULL otherwise.  */
+
+static rtx_insn*
+arm_last_vect_def_insn (rtx op, rtx_insn *cur_insn)
+{
+  if (!REG_P (op)
+      || !BLOCK_FOR_INSN (cur_insn))
+    return NULL;
+
+  df_ref def_insns;
+  rtx_insn *last_def = NULL;
+  for (def_insns = DF_REG_DEF_CHAIN (REGNO (op));
+       def_insns;
+       def_insns = DF_REF_NEXT_REG (def_insns))
+    {
+      rtx_insn *def_insn = DF_REF_INSN (def_insns);
+      /* Definition not in the loop body or after the current insn.  */
+      if (DF_REF_BB (def_insns) != BLOCK_FOR_INSN (cur_insn)
+	  || INSN_UID (def_insn) >= INSN_UID (cur_insn))
+	continue;
+
+      if (!last_def || INSN_UID (def_insn) > INSN_UID (last_def))
+	last_def = def_insn;
+    }
+  return last_def;
+}
+
+
+/* This function returns TRUE if we can validate the implicit predication of
+   INSN_IN with VCTP_VPR_GENERATED based on the definition of the instruction's
+   input operands.
+
+   If INSN_IN is a MVE operation across lanes then all of its MVE vector
+   operands must have its tail-predicated lanes be zeroes.  We keep track of any
+   instructions that define vector operands for which this is true in
+   PROPS_ZERO_SET.
+
+   For any other INSN_IN, the definition of all its operands must be defined
+   inside the loop body by an instruction that comes before INSN_IN and not be
+   a MVE load predicated by a different VPR.  These instructions have all been
+   validated for explicit or implicit predication.
+ */
+
+static bool
+arm_mve_impl_pred_on_inputs_p (vec <rtx_insn *> *props_zero_set,
+			       rtx_insn *insn_in, rtx vctp_vpr_generated)
+{
+  /* If all inputs come from instructions that are explicitly or
+     implicitly predicated by the same predicate then it is safe to
+     implicitly predicate this instruction.  */
+  df_ref insn_uses = NULL;
+  bool across_lane = arm_mve_across_lane_insn_p (insn_in);
+  FOR_EACH_INSN_USE (insn_uses, insn_in)
+  {
+    rtx op = DF_REF_REG (insn_uses);
+    rtx_insn *def_insn = arm_last_vect_def_insn (op, insn_in);
+    if (across_lane)
+      {
+	if (!VALID_MVE_MODE (GET_MODE (op)))
+	  continue;
+	if (!def_insn || !props_zero_set->contains (def_insn))
+	  return false;
+
+	continue;
+      }
+
+    if (!def_insn
+	|| (!arm_mve_insn_predicated_by (def_insn, vctp_vpr_generated)
+	    && arm_mve_load_store_insn_p (def_insn, DL_USAGE_READ)))
+      return false;
+  }
+
+  return true;
+}
+
+
+/* Determine whether INSN_IN is safe to implicitly predicate based on the type
+   of instruction and where needed the definition of its inputs and the uses of
+   its outputs.
+   Return TRUE if it is safe to implicitly predicate and FALSE otherwise.
+
+   * If INSN_IN is a store, then it is always unsafe to implicitly predicate it.
+   * If INSN_IN is a load, only reject implicit predication if its uses
+     directly invalidate it.
+   * If INSN_IN operates across vector lanes and does not have the
+     "mve_safe_imp_xlane_pred" attribute, then it is always unsafe to implicitly
+     predicate.
+   * If INSN_IN operates on Floating Point elements and we are not compiling
+     with -Ofast, then it is unsafe to implicitly predicate it as we may be
+     changing exception and cumulative bits behaviour.
+   * If INSN_IN is a VCTP instruction, then it is safe to implicitly predicate,
+     but instructions that use this predicate will need to be checked
+     just like any other UNPREDICATED MVE instruction.
+   * Otherwise check if INSN_IN's inputs or uses of outputs can validate its
+     implicit predication.
+
+   * If all inputs come from instructions that are explicitly or implicitly
+     predicated by the same predicate then it is safe to implicitly predicate
+     this instruction.
+   * If INSN_IN is an operation across lanes with the "mve_safe_imp_xlane_pred"
+     attribute, then all it's operands must have zeroed falsely predicated tail
+     lanes.
+
+   * Otherwise, check if the implicit predication of INSN_IN can be validated
+     based on its inputs, and if not check whether it can be validated based on
+     how its outputs are used.  */
+
+static bool
+arm_mve_impl_predicated_p (vec <rtx_insn *> *props_zero_set,
+			   rtx_insn *insn_in, rtx vctp_vpr_generated)
+{
+
+  /* If INSN_IN is a store, then it is always unsafe to implicitly
+     predicate it.  */
+  if (arm_mve_load_store_insn_p (insn_in, DL_USAGE_WRITE))
+    return false;
+
+  /* If INSN_IN is a load, only reject implicit predication if its uses
+     directly invalidate it.  */
+  if (arm_mve_load_store_insn_p (insn_in, DL_USAGE_READ))
+    {
+      if (!arm_mve_impl_pred_on_outputs_p (insn_in, vctp_vpr_generated))
+	return false;
+      return true;
+    }
+
+  /* If INSN_IN operates across vector lanes and does not have the
+     "mve_safe_imp_xlane_pred" attribute, then it is always unsafe to implicitly
+     predicate.  */
+  if (arm_mve_across_lane_insn_p (insn_in)
+      && (get_attr_mve_safe_imp_xlane_pred (insn_in)
+	  != MVE_SAFE_IMP_XLANE_PRED_YES))
+    return false;
+
+  /* If INSN_IN operates on Floating Point elements and we are not compiling
+     with -Ofast, then it is unsafe to implicitly predicate it as we may be
+     changing exception and cumulative bits behaviour.  */
+  if (!flag_unsafe_math_optimizations
+      && flag_trapping_math
+      && MVE_VPT_UNPREDICATED_INSN_P (insn_in))
+    {
+      df_ref def;
+      FOR_EACH_INSN_DEF (def, insn_in)
+	if (DF_REF_TYPE (def) == DF_REF_REG_DEF
+	    && FLOAT_MODE_P (GET_MODE (DF_REF_REG (def))))
+	  return false;
+      FOR_EACH_INSN_USE (def, insn_in)
+	if (DF_REF_TYPE (def) == DF_REF_REG_DEF
+	    && FLOAT_MODE_P (GET_MODE (DF_REF_REG (def))))
+	  return false;
+    }
+
+  /* If INSN_IN is a VCTP instruction, then it is safe to implicitly predicate,
+     but instructions that use this predicate will need to be checked
+     just like any other UNPREDICATED MVE instruction.  */
+  if (arm_get_required_vpr_reg_ret_val (insn_in)
+      && (arm_mve_get_vctp_lanes (insn_in) != 0))
+    return true;
+
+  /* Otherwise, check if the implicit predication of INSN_IN can be validated
+     based on its inputs, and if not check whether it can be validated based on
+     how its outputs are used.  */
+  return (arm_mve_impl_pred_on_inputs_p (props_zero_set, insn_in, vctp_vpr_generated)
+	  || arm_mve_impl_pred_on_outputs_p (insn_in, vctp_vpr_generated));
+}
+
+/* Helper function to `arm_mve_dlstp_check_inc_counter` and to
+   `arm_mve_dlstp_check_dec_counter`.  In the situations where the loop counter
+   is incrementing by 1 or decrementing by 1 in each iteration, ensure that the
+   number of iterations, the value of REG, going into the loop, was calculated
+   as:
+    REG = (N + [1, VCTP_STEP - 1]) / VCTP_STEP
+
+  where N is equivalent to the VCTP_REG.
+*/
+
+static bool
+arm_mve_check_reg_origin_is_num_elems (loop *loop, rtx reg, rtx vctp_step,
+				       rtx vctp_reg)
+{
+  df_ref counter_max_last_def = NULL;
+
+  /* More than one reaching definition.  */
+  if (DF_REG_DEF_COUNT (REGNO (reg)) > 2)
+    return false;
+
+  /* Look for a single defition of REG going into the loop.  The DEF_CHAIN will
+     have at least two values, as this is a loop induction variable that is
+     defined outside the loop.  */
+  for (df_ref def = DF_REG_DEF_CHAIN (REGNO (reg));
+       def;
+       def = DF_REF_NEXT_REG (def))
+    {
+      /* Skip the update inside the loop, this has already been checked by the
+	 iv_analyze call earlier.  */
+      if (DF_REF_BB (def) == loop->header)
+	continue;
+
+      counter_max_last_def = def;
+      break;
+    }
+
+  if (!counter_max_last_def)
+    return false;
+
+  rtx counter_max_last_set = single_set (DF_REF_INSN (counter_max_last_def));
+
+  if (!counter_max_last_set)
+    return false;
+
+  /* If we encounter a simple SET from a REG, follow it through.  */
+  if (REG_P (SET_SRC (counter_max_last_set)))
+    {
+      if (DF_REG_DEF_COUNT (REGNO (SET_SRC (counter_max_last_set))) != 1)
+	return false;
+
+      counter_max_last_def
+	= DF_REG_DEF_CHAIN (REGNO (SET_SRC (counter_max_last_set)));
+      counter_max_last_set
+	= single_set (DF_REF_INSN (counter_max_last_def));
+
+      if (!counter_max_last_set)
+	return false;
+    }
+
+  /* We are looking for:
+      COUNTER_MAX_LAST_SET = (N + VCTP_STEP - 1) / VCTP_STEP.
+     We currently only support the unsigned VCTP_OP case.  */
+  rtx division = SET_SRC (counter_max_last_set);
+  if (GET_CODE (division) != LSHIFTRT)
+    return false;
+
+  /* Now check that we are dividing by VCTP_STEP, i.e. the number of lanes.  */
+  rtx divisor = XEXP (division, 1);
+  unsigned vctp_step_cst = abs_hwi (INTVAL (vctp_step));
+  if (!CONST_INT_P (divisor)
+      || (1U << INTVAL (divisor) != vctp_step_cst))
+    return false;
+
+  rtx dividend = XEXP (division, 0);
+  if (!REG_P (dividend))
+    /* Subreg? */
+    return false;
+
+  /* For now only support the simple case, this only works for unsigned N, any
+     signed N will have further computations to deal with overflow.  */
+  if (DF_REG_DEF_COUNT (REGNO (dividend)) != 1)
+    return false;
+
+  rtx_insn *dividend_insn = DF_REF_INSN (DF_REG_DEF_CHAIN (REGNO (dividend)));
+  rtx dividend_op = single_set (dividend_insn);
+  if (!dividend_op
+      && GET_CODE (SET_SRC (dividend_op)) != PLUS)
+    return false;
+
+  /* Check if PLUS_OP is (VCTP_OP + VAL), where VAL = [1, VCTP_STEP - 1].  */
+  rtx plus_op = SET_SRC (dividend_op);
+  if (!REG_P (XEXP (plus_op, 0))
+      || !CONST_INT_P (XEXP (plus_op, 1))
+      || !IN_RANGE (INTVAL (XEXP (plus_op, 1)), 1, vctp_step_cst - 1))
+    return false;
+
+  /* VCTP_REG may have been copied before entering the loop, let's see if we can
+     trace such a copy back.  If we have more than one reaching definition then
+     bail out as analysis will be too difficult.  */
+  if (DF_REG_DEF_COUNT (REGNO (vctp_reg)) > 2)
+    return false;
+
+  /* Look for the definition of N. */
+  for (df_ref def = DF_REG_DEF_CHAIN (REGNO (vctp_reg));
+       def;
+       def = DF_REF_NEXT_REG (def))
+    {
+      if (DF_REF_BB (def) == loop->header)
+       continue;
+      rtx set = single_set (DF_REF_INSN (def));
+      if (set
+	  && REG_P (SET_SRC (set))
+	  && !HARD_REGISTER_P (SET_SRC (set)))
+	vctp_reg = SET_SRC (set);
+    }
+
+  return rtx_equal_p (vctp_reg, XEXP (plus_op, 0));
+}
+
+/* If we have identified the loop to have an incrementing counter, we need to
+   make sure that it increments by 1 and that the loop is structured correctly:
+    * The counter starts from 0
+    * The counter terminates at (num_of_elem + num_of_lanes - 1) / num_of_lanes
+    * The vctp insn uses a reg that decrements appropriately in each iteration.
+*/
+
+static rtx_insn*
+arm_mve_dlstp_check_inc_counter (loop *loop, rtx_insn* vctp_insn,
+				 rtx condconst, rtx condcount)
+{
+  rtx vctp_reg = XVECEXP (XEXP (PATTERN (vctp_insn), 1), 0, 0);
+  /* The loop latch has to be empty.  When compiling all the known MVE LoLs in
+     user applications, none of those with incrementing counters had any real
+     insns in the loop latch.  As such, this function has only been tested with
+     an empty latch and may misbehave or ICE if we somehow get here with an
+     increment in the latch, so, for correctness, error out early.  */
+  if (!empty_block_p (loop->latch))
+    return NULL;
+
+  class rtx_iv vctp_reg_iv;
+  /* For loops of DLSTP_TYPE_B, the loop counter is independent of the decrement
+     of the reg used in the vctp_insn. So run iv analysis on that reg.  This
+     has to succeed for such loops to be supported.  */
+  if (!iv_analyze (vctp_insn, as_a<scalar_int_mode> (GET_MODE (vctp_reg)),
+      vctp_reg, &vctp_reg_iv))
+    return NULL;
+
+  /* Extract the decrementnum of the vctp reg from the iv.  This decrementnum
+     is the number of lanes/elements it decrements from the remaining number of
+     lanes/elements to process in the loop, for this reason this is always a
+     negative number, but to simplify later checks we use it's absolute value.  */
+  HOST_WIDE_INT decrementnum = INTVAL (vctp_reg_iv.step);
+  if (decrementnum >= 0)
+    return NULL;
+  decrementnum = abs_hwi (decrementnum);
+
+  /* Find where both of those are modified in the loop header bb.  */
+  df_ref condcount_reg_set_df = df_bb_regno_only_def_find (loop->header,
+							   REGNO (condcount));
+  df_ref vctp_reg_set_df = df_bb_regno_only_def_find (loop->header,
+						      REGNO (vctp_reg));
+  if (!condcount_reg_set_df || !vctp_reg_set_df)
+    return NULL;
+  rtx condcount_reg_set = single_set (DF_REF_INSN (condcount_reg_set_df));
+  rtx vctp_reg_set = single_set (DF_REF_INSN (vctp_reg_set_df));
+  if (!condcount_reg_set || !vctp_reg_set)
+    return NULL;
+
+  /* Ensure the modification of the vctp reg from df is consistent with
+     the iv and the number of lanes on the vctp insn.  */
+  if (GET_CODE (SET_SRC (vctp_reg_set)) != PLUS
+      || !REG_P (SET_DEST (vctp_reg_set))
+      || !REG_P (XEXP (SET_SRC (vctp_reg_set), 0))
+      || REGNO (SET_DEST (vctp_reg_set))
+	  != REGNO (XEXP (SET_SRC (vctp_reg_set), 0))
+      || !CONST_INT_P (XEXP (SET_SRC (vctp_reg_set), 1))
+      || INTVAL (XEXP (SET_SRC (vctp_reg_set), 1)) >= 0
+      || decrementnum != abs_hwi (INTVAL (XEXP (SET_SRC (vctp_reg_set), 1)))
+      || decrementnum != arm_mve_get_vctp_lanes (vctp_insn))
+    return NULL;
+
+  if (REG_P (condcount) && REG_P (condconst))
+    {
+      /* First we need to prove that the loop is going 0..condconst with an
+	 inc of 1 in each iteration.  */
+      if (GET_CODE (SET_SRC (condcount_reg_set)) == PLUS
+	  && CONST_INT_P (XEXP (SET_SRC (condcount_reg_set), 1))
+	  && INTVAL (XEXP (SET_SRC (condcount_reg_set), 1)) == 1)
+	{
+	    rtx counter_reg = SET_DEST (condcount_reg_set);
+	    /* Check that the counter did indeed start from zero.  */
+	    df_ref this_set = DF_REG_DEF_CHAIN (REGNO (counter_reg));
+	    if (!this_set)
+	      return NULL;
+	    df_ref last_set_def = DF_REF_NEXT_REG (this_set);
+	    if (!last_set_def)
+	      return NULL;
+	    rtx_insn* last_set_insn = DF_REF_INSN (last_set_def);
+	    rtx last_set = single_set (last_set_insn);
+	    if (!last_set)
+	      return NULL;
+	    rtx counter_orig_set;
+	    counter_orig_set = SET_SRC (last_set);
+	    if (!CONST_INT_P (counter_orig_set)
+		|| (INTVAL (counter_orig_set) != 0))
+	      return NULL;
+	    /* And finally check that the target value of the counter,
+	       condconst, is of the correct shape.  */
+	    if (!arm_mve_check_reg_origin_is_num_elems (loop, condconst,
+							vctp_reg_iv.step,
+							vctp_reg))
+	      return NULL;
+	}
+      else
+	return NULL;
+    }
+  else
+    return NULL;
+
+  /* Everything looks valid.  */
+  return vctp_insn;
+}
+
+/* Helper function to `arm_mve_loop_valid_for_dlstp`.  In the case of a
+   counter that is decrementing, ensure that it is decrementing by the
+   right amount in each iteration and that the target condition is what
+   we expect.  */
+
+static rtx_insn*
+arm_mve_dlstp_check_dec_counter (loop *loop, rtx_insn* vctp_insn,
+				 rtx condconst, rtx condcount)
+{
+  rtx vctp_reg = XVECEXP (XEXP (PATTERN (vctp_insn), 1), 0, 0);
+  class rtx_iv vctp_reg_iv;
+  HOST_WIDE_INT decrementnum;
+  /* For decrementing loops of DLSTP_TYPE_A, the counter is usually present in the
+     loop latch.  Here we simply need to verify that this counter is the same
+     reg that is also used in the vctp_insn and that it is not otherwise
+     modified.  */
+  rtx_insn *dec_insn = BB_END (loop->latch);
+  /* If not in the loop latch, try to find the decrement in the loop header.  */
+  if (!NONDEBUG_INSN_P (dec_insn))
+  {
+    df_ref temp = df_bb_regno_only_def_find (loop->header, REGNO (condcount));
+    /* If we haven't been able to find the decrement, bail out.  */
+    if (!temp)
+      return NULL;
+    dec_insn = DF_REF_INSN (temp);
+  }
+
+  rtx dec_set = single_set (dec_insn);
+
+  /* Next, ensure that it is a PLUS of the form:
+     (set (reg a) (plus (reg a) (const_int)))
+     where (reg a) is the same as condcount.  */
+  if (!dec_set
+      || !REG_P (SET_DEST (dec_set))
+      || !REG_P (XEXP (SET_SRC (dec_set), 0))
+      || !CONST_INT_P (XEXP (SET_SRC (dec_set), 1))
+      || REGNO (SET_DEST (dec_set))
+	  != REGNO (XEXP (SET_SRC (dec_set), 0))
+      || REGNO (SET_DEST (dec_set)) != REGNO (condcount))
+    return NULL;
+
+  decrementnum = INTVAL (XEXP (SET_SRC (dec_set), 1));
+
+  /* This decrementnum is the number of lanes/elements it decrements from the
+     remaining number of lanes/elements to process in the loop, for this reason
+     this is always a negative number, but to simplify later checks we use its
+     absolute value.  */
+  if (decrementnum >= 0)
+    return NULL;
+  decrementnum = -decrementnum;
+
+  /* If the decrementnum is a 1, then we need to look at the loop vctp_reg and
+     verify that it also decrements correctly.
+     Then, we need to establish that the starting value of the loop decrement
+     originates from the starting value of the vctp decrement.  */
+  if (decrementnum == 1)
+    {
+      class rtx_iv vctp_reg_iv, condcount_reg_iv;
+      /* The loop counter is found to be independent of the decrement
+	 of the reg used in the vctp_insn, again.  Ensure that IV analysis
+	 succeeds and check the step.  */
+      if (!iv_analyze (vctp_insn, as_a<scalar_int_mode> (GET_MODE (vctp_reg)),
+		       vctp_reg, &vctp_reg_iv))
+	return NULL;
+      /* Ensure it matches the number of lanes of the vctp instruction.  */
+      if (abs (INTVAL (vctp_reg_iv.step))
+	  != arm_mve_get_vctp_lanes (vctp_insn))
+	return NULL;
+
+      if (!arm_mve_check_reg_origin_is_num_elems (loop, condcount,
+						  vctp_reg_iv.step,
+						  vctp_reg))
+	return NULL;
+    }
+  /* If the decrements are the same, then the situation is simple: either they
+     are also the same reg, which is safe, or they are different registers, in
+     which case makse sure that there is a only simple SET from one to the
+     other inside the loop.*/
+  else if (decrementnum == arm_mve_get_vctp_lanes (vctp_insn))
+    {
+      if (REGNO (condcount) != REGNO (vctp_reg))
+	{
+	  /* It wasn't the same reg, but it could be behild a
+	     (set (vctp_reg) (condcount)), so instead find where
+	     the VCTP insn is DEF'd inside the loop.  */
+	  rtx_insn *vctp_reg_insn
+	    = DF_REF_INSN (df_bb_regno_only_def_find (loop->header,
+						      REGNO (vctp_reg)));
+	  rtx vctp_reg_set = single_set (vctp_reg_insn);
+	  /* This must just be a simple SET from the condcount.  */
+	  if (!vctp_reg_set
+	      || !REG_P (SET_DEST (vctp_reg_set))
+	      || !REG_P (SET_SRC (vctp_reg_set))
+	      || REGNO (SET_SRC (vctp_reg_set)) != REGNO (condcount))
+	    return NULL;
+	}
+    }
+  else
+    return NULL;
+
+  /* We now only need to find out that the loop terminates with a LE
+     zero condition.  If condconst is a const_int, then this is easy.
+     If its a REG, look at the last condition+jump in a bb before
+     the loop, because that usually will have a branch jumping over
+     the loop header.  */
+  rtx_insn *jump_insn = BB_END (loop->header);
+  if (CONST_INT_P (condconst)
+      && !(INTVAL (condconst) == 0 && JUMP_P (jump_insn)
+	   && GET_CODE (XEXP (PATTERN (jump_insn), 1)) == IF_THEN_ELSE
+	   && (GET_CODE (XEXP (XEXP (PATTERN (jump_insn), 1), 0)) == NE
+	       ||GET_CODE (XEXP (XEXP (PATTERN (jump_insn), 1), 0)) == GT)))
+    return NULL;
+  else if (REG_P (condconst))
+    {
+      basic_block pre_loop_bb = single_pred (loop_preheader_edge (loop)->src);
+      if (!pre_loop_bb)
+	return NULL;
+
+      rtx initial_compare = NULL_RTX;
+      if (!(prev_nonnote_nondebug_insn_bb (BB_END (pre_loop_bb))
+	    && INSN_P (prev_nonnote_nondebug_insn_bb (BB_END (pre_loop_bb)))))
+	return NULL;
+      else
+	initial_compare
+	    = single_set (prev_nonnote_nondebug_insn_bb (BB_END (pre_loop_bb)));
+      if (!(initial_compare
+	    && cc_register (SET_DEST (initial_compare), VOIDmode)
+	    && GET_CODE (SET_SRC (initial_compare)) == COMPARE
+	    && CONST_INT_P (XEXP (SET_SRC (initial_compare), 1))
+	    && INTVAL (XEXP (SET_SRC (initial_compare), 1)) == 0))
+	return NULL;
+
+      /* Usually this is a LE condition, but it can also just be a GT or an EQ
+	 condition (if the value is unsigned or the compiler knows its not negative)  */
+      rtx_insn *loop_jumpover = BB_END (pre_loop_bb);
+      if (!(JUMP_P (loop_jumpover)
+	    && GET_CODE (XEXP (PATTERN (loop_jumpover), 1)) == IF_THEN_ELSE
+	    && (GET_CODE (XEXP (XEXP (PATTERN (loop_jumpover), 1), 0)) == LE
+		|| GET_CODE (XEXP (XEXP (PATTERN (loop_jumpover), 1), 0)) == GT
+		|| GET_CODE (XEXP (XEXP (PATTERN (loop_jumpover), 1), 0)) == EQ)))
+	return NULL;
+    }
+
+  /* Everything looks valid.  */
+  return vctp_insn;
+}
+
+/* Function to check a loop's structure to see if it is a valid candidate for
+   an MVE Tail Predicated Low-Overhead Loop.  Returns the loop's VCTP_INSN if
+   it is valid, or NULL if it isn't.  */
+
+static rtx_insn*
+arm_mve_loop_valid_for_dlstp (loop *loop)
+{
+  /* Doloop can only be done "elementwise" with predicated dlstp/letp if it
+     contains a VCTP on the number of elements processed by the loop.
+     Find the VCTP predicate generation inside the loop body BB.  */
+  rtx_insn *vctp_insn = arm_mve_get_loop_vctp (loop->header);
+  if (!vctp_insn)
+    return NULL;
+
+  /* We only support two loop forms for tail predication:
+      DLSTP_TYPE_A) Loops of the form:
+	  int num_of_lanes = 128 / elem_size;
+	  while (num_of_elem > 0)
+	    {
+	      p = vctp<size> (num_of_elem);
+	      num_of_elem -= num_of_lanes;
+	    }
+      DLSTP_TYPE_B) Loops of the form:
+	  int num_of_lanes = 128 / elem_size;
+	  int num_of_iters = (num_of_elem + num_of_lanes - 1) / num_of_lanes;
+	  for (i = 0; i < num_of_iters; i++)
+	    {
+	      p = vctp<size> (num_of_elem);
+	      num_of_elem -= num_of_lanes;
+	    }
+
+    Then, depending on the type of loop above we need will need to do
+    different sets of checks.  */
+  iv_analysis_loop_init (loop);
+
+  /* In order to find out if the loop is of DLSTP_TYPE_A or DLSTP_TYPE_B above
+     look for the loop counter: it will either be incrementing by one per
+     iteration or it will be decrementing by num_of_lanes.  We can find the
+     loop counter in the condition at the end of the loop.  */
+  rtx_insn *loop_cond = prev_nonnote_nondebug_insn_bb (BB_END (loop->header));
+  if (!(cc_register (XEXP (PATTERN (loop_cond), 0), VOIDmode)
+	&& GET_CODE (XEXP (PATTERN (loop_cond), 1)) == COMPARE))
+    return NULL;
+
+  /* The operands in the condition:  Try to identify which one is the
+     constant and which is the counter and run IV analysis on the latter.  */
+  rtx cond_arg_1 = XEXP (XEXP (PATTERN (loop_cond), 1), 0);
+  rtx cond_arg_2 = XEXP (XEXP (PATTERN (loop_cond), 1), 1);
+
+  rtx loop_cond_constant;
+  rtx loop_counter;
+  class rtx_iv cond_counter_iv, cond_temp_iv;
+
+  if (CONST_INT_P (cond_arg_1))
+    {
+      /* cond_arg_1 is the constant and cond_arg_2 is the counter.  */
+      loop_cond_constant = cond_arg_1;
+      loop_counter = cond_arg_2;
+      iv_analyze (loop_cond, as_a<scalar_int_mode> (GET_MODE (cond_arg_2)),
+		  cond_arg_2, &cond_counter_iv);
+    }
+  else if (CONST_INT_P (cond_arg_2))
+    {
+      /* cond_arg_2 is the constant and cond_arg_1 is the counter.  */
+      loop_cond_constant = cond_arg_2;
+      loop_counter = cond_arg_1;
+      iv_analyze (loop_cond, as_a<scalar_int_mode> (GET_MODE (cond_arg_1)),
+		  cond_arg_1, &cond_counter_iv);
+    }
+  else if (REG_P (cond_arg_1) && REG_P (cond_arg_2))
+    {
+      /* If both operands to the compare are REGs, we can safely
+	 run IV analysis on both and then determine which is the
+	 constant by looking at the step.
+	 First assume cond_arg_1 is the counter.  */
+      loop_counter = cond_arg_1;
+      loop_cond_constant = cond_arg_2;
+      iv_analyze (loop_cond, as_a<scalar_int_mode> (GET_MODE (cond_arg_1)),
+		  cond_arg_1, &cond_counter_iv);
+      iv_analyze (loop_cond, as_a<scalar_int_mode> (GET_MODE (cond_arg_2)),
+		  cond_arg_2, &cond_temp_iv);
+
+      /* Look at the steps and swap around the rtx's if needed.  Error out if
+	 one of them cannot be identified as constant.  */
+      if (!CONST_INT_P (cond_counter_iv.step) || !CONST_INT_P (cond_temp_iv.step))
+	return NULL;
+      if (INTVAL (cond_counter_iv.step) != 0 && INTVAL (cond_temp_iv.step) != 0)
+	return NULL;
+      if (INTVAL (cond_counter_iv.step) == 0 && INTVAL (cond_temp_iv.step) != 0)
+	{
+	  loop_counter = cond_arg_2;
+	  loop_cond_constant = cond_arg_1;
+	  cond_counter_iv = cond_temp_iv;
+	}
+    }
+  else
+    return NULL;
+
+  if (!REG_P (loop_counter))
+    return NULL;
+  if (!(REG_P (loop_cond_constant) || CONST_INT_P (loop_cond_constant)))
+    return NULL;
+
+  /* Now we have extracted the IV step of the loop counter, call the
+     appropriate checking function.  */
+  if (INTVAL (cond_counter_iv.step) > 0)
+    return arm_mve_dlstp_check_inc_counter (loop, vctp_insn,
+					    loop_cond_constant, loop_counter);
+  else if (INTVAL (cond_counter_iv.step) < 0)
+    return arm_mve_dlstp_check_dec_counter (loop, vctp_insn,
+					    loop_cond_constant, loop_counter);
+  else
+    return NULL;
+}
+
+/* Predict whether the given loop in gimple will be transformed in the RTL
+   doloop_optimize pass.  It could be argued that turning large enough loops
+   into low-overhead loops would not show a signficant performance boost.
+   However, in the case of tail predication we would still avoid using VPT/VPST
+   instructions inside the loop, and in either case using low-overhead loops
+   would not be detrimental, so we decided to not consider size, avoiding the
+   need of a heuristic to determine what an appropriate size boundary is.  */
+
+static bool
+arm_predict_doloop_p (struct loop *loop)
+{
+  gcc_assert (loop);
+  /* On arm, targetm.can_use_doloop_p is actually
+     can_use_doloop_if_innermost.  Ensure the loop is innermost,
+     it is valid and as per arm_target_bb_ok_for_lob and the
+     correct architecture flags are enabled.  */
+  if (!(TARGET_HAVE_LOB && optimize > 0))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " target architecture or optimisation flags.\n");
+      return false;
+    }
+  else if (loop->inner != NULL)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " loop nesting.\n");
+      return false;
+    }
+  else if (!arm_target_bb_ok_for_lob (loop->header->next_bb))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Predict doloop failure due to"
+			    " loop bb complexity.\n");
+      return false;
+    }
+
+  return true;
+}
+
+/* Implement targetm.loop_unroll_adjust.  Use this to block unrolling of loops
+   that may later be turned into MVE Tail Predicated Low Overhead Loops.  The
+   performance benefit of an MVE LoL is likely to be much higher than that of
+   the unrolling.  */
+
+unsigned
+arm_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
+{
+  if (TARGET_HAVE_MVE
+      && arm_target_bb_ok_for_lob (loop->latch)
+      && arm_mve_loop_valid_for_dlstp (loop))
+    return 0;
+  else
+    return nunroll;
+}
+
+/* Function to hadle emitting a VPT-unpredicated version of a VPT-predicated
+   insn to a sequence.  */
+
+static bool
+arm_emit_mve_unpredicated_insn_to_seq (rtx_insn* insn)
+{
+  rtx insn_vpr_reg_operand = arm_get_required_vpr_reg_param (insn);
+  int new_icode = get_attr_mve_unpredicated_insn (insn);
+  if (!in_sequence_p ()
+      || !MVE_VPT_PREDICATED_INSN_P (insn)
+      || (!insn_vpr_reg_operand)
+      || (!new_icode))
+    return false;
+
+  extract_insn (insn);
+  rtx arr[8];
+  int j = 0;
+
+  /* When transforming a VPT-predicated instruction into its unpredicated
+     equivalent we need to drop the VPR operand and we may need to also drop a
+     merge "vuninit" input operand, depending on the instruction pattern.  Here
+     ensure that we have at most a two-operand difference between the two
+     instrunctions.  */
+  int n_operands_diff
+      = recog_data.n_operands - insn_data[new_icode].n_operands;
+  if (!(n_operands_diff > 0 && n_operands_diff <= 2))
+    return false;
+
+  rtx move = NULL_RTX;
+  /* Then, loop through the operands of the predicated
+     instruction, and retain the ones that map to the
+     unpredicated instruction.  */
+  for (int i = 0; i < recog_data.n_operands; i++)
+    {
+      /* Ignore the VPR and, if needed, the vuninit
+	 operand.  */
+      if (insn_vpr_reg_operand == recog_data.operand[i])
+	continue;
+      if (n_operands_diff == 2
+	  && !strcmp (recog_data.constraints[i], "0"))
+	{
+	  move = gen_rtx_SET (arr[0], recog_data.operand[i]);
+	  arr[0] = recog_data.operand[i];
+	}
+      else
+	arr[j++] = recog_data.operand[i];
+    }
+
+  /* Finally, emit the upredicated instruction.  */
+  rtx_insn *new_insn;
+  switch (j)
+    {
+      case 1:
+	new_insn = emit_insn (GEN_FCN (new_icode) (arr[0]));
+	break;
+      case 2:
+	new_insn = emit_insn (GEN_FCN (new_icode) (arr[0], arr[1]));
+	break;
+      case 3:
+	new_insn = emit_insn (GEN_FCN (new_icode) (arr[0], arr[1], arr[2]));
+	break;
+      case 4:
+	new_insn = emit_insn (GEN_FCN (new_icode) (arr[0], arr[1], arr[2],
+						   arr[3]));
+	break;
+      case 5:
+	new_insn = emit_insn (GEN_FCN (new_icode) (arr[0], arr[1], arr[2],
+						   arr[3], arr[4]));
+	break;
+      case 6:
+	new_insn = emit_insn (GEN_FCN (new_icode) (arr[0], arr[1], arr[2],
+						   arr[3], arr[4], arr[5]));
+	break;
+      case 7:
+	new_insn = emit_insn (GEN_FCN (new_icode) (arr[0], arr[1], arr[2],
+						   arr[3], arr[4], arr[5],
+						   arr[6]));
+	break;
+      default:
+	gcc_unreachable ();
+    }
+  INSN_LOCATION (new_insn) = INSN_LOCATION (insn);
+  if (move)
+    {
+      new_insn = emit_insn (move);
+      INSN_LOCATION (new_insn) = INSN_LOCATION (insn);
+    }
+  return true;
+}
+
+/* Return TRUE if INSN defines a MVE vector operand that has zeroed
+   tail-predicated lanes.  This is either true if:
+   * INSN is predicated by VCTP_VPR_GENERATED and the 'invalid lanes' operand
+     is in the PROPS_ZERO_SET,
+   * all MVE vector operands are in the PROPS_ZERO_SET
+*/
+
+static bool
+arm_mve_propagate_zero_pred_p (vec <rtx_insn *> *props_zero_set,
+			       rtx_insn *insn, rtx vctp_vpr_generated)
+{
+  if (arm_mve_load_store_insn_p (insn, DL_USAGE_READ))
+    return true;
+  if (arm_mve_load_store_insn_p (insn, DL_USAGE_WRITE))
+    return false;
+
+  int inactive_idx = -1;
+
+  extract_insn (insn);
+  /* If INSN is predicated by VCTP_VPR_GENERATED, then all tail-predicated
+     lanes will keep the value that is in the 'invalid lanes' register which we
+     identify by the "0" constraint, to ensure it is the same as the 'result'
+     register of this instruction.  */
+  if (arm_mve_insn_predicated_by (insn, vctp_vpr_generated))
+    {
+      for (int i = 0; i < recog_data.n_operands; i++)
+	{
+	  if (strcmp (recog_data.constraints[i], "0") == 0
+	      && VALID_MVE_MODE (GET_MODE (recog_data.operand[i])))
+	    {
+	      inactive_idx = i;
+	      break;
+	    }
+	}
+    }
+
+  if (inactive_idx > 0)
+    {
+      rtx op = recog_data.operand[inactive_idx];
+      rtx_insn *def_insn =  arm_last_vect_def_insn (op, insn);
+      return def_insn != NULL_RTX && props_zero_set->contains (def_insn);
+    }
+
+  /* If this instruction is not predicated by VCTP_VPR_GENERATED, then we must
+     check that all vector operands have zeroed tail-predicated lanes, and that
+     it has at least one vector operand.  */
+  bool at_least_one_vector = false;
+  df_ref insn_uses;
+  FOR_EACH_INSN_USE (insn_uses, insn)
+    {
+      rtx reg = DF_REF_REG (insn_uses);
+      if (!VALID_MVE_MODE (GET_MODE (reg)))
+	continue;
+
+      rtx_insn *def_insn = arm_last_vect_def_insn (reg, insn);
+      if (def_insn && props_zero_set->contains (def_insn))
+	at_least_one_vector |= true;
+      else
+	return false;
+
+    }
+  return at_least_one_vector;
+}
+
+
+/* Attempt to transform the loop contents of loop basic block from VPT
+   predicated insns into unpredicated insns for a dlstp/letp loop.  Returns
+   the number to decrement from the total number of elements each iteration.
+   Returns 1 if tail predication can not be performed and fallback to scalar
+   low-overhead loops.  */
+
+int
+arm_attempt_dlstp_transform (rtx label)
+{
+  if (!dlstp_enabled)
+    return 1;
+
+  basic_block body = single_succ (BLOCK_FOR_INSN (label));
+
+  /* Ensure that the bb is within a loop that has all required metadata.  */
+  if (!body->loop_father || !body->loop_father->header
+      || !body->loop_father->simple_loop_desc)
+    return 1;
+
+  loop *loop = body->loop_father;
+  /* Instruction that sets the predicate mask depending on how many elements
+     are left to process.  */
+  rtx_insn *vctp_insn = arm_mve_loop_valid_for_dlstp (loop);
+  if (!vctp_insn)
+    return 1;
+
+  gcc_assert (single_set (vctp_insn));
+
+  rtx vctp_vpr_generated = single_set (vctp_insn);
+  if (!vctp_vpr_generated)
+    return 1;
+
+  vctp_vpr_generated = SET_DEST (vctp_vpr_generated);
+
+  if (!vctp_vpr_generated || !REG_P (vctp_vpr_generated)
+      || !VALID_MVE_PRED_MODE (GET_MODE (vctp_vpr_generated)))
+    return 1;
+
+  /* decrementunum is already known to be valid at this point.  */
+  int decrementnum = arm_mve_get_vctp_lanes (vctp_insn);
+
+  rtx_insn *insn = 0;
+  rtx_insn *cur_insn = 0;
+  rtx_insn *seq;
+  auto_vec <rtx_insn *> props_zero_set;
+
+  /* Scan through the insns in the loop bb and emit the transformed bb
+     insns to a sequence.  */
+  start_sequence ();
+  FOR_BB_INSNS (body, insn)
+    {
+      if (GET_CODE (insn) == CODE_LABEL || NOTE_INSN_BASIC_BLOCK_P (insn))
+	continue;
+      else if (NOTE_P (insn))
+	emit_note ((enum insn_note)NOTE_KIND (insn));
+      else if (DEBUG_INSN_P (insn))
+	emit_debug_insn (PATTERN (insn));
+      else if (!INSN_P (insn))
+	{
+	  end_sequence ();
+	  return 1;
+	}
+      /* If the transformation is successful we no longer need the vctp
+	 instruction.  */
+      else if (insn == vctp_insn)
+	continue;
+      /* If the insn pattern requires the use of the VPR value from the
+	 vctp as an input parameter for predication.  */
+      else if (arm_mve_insn_predicated_by (insn, vctp_vpr_generated))
+	{
+	  /* Check whether this INSN propagates the zeroed tail-predication
+	     lanes.  */
+	  if (arm_mve_propagate_zero_pred_p (&props_zero_set, insn,
+					     vctp_vpr_generated))
+	    props_zero_set.safe_push (insn);
+	  bool success = arm_emit_mve_unpredicated_insn_to_seq (insn);
+	  if (!success)
+	    {
+	      end_sequence ();
+	      return 1;
+	    }
+	}
+      /* If the insn isn't VPT predicated on vctp_vpr_generated, we need to
+	 make sure that it is still valid within the dlstp/letp loop.  */
+      else
+	{
+	  /* If this instruction USE-s the vctp_vpr_generated other than for
+	     predication, this blocks the transformation as we are not allowed
+	     to optimise the VPR value away.  */
+	  df_ref insn_uses = NULL;
+	  FOR_EACH_INSN_USE (insn_uses, insn)
+	  {
+	    if (rtx_equal_p (vctp_vpr_generated, DF_REF_REG (insn_uses)))
+	      {
+		end_sequence ();
+		return 1;
+	      }
+	  }
+	  /* If within the loop we have an MVE vector instruction that is
+	     unpredicated, the dlstp/letp looping will add implicit
+	     predication to it.  This will result in a change in behaviour
+	     of the instruction, so we need to find out if any instructions
+	     that feed into the current instruction were implicitly
+	     predicated.  */
+	  if (MVE_VPT_PREDICABLE_INSN_P (insn)
+	      && !arm_mve_impl_predicated_p (&props_zero_set, insn,
+					     vctp_vpr_generated))
+	    {
+	      end_sequence ();
+	      return 1;
+	    }
+	  emit_insn (PATTERN (insn));
+	}
+    }
+  seq = get_insns ();
+  end_sequence ();
+
+  /* Re-write the entire BB contents with the transformed
+     sequence.  */
+  FOR_BB_INSNS_SAFE (body, insn, cur_insn)
+    if (!(GET_CODE (insn) == CODE_LABEL || NOTE_INSN_BASIC_BLOCK_P (insn)))
+      delete_insn (insn);
+
+  emit_insn_after (seq, BB_END (body));
+
+  /* The transformation has succeeded, so now modify the "count"
+     (a.k.a. niter_expr) for the middle-end.  Also set noloop_assumptions
+     to NULL to stop the middle-end from making assumptions about the
+     number of iterations.  */
+  simple_loop_desc (body->loop_father)->niter_expr
+    = XVECEXP (SET_SRC (PATTERN (vctp_insn)), 0, 0);
+  simple_loop_desc (body->loop_father)->noloop_assumptions = NULL_RTX;
+  return decrementnum;
 }
 
 #if CHECKING_P

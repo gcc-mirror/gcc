@@ -54,29 +54,18 @@ loop3 (int *a, int *b, int *c)
     } while (i < N);
 }
 
-void
-check (int *a, int *b, int *c)
-{
-  for (int i = 0; i < N; i++)
-    {
-      NO_LOB;
-      if (c[i] != a[i] + b[i])
-	abort ();
-    }
-}
-
 int
 main (void)
 {
-  reset_data (a, b, c);
+  reset_data (a, b, c, N);
   loop1 (a, b ,c);
-  check (a, b ,c);
-  reset_data (a, b, c);
+  check_plus (a, b, c, N);
+  reset_data (a, b, c, N);
   loop2 (a, b ,c);
-  check (a, b ,c);
-  reset_data (a, b, c);
+  check_plus (a, b, c, N);
+  reset_data (a, b, c, N);
   loop3 (a, b ,c);
-  check (a, b ,c);
+  check_plus (a, b, c, N);
 
   return 0;
 }

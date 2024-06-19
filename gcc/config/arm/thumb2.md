@@ -1613,7 +1613,7 @@
    (use (match_operand 1 "" ""))]     ; label
   "TARGET_32BIT"
   "
- {
+{
    /* Currently SMS relies on the do-loop pattern to recognize loops
       where (1) the control part consists of all insns defining and/or
       using a certain 'count' register and (2) the loop count can be
@@ -1623,41 +1623,75 @@
 
       Also used to implement the low over head loops feature, which is part of
       the Armv8.1-M Mainline Low Overhead Branch (LOB) extension.  */
-   if (optimize > 0 && (flag_modulo_sched || TARGET_HAVE_LOB))
-   {
-     rtx s0;
-     rtx bcomp;
-     rtx loc_ref;
-     rtx cc_reg;
-     rtx insn;
-     rtx cmp;
+  if (optimize > 0 && (flag_modulo_sched || TARGET_HAVE_LOB))
+    {
+      rtx s0;
+      rtx bcomp;
+      rtx loc_ref;
+      rtx cc_reg;
+      rtx insn;
+      rtx cmp;
+      int decrement_num;
 
-     if (GET_MODE (operands[0]) != SImode)
-       FAIL;
+      if (GET_MODE (operands[0]) != SImode)
+	FAIL;
 
-     s0 = operands [0];
+      s0 = operands[0];
 
-     /* Low over head loop instructions require the first operand to be LR.  */
-     if (TARGET_HAVE_LOB && arm_target_insn_ok_for_lob (operands [1]))
-       s0 = gen_rtx_REG (SImode, LR_REGNUM);
+      if (TARGET_HAVE_LOB
+	  && arm_target_bb_ok_for_lob (BLOCK_FOR_INSN (operands[1])))
+	{
+	  /* If we have a compatible MVE target, try and analyse the loop
+	     contents to determine if we can use predicated dlstp/letp
+	     looping.  These patterns implicitly use LR as the loop counter.  */
+	  if (TARGET_HAVE_MVE
+	      && ((decrement_num = arm_attempt_dlstp_transform (operands[1]))
+		  != 1))
+	    {
+	      loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[1]);
+	      switch (decrement_num)
+		{
+		  case 2:
+		    insn = gen_predicated_doloop_end_internal2 (loc_ref);
+		    break;
+		  case 4:
+		    insn = gen_predicated_doloop_end_internal4 (loc_ref);
+		    break;
+		  case 8:
+		    insn = gen_predicated_doloop_end_internal8 (loc_ref);
+		    break;
+		  case 16:
+		    insn = gen_predicated_doloop_end_internal16 (loc_ref);
+		    break;
+		  default:
+		    gcc_unreachable ();
+		}
+	      emit_jump_insn (insn);
+	      DONE;
+	    }
+	  /* Remaining LOB cases need to explicitly use LR.  */
+	  s0 = gen_rtx_REG (SImode, LR_REGNUM);
+	}
 
-     if (TARGET_THUMB2)
-       insn = emit_insn (gen_thumb2_addsi3_compare0 (s0, s0, GEN_INT (-1)));
-     else
-       insn = emit_insn (gen_addsi3_compare0 (s0, s0, GEN_INT (-1)));
+	/* Otherwise, try standard decrement-by-one dls/le looping.  */
+	if (TARGET_THUMB2)
+	  insn = emit_insn (gen_thumb2_addsi3_compare0 (s0, s0,
+							GEN_INT (-1)));
+	else
+	  insn = emit_insn (gen_addsi3_compare0 (s0, s0, GEN_INT (-1)));
 
-     cmp = XVECEXP (PATTERN (insn), 0, 0);
-     cc_reg = SET_DEST (cmp);
-     bcomp = gen_rtx_NE (VOIDmode, cc_reg, const0_rtx);
-     loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands [1]);
-     emit_jump_insn (gen_rtx_SET (pc_rtx,
-                                  gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
-                                                        loc_ref, pc_rtx)));
-     DONE;
-   }
- else
-   FAIL;
- }")
+	cmp = XVECEXP (PATTERN (insn), 0, 0);
+	cc_reg = SET_DEST (cmp);
+	bcomp = gen_rtx_NE (VOIDmode, cc_reg, const0_rtx);
+	loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[1]);
+	emit_jump_insn (gen_rtx_SET (pc_rtx,
+				     gen_rtx_IF_THEN_ELSE (VOIDmode, bcomp,
+							   loc_ref, pc_rtx)));
+	DONE;
+    }
+  else
+    FAIL;
+}")
 
 (define_insn "*clear_apsr"
   [(unspec_volatile:SI [(const_int 0)] VUNSPEC_CLRM_APSR)
@@ -1755,7 +1789,37 @@
   {
     if (REGNO (operands[0]) == LR_REGNUM)
       {
-	emit_insn (gen_dls_insn (operands[0]));
+	/* Pick out the number by which we are decrementing the loop counter
+	   in every iteration.  If it's > 1, then use dlstp.  */
+	int const_int_dec_num
+	     = abs (INTVAL (XEXP (XEXP (XVECEXP (PATTERN (operands[1]), 0, 1),
+				  1),
+			    1)));
+	switch (const_int_dec_num)
+	  {
+	    case 16:
+	      emit_insn (gen_dlstp8_insn (operands[0]));
+	      break;
+
+	    case 8:
+	      emit_insn (gen_dlstp16_insn (operands[0]));
+	      break;
+
+	    case 4:
+	      emit_insn (gen_dlstp32_insn (operands[0]));
+	      break;
+
+	    case 2:
+	      emit_insn (gen_dlstp64_insn (operands[0]));
+	      break;
+
+	    case 1:
+	      emit_insn (gen_dls_insn (operands[0]));
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	  }
 	DONE;
       }
     else

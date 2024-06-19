@@ -591,6 +591,10 @@
   VADDLVQ_U
   VCTP
   VCTP_M
+  LETP8
+  LETP16
+  LETP32
+  LETP64
   VPNOT
   VCREATEQ_F
   VCVTQ_N_TO_F_S
@@ -1259,6 +1263,14 @@
   UQRSHLL_48
   SQRSHRL_64
   SQRSHRL_48
-  VSHLCQ_M_
   REINTERPRET
+])
+
+; DLSTP unspecs must be volatile to guarantee the scheduler does not reschedule
+; these instructions within the loop preheader.
+(define_c_enum "unspecv" [
+  DLSTP8
+  DLSTP16
+  DLSTP32
+  DLSTP64
 ])

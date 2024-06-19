@@ -363,5 +363,8 @@ Target Joined RejectNegative String Var(arm_stack_protector_guard_offset_str)
 Use an immediate to offset from the TLS register. This option is for use with
 fstack-protector-guard=tls and not for use in user-land code.
 
+mdlstp
+Target Var(dlstp_enabled) Init(1) Undocumented
+
 TargetVariable
 long arm_stack_protector_guard_offset = 0
