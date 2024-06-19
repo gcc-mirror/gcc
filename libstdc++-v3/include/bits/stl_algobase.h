@@ -929,28 +929,39 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #define _GLIBCXX_MOVE_BACKWARD3(_Tp, _Up, _Vp) std::copy_backward(_Tp, _Up, _Vp)
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
   template<typename _ForwardIterator, typename _Tp>
     _GLIBCXX20_CONSTEXPR
-    inline typename
-    __gnu_cxx::__enable_if<!__is_scalar<_Tp>::__value, void>::__type
+    inline void
     __fill_a1(_ForwardIterator __first, _ForwardIterator __last,
 	      const _Tp& __value)
     {
-      for (; __first != __last; ++__first)
-	*__first = __value;
-    }
+      // We can optimize this loop by moving the load from __value outside
+      // the loop, but only if we know that making that copy is trivial,
+      // and the assignment in the loop is also trivial (so that the identity
+      // of the operand doesn't matter).
+      const bool __load_outside_loop =
+#if __has_builtin(__is_trivially_constructible) \
+      && __has_builtin(__is_trivially_assignable)
+	    __is_trivially_constructible(_Tp, const _Tp&)
+	    && __is_trivially_assignable(__decltype(*__first), const _Tp&)
+#else
+	    __is_trivially_copyable(_Tp)
+	    && __is_same(_Tp, __typeof__(*__first))
+#endif
+	    && sizeof(_Tp) <= sizeof(long long);
 
-  template<typename _ForwardIterator, typename _Tp>
-    _GLIBCXX20_CONSTEXPR
-    inline typename
-    __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, void>::__type
-    __fill_a1(_ForwardIterator __first, _ForwardIterator __last,
-	      const _Tp& __value)
-    {
-      const _Tp __tmp = __value;
+      // When the condition is true, we use a copy of __value,
+      // otherwise we just use another reference.
+      typedef typename __gnu_cxx::__conditional_type<__load_outside_loop,
+						     const _Tp,
+						     const _Tp&>::__type _Up;
+      _Up __val(__value);
       for (; __first != __last; ++__first)
-	*__first = __tmp;
+	*__first = __val;
     }
+#pragma GCC diagnostic pop
 
   // Specialization: for char types we can use memset.
   template<typename _Tp>
@@ -1079,28 +1090,36 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   __size_to_integer(__float128 __n) { return (long long)__n; }
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
   template<typename _OutputIterator, typename _Size, typename _Tp>
     _GLIBCXX20_CONSTEXPR
-    inline typename
-    __gnu_cxx::__enable_if<!__is_scalar<_Tp>::__value, _OutputIterator>::__type
+    inline _OutputIterator
     __fill_n_a1(_OutputIterator __first, _Size __n, const _Tp& __value)
     {
-      for (; __n > 0; --__n, (void) ++__first)
-	*__first = __value;
-      return __first;
-    }
+      // See std::__fill_a1 for explanation of this condition.
+      const bool __load_outside_loop =
+#if __has_builtin(__is_trivially_constructible) \
+      && __has_builtin(__is_trivially_assignable)
+	    __is_trivially_constructible(_Tp, const _Tp&)
+	    && __is_trivially_assignable(__decltype(*__first), const _Tp&)
+#else
+	    __is_trivially_copyable(_Tp)
+	    && __is_same(_Tp, __typeof__(*__first))
+#endif
+	    && sizeof(_Tp) <= sizeof(long long);
 
-  template<typename _OutputIterator, typename _Size, typename _Tp>
-    _GLIBCXX20_CONSTEXPR
-    inline typename
-    __gnu_cxx::__enable_if<__is_scalar<_Tp>::__value, _OutputIterator>::__type
-    __fill_n_a1(_OutputIterator __first, _Size __n, const _Tp& __value)
-    {
-      const _Tp __tmp = __value;
+      // When the condition is true, we use a copy of __value,
+      // otherwise we just use another reference.
+      typedef typename __gnu_cxx::__conditional_type<__load_outside_loop,
+						     const _Tp,
+						     const _Tp&>::__type _Up;
+      _Up __val(__value);
       for (; __n > 0; --__n, (void) ++__first)
-	*__first = __tmp;
+	*__first = __val;
       return __first;
     }
+#pragma GCC diagnostic pop
 
   template<typename _Ite, typename _Seq, typename _Cat, typename _Size,
 	   typename _Tp>
