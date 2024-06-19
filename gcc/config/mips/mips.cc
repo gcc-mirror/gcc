@@ -22801,14 +22801,20 @@ mips_expand_vec_cmp_expr (rtx *operands)
 
 void
 mips_expand_vec_cond_expr (machine_mode mode, machine_mode vimode,
-			   rtx *operands)
+			   rtx *operands, bool mask)
 {
-  rtx cond = operands[3];
-  rtx cmp_op0 = operands[4];
-  rtx cmp_op1 = operands[5];
-  rtx cmp_res = gen_reg_rtx (vimode);
+  rtx cmp_res;
+  if (mask)
+    cmp_res = operands[3];
+  else
+    {
+      rtx cond = operands[3];
+      rtx cmp_op0 = operands[4];
+      rtx cmp_op1 = operands[5];
+      cmp_res = gen_reg_rtx (vimode);
 
-  mips_expand_msa_cmp (cmp_res, GET_CODE (cond), cmp_op0, cmp_op1);
+      mips_expand_msa_cmp (cmp_res, GET_CODE (cond), cmp_op0, cmp_op1);
+    }
 
   /* We handle the following cases:
      1) r = a CMP b ? -1 : 0

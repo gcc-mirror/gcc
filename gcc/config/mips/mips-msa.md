@@ -411,6 +411,19 @@
   DONE;
 })
 
+(define_expand "vcond_mask_<MSA:mode><IMSA:mode>"
+  [(match_operand:MSA 0 "register_operand")
+   (match_operand:MSA 1 "reg_or_m1_operand")
+   (match_operand:MSA 2 "reg_or_0_operand")
+   (match_operand:IMSA 3 "register_operand")]
+  "ISA_HAS_MSA
+   && (GET_MODE_NUNITS (<MSA:MODE>mode) == GET_MODE_NUNITS (<IMSA:MODE>mode))"
+{
+  mips_expand_vec_cond_expr (<MSA:MODE>mode, <MSA:VIMODE>mode, operands, true);
+  DONE;
+})
+
+
 (define_expand "vcondu<MSA:mode><IMSA:mode>"
   [(match_operand:MSA 0 "register_operand")
    (match_operand:MSA 1 "reg_or_m1_operand")
@@ -421,7 +434,7 @@
   "ISA_HAS_MSA
    && (GET_MODE_NUNITS (<MSA:MODE>mode) == GET_MODE_NUNITS (<IMSA:MODE>mode))"
 {
-  mips_expand_vec_cond_expr (<MSA:MODE>mode, <MSA:VIMODE>mode, operands);
+  mips_expand_vec_cond_expr (<MSA:MODE>mode, <MSA:VIMODE>mode, operands, false);
   DONE;
 })
 
@@ -435,7 +448,7 @@
   "ISA_HAS_MSA
    && (GET_MODE_NUNITS (<MSA:MODE>mode) == GET_MODE_NUNITS (<MSA_2:MODE>mode))"
 {
-  mips_expand_vec_cond_expr (<MSA:MODE>mode, <MSA:VIMODE>mode, operands);
+  mips_expand_vec_cond_expr (<MSA:MODE>mode, <MSA:VIMODE>mode, operands, false);
   DONE;
 })
 
