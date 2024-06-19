@@ -711,9 +711,9 @@ atom slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
 silvermont skylake-avx512 cannonlake icelake-client icelake-server \
 skylake goldmont goldmont-plus tremont cascadelake tigerlake cooperlake \
 sapphirerapids alderlake rocketlake eden-x2 nano nano-1000 nano-2000 nano-3000 \
-nano-x2 eden-x4 nano-x4 lujiazui yongfeng x86-64 x86-64-v2 x86-64-v3 x86-64-v4 \
-sierraforest graniterapids graniterapids-d grandridge arrowlake arrowlake-s \
-clearwaterforest pantherlake native"
+nano-x2 eden-x4 nano-x4 lujiazui yongfeng shijidadao x86-64 x86-64-v2 \
+x86-64-v3 x86-64-v4 sierraforest graniterapids graniterapids-d grandridge \
+arrowlake arrowlake-s clearwaterforest pantherlake native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -3855,6 +3855,10 @@ case ${target} in
 	arch=yongfeng
 	cpu=yongfeng
 	;;
+      shijidadao-*)
+	arch=shijidadao
+	cpu=shijidadao
+	;;
       pentium2-*)
 	arch=pentium2
 	cpu=pentium2
@@ -3979,6 +3983,10 @@ case ${target} in
       yongfeng-*)
 	arch=yongfeng
 	cpu=yongfeng
+	;;
+      shijidadao-*)
+	arch=shijidadao
+	cpu=shijidadao
 	;;
       nocona-*)
 	arch=nocona

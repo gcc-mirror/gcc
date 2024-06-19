@@ -558,10 +558,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       switch (family)
 	{
 	case 7:
-	  if (model == 0x3b)
-	    processor = PROCESSOR_LUJIAZUI;
-	  else if (model >= 0x5b)
+	  if (model >= 0x6b)
+	    processor = PROCESSOR_SHIJIDADAO;
+	  else if (model == 0x5b)
 	    processor = PROCESSOR_YONGFENG;
+	  else if (model == 0x3b)
+	    processor = PROCESSOR_LUJIAZUI;
 	  break;
 	default:
 	  break;
@@ -852,6 +854,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     case PROCESSOR_YONGFENG:
       cpu = "yongfeng";
+      break;
+    case PROCESSOR_SHIJIDADAO:
+      cpu = "shijidadao";
       break;
 
     default:
