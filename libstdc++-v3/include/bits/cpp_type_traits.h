@@ -105,21 +105,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __true_type __type;
     };
 
-  // Holds if the template-argument is a void type.
-  template<typename _Tp>
-    struct __is_void
-    {
-      enum { __value = 0 };
-      typedef __false_type __type;
-    };
-
-  template<>
-    struct __is_void<void>
-    {
-      enum { __value = 1 };
-      typedef __true_type __type;
-    };
-
   //
   // Integer types
   //
