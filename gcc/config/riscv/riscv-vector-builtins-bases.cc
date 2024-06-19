@@ -1420,12 +1420,8 @@ public:
     switch (e.op_info->op)
       {
 	case OP_TYPE_vf: {
-	  if (CODE == EQ || CODE == NE)
-	    return e.use_compare_insn (CODE, code_for_pred_eqne_scalar (
-					       e.vector_mode ()));
-	  else
-	    return e.use_compare_insn (CODE, code_for_pred_cmp_scalar (
-					       e.vector_mode ()));
+	  return e.use_compare_insn (CODE, code_for_pred_cmp_scalar (
+					     e.vector_mode ()));
 	}
 	case OP_TYPE_vv: {
 	  return e.use_compare_insn (CODE,
