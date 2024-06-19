@@ -265,6 +265,21 @@ vec_sat_u_sub_##T##_fmt_9 (T *out, T *op_1, T *op_2, unsigned limit) \
     }                                                                \
 }
 
+#define DEF_VEC_SAT_U_SUB_FMT_10(T)                                   \
+void __attribute__((noinline))                                        \
+vec_sat_u_sub_##T##_fmt_10 (T *out, T *op_1, T *op_2, unsigned limit) \
+{                                                                     \
+  unsigned i;                                                         \
+  for (i = 0; i < limit; i++)                                         \
+    {                                                                 \
+      T x = op_1[i];                                                  \
+      T y = op_2[i];                                                  \
+      T ret;                                                          \
+      bool overflow = __builtin_sub_overflow (x, y, &ret);            \
+      out[i] = !overflow ? ret : 0;                                   \
+    }                                                                 \
+}
+
 #define RUN_VEC_SAT_U_SUB_FMT_1(T, out, op_1, op_2, N) \
   vec_sat_u_sub_##T##_fmt_1(out, op_1, op_2, N)
 
@@ -291,5 +306,8 @@ vec_sat_u_sub_##T##_fmt_9 (T *out, T *op_1, T *op_2, unsigned limit) \
 
 #define RUN_VEC_SAT_U_SUB_FMT_9(T, out, op_1, op_2, N) \
   vec_sat_u_sub_##T##_fmt_9(out, op_1, op_2, N)
+
+#define RUN_VEC_SAT_U_SUB_FMT_10(T, out, op_1, op_2, N) \
+  vec_sat_u_sub_##T##_fmt_10(out, op_1, op_2, N)
 
 #endif
