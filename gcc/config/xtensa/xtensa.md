@@ -1285,17 +1285,25 @@
 (define_split
   [(set (match_operand:SHI 0 "register_operand")
 	(match_operand:SHI 1 "constantpool_operand"))]
-  "! optimize_debug && reload_completed"
+  "!optimize_debug && reload_completed"
   [(const_int 0)]
 {
-  rtx x = avoid_constant_pool_reference (operands[1]), dst = operands[0];
-  if (! CONST_INT_P (x))
-    FAIL;
-  if (<MODE>mode == HImode)
-    dst = gen_rtx_REG (SImode, REGNO (dst));
-  if (! xtensa_constantsynth (dst, INTVAL (x)))
-    emit_move_insn (dst, x);
-  DONE;
+  if (xtensa_constantsynth (operands[0], operands[1]))
+    DONE;
+  FAIL;
+})
+
+(define_split
+  [(set (match_operand:SHI 0 "register_operand")
+	(match_operand:SHI 1 "const_int_operand"))]
+  "!optimize_debug && reload_completed
+   && !TARGET_CONST16 && TARGET_AUTO_LITPOOLS
+   && ! xtensa_simm12b (INTVAL (operands[1]))"
+  [(const_int 0)]
+{
+  if (xtensa_constantsynth (operands[0], operands[1]))
+    DONE;
+  FAIL;
 })
 
 ;; 16-bit Integer moves
@@ -1503,21 +1511,25 @@
 
 (define_split
   [(set (match_operand:SF 0 "register_operand")
-	(match_operand:SF 1 "constantpool_operand"))]
-  "! optimize_debug && reload_completed"
+	(match_operand 1 "constantpool_operand"))]
+  "!optimize_debug && reload_completed"
   [(const_int 0)]
 {
-  rtx x = avoid_constant_pool_reference (operands[1]);
-  long l;
-  HOST_WIDE_INT value;
-  if (! CONST_DOUBLE_P (x) || GET_MODE (x) != SFmode)
-    FAIL;
-  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), l);
-  x = gen_rtx_REG (SImode, REGNO (operands[0]));
-  value = (int32_t)l;
-  if (! xtensa_constantsynth (x, value))
-    emit_move_insn (x, GEN_INT (value));
-  DONE;
+  if (xtensa_constantsynth (operands[0], operands[1]))
+    DONE;
+  FAIL;
+})
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand")
+	(match_operand 1 "const_double_operand"))]
+  "!optimize_debug && reload_completed
+   && !TARGET_CONST16 && TARGET_AUTO_LITPOOLS"
+  [(const_int 0)]
+{
+  if (xtensa_constantsynth (operands[0], operands[1]))
+    DONE;
+  FAIL;
 })
 
 ;; 64-bit floating point moves
