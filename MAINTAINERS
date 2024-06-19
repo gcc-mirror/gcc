@@ -59,7 +59,7 @@ amdgcn port		Andrew Stubbs		<ams@baylibre.com>
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
-arm port		Ramana Radhakrishnan	<ramana.gcc@gmail.com>
+arm port		Ramana Radhakrishnan	<ramanara@nvidia.com>
 avr port		Denis Chertykov		<chertykov@gmail.com>
 bfin port		Jie Zhang		<jzhang918@gmail.com>
 bpf port		Jose E. Marchesi	<jose.marchesi@oracle.com>
@@ -776,6 +776,7 @@ Immad Mir					<mir@sourceware.org>
 Gaius Mulley					<gaiusmod2@gmail.com>
 Andrew Pinski					<quic_apinski@quicinc.com>
 Siddhesh Poyarekar				<siddhesh@gotplt.org>
+Ramana Radhakrishnan				<ramanara@nvidia.com>
 Navid Rahimi					<navidrahimi@microsoft.com>
 Rishi Raj						<rishiraj45035@gmail.com>
 Trevor Saunders					<tbsaunde+gcc@tbsaunde.org>
