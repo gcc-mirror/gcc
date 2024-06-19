@@ -22540,6 +22540,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  /* force_paren_expr can also create a VIEW_CONVERT_EXPR.  */
 	  RETURN (finish_parenthesized_expr (op));
 
+	if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst
+	    && processing_contract_condition)
+	    op = constify_contract_access(op);
+
 	/* Otherwise, we're dealing with a wrapper to make a C++20 template
 	   parameter object const.  */
 	if (TREE_TYPE (op) == NULL_TREE
