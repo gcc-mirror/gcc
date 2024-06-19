@@ -906,6 +906,7 @@ private:
   vec<int> m_update_list;
   int m_update_head;
   bitmap m_propfail;
+  bitmap_obstack m_bitmaps;
 };
 
 // Create an update list.
@@ -915,7 +916,8 @@ update_list::update_list ()
   m_update_list.create (0);
   m_update_list.safe_grow_cleared (last_basic_block_for_fn (cfun) + 64);
   m_update_head = -1;
-  m_propfail = BITMAP_ALLOC (NULL);
+  bitmap_obstack_initialize (&m_bitmaps);
+  m_propfail = BITMAP_ALLOC (&m_bitmaps);
 }
 
 // Destroy an update list.
@@ -923,7 +925,7 @@ update_list::update_list ()
 update_list::~update_list ()
 {
   m_update_list.release ();
-  BITMAP_FREE (m_propfail);
+  bitmap_obstack_release (&m_bitmaps);
 }
 
 // Add BB to the list of blocks to update, unless it's already in the list.

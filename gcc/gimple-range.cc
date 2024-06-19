@@ -681,8 +681,6 @@ enable_ranger (struct function *fun, bool use_imm_uses)
 {
   gimple_ranger *r;
 
-  bitmap_obstack_initialize (NULL);
-
   gcc_checking_assert (!fun->x_range_query);
   r = new gimple_ranger (use_imm_uses);
   fun->x_range_query = r;
@@ -699,8 +697,6 @@ disable_ranger (struct function *fun)
   gcc_checking_assert (fun->x_range_query);
   delete fun->x_range_query;
   fun->x_range_query = NULL;
-
-  bitmap_obstack_release (NULL);
 }
 
 // ------------------------------------------------------------------------
