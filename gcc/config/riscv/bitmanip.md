@@ -569,24 +569,26 @@
 
 ;; ZBS extension.
 
-(define_insn "*bset<mode>"
+(define_insn "*<bit_optab><mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
-	(ior:X (ashift:X (const_int 1)
-			 (match_operand:QI 2 "register_operand" "r"))
-	       (match_operand:X 1 "register_operand" "r")))]
+	(any_or:X (ashift:X (const_int 1)
+			    (match_operand:QI 2 "register_operand" "r"))
+		  (match_operand:X 1 "register_operand" "r")))]
   "TARGET_ZBS"
-  "bset\t%0,%1,%2"
+  "<bit_optab>\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
-(define_insn "*bset<mode>_mask"
+(define_insn "*<bit_optab><mode>_mask"
   [(set (match_operand:X 0 "register_operand" "=r")
-	(ior:X (ashift:X (const_int 1)
-			 (subreg:QI
-			  (and:X (match_operand:X 2 "register_operand" "r")
-				 (match_operand 3 "<X:shiftm1>" "<X:shiftm1p>")) 0))
-	       (match_operand:X 1 "register_operand" "r")))]
+	(any_or:X
+	  (ashift:X
+	    (const_int 1)
+	    (subreg:QI
+	      (and:X (match_operand:X 2 "register_operand" "r")
+		     (match_operand 3 "<X:shiftm1>" "<X:shiftm1p>")) 0))
+	  (match_operand:X 1 "register_operand" "r")))]
   "TARGET_ZBS"
-  "bset\t%0,%1,%2"
+  "<bit_optab>\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
 (define_insn "*bset<mode>_1"
@@ -655,24 +657,24 @@
   "bset\t%0,x0,%1"
   [(set_attr "type" "bitmanip")])
 
-(define_insn "*bseti<mode>"
+(define_insn "*<bit_optab>i<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
-	(ior:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "single_bit_mask_operand" "DbS")))]
+	(any_or:X (match_operand:X 1 "register_operand" "r")
+		  (match_operand:X 2 "single_bit_mask_operand" "DbS")))]
   "TARGET_ZBS"
-  "bseti\t%0,%1,%S2"
+  "<bit_optab>i\t%0,%1,%S2"
   [(set_attr "type" "bitmanip")])
 
 ;; As long as the SImode operand is not a partial subreg, we can use a
 ;; bseti without postprocessing, as the middle end is smart enough to
 ;; stay away from the signbit.
-(define_insn "*bsetidisi"
+(define_insn "*<bit_optab>idisi"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
-		(match_operand 2 "single_bit_mask_operand" "i")))]
+	(any_or:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "r"))
+		   (match_operand 2 "single_bit_mask_operand" "i")))]
   "TARGET_ZBS && TARGET_64BIT
    && !partial_subreg_p (operands[1])"
-  "bseti\t%0,%1,%S2"
+  "<bit_optab>i\t%0,%1,%S2"
   [(set_attr "type" "bitmanip")])
 
 ;; We can easily handle zero extensions
@@ -780,23 +782,6 @@
    (set (match_dup 0)
 	  (and:DI (rotate:DI (const_int -2) (match_dup 1))
 		  (match_dup 3)))])
-
-(define_insn "*binv<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-	(xor:X (ashift:X (const_int 1)
-			 (match_operand:QI 2 "register_operand" "r"))
-	       (match_operand:X 1 "register_operand" "r")))]
-  "TARGET_ZBS"
-  "binv\t%0,%1,%2"
-  [(set_attr "type" "bitmanip")])
-
-(define_insn "*binvi<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-	(xor:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "single_bit_mask_operand" "DbS")))]
-  "TARGET_ZBS"
-  "binvi\t%0,%1,%S2"
-  [(set_attr "type" "bitmanip")])
 
 (define_insn "*bext<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
