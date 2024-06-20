@@ -25576,27 +25576,32 @@ ix86_ternlog_idx (rtx op, rtx *args)
 
   switch (GET_CODE (op))
     {
+    case SUBREG:
+      if (!register_operand (op, GET_MODE (op)))
+	return -1;
+      /* FALLTHRU */
+
     case REG:
       if (!args[0])
 	{
 	  args[0] = op;
 	  return 0xf0;
 	}
-      if (REGNO (op) == REGNO (args[0]))
+      if (rtx_equal_p (op, args[0]))
 	return 0xf0;
       if (!args[1])
 	{
 	  args[1] = op;
 	  return 0xcc;
 	}
-      if (REGNO (op) == REGNO (args[1]))
+      if (rtx_equal_p (op, args[1]))
 	return 0xcc;
       if (!args[2])
 	{
 	  args[2] = op;
 	  return 0xaa;
 	}
-      if (REG_P (args[2]) && REGNO (op) == REGNO (args[2]))
+      if (rtx_equal_p (op, args[2]))
 	return 0xaa;
       return -1;
 
@@ -25633,12 +25638,6 @@ ix86_ternlog_idx (rtx op, rtx *args)
 			  args[2]))
 	return 0x55;
       return -1;
-
-    case SUBREG:
-      if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))
-	  != GET_MODE_SIZE (GET_MODE (op)))
-	return -1;
-      return ix86_ternlog_idx (SUBREG_REG (op), args);
 
     case NOT:
       idx0 = ix86_ternlog_idx (XEXP (op, 0), args);
