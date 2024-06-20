@@ -1,3 +1,19 @@
+2024-06-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115390
+	* trans-decl.cc (gfc_conv_cfi_to_gfc): Move derivation of type sizes
+	for character via gfc_trans_vla_type_sizes to after character length
+	has been set.
+
+2024-06-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/90076
+	* trans-decl.cc (gfc_generate_function_code): Set vptr for
+	results to declared class type.
+	* trans-expr.cc (gfc_reset_vptr): Allow to provide the typespec
+	instead of the expression.
+	* trans.h (gfc_reset_vptr): Same.
+
 2024-06-17  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* trans.cc (gfc_deallocate_with_status): Check that object to deref

@@ -1,3 +1,264 @@
+2024-06-19  demin.han  <demin.han@starfivetech.com>
+
+	* gcc.target/riscv/rvv/base/float-point-cmp-eqne.c: New test.
+
+2024-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115544
+	* gcc.dg/bitint-107.c: New test.
+
+2024-06-19  mayshao  <mayshao-oc@zhaoxin.com>
+
+	* g++.target/i386/mv32.C: Handle new -march
+	* gcc.target/i386/funcspec-56.inc: Ditto.
+
+2024-06-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115390
+	* gfortran.dg/bind_c_char_11.f90: New test.
+
+2024-06-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/lob.h: Add new helpers.
+	* gcc.target/arm/lob1.c: Use new helpers.
+	* gcc.target/arm/lob6.c: Likewise.
+	* gcc.target/arm/mve/dlstp-compile-asm-1.c: New test.
+	* gcc.target/arm/mve/dlstp-compile-asm-2.c: New test.
+	* gcc.target/arm/mve/dlstp-compile-asm-3.c: New test.
+	* gcc.target/arm/mve/dlstp-int8x16.c: New test.
+	* gcc.target/arm/mve/dlstp-int8x16-run.c: New test.
+	* gcc.target/arm/mve/dlstp-int16x8.c: New test.
+	* gcc.target/arm/mve/dlstp-int16x8-run.c: New test.
+	* gcc.target/arm/mve/dlstp-int32x4.c: New test.
+	* gcc.target/arm/mve/dlstp-int32x4-run.c: New test.
+	* gcc.target/arm/mve/dlstp-int64x2.c: New test.
+	* gcc.target/arm/mve/dlstp-int64x2-run.c: New test.
+	* gcc.target/arm/mve/dlstp-invalid-asm.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-37.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-38.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-39.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-40.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-37.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-38.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-39.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-40.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-33.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-34.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-35.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-36.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-33.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-34.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-35.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-36.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-29.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-30.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-31.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-29.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-30.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-31.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-32.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-25.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-26.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-27.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-28.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-25.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-26.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-27.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-28.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-21.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-22.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-23.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-24.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-21.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-22.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-23.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-24.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-18.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-19.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-20.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-18.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-19.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-20.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-16.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add test macro.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub-run-9.c: New test.
+
+2024-06-19  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-32.c: Add check for correctness.
+
+2024-06-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/90076
+	* gfortran.dg/class_76.f90: Add declared vtab occurrence.
+	* gfortran.dg/class_78.f90: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add helper
+	macro for testing.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-29.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-30.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-31.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-32.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-29.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-30.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-31.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-32.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add helper
+	macro for testing.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-25.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-26.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-27.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-28.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-25.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-26.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-27.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-28.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add helper
+	macro for testing.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-21.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-22.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-23.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-24.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-21.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-22.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-23.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-24.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add helper
+	macro for testing.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-18.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-19.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-20.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-17.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-18.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-19.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-20.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add helper
+	macro for testing.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-16.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-13.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-14.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-15.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-16.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add helper
+	macro for testing.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-9.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-10.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-11.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-12.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-9.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_arith.h: Add helper
+	macro for testing.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-8.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_add-run-8.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper macro for
+	testing.
+	* gcc.target/riscv/sat_u_sub-45.c: New test.
+	* gcc.target/riscv/sat_u_sub-46.c: New test.
+	* gcc.target/riscv/sat_u_sub-47.c: New test.
+	* gcc.target/riscv/sat_u_sub-48.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-45.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-46.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-47.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-48.c: New test.
+
+2024-06-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper
+	macro for testing.
+	* gcc.target/riscv/sat_u_sub-41.c: New test.
+	* gcc.target/riscv/sat_u_sub-42.c: New test.
+	* gcc.target/riscv/sat_u_sub-43.c: New test.
+	* gcc.target/riscv/sat_u_sub-44.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-41.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-42.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-43.c: New test.
+	* gcc.target/riscv/sat_u_sub-run-44.c: New test.
+
 2024-06-18  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/zbs-ext-2.c: Do not run for -Os.

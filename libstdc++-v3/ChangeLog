@@ -1,3 +1,27 @@
+2024-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future: Adjust whitespace to use tabs for
+	indentation.
+
+2024-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (_State_baseV2::_Setter<R, void>): Add
+	noexcept to call operator.
+	(_State_baseV2::_Setter<R, __exception_ptr_tag>): Likewise.
+
+2024-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_pair.h [__cpp_lib_concepts] (pair()): Add
+	conditional noexcept.
+
+2024-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tempbuf.h (__get_temporary_buffer): Cast
+	argument to size_t to handle negative values and suppress
+	-Wsign-compare warning.
+	(_Temporary_buffer): Move diagnostic pragmas to new location of
+	call to std::get_temporary_buffer.
+
 2024-06-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/cpp_type_traits.h: Fix outdated comment about the

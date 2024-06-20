@@ -1,3 +1,35 @@
+2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
+
+	Revert:
+	2024-06-19  Collin Funk  <collin.funk1@gmail.com>
+
+	* configure.ac: Quote variable result of AC_SEARCH_LIBS.
+	* configure: Regenerate.
+
+2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
+
+	Revert:
+	2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR bootstrap/115453
+	* configure.ac: Fix typo ac_cv_search_pthread_crate.
+	* configure: Regnerate.
+
+2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR bootstrap/115453
+	* configure.ac: Fix typo ac_cv_search_pthread_crate.
+	* configure: Regnerate.
+
+2024-06-19  Collin Funk  <collin.funk1@gmail.com>
+
+	* configure.ac: Quote variable result of AC_SEARCH_LIBS.
+	* configure: Regenerate.
+
+2024-06-19  Ramana Radhakrishnan  <ramanara@nvidia.com>
+
+	* MAINTAINERS: Update my email address.
+
 2024-06-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* MAINTAINERS (aarch64 port): Update my email address.

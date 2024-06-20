@@ -1,3 +1,143 @@
+2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
+
+	Revert:
+	2024-06-19  Collin Funk  <collin.funk1@gmail.com>
+
+	* configure.ac: Add missing quotation of variable
+	gcc_cv_as_mips_explicit_relocs.
+	* configure: Regenerate.
+
+2024-06-19  demin.han  <demin.han@starfivetech.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Remove eqne cond
+	* config/riscv/vector.md (@pred_eqne<mode>_scalar): Remove patterns
+	(*pred_eqne<mode>_scalar_merge_tie_mask): Ditto
+	(*pred_eqne<mode>_scalar): Ditto
+	(*pred_eqne<mode>_scalar_narrow): Ditto
+
+2024-06-19  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* common/config/riscv/riscv-common.cc: Add 'a' extension to
+	riscv_combine_info.
+
+2024-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115544
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Disable optimizing
+	loads used by COMPLEX_EXPR operands.
+
+2024-06-19  mayshao  <mayshao-oc@zhaoxin.com>
+
+	* common/config/i386/cpuinfo.h (get_zhaoxin_cpu): Recognize shijidadao.
+	* common/config/i386/i386-common.cc: Add shijidadao.
+	* common/config/i386/i386-cpuinfo.h (enum processor_subtypes):
+	Add ZHAOXIN_FAM7H_SHIJIDADAO.
+	* config.gcc: Add shijidadao.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Let -march=native recognize shijidadao processors.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Add shijidadao.
+	* config/i386/i386-options.cc (m_ZHAOXIN): Add m_SHIJIDADAO.
+	(m_SHIJIDADAO): New definition.
+	* config/i386/i386.h (enum processor_type): Add PROCESSOR_SHIJIDADAO.
+	* config/i386/x86-tune-costs.h (struct processor_costs):
+	Add shijidadao_cost.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Add shijidadao.
+	(ix86_adjust_cost): Ditto.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER_2PARTS): Add m_SHIJIDADAO.
+	(X86_TUNE_USE_GATHER_4PARTS): Ditto.
+	(X86_TUNE_USE_GATHER_8PARTS): Ditto.
+	(X86_TUNE_AVOID_128FMA_CHAINS): Ditto.
+	* doc/extend.texi: Add details about shijidadao.
+	* doc/invoke.texi: Ditto.
+
+2024-06-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (print_operand):
+	When outputting MEMW before the instruction, check if the previous
+	instruction is already that.
+
+2024-06-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm-protos.h (arm_target_bb_ok_for_lob): Change
+	declaration to pass basic_block.
+	(arm_attempt_dlstp_transform): New declaration.
+	* config/arm/arm.cc (TARGET_LOOP_UNROLL_ADJUST): Define targethook.
+	(TARGET_PREDICT_DOLOOP_P): Likewise.
+	(arm_target_bb_ok_for_lob): Adapt condition.
+	(arm_mve_get_vctp_lanes): New function.
+	(arm_dl_usage_type): New internal enum.
+	(arm_get_required_vpr_reg): New function.
+	(arm_get_required_vpr_reg_param): New function.
+	(arm_get_required_vpr_reg_ret_val): New function.
+	(arm_mve_get_loop_vctp): New function.
+	(arm_mve_insn_predicated_by): New function.
+	(arm_mve_across_lane_insn_p): New function.
+	(arm_mve_load_store_insn_p): New function.
+	(arm_mve_impl_pred_on_outputs_p): New function.
+	(arm_mve_impl_pred_on_inputs_p): New function.
+	(arm_last_vect_def_insn): New function.
+	(arm_mve_impl_predicated_p): New function.
+	(arm_mve_check_reg_origin_is_num_elems): New function.
+	(arm_mve_dlstp_check_inc_counter): New function.
+	(arm_mve_dlstp_check_dec_counter): New function.
+	(arm_mve_loop_valid_for_dlstp): New function.
+	(arm_predict_doloop_p): New function.
+	(arm_loop_unroll_adjust): New function.
+	(arm_emit_mve_unpredicated_insn_to_seq): New function.
+	(arm_attempt_dlstp_transform): New function.
+	* config/arm/arm.opt (mdlstp): New option.
+	* config/arm/iterators.md (dlstp_elemsize, letp_num_lanes,
+	letp_num_lanes_neg, letp_num_lanes_minus_1): New attributes.
+	(DLSTP, LETP): New iterators.
+	* config/arm/mve.md (predicated_doloop_end_internal<letp_num_lanes>,
+	dlstp<dlstp_elemsize>_insn): New insn patterns.
+	* config/arm/thumb2.md (doloop_end): Adapt to support tail-predicated
+	loops.
+	(doloop_begin): Likewise.
+	* config/arm/types.md (mve_misc): New mve type to represent
+	predicated_loop_end insn sequences.
+	* config/arm/unspecs.md:
+	(DLSTP8, DLSTP16, DLSTP32, DSLTP64,
+	LETP8, LETP16, LETP32, LETP64): New unspecs for DLSTP and LETP.
+
+2024-06-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+	    Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* df-core.cc (df_bb_regno_only_def_find): New helper function.
+	* df.h (df_bb_regno_only_def_find): Declare new function.
+	* loop-doloop.cc (doloop_condition_get): Add support for detecting
+	predicated vectorized hardware loops.
+	(doloop_modify): Add support for GTU condition checks.
+	(doloop_optimize): Update costing computation to support alterations to
+	desc->niter_expr by the backend.
+
+2024-06-19  Collin Funk  <collin.funk1@gmail.com>
+
+	* configure.ac: Add missing quotation of variable
+	gcc_cv_as_mips_explicit_relocs.
+	* configure: Regenerate.
+
+2024-06-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_constantsynth):
+	Change the second argument from HOST_WIDE_INT to rtx.
+	* config/xtensa/xtensa.cc (#include):
+	Add "context.h" and "pass_manager.h".
+	(machine_function): Add a new hash_map field "litpool_usage".
+	(xtensa_constantsynth): Make "src" (the second operand) accept
+	RTX literal instead of its value, and treat both bare and pooled
+	SI/SFmode literals equally by bit-exact canonicalization into
+	CONST_INT RTX internally.  And then, make avoid synthesis if
+	such multiple identical canonicalized literals are found in same
+	function when optimizing for size.  Finally, for literals where
+	synthesis is not possible or has been avoided, re-emit "move"
+	RTXes with canonicalized ones to increase the chances of sharing
+	literal pool entries.
+	* config/xtensa/xtensa.md (split patterns for constant synthesis):
+	Change to simply invoke xtensa_constantsynth() as mentioned above,
+	and add new patterns for when TARGET_AUTO_LITPOOLS is enabled.
+
 2024-06-18  Edwin Lu  <ewlu@rivosinc.com>
 	    Robin Dapp  <rdapp@ventanamicro.com>
 
