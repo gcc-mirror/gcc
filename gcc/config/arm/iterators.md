@@ -50,6 +50,9 @@
 ;; A list of the 32bit and 64bit integer modes
 (define_mode_iterator SIDI [SI DI])
 
+;; A list of the 64bit modes for thumb1.
+(define_mode_iterator DIDF [DI DF])
+
 ;; A list of atomic compare and swap success return modes
 (define_mode_iterator CCSI [(CC_Z "TARGET_32BIT") (SI "TARGET_THUMB1")])
 

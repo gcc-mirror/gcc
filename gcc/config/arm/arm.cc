@@ -28374,15 +28374,11 @@ thumb_load_double_from_address (rtx *operands)
   switch (GET_CODE (addr))
     {
     case REG:
-      operands[2] = adjust_address (operands[1], SImode, 4);
-
-      if (REGNO (operands[0]) == REGNO (addr))
-	{
-	  output_asm_insn ("ldr\t%H0, %2", operands);
-	  output_asm_insn ("ldr\t%0, %1", operands);
-	}
+      if (reg_overlap_mentioned_p (addr, operands[0]))
+	output_asm_insn ("ldmia\t%m1, {%0, %H0}", operands);
       else
 	{
+	  operands[2] = adjust_address (operands[1], SImode, 4);
 	  output_asm_insn ("ldr\t%0, %1", operands);
 	  output_asm_insn ("ldr\t%H0, %2", operands);
 	}

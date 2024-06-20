@@ -655,6 +655,42 @@
    (set_attr "pool_range" "*,*,*,*,*,*,1018,*,*")]
 )
 
+
+;; match patterns usable by ldmia/stmia
+(define_peephole2
+  [(set (match_operand:DIDF 0 "low_register_operand" "")
+	(match_operand:DIDF 1 "memory_operand" ""))]
+  "TARGET_THUMB1
+   && low_register_operand (XEXP (operands[1], 0), SImode)
+   && !reg_overlap_mentioned_p (XEXP (operands[1], 0), operands[0])
+   && peep2_reg_dead_p (1, XEXP (operands[1], 0))"
+  [(set (match_dup 0)
+	(match_dup 1))]
+  {
+    operands[1] = change_address (operands[1], VOIDmode,
+				  gen_rtx_POST_INC (SImode,
+						    XEXP (operands[1], 0)));
+  }
+)
+
+(define_peephole2
+  [(set (match_operand:DIDF 0 "memory_operand" "")
+	(match_operand:DIDF 1 "low_register_operand" ""))]
+  "TARGET_THUMB1
+   && low_register_operand (XEXP (operands[0], 0), SImode)
+   && peep2_reg_dead_p (1, XEXP (operands[0], 0))
+   /* The low register in the transfer list may overlap the address,
+      but the second cannot.  */
+   && REGNO (XEXP (operands[0], 0)) != (REGNO (operands[1]) + 1)"
+  [(set (match_dup 0)
+	(match_dup 1))]
+  {
+    operands[0] = change_address (operands[0], VOIDmode,
+				  gen_rtx_POST_INC (SImode,
+						    XEXP (operands[0], 0)));
+  }
+)
+
 (define_insn "*thumb1_movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=l,l,r,l,l,l,>,l, l, m,*l*h*k")
 	(match_operand:SI 1 "general_operand"      "l, I,j,J,K,>,l,i, mi,l,*l*h*k"))]
@@ -2055,4 +2091,3 @@
    (set_attr "conds" "clob")
    (set_attr "type" "multiple")]
 )
-
