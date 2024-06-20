@@ -107,24 +107,70 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __is_trivial(T) && __is_assignable(T&, U)
 #endif
 
+  template<typename _ForwardIterator, typename _Alloc = void>
+    struct _UninitDestroyGuard
+    {
+      _GLIBCXX20_CONSTEXPR
+      explicit
+      _UninitDestroyGuard(_ForwardIterator& __first, _Alloc& __a)
+      : _M_first(__first), _M_cur(__builtin_addressof(__first)), _M_alloc(__a)
+      { }
+
+      _GLIBCXX20_CONSTEXPR
+      ~_UninitDestroyGuard()
+      {
+	if (__builtin_expect(_M_cur != 0, 0))
+	  std::_Destroy(_M_first, *_M_cur, _M_alloc);
+      }
+
+      _GLIBCXX20_CONSTEXPR
+      void release() { _M_cur = 0; }
+
+    private:
+      _ForwardIterator const _M_first;
+      _ForwardIterator* _M_cur;
+      _Alloc& _M_alloc;
+
+      _UninitDestroyGuard(const _UninitDestroyGuard&);
+    };
+
+  template<typename _ForwardIterator>
+    struct _UninitDestroyGuard<_ForwardIterator, void>
+    {
+      _GLIBCXX20_CONSTEXPR
+      explicit
+      _UninitDestroyGuard(_ForwardIterator& __first)
+      : _M_first(__first), _M_cur(__builtin_addressof(__first))
+      { }
+
+      _GLIBCXX20_CONSTEXPR
+      ~_UninitDestroyGuard()
+      {
+	if (__builtin_expect(_M_cur != 0, 0))
+	  std::_Destroy(_M_first, *_M_cur);
+      }
+
+      _GLIBCXX20_CONSTEXPR
+      void release() { _M_cur = 0; }
+
+      _ForwardIterator const _M_first;
+      _ForwardIterator* _M_cur;
+
+    private:
+      _UninitDestroyGuard(const _UninitDestroyGuard&);
+    };
+
   template<typename _InputIterator, typename _ForwardIterator>
     _GLIBCXX20_CONSTEXPR
     _ForwardIterator
     __do_uninit_copy(_InputIterator __first, _InputIterator __last,
 		     _ForwardIterator __result)
     {
-      _ForwardIterator __cur = __result;
-      __try
-	{
-	  for (; __first != __last; ++__first, (void)++__cur)
-	    std::_Construct(std::__addressof(*__cur), *__first);
-	  return __cur;
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__result, __cur);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator> __guard(__result);
+      for (; __first != __last; ++__first, (void)++__result)
+	std::_Construct(std::__addressof(*__result), *__first);
+      __guard.release();
+      return __result;
     }
 
   template<bool _TrivialValueTypes>
@@ -192,17 +238,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __do_uninit_fill(_ForwardIterator __first, _ForwardIterator __last,
 		     const _Tp& __x)
     {
-      _ForwardIterator __cur = __first;
-      __try
-	{
-	  for (; __cur != __last; ++__cur)
-	    std::_Construct(std::__addressof(*__cur), __x);
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__first, __cur);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator> __guard(__first);
+      for (; __first != __last; ++__first)
+	std::_Construct(std::__addressof(*__first), __x);
+      __guard.release();
     }
 
   template<bool _TrivialValueType>
@@ -260,18 +299,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _ForwardIterator
     __do_uninit_fill_n(_ForwardIterator __first, _Size __n, const _Tp& __x)
     {
-      _ForwardIterator __cur = __first;
-      __try
-	{
-	  for (; __n > 0; --__n, (void) ++__cur)
-	    std::_Construct(std::__addressof(*__cur), __x);
-	  return __cur;
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__first, __cur);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator> __guard(__first);
+      for (; __n > 0; --__n, (void) ++__first)
+	std::_Construct(std::__addressof(*__first), __x);
+      __guard.release();
+      return __first;
     }
 
   template<bool _TrivialValueType>
@@ -344,19 +376,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __uninitialized_copy_a(_InputIterator __first, _InputIterator __last,
 			   _ForwardIterator __result, _Allocator& __alloc)
     {
-      _ForwardIterator __cur = __result;
-      __try
-	{
-	  typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
-	  for (; __first != __last; ++__first, (void)++__cur)
-	    __traits::construct(__alloc, std::__addressof(*__cur), *__first);
-	  return __cur;
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__result, __cur, __alloc);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator, _Allocator>
+	__guard(__result, __alloc);
+
+      typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
+      for (; __first != __last; ++__first, (void)++__result)
+	__traits::construct(__alloc, std::__addressof(*__result), *__first);
+      __guard.release();
+      return __result;
     }
 
 #if _GLIBCXX_HOSTED
@@ -406,18 +433,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __uninitialized_fill_a(_ForwardIterator __first, _ForwardIterator __last,
 			   const _Tp& __x, _Allocator& __alloc)
     {
-      _ForwardIterator __cur = __first;
-      __try
-	{
-	  typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
-	  for (; __cur != __last; ++__cur)
-	    __traits::construct(__alloc, std::__addressof(*__cur), __x);
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__first, __cur, __alloc);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator, _Allocator>
+	__guard(__first, __alloc);
+
+      typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
+      for (; __first != __last; ++__first)
+	__traits::construct(__alloc, std::__addressof(*__first), __x);
+
+      __guard.release();
     }
 
 #if _GLIBCXX_HOSTED
@@ -442,19 +465,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __uninitialized_fill_n_a(_ForwardIterator __first, _Size __n,
 			     const _Tp& __x, _Allocator& __alloc)
     {
-      _ForwardIterator __cur = __first;
-      __try
-	{
-	  typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
-	  for (; __n > 0; --__n, (void) ++__cur)
-	    __traits::construct(__alloc, std::__addressof(*__cur), __x);
-	  return __cur;
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__first, __cur, __alloc);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator, _Allocator>
+	__guard(__first, __alloc);
+      typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
+      for (; __n > 0; --__n, (void) ++__first)
+	__traits::construct(__alloc, std::__addressof(*__first), __x);
+      __guard.release();
+      return __first;
     }
 
 #if _GLIBCXX_HOSTED
@@ -493,17 +510,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      _Allocator& __alloc)
     {
       _ForwardIterator __mid = std::__uninitialized_copy_a(__first1, __last1,
-							   __result,
-							   __alloc);
-      __try
-	{
-	  return std::__uninitialized_move_a(__first2, __last2, __mid, __alloc);
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__result, __mid, __alloc);
-	  __throw_exception_again;
-	}
+							   __result, __alloc);
+      _UninitDestroyGuard<_ForwardIterator, _Allocator> __guard(__result,
+								__alloc);
+      __result = __mid; // Everything up to __mid is now guarded.
+      __result = std::__uninitialized_move_a(__first2, __last2, __mid, __alloc);
+      __guard.release();
+      return __result;
     }
 
   // __uninitialized_move_copy
@@ -521,17 +534,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      _Allocator& __alloc)
     {
       _ForwardIterator __mid = std::__uninitialized_move_a(__first1, __last1,
-							   __result,
-							   __alloc);
-      __try
-	{
-	  return std::__uninitialized_copy_a(__first2, __last2, __mid, __alloc);
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__result, __mid, __alloc);
-	  __throw_exception_again;
-	}
+							   __result, __alloc);
+      _UninitDestroyGuard<_ForwardIterator, _Allocator> __guard(__result,
+								__alloc);
+      __result = __mid; // Everything up to __mid is now guarded.
+      __result = std::__uninitialized_copy_a(__first2, __last2, __mid, __alloc);
+      __guard.release();
     }
 
   // __uninitialized_fill_move
@@ -545,15 +553,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      _InputIterator __last, _Allocator& __alloc)
     {
       std::__uninitialized_fill_a(__result, __mid, __x, __alloc);
-      __try
-	{
-	  return std::__uninitialized_move_a(__first, __last, __mid, __alloc);
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__result, __mid, __alloc);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator, _Allocator> __guard(__result,
+								__alloc);
+      __result = __mid; // Everything up to __mid is now guarded.
+      __result = std::__uninitialized_move_a(__first, __last, __mid, __alloc);
+      __guard.release();
+      return __result;
     }
 
   // __uninitialized_move_fill
@@ -570,15 +575,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _ForwardIterator __mid2 = std::__uninitialized_move_a(__first1, __last1,
 							    __first2,
 							    __alloc);
-      __try
-	{
-	  std::__uninitialized_fill_a(__mid2, __last2, __x, __alloc);
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__first2, __mid2, __alloc);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator, _Allocator> __guard(__first2,
+								__alloc);
+      __first2 = __mid2; // Everything up to __mid2 is now guarded.
+      std::__uninitialized_fill_a(__mid2, __last2, __x, __alloc);
+      __guard.release();
     }
 
   /// @endcond
@@ -596,17 +597,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static void
         __uninit_default(_ForwardIterator __first, _ForwardIterator __last)
         {
-	  _ForwardIterator __cur = __first;
-	  __try
-	    {
-	      for (; __cur != __last; ++__cur)
-		std::_Construct(std::__addressof(*__cur));
-	    }
-	  __catch(...)
-	    {
-	      std::_Destroy(__first, __cur);
-	      __throw_exception_again;
-	    }
+	  _UninitDestroyGuard<_ForwardIterator> __guard(__first);
+	  for (; __first != __last; ++__first)
+	    std::_Construct(std::__addressof(*__first));
+	  __guard.release();
 	}
     };
 
@@ -636,18 +630,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         static _ForwardIterator
         __uninit_default_n(_ForwardIterator __first, _Size __n)
         {
-	  _ForwardIterator __cur = __first;
-	  __try
-	    {
-	      for (; __n > 0; --__n, (void) ++__cur)
-		std::_Construct(std::__addressof(*__cur));
-	      return __cur;
-	    }
-	  __catch(...)
-	    {
-	      std::_Destroy(__first, __cur);
-	      __throw_exception_again;
-	    }
+	  _UninitDestroyGuard<_ForwardIterator> __guard(__first);
+	  for (; __n > 0; --__n, (void) ++__first)
+	    std::_Construct(std::__addressof(*__first));
+	  __guard.release();
+	  return __first;
 	}
     };
 
@@ -722,18 +709,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      _ForwardIterator __last,
 			      _Allocator& __alloc)
     {
-      _ForwardIterator __cur = __first;
-      __try
-	{
-	  typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
-	  for (; __cur != __last; ++__cur)
-	    __traits::construct(__alloc, std::__addressof(*__cur));
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__first, __cur, __alloc);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator, _Allocator> __guard(__first,
+								__alloc);
+      typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
+      for (; __first != __last; ++__first)
+	__traits::construct(__alloc, std::__addressof(*__first));
+      __guard.release();
     }
 
 #if _GLIBCXX_HOSTED
@@ -753,19 +734,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __uninitialized_default_n_a(_ForwardIterator __first, _Size __n,
 				_Allocator& __alloc)
     {
-      _ForwardIterator __cur = __first;
-      __try
-	{
-	  typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
-	  for (; __n > 0; --__n, (void) ++__cur)
-	    __traits::construct(__alloc, std::__addressof(*__cur));
-	  return __cur;
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__first, __cur, __alloc);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator, _Allocator> __guard(__first,
+								__alloc);
+      typedef __gnu_cxx::__alloc_traits<_Allocator> __traits;
+      for (; __n > 0; --__n, (void) ++__first)
+	__traits::construct(__alloc, std::__addressof(*__first));
+      __guard.release();
+      return __first;
     }
 
 #if _GLIBCXX_HOSTED
@@ -787,17 +762,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__uninit_default_novalue(_ForwardIterator __first,
 				 _ForwardIterator __last)
 	{
-	  _ForwardIterator __cur = __first;
-	  __try
-	    {
-	      for (; __cur != __last; ++__cur)
-		std::_Construct_novalue(std::__addressof(*__cur));
-	    }
-	  __catch(...)
-	    {
-	      std::_Destroy(__first, __cur);
-	      __throw_exception_again;
-	    }
+	  _UninitDestroyGuard<_ForwardIterator> __guard(__first);
+	  for (; __first != __last; ++__first)
+	    std::_Construct_novalue(std::__addressof(*__first));
+	  __guard.release();
 	}
     };
 
@@ -818,18 +786,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static _ForwardIterator
 	__uninit_default_novalue_n(_ForwardIterator __first, _Size __n)
 	{
-	  _ForwardIterator __cur = __first;
-	  __try
-	    {
-	      for (; __n > 0; --__n, (void) ++__cur)
-		std::_Construct_novalue(std::__addressof(*__cur));
-	      return __cur;
-	    }
-	  __catch(...)
-	    {
-	      std::_Destroy(__first, __cur);
-	      __throw_exception_again;
-	    }
+	  _UninitDestroyGuard<_ForwardIterator> __guard(__first);
+	  for (; __n > 0; --__n, (void) ++__first)
+	    std::_Construct_novalue(std::__addressof(*__first));
+	  __guard.release();
+	  return __first;
 	}
     };
 
@@ -877,18 +838,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __uninitialized_copy_n(_InputIterator __first, _Size __n,
 			   _ForwardIterator __result, input_iterator_tag)
     {
-      _ForwardIterator __cur = __result;
-      __try
-	{
-	  for (; __n > 0; --__n, (void) ++__first, ++__cur)
-	    std::_Construct(std::__addressof(*__cur), *__first);
-	  return __cur;
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__result, __cur);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator> __guard(__result);
+      for (; __n > 0; --__n, (void) ++__first, ++__result)
+	std::_Construct(std::__addressof(*__result), *__first);
+      __guard.release();
+      return __result;
     }
 
   template<typename _RandomAccessIterator, typename _Size,
@@ -903,20 +857,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _ForwardIterator>
     pair<_InputIterator, _ForwardIterator>
     __uninitialized_copy_n_pair(_InputIterator __first, _Size __n,
-			   _ForwardIterator __result, input_iterator_tag)
+				_ForwardIterator __result, input_iterator_tag)
     {
-      _ForwardIterator __cur = __result;
-      __try
-	{
-	  for (; __n > 0; --__n, (void) ++__first, ++__cur)
-	    std::_Construct(std::__addressof(*__cur), *__first);
-	  return {__first, __cur};
-	}
-      __catch(...)
-	{
-	  std::_Destroy(__result, __cur);
-	  __throw_exception_again;
-	}
+      _UninitDestroyGuard<_ForwardIterator> __guard(__result);
+      for (; __n > 0; --__n, (void) ++__first, ++__result)
+	std::_Construct(std::__addressof(*__result), *__first);
+      __guard.release();
+      return {__first, __result};
     }
 
   template<typename _RandomAccessIterator, typename _Size,
