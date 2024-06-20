@@ -154,7 +154,7 @@ namespace __gnu_test
       tracker_allocator()
       { }
 
-      tracker_allocator(const tracker_allocator&)
+      tracker_allocator(const tracker_allocator& a) : Alloc(a)
       { }
 
       ~tracker_allocator()
