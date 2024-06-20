@@ -96,11 +96,6 @@ const mstring dtio_procs[] =
     minit ("_dtio_unformatted_write", DTIO_WUF),
 };
 
-/* This is to make sure the backend generates setup code in the correct
-   order.  */
-
-static int next_dummy_order = 1;
-
 
 gfc_namespace *gfc_current_ns;
 gfc_namespace *gfc_global_ns_list;
@@ -941,15 +936,10 @@ conflict:
 void
 gfc_set_sym_referenced (gfc_symbol *sym)
 {
-
   if (sym->attr.referenced)
     return;
 
   sym->attr.referenced = 1;
-
-  /* Remember which order dummy variables are accessed in.  */
-  if (sym->attr.dummy)
-    sym->dummy_order = next_dummy_order++;
 }
 
 
