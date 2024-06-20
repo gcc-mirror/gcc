@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "attr-fnspec.h"
 #include "tree-iterator.h"
+#include "dependency.h"
 
 #define MAX_LABEL_VALUE 99999
 
@@ -832,6 +833,19 @@ gfc_allocate_lang_decl (tree decl)
     DECL_LANG_SPECIFIC (decl) = ggc_cleared_alloc<struct lang_decl> ();
 }
 
+
+/* Determine order of two symbol declarations.  */
+
+static bool
+decl_order (gfc_symbol *sym1, gfc_symbol *sym2)
+{
+  if (sym1->declared_at.lb->location > sym2->declared_at.lb->location)
+    return true;
+  else
+    return false;
+}
+
+
 /* Remember a symbol to generate initialization/cleanup code at function
    entry/exit.  */
 
@@ -849,18 +863,34 @@ gfc_defer_symbol_init (gfc_symbol * sym)
   last = head = sym->ns->proc_name;
   p = last->tlink;
 
+  gfc_function_dependency (sym, head);
+
   /* Make sure that setup code for dummy variables which are used in the
      setup of other variables is generated first.  */
   if (sym->attr.dummy)
     {
       /* Find the first dummy arg seen after us, or the first non-dummy arg.
-         This is a circular list, so don't go past the head.  */
+	 This is a circular list, so don't go past the head.  */
       while (p != head
-             && (!p->attr.dummy || p->dummy_order > sym->dummy_order))
-        {
-          last = p;
-          p = p->tlink;
-        }
+	     && (!p->attr.dummy || decl_order (p, sym)))
+	{
+	  last = p;
+	  p = p->tlink;
+	}
+    }
+  else if (sym->fn_result_dep)
+    {
+      /* In the case of non-dummy symbols with dependencies on an old-fashioned
+     function result (ie. proc_name = proc_name->result), make sure that the
+     order in the tlink chain is such that the code appears in declaration
+     order. This ensures that mutual dependencies between these symbols are
+     respected.  */
+      while (p != head
+	     && (!p->attr.result || decl_order (sym, p)))
+	{
+	  last = p;
+	  p = p->tlink;
+	}
     }
   /* Insert in between last and p.  */
   last->tlink = sym;
@@ -4176,11 +4206,18 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, gfc_wrapped_block * block)
   stmtblock_t init;
   tree decl;
   tree tmp;
+  bool back;
 
   gcc_assert (sym->backend_decl);
   gcc_assert (sym->ts.u.cl && sym->ts.u.cl->length);
 
   gfc_init_block (&init);
+
+  /* In the case of non-dummy symbols with dependencies on an old-fashioned
+     function result (ie. proc_name = proc_name->result), gfc_add_init_cleanup
+     must be called with the last, optional argument false so that the process
+     ing of the character length occurs after the processing of the result.  */
+  back = sym->fn_result_dep;
 
   /* Evaluate the string length expression.  */
   gfc_conv_string_length (sym->ts.u.cl, NULL, &init);
@@ -4194,7 +4231,7 @@ gfc_trans_auto_character_variable (gfc_symbol * sym, gfc_wrapped_block * block)
   tmp = fold_build1_loc (input_location, DECL_EXPR, TREE_TYPE (decl), decl);
   gfc_add_expr_to_block (&init, tmp);
 
-  gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE);
+  gfc_add_init_cleanup (block, gfc_finish_block (&init), NULL_TREE, back);
 }
 
 /* Set the initial value of ASSIGN statement auxiliary variable explicitly.  */
