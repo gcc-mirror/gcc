@@ -281,6 +281,7 @@ init_dont_simulate_again (void)
 
 	      case NEGATE_EXPR:
 	      case CONJ_EXPR:
+	      case PAREN_EXPR:
 		if (TREE_CODE (TREE_TYPE (op0)) == COMPLEX_TYPE)
 		  saw_a_complex_op = true;
 		break;
@@ -391,6 +392,7 @@ complex_propagate::visit_stmt (gimple *stmt, edge *taken_edge_p ATTRIBUTE_UNUSED
       break;
 
     case NEGATE_EXPR:
+    case PAREN_EXPR:
     case CONJ_EXPR:
       new_l = find_lattice_value (gimple_assign_rhs1 (stmt));
       break;
@@ -852,8 +854,7 @@ expand_complex_move (gimple_stmt_iterator *gsi, tree type)
 	  update_complex_components_on_edge (e, lhs, r, i);
 	}
       else if (is_gimple_call (stmt)
-	       || gimple_has_side_effects (stmt)
-	       || gimple_assign_rhs_code (stmt) == PAREN_EXPR)
+	       || gimple_has_side_effects (stmt))
 	{
 	  r = build1 (REALPART_EXPR, inner_type, lhs);
 	  i = build1 (IMAGPART_EXPR, inner_type, lhs);
@@ -1545,6 +1546,25 @@ expand_complex_negation (gimple_stmt_iterator *gsi, tree inner_type,
   update_complex_assignment (gsi, rr, ri);
 }
 
+/* Expand complex paren to scalars:
+	((a)) = ((ar)) + i((ai))
+*/
+
+static void
+expand_complex_paren (gimple_stmt_iterator *gsi, tree inner_type,
+		      tree ar, tree ai)
+{
+  tree rr, ri;
+  gimple_seq stmts = NULL;
+  location_t loc = gimple_location (gsi_stmt (*gsi));
+
+  rr = gimple_build (&stmts, loc, PAREN_EXPR, inner_type, ar);
+  ri = gimple_build (&stmts, loc, PAREN_EXPR, inner_type, ai);
+
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  update_complex_assignment (gsi, rr, ri);
+}
+
 /* Expand complex conjugate to scalars:
 	~a = (ar) + i(-ai)
 */
@@ -1697,6 +1717,7 @@ expand_complex_operations_1 (gimple_stmt_iterator *gsi)
     case ROUND_DIV_EXPR:
     case RDIV_EXPR:
     case NEGATE_EXPR:
+    case PAREN_EXPR:
     case CONJ_EXPR:
       if (TREE_CODE (type) != COMPLEX_TYPE)
 	return;
@@ -1813,6 +1834,10 @@ expand_complex_operations_1 (gimple_stmt_iterator *gsi)
     case EQ_EXPR:
     case NE_EXPR:
       expand_complex_comparison (gsi, ar, ai, br, bi, code);
+      break;
+
+    case PAREN_EXPR:
+      expand_complex_paren (gsi, inner_type, ar, ai);
       break;
 
     default:
