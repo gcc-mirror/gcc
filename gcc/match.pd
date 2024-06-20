@@ -5927,6 +5927,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (VECTOR_INTEGER_TYPE_P (type)
        && target_supports_op_p (type, MINMAX, optab_vector))
     (minmax @0 @1))))
+
+/* Try to optimize x < 0 ? -1 : 0 into (signed) x >> 31
+   and x < 0 ? 1 : 0 into (unsigned) x >> 31.  */
+(simplify
+  (vec_cond (lt @0 integer_zerop) integer_all_onesp integer_zerop)
+   (if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && tree_nop_conversion_p (type, TREE_TYPE (@0))
+       && target_supports_op_p (TREE_TYPE (@0), RSHIFT_EXPR, optab_scalar))
+    (with
+      {
+       unsigned int prec = element_precision (TREE_TYPE (@0));
+      }
+    (view_convert
+      (rshift @0 { build_int_cst (integer_type_node, prec - 1);})))))
+
+(simplify
+  (vec_cond (lt @0 integer_zerop) integer_onep integer_zerop)
+   (if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && tree_nop_conversion_p (type, TREE_TYPE (@0)))
+    (with
+     {
+       unsigned int prec = element_precision (TREE_TYPE (@0));
+       tree utype = unsigned_type_for (TREE_TYPE (@0));
+     }
+     (if (target_supports_op_p (utype, RSHIFT_EXPR, optab_scalar))
+      (view_convert
+	(rshift (view_convert:utype @0)
+		{ build_int_cst (integer_type_node, prec - 1);}))))))
 #endif
 
 (for cnd (cond vec_cond)
