@@ -20,9 +20,16 @@
 
 #include <chrono>
 
+// std::chrono::tzdb is not defined for the old std::string ABI.
+#if _GLIBCXX_USE_CXX_ABI
+# define EXPECTED_VALUE 201907L
+#else
+# define EXPECTED_VALUE 201611L
+#endif
+
 #ifndef __cpp_lib_chrono
 # error "Feature test macro for chrono is missing in <chrono>"
-#elif __cpp_lib_chrono < 201907L
+#elif __cpp_lib_chrono < EXPECTED_VALUE
 # error "Feature test macro for chrono has wrong value in <chrono>"
 #endif
 
@@ -94,7 +101,7 @@ namespace __gnu_test
   using std::chrono::make12;
   using std::chrono::make24;
 
-#if _GLIBCXX_USE_CXX11_ABI
+#if __cpp_lib_chrono >= 201803L
   using std::chrono::tzdb;
   using std::chrono::tzdb_list;
   using std::chrono::get_tzdb;
