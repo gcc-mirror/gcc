@@ -16923,6 +16923,17 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn_and_split "*ashr<mode>3_1"
+  [(set (match_operand:VI24_AVX2 0 "register_operand")
+	(lt:VI24_AVX2
+	  (match_operand:VI24_AVX2 1 "register_operand")
+	  (match_operand:VI24_AVX2 2 "const0_operand")))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (ashiftrt:VI24_AVX2 (match_dup 1) (match_dup 3)))]
+  "operands[3] = gen_int_mode (<ssescalarsize> - 1, DImode);")
+
 (define_insn "<mask_codefor>ashr<mode>3<mask_name>"
   [(set (match_operand:VI248_AVX512BW_AVX512VL 0 "register_operand" "=v,v")
 	(ashiftrt:VI248_AVX512BW_AVX512VL
@@ -16936,6 +16947,23 @@
        (const_string "1")
        (const_string "0")))
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn_and_split "*avx512_ashr<mode>3_1"
+ [(set (match_operand:VI248_AVX512VLBW  0 "register_operand")
+	(vec_merge:VI248_AVX512VLBW
+	  (match_operand:VI248_AVX512VLBW 1 "vector_all_ones_operand")
+	  (match_operand:VI248_AVX512VLBW 2 "const0_operand")
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:VI248_AVX512VLBW 3 "nonimmediate_operand")
+	     (match_operand:VI248_AVX512VLBW 4 "const0_operand")
+	     (const_int 1)]
+	     UNSPEC_PCMP)))]
+  "TARGET_AVX512F && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(ashiftrt:VI248_AVX512VLBW (match_dup 3) (match_dup 5)))]
+  "operands[5] = gen_int_mode (<ssescalarsize> - 1, DImode);")
 
 (define_expand "ashr<mode>3"
   [(set (match_operand:VI248_AVX512BW 0 "register_operand")
@@ -17090,6 +17118,61 @@
    (set_attr "prefix_data16" "1,*")
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn_and_split "*avx2_lshr<mode>3_1"
+  [(set (match_operand:VI8_AVX2 0 "register_operand")
+  	(and:VI8_AVX2
+	  (gt:VI8_AVX2
+	    (match_operand:VI8_AVX2 1 "register_operand")
+	    (match_operand:VI8_AVX2 2 "register_operand"))
+	  (match_operand:VI8_AVX2 3 "const1_operand")))]
+  "TARGET_SSE4_2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 5) (gt:VI8_AVX2 (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (lshiftrt:VI8_AVX2 (match_dup 5) (match_dup 4)))]
+{
+  operands[4] = gen_int_mode (<ssescalarsize> - 1, DImode);
+  operands[5] = gen_reg_rtx (<MODE>mode);
+})
+
+(define_insn_and_split "*avx2_lshr<mode>3_2"
+  [(set (match_operand:VI8_AVX2 0 "register_operand")
+  	(and:VI8_AVX2
+	  (lt:VI8_AVX2
+	    (match_operand:VI8_AVX2 1 "register_operand")
+	    (match_operand:VI8_AVX2 2 "const0_operand"))
+	  (match_operand:VI8_AVX2 3 "const1_operand")))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (lshiftrt:VI8_AVX2 (match_dup 1) (const_int 63)))])
+
+(define_split
+  [(set (match_operand:VI248_AVX2 0 "register_operand")
+  	(and:VI248_AVX2
+	  (lt:VI248_AVX2
+	    (match_operand:VI248_AVX2 1 "register_operand")
+	    (match_operand:VI248_AVX2 2 "const0_operand"))
+	  (match_operand:VI248_AVX2 3 "const1_operand")))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  [(set (match_dup 0) (lshiftrt:VI248_AVX2 (match_dup 1) (match_dup 4)))]
+  "operands[4] = gen_int_mode (<ssescalarsize> - 1, DImode);")
+
+(define_split
+ [(set (match_operand:VI248_AVX512VLBW  0 "register_operand")
+	(vec_merge:VI248_AVX512VLBW
+	  (match_operand:VI248_AVX512VLBW 1 "const1_operand")
+	  (match_operand:VI248_AVX512VLBW 2 "const0_operand")
+	  (unspec:<avx512fmaskmode>
+	    [(match_operand:VI248_AVX512VLBW 3 "nonimmediate_operand")
+	     (match_operand:VI248_AVX512VLBW 4 "const0_operand")
+	     (const_int 1)]
+	     UNSPEC_PCMP)))]
+  "TARGET_AVX512F && ix86_pre_reload_split ()"
+  [(set (match_dup 0)
+	(lshiftrt:VI248_AVX512VLBW (match_dup 3) (match_dup 5)))]
+  "operands[5] = gen_int_mode (<ssescalarsize> - 1, DImode);")
 
 (define_insn "<insn><mode>3<mask_name>"
   [(set (match_operand:VI248_AVX512BW 0 "register_operand" "=v,v")

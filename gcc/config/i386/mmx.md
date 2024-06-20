@@ -147,6 +147,14 @@
    (V4HI "hi") (V2HI "hi")
    (V8QI "qi")])
 
+(define_mode_attr mmxscalarsize
+  [(V1DI "64")
+   (V2SI "32") (V2SF "32")
+   (V4HF "16") (V4BF "16")
+   (V2HF "16") (V2BF "16")
+   (V4HI "16") (V2HI "16")
+   (V8QI "8")])
+
 (define_mode_attr Yv_Yw
   [(V8QI "Yw") (V4HI "Yw") (V2SI "Yv") (V1DI "Yv") (V2SF "Yv")])
 
@@ -3620,6 +3628,17 @@
        (const_string "0")))
    (set_attr "mode" "DI,TI,TI")])
 
+(define_insn_and_split "*mmx_ashr<mode>3_1"
+  [(set (match_operand:MMXMODE24 0 "register_operand")
+	(lt:MMXMODE24
+	  (match_operand:MMXMODE24 1 "register_operand")
+	  (match_operand:MMXMODE24 2 "const0_operand")))]
+  "TARGET_MMX_WITH_SSE && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (ashiftrt:MMXMODE24 (match_dup 1) (match_dup 3)))]
+  "operands[3] = gen_int_mode (<mmxscalarsize> - 1, DImode);")
+
 (define_expand "ashr<mode>3"
   [(set (match_operand:MMXMODE24 0 "register_operand")
         (ashiftrt:MMXMODE24
@@ -3645,6 +3664,17 @@
        (const_string "1")
        (const_string "0")))
    (set_attr "mode" "DI,TI,TI")])
+
+(define_split
+  [(set (match_operand:MMXMODE248 0 "register_operand")
+  	(and:MMXMODE248
+	  (lt:MMXMODE248
+	    (match_operand:MMXMODE248 1 "register_operand")
+	    (match_operand:MMXMODE248 2 "const0_operand"))
+	  (match_operand:MMXMODE248 3 "const1_operand")))]
+  "TARGET_MMX_WITH_SSE && ix86_pre_reload_split ()"
+  [(set (match_dup 0) (lshiftrt:MMXMODE248 (match_dup 1) (match_dup 4)))]
+  "operands[4] = gen_int_mode (<mmxscalarsize> - 1, DImode);")
 
 (define_expand "<insn><mode>3"
   [(set (match_operand:MMXMODE24 0 "register_operand")
@@ -3686,6 +3716,28 @@
        (const_string "1")
        (const_string "0")))
    (set_attr "mode" "TI")])
+
+(define_insn_and_split "*mmx_ashrv2hi3_1"
+  [(set (match_operand:V2HI 0 "register_operand")
+	(lt:V2HI
+	  (match_operand:V2HI 1 "register_operand")
+	  (match_operand:V2HI 2 "const0_operand")))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (ashiftrt:V2HI (match_dup 1) (match_dup 3)))]
+  "operands[3] = gen_int_mode (15, DImode);")
+
+(define_split
+  [(set (match_operand:V2HI 0 "register_operand")
+  	(and:V2HI
+	  (lt:V2HI
+	    (match_operand:V2HI 1 "register_operand")
+	    (match_operand:V2HI 2 "const0_operand"))
+	  (match_operand:V2HI 3 "const1_operand")))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  [(set (match_dup 0) (lshiftrt:V2HI (match_dup 1) (match_dup 4)))]
+  "operands[4] = gen_int_mode (15, DImode);")
 
 (define_expand "<insn>v8qi3"
   [(set (match_operand:V8QI 0 "register_operand")

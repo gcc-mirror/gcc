@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fno-common -msse2" } */
+/* { dg-options "-O2 -ftree-vectorize -fno-common -msse4.1" } */
 
 unsigned short b[1024] = { 0 };
 int a[1024] = { 0 };
