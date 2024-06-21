@@ -1,3 +1,31 @@
+2024-06-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2024-06-10  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.cc (expand_perm_as_replicate): Handle memory
+	operands.
+	* config/s390/vx-builtins.md (vec_splats<mode>): Turn into parameterized expander.
+	(@vec_splats<mode>): New expander.
+
+2024-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115544
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Disable optimizing
+	loads used by COMPLEX_EXPR operands.
+
+2024-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/115440
+	* opts-common.cc (add_misspelling_candidates): If opt1 is non-NULL,
+	add a space and opt1 to the alternative suggestion text.
+
 2024-06-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	Backported from master:

@@ -1,3 +1,41 @@
+2024-06-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2024-06-17  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* g++.dg/torture/vshuf-mem.C: Use -march=z14 only, if the we are
+	on a machine which can actually run it.
+
+2024-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/torture/vshuf-mem.C: Add -Wno-psabi to dg-options.
+
+2024-06-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2024-06-10  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* g++.dg/torture/vshuf-mem.C: New test.
+
+2024-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/115544
+	* gcc.dg/bitint-107.c: New test.
+
+2024-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/115440
+	* g++.dg/cpp1z/pr115440.C: New test.
+
 2024-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

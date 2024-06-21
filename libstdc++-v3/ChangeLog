@@ -1,3 +1,16 @@
+2024-06-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2024-06-20  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/115454
+	* include/experimental/bits/simd_x86.h (_S_not_equal_to): Use
+	neq comparison instead of bitwise negation after eq.
+	(_S_find_last_set): Clear unused high bits before computing
+	bit_width.
+	* testsuite/experimental/simd/pr115454_find_last_set.cc: New
+	test.
+
 2024-06-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
