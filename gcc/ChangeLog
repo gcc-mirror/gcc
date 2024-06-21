@@ -1,3 +1,59 @@
+2024-06-20  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_ternlog_idx): Allow any SUBREG
+	that matches register_operand.  Use rtx_equal_p to compare REG
+	or SUBREG "leaf" operands.
+
+2024-06-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (<bit_optab><mode>): New unified
+	pattern for bset/binv using a code iterator.
+	(<bit_optab>i<mode>): Likewise.
+	(<bit_optab><mode>_mask): Likewise.  Support XOR via any_or.
+	(<bit_optab>isidi): Likewise.
+	* config/riscv/iterators.md (bit_optab): New iterator.
+
+2024-06-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Use TARGET_*_P (opts->x_ix86_isa_flags*) instead of TARGET_*
+	for UINTR, LAM and APX_F.
+
+2024-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114413
+	* tree-vect-slp.cc (release_scalar_stmts_to_slp_tree_map):
+	New function, split out from ...
+	(vect_analyze_slp): ... here.  Call it.
+	(vect_cse_slp_nodes): New function.
+	(vect_optimize_slp): Call it.
+
+2024-06-20  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-loop.cc (vect_transform_reduction): Change assertion to
+	cover all lane-reducing ops.
+
+2024-06-20  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-loop.cc (vect_transform_reduction): Replace vec_oprnds0/1/2
+	with one new array variable vec_oprnds[3].
+
+2024-06-20  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Remove v_reduc_type, and
+	replace it to another local variable reduction_type.
+
+2024-06-20  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Remove the duplicated
+	check.
+
+2024-06-20  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vectorizer.h (lane_reducing_stmt_p): New function.
+	* tree-vect-slp.cc (vect_analyze_slp): Use new function
+	lane_reducing_stmt_p to check statement.
+
 2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
 
 	Revert:

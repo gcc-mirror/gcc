@@ -1,3 +1,10 @@
+2024-06-20  Collin Funk  <collin.funk1@gmail.com>
+
+	PR bootstrap/115453
+	* configure.ac: Quote variable result of AC_SEARCH_LIBS.  Fix
+	typo ac_cv_search_pthread_crate.
+	* configure: Regenerate.
+
 2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
 
 	Revert:

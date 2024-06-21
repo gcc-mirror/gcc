@@ -1,3 +1,19 @@
+2024-06-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ccmp-2.c: Remove -mno-apxf in option.
+	* gcc.target/i386/funcspec-56.inc: Drop uintr tests.
+	* gcc.target/i386/funcspec-6.c: Add uintr tests.
+
+2024-06-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59104
+	* gfortran.dg/dependent_decls_2.f90: New test.
+
+2024-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114413
+	* gcc.dg/vect/bb-slp-32.c: Expect CSE and vectorization on x86.
+
 2024-06-19  demin.han  <demin.han@starfivetech.com>
 
 	* gcc.target/riscv/rvv/base/float-point-cmp-eqne.c: New test.
