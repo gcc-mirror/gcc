@@ -1420,9 +1420,9 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 		{
 		  *may_tailcall = false;
 		  maybe_complain_about_tail_call (exp,
-						  "a callee-copied argument is"
-						  " stored in the current"
-						  " function's frame");
+						  _("a callee-copied argument is"
+						    " stored in the current"
+						    " function's frame"));
 		}
 
 	      args[i].tree_value = build_fold_addr_expr_loc (loc,
@@ -1489,8 +1489,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	      type = TREE_TYPE (args[i].tree_value);
 	      *may_tailcall = false;
 	      maybe_complain_about_tail_call (exp,
-					      "argument must be passed"
-					      " by copying");
+					      _("argument must be passed"
+						" by copying"));
 	    }
 	  arg.pass_by_reference = true;
 	}
@@ -2508,8 +2508,8 @@ can_implement_as_sibling_call_p (tree exp,
     {
       maybe_complain_about_tail_call
 	(exp,
-	 "machine description does not have"
-	 " a sibcall_epilogue instruction pattern");
+	 _("machine description does not have"
+	   " a sibcall_epilogue instruction pattern"));
       return false;
     }
 
@@ -2519,7 +2519,7 @@ can_implement_as_sibling_call_p (tree exp,
      sibling calls will return a structure.  */
   if (structure_value_addr != NULL_RTX)
     {
-      maybe_complain_about_tail_call (exp, "callee returns a structure");
+      maybe_complain_about_tail_call (exp, _("callee returns a structure"));
       return false;
     }
 
@@ -2528,8 +2528,8 @@ can_implement_as_sibling_call_p (tree exp,
   if (!targetm.function_ok_for_sibcall (fndecl, exp))
     {
       maybe_complain_about_tail_call (exp,
-				      "target is not able to optimize the"
-				      " call into a sibling call");
+				      _("target is not able to optimize the"
+					" call into a sibling call"));
       return false;
     }
 
@@ -2537,18 +2537,18 @@ can_implement_as_sibling_call_p (tree exp,
      optimized.  */
   if (flags & ECF_RETURNS_TWICE)
     {
-      maybe_complain_about_tail_call (exp, "callee returns twice");
+      maybe_complain_about_tail_call (exp, _("callee returns twice"));
       return false;
     }
   if (flags & ECF_NORETURN)
     {
-      maybe_complain_about_tail_call (exp, "callee does not return");
+      maybe_complain_about_tail_call (exp, _("callee does not return"));
       return false;
     }
 
   if (TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (addr))))
     {
-      maybe_complain_about_tail_call (exp, "volatile function type");
+      maybe_complain_about_tail_call (exp, _("volatile function type"));
       return false;
     }
 
@@ -2567,7 +2567,7 @@ can_implement_as_sibling_call_p (tree exp,
      the argument areas are shared.  */
   if (fndecl && decl_function_context (fndecl) == current_function_decl)
     {
-      maybe_complain_about_tail_call (exp, "nested function");
+      maybe_complain_about_tail_call (exp, _("nested function"));
       return false;
     }
 
@@ -2579,8 +2579,8 @@ can_implement_as_sibling_call_p (tree exp,
 		crtl->args.size - crtl->args.pretend_args_size))
     {
       maybe_complain_about_tail_call (exp,
-				      "callee required more stack slots"
-				      " than the caller");
+				      _("callee required more stack slots"
+					" than the caller"));
       return false;
     }
 
@@ -2594,15 +2594,15 @@ can_implement_as_sibling_call_p (tree exp,
 						crtl->args.size)))
     {
       maybe_complain_about_tail_call (exp,
-				      "inconsistent number of"
-				      " popped arguments");
+				      _("inconsistent number of"
+					" popped arguments"));
       return false;
     }
 
   if (!lang_hooks.decls.ok_for_sibcall (fndecl))
     {
-      maybe_complain_about_tail_call (exp, "frontend does not support"
-					    " sibling call");
+      maybe_complain_about_tail_call (exp, _("frontend does not support"
+					     " sibling call"));
       return false;
     }
 
@@ -2657,7 +2657,7 @@ expand_call (tree exp, rtx target, int ignore)
      so this shouldn't really happen unless the
      the musttail pass gave up walking before finding the call.  */
   if (!try_tail_call)
-      maybe_complain_about_tail_call (exp, "other reasons");
+      maybe_complain_about_tail_call (exp, _("other reasons"));
   int pass;
 
   /* Register in which non-BLKmode value will be returned,
@@ -3031,7 +3031,7 @@ expand_call (tree exp, rtx target, int ignore)
      there's cleanups, as we know there's code to follow the call.  */
   if (currently_expanding_call++ != 0)
     {
-      maybe_complain_about_tail_call (exp, "inside another call");
+      maybe_complain_about_tail_call (exp, _("inside another call"));
       try_tail_call = 0;
     }
   if (!flag_optimize_sibling_calls
@@ -3040,7 +3040,7 @@ expand_call (tree exp, rtx target, int ignore)
     try_tail_call = 0;
   if (args_size.var)
     {
-      maybe_complain_about_tail_call (exp, "variable size arguments");
+      maybe_complain_about_tail_call (exp, _("variable size arguments"));
       try_tail_call = 0;
     }
   if (dbg_cnt (tail_call) == false)
@@ -3065,7 +3065,7 @@ expand_call (tree exp, rtx target, int ignore)
 	      {
 		try_tail_call = 0;
 		maybe_complain_about_tail_call (exp,
-				"hidden string length argument passed on stack");
+				_("hidden string length argument passed on stack"));
 		break;
 	      }
 	}
@@ -3113,9 +3113,9 @@ expand_call (tree exp, rtx target, int ignore)
 	{
 	  try_tail_call = 0;
 	  maybe_complain_about_tail_call (exp,
-					  "caller and callee disagree in"
-					  " promotion of function"
-					  " return value");
+					  _("caller and callee disagree in"
+					    " promotion of function"
+					    " return value"));
 	}
     }
 
@@ -4025,7 +4025,7 @@ expand_call (tree exp, rtx target, int ignore)
       if (try_tail_call)
 	/* Ideally we'd emit a message for all of the ways that it could
 	   have failed.  */
-	maybe_complain_about_tail_call (exp, "tail call production failed");
+	maybe_complain_about_tail_call (exp, _("tail call production failed"));
     }
 
   currently_expanding_call--;
