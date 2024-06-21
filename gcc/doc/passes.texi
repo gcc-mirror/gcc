@@ -450,18 +450,6 @@ The following briefly describes the Tree optimization passes that are
 run after gimplification and what source files they are located in.
 
 @itemize @bullet
-@item Remove useless statements
-
-This pass is an extremely simple sweep across the gimple code in which
-we identify obviously dead code and remove it.  Here we do things like
-simplify @code{if} statements with constant conditions, remove
-exception handling constructs surrounding code that obviously cannot
-throw, remove lexical bindings that contain no variables, and other
-assorted simplistic cleanups.  The idea is to get rid of the obvious
-stuff quickly rather than wait until later when it's more work to get
-rid of it.  This pass is located in @file{tree-cfg.cc} and described by
-@code{pass_remove_useless_stmts}.
-
 @item OpenMP lowering
 
 If OpenMP generation (@option{-fopenmp}) is enabled, this pass lowers
@@ -511,15 +499,6 @@ This pass decomposes a function into basic blocks and creates all of
 the edges that connect them.  It is located in @file{tree-cfg.cc} and
 is described by @code{pass_build_cfg}.
 
-@item Find all referenced variables
-
-This pass walks the entire function and collects an array of all
-variables referenced in the function, @code{referenced_vars}.  The
-index at which a variable is found in the array is used as a UID
-for the variable within this function.  This data is needed by the
-SSA rewriting routines.  The pass is located in @file{tree-dfa.cc}
-and is described by @code{pass_referenced_vars}.
-
 @item Enter static single assignment form
 
 This pass rewrites the function such that it is in SSA form.  After
@@ -527,7 +506,7 @@ this pass, all @code{is_gimple_reg} variables will be referenced by
 @code{SSA_NAME}, and all occurrences of other variables will be
 annotated with @code{VDEFS} and @code{VUSES}; PHI nodes will have
 been inserted as necessary for each basic block.  This pass is
-located in @file{tree-ssa.cc} and is described by @code{pass_build_ssa}.
+located in @file{tree-into-ssa.cc} and is described by @code{pass_build_ssa}.
 
 @item Warn for uninitialized variables
 
@@ -536,7 +515,7 @@ are fed by default definition.  For non-parameter variables, such
 uses are uninitialized.  The pass is run twice, before and after
 optimization (if turned on).  In the first pass we only warn for uses that are
 positively uninitialized; in the second pass we warn for uses that
-are possibly uninitialized.  The pass is located in @file{tree-ssa.cc}
+are possibly uninitialized.  The pass is located in @file{tree-ssa-uninit.cc}
 and is defined by @code{pass_early_warn_uninitialized} and
 @code{pass_late_warn_uninitialized}.
 
@@ -562,15 +541,6 @@ variables that are used once into the expression that uses them and
 seeing if the result can be simplified.  It is located in
 @file{tree-ssa-forwprop.cc} and is described by @code{pass_forwprop}.
 
-@item Copy Renaming
-
-This pass attempts to change the name of compiler temporaries involved in
-copy operations such that SSA->normal can coalesce the copy away.  When compiler
-temporaries are copies of user variables, it also renames the compiler
-temporary to the user variable resulting in better use of user symbols.  It is
-located in @file{tree-ssa-copyrename.c} and is described by
-@code{pass_copyrename}.
-
 @item PHI node optimizations
 
 This pass recognizes forms of PHI inputs that can be represented as
@@ -586,10 +556,9 @@ is used to promote variables from in-memory addressable objects to
 non-aliased variables that can be renamed into SSA form.  We also
 update the @code{VDEF}/@code{VUSE} memory tags for non-renameable
 aggregates so that we get fewer false kills.  The pass is located
-in @file{tree-ssa-alias.cc} and is described by @code{pass_may_alias}.
+in @file{tree-ssa-structalias.cc} and is described by @code{pass_may_alias}.
 
-Interprocedural points-to information is located in
-@file{tree-ssa-structalias.cc} and described by @code{pass_ipa_pta}.
+Interprocedural points-to information is described by @code{pass_ipa_pta}.
 
 @item Profiling
 
@@ -644,8 +613,9 @@ This pass eliminates partially redundant computations, as well as
 performing load motion.  The pass is located in @file{tree-ssa-pre.cc}
 and is described by @code{pass_pre}.
 
-Just before partial redundancy elimination, if
-@option{-funsafe-math-optimizations} is on, GCC tries to convert
+@item CSE of reciprocals
+
+If @option{-funsafe-math-optimizations} is on, GCC tries to convert
 divisions to multiplications by the reciprocal.  The pass is located
 in @file{tree-ssa-math-opts.cc} and is described by
 @code{pass_cse_reciprocal}.
@@ -744,20 +714,12 @@ that must be constant even in the presence of conditional branches.
 The pass is located in @file{tree-ssa-ccp.cc} and is described
 by @code{pass_ccp}.
 
-A related pass that works on memory loads and stores, and not just
-register values, is located in @file{tree-ssa-ccp.cc} and described by
-@code{pass_store_ccp}.
-
 @item Conditional copy propagation
 
 This is similar to constant propagation but the lattice of values is
 the ``copy-of'' relation.  It eliminates redundant copies from the
 code.  The pass is located in @file{tree-ssa-copy.cc} and described by
 @code{pass_copy_prop}.
-
-A related pass that works on memory copies, and not just register
-copies, is located in @file{tree-ssa-copy.cc} and described by
-@code{pass_store_copy_prop}.
 
 @item Value range propagation
 
@@ -811,14 +773,6 @@ run last so that we have as much time as possible to prove that the
 statement is not reachable.  It is located in @file{tree-cfg.cc} and
 is described by @code{pass_warn_function_return}.
 
-@item Leave static single assignment form
-
-This pass rewrites the function such that it is in normal form.  At
-the same time, we eliminate as many single-use temporaries as possible,
-so the intermediate language is no longer GIMPLE, but GENERIC@.  The
-pass is located in @file{tree-outof-ssa.cc} and is described by
-@code{pass_del_ssa}.
-
 @item Merge PHI nodes that feed into one another
 
 This is part of the CFG cleanup passes.  It attempts to join PHI nodes
@@ -867,14 +821,8 @@ includes loop interchange, scaling, skewing and reversal and they are
 all geared to the optimization of data locality in array traversals
 and the removal of dependencies that hamper optimizations such as loop
 parallelization and vectorization.  The pass is located in
-@file{tree-loop-linear.c} and described by
-@code{pass_linear_transform}.
-
-@item Removal of empty loops
-
-This pass removes loops with no code in them.  The pass is located in
-@file{tree-ssa-loop-ivcanon.cc} and described by
-@code{pass_empty_loop}.
+the @file{graphile-*.cc} files and described by
+@code{pass_graphite}.
 
 @item Unrolling of small loops
 
