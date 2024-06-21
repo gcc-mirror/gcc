@@ -1,3 +1,14 @@
+2024-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-04-03  Simon Chopin  <simon.chopin@canonical.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/114533
+	* printf/printf_fp.c (__quadmath_printf_fp): Use memcpy to copy
+	__float128 out of args.
+	* printf/printf_fphex.c (__quadmath_printf_fphex): Likewise.
+
 2023-05-29  Release Manager
 
 	* GCC 11.4.0 released.
