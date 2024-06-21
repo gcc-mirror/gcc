@@ -3511,15 +3511,15 @@ package body Sem_Warn is
                      Error_Msg_Sloc := Sloc (CV);
 
                      if Nkind (CV) not in N_Subexpr then
-                        Error_Msg_N ("\\??(see test #)", N);
+                        Error_Msg_N ("\\?c?(see test #)", N);
 
                      elsif Nkind (Parent (CV)) =
                              N_Case_Statement_Alternative
                      then
-                        Error_Msg_N ("\\??(see case alternative #)", N);
+                        Error_Msg_N ("\\?c?(see case alternative #)", N);
 
                      else
-                        Error_Msg_N ("\\??(see assignment #)", N);
+                        Error_Msg_N ("\\?c?(see assignment #)", N);
                      end if;
                   end if;
                end;

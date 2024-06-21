@@ -5938,7 +5938,7 @@ package body Sem_Util is
                         else
                            Error_Msg
                              ("\Constraint_Error will be raised"
-                              & " for objects of this type??", Eloc, N);
+                              & " for objects of this type", Eloc, N);
                         end if;
                      end if;
                   end;
