@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++17" }
 // { dg-do run { target *-*-* } }
 // { dg-require-effective-target c++17 }
-// { dg-additional-options "-march=x86-64-v4" { target avx512f } }
+// { dg-additional-options "-march=x86-64-v4" { target avx512f_runtime } }
 // { dg-require-cmath "" }
 
 #include <experimental/simd>
@@ -25,7 +25,9 @@ int reduce2()
 {
   using M8 = typename V<short, 8>::mask_type;
   using M4 = typename V<int, 4>::mask_type;
-  if constexpr (sizeof(M8) == sizeof(M4))
+  if constexpr (sizeof(M8) == sizeof(M4)
+		  && !std::is_same_v<M4, stdx::fixed_size_simd_mask<int, 4>>)
+    // fixed_size invariant: padding bits of masks are zero, the memcpy would violate that
     {
       M4 k;
       __builtin_memcpy(&__data(k), &__data(M8(true)), sizeof(M4));
