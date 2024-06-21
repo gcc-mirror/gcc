@@ -7808,6 +7808,22 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 				      non_constant_p, overflow_p);
       break;
 
+    case EH_ELSE_EXPR:
+      /* Evaluate any cleanup that applies to non-EH exits, this only for
+	 the output of the diagnostics ??? what is really meant to happen
+	 at constexpr-time?...  */
+      cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 0), vc_discard,
+				      non_constant_p, overflow_p);
+
+      /* The presence of a contract should not affect the constexpr.  */
+      if (CONTRACT_EH_ELSE_P (t))
+	break;
+      if (!*non_constant_p)
+	/* Also evaluate the EH handler.  */
+	cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1), vc_discard,
+				      non_constant_p, overflow_p);
+      break;
+
     case CLEANUP_STMT:
       r = cxx_eval_constant_expression (ctx, CLEANUP_BODY (t), lval,
 					non_constant_p, overflow_p,
