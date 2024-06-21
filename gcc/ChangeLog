@@ -1,3 +1,12 @@
+2024-06-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/115440
+	* opts-common.cc (add_misspelling_candidates): If opt1 is non-NULL,
+	add a space and opt1 to the alternative suggestion text.
+
 2024-06-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
