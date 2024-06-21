@@ -1356,42 +1356,43 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info,
       step_preserves_misalignment_p = true;
     }
 
-  /* In case the dataref is in an inner-loop of the loop that is being
-     vectorized (LOOP), we use the base and misalignment information
-     relative to the outer-loop (LOOP).  This is ok only if the misalignment
-     stays the same throughout the execution of the inner-loop, which is why
-     we have to check that the stride of the dataref in the inner-loop evenly
-     divides by the vector alignment.  */
-  else if (nested_in_vect_loop_p (loop, stmt_info))
-    {
-      step_preserves_misalignment_p
-	= (DR_STEP_ALIGNMENT (dr_info->dr) % vect_align_c) == 0;
-
-      if (dump_enabled_p ())
-	{
-	  if (step_preserves_misalignment_p)
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "inner step divides the vector alignment.\n");
-	  else
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "inner step doesn't divide the vector"
-			     " alignment.\n");
-	}
-    }
-
-  /* Similarly we can only use base and misalignment information relative to
-     an innermost loop if the misalignment stays the same throughout the
-     execution of the loop.  As above, this is the case if the stride of
-     the dataref evenly divides by the alignment.  */
   else
     {
+      /* We can only use base and misalignment information relative to
+	 an innermost loop if the misalignment stays the same throughout the
+	 execution of the loop.  As above, this is the case if the stride of
+	 the dataref evenly divides by the alignment.  */
       poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       step_preserves_misalignment_p
-	= multiple_p (DR_STEP_ALIGNMENT (dr_info->dr) * vf, vect_align_c);
+	= multiple_p (drb->step_alignment * vf, vect_align_c);
 
       if (!step_preserves_misalignment_p && dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "step doesn't divide the vector alignment.\n");
+
+      /* In case the dataref is in an inner-loop of the loop that is being
+	 vectorized (LOOP), we use the base and misalignment information
+	 relative to the outer-loop (LOOP).  This is ok only if the
+	 misalignment stays the same throughout the execution of the
+	 inner-loop, which is why we have to check that the stride of the
+	 dataref in the inner-loop evenly divides by the vector alignment.  */
+      if (step_preserves_misalignment_p
+	  && nested_in_vect_loop_p (loop, stmt_info))
+	{
+	  step_preserves_misalignment_p
+	    = (DR_STEP_ALIGNMENT (dr_info->dr) % vect_align_c) == 0;
+
+	  if (dump_enabled_p ())
+	    {
+	      if (step_preserves_misalignment_p)
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "inner step divides the vector alignment.\n");
+	      else
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "inner step doesn't divide the vector"
+				 " alignment.\n");
+	    }
+	}
     }
 
   unsigned int base_alignment = drb->base_alignment;
