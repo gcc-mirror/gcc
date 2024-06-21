@@ -460,6 +460,11 @@ is shown below:
 @item g++ testsuite
 @code{gcov}, @code{gzip}, @code{json}, @code{os} and @code{pytest}.
 
+@item SARIF testsuite
+Tests of SARIF output will use the @code{jsonschema} program from the
+@code{jsonschema} module (if available) to validate generated .sarif files.
+If this tool is not found, the validation parts of those tests are skipped.
+
 @item c++ cxx api generation
 @code{csv}, @code{os}, @code{sys} and @code{time}.
 
