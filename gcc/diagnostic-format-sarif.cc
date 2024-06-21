@@ -662,14 +662,8 @@ maybe_get_sarif_level (diagnostic_t diag_kind)
 static char *
 make_rule_id_for_diagnostic_kind (diagnostic_t diag_kind)
 {
-  static const char *const diagnostic_kind_text[] = {
-#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
-#include "diagnostic.def"
-#undef DEFINE_DIAGNOSTIC_KIND
-    "must-not-happen"
-  };
   /* Lose the trailing ": ".  */
-  const char *kind_text = diagnostic_kind_text[diag_kind];
+  const char *kind_text = get_diagnostic_kind_text (diag_kind);
   size_t len = strlen (kind_text);
   gcc_assert (len > 2);
   gcc_assert (kind_text[len - 2] == ':');

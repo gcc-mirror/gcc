@@ -590,6 +590,14 @@ static const char *const diagnostic_kind_text[] = {
   "must-not-happen"
 };
 
+/* Get unlocalized string describing KIND.  */
+
+const char *
+get_diagnostic_kind_text (diagnostic_t kind)
+{
+  return diagnostic_kind_text[kind];
+}
+
 /* Return a malloc'd string describing a location and the severity of the
    diagnostic, e.g. "foo.c:42:10: error: ".  The caller is responsible for
    freeing the memory.  */

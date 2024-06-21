@@ -231,14 +231,8 @@ json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
 
   /* Get "kind" of diagnostic.  */
   {
-    static const char *const diagnostic_kind_text[] = {
-#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
-#include "diagnostic.def"
-#undef DEFINE_DIAGNOSTIC_KIND
-      "must-not-happen"
-    };
     /* Lose the trailing ": ".  */
-    const char *kind_text = diagnostic_kind_text[diagnostic.kind];
+    const char *kind_text = get_diagnostic_kind_text (diagnostic.kind);
     size_t len = strlen (kind_text);
     gcc_assert (len > 2);
     gcc_assert (kind_text[len - 2] == ':');

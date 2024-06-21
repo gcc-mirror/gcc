@@ -1121,4 +1121,6 @@ option_unspecified_p (int opt)
 
 extern char *get_cwe_url (int cwe);
 
+extern const char *get_diagnostic_kind_text (diagnostic_t kind);
+
 #endif /* ! GCC_DIAGNOSTIC_H */
