@@ -189,11 +189,14 @@ private:
   make_thread_flow_location_object (const diagnostic_event &event,
 				    int path_event_idx);
   json::array *maybe_make_kinds_array (diagnostic_event::meaning m) const;
-  json::object *maybe_make_physical_location_object (location_t loc);
+  json::object *
+  maybe_make_physical_location_object (location_t loc,
+				       int column_override);
   json::object *make_artifact_location_object (location_t loc);
   json::object *make_artifact_location_object (const char *filename);
   json::object *make_artifact_location_object_for_pwd () const;
-  json::object *maybe_make_region_object (location_t loc) const;
+  json::object *maybe_make_region_object (location_t loc,
+					  int column_override) const;
   json::object *maybe_make_region_object_for_context (location_t loc) const;
   json::object *make_region_object_for_hint (const fixit_hint &hint) const;
   json::object *make_multiformat_message_string (const char *msg) const;
@@ -771,7 +774,9 @@ sarif_builder::make_location_object (const rich_location &rich_loc,
   location_t loc = rich_loc.get_loc ();
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
-  if (json::object *phs_loc_obj = maybe_make_physical_location_object (loc))
+  if (json::object *phs_loc_obj
+	= maybe_make_physical_location_object (loc,
+					       rich_loc.get_column_override ()))
     location_obj->set ("physicalLocation", phs_loc_obj);
 
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
@@ -790,7 +795,8 @@ sarif_builder::make_location_object (const diagnostic_event &event)
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
   location_t loc = event.get_location ();
-  if (json::object *phs_loc_obj = maybe_make_physical_location_object (loc))
+  if (json::object *phs_loc_obj
+	= maybe_make_physical_location_object (loc, 0))
     location_obj->set ("physicalLocation", phs_loc_obj);
 
   /* "logicalLocations" property (SARIF v2.1.0 section 3.28.4).  */
@@ -805,12 +811,15 @@ sarif_builder::make_location_object (const diagnostic_event &event)
   return location_obj;
 }
 
-/* Make a physicalLocation object (SARIF v2.1.0 section 3.29) for LOC,
-   or return NULL;
-   Add any filename to the m_artifacts.  */
+/* Make a physicalLocation object (SARIF v2.1.0 section 3.29) for LOC.
+
+   If COLUMN_OVERRIDE is non-zero, then use it as the column number
+   if LOC has no column information.  */
 
 json::object *
-sarif_builder::maybe_make_physical_location_object (location_t loc)
+sarif_builder::
+maybe_make_physical_location_object (location_t loc,
+				     int column_override)
 {
   if (loc <= BUILTINS_LOCATION || LOCATION_FILE (loc) == NULL)
     return NULL;
@@ -823,7 +832,8 @@ sarif_builder::maybe_make_physical_location_object (location_t loc)
   m_filenames.add (LOCATION_FILE (loc));
 
   /* "region" property (SARIF v2.1.0 section 3.29.4).  */
-  if (json::object *region_obj = maybe_make_region_object (loc))
+  if (json::object *region_obj = maybe_make_region_object (loc,
+							   column_override))
     phys_loc_obj->set ("region", region_obj);
 
   /* "contextRegion" property (SARIF v2.1.0 section 3.29.5).  */
@@ -929,10 +939,14 @@ sarif_builder::get_sarif_column (expanded_location exploc) const
 }
 
 /* Make a region object (SARIF v2.1.0 section 3.30) for LOC,
-   or return NULL.  */
+   or return NULL.
+
+   If COLUMN_OVERRIDE is non-zero, then use it as the column number
+   if LOC has no column information.  */
 
 json::object *
-sarif_builder::maybe_make_region_object (location_t loc) const
+sarif_builder::maybe_make_region_object (location_t loc,
+					 int column_override) const
 {
   location_t caret_loc = get_pure_location (loc);
 
@@ -954,21 +968,40 @@ sarif_builder::maybe_make_region_object (location_t loc) const
   json::object *region_obj = new json::object ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
-  region_obj->set_integer ("startLine", exploc_start.line);
+  if (exploc_start.line > 0)
+    region_obj->set_integer ("startLine", exploc_start.line);
 
-  /* "startColumn" property (SARIF v2.1.0 section 3.30.6) */
-  region_obj->set_integer ("startColumn", get_sarif_column (exploc_start));
+  /* "startColumn" property (SARIF v2.1.0 section 3.30.6).
+
+     We use column == 0 to mean the whole line, so omit the column
+     information for this case, unless COLUMN_OVERRIDE is non-zero,
+     (for handling certain awkward lexer diagnostics)  */
+
+  if (exploc_start.column == 0 && column_override)
+    /* Use the provided column number.  */
+    exploc_start.column = column_override;
+
+  if (exploc_start.column > 0)
+    {
+      int start_column = get_sarif_column (exploc_start);
+      region_obj->set_integer ("startColumn", start_column);
+    }
 
   /* "endLine" property (SARIF v2.1.0 section 3.30.7) */
-  if (exploc_finish.line != exploc_start.line)
+  if (exploc_finish.line != exploc_start.line
+      && exploc_finish.line > 0)
     region_obj->set_integer ("endLine", exploc_finish.line);
 
   /* "endColumn" property (SARIF v2.1.0 section 3.30.8).
-     This expresses the column immediately beyond the range.  */
-  {
-    int next_column = sarif_builder::get_sarif_column (exploc_finish) + 1;
-    region_obj->set_integer ("endColumn", next_column);
-  }
+     This expresses the column immediately beyond the range.
+
+     We use column == 0 to mean the whole line, so omit the column
+     information for this case.  */
+  if (exploc_finish.column > 0)
+    {
+      int next_column = get_sarif_column (exploc_finish) + 1;
+      region_obj->set_integer ("endColumn", next_column);
+    }
 
   return region_obj;
 }
@@ -1004,10 +1037,12 @@ sarif_builder::maybe_make_region_object_for_context (location_t loc) const
   json::object *region_obj = new json::object ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
-  region_obj->set_integer ("startLine", exploc_start.line);
+  if (exploc_start.line > 0)
+    region_obj->set_integer ("startLine", exploc_start.line);
 
   /* "endLine" property (SARIF v2.1.0 section 3.30.7) */
-  if (exploc_finish.line != exploc_start.line)
+  if (exploc_finish.line != exploc_start.line
+      && exploc_finish.line > 0)
     region_obj->set_integer ("endLine", exploc_finish.line);
 
   /* "snippet" property (SARIF v2.1.0 section 3.30.13).  */
