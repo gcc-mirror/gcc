@@ -555,8 +555,7 @@ package Erroutc is
    --  test these values before doing the full error scan.
    --
    --  Note that the call has no effect for continuation messages (those whose
-   --  first character is '\'), and all variables are left unchanged, unless
-   --  -gnatdF is set.
+   --  first character is '\') except for the Has_Insertion_Line setting.
 
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr);
    --  All error messages whose location is in the range From .. To (not

@@ -922,15 +922,36 @@ package body Erroutc is
    --  Start of processing for Prescan_Message
 
    begin
-      --  Nothing to do for continuation line, unless -gnatdF is set
+      --  Continuation lines need to check only for insertion sequences.
+      --  Other attributes should be inherited from the main message.
 
-      if not Debug_Flag_FF and then Msg (Msg'First) = '\' then
+      if Msg (Msg'First) = '\' then
+         Has_Insertion_Line := False;
+
+         J := Msg'First;
+
+         --  If we have a quote, don't look at following character
+
+         while J <= Msg'Last loop
+            if Msg (J) = ''' then
+               J := J + 2;
+
+            --  Insertion line (# insertion)
+
+            elsif Msg (J) = '#' then
+               Has_Insertion_Line := True;
+               J := J + 1;
+            else
+               J := J + 1;
+            end if;
+         end loop;
+
          return;
 
       --  Some global variables are not set for continuation messages, as they
       --  only make sense for the initial message.
 
-      elsif Msg (Msg'First) /= '\' then
+      else
 
          --  Set initial values of globals (may be changed during scan)
 
