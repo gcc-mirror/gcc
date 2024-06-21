@@ -16060,7 +16060,6 @@ package body Sem_Ch13 is
                   --  before the actual freeze point.
 
                   when Aspect_Default_Value =>
-                     Set_Must_Not_Freeze (Expr);
                      Preanalyze_Spec_Expression (Expr, E);
 
                   when Aspect_CPU
@@ -16076,7 +16075,6 @@ package body Sem_Ch13 is
                   --  relevant to the misuse of deferred constants.
 
                   when Aspect_Storage_Size =>
-                     Set_Must_Not_Freeze (Expr);
                      Preanalyze_Spec_Expression (Expr, Any_Integer);
 
                   when others =>
