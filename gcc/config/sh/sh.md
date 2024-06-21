@@ -1642,9 +1642,9 @@
 ;; matched.  Split this up into a simple sub add sequence, as this will save
 ;; us one sett insn.
 (define_insn_and_split "*minus_plus_one"
-  [(set (match_operand:SI 0 "arith_reg_dest" "")
-	(plus:SI (minus:SI (match_operand:SI 1 "arith_reg_operand" "")
-			   (match_operand:SI 2 "arith_reg_operand" ""))
+  [(set (match_operand:SI 0 "arith_reg_dest" "=r")
+	(plus:SI (minus:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			   (match_operand:SI 2 "arith_reg_operand" "r"))
 		 (const_int 1)))]
   "TARGET_SH1"
   "#"
