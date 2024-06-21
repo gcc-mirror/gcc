@@ -4798,12 +4798,14 @@
 		     (const_int 1) (const_int 5)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  rtx (*fun) (rtx, rtx, rtx);
-  fun = BYTES_BIG_ENDIAN ? gen_altivec_vmrghw_direct_<mode>
-			 : gen_altivec_vmrglw_direct_<mode>;
-  if (!BYTES_BIG_ENDIAN)
-    std::swap (operands[1], operands[2]);
-  emit_insn (fun (operands[0], operands[1], operands[2]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrghw_direct_v4si_be (operands[0],
+						  operands[1],
+						  operands[2]));
+  else
+    emit_insn (gen_altivec_vmrglw_direct_v4si_le (operands[0],
+						  operands[2],
+						  operands[1]));
   DONE;
 }
   [(set_attr "type" "vecperm")])
@@ -4818,12 +4820,14 @@
 		     (const_int 3) (const_int 7)])))]
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
-  rtx (*fun) (rtx, rtx, rtx);
-  fun = BYTES_BIG_ENDIAN ? gen_altivec_vmrglw_direct_<mode>
-			 : gen_altivec_vmrghw_direct_<mode>;
-  if (!BYTES_BIG_ENDIAN)
-    std::swap (operands[1], operands[2]);
-  emit_insn (fun (operands[0], operands[1], operands[2]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vmrglw_direct_v4si_be (operands[0],
+						  operands[1],
+						  operands[2]));
+  else
+    emit_insn (gen_altivec_vmrghw_direct_v4si_le (operands[0],
+						  operands[2],
+						  operands[1]));
   DONE;
 }
   [(set_attr "type" "vecperm")])
