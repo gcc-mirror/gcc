@@ -171,13 +171,6 @@ package System.Finalization_Primitives with Preelaborate is
 
 private
 
-   --  Since RTSfind cannot contain names of the form RE_"+", the following
-   --  routine serves as a wrapper around System.Storage_Elements."+".
-
-   function Add_Offset_To_Address
-     (Addr   : System.Address;
-      Offset : System.Storage_Elements.Storage_Offset) return System.Address;
-
    --  Finalization masters:
 
    --  Master node type structure. Finalize_Address comes first because it is

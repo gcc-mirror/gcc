@@ -5351,23 +5351,25 @@ package body Exp_Ch7 is
 
          --    V - (Obj_Typ'Descriptor_Size / Storage_Unit)
 
-         --  Note that this is done through a wrapper routine as  RTSfind
-         --  cannot retrieve operations with string name of the form "+".
-
          Obj_Addr :=
            Make_Function_Call (Loc,
              Name                   =>
-               New_Occurrence_Of (RTE (RE_Add_Offset_To_Address), Loc),
+               Make_Expanded_Name (Loc,
+                 Chars => Name_Op_Subtract,
+                 Prefix =>
+                   New_Occurrence_Of
+                     (RTU_Entity (System_Storage_Elements), Loc),
+                 Selector_Name =>
+                   Make_Identifier (Loc, Name_Op_Subtract)),
              Parameter_Associations => New_List (
                Obj_Addr,
-               Make_Op_Minus (Loc,
-                 Make_Op_Divide (Loc,
-                   Left_Opnd  =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => New_Occurrence_Of (Obj_Typ, Loc),
-                       Attribute_Name => Name_Descriptor_Size),
-                   Right_Opnd =>
-                     Make_Integer_Literal (Loc, System_Storage_Unit)))));
+               Make_Op_Divide (Loc,
+                 Left_Opnd  =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => New_Occurrence_Of (Obj_Typ, Loc),
+                     Attribute_Name => Name_Descriptor_Size),
+                 Right_Opnd =>
+                   Make_Integer_Literal (Loc, System_Storage_Unit))));
       end if;
 
       return Obj_Addr;
@@ -8105,14 +8107,17 @@ package body Exp_Ch7 is
             --  start of the elements:
             --
             --    V + Dnn
-            --
-            --  Note that this is done through a wrapper routine since RTSfind
-            --  cannot retrieve operations with string names of the form "+".
 
             Obj_Expr :=
               Make_Function_Call (Loc,
                 Name                   =>
-                  New_Occurrence_Of (RTE (RE_Add_Offset_To_Address), Loc),
+                  Make_Expanded_Name (Loc,
+                    Chars => Name_Op_Add,
+                    Prefix =>
+                      New_Occurrence_Of
+                        (RTU_Entity (System_Storage_Elements), Loc),
+                    Selector_Name =>
+                      Make_Identifier (Loc, Name_Op_Add)),
                 Parameter_Associations => New_List (
                   Obj_Expr,
                   New_Occurrence_Of (Dope_Id, Loc)));

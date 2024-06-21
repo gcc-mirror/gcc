@@ -60,18 +60,6 @@ package body System.Finalization_Primitives is
    --  Unlock the finalization collection, i.e. relinquish ownership of the
    --  lock to the collection.
 
-   ---------------------------
-   -- Add_Offset_To_Address --
-   ---------------------------
-
-   function Add_Offset_To_Address
-     (Addr   : System.Address;
-      Offset : System.Storage_Elements.Storage_Offset) return System.Address
-   is
-   begin
-      return System.Storage_Elements."+" (Addr, Offset);
-   end Add_Offset_To_Address;
-
    ---------------------------------
    -- Attach_Object_To_Collection --
    ---------------------------------
