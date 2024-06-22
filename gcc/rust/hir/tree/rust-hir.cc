@@ -3833,7 +3833,9 @@ BorrowExpr::accept_vis (HIRFullVisitor &vis)
 
 void
 InlineAsm::accept_vis (HIRExpressionVisitor &vis)
-{}
+{
+  vis.visit (*this);
+}
 
 void
 InlineAsm::accept_vis (HIRFullVisitor &vis)
