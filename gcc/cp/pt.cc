@@ -11961,8 +11961,13 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
   if (auto_p)
     ++processing_template_decl;
   ++processing_contract_condition;
+  if (POSTCONDITION_P (t))
+    ++processing_contract_postcondition;
+
   CONTRACT_CONDITION (r)
       = tsubst_expr (CONTRACT_CONDITION (t), args, complain, in_decl);
+  if (POSTCONDITION_P (t))
+    --processing_contract_postcondition;
   --processing_contract_condition;
   if (auto_p)
     --processing_template_decl;
@@ -21661,6 +21666,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    /* If the original type was a reference, we'll be wrapped in
 	       the appropriate INDIRECT_REF.  */
 	    r = convert_from_reference (r);
+
 	}
       RETURN (r);
 
@@ -21954,6 +21960,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (REF_PARENTHESIZED_P (t))
 	  /* force_paren_expr can also create a VIEW_CONVERT_EXPR.  */
 	  RETURN (finish_parenthesized_expr (op));
+
+	maybe_reject_param_in_postcondition (op);
 
 	if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst
 	    && processing_contract_condition)
