@@ -1947,6 +1947,7 @@ struct GTY(()) saved_scope {
   int x_processing_specialization;
   int x_processing_constraint;
   int x_processing_contract_condition;
+  int x_processing_contract_postcondition;
   int suppress_location_wrappers;
   BOOL_BITFIELD x_processing_explicit_instantiation : 1;
   BOOL_BITFIELD need_pop_function_context : 1;
@@ -2029,6 +2030,8 @@ extern GTY(()) struct saved_scope *scope_chain;
    trailing return type), but are potentially evaluated.  */
 
 #define processing_contract_condition scope_chain->x_processing_contract_condition
+
+#define processing_contract_postcondition scope_chain->x_processing_contract_postcondition
 
 #define in_discarded_stmt scope_chain->discarded_stmt
 #define in_consteval_if_p scope_chain->consteval_if_p
@@ -8972,6 +8975,8 @@ extern tree make_postcondition_variable		(cp_expr, tree);
 extern tree grok_contract			(tree, tree, tree, cp_expr, location_t);
 extern tree finish_contract_condition		(cp_expr);
 extern tree constify_contract_access            (tree);
+extern bool maybe_reject_param_in_postcondition (tree);
+
 extern tree view_as_const                       (tree);
 extern tree maybe_contract_wrap_new_method_call	(tree, tree);
 extern void emit_contract_wrapper_func          ();

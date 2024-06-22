@@ -2,7 +2,7 @@
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr" }
 
 namespace parsing_basic_test {
-  int f(int x)
+  int f(const int x)
   pre (x >= 0)
   post (r: r > x); // r is the return value
 

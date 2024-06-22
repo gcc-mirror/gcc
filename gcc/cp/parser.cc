@@ -31562,7 +31562,11 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       /* Parse the condition, ensuring that parameters or the return variable
 	 aren't flagged for use outside the body of a function.  */
       ++processing_contract_condition;
+      if (postcondition_p)
+	++processing_contract_postcondition;
       cp_expr condition = cp_parser_conditional_expression (parser);
+      if (postcondition_p)
+	--processing_contract_postcondition;
       --processing_contract_condition;
 
 	/* For natural syntax, we eat the parens here. For the attribute
@@ -31657,7 +31661,11 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   /* Parse the condition, ensuring that parameters or the return variable
      aren't flagged for use outside the body of a function.  */
   ++processing_contract_condition;
+  if (POSTCONDITION_P (contract))
+    ++processing_contract_postcondition;
   condition = cp_parser_conditional_expression (parser);
+  if (POSTCONDITION_P (contract))
+    --processing_contract_postcondition;
   --processing_contract_condition;
 
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
