@@ -82,7 +82,7 @@ Target Mask(DIV)
 Use hardware instructions for integer division.
 
 march=
-Target RejectNegative Joined Negative(march=)
+Target RejectNegative Joined Negative(march=) Var(riscv_arch_string) Save
 -march=	Generate code for given RISC-V ISA (e.g. RV64IM).  ISA strings must be
 lower-case.
 
