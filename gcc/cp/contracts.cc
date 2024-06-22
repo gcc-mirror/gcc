@@ -2001,6 +2001,25 @@ constify_contract_access(tree decl)
   return decl;
 }
 
+/* do not allow non-const by-value params being used in postconditions */
+bool
+maybe_reject_param_in_postcondition(tree decl)
+{
+  if (flag_contracts_nonattr
+      && processing_contract_postcondition
+      && !TREE_READONLY (decl)
+      && TREE_CODE (decl) == PARM_DECL
+      && !(REFERENCE_REF_P (decl) &&
+	   TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL))
+  {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"a value parameter used in a postcondition must be const");
+      return true;
+  }
+
+  return false;
+}
+
 void
 maybe_update_postconditions (tree fco)
 {
