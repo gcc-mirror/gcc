@@ -71,6 +71,7 @@ public:
   void visit (HIR::RangeFromToInclExpr &expr) override;
   void visit (HIR::WhileLoopExpr &expr) override;
   void visit (HIR::ClosureExpr &expr) override;
+  void visit (HIR::InlineAsm &expr) override;
 
   // TODO
   void visit (HIR::ErrorPropagationExpr &) override {}

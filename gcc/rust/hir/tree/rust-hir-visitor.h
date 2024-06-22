@@ -450,6 +450,7 @@ public:
   virtual void visit (IfExprConseqElse &expr) = 0;
   virtual void visit (IfLetExpr &expr) = 0;
   virtual void visit (IfLetExprConseqElse &expr) = 0;
+  virtual void visit (InlineAsm &expr) = 0;
   virtual void visit (MatchExpr &expr) = 0;
   virtual void visit (AwaitExpr &expr) = 0;
   virtual void visit (AsyncBlockExpr &expr) = 0;

@@ -21,6 +21,7 @@
 #include "rust-bir-builder-lazyboolexpr.h"
 #include "rust-bir-builder-pattern.h"
 #include "rust-bir-builder-struct.h"
+#include "rust-hir-expr.h"
 
 namespace Rust {
 namespace BIR {
@@ -316,6 +317,10 @@ ExprStmtBuilder::visit (HIR::CallExpr &expr)
   return_expr (new CallExpr (fn, std::move (arguments)), lookup_type (expr),
 	       expr.get_locus (), true);
 }
+
+void
+ExprStmtBuilder::visit (HIR::InlineAsm &expr)
+{}
 
 void
 ExprStmtBuilder::visit (HIR::MethodCallExpr &expr)

@@ -126,6 +126,7 @@ types
   virtual void visit (HIR::MatchExpr &expr);
   virtual void visit (HIR::AwaitExpr &expr);
   virtual void visit (HIR::AsyncBlockExpr &expr);
+  virtual void visit (HIR::InlineAsm &expr);
 
   virtual void visit (HIR::EnumItemTuple &);
   virtual void visit (HIR::EnumItemStruct &);

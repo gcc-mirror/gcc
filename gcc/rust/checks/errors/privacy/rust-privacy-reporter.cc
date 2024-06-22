@@ -284,6 +284,12 @@ PrivacyReporter::visit (HIR::TypePathSegmentFunction &)
 }
 
 void
+PrivacyReporter::visit (HIR::InlineAsm &)
+{
+  return;
+}
+
+void
 PrivacyReporter::visit (HIR::TypePath &path)
 {
   check_for_privacy_violation (path.get_mappings ().get_nodeid (),
