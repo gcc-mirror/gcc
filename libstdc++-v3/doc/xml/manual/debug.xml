@@ -49,7 +49,7 @@
 </para>
 
 <para>
-  Many other options are available: please see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html#Debugging%20Options">"Options
+  Many other options are available: please see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/gcc/Debugging-Options.html#Debugging%20Options">"Options
   for Debugging Your Program"</link> in Using the GNU Compiler
   Collection (GCC) for a complete list.
 </para>
@@ -270,7 +270,7 @@
   </para>
 
 <para>
-  Many options are available for GDB itself: please see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sourceware.org/gdb/current/onlinedocs/gdb">
+  Many options are available for GDB itself: please see <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceware.org/gdb/current/onlinedocs/gdb">
   "GDB features for C++" </link> in the GDB documentation. Also
   recommended: the other parts of this manual.
 </para>
@@ -316,12 +316,12 @@
 
 <para>
   For additional information on STL support and GDB please visit:
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sourceware.org/gdb/wiki/STLSupport"> "GDB Support
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceware.org/gdb/wiki/STLSupport"> "GDB Support
   for STL" </link> in the GDB wiki.  Additionally, in-depth
   documentation and discussion of the pretty printing feature can be
   found in "Pretty Printing" node in the GDB manual.  You can find
   on-line versions of the GDB user manual in GDB's homepage, at
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://sourceware.org/gdb/"> "GDB: The GNU Project
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://sourceware.org/gdb/"> "GDB: The GNU Project
   Debugger" </link>.
 </para>
 
