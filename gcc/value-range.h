@@ -363,7 +363,7 @@ protected:
 // HARD_MAX_RANGES.  This new storage is freed upon destruction.
 
 template<unsigned N, bool RESIZABLE = false>
-class int_range : public irange
+class int_range final : public irange
 {
 public:
   int_range ();
@@ -380,7 +380,7 @@ private:
   wide_int m_ranges[N*2];
 };
 
-class prange : public vrange
+class prange final : public vrange
 {
   friend class prange_storage;
   friend class vrange_printer;
@@ -523,7 +523,7 @@ nan_state::neg_p () const
 // The representation is a type with a couple of endpoints, unioned
 // with the set of { -NAN, +Nan }.
 
-class frange : public vrange
+class frange final : public vrange
 {
   friend class frange_storage;
   friend class vrange_printer;
