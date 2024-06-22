@@ -1,3 +1,9 @@
+2024-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/109360
+	* include/rich-location.h (rich_location::get_column_override):
+	New accessor.
+
 2024-06-11  Joseph Myers  <josmyers@redhat.com>
 
 	* include/cpplib.h (CLK_GNUC2Y, CLK_STDC2Y): New.

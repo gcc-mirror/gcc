@@ -1,3 +1,199 @@
+2024-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc
+	(json_output_format::on_end_diagnostic): Use
+	get_diagnostic_kind_text rather than embedding a duplicate copy of
+	the table.
+	* diagnostic-format-sarif.cc
+	(make_rule_id_for_diagnostic_kind): Likewise.
+	* diagnostic.cc (get_diagnostic_kind_text): New.
+	* diagnostic.h (get_diagnostic_kind_text): New decl.
+
+2024-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-path.cc (diagnostic_event::meaning::dump_to_pp): Move
+	here from diagnostic.cc.
+	(diagnostic_event::meaning::maybe_get_verb_str): Likewise.
+	(diagnostic_event::meaning::maybe_get_noun_str): Likewise.
+	(diagnostic_event::meaning::maybe_get_property_str): Likewise.
+	(diagnostic_path::get_first_event_in_a_function): Likewise.
+	(diagnostic_path::interprocedural_p): Likewise.
+	(debug): Likewise for diagnostic_path * overload.
+	* diagnostic.cc (diagnostic_event::meaning::dump_to_pp): Move from
+	here to diagnostic-path.cc.
+	(diagnostic_event::meaning::maybe_get_verb_str): Likewise.
+	(diagnostic_event::meaning::maybe_get_noun_str): Likewise.
+	(diagnostic_event::meaning::maybe_get_property_str): Likewise.
+	(diagnostic_path::get_first_event_in_a_function): Likewise.
+	(diagnostic_path::interprocedural_p): Likewise.
+	(debug): Likewise for diagnostic_path * overload.
+
+2024-06-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/stormy16/stormy16.md (swpn_zext): New pattern.
+
+2024-06-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/stormy16/predicates.md (xs_hi_nonmemory_operand): Handle
+	symbol_ref and label_ref.
+
+2024-06-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/iq2000/iq2000.cc (iq2000_print_operand): Make %p handle 1<<31.
+	* config/iq2000/iq2000.md: Remove "I" constraints on
+	power_of_2_operands.
+
+2024-06-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa/changes.cc (rtl_ssa::changes_are_worthwhile): Don't
+	cost no-op moves.
+	* rtl-ssa/insns.cc (insn_info::calculate_cost): Likewise.
+
+2024-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::register_inferred_ranges): Do not
+	dump global range info after set_range_info.
+	(gimple_ranger::register_transitive_inferred_ranges): Likewise.
+	(dom_ranger::range_of_stmt): Likewise.
+	* tree-ssanames.cc (set_range_info): If global range info
+	changes, maybe print new range to dump_file.
+	* tree-vrp.cc (remove_unreachable::handle_early): Do not
+	dump global range info after set_range_info.
+	(remove_unreachable::remove): Likewise.
+	(remove_unreachable::remove_and_update_globals): Likewise.
+	(pass_assumptions::execute): Likewise.
+
+2024-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (dom_ranger::dom_ranger): Create a block
+	vector.
+	(dom_ranger::~dom_ranger): Dispose of the block vector.
+	(dom_ranger::edge_range): Delete.
+	(dom_ranger::range_on_edge): Combine range in src BB with any
+	range gori_nme_on_edge returns.
+	(dom_ranger::range_in_bb): Combine global range with any active
+	contextual range for an ssa-name.
+	(dom_ranger::range_of_stmt): Fix non-ssa LHS case, use
+	fur_depend for folding so relations can be registered.
+	(dom_ranger::maybe_push_edge): Delete.
+	(dom_ranger::pre_bb): Create incoming contextual range vector.
+	(dom_ranger::post_bb): Free contextual range vector.
+	* gimple-range.h (dom_ranger::edge_range): Delete.
+	(dom_ranger::m_e0): Delete.
+	(dom_ranger::m_e1): Delete.
+	(dom_ranger::m_bb): New.
+	(dom_ranger::m_pop_list): Delete.
+	* tree-vrp.cc (execute_fast_vrp): Enable relation oracle.
+
+2024-06-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-vrp.cc (remove_unreachable::remove): Export global range
+	if builtin_unreachable dominates all uses.
+	(remove_unreachable::remove_and_update_globals): Do not reset SCEV.
+	(execute_ranger_vrp): Reset SCEV here instead.
+	(fvrp_folder::fvrp_folder): Take final pass flag
+	and create a remove_unreachable object when specified.
+	(fvrp_folder::pre_fold_stmt): Register GIMPLE_CONDs with
+	the remove_unreachcable object.
+	(fvrp_folder::m_unreachable): New.
+	(execute_fast_vrp): Process remove_unreachable object.
+	(pass_vrp::execute): Add final_p flag to execute_fast_vrp.
+
+2024-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/109360
+	* doc/install.texi: Mention optional usage of "jsonschema" tool.
+
+2024-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/109360
+	* diagnostic-format-sarif.cc
+	(sarif_builder::make_location_object): Pass any column override
+	from rich_loc to maybe_make_physical_location_object.
+	(sarif_builder::maybe_make_physical_location_object): Add
+	"column_override" param and pass it to maybe_make_region_object.
+	(sarif_builder::maybe_make_region_object): Add "column_override"
+	param and use it when the location has 0 for a column.  Don't
+	add "startLine", "startColumn", "endLine", or "endColumn" if
+	the values aren't positive.
+	(sarif_builder::maybe_make_region_object_for_context): Don't
+	add "startLine" or "endLine" if the values aren't positive.
+
+2024-06-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/sh/sh.md (*minus_plus_one): Add constraints.
+
+2024-06-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/68855
+	* tree-complex.cc (init_dont_simulate_again): Handle PAREN_EXPR
+	like NEGATE_EXPR.
+	(complex_propagate::visit_stmt): Likewise.
+	(expand_complex_move): Don't handle PAREN_EXPR.
+	(expand_complex_paren): New function.
+	(expand_complex_operations_1): Handle PAREN_EXPR like
+	NEGATE_EXPR. And call expand_complex_paren for PAREN_EXPR.
+
+2024-06-21  Richard Biener  <rguenther@suse.de>
+
+	* doc/passes.texi: Remove references to no longer existing
+	passes.
+
+2024-06-21  YunQiang Su  <syq@gcc.gnu.org>
+
+	* configure.ac: Set gcc_cv_as_mips_explicit_relocs if
+	gcc_cv_as_mips_explicit_relocs_pcrel.
+	* configure: Regenerate.
+
+2024-06-21  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.cc(mips_rtx_costs): Set condmove cost.
+	* config/mips/mips.md(mov<GPR:mode>_on_<MOVECC:mode>,
+	mov<GPR:mode>_on_<MOVECC:mode>_mips16e2,
+	mov<GPR:mode>_on_<GPR2:mode>_ne
+	mov<GPR:mode>_on_<GPR2:mode>_ne_mips16e2): Define name by
+	remove starting *, so that we can use CODE_FOR_.
+
+2024-06-21  Kewen Lin  <linkw@linux.ibm.com>
+	    Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/106069
+	PR target/115355
+	* config/rs6000/altivec.md (altivec_vmrghw_direct_<VSX_W:mode>): Rename
+	to ...
+	(altivec_vmrghw_direct_<VSX_W:mode>_be): ... this.  Add the condition
+	BYTES_BIG_ENDIAN.
+	(altivec_vmrghw_direct_<VSX_W:mode>_le): New define_insn.
+	(altivec_vmrglw_direct_<VSX_W:mode>): Rename to ...
+	(altivec_vmrglw_direct_<VSX_W:mode>_be): ... this.  Add the condition
+	BYTES_BIG_ENDIAN.
+	(altivec_vmrglw_direct_<VSX_W:mode>_le): New define_insn.
+	(altivec_vmrghw): Adjust by calling gen_altivec_vmrghw_direct_v4si_be
+	for BE and gen_altivec_vmrglw_direct_v4si_le for LE.
+	(altivec_vmrglw): Adjust by calling gen_altivec_vmrglw_direct_v4si_be
+	for BE and gen_altivec_vmrghw_direct_v4si_le for LE.
+	(vec_widen_umult_hi_v8hi): Adjust the call to
+	gen_altivec_vmrghw_direct_v4si by gen_altivec_vmrghw for BE
+	and by gen_altivec_vmrglw for LE.
+	(vec_widen_smult_hi_v8hi): Likewise.
+	(vec_widen_umult_lo_v8hi): Adjust the call to
+	gen_altivec_vmrglw_direct_v4si by gen_altivec_vmrglw for BE
+	and by gen_altivec_vmrghw for LE
+	(vec_widen_smult_lo_v8hi): Likewise.
+	* config/rs6000/rs6000.cc (altivec_expand_vec_perm_const): Replace
+	CODE_FOR_altivec_vmrghw_direct_v4si by
+	CODE_FOR_altivec_vmrghw_direct_v4si_be for BE and
+	CODE_FOR_altivec_vmrghw_direct_v4si_le for LE.  And replace
+	CODE_FOR_altivec_vmrglw_direct_v4si by
+	CODE_FOR_altivec_vmrglw_direct_v4si_be for BE and
+	CODE_FOR_altivec_vmrglw_direct_v4si_le for LE.
+	* config/rs6000/vsx.md (vsx_xxmrghw_<VSX_W:mode>): Adjust by calling
+	gen_altivec_vmrghw_direct_v4si_be for BE and
+	gen_altivec_vmrglw_direct_v4si_le for LE.
+	(vsx_xxmrglw_<VSX_W:mode>): Adjust by calling
+	gen_altivec_vmrglw_direct_v4si_be for BE and
+	gen_altivec_vmrghw_direct_v4si_le for LE.
+
 2024-06-20  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/i386/i386-expand.cc (ix86_ternlog_idx): Allow any SUBREG

@@ -1,3 +1,169 @@
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (Subprogram_Body_to_gnu): Also return early
+	for a protected subprogram in -gnatc mode.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <discrete_type>: Set
+	the TYPE_JUSTIFIED_MODULAR_P flag earlier.
+	* gcc-interface/misc.cc (gnat_unit_size_without_reusable_padding):
+	New function.
+	(LANG_HOOKS_UNIT_SIZE_WITHOUT_REUSABLE_PADDING): Redefine to above
+	function.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (clear_decl_bit_field): New function.
+	(finish_record_type): Call clear_decl_bit_field instead of clearing
+	DECL_BIT_FIELD manually.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.cc (gnat_to_gnu) <N_Op_Mod>: Fix formatting.
+	* gcc-interface/utils2.cc: Include optabs-query.h.
+	(fast_modulo_reduction): Call can_mult_highpart_p on the TYPE_MODE
+	before generating a high-part multiply.  Fix formatting.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (fast_modulo_reduction): Declare.
+	* gcc-interface/trans.cc (gnat_to_gnu) <N_Op_Mod>: In the unsigned
+	case, call fast_modulo_reduction for {FLOOR,TRUNC}_MOD_EXPR if the
+	RHS is a constant and not a power of two, and the precision is not
+	larger than the word size.
+	* gcc-interface/utils2.cc: Include expmed.h.
+	(fast_modulo_reduction): New function.
+	(nonbinary_modular_operation): Call fast_modulo_reduction for the
+	multiplication if the precision is not larger than the word size.
+
+2024-06-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch2.adb (Analyze_Interpolated_String_Literal): Reject
+	ambiguous function calls.
+
+2024-06-21  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_util.adb (Examine_Array_Bounds): Add missing return
+	statements. Fix criterion for a string literal being empty.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* bcheck.adb (Check_Consistency_Of_Sdep): Guard against path to ALI
+	file not found.
+
+2024-06-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): Fix code locating the entity
+	of the parent type.
+
+2024-06-21  Marc Poulhiès  <poulhies@adacore.com>
+
+	* make.adb (Scan_Make_Arg): Adjust error message.
+	* gnatls.adb (Search_RTS): Likewise.
+	* switch-b.adb (Scan_Debug_Switches): Likewise.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Direct_Primitive_Operations): Mention concurrent types
+	as well as GNAT extensions instead of implementation details.
+	(Primitive_Operations): Document that Direct_Primitive_Operations is
+	also used for concurrent types as a fallback.
+	* einfo-utils.adb (Primitive_Operations): Tweak formatting.
+	* exp_util.ads (Find_Prim_Op): Adjust description.
+	* exp_util.adb (Make_Subtype_From_Expr): In the private case with
+	unknown discriminants, always copy Direct_Primitive_Operations and
+	do not overwrite the Class_Wide_Type of the expression's base type.
+	* sem_ch3.adb (Analyze_Incomplete_Type_Decl): Tweak comment.
+	(Analyze_Subtype_Declaration): Remove older and now dead calls to
+	Set_Direct_Primitive_Operations.  Tweak comment.
+	(Build_Derived_Private_Type): Likewise.
+	(Build_Derived_Record_Type): Likewise.
+	(Build_Discriminated_Subtype): Set Direct_Primitive_Operations in
+	all cases instead of just for tagged types.
+	(Complete_Private_Subtype): Likewise.
+	(Derived_Type_Declaration): Tweak comment.
+	* sem_ch4.ads (Try_Object_Operation): Adjust description.
+
+2024-06-21  Doug Rupp  <rupp@adacore.com>
+
+	* init.c [vxworks] (__gnat_install_handler): Revert to
+	installing signal handlers without regard to interrupt_state.
+
+2024-06-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_disp.adb (Find_Hidden_Overridden_Primitive): Check
+	public dispatching primitives of ancestors; previously,
+	only immediately-visible primitives were checked.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Generate_Index_Checks): Add specific treatment for
+	index expressions that are N_Expression_With_Actions nodes.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Rename Name into Pref
+	and use Sel local variable consistently.
+	(Is_Simple_Indexed_Component): New predicate.
+	Call Is_Simple_Indexed_Component to determine whether to build an
+	actual subtype for the component.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Array_Type): Decouple the handling of the
+	interaction between packing and aliased/atomic components from
+	that of the interaction between a component clause and aliased/
+	atomic components, and retrofit the processing of the interaction
+	between the two characteristics and independent components into
+	the common processing.
+
+2024-06-21  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb
+	(N_Generic_Package_Declaration): Remove Activation_Chain_Entity.
+	* sinfo.ads: Comment improvements. Add missing doc.
+	Remove obsolete comment about Activation_Chain_Entity.
+	* einfo.ads: Comment improvements. Add missing doc.
+	* einfo-utils.adb (Base_Type): Add Assert (disabled for now).
+	(Next_Index): Minor cleanup.
+	* aspects.ads: Minor comment fix.
+	* exp_ch6.adb: Likewise.
+	* sem_ch3.adb: Likewise.
+
+2024-06-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Add_Interface_Tag_Components): Simplify with No.
+
+2024-06-21  Steve Baird  <baird@adacore.com>
+
+	* sem_ch4.adb (Is_Effectively_Visible_Operator): A new function.
+	(Check_Arithmetic_Pair): In paths where Add_One_Interp was
+	previously called unconditionally, instead call only if
+	Is_Effectively_Visible_Operator returns True.
+	(Check_Boolean_Pair): Likewise.
+	(Find_Unary_Types): Likewise.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* accessibility.adb (Accessibility_Level): Apply the processing to
+	Expr when its Original_Node is an unanalyzed identifier.
+
+2024-06-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (In_Aspect_Specification): Use the standard
+	condition that works correctly with declare expressions.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Replace
+	ordinary analysis with preanalysis of spec expressions.
+
+2024-06-21  Justin Squirek  <squirek@adacore.com>
+
+	* csets.ads (Identifier_Char): New function - replacing table.
+	* csets.adb (Identifier_Char): Rename and move table for static values.
+	(Initialize): Remove dynamic calculations.
+	(Identifier_Char): New function to calculate dynamic values.
+	* opt.adb (Set_Config_Switches): Remove setting of Identifier_Char.
+
 2024-06-20  Steve Baird  <baird@adacore.com>
 
 	* sem_attr.adb (Resolve_Attribute.Proper_Op): When resolving the

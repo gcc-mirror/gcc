@@ -1,3 +1,118 @@
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115497
+	* include/bits/cpp_type_traits.h (__is_pointer, __is_scalar):
+	Remove.
+	(__is_arithmetic): Do not use __is_pointer in the primary
+	template. Add partial specialization for pointers.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115497
+	* include/bits/cpp_type_traits.h (__is_void): Remove.
+	* include/debug/helper_functions.h (_Distance_traits):
+	Adjust partial specialization to match void directly, instead of
+	using __is_void<T>::__type and matching __true_type.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115497
+	* include/bits/deque.tcc (__lex_cmp_dit): Replace __is_pointer
+	class template with __is_pointer(T) built-in.
+	(__lexicographical_compare_aux1): Likewise.
+	* include/bits/stl_algobase.h (__equal_aux1): Likewise.
+	(__lexicographical_compare_aux1): Likewise.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115497
+	* include/bits/valarray_array.h (__valarray_default_construct):
+	Use __is_trivial(_Tp). instead of __is_scalar<_Tp>.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109150
+	* include/bits/stl_algobase.h (__fill_a1): Combine the
+	!__is_scalar and __is_scalar overloads into one and rewrite the
+	condition used to decide whether to perform the load outside the
+	loop.
+	* testsuite/25_algorithms/fill/109150.cc: New test.
+	* testsuite/25_algorithms/fill_n/109150.cc: New test.
+
+2024-06-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/115575
+	* testsuite/experimental/simd/pr115454_find_last_set.cc: Require
+	avx512f_runtime. Don't memcpy fixed_size masks.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h (uninitialized_default_construct)
+	(uninitialized_default_construct_n, uninitialized_value_construct)
+	(uninitialized_value_construct_n): Qualify calls to prevent ADL.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/any (any_cast(any*), any_cast(const any*)): Add
+	static assertion to reject void types, as per LWG 3305.
+	* testsuite/20_util/any/misc/lwg3305.cc: New test.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/memory_resource.h (polymorphic_allocator::destroy):
+	Remove deprecated attribute.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/backward/backward_warning.h: Adjust comments to
+	suggest <spanstream> as another alternative to <strstream>.
+	* include/backward/strstream (strstreambuf, istrstream)
+	(ostrstream, strstream): Add deprecated attribute.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (wstring_convert): Add deprecated
+	attribute for C++17 and later.
+	(wbuffer_convert): Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf16/79980.cc: Disable
+	deprecated warnings.
+	* testsuite/22_locale/codecvt/codecvt_utf8/79980.cc: Likewise.
+	* testsuite/22_locale/codecvt/codecvt_utf8_utf16/79511.cc:
+	Likewise.
+	* testsuite/22_locale/conversions/buffer/1.cc: Add dg-warning.
+	* testsuite/22_locale/conversions/buffer/2.cc: Likewise.
+	* testsuite/22_locale/conversions/buffer/3.cc: Likewise.
+	* testsuite/22_locale/conversions/buffer/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/22_locale/conversions/string/1.cc: Likewise.
+	* testsuite/22_locale/conversions/string/2.cc: Likewise.
+	* testsuite/22_locale/conversions/string/3.cc: Likewise.
+	* testsuite/22_locale/conversions/string/66441.cc: Likewise.
+	* testsuite/22_locale/conversions/string/requirements/typedefs-2.cc:
+	Likewise.
+	* testsuite/22_locale/conversions/string/requirements/typedefs.cc:
+	Likewise.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (chrono): Add cxx11abi = yes.
+	* include/bits/version.h: Regenerate.
+	* testsuite/std/time/syn_c++20.cc: Adjust expected value for
+	the feature test macro.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115522
+	* include/std/array (to_array): Workaround the fact that
+	std::is_trivial is not sufficient to check that a type is
+	trivially default constructible and assignable.
+	* testsuite/23_containers/array/creation/115522.cc: New test.
+
+2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h (tracker_allocator):
+	Initialize base class in copy constructor.
+
 2024-06-20  Matthias Kretz  <m.kretz@gsi.de>
 
 	PR libstdc++/115454

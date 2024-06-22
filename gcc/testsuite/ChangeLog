@@ -1,3 +1,40 @@
+2024-06-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/109360
+	* lib/sarif-schema-2.1.0.json: New file, downloaded from
+	https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/schemas/sarif-schema-2.1.0.json
+	Licensing information can be seen at
+	https://github.com/oasis-tcs/sarif-spec/issues/583
+	which states "They are free to incorporate it into their
+	implementation. No need for special permission or paperwork from
+	OASIS."
+	* lib/scansarif.exp (verify-sarif-file): If "jsonschema" is
+	available, use it to verify that the .sarif file complies with the
+	SARIF schema.
+	* lib/target-supports.exp (check_effective_target_jsonschema):
+	New.
+
+2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/atomic10.adb: Adjust.
+
+2024-06-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/vect/pr68855.c: New test.
+	* gfortran.dg/vect/pr68855.f90: New test.
+
+2024-06-21  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/movcc-2.c: Add k?100:1000 test.
+
+2024-06-21  Kewen Lin  <linkw@linux.ibm.com>
+	    Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/106069
+	PR target/115355
+	* g++.target/powerpc/pr106069.C: New test.
+	* gcc.target/powerpc/pr115355.c: New test.
+
 2024-06-20  Hongyu Wang  <hongyu.wang@intel.com>
 
 	* gcc.target/i386/apx-ccmp-2.c: Remove -mno-apxf in option.
