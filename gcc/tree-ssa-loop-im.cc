@@ -2269,7 +2269,7 @@ struct sm_aux
    temporary variable is put to the preheader of the loop, and assignments
    to the reference from the temporary variable are emitted to exits.  */
 
-static void
+static sm_aux *
 execute_sm (class loop *loop, im_mem_ref *ref,
 	    hash_map<im_mem_ref *, sm_aux *> &aux_map, bool maybe_mt,
 	    bool use_other_flag_var)
@@ -2345,6 +2345,8 @@ execute_sm (class loop *loop, im_mem_ref *ref,
       lim_data->tgt_loop = loop;
       gsi_insert_before (&gsi, load, GSI_SAME_STMT);
     }
+
+  return aux;
 }
 
 /* sm_ord is used for ordinary stores we can retain order with respect
@@ -2802,19 +2804,17 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
       hash_map<im_mem_ref *, sm_aux *> aux_map;
 
       /* Execute SM but delay the store materialization for ordered
-	 sequences on exit.  */
-      bool first_p = true;
+	 sequences on exit.  Remember a created flag var and make
+	 sure to re-use it.  */
+      sm_aux *flag_var_aux = nullptr;
       EXECUTE_IF_SET_IN_BITMAP (mem_refs, 0, i, bi)
 	{
 	  ref = memory_accesses.refs_list[i];
-	  execute_sm (loop, ref, aux_map, true, !first_p);
-	  first_p = false;
+	  sm_aux *aux = execute_sm (loop, ref, aux_map, true,
+				    flag_var_aux != nullptr);
+	  if (aux->store_flag)
+	    flag_var_aux = aux;
 	}
-
-      /* Get at the single flag variable we eventually produced.  */
-      im_mem_ref *ref
-	= memory_accesses.refs_list[bitmap_first_set_bit (mem_refs)];
-      sm_aux *aux = *aux_map.get (ref);
 
       /* Materialize ordered store sequences on exits.  */
       edge e;
@@ -2826,13 +2826,14 @@ hoist_memory_references (class loop *loop, bitmap mem_refs,
 	  /* Construct the single flag variable control flow and insert
 	     the ordered seq of stores in the then block.  With
 	     -fstore-data-races we can do the stores unconditionally.  */
-	  if (aux->store_flag)
+	  if (flag_var_aux)
 	    insert_e
 	      = single_pred_edge
 		  (execute_sm_if_changed (e, NULL_TREE, NULL_TREE,
-					  aux->store_flag,
+					  flag_var_aux->store_flag,
 					  loop_preheader_edge (loop),
-					  &aux->flag_bbs, append_cond_position,
+					  &flag_var_aux->flag_bbs,
+					  append_cond_position,
 					  last_cond_fallthru));
 	  execute_sm_exit (loop, insert_e, seq, aux_map, sm_ord,
 			   append_cond_position, last_cond_fallthru);
