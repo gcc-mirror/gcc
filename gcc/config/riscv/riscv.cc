@@ -681,6 +681,15 @@ riscv_min_arithmetic_precision (void)
   return 32;
 }
 
+/* Get the arch string from an options object.  */
+
+template <class T>
+static const char *
+get_arch_str (const T *opts)
+{
+  return opts->x_riscv_arch_string;
+}
+
 template <class T>
 static const char *
 get_tune_str (const T *opts)
@@ -8962,17 +8971,16 @@ riscv_declare_function_name (FILE *stream, const char *name, tree fndecl)
     {
       fprintf (stream, "\t.option push\n");
 
-      std::string *target_name = riscv_func_target_get (fndecl);
-      std::string isa = target_name != NULL
-	? *target_name
-	: riscv_cmdline_subset_list ()->to_string (true);
-      fprintf (stream, "\t.option arch, %s\n", isa.c_str ());
-      riscv_func_target_remove_and_destory (fndecl);
-
       struct cl_target_option *local_cl_target =
 	TREE_TARGET_OPTION (DECL_FUNCTION_SPECIFIC_TARGET (fndecl));
       struct cl_target_option *global_cl_target =
 	TREE_TARGET_OPTION (target_option_default_node);
+
+      const char *local_arch_str = get_arch_str (local_cl_target);
+      const char *arch_str = local_arch_str != NULL
+	? local_arch_str
+	: riscv_arch_str (true).c_str ();
+      fprintf (stream, "\t.option arch, %s\n", arch_str);
       const char *local_tune_str = get_tune_str (local_cl_target);
       const char *global_tune_str = get_tune_str (global_cl_target);
       if (strcmp (local_tune_str, global_tune_str) != 0)

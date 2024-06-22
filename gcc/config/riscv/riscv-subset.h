@@ -109,11 +109,7 @@ public:
   void finalize ();
 };
 
-extern const riscv_subset_list *riscv_current_subset_list (void);
 extern const riscv_subset_list *riscv_cmdline_subset_list (void);
-extern std::string * riscv_func_target_get (tree);
-extern void riscv_func_target_put (tree, std::string);
-extern void riscv_func_target_remove_and_destory (tree);
 extern void
 riscv_set_arch_by_subset_list (riscv_subset_list *, struct gcc_options *);
 

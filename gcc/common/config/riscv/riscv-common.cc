@@ -424,108 +424,11 @@ static const char *riscv_supported_std_ext (void);
 
 bool riscv_subset_list::parse_failed = false;
 
-static riscv_subset_list *current_subset_list = NULL;
-
 static riscv_subset_list *cmdline_subset_list = NULL;
 
-struct riscv_func_target_info
-{
-  tree fn_decl;
-  std::string fn_target_name;
-
-  riscv_func_target_info (const tree &decl, const std::string &target_name)
-    : fn_decl (decl), fn_target_name (target_name)
-  {
-  }
-};
-
-struct riscv_func_target_hasher : nofree_ptr_hash<struct riscv_func_target_info>
-{
-  typedef tree compare_type;
-
-  static hashval_t hash (value_type);
-  static bool equal (value_type, const compare_type &);
-};
-
-static hash_table<riscv_func_target_hasher> *func_target_table = NULL;
-
-static inline hashval_t riscv_func_decl_hash (tree fn_decl)
-{
-  inchash::hash h;
-
-  h.add_ptr (fn_decl);
-
-  return h.end ();
-}
-
-inline hashval_t
-riscv_func_target_hasher::hash (value_type value)
-{
-  return riscv_func_decl_hash (value->fn_decl);
-}
-
-inline bool
-riscv_func_target_hasher::equal (value_type value, const compare_type &key)
-{
-  return value->fn_decl == key;
-}
-
-const riscv_subset_list *riscv_current_subset_list ()
-{
-  return current_subset_list;
-}
-
-const riscv_subset_list * riscv_cmdline_subset_list ()
+const riscv_subset_list *riscv_cmdline_subset_list ()
 {
   return cmdline_subset_list;
-}
-
-static inline void riscv_func_target_table_lazy_init ()
-{
-  if (func_target_table != NULL)
-    return;
-
-  func_target_table = new hash_table<riscv_func_target_hasher> (1023);
-}
-
-std::string * riscv_func_target_get (tree fn_decl)
-{
-  riscv_func_target_table_lazy_init ();
-
-  hashval_t hash = riscv_func_decl_hash (fn_decl);
-  struct riscv_func_target_info *info
-    = func_target_table->find_with_hash (fn_decl, hash);
-
-  return info == NULL ? NULL : &info->fn_target_name;
-}
-
-void riscv_func_target_put (tree fn_decl, std::string fn_target_name)
-{
-  riscv_func_target_table_lazy_init ();
-
-  hashval_t hash = riscv_func_decl_hash (fn_decl);
-  struct riscv_func_target_info **target_info_slot
-    = func_target_table->find_slot_with_hash (fn_decl, hash, INSERT);
-
-  gcc_assert (!*target_info_slot);
-
-  struct riscv_func_target_info *info
-    = new riscv_func_target_info (fn_decl, fn_target_name);
-
-  *target_info_slot = info;
-}
-
-void riscv_func_target_remove_and_destory (tree fn_decl)
-{
-  hashval_t hash = riscv_func_decl_hash (fn_decl);
-  struct riscv_func_target_info *info
-    = func_target_table->find_with_hash (fn_decl, hash);
-
-  if (info)
-    {
-      func_target_table->remove_elt_with_hash (fn_decl, hash);
-      delete info;
-    }
 }
 
 /* struct for recording multi-lib info.  */
@@ -1579,8 +1482,8 @@ riscv_subset_list::finalize ()
 std::string
 riscv_arch_str (bool version_p)
 {
-  if (current_subset_list)
-    return current_subset_list->to_string (version_p);
+  if (cmdline_subset_list)
+    return cmdline_subset_list->to_string (version_p);
   else
     return std::string();
 }
@@ -1759,8 +1662,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {NULL, NULL, 0}
 };
 
-/* Apply SUBSET_LIST to OPTS if OPTS is not null, also set CURRENT_SUBSET_LIST
-   to SUBSET_LIST, just note this WON'T delete old CURRENT_SUBSET_LIST.  */
+/* Apply SUBSET_LIST to OPTS if OPTS is not null.  */
 
 void
 riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
@@ -1787,8 +1689,6 @@ riscv_set_arch_by_subset_list (riscv_subset_list *subset_list,
 	    opts->*arch_ext_flag_tab->var_ref |= arch_ext_flag_tab->mask;
 	}
     }
-
-  current_subset_list = subset_list;
 }
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
@@ -1804,15 +1704,10 @@ riscv_parse_arch_string (const char *isa,
   if (!subset_list)
     return;
 
-  /* Avoid double delete if current_subset_list equals cmdline_subset_list.  */
-  if (current_subset_list && current_subset_list != cmdline_subset_list)
-    delete current_subset_list;
-
   if (cmdline_subset_list)
     delete cmdline_subset_list;
 
   cmdline_subset_list = subset_list;
-  /* current_subset_list is set in the call below.  */
 
   riscv_set_arch_by_subset_list (subset_list, opts);
 }
