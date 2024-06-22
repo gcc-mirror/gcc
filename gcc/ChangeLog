@@ -1,3 +1,37 @@
+2024-06-21  YunQiang Su  <syq@gcc.gnu.org>
+
+	Backported from master:
+	2024-06-21  YunQiang Su  <syq@gcc.gnu.org>
+
+	* configure.ac: Set gcc_cv_as_mips_explicit_relocs if
+	gcc_cv_as_mips_explicit_relocs_pcrel.
+	* configure: Regenerate.
+
+2024-06-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115278
+	* tree-if-conv.cc (ifcvt_local_dce): Do not DSE volatile stores.
+
+2024-06-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115508
+	* tree-vect-slp.cc (vect_schedule_slp_node): Guard check on
+	representative.
+
+2024-06-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_schedule_slp_node): Avoid looking
+	at SLP_REPRESENTATIVE for VEC_PERM nodes.
+
 2024-06-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backported from master:

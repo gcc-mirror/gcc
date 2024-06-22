@@ -1,3 +1,16 @@
+2024-06-21  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2024-06-05  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/115342
+	* config/aarch64/cpuinfo.c (__init_cpu_features_constructor):
+	Use HWCAP where possible.  Use atomic write for initialization.
+	Fix FEAT_PREDRES comparison.
+	(__init_cpu_features_resolver): Use atomic load for correct
+	initialization.
+	(__init_cpu_features): Likewise.
+
 2024-06-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:

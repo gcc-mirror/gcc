@@ -1,3 +1,19 @@
+2024-06-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115278
+	* g++.dg/vect/pr115278.cc: New testcase.
+
+2024-06-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-06-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115508
+	* gcc.target/i386/pr115508.c: New testcase.
+
 2024-06-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backported from master:

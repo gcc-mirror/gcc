@@ -1,3 +1,12 @@
+2024-06-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2024-06-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/115575
+	* testsuite/experimental/simd/pr115454_find_last_set.cc: Require
+	avx512f_runtime. Don't memcpy fixed_size masks.
+
 2024-06-20  Matthias Kretz  <m.kretz@gsi.de>
 
 	Backported from master:
