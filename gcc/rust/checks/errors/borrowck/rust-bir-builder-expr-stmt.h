@@ -99,6 +99,7 @@ protected: // Expr
   void visit (HIR::WhileLetLoopExpr &expr) override;
   void visit (HIR::IfExpr &expr) override;
   void visit (HIR::IfExprConseqElse &expr) override;
+  void visit (HIR::InlineAsm &expr) override;
 
   void visit (HIR::IfLetExpr &expr) override;
   void visit (HIR::IfLetExprConseqElse &expr) override;

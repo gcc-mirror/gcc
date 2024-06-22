@@ -319,6 +319,10 @@ CompileExpr::visit (HIR::IfExpr &expr)
 }
 
 void
+CompileExpr::visit (HIR::InlineAsm &expr)
+{}
+
+void
 CompileExpr::visit (HIR::IfExprConseqElse &expr)
 {
   TyTy::BaseType *if_type = nullptr;

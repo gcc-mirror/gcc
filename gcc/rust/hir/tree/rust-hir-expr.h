@@ -4162,6 +4162,16 @@ public:
       options (std::move (options))
 
   {}
+
+  // This function checks if the assembly macro is "simple" or not, according to
+  // the tree defition (tree.h) of the
+  bool is_simple ()
+  {
+    return operands.size () == 0 && clobber_abi.size () == 0
+	   && options.size () == 0;
+  }
+
+  bool is_inline_asm () { return !is_global_asm; }
 };
 } // namespace HIR
 } // namespace Rust

@@ -101,6 +101,7 @@ public:
   void visit (HIR::MatchExpr &) override {}
   void visit (HIR::AwaitExpr &) override {}
   void visit (HIR::AsyncBlockExpr &) override {}
+  void visit (HIR::InlineAsm &) override {}
 
 private:
   CompileConditionalBlocks (Context *ctx, Bvariable *result)
@@ -184,6 +185,7 @@ public:
   void visit (HIR::MatchExpr &) override {}
   void visit (HIR::AwaitExpr &) override {}
   void visit (HIR::AsyncBlockExpr &) override {}
+  void visit (HIR::InlineAsm &) override {}
 
 private:
   CompileExprWithBlock (Context *ctx, Bvariable *result)

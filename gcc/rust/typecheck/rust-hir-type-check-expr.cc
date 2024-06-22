@@ -776,6 +776,12 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
 }
 
 void
+TypeCheckExpr::visit (HIR::InlineAsm &expr)
+{
+  return;
+}
+
+void
 TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE_FULL;
