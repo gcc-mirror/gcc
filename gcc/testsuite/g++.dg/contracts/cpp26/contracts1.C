@@ -70,7 +70,20 @@ struct Baz
 {
   void f(int x) pre(x = 0); // { dg-error "expected conditional-expression" }
   void g(int x) pre(x, x); // { dg-error "expected conditional-expression" }
-  void h(int x) post(x = 0); // { dg-error "expected conditional-expression" }
-  void i(int x) post(x, x); // { dg-error "expected conditional-expression" }
+  void h(const int x) post(x = 0); // { dg-error "expected conditional-expression" }
+  void i(const int x) post(x, x); // { dg-error "expected conditional-expression" }
 };
+		  
+void postcond(int x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+
+struct PostCond {
+  void postcond(int x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+  template<class T> void postcond2(T x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+};
+
+template <class T> void postcond3(T x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+
+void postcond4(const int y, int x) post(x >= 0); // { dg-error "a value parameter used in a postcondition must be const" }
+
+void postcond5(int y, const int x) post(x >= 0);
 		  
