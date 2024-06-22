@@ -777,9 +777,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
 
 void
 TypeCheckExpr::visit (HIR::InlineAsm &expr)
-{
-  return;
-}
+{}
 
 void
 TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
