@@ -303,6 +303,7 @@ public:
     Await,
     AsyncBlock,
     Path,
+    InlineAsm,
   };
 
   BaseKind get_hir_kind () override final { return EXPR; }

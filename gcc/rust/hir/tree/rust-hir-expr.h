@@ -3893,8 +3893,7 @@ public:
 
   ExprType get_expression_type () const final override
   {
-    // TODO: Not sure if this expression type is UnsafeBlock or not.
-    return ExprType::UnsafeBlock;
+    return ExprType::InlineAsm;
   }
   std::vector<AST::InlineAsmTemplatePiece> get_template_ ()
   {
