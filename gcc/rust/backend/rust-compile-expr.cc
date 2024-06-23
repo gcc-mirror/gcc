@@ -320,7 +320,10 @@ CompileExpr::visit (HIR::IfExpr &expr)
 
 void
 CompileExpr::visit (HIR::InlineAsm &expr)
-{}
+{
+  tree test_string = build_string(expr.template_strs[0].symbol.size() + 1, expr.template_strs[0].symbol.c_str());
+  debug(test_string);
+}
 
 void
 CompileExpr::visit (HIR::IfExprConseqElse &expr)
