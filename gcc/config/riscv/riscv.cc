@@ -4739,8 +4739,9 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       /* reg, reg  */
       else if (REG_P (cons) && REG_P (alt))
 	{
-	  if ((code == EQ && rtx_equal_p (cons, op0))
+	  if (((code == EQ && rtx_equal_p (cons, op0))
 	       || (code == NE && rtx_equal_p (alt, op0)))
+	      && op1 == CONST0_RTX (mode))
 	    {
 	      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
 	      alt = force_reg (mode, alt);
