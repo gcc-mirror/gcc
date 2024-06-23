@@ -1,3 +1,7 @@
+2024-06-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/zbs-ext-2.c: Also skip for -Oz.
+
 2024-06-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR testsuite/109360
