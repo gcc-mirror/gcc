@@ -36325,13 +36325,14 @@ enabled by default on those targets.
 @opindex mcrtdll
 @item -mcrtdll=@var{library}
 Preprocess, compile or link with specified C RunTime DLL @var{library}.
-This option adjust predefined macros @code{__CRTDLL__}, @code{__MSVCRT__}
-and @code{__MSVCRT_VERSION__} for specified CRT @var{library}, choose
-start file for CRT @var{library} and link with CRT @var{library}.
+This option adjust predefined macros @code{__CRTDLL__}, @code{__MSVCRT__},
+@code{_UCRT} and @code{__MSVCRT_VERSION__} for specified CRT @var{library},
+choose start file for CRT @var{library} and link with CRT @var{library}.
 Recognized CRT library names for proprocessor are:
-@code{crtdll}, @code{msvcrt10}, @code{msvcrt20}, @code{msvcrt40},
-@code{msvcrt-os}, @code{msvcr70}, @code{msvcr80}, @code{msvcr90},
-@code{msvcr100}, @code{msvcr110}, @code{msvcr120} and @code{ucrt}.
+@code{crtdll*}, @code{msvcrt10*}, @code{msvcrt20*}, @code{msvcrt40*},
+@code{msvcr40*}, @code{msvcrtd*}, @code{msvcrt-os*},
+@code{msvcr70*}, @code{msvcr71*}, @code{msvcr80*}, @code{msvcr90*},
+@code{msvcr100*}, @code{msvcr110*}, @code{msvcr120*} and @code{ucrt*}.
 If this options is not specified then the default MinGW import library
 @code{msvcrt} is used for linking and no other adjustment for
 preprocessor is done. MinGW import library @code{msvcrt} is just a
