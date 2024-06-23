@@ -8673,6 +8673,10 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	&& (sym->backend_decl != parent))
     this_array_result = false;
 
+  /* Passing an optional dummy argument as actual to an optional dummy?  */
+  bool pass_optional;
+  pass_optional = fsym && fsym->attr.optional && sym && sym->attr.optional;
+
   /* Passing address of the array if it is not pointer or assumed-shape.  */
   if (full_array_var && g77 && !this_array_result
       && sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
@@ -8710,6 +8714,14 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	  if (size)
 	    array_parameter_size (&se->pre, tmp, expr, size);
 	  se->expr = gfc_conv_array_data (tmp);
+	  if (pass_optional)
+	    {
+	      tree cond = gfc_conv_expr_present (sym);
+	      se->expr = build3_loc (input_location, COND_EXPR,
+				     TREE_TYPE (se->expr), cond, se->expr,
+				     fold_convert (TREE_TYPE (se->expr),
+						   null_pointer_node));
+	    }
           return;
         }
     }
@@ -8959,8 +8971,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	  tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				 fold_convert (TREE_TYPE (tmp), ptr), tmp);
 
-	  if (fsym && fsym->attr.optional && sym && sym->attr.optional)
-	    tmp = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+	  if (pass_optional)
+	    tmp = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
 				   logical_type_node,
 				   gfc_conv_expr_present (sym), tmp);
 
@@ -8994,8 +9006,8 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
       tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			     fold_convert (TREE_TYPE (tmp), ptr), tmp);
 
-      if (fsym && fsym->attr.optional && sym && sym->attr.optional)
-	tmp = fold_build2_loc (input_location, TRUTH_AND_EXPR,
+      if (pass_optional)
+	tmp = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
 			       logical_type_node,
 			       gfc_conv_expr_present (sym), tmp);
 
