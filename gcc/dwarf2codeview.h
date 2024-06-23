@@ -30,5 +30,6 @@ extern void codeview_source_line (unsigned int, const char *);
 extern void codeview_start_source_file (const char *);
 extern void codeview_switch_text_section ();
 extern void codeview_end_epilogue (void);
+extern void codeview_debug_early_finish (dw_die_ref die);
 
 #endif /* GCC_DWARF2CODEVIEW_H */

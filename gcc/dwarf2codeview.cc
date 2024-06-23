@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define CHKSUM_TYPE_MD5		1
 
+#define S_LDATA32		0x110c
+#define S_GDATA32		0x110d
 #define S_COMPILE3		0x113c
 
 #define CV_CFL_80386		0x03
@@ -129,6 +131,22 @@ struct codeview_function
   codeview_line_block *blocks, *last_block;
 };
 
+struct codeview_symbol
+{
+  codeview_symbol *next;
+  uint16_t kind;
+
+  union
+  {
+    struct
+    {
+      uint32_t type;
+      char *name;
+      dw_die_ref die;
+    } data_symbol;
+  };
+};
+
 static unsigned int line_label_num;
 static unsigned int func_label_num;
 static unsigned int sym_label_num;
@@ -140,6 +158,7 @@ static codeview_string *strings, *last_string;
 static codeview_function *funcs, *last_func;
 static const char* last_filename;
 static uint32_t last_file_id;
+static codeview_symbol *sym, *last_sym;
 
 /* Record new line number against the current function.  */
 
@@ -698,6 +717,77 @@ write_compile3_symbol (void)
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 }
 
+/* Write an S_GDATA32 symbol, representing a global variable, or an S_LDATA32
+   symbol, for a static global variable.  */
+
+static void
+write_data_symbol (codeview_symbol *s)
+{
+  unsigned int label_num = ++sym_label_num;
+  dw_attr_node *loc;
+  dw_loc_descr_ref loc_ref;
+
+  /* This is struct datasym in binutils:
+
+      struct datasym
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint32_t type;
+	uint32_t offset;
+	uint16_t section;
+	char name[];
+      } ATTRIBUTE_PACKED;
+  */
+
+  /* Extract the DW_AT_location attribute from the DIE, and make sure it's in
+     in a format we can parse.  */
+
+  loc = get_AT (s->data_symbol.die, DW_AT_location);
+  if (!loc)
+    goto end;
+
+  if (loc->dw_attr_val.val_class != dw_val_class_loc)
+    goto end;
+
+  loc_ref = loc->dw_attr_val.v.val_loc;
+  if (!loc_ref || loc_ref->dw_loc_opc != DW_OP_addr)
+    goto end;
+
+  /* Output the S_GDATA32 / S_LDATA32 record.  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, s->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, s->data_symbol.type);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, loc_ref->dw_loc_oprnd1.v.val_addr);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, loc_ref->dw_loc_oprnd1.v.val_addr);
+  fputc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, s->data_symbol.name,
+		    strlen (s->data_symbol.name) + 1);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+end:
+  free (s->data_symbol.name);
+}
+
 /* Write the CodeView symbols into the .debug$S section.  */
 
 static void
@@ -713,6 +803,22 @@ write_codeview_symbols (void)
   asm_fprintf (asm_out_file, "%LLcv_syms_start:\n");
 
   write_compile3_symbol ();
+
+  while (sym)
+    {
+      codeview_symbol *n = sym->next;
+
+      switch (sym->kind)
+	{
+	case S_LDATA32:
+	case S_GDATA32:
+	  write_data_symbol (sym);
+	  break;
+	}
+
+      free (sym);
+      sym = n;
+    }
 
   asm_fprintf (asm_out_file, "%LLcv_syms_end:\n");
 }
@@ -732,6 +838,60 @@ codeview_debug_finish (void)
   write_source_files ();
   write_line_numbers ();
   write_codeview_symbols ();
+}
+
+/* Process a DW_TAG_variable DIE, and add an S_GDATA32 or S_LDATA32 symbol for
+   this.  */
+
+static void
+add_variable (dw_die_ref die)
+{
+  codeview_symbol *s;
+  const char *name;
+
+  name = get_AT_string (die, DW_AT_name);
+  if (!name)
+    return;
+
+  s = (codeview_symbol *) xmalloc (sizeof (codeview_symbol));
+
+  s->next = NULL;
+  s->kind = get_AT (die, DW_AT_external) ? S_GDATA32 : S_LDATA32;
+  s->data_symbol.type = 0;
+  s->data_symbol.name = xstrdup (name);
+  s->data_symbol.die = die;
+
+  if (last_sym)
+    last_sym->next = s;
+  else
+    sym = s;
+
+  last_sym = s;
+}
+
+/* Loop through the DIEs that have been output for our TU, and add CodeView
+   symbols for them.  */
+
+void
+codeview_debug_early_finish (dw_die_ref die)
+{
+  dw_die_ref first_child, c;
+
+  first_child = dw_get_die_child (die);
+
+  if (!first_child)
+    return;
+
+  c = first_child;
+
+  do
+    {
+      if (dw_get_die_tag (c) == DW_TAG_variable)
+	add_variable (c);
+
+      c = dw_get_die_sib (c);
+    }
+  while (c != first_child);
 }
 
 #endif

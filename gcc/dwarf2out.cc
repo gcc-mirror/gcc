@@ -33251,6 +33251,11 @@ dwarf2out_early_finish (const char *filename)
       ctf_debug_early_finish (filename);
     }
 
+#ifdef CODEVIEW_DEBUGGING_INFO
+  if (codeview_debuginfo_p ())
+    codeview_debug_early_finish (comp_unit_die ());
+#endif
+
   /* Do not generate DWARF assembler now when not producing LTO bytecode.  */
   if ((!flag_generate_lto && !flag_generate_offload)
       /* FIXME: Disable debug info generation for (PE-)COFF targets since the
