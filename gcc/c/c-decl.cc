@@ -7502,12 +7502,18 @@ grokdeclarator (const struct c_declarator *declarator,
 	       modify the shared type, so we gcc_assert (itype)
 	       below.  */
 	      {
+		/* Identify typeless storage as introduced in C2Y
+		   and supported also in earlier language modes.  */
+		bool typeless = (char_type_p (type)
+				 && !(type_quals & TYPE_QUAL_ATOMIC))
+				|| (AGGREGATE_TYPE_P (type)
+				    && TYPE_TYPELESS_STORAGE (type));
+
 		addr_space_t as = DECODE_QUAL_ADDR_SPACE (type_quals);
 		if (!ADDR_SPACE_GENERIC_P (as) && as != TYPE_ADDR_SPACE (type))
 		  type = build_qualified_type (type,
 					       ENCODE_QUAL_ADDR_SPACE (as));
-
-		type = build_array_type (type, itype);
+		type = build_array_type (type, itype, typeless);
 	      }
 
 	    if (type != error_mark_node)
@@ -9659,6 +9665,10 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       if (DECL_NAME (x)
 	  || RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
 	saw_named_field = true;
+
+      if (AGGREGATE_TYPE_P (TREE_TYPE (x))
+	  && TYPE_TYPELESS_STORAGE (TREE_TYPE (x)))
+	TYPE_TYPELESS_STORAGE (t) = true;
     }
 
   detect_field_duplicates (fieldlist);
@@ -9859,6 +9869,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       TYPE_FIELDS (x) = TYPE_FIELDS (t);
       TYPE_LANG_SPECIFIC (x) = TYPE_LANG_SPECIFIC (t);
       TYPE_TRANSPARENT_AGGR (x) = TYPE_TRANSPARENT_AGGR (t);
+      TYPE_TYPELESS_STORAGE (x) = TYPE_TYPELESS_STORAGE (t);
       C_TYPE_FIELDS_READONLY (x) = C_TYPE_FIELDS_READONLY (t);
       C_TYPE_FIELDS_VOLATILE (x) = C_TYPE_FIELDS_VOLATILE (t);
       C_TYPE_FIELDS_NON_CONSTEXPR (x) = C_TYPE_FIELDS_NON_CONSTEXPR (t);
