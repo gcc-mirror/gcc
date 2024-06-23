@@ -6414,10 +6414,17 @@ compare_repeat_factors (const void *x1, const void *x2)
   const repeat_factor *rf1 = (const repeat_factor *) x1;
   const repeat_factor *rf2 = (const repeat_factor *) x2;
 
-  if (rf1->count != rf2->count)
-    return rf1->count - rf2->count;
+  if (rf1->count < rf2->count)
+    return -1;
+  else if (rf1->count > rf2->count)
+    return 1;
 
-  return rf2->rank - rf1->rank;
+  if (rf1->rank < rf2->rank)
+    return 1;
+  else if (rf1->rank > rf2->rank)
+    return -1;
+
+  return 0;
 }
 
 /* Look for repeated operands in OPS in the multiply tree rooted at
