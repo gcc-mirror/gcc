@@ -6080,7 +6080,6 @@ static void
 vect_cse_slp_nodes (scalar_stmts_to_slp_tree_map_t *bst_map, slp_tree& node)
 {
   if (SLP_TREE_DEF_TYPE (node) == vect_internal_def
-      && SLP_TREE_CODE (node) != VEC_PERM_EXPR
       /* Besides some VEC_PERM_EXPR, two-operator nodes also
 	 lack scalar stmts and thus CSE doesn't work via bst_map.  Ideally
 	 we'd have sth that works for all internal and external nodes.  */
