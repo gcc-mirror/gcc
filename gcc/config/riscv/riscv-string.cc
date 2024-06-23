@@ -1342,7 +1342,7 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx haystack, rtx needle,
   /* Compare needle with haystack and store in a mask.  */
   rtx eq = gen_rtx_EQ (mask_mode, gen_const_vec_duplicate (vmode, needle), vec);
   rtx vmsops[] = {mask, eq, vec, needle};
-  emit_nonvlmax_insn (code_for_pred_eqne_scalar (vmode),
+  emit_nonvlmax_insn (code_for_pred_cmp_scalar (vmode),
 		      riscv_vector::COMPARE_OP, vmsops, cnt);
 
   /* Find the first bit in the mask.  */
@@ -1468,7 +1468,7 @@ expand_strcmp (rtx result, rtx src1, rtx src2, rtx nbytes,
     = gen_rtx_EQ (mask_mode, gen_const_vec_duplicate (vmode, CONST0_RTX (mode)),
 		  vec1);
   rtx vmsops1[] = {mask0, eq0, vec1, CONST0_RTX (mode)};
-  emit_nonvlmax_insn (code_for_pred_eqne_scalar (vmode),
+  emit_nonvlmax_insn (code_for_pred_cmp_scalar (vmode),
 		      riscv_vector::COMPARE_OP, vmsops1, cnt);
 
   /* Look for vec1 != vec2 (includes vec2[i] == 0).  */

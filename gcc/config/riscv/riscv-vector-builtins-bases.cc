@@ -718,9 +718,6 @@ public:
 	  if (CODE == GE || CODE == GEU)
 	    return e.use_compare_insn (CODE, code_for_pred_ge_scalar (
 					       e.vector_mode ()));
-	  else if (CODE == EQ || CODE == NE)
-	    return e.use_compare_insn (CODE, code_for_pred_eqne_scalar (
-					       e.vector_mode ()));
 	  else
 	    return e.use_compare_insn (CODE, code_for_pred_cmp_scalar (
 					       e.vector_mode ()));
