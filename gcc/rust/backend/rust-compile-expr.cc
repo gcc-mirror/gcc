@@ -321,8 +321,10 @@ CompileExpr::visit (HIR::IfExpr &expr)
 void
 CompileExpr::visit (HIR::InlineAsm &expr)
 {
-  tree test_string = build_string(expr.template_strs[0].symbol.size() + 1, expr.template_strs[0].symbol.c_str());
-  debug(test_string);
+  // translated = build_asm_expr()(expr.get_locus(),
+  //      expr.construct_string_tree(), expr.construct_outputs(),
+  //      expr.construct_inputs(),   expr.construct_clobber_tree(),
+  //      expr.construct_label_tree(), expr.is_simple(), expr.is_inline_asm());
 }
 
 void
