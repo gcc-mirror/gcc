@@ -1688,7 +1688,9 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 	  gimple *stmt = gsi_stmt (si);
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (stmt);
 
-          if (!is_gimple_assign (stmt) && !is_gimple_call (stmt))
+	  if (!is_gimple_assign (stmt)
+	      && !is_gimple_call (stmt)
+	      && !is_a<gcond *> (stmt))
             continue;
 
           /* Skip stmts that are not vectorized inside the loop.  */
