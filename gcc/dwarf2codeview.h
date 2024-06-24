@@ -56,7 +56,12 @@ along with GCC; see the file COPYING3.  If not see
 #define CV_PTR_NEAR32		0x0a
 #define CV_PTR_64		0x0c
 
+/* LF_MODIFIER values.  */
+#define MOD_const		0x1
+#define MOD_volatile		0x2
+
 /* Constants for type definitions.  */
+#define LF_MODIFIER		0x1001
 #define LF_POINTER		0x1002
 
 /* Debug Format Interface.  Used in dwarf2out.cc.  */

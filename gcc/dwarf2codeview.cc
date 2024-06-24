@@ -183,6 +183,11 @@ struct codeview_custom_type
       uint32_t base_type;
       uint32_t attributes;
     } lf_pointer;
+    struct
+    {
+      uint32_t base_type;
+      uint16_t modifier;
+    } lf_modifier;
   };
 };
 
@@ -903,6 +908,76 @@ write_lf_pointer (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* All CodeView type definitions have to be aligned to a four-byte boundary,
+   so write some padding bytes if necessary.  These have to be specific values:
+   f3, f2, f1.  */
+
+static void
+write_cv_padding (size_t padding)
+{
+  if (padding == 4 || padding == 0)
+    return;
+
+  if (padding == 3)
+    {
+      fputs (integer_asm_op (1, false), asm_out_file);
+      fprint_whex (asm_out_file, 0xf3);
+      putc ('\n', asm_out_file);
+    }
+
+  if (padding >= 2)
+    {
+      fputs (integer_asm_op (1, false), asm_out_file);
+      fprint_whex (asm_out_file, 0xf2);
+      putc ('\n', asm_out_file);
+    }
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, 0xf1);
+  putc ('\n', asm_out_file);
+}
+
+/* Write an LF_MODIFIER type, representing a const and/or volatile modification
+   of another type.  */
+
+static void
+write_lf_modifier (codeview_custom_type *t)
+{
+  /* This is lf_modifier in binutils and lfModifier in Microsoft's cvinfo.h:
+
+    struct lf_modifier
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t base_type;
+      uint16_t modifier;
+      uint16_t padding;
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_modifier.base_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_modifier.modifier);
+  putc ('\n', asm_out_file);
+
+  write_cv_padding (2);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -923,6 +998,10 @@ write_custom_types (void)
 	{
 	case LF_POINTER:
 	  write_lf_pointer (custom_types);
+	  break;
+
+	case LF_MODIFIER:
+	  write_lf_modifier (custom_types);
 	  break;
 	}
 
@@ -1159,6 +1238,76 @@ get_type_num_pointer_type (dw_die_ref type)
   return ct->num;
 }
 
+/* Process a DW_TAG_const_type DIE, adding an LF_MODIFIER type and returning
+   its number.  */
+
+static uint32_t
+get_type_num_const_type (dw_die_ref type)
+{
+  dw_die_ref base_type;
+  uint32_t base_type_num;
+  codeview_custom_type *ct;
+  bool is_volatile = false;
+
+  base_type = get_AT_ref (type, DW_AT_type);
+  if (!base_type)
+    return 0;
+
+  /* Handle case when this is a const volatile type - we only need one
+     LF_MODIFIER for this.  */
+  if (dw_get_die_tag (base_type) == DW_TAG_volatile_type)
+    {
+      is_volatile = true;
+
+      base_type = get_AT_ref (base_type, DW_AT_type);
+      if (!base_type)
+	return 0;
+    }
+
+  base_type_num = get_type_num (base_type);
+  if (base_type_num == 0)
+    return 0;
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_MODIFIER;
+  ct->lf_modifier.base_type = base_type_num;
+  ct->lf_modifier.modifier = MOD_const;
+
+  if (is_volatile)
+    ct->lf_modifier.modifier |= MOD_volatile;
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
+/* Process a DW_TAG_volatile_type DIE, adding an LF_MODIFIER type and
+   returning its number.  */
+
+static uint32_t
+get_type_num_volatile_type (dw_die_ref type)
+{
+  uint32_t base_type_num;
+  codeview_custom_type *ct;
+
+  base_type_num = get_type_num (get_AT_ref (type, DW_AT_type));
+  if (base_type_num == 0)
+    return 0;
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_MODIFIER;
+  ct->lf_modifier.base_type = base_type_num;
+  ct->lf_modifier.modifier = MOD_volatile;
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
 /* Process a DIE representing a type definition, add a CodeView type if
    necessary, and return its number.  If it's something we can't handle, return
    0.  We keep a hash table so that we're not adding the same type multiple
@@ -1199,6 +1348,14 @@ get_type_num (dw_die_ref type)
 
     case DW_TAG_pointer_type:
       t->num = get_type_num_pointer_type (type);
+      break;
+
+    case DW_TAG_const_type:
+      t->num = get_type_num_const_type (type);
+      break;
+
+    case DW_TAG_volatile_type:
+      t->num = get_type_num_volatile_type (type);
       break;
 
     default:
