@@ -597,7 +597,7 @@ public:
 
 /* AST node representing a path-in-expression pattern (path that allows
  * generic arguments) */
-class PathInExpression : public PathPattern, public PathExpr
+class PathInExpression : public PathPattern, public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
   bool has_opening_scope_resolution;
@@ -1221,7 +1221,7 @@ public:
 
 /* AST node representing a qualified path-in-expression pattern (path that
  * allows specifying trait functions) */
-class QualifiedPathInExpression : public PathPattern, public PathExpr
+class QualifiedPathInExpression : public PathPattern, public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
   QualifiedPathType path_type;

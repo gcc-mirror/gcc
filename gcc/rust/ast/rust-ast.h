@@ -2048,11 +2048,6 @@ public:
   }
 };
 
-// Base path expression AST node - abstract
-class PathExpr : public ExprWithoutBlock
-{
-};
-
 } // namespace AST
 } // namespace Rust
 
