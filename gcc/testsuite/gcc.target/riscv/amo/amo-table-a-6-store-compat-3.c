@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* Verify that store mapping are compatible with Table A.6 & A.7.  */
 /* { dg-options "-O3" } */
+/* { dg-remove-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

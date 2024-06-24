@@ -1,6 +1,9 @@
 /* { dg-do compile } */
 /* Verify that lrsc atomic op mappings match Table A.6's recommended mapping.  */
-/* { dg-options "-O3 -march=rv64id_zalrsc -mabi=lp64d" } */
+/* { dg-options "-O3" } */
+/* { dg-add-options riscv_zalrsc } */
+/* { dg-remove-options riscv_zaamo } */
+/* { dg-remove-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
 /* { dg-final { check-function-bodies "**" "" } } */
 

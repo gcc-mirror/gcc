@@ -2156,7 +2156,7 @@ proc riscv_get_arch { } {
 
 proc add_options_for_riscv_a { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
+	# If there are any -march flags, we have to adjust all of them.
 	set expanded_flags [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*)g+} $flags \\1imafd ]
 	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[b-eg-rt-wy]*)a*} $expanded_flags \\1a ]
     }
@@ -2166,9 +2166,41 @@ proc add_options_for_riscv_a { flags } {
     return "$flags -march=[regsub {(rv[[:digit:]]*[b-eg-rt-wy]*)a*} [riscv_get_arch] &a]"
 }
 
+proc remove_options_for_riscv_a_only { flags } {
+    # Only remove the 'a' extension. Useful when removing zalrsc/zaamo.
+    if { [lsearch $flags -march=*] >= 0 } {
+	# If there are any -march flags, we have to adjust all of them.
+	set expanded_flags [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*)g+} $flags \\1imafd ]
+	set modified_flags [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[b-eg-rt-wy]*)a*} $expanded_flags \\1 ]
+	return $modified_flags
+    }
+    if { [check_effective_target_riscv_a] } {
+	# Manually specify the -march and remove it with another call
+	return [remove_options_for_riscv_a_only "$flags -march=[riscv_get_arch]"]
+    }
+    return $flags
+}
+
+proc remove_options_for_riscv_a { flags } {
+    # Remove the 'a' extension and implied zalrsc/zaamo extensions.
+    if { [lsearch $flags -march=*] >= 0 } {
+	# If there are any -march flags, we have to adjust all of them.
+	set modified_flags [remove_options_for_riscv_a_only $flags]
+	# Also removed implied extensions
+	set modified_flags [remove_options_for_riscv_z_ext zaamo $flags]
+	set modified_flags [remove_options_for_riscv_z_ext zalrsc $flags]
+	return $modified_flags
+    }
+    if { [check_effective_target_riscv_a] } {
+	# Manually specify the -march and remove it with another call
+	return [remove_options_for_riscv_a "$flags -march=[riscv_get_arch]"]
+    }
+    return $flags
+}
+
 proc add_options_for_riscv_d { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
+	# If there are any -march flags, we have to adjust all of them.
 	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-ce-rt-wy]*)d*} $flags \\1d ]
     }
     if { [check_effective_target_riscv_d] } {
@@ -2177,9 +2209,21 @@ proc add_options_for_riscv_d { flags } {
     return "$flags -march=[regsub {[[:alnum:]]*} [riscv_get_arch] &d]"
 }
 
+proc remove_options_for_riscv_d { flags } {
+    if { [lsearch $flags -march=*] >= 0 } {
+	# If there are any -march flags, we have to adjust all of them.
+	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-ce-rt-wy]*)d*} $flags \\1d ]
+    }
+    if { [check_effective_target_riscv_d] } {
+	# Manually specify the -march and remove it with another call
+	return [remove_options_for_riscv_d "$flags -march=[riscv_get_arch]"]
+    }
+    return $flags
+}
+
 proc add_options_for_riscv_v { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
+	# If there are any -march flags, we have to adjust all of them.
 	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-rt-uwy]*)v*} $flags \\1v ]
     }
     if { [check_effective_target_riscv_v] } {
@@ -2188,76 +2232,120 @@ proc add_options_for_riscv_v { flags } {
     return "$flags -march=[regsub {[[:alnum:]]*} [riscv_get_arch] &v]"
 }
 
-proc add_options_for_riscv_zaamo { flags } {
+proc remove_options_for_riscv_v { flags } {
     if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
-	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zaamo ]
-	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zaamo[[:alnum:]_.]*)_zaamo} $flags \\1 ]
+	# If there are any -march flags, we have to adjust all of them.
+	return [regsub -all -- {((?:^|[[:space:]])-march=rv[[:digit:]]*[a-rt-uwy]*)v*} $flags \\1 ]
     }
-    if { [check_effective_target_riscv_zaamo] } {
+    if { [check_effective_target_riscv_v] } {
+	# Manually specify the -march and remove it with another call
+	return [remove_options_for_riscv_v "$flags -march=[riscv_get_arch]"]
+    }
+    return $flags
+}
+
+proc add_options_for_riscv_z_ext { ext flags } {
+    if {[lsearch $flags "-march=*"] >= 0} {
+        # If there are any -march flags, we have to adjust all of them.
+        set modified_flags {}
+        foreach flag $flags {
+            if {[regexp {^-march=(\S+)} $flag match march_name]} {
+                if {![string match "*_${ext}*" $march_name]} {
+                    set march_name "${march_name}_${ext}"
+                }
+                lappend modified_flags "-march=$march_name"
+            } else {
+                lappend modified_flags $flag
+            }
+        }
+        return [join $modified_flags " "]
+    }
+    if { [check_effective_target_riscv_$ext] } {
 	return "$flags"
     }
-    return "$flags -march=[riscv_get_arch]_zaamo"
+    return "$flags -march=[riscv_get_arch]_${ext}"
+}
+
+proc remove_options_for_riscv_z_ext { ext flags } {
+    if { [lsearch $flags -march=*] >= 0 } {
+	# If there are multiple -march flags, we have to adjust all of them.
+	set modified_flags ""
+	foreach flag $flags {
+	    if {[regexp {^-march=(\S+)} $flag -> march_name]} {
+		# Remove "_ext" from the march_name if present
+		set march_name [string map [list _${ext} {}] $march_name]
+		lappend modified_flags "-march=$march_name"
+	    } else {
+		lappend modified_flags $flag
+	    }
+	}
+	return [join $modified_flags " "]
+    }
+    if { [check_effective_target_riscv_$ext] } {
+	# Manually specify the -march and remove it with another call
+	return [remove_options_for_riscv_z_ext $ext "$flags -march=[riscv_get_arch]"]
+    }
+    return $flags
+}
+
+proc add_options_for_riscv_zaamo { flags } {
+    return [add_options_for_riscv_z_ext zaamo $flags]
+}
+
+proc remove_options_for_riscv_zaamo { flags } {
+    set modified_flags [remove_options_for_riscv_z_ext zaamo $flags]
+    # If 'a' is set then zaamo will be implied. We need to downgrade instances
+    # of 'a' to 'zalrsc'
+    set no_a_flags [remove_options_for_riscv_a_only [split $modified_flags]]
+    if {![string equal $modified_flags $no_a_flags]} {
+	# 'a' was removed, add 'zalrsc' since it was previously implied
+	set modified_flags [add_options_for_riscv_zalrsc [split $no_a_flags]]
+    }
+    return $modified_flags
 }
 
 proc add_options_for_riscv_zalrsc { flags } {
-    if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
-	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zalrsc ]
-	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zalrsc[[:alnum:]_.]*)_zalrsc} $flags \\1 ]
+    return [add_options_for_riscv_z_ext zalrsc $flags]
+}
+
+proc remove_options_for_riscv_zalrsc { flags } {
+    set modified_flags [remove_options_for_riscv_z_ext zalrsc $flags]
+    # If 'a' is set then zalrsc will be implied. We need to downgrade instances
+    # of 'a' to 'zaamo'
+    set no_a_flags [remove_options_for_riscv_a_only [split $modified_flags]]
+    if {![string equal $modified_flags $no_a_flags]} {
+	# 'a' was removed, add 'zalrsc' since it was previously implied
+	set modified_flags [add_options_for_riscv_zalrsc [split $no_a_flags]]
     }
-    if { [check_effective_target_riscv_zalrsc] } {
-	return "$flags"
-    }
-    return "$flags -march=[riscv_get_arch]_zalrsc"
+    return $modified_flags
 }
 
 proc add_options_for_riscv_zfh { flags } {
-    if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
-	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zfh ]
-	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zfh[[:alnum:]_.]*)_zfh} $flags \\1 ]
-    }
-    if { [check_effective_target_riscv_zfh] } {
-	return "$flags"
-    }
-    return "$flags -march=[riscv_get_arch]_zfh"
+    return [add_options_for_riscv_z_ext zfh $flags]
+}
+
+proc remove_options_for_riscv_zfh { flags } {
+    return [remove_options_for_riscv_z_ext zfh $flags]
 }
 
 proc add_options_for_riscv_ztso { flags } {
-    if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
-	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_ztso ]
-	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_ztso[[:alnum:]_.]*)_ztso} $flags \\1 ]
-    }
-    if { [check_effective_target_riscv_ztso] } {
-	return "$flags"
-    }
-    return "$flags -march=[riscv_get_arch]_ztso"
+    return [add_options_for_riscv_z_ext ztso $flags]
 }
 
-proc add_options_for_riscv_zvfh { flags } {
-    if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
-	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zvfh ]
-	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zvfh[[:alnum:]_.]*)_zvfh} $flags \\1 ]
-    }
-    if { [check_effective_target_riscv_zvfh] } {
-	return "$flags"
-    }
-    return "$flags -march=[riscv_get_arch]_zvfh"
+proc remove_options_for_riscv_ztso { flags } {
+    return [remove_options_for_riscv_z_ext ztso $flags]
+}
+
+proc remove_options_for_riscv_zvfh { flags } {
+    return [add_options_for_riscv_z_ext zvfh $flags]
 }
 
 proc add_options_for_riscv_zvbb { flags } {
-    if { [lsearch $flags -march=*] >= 0 } {
-	# If there are multiple -march flags, we have to adjust all of them.
-	set flags [regsub -all -- {(?:^|[[:space:]])-march=[[:alnum:]_.]*} $flags &_zvbb ]
-	return [regsub -all -- {((?:^|[[:space:]])-march=[[:alnum:]_.]*_zvbb[[:alnum:]_.]*)_zvbb} $flags \\1 ]
-    }
-    if { [check_effective_target_riscv_zvbb] } {
-	return "$flags"
-    }
-    return "$flags -march=[riscv_get_arch]_zvbb"
+    return [add_options_for_riscv_z_ext zvbb $flags]
+}
+
+proc remove_options_for_riscv_zvbb { flags } {
+    return [add_options_for_riscv_z_ext zvbb $flags]
 }
 
 # Return 1 if the target OS supports running SSE executables, 0

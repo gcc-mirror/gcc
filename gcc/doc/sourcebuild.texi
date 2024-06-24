@@ -1015,6 +1015,7 @@ FIXME: discuss non-C testsuites here.
 * Selectors:: Selecting targets to which a test applies.
 * Effective-Target Keywords:: Keywords describing target attributes.
 * Add Options:: Features for @code{dg-add-options}
+* Remove Options:: Features for @code{dg-remove-options}
 * Require Support:: Variants of @code{dg-require-@var{support}}
 * Final Actions:: Commands for use in @code{dg-final}
 @end menu
@@ -1084,6 +1085,13 @@ This directive does nothing on targets that enable the features by
 default, or that don't provide them at all.  It must come after
 all @code{dg-options} directives.
 For supported values of @var{feature} see @ref{Add Options, ,}.
+
+@item @{ dg-remove-options @var{feature} @dots{} @}
+Remove any compiler options that are needed to access certain features.
+This directive does nothing on targets that disable the features by
+default, or that don't provide them at all.  It must come after
+all @code{dg-options} and @code{dg-add-options} directives.
+For supported values of @var{feature} see @ref{Remove Options, ,}.
 
 @item @{ dg-additional-options @var{options} [@{ target @var{selector} @}] @}
 This directive provides a list of compiler options, to be used
@@ -3278,6 +3286,18 @@ compliance mode.
 @code{mips16} function attributes.
 Only MIPS targets support this feature, and only then in certain modes.
 
+@item riscv_a
+Add the 'A' extension to the -march string on RISC-V targets.
+
+@item riscv_zaamo
+Add the zaamo extension to the -march string on RISC-V targets.
+
+@item riscv_zalrsc
+Add the zalrsc extension to the -march string on RISC-V targets.
+
+@item riscv_ztso
+Add the ztso extension to the -march string on RISC-V targets.
+
 @item stack_size
 @anchor{stack_size_ao}
 Add the flags needed to define macro STACK_SIZE and set it to the stack size
@@ -3298,6 +3318,29 @@ a target, if any.  This requires the target to have an implementation of the
 
 @item weak_undefined
 Add the flags needed to enable support for weak undefined symbols.
+@end table
+
+@node Remove Options
+@subsection Features for @code{dg-remove-options}
+
+The supported values of @var{feature} for directive @code{dg-remove-options}
+are:
+
+@table @code
+@item riscv_a
+Remove the 'A' extension and all implied extensions from the -march string on
+RISC-V targets.
+
+@item riscv_zaamo
+Remove the zaamo extension from the -march string on RISC-V. If the 'A'
+extension is present downgrade it to zalrsc.
+
+@item riscv_zalrsc
+Remove the zalrsc extension from the -march string on RISC-V. If the 'A'
+extension is present downgrade it to zaamo.
+
+@item riscv_ztso
+Remove the ztso extension from the -march string on RISC-V targets.
 @end table
 
 @node Require Support

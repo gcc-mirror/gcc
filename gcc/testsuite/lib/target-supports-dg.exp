@@ -321,6 +321,22 @@ proc dg-add-options { args } {
     }
 }
 
+# Remove any target-specific flags needed for accessing the given list
+# of features.  This must come after all dg-options.
+
+proc dg-remove-options { args } {
+    upvar dg-extra-tool-flags extra-tool-flags
+
+    foreach arg [lrange $args 1 end] {
+	if { [info procs remove_options_for_$arg] != "" } {
+	    set extra-tool-flags \
+		[eval [list remove_options_for_$arg ${extra-tool-flags}]]
+	} else {
+	    error "Unrecognized option type: $arg"
+	}
+    }
+}
+
 # Compare flags for a test directive against flags that will be used to
 # compile the test: multilib flags, flags for torture options, and either
 # the default flags for this group of tests or flags specified with a
