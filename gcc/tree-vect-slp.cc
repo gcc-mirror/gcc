@@ -6079,35 +6079,44 @@ vect_optimize_slp_pass::run ()
 static void
 vect_cse_slp_nodes (scalar_stmts_to_slp_tree_map_t *bst_map, slp_tree& node)
 {
+  bool put_p = false;
   if (SLP_TREE_DEF_TYPE (node) == vect_internal_def
       /* Besides some VEC_PERM_EXPR, two-operator nodes also
 	 lack scalar stmts and thus CSE doesn't work via bst_map.  Ideally
 	 we'd have sth that works for all internal and external nodes.  */
       && !SLP_TREE_SCALAR_STMTS (node).is_empty ())
     {
-      if (slp_tree *leader = bst_map->get (SLP_TREE_SCALAR_STMTS (node)))
+      slp_tree *leader = bst_map->get (SLP_TREE_SCALAR_STMTS (node));
+      if (leader)
 	{
-	  if (*leader != node)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "re-using SLP tree %p for %p\n",
-				 (void *)*leader, (void *)node);
-	      vect_free_slp_tree (node);
-	      (*leader)->refcnt += 1;
-	      node = *leader;
-	    }
+	  /* We've visited this node already.  */
+	  if (!*leader || *leader == node)
+	    return;
+
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "re-using SLP tree %p for %p\n",
+			     (void *)*leader, (void *)node);
+	  vect_free_slp_tree (node);
+	  (*leader)->refcnt += 1;
+	  node = *leader;
 	  return;
 	}
 
-      bst_map->put (SLP_TREE_SCALAR_STMTS (node).copy (), node);
+      /* Avoid creating a cycle by populating the map only after recursion.  */
+      bst_map->put (SLP_TREE_SCALAR_STMTS (node).copy (), nullptr);
       node->refcnt += 1;
+      put_p = true;
       /* And recurse.  */
     }
 
   for (slp_tree &child : SLP_TREE_CHILDREN (node))
     if (child)
       vect_cse_slp_nodes (bst_map, child);
+
+  /* Now record the node for CSE in other siblings.  */
+  if (put_p)
+    bst_map->put (SLP_TREE_SCALAR_STMTS (node).copy (), node);
 }
 
 /* Optimize the SLP graph of VINFO.  */
