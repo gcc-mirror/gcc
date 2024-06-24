@@ -1696,7 +1696,6 @@ package body Exp_Ch7 is
      (N                 : Node_Id;
       Clean_Stmts       : List_Id;
       Mark_Id           : Entity_Id;
-      Top_Decls         : List_Id;
       Defer_Abort       : Boolean;
       Fin_Id            : out Entity_Id)
    is
@@ -1716,7 +1715,7 @@ package body Exp_Ch7 is
       --  structures right from the start. Entities and lists are created once
       --  it has been established that N has at least one controlled object.
 
-      Counter_Val : Nat := 0;
+      Count : Nat := 0;
       --  Holds the number of controlled objects encountered so far
 
       Decls : List_Id := No_List;
@@ -1735,10 +1734,6 @@ package body Exp_Ch7 is
       Finalizer_Stmts : List_Id := No_List;
       --  The statement list of the finalizer body
 
-      Has_Ctrl_Objs : Boolean := False;
-      --  A general flag which denotes whether N has at least one controlled
-      --  object.
-
       Has_Tagged_Types : Boolean := False;
       --  A general flag which indicates whether N has at least one library-
       --  level tagged type declaration.
@@ -1753,7 +1748,6 @@ package body Exp_Ch7 is
       --  The private declarations of N if N is a package declaration
 
       Spec_Id    : Entity_Id := Empty;
-      Spec_Decls : List_Id   := Top_Decls;
       Stmts      : List_Id   := No_List;
 
       Tagged_Type_Stmts : List_Id := No_List;
@@ -1772,6 +1766,9 @@ package body Exp_Ch7 is
       --  Create the spec and body of the finalizer and insert them in the
       --  proper place in the tree depending on the context.
 
+      function Has_Ctrl_Objs return Boolean is (Count > 0);
+      --  Return true if N contains a least one controlled object
+
       function New_Finalizer_Name
         (Spec_Id : Node_Id; For_Spec : Boolean) return Name_Id;
       --  Create a fully qualified name of a package spec or body finalizer.
@@ -1783,7 +1780,7 @@ package body Exp_Ch7 is
       --  Inspect a list of declarations or statements which may contain
       --  objects that need finalization. When flag Preprocess is set, the
       --  routine will simply count the total number of controlled objects in
-      --  Decls and set Counter_Val accordingly.
+      --  Decls and set Count accordingly.
 
       procedure Process_Object_Declaration
         (Decl         : Node_Id;
@@ -1813,7 +1810,7 @@ package body Exp_Ch7 is
          --  this common case, we'll directly finalize the object.
 
          if Has_Ctrl_Objs then
-            if Counter_Val > 1 then
+            if Count > 1 then
                if For_Package_Spec then
                   Master_Name :=
                     New_External_Name (Name_uMaster, Suffix => "_spec");
@@ -1856,12 +1853,8 @@ package body Exp_Ch7 is
 
             if Exceptions_OK then
                Finalizer_Decls := New_List;
-
                Build_Object_Declarations
                  (Finalizer_Data, Finalizer_Decls, Loc, For_Package);
-
-            else
-               Finalizer_Decls := No_List;
             end if;
          end if;
 
@@ -1995,9 +1988,10 @@ package body Exp_Ch7 is
          --       <finalization statements>
          --       <stack release>            --  Added if Mark_Id exists
          --       Abort_Undefer;             --  Added if abort is allowed
+         --       <exception propagation>
          --    end Fin_Id;
 
-         if Has_Ctrl_Objs and then Counter_Val > 1 then
+         if Has_Ctrl_Objs and then Count > 1 then
             Fin_Call :=
               Make_Procedure_Call_Statement (Loc,
                Name                   =>
@@ -2155,10 +2149,10 @@ package body Exp_Ch7 is
          --  Non-package case
 
          else
-            pragma Assert (Present (Spec_Decls));
+            pragma Assert (Present (Decls));
 
-            Append_To (Spec_Decls, Fin_Spec);
-            Append_To (Spec_Decls, Fin_Body);
+            Append_To (Decls, Fin_Spec);
+            Append_To (Decls, Fin_Body);
          end if;
 
          Analyze (Fin_Spec, Suppress => All_Checks);
@@ -2235,10 +2229,9 @@ package body Exp_Ch7 is
            (Decl         : Node_Id;
             Is_Protected : Boolean := False);
          --  Depending on the mode of operation of Process_Declarations, either
-         --  increment the controlled object counter, set the controlled object
-         --  flag and store the last top level construct or process the current
-         --  declaration. Flag Is_Protected is set when the current declaration
-         --  denotes a simple protected object.
+         --  increment the controlled object count or process the declaration.
+         --  The Flag Is_Protected is set when the declaration denotes a simple
+         --  protected object.
 
          --------------------------
          -- Process_Package_Body --
@@ -2283,8 +2276,7 @@ package body Exp_Ch7 is
 
             else
                if Preprocess then
-                  Counter_Val   := Counter_Val + 1;
-                  Has_Ctrl_Objs := True;
+                  Count := Count + 1;
 
                else
                   Process_Object_Declaration (Decl, Is_Protected);
@@ -2572,7 +2564,7 @@ package body Exp_Ch7 is
          if Is_RTE (Obj_Typ, RE_Master_Node) then
             Master_Node_Id := Obj_Id;
 
-            if Counter_Val = 1 then
+            if Count = 1 then
                if Nkind (Next (Decl)) = N_Call_Marker then
                   Prepend_To (Decls, Remove_Next (Next (Decl)));
                end if;
@@ -2591,7 +2583,7 @@ package body Exp_Ch7 is
          else pragma Assert (No (Finalization_Master_Node (Obj_Id)));
             --  For one object, use the Sloc the master would have had
 
-            if Counter_Val = 1 then
+            if Count = 1 then
                Master_Node_Loc := Sloc (N);
             else
                Master_Node_Loc := Loc;
@@ -2605,7 +2597,7 @@ package body Exp_Ch7 is
                 Master_Node_Id, Obj_Id);
 
             Push_Scope (Scope (Obj_Id));
-            if Counter_Val = 1 then
+            if Count = 1 then
                Prepend_To (Decls, Master_Node_Decl);
             else
                Insert_Before (Decl, Master_Node_Decl);
@@ -2849,7 +2841,7 @@ package body Exp_Ch7 is
          --  procedure and then attach the Master_Node to the master, unless
          --  there is a single controlled object.
 
-         if Counter_Val = 1 then
+         if Count = 1 then
             --  Finalize_Address is not generated in CodePeer mode because the
             --  body contains address arithmetic. So we don't want to generate
             --  the attach in this case. Ditto if the object is a Master_Node.
@@ -3090,8 +3082,7 @@ package body Exp_Ch7 is
 
          if Has_Ctrl_Objs and then No (Decls) then
             Set_Declarations (N, New_List);
-            Decls      := Declarations (N);
-            Spec_Decls := Decls;
+            Decls := Declarations (N);
          end if;
 
          --  The current context may lack controlled objects, but require some
@@ -4650,9 +4641,9 @@ package body Exp_Ch7 is
       end if;
 
       declare
-         Decls  : constant List_Id := Declarations (N);
          Fin_Id : Entity_Id;
          Mark   : Entity_Id := Empty;
+
       begin
          --  If we are generating expanded code for debugging purposes, use the
          --  Sloc of the point of insertion for the cleanup code. The Sloc will
@@ -4690,7 +4681,7 @@ package body Exp_Ch7 is
             declare
                Mark_Call : constant Node_Id := Build_SS_Mark_Call (Loc, Mark);
             begin
-               Prepend_To (Decls, Mark_Call);
+               Prepend_To (Declarations (N), Mark_Call);
                Analyze (Mark_Call);
             end;
          end if;
@@ -4703,7 +4694,6 @@ package body Exp_Ch7 is
            (N           => N,
             Clean_Stmts => Build_Cleanup_Statements (N, Cln),
             Mark_Id     => Mark,
-            Top_Decls   => Decls,
             Defer_Abort => Nkind (Original_Node (N)) = N_Task_Body
                              or else Is_Master,
             Fin_Id      => Fin_Id);
@@ -4789,7 +4779,6 @@ package body Exp_Ch7 is
            (N           => N,
             Clean_Stmts => No_List,
             Mark_Id     => Empty,
-            Top_Decls   => No_List,
             Defer_Abort => False,
             Fin_Id      => Fin_Id);
 
@@ -4918,7 +4907,6 @@ package body Exp_Ch7 is
            (N           => N,
             Clean_Stmts => No_List,
             Mark_Id     => Empty,
-            Top_Decls   => No_List,
             Defer_Abort => False,
             Fin_Id      => Fin_Id);
 

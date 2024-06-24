@@ -3022,7 +3022,6 @@ package body Inline is
                     (N           => Decl,
                      Clean_Stmts => No_List,
                      Mark_Id     => Empty,
-                     Top_Decls   => No_List,
                      Defer_Abort => False,
                      Fin_Id      => Fin);
 
