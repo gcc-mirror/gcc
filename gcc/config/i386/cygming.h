@@ -461,7 +461,7 @@ do {						\
 #define TARGET_ASM_ASSEMBLE_VISIBILITY i386_pe_assemble_visibility
 
 #undef SUB_TARGET_RECORD_STUB
-#define SUB_TARGET_RECORD_STUB i386_pe_record_stub
+#define SUB_TARGET_RECORD_STUB mingw_pe_record_stub
 
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
@@ -469,3 +469,6 @@ do {						\
 #ifndef HAVE_GAS_ALIGNED_COMM
 # define HAVE_GAS_ALIGNED_COMM 0
 #endif
+
+#undef GOT_ALIAS_SET
+#define GOT_ALIAS_SET mingw_GOT_alias_set ()

@@ -672,7 +672,7 @@ mingw_pe_maybe_record_exported_symbol (tree decl, const char *name, int is_data)
 }
 
 void
-i386_pe_record_stub (const char *name)
+mingw_pe_record_stub (const char *name)
 {
   struct stub_list *p;
 

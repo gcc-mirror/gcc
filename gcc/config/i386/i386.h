@@ -2259,6 +2259,8 @@ extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 /* Which processor to tune code generation for.  These must be in sync
    with processor_cost_table in i386-options.cc.  */
 
+#define GOT_ALIAS_SET -1
+
 enum processor_type
 {
   PROCESSOR_GENERIC = 0,

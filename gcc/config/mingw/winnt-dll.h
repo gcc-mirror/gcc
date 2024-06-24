@@ -1,4 +1,5 @@
-/* Subroutines for targets on Windows.
+/* Expand a SYMBOL into its corresponding dllimport, far-address,
+or refptr symbol.
 Copyright (C) 2024 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify it under
@@ -15,20 +16,15 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 http://www.gnu.org/licenses/.  */
 
-#ifndef GCC_MINGW_WINNT_H
-#define GCC_MINGW_WINNT_H
+#ifndef GCC_MINGW_WINNT_DLL_H
+#define GCC_MINGW_WINNT_DLL_H
 
 #ifndef USED_FOR_TARGET
 
-extern void mingw_pe_asm_named_section (const char *, unsigned int, tree);
-extern void mingw_pe_declare_function_type (FILE *file, const char *name,
-	int pub);
-extern void mingw_pe_encode_section_info (tree, rtx, int);
-extern void mingw_pe_maybe_record_exported_symbol (tree, const char *, int);
-extern void mingw_pe_record_stub (const char *name);
-extern unsigned int mingw_pe_section_type_flags (tree, const char *, int);
-extern void mingw_pe_unique_section (tree, int);
+extern bool is_imported_p (rtx x);
+extern alias_set_type mingw_GOT_alias_set (void);
+extern rtx legitimize_pe_coff_symbol (rtx addr, bool inreg);
 
 #endif /* not USED_FOR_TARGET.  */
 
-#endif /* GCC_MINGW_WINNT_H.  */
+#endif /* GCC_MINGW_WINNT_DLL_H.  */

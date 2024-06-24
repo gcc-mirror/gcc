@@ -33,6 +33,12 @@ winnt-cxx.o: $(srcdir)/config/mingw/winnt-cxx.cc $(CONFIG_H) $(SYSTEM_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/mingw/winnt-cxx.cc
 
+winnt-dll.o: $(srcdir)/config/mingw/winnt-dll.cc $(CONFIG_H) $(SYSTEM_H) \
+  coretypes.h \
+  $(TM_H) $(TREE_H) flags.h \
+  $(TM_P_H) $(HASH_TABLE_H) $(GGC_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/mingw/winnt-dll.cc
 
 winnt-stubs.o: $(srcdir)/config/mingw/winnt-stubs.cc $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h \
