@@ -2218,7 +2218,7 @@ Lexer::parse_raw_string (location_t loc, int initial_hash_count)
 
   str.shrink_to_fit ();
 
-  return Token::make_string (loc, std::move (str));
+  return Token::make_raw_string (loc, std::move (str));
 }
 
 template <typename IsDigitFunc>

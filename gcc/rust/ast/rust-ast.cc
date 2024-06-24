@@ -3506,6 +3506,7 @@ AttributeParser::parse_meta_item_inner ()
 	case STRING_LITERAL:
 	case BYTE_CHAR_LITERAL:
 	case BYTE_STRING_LITERAL:
+	case RAW_STRING_LITERAL:
 	case INT_LITERAL:
 	case FLOAT_LITERAL:
 	case TRUE_LITERAL:
@@ -3787,6 +3788,10 @@ AttributeParser::parse_literal ()
     case BYTE_STRING_LITERAL:
       skip_token ();
       return Literal (tok->as_string (), Literal::BYTE_STRING,
+		      tok->get_type_hint ());
+    case RAW_STRING_LITERAL:
+      skip_token ();
+      return Literal (tok->as_string (), Literal::RAW_STRING,
 		      tok->get_type_hint ());
     case INT_LITERAL:
       skip_token ();

@@ -854,6 +854,9 @@ Parser<ManagedTokenSource>::parse_attr_input ()
 	  case BYTE_STRING_LITERAL:
 	    lit_type = AST::Literal::BYTE_STRING;
 	    break;
+	  case RAW_STRING_LITERAL:
+	    lit_type = AST::Literal::RAW_STRING;
+	    break;
 	  case STRING_LITERAL:
 	  default:
 	    lit_type = AST::Literal::STRING;
@@ -7511,6 +7514,11 @@ Parser<ManagedTokenSource>::parse_literal_expr (AST::AttrVec outer_attrs)
       literal_value = t->get_str ();
       lexer.skip_token ();
       break;
+    case RAW_STRING_LITERAL:
+      type = AST::Literal::RAW_STRING;
+      literal_value = t->get_str ();
+      lexer.skip_token ();
+      break;
     case INT_LITERAL:
       type = AST::Literal::INT;
       literal_value = t->get_str ();
@@ -10481,6 +10489,11 @@ Parser<ManagedTokenSource>::parse_pattern_no_alt ()
       return std::unique_ptr<AST::LiteralPattern> (
 	new AST::LiteralPattern (t->get_str (), AST::Literal::BYTE_STRING,
 				 t->get_locus (), t->get_type_hint ()));
+    case RAW_STRING_LITERAL:
+      lexer.skip_token ();
+      return std::unique_ptr<AST::LiteralPattern> (
+	new AST::LiteralPattern (t->get_str (), AST::Literal::RAW_STRING,
+				 t->get_locus (), t->get_type_hint ()));
     // raw string and raw byte string literals too if they are readded to
     // lexer
     case MINUS:
@@ -12274,6 +12287,10 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
     case BYTE_STRING_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::BYTE_STRING,
+			      tok->get_type_hint (), {}, tok->get_locus ()));
+    case RAW_STRING_LITERAL:
+      return std::unique_ptr<AST::LiteralExpr> (
+	new AST::LiteralExpr (tok->get_str (), AST::Literal::RAW_STRING,
 			      tok->get_type_hint (), {}, tok->get_locus ()));
     case CHAR_LITERAL:
       return std::unique_ptr<AST::LiteralExpr> (

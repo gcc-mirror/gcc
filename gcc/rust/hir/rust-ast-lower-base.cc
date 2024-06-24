@@ -928,6 +928,9 @@ ASTLoweringBase::lower_literal (const AST::Literal &literal)
     case AST::Literal::LitType::BYTE_STRING:
       type = HIR::Literal::LitType::BYTE_STRING;
       break;
+    case AST::Literal::LitType::RAW_STRING: // TODO: Lower raw string literals.
+      rust_unreachable ();
+      break;
     case AST::Literal::LitType::INT:
       type = HIR::Literal::LitType::INT;
       break;
