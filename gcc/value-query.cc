@@ -223,17 +223,18 @@ range_query::destroy_infer_oracle ()
 }
 
 // Create dominance based range oracle for the current query if dom info is
-// available.
+// available.  DO_TRANS_P indicates whether transitive relations should
+// be created.  This can cost more in compile time.
 
 void
-range_query::create_relation_oracle ()
+range_query::create_relation_oracle (bool do_trans_p)
 {
   gcc_checking_assert (this != &global_ranges);
   gcc_checking_assert (m_relation == &default_relation_oracle);
 
   if (!dom_info_available_p (CDI_DOMINATORS))
     return;
-  m_relation = new dom_oracle ();
+  m_relation = new dom_oracle (do_trans_p);
   gcc_checking_assert (m_relation);
 }
 

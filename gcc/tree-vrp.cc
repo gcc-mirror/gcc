@@ -1258,7 +1258,8 @@ execute_fast_vrp (struct function *fun, bool final_p)
 
   gcc_checking_assert (!fun->x_range_query);
   fun->x_range_query = &dr;
-  get_range_query (fun)->create_relation_oracle ();
+  // Create a relation oracle without transitives.
+  get_range_query (fun)->create_relation_oracle (false);
 
   folder.substitute_and_fold ();
   if (folder.m_unreachable)

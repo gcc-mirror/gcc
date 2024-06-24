@@ -76,7 +76,7 @@ public:
   virtual bool range_on_exit (vrange &r, basic_block bb, tree expr);
 
   inline class relation_oracle &relation () const  { return *m_relation; }
-  void create_relation_oracle ();
+  void create_relation_oracle (bool do_trans_p = true);
   void destroy_relation_oracle ();
 
   inline class infer_range_oracle &infer_oracle () const { return *m_infer; }
