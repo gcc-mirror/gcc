@@ -1,3 +1,26 @@
+2024-06-23  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	* gcc.target/riscv/zicond-ice-5.c: New test.
+
+2024-06-23  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/114139
+	* gcc.target/riscv/pr114139.c: New test.
+
+2024-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115579
+	* gcc.dg/pr115579.c: New testcase.
+
+2024-06-23  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* gcc.target/riscv/mcpu-6.c: Skip for -O0, -O1, -Og.
+	* gcc.target/riscv/mcpu-7.c: Likewise.
+
+2024-06-23  demin.han  <demin.han@starfivetech.com>
+
+	* gcc.target/riscv/rvv/base/integer-cmp-eqne.c: New test.
+
 2024-06-22  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/zbs-ext-2.c: Also skip for -Oz.

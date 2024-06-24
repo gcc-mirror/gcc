@@ -1,3 +1,65 @@
+2024-06-23  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (S_LDATA32, S_GDATA32): Define.
+	(struct codeview_symbol): New structure.
+	(sym, last_sym): New variables.
+	(write_data_symbol): New function.
+	(write_codeview_symbols): Call write_data_symbol.
+	(add_variable, codeview_debug_early_finish): New functions.
+	* dwarf2codeview.h (codeview_debug_early_finish): Prototype.
+	* dwarf2out.cc
+	(dwarf2out_early_finish): Call codeview_debug_early_finish.
+
+2024-06-23  Artemiy Volkov  <Artemiy.Volkov@synopsys.com>
+
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): Add a
+	CONST0_RTX check.
+
+2024-06-23  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/114139
+	* config/riscv/riscv.cc (riscv_macro_fusion_pair_p): Verify object
+	is a CONST_INT before looking at INTVAL.
+
+2024-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115597
+	* tree-vect-slp.cc (vect_cse_slp_nodes): Allow to CSE
+	VEC_PERM nodes.
+
+2024-06-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115579
+	* tree-ssa-loop-im.cc (execute_sm): Return the auxiliary data
+	created.
+	(hoist_memory_references): Record the flag var that's eventually
+	created and re-use it when all stores are in the same BB.
+
+2024-06-23  Collin Funk  <collin.funk1@gmail.com>
+
+	PR target/115409
+	* config/i386/avx512fp16intrin.h (_mm512_conj_pch): Make the
+	constant unsigned before shifting.
+	* config/i386/avx512fp16vlintrin.h (_mm256_conj_pch): Likewise.
+	(_mm_conj_pch): Likewise.
+
+2024-06-23  demin.han  <demin.han@starfivetech.com>
+
+	* config/riscv/predicates.md (comparison_except_eqge_operator): Only
+	exclude ge.
+	(comparison_except_ge_operator): Ditto.
+	* config/riscv/riscv-string.cc (expand_rawmemchr): Use cmp pattern.
+	(expand_strcmp): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc: Remove eqne cond.
+	* config/riscv/vector.md (@pred_eqne<mode>_scalar): Remove eqne
+	patterns.
+	(*pred_eqne<mode>_scalar_merge_tie_mask): Ditto.
+	(*pred_eqne<mode>_scalar): Ditto.
+	(*pred_eqne<mode>_scalar_narrow): Ditto.
+	(*pred_eqne<mode>_extended_scalar_merge_tie_mask): Ditto.
+	(*pred_eqne<mode>_extended_scalar): Ditto.
+	(*pred_eqne<mode>_extended_scalar_narrow): Ditto.
+
 2024-06-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-format-json.cc
