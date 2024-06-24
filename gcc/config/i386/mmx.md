@@ -1180,39 +1180,6 @@
   DONE;
 })
 
-(define_expand "vcond<mode>v2sf"
-  [(set (match_operand:V2FI 0 "register_operand")
-	(if_then_else:V2FI
-	  (match_operator 3 ""
-	    [(match_operand:V2SF 4 "nonimmediate_operand")
-	     (match_operand:V2SF 5 "nonimmediate_operand")])
-	  (match_operand:V2FI 1 "general_operand")
-	  (match_operand:V2FI 2 "general_operand")))]
-  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
-{
-  rtx ops[6];
-  ops[5] = gen_reg_rtx (V4SFmode);
-  ops[4] = gen_reg_rtx (V4SFmode);
-  ops[3] = gen_rtx_fmt_ee (GET_CODE (operands[3]), VOIDmode, ops[4], ops[5]);
-  ops[2] = lowpart_subreg (<mmxdoublevecmode>mode,
-			   force_reg (<MODE>mode, operands[2]),
-			   <MODE>mode);
-  ops[1] = lowpart_subreg (<mmxdoublevecmode>mode,
-			   force_reg (<MODE>mode, operands[1]),
-			   <MODE>mode);
-  ops[0] = gen_reg_rtx (<mmxdoublevecmode>mode);
-
-  emit_insn (gen_movq_v2sf_to_sse (ops[5], operands[5]));
-  emit_insn (gen_movq_v2sf_to_sse (ops[4], operands[4]));
-
-  bool ok = ix86_expand_fp_vcond (ops);
-  gcc_assert (ok);
-
-  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, ops[0],
-					       <mmxdoublevecmode>mode));
-  DONE;
-})
-
 (define_insn "@sse4_1_insertps_<mode>"
   [(set (match_operand:V2FI 0 "register_operand" "=Yr,*x,v")
 	(unspec:V2FI
@@ -4037,70 +4004,6 @@
   "TARGET_SSE2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcond<MMXMODE124:mode><MMXMODEI:mode>"
-  [(set (match_operand:MMXMODE124 0 "register_operand")
-	(if_then_else:MMXMODE124
-	  (match_operator 3 ""
-	    [(match_operand:MMXMODEI 4 "register_operand")
-	     (match_operand:MMXMODEI 5 "register_operand")])
-	  (match_operand:MMXMODE124 1)
-	  (match_operand:MMXMODE124 2)))]
-  "TARGET_MMX_WITH_SSE
-   && (GET_MODE_NUNITS (<MMXMODE124:MODE>mode)
-       == GET_MODE_NUNITS (<MMXMODEI:MODE>mode))"
-{
-  bool ok = ix86_expand_int_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:VI_16_32 0 "register_operand")
-	(if_then_else:VI_16_32
-	  (match_operator 3 ""
-	    [(match_operand:VI_16_32 4 "register_operand")
-	     (match_operand:VI_16_32 5 "register_operand")])
-	  (match_operand:VI_16_32 1)
-	  (match_operand:VI_16_32 2)))]
-  "TARGET_SSE2"
-{
-  bool ok = ix86_expand_int_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcondu<MMXMODE124:mode><MMXMODEI:mode>"
-  [(set (match_operand:MMXMODE124 0 "register_operand")
-	(if_then_else:MMXMODE124
-	  (match_operator 3 ""
-	    [(match_operand:MMXMODEI 4 "register_operand")
-	     (match_operand:MMXMODEI 5 "register_operand")])
-	  (match_operand:MMXMODE124 1)
-	  (match_operand:MMXMODE124 2)))]
-  "TARGET_MMX_WITH_SSE
-   && (GET_MODE_NUNITS (<MMXMODE124:MODE>mode)
-       == GET_MODE_NUNITS (<MMXMODEI:MODE>mode))"
-{
-  bool ok = ix86_expand_int_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcondu<mode><mode>"
-  [(set (match_operand:VI_16_32 0 "register_operand")
-	(if_then_else:VI_16_32
-	  (match_operator 3 ""
-	    [(match_operand:VI_16_32 4 "register_operand")
-	     (match_operand:VI_16_32 5 "register_operand")])
-	  (match_operand:VI_16_32 1)
-	  (match_operand:VI_16_32 2)))]
-  "TARGET_SSE2"
-{
-  bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
   DONE;
 })
