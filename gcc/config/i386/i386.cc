@@ -22154,7 +22154,10 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	     address_cost should be used, but it reduce cost too much.
 	     So current solution is make constant disp as cheap as possible.  */
 	  if (GET_CODE (addr) == PLUS
-	      && x86_64_immediate_operand (XEXP (addr, 1), Pmode))
+	      && x86_64_immediate_operand (XEXP (addr, 1), Pmode)
+	      /* Only hanlde (reg + disp) since other forms of addr are mostly LEA,
+		 there's no additional cost for the plus of disp.  */
+	      && register_operand (XEXP (addr, 0), Pmode))
 	    {
 	      *total += 1;
 	      *total += rtx_cost (XEXP (addr, 0), Pmode, PLUS, 0, speed);
