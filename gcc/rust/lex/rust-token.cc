@@ -247,6 +247,9 @@ Token::as_string () const
 	case BYTE_STRING_LITERAL:
 	  return "b\"" + escape_special_chars (get_str (), Context::String)
 		 + "\"";
+	case RAW_STRING_LITERAL:
+	  return "r\"" + escape_special_chars (get_str (), Context::String)
+		 + "\"";
 	case CHAR_LITERAL:
 	  return "'" + escape_special_chars (get_str (), Context::Char) + "'";
 	case BYTE_CHAR_LITERAL:
