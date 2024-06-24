@@ -269,7 +269,6 @@ extern unsigned int ix86_local_alignment (tree, machine_mode,
 extern unsigned int ix86_minimum_alignment (tree, machine_mode,
 					    unsigned int);
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);
-extern tree ix86_handle_selectany_attribute (tree *, tree, tree, int, bool *);
 extern int x86_field_alignment (tree, int);
 extern tree ix86_valid_target_attribute_tree (tree, tree,
 					      struct gcc_options *,
@@ -309,12 +308,10 @@ extern void ix86_register_pragmas (void);
 extern void i386_pe_record_external_function (tree, const char *);
 extern bool i386_pe_binds_local_p (const_tree);
 extern const char *i386_pe_strip_name_encoding_full (const char *);
-extern bool i386_pe_valid_dllimport_attribute_p (const_tree);
 extern void i386_pe_asm_output_aligned_decl_common (FILE *, tree,
 						    const char *,
 						    HOST_WIDE_INT,
 						    HOST_WIDE_INT);
-extern void i386_pe_file_end (void);
 extern void i386_pe_asm_lto_start (void);
 extern void i386_pe_asm_lto_end (void);
 extern void i386_pe_start_function (FILE *, const char *, tree);

@@ -344,7 +344,7 @@ do {						\
 
 /* Output function declarations at the end of the file.  */
 #undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END i386_pe_file_end
+#define TARGET_ASM_FILE_END mingw_pe_file_end
 
 /* Kludge because of missing PE-COFF support for early LTO debug.  */
 #undef  TARGET_ASM_LTO_START
@@ -445,7 +445,7 @@ do {						\
 
 #define SUBTARGET_ATTRIBUTE_TABLE \
   { "selectany", 0, 0, true, false, false, false, \
-    ix86_handle_selectany_attribute, NULL }
+    mingw_handle_selectany_attribute, NULL }
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
 
@@ -453,7 +453,7 @@ do {						\
 #undef NO_PROFILE_COUNTERS
 #define NO_PROFILE_COUNTERS 1
 
-#define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P i386_pe_valid_dllimport_attribute_p
+#define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P mingw_pe_valid_dllimport_attribute_p
 #define TARGET_CXX_ADJUST_CLASS_AT_DEFINITION i386_pe_adjust_class_at_definition
 #define SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME i386_pe_mangle_decl_assembler_name
 
