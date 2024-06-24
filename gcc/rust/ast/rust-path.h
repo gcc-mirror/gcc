@@ -581,13 +581,6 @@ protected:
    * possible, and creates a SimplePath from them. */
   SimplePath convert_to_simple_path (bool with_opening_scope_resolution) const;
 
-  // Removes all segments of the path.
-  void remove_all_segments ()
-  {
-    segments.clear ();
-    segments.shrink_to_fit ();
-  }
-
 public:
   /* Returns whether the path is a single segment (excluding qualified path
    * initial as segment). */
@@ -611,6 +604,8 @@ class PathInExpression : public PathPattern, public PathExpr
   location_t locus;
   NodeId _node_id;
 
+  bool marked_for_strip;
+
 public:
   std::string as_string () const override;
 
@@ -621,7 +616,8 @@ public:
     : PathPattern (std::move (path_segments)),
       outer_attrs (std::move (outer_attrs)),
       has_opening_scope_resolution (has_opening_scope_resolution),
-      locus (locus), _node_id (Analysis::Mappings::get ().get_next_node_id ())
+      locus (locus), _node_id (Analysis::Mappings::get ().get_next_node_id ()),
+      marked_for_strip (false)
   {}
 
   // Creates an error state path in expression.
@@ -650,9 +646,8 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // Invalid if path is empty (error state), so base stripping on that.
-  void mark_for_strip () override { remove_all_segments (); }
-  bool is_marked_for_strip () const override { return is_error (); }
+  void mark_for_strip () override { marked_for_strip = true; }
+  bool is_marked_for_strip () const override { return marked_for_strip; }
 
   bool opening_scope_resolution () const
   {
