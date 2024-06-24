@@ -63,6 +63,11 @@ along with GCC; see the file COPYING3.  If not see
 #define SYMBOL_START_LABEL	"Lcvsymstart"
 #define SYMBOL_END_LABEL	"Lcvsymend"
 
+/* There's two bytes available for each type's size, but follow MSVC's lead in
+   capping the LF_FIELDLIST size at fb00 (minus 8 bytes for the LF_INDEX
+   pointing to the overflow entry).  */
+#define MAX_FIELDLIST_SIZE	0xfaf8
+
 #define HASH_SIZE 16
 
 struct codeview_string
@@ -170,6 +175,31 @@ struct die_hasher : free_ptr_hash <codeview_type>
   }
 };
 
+struct codeview_integer
+{
+  bool neg;
+  uint64_t num;
+};
+
+struct codeview_subtype
+{
+  struct codeview_subtype *next;
+  uint16_t kind;
+
+  union
+  {
+    struct
+    {
+      char *name;
+      struct codeview_integer value;
+    } lf_enumerate;
+    struct
+    {
+      uint32_t type_num;
+    } lf_index;
+  };
+};
+
 struct codeview_custom_type
 {
   struct codeview_custom_type *next;
@@ -188,6 +218,20 @@ struct codeview_custom_type
       uint32_t base_type;
       uint16_t modifier;
     } lf_modifier;
+    struct
+    {
+      size_t length;
+      codeview_subtype *subtypes;
+      codeview_subtype *last_subtype;
+    } lf_fieldlist;
+    struct
+    {
+      uint16_t count;
+      uint16_t properties;
+      uint32_t underlying_type;
+      uint32_t fieldlist;
+      char *name;
+    } lf_enum;
   };
 };
 
@@ -978,6 +1022,292 @@ write_lf_modifier (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write a CodeView extensible integer.  If the value is non-negative and
+   < 0x8000, the value gets written directly as an uint16_t.  Otherwise, we
+   output two bytes for the integer type (LF_CHAR, LF_SHORT, ...), and the
+   actual value follows.  */
+
+static size_t
+write_cv_integer (codeview_integer *i)
+{
+  if (i->neg)
+    {
+      if (i->num <= 0x80)
+	{
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_CHAR);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (1, false), asm_out_file);
+	  fprint_whex (asm_out_file, -i->num);
+	  putc ('\n', asm_out_file);
+
+	  return 3;
+	}
+      else if (i->num <= 0x8000)
+	{
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_SHORT);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, -i->num);
+	  putc ('\n', asm_out_file);
+
+	  return 4;
+	}
+      else if (i->num <= 0x80000000)
+	{
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_LONG);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, -i->num);
+	  putc ('\n', asm_out_file);
+
+	  return 6;
+	}
+      else
+	{
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_QUADWORD);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (8, false), asm_out_file);
+	  fprint_whex (asm_out_file, -i->num);
+	  putc ('\n', asm_out_file);
+
+	  return 10;
+	}
+    }
+  else
+    {
+      if (i->num <= 0x7fff)
+	{
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, i->num);
+	  putc ('\n', asm_out_file);
+
+	  return 2;
+	}
+      else if (i->num <= 0xffff)
+	{
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_USHORT);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, i->num);
+	  putc ('\n', asm_out_file);
+
+	  return 4;
+	}
+      else if (i->num <= 0xffffffff)
+	{
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_ULONG);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, i->num);
+	  putc ('\n', asm_out_file);
+
+	  return 6;
+	}
+      else
+	{
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_UQUADWORD);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (8, false), asm_out_file);
+	  fprint_whex (asm_out_file, i->num);
+	  putc ('\n', asm_out_file);
+
+	  return 10;
+	}
+    }
+}
+
+/* Return the extra size needed for an extensible integer.  */
+
+static size_t
+cv_integer_len (codeview_integer *i)
+{
+  if (i->neg)
+    {
+      if (i->num <= 0x80)
+	return sizeof (int8_t);
+      else if (i->num <= 0x8000)
+	return sizeof (int16_t);
+      else if (i->num <= 0x80000000)
+	return sizeof (int32_t);
+      else
+	return sizeof (int64_t);
+    }
+  else
+    {
+      if (i->num <= 0x7fff)
+	return 0;
+      else if (i->num <= 0xffff)
+	return sizeof (uint16_t);
+      else if (i->num <= 0xffffffff)
+	return sizeof (uint32_t);
+      else
+	return sizeof (uint64_t);
+    }
+}
+
+/* Write an LF_FIELDLIST type, which is a container for various subtypes.  This
+   has two uses: for the values in an enum, and for the member, operators etc.
+   for a struct, class, or union.  */
+
+static void
+write_lf_fieldlist (codeview_custom_type *t)
+{
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  while (t->lf_fieldlist.subtypes)
+    {
+      codeview_subtype *v = t->lf_fieldlist.subtypes;
+      codeview_subtype *next = v->next;
+      size_t name_len, leaf_len;
+
+      switch (v->kind)
+	{
+	case LF_ENUMERATE:
+	  /* This is lf_enumerate in binutils and lfEnumerate in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_enumerate
+	    {
+	      uint16_t kind;
+	      uint16_t attributes;
+	      uint16_t value;
+	      (then actual value if value >= 0x8000)
+	      char name[];
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_ENUMERATE);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, CV_ACCESS_PUBLIC);
+	  putc ('\n', asm_out_file);
+
+	  leaf_len = 4 + write_cv_integer (&v->lf_enumerate.value);
+
+	  name_len = strlen (v->lf_enumerate.name) + 1;
+	  ASM_OUTPUT_ASCII (asm_out_file, v->lf_enumerate.name, name_len);
+
+	  leaf_len += name_len;
+	  write_cv_padding (4 - (leaf_len % 4));
+
+	  free (v->lf_enumerate.name);
+	  break;
+
+	case LF_INDEX:
+	  /* This is lf_index in binutils and lfIndex in Microsoft's cvinfo.h:
+
+	    struct lf_index
+	    {
+	      uint16_t kind;
+	      uint16_t padding;
+	      uint32_t index;
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_INDEX);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, 0);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_index.type_num);
+	  putc ('\n', asm_out_file);
+
+	  break;
+	}
+
+      t->lf_fieldlist.subtypes = next;
+      free (v);
+    }
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
+/* Write an LF_ENUM type.  */
+
+static void
+write_lf_enum (codeview_custom_type *t)
+{
+  size_t name_len, leaf_len;
+
+  /* This is lf_enum in binutils and lfEnum in Microsoft's cvinfo.h:
+
+    struct lf_enum
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint16_t num_elements;
+      uint16_t properties;
+      uint32_t underlying_type;
+      uint32_t field_list;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_enum.count);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_enum.properties);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_enum.underlying_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_enum.fieldlist);
+  putc ('\n', asm_out_file);
+
+  name_len = strlen (t->lf_enum.name) + 1;
+  ASM_OUTPUT_ASCII (asm_out_file, t->lf_enum.name, name_len);
+
+  leaf_len = 14 + name_len;
+  write_cv_padding (4 - (leaf_len % 4));
+
+  free (t->lf_enum.name);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -1002,6 +1332,14 @@ write_custom_types (void)
 
 	case LF_MODIFIER:
 	  write_lf_modifier (custom_types);
+	  break;
+
+	case LF_FIELDLIST:
+	  write_lf_fieldlist (custom_types);
+	  break;
+
+	case LF_ENUM:
+	  write_lf_enum (custom_types);
 	  break;
 	}
 
@@ -1308,6 +1646,188 @@ get_type_num_volatile_type (dw_die_ref type)
   return ct->num;
 }
 
+/* Add a forward declaration for an enum.  This is legal from C++11 onwards.  */
+
+static uint32_t
+add_enum_forward_def (dw_die_ref type)
+{
+  codeview_custom_type *ct;
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_ENUM;
+
+  ct->lf_enum.count = 0;
+  ct->lf_enum.properties = CV_PROP_FWDREF;
+  ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type));
+  ct->lf_enum.fieldlist = 0;
+  ct->lf_enum.name = xstrdup (get_AT_string (type, DW_AT_name));
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
+/* Process a DW_TAG_enumeration_type DIE, adding an LF_FIELDLIST and an LF_ENUM
+   type, returning the number of the latter.  */
+
+static uint32_t
+get_type_num_enumeration_type (dw_die_ref type)
+{
+  dw_die_ref first_child;
+  codeview_custom_type *ct;
+  uint16_t count = 0;
+  uint32_t last_type;
+
+  if (get_AT_flag (type, DW_AT_declaration))
+    return add_enum_forward_def (type);
+
+  /* First, add an LF_FIELDLIST for the enum's values.  We don't need to worry
+     about deduplication here, as ld will take care of that for us.  If there's
+     a lot of entries, add more LF_FIELDLISTs with LF_INDEXes pointing to
+     the overflow lists.  */
+
+  first_child = dw_get_die_child (type);
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_FIELDLIST;
+  ct->lf_fieldlist.length = 0;
+  ct->lf_fieldlist.subtypes = NULL;
+  ct->lf_fieldlist.last_subtype = NULL;
+
+  if (first_child)
+    {
+      dw_die_ref c;
+
+      c = first_child;
+      do
+	{
+	  dw_attr_node *att;
+	  codeview_subtype *el;
+	  size_t el_len;
+
+	  c = dw_get_die_sib (c);
+
+	  if (dw_get_die_tag (c) != DW_TAG_enumerator)
+	    continue;
+
+	  att = get_AT (c, DW_AT_const_value);
+	  if (!att)
+	    continue;
+
+	  el = (codeview_subtype *) xmalloc (sizeof (*el));
+	  el->next = NULL;
+	  el->kind = LF_ENUMERATE;
+
+	  switch (AT_class (att))
+	    {
+	    case dw_val_class_unsigned_const:
+	    case dw_val_class_unsigned_const_implicit:
+	      el->lf_enumerate.value.neg = false;
+	      el->lf_enumerate.value.num = att->dw_attr_val.v.val_unsigned;
+	      break;
+
+	    case dw_val_class_const:
+	    case dw_val_class_const_implicit:
+	      if (att->dw_attr_val.v.val_int < 0)
+		{
+		  el->lf_enumerate.value.neg = true;
+		  el->lf_enumerate.value.num = -att->dw_attr_val.v.val_int;
+		}
+	      else
+		{
+		  el->lf_enumerate.value.neg = false;
+		  el->lf_enumerate.value.num = att->dw_attr_val.v.val_int;
+		}
+	      break;
+
+	    default:
+	      free (el);
+	      continue;
+	    }
+
+	  el->lf_enumerate.name = xstrdup (get_AT_string (c, DW_AT_name));
+
+	  el_len = 7 + strlen (el->lf_enumerate.name);
+	  el_len += cv_integer_len (&el->lf_enumerate.value);
+
+	  if (el_len % 4)
+	    el_len += 4 - (el_len % 4);
+
+	  if (ct->lf_fieldlist.length + el_len > MAX_FIELDLIST_SIZE)
+	    {
+	      codeview_subtype *idx;
+	      codeview_custom_type *ct2;
+
+	      idx = (codeview_subtype *) xmalloc (sizeof (*idx));
+	      idx->next = NULL;
+	      idx->kind = LF_INDEX;
+	      idx->lf_index.type_num = 0;
+
+	      ct->lf_fieldlist.last_subtype->next = idx;
+	      ct->lf_fieldlist.last_subtype = idx;
+
+	      ct2 = (codeview_custom_type *)
+		xmalloc (sizeof (codeview_custom_type));
+
+	      ct2->next = ct;
+	      ct2->kind = LF_FIELDLIST;
+	      ct2->lf_fieldlist.length = 0;
+	      ct2->lf_fieldlist.subtypes = NULL;
+	      ct2->lf_fieldlist.last_subtype = NULL;
+
+	      ct = ct2;
+	    }
+
+	  ct->lf_fieldlist.length += el_len;
+
+	  if (ct->lf_fieldlist.last_subtype)
+	    ct->lf_fieldlist.last_subtype->next = el;
+	  else
+	    ct->lf_fieldlist.subtypes = el;
+
+	  ct->lf_fieldlist.last_subtype = el;
+	  count++;
+	}
+      while (c != first_child);
+    }
+
+  while (ct)
+    {
+      codeview_custom_type *ct2;
+
+      ct2 = ct->next;
+      ct->next = NULL;
+
+      if (ct->lf_fieldlist.last_subtype->kind == LF_INDEX)
+	ct->lf_fieldlist.last_subtype->lf_index.type_num = last_type;
+
+      add_custom_type (ct);
+      last_type = ct->num;
+
+      ct = ct2;
+    }
+
+  /* Now add an LF_ENUM, pointing to the LF_FIELDLIST we just added.  */
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_ENUM;
+  ct->lf_enum.count = count;
+  ct->lf_enum.properties = 0;
+  ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type));
+  ct->lf_enum.fieldlist = last_type;
+  ct->lf_enum.name = xstrdup (get_AT_string (type, DW_AT_name));
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
 /* Process a DIE representing a type definition, add a CodeView type if
    necessary, and return its number.  If it's something we can't handle, return
    0.  We keep a hash table so that we're not adding the same type multiple
@@ -1356,6 +1876,10 @@ get_type_num (dw_die_ref type)
 
     case DW_TAG_volatile_type:
       t->num = get_type_num_volatile_type (type);
+      break;
+
+    case DW_TAG_enumeration_type:
+      t->num = get_type_num_enumeration_type (type);
       break;
 
     default:

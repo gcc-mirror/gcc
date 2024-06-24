@@ -63,6 +63,23 @@ along with GCC; see the file COPYING3.  If not see
 /* Constants for type definitions.  */
 #define LF_MODIFIER		0x1001
 #define LF_POINTER		0x1002
+#define LF_FIELDLIST		0x1203
+#define LF_INDEX		0x1404
+#define LF_ENUMERATE		0x1502
+#define LF_ENUM			0x1507
+#define LF_CHAR			0x8000
+#define LF_SHORT		0x8001
+#define LF_USHORT		0x8002
+#define LF_LONG			0x8003
+#define LF_ULONG		0x8004
+#define LF_QUADWORD		0x8009
+#define LF_UQUADWORD		0x800a
+
+#define CV_ACCESS_PRIVATE	1
+#define CV_ACCESS_PROTECTED	2
+#define CV_ACCESS_PUBLIC	3
+
+#define CV_PROP_FWDREF		0x80
 
 /* Debug Format Interface.  Used in dwarf2out.cc.  */
 
