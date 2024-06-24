@@ -56,6 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #define CV_CFL_C		0x00
 #define CV_CFL_CXX		0x01
 
+#define FIRST_TYPE		0x1000
+
 #define LINE_LABEL	"Lcvline"
 #define END_FUNC_LABEL	"Lcvendfunc"
 #define SYMBOL_START_LABEL	"Lcvsymstart"
@@ -168,6 +170,22 @@ struct die_hasher : free_ptr_hash <codeview_type>
   }
 };
 
+struct codeview_custom_type
+{
+  struct codeview_custom_type *next;
+  uint32_t num;
+  uint16_t kind;
+
+  union
+  {
+    struct
+    {
+      uint32_t base_type;
+      uint32_t attributes;
+    } lf_pointer;
+  };
+};
+
 static unsigned int line_label_num;
 static unsigned int func_label_num;
 static unsigned int sym_label_num;
@@ -181,6 +199,9 @@ static const char* last_filename;
 static uint32_t last_file_id;
 static codeview_symbol *sym, *last_sym;
 static hash_table<die_hasher> *types_htab;
+static codeview_custom_type *custom_types, *last_custom_type;
+
+static uint32_t get_type_num (dw_die_ref type);
 
 /* Record new line number against the current function.  */
 
@@ -845,6 +866,71 @@ write_codeview_symbols (void)
   asm_fprintf (asm_out_file, "%LLcv_syms_end:\n");
 }
 
+/* Write an LF_POINTER type.  */
+
+static void
+write_lf_pointer (codeview_custom_type *t)
+{
+  /* This is lf_pointer in binutils and lfPointer in Microsoft's cvinfo.h:
+
+    struct lf_pointer
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t base_type;
+      uint32_t attributes;
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_pointer.base_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_pointer.attributes);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
+/* Write the .debug$T section, which contains all of our custom type
+   definitions.  */
+
+static void
+write_custom_types (void)
+{
+  targetm.asm_out.named_section (".debug$T", SECTION_DEBUG, NULL);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, CV_SIGNATURE_C13);
+  putc ('\n', asm_out_file);
+
+  while (custom_types)
+    {
+      codeview_custom_type *n = custom_types->next;
+
+      switch (custom_types->kind)
+	{
+	case LF_POINTER:
+	  write_lf_pointer (custom_types);
+	  break;
+	}
+
+      free (custom_types);
+      custom_types = n;
+    }
+}
+
 /* Finish CodeView debug info emission.  */
 
 void
@@ -860,6 +946,9 @@ codeview_debug_finish (void)
   write_source_files ();
   write_line_numbers ();
   write_codeview_symbols ();
+
+  if (custom_types)
+    write_custom_types ();
 
   if (types_htab)
     delete types_htab;
@@ -993,10 +1082,88 @@ get_type_num_base_type (dw_die_ref type)
     }
 }
 
-/* Process a DIE representing a type definition and return its number.  If
-   it's something we can't handle, return 0.  We keep a hash table so that
-   we're not adding the same type multiple times - though if we do it's not
-   disastrous, as ld will deduplicate everything for us.  */
+/* Add a new codeview_custom_type to our singly-linked custom_types list.  */
+
+static void
+add_custom_type (codeview_custom_type *ct)
+{
+  uint32_t num;
+
+  if (last_custom_type)
+    {
+      num = last_custom_type->num + 1;
+      last_custom_type->next = ct;
+    }
+  else
+    {
+      num = FIRST_TYPE;
+      custom_types = ct;
+    }
+
+  last_custom_type = ct;
+
+  ct->num = num;
+}
+
+/* Process a DW_TAG_pointer_type DIE.  If this is a pointer to a builtin
+   type, return the predefined constant for this.  Otherwise, add a new
+   LF_POINTER type and return its number.  */
+
+static uint32_t
+get_type_num_pointer_type (dw_die_ref type)
+{
+  uint32_t base_type_num, byte_size;
+  dw_die_ref base_type;
+  codeview_custom_type *ct;
+
+  byte_size = get_AT_unsigned (type, DW_AT_byte_size);
+  if (byte_size != 4 && byte_size != 8)
+    return 0;
+
+  base_type = get_AT_ref (type, DW_AT_type);
+
+  /* If DW_AT_type is not set, this must be a void pointer.  */
+  if (!base_type)
+    return byte_size == 4 ? T_32PVOID : T_64PVOID;
+
+  base_type_num = get_type_num (base_type);
+  if (base_type_num == 0)
+    return 0;
+
+  /* Pointers to builtin types have predefined type numbers, with the top byte
+     determining the pointer size - 0x0400 for a 32-bit pointer and 0x0600
+     for 64-bit.  */
+  if (base_type_num < FIRST_TYPE && !(base_type_num & 0xff00))
+    {
+      if (byte_size == 4)
+	return CV_POINTER_32 | base_type_num;
+      else
+	return CV_POINTER_64 | base_type_num;
+    }
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_POINTER;
+  ct->lf_pointer.base_type = base_type_num;
+
+  if (byte_size == 4)
+    ct->lf_pointer.attributes = CV_PTR_NEAR32;
+  else
+    ct->lf_pointer.attributes = CV_PTR_64;
+
+  ct->lf_pointer.attributes |= byte_size << 13;
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
+/* Process a DIE representing a type definition, add a CodeView type if
+   necessary, and return its number.  If it's something we can't handle, return
+   0.  We keep a hash table so that we're not adding the same type multiple
+   times - though if we do it's not disastrous, as ld will deduplicate
+   everything for us.  */
 
 static uint32_t
 get_type_num (dw_die_ref type)
@@ -1028,6 +1195,10 @@ get_type_num (dw_die_ref type)
       /* FIXME - signed longs typedef'd as "HRESULT" should get their
 		 own type (T_HRESULT) */
       t->num = get_type_num (get_AT_ref (type, DW_AT_type));
+      break;
+
+    case DW_TAG_pointer_type:
+      t->num = get_type_num_pointer_type (type);
       break;
 
     default:

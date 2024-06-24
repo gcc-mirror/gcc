@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Constants for in-built types.  */
 
+#define T_VOID			0x0003
 #define T_CHAR			0x0010
 #define T_SHORT			0x0011
 #define T_LONG			0x0012
@@ -45,6 +46,18 @@ along with GCC; see the file COPYING3.  If not see
 #define T_CHAR16		0x007a
 #define T_CHAR32		0x007b
 #define T_CHAR8			0x007c
+
+#define CV_POINTER_32		0x0400
+#define CV_POINTER_64		0x0600
+#define T_32PVOID		(T_VOID | CV_POINTER_32)
+#define T_64PVOID		(T_VOID | CV_POINTER_64)
+
+/* LF_POINTER attributes.  */
+#define CV_PTR_NEAR32		0x0a
+#define CV_PTR_64		0x0c
+
+/* Constants for type definitions.  */
+#define LF_POINTER		0x1002
 
 /* Debug Format Interface.  Used in dwarf2out.cc.  */
 
