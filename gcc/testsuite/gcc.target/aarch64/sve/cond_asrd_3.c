@@ -27,9 +27,9 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tasrd\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, #4\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tasrd\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, #4\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.b, p[0-7]/z, z[0-9]+\.b\n} 3 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.h, p[0-7]/z, z[0-9]+\.h\n} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.s, p[0-7]/z, z[0-9]+\.s\n} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.b, p[0-7]/z, z[0-9]+\.b\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.h, p[0-7]/z, z[0-9]+\.h\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.s, p[0-7]/z, z[0-9]+\.s\n} 1 } } */
 
-/* { dg-final { scan-assembler-not {\tmov\tz} { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-not {\tsel\t} { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not {\tmov\tz} } } */
+/* { dg-final { scan-assembler-not {\tsel\t} } } */

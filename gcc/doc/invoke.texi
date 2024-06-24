@@ -575,7 +575,7 @@ Objective-C and Objective-C++ Dialects}.
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
 -fipa-reference  -fipa-reference-addressable
 -fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm}
--flive-patching=@var{level}
+-flate-combine-instructions  -flive-patching=@var{level}
 -fira-region=@var{region}  -fira-hoist-pressure
 -fira-loop-pressure  -fno-ira-share-save-slots
 -fno-ira-share-spill-slots
@@ -13674,6 +13674,15 @@ works on different levels and thus the optimizations are not same - there are
 equivalences that are found only by GCC and equivalences found only by Gold.
 
 This flag is enabled by default at @option{-O2} and @option{-Os}.
+
+@opindex flate-combine-instructions
+@item -flate-combine-instructions
+Enable two instruction combination passes that run relatively late in the
+compilation process.  One of the passes runs before register allocation and
+the other after register allocation.  The main aim of the passes is to
+substitute definitions into all uses.
+
+Most targets enable this flag by default at @option{-O2} and @option{-Os}.
 
 @opindex flive-patching
 @item -flive-patching=@var{level}

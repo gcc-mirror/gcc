@@ -61,6 +61,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 #include <math.h>
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2977,6 +2978,16 @@ xtensa_option_override (void)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
+
+  /* One of the late-combine passes runs after register allocation
+     and can match define_insn_and_splits that were previously used
+     only before register allocation.  Some of those define_insn_and_splits
+     require the split to take place, but have a split condition of
+     can_create_pseudo_p, and so matching after RA will give an
+     unsplittable instruction.  Disable late-combine by default until
+     the define_insn_and_splits are fixed.  */
+  if (!OPTION_SET_P (flag_late_combine_instructions))
+    flag_late_combine_instructions = 0;
 }
 
 /* Implement TARGET_HARD_REGNO_NREGS.  */

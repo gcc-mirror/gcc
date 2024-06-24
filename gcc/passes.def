@@ -493,6 +493,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_initialize_regs);
       NEXT_PASS (pass_ud_rtl_dce);
       NEXT_PASS (pass_combine);
+      NEXT_PASS (pass_late_combine);
       NEXT_PASS (pass_if_after_combine);
       NEXT_PASS (pass_jump_after_combine);
       NEXT_PASS (pass_partition_blocks);
@@ -512,6 +513,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_postreload);
       PUSH_INSERT_PASSES_WITHIN (pass_postreload)
 	  NEXT_PASS (pass_postreload_cse);
+	  NEXT_PASS (pass_late_combine);
 	  NEXT_PASS (pass_gcse2);
 	  NEXT_PASS (pass_split_after_reload);
 	  NEXT_PASS (pass_ree);

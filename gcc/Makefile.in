@@ -1574,6 +1574,7 @@ OBJS = \
 	ira-lives.o \
 	jump.o \
 	langhooks.o \
+	late-combine.o \
 	lcm.o \
 	lists.o \
 	loop-doloop.o \

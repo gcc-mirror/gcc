@@ -1,5 +1,5 @@
 /* { dg-do compile { target bitint } } */
-/* { dg-additional-options "-std=c23 -O2 -fno-stack-protector -save-temps -fno-schedule-insns -fno-schedule-insns2" } */
+/* { dg-additional-options "-std=c23 -O2 -fno-stack-protector -save-temps -fno-schedule-insns -fno-schedule-insns2 -fno-late-combine-instructions" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #define ALIGN 8

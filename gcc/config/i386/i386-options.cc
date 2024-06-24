@@ -1944,6 +1944,10 @@ ix86_override_options_after_change (void)
 	flag_cunroll_grow_size = flag_peel_loops || optimize >= 3;
     }
 
+  /* Late combine tends to undo some of the effects of STV and RPAD,
+     by combining instructions back to their original form.  */
+  if (!OPTION_SET_P (flag_late_combine_instructions))
+    flag_late_combine_instructions = 0;
 }
 
 /* Clear stack slot assignments remembered from previous functions.

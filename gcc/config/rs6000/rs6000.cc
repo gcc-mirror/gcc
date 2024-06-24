@@ -4768,6 +4768,14 @@ rs6000_option_override_internal (bool global_init_p)
 	targetm.expand_builtin_va_start = NULL;
     }
 
+  /* One of the late-combine passes runs after register allocation
+     and can match define_insn_and_splits that were previously used
+     only before register allocation.  Some of those define_insn_and_splits
+     use gen_reg_rtx unconditionally.  Disable late-combine by default
+     until the define_insn_and_splits are fixed.  */
+  if (!OPTION_SET_P (flag_late_combine_instructions))
+    flag_late_combine_instructions = 0;
+
   rs6000_override_options_after_change ();
 
   /* If not explicitly specified via option, decide whether to generate indexed
