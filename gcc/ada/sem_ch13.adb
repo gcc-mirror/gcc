@@ -160,6 +160,14 @@ package body Sem_Ch13 is
    --  Performs the processing of an aspect at the freeze point. ASN is the
    --  N_Aspect_Specification node for the aspect.
 
+   procedure Check_Aspect_Too_Late (N : Node_Id);
+   --  This procedure is similar to Rep_Item_Too_Late for representation
+   --  aspects that apply to type and that do not have a corresponding pragma.
+   --
+   --  Used to check in particular that the expression associated with aspect
+   --  node N for the given type (entity) of the aspect does not appear too
+   --  late according to the rules in RM 13.1(9) and 13.1(10).
+
    procedure Check_Pool_Size_Clash (Ent : Entity_Id; SP, SS : Node_Id);
    --  Called if both Storage_Pool and Storage_Size attribute definition
    --  clauses (SP and SS) are present for entity Ent. Issue error message.
@@ -967,14 +975,6 @@ package body Sem_Ch13 is
       --  This routine analyzes an Aspect_Default_[Component_]Value denoted by
       --  the aspect specification node ASN.
 
-      procedure Check_Aspect_Too_Late (N : Node_Id);
-      --  This procedure is similar to Rep_Item_Too_Late for representation
-      --  aspects that apply to type and that do not have a corresponding
-      --  pragma.
-      --  Used to check in particular that the expression associated with
-      --  aspect node N for the given type (entity) of the aspect does not
-      --  appear too late according to the rules in RM 13.1(9) and 13.1(10).
-
       procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id);
       --  Given an aspect specification node ASN whose expression is an
       --  optional Boolean, this routines creates the corresponding pragma
@@ -999,110 +999,6 @@ package body Sem_Ch13 is
 
          Check_Aspect_Too_Late (ASN);
       end Analyze_Aspect_Default_Value;
-
-      ---------------------------
-      -- Check_Aspect_Too_Late --
-      ---------------------------
-
-      procedure Check_Aspect_Too_Late (N : Node_Id) is
-         Typ  : constant Entity_Id := Entity (N);
-         Expr : constant Node_Id   := Expression (N);
-
-         function Find_Type_Reference
-           (Typ : Entity_Id; Expr : Node_Id) return Boolean;
-         --  Return True if a reference to type Typ is found in the expression
-         --  Expr.
-
-         -------------------------
-         -- Find_Type_Reference --
-         -------------------------
-
-         function Find_Type_Reference
-           (Typ : Entity_Id; Expr : Node_Id) return Boolean
-         is
-            function Find_Type (N : Node_Id) return Traverse_Result;
-            --  Set Found to True if N refers to Typ
-
-            ---------------
-            -- Find_Type --
-            ---------------
-
-            function Find_Type (N : Node_Id) return Traverse_Result is
-            begin
-               if N = Typ
-                 or else (Nkind (N) in N_Identifier | N_Expanded_Name
-                           and then Present (Entity (N))
-                           and then Entity (N) = Typ)
-               then
-                  return Abandon;
-               else
-                  return OK;
-               end if;
-            end Find_Type;
-
-            function Search_Type_Reference is new Traverse_Func (Find_Type);
-
-         begin
-            return Search_Type_Reference (Expr) = Abandon;
-         end Find_Type_Reference;
-
-         Parent_Type : Entity_Id;
-
-         Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
-         Save_Must_Not_Freeze    : constant Boolean := Must_Not_Freeze (Expr);
-
-      begin
-         --  Ensure Expr is analyzed so that e.g. all types are properly
-         --  resolved for Find_Type_Reference. We preanalyze this expression
-         --  (to avoid expansion), handle it as a spec expression (like default
-         --  expression), disable freezing and skip resolution (to not fold
-         --  type self-references, e.g. T'Last).
-
-         In_Spec_Expression := True;
-         Set_Must_Not_Freeze (Expr);
-
-         Preanalyze (Expr);
-
-         Set_Must_Not_Freeze (Expr, Save_Must_Not_Freeze);
-         In_Spec_Expression := Save_In_Spec_Expression;
-
-         --  A self-referential aspect is illegal if it forces freezing the
-         --  entity before the corresponding aspect has been analyzed.
-
-         if Find_Type_Reference (Typ, Expr) then
-            Error_Msg_NE
-              ("aspect specification causes premature freezing of&", N, Typ);
-         end if;
-
-         --  For representation aspects, check for case of untagged derived
-         --  type whose parent either has primitive operations (pre Ada 2022),
-         --  or is a by-reference type (RM 13.1(10)).
-         --  Strictly speaking the check also applies to Ada 2012 but it is
-         --  really too constraining for existing code already, so relax it.
-         --  ??? Confirming aspects should be allowed here.
-
-         if Is_Representation_Aspect (Get_Aspect_Id (N))
-           and then Is_Derived_Type (Typ)
-           and then not Is_Tagged_Type (Typ)
-         then
-            Parent_Type := Etype (Base_Type (Typ));
-
-            if Ada_Version <= Ada_2012
-              and then Has_Primitive_Operations (Parent_Type)
-            then
-               Error_Msg_N
-                 ("|representation aspect not permitted before Ada 2022: " &
-                  "use -gnat2022!", N);
-               Error_Msg_NE
-                 ("\parent type & has primitive operations!", N, Parent_Type);
-
-            elsif Is_By_Reference_Type (Parent_Type) then
-               No_Type_Rep_Item (N);
-               Error_Msg_NE
-                 ("\parent type & is a by-reference type!", N, Parent_Type);
-            end if;
-         end if;
-      end Check_Aspect_Too_Late;
 
       -------------------------------------
       -- Make_Pragma_From_Boolean_Aspect --
@@ -11637,6 +11533,110 @@ package body Sem_Ch13 is
       end if;
    end Check_Aspect_At_Freeze_Point;
 
+   ---------------------------
+   -- Check_Aspect_Too_Late --
+   ---------------------------
+
+   procedure Check_Aspect_Too_Late (N : Node_Id) is
+      Typ  : constant Entity_Id := Entity (N);
+      Expr : constant Node_Id   := Expression (N);
+
+      function Find_Type_Reference
+        (Typ : Entity_Id; Expr : Node_Id) return Boolean;
+      --  Return True if a reference to type Typ is found in the expression
+      --  Expr.
+
+      -------------------------
+      -- Find_Type_Reference --
+      -------------------------
+
+      function Find_Type_Reference
+        (Typ : Entity_Id; Expr : Node_Id) return Boolean
+      is
+         function Find_Type (N : Node_Id) return Traverse_Result;
+         --  Set Found to True if N refers to Typ
+
+         ---------------
+         -- Find_Type --
+         ---------------
+
+         function Find_Type (N : Node_Id) return Traverse_Result is
+         begin
+            if N = Typ
+              or else (Nkind (N) in N_Identifier | N_Expanded_Name
+                        and then Present (Entity (N))
+                        and then Entity (N) = Typ)
+            then
+               return Abandon;
+            else
+               return OK;
+            end if;
+         end Find_Type;
+
+         function Search_Type_Reference is new Traverse_Func (Find_Type);
+
+      begin
+         return Search_Type_Reference (Expr) = Abandon;
+      end Find_Type_Reference;
+
+      Parent_Type : Entity_Id;
+
+      Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
+      Save_Must_Not_Freeze    : constant Boolean := Must_Not_Freeze (Expr);
+
+   begin
+      --  Ensure Expr is analyzed so that e.g. all types are properly
+      --  resolved for Find_Type_Reference. We preanalyze this expression
+      --  (to avoid expansion), handle it as a spec expression (like default
+      --  expression), disable freezing and skip resolution (to not fold
+      --  type self-references, e.g. T'Last).
+
+      In_Spec_Expression := True;
+      Set_Must_Not_Freeze (Expr);
+
+      Preanalyze (Expr);
+
+      Set_Must_Not_Freeze (Expr, Save_Must_Not_Freeze);
+      In_Spec_Expression := Save_In_Spec_Expression;
+
+      --  A self-referential aspect is illegal if it forces freezing the
+      --  entity before the corresponding aspect has been analyzed.
+
+      if Find_Type_Reference (Typ, Expr) then
+         Error_Msg_NE
+           ("aspect specification causes premature freezing of&", N, Typ);
+      end if;
+
+      --  For representation aspects, check for case of untagged derived
+      --  type whose parent either has primitive operations (pre Ada 2022),
+      --  or is a by-reference type (RM 13.1(10)).
+      --  Strictly speaking the check also applies to Ada 2012 but it is
+      --  really too constraining for existing code already, so relax it.
+      --  ??? Confirming aspects should be allowed here.
+
+      if Is_Representation_Aspect (Get_Aspect_Id (N))
+        and then Is_Derived_Type (Typ)
+        and then not Is_Tagged_Type (Typ)
+      then
+         Parent_Type := Etype (Base_Type (Typ));
+
+         if Ada_Version <= Ada_2012
+           and then Has_Primitive_Operations (Parent_Type)
+         then
+            Error_Msg_N
+              ("|representation aspect not permitted before Ada 2022: " &
+               "use -gnat2022!", N);
+            Error_Msg_NE
+              ("\parent type & has primitive operations!", N, Parent_Type);
+
+         elsif Is_By_Reference_Type (Parent_Type) then
+            No_Type_Rep_Item (N);
+            Error_Msg_NE
+              ("\parent type & is a by-reference type!", N, Parent_Type);
+         end if;
+      end if;
+   end Check_Aspect_Too_Late;
+
    -----------------------------------
    -- Check_Constant_Address_Clause --
    -----------------------------------
@@ -16064,7 +16064,12 @@ package body Sem_Ch13 is
                   --  before the actual freeze point.
 
                   when Aspect_Default_Value =>
+                     Check_Aspect_Too_Late (ASN);
                      Preanalyze_Spec_Expression (Expr, E);
+
+                  when Aspect_Default_Component_Value =>
+                     Check_Aspect_Too_Late (ASN);
+                     Preanalyze_Spec_Expression (Expr, Component_Type (E));
 
                   when Aspect_CPU
                      | Aspect_Interrupt_Priority
