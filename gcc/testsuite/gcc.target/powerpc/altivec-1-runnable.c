@@ -1,5 +1,6 @@
-/* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-options "-maltivec" } */
+/* { dg-do run { target vmx_hw } } */
+/* { dg-do compile { target { ! vmx_hw } } } */
+/* { dg-options "-O2 -maltivec" } */
 /* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
