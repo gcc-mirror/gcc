@@ -2697,11 +2697,16 @@
 
 (define_expand "setmem<mode>"
   [(parallel [(set (match_operand:BLK 0 "memory_operand")
-		   (match_operand:QI 2 "const_int_operand"))
+		   (match_operand:QI 2 "nonmemory_operand"))
 	      (use (match_operand:P 1 ""))
 	      (use (match_operand:SI 3 "const_int_operand"))])]
  ""
- {
+{
+  /* If TARGET_VECTOR is false, this routine will return false and we will
+     try scalar expansion.  */
+  if (riscv_vector::expand_vec_setmem (operands[0], operands[1], operands[2]))
+    DONE;
+
   /* If value to set is not zero, use the library routine.  */
   if (operands[2] != const0_rtx)
     FAIL;
