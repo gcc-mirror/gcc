@@ -5,16 +5,6 @@
 
 use std::ffi::CStr;
 
-trait StringLeakExt {
-    fn leak<'a>(self) -> &'a mut str;
-}
-
-impl StringLeakExt for String {
-    fn leak<'a>(self) -> &'a mut str {
-        Box::leak(self.into_boxed_str())
-    }
-}
-
 trait IntoFFI<T> {
     fn into_ffi(self) -> T;
 }
@@ -97,10 +87,6 @@ mod ffi {
     //     /// An inline assembly template string for `asm!`.
     //     InlineAsm,
     // }
-
-    #[derive(Copy, Clone)]
-    #[repr(C)]
-    struct InnerOffset(usize);
 
     /// A piece is a portion of the format string which represents the next part
     /// to emit. These are emitted as a stream by the `Parser` class.

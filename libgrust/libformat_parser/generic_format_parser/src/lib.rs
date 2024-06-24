@@ -22,22 +22,6 @@ fn is_id_continue(c: char) -> bool {
     unicode_xid::UnicodeXID::is_xid_continue(c)
 }
 
-// Workaround for Ubuntu 18.04. The default Rust package is 1.65 (and unlikely to change I assume?), but the
-// generic format parser library uses `is_some_and` which was introduced in 1.70. So this is a reimplementation,
-// directly taken from the standard library sources
-trait IsSomeAnd<T> {
-    fn is_some_and(self, f: impl FnOnce(T) -> bool) -> bool;
-}
-
-impl<T> IsSomeAnd<T> for Option<T> {
-    fn is_some_and(self, f: impl FnOnce(T) -> bool) -> bool {
-        match self {
-            None => false,
-            Some(x) => f(x),
-        }
-    }
-}
-
 // use rustc_lexer::unescape;
 pub use Alignment::*;
 pub use Count::*;
