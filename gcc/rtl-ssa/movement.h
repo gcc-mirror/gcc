@@ -83,10 +83,13 @@ canonicalize_move_range (insn_range_info &move_range, insn_info *insn)
 }
 
 // Try to restrict movement range MOVE_RANGE of INSN so that it can set
-// or clobber REGNO.  Assume that if:
+// or clobber REGNO.
+//
+// IGNORE is an object that provides the same interface as ignore_nothing.
+// Assume that if:
 //
 // - an instruction I2 contains another access A to REGNO; and
-// - IGNORE (I2) is true
+// - IGNORE says that I2 should be ignored
 //
 // then either:
 //
@@ -94,15 +97,18 @@ canonicalize_move_range (insn_range_info &move_range, insn_info *insn)
 // - something will ensure that the new definition of REGNO does not
 //   interfere with A, without this having to be enforced by I1's move range.
 //
+// If IGNORE says that a definition D of REGNO should be ignored, assume that
+// the new definition of REGNO will not conflict with D.
+//
 // Return true on success, otherwise leave MOVE_RANGE in an invalid state.
 //
 // This function only works correctly for instructions that remain within
 // the same extended basic block.
-template<typename IgnorePredicate>
+template<typename IgnorePredicates>
 bool
 restrict_movement_for_dead_range (insn_range_info &move_range,
 				  unsigned int regno, insn_info *insn,
-				  IgnorePredicate ignore)
+				  IgnorePredicates ignore)
 {
   // Find a definition at or neighboring INSN.
   resource_info resource = full_register (regno);
@@ -141,17 +147,18 @@ restrict_movement_for_dead_range (insn_range_info &move_range,
     {
       // Stop the instruction moving beyond the previous relevant access
       // to REGNO.
-      access_info *prev_access
-	= last_access_ignoring (prev, ignore_clobbers::YES, ignore);
+      access_info *prev_access = last_access (prev, ignore_clobbers::YES,
+					      ignore);
       if (prev_access)
 	move_range = move_later_than (move_range, access_insn (prev_access));
     }
 
-  // Stop the instruction moving beyond the next relevant definition of REGNO.
+  // Stop the instruction moving beyond the next relevant use or definition
+  // of REGNO.
   def_info *next = dl.matching_set_or_first_def_of_next_group ();
-  next = first_def_ignoring (next, ignore_clobbers::YES, ignore);
-  if (next)
-    move_range = move_earlier_than (move_range, next->insn ());
+  access_info *next_access = first_access (next, ignore_clobbers::YES, ignore);
+  if (next_access)
+    move_range = move_earlier_than (move_range, access_insn (next_access));
 
   return canonicalize_move_range (move_range, insn);
 }
@@ -159,11 +166,14 @@ restrict_movement_for_dead_range (insn_range_info &move_range,
 // Try to restrict movement range MOVE_RANGE so that it is possible for the
 // instruction being moved ("instruction I1") to perform all the definitions
 // in DEFS while still preserving dependencies between those definitions
-// and surrounding instructions.  Assume that if:
+// and surrounding instructions.
+//
+// IGNORE is an object that provides the same interface as ignore_nothing.
+// Assume that if:
 //
 // - DEFS contains a definition D of resource R;
 // - an instruction I2 contains another access A to R; and
-// - IGNORE (I2) is true
+// - IGNORE says that I2 should be ignored
 //
 // then either:
 //
@@ -171,14 +181,17 @@ restrict_movement_for_dead_range (insn_range_info &move_range,
 // - something will ensure that D and A maintain their current order,
 //   without this having to be enforced by I1's move range.
 //
+// Assume the same thing about a definition D and all uses of D if IGNORE
+// says that D should be ignored.
+//
 // Return true on success, otherwise leave MOVE_RANGE in an invalid state.
 //
 // This function only works correctly for instructions that remain within
 // the same extended basic block.
-template<typename IgnorePredicate>
+template<typename IgnorePredicates>
 bool
-restrict_movement_for_defs_ignoring (insn_range_info &move_range,
-				     def_array defs, IgnorePredicate ignore)
+restrict_movement_for_defs (insn_range_info &move_range, def_array defs,
+			    IgnorePredicates ignore)
 {
   for (def_info *def : defs)
     {
@@ -194,29 +207,16 @@ restrict_movement_for_defs_ignoring (insn_range_info &move_range,
       // are being moved at once.
       bool is_clobber = is_a<clobber_info *> (def);
 
-      // Search back for the first unfiltered use or definition of the
+      // Search back for the first relevant use or definition of the
       // same resource.
       access_info *access;
-      access = prev_access_ignoring (def, ignore_clobbers (is_clobber),
-				     ignore);
+      access = prev_access (def, ignore_clobbers (is_clobber), ignore);
       if (access)
 	move_range = move_later_than (move_range, access_insn (access));
 
-      // Search forward for the first unfiltered use of DEF,
-      // or the first unfiltered definition that follows DEF.
-      //
-      // We don't need to consider uses of following definitions, since
-      // if IGNORE (D->insn ()) is true for some definition D, the caller
-      // is guarantees that either
-      //
-      // - D will be removed, and thus its uses will be removed; or
-      // - D will occur after DEF, and thus D's uses will also occur
-      //   after DEF.
-      //
-      // This is purely a simplification: we could also process D's uses,
-      // but we don't need to.
-      access = next_access_ignoring (def, ignore_clobbers (is_clobber),
-				     ignore);
+      // Search forward for the next relevant use or definition of the
+      // same resource.
+      access = next_access (def, ignore_clobbers (is_clobber), ignore);
       if (access)
 	move_range = move_earlier_than (move_range, access_insn (access));
 
@@ -238,13 +238,11 @@ restrict_movement_for_defs_ignoring (insn_range_info &move_range,
 	    return false;
 
 	  insn_info *insn;
-	  insn = prev_call_clobbers_ignoring (*call_group, def->insn (),
-					      ignore);
+	  insn = prev_call_clobbers (*call_group, def->insn (), ignore);
 	  if (insn)
 	    move_range = move_later_than (move_range, insn);
 
-	  insn = next_call_clobbers_ignoring (*call_group, def->insn (),
-					      ignore);
+	  insn = next_call_clobbers (*call_group, def->insn (), ignore);
 	  if (insn)
 	    move_range = move_earlier_than (move_range, insn);
 	}
@@ -262,11 +260,11 @@ restrict_movement_for_defs_ignoring (insn_range_info &move_range,
   return bool (move_range);
 }
 
-// Like restrict_movement_for_defs_ignoring, but for the uses in USES.
-template<typename IgnorePredicate>
+// Like restrict_movement_for_defs, but for the uses in USES.
+template<typename IgnorePredicates>
 bool
-restrict_movement_for_uses_ignoring (insn_range_info &move_range,
-				     use_array uses, IgnorePredicate ignore)
+restrict_movement_for_uses (insn_range_info &move_range, use_array uses,
+			    IgnorePredicates ignore)
 {
   for (const use_info *use : uses)
     {
@@ -284,31 +282,21 @@ restrict_movement_for_uses_ignoring (insn_range_info &move_range,
       if (use->is_in_debug_insn ())
 	continue;
 
-      // If the used value is defined by an instruction I2 for which
-      // IGNORE (I2) is true, the caller guarantees that I2 will occur
-      // before change.insn ().  Otherwise, make sure that the use occurs
-      // after the definition.
+      // If the used value is defined by an ignored instruction I2,
+      // the caller guarantees that I2 will occur before change.insn ()
+      // and that its value will still be available at change.insn ().
+      // Otherwise, make sure that the use occurs after the definition.
       insn_info *insn = set->insn ();
-      if (!ignore (insn))
+      if (!ignore.should_ignore_def (set)
+	  && !ignore.should_ignore_insn (insn))
 	move_range = move_later_than (move_range, insn);
 
-      // Search forward for the first unfiltered definition that follows SET.
-      //
-      // We don't need to consider the uses of these definitions, since
-      // if IGNORE (D->insn ()) is true for some definition D, the caller
-      // is guarantees that either
-      //
-      // - D will be removed, and thus its uses will be removed; or
-      // - D will occur after USE, and thus D's uses will also occur
-      //   after USE.
-      //
-      // This is purely a simplification: we could also process D's uses,
-      // but we don't need to.
-      def_info *def;
-      def = first_def_ignoring (set->next_def (), ignore_clobbers::NO,
-				ignore);
-      if (def)
-	move_range = move_earlier_than (move_range, def->insn ());
+      // Search forward after SET's live range for the first relevant
+      // use or definition of the same resource.
+      access_info *access;
+      access = first_access (set->next_def (), ignore_clobbers::NO, ignore);
+      if (access)
+	move_range = move_earlier_than (move_range, access_insn (access));
 
       // If USE uses a hard register, take any call clobbers into account too.
       // SET will necessarily occur after any previous call clobber, so we
@@ -326,8 +314,8 @@ restrict_movement_for_uses_ignoring (insn_range_info &move_range,
 	  if (!move_range)
 	    return false;
 
-	  insn_info *insn = next_call_clobbers_ignoring (*call_group,
-							 use->insn (), ignore);
+	  insn_info *insn = next_call_clobbers (*call_group, use->insn (),
+						ignore);
 	  if (insn)
 	    move_range = move_earlier_than (move_range, insn);
 	}

@@ -30,25 +30,15 @@ insn_is_changing (array_slice<insn_change *const> changes,
   return false;
 }
 
-// Return a closure of insn_is_changing, for use as a predicate.
-// This could be done using local lambdas instead, but the predicate is
-// used often enough that having a class should be more convenient and allow
-// reuse of template instantiations.
-//
-// We don't use std::bind because it would involve an indirect function call,
-// whereas this function is used in relatively performance-critical code.
-inline insn_is_changing_closure
-insn_is_changing (array_slice<insn_change *const> changes)
-{
-  return insn_is_changing_closure (changes);
-}
-
 // Restrict CHANGE.move_range so that the changed instruction can perform
-// all its definitions and uses.  Assume that if:
+// all its definitions and uses.
+//
+// IGNORE is an object that provides the same interface as ignore_nothing.
+// Assume that if:
 //
 // - CHANGE contains an access A1 of resource R;
 // - an instruction I2 contains another access A2 to R; and
-// - IGNORE (I2) is true
+// - IGNORE says that I2 should be ignored
 //
 // then either:
 //
@@ -56,31 +46,33 @@ insn_is_changing (array_slice<insn_change *const> changes)
 // - something will ensure that A1 and A2 maintain their current order,
 //   without this having to be enforced by CHANGE's move range.
 //
-// IGNORE should return true for CHANGE.insn ().
+// Assume the same thing about a definition D of R, and about all uses of D,
+// if IGNORE says that D should be ignored.
+//
+// IGNORE should ignore CHANGE.insn ().
 //
 // Return true on success, otherwise leave CHANGE.move_range in an invalid
 // state.
 //
 // This function only works correctly for instructions that remain within
 // the same extended basic block.
-template<typename IgnorePredicate>
+template<typename IgnorePredicates>
 bool
-restrict_movement_ignoring (insn_change &change, IgnorePredicate ignore)
+restrict_movement (insn_change &change, IgnorePredicates ignore)
 {
   // Uses generally lead to failure quicker, so test those first.
-  return (restrict_movement_for_uses_ignoring (change.move_range,
-					       change.new_uses, ignore)
-	  && restrict_movement_for_defs_ignoring (change.move_range,
-						  change.new_defs, ignore)
+  return (restrict_movement_for_uses (change.move_range,
+				      change.new_uses, ignore)
+	  && restrict_movement_for_defs (change.move_range,
+					 change.new_defs, ignore)
 	  && canonicalize_move_range (change.move_range, change.insn ()));
 }
 
-// Like restrict_movement_ignoring, but ignore only the instruction
-// that is being changed.
+// As above, but ignore only the instruction that is being changed.
 inline bool
 restrict_movement (insn_change &change)
 {
-  return restrict_movement_ignoring (change, insn_is (change.insn ()));
+  return restrict_movement (change, ignore_insn (change.insn ()));
 }
 
 using add_regno_clobber_fn = std::function<bool (insn_change &,
@@ -91,18 +83,22 @@ bool recog_internal (insn_change &, add_regno_clobber_fn);
 // tweaking the pattern or adding extra clobbers in order to make it match.
 //
 // When adding an extra clobber for register R, restrict CHANGE.move_range
-// to a range of instructions for which R is not live.  When determining
-// whether R is live, ignore accesses made by an instruction I if
-// IGNORE (I) is true.  The caller then assumes the responsibility
-// of ensuring that CHANGE and I are placed in a valid order.
+// to a range of instructions for which R is not live.  Use IGNORE to guide
+// this process, where IGNORE is an object that provides the same interface
+// as ignore_nothing.  When determining whether R is live, ignore accesses
+// made by an instruction I if IGNORE says that I should be ignored.
+// The caller then assumes the responsibility of ensuring that CHANGE
+// and I are placed in a valid order.  Similarly, ignore live ranges
+// associated with a definition of R if IGNORE says that that definition
+// should be ignored.
 //
-// IGNORE should return true for CHANGE.insn ().
+// IGNORE should ignore CHANGE.insn ().
 //
 // Return true on success.  Leave CHANGE unmodified on failure.
-template<typename IgnorePredicate>
+template<typename IgnorePredicates>
 inline bool
-recog_ignoring (obstack_watermark &watermark, insn_change &change,
-		IgnorePredicate ignore)
+recog (obstack_watermark &watermark, insn_change &change,
+       IgnorePredicates ignore)
 {
   auto add_regno_clobber = [&](insn_change &change, unsigned int regno)
     {
@@ -111,12 +107,11 @@ recog_ignoring (obstack_watermark &watermark, insn_change &change,
   return recog_internal (change, add_regno_clobber);
 }
 
-// As for recog_ignoring, but ignore only the instruction that is being
-// changed.
+// As above, but ignore only the instruction that is being changed.
 inline bool
 recog (obstack_watermark &watermark, insn_change &change)
 {
-  return recog_ignoring (watermark, change, insn_is (change.insn ()));
+  return recog (watermark, change, ignore_insn (change.insn ()));
 }
 
 // Check whether insn costs indicate that the net effect of the changes

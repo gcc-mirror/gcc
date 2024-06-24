@@ -183,7 +183,7 @@ cc_fusion::parallelize_insns (def_info *cc_def, rtx cc_set,
   auto other_change = insn_change::delete_insn (other_insn);
   insn_change *changes[] = { &other_change, &cc_change };
   cc_change.move_range = cc_insn->ebb ()->insn_range ();
-  if (!restrict_movement_ignoring (cc_change, insn_is_changing (changes)))
+  if (!restrict_movement (cc_change, ignore_changing_insns (changes)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "-- cannot satisfy all definitions and uses\n");
@@ -205,7 +205,7 @@ cc_fusion::parallelize_insns (def_info *cc_def, rtx cc_set,
   validate_change (cc_rtl, &PATTERN (cc_rtl), m_parallel, 1);
 
   // These routines report failures themselves.
-  if (!recog_ignoring (attempt, cc_change, insn_is_changing (changes))
+  if (!recog (attempt, cc_change, ignore_changing_insns (changes))
       || !changes_are_worthwhile (changes)
       || !crtl->ssa->verify_insn_changes (changes))
     return false;

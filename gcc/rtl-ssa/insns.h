@@ -493,18 +493,6 @@ public:
   insn_info *last;
 };
 
-// A class that represents a closure of operator== for instructions.
-// This is used by insn_is; see there for details.
-class insn_is_closure
-{
-public:
-  insn_is_closure (const insn_info *insn) : m_insn (insn) {}
-  bool operator() (const insn_info *other) const { return m_insn == other; }
-
-private:
-  const insn_info *m_insn;
-};
-
 void pp_insn (pretty_printer *, const insn_info *);
 
 }

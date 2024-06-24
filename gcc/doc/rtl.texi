@@ -5073,7 +5073,7 @@ in the correct order with respect to each other.
 The way to do this is:
 
 @smallexample
-if (!rtl_ssa::restrict_movement_ignoring (change, insn_is_changing (changes)))
+if (!rtl_ssa::restrict_movement (change, ignore_changing_insns (changes)))
   return false;
 @end smallexample
 
@@ -5085,7 +5085,7 @@ changing instructions (which might, for example, no longer need
 to clobber the flags register).  The way to do this is:
 
 @smallexample
-if (!rtl_ssa::recog_ignoring (attempt, change, insn_is_changing (changes)))
+if (!rtl_ssa::recog (attempt, change, ignore_changing_insns (changes)))
   return false;
 @end smallexample
 
@@ -5137,16 +5137,16 @@ change2.move_range = @dots{};
 
 rtl_ssa::insn_change *changes[] = @{ &change1, &change2 @};
 
-auto is_changing = insn_is_changing (changes);
-if (!rtl_ssa::restrict_movement_ignoring (change1, is_changing)
-    || !rtl_ssa::restrict_movement_ignoring (change2, is_changing))
+auto ignore = ignore_changing_insns (changes);
+if (!rtl_ssa::restrict_movement (change1, ignore)
+    || !rtl_ssa::restrict_movement (change2, ignore))
   return false;
 
 insn_change_watermark watermark;
 // Use validate_change etc. to change INSN1's and INSN2's patterns.
 @dots{}
-if (!rtl_ssa::recog_ignoring (attempt, change1, is_changing)
-    || !rtl_ssa::recog_ignoring (attempt, change2, is_changing)
+if (!rtl_ssa::recog (attempt, change1, ignore)
+    || !rtl_ssa::recog (attempt, change2, ignore)
     || !rtl_ssa::changes_are_worthwhile (changes)
     || !crtl->ssa->verify_insn_changes (changes))
   return false;

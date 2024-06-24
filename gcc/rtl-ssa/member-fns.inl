@@ -870,21 +870,6 @@ inline insn_change::insn_change (insn_info *insn, delete_action)
 {
 }
 
-inline insn_is_changing_closure::
-insn_is_changing_closure (array_slice<insn_change *const> changes)
-  : m_changes (changes)
-{
-}
-
-inline bool
-insn_is_changing_closure::operator() (const insn_info *insn) const
-{
-  for (const insn_change *change : m_changes)
-    if (change->insn () == insn)
-      return true;
-  return false;
-}
-
 inline iterator_range<bb_iterator>
 function_info::bbs () const
 {
@@ -963,11 +948,11 @@ function_info::single_dominating_def (unsigned int regno) const
   return nullptr;
 }
 
-template<typename IgnorePredicate>
+template<typename IgnorePredicates>
 bool
 function_info::add_regno_clobber (obstack_watermark &watermark,
 				  insn_change &change, unsigned int regno,
-				  IgnorePredicate ignore)
+				  IgnorePredicates ignore)
 {
   // Check whether CHANGE already clobbers REGNO.
   if (find_access (change.new_defs, regno))
@@ -1001,6 +986,22 @@ function_info::change_alloc (obstack_watermark &wm, Ts... args)
 		 "too much alignment required");
   void *addr = XOBNEW (wm, T);
   return new (addr) T (std::forward<Ts> (args)...);
+}
+
+inline
+ignore_changing_insns::
+ignore_changing_insns (array_slice<insn_change *const> changes)
+  : m_changes (changes)
+{
+}
+
+inline bool
+ignore_changing_insns::should_ignore_insn (const insn_info *insn)
+{
+  for (const insn_change *change : m_changes)
+    if (change->insn () == insn)
+      return true;
+  return false;
 }
 
 }

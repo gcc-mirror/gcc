@@ -563,9 +563,6 @@ pair_fusion_bb_info::track_access (insn_info *insn, bool load_p, rtx mem)
     }
 }
 
-// Dummy predicate that never ignores any insns.
-static bool no_ignore (insn_info *) { return false; }
-
 // Return the latest dataflow hazard before INSN.
 //
 // If IGNORE is non-NULL, this points to a sub-rtx which we should ignore for
@@ -643,9 +640,8 @@ latest_hazard_before (insn_info *insn, rtx *ignore,
 	  if (!call_group->clobbers (def->resource ()))
 	    continue;
 
-	  auto clobber_insn = prev_call_clobbers_ignoring (*call_group,
-							   def->insn (),
-							   no_ignore);
+	  auto clobber_insn = prev_call_clobbers (*call_group, def->insn (),
+						  ignore_nothing ());
 	  if (clobber_insn)
 	    hazard (clobber_insn);
 	}
@@ -704,9 +700,8 @@ first_hazard_after (insn_info *insn, rtx *ignore)
 	  if (!call_group->clobbers (def->resource ()))
 	    continue;
 
-	  auto clobber_insn = next_call_clobbers_ignoring (*call_group,
-							   def->insn (),
-							   no_ignore);
+	  auto clobber_insn = next_call_clobbers (*call_group, def->insn (),
+						  ignore_nothing ());
 	  if (clobber_insn)
 	    hazard (clobber_insn);
 	}
@@ -733,16 +728,15 @@ first_hazard_after (insn_info *insn, rtx *ignore)
 
       // Also need to handle call clobbers of our uses (again WaR).
       //
-      // See restrict_movement_for_uses_ignoring for why we don't
-      // need to check backwards for call clobbers.
+      // See restrict_movement_for_uses for why we don't need to check
+      // backwards for call clobbers.
       for (auto call_group : use->ebb ()->call_clobbers ())
 	{
 	  if (!call_group->clobbers (use->resource ()))
 	    continue;
 
-	  auto clobber_insn = next_call_clobbers_ignoring (*call_group,
-							   use->insn (),
-							   no_ignore);
+	  auto clobber_insn = next_call_clobbers (*call_group, use->insn (),
+						  ignore_nothing ());
 	  if (clobber_insn)
 	    hazard (clobber_insn);
 	}
@@ -1965,12 +1959,12 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 	}
     }
 
-  auto is_changing = insn_is_changing (changes);
+  auto ignore = ignore_changing_insns (changes);
   for (unsigned i = 0; i < changes.length (); i++)
-    gcc_assert (rtl_ssa::restrict_movement_ignoring (*changes[i], is_changing));
+    gcc_assert (rtl_ssa::restrict_movement (*changes[i], ignore));
 
   // Check the pair pattern is recog'd.
-  if (!rtl_ssa::recog_ignoring (attempt, *pair_change, is_changing))
+  if (!rtl_ssa::recog (attempt, *pair_change, ignore))
     {
       if (dump_file)
 	fprintf (dump_file, "  failed to form pair, recog failed\n");
@@ -2953,11 +2947,11 @@ pair_fusion::try_promote_writeback (insn_info *insn, bool load_p)
 					pair_change.new_defs);
   gcc_assert (pair_change.new_defs.is_valid ());
 
-  auto is_changing = insn_is_changing (changes);
+  auto ignore = ignore_changing_insns (changes);
   for (unsigned i = 0; i < ARRAY_SIZE (changes); i++)
-    gcc_assert (rtl_ssa::restrict_movement_ignoring (*changes[i], is_changing));
+    gcc_assert (rtl_ssa::restrict_movement (*changes[i], ignore));
 
-  if (!rtl_ssa::recog_ignoring (attempt, pair_change, is_changing))
+  if (!rtl_ssa::recog (attempt, pair_change, ignore))
     {
       if (dump_file)
 	fprintf (dump_file, "i%d: recog failed on wb pair, bailing out\n",
