@@ -82,7 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #undef SUB_LINK_ENTRY
-#if TARGET_64BIT_DEFAULT
+#if HAVE_64BIT_POINTERS
 #define SUB_LINK_ENTRY SUB_LINK_ENTRY64
 #else
 #define SUB_LINK_ENTRY SUB_LINK_ENTRY32

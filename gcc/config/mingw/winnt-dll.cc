@@ -206,7 +206,7 @@ legitimize_pe_coff_symbol (rtx addr, bool inreg)
 	}
     }
 
-  if (ix86_cmodel != CM_LARGE_PIC && ix86_cmodel != CM_MEDIUM_PIC)
+  if (!PE_COFF_EXTERN_DECL_SHOULD_BE_LEGITIMIZED)
     return NULL_RTX;
 
   if (GET_CODE (addr) == SYMBOL_REF
