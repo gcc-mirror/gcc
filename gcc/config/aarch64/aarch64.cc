@@ -859,7 +859,10 @@ static const attribute_spec aarch64_gnu_attributes[] =
 			  NULL },
   { "Advanced SIMD type", 1, 1, false, true,  false, true,  NULL, NULL },
   { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
-  { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL }
+  { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL },
+#ifdef SUBTARGET_ATTRIBUTE_TABLE
+  SUBTARGET_ATTRIBUTE_TABLE
+#endif
 };
 
 static const scoped_attribute_specs aarch64_gnu_attribute_table =
