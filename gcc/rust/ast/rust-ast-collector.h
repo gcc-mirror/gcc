@@ -234,6 +234,8 @@ public:
   void visit (PathExprSegment &segment);
   void visit (PathIdentSegment &segment);
   void visit (PathInExpression &path);
+  void visit (RegularPath &path);
+  void visit (LangItemPath &path);
   void visit (TypePathSegment &segment);
   void visit (TypePathSegmentGeneric &segment);
   void visit (TypePathSegmentFunction &segment);

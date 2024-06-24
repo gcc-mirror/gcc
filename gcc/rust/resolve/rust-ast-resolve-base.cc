@@ -20,6 +20,7 @@
 #include "rust-ast-resolve-expr.h"
 #include "rust-ast-resolve-path.h"
 #include "rust-item.h"
+#include "rust-path.h"
 
 namespace Rust {
 namespace Resolver {
@@ -68,6 +69,14 @@ ResolverBase::visit (AST::LifetimeParam &)
 
 void
 ResolverBase::visit (AST::ConstGenericParam &)
+{}
+
+void
+ResolverBase::visit (AST::RegularPath &)
+{}
+
+void
+ResolverBase::visit (AST::LangItemPath &)
 {}
 
 void

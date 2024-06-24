@@ -21,6 +21,7 @@
 #include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-keyword-values.h"
+#include "rust-system.h"
 #include "rust-token.h"
 
 namespace Rust {
@@ -558,6 +559,19 @@ TokenCollector::visit (PathInExpression &path)
     }
 
   visit_items_joined_by_separator (path.get_segments (), SCOPE_RESOLUTION);
+}
+
+void
+TokenCollector::visit (RegularPath &path)
+{
+  // FIXME: We probably want to have a proper implementation here, and call this
+  // function from things like the PathInExpression visitor
+}
+
+void
+TokenCollector::visit (LangItemPath &path)
+{
+  // TODO: Implement proper token collection for lang item paths
 }
 
 void
