@@ -190,6 +190,14 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
 	  && INSN_CODE (change->rtl ()) != NOOP_MOVE_INSN_CODE)
 	{
 	  change->new_cost = insn_cost (change->rtl (), for_speed);
+	  /* If the cost is unknown, replacement is not worthwhile.  */
+	  if (!change->new_cost)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "Reject replacement due to unknown insn cost.\n");
+	      return false;
+	    }
 	  new_cost += change->new_cost;
 	  if (for_speed)
 	    weighted_new_cost += (cfg_bb->count.to_sreal_scale (entry_count)
