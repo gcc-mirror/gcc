@@ -712,6 +712,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fhoist-adjacent-loads)
 flarge-source-files
 UrlSuffix(gcc/Preprocessor-Options.html#index-flarge-source-files)
 
+flate-combine-instructions
+UrlSuffix(gcc/Optimize-Options.html#index-flate-combine-instructions)
+
 floop-parallelize-all
 UrlSuffix(gcc/Optimize-Options.html#index-floop-parallelize-all)
 
