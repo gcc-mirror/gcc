@@ -1024,6 +1024,12 @@ get_type_num (dw_die_ref type)
       t->num = get_type_num_base_type (type);
       break;
 
+    case DW_TAG_typedef:
+      /* FIXME - signed longs typedef'd as "HRESULT" should get their
+		 own type (T_HRESULT) */
+      t->num = get_type_num (get_AT_ref (type, DW_AT_type));
+      break;
+
     default:
       t->num = 0;
       break;
