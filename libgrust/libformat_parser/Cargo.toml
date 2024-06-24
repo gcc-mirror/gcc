@@ -14,7 +14,7 @@ libc = "0.2"
 generic_format_parser = { path = "generic_format_parser" }
 
 [lib]
-crate_type = ["staticlib", "rlib"]
+crate-type = ["staticlib", "rlib"]
 
 [[bin]]
 name = "format_parser_test"
