@@ -310,4 +310,23 @@ vec_sat_u_sub_##T##_fmt_10 (T *out, T *op_1, T *op_2, unsigned limit) \
 #define RUN_VEC_SAT_U_SUB_FMT_10(T, out, op_1, op_2, N) \
   vec_sat_u_sub_##T##_fmt_10(out, op_1, op_2, N)
 
+/******************************************************************************/
+/* Saturation Sub Truncated (Unsigned and Signed)                             */
+/******************************************************************************/
+#define DEF_VEC_SAT_U_SUB_TRUNC_FMT_1(OUT_T, IN_T)                   \
+void __attribute__((noinline))                                       \
+vec_sat_u_sub_trunc_##OUT_T##_fmt_1 (OUT_T *out, IN_T *op_1, IN_T y, \
+				     unsigned limit)                 \
+{                                                                    \
+  unsigned i;                                                        \
+  for (i = 0; i < limit; i++)                                        \
+    {                                                                \
+      IN_T x = op_1[i];                                              \
+      out[i] = (OUT_T)(x >= y ? x - y : 0);                          \
+    }                                                                \
+}
+
+#define RUN_VEC_SAT_U_SUB_TRUNC_FMT_1(OUT_T, IN_T, out, op_1, y, N) \
+  vec_sat_u_sub_trunc_##OUT_T##_fmt_1(out, op_1, y, N)
+
 #endif
