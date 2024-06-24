@@ -1657,7 +1657,7 @@ protected:
 };
 
 // Moved definition to rust-path.h
-class PathPattern;
+class Path;
 
 // Forward decls for paths (defined in rust-path.h)
 class PathInExpression;

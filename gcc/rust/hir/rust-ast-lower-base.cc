@@ -63,6 +63,12 @@ ASTLoweringBase::visit (AST::ConstGenericParam &)
 
 // rust-path.h
 void
+ASTLoweringBase::visit (AST::RegularPath &)
+{}
+void
+ASTLoweringBase::visit (AST::LangItemPath &)
+{}
+void
 ASTLoweringBase::visit (AST::PathInExpression &)
 {}
 void

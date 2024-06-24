@@ -22,6 +22,9 @@
  * for virtually all AST-related functionality. */
 
 #include "rust-ast.h"
+#include "rust-hir-map.h"
+#include "rust-mapping-common.h"
+#include "rust-system.h"
 #include "system.h"
 
 namespace Rust {
@@ -565,45 +568,113 @@ public:
 
 // AST node representing a pattern that involves a "path" - abstract base
 // class
-class PathPattern : public Pattern
+class Path : public Pattern
+{
+public:
+  enum class Kind
+  {
+    LangItem,
+    Regular,
+  };
+
+  virtual Kind get_path_kind () const = 0;
+
+  Pattern::Kind get_pattern_kind () override final
+  {
+    return Pattern::Kind::Path;
+  }
+
+  location_t get_locus () const override final { return locus; }
+  NodeId get_node_id () const override final { return node_id; }
+
+  std::unique_ptr<Path> clone_path ()
+  {
+    return std::unique_ptr<Path> (clone_path_impl ());
+  }
+
+  Pattern *clone_pattern_impl () const override final
+  {
+    return clone_path_impl ();
+  }
+
+protected:
+  location_t locus;
+  NodeId node_id;
+
+  Path (location_t locus, NodeId node_id) : locus (locus), node_id (node_id) {}
+
+  virtual Path *clone_path_impl () const = 0;
+};
+
+class RegularPath : public Path
 {
   std::vector<PathExprSegment> segments;
 
-protected:
-  PathPattern (std::vector<PathExprSegment> segments)
-    : segments (std::move (segments))
+public:
+  explicit RegularPath (std::vector<PathExprSegment> &&segments,
+			location_t locus, NodeId node_id)
+    : Path (locus, node_id), segments (std::move (segments))
   {}
+
+  std::string as_string () const override;
 
   // Returns whether path has segments.
   bool has_segments () const { return !segments.empty (); }
+
+  std::vector<PathExprSegment> &get_segments () { return segments; }
+
+  const std::vector<PathExprSegment> &get_segments () const { return segments; }
+
+  /* Returns whether the path is a single segment (excluding qualified path
+   * initial as segment). */
+  bool is_single_segment () const { return segments.size () == 1; }
 
   /* Converts path segments to their equivalent SimplePath segments if
    * possible, and creates a SimplePath from them. */
   SimplePath convert_to_simple_path (bool with_opening_scope_resolution) const;
 
-public:
-  /* Returns whether the path is a single segment (excluding qualified path
-   * initial as segment). */
-  bool is_single_segment () const { return segments.size () == 1; }
+  Path::Kind get_path_kind () const override { return Path::Kind::Regular; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  Path *clone_path_impl () const override
+  {
+    return new RegularPath (std::vector<PathExprSegment> (segments), locus,
+			    node_id);
+  }
+};
+
+class LangItemPath : public Path
+{
+  NodeId lang_item;
+  // TODO: Add LangItemKind or w/ever here as well
+
+  // TODO: This constructor is wrong
+  explicit LangItemPath (NodeId lang_item, location_t locus)
+    : Path (locus, lang_item), lang_item (lang_item)
+  {}
+
+  Path::Kind get_path_kind () const override { return Path::Kind::LangItem; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  Path *clone_path_impl () const override
+  {
+    return new LangItemPath (lang_item, locus);
+  }
 
   std::string as_string () const override;
-
-  // TODO: this seems kinda dodgy
-  std::vector<PathExprSegment> &get_segments () { return segments; }
-  const std::vector<PathExprSegment> &get_segments () const { return segments; }
-
-  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Path; }
 };
 
 /* AST node representing a path-in-expression pattern (path that allows
  * generic arguments) */
-class PathInExpression : public PathPattern, public ExprWithoutBlock
+class PathInExpression : public Pattern, public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
   bool has_opening_scope_resolution;
   location_t locus;
   NodeId _node_id;
-
+  std::unique_ptr<Path> path;
   bool marked_for_strip;
 
 public:
@@ -613,12 +684,33 @@ public:
   PathInExpression (std::vector<PathExprSegment> path_segments,
 		    std::vector<Attribute> outer_attrs, location_t locus,
 		    bool has_opening_scope_resolution = false)
-    : PathPattern (std::move (path_segments)),
-      outer_attrs (std::move (outer_attrs)),
+    : outer_attrs (std::move (outer_attrs)),
       has_opening_scope_resolution (has_opening_scope_resolution),
       locus (locus), _node_id (Analysis::Mappings::get ().get_next_node_id ()),
+      path (Rust::make_unique<RegularPath> (std::move (path_segments), locus,
+					    _node_id)),
       marked_for_strip (false)
   {}
+
+  PathInExpression (const PathInExpression &other)
+    : outer_attrs (other.outer_attrs),
+      has_opening_scope_resolution (other.has_opening_scope_resolution),
+      locus (other.locus), _node_id (other._node_id),
+      path (other.path->clone_path ()),
+      marked_for_strip (other.marked_for_strip)
+  {}
+
+  PathInExpression &operator= (const PathInExpression &other)
+  {
+    outer_attrs = other.outer_attrs;
+    has_opening_scope_resolution = other.has_opening_scope_resolution;
+    locus = other.locus;
+    _node_id = other._node_id;
+    path = other.path->clone_path ();
+    marked_for_strip = other.marked_for_strip;
+
+    return *this;
+  }
 
   // Creates an error state path in expression.
   static PathInExpression create_error ()
@@ -627,19 +719,26 @@ public:
   }
 
   // Returns whether path in expression is in an error state.
-  bool is_error () const { return !has_segments (); }
+  bool is_error () const
+  {
+    // FIXME: Cleanup
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return !static_cast<RegularPath &> (*path).has_segments ();
+
+    return false;
+  }
 
   /* Converts PathInExpression to SimplePath if possible (i.e. no generic
    * arguments). Otherwise returns an empty SimplePath. */
   SimplePath as_simple_path () const
   {
-    /* delegate to parent class as can't access segments. however,
-     * QualifiedPathInExpression conversion to simple path wouldn't make
-     * sense, so the method in the parent class should be protected, not
-     * public. Have to pass in opening scope resolution as parent class has no
-     * access to it.
-     */
-    return convert_to_simple_path (has_opening_scope_resolution);
+    // FIXME: Cleanup
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return static_cast<RegularPath &> (*path).convert_to_simple_path (
+	has_opening_scope_resolution);
+    else
+      // FIXME: lang item to simple path?
+      rust_unreachable ();
   }
 
   location_t get_locus () const override final { return locus; }
@@ -666,13 +765,61 @@ public:
 
   NodeId get_pattern_node_id () const { return get_node_id (); }
 
-  PathExprSegment &get_final_segment () { return get_segments ().back (); }
-  const PathExprSegment &get_final_segment () const
+  PathExprSegment &get_final_segment ()
   {
-    return get_segments ().back ();
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return static_cast<RegularPath &> (*path).get_segments ().back ();
+
+    // lang item segment?
+    rust_unreachable ();
   }
 
+  const PathExprSegment &get_final_segment () const
+  {
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return static_cast<RegularPath &> (*path).get_segments ().back ();
+
+    // lang item segment?
+    rust_unreachable ();
+  }
+
+  const std::vector<PathExprSegment> &get_segments () const
+  {
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return static_cast<RegularPath &> (*path).get_segments ();
+
+    rust_unreachable ();
+  }
+
+  std::vector<PathExprSegment> &get_segments ()
+  {
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return static_cast<RegularPath &> (*path).get_segments ();
+
+    rust_unreachable ();
+  }
+
+  bool is_single_segment () const
+  {
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return static_cast<RegularPath &> (*path).get_segments ().size () == 1;
+
+    return false;
+  }
+
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Path; }
+
 protected:
+  PathInExpression (std::vector<Attribute> &&outer_attrs,
+		    bool has_opening_scope_resolution, location_t locus,
+		    NodeId node_id, std::unique_ptr<Path> &&path,
+		    bool marked_for_strip)
+    : outer_attrs (std::move (outer_attrs)),
+      has_opening_scope_resolution (has_opening_scope_resolution),
+      locus (locus), _node_id (node_id), path (std::move (path)),
+      marked_for_strip (marked_for_strip)
+  {}
+
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   PathInExpression *clone_pattern_impl () const final override
@@ -1221,12 +1368,12 @@ public:
 
 /* AST node representing a qualified path-in-expression pattern (path that
  * allows specifying trait functions) */
-class QualifiedPathInExpression : public PathPattern, public ExprWithoutBlock
+class QualifiedPathInExpression : public Pattern, public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
   QualifiedPathType path_type;
-  location_t locus;
-  NodeId _node_id;
+
+  std::unique_ptr<Path> path;
 
 public:
   std::string as_string () const override;
@@ -1235,10 +1382,16 @@ public:
 			     std::vector<PathExprSegment> path_segments,
 			     std::vector<Attribute> outer_attrs,
 			     location_t locus)
-    : PathPattern (std::move (path_segments)),
-      outer_attrs (std::move (outer_attrs)),
-      path_type (std::move (qual_path_type)), locus (locus),
-      _node_id (Analysis::Mappings::get ().get_next_node_id ())
+    : outer_attrs (std::move (outer_attrs)),
+      path_type (std::move (qual_path_type)),
+      path (Rust::make_unique<RegularPath> (
+	std::move (path_segments), locus,
+	Analysis::Mappings::get ().get_next_node_id ()))
+  {}
+
+  QualifiedPathInExpression (const QualifiedPathInExpression &other)
+    : outer_attrs (other.outer_attrs), path_type (other.path_type),
+      path (other.path->clone_path ())
   {}
 
   /* TODO: maybe make a shortcut constructor that has QualifiedPathType
@@ -1254,7 +1407,9 @@ public:
 				      {}, UNDEF_LOCATION);
   }
 
-  location_t get_locus () const override final { return locus; }
+  Pattern::Kind get_pattern_kind () override { return Pattern::Kind::Path; }
+
+  location_t get_locus () const override final { return path->get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1280,7 +1435,31 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  NodeId get_node_id () const override { return _node_id; }
+  NodeId get_node_id () const override { return path->get_node_id (); }
+
+  const std::vector<PathExprSegment> &get_segments () const
+  {
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return static_cast<RegularPath &> (*path).get_segments ();
+
+    rust_unreachable ();
+  }
+
+  std::vector<PathExprSegment> &get_segments ()
+  {
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return static_cast<RegularPath &> (*path).get_segments ();
+
+    rust_unreachable ();
+  }
+
+  bool is_single_segment () const
+  {
+    if (path->get_path_kind () == Path::Kind::Regular)
+      return static_cast<RegularPath &> (*path).get_segments ().size () == 1;
+
+    return false;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

@@ -61,7 +61,7 @@ class PathIdentSegment;
 struct GenericArgsBinding;
 struct GenericArgs;
 class PathExprSegment;
-class PathPattern;
+class Path;
 class PathInExpression;
 class TypePathSegment;
 class TypePathSegmentGeneric;
