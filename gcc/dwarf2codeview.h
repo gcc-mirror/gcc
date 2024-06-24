@@ -23,6 +23,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"
 #include "flags.h"
 
+/* Constants for in-built types.  */
+
+#define T_CHAR			0x0010
+#define T_SHORT			0x0011
+#define T_LONG			0x0012
+#define T_QUAD			0x0013
+#define T_UCHAR			0x0020
+#define T_USHORT		0x0021
+#define T_ULONG			0x0022
+#define T_UQUAD			0x0023
+#define T_BOOL08		0x0030
+#define T_REAL32		0x0040
+#define T_REAL64		0x0041
+#define T_REAL80		0x0042
+#define T_REAL128		0x0043
+#define T_RCHAR			0x0070
+#define T_WCHAR			0x0071
+#define T_INT4			0x0074
+#define T_UINT4			0x0075
+#define T_CHAR16		0x007a
+#define T_CHAR32		0x007b
+#define T_CHAR8			0x007c
+
 /* Debug Format Interface.  Used in dwarf2out.cc.  */
 
 extern void codeview_debug_finish (void);

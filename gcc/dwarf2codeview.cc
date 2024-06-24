@@ -147,6 +147,27 @@ struct codeview_symbol
   };
 };
 
+struct codeview_type
+{
+  dw_die_ref die;
+  uint32_t num;
+};
+
+struct die_hasher : free_ptr_hash <codeview_type>
+{
+  typedef dw_die_ref compare_type;
+
+  static hashval_t hash (const codeview_type *x)
+  {
+    return htab_hash_pointer (x->die);
+  }
+
+  static bool equal (const codeview_type *x, const dw_die_ref y)
+  {
+    return x->die == y;
+  }
+};
+
 static unsigned int line_label_num;
 static unsigned int func_label_num;
 static unsigned int sym_label_num;
@@ -159,6 +180,7 @@ static codeview_function *funcs, *last_func;
 static const char* last_filename;
 static uint32_t last_file_id;
 static codeview_symbol *sym, *last_sym;
+static hash_table<die_hasher> *types_htab;
 
 /* Record new line number against the current function.  */
 
@@ -838,6 +860,178 @@ codeview_debug_finish (void)
   write_source_files ();
   write_line_numbers ();
   write_codeview_symbols ();
+
+  if (types_htab)
+    delete types_htab;
+}
+
+/* Translate a DWARF base type (DW_TAG_base_type) into its CodeView
+   equivalent.  */
+
+static uint32_t
+get_type_num_base_type (dw_die_ref type)
+{
+  unsigned int size = get_AT_unsigned (type, DW_AT_byte_size);
+
+  switch (get_AT_unsigned (type, DW_AT_encoding))
+    {
+    case DW_ATE_signed_char:
+      {
+	const char *name = get_AT_string (type, DW_AT_name);
+
+	if (size != 1)
+	  return 0;
+
+	if (name && !strcmp (name, "signed char"))
+	  return T_CHAR;
+	else
+	  return T_RCHAR;
+      }
+
+    case DW_ATE_unsigned_char:
+      if (size != 1)
+	return 0;
+
+      return T_UCHAR;
+
+    case DW_ATE_signed:
+      switch (size)
+	{
+	case 2:
+	  return T_SHORT;
+
+	case 4:
+	  {
+	    const char *name = get_AT_string (type, DW_AT_name);
+
+	    if (name && !strcmp (name, "int"))
+	      return T_INT4;
+	    else
+	      return T_LONG;
+	  }
+
+	case 8:
+	  return T_QUAD;
+
+	default:
+	  return 0;
+	}
+
+    case DW_ATE_unsigned:
+      switch (size)
+	{
+	case 2:
+	  {
+	    const char *name = get_AT_string (type, DW_AT_name);
+
+	    if (name && !strcmp (name, "wchar_t"))
+	      return T_WCHAR;
+	    else
+	      return T_USHORT;
+	  }
+
+	case 4:
+	  {
+	    const char *name = get_AT_string (type, DW_AT_name);
+
+	    if (name && !strcmp (name, "unsigned int"))
+	      return T_UINT4;
+	    else
+	      return T_ULONG;
+	  }
+
+	case 8:
+	  return T_UQUAD;
+
+	default:
+	  return 0;
+	}
+
+    case DW_ATE_UTF:
+      switch (size)
+	{
+	case 1:
+	  return T_CHAR8;
+
+	case 2:
+	  return T_CHAR16;
+
+	case 4:
+	  return T_CHAR32;
+
+	default:
+	  return 0;
+	}
+
+    case DW_ATE_float:
+      switch (size)
+	{
+	case 4:
+	  return T_REAL32;
+
+	case 8:
+	  return T_REAL64;
+
+	case 12:
+	  return T_REAL80;
+
+	case 16:
+	  return T_REAL128;
+
+	default:
+	  return 0;
+	}
+
+    case DW_ATE_boolean:
+      if (size == 1)
+	return T_BOOL08;
+      else
+	return 0;
+
+    default:
+      return 0;
+    }
+}
+
+/* Process a DIE representing a type definition and return its number.  If
+   it's something we can't handle, return 0.  We keep a hash table so that
+   we're not adding the same type multiple times - though if we do it's not
+   disastrous, as ld will deduplicate everything for us.  */
+
+static uint32_t
+get_type_num (dw_die_ref type)
+{
+  codeview_type **slot, *t;
+
+  if (!type)
+    return 0;
+
+  if (!types_htab)
+    types_htab = new hash_table<die_hasher> (10);
+
+  slot = types_htab->find_slot_with_hash (type, htab_hash_pointer (type),
+					  INSERT);
+
+  if (*slot)
+    return (*slot)->num;
+
+  t = (codeview_type *) xmalloc (sizeof (codeview_type));
+  t->die = type;
+
+  switch (dw_get_die_tag (type))
+    {
+    case DW_TAG_base_type:
+      t->num = get_type_num_base_type (type);
+      break;
+
+    default:
+      t->num = 0;
+      break;
+    }
+
+  *slot = t;
+
+  return t->num;
 }
 
 /* Process a DW_TAG_variable DIE, and add an S_GDATA32 or S_LDATA32 symbol for
@@ -857,7 +1051,7 @@ add_variable (dw_die_ref die)
 
   s->next = NULL;
   s->kind = get_AT (die, DW_AT_external) ? S_GDATA32 : S_LDATA32;
-  s->data_symbol.type = 0;
+  s->data_symbol.type = get_type_num (get_AT_ref (die, DW_AT_type));
   s->data_symbol.name = xstrdup (name);
   s->data_symbol.die = die;
 
