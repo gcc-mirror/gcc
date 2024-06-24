@@ -278,6 +278,7 @@ package body Sem_Ch4 is
            (N /= Original_Node (N)
              and then Is_Effectively_Visible_Operator
                         (N => Original_Node (N), Typ => Typ))
+         or else Checking_Potentially_Static_Expression
          or else not Comes_From_Source (N));
    --  Return True iff either Is_Visible_Operator returns True or if
    --  there is a reason it is ok for Is_Visible_Operator to return False.
