@@ -569,10 +569,9 @@ package body Sem_Aggr is
                end if;
 
             --  For null aggregates, build the bounds of their inner dimensions
-            --  (if not previously done). They are required for building the
-            --  aggregate itype.
+            --  since they are required for building the aggregate itype.
 
-            elsif No (Aggr_Range (Dim + 1)) then
+            else
                declare
                   Loc        : constant Source_Ptr := Sloc (N);
                   Typ        : constant Entity_Id := Etype (N);
@@ -622,7 +621,6 @@ package body Sem_Aggr is
                      Null_Range := Make_Range (Loc, New_Copy_Tree (Lo), Hi);
                      Analyze_And_Resolve (Null_Range, Index_Typ);
 
-                     pragma Assert (No (Aggr_Range (Num_Dim)));
                      Aggr_Low (Num_Dim)   := Low_Bound (Null_Range);
                      Aggr_High (Num_Dim)  := High_Bound (Null_Range);
                      Aggr_Range (Num_Dim) := Null_Range;
