@@ -1049,17 +1049,21 @@ package body Sem_Ch13 is
          Parent_Type : Entity_Id;
 
          Save_In_Spec_Expression : constant Boolean := In_Spec_Expression;
+         Save_Must_Not_Freeze    : constant Boolean := Must_Not_Freeze (Expr);
 
       begin
          --  Ensure Expr is analyzed so that e.g. all types are properly
          --  resolved for Find_Type_Reference. We preanalyze this expression
-         --  as a spec expression (to avoid recursive freezing), while skipping
-         --  resolution (to not fold type self-references, e.g. T'Last).
+         --  (to avoid expansion), handle it as a spec expression (like default
+         --  expression), disable freezing and skip resolution (to not fold
+         --  type self-references, e.g. T'Last).
 
          In_Spec_Expression := True;
+         Set_Must_Not_Freeze (Expr);
 
          Preanalyze (Expr);
 
+         Set_Must_Not_Freeze (Expr, Save_Must_Not_Freeze);
          In_Spec_Expression := Save_In_Spec_Expression;
 
          --  A self-referential aspect is illegal if it forces freezing the
