@@ -1133,7 +1133,7 @@ C ObjC Var(warn_override_init_side_effects) Init(1) Warning
 Warn about overriding initializers with side effects.
 
 Wnrvo
-C++ ObjC++ Var(warn_nrvo)
+C++ ObjC++ Var(warn_nrvo) Warning
 Warn if the named return value optimization is not performed although it is allowed.
 
 Wpacked-bitfield-compat
