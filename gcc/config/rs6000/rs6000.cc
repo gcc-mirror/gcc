@@ -3434,6 +3434,14 @@ rs6000_override_options_after_change (void)
   /* If we are inserting ROP-protect instructions, disable shrink wrap.  */
   if (rs6000_rop_protect)
     flag_shrink_wrap = 0;
+
+  /* One of the late-combine passes runs after register allocation
+     and can match define_insn_and_splits that were previously used
+     only before register allocation.  Some of those define_insn_and_splits
+     use gen_reg_rtx unconditionally.  Disable late-combine by default
+     until the define_insn_and_splits are fixed.  */
+  if (!OPTION_SET_P (flag_late_combine_instructions))
+    flag_late_combine_instructions = 0;
 }
 
 #ifdef TARGET_USES_LINUX64_OPT
@@ -4770,14 +4778,6 @@ rs6000_option_override_internal (bool global_init_p)
       if (DEFAULT_ABI != ABI_V4)
 	targetm.expand_builtin_va_start = NULL;
     }
-
-  /* One of the late-combine passes runs after register allocation
-     and can match define_insn_and_splits that were previously used
-     only before register allocation.  Some of those define_insn_and_splits
-     use gen_reg_rtx unconditionally.  Disable late-combine by default
-     until the define_insn_and_splits are fixed.  */
-  if (!OPTION_SET_P (flag_late_combine_instructions))
-    flag_late_combine_instructions = 0;
 
   rs6000_override_options_after_change ();
 
