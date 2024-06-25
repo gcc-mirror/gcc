@@ -1581,9 +1581,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !__rhs; }
 #endif // three-way-comparison
 
+#if __cpp_lib_concepts
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 4072. std::optional comparisons: constrain harder
-#if __cpp_lib_concepts
 # define _REQUIRES_NOT_OPTIONAL(T) requires (!__is_optional_v<T>)
 #else
 # define _REQUIRES_NOT_OPTIONAL(T)
@@ -1675,8 +1675,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !__rhs || __lhs >= *__rhs; }
 
 #ifdef __cpp_lib_three_way_comparison
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3746. optional's spaceship with U with a type derived from optional
+  // causes infinite constraint meta-recursion
+  template<typename _Tp>
+    concept __is_derived_from_optional = requires (const _Tp& __t) {
+      []<typename _Up>(const optional<_Up>&){ }(__t);
+    };
+
   template<typename _Tp, typename _Up>
-    requires (!__is_optional_v<_Up>)
+    requires (!__is_derived_from_optional<_Up>)
       && three_way_comparable_with<_Up, _Tp>
     constexpr compare_three_way_result_t<_Tp, _Up>
     operator<=> [[nodiscard]] (const optional<_Tp>& __x, const _Up& __v)
