@@ -104,8 +104,6 @@ along with GCC; see the file COPYING3.  If not see
 /* This file should be included last.  */
 #include "target-def.h"
 
-static rtx legitimize_dllimport_symbol (rtx, bool);
-static rtx legitimize_pe_coff_extern_decl (rtx, bool);
 static void ix86_print_operand_address_as (FILE *, rtx, addr_space_t, bool);
 static void ix86_emit_restore_reg_using_pop (rtx, bool = false);
 
