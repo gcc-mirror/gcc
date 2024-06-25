@@ -178,10 +178,6 @@ extern const char *msp430_get_linker_devices_include_path (int, const char **);
 #define LONG_TYPE_SIZE			32
 #define LONG_LONG_TYPE_SIZE		64
 
-#define FLOAT_TYPE_SIZE 		32
-#define DOUBLE_TYPE_SIZE 		64
-#define LONG_DOUBLE_TYPE_SIZE		64 /*DOUBLE_TYPE_SIZE*/
-
 #define DEFAULT_SIGNED_CHAR		0
 
 #define STRICT_ALIGNMENT 		1

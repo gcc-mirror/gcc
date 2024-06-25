@@ -99,9 +99,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INT_TYPE_SIZE 		32
 #define LONG_TYPE_SIZE 		32
 #define LONG_LONG_TYPE_SIZE 	64
-#define FLOAT_TYPE_SIZE 	32
-#define DOUBLE_TYPE_SIZE 	64
-#define LONG_DOUBLE_TYPE_SIZE 	64
 
 #define DEFAULT_SIGNED_CHAR 1
 

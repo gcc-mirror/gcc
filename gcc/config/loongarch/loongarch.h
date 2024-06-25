@@ -151,7 +151,7 @@ along with GCC; see the file COPYING3.  If not see
 #define UNITS_PER_FPVALUE \
   (TARGET_SOFT_FLOAT ? 0 \
    : TARGET_SINGLE_FLOAT ? UNITS_PER_FP_REG \
-			 : LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT)
+			 : LA_LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT)
 
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
@@ -162,9 +162,8 @@ along with GCC; see the file COPYING3.  If not see
 #define LONG_TYPE_SIZE (TARGET_64BIT ? 64 : 32)
 #define LONG_LONG_TYPE_SIZE 64
 
-#define FLOAT_TYPE_SIZE 32
-#define DOUBLE_TYPE_SIZE 64
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_64BIT ? 128 : 64)
+/* LONG_DOUBLE_TYPE_SIZE get poisoned, so add LA_ prefix.  */
+#define LA_LONG_DOUBLE_TYPE_SIZE (TARGET_64BIT ? 128 : 64)
 
 /* Define the sizes of fixed-point types.  */
 #define SHORT_FRACT_TYPE_SIZE 8
@@ -179,7 +178,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* long double is not a fixed mode, but the idea is that, if we
    support long double, we also want a 128-bit integer type.  */
-#define MAX_FIXED_MODE_SIZE LONG_DOUBLE_TYPE_SIZE
+#define MAX_FIXED_MODE_SIZE LA_LONG_DOUBLE_TYPE_SIZE
 
 /* Width in bits of a pointer.  */
 #ifndef POINTER_SIZE
@@ -200,11 +199,11 @@ along with GCC; see the file COPYING3.  If not see
 #define STRUCTURE_SIZE_BOUNDARY 8
 
 /* There is no point aligning anything to a rounder boundary than
-   LONG_DOUBLE_TYPE_SIZE, unless under LSX/LASX the bigggest alignment is
+   LA_LONG_DOUBLE_TYPE_SIZE, unless under LSX/LASX the bigggest alignment is
    BITS_PER_LSX_REG/BITS_PER_LASX_REG/..  */
 #define BIGGEST_ALIGNMENT \
   (ISA_HAS_LASX? BITS_PER_LASX_REG \
-   : (ISA_HAS_LSX ? BITS_PER_LSX_REG : LONG_DOUBLE_TYPE_SIZE))
+   : (ISA_HAS_LSX ? BITS_PER_LSX_REG : LA_LONG_DOUBLE_TYPE_SIZE))
 
 /* All accesses must be aligned.  */
 #define STRICT_ALIGNMENT (TARGET_STRICT_ALIGN)

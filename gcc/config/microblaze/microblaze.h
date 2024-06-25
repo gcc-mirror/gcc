@@ -216,9 +216,6 @@ extern enum pipeline_type microblaze_pipe;
 #define SHORT_TYPE_SIZE         16
 #define LONG_TYPE_SIZE          32
 #define LONG_LONG_TYPE_SIZE     64
-#define FLOAT_TYPE_SIZE         32
-#define DOUBLE_TYPE_SIZE        64
-#define LONG_DOUBLE_TYPE_SIZE   64
 #define POINTER_SIZE            32
 #define PARM_BOUNDARY           32
 #define FUNCTION_BOUNDARY       32

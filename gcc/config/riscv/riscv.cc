@@ -11649,6 +11649,18 @@ riscv_expand_ussub (rtx dest, rtx x, rtx y)
   emit_move_insn (dest, gen_lowpart (mode, pmode_dest));
 }
 
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode for
+   TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+riscv_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TFmode;
+  return default_mode_for_floating_type (ti);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -12003,6 +12015,9 @@ riscv_expand_ussub (rtx dest, rtx x, rtx y)
 
 #undef TARGET_GET_RAW_RESULT_MODE
 #define TARGET_GET_RAW_RESULT_MODE riscv_get_raw_result_mode
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE riscv_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

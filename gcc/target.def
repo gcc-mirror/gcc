@@ -6389,6 +6389,15 @@ are zero or sign extended depending on if it is\n\
  bool, (int n, struct bitint_info *info),
  default_bitint_type_info)
 
+DEFHOOK
+(mode_for_floating_type,
+"Return machine mode for a C floating point type which is indicated by\n\
+ a given @code{enum tree_index} @var{ti}, @var{ti} should be\n\
+ @code{TI_FLOAT_TYPE}, @code{TI_DOUBLE_TYPE} or @code{TI_LONG_DOUBLE_TYPE}.\n\
+ The default implementation returns @code{SFmode} for @code{TI_FLOAT_TYPE},\n\
+ and @code{DFmode} for @code{TI_DOUBLE_TYPE} or @code{TI_LONG_DOUBLE_TYPE}.",
+ machine_mode, (enum tree_index ti), default_mode_for_floating_type)
+
 HOOK_VECTOR_END (c)
 
 /* Functions specific to the C++ frontend.  */

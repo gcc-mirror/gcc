@@ -290,6 +290,7 @@ extern unsigned int default_min_arithmetic_precision (void);
 extern enum flt_eval_method
 default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED);
 extern bool default_bitint_type_info (int, struct bitint_info *);
+extern machine_mode default_mode_for_floating_type (enum tree_index);
 extern HOST_WIDE_INT default_stack_clash_protection_alloca_probe_range (void);
 extern void default_select_early_remat_modes (sbitmap);
 extern tree default_preferred_else_value (unsigned, tree, unsigned, tree *);

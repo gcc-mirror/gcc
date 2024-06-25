@@ -1326,7 +1326,7 @@ whose size is @code{BITS_PER_WORD}, @code{SImode} on 32-bit machines.
 
 The only modes which a machine description @i{must} support are
 @code{QImode}, and the modes corresponding to @code{BITS_PER_WORD},
-@code{FLOAT_TYPE_SIZE} and @code{DOUBLE_TYPE_SIZE}.
+C type @code{float} and C type @code{double}.
 The compiler will attempt to use @code{DImode} for 8-byte structures and
 unions, but this can be prevented by overriding the definition of
 @code{MAX_FIXED_MODE_SIZE}.  Alternatively, you can have the compiler

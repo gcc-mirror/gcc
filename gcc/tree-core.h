@@ -633,7 +633,7 @@ enum cv_qualifier {
 };
 
 /* Standard named or nameless data types of the C compiler.  */
-enum tree_index {
+enum tree_index : unsigned {
   TI_ERROR_MARK,
   TI_INTQI_TYPE,
   TI_INTHI_TYPE,
@@ -700,17 +700,18 @@ enum tree_index {
   TI_FLOAT64_TYPE,
   TI_FLOAT128_TYPE,
   TI_FLOATN_TYPE_LAST = TI_FLOAT128_TYPE,
-#define NUM_FLOATN_TYPES (TI_FLOATN_TYPE_LAST - TI_FLOATN_TYPE_FIRST + 1)
+#define NUM_FLOATN_TYPES ((int) (TI_FLOATN_TYPE_LAST		\
+				 - TI_FLOATN_TYPE_FIRST + 1))
   TI_FLOAT32X_TYPE,
   TI_FLOATNX_TYPE_FIRST = TI_FLOAT32X_TYPE,
   TI_FLOAT64X_TYPE,
   TI_FLOAT128X_TYPE,
   TI_FLOATNX_TYPE_LAST = TI_FLOAT128X_TYPE,
   TI_FLOATN_NX_TYPE_LAST = TI_FLOAT128X_TYPE,
-#define NUM_FLOATNX_TYPES (TI_FLOATNX_TYPE_LAST - TI_FLOATNX_TYPE_FIRST + 1)
-#define NUM_FLOATN_NX_TYPES (TI_FLOATN_NX_TYPE_LAST		\
-			     - TI_FLOATN_NX_TYPE_FIRST		\
-			     + 1)
+#define NUM_FLOATNX_TYPES ((int) (TI_FLOATNX_TYPE_LAST		\
+				  - TI_FLOATNX_TYPE_FIRST + 1))
+#define NUM_FLOATN_NX_TYPES ((int) (TI_FLOATN_NX_TYPE_LAST	\
+				  - TI_FLOATN_NX_TYPE_FIRST + 1))
 
   /* Type used by certain backends for __float128, which in C++ should be
      distinct type from _Float128 for backwards compatibility reasons.  */

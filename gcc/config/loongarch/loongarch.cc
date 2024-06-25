@@ -10953,6 +10953,18 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
 						      is_packed);
 }
 
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+loongarch_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TARGET_64BIT ? TFmode : DFmode;
+  return default_mode_for_floating_type (ti);
+}
+
 static bool
 use_rsqrt_p (void)
 {
@@ -11262,6 +11274,9 @@ loongarch_asm_code_end (void)
 #undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT \
   loongarch_builtin_support_vector_misalignment
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE loongarch_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

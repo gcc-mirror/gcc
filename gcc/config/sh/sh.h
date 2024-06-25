@@ -425,9 +425,6 @@ extern const sh_atomic_model& selected_atomic_model (void);
 /* Width in bits of a `long long'.  */
 #define LONG_LONG_TYPE_SIZE 64
 
-/* Width in bits of a `long double'.  */
-#define LONG_DOUBLE_TYPE_SIZE 64
-
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD	(4)
 #define MIN_UNITS_PER_WORD 4
@@ -1432,13 +1429,6 @@ extern bool current_function_interrupt;
    table.
    Do not define this if the table should contain absolute addresses.  */
 #define CASE_VECTOR_PC_RELATIVE 1
-
-/* Define it here, so that it doesn't get bumped to 64-bits on SHmedia.  */
-#define FLOAT_TYPE_SIZE 32
-
-/* Since the SH2e has only `float' support, it is desirable to make all
-   floating point types equivalent to `float'.  */
-#define DOUBLE_TYPE_SIZE (TARGET_FPU_SINGLE_ONLY ? 32 : 64)
 
 /* 'char' is signed by default.  */
 #define DEFAULT_SIGNED_CHAR  1

@@ -1707,6 +1707,9 @@ static const scoped_attribute_specs *const rs6000_attribute_table[] =
 #undef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX rs6000_c_mode_for_suffix
 
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE rs6000_c_mode_for_floating_type
+
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP rs6000_invalid_binary_op
 
@@ -24371,6 +24374,19 @@ rs6000_c_mode_for_suffix (char suffix)
     }
 
   return VOIDmode;
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode for
+   TI_LONG_DOUBLE_TYPE which is for long double type, go with the default
+   one for the others.  */
+
+static machine_mode
+rs6000_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return rs6000_long_double_type_size == FLOAT_PRECISION_TFmode ? TFmode
+								  : DFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 /* Target hook for invalid_arg_for_unprototyped_fn. */

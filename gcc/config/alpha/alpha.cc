@@ -9916,7 +9916,19 @@ alpha_can_change_mode_class (machine_mode from, machine_mode to,
   return (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
 	  || !reg_classes_intersect_p (FLOAT_REGS, rclass));
 }
-
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+alpha_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TARGET_LONG_DOUBLE_128 ? TFmode : DFmode;
+  return default_mode_for_floating_type (ti);
+}
+
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
 # undef TARGET_ATTRIBUTE_TABLE
@@ -10122,6 +10134,9 @@ alpha_can_change_mode_class (machine_mode from, machine_mode to,
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS alpha_can_change_mode_class
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE alpha_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

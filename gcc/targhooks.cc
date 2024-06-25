@@ -298,6 +298,18 @@ default_mode_for_suffix (char suffix ATTRIBUTE_UNUSED)
   return VOIDmode;
 }
 
+/* Return machine mode for a floating type which is indicated
+   by the given enum tree_index.  */
+
+machine_mode
+default_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_FLOAT_TYPE)
+    return SFmode;
+  gcc_assert (ti == TI_DOUBLE_TYPE || ti == TI_LONG_DOUBLE_TYPE);
+  return DFmode;
+}
+
 /* The generic C++ ABI specifies this is a 64-bit value.  */
 tree
 default_cxx_guard_type (void)
@@ -449,11 +461,11 @@ default_scalar_mode_supported_p (scalar_mode mode)
       return false;
 
     case MODE_FLOAT:
-      if (precision == FLOAT_TYPE_SIZE)
+      if (mode == targetm.c.mode_for_floating_type (TI_FLOAT_TYPE))
 	return true;
-      if (precision == DOUBLE_TYPE_SIZE)
+      if (mode == targetm.c.mode_for_floating_type (TI_DOUBLE_TYPE))
 	return true;
-      if (precision == LONG_DOUBLE_TYPE_SIZE)
+      if (mode == targetm.c.mode_for_floating_type (TI_LONG_DOUBLE_TYPE))
 	return true;
       return false;
 

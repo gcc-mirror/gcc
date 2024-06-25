@@ -6366,7 +6366,8 @@ init_emit_once (void)
   else
     const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
 
-  double_mode = float_mode_for_size (DOUBLE_TYPE_SIZE).require ();
+  mode = targetm.c.mode_for_floating_type (TI_DOUBLE_TYPE);
+  double_mode = as_a<scalar_float_mode> (mode);
 
   real_from_integer (&dconst0, double_mode, 0, SIGNED);
   real_from_integer (&dconst1, double_mode, 1, SIGNED);

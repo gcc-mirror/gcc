@@ -718,6 +718,7 @@ static bool sparc_vectorize_vec_perm_const (machine_mode, machine_mode,
 					    const vec_perm_indices &);
 static bool sparc_can_follow_jump (const rtx_insn *, const rtx_insn *);
 static HARD_REG_SET sparc_zero_call_used_regs (HARD_REG_SET);
+static machine_mode sparc_c_mode_for_floating_type (enum tree_index);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -970,6 +971,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_ZERO_CALL_USED_REGS
 #define TARGET_ZERO_CALL_USED_REGS sparc_zero_call_used_regs
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE sparc_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9824,18 +9828,6 @@ sparc_assemble_integer (rtx x, unsigned int size, int aligned_p)
 #define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
 #endif
 
-#ifndef FLOAT_TYPE_SIZE
-#define FLOAT_TYPE_SIZE BITS_PER_WORD
-#endif
-
-#ifndef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-#ifndef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
 unsigned long
 sparc_type_code (tree type)
 {
@@ -9920,7 +9912,7 @@ sparc_type_code (tree type)
 	  /* Carefully distinguish all the standard types of C,
 	     without messing up if the language is not C.  */
 
-	  if (TYPE_PRECISION (type) == FLOAT_TYPE_SIZE)
+	  if (TYPE_PRECISION (type) == TYPE_PRECISION (float_type_node))
 	    return (qualifiers | 6);
 
 	  else
@@ -13982,6 +13974,17 @@ sparc_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
       }
 
   return need_zeroed_hardregs;
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE and the default for others.  */
+
+static machine_mode
+sparc_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return SPARC_LONG_DOUBLE_TYPE_SIZE == 128 ? TFmode : DFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 #include "gt-sparc.h"

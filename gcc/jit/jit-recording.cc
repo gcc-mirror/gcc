@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_SSTREAM
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
+#include "target.h"
 #include "pretty-print.h"
 #include "toplev.h"
 
@@ -2353,6 +2353,7 @@ size_t
 recording::memento_of_get_type::get_size ()
 {
   int size;
+  machine_mode m;
   switch (m_kind)
     {
     case GCC_JIT_TYPE_VOID:
@@ -2399,13 +2400,16 @@ recording::memento_of_get_type::get_size ()
       size = 128;
       break;
     case GCC_JIT_TYPE_FLOAT:
-      size = FLOAT_TYPE_SIZE;
+      m = targetm.c.mode_for_floating_type (TI_FLOAT_TYPE);
+      size = GET_MODE_PRECISION (m).to_constant ();
       break;
     case GCC_JIT_TYPE_DOUBLE:
-      size = DOUBLE_TYPE_SIZE;
+      m = targetm.c.mode_for_floating_type (TI_DOUBLE_TYPE);
+      size = GET_MODE_PRECISION (m).to_constant ();
       break;
     case GCC_JIT_TYPE_LONG_DOUBLE:
-      size = LONG_DOUBLE_TYPE_SIZE;
+      m = targetm.c.mode_for_floating_type (TI_LONG_DOUBLE_TYPE);
+      size = GET_MODE_PRECISION (m).to_constant ();
       break;
     case GCC_JIT_TYPE_SIZE_T:
       size = MAX_BITS_PER_WORD;

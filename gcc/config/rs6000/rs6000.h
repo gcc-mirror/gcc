@@ -693,20 +693,6 @@ extern unsigned char rs6000_recip_bits[];
    words.  */
 #define LONG_LONG_TYPE_SIZE 64
 
-/* A C expression for the size in bits of the type `float' on the
-   target machine.  If you don't define this, the default is one
-   word.  */
-#define FLOAT_TYPE_SIZE 32
-
-/* A C expression for the size in bits of the type `double' on the
-   target machine.  If you don't define this, the default is two
-   words.  */
-#define DOUBLE_TYPE_SIZE 64
-
-/* A C expression for the size in bits of the type `long double' on the target
-   machine.  If you don't define this, the default is two words.  */
-#define LONG_DOUBLE_TYPE_SIZE rs6000_long_double_type_size
-
 /* Work around rs6000_long_double_type_size dependency in ada/targtyps.cc.  */
 #define WIDEST_HARDWARE_FP_SIZE 64
 

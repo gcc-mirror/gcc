@@ -18079,6 +18079,18 @@ s390_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
   return default_noce_conversion_profitable_p (seq, if_info);
 }
 
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+s390_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TARGET_LONG_DOUBLE_128 ? TFmode : DFmode;
+  return default_mode_for_floating_type (ti);
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -18394,6 +18406,9 @@ s390_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 
 #undef TARGET_NOCE_CONVERSION_PROFITABLE_P
 #define TARGET_NOCE_CONVERSION_PROFITABLE_P s390_noce_conversion_profitable_p
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE s390_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -143,9 +143,6 @@ FIXME: DRIVER_SELF_SPECS has changed.
 #define SHORT_TYPE_SIZE (INT_TYPE_SIZE == 8 ? INT_TYPE_SIZE : 16)
 #define LONG_TYPE_SIZE (INT_TYPE_SIZE == 8 ? 16 : 32)
 #define LONG_LONG_TYPE_SIZE (INT_TYPE_SIZE == 8 ? 32 : 64)
-#define FLOAT_TYPE_SIZE 32
-#define DOUBLE_TYPE_SIZE (avr_double)
-#define LONG_DOUBLE_TYPE_SIZE (avr_long_double)
 
 #define LONG_LONG_ACCUM_TYPE_SIZE 64
 

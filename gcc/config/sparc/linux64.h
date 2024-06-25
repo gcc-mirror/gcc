@@ -61,8 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Define for support of TFmode long double.
    SPARC ABI says that long double is 4 words.  */
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
+#undef SPARC_LONG_DOUBLE_TYPE_SIZE
+#define SPARC_LONG_DOUBLE_TYPE_SIZE (TARGET_LONG_DOUBLE_128 ? 128 : 64)
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\

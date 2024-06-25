@@ -1044,6 +1044,14 @@ are zero or sign extended depending on if it is
 @code{GET_MODE_ALIGNMENT (info->limb_mode)}.
 @end deftypefn
 
+@deftypefn {Target Hook} machine_mode TARGET_C_MODE_FOR_FLOATING_TYPE (enum tree_index @var{ti})
+Return machine mode for a C floating point type which is indicated by
+ a given @code{enum tree_index} @var{ti}, @var{ti} should be
+ @code{TI_FLOAT_TYPE}, @code{TI_DOUBLE_TYPE} or @code{TI_LONG_DOUBLE_TYPE}.
+ The default implementation returns @code{SFmode} for @code{TI_FLOAT_TYPE},
+ and @code{DFmode} for @code{TI_DOUBLE_TYPE} or @code{TI_LONG_DOUBLE_TYPE}.
+@end deftypefn
+
 @deftypefn {Target Hook} machine_mode TARGET_PROMOTE_FUNCTION_MODE (const_tree @var{type}, machine_mode @var{mode}, int *@var{punsignedp}, const_tree @var{funtype}, int @var{for_return})
 Like @code{PROMOTE_MODE}, but it is applied to outgoing function arguments or
 function return values.  The target hook should return the new mode
@@ -1610,23 +1618,6 @@ C99 type @code{_Bool} on the target machine.  If you don't define
 this, and you probably shouldn't, the default is @code{CHAR_TYPE_SIZE}.
 @end defmac
 
-@defmac FLOAT_TYPE_SIZE
-A C expression for the size in bits of the type @code{float} on the
-target machine.  If you don't define this, the default is one word.
-@end defmac
-
-@defmac DOUBLE_TYPE_SIZE
-A C expression for the size in bits of the type @code{double} on the
-target machine.  If you don't define this, the default is two
-words.
-@end defmac
-
-@defmac LONG_DOUBLE_TYPE_SIZE
-A C expression for the size in bits of the type @code{long double} on
-the target machine.  If you don't define this, the default is two
-words.
-@end defmac
-
 @defmac SHORT_FRACT_TYPE_SIZE
 A C expression for the size in bits of the type @code{short _Fract} on
 the target machine.  If you don't define this, the default is
@@ -1687,9 +1678,11 @@ the libgcc @file{config.host}.
 @defmac WIDEST_HARDWARE_FP_SIZE
 A C expression for the size in bits of the widest floating-point format
 supported by the hardware.  If you define this macro, you must specify a
-value less than or equal to the value of @code{LONG_DOUBLE_TYPE_SIZE}.
-If you do not define this macro, the value of @code{LONG_DOUBLE_TYPE_SIZE}
-is the default.
+value less than or equal to mode precision of the mode used for C type
+@code{long double} (from hook @code{targetm.c.mode_for_floating_type}
+with argument @code{TI_LONG_DOUBLE_TYPE}).  If you do not define this
+macro, mode precision of the mode used for C type @code{long double} is
+the default.
 @end defmac
 
 @defmac DEFAULT_SIGNED_CHAR

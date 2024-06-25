@@ -23045,6 +23045,18 @@ mips_asm_file_end (void)
     file_end_indicate_exec_stack ();
 }
 
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+mips_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return MIPS_LONG_DOUBLE_TYPE_SIZE == 64 ? DFmode : TFmode;
+  return default_mode_for_floating_type (ti);
+}
+
 void
 mips_bit_clear_info (enum machine_mode mode, unsigned HOST_WIDE_INT m,
 		      int *start_pos, int *size)
@@ -23413,6 +23425,8 @@ mips_bit_clear_p (enum machine_mode mode, unsigned HOST_WIDE_INT m)
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END mips_asm_file_end
 
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE mips_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

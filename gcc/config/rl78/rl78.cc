@@ -4972,6 +4972,21 @@ rl78_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t rclass)
   return rclass;
 }
 
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE rl78_c_mode_for_floating_type
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return SFmode for
+   TI_DOUBLE_TYPE which is for double type, go with the default
+   one for the others.  */
+
+static machine_mode
+rl78_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_DOUBLE_TYPE)
+    return SFmode;
+  return default_mode_for_floating_type (ti);
+}
+
 
 /* The strub runtime uses asms, and physical register allocation won't
    deal with them, so disable it.  */

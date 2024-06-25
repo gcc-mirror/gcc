@@ -366,9 +366,6 @@
 #define INT_TYPE_SIZE         32
 #define LONG_TYPE_SIZE        32
 #define LONG_LONG_TYPE_SIZE   64
-#define FLOAT_TYPE_SIZE       32
-#define DOUBLE_TYPE_SIZE      64
-#define LONG_DOUBLE_TYPE_SIZE 64
 
 /* An expression whose value is 1 or 0, according to whether the type `char'
    should be signed or unsigned by default.  The user can always override this

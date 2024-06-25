@@ -194,6 +194,7 @@ static rtx pa_internal_arg_pointer (void);
 static bool pa_can_eliminate (const int, const int);
 static void pa_conditional_register_usage (void);
 static machine_mode pa_c_mode_for_suffix (char);
+static machine_mode pa_c_mode_for_floating_type (enum tree_index);
 static section *pa_function_section (tree, enum node_frequency, bool, bool);
 static bool pa_cannot_force_const_mem (machine_mode, rtx);
 static bool pa_legitimate_constant_p (machine_mode, rtx);
@@ -398,6 +399,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_CONDITIONAL_REGISTER_USAGE pa_conditional_register_usage
 #undef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX pa_c_mode_for_suffix
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE pa_c_mode_for_floating_type
 #undef TARGET_ASM_FUNCTION_SECTION
 #define TARGET_ASM_FUNCTION_SECTION pa_function_section
 
@@ -6728,11 +6731,11 @@ pa_scalar_mode_supported_p (scalar_mode mode)
       return false;
 
     case MODE_FLOAT:
-      if (precision == FLOAT_TYPE_SIZE)
+      if (precision == PA_FLOAT_TYPE_SIZE)
 	return true;
-      if (precision == DOUBLE_TYPE_SIZE)
+      if (precision == PA_DOUBLE_TYPE_SIZE)
 	return true;
-      if (precision == LONG_DOUBLE_TYPE_SIZE)
+      if (precision == PA_LONG_DOUBLE_TYPE_SIZE)
 	return true;
       return false;
 
@@ -10806,6 +10809,18 @@ pa_c_mode_for_suffix (char suffix)
     }
 
   return VOIDmode;
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+pa_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return PA_LONG_DOUBLE_TYPE_SIZE == 64 ? DFmode : TFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 /* Target hook for function_section.  */

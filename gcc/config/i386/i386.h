@@ -678,10 +678,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define LONG_TYPE_SIZE (TARGET_X32 ? 32 : BITS_PER_WORD)
 #define POINTER_SIZE (TARGET_X32 ? 32 : BITS_PER_WORD)
 #define LONG_LONG_TYPE_SIZE 64
-#define FLOAT_TYPE_SIZE 32
-#define DOUBLE_TYPE_SIZE 64
-#define LONG_DOUBLE_TYPE_SIZE \
-  (TARGET_LONG_DOUBLE_64 ? 64 : (TARGET_LONG_DOUBLE_128 ? 128 : 80))
 
 #define WIDEST_HARDWARE_FP_SIZE 80
 

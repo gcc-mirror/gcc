@@ -188,10 +188,6 @@ ASM_MISA_SPEC
 #define POINTER_SIZE (riscv_abi >= ABI_LP64 ? 64 : 32)
 #define LONG_TYPE_SIZE POINTER_SIZE
 
-#define FLOAT_TYPE_SIZE 32
-#define DOUBLE_TYPE_SIZE 64
-#define LONG_DOUBLE_TYPE_SIZE 128
-
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
 #define PARM_BOUNDARY BITS_PER_WORD
 

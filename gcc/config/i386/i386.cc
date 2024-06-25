@@ -26109,6 +26109,19 @@ ix86_bitint_type_info (int n, struct bitint_info *info)
   return true;
 }
 
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return DFmode, TFmode
+   or XFmode for TI_LONG_DOUBLE_TYPE which is for long double type,
+   based on long double bits, go with the default one for the others.  */
+
+static machine_mode
+ix86_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return (TARGET_LONG_DOUBLE_64 ? DFmode
+				  : (TARGET_LONG_DOUBLE_128 ? TFmode : XFmode));
+  return default_mode_for_floating_type (ti);
+}
+
 /* Returns modified FUNCTION_TYPE for cdtor callabi.  */
 tree
 ix86_cxx_adjust_cdtor_callabi_fntype (tree fntype)
@@ -26741,6 +26754,8 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
 #undef TARGET_C_BITINT_TYPE_INFO
 #define TARGET_C_BITINT_TYPE_INFO ix86_bitint_type_info
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE ix86_c_mode_for_floating_type
 #undef TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE
 #define TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE ix86_cxx_adjust_cdtor_callabi_fntype
 #undef TARGET_PROMOTE_PROTOTYPES

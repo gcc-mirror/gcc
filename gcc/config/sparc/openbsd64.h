@@ -54,8 +54,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE 128
+#undef SPARC_LONG_DOUBLE_TYPE_SIZE
+#define SPARC_LONG_DOUBLE_TYPE_SIZE 128
 
 #undef LINK_SPEC
 #define LINK_SPEC \

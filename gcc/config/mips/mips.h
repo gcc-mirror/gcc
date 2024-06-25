@@ -1654,7 +1654,7 @@ FP_ASM_SPEC "\
 #define UNITS_PER_FPVALUE			\
   (TARGET_SOFT_FLOAT_ABI ? 0			\
    : TARGET_SINGLE_FLOAT ? UNITS_PER_FPREG	\
-   : LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT)
+   : MIPS_LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT)
 
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
@@ -1665,9 +1665,8 @@ FP_ASM_SPEC "\
 #define LONG_TYPE_SIZE (TARGET_LONG64 ? 64 : 32)
 #define LONG_LONG_TYPE_SIZE 64
 
-#define FLOAT_TYPE_SIZE 32
-#define DOUBLE_TYPE_SIZE 64
-#define LONG_DOUBLE_TYPE_SIZE (TARGET_NEWABI ? 128 : 64)
+/* LONG_DOUBLE_TYPE_SIZE gets poisoned, so add MIPS_ prefix.  */
+#define MIPS_LONG_DOUBLE_TYPE_SIZE (TARGET_NEWABI ? 128 : 64)
 
 /* Define the sizes of fixed-point types.  */
 #define SHORT_FRACT_TYPE_SIZE 8
@@ -1684,7 +1683,7 @@ FP_ASM_SPEC "\
 
 /* long double is not a fixed mode, but the idea is that, if we
    support long double, we also want a 128-bit integer type.  */
-#define MAX_FIXED_MODE_SIZE LONG_DOUBLE_TYPE_SIZE
+#define MAX_FIXED_MODE_SIZE MIPS_LONG_DOUBLE_TYPE_SIZE
 
 /* Width in bits of a pointer.  */
 #ifndef POINTER_SIZE
@@ -1705,10 +1704,10 @@ FP_ASM_SPEC "\
 #define STRUCTURE_SIZE_BOUNDARY 8
 
 /* There is no point aligning anything to a rounder boundary than
-   LONG_DOUBLE_TYPE_SIZE, unless under MSA the bigggest alignment is
+   MIPS_LONG_DOUBLE_TYPE_SIZE, unless under MSA the bigggest alignment is
    BITS_PER_MSA_REG.  */
 #define BIGGEST_ALIGNMENT \
-  (ISA_HAS_MSA ? BITS_PER_MSA_REG : LONG_DOUBLE_TYPE_SIZE)
+  (ISA_HAS_MSA ? BITS_PER_MSA_REG : MIPS_LONG_DOUBLE_TYPE_SIZE)
 
 /* All accesses must be aligned.  */
 #define STRICT_ALIGNMENT (!ISA_HAS_UNALIGNED_ACCESS)

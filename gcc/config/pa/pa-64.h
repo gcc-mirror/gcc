@@ -58,12 +58,12 @@ along with GCC; see the file COPYING3.  If not see
 #define LONG_TYPE_SIZE 64
 #undef LONG_LONG_TYPE_SIZE
 #define LONG_LONG_TYPE_SIZE 64
-#undef FLOAT_TYPE_SIZE
-#define FLOAT_TYPE_SIZE 32
-#undef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE 64
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE 128
+#undef PA_FLOAT_TYPE_SIZE
+#define PA_FLOAT_TYPE_SIZE 32
+#undef PA_DOUBLE_TYPE_SIZE
+#define PA_DOUBLE_TYPE_SIZE 64
+#undef PA_LONG_DOUBLE_TYPE_SIZE
+#define PA_LONG_DOUBLE_TYPE_SIZE 128
 
 /* ?!? This needs to be made compile-time selectable.
 
