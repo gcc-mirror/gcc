@@ -250,6 +250,12 @@ struct codeview_custom_type
       codeview_integer length;
       char *name;
     } lf_structure;
+    struct
+    {
+      uint32_t element_type;
+      uint32_t index_type;
+      codeview_integer length_in_bytes;
+    } lf_array;
   };
 };
 
@@ -1520,6 +1526,53 @@ write_lf_union (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_ARRAY type.  */
+
+static void
+write_lf_array (codeview_custom_type *t)
+{
+  size_t leaf_len;
+
+  /* This is lf_array in binutils and lfArray in Microsoft's cvinfo.h:
+
+    struct lf_array
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t element_type;
+      uint32_t index_type;
+      uint16_t length_in_bytes;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_array.element_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_array.index_type);
+  putc ('\n', asm_out_file);
+
+  leaf_len = 13 + write_cv_integer (&t->lf_array.length_in_bytes);
+
+  ASM_OUTPUT_ASCII (asm_out_file, "", 1);
+
+  write_cv_padding (4 - (leaf_len % 4));
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -1561,6 +1614,10 @@ write_custom_types (void)
 
 	case LF_UNION:
 	  write_lf_union (custom_types);
+	  break;
+
+	case LF_ARRAY:
+	  write_lf_array (custom_types);
 	  break;
 	}
 
@@ -2346,6 +2403,124 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
   return ct->num;
 }
 
+/* Process a DW_TAG_array_type DIE, adding an LF_ARRAY type and returning its
+   number.  */
+
+static uint32_t
+get_type_num_array_type (dw_die_ref type, bool in_struct)
+{
+  dw_die_ref base_type, t, first_child, c, *dimension_arr;
+  uint64_t size = 0;
+  unsigned int dimensions, i;
+  uint32_t element_type;
+
+  base_type = get_AT_ref (type, DW_AT_type);
+  if (!base_type)
+    return 0;
+
+  /* We need to know the size of our base type.  Loop through until we find
+     it.  */
+  t = base_type;
+  while (t && size == 0)
+    {
+      switch (dw_get_die_tag (t))
+	{
+	case DW_TAG_const_type:
+	case DW_TAG_volatile_type:
+	case DW_TAG_typedef:
+	case DW_TAG_enumeration_type:
+	  t = get_AT_ref (t, DW_AT_type);
+	  break;
+
+	case DW_TAG_base_type:
+	case DW_TAG_structure_type:
+	case DW_TAG_class_type:
+	case DW_TAG_union_type:
+	case DW_TAG_pointer_type:
+	  size = get_AT_unsigned (t, DW_AT_byte_size);
+	  break;
+
+	default:
+	  return 0;
+	}
+    }
+
+  if (size == 0)
+    return 0;
+
+  first_child = dw_get_die_child (type);
+  if (!first_child)
+    return 0;
+
+  element_type = get_type_num (base_type, in_struct, false);
+  if (element_type == 0)
+    return 0;
+
+  /* Create an array of our DW_TAG_subrange_type children, in reverse order.
+     We have to do this because unlike DWARF CodeView doesn't have
+     multidimensional arrays, so instead we do arrays of arrays.  */
+
+  dimensions = 0;
+  c = first_child;
+  do
+    {
+      c = dw_get_die_sib (c);
+      if (dw_get_die_tag (c) != DW_TAG_subrange_type)
+	continue;
+
+      dimensions++;
+    }
+  while (c != first_child);
+
+  if (dimensions == 0)
+    return 0;
+
+  dimension_arr = (dw_die_ref *) xmalloc (sizeof (dw_die_ref) * dimensions);
+
+  c = first_child;
+  i = 0;
+  do
+    {
+      c = dw_get_die_sib (c);
+      if (dw_get_die_tag (c) != DW_TAG_subrange_type)
+	continue;
+
+      dimension_arr[dimensions - i - 1] = c;
+      i++;
+    }
+  while (c != first_child);
+
+  /* Record an LF_ARRAY entry for each array dimension.  If this leads to
+     duplicate types, ld will take care of it for us.  */
+
+  for (i = 0; i < dimensions; i++)
+    {
+      codeview_custom_type *ct;
+      dw_die_ref index;
+
+      ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+      size *= get_AT_unsigned (dimension_arr[i], DW_AT_upper_bound) + 1;
+
+      index = get_AT_ref (dimension_arr[i], DW_AT_type);
+
+      ct->next = NULL;
+      ct->kind = LF_ARRAY;
+      ct->lf_array.element_type = element_type;
+      ct->lf_array.index_type = get_type_num (index, in_struct, false);
+      ct->lf_array.length_in_bytes.neg = false;
+      ct->lf_array.length_in_bytes.num = size;
+
+      add_custom_type (ct);
+
+      element_type = ct->num;
+    }
+
+  free (dimension_arr);
+
+  return element_type;
+}
+
 /* Process a DIE representing a type definition, add a CodeView type if
    necessary, and return its number.  If it's something we can't handle, return
    0.  We keep a hash table so that we're not adding the same type multiple
@@ -2405,6 +2580,10 @@ get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
     case DW_TAG_class_type:
     case DW_TAG_union_type:
       num = get_type_num_struct (type, in_struct, &is_fwd_ref);
+      break;
+
+    case DW_TAG_array_type:
+      num = get_type_num_array_type (type, in_struct);
       break;
 
     default:
