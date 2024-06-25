@@ -1,3 +1,11 @@
+2024-06-24  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2024-05-29  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/114846
+	* gcc.target/powerpc/pr114846.c: New test.
+
 2024-06-21  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
