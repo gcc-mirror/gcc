@@ -3872,8 +3872,8 @@ To set the kind of a label, use the @code{SET_LABEL_KIND} macro.
 @item jump_table_data
 A @code{jump_table_data} insn is a placeholder for the jump-table data
 of a @code{casesi} or @code{tablejump} insn.  They are placed after
-a @code{tablejump_p} insn.  A @code{jump_table_data} insn is not part o
-a basic blockm but it is associated with the basic block that ends with
+a @code{tablejump_p} insn.  A @code{jump_table_data} insn is not part of
+a basic block but it is associated with the basic block that ends with
 the @code{tablejump_p} insn.  The @code{PATTERN} of a @code{jump_table_data}
 is always either an @code{addr_vec} or an @code{addr_diff_vec}, and a
 @code{jump_table_data} insn is always preceded by a @code{code_label}.
