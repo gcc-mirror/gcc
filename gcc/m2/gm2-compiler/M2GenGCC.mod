@@ -637,14 +637,14 @@ BEGIN
          CastOp             : FoldCast (tokenno, p, quad, op1, op2, op3) |
          InclOp             : FoldIncl (tokenno, p, quad, op1, op3) |
          ExclOp             : FoldExcl (tokenno, p, quad, op1, op3) |
-         IfEquOp            : FoldIfEqu (tokenno, p, quad, op1, op2, op3) |
-         IfNotEquOp         : FoldIfNotEqu (tokenno, p, quad, op1, op2, op3) |
-         IfLessOp           : FoldIfLess (tokenno, p, quad, op1, op2, op3) |
-         IfLessEquOp        : FoldIfLessEqu (tokenno, p, quad, op1, op2, op3) |
-         IfGreOp            : FoldIfGre (tokenno, p, quad, op1, op2, op3) |
-         IfGreEquOp         : FoldIfGreEqu (tokenno, p, quad, op1, op2, op3) |
-         IfInOp             : FoldIfIn (tokenno, p, quad, op1, op2, op3) |
-         IfNotInOp          : FoldIfNotIn (tokenno, p, quad, op1, op2, op3) |
+         IfEquOp            : FoldIfEqu (tokenno, quad, op1, op2, op3) |
+         IfNotEquOp         : FoldIfNotEqu (tokenno, quad, op1, op2, op3) |
+         IfLessOp           : FoldIfLess (tokenno, quad, op1, op2, op3) |
+         IfLessEquOp        : FoldIfLessEqu (tokenno, quad, op1, op2, op3) |
+         IfGreOp            : FoldIfGre (tokenno, quad, op1, op2, op3) |
+         IfGreEquOp         : FoldIfGreEqu (tokenno, quad, op1, op2, op3) |
+         IfInOp             : FoldIfIn (tokenno, quad, op1, op2, op3) |
+         IfNotInOp          : FoldIfNotIn (tokenno, quad, op1, op2, op3) |
          LogicalShiftOp     : FoldSetShift(tokenno, p, quad, op1, op2, op3) |
          LogicalRotateOp    : FoldSetRotate (tokenno, p, quad, op1, op2, op3) |
          ParamOp            : FoldBuiltinFunction (tokenno, p, quad, op1, op2, op3) |
@@ -5332,7 +5332,7 @@ END FoldIncl ;
                 if op1 < op2 then goto op3.
 *)
 
-PROCEDURE FoldIfLess (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfLess (tokenno: CARDINAL;
                       quad: CARDINAL; left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
@@ -5358,56 +5358,11 @@ END FoldIfLess ;
 
 
 (*
-   QuadCondition - Pre-condition:  left, right operands are constants
-                   which have been resolved.
-                   Post-condition: return TRUE if the condition at
-                   quad is TRUE.
-*)
-
-PROCEDURE QuadCondition (quad: CARDINAL) : BOOLEAN ;
-VAR
-   left, right, dest, combined,
-   leftpos, rightpos, destpos : CARDINAL ;
-   constExpr, overflow        : BOOLEAN ;
-   op                         : QuadOperator ;
-BEGIN
-   GetQuadOtok (quad, combined, op,
-                left, right, dest, overflow,
-                constExpr,
-                leftpos, rightpos, destpos) ;
-   CASE op OF
-
-   IfInOp     :  PushValue (right) ;
-                 RETURN SetIn (left, combined) |
-   IfNotInOp  :  PushValue (right) ;
-                 RETURN NOT SetIn (left, combined)
-
-   ELSE
-   END ;
-   PushValue (left) ;
-   PushValue (right) ;
-   CASE op OF
-
-   IfGreOp    :  RETURN Gre (combined) |
-   IfLessOp   :  RETURN Less (combined) |
-   IfLessEquOp:  RETURN LessEqu (combined) |
-   IfGreEquOp :  RETURN GreEqu (combined) |
-   IfEquOp    :  RETURN GreEqu (combined) |
-   IfNotEquOp :  RETURN NotEqu (combined)
-
-   ELSE
-      InternalError ('unrecognized comparison operator')
-   END ;
-   RETURN FALSE
-END QuadCondition ;
-
-
-(*
    FoldIfGre - check to see if it is possible to evaluate
                if op1 > op2 then goto op3.
 *)
 
-PROCEDURE FoldIfGre (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfGre (tokenno: CARDINAL;
                      quad: CARDINAL;
                      left, right, destQuad: CARDINAL) ;
 BEGIN
@@ -5438,7 +5393,7 @@ END FoldIfGre ;
                    if op1 <= op2 then goto op3.
 *)
 
-PROCEDURE FoldIfLessEqu (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfLessEqu (tokenno: CARDINAL;
                          quad: CARDINAL;
                          left, right, destQuad: CARDINAL) ;
 BEGIN
@@ -5469,7 +5424,7 @@ END FoldIfLessEqu ;
                   if op1 >= op2 then goto op3.
 *)
 
-PROCEDURE FoldIfGreEqu (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfGreEqu (tokenno: CARDINAL;
                         quad: CARDINAL;
                         left, right, destQuad: CARDINAL) ;
 BEGIN
@@ -5500,7 +5455,7 @@ END FoldIfGreEqu ;
               if op1 in op2 then goto op3
 *)
 
-PROCEDURE FoldIfIn (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfIn (tokenno: CARDINAL;
                     quad: CARDINAL;
                     left, right, destQuad: CARDINAL) ;
 BEGIN
@@ -5535,7 +5490,7 @@ END FoldIfIn ;
                  if not (op1 in op2) then goto op3
 *)
 
-PROCEDURE FoldIfNotIn (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfNotIn (tokenno: CARDINAL;
                        quad: CARDINAL;
                        left, right, destQuad: CARDINAL) ;
 BEGIN
@@ -5571,7 +5526,7 @@ END FoldIfNotIn ;
                if op1 = op2 then goto op3.
 *)
 
-PROCEDURE FoldIfEqu (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfEqu (tokenno: CARDINAL;
                      quad: CARDINAL;
                      left, right, destQuad: CARDINAL) ;
 BEGIN
@@ -5603,7 +5558,7 @@ END FoldIfEqu ;
                   if op1 # op2 then goto op3.
 *)
 
-PROCEDURE FoldIfNotEqu (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfNotEqu (tokenno: CARDINAL;
                         quad: CARDINAL;
                         left, right, destQuad: CARDINAL) ;
 BEGIN

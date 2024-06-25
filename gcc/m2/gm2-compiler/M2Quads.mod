@@ -13823,58 +13823,6 @@ END GenQuadOTypetok ;
 
 
 (*
-   GenQuadOTypeUniquetok - assigns the fields of the quadruple with
-                           the parameters and marks the quad as constexpr.
-*)
-
-PROCEDURE GenQuadOTypeUniquetok (TokPos: CARDINAL;
-                                 Operation: QuadOperator;
-                                 Op1, Op2, Op3: CARDINAL;
-                                 overflow, typecheck: BOOLEAN;
-                                 Op1Pos, Op2Pos, Op3Pos: CARDINAL) ;
-VAR
-   f: QuadFrame ;
-BEGIN
-   (* WriteString('Potential Quad: ') ; *)
-   IF QuadrupleGeneration
-   THEN
-      IF NextQuad # Head
-      THEN
-         f := GetQF (NextQuad-1) ;
-         f^.Next := NextQuad
-      END ;
-      PutQuadOType (NextQuad, Operation, Op1, Op2, Op3, overflow, typecheck) ;
-      f := GetQF (NextQuad) ;
-      WITH f^ DO
-         Next := 0 ;
-         LineNo := GetLineNo () ;
-         IF TokPos = UnknownTokenNo
-         THEN
-            TokenNo := GetTokenNo ()
-         ELSE
-            TokenNo := TokPos
-         END ;
-         op1pos := Op1Pos ;
-         op2pos := Op2Pos ;
-         op3pos := Op3Pos ;
-         ConstExpr := TRUE ;
-         IF GetDebugTraceQuad ()
-         THEN
-            printf0('generating: ') ;
-            DisplayQuad (NextQuad) ;
-            (* MetaErrorT1 (TokenNo, '{%1On}', NextQuad) *)
-         END
-      END ;
-      IF NextQuad=BreakAtQuad
-      THEN
-         stop
-      END ;
-      NewQuad (NextQuad)
-   END
-END GenQuadOTypeUniquetok ;
-
-
-(*
    DumpUntil - dump all quadruples until we seen the ending quadruple
                with procsym in the third operand.
                Return the quad number containing the match.
