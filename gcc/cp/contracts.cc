@@ -1411,6 +1411,19 @@ build_contract_condition_function (tree fndecl, bool pre)
      including the original contracts.  */
   DECL_ATTRIBUTES (fn) = NULL_TREE;
 
+  /* If requested, disable optimisation of checking functions; this can, in
+     some cases, prevent UB from eliding the checks themselves.  */
+  if (flag_contract_disable_optimized_checks)
+    DECL_ATTRIBUTES (fn)
+      = tree_cons (get_identifier ("optimize"),
+		   build_tree_list (NULL_TREE, build_string (3, "-O0")),
+		   NULL_TREE);
+  /* Now parse and add any internal representation of these attrs to the
+     decl.  */
+  if (DECL_ATTRIBUTES (fn))
+    cplus_decl_attributes (&fn, DECL_ATTRIBUTES (fn), 0);
+
+  /* Handle the args list.  */
   tree arg_types = NULL_TREE;
   tree *last = &arg_types;
 
@@ -2184,6 +2197,12 @@ maybe_apply_function_contracts (tree fndecl)
 void
 finish_function_contracts (tree fndecl)
 {
+  /* If the guarded func is either already decided to be ill-formed or is
+     not yet complete return early.  */
+  if (fndecl == error_mark_node
+      || DECL_INITIAL (fndecl) == error_mark_node)
+    return;
+
   if (!handle_contracts_p (fndecl)
       || !outline_contracts_p (fndecl))
     return;
@@ -2206,7 +2225,7 @@ finish_function_contracts (tree fndecl)
   if (pre == error_mark_node || post == error_mark_node)
     return;
 
-  if (pre && DECL_INITIAL (fndecl) != error_mark_node)
+  if (pre)
     {
       DECL_PENDING_INLINE_P (pre) = false;
       start_preparsed_function (pre, DECL_ATTRIBUTES (pre), flags);
@@ -2216,17 +2235,15 @@ finish_function_contracts (tree fndecl)
       expand_or_defer_fn (finished_pre);
     }
 
-  if (post && DECL_INITIAL (fndecl) != error_mark_node)
+  if (post)
     {
       DECL_PENDING_INLINE_P (post) = false;
-      start_preparsed_function (post,
+     start_preparsed_function (post,
 				DECL_ATTRIBUTES (post),
 				flags);
       remap_and_emit_conditions (fndecl, post, POSTCONDITION_STMT);
-      if (!VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post))))
-	finish_return_stmt (get_postcondition_result_parameter (fndecl));
-      else
-	finish_return_stmt (NULL_TREE);
+      gcc_checking_assert (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post))));
+      finish_return_stmt (NULL_TREE);
 
       tree finished_post = finish_function (false);
       expand_or_defer_fn (finished_post);
