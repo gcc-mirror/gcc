@@ -9,29 +9,17 @@
 extern "C" {
 #endif
 
-/*
-**foo:
-**	...
-**	vdup.32	q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
-**	...
-*/
-float32x4_t
-foo (float32_t a)
-{
-  return vdupq_n_f32 (a);
-}
-
+  /* Test with a constant that fits in vmov.  */
 /*
 **foo1:
 **	...
-**	ldr	r[0-9]+, .L.*
-**	vdup.32	q[0-9]+, r[0-9]+
+**	vmov.f32	q[0-9]+, #0.0  .*
 **	...
 */
 float32x4_t
 foo1 ()
 {
-  return vdupq_n_f32 (1.1);
+  return vdupq_n_f32 (0);
 }
 
 #ifdef __cplusplus

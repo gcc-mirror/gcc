@@ -39,6 +39,59 @@ using namespace arm_mve;
 
 namespace {
 
+/* Implements vdup_* intrinsics.  */
+class vdupq_impl : public quiet<function_base>
+{
+public:
+  CONSTEXPR vdupq_impl (int unspec_for_m_n_sint,
+			int unspec_for_m_n_uint,
+			int unspec_for_m_n_fp)
+    : m_unspec_for_m_n_sint (unspec_for_m_n_sint),
+      m_unspec_for_m_n_uint (unspec_for_m_n_uint),
+      m_unspec_for_m_n_fp (unspec_for_m_n_fp)
+  {}
+  int m_unspec_for_m_n_sint;
+  int m_unspec_for_m_n_uint;
+  int m_unspec_for_m_n_fp;
+
+  rtx expand (function_expander &e) const override
+  {
+    gcc_assert (e.mode_suffix_id == MODE_n);
+
+    insn_code code;
+    machine_mode mode = e.vector_mode (0);
+
+    switch (e.pred)
+    {
+    case PRED_none:
+      /* No predicate, _n suffix.  */
+      code = code_for_mve_vdupq_n (mode);
+      return e.use_exact_insn (code);
+
+    case PRED_m:
+    case PRED_x:
+      /* "m" or "x" predicate, _n suffix.  */
+      if (e.type_suffix (0).integer_p)
+	if (e.type_suffix (0).unsigned_p)
+	  code = code_for_mve_q_m_n (m_unspec_for_m_n_uint,
+				     m_unspec_for_m_n_uint, mode);
+	else
+	  code = code_for_mve_q_m_n (m_unspec_for_m_n_sint,
+				     m_unspec_for_m_n_sint, mode);
+      else
+	code = code_for_mve_q_m_n_f (m_unspec_for_m_n_fp, mode);
+
+      if (e.pred == PRED_m)
+	return e.use_cond_insn (code, 0);
+      else
+	return e.use_pred_x_insn (code);
+
+    default:
+      gcc_unreachable ();
+    }
+  }
+};
+
 /* Implements vreinterpretq_* intrinsics.  */
 class vreinterpretq_impl : public quiet<function_base>
 {
@@ -339,7 +392,7 @@ FUNCTION (vcmpltq, unspec_based_mve_function_exact_insn_vcmp, (LT, UNKNOWN, LT, 
 FUNCTION (vcmpcsq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GEU, UNKNOWN, UNKNOWN, VCMPCSQ_M_U, UNKNOWN, UNKNOWN, VCMPCSQ_M_N_U, UNKNOWN))
 FUNCTION (vcmphiq, unspec_based_mve_function_exact_insn_vcmp, (UNKNOWN, GTU, UNKNOWN, UNKNOWN, VCMPHIQ_M_U, UNKNOWN, UNKNOWN, VCMPHIQ_M_N_U, UNKNOWN))
 FUNCTION_WITHOUT_M_N (vcreateq, VCREATEQ)
-FUNCTION_ONLY_N (vdupq, VDUPQ)
+FUNCTION (vdupq, vdupq_impl, (VDUPQ_M_N_S, VDUPQ_M_N_U, VDUPQ_M_N_F))
 FUNCTION_WITH_RTX_M (veorq, XOR, VEORQ)
 FUNCTION (vfmaq, unspec_mve_function_exact_insn, (-1, -1, VFMAQ_F, -1, -1, VFMAQ_N_F, -1, -1, VFMAQ_M_F, -1, -1, VFMAQ_M_N_F))
 FUNCTION (vfmasq, unspec_mve_function_exact_insn, (-1, -1, -1, -1, -1, VFMASQ_N_F, -1, -1, -1, -1, -1, VFMASQ_M_N_F))

@@ -9,28 +9,18 @@
 extern "C" {
 #endif
 
-/*
-**foo:
-**	...
-**	vdup.8	q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
-**	...
-*/
-int8x16_t
-foo (int8_t a)
-{
-  return vdupq_n_s8 (a);
-}
-
+  /* Test with a constant that does not fit in vmov.  */
 /*
 **foo1:
 **	...
-**	vmov.i8	q[0-9]+, (#0x1)  (?:@.*|)
+**	mov	r[0-9]+, #1000(?:	@.*|)
+**	vdup.16	q[0-9]+, r[0-9]+
 **	...
 */
-int8x16_t
+uint16x8_t
 foo1 ()
 {
-  return vdupq_n_s8 (1);
+  return vdupq_n_u16 (1000);
 }
 
 #ifdef __cplusplus

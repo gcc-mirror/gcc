@@ -39,7 +39,7 @@ foo1 (float16x8_t a, float16_t b)
 }
 
 /*
-**foo2: { xfail *-*-* }
+**foo2:
 **	...
 **	vcmp.f16	gt, q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
 **	...

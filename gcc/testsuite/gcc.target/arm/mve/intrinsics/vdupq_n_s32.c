@@ -21,6 +21,18 @@ foo (int32_t a)
   return vdupq_n_s32 (a);
 }
 
+/*
+**foo1:
+**	...
+**	vmov.i32	q[0-9]+, (#0x1)  (?:@.*|)
+**	...
+*/
+int32x4_t
+foo1 ()
+{
+  return vdupq_n_s32 (1);
+}
+
 #ifdef __cplusplus
 }
 #endif

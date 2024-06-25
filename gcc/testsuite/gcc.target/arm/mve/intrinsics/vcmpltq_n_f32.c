@@ -39,7 +39,7 @@ foo1 (float32x4_t a, float32_t b)
 }
 
 /*
-**foo2: { xfail *-*-* }
+**foo2:
 **	...
 **	vcmp.f32	lt, q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
 **	...
