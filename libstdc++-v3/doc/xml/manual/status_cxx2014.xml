@@ -30,7 +30,7 @@ since C++11 and the implementation is complete.
 
 <para>
 This section describes the C++14 and library TS support in
-the GCC 14 release series, not in any particular release.
+the GCC 14 release series.
 </para>
 
 <!-- Status is Yes or No, Broken/Partial-->
