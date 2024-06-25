@@ -9363,18 +9363,42 @@ is_flexible_array_member_p (bool is_last_field,
 static void
 c_update_type_canonical (tree t)
 {
-  for (tree x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
+  gcc_checking_assert (TYPE_MAIN_VARIANT (t) == t && !TYPE_QUALS (t));
+  for (tree x = t, l = NULL_TREE; x; l = x, x = TYPE_NEXT_VARIANT (x))
     {
       if (x != t && TYPE_STRUCTURAL_EQUALITY_P (x))
 	{
-	  if (TYPE_QUALS (x) == TYPE_QUALS (t))
+	  if (!TYPE_QUALS (x))
 	    TYPE_CANONICAL (x) = TYPE_CANONICAL (t);
-	  else if (TYPE_CANONICAL (t) != t
-		   || check_qualified_type (x, t, TYPE_QUALS (x)))
-	    TYPE_CANONICAL (x)
-	      = build_qualified_type (TYPE_CANONICAL (t), TYPE_QUALS (x));
 	  else
-	    TYPE_CANONICAL (x) = x;
+	    {
+	      tree
+		c = build_qualified_type (TYPE_CANONICAL (t), TYPE_QUALS (x));
+	      if (TYPE_STRUCTURAL_EQUALITY_P (c))
+		{
+		  gcc_checking_assert (TYPE_CANONICAL (t) == t);
+		  if (c == x)
+		    TYPE_CANONICAL (x) = x;
+		  else
+		    {
+		      /* build_qualified_type for this function unhelpfully
+			 moved c from some later spot in TYPE_MAIN_VARIANT (t)
+			 chain to right after t (or created it there).  Move
+			 it right before x and process c and then x.  */
+		      gcc_checking_assert (TYPE_NEXT_VARIANT (t) == c);
+		      if (l != t)
+			{
+			  TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (c);
+			  TYPE_NEXT_VARIANT (l) = c;
+			  TYPE_NEXT_VARIANT (c) = x;
+			}
+		      TYPE_CANONICAL (c) = c;
+		      x = c;
+		    }
+		}
+	      else
+		TYPE_CANONICAL (x) = TYPE_CANONICAL (c);
+	    }
 	}
       else if (x != t)
 	continue;
