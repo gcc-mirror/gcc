@@ -695,7 +695,13 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
 	     if we must narrow it, be sure we do it correctly.  */
 
 	  if (GET_MODE_SIZE (value_mode) < GET_MODE_SIZE (op_mode))
-	    tmp = force_subreg (op_mode, value1, value_mode, 0);
+	    {
+	      tmp = simplify_subreg (op_mode, value1, value_mode, 0);
+	      if (! tmp)
+		tmp = simplify_gen_subreg (op_mode,
+					   force_reg (value_mode, value1),
+					   value_mode, 0);
+	    }
 	  else
 	    {
 	      if (targetm.mode_rep_extended (op_mode, value_mode) != UNKNOWN)
