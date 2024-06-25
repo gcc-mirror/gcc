@@ -2437,6 +2437,95 @@ out:
       }
   swap = NULL;
 
+  bool has_two_operators_perm = false;
+  auto_vec<unsigned> two_op_perm_indices[2];
+  vec<stmt_vec_info> two_op_scalar_stmts[2] = {vNULL, vNULL};
+
+  if (two_operators && oprnds_info.length () == 2 && group_size > 2)
+    {
+      unsigned idx = 0;
+      hash_map<gimple *, unsigned> seen;
+      vec<slp_oprnd_info> new_oprnds_info
+	= vect_create_oprnd_info (1, group_size);
+      bool success = true;
+
+      enum tree_code code = ERROR_MARK;
+      if (oprnds_info[0]->def_stmts[0]
+	  && is_a<gassign *> (oprnds_info[0]->def_stmts[0]->stmt))
+	code = gimple_assign_rhs_code (oprnds_info[0]->def_stmts[0]->stmt);
+
+      for (unsigned j = 0; j < group_size; ++j)
+	{
+	  FOR_EACH_VEC_ELT (oprnds_info, i, oprnd_info)
+	    {
+	      stmt_vec_info stmt_info = oprnd_info->def_stmts[j];
+	      if (!stmt_info || !stmt_info->stmt
+		  || !is_a<gassign *> (stmt_info->stmt)
+		  || gimple_assign_rhs_code (stmt_info->stmt) != code
+		  || skip_args[i])
+		{
+		  success = false;
+		  break;
+		}
+
+	      bool exists;
+	      unsigned &stmt_idx
+		= seen.get_or_insert (stmt_info->stmt, &exists);
+
+	      if (!exists)
+		{
+		  new_oprnds_info[0]->def_stmts.safe_push (stmt_info);
+		  new_oprnds_info[0]->ops.safe_push (oprnd_info->ops[j]);
+		  stmt_idx = idx;
+		  idx++;
+		}
+
+	      two_op_perm_indices[i].safe_push (stmt_idx);
+	    }
+
+	  if (!success)
+	    break;
+	}
+
+      if (success && idx == group_size)
+	{
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "Replace two_operators operands:\n");
+
+	      FOR_EACH_VEC_ELT (oprnds_info, i, oprnd_info)
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location,
+				   "Operand %u:\n", i);
+		  for (unsigned j = 0; j < group_size; j++)
+		    dump_printf_loc (MSG_NOTE, vect_location, "\tstmt %u %G",
+				     j, oprnd_info->def_stmts[j]->stmt);
+		}
+
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "With a single operand:\n");
+	      for (unsigned j = 0; j < group_size; j++)
+		dump_printf_loc (MSG_NOTE, vect_location, "\tstmt %u %G",
+				 j, new_oprnds_info[0]->def_stmts[j]->stmt);
+	    }
+
+	  two_op_scalar_stmts[0].safe_splice (oprnds_info[0]->def_stmts);
+	  two_op_scalar_stmts[1].safe_splice (oprnds_info[1]->def_stmts);
+
+	  new_oprnds_info[0]->first_op_type = oprnds_info[0]->first_op_type;
+	  new_oprnds_info[0]->first_dt = oprnds_info[0]->first_dt;
+	  new_oprnds_info[0]->any_pattern = oprnds_info[0]->any_pattern;
+	  new_oprnds_info[0]->first_gs_p = oprnds_info[0]->first_gs_p;
+	  new_oprnds_info[0]->first_gs_info = oprnds_info[0]->first_gs_info;
+
+	  vect_free_oprnd_info (oprnds_info);
+	  oprnds_info = new_oprnds_info;
+	  nops = 1;
+	  has_two_operators_perm = true;
+	}
+    }
+
   auto_vec<slp_tree, 4> children;
 
   stmt_info = stmts[0];
@@ -2707,6 +2796,29 @@ fail:
 	 the true { a+b, a+b, a+b, a+b } ... but there we don't have
 	 explicit stmts to put in so the keying on 'stmts' doesn't
 	 work (but we have the same issue with nodes that use 'ops').  */
+
+      if (has_two_operators_perm)
+	{
+	  slp_tree child = children[0];
+	  children.truncate (0);
+	  for (i = 0; i < 2; i++)
+	    {
+	      slp_tree pnode
+		= vect_create_new_slp_node (two_op_scalar_stmts[i], 2);
+	      SLP_TREE_CODE (pnode) = VEC_PERM_EXPR;
+	      SLP_TREE_VECTYPE (pnode) = vectype;
+	      SLP_TREE_CHILDREN (pnode).quick_push (child);
+	      SLP_TREE_CHILDREN (pnode).quick_push (child);
+	      lane_permutation_t& perm = SLP_TREE_LANE_PERMUTATION (pnode);
+	      children.safe_push (pnode);
+
+	      for (unsigned j = 0; j < stmts.length (); j++)
+		perm.safe_push (std::make_pair (0, two_op_perm_indices[i][j]));
+	    }
+
+	  SLP_TREE_REF_COUNT (child) += 4;
+	}
+
       slp_tree one = new _slp_tree;
       slp_tree two = new _slp_tree;
       SLP_TREE_DEF_TYPE (one) = vect_internal_def;
@@ -2743,12 +2855,14 @@ fail:
 	  else
 	    SLP_TREE_LANE_PERMUTATION (node).safe_push (std::make_pair (0, i));
 	}
+
       SLP_TREE_CODE (one) = code0;
       SLP_TREE_CODE (two) = ocode;
       SLP_TREE_LANES (one) = stmts.length ();
       SLP_TREE_LANES (two) = stmts.length ();
       SLP_TREE_REPRESENTATIVE (one) = stmts[0];
       SLP_TREE_REPRESENTATIVE (two) = stmts[j];
+
       return node;
     }
 
