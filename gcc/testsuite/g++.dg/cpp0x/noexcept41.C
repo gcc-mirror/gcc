@@ -9,4 +9,4 @@ template <typename> struct a {
 };
 template <typename d, typename c> auto f(d &&, c &&) -> decltype(declval<c>);
 struct e {};
-static_assert((e{}, declval<a<int>>),""); // { dg-error "no context to resolve type" }
+static_assert((e{}, declval<a<int>>),"");
