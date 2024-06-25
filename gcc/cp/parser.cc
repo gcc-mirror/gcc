@@ -44756,8 +44756,8 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
 static tree
 cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 {
-  tree decl, cond, incr, init;
-  tree orig_init, real_decl, orig_decl;
+  tree decl = NULL_TREE, cond = NULL_TREE, incr = NULL_TREE, init = NULL_TREE;
+  tree orig_init = NULL_TREE, real_decl = NULL_TREE, orig_decl = NULL_TREE;
   tree init_block, body_block;
   tree init_placeholder, body_placeholder;
   tree init_scope;
@@ -44792,8 +44792,6 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
   matching_parens parens;
   if (!parens.require_open (parser))
     return NULL;
-
-  init = orig_init = decl = real_decl = orig_decl = NULL_TREE;
 
   init_placeholder = build_stmt (input_location, EXPR_STMT,
 				 integer_zero_node);
@@ -44970,12 +44968,10 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 	}
     }
 
-  cond = NULL;
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
     cond = cp_parser_omp_for_cond (parser, decl, omp_for_parse_state->code);
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
-  incr = NULL;
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
     {
       /* If decl is an iterator, preserve the operator on decl
