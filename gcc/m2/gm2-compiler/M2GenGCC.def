@@ -34,10 +34,7 @@ DEFINITION MODULE M2GenGCC ;
 FROM M2GCCDeclare IMPORT WalkAction ;
 FROM m2tree IMPORT Tree ;
 FROM m2linemap IMPORT location_t ;
-EXPORT QUALIFIED ConvertQuadsToTree, ResolveConstantExpressions,
-                 GetHighFromUnbounded, StringToChar,
-                 LValueToGenericPtr, ZConstToTypedConst,
-                 PrepareCopyString ;
+FROM M2BasicBlock IMPORT BasicBlock ;
 
 
 (*
@@ -55,7 +52,7 @@ PROCEDURE ConvertQuadsToTree (Start, End: CARDINAL) ;
                                 p(sym) is invoked.
 *)
 
-PROCEDURE ResolveConstantExpressions (p: WalkAction; start, end: CARDINAL) : BOOLEAN ;
+PROCEDURE ResolveConstantExpressions (p: WalkAction; bb: BasicBlock) : BOOLEAN ;
 
 
 (*

@@ -320,9 +320,14 @@ END InitialDeclareAndOptimize ;
 
 PROCEDURE SecondDeclareAndOptimize (scope: CARDINAL;
                                     start, end: CARDINAL) ;
+VAR
+   bb: BasicBlock ;
 BEGIN
    REPEAT
-      FoldConstants(start, end) ;
+      bb := InitBasicBlocksFromRange (scope, start, end) ;
+      ForeachBasicBlockDo (bb, FoldConstants) ;
+      FreeBasicBlocks (bb) ;
+
       DeltaConst := Count - CountQuads () ;
       Count := CountQuads () ;
 

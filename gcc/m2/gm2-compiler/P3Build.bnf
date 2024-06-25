@@ -679,9 +679,12 @@ ConstExpression :=                                                         % VAR
                                                                            % PopInConstExpression %
                 =:
 
-Relation := "="                                                            % PushTtok(EqualTok, GetTokenNo() -1) %
-            | "#"                                                          % PushTtok(HashTok, GetTokenNo() -1) %
-            | "<>"                                                         % PushTtok(LessGreaterTok, GetTokenNo() -1) %
+Relation := "="                                                            % PushTtok(EqualTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+            | "#"                                                          % PushTtok(HashTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+            | "<>"                                                         % PushTtok(LessGreaterTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
             | "<"                                                          % PushTtok(LessTok, GetTokenNo() -1) %
             | "<="                                                         % PushTtok(LessEqualTok, GetTokenNo() -1) %
             | ">"                                                          % PushTtok(GreaterTok, GetTokenNo() -1) %

@@ -510,6 +510,8 @@ TYPE
                                               (* of const.                   *)
                     Value        : PtrToValue ; (* Value of the constant     *)
                     Type         : CARDINAL ; (* TYPE of constant, char etc  *)
+                    IsConditional,            (* Is it the result of a       *)
+                                              (* boolean conditional?        *)
                     IsSet        : BOOLEAN ;  (* is the constant a set?      *)
                     IsConstructor: BOOLEAN ;  (* is the constant a set?      *)
                     FromType     : CARDINAL ; (* type is determined FromType *)
@@ -533,6 +535,7 @@ TYPE
                IsComponentRef: BOOLEAN ;      (* Is temporary referencing a  *)
                                               (* record field?               *)
                list          : Indexing.Index ;  (* the record and fields    *)
+               IsConditional,
                IsTemp        : BOOLEAN ;      (* Is variable a temporary?    *)
                IsParam       : BOOLEAN ;      (* Is variable a parameter?    *)
                IsPointerCheck: BOOLEAN ;      (* Is variable used to         *)
@@ -4306,6 +4309,7 @@ BEGIN
             Scope := GetCurrentScope() ;  (* Procedure or Module?  *)
             AtAddress := FALSE ;
             Address := NulSym ;           (* Address at which declared.  *)
+            IsConditional := FALSE ;
             IsTemp := FALSE ;
             IsComponentRef := FALSE ;
             IsParam := FALSE ;
@@ -4332,6 +4336,52 @@ BEGIN
    END ;
    RETURN Sym
 END MakeVar ;
+
+
+(*
+   PutVarConditional - assign IsConditional to value.
+*)
+
+PROCEDURE PutVarConditional (sym: CARDINAL; value: BOOLEAN) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym(sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      VarSym     : Var.IsConditional := value |
+      ConstVarSym: ConstVar.IsConditional := value
+
+      ELSE
+         InternalError ('expecting Var')
+      END
+   END
+END PutVarConditional ;
+
+
+(*
+   IsVarConditional - return TRUE if the symbol is a var symbol
+                      containing the result of a boolean conditional.
+*)
+
+PROCEDURE IsVarConditional (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym(sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      VarSym     : RETURN Var.IsConditional |
+      ConstVarSym: RETURN ConstVar.IsConditional
+
+      ELSE
+         RETURN FALSE
+      END
+   END ;
+   RETURN FALSE
+END IsVarConditional ;
 
 
 (*
@@ -5043,6 +5093,7 @@ BEGIN
             Value := InitValue() ;
             Type  := NulSym ;
             IsSet := FALSE ;
+            IsConditional := FALSE ;
             IsConstructor := FALSE ;
             FromType := NulSym ;     (* type is determined FromType *)
             UnresFromType := FALSE ; (* is Type resolved?           *)

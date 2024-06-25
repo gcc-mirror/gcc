@@ -32,7 +32,7 @@ FROM M2Quads IMPORT IsReferenced, IsConditional, IsUnConditional, IsCall,
                     IsReturn, IsNewLocalVar, IsKillLocalVar,
                     IsCatchBegin, IsCatchEnd,
                     IsInitStart, IsInitEnd, IsFinallyStart, IsFinallyEnd,
-                    IsInitialisingConst,
+                    IsInitialisingConst, IsConditionalBooleanQuad,
                     IsPseudoQuad, IsDefOrModFile,
                     GetNextQuad, GetQuad, QuadOperator,
                     SubQuad, DisplayQuadRange ;
@@ -45,16 +45,21 @@ CONST
 
 TYPE
    BasicBlock = POINTER TO RECORD
-                   StartQuad  : CARDINAL ;  (* First Quad in Basic Block *)
-                   EndQuad    : CARDINAL ;  (* End Quad in Basic Block   *)
+                   Scope      : CARDINAL ;  (* Scope associated with the block.  *)
+                   StartQuad  : CARDINAL ;  (* First Quad in Basic Block.  *)
+                   EndQuad    : CARDINAL ;  (* End Quad in Basic Block.  *)
+                   First      : BOOLEAN ;   (* The first block?  *)
                    Right      : BasicBlock ;
-                                            (* Last Basic Block in list  *)
                    Left       : BasicBlock ;
                 END ;
 
 VAR
    FreeList        : BasicBlock ;   (* Free list of Basic Blocks         *)
    HeadOfBasicBlock: BasicBlock ;
+
+
+PROCEDURE stop ;
+END stop ;
 
 
 (*
@@ -128,19 +133,21 @@ END FreeBasicBlocks ;
    New - returns a basic block.
 *)
 
-PROCEDURE New () : BasicBlock ;
+PROCEDURE New (Scope: CARDINAL; First: BOOLEAN) : BasicBlock ;
 VAR
    b: BasicBlock ;
 BEGIN
    IF FreeList=NIL
    THEN
-      NEW(b)
+      NEW (b)
    ELSE
       b := FreeList ;
       FreeList := FreeList^.Right
    END ;
-   Assert(b#NIL) ;
-   RETURN( b )
+   Assert (b#NIL) ;
+   b^.Scope := Scope ;
+   b^.First := First ;
+   RETURN b
 END New ;
 
 
@@ -153,6 +160,7 @@ END New ;
 
 PROCEDURE ConvertQuads2BasicBlock (ScopeSym: CARDINAL; Start, End: CARDINAL) ;
 VAR
+   First,
    LastQuadDefMod,
    LastQuadConditional,
    LastQuadCall,
@@ -163,13 +171,14 @@ VAR
 BEGIN
    IF Debugging
    THEN
+      WriteString ("Enter ConvertQuads2BasicBlock") ; WriteLn ;
       DisplayQuadRange (ScopeSym, Start, End)
    END ;
    (*
       Algorithm to perform Basic Block:
 
       For every quadruple establish a set of leaders.
-      A Leader is defined as a quadruple which is
+      A leader is defined as a quadruple which is
       either:
 
       (i)   The first quadruple.
@@ -179,7 +188,7 @@ BEGIN
       For each leader construct a basic block.
       A Basic Block starts with a leader quadruple and ends with either:
 
-      (i)  Another Leader
+      (i)  Another leader
       (ii) An unconditional Jump.
 
       Any quadruples that do not fall into a Basic Block can be thrown away
@@ -188,20 +197,26 @@ BEGIN
    LastBB := NIL ;
    CurrentBB := NIL ;
    Quad := Start ;
-   LastQuadConditional := TRUE ;  (* Force Rule (i) *)
+   LastQuadConditional := TRUE ;  (* Force Rule (i).  *)
    LastQuadCall := FALSE ;
    LastQuadReturn := FALSE ;
    LastQuadDefMod := FALSE ;
-   (* Scan all quadruples *)
+   First := TRUE ;
+   (* Scan all quadruples.  *)
    WHILE (Quad<=End) AND (Quad#0) DO
+      IF Quad = 200
+      THEN
+         stop
+      END ;
       IF LastQuadConditional OR LastQuadCall OR LastQuadReturn OR
          LastQuadDefMod OR IsReferenced(Quad)
       THEN
          (* Rule (ii) *)
-         CurrentBB := New() ;                      (* Get a new Basic Block *)
-                                  (* At least one quad in this Basic Block  *)
+         CurrentBB := New (ScopeSym, First) ;  (* Get a new Basic Block.  *)
+                                 (* At least one quad in this Basic Block.  *)
          StartBB(CurrentBB, Quad) ;
-         EndBB(CurrentBB, Quad)
+         EndBB(CurrentBB, Quad) ;
+         First := FALSE
       ELSIF CurrentBB#NIL
       THEN
          (* We have a Basic Block - therefore add quad to this Block  *)
@@ -216,14 +231,20 @@ BEGIN
             IsInitStart(Quad) OR IsInitEnd(Quad) OR
             IsFinallyStart(Quad) OR IsFinallyEnd(Quad)
       THEN
-         (* we must leave these quads alone *)
+         (* We must leave these quads alone.  *)
          EndBB(LastBB, Quad)
+      ELSIF IsConditionalBooleanQuad (Quad)
+      THEN
+         (* We can remove unreachable const quads.  *)
+         SubQuad (Quad)
+(*
       ELSIF IsInitialisingConst(Quad)
       THEN
-         (* we must leave these quads alone *)
+         (* But we leave remaining constant quads alone.  *)
          EndBB(LastBB, Quad)
+*)
       ELSE
-         (* remove this Quad since it will never be reached *)
+         (* Remove this Quad since it will never be reached.  *)
          SubQuad(Quad)
       END ;
       LastQuadConditional := IsConditional(Quad) ;
@@ -236,12 +257,17 @@ BEGIN
          CurrentBB := NIL
       END ;
       Quad := GetNextQuad(Quad)
+   END ;
+   IF Debugging
+   THEN
+      WriteString ("Exit ConvertQuads2BasicBlock") ; WriteLn ;
+      DisplayQuadRange (ScopeSym, Start, End)
    END
 END ConvertQuads2BasicBlock ;
 
 
 (*
-   ForeachBasicBlockDo - for each basic block call procedure, p.
+   ForeachBasicBlockDo - for each basic block call procedure  p.
 *)
 
 PROCEDURE ForeachBasicBlockDo (bb: BasicBlock; p: BasicBlockProc) ;
@@ -253,7 +279,7 @@ BEGIN
       b := bb ;
       REPEAT
          WITH b^ DO
-            p (StartQuad, EndQuad)
+            p (b)
          END ;
          b := b^.Right
       UNTIL b=bb
@@ -308,29 +334,6 @@ END Add ;
 
 
 (*
-   Sub deletes an element from the specified queue.
-*)
-
-(*
-PROCEDURE Sub (VAR Head: BasicBlock;
-               b: BasicBlock) ;
-BEGIN
-   IF (b^.Right=Head) AND (b=Head)
-   THEN
-      Head := NIL
-   ELSE
-      IF Head=b
-      THEN
-         Head := Head^.Right
-      END ;
-      b^.Left^.Right := b^.Right ;
-      b^.Right^.Left := b^.Left
-   END
-END Sub ;
-*)
-
-
-(*
    DisplayBasicBlocks - displays the basic block data structure.
 *)
 
@@ -357,6 +360,46 @@ BEGIN
       WriteString(' end   ') ; WriteCard(EndQuad, 6) ;
    END
 END DisplayBlock ;
+
+
+(*
+   GetBasicBlockScope - return the scope associated with the basic block.
+*)
+
+PROCEDURE GetBasicBlockScope (bb: BasicBlock) : CARDINAL ;
+BEGIN
+   RETURN bb^.Scope
+END GetBasicBlockScope ;
+
+
+(*
+   GetBasicBlockStart - return the quad associated with the start of the basic block.
+*)
+
+PROCEDURE GetBasicBlockStart (bb: BasicBlock) : CARDINAL ;
+BEGIN
+   RETURN bb^.StartQuad
+END GetBasicBlockStart ;
+
+
+(*
+   GetBasicBlockEnd - return the quad associated with the end of the basic block.
+*)
+
+PROCEDURE GetBasicBlockEnd (bb: BasicBlock) : CARDINAL ;
+BEGIN
+   RETURN bb^.EndQuad
+END GetBasicBlockEnd ;
+
+
+(*
+   IsBasicBlockFirst - return TRUE if this basic block is the first in the sequence.
+*)
+
+PROCEDURE IsBasicBlockFirst (bb: BasicBlock) : BOOLEAN ;
+BEGIN
+   RETURN bb^.First
+END IsBasicBlockFirst ;
 
 
 BEGIN

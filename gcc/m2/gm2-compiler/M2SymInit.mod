@@ -39,7 +39,8 @@ FROM M2Error IMPORT InternalError ;
 FROM M2BasicBlock IMPORT BasicBlock,
                          InitBasicBlocks, InitBasicBlocksFromRange,
 			 KillBasicBlocks, FreeBasicBlocks,
-                         ForeachBasicBlockDo ;
+                         ForeachBasicBlockDo,
+                         GetBasicBlockStart, GetBasicBlockEnd ;
 
 IMPORT Indexing ;
 FROM Indexing IMPORT Index ;
@@ -1873,7 +1874,7 @@ END DetectTrash ;
    AppendEntry -
 *)
 
-PROCEDURE AppendEntry (Start, End: CARDINAL) ;
+PROCEDURE AppendEntry (bb: BasicBlock) ;
 VAR
    bbPtr: bbEntry ;
    high : CARDINAL ;
@@ -1881,13 +1882,13 @@ BEGIN
    high := Indexing.HighIndice (bbArray) ;
    bbPtr := NewEntry () ;
    WITH bbPtr^ DO
-      start := Start ;
-      end := End ;
+      start := GetBasicBlockStart (bb) ;
+      end := GetBasicBlockEnd (bb) ;
       first := high = 0 ;
-      endCall := IsCall (End) ;
-      endGoto := IsGoto (End) ;
-      endCond := IsConditional (End) ;
-      topOfLoop := IsBackReference (Start) ;
+      endCall := IsCall (end) ;
+      endGoto := IsGoto (end) ;
+      endCond := IsConditional (end) ;
+      topOfLoop := IsBackReference (start) ;
       trashQuad := 0 ;
       indexBB := high + 1 ;
       nextQuad := 0 ;
