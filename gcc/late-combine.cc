@@ -179,6 +179,18 @@ insn_combination::substitute_nondebug_use (use_info *use)
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_insn_slim (dump_file, use->insn ()->rtl ());
 
+  // Reject second and subsequent uses if the target does not allow
+  // the defining instruction to be copied.
+  if (targetm.cannot_copy_insn_p
+      && m_nondebug_changes.length () >= 2
+      && targetm.cannot_copy_insn_p (m_def_insn->rtl ()))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "-- The target does not allow multiple"
+		 " copies of insn %d\n", m_def_insn->uid ());
+      return false;
+    }
+
   // Check that we can change the instruction pattern.  Leave recognition
   // of the result till later.
   insn_propagation prop (use_rtl, m_dest, m_src);
