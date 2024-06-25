@@ -2178,7 +2178,9 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 	    add_cost = ((ira_memory_move_cost[mode][rclass][0]
 		         + ira_memory_move_cost[mode][rclass][1])
 		        * saved_nregs / hard_regno_nregs (hard_regno,
-							  mode) - 1);
+							  mode) - 1)
+		       * (optimize_size ? 1 :
+			  REG_FREQ_FROM_BB (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 	    cost += add_cost;
 	    full_cost += add_cost;
 	  }
