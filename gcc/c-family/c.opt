@@ -1903,6 +1903,10 @@ fcontract-semantic=
 C++ Joined RejectNegative
 -fcontract-semantic=<level>:<semantic>	Specify the concrete semantics for level.
 
+fcontract-disable-optimized-checks
+C++ Var(flag_contract_disable_optimized_checks) Init(0)
+-fcontract-disable-optimized-checks	Disable optimisation of contract checks.
+
 fcoroutines
 C++ LTO Var(flag_coroutines)
 Enable C++ coroutines (experimental).
