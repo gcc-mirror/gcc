@@ -6702,6 +6702,9 @@ c_cast_expr (location_t loc, struct c_type_name *type_name, tree expr)
     return error_mark_node;
 
   ret = build_c_cast (loc, type, expr);
+  if (ret == error_mark_node)
+    return error_mark_node;
+
   if (type_expr)
     {
       bool inner_expr_const = true;
