@@ -1,3 +1,226 @@
+2024-06-24  Sergei Lewis  <slewis@rivosinc.com>
+
+	* config/riscv/riscv-protos.h (riscv_vector::expand_vec_setmem): New
+	function declaration.
+	* config/riscv/riscv-string.cc (riscv_vector::expand_vec_setmem): New
+	function: this generates an inline vectorised memory set, if and only if
+	we know the entire operation can be performed in a single vector store.
+	* config/riscv/riscv.md (setmem<mode>): Try riscv_vector::expand_vec_setmem
+	for constant lengths.  Do not require operand 2 to be a constant.
+
+2024-06-24  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* doc/sourcebuild.texi (dg-remove-option): Add documentation.
+	(dg-add-option): Add documentation for riscv_{a,zaamo,zalrsc,ztso}
+
+2024-06-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113673
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop_load): Make static.
+	(find_bswap_or_nop_1): Avoid transformations (load merging) when
+	stmt_can_throw_internal indicates that a statement can trap.
+
+2024-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115602
+	* tree-vect-slp.cc (vect_cse_slp_nodes): Delay populating the
+	bst-map to avoid cycles.
+
+2024-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115528
+	* tree-vect-data-refs.cc (vect_compute_data_ref_alignment):
+	Make sure to look at both the inner and outer loop step
+	behavior.
+
+2024-06-24  Pali Rohár  <pali@kernel.org>
+
+	* config/i386/mingw-w64.h (CPP_SPEC): Add missing -mcrtdll=
+	cases: msvcr40*, msvcrtd*.
+	* config/mingw/mingw32.h (CPP_SPEC): Add missing -mcrtdll=
+	cases: msvcr40*, msvcrtd*.
+	* doc/invoke.texi: Add missing -mcrtdll= cases: msvcr40*,
+	msvcrtd*, msvcr71*. Express wildcards with *. Document _UCRT.
+
+2024-06-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* common.opt.urls: Regenerate.
+
+2024-06-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/106594
+	PR rtl-optimization/114515
+	PR rtl-optimization/114575
+	PR rtl-optimization/114996
+	PR rtl-optimization/115104
+	* Makefile.in (OBJS): Add late-combine.o.
+	* common.opt (flate-combine-instructions): New option.
+	* doc/invoke.texi: Document it.
+	* opts.cc (default_options_table): Enable it by default at -O2
+	and above.
+	* tree-pass.h (make_pass_late_combine): Declare.
+	* late-combine.cc: New file.
+	* passes.def: Add two instances of late_combine.
+	* doc/passes.texi: Document the new passes.
+	* config/i386/i386-options.cc (ix86_override_options_after_change):
+	Disable late-combine by default.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Likewise.
+	* config/xtensa/xtensa.cc (xtensa_option_override): Likewise.
+
+2024-06-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl-ssa.h: Include predicates.h.
+	* rtl-ssa/predicates.h: New file.
+	* rtl-ssa/access-utils.h (prev_call_clobbers_ignoring): Rename to...
+	(prev_call_clobbers): ...this and treat the ignore parameter as an
+	object with the same interface as ignore_nothing.
+	(next_call_clobbers_ignoring): Rename to...
+	(next_call_clobbers): ...this and treat the ignore parameter as an
+	object with the same interface as ignore_nothing.
+	(first_nondebug_insn_use_ignoring): Rename to...
+	(first_nondebug_insn_use): ...this and treat the ignore parameter as
+	an object with the same interface as ignore_nothing.
+	(last_nondebug_insn_use_ignoring): Rename to...
+	(last_nondebug_insn_use): ...this and treat the ignore parameter as
+	an object with the same interface as ignore_nothing.
+	(last_access_ignoring): Rename to...
+	(last_access): ...this and treat the ignore parameter as an object
+	with the same interface as ignore_nothing.  Conditionally skip
+	definitions.
+	(prev_access_ignoring): Rename to...
+	(prev_access): ...this and treat the ignore parameter as an object
+	with the same interface as ignore_nothing.
+	(first_def_ignoring): Replace with...
+	(first_access): ...this new function.
+	(next_access_ignoring): Rename to...
+	(next_access): ...this and treat the ignore parameter as an object
+	with the same interface as ignore_nothing.  Conditionally skip
+	definitions.
+	* rtl-ssa/change-utils.h (insn_is_changing): Delete.
+	(restrict_movement_ignoring): Rename to...
+	(restrict_movement): ...this and treat the ignore parameter as an
+	object with the same interface as ignore_nothing.
+	(recog_ignoring): Rename to...
+	(recog): ...this and treat the ignore parameter as an object with
+	the same interface as ignore_nothing.
+	* rtl-ssa/changes.h (insn_is_changing_closure): Delete.
+	* rtl-ssa/functions.h (function_info::add_regno_clobber): Treat
+	the ignore parameter as an object with the same interface as
+	ignore_nothing.
+	* rtl-ssa/insn-utils.h (insn_is): Delete.
+	* rtl-ssa/insns.h (insn_is_closure): Delete.
+	* rtl-ssa/member-fns.inl
+	(insn_is_changing_closure::insn_is_changing_closure): Delete.
+	(insn_is_changing_closure::operator()): Likewise.
+	(function_info::add_regno_clobber): Treat the ignore parameter
+	as an object with the same interface as ignore_nothing.
+	(ignore_changing_insns::ignore_changing_insns): New function.
+	(ignore_changing_insns::should_ignore_insn): Likewise.
+	* rtl-ssa/movement.h (restrict_movement_for_dead_range): Treat
+	the ignore parameter as an object with the same interface as
+	ignore_nothing.
+	(restrict_movement_for_defs_ignoring): Rename to...
+	(restrict_movement_for_defs): ...this and treat the ignore parameter
+	as an object with the same interface as ignore_nothing.
+	(restrict_movement_for_uses_ignoring): Rename to...
+	(restrict_movement_for_uses): ...this and treat the ignore parameter
+	as an object with the same interface as ignore_nothing.  Conditionally
+	skip definitions.
+	* doc/rtl.texi: Update for above name changes.  Use
+	ignore_changing_insns instead of insn_is_changing.
+	* config/aarch64/aarch64-cc-fusion.cc (cc_fusion::parallelize_insns):
+	Likewise.
+	* pair-fusion.cc (no_ignore): Delete.
+	(latest_hazard_before, first_hazard_after): Update for above name
+	changes.  Use ignore_nothing instead of no_ignore.
+	(pair_fusion_bb_info::fuse_pair): Update for above name changes.
+	Use ignore_changing_insns instead of insn_is_changing.
+	(pair_fusion::try_promote_writeback): Likewise.
+
+2024-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115599
+	* tree-ssa-reassoc.cc (compare_repeat_factors): Use explicit
+	compares to avoid truncations.
+
+2024-06-24  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/113325
+	* config/rs6000/vsx.md (vsx_stxvd2x4_le_const_<mode>): New.
+
+2024-06-24  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* fwprop.cc (try_fwprop_subst_pattern): Invoke change_is_worthwhile
+	to judge if a replacement is worthwhile.  Remove single_set check
+	and add is_debug_insn check.
+	* recog.cc (swap_change): Invalidate recog_data when the cached INSN
+	is swapped out.
+	* rtl-ssa/changes.cc (rtl_ssa::changes_are_worthwhile): Check if the
+	insn cost of new rtl is unknown and fail the replacement.
+
+2024-06-24  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (MAX_FIELDLIST_SIZE): Define.
+	(struct codeview_integer): New structure.
+	(struct codeview_subtype): Likewise
+	(struct codeview_custom_type): Add lf_fieldlist and lf_enum to union.
+	(write_cv_integer, cv_integer_len): New functions.
+	(write_lf_fieldlist, write_lf_enum): Likewise.
+	(write_custom_types): Call write_lf_fieldlist and write_lf_enum.
+	(add_enum_forward_def): New function.
+	(get_type_num_enumeration_type): Likewise.
+	(get_type_num): Handle DW_TAG_enumeration_type DIEs.
+	* dwarf2codeview.h (LF_FIELDLIST, LF_INDEX, LF_ENUMERATE): Define.
+	(LF_ENUM, LF_CHAR, LF_SHORT, LF_USHORT, LF_LONG): Likewise.
+	(LF_ULONG, LF_QUADWORD, LF_UQUADWORD): Likewise.
+	(CV_ACCESS_PRIVATE, CV_ACCESS_PROTECTED): Likewise.
+	(CV_ACCESS_PUBLIC, CV_PROP_FWDREF): Likewise.
+
+2024-06-24  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc
+	(struct codeview_custom_type): Add lf_modifier to union.
+	(write_cv_padding, write_lf_modifier): New functions.
+	(write_custom_types): Call write_lf_modifier.
+	(get_type_num_const_type): New function.
+	(get_type_num_volatile_type): Likewise.
+	(get_type_num): Handle DW_TAG_const_type and DW_TAG_volatile_type DIEs.
+	* dwarf2codeview.h (MOD_const, MOD_volatile): Define.
+	(LF_MODIFIER): Likewise.
+
+2024-06-24  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (FIRST_TYPE): Define.
+	(struct codeview_custom_type): New structure.
+	(custom_types, last_custom_type): New variables.
+	(get_type_num): Prototype.
+	(write_lf_pointer, write_custom_types): New functions.
+	(codeview_debug_finish): Call write_custom_types.
+	(add_custom_type, get_type_num_pointer_type): New functions.
+	(get_type_num): Handle DW_TAG_pointer_type DIEs.
+	* dwarf2codeview.h (T_VOID): Define.
+	(CV_POINTER_32, CV_POINTER_64): Likewise.
+	(T_32PVOID, T_64PVOID): Likewise.
+	(CV_PTR_NEAR32, CV_PTR64, LF_POINTER): Likewise.
+
+2024-06-24  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (get_type_num): Handle typedefs.
+
+2024-06-24  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (struct codeview_type): New structure.
+	(struct die_hasher): Likewise.
+	(types_htab): New variable.
+	(codeview_debug_finish): Free types_htab if allocated.
+	(get_type_num_base_type, get_type_num): New function.
+	(add_variable): Call get_type_num.
+	* dwarf2codeview.h (T_CHAR, T_SHORT, T_LONG, T_QUAD): Define.
+	(T_UCHAR, T_USHORT, T_ULONG, T_UQUAD, T_BOOL08): Likewise.
+	(T_REAL32, T_REAL64, T_REAL80, T_REAL128, T_RCHAR): Likewise.
+	(T_WCHAR, T_INT4, T_UINT4, T_CHAR16, T_CHAR32, T_CHAR8): Likewise.
+
 2024-06-23  Mark Harmstone  <mark@harmstone.com>
 
 	* dwarf2codeview.cc (S_LDATA32, S_GDATA32): Define.
