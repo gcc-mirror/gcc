@@ -1332,18 +1332,14 @@ gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
 	  gcc_checking_assert (depth >= 1);
 	}
 
-      bool res = (bb ? m_map.is_export_p (dep1, bb)
-		     : m_map.is_export_p (dep1));
+      bool res = m_map.is_export_p (dep1, bb);
       if (res || depth <= 1)
 	return res;
       // Check another level of recomputation.
       return may_recompute_p (dep1, bb, --depth);
     }
   // Two dependencies terminate the depth of the search.
-  if (bb)
-    return m_map.is_export_p (dep1, bb) || m_map.is_export_p (dep2, bb);
-  else
-    return m_map.is_export_p (dep1) || m_map.is_export_p (dep2);
+  return m_map.is_export_p (dep1, bb) || m_map.is_export_p (dep2, bb);
 }
 
 // Return TRUE if NAME can be recomputed on edge E.  If any direct dependent
