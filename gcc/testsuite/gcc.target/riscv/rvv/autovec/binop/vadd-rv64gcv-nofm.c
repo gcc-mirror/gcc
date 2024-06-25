@@ -5,6 +5,7 @@
 
 /* { dg-final { scan-assembler-times {\tvadd\.vv} 16 } } */
 /* { dg-final { scan-assembler-times {\tvadd\.vi} 8 } } */
-/* { dg-final { scan-assembler-times {\tvfadd\.vv} 9 } } */
+/* { dg-final { scan-assembler-times {\tvfadd\.vv} 3 } } */
+/* { dg-final { scan-assembler-times {\tvfadd\.vf} 6 } } */
 
 /* { dg-final { scan-tree-dump-times "\.COND_LEN_ADD" 9 "optimized" } } */

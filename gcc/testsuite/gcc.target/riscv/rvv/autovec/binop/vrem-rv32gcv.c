@@ -2,8 +2,10 @@
 
 #include "vrem-template.h"
 
-/* { dg-final { scan-assembler-times {\tvrem\.vv} 8 } } */
-/* { dg-final { scan-assembler-times {\tvremu\.vv} 8 } } */
+/* { dg-final { scan-assembler-times {\tvrem\.vv} 5 } } */
+/* { dg-final { scan-assembler-times {\tvrem\.vx} 3 } } */
+/* { dg-final { scan-assembler-times {\tvremu\.vv} 5 } } */
+/* { dg-final { scan-assembler-times {\tvremu\.vx} 3 } } */
 /* { dg-final { scan-tree-dump-times "\.COND_LEN_MOD" 16 "optimized" } } */
 /* { dg-final { scan-assembler-not {\tvmv1r\.v} } } */
 /* { dg-final { scan-assembler-not {\tvmv2r\.v} } } */
