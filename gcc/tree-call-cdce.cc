@@ -260,7 +260,7 @@ check_pow (gcall *pow_call)
       /* If the type of the base is too wide,
          the resulting shrink wrapping condition
 	 will be too conservative.  */
-      if (bit_sz > MAX_BASE_INT_BIT_SIZE)
+      if (bit_sz != 8 && bit_sz != 16 && bit_sz != MAX_BASE_INT_BIT_SIZE)
         return false;
 
       return true;
