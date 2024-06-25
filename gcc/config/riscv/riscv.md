@@ -2669,6 +2669,12 @@
 	      (use (match_operand:SI 4))])]
   "!optimize_size"
 {
+  /* If TARGET_VECTOR is false, this routine will return false and we will
+     try scalar expansion.  */
+  if (riscv_vector::expand_vec_cmpmem (operands[0], operands[1],
+				       operands[2], operands[3]))
+    DONE;
+
   if (riscv_expand_block_compare (operands[0], operands[1], operands[2],
                                   operands[3]))
     DONE;
@@ -2716,7 +2722,6 @@
   else
     FAIL;
 })
-
 
 ;; Expand in-line code to clear the instruction cache between operand[0] and
 ;; operand[1].

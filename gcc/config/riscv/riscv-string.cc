@@ -1605,4 +1605,104 @@ expand_vec_setmem (rtx dst_in, rtx length_in, rtx fill_value_in)
   return true;
 }
 
+/* Used by cmpmemsi in riscv.md.  */
+
+bool
+expand_vec_cmpmem (rtx result_out, rtx blk_a_in, rtx blk_b_in, rtx length_in)
+{
+  HOST_WIDE_INT lmul;
+  /* Check we are able and allowed to vectorise this operation;
+     bail if not.  */
+  if (!check_vectorise_memory_operation (length_in, lmul))
+    return false;
+
+  /* Strategy:
+     load entire blocks at a and b into vector regs
+     generate mask of bytes that differ
+     find first set bit in mask
+     find offset of first set bit in mask, use 0 if none set
+     result is ((char*)a[offset] - (char*)b[offset])
+   */
+
+  machine_mode vmode
+      = riscv_vector::get_vector_mode (QImode, BYTES_PER_RISCV_VECTOR * lmul)
+	      .require ();
+  rtx blk_a_addr = copy_addr_to_reg (XEXP (blk_a_in, 0));
+  rtx blk_a = change_address (blk_a_in, vmode, blk_a_addr);
+  rtx blk_b_addr = copy_addr_to_reg (XEXP (blk_b_in, 0));
+  rtx blk_b = change_address (blk_b_in, vmode, blk_b_addr);
+
+  rtx vec_a = gen_reg_rtx (vmode);
+  rtx vec_b = gen_reg_rtx (vmode);
+
+  machine_mode mask_mode = get_mask_mode (vmode);
+  rtx mask = gen_reg_rtx (mask_mode);
+  rtx mismatch_ofs = gen_reg_rtx (Pmode);
+
+  rtx ne = gen_rtx_NE (mask_mode, vec_a, vec_b);
+  rtx vmsops[] = { mask, ne, vec_a, vec_b };
+  rtx vfops[] = { mismatch_ofs, mask };
+
+  /* If the length is exactly vlmax for the selected mode, do that.
+     Otherwise, use a predicated store.  */
+
+  if (known_eq (GET_MODE_SIZE (vmode), INTVAL (length_in)))
+    {
+      emit_move_insn (vec_a, blk_a);
+      emit_move_insn (vec_b, blk_b);
+      emit_vlmax_insn (code_for_pred_cmp (vmode), riscv_vector::COMPARE_OP,
+		       vmsops);
+
+      emit_vlmax_insn (code_for_pred_ffs (mask_mode, Pmode),
+		       riscv_vector::CPOP_OP, vfops);
+    }
+  else
+    {
+      if (!satisfies_constraint_K (length_in))
+	      length_in = force_reg (Pmode, length_in);
+
+      rtx memmask = CONSTM1_RTX (mask_mode);
+
+      rtx m_ops_a[] = { vec_a, memmask, blk_a };
+      rtx m_ops_b[] = { vec_b, memmask, blk_b };
+
+      emit_nonvlmax_insn (code_for_pred_mov (vmode),
+			  riscv_vector::UNARY_OP_TAMA, m_ops_a, length_in);
+      emit_nonvlmax_insn (code_for_pred_mov (vmode),
+			  riscv_vector::UNARY_OP_TAMA, m_ops_b, length_in);
+
+      emit_nonvlmax_insn (code_for_pred_cmp (vmode), riscv_vector::COMPARE_OP,
+			  vmsops, length_in);
+
+      emit_nonvlmax_insn (code_for_pred_ffs (mask_mode, Pmode),
+			  riscv_vector::CPOP_OP, vfops, length_in);
+    }
+
+  /* Mismatch_ofs is -1 if blocks match, or the offset of
+     the first mismatch otherwise.  */
+  rtx ltz = gen_reg_rtx (Xmode);
+  emit_insn (gen_slt_3 (LT, Xmode, Xmode, ltz, mismatch_ofs, const0_rtx));
+  /* mismatch_ofs += (mismatch_ofs < 0) ? 1 : 0.  */
+  emit_insn (
+      gen_rtx_SET (mismatch_ofs, gen_rtx_PLUS (Pmode, mismatch_ofs, ltz)));
+
+  /* Unconditionally load the bytes at mismatch_ofs and subtract them
+     to get our result.  */
+  emit_insn (gen_rtx_SET (blk_a_addr,
+			  gen_rtx_PLUS (Pmode, mismatch_ofs, blk_a_addr)));
+  emit_insn (gen_rtx_SET (blk_b_addr,
+			  gen_rtx_PLUS (Pmode, mismatch_ofs, blk_b_addr)));
+
+  blk_a = change_address (blk_a, QImode, blk_a_addr);
+  blk_b = change_address (blk_b, QImode, blk_b_addr);
+
+  rtx byte_a = gen_reg_rtx (SImode);
+  rtx byte_b = gen_reg_rtx (SImode);
+  do_zero_extendqi2 (byte_a, blk_a);
+  do_zero_extendqi2 (byte_b, blk_b);
+
+  emit_insn (gen_rtx_SET (result_out, gen_rtx_MINUS (SImode, byte_a, byte_b)));
+
+  return true;
+}
 }
