@@ -41,6 +41,7 @@
 #include "tree-pass.h"
 #include "cfgcleanup.h"
 #include "target.h"
+#include "dbgcnt.h"
 
 using namespace rtl_ssa;
 
@@ -426,6 +427,11 @@ insn_combination::run ()
   if (!substitute_nondebug_uses (m_def)
       || !changes_are_worthwhile (m_nondebug_changes)
       || !crtl->ssa->verify_insn_changes (m_nondebug_changes))
+    return false;
+
+  // We've now decided that the optimization is valid and profitable.
+  // Allow it to be suppressed for bisection purposes.
+  if (!dbg_cnt (::late_combine))
     return false;
 
   substitute_optional_uses (m_def);
