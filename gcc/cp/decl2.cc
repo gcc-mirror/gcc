@@ -5952,6 +5952,8 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
      find out its type.  For OpenMP user defined reductions, we need them
      instantiated for reduction clauses which inline them by hand directly.  */
   if (undeduced_auto_decl (decl)
+      || (VAR_P (decl)
+	  && VAR_HAD_UNKNOWN_BOUND (decl))
       || (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_OMP_DECLARE_REDUCTION_P (decl)))
     maybe_instantiate_decl (decl);
