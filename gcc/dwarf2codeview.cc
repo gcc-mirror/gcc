@@ -158,6 +158,7 @@ struct codeview_type
 {
   dw_die_ref die;
   uint32_t num;
+  bool is_fwd_ref;
 };
 
 struct die_hasher : free_ptr_hash <codeview_type>
@@ -197,6 +198,13 @@ struct codeview_subtype
     {
       uint32_t type_num;
     } lf_index;
+    struct
+    {
+      uint16_t attributes;
+      uint32_t type;
+      codeview_integer offset;
+      char *name;
+    } lf_member;
   };
 };
 
@@ -232,7 +240,23 @@ struct codeview_custom_type
       uint32_t fieldlist;
       char *name;
     } lf_enum;
+    struct
+    {
+      uint16_t num_members;
+      uint16_t properties;
+      uint32_t field_list;
+      uint32_t derived_from;
+      uint32_t vshape;
+      codeview_integer length;
+      char *name;
+    } lf_structure;
   };
+};
+
+struct codeview_deferred_type
+{
+  struct codeview_deferred_type *next;
+  dw_die_ref type;
 };
 
 static unsigned int line_label_num;
@@ -249,8 +273,9 @@ static uint32_t last_file_id;
 static codeview_symbol *sym, *last_sym;
 static hash_table<die_hasher> *types_htab;
 static codeview_custom_type *custom_types, *last_custom_type;
+static codeview_deferred_type *deferred_types, *last_deferred_type;
 
-static uint32_t get_type_num (dw_die_ref type);
+static uint32_t get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref);
 
 /* Record new line number against the current function.  */
 
@@ -1217,6 +1242,51 @@ write_lf_fieldlist (codeview_custom_type *t)
 	  free (v->lf_enumerate.name);
 	  break;
 
+	case LF_MEMBER:
+	  /* This is lf_member in binutils and lfMember in Microsoft's
+	     cvinfo.h:
+
+	    struct lf_member
+	    {
+	      uint16_t kind;
+	      uint16_t attributes;
+	      uint32_t type;
+	      uint16_t offset;
+	      char name[];
+	    } ATTRIBUTE_PACKED;
+	  */
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, LF_MEMBER);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (2, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_member.attributes);
+	  putc ('\n', asm_out_file);
+
+	  fputs (integer_asm_op (4, false), asm_out_file);
+	  fprint_whex (asm_out_file, v->lf_member.type);
+	  putc ('\n', asm_out_file);
+
+	  leaf_len = 8 + write_cv_integer (&v->lf_member.offset);
+
+	  if (v->lf_member.name)
+	    {
+	      name_len = strlen (v->lf_member.name) + 1;
+	      ASM_OUTPUT_ASCII (asm_out_file, v->lf_member.name, name_len);
+	    }
+	  else
+	    {
+	      name_len = 1;
+	      ASM_OUTPUT_ASCII (asm_out_file, "", name_len);
+	    }
+
+	  leaf_len += name_len;
+	  write_cv_padding (4 - (leaf_len % 4));
+
+	  free (v->lf_member.name);
+	  break;
+
 	case LF_INDEX:
 	  /* This is lf_index in binutils and lfIndex in Microsoft's cvinfo.h:
 
@@ -1308,6 +1378,82 @@ write_lf_enum (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_STRUCTURE or LF_CLASS type (the two have the same structure).  */
+
+static void
+write_lf_structure (codeview_custom_type *t)
+{
+  size_t name_len, leaf_len;
+
+  /* This is lf_class in binutils and lfClass in Microsoft's cvinfo.h:
+
+    struct lf_class
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint16_t num_members;
+      uint16_t properties;
+      uint32_t field_list;
+      uint32_t derived_from;
+      uint32_t vshape;
+      uint16_t length;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_structure.num_members);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_structure.properties);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_structure.field_list);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_structure.derived_from);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_structure.vshape);
+  putc ('\n', asm_out_file);
+
+  leaf_len = 20 + write_cv_integer (&t->lf_structure.length);
+
+  if (t->lf_structure.name)
+    {
+      name_len = strlen (t->lf_structure.name) + 1;
+      ASM_OUTPUT_ASCII (asm_out_file, t->lf_structure.name, name_len);
+    }
+  else
+    {
+      static const char unnamed_struct[] = "<unnamed-tag>";
+
+      name_len = sizeof (unnamed_struct);
+      ASM_OUTPUT_ASCII (asm_out_file, unnamed_struct, name_len);
+    }
+
+  leaf_len += name_len;
+  write_cv_padding (4 - (leaf_len % 4));
+
+  free (t->lf_structure.name);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -1340,6 +1486,11 @@ write_custom_types (void)
 
 	case LF_ENUM:
 	  write_lf_enum (custom_types);
+	  break;
+
+	case LF_STRUCTURE:
+	case LF_CLASS:
+	  write_lf_structure (custom_types);
 	  break;
 	}
 
@@ -1527,7 +1678,7 @@ add_custom_type (codeview_custom_type *ct)
    LF_POINTER type and return its number.  */
 
 static uint32_t
-get_type_num_pointer_type (dw_die_ref type)
+get_type_num_pointer_type (dw_die_ref type, bool in_struct)
 {
   uint32_t base_type_num, byte_size;
   dw_die_ref base_type;
@@ -1543,7 +1694,7 @@ get_type_num_pointer_type (dw_die_ref type)
   if (!base_type)
     return byte_size == 4 ? T_32PVOID : T_64PVOID;
 
-  base_type_num = get_type_num (base_type);
+  base_type_num = get_type_num (base_type, in_struct, false);
   if (base_type_num == 0)
     return 0;
 
@@ -1580,7 +1731,7 @@ get_type_num_pointer_type (dw_die_ref type)
    its number.  */
 
 static uint32_t
-get_type_num_const_type (dw_die_ref type)
+get_type_num_const_type (dw_die_ref type, bool in_struct)
 {
   dw_die_ref base_type;
   uint32_t base_type_num;
@@ -1602,7 +1753,7 @@ get_type_num_const_type (dw_die_ref type)
 	return 0;
     }
 
-  base_type_num = get_type_num (base_type);
+  base_type_num = get_type_num (base_type, in_struct, false);
   if (base_type_num == 0)
     return 0;
 
@@ -1625,12 +1776,13 @@ get_type_num_const_type (dw_die_ref type)
    returning its number.  */
 
 static uint32_t
-get_type_num_volatile_type (dw_die_ref type)
+get_type_num_volatile_type (dw_die_ref type, bool in_struct)
 {
   uint32_t base_type_num;
   codeview_custom_type *ct;
 
-  base_type_num = get_type_num (get_AT_ref (type, DW_AT_type));
+  base_type_num = get_type_num (get_AT_ref (type, DW_AT_type), in_struct,
+				false);
   if (base_type_num == 0)
     return 0;
 
@@ -1660,7 +1812,8 @@ add_enum_forward_def (dw_die_ref type)
 
   ct->lf_enum.count = 0;
   ct->lf_enum.properties = CV_PROP_FWDREF;
-  ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type));
+  ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type),
+					      false, false);
   ct->lf_enum.fieldlist = 0;
   ct->lf_enum.name = xstrdup (get_AT_string (type, DW_AT_name));
 
@@ -1673,7 +1826,7 @@ add_enum_forward_def (dw_die_ref type)
    type, returning the number of the latter.  */
 
 static uint32_t
-get_type_num_enumeration_type (dw_die_ref type)
+get_type_num_enumeration_type (dw_die_ref type, bool in_struct)
 {
   dw_die_ref first_child;
   codeview_custom_type *ct;
@@ -1819,9 +1972,296 @@ get_type_num_enumeration_type (dw_die_ref type)
   ct->kind = LF_ENUM;
   ct->lf_enum.count = count;
   ct->lf_enum.properties = 0;
-  ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type));
+  ct->lf_enum.underlying_type = get_type_num (get_AT_ref (type, DW_AT_type),
+					      in_struct, false);
   ct->lf_enum.fieldlist = last_type;
   ct->lf_enum.name = xstrdup (get_AT_string (type, DW_AT_name));
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
+/* Add a DIE to our deferred_types list.  This happens when we have a struct
+   with a pointer to a type that hasn't been defined yet, but which gets
+   defined later on.  */
+
+static void
+add_deferred_type (dw_die_ref type)
+{
+  codeview_deferred_type *def;
+
+  def = (codeview_deferred_type *) xmalloc (sizeof (codeview_deferred_type));
+
+  def->next = NULL;
+  def->type = type;
+
+  if (!deferred_types)
+    deferred_types = def;
+  else
+    last_deferred_type->next = def;
+
+  last_deferred_type = def;
+}
+
+/* Flush the contents of our deferred_types list.  This happens after everything
+   else has been written.  We call get_type_num to ensure that a type gets
+   added to custom_types, if it hasn't been already.  */
+
+static void
+flush_deferred_types (void)
+{
+  while (deferred_types)
+    {
+      codeview_deferred_type *next;
+
+      next = deferred_types->next;
+
+      get_type_num (deferred_types->type, false, true);
+
+      free (deferred_types);
+      deferred_types = next;
+    }
+
+  last_deferred_type = NULL;
+}
+
+/* Add a forward definition for a struct or class.  */
+
+static uint32_t
+add_struct_forward_def (dw_die_ref type)
+{
+  codeview_custom_type *ct;
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+
+  switch (dw_get_die_tag (type))
+    {
+    case DW_TAG_class_type:
+      ct->kind = LF_CLASS;
+      break;
+
+    case DW_TAG_structure_type:
+      ct->kind = LF_STRUCTURE;
+      break;
+
+    default:
+      break;
+    }
+
+  ct->lf_structure.num_members = 0;
+  ct->lf_structure.properties = CV_PROP_FWDREF;
+  ct->lf_structure.field_list = 0;
+  ct->lf_structure.derived_from = 0;
+  ct->lf_structure.vshape = 0;
+  ct->lf_structure.length.neg = false;
+  ct->lf_structure.length.num = 0;
+  ct->lf_structure.name = xstrdup (get_AT_string (type, DW_AT_name));
+
+  add_custom_type (ct);
+
+  if (!get_AT_flag (type, DW_AT_declaration))
+    add_deferred_type (type);
+
+  return ct->num;
+}
+
+/* Process a DW_TAG_structure_type or DW_TAG_class_type DIE, add an
+   LF_FIELDLIST and an LF_STRUCTURE / LF_CLASS type, and return the number of
+   the latter.  */
+
+static uint32_t
+get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
+{
+  dw_die_ref first_child;
+  codeview_custom_type *ct;
+  uint16_t num_members = 0;
+  uint32_t last_type;
+  const char *name;
+
+  if ((in_struct && get_AT_string (type, DW_AT_name))
+      || get_AT_flag (type, DW_AT_declaration))
+    {
+      *is_fwd_ref = true;
+      return add_struct_forward_def (type);
+    }
+
+  *is_fwd_ref = false;
+
+  /* First, add an LF_FIELDLIST for the structure's members.  We don't need to
+     worry about deduplication here, as ld will take care of that for us.
+     If there's a lot of entries, add more LF_FIELDLISTs with LF_INDEXes
+     pointing to the overflow lists.  */
+
+  first_child = dw_get_die_child (type);
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_FIELDLIST;
+  ct->lf_fieldlist.length = 0;
+  ct->lf_fieldlist.subtypes = NULL;
+  ct->lf_fieldlist.last_subtype = NULL;
+
+  if (first_child)
+    {
+      dw_die_ref c;
+
+      c = first_child;
+      do
+	{
+	  codeview_subtype *el;
+	  size_t el_len;
+
+	  c = dw_get_die_sib (c);
+
+	  if (dw_get_die_tag (c) != DW_TAG_member)
+	    continue;
+
+	  el = (codeview_subtype *) xmalloc (sizeof (*el));
+	  el->next = NULL;
+	  el->kind = LF_MEMBER;
+
+	  switch (get_AT_unsigned (c, DW_AT_accessibility))
+	    {
+	    case DW_ACCESS_private:
+	      el->lf_member.attributes = CV_ACCESS_PRIVATE;
+	      break;
+
+	    case DW_ACCESS_protected:
+	      el->lf_member.attributes = CV_ACCESS_PROTECTED;
+	      break;
+
+	    case DW_ACCESS_public:
+	      el->lf_member.attributes = CV_ACCESS_PUBLIC;
+	      break;
+
+	    /* Members in a C++ struct or union are public by default, members
+	      in a class are private.  */
+	    default:
+	      if (dw_get_die_tag (type) == DW_TAG_class_type)
+		el->lf_member.attributes = CV_ACCESS_PRIVATE;
+	      else
+		el->lf_member.attributes = CV_ACCESS_PUBLIC;
+	      break;
+	    }
+
+	  el->lf_member.type = get_type_num (get_AT_ref (c, DW_AT_type), true,
+					    false);
+	  el->lf_member.offset.neg = false;
+	  el->lf_member.offset.num = get_AT_unsigned (c,
+						      DW_AT_data_member_location);
+
+	  el_len = 11;
+	  el_len += cv_integer_len (&el->lf_member.offset);
+
+	  if (get_AT_string (c, DW_AT_name))
+	    {
+	      el->lf_member.name = xstrdup (get_AT_string (c, DW_AT_name));
+	      el_len += strlen (el->lf_member.name);
+	    }
+	  else
+	    {
+	      el->lf_member.name = NULL;
+	    }
+
+	  if (el_len % 4)
+	    el_len += 4 - (el_len % 4);
+
+	  /* Add an LF_INDEX subtype if everything's too big for one
+	     LF_FIELDLIST.  */
+
+	  if (ct->lf_fieldlist.length + el_len > MAX_FIELDLIST_SIZE)
+	    {
+	      codeview_subtype *idx;
+	      codeview_custom_type *ct2;
+
+	      idx = (codeview_subtype *) xmalloc (sizeof (*idx));
+	      idx->next = NULL;
+	      idx->kind = LF_INDEX;
+	      idx->lf_index.type_num = 0;
+
+	      ct->lf_fieldlist.last_subtype->next = idx;
+	      ct->lf_fieldlist.last_subtype = idx;
+
+	      ct2 = (codeview_custom_type *)
+		xmalloc (sizeof (codeview_custom_type));
+
+	      ct2->next = ct;
+	      ct2->kind = LF_FIELDLIST;
+	      ct2->lf_fieldlist.length = 0;
+	      ct2->lf_fieldlist.subtypes = NULL;
+	      ct2->lf_fieldlist.last_subtype = NULL;
+
+	      ct = ct2;
+	    }
+
+	  ct->lf_fieldlist.length += el_len;
+
+	  if (ct->lf_fieldlist.last_subtype)
+	    ct->lf_fieldlist.last_subtype->next = el;
+	  else
+	    ct->lf_fieldlist.subtypes = el;
+
+	  ct->lf_fieldlist.last_subtype = el;
+	  num_members++;
+	}
+      while (c != first_child);
+    }
+
+  while (ct)
+    {
+      codeview_custom_type *ct2;
+
+      ct2 = ct->next;
+      ct->next = NULL;
+
+      if (ct->lf_fieldlist.last_subtype->kind == LF_INDEX)
+	ct->lf_fieldlist.last_subtype->lf_index.type_num = last_type;
+
+      add_custom_type (ct);
+      last_type = ct->num;
+
+      ct = ct2;
+    }
+
+  /* Now add an LF_STRUCTURE / LF_CLASS, pointing to the LF_FIELDLIST we just
+     added.  */
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+
+  switch (dw_get_die_tag (type))
+    {
+    case DW_TAG_class_type:
+      ct->kind = LF_CLASS;
+      break;
+
+    case DW_TAG_structure_type:
+      ct->kind = LF_STRUCTURE;
+      break;
+
+    default:
+      break;
+    }
+
+  ct->lf_structure.num_members = num_members;
+  ct->lf_structure.properties = 0;
+  ct->lf_structure.field_list = last_type;
+  ct->lf_structure.derived_from = 0;
+  ct->lf_structure.vshape = 0;
+  ct->lf_structure.length.neg = false;
+  ct->lf_structure.length.num = get_AT_unsigned (type, DW_AT_byte_size);
+
+  name = get_AT_string (type, DW_AT_name);
+
+  if (name)
+    ct->lf_structure.name = xstrdup (name);
+  else
+    ct->lf_structure.name = NULL;
 
   add_custom_type (ct);
 
@@ -1835,9 +2275,11 @@ get_type_num_enumeration_type (dw_die_ref type)
    everything for us.  */
 
 static uint32_t
-get_type_num (dw_die_ref type)
+get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
 {
   codeview_type **slot, *t;
+  uint32_t num;
+  bool is_fwd_ref;
 
   if (!type)
     return 0;
@@ -1846,46 +2288,68 @@ get_type_num (dw_die_ref type)
     types_htab = new hash_table<die_hasher> (10);
 
   slot = types_htab->find_slot_with_hash (type, htab_hash_pointer (type),
-					  INSERT);
+					  NO_INSERT);
 
-  if (*slot)
+  if (slot && *slot && (!no_fwd_ref || !(*slot)->is_fwd_ref))
     return (*slot)->num;
 
-  t = (codeview_type *) xmalloc (sizeof (codeview_type));
-  t->die = type;
+  is_fwd_ref = false;
 
   switch (dw_get_die_tag (type))
     {
     case DW_TAG_base_type:
-      t->num = get_type_num_base_type (type);
+      num = get_type_num_base_type (type);
       break;
 
     case DW_TAG_typedef:
       /* FIXME - signed longs typedef'd as "HRESULT" should get their
 		 own type (T_HRESULT) */
-      t->num = get_type_num (get_AT_ref (type, DW_AT_type));
+      num = get_type_num (get_AT_ref (type, DW_AT_type), in_struct, false);
       break;
 
     case DW_TAG_pointer_type:
-      t->num = get_type_num_pointer_type (type);
+      num = get_type_num_pointer_type (type, in_struct);
       break;
 
     case DW_TAG_const_type:
-      t->num = get_type_num_const_type (type);
+      num = get_type_num_const_type (type, in_struct);
       break;
 
     case DW_TAG_volatile_type:
-      t->num = get_type_num_volatile_type (type);
+      num = get_type_num_volatile_type (type, in_struct);
       break;
 
     case DW_TAG_enumeration_type:
-      t->num = get_type_num_enumeration_type (type);
+      num = get_type_num_enumeration_type (type, in_struct);
+      break;
+
+    case DW_TAG_structure_type:
+    case DW_TAG_class_type:
+      num = get_type_num_struct (type, in_struct, &is_fwd_ref);
       break;
 
     default:
-      t->num = 0;
+      num = 0;
       break;
     }
+
+  /* Check hash table again, and account for the fact that self-referential
+     structs will have created a forward reference to themselves.  */
+
+  slot = types_htab->find_slot_with_hash (type, htab_hash_pointer (type),
+					  INSERT);
+
+  if (*slot && (*slot)->is_fwd_ref && !is_fwd_ref)
+    {
+      (*slot)->num = num;
+      (*slot)->is_fwd_ref = false;
+      return num;
+    }
+
+  t = (codeview_type *) xmalloc (sizeof (codeview_type));
+  t->die = type;
+  t->num = num;
+  t->is_fwd_ref = is_fwd_ref;
 
   *slot = t;
 
@@ -1909,7 +2373,8 @@ add_variable (dw_die_ref die)
 
   s->next = NULL;
   s->kind = get_AT (die, DW_AT_external) ? S_GDATA32 : S_LDATA32;
-  s->data_symbol.type = get_type_num (get_AT_ref (die, DW_AT_type));
+  s->data_symbol.type = get_type_num (get_AT_ref (die, DW_AT_type), false,
+				      false);
   s->data_symbol.name = xstrdup (name);
   s->data_symbol.die = die;
 
@@ -1944,6 +2409,8 @@ codeview_debug_early_finish (dw_die_ref die)
       c = dw_get_die_sib (c);
     }
   while (c != first_child);
+
+  flush_deferred_types ();
 }
 
 #endif

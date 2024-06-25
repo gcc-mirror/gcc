@@ -66,7 +66,10 @@ along with GCC; see the file COPYING3.  If not see
 #define LF_FIELDLIST		0x1203
 #define LF_INDEX		0x1404
 #define LF_ENUMERATE		0x1502
+#define LF_CLASS		0x1504
+#define LF_STRUCTURE		0x1505
 #define LF_ENUM			0x1507
+#define LF_MEMBER		0x150d
 #define LF_CHAR			0x8000
 #define LF_SHORT		0x8001
 #define LF_USHORT		0x8002
