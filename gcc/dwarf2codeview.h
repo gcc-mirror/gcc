@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LF_ENUMERATE		0x1502
 #define LF_CLASS		0x1504
 #define LF_STRUCTURE		0x1505
+#define LF_UNION		0x1506
 #define LF_ENUM			0x1507
 #define LF_MEMBER		0x150d
 #define LF_CHAR			0x8000

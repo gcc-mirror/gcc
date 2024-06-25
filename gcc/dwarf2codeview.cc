@@ -1454,6 +1454,72 @@ write_lf_structure (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_UNION type.  */
+
+static void
+write_lf_union (codeview_custom_type *t)
+{
+  size_t name_len, leaf_len;
+
+  /* This is lf_union in binutils and lfUnion in Microsoft's cvinfo.h:
+
+    struct lf_union
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint16_t num_members;
+      uint16_t properties;
+      uint32_t field_list;
+      uint16_t length;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_structure.num_members);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_structure.properties);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_structure.field_list);
+  putc ('\n', asm_out_file);
+
+  leaf_len = 12 + write_cv_integer (&t->lf_structure.length);
+
+  if (t->lf_structure.name)
+    {
+      name_len = strlen (t->lf_structure.name) + 1;
+      ASM_OUTPUT_ASCII (asm_out_file, t->lf_structure.name, name_len);
+    }
+  else
+    {
+      static const char unnamed_struct[] = "<unnamed-tag>";
+
+      name_len = sizeof (unnamed_struct);
+      ASM_OUTPUT_ASCII (asm_out_file, unnamed_struct, name_len);
+    }
+
+  leaf_len += name_len;
+  write_cv_padding (4 - (leaf_len % 4));
+
+  free (t->lf_structure.name);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -1491,6 +1557,10 @@ write_custom_types (void)
 	case LF_STRUCTURE:
 	case LF_CLASS:
 	  write_lf_structure (custom_types);
+	  break;
+
+	case LF_UNION:
+	  write_lf_union (custom_types);
 	  break;
 	}
 
@@ -2026,7 +2096,7 @@ flush_deferred_types (void)
   last_deferred_type = NULL;
 }
 
-/* Add a forward definition for a struct or class.  */
+/* Add a forward definition for a struct, class, or union.  */
 
 static uint32_t
 add_struct_forward_def (dw_die_ref type)
@@ -2045,6 +2115,10 @@ add_struct_forward_def (dw_die_ref type)
 
     case DW_TAG_structure_type:
       ct->kind = LF_STRUCTURE;
+      break;
+
+    case DW_TAG_union_type:
+      ct->kind = LF_UNION;
       break;
 
     default:
@@ -2068,9 +2142,9 @@ add_struct_forward_def (dw_die_ref type)
   return ct->num;
 }
 
-/* Process a DW_TAG_structure_type or DW_TAG_class_type DIE, add an
-   LF_FIELDLIST and an LF_STRUCTURE / LF_CLASS type, and return the number of
-   the latter.  */
+/* Process a DW_TAG_structure_type, DW_TAG_class_type, or DW_TAG_union_type
+   DIE, add an LF_FIELDLIST and an LF_STRUCTURE / LF_CLASS / LF_UNION type,
+   and return the number of the latter.  */
 
 static uint32_t
 get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
@@ -2227,8 +2301,8 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
       ct = ct2;
     }
 
-  /* Now add an LF_STRUCTURE / LF_CLASS, pointing to the LF_FIELDLIST we just
-     added.  */
+  /* Now add an LF_STRUCTURE / LF_CLASS / LF_UNION, pointing to the
+     LF_FIELDLIST we just added.  */
 
   ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
 
@@ -2242,6 +2316,10 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 
     case DW_TAG_structure_type:
       ct->kind = LF_STRUCTURE;
+      break;
+
+    case DW_TAG_union_type:
+      ct->kind = LF_UNION;
       break;
 
     default:
@@ -2325,6 +2403,7 @@ get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
 
     case DW_TAG_structure_type:
     case DW_TAG_class_type:
+    case DW_TAG_union_type:
       num = get_type_num_struct (type, in_struct, &is_fwd_ref);
       break;
 
