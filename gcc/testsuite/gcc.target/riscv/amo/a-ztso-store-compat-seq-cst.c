@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* Verify that store mappings match the Ztso suggested mapping.  */
+/* Verify that store mappings match the PSABI doc's recommended compatibility
+   mapping.  */
 /* { dg-options "-O3" } */
 /* { dg-add-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */

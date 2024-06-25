@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* Verify that fence mappings match the Ztso suggested mapping.  */
+/* Verify that fence mappings match the PSABI doc's recommended mapping.  */
 /* { dg-options "-O3" } */
 /* { dg-add-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */

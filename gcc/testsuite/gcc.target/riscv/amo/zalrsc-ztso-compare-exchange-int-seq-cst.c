@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* Verify that compare exchange mappings match the Ztso suggested mapping.  */
+/* Verify that compare exchange mappings match the PSABI doc's recommended mapping.  */
 /* { dg-add-options riscv_zalrsc } */
 /* { dg-add-options riscv_ztso } */
 /* { dg-final { scan-assembler-times "lr.w.aqrl\t" 1 } } */

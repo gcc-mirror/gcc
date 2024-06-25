@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* Verify that atomic op mappings match Table A.6's recommended mapping.  */
+/* Verify that atomic op mappings match the PSABI doc's recommended mapping.  */
 /* { dg-options "-O3" } */
 /* { dg-add-options riscv_zaamo } */
 /* { dg-add-options riscv_ztso } */

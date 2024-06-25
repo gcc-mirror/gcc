@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* Verify that store mapping are compatible with Table A.6 & A.7.  */
+/* Verify that store mappings match the PSABI doc's recommended compatibility
+   mapping.  */
 /* { dg-options "-O3" } */
 /* { dg-remove-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */

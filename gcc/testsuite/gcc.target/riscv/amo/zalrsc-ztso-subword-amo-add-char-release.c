@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* Verify that subword atomic op mappings match the Ztso suggested mapping.  */
+/* Verify that subword atomic op mappings match the PSABI doc's suggested mapping.  */
 /* { dg-add-options riscv_zalrsc } */
 /* { dg-add-options riscv_ztso } */
 /* { dg-final { scan-assembler-times "lr.w\t" 1 } } */

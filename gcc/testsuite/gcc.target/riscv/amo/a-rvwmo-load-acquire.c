@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* Verify that load mappings match Table A.6's recommended mapping.  */
+/* Verify that load mappings match the PSABI doc's recommended mapping.  */
 /* { dg-options "-O3" } */
 /* { dg-remove-options riscv_ztso } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto"} } */
