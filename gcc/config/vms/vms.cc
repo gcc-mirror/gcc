@@ -141,6 +141,7 @@ vms_patch_builtins (void)
   if (builtin_decl_implicit_p (BUILT_IN_FWRITE_UNLOCKED))
     set_builtin_decl_implicit_p (BUILT_IN_FWRITE_UNLOCKED, false);
 
+  unsigned long_double_type_size = TYPE_PRECISION (long_double_type_node);
   /* Define aliases for names.  */
   for (i = 0; i < NBR_CRTL_NAMES; i++)
     {
@@ -179,7 +180,7 @@ vms_patch_builtins (void)
 	  vms_add_crtl_xlat (alt, nlen + 1, res, rlen);
 
 	  /* Long double version.  */
-	  res[rlen - 1] = (LONG_DOUBLE_TYPE_SIZE == 128 ? 'X' : 'T');
+	  res[rlen - 1] = (long_double_type_size == 128 ? 'X' : 'T');
 	  alt[nlen] = 'l';
 	  vms_add_crtl_xlat (alt, nlen + 1, res, rlen);
 
@@ -223,7 +224,7 @@ vms_patch_builtins (void)
       if (n->flags & VMS_CRTL_FLOAT64)
         res[rlen++] = 't';
 
-      if ((n->flags & VMS_CRTL_FLOAT128) && LONG_DOUBLE_TYPE_SIZE == 128)
+      if ((n->flags & VMS_CRTL_FLOAT128) && long_double_type_size == 128)
         res[rlen++] = 'x';
 
       memcpy (res + rlen, n->name, nlen);
