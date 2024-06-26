@@ -2459,8 +2459,10 @@ interclass_mathfn_icode (tree arg, tree fndecl)
       errno_set = true; builtin_optab = ilogb_optab; break;
     CASE_FLT_FN (BUILT_IN_ISINF):
       builtin_optab = isinf_optab; break;
-    case BUILT_IN_ISNORMAL:
     case BUILT_IN_ISFINITE:
+      builtin_optab = isfinite_optab;
+      break;
+    case BUILT_IN_ISNORMAL:
     CASE_FLT_FN (BUILT_IN_FINITE):
     case BUILT_IN_FINITED32:
     case BUILT_IN_FINITED64:
