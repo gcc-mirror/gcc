@@ -5010,7 +5010,7 @@ package body Exp_Ch4 is
       Target     : Entity_Id := Empty;
       Target_Typ : Entity_Id;
 
-      Optimize_Assignment_Stmt : Boolean;
+      Optimize_Assignment_Stmt : Boolean := False;
       --  Small optimization: when the case expression appears in the context
       --  of a safe assignment statement, expand into
 
@@ -5029,18 +5029,22 @@ package body Exp_Ch4 is
 
    begin
       --  If the expansion of the expression has been delayed, we wait for the
-      --  rewriting of its parent as an assignment statement; when that's done,
-      --  we optimize the assignment (the very purpose of the manipulation).
+      --  rewriting of its parent as an assignment or return statement; when
+      --  that's done, we optimize the assignment or the return statement (the
+      --  very purpose of the manipulation).
 
       if Expansion_Delayed (N) then
-         if Nkind (Par) /= N_Assignment_Statement then
+         if Nkind (Par) = N_Assignment_Statement then
+            Optimize_Assignment_Stmt := True;
+
+         elsif Optimize_Return_Stmt then
+            null;
+
+         else
             return;
          end if;
 
-         Optimize_Assignment_Stmt := True;
-
-      else
-         Optimize_Assignment_Stmt := False;
+         Set_Expansion_Delayed (N, False);
       end if;
 
       --  Check for MINIMIZED/ELIMINATED overflow mode
@@ -5191,6 +5195,13 @@ package body Exp_Ch4 is
                Stmts := New_List (
                  Make_Simple_Return_Statement (Alt_Loc,
                    Expression => Alt_Expr));
+
+               --  If the expression is itself a conditional expression whose
+               --  expansion has been delayed, analyze it again and expand it.
+
+               if Is_Delayed_Conditional_Expression (Alt_Expr) then
+                  Set_Analyzed (Alt_Expr, False);
+               end if;
 
             --  Take the unrestricted access of the expression value for non-
             --  scalar types. This approach avoids big copies and covers the
@@ -5493,7 +5504,7 @@ package body Exp_Ch4 is
       New_N    : Node_Id;
       New_Then : Node_Id;
 
-      Optimize_Assignment_Stmt : Boolean;
+      Optimize_Assignment_Stmt : Boolean := False;
       --  Small optimization: when the if expression appears in the context of
       --  a safe assignment statement, expand into
 
@@ -5510,18 +5521,22 @@ package body Exp_Ch4 is
 
    begin
       --  If the expansion of the expression has been delayed, we wait for the
-      --  rewriting of its parent as an assignment statement; when that's done,
-      --  we optimize the assignment (the very purpose of the manipulation).
+      --  rewriting of its parent as an assignment or return statement; when
+      --  that's done, we optimize the assignment or the return statement (the
+      --  very purpose of the manipulation).
 
       if Expansion_Delayed (N) then
-         if Nkind (Par) /= N_Assignment_Statement then
+         if Nkind (Par) = N_Assignment_Statement then
+            Optimize_Assignment_Stmt := True;
+
+         elsif Optimize_Return_Stmt then
+            null;
+
+         else
             return;
          end if;
 
-         Optimize_Assignment_Stmt := True;
-
-      else
-         Optimize_Assignment_Stmt := False;
+         Set_Expansion_Delayed (N, False);
       end if;
 
       --  Deal with non-standard booleans
@@ -5652,15 +5667,33 @@ package body Exp_Ch4 is
          Process_Transients_In_Expression (N, Then_Actions (N));
          Process_Transients_In_Expression (N, Else_Actions (N));
 
+         New_Then := Relocate_Node (Thenx);
+
+         --  If the expression is itself a conditional expression whose
+         --  expansion has been delayed, analyze it again and expand it.
+
+         if Is_Delayed_Conditional_Expression (New_Then) then
+            Set_Analyzed (New_Then, False);
+         end if;
+
+         New_Else := Relocate_Node (Elsex);
+
+         --  If the expression is itself a conditional expression whose
+         --  expansion has been delayed, analyze it again and expand it.
+
+         if Is_Delayed_Conditional_Expression (New_Else) then
+            Set_Analyzed (New_Else, False);
+         end if;
+
          New_If :=
            Make_Implicit_If_Statement (N,
              Condition       => Relocate_Node (Cond),
              Then_Statements => New_List (
-               Make_Simple_Return_Statement (Sloc (Thenx),
-                 Expression => Relocate_Node (Thenx))),
+               Make_Simple_Return_Statement (Sloc (New_Then),
+                 Expression => New_Then)),
              Else_Statements => New_List (
-               Make_Simple_Return_Statement (Sloc (Elsex),
-                 Expression => Relocate_Node (Elsex))));
+               Make_Simple_Return_Statement (Sloc (New_Else),
+                 Expression => New_Else)));
 
          --  Preserve the original context for which the if statement is
          --  being generated. This is needed by the finalization machinery

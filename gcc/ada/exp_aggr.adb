@@ -4265,6 +4265,19 @@ package body Exp_Aggr is
 
          or else (Nkind (Parent_Node) = N_Assignment_Statement
                    and then Inside_Init_Proc)
+
+         --  (Ada 2005) An inherently limited type in a return statement, which
+         --  will be handled in a build-in-place fashion, and may be rewritten
+         --  as an extended return and have its own finalization machinery.
+         --  In the case of a simple return, the aggregate needs to be delayed
+         --  until the scope for the return statement has been created, so
+         --  that any finalization chain will be associated with that scope.
+         --  For extended returns, we delay expansion to avoid the creation
+         --  of an unwanted transient scope that could result in premature
+         --  finalization of the return object (which is built in place
+         --  within the caller's scope).
+
+         or else Is_Build_In_Place_Aggregate_Return (N)
       then
          Node := N;
 
@@ -4285,21 +4298,6 @@ package body Exp_Aggr is
             Node := Parent (Node);
          end loop;
 
-         return;
-
-      --  (Ada 2005) An inherently limited type in a return statement, which
-      --  will be handled in a build-in-place fashion, and may be rewritten
-      --  as an extended return and have its own finalization machinery.
-      --  In the case of a simple return, the aggregate needs to be delayed
-      --  until the scope for the return statement has been created, so
-      --  that any finalization chain will be associated with that scope.
-      --  For extended returns, we delay expansion to avoid the creation
-      --  of an unwanted transient scope that could result in premature
-      --  finalization of the return object (which is built in place
-      --  within the caller's scope).
-
-      elsif Is_Build_In_Place_Aggregate_Return (N) then
-         Set_Expansion_Delayed (N);
          return;
       end if;
 
