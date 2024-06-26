@@ -1406,7 +1406,6 @@ build_contract_condition_function (tree fndecl, bool pre)
   /* Create and rename the unchecked function and give an internal name.  */
   tree fn = copy_fn_decl (fndecl);
   DECL_RESULT (fn) = NULL_TREE;
-  tree value_type = pre ? void_type_node : TREE_TYPE (TREE_TYPE (fn));
 
   /* Don't propagate declaration attributes to the checking function,
      including the original contracts.  */
@@ -1429,27 +1428,25 @@ build_contract_condition_function (tree fndecl, bool pre)
 	continue;
       }
       *last = build_tree_list (TREE_PURPOSE (arg_type), TREE_VALUE (arg_type));
-      last = &TREE_CHAIN (*last);
     }
 
-  if (pre || VOID_TYPE_P (value_type))
-    *last = void_list_node;
-  else
+  tree orig_fn_value_type = TREE_TYPE (TREE_TYPE (fn));
+  if (!pre && !VOID_TYPE_P (orig_fn_value_type))
     {
+      /* For post contracts that deal with a non-void function, append a
+	 parameter to pass the return value.  */
       tree name = get_identifier ("__r");
-      tree parm = build_lang_decl (PARM_DECL, name, value_type);
+      tree parm = build_lang_decl (PARM_DECL, name, orig_fn_value_type);
       DECL_CONTEXT (parm) = fn;
       DECL_ARTIFICIAL (parm) = true;
       DECL_ARGUMENTS (fn) = chainon (DECL_ARGUMENTS (fn), parm);
-
-      *last = build_tree_list (NULL_TREE, value_type);
-      TREE_CHAIN (*last) = void_list_node;
-
-      /* The handler is a void return.  */
-      value_type = void_type_node;
+      *last = build_tree_list (NULL_TREE, orig_fn_value_type);
+      last = &TREE_CHAIN (*last);
     }
+  *last = void_list_node;
+  /* The handlers are void fns.  */
+  TREE_TYPE (fn) = build_function_type (void_type_node, arg_types);
 
-  TREE_TYPE (fn) = build_function_type (value_type, arg_types);
   if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl))
     TREE_TYPE (fn) = build_method_type (class_type, TREE_TYPE (fn));
 
