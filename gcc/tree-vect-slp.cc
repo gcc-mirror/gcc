@@ -9629,16 +9629,6 @@ vect_schedule_slp_node (vec_info *vinfo,
       /* Emit other stmts after the children vectorized defs which is
 	 earliest possible.  */
       gimple *last_stmt = NULL;
-      if (auto loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
-	if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
-	    || LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
-	  {
-	    /* But avoid scheduling internal defs outside of the loop when
-	       we might have only implicitly tracked loop mask/len defs.  */
-	    gimple_stmt_iterator si
-	      = gsi_after_labels (LOOP_VINFO_LOOP (loop_vinfo)->header);
-	    last_stmt = *si;
-	  }
       bool seen_vector_def = false;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
 	if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
@@ -9747,12 +9737,19 @@ vect_schedule_slp_node (vec_info *vinfo,
       else
 	{
 	  si = gsi_for_stmt (last_stmt);
-	  /* When we're getting gsi_after_labels from the starting
-	     condition of a fully masked/len loop avoid insertion
-	     after a GIMPLE_COND that can appear as the only header
-	     stmt with early break vectorization.  */
-	  if (gimple_code (last_stmt) != GIMPLE_COND)
-	    gsi_next (&si);
+	  gsi_next (&si);
+
+	  /* Avoid scheduling internal defs outside of the loop when
+	     we might have only implicitly tracked loop mask/len defs.  */
+	  if (auto loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+	    if (LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
+		|| LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo))
+	      {
+		gimple_stmt_iterator si2
+		  = gsi_after_labels (LOOP_VINFO_LOOP (loop_vinfo)->header);
+		if (vect_stmt_dominates_stmt_p (last_stmt, *si2))
+		  si = si2;
+	      }
 	}
     }
 
