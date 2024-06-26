@@ -35587,6 +35587,22 @@ arm_predict_doloop_p (struct loop *loop)
 			    " loop bb complexity.\n");
       return false;
     }
+  else
+    {
+      gimple_stmt_iterator gsi = gsi_after_labels (loop->header);
+      while (!gsi_end_p (gsi))
+	{
+	  if (is_gimple_call (gsi_stmt (gsi))
+	      && !gimple_call_builtin_p (gsi_stmt (gsi)))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "Predict doloop failure due to"
+				    " call in loop.\n");
+	      return false;
+	    }
+	  gsi_next (&gsi);
+	}
+    }
 
   return true;
 }
