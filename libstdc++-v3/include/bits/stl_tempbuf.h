@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__builtin_expect(size_t(__len) > (size_t(-1) / sizeof(_Tp)), 0))
 	  return 0;
 
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
 	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  return (_Tp*) _GLIBCXX_OPERATOR_NEW(__len * sizeof(_Tp),
 					      align_val_t(alignof(_Tp)),
@@ -107,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_SIZED_DEALLOC(T, p, n) (p)
 #endif
 
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
 	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  {
 	    _GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(_Tp, __p, __len),
@@ -168,7 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     return_temporary_buffer(_Tp* __p)
     {
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
       if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	_GLIBCXX_OPERATOR_DELETE(__p, align_val_t(alignof(_Tp)));
       else
