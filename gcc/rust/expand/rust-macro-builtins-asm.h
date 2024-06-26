@@ -5,9 +5,10 @@
 #include "expected.h"
 #include "rust-macro-invoc-lexer.h"
 #include "rust/ast/rust-expr.h"
+#include "system.h"
 namespace Rust {
 
-enum InlineAsmParseError
+enum WARN_UNUSED_RESULT InlineAsmParseError
 {
   // Enum for InlineAsmParseError
 
