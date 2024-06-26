@@ -1203,17 +1203,18 @@
    (use (match_operand:V8HI 2 "register_operand"))]
   "TARGET_ALTIVEC"
 {
-  rtx (*fun) (rtx, rtx, rtx) = BYTES_BIG_ENDIAN ? gen_altivec_vmrghh_direct
-						: gen_altivec_vmrglh_direct;
-  if (!BYTES_BIG_ENDIAN)
-    std::swap (operands[1], operands[2]);
-  emit_insn (fun (operands[0], operands[1], operands[2]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (
+      gen_altivec_vmrghh_direct_be (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (
+      gen_altivec_vmrglh_direct_le (operands[0], operands[2], operands[1]));
   DONE;
 })
 
-(define_insn "altivec_vmrghh_direct"
+(define_insn "altivec_vmrghh_direct_be"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
-        (vec_select:V8HI
+	(vec_select:V8HI
 	  (vec_concat:V16HI
 	    (match_operand:V8HI 1 "register_operand" "v")
 	    (match_operand:V8HI 2 "register_operand" "v"))
@@ -1221,7 +1222,21 @@
 		     (const_int 1) (const_int 9)
 		     (const_int 2) (const_int 10)
 		     (const_int 3) (const_int 11)])))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC && BYTES_BIG_ENDIAN"
+  "vmrghh %0,%1,%2"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "altivec_vmrghh_direct_le"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+        (vec_select:V8HI
+	  (vec_concat:V16HI
+	    (match_operand:V8HI 2 "register_operand" "v")
+	    (match_operand:V8HI 1 "register_operand" "v"))
+	  (parallel [(const_int 4) (const_int 12)
+		     (const_int 5) (const_int 13)
+		     (const_int 6) (const_int 14)
+		     (const_int 7) (const_int 15)])))]
+  "TARGET_ALTIVEC && !BYTES_BIG_ENDIAN"
   "vmrghh %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
@@ -1344,15 +1359,16 @@
    (use (match_operand:V8HI 2 "register_operand"))]
   "TARGET_ALTIVEC"
 {
-  rtx (*fun) (rtx, rtx, rtx) = BYTES_BIG_ENDIAN ? gen_altivec_vmrglh_direct
-						: gen_altivec_vmrghh_direct;
-  if (!BYTES_BIG_ENDIAN)
-    std::swap (operands[1], operands[2]);
-  emit_insn (fun (operands[0], operands[1], operands[2]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (
+      gen_altivec_vmrglh_direct_be (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (
+      gen_altivec_vmrghh_direct_le (operands[0], operands[2], operands[1]));
   DONE;
 })
 
-(define_insn "altivec_vmrglh_direct"
+(define_insn "altivec_vmrglh_direct_be"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (vec_select:V8HI
 	  (vec_concat:V16HI
@@ -1362,7 +1378,21 @@
 		     (const_int 5) (const_int 13)
 		     (const_int 6) (const_int 14)
 		     (const_int 7) (const_int 15)])))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC && BYTES_BIG_ENDIAN"
+  "vmrglh %0,%1,%2"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "altivec_vmrglh_direct_le"
+  [(set (match_operand:V8HI 0 "register_operand" "=v")
+	(vec_select:V8HI
+	  (vec_concat:V16HI
+	    (match_operand:V8HI 2 "register_operand" "v")
+	    (match_operand:V8HI 1 "register_operand" "v"))
+	  (parallel [(const_int 0) (const_int 8)
+		     (const_int 1) (const_int 9)
+		     (const_int 2) (const_int 10)
+		     (const_int 3) (const_int 11)])))]
+  "TARGET_ALTIVEC && !BYTES_BIG_ENDIAN"
   "vmrglh %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
@@ -3831,13 +3861,13 @@
     {
       emit_insn (gen_altivec_vmuleub (ve, operands[1], operands[2]));
       emit_insn (gen_altivec_vmuloub (vo, operands[1], operands[2]));
-      emit_insn (gen_altivec_vmrghh_direct (operands[0], ve, vo));
+      emit_insn (gen_altivec_vmrghh (operands[0], ve, vo));
     }
   else
     {
       emit_insn (gen_altivec_vmuloub (ve, operands[1], operands[2]));
       emit_insn (gen_altivec_vmuleub (vo, operands[1], operands[2]));
-      emit_insn (gen_altivec_vmrghh_direct (operands[0], vo, ve));
+      emit_insn (gen_altivec_vmrglh (operands[0], ve, vo));
     }
   DONE;
 })
@@ -3856,13 +3886,13 @@
     {
       emit_insn (gen_altivec_vmuleub (ve, operands[1], operands[2]));
       emit_insn (gen_altivec_vmuloub (vo, operands[1], operands[2]));
-      emit_insn (gen_altivec_vmrglh_direct (operands[0], ve, vo));
+      emit_insn (gen_altivec_vmrglh (operands[0], ve, vo));
     }
   else
     {
       emit_insn (gen_altivec_vmuloub (ve, operands[1], operands[2]));
       emit_insn (gen_altivec_vmuleub (vo, operands[1], operands[2]));
-      emit_insn (gen_altivec_vmrglh_direct (operands[0], vo, ve));
+      emit_insn (gen_altivec_vmrghh (operands[0], ve, vo));
     }
   DONE;
 })
@@ -3881,13 +3911,13 @@
     {
       emit_insn (gen_altivec_vmulesb (ve, operands[1], operands[2]));
       emit_insn (gen_altivec_vmulosb (vo, operands[1], operands[2]));
-      emit_insn (gen_altivec_vmrghh_direct (operands[0], ve, vo));
+      emit_insn (gen_altivec_vmrghh (operands[0], ve, vo));
     }
   else
     {
       emit_insn (gen_altivec_vmulosb (ve, operands[1], operands[2]));
       emit_insn (gen_altivec_vmulesb (vo, operands[1], operands[2]));
-      emit_insn (gen_altivec_vmrghh_direct (operands[0], vo, ve));
+      emit_insn (gen_altivec_vmrglh (operands[0], ve, vo));
     }
   DONE;
 })
@@ -3906,13 +3936,13 @@
     {
       emit_insn (gen_altivec_vmulesb (ve, operands[1], operands[2]));
       emit_insn (gen_altivec_vmulosb (vo, operands[1], operands[2]));
-      emit_insn (gen_altivec_vmrglh_direct (operands[0], ve, vo));
+      emit_insn (gen_altivec_vmrglh (operands[0], ve, vo));
     }
   else
     {
       emit_insn (gen_altivec_vmulosb (ve, operands[1], operands[2]));
       emit_insn (gen_altivec_vmulesb (vo, operands[1], operands[2]));
-      emit_insn (gen_altivec_vmrglh_direct (operands[0], vo, ve));
+      emit_insn (gen_altivec_vmrghh (operands[0], ve, vo));
     }
   DONE;
 })
