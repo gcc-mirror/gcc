@@ -63,6 +63,9 @@ OPTAB_CX(fractuns_optab, "fractuns$Q$b$I$a2")
 OPTAB_CL(satfract_optab, "satfract$b$Q$a2", SAT_FRACT, "satfract", gen_satfract_conv_libfunc)
 OPTAB_CL(satfractuns_optab, "satfractuns$I$b$Q$a2", UNSIGNED_SAT_FRACT, "satfractuns", gen_satfractuns_conv_libfunc)
 
+OPTAB_CL(ustrunc_optab, "ustrunc$b$a2", US_TRUNCATE, "ustrunc", NULL)
+OPTAB_CL(sstrunc_optab, "sstrunc$b$a2", SS_TRUNCATE, "sstrunc", NULL)
+
 OPTAB_CD(sfixtrunc_optab, "fix_trunc$F$b$I$a2")
 OPTAB_CD(ufixtrunc_optab, "fixuns_trunc$F$b$I$a2")
 

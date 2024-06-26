@@ -4088,6 +4088,7 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
 
 extern bool gimple_unsigned_integer_sat_add (tree, tree*, tree (*)(tree));
 extern bool gimple_unsigned_integer_sat_sub (tree, tree*, tree (*)(tree));
+extern bool gimple_unsigned_integer_sat_trunc (tree, tree*, tree (*)(tree));
 
 static void
 build_saturation_binary_arith_call (gimple_stmt_iterator *gsi, internal_fn fn,
@@ -4214,6 +4215,36 @@ match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gphi *phi)
   if (gimple_unsigned_integer_sat_sub (phi_result, ops, NULL))
     build_saturation_binary_arith_call (gsi, phi, IFN_SAT_SUB, phi_result,
 					ops[0], ops[1]);
+}
+
+/*
+ * Try to match saturation unsigned sub.
+ * uint16_t x_4(D);
+ * uint8_t _6;
+ * overflow_5 = x_4(D) > 255;
+ * _1 = (unsigned char) x_4(D);
+ * _2 = (unsigned char) overflow_5;
+ * _3 = -_2;
+ * _6 = _1 | _3;
+ * =>
+ * _6 = .SAT_TRUNC (x_4(D));
+ * */
+static void
+match_unsigned_saturation_trunc (gimple_stmt_iterator *gsi, gassign *stmt)
+{
+  tree ops[1];
+  tree lhs = gimple_assign_lhs (stmt);
+  tree type = TREE_TYPE (lhs);
+
+  if (gimple_unsigned_integer_sat_trunc (lhs, ops, NULL)
+    && direct_internal_fn_supported_p (IFN_SAT_TRUNC,
+				       tree_pair (type, TREE_TYPE (ops[0])),
+				       OPTIMIZE_FOR_BOTH))
+    {
+      gcall *call = gimple_build_call_internal (IFN_SAT_TRUNC, 1, ops[0]);
+      gimple_call_set_lhs (call, lhs);
+      gsi_replace (gsi, call, /* update_eh_info */ true);
+    }
 }
 
 /* Recognize for unsigned x
@@ -6188,6 +6219,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
 	    case BIT_IOR_EXPR:
 	      match_unsigned_saturation_add (&gsi, as_a<gassign *> (stmt));
+	      match_unsigned_saturation_trunc (&gsi, as_a<gassign *> (stmt));
 	      /* fall-through  */
 	    case BIT_XOR_EXPR:
 	      match_uaddc_usubc (&gsi, stmt, code);
