@@ -1,3 +1,9 @@
+2024-06-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* rust-gcc.cc (float_type): Use TYPE_PRECISION of
+	{float,double,long_double}_type_node to replace
+	{FLOAT,DOUBLE,LONG_DOUBLE}_TYPE_SIZE.
+
 2024-06-11  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* Make-lang.in: Remove overazealous LIBS = -ldl -lpthread line, link

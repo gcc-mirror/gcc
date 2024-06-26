@@ -1,3 +1,22 @@
+2024-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/valarray_array.h (_Array_default_ctor): Remove.
+	(__valarray_default_construct): Inline it into here.
+	(_Array_init_ctor): Remove.
+	(__valarray_fill_construct): Inline it into here.
+	(_Array_copy_ctor): Remove.
+	(__valarray_copy_construct(const T*, const T*, T*)): Inline it
+	into here.
+	(__valarray_copy_construct(const T*, size_t, size_t, T*)):
+	Use _GLIBCXX17_CONSTEXPR for constant condition.
+
+2024-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Replace viewcvs links with cgit links.
+	* doc/xml/manual/allocator.xml: Likewise.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 2024-06-22  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/debug.xml: Move gcc.gnu.org link to https.

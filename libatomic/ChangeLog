@@ -1,3 +1,13 @@
+2024-06-25  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/linux/aarch64/atomic_16.S (libat_load_16): Add LRCPC3
+	variant.
+	(libat_store_16): Likewise.
+	* config/linux/aarch64/host-config.h (HWCAP2_LRCPC3): New.
+	(LSE2_LRCPC3_ATOP): Previously LSE2_ATOP.  New ifuncs guarded
+	under it.
+	(has_rcpc3): New.
+
 2024-06-12  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* config/linux/aarch64/atomic_16.S: Reorganize functions in

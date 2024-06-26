@@ -1,3 +1,521 @@
+2024-06-25  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (struct codeview_custom_type): Add lf_array to
+	union.
+	(write_lf_array): New function.
+	(write_custom_types): Call write_lf_array.
+	(get_type_num_array_type): New function.
+	(get_type_num): Handle DW_TAG_array_type DIEs.
+	* dwarf2codeview.h (LF_ARRAY): Define.
+
+2024-06-25  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (write_lf_union): New function.
+	(write_custom_types): Call write_lf_union.
+	(add_struct_forward_def): Handle DW_TAG_union_type DIEs.
+	(get_type_num_struct): Handle unions.
+	(get_type_num): Handle DW_TAG_union_type DIEs.
+	* dwarf2codeview.h (LF_UNION): Define.
+
+2024-06-25  Sergei Lewis  <slewis@rivosinc.com>
+
+	* config/riscv/riscv-protos.h (riscv_vector::expand_vec_cmpmem): New
+	function declaration.
+	* config/riscv/riscv-string.cc (riscv_vector::expand_vec_cmpmem): New
+	function.
+	* config/riscv/riscv.md (cmpmemsi): Try riscv_vector::expand_vec_cmpmem
+	for constant lengths.
+
+2024-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* doc/invoke.texi (vrp-block-limit): Document.
+	* params.opt (param=vrp-block-limit): New.
+	* tree-vrp.cc (fvrp_folder::execute): Invoke fast_vrp if block
+	count exceeds limit.
+
+2024-06-25  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/111673
+	* ira-color.cc (assign_hard_reg): Scale save/restore costs of
+	callee save registers with block frequency.
+
+2024-06-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/fr30/constraints.md (Q): Remove unused constraint.
+	* config/fr30/predicates.md (call_operand): Remove unused predicate.
+	* config/fr30/fr30.md (call, vall_value): Turn into expanders and
+	force the call address into a register.
+	(*call, *call_value): Adjust to only allow indirect calls.  Adjust
+	output template accordingly.
+
+2024-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* late-combine.cc (insn_combination::substitute_nondebug_use):
+	Reject second and subsequent uses if targetm.cannot_copy_insn_p
+	disallows copying.
+
+2024-06-25  Richard Biener  <rguenther@suse.de>
+
+	* gimple-range-gori.cc (gori_compute::may_recompute_p):
+	Call is_export_p with NULL bb.
+
+2024-06-25  Xi Ruoyao  <xry111@xry111.site>
+
+	* doc/rtl.texi (jump_table_data): Fix typos.
+
+2024-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* dbgcnt.def (late_combine): New debug counter.
+	* late-combine.cc (insn_combination::run): Use it.
+
+2024-06-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/115608
+	* config/sparc/linux64.h (CC1_SPEC): Pass -m32 for -mv8plus.
+
+2024-06-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/106594
+	PR target/115622
+	PR target/115633
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Move
+	default-disable of late-combine passes from here...
+	(rs6000_override_options_after_change): ... to here.
+
+2024-06-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* expmed.cc (store_bit_field_using_insv): Revert earlier change
+	to use force_subreg instead of simplify_gen_subreg.
+
+2024-06-25  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.cc(mips_expand_vec_cond_expr): Add extra
+	argument to info that opernads[3] is cmp_res already.
+	* config/mips/mips-protos.h(mips_expand_vec_cond_expr): Ditto.
+	* config/mips/mips-msa.md(vcond_mask): Define new expand.
+	(vcondu): Use mips_expand_vec_cond_expr with 4th argument.
+	(vcond): Ditto.
+
+2024-06-25  YunQiang Su  <syq@gcc.gnu.org>
+
+	* config/mips/mips.md(conditional_trap_reg): Output $0 instead
+	of 0 if !ISA_HAS_COND_TRAPI.
+
+2024-06-25  Evgeny Karpov  <Evgeny.Karpov@microsoft.com>
+
+	* config.gcc: Add winnt-dll.o, which contains the DLL
+	import/export implementation.
+	* config/aarch64/aarch64.cc (aarch64_load_symref_appropriately):
+	Add dllimport implementation.
+	(aarch64_expand_call): Likewise.
+	(aarch64_legitimize_address): Likewise.
+	* config/aarch64/cygming.h (SYMBOL_FLAG_DLLIMPORT): Modify MinGW
+	environment to support DLL import/export.
+	(SYMBOL_FLAG_DLLEXPORT): Likewise.
+	(SYMBOL_REF_DLLIMPORT_P): Likewise.
+	(SYMBOL_FLAG_STUBVAR): Likewise.
+	(SYMBOL_REF_STUBVAR_P): Likewise.
+	(TARGET_VALID_DLLIMPORT_ATTRIBUTE_P): Likewise.
+	(TARGET_ASM_FILE_END): Likewise.
+	(SUB_TARGET_RECORD_STUB): Likewise.
+	(GOT_ALIAS_SET): Likewise.
+	(PE_COFF_EXTERN_DECL_SHOULD_BE_LEGITIMIZED): Likewise.
+	(HAVE_64BIT_POINTERS): Likewise.
+
+2024-06-25  Evgeny Karpov  <Evgeny.Karpov@microsoft.com>
+
+	* config/i386/cygming.h
+	(PE_COFF_EXTERN_DECL_SHOULD_BE_LEGITIMIZED): Declare whether an
+	external declaration should be legitimized.
+	(HAVE_64BIT_POINTERS): Define whether the target supports 64-bit
+	pointers.
+	* config/mingw/mingw32.h (defined): Use the correct
+	DllMainCRTStartup entry function.
+	* config/mingw/winnt-dll.cc (defined): Exclude ix86-related code.
+
+2024-06-25  Evgeny Karpov  <Evgeny.Karpov@microsoft.com>
+
+	* config/aarch64/aarch64.cc: Extend the aarch64 attributes list.
+	* config/aarch64/cygming.h (SUBTARGET_ATTRIBUTE_TABLE): Define the
+	selectany attribute.
+
+2024-06-25  Evgeny Karpov  <Evgeny.Karpov@microsoft.com>
+
+	* config/i386/cygming.h (mingw_pe_record_stub): Rename functions
+	in mingw folder which will be reused for aarch64.
+	(TARGET_ASM_FILE_END): Update to new target-independent name.
+	(SUBTARGET_ATTRIBUTE_TABLE): Likewise.
+	(TARGET_VALID_DLLIMPORT_ATTRIBUTE_P): Likewise.
+	(SUB_TARGET_RECORD_STUB): Likewise.
+	* config/i386/i386-protos.h (ix86_handle_selectany_attribute):
+	Likewise.
+	(mingw_handle_selectany_attribute): Likewise.
+	(i386_pe_valid_dllimport_attribute_p): Likewise.
+	(mingw_pe_valid_dllimport_attribute_p): Likewise.
+	(i386_pe_file_end): Likewise.
+	(mingw_pe_file_end): Likewise.
+	(i386_pe_record_stub): Likewise.
+	(mingw_pe_record_stub): Likewise.
+	* config/mingw/winnt.cc (ix86_handle_selectany_attribute):
+	Likewise.
+	(mingw_handle_selectany_attribute): Likewise.
+	(i386_pe_valid_dllimport_attribute_p): Likewise.
+	(mingw_pe_valid_dllimport_attribute_p): Likewise.
+	(i386_pe_record_stub): Likewise.
+	(mingw_pe_record_stub): Likewise.
+	(i386_pe_file_end): Likewise.
+	(mingw_pe_file_end): Likewise.
+	* config/mingw/winnt.h (mingw_handle_selectany_attribute): Declate
+	functionality that will be reused by multiple targets.
+	(mingw_pe_file_end): Likewise.
+	(mingw_pe_record_stub): Likewise.
+	(mingw_pe_valid_dllimport_attribute_p): Likewise.
+
+2024-06-25  Evgeny Karpov  <Evgeny.Karpov@microsoft.com>
+
+	* config.gcc: Add winnt-dll.o, which contains the DLL
+	import/export implementation.
+	* config/i386/cygming.h (SUB_TARGET_RECORD_STUB): Remove the
+	old implementation. Rename the required function to MinGW.
+	Use MinGW implementation for COFF and nothing otherwise.
+	(GOT_ALIAS_SET): Likewise.
+	* config/i386/i386-expand.cc (ix86_expand_move): Likewise.
+	* config/i386/i386-expand.h (ix86_GOT_alias_set): Likewise.
+	(legitimize_pe_coff_symbol): Likewise.
+	* config/i386/i386-protos.h (i386_pe_record_stub): Likewise.
+	* config/i386/i386.cc (is_imported_p): Likewise.
+	(legitimate_pic_address_disp_p): Likewise.
+	(ix86_GOT_alias_set): Likewise.
+	(legitimize_pic_address): Likewise.
+	(legitimize_tls_address): Likewise.
+	(struct dllimport_hasher): Likewise.
+	(GTY): Likewise.
+	(get_dllimport_decl): Likewise.
+	(legitimize_pe_coff_extern_decl): Likewise.
+	(legitimize_dllimport_symbol): Likewise.
+	(legitimize_pe_coff_symbol): Likewise.
+	(ix86_legitimize_address): Likewise.
+	* config/i386/i386.h (GOT_ALIAS_SET): Likewise.
+	* config/mingw/winnt.cc (i386_pe_record_stub): Likewise.
+	(mingw_pe_record_stub): Likewise.
+	* config/mingw/winnt.h (mingw_pe_record_stub): Likewise.
+	* config/mingw/t-cygming: Add the winnt-dll.o compilation.
+	* config/mingw/winnt-dll.cc: New file.
+	* config/mingw/winnt-dll.h: New file.
+
+2024-06-25  Evgeny Karpov  <Evgeny.Karpov@microsoft.com>
+
+	* config.gcc: Move mingw_* declations to mingw.
+	* config/aarch64/aarch64-protos.h
+	(mingw_pe_maybe_record_exported_symbol): Likewise.
+	(mingw_pe_section_type_flags): Likewise.
+	(mingw_pe_unique_section): Likewise.
+	(mingw_pe_encode_section_info): Likewise.
+	* config/aarch64/cygming.h
+	(mingw_pe_asm_named_section): Likewise.
+	(mingw_pe_declare_function_type): Likewise.
+	* config/i386/i386-protos.h
+	(mingw_pe_unique_section): Likewise.
+	(mingw_pe_declare_function_type): Likewise.
+	(mingw_pe_maybe_record_exported_symbol): Likewise.
+	(mingw_pe_encode_section_info): Likewise.
+	(mingw_pe_section_type_flags): Likewise.
+	(mingw_pe_asm_named_section): Likewise.
+	* config/mingw/winnt.h: New file.
+
+2024-06-25  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (struct codeview_type): Add is_fwd_ref member.
+	(struct codeview_subtype): Add lf_member to union.
+	(struct codeview_custom_type): Add lf_structure to union.
+	(struct codeview_deferred_type): New structure.
+	(deferred_types, last_deferred_type): New variables.
+	(get_type_num): Add new args to prototype.
+	(write_lf_fieldlist): Handle LF_MEMBER subtypes.
+	(write_lf_structure): New function.
+	(write_custom_types): Call write_lf_structure.
+	(get_type_num_pointer_type): Add in_struct argument.
+	(get_type_num_const_type): Likewise.
+	(get_type_num_volatile_type): Likewise.
+	(add_enum_forward_def): Fix get_type_num call.
+	(get_type_num_enumeration_type): Add in-struct argument.
+	(add_deferred_type, flush_deferred_types): New functions.
+	(add_struct_forward_def, get_type_num_struct): Likewise.
+	(get_type_num): Handle self-referential structs.
+	(add_variable): Fix get_type_num call.
+	(codeview_debug_early_finish): Call flush_deferred_types.
+	* dwarf2codeview.h (LF_CLASS, LF_STRUCTURE, LF_MEMBER): Define.
+
+2024-06-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* coretypes.h (enum tree_index): Forward declaration.
+	* defaults.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* doc/rtl.texi: Update document by replacing {FLOAT,DOUBLE}_TYPE_SIZE
+	with C type {float,double}.
+	* doc/tm.texi.in: Document new hook mode_for_floating_type, remove
+	document entries for {FLOAT,DOUBLE,LONG_DOUBLE}_TYPE_SIZE and
+	update document for WIDEST_HARDWARE_FP_SIZE.
+	* doc/tm.texi: Regenerate.
+	* emit-rtl.cc (init_emit_once): Replace DOUBLE_TYPE_SIZE by
+	calling targetm.c.mode_for_floating_type with TI_DOUBLE_TYPE.
+	* real.h (REAL_VALUE_TO_TARGET_LONG_DOUBLE): Use TYPE_PRECISION of
+	long_double_type_node to replace LONG_DOUBLE_TYPE_SIZE.
+	* system.h (FLOAT_TYPE_SIZE): Poison.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* target.def (mode_for_floating_type): New hook.
+	* targhooks.cc (default_mode_for_floating_type): New function.
+	(default_scalar_mode_supported_p): Update macros
+	{FLOAT,DOUBLE,LONG_DOUBLE}_TYPE_SIZE by calling
+	targetm.c.mode_for_floating_type with
+	TI_{FLOAT,DOUBLE,LONG_DOUBLE}_TYPE.
+	* targhooks.h (default_mode_for_floating_type): New declaration.
+	* tree-core.h (enum tree_index): Specify underlying type unsigned
+	to sync with forward declaration in coretypes.h.
+	(NUM_FLOATN_TYPES): Explicitly convert to int.
+	(NUM_FLOATNX_TYPES): Likewise.
+	(NUM_FLOATN_NX_TYPES): Likewise.
+	* tree.cc (build_common_tree_nodes): Update macros
+	{FLOAT,DOUBLE,LONG_DOUBLE}_TYPE_SIZE by calling
+	targetm.c.mode_for_floating_type with
+	TI_{FLOAT,DOUBLE,LONG_DOUBLE}_TYPE and set type mode accordingly.
+	* config/arc/arc.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/bpf/bpf.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/epiphany/epiphany.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/fr30/fr30.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/frv/frv.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/ft32/ft32.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/gcn/gcn.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/iq2000/iq2000.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/lm32/lm32.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/m32c/m32c.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/m32r/m32r.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/microblaze/microblaze.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/mmix/mmix.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/moxie/moxie.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/msp430/msp430.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/nds32/nds32.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/nios2/nios2.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/nvptx/nvptx.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/or1k/or1k.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/pdp11/pdp11.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/pru/pru.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/stormy16/stormy16.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/visium/visium.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/xtensa/xtensa.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/rs6000/rs6000.cc (TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	(rs6000_c_mode_for_floating_type): New function.
+	* config/rs6000/rs6000.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_c_mode_for_floating_type):
+	New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/aarch64/aarch64.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/alpha/alpha.cc (alpha_c_mode_for_floating_type): New
+	function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/alpha/alpha.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/avr/avr.cc (avr_c_mode_for_floating_type): New
+	function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/avr/avr.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/i386/i386.cc (ix86_c_mode_for_floating_type): New
+	function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/i386/i386.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/ia64/ia64.cc (ia64_c_mode_for_floating_type): New
+	function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/ia64/ia64.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/riscv/riscv.cc (riscv_c_mode_for_floating_type): New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/riscv/riscv.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/rl78/rl78.cc (TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	(rl78_c_mode_for_floating_type): New function.
+	* config/rl78/rl78.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/rx/rx.cc (rx_c_mode_for_floating_type): New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/rx/rx.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/s390/s390.cc (s390_c_mode_for_floating_type): New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/s390/s390.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/sh/sh.cc (sh_c_mode_for_floating_type): New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/sh/sh.h (LONG_DOUBLE_TYPE_SIZE): Remove.
+	* config/h8300/h8300.cc (h8300_c_mode_for_floating_type): New
+	function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/h8300/h8300.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Remove.
+	(LONG_DOUBLE_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_MODE): New macro.
+	* config/h8300/linux.h (DOUBLE_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_MODE): New macro.
+	* config/loongarch/loongarch.cc (loongarch_c_mode_for_floating_type):
+	New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/loongarch/loongarch.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Remove.
+	(LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(LA_LONG_DOUBLE_TYPE_SIZE): ... this.
+	(UNITS_PER_FPVALUE): Replace LONG_DOUBLE_TYPE_SIZE with
+	LA_LONG_DOUBLE_TYPE_SIZE.
+	(MAX_FIXED_MODE_SIZE): Likewise.
+	(STRUCTURE_SIZE_BOUNDARY): Likewise.
+	(BIGGEST_ALIGNMENT): Likewise.
+	* config/m68k/m68k.cc (m68k_c_mode_for_floating_type): New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/m68k/m68k.h (LONG_DOUBLE_TYPE_SIZE): Remove.
+	(LONG_DOUBLE_TYPE_MODE): New macro.
+	* config/m68k/netbsd-elf.h (LONG_DOUBLE_TYPE_SIZE): Remove.
+	(LONG_DOUBLE_TYPE_MODE): New macro.
+	* config/mips/mips.cc (mips_c_mode_for_floating_type): New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	* config/mips/mips.h (UNITS_PER_FPVALUE): Replace LONG_DOUBLE_TYPE_SIZE
+	with MIPS_LONG_DOUBLE_TYPE_SIZE.
+	(MAX_FIXED_MODE_SIZE): Likewise.
+	(STRUCTURE_SIZE_BOUNDARY): Likewise.
+	(BIGGEST_ALIGNMENT): Likewise.
+	(FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Remove.
+	(LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(MIPS_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/mips/n32-elf.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(MIPS_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/pa/pa.cc (pa_c_mode_for_floating_type): New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	(pa_scalar_mode_supported_p): Rename FLOAT_TYPE_SIZE to
+	PA_FLOAT_TYPE_SIZE, rename DOUBLE_TYPE_SIZE to PA_DOUBLE_TYPE_SIZE
+	and rename LONG_DOUBLE_TYPE_SIZE to PA_LONG_DOUBLE_TYPE_SIZE.
+	* config/pa/pa.h (PA_FLOAT_TYPE_SIZE): New macro.
+	(PA_DOUBLE_TYPE_SIZE): Likewise.
+	(PA_LONG_DOUBLE_TYPE_SIZE): Likewise.
+	* config/pa/pa-64.h (FLOAT_TYPE_SIZE): Rename to ...
+	(PA_FLOAT_TYPE_SIZE): ... this.
+	(DOUBLE_TYPE_SIZE): Rename to ...
+	(PA_DOUBLE_TYPE_SIZE): ... this.
+	(LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(PA_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/pa/pa-hpux.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(PA_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/sparc/sparc.cc (sparc_c_mode_for_floating_type): New function.
+	(TARGET_C_MODE_FOR_FLOATING_TYPE): New macro.
+	(FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Likewise.
+	(LONG_DOUBLE_TYPE_SIZE): Likewise.
+	(sparc_type_code): Replace FLOAT_TYPE_SIZE with TYPE_PRECISION of
+	float_type_node.
+	* config/sparc/sparc.h (FLOAT_TYPE_SIZE): Remove.
+	(DOUBLE_TYPE_SIZE): Remove.
+	* config/sparc/freebsd.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(SPARC_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/sparc/linux.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(SPARC_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/sparc/linux64.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(SPARC_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/sparc/netbsd-elf.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(SPARC_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/sparc/openbsd64.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(SPARC_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/sparc/sol2.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(SPARC_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/sparc/sp-elf.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(SPARC_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/sparc/sp64-elf.h (LONG_DOUBLE_TYPE_SIZE): Rename to ...
+	(SPARC_LONG_DOUBLE_TYPE_SIZE): ... this.
+	* config/bfin/bfin.h (FLOAT_TYPE_SIZE): Rename to ...
+	(BFIN_FLOAT_TYPE_SIZE): ... this.
+	(DOUBLE_TYPE_SIZE): Rename to ...
+	(BFIN_DOUBLE_TYPE_SIZE): ... this.
+	(LONG_DOUBLE_TYPE_SIZE): Remove.
+	(UNITS_PER_FLOAT): Replace FLOAT_TYPE_SIZE with BFIN_FLOAT_TYPE_SIZE.
+	(UNITS_PER_DOUBLE): Replace DOUBLE_TYPE_SIZE with
+	BFIN_DOUBLE_TYPE_SIZE.
+
+2024-06-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/vms/vms.cc (vms_patch_builtins): Use TYPE_PRECISION of
+	long_double_type_node to replace LONG_DOUBLE_TYPE_SIZE.
+
+2024-06-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-vrp.cc (execute_fast_vrp): Do not use transitive relations.
+	* value-query.cc (range_query::create_relation_oracle): Add
+	parameter to enable transitive relations.
+	* value-query.h (range_query::create_relation_oracle): Likewise.
+	* value-relation.h (dom_oracle::dom_oracle): Likewise.
+	* value-relation.cc (dom_oracle::dom_oracle): Likewise.
+	(dom_oracle::register_transitives): Check transitive flag.
+
 2024-06-24  Sergei Lewis  <slewis@rivosinc.com>
 
 	* config/riscv/riscv-protos.h (riscv_vector::expand_vec_setmem): New

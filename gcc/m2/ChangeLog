@@ -1,3 +1,89 @@
+2024-06-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GenGCC.mod (QuadCondition): Remove.
+	(FoldIfEqu): Remove WalkAction parameter.
+	(FoldIfNotEqu): Ditto.
+	(FoldIfGreEqu): Ditto.
+	(FoldIfLessEqu): Ditto.
+	(FoldIfGre): Ditto.
+	(FoldIfLess): Ditto.
+	(FoldIfIn): Ditto.
+	(FoldIfNotIn): Ditto.
+	* gm2-compiler/M2Quads.mod (GenQuadOTypeUniquetok): Remove.
+
+2024-06-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115540
+	* gm2-libs-ch/termios.c (cfmakeraw): Remove return.
+	* mc-boot-ch/Gtermios.cc (cfmakeraw): Remove return.
+	* pge-boot/Gtermios.cc (cfmakeraw): Remove return.
+
+2024-06-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115536
+	* gm2-compiler/M2BasicBlock.def (GetBasicBlockScope): New procedure.
+	(GetBasicBlockStart): Ditto.
+	(GetBasicBlockEnd): Ditto.
+	(IsBasicBlockFirst): New procedure function.
+	* gm2-compiler/M2BasicBlock.mod (ConvertQuads2BasicBlock): Allow
+	conditional boolean quads to be removed.
+	(GetBasicBlockScope): Implement new procedure.
+	(GetBasicBlockStart): Ditto.
+	(GetBasicBlockEnd): Ditto.
+	(IsBasicBlockFirst): Implement new procedure function.
+	* gm2-compiler/M2GCCDeclare.def (FoldConstants): New parameter
+	declaration.
+	* gm2-compiler/M2GCCDeclare.mod (FoldConstants): New parameter
+	declaration.
+	(DeclareTypesConstantsProceduresInRange): Recreate basic blocks
+	after resolving constant expressions.
+	(CodeBecomes): Guard IsVariableSSA with IsVar.
+	* gm2-compiler/M2GenGCC.def (ResolveConstantExpressions): New
+	parameter declaration.
+	* gm2-compiler/M2GenGCC.mod (FoldIfLess): Remove relop pattern
+	detection.
+	(FoldIfGre): Ditto.
+	(FoldIfLessEqu): Ditto.
+	(FoldIfGreEqu): Ditto.
+	(FoldIfIn): Ditto.
+	(FoldIfNotIn): Ditto.
+	(FoldIfEqu): Ditto.
+	(FoldIfNotEqu): Ditto.
+	(FoldBecomes): Add BasicBlock parameter and allow conditional
+	boolean becomes to be folded in the first basic block.
+	(ResolveConstantExpressions): Reimplement.
+	* gm2-compiler/M2Quads.def (IsConstQuad): New procedure function.
+	(IsConditionalBooleanQuad): Ditto.
+	* gm2-compiler/M2Quads.mod (IsConstQuad): Implement new procedure function.
+	(IsConditionalBooleanQuad): Ditto.
+	(MoveWithMode): Use GenQuadOTypetok.
+	(IsInitialisingConst): Rewrite using OpUsesOp1.
+	(OpUsesOp1): New procedure function.
+	(doBuildAssignment): Mark des as a VarConditional.
+	(ConvertBooleanToVariable): Call PutVarConditional.
+	(DumpQuadSummary): New procedure.
+	(BuildRelOpFromBoolean): Updated debugging and improved comments.
+	(BuildRelOp): Only call BuildRelOpFromBoolean if we are in a const
+	expression and both operands are boolean relops.
+	(GenQuadOTypeUniquetok): New procedure.
+	(BackPatch): Correct comment.
+	* gm2-compiler/SymbolTable.def (PutVarConditional): New procedure.
+	(IsVarConditional): New procedure function.
+	* gm2-compiler/SymbolTable.mod (PutVarConditional): Implement new
+	procedure.
+	(IsVarConditional): Implement new procedure function.
+	(SymConstVar): New field IsConditional.
+	(SymVar): New field IsConditional.
+	(MakeVar): Initialize IsConditional field.
+	(MakeConstVar): Initialize IsConditional field.
+	* gm2-compiler/M2Swig.mod (DoBasicBlock): Change parameters to
+	use BasicBlock.
+	* gm2-compiler/M2Code.mod (SecondDeclareAndOptimize): Use iterator
+	to FoldConstants over basic block list.
+	* gm2-compiler/M2SymInit.mod (AppendEntry): Replace parameters
+	with BasicBlock.
+	* gm2-compiler/P3Build.bnf (Relation): Call RecordOp for #, <> and =.
+
 2024-06-17  Kewen Lin  <linkw@linux.ibm.com>
 
 	* gm2-gcc/m2type.cc (build_m2_short_real_node): Adjust assertion with

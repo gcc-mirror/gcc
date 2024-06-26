@@ -1,3 +1,48 @@
+2024-06-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115504
+	* semantics.cc (finish_decltype_type): Don't strip the reference
+	type (if any) of a capture proxy's captured variable.
+
+2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115476
+	* semantics.cc (finish_trait_expr)
+	<case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS>: Move below to call
+	check_trait_type with kind==2.
+
+2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115425
+	* pt.cc (tsubst_pack_expansion): Return error_mark_node if
+	make_pack_expansion doesn't work out.
+
+2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115501
+	* rtti.cc (build_dynamic_cast_1): Return if dcast_fn is erroneous.
+
+2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115198
+	* pt.cc (alias_ctad_tweaks): Update DECL_NAME of the transformed
+	guides.
+
+2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115358
+	* decl2.cc (mark_used): Call maybe_instantiate_decl for an array
+	variable with unknown bound.
+	* semantics.cc (finish_decltype_type): Remove now redundant
+	handling of array variables with unknown bound.
+	* typeck.cc (cxx_sizeof_expr): Likewise.
+
+2024-06-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/115587
+	* parser.cc (cp_parser_omp_loop_nest): Move initializations to
+	point of declaration.
+
 2024-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/111343

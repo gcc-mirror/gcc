@@ -1,3 +1,8 @@
+2024-06-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/115624
+	* c.opt (Wnrvo): Add Warning property.
+
 2024-06-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-opts.cc: Replace include of "tree-diagnostic.h" with

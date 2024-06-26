@@ -1,3 +1,10 @@
+2024-06-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* jit-recording.cc (recording::memento_of_get_type::get_size): Update
+	macros {FLOAT,DOUBLE,LONG_DOUBLE}_TYPE_SIZE by calling
+	targetm.c.mode_for_floating_type with
+	TI_{FLOAT,DOUBLE,LONG_DOUBLE}_TYPE.
+
 2024-06-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit-recording.cc (recording::function::dump_to_dot): Update for

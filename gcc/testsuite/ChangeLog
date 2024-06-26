@@ -1,3 +1,121 @@
+2024-06-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115504
+	* g++.dg/cpp1y/decltype-auto8.C: New test.
+
+2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115476
+	* g++.dg/cpp1z/has-unique-obj-representations4.C: New test.
+
+2024-06-25  Sergei Lewis  <slewis@rivosinc.com>
+
+	* gcc.target/riscv/rvv/base/cmpmem-1.c: New codegen tests
+	* gcc.target/riscv/rvv/base/cmpmem-2.c: New execution tests
+	* gcc.target/riscv/rvv/base/cmpmem-3.c: New codegen tests
+	* gcc.target/riscv/rvv/base/cmpmem-4.c: New codegen tests
+	* gcc.target/riscv/rvv/autovec/vls/misalign-1.c: Turn off vector mem* and
+	str* handling.
+
+2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115425
+	* g++.dg/cpp2a/lambda-generic12.C: New test.
+
+2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115501
+	* g++.dg/rtti/dyncast8.C: New test.
+
+2024-06-25  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/111673
+	* gcc.target/powerpc/pr111673.c: New test.
+
+2024-06-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115536
+	* gm2/iso/const/pass/constbool4.mod: New test.
+	* gm2/iso/const/pass/constbool5.mod: New test.
+	* gm2/iso/run/pass/condtest2.mod: New test.
+	* gm2/iso/run/pass/condtest3.mod: New test.
+	* gm2/iso/run/pass/condtest4.mod: New test.
+	* gm2/iso/run/pass/condtest5.mod: New test.
+	* gm2/iso/run/pass/constbool4.mod: New test.
+
+2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115198
+	* g++.dg/cpp2a/class-deduction-alias22.C: New test.
+
+2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115358
+	* g++.dg/template/array37.C: New test.
+
+2024-06-25  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114930
+	PR c/115502
+	* gcc.dg/pr114574-1.c: Require lto effective target.
+	* gcc.dg/pr114574-2.c: Likewise.
+	* gcc.dg/pr114930.c: New test.
+	* gcc.dg/pr115502.c: New test.
+
+2024-06-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv-nofm.c: Adjust
+	expected test output after late-combine changes.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv64gcv-nofm.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv-nofm.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv-nofm.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv32gcv.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv64gcv.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv32gcv-nofm.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv64gcv-nofm.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv-nofm.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv64gcv-nofm.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv32gcv.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_copysign-rv64gcv.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-1.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-2.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fadd-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-1.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-5.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fma_fnma-6.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-1.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-2.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-1.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-2.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmax_zvfh-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-1.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-2.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-1.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-2.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmin_zvfh-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-1.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-5.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fms_fnms-6.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-1.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-2.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/cond/cond_fmul-5.c: Likewise.
+
 2024-06-24  Sergei Lewis  <slewis@rivosinc.com>
 
 	* gcc.target/riscv/rvv/base/setmem-1.c: New tests
