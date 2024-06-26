@@ -3151,17 +3151,20 @@ layout::update_any_effects () const
 /* If LOC is within the spans of lines that will already be printed for
    this gcc_rich_location, then add it as a secondary location and return true.
 
-   Otherwise return false.  */
+   Otherwise return false.
+
+   Use CTXT for determining how spans of lines would be printed.  */
 
 bool
-gcc_rich_location::add_location_if_nearby (location_t loc,
+gcc_rich_location::add_location_if_nearby (const diagnostic_context &ctxt,
+					   location_t loc,
 					   bool restrict_to_current_line_spans,
 					   const range_label *label)
 {
   /* Use the layout location-handling logic to sanitize LOC,
      filtering it to the current line spans within a temporary
      layout instance.  */
-  layout layout (*global_dc, *this, DK_ERROR, nullptr);
+  layout layout (ctxt, *this, DK_ERROR, nullptr);
   location_range loc_range;
   loc_range.m_loc = loc;
   loc_range.m_range_display_kind = SHOW_RANGE_WITHOUT_CARET;
@@ -4817,12 +4820,7 @@ test_add_location_if_nearby (const line_table_case &case_)
        "  double x;\n"                              /* line 4.  */
        "  double y;\n"                              /* line 5.  */
        ";\n");                                      /* line 6.  */
-  temp_source_file tmp (SELFTEST_LOCATION, ".c", content,
-
-			/* gcc_rich_location::add_location_if_nearby implicitly
-			   uses global_dc's file_cache, so we need to evict
-			   tmp when we're done.  */
-			&global_dc->get_file_cache ());
+  temp_source_file tmp (SELFTEST_LOCATION, ".c", content, nullptr);
   line_table_test ltt (case_);
 
   const line_map_ordinary *ord_map
@@ -4841,15 +4839,16 @@ test_add_location_if_nearby (const line_table_case &case_)
   /* Test of add_location_if_nearby on the same line as the
      primary location.  */
   {
+    test_diagnostic_context dc;
     const location_t missing_close_brace_1_39
       = linemap_position_for_line_and_column (line_table, ord_map, 1, 39);
     const location_t matching_open_brace_1_18
       = linemap_position_for_line_and_column (line_table, ord_map, 1, 18);
     gcc_rich_location richloc (missing_close_brace_1_39);
-    bool added = richloc.add_location_if_nearby (matching_open_brace_1_18);
+    bool added = richloc.add_location_if_nearby (dc,
+						 matching_open_brace_1_18);
     ASSERT_TRUE (added);
     ASSERT_EQ (2, richloc.get_num_locations ());
-    test_diagnostic_context dc;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ (" struct same_line { double x; double y; ;\n"
 		  "                  ~                    ^\n",
@@ -4859,12 +4858,14 @@ test_add_location_if_nearby (const line_table_case &case_)
   /* Test of add_location_if_nearby on a different line to the
      primary location.  */
   {
+    test_diagnostic_context dc;
     const location_t missing_close_brace_6_1
       = linemap_position_for_line_and_column (line_table, ord_map, 6, 1);
     const location_t matching_open_brace_3_1
       = linemap_position_for_line_and_column (line_table, ord_map, 3, 1);
     gcc_rich_location richloc (missing_close_brace_6_1);
-    bool added = richloc.add_location_if_nearby (matching_open_brace_3_1);
+    bool added = richloc.add_location_if_nearby (dc,
+						 matching_open_brace_3_1);
     ASSERT_FALSE (added);
     ASSERT_EQ (1, richloc.get_num_locations ());
   }

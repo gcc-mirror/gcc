@@ -1248,7 +1248,7 @@ c_parser_require (c_parser *parser,
       bool added_matching_location = false;
       if (matching_location != UNKNOWN_LOCATION)
 	added_matching_location
-	  = richloc.add_location_if_nearby (matching_location);
+	  = richloc.add_location_if_nearby (*global_dc, matching_location);
 
       if (c_parser_error_richloc (parser, msgid, &richloc))
 	/* If we weren't able to consolidate matching_location, then

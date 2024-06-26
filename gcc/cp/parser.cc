@@ -3297,7 +3297,8 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
 	   secondary range within the main diagnostic.  */
 	if (matching_location != UNKNOWN_LOCATION)
 	  added_matching_location
-	    = richloc.add_location_if_nearby (matching_location);
+	    = richloc.add_location_if_nearby (*global_dc,
+					      matching_location);
       }
 
   /* If we were parsing a string-literal and there is an unknown name
@@ -16651,7 +16652,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 		break;
 	      gcc_rich_location richloc (token->location);
 	      location_t oloc = decl_specs->locations[ds_storage_class];
-	      richloc.add_location_if_nearby (oloc);
+	      richloc.add_location_if_nearby (*global_dc, oloc);
 	      error_at (&richloc,
 			"%<typedef%> specifier conflicts with %qs",
 			cp_storage_class_name[decl_specs->storage_class]);
@@ -34429,7 +34430,8 @@ cp_parser_set_storage_class (cp_parser *parser,
       if (decl_specs->conflicting_specifiers_p)
 	return;
       gcc_rich_location richloc (token->location);
-      richloc.add_location_if_nearby (decl_specs->locations[ds_storage_class]);
+      richloc.add_location_if_nearby (*global_dc,
+				      decl_specs->locations[ds_storage_class]);
       if (decl_specs->storage_class == storage_class)
 	error_at (&richloc, "duplicate %qD specifier", ridpointers[keyword]);
       else
@@ -34460,7 +34462,8 @@ cp_parser_set_storage_class (cp_parser *parser,
       && !decl_specs->conflicting_specifiers_p)
     {
       gcc_rich_location richloc (token->location);
-      richloc.add_location_if_nearby (decl_specs->locations[ds_typedef]);
+      richloc.add_location_if_nearby (*global_dc,
+				      decl_specs->locations[ds_typedef]);
       error_at (&richloc,
 		"%qD specifier conflicts with %<typedef%>",
 		ridpointers[keyword]);
