@@ -1,3 +1,12 @@
+2024-06-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2024-06-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/115587
+	* parser.cc (cp_parser_omp_loop_nest): Move initializations to
+	point of declaration.
+
 2024-06-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

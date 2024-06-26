@@ -1,3 +1,8 @@
+2024-06-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/115608
+	* config/sparc/linux64.h (CC1_SPEC): Pass -m32 for -mv8plus.
+
 2024-06-24  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
