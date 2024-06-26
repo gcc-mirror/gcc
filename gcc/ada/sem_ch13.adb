@@ -6079,24 +6079,6 @@ package body Sem_Ch13 is
          Check_Restriction_No_Specification_Of_Aspect (N);
       end if;
 
-      --  Ignore some selected attributes in CodePeer mode since they are not
-      --  relevant in this context.
-
-      if CodePeer_Mode then
-         case Id is
-
-            --  Ignore Component_Size in CodePeer mode, to avoid changing the
-            --  internal representation of types by implicitly packing them.
-
-            when Attribute_Component_Size =>
-               Rewrite (N, Make_Null_Statement (Sloc (N)));
-               return;
-
-            when others =>
-               null;
-         end case;
-      end if;
-
       --  Process Ignore_Rep_Clauses option
 
       if Ignore_Rep_Clauses then
