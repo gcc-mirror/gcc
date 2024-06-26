@@ -2183,6 +2183,34 @@
 	     (match_dup 2)))
       (unspec [(const_int 0)] UNSPEC_MASKOP)])])
 
+(define_insn "*klshrsi3_1_zext"
+  [(set (match_operand:DI 0 "register_operand" "=k")
+	(zero_extend:DI
+	  (lshiftrt:SI (match_operand:SI 1 "register_operand" "k")
+		       (match_operand 2 "const_0_to_31_operand" "I"))))
+      (unspec [(const_int 0)] UNSPEC_MASKOP)]
+  "TARGET_AVX512BW"
+  "kshiftrd\t{%2, %1, %0|%0, %1, %2}"
+    [(set_attr "type" "msklog")
+   (set_attr "prefix" "vex")
+   (set_attr "mode" "SI")])
+
+(define_split
+  [(set (match_operand:DI 0 "mask_reg_operand")
+	(zero_extend:DI
+	  (lshiftrt:SI
+	    (match_operand:SI 1 "mask_reg_operand")
+	    (match_operand 2 "const_0_to_31_operand"))))
+    (clobber (reg:CC FLAGS_REG))]
+  "TARGET_AVX512BW && reload_completed"
+  [(parallel
+     [(set (match_dup 0)
+	   (zero_extend:DI
+	     (lshiftrt:SI
+	       (match_dup 1)
+	       (match_dup 2))))
+      (unspec [(const_int 0)] UNSPEC_MASKOP)])])
+
 (define_insn "ktest<mode>"
   [(set (reg:CC FLAGS_REG)
 	(unspec:CC
