@@ -11904,7 +11904,6 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 		{
 		  expr = DECL_CAPTURED_VARIABLE (expr);
 		  type = TREE_TYPE (expr);
-		  type = non_reference (type);
 		}
 	      else
 		{
