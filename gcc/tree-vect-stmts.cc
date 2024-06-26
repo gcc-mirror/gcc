@@ -10512,9 +10512,14 @@ vectorizable_load (vec_info *vinfo,
 	     whole group, not only the number of vector stmts the
 	     permutation result fits in.  */
 	  unsigned scalar_lanes = SLP_TREE_LANES (slp_node);
-	  if (slp_perm
-	      && (group_size != scalar_lanes 
-		  || !multiple_p (nunits, group_size)))
+	  if (nested_in_vect_loop)
+	    /* We do not support grouped accesses in a nested loop,
+	       instead the access is contiguous but it might be
+	       permuted.  No gap adjustment is needed though.  */
+	    vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+	  else if (slp_perm
+		   && (group_size != scalar_lanes
+		       || !multiple_p (nunits, group_size)))
 	    {
 	      /* We don't yet generate such SLP_TREE_LOAD_PERMUTATIONs for
 		 variable VF; see vect_transform_slp_perm_load.  */
