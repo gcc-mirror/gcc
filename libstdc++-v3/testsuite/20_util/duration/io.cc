@@ -100,6 +100,12 @@ test_format()
   std::chrono::duration<float, std::milli> d{0.5};
   s = std::format("{}", d);
   VERIFY( s == "0.5ms" );
+
+  std::chrono::duration<unsigned, std::milli> u{500}; // PR libstdc++/115668
+  s = std::format("{}", u);
+  VERIFY( s == "500ms" );
+  s = std::format("{:%Q %q}", u);
+  VERIFY( s == "500 ms" );
 }
 
 void
