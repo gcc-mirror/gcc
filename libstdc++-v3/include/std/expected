@@ -79,10 +79,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     protected:
       bad_expected_access() noexcept { }
-      bad_expected_access(const bad_expected_access&) = default;
-      bad_expected_access(bad_expected_access&&) = default;
-      bad_expected_access& operator=(const bad_expected_access&) = default;
-      bad_expected_access& operator=(bad_expected_access&&) = default;
+      bad_expected_access(const bad_expected_access&) noexcept = default;
+      bad_expected_access(bad_expected_access&&) noexcept = default;
+      bad_expected_access& operator=(const bad_expected_access&) noexcept = default;
+      bad_expected_access& operator=(bad_expected_access&&) noexcept = default;
       ~bad_expected_access() = default;
 
     public:
