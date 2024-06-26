@@ -13594,10 +13594,10 @@ proc check_effective_target_heap_trampoline {} {
     return 0
 }
 
-# Return 1 if jsonschema is available.
+# Return 1 if check-jsonschema is available.
 
-proc check_effective_target_jsonschema { } {
-    set result [remote_exec host "jsonschema --version"]
+proc check_effective_target_check_jsonschema { } {
+    set result [remote_exec host "check-jsonschema --version"]
     set status [lindex $result 0]
     if { $status == 0 } then {
         return 1;
