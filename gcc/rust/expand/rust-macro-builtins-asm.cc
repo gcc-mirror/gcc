@@ -740,11 +740,9 @@ parse_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
 			     is_global_asm == AST::AsmKind::Global);
   auto inline_asm_ctx = InlineAsmContext (inline_asm, parser, last_token_id);
 
-  tl::expected<InlineAsmContext, InlineAsmParseError> resulting_context
-    = tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
-  resulting_context.and_then (parse_format_strings)
-    .and_then (parse_asm_arg)
-    .and_then (validate);
+  auto resulting_context = parse_format_strings (inline_asm_ctx)
+			     .and_then (parse_asm_arg)
+			     .and_then (validate);
 
   // TODO: I'm putting the validation here because the rust reference put it
   // here Per Arthur's advice we would actually do the validation in a different
