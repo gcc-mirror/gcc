@@ -57,7 +57,7 @@ proc scan-sarif-file-not { args } {
 # Assuming python3 is available, use verify-sarif-file.py to check
 # that the .sarif file is UTF-8 encoded and is parseable as JSON.
 #
-# Assuming "jsonschema" is available, use it to verify that the .sarif
+# Assuming "check-jsonschema" is available, use it to verify that the .sarif
 # file complies with the SARIF schema.
 
 proc verify-sarif-file { args } {
@@ -86,8 +86,8 @@ proc verify-sarif-file { args } {
     # Verify that the file complies with the SARIF schema.
 
     # Check that jsonschema is installed.
-    if { ![check_effective_target_jsonschema] } {
-	unsupported "$testcase verify-sarif-file: jsonschema is missing"
+    if { ![check_effective_target_check_jsonschema] } {
+	unsupported "$testcase verify-sarif-file: check-jsonschema is missing"
 	return	
     }
 
@@ -95,7 +95,7 @@ proc verify-sarif-file { args } {
     verbose "schema_file: $schema_file" 2
 
     set what "$testcase (test .sarif output against SARIF schema)"
-    if [catch {exec jsonschema --instance $output_file $schema_file} res ] {
+    if [catch {exec check-jsonschema --schemafile $schema_file $output_file} res ] {
 	verbose "verify-sarif-file: res: $res" 2
 	fail "$what"
 	return
