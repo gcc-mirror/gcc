@@ -9747,7 +9747,8 @@ vect_schedule_slp_node (vec_info *vinfo,
 	      {
 		gimple_stmt_iterator si2
 		  = gsi_after_labels (LOOP_VINFO_LOOP (loop_vinfo)->header);
-		if (vect_stmt_dominates_stmt_p (last_stmt, *si2))
+		if (last_stmt != *si2
+		    && vect_stmt_dominates_stmt_p (last_stmt, *si2))
 		  si = si2;
 	      }
 	}
