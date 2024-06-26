@@ -6175,7 +6175,7 @@ vectorizable_shift (vec_info *vinfo,
   if ((dt[1] == vect_internal_def
        || dt[1] == vect_induction_def
        || dt[1] == vect_nested_cycle)
-      && !slp_node)
+      && (!slp_node || SLP_TREE_LANES (slp_node) == 1))
     scalar_shift_arg = false;
   else if (dt[1] == vect_constant_def
 	   || dt[1] == vect_external_def
