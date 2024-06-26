@@ -120,7 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 
 	_Tp* __ret = 0;
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
 #if __cplusplus > 201402L && _GLIBCXX_HAVE_ALIGNED_ALLOC
 	if (alignof(_Tp) > alignof(std::max_align_t))
 	  {
