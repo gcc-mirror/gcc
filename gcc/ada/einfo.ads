@@ -2026,8 +2026,22 @@ package Einfo is
 --       checks for infinite recursion.
 
 --    Has_Relaxed_Finalization [base type only]
---       Defined in all type entities. Indicates that the type is subject to
---       relaxed semantics for the finalization operations.
+--       Defined in all type entities. Set only for controlled types and types
+--       with controlled components. Indicates that the type is subject to the
+--       relaxed semantics for the finalization operations. These semantics are
+--       made up of two independent parts:
+--
+--       1. The compiler is permitted to perform no automatic finalization of
+--          heap-allocated objects: Finalize is only called when the object is
+--          explicitly deallocated, or when the object is assigned a new value.
+--          As a consequence, no finalization collection is created for access
+--          types designating the type, and no header is allocated in front of
+--          heap-allocated objects of the type.
+--
+--       2. If an exception is raised out of the Adjust or Finalize procedures,
+--          the compiler is permitted to enforce none of the guarantees given
+--          by the RM 7.6.1(14/1) and following subclauses, and to instead just
+--          let the exception be propagated upward.
 
 --    Has_Shift_Operator [base type only]
 --       Defined in integer types. Set in the base type of an integer type for

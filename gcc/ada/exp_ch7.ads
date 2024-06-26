@@ -222,6 +222,11 @@ package Exp_Ch7 is
    --  an address into a pointer and subsequently calls Deep_Finalize on the
    --  dereference.
 
+   function Make_Finalize_Call_For_Node
+     (Loc  : Source_Ptr;
+      Node : Entity_Id) return Node_Id;
+   --  Create a call to finalize the object attached to the given Master_Node
+
    function Make_Init_Call
      (Obj_Ref : Node_Id;
       Typ     : Entity_Id) return Node_Id;

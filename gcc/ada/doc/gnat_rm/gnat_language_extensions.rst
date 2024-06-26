@@ -590,8 +590,7 @@ Example:
     procedure Finalize   (Obj : in out Ctrl);
     procedure Initialize (Obj : in out Ctrl);
 
-As of this writing, the relaxed semantics for finalization operations are
-only implemented for dynamically allocated objects.
+As of this writing, the RFC is implemented except for the `No_Raise` aspect.
 
 Link to the original RFC:
 https://github.com/AdaCore/ada-spark-rfcs/blob/topic/finalization-rehaul/considered/rfc-generalized-finalization.md

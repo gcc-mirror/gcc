@@ -14363,11 +14363,7 @@ package body Exp_Ch4 is
             pragma Assert (Present (Fin_Context));
 
             Insert_Action_After (Fin_Context,
-              Make_Procedure_Call_Statement (Loc,
-                Name                   =>
-                  New_Occurrence_Of (RTE (RE_Finalize_Object), Loc),
-                Parameter_Associations => New_List (
-                  New_Occurrence_Of (Master_Node_Id, Loc))));
+              Make_Finalize_Call_For_Node (Loc, Master_Node_Id));
          end if;
 
          --  Mark the transient object to avoid double finalization

@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Jun 27, 2024
+GNAT Reference Manual , Jul 29, 2024
 
 AdaCore
 
@@ -29529,8 +29529,7 @@ procedure Finalize   (Obj : in out Ctrl);
 procedure Initialize (Obj : in out Ctrl);
 @end example
 
-As of this writing, the relaxed semantics for finalization operations are
-only implemented for dynamically allocated objects.
+As of this writing, the RFC is implemented except for the @cite{No_Raise} aspect.
 
 Link to the original RFC:
 @indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/topic/finalization-rehaul/considered/rfc-generalized-finalization.md}
