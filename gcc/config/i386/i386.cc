@@ -21382,6 +21382,22 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
     }
 }
 
+static int
+ix86_insn_cost (rtx_insn *insn, bool speed)
+{
+  int insn_cost = 0;
+  /* Add extra cost to avoid post_reload late_combine revert
+     the optimization did in pass_rpad.  */
+  if (reload_completed
+      && ix86_rpad_gate ()
+      && recog_memoized (insn) >= 0
+      && get_attr_avx_partial_xmm_update (insn)
+      == AVX_PARTIAL_XMM_UPDATE_TRUE)
+    insn_cost += COSTS_N_INSNS (3);
+
+  return insn_cost + pattern_cost (PATTERN (insn), speed);
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -26528,6 +26544,8 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #define TARGET_MEMORY_MOVE_COST ix86_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ix86_rtx_costs
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST ix86_insn_cost
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ix86_address_cost
 

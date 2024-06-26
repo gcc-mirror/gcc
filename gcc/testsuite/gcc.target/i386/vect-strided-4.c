@@ -15,6 +15,6 @@ void foo (int * __restrict a, int * __restrict b, int *c, int s)
 
 /* Vectorization factor two, two two-element stores to a using movq
    and two two-element stores to b via pextrq/movhps of the high part.  */
-/* { dg-final { scan-assembler-times "movq" 2 } } */
+/* { dg-final { scan-assembler-times "movq\[\t ]+%xmm\[0-9]" 2 } } */
 /* { dg-final { scan-assembler-times "pextrq" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "movhps" 2 { target { ia32 } } } } */

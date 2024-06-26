@@ -2995,6 +2995,16 @@ make_pass_insert_endbr_and_patchable_area (gcc::context *ctxt)
   return new pass_insert_endbr_and_patchable_area (ctxt);
 }
 
+bool
+ix86_rpad_gate ()
+{
+  return (TARGET_AVX
+	  && TARGET_SSE_PARTIAL_REG_DEPENDENCY
+	  && TARGET_SSE_MATH
+	  && optimize
+	  && optimize_function_for_speed_p (cfun));
+}
+
 /* At entry of the nearest common dominator for basic blocks with
    conversions/rcp/sqrt/rsqrt/round, generate a single
 	vxorps %xmmN, %xmmN, %xmmN
@@ -3232,11 +3242,7 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return (TARGET_AVX
-	      && TARGET_SSE_PARTIAL_REG_DEPENDENCY
-	      && TARGET_SSE_MATH
-	      && optimize
-	      && optimize_function_for_speed_p (cfun));
+      return ix86_rpad_gate ();
     }
 
   unsigned int execute (function *) final override
