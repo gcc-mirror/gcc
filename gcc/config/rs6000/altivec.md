@@ -1152,15 +1152,16 @@
    (use (match_operand:V16QI 2 "register_operand"))]
   "TARGET_ALTIVEC"
 {
-  rtx (*fun) (rtx, rtx, rtx) = BYTES_BIG_ENDIAN ? gen_altivec_vmrghb_direct
-						: gen_altivec_vmrglb_direct;
-  if (!BYTES_BIG_ENDIAN)
-    std::swap (operands[1], operands[2]);
-  emit_insn (fun (operands[0], operands[1], operands[2]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (
+      gen_altivec_vmrghb_direct_be (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (
+      gen_altivec_vmrglb_direct_le (operands[0], operands[2], operands[1]));
   DONE;
 })
 
-(define_insn "altivec_vmrghb_direct"
+(define_insn "altivec_vmrghb_direct_be"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
@@ -1174,7 +1175,25 @@
 		     (const_int 5) (const_int 21)
 		     (const_int 6) (const_int 22)
 		     (const_int 7) (const_int 23)])))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC && BYTES_BIG_ENDIAN"
+  "vmrghb %0,%1,%2"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "altivec_vmrghb_direct_le"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_select:V16QI
+	  (vec_concat:V32QI
+	    (match_operand:V16QI 2 "register_operand" "v")
+	    (match_operand:V16QI 1 "register_operand" "v"))
+	  (parallel [(const_int  8) (const_int 24)
+		     (const_int  9) (const_int 25)
+		     (const_int 10) (const_int 26)
+		     (const_int 11) (const_int 27)
+		     (const_int 12) (const_int 28)
+		     (const_int 13) (const_int 29)
+		     (const_int 14) (const_int 30)
+		     (const_int 15) (const_int 31)])))]
+  "TARGET_ALTIVEC && !BYTES_BIG_ENDIAN"
   "vmrghb %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
@@ -1274,15 +1293,16 @@
    (use (match_operand:V16QI 2 "register_operand"))]
   "TARGET_ALTIVEC"
 {
-  rtx (*fun) (rtx, rtx, rtx) = BYTES_BIG_ENDIAN ? gen_altivec_vmrglb_direct
-						: gen_altivec_vmrghb_direct;
-  if (!BYTES_BIG_ENDIAN)
-    std::swap (operands[1], operands[2]);
-  emit_insn (fun (operands[0], operands[1], operands[2]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (
+      gen_altivec_vmrglb_direct_be (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (
+      gen_altivec_vmrghb_direct_le (operands[0], operands[2], operands[1]));
   DONE;
 })
 
-(define_insn "altivec_vmrglb_direct"
+(define_insn "altivec_vmrglb_direct_be"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
@@ -1296,7 +1316,25 @@
 		     (const_int 13) (const_int 29)
 		     (const_int 14) (const_int 30)
 		     (const_int 15) (const_int 31)])))]
-  "TARGET_ALTIVEC"
+  "TARGET_ALTIVEC && BYTES_BIG_ENDIAN"
+  "vmrglb %0,%1,%2"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "altivec_vmrglb_direct_le"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_select:V16QI
+	  (vec_concat:V32QI
+	    (match_operand:V16QI 2 "register_operand" "v")
+	    (match_operand:V16QI 1 "register_operand" "v"))
+	  (parallel [(const_int 0) (const_int 16)
+		     (const_int 1) (const_int 17)
+		     (const_int 2) (const_int 18)
+		     (const_int 3) (const_int 19)
+		     (const_int 4) (const_int 20)
+		     (const_int 5) (const_int 21)
+		     (const_int 6) (const_int 22)
+		     (const_int 7) (const_int 23)])))]
+  "TARGET_ALTIVEC && !BYTES_BIG_ENDIAN"
   "vmrglb %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
