@@ -256,6 +256,12 @@ struct codeview_custom_type
       uint32_t index_type;
       codeview_integer length_in_bytes;
     } lf_array;
+    struct
+    {
+      uint32_t base_type;
+      uint8_t length;
+      uint8_t position;
+    } lf_bitfield;
   };
 };
 
@@ -1573,6 +1579,50 @@ write_lf_array (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_BITFIELD type.  */
+
+static void
+write_lf_bitfield (codeview_custom_type *t)
+{
+  /* This is lf_bitfield in binutils and lfBitfield in Microsoft's cvinfo.h:
+
+    struct lf_bitfield
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t base_type;
+      uint8_t length;
+      uint8_t position;
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_bitfield.base_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_bitfield.length);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_bitfield.position);
+  putc ('\n', asm_out_file);
+
+  write_cv_padding (2);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -1618,6 +1668,10 @@ write_custom_types (void)
 
 	case LF_ARRAY:
 	  write_lf_array (custom_types);
+	  break;
+
+	case LF_BITFIELD:
+	  write_lf_bitfield (custom_types);
 	  break;
 	}
 
@@ -2199,6 +2253,33 @@ add_struct_forward_def (dw_die_ref type)
   return ct->num;
 }
 
+/* Add an LF_BITFIELD type, returning its number.  DWARF represents bitfields
+   as members in a struct with a DW_AT_data_bit_offset attribute, whereas in
+   CodeView they're a distinct type.  */
+
+static uint32_t
+create_bitfield (dw_die_ref c)
+{
+  codeview_custom_type *ct;
+  uint32_t base_type;
+
+  base_type = get_type_num (get_AT_ref (c, DW_AT_type), true, false);
+  if (base_type == 0)
+    return 0;
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_BITFIELD;
+  ct->lf_bitfield.base_type = base_type;
+  ct->lf_bitfield.length = get_AT_unsigned (c, DW_AT_bit_size);
+  ct->lf_bitfield.position = get_AT_unsigned (c, DW_AT_data_bit_offset);
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
 /* Process a DW_TAG_structure_type, DW_TAG_class_type, or DW_TAG_union_type
    DIE, add an LF_FIELDLIST and an LF_STRUCTURE / LF_CLASS / LF_UNION type,
    and return the number of the latter.  */
@@ -2279,8 +2360,12 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 	      break;
 	    }
 
-	  el->lf_member.type = get_type_num (get_AT_ref (c, DW_AT_type), true,
-					    false);
+	  if (get_AT (c, DW_AT_data_bit_offset))
+	    el->lf_member.type = create_bitfield (c);
+	  else
+	    el->lf_member.type = get_type_num (get_AT_ref (c, DW_AT_type),
+					       true, false);
+
 	  el->lf_member.offset.neg = false;
 	  el->lf_member.offset.num = get_AT_unsigned (c,
 						      DW_AT_data_member_location);

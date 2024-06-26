@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LF_MODIFIER		0x1001
 #define LF_POINTER		0x1002
 #define LF_FIELDLIST		0x1203
+#define LF_BITFIELD		0x1205
 #define LF_INDEX		0x1404
 #define LF_ENUMERATE		0x1502
 #define LF_ARRAY		0x1503
