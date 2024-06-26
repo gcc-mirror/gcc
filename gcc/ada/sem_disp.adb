@@ -1666,13 +1666,14 @@ package body Sem_Disp is
       then
          Ovr_Subp := Find_Hidden_Overridden_Primitive (Subp);
 
-         --  Verify that the proper overriding indicator has been supplied.
+         --  Warn if the proper overriding indicator has not been supplied.
 
          if Present (Ovr_Subp)
            and then
              not Must_Override (Specification (Unit_Declaration_Node (Subp)))
+           and then not In_Instance
          then
-            Error_Msg_NE ("missing overriding indicator for&", Subp, Subp);
+            Error_Msg_NE ("missing overriding indicator for&??", Subp, Subp);
          end if;
       end if;
 
