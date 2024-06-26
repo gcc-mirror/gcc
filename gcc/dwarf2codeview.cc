@@ -262,6 +262,19 @@ struct codeview_custom_type
       uint8_t length;
       uint8_t position;
     } lf_bitfield;
+    struct
+    {
+      uint32_t return_type;
+      uint8_t calling_convention;
+      uint8_t attributes;
+      uint16_t num_parameters;
+      uint32_t arglist;
+    } lf_procedure;
+    struct
+    {
+      uint32_t num_entries;
+      uint32_t *args;
+    } lf_arglist;
   };
 };
 
@@ -1623,6 +1636,102 @@ write_lf_bitfield (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_PROCEDURE type.  Function pointers are implemented as pointers
+   to one of these.  */
+
+static void
+write_lf_procedure (codeview_custom_type *t)
+{
+  /* This is lf_procedure in binutils and lfProc in Microsoft's cvinfo.h:
+
+    struct lf_procedure
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t return_type;
+      uint8_t calling_convention;
+      uint8_t attributes;
+      uint16_t num_parameters;
+      uint32_t arglist;
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_procedure.return_type);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_procedure.calling_convention);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_procedure.attributes);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_procedure.num_parameters);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_procedure.arglist);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
+/* Write an LF_ARGLIST type.  This is just a list of other types.  LF_PROCEDURE
+   entries point to one of these.  */
+
+static void
+write_lf_arglist (codeview_custom_type *t)
+{
+  /* This is lf_arglist in binutils and lfArgList in Microsoft's cvinfo.h:
+
+    struct lf_arglist
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t num_entries;
+      uint32_t args[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_arglist.num_entries);
+  putc ('\n', asm_out_file);
+
+  for (uint32_t i = 0; i < t->lf_arglist.num_entries; i++)
+    {
+      fputs (integer_asm_op (4, false), asm_out_file);
+      fprint_whex (asm_out_file, t->lf_arglist.args[i]);
+      putc ('\n', asm_out_file);
+    }
+
+  free (t->lf_arglist.args);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -1672,6 +1781,14 @@ write_custom_types (void)
 
 	case LF_BITFIELD:
 	  write_lf_bitfield (custom_types);
+	  break;
+
+	case LF_PROCEDURE:
+	  write_lf_procedure (custom_types);
+	  break;
+
+	case LF_ARGLIST:
+	  write_lf_arglist (custom_types);
 	  break;
 	}
 
@@ -2488,6 +2605,123 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
   return ct->num;
 }
 
+/* Process a DW_TAG_subroutine_type DIE, adding an LF_ARGLIST and an
+   LF_PROCEDURE type, and returning the number of the latter.  */
+
+static uint32_t
+get_type_num_subroutine_type (dw_die_ref type, bool in_struct)
+{
+  codeview_custom_type *ct;
+  uint32_t return_type, arglist_type;
+  uint16_t num_args;
+  dw_die_ref first_child;
+
+  /* Find the return type.  */
+
+  if (get_AT_ref (type, DW_AT_type))
+    {
+      return_type = get_type_num (get_AT_ref (type, DW_AT_type), in_struct,
+				  false);
+      if (return_type == 0)
+	return 0;
+    }
+  else
+    {
+      return_type = T_VOID;
+    }
+
+  /* Count the arguments.  */
+
+  first_child = dw_get_die_child (type);
+  num_args = 0;
+
+  if (first_child)
+    {
+      dw_die_ref c;
+
+      c = first_child;
+      do
+	{
+	  c = dw_get_die_sib (c);
+
+	  if (dw_get_die_tag (c) != DW_TAG_formal_parameter
+	      && dw_get_die_tag (c) != DW_TAG_unspecified_parameters)
+	    continue;
+
+	  num_args++;
+	}
+      while (c != first_child);
+    }
+
+  /* Create an LF_ARGLIST for the arguments.  If this is a duplicate, ld
+     will take care of this for us.  */
+
+  first_child = dw_get_die_child (type);
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_ARGLIST;
+  ct->lf_arglist.num_entries = num_args;
+
+  if (num_args > 0)
+    {
+      dw_die_ref c;
+      uint32_t *argptr;
+
+      ct->lf_arglist.args = (uint32_t *) xmalloc (sizeof (uint32_t) * num_args);
+      argptr = ct->lf_arglist.args;
+
+      c = first_child;
+      do
+	{
+	  c = dw_get_die_sib (c);
+
+	  switch (dw_get_die_tag (c))
+	    {
+	    case DW_TAG_formal_parameter:
+	      *argptr = get_type_num (get_AT_ref (c, DW_AT_type), in_struct,
+				      false);
+	      argptr++;
+	      break;
+
+	    case DW_TAG_unspecified_parameters:
+	      *argptr = 0;
+	      argptr++;
+	      break;
+
+	    default:
+	      break;
+	    }
+	}
+      while (c != first_child);
+    }
+  else
+    {
+      ct->lf_arglist.args = NULL;
+    }
+
+  add_custom_type (ct);
+
+  arglist_type = ct->num;
+
+  /* Finally, create an LF_PROCEDURE.  */
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_PROCEDURE;
+  ct->lf_procedure.return_type = return_type;
+  ct->lf_procedure.calling_convention = 0;
+  ct->lf_procedure.attributes = 0;
+  ct->lf_procedure.num_parameters = num_args;
+  ct->lf_procedure.arglist = arglist_type;
+
+  add_custom_type (ct);
+
+  return ct->num;
+}
+
 /* Process a DW_TAG_array_type DIE, adding an LF_ARRAY type and returning its
    number.  */
 
@@ -2669,6 +2903,10 @@ get_type_num (dw_die_ref type, bool in_struct, bool no_fwd_ref)
 
     case DW_TAG_array_type:
       num = get_type_num_array_type (type, in_struct);
+      break;
+
+    case DW_TAG_subroutine_type:
+      num = get_type_num_subroutine_type (type, in_struct);
       break;
 
     default:

@@ -63,6 +63,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Constants for type definitions.  */
 #define LF_MODIFIER		0x1001
 #define LF_POINTER		0x1002
+#define LF_PROCEDURE		0x1008
+#define LF_ARGLIST		0x1201
 #define LF_FIELDLIST		0x1203
 #define LF_BITFIELD		0x1205
 #define LF_INDEX		0x1404
