@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "expected.h"
 #include "rust-make-unique.h"
 #include "rust-macro-builtins-asm.h"
 #include "rust-ast-fragment.h"
@@ -208,14 +209,12 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
       else
 	{
 	  rust_error_at (token->get_locus (),
-			 "expected operand, clobber_abi, options, or "
-			 "additional template string");
+			 "expected operand, %s, options, or "
+			 "additional template string",
+			 "clobber_abi");
 	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
     }
-
-  tl::expected<InlineAsmContext, InlineAsmParseError> parsing_operand
-    = tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
 
   int slot = inline_asm_ctx.inline_asm.operands.size ();
 
@@ -230,7 +229,8 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
   // we propogate the result.
   for (auto &parse_func : parse_funcs)
     {
-      parsing_operand.emplace (inline_asm_ctx);
+      auto parsing_operand
+	= tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
       parsing_operand.map (parse_func);
 
       // Per rust's asm.rs's structure
@@ -281,7 +281,7 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
 	}
     }
 
-  return parsing_operand;
+  return inline_asm_ctx;
 }
 
 tl::expected<InlineAsmContext, InlineAsmParseError>
@@ -386,7 +386,10 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	{
 	  if (!parser.skip_token (UNDERSCORE))
 	    {
-	      parse_format_string (inline_asm_ctx);
+	      auto result = parse_format_string (inline_asm_ctx);
+
+	      if (!result.has_value ())
+		rust_unreachable ();
 	      // out_expr = parser.parse_expr();
 	    }
 
@@ -708,8 +711,9 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
       // committed to anything So that the error bubbles up and we recover from
       // this error gracefully
       rust_error_at (token->get_locus (),
-		     "expected operand, clobber_abi, options, or additional "
-		     "template string");
+		     "expected operand, %s, options, or additional "
+		     "template string",
+		     "clobber_abi");
       return tl::unexpected<InlineAsmParseError> (COMMITTED);
     }
   return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
