@@ -514,6 +514,20 @@ level_for_consteval_if (cp_binding_level *b)
 	  && IF_STMT_CONSTEVAL_P (b->this_entity));
 }
 
+/* True if T is a non-static VAR_DECL that has a non-trivial destructor.
+   See [stmt.dcl]/2.  */
+
+static bool
+automatic_var_with_nontrivial_dtor_p (const_tree t)
+{
+  if (error_operand_p (t))
+    return false;
+
+  return (VAR_P (t)
+	  && decl_storage_duration (CONST_CAST_TREE (t)) == dk_auto
+	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (t)));
+}
+
 /* Update data for defined and undefined labels when leaving a scope.  */
 
 int
@@ -575,8 +589,7 @@ poplevel_named_label_1 (named_label_entry **slot, cp_binding_level *bl)
 		if (bl->kind == sk_catch)
 		  vec_safe_push (cg, get_identifier ("catch"));
 		for (tree d = use->names_in_scope; d; d = DECL_CHAIN (d))
-		  if (TREE_CODE (d) == VAR_DECL && !TREE_STATIC (d)
-		      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (d)))
+		  if (automatic_var_with_nontrivial_dtor_p (d))
 		    vec_safe_push (cg, d);
 	      }
 
@@ -4003,8 +4016,7 @@ check_goto_1 (named_label_entry *ent, bool computed)
 	  tree end = b == level ? names : NULL_TREE;
 	  for (tree d = b->names; d != end; d = DECL_CHAIN (d))
 	    {
-	      if (TREE_CODE (d) == VAR_DECL && !TREE_STATIC (d)
-		  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (d)))
+	      if (automatic_var_with_nontrivial_dtor_p (d))
 		{
 		  if (!identified)
 		    {
