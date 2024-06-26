@@ -1607,7 +1607,10 @@ namespace __format
 	format(const chrono::duration<_Rep, _Period>& __d,
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{
-	  return _M_f._M_format(chrono::abs(__d), __fc, __d < __d.zero());
+	  if constexpr (numeric_limits<_Rep>::is_signed)
+	    if (__d < __d.zero())
+	      return _M_f._M_format(-__d, __fc, true);
+	  return _M_f._M_format(__d, __fc, false);
 	}
 
     private:
