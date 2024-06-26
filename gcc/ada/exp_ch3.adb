@@ -2700,10 +2700,12 @@ package body Exp_Ch3 is
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
-         --  that will be expanded inline.
+         --  that will be expanded inline (but note that the case of container
+         --  aggregates does require component adjustment).
 
          if Needs_Finalization (Typ)
-           and then Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
+           and then (Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
+                      or else Is_Container_Aggregate (Exp_Q))
            and then not Is_Build_In_Place_Function_Call (Exp)
          then
             Adj_Call :=
