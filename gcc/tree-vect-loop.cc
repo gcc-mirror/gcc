@@ -6849,7 +6849,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	  tree initial_def = reduc_info->reduc_initial_values[0];
 	  tree tmp = make_ssa_name (new_scalar_dest);
 	  epilog_stmt = gimple_build_assign (tmp, COND_EXPR, zcompare,
-					     initial_def, new_temp);
+					     initial_def, scalar_results[0]);
 	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
 	  scalar_results[0] = tmp;
 	}
