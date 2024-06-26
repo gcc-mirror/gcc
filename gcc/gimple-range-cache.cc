@@ -683,6 +683,32 @@ ssa_cache::dump (FILE *f)
 
 }
 
+// Construct an ssa_lazy_cache. If OB is specified, us it, otherwise use
+// a local bitmap obstack.
+
+ssa_lazy_cache::ssa_lazy_cache (bitmap_obstack *ob)
+{
+  if (!ob)
+    {
+      bitmap_obstack_initialize (&m_bitmaps);
+      m_ob = &m_bitmaps;
+    }
+  else
+    m_ob = ob;
+  active_p = BITMAP_ALLOC (m_ob);
+}
+
+// Destruct an sa_lazy_cache.  Free the bitmap if it came from a different
+// obstack, or release the obstack if it was a local one.
+
+ssa_lazy_cache::~ssa_lazy_cache ()
+{
+  if (m_ob == &m_bitmaps)
+    bitmap_obstack_release (&m_bitmaps);
+  else
+    BITMAP_FREE (active_p);
+}
+
 // Return true if NAME has an active range in the cache.
 
 bool

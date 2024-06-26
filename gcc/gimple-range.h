@@ -116,6 +116,7 @@ public:
   void pre_bb (basic_block bb);
   void post_bb (basic_block bb);
 protected:
+  bitmap_obstack m_bitmaps;
   void range_in_bb (vrange &r, basic_block bb, tree name);
   DISABLE_COPY_AND_ASSIGN (dom_ranger);
   ssa_cache m_global;

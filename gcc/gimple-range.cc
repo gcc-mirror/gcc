@@ -908,6 +908,7 @@ assume_query::dump (FILE *f)
 
 dom_ranger::dom_ranger () : m_global ()
 {
+  bitmap_obstack_initialize (&m_bitmaps);
   m_freelist.create (0);
   m_freelist.truncate (0);
   m_bb.create (0);
@@ -928,6 +929,7 @@ dom_ranger::~dom_ranger ()
     }
   m_bb.release ();
   m_freelist.release ();
+  bitmap_obstack_release (&m_bitmaps);
 }
 
 // Implement range of EXPR on stmt S, and return it in R.
@@ -1071,7 +1073,7 @@ dom_ranger::pre_bb (basic_block bb)
   if (!m_freelist.is_empty ())
     e_cache = m_freelist.pop ();
   else
-    e_cache = new ssa_lazy_cache;
+    e_cache = new ssa_lazy_cache (&m_bitmaps);
   gcc_checking_assert (e_cache->empty_p ());
 
   // If there is a single pred, check if there are any ranges on

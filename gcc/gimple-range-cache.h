@@ -78,12 +78,8 @@ protected:
 class ssa_lazy_cache : public ssa_cache
 {
 public:
-  inline ssa_lazy_cache ()
-  {
-    bitmap_obstack_initialize (&m_bitmaps);
-    active_p = BITMAP_ALLOC (&m_bitmaps);
-  }
-  inline ~ssa_lazy_cache () { bitmap_obstack_release (&m_bitmaps); }
+  ssa_lazy_cache (bitmap_obstack *ob = NULL);
+  ~ssa_lazy_cache ();
   inline bool empty_p () const { return bitmap_empty_p (active_p); }
   virtual bool has_range (tree name) const;
   virtual bool set_range (tree name, const vrange &r);
@@ -94,6 +90,7 @@ public:
   void merge (const ssa_lazy_cache &);
 protected:
   bitmap_obstack m_bitmaps;
+  bitmap_obstack *m_ob;
   bitmap active_p;
 };
 
