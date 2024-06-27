@@ -2050,6 +2050,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
   else if (is_a <loop_vec_info> (vinfo)
 	   /* ???  We don't handle !vect_internal_def defs below.  */
 	   && STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
+	   /* ???  Do not associate a reduction, this will wreck REDUC_IDX
+	      mapping as long as that exists on the stmt_info level.  */
+	   && STMT_VINFO_REDUC_IDX (stmt_info) == -1
 	   && is_gimple_assign (stmt_info->stmt)
 	   && (associative_tree_code (gimple_assign_rhs_code (stmt_info->stmt))
 	       || gimple_assign_rhs_code (stmt_info->stmt) == MINUS_EXPR)
