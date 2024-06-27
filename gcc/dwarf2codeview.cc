@@ -46,10 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define CHKSUM_TYPE_MD5		1
 
-#define S_LDATA32		0x110c
-#define S_GDATA32		0x110d
-#define S_COMPILE3		0x113c
-
 #define CV_CFL_80386		0x03
 #define CV_CFL_X64		0xD0
 
@@ -69,6 +65,14 @@ along with GCC; see the file COPYING3.  If not see
 #define MAX_FIELDLIST_SIZE	0xfaf8
 
 #define HASH_SIZE 16
+
+/* This is enum SYM_ENUM_e in Microsoft's cvinfo.h.  */
+
+enum cv_sym_type {
+  S_LDATA32 = 0x110c,
+  S_GDATA32 = 0x110d,
+  S_COMPILE3 = 0x113c
+};
 
 /* This is enum LEAF_ENUM_e in Microsoft's cvinfo.h.  */
 
@@ -168,7 +172,7 @@ struct codeview_function
 struct codeview_symbol
 {
   codeview_symbol *next;
-  uint16_t kind;
+  enum cv_sym_type kind;
 
   union
   {
@@ -982,6 +986,8 @@ write_codeview_symbols (void)
 	case S_LDATA32:
 	case S_GDATA32:
 	  write_data_symbol (sym);
+	  break;
+	default:
 	  break;
 	}
 
