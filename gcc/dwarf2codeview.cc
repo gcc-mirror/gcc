@@ -958,6 +958,8 @@ write_data_symbol (codeview_symbol *s)
   ASM_OUTPUT_ASCII (asm_out_file, s->data_symbol.name,
 		    strlen (s->data_symbol.name) + 1);
 
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
   targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
 
 end:
