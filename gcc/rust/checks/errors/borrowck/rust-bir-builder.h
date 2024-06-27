@@ -152,7 +152,8 @@ private:
 	  {
 	    push_assignment (RETURN_VALUE_PLACE,
 			     ctx.place_db.get_constant (
-			       ctx.place_db[RETURN_VALUE_PLACE].tyty));
+			       ctx.place_db[RETURN_VALUE_PLACE].tyty),
+			     body.get_end_locus ());
 	  }
 	ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
       }

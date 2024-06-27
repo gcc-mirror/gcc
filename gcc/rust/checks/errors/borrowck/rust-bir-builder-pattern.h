@@ -65,7 +65,7 @@ public:
   void go (HIR::Pattern &pattern) { pattern.accept_vis (*this); }
 
   void visit_identifier (const Analysis::NodeMapping &node, bool is_ref,
-			 bool is_mut = false)
+			 location_t location, bool is_mut = false)
   {
     if (is_ref)
       {
@@ -82,7 +82,7 @@ public:
 
     if (init.has_value ())
       {
-	push_assignment (translated, init.value ());
+	push_assignment (translated, init.value (), location);
       }
   }
 
@@ -91,7 +91,7 @@ public:
     // Top-level identifiers are resolved directly to avoid useless temporary
     // (for cleaner BIR).
     visit_identifier (pattern.get_mappings (), pattern.get_is_ref (),
-		      pattern.is_mut ());
+		      pattern.get_locus (), pattern.is_mut ());
   }
 
   void visit (HIR::ReferencePattern &pattern) override
@@ -210,6 +210,7 @@ public:
 						   field_index);
 	      visit_identifier (ident_field->get_mappings (),
 				ident_field->get_has_ref (),
+				ident_field->get_locus (),
 				ident_field->is_mut ());
 	      break;
 	    }

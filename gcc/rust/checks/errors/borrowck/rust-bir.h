@@ -77,19 +77,25 @@ private:
   // otherwise: <unused>
   std::unique_ptr<AbstractExpr> expr;
   TyTy::BaseType *type;
+  // stores location of the actual expression from source code
+  // currently only available when kind == Kind::ASSIGNMENT
+  // FIXME: Add location for Statements other than ASSIGNMENT
+  location_t location;
 
 public:
-  Statement (PlaceId lhs, AbstractExpr *rhs)
-    : kind (Kind::ASSIGNMENT), place (lhs), expr (rhs)
+  Statement (PlaceId lhs, AbstractExpr *rhs, location_t location)
+    : kind (Kind::ASSIGNMENT), place (lhs), expr (rhs), location (location)
   {}
 
   explicit Statement (Kind kind, PlaceId place = INVALID_PLACE,
-		      AbstractExpr *expr = nullptr)
-    : kind (kind), place (place), expr (expr)
+		      AbstractExpr *expr = nullptr,
+		      location_t location = UNKNOWN_LOCATION)
+    : kind (kind), place (place), expr (expr), location (location)
   {}
 
-  explicit Statement (Kind kind, PlaceId place, TyTy::BaseType *type)
-    : kind (kind), place (place), type (type)
+  explicit Statement (Kind kind, PlaceId place, TyTy::BaseType *type,
+		      location_t location = UNKNOWN_LOCATION)
+    : kind (kind), place (place), type (type), location (location)
   {}
 
 public:
@@ -97,6 +103,7 @@ public:
   WARN_UNUSED_RESULT PlaceId get_place () const { return place; }
   WARN_UNUSED_RESULT AbstractExpr &get_expr () const { return *expr; }
   WARN_UNUSED_RESULT TyTy::BaseType *get_type () const { return type; }
+  WARN_UNUSED_RESULT location_t get_location () const { return location; }
 };
 
 /** Unique identifier for a basic block in the BIR. */
