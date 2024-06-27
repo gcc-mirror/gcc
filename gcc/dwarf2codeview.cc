@@ -70,6 +70,33 @@ along with GCC; see the file COPYING3.  If not see
 
 #define HASH_SIZE 16
 
+/* This is enum LEAF_ENUM_e in Microsoft's cvinfo.h.  */
+
+enum cv_leaf_type {
+  LF_MODIFIER = 0x1001,
+  LF_POINTER = 0x1002,
+  LF_PROCEDURE = 0x1008,
+  LF_ARGLIST = 0x1201,
+  LF_FIELDLIST = 0x1203,
+  LF_BITFIELD = 0x1205,
+  LF_INDEX = 0x1404,
+  LF_ENUMERATE = 0x1502,
+  LF_ARRAY = 0x1503,
+  LF_CLASS = 0x1504,
+  LF_STRUCTURE = 0x1505,
+  LF_UNION = 0x1506,
+  LF_ENUM = 0x1507,
+  LF_MEMBER = 0x150d,
+  LF_FUNC_ID = 0x1601,
+  LF_CHAR = 0x8000,
+  LF_SHORT = 0x8001,
+  LF_USHORT = 0x8002,
+  LF_LONG = 0x8003,
+  LF_ULONG = 0x8004,
+  LF_QUADWORD = 0x8009,
+  LF_UQUADWORD = 0x800a
+};
+
 struct codeview_string
 {
   codeview_string *next;
@@ -185,7 +212,7 @@ struct codeview_integer
 struct codeview_subtype
 {
   struct codeview_subtype *next;
-  uint16_t kind;
+  enum cv_leaf_type kind;
 
   union
   {
@@ -212,7 +239,7 @@ struct codeview_custom_type
 {
   struct codeview_custom_type *next;
   uint32_t num;
-  uint16_t kind;
+  enum cv_leaf_type kind;
 
   union
   {
@@ -1336,6 +1363,9 @@ write_lf_fieldlist (codeview_custom_type *t)
 	  putc ('\n', asm_out_file);
 
 	  break;
+
+	default:
+	  break;
 	}
 
       t->lf_fieldlist.subtypes = next;
@@ -1789,6 +1819,9 @@ write_custom_types (void)
 
 	case LF_ARGLIST:
 	  write_lf_arglist (custom_types);
+	  break;
+
+	default:
 	  break;
 	}
 

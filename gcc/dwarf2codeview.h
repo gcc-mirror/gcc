@@ -60,29 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 #define MOD_const		0x1
 #define MOD_volatile		0x2
 
-/* Constants for type definitions.  */
-#define LF_MODIFIER		0x1001
-#define LF_POINTER		0x1002
-#define LF_PROCEDURE		0x1008
-#define LF_ARGLIST		0x1201
-#define LF_FIELDLIST		0x1203
-#define LF_BITFIELD		0x1205
-#define LF_INDEX		0x1404
-#define LF_ENUMERATE		0x1502
-#define LF_ARRAY		0x1503
-#define LF_CLASS		0x1504
-#define LF_STRUCTURE		0x1505
-#define LF_UNION		0x1506
-#define LF_ENUM			0x1507
-#define LF_MEMBER		0x150d
-#define LF_CHAR			0x8000
-#define LF_SHORT		0x8001
-#define LF_USHORT		0x8002
-#define LF_LONG			0x8003
-#define LF_ULONG		0x8004
-#define LF_QUADWORD		0x8009
-#define LF_UQUADWORD		0x800a
-
 #define CV_ACCESS_PRIVATE	1
 #define CV_ACCESS_PROTECTED	2
 #define CV_ACCESS_PUBLIC	3
