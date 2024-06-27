@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "dwarf2out.h"
 #include "dwarf2codeview.h"
+#include "rtl.h"
 
 #ifdef CODEVIEW_DEBUGGING_INFO
 
@@ -71,7 +72,10 @@ along with GCC; see the file COPYING3.  If not see
 enum cv_sym_type {
   S_LDATA32 = 0x110c,
   S_GDATA32 = 0x110d,
-  S_COMPILE3 = 0x113c
+  S_COMPILE3 = 0x113c,
+  S_LPROC32_ID = 0x1146,
+  S_GPROC32_ID = 0x1147,
+  S_PROC_ID_END = 0x114f
 };
 
 /* This is enum LEAF_ENUM_e in Microsoft's cvinfo.h.  */
@@ -185,6 +189,16 @@ struct codeview_symbol
       char *name;
       dw_die_ref die;
     } data_symbol;
+    struct
+    {
+      uint32_t parent;
+      uint32_t end;
+      uint32_t next;
+      uint32_t type;
+      uint8_t flags;
+      char *name;
+      dw_die_ref die;
+    } function;
   };
 };
 
@@ -309,6 +323,12 @@ struct codeview_custom_type
       uint32_t num_entries;
       uint32_t *args;
     } lf_arglist;
+    struct
+    {
+      uint32_t parent_scope;
+      uint32_t function_type;
+      char *name;
+    } lf_func_id;
   };
 };
 
@@ -966,6 +986,152 @@ end:
   free (s->data_symbol.name);
 }
 
+/* Write an S_GPROC32_ID symbol, representing a global function, or an
+   S_LPROC32_ID symbol, for a static function.  */
+
+static void
+write_function (codeview_symbol *s)
+{
+  unsigned int label_num = ++sym_label_num;
+  dw_attr_node *loc_low, *loc_high;
+  const char *label_low, *label_high;
+  rtx rtx_low, rtx_high;
+
+  /* This is struct procsym in binutils and PROCSYM32 in Microsoft's cvinfo.h:
+
+      struct procsym
+      {
+	uint16_t size;
+	uint16_t kind;
+	uint32_t parent;
+	uint32_t end;
+	uint32_t next;
+	uint32_t proc_len;
+	uint32_t debug_start;
+	uint32_t debug_end;
+	uint32_t type;
+	uint32_t offset;
+	uint16_t section;
+	uint8_t flags;
+	char name[];
+      } ATTRIBUTE_PACKED;
+  */
+
+  loc_low = get_AT (s->function.die, DW_AT_low_pc);
+  if (!loc_low)
+    goto end;
+
+  if (loc_low->dw_attr_val.val_class != dw_val_class_lbl_id)
+    goto end;
+
+  label_low = loc_low->dw_attr_val.v.val_lbl_id;
+  if (!label_low)
+    goto end;
+
+  rtx_low = gen_rtx_SYMBOL_REF (Pmode, label_low);
+
+  loc_high = get_AT (s->function.die, DW_AT_high_pc);
+  if (!loc_high)
+    goto end;
+
+  if (loc_high->dw_attr_val.val_class != dw_val_class_high_pc)
+    goto end;
+
+  label_high = loc_high->dw_attr_val.v.val_lbl_id;
+  if (!label_high)
+    goto end;
+
+  rtx_high = gen_rtx_SYMBOL_REF (Pmode, label_high);
+
+  /* Output the S_GPROC32_ID / S_LPROC32_ID record.  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, s->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.parent);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.end);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.next);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  output_addr_const (asm_out_file, rtx_high);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, rtx_low);
+  putc ('\n', asm_out_file);
+
+  /* FIXME - debug_start should be the end of the prologue, and debug_end
+	     the beginning of the epilogue.  Do the whole function for
+	     now.  */
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, 0);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  output_addr_const (asm_out_file, rtx_high);
+  fputs (" - ", asm_out_file);
+  output_addr_const (asm_out_file, rtx_low);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.type);
+  putc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secrel32 ");
+  output_addr_const (asm_out_file, rtx_low);
+  fputc ('\n', asm_out_file);
+
+  asm_fprintf (asm_out_file, "\t.secidx ");
+  output_addr_const (asm_out_file, rtx_low);
+  fputc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (1, false), asm_out_file);
+  fprint_whex (asm_out_file, s->function.flags);
+  putc ('\n', asm_out_file);
+
+  ASM_OUTPUT_ASCII (asm_out_file, s->function.name,
+		    strlen (s->function.name) + 1);
+
+  ASM_OUTPUT_ALIGN (asm_out_file, 2);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+  /* Output the S_PROC_ID_END record.  */
+
+  label_num = ++sym_label_num;
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file,
+	       "%L" SYMBOL_END_LABEL "%u - %L" SYMBOL_START_LABEL "%u\n",
+	       label_num, label_num);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_START_LABEL, label_num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, S_PROC_ID_END);
+  putc ('\n', asm_out_file);
+
+  targetm.asm_out.internal_label (asm_out_file, SYMBOL_END_LABEL, label_num);
+
+end:
+  free (s->function.name);
+}
+
 /* Write the CodeView symbols into the .debug$S section.  */
 
 static void
@@ -991,6 +1157,10 @@ write_codeview_symbols (void)
 	case S_LDATA32:
 	case S_GDATA32:
 	  write_data_symbol (sym);
+	  break;
+	case S_LPROC32_ID:
+	case S_GPROC32_ID:
+	  write_function (sym);
 	  break;
 	default:
 	  break;
@@ -1773,6 +1943,56 @@ write_lf_arglist (codeview_custom_type *t)
   asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
 }
 
+/* Write an LF_FUNC_ID type, which marries together a function type with its
+   name.  This will end up in the alternative types stream in the final PDB,
+   but we can just stick it in the normal .debug$T section.  */
+
+static void
+write_lf_func_id (codeview_custom_type *t)
+{
+  size_t name_len;
+
+  /* This is lf_func_id in binutils and lfFuncId in Microsoft's cvinfo.h:
+
+    struct lf_func_id
+    {
+      uint16_t size;
+      uint16_t kind;
+      uint32_t parent_scope;
+      uint32_t function_type;
+      char name[];
+    } ATTRIBUTE_PACKED;
+  */
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end - %LLcv_type%x_start\n",
+	       t->num, t->num);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_start:\n", t->num);
+
+  fputs (integer_asm_op (2, false), asm_out_file);
+  fprint_whex (asm_out_file, t->kind);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_func_id.parent_scope);
+  putc ('\n', asm_out_file);
+
+  fputs (integer_asm_op (4, false), asm_out_file);
+  fprint_whex (asm_out_file, t->lf_func_id.function_type);
+  putc ('\n', asm_out_file);
+
+  name_len = strlen (t->lf_func_id.name) + 1;
+
+  ASM_OUTPUT_ASCII (asm_out_file, t->lf_func_id.name, name_len);
+
+  write_cv_padding (4 - (name_len % 4));
+
+  free (t->lf_func_id.name);
+
+  asm_fprintf (asm_out_file, "%LLcv_type%x_end:\n", t->num);
+}
+
 /* Write the .debug$T section, which contains all of our custom type
    definitions.  */
 
@@ -1830,6 +2050,10 @@ write_custom_types (void)
 
 	case LF_ARGLIST:
 	  write_lf_arglist (custom_types);
+	  break;
+
+	case LF_FUNC_ID:
+	  write_lf_func_id (custom_types);
 	  break;
 
 	default:
@@ -3011,6 +3235,58 @@ add_variable (dw_die_ref die)
   last_sym = s;
 }
 
+/* Process a DW_TAG_subprogram DIE, and add an S_GPROC32_ID or S_LPROC32_ID
+   symbol for this.  */
+
+static void
+add_function (dw_die_ref die)
+{
+  codeview_custom_type *ct;
+  const char *name = get_AT_string (die, DW_AT_name);
+  uint32_t function_type, func_id_type;
+  codeview_symbol *s;
+
+  if (!name)
+    return;
+
+  /* Add an LF_FUNC_ID type for this function.  */
+
+  function_type = get_type_num_subroutine_type (die, false);
+
+  ct = (codeview_custom_type *) xmalloc (sizeof (codeview_custom_type));
+
+  ct->next = NULL;
+  ct->kind = LF_FUNC_ID;
+  ct->lf_func_id.parent_scope = 0;
+  ct->lf_func_id.function_type = function_type;
+  ct->lf_func_id.name = xstrdup (name);
+
+  add_custom_type (ct);
+
+  func_id_type = ct->num;
+
+  /* Add an S_GPROC32_ID / S_LPROC32_ID symbol.  */
+
+  s = (codeview_symbol *) xmalloc (sizeof (codeview_symbol));
+
+  s->next = NULL;
+  s->kind = get_AT (die, DW_AT_external) ? S_GPROC32_ID : S_LPROC32_ID;
+  s->function.parent = 0;
+  s->function.end = 0;
+  s->function.next = 0;
+  s->function.type = func_id_type;
+  s->function.flags = 0;
+  s->function.name = xstrdup (name);
+  s->function.die = die;
+
+  if (last_sym)
+    last_sym->next = s;
+  else
+    sym = s;
+
+  last_sym = s;
+}
+
 /* Loop through the DIEs that have been output for our TU, and add CodeView
    symbols for them.  */
 
@@ -3028,8 +3304,17 @@ codeview_debug_early_finish (dw_die_ref die)
 
   do
     {
-      if (dw_get_die_tag (c) == DW_TAG_variable)
-	add_variable (c);
+      switch (dw_get_die_tag (c))
+	{
+	case DW_TAG_variable:
+	  add_variable (c);
+	  break;
+	case DW_TAG_subprogram:
+	  add_function (c);
+	  break;
+	default:
+	  break;
+	}
 
       c = dw_get_die_sib (c);
     }
