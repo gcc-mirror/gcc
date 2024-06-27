@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do run { target *-*-* } }
 // { dg-require-effective-target c++17 }
 // { dg-additional-options "-march=x86-64-v4" { target avx512f_runtime } }
 // { dg-require-cmath "" }
