@@ -4715,8 +4715,6 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
       location_t brace_loc = c_parser_peek_token (parser)->location;
       struct c_declarator *declarator;
       struct c_declspecs *quals_attrs = build_null_declspecs ();
-      bool static_seen;
-      bool star_seen;
       struct c_expr dimen;
       dimen.value = NULL_TREE;
       dimen.original_code = ERROR_MARK;
@@ -4724,49 +4722,48 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
       c_parser_consume_token (parser);
       c_parser_declspecs (parser, quals_attrs, false, false, true,
 			  false, false, false, false, cla_prefer_id);
-      static_seen = c_parser_next_token_is_keyword (parser, RID_STATIC);
-      if (static_seen)
-	c_parser_consume_token (parser);
-      if (static_seen && !quals_attrs->declspecs_seen_p)
-	c_parser_declspecs (parser, quals_attrs, false, false, true,
-			    false, false, false, false, cla_prefer_id);
+
+      location_t static_loc = UNKNOWN_LOCATION;
+      if (c_parser_next_token_is_keyword (parser, RID_STATIC))
+	{
+	  static_loc = c_parser_peek_token (parser)->location;
+	  c_parser_consume_token (parser);
+	  if (!quals_attrs->declspecs_seen_p)
+	    c_parser_declspecs (parser, quals_attrs, false, false, true,
+				false, false, false, false, cla_prefer_id);
+	}
       if (!quals_attrs->declspecs_seen_p)
 	quals_attrs = NULL;
       /* If "static" is present, there must be an array dimension.
 	 Otherwise, there may be a dimension, "*", or no
 	 dimension.  */
+      const bool static_seen = (static_loc != UNKNOWN_LOCATION);
+      bool star_seen = false;
+      if (c_parser_next_token_is (parser, CPP_MULT)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_CLOSE_SQUARE)
+	{
+	  star_seen = true;
+	  c_parser_consume_token (parser);
+	}
+      else if (!c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
+	dimen = c_parser_expr_no_commas (parser, NULL);
+
       if (static_seen)
 	{
-	  star_seen = false;
-	  dimen = c_parser_expr_no_commas (parser, NULL);
-	}
-      else
-	{
-	  if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
+	  if (star_seen)
 	    {
-	      dimen.value = NULL_TREE;
+	      error_at (static_loc,
+			"%<static%> may not be used with an unspecified "
+			"variable length array size");
+	      /* Prevent further errors.  */
 	      star_seen = false;
+	      dimen.value = error_mark_node;
 	    }
-	  else if (c_parser_next_token_is (parser, CPP_MULT))
-	    {
-	      if (c_parser_peek_2nd_token (parser)->type == CPP_CLOSE_SQUARE)
-		{
-		  dimen.value = NULL_TREE;
-		  star_seen = true;
-		  c_parser_consume_token (parser);
-		}
-	      else
-		{
-		  star_seen = false;
-		  dimen = c_parser_expr_no_commas (parser, NULL);
-		}
-	    }
-	  else
-	    {
-	      star_seen = false;
-	      dimen = c_parser_expr_no_commas (parser, NULL);
-	    }
+	  else if (!dimen.value)
+	    error_at (static_loc,
+		      "%<static%> may not be used without an array size");
 	}
+
       if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 	c_parser_consume_token (parser);
       else
