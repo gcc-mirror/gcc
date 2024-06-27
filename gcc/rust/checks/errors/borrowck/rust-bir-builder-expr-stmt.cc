@@ -80,14 +80,21 @@ ExprStmtBuilder::visit (HIR::ClosureExpr &expr)
 {
   auto closure_ty = lookup_type (expr)->as<TyTy::ClosureType> ();
   std::vector<PlaceId> captures;
+  std::vector<location_t> capture_locations;
   for (auto &capture : closure_ty->get_captures ())
     {
       captures.push_back (ctx.place_db.lookup_variable (capture));
+      auto location = Analysis::Mappings::get ()
+			.lookup_ast_item (capture)
+			.value ()
+			->get_locus ();
+      capture_locations.push_back (location);
     }
-  move_all (captures);
+  move_all (captures, capture_locations);
 
   // Note: Not a coercion site for captures.
-  return_expr (new InitializerExpr (std::move (captures)), lookup_type (expr));
+  return_expr (new InitializerExpr (std::move (captures)), lookup_type (expr),
+	       expr.get_locus ());
 }
 
 void
@@ -96,23 +103,31 @@ ExprStmtBuilder::visit (HIR::StructExprStructFields &fields)
   auto *p_adt_type = lookup_type (fields)->as<TyTy::ADTType> ();
   auto struct_ty = p_adt_type->get_variants ().at (0);
   auto init_values = StructBuilder (ctx, struct_ty).build (fields);
-  move_all (init_values);
+  // collect fields locations
+  std::vector<location_t> field_locations;
+  for (auto &field : fields.get_fields ())
+    {
+      field_locations.push_back (field->get_locus ());
+    }
+  move_all (init_values, field_locations);
   return_expr (new InitializerExpr (std::move (init_values)),
-	       lookup_type (fields));
+	       lookup_type (fields), fields.get_locus ());
 }
 
 void
 ExprStmtBuilder::visit (HIR::StructExprStruct &expr)
 {
   // There is no way to modify empty struct, which makes them constant.
-  return_place (ctx.place_db.get_constant (lookup_type (expr)));
+  return_place (ctx.place_db.get_constant (lookup_type (expr)),
+		expr.get_locus ());
 }
 
 void
 ExprStmtBuilder::visit (HIR::LiteralExpr &expr)
 {
   // Different literal values of the same type are not distinguished in BIR.
-  return_place (ctx.place_db.get_constant (lookup_type (expr)));
+  return_place (ctx.place_db.get_constant (lookup_type (expr)),
+		expr.get_locus ());
 }
 
 void
@@ -122,12 +137,12 @@ ExprStmtBuilder::visit (HIR::BorrowExpr &expr)
   if (ctx.place_db[operand].is_constant ())
     {
       // Cannot borrow a constant, must create a temporary copy.
-      push_tmp_assignment (operand);
+      push_tmp_assignment (operand, expr.get_locus ());
       operand = translated;
     }
 
   // BorrowExpr cannot be annotated with lifetime.
-  return_borrowed (operand, lookup_type (expr));
+  return_borrowed (operand, lookup_type (expr), expr.get_locus ());
 }
 
 void
@@ -135,7 +150,8 @@ ExprStmtBuilder::visit (HIR::DereferenceExpr &expr)
 {
   auto operand = visit_expr (*expr.get_expr ());
   return_place (ctx.place_db.lookup_or_add_path (Place::DEREF,
-						 lookup_type (expr), operand));
+						 lookup_type (expr), operand),
+		expr.get_locus ());
 }
 
 void
@@ -149,7 +165,8 @@ void
 ExprStmtBuilder::visit (HIR::NegationExpr &expr)
 {
   PlaceId operand = visit_expr (*expr.get_expr ());
-  return_expr (new Operator<1> ({move_place (operand)}), lookup_type (expr));
+  return_expr (new Operator<1> ({move_place (operand, expr.get_locus ())}),
+	       lookup_type (expr), expr.get_locus ());
 }
 
 void
@@ -157,8 +174,10 @@ ExprStmtBuilder::visit (HIR::ArithmeticOrLogicalExpr &expr)
 {
   PlaceId lhs = visit_expr (*expr.get_lhs ());
   PlaceId rhs = visit_expr (*expr.get_rhs ());
-  return_expr (new Operator<2> ({move_place (lhs), move_place (rhs)}),
-	       lookup_type (expr));
+  return_expr (new Operator<2> (
+		 {move_place (lhs, expr.get_lhs ()->get_locus ()),
+		  move_place (rhs, expr.get_rhs ()->get_locus ())}),
+	       lookup_type (expr), expr.get_locus ());
 }
 
 void
@@ -166,8 +185,10 @@ ExprStmtBuilder::visit (HIR::ComparisonExpr &expr)
 {
   PlaceId lhs = visit_expr (*expr.get_lhs ());
   PlaceId rhs = visit_expr (*expr.get_rhs ());
-  return_expr (new Operator<2> ({move_place (lhs), move_place (rhs)}),
-	       lookup_type (expr));
+  return_expr (new Operator<2> (
+		 {move_place (lhs, expr.get_lhs ()->get_locus ()),
+		  move_place (rhs, expr.get_rhs ()->get_locus ())}),
+	       lookup_type (expr), expr.get_locus ());
 }
 
 void
@@ -175,14 +196,16 @@ ExprStmtBuilder::visit (HIR::LazyBooleanExpr &expr)
 {
   return_place (LazyBooleanExprBuilder (ctx, take_or_create_return_place (
 					       lookup_type (expr)))
-		  .build (expr));
+		  .build (expr),
+		expr.get_locus ());
 }
 
 void
 ExprStmtBuilder::visit (HIR::TypeCastExpr &expr)
 {
   auto operand = visit_expr (*expr.get_expr ());
-  return_expr (new Operator<1> ({operand}), lookup_type (expr));
+  return_expr (new Operator<1> ({operand}), lookup_type (expr),
+	       expr.get_locus ());
 }
 
 void
@@ -190,7 +213,7 @@ ExprStmtBuilder::visit (HIR::AssignmentExpr &expr)
 {
   auto lhs = visit_expr (*expr.get_lhs ());
   auto rhs = visit_expr (*expr.get_rhs ());
-  push_assignment (lhs, rhs);
+  push_assignment (lhs, rhs, expr.get_locus ());
   translated = INVALID_PLACE;
 }
 
@@ -199,13 +222,13 @@ ExprStmtBuilder::visit (HIR::CompoundAssignmentExpr &expr)
 {
   auto lhs = visit_expr (*expr.get_lhs ());
   auto rhs = visit_expr (*expr.get_rhs ());
-  push_assignment (lhs, new Operator<2> ({lhs, rhs}));
+  push_assignment (lhs, new Operator<2> ({lhs, rhs}), expr.get_locus ());
 }
 
 void
 ExprStmtBuilder::visit (HIR::GroupedExpr &expr)
 {
-  return_place (visit_expr (*expr.get_expr_in_parens ()));
+  return_place (visit_expr (*expr.get_expr_in_parens ()), expr.get_locus ());
 }
 
 void
@@ -217,15 +240,22 @@ ExprStmtBuilder::visit (HIR::ArrayExpr &expr)
       case HIR::ArrayElems::VALUES: {
 	auto &elem_vals = (static_cast<HIR::ArrayElemsValues &> (*elems));
 	auto init_values = visit_list (elem_vals.get_values ());
-	move_all (init_values);
+	// collect locations
+	std::vector<location_t> value_locations;
+	for (auto &value : elem_vals.get_values ())
+	  {
+	    value_locations.push_back (value->get_locus ());
+	  }
+	move_all (init_values, value_locations);
 	return_expr (new InitializerExpr (std::move (init_values)),
-		     lookup_type (expr));
+		     lookup_type (expr), expr.get_locus ());
 	break;
       }
       case HIR::ArrayElems::COPIED: {
 	auto &elem_copied = (static_cast<HIR::ArrayElemsCopied &> (*elems));
 	auto init = visit_expr (*elem_copied.get_elem_to_copy ());
-	return_expr (new InitializerExpr ({init}), lookup_type (expr));
+	return_expr (new InitializerExpr ({init}), lookup_type (expr),
+		     expr.get_locus ());
 	break;
       }
     }
@@ -238,8 +268,9 @@ ExprStmtBuilder::visit (HIR::ArrayIndexExpr &expr)
   auto rhs = visit_expr (*expr.get_index_expr ());
   // The index is not tracked in BIR.
   std::ignore = rhs;
-  return_place (
-    ctx.place_db.lookup_or_add_path (Place::INDEX, lookup_type (expr), lhs));
+  return_place (ctx.place_db.lookup_or_add_path (Place::INDEX,
+						 lookup_type (expr), lhs),
+		expr.get_locus ());
 }
 
 void
@@ -247,7 +278,7 @@ ExprStmtBuilder::visit (HIR::TupleExpr &expr)
 {
   std::vector<PlaceId> init_values = visit_list (expr.get_tuple_elems ());
   return_expr (new InitializerExpr (std::move (init_values)),
-	       lookup_type (expr));
+	       lookup_type (expr), expr.get_locus ());
 }
 
 void
@@ -256,7 +287,8 @@ ExprStmtBuilder::visit (HIR::TupleIndexExpr &expr)
   auto tuple = visit_expr (*expr.get_tuple_expr ());
   return_place (ctx.place_db.lookup_or_add_path (Place::FIELD,
 						 lookup_type (expr), tuple,
-						 expr.get_tuple_index ()));
+						 expr.get_tuple_index ()),
+		expr.get_locus ());
 }
 
 void
@@ -273,10 +305,16 @@ ExprStmtBuilder::visit (HIR::CallExpr &expr)
       coercion_site (arguments[i], fn_type->get_param_type_at (i));
     }
 
-  move_all (arguments);
+  // collect parameter locations
+  std::vector<location_t> parameter_locations;
+  for (auto &parameter : expr.get_arguments ())
+    {
+      parameter_locations.push_back (parameter->get_locus ());
+    }
+  move_all (arguments, parameter_locations);
 
   return_expr (new CallExpr (fn, std::move (arguments)), lookup_type (expr),
-	       true);
+	       expr.get_locus (), true);
 }
 
 void
@@ -302,7 +340,8 @@ ExprStmtBuilder::visit (HIR::FieldAccessExpr &expr)
 
   return_place (ctx.place_db.lookup_or_add_path (Place::FIELD,
 						 field_ty->get_field_type (),
-						 receiver, field_index));
+						 receiver, field_index),
+		expr.get_locus ());
 }
 
 void
@@ -338,7 +377,8 @@ ExprStmtBuilder::visit (HIR::BlockExpr &block)
       if (block.has_expr () && !unreachable)
 	{
 	  push_assignment (block_ctx.label_var,
-			   visit_expr (*block.get_final_expr ()));
+			   visit_expr (*block.get_final_expr ()),
+			   block.get_start_locus ());
 	}
       if (!ctx.get_current_bb ().is_terminated ())
 	{
@@ -347,13 +387,14 @@ ExprStmtBuilder::visit (HIR::BlockExpr &block)
       ctx.current_bb = block_ctx.break_bb;
       ctx.loop_and_label_stack.pop_back ();
 
-      return_place (block_ctx.label_var);
+      return_place (block_ctx.label_var, block.get_start_locus ());
     }
   else if (block.has_expr () && !unreachable)
     {
       return_place (visit_expr (*block.get_final_expr (),
 				take_or_create_return_place (
-				  lookup_type (*block.get_final_expr ()))));
+				  lookup_type (*block.get_final_expr ()))),
+		    block.get_start_locus ());
     }
 
   if (!unreachable)
@@ -379,7 +420,8 @@ ExprStmtBuilder::visit (HIR::BreakExpr &brk)
   LoopAndLabelCtx info = brk.has_label () ? get_label_ctx (brk.get_label ())
 					  : get_unnamed_loop_ctx ();
   if (brk.has_break_expr ())
-    push_assignment (info.label_var, visit_expr (*brk.get_expr ()));
+    push_assignment (info.label_var, visit_expr (*brk.get_expr ()),
+		     brk.get_locus ());
 
   start_new_consecutive_bb ();
   unwind_until (ctx.place_db.get_scope (info.continue_scope).parent);
@@ -392,27 +434,30 @@ ExprStmtBuilder::visit (HIR::RangeFromToExpr &range)
 {
   auto from = visit_expr (*range.get_from_expr ());
   auto to = visit_expr (*range.get_to_expr ());
-  return_expr (new InitializerExpr ({from, to}), lookup_type (range));
+  return_expr (new InitializerExpr ({from, to}), lookup_type (range),
+	       range.get_locus ());
 }
 
 void
 ExprStmtBuilder::visit (HIR::RangeFromExpr &expr)
 {
   auto from = visit_expr (*expr.get_from_expr ());
-  return_expr (new InitializerExpr ({from}), lookup_type (expr));
+  return_expr (new InitializerExpr ({from}), lookup_type (expr),
+	       expr.get_locus ());
 }
 
 void
 ExprStmtBuilder::visit (HIR::RangeToExpr &expr)
 {
   auto to = visit_expr (*expr.get_to_expr ());
-  return_expr (new InitializerExpr ({to}), lookup_type (expr));
+  return_expr (new InitializerExpr ({to}), lookup_type (expr),
+	       expr.get_locus ());
 }
 
 void
 ExprStmtBuilder::visit (HIR::RangeFullExpr &expr)
 {
-  return_expr (new InitializerExpr ({}), lookup_type (expr));
+  return_expr (new InitializerExpr ({}), lookup_type (expr), expr.get_locus ());
 }
 
 void
@@ -420,14 +465,16 @@ ExprStmtBuilder::visit (HIR::RangeFromToInclExpr &expr)
 {
   auto from = visit_expr (*expr.get_from_expr ());
   auto to = visit_expr (*expr.get_to_expr ());
-  return_expr (new InitializerExpr ({from, to}), lookup_type (expr));
+  return_expr (new InitializerExpr ({from, to}), lookup_type (expr),
+	       expr.get_locus ());
 }
 
 void
 ExprStmtBuilder::visit (HIR::RangeToInclExpr &expr)
 {
   auto to = visit_expr (*expr.get_to_expr ());
-  return_expr (new InitializerExpr ({to}), lookup_type (expr));
+  return_expr (new InitializerExpr ({to}), lookup_type (expr),
+	       expr.get_locus ());
 }
 
 void
@@ -436,7 +483,9 @@ ExprStmtBuilder::visit (HIR::ReturnExpr &ret)
   if (ret.has_return_expr ())
     {
       push_assignment (RETURN_VALUE_PLACE,
-		       move_place (visit_expr (*ret.get_expr ())));
+		       move_place (visit_expr (*ret.get_expr ()),
+				   ret.get_expr ()->get_locus ()),
+		       ret.get_locus ());
     }
   unwind_until (ROOT_SCOPE);
   ctx.get_current_bb ().statements.emplace_back (Statement::Kind::RETURN);
@@ -468,7 +517,7 @@ ExprStmtBuilder::visit (HIR::WhileLoopExpr &expr)
 
   auto cond_val = visit_expr (*expr.get_predicate_expr ());
   auto body_bb = new_bb ();
-  push_switch (cond_val, {body_bb, loop.break_bb});
+  push_switch (cond_val, expr.get_locus (), {body_bb, loop.break_bb});
 
   ctx.current_bb = body_bb;
   std::ignore = visit_expr (*expr.get_loop_block ());
@@ -492,7 +541,7 @@ ExprStmtBuilder::visit (HIR::IfExpr &expr)
   if (expr.get_if_block ()->statements.empty ())
     return;
 
-  push_switch (visit_expr (*expr.get_if_condition ()));
+  push_switch (visit_expr (*expr.get_if_condition ()), expr.get_locus ());
   BasicBlockId if_block = ctx.current_bb;
 
   ctx.current_bb = new_bb ();
@@ -518,7 +567,9 @@ ExprStmtBuilder::visit (HIR::IfExpr &expr)
 void
 ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
 {
-  push_switch (move_place (visit_expr (*expr.get_if_condition ())));
+  push_switch (move_place (visit_expr (*expr.get_if_condition ()),
+			   expr.get_if_condition ()->get_locus ()),
+	       expr.get_locus ());
   BasicBlockId if_end_bb = ctx.current_bb;
 
   PlaceId result = take_or_create_return_place (lookup_type (expr));
@@ -539,7 +590,7 @@ ExprStmtBuilder::visit (HIR::IfExprConseqElse &expr)
 
   ctx.current_bb = new_bb ();
   BasicBlockId final_start_bb = ctx.current_bb;
-  return_place (result);
+  return_place (result, expr.get_locus ());
 
   // Jumps are added at the end to match rustc MIR order for easier comparison.
   add_jump (if_end_bb, then_start_bb);
@@ -627,7 +678,7 @@ ExprStmtBuilder::visit (HIR::QualifiedPathInExpression &expr)
 {
   // Note: Type is only stored for the expr, not the segment.
   PlaceId result = resolve_variable_or_fn (expr, lookup_type (expr));
-  return_place (result);
+  return_place (result, expr.get_locus ());
 }
 
 void
@@ -635,7 +686,7 @@ ExprStmtBuilder::visit (HIR::PathInExpression &expr)
 {
   // Note: Type is only stored for the expr, not the segment.
   PlaceId result = resolve_variable_or_fn (expr, lookup_type (expr));
-  return_place (result);
+  return_place (result, expr.get_locus ());
 }
 
 void
@@ -677,7 +728,7 @@ ExprStmtBuilder::visit (HIR::ExprStmt &stmt)
   // We must read the value for current liveness and we must not store it into
   // the same place.
   if (result != INVALID_PLACE)
-    push_tmp_assignment (result);
+    push_tmp_assignment (result, stmt.get_locus ());
 }
 } // namespace BIR
 } // namespace Rust
