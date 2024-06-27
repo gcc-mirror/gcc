@@ -2079,6 +2079,72 @@ mips_const_vector_shuffle_set_p (rtx op, machine_mode mode)
   int nsets = nunits / 4;
   int set = 0;
   int i, j;
+  int val[4];
+  bool ok;
+
+  /* We support swapping 2 Doubleword part with shf.w.  */
+  if (ISA_HAS_MSA && (mode == V2DFmode || mode == V2DImode))
+    {
+      if (!IN_RANGE (INTVAL (XVECEXP (op, 0, 0)), 0, 1)
+	  || !IN_RANGE (INTVAL (XVECEXP (op, 0, 1)), 0, 1))
+	return false;
+    }
+
+  if (ISA_HAS_MSA && mode == V16QImode)
+    {
+     /* We can use shf.w if the elements are in-order inner 32bit.  */
+      ok = true;
+      for (j = 0; j < 4; j++)
+	{
+	  val[0] = INTVAL (XVECEXP (op, 0, j * 4));
+	  val[1] = INTVAL (XVECEXP (op, 0, j * 4 + 1));
+	  val[2] = INTVAL (XVECEXP (op, 0, j * 4 + 2));
+	  val[3] = INTVAL (XVECEXP (op, 0, j * 4 + 3));
+	  if (val[0] != val[1] - 1
+	      || val[1] != val[2] - 1
+	      || val[2] != val[3] - 1)
+	    ok = false;
+	  if (val[0] != 0 && val[0] != 4 && val[0] != 8 && val[0] != 12)
+	    ok = false;
+	}
+      if (ok)
+	return ok;
+
+      /* We can use shf.h if the elements are in order inner 16bit.  */
+      ok = true;
+      for (j = 0; j < 4; j++)
+	{
+	  val[0] = INTVAL (XVECEXP (op, 0, j * 2));
+	  val[1] = INTVAL (XVECEXP (op, 0, j * 2 + 1));
+	  val[2] = INTVAL (XVECEXP (op, 0, j * 2 + 8));
+	  val[3] = INTVAL (XVECEXP (op, 0, j * 2 + 1 + 8));
+	  if (val[0] != val[1] - 1 || val[2] != val[3] - 1)
+	    ok = false;
+	  if (val[0] != val[2] - 8 || val[1] != val[3] - 8)
+	    ok = false;
+	  if (val[0] != 0 && val[0] != 2 && val[0] != 4 && val[0] != 6)
+	    ok = false;
+	}
+      if (ok)
+	return ok;
+    }
+
+  if (ISA_HAS_MSA && mode == V8HImode)
+    {
+     /* We can use shf.w if the elements are in-order inner 32bit.  */
+      ok = true;
+      for (j = 0; j < 4; j++)
+	{
+	  val[0] = INTVAL (XVECEXP (op, 0, j * 2));
+	  val[1] = INTVAL (XVECEXP (op, 0, j * 2 + 1));
+	  if (val[0] != val[1] - 1)
+	    ok = false;
+	  if (val[0] != 0 && val[0] != 2 && val[0] != 4 && val[0] != 6)
+	    ok = false;
+	}
+      if (ok)
+	return ok;
+    }
 
   /* Check if we have the same 4-element sets.  */
   for (j = 0; j < nsets; j++, set = 4 * j)
@@ -22302,6 +22368,89 @@ mips_msa_vec_parallel_const_half (machine_mode mode, bool high_p)
     RTVEC_ELT (v, i) = GEN_INT (base + i);
 
   return gen_rtx_PARALLEL (VOIDmode, v);
+}
+
+/* Construct and return i8 of SHF.df.  No error will happen since tt has
+   been constrained by mips_const_vector_shuffle_set_p.
+   Return (IMM | (INSN << 8)):  The range of IMM is [0, 0xFF].
+   The INSN can be 0 (error)/1 (SHF.B)/2 (SHF.H)/4 (SHF.W).  */
+
+HOST_WIDE_INT
+mips_msa_shf_i8 (rtx *operands)
+{
+  HOST_WIDE_INT rval = 0, val[16];
+  unsigned int i;
+  machine_mode mode = GET_MODE (operands[0]);
+  int which_op = 0;
+
+  /* We use shf.w to swap 2 doubleword part.  */
+  if (mode == V2DImode || mode == V2DFmode)
+    {
+      val[0] = INTVAL (XVECEXP (operands[2], 0, 0));
+      val[1] = INTVAL (XVECEXP (operands[2], 0, 1));
+      val[3] = val[1] == 0 ? 1 : 3;
+      val[2] = val[1] == 0 ? 0 : 2;
+      val[1] = val[0] == 0 ? 1 : 3;
+      val[0] = val[0] == 0 ? 0 : 2;
+      which_op = 4;
+    }
+  else if (mode == V16QImode)
+    {
+      for (i = 0; i < 16; i++)
+	val[i] = INTVAL (XVECEXP (operands[2], 0, i));
+      if (val[1] - val[0] == 1
+	  && val[2] - val[1] == 1
+	  && val[3] - val[2] == 1)
+	{
+	  which_op = 4;
+	  val[0] = val[0] / 4;
+	  val[1] = val[4] / 4;
+	  val[2] = val[8] / 4;
+	  val[3] = val[12] / 4;
+	}
+      else if (val[1] - val[0] == 1
+	  && val[3] - val[2] == 1)
+	{
+	  which_op = 2;
+	  val[0] = val[0] / 2;
+	  val[1] = val[2] / 2;
+	  val[2] = val[4] / 2;
+	  val[3] = val[6] / 2;
+	}
+      else
+	which_op = 1;
+    }
+  else if (mode == V8HImode)
+    {
+      for (i = 0; i < 8; i++)
+	val[i] = INTVAL (XVECEXP (operands[2], 0, i));
+      if (val[1] - val[0] == 1
+	  && val[3] - val[2] == 1
+	  && val[5] - val[4] == 1
+	  && val[7] - val[6] == 1)
+	{
+	  which_op = 4;
+	  val[0] = val[0] / 2;
+	  val[1] = val[2] / 2;
+	  val[2] = val[4] / 2;
+	  val[3] = val[6] / 2;
+	}
+      else
+	which_op = 2;
+    }
+  else if (mode == V4SImode || mode == V4SFmode)
+    {
+      for (i = 0; i < 4; i++)
+	val[i] = INTVAL (XVECEXP (operands[2], 0, i));
+      which_op = 4;
+    }
+
+  /* We convert the selection to an immediate.  */
+  for (i = 0; i < 4; i++)
+    rval |= val[i] << (2 * i);
+
+  rval |= (which_op << 8);
+  return rval;
 }
 
 /* A subroutine of mips_expand_vec_init, match constant vector elements.  */

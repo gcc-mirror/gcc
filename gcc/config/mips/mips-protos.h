@@ -387,6 +387,7 @@ extern mulsidi3_gen_fn mips_mulsidi3_gen_fn (enum rtx_code);
 extern void mips_register_frame_header_opt (void);
 extern void mips_expand_vec_cond_expr (machine_mode, machine_mode, rtx *, bool);
 extern void mips_expand_vec_cmp_expr (rtx *);
+extern HOST_WIDE_INT mips_msa_shf_i8 (rtx *);
 
 extern void mips_emit_speculation_barrier_function (void);
 
