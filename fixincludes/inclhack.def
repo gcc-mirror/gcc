@@ -1273,6 +1273,7 @@ fix = {
     hackname  = apple_local_stdio_fn_deprecation;
     mach      = "*-*-*darwin2*";
     files     = stdio.h;
+    files     = _stdio.h;
     select    = "__deprecated_msg([^\n]*)$";
     c_fix     = format;
     c_fix_arg = "#if defined(__APPLE_LOCAL_DEPRECATIONS)\n"
