@@ -5496,8 +5496,11 @@ c_decl_attributes (tree *node, tree attributes, int flags)
   /* Look up the current declaration with all the attributes merged
      so far so that attributes on the current declaration that's
      about to be pushed that conflict with the former can be detected,
-     diagnosed, and rejected as appropriate.  */
+     diagnosed, and rejected as appropriate.  To match the C++ FE, do
+     not pass an error_mark_node when we found an undeclared variable.  */
   tree last_decl = lookup_last_decl (*node);
+  if (last_decl == error_mark_node)
+    last_decl = NULL_TREE;
   return decl_attributes (node, attributes, flags, last_decl);
 }
 
