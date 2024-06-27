@@ -13122,13 +13122,17 @@ bool
 depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 {
   auto data = static_cast <add_binding_data *> (data_);
+  decl = strip_using_decl (decl);
 
   if (!(TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl)))
     {
       tree inner = decl;
 
       if (TREE_CODE (inner) == CONST_DECL
-	  && TREE_CODE (DECL_CONTEXT (inner)) == ENUMERAL_TYPE)
+	  && TREE_CODE (DECL_CONTEXT (inner)) == ENUMERAL_TYPE
+	  /* A using-decl could make a CONST_DECL purview for a non-purview
+	     enumeration.  */
+	  && (!DECL_LANG_SPECIFIC (inner) || !DECL_MODULE_PURVIEW_P (inner)))
 	inner = TYPE_NAME (DECL_CONTEXT (inner));
       else if (TREE_CODE (inner) == TEMPLATE_DECL)
 	inner = DECL_TEMPLATE_RESULT (inner);
@@ -13156,18 +13160,17 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	/* Ignore NTTP objects.  */
 	return false;
 
-      bool unscoped_enum_const_p = false;
       if (!(flags & WMB_Using) && CP_DECL_CONTEXT (decl) != data->ns)
 	{
-	  /* A using that lost its wrapper or an unscoped enum
-	     constant.  */
-	  /* FIXME: Ensure that unscoped enums are differentiated from
-	     'using enum' declarations when PR c++/114683 is fixed.  */
-	  unscoped_enum_const_p = (TREE_CODE (decl) == CONST_DECL);
+	  /* An unscoped enum constant implicitly brought into the containing
+	     namespace.  We treat this like a using-decl.  */
+	  gcc_checking_assert (TREE_CODE (decl) == CONST_DECL);
+
 	  flags = WMB_Flags (flags | WMB_Using);
-	  if (DECL_MODULE_EXPORT_P (TREE_CODE (decl) == CONST_DECL
-				    ? TYPE_NAME (TREE_TYPE (decl))
-				    : STRIP_TEMPLATE (decl)))
+	  if (DECL_MODULE_EXPORT_P (TYPE_NAME (TREE_TYPE (decl)))
+	      /* A using-decl can make an enum constant exported for a
+		 non-exported enumeration.  */
+	      || (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_EXPORT_P (decl)))
 	    flags = WMB_Flags (flags | WMB_Export);
 	}
 
@@ -13225,8 +13228,7 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
       if (flags & WMB_Using)
 	{
 	  decl = ovl_make (decl, NULL_TREE);
-	  if (!unscoped_enum_const_p)
-	    OVL_USING_P (decl) = true;
+	  OVL_USING_P (decl) = true;
 	  OVL_PURVIEW_P (decl) = true;
 	  if (flags & WMB_Export)
 	    OVL_EXPORT_P (decl) = true;
@@ -13250,12 +13252,8 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
       data->met_namespace = true;
       if (data->hash->add_namespace_entities (decl, data->partitions))
 	{
-	  /* It contains an exported thing, so it is exported.
-
-	     FIXME we have to set DECL_MODULE_PURVIEW_P instead of asserting
-	     that it is already set because of the c++/114683 issue with
-	     exported using-declarations; see do_nonmember_using_decl.  */
-	  DECL_MODULE_PURVIEW_P (decl) = true;
+	  /* It contains an exported thing, so it is exported.  */
+	  gcc_checking_assert (DECL_MODULE_PURVIEW_P (decl));
 	  DECL_MODULE_EXPORT_P (decl) = true;
 	}
 
@@ -13744,6 +13742,10 @@ binding_cmp (const void *a_, const void *b_)
       a_export = OVL_EXPORT_P (a_ent);
       a_ent = OVL_FUNCTION (a_ent);
     }
+  else if (TREE_CODE (a_ent) == CONST_DECL
+	   && DECL_LANG_SPECIFIC (a_ent)
+	   && DECL_MODULE_EXPORT_P (a_ent))
+    a_export = true;
   else
     a_export = DECL_MODULE_EXPORT_P (TREE_CODE (a_ent) == CONST_DECL
 				     ? TYPE_NAME (TREE_TYPE (a_ent))
@@ -13756,6 +13758,10 @@ binding_cmp (const void *a_, const void *b_)
       b_export = OVL_EXPORT_P (b_ent);
       b_ent = OVL_FUNCTION (b_ent);
     }
+  else if (TREE_CODE (b_ent) == CONST_DECL
+	   && DECL_LANG_SPECIFIC (b_ent)
+	   && DECL_MODULE_EXPORT_P (b_ent))
+    b_export = true;
   else
     b_export = DECL_MODULE_EXPORT_P (TREE_CODE (b_ent) == CONST_DECL
 				     ? TYPE_NAME (TREE_TYPE (b_ent))
@@ -14964,7 +14970,6 @@ enum ct_bind_flags
   cbf_export = 0x1,	/* An exported decl.  */
   cbf_hidden = 0x2,	/* A hidden (friend) decl.  */
   cbf_using = 0x4,	/* A using decl.  */
-  cbf_wrapped = 0x8,  	/* ... that is wrapped.  */
 };
 
 /* DEP belongs to a different cluster, seed it to prevent
@@ -15127,13 +15132,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		    if (!(TREE_CODE (bound) == CONST_DECL
 			  && UNSCOPED_ENUM_P (TREE_TYPE (bound))
 			  && decl == TYPE_NAME (TREE_TYPE (bound))))
-		      {
-			/* An unscope enumerator in its enumeration's
-			   scope is not a using.  */
-			flags |= cbf_using;
-			if (OVL_USING_P (ovl))
-			  flags |= cbf_wrapped;
-		      }
+		      /* An unscoped enumerator in its enumeration's
+			 scope is not a using.  */
+		      flags |= cbf_using;
 		    if (OVL_EXPORT_P (ovl))
 		      flags |= cbf_export;
 		  }
@@ -15300,13 +15301,54 @@ module_state::read_cluster (unsigned snum)
 		    /* Stat hack.  */
 		    if (type || !DECL_IMPLICIT_TYPEDEF_P (decl))
 		      sec.set_overrun ();
-		    type = decl;
+
+		    if (flags & cbf_using)
+		      {
+			type = build_lang_decl_loc (UNKNOWN_LOCATION,
+						    USING_DECL,
+						    DECL_NAME (decl),
+						    NULL_TREE);
+			USING_DECL_DECLS (type) = decl;
+			USING_DECL_SCOPE (type) = CP_DECL_CONTEXT (decl);
+			DECL_CONTEXT (type) = ns;
+
+			DECL_MODULE_PURVIEW_P (type) = true;
+			if (flags & cbf_export)
+			  DECL_MODULE_EXPORT_P (type) = true;
+		      }
+		    else
+		      type = decl;
 		  }
 		else
 		  {
-		    if (decls
-			|| (flags & (cbf_hidden | cbf_wrapped))
-			|| DECL_FUNCTION_TEMPLATE_P (decl))
+		    if ((flags & cbf_using) &&
+			!DECL_DECLARES_FUNCTION_P (decl))
+		      {
+			/* We should only see a single non-function using-decl
+			   for a binding; more than that would clash.  */
+			if (decls)
+			  sec.set_overrun ();
+
+			/* FIXME: Propagate the location of the using-decl
+			   for use in diagnostics.  */
+			decls = build_lang_decl_loc (UNKNOWN_LOCATION,
+						     USING_DECL,
+						     DECL_NAME (decl),
+						     NULL_TREE);
+			USING_DECL_DECLS (decls) = decl;
+			/* We don't currently record the actual scope of the
+			   using-declaration, but this approximation should
+			   generally be good enough.  */
+			USING_DECL_SCOPE (decls) = CP_DECL_CONTEXT (decl);
+			DECL_CONTEXT (decls) = ns;
+
+			DECL_MODULE_PURVIEW_P (decls) = true;
+			if (flags & cbf_export)
+			  DECL_MODULE_EXPORT_P (decls) = true;
+		      }
+		    else if (decls
+			     || (flags & (cbf_hidden | cbf_using))
+			     || DECL_FUNCTION_TEMPLATE_P (decl))
 		      {
 			decls = ovl_make (decl, decls);
 			if (flags & cbf_using)
@@ -19202,6 +19244,7 @@ set_instantiating_module (tree decl)
 	      || TREE_CODE (decl) == TYPE_DECL
 	      || TREE_CODE (decl) == CONCEPT_DECL
 	      || TREE_CODE (decl) == TEMPLATE_DECL
+	      || TREE_CODE (decl) == CONST_DECL
 	      || (TREE_CODE (decl) == NAMESPACE_DECL
 		  && DECL_NAMESPACE_ALIAS (decl)));
 

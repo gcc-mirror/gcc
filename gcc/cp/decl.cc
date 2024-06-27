@@ -702,12 +702,13 @@ poplevel (int keep, int reverse, int functionbody)
 	/* There are cases where D itself is a TREE_LIST.  See in
 	   push_local_binding where the list of decls returned by
 	   getdecls is built.  */
-	decl = TREE_CODE (d) == TREE_LIST ? TREE_VALUE (d) : d;
+	tree udecl = TREE_CODE (d) == TREE_LIST ? TREE_VALUE (d) : d;
+	decl = strip_using_decl (udecl);
 
 	tree type = TREE_TYPE (decl);
 	if (VAR_P (decl)
-	    && (! TREE_USED (decl) || !DECL_READ_P (decl))
-	    && ! DECL_IN_SYSTEM_HEADER (decl)
+	    && (!TREE_USED (decl) || !DECL_READ_P (decl))
+	    && !DECL_IN_SYSTEM_HEADER (udecl)
 	    /* For structured bindings, consider only real variables, not
 	       subobjects.  */
 	    && (DECL_DECOMPOSITION_P (decl) ? DECL_DECOMP_IS_BASE (decl)
@@ -720,9 +721,13 @@ poplevel (int keep, int reverse, int functionbody)
 		|| lookup_attribute ("warn_unused",
 				     TYPE_ATTRIBUTES (TREE_TYPE (decl)))))
 	  {
-	    if (! TREE_USED (decl))
+	    if (!TREE_USED (decl))
 	      {
-		if (!DECL_NAME (decl) && DECL_DECOMPOSITION_P (decl))
+		if (TREE_CODE (udecl) == USING_DECL)
+		  warning_at (DECL_SOURCE_LOCATION (udecl),
+			      OPT_Wunused_variable,
+			      "unused using-declaration %qD", udecl);
+		else if (!DECL_NAME (decl) && DECL_DECOMPOSITION_P (decl))
 		  warning_at (DECL_SOURCE_LOCATION (decl),
 			      OPT_Wunused_variable,
 			      "unused structured binding declaration");
@@ -16491,7 +16496,6 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
       /* First try ordinary name lookup, ignoring hidden class name
 	 injected via friend declaration.  */
       decl = lookup_name (name, LOOK_want::TYPE);
-      decl = strip_using_decl (decl);
       /* If that fails, the name will be placed in the smallest
 	 non-class, non-function-prototype scope according to 3.3.1/5.
 	 We may already have a hidden name declared as friend in this
