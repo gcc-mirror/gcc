@@ -344,7 +344,7 @@ c++.install-plugin: installdirs
 # Install import library.
 ifeq ($(plugin_implib),yes)
 	$(mkinstalldirs) $(DESTDIR)$(plugin_resourcesdir)
-	$(INSTALL_DATA) cc1plus$(exeext).a $(DESTDIR)/$(plugin_resourcesdir)/cc1plus$(exeext).a
+	$(INSTALL_DATA) cc1plus$(exeext).a $(DESTDIR)$(plugin_resourcesdir)/cc1plus$(exeext).a
 endif
 
 c++.uninstall:
