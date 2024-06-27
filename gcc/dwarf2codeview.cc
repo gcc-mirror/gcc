@@ -1113,7 +1113,7 @@ write_lf_modifier (codeview_custom_type *t)
 /* Write a CodeView extensible integer.  If the value is non-negative and
    < 0x8000, the value gets written directly as an uint16_t.  Otherwise, we
    output two bytes for the integer type (LF_CHAR, LF_SHORT, ...), and the
-   actual value follows.  */
+   actual value follows.  Returns the total number of bytes written.  */
 
 static size_t
 write_cv_integer (codeview_integer *i)
