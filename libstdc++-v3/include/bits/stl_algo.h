@@ -665,25 +665,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __result;
     }
 
-  template<typename _InputIterator, typename _Size, typename _OutputIterator>
-    _GLIBCXX20_CONSTEXPR
-    _OutputIterator
-    __copy_n(_InputIterator __first, _Size __n,
-	     _OutputIterator __result, input_iterator_tag)
-    {
-      return std::__niter_wrap(__result,
-			       __copy_n_a(__first, __n,
-					  std::__niter_base(__result), true));
-    }
-
-  template<typename _RandomAccessIterator, typename _Size,
-	   typename _OutputIterator>
-    _GLIBCXX20_CONSTEXPR
-    inline _OutputIterator
-    __copy_n(_RandomAccessIterator __first, _Size __n,
-	     _OutputIterator __result, random_access_iterator_tag)
-    { return std::copy(__first, __first + __n, __result); }
-
   /**
    *  @brief Copies the range [first,first+n) into [result,result+n).
    *  @ingroup mutating_algorithms
@@ -714,8 +695,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_can_increment(__first, __n2);
       __glibcxx_requires_can_increment(__result, __n2);
 
-      return std::__copy_n(__first, __n2, __result,
-			   std::__iterator_category(__first));
+      auto __res = std::__copy_n_a(std::__niter_base(__first), __n2,
+				   std::__niter_base(__result), true);
+      return std::__niter_wrap(__result, std::move(__res));
     }
 
   /**
