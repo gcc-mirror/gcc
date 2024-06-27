@@ -744,9 +744,15 @@ public:
 
   // opt_pass methods:
   opt_pass *clone () override { return new pass_late_combine (m_ctxt); }
-  bool gate (function *) override { return flag_late_combine_instructions; }
+  bool gate (function *) override;
   unsigned int execute (function *) override;
 };
+
+bool
+pass_late_combine::gate (function *)
+{
+  return optimize > 0 && flag_late_combine_instructions;
+}
 
 unsigned int
 pass_late_combine::execute (function *fn)
