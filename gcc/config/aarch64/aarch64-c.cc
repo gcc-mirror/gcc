@@ -252,6 +252,8 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_BF16_VECTOR_ARITHMETIC", pfile);
   aarch64_def_or_undef (TARGET_BF16_FP,
 			"__ARM_FEATURE_BF16_SCALAR_ARITHMETIC", pfile);
+  aarch64_def_or_undef (TARGET_BF16_FP,
+			"__ARM_FEATURE_BF16", pfile);
   aarch64_def_or_undef (TARGET_LS64,
 			"__ARM_FEATURE_LS64", pfile);
   aarch64_def_or_undef (AARCH64_ISA_RCPC, "__ARM_FEATURE_RCPC", pfile);
