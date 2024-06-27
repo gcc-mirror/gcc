@@ -3347,7 +3347,9 @@ s390_decompose_addrstyle_without_index (rtx op, rtx *base,
   while (op && GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
-  if (op && GET_CODE (op) != REG)
+  if (op && (!REG_P (op)
+	     || (reload_completed
+		 && !REGNO_OK_FOR_BASE_P (REGNO (op)))))
     return false;
 
   if (offset)
