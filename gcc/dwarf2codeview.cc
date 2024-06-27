@@ -77,6 +77,9 @@ enum cv_sym_type {
 /* This is enum LEAF_ENUM_e in Microsoft's cvinfo.h.  */
 
 enum cv_leaf_type {
+  LF_PAD1 = 0xf1,
+  LF_PAD2 = 0xf2,
+  LF_PAD3 = 0xf3,
   LF_MODIFIER = 0x1001,
   LF_POINTER = 0x1002,
   LF_PROCEDURE = 0x1008,
@@ -1037,7 +1040,7 @@ write_lf_pointer (codeview_custom_type *t)
 
 /* All CodeView type definitions have to be aligned to a four-byte boundary,
    so write some padding bytes if necessary.  These have to be specific values:
-   f3, f2, f1.  */
+   LF_PAD3, LF_PAD2, LF_PAD1.  */
 
 static void
 write_cv_padding (size_t padding)
@@ -1048,19 +1051,19 @@ write_cv_padding (size_t padding)
   if (padding == 3)
     {
       fputs (integer_asm_op (1, false), asm_out_file);
-      fprint_whex (asm_out_file, 0xf3);
+      fprint_whex (asm_out_file, LF_PAD3);
       putc ('\n', asm_out_file);
     }
 
   if (padding >= 2)
     {
       fputs (integer_asm_op (1, false), asm_out_file);
-      fprint_whex (asm_out_file, 0xf2);
+      fprint_whex (asm_out_file, LF_PAD2);
       putc ('\n', asm_out_file);
     }
 
   fputs (integer_asm_op (1, false), asm_out_file);
-  fprint_whex (asm_out_file, 0xf1);
+  fprint_whex (asm_out_file, LF_PAD1);
   putc ('\n', asm_out_file);
 }
 
