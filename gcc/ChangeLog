@@ -1,3 +1,261 @@
+2024-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115629
+	* tree-ssa-tail-merge.cc (gimple_equal_p): Handle
+	memory references better.
+	(deps_ok_for_redirect): Handle the case not both blocks
+	are considered a valid prevailing block.
+
+2024-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115652
+	* tree-vect-slp.cc (vect_schedule_slp_node): Advance the
+	iterator based on last_stmt only for vector defs.
+
+2024-06-26  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov-io.h (GCOV_ARC_TRUE): New.
+	(GCOV_ARC_FALSE): New.
+	* gcov.cc (struct arc_info): Add true_value, false_value.
+	(read_graph_file): Read true_value, false_value.
+	* profile.cc (branch_prob): Write GCOV_ARC_TRUE, GCOV_ARC_FALSE.
+
+2024-06-26  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov.cc (print_usage): Reference masking MC/DC.
+
+2024-06-26  Jørgen Kvalsvik  <j@lambda.is>
+
+	* doc/gcov.texi: Add MC/DC section.
+
+2024-06-26  Jørgen Kvalsvik  <j@lambda.is>
+
+	* tree-profile.cc (find_conditions): Use auto_vec.
+
+2024-06-26  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/arm/arm.cc (arm_predict_doloop_p): Reject loops with function
+	calls that are not builtins.
+
+2024-06-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (grace): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document the above.
+
+2024-06-26  Evgeny Karpov  <Evgeny.Karpov@microsoft.com>
+
+	* config/i386/i386.cc (legitimize_dllimport_symbol): Remove unused
+	functions.
+	(legitimize_pe_coff_extern_decl): Likewise.
+
+2024-06-26  Kewen Lin  <linkw@linux.ibm.com>
+	    Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/106069
+	PR target/115355
+	* config/rs6000/altivec.md (altivec_vmrghh_direct): Rename to ...
+	(altivec_vmrghh_direct_be): ... this.  Add condition BYTES_BIG_ENDIAN.
+	(altivec_vmrghh_direct_le): New define_insn.
+	(altivec_vmrglh_direct): Rename to ...
+	(altivec_vmrglh_direct_be): ... this.  Add condition BYTES_BIG_ENDIAN.
+	(altivec_vmrglh_direct_le): New define_insn.
+	(altivec_vmrghh): Adjust by calling gen_altivec_vmrghh_direct_be
+	for BE and gen_altivec_vmrglh_direct_le for LE.
+	(altivec_vmrglh): Adjust by calling gen_altivec_vmrglh_direct_be
+	for BE and gen_altivec_vmrghh_direct_le for LE.
+	(vec_widen_umult_hi_v16qi): Adjust the call to
+	gen_altivec_vmrghh_direct by gen_altivec_vmrghh for BE
+	and by gen_altivec_vmrglh for LE.
+	(vec_widen_smult_hi_v16qi): Likewise.
+	(vec_widen_umult_lo_v16qi): Adjust the call to
+	gen_altivec_vmrglh_direct by gen_altivec_vmrglh for BE
+	and by gen_altivec_vmrghh for LE.
+	(vec_widen_smult_lo_v16qi): Likewise.
+	* config/rs6000/rs6000.cc (altivec_expand_vec_perm_const): Replace
+	CODE_FOR_altivec_vmrghh_direct by
+	CODE_FOR_altivec_vmrghh_direct_be for BE and
+	CODE_FOR_altivec_vmrghh_direct_le for LE.  And replace
+	CODE_FOR_altivec_vmrglh_direct by
+	CODE_FOR_altivec_vmrglh_direct_be for BE and
+	CODE_FOR_altivec_vmrglh_direct_le for LE.
+
+2024-06-26  Kewen Lin  <linkw@linux.ibm.com>
+	    Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/106069
+	PR target/115355
+	* config/rs6000/altivec.md (altivec_vmrghb_direct): Rename to ...
+	(altivec_vmrghb_direct_be): ... this.  Add condition BYTES_BIG_ENDIAN.
+	(altivec_vmrghb_direct_le): New define_insn.
+	(altivec_vmrglb_direct): Rename to ...
+	(altivec_vmrglb_direct_be): ... this.  Add condition BYTES_BIG_ENDIAN.
+	(altivec_vmrglb_direct_le): New define_insn.
+	(altivec_vmrghb): Adjust by calling gen_altivec_vmrghb_direct_be
+	for BE and gen_altivec_vmrglb_direct_le for LE.
+	(altivec_vmrglb): Adjust by calling gen_altivec_vmrglb_direct_be
+	for BE and gen_altivec_vmrghb_direct_le for LE.
+	* config/rs6000/rs6000.cc (altivec_expand_vec_perm_const): Replace
+	CODE_FOR_altivec_vmrghb_direct by
+	CODE_FOR_altivec_vmrghb_direct_be for BE and
+	CODE_FOR_altivec_vmrghb_direct_le for LE.  And replace
+	CODE_FOR_altivec_vmrglb_direct by
+	CODE_FOR_altivec_vmrglb_direct_be for BE and
+	CODE_FOR_altivec_vmrglb_direct_le for LE.
+
+2024-06-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115646
+	* tree-call-cdce.cc (check_pow): Check for bit_sz values
+	as allowed by transform.
+
+2024-06-26  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* builtins.cc (interclass_mathfn_icode): Set optab to isnormal_optab
+	for isnormal builtin.
+	* optabs.def (isnormal_optab): New.
+	* doc/md.texi (isnormal): Document.
+
+2024-06-26  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* builtins.cc (interclass_mathfn_icode): Set optab to isfinite_optab
+	for isfinite builtin.
+	* optabs.def (isfinite_optab): New.
+	* doc/md.texi (isfinite): Document.
+
+2024-06-26  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/114189
+	* match.pd: Simplify a < 0 ? -1 : 0 to (signed) >> 31 and a <
+	0 ? 1 : 0 to (unsigned) a >> 31 for vector integer type.
+
+2024-06-26  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (struct codeview_custom_type): Add lf_procedure
+	and lf_arglist to union.
+	(write_lf_procedure, write_lf_arglist): New functions.
+	(write_custom_types): Call write_lf_procedure and write_lf_arglist.
+	(get_type_num_subroutine_type): New function.
+	(get_type_num): Handle DW_TAG_subroutine_type DIEs.
+	* dwarf2codeview.h (LF_PROCEDURE, LF_ARGLIST): Define.
+
+2024-06-26  Mark Harmstone  <mark@harmstone.com>
+
+	* dwarf2codeview.cc (struct codeview_custom_type): Add lf_bitfield to
+	union.
+	(write_lf_bitfield): New function.
+	(write_custom_types): Call write_lf_bitfield.
+	(create_bitfield): New function.
+	(get_type_num_struct): Handle bitfields.
+	* dwarf2codeview.h (LF_BITFIELD): Define.
+
+2024-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostic-global-context.o.
+	* diagnostic-global-context.cc: New file, taken from material in
+	diagnostic.cc.
+	* diagnostic.cc (global_diagnostic_context): Move to
+	diagnostic-global-context.cc.
+	(global_dc): Likewise.
+	(verbatim): Likewise.
+	(emit_diagnostic): Likewise.
+	(emit_diagnostic_valist): Likewise.
+	(emit_diagnostic_valist_meta): Likewise.
+	(inform): Likewise.
+	(inform_n): Likewise.
+	(warning): Likewise.
+	(warning_at): Likewise.
+	(warning_meta): Likewise.
+	(warning_n): Likewise.
+	(pedwarn): Likewise.
+	(permerror): Likewise.
+	(permerror_opt): Likewise.
+	(error): Likewise.
+	(error_n): Likewise.
+	(error_at): Likewise.
+	(error_meta): Likewise.
+	(sorry): Likewise.
+	(sorry_at): Likewise.
+	(seen_error): Likewise.
+	(fatal_error): Likewise.
+	(internal_error): Likewise.
+	(internal_error_no_backtrace): Likewise.
+	(fnotice): Likewise.
+	(auto_diagnostic_group::auto_diagnostic_group): Likewise.
+	(auto_diagnostic_group::~auto_diagnostic_group): Likewise.
+
+2024-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-path.cc (class path_label): Add m_path field,
+	and use it to replace all uses of global_dc.
+	(event_range::event_range): Add "ctxt" param and use it to
+	construct m_path_label.
+	(event_range::maybe_add_event): Add "ctxt" param and pass it to
+	gcc_rich_location::add_location_if_nearby.
+	(path_summary::path_summary): Add "ctxt" param and pass it to
+	event_range::maybe_add_event.
+	(diagnostic_context::print_path): Pass *this to path_summary ctor.
+	(selftest::test_empty_path): Use "dc" when constructing
+	path_summary rather than implicitly using global_dc.
+	(selftest::test_intraprocedural_path): Likewise.
+	(selftest::test_interprocedural_path_1): Likewise.
+	(selftest::test_interprocedural_path_2): Likewise.
+	(selftest::test_recursion): Likewise.
+	(selftest::test_control_flow_1): Likewise.
+	(selftest::test_control_flow_2): Likewise.
+	(selftest::test_control_flow_3): Likewise.
+	(selftest::assert_cfg_edge_path_streq): Likewise.
+	(selftest::test_control_flow_5): Likewise.
+	(selftest::test_control_flow_6): Likewise.
+	(selftest::diagnostic_path_cc_tests): Eliminate use of global_dc.
+	* diagnostic-show-locus.cc
+	(gcc_rich_location::add_location_if_nearby): Add "ctxt" param and
+	use it instead of implicitly using global_dc.
+	(selftest::test_add_location_if_nearby): Use
+	test_diagnostic_context rather than implicitly using global_dc.
+	* diagnostic.cc (pedantic_warning_kind): Delete macro.
+	(permissive_error_kind): Delete macro.
+	(permissive_error_option): Delete macro.
+	(diagnostic_context::diagnostic_enabled): Remove use of
+	permissive_error_option.
+	(diagnostic_context::report_diagnostic): Remove use of
+	pedantic_warning_kind.
+	(diagnostic_impl): Convert to...
+	(diagnostic_context::diagnostic_impl): ...this.
+	(diagnostic_n_impl): Convert to...
+	(diagnostic_context::diagnostic_n_impl): ...this.
+	(emit_diagnostic): Explicitly use global_dc for method call.
+	(emit_diagnostic_valist): Likewise.
+	(emit_diagnostic_valist_meta): Likewise.
+	(inform): Likewise.
+	(inform_n): Likewise.
+	(warning): Likewise.
+	(warning_at): Likewise.
+	(warning_meta): Likewise.
+	(warning_n): Likewise.
+	(pedwarn): Likewise.
+	(permerror): Likewise.
+	(permerror_opt): Likewise.
+	(error): Likewise.
+	(error_n): Likewise.
+	(error_at): Likewise.
+	(error_meta): Likewise.
+	(sorry): Likewise.
+	(sorry_at): Likewise.
+	(fatal_error): Likewise.
+	(internal_error): Likewise.
+	(internal_error_no_backtrace): Likewise.
+	* diagnostic.h (diagnostic_context::diagnostic_impl): New decl.
+	(diagnostic_context::diagnostic_n_impl): New decl.
+	* gcc-rich-location.h (gcc_rich_location::add_location_if_nearby):
+	Add "ctxt" param.
+
+2024-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/109360
+	* doc/install.texi (Python3 modules): Update SARIF validation
+	requirement to use check-jsonschema rather than jsonschema.
+
 2024-06-25  Mark Harmstone  <mark@harmstone.com>
 
 	* dwarf2codeview.cc (struct codeview_custom_type): Add lf_array to

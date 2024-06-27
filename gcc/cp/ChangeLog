@@ -1,3 +1,11 @@
+2024-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.cc (cp_parser_error_1): Pass *global_dc to
+	gcc_rich_location::add_location_if_nearby.
+	(cp_parser_decl_specifier_seq): Likewise.
+	(cp_parser_set_storage_class): Likewise.
+	(cp_parser_set_storage_class): Likewise.
+
 2024-06-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/115504
