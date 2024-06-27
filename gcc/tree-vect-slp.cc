@@ -1072,6 +1072,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
   bool first_stmt_ldst_p = false, ldst_p = false;
   bool first_stmt_phi_p = false, phi_p = false;
+  int first_reduc_idx = -1;
   bool maybe_soft_fail = false;
   tree soft_fail_nunits_vectype = NULL_TREE;
 
@@ -1204,6 +1205,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  first_stmt_code = rhs_code;
 	  first_stmt_ldst_p = ldst_p;
 	  first_stmt_phi_p = phi_p;
+	  first_reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
 
 	  /* Shift arguments should be equal in all the packed stmts for a
 	     vector shift with scalar shift operand.  */
@@ -1267,6 +1269,24 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	}
       else
 	{
+	  if (first_reduc_idx != STMT_VINFO_REDUC_IDX (stmt_info)
+	      /* For SLP reduction groups the index isn't necessarily
+		 uniform but only that of the first stmt matters.  */
+	      && !(first_reduc_idx != -1
+		   && STMT_VINFO_REDUC_IDX (stmt_info) != -1
+		   && REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				   "Build SLP failed: different reduc_idx "
+				   "%d instead of %d in %G",
+				   STMT_VINFO_REDUC_IDX (stmt_info),
+				   first_reduc_idx, stmt);
+		}
+	      /* Mismatch.  */
+	      continue;
+	    }
 	  if (first_stmt_code != rhs_code
 	      && alt_stmt_code == ERROR_MARK)
 	    alt_stmt_code = rhs_code;
@@ -2530,8 +2550,7 @@ out:
 	  && oprnds_info[1]->first_dt == vect_internal_def
 	  && is_gimple_assign (stmt_info->stmt)
 	  /* Swapping operands for reductions breaks assumptions later on.  */
-	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def
-	  && STMT_VINFO_DEF_TYPE (stmt_info) != vect_double_reduction_def)
+	  && STMT_VINFO_REDUC_IDX (stmt_info) == -1)
 	{
 	  /* See whether we can swap the matching or the non-matching
 	     stmt operands.  */
