@@ -160,22 +160,26 @@ package Osint.C is
    --------------------------
 
    --  These routines are used by the compiler when the C translation option
-   --  is activated to write *.h files to the current object directory.
-   --  Note that the files are written via the Output package routines, using
-   --  Output_FD.
+   --  is activated to write *.c or *.h files to the current object directory.
+   --  Each routine exists in a C and an H form for the two kinds of files.
+   --  Only one of these files can be written at a time. Note that the files
+   --  are written via the Output package routines, using Output_FD.
 
+   procedure Create_C_File;
    procedure Create_H_File;
-   --  Creates the *.h file for the source file which is currently being
+   --  Creates the *.c/*.h file for the source file which is currently being
    --  compiled (i.e. the file which was most recently returned by
    --  Next_Main_Source).
 
+   procedure Close_C_File;
    procedure Close_H_File;
-   --  Closes the file created by Create_H file, flushing any buffers, etc.
+   --  Closes the file created by Create_C/H file, flushing any buffers, etc.
    --  from writes by Write_C_File and Write_H_File;
 
+   procedure Delete_C_File;
    procedure Delete_H_File;
-   --  Deletes the .h file corresponding to the source file which is currently
-   --  being compiled.
+   --  Deletes the .c/.h file corresponding to the source file which is
+   --  currently being compiled.
 
    ----------------------
    -- List File Output --

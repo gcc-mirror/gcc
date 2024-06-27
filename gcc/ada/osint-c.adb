@@ -44,6 +44,23 @@ package body Osint.C is
    --  output file and Suffix is the desired suffix (dg/rep/xxx for debug/
    --  repinfo/list file where xxx is specified extension.
 
+   ------------------
+   -- Close_C_File --
+   ------------------
+
+   procedure Close_C_File is
+      Status : Boolean;
+
+   begin
+      Close (Output_FD, Status);
+
+      if not Status then
+         Fail
+           ("error while closing file "
+            & Get_Name_String (Output_File_Name));
+      end if;
+   end Close_C_File;
+
    ----------------------
    -- Close_Debug_File --
    ----------------------
@@ -173,6 +190,18 @@ package body Osint.C is
       return Result;
    end Create_Auxiliary_File;
 
+   -------------------
+   -- Create_C_File --
+   -------------------
+
+   procedure Create_C_File is
+      Dummy : Boolean;
+   begin
+      Set_File_Name ("c");
+      Delete_File (Name_Buffer (1 .. Name_Len), Dummy);
+      Create_File_And_Check (Output_FD, Text);
+   end Create_C_File;
+
    -----------------------
    -- Create_Debug_File --
    -----------------------
@@ -264,6 +293,17 @@ package body Osint.C is
          return 2;
       end if;
    end Debug_File_Eol_Length;
+
+   -------------------
+   -- Delete_C_File --
+   -------------------
+
+   procedure Delete_C_File is
+      Dummy : Boolean;
+   begin
+      Set_File_Name ("c");
+      Delete_File (Name_Buffer (1 .. Name_Len), Dummy);
+   end Delete_C_File;
 
    -------------------
    -- Delete_H_File --
