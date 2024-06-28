@@ -25606,7 +25606,7 @@ ix86_ternlog_idx (rtx op, rtx *args)
     case VEC_DUPLICATE:
       if (!bcst_mem_operand (op, GET_MODE (op)))
 	return -1;
-      /* FALLTHRU */
+      goto do_mem_operand;
 
     case MEM:
       if (!memory_operand (op, GET_MODE (op)))
@@ -25618,23 +25618,52 @@ ix86_ternlog_idx (rtx op, rtx *args)
       /* FALLTHRU */
 
     case CONST_VECTOR:
+do_mem_operand:
       if (!args[2])
 	{
 	  args[2] = op;
 	  return 0xaa;
 	}
       /* Maximum of one volatile memory reference per expression.  */
-      if (side_effects_p (op) && side_effects_p (args[2]))
+      if (side_effects_p (op))
 	return -1;
       if (rtx_equal_p (op, args[2]))
 	return 0xaa;
-      /* Check if one CONST_VECTOR is the ones-complement of the other.  */
+      /* Check if CONST_VECTOR is the ones-complement of args[2].  */
       if (GET_CODE (op) == CONST_VECTOR
 	  && GET_CODE (args[2]) == CONST_VECTOR
 	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
 							  op, GET_MODE (op)),
 			  args[2]))
 	return 0x55;
+      if (!args[0])
+	{
+	  args[0] = op;
+	  return 0xf0;
+	}
+      if (rtx_equal_p (op, args[0]))
+	return 0xf0;
+      /* Check if CONST_VECTOR is the ones-complement of args[0].  */
+      if (GET_CODE (op) == CONST_VECTOR
+	  && GET_CODE (args[0]) == CONST_VECTOR
+	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
+							  op, GET_MODE (op)),
+			  args[0]))
+	return 0x0f;
+      if (!args[1])
+	{
+	  args[1] = op;
+	  return 0xcc;
+	}
+      if (rtx_equal_p (op, args[1]))
+	return 0xcc;
+      /* Check if CONST_VECTOR is the ones-complement of args[1].  */
+      if (GET_CODE (op) == CONST_VECTOR
+	  && GET_CODE (args[1]) == CONST_VECTOR
+	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
+							  op, GET_MODE (op)),
+			  args[1]))
+	return 0x33;
       return -1;
 
     case NOT:

@@ -39,4 +39,4 @@ v8di foo_v8di (long long a, v8di b)
 
 /* { dg-final { scan-assembler-times "vpternlog\[dq\]\[ \\t\]+\\\$207" 4 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vpternlogd\[ \\t\]+\\\$207" 2 { target { ia32 } } } } */
-/* { dg-final { scan-assembler-times "vpternlog\[dq\]\[ \\t\]+\\\$0xdd" 2 { target { ia32 } } } } */
+/* { dg-final { scan-assembler-times "vpternlog\[dq\]\[ \\t\]+\\\$245" 2 { target { ia32 } } } } */
