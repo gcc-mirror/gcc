@@ -29223,20 +29223,8 @@ Put_Line
    f" an open brace is \@{");
 @end example
 
-Finally, a syntax is provided for creating multi-line string literals,
-without having to explicitly use an escape sequence such as @code{\n}. For
-example:
-
-@example
-Put_Line
-  (f"This is a multi-line"
-    "string literal"
-    "There is no ambiguity about how many"
-    "spaces are included in each line");
-@end example
-
-Here is a link to the original RFC   :
-@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-string-interpolation.rst}
+Link to the original RFC:
+@indicateurl{https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-string-interpolation.md}
 
 @node Constrained attribute for generic objects,Static aspect on intrinsic functions,String interpolation,Curated Extensions
 @anchor{gnat_rm/gnat_language_extensions constrained-attribute-for-generic-objects}@anchor{448}
