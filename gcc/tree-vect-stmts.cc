@@ -6191,11 +6191,12 @@ vectorizable_shift (vec_info *vinfo,
 	  stmt_vec_info slpstmt_info;
 
 	  FOR_EACH_VEC_ELT (stmts, k, slpstmt_info)
-	    {
-	      gassign *slpstmt = as_a <gassign *> (slpstmt_info->stmt);
-	      if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
-		scalar_shift_arg = false;
-	    }
+	    if (slpstmt_info)
+	      {
+		gassign *slpstmt = as_a <gassign *> (slpstmt_info->stmt);
+		if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
+		  scalar_shift_arg = false;
+	      }
 
 	  /* For internal SLP defs we have to make sure we see scalar stmts
 	     for all vector elements.
@@ -13082,11 +13083,12 @@ can_vectorize_live_stmts (vec_info *vinfo, stmt_vec_info stmt_info,
       unsigned int i;
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt_info)
 	{
-	  if ((STMT_VINFO_LIVE_P (slp_stmt_info)
-	       || (loop_vinfo
-		   && LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-		   && STMT_VINFO_DEF_TYPE (slp_stmt_info)
-			== vect_induction_def))
+	  if (slp_stmt_info
+	      && (STMT_VINFO_LIVE_P (slp_stmt_info)
+		  || (loop_vinfo
+		      && LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+		      && STMT_VINFO_DEF_TYPE (slp_stmt_info)
+		      == vect_induction_def))
 	      && !vectorizable_live_operation (vinfo, slp_stmt_info, slp_node,
 					       slp_node_instance, i,
 					       vec_stmt_p, cost_vec))

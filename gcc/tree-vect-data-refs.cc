@@ -1041,6 +1041,8 @@ vect_slp_analyze_load_dependences (vec_info *vinfo, slp_tree node,
 
   for (unsigned k = 0; k < SLP_TREE_SCALAR_STMTS (node).length (); ++k)
     {
+      if (! SLP_TREE_SCALAR_STMTS (node)[k])
+	continue;
       stmt_vec_info access_info
 	= vect_orig_stmt (SLP_TREE_SCALAR_STMTS (node)[k]);
       if (access_info == first_access_info)
