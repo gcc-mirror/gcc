@@ -660,6 +660,10 @@ make_pass_rest_of_compilation (gcc::context *ctxt)
 
 namespace {
 
+/* A container pass (only) for '!targetm.no_register_allocation' targets, for
+   passes to run if reload completed (..., but not run them if it failed, for
+   example for an invalid 'asm').  See also 'pass_late_compilation'.  */
+
 const pass_data pass_data_postreload =
 {
   RTL_PASS, /* type */
@@ -681,7 +685,12 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate (function *) final override { return reload_completed; }
+  bool gate (function *) final override
+  {
+    if (reload_completed)
+      gcc_checking_assert (!targetm.no_register_allocation);
+    return reload_completed;
+  }
 
 }; // class pass_postreload
 
@@ -694,6 +703,9 @@ make_pass_postreload (gcc::context *ctxt)
 }
 
 namespace {
+
+/* A container pass like 'pass_postreload', but for passes to run also for
+   'targetm.no_register_allocation' targets.  */
 
 const pass_data pass_data_late_compilation =
 {
