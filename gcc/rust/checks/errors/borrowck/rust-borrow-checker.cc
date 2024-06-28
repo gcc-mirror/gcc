@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-borrow-checker.h"
+#include "rust-borrow-checker-diagnostics.h"
 #include "rust-function-collector.h"
 #include "rust-bir-fact-collector.h"
 #include "rust-bir-builder.h"
@@ -152,23 +153,9 @@ BorrowChecker::go (HIR::Crate &crate)
       delete result.move_errors;
       delete result.subset_errors;
 
-      if (!loan_errors.empty ())
-	{
-	  rust_error_at (func->get_locus (), "Found loan errors in function %s",
-			 func->get_function_name ().as_string ().c_str ());
-	}
-      if (!subset_errors.empty ())
-	{
-	  rust_error_at (func->get_locus (),
-			 "Found subset errors in function %s. Some lifetime "
-			 "constraints need to be added.",
-			 func->get_function_name ().as_string ().c_str ());
-	}
-      if (!move_errors.empty ())
-	{
-	  rust_error_at (func->get_locus (), "Found move errors in function %s",
-			 func->get_function_name ().as_string ().c_str ());
-	}
+      BIR::BorrowCheckerDiagnostics (func, bir, facts, move_errors, loan_errors,
+				     subset_errors)
+	.report_errors ();
     }
 
   for (auto closure ATTRIBUTE_UNUSED : collector.get_closures ())
