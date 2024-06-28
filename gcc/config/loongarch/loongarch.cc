@@ -4372,6 +4372,33 @@ loongarch_address_cost (rtx addr, machine_mode mode,
   return loongarch_address_insns (addr, mode, false);
 }
 
+/* Implement TARGET_INSN_COST.  */
+
+static int
+loongarch_insn_cost (rtx_insn *insn, bool speed)
+{
+  rtx x = PATTERN (insn);
+  int cost = pattern_cost (x, speed);
+
+  /* On LA464, prevent movcf2fr and movfr2gr from merging into movcf2gr.  */
+  if (GET_CODE (x) == SET
+      && GET_MODE (XEXP (x, 0)) == FCCmode)
+    {
+      rtx dest, src;
+      dest = XEXP (x, 0);
+      src = XEXP (x, 1);
+
+      if (REG_P (dest) && REG_P (src))
+	{
+	  if (GP_REG_P (REGNO (dest)) && FCC_REG_P (REGNO (src)))
+	    cost = loongarch_cost->movcf2gr;
+	  else if (FCC_REG_P (REGNO (dest)) && GP_REG_P (REGNO (src)))
+	    cost = loongarch_cost->movgr2cf;
+	}
+    }
+  return cost;
+}
+
 /* Return one word of double-word value OP, taking into account the fixed
    endianness of certain registers.  HIGH_P is true to select the high part,
    false to select the low part.  */
@@ -11105,6 +11132,8 @@ loongarch_asm_code_end (void)
 #define TARGET_RTX_COSTS loongarch_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST loongarch_address_cost
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST loongarch_insn_cost
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
   loongarch_builtin_vectorization_cost
