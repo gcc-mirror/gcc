@@ -6195,6 +6195,8 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      break;
 
 	    case PLUS_EXPR:
+	      match_unsigned_saturation_add (&gsi, as_a<gassign *> (stmt));
+	      /* fall-through  */
 	    case MINUS_EXPR:
 	      if (!convert_plusminus_to_widen (&gsi, stmt, code))
 		{

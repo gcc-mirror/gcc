@@ -3154,6 +3154,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match (unsigned_integer_sat_add @0 @1)
  (cond^ (gt @0 (usadd_left_part_1@2 @0 @1)) integer_minus_onep @2))
 
+/* Unsigned saturation add, case 9 (one op is imm):
+   SAT_U_ADD = (X + 3) >= x ? (X + 3) : -1.  */
+(match (unsigned_integer_sat_add @0 @1)
+ (plus (min @0 INTEGER_CST@2) INTEGER_CST@1)
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1))
+  (with
+   {
+    unsigned precision = TYPE_PRECISION (type);
+    wide_int cst_1 = wi::to_wide (@1);
+    wide_int cst_2 = wi::to_wide (@2);
+    wide_int max = wi::mask (precision, false, precision);
+    wide_int sum = wi::add (cst_1, cst_2);
+   }
+   (if (wi::eq_p (max, sum))))))
+
+/* Unsigned saturation add, case 10 (one op is imm):
+   SAT_U_ADD = __builtin_add_overflow (X, 3, &ret) == 0 ? ret : -1.  */
+(match (unsigned_integer_sat_add @0 @1)
+ (cond^ (ne (imagpart (IFN_ADD_OVERFLOW@2 @0 INTEGER_CST@1)) integer_zerop)
+  integer_minus_onep (realpart @2))
+  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0))))
+
 /* Unsigned saturation sub, case 1 (branch with gt):
    SAT_U_SUB = X > Y ? X - Y : 0  */
 (match (unsigned_integer_sat_sub @0 @1)
