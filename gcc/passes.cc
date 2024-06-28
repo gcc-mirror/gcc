@@ -1585,7 +1585,7 @@ pass_manager::pass_manager (context *ctxt)
 
   /* Zero-initialize pass members.  */
 #define INSERT_PASSES_AFTER(PASS)
-#define PUSH_INSERT_PASSES_WITHIN(PASS)
+#define PUSH_INSERT_PASSES_WITHIN(PASS, NUM)
 #define POP_INSERT_PASSES()
 #define NEXT_PASS(PASS, NUM) PASS ## _ ## NUM = NULL
 #define NEXT_PASS_WITH_ARG(PASS, NUM, ARG) NEXT_PASS (PASS, NUM)
@@ -1615,9 +1615,9 @@ pass_manager::pass_manager (context *ctxt)
     *p = NULL;					\
   }
 
-#define PUSH_INSERT_PASSES_WITHIN(PASS) \
+#define PUSH_INSERT_PASSES_WITHIN(PASS, NUM) \
   { \
-    opt_pass **p = &(PASS ## _1)->sub;
+    opt_pass **p = &(PASS ## _ ## NUM)->sub;
 
 #define POP_INSERT_PASSES() \
   }
