@@ -1,3 +1,13 @@
+2024-06-27  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (grace): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document the above.
+
+2024-06-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* tree-ssa-pre.cc (create_component_ref_by_pieces_1): New conditions.
+
 2024-06-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/115608

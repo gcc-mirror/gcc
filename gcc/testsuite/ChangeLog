@@ -1,3 +1,7 @@
+2024-06-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/vsetvl/pr115214.c: New test.
+
 2024-06-24  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:

@@ -1,3 +1,22 @@
+2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Replace viewcvs links with cgit links.
+	* doc/xml/manual/allocator.xml: Likewise.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/html/*: Regenerate.
+
+2024-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2024-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/115454
+	* testsuite/experimental/simd/pr115454_find_last_set.cc: Defer
+	to check_vect_support_and_set_flags's default dg-do action.
+
 2024-06-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx1998.xml: Remove confusing "not in
