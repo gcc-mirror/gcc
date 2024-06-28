@@ -2462,8 +2462,8 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
 		  || (ts->type == BT_CLASS
 		      && !GFC_CLASS_TYPE_P (TREE_TYPE (decl))))
 		gfc_conv_derived_to_class (se, code->expr1,
-					   dtio_sub->formal->sym->ts,
-					   vptr, false, false);
+					   dtio_sub->formal->sym, vptr, false,
+					   false, "transfer");
 	      addr_expr = se->expr;
 	      function = iocall[IOCALL_X_DERIVED];
 	      break;

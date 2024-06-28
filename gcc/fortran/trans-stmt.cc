@@ -2118,11 +2118,9 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	{
 	  /* This is bound to be a class array element.  */
 	  gfc_conv_expr_reference (&se, e);
-	  /* Get the _vptr component of the class object.  */
-	  tmp = gfc_get_vptr_from_expr (se.expr);
 	  /* Obtain a temporary class container for the result.  */
-	  gfc_conv_derived_to_class (&se, e, sym->ts, tmp, false, false);
-	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
+	  gfc_conv_derived_to_class (&se, e, sym, se.expr, false, false,
+				     e->symtree->name);
 	  need_len_assign = false;
 	}
       else

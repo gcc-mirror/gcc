@@ -118,6 +118,8 @@ tree gfor_fndecl_fdate;
 tree gfor_fndecl_ttynam;
 tree gfor_fndecl_in_pack;
 tree gfor_fndecl_in_unpack;
+tree gfor_fndecl_in_pack_class;
+tree gfor_fndecl_in_unpack_class;
 tree gfor_fndecl_associated;
 tree gfor_fndecl_system_clock4;
 tree gfor_fndecl_system_clock8;
@@ -3916,9 +3918,19 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("internal_unpack")), ". w R ",
 	void_type_node, 2, pvoid_type_node, pvoid_type_node);
 
+  gfor_fndecl_in_pack_class = gfc_build_library_function_decl_with_spec (
+    get_identifier (PREFIX ("internal_pack_class")), ". w R r r ",
+    void_type_node, 4, pvoid_type_node, pvoid_type_node, size_type_node,
+    integer_type_node);
+
+  gfor_fndecl_in_unpack_class = gfc_build_library_function_decl_with_spec (
+    get_identifier (PREFIX ("internal_unpack_class")), ". w R r r ",
+    void_type_node, 4, pvoid_type_node, pvoid_type_node, size_type_node,
+    integer_type_node);
+
   gfor_fndecl_associated = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("associated")), ". R R ",
-	integer_type_node, 2, ppvoid_type_node, ppvoid_type_node);
+    get_identifier (PREFIX ("associated")), ". R R ", integer_type_node, 2,
+    ppvoid_type_node, ppvoid_type_node);
   DECL_PURE_P (gfor_fndecl_associated) = 1;
   TREE_NOTHROW (gfor_fndecl_associated) = 1;
 

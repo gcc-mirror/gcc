@@ -570,6 +570,29 @@ typedef GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, GFC_INTEGER_4) gfc_full_a
 #define GFC_UNALIGNED_C8(x) (((uintptr_t)(x)) & \
 			     (__alignof__(GFC_COMPLEX_8) - 1))
 
+/* Generic vtab structure.  */
+typedef struct
+{
+  GFC_INTEGER_4 _hash;
+  size_t _size;
+  struct gfc_vtype_generic_t *_extends;
+  void *_def_init;
+  void (*_copy) (const void *, void *);
+  void *(*_final);
+  void (*_deallocate) (void *);
+} gfc_vtype_generic_t;
+
+/* Generic class structure.  */
+#define GFC_CLASS_T(type) \
+  struct \
+  { \
+    type _data; \
+    gfc_vtype_generic_t *_vptr; \
+    size_t _len; \
+  }
+
+typedef GFC_CLASS_T (GFC_ARRAY_DESCRIPTOR (void)) gfc_class_array_t;
+
 /* Runtime library include.  */
 #define stringize(x) expand_macro(x)
 #define expand_macro(x) # x

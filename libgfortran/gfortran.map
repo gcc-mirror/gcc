@@ -1770,3 +1770,9 @@ GFORTRAN_14 {
   global:
     _gfortran_selected_logical_kind;
 } GFORTRAN_13;
+
+GFORTRAN_15 {
+  global:
+    _gfortran_internal_pack_class;
+    _gfortran_internal_unpack_class;
+} GFORTRAN_14;

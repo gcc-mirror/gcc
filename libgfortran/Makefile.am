@@ -156,7 +156,9 @@ intrinsics/selected_real_kind.f90 \
 intrinsics/trigd.c \
 intrinsics/unpack_generic.c \
 runtime/in_pack_generic.c \
-runtime/in_unpack_generic.c
+runtime/in_unpack_generic.c \
+runtime/in_pack_class.c \
+runtime/in_unpack_class.c
 
 if !LIBGFOR_MINIMAL
 

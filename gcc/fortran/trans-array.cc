@@ -6803,6 +6803,9 @@ gfc_trans_array_bounds (tree type, gfc_symbol * sym, tree * poffset,
 
   size = gfc_index_one_node;
   offset = gfc_index_zero_node;
+  stride = GFC_TYPE_ARRAY_STRIDE (type, 0);
+  if (stride && VAR_P (stride))
+    gfc_add_modify (pblock, stride, gfc_index_one_node);
   for (dim = 0; dim < as->rank; dim++)
     {
       /* Evaluate non-constant array bound expressions.
@@ -7148,7 +7151,9 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
       || (is_classarray && CLASS_DATA (sym)->attr.allocatable))
     return;
 
-  if (!is_classarray && sym->attr.dummy && gfc_is_nodesc_array (sym))
+  if ((!is_classarray
+       || (is_classarray && CLASS_DATA (sym)->as->type == AS_EXPLICIT))
+      && sym->attr.dummy && !sym->attr.elemental && gfc_is_nodesc_array (sym))
     {
       gfc_trans_g77_array (sym, block);
       return;
@@ -8647,15 +8652,17 @@ is_pointer (gfc_expr *e)
 /* Convert an array for passing as an actual parameter.  */
 
 void
-gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
+gfc_conv_array_parameter (gfc_se *se, gfc_expr *expr, bool g77,
 			  const gfc_symbol *fsym, const char *proc_name,
-			  tree *size)
+			  tree *size, tree *lbshift, tree *packed)
 {
   tree ptr;
   tree desc;
   tree tmp = NULL_TREE;
   tree stmt;
   tree parent = DECL_CONTEXT (current_function_decl);
+  tree ctree;
+  tree pack_attr;
   bool full_array_var;
   bool this_array_result;
   bool contiguous;
@@ -8767,20 +8774,28 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
   /* There is no need to pack and unpack the array, if it is contiguous
      and not a deferred- or assumed-shape array, or if it is simply
      contiguous.  */
-  no_pack = ((sym && sym->as
-		  && !sym->attr.pointer
-		  && sym->as->type != AS_DEFERRED
-		  && sym->as->type != AS_ASSUMED_RANK
-		  && sym->as->type != AS_ASSUMED_SHAPE)
-		      ||
-	     (ref && ref->u.ar.as
-		  && ref->u.ar.as->type != AS_DEFERRED
+  no_pack = false;
+  // clang-format off
+  if (sym)
+    {
+      symbol_attribute *attr = &(IS_CLASS_ARRAY (sym)
+				 ? CLASS_DATA (sym)->attr : sym->attr);
+      gfc_array_spec *as = IS_CLASS_ARRAY (sym)
+			   ? CLASS_DATA (sym)->as : sym->as;
+      no_pack = (as
+		 && !attr->pointer
+		 && as->type != AS_DEFERRED
+		 && as->type != AS_ASSUMED_RANK
+		 && as->type != AS_ASSUMED_SHAPE);
+    }
+  if (ref && ref->u.ar.as)
+    no_pack = no_pack
+	      || (ref->u.ar.as->type != AS_DEFERRED
 		  && ref->u.ar.as->type != AS_ASSUMED_RANK
-		  && ref->u.ar.as->type != AS_ASSUMED_SHAPE)
-		      ||
-	     gfc_is_simply_contiguous (expr, false, true));
-
-  no_pack = contiguous && no_pack;
+		  && ref->u.ar.as->type != AS_ASSUMED_SHAPE);
+  no_pack = contiguous
+	    && (no_pack || gfc_is_simply_contiguous (expr, false, true));
+  // clang-format on
 
   /* If we have an EXPR_OP or a function returning an explicit-shaped
      or allocatable array, an array temporary will be generated which
@@ -8835,6 +8850,14 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
       return;
     }
 
+  if (fsym && fsym->ts.type == BT_CLASS)
+    {
+      gcc_assert (se->expr);
+      ctree = se->expr;
+    }
+  else
+    ctree = NULL_TREE;
+
   if (this_array_result)
     {
       /* Result of the enclosing function.  */
@@ -8853,7 +8876,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
   else
     {
       /* Every other type of array.  */
-      se->want_pointer = 1;
+      se->want_pointer = (ctree) ? 0 : 1;
       gfc_conv_expr_descriptor (se, expr);
 
       if (size)
@@ -8861,6 +8884,55 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 			      build_fold_indirect_ref_loc (input_location,
 							    se->expr),
 			      expr, size);
+      if (ctree)
+	{
+	  stmtblock_t block;
+
+	  gfc_init_block (&block);
+	  if (lbshift && *lbshift)
+	    {
+	      /* Apply a shift of the lbound when supplied.  */
+	      for (int dim = 0; dim < expr->rank; ++dim)
+		gfc_conv_shift_descriptor_lbound (&block, se->expr, dim,
+						  *lbshift);
+	    }
+	  tmp = gfc_class_data_get (ctree);
+	  if (expr->rank > 1 && CLASS_DATA (fsym)->as->rank != expr->rank
+	      && CLASS_DATA (fsym)->as->type == AS_EXPLICIT && !no_pack)
+	    {
+	      tree arr = gfc_create_var (TREE_TYPE (tmp), "parm");
+	      gfc_conv_descriptor_data_set (&block, arr,
+					    gfc_conv_descriptor_data_get (
+					      se->expr));
+	      gfc_conv_descriptor_lbound_set (&block, arr, gfc_index_zero_node,
+					      gfc_index_zero_node);
+	      gfc_conv_descriptor_ubound_set (
+		&block, arr, gfc_index_zero_node,
+		gfc_conv_descriptor_size (se->expr, expr->rank));
+	      gfc_conv_descriptor_stride_set (
+		&block, arr, gfc_index_zero_node,
+		gfc_conv_descriptor_stride_get (se->expr, gfc_index_zero_node));
+	      gfc_add_modify (&block, gfc_conv_descriptor_dtype (arr),
+			      gfc_conv_descriptor_dtype (se->expr));
+	      gfc_add_modify (&block, gfc_conv_descriptor_rank (arr),
+			      build_int_cst (signed_char_type_node, 1));
+	      gfc_conv_descriptor_span_set (&block, arr,
+					    gfc_conv_descriptor_span_get (arr));
+	      gfc_conv_descriptor_offset_set (&block, arr, gfc_index_zero_node);
+	      se->expr = arr;
+	    }
+	  gfc_class_array_data_assign (&block, tmp, se->expr, true);
+
+	  /* Handle optional.  */
+	  if (fsym && fsym->attr.optional && sym && sym->attr.optional)
+	    tmp = build3_v (COND_EXPR, gfc_conv_expr_present (sym),
+			    gfc_finish_block (&block),
+			    build_empty_stmt (input_location));
+	  else
+	    tmp = gfc_finish_block (&block);
+
+	  gfc_add_expr_to_block (&se->pre, tmp);
+	}
     }
 
   /* Deallocate the allocatable components of structures that are
@@ -8880,12 +8952,12 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
   if (g77 || (fsym && fsym->attr.contiguous
 	      && !gfc_is_simply_contiguous (expr, false, true)))
     {
-      tree origptr = NULL_TREE;
+      tree origptr = NULL_TREE, packedptr = NULL_TREE;
 
       desc = se->expr;
 
       /* For contiguous arrays, save the original value of the descriptor.  */
-      if (!g77)
+      if (!g77 && !ctree)
 	{
 	  origptr = gfc_create_var (pvoid_type_node, "origptr");
 	  tmp = build_fold_indirect_ref_loc (input_location, desc);
@@ -8924,18 +8996,51 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 	  return;
 	}
 
-      ptr = build_call_expr_loc (input_location,
-			     gfor_fndecl_in_pack, 1, desc);
-
-      if (fsym && fsym->attr.optional && sym && sym->attr.optional)
+      if (ctree)
 	{
-	  tmp = gfc_conv_expr_present (sym);
-	  ptr = build3_loc (input_location, COND_EXPR, TREE_TYPE (se->expr),
-			tmp, fold_convert (TREE_TYPE (se->expr), ptr),
-			fold_convert (TREE_TYPE (se->expr), null_pointer_node));
-	}
+	  packedptr
+	    = gfc_build_addr_expr (NULL_TREE, gfc_create_var (TREE_TYPE (ctree),
+							      "packed"));
+	  if (fsym)
+	    {
+	      int pack_mask = 0;
 
-      ptr = gfc_evaluate_now (ptr, &se->pre);
+	      /* Set bit 0 to the mask, when this is an unlimited_poly
+		 class.  */
+	      if (CLASS_DATA (fsym)->ts.u.derived->attr.unlimited_polymorphic)
+		pack_mask = 1 << 0;
+	      pack_attr = build_int_cst (integer_type_node, pack_mask);
+	    }
+	  else
+	    pack_attr = integer_zero_node;
+
+	  gfc_add_expr_to_block (
+	    &se->pre,
+	    build_call_expr_loc (input_location, gfor_fndecl_in_pack_class, 4,
+				 packedptr,
+				 gfc_build_addr_expr (NULL_TREE, ctree),
+				 size_in_bytes (TREE_TYPE (ctree)), pack_attr));
+	  ptr = gfc_conv_array_data (gfc_class_data_get (packedptr));
+	  se->expr = packedptr;
+	  if (packed)
+	    *packed = packedptr;
+	}
+      else
+	{
+	  ptr = build_call_expr_loc (input_location, gfor_fndecl_in_pack, 1,
+				     desc);
+
+	  if (fsym && fsym->attr.optional && sym && sym->attr.optional)
+	    {
+	      tmp = gfc_conv_expr_present (sym);
+	      ptr = build3_loc (input_location, COND_EXPR, TREE_TYPE (se->expr),
+				tmp, fold_convert (TREE_TYPE (se->expr), ptr),
+				fold_convert (TREE_TYPE (se->expr),
+					      null_pointer_node));
+	    }
+
+	  ptr = gfc_evaluate_now (ptr, &se->pre);
+	}
 
       /* Use the packed data for the actual argument, except for contiguous arrays,
 	 where the descriptor's data component is set.  */
@@ -8947,8 +9052,11 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 
 	  gfc_ss * ss = gfc_walk_expr (expr);
 	  if (!transposed_dims (ss))
-	    gfc_conv_descriptor_data_set (&se->pre, tmp, ptr);
-	  else
+	    {
+	      if (!ctree)
+		gfc_conv_descriptor_data_set (&se->pre, tmp, ptr);
+	    }
+	  else if (!ctree)
 	    {
 	      tree old_field, new_field;
 
@@ -9021,22 +9129,36 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
       /* Copy the data back.  */
       if (fsym == NULL || fsym->attr.intent != INTENT_IN)
 	{
-	  tmp = build_call_expr_loc (input_location,
-				 gfor_fndecl_in_unpack, 2, desc, ptr);
+	  if (ctree)
+	    {
+	      tmp = gfc_build_addr_expr (NULL_TREE, ctree);
+	      tmp = build_call_expr_loc (input_location,
+					 gfor_fndecl_in_unpack_class, 4, tmp,
+					 packedptr,
+					 size_in_bytes (TREE_TYPE (ctree)),
+					 pack_attr);
+	    }
+	  else
+	    tmp = build_call_expr_loc (input_location, gfor_fndecl_in_unpack, 2,
+				       desc, ptr);
 	  gfc_add_expr_to_block (&block, tmp);
+	}
+      else if (ctree && fsym->attr.intent == INTENT_IN)
+	{
+	  /* Need to free the memory for class arrays, that got packed.  */
+	  gfc_add_expr_to_block (&block, gfc_call_free (ptr));
 	}
 
       /* Free the temporary.  */
-      tmp = gfc_call_free (ptr);
-      gfc_add_expr_to_block (&block, tmp);
+      if (!ctree)
+	gfc_add_expr_to_block (&block, gfc_call_free (ptr));
 
       stmt = gfc_finish_block (&block);
 
       gfc_init_block (&block);
       /* Only if it was repacked.  This code needs to be executed before the
          loop cleanup code.  */
-      tmp = build_fold_indirect_ref_loc (input_location,
-				     desc);
+      tmp = (ctree) ? desc : build_fold_indirect_ref_loc (input_location, desc);
       tmp = gfc_conv_array_data (tmp);
       tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			     fold_convert (TREE_TYPE (tmp), ptr), tmp);
@@ -9054,11 +9176,11 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
       gfc_init_block (&se->post);
 
       /* Reset the descriptor pointer.  */
-      if (!g77)
-        {
-          tmp = build_fold_indirect_ref_loc (input_location, desc);
-          gfc_conv_descriptor_data_set (&se->post, tmp, origptr);
-        }
+      if (!g77 && !ctree)
+	{
+	  tmp = build_fold_indirect_ref_loc (input_location, desc);
+	  gfc_conv_descriptor_data_set (&se->post, tmp, origptr);
+	}
 
       gfc_add_block_to_block (&se->post, &block);
     }
