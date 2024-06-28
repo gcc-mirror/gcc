@@ -414,6 +414,10 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	{
 #if TARGET_PECOFF
 	  tmp = legitimize_pe_coff_symbol (op1, addend != NULL_RTX);
+#else
+	  tmp = NULL_RTX;
+#endif
+
 	  if (tmp)
 	    {
 	      op1 = tmp;
@@ -425,7 +429,6 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	      op1 = operands[1];
 	      break;
 	    }
-#endif
 	}
 
       if (addend)

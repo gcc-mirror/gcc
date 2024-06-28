@@ -34,6 +34,7 @@ struct expand_vec_perm_d
 };
 
 rtx legitimize_tls_address (rtx x, enum tls_model model, bool for_mov);
+alias_set_type ix86_GOT_alias_set (void);
 rtx legitimize_pic_address (rtx orig, rtx reg);
 
 bool insn_defines_reg (unsigned int regno1, unsigned int regno2,

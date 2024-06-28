@@ -186,7 +186,7 @@ still needed for compilation.  */
 #undef GOT_ALIAS_SET
 #define GOT_ALIAS_SET mingw_GOT_alias_set ()
 
-#define PE_COFF_EXTERN_DECL_SHOULD_BE_LEGITIMIZED 1
+#define PE_COFF_LEGITIMIZE_EXTERN_DECL 1
 
 #define HAVE_64BIT_POINTERS 1
 

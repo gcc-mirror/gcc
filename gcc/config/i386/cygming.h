@@ -470,10 +470,7 @@ do {						\
 # define HAVE_GAS_ALIGNED_COMM 0
 #endif
 
-#undef GOT_ALIAS_SET
-#define GOT_ALIAS_SET mingw_GOT_alias_set ()
-
-#define PE_COFF_EXTERN_DECL_SHOULD_BE_LEGITIMIZED \
-  ix86_cmodel == CM_LARGE_PIC || ix86_cmodel == CM_MEDIUM_PIC
+#define PE_COFF_LEGITIMIZE_EXTERN_DECL \
+  (ix86_cmodel == CM_LARGE_PIC || ix86_cmodel == CM_MEDIUM_PIC)
 
 #define HAVE_64BIT_POINTERS TARGET_64BIT_DEFAULT

@@ -11242,6 +11242,17 @@ ix86_cannot_force_const_mem (machine_mode mode, rtx x)
   return !ix86_legitimate_constant_p (mode, x);
 }
 
+/* Return a unique alias set for the GOT.  */
+
+alias_set_type
+ix86_GOT_alias_set (void)
+{
+  static alias_set_type set = -1;
+  if (set == -1)
+    set = new_alias_set ();
+  return set;
+}
+
 /* Nonzero if the constant value X is a legitimate general operand
    when generating PIC code.  It is given that flag_pic is on and
    that X satisfies CONSTANT_P.  */

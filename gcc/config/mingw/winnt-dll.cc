@@ -139,7 +139,7 @@ get_dllimport_decl (tree decl, bool beimport)
     }
 
   rtl = gen_const_mem (Pmode, rtl);
-  set_mem_alias_set (rtl, mingw_GOT_alias_set ());
+  set_mem_alias_set (rtl, GOT_ALIAS_SET);
 
   SET_DECL_RTL (to, rtl);
   SET_DECL_ASSEMBLER_NAME (to, get_identifier (name));
@@ -206,7 +206,7 @@ legitimize_pe_coff_symbol (rtx addr, bool inreg)
 	}
     }
 
-  if (!PE_COFF_EXTERN_DECL_SHOULD_BE_LEGITIMIZED)
+  if (!PE_COFF_LEGITIMIZE_EXTERN_DECL)
     return NULL_RTX;
 
   if (GET_CODE (addr) == SYMBOL_REF
