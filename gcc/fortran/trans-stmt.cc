@@ -6464,7 +6464,10 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
       else if (se.expr != NULL_TREE && temp_var_needed)
 	{
 	  tree var, desc;
-	  tmp = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)) || is_coarray ?
+	  tmp = (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr))
+		 || is_coarray
+		 || (code->expr3->ts.type == BT_CHARACTER
+		     && code->expr3->rank == 0)) ?
 		se.expr
 	      : build_fold_indirect_ref_loc (input_location, se.expr);
 
