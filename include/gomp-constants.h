@@ -395,7 +395,12 @@ enum gomp_map_kind
 /* Predefined allocator value ranges.  */
 #define GOMP_OMP_PREDEF_ALLOC_MAX	8
 #define GOMP_OMPX_PREDEF_ALLOC_MIN	200
-#define GOMP_OMPX_PREDEF_ALLOC_MAX	200
+#define GOMP_OMPX_PREDEF_ALLOC_MAX	201
+
+/* Predefined memspace value ranges.  */
+#define GOMP_OMP_PREDEF_MEMSPACE_MAX	4
+#define GOMP_OMPX_PREDEF_MEMSPACE_MIN	200
+#define GOMP_OMPX_PREDEF_MEMSPACE_MAX	200
 
 /* Predefined allocator with access == thread.  */
 #define GOMP_OMP_PREDEF_ALLOC_THREADS	8

@@ -61,6 +61,9 @@ nvptx_memspace_alloc (omp_memspace_handle_t memspace, size_t size)
 
       return __nvptx_lowlat_alloc (shared_pool, size);
     }
+  else if (memspace > GOMP_OMP_PREDEF_MEMSPACE_MAX)
+    /* No non-standard memspaces are implemented for device-side nvptx.  */
+    return NULL;
   else
     return malloc (size);
 }
@@ -75,6 +78,9 @@ nvptx_memspace_calloc (omp_memspace_handle_t memspace, size_t size)
 
       return __nvptx_lowlat_calloc (shared_pool, size);
     }
+  else if (memspace > GOMP_OMP_PREDEF_MEMSPACE_MAX)
+    /* No non-standard memspaces are implemented for device-side nvptx.  */
+    return NULL;
   else
     return calloc (1, size);
 }
@@ -104,6 +110,9 @@ nvptx_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 
       return __nvptx_lowlat_realloc (shared_pool, addr, oldsize, size);
     }
+  else if (memspace > GOMP_OMP_PREDEF_MEMSPACE_MAX)
+    /* No non-standard memspaces are implemented for device-side nvptx.  */
+    return NULL;
   else
     return realloc (addr, size);
 }
@@ -115,12 +124,19 @@ nvptx_memspace_validate (omp_memspace_handle_t memspace, unsigned access)
     || (__PTX_ISA_VERSION_MAJOR__ == 4 && __PTX_ISA_VERSION_MINOR >= 1)
   /* Disallow use of low-latency memory when it must be accessible by
      all threads.  */
-  return (memspace != omp_low_lat_mem_space
-	  || access != omp_atv_all);
+  if (memspace == omp_low_lat_mem_space
+      && access == omp_atv_all)
+    return false;
 #else
   /* Low-latency memory is not available before PTX 4.1.  */
-  return (memspace != omp_low_lat_mem_space);
+  if (memspace == omp_low_lat_mem_space)
+    return false;
 #endif
+
+  /* Otherwise, standard memspaces are accepted, even when we don't have
+     anything special to do with them, and non-standard memspaces are assumed
+     to need explicit support.  */
+  return (memspace <= GOMP_OMP_PREDEF_MEMSPACE_MAX);
 }
 
 #define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \

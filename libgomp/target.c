@@ -4707,6 +4707,46 @@ omp_target_free (void *device_ptr, int device_num)
   gomp_mutex_unlock (&devicep->lock);
 }
 
+void *
+gomp_managed_alloc (size_t size)
+{
+  struct gomp_task_icv *icv = gomp_icv (false);
+  struct gomp_device_descr *devicep = resolve_device (icv->default_device_var,
+						      false);
+  if (devicep == NULL)
+    return NULL;
+
+  void *ret = NULL;
+  gomp_mutex_lock (&devicep->lock);
+  if (devicep->managed_alloc_func)
+    ret = devicep->managed_alloc_func (devicep->target_id, size);
+  gomp_mutex_unlock (&devicep->lock);
+  return ret;
+}
+
+void
+gomp_managed_free (void *device_ptr)
+{
+  if (device_ptr == NULL)
+    return;
+
+  struct gomp_task_icv *icv = gomp_icv (false);
+  struct gomp_device_descr *devicep = resolve_device (icv->default_device_var,
+						      false);
+  if (devicep == NULL)
+    gomp_fatal ("attempted to free managed memory at %p, but the default "
+		"device is set to the host device", device_ptr);
+
+  gomp_mutex_lock (&devicep->lock);
+  if (!devicep->managed_free_func
+      || !devicep->managed_free_func (devicep->target_id, device_ptr))
+    {
+      gomp_mutex_unlock (&devicep->lock);
+      gomp_fatal ("error in freeing managed memory block at %p", device_ptr);
+    }
+  gomp_mutex_unlock (&devicep->lock);
+}
+
 /* Device (really: libgomp plugin) to use for paged-locked memory.  We
    assume there is either none or exactly one such device for the lifetime of
    the process.  */
@@ -5967,6 +6007,8 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (unload_image);
   DLSYM (alloc);
   DLSYM (free);
+  DLSYM_OPT (managed_alloc, managed_alloc);
+  DLSYM_OPT (managed_free, managed_free);
   DLSYM_OPT (page_locked_host_alloc, page_locked_host_alloc);
   DLSYM_OPT (page_locked_host_free, page_locked_host_free);
   DLSYM (dev2host);

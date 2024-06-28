@@ -6924,6 +6924,7 @@ GCC supports the following predefined allocators and predefined memory spaces:
 @item omp_pteam_mem_alloc       @tab omp_low_lat_mem_space (implementation defined)
 @item omp_thread_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
 @item ompx_gnu_pinned_mem_alloc @tab omp_default_mem_space (GNU extension)
+@item ompx_gnu_managed_mem_alloc @tab ompx_gnu_managed_mem_space (GNU extension)
 @end multitable
 
 Each predefined allocator, including @code{omp_null_allocator}, has a corresponding
@@ -6951,6 +6952,7 @@ The following allocator templates are supported:
 @item omp_pteam_mem_alloc       @tab omp::allocator::pteam_mem
 @item omp_thread_mem_alloc      @tab omp::allocator::thread_mem
 @item ompx_gnu_pinned_mem_alloc @tab ompx::allocator::gnu_pinned_mem
+@item ompx_gnu_managed_mem_alloc @tab ompx::allocator::gnu_managed_mem
 @end multitable
 
 The following traits are available when constructing a new allocator;
@@ -7010,6 +7012,19 @@ For the memory spaces, the following applies:
       unless the memkind library is available
 @item @code{omp_high_bw_mem_space} maps to @code{omp_default_mem_space},
       unless the memkind library is available
+@item @code{ompx_gnu_managed_mem_space} is a GNU extension that provides
+      managed memory accessible by both host and devices.  The memory space is
+      available if the offload target associated with the
+      @var{default-device-var} ICV supports managed memory (see
+      @ref{Offload-Target Specifics}).  This memory is accessible by both the
+      host and the device at the same address, so it need not be mapped with
+      @code{map} clauses.  Instead, use the @code{is_device_ptr} clause or
+      @code{has_device_addr} clause to indicate that the pointer is already
+      accessible on the device.  If managed memory is not supported by the
+      default device, as configured at the moment the allocator is called, then
+      the allocator will use the fall-back setting.  If the default device is
+      configured differently when the memory is freed, via @code{omp_free} or
+      @code{omp_realloc}, the result may be undefined.
 @end itemize
 
 On Linux systems, where the @uref{https://github.com/memkind/memkind, memkind
@@ -7169,6 +7184,11 @@ The implementation remark:
       a performance boost for NVPTX offload code and also allows unlimited use
       of pinned memory regardless of the OS @code{ulimit}/@code{rlimit}
       settings.
+@item Managed memory allocated with the OpenMP
+      @code{ompx_gnu_managed_mem_alloc} allocator or in the
+      @code{ompx_gnu_managed_mem_space} is not currently supported for AMD GPU
+      devices; attempting to use it in an allocator will trigger the fall-back
+      trait.
 @item The OpenMP routines @code{omp_target_memcpy_rect} and
       @code{omp_target_memcpy_rect_async} and the @code{target update}
       directive for non-contiguous list items use the 3D memory-copy function
@@ -7331,6 +7351,20 @@ The implementation remark:
       @code{omp_thread_mem_alloc}, all use low-latency memory as first
       preference, and fall back to main graphics memory when the low-latency
       pool is exhausted.
+@item Managed memory allocated on the host with the
+      @code{ompx_gnu_managed_mem_alloc} allocator or in the
+      @code{ompx_gnu_managed_mem_space} (both GNU extensions) allocate memory
+      in the CUDA Managed Memory space using @code{cuMemAllocManaged}.  This
+      memory is accessible by both the host and the device at the same address,
+      so it need not be mapped with @code{map} clauses.  Instead, use the
+      @code{is_device_ptr} clause or @code{has_device_addr} clause to indicate
+      that the pointer is already accessible on the device.  The CUDA runtime
+      will automatically handle data migration between host and device as
+      needed.  If managed memory is not supported by the default device, as
+      configured at the moment the allocator is called, then the allocator will
+      use the fall-back setting. If the default device is configured
+      differently when the memory is freed, via @code{omp_free} or
+      @code{omp_realloc}, the result may be undefined.
 @item The OpenMP routines @code{omp_target_memcpy_rect} and
       @code{omp_target_memcpy_rect_async} and the @code{target update}
       directive for non-contiguous list items use the 2D and 3D memory-copy

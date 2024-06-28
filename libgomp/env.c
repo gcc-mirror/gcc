@@ -1231,6 +1231,12 @@ parse_affinity (bool ignore)
   return false;
 }
 
+/* These are reminders to add new allocators to parse_allocator.  */
+_Static_assert (GOMP_OMP_PREDEF_ALLOC_MAX == omp_thread_mem_alloc);
+_Static_assert (GOMP_OMPX_PREDEF_ALLOC_MAX == ompx_gnu_managed_mem_alloc);
+_Static_assert (GOMP_OMP_PREDEF_MEMSPACE_MAX == omp_low_lat_mem_space);
+_Static_assert (GOMP_OMPX_PREDEF_MEMSPACE_MAX == ompx_gnu_managed_mem_space);
+
 /* Parse the OMP_ALLOCATOR environment variable and return the value.  */
 static bool
 parse_allocator (const char *env, const char *val, void *const params[])
@@ -1249,12 +1255,12 @@ parse_allocator (const char *env, const char *val, void *const params[])
     ++val;
   if (0)
     ;
-#define C(v, m) \
+#define C(v, is_memspace) \
   else if (strncasecmp (val, #v, sizeof (#v) - 1) == 0)	\
     {							\
       *ret = v;						\
       val += sizeof (#v) - 1;				\
-      memspace = m;					\
+      memspace = is_memspace;					\
     }
   C (omp_default_mem_alloc, false)
   C (omp_large_cap_mem_alloc, false)
@@ -1265,11 +1271,13 @@ parse_allocator (const char *env, const char *val, void *const params[])
   C (omp_pteam_mem_alloc, false)
   C (omp_thread_mem_alloc, false)
   C (ompx_gnu_pinned_mem_alloc, false)
+  C (ompx_gnu_managed_mem_alloc, false)
   C (omp_default_mem_space, true)
   C (omp_large_cap_mem_space, true)
   C (omp_const_mem_space, true)
   C (omp_high_bw_mem_space, true)
   C (omp_low_lat_mem_space, true)
+  C (ompx_gnu_managed_mem_space, true)
 #undef C
   else
     goto invalid;

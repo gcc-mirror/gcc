@@ -8359,9 +8359,9 @@ resolve_omp_udr_clause (gfc_omp_namelist *n, gfc_namespace *ns,
 }
 
 /* Assume that a constant expression in the range 1 (omp_default_mem_alloc)
-   to 8 (omp_thread_mem_alloc) range, or 200 (ompx_gnu_pinned_mem_alloc) is
-   fine.  The original symbol name is already lost during matching via
-   gfc_match_expr.  */
+   to GOMP_OMP_PREDEF_ALLOC_MAX, or GOMP_OMPX_PREDEF_ALLOC_MIN to
+   GOMP_OMPX_PREDEF_ALLOC_MAX is fine.  The original symbol name is already
+   lost during matching via gfc_match_expr.  */
 static bool
 is_predefined_allocator (gfc_expr *expr)
 {

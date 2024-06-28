@@ -80,7 +80,9 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin,
 {
   void *addr = NULL;
 
-  if (pin)
+  if (memspace == ompx_gnu_managed_mem_space)
+    addr = gomp_managed_alloc (size);
+  else if (pin)
     {
       int using_device = __atomic_load_n (&using_device_for_page_locked,
 					  MEMMODEL_RELAXED);
@@ -155,7 +157,15 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin,
 static void *
 linux_memspace_calloc (omp_memspace_handle_t memspace, size_t size, int pin)
 {
-  if (pin)
+  if (memspace == ompx_gnu_managed_mem_space)
+    {
+      void *ret = gomp_managed_alloc (size);
+      if (!ret)
+	return NULL;
+      memset (ret, 0, size);
+      return ret;
+    }
+  else if (pin)
     return linux_memspace_alloc (memspace, size, pin, true);
   else
     return calloc (1, size);
@@ -165,7 +175,9 @@ static void
 linux_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size,
 		     int pin)
 {
-  if (pin)
+  if (memspace == ompx_gnu_managed_mem_space)
+    gomp_managed_free (addr);
+  else if (pin)
     {
       int using_device
 	= __atomic_load_n (&using_device_for_page_locked,
@@ -186,7 +198,10 @@ static void *
 linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 			size_t oldsize, size_t size, int oldpin, int pin)
 {
-  if (oldpin && pin)
+  if (memspace == ompx_gnu_managed_mem_space)
+    /* Realloc is not implemented for device Managed Memory.  */
+    ;
+  else if (oldpin && pin)
     {
       int using_device
 	= __atomic_load_n (&using_device_for_page_locked,
@@ -221,7 +236,8 @@ linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 static int
 linux_memspace_validate (omp_memspace_handle_t, unsigned, int)
 {
-  /* Everything should be accepted on Linux, including pinning.  */
+  /* Everything should be accepted on Linux, including pinning and
+     non-standard memspaces.  */
   return 1;
 }
 

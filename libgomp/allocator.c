@@ -100,34 +100,57 @@ GOMP_is_alloc (void *ptr)
 
 #define omp_max_predefined_alloc omp_thread_mem_alloc
 #define ompx_gnu_min_predefined_alloc ompx_gnu_pinned_mem_alloc
-#define ompx_gnu_max_predefined_alloc ompx_gnu_pinned_mem_alloc
+#define ompx_gnu_max_predefined_alloc ompx_gnu_managed_mem_alloc
 
 _Static_assert (GOMP_OMP_PREDEF_ALLOC_MAX == omp_thread_mem_alloc,
 		"GOMP_OMP_PREDEF_ALLOC_MAX == omp_thread_mem_alloc");
 _Static_assert (GOMP_OMPX_PREDEF_ALLOC_MIN == ompx_gnu_min_predefined_alloc,
-		"GOMP_OMP_PREDEF_ALLOC_MAX == omp_thread_mem_alloc");
+		"GOMP_OMPX_PREDEF_ALLOC_MIN == ompx_gnu_min_predefined_alloc");
 _Static_assert (GOMP_OMPX_PREDEF_ALLOC_MAX == ompx_gnu_max_predefined_alloc,
-		"GOMP_OMP_PREDEF_ALLOC_MAX == omp_thread_mem_alloc");
+		"GOMP_OMPX_PREDEF_ALLOC_MAX == ompx_gnu_max_predefined_alloc");
 _Static_assert (GOMP_OMP_PREDEF_ALLOC_THREADS == omp_thread_mem_alloc,
 		"GOMP_OMP_PREDEF_ALLOC_THREADS == omp_thread_mem_alloc");
 
+#define omp_max_predefined_mem_space omp_low_lat_mem_space
+#define ompx_gnu_min_predefined_mem_space ompx_gnu_managed_mem_space
+#define ompx_gnu_max_predefined_mem_space ompx_gnu_managed_mem_space
+
+_Static_assert (GOMP_OMP_PREDEF_MEMSPACE_MAX == omp_max_predefined_mem_space,
+		"GOMP_OMP_PREDEF_MEMSPACE_MAX == omp_max_predefined_mem_space");
+_Static_assert (GOMP_OMPX_PREDEF_MEMSPACE_MIN == ompx_gnu_min_predefined_mem_space,
+		"GOMP_OMPX_PREDEF_MEMSPACE_MIN == ompx_gnu_min_predefined_mem_space");
+_Static_assert (GOMP_OMPX_PREDEF_MEMSPACE_MAX == ompx_gnu_max_predefined_mem_space,
+		"GOMP_OMPX_PREDEF_MEMSPACE_MAX == ompx_gnu_max_predefined_mem_space");
+
+#if 0 /* For testing the fall-back macros compile, only.  */
+#undef MEMSPACE_ALLOC
+#undef MEMSPACE_CALLOC
+#undef MEMSPACE_REALLOC
+#undef MEMSPACE_FREE
+#undef MEMSPACE_VALIDATE
+#endif
+
 /* These macros may be overridden in config/<target>/allocator.c.
    The defaults (no override) are to return NULL for pinned memory requests
-   and pass through to the regular OS calls otherwise.
+   or non-standard memory spaces (these need a deliberate implementation), and
+   pass through to the regular OS calls otherwise.
    The following definitions (ab)use comma operators to avoid unused
    variable errors.  */
 #ifndef MEMSPACE_ALLOC
 #define MEMSPACE_ALLOC(MEMSPACE, SIZE, PIN) \
-  (PIN ? NULL : malloc (((void)(MEMSPACE), (SIZE))))
+  ((PIN) || (MEMSPACE) > GOMP_OMP_PREDEF_MEMSPACE_MAX \
+   ? NULL : malloc (((void)(MEMSPACE), (SIZE))))
 #endif
 #ifndef MEMSPACE_CALLOC
 #define MEMSPACE_CALLOC(MEMSPACE, SIZE, PIN) \
-  (PIN ? NULL : calloc (1, (((void)(MEMSPACE), (SIZE)))))
+  ((PIN) || (MEMSPACE) > GOMP_OMP_PREDEF_MEMSPACE_MAX \
+   ? NULL : calloc (1, (((void)(MEMSPACE), (SIZE)))))
 #endif
 #ifndef MEMSPACE_REALLOC
 #define MEMSPACE_REALLOC(MEMSPACE, ADDR, OLDSIZE, SIZE, OLDPIN, PIN) \
-   ((PIN) || (OLDPIN) ? NULL \
-   : realloc (ADDR, (((void)(MEMSPACE), (void)(OLDSIZE), (SIZE)))))
+   ((PIN) || (OLDPIN) || (MEMSPACE) > GOMP_OMP_PREDEF_MEMSPACE_MAX \
+    ? NULL \
+    : realloc (ADDR, (((void)(MEMSPACE), (void)(OLDSIZE), (SIZE)))))
 #endif
 #ifndef MEMSPACE_FREE
 #define MEMSPACE_FREE(MEMSPACE, ADDR, SIZE, PIN) \
@@ -135,7 +158,8 @@ _Static_assert (GOMP_OMP_PREDEF_ALLOC_THREADS == omp_thread_mem_alloc,
 #endif
 #ifndef MEMSPACE_VALIDATE
 #define MEMSPACE_VALIDATE(MEMSPACE, ACCESS, PIN) \
-  (PIN ? 0 : ((void)(MEMSPACE), (void)(ACCESS), 1))
+  ((PIN) || (MEMSPACE) > GOMP_OMP_PREDEF_MEMSPACE_MAX \
+   ? 0 : ((void)(MEMSPACE), (void)(ACCESS), 1))
 #endif
 
 /* Map the predefined allocators to the correct memory space.
@@ -155,6 +179,7 @@ static const omp_memspace_handle_t predefined_omp_alloc_mapping[] = {
 };
 static const omp_memspace_handle_t predefined_ompx_gnu_alloc_mapping[] = {
   omp_default_mem_space,   /* ompx_gnu_pinned_mem_alloc. */
+  ompx_gnu_managed_mem_space,  /* ompx_gnu_managed_mem_alloc. */
 };
 
 #define ARRAY_SIZE(A) (sizeof (A) / sizeof ((A)[0]))
@@ -389,7 +414,9 @@ omp_init_allocator (omp_memspace_handle_t memspace, int ntraits,
   struct omp_allocator_data *ret;
   int i;
 
-  if (memspace > omp_low_lat_mem_space)
+  if (memspace > omp_max_predefined_mem_space
+      && (memspace < ompx_gnu_min_predefined_mem_space
+	  || memspace > ompx_gnu_max_predefined_mem_space))
     return omp_null_allocator;
   for (i = 0; i < ntraits; i++)
     switch (traits[i].key)

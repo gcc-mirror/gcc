@@ -1133,11 +1133,13 @@ nvptx_stacks_free (struct ptx_device *ptx_dev, bool force)
 }
 
 static void *
-nvptx_alloc (size_t s, bool suppress_errors)
+nvptx_alloc (size_t s, bool suppress_errors, bool managed)
 {
   CUdeviceptr d;
 
-  CUresult r = CUDA_CALL_NOCHECK (cuMemAlloc, &d, s);
+  CUresult r = (managed ? CUDA_CALL_NOCHECK (cuMemAllocManaged, &d, s,
+					     CU_MEM_ATTACH_GLOBAL)
+		: CUDA_CALL_NOCHECK (cuMemAlloc, &d, s));
   if (suppress_errors && r == CUDA_ERROR_OUT_OF_MEMORY)
     return NULL;
   else if (r != CUDA_SUCCESS)
@@ -1843,8 +1845,8 @@ GOMP_OFFLOAD_unload_image (int ord, unsigned version, const void *target_data)
   return ret;
 }
 
-void *
-GOMP_OFFLOAD_alloc (int ord, size_t size)
+static void *
+cleanup_and_alloc (int ord, size_t size, bool managed)
 {
   if (!nvptx_attach_host_thread_to_device (ord))
     return NULL;
@@ -1867,7 +1869,7 @@ GOMP_OFFLOAD_alloc (int ord, size_t size)
       blocks = tmp;
     }
 
-  void *d = nvptx_alloc (size, true);
+  void *d = nvptx_alloc (size, true, managed);
   if (d)
     return d;
   else
@@ -1875,8 +1877,20 @@ GOMP_OFFLOAD_alloc (int ord, size_t size)
       /* Memory allocation failed.  Try freeing the stacks block, and
 	 retrying.  */
       nvptx_stacks_free (ptx_dev, true);
-      return nvptx_alloc (size, false);
+      return nvptx_alloc (size, false, managed);
     }
+}
+
+void *
+GOMP_OFFLOAD_alloc (int ord, size_t size)
+{
+  return cleanup_and_alloc (ord, size, false);
+}
+
+void *
+GOMP_OFFLOAD_managed_alloc (int ord, size_t size)
+{
+  return cleanup_and_alloc (ord, size, true);
 }
 
 bool
@@ -1884,6 +1898,12 @@ GOMP_OFFLOAD_free (int ord, void *ptr)
 {
   return (nvptx_attach_host_thread_to_device (ord)
 	  && nvptx_free (ptr, ptx_devices[ord]));
+}
+
+bool
+GOMP_OFFLOAD_managed_free (int ord, void *ptr)
+{
+  return GOMP_OFFLOAD_free (ord, ptr);
 }
 
 bool

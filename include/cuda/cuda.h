@@ -87,6 +87,10 @@ typedef enum {
   CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS = 88
 } CUdevice_attribute;
 
+typedef enum {
+  CU_MEM_ATTACH_GLOBAL = 0x1
+} CUmemAttach_flags;
+
 enum {
   CU_EVENT_DEFAULT = 0,
   CU_EVENT_DISABLE_TIMING = 2
@@ -254,6 +258,7 @@ CUresult cuMemAlloc (CUdeviceptr *, size_t);
 #define cuMemAllocHost cuMemAllocHost_v2
 CUresult cuMemAllocHost (void **, size_t);
 CUresult cuMemHostAlloc (void **, size_t, unsigned int);
+CUresult cuMemAllocManaged(CUdeviceptr *, size_t, unsigned int);
 CUresult cuMemcpy (CUdeviceptr, CUdeviceptr, size_t);
 CUresult cuMemcpyPeer (CUdeviceptr, CUcontext, CUdeviceptr, CUcontext, size_t);
 CUresult cuMemcpyPeerAsync (CUdeviceptr, CUcontext, CUdeviceptr, CUcontext, size_t, CUstream);

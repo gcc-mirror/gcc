@@ -1135,6 +1135,8 @@ extern int gomp_get_num_devices (void);
 extern bool gomp_target_task_fn (void *);
 extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
 			     int, struct goacc_asyncqueue *);
+extern void *gomp_managed_alloc (size_t size);
+extern void gomp_managed_free (void *device_ptr);
 extern bool gomp_page_locked_host_alloc (void **, size_t);
 extern void gomp_page_locked_host_free (void *);
 
@@ -1421,6 +1423,8 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_unload_image) *unload_image_func;
   __typeof (GOMP_OFFLOAD_alloc) *alloc_func;
   __typeof (GOMP_OFFLOAD_free) *free_func;
+  __typeof (GOMP_OFFLOAD_managed_alloc) *managed_alloc_func;
+  __typeof (GOMP_OFFLOAD_managed_free) *managed_free_func;
   __typeof (GOMP_OFFLOAD_page_locked_host_alloc) *page_locked_host_alloc_func;
   __typeof (GOMP_OFFLOAD_page_locked_host_free) *page_locked_host_free_func;
   __typeof (GOMP_OFFLOAD_dev2host) *dev2host_func;
