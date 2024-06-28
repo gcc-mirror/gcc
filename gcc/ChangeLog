@@ -1,3 +1,137 @@
+2024-06-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/115677
+	* late-combine.cc (pass_late_combine::gate): New function.
+
+2024-06-27  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/115634
+	* config/s390/s390.cc (s390_decompose_addrstyle_without_index):
+	Check for ADDR_REGS in s390_decompose_addrstyle_without_index.
+
+2024-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115669
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Do not reassociate
+	chains that participate in a reduction.
+
+2024-06-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (update_list::update_list): Add m_bitmaps.
+	(update_list::~update_list): Initialize m_bitmaps.
+	* gimple-range-cache.h (ssa_lazy_cache): Add m_bitmaps.
+	* gimple-range.cc (enable_ranger): Remove global bitmap
+	initialization.
+	(disable_ranger): Remove global bitmap release.
+
+2024-06-27  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/sse.md
+	(float<floatunssuffix><sselongvecmodelower><mode>2<mask_name>
+	<round_name>): Refactor the pattern.
+	(unspec_fix<vcvtt_uns_suffix>_trunc<mode><sselongvecmodelower>2
+	<mask_name><round_saeonly_name>): Ditto.
+	(fix<fixunssuffix>_trunc<mode><sselongvecmodelower>2<mask_name>
+	<round_saeonly_name>): Ditto.
+	* config/i386/subst.md (round_modev8sf_condition): Remove.
+	(round_saeonly_modev8sf_condition): Ditto.
+
+2024-06-27  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/107432
+	* config/i386/i386-expand.cc (ix86_expand_trunc_with_avx2_noavx512f):
+	New function for generate a series of suitable insn.
+	* config/i386/i386-protos.h (ix86_expand_trunc_with_avx2_noavx512f):
+	Define new function.
+	* config/i386/sse.md: Extend trunc<mode><mode>2 for x86-64-v3.
+	(ssebytemode) Add V8HI.
+	(PMOV_DST_MODE_2_AVX2): New mode iterator.
+	(PMOV_SRC_MODE_3_AVX2): Ditto.
+	* config/i386/mmx.md
+	(trunc<mode><mmxhalfmodelower>2): Ditto.
+	(avx512vl_trunc<mode><mmxhalfmodelower>2): Ditto.
+	(truncv2si<mode>2): Ditto.
+	(avx512vl_truncv2si<mode>2): Ditto.
+	(mmxbytemode): New mode attr.
+
+2024-06-27  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/107432
+	* config/i386/mmx.md
+	(VI2_32_64): New mode iterator.
+	(mmxhalfmode): New mode atter.
+	(mmxhalfmodelower): Ditto.
+	(truncv2hiv2qi2): Extend mode v4hi and change name from
+	truncv2hiv2qi to trunc<mode><mmxhalfmodelower>2.
+
+2024-06-27  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/107432
+	* tree-vect-generic.cc
+	(expand_vector_conversion): Support convert for int -> int,
+	float -> float and int <-> float.
+	* tree-vect-stmts.cc (vectorizable_conversion): Wrap the
+	indirect convert part.
+	(supportable_indirect_convert_operation): New function.
+	* tree-vectorizer.h (supportable_indirect_convert_operation):
+	Define the new function.
+
+2024-06-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_print_operand_reloc):
+	Dedup and sort the comment describing modifiers.
+
+2024-06-27  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc:
+	(loongarch_use_bstrins_for_ior_with_mask): Split the main logic
+	into ...
+	(loongarch_use_bstrins_for_ior_with_mask_1): ... here.
+	(loongarch_rtx_costs): Special case for IOR those can be
+	implemented with bstrins.
+
+2024-06-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115462
+	* config/i386/i386.cc (ix86_rtx_costs): Make cost of MEM (reg +
+	disp) just a little bit more than MEM (reg).
+
+2024-06-27  Pan Li  <pan2.li@intel.com>
+
+	* internal-fn.def (SAT_TRUNC): Add new signed IFN sat_trunc as
+	unary_convert.
+	* match.pd: Add new matching pattern for unsigned int sat_trunc.
+	* optabs.def (OPTAB_CL): Add unsigned and signed optab.
+	* tree-ssa-math-opts.cc (gimple_unsigend_integer_sat_trunc): Add
+	new decl for the matching pattern generated func.
+	(match_unsigned_saturation_trunc): Add new func impl to match
+	the .SAT_TRUNC.
+	(math_opts_dom_walker::after_dom_children): Add .SAT_TRUNC match
+	function under BIT_IOR_EXPR case.
+
+2024-06-27  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add convert description for minus and capture.
+	* tree-vect-patterns.cc (vect_recog_build_binary_gimple_call): Add
+	new logic to handle in_type is incompatibile with out_type,  as
+	well as rename from.
+	(vect_recog_build_binary_gimple_stmt): Rename to.
+	(vect_recog_sat_add_pattern): Leverage above renamed func.
+	(vect_recog_sat_sub_pattern): Ditto.
+
+2024-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115652
+	* tree-vect-slp.cc (vect_schedule_slp_node): Only insert
+	at the start of the block if that strictly dominates
+	the discovered dependent stmt.
+
+2024-06-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115493
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Use
+	first scalar result.
+
 2024-06-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/115629

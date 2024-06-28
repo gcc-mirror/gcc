@@ -1,3 +1,9 @@
+2024-06-27  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def (apple_local_stdio_fn_deprecation): Also apply to
+	_stdio.h.
+
 2024-06-11  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	* fixincl.x: Regenerate.

@@ -1,3 +1,8 @@
+2024-06-27  Martin Uecker  <uecker@tugraz.at>
+
+	* c-parser.cc (c_parser_direct_declarator_inner): Add
+	error message.
+
 2024-06-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.cc (c_parser_require): Pass *global_dc to

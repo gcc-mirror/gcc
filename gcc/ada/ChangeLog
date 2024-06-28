@@ -1,3 +1,134 @@
+2024-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-carsi8.adb: Remove clauses for System.Address_Operations
+	and use only operations of System.Storage_Elements for addresses.
+	* libgnat/s-casi16.adb: Likewise.
+	* libgnat/s-casi32.adb: Likewise.
+	* libgnat/s-casi64.adb: Likewise.
+	* libgnat/s-casi128.adb: Likewise.
+	* libgnat/s-carun8.adb: Likewise.
+	* libgnat/s-caun16.adb: Likewise.
+	* libgnat/s-caun32.adb: Likewise.
+	* libgnat/s-caun64.adb: Likewise.
+	* libgnat/s-caun128.adb: Likewise.
+	* libgnat/s-geveop.adb: Likewise.
+
+2024-06-27  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch2.adb (Analyze_Interpolated_String_Literal): Report
+	interpretations of ambiguous parameterless function calls.
+
+2024-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch5.adb (Analyze_Target_Name): Call Analyze_Dimension on the
+	node once the Etype is set.
+	* sem_dim.adb (OK_For_Dimension): Set to True for N_Target_Name.
+	(Analyze_Dimension): Call Analyze_Dimension_Has_Etype for it.
+
+2024-06-27  Ronan Desplanques  <desplanques@adacore.com>
+
+	* mdll.adb (Build_Non_Reloc_DLL): Fix incorrect assignment
+	to array object.
+	(Ada_Build_Non_Reloc_DLL): Likewise.
+
+2024-06-27  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Has_Applicable_User_Defined_Literal): Add missing
+	support for interpolated strings.
+
+2024-06-27  Martin Clochard  <clochard@adacore.com>
+
+	* sem_ch6.adb (Check_Overriding_Indicator) Remove Comes_From_Source filter.
+	(New_Overloaded_Entity) Move up special case of LSP_Subprogram,
+	and remove Comes_From_Source filter.
+
+2024-06-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* aspects.ads (Aspect_Id): Add Aspect_Finalizable.
+	(Implementation_Defined_Aspect): Add True for Aspect_Finalizable.
+	(Operational_Aspect): Add True for Aspect_Finalizable.
+	(Aspect_Argument): Add Expression for Aspect_Finalizable.
+	(Is_Representation_Aspect): Add False for Aspect_Finalizable.
+	(Aspect_Names): Add Name_Finalizable for Aspect_Finalizable.
+	(Aspect_Delay): Add Always_Delay  for Aspect_Finalizable.
+	* checks.adb: Add with and use clauses for Sem_Elab.
+	(Install_Primitive_Elaboration_Check): Call Is_Controlled_Procedure.
+	* einfo.ads (Has_Relaxed_Finalization): Document new flag.
+	(Is_Controlled_Active): Update documentation.
+	* exp_aggr.adb (Generate_Finalization_Actions): Replace Find_Prim_Op
+	with Find_Controlled_Prim_Op for Name_Finalize.
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Finalization_Size>:
+	Return 0 if the prefix type has relaxed finalization.
+	* exp_ch3.adb (Build_Equivalent_Record_Aggregate): Return Empty if
+	the type needs finalization.
+	(Expand_Freeze_Record_Type): Call Find_Controlled_Prim_Op instead of
+	Find_Prim_Op for Name_{Adjust,Initialize,Finalize}.
+	Call Make_Finalize_Address_Body for all controlled types.
+	* exp_ch4.adb (Insert_Dereference_Action): Do not generate a call to
+	Adjust_Controlled_Dereference if the designated type has relaxed
+	finalization.
+	* exp_ch6.adb (Needs_BIP_Collection): Return false for an untagged
+	type that has relaxed finalization.
+	* exp_ch7.adb (Allows_Finalization_Collection): Return false if the
+	designated type has relaxed finalization.
+	(Check_Visibly_Controlled): Call Find_Controlled_Prim_Op instead of
+	Find_Prim_Op.
+	(Make_Adjust_Call): Likewise.
+	(Make_Deep_Record_Body): Likewise.
+	(Make_Final_Call): Likewise.
+	(Make_Init_Call): Likewise.
+	* exp_disp.adb (Set_All_DT_Position): Remove obsolete warning.
+	* exp_util.ads: Add with and use clauses for Snames.
+	(Find_Prim_Op): Add precondition.
+	(Find_Controlled_Prim_Op): New function declaration.
+	(Name_Of_Controlled_Prim_Op): Likewise.
+	* exp_util.adb: Remove with and use clauses for Snames.
+	(Build_Allocate_Deallocate_Proc): Do not build finalization actions
+	if the designated type has relaxed finalization.
+	(Find_Controlled_Prim_Op): New function.
+	(Find_Last_Init): Call Find_Controlled_Prim_Op instead of
+	Find_Prim_Op.
+	(Name_Of_Controlled_Prim_Op): New function.
+	* freeze.adb (Freeze_Entity.Freeze_Record_Type): Propagate the
+	Has_Relaxed_Finalization flag from components.
+	* gen_il-fields.ads (Opt_Field_Enum): Add Has_Relaxed_Finalization.
+	* gen_il-gen-gen_entities.adb (Entity_Kind): Likewise.
+	* sem_aux.adb (Is_By_Reference_Type): Return true for all controlled
+	types.
+	* sem_ch3.adb (Build_Derived_Record_Type): Do not special case types
+	declared in Ada.Finalization.
+	(Record_Type_Definition): Propagate the Has_Relaxed_Finalization
+	flag from components.
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Also process the
+	Finalizable aspect.
+	(Analyze_Aspect_Specifications): Likewise. Call Flag_Non_Static_Expr
+	in more cases.
+	(Check_Aspect_At_Freeze_Point): Likewise.
+	(Inherit_Aspects_At_Freeze_Point): Likewise.
+	(Resolve_Aspect_Expressions): Likewise.
+	(Resolve_Finalizable_Argument): New procedure.
+	(Validate_Finalizable_Aspect): Likewise.
+	* sem_elab.ads: Add with and use clauses for Snames.
+	(Is_Controlled_Procedure): New function declaration.
+	* sem_elab.adb: Remove with and use clauses for Snames.
+	(Is_Controlled_Proc): Move to...
+	(Is_Controlled_Procedure): ...here and rename.
+	(Check_A_Call): Call Find_Controlled_Prim_Op instead of
+	Find_Prim_Op.
+	(Is_Finalization_Procedure): Likewise.
+	* sem_util.ads (Propagate_Controlled_Flags): Update documentation.
+	* sem_util.adb (Is_Fully_Initialized_Type): Replace call to
+	Find_Optional_Prim_Op with Find_Controlled_Prim_Op.
+	Call Has_Null_Extension only for derived tagged types.
+	(Propagate_Controlled_Flags): Propagate Has_Relaxed_Finalization.
+	* snames.ads-tmpl (Name_Finalizable): New name.
+	(Name_Relaxed_Finalization): Likewise.
+	* libgnat/s-finroo.ads (Root_Controlled): Add Finalizable aspect.
+	* doc/gnat_rm/gnat_language_extensions.rst: Document implementation
+	of Generalized Finalization.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
 2024-06-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.cc (Subprogram_Body_to_gnu): Also return early

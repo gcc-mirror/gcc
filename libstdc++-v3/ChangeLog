@@ -1,3 +1,50 @@
+2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/37475
+	* config/locale/gnu/codecvt_members.cc (Guard): New RAII type.
+	(do_out, do_in): Return partial if the destination is empty but
+	the source is not. Use Guard to restore locale on scope exit.
+	Return immediately on any conversion error.
+	(do_encoding, do_max_length, do_length): Use Guard.
+	* testsuite/22_locale/codecvt/in/char/37475.cc: New test.
+	* testsuite/22_locale/codecvt/in/wchar_t/37475.cc: New test.
+	* testsuite/22_locale/codecvt/out/char/37475.cc: New test.
+	* testsuite/22_locale/codecvt/out/wchar_t/37475.cc: New test.
+
+2024-06-27  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/115454
+	* testsuite/experimental/simd/pr115454_find_last_set.cc: Defer
+	to check_vect_support_and_set_flags's default dg-do action.
+
+2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115668
+	* include/bits/chrono_io.h (formatter<duration<R,P, C>::format):
+	Do not use chrono::abs.
+	* testsuite/20_util/duration/io.cc: Check formatting a duration
+	with unsigned rep.
+
+2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103191
+	* include/bits/stl_bvector.h (vector<bool>::operator[])
+	(vector<bool>::front, vector<bool>::back): Add debug assertions.
+	* testsuite/23_containers/vector/bool/element_access/constexpr.cc:
+	Remove dg-error that no longer triggers.
+
+2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111250
+	* include/debug/assertions.h (__glibcxx_requires_non_empty_range)
+	(__glibcxx_requires_nonempty, __glibcxx_requires_subscript):
+	Define to __glibcxx_assert expressions or to debug mode
+	__glibcxx_check_xxx expressions.
+	* testsuite/23_containers/array/element_access/constexpr_c++17.cc:
+	Add checks for out-of-bounds accesses in constant expressions.
+	* testsuite/23_containers/vector/element_access/constexpr.cc:
+	Likewise.
+
 2024-06-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* scripts/update_release_branch.sh: New file.
