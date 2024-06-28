@@ -22,10 +22,10 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include <cstdio>	// for std::fprintf, stderr
 #include <cstdlib>	// for std::abort
 
 #ifdef _GLIBCXX_VERBOSE_ASSERT
+#include <cstdio>	// for std::fprintf, stderr
 namespace std
 {
   [[__noreturn__]]
@@ -40,5 +40,13 @@ namespace std
       fprintf(stderr, "%s: Undefined behavior detected.\n", function);
     abort();
   }
+}
+#else
+namespace std
+{
+  [[__noreturn__]]
+  void
+  __glibcxx_assert_fail(const char*, int, const char*, const char*) noexcept
+  { abort(); }
 }
 #endif
