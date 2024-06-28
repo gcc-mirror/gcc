@@ -5134,7 +5134,7 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
      Reject permutations that cross the boundary.  */
   if (TARGET_RDNA2_PLUS)
     for (unsigned int i = 0; i < nelt; i++)
-      if (i < 31 ? perm[i] > 31 : perm[i] < 32)
+      if (i < 32 ? (perm[i] % nelt) > 31 : (perm[i] % nelt) < 32)
 	return false;
 
   /* All vector permutations are possible on other architectures,
