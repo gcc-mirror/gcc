@@ -133,6 +133,11 @@ package body Bindusg is
       Write_Line
         ("  -F        Force checking of elaboration Flags");
 
+      --  Line for -G switch
+
+      Write_Line
+        ("  -G        Generate binder file suitable for CCG");
+
       --  Line for -h switch
 
       Write_Line

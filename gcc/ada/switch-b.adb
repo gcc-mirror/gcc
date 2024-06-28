@@ -362,6 +362,12 @@ package body Switch.B is
                Debugger_Level := 2;
             end if;
 
+         --  Processing for G switch
+
+         when 'G' =>
+            Ptr := Ptr + 1;
+            CCG_Mode := True;
+
          --  Processing for h switch
 
          when 'h' =>

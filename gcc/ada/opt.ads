@@ -261,7 +261,9 @@ package Opt is
    --  (switch -B)
 
    CCG_Mode : Boolean := False;
-   --  Set to True when running as CCG (either via -gnatceg or via -emit-c)
+   --  GNAT, GNATBIND
+   --  Set to True when running as CCG (implicitly, via -emit-c, or -G for the
+   --  binder)
 
    Check_Aliasing_Of_Parameters : Boolean := False;
    --  GNAT
