@@ -1,3 +1,36 @@
+2024-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/104051
+	* g++.dg/coroutines/pr104051.C: New test.
+
+2024-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101765
+	* g++.dg/coroutines/pr101765.C: New test.
+
+2024-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100772
+	* g++.dg/coroutines/pr100772-a.C: New test.
+	* g++.dg/coroutines/pr100772-b.C: New test.
+
+2024-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99710
+	* g++.dg/coroutines/pr99710.C: New test.
+
 2024-06-24  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:

@@ -1,3 +1,40 @@
+2024-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-04-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/104051
+	* coroutines.cc (coro_diagnose_throwing_final_aw_expr): Handle
+	non-target expression inputs.
+
+2024-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101765
+	* coroutines.cc (register_local_var_uses): Emit a sorry if
+	we encounter a VLA in the coroutine local variables.
+
+2024-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-12-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/100772
+	* coroutines.cc (morph_fn_to_coro): Convert function parms
+	from reference before constructing any operator-new args
+	list.
+
+2024-06-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-10-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99710
+	* coroutines.cc (await_statement_walker): Report an error if
+	an await expression is found in a handler body.
+
 2024-06-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
