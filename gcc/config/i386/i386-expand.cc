@@ -414,9 +414,6 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	{
 #if TARGET_PECOFF
 	  tmp = legitimize_pe_coff_symbol (op1, addend != NULL_RTX);
-#else
-	  tmp = NULL_RTX;
-#endif
 
 	  if (tmp)
 	    {
@@ -425,6 +422,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 		break;
 	    }
 	  else
+#endif
 	    {
 	      op1 = operands[1];
 	      break;
@@ -482,12 +480,12 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	  /* dynamic-no-pic */
 	  if (MACHOPIC_INDIRECT)
 	    {
-	      rtx temp = (op0 && REG_P (op0) && mode == Pmode)
-			 ? op0 : gen_reg_rtx (Pmode);
-	      op1 = machopic_indirect_data_reference (op1, temp);
+	      tmp = (op0 && REG_P (op0) && mode == Pmode)
+		    ? op0 : gen_reg_rtx (Pmode);
+	      op1 = machopic_indirect_data_reference (op1, tmp);
 	      if (MACHOPIC_PURE)
 		op1 = machopic_legitimize_pic_address (op1, mode,
-						       temp == op1 ? 0 : temp);
+						       tmp == op1 ? 0 : tmp);
 	    }
 	  if (op0 != op1 && GET_CODE (op0) != MEM)
 	    {
@@ -542,9 +540,9 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	      op1 = validize_mem (force_const_mem (mode, op1));
 	      if (!register_operand (op0, mode))
 		{
-		  rtx temp = gen_reg_rtx (mode);
-		  emit_insn (gen_rtx_SET (temp, op1));
-		  emit_move_insn (op0, temp);
+		  tmp = gen_reg_rtx (mode);
+		  emit_insn (gen_rtx_SET (tmp, op1));
+		  emit_move_insn (op0, tmp);
 		  return;
 		}
 	    }
@@ -565,7 +563,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
       if (SUBREG_BYTE (op0) == 0)
 	{
 	  wide_int mask = wi::mask (64, true, 128);
-	  rtx tmp = immed_wide_int_const (mask, TImode);
+	  tmp = immed_wide_int_const (mask, TImode);
 	  op0 = SUBREG_REG (op0);
 	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
 	  if (mode == DFmode)
@@ -577,7 +575,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
       else if (SUBREG_BYTE (op0) == 8)
 	{
 	  wide_int mask = wi::mask (64, false, 128);
-	  rtx tmp = immed_wide_int_const (mask, TImode);
+	  tmp = immed_wide_int_const (mask, TImode);
 	  op0 = SUBREG_REG (op0);
 	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
 	  if (mode == DFmode)
