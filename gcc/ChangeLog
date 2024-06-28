@@ -1,3 +1,35 @@
+2024-06-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	Backported from master:
+	2023-11-30  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/103100
+	* config/aarch64/aarch64.md (cpymemdi): Remove pattern condition.
+	(setmemdi): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_expand_cpymem): Support
+	strict-align.  Cleanup condition for using MOPS.
+	(aarch64_expand_setmem): Likewise.
+
+2024-06-27  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	Backported from master:
+	2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/115618
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_get_extension_string_for_isa_flags): Fix generation of
+	the "+nocrypto" extension.
+	* config/aarch64/aarch64.h (AARCH64_ISA_CRYPTO): Remove.
+	(TARGET_CRYPTO): Remove.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Don't use TARGET_CRYPTO.
+
+2024-06-27  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (grace): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document the above.
+
 2024-06-24  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:

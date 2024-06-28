@@ -1,3 +1,12 @@
+2024-06-27  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	Backported from master:
+	2023-12-16  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/115618
+	* gcc.target/aarch64/options_set_4.c: Add terminating newline.
+	* gcc.target/aarch64/options_set_27.c: New test.
+
 2024-06-24  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
