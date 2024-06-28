@@ -6742,7 +6742,8 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 
       if (cand->viable == -1
 	  && shortcut_bad_convs
-	  && missing_conversion_p (cand))
+	  && (missing_conversion_p (cand)
+	      || TREE_CODE (cand->fn) == TEMPLATE_DECL))
 	{
 	  /* This candidate has been tentatively marked non-strictly viable,
 	     and we didn't compute all argument conversions for it (having
