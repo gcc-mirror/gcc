@@ -1257,7 +1257,11 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
       typedef typename iterator_traits<_II1>::value_type _ValueType1;
       const bool __simple = ((__is_integer<_ValueType1>::__value
 #if _GLIBCXX_USE_BUILTIN_TRAIT(__is_pointer)
-			      || __is_pointer(_ValueType1)
+				|| __is_pointer(_ValueType1)
+#endif
+#if __glibcxx_byte && __glibcxx_type_trait_variable_templates
+				// bits/cpp_type_traits.h declares std::byte
+				|| is_same_v<_ValueType1, byte>
 #endif
 			     ) && __memcmpable<_II1, _II2>::__value);
       return std::__equal<__simple>::equal(__first1, __last1, __first2);
