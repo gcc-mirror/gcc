@@ -1175,6 +1175,10 @@ common_type (tree t1, tree t2)
 static bool
 comptypes_verify (tree type1, tree type2)
 {
+  if (type1 == type2 || !type1 || !type2
+      || TREE_CODE (type1) == ERROR_MARK || TREE_CODE (type2) == ERROR_MARK)
+    return true;
+
   if (TYPE_CANONICAL (type1) != TYPE_CANONICAL (type2)
       && !TYPE_STRUCTURAL_EQUALITY_P (type1)
       && !TYPE_STRUCTURAL_EQUALITY_P (type2))
