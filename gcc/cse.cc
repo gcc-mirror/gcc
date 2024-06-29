@@ -239,7 +239,7 @@ static int next_qty;
    the constant being compared against, or zero if the comparison
    is not against a constant.  `comparison_qty' holds the quantity
    being compared against when the result is known.  If the comparison
-   is not with a register, `comparison_qty' is -1.  */
+   is not with a register, `comparison_qty' is INT_MIN.  */
 
 struct qty_table_elem
 {
@@ -4058,7 +4058,7 @@ record_jump_cond (enum rtx_code code, machine_mode mode, rtx op0, rtx op1)
       else
 	{
 	  ent->comparison_const = op1;
-	  ent->comparison_qty = -1;
+	  ent->comparison_qty = INT_MIN;
 	}
 
       return;
