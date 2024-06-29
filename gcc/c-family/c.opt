@@ -1464,6 +1464,10 @@ Wunsuffixed-float-constants
 C ObjC Var(warn_unsuffixed_float_constants) Warning
 Warn about unsuffixed float constants.
 
+Wunterminated-string-initialization
+C ObjC Var(warn_unterminated_string_initialization) Warning LangEnabledBy(C ObjC,Wextra || Wc++-compat)
+Warn about character arrays initialized as unterminated character sequences with a string literal.
+
 Wunused
 C ObjC C++ ObjC++ LangEnabledBy(C ObjC C++ ObjC++,Wall)
 ; documented in common.opt

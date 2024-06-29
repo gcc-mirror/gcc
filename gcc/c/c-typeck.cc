@@ -8878,11 +8878,11 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		pedwarn_init (init_loc, 0,
 			      ("initializer-string for array of %qT "
 			       "is too long"), typ1);
-	      else if (warn_cxx_compat
+	      else if (warn_unterminated_string_initialization
 		       && compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
-		warning_at (init_loc, OPT_Wc___compat,
+		warning_at (init_loc, OPT_Wunterminated_string_initialization,
 			    ("initializer-string for array of %qT "
-			     "is too long for C++"), typ1);
+			     "is too long"), typ1);
 	      if (compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
 		{
 		  unsigned HOST_WIDE_INT size

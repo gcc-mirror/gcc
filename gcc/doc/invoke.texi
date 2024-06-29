@@ -415,7 +415,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs
 -Wtrivial-auto-var-init  -Wno-tsan  -Wtype-limits  -Wundef
 -Wuninitialized  -Wunknown-pragmas
--Wunsuffixed-float-constants  -Wunused
+-Wunsuffixed-float-constants
+-Wunterminated-string-initialization
+-Wunused
 -Wunused-but-set-parameter  -Wunused-but-set-variable
 -Wunused-const-variable  -Wunused-const-variable=@var{n}
 -Wunused-function  -Wunused-label  -Wunused-local-typedefs
@@ -6496,6 +6498,7 @@ name is still supported, but the newer name is more descriptive.)
 -Wstring-compare
 -Wtype-limits
 -Wuninitialized
+-Wunterminated-string-initialization
 -Wunused-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}
 -Wunused-but-set-parameter @r{(only with} @option{-Wunused} @r{or} @option{-Wall}@r{)}}
 
@@ -8663,6 +8666,21 @@ This warning level also warns about the intermediate results of pointer
 arithmetic that may yield out of bounds values. This warning level may
 give a larger number of false positives and is deactivated by default.
 @end table
+
+@opindex Wunterminated-string-initialization
+@opindex Wno-unterminated-string-initialization
+@item -Wunterminated-string-initialization @r{(C and Objective-C only)}
+Warn about character arrays
+initialized as unterminated character sequences
+with a string literal.
+For example:
+
+@smallexample
+char arr[3] = "foo";
+@end smallexample
+
+This warning is enabled by @option{-Wextra} and @option{-Wc++-compat}.
+In C++, such initializations are an error.
 
 @opindex Warray-compare
 @opindex Wno-array-compare
