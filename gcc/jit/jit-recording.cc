@@ -5516,7 +5516,7 @@ recording::memento_of_typeinfo::replay_into (replayer *r)
 recording::string *
 recording::memento_of_typeinfo::make_debug_string ()
 {
-  const char* ident;
+  const char* ident = "";
   switch (m_info_type)
   {
     case TYPE_INFO_ALIGN_OF:
@@ -5538,7 +5538,7 @@ recording::memento_of_typeinfo::make_debug_string ()
 void
 recording::memento_of_typeinfo::write_reproducer (reproducer &r)
 {
-  const char* type;
+  const char* type = "";
   switch (m_info_type)
   {
     case TYPE_INFO_ALIGN_OF:
