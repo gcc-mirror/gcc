@@ -1,3 +1,28 @@
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106760
+	* g++.dg/ext/conv3.C: New test.
+
+2024-06-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/unlimited_polymorphic_11.f90: Remove unnecessary
+	casts in gd-final expression.
+
+2024-06-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/concatditi-1.c: New test case.
+
+2024-06-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/avx512f-andn-di-zmm-2.c: Match decimal instead
+	of hexadecimal immediate operand to ternlog.
+	* gcc.target/i386/avx512f-andn-si-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-orn-si-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-orn-si-zmm-2.c: Likewise.
+	* gcc.target/i386/pr100711-3.c: Likewise.
+	* gcc.target/i386/pr100711-4.c: Likewise.
+	* gcc.target/i386/pr100711-5.c: Likewise.
+
 2024-06-27  Antoni Boucher  <bouanto@zoho.com>
 
 	* jit.dg/all-non-failing-tests.h: New test.

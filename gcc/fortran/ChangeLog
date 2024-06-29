@@ -1,3 +1,21 @@
+2024-06-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-expr.cc (gfc_class_set_vptr): Add setting of _vptr
+	member.
+	* trans-intrinsic.cc (conv_intrinsic_move_alloc): First use
+	of gfc_class_set_vptr and refactor very similar code.
+	* trans.h (gfc_class_set_vptr): Declare the new function.
+
+2024-06-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-array.cc (structure_alloc_comps): Use reset_vptr.
+	* trans-decl.cc (gfc_trans_deferred_vars): Same.
+	(gfc_generate_function_code): Same.
+	* trans-expr.cc (gfc_reset_vptr): Allow supplying the class
+	type.
+	(gfc_conv_procedure_call): Use reset_vptr.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_transfer): Same.
+
 2024-06-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/55978

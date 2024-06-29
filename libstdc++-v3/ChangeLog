@@ -1,3 +1,36 @@
+2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115585
+	* src/c++11/assert_fail.cc (__glibcxx_assert_fail): Add
+	definition for non-verbose builds.
+
+2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101485
+	* include/bits/stl_algobase.h (__equal_aux1): Check for
+	std::byte as well.
+	* testsuite/25_algorithms/equal/101485.cc: New test.
+
+2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104395
+	* include/bits/new_allocator.h: Disable extended alignment
+	support in C++98 mode.
+	* include/bits/stl_tempbuf.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* testsuite/ext/104395.cc: New test.
+
+2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/aligned_buffer.h (__aligned_membuf): Use
+	alignas(T) directly instead of defining a struct and using 9its
+	alignment.
+	(__aligned_buffer): Remove use of std::aligned_storage.
+	* testsuite/abi/aligned_buffers.cc: New test.
+
 2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/37475

@@ -1,3 +1,91 @@
+2024-06-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_lazy_cache::ssa_lazy_cache): Relocate here.
+	Check for provided obstack.
+	(ssa_lazy_cache::~ssa_lazy_cache): Relocate here.  Free bitmap or obstack.
+	* gimple-range-cache.h (ssa_lazy_cache::ssa_lazy_cache): Move.
+	(ssa_lazy_cache::~ssa_lazy_cache): Move.
+	(ssa_lazy_cache::m_ob): New.
+	* gimple-range.cc (dom_ranger::dom_ranger): Iniitialize obstack.
+	(dom_ranger::~dom_ranger): Release obstack.
+	(dom_ranger::pre_bb): Create ssa_lazy_cache using obstack.
+	* gimple-range.h (m_bitmaps): New.
+
+2024-06-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_move): Remove extra
+	assignment to tmp variable, reuse tmp variable instead of
+	declaring new temporary variable and remove tmp variable shadowing.
+
+2024-06-28  Jørgen Kvalsvik  <j@lambda.is>
+
+	* tree-profile.cc (find_conditions): Use auto_vec without
+	embedded storage.
+
+2024-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115652
+	* tree-vect-slp.cc (vect_schedule_slp_node): Handle the case
+	where the outer loop header block is empty.
+
+2024-06-28  Evgeny Karpov  <Evgeny.Karpov@microsoft.com>
+
+	PR bootstrap/115635
+	PR target/115643
+	PR target/115661
+	* config/aarch64/cygming.h
+	(PE_COFF_EXTERN_DECL_SHOULD_BE_LEGITIMIZED): Rename to
+	PE_COFF_LEGITIMIZE_EXTERN_DECL.
+	(PE_COFF_LEGITIMIZE_EXTERN_DECL): Likewise.
+	* config/i386/cygming.h (GOT_ALIAS_SET): Remove the diffinition to
+	reuse it from i386.h.
+	(PE_COFF_EXTERN_DECL_SHOULD_BE_LEGITIMIZED): Rename to
+	PE_COFF_LEGITIMIZE_EXTERN_DECL.
+	(PE_COFF_LEGITIMIZE_EXTERN_DECL): Likewise.
+	* config/i386/i386-expand.cc (ix86_expand_move): Return
+	ix86_GOT_alias_set.
+	* config/i386/i386-expand.h (ix86_GOT_alias_set): Likewise.
+	* config/i386/i386.cc (ix86_GOT_alias_set): Likewise.
+	* config/i386/i386.h (GOT_ALIAS_SET): Likewise.
+	* config/mingw/winnt-dll.cc (get_dllimport_decl): Use
+	GOT_ALIAS_SET.
+	(legitimize_pe_coff_symbol): Rename to
+	PE_COFF_LEGITIMIZE_EXTERN_DECL.
+	* config/mingw/winnt-dll.h (ix86_GOT_alias_set): Declare
+	ix86_GOT_alias_set.
+
+2024-06-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op-ptr.cc (class hybrid_and_operator): Remove.
+	(class hybrid_or_operator): Same.
+	(class hybrid_min_operator): Same.
+	(class hybrid_max_operator): Same.
+
+2024-06-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115640
+	* tree-vect-stmts.cc (vectorizable_load): With an inner
+	loop SLP access to not apply a gap adjustment.
+
+2024-06-28  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/115640
+	* config/gcn/gcn.cc (gcn_vectorize_vec_perm_const): Modify RDNA checks.
+
+2024-06-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*concat<mode><dwi>3_3): Change zero_extend
+	to any_extend in first operand to left shift by mode precision.
+	(*concat<mode><dwi>3_4): Likewise.
+	(*concat<mode><dwi>3_6): Likewise.
+
+2024-06-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-expand.cc (ix86_ternlog_idx) <case VEC_DUPLICATE>:
+	Add a "goto do_mem_operand" as this need not match memory_operand.
+	<case CONST_VECTOR>: Only args[2] may be volatile memory operand.
+	Allow MEM/VEC_DUPLICATE/CONST_VECTOR as args[0] and args[1].
+
 2024-06-27  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/115677
