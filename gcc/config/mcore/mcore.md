@@ -1057,15 +1057,17 @@
   [(set_attr "type" "load")])
 
 (define_expand "zero_extendqisi2"
-  [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
-	(zero_extend:SI (match_operand:QI 1 "general_operand" "")))]
+  [(parallel [(set (match_operand:SI 0 "mcore_arith_reg_operand" "")
+		  (zero_extend:SI (match_operand:QI 1 "general_operand" "")))
+	      (clobber (reg:CC 17))])]
   ""
   "") 
 
 ;; RBE: XXX: we don't recognize that the xtrb3 kills the CC register.
 (define_insn ""
   [(set (match_operand:SI 0 "mcore_arith_reg_operand" "=r,b,r")
-	(zero_extend:SI (match_operand:QI 1 "general_operand" "0,r,m")))]
+	(zero_extend:SI (match_operand:QI 1 "general_operand" "0,r,m")))
+   (clobber (reg:CC 17))]
   ""
   "@
 	zextb	%0
@@ -1091,15 +1093,17 @@
   [(set_attr "type" "load")])
 
 (define_expand "zero_extendqihi2"
-  [(set (match_operand:HI 0 "mcore_arith_reg_operand" "")
-	(zero_extend:HI (match_operand:QI 1 "general_operand" "")))]
+  [(parallel [(set (match_operand:HI 0 "mcore_arith_reg_operand" "")
+		   (zero_extend:HI (match_operand:QI 1 "general_operand" "")))
+	      (clobber (reg:CC 17))])]
   ""
   "") 
 
 ;; RBE: XXX: we don't recognize that the xtrb3 kills the CC register.
 (define_insn ""
   [(set (match_operand:HI 0 "mcore_arith_reg_operand" "=r,b,r")
-	(zero_extend:HI (match_operand:QI 1 "general_operand" "0,r,m")))]
+	(zero_extend:HI (match_operand:QI 1 "general_operand" "0,r,m")))
+   (clobber (reg:CC 17))]
   ""
   "@
 	zextb	%0
