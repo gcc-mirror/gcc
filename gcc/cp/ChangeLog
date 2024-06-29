@@ -1,3 +1,33 @@
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115504
+	* semantics.cc (finish_decltype_type): Don't strip the reference
+	type (if any) of a capture proxy's captured variable.
+
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115198
+	* pt.cc (alias_ctad_tweaks): Update DECL_NAME of the transformed
+	guides.
+
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115358
+	* decl2.cc (mark_used): Call maybe_instantiate_decl for an array
+	variable with unknown bound.
+	* semantics.cc (finish_decltype_type): Remove now redundant
+	handling of array variables with unknown bound.
+	* typeck.cc (cxx_sizeof_expr): Likewise.
+
 2024-06-25  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	Backported from master:

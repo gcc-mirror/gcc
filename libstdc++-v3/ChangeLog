@@ -1,3 +1,14 @@
+2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115668
+	* include/bits/chrono_io.h (formatter<duration<R,P, C>::format):
+	Do not use chrono::abs.
+	* testsuite/20_util/duration/io.cc: Check formatting a duration
+	with unsigned rep.
+
 2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

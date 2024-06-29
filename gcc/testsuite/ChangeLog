@@ -1,3 +1,38 @@
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115504
+	* g++.dg/cpp1y/decltype-auto8.C: New test.
+
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115198
+	* g++.dg/cpp2a/class-deduction-alias22.C: New test.
+
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115358
+	* g++.dg/template/array37.C: New test.
+
+2024-06-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2024-06-21  Kewen Lin  <linkw@linux.ibm.com>
+		    Xionghu Luo  <xionghuluo@tencent.com>
+
+	PR target/106069
+	PR target/115355
+	* g++.target/powerpc/pr106069.C: New test.
+	* gcc.target/powerpc/pr115355.c: New test.
+
 2024-06-27  Jiawei  <jiawei@iscas.ac.cn>
 
 	* gcc.target/riscv/rvv/vsetvl/pr115214.c: New test.
