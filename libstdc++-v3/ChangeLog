@@ -1,3 +1,24 @@
+2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Replace viewcvs links with cgit links.
+	* doc/xml/manual/allocator.xml: Likewise.
+	* doc/xml/manual/mt_allocator.xml: Likewise.
+	* doc/html/*: Regenerate.
+
+2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115668
+	* include/bits/chrono_io.h (formatter<duration<R,P, C>::format):
+	Do not use chrono::abs.
+	* testsuite/20_util/duration/io.cc: Check formatting a duration
+	with unsigned rep.
+
 2024-06-27  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:
