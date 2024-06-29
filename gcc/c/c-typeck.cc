@@ -1603,6 +1603,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 	  != TYPE_REVERSE_STORAGE_ORDER (t2)))
     return false;
 
+  if (TYPE_USER_ALIGN (t1) != TYPE_USER_ALIGN (t2))
+    data->different_types_p = true;
+
   /* For types already being looked at in some active
      invocation of this function, assume compatibility.
      The cache is built as a linked list on the stack
