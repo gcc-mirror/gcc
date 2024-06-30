@@ -1,3 +1,8 @@
+2024-06-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc-interface/Makefile.in: Use DSYMUTIL_FOR_TARGET in
+	libgnat/libgnarl recipies.
+
 2024-03-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/113979
