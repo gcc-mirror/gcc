@@ -79,9 +79,10 @@ extern struct ptr_info_def *get_ptr_info (tree);
 extern void set_ptr_nonnull (tree);
 
 extern tree copy_ssa_name_fn (struct function *, tree, gimple *);
-extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
 extern tree duplicate_ssa_name_fn (struct function *, tree, gimple *);
+extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
 extern void duplicate_ssa_name_range_info (tree dest, tree src);
+extern void maybe_duplicate_ssa_info_at_copy (tree dest, tree src);
 extern void reset_flow_sensitive_info (tree);
 extern void reset_flow_sensitive_info_in_bb (basic_block);
 extern void release_defs (gimple *);
