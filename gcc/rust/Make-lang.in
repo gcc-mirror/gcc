@@ -196,6 +196,7 @@ GRS_OBJS = \
     rust/rust-compile-item.o \
     rust/rust-compile-implitem.o \
     rust/rust-compile-stmt.o \
+    rust/rust-compile-asm.o \
     rust/rust-compile-expr.o \
     rust/rust-compile-type.o \
     rust/rust-compile-block.o \

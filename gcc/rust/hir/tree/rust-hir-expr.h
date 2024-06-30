@@ -4163,41 +4163,6 @@ public:
       options (std::move (options))
 
   {}
-
-  tree construct_string_tree ()
-  {
-    if (template_strs.empty ())
-      return build_string (1, "");
-    // Initialize to NULL_TREE
-    tree string_chain = NULL_TREE;
-
-    for (const auto &template_str : template_strs)
-      {
-	auto str = template_str.symbol;
-	auto string_tree = build_string (str.size () + 1, str.c_str ());
-
-	string_chain = tree_cons (NULL_TREE, string_tree, string_chain);
-      }
-    // Reverse the chain before returning
-    return nreverse (string_chain);
-  }
-
-  tree construct_clobber_tree () { return NULL_TREE; }
-  tree construct_label_tree () { return NULL_TREE; }
-  tree construct_inputs () { return NULL_TREE; }
-  tree construct_outputs () { return NULL_TREE; }
-  // This function checks if the assembly macro is "simple" or not, according to
-  // the tree defition (tree.h) of the
-
-  // SIMPLE indicates whether there was anything at all after the
-  // string in the asm expression
-  bool is_simple ()
-  {
-    return operands.size () == 0 && clobber_abi.size () == 0
-	   && options.size () == 0;
-  }
-
-  bool is_inline_asm () { return !is_global_asm; }
 };
 } // namespace HIR
 } // namespace Rust
