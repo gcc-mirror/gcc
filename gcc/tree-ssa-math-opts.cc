@@ -2272,17 +2272,16 @@ make_pass_cse_sincos (gcc::context *ctxt)
   return new pass_cse_sincos (ctxt);
 }
 
-/* Expand powi(x,n) into an optimal number of multiplies, when n is a constant.
-   Note the name is powcabs but cabs expansion was moved to the lower complex
-   pass.  */
+/* Expand powi(x,n) into an optimal number of multiplies, when n is a
+   constant.  */
 namespace {
 
-const pass_data pass_data_expand_powcabs =
+const pass_data pass_data_expand_pow =
 {
   GIMPLE_PASS, /* type */
-  "powcabs", /* name */
+  "pow", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_TREE_POWCABS, /* tv_id */
+  TV_TREE_POW, /* tv_id */
   PROP_ssa, /* properties_required */
   PROP_gimple_opt_math, /* properties_provided */
   0, /* properties_destroyed */
@@ -2290,11 +2289,11 @@ const pass_data pass_data_expand_powcabs =
   TODO_update_ssa, /* todo_flags_finish */
 };
 
-class pass_expand_powcabs : public gimple_opt_pass
+class pass_expand_pow : public gimple_opt_pass
 {
 public:
-  pass_expand_powcabs (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_expand_powcabs, ctxt)
+  pass_expand_pow (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_expand_pow, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -2305,10 +2304,10 @@ public:
 
   unsigned int execute (function *) final override;
 
-}; // class pass_expand_powcabs
+}; // class pass_expand_pow
 
 unsigned int
-pass_expand_powcabs::execute (function *fun)
+pass_expand_pow::execute (function *fun)
 {
   basic_block bb;
   bool cfg_changed = false;
@@ -2421,9 +2420,9 @@ pass_expand_powcabs::execute (function *fun)
 } // anon namespace
 
 gimple_opt_pass *
-make_pass_expand_powcabs (gcc::context *ctxt)
+make_pass_expand_pow (gcc::context *ctxt)
 {
-  return new pass_expand_powcabs (ctxt);
+  return new pass_expand_pow (ctxt);
 }
 
 /* Return true if stmt is a type conversion operation that can be stripped
