@@ -3762,6 +3762,8 @@ pass_forwprop::execute (function *fun)
 		  && gimple_store_p (use_stmt)
 		  && !gimple_has_volatile_ops (use_stmt)
 		  && is_gimple_assign (use_stmt)
+		  && (TREE_CODE (TREE_TYPE (gimple_assign_lhs (use_stmt)))
+		      == COMPLEX_TYPE)
 		  && (TREE_CODE (gimple_assign_lhs (use_stmt))
 		      != TARGET_MEM_REF))
 		{
