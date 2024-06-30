@@ -1,3 +1,25 @@
+2024-06-29  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	PR rtl-optimization/115565
+	* cse.cc (record_jump_cond): Use INT_MIN rather than -1 for
+	`comparison_qty' if !REG_P.
+
+2024-06-29  Sergei Lewis  <slewis@rivosinc.com>
+
+	* config/riscv/riscv.md (movmem<mode>): New expander.
+
+2024-06-29  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add imm form for .SAT_ADD matching.
+	* tree-ssa-math-opts.cc (math_opts_dom_walker::after_dom_children):
+	Add .SAT_ADD matching under PLUS_EXPR.
+
+2024-06-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/mcore/mcore.md  (zero_extendqihi2): Clobber CC in expander
+	and matching insn.
+	(zero_extendqisi2): Likewise.
+
 2024-06-28  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc (ssa_lazy_cache::ssa_lazy_cache): Relocate here.

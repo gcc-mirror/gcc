@@ -1,3 +1,9 @@
+2024-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114019
+	* trans-stmt.cc (gfc_trans_allocate): Fix handling of case of
+	scalar character expression being used for SOURCE.
+
 2024-06-28  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* trans-expr.cc (gfc_class_set_vptr): Add setting of _vptr

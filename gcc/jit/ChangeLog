@@ -1,3 +1,11 @@
+2024-06-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit-recording.cc
+	(recording::memento_of_typeinfo::make_debug_string): Default the value
+	of ident.
+	(recording::memento_of_typeinfo::write_reproducer): Default the value
+	of type.
+
 2024-06-27  Antoni Boucher  <bouanto@zoho.com>
 
 	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_28): New ABI tag.
