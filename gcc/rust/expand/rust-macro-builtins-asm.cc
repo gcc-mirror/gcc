@@ -784,11 +784,19 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
   auto last_token_id = inline_asm_ctx.last_token_id;
   auto fm_string = parse_format_string (inline_asm_ctx);
 
+  auto &inline_asm = inline_asm_ctx.inline_asm;
+  auto token = parser.peek_current_token ();
   if (fm_string == tl::nullopt)
     {
       rust_error_at (parser.peek_current_token ()->get_locus (),
 		     "%s template must be a string literal", "asm");
       return tl::unexpected<InlineAsmParseError> (COMMITTED);
+    }
+  else
+    {
+      auto template_str
+	= AST::TupleTemplateStr (token->get_locus (), fm_string.value ());
+      inline_asm.template_strs.push_back (template_str);
     }
 
   // formatted string stream
@@ -803,15 +811,22 @@ parse_format_strings (InlineAsmContext inline_asm_ctx)
       // in here, which is formatted string in ABNF
       inline_asm_ctx.consumed_comma_without_formatted_string = false;
 
+      token = parser.peek_current_token ();
       fm_string = parse_format_string (inline_asm_ctx);
       if (fm_string == tl::nullopt)
 	{
 	  inline_asm_ctx.consumed_comma_without_formatted_string = true;
 	  break;
 	}
+      else
+	{
+	  auto template_str
+	    = AST::TupleTemplateStr (token->get_locus (), fm_string.value ());
+	  inline_asm.template_strs.push_back (template_str);
+	}
     }
 
-  return tl::expected<InlineAsmContext, InlineAsmParseError> (inline_asm_ctx);
+  return inline_asm_ctx;
 }
 
 // bool

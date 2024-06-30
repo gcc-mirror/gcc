@@ -5057,9 +5057,12 @@ struct TupleClobber
 struct TupleTemplateStr
 {
   // as gccrs still doesn't contain a symbol class I have put them as strings
-  std::string symbol;
-  std::string optional_symbol;
   location_t loc;
+  std::string symbol;
+
+  TupleTemplateStr (location_t loc, const std::string &symbol)
+    : loc (loc), symbol (symbol)
+  {}
 };
 
 // Inline Assembly Node
