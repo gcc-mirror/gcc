@@ -4567,6 +4567,70 @@ vect_recog_sat_add_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
 }
 
 /*
+ * Try to transform the truncation for .SAT_SUB pattern,  mostly occurs in
+ * the benchmark zip.  Aka:
+ *
+ *   unsigned int _1;
+ *   unsigned int _2;
+ *   unsigned short int _4;
+ *   _9 = (unsigned short int).SAT_SUB (_1, _2);
+ *
+ *   if _1 is known to be in the range of unsigned short int.  For example
+ *   there is a def _1 = (unsigned short int)_4.  Then we can transform the
+ *   truncation to:
+ *
+ *   _3 = (unsigned short int) MIN (65535, _2); // aka _3 = .SAT_TRUNC (_2);
+ *   _9 = .SAT_SUB (_4, _3);
+ *
+ *   Then,  we can better vectorized code and avoid the unnecessary narrowing
+ *   stmt during vectorization with below stmt(s).
+ *
+ *   _3 = .SAT_TRUNC(_2); // SI => HI
+ *   _9 = .SAT_SUB (_4, _3);
+ */
+static void
+vect_recog_sat_sub_pattern_transform (vec_info *vinfo,
+				      stmt_vec_info stmt_vinfo,
+				      tree lhs, tree *ops)
+{
+  tree otype = TREE_TYPE (lhs);
+  tree itype = TREE_TYPE (ops[0]);
+  unsigned itype_prec = TYPE_PRECISION (itype);
+  unsigned otype_prec = TYPE_PRECISION (otype);
+
+  if (types_compatible_p (otype, itype) || otype_prec >= itype_prec)
+    return;
+
+  tree v_otype = get_vectype_for_scalar_type (vinfo, otype);
+  tree v_itype = get_vectype_for_scalar_type (vinfo, itype);
+  tree_pair v_pair = tree_pair (v_otype, v_itype);
+
+  if (v_otype == NULL_TREE || v_itype == NULL_TREE
+    || !direct_internal_fn_supported_p (IFN_SAT_TRUNC, v_pair,
+					OPTIMIZE_FOR_BOTH))
+    return;
+
+  /* 1. Find the _4 and update ops[0] as above example.  */
+  vect_unpromoted_value unprom;
+  tree tmp = vect_look_through_possible_promotion (vinfo, ops[0], &unprom);
+
+  if (tmp == NULL_TREE || TYPE_PRECISION (unprom.type) != otype_prec)
+    return;
+
+  ops[0] = tmp;
+
+  /* 2. Generate _3 = .SAT_TRUNC (_2) and update ops[1] as above example.  */
+  tree trunc_lhs_ssa = vect_recog_temp_ssa_var (otype, NULL);
+  gcall *call = gimple_build_call_internal (IFN_SAT_TRUNC, 1, ops[1]);
+
+  gimple_call_set_lhs (call, trunc_lhs_ssa);
+  gimple_call_set_nothrow (call, /* nothrow_p */ false);
+  append_pattern_def_seq (vinfo, stmt_vinfo, call, v_otype);
+
+  ops[1] = trunc_lhs_ssa;
+}
+
+/*
  * Try to detect saturation sub pattern (SAT_ADD), aka below gimple:
  *   _7 = _1 >= _2;
  *   _8 = _1 - _2;
@@ -4591,6 +4655,7 @@ vect_recog_sat_sub_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
 
   if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL))
     {
+      vect_recog_sat_sub_pattern_transform (vinfo, stmt_vinfo, lhs, ops);
       gimple *stmt = vect_recog_build_binary_gimple_stmt (vinfo, stmt_vinfo,
 							  IFN_SAT_SUB, type_out,
 							  lhs, ops[0], ops[1]);
