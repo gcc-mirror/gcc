@@ -82,6 +82,14 @@ sat_u_add_imm##IMM##_##T##_fmt_3 (T x)                     \
   return __builtin_add_overflow (x, IMM, &ret) ? -1 : ret; \
 }
 
+#define DEF_SAT_U_ADD_IMM_FMT_4(T, IMM)                         \
+T __attribute__((noinline))                                     \
+sat_u_add_imm##IMM##_##T##_fmt_4 (T x)                          \
+{                                                               \
+  T ret;                                                        \
+  return __builtin_add_overflow (x, IMM, &ret) == 0 ? ret : -1; \
+}
+
 #define RUN_SAT_U_ADD_IMM_FMT_1(T, x, IMM, expect) \
   if (sat_u_add_imm##IMM##_##T##_fmt_1(x) != expect) __builtin_abort ()
 
@@ -90,6 +98,9 @@ sat_u_add_imm##IMM##_##T##_fmt_3 (T x)                     \
 
 #define RUN_SAT_U_ADD_IMM_FMT_3(T, x, IMM, expect) \
   if (sat_u_add_imm##IMM##_##T##_fmt_3(x) != expect) __builtin_abort ()
+
+#define RUN_SAT_U_ADD_IMM_FMT_4(T, x, IMM, expect) \
+  if (sat_u_add_imm##IMM##_##T##_fmt_4(x) != expect) __builtin_abort ()
 
 /******************************************************************************/
 /* Saturation Sub (Unsigned and Signed)                                       */
