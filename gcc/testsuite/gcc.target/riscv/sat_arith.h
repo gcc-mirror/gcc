@@ -60,6 +60,16 @@ sat_u_add_##T##_fmt_6 (T x, T y)        \
 #define RUN_SAT_U_ADD_FMT_5(T, x, y) sat_u_add_##T##_fmt_5(x, y)
 #define RUN_SAT_U_ADD_FMT_6(T, x, y) sat_u_add_##T##_fmt_6(x, y)
 
+#define DEF_SAT_U_ADD_IMM_FMT_1(T, IMM)      \
+T __attribute__((noinline))                  \
+sat_u_add_imm##IMM##_##T##_fmt_1 (T x)       \
+{                                            \
+  return (T)(x + IMM) >= x ? (x + IMM) : -1; \
+}
+
+#define RUN_SAT_U_ADD_IMM_FMT_1(T, x, IMM, expect) \
+  if (sat_u_add_imm##IMM##_##T##_fmt_1(x) != expect) __builtin_abort ()
+
 /******************************************************************************/
 /* Saturation Sub (Unsigned and Signed)                                       */
 /******************************************************************************/
