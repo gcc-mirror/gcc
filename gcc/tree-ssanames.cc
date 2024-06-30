@@ -757,6 +757,34 @@ duplicate_ssa_name_range_info (tree name, tree src)
     }
 }
 
+/* For a SSA copy DEST = SRC duplicate SSA info present on DEST to SRC
+   to preserve it in case DEST is eliminated to SRC.  */
+
+void
+maybe_duplicate_ssa_info_at_copy (tree dest, tree src)
+{
+  if (POINTER_TYPE_P (TREE_TYPE (dest))
+      && SSA_NAME_PTR_INFO (dest)
+      && ! SSA_NAME_PTR_INFO (src))
+    {
+      duplicate_ssa_name_ptr_info (src, SSA_NAME_PTR_INFO (dest));
+      /* Points-to information is cfg insensitive,
+	 but VRP might record context sensitive alignment
+	 info, non-nullness, etc.  So reset context sensitive
+	 info if the two SSA_NAMEs aren't defined in the same
+	 basic block.  */
+      if (gimple_bb (SSA_NAME_DEF_STMT (src))
+	  != gimple_bb (SSA_NAME_DEF_STMT (dest)))
+	reset_flow_sensitive_info (src);
+    }
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
+	   && SSA_NAME_RANGE_INFO (dest)
+	   && ! SSA_NAME_RANGE_INFO (src)
+	   && (gimple_bb (SSA_NAME_DEF_STMT (src))
+	       == gimple_bb (SSA_NAME_DEF_STMT (dest))))
+    duplicate_ssa_name_range_info (src, dest);
+}
+
 
 /* Creates a duplicate of a ssa name NAME tobe defined by statement STMT
    in function FN.  */
