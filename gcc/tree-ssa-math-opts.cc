@@ -1622,22 +1622,6 @@ build_and_insert_binop (gimple_stmt_iterator *gsi, location_t loc,
   return result;
 }
 
-/* Build a gimple reference operation with the given CODE and argument
-   ARG, assigning the result to a new SSA name of TYPE with NAME.
-   Insert the statement prior to GSI's current position, and return
-   the fresh SSA name.  */
-
-static inline tree
-build_and_insert_ref (gimple_stmt_iterator *gsi, location_t loc, tree type,
-		      const char *name, enum tree_code code, tree arg0)
-{
-  tree result = make_temp_ssa_name (type, NULL, name);
-  gimple *stmt = gimple_build_assign (result, build1 (code, type, arg0));
-  gimple_set_location (stmt, loc);
-  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
-  return result;
-}
-
 /* Build a gimple assignment to cast VAL to TYPE.  Insert the statement
    prior to GSI's current position, and return the fresh SSA name.  */
 
@@ -2193,39 +2177,6 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   return NULL_TREE;
 }
 
-/* ARG is the argument to a cabs builtin call in GSI with location info
-   LOC.  Create a sequence of statements prior to GSI that calculates
-   sqrt(R*R + I*I), where R and I are the real and imaginary components
-   of ARG, respectively.  Return an expression holding the result.  */
-
-static tree
-gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, location_t loc, tree arg)
-{
-  tree real_part, imag_part, addend1, addend2, sum, result;
-  tree type = TREE_TYPE (TREE_TYPE (arg));
-  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
-  machine_mode mode = TYPE_MODE (type);
-
-  if (!flag_unsafe_math_optimizations
-      || !optimize_bb_for_speed_p (gimple_bb (gsi_stmt (*gsi)))
-      || !sqrtfn
-      || optab_handler (sqrt_optab, mode) == CODE_FOR_nothing)
-    return NULL_TREE;
-
-  real_part = build_and_insert_ref (gsi, loc, type, "cabs",
-				    REALPART_EXPR, arg);
-  addend1 = build_and_insert_binop (gsi, loc, "cabs", MULT_EXPR,
-				    real_part, real_part);
-  imag_part = build_and_insert_ref (gsi, loc, type, "cabs",
-				    IMAGPART_EXPR, arg);
-  addend2 = build_and_insert_binop (gsi, loc, "cabs", MULT_EXPR,
-				    imag_part, imag_part);
-  sum = build_and_insert_binop (gsi, loc, "cabs", PLUS_EXPR, addend1, addend2);
-  result = build_and_insert_call (gsi, loc, sqrtfn, sum);
-
-  return result;
-}
-
 /* Go through all calls to sin, cos and cexpi and call execute_cse_sincos_1
    on the SSA_NAME argument of each of them.  */
 
@@ -2322,7 +2273,8 @@ make_pass_cse_sincos (gcc::context *ctxt)
 }
 
 /* Expand powi(x,n) into an optimal number of multiplies, when n is a constant.
-   Also expand CABS.  */
+   Note the name is powcabs but cabs expansion was moved to the lower complex
+   pass.  */
 namespace {
 
 const pass_data pass_data_expand_powcabs =
@@ -2441,24 +2393,6 @@ pass_expand_powcabs::execute (function *fun)
 		      n = tree_to_shwi (arg1);
 		      result = gimple_expand_builtin_powi (&gsi, loc, arg0, n);
 		    }
-
-		  if (result)
-		    {
-		      tree lhs = gimple_get_lhs (stmt);
-		      gassign *new_stmt = gimple_build_assign (lhs, result);
-		      gimple_set_location (new_stmt, loc);
-		      unlink_stmt_vdef (stmt);
-		      gsi_replace (&gsi, new_stmt, true);
-		      cleanup_eh = true;
-		      if (gimple_vdef (stmt))
-			release_ssa_name (gimple_vdef (stmt));
-		    }
-		  break;
-
-		CASE_CFN_CABS:
-		  arg0 = gimple_call_arg (stmt, 0);
-		  loc = gimple_location (stmt);
-		  result = gimple_expand_builtin_cabs (&gsi, loc, arg0);
 
 		  if (result)
 		    {
