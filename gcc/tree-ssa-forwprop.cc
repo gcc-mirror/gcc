@@ -207,6 +207,10 @@ fwprop_set_lattice_val (tree name, tree val)
 	  lattice.quick_grow_cleared (num_ssa_names);
 	}
       lattice[SSA_NAME_VERSION (name)] = val;
+      /* As this now constitutes a copy duplicate points-to
+	 and range info appropriately.  */
+      if (TREE_CODE (val) == SSA_NAME)
+	maybe_duplicate_ssa_info_at_copy (name, val);
     }
 }
 

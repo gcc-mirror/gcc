@@ -789,6 +789,10 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 		  fprintf (dump_file, "\n");
 		}
 	      bitmap_set_bit (dceworklist, SSA_NAME_VERSION (res));
+	      /* As this now constitutes a copy duplicate points-to
+		 and range info appropriately.  */
+	      if (TREE_CODE (sprime) == SSA_NAME)
+		maybe_duplicate_ssa_info_at_copy (res, sprime);
 	      continue;
 	    }
 	}
@@ -831,6 +835,10 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 		  fprintf (dump_file, "\n");
 		}
 	      bitmap_set_bit (dceworklist, SSA_NAME_VERSION (lhs));
+	      /* As this now constitutes a copy duplicate points-to
+		 and range info appropriately.  */
+	      if (TREE_CODE (sprime) == SSA_NAME)
+		maybe_duplicate_ssa_info_at_copy (lhs, sprime);
 	      continue;
 	    }
 	}
