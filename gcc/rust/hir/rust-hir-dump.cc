@@ -353,6 +353,31 @@ Dump::do_expr (Expr &e)
 }
 
 void
+Dump::do_matcharm (MatchArm &e)
+{
+  begin ("MatchArm");
+  // FIXME Can't remember how to handle that. Let's see later.
+  // do_outer_attrs(e);
+  visit_collection ("match_arm_patterns", e.get_patterns ());
+  visit_field ("guard_expr", e.get_guard_expr ());
+  end ("MatchArm");
+}
+
+void
+Dump::do_matchcase (HIR::MatchCase &e)
+{
+  begin ("MatchCase");
+
+  begin_field ("arm");
+  do_matcharm (e.get_arm ());
+  end_field ("arm");
+
+  visit_field ("expr", e.get_expr ());
+
+  end ("MatchCase");
+}
+
+void
 Dump::do_pathexpr (PathExpr &e)
 {
   do_expr (e);
@@ -1437,16 +1462,20 @@ Dump::visit (MatchExpr &e)
   begin ("MatchExpr");
   do_inner_attrs (e);
   do_expr (e);
+
   visit_field ("branch_value", e.get_scrutinee_expr ());
 
-  std::string str;
-  if (e.get_match_cases ().empty ())
-    str = "none";
+  if (!e.has_match_arms ())
+    {
+      put_field ("match_arms", "empty");
+    }
   else
-    for (const auto &arm : e.get_match_cases ())
-      str += "\n " + arm.as_string ();
-  put_field ("match_arms", str);
-
+    {
+      begin_field ("match_arms");
+      for (auto &arm : e.get_match_cases ())
+	do_matchcase (arm);
+      end_field ("match_arms");
+    }
   end ("MatchExpr");
 }
 

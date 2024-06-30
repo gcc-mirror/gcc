@@ -100,6 +100,8 @@ private:
   void do_structfield (StructField &);
   void do_maybenamedparam (MaybeNamedParam &);
   void do_struct (Struct &);
+  void do_matcharm (MatchArm &);
+  void do_matchcase (MatchCase &);
 
   void visit (AST::Attribute &attribute);
   virtual void visit (Lifetime &) override;
