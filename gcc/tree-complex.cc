@@ -1701,10 +1701,10 @@ expand_complex_asm (gimple_stmt_iterator *gsi)
 }
 
 
-/* ARG is the argument to a cabs builtin call in GSI with location info
-   LOC.  Create a sequence of statements prior to GSI that calculates
-   sqrt(R*R + I*I), where R and I are the real and imaginary components
-   of ARG, respectively.  */
+/* ARG is the argument to a cabs builtin call in GSI from the
+   original OLD_STMT.  Create a sequence of statements prior
+   to GSI that calculates sqrt(R*R + I*I), where R and
+   I are the real and imaginary components of ARG, respectively.  */
 
 static void
 gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, gimple *old_stmt)
@@ -1712,21 +1712,56 @@ gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, gimple *old_stmt)
   tree real_part, imag_part, addend1, addend2, sum;
   tree arg = gimple_call_arg (old_stmt, 0);
   tree type = TREE_TYPE (TREE_TYPE (arg));
-  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
   machine_mode mode = TYPE_MODE (type);
   gimple *new_stmt;
 
-  if (!flag_unsafe_math_optimizations
-      || !optimize_bb_for_speed_p (gimple_bb (old_stmt))
-      || !sqrtfn
-      || optab_handler (sqrt_optab, mode) == CODE_FOR_nothing)
-    return;
+  tree lhs = gimple_call_lhs (old_stmt);
 
   real_part = extract_component (gsi, arg, false, true);
   imag_part = extract_component (gsi, arg, true, true);
   location_t loc = gimple_location (old_stmt);
 
   gimple_seq stmts = NULL;
+
+  /* cabs(x+0i) -> abs(x).
+     cabs(0+xi) -> abs(x).
+     These 2 can be done even without unsafe math optimizations.  */
+  if (real_zerop (imag_part)
+      || real_zerop (real_part))
+    {
+      tree other = real_zerop (imag_part) ? real_part : imag_part;
+      sum = gimple_build (&stmts, loc, ABS_EXPR, type, other);
+      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+      new_stmt = gimple_build_assign (lhs, sum);
+      gimple_set_location (new_stmt, loc);
+      gsi_replace (gsi, new_stmt, true);
+      return;
+    }
+
+  if (!flag_unsafe_math_optimizations)
+    return;
+
+  /* cabs(x+xi) -> fabs(x)*sqrt(2).  */
+  if (operand_equal_p (real_part, imag_part))
+    {
+      tree sqrt2 = build_real_truncate (type, dconst_sqrt2 ());
+      sum = gimple_build (&stmts, loc, ABS_EXPR, type, real_part);
+      sum = gimple_build (&stmts, loc, MULT_EXPR, type, sum, sqrt2);
+      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+      new_stmt = gimple_build_assign (lhs, sum);
+      gimple_set_location (new_stmt, loc);
+      gsi_replace (gsi, new_stmt, true);
+      return;
+    }
+
+  /* cabs(a+bi) -> sqrt(a*a+b*b) if sqrt exists on the target
+     and optimizing for speed.  */
+  tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
+  if (!optimize_bb_for_speed_p (gimple_bb (old_stmt))
+      || !sqrtfn
+      || optab_handler (sqrt_optab, mode) == CODE_FOR_nothing)
+    return;
+
   addend1 = gimple_build (&stmts, loc, MULT_EXPR, type, real_part, real_part);
   addend2 = gimple_build (&stmts, loc, MULT_EXPR, type, imag_part, imag_part);
   sum = gimple_build (&stmts, loc, PLUS_EXPR, type, addend1, addend2);
@@ -1735,7 +1770,6 @@ gimple_expand_builtin_cabs (gimple_stmt_iterator *gsi, gimple *old_stmt)
   /* Build the sqrt call. */
   new_stmt = gimple_build_call (sqrtfn, 1, sum);
   gimple_set_location (new_stmt, loc);
-  tree lhs = gimple_call_lhs (old_stmt);
   gimple_call_set_lhs (new_stmt, lhs);
   gsi_replace (gsi, new_stmt, true);
 }
