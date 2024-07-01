@@ -1,3 +1,34 @@
+2024-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114019
+	* trans-stmt.cc (gfc_trans_allocate): Fix handling of case of
+	scalar character expression being used for SOURCE.
+
+2024-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/55978
+	* trans-array.cc (gfc_conv_array_parameter): Do not dereference
+	data component of a missing allocatable dummy array argument for
+	passing as actual to optional dummy.  Harden logic of presence
+	check for optional pointer dummy by using TRUTH_ANDIF_EXPR instead
+	of TRUTH_AND_EXPR.
+
+2024-06-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2024-06-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115390
+	* trans-decl.cc (gfc_conv_cfi_to_gfc): Move derivation of type sizes
+	for character via gfc_trans_vla_type_sizes to after character length
+	has been set.
+
 2024-06-08  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
