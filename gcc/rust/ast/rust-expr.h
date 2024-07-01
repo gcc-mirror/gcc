@@ -4725,7 +4725,6 @@ struct AnonConst
 {
   NodeId id;
   std::unique_ptr<Expr> expr;
-  AnonConst () {}
   AnonConst (const AnonConst &other)
   {
     id = other.id;
@@ -4786,24 +4785,24 @@ struct InlineAsmOperand
     tl::optional<InlineAsmRegOrRegClass> reg;
     std::unique_ptr<Expr> expr;
 
-    In () {}
     In (tl::optional<struct InlineAsmRegOrRegClass> &reg,
 	std::unique_ptr<Expr> expr)
       : reg (reg), expr (std::move (expr))
-    {}
+    {
+      rust_assert (expr != nullptr);
+    }
 
     In (const struct In &other)
     {
       reg = other.reg;
-      if (other.expr)
-	expr = other.expr->clone_expr ();
+
+      expr = other.expr->clone_expr ();
     }
 
     In operator= (const struct In &other)
     {
       reg = other.reg;
-      if (other.expr)
-	expr = other.expr->clone_expr ();
+      expr = other.expr->clone_expr ();
 
       return *this;
     }
@@ -4815,27 +4814,25 @@ struct InlineAsmOperand
     bool late;
     std::unique_ptr<Expr> expr; // can be null
 
-    Out () {}
-
     Out (tl::optional<struct InlineAsmRegOrRegClass> &reg, bool late,
 	 std::unique_ptr<Expr> expr)
       : reg (reg), late (late), expr (std::move (expr))
-    {}
+    {
+      rust_assert (expr != nullptr);
+    }
 
     Out (const struct Out &other)
     {
       reg = other.reg;
       late = other.late;
-      if (other.expr)
-	expr = other.expr->clone_expr ();
+      expr = other.expr->clone_expr ();
     }
 
     Out operator= (const struct Out &other)
     {
       reg = other.reg;
       late = other.late;
-      if (other.expr)
-	expr = other.expr->clone_expr ();
+      expr = other.expr->clone_expr ();
       return *this;
     }
   };
@@ -4846,26 +4843,25 @@ struct InlineAsmOperand
     bool late;
     std::unique_ptr<Expr> expr; // this can't be null
 
-    InOut () {}
     InOut (tl::optional<struct InlineAsmRegOrRegClass> &reg, bool late,
 	   std::unique_ptr<Expr> expr)
       : reg (reg), late (late), expr (std::move (expr))
-    {}
+    {
+      rust_assert (expr != nullptr);
+    }
 
     InOut (const struct InOut &other)
     {
       reg = other.reg;
       late = other.late;
-      if (other.expr)
-	expr = other.expr->clone_expr ();
+      expr = other.expr->clone_expr ();
     }
 
     InOut operator= (const struct InOut &other)
     {
       reg = other.reg;
       late = other.late;
-      if (other.expr)
-	expr = other.expr->clone_expr ();
+      expr = other.expr->clone_expr ();
 
       return *this;
     }
@@ -4878,35 +4874,29 @@ struct InlineAsmOperand
     std::unique_ptr<Expr> in_expr;
     std::unique_ptr<Expr> out_expr; // could be null
 
-    SplitInOut () {}
-
     SplitInOut (tl::optional<struct InlineAsmRegOrRegClass> &reg, bool late,
 		std::unique_ptr<Expr> in_expr, std::unique_ptr<Expr> out_expr)
       : reg (reg), late (late), in_expr (std::move (in_expr)),
 	out_expr (std::move (out_expr))
-    {}
+    {
+      rust_assert (in_expr != nullptr);
+      rust_assert (out_expr != nullptr);
+    }
 
     SplitInOut (const struct SplitInOut &other)
     {
       reg = other.reg;
       late = other.late;
-      if (other.in_expr)
-	in_expr = other.in_expr->clone_expr ();
-
-      if (other.out_expr)
-	out_expr = other.out_expr->clone_expr ();
+      in_expr = other.in_expr->clone_expr ();
+      out_expr = other.out_expr->clone_expr ();
     }
 
     SplitInOut operator= (const struct SplitInOut &other)
     {
       reg = other.reg;
       late = other.late;
-
-      if (other.in_expr)
-	in_expr = other.in_expr->clone_expr ();
-
-      if (other.out_expr)
-	out_expr = other.out_expr->clone_expr ();
+      in_expr = other.in_expr->clone_expr ();
+      out_expr = other.out_expr->clone_expr ();
 
       return *this;
     }
@@ -4921,17 +4911,18 @@ struct InlineAsmOperand
   {
     std::unique_ptr<Expr> expr;
 
-    Sym () {}
+    Sym (std::unique_ptr<Expr> expr) : expr (std::move (expr))
+    {
+      rust_assert (expr != nullptr);
+    }
     Sym (const struct Sym &other)
     {
-      if (other.expr)
-	expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
     }
 
     Sym operator= (const struct Sym &other)
     {
-      if (other.expr)
-	expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
       return *this;
     }
   };
@@ -4941,37 +4932,34 @@ struct InlineAsmOperand
     std::string label_name;
     std::unique_ptr<Expr> expr;
 
-    Label () {}
-
     Label (tl::optional<std::string> label_name, std::unique_ptr<Expr> expr)
       : expr (std::move (expr))
     {
+      rust_assert (expr != nullptr);
       if (label_name.has_value ())
 	this->label_name = label_name.value ();
     }
     Label (const struct Label &other)
     {
-      if (other.expr)
-	expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
     }
 
     Label operator= (const struct Label &other)
     {
-      if (other.expr)
-	expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
+      expr = std::unique_ptr<Expr> (other.expr->clone_expr ());
       return *this;
     }
   };
 
   RegisterType register_type;
 
-  struct In in;
-  struct Out out;
-  struct InOut in_out;
-  struct SplitInOut split_in_out;
-  struct Const cnst;
-  struct Sym sym;
-  struct Label label;
+  tl::optional<struct In> in;
+  tl::optional<struct Out> out;
+  tl::optional<struct InOut> in_out;
+  tl::optional<struct SplitInOut> split_in_out;
+  tl::optional<struct Const> cnst;
+  tl::optional<struct Sym> sym;
+  tl::optional<struct Label> label;
 
   InlineAsmOperand () {}
   InlineAsmOperand (const InlineAsmOperand &other)

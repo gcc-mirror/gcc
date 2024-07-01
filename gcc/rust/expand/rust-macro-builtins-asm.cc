@@ -307,9 +307,9 @@ parse_reg_operand_in (InlineAsmContext inline_asm_ctx)
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
-      struct AST::InlineAsmOperand::In in (reg, nullptr);
-      reg_operand.set_in (in);
-      inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
+      // struct AST::InlineAsmOperand::In in (reg, nullptr);
+      // reg_operand.set_in (in);
+      // inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
       return inline_asm_ctx;
     }
   return tl::unexpected<InlineAsmParseError> (NONCOMMITED);
@@ -328,9 +328,9 @@ parse_reg_operand_out (InlineAsmContext inline_asm_ctx)
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
-      struct AST::InlineAsmOperand::Out out (reg, false, nullptr);
-      reg_operand.set_out (out);
-      inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
+      //      struct AST::InlineAsmOperand::Out out (reg, false, nullptr);
+      //      reg_operand.set_out (out);
+      //      inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
 
       return inline_asm_ctx;
     }
@@ -397,11 +397,10 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L135
 	  // RUST VERSION: ast::InlineAsmOperand::SplitInOut { reg, in_expr:
 	  // expr, out_expr, late: false }
-	  struct AST::InlineAsmOperand::SplitInOut split_in_out (reg, false,
-								 nullptr,
-								 nullptr);
-	  reg_operand.set_split_in_out (split_in_out);
-	  inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
+	  //	  struct AST::InlineAsmOperand::SplitInOut split_in_out (reg,
+	  // false, nullptr,
+	  // nullptr); 	  reg_operand.set_split_in_out (split_in_out);
+	  // inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
 
 	  return inline_asm_ctx;
 	}
@@ -410,9 +409,9 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L137
 	  // RUST VERSION: ast::InlineAsmOperand::InOut { reg, expr, late: false
 	  // }
-	  struct AST::InlineAsmOperand::InOut inout (reg, false, nullptr);
-	  reg_operand.set_in_out (inout);
-	  inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
+	  //	  struct AST::InlineAsmOperand::InOut inout (reg, false,
+	  // nullptr); 	  reg_operand.set_in_out (inout);
+	  //	  inline_asm_ctx.inline_asm.operands.push_back (reg_operand);
 	  return inline_asm_ctx;
 	}
     }
