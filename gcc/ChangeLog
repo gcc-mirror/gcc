@@ -1,3 +1,41 @@
+2024-06-30  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/115691
+	* config/pa/pa.md: Remove incorrect xmpyu patterns.
+
+2024-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115701
+	* tree-ssanames.cc (maybe_duplicate_ssa_info_at_copy):
+	Only copy info from within the same BB.
+
+2024-06-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115701
+	* tree-ssanames.h (maybe_duplicate_ssa_info_at_copy): Declare.
+	* tree-ssanames.cc (maybe_duplicate_ssa_info_at_copy): New
+	function, split out from ...
+	* tree-ssa-copy.cc (fini_copy_prop): ... here.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt): ...
+	and here.
+
+2024-06-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Compare
+	STMT_VINFO_REDUC_IDX.
+	(vect_build_slp_tree_2): Prevent operand swapping for
+	all stmts participating in a reduction.
+
+2024-06-30  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Determine input vectype
+	during traversal of reduction statements.
+
+2024-06-30  Feng Xue  <fxue@os.amperecomputing.com>
+
+	* tree-vect-stmts.cc (vectorizable_shift): Allow shift-by-induction
+	for single-lane slp node.
+
 2024-06-29  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	PR rtl-optimization/115565
