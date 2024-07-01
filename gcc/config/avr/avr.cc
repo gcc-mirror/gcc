@@ -4686,7 +4686,13 @@ avr_out_xload (rtx_insn * /*insn*/, rtx *op, int *plen)
   xop[2] = lpm_addr_reg_rtx;
   xop[3] = AVR_HAVE_LPMX ? op[0] : lpm_reg_rtx;
 
-  avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, -1);
+  if (plen)
+    *plen = 0;
+
+  if (reg_overlap_mentioned_p (xop[3], lpm_addr_reg_rtx))
+    avr_asm_len ("sbrs %1,7", xop, plen, 1);
+
+  avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, 1);
 
   avr_asm_len ("sbrc %1,7" CR_TAB
 	       "ld %3,%a2", xop, plen, 2);
