@@ -215,7 +215,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Needs_Activation_Record, Flag),
         Sm (Needs_Debug_Info, Flag),
         Sm (Never_Set_In_Source, Flag),
-        Sm (No_Return, Flag),
         Sm (Overlays_Constant, Flag),
         Sm (Prev_Entity, Node_Id),
         Sm (Referenced, Flag),
@@ -985,6 +984,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Linker_Section_Pragma, Node_Id),
         Sm (Overridden_Operation, Node_Id),
         Sm (Protected_Body_Subprogram, Node_Id),
+        Sm (No_Return, Flag),
         Sm (Scope_Depth_Value, Unat),
         Sm (Static_Call_Helper, Node_Id),
         Sm (SPARK_Pragma, Node_Id),
@@ -1193,6 +1193,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Has_Out_Or_In_Out_Parameter, Flag),
         Sm (Is_Primitive, Flag),
         Sm (Next_Inlined_Subprogram, Node_Id),
+        Sm (No_Return, Flag),
         Sm (Overridden_Operation, Node_Id)));
 
    Cc (E_Generic_Function, Generic_Subprogram_Kind,

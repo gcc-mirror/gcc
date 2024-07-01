@@ -3799,8 +3799,8 @@ package Einfo is
 --       pragma No_Component_Reordering applies.
 
 --    No_Return
---       Defined in all entities. Set for subprograms and generic subprograms
---       to which a valid aspect or pragma No_Return applies.
+--       Defined in subprograms and generic subprograms. Set if a valid aspect
+--       or pragma No_Return applies.
 
 --    No_Strict_Aliasing [base type only]
 --       Defined in access types. Set to direct the backend to avoid any
@@ -4969,7 +4969,6 @@ package Einfo is
    --    Materialize_Entity
    --    Needs_Debug_Info
    --    Never_Set_In_Source
-   --    No_Return
    --    Overlays_Constant
    --    Referenced
    --    Referenced_As_LHS
@@ -5579,6 +5578,7 @@ package Einfo is
    --    Is_Visible_Lib_Unit
    --    Is_Wrapper
    --    Needs_No_Actuals
+   --    No_Return
    --    Requires_Overriding                  (non-generic case only)
    --    Return_Present
    --    Returns_By_Ref
