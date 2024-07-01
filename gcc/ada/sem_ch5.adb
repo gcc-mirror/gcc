@@ -2823,6 +2823,9 @@ package body Sem_Ch5 is
       --  forms. In this case it is not sufficient to check the static
       --  predicate function only, look for a dynamic predicate aspect as well.
 
+      function Is_Expanded_Quantified_Expr (N : Node_Id) return Boolean;
+      --  Return Whether N comes from the expansion of a quantified expression.
+
       procedure Process_Bounds (R : Node_Id);
       --  If the iteration is given by a range, create temporaries and
       --  assignment statements block to capture the bounds and perform
@@ -2907,6 +2910,16 @@ package body Sem_Ch5 is
             Set_No_Dynamic_Predicate_On_Actual (T);
          end if;
       end Check_Predicate_Use;
+
+      ---------------------------------
+      -- Is_Expanded_Quantified_Expr --
+      ---------------------------------
+
+      function Is_Expanded_Quantified_Expr (N : Node_Id) return Boolean is
+      begin
+         return Nkind (N) = N_Expression_With_Actions
+           and then Nkind (Original_Node (N)) = N_Quantified_Expression;
+      end Is_Expanded_Quantified_Expr;
 
       --------------------
       -- Process_Bounds --
@@ -3080,6 +3093,16 @@ package body Sem_Ch5 is
       Id : constant Entity_Id := Defining_Identifier (N);
 
       DS_Copy : Node_Id;
+
+      Is_Loop_Of_Expanded_Quantified_Expr : constant Boolean :=
+        Present (Loop_Nod)
+          and then (Is_Expanded_Quantified_Expr (Parent (Loop_Nod))
+      --  We also have to consider the case where the loop was wrapped with
+      --  Wrap_Loop_Statement.
+            or else (Present (Parent (Loop_Nod))
+              and then Present (Parent (Parent (Loop_Nod)))
+              and then Is_Expanded_Quantified_Expr
+                (Parent (Parent (Parent (Loop_Nod))))));
 
    --  Start of processing for Analyze_Loop_Parameter_Specification
 
@@ -3271,10 +3294,7 @@ package body Sem_Ch5 is
         or else
           (Present (Etype (Id))
             and then Is_Itype (Etype (Id))
-            and then Present (Loop_Nod)
-            and then Nkind (Parent (Loop_Nod)) = N_Expression_With_Actions
-            and then Nkind (Original_Node (Parent (Loop_Nod))) =
-                                                   N_Quantified_Expression)
+            and then Is_Loop_Of_Expanded_Quantified_Expr)
       then
          Set_Etype (Id, Etype (DS));
       end if;
