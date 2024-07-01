@@ -1,5 +1,6 @@
 /* { dg-additional-options "-Wno-analyzer-null-argument" } */
 /* { dg-require-effective-target alloca } */
+/* { dg-skip-if "has no putenv" { "avr-*-*" } } */
 
 #include <stdio.h>
 #include <stdlib.h>
