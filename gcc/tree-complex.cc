@@ -984,7 +984,12 @@ expand_complex_addition (gimple_stmt_iterator *gsi, tree inner_type,
     case PAIR (VARYING, VARYING):
     general:
       rr = gimple_build (&stmts, loc, code, inner_type, ar, br);
-      ri = gimple_build (&stmts, loc, code, inner_type, ai, bi);
+      /* (a+ai) + (b+bi) -> (a+b)+(a+b)i
+	  small optimization to remove one new statement. */
+      if (operand_equal_p (ar, ai) && operand_equal_p (br, bi))
+	ri = rr;
+      else
+	ri = gimple_build (&stmts, loc, code, inner_type, ai, bi);
       break;
 
     default:
