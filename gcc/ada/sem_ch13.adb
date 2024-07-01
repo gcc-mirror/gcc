@@ -10218,12 +10218,12 @@ package body Sem_Ch13 is
 
             if Is_Ignored_Ghost_Pragma (Prag) then
                Add_Condition (New_Occurrence_Of (Standard_True, Sloc (Prag)));
-               return;
+
+            else
+               --  Mark corresponding SCO as enabled
+
+               Set_SCO_Pragma_Enabled (Sloc (Prag));
             end if;
-
-            --  Mark corresponding SCO as enabled
-
-            Set_SCO_Pragma_Enabled (Sloc (Prag));
 
             --  Extract the arguments of the pragma
 
@@ -10257,7 +10257,9 @@ package body Sem_Ch13 is
 
                   --  "and"-in the Arg2 condition to evolving expression
 
-                  Add_Condition (Arg2_Copy);
+                  if not Is_Ignored_Ghost_Pragma (Prag) then
+                     Add_Condition (Arg2_Copy);
+                  end if;
                end;
             end if;
          end Add_Predicate;
