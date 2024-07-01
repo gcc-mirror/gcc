@@ -3161,49 +3161,50 @@ package body Sem_Warn is
 
       elsif Nkind (P) = N_Procedure_Call_Statement then
          Error_Msg_NE
-           ("??call to obsolescent procedure& declared#", N, E);
+           ("?j?call to obsolescent procedure& declared#", N, E);
 
       --  Function call
 
       elsif Nkind (P) = N_Function_Call then
          Error_Msg_NE
-           ("??call to obsolescent function& declared#", N, E);
+           ("?j?call to obsolescent function& declared#", N, E);
 
       --  Reference to obsolescent type
 
       elsif Is_Type (E) then
          Error_Msg_NE
-           ("??reference to obsolescent type& declared#", N, E);
+           ("?j?reference to obsolescent type& declared#", N, E);
 
       --  Reference to obsolescent component
 
       elsif Ekind (E) in E_Component | E_Discriminant then
          Error_Msg_NE
-           ("??reference to obsolescent component& declared#", N, E);
+           ("?j?reference to obsolescent component& declared#", N, E);
 
       --  Reference to obsolescent variable
 
       elsif Ekind (E) = E_Variable then
          Error_Msg_NE
-           ("??reference to obsolescent variable& declared#", N, E);
+           ("?j?reference to obsolescent variable& declared#", N, E);
 
       --  Reference to obsolescent constant
 
       elsif Ekind (E) = E_Constant or else Ekind (E) in Named_Kind then
          Error_Msg_NE
-           ("??reference to obsolescent constant& declared#", N, E);
+           ("?j?reference to obsolescent constant& declared#", N, E);
 
       --  Reference to obsolescent enumeration literal
 
       elsif Ekind (E) = E_Enumeration_Literal then
          Error_Msg_NE
-           ("??reference to obsolescent enumeration literal& declared#", N, E);
+           ("?j?reference to obsolescent enumeration literal& declared#",
+            N, E);
 
       --  Generic message for any other case we missed
 
       else
          Error_Msg_NE
-           ("??reference to obsolescent entity& declared#", N, E);
+           ("?j?reference to obsolescent entity& declared#", N, E);
       end if;
 
       --  Output additional warning if present
@@ -3213,7 +3214,7 @@ package body Sem_Warn is
             String_To_Name_Buffer (Obsolescent_Warnings.Table (J).Msg);
             Error_Msg_Strlen := Name_Len;
             Error_Msg_String (1 .. Name_Len) := Name_Buffer (1 .. Name_Len);
-            Error_Msg_N ("\\??~", N);
+            Error_Msg_N ("\\?j?~", N);
             exit;
          end if;
       end loop;
