@@ -65,6 +65,16 @@
 ;; Iterator for hardware-supported integer modes.
 (define_mode_iterator ANYI [QI HI SI (DI "TARGET_64BIT")])
 
+(define_mode_iterator ANYI_DOUBLE_TRUNC [HI SI (DI "TARGET_64BIT")])
+
+(define_mode_attr ANYI_DOUBLE_TRUNCATED [
+  (HI "QI") (SI "HI") (DI "SI")
+])
+
+(define_mode_attr anyi_double_truncated [
+  (HI "qi") (SI "hi") (DI "si")
+])
+
 ;; Iterator for hardware-supported floating-point modes.
 (define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT || TARGET_ZFINX")
 			    (DF "TARGET_DOUBLE_FLOAT || TARGET_ZDINX")

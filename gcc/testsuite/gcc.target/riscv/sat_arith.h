@@ -214,4 +214,20 @@ sat_u_sub_##T##_fmt_12 (T x, T y)                      \
 #define RUN_SAT_U_SUB_FMT_11(T, x, y) sat_u_sub_##T##_fmt_11(x, y)
 #define RUN_SAT_U_SUB_FMT_12(T, x, y) sat_u_sub_##T##_fmt_12(x, y)
 
+/******************************************************************************/
+/* Saturation Truncate (unsigned and signed)                                  */
+/******************************************************************************/
+
+#define DEF_SAT_U_TRUC_FMT_1(NT, WT)     \
+NT __attribute__((noinline))             \
+sat_u_truc_##WT##_to_##NT##_fmt_1 (WT x) \
+{                                        \
+  bool overflow = x > (WT)(NT)(-1);      \
+  return ((NT)x) | (NT)-overflow;        \
+}
+#define DEF_SAT_U_TRUC_FMT_1_WRAP(NT, WT) DEF_SAT_U_TRUC_FMT_1(NT, WT)
+
+#define RUN_SAT_U_TRUC_FMT_1(NT, WT, x) sat_u_truc_##WT##_to_##NT##_fmt_1 (x)
+#define RUN_SAT_U_TRUC_FMT_1_WRAP(NT, WT, x) RUN_SAT_U_TRUC_FMT_1(NT, WT, x)
+
 #endif
