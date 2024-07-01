@@ -16,7 +16,7 @@ constexpr strong_ordering strong_ordering::greater = 1;
 }
 
 struct A {
-  long i : 48;
+  __INT64_TYPE__ i : 48;
   auto operator <=> (const A&) const = default;
 };
 
