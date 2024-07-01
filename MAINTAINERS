@@ -56,7 +56,7 @@ aarch64 port		Kyrylo Tkachov		<ktkachov@nvidia.com>
 alpha port		Richard Henderson	<rth@gcc.gnu.org>
 amdgcn port		Julian Brown		<julian@codesourcery.com>
 amdgcn port		Andrew Stubbs		<ams@baylibre.com>
-arc port		Claudiu Zissulescu	<claziss@synopsys.com>
+arc port		Claudiu Zissulescu	<claziss@gmail.com>
 arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
 arm port		Ramana Radhakrishnan	<ramanara@nvidia.com>
@@ -267,7 +267,6 @@ check in changes outside of the parts of the compiler they maintain.
 
 			Reviewers
 
-arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 callgraph		Martin Jambor		<mjambor@suse.cz>
 C front end		Marek Polacek		<polacek@redhat.com>
 CTF, BTF		Indu Bhagat		<indu.bhagat@oracle.com>
