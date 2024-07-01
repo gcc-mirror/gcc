@@ -735,12 +735,26 @@
         if (!REG_P (addr))
           src = replace_equiv_address (src, copy_to_mode_reg (PSImode, addr));
 
+        rtx dest2 = reg_overlap_mentioned_p (dest, lpm_addr_reg_rtx)
+          ? gen_reg_rtx (<MODE>mode)
+          : dest;
+
         if (!avr_xload_libgcc_p (<MODE>mode))
           // No <mode> here because gen_xload8<mode>_A only iterates over ALL1.
           // insn-emit does not depend on the mode, it's all about operands.
-          emit_insn (gen_xload8qi_A (dest, src));
+          emit_insn (gen_xload8qi_A (dest2, src));
         else
-          emit_insn (gen_xload<mode>_A (dest, src));
+          {
+            rtx reg_22 = gen_rtx_REG (<MODE>mode, REG_22);
+            if (reg_overlap_mentioned_p (dest2, reg_22)
+                || reg_overlap_mentioned_p (dest2, all_regs_rtx[REG_21]))
+              dest2 = gen_reg_rtx (<MODE>mode);
+
+            emit_insn (gen_xload<mode>_A (dest2, src));
+          }
+
+        if (dest2 != dest)
+          emit_move_insn (dest, dest2);
 
         DONE;
       }
