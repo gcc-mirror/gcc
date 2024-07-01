@@ -80,14 +80,10 @@ typedef double vnx16df __attribute__((vector_size (128)));
 TEST_ALL4 (VEC_SET)
 TEST_ALL_VAR4 (VEC_SET_VAR4)
 
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m8,\s*ta,\s*ma} 1 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m8,\s*tu,\s*ma} 6 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m8,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m8,\s*tu,\s*ma} 13 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m8,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m8,\s*tu,\s*ma} 10 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m8,\s*ta,\s*ma} 2 } } */
-/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m8,\s*tu,\s*ma} 8 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e8,\s*m8,\s*tu,\s*ma} 7 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e16,\s*m8,\s*tu,\s*ma} 15 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e32,\s*m8,\s*tu,\s*ma} 12 } } */
+/* { dg-final { scan-assembler-times {vset[i]*vli\s+[a-z0-9,]+,\s*e64,\s*m8,\s*tu,\s*ma} 10 } } */
 
 /* { dg-final { scan-assembler-times {\tvmv.v.x} 20 } } */
 /* { dg-final { scan-assembler-times {\tvfmv.v.f} 17 } } */
