@@ -4161,15 +4161,19 @@ pop:
 
       FOR_EACH_IMM_USE_STMT (op_use_stmt, imm_iter, op.ops[opi])
 	{
-	/* In case of a COND_OP (mask, op1, op2, op1) reduction we might have
-	   op1 twice (once as definition, once as else) in the same operation.
-	   Allow this.  */
+	  /* In case of a COND_OP (mask, op1, op2, op1) reduction we should
+	     have op1 twice (once as definition, once as else) in the same
+	     operation.  Enforce this.  */
 	  if (cond_fn_p && op_use_stmt == use_stmt)
 	    {
 	      gcall *call = as_a<gcall *> (use_stmt);
 	      unsigned else_pos
 		= internal_fn_else_index (internal_fn (op.code));
-
+	      if (gimple_call_arg (call, else_pos) != op.ops[opi])
+		{
+		  fail = true;
+		  break;
+		}
 	      for (unsigned int j = 0; j < gimple_call_num_args (call); ++j)
 		{
 		  if (j == else_pos)
