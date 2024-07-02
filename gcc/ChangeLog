@@ -1,3 +1,140 @@
+2024-07-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.cc (fwprop_set_lattice_val): Preserve
+	SSA info.
+	* tree-ssa-propagate.cc
+	(substitute_and_fold_dom_walker::before_dom_children): Likewise.
+
+2024-07-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (peephole2): Transform two consecutive
+	additions into a 3-component lea if !TARGET_AVOID_LEA_FOR_ADDR.
+
+2024-07-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/88236
+	PR target/115726
+	* config/avr/avr.md (mov<mode>) [avr_mem_memx_p]: Expand in such a
+	way that the destination does not overlap with any hard register
+	clobbered / used by xload8qi_A resp. xload<mode>_A.
+	* config/avr/avr.cc (avr_out_xload): Avoid early-clobber
+	situation for Z by executing just one load when the output register
+	overlaps with Z.
+
+2024-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115723
+	* tree-vect-loop.cc (check_reduction_path): For a .COND_ADD
+	verify the else value also refers to the reduction chain op.
+
+2024-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115694
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Check the
+	store is complex before rewriting it.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115517
+	* config/i386/mmx.md (vcond<mode>v2sf): Removed.
+	(vcond<MMXMODE124:mode><MMXMODEI:mode>): Ditto.
+	(vcond<mode><mode>): Ditto.
+	(vcondu<MMXMODE124:mode><MMXMODEI:mode>): Ditto.
+	(vcondu<mode><mode>): Ditto.
+	* config/i386/sse.md (vcond<V_512:mode><VF_512:mode>): Ditto.
+	(vcond<V_256:mode><VF_256:mode>): Ditto.
+	(vcond<V_128:mode><VF_128:mode>): Ditto.
+	(vcond<VI2HFBF_AVX512VL:mode><VHF_AVX512VL:mode>): Ditto.
+	(vcond<V_512:mode><VI_AVX512BW:mode>): Ditto.
+	(vcond<V_256:mode><VI_256:mode>): Ditto.
+	(vcond<V_128:mode><VI124_128:mode>): Ditto.
+	(vcond<VI8F_128:mode>v2di): Ditto.
+	(vcondu<V_512:mode><VI_AVX512BW:mode>): Ditto.
+	(vcondu<V_256:mode><VI_256:mode>): Ditto.
+	(vcondu<V_128:mode><VI124_128:mode>): Ditto.
+	(vcondu<VI8F_128:mode>v2di): Ditto.
+	(vcondeq<VI8F_128:mode>v2di): Ditto.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115517
+	* config/i386/sse.md ("*ashr<mode>3_1"): New
+	define_insn_and_split.
+	(*avx512_ashr<mode>3_1): Ditto.
+	(*avx2_lshr<mode>3_1): Ditto.
+	(*avx2_lshr<mode>3_2): Ditto and add 2 combine splitter after
+	it.
+	* config/i386/mmx.md (mmxscalarsize): New mode attribute.
+	(*mmw_ashr<mode>3_1): New define_insn_and_split.
+	("mmx_<insn><mode>3): Add a combine spiltter after it.
+	(*mmx_ashrv2hi3_1): New define_insn_and_plit, also add a
+	combine splitter after it.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115517
+	* config/i386/sse.md
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_lt_avx512): New
+	define_insn_and_split.
+	(*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_<u>ext_lt_avx512):
+	Ditto.
+	(*<sse2_avx2>_pmovmskb_lt_avx512): Ditto.
+	(*<sse2_avx2>_pmovmskb_zext_lt_avx512): Ditto.
+	(*sse2_pmovmskb_ext_lt_avx512): Ditto.
+	(*pmovsk_kmask_v16qi_avx512): Ditto.
+	(*pmovsk_mask_v32qi_avx512): Ditto.
+	(*pmovsk_mask_cmp_<mode>_avx512): Ditto.
+	(*pmovsk_ptest_<mode>_avx512): Ditto.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115517
+	* config/i386/sse.md (*minmax<mode>3_1): New pre_reload
+	define_insn_and_split.
+	(*minmax<mode>3_2): Ditto.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115517
+	* config/i386/sse.md
+	(*<avx512>_cvtmask2<ssemodesuffix><mode>_not): New pre_reload
+	splitter.
+	(*<avx512>_cvtmask2<ssemodesuffix><mode>_not): Ditto.
+	(*avx2_pcmp<mode>3_6): Ditto.
+	(*avx2_pcmp<mode>3_7): Ditto.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115517
+	* config/i386/sse.md
+	(*<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>_gt): New
+	define_insn_and_split.
+	(*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_gtint):
+	Ditto.
+	(*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_not_gtint):
+	Ditto.
+	(*<sse4_1_avx2>_pblendvb_gt): Ditto.
+	(*<sse4_1_avx2>_pblendvb_gt_subreg_not): Ditto.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-features.cc (ix86_rpad_gate): New function.
+	* config/i386/i386-options.cc (ix86_override_options_after_change):
+	Don't disable flate_combine.
+	* config/i386/i386-passes.def: Move pass_stv2 and pass_rpad
+	after pre_reload pas_late_combine.
+	* config/i386/i386-protos.h (ix86_rpad_gate): New declare.
+	* config/i386/i386.cc (ix86_insn_cost): New function.
+	(TARGET_INSN_COST): Define.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115610
+	* config/i386/i386.md (<*insnsi3_zext): Add alternative ?k,
+	enable it only for lshiftrt and under avx512bw.
+	* config/i386/sse.md (*klshrsi3_1_zext): New define_insn, and
+	add corresponding define_split after it.
+
 2024-06-30  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/115691

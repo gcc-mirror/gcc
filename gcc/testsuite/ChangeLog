@@ -1,3 +1,159 @@
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115469
+	* g++.dg/ext/label17.C: New test.
+
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-narrowing1.C: Use __INT64_TYPE__.
+
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115430
+	* g++.dg/cpp0x/noexcept41.C: Remove dg-error.
+	* g++.dg/overload/addr3.C: New test.
+
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	DR 2627
+	PR c++/94058
+	PR c++/104392
+	* g++.dg/DRs/dr2627.C: New test.
+	* g++.dg/cpp0x/Wnarrowing22.C: New test.
+	* g++.dg/cpp2a/spaceship-narrowing1.C: New test.
+	* g++.dg/cpp2a/spaceship-narrowing2.C: New test.
+
+2024-07-01  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper test macro.
+	* gcc.target/riscv/sat_u_add_imm-13.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-14.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-15.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-16.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-13.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-14.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-15.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-16.c: New test.
+
+2024-07-01  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper test macro.
+	* gcc.target/riscv/sat_u_add_imm-10.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-11.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-12.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-9.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-10.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-11.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-12.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-9.c: New test.
+
+2024-07-01  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper test macro.
+	* gcc.target/riscv/sat_u_add_imm-5.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-6.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-7.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-8.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-5.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-6.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-7.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-8.c: New test.
+
+2024-07-01  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat_arith.h: Add helper test macro.
+	* gcc.target/riscv/sat_u_add_imm-1.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-2.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-3.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-4.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-1.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-2.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-3.c: New test.
+	* gcc.target/riscv/sat_u_add_imm-run-4.c: New test.
+
+2024-07-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/102464
+	* gcc.target/i386/pr102464-vrndscaleph.c: Define __NO_MATH_INLINES
+	to resovle FAILs with -m32 on older RedHat systems.
+
+2024-07-01  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/lea-3.c: New test case.
+
+2024-07-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/88236
+	PR target/115726
+	* gcc.target/avr/torture/pr88236-pr115726.c: New test.
+
+2024-07-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/analyzer/pr109577.c: Use __SIZE_TYPE__ instead of "unsigned long".
+	* gcc.dg/analyzer/pr93032-mztools-signed-char.c: Requires int32plus.
+	* gcc.dg/analyzer/pr93032-mztools-unsigned-char.c: Requires int32plus.
+	* gcc.dg/analyzer/putenv-1.c: Skip on avr.
+	* gcc.dg/torture/type-generic-1.c: Skip on avr.
+
+2024-07-01  Andrew Stubbs  <ams@baylibre.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/gomp/allocate-pinned-1.f90: New test.
+
+2024-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115723
+	* gcc.dg/vect/pr115723.c: New testcase.
+
+2024-07-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115694
+	* g++.dg/torture/pr115694.C: New testcase.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr111023-2.c: Adjust testcase.
+	* gcc.target/i386/vect-div-1.c: Ditto.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115517
+	* g++.target/i386/pr100637-1b.C: Add xfail and -mno-sse4.1.
+	* g++.target/i386/pr100637-1w.C: Ditto.
+	* g++.target/i386/pr103861-1.C: Ditto.
+	* gcc.target/i386/pr88540.c: Ditto.
+	* gcc.target/i386/pr103941-2.c: Add -mno-avx512f.
+	* g++.target/i386/sse4_1-pr100637-1b.C: New test.
+	* g++.target/i386/sse4_1-pr100637-1w.C: New test.
+	* g++.target/i386/sse4_1-pr103861-1.C: New test.
+	* gcc.target/i386/sse4_1-pr88540.c: New test.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512f-broadcast-pr87767-1.c: Adjus
+	testcase.
+	* gcc.target/i386/avx512f-broadcast-pr87767-5.c: Ditto.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-7.c: Ditto.
+	* gcc.target/i386/avx512f-fmsub-sf-zmm-7.c: Ditto.
+	* gcc.target/i386/avx512f-fnmadd-sf-zmm-7.c: Ditto.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-7.c: Ditto.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-1.c: Ditto.
+	* gcc.target/i386/avx512vl-broadcast-pr87767-5.c: Ditto.
+	* gcc.target/i386/pr91333.c: Ditto.
+	* gcc.target/i386/vect-strided-4.c: Ditto.
+
+2024-07-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115610
+	* gcc.target/i386/avx512bitalg-vpopcntb.c: Define mask as
+	extern instead of uninitialized local variables.
+	* gcc.target/i386/avx512bitalg-vpopcntbvl.c: Ditto.
+	* gcc.target/i386/avx512bitalg-vpopcntw.c: Ditto.
+	* gcc.target/i386/avx512bitalg-vpopcntwvl.c: Ditto.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntd.c: Ditto.
+	* gcc.target/i386/avx512vpopcntdq-vpopcntq.c: Ditto.
+
 2024-06-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/115701

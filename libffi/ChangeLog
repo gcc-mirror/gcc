@@ -1,3 +1,9 @@
+2024-07-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libffi/115681
+	* src/sparc/ffi.c (ffi_call_int): Copy structure arguments to
+	maintain call-by-value semantics.
+
 2024-05-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am [LIBFFI_BUILD_VERSIONED_SHLIB_SUN] (libffi.map-sun):

@@ -1,3 +1,24 @@
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115469
+	* decl.cc (automatic_var_with_nontrivial_dtor_p): New.
+	(poplevel_named_label_1): Use it.
+	(check_goto_1): Likewise.
+
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115430
+	* typeck.cc (cp_build_compound_expr): Call resolve_nondeduced_context
+	on RHS.
+
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	DR 2627
+	PR c++/94058
+	PR c++/104392
+	* typeck2.cc (check_narrowing): Don't warn if the conversion isn't
+	narrowing as per DR 2627.
+
 2024-06-28  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/106760

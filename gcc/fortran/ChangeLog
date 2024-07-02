@@ -1,3 +1,9 @@
+2024-07-01  Andrew Stubbs  <ams@baylibre.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.cc (is_predefined_allocator): Update valid ranges to
+	incorporate ompx_gnu_pinned_mem_alloc.
+
 2024-06-29  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/114019
