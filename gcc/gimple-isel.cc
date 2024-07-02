@@ -240,16 +240,50 @@ gimple_expand_vec_cond_expr (struct function *fun, gimple_stmt_iterator *gsi,
 	    can_compute_op0 = expand_vec_cmp_expr_p (op0a_type, op0_type,
 						     tcode);
 
-	  /* Try to fold x CMP y ? -1 : 0 to x CMP y.  */
 	  if (can_compute_op0
-	      && integer_minus_onep (op1)
-	      && integer_zerop (op2)
 	      && TYPE_MODE (TREE_TYPE (lhs)) == TYPE_MODE (TREE_TYPE (op0)))
 	    {
-	      tree conv_op = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), op0);
-	      gassign *new_stmt = gimple_build_assign (lhs, conv_op);
-	      gsi_replace (gsi, new_stmt, true);
-	      return new_stmt;
+	      /* Assuming c = x CMP y.  */
+	      bool op1_minus_onep = integer_minus_onep (op1);
+	      bool op2_zerop = integer_zerop (op2);
+	      tree vtype = TREE_TYPE (lhs);
+	      machine_mode vmode = TYPE_MODE (vtype);
+	      /* Try to fold r = c ? -1 : 0 to r = c.  */
+	      if (op1_minus_onep && op2_zerop)
+		{
+		  tree conv_op = build1 (VIEW_CONVERT_EXPR, vtype, op0);
+		  return gimple_build_assign (lhs, conv_op);
+		}
+	      /* Try to fold r = c ? -1 : z to r = c | z, or
+		 r = c ? c : z.  */
+	      if (op1_minus_onep)
+		{
+		  tree conv_op = build1 (VIEW_CONVERT_EXPR, vtype, op0);
+		  tree new_op1 = make_ssa_name (vtype);
+		  gassign *new_stmt = gimple_build_assign (new_op1, conv_op);
+		  gsi_insert_seq_before (gsi, new_stmt, GSI_SAME_STMT);
+		  if (optab_handler (ior_optab, vmode) != CODE_FOR_nothing)
+		    /* r = c | z */
+		    return gimple_build_assign (lhs, BIT_IOR_EXPR, new_op1,
+						op2);
+		  /* r = c ? c : z */
+		  op1 = new_op1;
+		}
+	      /* Try to fold r = c ? z : 0 to r = c & z, or
+		 r = c ? z : c.  */
+	      else if (op2_zerop)
+		{
+		  tree conv_op = build1 (VIEW_CONVERT_EXPR, vtype, op0);
+		  tree new_op2 = make_ssa_name (vtype);
+		  gassign *new_stmt = gimple_build_assign (new_op2, conv_op);
+		  gsi_insert_seq_before (gsi, new_stmt, GSI_SAME_STMT);
+		  if (optab_handler (and_optab, vmode) != CODE_FOR_nothing)
+		    /* r = c | z */
+		    return gimple_build_assign (lhs, BIT_AND_EXPR, new_op2,
+						op1);
+		  /* r = c ? z : c */
+		  op2 = new_op2;
+		}
 	    }
 
 	  /* When the compare has EH we do not want to forward it when
