@@ -1,3 +1,17 @@
+2024-07-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-07-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/88236
+	PR target/115726
+	* config/avr/avr.md (mov<mode>) [avr_mem_memx_p]: Expand in such a
+	way that the destination does not overlap with any hard register
+	clobbered / used by xload8qi_A resp. xload<mode>_A.
+	* config/avr/avr.cc (avr_out_xload): Avoid early-clobber
+	situation for Z by executing just one load when the output register
+	overlaps with Z.
+
 2024-06-28  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
