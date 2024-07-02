@@ -6554,26 +6554,13 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 {
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
 
-  /* Calculate the number of vector statements to be created for the
-     scalar stmts in this node.  For SLP reductions it is equal to the
-     number of vector statements in the children (which has already been
-     calculated by the recursive call).  Otherwise it is the number of
-     scalar elements in one scalar iteration (DR_GROUP_SIZE) multiplied by
-     VF divided by the number of elements in a vector.  */
-  if (SLP_TREE_CODE (node) != VEC_PERM_EXPR
-      && !STMT_VINFO_DATA_REF (stmt_info)
-      && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
-    {
-      for (unsigned i = 0; i < SLP_TREE_CHILDREN (node).length (); ++i)
-	if (SLP_TREE_DEF_TYPE (SLP_TREE_CHILDREN (node)[i]) == vect_internal_def)
-	  {
-	    SLP_TREE_NUMBER_OF_VEC_STMTS (node)
-	      = SLP_TREE_NUMBER_OF_VEC_STMTS (SLP_TREE_CHILDREN (node)[i]);
-	    break;
-	  }
-    }
-  else
-    SLP_TREE_NUMBER_OF_VEC_STMTS (node) = vect_get_num_copies (vinfo, node);
+  /* Calculate the number of vector statements to be created for the scalar
+     stmts in this node.  It is the number of scalar elements in one scalar
+     iteration (DR_GROUP_SIZE) multiplied by VF divided by the number of
+     elements in a vector.  For single-defuse-cycle, lane-reducing op, and
+     PHI statement that starts reduction comprised of only lane-reducing ops,
+     the number is more than effective vector statements actually required.  */
+  SLP_TREE_NUMBER_OF_VEC_STMTS (node) = vect_get_num_copies (vinfo, node);
 
   /* Handle purely internal nodes.  */
   if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)

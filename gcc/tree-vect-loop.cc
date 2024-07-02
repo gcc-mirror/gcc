@@ -7472,12 +7472,8 @@ vect_reduction_update_partial_vector_usage (loop_vec_info loop_vinfo,
 			= get_masked_reduction_fn (reduc_fn, vectype_in);
       vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
       vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
-      unsigned nvectors;
-
-      if (slp_node)
-	nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-      else
-	nvectors = vect_get_num_copies (loop_vinfo, vectype_in);
+      unsigned nvectors = vect_get_num_copies (loop_vinfo, slp_node,
+					       vectype_in);
 
       if (mask_reduc_fn == IFN_MASK_LEN_FOLD_LEFT_PLUS)
 	vect_record_loop_len (loop_vinfo, lens, nvectors, vectype_in, 1);
@@ -8599,12 +8595,15 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   stmt_vec_info phi_info = STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info));
   gphi *reduc_def_phi = as_a <gphi *> (phi_info->stmt);
   int reduc_index = STMT_VINFO_REDUC_IDX (stmt_info);
-  tree vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (reduc_info);
+  tree vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (stmt_info);
+
+  if (!vectype_in)
+    vectype_in = STMT_VINFO_VECTYPE (stmt_info);
 
   if (slp_node)
     {
       ncopies = 1;
-      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+      vec_num = vect_get_num_copies (loop_vinfo, slp_node, vectype_in);
     }
   else
     {
@@ -8662,13 +8661,40 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   bool lane_reducing = lane_reducing_op_p (code);
   gcc_assert (single_defuse_cycle || lane_reducing);
 
+  if (lane_reducing)
+    {
+      /* The last operand of lane-reducing op is for reduction.  */
+      gcc_assert (reduc_index == (int) op.num_ops - 1);
+    }
+
   /* Create the destination vector  */
   tree scalar_dest = gimple_get_lhs (stmt_info->stmt);
   tree vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
 
+  if (lane_reducing && !slp_node && !single_defuse_cycle)
+    {
+      /* Note: there are still vectorizable cases that can not be handled by
+	 single-lane slp.  Probably it would take some time to evolve the
+	 feature to a mature state.  So we have to keep the below non-slp code
+	 path as failsafe for lane-reducing support.  */
+      gcc_assert (op.num_ops <= 3);
+      for (unsigned i = 0; i < op.num_ops; i++)
+	{
+	  unsigned oprnd_ncopies = ncopies;
+
+	  if ((int) i == reduc_index)
+	    {
+	      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+	      oprnd_ncopies = vect_get_num_copies (loop_vinfo, vectype);
+	    }
+
+	  vect_get_vec_defs_for_operand (loop_vinfo, stmt_info, oprnd_ncopies,
+					 op.ops[i], &vec_oprnds[i]);
+	}
+    }
   /* Get NCOPIES vector definitions for all operands except the reduction
      definition.  */
-  if (!cond_fn_p)
+  else if (!cond_fn_p)
     {
       gcc_assert (reduc_index >= 0 && reduc_index <= 2);
       vect_get_vec_defs (loop_vinfo, stmt_info, slp_node, ncopies,
@@ -8706,6 +8732,61 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 			 reduc_index == 2 ? op.ops[2] : NULL_TREE,
 			 &vec_oprnds[2]);
     }
+  else if (lane_reducing)
+    {
+      /* For normal reduction, consistency between vectorized def/use is
+	 naturally ensured when mapping from scalar statement.  But if lane-
+	 reducing op is involved in reduction, thing would become somewhat
+	 complicated in that the op's result and operand for accumulation are
+	 limited to less lanes than other operands, which certainly causes
+	 def/use mismatch on adjacent statements around the op if do not have
+	 any kind of specific adjustment.  One approach is to refit lane-
+	 reducing op in the way of introducing new trivial pass-through copies
+	 to fix possible def/use gap, so as to make it behave like a normal op.
+	 And vector reduction PHIs are always generated to the full extent, no
+	 matter lane-reducing op exists or not.  If some copies or PHIs are
+	 actually superfluous, they would be cleaned up by passes after
+	 vectorization.  An example for single-lane slp is given as below.
+	 Similarly, this handling is applicable for multiple-lane slp as well.
+
+	   int sum = 1;
+	   for (i)
+	     {
+	       sum += d0[i] * d1[i];      // dot-prod <vector(16) char>
+	     }
+
+	 The vector size is 128-bit，vectorization factor is 16.  Reduction
+	 statements would be transformed as:
+
+	   vector<4> int sum_v0 = { 0, 0, 0, 1 };
+	   vector<4> int sum_v1 = { 0, 0, 0, 0 };
+	   vector<4> int sum_v2 = { 0, 0, 0, 0 };
+	   vector<4> int sum_v3 = { 0, 0, 0, 0 };
+
+	   for (i / 16)
+	     {
+	       sum_v0 = DOT_PROD (d0_v0[i: 0 ~ 15], d1_v0[i: 0 ~ 15], sum_v0);
+	       sum_v1 = sum_v1;  // copy
+	       sum_v2 = sum_v2;  // copy
+	       sum_v3 = sum_v3;  // copy
+	     }
+
+	   sum_v = sum_v0 + sum_v1 + sum_v2 + sum_v3;   // = sum_v0
+	*/
+      unsigned effec_ncopies = vec_oprnds[0].length ();
+      unsigned total_ncopies = vec_oprnds[reduc_index].length ();
+
+      gcc_assert (effec_ncopies <= total_ncopies);
+
+      if (effec_ncopies < total_ncopies)
+	{
+	  for (unsigned i = 0; i < op.num_ops - 1; i++)
+	    {
+	      gcc_assert (vec_oprnds[i].length () == effec_ncopies);
+	      vec_oprnds[i].safe_grow_cleared (total_ncopies);
+	    }
+	}
+    }
 
   bool emulated_mixed_dot_prod = vect_is_emulated_mixed_dot_prod (stmt_info);
   unsigned num = vec_oprnds[reduc_index == 0 ? 1 : 0].length ();
@@ -8714,7 +8795,27 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
     {
       gimple *new_stmt;
       tree vop[3] = { vec_oprnds[0][i], vec_oprnds[1][i], NULL_TREE };
-      if (masked_loop_p && !mask_by_cond_expr)
+      if (!vop[0] || !vop[1])
+	{
+	  tree reduc_vop = vec_oprnds[reduc_index][i];
+
+	  /* If could not generate an effective vector statement for current
+	     portion of reduction operand, insert a trivial copy to simply
+	     handle over the operand to other dependent statements.  */
+	  gcc_assert (reduc_vop);
+
+	  if (slp_node && TREE_CODE (reduc_vop) == SSA_NAME
+	      && !SSA_NAME_IS_DEFAULT_DEF (reduc_vop))
+	    new_stmt = SSA_NAME_DEF_STMT (reduc_vop);
+	  else
+	    {
+	      new_temp = make_ssa_name (vec_dest);
+	      new_stmt = gimple_build_assign (new_temp, reduc_vop);
+	      vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt,
+					   gsi);
+	    }
+	}
+      else if (masked_loop_p && !mask_by_cond_expr)
 	{
 	  /* No conditional ifns have been defined for lane-reducing op
 	     yet.  */
@@ -8814,23 +8915,16 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
     /* Leave the scalar phi in place.  */
     return true;
 
-  tree vectype_in = STMT_VINFO_REDUC_VECTYPE_IN (reduc_info);
-  /* For a nested cycle we do not fill the above.  */
-  if (!vectype_in)
-    vectype_in = STMT_VINFO_VECTYPE (stmt_info);
-  gcc_assert (vectype_in);
-
   if (slp_node)
     {
-      /* The size vect_schedule_slp_instance computes is off for us.  */
-      vec_num = vect_get_num_vectors (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-				      * SLP_TREE_LANES (slp_node), vectype_in);
+      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
       ncopies = 1;
     }
   else
     {
       vec_num = 1;
-      ncopies = vect_get_num_copies (loop_vinfo, vectype_in);
+      ncopies = vect_get_num_copies (loop_vinfo,
+				     STMT_VINFO_VECTYPE (stmt_info));
     }
 
   /* Check whether we should use a single PHI node and accumulate
