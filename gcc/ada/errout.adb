@@ -2498,7 +2498,6 @@ package body Errout is
    --  Start of processing for Output_JSON_Message
 
    begin
-
       --  Print message kind
 
       Write_Str ("{""kind"":");

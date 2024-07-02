@@ -33950,7 +33950,6 @@ package body Sem_Prag is
    --  Start of processing for Validate_Compile_Time_Warning_Errors
 
    begin
-
       --  These error/warning messages were deferred because they could not be
       --  evaluated in the front-end and they needed additional information
       --  from the back-end. There is no reason to run these checks again if

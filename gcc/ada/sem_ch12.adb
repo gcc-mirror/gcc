@@ -6296,7 +6296,6 @@ package body Sem_Ch12 is
       New_F     : Entity_Id;
 
    begin
-
       Subp := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
       Mutate_Ekind (Subp, Ekind (Formal_Subp));
       Set_Is_Generic_Actual_Subprogram (Subp);

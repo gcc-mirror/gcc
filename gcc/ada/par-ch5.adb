@@ -1745,7 +1745,6 @@ package body Ch5 is
       Scan_State : Saved_Scan_State;
 
    begin
-
       Save_Scan_State (Scan_State);
       ID_Node := P_Defining_Identifier (C_In);
 

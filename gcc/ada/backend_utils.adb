@@ -38,7 +38,6 @@ package body Backend_Utils is
       First : constant Positive := Switch_Chars'First + 1;
       Last  : constant Natural  := Switch_Last (Switch_Chars);
    begin
-
       --  Recognize -gxxx switches
 
       if Switch_Chars (First) = 'g' then

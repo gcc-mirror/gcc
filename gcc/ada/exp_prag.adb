@@ -955,7 +955,6 @@ package body Exp_Prag is
          Third_Component  : Entity_Id := Next_Entity (Second_Component);
 
       begin
-
          --  Sem_prag.adb ensured that Init_Val is either a Dim3, an aggregate
          --  of three Any_Integers or Any_Integer.
 

@@ -9636,7 +9636,6 @@ package body Exp_Aggr is
       --  One-dimensional subaggregate
 
    begin
-
       --  For now, only deal with cases where an integral number of elements
       --  fit in a single byte. This includes the most common boolean case.
 

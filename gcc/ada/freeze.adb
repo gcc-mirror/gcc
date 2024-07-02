@@ -3168,7 +3168,6 @@ package body Freeze is
               Find_Aspect (Typ, Aspect_No_Parts);
             Curr_Aspect_Spec : Entity_Id;
          begin
-
             --  Examine Typ's associated node, when present, since aspect
             --  specifications do not get transferred when nodes get rewritten.
 
@@ -3235,7 +3234,6 @@ package body Freeze is
             Aspect_Spec : constant Entity_Id :=
               Find_Aspect_No_Parts (Typ);
          begin
-
             --  Return the value of the aspect when present
 
             if Present (Aspect_Spec) then

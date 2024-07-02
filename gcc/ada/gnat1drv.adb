@@ -145,7 +145,6 @@ procedure Gnat1drv is
    --  Start of processing for Adjust_Global_Switches
 
    begin
-
       --  -gnatd_U disables prepending error messages with "error:"
 
       if Debug_Flag_Underscore_UU then

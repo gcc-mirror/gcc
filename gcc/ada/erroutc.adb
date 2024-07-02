@@ -1162,7 +1162,6 @@ package body Erroutc is
 
    procedure Set_Msg_Char (C : Character) is
    begin
-
       --  The check for message buffer overflow is needed to deal with cases
       --  where insertions get too long (in particular a child unit name can
       --  be very long).

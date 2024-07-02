@@ -2092,7 +2092,6 @@ package body Sem_Attr is
 
       procedure Check_Dereference is
       begin
-
          --  Case of a subtype mark
 
          if Is_Entity_Name (P) and then Is_Type (Entity (P)) then

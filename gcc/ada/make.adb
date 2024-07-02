@@ -3022,7 +3022,6 @@ package body Make is
       --  when gnatbind is invoked with -shared.
 
    begin
-
       --  Check now for switch -shared
 
       for J in Binder_Switches.First .. Last_Arg loop

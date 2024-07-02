@@ -163,7 +163,6 @@ package body Ch11 is
 
    function P_Exception_Choice return Node_Id is
    begin
-
       if Token = Tok_Others then
          Scan; -- past OTHERS
          return New_Node (N_Others_Choice, Prev_Token_Ptr);

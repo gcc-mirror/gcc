@@ -1511,7 +1511,6 @@ package body Exp_Pakd is
       Offset : Node_Id;
 
    begin
-
       if CodePeer_Mode then
          return;
       end if;
@@ -1555,7 +1554,6 @@ package body Exp_Pakd is
       Offset : Node_Id;
 
    begin
-
       if CodePeer_Mode then
          return;
       end if;
@@ -1595,7 +1593,6 @@ package body Exp_Pakd is
       PAT  : Entity_Id;
 
    begin
-
       if CodePeer_Mode then
          return;
       end if;
@@ -1763,7 +1760,6 @@ package body Exp_Pakd is
       Arg   : Node_Id;
 
    begin
-
       if CodePeer_Mode then
          return;
       end if;
@@ -1931,7 +1927,6 @@ package body Exp_Pakd is
       PAT  : Entity_Id;
 
    begin
-
       if CodePeer_Mode then
          return;
       end if;
@@ -2033,7 +2028,6 @@ package body Exp_Pakd is
       Size : Unat;
 
    begin
-
       if CodePeer_Mode then
          return;
       end if;
