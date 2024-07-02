@@ -2314,10 +2314,10 @@ attribute handlers.  So far this only affects the @var{noinit} and\n\
 DEFHOOK
 (function_attribute_inlinable_p,
  "@cindex inlining\n\
-This target hook returns @code{true} if it is OK to inline @var{fndecl}\n\
-into the current function, despite its having target-specific\n\
-attributes, @code{false} otherwise.  By default, if a function has a\n\
-target specific attribute attached to it, it will not be inlined.",
+This target hook returns @code{false} if the target-specific attributes on\n\
+@var{fndecl} always block it getting inlined, @code{true} otherwise.  By\n\
+default, if a function has a target specific attribute attached to it, it\n\
+will not be inlined.",
  bool, (const_tree fndecl),
  hook_bool_const_tree_false)
 
@@ -4067,12 +4067,10 @@ allocation.",
    FLAGS has the same meaning as in rtlanal.cc: may_trap_p_1.  */
 DEFHOOK
 (unspec_may_trap_p,
- "This target hook returns nonzero if @var{x}, an @code{unspec} or\n\
-@code{unspec_volatile} operation, might cause a trap.  Targets can use\n\
-this hook to enhance precision of analysis for @code{unspec} and\n\
-@code{unspec_volatile} operations.  You may call @code{may_trap_p_1}\n\
-to analyze inner elements of @var{x} in which case @var{flags} should be\n\
-passed along.",
+ "This target hook returns nonzero if @var{x}, an @code{unspec} might cause\n\
+a trap.  Targets can use this hook to enhance precision of analysis for\n\
+@code{unspec} operations.  You may call @code{may_trap_p_1} to analyze inner\n\
+elements of @var{x} in which case @var{flags} should be passed along.",
  int, (const_rtx x, unsigned flags),
  default_unspec_may_trap_p)
 

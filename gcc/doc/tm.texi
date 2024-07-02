@@ -10752,10 +10752,10 @@ attribute handlers.  So far this only affects the @var{noinit} and
 
 @deftypefn {Target Hook} bool TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P (const_tree @var{fndecl})
 @cindex inlining
-This target hook returns @code{true} if it is OK to inline @var{fndecl}
-into the current function, despite its having target-specific
-attributes, @code{false} otherwise.  By default, if a function has a
-target specific attribute attached to it, it will not be inlined.
+This target hook returns @code{false} if the target-specific attributes on
+@var{fndecl} always block it getting inlined, @code{true} otherwise.  By
+default, if a function has a target specific attribute attached to it, it
+will not be inlined.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_OPTION_VALID_ATTRIBUTE_P (tree @var{fndecl}, tree @var{name}, tree @var{args}, int @var{flags})
@@ -12253,12 +12253,10 @@ allocation.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_UNSPEC_MAY_TRAP_P (const_rtx @var{x}, unsigned @var{flags})
-This target hook returns nonzero if @var{x}, an @code{unspec} or
-@code{unspec_volatile} operation, might cause a trap.  Targets can use
-this hook to enhance precision of analysis for @code{unspec} and
-@code{unspec_volatile} operations.  You may call @code{may_trap_p_1}
-to analyze inner elements of @var{x} in which case @var{flags} should be
-passed along.
+This target hook returns nonzero if @var{x}, an @code{unspec} might cause
+a trap.  Targets can use this hook to enhance precision of analysis for
+@code{unspec} operations.  You may call @code{may_trap_p_1} to analyze inner
+elements of @var{x} in which case @var{flags} should be passed along.
 @end deftypefn
 
 @deftypefn {Target Hook} void TARGET_SET_CURRENT_FUNCTION (tree @var{decl})
