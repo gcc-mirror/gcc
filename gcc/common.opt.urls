@@ -1642,6 +1642,9 @@ UrlSuffix(gcc/Debugging-Options.html#index-gctf)
 gbtf
 UrlSuffix(gcc/Debugging-Options.html#index-gbtf)
 
+gprune-btf
+UrlSuffix(gcc/Debugging-Options.html#index-gprune-btf)
+
 gdwarf
 UrlSuffix(gcc/Debugging-Options.html#index-gdwarf)
 
