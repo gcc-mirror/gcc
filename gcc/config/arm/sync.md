@@ -65,7 +65,7 @@
 (define_insn "arm_atomic_load<mode>"
   [(set (match_operand:QHSI 0 "register_operand" "=r,l")
     (unspec_volatile:QHSI
-      [(match_operand:QHSI 1 "memory_operand" "m,m")]
+      [(match_operand:QHSI 1 "mem_and_no_t1_wback_op" "m,Uw")]
       VUNSPEC_LDR))]
   ""
   "ldr<sync_sfx>\t%0, %1"
@@ -81,7 +81,7 @@
 )
 
 (define_insn "arm_atomic_store<mode>"
-  [(set (match_operand:QHSI 0 "memory_operand" "=m,m")
+  [(set (match_operand:QHSI 0 "mem_and_no_t1_wback_op" "=m,Uw")
     (unspec_volatile:QHSI
       [(match_operand:QHSI 1 "register_operand" "r,l")]
       VUNSPEC_STR))]
