@@ -2823,9 +2823,6 @@ package body Sem_Ch5 is
       --  forms. In this case it is not sufficient to check the static
       --  predicate function only, look for a dynamic predicate aspect as well.
 
-      function Is_Expanded_Quantified_Expr (N : Node_Id) return Boolean;
-      --  Return Whether N comes from the expansion of a quantified expression.
-
       procedure Process_Bounds (R : Node_Id);
       --  If the iteration is given by a range, create temporaries and
       --  assignment statements block to capture the bounds and perform
@@ -2910,16 +2907,6 @@ package body Sem_Ch5 is
             Set_No_Dynamic_Predicate_On_Actual (T);
          end if;
       end Check_Predicate_Use;
-
-      ---------------------------------
-      -- Is_Expanded_Quantified_Expr --
-      ---------------------------------
-
-      function Is_Expanded_Quantified_Expr (N : Node_Id) return Boolean is
-      begin
-         return Nkind (N) = N_Expression_With_Actions
-           and then Nkind (Original_Node (N)) = N_Quantified_Expression;
-      end Is_Expanded_Quantified_Expr;
 
       --------------------
       -- Process_Bounds --
@@ -3094,16 +3081,6 @@ package body Sem_Ch5 is
 
       DS_Copy : Node_Id;
 
-      Is_Loop_Of_Expanded_Quantified_Expr : constant Boolean :=
-        Present (Loop_Nod)
-          and then (Is_Expanded_Quantified_Expr (Parent (Loop_Nod))
-      --  We also have to consider the case where the loop was wrapped with
-      --  Wrap_Loop_Statement.
-            or else (Present (Parent (Loop_Nod))
-              and then Present (Parent (Parent (Loop_Nod)))
-              and then Is_Expanded_Quantified_Expr
-                (Parent (Parent (Parent (Loop_Nod))))));
-
    --  Start of processing for Analyze_Loop_Parameter_Specification
 
    begin
@@ -3276,28 +3253,9 @@ package body Sem_Ch5 is
       end if;
 
       Mutate_Ekind (Id, E_Loop_Parameter);
+      Set_Etype (Id, Etype (DS));
+
       Set_Is_Not_Self_Hidden (Id);
-
-      --  A quantified expression which appears in a pre- or post-condition may
-      --  be analyzed multiple times. The analysis of the range creates several
-      --  itypes which reside in different scopes depending on whether the pre-
-      --  or post-condition has been expanded. Update the type of the loop
-      --  variable to reflect the proper itype at each stage of analysis.
-
-      --  Loop_Nod might not be present when we are preanalyzing a class-wide
-      --  pre/postcondition since preanalysis occurs in a place unrelated to
-      --  the actual code and the quantified expression may be the outermost
-      --  expression of the class-wide condition.
-
-      if No (Etype (Id))
-        or else Etype (Id) = Any_Type
-        or else
-          (Present (Etype (Id))
-            and then Is_Itype (Etype (Id))
-            and then Is_Loop_Of_Expanded_Quantified_Expr)
-      then
-         Set_Etype (Id, Etype (DS));
-      end if;
 
       --  Treat a range as an implicit reference to the type, to inhibit
       --  spurious warnings.
