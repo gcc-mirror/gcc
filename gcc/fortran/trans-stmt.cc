@@ -1911,6 +1911,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_se se;
       tree desc;
       bool cst_array_ctor;
+      stmtblock_t init;
+      gfc_init_block (&init);
 
       desc = sym->backend_decl;
       cst_array_ctor = e->expr_type == EXPR_ARRAY
@@ -1935,10 +1937,17 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  && !sym->attr.select_type_temporary
 	  && sym->ts.u.cl->backend_decl
 	  && VAR_P (sym->ts.u.cl->backend_decl)
+	  && se.string_length
 	  && se.string_length != sym->ts.u.cl->backend_decl)
-	gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl,
-			  fold_convert (TREE_TYPE (sym->ts.u.cl->backend_decl),
-					se.string_length));
+	{
+	  /* When the target is a variable, its length is already known.  */
+	  tree len = fold_convert (TREE_TYPE (sym->ts.u.cl->backend_decl),
+				   se.string_length);
+	  if (e->expr_type == EXPR_VARIABLE)
+	    gfc_add_modify (&init, sym->ts.u.cl->backend_decl, len);
+	  else
+	    gfc_add_modify (&se.pre, sym->ts.u.cl->backend_decl, len);
+	}
 
       /* If we didn't already do the pointer assignment, set associate-name
 	 descriptor to the one generated for the temporary.  */
@@ -1978,7 +1987,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	}
 
       /* Done, register stuff as init / cleanup code.  */
-      gfc_add_init_cleanup (block, gfc_finish_block (&se.pre),
+      gfc_add_block_to_block (&init, &se.pre);
+      gfc_add_init_cleanup (block, gfc_finish_block (&init),
 			    gfc_finish_block (&se.post));
     }
 
