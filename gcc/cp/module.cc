@@ -10142,7 +10142,7 @@ trees_in::tree_node (bool is_use)
       TREE_USED (res) = true;
 
       /* And for structured bindings also the underlying decl.  */
-      if (DECL_DECOMPOSITION_P (res) && DECL_DECOMP_BASE (res))
+      if (DECL_DECOMPOSITION_P (res) && !DECL_DECOMP_IS_BASE (res))
 	TREE_USED (DECL_DECOMP_BASE (res)) = true;
 
       if (DECL_CLONED_FUNCTION_P (res))

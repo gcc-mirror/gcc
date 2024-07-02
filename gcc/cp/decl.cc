@@ -710,7 +710,7 @@ poplevel (int keep, int reverse, int functionbody)
 	    && ! DECL_IN_SYSTEM_HEADER (decl)
 	    /* For structured bindings, consider only real variables, not
 	       subobjects.  */
-	    && (DECL_DECOMPOSITION_P (decl) ? !DECL_DECOMP_BASE (decl)
+	    && (DECL_DECOMPOSITION_P (decl) ? DECL_DECOMP_IS_BASE (decl)
 		: (DECL_NAME (decl) && !DECL_ARTIFICIAL (decl)))
 	    /* Don't warn about name-independent declarations.  */
 	    && !name_independent_decl_p (decl)
@@ -7573,7 +7573,7 @@ check_array_initializer (tree decl, tree type, tree init)
      to have complete type.  */
   if (decl
       && DECL_DECOMPOSITION_P (decl)
-      && !DECL_DECOMP_BASE (decl)
+      && DECL_DECOMP_IS_BASE (decl)
       && !COMPLETE_TYPE_P (type))
     {
       error_at (DECL_SOURCE_LOCATION (decl),
@@ -9438,6 +9438,12 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
       nelts = array_type_nelts_top (type);
       if (nelts == error_mark_node)
 	goto error_out;
+      if (DECL_DECOMP_BASE (decl))
+	{
+	  error_at (loc, "array initializer for structured binding "
+		    "declaration in condition");
+	  goto error_out;
+	}
       if (!tree_fits_uhwi_p (nelts))
 	{
 	  error_at (loc, "cannot decompose variable length array %qT", type);
@@ -9537,6 +9543,30 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
       eltscnt = tree_to_uhwi (tsize);
       if (count != eltscnt)
 	goto cnt_mismatch;
+      if (!processing_template_decl && DECL_DECOMP_BASE (decl))
+	{
+	  /* For structured bindings used in conditions we need to evaluate
+	     the conversion of decl (aka e in the standard) to bool or
+	     integral/enumeral type (the latter for switch conditions)
+	     before the get methods.  */
+	  tree cond = convert_from_reference (decl);
+	  if (integer_onep (DECL_DECOMP_BASE (decl)))
+	    /* switch condition.  */
+	    cond = build_expr_type_conversion (WANT_INT | WANT_ENUM,
+					       cond, true);
+	  else
+	    /* if/while/for condition.  */
+	    cond = contextual_conv_bool (cond, tf_warning_or_error);
+	  if (cond && !error_operand_p (cond))
+	    {
+	      /* Wrap that value into a TARGET_EXPR, emit it right
+		 away and save for later uses in the cp_parse_condition
+		 or its instantiation.  */
+	      cond = get_target_expr (cond);
+	      add_stmt (cond);
+	      DECL_DECOMP_BASE (decl) = cond;
+	    }
+	}
       int save_read = DECL_READ_P (decl);	
       for (unsigned i = 0; i < count; ++i)
 	{

@@ -4472,9 +4472,17 @@ get_vec_init_expr (tree t)
    ? DECL_LANG_SPECIFIC (NODE)->u.base.selector == lds_decomp		\
    : false)
 
-/* The underlying artificial VAR_DECL for structured binding.  */
+/* The underlying artificial VAR_DECL for structured binding.  On the
+   artificial base VAR_DECL this can be NULL, or integer_{zero,one}_node
+   for structured binding used in if/while/for resp. switch conditions,
+   or a TARGET_EXPR with the condition value after cp_finish_decomp in
+   those cases.  */
 #define DECL_DECOMP_BASE(NODE) \
   (LANG_DECL_DECOMP_CHECK (NODE)->base)
+
+/* True for the artificial VAR_DECL for structured binding.  */
+#define DECL_DECOMP_IS_BASE(NODE) \
+  (!DECL_DECOMP_BASE (NODE) || !VAR_P (DECL_DECOMP_BASE (NODE)))
 
 /* Nonzero if NODE is an inline VAR_DECL.  In C++17, static data members
    declared with constexpr specifier are implicitly inline variables.  */

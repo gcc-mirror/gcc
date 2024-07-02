@@ -966,6 +966,15 @@ maybe_convert_cond (tree cond)
   if (type_dependent_expression_p (cond))
     return cond;
 
+  /* For structured binding used in condition, the conversion needs to be
+     evaluated before the individual variables are initialized in the
+     std::tuple_{size,elemenet} case.  cp_finish_decomp saved the conversion
+     result in a TARGET_EXPR, pick it up from there.  */
+  if (DECL_DECOMPOSITION_P (cond)
+      && DECL_DECOMP_IS_BASE (cond)
+      && TREE_CODE (DECL_DECOMP_BASE (cond)) == TARGET_EXPR)
+    cond = TARGET_EXPR_SLOT (DECL_DECOMP_BASE (cond));
+
   if (warn_sequence_point && !processing_template_decl)
     verify_sequence_points (cond);
 
@@ -1699,6 +1708,14 @@ finish_switch_cond (tree cond, tree switch_stmt)
     {
       /* Convert the condition to an integer or enumeration type.  */
       tree orig_cond = cond;
+      /* For structured binding used in condition, the conversion needs to be
+	 evaluated before the individual variables are initialized in the
+	 std::tuple_{size,elemenet} case.  cp_finish_decomp saved the
+	 conversion result in a TARGET_EXPR, pick it up from there.  */
+      if (DECL_DECOMPOSITION_P (cond)
+	  && DECL_DECOMP_IS_BASE (cond)
+	  && TREE_CODE (DECL_DECOMP_BASE (cond)) == TARGET_EXPR)
+	cond = TARGET_EXPR_SLOT (DECL_DECOMP_BASE (cond));
       cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, true);
       if (cond == NULL_TREE)
 	{

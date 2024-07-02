@@ -2449,7 +2449,7 @@ static void cp_parser_statement_seq_opt
 static tree cp_parser_selection_statement
   (cp_parser *, bool *, vec<tree> *);
 static tree cp_parser_condition
-  (cp_parser *);
+  (cp_parser *, enum rid);
 static tree cp_parser_iteration_statement
   (cp_parser *, bool *, bool, tree, bool);
 static bool cp_parser_init_statement
@@ -2562,7 +2562,7 @@ static void cp_parser_static_assert
 static tree cp_parser_decltype
   (cp_parser *);
 static tree cp_parser_decomposition_declaration
-  (cp_parser *, cp_decl_specifier_seq *, tree *, location_t *);
+  (cp_parser *, cp_decl_specifier_seq *, tree *, location_t *, enum rid);
 
 /* Declarators [gram.dcl.decl] */
 
@@ -13690,7 +13690,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	  }
 
 	/* Parse the condition.  */
-	condition = cp_parser_condition (parser);
+	condition = cp_parser_condition (parser, keyword);
 	/* Look for the `)'.  */
 	if (!parens.require_close (parser))
 	  cp_parser_skip_to_closing_parenthesis (parser, true, false,
@@ -13909,6 +13909,7 @@ cp_parser_check_condition_declarator (cp_parser* parser,
      expression
      type-specifier-seq declarator = initializer-clause
      type-specifier-seq declarator braced-init-list
+     structured-binding-declaration initializer (C++26)
 
    GNU Extension:
 
@@ -13919,7 +13920,7 @@ cp_parser_check_condition_declarator (cp_parser* parser,
    Returns the expression that should be tested.  */
 
 static tree
-cp_parser_condition (cp_parser* parser)
+cp_parser_condition (cp_parser* parser, enum rid keyword)
 {
   cp_decl_specifier_seq type_specifiers;
   const char *saved_message;
@@ -13955,6 +13956,26 @@ cp_parser_condition (cp_parser* parser)
       cp_declarator *declarator;
       tree initializer = NULL_TREE;
       location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+
+      /* Look for C++26 structured binding declaration.  */
+      for (size_t n = 1; ; n++)
+	if (cp_lexer_nth_token_is (parser->lexer, n, CPP_AND)
+	    || cp_lexer_nth_token_is (parser->lexer, n, CPP_AND_AND))
+	  continue;
+	else if (cp_lexer_nth_token_is (parser->lexer, n, CPP_OPEN_SQUARE)
+		 && !cp_lexer_nth_token_is (parser->lexer, n + 1,
+					    CPP_OPEN_SQUARE)
+		 && type_specifiers.any_specifiers_p
+		 && cp_parser_parse_definitely (parser))
+	  {
+	    location_t init_loc;
+	    tree decl
+	      = cp_parser_decomposition_declaration (parser, &type_specifiers,
+						     NULL, &init_loc, keyword);
+	    return decl;
+	  }
+	else
+	  break;
 
       /* Parse the declarator.  */
       declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
@@ -14095,7 +14116,7 @@ cp_parser_c_for (cp_parser *parser, tree scope, tree init, bool ivdep,
 
   /* If there's a condition, process it.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
-    condition = cp_parser_condition (parser);
+    condition = cp_parser_condition (parser, RID_FOR);
   else if (ivdep)
     {
       cp_parser_error (parser, "missing loop condition in loop with "
@@ -14660,7 +14681,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep,
 	matching_parens parens;
 	parens.require_open (parser);
 	/* Parse the condition.  */
-	condition = cp_parser_condition (parser);
+	condition = cp_parser_condition (parser, RID_WHILE);
 	finish_while_stmt_cond (condition, statement, ivdep, unroll, novector);
 	/* Look for the `)'.  */
 	parens.require_close (parser);
@@ -15966,7 +15987,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	tree decl
 	  = cp_parser_decomposition_declaration (parser, &decl_specifiers,
 						 maybe_range_for_decl,
-						 &init_loc);
+						 &init_loc, RID_MAX);
 
 	/* The next token should be either a `,' or a `;'.  */
 	cp_token *token = cp_lexer_peek_token (parser->lexer);
@@ -16210,7 +16231,7 @@ static tree
 cp_parser_decomposition_declaration (cp_parser *parser,
 				     cp_decl_specifier_seq *decl_specifiers,
 				     tree *maybe_range_for_decl,
-				     location_t *init_loc)
+				     location_t *init_loc, enum rid keyword)
 {
   cp_ref_qualifier ref_qual = cp_parser_ref_qualifier_opt (parser);
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -16269,7 +16290,11 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	}
     }
 
-  if (cxx_dialect < cxx17)
+  if (keyword != RID_MAX && cxx_dialect < cxx26)
+    pedwarn (loc, OPT_Wc__26_extensions,
+	     "structured bindings in conditions only available with "
+	     "%<-std=c++2c%> or %<-std=gnu++2c%>");
+  else if (cxx_dialect < cxx17)
     pedwarn (loc, OPT_Wc__17_extensions,
 	     "structured bindings only available with "
 	     "%<-std=c++17%> or %<-std=gnu++17%>");
@@ -16357,6 +16382,9 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
 			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT),
 			  &decomp);
+	  if (keyword != RID_MAX)
+	    DECL_DECOMP_BASE (decl)
+	      = keyword == RID_SWITCH ? integer_one_node : integer_zero_node;
 	  cp_finish_decomp (decl, &decomp);
 	}
     }

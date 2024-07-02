@@ -5893,7 +5893,7 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
   TREE_USED (decl) = true;
 
   /* And for structured bindings also the underlying decl.  */
-  if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_BASE (decl))
+  if (DECL_DECOMPOSITION_P (decl) && !DECL_DECOMP_IS_BASE (decl))
     TREE_USED (DECL_DECOMP_BASE (decl)) = true;
 
   if (TREE_CODE (decl) == TEMPLATE_DECL)
