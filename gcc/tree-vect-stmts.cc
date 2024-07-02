@@ -2099,7 +2099,8 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 	     If there is a combination of the access not covering the full
 	     vector and a gap recorded then we may need to peel twice.  */
 	  if (loop_vinfo
-	      && *memory_access_type == VMAT_CONTIGUOUS
+	      && (*memory_access_type == VMAT_CONTIGUOUS
+		  || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	      && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ()
 	      && !multiple_p (group_size * LOOP_VINFO_VECT_FACTOR (loop_vinfo),
 			      nunits))
