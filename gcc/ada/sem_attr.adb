@@ -11267,7 +11267,42 @@ package body Sem_Attr is
                if Is_Overloaded (P) then
                   Get_First_Interp (P, Index, It);
                   while Present (It.Nam) loop
-                     if Type_Conformant (Designated_Type (Typ), It.Nam) then
+
+                     --  Overloaded object names can occur when user-defined
+                     --  references are involved. The prefix can be interpreted
+                     --  as either just an object of the reference type, or an
+                     --  implicit dereferencing of such an object.
+
+                     if Is_Object (It.Nam) then
+                        if Covers (Designated_Type (Typ), Etype (It.Typ)) then
+
+                           --  If the interpretation is a discriminant for an
+                           --  implicit dereference, then build the dereference
+                           --  and resolve the rewritten attribute recursively.
+
+                           if Ekind (It.Nam) = E_Discriminant
+                             and then Has_Implicit_Dereference (It.Nam)
+                           then
+                              Build_Explicit_Dereference
+                                (P, Get_Reference_Discriminant (Etype (P)));
+                              Resolve_Attribute (N, Typ);
+
+                              return;
+                           end if;
+
+                           --  The prefix is definitely NOT overloaded anymore
+                           --  at this point, so we reset the Is_Overloaded
+                           --  flag to avoid any confusion when reanalyzing
+                           --  the node.
+
+                           Set_Is_Overloaded (P, False);
+                           Set_Is_Overloaded (N, False);
+                           Generate_Reference (Entity (P), P);
+
+                           exit;
+                        end if;
+
+                     elsif Type_Conformant (Designated_Type (Typ), It.Nam) then
                         Set_Entity (P, It.Nam);
 
                         --  The prefix is definitely NOT overloaded anymore at
