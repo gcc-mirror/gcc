@@ -1,3 +1,16 @@
+2024-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-25  Jakub Jelinek  <jakub@redhat.com>
+		    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114930
+	PR c/115502
+	* c-decl.cc (c_update_type_canonical): Assert t is main variant
+	with 0 TYPE_QUALS.  Simplify and don't use check_qualified_type.
+	Deal with the case where build_qualified_type returns
+	TYPE_STRUCTURAL_EQUALITY_P type.
+
 2024-06-25  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	Backported from master:

@@ -1,3 +1,25 @@
+2024-07-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2024-07-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/88236
+	PR target/115726
+	* gcc.target/avr/torture/pr88236-pr115726.c: New test.
+
+2024-07-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-06-25  Jakub Jelinek  <jakub@redhat.com>
+		    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114930
+	PR c/115502
+	* gcc.dg/pr114574-1.c: Require lto effective target.
+	* gcc.dg/pr114574-2.c: Likewise.
+	* gcc.dg/pr114930.c: New test.
+	* gcc.dg/pr115502.c: New test.
+
 2024-06-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
