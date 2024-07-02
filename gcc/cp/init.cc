@@ -4005,10 +4005,14 @@ build_new (location_t loc, vec<tree, va_gc> **placement, tree type,
   /* P1009: Array size deduction in new-expressions.  */
   const bool array_p = TREE_CODE (type) == ARRAY_TYPE;
   if (*init
-      /* If ARRAY_P, we have to deduce the array bound.  For C++20 paren-init,
-	 we have to process the parenthesized-list.  But don't do it for (),
-	 which is value-initialization, and INIT should stay empty.  */
-      && (array_p || (cxx_dialect >= cxx20 && nelts && !(*init)->is_empty ())))
+      /* If the array didn't specify its bound, we have to deduce it.  */
+      && ((array_p && !TYPE_DOMAIN (type))
+	  /* For C++20 array with parenthesized-init, we have to process
+	     the parenthesized-list.  But don't do it for (), which is
+	     value-initialization, and INIT should stay empty.  */
+	  || (cxx_dialect >= cxx20
+	      && (array_p || nelts)
+	      && !(*init)->is_empty ())))
     {
       /* This means we have 'new T[]()'.  */
       if ((*init)->is_empty ())
