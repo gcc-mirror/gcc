@@ -62,3 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 /* This platform supports the probing method of stack checking (RTP mode).
    8K is reserved in the stack to propagate exceptions in case of overflow.  */
 #define STACK_CHECK_PROTECT 8192
+
+/* SPARC_LONG_DOUBLE_TYPE_SIZE should be defined per OS.  */
+#undef SPARC_LONG_DOUBLE_TYPE_SIZE
+#define SPARC_LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
