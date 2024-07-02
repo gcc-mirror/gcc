@@ -5174,14 +5174,14 @@ package Sinfo is
       --  Handled_Statement_Sequence
       --  Activation_Chain_Entity
       --  Cleanup_Actions
-      --  Has_Created_Identifier
-      --  Is_Asynchronous_Call_Block
-      --  Is_Task_Allocation_Block
-      --  Exception_Junk
-      --  Is_Abort_Block
-      --  Is_Initialization_Block
-      --  Is_Task_Master
       --  At_End_Proc (set to Empty if no clean up procedure)
+      --  Exception_Junk
+      --  Has_Created_Identifier
+      --  Is_Abort_Block
+      --  Is_Asynchronous_Call_Block
+      --  Is_Initialization_Block
+      --  Is_Task_Allocation_Block
+      --  Is_Task_Master
 
       -------------------------
       -- 5.7  Exit Statement --
@@ -5456,6 +5456,7 @@ package Sinfo is
       --  Handled_Statement_Sequence
       --  Activation_Chain_Entity
       --  Corresponding_Spec
+      --  At_End_Proc (set to Empty if no clean up procedure)
       --  Acts_As_Spec
       --  Bad_Is_Detected used only by parser
       --  Do_Storage_Check
@@ -5693,8 +5694,8 @@ package Sinfo is
       --  Declarations
       --  Handled_Statement_Sequence (set to Empty if no HSS present)
       --  Corresponding_Spec
-      --  Was_Originally_Stub
       --  At_End_Proc (set to Empty if no clean up procedure)
+      --  Was_Originally_Stub
 
       --  Note: if a source level package does not contain a handled sequence
       --  of statements, then the parser supplies a dummy one with a null
@@ -6726,7 +6727,6 @@ package Sinfo is
       --  Corresponding_Spec_Of_Stub
       --  Library_Unit points to the subunit
       --  Corresponding_Body
-      --  At_End_Proc (set to Empty if no clean up procedure)
 
       -------------------------------
       -- 10.1.3  Package Body Stub --
