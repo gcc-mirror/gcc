@@ -8109,7 +8109,10 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	tree oldop = TREE_OPERAND (t, 0);
 
 	tree op = cxx_eval_constant_expression (ctx, oldop,
-						lval,
+						VOID_TYPE_P (TREE_TYPE (t))
+						? vc_discard
+						: tcode == VIEW_CONVERT_EXPR
+						? lval : vc_prvalue,
 						non_constant_p, overflow_p);
 	if (*non_constant_p)
 	  return t;
