@@ -6,8 +6,6 @@
 #include "rust-path.h"
 #include "rust-macro.h"
 #include "rust-operators.h"
-#include "rust-system.h"
-#include <memory>
 
 namespace Rust {
 namespace AST {
