@@ -47,6 +47,7 @@ enum df_problem_id
   {
     DF_SCAN,
     DF_LR,                /* Live Registers backward. */
+    DF_LR_DCE,            /* Dead code elimination post-pass for LR.  */
     DF_LIVE,              /* Live Registers & Uninitialized Registers */
     DF_RD,                /* Reaching Defs. */
     DF_CHAIN,             /* Def-Use and/or Use-Def Chains. */
@@ -940,6 +941,7 @@ extern class df_d *df;
 #define df_scan    (df->problems_by_index[DF_SCAN])
 #define df_rd      (df->problems_by_index[DF_RD])
 #define df_lr      (df->problems_by_index[DF_LR])
+#define df_lr_dce  (df->problems_by_index[DF_LR_DCE])
 #define df_live    (df->problems_by_index[DF_LIVE])
 #define df_chain   (df->problems_by_index[DF_CHAIN])
 #define df_word_lr (df->problems_by_index[DF_WORD_LR])

@@ -1182,6 +1182,9 @@ fast_dce (bool word_level)
   BITMAP_FREE (processed);
   BITMAP_FREE (redo_out);
   BITMAP_FREE (all_blocks);
+
+  /* Both forms of DCE should make further DCE unnecessary.  */
+  df_lr_dce->solutions_dirty = false;
 }
 
 

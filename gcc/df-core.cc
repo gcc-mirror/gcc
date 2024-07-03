@@ -806,7 +806,8 @@ rest_of_handle_df_finish (void)
   for (i = 0; i < df->num_problems_defined; i++)
     {
       struct dataflow *dflow = df->problems_in_order[i];
-      dflow->problem->free_fun ();
+      if (dflow->problem->free_fun)
+	dflow->problem->free_fun ();
     }
 
   free (df->postorder);
