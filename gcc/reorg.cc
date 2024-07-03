@@ -3409,7 +3409,8 @@ relax_delay_slots (rtx_insn *first)
 	  && next && simplejump_or_return_p (next)
 	  && (next_active_insn (as_a<rtx_insn *> (target_label))
 	      == next_active_insn (next))
-	  && no_labels_between_p (insn, next))
+	  && no_labels_between_p (insn, next)
+	  && !switch_text_sections_between_p (insn, next_active_insn (next)))
 	{
 	  rtx label = JUMP_LABEL (next);
 	  rtx old_label = JUMP_LABEL (delay_jump_insn);
