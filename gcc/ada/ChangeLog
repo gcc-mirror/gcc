@@ -1,3 +1,112 @@
+2024-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): In the case where an operand
+	does not have both bounds known at compile time, use nevertheless
+	the low bound directly if it is known at compile time.
+	Fold the conditional expression giving the low bound of the result
+	in the general case if the low bound of all the operands are equal.
+
+2024-07-02  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch12.adb (Save_And_Reset): Fix value of low bound used to
+	reset table.
+
+2024-07-02  Steve Baird  <baird@adacore.com>
+
+	* sem_attr.adb
+	(Analyze_Image_Attribute.Check_Image_Type): Check for
+	E_Access_Attribute_Type prefix type.
+
+2024-07-02  Steve Baird  <baird@adacore.com>
+
+	* exp_ch9.adb
+	(Expand_N_Protected_Body): Declare new procedure
+	Unanalyze_Use_Clauses and call it before analyzing the newly
+	constructed subprogram body.
+
+2024-07-02  Steve Baird  <baird@adacore.com>
+
+	* exp_put_image.adb
+	(Build_Record_Put_Image_Procedure): Declare new Boolean-valued
+	function Null_Record_Default_Implementation_OK; call it as part of
+	deciding whether to generate "(NULL RECORD)" text.
+
+2024-07-02  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch5.adb:
+	(Analyze_Assignment): Add special expansion for qualified expressions
+	in certain cases dealing with mutably tagged types.
+
+2024-07-02  Bob Duff  <duff@adacore.com>
+
+	* freeze.adb (Freeze_Type_Refs): If Node is in N_Has_Etype,
+	check that it has had its Etype set, because this can be
+	called early for expression functions that are completions.
+
+2024-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Array_Comparison): Remove the obsolete byte
+	addressibility test. If Support_Composite_Compare_On_Target is true,
+	immediately return for a component size of 8, an unsigned component
+	type and aligned operands. Disable when Unnest_Subprogram_Mode is
+	true (for LLVM).
+	(Expand_N_Op_Eq): Adjust comment.
+	* targparm.ads (Support_Composite_Compare_On_Target): Replace bit by
+	byte in description and document support for ordering comparisons.
+	* gcc-interface/utils2.cc (compare_arrays): Rename into...
+	(compare_arrays_for_equality): ...this.  Remove redundant lines.
+	(compare_arrays_for_ordering): New function.
+	(build_binary_op) <comparisons>: Call compare_arrays_for_ordering
+	to implement ordering comparisons for arrays.
+
+2024-07-02  Yannick Moy  <moy@adacore.com>
+
+	* contracts.adb (Analyze_Pragmas_In_Declarations): Analyze
+	pragmas in two iterations over the list of declarations in
+	order to analyze some pragmas before others.
+	* einfo-utils.ads (Get_Pragma): Fix comment.
+	* sem_prag.ads (Pragma_Significant_To_Subprograms): Fix.
+	(Pragma_Significant_To_Subprograms_Analyzed_First): Add new
+	global array to identify these pragmas which should be analyzed
+	first, which concerns only Extensions_Visible for now.
+
+2024-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Convert_View): Add third parameter Typ and use it if
+	the second parameter does not have an Etype.
+	(Make_Adjust_Call): Remove obsolete setting of Etype and pass Typ in
+	call to Convert_View.
+	(Make_Final_Call): Likewise.
+	(Make_Init_Call): Pass Typ in call to Convert_View.
+
+2024-07-02  Javier Miranda  <miranda@adacore.com>
+
+	* sem_aggr.adb (Cannot_Compute_High_Bound): New subprogram.
+	(Report_Null_Array_Constraint_Error): New subprogram.
+	(Collect_Aggr_Bounds): For null aggregates, build the bounds
+	of the inner dimensions.
+	(Has_Null_Aggregate_Raising_Constraint_Error): New subprogram.
+	(Subtract): New subprogram.
+	(Resolve_Array_Aggregate): Report a warning when the index of
+	null array aggregates is an enumeration type or a modular type
+	at we can statically determine that the program will raise CE
+	at runtime computing its high bound.
+	(Resolve_Null_Array_Aggregate): ditto.
+
+2024-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst
+	(No_Default_Initialization): Mention components alongside variables.
+	* exp_aggr.adb (Build_Array_Aggr_Code.Gen_Assign): Check that the
+	restriction No_Default_Initialization is not in effect for default
+	initialized component.
+	(Build_Record_Aggr_Code): Likewise.
+	* gnat_rm.texi: Regenerate.
+
+2024-07-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* debug.adb (dJ): Add back as unused.
+
 2024-06-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/s-carsi8.adb: Remove clauses for System.Address_Operations

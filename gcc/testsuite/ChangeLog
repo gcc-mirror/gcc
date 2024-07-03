@@ -1,3 +1,102 @@
+2024-07-02  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113859
+	* gcc.target/aarch64/popcnt-udot.c: New test.
+	* gcc.target/aarch64/popcnt-vec.c: New test.
+
+2024-07-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/110473
+	PR tree-optimization/107432
+	* gcc.target/aarch64/vect-convert-1.c: New test.
+
+2024-07-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/pow-sqrt-synth-1.c: Update testcase for renamed pass.
+
+2024-07-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/tree-ssa/cabs-3.c: New test.
+	* gcc.dg/tree-ssa/cabs-4.c: New test.
+	* gcc.dg/tree-ssa/cabs-5.c: New test.
+	* gcc.dg/tree-ssa/cabs-6.c: New test.
+
+2024-07-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115710
+	* gcc.dg/tree-ssa/cabs-1.c: New test.
+	* gcc.dg/tree-ssa/cabs-2.c: New test.
+	* gfortran.dg/vect/pr115710.f90: New test.
+
+2024-07-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/tree-ssa/complex-8.c: New test.
+
+2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/115754
+	* g++.dg/cpp26/pr115754.C: New test.
+
+2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/115747
+	* g++.dg/init/delete1.C: Adjust expected diagnostics for C++26.
+	* g++.dg/warn/Wdelete-incomplete-1.C: Likewise.
+	* g++.dg/warn/incomplete1.C: Likewise.
+	* g++.dg/ipa/pr85607.C: Likewise.
+	* g++.dg/cpp26/delete1.C: New test.
+	* g++.dg/cpp26/delete2.C: New test.
+	* g++.dg/cpp26/delete3.C: New test.
+
+2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115745
+	* g++.dg/cpp1z/decomp16.C: Adjust expected diagnostics.
+	* g++.dg/cpp26/decomp3.C: New test.
+	* g++.dg/cpp26/decomp4.C: New test.
+	* g++.dg/cpp26/decomp5.C: New test.
+	* g++.dg/cpp26/decomp6.C: New test.
+	* g++.dg/cpp26/decomp7.C: New test.
+	* g++.dg/cpp26/decomp8.C: New test.
+	* g++.dg/cpp26/decomp9.C: New test.
+	* g++.dg/cpp26/decomp10.C: New test.
+
+2024-07-02  David Faust  <david.faust@oracle.com>
+	    Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* gcc.dg/debug/btf/btf-variables-5.c: Adjust one test for bpf-*-*
+	target.
+
+2024-07-02  David Faust  <david.faust@oracle.com>
+
+	* gcc.dg/debug/btf/btf-prune-1.c: New test.
+	* gcc.dg/debug/btf/btf-prune-2.c: Likewise.
+	* gcc.dg/debug/btf/btf-prune-3.c: Likewise.
+	* gcc.dg/debug/btf/btf-prune-maps.c: Likewise.
+
+2024-07-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/115188
+	* gcc.target/arm/pr115188.c: Add new test.
+
+2024-07-02  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/111160
+	* g++.dg/overload/error8.C: New test.
+	* g++.dg/overload/volatile2.C: New test.
+
+2024-07-02  Lingling Kong  <lingling.kong@intel.com>
+
+	* gcc.target/i386/apx-ndd.c: Add test for imul ndd.
+
+2024-07-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/explicit-relocs-extreme-tls-desc.c:
+	Add compilation options '-fno-late-combine-instructions'.
+	* gcc.target/loongarch/explicit-relocs-tls-desc.c: Likewise.
+
 2024-07-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/115469

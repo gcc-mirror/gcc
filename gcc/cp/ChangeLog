@@ -1,3 +1,65 @@
+2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/115754
+	* constexpr.cc (cxx_eval_constant_expression) <case CONVERT_EXPR>:
+	For conversions to void, pass vc_discard to the recursive call
+	and otherwise for tcode other than VIEW_CONVERT_EXPR pass vc_prvalue.
+
+2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/115747
+	* init.cc: Implement C++26 P3144R2 - Deleting a Pointer to an
+	Incomplete Type Should be Ill-formed.
+	(build_vec_delete_1): Emit permerror_at and return error_mark_node
+	for delete [] on incomplete type.
+	(build_delete): Similarly for delete.
+
+2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115745
+	* cp-tree.h: Implement C++26 P0963R3 - Structured binding declaration
+	as a condition.
+	(DECL_DECOMP_BASE): Adjust comment.
+	(DECL_DECOMP_IS_BASE): Define.
+	* parser.cc (cp_parser_selection_statement): Adjust
+	cp_parser_condition caller.
+	(cp_parser_condition): Add KEYWORD argument.  Parse
+	C++26 structured bindings in conditions.
+	(cp_parser_c_for, cp_parser_iteration_statement): Adjust
+	cp_parser_condition callers.
+	(cp_parser_simple_declaration): Adjust
+	cp_parser_decomposition_declaration caller.
+	(cp_parser_decomposition_declaration): Add KEYWORD argument.
+	If it is not RID_MAX, diagnose for C++23 and older rather than C++14
+	and older.  Set DECL_DECOMP_BASE to integer_zero_node for structured
+	bindings used in if/while/for conditions or integer_one_node for
+	those used in switch conditions.
+	* decl.cc (poplevel, check_array_initializer): Use DECL_DECOMP_IS_BASE
+	instead of !DECL_DECOMP_BASE.
+	(cp_finish_decomp): Diagnose array initializer for structured bindings
+	used in conditions.  If using std::tuple_{size,element}, emit
+	conversion to bool or integer/enumeration of e into a TARGET_EXPR
+	before emitting get method calls.
+	* decl2.cc (mark_used): Use DECL_DECOMP_IS_BASE instead of
+	!DECL_DECOMP_BASE.
+	* module.cc (trees_in::tree_node): Likewise.
+	* typeck.cc (maybe_warn_about_returning_address_of_local): Likewise.
+	* semantics.cc (maybe_convert_cond): For structured bindings with
+	TARGET_EXPR DECL_DECOMP_BASE use that as condition.
+	(finish_switch_cond): Likewise.
+
+2024-07-02  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* Make-lang.in: Remove redundant slash.
+
+2024-07-02  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/111160
+	* tree.cc (stabilize_expr): Stabilized expressions can have
+	TREE_SIDE_EFFECTS if they're volatile.
+
 2024-07-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/115469

@@ -1,3 +1,284 @@
+2024-07-02  Pengxuan Zheng  <quic_pzheng@quicinc.com>
+
+	PR target/113859
+	* config/aarch64/aarch64-simd.md (aarch64_<su>addlp<mode>): Rename to...
+	(@aarch64_<su>addlp<mode>): ... This.
+	(popcount<mode>2): New define_expand.
+
+2024-07-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* passes.def (expand_pow): Renamed from expand_powcabs.
+	* timevar.def (TV_TREE_POWCABS): Remove.
+	(TV_TREE_POW): Add
+	* tree-pass.h (make_pass_expand_powcabs): Rename to ...
+	(make_pass_expand_pow): This.
+	* tree-ssa-math-opts.cc (class pass_expand_powcabs): Rename to ...
+	(class pass_expand_pow): This.
+	(pass_expand_powcabs::execute): Rename to ...
+	(pass_expand_pow::execute): This.
+	(make_pass_expand_powcabs): Rename to ...
+	(make_pass_expand_pow): This.
+
+2024-07-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-complex.cc (gimple_expand_builtin_cabs): Add
+	`cabs(a+ai)`, `cabs(x+0i)` and `cabs(0+xi)` optimizations.
+
+2024-07-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/115710
+	* tree-complex.cc (init_dont_simulate_again): Handle CABS.
+	(gimple_expand_builtin_cabs): New function, moved mostly
+	from tree-ssa-math-opts.cc.
+	(expand_complex_operations_1): Call gimple_expand_builtin_cabs.
+	* tree-ssa-math-opts.cc (gimple_expand_builtin_cabs): Remove.
+	(build_and_insert_binop): Remove.
+	(pass_data_expand_powcabs): Update comment.
+	(pass_expand_powcabs::execute): Don't handle CABS.
+
+2024-07-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-complex.cc (expand_complex_addition): If both
+	operands have the same real and imag parts, only
+	add the addition once.
+
+2024-07-02  David Faust  <david.faust@oracle.com>
+
+	* common.opt.urls: Regenerate.
+
+2024-07-02  David Faust  <david.faust@oracle.com>
+	    Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* btfout.cc (btf_mark_type_used): New.
+	* ctfc.h (btf_mark_type_used): Declare it here.
+	* config/bpf/bpf.cc (bpf_option_override): Enable -gprune-btf
+	by default if -gbtf is enabled.
+	* config/bpf/core-builtins.cc (extra_fn): New typedef.
+	(compute_field_expr): Add callback parameter, and call it if supplied.
+	Fix computation for MEM_REF.
+	(mark_component_type_as_used): New.
+	(bpf_mark_types_as_used): Likewise.
+	(bpf_expand_core_builtin): Call here.
+	* doc/invoke.texi (Debugging Options): Note that -gprune-btf is
+	enabled by default for BPF target when generating BTF.
+
+2024-07-02  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (btf_used_types): New hash set.
+	(struct btf_fixup): New.
+	(fixups, forwards): New vecs.
+	(btf_output): Calculate num_types depending on debug_prune_btf.
+	(btf_early_finsih): New initialization for debug_prune_btf.
+	(btf_add_used_type): New function.
+	(btf_used_type_list_cb): Likewise.
+	(btf_collect_pruned_types): Likewise.
+	(btf_add_vars): Handle special case for variables in ".maps" section
+	when generating BTF for BPF CO-RE target.
+	(btf_late_finish): Use btf_collect_pruned_types when debug_prune_btf
+	is in effect.  Move some initialization to btf_early_finish.
+	(btf_finalize): Additional deallocation for debug_prune_btf.
+	* common.opt (gprune-btf): New flag.
+	* ctfc.cc (init_ctf_strtable): Make non-static.
+	* ctfc.h (init_ctf_strtable, ctfc_delete_strtab): Make extern.
+	* doc/invoke.texi (Debugging Options): Document -gprune-btf.
+
+2024-07-02  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (struct btf_datasec_entry): New.
+	(struct btf_datasec): Add `id' member.  Change `entries' to use
+	new struct btf_datasec_entry.
+	(func_map): New hash_map.
+	(max_translated_id): New.
+	(btf_var_ids, btf_id_map, holes, voids, num_vars_added)
+	(num_types_added, num_types_created): Delete.
+	(btf_absolute_var_id, btf_relative_var_id, btf_absolute_func_id)
+	(btf_relative_func_id, btf_absolute_datasec_id, init_btf_id_map)
+	(get_btf_id, set_btf_id, btf_emit_id_p): Delete.
+	(btf_removed_type_p): Delete.
+	(btf_dtd_kind, btf_emit_type_p): New helpers.
+	(btf_fwd_to_enum_p, btf_calc_num_vbytes): Use them.
+	(btf_collect_datasec): Delete.
+	(btf_dtd_postprocess_cb, btf_dvd_emit_preprocess_cb)
+	(btf_dtd_emit_preprocess_cb, btf_emit_preprocess): Delete.
+	(btf_dmd_representable_bitfield_p): Adapt to type reference changes
+	and delete now-unused ctfc argument.
+	(btf_asm_datasec_type_ref): Delete.
+	(btf_asm_type_ref): Adapt to type reference changes, simplify.
+	(btf_asm_type): Likewise. Mark struct/union types with bitfield
+	members.
+	(btf_asm_array): Adapt to data structure changes.
+	(btf_asm_varent): Likewise.
+	(btf_asm_sou_member): Likewise. Ensure non-bitfield members are
+	correctly re-encoded if struct or union contains any bitfield.
+	(btf_asm_func_arg, btf_asm_func_type, btf_asm_datasec_entry)
+	(btf_asm_datasec_type): Adapt to data structure changes.
+	(output_btf_header): Adapt to other changes, simplify type
+	length calculation, add info to assembler comments.
+	(output_btf_vars): Adapt to other changes.
+	(output_btf_strs): Fix overlong lines.
+	(output_asm_btf_sou_fields, output_asm_btf_enum_list)
+	(output_asm_btf_func_args_list, output_asm_btf_vlen_bytes)
+	(output_asm_btf_type, output_btf_types, output_btf_func_types)
+	(output_btf_datasec_types): Adapt to other changes.
+	(btf_init_postprocess): Delete.
+	(btf_output): Change to only perform output.
+	(btf_add_const_void, btf_add_func_records): New.
+	(btf_early_finish): Use them here. New.
+	(btf_datasec_push_entry): Adapt to data structure changes.
+	(btf_datasec_add_func, btf_datasec_add_var): New.
+	(btf_add_func_datasec_entries): New.
+	(btf_emit_variable_p): New helper.
+	(btf_add_vars): Use it here. New.
+	(btf_type_list_cb, btf_collect_translated_types): New.
+	(btf_assign_func_ids, btf_late_assign_var_ids)
+	(btf_assign_datasec_ids): New.
+	(btf_finish): Remove unused argument. Call new btf_late*
+	functions and btf_output.
+	(btf_finalize): Adapt to data structure changes.
+	* ctfc.h (struct ctf_dtdef): Convert existing boolean flags to
+	BOOL_BITFIELD and reorder.
+	(struct ctf_dvdef): Add dvd_id member.
+	(btf_finish): Remove argument from prototype.
+	(get_btf_id): Delete prototype.
+	(funcs_traverse_callback, traverse_btf_func_types): Add an
+	explanatory comment.
+	* dwarf2ctf.cc (ctf_debug_finish): Remove unused argument.
+	* dwarf2ctf.h: Analogous change.
+	* dwarf2out.cc: Likewise.
+
+2024-07-02  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (BTF_VOID_TYPEID, BTF_INIT_TYPEID): Move defines to
+	include/btf.h.
+	(btf_dvd_emit_preprocess_cb, btf_emit_preprocess)
+	(btf_dmd_representable_bitfield_p, btf_asm_array, btf_asm_varent)
+	(btf_asm_sou_member, btf_asm_func_arg, btf_init_postprocess):
+	Adapt to structural changes in ctf_* structs.
+	* ctfc.h (struct ctf_dtdef): Add forward declaration.
+	(ctf_dtdef_t, ctf_dtdef_ref): Move typedefs earlier.
+	(struct ctf_arinfo, struct ctf_funcinfo, struct ctf_sliceinfo)
+	(struct ctf_itype, struct ctf_dmdef, struct ctf_func_arg)
+	(struct ctf_dvdef): Use pointers instead of type IDs for
+	references to other types and use typedefs where appropriate.
+	(struct ctf_dtdef): Add ref_type member.
+	(ctf_type_exists): Use pointer instead of type ID.
+	(ctf_add_reftype, ctf_add_enum, ctf_add_slice, ctf_add_float)
+	(ctf_add_integer, ctf_add_unknown, ctf_add_pointer)
+	(ctf_add_array, ctf_add_forward, ctf_add_typedef)
+	(ctf_add_function, ctf_add_sou, ctf_add_enumerator)
+	(ctf_add_variable): Likewise. Return pointer instead of ID.
+	(ctf_lookup_tree_type): Return pointer to type instead of ID.
+	* ctfc.cc: Analogous changes.
+	* ctfout.cc (ctf_asm_type, ctf_asm_slice, ctf_asm_varent)
+	(ctf_asm_sou_lmember, ctf_asm_sou_member, ctf_asm_func_arg)
+	(output_ctf_objt_info): Adapt to changes.
+	* dwarf2ctf.cc (gen_ctf_type, gen_ctf_void_type)
+	(gen_ctf_unknown_type, gen_ctf_base_type, gen_ctf_pointer_type)
+	(gen_ctf_subrange_type, gen_ctf_array_type, gen_ctf_typedef)
+	(gen_ctf_modifier_type, gen_ctf_sou_type, gen_ctf_function_type)
+	(gen_ctf_enumeration_type, gen_ctf_variable, gen_ctf_function)
+	(gen_ctf_type, ctf_do_die): Likewise.
+	* config/bpf/btfext-out.cc (struct btf_ext_core_reloc): Use
+	pointer instead of type ID.
+	(bpf_core_reloc_add, bpf_core_get_sou_member_index)
+	(output_btfext_core_sections): Adapt to above changes.
+	* config/bpf/core-builtins.cc (process_type): Likewise.
+
+2024-07-02  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (btf_init_postprocess): Rename to...
+	(btf_early_finish): ...this.
+	(btf_output): Rename to...
+	(btf_finish): ...this.
+	* ctfc.h: Analogous changes.
+	* dwarf2ctf.cc (ctf_debug_early_finish): Conditionally call
+	btf_early_finish, or ctf_finalize as appropriate.  Emit BTF
+	here for LTO builds.
+	(ctf_debug_finish): Always call btf_finish here if generating
+	BTF info in non-LTO builds.
+	(ctf_debug_finalize, ctf_debug_init_postprocess): Delete.
+	* dwarf2out.cc (dwarf2out_early_finish): Remove call to
+	ctf_debug_init_postprocess.
+
+2024-07-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/115188
+	* config/arm/arm.md (unaligned_loadsi): Use 'Uw' constraint and
+	'mem_and_no_t1_wback_op'.
+	(unaligned_loadhiu): Likewise.
+	(unaligned_storesi): Likewise.
+	(unaligned_storehi): Likewise.
+	* config/arm/predicates.md (mem_and_no_t1_wback_op): Add new predicate.
+	* config/arm/sync.md (arm_atomic_load<mode>): Use 'Uw' constraint.
+	(arm_atomic_store<mode>): Likewise.
+
+2024-07-02  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* doc/tm.texi: Regenerated.
+	* target.def (function_attribute_inlinable_p,
+	unspec_may_trap_p): Update documentation.
+
+2024-07-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115741
+	* tree-vect-stmts.cc (get_group_load_store_type): Also
+	handle VMAT_CONTIGUOUS_REVERSE when determining overrun.
+
+2024-07-02  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-opts.h (TARGET_GLOBAL_ADDRSPACE): New.
+	(TARGET_AVGPRS): New.
+	(TARGET_AVGPR_MEMOPS): New.
+	(TARGET_AVGPR_COMBINED): New.
+	(TARGET_FLAT_OFFSETS): New.
+	(TARGET_11BIT_GLOBAL_OFFSET): New.
+	(TARGET_CDNA2_MEM_COSTS): New.
+	(TARGET_WAVE64_COMPAT): New.
+	(TARGET_DPP_FULL): New.
+	(TARGET_DPP16): New.
+	(TARGET_DPP8): New.
+	(TARGET_AVGPR_CDNA1_NOPS): New.
+	(TARGET_VGPR_GRANULARITY): New.
+	(TARGET_ARCHITECTED_FLAT_SCRATCH): New.
+	(TARGET_EXPLICIT_CARRY): New.
+	(TARGET_MULTIPLY_IMMEDIATE): New.
+	(TARGET_SDWA): New.
+	(TARGET_WBINVL1_CACHE): New.
+	(TARGET_GLn_CACHE): New.
+	* config/gcn/gcn-valu.md (throughout): Change TARGET_GCN*,
+	TARGET_CDNA* and TARGET_RDNA* to use TARGET_<feature> instead.
+	* config/gcn/gcn.cc (throughout): Likewise.
+	* config/gcn/gcn.md (throughout): Likewise.
+
+2024-07-02  Lingling Kong  <lingling.kong@intel.com>
+
+	* config/i386/i386.md (*imulhi<mode>zu): Added APX
+	NF support.
+	(*imulhi<mode>zu<nf_name>): New define_insn.
+	(*mulsi3_1_zext<nf_name>): Ditto.
+	(*mul<mode><dwi>3_1<nf_name>): Ditto.
+	(*<u>mulqihi3_1<nf_name>): Ditto.
+	(*mul<mode>3_1<nf_name>): Added APX NDD support.
+	(*mulv<mode>4): Ditto.
+	(*mulvhi4): Ditto.
+
+2024-07-02  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/115739
+	* config/sparc/vxworks.h (SPARC_LONG_DOUBLE_TYPE_SIZE): New define.
+
+2024-07-02  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_insn_cost):
+	New function.
+	(TARGET_INSN_COST): New macro.
+
+2024-07-02  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/115659
+	* gimple-isel.cc (gimple_expand_vec_cond_expr): Add more foldings for
+	patterns x CMP y ? -1 : z and x CMP y ? z : 0.
+
 2024-07-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-forwprop.cc (fwprop_set_lattice_val): Preserve
