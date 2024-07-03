@@ -1,3 +1,14 @@
+2024-07-02  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2024-05-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/114936
+	* config/aarch64/aarch64-ldp-fusion.cc (combine_reg_notes):
+	Ensure insn iN has its REG_FRAME_RELATED_EXPR (if any) stored in
+	FR_EXPR[N-1], thus matching the correspondence expected by the
+	copy_rtx calls.
+
 2024-07-01  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
