@@ -824,7 +824,7 @@ package body Ada.Strings.Unbounded is
          declare
             New_Size : constant Positive :=
               Saturated_Sum
-                (Sum (S_Length, Chunk_Size), S_Length / Growth_Factor);
+                (Sum (Source.Last, Chunk_Size), S_Length / Growth_Factor);
 
             New_Rounded_Up_Size : constant Positive :=
               Saturated_Mul
