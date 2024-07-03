@@ -30812,6 +30812,11 @@ ctad_template_p (tree tmpl)
      template-name of the simple-template-id names a deducible template.  */
 
   if (DECL_CLASS_TEMPLATE_P (tmpl)
+      && IDENTIFIER_TRAIT_P (DECL_NAME (tmpl)))
+    /* Don't consider CTAD for templates with the same name as a trait; that
+       is ambiguous with e.g. __is_invocable(_Fn,_Args...).  */
+    return false;
+  if (DECL_CLASS_TEMPLATE_P (tmpl)
       || DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl))
     return true;
   if (!DECL_ALIAS_TEMPLATE_P (tmpl))
