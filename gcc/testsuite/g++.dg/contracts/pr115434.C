@@ -1,8 +1,7 @@
 // We were failing to apply post conditions to void functions.
 
-// { dg-do run }
 // { dg-options "-std=c++20 -fcontracts -fcontract-continuation-mode=on" }
-
+// { dg-do run }
 
 void foo (const int b)
 [[ post: b == 9 ]]  // contract not checked
