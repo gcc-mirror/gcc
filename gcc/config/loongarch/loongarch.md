@@ -1851,16 +1851,17 @@
 ;;  ....................
 
 (define_insn "extendsidi2"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r")
 	(sign_extend:DI
-	    (match_operand:SI 1 "nonimmediate_operand" "r,ZC,m,k")))]
+	    (match_operand:SI 1 "nonimmediate_operand" "r,ZC,m,k,f")))]
   "TARGET_64BIT"
   "@
    slli.w\t%0,%1,0
    ldptr.w\t%0,%1
    ld.w\t%0,%1
-   ldx.w\t%0,%1"
-  [(set_attr "move_type" "sll0,load,load,load")
+   ldx.w\t%0,%1
+   movfr2gr.s\t%0,%1"
+  [(set_attr "move_type" "sll0,load,load,load,mftg")
    (set_attr "mode" "DI")])
 
 (define_insn "extend<SHORT:mode><GPR:mode>2"
@@ -4110,13 +4111,51 @@
   "movgr2fcsr\t$r%0,%1")
 
 (define_insn "fclass_<fmt>"
-  [(set (match_operand:ANYF 0 "register_operand" "=f")
-	(unspec:ANYF [(match_operand:ANYF 1 "register_operand" "f")]
-		      UNSPEC_FCLASS))]
+  [(set (match_operand:SI 0 "register_operand" "=f")
+	(unspec:SI [(match_operand:ANYF 1 "register_operand" "f")]
+		   UNSPEC_FCLASS))]
   "TARGET_HARD_FLOAT"
   "fclass.<fmt>\t%0,%1"
   [(set_attr "type" "unknown")
    (set_attr "mode" "<MODE>")])
+
+(define_int_iterator FCLASS_MASK [68 136 952])
+(define_int_attr fclass_optab
+  [(68	"isinf")
+   (136	"isnormal")
+   (952	"isfinite")])
+
+(define_expand "<FCLASS_MASK:fclass_optab><ANYF:mode>2"
+  [(match_operand:SI   0 "register_operand" "=r")
+   (match_operand:ANYF 1 "register_operand" " f")
+   (const_int FCLASS_MASK)]
+  "TARGET_HARD_FLOAT"
+  {
+    rtx ft0 = gen_reg_rtx (SImode);
+    rtx t0 = gen_reg_rtx (word_mode);
+    rtx mask = GEN_INT (<FCLASS_MASK>);
+
+    emit_insn (gen_fclass_<ANYF:fmt> (ft0, operands[1]));
+
+    if (TARGET_64BIT)
+      emit_insn (gen_extend_insn (t0, ft0, DImode, SImode, 0));
+    else
+      emit_move_insn (t0, ft0);
+
+    emit_move_insn (t0, gen_rtx_AND (word_mode, t0, mask));
+    emit_move_insn (t0, gen_rtx_NE (word_mode, t0, const0_rtx));
+
+    if (TARGET_64BIT)
+      {
+	t0 = lowpart_subreg (SImode, t0, DImode);
+	SUBREG_PROMOTED_VAR_P (t0) = 1;
+	SUBREG_PROMOTED_SET (t0, SRP_SIGNED);
+      }
+
+    emit_move_insn (operands[0], t0);
+
+    DONE;
+  })
 
 (define_insn "bytepick_w_<bytepick_imm>"
   [(set (match_operand:SI 0 "register_operand" "=r")
