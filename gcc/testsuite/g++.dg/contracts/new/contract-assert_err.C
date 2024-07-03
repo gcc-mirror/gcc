@@ -26,13 +26,13 @@ void contract_assert(); // { dg-error "expected unqualified-id before" }
 int main()
 {
 
-	contract_assert(x==0); // { dg-error ".x. was not declared in this scope"}
-	contract_assert int i = 0; // // { dg-error "expected primary-expression before|before .int." }
+    contract_assert(x==0); // { dg-error ".x. was not declared in this scope"}
+    contract_assert int i = 0; // // { dg-error "expected primary-expression before|before .int." }
 
-	i = 7;
-	[[assert: i == 0]] contract_assert(x==0); // { dg-error "assertions must be followed by" }
+    i = 7;
+    [[assert: i == 0]] contract_assert(x==0); // { dg-error "assertions must be followed by" }
 
-	contract_assert( x = 0); // { dg-error  "expected primary-expression before|expected .\\). before .=. token" }
+    contract_assert( x = 0); // { dg-error  "expected primary-expression before|expected .\\). before .=. token" }
 
     contract_assert( y == 0); // { dg-error ".y. was not declared in this scope" }
 	return 0;
