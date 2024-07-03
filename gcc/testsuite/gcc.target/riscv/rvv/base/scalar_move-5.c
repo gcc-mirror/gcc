@@ -21,9 +21,9 @@ void foo (void *base, void *out, size_t vl)
 
 /*
 ** foo2:
-** addi\t[a-x0-9]+,\s*[a-x0-9]+,100
+** fld\tfa[0-9]+,\s*100\(a0\)
 ** vsetvli\tzero,a2,e64,m2,t[au],m[au]
-** vlse64.v\tv[0-9]+,0\([a-x0-9]+\),zero
+** vfmv\.v\.f\tv[0-9]+,\s*fa[0-9]+
 ** vs2r.v\tv[0-9]+,0\([a-x0-9]+\)
 ** ret
 */
