@@ -11,7 +11,7 @@
 ** vsetvli\s+[atx][0-9]+,\s*[atx][0-9]+,\s*e32,\s*m1,\s*ta,\s*ma
 ** ...
 ** vle32\.v\s+v[0-9]+,\s*0\([atx][0-9]+\)
-** vssubu\.vv\s+v[0-9]+,\s*v[0-9]+,\s*v[0-9]+
+** vssubu\.vx\s+v[0-9]+,\s*v[0-9]+,\s*[atx][0-9]+
 ** vsetvli\s+zero,\s*zero,\s*e16,\s*mf2,\s*ta,\s*ma
 ** vncvt\.x\.x\.w\s+v[0-9]+,\s*v[0-9]+
 ** ...
