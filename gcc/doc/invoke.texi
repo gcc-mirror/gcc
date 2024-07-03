@@ -31063,6 +31063,10 @@ If both @option{-march} and @option{-mcpu=} are not specified, the default for
 this argument is system dependent, users who want a specific architecture
 extensions should specify one explicitly.
 
+When the RISC-V specifications define an extension as depending on other
+extensions, GCC will implicitly add the dependent extensions to the enabled
+extension set if they weren't added explicitly.
+
 @opindex mcpu
 @item -mcpu=@var{processor-string}
 Use architecture of and optimize the output for the given processor, specified
