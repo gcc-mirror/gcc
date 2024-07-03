@@ -7770,6 +7770,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      when the operand has that value.)  */
 
 (if (flag_unsafe_math_optimizations)
+ /* Simplify x / sqrt(x) -> sqrt(x).  */
+ (simplify
+  (rdiv @0 (SQRT @0)) (SQRT @0))
+
  /* Simplify sqrt(x) * sqrt(x) -> x.  */
  (simplify
   (mult (SQRT_ALL@1 @0) @1)
