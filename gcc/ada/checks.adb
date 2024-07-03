@@ -2901,6 +2901,78 @@ package body Checks is
    end Apply_Predicate_Check;
 
    -----------------------
+   -- Apply_Raise_Check --
+   -----------------------
+
+   procedure Apply_Raise_Check (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Block    : Node_Id;
+      Block_Id : Entity_Id;
+      HSS      : Node_Id;
+      Spec_Id  : Entity_Id;
+
+   begin
+      pragma Assert (Nkind (N) = N_Subprogram_Body);
+
+      if Present (Corresponding_Spec (N)) then
+         Spec_Id := Corresponding_Spec (N);
+      else
+         Spec_Id := Defining_Entity (N);
+      end if;
+
+      --  Return immediately if the check is not needed or is suppressed
+
+      if not No_Raise (Spec_Id) or else Raise_Checks_Suppressed (Spec_Id) then
+         return;
+      end if;
+
+      --  Build a block using the declarations, statements and At_End procedure
+      --  from the subprogram body.
+
+      Block_Id := New_Internal_Entity (E_Block, Spec_Id, Loc, 'B');
+      Set_Etype (Block_Id, Standard_Void_Type);
+      Set_Scope (Block_Id, Spec_Id);
+
+      Block :=
+        Make_Block_Statement (Loc,
+          Identifier                 => New_Occurrence_Of (Block_Id, Loc),
+          Declarations               => Declarations (N),
+          Handled_Statement_Sequence => Handled_Statement_Sequence (N),
+          At_End_Proc                => At_End_Proc (N));
+
+      Set_Parent (Block_Id, Block);
+
+      --  Wrap the block in a sequence of statements with an Others handler
+      --  and attach it directly to the subprogram body. Generate:
+      --
+      --    begin
+      --      Bnn :
+      --      ...
+      --      end Bnn;
+      --    exception
+      --      when others =>
+      --        [program_error "raise check failed"]
+      --    end
+
+      HSS :=
+        Make_Handled_Sequence_Of_Statements (Loc,
+          Statements         => New_List (Block),
+          Exception_Handlers => New_List (
+            Make_Exception_Handler (Loc,
+              Exception_Choices => New_List (Make_Others_Choice (Loc)),
+              Statements        => New_List (
+                Make_Raise_Program_Error (Loc,
+                  Reason => PE_Raise_Check_Failed)))));
+
+      Set_Declarations (N, No_List);
+      Set_Handled_Statement_Sequence (N, HSS);
+      Set_At_End_Proc (N, Empty);
+
+      Analyze (HSS);
+   end Apply_Raise_Check;
+
+   -----------------------
    -- Apply_Range_Check --
    -----------------------
 
@@ -9571,6 +9643,19 @@ package body Checks is
          return Scope_Suppress.Suppress (Predicate_Check);
       end if;
    end Predicate_Checks_Suppressed;
+
+   -----------------------------
+   -- Raise_Checks_Suppressed --
+   -----------------------------
+
+   function Raise_Checks_Suppressed (E : Entity_Id) return Boolean is
+   begin
+      if Present (E) and then Checks_May_Be_Suppressed (E) then
+         return Is_Check_Suppressed (E, Raise_Check);
+      else
+         return Scope_Suppress.Suppress (Raise_Check);
+      end if;
+   end Raise_Checks_Suppressed;
 
    -----------------------------
    -- Range_Checks_Suppressed --

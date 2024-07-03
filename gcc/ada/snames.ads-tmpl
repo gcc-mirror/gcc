@@ -622,6 +622,7 @@ package Snames is
    Name_No_Caching                     : constant Name_Id := N + $; -- GNAT
    Name_No_Elaboration_Code_All        : constant Name_Id := N + $; -- GNAT
    Name_No_Inline                      : constant Name_Id := N + $; -- GNAT
+   Name_No_Raise                       : constant Name_Id := N + $; -- GNAT
    Name_No_Return                      : constant Name_Id := N + $; -- Ada 05
    Name_No_Tagged_Streams              : constant Name_Id := N + $; -- GNAT
    Name_Obsolescent                    : constant Name_Id := N + $; -- GNAT
@@ -1253,6 +1254,7 @@ package Snames is
    Name_Container_Checks               : constant Name_Id := N + $; -- GNAT
    Name_Tampering_Check                : constant Name_Id := N + $; -- GNAT
    Name_Tasking_Check                  : constant Name_Id := N + $;
+   Name_Raise_Check                    : constant Name_Id := N + $; -- GNAT
    Name_All_Checks                     : constant Name_Id := N + $;
    Last_Check_Name                     : constant Name_Id := N + $;
 
@@ -1911,6 +1913,7 @@ package Snames is
       Pragma_No_Caching,
       Pragma_No_Elaboration_Code_All,
       Pragma_No_Inline,
+      Pragma_No_Raise,
       Pragma_No_Return,
       Pragma_No_Tagged_Streams,
       Pragma_Obsolescent,

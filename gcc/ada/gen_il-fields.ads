@@ -825,6 +825,7 @@ package Gen_IL.Fields is
       No_Dynamic_Predicate_On_Actual,
       No_Pool_Assigned,
       No_Predicate_On_Actual,
+      No_Raise,
       No_Reordering,
       No_Return,
       No_Strict_Aliasing,

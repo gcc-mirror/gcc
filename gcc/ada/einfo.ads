@@ -3794,6 +3794,10 @@ package Einfo is
 --       in the spec of a generic package, in constructs that forbid discrete
 --       types with predicates.
 
+--    No_Raise
+--       Defined in subprograms and generic subprograms. Set if a valid aspect
+--       or pragma No_Raise applies.
+
 --    No_Reordering [implementation base type only]
 --       Defined in record types. Set only for a base type to which a valid
 --       pragma No_Component_Reordering applies.
@@ -5578,6 +5582,7 @@ package Einfo is
    --    Is_Visible_Lib_Unit
    --    Is_Wrapper
    --    Needs_No_Actuals
+   --    No_Raise
    --    No_Return
    --    Requires_Overriding                  (non-generic case only)
    --    Return_Present
@@ -5939,6 +5944,7 @@ package Einfo is
    --    Is_Valued_Procedure
    --    Is_Visible_Lib_Unit
    --    Needs_No_Actuals
+   --    No_Raise
    --    No_Return
    --    Requires_Overriding                  (non-generic case only)
    --    Sec_Stack_Needed_For_Return

@@ -479,10 +479,11 @@ via compiler switches such as "-gnata".
   "Implementation-defined check names.  See 11.5(27)."
 
 The implementation defined check names include Alignment_Check,
-Atomic_Synchronization, Duplicated_Tag_Check, Container_Checks,
-Tampering_Check, Predicate_Check, and Validity_Check. In addition, a user
-program can add implementation-defined check names by means of the pragma
-Check_Name. See the description of pragma ``Suppress`` for full details.
+Atomic_Synchronization, Container_Checks, Duplicated_Tag_Check,
+Predicate_Check, Raise_Check, Tampering_Check, and Validity_Check.
+In addition, a user program can add implementation-defined check
+names by means of the pragma Check_Name. See the description of
+pragma ``Suppress`` for full details.
 
 *
   "Existence and meaning of second parameter of pragma Unsuppress.

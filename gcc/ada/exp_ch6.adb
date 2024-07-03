@@ -5689,8 +5689,6 @@ package body Exp_Ch6 is
    --  (this makes things easier on Gigi which does not want to have to handle
    --  a missing return).
 
-   --  Add call to Activate_Tasks if body is a task activator
-
    --  Deal with possible detection of infinite recursion
 
    --  Eliminate body completely if convention stubbed
@@ -5704,7 +5702,7 @@ package body Exp_Ch6 is
    --  or has any parameters of limited types, where limited means that the
    --  run-time view is limited (i.e. the full type is limited).
 
-   --  Wrap thread body
+   --  Apply raise check
 
    procedure Expand_N_Subprogram_Body (N : Node_Id) is
       Body_Id  : constant Entity_Id  := Defining_Entity (N);
@@ -6033,6 +6031,10 @@ package body Exp_Ch6 is
       --  without it being previously elaborated.
 
       Install_Primitive_Elaboration_Check (N);
+
+      --  If the subprogram is subject to pragma No_Raise, apply the check
+
+      Apply_Raise_Check (N);
    end Expand_N_Subprogram_Body;
 
    -----------------------------------

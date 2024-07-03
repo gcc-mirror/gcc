@@ -210,6 +210,7 @@ package Aspects is
       Aspect_No_Caching,                    -- GNAT
       Aspect_No_Controlled_Parts,
       Aspect_No_Inline,                     -- GNAT
+      Aspect_No_Raise,                      -- GNAT
       Aspect_No_Return,
       Aspect_No_Tagged_Streams,             -- GNAT
       Aspect_No_Task_Parts,                 -- GNAT
@@ -309,6 +310,7 @@ package Aspects is
       Aspect_No_Caching                 => True,
       Aspect_No_Elaboration_Code_All    => True,
       Aspect_No_Inline                  => True,
+      Aspect_No_Raise                   => True,
       Aspect_No_Tagged_Streams          => True,
       Aspect_No_Task_Parts              => True,
       Aspect_Obsolescent                => True,
@@ -629,6 +631,7 @@ package Aspects is
       Aspect_No_Caching                   => False,
       Aspect_No_Controlled_Parts          => False,
       Aspect_No_Inline                    => False,
+      Aspect_No_Raise                     => False,
       Aspect_No_Return                    => False,
       Aspect_No_Tagged_Streams            => False,
       Aspect_No_Task_Parts                => False,
@@ -741,6 +744,7 @@ package Aspects is
       Aspect_No_Task_Parts                => Name_No_Task_Parts,
       Aspect_No_Elaboration_Code_All      => Name_No_Elaboration_Code_All,
       Aspect_No_Inline                    => Name_No_Inline,
+      Aspect_No_Raise                     => Name_No_Raise,
       Aspect_No_Return                    => Name_No_Return,
       Aspect_No_Tagged_Streams            => Name_No_Tagged_Streams,
       Aspect_Object_Size                  => Name_Object_Size,
@@ -977,6 +981,7 @@ package Aspects is
       Aspect_Linker_Section               => Always_Delay,
       Aspect_Lock_Free                    => Always_Delay,
       Aspect_No_Inline                    => Always_Delay,
+      Aspect_No_Raise                     => Always_Delay,
       Aspect_No_Return                    => Always_Delay,
       Aspect_Output                       => Always_Delay,
       Aspect_Persistent_BSS               => Always_Delay,
