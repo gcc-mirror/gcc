@@ -14051,8 +14051,11 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	   && (qualified_type == TYPE_MAIN_VARIANT (type)
 	       || (cv_quals == TYPE_UNQUALIFIED)))
 	  || (TREE_CODE (name) == TYPE_DECL
-	      && TREE_TYPE (name) == qualified_type
-	      && DECL_NAME (name))))
+	      && DECL_NAME (name)
+	      && (TREE_TYPE (name) == qualified_type
+		  || (lang_hooks.types.get_debug_type
+		      && (lang_hooks.types.get_debug_type (TREE_TYPE (name))
+			  == qualified_type))))))
     {
       if (TREE_CODE (name) == TYPE_DECL)
 	/* Could just call add_name_and_src_coords_attributes here,

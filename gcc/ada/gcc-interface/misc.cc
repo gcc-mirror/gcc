@@ -967,7 +967,8 @@ gnat_get_array_descr_info (const_tree const_type,
 
       while (true)
 	{
-	  if (TYPE_DEBUG_TYPE (source_element_type))
+	  if (TYPE_CAN_HAVE_DEBUG_TYPE_P (source_element_type)
+	      && TYPE_DEBUG_TYPE (source_element_type))
 	    source_element_type = TYPE_DEBUG_TYPE (source_element_type);
 	  else if (TYPE_IS_PADDING_P (source_element_type))
 	    source_element_type

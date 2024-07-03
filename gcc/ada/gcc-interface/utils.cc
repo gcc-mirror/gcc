@@ -364,6 +364,26 @@ struct pad_type_hasher : ggc_cache_ptr_hash<pad_type_hash>
 
 static GTY ((cache)) hash_table<pad_type_hasher> *pad_type_hash_table;
 
+struct GTY((for_user)) sized_type_hash
+{
+  hashval_t hash;
+  tree type;
+};
+
+struct sized_type_hasher : ggc_cache_ptr_hash<sized_type_hash>
+{
+  static inline hashval_t hash (sized_type_hash *t) { return t->hash; }
+  static bool equal (sized_type_hash *a, sized_type_hash *b);
+
+  static int
+  keep_cache_entry (sized_type_hash *&t)
+  {
+    return ggc_marked_p (t->type);
+  }
+};
+
+static GTY ((cache)) hash_table<sized_type_hasher> *sized_type_hash_table;
+
 static tree merge_sizes (tree, tree, tree, bool, bool);
 static tree fold_bit_position (const_tree);
 static tree compute_related_constant (tree, tree);
@@ -421,6 +441,9 @@ init_gnat_utils (void)
 
   /* Initialize the hash table of padded types.  */
   pad_type_hash_table = hash_table<pad_type_hasher>::create_ggc (512);
+
+  /* Initialize the hash table of sized types.  */
+  sized_type_hash_table = hash_table<sized_type_hasher>::create_ggc (512);
 }
 
 /* Destroy data structures of the utils.cc module.  */
@@ -443,6 +466,10 @@ destroy_gnat_utils (void)
   /* Destroy the hash table of padded types.  */
   pad_type_hash_table->empty ();
   pad_type_hash_table = NULL;
+
+  /* Destroy the hash table of sized types.  */
+  sized_type_hash_table->empty ();
+  sized_type_hash_table = NULL;
 }
 
 /* GNAT_ENTITY is a GNAT tree node for an entity.  Associate GNU_DECL, a GCC
@@ -1350,6 +1377,79 @@ type_unsigned_for_rm (tree type)
   return false;
 }
 
+/* Return true iff the sized types are equivalent.  */
+
+bool
+sized_type_hasher::equal (sized_type_hash *t1, sized_type_hash *t2)
+{
+  tree type1, type2;
+
+  if (t1->hash != t2->hash)
+    return false;
+
+  type1 = t1->type;
+  type2 = t2->type;
+
+  /* We consider sized types equivalent if they have the same name,
+     size, alignment, RM size, and biasing.  The range is not expected
+     to vary across different-sized versions of the same base
+     type.  */
+  bool res
+    = (TYPE_NAME (type1) == TYPE_NAME (type2)
+       && TYPE_SIZE (type1) == TYPE_SIZE (type2)
+       && TYPE_ALIGN (type1) == TYPE_ALIGN (type2)
+       && TYPE_RM_SIZE (type1) == TYPE_RM_SIZE (type2)
+       && (TYPE_BIASED_REPRESENTATION_P (type1)
+	   == TYPE_BIASED_REPRESENTATION_P (type2)));
+
+  gcc_assert (!res
+	      || (TYPE_RM_MIN_VALUE (type1) == TYPE_RM_MIN_VALUE (type2)
+		  && TYPE_RM_MAX_VALUE (type1) == TYPE_RM_MAX_VALUE (type2)));
+
+  return res;
+}
+
+/* Compute the hash value for the sized TYPE.  */
+
+static hashval_t
+hash_sized_type (tree type)
+{
+  hashval_t hashcode;
+
+  hashcode = iterative_hash_expr (TYPE_NAME (type), 0);
+  hashcode = iterative_hash_expr (TYPE_SIZE (type), hashcode);
+  hashcode = iterative_hash_hashval_t (TYPE_ALIGN (type), hashcode);
+  hashcode = iterative_hash_expr (TYPE_RM_SIZE (type), hashcode);
+  hashcode
+    = iterative_hash_hashval_t (TYPE_BIASED_REPRESENTATION_P (type), hashcode);
+
+  return hashcode;
+}
+
+/* Look up the sized TYPE in the hash table and return its canonical version
+   if it exists; otherwise, insert it into the hash table.  */
+
+static tree
+canonicalize_sized_type (tree type)
+{
+  const hashval_t hashcode = hash_sized_type (type);
+  struct sized_type_hash in, *h, **slot;
+
+  in.hash = hashcode;
+  in.type = type;
+  slot = sized_type_hash_table->find_slot_with_hash (&in, hashcode, INSERT);
+  h = *slot;
+  if (!h)
+    {
+      h = ggc_alloc<sized_type_hash> ();
+      h->hash = hashcode;
+      h->type = type;
+      *slot = h;
+    }
+
+  return h->type;
+}
+
 /* Given a type TYPE, return a new type whose size is appropriate for SIZE.
    If TYPE is the best type, return it.  Otherwise, make a new type.  We
    only support new integral and pointer types.  FOR_BIASED is true if
@@ -1383,6 +1483,11 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
       biased_p = (TREE_CODE (type) == INTEGER_TYPE
 		  && TYPE_BIASED_REPRESENTATION_P (type));
 
+      /* FOR_BIASED initially refers to the entity's representation,
+	 not to its type's.  The type we're to return must take both
+	 into account.  */
+      for_biased |= biased_p;
+
       /* Integer types with precision 0 are forbidden.  */
       if (size == 0)
 	size = 1;
@@ -1394,12 +1499,10 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	  || size > (Enable_128bit_Types ? 128 : LONG_LONG_TYPE_SIZE))
 	break;
 
-      biased_p |= for_biased;
-
       /* The type should be an unsigned type if the original type is unsigned
 	 or if the lower bound is constant and non-negative or if the type is
 	 biased, see E_Signed_Integer_Subtype case of gnat_to_gnu_entity.  */
-      if (type_unsigned_for_rm (type) || biased_p)
+      if (type_unsigned_for_rm (type) || for_biased)
 	new_type = make_unsigned_type (size);
       else
 	new_type = make_signed_type (size);
@@ -1409,9 +1512,12 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
       /* Copy the name to show that it's essentially the same type and
 	 not a subrange type.  */
       TYPE_NAME (new_type) = TYPE_NAME (type);
-      TYPE_BIASED_REPRESENTATION_P (new_type) = biased_p;
+      TYPE_BIASED_REPRESENTATION_P (new_type) = for_biased;
       SET_TYPE_RM_SIZE (new_type, bitsize_int (size));
-      return new_type;
+
+      return (TYPE_NAME (new_type)
+	      ? canonicalize_sized_type (new_type)
+	      : new_type);
 
     case RECORD_TYPE:
       /* Do something if this is a fat pointer, in which case we
