@@ -2146,65 +2146,15 @@ idx_record_use (tree base, tree *idx,
 static bool
 constant_multiple_of (tree top, tree bot, widest_int *mul)
 {
-  tree mby;
-  enum tree_code code;
-  unsigned precision = TYPE_PRECISION (TREE_TYPE (top));
-  widest_int res, p0, p1;
+  aff_tree aff_top, aff_bot;
+  tree_to_aff_combination (top, TREE_TYPE (top), &aff_top);
+  tree_to_aff_combination (bot, TREE_TYPE (bot), &aff_bot);
+  poly_widest_int poly_mul;
+  if (aff_combination_constant_multiple_p (&aff_top, &aff_bot, &poly_mul)
+      && poly_mul.is_constant (mul))
+    return true;
 
-  STRIP_NOPS (top);
-  STRIP_NOPS (bot);
-
-  if (operand_equal_p (top, bot, 0))
-    {
-      *mul = 1;
-      return true;
-    }
-
-  code = TREE_CODE (top);
-  switch (code)
-    {
-    case MULT_EXPR:
-      mby = TREE_OPERAND (top, 1);
-      if (TREE_CODE (mby) != INTEGER_CST)
-	return false;
-
-      if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &res))
-	return false;
-
-      *mul = wi::sext (res * wi::to_widest (mby), precision);
-      return true;
-
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-      if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &p0)
-	  || !constant_multiple_of (TREE_OPERAND (top, 1), bot, &p1))
-	return false;
-
-      if (code == MINUS_EXPR)
-	p1 = -p1;
-      *mul = wi::sext (p0 + p1, precision);
-      return true;
-
-    case INTEGER_CST:
-      if (TREE_CODE (bot) != INTEGER_CST)
-	return false;
-
-      p0 = widest_int::from (wi::to_wide (top), SIGNED);
-      p1 = widest_int::from (wi::to_wide (bot), SIGNED);
-      if (p1 == 0)
-	return false;
-      *mul = wi::sext (wi::divmod_trunc (p0, p1, SIGNED, &res), precision);
-      return res == 0;
-
-    default:
-      if (POLY_INT_CST_P (top)
-	  && POLY_INT_CST_P (bot)
-	  && constant_multiple_p (wi::to_poly_widest (top),
-				  wi::to_poly_widest (bot), mul))
-	return true;
-
-      return false;
-    }
+  return false;
 }
 
 /* Return true if memory reference REF with step STEP may be unaligned.  */
