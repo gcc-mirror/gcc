@@ -1767,14 +1767,25 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* Use the arbitrary scale factor description.  Note that we support
 	   a Small_Value whose magnitude is larger than 64-bit even on 32-bit
-	   platforms, so we unconditionally use a (dummy) 128-bit type.  */
+	   platforms.  UI_To_gnu chooses a wide-enough integral type.  */
 	else
 	  {
 	    const Uint gnat_num = Norm_Num (gnat_small_value);
 	    const Uint gnat_den = Norm_Den (gnat_small_value);
-	    tree gnu_small_type = make_unsigned_type (128);
-	    tree gnu_num = UI_To_gnu (gnat_num, gnu_small_type);
-	    tree gnu_den = UI_To_gnu (gnat_den, gnu_small_type);
+	    tree gnu_num = UI_To_gnu (gnat_num, NULL_TREE);
+	    tree gnu_den = UI_To_gnu (gnat_den, NULL_TREE);
+
+	    if (!gnu_num || !gnu_den)
+	      gnu_num = gnu_den = integer_zero_node;
+
+	    tree gnu_num_type = TREE_TYPE (gnu_num);
+	    tree gnu_den_type = TREE_TYPE (gnu_den);
+	    tree gnu_small_type = (TYPE_PRECISION (gnu_num_type)
+				   >= TYPE_PRECISION (gnu_den_type)
+				   ? gnu_num_type : gnu_den_type);
+
+	    gnu_num = convert (gnu_small_type, gnu_num);
+	    gnu_den = convert (gnu_small_type, gnu_den);
 
 	    scale_factor
 	      = build2 (RDIV_EXPR, gnu_small_type, gnu_num, gnu_den);
