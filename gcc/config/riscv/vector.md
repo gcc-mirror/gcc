@@ -2080,31 +2080,50 @@
   [(set_attr "type" "vimov,vimov,vlds,vlds,vlds,vlds,vimovxv,vimovxv")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*pred_broadcast<mode>"
-  [(set (match_operand:V_VLSF_ZVFHMIN 0 "register_operand"         "=vr, vr, vr, vr, vr, vr, vr, vr")
-	(if_then_else:V_VLSF_ZVFHMIN
+(define_insn "*pred_broadcast<mode>_zvfh"
+  [(set (match_operand:V_VLSF    0 "register_operand"              "=vr,  vr,  vr,  vr")
+	(if_then_else:V_VLSF
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand" "Wc1,Wc1, vm, vm,Wc1,Wc1,Wb1,Wb1")
-	     (match_operand 4 "vector_length_operand"              " rK, rK, rK, rK, rK, rK, rK, rK")
-	     (match_operand 5 "const_int_operand"                  "  i,  i,  i,  i,  i,  i,  i,  i")
-	     (match_operand 6 "const_int_operand"                  "  i,  i,  i,  i,  i,  i,  i,  i")
-	     (match_operand 7 "const_int_operand"                  "  i,  i,  i,  i,  i,  i,  i,  i")
+	    [(match_operand:<VM> 1 "vector_broadcast_mask_operand" "Wc1, Wc1, Wb1, Wb1")
+	     (match_operand      4 "vector_length_operand"         " rK,  rK,  rK,  rK")
+	     (match_operand      5 "const_int_operand"             "  i,   i,   i,   i")
+	     (match_operand      6 "const_int_operand"             "  i,   i,   i,   i")
+	     (match_operand      7 "const_int_operand"             "  i,   i,   i,   i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:V_VLSF_ZVFHMIN
-	    (match_operand:<VEL> 3 "direct_broadcast_operand"       " f,  f,Wdm,Wdm,Wdm,Wdm,  f,  f"))
-	  (match_operand:V_VLSF_ZVFHMIN 2 "vector_merge_operand"    "vu,  0, vu,  0, vu,  0, vu,  0")))]
+	  (vec_duplicate:V_VLSF
+	    (match_operand:<VEL> 3 "direct_broadcast_operand"      "  f,   f,   f,   f"))
+	  (match_operand:V_VLSF  2 "vector_merge_operand"          " vu,   0,  vu,   0")))]
   "TARGET_VECTOR"
   "@
    vfmv.v.f\t%0,%3
    vfmv.v.f\t%0,%3
-   vlse<sew>.v\t%0,%3,zero,%1.t
-   vlse<sew>.v\t%0,%3,zero,%1.t
-   vlse<sew>.v\t%0,%3,zero
-   vlse<sew>.v\t%0,%3,zero
    vfmv.s.f\t%0,%3
    vfmv.s.f\t%0,%3"
-  [(set_attr "type" "vfmov,vfmov,vlds,vlds,vlds,vlds,vfmovfv,vfmovfv")
+  [(set_attr "type" "vfmov,vfmov,vfmovfv,vfmovfv")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*pred_broadcast<mode>_zvfhmin"
+  [(set (match_operand:V_VLSF_ZVFHMIN   0 "register_operand"              "=vr,  vr,  vr,  vr")
+	(if_then_else:V_VLSF_ZVFHMIN
+	  (unspec:<VM>
+	    [(match_operand:<VM>        1 "vector_broadcast_mask_operand" " vm,  vm, Wc1, Wc1")
+	     (match_operand             4 "vector_length_operand"         " rK,  rK,  rK,  rK")
+	     (match_operand             5 "const_int_operand"             "  i,   i,   i,   i")
+	     (match_operand             6 "const_int_operand"             "  i,   i,   i,   i")
+	     (match_operand             7 "const_int_operand"             "  i,   i,   i,   i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (vec_duplicate:V_VLSF_ZVFHMIN
+	    (match_operand:<VEL>        3 "direct_broadcast_operand"      "Wdm, Wdm, Wdm, Wdm"))
+	  (match_operand:V_VLSF_ZVFHMIN 2 "vector_merge_operand"          " vu,   0,  vu,   0")))]
+  "TARGET_VECTOR"
+  "@
+   vlse<sew>.v\t%0,%3,zero,%1.t
+   vlse<sew>.v\t%0,%3,zero,%1.t
+   vlse<sew>.v\t%0,%3,zero
+   vlse<sew>.v\t%0,%3,zero"
+  [(set_attr "type" "vlds,vlds,vlds,vlds")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*pred_broadcast<mode>_extended_scalar"
