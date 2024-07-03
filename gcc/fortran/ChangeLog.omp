@@ -1,3 +1,7 @@
+2024-07-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* class.cc (generate_callback_wrapper) [GCC_NVPTX_H]: Disable.
+
 2024-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* openmp.cc (resolve_omp_clauses): Diagnose grainsize

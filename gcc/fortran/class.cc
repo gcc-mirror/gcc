@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 #include "constructor.h"
 #include "target-memory.h"
+#include "tm.h" //TODO
 
 /* Inserts a derived type component reference in a data reference chain.
     TS: base type of the ref chain so far, in which we will pick the component
@@ -2420,6 +2421,30 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
 			   gfc_namespace *ns, const char *tname,
 			   gfc_component *vtab_cb)
 {
+  //TODO
+#ifdef GCC_NVPTX_H
+  /* Code generated here appears not relevant for nvptx target (completely
+     unused?), but results in erroneous PTX code generated:
+
+         ptxas /tmp/ccAMr7D9.o, line 63; error   : Illegal operand type to instruction 'st'
+         ptxas /tmp/ccAMr7D9.o, line 63; error   : Unknown symbol '%stack'
+         ptxas fatal   : Ptx assembly aborted due to errors
+         nvptx-as: ptxas returned 255 exit status
+         compiler exited with status 1
+
+     Note that also outside of OG14 (that is, in GCC 14 as well as GCC trunk),
+     we have a number of instances of this 'ptxas' error, all over the Fortran
+     test suite (only).  The current theory therefore is that there is some
+     latent issue, which is just greatly exacerbated by this code here.
+
+     This could be the Fortran front end generating incorrect GIMPLE, or the
+     middle end or (more likely?) nvptx back end not correctly handling
+     something that only comes into existance via the Fortran front end.
+
+     Until that is resolved, just skip this.  */
+  return;
+#endif
+
   gfc_namespace *sub_ns;
   gfc_code *last_code, *block;
   gfc_symbol *callback, *cb, *token, *this_ptr, *scalar, *flag, *result;
