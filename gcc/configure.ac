@@ -5459,6 +5459,11 @@ configured with --enable-newlib-nano-formatted-io.])
       [-march=rv32i_zaamo_zalrsc],,,
       [AC_DEFINE(HAVE_AS_MARCH_ZAAMO_ZALRSC, 1,
 		 [Define if the assembler understands -march=rv*_zaamo_zalrsc.])])
+    gcc_GAS_CHECK_FEATURE([-march=rv32i_zabha support],
+      gcc_cv_as_riscv_march_zabha,
+      [-march=rv32i_zabha],,,
+      [AC_DEFINE(HAVE_AS_MARCH_ZABHA, 1,
+		 [Define if the assembler understands -march=rv*_zabha.])])
     ;;
     loongarch*-*-*)
     gcc_GAS_CHECK_FEATURE([.dtprelword support],

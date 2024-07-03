@@ -24,8 +24,10 @@
   UNSPEC_COMPARE_AND_SWAP_SUBWORD
   UNSPEC_SYNC_OLD_OP
   UNSPEC_SYNC_OLD_OP_SUBWORD
+  UNSPEC_SYNC_OLD_OP_ZABHA
   UNSPEC_SYNC_EXCHANGE
   UNSPEC_SYNC_EXCHANGE_SUBWORD
+  UNSPEC_SYNC_EXCHANGE_ZABHA
   UNSPEC_ATOMIC_LOAD
   UNSPEC_ATOMIC_STORE
   UNSPEC_MEMORY_BARRIER
@@ -87,6 +89,18 @@
   })
 
 ;; AMO ops
+
+(define_insn "atomic_<atomic_optab><mode>"
+  [(set (match_operand:SHORT 0 "memory_operand" "+A")
+	(unspec_volatile:SHORT
+	  [(any_atomic:SHORT (match_dup 0)
+		     (match_operand:SHORT 1 "reg_or_0_operand" "rJ"))
+	   (match_operand:SI 2 "const_int_operand")] ;; model
+	 UNSPEC_SYNC_OLD_OP_ZABHA))]
+  "TARGET_ZABHA"
+  "amo<insn>.<amobh>%A2\tzero,%z1,%0"
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 4))])
 
 (define_expand "atomic_<atomic_optab><mode>"
   [(any_atomic:GPR (match_operand:GPR 0 "memory_operand")    ;; mem location
@@ -287,7 +301,37 @@
    (any_atomic:SHORT (match_operand:SHORT 1 "memory_operand")	 ;; mem location
 		     (match_operand:SHORT 2 "reg_or_0_operand")) ;; value for op
    (match_operand:SI 3 "const_int_operand")]			 ;; model
-  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "(TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC) || TARGET_ZABHA"
+{
+  if (TARGET_ZABHA)
+    emit_insn(gen_zabha_atomic_fetch_<atomic_optab><mode> (operands[0], operands[1],
+							   operands[2], operands[3]));
+  else
+    emit_insn(gen_lrsc_atomic_fetch_<atomic_optab><mode> (operands[0], operands[1],
+							  operands[2], operands[3]));
+  DONE;
+})
+
+(define_insn "zabha_atomic_fetch_<atomic_optab><mode>"
+  [(set (match_operand:SHORT 0 "register_operand" "=&r")
+	(match_operand:SHORT 1 "memory_operand" "+A"))
+   (set (match_dup 1)
+	(unspec_volatile:SHORT
+	  [(any_atomic:SHORT (match_dup 1)
+		     (match_operand:SHORT 2 "reg_or_0_operand" "rJ"))
+	   (match_operand:SI 3 "const_int_operand")] ;; model
+	 UNSPEC_SYNC_OLD_OP_ZABHA))]
+   "TARGET_ZABHA"
+   "amo<insn>.<amobh>%A3\t%0,%z2,%1"
+   [(set_attr "type" "atomic")
+    (set (attr "length") (const_int 4))])
+
+(define_expand "lrsc_atomic_fetch_<atomic_optab><mode>"
+  [(match_operand:SHORT 0 "register_operand")			 ;; old value at mem
+   (any_atomic:SHORT (match_operand:SHORT 1 "memory_operand")	 ;; mem location
+		     (match_operand:SHORT 2 "reg_or_0_operand")) ;; value for op
+   (match_operand:SI 3 "const_int_operand")]			 ;; model
+  "!TARGET_ZABHA && TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
 {
   /* We have no QImode/HImode atomics, so form a mask, then use
      subword_atomic_fetch_strong_<mode> to implement a LR/SC version of the
@@ -322,6 +366,8 @@
 
   DONE;
 })
+
+; Atomic exchange ops
 
 (define_expand "atomic_exchange<mode>"
   [(match_operand:GPR 0 "register_operand")  ;; old value at mem
@@ -377,7 +423,36 @@
    (match_operand:SHORT 1 "memory_operand")   ;; mem location
    (match_operand:SHORT 2 "register_operand") ;; value
    (match_operand:SI 3 "const_int_operand")]  ;; model
-  "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
+  "(TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC) || TARGET_ZABHA"
+{
+ if (TARGET_ZABHA)
+    emit_insn(gen_zabha_atomic_exchange<mode>(operands[0], operands[1],
+					      operands[2], operands[3]));
+ else
+    emit_insn(gen_lrsc_atomic_exchange<mode>(operands[0], operands[1],
+					     operands[2], operands[3]));
+  DONE;
+})
+
+(define_insn "zabha_atomic_exchange<mode>"
+  [(set (match_operand:SHORT 0 "register_operand" "=&r")
+	(unspec_volatile:SHORT
+	  [(match_operand:SHORT 1 "memory_operand" "+A")
+	   (match_operand:SI 3 "const_int_operand")] ;; model
+	  UNSPEC_SYNC_EXCHANGE_ZABHA))
+   (set (match_dup 1)
+	(match_operand:SHORT 2 "register_operand" "0"))]
+  "TARGET_ZABHA"
+  "amoswap.<amobh>%A3\t%0,%z2,%1"
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 4))])
+
+(define_expand "lrsc_atomic_exchange<mode>"
+  [(match_operand:SHORT 0 "register_operand") ;; old value at mem
+   (match_operand:SHORT 1 "memory_operand")   ;; mem location
+   (match_operand:SHORT 2 "register_operand") ;; value
+   (match_operand:SI 3 "const_int_operand")]  ;; model
+  "!TARGET_ZABHA && TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
 {
   rtx old = gen_reg_rtx (SImode);
   rtx mem = operands[1];
@@ -425,6 +500,8 @@
   }
   [(set_attr "type" "multi")
    (set (attr "length") (const_int 20))])
+
+; Atomic CAS ops
 
 (define_insn "atomic_cas_value_strong<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")

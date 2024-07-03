@@ -2527,7 +2527,10 @@ Test target architecture has support for the A extension.
 @item riscv_zaamo
 Test target architecture has support for the zaamo extension.
 
-@item riscv_zlrsc
+@item riscv_zabha
+Test target architecture has support for the zabha extension.
+
+@item riscv_zalrsc
 Test target architecture has support for the zalrsc extension.
 
 @item riscv_ztso
@@ -3292,6 +3295,9 @@ Add the 'A' extension to the -march string on RISC-V targets.
 @item riscv_zaamo
 Add the zaamo extension to the -march string on RISC-V targets.
 
+@item riscv_zabha
+Add the zabha extension to the -march string on RISC-V targets.
+
 @item riscv_zalrsc
 Add the zalrsc extension to the -march string on RISC-V targets.
 
@@ -3334,6 +3340,10 @@ RISC-V targets.
 @item riscv_zaamo
 Remove the zaamo extension from the -march string on RISC-V. If the 'A'
 extension is present downgrade it to zalrsc.
+
+@item riscv_zabha
+Remove the zabha extension and implied zaamo extension from the -march string
+on RISC-V.
 
 @item riscv_zalrsc
 Remove the zalrsc extension from the -march string on RISC-V. If the 'A'

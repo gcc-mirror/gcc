@@ -262,6 +262,8 @@ Mask(ZAAMO)  Var(riscv_za_subext)
 
 Mask(ZALRSC) Var(riscv_za_subext)
 
+Mask(ZABHA) Var(riscv_za_subext)
+
 Mask(ZA64RS)  Var(riscv_za_subext)
 
 Mask(ZA128RS) Var(riscv_za_subext)
