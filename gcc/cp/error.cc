@@ -1407,10 +1407,8 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	  break;
 	}
 
-      /* If there's only one function, just treat it like an ordinary
-	 FUNCTION_DECL.  */
-      t = OVL_FIRST (t);
-      /* Fall through.  */
+      /* If there's only one function, dump that.  */
+      return dump_decl (pp, OVL_FIRST (t), flags);
 
     case FUNCTION_DECL:
       if (! DECL_LANG_SPECIFIC (t))
