@@ -697,6 +697,10 @@ tree
 grok_contract (tree attribute, tree mode, tree result, cp_expr condition,
 	       location_t loc)
 {
+
+  if (condition == error_mark_node)
+    return error_mark_node;
+
   tree_code code;
   if (is_attribute_p ("assert", attribute) || is_attribute_p ("contract_assert", attribute))
     code = ASSERTION_STMT;
@@ -732,6 +736,10 @@ grok_contract (tree attribute, tree mode, tree result, cp_expr condition,
 
   /* The condition is converted to bool.  */
   condition = finish_contract_condition (condition);
+
+  if (condition == error_mark_node)
+      return error_mark_node;
+
   CONTRACT_CONDITION (contract) = condition;
 
   return contract;
