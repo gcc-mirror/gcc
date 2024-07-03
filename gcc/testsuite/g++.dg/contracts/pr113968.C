@@ -1,6 +1,7 @@
 // check that an invalid contract condition doesn't cause an ICE
-// { dg-options "-std=c++2a -fcontracts " }
 // { dg-do compile }
+// { dg-options "-std=c++2a -fcontracts " }
+
 
 struct A {
   A(A &);
