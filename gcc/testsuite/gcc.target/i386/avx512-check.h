@@ -34,8 +34,9 @@ check_osxsave (void)
   return (ecx & bit_OSXSAVE) != 0;
 }
 
+__attribute__((noipa,target("no-avx")))
 int
-main ()
+avx512_runtime_support_p ()
 {
   unsigned int eax, ebx, ecx, edx;
 
@@ -100,6 +101,17 @@ main ()
       && (edx & bit_AVX512VP2INTERSECT)
 #endif
       && avx512f_os_support ())
+    {
+      return 1;
+    }
+
+  return 0;
+}
+
+int
+main ()
+{
+  if (avx512_runtime_support_p ())
     {
       DO_TEST ();
 #ifdef DEBUG
