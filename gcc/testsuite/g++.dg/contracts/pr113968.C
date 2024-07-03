@@ -1,4 +1,4 @@
-// check that an invalid contract condition doesn't cause and ICE
+// check that an invalid contract condition doesn't cause an ICE
 // { dg-options "-std=c++2a -fcontracts " }
 // { dg-do compile }
 struct A {
