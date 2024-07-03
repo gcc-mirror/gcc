@@ -1,3 +1,16 @@
+2024-07-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* doc/tm.texi.in (TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Remove
+	documentation hook.
+	* doc/tm.texi: Regenerate.
+	* target.def (prefer_gather_scatter): Remove target hook under
+	vectorizer.
+	* tree-vect-stmts.cc (get_group_load_store_type): Remove code to
+	optionally prefer gather/scatter instructions to
+	scalar/elementwise fallback.
+	* config/gcn/gcn.cc (TARGET_VECTORIZE_PREFER_GATHER_SCATTER):
+	Remove hook definition.
+
 2024-05-19  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/nvptx/nvptx.md (popcount<mode>2): Split into...
