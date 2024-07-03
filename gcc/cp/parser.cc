@@ -13249,9 +13249,14 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	      /* Build the contract.  */
 	      tree contract = grok_contract (cont_assert, NULL_TREE /*mode*/,
 					NULL_TREE /*result*/, condition, loc);
+
 	      std_attrs = finish_contract_attribute (cont_assert, contract);
 
-
+	      // If there are errors in the contract, we do not create
+	      // the attribute tree.  This assumes no attributes on
+	      // 'contract_assert'
+	      if (std_attrs == error_mark_node)
+		 std_attrs = NULL_TREE;
 	    }
 	  else
 	    error_at (
@@ -31569,13 +31574,14 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       cp_expr condition = cp_parser_conditional_expression (parser);
       --processing_contract_condition;
 
+      /* For natural syntax, we eat the parens here. For the attribute syntax,
+         it will be done one level up, we just need to skip to it. */
       if (!attr_mode)
 	  parens.require_close (parser);
-
       /* Try to recover from errors by scanning up to the end of the
 	 attribute.  Sometimes we get partially parsed expressions, so
 	 we need to search the condition for errors.  */
-      if (contains_error_p (condition))
+      else if (contains_error_p (condition))
 	cp_parser_skip_up_to_closing_square_bracket (parser);
 
       /* Build the contract.  */
@@ -31594,6 +31600,9 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       error_at (loc, "contracts are only available with %<-fcontracts%>");
       return error_mark_node;
     }
+
+  if (contract == error_mark_node)
+    return error_mark_node;
 
   return finish_contract_attribute (attribute, contract);
 }
