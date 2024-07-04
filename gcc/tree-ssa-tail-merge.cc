@@ -1188,7 +1188,52 @@ gimple_equal_p (same_succ *same_succ, gimple *s1, gimple *s2)
 	{
 	  t1 = gimple_arg (s1, i);
 	  t2 = gimple_arg (s2, i);
-	  if (!gimple_operand_equal_value_p (t1, t2))
+	  while (handled_component_p (t1) && handled_component_p (t2))
+	    {
+	      if (TREE_CODE (t1) != TREE_CODE (t2)
+		  || TREE_THIS_VOLATILE (t1) != TREE_THIS_VOLATILE (t2))
+		return false;
+	      switch (TREE_CODE (t1))
+		{
+		case COMPONENT_REF:
+		  if (TREE_OPERAND (t1, 1) != TREE_OPERAND (t2, 1)
+		      || !gimple_operand_equal_value_p (TREE_OPERAND (t1, 2),
+							TREE_OPERAND (t2, 2)))
+		    return false;
+		  break;
+		case ARRAY_REF:
+		case ARRAY_RANGE_REF:
+		  if (!gimple_operand_equal_value_p (TREE_OPERAND (t1, 3),
+						     TREE_OPERAND (t2, 3)))
+		    return false;
+		  /* Fallthru.  */
+		case BIT_FIELD_REF:
+		  if (!gimple_operand_equal_value_p (TREE_OPERAND (t1, 1),
+						     TREE_OPERAND (t2, 1))
+		      || !gimple_operand_equal_value_p (TREE_OPERAND (t1, 2),
+							TREE_OPERAND (t2, 2)))
+		    return false;
+		  break;
+		case REALPART_EXPR:
+		case IMAGPART_EXPR:
+		case VIEW_CONVERT_EXPR:
+		  break;
+		default:
+		gcc_unreachable ();
+		}
+	      t1 = TREE_OPERAND (t1, 0);
+	      t2 = TREE_OPERAND (t2, 0);
+	    }
+	  if (TREE_CODE (t1) == MEM_REF && TREE_CODE (t2) == MEM_REF)
+	    {
+	      if (TREE_THIS_VOLATILE (t1) != TREE_THIS_VOLATILE (t2)
+		  || TYPE_ALIGN (TREE_TYPE (t1)) != TYPE_ALIGN (TREE_TYPE (t2))
+		  || !gimple_operand_equal_value_p (TREE_OPERAND (t1, 0),
+						    TREE_OPERAND (t2, 0))
+		  || TREE_OPERAND (t1, 1) != TREE_OPERAND (t2, 1))
+		return false;
+	    }
+	  else if (!gimple_operand_equal_value_p (t1, t2))
 	    return false;
 	}
       return true;
@@ -1462,16 +1507,24 @@ deps_ok_for_redirect_from_bb_to_bb (basic_block from, basic_block to)
    replacement are dominates by their defs.  */
 
 static bool
-deps_ok_for_redirect (basic_block bb1, basic_block bb2)
+deps_ok_for_redirect (basic_block &bb1, basic_block &bb2)
 {
-  if (BB_CLUSTER (bb1) != NULL)
-    bb1 = BB_CLUSTER (bb1)->rep_bb;
+  basic_block b1 = bb1;
+  basic_block b2 = bb2;
+  if (BB_CLUSTER (b1) != NULL)
+    b1 = BB_CLUSTER (b1)->rep_bb;
 
-  if (BB_CLUSTER (bb2) != NULL)
-    bb2 = BB_CLUSTER (bb2)->rep_bb;
+  if (BB_CLUSTER (b2) != NULL)
+    b2 = BB_CLUSTER (b2)->rep_bb;
 
-  return (deps_ok_for_redirect_from_bb_to_bb (bb1, bb2)
-	  && deps_ok_for_redirect_from_bb_to_bb (bb2, bb1));
+  if (deps_ok_for_redirect_from_bb_to_bb (b1, b2))
+    return true;
+  if (deps_ok_for_redirect_from_bb_to_bb (b2, b1))
+    {
+      std::swap (bb1, bb2);
+      return true;
+    }
+  return false;
 }
 
 /* Within SAME_SUCC->bbs, find clusters of bbs which can be merged.  */

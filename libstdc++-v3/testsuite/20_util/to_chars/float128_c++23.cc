@@ -19,7 +19,7 @@
 // { dg-require-effective-target ieee_floats }
 // { dg-require-effective-target size32plus }
 // { dg-add-options ieee }
-// { dg-xfail-run-if "from_chars limited to double-precision" { aarch64-*-vxworks* } }
+// { dg-xfail-run-if "from_chars limited to double-precision" { aarch64-*-vxworks* aarch64-*-rtems* } }
 
 #include <charconv>
 #include <stdfloat>

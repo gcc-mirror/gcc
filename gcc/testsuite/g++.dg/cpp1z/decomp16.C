@@ -7,23 +7,23 @@ void
 foo ()
 {
   auto [ a, b ] = A ();
-  for (; auto [ a, b ] = A (); )			// { dg-error "expected" }
-    ;
+  for (; auto [ a, b ] = A (); )			// { dg-error "structured bindings in conditions only available with" "" { target c++23_down } }
+    ;							// { dg-error "could not convert '<structured bindings>' from 'A' to 'bool'" "" { target *-*-* } .-1 }
   for (; false; auto [ a, b ] = A ())			// { dg-error "expected" }
     ;
-  if (auto [ a, b ] = A ())				// { dg-error "expected" }
-    ;
-  if (auto [ a, b ] = A (); auto [ c, d ] = A ())	// { dg-error "expected" }
-    ;
-  if (int d = 5; auto [ a, b ] = A ())			// { dg-error "expected" }
-    ;
-  switch (auto [ a, b ] = B ())				// { dg-error "expected" }
-    {
+  if (auto [ a, b ] = A ())				// { dg-error "structured bindings in conditions only available with" "" { target c++23_down } }
+    ;							// { dg-error "could not convert '<structured bindings>' from 'A' to 'bool'" "" { target *-*-* } .-1 }
+  if (auto [ a, b ] = A (); auto [ c, d ] = A ())	// { dg-error "structured bindings in conditions only available with" "" { target c++23_down } }
+    ;							// { dg-error "could not convert '<structured bindings>' from 'A' to 'bool'" "" { target *-*-* } .-1 }
+  if (int d = 5; auto [ a, b ] = A ())			// { dg-error "structured bindings in conditions only available with" "" { target c++23_down } }
+    ;							// { dg-error "could not convert '<structured bindings>' from 'A' to 'bool'" "" { target *-*-* } .-1 }
+  switch (auto [ a, b ] = B ())				// { dg-error "structured bindings in conditions only available with" "" { target c++23_down } }
+    {							// { dg-error "switch quantity not an integer" "" { target *-*-* } .-1 }
     case 2:
       break;
     }
-  switch (int d = 5; auto [ a, b ] = B ())		// { dg-error "expected" }
-    {
+  switch (int d = 5; auto [ a, b ] = B ())		// { dg-error "structured bindings in conditions only available with" "" { target c++23_down } }
+    {							// { dg-error "switch quantity not an integer" "" { target *-*-* } .-1 }
     case 2:
       break;
     }

@@ -1061,7 +1061,7 @@ PROCEDURE GetM2DumpFilter () : ADDRESS ;
    SetM2Dump - sets the dump via a comma separated list: quad,decl,gimple,all.
 *)
 
-PROCEDURE SetM2Dump (value: BOOLEAN; filter: ADDRESS) ;
+PROCEDURE SetM2Dump (value: BOOLEAN; filter: ADDRESS) : BOOLEAN ;
 
 
 (*

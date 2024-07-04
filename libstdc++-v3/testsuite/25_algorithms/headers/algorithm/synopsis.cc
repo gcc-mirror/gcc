@@ -19,6 +19,14 @@
 
 #include <algorithm>
 
+#if __cplusplus >= 202002L
+#ifndef __cpp_lib_ranges
+# error "Feature test macro for ranges is missing in <algorithm>"
+#elif __cpp_lib_ranges < 201911L
+# error "Feature test macro for ranges has wrong value in <algorithm>"
+#endif
+#endif
+
 namespace std
  {
   // 25.1, non-modifying sequence operations:

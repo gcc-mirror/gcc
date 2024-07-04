@@ -58,16 +58,16 @@ AARCH64_CORE("cortex-a73",  cortexa73, cortexa57, V8A,  (CRC), cortexa73, 0x41, 
 
 /* Cavium ('C') cores. */
 AARCH64_CORE("thunderx",      thunderx,      thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a0, -1)
-/* Do not swap around "thunderxt88p1" and "thunderxt88",
-   this order is required to handle variant correctly. */
-AARCH64_CORE("thunderxt88p1", thunderxt88p1, thunderx,  V8A,  (CRC, CRYPTO),	thunderxt88,  0x43, 0x0a1, 0)
 AARCH64_CORE("thunderxt88",   thunderxt88,   thunderx,  V8A,  (CRC, CRYPTO), thunderxt88,  0x43, 0x0a1, -1)
+/* "thunderxt88p1 is just an alias for thunderxt88 now. */
+AARCH64_CORE("thunderxt88p1", thunderxt88p1, thunderx,  V8A,  (CRC, CRYPTO), thunderxt88,  0x43, 0x0a1, -1)
 
 /* OcteonTX is the official name for T81/T83. */
 AARCH64_CORE("octeontx",      octeontx,      thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a0, -1)
 AARCH64_CORE("octeontx81",    octeontxt81,   thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a2, -1)
 AARCH64_CORE("octeontx83",    octeontxt83,   thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a3, -1)
 
+/* thunderxt81/83 are aliases for octeontxt81/83. */
 AARCH64_CORE("thunderxt81",   thunderxt81,   thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a2, -1)
 AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a3, -1)
 
@@ -194,6 +194,8 @@ AARCH64_CORE("neoverse-n2", neoversen2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPER
 AARCH64_CORE("cobalt-100",   cobalt100, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversen2, 0x6d, 0xd49, -1)
 
 AARCH64_CORE("neoverse-v2", neoversev2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
+AARCH64_CORE("grace", grace, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, SVE2_AES, SVE2_SHA3, SVE2_SM4, PROFILE), neoversev2, 0x41, 0xd4f, -1)
+
 AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 
 /* Generic Architecture Processors.  */

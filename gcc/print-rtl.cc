@@ -2070,7 +2070,7 @@ void
 dump_value_slim (FILE *f, const_rtx x, int verbose)
 {
   pretty_printer rtl_slim_pp;
-  rtl_slim_pp.buffer->stream = f;
+  rtl_slim_pp.set_output_stream (f);
   print_value (&rtl_slim_pp, x, verbose);
   pp_flush (&rtl_slim_pp);
 }
@@ -2081,7 +2081,7 @@ void
 dump_insn_slim (FILE *f, const rtx_insn *x)
 {
   pretty_printer rtl_slim_pp;
-  rtl_slim_pp.buffer->stream = f;
+  rtl_slim_pp.set_output_stream (f);
   print_insn_with_notes (&rtl_slim_pp, x);
   pp_flush (&rtl_slim_pp);
 }
@@ -2095,7 +2095,7 @@ dump_rtl_slim (FILE *f, const rtx_insn *first, const rtx_insn *last,
 {
   const rtx_insn *insn, *tail;
   pretty_printer rtl_slim_pp;
-  rtl_slim_pp.buffer->stream = f;
+  rtl_slim_pp.set_output_stream (f);
 
   tail = last ? NEXT_INSN (last) : NULL;
   for (insn = first;

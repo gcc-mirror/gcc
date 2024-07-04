@@ -27,6 +27,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "target.h"
+#include "function.h"
 #include "tree.h"
 #include "gimple-expr.h"
 #include "stringpool.h"
@@ -1384,7 +1385,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    volatile_flag = false;
 	    gnu_size = NULL_TREE;
 
-	    /* In case this was a aliased object whose nominal subtype is
+	    /* In case this was an aliased object whose nominal subtype is
 	       unconstrained, the pointer above will be a thin pointer and
 	       build_allocator will automatically make the template.
 
@@ -1975,6 +1976,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  gnu_type = make_node (RECORD_TYPE);
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "JM");
+	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 	  TYPE_PACKED (gnu_type) = 1;
 	  TYPE_SIZE (gnu_type) = TYPE_SIZE (gnu_field_type);
 	  TYPE_SIZE_UNIT (gnu_type) = TYPE_SIZE_UNIT (gnu_field_type);
@@ -2005,7 +2007,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  /* We will output additional debug info manually below.  */
 	  finish_record_type (gnu_type, gnu_field, 2, false);
-	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 
 	  /* Make the original array type a parallel/debug type.  Note that
 	     gnat_get_array_descr_info needs a TYPE_IMPL_PACKED_ARRAY_P type
@@ -2103,7 +2104,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	   1. the array type (suffix XUA) containing the actual data,
 
-	   2. the template type (suffix XUB) containng the bounds,
+	   2. the template type (suffix XUB) containing the bounds,
 
 	   3. the fat pointer type (suffix XUP) representing a pointer or a
 	      reference to the unconstrained array type:
@@ -5445,8 +5446,8 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 	  if (gnu_comp_align > TYPE_ALIGN (gnu_type))
 	    gnu_comp_align = 0;
 	}
-       else
-	 gnu_comp_align = 0;
+      else
+	gnu_comp_align = 0;
 
       gnu_type = maybe_pad_type (gnu_type, gnu_comp_size, gnu_comp_align,
 				 gnat_array, true, definition, true);
@@ -5703,6 +5704,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
 
   input_location = saved_location;
 
+  /* Warn if we are asked to pass by copy but cannot.  */
   if (mech == By_Copy && (by_ref || by_component_ptr))
     post_error ("??cannot pass & by copy", gnat_param);
 
@@ -5735,12 +5737,13 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   DECL_RESTRICTED_ALIASING_P (gnu_param) = restricted_aliasing_p;
   Sloc_to_locus (Sloc (gnat_param), &DECL_SOURCE_LOCATION (gnu_param));
 
-  /* If no Mechanism was specified, indicate what we're using, then
-     back-annotate it.  */
+  /* If no Mechanism was specified, indicate what we will use.  */
   if (mech == Default)
     mech = (by_ref || by_component_ptr) ? By_Reference : By_Copy;
 
+  /* Back-annotate the mechanism in all cases.  */
   Set_Mechanism (gnat_param, mech);
+
   return gnu_param;
 }
 
@@ -6129,11 +6132,6 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	  associate_subprog_with_dummy_type (gnat_subprog, gnu_return_type);
 	  incomplete_profile_p = true;
 	}
-
-      if (kind == E_Function)
-	Set_Mechanism (gnat_subprog, return_by_direct_ref_p
-				     || return_by_invisi_ref_p
-				     ? By_Reference : By_Copy);
     }
 
   /* A procedure (something that doesn't return anything) shouldn't be
@@ -6635,6 +6633,28 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     of options.  */
 	  if (warn_shadow)
 	    post_error ("'G'C'C builtin not found for&!??", gnat_subprog);
+	}
+
+      /* Finally deal with the return mechanism for a function.  */
+      if (kind == E_Function)
+	{
+	  /* We return by reference either if this is required by the semantics
+	     of the language or if this is the default for the function.  */
+	  const bool by_ref = return_by_direct_ref_p
+			      || return_by_invisi_ref_p
+			      || aggregate_value_p (gnu_return_type, gnu_type);
+	  Mechanism_Type mech = Mechanism (gnat_subprog);
+
+	  /* Warn if we are asked to return by copy but cannot.  */
+	  if (mech == By_Copy && by_ref)
+	    post_error ("??cannot return from & by copy", gnat_subprog);
+
+	  /* If no mechanism was specified, indicate what we will use.  */
+	  if (mech == Default)
+	    mech = by_ref ? By_Reference : By_Copy;
+
+	  /* Back-annotate the mechanism in all cases.  */
+	  Set_Mechanism (gnat_subprog, mech);
 	}
     }
 

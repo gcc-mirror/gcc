@@ -15,11 +15,12 @@
 extern __m128i x, x_1;
 extern __m256i y, y_1;
 extern __m512i z, z_1;
+extern  __mmask16 msk;
+extern  __mmask8 msk8;
+
 
 int foo ()
 {
-  __mmask16 msk;
-  __mmask8 msk8;
   __m128i a = _mm_popcnt_epi32 (x);
   asm volatile ("" : "+v" (a));
   a = _mm_mask_popcnt_epi32 (x_1, msk8, x);

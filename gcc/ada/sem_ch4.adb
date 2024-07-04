@@ -36,6 +36,7 @@ with Exp_Util;       use Exp_Util;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
 with Lib.Xref;       use Lib.Xref;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Namet.Sp;       use Namet.Sp;
 with Nlists;         use Nlists;
@@ -268,6 +269,18 @@ package body Sem_Ch4 is
    --  of the new aspect. It is unclear whether a full implementation of
    --  these aspects can be achieved without larger modifications to the
    --  two-pass resolution algorithm.
+
+   function Is_Effectively_Visible_Operator
+     (N : Node_Id; Typ : Entity_Id) return Boolean
+   is (Is_Visible_Operator (N => N, Typ => Typ)
+         or else
+           --  test for a rewritten Foo."+" call
+           (N /= Original_Node (N)
+             and then Is_Effectively_Visible_Operator
+                        (N => Original_Node (N), Typ => Typ))
+         or else not Comes_From_Source (N));
+   --  Return True iff either Is_Visible_Operator returns True or if
+   --  there is a reason it is ok for Is_Visible_Operator to return False.
 
    function Possible_Type_For_Conditional_Expression
      (T1, T2 : Entity_Id) return Entity_Id;
@@ -623,6 +636,12 @@ package body Sem_Ch4 is
                         Make_Index_Or_Discriminant_Constraint (Loc,
                           Constraints => Constr)));
                end;
+
+            --  Rewrite the mutably tagged type to a non-class-wide type for
+            --  proper initialization.
+
+            elsif Is_Mutably_Tagged_Type (Type_Id) then
+               Rewrite (E, New_Occurrence_Of (Etype (Type_Id), Loc));
             end if;
          end if;
 
@@ -2885,6 +2904,12 @@ package body Sem_Ch4 is
             Set_Etype (N, Component_Type (Array_Type));
             Check_Implicit_Dereference (N, Etype (N));
 
+            --  Generate conversion to class-wide type
+
+            if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (N)) then
+               Make_Mutably_Tagged_Conversion (N);
+            end if;
+
             if Present (Index) then
                Error_Msg_N
                  ("too few subscripts in array reference", First (Exprs));
@@ -4069,6 +4094,17 @@ package body Sem_Ch4 is
                   Next_Actual (Actual);
                   Next_Formal (Formal);
 
+               --  Generate a class-wide type conversion for instances of
+               --  class-wide equivalent types to their corresponding
+               --  mutably tagged type.
+
+               elsif Is_Mutably_Tagged_CW_Equivalent_Type (Etype (Actual))
+                 and then Etype (Formal) = Parent_Subtype (Etype (Actual))
+               then
+                  Make_Mutably_Tagged_Conversion (Actual);
+                  Next_Actual (Actual);
+                  Next_Formal (Formal);
+
                --  Handle failed type check
 
                else
@@ -4891,7 +4927,7 @@ package body Sem_Ch4 is
    --  the selector must denote a visible entry.
 
    procedure Analyze_Selected_Component (N : Node_Id) is
-      Name          : constant Node_Id := Prefix (N);
+      Pref          : constant Node_Id := Prefix (N);
       Sel           : constant Node_Id := Selector_Name (N);
       Act_Decl      : Node_Id;
       Comp          : Entity_Id := Empty;
@@ -4926,8 +4962,11 @@ package body Sem_Ch4 is
       --  indexed component rather than a function call.
 
       function Has_Dereference (Nod : Node_Id) return Boolean;
-      --  Check whether prefix includes a dereference, explicit or implicit,
-      --  at any recursive level.
+      --  Check whether Nod includes a dereference, explicit or implicit, at
+      --  any recursive level.
+
+      function Is_Simple_Indexed_Component (Nod : Node_Id) return Boolean;
+      --  Check whether Nod is a simple indexed component in the context
 
       function Try_By_Protected_Procedure_Prefixed_View return Boolean;
       --  Return True if N is an access attribute whose prefix is a prefixed
@@ -5071,6 +5110,40 @@ package body Sem_Ch4 is
          end if;
       end Has_Dereference;
 
+      ---------------------------------
+      -- Is_Simple_Indexed_Component --
+      ---------------------------------
+
+      function Is_Simple_Indexed_Component (Nod : Node_Id) return Boolean is
+         Expr : Node_Id;
+
+      begin
+         --  Nod must be an indexed component
+
+         if Nkind (Nod) /= N_Indexed_Component then
+            return False;
+         end if;
+
+         --  The context must not be a nested selected component
+
+         if Nkind (Pref) = N_Selected_Component then
+            return False;
+         end if;
+
+         --  The expressions must not be case expressions
+
+         Expr := First (Expressions (Nod));
+         while Present (Expr) loop
+            if Nkind (Expr) = N_Case_Expression then
+               return False;
+            end if;
+
+            Next (Expr);
+         end loop;
+
+         return True;
+      end Is_Simple_Indexed_Component;
+
       ----------------------------------------------
       -- Try_By_Protected_Procedure_Prefixed_View --
       ----------------------------------------------
@@ -5213,22 +5286,6 @@ package body Sem_Ch4 is
             end if;
          end loop;
 
-         --  If Par is a generic actual, look for component in ancestor types.
-         --  Skip this if we have no Declaration_Node, as is the case for
-         --  itypes.
-
-         if Present (Par)
-           and then Is_Generic_Actual_Type (Par)
-           and then Present (Declaration_Node (Par))
-         then
-            Par := Generic_Parent_Type (Declaration_Node (Par));
-            loop
-               Find_Component_In_Instance (Par);
-               exit when Present (Entity (Sel))
-                 or else Par = Etype (Par);
-               Par := Etype (Par);
-            end loop;
-
          --  Another special case: the type is an extension of a private
          --  type T, either is an actual in an instance or is immediately
          --  visible, and we are in the body of the instance, which means
@@ -5239,12 +5296,29 @@ package body Sem_Ch4 is
          --  the Has_Private_View mechanism is bypassed because T or the
          --  ancestor is not directly referenced in the generic body.
 
-         elsif Is_Derived_Type (Typ)
-           and then (Used_As_Generic_Actual (Typ)
+         if Is_Derived_Type (Typ)
+           and then (Used_As_Generic_Actual (Base_Type (Typ))
                       or else Is_Immediately_Visible (Typ))
            and then In_Instance_Body
+           and then Present (Parent_Subtype (Typ))
          then
             Find_Component_In_Instance (Parent_Subtype (Typ));
+
+         --  If Par is a generic actual, look for component in ancestor types.
+         --  Skip this if we have no Declaration_Node, as is the case for
+         --  itypes.
+
+         elsif Present (Par)
+           and then Is_Generic_Actual_Type (Par)
+           and then Present (Declaration_Node (Par))
+         then
+            Par := Generic_Parent_Type (Declaration_Node (Par));
+            loop
+               Find_Component_In_Instance (Par);
+               exit when Present (Entity (Sel))
+                 or else Par = Etype (Par);
+               Par := Etype (Par);
+            end loop;
          end if;
 
          return Etype (N) /= Any_Type;
@@ -5255,17 +5329,17 @@ package body Sem_Ch4 is
    begin
       Set_Etype (N, Any_Type);
 
-      if Is_Overloaded (Name) then
+      if Is_Overloaded (Pref) then
          Analyze_Overloaded_Selected_Component (N);
          return;
 
-      elsif Etype (Name) = Any_Type then
+      elsif Etype (Pref) = Any_Type then
          Set_Entity (Sel, Any_Id);
          Set_Etype (Sel, Any_Type);
          return;
 
       else
-         Prefix_Type := Etype (Name);
+         Prefix_Type := Etype (Pref);
       end if;
 
       if Is_Access_Type (Prefix_Type) then
@@ -5294,6 +5368,11 @@ package body Sem_Ch4 is
             Prefix_Type := Implicitly_Designated_Type (Prefix_Type);
          end if;
 
+      --  Handle mutably tagged types
+
+      elsif Is_Class_Wide_Equivalent_Type (Prefix_Type) then
+         Prefix_Type := Parent_Subtype (Prefix_Type);
+
       --  If we have an explicit dereference of a remote access-to-class-wide
       --  value, then issue an error (see RM-E.2.2(16/1)). However we first
       --  have to check for the case of a prefix that is a controlling operand
@@ -5303,8 +5382,8 @@ package body Sem_Ch4 is
       --  component prefixes because of the prefixed dispatching call case.
       --  Note that implicit dereferences are checked for this just above.
 
-      elsif Nkind (Name) = N_Explicit_Dereference
-        and then Is_Remote_Access_To_Class_Wide_Type (Etype (Prefix (Name)))
+      elsif Nkind (Pref) = N_Explicit_Dereference
+        and then Is_Remote_Access_To_Class_Wide_Type (Etype (Prefix (Pref)))
         and then Comes_From_Source (N)
       then
          if Try_Object_Operation (N) then
@@ -5355,7 +5434,7 @@ package body Sem_Ch4 is
         Is_Concurrent_Type (Prefix_Type)
           and then Is_Internal_Name (Chars (Prefix_Type))
           and then not Is_Derived_Type (Prefix_Type)
-          and then Is_Entity_Name (Name);
+          and then Is_Entity_Name (Pref);
 
       --  Avoid initializing Comp if that initialization is not needed
       --  (and, more importantly, if the call to First_Entity could fail).
@@ -5383,13 +5462,12 @@ package body Sem_Ch4 is
          --  subsequent semantic checks might examine the original node.
 
          Set_Entity (Sel, Comp);
-         Rewrite (Selector_Name (N), New_Occurrence_Of (Comp, Sloc (N)));
-         Set_Original_Discriminant (Selector_Name (N), Comp);
+         Rewrite (Sel, New_Occurrence_Of (Comp, Sloc (N)));
+         Set_Original_Discriminant (Sel, Comp);
          Set_Etype (N, Etype (Comp));
          Check_Implicit_Dereference (N, Etype (Comp));
 
       elsif Is_Record_Type (Prefix_Type) then
-
          --  Find a component with the given name. If the node is a prefixed
          --  call, do not examine components whose visibility may be
          --  accidental.
@@ -5436,7 +5514,7 @@ package body Sem_Ch4 is
                --  to duplicate this prefix and duplication is only allowed
                --  on fully resolved expressions.
 
-               Resolve (Name);
+               Resolve (Pref);
 
                --  Ada 2005 (AI-50217): Check wrong use of incomplete types or
                --  subtypes in a package specification.
@@ -5449,38 +5527,39 @@ package body Sem_Ch4 is
                --       N : Natural := X.all.Comp;  --  ERROR, limited view
                --    end Pkg;                       --  Comp is not visible
 
-               if Nkind (Name) = N_Explicit_Dereference
-                 and then From_Limited_With (Etype (Prefix (Name)))
-                 and then not Is_Potentially_Use_Visible (Etype (Name))
+               if Nkind (Pref) = N_Explicit_Dereference
+                 and then From_Limited_With (Etype (Prefix (Pref)))
+                 and then not Is_Potentially_Use_Visible (Etype (Pref))
                  and then Nkind (Parent (Cunit_Entity (Current_Sem_Unit))) =
                             N_Package_Specification
                then
                   Error_Msg_NE
-                    ("premature usage of incomplete}", Prefix (Name),
-                     Etype (Prefix (Name)));
+                    ("premature usage of incomplete}", Prefix (Pref),
+                     Etype (Prefix (Pref)));
                end if;
 
-               --  We never need an actual subtype for the case of a selection
-               --  for a indexed component of a non-packed array, since in
-               --  this case gigi generates all the checks and can find the
-               --  necessary bounds information.
+               --  We generally do not need an actual subtype for the case of
+               --  a selection for an indexed component of a non-packed array,
+               --  since, in this case, gigi can find all the necessary bound
+               --  information. However, when the prefix is itself a selected
+               --  component, for example a.b.c (i), gigi may regard a.b.c as
+               --  a dynamic-sized temporary, so we generate an actual subtype
+               --  for this case. Moreover, if the expressions are complex,
+               --  the actual subtype may be needed for constructs generated
+               --  by their analysis.
 
                --  We also do not need an actual subtype for the case of a
                --  first, last, length, or range attribute applied to a
                --  non-packed array, since gigi can again get the bounds in
                --  these cases (gigi cannot handle the packed case, since it
                --  has the bounds of the packed array type, not the original
-               --  bounds of the type). However, if the prefix is itself a
-               --  selected component, as in a.b.c (i), gigi may regard a.b.c
-               --  as a dynamic-sized temporary, so we do generate an actual
-               --  subtype for this case.
+               --  bounds of the type).
 
                Parent_N := Parent (N);
 
                if not Is_Packed (Etype (Comp))
                  and then
-                   ((Nkind (Parent_N) = N_Indexed_Component
-                       and then Nkind (Name) /= N_Selected_Component)
+                   (Is_Simple_Indexed_Component (Parent_N)
                      or else
                       (Nkind (Parent_N) = N_Attribute_Reference
                         and then
@@ -5559,6 +5638,13 @@ package body Sem_Ch4 is
                   Set_Etype (N, Etype (Comp));
                end if;
 
+               --  Force the generation of a mutably tagged type conversion
+               --  when we encounter a special class-wide equivalent type.
+
+               if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (Pref)) then
+                  Make_Mutably_Tagged_Conversion (Pref, Force => True);
+               end if;
+
                Check_Implicit_Dereference (N, Etype (N));
                return;
             end if;
@@ -5568,7 +5654,7 @@ package body Sem_Ch4 is
             --  which can appear in expanded code in a tag check.
 
             if Ekind (Type_To_Use) = E_Record_Type_With_Private
-              and then Chars (Selector_Name (N)) /= Name_uTag
+              and then Chars (Sel) /= Name_uTag
             then
                exit when Comp = Last_Entity (Type_To_Use);
             end if;
@@ -5738,7 +5824,7 @@ package body Sem_Ch4 is
                elsif Ekind (Comp) in E_Discriminant | E_Entry_Family
                  or else (In_Scope
                             and then not Is_Protected_Type (Prefix_Type)
-                            and then Is_Entity_Name (Name))
+                            and then Is_Entity_Name (Pref))
                then
                   Set_Entity_With_Checks (Sel, Comp);
                   Generate_Reference (Comp, Sel);
@@ -5808,8 +5894,8 @@ package body Sem_Ch4 is
          --  and the selector is one of the task operations.
 
          if In_Scope
-           and then not Is_Entity_Name (Name)
-           and then not Has_Dereference (Name)
+           and then not Is_Entity_Name (Pref)
+           and then not Has_Dereference (Pref)
          then
             if Is_Task_Type (Prefix_Type)
               and then Present (Entity (Sel))
@@ -5926,7 +6012,7 @@ package body Sem_Ch4 is
 
             if Present (Comp) then
                if Is_Single_Concurrent_Object then
-                  Error_Msg_Node_2 := Entity (Name);
+                  Error_Msg_Node_2 := Entity (Pref);
                   Error_Msg_NE ("invisible selector& for &", N, Sel);
 
                else
@@ -5958,7 +6044,7 @@ package body Sem_Ch4 is
       if Etype (N) = Any_Type then
 
          if Is_Single_Concurrent_Object then
-            Error_Msg_Node_2 := Entity (Name);
+            Error_Msg_Node_2 := Entity (Pref);
             Error_Msg_NE ("no selector& for&", N, Sel);
 
             Check_Misspelled_Selector (Type_To_Use, Sel);
@@ -6328,6 +6414,30 @@ package body Sem_Ch4 is
            ("formal parameter cannot be converted to class-wide type when "
             & "Extensions_Visible is False", Expr);
       end if;
+
+      --  Perform special checking for access to mutably tagged type since they
+      --  are not compatible with interfaces.
+
+      if Is_Access_Type (Typ)
+        and then Is_Access_Type (Etype (Expr))
+        and then not Error_Posted (N)
+      then
+
+         if Is_Mutably_Tagged_Type (Directly_Designated_Type (Typ))
+           and then Is_Interface (Directly_Designated_Type (Etype (Expr)))
+         then
+            Error_Msg_N
+              ("argument of conversion to mutably tagged access type cannot "
+               & "be access to interface", Expr);
+
+         elsif Is_Mutably_Tagged_Type (Directly_Designated_Type (Etype (Expr)))
+           and then Is_Interface (Directly_Designated_Type (Typ))
+         then
+            Error_Msg_N
+              ("argument of conversion to interface access type cannot "
+               & "be access to mutably tagged type", Expr);
+         end if;
+      end if;
    end Analyze_Type_Conversion;
 
    ----------------------
@@ -6581,6 +6691,8 @@ package body Sem_Ch4 is
            and then (Covers (T1 => T1, T2 => T2)
                        or else
                      Covers (T1 => T2, T2 => T1))
+           and then Is_Effectively_Visible_Operator
+                      (N, Specific_Type (T1, T2))
          then
             Add_One_Interp (N, Op_Id, Specific_Type (T1, T2));
          end if;
@@ -6610,6 +6722,8 @@ package body Sem_Ch4 is
            and then (Covers (T1 => T1, T2 => T2)
                        or else
                      Covers (T1 => T2, T2 => T1))
+           and then Is_Effectively_Visible_Operator
+                      (N, Specific_Type (T1, T2))
          then
             Add_One_Interp (N, Op_Id, Specific_Type (T1, T2));
 
@@ -6653,6 +6767,8 @@ package body Sem_Ch4 is
            and then (Covers (T1 => T1, T2 => T2)
                        or else
                      Covers (T1 => T2, T2 => T1))
+           and then Is_Effectively_Visible_Operator
+                      (N, Specific_Type (T1, T2))
          then
             Add_One_Interp (N, Op_Id, Specific_Type (T1, T2));
          end if;
@@ -7026,6 +7142,7 @@ package body Sem_Ch4 is
                T := Any_Modular;
             end if;
 
+            --  test Is_Effectively_Visible_Operator here ???
             Add_One_Interp (N, Op_Id, T);
          end if;
       end Check_Boolean_Pair;
@@ -7555,7 +7672,8 @@ package body Sem_Ch4 is
                then
                   null;
 
-               else
+               elsif Is_Effectively_Visible_Operator (N, Base_Type (It.Typ))
+               then
                   Add_One_Interp (N, Op_Id, Base_Type (It.Typ));
                end if;
             end if;
@@ -9805,11 +9923,23 @@ package body Sem_Ch4 is
          begin
             Error := False;
 
+            --  When climbing through the parents of an interface type,
+            --  look for acceptable class-wide homonyms associated with
+            --  the interface type.
+
+            if Is_Interface (Anc_Type) then
+               Traverse_Homonyms (Anc_Type, Error);
+
+               if Error then
+                  return;
+               end if;
+            end if;
+
             Intface := First (Intface_List);
             while Present (Intface) loop
 
                --  Look for acceptable class-wide homonyms associated with the
-               --  interface.
+               --  interface type.
 
                Traverse_Homonyms (Etype (Intface), Error);
 
@@ -9828,6 +9958,15 @@ package body Sem_Ch4 is
 
                Next (Intface);
             end loop;
+
+            --  For derived interface types continue the search climbing to
+            --  the parent type.
+
+            if Is_Interface (Anc_Type)
+              and then Etype (Anc_Type) /= Anc_Type
+            then
+               Traverse_Interfaces (Etype (Anc_Type), Error);
+            end if;
          end Traverse_Interfaces;
 
       --  Start of processing for Try_Class_Wide_Operation

@@ -15,8 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++98" }
-
 #include <vector>
 #include <stdexcept>
 
@@ -27,6 +25,11 @@ struct c
 
   c(void* o = 0) : m(o) {}
   c(const c &r) : m(r.m) {}
+
+#if __cplusplus >= 201103L
+  // Avoid -Wdeprecated-copy warning.
+  c& operator=(const c &) = default;
+#endif
 
   template<class T>
     explicit c(T &o) : m((void*)0xdeadbeef) { }

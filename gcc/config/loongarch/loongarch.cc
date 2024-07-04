@@ -3681,6 +3681,27 @@ loongarch_set_reg_reg_piece_cost (machine_mode mode, unsigned int units)
   return COSTS_N_INSNS ((GET_MODE_SIZE (mode) + units - 1) / units);
 }
 
+static int
+loongarch_use_bstrins_for_ior_with_mask_1 (machine_mode mode,
+					   unsigned HOST_WIDE_INT mask1,
+					   unsigned HOST_WIDE_INT mask2)
+{
+  if (mask1 != ~mask2 || !mask1 || !mask2)
+    return 0;
+
+  /* Try to avoid a right-shift.  */
+  if (low_bitmask_len (mode, mask1) != -1)
+    return -1;
+
+  if (low_bitmask_len (mode, mask2 >> (ffs_hwi (mask2) - 1)) != -1)
+    return 1;
+
+  if (low_bitmask_len (mode, mask1 >> (ffs_hwi (mask1) - 1)) != -1)
+    return -1;
+
+  return 0;
+}
+
 /* Return the cost of moving between two registers of mode MODE.  */
 
 static int
@@ -3812,6 +3833,38 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
       /* Fall through.  */
 
     case IOR:
+      {
+	rtx op[2] = {XEXP (x, 0), XEXP (x, 1)};
+	if (GET_CODE (op[0]) == AND && GET_CODE (op[1]) == AND
+	    && (mode == SImode || (TARGET_64BIT && mode == DImode)))
+	  {
+	    rtx rtx_mask0 = XEXP (op[0], 1), rtx_mask1 = XEXP (op[1], 1);
+	    if (CONST_INT_P (rtx_mask0) && CONST_INT_P (rtx_mask1))
+	      {
+		unsigned HOST_WIDE_INT mask0 = UINTVAL (rtx_mask0);
+		unsigned HOST_WIDE_INT mask1 = UINTVAL (rtx_mask1);
+		if (loongarch_use_bstrins_for_ior_with_mask_1 (mode,
+							       mask0,
+							       mask1))
+		  {
+		    /* A bstrins instruction */
+		    *total = COSTS_N_INSNS (1);
+
+		    /* A srai instruction */
+		    if (low_bitmask_len (mode, mask0) == -1
+			&& low_bitmask_len (mode, mask1) == -1)
+		      *total += COSTS_N_INSNS (1);
+
+		    for (int i = 0; i < 2; i++)
+		      *total += set_src_cost (XEXP (op[i], 0), mode, speed);
+
+		    return true;
+		  }
+	      }
+	  }
+      }
+
+      /* Fall through.  */
     case XOR:
       /* Double-word operations use two single-word operations.  */
       *total = loongarch_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (2),
@@ -4317,6 +4370,33 @@ loongarch_address_cost (rtx addr, machine_mode mode,
 			bool speed ATTRIBUTE_UNUSED)
 {
   return loongarch_address_insns (addr, mode, false);
+}
+
+/* Implement TARGET_INSN_COST.  */
+
+static int
+loongarch_insn_cost (rtx_insn *insn, bool speed)
+{
+  rtx x = PATTERN (insn);
+  int cost = pattern_cost (x, speed);
+
+  /* On LA464, prevent movcf2fr and movfr2gr from merging into movcf2gr.  */
+  if (GET_CODE (x) == SET
+      && GET_MODE (XEXP (x, 0)) == FCCmode)
+    {
+      rtx dest, src;
+      dest = XEXP (x, 0);
+      src = XEXP (x, 1);
+
+      if (REG_P (dest) && REG_P (src))
+	{
+	  if (GP_REG_P (REGNO (dest)) && FCC_REG_P (REGNO (src)))
+	    cost = loongarch_cost->movcf2gr;
+	  else if (FCC_REG_P (REGNO (dest)) && GP_REG_P (REGNO (src)))
+	    cost = loongarch_cost->movgr2cf;
+	}
+    }
+  return cost;
 }
 
 /* Return one word of double-word value OP, taking into account the fixed
@@ -5352,7 +5432,7 @@ loongarch_expand_conditional_move (rtx *operands)
     loongarch_emit_float_compare (&code, &op0, &op1);
   else
     {
-      if (GET_MODE_SIZE (GET_MODE (op0)) < word_mode)
+      if (GET_MODE_SIZE (GET_MODE (op0)) < UNITS_PER_WORD)
 	{
 	  promote_op[0] = (REG_P (op0) && REG_P (operands[2]) &&
 			   REGNO (op0) == REGNO (operands[2]));
@@ -5796,23 +5876,9 @@ bool loongarch_pre_reload_split (void)
 int
 loongarch_use_bstrins_for_ior_with_mask (machine_mode mode, rtx *op)
 {
-  unsigned HOST_WIDE_INT mask1 = UINTVAL (op[2]);
-  unsigned HOST_WIDE_INT mask2 = UINTVAL (op[4]);
-
-  if (mask1 != ~mask2 || !mask1 || !mask2)
-    return 0;
-
-  /* Try to avoid a right-shift.  */
-  if (low_bitmask_len (mode, mask1) != -1)
-    return -1;
-
-  if (low_bitmask_len (mode, mask2 >> (ffs_hwi (mask2) - 1)) != -1)
-    return 1;
-
-  if (low_bitmask_len (mode, mask1 >> (ffs_hwi (mask1) - 1)) != -1)
-    return -1;
-
-  return 0;
+  return loongarch_use_bstrins_for_ior_with_mask_1 (mode,
+						    UINTVAL (op[2]),
+						    UINTVAL (op[4]));
 }
 
 /* Rewrite a MEM for simple load/store under -mexplicit-relocs=auto
@@ -6093,21 +6159,13 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
    'T'	Print 'f' for (eq:CC ...), 't' for (ne:CC ...),
 	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
    't'	Like 'T', but with the EQ/NE cases reversed
-   'F'	Print the FPU branch condition for comparison OP.
-   'W'	Print the inverse of the FPU branch condition for comparison OP.
-   'w'	Print a LSX register.
    'u'	Print a LASX register.
-   'T'	Print 'f' for (eq:CC ...), 't' for (ne:CC ...),
-	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
-   't'	Like 'T', but with the EQ/NE cases reversed
-   'Y'	Print loongarch_fp_conditions[INTVAL (OP)]
-   'Z'	Print OP and a comma for 8CC, otherwise print nothing.
-   'z'	Print $0 if OP is zero, otherwise print OP normally.
    'v'	Print the insn size suffix b, h, w or d for vector modes V16QI, V8HI,
 	  V4SI, V2SI, and w, d for vector modes V4SF, V2DF respectively.
    'V'	Print exact log2 of CONST_INT OP element 0 of a replicated
 	  CONST_VECTOR in decimal.
    'W'	Print the inverse of the FPU branch condition for comparison OP.
+   'w'	Print a LSX register.
    'X'	Print CONST_INT OP in hexadecimal format.
    'x'	Print the low 16 bits of CONST_INT OP in hexadecimal format.
    'Y'	Print loongarch_fp_conditions[INTVAL (OP)]
@@ -10953,6 +11011,18 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
 						      is_packed);
 }
 
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+loongarch_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TARGET_64BIT ? TFmode : DFmode;
+  return default_mode_for_floating_type (ti);
+}
+
 static bool
 use_rsqrt_p (void)
 {
@@ -11062,6 +11132,8 @@ loongarch_asm_code_end (void)
 #define TARGET_RTX_COSTS loongarch_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST loongarch_address_cost
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST loongarch_insn_cost
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
   loongarch_builtin_vectorization_cost
@@ -11262,6 +11334,9 @@ loongarch_asm_code_end (void)
 #undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
 #define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT \
   loongarch_builtin_support_vector_misalignment
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE loongarch_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

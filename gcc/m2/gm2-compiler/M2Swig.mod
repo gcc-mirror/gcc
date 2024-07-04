@@ -57,7 +57,8 @@ FROM SymbolTable IMPORT GetSymName, IsType, IsProcedure, IsConst, IsVar,
                         NulSym ;
 
 FROM M2BasicBlock IMPORT BasicBlock, InitBasicBlocks, KillBasicBlocks,
-                         ForeachBasicBlockDo ;
+                         ForeachBasicBlockDo,
+                         GetBasicBlockStart, GetBasicBlockEnd ;
 
 
 TYPE
@@ -520,8 +521,12 @@ VAR
    DoBasicBlock -
 *)
 
-PROCEDURE DoBasicBlock (start, end: CARDINAL) ;
+PROCEDURE DoBasicBlock (bb: BasicBlock) ;
+VAR
+   start, end: CARDINAL ;
 BEGIN
+   start := GetBasicBlockStart (bb) ;
+   end := GetBasicBlockEnd (bb) ;
    IF IsProcedureScope(start)
    THEN
       (* skip this basic block, as this will not modify the parameter *)

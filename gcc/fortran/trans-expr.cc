@@ -530,13 +530,14 @@ gfc_find_and_cut_at_last_class_ref (gfc_expr *e, bool is_mold,
   return base_expr;
 }
 
-
 /* Reset the vptr to the declared type, e.g. after deallocation.
    Use the variable in CLASS_CONTAINER if available.  Otherwise, recreate
-   one with E.  The generated assignment code is added at the end of BLOCK.  */
+   one with e or class_type.  At least one of the two has to be set.  The
+   generated assignment code is added at the end of BLOCK.  */
 
 void
-gfc_reset_vptr (stmtblock_t *block, gfc_expr *e, tree class_container)
+gfc_reset_vptr (stmtblock_t *block, gfc_expr *e, tree class_container,
+		gfc_symbol *class_type)
 {
   tree vptr = NULL_TREE;
 
@@ -546,6 +547,7 @@ gfc_reset_vptr (stmtblock_t *block, gfc_expr *e, tree class_container)
   if (vptr == NULL_TREE)
     {
       gfc_se se;
+      gcc_assert (e);
 
       /* Evaluate the expression and obtain the vptr from it.  */
       gfc_init_se (&se, NULL);
@@ -562,21 +564,85 @@ gfc_reset_vptr (stmtblock_t *block, gfc_expr *e, tree class_container)
   if (vptr == NULL_TREE)
     return;
 
-  if (UNLIMITED_POLY (e))
+  if (UNLIMITED_POLY (e)
+      || UNLIMITED_POLY (class_type)
+      /* When the class_type's source is not a symbol (e.g. a component's ts),
+	 then look at the _data-components type.  */
+      || (class_type != NULL && class_type->ts.type == BT_UNKNOWN
+	  && class_type->components && class_type->components->ts.u.derived
+	  && class_type->components->ts.u.derived->attr.unlimited_polymorphic))
     gfc_add_modify (block, vptr, build_int_cst (TREE_TYPE (vptr), 0));
   else
     {
-      gfc_symbol *vtab;
+      gfc_symbol *vtab, *type = nullptr;
       tree vtable;
 
+      if (e)
+	type = e->ts.u.derived;
+      else if (class_type)
+	{
+	  if (class_type->ts.type == BT_CLASS)
+	    type = CLASS_DATA (class_type)->ts.u.derived;
+	  else
+	    type = class_type;
+	}
+      gcc_assert (type);
       /* Return the vptr to the address of the declared type.  */
-      vtab = gfc_find_derived_vtab (e->ts.u.derived);
+      vtab = gfc_find_derived_vtab (type);
       vtable = vtab->backend_decl;
       if (vtable == NULL_TREE)
 	vtable = gfc_get_symbol_decl (vtab);
       vtable = gfc_build_addr_expr (NULL, vtable);
       vtable = fold_convert (TREE_TYPE (vptr), vtable);
       gfc_add_modify (block, vptr, vtable);
+    }
+}
+
+
+/* Set the vptr of a class in to from the type given in from.  If from is NULL,
+   then reset the vptr to the default or to.  */
+
+void
+gfc_class_set_vptr (stmtblock_t *block, tree to, tree from)
+{
+  tree tmp, vptr_ref;
+
+  vptr_ref = gfc_get_vptr_from_expr (to);
+  if (POINTER_TYPE_P (TREE_TYPE (from))
+      && GFC_CLASS_TYPE_P (TREE_TYPE (TREE_TYPE (from))))
+    {
+      gfc_add_modify (block, vptr_ref,
+		      fold_convert (TREE_TYPE (vptr_ref),
+				    gfc_get_vptr_from_expr (from)));
+    }
+  else if (VAR_P (from)
+	   && strncmp (IDENTIFIER_POINTER (DECL_NAME (from)), "__vtab", 6) == 0)
+    {
+      gfc_add_modify (block, vptr_ref,
+		      gfc_build_addr_expr (TREE_TYPE (vptr_ref), from));
+    }
+  else if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (from)))
+	   && GFC_CLASS_TYPE_P (
+	     TREE_TYPE (TREE_OPERAND (TREE_OPERAND (from, 0), 0))))
+    {
+      gfc_add_modify (block, vptr_ref,
+		      fold_convert (TREE_TYPE (vptr_ref),
+				    gfc_get_vptr_from_expr (TREE_OPERAND (
+				      TREE_OPERAND (from, 0), 0))));
+    }
+  else
+    {
+      tree vtab;
+      gfc_symbol *type;
+      tmp = TREE_TYPE (from);
+      if (POINTER_TYPE_P (tmp))
+	tmp = TREE_TYPE (tmp);
+      gfc_find_symbol (IDENTIFIER_POINTER (TYPE_NAME (tmp)), gfc_current_ns, 1,
+		       &type);
+      vtab = gfc_find_derived_vtab (type)->backend_decl;
+      gcc_assert (vtab);
+      gfc_add_modify (block, vptr_ref,
+		      gfc_build_addr_expr (TREE_TYPE (vptr_ref), vtab));
     }
 }
 
@@ -6870,29 +6936,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 							       NULL_TREE, true,
 							       e, e->ts, cls);
 		      gfc_add_expr_to_block (&block, tmp);
-		      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
-					     void_type_node, ptr,
-					     null_pointer_node);
-		      gfc_add_expr_to_block (&block, tmp);
+		      gfc_add_modify (&block, ptr,
+				      fold_convert (TREE_TYPE (ptr),
+						    null_pointer_node));
 
-		      if (fsym->ts.type == BT_CLASS && UNLIMITED_POLY (fsym))
-			{
-			  gfc_add_modify (&block, ptr,
-					  fold_convert (TREE_TYPE (ptr),
-							null_pointer_node));
-			  gfc_add_expr_to_block (&block, tmp);
-			}
-		      else if (fsym->ts.type == BT_CLASS)
-			{
-			  gfc_symbol *vtab;
-			  vtab = gfc_find_derived_vtab (fsym->ts.u.derived);
-			  tmp = gfc_get_symbol_decl (vtab);
-			  tmp = gfc_build_addr_expr (NULL_TREE, tmp);
-			  ptr = gfc_class_vptr_get (parmse.expr);
-			  gfc_add_modify (&block, ptr,
-					  fold_convert (TREE_TYPE (ptr), tmp));
-			  gfc_add_expr_to_block (&block, tmp);
-			}
+		      if (fsym->ts.type == BT_CLASS)
+			gfc_reset_vptr (&block, nullptr,
+					build_fold_indirect_ref (parmse.expr),
+					fsym->ts.u.derived);
 
 		      if (fsym->attr.optional
 			  && e->expr_type == EXPR_VARIABLE

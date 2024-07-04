@@ -568,8 +568,8 @@
 (define_predicate "comparison_except_ltge_operator"
   (match_code "eq,ne,le,leu,gt,gtu"))
 
-(define_predicate "comparison_except_eqge_operator"
-  (match_code "le,leu,gt,gtu,lt,ltu"))
+(define_predicate "comparison_except_ge_operator"
+  (match_code "eq,ne,le,leu,gt,gtu,lt,ltu"))
 
 (define_predicate "ge_operator"
   (match_code "ge,geu"))

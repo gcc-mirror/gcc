@@ -4114,7 +4114,24 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 
   if (!COMPLETE_TYPE_P (type))
     {
-      if (complain & tf_warning)
+      if (cxx_dialect > cxx23)
+	{
+	  if (complain & tf_error)
+	    {
+	      int saved_errorcount = errorcount;
+	      if (permerror_opt (loc, OPT_Wdelete_incomplete,
+				 "operator %<delete []%> used on "
+				 "incomplete type"))
+		{
+		  cxx_incomplete_type_inform (type);
+		  if (errorcount != saved_errorcount)
+		    return error_mark_node;
+		}
+	    }
+	  else
+	    return error_mark_node;
+	}
+      else if (complain & tf_warning)
 	{
 	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wdelete_incomplete,
@@ -5178,7 +5195,24 @@ build_delete (location_t loc, tree otype, tree addr,
 
 	  if (!COMPLETE_TYPE_P (type))
 	    {
-	      if (complain & tf_warning)
+	      if (cxx_dialect > cxx23)
+		{
+		  if (complain & tf_error)
+		    {
+		      int saved_errorcount = errorcount;
+		      if (permerror_opt (loc, OPT_Wdelete_incomplete,
+					 "operator %<delete%> used on "
+					 "incomplete type"))
+			{
+			  cxx_incomplete_type_inform (type);
+			  if (errorcount != saved_errorcount)
+			    return error_mark_node;
+			}
+		    }
+		  else
+		    return error_mark_node;
+		}
+	      else if (complain & tf_warning)
 		{
 		  auto_diagnostic_group d;
 		  if (warning_at (loc, OPT_Wdelete_incomplete,

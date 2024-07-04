@@ -56,6 +56,11 @@ struct btf_header
 /* Maximum number of struct, union, enum members or func args.  */
 #define BTF_MAX_VLEN	0xffff
 
+/* Type ID 0 represents the void type.  */
+#define BTF_VOID_TYPEID 0
+/* Initial type ID for regular types.  */
+#define BTF_INIT_TYPEID 1
+
 struct btf_type
 {
   uint32_t name_off; 	/* Offset in string section of type name.  */

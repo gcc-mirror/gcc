@@ -1418,7 +1418,7 @@ hybrid_jt_simplifier::simplify (gimple *stmt, gimple *, basic_block,
   if (gimple_code (stmt) == GIMPLE_COND
       || gimple_code (stmt) == GIMPLE_ASSIGN)
     {
-      Value_Range r (gimple_range_type (stmt));
+      value_range r (gimple_range_type (stmt));
       tree ret;
       if (m_query->range_of_stmt (r, stmt) && r.singleton_p (&ret))
 	return ret;
@@ -1457,7 +1457,7 @@ hybrid_jt_simplifier::compute_exit_dependencies (bitmap dependencies,
 	  tree op = gimple_op (stmt, i);
 	  if (op
 	      && TREE_CODE (op) == SSA_NAME
-	      && Value_Range::supports_type_p (TREE_TYPE (op)))
+	      && value_range::supports_type_p (TREE_TYPE (op)))
 	    bitmap_set_bit (dependencies, SSA_NAME_VERSION (op));
 	}
     }

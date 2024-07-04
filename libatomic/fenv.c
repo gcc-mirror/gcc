@@ -21,6 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_FENV
 #include "libatomic_i.h"
 
 #ifdef HAVE_FENV_H
@@ -70,3 +71,4 @@ __atomic_feraiseexcept (int excepts __attribute__ ((unused)))
     }
 #endif
 }
+#undef LAT_FENV

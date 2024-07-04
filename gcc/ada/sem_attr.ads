@@ -381,17 +381,6 @@ package Sem_Attr is
       --  other composite object passed by reference, there is no other way
       --  of specifying that a zero address should be passed.
 
-      -----------------
-      -- Object_Size --
-      -----------------
-
-      Attribute_Object_Size => True,
-      --  Type'Object_Size is the same as Type'Size for all types except
-      --  fixed-point types and discrete types. For fixed-point types and
-      --  discrete types, this attribute gives the size used for default
-      --  allocation of objects and components of the size. See section in
-      --  Einfo ("Handling of Type'Size values") for further details.
-
       -------------------------
       -- Passed_By_Reference --
       -------------------------

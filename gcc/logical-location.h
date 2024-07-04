@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_LOGICAL_LOCATION_H
 #define GCC_LOGICAL_LOCATION_H
 
+#include "label-text.h"
+
 /* An enum for discriminating between different kinds of logical location
    for a diagnostic.
 
@@ -46,7 +48,8 @@ enum logical_location_kind
    - "within function 'foo'", or
    - "within method 'bar'",
    but *without* requiring knowledge of trees
-   (see tree-logical-location.h for subclasses relating to trees).  */
+   (see tree-logical-location.h for concrete subclasses relating to trees,
+   and selftest-logical-location.h for a concrete subclass for selftests).  */
 
 class logical_location
 {
@@ -67,6 +70,11 @@ public:
 
   /* Get what kind of SARIF logicalLocation this is (if any).  */
   virtual enum logical_location_kind get_kind () const = 0;
+
+  /* Get a string for this location in a form suitable for path output.  */
+  virtual label_text get_name_for_path_output () const = 0;
+
+  bool function_p () const;
 };
 
 #endif /* GCC_LOGICAL_LOCATION_H.  */

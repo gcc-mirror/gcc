@@ -1,0 +1,12 @@
+DEFINITION MODULE opaqueparam ;  (*!m2pim*)
+
+TYPE
+   List ;
+
+
+PROCEDURE initList () : List ;
+
+PROCEDURE add (l: List) ;
+
+
+END opaqueparam.

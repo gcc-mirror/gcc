@@ -1,7 +1,7 @@
 /* PR target/88234 */
 /* { dg-do run { target { powerpc*-*-* && vmx_hw } } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-fsanitize=signed-integer-overflow -fno-sanitize-recover=signed-integer-overflow -O2 -maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

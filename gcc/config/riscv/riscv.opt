@@ -256,7 +256,11 @@ Mask(ZICCRSE)     Var(riscv_zi_subext)
 TargetVariable
 int riscv_za_subext
 
-Mask(ZAWRS) Var(riscv_za_subext)
+Mask(ZAWRS)  Var(riscv_za_subext)
+
+Mask(ZAAMO)  Var(riscv_za_subext)
+
+Mask(ZALRSC) Var(riscv_za_subext)
 
 Mask(ZA64RS)  Var(riscv_za_subext)
 

@@ -219,6 +219,7 @@ package body Sem_Dim is
       N_Real_Literal              => True,
       N_Selected_Component        => True,
       N_Slice                     => True,
+      N_Target_Name               => True,
       N_Type_Conversion           => True,
       N_Unchecked_Type_Conversion => True,
 
@@ -1179,6 +1180,7 @@ package body Sem_Dim is
             | N_Qualified_Expression
             | N_Selected_Component
             | N_Slice
+            | N_Target_Name
             | N_Unchecked_Type_Conversion
          =>
             Analyze_Dimension_Has_Etype (N);

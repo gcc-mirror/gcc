@@ -1306,3 +1306,9 @@ do {									     \
 /* An integer expression for the size in bits of the largest integer machine
    mode that should actually be used.  We allow pairs of registers.  */
 #define MAX_FIXED_MODE_SIZE GET_MODE_BITSIZE (TARGET_64BIT ? TImode : DImode)
+
+/* Define these macros as default for all subtargets, add PA_ prefix
+   as {FLOAT,{,LONG_}DOUBLE}_TYPE_SIZE get poisoned.  */
+#define PA_FLOAT_TYPE_SIZE BITS_PER_WORD
+#define PA_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#define PA_LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)

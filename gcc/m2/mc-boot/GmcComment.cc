@@ -43,9 +43,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _mcComment_H
 #define _mcComment_C
 
+#include "GmcComment.h"
 #   include "GDynamicStrings.h"
 #   include "GStorage.h"
 #   include "GnameKey.h"
@@ -57,7 +57,7 @@ typedef struct mcComment__T1_r mcComment__T1;
 
 typedef enum {mcComment_unknown, mcComment_procedureHeading, mcComment_inBody, mcComment_afterStatement} mcComment_commentType;
 
-typedef mcComment__T1 *mcComment_commentDesc;
+typedef mcComment__T1 *mcComment_commentDesc__opaque;
 
 struct mcComment__T1_r {
                          mcComment_commentType type;
@@ -156,13 +156,13 @@ static DynamicStrings_String RemoveNewlines (DynamicStrings_String s);
                    in the comment.
 */
 
-static bool seenProcedure (mcComment_commentDesc cd, nameKey_Name procName);
+static bool seenProcedure (mcComment_commentDesc__opaque cd, nameKey_Name procName);
 
 /*
    dumpComment -
 */
 
-static void dumpComment (mcComment_commentDesc cd);
+static void dumpComment (mcComment_commentDesc__opaque cd);
 
 
 /*
@@ -212,7 +212,7 @@ static DynamicStrings_String RemoveNewlines (DynamicStrings_String s)
                    in the comment.
 */
 
-static bool seenProcedure (mcComment_commentDesc cd, nameKey_Name procName)
+static bool seenProcedure (mcComment_commentDesc__opaque cd, nameKey_Name procName)
 {
   DynamicStrings_String s;
   void * a;
@@ -235,7 +235,7 @@ static bool seenProcedure (mcComment_commentDesc cd, nameKey_Name procName)
    dumpComment -
 */
 
-static void dumpComment (mcComment_commentDesc cd)
+static void dumpComment (mcComment_commentDesc__opaque cd)
 {
   libc_printf ((const char *) "comment : ", 10);
   switch (cd->type)
@@ -282,7 +282,7 @@ static void dumpComment (mcComment_commentDesc cd)
 
 extern "C" mcComment_commentDesc mcComment_initComment (bool onlySpaces)
 {
-  mcComment_commentDesc cd;
+  mcComment_commentDesc__opaque cd;
 
   Storage_ALLOCATE ((void **) &cd, sizeof (mcComment__T1));
   mcDebug_assert (cd != NULL);
@@ -297,7 +297,7 @@ extern "C" mcComment_commentDesc mcComment_initComment (bool onlySpaces)
   cd->content = DynamicStrings_InitString ((const char *) "", 0);
   cd->procName = nameKey_NulName;
   cd->used = false;
-  return cd;
+  return static_cast<mcComment_commentDesc> (cd);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -312,7 +312,7 @@ extern "C" void mcComment_addText (mcComment_commentDesc cd, void * cs)
 {
   if (cd != NULL)
     {
-      cd->content = DynamicStrings_ConCat (cd->content, DynamicStrings_InitStringCharStar (cs));
+      static_cast<mcComment_commentDesc__opaque> (cd)->content = DynamicStrings_ConCat (static_cast<mcComment_commentDesc__opaque> (cd)->content, DynamicStrings_InitStringCharStar (cs));
     }
 }
 
@@ -325,7 +325,7 @@ extern "C" DynamicStrings_String mcComment_getContent (mcComment_commentDesc cd)
 {
   if (cd != NULL)
     {
-      return cd->content;
+      return static_cast<mcComment_commentDesc__opaque> (cd)->content;
     }
   return static_cast<DynamicStrings_String> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -365,10 +365,10 @@ extern "C" void mcComment_setProcedureComment (mcComment_commentDesc cd, nameKey
 {
   if (cd != NULL)
     {
-      if (seenProcedure (cd, procname))
+      if (seenProcedure (static_cast<mcComment_commentDesc__opaque> (cd), procname))
         {
-          cd->type = mcComment_procedureHeading;
-          cd->procName = procname;
+          static_cast<mcComment_commentDesc__opaque> (cd)->type = mcComment_procedureHeading;
+          static_cast<mcComment_commentDesc__opaque> (cd)->procName = procname;
         }
     }
 }
@@ -380,10 +380,10 @@ extern "C" void mcComment_setProcedureComment (mcComment_commentDesc cd, nameKey
 
 extern "C" DynamicStrings_String mcComment_getProcedureComment (mcComment_commentDesc cd)
 {
-  if ((cd->type == mcComment_procedureHeading) && ! cd->used)
+  if ((static_cast<mcComment_commentDesc__opaque> (cd)->type == mcComment_procedureHeading) && ! static_cast<mcComment_commentDesc__opaque> (cd)->used)
     {
-      cd->used = true;
-      return cd->content;
+      static_cast<mcComment_commentDesc__opaque> (cd)->used = true;
+      return static_cast<mcComment_commentDesc__opaque> (cd)->content;
     }
   return static_cast<DynamicStrings_String> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -397,10 +397,10 @@ extern "C" DynamicStrings_String mcComment_getProcedureComment (mcComment_commen
 
 extern "C" DynamicStrings_String mcComment_getAfterStatementComment (mcComment_commentDesc cd)
 {
-  if ((cd->type == mcComment_afterStatement) && ! cd->used)
+  if ((static_cast<mcComment_commentDesc__opaque> (cd)->type == mcComment_afterStatement) && ! static_cast<mcComment_commentDesc__opaque> (cd)->used)
     {
-      cd->used = true;
-      return cd->content;
+      static_cast<mcComment_commentDesc__opaque> (cd)->used = true;
+      return static_cast<mcComment_commentDesc__opaque> (cd)->content;
     }
   return static_cast<DynamicStrings_String> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -414,10 +414,10 @@ extern "C" DynamicStrings_String mcComment_getAfterStatementComment (mcComment_c
 
 extern "C" DynamicStrings_String mcComment_getInbodyStatementComment (mcComment_commentDesc cd)
 {
-  if ((cd->type == mcComment_inBody) && ! cd->used)
+  if ((static_cast<mcComment_commentDesc__opaque> (cd)->type == mcComment_inBody) && ! static_cast<mcComment_commentDesc__opaque> (cd)->used)
     {
-      cd->used = true;
-      return cd->content;
+      static_cast<mcComment_commentDesc__opaque> (cd)->used = true;
+      return static_cast<mcComment_commentDesc__opaque> (cd)->content;
     }
   return static_cast<DynamicStrings_String> (NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -431,7 +431,7 @@ extern "C" DynamicStrings_String mcComment_getInbodyStatementComment (mcComment_
 
 extern "C" bool mcComment_isProcedureComment (mcComment_commentDesc cd)
 {
-  return (cd != NULL) && (cd->type == mcComment_procedureHeading);
+  return (cd != NULL) && (static_cast<mcComment_commentDesc__opaque> (cd)->type == mcComment_procedureHeading);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -443,7 +443,7 @@ extern "C" bool mcComment_isProcedureComment (mcComment_commentDesc cd)
 
 extern "C" bool mcComment_isBodyComment (mcComment_commentDesc cd)
 {
-  return (cd != NULL) && (cd->type == mcComment_inBody);
+  return (cd != NULL) && (static_cast<mcComment_commentDesc__opaque> (cd)->type == mcComment_inBody);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -455,15 +455,15 @@ extern "C" bool mcComment_isBodyComment (mcComment_commentDesc cd)
 
 extern "C" bool mcComment_isAfterComment (mcComment_commentDesc cd)
 {
-  return (cd != NULL) && (cd->type == mcComment_afterStatement);
+  return (cd != NULL) && (static_cast<mcComment_commentDesc__opaque> (cd)->type == mcComment_afterStatement);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_mcComment_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcComment_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_mcComment_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_mcComment_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

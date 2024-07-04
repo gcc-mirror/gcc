@@ -302,7 +302,7 @@ program_point::dump () const
 {
   pretty_printer pp;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   print (&pp, format (true));
   pp_flush (&pp);
 }

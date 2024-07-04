@@ -6630,7 +6630,10 @@ gimple_lower_bitint (void)
 		    continue;
 		  if (gimple_code (use_stmt) == GIMPLE_PHI
 		      || is_gimple_call (use_stmt)
-		      || gimple_code (use_stmt) == GIMPLE_ASM)
+		      || gimple_code (use_stmt) == GIMPLE_ASM
+		      || (is_gimple_assign (use_stmt)
+			  && (gimple_assign_rhs_code (use_stmt)
+			      == COMPLEX_EXPR)))
 		    {
 		      optimizable_load = false;
 		      break;

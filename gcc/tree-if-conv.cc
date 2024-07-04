@@ -936,12 +936,11 @@ ifcvt_memrefs_wont_trap (gimple *stmt, vec<data_reference_p> drs)
 
       /* an unconditionaly write won't trap if the base is written
          to unconditionally.  */
-      if (base_master_dr
-	  && DR_BASE_W_UNCONDITIONALLY (*base_master_dr))
-	return flag_store_data_races;
-      /* or the base is known to be not readonly.  */
-      else if (base_object_writable (DR_REF (a)))
-	return flag_store_data_races;
+      if ((base_master_dr
+	   && DR_BASE_W_UNCONDITIONALLY (*base_master_dr))
+	  /* or the base is known to be not readonly.  */
+	  || base_object_writable (DR_REF (a)))
+	return !ref_can_have_store_data_races (base);
     }
 
   return false;

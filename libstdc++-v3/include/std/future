@@ -292,7 +292,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	using __allocator_type = __alloc_rebind<_Alloc, _Result_alloc>;
 
-        explicit
+	explicit
 	_Result_alloc(const _Alloc& __a) : _Result<_Res>(), _Alloc(__a)
 	{ }
 
@@ -362,9 +362,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Rep, typename _Period>
-        future_status
-        wait_for(const chrono::duration<_Rep, _Period>& __rel)
-        {
+	future_status
+	wait_for(const chrono::duration<_Rep, _Period>& __rel)
+	{
 	  // First, check if the future has been made ready.  Use acquire MO
 	  // to synchronize with the thread that made it ready.
 	  if (_M_status._M_load(memory_order_acquire) == _Status::__ready)
@@ -396,9 +396,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Clock, typename _Duration>
-        future_status
-        wait_until(const chrono::time_point<_Clock, _Duration>& __abs)
-        {
+	future_status
+	wait_until(const chrono::time_point<_Clock, _Duration>& __abs)
+	{
 #if __cplusplus > 201703L
 	  static_assert(chrono::is_clock_v<_Clock>);
 #endif
@@ -430,8 +430,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_set_result(function<_Ptr_type()> __res, bool __ignore_failure = false)
       {
 	bool __did_set = false;
-        // all calls to this function are serialized,
-        // side-effects of invoking __res only happen once
+	// all calls to this function are serialized,
+	// side-effects of invoking __res only happen once
 	call_once(_M_once, &_State_baseV2::_M_do_set, this,
 		  std::__addressof(__res), std::__addressof(__did_set));
 	if (__did_set)
@@ -439,7 +439,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_status._M_store_notify_all(_Status::__ready,
 					memory_order_release);
 	else if (!__ignore_failure)
-          __throw_future_error(int(future_errc::promise_already_satisfied));
+	  __throw_future_error(int(future_errc::promise_already_satisfied));
       }
 
       // Provide a result to the shared state but delay making it ready
@@ -451,12 +451,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	bool __did_set = false;
 	unique_ptr<_Make_ready> __mr{new _Make_ready};
-        // all calls to this function are serialized,
-        // side-effects of invoking __res only happen once
+	// all calls to this function are serialized,
+	// side-effects of invoking __res only happen once
 	call_once(_M_once, &_State_baseV2::_M_do_set, this,
 		  std::__addressof(__res), std::__addressof(__did_set));
 	if (!__did_set)
-          __throw_future_error(int(future_errc::promise_already_satisfied));
+	  __throw_future_error(int(future_errc::promise_already_satisfied));
 	__mr->_M_shared_state = std::move(__self);
 	__mr->_M_set();
 	__mr.release();
@@ -490,41 +490,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Res, typename _Arg>
-        struct _Setter;
+	struct _Setter;
 
       // set lvalues
       template<typename _Res, typename _Arg>
-        struct _Setter<_Res, _Arg&>
-        {
-          // check this is only used by promise<R>::set_value(const R&)
-          // or promise<R&>::set_value(R&)
-          static_assert(is_same<_Res, _Arg&>::value  // promise<R&>
-              || is_same<const _Res, _Arg>::value,   // promise<R>
-              "Invalid specialisation");
+	struct _Setter<_Res, _Arg&>
+	{
+	  // check this is only used by promise<R>::set_value(const R&)
+	  // or promise<R&>::set_value(R&)
+	  static_assert(is_same<_Res, _Arg&>::value              // promise<R&>
+			  || is_same<const _Res, _Arg>::value,   // promise<R>
+			"Invalid specialisation");
 
 	  // Used by std::promise to copy construct the result.
-          typename promise<_Res>::_Ptr_type operator()() const
-          {
-            _M_promise->_M_storage->_M_set(*_M_arg);
-            return std::move(_M_promise->_M_storage);
-          }
-          promise<_Res>*    _M_promise;
-          _Arg*             _M_arg;
-        };
+	  typename promise<_Res>::_Ptr_type operator()() const
+	  {
+	    _M_promise->_M_storage->_M_set(*_M_arg);
+	    return std::move(_M_promise->_M_storage);
+	  }
+	  promise<_Res>*    _M_promise;
+	  _Arg*             _M_arg;
+	};
 
       // set rvalues
       template<typename _Res>
-        struct _Setter<_Res, _Res&&>
-        {
+	struct _Setter<_Res, _Res&&>
+	{
 	  // Used by std::promise to move construct the result.
-          typename promise<_Res>::_Ptr_type operator()() const
-          {
-            _M_promise->_M_storage->_M_set(std::move(*_M_arg));
-            return std::move(_M_promise->_M_storage);
-          }
-          promise<_Res>*    _M_promise;
-          _Res*             _M_arg;
-        };
+	  typename promise<_Res>::_Ptr_type operator()() const
+	  {
+	    _M_promise->_M_storage->_M_set(std::move(*_M_arg));
+	    return std::move(_M_promise->_M_storage);
+	  }
+	  promise<_Res>*    _M_promise;
+	  _Res*             _M_arg;
+	};
 
       // set void
       template<typename _Res>
@@ -532,7 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  static_assert(is_void<_Res>::value, "Only used for promise<void>");
 
-	  typename promise<_Res>::_Ptr_type operator()() const
+	  typename promise<_Res>::_Ptr_type operator()() const noexcept
 	  { return std::move(_M_promise->_M_storage); }
 
 	  promise<_Res>*    _M_promise;
@@ -542,35 +542,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // set exceptions
       template<typename _Res>
-        struct _Setter<_Res, __exception_ptr_tag>
-        {
+	struct _Setter<_Res, __exception_ptr_tag>
+	{
 	  // Used by std::promise to store an exception as the result.
-          typename promise<_Res>::_Ptr_type operator()() const
-          {
-            _M_promise->_M_storage->_M_error = *_M_ex;
-            return std::move(_M_promise->_M_storage);
-          }
+	  typename promise<_Res>::_Ptr_type operator()() const noexcept
+	  {
+	    _M_promise->_M_storage->_M_error = *_M_ex;
+	    return std::move(_M_promise->_M_storage);
+	  }
 
-          promise<_Res>*   _M_promise;
-          exception_ptr*    _M_ex;
-        };
+	  promise<_Res>*   _M_promise;
+	  exception_ptr*    _M_ex;
+	};
 
       template<typename _Res, typename _Arg>
 	__attribute__((__always_inline__))
-        static _Setter<_Res, _Arg&&>
-        __setter(promise<_Res>* __prom, _Arg&& __arg) noexcept
-        {
-          return _Setter<_Res, _Arg&&>{ __prom, std::__addressof(__arg) };
-        }
+	static _Setter<_Res, _Arg&&>
+	__setter(promise<_Res>* __prom, _Arg&& __arg) noexcept
+	{
+	  return _Setter<_Res, _Arg&&>{ __prom, std::__addressof(__arg) };
+	}
 
       template<typename _Res>
 	__attribute__((__always_inline__))
-        static _Setter<_Res, __exception_ptr_tag>
-        __setter(exception_ptr& __ex, promise<_Res>* __prom) noexcept
-        {
-          __glibcxx_assert(__ex != nullptr); // LWG 2276
-          return _Setter<_Res, __exception_ptr_tag>{ __prom, &__ex };
-        }
+	static _Setter<_Res, __exception_ptr_tag>
+	__setter(exception_ptr& __ex, promise<_Res>* __prom) noexcept
+	{
+	  __glibcxx_assert(__ex != nullptr); // LWG 2276
+	  return _Setter<_Res, __exception_ptr_tag>{ __prom, &__ex };
+	}
 
       template<typename _Res>
 	__attribute__((__always_inline__))
@@ -581,24 +581,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Tp>
-        static void
-        _S_check(const shared_ptr<_Tp>& __p)
-        {
-          if (!static_cast<bool>(__p))
-            __throw_future_error((int)future_errc::no_state);
-        }
+	static void
+	_S_check(const shared_ptr<_Tp>& __p)
+	{
+	  if (!static_cast<bool>(__p))
+	    __throw_future_error((int)future_errc::no_state);
+	}
 
     private:
       // The function invoked with std::call_once(_M_once, ...).
       void
       _M_do_set(function<_Ptr_type()>* __f, bool* __did_set)
       {
-        _Ptr_type __res = (*__f)();
-        // Notify the caller that we did try to set; if we do not throw an
-        // exception, the caller will be aware that it did set (e.g., see
-        // _M_set_result).
+	_Ptr_type __res = (*__f)();
+	// Notify the caller that we did try to set; if we do not throw an
+	// exception, the caller will be aware that it did set (e.g., see
+	// _M_set_result).
 	*__did_set = true;
-        _M_result.swap(__res); // nothrow
+	_M_result.swap(__res); // nothrow
       }
 
       // Wait for completion of async function.
@@ -719,49 +719,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       wait() const
       {
-        _State_base::_S_check(_M_state);
-        _M_state->wait();
+	_State_base::_S_check(_M_state);
+	_M_state->wait();
       }
 
       template<typename _Rep, typename _Period>
-        future_status
-        wait_for(const chrono::duration<_Rep, _Period>& __rel) const
-        {
-          _State_base::_S_check(_M_state);
-          return _M_state->wait_for(__rel);
-        }
+	future_status
+	wait_for(const chrono::duration<_Rep, _Period>& __rel) const
+	{
+	  _State_base::_S_check(_M_state);
+	  return _M_state->wait_for(__rel);
+	}
 
       template<typename _Clock, typename _Duration>
-        future_status
-        wait_until(const chrono::time_point<_Clock, _Duration>& __abs) const
-        {
-          _State_base::_S_check(_M_state);
-          return _M_state->wait_until(__abs);
-        }
+	future_status
+	wait_until(const chrono::time_point<_Clock, _Duration>& __abs) const
+	{
+	  _State_base::_S_check(_M_state);
+	  return _M_state->wait_until(__abs);
+	}
 
     protected:
       /// Wait for the state to be ready and rethrow any stored exception
       __result_type
       _M_get_result() const
       {
-        _State_base::_S_check(_M_state);
-        _Result_base& __res = _M_state->wait();
-        if (!(__res._M_error == nullptr))
-          rethrow_exception(__res._M_error);
-        return static_cast<__result_type>(__res);
+	_State_base::_S_check(_M_state);
+	_Result_base& __res = _M_state->wait();
+	if (!(__res._M_error == nullptr))
+	  rethrow_exception(__res._M_error);
+	return static_cast<__result_type>(__res);
       }
 
       void _M_swap(__basic_future& __that) noexcept
       {
-        _M_state.swap(__that._M_state);
+	_M_state.swap(__that._M_state);
       }
 
       // Construction of a future by promise::get_future()
       explicit
       __basic_future(const __state_type& __state) : _M_state(__state)
       {
-        _State_base::_S_check(_M_state);
-        _M_state->_M_set_retrieved_flag();
+	_State_base::_S_check(_M_state);
+	_M_state->_M_set_retrieved_flag();
       }
 
       // Copy construction from a shared_future
@@ -780,9 +780,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       struct _Reset
       {
-        explicit _Reset(__basic_future& __fut) noexcept : _M_fut(__fut) { }
-        ~_Reset() { _M_fut._M_state.reset(); }
-        __basic_future& _M_fut;
+	explicit _Reset(__basic_future& __fut) noexcept : _M_fut(__fut) { }
+	~_Reset() { _M_fut._M_state.reset(); }
+	__basic_future& _M_fut;
       };
     };
 
@@ -801,8 +801,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class promise<_Res>;
       template<typename> friend class packaged_task;
       template<typename _Fn, typename... _Args>
-        friend future<__async_result_of<_Fn, _Args...>>
-        async(launch, _Fn&&, _Args&&...);
+	friend future<__async_result_of<_Fn, _Args...>>
+	async(launch, _Fn&&, _Args&&...);
 
       typedef __basic_future<_Res> _Base_type;
       typedef typename _Base_type::__state_type __state_type;
@@ -822,16 +822,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       future& operator=(future&& __fut) noexcept
       {
-        future(std::move(__fut))._M_swap(*this);
-        return *this;
+	future(std::move(__fut))._M_swap(*this);
+	return *this;
       }
 
       /// Retrieving the value
       _Res
       get()
       {
-        typename _Base_type::_Reset __reset(*this);
-        return std::move(this->_M_get_result()._M_value());
+	typename _Base_type::_Reset __reset(*this);
+	return std::move(this->_M_get_result()._M_value());
       }
 
       shared_future<_Res> share() noexcept;
@@ -844,8 +844,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class promise<_Res&>;
       template<typename> friend class packaged_task;
       template<typename _Fn, typename... _Args>
-        friend future<__async_result_of<_Fn, _Args...>>
-        async(launch, _Fn&&, _Args&&...);
+	friend future<__async_result_of<_Fn, _Args...>>
+	async(launch, _Fn&&, _Args&&...);
 
       typedef __basic_future<_Res&> _Base_type;
       typedef typename _Base_type::__state_type __state_type;
@@ -865,16 +865,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       future& operator=(future&& __fut) noexcept
       {
-        future(std::move(__fut))._M_swap(*this);
-        return *this;
+	future(std::move(__fut))._M_swap(*this);
+	return *this;
       }
 
       /// Retrieving the value
       _Res&
       get()
       {
-        typename _Base_type::_Reset __reset(*this);
-        return this->_M_get_result()._M_get();
+	typename _Base_type::_Reset __reset(*this);
+	return this->_M_get_result()._M_get();
       }
 
       shared_future<_Res&> share() noexcept;
@@ -887,8 +887,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class promise<void>;
       template<typename> friend class packaged_task;
       template<typename _Fn, typename... _Args>
-        friend future<__async_result_of<_Fn, _Args...>>
-        async(launch, _Fn&&, _Args&&...);
+	friend future<__async_result_of<_Fn, _Args...>>
+	async(launch, _Fn&&, _Args&&...);
 
       typedef __basic_future<void> _Base_type;
       typedef typename _Base_type::__state_type __state_type;
@@ -908,16 +908,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       future& operator=(future&& __fut) noexcept
       {
-        future(std::move(__fut))._M_swap(*this);
-        return *this;
+	future(std::move(__fut))._M_swap(*this);
+	return *this;
       }
 
       /// Retrieving the value
       void
       get()
       {
-        typename _Base_type::_Reset __reset(*this);
-        this->_M_get_result();
+	typename _Base_type::_Reset __reset(*this);
+	this->_M_get_result();
       }
 
       shared_future<void> share() noexcept;
@@ -955,14 +955,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       shared_future& operator=(const shared_future& __sf) noexcept
       {
-        shared_future(__sf)._M_swap(*this);
-        return *this;
+	shared_future(__sf)._M_swap(*this);
+	return *this;
       }
 
       shared_future& operator=(shared_future&& __sf) noexcept
       {
-        shared_future(std::move(__sf))._M_swap(*this);
-        return *this;
+	shared_future(std::move(__sf))._M_swap(*this);
+	return *this;
       }
 
       /// Retrieving the value
@@ -994,14 +994,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       shared_future& operator=(const shared_future& __sf)
       {
-        shared_future(__sf)._M_swap(*this);
-        return *this;
+	shared_future(__sf)._M_swap(*this);
+	return *this;
       }
 
       shared_future& operator=(shared_future&& __sf) noexcept
       {
-        shared_future(std::move(__sf))._M_swap(*this);
-        return *this;
+	shared_future(std::move(__sf))._M_swap(*this);
+	return *this;
       }
 
       /// Retrieving the value
@@ -1033,14 +1033,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       shared_future& operator=(const shared_future& __sf)
       {
-        shared_future(__sf)._M_swap(*this);
-        return *this;
+	shared_future(__sf)._M_swap(*this);
+	return *this;
       }
 
       shared_future& operator=(shared_future&& __sf) noexcept
       {
-        shared_future(std::move(__sf))._M_swap(*this);
-        return *this;
+	shared_future(std::move(__sf))._M_swap(*this);
+	return *this;
       }
 
       // Retrieving the value
@@ -1115,31 +1115,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       template<typename _Allocator>
-        promise(allocator_arg_t, const _Allocator& __a)
-        : _M_future(std::allocate_shared<_State>(__a)),
+	promise(allocator_arg_t, const _Allocator& __a)
+	: _M_future(std::allocate_shared<_State>(__a)),
 	  _M_storage(__future_base::_S_allocate_result<_Res>(__a))
-        { }
+	{ }
 
       template<typename _Allocator>
-        promise(allocator_arg_t, const _Allocator&, promise&& __rhs)
-        : _M_future(std::move(__rhs._M_future)),
+	promise(allocator_arg_t, const _Allocator&, promise&& __rhs)
+	: _M_future(std::move(__rhs._M_future)),
 	  _M_storage(std::move(__rhs._M_storage))
-        { }
+	{ }
 
       promise(const promise&) = delete;
 
       ~promise()
       {
-        if (static_cast<bool>(_M_future) && !_M_future.unique())
-          _M_future->_M_break_promise(std::move(_M_storage));
+	if (static_cast<bool>(_M_future) && !_M_future.unique())
+	  _M_future->_M_break_promise(std::move(_M_storage));
       }
 
       // Assignment
       promise&
       operator=(promise&& __rhs) noexcept
       {
-        promise(std::move(__rhs)).swap(*this);
-        return *this;
+	promise(std::move(__rhs)).swap(*this);
+	return *this;
       }
 
       promise& operator=(const promise&) = delete;
@@ -1147,8 +1147,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(promise& __rhs) noexcept
       {
-        _M_future.swap(__rhs._M_future);
-        _M_storage.swap(__rhs._M_storage);
+	_M_future.swap(__rhs._M_future);
+	_M_storage.swap(__rhs._M_storage);
       }
 
       // Retrieving the result
@@ -1234,31 +1234,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       template<typename _Allocator>
-        promise(allocator_arg_t, const _Allocator& __a)
-        : _M_future(std::allocate_shared<_State>(__a)),
+	promise(allocator_arg_t, const _Allocator& __a)
+	: _M_future(std::allocate_shared<_State>(__a)),
 	  _M_storage(__future_base::_S_allocate_result<_Res&>(__a))
-        { }
+	{ }
 
       template<typename _Allocator>
-        promise(allocator_arg_t, const _Allocator&, promise&& __rhs)
-        : _M_future(std::move(__rhs._M_future)),
+	promise(allocator_arg_t, const _Allocator&, promise&& __rhs)
+	: _M_future(std::move(__rhs._M_future)),
 	  _M_storage(std::move(__rhs._M_storage))
-        { }
+	{ }
 
       promise(const promise&) = delete;
 
       ~promise()
       {
-        if (static_cast<bool>(_M_future) && !_M_future.unique())
-          _M_future->_M_break_promise(std::move(_M_storage));
+	if (static_cast<bool>(_M_future) && !_M_future.unique())
+	  _M_future->_M_break_promise(std::move(_M_storage));
       }
 
       // Assignment
       promise&
       operator=(promise&& __rhs) noexcept
       {
-        promise(std::move(__rhs)).swap(*this);
-        return *this;
+	promise(std::move(__rhs)).swap(*this);
+	return *this;
       }
 
       promise& operator=(const promise&) = delete;
@@ -1266,8 +1266,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(promise& __rhs) noexcept
       {
-        _M_future.swap(__rhs._M_future);
-        _M_storage.swap(__rhs._M_storage);
+	_M_future.swap(__rhs._M_future);
+	_M_storage.swap(__rhs._M_storage);
       }
 
       // Retrieving the result
@@ -1332,33 +1332,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { }
 
       template<typename _Allocator>
-        promise(allocator_arg_t, const _Allocator& __a)
-        : _M_future(std::allocate_shared<_State>(__a)),
+	promise(allocator_arg_t, const _Allocator& __a)
+	: _M_future(std::allocate_shared<_State>(__a)),
 	  _M_storage(__future_base::_S_allocate_result<void>(__a))
-        { }
+	{ }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2095.  missing constructors needed for uses-allocator construction
       template<typename _Allocator>
-        promise(allocator_arg_t, const _Allocator&, promise&& __rhs)
-        : _M_future(std::move(__rhs._M_future)),
+	promise(allocator_arg_t, const _Allocator&, promise&& __rhs)
+	: _M_future(std::move(__rhs._M_future)),
 	  _M_storage(std::move(__rhs._M_storage))
-        { }
+	{ }
 
       promise(const promise&) = delete;
 
       ~promise()
       {
-        if (static_cast<bool>(_M_future) && !_M_future.unique())
-          _M_future->_M_break_promise(std::move(_M_storage));
+	if (static_cast<bool>(_M_future) && !_M_future.unique())
+	  _M_future->_M_break_promise(std::move(_M_storage));
       }
 
       // Assignment
       promise&
       operator=(promise&& __rhs) noexcept
       {
-        promise(std::move(__rhs)).swap(*this);
-        return *this;
+	promise(std::move(__rhs)).swap(*this);
+	return *this;
       }
 
       promise& operator=(const promise&) = delete;
@@ -1366,8 +1366,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       swap(promise& __rhs) noexcept
       {
-        _M_future.swap(__rhs._M_future);
-        _M_storage.swap(__rhs._M_storage);
+	_M_future.swap(__rhs._M_future);
+	_M_storage.swap(__rhs._M_storage);
       }
 
       // Retrieving the result
@@ -1596,7 +1596,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~packaged_task()
       {
-        if (static_cast<bool>(_M_state) && !_M_state.unique())
+	if (static_cast<bool>(_M_state) && !_M_state.unique())
 	  _M_state->_M_break_promise(std::move(_M_state->_M_result));
       }
 
@@ -1709,7 +1709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// result in _M_result, swaps that with the base _M_result and makes
 	// the state ready. Tell _M_set_result to ignore failure so all later
 	// calls do nothing.
-        _M_set_result(_S_task_setter(_M_result, _M_fn), true);
+	_M_set_result(_S_task_setter(_M_result, _M_fn), true);
       }
 
       // Caller should check whether the state is ready first, because this

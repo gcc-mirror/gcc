@@ -451,7 +451,7 @@ extern gimple_opt_pass *make_pass_early_warn_uninitialized (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_late_warn_uninitialized (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_cse_reciprocals (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_cse_sincos (gcc::context *ctxt);
-extern gimple_opt_pass *make_pass_expand_powcabs (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_expand_pow (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_optimize_bswap (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_store_merging (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_optimize_widening_mul (gcc::context *ctxt);
@@ -470,6 +470,7 @@ extern gimple_opt_pass *make_pass_fre (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_check_data_deps (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_copy_prop (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_isolate_erroneous_paths (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_array_bounds (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_early_vrp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_fast_vrp (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_vrp (gcc::context *ctxt);
@@ -614,6 +615,7 @@ extern rtl_opt_pass *make_pass_branch_prob (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_value_profile_transformations (gcc::context
 							      *ctxt);
 extern rtl_opt_pass *make_pass_postreload_cse (gcc::context *ctxt);
+extern rtl_opt_pass *make_pass_late_combine (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_gcse2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_split_after_reload (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_thread_prologue_and_epilogue (gcc::context

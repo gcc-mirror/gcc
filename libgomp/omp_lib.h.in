@@ -155,6 +155,7 @@
       integer (omp_allocator_handle_kind) omp_cgroup_mem_alloc
       integer (omp_allocator_handle_kind) omp_pteam_mem_alloc
       integer (omp_allocator_handle_kind) omp_thread_mem_alloc
+      integer (omp_allocator_handle_kind) ompx_gnu_pinned_mem_alloc
       parameter (omp_null_allocator = 0)
       parameter (omp_default_mem_alloc = 1)
       parameter (omp_large_cap_mem_alloc = 2)
@@ -164,6 +165,7 @@
       parameter (omp_cgroup_mem_alloc = 6)
       parameter (omp_pteam_mem_alloc = 7)
       parameter (omp_thread_mem_alloc = 8)
+      parameter (ompx_gnu_pinned_mem_alloc = 200)
       integer (omp_memspace_handle_kind) omp_default_mem_space
       integer (omp_memspace_handle_kind) omp_large_cap_mem_space
       integer (omp_memspace_handle_kind) omp_const_mem_space

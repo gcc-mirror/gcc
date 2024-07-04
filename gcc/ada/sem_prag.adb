@@ -2966,16 +2966,18 @@ package body Sem_Prag is
            (Item    : Node_Id;
             Item_Id : Entity_Id)
          is
-            Context : Entity_Id;
-            Dummy   : Boolean;
-            Inputs  : Elist_Id := No_Elist;
-            Outputs : Elist_Id := No_Elist;
+            Context   : Entity_Id;
+            Dummy     : Boolean;
+            Item_View : Entity_Id;
+            Inputs    : Elist_Id := No_Elist;
+            Outputs   : Elist_Id := No_Elist;
 
          begin
             --  Traverse the scope stack looking for enclosing subprograms or
             --  tasks subject to pragma [Refined_]Global.
 
             Context := Scope (Subp_Id);
+            Check_Context :
             while Present (Context) and then Context /= Standard_Standard loop
 
                --  For a single task type, retrieve the corresponding object to
@@ -2997,35 +2999,64 @@ package body Sem_Prag is
                      Subp_Outputs => Outputs,
                      Global_Seen  => Dummy);
 
-                  --  The item is classified as In_Out or Output but appears as
-                  --  an Input or a formal parameter of mode IN in an enclosing
-                  --  subprogram or task unit (SPARK RM 6.1.4(13)).
+                  --  If the item is a constituent, we must check not just the
+                  --  item itself, but also its encapsulating abstract states.
 
-                  if Appears_In (Inputs, Item_Id)
-                    and then not Appears_In (Outputs, Item_Id)
-                  then
-                     SPARK_Msg_NE
-                       ("global item & cannot have mode In_Out or Output",
-                        Item, Item_Id);
+                  Item_View := Item_Id;
 
-                     if Is_Subprogram_Or_Entry (Context) then
-                        SPARK_Msg_NE
-                          (Fix_Msg (Subp_Id, "\item already appears as input "
-                           & "of subprogram &"), Item, Context);
-                     else
-                        SPARK_Msg_NE
-                          (Fix_Msg (Subp_Id, "\item already appears as input "
-                           & "of task &"), Item, Context);
+                  Check_View : loop
+                     --  The item is classified as In_Out or Output but appears
+                     --  as an Input or a formal parameter of mode IN in
+                     --  an enclosing subprogram or task unit (SPARK RM
+                     --  6.1.4(13)).
+
+                     if Appears_In (Inputs, Item_View)
+                       and then not Appears_In (Outputs, Item_View)
+                     then
+                        if Item_View = Item_Id then
+                           SPARK_Msg_NE
+                             ("global item & " &
+                              "cannot have mode In_Out or Output",
+                              Item, Item_Id);
+                        else
+                           Error_Msg_Node_2 := Item_View;
+                           SPARK_Msg_NE
+                             ("global constituent & of & " &
+                              "cannot have mode In_Out or Output",
+                              Item, Item_Id);
+                        end if;
+
+                        if Is_Subprogram_Or_Entry (Context) then
+                           SPARK_Msg_NE
+                             (Fix_Msg (Subp_Id, "\item already appears "
+                              & "as input of subprogram &"), Item, Context);
+                        else
+                           SPARK_Msg_NE
+                             (Fix_Msg (Subp_Id, "\item already appears "
+                              & "as input of task &"), Item, Context);
+                        end if;
+
+                        --  Stop the traversal once an error has been detected
+
+                        exit Check_Context;
                      end if;
 
-                     --  Stop the traversal once an error has been detected
+                     if Ekind (Item_View) in E_Abstract_State
+                                           | E_Constant
+                                           | E_Variable
+                     then
+                        Item_View := Encapsulating_State (Item_View);
 
-                     exit;
-                  end if;
+                        exit Check_View when No (Item_View);
+                     else
+                        exit Check_View;
+                     end if;
+                  end loop Check_View;
+
                end if;
 
                Context := Scope (Context);
-            end loop;
+            end loop Check_Context;
          end Check_Mode_Restriction_In_Enclosing_Context;
 
          ----------------------------------------
@@ -8498,6 +8529,15 @@ package body Sem_Prag is
                end if;
             end if;
 
+            --  If the convention of a record type is changed (such as to C),
+            --  this must override C_Pass_By_Copy if that flag was inherited
+            --  from a parent type where the latter convention was specified,
+            --  so we force the flag to False.
+
+            if Cname /= Name_C_Pass_By_Copy and then Is_Record_Type (E) then
+               Set_C_Pass_By_Copy (Base_Type (E), False);
+            end if;
+
             --  If the entity is a derived boolean type, check for the special
             --  case of convention C, C++, or Fortran, where we consider any
             --  nonzero value to represent true.
@@ -12021,6 +12061,18 @@ package body Sem_Prag is
          Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
          Set_Is_Checked (N, Is_Checked (Original_Node (N)));
 
+      --  Skip querying the applicable policy at this point for dynamic
+      --  predicate checks since they rely on the policy applicable in
+      --  the context of their associated type declaration (and this
+      --  pragma check has been internally added by the frontend at the
+      --  point where the runtime check must be performed).
+
+      elsif not Comes_From_Source (N)
+        and then Chars (Pragma_Identifier (N)) = Name_Check
+        and then Pname = Name_Dynamic_Predicate
+      then
+         null;
+
       --  Otherwise query the applicable policy at this point
 
       else
@@ -14411,6 +14463,62 @@ package body Sem_Prag is
          --  restore the Ghost mode.
 
          when Pragma_Check => Check : declare
+
+            procedure Handle_Dynamic_Predicate_Check;
+            --  Enable or ignore the pragma depending on whether dynamic
+            --  checks are enabled in the context where the associated
+            --  type declaration is defined.
+
+            ------------------------------------
+            -- Handle_Dynamic_Predicate_Check --
+            ------------------------------------
+
+            procedure Handle_Dynamic_Predicate_Check is
+               Func_Call : constant Node_Id   := Expression (Arg2);
+               Func_Id   : constant Entity_Id := Entity (Name (Func_Call));
+               Typ       : Entity_Id;
+
+            begin
+               --  Locate the type declaration associated with this runtime
+               --  check. The 2nd parameter of this pragma is a call to an
+               --  internally built function that has a single parameter;
+               --  the type of that formal parameter is the type we are
+               --  searching for.
+
+               pragma Assert (Is_Predicate_Function (Func_Id));
+               Typ := Etype (First_Entity (Func_Id));
+
+               if not Has_Dynamic_Predicate_Aspect (Typ)
+                 and then Is_Private_Type (Typ)
+                 and then Present (Full_View (Typ))
+               then
+                  Typ := Full_View (Typ);
+               end if;
+
+               pragma Assert (Has_Dynamic_Predicate_Aspect (Typ));
+
+               if not Predicates_Ignored (Typ) then
+                  Set_Is_Checked (N, True);
+                  Set_Is_Ignored (N, False);
+
+               else
+                  --  In CodePeer mode and GNATprove mode, we need to
+                  --  consider all assertions, unless they are disabled,
+                  --  because transformations of the AST may depend on
+                  --  assertions being checked.
+
+                  if CodePeer_Mode or GNATprove_Mode then
+                     Set_Is_Checked (N, True);
+                     Set_Is_Ignored (N, False);
+                  else
+                     Set_Is_Checked (N, False);
+                     Set_Is_Ignored (N, True);
+                  end if;
+               end if;
+            end Handle_Dynamic_Predicate_Check;
+
+            --  Local variables
+
             Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
             Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
             --  Save the Ghost-related attributes to restore on exit
@@ -14420,6 +14528,8 @@ package body Sem_Prag is
             Expr  : Node_Id;
             Str   : Node_Id;
             pragma Warnings (Off, Str);
+
+         --  Start of processing for Pragma_Check
 
          begin
             --  Pragma Check is Ghost when it applies to a Ghost entity. Set
@@ -14474,6 +14584,16 @@ package body Sem_Prag is
             then
                Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
                Set_Is_Checked (N, Is_Checked (Original_Node (N)));
+
+            --  Internally added dynamic predicate checks require checking the
+            --  applicable policy at the point of the type declaration of their
+            --  corresponding entity.
+
+            elsif not Comes_From_Source (N)
+              and then Chars (Pragma_Identifier (N)) = Name_Check
+              and then Pname = Name_Dynamic_Predicate
+            then
+               Handle_Dynamic_Predicate_Check;
 
             --  Otherwise query the applicable policy at this point
 
@@ -17302,17 +17422,17 @@ package body Sem_Prag is
          -- Extensions_Allowed --
          ------------------------
 
-         --  pragma Extensions_Allowed (ON | OFF | ALL);
+         --  pragma Extensions_Allowed (ON | OFF | ALL_EXTENSIONS);
 
          when Pragma_Extensions_Allowed =>
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_No_Identifiers;
-            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off, Name_All);
+            Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off, Name_All_Extensions);
 
             if Chars (Get_Pragma_Arg (Arg1)) = Name_On then
                Ada_Version := Ada_With_Core_Extensions;
-            elsif Chars (Get_Pragma_Arg (Arg1)) = Name_All then
+            elsif Chars (Get_Pragma_Arg (Arg1)) = Name_All_Extensions then
                Ada_Version := Ada_With_All_Extensions;
             else
                Ada_Version := Ada_Version_Explicit;
@@ -20344,11 +20464,7 @@ package body Sem_Prag is
 
          --  pragma Max_Entry_Queue_Length (static_integer_EXPRESSION);
 
-         --  This processing is shared by Pragma_Max_Entry_Queue_Depth and
-         --  Pragma_Max_Queue_Length.
-
          when Pragma_Max_Entry_Queue_Length
-            | Pragma_Max_Entry_Queue_Depth
             | Pragma_Max_Queue_Length
          =>
          Max_Entry_Queue_Length : declare
@@ -20358,9 +20474,7 @@ package body Sem_Prag is
             Val        : Uint;
 
          begin
-            if Prag_Id = Pragma_Max_Entry_Queue_Depth
-              or else Prag_Id = Pragma_Max_Queue_Length
-            then
+            if Prag_Id = Pragma_Max_Queue_Length then
                GNAT_Pragma;
             end if;
 
@@ -20395,10 +20509,6 @@ package body Sem_Prag is
             if (Has_Rep_Pragma (Entry_Id, Name_Max_Entry_Queue_Length)
                   and then
                 Prag_Id /= Pragma_Max_Entry_Queue_Length)
-                 or else
-               (Has_Rep_Pragma (Entry_Id, Name_Max_Entry_Queue_Depth)
-                  and then
-                Prag_Id /= Pragma_Max_Entry_Queue_Depth)
                  or else
                (Has_Rep_Pragma (Entry_Id, Name_Max_Queue_Length)
                   and then
@@ -20969,6 +21079,18 @@ package body Sem_Prag is
                   Set_Restriction (No_Tasking, N);
                end if;
             end;
+
+         ----------------------------------
+         -- Interrupts_System_By_Default --
+         ----------------------------------
+
+         --  pragma Interrupts_System_By_Default;
+
+         when Pragma_Interrupts_System_By_Default =>
+            GNAT_Pragma;
+            Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
+            Interrupts_System_By_Default := True;
 
          -----------------------
          -- No_Tagged_Streams --
@@ -22270,8 +22392,22 @@ package body Sem_Prag is
             Set_Has_Delayed_Aspects (Typ);
             Set_Has_Delayed_Freeze (Typ);
 
-            Set_Predicates_Ignored (Typ,
-              Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
+            --  Mark this aspect as ignored if the policy in effect is Ignore.
+
+            --  It is not done for the internally built pragma created as part
+            --  of processing aspect dynamic predicate because, in such case,
+            --  this was done when the aspect was processed (see subprogram
+            --  Analyze_One_Aspect).
+
+            if From_Aspect_Specification (N)
+              and then Pname = Name_Dynamic_Predicate
+            then
+               null;
+            else
+               Set_Predicates_Ignored (Typ,
+                 Policy_In_Effect (Name_Dynamic_Predicate) = Name_Ignore);
+            end if;
+
             Discard := Rep_Item_Too_Late (Typ, N, FOnly => True);
          end Predicate;
 
@@ -27650,13 +27786,6 @@ package body Sem_Prag is
       --  Start of processing for Check_Dependency_Clause
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            return;
-         end if;
-
          --  Examine all refinement clauses and compare them against the
          --  dependence clause.
 
@@ -27910,16 +28039,10 @@ package body Sem_Prag is
       --  Start of processing for Check_Output_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the outputs of pragma Depends looking for a state with a
          --  visible refinement.
 
-         elsif Present (Spec_Outputs) then
+         if Present (Spec_Outputs) then
             Item_Elmt := First_Elmt (Spec_Outputs);
             while Present (Item_Elmt) loop
                Item := Node (Item_Elmt);
@@ -28261,22 +28384,13 @@ package body Sem_Prag is
          Clause : Node_Id;
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
+         Clause := First (Clauses);
+         while Present (Clause) loop
+            SPARK_Msg_N
+              ("unmatched or extra clause in dependence refinement", Clause);
 
-         if In_Instance then
-            null;
-
-         elsif Present (Clauses) then
-            Clause := First (Clauses);
-            while Present (Clause) loop
-               SPARK_Msg_N
-                 ("unmatched or extra clause in dependence refinement",
-                  Clause);
-
-               Next (Clause);
-            end loop;
-         end if;
+            Next (Clause);
+         end loop;
       end Report_Extra_Clauses;
 
       --  Local variables
@@ -28368,6 +28482,13 @@ package body Sem_Prag is
       --  is consistent with their role.
 
       Analyze_Depends_In_Decl_Part (N);
+
+      --  Do not perform these checks in an instance because they were already
+      --  performed successfully in the generic template.
+
+      if In_Instance then
+         goto Leave;
+      end if;
 
       --  Do not match dependencies against refinements if Refined_Depends is
       --  illegal to avoid emitting misleading error.
@@ -28712,16 +28833,10 @@ package body Sem_Prag is
       --  Start of processing for Check_In_Out_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the In_Out items of the corresponding Global pragma
          --  looking for a state with a visible refinement.
 
-         elsif Has_In_Out_State and then Present (In_Out_Items) then
+         if Has_In_Out_State and then Present (In_Out_Items) then
             Item_Elmt := First_Elmt (In_Out_Items);
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
@@ -28821,16 +28936,10 @@ package body Sem_Prag is
       --  Start of processing for Check_Input_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the Input items of the corresponding Global pragma looking
          --  for a state with a visible refinement.
 
-         elsif Has_In_State and then Present (In_Items) then
+         if Has_In_State and then Present (In_Items) then
             Item_Elmt := First_Elmt (In_Items);
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
@@ -28944,16 +29053,10 @@ package body Sem_Prag is
       --  Start of processing for Check_Output_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the Output items of the corresponding Global pragma
          --  looking for a state with a visible refinement.
 
-         elsif Has_Out_State and then Present (Out_Items) then
+         if Has_Out_State and then Present (Out_Items) then
             Item_Elmt := First_Elmt (Out_Items);
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
@@ -29050,16 +29153,10 @@ package body Sem_Prag is
       --  Start of processing for Check_Proof_In_States
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
          --  Inspect the Proof_In items of the corresponding Global pragma
          --  looking for a state with a visible refinement.
 
-         elsif Has_Proof_In_State and then Present (Proof_In_Items) then
+         if Has_Proof_In_State and then Present (Proof_In_Items) then
             Item_Elmt := First_Elmt (Proof_In_Items);
             while Present (Item_Elmt) loop
                Item_Id := Node (Item_Elmt);
@@ -29214,13 +29311,7 @@ package body Sem_Prag is
       --  Start of processing for Check_Refined_Global_List
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
-         elsif Nkind (List) = N_Null then
+         if Nkind (List) = N_Null then
             null;
 
          --  Single global item declaration
@@ -29465,18 +29556,10 @@ package body Sem_Prag is
       --  Start of processing for Report_Extra_Constituents
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
-         else
-            Report_Extra_Constituents_In_List (In_Constits);
-            Report_Extra_Constituents_In_List (In_Out_Constits);
-            Report_Extra_Constituents_In_List (Out_Constits);
-            Report_Extra_Constituents_In_List (Proof_In_Constits);
-         end if;
+         Report_Extra_Constituents_In_List (In_Constits);
+         Report_Extra_Constituents_In_List (In_Out_Constits);
+         Report_Extra_Constituents_In_List (Out_Constits);
+         Report_Extra_Constituents_In_List (Proof_In_Constits);
       end Report_Extra_Constituents;
 
       --------------------------
@@ -29488,21 +29571,13 @@ package body Sem_Prag is
          Item_Id   : Entity_Id;
 
       begin
-         --  Do not perform this check in an instance because it was already
-         --  performed successfully in the generic template.
-
-         if In_Instance then
-            null;
-
-         else
-            if Present (Repeat_Items) then
-               Item_Elmt := First_Elmt (Repeat_Items);
-               while Present (Item_Elmt) loop
-                  Item_Id := Node (Item_Elmt);
-                  SPARK_Msg_NE ("missing global item &", N, Item_Id);
-                  Next_Elmt (Item_Elmt);
-               end loop;
-            end if;
+         if Present (Repeat_Items) then
+            Item_Elmt := First_Elmt (Repeat_Items);
+            while Present (Item_Elmt) loop
+               Item_Id := Node (Item_Elmt);
+               SPARK_Msg_NE ("missing global item &", N, Item_Id);
+               Next_Elmt (Item_Elmt);
+            end loop;
          end if;
       end Report_Missing_Items;
 
@@ -29603,6 +29678,13 @@ package body Sem_Prag is
 
       Analyze_Global_In_Decl_Part (N);
 
+      --  Do not perform these checks in an instance because they were already
+      --  performed successfully in the generic template.
+
+      if In_Instance then
+         goto Leave;
+      end if;
+
       --  Perform all refinement checks with respect to completeness and mode
       --  matching.
 
@@ -29671,7 +29753,6 @@ package body Sem_Prag is
       --  in the generic template.
 
       if Serious_Errors_Detected = Errors
-        and then not In_Instance
         and then not Has_Null_State
         and then No_Constit
       then
@@ -32687,7 +32768,6 @@ package body Sem_Prag is
       Pragma_Machine_Attribute              => -1,
       Pragma_Main                           => -1,
       Pragma_Main_Storage                   => -1,
-      Pragma_Max_Entry_Queue_Depth          =>  0,
       Pragma_Max_Entry_Queue_Length         =>  0,
       Pragma_Max_Queue_Length               =>  0,
       Pragma_Memory_Size                    =>  0,
@@ -32699,6 +32779,7 @@ package body Sem_Prag is
       Pragma_No_Inline                      =>  0,
       Pragma_No_Return                      =>  0,
       Pragma_No_Run_Time                    => -1,
+      Pragma_Interrupts_System_By_Default   =>  0,
       Pragma_No_Strict_Aliasing             => -1,
       Pragma_No_Tagged_Streams              =>  0,
       Pragma_Normalize_Scalars              =>  0,

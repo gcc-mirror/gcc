@@ -3,8 +3,10 @@
 
 #include "vdiv-template.h"
 
-/* { dg-final { scan-assembler-times {\tvdiv\.vv} 8 } } */
-/* { dg-final { scan-assembler-times {\tvdivu\.vv} 8 } } */
+/* { dg-final { scan-assembler-times {\tvdiv\.vv} 5 } } */
+/* { dg-final { scan-assembler-times {\tvdiv\.vx} 3 } } */
+/* { dg-final { scan-assembler-times {\tvdivu\.vv} 5 } } */
+/* { dg-final { scan-assembler-times {\tvdivu\.vx} 3 } } */
 
 /* Division by constant is done by calculating a reciprocal and
    then multiplying.  Hence we do not expect 6 vfdivs.  */

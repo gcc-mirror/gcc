@@ -1,3 +1,59 @@
+2024-06-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/115624
+	* c.opt (Wnrvo): Add Warning property.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-opts.cc: Replace include of "tree-diagnostic.h" with
+	"diagnostic-macro-unwinding.h".
+
+2024-06-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (is_float16): New predicate.
+	(dump_ada_node) <REAL_TYPE>: Call it.
+
+2024-06-17  Joseph Myers  <josmyers@redhat.com>
+
+	* c-common.cc (c_sizeof_or_alignof_type): Allow alignof on an
+	incomplete array type for C2Y.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/115290
+	* c-warn.cc (do_warn_array_compare): Use %E rather than %D for
+	printing op0 and op1; if those operands aren't decls, also print
+	parens around them.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-ada-spec.cc (dump_ads): Update for fields of pretty_printer
+	becoming private.
+	* c-pretty-print.cc: Likewise throughout.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-ada-spec.cc: Rename pretty_printer "buffer" to "pp"
+	throughout.
+
+2024-06-11  Joseph Myers  <josmyers@redhat.com>
+
+	* c-common.cc (flag_isoc2y): New.
+	(flag_isoc99, flag_isoc11, flag_isoc23): Update comments.
+	* c-common.h (flag_isoc2y): New.
+	(clk_c, flag_isoc23): Update comments.
+	* c-opts.cc (set_std_c2y): New.
+	(c_common_handle_option): Handle OPT_std_c2y and OPT_std_gnu2y.
+	(set_std_c89, set_std_c99, set_std_c11, set_std_c17, set_std_c23):
+	Set flag_isoc2y.
+	(set_std_c23): Update comment.
+	* c.opt (Wc23-c2y-compat, std=c2y, std=gnu2y): New.
+	* c.opt.urls: Regenerate.
+
+2024-06-11  Andi Kleen  <ak@linux.intel.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define __GXX_CONSTEXPR_ASM__
+
 2024-06-05  Jakub Jelinek  <jakub@redhat.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

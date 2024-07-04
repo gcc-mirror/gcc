@@ -29,6 +29,12 @@ with System.WCh_Con; use System.WCh_Con;
 
 package body Csets is
 
+   Identifier_Char_Table : Char_Array_Flags;
+   --  This table contains all statically known characters which can appear in
+   --  identifiers, but excludes characters which need to be known dynamically,
+   --  for example like those that depend on the current Ada version which may
+   --  change from file to file.
+
    X_80 : constant Character := Character'Val (16#80#);
    X_81 : constant Character := Character'Val (16#81#);
    X_82 : constant Character := Character'Val (16#82#);
@@ -1085,6 +1091,34 @@ package body Csets is
 
       others => ' ');
 
+   ---------------------
+   -- Identifier_Char --
+   ---------------------
+
+   function Identifier_Char (Item : Character) return Boolean is
+   begin
+      --  Handle explicit dynamic cases
+
+      case Item is
+
+         --  Add [ as an identifier character to deal with the brackets
+         --  notation for wide characters used in identifiers for versions up
+         --  to Ada 2012.
+
+         --  Note that if we are not allowing wide characters in identifiers,
+         --  then any use of this notation will be flagged as an error in
+         --  Scan_Identifier.
+
+         when '[' | ']' =>
+            return Ada_Version < Ada_2022;
+
+         --  Otherwise, this is a static case - use the table
+
+         when others =>
+            return Identifier_Char_Table (Item);
+      end case;
+   end Identifier_Char;
+
    ----------------
    -- Initialize --
    ----------------
@@ -1144,16 +1178,8 @@ package body Csets is
       --  Build Identifier_Char table from used entries of Fold_Upper
 
       for J in Character loop
-         Identifier_Char (J) := (Fold_Upper (J) /= ' ');
+         Identifier_Char_Table (J) := (Fold_Upper (J) /= ' ');
       end loop;
-
-      --  Add [ as an identifier character to deal with the brackets notation
-      --  for wide characters used in identifiers for versions up to Ada 2012.
-      --  Note that if we are not allowing wide characters in identifiers, then
-      --  any use of this notation will be flagged as an error in
-      --  Scan_Identifier.
-
-      Identifier_Char ('[') := Ada_Version < Ada_2022;
 
       --  Add entry for ESC if wide characters in use with a wide character
       --  encoding method active that uses the ESC code for encoding.
@@ -1161,7 +1187,7 @@ package body Csets is
       if Identifier_Character_Set = 'w'
         and then Wide_Character_Encoding_Method in WC_ESC_Encoding_Method
       then
-         Identifier_Char (ASCII.ESC) := True;
+         Identifier_Char_Table (ASCII.ESC) := True;
       end if;
    end Initialize;
 

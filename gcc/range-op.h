@@ -336,8 +336,8 @@ inline bool
 range_cast (vrange &r, tree type)
 {
   gcc_checking_assert (r.supports_type_p (type));
-  Value_Range tmp (r);
-  Value_Range varying (type);
+  value_range tmp (r);
+  value_range varying (type);
   varying.set_varying (type);
   // Call op_convert, if it fails, the result is varying.
   if (!range_op_handler (CONVERT_EXPR).fold_range (r, type, tmp, varying))
@@ -352,10 +352,10 @@ range_cast (vrange &r, tree type)
 // ie for float to int.
 
 inline bool
-range_cast (Value_Range &r, tree type)
+range_cast (value_range &r, tree type)
 {
-  Value_Range tmp (r);
-  Value_Range varying (type);
+  value_range tmp (r);
+  value_range varying (type);
   varying.set_varying (type);
 
   // Ensure we are in the correct mode for the call to fold.

@@ -162,10 +162,14 @@ package body Bcheck is
             end if;
 
          else
-            ALI_Path_Id :=
-              Osint.Full_Lib_File_Name (A.Afile);
+            ALI_Path_Id := Osint.Full_Lib_File_Name (A.Afile);
 
-            if Osint.Is_Readonly_Library (ALI_Path_Id) then
+            --  Guard against Find_File not finding (again) the file because
+            --  Primary_Directory has been clobbered in between.
+
+            if Present (ALI_Path_Id)
+              and then Osint.Is_Readonly_Library (ALI_Path_Id)
+            then
                if Tolerate_Consistency_Errors then
                   Error_Msg ("?{ should be recompiled");
                   Error_Msg_File_1 := ALI_Path_Id;

@@ -166,6 +166,9 @@ public:
   new_sizeof (type *type);
 
   rvalue *
+  new_alignof (type *type);
+
+  rvalue *
   new_string_literal (const char *value);
 
   rvalue *

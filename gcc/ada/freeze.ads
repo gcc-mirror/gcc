@@ -170,11 +170,14 @@ package Freeze is
    procedure Check_Inherited_Conditions
     (R               : Entity_Id;
      Late_Overriding : Boolean := False);
-   --  For a tagged derived type R, create wrappers for inherited operations
-   --  that have class-wide conditions, so it can be properly rewritten if
-   --  it involves calls to other overriding primitives. Late_Overriding is
-   --  True when we are processing the body of a primitive with no previous
-   --  spec defined after R is frozen (see Check_Dispatching_Operation).
+   --  R is a derived tagged type or a derived interface type. For a derived
+   --  interface type R, check strub mode compatibility of its primitives; for
+   --  a tagged derived type R, in addition to check strub mode compatibility,
+   --  create wrappers for inherited operations that have class-wide conditions
+   --  so it can be properly rewritten if it involves calls to other overriding
+   --  primitives. Late_Overriding is True when we are processing the body of a
+   --  primitive with no previous spec defined after R is frozen (see procedure
+   --  Check_Dispatching_Operation).
 
    procedure Explode_Initialization_Compound_Statement (E : Entity_Id);
    --  If Initialization_Statements (E) is an N_Compound_Statement, insert its

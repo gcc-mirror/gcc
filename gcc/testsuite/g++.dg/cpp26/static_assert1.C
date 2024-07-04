@@ -6,25 +6,25 @@
 
 static_assert (true, "");
 static_assert (true, (""));	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-				// { dg-error "'static_assert' message must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
+				// { dg-error "constexpr string must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
 				// { dg-error "request for member 'size' in '\\\(\\\"\\\"\\\)', which is of non-class type 'const char \\\[1\\\]'" "" { target *-*-* } .-2 }
 static_assert (true, "" + 0);	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-				// { dg-error "'static_assert' message must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
+				// { dg-error "constexpr string must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
 				// { dg-error "request for member 'size' in '\\\(const char\\\*\\\)\\\"\\\"', which is of non-class type 'const char\\\*'" "" { target *-*-* } .-2 }
 static_assert (true, 0);	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-				// { dg-error "'static_assert' message must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
+				// { dg-error "constexpr string must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
 				// { dg-error "request for member 'size' in '0', which is of non-class type 'int'" "" { target *-*-* } .-2 }
 struct A {};
 static_assert (true, A {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-				// { dg-error "'static_assert' message must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
+				// { dg-error "constexpr string must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
 				// { dg-error "'struct A' has no member named 'size'" "" { target *-*-* } .-2 }
 struct B { int size; };
 static_assert (true, B {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-				// { dg-error "'static_assert' message must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
+				// { dg-error "constexpr string must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
 				// { dg-error "'struct B' has no member named 'data'" "" { target *-*-* } .-2 }
 struct C { constexpr int size () const { return 0; } };
 static_assert (true, C {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-				// { dg-error "'static_assert' message must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
+				// { dg-error "constexpr string must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
 				// { dg-error "'struct C' has no member named 'data'" "" { target *-*-* } .-2 }
 struct D { constexpr int size () const { return 0; } int data; };
 static_assert (true, D {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
@@ -37,13 +37,13 @@ static_assert (true, E {});	// { dg-warning "'static_assert' with non-string mes
 struct F { constexpr const char *size () const { return ""; }
 	   constexpr const char *data () const { return ""; } };
 static_assert (true, F {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-				// { dg-error "'static_assert' message 'size\\\(\\\)' must be implicitly convertible to 'std::size_t'" "" { target *-*-* } .-1 }
+				// { dg-error "constexpr string 'size\\\(\\\)' must be implicitly convertible to 'std::size_t'" "" { target *-*-* } .-1 }
 				// { dg-error "could not convert 'F\\\(\\\).F::size\\\(\\\)' from 'const char\\\*' to '\[^']*'" "" { target *-*-* } .-2 }
 				// { dg-error "conversion from 'const char\\\*' to '\[^']*' in a converted constant expression" "" { target *-*-* } .-3 }
 struct G { constexpr long size () const { return 0; }
 	   constexpr float data () const { return 0.0f; } };
 static_assert (true, G {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-				// { dg-error "'static_assert' message 'data\\\(\\\)' must be implicitly convertible to 'const char\\\*'" "" { target *-*-* } .-1 }
+				// { dg-error "constexpr string 'data\\\(\\\)' must be implicitly convertible to 'const char\\\*'" "" { target *-*-* } .-1 }
 				// { dg-error "could not convert 'G\\\(\\\).G::data\\\(\\\)' from 'float' to 'const char\\\*'" "" { target *-*-* } .-2 }
 struct H { short size () const { return 0; }
 	   constexpr const char *data () const { return ""; } };
@@ -59,7 +59,7 @@ static_assert (true, J (1));	// { dg-warning "'static_assert' with non-string me
 static_assert (false, J (0));	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
 				// { dg-error "static assertion failed" "" { target *-*-* } .-1 }
 static_assert (false, J (1));	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-				// { dg-error "'static_assert' message 'size\\\(\\\)' must be a constant expression" "" { target *-*-* } .-1 }
+				// { dg-error "constexpr string 'size\\\(\\\)' must be a constant expression" "" { target *-*-* } .-1 }
 struct K { constexpr operator int () { return 4; } };
 struct L { constexpr operator const char * () { return "test"; } };
 struct M { constexpr K size () const { return {}; }
@@ -72,7 +72,7 @@ struct N { constexpr int size () const { return 3; }
 	   constexpr const char *data () const { return new char[3] { 'b', 'a', 'd' }; } }; // { dg-error "'\\\* N\\\(\\\).N::data\\\(\\\)' is not a constant expression because allocated storage has not been deallocated" "" { target c++20 } }
 static_assert (true, N {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target { c++20 && c++23_down } } }
 static_assert (false, N {});	// { dg-warning "'static_assert' with non-string message only available with" "" { target { c++20 && c++23_down } } }
-				// { dg-error "'static_assert' message 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++20 } .-1 }
+				// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++20 } .-1 }
 #endif
 constexpr const char a[] = { 't', 'e', 's', 't' };
 struct O { constexpr int size () const { return 4; }
@@ -133,7 +133,7 @@ static_assert (false, string_view (4, "testwithextrachars"));	// { dg-warning "'
 								// { dg-error "static assertion failed: test" "" { target *-*-* } .-1 }
 static_assert (false, string_view (42, "test"));		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
 								// { dg-error "array subscript value '41' is outside the bounds of array type 'const char \\\[5\\\]'" "" { target *-*-* } .-1 }
-								// { dg-error "'static_assert' message 'data\\\(\\\)\\\[41\\\]' must be a constant expression" "" { target *-*-* } .-2 }
+								// { dg-error "constexpr string 'data\\\(\\\)\\\[41\\\]' must be a constant expression" "" { target *-*-* } .-2 }
 
 template <typename T, size_t N>
 struct array {
@@ -143,7 +143,7 @@ struct array {
 };
 static_assert (true, array<char, 2> { 'O', 'K' });		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
 static_assert (true, array<wchar_t, 2> { L'O', L'K' });		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-								// { dg-error "'static_assert' message 'data\\\(\\\)' must be implicitly convertible to 'const char\\\*'" "" { target *-*-* } .-1 }
+								// { dg-error "constexpr string 'data\\\(\\\)' must be implicitly convertible to 'const char\\\*'" "" { target *-*-* } .-1 }
 								// { dg-error "could not convert 'array<wchar_t, 2>{const wchar_t \\\[2\\\]{\[0-9]+, \[0-9]+}}.array<wchar_t, 2>::data\\\(\\\)' from 'const wchar_t\\\*' to 'const char\\\*'" "" { target *-*-* } .-2 }
 static_assert (false, array<char, 4> { 't', 'e', 's', 't' });	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
 								// { dg-error "static assertion failed: test" "" { target *-*-* } .-1 }
@@ -235,7 +235,7 @@ namespace NN
   template <typename T>
   struct G {
     static_assert (false, T{});	// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_down } }
-  };				// { dg-error "'static_assert' message must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
+  };				// { dg-error "constexpr string must be a string literal or object with 'size' and 'data' members" "" { target *-*-* } .-1 }
 				// { dg-error "request for member 'size' in '0', which is of non-class type 'long int'" "" { target *-*-* } .-2 }
   F<E> fe;
   G<long> gl;
@@ -263,7 +263,7 @@ namespace NN
     static constexpr const char *data (int x = 0) { if (x) return nullptr; else throw 1; } }; // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++14 } }
   static_assert (true, J{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target { c++14 && c++23_down } } }
   static_assert (false, J{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target { c++14 && c++23_down } } }
-					// { dg-error "'static_assert' message 'data\\\(\\\)' must be a core constant expression" "" { target c++14 } .-1 }
+					// { dg-error "constexpr string 'data\\\(\\\)' must be a core constant expression" "" { target c++14 } .-1 }
 #endif
 #if __cpp_if_consteval >= 202106L
   struct K {
@@ -286,14 +286,14 @@ namespace NN
   };
   static_assert (true, M{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
   static_assert (false, M{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
-					// { dg-error "'static_assert' message 'size\\\(\\\)' must be a constant expression" "" { target c++23 } .-1 }
+					// { dg-error "constexpr string 'size\\\(\\\)' must be a constant expression" "" { target c++23 } .-1 }
   struct N {
     static constexpr int size () { return 4; }
     static constexpr const char *data () { if consteval { throw 1; } else { return "test"; } } // { dg-error "expression '<throw-expression>' is not a constant expression" "" { target c++23 } }
   };
   static_assert (true, N{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
   static_assert (false, N{});		// { dg-warning "'static_assert' with non-string message only available with" "" { target c++23_only } }
-					// { dg-error "'static_assert' message 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++23 } .-1 }
+					// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++23 } .-1 }
 #endif
   struct O { constexpr int operator () () const { return 12; } };
   struct P { constexpr const char *operator () () const { return "another test"; } };

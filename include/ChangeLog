@@ -1,3 +1,8 @@
+2024-07-02  David Faust  <david.faust@oracle.com>
+
+	* btf.h (BTF_VOID_TYPEID, BTF_INIT_TYPEID): Move defines here,
+	from gcc/btfout.cc.
+
 2024-05-29  Tobias Burnus  <tburnus@baylibre.com>
 
 	* hsa.h (HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT): Add

@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do link { target c++23 } }
+// { dg-require-cmath "" }
 
 #include <stdfloat>
 #include <cmath>

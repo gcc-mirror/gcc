@@ -66,13 +66,12 @@ namespace __gnu_debug
       typedef
 	typename std::iterator_traits<_Iterator>::difference_type _ItDiffType;
 
-      template<typename _DiffType,
-	       typename = typename std::__is_void<_DiffType>::__type>
+      template<typename _DiffType, typename = _DiffType> // PR c++/85282
 	struct _DiffTraits
 	{ typedef _DiffType __type; };
 
       template<typename _DiffType>
-	struct _DiffTraits<_DiffType, std::__true_type>
+	struct _DiffTraits<_DiffType, void>
 	{ typedef std::ptrdiff_t __type; };
 
       typedef typename _DiffTraits<_ItDiffType>::__type _DiffType;

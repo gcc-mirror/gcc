@@ -489,12 +489,11 @@ along with GCC; see the file COPYING3.  If not see
 #define INT_TYPE_SIZE		32
 #define LONG_TYPE_SIZE		(TARGET_ARCH64 ? 64 : 32)
 #define LONG_LONG_TYPE_SIZE	64
-#define FLOAT_TYPE_SIZE		32
-#define DOUBLE_TYPE_SIZE	64
 
-/* LONG_DOUBLE_TYPE_SIZE is defined per OS even though the
-   SPARC ABI says that it is 128-bit wide.  */
-/* #define LONG_DOUBLE_TYPE_SIZE	128 */
+/* SPARC_LONG_DOUBLE_TYPE_SIZE is defined per OS even though the
+   SPARC ABI says that it is 128-bit wide.  LONG_DOUBLE_TYPE_SIZE
+   get poisoned, so add SPARC_ prefix.  */
+/* #define SPARC_LONG_DOUBLE_TYPE_SIZE	128 */
 
 /* The widest floating-point format really supported by the hardware.  */
 #define WIDEST_HARDWARE_FP_SIZE 64

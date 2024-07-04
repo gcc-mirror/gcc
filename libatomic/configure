@@ -14697,49 +14697,6 @@ _ACEOF
 
 
 
-# Check for target-specific assembly-level support for atomic operations.
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for armv9.4-a LSE128 insn support" >&5
-$as_echo_n "checking for armv9.4-a LSE128 insn support... " >&6; }
-if ${libat_cv_have_feat_lse128+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-asm(".arch armv9-a+lse128")
-  ;
-  return 0;
-}
-_ACEOF
-    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
-  (eval $ac_compile) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; then
-      eval libat_cv_have_feat_lse128=yes
-    else
-      eval libat_cv_have_feat_lse128=no
-    fi
-    rm -f conftest*
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libat_cv_have_feat_lse128" >&5
-$as_echo "$libat_cv_have_feat_lse128" >&6; }
-
-  yesno=`echo $libat_cv_have_feat_lse128 | tr 'yesno' '1  0 '`
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_FEAT_LSE128 $yesno
-_ACEOF
-
-
-
-
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether byte ordering is bigendian" >&5
 $as_echo_n "checking whether byte ordering is bigendian... " >&6; }
 if ${ac_cv_c_bigendian+:} false; then :

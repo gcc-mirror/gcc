@@ -2400,7 +2400,7 @@ package body Sem_Ch7 is
 
          --  Do not enter implicitly inherited non-overridden subprograms of
          --  a tagged type back into visibility if they have non-conformant
-         --  homographs (Ada RM 8.3 12.3/2).
+         --  homographs (RM 8.3(12.3/2)).
 
          elsif Is_Hidden_Non_Overridden_Subpgm (Id) then
             null;
@@ -2827,13 +2827,14 @@ package body Sem_Ch7 is
       --  Otherwise test to see if entity requires a completion. Note that
       --  subprogram entities whose declaration does not come from source are
       --  ignored here on the basis that we assume the expander will provide an
-      --  implicit completion at some point.
+      --  implicit completion at some point. In particular, an inherited
+      --  subprogram of a derived type should not cause us to return True here.
 
       elsif (Is_Overloadable (Id)
               and then Ekind (Id) not in E_Enumeration_Literal | E_Operator
               and then not Is_Abstract_Subprogram (Id)
               and then not Has_Completion (Id)
-              and then Comes_From_Source (Parent (Id)))
+              and then Comes_From_Source (Id))
 
         or else
           (Ekind (Id) = E_Package
@@ -2918,6 +2919,7 @@ package body Sem_Ch7 is
                                      (Priv, Has_Pragma_Unreferenced_Objects
                                                                        (Full));
          Set_Predicates_Ignored      (Priv, Predicates_Ignored         (Full));
+
          if Is_Unchecked_Union (Full) then
             Set_Is_Unchecked_Union (Base_Type (Priv));
          end if;
@@ -2927,14 +2929,8 @@ package body Sem_Ch7 is
          end if;
 
          if Priv_Is_Base_Type then
-            Set_Is_Controlled_Active
-                              (Priv, Is_Controlled_Active     (Full_Base));
-            Set_Finalize_Storage_Only
-                              (Priv, Finalize_Storage_Only    (Full_Base));
-            Set_Has_Controlled_Component
-                              (Priv, Has_Controlled_Component (Full_Base));
-
-            Propagate_Concurrent_Flags (Priv, Base_Type (Full));
+            Propagate_Concurrent_Flags (Priv, Full_Base);
+            Propagate_Controlled_Flags (Priv, Full_Base);
          end if;
 
          --  As explained in Freeze_Entity, private types are required to point

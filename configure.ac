@@ -2037,6 +2037,28 @@ fi
 
 AC_SUBST(PICFLAG)
 
+# Rust requires -ldl and -lpthread if you are using an old glibc that does not include them by
+# default, so we check for them here
+
+missing_rust_dynlibs=none
+
+AC_SEARCH_LIBS([dlopen], [dl])
+AC_SEARCH_LIBS([pthread_create], [pthread])
+
+if test "$ac_cv_search_dlopen" = -ldl; then
+    CRAB1_LIBS="$CRAB1_LIBS -ldl"
+elif test "$ac_cv_search_dlopen" = no; then
+    missing_rust_dynlibs="libdl"
+fi
+
+if test "$ac_cv_search_pthread_create" = -lpthread; then
+    CRAB1_LIBS="$CRAB1_LIBS -lpthread"
+elif test "$ac_cv_search_pthread_create" = no; then
+    missing_rust_dynlibs="$missing_rust_dynlibs, libpthread"
+fi
+
+AC_SUBST(CRAB1_LIBS, "$CRAB1_LIBS")
+
 # If we are building PIC/PIE host executables, and we are building dependent
 # libs (e.g. GMP) in-tree those libs need to be configured to generate PIC
 # code.
@@ -2269,6 +2291,25 @@ if test -d ${srcdir}/gcc; then
             add_this_lang=unsupported
             ;;
           *:d:no)
+            # Silently disable.
+            add_this_lang=unsupported
+            ;;
+        esac
+
+        # Disable Rust if we are missing some required C libraries for the Rust runtime.
+        case ${add_this_lang}:${language}:${missing_rust_dynlibs} in
+          *:rust:none)
+            # Nothing to do - we're not missing any C libraries
+            ;;
+          yes:rust:*)
+            AC_MSG_ERROR([some C libraries are required to build $language: $missing_rust_dynlibs])
+            add_this_lang=unsupported
+            ;;
+          all:rust:*)
+            AC_MSG_WARN([some C libraries are required to build $language: $missing_rust_dynlibs])
+            add_this_lang=unsupported
+            ;;
+          *:rust:*)
             # Silently disable.
             add_this_lang=unsupported
             ;;

@@ -1,8 +1,8 @@
 /* Test that const and volatile qualifiers can mix on vec_mul operands.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mvsx" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

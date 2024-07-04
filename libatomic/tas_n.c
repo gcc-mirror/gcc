@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_TAS_N
 #include "libatomic_i.h"
 
 
@@ -113,3 +114,4 @@ SIZE(libat_test_and_set) (UTYPE *mptr, int smodel UNUSED)
 #endif
 
 EXPORT_ALIAS (SIZE(test_and_set));
+#undef LAT_TAS_N

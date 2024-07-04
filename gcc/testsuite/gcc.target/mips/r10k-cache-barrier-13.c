@@ -1,4 +1,4 @@
-/* { dg-options "-mr10k-cache-barrier=store" } */
+/* { dg-options "-mr10k-cache-barrier=store -mno-branch-likely" } */
 
 /* Test that indirect calls are protected.  */
 

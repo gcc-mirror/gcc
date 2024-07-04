@@ -58,7 +58,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "insn-attr.h"
 #include "tree-pass.h"
 #include "print-rtl.h"
+#include "context.h"
+#include "pass_manager.h"
 #include <math.h>
+#include "opts.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -107,6 +110,7 @@ struct GTY(()) machine_function
   bool inhibit_logues_a1_adjusts;
   rtx last_logues_a9_content;
   HARD_REG_SET eliminated_callee_saved;
+  hash_map<rtx, int> *litpool_usage;
 };
 
 static void xtensa_option_override (void);
@@ -1104,7 +1108,7 @@ xtensa_split_operand_pair (rtx operands[4], machine_mode mode)
 }
 
 
-/* Try to emit insns to load srcval (that cannot fit into signed 12-bit)
+/* Try to emit insns to load src (either naked or pooled SI/SF constant)
    into dst with synthesizing a such constant value from a sequence of
    load-immediate / arithmetic ones, instead of a L32R instruction
    (plus a constant in litpool).  */
@@ -1190,11 +1194,67 @@ xtensa_constantsynth_rtx_ADDSUBX (rtx reg, HOST_WIDE_INT imm)
 }
 
 int
-xtensa_constantsynth (rtx dst, HOST_WIDE_INT srcval)
+xtensa_constantsynth (rtx dst, rtx src)
 {
+  HOST_WIDE_INT srcval;
+  static opt_pass *pass_rtl_split2;
+  int *pv;
+
+  /* Derefer if src is litpool entry, and get integer constant value.  */
+  src = avoid_constant_pool_reference (src);
+  if (CONST_INT_P (src))
+    srcval = INTVAL (src);
+  else if (CONST_DOUBLE_P (src) && GET_MODE (src) == SFmode)
+    {
+      long l;
+
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (src), l);
+      srcval = (int32_t)l, src = GEN_INT (srcval);
+    }
+  else
+    return 0;
+
+  /* Force dst as SImode.  */
+  gcc_assert (REG_P (dst));
+  if (GET_MODE (dst) != SImode)
+    dst = gen_rtx_REG (SImode, REGNO (dst));
+
+  if (optimize_size)
+    {
+      /* During the first split pass after register allocation (rtl-split2),
+	 record the occurrence of integer src value and do nothing.  */
+      if (!pass_rtl_split2)
+	pass_rtl_split2 = g->get_passes ()->get_pass_by_name ("rtl-split2");
+      if (current_pass == pass_rtl_split2)
+	{
+	  if (!cfun->machine->litpool_usage)
+	    cfun->machine->litpool_usage = hash_map<rtx, int>::create_ggc ();
+	  if ((pv = cfun->machine->litpool_usage->get (src)))
+	    ++*pv;
+	  else
+	    cfun->machine->litpool_usage->put (src, 1);
+	  return 0;
+	}
+
+      /* If two or more identical integer constants appear in the function,
+	 the code size can be reduced by re-emitting a "move" (load from an
+	 either litpool entry or relaxed immediate) instruction in SImode
+	 to increase the chances that the litpool entry will be shared.  */
+      if (cfun->machine->litpool_usage
+	  && (pv = cfun->machine->litpool_usage->get (src))
+	  && *pv > 1)
+	{
+	  emit_move_insn (dst, src);
+	  return 1;
+	}
+    }
+
   /* No need for synthesizing for what fits into MOVI instruction.  */
   if (xtensa_simm12b (srcval))
-    return 0;
+    {
+      emit_move_insn (dst, src);
+      return 1;
+    }
 
   /* 2-insns substitution.  */
   if ((optimize_size || (optimize && xtensa_extra_l32r_costs >= 1))
@@ -1240,9 +1300,6 @@ xtensa_constantsynth (rtx dst, HOST_WIDE_INT srcval)
 		  emit_insn (gen_rotlsi3 (dst, dst, GEN_INT (shift)));
 		  return 1;
 		}
-	    }
-	  for (shift = 1; shift < 12; ++shift)
-	    {
 	      v = (int32_t)(((uint32_t)srcval << shift)
 			    | ((uint32_t)srcval >> (32 - shift)));
 	      if (xtensa_simm12b(v))
@@ -1255,7 +1312,12 @@ xtensa_constantsynth (rtx dst, HOST_WIDE_INT srcval)
 	}
     }
 
-  return 0;
+  /* If cannot synthesize the value and also cannot fit into MOVI instruc-
+     tion, re-emit a "move" (load from an either litpool entry or relaxed
+     immediate) instruction in SImode in order to increase the chances that
+     the litpool entry will be shared.  */
+  emit_move_insn (dst, src);
+  return 1;
 }
 
 
@@ -2916,6 +2978,16 @@ xtensa_option_override (void)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
+
+  /* One of the late-combine passes runs after register allocation
+     and can match define_insn_and_splits that were previously used
+     only before register allocation.  Some of those define_insn_and_splits
+     require the split to take place, but have a split condition of
+     can_create_pseudo_p, and so matching after RA will give an
+     unsplittable instruction.  Disable late-combine by default until
+     the define_insn_and_splits are fixed.  */
+  if (!OPTION_SET_P (flag_late_combine_instructions))
+    flag_late_combine_instructions = 0;
 }
 
 /* Implement TARGET_HARD_REGNO_NREGS.  */
@@ -3017,7 +3089,17 @@ print_operand (FILE *file, rtx x, int letter)
 	  /* For a volatile memory reference, emit a MEMW before the
 	     load or store.  */
 	  if (MEM_VOLATILE_P (x) && TARGET_SERIALIZE_VOLATILE)
-	    fprintf (file, "memw\n\t");
+	    {
+	      rtx_insn *prev_insn
+			= prev_nonnote_nondebug_insn (current_output_insn);
+	      rtx pat, src;
+
+	      if (! (prev_insn && NONJUMP_INSN_P (prev_insn)
+		     && GET_CODE (pat = PATTERN (prev_insn)) == SET
+		     && GET_CODE (src = SET_SRC (pat)) == UNSPEC
+		     && XINT (src, 1) == UNSPEC_MEMW))
+		fprintf (file, "memw\n\t");
+	    }
 	}
       else
 	output_operand_lossage ("invalid %%v value");

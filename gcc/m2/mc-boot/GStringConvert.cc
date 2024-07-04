@@ -46,9 +46,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _StringConvert_H
 #define _StringConvert_C
 
+#include "GStringConvert.h"
 #   include "GSYSTEM.h"
 #   include "Glibc.h"
 #   include "Glibm.h"
@@ -1995,10 +1995,10 @@ extern "C" DynamicStrings_String StringConvert_ToDecimalPlaces (DynamicStrings_S
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_StringConvert_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StringConvert_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_StringConvert_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StringConvert_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

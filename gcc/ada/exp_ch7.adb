@@ -563,12 +563,16 @@ package body Exp_Ch7 is
    --  Check recursively whether a loop or block contains a subprogram that
    --  may need an activation record.
 
-   function Convert_View (Proc : Entity_Id; Arg  : Node_Id) return Node_Id;
-   --  Proc is one of the Initialize/Adjust/Finalize operations, and Arg is the
-   --  argument being passed to it. This function will, if necessary, generate
-   --  a conversion between the partial and full view of Arg to match the type
-   --  of the formal of Proc, or force a conversion to the class-wide type in
-   --  the case where the operation is abstract.
+   function Convert_View
+     (Proc : Entity_Id;
+      Arg  : Node_Id;
+      Typ  : Entity_Id) return Node_Id;
+   --  Proc is one of the Initialize/Adjust/Finalize operations, Arg is the one
+   --  argument being passed to it, and Typ is its expected type. This function
+   --  will, if necessary, generate a conversion between the partial and full
+   --  views of Arg to match the type of the formal of Proc, or else force a
+   --  conversion to the class-wide type in the case where the operation is
+   --  abstract.
 
    function Make_Call
      (Loc       : Source_Ptr;
@@ -839,7 +843,7 @@ package body Exp_Ch7 is
         and then Needs_BIP_Collection (Func_Id)
       then
          declare
-            Ptr_Typ   : constant Node_Id := Make_Temporary (Loc, 'P');
+            Ptr_Typ   : constant Node_Id   := Make_Temporary (Loc, 'P');
             Param     : constant Entity_Id :=
                           Make_Defining_Identifier (Loc, Name_V);
 
@@ -861,27 +865,26 @@ package body Exp_Ch7 is
             Fin_Body :=
               Make_Subprogram_Body (Loc,
                 Specification =>
-                 Make_Procedure_Specification (Loc,
-                   Defining_Unit_Name => Fin_Id,
+                  Make_Procedure_Specification (Loc,
+                    Defining_Unit_Name       => Fin_Id,
+                    Parameter_Specifications => New_List (
+                      Make_Parameter_Specification (Loc,
+                        Defining_Identifier => Param,
+                        Parameter_Type      =>
+                          New_Occurrence_Of (RTE (RE_Address), Loc)))),
 
-                   Parameter_Specifications => New_List (
-                     Make_Parameter_Specification (Loc,
-                       Defining_Identifier => Param,
-                       Parameter_Type =>
-                         New_Occurrence_Of (RTE (RE_Address), Loc)))),
+                Declarations => New_List (
+                  Make_Full_Type_Declaration (Loc,
+                    Defining_Identifier => Ptr_Typ,
+                    Type_Definition     =>
+                      Make_Access_To_Object_Definition (Loc,
+                        All_Present        => True,
+                        Subtype_Indication =>
+                          New_Occurrence_Of (Obj_Typ, Loc)))),
 
-             Declarations => New_List (
-               Make_Full_Type_Declaration (Loc,
-                 Defining_Identifier => Ptr_Typ,
-                 Type_Definition     =>
-                   Make_Access_To_Object_Definition (Loc,
-                     All_Present        => True,
-                     Subtype_Indication =>
-                       New_Occurrence_Of (Obj_Typ, Loc)))),
-
-               Handled_Statement_Sequence =>
-                 Make_Handled_Sequence_Of_Statements (Loc,
-                   Statements => Fin_Stmts));
+                Handled_Statement_Sequence =>
+                  Make_Handled_Sequence_Of_Statements (Loc,
+                    Statements => Fin_Stmts));
 
             Insert_After_And_Analyze
               (Master_Node_Ins, Fin_Body, Suppress => All_Checks);
@@ -971,6 +974,11 @@ package body Exp_Ch7 is
       elsif Convention (Desig_Typ) = Convention_C
         or else Convention (Desig_Typ) = Convention_CPP
       then
+         return False;
+
+      --  Do not consider controlled types with relaxed finalization
+
+      elsif Has_Relaxed_Finalization (Desig_Typ) then
          return False;
 
       --  Do not consider an access type that returns on the secondary stack
@@ -1318,41 +1326,12 @@ package body Exp_Ch7 is
             Append_To (Stmts, Build_Runtime_Call (Loc, RE_Complete_Master));
          end if;
 
-      --  Add statements to unlock the protected object parameter and to
-      --  undefer abort. If the context is a protected procedure and the object
-      --  has entries, call the entry service routine.
-
-      --  NOTE: The generated code references _object, a parameter to the
-      --  procedure.
+      --  Add statements to undefer abort.
 
       elsif Is_Protected_Subp_Body then
-         declare
-            Spec      : constant Node_Id := Parent (Corresponding_Spec (N));
-            Conc_Typ  : Entity_Id := Empty;
-            Param     : Node_Id;
-            Param_Typ : Entity_Id;
-
-         begin
-            --  Find the _object parameter representing the protected object
-
-            Param := First (Parameter_Specifications (Spec));
-            loop
-               Param_Typ := Etype (Parameter_Type (Param));
-
-               if Ekind (Param_Typ) = E_Record_Type then
-                  Conc_Typ := Corresponding_Concurrent_Type (Param_Typ);
-               end if;
-
-               exit when No (Param) or else Present (Conc_Typ);
-               Next (Param);
-            end loop;
-
-            pragma Assert (Present (Param));
-            pragma Assert (Present (Conc_Typ));
-
-            Build_Protected_Subprogram_Call_Cleanup
-              (Specification (N), Conc_Typ, Loc, Stmts);
-         end;
+         if Abort_Allowed then
+            Append_To (Stmts, Build_Runtime_Call (Loc, RE_Abort_Undefer));
+         end if;
 
       --  Add a call to Expunge_Unactivated_Tasks for dynamically allocated
       --  tasks. Other unactivated tasks are completed by Complete_Task or
@@ -2477,26 +2456,6 @@ package body Exp_Ch7 is
                   Processing_Actions (Decl, Is_Protected => True);
                end if;
 
-            --  Specific cases of object renamings
-
-            elsif Nkind (Decl) = N_Object_Renaming_Declaration then
-               Obj_Id  := Defining_Identifier (Decl);
-               Obj_Typ := Base_Type (Etype (Obj_Id));
-
-               --  Bypass any form of processing for objects which have their
-               --  finalization disabled. This applies only to objects at the
-               --  library level.
-
-               if For_Package and then Finalize_Storage_Only (Obj_Typ) then
-                  null;
-
-               --  Ignored Ghost object renamings do not need any cleanup
-               --  actions because they will not appear in the final tree.
-
-               elsif Is_Ignored_Ghost_Entity (Obj_Id) then
-                  null;
-               end if;
-
             --  Inspect the freeze node of an access-to-controlled type and
             --  look for a delayed finalization collection. This case arises
             --  when the freeze actions are inserted at a later time than the
@@ -2701,7 +2660,7 @@ package body Exp_Ch7 is
          --  Processing for simple protected objects. Such objects require
          --  manual finalization of their lock managers. Generate:
 
-         --    procedure obj_type_nnFD (v :system__address) is
+         --    procedure obj_typ_nnFD (v : system__address) is
          --       type Ptr_Typ is access all Obj_Typ;
          --       Rnn : Obj_Typ renames Ptr_Typ!(v).all;
          --    begin
@@ -2710,7 +2669,7 @@ package body Exp_Ch7 is
          --    exception
          --       when others =>
          --          null;
-         --    end obj_type_nnFD;
+         --    end obj_typ_nnFD;
 
          if Is_Protected
            or else (Has_Simple_Protected_Object (Obj_Typ)
@@ -2798,6 +2757,76 @@ package body Exp_Ch7 is
                                (Ptr_Typ, New_Occurrence_Of (Param, Loc))))),
 
                    Handled_Statement_Sequence => HSS);
+
+               Push_Scope (Scope (Obj_Id));
+               Insert_After_And_Analyze
+                 (Master_Node_Ins, Fin_Body, Suppress => All_Checks);
+               Pop_Scope;
+
+               Master_Node_Ins := Fin_Body;
+            end;
+
+         --  If the object's subtype is an array that has a constrained first
+         --  subtype and is not this first subtype, we need to build a special
+         --  Finalize_Address primitive for the object's subtype because the
+         --  Finalize_Address primitive of the base type has been tailored to
+         --  the first subtype (see Make_Finalize_Address_Stmts). Generate:
+
+         --    procedure obj_typ_nnFD (v : system__address) is
+         --       type Ptr_Typ is access all Obj_Typ;
+         --    begin
+         --       obj_typBDF (Ptr_Typ!(v).all, f => true);
+         --    end obj_typ_nnFD;
+
+         elsif Is_Array_Type (Etype (Obj_Id))
+           and then Is_Constrained (First_Subtype (Etype (Obj_Id)))
+           and then Etype (Obj_Id) /= First_Subtype (Etype (Obj_Id))
+         then
+            declare
+               Ptr_Typ   : constant Node_Id   := Make_Temporary (Loc, 'P');
+               Param     : constant Entity_Id :=
+                             Make_Defining_Identifier (Loc, Name_V);
+
+               Fin_Body  : Node_Id;
+
+            begin
+               Obj_Typ := Etype (Obj_Id);
+
+               Fin_Id :=
+                 Make_Defining_Identifier (Loc,
+                   Make_TSS_Name_Local
+                     (Obj_Typ, TSS_Finalize_Address));
+
+               Fin_Body :=
+                 Make_Subprogram_Body (Loc,
+                   Specification =>
+                     Make_Procedure_Specification (Loc,
+                       Defining_Unit_Name       => Fin_Id,
+                       Parameter_Specifications => New_List (
+                         Make_Parameter_Specification (Loc,
+                           Defining_Identifier => Param,
+                           Parameter_Type      =>
+                             New_Occurrence_Of (RTE (RE_Address), Loc)))),
+
+                   Declarations => New_List (
+                     Make_Full_Type_Declaration (Loc,
+                       Defining_Identifier => Ptr_Typ,
+                       Type_Definition     =>
+                         Make_Access_To_Object_Definition (Loc,
+                           All_Present        => True,
+                           Subtype_Indication =>
+                             New_Occurrence_Of (Obj_Typ, Loc)))),
+
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc,
+                       Statements => New_List (
+                         Make_Final_Call (
+                           Obj_Ref =>
+                             Make_Explicit_Dereference (Loc,
+                               Prefix =>
+                                 Unchecked_Convert_To (Ptr_Typ,
+                                   Make_Identifier (Loc, Name_V))),
+                           Typ     => Obj_Typ))));
 
                Push_Scope (Scope (Obj_Id));
                Insert_After_And_Analyze
@@ -3924,7 +3953,7 @@ package body Exp_Ch7 is
          --  is from a private type that is not visibly controlled.
 
          Parent_Type := Etype (Typ);
-         Op := Find_Optional_Prim_Op (Parent_Type, Name_Of (Prim));
+         Op := Find_Controlled_Prim_Op (Parent_Type, Name_Of (Prim));
 
          if Present (Op) then
             E := Op;
@@ -3998,7 +4027,11 @@ package body Exp_Ch7 is
    -- Convert_View --
    ------------------
 
-   function Convert_View (Proc : Entity_Id; Arg  : Node_Id) return Node_Id is
+   function Convert_View
+     (Proc : Entity_Id;
+      Arg  : Node_Id;
+      Typ  : Entity_Id) return Node_Id
+   is
       Ftyp : constant Entity_Id := Etype (First_Formal (Proc));
 
       Atyp : Entity_Id;
@@ -4006,8 +4039,10 @@ package body Exp_Ch7 is
    begin
       if Nkind (Arg) in N_Type_Conversion | N_Unchecked_Type_Conversion then
          Atyp := Entity (Subtype_Mark (Arg));
-      else
+      elsif Present (Etype (Arg)) then
          Atyp := Etype (Arg);
+      else
+         Atyp := Typ;
       end if;
 
       if Is_Abstract_Subprogram (Proc) and then Is_Tagged_Type (Ftyp) then
@@ -5415,7 +5450,7 @@ package body Exp_Ch7 is
       --  Derivations from [Limited_]Controlled
 
       elsif Is_Controlled (Utyp) then
-         Adj_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Adjust_Case));
+         Adj_Id := Find_Controlled_Prim_Op (Utyp, Name_Adjust);
 
       --  Tagged types
 
@@ -5427,21 +5462,11 @@ package body Exp_Ch7 is
       end if;
 
       if Present (Adj_Id) then
-
-         --  If the object is unanalyzed, set its expected type for use in
-         --  Convert_View in case an additional conversion is needed.
-
-         if No (Etype (Ref))
-           and then Nkind (Ref) /= N_Unchecked_Type_Conversion
-         then
-            Set_Etype (Ref, Typ);
-         end if;
-
          --  The object reference may need another conversion depending on the
          --  type of the formal and that of the actual.
 
          if not Is_Class_Wide_Type (Typ) then
-            Ref := Convert_View (Adj_Id, Ref);
+            Ref := Convert_View (Adj_Id, Ref, Typ);
          end if;
 
          return
@@ -6349,6 +6374,8 @@ package body Exp_Ch7 is
       Typ      : Entity_Id;
       Is_Local : Boolean := False) return List_Id
    is
+      Loc : constant Source_Ptr := Sloc (Typ);
+
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id;
       --  Build the statements necessary to adjust a record type. The type may
       --  have discriminants and contain variant parts. Generate:
@@ -6498,7 +6525,6 @@ package body Exp_Ch7 is
       -----------------------------
 
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id is
-         Loc     : constant Source_Ptr := Sloc (Typ);
          Typ_Def : constant Node_Id    := Type_Definition (Parent (Typ));
 
          Finalizer_Data : Finalization_Exception_Data;
@@ -6826,7 +6852,7 @@ package body Exp_Ch7 is
                Proc     : Entity_Id;
 
             begin
-               Proc := Find_Optional_Prim_Op (Typ, Name_Adjust);
+               Proc := Find_Controlled_Prim_Op (Typ, Name_Adjust);
 
                --  Generate:
                --    if F then
@@ -6914,8 +6940,7 @@ package body Exp_Ch7 is
       -------------------------------
 
       function Build_Finalize_Statements (Typ : Entity_Id) return List_Id is
-         Loc     : constant Source_Ptr := Sloc (Typ);
-         Typ_Def : constant Node_Id    := Type_Definition (Parent (Typ));
+         Typ_Def : constant Node_Id := Type_Definition (Parent (Typ));
 
          Counter        : Nat := 0;
          Finalizer_Data : Finalization_Exception_Data;
@@ -7419,7 +7444,7 @@ package body Exp_Ch7 is
                      --  non-POC components are finalized before the
                      --  non-POC extension components. This violates the
                      --  usual "finalize in reverse declaration order"
-                     --  principle, but that's ok (see Ada RM 7.6.1(9)).
+                     --  principle, but that's ok (see RM 7.6.1(9)).
                      --
                      --  Last_POC_Call should be non-empty if the extension
                      --  has at least one POC. Interactions with variant
@@ -7452,7 +7477,7 @@ package body Exp_Ch7 is
                Proc     : Entity_Id;
 
             begin
-               Proc := Find_Optional_Prim_Op (Typ, Name_Finalize);
+               Proc := Find_Controlled_Prim_Op (Typ, Name_Finalize);
 
                --  Generate:
                --    if F then
@@ -7609,22 +7634,17 @@ package body Exp_Ch7 is
             return Build_Finalize_Statements (Typ);
 
          when Initialize_Case =>
-            declare
-               Loc : constant Source_Ptr := Sloc (Typ);
-
-            begin
-               if Is_Controlled (Typ) then
-                  return New_List (
-                    Make_Procedure_Call_Statement (Loc,
-                      Name                   =>
-                        New_Occurrence_Of
-                          (Find_Prim_Op (Typ, Name_Of (Prim)), Loc),
-                      Parameter_Associations => New_List (
-                        Make_Identifier (Loc, Name_V))));
-               else
-                  return Empty_List;
-               end if;
-            end;
+            if Is_Controlled (Typ) then
+               return New_List (
+                 Make_Procedure_Call_Statement (Loc,
+                   Name                   =>
+                     New_Occurrence_Of
+                       (Find_Controlled_Prim_Op (Typ, Name_Initialize), Loc),
+                   Parameter_Associations => New_List (
+                     Make_Identifier (Loc, Name_V))));
+            else
+               return Empty_List;
+            end if;
       end case;
    end Make_Deep_Record_Body;
 
@@ -7764,7 +7784,7 @@ package body Exp_Ch7 is
       --  Derivations from [Limited_]Controlled
 
       elsif Is_Controlled (Utyp) then
-         Fin_Id := Find_Optional_Prim_Op (Utyp, Name_Of (Finalize_Case));
+         Fin_Id := Find_Controlled_Prim_Op (Utyp, Name_Finalize);
 
       --  Tagged types
 
@@ -7829,16 +7849,7 @@ package body Exp_Ch7 is
                end if;
             end;
 
-            --  If the object is unanalyzed, set its expected type for use in
-            --  Convert_View in case an additional conversion is needed.
-
-            if No (Etype (Ref))
-              and then Nkind (Ref) /= N_Unchecked_Type_Conversion
-            then
-               Set_Etype (Ref, Typ);
-            end if;
-
-            Ref := Convert_View (Fin_Id, Ref);
+            Ref := Convert_View (Fin_Id, Ref, Typ);
          end if;
 
          return
@@ -7875,10 +7886,10 @@ package body Exp_Ch7 is
       if Is_Task then
          null;
 
-      --  Nothing to do if the type is not controlled or it already has a
-      --  TSS entry for Finalize_Address. Skip class-wide subtypes which do not
-      --  come from source. These are usually generated for completeness and
-      --  do not need the Finalize_Address primitive.
+      --  Nothing to do if the type does not need finalization or already has
+      --  a TSS entry for Finalize_Address. Skip class-wide subtypes that do
+      --  not come from source, as they are usually generated for completeness
+      --  and need no Finalize_Address.
 
       elsif not Needs_Finalization (Typ)
         or else Present (TSS (Typ, TSS_Finalize_Address))
@@ -8267,9 +8278,12 @@ package body Exp_Ch7 is
       --  Select the appropriate version of initialize
 
       if Has_Controlled_Component (Utyp) then
-         Proc := TSS (Utyp, Deep_Name_Of (Initialize_Case));
+         Proc := TSS (Utyp, TSS_Deep_Initialize);
+      elsif Is_Mutably_Tagged_Type (Utyp) then
+         Proc := Find_Controlled_Prim_Op (Etype (Utyp), Name_Initialize);
+         Check_Visibly_Controlled (Initialize_Case, Etype (Typ), Proc, Ref);
       else
-         Proc := Find_Prim_Op (Utyp, Name_Of (Initialize_Case));
+         Proc := Find_Controlled_Prim_Op (Utyp, Name_Initialize);
          Check_Visibly_Controlled (Initialize_Case, Typ, Proc, Ref);
       end if;
 
@@ -8291,7 +8305,7 @@ package body Exp_Ch7 is
       --  The object reference may need another conversion depending on the
       --  type of the formal and that of the actual.
 
-      Ref := Convert_View (Proc, Ref);
+      Ref := Convert_View (Proc, Ref, Typ);
 
       --  Generate:
       --    [Deep_]Initialize (Ref);

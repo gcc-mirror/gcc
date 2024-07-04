@@ -33,7 +33,9 @@
 #include "tree.h"
 #include "inchash.h"
 #include "builtins.h"
+#include "expmed.h"
 #include "fold-const.h"
+#include "optabs-query.h"
 #include "stor-layout.h"
 #include "stringpool.h"
 #include "varasm.h"
@@ -281,7 +283,7 @@ find_common_type (tree t1, tree t2)
    tests in as efficient a manner as possible.  */
 
 static tree
-compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
+compare_arrays_for_equality (location_t loc, tree result_type, tree a1, tree a2)
 {
   tree result = convert (result_type, boolean_true_node);
   tree a1_is_null = convert (result_type, boolean_false_node);
@@ -355,8 +357,6 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 	  ub1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (ub1, a1);
 
 	  comparison = fold_build2_loc (loc, LT_EXPR, result_type, ub1, lb1);
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, loc);
 
 	  this_a1_is_null = comparison;
 	  this_a2_is_null = convert (result_type, boolean_true_node);
@@ -378,9 +378,6 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 						ub1, lb1),
 			       build_binary_op (MINUS_EXPR, base_type,
 						ub2, lb2));
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, loc);
-
 	  this_a1_is_null
 	    = fold_build2_loc (loc, LT_EXPR, result_type, ub1, lb1);
 
@@ -395,8 +392,6 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 
 	  comparison
 	    = fold_build2_loc (loc, EQ_EXPR, result_type, length1, length2);
-	  if (EXPR_P (comparison))
-	    SET_EXPR_LOCATION (comparison, loc);
 
 	  lb1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (lb1, a1);
 	  ub1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (ub1, a1);
@@ -449,6 +444,89 @@ compare_arrays (location_t loc, tree result_type, tree a1, tree a2)
 			    build_binary_op (TRUTH_ANDIF_EXPR, result_type,
 					     a1_is_null, a2_is_null),
 			    result);
+
+  /* If the operands have side-effects, they need to be evaluated before
+     doing the tests above since the place they otherwise would end up
+     being evaluated at run time could be wrong.  */
+  if (a1_side_effects_p)
+    result = build2 (COMPOUND_EXPR, result_type, a1, result);
+
+  if (a2_side_effects_p)
+    result = build2 (COMPOUND_EXPR, result_type, a2, result);
+
+  return result;
+}
+
+/* Return an expression tree representing an ordering comparison of A1 and A2,
+   two objects of type ARRAY_TYPE.  The result should be of type RESULT_TYPE.
+
+   A1 is less than A2 according to the following alternative:
+     - when A1's length is less than A2'length: if every element of A1 is equal
+       to its counterpart in A2 or the first differing is lesser in A1 than A2,
+     - otherwise: if not every element of A2 is equal to its counterpart in A1
+       and the first differing is lesser in A1 than A2.
+
+   The other 3 ordering comparisons can be easily deduced from this one.  */
+
+static tree
+compare_arrays_for_ordering (location_t loc, tree result_type, tree a1, tree a2)
+{
+  const bool a1_side_effects_p = TREE_SIDE_EFFECTS (a1);
+  const bool a2_side_effects_p = TREE_SIDE_EFFECTS (a2);
+  tree t1 = TREE_TYPE (a1);
+  tree t2 = TREE_TYPE (a2);
+  tree dom1 = TYPE_DOMAIN (t1);
+  tree dom2 = TYPE_DOMAIN (t2);
+  tree length1 = size_binop (PLUS_EXPR,
+			     size_binop (MINUS_EXPR,
+					 TYPE_MAX_VALUE (dom1),
+					 TYPE_MIN_VALUE (dom1)),
+			     size_one_node);
+  tree length2 = size_binop (PLUS_EXPR,
+			     size_binop (MINUS_EXPR,
+					 TYPE_MAX_VALUE (dom2),
+					 TYPE_MIN_VALUE (dom2)),
+			     size_one_node);
+  tree addr1, addr2, fndecl, result;
+
+  /* If the lengths are known at compile time, fold the alternative and let the
+     gimplifier optimize the case of power-of-two lengths.  */
+  if (TREE_CODE (length1) == INTEGER_CST && TREE_CODE (length2) == INTEGER_CST)
+    return tree_int_cst_compare (length1, length2) < 0
+	   ? fold_build2_loc (loc, LE_EXPR, result_type, a1, convert (t1, a2))
+	   : fold_build2_loc (loc, LT_EXPR, result_type, convert (t2, a1), a2);
+
+  /* If the operands have side-effects, they need to be evaluated only once
+     in spite of the multiple references in the comparison.  */
+  if (a1_side_effects_p)
+    a1 = gnat_protect_expr (a1);
+
+  if (a2_side_effects_p)
+    a2 = gnat_protect_expr (a2);
+
+  length1 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length1, a1);
+  length2 = SUBSTITUTE_PLACEHOLDER_IN_EXPR (length2, a2);
+
+  /* If the lengths are not known at compile time, call memcmp directly with
+     the actual lengths since a1 and a2 may have the same nominal subtype.  */
+  addr1 = build_fold_addr_expr_loc (loc, a1);
+  addr2 = build_fold_addr_expr_loc (loc, a2);
+  fndecl = builtin_decl_implicit (BUILT_IN_MEMCMP);
+
+  result
+    = fold_build3_loc (loc, COND_EXPR, result_type,
+		       fold_build2_loc (loc, LT_EXPR, boolean_type_node,
+				        length1, length2),
+		       fold_build2_loc (loc, LE_EXPR, result_type,
+				        build_call_expr_loc (loc, fndecl, 3,
+							     addr1, addr2,
+							     length1),
+					integer_zero_node),
+		       fold_build2_loc (loc, LT_EXPR, result_type,
+					build_call_expr_loc (loc, fndecl, 3,
+							     addr1, addr2,
+							     length2),
+					integer_zero_node));
 
   /* If the operands have side-effects, they need to be evaluated before
      doing the tests above since the place they otherwise would end up
@@ -534,6 +612,92 @@ compare_fat_pointers (location_t loc, tree result_type, tree p1, tree p2)
 					   p1_array_is_null, same_bounds));
 }
 
+/* Try to compute the reduction of OP modulo MODULUS in PRECISION bits with a
+   division-free algorithm.  Return NULL_TREE if this is not easily doable.  */
+
+tree
+fast_modulo_reduction (tree op, tree modulus, unsigned int precision)
+{
+  const tree type = TREE_TYPE (op);
+  const unsigned int type_precision = TYPE_PRECISION (type);
+
+  /* The implementation is host-dependent for the time being.  */
+  if (type_precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      const unsigned HOST_WIDE_INT d = tree_to_uhwi (modulus);
+      unsigned HOST_WIDE_INT ml, mh;
+      int pre_shift, post_shift;
+      tree t;
+
+      /* The trick is to replace the division by d with a multiply-and-shift
+	 sequence parameterized by a (multiplier, shifter) pair computed from
+	 d, the precision of the type and the needed precision:
+
+	   op / d = (op * multiplier) >> shifter
+
+	 But choose_multiplier provides a slightly different interface:
+
+	  op / d = (op h* multiplier) >> reduced_shifter
+
+	 that makes things easier by using a high-part multiplication.  */
+      mh = choose_multiplier (d, type_precision, precision, &ml, &post_shift);
+
+      /* If the suggested multiplier is more than TYPE_PRECISION bits, we can
+	 do better for even divisors, using an initial right shift.  */
+      if (mh != 0 && (d & 1) == 0)
+	{
+	  pre_shift = ctz_or_zero (d);
+	  mh = choose_multiplier (d >> pre_shift, type_precision,
+				  precision - pre_shift, &ml, &post_shift);
+	}
+      else
+	pre_shift = 0;
+
+      /* If the suggested multiplier is still more than TYPE_PRECISION bits,
+	 or the TYPE_MODE does not have a high-part multiply, try again with
+	 a larger type up to the word size.  */
+      if (mh != 0 || !can_mult_highpart_p (TYPE_MODE (type), true))
+	{
+	  if (type_precision < BITS_PER_WORD)
+	    {
+	      const scalar_int_mode m
+		= smallest_int_mode_for_size (type_precision + 1);
+	      tree new_type = gnat_type_for_mode (m, 1);
+	      op = fold_convert (new_type, op);
+	      modulus = fold_convert (new_type, modulus);
+	      t = fast_modulo_reduction (op, modulus, precision);
+	      if (t)
+		return fold_convert (type, t);
+	    }
+
+	  return NULL_TREE;
+	}
+
+      /* This computes op - (op / modulus) * modulus with PRECISION bits.  */
+      op = gnat_protect_expr (op);
+
+      /* t = op >> pre_shift
+	 t = t h* ml
+	 t = t >> post_shift
+	 t = t * modulus  */
+      if (pre_shift)
+	t = fold_build2 (RSHIFT_EXPR, type, op,
+			 build_int_cst (type, pre_shift));
+      else
+	t = op;
+      t = fold_build2 (MULT_HIGHPART_EXPR, type, t, build_int_cst (type, ml));
+      if (post_shift)
+	t = fold_build2 (RSHIFT_EXPR, type, t,
+			 build_int_cst (type, post_shift));
+      t = fold_build2 (MULT_EXPR, type, t, modulus);
+
+      return fold_build2 (MINUS_EXPR, type, op, t);
+    }
+
+  else
+    return NULL_TREE;
+}
+
 /* Compute the result of applying OP_CODE to LHS and RHS, where both are of
    TYPE.  We know that TYPE is a modular type with a nonbinary modulus.  */
 
@@ -543,7 +707,7 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
 {
   tree modulus = TYPE_MODULUS (type);
   unsigned precision = tree_floor_log2 (modulus) + 1;
-  tree op_type, result;
+  tree op_type, result, fmr;
 
   /* For the logical operations, we only need PRECISION bits.  For addition and
      subtraction, we need one more, and for multiplication twice as many.  */
@@ -576,9 +740,19 @@ nonbinary_modular_operation (enum tree_code op_code, tree type, tree lhs,
   if (op_code == MINUS_EXPR)
     result = fold_build2 (PLUS_EXPR, op_type, result, modulus);
 
-  /* For a multiplication, we have no choice but to use a modulo operation.  */
+  /* For a multiplication, we first try to do a modulo reduction by means of a
+     (multiplier, shifter) pair in the needed precision up to the word size, or
+     else we fall back to a standard modulo operation.  But not when optimizing
+     for size, because it will be longer than a div+mul+sub sequence.  */
   if (op_code == MULT_EXPR)
-    result = fold_build2 (TRUNC_MOD_EXPR, op_type, result, modulus);
+    {
+      if (!optimize_size
+	  && precision <= BITS_PER_WORD
+	  && (fmr = fast_modulo_reduction (result, modulus, precision)))
+	result = fmr;
+      else
+	result = fold_build2 (TRUNC_MOD_EXPR, op_type, result, modulus);
+    }
 
   /* For the other operations, subtract the modulus if we are >= it.  */
   else
@@ -1078,12 +1252,32 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	      || (TREE_CODE (right_type) == INTEGER_TYPE
 		  && TYPE_HAS_ACTUAL_BOUNDS_P (right_type))))
 	{
-	  result = compare_arrays (input_location,
-				   result_type, left_operand, right_operand);
-	  if (op_code == NE_EXPR)
-	    result = invert_truthvalue_loc (EXPR_LOCATION (result), result);
+          if (op_code == EQ_EXPR || op_code == NE_EXPR)
+	    {
+	      result
+		= compare_arrays_for_equality (input_location, result_type,
+					       left_operand, right_operand);
+	      if (op_code == NE_EXPR)
+		result = invert_truthvalue_loc (input_location, result);
+	    }
+
 	  else
-	    gcc_assert (op_code == EQ_EXPR);
+	    {
+	      /* Swap the operands to canonicalize to LT_EXPR or GE_EXPR.  */
+	      if (op_code == GT_EXPR || op_code == LE_EXPR)
+		result
+		  = compare_arrays_for_ordering (input_location, result_type,
+						 right_operand, left_operand);
+
+	      else
+		result
+		  = compare_arrays_for_ordering (input_location, result_type,
+						 left_operand, right_operand);
+
+	      /* GE_EXPR is (not LT_EXPR) for discrete array types.  */
+	      if (op_code == GE_EXPR || op_code == LE_EXPR)
+		result = invert_truthvalue_loc (input_location, result);
+	    }
 
 	  return result;
 	}
@@ -2884,7 +3078,7 @@ gnat_protect_expr (tree exp)
   if (code == NON_LVALUE_EXPR
       || CONVERT_EXPR_CODE_P (code)
       || code == VIEW_CONVERT_EXPR)
-  return build1 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)));
+    return build1 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)));
 
   /* If we're indirectly referencing something, we only need to protect the
      address since the data itself can't change in these situations.  */

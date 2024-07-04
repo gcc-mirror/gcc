@@ -216,17 +216,21 @@ int flag_cond_mismatch;
 
 int flag_isoc94;
 
-/* Nonzero means use the ISO C99 (or C11) dialect of C.  */
+/* Nonzero means use the ISO C99 (or later) dialect of C.  */
 
 int flag_isoc99;
 
-/* Nonzero means use the ISO C11 dialect of C.  */
+/* Nonzero means use the ISO C11 (or later) dialect of C.  */
 
 int flag_isoc11;
 
-/* Nonzero means use the ISO C23 dialect of C.  */
+/* Nonzero means use the ISO C23 (or later) dialect of C.  */
 
 int flag_isoc23;
+
+/* Nonzero means use the ISO C2Y (or later) dialect of C.  */
+
+int flag_isoc2y;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 
@@ -3969,7 +3973,9 @@ c_sizeof_or_alignof_type (location_t loc,
       value = size_one_node;
     }
   else if (!COMPLETE_TYPE_P (type)
-	   && (!c_dialect_cxx () || is_sizeof || type_code != ARRAY_TYPE))
+	   && ((!c_dialect_cxx () && !flag_isoc2y)
+	       || is_sizeof
+	       || type_code != ARRAY_TYPE))
     {
       if (complain)
 	error_at (loc, "invalid application of %qs to incomplete type %qT",

@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O2 -mdejagnu-cpu=power5 -mabi=altivec -mno-altivec -mno-vsx" } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* { dg-final { scan-assembler	   "\[ \t\]and "     } } */
 /* { dg-final { scan-assembler	   "\[ \t\]or "      } } */
 /* { dg-final { scan-assembler	   "\[ \t\]xor "     } } */

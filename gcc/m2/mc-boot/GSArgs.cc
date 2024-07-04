@@ -46,9 +46,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _SArgs_H
 #define _SArgs_C
 
+#include "GSArgs.h"
 #   include "GSYSTEM.h"
 #   include "GUnixArgs.h"
 #   include "GDynamicStrings.h"
@@ -119,10 +119,10 @@ extern "C" unsigned int SArgs_Narg (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_SArgs_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SArgs_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_SArgs_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SArgs_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

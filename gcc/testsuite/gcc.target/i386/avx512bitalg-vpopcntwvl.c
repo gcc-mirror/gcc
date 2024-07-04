@@ -11,11 +11,11 @@
 
 extern __m256i y, y_1;
 extern __m128i x, x_1;
+extern __mmask16 msk16;
+extern __mmask8 msk8;
 
 int foo ()
 {
-  __mmask16 msk16;
-  __mmask8 msk8;
   __m256i c256 = _mm256_popcnt_epi16 (y);
   asm volatile ("" : "+v" (c256));
   c256 = _mm256_mask_popcnt_epi16 (y_1, msk16, y);

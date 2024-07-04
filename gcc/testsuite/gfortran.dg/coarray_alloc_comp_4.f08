@@ -5,7 +5,7 @@
 ! Contributed by Andre Vehreschild
 ! Check that sub-components are caf_deregistered and not freed.
 
-program coarray_alloc_comp_3
+program coarray_alloc_comp_4
   implicit none
 
   type dt

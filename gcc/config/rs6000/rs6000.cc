@@ -1707,6 +1707,9 @@ static const scoped_attribute_specs *const rs6000_attribute_table[] =
 #undef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX rs6000_c_mode_for_suffix
 
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE rs6000_c_mode_for_floating_type
+
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP rs6000_invalid_binary_op
 
@@ -3431,6 +3434,14 @@ rs6000_override_options_after_change (void)
   /* If we are inserting ROP-protect instructions, disable shrink wrap.  */
   if (rs6000_rop_protect)
     flag_shrink_wrap = 0;
+
+  /* One of the late-combine passes runs after register allocation
+     and can match define_insn_and_splits that were previously used
+     only before register allocation.  Some of those define_insn_and_splits
+     use gen_reg_rtx unconditionally.  Disable late-combine by default
+     until the define_insn_and_splits are fixed.  */
+  if (!OPTION_SET_P (flag_late_combine_instructions))
+    flag_late_combine_instructions = 0;
 }
 
 #ifdef TARGET_USES_LINUX64_OPT
@@ -23442,28 +23453,28 @@ altivec_expand_vec_perm_const (rtx target, rtx op0, rtx op1,
      CODE_FOR_altivec_vpkuwum_direct,
      {2, 3, 6, 7, 10, 11, 14, 15, 18, 19, 22, 23, 26, 27, 30, 31}},
     {OPTION_MASK_ALTIVEC,
-     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghb_direct
-		      : CODE_FOR_altivec_vmrglb_direct,
+     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghb_direct_be
+		      : CODE_FOR_altivec_vmrglb_direct_le,
      {0, 16, 1, 17, 2, 18, 3, 19, 4, 20, 5, 21, 6, 22, 7, 23}},
     {OPTION_MASK_ALTIVEC,
-     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghh_direct
-		      : CODE_FOR_altivec_vmrglh_direct,
+     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghh_direct_be
+		      : CODE_FOR_altivec_vmrglh_direct_le,
      {0, 1, 16, 17, 2, 3, 18, 19, 4, 5, 20, 21, 6, 7, 22, 23}},
     {OPTION_MASK_ALTIVEC,
-     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghw_direct_v4si
-		      : CODE_FOR_altivec_vmrglw_direct_v4si,
+     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrghw_direct_v4si_be
+		      : CODE_FOR_altivec_vmrglw_direct_v4si_le,
      {0, 1, 2, 3, 16, 17, 18, 19, 4, 5, 6, 7, 20, 21, 22, 23}},
     {OPTION_MASK_ALTIVEC,
-     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglb_direct
-		      : CODE_FOR_altivec_vmrghb_direct,
+     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglb_direct_be
+		      : CODE_FOR_altivec_vmrghb_direct_le,
      {8, 24, 9, 25, 10, 26, 11, 27, 12, 28, 13, 29, 14, 30, 15, 31}},
     {OPTION_MASK_ALTIVEC,
-     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglh_direct
-		      : CODE_FOR_altivec_vmrghh_direct,
+     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglh_direct_be
+		      : CODE_FOR_altivec_vmrghh_direct_le,
      {8, 9, 24, 25, 10, 11, 26, 27, 12, 13, 28, 29, 14, 15, 30, 31}},
     {OPTION_MASK_ALTIVEC,
-     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglw_direct_v4si
-		      : CODE_FOR_altivec_vmrghw_direct_v4si,
+     BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglw_direct_v4si_be
+		      : CODE_FOR_altivec_vmrghw_direct_v4si_le,
      {8, 9, 10, 11, 24, 25, 26, 27, 12, 13, 14, 15, 28, 29, 30, 31}},
     {OPTION_MASK_P8_VECTOR,
      BYTES_BIG_ENDIAN ? CODE_FOR_p8_vmrgew_v4sf_direct
@@ -24363,6 +24374,19 @@ rs6000_c_mode_for_suffix (char suffix)
     }
 
   return VOIDmode;
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode for
+   TI_LONG_DOUBLE_TYPE which is for long double type, go with the default
+   one for the others.  */
+
+static machine_mode
+rs6000_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return rs6000_long_double_type_size == FLOAT_PRECISION_TFmode ? TFmode
+								  : DFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 /* Target hook for invalid_arg_for_unprototyped_fn. */

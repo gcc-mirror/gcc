@@ -3521,58 +3521,6 @@ namespace ranges
 
 #endif // __glibcxx_ranges_contains
 
-#if __glibcxx_ranges_iota >= 202202L // C++ >= 23
-
-  template<typename _Out, typename _Tp>
-    struct out_value_result
-    {
-      [[no_unique_address]] _Out out;
-      [[no_unique_address]] _Tp value;
-
-      template<typename _Out2, typename _Tp2>
-	requires convertible_to<const _Out&, _Out2>
-	  && convertible_to<const _Tp&, _Tp2>
-	constexpr
-	operator out_value_result<_Out2, _Tp2>() const &
-	{ return {out, value}; }
-
-      template<typename _Out2, typename _Tp2>
-	requires convertible_to<_Out, _Out2>
-	  && convertible_to<_Tp, _Tp2>
-	constexpr
-	operator out_value_result<_Out2, _Tp2>() &&
-	{ return {std::move(out), std::move(value)}; }
-    };
-
-  template<typename _Out, typename _Tp>
-    using iota_result = out_value_result<_Out, _Tp>;
-
-  struct __iota_fn
-  {
-    template<input_or_output_iterator _Out, sentinel_for<_Out> _Sent, weakly_incrementable _Tp>
-      requires indirectly_writable<_Out, const _Tp&>
-      constexpr iota_result<_Out, _Tp>
-      operator()(_Out __first, _Sent __last, _Tp __value) const
-      {
-	while (__first != __last)
-	  {
-	    *__first = static_cast<const _Tp&>(__value);
-	    ++__first;
-	    ++__value;
-	  }
-	return {std::move(__first), std::move(__value)};
-      }
-
-    template<weakly_incrementable _Tp, output_range<const _Tp&> _Range>
-      constexpr iota_result<borrowed_iterator_t<_Range>, _Tp>
-      operator()(_Range&& __r, _Tp __value) const
-      { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__value)); }
-  };
-
-  inline constexpr __iota_fn iota{};
-
-#endif // __glibcxx_ranges_iota
-
 #if __glibcxx_ranges_find_last >= 202207L // C++ >= 23
 
   struct __find_last_fn

@@ -406,9 +406,10 @@ extern const struct real_format arm_bfloat_half_format;
 #define REAL_VALUE_MINUS_ZERO(x)	real_isnegzero (&(x))
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs.  */
-#define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT)			\
-  real_to_target (OUT, &(IN),						\
-		  float_mode_for_size (LONG_DOUBLE_TYPE_SIZE).require ())
+#define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT)			   \
+  real_to_target (OUT, &(IN),						   \
+		  float_mode_for_size (TYPE_PRECISION			   \
+				       (long_double_type_node)).require ())
 
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT) \
   real_to_target (OUT, &(IN), float_mode_for_size (64).require ())

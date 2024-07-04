@@ -546,33 +546,41 @@ package body Contracts is
 
    begin
       --  Move through the body's declarations analyzing all pragmas which
-      --  appear at the top of the declarations.
+      --  appear at the top of the declarations. Go over the list twice, so
+      --  that pragmas which should be analyzed first are analyzed in the
+      --  first pass.
 
-      Curr_Decl := First (Declarations (Unit_Declaration_Node (Body_Id)));
-      while Present (Curr_Decl) loop
+      for Pragmas_Analyzed_First in reverse False .. True loop
 
-         if Nkind (Curr_Decl) = N_Pragma then
+         Curr_Decl := First (Declarations (Unit_Declaration_Node (Body_Id)));
+         while Present (Curr_Decl) loop
 
-            if Pragma_Significant_To_Subprograms
-                 (Get_Pragma_Id (Curr_Decl))
-            then
-               Analyze (Curr_Decl);
+            if Nkind (Curr_Decl) = N_Pragma then
+
+               if Pragma_Significant_To_Subprograms
+                    (Get_Pragma_Id (Curr_Decl))
+                 and then Pragmas_Analyzed_First =
+                   Pragma_Significant_To_Subprograms_Analyzed_First
+                     (Get_Pragma_Id (Curr_Decl))
+               then
+                  Analyze (Curr_Decl);
+               end if;
+
+            --  Skip the renamings of discriminants and protection fields
+
+            elsif Is_Prologue_Renaming (Curr_Decl) then
+               null;
+
+            --  We have reached something which is not a pragma so we can be
+            --  sure there are no more contracts or pragmas which need to be
+            --  taken into account.
+
+            else
+               exit;
             end if;
 
-         --  Skip the renamings of discriminants and protection fields
-
-         elsif Is_Prologue_Renaming (Curr_Decl) then
-            null;
-
-         --  We have reached something which is not a pragma so we can be sure
-         --  there are no more contracts or pragmas which need to be taken into
-         --  account.
-
-         else
-            exit;
-         end if;
-
-         Next (Curr_Decl);
+            Next (Curr_Decl);
+         end loop;
       end loop;
    end Analyze_Pragmas_In_Declarations;
 

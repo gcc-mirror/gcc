@@ -1887,7 +1887,9 @@ signifies the 2011 revision of the C standard; the value
 @code{201710L} signifies the 2017 revision of the C standard (which is
 otherwise identical to the 2011 version apart from correction of
 defects).  The value @code{202311L} is used for the experimental
-@option{-std=c23} and @option{-std=gnu23} modes.
+@option{-std=c23} and @option{-std=gnu23} modes.  An unspecified value
+larger than @code{202311L} is used for the experimental
+@option{-std=c2y} and @option{-std=gnu2y} modes.
 
 This macro is not defined if the @option{-traditional-cpp} option is
 used, nor when compiling C++ or Objective-C@.

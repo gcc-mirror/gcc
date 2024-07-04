@@ -54,4 +54,5 @@ ADJUST_ALIGNMENT (CCV4, 16);
 CC_MODE (CCDSP);
 
 /* For floating point conditions in FP registers.  */
+CC_MODE (CCE);
 CC_MODE (CCF);

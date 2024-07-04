@@ -289,7 +289,7 @@ void
 EXPORT (cfmakeraw) (struct termios *t)
 {
 #if defined(HAVE_CFMAKERAW)
-  return cfmakeraw (t);
+  cfmakeraw (t);
 #endif
 }
 

@@ -614,7 +614,11 @@ swap_change (int num)
   else
     std::swap (*changes[num].loc, changes[num].old);
   if (changes[num].object && !MEM_P (changes[num].object))
-    std::swap (INSN_CODE (changes[num].object), changes[num].old_code);
+    {
+      std::swap (INSN_CODE (changes[num].object), changes[num].old_code);
+      if (recog_data.insn == changes[num].object)
+	recog_data.insn = nullptr;
+    }
 }
 
 /* Temporarily undo all the changes numbered NUM and up, with a view

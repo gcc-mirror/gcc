@@ -440,7 +440,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Define for support of TFmode long double.
    SPARC ABI says that long double is 4 words.  */
-#define LONG_DOUBLE_TYPE_SIZE 128
+#define SPARC_LONG_DOUBLE_TYPE_SIZE 128
 
 /* Solaris's _Qp_* library routine implementation clobbers the output
    memory before the inputs are fully consumed.  */

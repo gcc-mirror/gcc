@@ -123,21 +123,21 @@ dtoa_calcdecimal (char *p, int str_size, int ndigits)
 }
 
 
-int
+bool
 dtoa_calcsign (char *p, int str_size)
 {
   if (p[0] == '-')
     {
       memmove (p, p + 1, str_size - 1);
-      return TRUE;
+      return true;
     }
   else
-    return FALSE;
+    return false;
 }
 
 
-char *
-dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
+void *
+dtoa_dtoa (double d, int mode, int ndigits, int *decpt, bool *sign)
 {
   char format[50];
   char *p;
@@ -169,12 +169,12 @@ dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
 /* GNU Modula-2 hooks */
 
 void
-_M2_dtoa_init (void)
+_M2_dtoa_init (int argc, char *argv[], char *envp[])
 {
 }
 
 void
-_M2_dtoa_fini (void)
+_M2_dtoa_fini (int argc, char *argv[], char *envp[])
 {
 }
 #endif

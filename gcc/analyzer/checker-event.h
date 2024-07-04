@@ -91,7 +91,6 @@ public:
   /* Implementation of diagnostic_event.  */
 
   location_t get_location () const final override { return m_loc; }
-  tree get_fndecl () const final override { return m_effective_fndecl; }
   int get_stack_depth () const final override { return m_effective_depth; }
   const logical_location *get_logical_location () const final override
   {
@@ -111,6 +110,7 @@ public:
   maybe_add_sarif_properties (sarif_object &thread_flow_loc_obj) const override;
 
   /* Additional functionality.  */
+  tree get_fndecl () const { return m_effective_fndecl; }
 
   int get_original_stack_depth () const { return m_original_depth; }
 

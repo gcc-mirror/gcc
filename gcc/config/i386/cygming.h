@@ -344,7 +344,7 @@ do {						\
 
 /* Output function declarations at the end of the file.  */
 #undef TARGET_ASM_FILE_END
-#define TARGET_ASM_FILE_END i386_pe_file_end
+#define TARGET_ASM_FILE_END mingw_pe_file_end
 
 /* Kludge because of missing PE-COFF support for early LTO debug.  */
 #undef  TARGET_ASM_LTO_START
@@ -445,7 +445,7 @@ do {						\
 
 #define SUBTARGET_ATTRIBUTE_TABLE \
   { "selectany", 0, 0, true, false, false, false, \
-    ix86_handle_selectany_attribute, NULL }
+    mingw_handle_selectany_attribute, NULL }
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
 
@@ -453,7 +453,7 @@ do {						\
 #undef NO_PROFILE_COUNTERS
 #define NO_PROFILE_COUNTERS 1
 
-#define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P i386_pe_valid_dllimport_attribute_p
+#define TARGET_VALID_DLLIMPORT_ATTRIBUTE_P mingw_pe_valid_dllimport_attribute_p
 #define TARGET_CXX_ADJUST_CLASS_AT_DEFINITION i386_pe_adjust_class_at_definition
 #define SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME i386_pe_mangle_decl_assembler_name
 
@@ -461,7 +461,7 @@ do {						\
 #define TARGET_ASM_ASSEMBLE_VISIBILITY i386_pe_assemble_visibility
 
 #undef SUB_TARGET_RECORD_STUB
-#define SUB_TARGET_RECORD_STUB i386_pe_record_stub
+#define SUB_TARGET_RECORD_STUB mingw_pe_record_stub
 
 /* Static stack checking is supported by means of probes.  */
 #define STACK_CHECK_STATIC_BUILTIN 1
@@ -469,3 +469,8 @@ do {						\
 #ifndef HAVE_GAS_ALIGNED_COMM
 # define HAVE_GAS_ALIGNED_COMM 0
 #endif
+
+#define PE_COFF_LEGITIMIZE_EXTERN_DECL \
+  (ix86_cmodel == CM_LARGE_PIC || ix86_cmodel == CM_MEDIUM_PIC)
+
+#define HAVE_64BIT_POINTERS TARGET_64BIT_DEFAULT

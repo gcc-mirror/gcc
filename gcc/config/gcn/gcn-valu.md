@@ -983,7 +983,7 @@
    (match_operand 2 "immediate_operand")]
   "MODE_VF (<V_MOV_ALT:MODE>mode) < MODE_VF (<V_MOV:MODE>mode)
    && <V_MOV_ALT:SCALAR_MODE>mode == <V_MOV:SCALAR_MODE>mode
-   && (!TARGET_RDNA2_PLUS || MODE_VF (<V_MOV:MODE>mode) <= 32)"
+   && (!TARGET_WAVE64_COMPAT || MODE_VF (<V_MOV:MODE>mode) <= 32)"
   {
     int numlanes = GET_MODE_NUNITS (<V_MOV_ALT:MODE>mode);
     int firstlane = INTVAL (operands[2]) * numlanes;
@@ -1167,7 +1167,7 @@
     static char buf[200];
     if (AS_FLAT_P (as))
       {
-	if (TARGET_GCN5_PLUS)
+	if (TARGET_FLAT_OFFSETS)
 	  sprintf (buf, "flat_load%%o0\t%%0, %%1 offset:%%2%s\;s_waitcnt\t0",
 		   glc);
 	else
@@ -1290,7 +1290,7 @@
 	  UNSPEC_SCATTER))]
   "(AS_FLAT_P (INTVAL (operands[3]))
     && (INTVAL(operands[1]) == 0
-	|| (TARGET_GCN5_PLUS
+	|| (TARGET_FLAT_OFFSETS
 	    && (unsigned HOST_WIDE_INT)INTVAL(operands[1]) < 0x1000)))
     || (AS_GLOBAL_P (INTVAL (operands[3]))
 	&& (((unsigned HOST_WIDE_INT)INTVAL(operands[1]) + 0x1000) < 0x2000))"
@@ -1301,7 +1301,7 @@
     static char buf[200];
     if (AS_FLAT_P (as))
       {
-	if (TARGET_GCN5_PLUS)
+	if (TARGET_FLAT_OFFSETS)
 	  sprintf (buf, "flat_store%%s2\t%%0, %%2 offset:%%1%s", glc);
 	else
 	  sprintf (buf, "flat_store%%s2\t%%0, %%2%s", glc);
@@ -1418,7 +1418,7 @@
 	  [(match_operand:V_noHI 1 "register_operand" " v")
 	   (match_operand:SI 2 "const_int_operand"    " n")]
 	  UNSPEC_MOV_DPP_SHR))]
-  "!TARGET_RDNA2_PLUS"
+  "TARGET_DPP_FULL"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "v_mov_b32",
 				    UNSPEC_MOV_DPP_SHR, INTVAL (operands[2]));
@@ -3573,7 +3573,7 @@
   [(set (match_operand:V_INT_1REG 0 "register_operand"      "=v")
         (zero_convert:V_INT_1REG
 	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
-  "!TARGET_RDNA3"
+  "TARGET_SDWA"
   "v_mov_b32_sdwa\t%0, %1 dst_sel:<V_INT_1REG:sdwa> dst_unused:UNUSED_PAD src0_sel:<V_INT_1REG_ALT:sdwa>"
   [(set_attr "type" "vop_sdwa")
    (set_attr "length" "8")])
@@ -3582,7 +3582,7 @@
   [(set (match_operand:V_INT_1REG 0 "register_operand"	    "=v")
         (sign_extend:V_INT_1REG
 	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
-  "!TARGET_RDNA3"
+  "TARGET_SDWA"
   "v_mov_b32_sdwa\t%0, sext(%1) src0_sel:<V_INT_1REG_ALT:sdwa>"
   [(set_attr "type" "vop_sdwa")
    (set_attr "length" "8")])
@@ -3591,7 +3591,7 @@
   [(set (match_operand:V_INT_1REG 0 "register_operand"      "=v")
         (all_convert:V_INT_1REG
 	  (match_operand:V_INT_1REG_ALT 1 "gcn_alu_operand" " v")))]
-  "TARGET_RDNA3"
+  "!TARGET_SDWA"
   {
     enum {extend, zero_extend, trunc};
     rtx shiftwidth = (<V_INT_1REG_ALT:SCALAR_MODE>mode == QImode
@@ -4245,7 +4245,7 @@
 	(unspec:<SCALAR_MODE>
 	  [(match_operand:V_ALL 1 "register_operand")]
 	  REDUC_UNSPEC))]
-  "!TARGET_RDNA2_PLUS"
+  "!TARGET_WAVE64_COMPAT"
   {
     rtx tmp = gcn_expand_reduc_scalar (<MODE>mode, operands[1],
 				       <reduc_unspec>);
@@ -4261,7 +4261,7 @@
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
    (fminmaxop:V_FP
      (match_operand:V_FP 1 "register_operand"))]
-  "!TARGET_RDNA2_PLUS"
+  "!TARGET_WAVE64_COMPAT"
   {
     /* fmin/fmax are identical to smin/smax.  */
     emit_insn (gen_reduc_<expander>_scal_<mode> (operands[0], operands[1]));
@@ -4275,7 +4275,7 @@
  [(match_operand:<SCALAR_MODE> 0 "register_operand")
   (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand")
   (match_operand:V_FP 2 "gcn_alu_operand")]
-  "!TARGET_RDNA2_PLUS
+  "!TARGET_WAVE64_COMPAT
    && can_create_pseudo_p ()
    && (flag_openacc || flag_openmp
        || flag_associative_math)"
@@ -4300,7 +4300,7 @@
   ; GCN3 requires a carry out, GCN5 not
   "!(TARGET_GCN3 && SCALAR_INT_MODE_P (<SCALAR_MODE>mode)
      && <reduc_unspec> == UNSPEC_PLUS_DPP_SHR)
-   && !TARGET_RDNA2_PLUS"
+   && TARGET_DPP_FULL"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "<reduc_insn>",
 				    <reduc_unspec>, INTVAL (operands[3]));
@@ -4345,7 +4345,7 @@
 	   (match_operand:SI 3 "const_int_operand"	  "n")]
 	  UNSPEC_PLUS_CARRY_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
-  "!TARGET_RDNA2_PLUS"
+  "TARGET_DPP_FULL"
   {
     return gcn_expand_dpp_shr_insn (<VnSI>mode, "v_add%^_u32",
 				    UNSPEC_PLUS_CARRY_DPP_SHR,
@@ -4363,7 +4363,7 @@
 	   (match_operand:DI 4 "register_operand"   "cV")]
 	  UNSPEC_PLUS_CARRY_IN_DPP_SHR))
    (clobber (reg:DI VCC_REG))]
-  "!TARGET_RDNA2_PLUS"
+  "TARGET_DPP_FULL"
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "v_addc%^_u32",
 				    UNSPEC_PLUS_CARRY_IN_DPP_SHR,

@@ -2089,8 +2089,10 @@ package body System.OS_Lib is
       --  Returns True only if the Name is including a drive
       --  letter at start.
 
-      function Missed_Drive_Letter (Name : String) return Boolean;
-      --  Missed drive letter at start of the normalized pathname
+      function Drive_Letter_Omitted (Name : String) return Boolean;
+      --  Name must be an absolute path. Returns True if and only if
+      --  Name doesn't start with a drive letter and Name is not a
+      --  UNC path.
 
       -------------------
       -- Is_With_Drive --
@@ -2104,11 +2106,11 @@ package body System.OS_Lib is
                      or else Name (Name'First) in 'A' .. 'Z');
       end Is_With_Drive;
 
-      -------------------------
-      -- Missed_Drive_Letter --
-      -------------------------
+      --------------------------
+      -- Drive_Letter_Omitted --
+      --------------------------
 
-      function Missed_Drive_Letter (Name : String) return Boolean is
+      function Drive_Letter_Omitted (Name : String) return Boolean is
       begin
          return On_Windows
            and then not Is_With_Drive (Name)
@@ -2117,7 +2119,7 @@ package body System.OS_Lib is
                              /= Directory_Separator
                      or else Name (Name'First + 1)
                              /= Directory_Separator);
-      end Missed_Drive_Letter;
+      end Drive_Letter_Omitted;
 
       -----------------
       -- Final_Value --
@@ -2174,7 +2176,7 @@ package body System.OS_Lib is
 
          elsif Directory = ""
            or else not Is_Absolute_Path (Directory)
-           or else Missed_Drive_Letter (Directory)
+           or else Drive_Letter_Omitted (Directory)
          then
             --  Directory name not given or it is not absolute or without drive
             --  letter on Windows, get current directory.
@@ -2251,7 +2253,7 @@ package body System.OS_Lib is
       end if;
 
       if Is_Absolute_Path (Name) then
-         if Missed_Drive_Letter (Name) then
+         if Drive_Letter_Omitted (Name) then
             Fill_Directory (Drive_Only => True);
 
             --  Take only drive letter part with colon
@@ -2285,8 +2287,6 @@ package body System.OS_Lib is
          end loop;
 
          --  Ensure drive letter is upper-case
-
-         pragma Assert (Path_Buffer (2) = ':');
 
          if Path_Buffer (1) in 'a' .. 'z' then
             System.Case_Util.To_Upper (Path_Buffer (1 .. 1));

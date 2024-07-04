@@ -380,7 +380,8 @@ ctf_asm_type (ctf_dtdef_ref type)
 static void
 ctf_asm_slice (ctf_dtdef_ref type)
 {
-  dw2_asm_output_data (4, type->dtd_u.dtu_slice.cts_type, "cts_type");
+  dw2_asm_output_data (4, ctf_type_id (type->dtd_u.dtu_slice.cts_type),
+		       "cts_type");
   dw2_asm_output_data (2, type->dtd_u.dtu_slice.cts_offset, "cts_offset");
   dw2_asm_output_data (2, type->dtd_u.dtu_slice.cts_bits, "cts_bits");
 }
@@ -390,8 +391,10 @@ ctf_asm_slice (ctf_dtdef_ref type)
 static void
 ctf_asm_array (ctf_dtdef_ref dtd)
 {
-  dw2_asm_output_data (4, dtd->dtd_u.dtu_arr.ctr_contents, "cta_contents");
-  dw2_asm_output_data (4, dtd->dtd_u.dtu_arr.ctr_index, "cta_index");
+  dw2_asm_output_data (4, ctf_type_id (dtd->dtd_u.dtu_arr.ctr_contents),
+		       "cta_contents");
+  dw2_asm_output_data (4, ctf_type_id (dtd->dtd_u.dtu_arr.ctr_index),
+		       "cta_index");
   dw2_asm_output_data (4, dtd->dtd_u.dtu_arr.ctr_nelems, "cta_nelems");
 }
 
@@ -403,7 +406,7 @@ ctf_asm_varent (ctf_dvdef_ref var)
   /* Output the reference to the name in the string table.  */
   dw2_asm_output_data (4, var->dvd_name_offset, "ctv_name");
   /* Output the type index.  */
-  dw2_asm_output_data (4, var->dvd_type, "ctv_typeidx");
+  dw2_asm_output_data (4, ctf_type_id (var->dvd_type), "ctv_typeidx");
 }
 
 /* Asm'out a member of CTF struct or union, represented by ctf_lmember_t.  */
@@ -414,7 +417,7 @@ ctf_asm_sou_lmember (ctf_dmdef_t * dmd)
   dw2_asm_output_data (4, dmd->dmd_name_offset, "ctlm_name");
   dw2_asm_output_data (4, CTF_OFFSET_TO_LMEMHI (dmd->dmd_offset),
 		       "ctlm_offsethi");
-  dw2_asm_output_data (4, dmd->dmd_type, "ctlm_type");
+  dw2_asm_output_data (4, ctf_type_id (dmd->dmd_type), "ctlm_type");
   dw2_asm_output_data (4, CTF_OFFSET_TO_LMEMLO (dmd->dmd_offset),
 		       "ctlm_offsetlo");
 }
@@ -426,7 +429,7 @@ ctf_asm_sou_member (ctf_dmdef_t * dmd)
 {
   dw2_asm_output_data (4, dmd->dmd_name_offset, "ctm_name");
   dw2_asm_output_data (4, dmd->dmd_offset, "ctm_offset");
-  dw2_asm_output_data (4, dmd->dmd_type, "ctm_type");
+  dw2_asm_output_data (4, ctf_type_id (dmd->dmd_type), "ctm_type");
 }
 
 /* Asm'out an enumerator constant.  */
@@ -443,7 +446,10 @@ ctf_asm_enum_const (ctf_dmdef_t * dmd)
 static void
 ctf_asm_func_arg (ctf_func_arg_t * farg)
 {
-  dw2_asm_output_data (4, farg->farg_type, "dtu_argv");
+  /* farg_type may be NULL, indicating varargs.  */
+  dw2_asm_output_data (4, farg->farg_type
+		       ? ctf_type_id (farg->farg_type)
+		       : 0, "dtu_argv");
 }
 
 /* CTF writeout to asm file.  */
@@ -537,7 +543,7 @@ output_ctf_obj_info (ctf_container_ref ctfc)
       var = ctfc->ctfc_gobjts_list[i];
 
       /* CTF type ID corresponding to the type of the variable.  */
-      dw2_asm_output_data (4, var->dvd_type, "objtinfo_var_type");
+      dw2_asm_output_data (4, ctf_type_id (var->dvd_type), "objtinfo_var_type");
     }
 
 }

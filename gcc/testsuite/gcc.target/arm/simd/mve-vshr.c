@@ -9,6 +9,8 @@
   void test_ ## NAME ##_ ## SIGN ## BITS ## x ## NB (TYPE##BITS##_t * __restrict__ dest, TYPE##BITS##_t *a, TYPE##BITS##_t *b) { \
     int i;								\
     for (i=0; i<NB; i++) {						\
+      if ((unsigned)b[i] >= (unsigned)(BITS))				\
+	__builtin_unreachable();					\
       dest[i] = a[i] OP b[i];						\
     }									\
 }

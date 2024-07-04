@@ -85,10 +85,10 @@ doloop_condition_get (rtx_insn *doloop_pat)
      forms:
 
      1)  (parallel [(set (pc) (if_then_else (condition)
-	  			            (label_ref (label))
-				            (pc)))
-	             (set (reg) (plus (reg) (const_int -1)))
-	             (additional clobbers and uses)])
+					    (label_ref (label))
+					    (pc)))
+		     (set (reg) (plus (reg) (const_int -1)))
+		     (additional clobbers and uses)])
 
      The branch must be the first entry of the parallel (also required
      by jump.cc), and the second entry of the parallel must be a set of
@@ -96,19 +96,33 @@ doloop_condition_get (rtx_insn *doloop_pat)
      the loop counter in an if_then_else too.
 
      2)  (set (reg) (plus (reg) (const_int -1))
-         (set (pc) (if_then_else (reg != 0)
-	                         (label_ref (label))
-			         (pc))).  
+	 (set (pc) (if_then_else (reg != 0)
+				 (label_ref (label))
+				 (pc))).
 
-     Some targets (ARM) do the comparison before the branch, as in the
+     3) Some targets (Arm) do the comparison before the branch, as in the
      following form:
 
-     3) (parallel [(set (cc) (compare ((plus (reg) (const_int -1), 0)))
-                   (set (reg) (plus (reg) (const_int -1)))])
-        (set (pc) (if_then_else (cc == NE)
-                                (label_ref (label))
-                                (pc))) */
+     (parallel [(set (cc) (compare (plus (reg) (const_int -1)) 0))
+		(set (reg) (plus (reg) (const_int -1)))])
+     (set (pc) (if_then_else (cc == NE)
+			     (label_ref (label))
+			     (pc)))
 
+      4) This form supports a construct that is used to represent a vectorized
+      do loop with predication, however we do not need to care about the
+      details of the predication here.
+      Arm uses this construct to support MVE tail predication.
+
+      (parallel
+       [(set (pc)
+	     (if_then_else (gtu (plus (reg) (const_int -n))
+				(const_int n-1))
+			   (label_ref)
+			   (pc)))
+	(set (reg) (plus (reg) (const_int -n)))
+	(additional clobbers and uses)])
+     */
   pattern = PATTERN (doloop_pat);
 
   if (GET_CODE (pattern) != PARALLEL)
@@ -173,15 +187,17 @@ doloop_condition_get (rtx_insn *doloop_pat)
   if (! REG_P (reg))
     return 0;
 
-  /* Check if something = (plus (reg) (const_int -1)).
+  /* Check if something = (plus (reg) (const_int -n)).
      On IA-64, this decrement is wrapped in an if_then_else.  */
   inc_src = SET_SRC (inc);
   if (GET_CODE (inc_src) == IF_THEN_ELSE)
     inc_src = XEXP (inc_src, 1);
   if (GET_CODE (inc_src) != PLUS
-      || XEXP (inc_src, 0) != reg
-      || XEXP (inc_src, 1) != constm1_rtx)
+      || !rtx_equal_p (XEXP (inc_src, 0), reg)
+      || !CONST_INT_P (XEXP (inc_src, 1))
+      || INTVAL (XEXP (inc_src, 1)) >= 0)
     return 0;
+  int dec_num = -INTVAL (XEXP (inc_src, 1));
 
   /* Check for (set (pc) (if_then_else (condition)
                                        (label_ref (label))
@@ -196,60 +212,63 @@ doloop_condition_get (rtx_insn *doloop_pat)
   /* Extract loop termination condition.  */
   condition = XEXP (SET_SRC (cmp), 0);
 
-  /* We expect a GE or NE comparison with 0 or 1.  */
-  if ((GET_CODE (condition) != GE
-       && GET_CODE (condition) != NE)
-      || (XEXP (condition, 1) != const0_rtx
-          && XEXP (condition, 1) != const1_rtx))
+  /* We expect a GE or NE comparison with 0 or 1, or a GTU comparison with
+     dec_num - 1.  */
+  if (!((GET_CODE (condition) == GE
+	 || GET_CODE (condition) == NE)
+	&& (XEXP (condition, 1) == const0_rtx
+	    || XEXP (condition, 1) == const1_rtx ))
+      &&!(GET_CODE (condition) == GTU
+	  && ((INTVAL (XEXP (condition, 1))) == (dec_num - 1))))
     return 0;
 
-  if ((XEXP (condition, 0) == reg)
+  if (rtx_equal_p (XEXP (condition, 0), reg)
       /* For the third case:  */  
       || ((cc_reg != NULL_RTX)
 	  && (XEXP (condition, 0) == cc_reg)
-	  && (reg_orig == reg))
+	  && (rtx_equal_p (reg_orig, reg)))
       || (GET_CODE (XEXP (condition, 0)) == PLUS
-	  && XEXP (XEXP (condition, 0), 0) == reg))
-   {
-     if (GET_CODE (pattern) != PARALLEL)
-     /*  For the second form we expect:
+	  && rtx_equal_p (XEXP (XEXP (condition, 0), 0), reg, NULL)))
+    {
+      if (GET_CODE (pattern) != PARALLEL)
+      /* For the second form we expect:
 
-         (set (reg) (plus (reg) (const_int -1))
-         (set (pc) (if_then_else (reg != 0)
-                                 (label_ref (label))
-                                 (pc))).
+	 (set (reg) (plus (reg) (const_int -1))
+	 (set (pc) (if_then_else (reg != 0)
+				 (label_ref (label))
+				 (pc))).
 
-         is equivalent to the following:
+	 is equivalent to the following:
 
-         (parallel [(set (pc) (if_then_else (reg != 1)
-                                            (label_ref (label))
-                                            (pc)))
-                     (set (reg) (plus (reg) (const_int -1)))
-                     (additional clobbers and uses)])
+	 (parallel [(set (pc) (if_then_else (reg != 1)
+					    (label_ref (label))
+					    (pc)))
+		     (set (reg) (plus (reg) (const_int -1)))
+		     (additional clobbers and uses)])
 
-        For the third form we expect:
+	For the third form we expect:
 
-        (parallel [(set (cc) (compare ((plus (reg) (const_int -1)), 0))
-                   (set (reg) (plus (reg) (const_int -1)))])
-        (set (pc) (if_then_else (cc == NE)
-                                (label_ref (label))
-                                (pc))) 
+	(parallel [(set (cc) (compare ((plus (reg) (const_int -1)), 0))
+		   (set (reg) (plus (reg) (const_int -1)))])
+	(set (pc) (if_then_else (cc == NE)
+				(label_ref (label))
+				(pc)))
 
-        which is equivalent to the following:
+	which is equivalent to the following:
 
-        (parallel [(set (cc) (compare (reg,  1))
-                   (set (reg) (plus (reg) (const_int -1)))
-                   (set (pc) (if_then_else (NE == cc)
-                                           (label_ref (label))
-                                           (pc))))])
+	(parallel [(set (cc) (compare (reg,  1))
+		   (set (reg) (plus (reg) (const_int -1)))
+		   (set (pc) (if_then_else (NE == cc)
+					   (label_ref (label))
+					   (pc))))])
 
-        So we return the second form instead for the two cases.
+	So we return the second form instead for the two cases.
 
      */
-        condition = gen_rtx_fmt_ee (NE, VOIDmode, inc_src, const1_rtx);
+	condition = gen_rtx_fmt_ee (NE, VOIDmode, inc_src, const1_rtx);
 
     return condition;
-   }
+    }
 
   /* ??? If a machine uses a funny comparison, we could return a
      canonicalized form here.  */
@@ -507,6 +526,11 @@ doloop_modify (class loop *loop, class niter_desc *desc,
 	nonneg = 1;
       break;
 
+    case GTU:
+      /* The iteration count does not need incrementing for a GTU test.  */
+      increment_count = false;
+      break;
+
       /* Abort if an invalid doloop pattern has been generated.  */
     default:
       gcc_unreachable ();
@@ -529,6 +553,10 @@ doloop_modify (class loop *loop, class niter_desc *desc,
 
   if (desc->noloop_assumptions)
     {
+      /* The GTU case has only been implemented for Arm, where
+	 noloop_assumptions gets explicitly set to NULL for that case, so
+	 assert here for safety.  */
+      gcc_assert (GET_CODE (condition) != GTU);
       rtx ass = copy_rtx (desc->noloop_assumptions);
       basic_block preheader = loop_preheader_edge (loop)->src;
       basic_block set_zero = split_edge (loop_preheader_edge (loop));
@@ -642,7 +670,7 @@ doloop_optimize (class loop *loop)
 {
   scalar_int_mode mode;
   rtx doloop_reg;
-  rtx count;
+  rtx count = NULL_RTX;
   widest_int iterations, iterations_max;
   rtx_code_label *start_label;
   rtx condition;
@@ -685,17 +713,6 @@ doloop_optimize (class loop *loop)
       return false;
     }
 
-  max_cost
-    = COSTS_N_INSNS (param_max_iterations_computation_cost);
-  if (set_src_cost (desc->niter_expr, mode, optimize_loop_for_speed_p (loop))
-      > max_cost)
-    {
-      if (dump_file)
-	fprintf (dump_file,
-		 "Doloop: number of iterations too costly to compute.\n");
-      return false;
-    }
-
   if (desc->const_iter)
     iterations = widest_int::from (rtx_mode_t (desc->niter_expr, mode),
 				   UNSIGNED);
@@ -716,12 +733,25 @@ doloop_optimize (class loop *loop)
 
   /* Generate looping insn.  If the pattern FAILs then give up trying
      to modify the loop since there is some aspect the back-end does
-     not like.  */
-  count = copy_rtx (desc->niter_expr);
+     not like.  If this succeeds, there is a chance that the loop
+     desc->niter_expr has been altered by the backend, so only extract
+     that data after the gen_doloop_end.  */
   start_label = block_label (desc->in_edge->dest);
   doloop_reg = gen_reg_rtx (mode);
   rtx_insn *doloop_seq = targetm.gen_doloop_end (doloop_reg, start_label);
 
+  max_cost
+    = COSTS_N_INSNS (param_max_iterations_computation_cost);
+  if (set_src_cost (desc->niter_expr, mode, optimize_loop_for_speed_p (loop))
+      > max_cost)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Doloop: number of iterations too costly to compute.\n");
+      return false;
+    }
+
+  count = copy_rtx (desc->niter_expr);
   word_mode_size = GET_MODE_PRECISION (word_mode);
   word_mode_max = (HOST_WIDE_INT_1U << (word_mode_size - 1) << 1) - 1;
   if (! doloop_seq

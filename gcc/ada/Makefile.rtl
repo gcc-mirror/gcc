@@ -611,6 +611,9 @@ GNATRTL_NONTASKING_OBJS= \
   s-geveop$(objext) \
   s-gloloc$(objext) \
   s-htable$(objext) \
+  s-imad32$(objext) \
+  s-imad64$(objext) \
+  s-imagea$(objext) \
   s-imageb$(objext) \
   s-imaged$(objext) \
   s-imagef$(objext) \

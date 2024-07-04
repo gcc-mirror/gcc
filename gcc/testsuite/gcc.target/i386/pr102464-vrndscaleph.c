@@ -1,6 +1,9 @@
 /* PR target/102464.  */
 /* { dg-do compile } */
 /* { dg-options "-Ofast -mavx512fp16 -mavx512vl -mprefer-vector-width=512" } */
+#ifndef __NO_MATH_INLINES
+#define __NO_MATH_INLINES
+#endif
 #include<math.h>
 void
 foo (_Float16* __restrict a, _Float16* b)

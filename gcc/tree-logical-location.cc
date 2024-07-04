@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "tree-logical-location.h"
 #include "langhooks.h"
+#include "intl.h"
 
 /* class compiler_logical_location : public logical_location.  */
 
@@ -82,6 +83,16 @@ compiler_logical_location::get_kind_for_tree (tree decl)
     }
 }
 
+label_text
+compiler_logical_location::get_name_for_tree_for_path_output (tree decl)
+{
+  gcc_assert (decl);
+  const char *n = DECL_NAME (decl)
+    ? identifier_to_locale (lang_hooks.decl_printable_name (decl, 2))
+    : _("<anonymous>");
+  return label_text::borrow (n);
+}
+
 /* class tree_logical_location : public compiler_logical_location.  */
 
 /* Implementation of the logical_location vfuncs, using m_decl.  */
@@ -112,6 +123,13 @@ tree_logical_location::get_kind () const
 {
   gcc_assert (m_decl);
   return get_kind_for_tree (m_decl);
+}
+
+label_text
+tree_logical_location::get_name_for_path_output () const
+{
+  gcc_assert (m_decl);
+  return get_name_for_tree_for_path_output (m_decl);
 }
 
 /* class current_fndecl_logical_location : public compiler_logical_location.  */
@@ -145,4 +163,11 @@ current_fndecl_logical_location::get_kind () const
 {
   gcc_assert (current_function_decl);
   return get_kind_for_tree (current_function_decl);
+}
+
+label_text
+current_fndecl_logical_location::get_name_for_path_output () const
+{
+  gcc_assert (current_function_decl);
+  return get_name_for_tree_for_path_output (current_function_decl);
 }

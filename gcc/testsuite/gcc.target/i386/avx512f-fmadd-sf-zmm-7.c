@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512f -O2" } */
-/* { dg-final { scan-assembler-times "vbroadcastss\[^\n\]*%zmm\[0-9\]+" 1 } } */
+/* { dg-final { scan-assembler-times "vbroadcastss\[^\n\]*%zmm\[0-9\]+" 1 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vfmadd...ps\[^\n\]*%zmm\[0-9\]+" 1 } } */
 
 #define type __m512

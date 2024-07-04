@@ -1,6 +1,6 @@
 /* PR target/71763 */
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 int main ()
 {

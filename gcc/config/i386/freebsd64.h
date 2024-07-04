@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SPEC "\
   %{m32:-m elf_i386_fbsd}%{!m32:-m elf_x86_64_fbsd} \
   %{p:%nconsider using '-pg' instead of '-p' with gprof(1)} \
+  " FBSD_LINK_PG_NOTE " \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
   %{shared:-Bshareable %{h*} %{soname*}} \

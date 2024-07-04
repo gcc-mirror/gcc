@@ -45,7 +45,7 @@ private:
   unsigned num_args;
   static const int size_limit = 10;
   tree m_names[size_limit];
-  Value_Range m_ranges[size_limit];
+  value_range m_ranges[size_limit];
   inline void bump_index () { if (num_args < size_limit - 1) num_args++; }
   friend class non_null_wrapper;
 };

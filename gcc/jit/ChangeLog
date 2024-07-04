@@ -1,3 +1,49 @@
+2024-06-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit-recording.cc
+	(recording::memento_of_typeinfo::make_debug_string): Default the value
+	of ident.
+	(recording::memento_of_typeinfo::write_reproducer): Default the value
+	of type.
+
+2024-06-27  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_28): New ABI tag.
+	* docs/topics/expressions.rst: Document gcc_jit_context_new_alignof.
+	* jit-playback.cc (new_alignof): New method.
+	* jit-playback.h: New method.
+	* jit-recording.cc (recording::context::new_alignof): New
+	method.
+	(recording::memento_of_sizeof::replay_into,
+	recording::memento_of_typeinfo::replay_into,
+	recording::memento_of_sizeof::make_debug_string,
+	recording::memento_of_typeinfo::make_debug_string,
+	recording::memento_of_sizeof::write_reproducer,
+	recording::memento_of_typeinfo::write_reproducer): Rename.
+	* jit-recording.h (enum type_info_type): New enum.
+	(class memento_of_sizeof class memento_of_typeinfo): Rename.
+	* libgccjit.cc (gcc_jit_context_new_alignof): New function.
+	* libgccjit.h (gcc_jit_context_new_alignof): New function.
+	* libgccjit.map: New function.
+
+2024-06-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* jit-recording.cc (recording::memento_of_get_type::get_size): Update
+	macros {FLOAT,DOUBLE,LONG_DOUBLE}_TYPE_SIZE by calling
+	targetm.c.mode_for_floating_type with
+	TI_{FLOAT,DOUBLE,LONG_DOUBLE}_TYPE.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.cc (recording::function::dump_to_dot): Update for
+	fields of pretty_printer becoming private.
+
+2024-06-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR jit/115442
+	* jit-recording.cc: Define INCLUDE_SSTREAM before including
+	system.h and don't directly incldue sstream.
+
 2024-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* docs/topics/expressions.rst (Constructor expressions): Fix

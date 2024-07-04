@@ -927,7 +927,8 @@ package body Switch.C is
                Ptr := Ptr + 1;
                Legacy_Elaboration_Checks := True;
 
-            --  -gnati (character set)
+            --  -gnati[1-5|8|9|p|f|n|w] (character set)
+            --  -gnatis (suppress info messages)
 
             when 'i' =>
                if Ptr = Max then
@@ -939,6 +940,9 @@ package body Switch.C is
 
                if C in '1' .. '5' | '8' | 'p' | '9' | 'f' | 'n' | 'w' then
                   Identifier_Character_Set := C;
+                  Ptr := Ptr + 1;
+               elsif C = 's' then
+                  Info_Suppressed := True;
                   Ptr := Ptr + 1;
 
                else

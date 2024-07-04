@@ -226,7 +226,7 @@ region_to_value_map::dump (bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, simple, true);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -258,7 +258,7 @@ region_to_value_map::to_json () const
   return map_obj;
 }
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 region_to_value_map::
 make_dump_widget (const text_art::dump_widget_info &dwi) const
 {
@@ -288,7 +288,7 @@ make_dump_widget (const text_art::dump_widget_info &dwi) const
       sval->dump_to_pp (pp, true);
       w->add_child (text_art::tree_widget::make (dwi, pp));
     }
-  return std::move (w);
+  return w;
 }
 
 /* Attempt to merge THIS with OTHER, writing the result
@@ -486,7 +486,7 @@ region_model::dump (FILE *fp, bool simple, bool multiline) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_to_pp (&pp, simple, multiline);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -532,7 +532,7 @@ region_model::to_json () const
   return model_obj;
 }
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 region_model::make_dump_widget (const text_art::dump_widget_info &dwi) const
 {
   using text_art::tree_widget;
@@ -556,7 +556,7 @@ region_model::make_dump_widget (const text_art::dump_widget_info &dwi) const
 			       m_mgr->get_store_manager ()));
   model_widget->add_child (m_constraints->make_dump_widget (dwi));
   model_widget->add_child (m_dynamic_extents.make_dump_widget (dwi));
-  return std::move (model_widget);
+  return model_widget;
 }
 
 /* Assert that this object is valid.  */
@@ -7400,7 +7400,7 @@ model_merger::dump (FILE *fp, bool simple) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_to_pp (&pp, simple);
   pp_flush (&pp);
 }

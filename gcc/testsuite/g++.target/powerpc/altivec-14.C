@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 void f (__attribute__((altivec (vector__))) signed int * a,
 	__attribute__((altivec (vector__))) signed int * const b);

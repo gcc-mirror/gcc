@@ -65,8 +65,8 @@ extern void arm_emit_speculation_barrier_function (void);
 extern void arm_decompose_di_binop (rtx, rtx, rtx *, rtx *, rtx *, rtx *);
 extern bool arm_q_bit_access (void);
 extern bool arm_ge_bits_access (void);
-extern bool arm_target_insn_ok_for_lob (rtx);
-
+extern bool arm_target_bb_ok_for_lob (basic_block);
+extern int arm_attempt_dlstp_transform (rtx);
 #ifdef RTX_CODE
 enum reg_class
 arm_mode_base_reg_class (machine_mode);

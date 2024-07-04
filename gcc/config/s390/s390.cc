@@ -3347,7 +3347,9 @@ s390_decompose_addrstyle_without_index (rtx op, rtx *base,
   while (op && GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
-  if (op && GET_CODE (op) != REG)
+  if (op && (!REG_P (op)
+	     || (reload_completed
+		 && !REGNO_OK_FOR_BASE_P (REGNO (op)))))
     return false;
 
   if (offset)
@@ -17940,7 +17942,8 @@ expand_perm_as_replicate (const struct expand_vec_perm_d &d)
   unsigned char i;
   unsigned char elem;
   rtx base = d.op0;
-  rtx insn;
+  rtx insn = NULL_RTX;
+
   /* Needed to silence maybe-uninitialized warning.  */
   gcc_assert (d.nelt > 0);
   elem = d.perm[0];
@@ -17954,7 +17957,19 @@ expand_perm_as_replicate (const struct expand_vec_perm_d &d)
 	  base = d.op1;
 	  elem -= d.nelt;
 	}
-      insn = maybe_gen_vec_splat (d.vmode, d.target, base, GEN_INT (elem));
+      if (memory_operand (base, d.vmode))
+	{
+	  /* Try to use vector load and replicate.  */
+	  rtx new_base = adjust_address (base, GET_MODE_INNER (d.vmode),
+					 elem * GET_MODE_UNIT_SIZE (d.vmode));
+	  insn = maybe_gen_vec_splats (d.vmode, d.target, new_base);
+	}
+      if (insn == NULL_RTX)
+	{
+	  base = force_reg (d.vmode, base);
+	  insn = maybe_gen_vec_splat (d.vmode, d.target, base, GEN_INT (elem));
+	}
+
       if (insn == NULL_RTX)
 	return false;
       emit_insn (insn);
@@ -18064,6 +18079,18 @@ s390_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 	}
     }
   return default_noce_conversion_profitable_p (seq, if_info);
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+s390_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TARGET_LONG_DOUBLE_128 ? TFmode : DFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 /* Initialize GCC target structure.  */
@@ -18381,6 +18408,9 @@ s390_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 
 #undef TARGET_NOCE_CONVERSION_PROFITABLE_P
 #define TARGET_NOCE_CONVERSION_PROFITABLE_P s390_noce_conversion_profitable_p
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE s390_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

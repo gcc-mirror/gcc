@@ -259,12 +259,15 @@ FROM M2Quads IMPORT QuadOperator, GetQuad, IsReferenced, GetNextQuad,
                     QuadToTokenNo, DisplayQuad, GetQuadtok,
                     GetM2OperatorDesc, GetQuadOp,
                     IsQuadConstExpr, IsBecomes, IsGoto, IsConditional,
-                    IsDummy,
+                    IsDummy, IsConditionalBooleanQuad,
                     GetQuadOp1, GetQuadOp3, GetQuadDest, SetQuadConstExpr ;
 
 FROM M2Check IMPORT ParameterTypeCompatible, AssignmentTypeCompatible,  ExpressionTypeCompatible ;
 FROM M2SSA IMPORT EnableSSA ;
 FROM M2Optimize IMPORT FoldBranches ;
+
+FROM M2BasicBlock IMPORT BasicBlock, IsBasicBlockFirst,
+                         GetBasicBlockStart, GetBasicBlockEnd ;
 
 
 CONST
@@ -568,7 +571,7 @@ END CodeStatement ;
                                 p(sym) is invoked.
 *)
 
-PROCEDURE ResolveConstantExpressions (p: WalkAction; start, end: CARDINAL) : BOOLEAN ;
+PROCEDURE ResolveConstantExpressions (p: WalkAction; bb: BasicBlock) : BOOLEAN ;
 VAR
    tokenno: CARDINAL ;
    quad   : CARDINAL ;
@@ -580,8 +583,12 @@ VAR
    op2pos,
    op3pos : CARDINAL ;
    Changed: BOOLEAN ;
+   start,
+   end    : CARDINAL ;
 BEGIN
    InitBuiltinSyms (BuiltinTokenNo) ;
+   start := GetBasicBlockStart (bb) ;
+   end := GetBasicBlockEnd (bb) ;
    Changed  := FALSE ;
    REPEAT
       NoChange := TRUE ;
@@ -607,7 +614,7 @@ BEGIN
          LogicalOrOp        : FoldSetOr (tokenno, p, quad, op1, op2, op3) |
          LogicalAndOp       : FoldSetAnd (tokenno, p, quad, op1, op2, op3) |
          LogicalXorOp       : FoldSymmetricDifference (tokenno, p, quad, op1, op2, op3) |
-         BecomesOp          : FoldBecomes (p, quad) |
+         BecomesOp          : FoldBecomes (p, bb, quad) |
          ArithAddOp         : FoldArithAdd (op1pos, p, quad, op1, op2, op3) |
          AddOp              : FoldAdd (op1pos, p, quad, op1, op2, op3) |
          SubOp              : FoldSub (op1pos, p, quad, op1, op2, op3) |
@@ -630,14 +637,14 @@ BEGIN
          CastOp             : FoldCast (tokenno, p, quad, op1, op2, op3) |
          InclOp             : FoldIncl (tokenno, p, quad, op1, op3) |
          ExclOp             : FoldExcl (tokenno, p, quad, op1, op3) |
-         IfEquOp            : FoldIfEqu (tokenno, p, quad, op1, op2, op3) |
-         IfNotEquOp         : FoldIfNotEqu (tokenno, p, quad, op1, op2, op3) |
-         IfLessOp           : FoldIfLess (tokenno, p, quad, op1, op2, op3) |
-         IfLessEquOp        : FoldIfLessEqu (tokenno, p, quad, op1, op2, op3) |
-         IfGreOp            : FoldIfGre (tokenno, p, quad, op1, op2, op3) |
-         IfGreEquOp         : FoldIfGreEqu (tokenno, p, quad, op1, op2, op3) |
-         IfInOp             : FoldIfIn (tokenno, p, quad, op1, op2, op3) |
-         IfNotInOp          : FoldIfNotIn (tokenno, p, quad, op1, op2, op3) |
+         IfEquOp            : FoldIfEqu (tokenno, quad, op1, op2, op3) |
+         IfNotEquOp         : FoldIfNotEqu (tokenno, quad, op1, op2, op3) |
+         IfLessOp           : FoldIfLess (tokenno, quad, op1, op2, op3) |
+         IfLessEquOp        : FoldIfLessEqu (tokenno, quad, op1, op2, op3) |
+         IfGreOp            : FoldIfGre (tokenno, quad, op1, op2, op3) |
+         IfGreEquOp         : FoldIfGreEqu (tokenno, quad, op1, op2, op3) |
+         IfInOp             : FoldIfIn (tokenno, quad, op1, op2, op3) |
+         IfNotInOp          : FoldIfNotIn (tokenno, quad, op1, op2, op3) |
          LogicalShiftOp     : FoldSetShift(tokenno, p, quad, op1, op2, op3) |
          LogicalRotateOp    : FoldSetRotate (tokenno, p, quad, op1, op2, op3) |
          ParamOp            : FoldBuiltinFunction (tokenno, p, quad, op1, op2, op3) |
@@ -650,7 +657,7 @@ BEGIN
          ELSE
             (* ignore quadruple as it is not associated with a constant expression *)
          END ;
-         quad := GetNextQuad(quad)
+         quad := GetNextQuad (quad)
       END ;
       IF NOT NoChange
       THEN
@@ -2750,19 +2757,22 @@ END CheckStop ;
    Sym1<I> := Sym3<I>           := produces a constant
 *)
 
-PROCEDURE FoldBecomes (p: WalkAction; quad: CARDINAL) ;
+PROCEDURE FoldBecomes (p: WalkAction; bb: BasicBlock; quad: CARDINAL) ;
 VAR
    op            : QuadOperator ;
    des, op2, expr: CARDINAL ;
 BEGIN
-   IF DeclaredOperandsBecomes (p, quad) AND (NOT IsQuadConstExpr (quad))
+   IF DeclaredOperandsBecomes (p, quad)
    THEN
-      IF TypeCheckBecomes (p, quad)
+      IF (NOT IsConditionalBooleanQuad (quad)) OR IsBasicBlockFirst (bb)
       THEN
-         PerformFoldBecomes (p, quad)
-      ELSE
-         GetQuad (quad, op, des, op2, expr) ;
-         RemoveQuad (p, des, quad)
+         IF TypeCheckBecomes (p, quad)
+         THEN
+            PerformFoldBecomes (p, quad)
+         ELSE
+            GetQuad (quad, op, des, op2, expr) ;
+            RemoveQuad (p, des, quad)
+         END
       END
    END
 END FoldBecomes ;
@@ -3432,7 +3442,7 @@ BEGIN
       ELSE
          IF checkBecomes (des, expr, virtpos, despos, exprpos)
          THEN
-            IF IsVariableSSA (des)
+            IF IsVar (des) AND IsVariableSSA (des)
             THEN
                Replace (des, FoldConstBecomes (virtpos, des, expr))
             ELSE
@@ -5322,7 +5332,7 @@ END FoldIncl ;
                 if op1 < op2 then goto op3.
 *)
 
-PROCEDURE FoldIfLess (tokenno: CARDINAL; p: WalkAction;
+PROCEDURE FoldIfLess (tokenno: CARDINAL;
                       quad: CARDINAL; left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
@@ -5333,18 +5343,13 @@ BEGIN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
          (* We can take advantage of the known values and evaluate the condition.  *)
-         IF IsBooleanRelOpPattern (quad)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF Less (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            PushValue (left) ;
-            PushValue (right) ;
-            IF Less (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5353,114 +5358,13 @@ END FoldIfLess ;
 
 
 (*
-   IsBooleanRelOpPattern - return TRUE if the pattern:
-                           q   If    left  right  q+2
-                           q+1 Goto               q+4
-                           q+2 Becomes des[i]  TRUE[i]
-                           q+3 Goto               q+5
-                           q+4 Becomes des[i]  FALSE[i]
-*)
-
-PROCEDURE IsBooleanRelOpPattern (quad: CARDINAL) : BOOLEAN ;
-BEGIN
-   IF IsQuadConstExpr (quad)
-   THEN
-      IF IsConditional (quad) AND
-         (IsGoto (quad+1) OR IsDummy (quad+1)) AND
-         IsBecomes (quad+2) AND IsGoto (quad+3) AND
-         IsBecomes (quad+4) AND
-         (GetQuadDest (quad) = quad+2) AND
-         (GetQuadDest (quad+1) = quad+4) AND
-         (GetQuadDest (quad+3) = quad+5) AND
-         (GetQuadOp1 (quad+2) = GetQuadOp1 (quad+4))
-      THEN
-         RETURN TRUE
-      END
-   END ;
-   RETURN FALSE
-END IsBooleanRelOpPattern ;
-
-
-(*
-   FoldBooleanRelopPattern - fold the boolean relop pattern of quadruples
-                             above to:
-                             q+2 Becomes des[i]  TRUE[i]
-                             or
-                             q+4 Becomes des[i]  FALSE[i]
-                             depending upon the condition in quad.
-*)
-
-PROCEDURE FoldBooleanRelopPattern (p: WalkAction; quad: CARDINAL) ;
-VAR
-   des: CARDINAL ;
-BEGIN
-   des := GetQuadOp1 (quad+2) ;
-   IF QuadCondition (quad)
-   THEN
-      SetQuadConstExpr (quad+2, FALSE) ;
-      SubQuad (quad+4)  (* Remove des := FALSE.  *)
-   ELSE
-      SetQuadConstExpr (quad+4, FALSE) ;
-      SubQuad (quad+2)  (* Remove des := TRUE.  *)
-   END ;
-   RemoveQuad (p, des, quad) ;
-   SubQuad (quad+1) ;
-   SubQuad (quad+3)
-END FoldBooleanRelopPattern ;
-
-
-(*
-   QuadCondition - Pre-condition:  left, right operands are constants
-                   which have been resolved.
-                   Post-condition: return TRUE if the condition at
-                   quad is TRUE.
-*)
-
-PROCEDURE QuadCondition (quad: CARDINAL) : BOOLEAN ;
-VAR
-   left, right, dest, combined,
-   leftpos, rightpos, destpos : CARDINAL ;
-   constExpr, overflow        : BOOLEAN ;
-   op                         : QuadOperator ;
-BEGIN
-   GetQuadOtok (quad, combined, op,
-                left, right, dest, overflow,
-                constExpr,
-                leftpos, rightpos, destpos) ;
-   CASE op OF
-
-   IfInOp     :  PushValue (right) ;
-                 RETURN SetIn (left, combined) |
-   IfNotInOp  :  PushValue (right) ;
-                 RETURN NOT SetIn (left, combined)
-
-   ELSE
-   END ;
-   PushValue (left) ;
-   PushValue (right) ;
-   CASE op OF
-
-   IfGreOp    :  RETURN Gre (combined) |
-   IfLessOp   :  RETURN Less (combined) |
-   IfLessEquOp:  RETURN LessEqu (combined) |
-   IfGreEquOp :  RETURN GreEqu (combined) |
-   IfEquOp    :  RETURN GreEqu (combined) |
-   IfNotEquOp :  RETURN NotEqu (combined)
-
-   ELSE
-      InternalError ('unrecognized comparison operator')
-   END ;
-   RETURN FALSE
-END QuadCondition ;
-
-
-(*
    FoldIfGre - check to see if it is possible to evaluate
                if op1 > op2 then goto op3.
 *)
 
-PROCEDURE FoldIfGre (tokenno: CARDINAL; p: WalkAction;
-                     quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfGre (tokenno: CARDINAL;
+                     quad: CARDINAL;
+                     left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5470,18 +5374,13 @@ BEGIN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
          (* We can take advantage of the known values and evaluate the condition.  *)
-         IF IsBooleanRelOpPattern (quad)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF Gre (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            PushValue (left) ;
-            PushValue (right) ;
-            IF Gre (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5494,8 +5393,9 @@ END FoldIfGre ;
                    if op1 <= op2 then goto op3.
 *)
 
-PROCEDURE FoldIfLessEqu (tokenno: CARDINAL; p: WalkAction;
-                         quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfLessEqu (tokenno: CARDINAL;
+                         quad: CARDINAL;
+                         left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5505,18 +5405,13 @@ BEGIN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
          (* We can take advantage of the known values and evaluate the condition.  *)
-         IF IsBooleanRelOpPattern (quad)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF LessEqu (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            PushValue (left) ;
-            PushValue (right) ;
-            IF LessEqu (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5529,8 +5424,9 @@ END FoldIfLessEqu ;
                   if op1 >= op2 then goto op3.
 *)
 
-PROCEDURE FoldIfGreEqu (tokenno: CARDINAL; p: WalkAction;
-                        quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfGreEqu (tokenno: CARDINAL;
+                        quad: CARDINAL;
+                        left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5540,18 +5436,13 @@ BEGIN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
          (* We can take advantage of the known values and evaluate the condition.  *)
-         IF IsBooleanRelOpPattern (quad)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF GreEqu (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            PushValue (left) ;
-            PushValue (right) ;
-            IF GreEqu (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5564,8 +5455,9 @@ END FoldIfGreEqu ;
               if op1 in op2 then goto op3
 *)
 
-PROCEDURE FoldIfIn (tokenno: CARDINAL; p: WalkAction;
-                    quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfIn (tokenno: CARDINAL;
+                    quad: CARDINAL;
+                    left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant (tokenno, left) ;
@@ -5577,17 +5469,12 @@ BEGIN
          IF CheckBinaryExpressionTypes (quad, NoWalkProcedure)
          THEN
             (* We can take advantage of the known values and evaluate the condition.  *)
-            IF IsBooleanRelOpPattern (quad)
+            PushValue (right) ;
+            IF SetIn (tokenno, left)
             THEN
-               FoldBooleanRelopPattern (p, quad)
+               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad) ;
             ELSE
-               PushValue (right) ;
-               IF SetIn (tokenno, left)
-               THEN
-                  PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-               ELSE
-                  SubQuad (quad)
-               END
+               SubQuad (quad)
             END
          ELSE
             SubQuad (quad)
@@ -5603,8 +5490,9 @@ END FoldIfIn ;
                  if not (op1 in op2) then goto op3
 *)
 
-PROCEDURE FoldIfNotIn (tokenno: CARDINAL; p: WalkAction;
-                       quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfNotIn (tokenno: CARDINAL;
+                       quad: CARDINAL;
+                       left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant (tokenno, left) ;
@@ -5615,18 +5503,14 @@ BEGIN
       THEN
          IF CheckBinaryExpressionTypes (quad, NoWalkProcedure)
          THEN
-            (* We can take advantage of the known values and evaluate the condition.  *)
-            IF IsBooleanRelOpPattern (quad)
+            (* We can take advantage of the known values and evaluate the
+               condition.  *)
+            PushValue (right) ;
+            IF NOT SetIn (tokenno, left)
             THEN
-               FoldBooleanRelopPattern (p, quad)
+               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
             ELSE
-               PushValue (right) ;
-               IF NOT SetIn (tokenno, left)
-               THEN
-                  PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-               ELSE
-                  SubQuad (quad)
-               END
+               SubQuad (quad)
             END
          ELSE
             SubQuad (quad)
@@ -5642,8 +5526,9 @@ END FoldIfNotIn ;
                if op1 = op2 then goto op3.
 *)
 
-PROCEDURE FoldIfEqu (tokenno: CARDINAL; p: WalkAction;
-                     quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfEqu (tokenno: CARDINAL;
+                     quad: CARDINAL;
+                     left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5652,19 +5537,15 @@ BEGIN
    THEN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
-         IF IsBooleanRelOpPattern (quad)
+         (* We can take advantage of the known values and evaluate the
+            condition.  *)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF Equ (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            (* We can take advantage of the known values and evaluate the condition.  *)
-            PushValue (left) ;
-            PushValue (right) ;
-            IF Equ (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END
@@ -5677,8 +5558,9 @@ END FoldIfEqu ;
                   if op1 # op2 then goto op3.
 *)
 
-PROCEDURE FoldIfNotEqu (tokenno: CARDINAL; p: WalkAction;
-                        quad: CARDINAL; left, right, destQuad: CARDINAL) ;
+PROCEDURE FoldIfNotEqu (tokenno: CARDINAL;
+                        quad: CARDINAL;
+                        left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
    TryDeclareConstant(tokenno, left) ;
@@ -5687,19 +5569,15 @@ BEGIN
    THEN
       IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
-         IF IsBooleanRelOpPattern (quad)
+         (* We can take advantage of the known values and evaluate the
+            condition.  *)
+         PushValue (left) ;
+         PushValue (right) ;
+         IF NotEqu (tokenno)
          THEN
-            FoldBooleanRelopPattern (p, quad)
+            PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
          ELSE
-            (* We can take advantage of the known values and evaluate the condition.  *)
-            PushValue (left) ;
-            PushValue (right) ;
-            IF NotEqu (tokenno)
-            THEN
-               PutQuad (quad, GotoOp, NulSym, NulSym, destQuad)
-            ELSE
-               SubQuad (quad)
-            END
+            SubQuad (quad)
          END ;
          NoChange := FALSE
       END

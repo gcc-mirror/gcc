@@ -134,7 +134,7 @@ struct GTY ((chain_next ("%h.next"))) btf_ext_lineinfo
 
 /* Internal representation of a BPF CO-RE relocation record.  */
 struct GTY ((chain_next ("%h.next"))) btf_ext_core_reloc {
-  unsigned int bpfcr_type;		/* BTF type ID of container.  */
+  ctf_dtdef_ref bpfcr_type;		/* BTF type involved in relocation.  */
   unsigned int  bpfcr_astr_off;		/* Offset of access string in .BTF
 					   string table.  */
   rtx_code_label * bpfcr_insn_label;	/* RTX label attached to instruction
@@ -296,13 +296,14 @@ bpf_core_reloc_add (const tree type, const char * section_name,
   struct btf_ext_core_reloc *bpfcr = bpf_create_core_reloc (section_name, &sec);
 
   ctf_container_ref ctfc = ctf_get_tu_ctfc ();
+  ctf_dtdef_ref dtd = ctf_lookup_tree_type (ctfc, type);
 
   /* Buffer the access string in the auxiliary strtab.  */
   bpfcr->bpfcr_astr_off = 0;
   gcc_assert (accessor != NULL);
   bpfcr->bpfcr_astr_off = btf_ext_add_string (accessor);
 
-  bpfcr->bpfcr_type = get_btf_id (ctf_lookup_tree_type (ctfc, type));
+  bpfcr->bpfcr_type = dtd;
   bpfcr->bpfcr_insn_label = label;
   bpfcr->bpfcr_kind = kind;
 
@@ -341,7 +342,8 @@ bpf_core_get_sou_member_index (ctf_container_ref ctfc, const tree node)
       for (dmd = dtd->dtd_u.dtu_members;
            dmd != NULL; dmd = (ctf_dmdef_t *) ctf_dmd_list_next (dmd))
         {
-	  bool field_has_btf = get_btf_id (dmd->dmd_type) <= BTF_MAX_TYPE;
+	  bool field_has_btf = (dmd->dmd_type
+				&& dmd->dmd_type->dtd_type <= BTF_MAX_TYPE);
 
 	  if (field == node)
 	    return field_has_btf ? i : -1;
@@ -574,8 +576,10 @@ output_btfext_core_sections (void)
 				 false);
 	      char *str = xstrdup (pp_formatted_text (&pp));
 
-	      dw2_asm_output_data (4, bpfcr->bpfcr_type, "bpfcr_type (%s)",
-				   str);
+	      uint32_t type_id = bpfcr->bpfcr_type
+		? bpfcr->bpfcr_type->dtd_type
+		: BTF_VOID_TYPEID;
+	      dw2_asm_output_data (4, type_id, "bpfcr_type (%s)", str);
 	      dw2_asm_output_data (4, bpfcr->bpfcr_astr_off + str_aux_off,
 				   "bpfcr_astr_off (\"%s\")",
 				   bpfcr->info.accessor_str);

@@ -1,7 +1,7 @@
 // PR target/88152
 // { dg-do compile }
 // { dg-options "-O2 -std=c++14 -fdump-tree-forwprop1" }
-// { dg-final { scan-tree-dump-times " (?:<|>=) \{ 0\[, ]" 120 "forwprop1" } }
+// { dg-final { scan-tree-dump-times " (?:(?:<|>=) \{ 0\[, \]|>> (?:7|15|31|63))" 120 "forwprop1" } }
 
 template <typename T, int N>
 using V [[gnu::vector_size (sizeof (T) * N)]] = T;

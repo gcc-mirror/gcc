@@ -9602,15 +9602,27 @@ build_common_tree_nodes (bool signed_char)
   pointer_sized_int_node = build_nonstandard_integer_type (POINTER_SIZE, 1);
 
   float_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (float_type_node) = FLOAT_TYPE_SIZE;
+  machine_mode float_type_mode
+    = targetm.c.mode_for_floating_type (TI_FLOAT_TYPE);
+  SET_TYPE_MODE (float_type_node, float_type_mode);
+  TYPE_PRECISION (float_type_node)
+    = GET_MODE_PRECISION (float_type_mode).to_constant ();
   layout_type (float_type_node);
 
   double_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (double_type_node) = DOUBLE_TYPE_SIZE;
+  machine_mode double_type_mode
+    = targetm.c.mode_for_floating_type (TI_DOUBLE_TYPE);
+  SET_TYPE_MODE (double_type_node, double_type_mode);
+  TYPE_PRECISION (double_type_node)
+    = GET_MODE_PRECISION (double_type_mode).to_constant ();
   layout_type (double_type_node);
 
   long_double_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (long_double_type_node) = LONG_DOUBLE_TYPE_SIZE;
+  machine_mode long_double_type_mode
+    = targetm.c.mode_for_floating_type (TI_LONG_DOUBLE_TYPE);
+  SET_TYPE_MODE (long_double_type_node, long_double_type_mode);
+  TYPE_PRECISION (long_double_type_node)
+    = GET_MODE_PRECISION (long_double_type_mode).to_constant ();
   layout_type (long_double_type_node);
 
   for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)

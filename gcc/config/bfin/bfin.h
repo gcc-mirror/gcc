@@ -862,10 +862,10 @@ typedef struct {
  *  really cause some alignment problem
  */
 
-#define UNITS_PER_FLOAT  ((FLOAT_TYPE_SIZE  + BITS_PER_UNIT - 1) / \
+#define UNITS_PER_FLOAT  ((BFIN_FLOAT_TYPE_SIZE  + BITS_PER_UNIT - 1) / \
 			   BITS_PER_UNIT)
 
-#define UNITS_PER_DOUBLE ((DOUBLE_TYPE_SIZE + BITS_PER_UNIT - 1) / \
+#define UNITS_PER_DOUBLE ((BFIN_DOUBLE_TYPE_SIZE + BITS_PER_UNIT - 1) / \
  			   BITS_PER_UNIT)
 
 
@@ -874,7 +874,8 @@ typedef struct {
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
-#define FLOAT_TYPE_SIZE BITS_PER_WORD
+/* FLOAT_TYPE_SIZE get poisoned, so add BFIN_ prefix.  */
+#define BFIN_FLOAT_TYPE_SIZE BITS_PER_WORD
 #define SHORT_TYPE_SIZE 16 
 #define CHAR_TYPE_SIZE	8
 #define INT_TYPE_SIZE	32
@@ -890,8 +891,8 @@ typedef struct {
  * #define DOUBLES_ARE_FLOATS 1
  */
 
-#define DOUBLE_TYPE_SIZE	64
-#define LONG_DOUBLE_TYPE_SIZE	64
+/* DOUBLE_TYPE_SIZE get poisoned, so add BFIN_ prefix.  */
+#define BFIN_DOUBLE_TYPE_SIZE	64
 
 /* `PROMOTE_MODE (M, UNSIGNEDP, TYPE)'
      A macro to update M and UNSIGNEDP when an object whose type is

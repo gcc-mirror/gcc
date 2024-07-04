@@ -224,13 +224,11 @@ described below.
 @table @asis
 @item ISO C++11 compiler
 Necessary to bootstrap GCC.  GCC 4.8.3 or newer has sufficient
-support for used C++11 features, with earlier GCC versions you
-might run into implementation bugs.
+support for used C++11 features.
 
 Versions of GCC prior to 11 also allow bootstrapping with an ISO C++98
-compiler, versions of GCC prior to 4.8 also allow bootstrapping with a
-ISO C89 compiler, and versions of GCC prior to 3.4 also allow
-bootstrapping with a traditional (K&R) C compiler.
+compiler, and versions of GCC prior to 4.8 also allow bootstrapping with
+an ISO C89 compiler.
 
 To build all languages in a cross-compiler or other configuration where
 3-stage bootstrap is not performed, you need to start with an existing
@@ -461,6 +459,12 @@ is shown below:
 
 @item g++ testsuite
 @code{gcov}, @code{gzip}, @code{json}, @code{os} and @code{pytest}.
+
+@item SARIF testsuite
+Tests of SARIF output will use the @code{check-jsonschema} program from
+the @code{check-jsonschema} module (if available) to validate generated
+.sarif files.  If this tool is not found, the validation parts of those
+tests are skipped.
 
 @item c++ cxx api generation
 @code{csv}, @code{os}, @code{sys} and @code{time}.
@@ -1781,12 +1785,12 @@ Produce code conforming to version 20191213.
 In the absence of this configuration option the default version is 20191213.
 
 @item --enable-__cxa_atexit
-Define if you want to use __cxa_atexit, rather than atexit, to
+Define if you want to use @code{__cxa_atexit}, rather than atexit, to
 register C++ destructors for local statics and global objects.
 This is essential for fully standards-compliant handling of
-destructors, but requires __cxa_atexit in libc.  This option is currently
-only available on systems with GNU libc.  When enabled, this will cause
-@option{-fuse-cxa-atexit} to be passed by default.
+destructors, but requires @code{__cxa_atexit} in libc.  This option is
+currently only available on systems with GNU libc.  When enabled, this
+will cause @option{-fuse-cxa-atexit} to be passed by default.
 
 @item --enable-gnu-indirect-function
 Define if you want to enable the @code{ifunc} attribute.  This option is
@@ -4016,8 +4020,6 @@ can also be obtained from:
 @itemize @bullet
 @item
 @uref{http://www.nongnu.org/avr/,,http://www.nongnu.org/avr/}
-@item
-@uref{http://www.amelek.gda.pl/avr/,,http://www.amelek.gda.pl/avr/}
 @end itemize
 
 The following error:
@@ -4268,9 +4270,6 @@ supported, so @option{--enable-threads=dce} does not work.
 @end html
 @anchor{x-x-linux-gnu}
 @heading *-*-linux-gnu
-The @code{.init_array} and @code{.fini_array} sections are enabled
-unconditionally which requires at least glibc 2.1 and binutils 2.12.
-
 Versions of libstdc++-v3 starting with 3.2.1 require bug fixes present
 in glibc 2.2.5 and later.  More information is available in the
 libstdc++-v3 documentation.
@@ -5106,8 +5105,6 @@ both 64-bit x86-64 and 32-bit x86 code (via the @option{-m32} switch).
 @end html
 @anchor{x86-64-x-solaris2}
 @heading x86_64-*-solaris2*
-GCC also supports the x86-64 architecture implemented by the AMD64
-processor (@samp{amd64-*-*} is an alias for @samp{x86_64-*-*}).
 Unlike other systems, without special options a
 bi-arch compiler is built which generates 32-bit code by default, but
 can generate 64-bit x86-64 code with the @option{-m64} switch.  Since
@@ -5187,8 +5184,7 @@ SuperH (sh-wince-pe), and MIPS (mips-wince-pe).
 @subheading Other Windows Platforms
 GCC no longer supports Windows NT on the Alpha or PowerPC.
 
-GCC no longer supports the Windows POSIX subsystem.  However, it does
-support the Interix subsystem.  See above.
+GCC no longer supports the Windows POSIX subsystem.
 
 Old target names including *-*-winnt and *-*-windowsnt are no longer used.
 
@@ -5200,7 +5196,7 @@ UWIN support has been removed due to a lack of maintenance.
 @anchor{x-x-cygwin}
 @heading *-*-cygwin
 Ports of GCC are included with the
-@uref{http://www.cygwin.com/,,Cygwin environment}.
+@uref{https://cygwin.com,,Cygwin environment}.
 
 GCC will build under Cygwin without modification; it does not build
 with Microsoft's C++ compiler and there are no plans to make it do so.
@@ -5260,10 +5256,6 @@ version before they were removed), patches
 @uref{../contribute.html,,following the usual requirements} would be
 likely to be accepted, since they should not affect the support for more
 modern targets.
-
-For some systems, old versions of GNU binutils may also be useful,
-and are available from @file{pub/binutils/old-releases} on
-@uref{https://sourceware.org/mirrors.html,,sourceware.org mirror sites}.
 
 Some of the information on specific systems above relates to
 such older systems, but much of the information

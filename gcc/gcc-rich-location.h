@@ -59,14 +59,16 @@ class gcc_rich_location : public rich_location
      printing them via a note otherwise e.g.:
 
 	gcc_rich_location richloc (primary_loc);
-	bool added secondary = richloc.add_location_if_nearby (secondary_loc);
+	bool added secondary = richloc.add_location_if_nearby (*global_dc,
+							       secondary_loc);
 	error_at (&richloc, "main message");
 	if (!added secondary)
 	  inform (secondary_loc, "message for secondary");
 
      Implemented in diagnostic-show-locus.cc.  */
 
-  bool add_location_if_nearby (location_t loc,
+  bool add_location_if_nearby (const diagnostic_context &ctxt,
+			       location_t loc,
 			       bool restrict_to_current_line_spans = true,
 			       const range_label *label = NULL);
 

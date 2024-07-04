@@ -1000,7 +1000,8 @@ extern void fancy_abort (const char *, int, const char *)
 	HARD_REGNO_NREGS SECONDARY_MEMORY_NEEDED_MODE			\
 	SECONDARY_MEMORY_NEEDED CANNOT_CHANGE_MODE_CLASS		\
 	TRULY_NOOP_TRUNCATION FUNCTION_ARG_OFFSET CONSTANT_ALIGNMENT	\
-	STARTING_FRAME_OFFSET
+	STARTING_FRAME_OFFSET FLOAT_TYPE_SIZE DOUBLE_TYPE_SIZE		\
+	LONG_DOUBLE_TYPE_SIZE
 
 /* Target macros only used for code built for the target, that have
    moved to libgcc-tm.h or have never been present elsewhere.  */

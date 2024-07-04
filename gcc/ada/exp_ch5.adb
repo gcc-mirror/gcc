@@ -41,6 +41,7 @@ with Exp_Pakd;       use Exp_Pakd;
 with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Inline;         use Inline;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -2398,8 +2399,14 @@ package body Exp_Ch5 is
       Lhs  : constant Node_Id    := Name (N);
       Loc  : constant Source_Ptr := Sloc (N);
       Rhs  : constant Node_Id    := Expression (N);
-      Typ  : constant Entity_Id  := Underlying_Type (Etype (Lhs));
-      Exp  : Node_Id;
+
+      --  Obtain the relevant corresponding mutably tagged type if necessary
+
+      Typ  : constant Entity_Id :=
+        Get_Corresponding_Mutably_Tagged_Type_If_Present
+          (Underlying_Type (Etype (Lhs)));
+
+      Exp : Node_Id;
 
    begin
       --  Special case to check right away, if the Componentwise_Assignment
@@ -2776,7 +2783,9 @@ package body Exp_Ch5 is
                Apply_Discriminant_Check (Rhs, Typ, Lhs);
             end if;
 
-         elsif Is_Array_Type (Typ) and then Is_Constrained (Typ) then
+         elsif Is_Array_Type (Typ) and then
+           (Is_Constrained (Typ) or else Is_Mutably_Tagged_Conversion (Lhs))
+         then
             Rewrite (Rhs, OK_Convert_To (Base_Type (Typ), Rhs));
             Rewrite (Lhs, OK_Convert_To (Base_Type (Typ), Lhs));
             if not Suppress_Assignment_Checks (N) then
@@ -3072,13 +3081,64 @@ package body Exp_Ch5 is
                                      Attribute_Name => Name_Address)));
                         end if;
 
-                        Append_To (L,
-                          Make_Raise_Constraint_Error (Loc,
-                            Condition =>
-                              Make_Op_Ne (Loc,
-                                Left_Opnd  => Lhs_Tag,
-                                Right_Opnd => Rhs_Tag),
-                            Reason    => CE_Tag_Check_Failed));
+                        --  Handle assignment to a mutably tagged type
+
+                        if Is_Mutably_Tagged_Conversion (Lhs)
+                          or else Is_Mutably_Tagged_Type (Typ)
+                          or else Is_Mutably_Tagged_Type (Etype (Lhs))
+                        then
+                           --  Create a tag check when we have the extra
+                           --  constrained formal and it is true (meaning we
+                           --  are not dealing with a mutably tagged object).
+
+                           if Is_Entity_Name (Name (N))
+                             and then Is_Formal (Entity (Name (N)))
+                             and then Present
+                                        (Extra_Constrained (Entity (Name (N))))
+                           then
+                              Append_To (L,
+                                Make_If_Statement (Loc,
+                                  Condition       =>
+                                    New_Occurrence_Of
+                                      (Extra_Constrained
+                                        (Entity (Name (N))), Loc),
+                                  Then_Statements => New_List (
+                                    Make_Raise_Constraint_Error (Loc,
+                                      Condition =>
+                                        Make_Op_Ne (Loc,
+                                          Left_Opnd  => Lhs_Tag,
+                                          Right_Opnd => Rhs_Tag),
+                                      Reason    => CE_Tag_Check_Failed))));
+                           end if;
+
+                           --  Generate a tag assignment before the actual
+                           --  assignment so we dispatch to the proper
+                           --  assign version.
+
+                           Append_To (L,
+                             Make_Assignment_Statement (Loc,
+                               Name       =>
+                               Make_Selected_Component (Loc,
+                                 Prefix        => Duplicate_Subexpr (Lhs),
+                                 Selector_Name =>
+                                   Make_Identifier (Loc, Name_uTag)),
+                             Expression =>
+                               Make_Selected_Component (Loc,
+                                 Prefix        => Duplicate_Subexpr (Rhs),
+                                 Selector_Name =>
+                                   Make_Identifier (Loc, Name_uTag))));
+
+                        --  Otherwise generate a normal tag check
+
+                        else
+                           Append_To (L,
+                             Make_Raise_Constraint_Error (Loc,
+                               Condition =>
+                                 Make_Op_Ne (Loc,
+                                   Left_Opnd  => Lhs_Tag,
+                                   Right_Opnd => Rhs_Tag),
+                               Reason    => CE_Tag_Check_Failed));
+                        end if;
                      end;
                   end if;
 
@@ -4394,6 +4454,18 @@ package body Exp_Ch5 is
       Reinit_Field_To_Zero (Init_Name, F_SPARK_Pragma_Inherited);
       Mutate_Ekind (Init_Name, E_Loop_Parameter);
 
+      --  Wrap the block statements with the condition specified in the
+      --  iterator filter when one is present.
+
+      if Present (Iterator_Filter (I_Spec)) then
+         pragma Assert (Ada_Version >= Ada_2022);
+         Set_Statements (Handled_Statement_Sequence (N),
+            New_List (Make_If_Statement (Loc,
+              Condition => Iterator_Filter (I_Spec),
+              Then_Statements =>
+                Statements (Handled_Statement_Sequence (N)))));
+      end if;
+
       --  The cursor was marked as a loop parameter to prevent user assignments
       --  to it, however this renders the advancement step illegal as it is not
       --  possible to change the value of a constant. Flag the advancement step
@@ -4436,6 +4508,7 @@ package body Exp_Ch5 is
       Advance   : Node_Id;
       Init      : Node_Id;
       New_Loop  : Node_Id;
+      Block     : Node_Id;
 
    begin
       --  For an element iterator, the Element aspect must be present,
@@ -4456,7 +4529,6 @@ package body Exp_Ch5 is
 
       Build_Formal_Container_Iteration
         (N, Container, Cursor, Init, Advance, New_Loop);
-      Append_To (Stats, Advance);
 
       Mutate_Ekind (Cursor, E_Variable);
       Insert_Action (N, Init);
@@ -4481,13 +4553,30 @@ package body Exp_Ch5 is
             Convert_To_Iterable_Type (Container, Loc),
             New_Occurrence_Of (Cursor, Loc))));
 
-      Set_Statements (New_Loop,
-        New_List
-          (Make_Block_Statement (Loc,
-             Declarations => New_List (Elmt_Decl),
-             Handled_Statement_Sequence =>
-               Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Stats))));
+      Block :=
+        Make_Block_Statement (Loc,
+          Declarations => New_List (Elmt_Decl),
+          Handled_Statement_Sequence =>
+            Make_Handled_Sequence_Of_Statements (Loc,
+              Statements => Stats));
+
+      --  Wrap the block statements with the condition specified in the
+      --  iterator filter when one is present.
+
+      if Present (Iterator_Filter (I_Spec)) then
+         pragma Assert (Ada_Version >= Ada_2022);
+         Set_Statements (Handled_Statement_Sequence (Block),
+            New_List (
+              Make_If_Statement (Loc,
+                Condition       => Iterator_Filter (I_Spec),
+                Then_Statements =>
+                  Statements (Handled_Statement_Sequence (Block))),
+              Advance));
+      else
+         Append_To (Stats, Advance);
+      end if;
+
+      Set_Statements (New_Loop, New_List (Block));
 
       --  The element is only modified in expanded code, so it appears as
       --  unassigned to the warning machinery. We must suppress this spurious
@@ -5322,10 +5411,16 @@ package body Exp_Ch5 is
 
             Ent := First_Entity (Cont_Type_Pack);
             while Present (Ent) loop
+
+               --  Ignore subprogram bodies
+
+               if Ekind (Ent) = E_Subprogram_Body then
+                  null;
+
                --  Get_Element_Access function with one parameter called
                --  Position.
 
-               if Chars (Ent) = Name_Get_Element_Access
+               elsif Chars (Ent) = Name_Get_Element_Access
                  and then Ekind (Ent) = E_Function
                  and then Present (First_Formal (Ent))
                  and then Chars (First_Formal (Ent)) = Name_Position

@@ -63,7 +63,7 @@ void dump_to_file (const T &obj, FILE *outf)
   pp_format_decoder (&pp) = default_tree_printer;
   if (outf == stderr)
     pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = outf;
+  pp.set_output_stream (outf);
 
   text_art::theme *theme = global_dc->get_diagram_theme ();
   dump_to_pp (obj, theme, &pp);

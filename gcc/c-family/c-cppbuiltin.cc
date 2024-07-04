@@ -954,7 +954,10 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
 
       if (cxx_dialect >= cxx11)
-        cpp_define (pfile, "__GXX_EXPERIMENTAL_CXX0X__");
+	{
+	  cpp_define (pfile, "__GXX_EXPERIMENTAL_CXX0X__");
+	  cpp_define (pfile, "__GXX_CONSTEXPR_ASM__");
+	}
 
       /* Binary literals have been allowed in g++ before C++11
 	 and were standardized for C++14.  */

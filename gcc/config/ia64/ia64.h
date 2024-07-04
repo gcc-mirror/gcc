@@ -236,18 +236,6 @@ while (0)
 
 #define LONG_LONG_TYPE_SIZE 64
 
-#define FLOAT_TYPE_SIZE 32
-
-#define DOUBLE_TYPE_SIZE 64
-
-/* long double is XFmode normally, and TFmode for HPUX.  It should be
-   TFmode for VMS as well but we only support up to DFmode now.  */
-#define LONG_DOUBLE_TYPE_SIZE \
-  (TARGET_HPUX ? 128 \
-   : TARGET_ABI_OPEN_VMS ? 64 \
-   : 80)
-
-
 #define DEFAULT_SIGNED_CHAR 1
 
 /* A C expression for a string describing the name of the data type to use for

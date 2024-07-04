@@ -1542,6 +1542,23 @@
   [(set_attr "move_type" "pick_ins")
    (set_attr "mode" "<MODE>")])
 
+(define_insn_and_split "and<mode>3_align"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(and:GPR (match_operand:GPR 1 "register_operand" "r")
+		 (match_operand:GPR 2 "high_bitmask_operand" "Yy")))]
+  ""
+  "#"
+  ""
+  [(set (match_dup 0) (match_dup 1))
+   (set (zero_extract:GPR (match_dup 0) (match_dup 2) (const_int 0))
+	(const_int 0))]
+{
+  int len;
+
+  len = low_bitmask_len (<MODE>mode, ~INTVAL (operands[2]));
+  operands[2] = GEN_INT (len);
+})
+
 (define_insn_and_split "*bstrins_<mode>_for_mask"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(and:GPR (match_operand:GPR 1 "register_operand" "r")

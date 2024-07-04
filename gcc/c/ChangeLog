@@ -1,3 +1,58 @@
+2024-06-27  Martin Uecker  <uecker@tugraz.at>
+
+	* c-parser.cc (c_parser_direct_declarator_inner): Add
+	error message.
+
+2024-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.cc (c_parser_require): Pass *global_dc to
+	gcc_rich_location::add_location_if_nearby.
+
+2024-06-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/115587
+	* c-parser.cc (c_parser_omp_loop_nest): Move initializations to
+	point of declaration.
+
+2024-06-25  Jakub Jelinek  <jakub@redhat.com>
+	    Martin Uecker  <uecker@tugraz.at>
+
+	PR c/114930
+	PR c/115502
+	* c-decl.cc (c_update_type_canonical): Assert t is main variant
+	with 0 TYPE_QUALS.  Simplify and don't use check_qualified_type.
+	Deal with the case where build_qualified_type returns
+	TYPE_STRUCTURAL_EQUALITY_P type.
+
+2024-06-18  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/115109
+	* c-decl.cc (build_enumerator): When redeclaring an
+	enumerator convert value to previous type.  For redeclared
+	enumerators use underlying type for computing the next value.
+
+2024-06-13  Joseph Myers  <josmyers@redhat.com>
+
+	* c-typeck.cc (build_unary_op): Use pedwarn_c23 for complex
+	increment and decrement.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.cc (print_type): Update for fields of
+	pretty_printer becoming private.
+	(c_tree_printer): Likewise.
+
+2024-06-11  Joseph Myers  <josmyers@redhat.com>
+
+	* c-errors.cc (pedwarn_c23): New.
+	* c-parser.cc (disable_extension_diagnostics)
+	(restore_extension_diagnostics): Save and restore
+	warn_c23_c2y_compat.
+	(c_parser_generic_selection): Handle type name as controlling
+	operand.  Allow incomplete and function types subject to
+	pedwarn_c23 calls.
+	* c-tree.h (pedwarn_c23): New.
+
 2024-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/114493

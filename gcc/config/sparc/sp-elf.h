@@ -63,5 +63,5 @@ along with GCC; see the file COPYING3.  If not see
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
 /* ??? until fixed.  */
-#undef LONG_DOUBLE_TYPE_SIZE
-#define LONG_DOUBLE_TYPE_SIZE 64
+#undef SPARC_LONG_DOUBLE_TYPE_SIZE
+#define SPARC_LONG_DOUBLE_TYPE_SIZE 64

@@ -18,13 +18,15 @@ load_lib gcc-dg.exp
 
 dg-init
 
-if { [board_info [target_info name] exists multilib_flags] 
-     && [regexp {(-marm|-mthumb|-march=.*|-mcpu=.*|-mfpu=.*|-mfloat=abi=.*)\y} [board_info [target_info name] multilib_flags]] } {
+foreach flagsvar {multilib_flags cflags} {
+  if { [board_info [target_info name] exists $flagsvar] 
+     && [regexp {(-marm|-mthumb|-march=.*|-mcpu=.*|-mfpu=.*|-mfloat=abi=.*)\y} [board_info [target_info name] $flagsvar]] } {
 	
     # Multilib flags override anything we can apply to a test, so
     # skip if any of the above options are set there.
-    verbose "skipping multilib tests due to multilib_flags setting" 1
+    verbose "skipping multilib tests due to $flagsvar setting" 1
     return
+  }
 }
 
 # We don't want to run this test multiple times in a parallel make check.

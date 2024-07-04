@@ -1,6 +1,6 @@
 /*
  * { dg-do compile }
- * { dg-options "-std=c23" }
+ * { dg-options "-std=c23 -pedantic-errors" }
  */
 
 // (in-)completeness

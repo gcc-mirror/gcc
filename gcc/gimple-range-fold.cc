@@ -343,7 +343,7 @@ op1_range (vrange &r, gimple *s, const vrange &lhs, range_query *q)
   if (!op2_expr)
     return handler.calc_op1 (r, lhs);
 
-  Value_Range op2 (TREE_TYPE (op2_expr));
+  value_range op2 (TREE_TYPE (op2_expr));
   if (!src.get_operand (op2, op2_expr))
     return false;
 
@@ -359,7 +359,7 @@ op1_range (vrange &r, gimple *s, range_query *q)
   tree lhs_type = gimple_range_type (s);
   if (!lhs_type)
     return false;
-  Value_Range lhs_range;
+  value_range lhs_range;
   lhs_range.set_varying (lhs_type);
   return op1_range (r, s, lhs_range, q);
 }
@@ -377,7 +377,7 @@ op2_range (vrange &r, gimple *s, const vrange &lhs, range_query *q)
 
   fur_stmt src (s, q);
 
-  Value_Range op1 (TREE_TYPE (handler.operand1 ()));
+  value_range op1 (TREE_TYPE (handler.operand1 ()));
   if (!src.get_operand (op1, handler.operand1 ()))
     return false;
 
@@ -393,7 +393,7 @@ op2_range (vrange &r, gimple *s, range_query *q)
   tree lhs_type = gimple_range_type (s);
   if (!lhs_type)
     return false;
-  Value_Range lhs_range;
+  value_range lhs_range;
   lhs_range.set_varying (lhs_type);
   return op2_range (r, s, lhs_range, q);
 }
@@ -493,7 +493,7 @@ fold_relations (gimple *s, range_query *q)
   tree lhs = gimple_range_ssa_p (gimple_get_lhs (s));
   if (lhs)
     {
-      Value_Range vr(TREE_TYPE (lhs));
+      value_range vr(TREE_TYPE (lhs));
       if (f.fold_stmt (vr, s, src))
 	return src.trio ();
     }
@@ -725,21 +725,21 @@ fold_using_range::range_of_range_op (vrange &r,
   // Certain types of builtin functions may have no arguments.
   if (!op1)
     {
-      Value_Range r1 (type);
+      value_range r1 (type);
       if (!handler.fold_range (r, type, r1, r1))
 	r.set_varying (type);
       return true;
     }
 
-  Value_Range range1 (TREE_TYPE (op1));
-  Value_Range range2 (op2 ? TREE_TYPE (op2) : TREE_TYPE (op1));
+  value_range range1 (TREE_TYPE (op1));
+  value_range range2 (op2 ? TREE_TYPE (op2) : TREE_TYPE (op1));
 
   if (src.get_operand (range1, op1))
     {
       if (!op2)
 	{
 	  // Fold range, and register any dependency if available.
-	  Value_Range r2 (type);
+	  value_range r2 (type);
 	  r2.set_varying (type);
 	  if (!handler.fold_range (r, type, range1, r2))
 	    r.set_varying (type);
@@ -913,8 +913,8 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 {
   tree phi_def = gimple_phi_result (phi);
   tree type = gimple_range_type (phi);
-  Value_Range arg_range (type);
-  Value_Range equiv_range (type);
+  value_range arg_range (type);
+  value_range equiv_range (type);
   unsigned x;
 
   if (!type)
@@ -1042,7 +1042,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
       class loop *l = loop_containing_stmt (phi);
       if (l && loop_outer (l))
 	{
-	  Value_Range loop_range (type);
+	  value_range loop_range (type);
 	  range_of_ssa_name_with_loop_info (loop_range, phi_def, l, phi, src);
 	  if (!loop_range.varying_p ())
 	    {
@@ -1089,7 +1089,7 @@ fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &)
   if (callee
       && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (callee)), type))
     {
-      Value_Range val;
+      value_range val;
       if (ipa_return_value_range (val, callee))
 	{
 	  r.intersect (val);
@@ -1105,9 +1105,9 @@ fold_using_range::range_of_call (vrange &r, gcall *call, fur_source &)
     }
 
   // If there is an LHS, intersect that with what is known.
-  if (lhs)
+  if (gimple_range_ssa_p (lhs))
     {
-      Value_Range def (TREE_TYPE (lhs));
+      value_range def (TREE_TYPE (lhs));
       gimple_range_global (def, lhs);
       r.intersect (def);
     }
@@ -1155,8 +1155,8 @@ fold_using_range::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
   // Pick up the current values of each part of the condition.
   tree rhs1 = gimple_assign_rhs1 (cond_def);
   tree rhs2 = gimple_assign_rhs2 (cond_def);
-  Value_Range cl (TREE_TYPE (rhs1));
-  Value_Range cr (TREE_TYPE (rhs2));
+  value_range cl (TREE_TYPE (rhs1));
+  value_range cr (TREE_TYPE (rhs2));
   src.get_operand (cl, rhs1);
   src.get_operand (cr, rhs2);
 
@@ -1165,7 +1165,7 @@ fold_using_range::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
 
   // Evaluate the value of COND_NAME on the true and false edges, using either
   // the op1 or op2 routines based on its location.
-  Value_Range cond_true (type), cond_false (type);
+  value_range cond_true (type), cond_false (type);
   if (c1)
     {
       if (!hand.op1_range (cond_false, type, range_false (), cr))
@@ -1188,14 +1188,14 @@ fold_using_range::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
    // Now solve for SSA1 or SSA2 if they are in the dependency chain.
    if (ssa1 && src.gori_ssa()->in_chain_p (ssa1, cond_name))
     {
-      Value_Range tmp1 (TREE_TYPE (ssa1));
+      value_range tmp1 (TREE_TYPE (ssa1));
       if (src.gori ()->compute_operand_range (tmp1, def_stmt, cond_true,
 	  ssa1, src))
 	r1.intersect (tmp1);
     }
   if (ssa2 && src.gori_ssa ()->in_chain_p (ssa2, cond_name))
     {
-      Value_Range tmp2 (TREE_TYPE (ssa2));
+      value_range tmp2 (TREE_TYPE (ssa2));
       if (src.gori ()->compute_operand_range (tmp2, def_stmt, cond_false,
 	  ssa2, src))
 	r2.intersect (tmp2);
@@ -1217,9 +1217,9 @@ fold_using_range::range_of_cond_expr  (vrange &r, gassign *s, fur_source &src)
   if (!type)
     return false;
 
-  Value_Range range1 (TREE_TYPE (op1));
-  Value_Range range2 (TREE_TYPE (op2));
-  Value_Range cond_range (TREE_TYPE (cond));
+  value_range range1 (TREE_TYPE (op1));
+  value_range range2 (TREE_TYPE (op2));
+  value_range cond_range (TREE_TYPE (cond));
   gcc_checking_assert (gimple_assign_rhs_code (s) == COND_EXPR);
   gcc_checking_assert (range_compatible_p (TREE_TYPE (op1), TREE_TYPE (op2)));
   src.get_operand (cond_range, cond);
@@ -1267,9 +1267,18 @@ fold_using_range::range_of_ssa_name_with_loop_info (vrange &r, tree name,
   // SCEV currently invokes get_range_query () for values.  If the query
   // being passed in is not the same SCEV will use, do not invoke SCEV.
   // This can be remove if/when SCEV uses a passed in range-query.
-  if (src.query () != get_range_query (cfun)
-      || !range_of_var_in_loop (r, name, l, phi, src.query ()))
-    r.set_varying (TREE_TYPE (name));
+  if (src.query () != get_range_query (cfun))
+    {
+      r.set_varying (TREE_TYPE (name));
+      // Report the msmatch if SRC is not the global query.  The cache
+      // uses a global query and would provide numerous false positives.
+      if (dump_file && (dump_flags & TDF_DETAILS)
+	  && src.query () != get_global_range_query ())
+	fprintf (dump_file,
+	  "fold_using-range:: SCEV not invoked due to mismatched queries\n");
+    }
+  else if (!range_of_var_in_loop (r, name, l, phi, src.query ()))
+      r.set_varying (TREE_TYPE (name));
 }
 
 // -----------------------------------------------------------------------
@@ -1417,7 +1426,7 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
   // if (a_2 < b_5)
   tree ssa1 = gimple_range_ssa_p (handler.operand1 ());
   tree ssa2 = gimple_range_ssa_p (handler.operand2 ());
-  Value_Range r1,r2;
+  value_range r1,r2;
   if (ssa1 && ssa2)
     {
       r1.set_varying (TREE_TYPE (ssa1));
@@ -1454,7 +1463,7 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
 	continue;
       tree ssa1 = gimple_range_ssa_p (handler.operand1 ());
       tree ssa2 = gimple_range_ssa_p (handler.operand2 ());
-      Value_Range r (TREE_TYPE (name));
+      value_range r (TREE_TYPE (name));
       if (ssa1 && ssa2)
 	{
 	  r1.set_varying (TREE_TYPE (ssa1));

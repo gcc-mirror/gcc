@@ -451,7 +451,9 @@ tree gfc_vptr_def_init_get (tree);
 tree gfc_vptr_copy_get (tree);
 tree gfc_vptr_final_get (tree);
 tree gfc_vptr_deallocate_get (tree);
-void gfc_reset_vptr (stmtblock_t *, gfc_expr *, tree = NULL_TREE);
+void gfc_reset_vptr (stmtblock_t *, gfc_expr *, tree = NULL_TREE,
+		     gfc_symbol * = nullptr);
+void gfc_class_set_vptr (stmtblock_t *, tree, tree);
 void gfc_reset_len (stmtblock_t *, gfc_expr *);
 tree gfc_get_class_from_gfc_expr (gfc_expr *);
 tree gfc_get_class_from_expr (tree);
@@ -471,7 +473,8 @@ void gfc_conv_class_to_class (gfc_se *, gfc_expr *, gfc_typespec, bool, bool,
 void gfc_start_wrapped_block (gfc_wrapped_block* block, tree code);
 /* Add a pair of init/cleanup code to the block.  Each one might be a
    NULL_TREE if not required.  */
-void gfc_add_init_cleanup (gfc_wrapped_block* block, tree init, tree cleanup);
+void gfc_add_init_cleanup (gfc_wrapped_block* block, tree init, tree cleanup,
+			   bool back = false);
 /* Finalize the block, that is, create a single expression encapsulating the
    original code together with init and clean-up code.  */
 tree gfc_finish_wrapped_block (gfc_wrapped_block* block);

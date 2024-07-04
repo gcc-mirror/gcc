@@ -1416,7 +1416,7 @@ static tree
 build_m2_short_real_node (void)
 {
   /* Define `SHORTREAL'.  */
-  ASSERT_CONDITION (TYPE_PRECISION (float_type_node) == FLOAT_TYPE_SIZE);
+  ASSERT_CONDITION (TYPE_SIZE (float_type_node));
   return float_type_node;
 }
 
@@ -1424,7 +1424,7 @@ static tree
 build_m2_real_node (void)
 {
   /* Define `REAL'.  */
-  ASSERT_CONDITION (TYPE_PRECISION (double_type_node) == DOUBLE_TYPE_SIZE);  
+  ASSERT_CONDITION (TYPE_SIZE (double_type_node));
   return double_type_node;
 }
 
@@ -1432,12 +1432,13 @@ static tree
 build_m2_long_real_node (void)
 {
   tree longreal;
-  
+
   /* Define `LONGREAL'.  */
   if (M2Options_GetIEEELongDouble ())
     longreal = float128_type_node;
   else
     longreal = long_double_type_node;
+  ASSERT_CONDITION (TYPE_SIZE (longreal));
   return longreal;
 }
 

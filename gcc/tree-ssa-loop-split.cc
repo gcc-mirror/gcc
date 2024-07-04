@@ -144,7 +144,7 @@ split_at_bb_p (class loop *loop, basic_block bb, tree *border, affine_iv *iv,
 	   value range.  */
 	else
 	  {
-	    Value_Range r (TREE_TYPE (op0));
+	    value_range r (TREE_TYPE (op0));
 	    get_global_range_query ()->range_of_expr (r, op0, stmt);
 	    if (!r.varying_p () && !r.undefined_p ()
 		&& TREE_CODE (op1) == INTEGER_CST)

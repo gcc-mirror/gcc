@@ -340,7 +340,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wbool-compare  -Wbool-operation
 -Wno-builtin-declaration-mismatch
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat
--Wc11-c23-compat
+-Wc11-c23-compat  -Wc23-c2y-compat
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat
 -Wc++20-compat
 -Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
@@ -522,6 +522,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Debugging Options,,Options for Debugging Your Program}.
 @gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version}
 -gbtf -gctf  -gctf@var{level}
+-gprune-btf -gno-prune-btf
 -ggdb  -grecord-gcc-switches  -gno-record-gcc-switches
 -gstrict-dwarf  -gno-strict-dwarf
 -gas-loc-support  -gno-as-loc-support
@@ -575,7 +576,7 @@ Objective-C and Objective-C++ Dialects}.
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
 -fipa-reference  -fipa-reference-addressable
 -fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm}
--flive-patching=@var{level}
+-flate-combine-instructions  -flive-patching=@var{level}
 -fira-region=@var{region}  -fira-hoist-pressure
 -fira-loop-pressure  -fno-ira-share-save-slots
 -fno-ira-share-spill-slots
@@ -2472,6 +2473,10 @@ ISO C23, the 2023 revision of the ISO C standard (expected to be
 published in 2024).  The support for this version is experimental and
 incomplete.  The name @samp{c2x} is deprecated.
 
+@item c2y
+The next version of the ISO C standard, still under development.  The
+support for this version is experimental and incomplete.
+
 @item gnu90
 @itemx gnu89
 GNU dialect of ISO C90 (including some C99 features).
@@ -2491,6 +2496,10 @@ GNU dialect of ISO C17.  This is the default for C code.
 
 @item gnu23
 @itemx gnu2x
+GNU dialect of ISO C23.  The support for this version is experimental
+and incomplete.  The name @samp{gnu2x} is deprecated.
+
+@item gnu2y
 The next version of the ISO C standard, still under development, plus
 GNU extensions.  The support for this version is experimental and
 incomplete.  The name @samp{gnu2x} is deprecated.
@@ -9326,6 +9335,19 @@ deprecated.
 When not compiling in C23 mode, these warnings are upgraded to errors
 by @option{-pedantic-errors}.
 
+@opindex Wc23-c2y-compat
+@opindex Wno-c23-c2y-compat
+@item -Wc23-c2y-compat @r{(C and Objective-C only)}
+@itemx -Wc23-c2y-compat @r{(C and Objective-C only)}
+Warn about features not present in ISO C23, but present in ISO C2Y.
+For instance, warn about @code{_Generic} selecting with a type name
+instead of an expression.  This option is independent of the standards
+mode.  Warnings are disabled in the expression that follows
+@code{__extension__}.
+
+When not compiling in C2Y mode, these warnings are upgraded to errors
+by @option{-pedantic-errors}.
+
 @opindex Wc++-compat
 @opindex Wno-c++-compat
 @item -Wc++-compat @r{(C and Objective-C only)}
@@ -12003,6 +12025,28 @@ eBPF target.  On other targets, like x86, BTF debug information can be
 generated along with DWARF debug information when both of the debug formats are
 enabled explicitly via their respective command line options.
 
+@opindex gprune-btf
+@opindex gno-prune-btf
+@item -gprune-btf
+@itemx -gno-prune-btf
+Prune BTF information before emission.  When pruning, only type
+information for types used by global variables and file-scope functions
+will be emitted.  If compiling for the BPF target with BPF CO-RE
+enabled, type information will also be emitted for types used in BPF
+CO-RE relocations.  In addition, struct and union types which are only
+referred to via pointers from members of other struct or union types
+shall be pruned and replaced with BTF_KIND_FWD, as though those types
+were only present in the input as forward declarations.
+
+This option substantially reduces the size of produced BTF information,
+but at significant loss in the amount of detailed type information.
+It is primarily useful when compiling for the BPF target, to minimize
+the size of the resulting object, and to eliminate BTF information
+which is not immediately relevant to the BPF program loading process.
+
+This option is enabled by default for the BPF target when generating
+BTF information.
+
 @opindex gctf
 @item -gctf
 @itemx -gctf@var{level}
@@ -13653,6 +13697,15 @@ works on different levels and thus the optimizations are not same - there are
 equivalences that are found only by GCC and equivalences found only by Gold.
 
 This flag is enabled by default at @option{-O2} and @option{-Os}.
+
+@opindex flate-combine-instructions
+@item -flate-combine-instructions
+Enable two instruction combination passes that run relatively late in the
+compilation process.  One of the passes runs before register allocation and
+the other after register allocation.  The main aim of the passes is to
+substitute definitions into all uses.
+
+Most targets enable this flag by default at @option{-O2} and @option{-Os}.
 
 @opindex flive-patching
 @item -flive-patching=@var{level}
@@ -16818,6 +16871,9 @@ this parameter.  The default value of this parameter is 50.
 
 @item vect-induction-float
 Enable loop vectorization of floating point inductions.
+
+@item vrp-block-limit
+Maximum number of basic blocks before VRP switches to a lower memory algorithm.
 
 @item vrp-sparse-threshold
 Maximum number of basic blocks before VRP uses a sparse bitmap cache.
@@ -21404,8 +21460,8 @@ performance of the code.  Permissible values for this option are:
 @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{oryon-1},
 @samp{neoverse-512tvb}, @samp{neoverse-e1}, @samp{neoverse-n1},
-@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{qdf24xx},
-@samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
+@samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{grace},
+@samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
 @samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
 @samp{octeontx2t93}, @samp{octeontx2f95}, @samp{octeontx2f95n},
@@ -34455,18 +34511,18 @@ SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND
 and F16C instruction set support.
 
 @item haswell
-Intel Haswell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+Intel Haswell CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
 F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE and HLE instruction set support.
 
 @item broadwell
-Intel Broadwell CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+Intel Broadwell CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
 F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX and PREFETCHW
 instruction set support.
 
 @item skylake
-Intel Skylake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+Intel Skylake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
 F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
 CLFLUSHOPT, XSAVEC, XSAVES and SGX instruction set support.
@@ -34527,14 +34583,14 @@ ENQCMD, UINTR, AVXIFMA, AVXVNNIINT8, AVXNECONVERT, CMPCCXADD, AVXVNNIINT16,
 SHA512, SM3, SM4, USER_MSR and PREFETCHI instruction set support.
 
 @item skylake-avx512
-Intel Skylake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+Intel Skylake Server CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
 RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
 AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW,
 AVX512DQ and AVX512CD instruction set support.
 
 @item cannonlake
-Intel Cannonlake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2,
+Intel Cannonlake Server CPU with 64-bit extensions, MMX, SSE, SSE2,
 SSE3, SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL,
 FSGSBASE, RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX,
 PREFETCHW, AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW,
@@ -34542,7 +34598,7 @@ AVX512DQ, AVX512CD, PKU, AVX512VBMI, AVX512IFMA and SHA instruction set
 support.
 
 @item icelake-client
-Intel Icelake Client CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+Intel Icelake Client CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
 RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
 AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
@@ -34550,7 +34606,7 @@ AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2
 , VPCLMULQDQ, AVX512BITALG, RDPID and AVX512VPOPCNTDQ instruction set support.
 
 @item icelake-server
-Intel Icelake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+Intel Icelake Server CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
 RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
 AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
@@ -34559,21 +34615,21 @@ AVX512CD, PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2
 instruction set support.
 
 @item cascadelake
-Intel Cascadelake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+Intel Cascadelake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
 F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
 CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW, AVX512DQ,
 AVX512CD and AVX512VNNI instruction set support.
 
 @item cooperlake
-Intel cooperlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+Intel cooperlake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
 F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
 CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, CLWB, AVX512VL, AVX512BW, AVX512DQ,
 AVX512CD, AVX512VNNI and AVX512BF16 instruction set support.
 
 @item tigerlake
-Intel Tigerlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+Intel Tigerlake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
 F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
 CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD
@@ -34582,7 +34638,7 @@ VPCLMULQDQ, AVX512BITALG, RDPID, AVX512VPOPCNTDQ, MOVDIRI, MOVDIR64B, CLWB,
 AVX512VP2INTERSECT and KEYLOCKER instruction set support.
 
 @item sapphirerapids
-Intel sapphirerapids CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+Intel sapphirerapids CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
 RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
 AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
@@ -34601,7 +34657,7 @@ VAES, VPCLMULQDQ, SERIALIZE, HRESET, KL, WIDEKL and AVX-VNNI instruction set
 support.
 
 @item rocketlake
-Intel Rocketlake CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3
+Intel Rocketlake CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3
 , SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE, RDRND,
 F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW, AES,
 CLFLUSHOPT, XSAVEC, XSAVES, AVX512F, AVX512VL, AVX512BW, AVX512DQ, AVX512CD
@@ -34609,7 +34665,7 @@ PKU, AVX512VBMI, AVX512IFMA, SHA, AVX512VNNI, GFNI, VAES, AVX512VBMI2,
 VPCLMULQDQ, AVX512BITALG, RDPID and AVX512VPOPCNTDQ instruction set support.
 
 @item graniterapids
-Intel graniterapids CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+Intel graniterapids CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
 RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
 AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
@@ -34620,7 +34676,7 @@ UINTR, AMX-BF16, AMX-TILE, AMX-INT8, AVX-VNNI, AVX512-FP16, AVX512BF16, AMX-FP16
 and PREFETCHI instruction set support.
 
 @item graniterapids-d
-Intel graniterapids D CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+Intel graniterapids D CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, CX16, SAHF, FXSR, AVX, XSAVE, PCLMUL, FSGSBASE,
 RDRND, F16C, AVX2, BMI, BMI2, LZCNT, FMA, MOVBE, HLE, RDSEED, ADCX, PREFETCHW,
 AES, CLFLUSHOPT, XSAVEC, XSAVES, SGX, AVX512F, AVX512VL, AVX512BW, AVX512DQ,
@@ -34848,6 +34904,12 @@ for performance reasons.
 
 @item yongfeng
 ZHAOXIN yongfeng CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
+SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
+ABM, BMI, BMI2, F16C, FXSR, RDSEED, AVX2, FMA, SHA, LZCNT
+instruction set support.
+
+@item shijidadao
+ZHAOXIN shijidadao CPU with x86-64, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1,
 SSE4.2, AVX, POPCNT, AES, PCLMUL, RDRND, XSAVE, XSAVEOPT, FSGSBASE, CX16,
 ABM, BMI, BMI2, F16C, FXSR, RDSEED, AVX2, FMA, SHA, LZCNT
 instruction set support.
@@ -36426,13 +36488,14 @@ enabled by default on those targets.
 @opindex mcrtdll
 @item -mcrtdll=@var{library}
 Preprocess, compile or link with specified C RunTime DLL @var{library}.
-This option adjust predefined macros @code{__CRTDLL__}, @code{__MSVCRT__}
-and @code{__MSVCRT_VERSION__} for specified CRT @var{library}, choose
-start file for CRT @var{library} and link with CRT @var{library}.
+This option adjust predefined macros @code{__CRTDLL__}, @code{__MSVCRT__},
+@code{_UCRT} and @code{__MSVCRT_VERSION__} for specified CRT @var{library},
+choose start file for CRT @var{library} and link with CRT @var{library}.
 Recognized CRT library names for proprocessor are:
-@code{crtdll}, @code{msvcrt10}, @code{msvcrt20}, @code{msvcrt40},
-@code{msvcrt-os}, @code{msvcr70}, @code{msvcr80}, @code{msvcr90},
-@code{msvcr100}, @code{msvcr110}, @code{msvcr120} and @code{ucrt}.
+@code{crtdll*}, @code{msvcrt10*}, @code{msvcrt20*}, @code{msvcrt40*},
+@code{msvcr40*}, @code{msvcrtd*}, @code{msvcrt-os*},
+@code{msvcr70*}, @code{msvcr71*}, @code{msvcr80*}, @code{msvcr90*},
+@code{msvcr100*}, @code{msvcr110*}, @code{msvcr120*} and @code{ucrt*}.
 If this options is not specified then the default MinGW import library
 @code{msvcrt} is used for linking and no other adjustment for
 preprocessor is done. MinGW import library @code{msvcrt} is just a

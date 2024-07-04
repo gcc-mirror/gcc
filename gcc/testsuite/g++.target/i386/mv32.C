@@ -21,6 +21,10 @@ int __attribute__ ((target("arch=yongfeng"))) foo () {
   return 2;
 }
 
+int __attribute__ ((target("arch=shijidadao"))) foo () {
+  return 3;
+}
+
 int main ()
 {
   int val = foo ();
@@ -29,6 +33,8 @@ int main ()
     assert (val == 1);
   else if (__builtin_cpu_is ("yongfeng"))
     assert (val == 2);
+  else if (__builtin_cpu_is ("shijidadao"))
+    assert (val == 3);
   else
     assert (val == 0);
 

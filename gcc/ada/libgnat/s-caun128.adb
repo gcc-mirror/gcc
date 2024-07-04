@@ -29,8 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Address_Operations; use System.Address_Operations;
-with System.Storage_Elements;   use System.Storage_Elements;
+with System.Storage_Elements; use System.Storage_Elements;
 
 with Ada.Unchecked_Conversion;
 
@@ -69,7 +68,9 @@ package body System.Compare_Array_Unsigned_128 is
    begin
       --  Case of going by aligned quadruple words
 
-      if ModA (OrA (Left, Right), 16) = 0 then
+      if Left mod Storage_Offset (16) = 0
+        and then Right mod Storage_Offset (16) = 0
+      then
          while Clen /= 0 loop
             if W (L).all /= W (R).all then
                if W (L).all > W (R).all then

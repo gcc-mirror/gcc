@@ -57,6 +57,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_APX_PPX (ix86_apx_features & apx_ppx)
 #define TARGET_APX_NF (ix86_apx_features & apx_nf)
 #define TARGET_APX_CCMP (ix86_apx_features & apx_ccmp)
+#define TARGET_APX_ZU (ix86_apx_features & apx_zu)
 
 #include "config/vxworks-dummy.h"
 
@@ -677,10 +678,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define LONG_TYPE_SIZE (TARGET_X32 ? 32 : BITS_PER_WORD)
 #define POINTER_SIZE (TARGET_X32 ? 32 : BITS_PER_WORD)
 #define LONG_LONG_TYPE_SIZE 64
-#define FLOAT_TYPE_SIZE 32
-#define DOUBLE_TYPE_SIZE 64
-#define LONG_DOUBLE_TYPE_SIZE \
-  (TARGET_LONG_DOUBLE_64 ? 64 : (TARGET_LONG_DOUBLE_128 ? 128 : 80))
 
 #define WIDEST_HARDWARE_FP_SIZE 80
 
@@ -2262,6 +2259,8 @@ extern int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
 /* Which processor to tune code generation for.  These must be in sync
    with processor_cost_table in i386-options.cc.  */
 
+#define GOT_ALIAS_SET ix86_GOT_alias_set ()
+
 enum processor_type
 {
   PROCESSOR_GENERIC = 0,
@@ -2303,6 +2302,7 @@ enum processor_type
   PROCESSOR_INTEL,
   PROCESSOR_LUJIAZUI,
   PROCESSOR_YONGFENG,
+  PROCESSOR_SHIJIDADAO,
   PROCESSOR_GEODE,
   PROCESSOR_K6,
   PROCESSOR_ATHLON,

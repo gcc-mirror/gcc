@@ -77,7 +77,11 @@ void
 test_includes(Compare compare)
 {
 
+#ifdef _GLIBCXX_DEBUG
+    const std::size_t n_max = 10000;
+#else
     const std::size_t n_max = 1000000;
+#endif
 
     // The rand()%(2*n+1) encourages generation of some duplicates.
     std::srand(42);

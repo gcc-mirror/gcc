@@ -48,6 +48,10 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef uint64_t ctf_id_t;
 
+struct ctf_dtdef;
+typedef struct ctf_dtdef ctf_dtdef_t;
+typedef ctf_dtdef_t * ctf_dtdef_ref;
+
 /* CTF string table element (list node).  */
 
 typedef struct GTY ((chain_next ("%h.cts_next"))) ctf_string
@@ -81,8 +85,8 @@ typedef struct GTY (()) ctf_encoding
 
 typedef struct GTY (()) ctf_arinfo
 {
-  ctf_id_t ctr_contents;	/* Type of array contents.  */
-  ctf_id_t ctr_index;		/* Type of array index.  */
+  ctf_dtdef_ref ctr_contents;	/* Type of array contents.  */
+  ctf_dtdef_ref ctr_index;	/* Type of array index.  */
   unsigned int ctr_nelems;	/* Number of elements.  */
 } ctf_arinfo_t;
 
@@ -90,14 +94,14 @@ typedef struct GTY (()) ctf_arinfo
 
 typedef struct GTY (()) ctf_funcinfo
 {
-  ctf_id_t ctc_return;		/* Function return type.  */
-  unsigned int ctc_argc;	/* Number of typed arguments to function.  */
-  unsigned int ctc_flags;	/* Function attributes (see below).  */
+  ctf_dtdef_ref ctc_return;	 /* Function return type.  */
+  unsigned int ctc_argc;	 /* Number of typed arguments to function.  */
+  unsigned int ctc_flags;	 /* Function attributes (see below).  */
 } ctf_funcinfo_t;
 
 typedef struct GTY (()) ctf_sliceinfo
 {
-  unsigned int cts_type;	/* Reference CTF type.  */
+  ctf_dtdef_ref cts_type;	/* Reference CTF type.  */
   unsigned short cts_offset;	/* Offset in bits of the first bit.  */
   unsigned short cts_bits;	/* Size in bits.  */
 } ctf_sliceinfo_t;
@@ -130,7 +134,7 @@ typedef struct GTY (()) ctf_itype
 typedef struct GTY ((chain_next ("%h.dmd_next"))) ctf_dmdef
 {
   const char * dmd_name;	/* Name of this member.  */
-  ctf_id_t dmd_type;		/* Type of this member (for sou).  */
+  ctf_dtdef_ref dmd_type;	/* Type of this member (for sou).  */
   uint32_t dmd_name_offset;	/* Offset of the name in str table.  */
   uint64_t dmd_offset;		/* Offset of this member in bits (for sou).  */
   HOST_WIDE_INT dmd_value;	/* Value of this member (for enum).  */
@@ -143,7 +147,7 @@ typedef struct GTY ((chain_next ("%h.dmd_next"))) ctf_dmdef
 
 typedef struct GTY (()) ctf_func_arg
 {
-  ctf_id_t farg_type;		  /* Type identifier of the argument.  */
+  ctf_dtdef_ref farg_type;	  /* Type of the argument.  */
   const char * farg_name;	  /* Name of the argument.  */
   uint32_t farg_name_offset;	  /* Offset of the name in str table.  */
   struct ctf_func_arg * farg_next;/* A list node.  */
@@ -158,11 +162,16 @@ struct GTY ((for_user)) ctf_dtdef
   dw_die_ref dtd_key;	      /* Type key for hashing.  */
   const char * dtd_name;      /* Name associated with definition (if any).  */
   ctf_id_t dtd_type;	      /* Type identifier for this definition.  */
+  ctf_dtdef_ref ref_type;     /* Type referred to by this type (if any).  */
   ctf_itype_t dtd_data;	      /* Type node.  */
-  bool from_global_func; /* Whether this type was added from a global
-			    function.  */
   uint32_t linkage;           /* Used in function types.  0=local, 1=global.  */
-  bool dtd_enum_unsigned;     /* Enum signedness.  */
+
+  /* Whether this type was added from a global function.  */
+  BOOL_BITFIELD from_global_func : 1;
+  /* Enum signedness.  */
+  BOOL_BITFIELD dtd_enum_unsigned : 1;
+  /* Lots of spare bits.  */
+
   union GTY ((desc ("ctf_dtu_d_union_selector (&%1)")))
   {
     /* struct, union, or enum.  */
@@ -178,7 +187,7 @@ struct GTY ((for_user)) ctf_dtdef
   } dtd_u;
 };
 
-typedef struct ctf_dtdef ctf_dtdef_t;
+#define ctf_type_id(dtd) ((uint32_t) dtd->dtd_type)
 
 /* Variable definition for CTF generation.  */
 
@@ -188,13 +197,12 @@ struct GTY ((for_user)) ctf_dvdef
   const char * dvd_name;	/* Name associated with variable.  */
   uint32_t dvd_name_offset;	/* Offset of the name in str table.  */
   unsigned int dvd_visibility;	/* External visibility.  0=static,1=global.  */
-  ctf_id_t dvd_type;		/* Type of variable.  */
+  ctf_dtdef_ref dvd_type;	/* Type of variable.  */
+  ctf_id_t dvd_id;		/* ID of this variable.  Only used for BTF.  */
 };
 
 typedef struct ctf_dvdef ctf_dvdef_t;
-
 typedef ctf_dvdef_t * ctf_dvdef_ref;
-typedef ctf_dtdef_t * ctf_dtdef_ref;
 
 /* Location information for CTF Types and CTF Variables.  */
 
@@ -361,6 +369,9 @@ extern unsigned int ctfc_get_num_ctf_vars (ctf_container_ref);
 
 extern ctf_strtable_t * ctfc_get_strtab (ctf_container_ref, int);
 
+extern void init_ctf_strtable (ctf_strtable_t *);
+extern void ctfc_delete_strtab (ctf_strtable_t *);
+
 /* Get the length of the specified string table in the CTF container.  */
 
 extern size_t ctfc_get_strtab_len (ctf_container_ref, int);
@@ -384,13 +395,13 @@ extern void ctf_init (void);
 extern void ctf_output (const char * filename);
 extern void ctf_finalize (void);
 
-extern void btf_output (const char * filename);
-extern void btf_init_postprocess (void);
+extern void btf_early_finish (void);
+extern void btf_finish (void);
 extern void btf_finalize (void);
 
 extern ctf_container_ref ctf_get_tu_ctfc (void);
 
-extern bool ctf_type_exists (ctf_container_ref, dw_die_ref, ctf_id_t *);
+extern bool ctf_type_exists (ctf_container_ref, dw_die_ref, ctf_dtdef_ref *);
 
 extern void ctf_add_cuname (ctf_container_ref, const char *);
 
@@ -404,45 +415,49 @@ extern bool ctf_dvd_ignore_lookup (const ctf_container_ref ctfc,
 extern const char * ctf_add_string (ctf_container_ref, const char *,
 				    uint32_t *, int);
 
-extern ctf_id_t ctf_add_reftype (ctf_container_ref, uint32_t, ctf_id_t,
-				 uint32_t, dw_die_ref);
-extern ctf_id_t ctf_add_enum (ctf_container_ref, uint32_t, const char *,
-			      HOST_WIDE_INT, bool, dw_die_ref);
-extern ctf_id_t ctf_add_slice (ctf_container_ref, uint32_t, ctf_id_t,
-			       uint32_t, uint32_t, dw_die_ref);
-extern ctf_id_t ctf_add_float (ctf_container_ref, uint32_t, const char *,
-			       const ctf_encoding_t *, dw_die_ref);
-extern ctf_id_t ctf_add_integer (ctf_container_ref, uint32_t, const char *,
-				 const ctf_encoding_t *, dw_die_ref);
-extern ctf_id_t ctf_add_unknown (ctf_container_ref, uint32_t, const char *,
-				 const ctf_encoding_t *, dw_die_ref);
-extern ctf_id_t ctf_add_pointer (ctf_container_ref, uint32_t, ctf_id_t,
-				 dw_die_ref);
-extern ctf_id_t ctf_add_array (ctf_container_ref, uint32_t,
-			       const ctf_arinfo_t *, dw_die_ref);
-extern ctf_id_t ctf_add_forward (ctf_container_ref, uint32_t, const char *,
-				 uint32_t, dw_die_ref);
-extern ctf_id_t ctf_add_typedef (ctf_container_ref, uint32_t, const char *,
-				 ctf_id_t, dw_die_ref);
-extern ctf_id_t ctf_add_function (ctf_container_ref, uint32_t, const char *,
-				  const ctf_funcinfo_t *, dw_die_ref, bool, int);
-extern ctf_id_t ctf_add_sou (ctf_container_ref, uint32_t, const char *,
-			     uint32_t, size_t, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_reftype (ctf_container_ref, uint32_t,
+				      ctf_dtdef_ref, uint32_t, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_enum (ctf_container_ref, uint32_t, const char *,
+				   HOST_WIDE_INT, bool, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_slice (ctf_container_ref, uint32_t, ctf_dtdef_ref,
+				    uint32_t, uint32_t, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_float (ctf_container_ref, uint32_t, const char *,
+				    const ctf_encoding_t *, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_integer (ctf_container_ref, uint32_t, const char *,
+				      const ctf_encoding_t *, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_unknown (ctf_container_ref, uint32_t, const char *,
+				      const ctf_encoding_t *, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_pointer (ctf_container_ref, uint32_t,
+				      ctf_dtdef_ref, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_array (ctf_container_ref, uint32_t,
+				    const ctf_arinfo_t *, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_forward (ctf_container_ref, uint32_t, const char *,
+				      uint32_t, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_typedef (ctf_container_ref, uint32_t, const char *,
+				      ctf_dtdef_ref, dw_die_ref);
+extern ctf_dtdef_ref ctf_add_function (ctf_container_ref, uint32_t,
+				       const char *, const ctf_funcinfo_t *,
+				       dw_die_ref, bool, int);
+extern ctf_dtdef_ref ctf_add_sou (ctf_container_ref, uint32_t, const char *,
+				  uint32_t, size_t, dw_die_ref);
 
-extern int ctf_add_enumerator (ctf_container_ref, ctf_id_t, const char *,
+extern int ctf_add_enumerator (ctf_container_ref, ctf_dtdef_ref, const char *,
 			       HOST_WIDE_INT, dw_die_ref);
 extern int ctf_add_member_offset (ctf_container_ref, dw_die_ref, const char *,
-				  ctf_id_t, uint64_t);
+				  ctf_dtdef_ref, uint64_t);
 extern int ctf_add_function_arg (ctf_container_ref, dw_die_ref,
-				 const char *, ctf_id_t);
-extern int ctf_add_variable (ctf_container_ref, const char *, ctf_id_t,
+				 const char *, ctf_dtdef_ref);
+extern int ctf_add_variable (ctf_container_ref, const char *, ctf_dtdef_ref,
 			     dw_die_ref, unsigned int, dw_die_ref);
 
-extern ctf_id_t ctf_lookup_tree_type (ctf_container_ref, const tree);
-extern ctf_id_t get_btf_id (ctf_id_t);
+extern ctf_dtdef_ref ctf_lookup_tree_type (ctf_container_ref, const tree);
+
+/* Callback and traversal function for BTF_KIND_FUNC records.  Used by BPF
+   target for BPF CO-RE implementation.  */
 
 typedef bool (*funcs_traverse_callback) (ctf_dtdef_ref, void *);
 bool traverse_btf_func_types (funcs_traverse_callback, void *);
+extern void btf_mark_type_used (tree);
 
 /* CTF section does not emit location information; at this time, location
    information is needed for BTF CO-RE use-cases.  */

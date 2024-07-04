@@ -27,7 +27,7 @@ void test01()
   // Check for required typedefs
   struct cvt_type : std::codecvt<wchar_t, char, mbstate_t> { };
   typedef std::char_traits<wchar_t> traits_type;
-  typedef std::wbuffer_convert<cvt_type, wchar_t, traits_type> test_type;
+  typedef std::wbuffer_convert<cvt_type, wchar_t, traits_type> test_type; // { dg-warning "deprecated" "" { target c++17 } }
   typedef test_type::state_type state_type;
 
   static_assert( std::is_same<cvt_type::state_type, state_type>::value,

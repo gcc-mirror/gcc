@@ -33,6 +33,7 @@ class compiler_logical_location : public logical_location
   static const char *get_name_with_scope_for_tree (tree);
   static const char *get_internal_name_for_tree (tree);
   static enum logical_location_kind get_kind_for_tree (tree);
+  static label_text get_name_for_tree_for_path_output (tree);
 };
 
 /* Concrete subclass of logical_location, with reference to a specific
@@ -47,6 +48,7 @@ public:
   const char *get_name_with_scope () const final override;
   const char *get_internal_name () const final override;
   enum logical_location_kind get_kind () const final override;
+  label_text get_name_for_path_output () const final override;
 
 private:
   tree m_decl;
@@ -62,6 +64,7 @@ public:
   const char *get_name_with_scope () const final override;
   const char *get_internal_name () const final override;
   enum logical_location_kind get_kind () const final override;
+  label_text get_name_for_path_output () const final override;
 };
 
 #endif /* GCC_TREE_LOGICAL_LOCATION_H.  */

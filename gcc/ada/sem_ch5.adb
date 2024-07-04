@@ -39,6 +39,7 @@ with Freeze;         use Freeze;
 with Ghost;          use Ghost;
 with Lib;            use Lib;
 with Lib.Xref;       use Lib.Xref;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -676,11 +677,17 @@ package body Sem_Ch5 is
 
       Set_Assignment_Type (Lhs, T1);
 
-      --  If the target of the assignment is an entity of a mutable type and
-      --  the expression is a conditional expression, its alternatives can be
-      --  of different subtypes of the nominal type of the LHS, so they must be
-      --  resolved with the base type, given that their subtype may differ from
-      --  that of the target mutable object.
+      --  When analyzing a mutably tagged class-wide equivalent type pretend we
+      --  are actually looking at the mutably tagged type itself for proper
+      --  analysis.
+
+      T1 := Get_Corresponding_Mutably_Tagged_Type_If_Present (T1);
+
+      --  If the target of the assignment is an entity of a mutably tagged type
+      --  and the expression is a conditional expression, its alternatives can
+      --  be of different subtypes of the nominal type of the LHS, so they must
+      --  be resolved with the base type, given that their subtype may differ
+      --  from that of the target mutable object.
 
       if Is_Entity_Name (Lhs)
         and then Is_Assignable (Entity (Lhs))
@@ -689,6 +696,19 @@ package body Sem_Ch5 is
         and then Nkind (Rhs) in N_If_Expression | N_Case_Expression
       then
          Resolve (Rhs, Base_Type (T1));
+
+      --  When the right hand side is a qualified expression and the left hand
+      --  side is mutably tagged we force the right hand side to be class-wide
+      --  so that they are compatible both for the purposes of checking
+      --  legality rules as well as assignment expansion.
+
+      elsif Is_Mutably_Tagged_Type (T1)
+        and then Nkind (Rhs) = N_Qualified_Expression
+      then
+         Make_Mutably_Tagged_Conversion (Rhs, T1);
+         Resolve (Rhs, T1);
+
+      --  Otherwise, resolve the right hand side normally
 
       else
          Resolve (Rhs, T1);
@@ -758,6 +778,7 @@ package body Sem_Ch5 is
         and then not Is_Class_Wide_Type (T2)
         and then not Is_Tag_Indeterminate (Rhs)
         and then not Is_Dynamically_Tagged (Rhs)
+        and then not Is_Mutably_Tagged_Type (T1)
       then
          Error_Msg_N ("dynamically tagged expression required!", Rhs);
       end if;
@@ -2500,6 +2521,13 @@ package body Sem_Ch5 is
                Error_Msg_N
                  ("iterable name cannot be a discriminant-dependent "
                   & "component of a mutable object", N);
+
+            elsif Depends_On_Mutably_Tagged_Ext_Comp
+                    (Original_Node (Iter_Name))
+            then
+               Error_Msg_N
+                 ("iterable name cannot depend on a mutably tagged component",
+                  N);
             end if;
 
             Check_Subtype_Definition (Component_Type (Typ));
@@ -2630,6 +2658,13 @@ package body Sem_Ch5 is
                         Error_Msg_N
                           ("container cannot be a discriminant-dependent "
                            & "component of a mutable object", N);
+
+                     elsif Depends_On_Mutably_Tagged_Ext_Comp
+                             (Orig_Iter_Name)
+                     then
+                        Error_Msg_N
+                          ("container cannot depend on a mutably tagged "
+                           & "component", N);
                      end if;
                   end if;
                end;
@@ -2716,6 +2751,11 @@ package body Sem_Ch5 is
                      Error_Msg_N
                        ("container cannot be a discriminant-dependent "
                         & "component of a mutable object", N);
+
+                  elsif Depends_On_Mutably_Tagged_Ext_Comp (Obj) then
+                     Error_Msg_N
+                       ("container cannot depend on a mutably tagged"
+                        & " component", N);
                   end if;
                end;
             end if;
@@ -4175,6 +4215,7 @@ package body Sem_Ch5 is
                if Current = Expression (Context) then
                   pragma Assert (Context = Current_Assignment);
                   Set_Etype (N, Etype (Name (Current_Assignment)));
+                  Analyze_Dimension (N);
                else
                   Report_Error;
                end if;

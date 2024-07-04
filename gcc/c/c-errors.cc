@@ -25,6 +25,45 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-tree.h"
 #include "opts.h"
 
+/* Issue an ISO C23 pedantic warning MSGID if -pedantic outside C2Y mode,
+   otherwise issue warning MSGID if -Wc23-c2y-compat is specified.
+   This function is supposed to be used for matters that are allowed in
+   ISO C2Y but not supported in ISO C23, thus we explicitly don't pedwarn
+   when C2Y is specified.  */
+
+bool
+pedwarn_c23 (location_t location, int opt, const char *gmsgid, ...)
+{
+  diagnostic_info diagnostic;
+  va_list ap;
+  bool warned = false;
+  rich_location richloc (line_table, location);
+
+  va_start (ap, gmsgid);
+  /* If desired, issue the C23/C2Y compat warning, which is more specific
+     than -pedantic.  */
+  if (warn_c23_c2y_compat > 0)
+    {
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc,
+			   (pedantic && !flag_isoc2y)
+			   ? DK_PEDWARN : DK_WARNING);
+      diagnostic.option_index = OPT_Wc23_c2y_compat;
+      warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
+    }
+  /* -Wno-c23-c2y-compat suppresses even the pedwarns.  */
+  else if (warn_c23_c2y_compat == 0)
+    ;
+  /* For -pedantic outside C2Y, issue a pedwarn.  */
+  else if (pedantic && !flag_isoc2y)
+    {
+      diagnostic_set_info (&diagnostic, gmsgid, &ap, &richloc, DK_PEDWARN);
+      diagnostic.option_index = opt;
+      warned = diagnostic_report_diagnostic (global_dc, &diagnostic);
+    }
+  va_end (ap);
+  return warned;
+}
+
 /* Issue an ISO C11 pedantic warning MSGID if -pedantic outside C23 mode,
    otherwise issue warning MSGID if -Wc11-c23-compat is specified.
    This function is supposed to be used for matters that are allowed in

@@ -1273,6 +1273,7 @@ fix = {
     hackname  = apple_local_stdio_fn_deprecation;
     mach      = "*-*-*darwin2*";
     files     = stdio.h;
+    files     = _stdio.h;
     select    = "__deprecated_msg([^\n]*)$";
     c_fix     = format;
     c_fix_arg = "#if defined(__APPLE_LOCAL_DEPRECATIONS)\n"
@@ -3412,17 +3413,7 @@ fix = {
     hackname  = math_exception;
     files     = math.h;
     select    = "struct exception";
-    /*
-     * This should be bypassed on __cplusplus, but some supposedly C++
-     * aware headers, such as Solaris 8 and 9, don't wrap their struct
-     * exception either.  So currently we bypass only for glibc, based on a
-     * comment in the fixed glibc header.  Ick.
-     */
-    bypass    = 'We have a problem when using C\+\+|for C\+\+, '
-		'_[a-z0-9A-Z_]+_exception; for C, exception';
-    /* The Solaris 10 headers already get this right.  */
-    mach   = '*-*-solaris2.1[0-9]*';
-    not_machine = true;
+    bypass    = '__cplusplus';
     c_fix     = wrap;
 
     c_fix_arg = "#ifdef __cplusplus\n"

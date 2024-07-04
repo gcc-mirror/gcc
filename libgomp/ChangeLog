@@ -1,3 +1,38 @@
+2024-07-01  Andrew Stubbs  <ams@baylibre.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* allocator.c (ompx_gnu_min_predefined_alloc): New.
+	(ompx_gnu_max_predefined_alloc): New.
+	(predefined_alloc_mapping): Rename to ...
+	(predefined_omp_alloc_mapping): ... this.
+	(predefined_ompx_gnu_alloc_mapping): New.
+	(_Static_assert): Adjust for the new name, and add a new assert for the
+	new table.
+	(predefined_allocator_p): New.
+	(predefined_alloc_mapping): New.
+	(omp_aligned_alloc): Support ompx_gnu_pinned_mem_alloc.
+	Use predefined_allocator_p and predefined_alloc_mapping.
+	(omp_free): Likewise.
+	(omp_alligned_calloc): Likewise.
+	(omp_realloc): Likewise.
+	* env.c (parse_allocator): Add ompx_gnu_pinned_mem_alloc.
+	* libgomp.texi: Document ompx_gnu_pinned_mem_alloc.
+	* omp.h.in (omp_allocator_handle_t): Add ompx_gnu_pinned_mem_alloc.
+	* omp_lib.f90.in: Add ompx_gnu_pinned_mem_alloc.
+	* omp_lib.h.in: Add ompx_gnu_pinned_mem_alloc.
+	* testsuite/libgomp.c/alloc-pinned-5.c: New test.
+	* testsuite/libgomp.c/alloc-pinned-6.c: New test.
+	* testsuite/libgomp.fortran/alloc-pinned-1.f90: New test.
+
+2024-07-01  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c/alloc-pinned-1.c: Change dg-xfail-run-if to
+	dg-skip-if.
+	Correct spelling mistake.
+	Abort on insufficient lockable memory.
+	Use #error on non-linux hosts.
+	* testsuite/libgomp.c/alloc-pinned-2.c: Likewise.
+
 2024-06-06  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (nvptx): Add missing preposition.

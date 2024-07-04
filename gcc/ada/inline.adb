@@ -1090,19 +1090,10 @@ package body Inline is
       --  conflict with subsequent inlinings, so that it is unsafe to try to
       --  inline in such a case.
 
-      function Has_Single_Return_In_GNATprove_Mode return Boolean;
-      --  This function is called only in GNATprove mode, and it returns
-      --  True if the subprogram has no return statement or a single return
-      --  statement as last statement. It returns False for subprogram with
-      --  a single return as last statement inside one or more blocks, as
-      --  inlining would generate gotos in that case as well (although the
-      --  goto is useless in that case).
-
       function Uses_Secondary_Stack (Bod : Node_Id) return Boolean;
       --  If the body of the subprogram includes a call that returns an
       --  unconstrained type, the secondary stack is involved, and it is
       --  not worth inlining.
-
       -------------------------
       -- Has_Extended_Return --
       -------------------------
@@ -1173,64 +1164,6 @@ package body Inline is
          return False;
       end Has_Pending_Instantiation;
 
-      -----------------------------------------
-      -- Has_Single_Return_In_GNATprove_Mode --
-      -----------------------------------------
-
-      function Has_Single_Return_In_GNATprove_Mode return Boolean is
-         Body_To_Inline : constant Node_Id := N;
-         Last_Statement : Node_Id := Empty;
-
-         function Check_Return (N : Node_Id) return Traverse_Result;
-         --  Returns OK on node N if this is not a return statement different
-         --  from the last statement in the subprogram.
-
-         ------------------
-         -- Check_Return --
-         ------------------
-
-         function Check_Return (N : Node_Id) return Traverse_Result is
-         begin
-            case Nkind (N) is
-               when N_Extended_Return_Statement
-                  | N_Simple_Return_Statement
-               =>
-                  if N = Last_Statement then
-                     return OK;
-                  else
-                     return Abandon;
-                  end if;
-
-               --  Skip locally declared subprogram bodies inside the body to
-               --  inline, as the return statements inside those do not count.
-
-               when N_Subprogram_Body =>
-                  if N = Body_To_Inline then
-                     return OK;
-                  else
-                     return Skip;
-                  end if;
-
-               when others =>
-                  return OK;
-            end case;
-         end Check_Return;
-
-         function Check_All_Returns is new Traverse_Func (Check_Return);
-
-      --  Start of processing for Has_Single_Return_In_GNATprove_Mode
-
-      begin
-         --  Retrieve the last statement
-
-         Last_Statement := Last (Statements (Handled_Statement_Sequence (N)));
-
-         --  Check that the last statement is the only possible return
-         --  statement in the subprogram.
-
-         return Check_All_Returns (N) = OK;
-      end Has_Single_Return_In_GNATprove_Mode;
-
       --------------------------
       -- Uses_Secondary_Stack --
       --------------------------
@@ -1273,16 +1206,6 @@ package body Inline is
       if Nkind (Decl) = N_Subprogram_Declaration
         and then Present (Body_To_Inline (Decl))
       then
-         return;
-
-      --  Subprograms that have return statements in the middle of the body are
-      --  inlined with gotos. GNATprove does not currently support gotos, so
-      --  we prevent such inlining.
-
-      elsif GNATprove_Mode
-        and then not Has_Single_Return_In_GNATprove_Mode
-      then
-         Cannot_Inline ("cannot inline & (multiple returns)?", N, Spec_Id);
          return;
 
       --  Functions that return controlled types cannot currently be inlined
@@ -1538,6 +1461,14 @@ package body Inline is
      (Spec_Id : Entity_Id;
       Body_Id : Entity_Id) return Boolean
    is
+      function Has_Constant_With_Address_Clause
+        (Body_Node : Node_Id)
+         return Boolean;
+      --  Returns true if the subprogram contains a declaration of a constant
+      --  with an address clause, which could become illegal in SPARK after
+      --  inlining, if the address clause mentions a constant view of a mutable
+      --  object at call site.
+
       function Has_Formal_Or_Result_Of_Deep_Type
         (Id : Entity_Id) return Boolean;
       --  Returns true if the subprogram has at least one formal parameter or
@@ -1577,6 +1508,70 @@ package body Inline is
       --  defined in SPARK RM 3.10. This is only a safe approximation, as the
       --  knowledge of the SPARK boundary is needed to determine exactly
       --  traversal functions.
+
+      --------------------------------------
+      -- Has_Constant_With_Address_Clause --
+      --------------------------------------
+
+      function Has_Constant_With_Address_Clause
+        (Body_Node : Node_Id)
+         return Boolean
+      is
+         function Check_Constant_With_Addresss_Clause
+           (N : Node_Id)
+            return Traverse_Result;
+         --  Returns Abandon on node N if this is a declaration of a constant
+         --  object with an address clause.
+
+         -----------------------------------------
+         -- Check_Constant_With_Addresss_Clause --
+         -----------------------------------------
+
+         function Check_Constant_With_Addresss_Clause
+           (N : Node_Id)
+            return Traverse_Result
+         is
+         begin
+            case Nkind (N) is
+               when N_Object_Declaration =>
+                  declare
+                     Obj : constant Entity_Id := Defining_Entity (N);
+                  begin
+                     if Constant_Present (N)
+                       and then
+                         (Present (Address_Clause (Obj))
+                            or else Has_Aspect (Obj, Aspect_Address))
+                     then
+                        return Abandon;
+                     else
+                        return OK;
+                     end if;
+                  end;
+
+               --  Skip locally declared subprogram bodies inside the body to
+               --  inline, as the declarations inside those do not count.
+
+               when N_Subprogram_Body =>
+                  if N = Body_Node then
+                     return OK;
+                  else
+                     return Skip;
+                  end if;
+
+               when others =>
+                  return OK;
+            end case;
+         end Check_Constant_With_Addresss_Clause;
+
+         function Check_All_Constants_With_Address_Clause is new
+           Traverse_Func (Check_Constant_With_Addresss_Clause);
+
+      --  Start of processing for Has_Constant_With_Address_Clause
+
+      begin
+         return Check_All_Constants_With_Address_Clause
+           (Body_Node) = Abandon;
+      end Has_Constant_With_Address_Clause;
 
       ---------------------------------------
       -- Has_Formal_Or_Result_Of_Deep_Type --
@@ -2085,6 +2080,16 @@ package body Inline is
       elsif Has_Hide_Unhide_Annotation (Spec_Id, Body_Id) then
          return False;
 
+      --  Do not inline subprograms containing constant declarations with an
+      --  address clause, as inlining could lead to a spurious violation of
+      --  SPARK rules.
+
+      elsif Present (Body_Id)
+        and then
+          Has_Constant_With_Address_Clause (Unit_Declaration_Node (Body_Id))
+      then
+         return False;
+
       --  Otherwise, this is a subprogram declared inside the private part of a
       --  package, or inside a package body, or locally in a subprogram, and it
       --  does not have any contract. Inline it.
@@ -2105,6 +2110,11 @@ package body Inline is
       Is_Serious    : Boolean := False;
       Suppress_Info : Boolean := False)
    is
+      Inline_Prefix : constant String := "cannot inline";
+
+      function Starts_With (S, Prefix : String) return Boolean is
+        (S (S'First .. S'First + Prefix'Length - 1) = Prefix);
+
    begin
       --  In GNATprove mode, inlining is the technical means by which the
       --  higher-level goal of contextual analysis is reached, so issue
@@ -2112,20 +2122,15 @@ package body Inline is
       --  subprogram, rather than failure to inline it.
 
       if GNATprove_Mode
-        and then Msg (Msg'First .. Msg'First + 12) = "cannot inline"
+        and then Starts_With (Msg, Inline_Prefix)
       then
          declare
-            Len1 : constant Positive :=
-              String'("cannot inline")'Length;
-            Len2 : constant Positive :=
-              String'("info: no contextual analysis of")'Length;
+            Msg_Txt : constant String :=
+              Msg (Msg'First + Inline_Prefix'Length .. Msg'Last);
 
-            New_Msg : String (1 .. Msg'Length + Len2 - Len1);
-
+            New_Msg : constant String :=
+              "info: no contextual analysis of" & Msg_Txt;
          begin
-            New_Msg (1 .. Len2) := "info: no contextual analysis of";
-            New_Msg (Len2 + 1 .. Msg'Length + Len2 - Len1) :=
-              Msg (Msg'First + Len1 .. Msg'Last);
             Cannot_Inline (New_Msg, N, Subp, Is_Serious, Suppress_Info);
             return;
          end;
@@ -3160,7 +3165,9 @@ package body Inline is
 
          elsif Base_Type (Etype (F)) = Base_Type (Etype (A))
            and then Etype (F) /= Base_Type (Etype (F))
-           and then Is_Constrained (Etype (F))
+           and then (Is_Constrained (Etype (F))
+                      or else
+                     Is_Fixed_Lower_Bound_Array_Subtype (Etype (F)))
          then
             Temp_Typ := Etype (F);
 
@@ -3229,7 +3236,11 @@ package body Inline is
             --  GNATprove.
 
             elsif Etype (F) /= Etype (A)
-              and then (not GNATprove_Mode or else Is_Constrained (Etype (F)))
+              and then
+                (not GNATprove_Mode
+                   or else (Is_Constrained (Etype (F))
+                              or else
+                            Is_Fixed_Lower_Bound_Array_Subtype (Etype (F))))
             then
                New_A    := Unchecked_Convert_To (Etype (F), Relocate_Node (A));
                Temp_Typ := Etype (F);
@@ -3518,6 +3529,7 @@ package body Inline is
       ---------------------
 
       function Process_Formals (N : Node_Id) return Traverse_Result is
+         Loc : constant Source_Ptr := Sloc (N);
          A   : Entity_Id;
          E   : Entity_Id;
          Ret : Node_Id;
@@ -3544,13 +3556,13 @@ package body Inline is
 
                if Is_Entity_Name (A) then
                   Had_Private_View := Has_Private_View (N);
-                  Rewrite (N, New_Occurrence_Of (Entity (A), Sloc (N)));
+                  Rewrite (N, New_Occurrence_Of (Entity (A), Loc));
                   Set_Has_Private_View (N, Had_Private_View);
                   Check_Private_View (N);
 
                elsif Nkind (A) = N_Defining_Identifier then
                   Had_Private_View := Has_Private_View (N);
-                  Rewrite (N, New_Occurrence_Of (A, Sloc (N)));
+                  Rewrite (N, New_Occurrence_Of (A, Loc));
                   Set_Has_Private_View (N, Had_Private_View);
                   Check_Private_View (N);
 
@@ -3618,8 +3630,8 @@ package body Inline is
                  or else Yields_Universal_Type (Expression (N))
                then
                   Ret :=
-                    Make_Qualified_Expression (Sloc (N),
-                      Subtype_Mark => New_Occurrence_Of (Ret_Type, Sloc (N)),
+                    Make_Qualified_Expression (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Ret_Type, Loc),
                       Expression   => Relocate_Node (Expression (N)));
 
                --  Use an unchecked type conversion between access types, for
@@ -3635,8 +3647,8 @@ package body Inline is
 
                else
                   Ret :=
-                    Make_Type_Conversion (Sloc (N),
-                      Subtype_Mark => New_Occurrence_Of (Ret_Type, Sloc (N)),
+                    Make_Type_Conversion (Loc,
+                      Subtype_Mark => New_Occurrence_Of (Ret_Type, Loc),
                       Expression   => Relocate_Node (Expression (N)));
                end if;
 
@@ -3715,7 +3727,7 @@ package body Inline is
          elsif Nkind (N) = N_Pragma
            and then Pragma_Name (N) = Name_Unreferenced
          then
-            Rewrite (N, Make_Null_Statement (Sloc (N)));
+            Rewrite (N, Make_Null_Statement (Loc));
             return OK;
 
          else

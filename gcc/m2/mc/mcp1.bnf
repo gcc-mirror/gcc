@@ -59,7 +59,7 @@ FROM mcLexBuf IMPORT currentstring, currenttoken, getToken, insertToken,
 FROM decl IMPORT node, lookupDef, lookupImp, lookupModule, getSymName,
                  lookupSym, putDefForC,
                  makeProcedure, makeType, makeTypeImp, makeVar, makeConst,
-		 enterScope, leaveScope, putTypeHidden,
+		 enterScope, leaveScope, putTypeHidden, putTypeOpaque,
 		 addImportedModule, getCurrentModule,
 		 putCommentDefProcedure, putCommentModProcedure ;
 
@@ -1064,7 +1064,8 @@ DefinitionModule :=                                                    % VAR c: 
 
 DefTypeDeclaration := { Ident                                          % VAR n: node ; %
 		                                                       % n := makeType (curident) %
-                        ( ";"                                          % putTypeHidden (n) %
+                        ( ";"                                          % putTypeHidden (n) ;
+                                                                         putTypeOpaque (n) %
 			      | "=" Type Alignment ";" ) }
 		    =:
 

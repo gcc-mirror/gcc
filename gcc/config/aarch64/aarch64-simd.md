@@ -377,8 +377,7 @@
 
 (define_insn "aarch64_rbit<mode><vczle><vczbe>"
   [(set (match_operand:VB 0 "register_operand" "=w")
-	(unspec:VB [(match_operand:VB 1 "register_operand" "w")]
-		   UNSPEC_RBIT))]
+	(bitreverse:VB (match_operand:VB 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "rbit\\t%0.<Vbtype>, %1.<Vbtype>"
   [(set_attr "type" "neon_rbit")]
@@ -390,8 +389,8 @@
   "TARGET_SIMD"
   {
      emit_insn (gen_bswap<mode>2 (operands[0], operands[1]));
-     rtx op0_castsi2qi = simplify_gen_subreg(<VS:VSI2QI>mode, operands[0],
-					     <MODE>mode, 0);
+     rtx op0_castsi2qi = force_subreg (<VS:VSI2QI>mode, operands[0],
+				       <MODE>mode, 0);
      emit_insn (gen_aarch64_rbit<VS:vsi2qi> (op0_castsi2qi, op0_castsi2qi));
      emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
      DONE;
@@ -3197,7 +3196,7 @@
 }
 )
 
-(define_insn "aarch64_float_truncate_lo_<mode><vczle><vczbe>"
+(define_insn "trunc<Vwide><mode>2<vczle><vczbe>"
   [(set (match_operand:VDF 0 "register_operand" "=w")
       (float_truncate:VDF
 	(match_operand:<VWIDE> 1 "register_operand" "w")))]
@@ -3256,7 +3255,7 @@
     int lo = BYTES_BIG_ENDIAN ? 2 : 1;
     int hi = BYTES_BIG_ENDIAN ? 1 : 2;
 
-    emit_insn (gen_aarch64_float_truncate_lo_v2sf (tmp, operands[lo]));
+    emit_insn (gen_truncv2dfv2sf2 (tmp, operands[lo]));
     emit_insn (gen_aarch64_float_truncate_hi_v4sf (operands[0],
 						   tmp, operands[hi]));
     DONE;
@@ -3272,7 +3271,7 @@
   {
     rtx tmp = gen_reg_rtx (V2SFmode);
     emit_insn (gen_aarch64_vec_concatdf (tmp, operands[1], operands[2]));
-    emit_insn (gen_aarch64_float_truncate_lo_v2sf (operands[0], tmp));
+    emit_insn (gen_truncv2dfv2sf2 (operands[0], tmp));
     DONE;
   }
 )
@@ -3462,7 +3461,7 @@
   [(set_attr "type" "neon_reduc_add<VDQV_L:q>")]
 )
 
-(define_expand "aarch64_<su>addlp<mode>"
+(define_expand "@aarch64_<su>addlp<mode>"
   [(set (match_operand:<VDBLW> 0 "register_operand")
 	(plus:<VDBLW>
 	  (vec_select:<VDBLW>
@@ -3516,6 +3515,45 @@
   "TARGET_SIMD"
   "cnt\\t%0.<Vbtype>, %1.<Vbtype>"
   [(set_attr "type" "neon_cnt<q>")]
+)
+
+(define_expand "popcount<mode>2"
+  [(set (match_operand:VDQHSD 0 "register_operand")
+	(popcount:VDQHSD (match_operand:VDQHSD 1 "register_operand")))]
+  "TARGET_SIMD"
+  {
+    /* Generate a byte popcount.  */
+    machine_mode mode = <bitsize> == 64 ? V8QImode : V16QImode;
+    rtx tmp = gen_reg_rtx (mode);
+    auto icode = optab_handler (popcount_optab, mode);
+    emit_insn (GEN_FCN (icode) (tmp, gen_lowpart (mode, operands[1])));
+
+    if (TARGET_DOTPROD
+	&& (<VEL>mode == SImode || <VEL>mode == DImode))
+      {
+	/* For V4SI and V2SI, we can generate a UDOT with a 0 accumulator and a
+	   1 multiplicand.  For V2DI, another UAADDLP is needed.  */
+	rtx ones = force_reg (mode, CONST1_RTX (mode));
+	auto icode = optab_handler (udot_prod_optab, mode);
+	mode = <bitsize> == 64 ? V2SImode : V4SImode;
+	rtx dest = mode == <MODE>mode ? operands[0] : gen_reg_rtx (mode);
+	rtx zeros = force_reg (mode, CONST0_RTX (mode));
+	emit_insn (GEN_FCN (icode) (dest, tmp, ones, zeros));
+	tmp = dest;
+      }
+
+    /* Use a sequence of UADDLPs to accumulate the counts.  Each step doubles
+       the element size and halves the number of elements.  */
+    while (mode != <MODE>mode)
+      {
+	auto icode = code_for_aarch64_addlp (ZERO_EXTEND, GET_MODE (tmp));
+	mode = insn_data[icode].operand[0].mode;
+	rtx dest = mode == <MODE>mode ? operands[0] : gen_reg_rtx (mode);
+	emit_insn (GEN_FCN (icode) (dest, tmp));
+	tmp = dest;
+      }
+    DONE;
+  }
 )
 
 ;; 'across lanes' max and min ops.

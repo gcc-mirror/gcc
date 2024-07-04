@@ -1,6 +1,6 @@
 /* { dg-do compile  } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O2 -maltivec -mabi=altivec -mdejagnu-cpu=cell" } */
+/* { dg-require-effective-target powerpc_altivec } */
 #include <altivec.h>
 
 /* This used to ICE with reloading of a constant address. */

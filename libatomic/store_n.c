@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_STORE_N
 #include "libatomic_i.h"
 
 
@@ -110,3 +111,4 @@ SIZE(libat_store) (UTYPE *mptr, UTYPE newval, int smodel)
 #endif
 
 EXPORT_ALIAS (SIZE(store));
+#undef LAT_STORE_N

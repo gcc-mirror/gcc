@@ -259,7 +259,6 @@
     UNSPEC_PACIBSP
     UNSPEC_PRLG_STK
     UNSPEC_REV
-    UNSPEC_RBIT
     UNSPEC_SADALP
     UNSPEC_SCVTF
     UNSPEC_SETMEM
@@ -5368,7 +5367,7 @@
 
 (define_insn "@aarch64_rbit<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-	(unspec:GPI [(match_operand:GPI 1 "register_operand" "r")] UNSPEC_RBIT))]
+	(bitreverse:GPI (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "rbit\\t%<w>0, %<w>1"
   [(set_attr "type" "rbit")]

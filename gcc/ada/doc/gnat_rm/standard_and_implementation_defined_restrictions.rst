@@ -163,8 +163,8 @@ No_Default_Initialization
 .. index:: No_Default_Initialization
 
 [GNAT] This restriction prohibits any instance of default initialization
-of variables.  The binder implements a consistency rule which prevents
-any unit compiled without the restriction from with'ing a unit with the
+of variables or components. The binder implements a consistency check that
+prevents any unit without the restriction from with'ing a unit with the
 restriction (this allows the generation of initialization procedures to
 be skipped, since you can be sure that no call is ever generated to an
 initialization procedure in a unit with the restriction active). If used
@@ -674,6 +674,12 @@ since they do not need to worry about dispatching stream operations.
 To take maximum advantage of this space-saving optimization, any
 unit declaring a tagged type should be compiled with the restriction,
 though this is not required.
+
+When pragmas ``Discard_Names`` and ``Restrictions (No_Streams)`` simultaneously
+apply to a tagged type, its Expanded_Name and External_Tag are also initialized
+with empty strings. In particular, both these pragmas can be applied as
+configuration pragmas to avoid exposing entity names at binary level for the
+entire partition.
 
 No_Tagged_Type_Registration
 ---------------------------

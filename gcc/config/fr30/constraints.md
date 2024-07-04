@@ -63,9 +63,3 @@
   "An integer in the range -256 to 255."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -256, 255)")))
-
-;; Extra constraints.
-(define_constraint "Q"
-  "@internal"
-  (and (match_code "mem")
-       (match_code "symbol_ref" "0")))

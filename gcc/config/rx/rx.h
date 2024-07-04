@@ -132,10 +132,6 @@
 #define LONG_TYPE_SIZE			32
 #define LONG_LONG_TYPE_SIZE		64
 
-#define FLOAT_TYPE_SIZE 		32
-#define DOUBLE_TYPE_SIZE 		(TARGET_64BIT_DOUBLES ? 64 : 32)
-#define LONG_DOUBLE_TYPE_SIZE		DOUBLE_TYPE_SIZE
-
 #define DEFAULT_SIGNED_CHAR		0
 
 /* RX load/store instructions can handle unaligned addresses.  */

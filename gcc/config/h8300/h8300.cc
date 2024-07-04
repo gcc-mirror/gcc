@@ -5601,6 +5601,18 @@ h8300_ok_for_sibcall_p (tree fndecl, tree)
   return 1;
 }
 
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return SFmode or DFmode
+   for TI_{LONG_,}DOUBLE_TYPE which is for {long,} double type, go with
+   the default one for the others.  */
+
+static machine_mode
+h8300_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_DOUBLE_TYPE || ti == TI_LONG_DOUBLE_TYPE)
+    return DOUBLE_TYPE_MODE;
+  return default_mode_for_floating_type (ti);
+}
+
 /* Return TRUE if OP is a PRE_INC or PRE_DEC
    instruction using REG, FALSE otherwise.  */
 
@@ -5720,5 +5732,8 @@ pre_incdec_with_reg (rtx op, unsigned int reg)
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL h8300_ok_for_sibcall_p
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE h8300_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;

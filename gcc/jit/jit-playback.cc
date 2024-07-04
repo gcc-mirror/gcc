@@ -1122,6 +1122,17 @@ new_sizeof (type *type)
 
 playback::rvalue *
 playback::context::
+new_alignof (type *type)
+{
+  int alignment = TYPE_ALIGN (type->as_tree ()) / BITS_PER_UNIT;
+  tree inner = build_int_cst (integer_type_node, alignment);
+  return new rvalue (this, inner);
+}
+
+/* Construct a playback::rvalue instance (wrapping a tree).  */
+
+playback::rvalue *
+playback::context::
 new_string_literal (const char *value)
 {
   /* Compare with c-family/c-common.cc: fix_string_type.  */

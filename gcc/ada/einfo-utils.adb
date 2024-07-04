@@ -664,12 +664,22 @@ package body Einfo.Utils is
 
    function Base_Type (Id : E) return E is
    begin
-      if Is_Base_Type (Id) then
-         return Id;
-      else
-         pragma Assert (Is_Type (Id));
-         return Etype (Id);
-      end if;
+      return Result : E do
+         if Is_Base_Type (Id) then
+            Result := Id;
+         else
+            pragma Assert (Is_Type (Id));
+            Result := Etype (Id);
+            if False then
+               pragma Assert (Is_Base_Type (Result));
+               --  ???It seems like Base_Type should return a base type,
+               --  but this assertion is disabled because it is not always
+               --  true. Hence the need to say "Base_Type (Base_Type (...))"
+               --  in some cases; Base_Type is not idempotent as one might
+               --  expect.
+            end if;
+         end if;
+      end return;
    end Base_Type;
 
    ----------------------
@@ -2018,10 +2028,11 @@ package body Einfo.Utils is
    ----------------
 
    function Next_Index (Id : N) return Node_Id is
-   begin
       pragma Assert (Nkind (Id) in N_Is_Index);
-      pragma Assert (No (Next (Id)) or else Nkind (Next (Id)) in N_Is_Index);
-      return Next (Id);
+      Result : constant Node_Id := Next (Id);
+      pragma Assert (No (Result) or else Nkind (Result) in N_Is_Index);
+   begin
+      return Result;
    end Next_Index;
 
    ------------------
@@ -2411,8 +2422,8 @@ package body Einfo.Utils is
    begin
       if Is_Concurrent_Type (Id) then
          if Present (Corresponding_Record_Type (Id)) then
-            return Direct_Primitive_Operations
-              (Corresponding_Record_Type (Id));
+            return
+              Direct_Primitive_Operations (Corresponding_Record_Type (Id));
 
          --  When expansion is disabled, the corresponding record type is
          --  absent, but if this is a tagged type with ancestors, or if the

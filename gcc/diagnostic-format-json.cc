@@ -25,8 +25,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "selftest-diagnostic.h"
 #include "diagnostic-metadata.h"
+#include "diagnostic-path.h"
 #include "json.h"
 #include "selftest.h"
+#include "logical-location.h"
 
 /* Subclass of diagnostic_output_format for JSON output.  */
 
@@ -187,6 +189,36 @@ json_from_metadata (const diagnostic_metadata *metadata)
   return metadata_obj;
 }
 
+/* Make a JSON value for PATH.  */
+
+static json::value *
+make_json_for_path (diagnostic_context *context,
+		    const diagnostic_path *path)
+{
+  json::array *path_array = new json::array ();
+  for (unsigned i = 0; i < path->num_events (); i++)
+    {
+      const diagnostic_event &event = path->get_event (i);
+
+      json::object *event_obj = new json::object ();
+      if (event.get_location ())
+	event_obj->set ("location",
+			json_from_expanded_location (context,
+						     event.get_location ()));
+      label_text event_text (event.get_desc (false));
+      event_obj->set_string ("description", event_text.get ());
+      if (const logical_location *logical_loc = event.get_logical_location ())
+	{
+	  label_text name (logical_loc->get_name_for_path_output ());
+	  event_obj->set_string ("function", name.get ());
+	}
+      event_obj->set_integer ("depth", event.get_stack_depth ());
+      path_array->append (event_obj);
+    }
+  return path_array;
+}
+
+
 /* Implementation of "on_end_diagnostic" vfunc for JSON output.
    Generate a JSON object for DIAGNOSTIC, and store for output
    within current diagnostic group.  */
@@ -199,14 +231,8 @@ json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
 
   /* Get "kind" of diagnostic.  */
   {
-    static const char *const diagnostic_kind_text[] = {
-#define DEFINE_DIAGNOSTIC_KIND(K, T, C) (T),
-#include "diagnostic.def"
-#undef DEFINE_DIAGNOSTIC_KIND
-      "must-not-happen"
-    };
     /* Lose the trailing ": ".  */
-    const char *kind_text = diagnostic_kind_text[diagnostic.kind];
+    const char *kind_text = get_diagnostic_kind_text (diagnostic.kind);
     size_t len = strlen (kind_text);
     gcc_assert (len > 2);
     gcc_assert (kind_text[len - 2] == ':');
@@ -291,10 +317,9 @@ json_output_format::on_end_diagnostic (const diagnostic_info &diagnostic,
     }
 
   const diagnostic_path *path = richloc->get_path ();
-  if (path && m_context.m_make_json_for_path)
+  if (path)
     {
-      json::value *path_value
-	= m_context.m_make_json_for_path (&m_context, path);
+      json::value *path_value = make_json_for_path (&m_context, path);
       diag_obj->set ("path", path_value);
     }
 
@@ -364,8 +389,8 @@ private:
 static void
 diagnostic_output_format_init_json (diagnostic_context *context)
 {
-  /* Override callbacks.  */
-  context->m_print_path = nullptr; /* handled in json_end_diagnostic.  */
+  /* Suppress normal textual path output.  */
+  context->set_path_format (DPF_NONE);
 
   /* The metadata is handled in JSON format, rather than as text.  */
   context->set_show_cwe (false);

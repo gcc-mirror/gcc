@@ -50,6 +50,7 @@
 #include "rtx-vector-builder.h"
 #include "targhooks.h"
 #include "predict.h"
+#include "errors.h"
 
 using namespace riscv_vector;
 
@@ -290,11 +291,17 @@ public:
 	   always Pmode.  */
 	if (mode == VOIDmode)
 	  mode = Pmode;
-	else
-	  /* Early assertion ensures same mode since maybe_legitimize_operand
-	     will check this.  */
-	  gcc_assert (GET_MODE (ops[opno]) == VOIDmode
-		      || GET_MODE (ops[opno]) == mode);
+
+	/* Early assertion ensures same mode since maybe_legitimize_operand
+	   will check this.  */
+	machine_mode required_mode = GET_MODE (ops[opno]);
+	if (required_mode != VOIDmode && required_mode != mode)
+	  internal_error ("expected mode %s for operand %d of "
+			  "insn %s but got mode %s.\n",
+			  GET_MODE_NAME (mode),
+			  opno,
+			  insn_data[(int) icode].name,
+			  GET_MODE_NAME (required_mode));
 
 	add_input_operand (ops[opno], mode);
       }
@@ -346,7 +353,13 @@ public:
     else if (m_insn_flags & VXRM_RDN_P)
       add_rounding_mode_operand (VXRM_RDN);
 
-    gcc_assert (insn_data[(int) icode].n_operands == m_opno);
+
+    if (insn_data[(int) icode].n_operands != m_opno)
+      internal_error ("invalid number of operands for insn %s, "
+		      "expected %d but got %d.\n",
+		      insn_data[(int) icode].name,
+		      insn_data[(int) icode].n_operands, m_opno);
+
     expand (icode, any_mem_p);
   }
 
@@ -4634,13 +4647,13 @@ emit_vec_cvt_x_f_rtz (rtx op_dest, rtx op_src, rtx mask,
 }
 
 static void
-emit_vec_saddu (rtx op_dest, rtx op_1, rtx op_2, insn_type type,
-		machine_mode vec_mode)
+emit_vec_binary_alu (rtx op_dest, rtx op_1, rtx op_2, enum rtx_code rcode,
+		     machine_mode vec_mode)
 {
   rtx ops[] = {op_dest, op_1, op_2};
-  insn_code icode = code_for_pred (US_PLUS, vec_mode);
+  insn_code icode = code_for_pred (rcode, vec_mode);
 
-  emit_vlmax_insn (icode, type, ops);
+  emit_vlmax_insn (icode, BINARY_OP, ops);
 }
 
 void
@@ -4876,7 +4889,16 @@ expand_vec_lfloor (rtx op_0, rtx op_1, machine_mode vec_fp_mode,
 void
 expand_vec_usadd (rtx op_0, rtx op_1, rtx op_2, machine_mode vec_mode)
 {
-  emit_vec_saddu (op_0, op_1, op_2, BINARY_OP, vec_mode);
+  emit_vec_binary_alu (op_0, op_1, op_2, US_PLUS, vec_mode);
+}
+
+/* Expand the standard name usadd<mode>3 for vector mode,  we can leverage
+   the vector fixed point vector single-width saturating add directly.  */
+
+void
+expand_vec_ussub (rtx op_0, rtx op_1, rtx op_2, machine_mode vec_mode)
+{
+  emit_vec_binary_alu (op_0, op_1, op_2, US_MINUS, vec_mode);
 }
 
 /* Vectorize popcount by the Wilkes-Wheeler-Gill algorithm that libgcc uses as

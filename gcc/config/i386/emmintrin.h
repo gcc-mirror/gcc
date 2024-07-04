@@ -1391,6 +1391,28 @@ _mm_cmpgt_epi32 (__m128i __A, __m128i __B)
 }
 
 #ifdef __OPTIMIZE__
+extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmp_pd (__m128d __X, __m128d __Y, const int __P)
+{
+  return (__m128d) __builtin_ia32_cmppd ((__v2df)__X, (__v2df)__Y, __P);
+}
+
+extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmp_sd (__m128d __X, __m128d __Y, const int __P)
+{
+  return (__m128d) __builtin_ia32_cmpsd ((__v2df)__X, (__v2df)__Y, __P);
+}
+#else
+#define _mm_cmp_pd(X, Y, P)						\
+  ((__m128d) __builtin_ia32_cmppd ((__v2df)(__m128d)(X),		\
+				   (__v2df)(__m128d)(Y), (int)(P)))
+
+#define _mm_cmp_sd(X, Y, P)						\
+  ((__m128d) __builtin_ia32_cmpsd ((__v2df)(__m128d)(X),		\
+				   (__v2df)(__m128d)(Y), (int)(P)))
+#endif
+
+#ifdef __OPTIMIZE__
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_extract_epi16 (__m128i const __A, int const __N)
 {

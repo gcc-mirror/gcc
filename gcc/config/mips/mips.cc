@@ -4692,6 +4692,30 @@ mips_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = mips_set_reg_reg_cost (GET_MODE (SET_DEST (x)));
 	  return true;
 	}
+      int insn_code;
+      if (register_operand (SET_DEST (x), VOIDmode)
+	  && GET_CODE (SET_SRC (x)) == IF_THEN_ELSE)
+	insn_code = recog_memoized (make_insn_raw (x));
+      else
+	insn_code = -1;
+      switch (insn_code)
+	{
+	/* MIPS16e2 ones may be listed here, while the only known CPU core
+	   that implements MIPS16e2 is interAptiv.  The Dependency delays
+	   of MOVN/MOVZ on interAptiv is 3.  */
+	case CODE_FOR_movsi_on_si:
+	case CODE_FOR_movdi_on_si:
+	case CODE_FOR_movsi_on_di:
+	case CODE_FOR_movdi_on_di:
+	case CODE_FOR_movsi_on_si_ne:
+	case CODE_FOR_movdi_on_si_ne:
+	case CODE_FOR_movsi_on_di_ne:
+	case CODE_FOR_movdi_on_di_ne:
+	  *total = mips_set_reg_reg_cost (GET_MODE (SET_DEST (x)));
+	  return true;
+	default:
+	  break;
+	}
       return false;
 
     default:
@@ -5659,7 +5683,7 @@ mips_allocate_fcc (machine_mode mode)
 
   gcc_assert (TARGET_HARD_FLOAT && ISA_HAS_8CC);
 
-  if (mode == CCmode)
+  if (mode == CCmode || mode == CCEmode)
     count = 1;
   else if (mode == CCV2mode)
     count = 2;
@@ -5788,17 +5812,57 @@ mips_emit_compare (enum rtx_code *code, rtx *op0, rtx *op1, bool need_eq_ne_p)
 	  /* Three FP conditions cannot be implemented by reversing the
 	     operands for C.cond.fmt, instead a reversed condition code is
 	     required and a test for false.  */
+	  machine_mode ccmode = CCmode;
+	  switch (*code)
+	    {
+	    case LTGT:
+	    case LT:
+	    case LE:
+	      ccmode = CCEmode;
+	      break;
+	    default:
+	      break;
+	    }
 	  *code = mips_reversed_fp_cond (&cmp_code) ? EQ : NE;
 	  if (ISA_HAS_8CC)
-	    *op0 = mips_allocate_fcc (CCmode);
+	    *op0 = mips_allocate_fcc (ccmode);
 	  else
-	    *op0 = gen_rtx_REG (CCmode, FPSW_REGNUM);
+	    *op0 = gen_rtx_REG (ccmode, FPSW_REGNUM);
 	}
 
       *op1 = const0_rtx;
       mips_emit_binary (cmp_code, *op0, cmp_op0, cmp_op1);
     }
 }
+
+
+const char *
+mips_output_compare (const char *fpcmp, const char *fcond,
+			const char *fmt, const char *fpcc_mode, bool swap)
+{
+  const char *fc = fcond;
+
+  if (ISA_HAS_CCF)
+    {
+      /* c.lt.fmt is signaling, while cmp.lt.fmt is quiet.  */
+      if (strcmp (fcond, "lt") == 0)
+	fc = "slt";
+      else if (strcmp (fcond, "le") == 0)
+	fc = "sle";
+    }
+  else if (strcmp (fpcc_mode, "cce") == 0)
+    {
+      /* It was LTGT, while we have only inverse one.  It was then converted
+	 to UNEQ by mips_reversed_fp_cond, and we used CCEmode to mark it.
+	 Lets convert it back to ngl now.  */
+      if (strcmp (fcond, "ueq") == 0)
+	fc = "ngl";
+    }
+  if (swap)
+    return concat(fpcmp, ".", fc, ".", fmt, "\t%Z0%2,%1", NULL);
+  return concat(fpcmp, ".", fc, ".", fmt, "\t%Z0%1,%2", NULL);
+}
+
 
 /* Try performing the comparison in OPERANDS[1], whose arms are OPERANDS[2]
    and OPERAND[3].  Store the result in OPERANDS[0].
@@ -13142,7 +13206,7 @@ mips_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
 	    && ST_REG_P (regno)
 	    && (regno - ST_REG_FIRST) % 4 == 0);
 
-  if (mode == CCmode)
+  if (mode == CCmode || mode == CCEmode)
     return ISA_HAS_8CC ? ST_REG_P (regno) : regno == FPSW_REGNUM;
 
   size = GET_MODE_SIZE (mode);
@@ -22737,14 +22801,20 @@ mips_expand_vec_cmp_expr (rtx *operands)
 
 void
 mips_expand_vec_cond_expr (machine_mode mode, machine_mode vimode,
-			   rtx *operands)
+			   rtx *operands, bool mask)
 {
-  rtx cond = operands[3];
-  rtx cmp_op0 = operands[4];
-  rtx cmp_op1 = operands[5];
-  rtx cmp_res = gen_reg_rtx (vimode);
+  rtx cmp_res;
+  if (mask)
+    cmp_res = operands[3];
+  else
+    {
+      rtx cond = operands[3];
+      rtx cmp_op0 = operands[4];
+      rtx cmp_op1 = operands[5];
+      cmp_res = gen_reg_rtx (vimode);
 
-  mips_expand_msa_cmp (cmp_res, GET_CODE (cond), cmp_op0, cmp_op1);
+      mips_expand_msa_cmp (cmp_res, GET_CODE (cond), cmp_op0, cmp_op1);
+    }
 
   /* We handle the following cases:
      1) r = a CMP b ? -1 : 0
@@ -22979,6 +23049,18 @@ mips_asm_file_end (void)
 {
   if (NEED_INDICATE_EXEC_STACK)
     file_end_indicate_exec_stack ();
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode
+   for TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+mips_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return MIPS_LONG_DOUBLE_TYPE_SIZE == 64 ? DFmode : TFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 void
@@ -23349,6 +23431,8 @@ mips_bit_clear_p (enum machine_mode mode, unsigned HOST_WIDE_INT m)
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END mips_asm_file_end
 
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE mips_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

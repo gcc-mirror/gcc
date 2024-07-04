@@ -4072,9 +4072,11 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
       if (VECTOR_MODE_P (mode) && GET_CODE (op0) == ASHIFTRT
 	  && (CONST_INT_P (XEXP (op0, 1))
 	      || (GET_CODE (XEXP (op0, 1)) == CONST_VECTOR
-		  && CONST_VECTOR_DUPLICATE_P (XEXP (op0, 1))))
+		  && CONST_VECTOR_DUPLICATE_P (XEXP (op0, 1))
+		  && CONST_INT_P (XVECEXP (XEXP (op0, 1), 0, 0))))
 	  && GET_CODE (op1) == CONST_VECTOR
-	  && CONST_VECTOR_DUPLICATE_P (op1))
+	  && CONST_VECTOR_DUPLICATE_P (op1)
+	  && CONST_INT_P (XVECEXP (op1, 0, 0)))
 	{
 	  unsigned HOST_WIDE_INT shift_count
 	    = (CONST_INT_P (XEXP (op0, 1))
@@ -7734,6 +7736,11 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       machine_mode innermostmode = GET_MODE (SUBREG_REG (op));
       poly_uint64 innermostsize = GET_MODE_SIZE (innermostmode);
       rtx newx;
+
+      /* Make sure that the relationship between the two subregs is
+	 known at compile time.  */
+      if (!ordered_p (outersize, innermostsize))
+	return NULL_RTX;
 
       if (outermode == innermostmode
 	  && known_eq (byte, 0U)

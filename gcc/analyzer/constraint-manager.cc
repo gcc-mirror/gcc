@@ -185,7 +185,7 @@ range::dump () const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -448,7 +448,7 @@ bounded_range::dump (bool show_types) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, show_types);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -721,7 +721,7 @@ bounded_ranges::dump (bool show_types) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = stderr;
+  pp.set_output_stream (stderr);
   dump_to_pp (&pp, show_types);
   pp_newline (&pp);
   pp_flush (&pp);
@@ -1146,7 +1146,7 @@ equiv_class::to_json () const
   return ec_obj;
 }
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 equiv_class::make_dump_widget (const text_art::dump_widget_info &dwi,
 			       unsigned id) const
 {
@@ -1176,7 +1176,7 @@ equiv_class::make_dump_widget (const text_art::dump_widget_info &dwi,
       ec_widget->add_child (tree_widget::make (dwi, &pp));
     }
 
-  return std::move (ec_widget);
+  return ec_widget;
 }
 
 /* Generate a hash value for this equiv_class.
@@ -1491,7 +1491,7 @@ bounded_ranges_constraint::to_json () const
   return con_obj;
 }
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 bounded_ranges_constraint::
 make_dump_widget (const text_art::dump_widget_info &dwi) const
 {
@@ -1500,7 +1500,7 @@ make_dump_widget (const text_art::dump_widget_info &dwi) const
     (tree_widget::from_fmt (dwi, nullptr,
 			    "ec%i bounded ranges", m_ec_id.as_int ()));
   m_ranges->add_to_dump_widget (*brc_widget.get (), dwi);
-  return std::move (brc_widget);
+  return brc_widget;
 }
 
 bool
@@ -1772,7 +1772,7 @@ constraint_manager::dump (FILE *fp) const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = pp_show_color (global_dc->printer);
-  pp.buffer->stream = fp;
+  pp.set_output_stream (fp);
   dump_to_pp (&pp, true);
   pp_flush (&pp);
 }
@@ -1829,7 +1829,7 @@ constraint_manager::to_json () const
   return cm_obj;
 }
 
-std::unique_ptr<text_art::widget>
+std::unique_ptr<text_art::tree_widget>
 constraint_manager::make_dump_widget (const text_art::dump_widget_info &dwi) const
 {
   using text_art::tree_widget;
@@ -1853,7 +1853,7 @@ constraint_manager::make_dump_widget (const text_art::dump_widget_info &dwi) con
   if (cm_widget->get_num_children () == 0)
     return nullptr;
 
-  return std::move (cm_widget);
+  return cm_widget;
 }
 
 /* Attempt to add the constraint LHS OP RHS to this constraint_manager.

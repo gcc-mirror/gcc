@@ -1012,6 +1012,18 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
       if (TREE_CODE (ftype) == ENUMERAL_TYPE)
 	/* Check for narrowing based on the values of the enumeration. */
 	ftype = ENUM_UNDERLYING_TYPE (ftype);
+      /* Undo convert_bitfield_to_declared_type (STRIP_NOPS isn't enough).  */
+      tree op = init;
+      while (CONVERT_EXPR_P (op))
+	op = TREE_OPERAND (op, 0);
+      /* Core 2627 says that we shouldn't warn when "the source is a bit-field
+	 whose width w is less than that of its type (or, for an enumeration
+	 type, its underlying type) and the target type can represent all the
+	 values of a hypothetical extended integer type with width w and with
+	 the same signedness as the original type".  */
+      if (is_bitfield_expr_with_lowered_type (op)
+	  && TYPE_PRECISION (TREE_TYPE (op)) < TYPE_PRECISION (ftype))
+	ftype = TREE_TYPE (op);
       if ((tree_int_cst_lt (TYPE_MAX_VALUE (type),
 			    TYPE_MAX_VALUE (ftype))
 	   || tree_int_cst_lt (TYPE_MIN_VALUE (ftype),

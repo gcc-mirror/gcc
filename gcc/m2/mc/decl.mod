@@ -81,6 +81,7 @@ CONST
    enableDefForCStrings   = FALSE ;   (* currently disabled.  *)
    enableMemsetOnAllocation = TRUE ;  (* Should we memset (..., 0, ...) the allocated mem?  *)
    forceQualified  = TRUE ;
+   debugOpaque     = FALSE ;
 
 TYPE
    language = (ansiC, ansiCP, pim4) ;
@@ -127,7 +128,7 @@ TYPE
             componentref, pointerref, arrayref, deref,
 	    equal, notequal, less, greater, greequal, lessequal,
 	    lsl, lsr, lor, land, lnot, lxor,
-	    and, or, not, identlist, vardecl, setvalue) ;
+	    and, or, not, identlist, vardecl, setvalue, opaquecast) ;
 
     node = POINTER TO nodeRec ;
 
@@ -260,11 +261,23 @@ TYPE
 			 identlist       :  identlistF       : identlistT |
 			 vardecl         :  vardeclF         : vardeclT |
                          funccall        :  funccallF        : funccallT |
-			 setvalue        :  setvalueF        : setvalueT
+			 setvalue        :  setvalueF        : setvalueT |
+                         opaquecast      :  opaquecastF      : opaquecastT
 
                          END ;
                          at: where ;
                       END ;
+
+       opaqueCastState = RECORD
+                            opaque,
+                            voidStar: BOOLEAN ;
+                         END ;
+
+       opaquecastT = RECORD
+                        (* Describes the cast of the opaque.  *)
+                        exp        : node ;
+                        opaqueState: opaqueCastState ;
+                     END ;
 
        intrinsicT = RECORD
                        args            : node ;
@@ -298,6 +311,7 @@ TYPE
 		      args           : node ;
 		      type           : node ;
 		      funccallComment: commentPair ;
+                      opaqueState    : opaqueCastState ;
                    END ;
 
        commentT = RECORD
@@ -328,6 +342,7 @@ TYPE
                   name      :  Name ;
 		  type      :  node ;
 		  scope     :  node ;
+                  isOpaque,
 		  isHidden,
 		  isInternal:  BOOLEAN ;
                END ;
@@ -355,6 +370,7 @@ TYPE
 		 isVarParameter,
                  isUsed        :  BOOLEAN ;
                  cname         :  cnameT ;
+                 opaqueState   :  opaqueCastState ;
               END ;
 
        enumerationT = RECORD
@@ -382,6 +398,7 @@ TYPE
 		   type,
 		   scope      :  node ;
 		   isUnbounded:  BOOLEAN ;
+                   opaqueState:  opaqueCastState ;
                 END ;
 
        stringT = RECORD
@@ -412,6 +429,7 @@ TYPE
                       isUnbounded:  BOOLEAN ;
                       isForC     :  BOOLEAN ;
                       isUsed     :  BOOLEAN ;
+                      opaqueState:  opaqueCastState ;
                    END ;
 
        paramT = RECORD
@@ -421,6 +439,7 @@ TYPE
                    isUnbounded:  BOOLEAN ;
                    isForC     :  BOOLEAN ;
                    isUsed     :  BOOLEAN ;
+                   opaqueState:  opaqueCastState ;
                 END ;
 
        varargsT = RECORD
@@ -435,18 +454,20 @@ TYPE
                  END ;
 
        pointerT = RECORD
-                     type :  node ;
-                     scope:  node ;
+                     type       :  node ;
+                     scope      :  node ;
+                     opaqueState:  opaqueCastState ;
                   END ;
 
        recordfieldT = RECORD
-                         name   :  Name ;
-			 type   :  node ;
-			 tag    :  BOOLEAN ;
-			 parent :  node ;
-			 varient:  node ;
-			 scope  :  node ;
-			 cname  :  cnameT ;
+                         name       :  Name ;
+			 type       :  node ;
+			 tag        :  BOOLEAN ;
+			 parent     :  node ;
+			 varient    :  node ;
+			 scope      :  node ;
+			 cname      :  cnameT ;
+                         opaqueState:  opaqueCastState ;
                       END ;
 
        varientfieldT = RECORD
@@ -472,21 +493,24 @@ TYPE
               END ;
 
        componentrefT = RECORD
-                          rec       :  node ;
-                          field     :  node ;
-                          resultType:  node ;
+                          rec        :  node ;
+                          field      :  node ;
+                          resultType :  node ;
+                          opaqueState:  opaqueCastState ;
                        END ;
 
        pointerrefT = RECORD
-                        ptr       :  node ;
-                        field     :  node ;
-                        resultType:  node ;
+                        ptr        :  node ;
+                        field      :  node ;
+                        resultType :  node ;
+                        opaqueState:  opaqueCastState ;
                      END ;
 
        arrayrefT = RECORD
-                      array     :  node ;
-                      index     :  node ;
-                      resultType:  node ;
+                      array      :  node ;
+                      index      :  node ;
+                      resultType :  node ;
+                      opaqueState:  opaqueCastState ;
                    END ;
 
        commentPair = RECORD
@@ -596,15 +620,17 @@ TYPE
                        cname          :  cnameT ;
 		       defComment,
 		       modComment     :  commentDesc ;
+                       opaqueState    :  opaqueCastState ;
                     END ;
 
        proctypeT = RECORD
-                      parameters:  Index ;
+                      parameters :  Index ;
                       returnopt,
-                      vararg    :  BOOLEAN ;
-                      optarg    :  node ;
-		      scope     :  node ;
-                      returnType:  node ;
+                      vararg     :  BOOLEAN ;
+                      optarg     :  node ;
+		      scope      :  node ;
+                      returnType :  node ;
+                      opaqueState:  opaqueCastState ;
                    END ;
 
        binaryT = RECORD
@@ -2025,6 +2051,7 @@ BEGIN
       typeF.name := n ;
       typeF.type := NIL ;
       typeF.scope := getDeclScope () ;
+      typeF.isOpaque := FALSE ;
       typeF.isHidden := FALSE ;
       typeF.isInternal := FALSE
    END ;
@@ -2052,6 +2079,7 @@ BEGIN
          typeF.name := n ;
          typeF.type := NIL ;
          typeF.scope := getDeclScope () ;
+         typeF.isOpaque := FALSE ;
          typeF.isHidden := FALSE
       END ;
       RETURN addToScope (d)
@@ -2091,7 +2119,8 @@ BEGIN
    assert (var#NIL) ;
    assert (isVar (var)) ;
    var^.varF.type := type ;
-   var^.varF.decl := decl
+   var^.varF.decl := decl ;
+   initNodeOpaqueState (var) ;
 END putVar ;
 
 
@@ -2328,7 +2357,7 @@ END paramLeave ;
 
 
 (*
-   putReturnType - sets the return type of procedure or proctype, proc, to, type.
+   putReturnType - sets the return type of procedure or proctype proc to type.
 *)
 
 PROCEDURE putReturnType (proc, type: node) ;
@@ -2339,7 +2368,8 @@ BEGIN
       proc^.procedureF.returnType := type
    ELSE
       proc^.proctypeF.returnType := type
-   END
+   END ;
+   initNodeOpaqueState (proc)
 END putReturnType ;
 
 
@@ -2374,8 +2404,9 @@ BEGIN
       proctypeF.returnopt := FALSE ;
       proctypeF.optarg := NIL ;
       proctypeF.vararg := FALSE ;
-      proctypeF.returnType := NIL
+      proctypeF.returnType := NIL ;
    END ;
+   initNodeOpaqueState (d) ;
    RETURN d
 END makeProcType ;
 
@@ -2387,7 +2418,8 @@ END makeProcType ;
 PROCEDURE putProcTypeReturn (proc, type: node) ;
 BEGIN
    assert (isProcType (proc)) ;
-   proc^.proctypeF.returnType := type
+   proc^.proctypeF.returnType := type ;
+   initNodeOpaqueState (proc)
 END putProcTypeReturn ;
 
 
@@ -2418,6 +2450,7 @@ BEGIN
    d^.paramF.isUnbounded := FALSE ;
    d^.paramF.isForC := isDefForCNode (proc) ;
    d^.paramF.isUsed := isused ;
+   initNodeOpaqueState (d) ;
    RETURN d
 END makeNonVarParameter ;
 
@@ -2438,6 +2471,7 @@ BEGIN
    d^.varparamF.isUnbounded := FALSE ;
    d^.varparamF.isForC := isDefForCNode (proc) ;
    d^.varparamF.isUsed := isused ;
+   initNodeOpaqueState (d) ;
    RETURN d
 END makeVarParameter ;
 
@@ -3864,8 +3898,9 @@ BEGIN
       f := newNode (funccall) ;
       f^.funccallF.function := c ;
       f^.funccallF.args := n ;
-      f^.funccallF.type := NIL ;
-      initPair (f^.funccallF.funccallComment)
+      f^.funccallF.type := getType (c) ;
+      initPair (f^.funccallF.funccallComment) ;
+      initNodeOpaqueState (f)
    END ;
    RETURN f
 END makeFuncCall ;
@@ -3934,6 +3969,33 @@ BEGIN
    assert (isDef (n)) ;
    RETURN n^.defF.hasHidden
 END hasHidden ;
+
+
+(*
+   putTypeOpaque - marks type, des, as being an opaque type.
+                   TYPE des ;
+*)
+
+PROCEDURE putTypeOpaque (des: node) ;
+VAR
+   s: node ;
+BEGIN
+   assert (des#NIL) ;
+   assert (isType (des)) ;
+   des^.typeF.isOpaque := TRUE
+END putTypeOpaque ;
+
+
+(*
+   isTypeOpaque - returns TRUE if type, n, is an opaque type.
+*)
+
+PROCEDURE isTypeOpaque (n: node) : BOOLEAN ;
+BEGIN
+   assert (n#NIL) ;
+   assert (isType (n)) ;
+   RETURN n^.typeF.isOpaque
+END isTypeOpaque ;
 
 
 (*
@@ -4673,6 +4735,7 @@ BEGIN
    n^.componentrefF.rec := rec ;
    n^.componentrefF.field := field ;
    n^.componentrefF.resultType := getType (field) ;
+   initNodeOpaqueState (n) ;
    RETURN n
 END doMakeComponentRef ;
 
@@ -4708,6 +4771,7 @@ BEGIN
       rec^.pointerrefF.ptr := a ;
       rec^.pointerrefF.field := field ;
       rec^.pointerrefF.resultType := getType (field) ;
+      initNodeOpaqueState (rec) ;
       RETURN rec
    ELSE
       RETURN doMakeComponentRef (rec, field)
@@ -4739,6 +4803,7 @@ BEGIN
    n^.pointerrefF.ptr := ptr ;
    n^.pointerrefF.field := field ;
    n^.pointerrefF.resultType := getType (field) ;
+   initNodeOpaqueState (n) ;
    RETURN n
 END makePointerRef ;
 
@@ -5192,9 +5257,13 @@ END getMaxMinType ;
 *)
 
 PROCEDURE doGetFuncType (n: node) : node ;
+VAR
+   result: node ;
 BEGIN
    assert (isFuncCall (n)) ;
-   RETURN doSetExprType (n^.funccallF.type, getType (n^.funccallF.function))
+   result := doSetExprType (n^.funccallF.type, getType (n^.funccallF.function)) ;
+   initNodeOpaqueState (n) ;  (* Update now that the return type is known.  *)
+   RETURN result
 END doGetFuncType ;
 
 
@@ -5951,10 +6020,10 @@ BEGIN
    IF needsParen (left)
    THEN
       outText (p, '(') ;
-      doExprCup (p, left, unpackProc) ;
+      left := doExprCup (p, left, unpackProc, FALSE) ;
       outText (p, ')')
    ELSE
-      doExprCup (p, left, unpackProc)
+      left := doExprCup (p, left, unpackProc, FALSE)
    END ;
    IF l
    THEN
@@ -5968,10 +6037,10 @@ BEGIN
    IF needsParen (right)
    THEN
       outText (p, '(') ;
-      doExprCup (p, right, unpackProc) ;
+      right := doExprCup (p, right, unpackProc, FALSE) ;
       outText (p, ')')
    ELSE
-      doExprCup (p, right, unpackProc)
+      right := doExprCup (p, right, unpackProc, FALSE)
    END
 END doBinary ;
 
@@ -5991,11 +6060,12 @@ END doPostUnary ;
    doDeRefC -
 *)
 
-PROCEDURE doDeRefC (p: pretty; expr: node) ;
+PROCEDURE doDeRefC (p: pretty; expr: node) : node ;
 BEGIN
    outText (p, '(*') ;
-   doExprC (p, expr) ;
-   outText (p, ')')
+   expr := castOpaque (p, expr, FALSE) ;
+   outText (p, ')') ;
+   RETURN expr
 END doDeRefC ;
 
 
@@ -6079,7 +6149,7 @@ END getLastOp ;
 
 PROCEDURE doComponentRefC (p: pretty; l, r: node) ;
 BEGIN
-   doExprC (p, l) ;
+   flushOpaque (p, l, FALSE) ;
    outText (p, '.') ;
    doExprC (p, r)
 END doComponentRefC ;
@@ -6091,7 +6161,7 @@ END doComponentRefC ;
 
 PROCEDURE doPointerRefC (p: pretty; l, r: node) ;
 BEGIN
-   doExprC (p, l) ;
+   flushOpaque (p, l, FALSE) ;
    outText (p, '->') ;
    doExprC (p, r)
 END doPointerRefC ;
@@ -6156,23 +6226,38 @@ END isZero ;
 
 
 (*
-   doArrayRef -
+   doArrayRef - perform an array reference.  If constCast
+                then an unbounded array access will be const_cast
+                (the constCast should be TRUE if an assignment to
+                the array is required).
 *)
 
-PROCEDURE doArrayRef (p: pretty; n: node) ;
+PROCEDURE doArrayRef (p: pretty; n: node; constCast: BOOLEAN) ;
 VAR
-   t   : node ;
+   type,
+   v   : node ;
    i, c: CARDINAL ;
 BEGIN
    assert (n # NIL) ;
    assert (isArrayRef (n)) ;
-   t := skipType (getType (n^.arrayrefF.array)) ;
-   IF isUnbounded (t)
+   type := skipType (getType (n^.arrayrefF.array)) ;
+   IF isUnbounded (type)
    THEN
-      outTextN (p, getSymName (n^.arrayrefF.array))
+      v := n^.arrayrefF.array ;
+      IF constCast AND isVar (n^.arrayrefF.array) AND
+         (v^.varF.isParameter OR v^.varF.isVarParameter)
+      THEN
+         outText (p, "const_cast<") ;
+         doTypeNameC (p, getType (v)) ;
+         outText (p, ">(") ;
+         outTextN (p, getSymName (n^.arrayrefF.array)) ;
+         outText (p, ")")
+      ELSE
+         outTextN (p, getSymName (n^.arrayrefF.array))
+      END
    ELSE
       doExprC (p, n^.arrayrefF.array) ;
-      assert (isArray (t)) ;
+      assert (isArray (type)) ;
       outText (p, '.array')
    END ;
    outText (p, '[') ;
@@ -6180,16 +6265,16 @@ BEGIN
    c := expListLen (n^.arrayrefF.index) ;
    WHILE i<=c DO
       doExprC (p, getExpList (n^.arrayrefF.index, i)) ;
-      IF isUnbounded (t)
+      IF isUnbounded (type)
       THEN
          assert (c = 1)
       ELSE
-         doSubtractC (p, getMin (t^.arrayF.subr)) ;
+         doSubtractC (p, getMin (type^.arrayF.subr)) ;
 	 IF i<c
          THEN
-            assert (isArray (t)) ;
+            assert (isArray (type)) ;
             outText (p, '].array[') ;
-            t := skipType (getType (t))
+            type := skipType (getType (type))
          END
       END ;
       INC (i)
@@ -6466,7 +6551,7 @@ BEGIN
       im              :  doImC (p, n) |
       cmplx           :  doCmplx (p, n) |
 
-      deref           :  doDeRefC (p, unaryF.arg) |
+      deref           :  unaryF.arg := doDeRefC (p, unaryF.arg) |
       equal           :  doBinary (p, '==', binaryF.left, binaryF.right, TRUE, TRUE, TRUE) |
       notequal        :  doBinary (p, '!=', binaryF.left, binaryF.right, TRUE, TRUE, TRUE) |
       less            :  doBinary (p, '<', binaryF.left, binaryF.right, TRUE, TRUE, FALSE) |
@@ -6490,7 +6575,7 @@ BEGIN
       enumerationfield:  doEnumerationField (p, n) |
       string          :  doStringC (p, n) |
       var             :  doVar (p, n) |
-      arrayref        :  doArrayRef (p, n) |
+      arrayref        :  doArrayRef (p, n, FALSE) |
       funccall        :  doFuncExprC (p, n) |
       procedure       :  doProcedure (p, n) |
       recordfield     :  doRecordfield (p, n) |
@@ -6529,19 +6614,26 @@ END doExprC ;
    doExprCup -
 *)
 
-PROCEDURE doExprCup (p: pretty; n: node; unpackProc: BOOLEAN) ;
+PROCEDURE doExprCup (p: pretty; n: node;
+                     unpackProc, uncastConst: BOOLEAN) : node ;
 VAR
-   t: node ;
+   type: node ;
 BEGIN
-   doExprC (p, n) ;
-   IF unpackProc
+   IF uncastConst AND isArrayRef (n)
    THEN
-      t := skipType (getExprType (n)) ;
-      IF (t # NIL) AND isAProcType (t)
+      doArrayRef (p, n, TRUE)
+   ELSE
+      doExprC (p, n) ;
+      IF unpackProc
       THEN
-         outText (p, '.proc')
+         type := skipType (getExprType (n)) ;
+         IF (type # NIL) AND isAProcType (type)
+         THEN
+            outText (p, '.proc')
+         END
       END
-   END
+   END ;
+   RETURN n
 END doExprCup ;
 
 
@@ -7040,31 +7132,10 @@ END outTextN ;
 
 
 (*
-   doTypeAliasC -
+   outputEnumerationC -
 *)
 
-PROCEDURE doTypeAliasC (p: pretty; n: node; VAR m: node) ;
-BEGIN
-   print (p, "typedef") ; setNeedSpace (p) ;
-   IF isTypeHidden (n) AND (isDef (getMainModule ()) OR (getScope (n) # getMainModule ()))
-   THEN
-      outText (p, "void *")
-   ELSE
-      doTypeC (p, getType (n), m)
-   END ;
-   IF m#NIL
-   THEN
-      doFQNameC (p, m)
-   END ;
-   print (p, ';\n\n')
-END doTypeAliasC ;
-
-
-(*
-   doEnumerationC -
-*)
-
-PROCEDURE doEnumerationC (p: pretty; n: node) ;
+PROCEDURE outputEnumerationC (p: pretty; n: node) ;
 VAR
    i, h: CARDINAL ;
    s   : node ;
@@ -7083,6 +7154,47 @@ BEGIN
       INC (i)
    END ;
    outText (p, "}")
+END outputEnumerationC ;
+
+
+(*
+   isDeclType - return TRUE if the current module should declare type.
+*)
+
+PROCEDURE isDeclType (type: node) : BOOLEAN ;
+VAR
+   n,
+   def : node ;
+   name: Name ;
+BEGIN
+   IF isImp (currentModule)
+   THEN
+      name := getSymName (type) ;
+      IF name # NulName
+      THEN
+         (* Lookup the matching .def module.  *)
+         def := lookupDef (getSymName (currentModule)) ;
+         IF def # NIL
+         THEN
+            (* Return TRUE if the symbol has not already been declared in the .def.  *)
+            RETURN lookupExported (def, name) = NIL
+         END
+      END
+   END ;
+   RETURN TRUE
+END isDeclType ;
+
+
+(*
+   doEnumerationC -
+*)
+
+PROCEDURE doEnumerationC (p: pretty; n: node) ;
+BEGIN
+   IF isDeclType (n)
+   THEN
+      outputEnumerationC (p, n)
+   END
 END doEnumerationC ;
 
 
@@ -7307,9 +7419,587 @@ BEGIN
       doFQNameC (p, paramtype) ;
       outText (p, "_C")
    ELSE
-      doTypeNameC (p, paramtype)
+      doTypeNameC (p, paramtype) ;
+      doOpaqueModifier (p, paramnode) ;
+      (*
+      IF nodeUsesOpaque (paramnode) AND (NOT getNodeOpaqueVoidStar (paramnode))
+      THEN
+         outText (p, '__opaque')
+      END
+      *)
    END
 END doParamTypeEmit ;
+
+
+(*
+   doParamTypeNameModifier - Add an _ to an unbounded parameter which is non var.
+*)
+
+PROCEDURE doParamTypeNameModifier (p: pretty; ptype: node; varparam: BOOLEAN) ;
+BEGIN
+   IF (NOT varparam) AND isArray (ptype) AND isUnbounded (ptype)
+   THEN
+      outText (p, '_')
+   END
+END doParamTypeNameModifier ;
+
+
+(*
+   initOpaqueCastState - assign fields opaque and voidstar in opaquestate.
+*)
+
+PROCEDURE initOpaqueCastState (VAR opaquestate: opaqueCastState; opaque, voidstar: BOOLEAN) ;
+BEGIN
+   opaquestate.opaque := opaque ;
+   opaquestate.voidStar := voidstar
+END initOpaqueCastState ;
+
+
+(*
+   initNodeOpaqueCastState - assign opaque and currentvoidstar
+*)
+
+PROCEDURE initNodeOpaqueCastState (n: node; opaque, voidstar: BOOLEAN) ;
+BEGIN
+   CASE n^.kind OF
+
+   opaquecast  :  initOpaqueCastState (n^.opaquecastF.opaqueState, opaque, voidstar) |
+   funccall    :  initOpaqueCastState (n^.funccallF.opaqueState, opaque, voidstar) |
+   var         :  initOpaqueCastState (n^.varF.opaqueState, opaque, voidstar) |
+   array       :  initOpaqueCastState (n^.arrayF.opaqueState, opaque, voidstar) |
+   varparam    :  initOpaqueCastState (n^.varparamF.opaqueState, opaque, voidstar) |
+   param       :  initOpaqueCastState (n^.paramF.opaqueState, opaque, voidstar) |
+   pointer     :  initOpaqueCastState (n^.pointerF.opaqueState, opaque, voidstar) |
+   recordfield :  initOpaqueCastState (n^.recordfieldF.opaqueState, opaque, voidstar) |
+   componentref:  initOpaqueCastState (n^.componentrefF.opaqueState, opaque, voidstar) |
+   pointerref  :  initOpaqueCastState (n^.pointerrefF.opaqueState, opaque, voidstar) |
+   arrayref    :  initOpaqueCastState (n^.arrayrefF.opaqueState, opaque, voidstar) |
+   procedure   :  initOpaqueCastState (n^.procedureF.opaqueState, opaque, voidstar) |
+   proctype    :  initOpaqueCastState (n^.proctypeF.opaqueState, opaque, voidstar)
+
+   ELSE
+      HALT
+   END
+END initNodeOpaqueCastState ;
+
+
+(*
+   setOpaqueCastState - set the voidStar field in opaquestate.
+*)
+
+PROCEDURE setOpaqueCastState (VAR opaquestate: opaqueCastState; voidstar: BOOLEAN) ;
+BEGIN
+   opaquestate.voidStar := voidstar
+END setOpaqueCastState ;
+
+
+(*
+   setNodeOpaqueVoidStar - sets the voidStar field in node to voidstar.
+*)
+
+PROCEDURE setNodeOpaqueVoidStar (n: node; voidstar: BOOLEAN) ;
+BEGIN
+   assert (nodeUsesOpaque (n)) ;
+   CASE n^.kind OF
+
+   opaquecast  :  setOpaqueCastState (n^.opaquecastF.opaqueState, voidstar) |
+   funccall    :  setOpaqueCastState (n^.funccallF.opaqueState, voidstar) |
+   var         :  setOpaqueCastState (n^.varF.opaqueState, voidstar) |
+   array       :  setOpaqueCastState (n^.arrayF.opaqueState, voidstar) |
+   varparam    :  setOpaqueCastState (n^.varparamF.opaqueState, voidstar) |
+   param       :  setOpaqueCastState (n^.paramF.opaqueState, voidstar) |
+   pointer     :  setOpaqueCastState (n^.pointerF.opaqueState, voidstar) |
+   recordfield :  setOpaqueCastState (n^.recordfieldF.opaqueState, voidstar) |
+   componentref:  assert (NOT voidstar) ;
+                  setOpaqueCastState (n^.componentrefF.opaqueState, voidstar) |
+   pointerref  :  assert (NOT voidstar) ;
+                  setOpaqueCastState (n^.pointerrefF.opaqueState, voidstar) |
+   arrayref    :  setOpaqueCastState (n^.arrayrefF.opaqueState, voidstar) |
+   procedure   :  setOpaqueCastState (n^.procedureF.opaqueState, voidstar) |
+   proctype    :  setOpaqueCastState (n^.proctypeF.opaqueState, voidstar)
+
+   ELSE
+      HALT
+   END
+END setNodeOpaqueVoidStar ;
+
+
+(*
+   nodeUsesOpaque - return TRUE if node n uses an opaque type.
+*)
+
+PROCEDURE nodeUsesOpaque (n: node) : BOOLEAN ;
+BEGIN
+   CASE n^.kind OF
+
+   opaquecast  :  RETURN n^.opaquecastF.opaqueState.opaque |
+   funccall    :  RETURN n^.funccallF.opaqueState.opaque |
+   var         :  RETURN n^.varF.opaqueState.opaque |
+   array       :  RETURN n^.arrayF.opaqueState.opaque |
+   varparam    :  RETURN n^.varparamF.opaqueState.opaque |
+   param       :  RETURN n^.paramF.opaqueState.opaque |
+   pointer     :  RETURN n^.pointerF.opaqueState.opaque |
+   recordfield :  RETURN n^.recordfieldF.opaqueState.opaque |
+   componentref:  RETURN n^.componentrefF.opaqueState.opaque |
+   pointerref  :  RETURN n^.pointerrefF.opaqueState.opaque |
+   arrayref    :  RETURN n^.arrayrefF.opaqueState.opaque |
+   procedure   :  RETURN n^.procedureF.opaqueState.opaque |
+   proctype    :  RETURN n^.proctypeF.opaqueState.opaque |
+   deref       :  RETURN nodeUsesOpaque (n^.unaryF.arg)
+
+   ELSE
+      RETURN FALSE
+   END
+END nodeUsesOpaque ;
+
+
+(*
+   getNodeOpaqueVoidStar - return TRUE if the opaque type used by node n is a void *.
+*)
+
+PROCEDURE getNodeOpaqueVoidStar (n: node) : BOOLEAN ;
+BEGIN
+   assert (nodeUsesOpaque (n)) ;
+   CASE n^.kind OF
+
+   opaquecast  :  RETURN n^.opaquecastF.opaqueState.voidStar |
+   funccall    :  RETURN n^.funccallF.opaqueState.voidStar |
+   var         :  RETURN n^.varF.opaqueState.voidStar |
+   array       :  RETURN n^.arrayF.opaqueState.voidStar |
+   varparam    :  RETURN n^.varparamF.opaqueState.voidStar |
+   param       :  RETURN n^.paramF.opaqueState.voidStar |
+   pointer     :  RETURN n^.pointerF.opaqueState.voidStar |
+   recordfield :  RETURN n^.recordfieldF.opaqueState.voidStar |
+   componentref:  RETURN n^.componentrefF.opaqueState.voidStar |
+   pointerref  :  RETURN n^.pointerrefF.opaqueState.voidStar |
+   arrayref    :  RETURN n^.arrayrefF.opaqueState.voidStar |
+   procedure   :  RETURN n^.procedureF.opaqueState.voidStar |
+   proctype    :  RETURN n^.proctypeF.opaqueState.voidStar |
+   deref       :  RETURN FALSE
+
+   ELSE
+      HALT
+   END
+END getNodeOpaqueVoidStar ;
+
+
+(*
+   getOpaqueFlushNecessary - return TRUE if the value next differs from the opaque state.
+*)
+
+PROCEDURE getOpaqueFlushNecessary (state: opaqueCastState; next: BOOLEAN) : BOOLEAN ;
+BEGIN
+   RETURN state.opaque AND (state.voidStar # next)
+END getOpaqueFlushNecessary ;
+
+
+(*
+   getNodeOpaqueFlushNecessary - return TRUE if the value of next requires a cast.
+*)
+
+PROCEDURE getNodeOpaqueFlushNecessary (n: node; next: BOOLEAN) : BOOLEAN ;
+BEGIN
+   CASE n^.kind OF
+
+   opaquecast  :  RETURN getOpaqueFlushNecessary (n^.opaquecastF.opaqueState, next) |
+   funccall    :  RETURN getOpaqueFlushNecessary (n^.funccallF.opaqueState, next) |
+   var         :  RETURN getOpaqueFlushNecessary (n^.varF.opaqueState, next) |
+   array       :  RETURN getOpaqueFlushNecessary (n^.arrayF.opaqueState, next) |
+   varparam    :  RETURN getOpaqueFlushNecessary (n^.varparamF.opaqueState, next) |
+   param       :  RETURN getOpaqueFlushNecessary (n^.paramF.opaqueState, next) |
+   pointer     :  RETURN getOpaqueFlushNecessary (n^.pointerF.opaqueState, next) |
+   recordfield :  RETURN getOpaqueFlushNecessary (n^.recordfieldF.opaqueState, next) |
+   componentref:  RETURN getOpaqueFlushNecessary (n^.componentrefF.opaqueState, next) |
+   pointerref  :  RETURN getOpaqueFlushNecessary (n^.pointerrefF.opaqueState, next) |
+   arrayref    :  RETURN getOpaqueFlushNecessary (n^.arrayrefF.opaqueState, next) |
+   procedure   :  RETURN getOpaqueFlushNecessary (n^.procedureF.opaqueState, next) |
+   proctype    :  RETURN getOpaqueFlushNecessary (n^.proctypeF.opaqueState, next)
+
+   ELSE
+      RETURN FALSE
+   END
+END getNodeOpaqueFlushNecessary ;
+
+
+(*
+   makeOpaqueCast - wrap node n with an opaquecast node and assign
+                    voidstar into the new opaque state.
+*)
+
+PROCEDURE makeOpaqueCast (n: node; voidstar: BOOLEAN) : node ;
+VAR
+   o: node ;
+BEGIN
+   o := newNode (opaquecast) ;
+   WITH o^.opaquecastF DO
+      exp := n ;
+      initOpaqueCastState (opaqueState, TRUE, voidstar)
+   END ;
+   RETURN o
+END makeOpaqueCast ;
+
+
+(*
+   flushOpaque - perform a cast to voidstar (if necessary) and ignore the new
+                 node which could be created.
+*)
+
+PROCEDURE flushOpaque (p: pretty; n: node; toVoidStar: BOOLEAN) ;
+VAR
+   o: node ;
+BEGIN
+   o := castOpaque (p, n, toVoidStar)
+END flushOpaque ;
+
+
+(*
+   castOpaque - flushes the opaque type casts if necessary and changes the
+                voidstar boolean value.   If necessary it creates a opaquecast
+                and returns the new node otherwise return n.
+*)
+
+PROCEDURE castOpaque (p: pretty; n: node; toVoidStar: BOOLEAN) : node ;
+VAR
+   type: node ;
+BEGIN
+   IF getNodeOpaqueFlushNecessary (n, toVoidStar)
+   THEN
+      type := getType (n) ;
+      IF toVoidStar
+      THEN
+         (* next is true cast to void * opaque type.  *)
+         outText (p, 'static_cast<') ;
+         doTypeNameC (p, type) ;
+         noSpace (p) ;
+         outText (p, '> (') ;
+         doExprC (p, n) ;
+         outText (p, ')') ;
+         RETURN makeOpaqueCast (n, TRUE)
+      ELSE
+         (* next is false cast to __opaque opaque type.  *)
+         outText (p, 'static_cast<') ;
+         doTypeNameC (p, type) ;
+         outText (p, '__opaque') ;
+         noSpace (p) ;
+         outText (p, '> (') ;
+         doExprC (p, n) ;
+         outText (p, ')') ;
+         RETURN makeOpaqueCast (n, FALSE)
+      END
+   ELSE
+      IF debugOpaque
+      THEN
+         doP := p ;
+         dumpOpaqueState (n) ;
+         IF nodeUsesOpaque (n)
+         THEN
+            outText (p, ' /* no difference seen */ ')
+         ELSE
+            outText (p, ' /* no opaque used */ ')
+         END
+      END ;
+      doExprC (p, n)
+   END ;
+   RETURN n
+END castOpaque ;
+
+
+(*
+   isTypeOpaqueDefImp - returns TRUE if type is an opaque type by checking
+                        the def/imp pair of modules or fall back to the
+                        definition module.
+*)
+
+PROCEDURE isTypeOpaqueDefImp (type: node) : BOOLEAN ;
+VAR
+   scope,
+   def,
+   opaque: node ;
+BEGIN
+   IF type = NIL
+   THEN
+      RETURN FALSE
+   ELSIF isType (type)
+   THEN
+      scope := getScope (type) ;
+      IF isImp (scope)
+      THEN
+         def := lookupDef (getSymName (scope)) ;
+         IF def # NIL
+         THEN
+            (* Lookup the type name in the matching definition module.  *)
+            opaque := lookupExported (def, getSymName (type)) ;
+            RETURN (opaque # NIL) AND isType (opaque) AND isTypeOpaque (opaque)
+         END
+      ELSE
+         (* Otherwise just check the definition module.  *)
+         RETURN isTypeOpaque (type)
+      END
+   END ;
+   RETURN FALSE
+END isTypeOpaqueDefImp ;
+
+
+(*
+   isParamVoidStar - return TRUE if the procedure or proctype opaque type
+                     parameter should be implemented as a (void * ).
+*)
+
+PROCEDURE isParamVoidStar (n: node) : BOOLEAN ;
+VAR
+   proc,
+   type: node ;
+BEGIN
+   proc := getScope (n) ;
+   assert (isProcedure (proc) OR isProcType (proc)) ;
+   type := getType (n) ;
+   RETURN isReturnVoidStar (proc, type)
+END isParamVoidStar ;
+
+
+(*
+   isRefVoidStar - returns TRUE if the ref node uses an opaque type which
+                   is represented as a (void * ).
+*)
+
+PROCEDURE isRefVoidStar (n: node) : BOOLEAN ;
+VAR
+   type: node ;
+BEGIN
+   type := getType (n) ;
+   IF (NOT isType (type)) OR (NOT isTypeOpaque (type))
+   THEN
+      (* We should finish the procedure as the ref does not use an opaque.  *)
+      RETURN TRUE
+   ELSE
+      (* We check whether the opaque type was declared in the implementation
+         module.  If it is declared in the implementation module then we
+         return FALSE.  *)
+      RETURN NOT isDeclInImp (type)
+   END
+END isRefVoidStar ;
+
+
+(*
+   isReturnVoidStar - return TRUE if the procedure or proctype opaque type
+                      return type should be implemented as a (void * ).
+*)
+
+PROCEDURE isReturnVoidStar (proc, type: node) : BOOLEAN ;
+VAR
+   def : node ;
+BEGIN
+   assert (isProcedure (proc) OR isProcType (proc)) ;
+   IF isExported (proc)
+   THEN
+      RETURN TRUE
+   ELSE
+      (* Not exported therefore local, we check whether the opaque type
+         was declared in the implementation module.  *)
+      IF isImp (currentModule)
+      THEN
+         IF isType (type)
+         THEN
+            RETURN NOT isDeclInImp (type)
+         ELSE
+            RETURN FALSE
+         END
+      ELSE
+         (* Always use void * in .def modules.  *)
+         RETURN TRUE
+      END
+   END
+END isReturnVoidStar ;
+
+
+(*
+   isVarVoidStar - return TRUE if the variable using an opaque type should
+                   be implemented as a (void * ).
+*)
+
+PROCEDURE isVarVoidStar (n: node) : BOOLEAN ;
+VAR
+   type: node ;
+BEGIN
+   assert (isVar (n)) ;
+   type := getType (n) ;
+   IF (NOT isType (type)) OR (NOT isTypeOpaque (type))
+   THEN
+      (* We should finish the procedure as the variable does not use an opaque.  *)
+      RETURN TRUE
+   ELSIF isExported (n)
+   THEN
+      (* Exported variables using an opaque type will always be implemented
+         with a (void * ).  *)
+      RETURN TRUE
+   ELSE
+      (* Not exported therefore static to the module (local or global non exported
+         variable), we check whether the opaque type was declared in the
+         implementation module.  If it is declared in the implementation module
+         then we return FALSE.  *)
+      RETURN NOT isDeclInImp (type)
+   END
+END isVarVoidStar ;
+
+
+(*
+   initNodeOpaqueState - initialize the node opaque state.
+*)
+
+PROCEDURE initNodeOpaqueState (n: node) ;
+VAR
+   type: node ;
+BEGIN
+   CASE n^.kind OF
+
+   opaquecast  :  |  (* This must be done when the cast direction is known.  *)
+   funccall    :  assignNodeOpaqueCastState (n, getFunction (n)) |
+   var         :  type := getType (n) ;
+                  IF n^.varF.isParameter OR n^.varF.isVarParameter
+                  THEN
+                     (* If the variable is really a parameter then it uses
+                        the state of the parameter.  *)
+                     initNodeOpaqueCastState (n, isTypeOpaqueDefImp (type),
+                                              isParamVoidStar (n))
+                  ELSE
+                     initNodeOpaqueCastState (n, isTypeOpaqueDefImp (type),
+                                              isVarVoidStar (n))
+                  END  |
+   array       :  type := getType (n) ;
+                  initNodeOpaqueCastState (n, isTypeOpaqueDefImp (type),
+                                           isExported (n)) |
+   varparam,
+   param       :  assert (isProcedure (getScope (n)) OR isProcType (getScope (n))) ;
+                  type := getType (n) ;
+                  initNodeOpaqueCastState (n, isTypeOpaqueDefImp (type),
+                                           isParamVoidStar (n)) |
+   componentref,
+   pointerref,
+   pointer,
+   recordfield,
+   arrayref    :  type := getType (n) ;
+                  (* In the future this should be revisited.  *)
+                  initNodeOpaqueCastState (n, isTypeOpaqueDefImp (type),
+                                           isRefVoidStar (n)) |
+                          (* For the moment treat as never exported.  *)
+   proctype,
+   procedure   :  (* We only consider the return type for a procedure or proctype.
+                     The parameters and local vars are handled separately (see
+                     above).  *)
+                  type := getType (n) ;
+                  IF type = NIL
+                  THEN
+                     (* No return type, therefore no opaque type used.  *)
+                     initNodeOpaqueCastState (n, FALSE, FALSE)
+                  ELSE
+                     (* Init state from the return type.  Is type an opaque type?
+                        Is the opaque type declared in this module?  *)
+                     initNodeOpaqueCastState (n, isTypeOpaqueDefImp (type),
+                                              isReturnVoidStar (n, type))
+                  END |
+
+   ELSE
+   END ;
+   IF debugOpaque
+   THEN
+      dumpOpaqueState (n)
+   END
+END initNodeOpaqueState ;
+
+
+(*
+   assignNodeOpaqueCastState - copy the opaqueCastState from src into dest.
+*)
+
+PROCEDURE assignNodeOpaqueCastState (dest, src: node) ;
+BEGIN
+   IF nodeUsesOpaque (src)
+   THEN
+      initNodeOpaqueCastState (dest, TRUE, getNodeOpaqueVoidStar (src))
+   ELSE
+      initNodeOpaqueCastState (dest, FALSE, FALSE)
+   END
+END assignNodeOpaqueCastState ;
+
+
+(*
+   assignNodeOpaqueCastFalse - assign the voidstar field of dest to false.
+                               It assigns the opaque field of dest to the value
+                               of the src opaque field.
+*)
+
+PROCEDURE assignNodeOpaqueCastFalse (dest, src: node) ;
+BEGIN
+   IF nodeUsesOpaque (src)
+   THEN
+      initNodeOpaqueCastState (dest, TRUE, FALSE)
+   ELSE
+      initNodeOpaqueCastState (dest, FALSE, FALSE)
+   END
+END assignNodeOpaqueCastFalse ;
+
+
+(*
+   dumpOpaqueState -
+*)
+
+PROCEDURE dumpOpaqueState (n: node) ;
+VAR
+   o: node ;
+BEGIN
+   CASE n^.kind OF
+
+   opaquecast,
+   funccall,
+   var,
+   array,
+   varparam,
+   param,
+   pointer,
+   recordfield,
+   componentref,
+   arrayref,
+   procedure,
+   proctype    :  o := n
+
+   ELSE
+      o := NIL
+   END ;
+   IF o # NIL
+   THEN
+      outText (doP, "/* ") ;
+      doNameC (doP, o) ;
+      outText (doP, "  ") ;
+      CASE o^.kind OF
+
+      opaquecast  :  outText (doP, "opaquecast") |
+      funccall    :  outText (doP, "funccall") |
+      var         :  outText (doP, "var") |
+      array       :  outText (doP, "array") |
+      varparam    :  outText (doP, "varparam") |
+      param       :  outText (doP, "param") |
+      pointer     :  outText (doP, "pointer") |
+      recordfield :  outText (doP, "recordfield") |
+      componentref:  outText (doP, "componentref") |
+      pointerref  :  outText (doP, "pointerref") |
+      arrayref    :  outText (doP, "arrayref") |
+      procedure   :  outText (doP, "procedure") |
+      proctype    :  outText (doP, "proctype")
+
+      ELSE
+      END ;
+      IF nodeUsesOpaque (o)
+      THEN
+         IF getNodeOpaqueVoidStar (o)
+         THEN
+            outText (doP, " uses (void *) opaque")
+         ELSE
+            outText (doP, " uses opaque__full")
+         END ;
+      END ;
+      outText (doP, " */ \n")
+   END
+END dumpOpaqueState ;
 
 
 (*
@@ -7369,10 +8059,7 @@ BEGIN
             ELSE
                doFQDNameC (p, v, TRUE)
             END ;
-            IF isArray (ptype) AND isUnbounded (ptype)
-            THEN
-               outText (p, '_')
-            END ;
+            doParamTypeNameModifier (p, ptype, FALSE) ;
             doUsed (p, n^.paramF.isUsed) ;
             doHighC (p, ptype, i, n^.paramF.isUsed) ;
             IF c<t
@@ -7440,6 +8127,7 @@ BEGIN
             ELSE
                doFQDNameC (p, v, TRUE)
             END ;
+            doParamTypeNameModifier (p, ptype, TRUE) ;
             doUsed (p, n^.varparamF.isUsed) ;
             doHighC (p, ptype, i, n^.varparamF.isUsed) ;
             IF c<t
@@ -7508,9 +8196,61 @@ END doParameterC ;
 PROCEDURE doProcTypeC (p: pretty; t, n: node) ;
 BEGIN
    assert (isType (t)) ;
-   outputPartial (t) ;
-   doCompletePartialProcType (p, t, n)
+   IF isDeclType (t) AND isDeclType (n)
+   THEN
+      outputPartial (t) ;
+      doCompletePartialProcType (p, t, n)
+   END
 END doProcTypeC ;
+
+
+(*
+   isDeclInImp - returns TRUE if node type is declared as an opaque and
+                 is declared fully in the current implementation module.
+                 This should only be called if isType (type).  Its purpose
+                 is specific to a type checking whether it is an opaque type
+                 declared in the .def/.mod pair of the current imp module.
+*)
+
+PROCEDURE isDeclInImp (type: node) : BOOLEAN ;
+VAR
+   scope,
+   def  : node ;
+   name : Name ;
+BEGIN
+   assert (isType (type)) ;
+   scope := getScope (type) ;
+   IF isTypeOpaqueDefImp (type) AND isImp (currentModule)
+   THEN
+      name := getSymName (type) ;
+      IF name # NulName
+      THEN
+         (* Lookup the matching .def module.  *)
+         def := lookupDef (getSymName (currentModule)) ;
+         IF (def # NIL) AND ((def = scope) OR (currentModule = scope))
+         THEN
+            (* Return TRUE if the symbol has already been declared in the .def.  *)
+            RETURN lookupExported (def, name) # NIL
+         END
+      END
+   END ;
+   RETURN FALSE
+END isDeclInImp ;
+
+
+(*
+   doTypeNameModifier - adds the __opaque modifier to the type n provided
+                        it is an opaque type which is being declared in the
+                        implementation module.
+*)
+
+PROCEDURE doTypeNameModifier (p: pretty; n: node) ;
+BEGIN
+   IF isTypeOpaqueDefImp (n) AND isImp (currentModule)
+   THEN
+      outText (p, '__opaque')
+   END
+END doTypeNameModifier ;
 
 
 (*
@@ -7536,14 +8276,18 @@ BEGIN
             setNeedSpace (doP)
          END ;
          doTypeNameC (doP, n) ;
+         doTypeNameModifier (doP, n) ;
          outText (doP, ";\n\n")
       ELSIF isEnumeration (m)
       THEN
-         outText (doP, "typedef") ; setNeedSpace (doP) ;
-         doTypeC (doP, m, m) ;
-         setNeedSpace (doP) ;
-	 doTypeNameC (doP, n) ;
-         outText (doP, ";\n\n")
+         IF isDeclType (n)
+         THEN
+            outText (doP, "typedef") ; setNeedSpace (doP) ;
+            doTypeC (doP, m, m) ;
+            setNeedSpace (doP) ;
+            doTypeNameC (doP, n) ;
+            outText (doP, ";\n\n")
+         END
       ELSE
          outText (doP, "typedef") ; setNeedSpace (doP) ;
          doTypeC (doP, m, m) ;
@@ -7552,6 +8296,7 @@ BEGIN
             setNeedSpace (doP)
          END ;
          doTypeNameC (doP, n) ;
+         doTypeNameModifier (doP, n) ;
          outText (doP, ";\n\n")
       END
    END
@@ -7606,7 +8351,6 @@ BEGIN
       THEN
          IF NOT f^.recordfieldF.tag
          THEN
-            setNeedSpace (p) ;
             doRecordFieldC (p, f) ;
             outText (p, ";\n")
          END
@@ -7864,6 +8608,19 @@ END doSubrC ;
 *)
 
 PROCEDURE doCompletePartialProcType (p: pretty; t, n: node) ;
+BEGIN
+   IF isDeclType (t) AND isDeclType (n)
+   THEN
+      outputCompletePartialProcType (p, t, n)
+   END
+END doCompletePartialProcType ;
+
+
+(*
+   outputCompletePartialProcType -
+*)
+
+PROCEDURE outputCompletePartialProcType (p: pretty; t, n: node) ;
 VAR
    i, h: CARDINAL ;
    v, u: node ;
@@ -7871,7 +8628,9 @@ BEGIN
    assert (isProcType (n)) ;
    u := NIL ;
    outText (p, "typedef") ; setNeedSpace (p) ;
-   doTypeC (p, n^.proctypeF.returnType, u) ; setNeedSpace (p) ;
+   doTypeC (p, n^.proctypeF.returnType, u) ;
+   doOpaqueModifier (p, n) ;
+   setNeedSpace (p) ;
    outText (p, "(*") ;
    doFQNameC (p, t) ;
    outText (p, "_t) (") ;
@@ -7906,7 +8665,7 @@ BEGIN
    outText (p, "_p {") ; setNeedSpace (p) ;
    doFQNameC (p, t) ;
    outText (p, "_t proc; };\n\n")
-END doCompletePartialProcType ;
+END outputCompletePartialProcType ;
 
 
 (*
@@ -8092,6 +8851,11 @@ BEGIN
    m := NIL ;
    setNeedSpace (p) ;
    doTypeC (p, f^.recordfieldF.type, m) ;
+   IF isType (f^.recordfieldF.type) AND isDeclInImp (f^.recordfieldF.type)
+   THEN
+      outText (p, '__opaque')
+   END ;
+   setNeedSpace (p) ;
    doDNameC (p, f, FALSE)
 END doRecordFieldC ;
 
@@ -8298,14 +9062,7 @@ BEGIN
       doEnumerationC (p, n)
    ELSIF isType (n)
    THEN
-      doFQNameC (p, n) ;
-      setNeedSpace (p)
-      (* doTypeAliasC (p, n, n) *)  (* type, n, has a name, so we choose this over, m.  *)
-(*
-   ELSIF isProcType (n) OR isArray (n) OR isRecord (n)
-   THEN
-      HALT  (* n should have been simplified.  *)
-*)
+      doFQNameC (p, n)
    ELSIF isProcType (n)
    THEN
       doProcTypeC (p, n, m)
@@ -8408,8 +9165,7 @@ BEGIN
    THEN
       doSubrangeC (p, n)
    ELSE
-      print (p, "is type unknown required\n") ;
-      stop
+      print (p, "is type unknown required\n")
    END
 END doTypeNameC ;
 
@@ -8430,32 +9186,70 @@ END isExternal ;
 
 
 (*
-   doVarC -
+   doOpaqueModifier - adds postfix __opaque providing n uses an opaque type which is
+                      not represented by ( void * ).  n is a non type node which might
+                      be using an opaque type.  For example a var or param node.
+*)
+
+PROCEDURE doOpaqueModifier (p: pretty; n: node) ;
+BEGIN
+   assert (NOT isType (n)) ;
+   IF isImp (getCurrentModule ()) AND nodeUsesOpaque (n) AND (NOT getNodeOpaqueVoidStar (n))
+   THEN
+      outText (doP, '__opaque')
+   END
+END doOpaqueModifier ;
+
+
+(*
+   doDeclareVarC -
+*)
+
+PROCEDURE doDeclareVarC (n: node) ;
+VAR
+   type,
+   s   : node ;
+BEGIN
+   s := NIL ;
+   type := getType (n) ;
+   doTypeC (doP, type, s) ;
+   doOpaqueModifier (doP, n) ;
+   setNeedSpace (doP) ;
+   doFQDNameC (doP, n, FALSE) ;
+   print (doP, ";\n")
+END doDeclareVarC ;
+
+
+(*
+   doVarC - output a variable declaration.  Note that we do not generate
+            a declaration if we are translating the implementation module
+            and a variable is exported as the variable will be in the .h
+            file to avoid all -Wodr issues.
 *)
 
 PROCEDURE doVarC (n: node) ;
-VAR
-   s: node ;
 BEGIN
    IF isDef (getMainModule ())
    THEN
-      print (doP, "EXTERN") ; setNeedSpace (doP)
+      print (doP, "EXTERN") ; setNeedSpace (doP) ;
+      doDeclareVarC (n)
    ELSIF (NOT isExported (n)) AND (NOT isLocal (n))
    THEN
-      print (doP, "static") ; setNeedSpace (doP)
+      print (doP, "static") ; setNeedSpace (doP) ;
+      doDeclareVarC (n)
    ELSIF getExtendedOpaque ()
    THEN
+      (* --fixme-- need to revisit extended opaque.  *)
       IF isExternal (n)
       THEN
          (* different module declared this variable, therefore it is extern.  *)
          print (doP, "extern") ; setNeedSpace (doP)
-      END
-   END ;
-   s := NIL ;
-   doTypeC (doP, getType (n), s) ;
-   setNeedSpace (doP) ;
-   doFQDNameC (doP, n, FALSE) ;
-   print (doP, ";\n")
+      END ;
+      doDeclareVarC (n)
+   ELSIF isLocal (n)
+   THEN
+      doDeclareVarC (n)
+   END
 END doVarC ;
 
 
@@ -8507,10 +9301,17 @@ END doProcedureComment ;
 
 PROCEDURE doProcedureHeadingC (n: node; prototype: BOOLEAN) ;
 VAR
+   s   : String ;
    i, h: CARDINAL ;
    p, q: node ;
 BEGIN
    assert (isProcedure (n)) ;
+   s := getFQstring (n) ;
+   IF EqualArray (s, 'M2Quads_BuildAssignment')
+   THEN
+      localstop
+   END ;
+   s := KillString (s) ;
    noSpace (doP) ;
    IF isDef (getMainModule ())
    THEN
@@ -8525,7 +9326,15 @@ BEGIN
       outText (doP, "static") ; setNeedSpace (doP)
    END ;
    q := NIL ;
-   doTypeC (doP, n^.procedureF.returnType, q) ; setNeedSpace (doP) ;
+   doTypeC (doP, n^.procedureF.returnType, q) ;
+   (*
+   IF NOT isExported (n)
+   THEN
+      doTypeNameModifier (doP, n^.procedureF.returnType)
+   END ;
+   *)
+   doOpaqueModifier (doP, n) ;
+   setNeedSpace (doP) ;
    doFQDNameC (doP, n, FALSE) ;
    setNeedSpace (doP) ;
    outText (doP, "(") ;
@@ -9301,18 +10110,26 @@ END doAfterCommentC ;
 *)
 
 PROCEDURE doReturnC (p: pretty; s: node) ;
+VAR
+   type: node ;
 BEGIN
    assert (isReturn (s)) ;
    doCommentC (p, s^.returnF.returnComment.body) ;
    outText (p, "return") ;
-   IF s^.returnF.scope#NIL
+   IF (s^.returnF.scope#NIL) AND (s^.returnF.exp#NIL)
    THEN
       setNeedSpace (p) ;
       IF (NOT isProcedure (s^.returnF.scope)) OR (getType (s^.returnF.scope)=NIL)
       THEN
          metaError1 ('{%1DMad} has no return type', s^.returnF.scope) ;
       ELSE
-         doExprCastC (p, s^.returnF.exp, getType (s^.returnF.scope))
+         IF isProcedure (s^.returnF.scope) AND nodeUsesOpaque (s^.returnF.scope)
+         THEN
+            forceCastOpaque (p, s^.returnF.scope, s^.returnF.exp,
+                             getNodeOpaqueVoidStar (s^.returnF.scope))
+         ELSE
+            doExprCastC (p, s^.returnF.exp, getType (s^.returnF.scope))
+         END
       END
    END ;
    outText (p, ";") ;
@@ -9372,7 +10189,7 @@ BEGIN
          (* potentially a cast is required.  *)
          IF isPointer (type) OR (type = addressN)
          THEN
-            outText (p, 'reinterpret_cast<') ;
+            outText (p, 'static_cast<') ;
             doTypeNameC (p, type) ;
             noSpace (p) ;
             outText (p, '> (') ;
@@ -9413,6 +10230,80 @@ END requiresUnpackProc ;
 
 
 (*
+   forceCastOpaque -
+*)
+
+PROCEDURE forceCastOpaque (p: pretty; des, expr: node; toVoidStar: BOOLEAN) ;
+BEGIN
+   IF nodeUsesOpaque (expr)
+   THEN
+      flushOpaque (p, expr, getNodeOpaqueVoidStar (des))
+   ELSE
+      forceReintCastOpaque (p, des, expr, toVoidStar)
+   END
+END forceCastOpaque ;
+
+
+(*
+   forceReintCastOpaque -
+*)
+
+PROCEDURE forceReintCastOpaque (p: pretty; des, expr: node; toVoidStar: BOOLEAN) ;
+VAR
+   type: node ;
+BEGIN
+   type := getType (des) ;
+   IF toVoidStar
+   THEN
+      (* next is true cast to void * opaque type.  *)
+      outText (p, 'static_cast<') ;
+      doTypeNameC (p, type) ;
+      noSpace (p) ;
+      outText (p, '> (') ;
+      doExprC (p, expr) ;
+      outText (p, ')')
+   ELSE
+      (* next is false cast to __opaque opaque type.  *)
+      outText (p, 'static_cast<') ;
+      doTypeNameC (p, type) ;
+      outText (p, '__opaque') ;
+      noSpace (p) ;
+      outText (p, '> (') ;
+      doExprC (p, expr) ;
+      outText (p, ')') ;
+   END
+END forceReintCastOpaque ;
+
+
+(*
+   doUnConstCastUnbounded - if node n type is an unbounded array then
+                            use const_cast to remove the const parameter
+                            to allow the unbounded array to be modified.
+*)
+
+PROCEDURE doUnConstCastUnbounded (p: pretty; n: node) ;
+VAR
+   type, v: node ;
+BEGIN
+   IF isArrayRef (n)
+   THEN
+      IF isVar (n^.arrayrefF.array)
+      THEN
+         v := n^.arrayrefF.array ;
+         IF (v^.varF.isParameter OR v^.varF.isVarParameter) AND
+	    isUnbounded (getType (v))
+         THEN
+            type := getType (v) ;
+            outText (p, " /* const_cast<") ;
+            doTypeNameC (p, type) ;
+            outText (p, "> is needed */ ") ;
+         END
+      END
+   END
+END doUnConstCastUnbounded ;
+
+
+(*
    doAssignmentC -
 *)
 
@@ -9420,11 +10311,35 @@ PROCEDURE doAssignmentC (p: pretty; s: node) ;
 BEGIN
    assert (isAssignment (s)) ;
    doCommentC (p, s^.assignmentF.assignComment.body) ;
-   doExprCup (p, s^.assignmentF.des, requiresUnpackProc (s)) ;
+   IF debugOpaque
+   THEN
+      outText (p, " /* des: */ ") ;
+      dumpOpaqueState (s^.assignmentF.des) ;
+      outText (p, " /* expr: */ ") ;
+      dumpOpaqueState (s^.assignmentF.expr)
+   END ;
+   s^.assignmentF.des := doExprCup (p, s^.assignmentF.des,
+                                    requiresUnpackProc (s), TRUE) ;
+   IF debugOpaque
+   THEN
+      outText (p, "\n /* after doExprCup des: */ ") ;
+      dumpOpaqueState (s^.assignmentF.des) ;
+      outText (p, "\n")
+   END ;
    setNeedSpace (p) ;
    outText (p, "=") ;
    setNeedSpace (p) ;
-   doExprCastC (p, s^.assignmentF.expr, getType (s^.assignmentF.des)) ;
+   IF nodeUsesOpaque (s^.assignmentF.des)
+   THEN
+      forceCastOpaque (p, s^.assignmentF.des, s^.assignmentF.expr,
+                       getNodeOpaqueVoidStar (s^.assignmentF.des))
+   ELSE
+      IF debugOpaque
+      THEN
+         outText (p, " /* no opaque des seen */ ")
+      END ;
+      doExprCastC (p, s^.assignmentF.expr, getType (s^.assignmentF.des))
+   END ;
    outText (p, ";") ;
    doAfterCommentC (p, s^.assignmentF.assignComment.after)
 END doAssignmentC ;
@@ -10058,11 +10973,11 @@ PROCEDURE doAdrExprC (p: pretty; n: node) ;
 BEGIN
    IF isDeref (n)
    THEN
-      (* (* no point in issuing & ( * n )  *) *)
+      (* No point in issuing & ( * n ).  *)
       doExprC (p, n^.unaryF.arg)
    ELSIF isVar (n) AND n^.varF.isVarParameter
    THEN
-      (* (* no point in issuing & ( * n )  *) *)
+      (* No point in issuing & ( * n ).  *)
       doFQNameC (p, n)
    ELSE
       outText (p, '&') ;
@@ -10129,7 +11044,7 @@ BEGIN
       THEN
          IF isString (actual) AND (skipType (ft) = addressN)
          THEN
-            outText (p, "const_cast<void*> (reinterpret_cast<const void*> (") ;
+            outText (p, "const_cast<void*> (static_cast<const void*> (") ;
 	    RETURN 2
          ELSIF isPointer (skipType (ft)) OR (skipType (ft) = addressN)
          THEN
@@ -10233,6 +11148,42 @@ END isDefForCNode ;
 
 
 (*
+   doFuncVarParam - detect whether the formal uses an opaque and ensure that the address of
+                    the actual parameter is cast to the formal type.
+*)
+
+PROCEDURE doFuncVarParam (p: pretty; actual, formal: node) ;
+VAR
+   type: node ;
+BEGIN
+   IF nodeUsesOpaque (formal) AND
+      getNodeOpaqueFlushNecessary (actual, getNodeOpaqueVoidStar (formal))
+   THEN
+      type := getType (formal) ;
+      outText (p, 'reinterpret_cast<') ;
+      IF getNodeOpaqueVoidStar (formal)
+      THEN
+         doTypeNameC (p, type) ;
+         setNeedSpace (p) ;
+         outText (p, '*> (&') ;
+         doExprC (p, actual) ;
+         outText (p, ')') ;
+         actual := makeOpaqueCast (actual, TRUE)
+      ELSE
+         doTypeNameC (p, type) ;
+         noSpace (p) ;
+         outText (p, '__opaque *> (&') ;
+         doExprC (p, actual) ;
+         outText (p, ')') ;
+         actual := makeOpaqueCast (actual, FALSE)
+      END
+   ELSE
+      doAdrExprC (p, actual)
+   END
+END doFuncVarParam ;
+
+
+(*
    doFuncParamC -
 *)
 
@@ -10283,14 +11234,22 @@ BEGIN
                doCastC (p, getType (formal), actual)
             END
          ELSE
-            lbr := checkSystemCast (p, actual, formal) ;
             IF isVarParam (formal)
             THEN
-               doAdrExprC (p, actual)
+               lbr := checkSystemCast (p, actual, formal) ;
+               doFuncVarParam (p, actual, formal) ;
+               emitN (p, ")", lbr)
             ELSE
-               doExprC (p, actual)
-            END ;
-            emitN (p, ")", lbr)
+               IF nodeUsesOpaque (formal)
+               THEN
+                  forceCastOpaque (p, formal, actual,
+                                   getNodeOpaqueVoidStar (formal))
+               ELSE
+                  lbr := checkSystemCast (p, actual, formal) ;
+                  doExprC (p, actual) ;
+                  emitN (p, ")", lbr)
+               END
+            END
          END
       END
    END
@@ -10442,22 +11401,20 @@ BEGIN
    THEN
       (* & and * cancel each other out.  *)
       outTextN (p, getSymName (n))   (* --fixme-- does the caller need to cast it?  *)
-   ELSE
-      IF isString (n)
+   ELSIF isString (n) OR (isArray (getType (n)) AND isUnbounded (getType (n)))
+   THEN
+      IF lang = ansiCP
       THEN
-         IF lang = ansiCP
-         THEN
-            outText (p, "const_cast<void*> (reinterpret_cast<const void*>") ;
-            outText (p, "(") ;
-            doExprC (p, n) ;
-            outText (p, "))")
-         ELSE
-            doExprC (p, n)
-         END
+         outText (p, "const_cast<void*> (static_cast<const void*>") ;
+         outText (p, "(") ;
+         doExprC (p, n) ;
+         outText (p, "))")
       ELSE
-         outText (p, "&") ;
          doExprC (p, n)
       END
+   ELSE
+      outText (p, "&") ;
+      doExprC (p, n)
    END
 END doAdrArgC ;
 
@@ -11171,6 +12128,23 @@ END doConvertSC ;
 
 
 (*
+   getFunction - return the function associate with funccall node n.
+*)
+
+PROCEDURE getFunction (n: node) : node ;
+BEGIN
+   assert (isFuncCall (n)) ;
+   CASE n^.kind OF
+
+   funccall:  RETURN n^.funccallF.function
+
+   ELSE
+      HALT
+   END
+END getFunction ;
+
+
+(*
    getFuncFromExpr -
 *)
 
@@ -11701,7 +12675,9 @@ BEGIN
 END doStatementsC ;
 
 
-PROCEDURE stop ; END stop ;
+PROCEDURE localstop ;
+END localstop ;
+
 
 (*
    doLocalVarC -
@@ -11711,7 +12687,6 @@ PROCEDURE doLocalVarC (p: pretty; s: scopeT) ;
 BEGIN
    includeVarProcedure (s) ;
    debugLists ;
-
    topologicallyOut (doConstC, doTypesC, doVarC,
                      outputPartial,
                      doNone, doCompletePartialC, doNone)
@@ -13912,13 +14887,9 @@ END dumpQ ;
 *)
 
 PROCEDURE dumpLists ;
-VAR
-   m: String ;
 BEGIN
-   IF getDebugTopological ()
+   IF getDebugTopological () AND FALSE
    THEN
-      m := Sprintf0 (InitString ('\n')) ;
-      m := KillString (WriteS (StdOut, m)) ;
       dumpQ ('todo', globalGroup^.todoQ) ;
       dumpQ ('partial', globalGroup^.partialQ) ;
       dumpQ ('done', globalGroup^.doneQ)
@@ -14099,7 +15070,7 @@ BEGIN
       IF tryComplete (d, c, t, v)
       THEN
          alists.removeItemFromList (globalGroup^.todoQ, d) ;
-	 alists.includeItemIntoList (globalGroup^.doneQ, d) ;
+         addDone (d) ;
          i := 1
       ELSIF tryPartial (d, pt)
       THEN
@@ -14130,7 +15101,7 @@ BEGIN
       IF tryCompleteFromPartial (d, t)
       THEN
          alists.removeItemFromList (globalGroup^.partialQ, d) ;
-         alists.includeItemIntoList (globalGroup^.doneQ, d) ;
+         addDone (d) ;
          i := 1 ;
          DEC (n)
       ELSE
@@ -14144,7 +15115,7 @@ END tryOutputPartial ;
    debugList -
 *)
 
-PROCEDURE debugList (a: ARRAY OF CHAR; l: alist) ;
+PROCEDURE debugList (listName, symName: ARRAY OF CHAR; l: alist) ;
 VAR
    i, h: CARDINAL ;
    n   : node ;
@@ -14152,12 +15123,10 @@ BEGIN
    h := alists.noOfItemsInList (l) ;
    IF h>0
    THEN
-      outText (doP, a) ;
-      outText (doP, ' still contains node(s)\n') ;
       i := 1 ;
       REPEAT
          n := alists.getItemFromList (l, i) ;
-         dbg (n) ;
+         dbg (listName, symName, n) ;
          INC (i)
       UNTIL i > h
    END
@@ -14172,8 +15141,9 @@ PROCEDURE debugLists ;
 BEGIN
    IF getDebugTopological ()
    THEN
-      debugList ('todo', globalGroup^.todoQ) ;
-      debugList ('partial', globalGroup^.partialQ)
+      debugList ('todo', 'decl_node', globalGroup^.todoQ) ;
+      debugList ('partial', 'decl_node', globalGroup^.partialQ) ;
+      debugList ('done', 'decl_node', globalGroup^.doneQ)
    END
 END debugLists ;
 
@@ -14255,9 +15225,11 @@ BEGIN
    doFQNameC (p, n) ;
    outText (p, "_init") ;
    setNeedSpace (p) ;
-   outText (p, "(__attribute__((unused)) int argc") ;
-   outText (p, ",__attribute__((unused)) char *argv[]") ;
-   outText (p, ",__attribute__((unused)) char *envp[])\n");
+   outText (p, "(__attribute__((unused)) int argc,") ;
+   setNeedSpace (p) ;
+   outText (p, "__attribute__((unused)) char *argv[],") ;
+   setNeedSpace (p) ;
+   outText (p, "__attribute__((unused)) char *envp[])\n");
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.impF.beginStatements) ;
    p := outKc (p, "}\n") ;
@@ -14269,9 +15241,11 @@ BEGIN
    doFQNameC (p, n) ;
    outText (p, "_fini") ;
    setNeedSpace (p) ;
-   outText (p, "(__attribute__((unused)) int argc") ;
-   outText (p, ",__attribute__((unused)) char *argv[]") ;
-   outText (p, ",__attribute__((unused)) char *envp[])\n");
+   outText (p, "(__attribute__((unused)) int argc,") ;
+   setNeedSpace (p) ;
+   outText (p, "__attribute__((unused)) char *argv[],") ;
+   setNeedSpace (p) ;
+   outText (p, "__attribute__((unused)) char *envp[])\n");
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.impF.finallyStatements) ;
    p := outKc (p, "}\n")
@@ -14341,8 +15315,10 @@ BEGIN
    outText (p, "_init") ;
    setNeedSpace (p) ;
    outText (p, "(__attribute__((unused)) int argc,") ;
-   outText (p, " __attribute__((unused)) char *argv[]") ;
-   outText (p, " __attribute__((unused)) char *envp[])\n") ;
+   setNeedSpace (p) ;
+   outText (p, "__attribute__((unused)) char *argv[],") ;
+   setNeedSpace (p) ;
+   outText (p, "__attribute__((unused)) char *envp[])\n") ;
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.impF.beginStatements) ;
    p := outKc (p, "}\n") ;
@@ -14355,8 +15331,10 @@ BEGIN
    outText (p, "_fini") ;
    setNeedSpace (p) ;
    outText (p, "(__attribute__((unused)) int argc,") ;
-   outText (p, " __attribute__((unused)) char *argv[]") ;
-   outText (p, " __attribute__((unused)) char *envp[])\n") ;
+   setNeedSpace (p) ;
+   outText (p, "__attribute__((unused)) char *argv[],") ;
+   setNeedSpace (p) ;
+   outText (p, "__attribute__((unused)) char *envp[])\n") ;
    p := outKc (p, "{\n") ;
    doStatementsC (p, n^.impF.finallyStatements) ;
    p := outKc (p, "}\n") ;
@@ -14543,9 +15521,13 @@ BEGIN
       foreachDefModuleDo (runPrototypeDefC)
    ELSE
       s := InitStringCharStar (keyToCharStar (getSymName (n))) ;
-      (* we don't want to include the .h file for this implementation module.  *)
-      print (p, "#define _") ; prints (p, s) ; print (p, "_H\n") ;
+      (* Inform the source that this code belongs to the implementation module.  *)
       print (p, "#define _") ; prints (p, s) ; print (p, "_C\n\n") ;
+      (* Include the definition module for any opaque types.  *)
+      print (doP, '#include "') ;
+      prints (p, getHPrefix ()) ;
+      prints (p, s) ;
+      print (p, '.h"\n') ;
       s := KillString (s) ;
 
       doP := p ;
@@ -15442,8 +16424,15 @@ END setLangM2 ;
 *)
 
 PROCEDURE addDone (n: node) ;
+VAR
+   s: String ;
 BEGIN
-   alists.includeItemIntoList (globalGroup^.doneQ, n)
+   alists.includeItemIntoList (globalGroup^.doneQ, n) ;
+   IF isVar (n) OR isParameter (n)
+   THEN
+      initNodeOpaqueState (n)
+   END ;
+   debugLists
 END addDone ;
 
 
@@ -15464,6 +16453,11 @@ BEGIN
       metaError1 ('cyclic dependancy found between another module using {%1ad} from the definition module of the implementation main being compiled, use the --extended-opaque option to compile', n) ;
       flushErrors ;
       errorAbort0 ('terminating compilation')
+   ELSIF isType (n) AND isDeclInImp (n)
+   THEN
+      (* Ignore an opaque type which is declared in this implementation module as it
+         will be fully declared in C/C++ with the __opaque postfix.  Whereas the
+         void * non prefixed typedef will be declared in the .h file.  *)
    ELSE
       addDone (n)
    END
@@ -15704,7 +16698,7 @@ END doDbg ;
    dbg -
 *)
 
-PROCEDURE dbg (n: node) ;
+PROCEDURE dbg (listName, symName: ARRAY OF CHAR; n: node) ;
 VAR
    l: alist ;
    o: pretty ;
@@ -15720,10 +16714,20 @@ BEGIN
    l := alists.initList () ;
    alists.includeItemIntoList (l, n) ;
    i := 1 ;
-   out1 ("dbg (%s)\n", n) ;
    REPEAT
       n := alists.getItemFromList (l, i) ;
-      doDbg (l, n) ;
+      IF isType (n)
+      THEN
+         s := getFQstring (n) ;
+         IF EqualArray (s, symName)
+         THEN
+            out0 ("list ") ;
+            out0 (listName) ;
+            out0 (": ") ;
+            doDbg (l, n)
+         END ;
+         s := KillString (s)
+      END ;
       INC (i)
    UNTIL i>alists.noOfItemsInList (l) ;
    doP := o ;
@@ -16658,6 +17662,7 @@ BEGIN
    assert (isFuncCall (n)) ;
    m := makeFuncCall (dupExpr (n^.funccallF.function), dupExpr (n^.funccallF.args)) ;
    m^.funccallF.type := n^.funccallF.type ;
+   assignNodeOpaqueCastState (m, n) ;
    RETURN m
 END dupFunccall ;
 

@@ -1360,6 +1360,31 @@ package body Ch5 is
       else
          if Style_Check then
             Style.Check_Xtra_Parens (Cond);
+
+            --  When the condition is an operator then examine parentheses
+            --  surrounding the condition's operands - taking care to avoid
+            --  flagging operands which themselves are operators since they
+            --  may be required for resolution or precedence.
+
+            if Nkind (Cond) in N_Op
+                             | N_Membership_Test
+                             | N_Short_Circuit
+              and then Nkind (Right_Opnd (Cond)) not in N_Op
+                                                      | N_Membership_Test
+                                                      | N_Short_Circuit
+            then
+               Style.Check_Xtra_Parens (Right_Opnd (Cond));
+            end if;
+
+            if Nkind (Cond) in N_Binary_Op
+                             | N_Membership_Test
+                             | N_Short_Circuit
+              and then Nkind (Left_Opnd (Cond)) not in N_Op
+                                                     | N_Membership_Test
+                                                     | N_Short_Circuit
+            then
+               Style.Check_Xtra_Parens (Left_Opnd (Cond));
+            end if;
          end if;
 
          --  And return the result

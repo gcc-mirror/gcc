@@ -1574,6 +1574,7 @@ OBJS = \
 	ira-lives.o \
 	jump.o \
 	langhooks.o \
+	late-combine.o \
 	lcm.o \
 	lists.o \
 	loop-doloop.o \
@@ -1700,6 +1701,7 @@ OBJS = \
 	ubsan.o \
 	sanopt.o \
 	sancov.o \
+	simple-diagnostic-path.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
 	tree-cfgcleanup.o \
@@ -1709,7 +1711,6 @@ OBJS = \
 	tree-dfa.o \
 	tree-diagnostic.o \
 	tree-diagnostic-client-data-hooks.o \
-	tree-diagnostic-path.o \
 	tree-dump.o \
 	tree-eh.o \
 	tree-emutls.o \
@@ -1823,6 +1824,9 @@ OBJS = \
 OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	diagnostic-format-json.o \
 	diagnostic-format-sarif.o \
+	diagnostic-global-context.o \
+	diagnostic-macro-unwinding.o \
+	diagnostic-path.o \
 	diagnostic-show-locus.o \
 	edit-context.o \
 	pretty-print.o intl.o \
@@ -1830,6 +1834,8 @@ OBJS-libcommon = diagnostic-spec.o diagnostic.o diagnostic-color.o \
 	sbitmap.o \
 	vec.o input.o hash-table.o ggc-none.o memory-block.o \
 	selftest.o selftest-diagnostic.o sort.o \
+	selftest-diagnostic-path.o \
+	selftest-logical-location.o \
 	text-art/box-drawing.o \
 	text-art/canvas.o \
 	text-art/ruler.o \

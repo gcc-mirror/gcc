@@ -63,6 +63,9 @@ OPTAB_CX(fractuns_optab, "fractuns$Q$b$I$a2")
 OPTAB_CL(satfract_optab, "satfract$b$Q$a2", SAT_FRACT, "satfract", gen_satfract_conv_libfunc)
 OPTAB_CL(satfractuns_optab, "satfractuns$I$b$Q$a2", UNSIGNED_SAT_FRACT, "satfractuns", gen_satfractuns_conv_libfunc)
 
+OPTAB_CL(ustrunc_optab, "ustrunc$b$a2", US_TRUNCATE, "ustrunc", NULL)
+OPTAB_CL(sstrunc_optab, "sstrunc$b$a2", SS_TRUNCATE, "sstrunc", NULL)
+
 OPTAB_CD(sfixtrunc_optab, "fix_trunc$F$b$I$a2")
 OPTAB_CD(ufixtrunc_optab, "fixuns_trunc$F$b$I$a2")
 
@@ -352,6 +355,8 @@ OPTAB_D (fmod_optab, "fmod$a3")
 OPTAB_D (hypot_optab, "hypot$a3")
 OPTAB_D (ilogb_optab, "ilogb$a2")
 OPTAB_D (isinf_optab, "isinf$a2")
+OPTAB_D (isfinite_optab, "isfinite$a2")
+OPTAB_D (isnormal_optab, "isnormal$a2")
 OPTAB_D (issignaling_optab, "issignaling$a2")
 OPTAB_D (ldexp_optab, "ldexp$a3")
 OPTAB_D (log10_optab, "log10$a2")

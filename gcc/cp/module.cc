@@ -10142,7 +10142,7 @@ trees_in::tree_node (bool is_use)
       TREE_USED (res) = true;
 
       /* And for structured bindings also the underlying decl.  */
-      if (DECL_DECOMPOSITION_P (res) && DECL_DECOMP_BASE (res))
+      if (DECL_DECOMPOSITION_P (res) && !DECL_DECOMP_IS_BASE (res))
 	TREE_USED (DECL_DECOMP_BASE (res)) = true;
 
       if (DECL_CLONED_FUNCTION_P (res))
@@ -13253,8 +13253,12 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
       data->met_namespace = true;
       if (data->hash->add_namespace_entities (decl, data->partitions))
 	{
-	  /* It contains an exported thing, so it is exported.  */
-	  gcc_checking_assert (DECL_MODULE_PURVIEW_P (decl));
+	  /* It contains an exported thing, so it is exported.
+
+	     FIXME we have to set DECL_MODULE_PURVIEW_P instead of asserting
+	     that it is already set because of the c++/114683 issue with
+	     exported using-declarations; see do_nonmember_using_decl.  */
+	  DECL_MODULE_PURVIEW_P (decl) = true;
 	  DECL_MODULE_EXPORT_P (decl) = true;
 	}
 

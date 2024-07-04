@@ -876,7 +876,7 @@ find_conditions (struct function *fn)
     make_top_index (fnblocks, ctx.B1, ctx.top_index);
 
     /* Bin the Boolean expressions so that exprs[id] -> [x1, x2, ...].  */
-    hash_map<int_hash<unsigned, 0>, vec<basic_block>> exprs;
+    hash_map<int_hash<unsigned, 0>, auto_vec<basic_block>> exprs;
     for (basic_block b : fnblocks)
     {
 	const unsigned uid = condition_uid (fn, b);
@@ -2070,7 +2070,8 @@ pass_ipa_tree_profile::gate (function *)
      disabled.  */
   return (!in_lto_p && !flag_auto_profile
 	  && (flag_branch_probabilities || flag_test_coverage
-	      || profile_arc_flag || condition_coverage_flag));
+	      || profile_arc_flag || condition_coverage_flag)
+	  && !seen_error ());
 }
 
 } // anon namespace

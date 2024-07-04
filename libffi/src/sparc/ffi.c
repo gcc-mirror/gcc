@@ -286,6 +286,8 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
 	      void **avalue, void *closure)
 {
   size_t bytes = cif->bytes;
+  size_t i, nargs = cif->nargs;
+  ffi_type **arg_types = cif->arg_types;
 
   FFI_ASSERT (cif->abi == FFI_V8);
 
@@ -294,6 +296,20 @@ ffi_call_int (ffi_cif *cif, void (*fn)(void), void *rvalue,
   if (rvalue == NULL
       && (cif->flags & SPARC_FLAG_RET_MASK) == SPARC_RET_STRUCT)
     bytes += FFI_ALIGN (cif->rtype->size, 8);
+
+  /* If we have any structure arguments, make a copy so we are passing
+     by value.  */
+  for (i = 0; i < nargs; i++)
+    {
+      ffi_type *at = arg_types[i];
+      int size = at->size;
+      if (at->type == FFI_TYPE_STRUCT)
+        {
+          char *argcopy = alloca (size);
+          memcpy (argcopy, avalue[i], size);
+          avalue[i] = argcopy;
+        }
+    }
 
   ffi_call_v8(cif, fn, rvalue, avalue, -bytes, closure);
 }

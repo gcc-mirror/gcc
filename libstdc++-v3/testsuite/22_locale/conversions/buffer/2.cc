@@ -27,6 +27,7 @@ test01()
   struct Cvt : std::codecvt<char, char, std::mbstate_t> { };
   std::stringstream ss;
   std::wbuffer_convert<Cvt, char> cvt(ss.rdbuf());
+  // { dg-warning "deprecated" "" { target c++17 } 29 }
   auto p = ss.std::ios::rdbuf(&cvt);
   ss << "hello";
   VERIFY( ss.flush().good() );

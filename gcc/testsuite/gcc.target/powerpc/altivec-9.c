@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec -g" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* PR9564 */
 

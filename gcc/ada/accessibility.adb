@@ -398,7 +398,7 @@ package body Accessibility is
 
       --  Local variables
 
-      E   : Node_Id := Original_Node (Expr);
+      E   : Node_Id;
       Pre : Node_Id;
 
    --  Start of processing for Accessibility_Level
@@ -409,6 +409,17 @@ package body Accessibility is
 
       if Present (Param_Entity (Expr)) then
          E := Param_Entity (Expr);
+
+      --  Use the original node unless it is an unanalyzed identifier, as we
+      --  don't want to reason on unanalyzed expressions from predicates.
+
+      elsif Nkind (Original_Node (Expr)) /= N_Identifier
+        or else Analyzed (Original_Node (Expr))
+      then
+         E := Original_Node (Expr);
+
+      else
+         E := Expr;
       end if;
 
       --  Extract the entity
@@ -2227,7 +2238,11 @@ package body Accessibility is
                   --  that of the type.
 
                   elsif Ekind (Def_Ent) = E_Discriminant then
-                     return Scope_Depth (Scope (Def_Ent));
+                     return Scope_Depth
+                       (if Present (Full_View (Scope (Def_Ent))) then
+                           Full_View (Scope (Def_Ent))
+                        else
+                           Scope (Def_Ent));
                   end if;
                end if;
 

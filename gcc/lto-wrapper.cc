@@ -1361,11 +1361,11 @@ init_num_threads (void)
 void
 print_lto_docs_link ()
 {
-  bool print_url = global_dc->printer->url_format != URL_FORMAT_NONE;
+  bool print_url = global_dc->printer->supports_urls_p ();
   const char *url = global_dc->make_option_url (OPT_flto);
 
   pretty_printer pp;
-  pp.url_format = URL_FORMAT_DEFAULT;
+  pp.set_url_format (URL_FORMAT_DEFAULT);
   pp_string (&pp, "see the ");
   if (print_url)
     pp_begin_url (&pp, url);

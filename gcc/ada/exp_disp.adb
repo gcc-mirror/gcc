@@ -70,6 +70,7 @@ with Stringt;        use Stringt;
 with Strub;          use Strub;
 with SCIL_LL;        use SCIL_LL;
 with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
 
 package body Exp_Disp is
 
@@ -4598,6 +4599,10 @@ package body Exp_Disp is
       --    (2) External_Tag (combined with Internal_Tag) is used for object
       --        streaming and No_Tagged_Streams inhibits the generation of
       --        streams.
+      --  Instead of No_Tagged_Streams, which applies either to a single
+      --  type or to a declarative region, it is possible to use restriction
+      --  No_Streams, which prevents stream objects from being created in the
+      --  entire partition.
 
       Discard_Names : constant Boolean :=
         (Present (No_Tagged_Streams_Pragma (Typ))
@@ -5213,8 +5218,10 @@ package body Exp_Disp is
                             Chars => New_External_Name (Tname, 'A'));
             Full_Name : constant String_Id :=
                             Fully_Qualified_Name_String (First_Subtype (Typ));
-            Str1_Id   : String_Id;
-            Str2_Id   : String_Id;
+
+            Address_Image : RE_Id;
+            Str1_Id       : String_Id;
+            Str2_Id       : String_Id;
 
          begin
             --  Generate:
@@ -5236,7 +5243,17 @@ package body Exp_Disp is
             --    Exname : constant String :=
             --               Str1 & Address_Image (Tag) & Str2;
 
-            if RTE_Available (RE_Address_Image) then
+            --  We use Address_Image64 for Morello because Integer_Address
+            --  is 64-bit large even though Address is 128-bit large.
+
+            case System_Address_Size is
+               when 32     => Address_Image := RE_Address_Image32;
+               when 64     => Address_Image := RE_Address_Image64;
+               when 128    => Address_Image := RE_Address_Image64;
+               when others => raise Program_Error;
+            end case;
+
+            if RTE_Available (Address_Image) then
                Append_To (Result,
                  Make_Object_Declaration (Loc,
                    Defining_Identifier => Exname,
@@ -5252,7 +5269,7 @@ package body Exp_Disp is
                              Make_Function_Call (Loc,
                                Name =>
                                  New_Occurrence_Of
-                                   (RTE (RE_Address_Image), Loc),
+                                   (RTE (Address_Image), Loc),
                                Parameter_Associations => New_List (
                                  Unchecked_Convert_To (RTE (RE_Address),
                                    New_Occurrence_Of (DT_Ptr, Loc)))),
@@ -7561,11 +7578,7 @@ package body Exp_Disp is
             if Chars (Prim) = Name_uSize
               and then RTE_Record_Component_Available (RE_Size_Func)
             then
-               DT_Ptr := Node (First_Elmt (Access_Disp_Table (Tag_Typ)));
-               Append_To (L,
-                 Build_Set_Size_Function (Loc,
-                   Tag_Node  => New_Occurrence_Of (DT_Ptr, Loc),
-                   Size_Func => Prim));
+               Append_To (L, Build_Set_Size_Function (Loc, Tag_Typ, Prim));
             end if;
 
          else
@@ -7864,9 +7877,6 @@ package body Exp_Disp is
       Parent_Typ : constant Entity_Id := Etype (Typ);
       First_Prim : constant Elmt_Id := First_Elmt (Primitive_Operations (Typ));
       The_Tag    : constant Entity_Id := First_Tag_Component (Typ);
-
-      Adjusted  : Boolean := False;
-      Finalized : Boolean := False;
 
       Count_Prim : Nat;
       DT_Length  : Nat;
@@ -8195,14 +8205,6 @@ package body Exp_Disp is
             Validate_Position (Prim);
          end if;
 
-         if Chars (Prim) = Name_Finalize then
-            Finalized := True;
-         end if;
-
-         if Chars (Prim) = Name_Adjust then
-            Adjusted := True;
-         end if;
-
          --  An abstract operation cannot be declared in the private part for a
          --  visible abstract type, because it can't be overridden outside this
          --  package hierarchy. For explicit declarations this is checked at
@@ -8248,19 +8250,6 @@ package body Exp_Disp is
 
          Next_Elmt (Prim_Elmt);
       end loop;
-
-      --  Additional check
-
-      if Is_Controlled (Typ) then
-         if not Finalized then
-            Error_Msg_N
-              ("controlled type has no explicit Finalize method??", Typ);
-
-         elsif not Adjusted then
-            Error_Msg_N
-              ("controlled type has no explicit Adjust method??", Typ);
-         end if;
-      end if;
 
       --  Set the final size of the Dispatch Table
 
@@ -8740,6 +8729,10 @@ package body Exp_Disp is
 
          if Is_Predefined_Dispatching_Operation (Prim) then
             Write_Str ("(predefined) ");
+         end if;
+
+         if Is_Wrapper (Prim) then
+            Write_Str ("(wrapper) ");
          end if;
 
          --  Prefix the name of the primitive with its corresponding tagged

@@ -393,6 +393,21 @@ PROCEDURE MakeVar (tok: CARDINAL; VarName: Name) : CARDINAL ;
 
 
 (*
+   PutVarConditional - assign IsConditional to value.
+*)
+
+PROCEDURE PutVarConditional (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsVarConditional - return TRUE if the symbol is a var symbol
+                      containing the result of a boolean conditional.
+*)
+
+PROCEDURE IsVarConditional (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
    MakeRecord - makes a Record symbol with name RecordName.
 *)
 

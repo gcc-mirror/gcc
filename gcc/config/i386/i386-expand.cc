@@ -408,11 +408,13 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 				 : UNSPEC_GOT));
 	  op1 = gen_rtx_CONST (Pmode, op1);
 	  op1 = gen_const_mem (Pmode, op1);
-	  set_mem_alias_set (op1, ix86_GOT_alias_set ());
+	  set_mem_alias_set (op1, GOT_ALIAS_SET);
 	}
       else
 	{
+#if TARGET_PECOFF
 	  tmp = legitimize_pe_coff_symbol (op1, addend != NULL_RTX);
+
 	  if (tmp)
 	    {
 	      op1 = tmp;
@@ -420,6 +422,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 		break;
 	    }
 	  else
+#endif
 	    {
 	      op1 = operands[1];
 	      break;
@@ -477,12 +480,12 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	  /* dynamic-no-pic */
 	  if (MACHOPIC_INDIRECT)
 	    {
-	      rtx temp = (op0 && REG_P (op0) && mode == Pmode)
-			 ? op0 : gen_reg_rtx (Pmode);
-	      op1 = machopic_indirect_data_reference (op1, temp);
+	      tmp = (op0 && REG_P (op0) && mode == Pmode)
+		    ? op0 : gen_reg_rtx (Pmode);
+	      op1 = machopic_indirect_data_reference (op1, tmp);
 	      if (MACHOPIC_PURE)
 		op1 = machopic_legitimize_pic_address (op1, mode,
-						       temp == op1 ? 0 : temp);
+						       tmp == op1 ? 0 : tmp);
 	    }
 	  if (op0 != op1 && GET_CODE (op0) != MEM)
 	    {
@@ -537,9 +540,9 @@ ix86_expand_move (machine_mode mode, rtx operands[])
 	      op1 = validize_mem (force_const_mem (mode, op1));
 	      if (!register_operand (op0, mode))
 		{
-		  rtx temp = gen_reg_rtx (mode);
-		  emit_insn (gen_rtx_SET (temp, op1));
-		  emit_move_insn (op0, temp);
+		  tmp = gen_reg_rtx (mode);
+		  emit_insn (gen_rtx_SET (tmp, op1));
+		  emit_move_insn (op0, tmp);
 		  return;
 		}
 	    }
@@ -560,7 +563,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
       if (SUBREG_BYTE (op0) == 0)
 	{
 	  wide_int mask = wi::mask (64, true, 128);
-	  rtx tmp = immed_wide_int_const (mask, TImode);
+	  tmp = immed_wide_int_const (mask, TImode);
 	  op0 = SUBREG_REG (op0);
 	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
 	  if (mode == DFmode)
@@ -572,7 +575,7 @@ ix86_expand_move (machine_mode mode, rtx operands[])
       else if (SUBREG_BYTE (op0) == 8)
 	{
 	  wide_int mask = wi::mask (64, false, 128);
-	  rtx tmp = immed_wide_int_const (mask, TImode);
+	  tmp = immed_wide_int_const (mask, TImode);
 	  op0 = SUBREG_REG (op0);
 	  tmp = gen_rtx_AND (TImode, copy_rtx (op0), tmp);
 	  if (mode == DFmode)
@@ -1895,10 +1898,6 @@ ix86_split_convert_uns_si_sse (rtx operands[])
 
   emit_insn (gen_xorv4si3 (value, value, large));
 }
-
-static bool ix86_expand_vector_init_one_nonzero (bool mmx_ok,
-						 machine_mode mode, rtx target,
-						 rtx var, int one_var);
 
 /* Convert an unsigned DImode value into a DFmode, using only SSE.
    Expects the 64-bit DImode to be supplied in a pair of integral
@@ -11835,6 +11834,12 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 	      case CODE_FOR_avx_vmcmpv4sf3:
 	      case CODE_FOR_avx_cmpv2df3:
 	      case CODE_FOR_avx_cmpv4sf3:
+		if (CONST_INT_P (op) && IN_RANGE (INTVAL (op), 8, 31))
+		  {
+		    error ("'%s' needs isa option %s", d->name, "-mavx");
+		    return const0_rtx;
+		  }
+		/* FALLTHRU */
 	      case CODE_FOR_avx_cmpv4df3:
 	      case CODE_FOR_avx_cmpv8sf3:
 	      case CODE_FOR_avx512f_cmpv8df3_mask:
@@ -16118,7 +16123,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
    whose ONE_VAR element is VAR, and other elements are zero.  Return true
    if successful.  */
 
-static bool
+bool
 ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
 				     rtx target, rtx var, int one_var)
 {
@@ -23657,8 +23662,8 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
   if (GET_MODE_SIZE (vmode) == 64 && !TARGET_EVEX512)
     return false;
 
-  /* For HF mode vector, convert it to HI using subreg.  */
-  if (GET_MODE_INNER (vmode) == HFmode)
+  /* For HF and BF mode vector, convert it to HI using subreg.  */
+  if (GET_MODE_INNER (vmode) == HFmode || GET_MODE_INNER (vmode) == BFmode)
     {
       machine_mode orig_mode = vmode;
       vmode = mode_for_vector (HImode,
@@ -25570,34 +25575,39 @@ ix86_ternlog_idx (rtx op, rtx *args)
 
   switch (GET_CODE (op))
     {
+    case SUBREG:
+      if (!register_operand (op, GET_MODE (op)))
+	return -1;
+      /* FALLTHRU */
+
     case REG:
       if (!args[0])
 	{
 	  args[0] = op;
 	  return 0xf0;
 	}
-      if (REGNO (op) == REGNO (args[0]))
+      if (rtx_equal_p (op, args[0]))
 	return 0xf0;
       if (!args[1])
 	{
 	  args[1] = op;
 	  return 0xcc;
 	}
-      if (REGNO (op) == REGNO (args[1]))
+      if (rtx_equal_p (op, args[1]))
 	return 0xcc;
       if (!args[2])
 	{
 	  args[2] = op;
 	  return 0xaa;
 	}
-      if (REG_P (args[2]) && REGNO (op) == REGNO (args[2]))
+      if (rtx_equal_p (op, args[2]))
 	return 0xaa;
       return -1;
 
     case VEC_DUPLICATE:
       if (!bcst_mem_operand (op, GET_MODE (op)))
 	return -1;
-      /* FALLTHRU */
+      goto do_mem_operand;
 
     case MEM:
       if (!memory_operand (op, GET_MODE (op)))
@@ -25609,30 +25619,53 @@ ix86_ternlog_idx (rtx op, rtx *args)
       /* FALLTHRU */
 
     case CONST_VECTOR:
+do_mem_operand:
       if (!args[2])
 	{
 	  args[2] = op;
 	  return 0xaa;
 	}
       /* Maximum of one volatile memory reference per expression.  */
-      if (side_effects_p (op) && side_effects_p (args[2]))
+      if (side_effects_p (op))
 	return -1;
       if (rtx_equal_p (op, args[2]))
 	return 0xaa;
-      /* Check if one CONST_VECTOR is the ones-complement of the other.  */
+      /* Check if CONST_VECTOR is the ones-complement of args[2].  */
       if (GET_CODE (op) == CONST_VECTOR
 	  && GET_CODE (args[2]) == CONST_VECTOR
 	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
 							  op, GET_MODE (op)),
 			  args[2]))
 	return 0x55;
+      if (!args[0])
+	{
+	  args[0] = op;
+	  return 0xf0;
+	}
+      if (rtx_equal_p (op, args[0]))
+	return 0xf0;
+      /* Check if CONST_VECTOR is the ones-complement of args[0].  */
+      if (GET_CODE (op) == CONST_VECTOR
+	  && GET_CODE (args[0]) == CONST_VECTOR
+	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
+							  op, GET_MODE (op)),
+			  args[0]))
+	return 0x0f;
+      if (!args[1])
+	{
+	  args[1] = op;
+	  return 0xcc;
+	}
+      if (rtx_equal_p (op, args[1]))
+	return 0xcc;
+      /* Check if CONST_VECTOR is the ones-complement of args[1].  */
+      if (GET_CODE (op) == CONST_VECTOR
+	  && GET_CODE (args[1]) == CONST_VECTOR
+	  && rtx_equal_p (simplify_const_unary_operation (NOT, GET_MODE (op),
+							  op, GET_MODE (op)),
+			  args[1]))
+	return 0x33;
       return -1;
-
-    case SUBREG:
-      if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))
-	  != GET_MODE_SIZE (GET_MODE (op)))
-	return -1;
-      return ix86_ternlog_idx (SUBREG_REG (op), args);
 
     case NOT:
       idx0 = ix86_ternlog_idx (XEXP (op, 0), args);
@@ -26041,8 +26074,72 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
       tmp2 = ix86_gen_bcst_mem (mode, op2);
       if (!tmp2)
 	{
-	  tmp2 = validize_mem (force_const_mem (mode, op2));
+	  machine_mode bcst32_mode = mode;
+	  machine_mode bcst64_mode = mode;
+	  switch (mode)
+	    {
+	    case V1TImode:
+	    case V4SImode:
+	    case V4SFmode:
+	    case V8HImode:
+	    case V16QImode:
+	      bcst32_mode = V4SImode;
+	      bcst64_mode = V2DImode;
+	      break;
+
+	    case V2TImode:
+	    case V8SImode:
+	    case V8SFmode:
+	    case V16HImode:
+	    case V32QImode:
+	      bcst32_mode = V8SImode;
+	      bcst64_mode = V4DImode;
+	      break;
+
+	    case V4TImode:
+	    case V16SImode:
+	    case V16SFmode:
+	    case V32HImode:
+	    case V64QImode:
+	      bcst32_mode = V16SImode;
+	      bcst64_mode = V8DImode;
+	      break;
+
+	    default:
+	      break;
+	    }
+
+	  if (bcst32_mode != mode)
+	    {
+	      tmp2 = gen_lowpart (bcst32_mode, op2);
+	      if (ix86_gen_bcst_mem (bcst32_mode, tmp2))
+		{
+		  tmp2 = ix86_expand_ternlog (bcst32_mode,
+					      gen_lowpart (bcst32_mode, tmp0),
+					      gen_lowpart (bcst32_mode, tmp1),
+					      tmp2, idx, NULL_RTX);
+		  emit_move_insn (target, gen_lowpart (mode, tmp2));
+		  return target;
+		}
+	    }
+
+	  if (bcst64_mode != mode)
+	    {
+	      tmp2 = gen_lowpart (bcst64_mode, op2);
+	      if (ix86_gen_bcst_mem (bcst64_mode, tmp2))
+		{
+		  tmp2 = ix86_expand_ternlog (bcst64_mode,
+					      gen_lowpart (bcst64_mode, tmp0),
+					      gen_lowpart (bcst64_mode, tmp1),
+					      tmp2, idx, NULL_RTX);
+		  emit_move_insn (target, gen_lowpart (mode, tmp2));
+		  return target;
+		}
+	    }
+
+	  tmp2 = force_const_mem (mode, op2);
 	  rtx bcast = ix86_broadcast_from_constant (mode, tmp2);
+	  tmp2 = validize_mem (tmp2);
 	  if (bcast)
 	    {
 	      rtx reg2 = gen_reg_rtx (mode);
@@ -26064,6 +26161,44 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
   rtvec vec = gen_rtvec (4, tmp0, tmp1, tmp2, GEN_INT (idx));
   emit_move_insn (target, gen_rtx_UNSPEC (mode, vec, UNSPEC_VTERNLOG));
   return target;
+}
+
+/* Trunc a vector to a narrow vector, like v4di -> v4si.  */
+
+void
+ix86_expand_trunc_with_avx2_noavx512f (rtx output, rtx input, machine_mode cvt_mode)
+{
+  machine_mode out_mode = GET_MODE (output);
+  machine_mode in_mode = GET_MODE (input);
+  int len = GET_MODE_SIZE (in_mode);
+  gcc_assert (len == GET_MODE_SIZE (cvt_mode)
+	      && GET_MODE_INNER (out_mode) == GET_MODE_INNER (cvt_mode)
+	      && (REG_P (input) || SUBREG_P (input)));
+  scalar_mode inner_out_mode = GET_MODE_INNER (out_mode);
+  int in_innersize = GET_MODE_SIZE (GET_MODE_INNER (in_mode));
+  int out_innersize = GET_MODE_SIZE (inner_out_mode);
+
+  struct expand_vec_perm_d d;
+  d.target = gen_reg_rtx (cvt_mode);
+  d.op0 = lowpart_subreg (cvt_mode, force_reg(in_mode, input), in_mode);
+  d.op1 = d.op0;
+  d.vmode = cvt_mode;
+  d.nelt = GET_MODE_NUNITS (cvt_mode);
+  d.testing_p = false;
+  d.one_operand_p = true;
+
+  /* Init perm. Put the needed bits of input in order and
+     fill the rest of bits by default.  */
+  for (int i = 0; i < d.nelt; ++i)
+    {
+      d.perm[i] = i;
+      if (i < GET_MODE_NUNITS (out_mode))
+	d.perm[i] = i * (in_innersize / out_innersize);
+    }
+
+  bool ok = ix86_expand_vec_perm_const_1(&d);
+  gcc_assert (ok);
+  emit_move_insn (output, gen_lowpart (out_mode, d.target));
 }
 
 #include "gt-i386-expand.h"

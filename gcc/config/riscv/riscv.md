@@ -2669,6 +2669,12 @@
 	      (use (match_operand:SI 4))])]
   "!optimize_size"
 {
+  /* If TARGET_VECTOR is false, this routine will return false and we will
+     try scalar expansion.  */
+  if (riscv_vector::expand_vec_cmpmem (operands[0], operands[1],
+				       operands[2], operands[3]))
+    DONE;
+
   if (riscv_expand_block_compare (operands[0], operands[1], operands[2],
                                   operands[3]))
     DONE;
@@ -2697,11 +2703,16 @@
 
 (define_expand "setmem<mode>"
   [(parallel [(set (match_operand:BLK 0 "memory_operand")
-		   (match_operand:QI 2 "const_int_operand"))
+		   (match_operand:QI 2 "nonmemory_operand"))
 	      (use (match_operand:P 1 ""))
 	      (use (match_operand:SI 3 "const_int_operand"))])]
  ""
- {
+{
+  /* If TARGET_VECTOR is false, this routine will return false and we will
+     try scalar expansion.  */
+  if (riscv_vector::expand_vec_setmem (operands[0], operands[1], operands[2]))
+    DONE;
+
   /* If value to set is not zero, use the library routine.  */
   if (operands[2] != const0_rtx)
     FAIL;
@@ -2712,6 +2723,27 @@
     FAIL;
 })
 
+;; Inlining general memmove is a pessimisation: we can't avoid having to decide
+;; which direction to go at runtime, which is costly in instruction count
+;; however for situations where the entire move fits in one vector operation
+;; we can do all reads before doing any writes so we don't have to worry
+;; so generate the inline vector code in such situations
+;; nb. prefer scalar path for tiny memmoves.
+(define_expand "movmem<mode>"
+  [(parallel [(set (match_operand:BLK 0 "general_operand")
+   (match_operand:BLK 1 "general_operand"))
+    (use (match_operand:P 2 "const_int_operand"))
+    (use (match_operand:SI 3 "const_int_operand"))])]
+  "TARGET_VECTOR"
+{
+  if ((INTVAL (operands[2]) >= TARGET_MIN_VLEN / 8)
+	&& (INTVAL (operands[2]) <= TARGET_MIN_VLEN)
+	&& riscv_vector::expand_block_move (operands[0], operands[1],
+	     operands[2]))
+    DONE;
+  else
+    FAIL;
+})
 
 ;; Expand in-line code to clear the instruction cache between operand[0] and
 ;; operand[1].
@@ -4224,6 +4256,17 @@
   ""
   {
     riscv_expand_usadd (operands[0], operands[1], operands[2]);
+    DONE;
+  }
+)
+
+(define_expand "ussub<mode>3"
+  [(match_operand:ANYI 0 "register_operand")
+   (match_operand:ANYI 1 "register_operand")
+   (match_operand:ANYI 2 "register_operand")]
+  ""
+  {
+    riscv_expand_ussub (operands[0], operands[1], operands[2]);
     DONE;
   }
 )

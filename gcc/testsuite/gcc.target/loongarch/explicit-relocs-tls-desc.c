@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fPIC -mexplicit-relocs -mtls-dialect=desc" } */
+/* { dg-options "-O2 -fPIC -mexplicit-relocs -mtls-dialect=desc -fno-late-combine-instructions" } */
 
 __thread int a __attribute__((visibility("hidden")));
 extern __thread int b __attribute__((visibility("default")));

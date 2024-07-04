@@ -6742,7 +6742,8 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 
       if (cand->viable == -1
 	  && shortcut_bad_convs
-	  && missing_conversion_p (cand))
+	  && (missing_conversion_p (cand)
+	      || TREE_CODE (cand->fn) == TEMPLATE_DECL))
 	{
 	  /* This candidate has been tentatively marked non-strictly viable,
 	     and we didn't compute all argument conversions for it (having
@@ -13490,7 +13491,8 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 	{
 	  previous_worse_champ = nullptr;
 	  champ = &(*challenger)->next;
-	  if (!*champ || !(*champ)->viable)
+	  if (!*champ || !(*champ)->viable
+	      || (*champ)->viable < (*challenger)->viable)
 	    {
 	      champ = nullptr;
 	      break;

@@ -566,7 +566,7 @@ styled_string::from_fmt_va (style_manager &sm,
   text_info text (fmt, args, errno);
   pretty_printer pp;
   pp_show_color (&pp) = true;
-  pp.url_format = URL_FORMAT_DEFAULT;
+  pp.set_url_format (URL_FORMAT_DEFAULT);
   pp_format_decoder (&pp) = format_decoder;
   pp_format (&pp, &text);
   pp_output_formatted_text (&pp);

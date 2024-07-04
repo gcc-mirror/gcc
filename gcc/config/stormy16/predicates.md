@@ -152,7 +152,7 @@
 })
 
 (define_predicate "xs_hi_nonmemory_operand"
-  (match_code "const_int,reg,subreg,const")
+  (match_code "const_int,reg,subreg,const,symbol_ref,label_ref")
 {
   return nonmemory_operand (op, mode);
 })

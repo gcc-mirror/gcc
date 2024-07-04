@@ -144,6 +144,8 @@ extern bool call_may_clobber_ref_p (gcall *, tree, bool = true);
 extern bool call_may_clobber_ref_p_1 (gcall *, ao_ref *, bool = true);
 extern bool stmt_kills_ref_p (gimple *, tree);
 extern bool stmt_kills_ref_p (gimple *, ao_ref *);
+extern bool ref_can_have_store_data_races (tree);
+
 enum translate_flags
   { TR_TRANSLATE, TR_VALUEIZE_AND_DISAMBIGUATE, TR_DISAMBIGUATE };
 extern tree get_continuation_for_phi (gimple *, ao_ref *, bool,

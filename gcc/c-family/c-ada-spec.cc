@@ -40,7 +40,7 @@ static void dump_ada_structure (pretty_printer *, tree, tree, bool, int);
 static char *to_ada_name (const char *, bool *);
 
 #define INDENT(SPACE) \
-  do { int i; for (i = 0; i<SPACE; i++) pp_space (buffer); } while (0)
+  do { int i; for (i = 0; i<SPACE; i++) pp_space (pp); } while (0)
 
 #define INDENT_INCR 3
 
@@ -910,9 +910,9 @@ dump_ada_nodes (pretty_printer *pp, const char *source_file)
 /* Dump a newline and indent BUFFER by SPC chars.  */
 
 static void
-newline_and_indent (pretty_printer *buffer, int spc)
+newline_and_indent (pretty_printer *pp, int spc)
 {
-  pp_newline (buffer);
+  pp_newline (pp);
   INDENT (spc);
 }
 
@@ -1382,12 +1382,12 @@ separate_class_package (tree decl)
 
 static bool package_prefix = true;
 
-/* Dump in BUFFER the name of an identifier NODE of type TYPE, following Ada
+/* Dump in PP the name of an identifier NODE of type TYPE, following Ada
    syntax.  LIMITED_ACCESS indicates whether NODE can be accessed through a
    limited 'with' clause rather than a regular 'with' clause.  */
 
 static void
-pp_ada_tree_identifier (pretty_printer *buffer, tree node, tree type,
+pp_ada_tree_identifier (pretty_printer *pp, tree node, tree type,
 			bool limited_access)
 {
   const char *name = IDENTIFIER_POINTER (node);
@@ -1419,8 +1419,8 @@ pp_ada_tree_identifier (pretty_printer *buffer, tree node, tree type,
 		  {
 		    char *s1 = get_ada_package (xloc.file);
 		    append_withs (s1, limited_access);
-		    pp_string (buffer, s1);
-		    pp_dot (buffer);
+		    pp_string (pp, s1);
+		    pp_dot (pp);
 		    free (s1);
 		  }
 		break;
@@ -1431,59 +1431,59 @@ pp_ada_tree_identifier (pretty_printer *buffer, tree node, tree type,
 	  /* Generate the additional package prefix for C++ classes.  */
 	  if (separate_class_package (decl))
 	    {
-	      pp_string (buffer, "Class_");
-	      pp_string (buffer, s);
-	      pp_dot (buffer);
+	      pp_string (pp, "Class_");
+	      pp_string (pp, s);
+	      pp_dot (pp);
 	    }
 	}
     }
 
   if (space_found)
     if (!strcmp (s, "short_int"))
-      pp_string (buffer, "short");
+      pp_string (pp, "short");
     else if (!strcmp (s, "short_unsigned_int"))
-      pp_string (buffer, "unsigned_short");
+      pp_string (pp, "unsigned_short");
     else if (!strcmp (s, "unsigned_int"))
-      pp_string (buffer, "unsigned");
+      pp_string (pp, "unsigned");
     else if (!strcmp (s, "long_int"))
-      pp_string (buffer, "long");
+      pp_string (pp, "long");
     else if (!strcmp (s, "long_unsigned_int"))
-      pp_string (buffer, "unsigned_long");
+      pp_string (pp, "unsigned_long");
     else if (!strcmp (s, "long_long_int"))
-      pp_string (buffer, "Long_Long_Integer");
+      pp_string (pp, "Long_Long_Integer");
     else if (!strcmp (s, "long_long_unsigned_int"))
       {
 	if (package_prefix)
 	  {
 	    append_withs ("Interfaces.C.Extensions", false);
-	    pp_string (buffer, "Extensions.unsigned_long_long");
+	    pp_string (pp, "Extensions.unsigned_long_long");
 	  }
 	else
-	  pp_string (buffer, "unsigned_long_long");
+	  pp_string (pp, "unsigned_long_long");
       }
     else
-      pp_string(buffer, s);
+      pp_string (pp, s);
   else
     if (!strcmp (s, "u_Bool") || !strcmp (s, "bool"))
       {
 	if (package_prefix)
 	  {
 	    append_withs ("Interfaces.C.Extensions", false);
-	    pp_string (buffer, "Extensions.bool");
+	    pp_string (pp, "Extensions.bool");
 	  }
 	else
-	  pp_string (buffer, "bool");
+	  pp_string (pp, "bool");
       }
     else
-      pp_string(buffer, s);
+      pp_string (pp, s);
 
   free (s);
 }
 
-/* Dump in BUFFER the assembly name of T.  */
+/* Dump in PP the assembly name of T.  */
 
 static void
-pp_asm_name (pretty_printer *buffer, tree t)
+pp_asm_name (pretty_printer *pp, tree t)
 {
   tree name = DECL_ASSEMBLER_NAME (t);
   char *ada_name = XALLOCAVEC (char, IDENTIFIER_LENGTH (name) + 1), *s;
@@ -1498,112 +1498,112 @@ pp_asm_name (pretty_printer *buffer, tree t)
     }
 
   *s = '\0';
-  pp_string (buffer, ada_name);
+  pp_string (pp, ada_name);
 }
 
-/* Dump in BUFFER the name of a DECL node if set, in Ada syntax.
+/* Dump in PP the name of a DECL node if set, in Ada syntax.
    LIMITED_ACCESS indicates whether NODE can be accessed via a
    limited 'with' clause rather than a regular 'with' clause.  */
 
 static void
-dump_ada_decl_name (pretty_printer *buffer, tree decl, bool limited_access)
+dump_ada_decl_name (pretty_printer *pp, tree decl, bool limited_access)
 {
   if (DECL_NAME (decl))
-    pp_ada_tree_identifier (buffer, DECL_NAME (decl), decl, limited_access);
+    pp_ada_tree_identifier (pp, DECL_NAME (decl), decl, limited_access);
   else
     {
       tree type_name = TYPE_NAME (TREE_TYPE (decl));
 
       if (!type_name)
 	{
-	  pp_string (buffer, "anon");
+	  pp_string (pp, "anon");
 	  if (TREE_CODE (decl) == FIELD_DECL)
-	    pp_decimal_int (buffer, DECL_UID (decl));
+	    pp_decimal_int (pp, DECL_UID (decl));
 	  else
-	    pp_decimal_int (buffer, TYPE_UID (TREE_TYPE (decl)));
+	    pp_decimal_int (pp, TYPE_UID (TREE_TYPE (decl)));
 	}
       else if (TREE_CODE (type_name) == IDENTIFIER_NODE)
-	pp_ada_tree_identifier (buffer, type_name, decl, limited_access);
+	pp_ada_tree_identifier (pp, type_name, decl, limited_access);
     }
 }
 
-/* Dump in BUFFER a name for the type T, which is a TYPE without TYPE_NAME.  */
+/* Dump in PP a name for the type T, which is a TYPE without TYPE_NAME.  */
 
 static void
-dump_anonymous_type_name (pretty_printer *buffer, tree t)
+dump_anonymous_type_name (pretty_printer *pp, tree t)
 {
-  pp_string (buffer, "anon");
+  pp_string (pp, "anon");
 
   switch (TREE_CODE (t))
     {
     case ARRAY_TYPE:
-      pp_string (buffer, "_array");
+      pp_string (pp, "_array");
       break;
     case ENUMERAL_TYPE:
-      pp_string (buffer, "_enum");
+      pp_string (pp, "_enum");
       break;
     case RECORD_TYPE:
-      pp_string (buffer, "_struct");
+      pp_string (pp, "_struct");
       break;
     case UNION_TYPE:
-      pp_string (buffer, "_union");
+      pp_string (pp, "_union");
       break;
     default:
-      pp_string (buffer, "_unknown");
+      pp_string (pp, "_unknown");
       break;
     }
 
-  pp_decimal_int (buffer, TYPE_UID (t));
+  pp_decimal_int (pp, TYPE_UID (t));
 }
 
-/* Dump in BUFFER aspect Import on a given node T.  SPC is the current
+/* Dump in PP aspect Import on a given node T.  SPC is the current
    indentation level.  */
 
 static void
-dump_ada_import (pretty_printer *buffer, tree t, int spc)
+dump_ada_import (pretty_printer *pp, tree t, int spc)
 {
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (t));
   const bool is_stdcall
     = TREE_CODE (t) == FUNCTION_DECL
       && lookup_attribute ("stdcall", TYPE_ATTRIBUTES (TREE_TYPE (t)));
 
-  pp_string (buffer, "with Import => True, ");
+  pp_string (pp, "with Import => True, ");
 
-  newline_and_indent (buffer, spc + 5);
+  newline_and_indent (pp, spc + 5);
 
   if (is_stdcall)
-    pp_string (buffer, "Convention => Stdcall, ");
+    pp_string (pp, "Convention => Stdcall, ");
   else if (name[0] == '_' && name[1] == 'Z')
-    pp_string (buffer, "Convention => CPP, ");
+    pp_string (pp, "Convention => CPP, ");
   else
-    pp_string (buffer, "Convention => C, ");
+    pp_string (pp, "Convention => C, ");
 
-  newline_and_indent (buffer, spc + 5);
+  newline_and_indent (pp, spc + 5);
 
   tree sec = lookup_attribute ("section", DECL_ATTRIBUTES (t));
   if (sec)
     {
-      pp_string (buffer, "Linker_Section => \"");
-      pp_string (buffer, TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (sec))));
-      pp_string (buffer, "\", ");
-      newline_and_indent (buffer, spc + 5);
+      pp_string (pp, "Linker_Section => \"");
+      pp_string (pp, TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (sec))));
+      pp_string (pp, "\", ");
+      newline_and_indent (pp, spc + 5);
     }
 
-  pp_string (buffer, "External_Name => \"");
+  pp_string (pp, "External_Name => \"");
 
   if (is_stdcall)
-    pp_string (buffer, IDENTIFIER_POINTER (DECL_NAME (t)));
+    pp_string (pp, IDENTIFIER_POINTER (DECL_NAME (t)));
   else
-    pp_asm_name (buffer, t);
+    pp_asm_name (pp, t);
 
-  pp_string (buffer, "\";");
+  pp_string (pp, "\";");
 }
 
 /* Check whether T and its type have different names, and append "the_"
-   otherwise in BUFFER.  */
+   otherwise in PP.  */
 
 static void
-check_type_name_conflict (pretty_printer *buffer, tree t)
+check_type_name_conflict (pretty_printer *pp, tree t)
 {
   tree tmp = TREE_TYPE (t);
 
@@ -1626,18 +1626,18 @@ check_type_name_conflict (pretty_printer *buffer, tree t)
 	s = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (tmp)));
 
       if (!strcasecmp (IDENTIFIER_POINTER (DECL_NAME (t)), s))
-	pp_string (buffer, "the_");
+	pp_string (pp, "the_");
     }
 }
 
-/* Dump in BUFFER a function declaration FUNC in Ada syntax.
+/* Dump in PP a function declaration FUNC in Ada syntax.
    IS_METHOD indicates whether FUNC is a C++ method.
    IS_CONSTRUCTOR whether FUNC is a C++ constructor.
    IS_DESTRUCTOR whether FUNC is a C++ destructor.
    SPC is the current indentation level.  */
 
 static void
-dump_ada_function_declaration (pretty_printer *buffer, tree func,
+dump_ada_function_declaration (pretty_printer *pp, tree func,
 			       bool is_method, bool is_constructor,
 			       bool is_destructor, int spc)
 {
@@ -1670,12 +1670,12 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
     num_args = 1;
 
   if (num_args > 2)
-    newline_and_indent (buffer, spc + 1);
+    newline_and_indent (pp, spc + 1);
 
   if (num_args > 0)
     {
-      pp_space (buffer);
-      pp_left_paren (buffer);
+      pp_space (pp);
+      pp_left_paren (pp);
     }
 
   /* For a function, see if we have the corresponding arguments.  */
@@ -1707,24 +1707,24 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 	{
 	  if (DECL_NAME (arg))
 	    {
-	      check_type_name_conflict (buffer, arg);
-	      pp_ada_tree_identifier (buffer, DECL_NAME (arg), NULL_TREE,
+	      check_type_name_conflict (pp, arg);
+	      pp_ada_tree_identifier (pp, DECL_NAME (arg), NULL_TREE,
 				      false);
-	      pp_string (buffer, " : ");
+	      pp_string (pp, " : ");
 	    }
 	  else
 	    {
 	      sprintf (buf, "arg%d : ", num);
-	      pp_string (buffer, buf);
+	      pp_string (pp, buf);
 	    }
 
-	  dump_ada_node (buffer, TREE_TYPE (arg), type, spc, false, true);
+	  dump_ada_node (pp, TREE_TYPE (arg), type, spc, false, true);
 	}
       else
 	{
 	  sprintf (buf, "arg%d : ", num);
-	  pp_string (buffer, buf);
-	  dump_ada_node (buffer, TREE_VALUE (arg), type, spc, false, true);
+	  pp_string (pp, buf);
+	  dump_ada_node (pp, TREE_VALUE (arg), type, spc, false, true);
 	}
 
       /* If the type is a pointer to a tagged type, we need to differentiate
@@ -1738,47 +1738,47 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 	  && POINTER_TYPE_P (TREE_TYPE (arg))
 	  && is_tagged_type (TREE_TYPE (TREE_TYPE (arg)))
 	  && !(num == 1 && is_method && (DECL_VINDEX (func) || is_constructor)))
-	pp_string (buffer, "'Class");
+	pp_string (pp, "'Class");
 
       arg = TREE_CHAIN (arg);
 
       if (num < num_args)
 	{
-	  pp_semicolon (buffer);
+	  pp_semicolon (pp);
 
 	  if (num_args > 2)
-	    newline_and_indent (buffer, spc + INDENT_INCR);
+	    newline_and_indent (pp, spc + INDENT_INCR);
 	  else
-	    pp_space (buffer);
+	    pp_space (pp);
 	}
     }
 
   if (have_ellipsis)
     {
-      pp_string (buffer, "  -- , ...");
-      newline_and_indent (buffer, spc + INDENT_INCR);
+      pp_string (pp, "  -- , ...");
+      newline_and_indent (pp, spc + INDENT_INCR);
     }
 
   if (num_args > 0)
-    pp_right_paren (buffer);
+    pp_right_paren (pp);
 
   if (is_constructor || !VOID_TYPE_P (TREE_TYPE (type)))
     {
-      pp_string (buffer, " return ");
+      pp_string (pp, " return ");
       tree rtype = is_constructor ? DECL_CONTEXT (func) : TREE_TYPE (type);
-      dump_ada_node (buffer, rtype, rtype, spc, false, true);
+      dump_ada_node (pp, rtype, rtype, spc, false, true);
     }
 }
 
-/* Dump in BUFFER all the domains associated with an array NODE,
+/* Dump in PP all the domains associated with an array NODE,
    in Ada syntax.  SPC is the current indentation level.  */
 
 static void
-dump_ada_array_domains (pretty_printer *buffer, tree node, int spc)
+dump_ada_array_domains (pretty_printer *pp, tree node, int spc)
 {
   bool first = true;
 
-  pp_left_paren (buffer);
+  pp_left_paren (pp);
 
   for (; TREE_CODE (node) == ARRAY_TYPE; node = TREE_TYPE (node))
     {
@@ -1790,33 +1790,33 @@ dump_ada_array_domains (pretty_printer *buffer, tree node, int spc)
 	  tree max = TYPE_MAX_VALUE (domain);
 
 	  if (!first)
-	    pp_string (buffer, ", ");
+	    pp_string (pp, ", ");
 	  first = false;
 
 	  if (min)
-	    dump_ada_node (buffer, min, NULL_TREE, spc, false, true);
-	  pp_string (buffer, " .. ");
+	    dump_ada_node (pp, min, NULL_TREE, spc, false, true);
+	  pp_string (pp, " .. ");
 
 	  /* If the upper bound is zero, gcc may generate a NULL_TREE
 	     for TYPE_MAX_VALUE rather than an integer_cst.  */
 	  if (max)
-	    dump_ada_node (buffer, max, NULL_TREE, spc, false, true);
+	    dump_ada_node (pp, max, NULL_TREE, spc, false, true);
 	  else
-	    pp_string (buffer, "0");
+	    pp_string (pp, "0");
 	}
       else
 	{
-	  pp_string (buffer, "size_t");
+	  pp_string (pp, "size_t");
 	  first = false;
 	}
     }
-  pp_right_paren (buffer);
+  pp_right_paren (pp);
 }
 
-/* Dump in BUFFER file:line information related to NODE.  */
+/* Dump in PP file:line information related to NODE.  */
 
 static void
-dump_sloc (pretty_printer *buffer, tree node)
+dump_sloc (pretty_printer *pp, tree node)
 {
   expanded_location xloc;
 
@@ -1829,9 +1829,9 @@ dump_sloc (pretty_printer *buffer, tree node)
 
   if (xloc.file)
     {
-      pp_string (buffer, xloc.file);
-      pp_colon (buffer);
-      pp_decimal_int (buffer, xloc.line);
+      pp_string (pp, xloc.file);
+      pp_colon (pp);
+      pp_decimal_int (pp, xloc.line);
     }
 }
 
@@ -1845,68 +1845,68 @@ is_char_array (tree t)
 	 && id_equal (DECL_NAME (TYPE_NAME (TREE_TYPE (t))), "char");
 }
 
-/* Dump in BUFFER an array type NODE in Ada syntax.  SPC is the indentation
+/* Dump in PP an array type NODE in Ada syntax.  SPC is the indentation
    level.  */
 
 static void
-dump_ada_array_type (pretty_printer *buffer, tree node, int spc)
+dump_ada_array_type (pretty_printer *pp, tree node, int spc)
 {
   const bool char_array = is_char_array (node);
 
   /* Special case char arrays.  */
   if (char_array)
-    pp_string (buffer, "Interfaces.C.char_array ");
+    pp_string (pp, "Interfaces.C.char_array ");
   else
-    pp_string (buffer, "array ");
+    pp_string (pp, "array ");
 
   /* Print the dimensions.  */
-  dump_ada_array_domains (buffer, node, spc);
+  dump_ada_array_domains (pp, node, spc);
 
   /* Print the component type.  */
   if (!char_array)
     {
       tree tmp = strip_array_types (node);
 
-      pp_string (buffer, " of ");
+      pp_string (pp, " of ");
 
       if (TREE_CODE (tmp) != POINTER_TYPE && !packed_layout)
-	pp_string (buffer, "aliased ");
+	pp_string (pp, "aliased ");
 
       if (TYPE_NAME (tmp)
 	  || (!RECORD_OR_UNION_TYPE_P (tmp)
 	      && TREE_CODE (tmp) != ENUMERAL_TYPE))
-	dump_ada_node (buffer, tmp, node, spc, false, true);
+	dump_ada_node (pp, tmp, node, spc, false, true);
       else
-	dump_anonymous_type_name (buffer, tmp);
+	dump_anonymous_type_name (pp, tmp);
     }
 }
 
-/* Dump in BUFFER type names associated with a template, each prepended with
+/* Dump in PP type names associated with a template, each prepended with
    '_'.  TYPES is the TREE_PURPOSE of a DECL_TEMPLATE_INSTANTIATIONS.  SPC is
    the indentation level.  */
 
 static void
-dump_template_types (pretty_printer *buffer, tree types, int spc)
+dump_template_types (pretty_printer *pp, tree types, int spc)
 {
   for (int i = 0; i < TREE_VEC_LENGTH (types); i++)
     {
       tree elem = TREE_VEC_ELT (types, i);
-      pp_underscore (buffer);
+      pp_underscore (pp);
 
-      if (!dump_ada_node (buffer, elem, NULL_TREE, spc, false, true))
+      if (!dump_ada_node (pp, elem, NULL_TREE, spc, false, true))
 	{
-	  pp_string (buffer, "unknown");
-	  pp_scalar (buffer, HOST_SIZE_T_PRINT_UNSIGNED,
+	  pp_string (pp, "unknown");
+	  pp_scalar (pp, HOST_SIZE_T_PRINT_UNSIGNED,
 		     (fmt_size_t) TREE_HASH (elem));
 	}
     }
 }
 
-/* Dump in BUFFER the contents of all class instantiations associated with
+/* Dump in PP the contents of all class instantiations associated with
    a given template T.  SPC is the indentation level.  */
 
 static int
-dump_ada_template (pretty_printer *buffer, tree t, int spc)
+dump_ada_template (pretty_printer *pp, tree t, int spc)
 {
   /* DECL_SIZE_UNIT is DECL_TEMPLATE_INSTANTIATIONS in this context.  */
   tree inst = DECL_SIZE_UNIT (t);
@@ -1945,39 +1945,39 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
 
       num_inst++;
       INDENT (spc);
-      pp_string (buffer, "package ");
+      pp_string (pp, "package ");
       package_prefix = false;
-      dump_ada_node (buffer, instance, t, spc, false, true);
-      dump_template_types (buffer, types, spc);
-      pp_string (buffer, " is");
+      dump_ada_node (pp, instance, t, spc, false, true);
+      dump_template_types (pp, types, spc);
+      pp_string (pp, " is");
       spc += INDENT_INCR;
-      newline_and_indent (buffer, spc);
+      newline_and_indent (pp, spc);
 
       TREE_VISITED (get_underlying_decl (instance)) = 1;
-      pp_string (buffer, "type ");
-      dump_ada_node (buffer, instance, t, spc, false, true);
+      pp_string (pp, "type ");
+      dump_ada_node (pp, instance, t, spc, false, true);
       package_prefix = true;
 
       if (is_tagged_type (instance))
-	pp_string (buffer, " is tagged limited ");
+	pp_string (pp, " is tagged limited ");
       else
-	pp_string (buffer, " is limited ");
+	pp_string (pp, " is limited ");
 
-      dump_ada_node (buffer, instance, t, spc, false, false);
-      pp_newline (buffer);
+      dump_ada_node (pp, instance, t, spc, false, false);
+      pp_newline (pp);
       spc -= INDENT_INCR;
-      newline_and_indent (buffer, spc);
+      newline_and_indent (pp, spc);
 
-      pp_string (buffer, "end;");
-      newline_and_indent (buffer, spc);
-      pp_string (buffer, "use ");
+      pp_string (pp, "end;");
+      newline_and_indent (pp, spc);
+      pp_string (pp, "use ");
       package_prefix = false;
-      dump_ada_node (buffer, instance, t, spc, false, true);
-      dump_template_types (buffer, types, spc);
+      dump_ada_node (pp, instance, t, spc, false, true);
+      dump_template_types (pp, types, spc);
       package_prefix = true;
-      pp_semicolon (buffer);
-      pp_newline (buffer);
-      pp_newline (buffer);
+      pp_semicolon (pp);
+      pp_newline (pp);
+      pp_newline (pp);
     }
 
   return num_inst > 0;
@@ -2007,41 +2007,41 @@ is_simple_enum (tree node)
   return true;
 }
 
-/* Dump in BUFFER the declaration of enumeral NODE of type TYPE in Ada syntax.
+/* Dump in PP the declaration of enumeral NODE of type TYPE in Ada syntax.
    SPC is the indentation level.  */
 
 static void
-dump_ada_enum_type (pretty_printer *buffer, tree node, tree type, int spc)
+dump_ada_enum_type (pretty_printer *pp, tree node, tree type, int spc)
 {
   if (is_simple_enum (node))
     {
       bool first = true;
       spc += INDENT_INCR;
-      newline_and_indent (buffer, spc - 1);
-      pp_left_paren (buffer);
+      newline_and_indent (pp, spc - 1);
+      pp_left_paren (pp);
       for (tree value = TYPE_VALUES (node); value; value = TREE_CHAIN (value))
 	{
 	  if (first)
 	    first = false;
 	  else
 	    {
-	      pp_comma (buffer);
-	      newline_and_indent (buffer, spc);
+	      pp_comma (pp);
+	      newline_and_indent (pp, spc);
 	    }
 
-	  pp_ada_tree_identifier (buffer, TREE_PURPOSE (value), node, false);
+	  pp_ada_tree_identifier (pp, TREE_PURPOSE (value), node, false);
 	}
-      pp_string (buffer, ")");
+      pp_string (pp, ")");
       spc -= INDENT_INCR;
-      newline_and_indent (buffer, spc);
-      pp_string (buffer, "with Convention => C");
+      newline_and_indent (pp, spc);
+      pp_string (pp, "with Convention => C");
     }
   else
     {
       if (TYPE_UNSIGNED (node))
-	pp_string (buffer, "unsigned");
+	pp_string (pp, "unsigned");
       else
-	pp_string (buffer, "int");
+	pp_string (pp, "int");
 
       for (tree value = TYPE_VALUES (node); value; value = TREE_CHAIN (value))
 	{
@@ -2050,31 +2050,47 @@ dump_ada_enum_type (pretty_printer *buffer, tree node, tree type, int spc)
 	  if (TREE_CODE (int_val) != INTEGER_CST)
 	    int_val = DECL_INITIAL (int_val);
 
-	  pp_semicolon (buffer);
-	  newline_and_indent (buffer, spc);
+	  pp_semicolon (pp);
+	  newline_and_indent (pp, spc);
 
 	  if (TYPE_NAME (node))
-	    dump_ada_node (buffer, node, NULL_TREE, spc, false, true);
+	    dump_ada_node (pp, node, NULL_TREE, spc, false, true);
 	  else if (type)
-	    dump_ada_node (buffer, type, NULL_TREE, spc, false, true);
+	    dump_ada_node (pp, type, NULL_TREE, spc, false, true);
 	  else
-	    dump_anonymous_type_name (buffer, node);
-	  pp_underscore (buffer);
-	  pp_ada_tree_identifier (buffer, TREE_PURPOSE (value), node, false);
+	    dump_anonymous_type_name (pp, node);
+	  pp_underscore (pp);
+	  pp_ada_tree_identifier (pp, TREE_PURPOSE (value), node, false);
 
-	  pp_string (buffer, " : constant ");
+	  pp_string (pp, " : constant ");
 
 	  if (TYPE_NAME (node))
-	    dump_ada_node (buffer, node, NULL_TREE, spc, false, true);
+	    dump_ada_node (pp, node, NULL_TREE, spc, false, true);
 	  else if (type)
-	    dump_ada_node (buffer, type, NULL_TREE, spc, false, true);
+	    dump_ada_node (pp, type, NULL_TREE, spc, false, true);
 	  else
-	    dump_anonymous_type_name (buffer, node);
+	    dump_anonymous_type_name (pp, node);
 
-	  pp_string (buffer, " := ");
-	  dump_ada_node (buffer, int_val, node, spc, false, true);
+	  pp_string (pp, " := ");
+	  dump_ada_node (pp, int_val, node, spc, false, true);
 	}
     }
+}
+
+/* Return true if NODE is the __bf16 type.  */
+
+static bool
+is_float16 (tree node)
+{
+  if (!TYPE_NAME (node) || TREE_CODE (TYPE_NAME (node)) != TYPE_DECL)
+    return false;
+
+  tree name = DECL_NAME (TYPE_NAME (node));
+
+  if (IDENTIFIER_POINTER (name) [0] != '_')
+    return false;
+
+  return id_equal (name, "__bf16");
 }
 
 /* Return true if NODE is the _Float32/_Float32x type.  */
@@ -2127,13 +2143,13 @@ is_float128 (tree node)
 	 || id_equal (name, "_Float128x");
 }
 
-/* Recursively dump in BUFFER Ada declarations corresponding to NODE of type
+/* Recursively dump in PP Ada declarations corresponding to NODE of type
    TYPE.  SPC is the indentation level.  LIMITED_ACCESS indicates whether NODE
    can be referenced via a "limited with" clause.  NAME_ONLY indicates whether
    we should only dump the name of NODE, instead of its full declaration.  */
 
 static int
-dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
+dump_ada_node (pretty_printer *pp, tree node, tree type, int spc,
 	       bool limited_access, bool name_only)
 {
   if (node == NULL_TREE)
@@ -2142,24 +2158,24 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
   switch (TREE_CODE (node))
     {
     case ERROR_MARK:
-      pp_string (buffer, "<<< error >>>");
+      pp_string (pp, "<<< error >>>");
       return 0;
 
     case IDENTIFIER_NODE:
-      pp_ada_tree_identifier (buffer, node, type, limited_access);
+      pp_ada_tree_identifier (pp, node, type, limited_access);
       break;
 
     case TREE_LIST:
-      pp_string (buffer, "--- unexpected node: TREE_LIST");
+      pp_string (pp, "--- unexpected node: TREE_LIST");
       return 0;
 
     case TREE_BINFO:
-      dump_ada_node (buffer, BINFO_TYPE (node), type, spc, limited_access,
+      dump_ada_node (pp, BINFO_TYPE (node), type, spc, limited_access,
 		     name_only);
       return 0;
 
     case TREE_VEC:
-      pp_string (buffer, "--- unexpected node: TREE_VEC");
+      pp_string (pp, "--- unexpected node: TREE_VEC");
       return 0;
 
     case NULLPTR_TYPE:
@@ -2167,63 +2183,68 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
       if (package_prefix)
 	{
 	  append_withs ("System", false);
-	  pp_string (buffer, "System.Address");
+	  pp_string (pp, "System.Address");
 	}
       else
-	pp_string (buffer, "address");
+	pp_string (pp, "address");
       break;
 
     case VECTOR_TYPE:
-      pp_string (buffer, "<vector>");
+      pp_string (pp, "<vector>");
       break;
 
     case COMPLEX_TYPE:
       if (is_float128 (TREE_TYPE (node)))
 	{
 	  append_withs ("Interfaces.C.Extensions", false);
-	  pp_string (buffer, "Extensions.CFloat_128");
+	  pp_string (pp, "Extensions.CFloat_128");
 	}
       else if (TREE_TYPE (node) == float_type_node)
 	{
 	  append_withs ("Ada.Numerics.Complex_Types", false);
-	  pp_string (buffer, "Ada.Numerics.Complex_Types.Complex");
+	  pp_string (pp, "Ada.Numerics.Complex_Types.Complex");
 	}
       else if (TREE_TYPE (node) == double_type_node)
 	{
 	  append_withs ("Ada.Numerics.Long_Complex_Types", false);
-	  pp_string (buffer, "Ada.Numerics.Long_Complex_Types.Complex");
+	  pp_string (pp, "Ada.Numerics.Long_Complex_Types.Complex");
 	}
       else if (TREE_TYPE (node) == long_double_type_node)
 	{
 	  append_withs ("Ada.Numerics.Long_Long_Complex_Types", false);
-	  pp_string (buffer, "Ada.Numerics.Long_Long_Complex_Types.Complex");
+	  pp_string (pp, "Ada.Numerics.Long_Long_Complex_Types.Complex");
 	}
       else
-	pp_string (buffer, "<complex>");
+	pp_string (pp, "<complex>");
       break;
 
     case ENUMERAL_TYPE:
       if (name_only)
-	dump_ada_node (buffer, TYPE_NAME (node), node, spc, false, true);
+	dump_ada_node (pp, TYPE_NAME (node), node, spc, false, true);
       else
-	dump_ada_enum_type (buffer, node, type, spc);
+	dump_ada_enum_type (pp, node, type, spc);
       break;
 
     case REAL_TYPE:
-      if (is_float32 (node))
+      if (is_float16 (node))
 	{
-	  pp_string (buffer, "Float");
+	  pp_string (pp, "Short_Float");
+	  break;
+	}
+      else if (is_float32 (node))
+	{
+	  pp_string (pp, "Float");
 	  break;
 	}
       else if (is_float64 (node))
 	{
-	  pp_string (buffer, "Long_Float");
+	  pp_string (pp, "Long_Float");
 	  break;
 	}
       else if (is_float128 (node))
 	{
 	  append_withs ("Interfaces.C.Extensions", false);
-	  pp_string (buffer, "Extensions.Float_128");
+	  pp_string (pp, "Extensions.Float_128");
 	  break;
 	}
 
@@ -2238,13 +2259,13 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 			   "__int128")))
 	{
 	  if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
-	    pp_ada_tree_identifier (buffer, TYPE_NAME (node), node,
+	    pp_ada_tree_identifier (pp, TYPE_NAME (node), node,
 				    limited_access);
 	  else if (TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
 		   && DECL_NAME (TYPE_NAME (node)))
-	    dump_ada_decl_name (buffer, TYPE_NAME (node), limited_access);
+	    dump_ada_decl_name (pp, TYPE_NAME (node), limited_access);
 	  else
-	    pp_string (buffer, "<unnamed type>");
+	    pp_string (pp, "<unnamed type>");
 	}
       else if (TREE_CODE (node) == INTEGER_TYPE)
 	{
@@ -2252,41 +2273,41 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	  bitfield_used = true;
 
 	  if (TYPE_PRECISION (node) == 1)
-	    pp_string (buffer, "Extensions.Unsigned_1");
+	    pp_string (pp, "Extensions.Unsigned_1");
 	  else
 	    {
-	      pp_string (buffer, TYPE_UNSIGNED (node)
+	      pp_string (pp, TYPE_UNSIGNED (node)
 				 ? "Extensions.Unsigned_"
 				 : "Extensions.Signed_");
-	      pp_decimal_int (buffer, TYPE_PRECISION (node));
+	      pp_decimal_int (pp, TYPE_PRECISION (node));
 	    }
 	}
       else
-	pp_string (buffer, "<unnamed type>");
+	pp_string (pp, "<unnamed type>");
       break;
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       if (name_only && TYPE_NAME (node))
-	dump_ada_node (buffer, TYPE_NAME (node), node, spc, limited_access,
+	dump_ada_node (pp, TYPE_NAME (node), node, spc, limited_access,
 		       true);
 
       else if (TREE_CODE (TREE_TYPE (node)) == FUNCTION_TYPE)
 	{
 	  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (node))))
-	    pp_string (buffer, "access procedure");
+	    pp_string (pp, "access procedure");
 	  else
-	    pp_string (buffer, "access function");
+	    pp_string (pp, "access function");
 
-	  dump_ada_function_declaration (buffer, node, false, false, false,
+	  dump_ada_function_declaration (pp, node, false, false, false,
 					 spc + INDENT_INCR);
 
 	  /* If we are dumping the full type, it means we are part of a
 	     type definition and need also a Convention C aspect.  */
 	  if (!name_only)
 	    {
-	      newline_and_indent (buffer, spc);
-	      pp_string (buffer, "with Convention => C");
+	      newline_and_indent (pp, spc);
+	      pp_string (pp, "with Convention => C");
 	    }
 	}
       else
@@ -2298,14 +2319,14 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	  if (VOID_TYPE_P (ref_type))
 	    {
 	      if (!name_only)
-		pp_string (buffer, "new ");
+		pp_string (pp, "new ");
 	      if (package_prefix)
 		{
 		  append_withs ("System", false);
-		  pp_string (buffer, "System.Address");
+		  pp_string (pp, "System.Address");
 		}
 	      else
-		pp_string (buffer, "address");
+		pp_string (pp, "address");
 	    }
 	  else
 	    {
@@ -2314,15 +2335,15 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		  && id_equal (DECL_NAME (TYPE_NAME (ref_type)), "char"))
 		{
 		  if (!name_only)
-		    pp_string (buffer, "new ");
+		    pp_string (pp, "new ");
 
 		  if (package_prefix)
 		    {
-		      pp_string (buffer, "Interfaces.C.Strings.chars_ptr");
+		      pp_string (pp, "Interfaces.C.Strings.chars_ptr");
 		      append_withs ("Interfaces.C.Strings", false);
 		    }
 		  else
-		    pp_string (buffer, "chars_ptr");
+		    pp_string (pp, "chars_ptr");
 		}
 	      else
 		{
@@ -2336,40 +2357,40 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 			{
 			  append_withs ("System", false);
 			  if (!name_only)
-			    pp_string (buffer, "new ");
-			  pp_string (buffer, "System.Address");
+			    pp_string (pp, "new ");
+			  pp_string (pp, "System.Address");
 			}
 		      else
-			pp_string (buffer, "address");
+			pp_string (pp, "address");
 		      return spc;
 		    }
 
 		  if (!package_prefix)
 		    {
 		      is_access = false;
-		      pp_string (buffer, "access");
+		      pp_string (pp, "access");
 		    }
 		  else if (AGGREGATE_TYPE_P (ref_type))
 		    {
 		      if (!type || TREE_CODE (type) != FUNCTION_DECL)
 			{
 			  is_access = true;
-			  pp_string (buffer, "access ");
+			  pp_string (pp, "access ");
 
 			  if (quals & TYPE_QUAL_CONST)
-			    pp_string (buffer, "constant ");
+			    pp_string (pp, "constant ");
 			  else if (!name_only)
-			    pp_string (buffer, "all ");
+			    pp_string (pp, "all ");
 			}
 		      else if (quals & TYPE_QUAL_CONST)
 			{
 			  is_access = false;
-			  pp_string (buffer, "in ");
+			  pp_string (pp, "in ");
 			}
 		      else
 			{
 			  is_access = true;
-			  pp_string (buffer, "access ");
+			  pp_string (pp, "access ");
 			}
 		    }
 		  else
@@ -2377,10 +2398,10 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		      /* We want to use regular with clauses for scalar types,
 			 as they are not involved in circular declarations.  */
 		      is_access = false;
-		      pp_string (buffer, "access ");
+		      pp_string (pp, "access ");
 
 		      if (!name_only)
-			pp_string (buffer, "all ");
+			pp_string (pp, "all ");
 		    }
 
 		  /* If this is the anonymous original type of a typedef'ed
@@ -2421,7 +2442,7 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 			  break;
 		      }
 
-		  dump_ada_node (buffer, ref_type, ref_type, spc, is_access,
+		  dump_ada_node (pp, ref_type, ref_type, spc, is_access,
 				 true);
 		}
 	    }
@@ -2430,19 +2451,19 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 
     case ARRAY_TYPE:
       if (name_only)
-	dump_ada_node (buffer, TYPE_NAME (node), node, spc, limited_access,
+	dump_ada_node (pp, TYPE_NAME (node), node, spc, limited_access,
 		       true);
       else
-	dump_ada_array_type (buffer, node, spc);
+	dump_ada_array_type (pp, node, spc);
       break;
 
     case RECORD_TYPE:
     case UNION_TYPE:
       if (name_only)
-	dump_ada_node (buffer, TYPE_NAME (node), node, spc, limited_access,
+	dump_ada_node (pp, TYPE_NAME (node), node, spc, limited_access,
 		       true);
       else
-	dump_ada_structure (buffer, node, type, false, spc);
+	dump_ada_structure (pp, node, type, false, spc);
       break;
 
     case INTEGER_CST:
@@ -2452,25 +2473,25 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
       if (TREE_TYPE (node) == sizetype)
 	node = fold_convert (ssizetype, node);
       if (tree_fits_shwi_p (node))
-	pp_wide_integer (buffer, tree_to_shwi (node));
+	pp_wide_integer (pp, tree_to_shwi (node));
       else if (tree_fits_uhwi_p (node))
-	pp_unsigned_wide_integer (buffer, tree_to_uhwi (node));
+	pp_unsigned_wide_integer (pp, tree_to_uhwi (node));
       else
 	{
 	  wide_int val = wi::to_wide (node);
 	  int i;
 	  if (wi::neg_p (val))
 	    {
-	      pp_minus (buffer);
+	      pp_minus (pp);
 	      val = -val;
 	    }
-	  sprintf (pp_buffer (buffer)->digit_buffer,
+	  sprintf (pp_buffer (pp)->digit_buffer,
 		   "16#%" HOST_WIDE_INT_PRINT "x",
 		   val.elt (val.get_len () - 1));
 	  for (i = val.get_len () - 2; i >= 0; i--)
-	    sprintf (pp_buffer (buffer)->digit_buffer,
+	    sprintf (pp_buffer (pp)->digit_buffer,
 		     HOST_WIDE_INT_PRINT_PADDED_HEX, val.elt (i));
-	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
+	  pp_string (pp, pp_buffer (pp)->digit_buffer);
 	}
       break;
 
@@ -2492,14 +2513,14 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	      if (package_prefix)
 		{
 		  append_withs ("System", false);
-		  pp_string (buffer, "System.Address");
+		  pp_string (pp, "System.Address");
 		}
 	      else
-		pp_string (buffer, "address");
+		pp_string (pp, "address");
 	    }
 	}
       else if (name_only)
-	dump_ada_decl_name (buffer, node, limited_access);
+	dump_ada_decl_name (pp, node, limited_access);
       else
 	{
 	  if (is_tagged_type (TREE_TYPE (node)))
@@ -2515,23 +2536,23 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		    {
 		      if (first)
 			{
-			  pp_string (buffer, "limited new ");
+			  pp_string (pp, "limited new ");
 			  first = false;
 			}
 		      else
-			pp_string (buffer, " and ");
+			pp_string (pp, " and ");
 
-		      dump_ada_decl_name (buffer, TYPE_NAME (TREE_TYPE (fld)),
+		      dump_ada_decl_name (pp, TYPE_NAME (TREE_TYPE (fld)),
 					  false);
 		    }
 		}
 
-	      pp_string (buffer, first ? "tagged limited " : " with ");
+	      pp_string (pp, first ? "tagged limited " : " with ");
 	    }
 	  else if (has_nontrivial_methods (TREE_TYPE (node)))
-	    pp_string (buffer, "limited ");
+	    pp_string (pp, "limited ");
 
-	  dump_ada_node (buffer, TREE_TYPE (node), type, spc, false, false);
+	  dump_ada_node (pp, TREE_TYPE (node), type, spc, false, false);
 	}
       break;
 
@@ -2541,7 +2562,7 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
     case PARM_DECL:
     case FIELD_DECL:
     case NAMESPACE_DECL:
-      dump_ada_decl_name (buffer, node, false);
+      dump_ada_decl_name (pp, node, false);
       break;
 
     default:
@@ -2552,16 +2573,16 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
   return 1;
 }
 
-/* Dump in BUFFER NODE's methods.  SPC is the indentation level.  Return 1 if
+/* Dump in PP NODE's methods.  SPC is the indentation level.  Return 1 if
    methods were printed, 0 otherwise.  */
 
 static int
-dump_ada_methods (pretty_printer *buffer, tree node, int spc)
+dump_ada_methods (pretty_printer *pp, tree node, int spc)
 {
   if (!has_nontrivial_methods (node))
     return 0;
 
-  pp_semicolon (buffer);
+  pp_semicolon (pp);
 
   int res = 1;
   for (tree fld = TYPE_FIELDS (node); fld; fld = DECL_CHAIN (fld))
@@ -2569,21 +2590,21 @@ dump_ada_methods (pretty_printer *buffer, tree node, int spc)
       {
 	if (res)
 	  {
-	    pp_newline (buffer);
-	    pp_newline (buffer);
+	    pp_newline (pp);
+	    pp_newline (pp);
 	  }
 
-	res = dump_ada_declaration (buffer, fld, node, spc);
+	res = dump_ada_declaration (pp, fld, node, spc);
       }
 
   return 1;
 }
 
-/* Dump in BUFFER a forward declaration for TYPE present inside T.
+/* Dump in PP a forward declaration for TYPE present inside T.
    SPC is the indentation level.  */
 
 static void
-dump_forward_type (pretty_printer *buffer, tree type, tree t, int spc)
+dump_forward_type (pretty_printer *pp, tree type, tree t, int spc)
 {
   tree decl = get_underlying_decl (type);
 
@@ -2591,14 +2612,14 @@ dump_forward_type (pretty_printer *buffer, tree type, tree t, int spc)
   if (!decl)
     {
       if (TREE_CODE (type) == POINTER_TYPE)
-	dump_forward_type (buffer, TREE_TYPE (type), t, spc);
+	dump_forward_type (pp, TREE_TYPE (type), t, spc);
       else if (TREE_CODE (type) == FUNCTION_TYPE)
 	{
 	  function_args_iterator args_iter;
 	  tree arg;
-	  dump_forward_type (buffer, TREE_TYPE (type), t, spc);
+	  dump_forward_type (pp, TREE_TYPE (type), t, spc);
 	  FOREACH_FUNCTION_ARGS (type, arg, args_iter)
-	    dump_forward_type (buffer, arg, t, spc);
+	    dump_forward_type (pp, arg, t, spc);
 	}
       return;
     }
@@ -2614,10 +2635,10 @@ dump_forward_type (pretty_printer *buffer, tree type, tree t, int spc)
     return;
 
   /* Generate an incomplete type declaration.  */
-  pp_string (buffer, "type ");
-  dump_ada_node (buffer, decl, NULL_TREE, spc, false, true);
-  pp_semicolon (buffer);
-  newline_and_indent (buffer, spc);
+  pp_string (pp, "type ");
+  dump_ada_node (pp, decl, NULL_TREE, spc, false, true);
+  pp_semicolon (pp);
+  newline_and_indent (pp, spc);
 
   /* Only one incomplete declaration is legal for a given type.  */
   TREE_VISITED (decl) = 1;
@@ -2630,7 +2651,7 @@ static bitmap dumped_anonymous_types;
 
 static void dump_nested_type (pretty_printer *, tree, tree, int);
 
-/* Dump in BUFFER anonymous types nested inside T's definition.  PARENT is the
+/* Dump in PP anonymous types nested inside T's definition.  PARENT is the
    parent node of T.  DUMPED_TYPES is the bitmap of already dumped types.  SPC
    is the indentation level.
 
@@ -2644,7 +2665,7 @@ static void dump_nested_type (pretty_printer *, tree, tree, int);
    pass on the nested TYPE_DECLs and a second pass on the unnamed types.  */
 
 static void
-dump_nested_types (pretty_printer *buffer, tree t, int spc)
+dump_nested_types (pretty_printer *pp, tree t, int spc)
 {
   tree type, field;
 
@@ -2658,18 +2679,18 @@ dump_nested_types (pretty_printer *buffer, tree t, int spc)
 	&& DECL_NAME (field) != DECL_NAME (t)
 	&& !DECL_ORIGINAL_TYPE (field)
 	&& TYPE_NAME (TREE_TYPE (field)) != TYPE_NAME (type))
-      dump_nested_type (buffer, field, t, spc);
+      dump_nested_type (pp, field, t, spc);
 
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL && !TYPE_NAME (TREE_TYPE (field)))
-      dump_nested_type (buffer, field, t, spc);
+      dump_nested_type (pp, field, t, spc);
 }
 
-/* Dump in BUFFER the anonymous type of FIELD inside T.  SPC is the indentation
+/* Dump in PP the anonymous type of FIELD inside T.  SPC is the indentation
    level.  */
 
 static void
-dump_nested_type (pretty_printer *buffer, tree field, tree t, int spc)
+dump_nested_type (pretty_printer *pp, tree field, tree t, int spc)
 {
   tree field_type = TREE_TYPE (field);
   tree decl, tmp;
@@ -2678,7 +2699,7 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, int spc)
     {
     case POINTER_TYPE:
       tmp = TREE_TYPE (field_type);
-      dump_forward_type (buffer, tmp, t, spc);
+      dump_forward_type (pp, tmp, t, spc);
       break;
 
     case ARRAY_TYPE:
@@ -2694,59 +2715,59 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, int spc)
 	  && !TREE_VISITED (decl))
 	{
 	  /* Generate full declaration.  */
-	  dump_nested_type (buffer, decl, t, spc);
+	  dump_nested_type (pp, decl, t, spc);
 	  TREE_VISITED (decl) = 1;
 	}
       else if (!decl && TREE_CODE (tmp) == POINTER_TYPE)
-	dump_forward_type (buffer, TREE_TYPE (tmp), t, spc);
+	dump_forward_type (pp, TREE_TYPE (tmp), t, spc);
 
       /* Special case char arrays.  */
       if (is_char_array (field_type))
-	pp_string (buffer, "subtype ");
+	pp_string (pp, "subtype ");
       else
-	pp_string (buffer, "type ");
+	pp_string (pp, "type ");
 
-      dump_anonymous_type_name (buffer, field_type);
-      pp_string (buffer, " is ");
-      dump_ada_array_type (buffer, field_type, spc);
-      pp_semicolon (buffer);
-      newline_and_indent (buffer, spc);
+      dump_anonymous_type_name (pp, field_type);
+      pp_string (pp, " is ");
+      dump_ada_array_type (pp, field_type, spc);
+      pp_semicolon (pp);
+      newline_and_indent (pp, spc);
       break;
 
     case ENUMERAL_TYPE:
       if (is_simple_enum (field_type))
-	pp_string (buffer, "type ");
+	pp_string (pp, "type ");
       else
-	pp_string (buffer, "subtype ");
+	pp_string (pp, "subtype ");
 
       if (TYPE_NAME (field_type))
-	dump_ada_node (buffer, field_type, NULL_TREE, spc, false, true);
+	dump_ada_node (pp, field_type, NULL_TREE, spc, false, true);
       else
-	dump_anonymous_type_name (buffer, field_type);
-      pp_string (buffer, " is ");
-      dump_ada_enum_type (buffer, field_type, NULL_TREE, spc);
-      pp_semicolon (buffer);
-      newline_and_indent (buffer, spc);
+	dump_anonymous_type_name (pp, field_type);
+      pp_string (pp, " is ");
+      dump_ada_enum_type (pp, field_type, NULL_TREE, spc);
+      pp_semicolon (pp);
+      newline_and_indent (pp, spc);
       break;
 
     case RECORD_TYPE:
     case UNION_TYPE:
-      dump_nested_types (buffer, field, spc);
+      dump_nested_types (pp, field, spc);
 
-      pp_string (buffer, "type ");
+      pp_string (pp, "type ");
 
       if (TYPE_NAME (field_type))
-	dump_ada_node (buffer, field_type, NULL_TREE, spc, false, true);
+	dump_ada_node (pp, field_type, NULL_TREE, spc, false, true);
       else
-	dump_anonymous_type_name (buffer, field_type);
+	dump_anonymous_type_name (pp, field_type);
 
       if (TREE_CODE (field_type) == UNION_TYPE)
-	pp_string (buffer, " (discr : unsigned := 0)");
+	pp_string (pp, " (discr : unsigned := 0)");
 
-      pp_string (buffer, " is ");
-      dump_ada_structure (buffer, field_type, t, true, spc);
-      pp_semicolon (buffer);
-      newline_and_indent (buffer, spc);
+      pp_string (pp, " is ");
+      dump_ada_structure (pp, field_type, t, true, spc);
+      pp_semicolon (pp);
+      newline_and_indent (pp, spc);
       break;
 
     default:
@@ -2831,39 +2852,39 @@ overloading_index (tree name)
   return h ? ++h->n : 0;
 }
 
-/* Dump in BUFFER constructor spec corresponding to T for TYPE.  */
+/* Dump in PP constructor spec corresponding to T for TYPE.  */
 
 static void
-print_constructor (pretty_printer *buffer, tree t, tree type)
+print_constructor (pretty_printer *pp, tree t, tree type)
 {
   tree decl_name = DECL_NAME (TYPE_NAME (type));
 
-  pp_string (buffer, "New_");
-  pp_ada_tree_identifier (buffer, decl_name, t, false);
+  pp_string (pp, "New_");
+  pp_ada_tree_identifier (pp, decl_name, t, false);
 }
 
-/* Dump in BUFFER destructor spec corresponding to T.  */
+/* Dump in PP destructor spec corresponding to T.  */
 
 static void
-print_destructor (pretty_printer *buffer, tree t, tree type)
+print_destructor (pretty_printer *pp, tree t, tree type)
 {
   tree decl_name = DECL_NAME (TYPE_NAME (type));
 
-  pp_string (buffer, "Delete_");
+  pp_string (pp, "Delete_");
   if (startswith (IDENTIFIER_POINTER (DECL_NAME (t)), "__dt_del"))
-    pp_string (buffer, "And_Free_");
-  pp_ada_tree_identifier (buffer, decl_name, t, false);
+    pp_string (pp, "And_Free_");
+  pp_ada_tree_identifier (pp, decl_name, t, false);
 }
 
-/* Dump in BUFFER assignment operator spec corresponding to T.  */
+/* Dump in PP assignment operator spec corresponding to T.  */
 
 static void
-print_assignment_operator (pretty_printer *buffer, tree t, tree type)
+print_assignment_operator (pretty_printer *pp, tree t, tree type)
 {
   tree decl_name = DECL_NAME (TYPE_NAME (type));
 
-  pp_string (buffer, "Assign_");
-  pp_ada_tree_identifier (buffer, decl_name, t, false);
+  pp_string (pp, "Assign_");
+  pp_ada_tree_identifier (pp, decl_name, t, false);
 }
 
 /* Return the name of type T.  */
@@ -2879,12 +2900,12 @@ type_name (tree t)
     return IDENTIFIER_POINTER (DECL_NAME (n));
 }
 
-/* Dump in BUFFER the declaration of object T of type TYPE in Ada syntax.
+/* Dump in PP the declaration of object T of type TYPE in Ada syntax.
    SPC is the indentation level.  Return 1 if a declaration was printed,
    0 otherwise.  */
 
 static int
-dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
+dump_ada_declaration (pretty_printer *pp, tree t, tree type, int spc)
 {
   bool is_var = false;
   bool need_indent = false;
@@ -2894,7 +2915,7 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
   tree orig = NULL_TREE;
 
   if (cpp_check && cpp_check (t, IS_TEMPLATE))
-    return dump_ada_template (buffer, t, spc);
+    return dump_ada_template (pp, t, spc);
 
   /* Skip enumeral values: will be handled as part of the type itself.  */
   if (TREE_CODE (t) == CONST_DECL && TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE)
@@ -2921,7 +2942,7 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		  if (RECORD_OR_UNION_TYPE_P (orig) && !TREE_VISITED (stub))
 		    {
 		      INDENT (spc);
-		      dump_forward_type (buffer, orig, t, 0);
+		      dump_forward_type (pp, orig, t, 0);
 		    }
 
 		  TREE_VISITED (t) = 1;
@@ -2931,14 +2952,14 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	      INDENT (spc);
 
 	      if (RECORD_OR_UNION_TYPE_P (orig) && !TREE_VISITED (stub))
-		dump_forward_type (buffer, orig, t, spc);
+		dump_forward_type (pp, orig, t, spc);
 
-	      pp_string (buffer, "subtype ");
-	      dump_ada_node (buffer, t, type, spc, false, true);
-	      pp_string (buffer, " is ");
-	      dump_ada_node (buffer, orig, type, spc, false, true);
-	      pp_string (buffer, ";  -- ");
-	      dump_sloc (buffer, t);
+	      pp_string (pp, "subtype ");
+	      dump_ada_node (pp, t, type, spc, false, true);
+	      pp_string (pp, " is ");
+	      dump_ada_node (pp, orig, type, spc, false, true);
+	      pp_string (pp, ";  -- ");
+	      dump_sloc (pp, t);
 
 	      TREE_VISITED (t) = 1;
 	      return 1;
@@ -2976,9 +2997,9 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  case UNION_TYPE:
 	    if (!COMPLETE_TYPE_P (TREE_TYPE (t)))
 	      {
-		pp_string (buffer, "type ");
-		dump_ada_node (buffer, t, type, spc, false, true);
-		pp_string (buffer, " is null record;   -- incomplete struct");
+		pp_string (pp, "type ");
+		dump_ada_node (pp, t, type, spc, false, true);
+		pp_string (pp, " is null record;   -- incomplete struct");
 		TREE_VISITED (t) = 1;
 		return 1;
 	      }
@@ -2987,63 +3008,63 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	    if (TYPE_PACKED (TREE_TYPE (t)))
 	      {
 		warning_at (DECL_SOURCE_LOCATION (t), 0, "packed layout");
-		pp_string (buffer, "pragma Compile_Time_Warning (True, ");
-		pp_string (buffer, "\"packed layout may be incorrect\");");
-		newline_and_indent (buffer, spc);
+		pp_string (pp, "pragma Compile_Time_Warning (True, ");
+		pp_string (pp, "\"packed layout may be incorrect\");");
+		newline_and_indent (pp, spc);
 		packed_layout = true;
 	      }
 
 	    if (orig && TYPE_NAME (orig))
-	      pp_string (buffer, "subtype ");
+	      pp_string (pp, "subtype ");
 	    else
 	      {
                 if (separate_class_package (t))
 		  {
 		    is_class = true;
-		    pp_string (buffer, "package Class_");
-		    dump_ada_node (buffer, t, type, spc, false, true);
-		    pp_string (buffer, " is");
+		    pp_string (pp, "package Class_");
+		    dump_ada_node (pp, t, type, spc, false, true);
+		    pp_string (pp, " is");
 		    spc += INDENT_INCR;
-		    newline_and_indent (buffer, spc);
+		    newline_and_indent (pp, spc);
 		  }
 
-		dump_nested_types (buffer, t, spc);
+		dump_nested_types (pp, t, spc);
 
-		pp_string (buffer, "type ");
+		pp_string (pp, "type ");
 	      }
 	    break;
 
 	  case POINTER_TYPE:
 	  case REFERENCE_TYPE:
-	    dump_forward_type (buffer, TREE_TYPE (TREE_TYPE (t)), t, spc);
+	    dump_forward_type (pp, TREE_TYPE (TREE_TYPE (t)), t, spc);
 	    if (orig && TYPE_NAME (orig))
-	      pp_string (buffer, "subtype ");
+	      pp_string (pp, "subtype ");
 	    else
-	      pp_string (buffer, "type ");
+	      pp_string (pp, "type ");
 	    break;
 
 	  case ARRAY_TYPE:
 	    if ((orig && TYPE_NAME (orig)) || is_char_array (TREE_TYPE (t)))
-	      pp_string (buffer, "subtype ");
+	      pp_string (pp, "subtype ");
 	    else
-	      pp_string (buffer, "type ");
+	      pp_string (pp, "type ");
 	    break;
 
 	  case FUNCTION_TYPE:
-	    pp_string (buffer, "--  skipped function type ");
-	    dump_ada_node (buffer, t, type, spc, false, true);
+	    pp_string (pp, "--  skipped function type ");
+	    dump_ada_node (pp, t, type, spc, false, true);
 	    return 1;
 
 	  case ENUMERAL_TYPE:
 	    if ((orig && TYPE_NAME (orig) && orig != TREE_TYPE (t))
 		|| !is_simple_enum (TREE_TYPE (t)))
-	      pp_string (buffer, "subtype ");
+	      pp_string (pp, "subtype ");
 	    else
-	      pp_string (buffer, "type ");
+	      pp_string (pp, "type ");
 	    break;
 
 	  default:
-	    pp_string (buffer, "subtype ");
+	    pp_string (pp, "subtype ");
 	}
 
       TREE_VISITED (t) = 1;
@@ -3065,34 +3086,34 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	INDENT (spc);
 
       /* Print variable's name.  */
-      dump_ada_node (buffer, t, type, spc, false, true);
+      dump_ada_node (pp, t, type, spc, false, true);
 
       if (TREE_CODE (t) == TYPE_DECL)
 	{
-	  pp_string (buffer, " is ");
+	  pp_string (pp, " is ");
 
 	  if (orig && TYPE_NAME (orig))
-	    dump_ada_node (buffer, TYPE_NAME (orig), type, spc, false, true);
+	    dump_ada_node (pp, TYPE_NAME (orig), type, spc, false, true);
 	  else
-	    dump_ada_array_type (buffer, TREE_TYPE (t), spc);
+	    dump_ada_array_type (pp, TREE_TYPE (t), spc);
 	}
       else
 	{
 	  if (spc == INDENT_INCR || TREE_STATIC (t))
 	    is_var = true;
 
-	  pp_string (buffer, " : ");
+	  pp_string (pp, " : ");
 
 	  if (TREE_CODE (TREE_TYPE (TREE_TYPE (t))) != POINTER_TYPE
 	      && !packed_layout)
-	    pp_string (buffer, "aliased ");
+	    pp_string (pp, "aliased ");
 
 	  if (TYPE_NAME (TREE_TYPE (t)))
-	    dump_ada_node (buffer, TREE_TYPE (t), type, spc, false, true);
+	    dump_ada_node (pp, TREE_TYPE (t), type, spc, false, true);
 	  else if (type)
-	    dump_anonymous_type_name (buffer, TREE_TYPE (t));
+	    dump_anonymous_type_name (pp, TREE_TYPE (t));
 	  else
-	    dump_ada_array_type (buffer, TREE_TYPE (t), spc);
+	    dump_ada_array_type (pp, TREE_TYPE (t), spc);
 	}
     }
   else if (TREE_CODE (t) == FUNCTION_DECL)
@@ -3149,36 +3170,36 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       else if (!DECL_VINDEX (t) && *IDENTIFIER_POINTER (decl_name) == '_')
 	{
 	  INDENT (spc);
-	  pp_string (buffer, "--  skipped func ");
-	  pp_string (buffer, IDENTIFIER_POINTER (decl_name));
+	  pp_string (pp, "--  skipped func ");
+	  pp_string (pp, IDENTIFIER_POINTER (decl_name));
 	  return 1;
 	}
 
       INDENT (spc);
 
-      dump_forward_type (buffer, TREE_TYPE (t), t, spc);
+      dump_forward_type (pp, TREE_TYPE (t), t, spc);
 
       if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (t))) && !is_constructor)
-	pp_string (buffer, "procedure ");
+	pp_string (pp, "procedure ");
       else
-	pp_string (buffer, "function ");
+	pp_string (pp, "function ");
 
       if (is_constructor)
-	print_constructor (buffer, t, type);
+	print_constructor (pp, t, type);
       else if (is_destructor)
-	print_destructor (buffer, t, type);
+	print_destructor (pp, t, type);
       else if (is_assignment_operator)
-	print_assignment_operator (buffer, t, type);
+	print_assignment_operator (pp, t, type);
       else
 	{
 	  const unsigned int suffix = overloading_index (decl_name);
-	  pp_ada_tree_identifier (buffer, decl_name, t, false);
+	  pp_ada_tree_identifier (pp, decl_name, t, false);
 	  if (suffix > 1)
-	    pp_decimal_int (buffer, suffix);
+	    pp_decimal_int (pp, suffix);
 	}
 
       dump_ada_function_declaration
-	(buffer, t, is_method, is_constructor, is_destructor, spc);
+	(pp, t, is_method, is_constructor, is_destructor, spc);
 
       if (is_constructor && RECORD_OR_UNION_TYPE_P (type))
 	for (tree fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
@@ -3189,34 +3210,34 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	    }
 
       if (is_abstract || is_abstract_class)
-	pp_string (buffer, " is abstract");
+	pp_string (pp, " is abstract");
 
       if (is_abstract || !DECL_ASSEMBLER_NAME (t))
 	{
-	  pp_semicolon (buffer);
-	  pp_string (buffer, "  -- ");
-	  dump_sloc (buffer, t);
+	  pp_semicolon (pp);
+	  pp_string (pp, "  -- ");
+	  dump_sloc (pp, t);
 	}
       else if (is_constructor)
 	{
-	  pp_semicolon (buffer);
-	  pp_string (buffer, "  -- ");
-	  dump_sloc (buffer, t);
+	  pp_semicolon (pp);
+	  pp_string (pp, "  -- ");
+	  dump_sloc (pp, t);
 
-	  newline_and_indent (buffer, spc);
-	  pp_string (buffer, "pragma CPP_Constructor (");
-	  print_constructor (buffer, t, type);
-	  pp_string (buffer, ", \"");
-	  pp_asm_name (buffer, t);
-	  pp_string (buffer, "\");");
+	  newline_and_indent (pp, spc);
+	  pp_string (pp, "pragma CPP_Constructor (");
+	  print_constructor (pp, t, type);
+	  pp_string (pp, ", \"");
+	  pp_asm_name (pp, t);
+	  pp_string (pp, "\");");
 	}
       else
 	{
-	  pp_string (buffer, "  -- ");
-	  dump_sloc (buffer, t);
+	  pp_string (pp, "  -- ");
+	  dump_sloc (pp, t);
 
-	  newline_and_indent (buffer, spc);
-	  dump_ada_import (buffer, t, spc);
+	  newline_and_indent (pp, spc);
+	  dump_ada_import (pp, t, spc);
 	}
 
       return 1;
@@ -3227,12 +3248,12 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       bool is_abstract_record = false;
 
       /* Anonymous structs/unions.  */
-      dump_ada_node (buffer, TREE_TYPE (t), t, spc, false, true);
+      dump_ada_node (pp, TREE_TYPE (t), t, spc, false, true);
 
       if (TREE_CODE (TREE_TYPE (t)) == UNION_TYPE)
-	pp_string (buffer, " (discr : unsigned := 0)");
+	pp_string (pp, " (discr : unsigned := 0)");
 
-      pp_string (buffer, " is ");
+      pp_string (pp, " is ");
 
       /* Check whether we have an Ada interface compatible class.
 	 That is only have a vtable non-static data member and no
@@ -3269,20 +3290,20 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       TREE_VISITED (t) = 1; 
       if (is_interface)
 	{
-	  pp_string (buffer, "limited interface  -- ");
-	  dump_sloc (buffer, t);
-	  newline_and_indent (buffer, spc);
-	  pp_string (buffer, "with Import => True,");
-	  newline_and_indent (buffer, spc + 5);
-	  pp_string (buffer, "Convention => CPP");
+	  pp_string (pp, "limited interface  -- ");
+	  dump_sloc (pp, t);
+	  newline_and_indent (pp, spc);
+	  pp_string (pp, "with Import => True,");
+	  newline_and_indent (pp, spc + 5);
+	  pp_string (pp, "Convention => CPP");
 
-	  dump_ada_methods (buffer, TREE_TYPE (t), spc);
+	  dump_ada_methods (pp, TREE_TYPE (t), spc);
 	}
       else
 	{
 	  if (is_abstract_record)
-	    pp_string (buffer, "abstract ");
-	  dump_ada_node (buffer, t, t, spc, false, false);
+	    pp_string (pp, "abstract ");
+	  dump_ada_node (pp, t, t, spc, false, false);
 	}
     }
   else
@@ -3292,84 +3313,84 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
       if ((TREE_CODE (t) == FIELD_DECL || VAR_P (t))
 	  && DECL_NAME (t))
-	check_type_name_conflict (buffer, t);
+	check_type_name_conflict (pp, t);
 
       /* Print variable/type's name.  */
-      dump_ada_node (buffer, t, t, spc, false, true);
+      dump_ada_node (pp, t, t, spc, false, true);
 
       if (TREE_CODE (t) == TYPE_DECL)
 	{
 	  const bool is_subtype = TYPE_NAME (orig);
 
 	  if (!is_subtype && TREE_CODE (TREE_TYPE (t)) == UNION_TYPE)
-	    pp_string (buffer, " (discr : unsigned := 0)");
+	    pp_string (pp, " (discr : unsigned := 0)");
 
-	  pp_string (buffer, " is ");
+	  pp_string (pp, " is ");
 
-	  dump_ada_node (buffer, orig, t, spc, false, is_subtype);
+	  dump_ada_node (pp, orig, t, spc, false, is_subtype);
 	}
       else
 	{
 	  if (spc == INDENT_INCR || TREE_STATIC (t))
 	    is_var = true;
 
-	  pp_string (buffer, " : ");
+	  pp_string (pp, " : ");
 
 	  if (TREE_CODE (TREE_TYPE (t)) != POINTER_TYPE
 	      && (TYPE_NAME (TREE_TYPE (t))
 		  || (TREE_CODE (TREE_TYPE (t)) != INTEGER_TYPE
 		      && TREE_CODE (TREE_TYPE (t)) != ENUMERAL_TYPE))
 	      && !packed_layout)
-	    pp_string (buffer, "aliased ");
+	    pp_string (pp, "aliased ");
 
 	  if (TREE_READONLY (t) && TREE_CODE (t) != FIELD_DECL)
-	    pp_string (buffer, "constant ");
+	    pp_string (pp, "constant ");
 
 	  if (TYPE_NAME (TREE_TYPE (t))
 	      || (!RECORD_OR_UNION_TYPE_P (TREE_TYPE (t))
 		  && TREE_CODE (TREE_TYPE (t)) != ENUMERAL_TYPE))
-	    dump_ada_node (buffer, TREE_TYPE (t), t, spc, false, true);
+	    dump_ada_node (pp, TREE_TYPE (t), t, spc, false, true);
 	  else if (type)
-	    dump_anonymous_type_name (buffer, TREE_TYPE (t));
+	    dump_anonymous_type_name (pp, TREE_TYPE (t));
 	}
     }
 
   if (is_class)
     {
       spc -= INDENT_INCR;
-      newline_and_indent (buffer, spc);
-      pp_string (buffer, "end;");
-      newline_and_indent (buffer, spc);
-      pp_string (buffer, "use Class_");
-      dump_ada_node (buffer, t, type, spc, false, true);
-      pp_semicolon (buffer);
-      pp_newline (buffer);
+      newline_and_indent (pp, spc);
+      pp_string (pp, "end;");
+      newline_and_indent (pp, spc);
+      pp_string (pp, "use Class_");
+      dump_ada_node (pp, t, type, spc, false, true);
+      pp_semicolon (pp);
+      pp_newline (pp);
 
       /* All needed indentation/newline performed already, so return 0.  */
       return 0;
     }
   else if (is_var)
     {
-      pp_string (buffer, "  -- ");
-      dump_sloc (buffer, t);
-      newline_and_indent (buffer, spc);
-      dump_ada_import (buffer, t, spc);
+      pp_string (pp, "  -- ");
+      dump_sloc (pp, t);
+      newline_and_indent (pp, spc);
+      dump_ada_import (pp, t, spc);
     }
 
   else
     {
-      pp_string (buffer, ";  -- ");
-      dump_sloc (buffer, t);
+      pp_string (pp, ";  -- ");
+      dump_sloc (pp, t);
     }
 
   return 1;
 }
 
-/* Dump in BUFFER a structure NODE of type TYPE in Ada syntax.  If NESTED is
+/* Dump in PP a structure NODE of type TYPE in Ada syntax.  If NESTED is
    true, it's an anonymous nested type.  SPC is the indentation level.  */
 
 static void
-dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
+dump_ada_structure (pretty_printer *pp, tree node, tree type, bool nested,
 		    int spc)
 {
   const bool is_union = (TREE_CODE (node) == UNION_TYPE);
@@ -3381,16 +3402,16 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
   bitfield_used = false;
 
   /* Print the contents of the structure.  */
-  pp_string (buffer, "record");
+  pp_string (pp, "record");
 
   if (is_union)
     {
-      newline_and_indent (buffer, spc + INDENT_INCR);
-      pp_string (buffer, "case discr is");
+      newline_and_indent (pp, spc + INDENT_INCR);
+      pp_string (pp, "case discr is");
       field_spc = spc + INDENT_INCR * 3;
     }
 
-  pp_newline (buffer);
+  pp_newline (pp);
 
   /* Print the non-static fields of the structure.  */
   for (tree tmp = TYPE_FIELDS (node); tmp; tmp = TREE_CHAIN (tmp))
@@ -3401,24 +3422,24 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
 	  if (!is_tagged_type (TREE_TYPE (tmp)))
 	    {
 	      if (!TYPE_NAME (TREE_TYPE (tmp)))
-		dump_ada_declaration (buffer, tmp, type, field_spc);
+		dump_ada_declaration (pp, tmp, type, field_spc);
 	      else
 		{
 		  INDENT (field_spc);
 
 		  if (field_num == 0)
-		    pp_string (buffer, "parent : aliased ");
+		    pp_string (pp, "parent : aliased ");
 		  else
 		    {
 		      sprintf (buf, "field_%d : aliased ", field_num + 1);
-		      pp_string (buffer, buf);
+		      pp_string (pp, buf);
 		    }
-		  dump_ada_decl_name (buffer, TYPE_NAME (TREE_TYPE (tmp)),
+		  dump_ada_decl_name (pp, TYPE_NAME (TREE_TYPE (tmp)),
 				      false);
-		  pp_semicolon (buffer);
+		  pp_semicolon (pp);
 		}
 
-	      pp_newline (buffer);
+	      pp_newline (pp);
 	      field_num++;
 	    }
 	}
@@ -3437,13 +3458,13 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
 		    sprintf (buf, "when others =>");
 
 		  INDENT (spc + INDENT_INCR * 2);
-		  pp_string (buffer, buf);
-		  pp_newline (buffer);
+		  pp_string (pp, buf);
+		  pp_newline (pp);
 		}
 
-	      if (dump_ada_declaration (buffer, tmp, type, field_spc))
+	      if (dump_ada_declaration (pp, tmp, type, field_spc))
 		{
-		  pp_newline (buffer);
+		  pp_newline (pp);
 		  field_num++;
 		}
 	    }
@@ -3453,49 +3474,49 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
   if (is_union)
     {
       INDENT (spc + INDENT_INCR);
-      pp_string (buffer, "end case;");
-      pp_newline (buffer);
+      pp_string (pp, "end case;");
+      pp_newline (pp);
     }
 
   if (field_num == 0)
     {
       INDENT (spc + INDENT_INCR);
-      pp_string (buffer, "null;");
-      pp_newline (buffer);
+      pp_string (pp, "null;");
+      pp_newline (pp);
     }
 
   INDENT (spc);
-  pp_string (buffer, "end record");
+  pp_string (pp, "end record");
 
-  newline_and_indent (buffer, spc);
+  newline_and_indent (pp, spc);
 
   /* We disregard the methods for anonymous nested types.  */
   if (has_nontrivial_methods (node) && !nested)
     {
-      pp_string (buffer, "with Import => True,");
-      newline_and_indent (buffer, spc + 5);
-      pp_string (buffer, "Convention => CPP");
+      pp_string (pp, "with Import => True,");
+      newline_and_indent (pp, spc + 5);
+      pp_string (pp, "Convention => CPP");
     }
   else
-    pp_string (buffer, "with Convention => C_Pass_By_Copy");
+    pp_string (pp, "with Convention => C_Pass_By_Copy");
 
   if (is_union)
     {
-      pp_comma (buffer);
-      newline_and_indent (buffer, spc + 5);
-      pp_string (buffer, "Unchecked_Union => True");
+      pp_comma (pp);
+      newline_and_indent (pp, spc + 5);
+      pp_string (pp, "Unchecked_Union => True");
     }
 
   if (bitfield_used || packed_layout)
     {
       char buf[32];
-      pp_comma (buffer);
-      newline_and_indent (buffer, spc + 5);
-      pp_string (buffer, "Pack => True");
-      pp_comma (buffer);
-      newline_and_indent (buffer, spc + 5);
+      pp_comma (pp);
+      newline_and_indent (pp, spc + 5);
+      pp_string (pp, "Pack => True");
+      pp_comma (pp);
+      newline_and_indent (pp, spc + 5);
       sprintf (buf, "Alignment => %d", TYPE_ALIGN (node) / BITS_PER_UNIT);
-      pp_string (buffer, buf);
+      pp_string (pp, buf);
       bitfield_used = false;
       packed_layout = false;
     }
@@ -3503,7 +3524,7 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
   if (nested)
     return;
 
-  need_semicolon = !dump_ada_methods (buffer, node, spc);
+  need_semicolon = !dump_ada_methods (pp, node, spc);
 
   /* Print the static fields of the structure, if any.  */
   for (tree tmp = TYPE_FIELDS (node); tmp; tmp = TREE_CHAIN (tmp))
@@ -3513,11 +3534,11 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
 	  if (need_semicolon)
 	    {
 	      need_semicolon = false;
-	      pp_semicolon (buffer);
+	      pp_semicolon (pp);
 	    }
-	  pp_newline (buffer);
-	  pp_newline (buffer);
-	  dump_ada_declaration (buffer, tmp, type, spc);
+	  pp_newline (pp);
+	  pp_newline (pp);
+	  dump_ada_declaration (pp, tmp, type, spc);
 	}
     }
 }
@@ -3556,7 +3577,7 @@ dump_ads (const char *source_file,
       pretty_printer pp;
 
       pp_needs_newline (&pp) = true;
-      pp.buffer->stream = f;
+      pp.set_output_stream (f);
 
       /* Dump all relevant macros.  */
       dump_ada_macros (&pp, source_file);

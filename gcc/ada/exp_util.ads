@@ -31,6 +31,7 @@ with Namet;          use Namet;
 with Rtsfind;        use Rtsfind;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
+with Snames;         use Snames;
 with Types;          use Types;
 with Uintp;          use Uintp;
 
@@ -577,12 +578,15 @@ package Exp_Util is
    function Find_Last_Init (Decl : Node_Id) return Node_Id;
    --  Find the last initialization call related to object declaration Decl
 
-   function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
-   --  Find the first primitive operation of a tagged type T with name Name.
-   --  This function allows the use of a primitive operation which is not
-   --  directly visible. If T is a class-wide type, then the reference is to an
-   --  operation of the corresponding root type. It is an error if no primitive
-   --  operation with the given name is found.
+   function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id
+     with Pre => Name not in Name_Adjust | Name_Finalize | Name_Initialize;
+   --  Find the first primitive operation of type T with the specified Name,
+   --  disregarding any visibility considerations. If T is a class-wide type,
+   --  then examine the primitive operations of its corresponding root type.
+   --  This function should not be called for the three controlled primitive
+   --  operations, and, instead, Find_Controlled_Prim_Op must be called for
+   --  those. Raise Program_Error if no primitive operation with the given
+   --  Name is found.
 
    function Find_Prim_Op
      (T    : Entity_Id;
@@ -590,6 +594,12 @@ package Exp_Util is
    --  Same as Find_Prim_Op above, except we're searching for an op that has
    --  the form indicated by Name (i.e. is a type support subprogram with the
    --  indicated suffix).
+
+   function Find_Controlled_Prim_Op
+     (T : Entity_Id; Name : Name_Id) return Entity_Id
+     with Pre => Name in Name_Adjust | Name_Finalize | Name_Initialize;
+   --  Same as Find_Prim_Op but for the three controlled primitive operations,
+   --  and returns Empty if not found.
 
    function Find_Optional_Prim_Op
      (T : Entity_Id; Name : Name_Id) return Entity_Id;
@@ -764,12 +774,10 @@ package Exp_Util is
    --    Rnn.all
 
    function Is_Finalizable_Transient
-     (Decl     : Node_Id;
-      Rel_Node : Node_Id) return Boolean;
-   --  Determine whether declaration Decl denotes a controlled transient which
-   --  should be finalized. Rel_Node is the related context. Even though some
-   --  transients are controlled, they may act as renamings of other objects or
-   --  function calls.
+     (Decl : Node_Id;
+      N    : Node_Id) return Boolean;
+   --  Determine whether declaration Decl denotes a controlled transient object
+   --  that must be finalized. N is the node serviced by the transient context.
 
    function Is_Fully_Repped_Tagged_Type (T : Entity_Id) return Boolean;
    --  Tests given type T, and returns True if T is a non-discriminated tagged
@@ -887,6 +895,26 @@ package Exp_Util is
    --  list. If Warn is True, a warning will be output at the start of N
    --  indicating the deletion of the code.
 
+   function Make_CW_Equivalent_Type
+     (T        : Entity_Id;
+      E        : Node_Id;
+      List_Def : out List_Id) return Entity_Id;
+   --  T is a class-wide type entity, and E is the initial expression node that
+   --  constrains T in cases such as: " X: T := E" or "new T'(E)". When there
+   --  is no E present then it is assumed that T is an unconstrained mutably
+   --  tagged class-wide type.
+   --
+   --  This function returns the entity of the Equivalent type and inserts
+   --  on the fly the necessary declaration into List_Def such as:
+   --
+   --    type anon is record
+   --       _parent : Root_Type (T); constrained with E discriminants (if any)
+   --       Extension : String (1 .. expr to match size of E);
+   --    end record;
+   --
+   --  This record is compatible with any object of the class of T thanks to
+   --  the first field and has the same size as E thanks to the second.
+
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id;
    --  Generate a call to the Invariant_Procedure associated with the type of
    --  expression Expr. Expr is passed as an actual parameter in the call.
@@ -982,6 +1010,13 @@ package Exp_Util is
    --  temporaries that interfere with stack checking mechanism. Note that the
    --  caller has to check whether stack checking is actually enabled in order
    --  to guide the expansion (typically of a function call).
+
+   function Name_Of_Controlled_Prim_Op
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Name_Id
+     with Pre => Nam in Name_Adjust | Name_Finalize | Name_Initialize;
+   --  Return the name of the Adjust, Finalize, or Initialize primitive of
+   --  controlled type Typ, if it exists, and No_Name if it does not.
 
    function Needs_Conditional_Null_Excluding_Check
      (Typ : Entity_Id) return Boolean;
@@ -1251,6 +1286,8 @@ package Exp_Util is
 
 private
    pragma Inline (Duplicate_Subexpr);
+   pragma Inline (Find_Controlled_Prim_Op);
+   pragma Inline (Find_Prim_Op);
    pragma Inline (Force_Evaluation);
    pragma Inline (Get_Mapped_Entity);
    pragma Inline (Is_Library_Level_Tagged_Type);

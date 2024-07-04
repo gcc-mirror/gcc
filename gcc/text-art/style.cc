@@ -232,7 +232,7 @@ style::print_changes (pretty_printer *pp,
     {
       if (!old_style.m_url.empty ())
 	pp_end_url (pp);
-      if (pp->url_format != URL_FORMAT_NONE
+      if (pp->supports_urls_p ()
 	  && !new_style.m_url.empty ())
 	{
 	  /* Adapted from pp_begin_url, but encoding the
@@ -241,7 +241,7 @@ style::print_changes (pretty_printer *pp,
 	  pp_string (pp, "\33]8;;");
 	  for (auto ch : new_style.m_url)
 	    pp_unicode_character (pp, ch);
-	  switch (pp->url_format)
+	  switch (pp->get_url_format ())
 	    {
 	    default:
 	    case URL_FORMAT_NONE:

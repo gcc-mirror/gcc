@@ -44,7 +44,7 @@ extern int xtensa_expand_scc (rtx *, machine_mode);
 extern int xtensa_expand_block_move (rtx *);
 extern int xtensa_expand_block_set (rtx *);
 extern void xtensa_split_operand_pair (rtx *, machine_mode);
-extern int xtensa_constantsynth (rtx, HOST_WIDE_INT);
+extern int xtensa_constantsynth (rtx, rtx);
 extern int xtensa_emit_move_sequence (rtx *, machine_mode);
 extern rtx xtensa_copy_incoming_a7 (rtx);
 extern void xtensa_expand_nonlocal_goto (rtx *);

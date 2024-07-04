@@ -71,17 +71,6 @@ along with GCC; see the file COPYING3.  If not see
 #define LONG_TYPE_SIZE		32
 #define LONG_LONG_TYPE_SIZE	64     
 
-/* In earlier versions, FLOAT_TYPE_SIZE was selectable as 32 or 64,
-   but that conflicts with Fortran language rules.  Since there is no
-   obvious reason why we should have that feature -- other targets
-   generally don't have float and double the same size -- I've removed
-   it.  Note that it continues to be true (for now) that arithmetic is
-   always done with 64-bit values, i.e., the FPU is always in "double"
-   mode.  */
-#define FLOAT_TYPE_SIZE		32
-#define DOUBLE_TYPE_SIZE	64
-#define LONG_DOUBLE_TYPE_SIZE	64
-
 /* machine types from ansi */
 #define SIZE_TYPE "short unsigned int" 	/* definition of size_t */
 #define WCHAR_TYPE "short int" 		/* or long int???? */

@@ -85,23 +85,39 @@ template<typename T = int>
   access_empty() { return {}; }
 
 template<typename T = int>
-  requires (std::bool_constant<(std::vector<T>().at(0), true)>::value)
+  requires (std::bool_constant<&std::vector<T>().at(0) != nullptr>::value)
   constexpr std::true_type
   access_empty() { return {}; }
 
 template<typename T = int>
-  requires (std::bool_constant<(std::vector<T>()[0], true)>::value)
+  requires (std::bool_constant<&std::vector<T>()[0] != nullptr>::value)
   constexpr std::true_type
   access_empty() { return {}; }
 
 template<typename T = int>
-  requires (std::bool_constant<(std::vector<T>().front(), true)>::value)
+  requires (std::bool_constant<&std::vector<T>().front() != nullptr>::value)
   constexpr std::true_type
   access_empty() { return {}; }
 
 template<typename T = int>
-  requires (std::bool_constant<(std::vector<T>().back(), true)>::value)
+  requires (std::bool_constant<&std::vector<T>().back() != nullptr>::value)
   constexpr std::true_type
   access_empty() { return {}; }
 
 static_assert( ! access_empty() );
+
+template<typename T = int>
+  constexpr std::false_type
+  access_past_the_end() { return {}; }
+
+template<typename T = int>
+  requires (std::bool_constant<&std::vector<T>(3).at(3) != nullptr>::value)
+  constexpr std::true_type
+  access_past_the_end() { return {}; }
+
+template<typename T = int>
+  requires (std::bool_constant<&std::vector<T>(3)[3] != nullptr>::value)
+  constexpr std::true_type
+  access_past_the_end() { return {}; }
+
+static_assert( ! access_past_the_end() );

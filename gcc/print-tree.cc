@@ -954,11 +954,11 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  indent_to (file, indent + 4);
 	  fprintf (file, "def_stmt ");
 	  {
-	    pretty_printer buffer;
-	    buffer.buffer->stream = file;
-	    pp_gimple_stmt_1 (&buffer, SSA_NAME_DEF_STMT (node), indent + 4,
+	    pretty_printer pp;
+	    pp.set_output_stream (file);
+	    pp_gimple_stmt_1 (&pp, SSA_NAME_DEF_STMT (node), indent + 4,
 			      TDF_NONE);
-	    pp_flush (&buffer);
+	    pp_flush (&pp);
 	  }
 
 	  indent_to (file, indent + 4);

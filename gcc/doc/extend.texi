@@ -4627,14 +4627,14 @@ the same behavior as that of the command-line option
 Indicates that the workaround for the Cortex-A53 erratum 835769 should be
 applied to this function.  To explicitly disable the workaround for this
 function specify the negated form: @code{no-fix-cortex-a53-835769}.
-This corresponds to the behavior of the command line options
+This corresponds to the behavior of the command-line options
 @option{-mfix-cortex-a53-835769} and @option{-mno-fix-cortex-a53-835769}.
 
 @cindex @code{cmodel=} function attribute, AArch64
 @item cmodel=
 Indicates that code should be generated for a particular code model for
 this function.  The behavior and permissible arguments are the same as
-for the command line option @option{-mcmodel=}.
+for the command-line option @option{-mcmodel=}.
 
 @cindex @code{strict-align} function attribute, AArch64
 @item strict-align
@@ -4694,7 +4694,7 @@ behavior and permissible arguments are the same as for the command-line option
 @cindex @code{outline-atomics} function attribute, AArch64
 @item outline-atomics
 Enable or disable calls to out-of-line helpers to implement atomic operations.
-This corresponds to the behavior of the command line options
+This corresponds to the behavior of the command-line options
 @option{-moutline-atomics} and @option{-mno-outline-atomics}.
 
 @end table
@@ -8456,7 +8456,7 @@ volatile int porta __attribute__((address (0x600)));
 
 This attribute can also be used to define symbols in C/C++
 code which otherwise would require assembly, a linker description file
-or command line options like @code{-Wl,--defsym,a_symbol=@var{value}}.
+or command-line options like @code{-Wl,--defsym,a_symbol=@var{value}}.
 For example,
 @smallexample
 int a_symbol __attribute__((weak, address (1234)));
@@ -9473,7 +9473,7 @@ bat (void)
 @end example
 
 @cindex strub eligibility and viability
-Some @option{-fstrub=*} command line options enable @code{strub} modes
+Some @option{-fstrub=*} command-line options enable @code{strub} modes
 implicitly where viable.  A @code{strub} mode is only viable for a
 function if the function is eligible for that mode, and if other
 conditions, detailed below, are satisfied.  If it's not eligible for a
@@ -10700,13 +10700,30 @@ contain any instructions recognized by the assembler, including directives.
 GCC does not parse the assembler instructions themselves and 
 does not know what they mean or even whether they are valid assembler input. 
 
-You may place multiple assembler instructions together in a single @code{asm} 
-string, separated by the characters normally used in assembly code for the 
-system. A combination that works in most places is a newline to break the 
+You may place multiple assembler instructions together in a single @code{asm}
+string, separated by the characters normally used in assembly code for the
+system. A combination that works in most places is a newline to break the
 line, plus a tab character (written as @samp{\n\t}).
-Some assemblers allow semicolons as a line separator. However, 
-note that some assembler dialects use semicolons to start a comment. 
+Some assemblers allow semicolons as a line separator. However,
+note that some assembler dialects use semicolons to start a comment.
 @end table
+
+@node asm constexprs
+With gnu++11 or later the string can also be a compile time constant expression
+inside parens.  The constant expression can return a string or a container
+with data and size members, following similar rules as C++26 @code{static_assert}
+message. Any string is converted to the character set of the source code.
+When this feature is available the @code{__GXX_CONSTEXPR_ASM__} cpp symbol is defined.
+
+@example
+#include <string>
+constexpr std::string_view genfoo() @{ return "foo"; @}
+
+void function()
+@{
+  asm((genfoo()));
+@}
+@end example
 
 @subsubheading Remarks
 Using extended @code{asm} (@pxref{Extended Asm}) typically produces
@@ -10850,20 +10867,27 @@ perform a jump to one of the labels listed in the @var{GotoLabels}.
 @item AssemblerTemplate
 This is a literal string that is the template for the assembler code. It is a 
 combination of fixed text and tokens that refer to the input, output, 
-and goto parameters. @xref{AssemblerTemplate}.
+and goto parameters. @xref{AssemblerTemplate}. With gnu++11 or later it can
+also be a constant expression inside parens (see @ref{asm constexprs}).
 
 @item OutputOperands
 A comma-separated list of the C variables modified by the instructions in the 
 @var{AssemblerTemplate}.  An empty list is permitted.  @xref{OutputOperands}.
+With gnu++11 or later the strings can also be constant expressions inside parens
+(see @ref{asm constexprs})
 
 @item InputOperands
 A comma-separated list of C expressions read by the instructions in the 
 @var{AssemblerTemplate}.  An empty list is permitted.  @xref{InputOperands}.
+With gnu++11 or later the strings can also be constant expressions inside parens
+(see @ref{asm constexprs})
 
 @item Clobbers
 A comma-separated list of registers or other values changed by the 
 @var{AssemblerTemplate}, beyond those listed as outputs.
 An empty list is permitted.  @xref{Clobbers and Scratch Registers}.
+With gnu++11 or later the strings can also be constant expressions inside parens
+(see @ref{asm constexprs})
 
 @item GotoLabels
 When you are using the @code{goto} form of @code{asm}, this section contains 
@@ -26220,6 +26244,9 @@ ZHAOXIN lujiazui CPU.
 
 @item yongfeng
 ZHAOXIN yongfeng CPU.
+
+@item shijidadao
+ZHAOXIN shijidadao CPU.
 
 @item amdfam10h
 AMD Family 10h CPU.

@@ -5079,8 +5079,9 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	{
 	  tree real, imag;
 
-	  pedwarn (location, OPT_Wpedantic,
-		   "ISO C does not support %<++%> and %<--%> on complex types");
+	  pedwarn_c23 (location, OPT_Wpedantic,
+		       "ISO C does not support %<++%> and %<--%> on complex "
+		       "types before C2Y");
 
 	  if (!atomic_op)
 	    {

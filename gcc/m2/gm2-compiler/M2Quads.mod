@@ -135,6 +135,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         ForeachFieldEnumerationDo, ForeachLocalSymDo,
                         GetExported, PutImported, GetSym, GetLibName,
                         GetTypeMode,
+                        IsVarConditional, PutVarConditional,
                         IsUnused,
                         NulSym ;
 
@@ -276,7 +277,7 @@ IMPORT M2Error, FIO, SFIO, DynamicStrings, StdIO ;
 CONST
    DebugStackOn = TRUE ;
    DebugVarients = FALSE ;
-   BreakAtQuad = 140 ;
+   BreakAtQuad = 200 ;
    DebugTokPos = FALSE ;
 
 TYPE
@@ -959,6 +960,29 @@ VAR
    op1, op2, op3: CARDINAL ;
 BEGIN
    GetQuad (QuadNo, op, op1, op2, op3) ;
+   RETURN OpUsesOp1 (op) AND IsConst (op1)
+END IsInitialisingConst ;
+
+
+(*
+   IsConstQuad - return TRUE if the quadruple is marked as a constexpr.
+*)
+
+PROCEDURE IsConstQuad (quad: CARDINAL) : BOOLEAN ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (quad) ;
+   RETURN f^.ConstExpr
+END IsConstQuad ;
+
+
+(*
+   OpUsesOp1 - return TRUE if op allows op1.
+*)
+
+PROCEDURE OpUsesOp1 (op: QuadOperator) : BOOLEAN ;
+BEGIN
    CASE op OF
 
    StringConvertCnulOp,
@@ -997,12 +1021,27 @@ BEGIN
    XIndrOp,
    IndrXOp,
    SaveExceptionOp,
-   RestoreExceptionOp:  RETURN( IsConst(op1) )
+   RestoreExceptionOp:  RETURN TRUE
 
    ELSE
-      RETURN( FALSE )
+      RETURN FALSE
    END
-END IsInitialisingConst ;
+END OpUsesOp1 ;
+
+
+(*
+   IsConditionalBooleanQuad - return TRUE if operand 1 is a boolean result.
+*)
+
+PROCEDURE IsConditionalBooleanQuad (quad: CARDINAL) : BOOLEAN ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   f := GetQF (quad) ;
+   RETURN OpUsesOp1 (f^.Operator) AND
+          (IsVar (f^.Operand1) OR IsConst (f^.Operand1)) AND
+          IsVarConditional (f^.Operand1)
+END IsConditionalBooleanQuad ;
 
 
 (*
@@ -1486,7 +1525,7 @@ BEGIN
          Operand3      := Oper3 ;
          CheckOverflow := overflow ;
          CheckType     := checktype ;
-         ConstExpr     := IsInConstExpression ()
+         ConstExpr     := FALSE ;  (* IsInConstExpression () *)
       END
    END
 END PutQuadOType ;
@@ -1810,6 +1849,10 @@ VAR
    i   : CARDINAL ;
    f, g: QuadFrame ;
 BEGIN
+   IF QuadNo = BreakAtQuad
+   THEN
+      stop
+   END ;
    f := GetQF(QuadNo) ;
    WITH f^ DO
       AlterReference(Head, QuadNo, f^.Next) ;
@@ -1955,8 +1998,8 @@ END ManipulateReference ;
 
 
 (*
-   RemoveReference - remove the reference by quadruple, q, to wherever
-                     it was pointing to.
+   RemoveReference - remove the reference by quadruple q to wherever
+                     it was pointing.
 *)
 
 PROCEDURE RemoveReference (q: CARDINAL) ;
@@ -1966,6 +2009,10 @@ BEGIN
    f := GetQF(q) ;
    IF (f^.Operand3#0) AND (f^.Operand3<NextQuad)
    THEN
+      IF f^.Operand3 = BreakAtQuad
+      THEN
+         stop
+      END ;
       g := GetQF(f^.Operand3) ;
       Assert(g^.NoOfTimesReferenced#0) ;
       DEC(g^.NoOfTimesReferenced)
@@ -3483,8 +3530,11 @@ BEGIN
                       checkOverflow)
          END
       ELSE
-         GenQuadOtok (tokno, BecomesOp, Des, NulSym, Exp, TRUE,
-                      destok, UnknownTokenNo, exptok)
+         (* This might be inside a const expression.  *)
+         GenQuadOTypetok (tokno, BecomesOp,
+                          Des, NulSym, Exp,
+                          TRUE, TRUE,
+                          destok, UnknownTokenNo, exptok)
       END
    END
 END MoveWithMode ;
@@ -3768,16 +3818,19 @@ BEGIN
    THEN
       PopBool (t, f) ;
       PopTtok (Des, destok) ;
+      PutVarConditional (Des, TRUE) ;  (* Des will contain the result of a boolean relop.  *)
       (* Conditional Boolean Assignment.  *)
       BackPatch (t, NextQuad) ;
       IF GetMode (Des) = LeftValue
       THEN
          CheckPointerThroughNil (destok, Des) ;
-         GenQuadO (destok, XIndrOp, Des, Boolean, True, checkOverflow)
+         GenQuadO (destok, XIndrOp, Des, Boolean, True, checkOverflow) ;
+         GenQuadO (destok, GotoOp, NulSym, NulSym, NextQuad+2, FALSE) ;
       ELSE
-         GenQuadO (becomesTokNo, BecomesOp, Des, NulSym, True, checkOverflow)
+         (* This might be inside a const expression.  *)
+         GenQuadO (becomesTokNo, BecomesOp, Des, NulSym, True, checkOverflow) ;
+         GenQuadO (destok, GotoOp, NulSym, NulSym, NextQuad+2, FALSE)
       END ;
-      GenQuadO (destok, GotoOp, NulSym, NulSym, NextQuad+2, checkOverflow) ;
       BackPatch (f, NextQuad) ;
       IF GetMode (Des) = LeftValue
       THEN
@@ -3823,16 +3876,6 @@ BEGIN
       MoveWithMode (combinedtok, Des, Exp, Array, destok, exptok, checkOverflow) ;
       IF checkTypes
       THEN
-         (*
-         IF (CannotCheckTypeInPass3 (Des) OR CannotCheckTypeInPass3 (Exp))
-         THEN
-            (* We must do this after the assignment to allow the Designator to be
-               resolved (if it is a constant) before the type checking is done.  *)
-            (* Prompt post pass 3 to check the assignment once all types are resolved.  *)
-            BuildRange (InitTypesAssignmentCheck (combinedtok, Des, Exp))
-         END ;
-         *)
-         (* BuildRange (InitTypesAssignmentCheck (combinedtok, Des, Exp)) ; *)
          CheckAssignCompatible (Des, Exp, combinedtok, destok, exptok)
       END
    END ;
@@ -12735,7 +12778,7 @@ BEGIN
          PopT(e2) ;
          PopT(e1) ;
          PopT(const) ;
-         WriteFormat0('the constant must be an array constructor or a set constructor but not both') ;
+         WriteFormat0('the constant must be either an array constructor or a set constructor') ;
          PushT(const)
       END
    END
@@ -12744,6 +12787,14 @@ END BuildComponentValue ;
 
 (*
    RecordOp - Records the operator passed on the stack.
+              This is called when a boolean operator is found in an
+              expression.  It is called just after the lhs has been built
+              and pushed to the quad stack and prior to the rhs build.
+              It checks to see if AND OR or equality tests are required.
+              It will short circuit AND and OR expressions.  It also
+              converts a lhs to a boolean variable if an xor comparison
+              is about to be performed.
+
               Checks for AND operator or OR operator
               if either of these operators are found then BackPatching
               takes place.
@@ -12787,6 +12838,10 @@ BEGIN
       PopBool(t, f) ;
       BackPatch(f, NextQuad) ;
       PushBool(t, 0)
+   ELSIF IsBoolean (1) AND
+      ((Op = EqualTok) OR (Op = LessGreaterTok) OR (Op = HashTok) OR (Op = InTok))
+   THEN
+      ConvertBooleanToVariable (tokno, 1)
    END ;
    PushTtok(Op, tokno)
 END RecordOp ;
@@ -13180,7 +13235,7 @@ END AreConstant ;
 (*
    ConvertBooleanToVariable - converts a BoolStack(i) from a Boolean True|False
                               exit pair into a variable containing the value TRUE or
-                              FALSE. The parameter, i, is relative to the top
+                              FALSE.  The parameter i is relative to the top
                               of the stack.
 *)
 
@@ -13194,10 +13249,12 @@ BEGIN
       constant boolean.  *)
    Des := MakeTemporary (tok, AreConstant (IsInConstExpression ())) ;
    PutVar (Des, Boolean) ;
+   PutVarConditional (Des, TRUE) ;
    PushTtok (Des, tok) ;   (* we have just increased the stack so we must use i+1 *)
    f := PeepAddress (BoolStack, i+1) ;
    PushBool (f^.TrueExit, f^.FalseExit) ;
-   BuildAssignmentWithoutBounds (tok, FALSE, TRUE) ;  (* restored stack *)
+   BuildAssignmentWithoutBounds (tok, FALSE, TRUE) ;
+   (* Restored stack after the BuildAssign... above.  *)
    f := PeepAddress (BoolStack, i) ;
    WITH f^ DO
       TrueExit := Des ;  (* Alter Stack(i) to contain the variable.  *)
@@ -13229,6 +13286,23 @@ END BuildBooleanVariable ;
 
 
 (*
+   DumpQuadSummary -
+*)
+
+PROCEDURE DumpQuadSummary (quad: CARDINAL) ;
+VAR
+   f: QuadFrame ;
+BEGIN
+   IF quad # 0
+   THEN
+      f := GetQF (quad) ;
+      printf2 ("%d  op3 = %d\n", quad, f^.Operand3)
+   END
+END DumpQuadSummary ;
+
+
+
+(*
    BuildRelOpFromBoolean - builds a relational operator sequence of quadruples
                            instead of using a temporary boolean variable.
                            This function can only be used when we perform
@@ -13244,10 +13318,11 @@ END BuildBooleanVariable ;
 
                            before
 
-                           q    if r1      op1     op2     t2
-                           q+1  Goto                       f2
-                           q+2  if r2      op3     op4     t1
-                           q+3  Goto                       f1
+                           q      if r1      op1     op2     t2
+                           q+1    Goto                       f2
+                           ...
+                           q+n    if r2      op3     op4     t1
+                           q+n+1  Goto                       f1
 
                            after (in case of =)
 
@@ -13260,12 +13335,14 @@ END BuildBooleanVariable ;
 
                            after (in case of #)
 
-                           q    if r1      op1     op2     q+2
-                           q+1  Goto                       q+4
-                           q+2  if r2      op3     op4     f
-                           q+3  Goto                       t
-                           q+4  if r2      op3     op4     t
-                           q+5  Goto                       f
+                           q      if r1      op1     op2     q+2
+                           q+1    Goto                       q+n+2
+                           q+2    ...
+                           ...    ...
+                           q+n    if r2      op3     op4     f
+                           q+n+1  Goto                       t
+                           q+n+2  if r2      op3     op4     t
+                           q+n+3  Goto                       f
 
                            The Stack is expected to contain:
 
@@ -13295,11 +13372,11 @@ BEGIN
    Assert (IsBoolean (1) AND IsBoolean (3)) ;
    IF OperandT (2) = EqualTok
    THEN
-      (* are the two boolean expressions the same? *)
+      (* Are the two boolean expressions the same?  *)
       PopBool (t1, f1) ;
       PopT (Tok) ;
       PopBool (t2, f2) ;
-      (* give the false exit a second chance *)
+      (* Give the false exit a second chance.  *)
       BackPatch (t2, t1) ;        (* q    if   _     _    q+2 *)
       BackPatch (f2, NextQuad) ;  (* q+1  if   _     _    q+4 *)
       Assert (NextQuad = f1+1) ;
@@ -13311,11 +13388,25 @@ BEGIN
       PushBooltok (Merge (NextQuad-1, t1), Merge (NextQuad-2, f1), tokpos)
    ELSIF (OperandT (2) = HashTok) OR (OperandT (2) = LessGreaterTok)
    THEN
-      (* are the two boolean expressions different? *)
+      IF CompilerDebugging
+      THEN
+         printf0 ("BuildRelOpFromBoolean (NotEqualTok)\n") ;
+         DisplayStack
+      END ;
+      (* Are the two boolean expressions different?  *)
       PopBool (t1, f1) ;
       PopT (Tok) ;
       PopBool (t2, f2) ;
-      (* give the false exit a second chance *)
+      IF CompilerDebugging
+      THEN
+         printf2 ("t1 = %d, f1 = %d\n", t1, f1) ;
+         printf2 ("t2 = %d, f2 = %d\n", t2, f2) ;
+         DumpQuadSummary (t1) ;
+         DumpQuadSummary (f1) ;
+         DumpQuadSummary (t2) ;
+         DumpQuadSummary (f2) ;
+      END ;
+      (* Give the false exit a second chance.  *)
       BackPatch (t2, t1) ;        (* q    if   _     _    q+2 *)
       BackPatch (f2, NextQuad) ;  (* q+1  if   _     _    q+4 *)
       Assert (NextQuad = f1+1) ;
@@ -13410,11 +13501,13 @@ BEGIN
    THEN
       DisplayStack    (* Debugging info *)
    END ;
-   IF IsBoolean (1) AND IsBoolean (3)
+   IF IsInConstExpression () AND IsBoolean (1) AND IsBoolean (3)
    THEN
       (*
          we allow # and = to be used with Boolean expressions.
-         we do not allow >  <  >=  <=  though
+         we do not allow >  <  >=  <=  though.  We only examine
+         this case if we are in a const expression as there will be
+         no dereferencing of operands.
       *)
       BuildRelOpFromBoolean (optokpos)
    ELSE
@@ -13869,7 +13962,7 @@ END DisplayQuadRange ;
 
 (*
    BackPatch - Makes each of the quadruples on the list pointed to by
-               StartQuad, take quadruple Value as a target.
+               QuadNo take quadruple Value as a target.
 *)
 
 PROCEDURE BackPatch (QuadNo, Value: CARDINAL) ;

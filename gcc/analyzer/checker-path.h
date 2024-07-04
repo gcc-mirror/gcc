@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_CHECKER_PATH_H
 
 #include "analyzer/checker-event.h"
+#include "simple-diagnostic-path.h"
 
 namespace ana {
 
@@ -61,6 +62,10 @@ public:
   {
     return m_events[idx];
   }
+
+  bool
+  same_function_p (int event_idx_a,
+		   int event_idx_b) const final override;
 
   void dump (pretty_printer *pp) const;
   void debug () const;

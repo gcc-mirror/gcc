@@ -63,6 +63,14 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+bool
+checker_path::same_function_p (int event_idx_a,
+			       int event_idx_b) const
+{
+  return (m_events[event_idx_a]->get_fndecl ()
+	  == m_events[event_idx_b]->get_fndecl ());
+}
+
 /* Print a single-line representation of this path to PP.  */
 
 void

@@ -1,6 +1,6 @@
-/* { dg-require-effective-target int128 } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mno-vsx" } */
+/* { dg-require-effective-target int128 } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* Verify there is no ICE but one expected error message instead.  */
 

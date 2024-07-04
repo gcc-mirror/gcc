@@ -345,9 +345,9 @@ static void
 dot_rdg_1 (FILE *file, struct graph *rdg)
 {
   int i;
-  pretty_printer buffer;
-  pp_needs_newline (&buffer) = false;
-  buffer.buffer->stream = file;
+  pretty_printer pp;
+  pp_needs_newline (&pp) = false;
+  pp.set_output_stream (file);
 
   fprintf (file, "digraph RDG {\n");
 
@@ -357,8 +357,8 @@ dot_rdg_1 (FILE *file, struct graph *rdg)
       struct graph_edge *e;
 
       fprintf (file, "%d [label=\"[%d] ", i, i);
-      pp_gimple_stmt_1 (&buffer, RDGV_STMT (v), 0, TDF_SLIM);
-      pp_flush (&buffer);
+      pp_gimple_stmt_1 (&pp, RDGV_STMT (v), 0, TDF_SLIM);
+      pp_flush (&pp);
       fprintf (file, "\"]\n");
 
       /* Highlight reads from memory.  */

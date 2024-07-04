@@ -552,7 +552,7 @@ package body Exp_Ch11 is
 
          --  Nothing to do if no handlers requiring the goto transformation
 
-         if not (Local_Expansion_Required) then
+         if not Local_Expansion_Required then
             return;
          end if;
 

@@ -34,9 +34,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#define _ASCII_H
 #define _ASCII_C
 
+#include "GASCII.h"
 
 #   define ASCII_nul (char) 000
 #   define ASCII_soh (char) 001
@@ -78,10 +78,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   define ASCII_del (char) 0177
 #   define ASCII_EOL ASCII_nl
 
-extern "C" void _M2_ASCII_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_ASCII_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_ASCII_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_ASCII_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

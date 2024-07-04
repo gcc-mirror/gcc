@@ -3083,6 +3083,7 @@
 ;; - CLS (= clrsb)
 ;; - CLZ
 ;; - CNT (= popcount)
+;; - RBIT (= bitreverse)
 ;; - NEG
 ;; - NOT
 ;; -------------------------------------------------------------------------
@@ -3171,7 +3172,6 @@
 ;; ---- [INT] General unary arithmetic corresponding to unspecs
 ;; -------------------------------------------------------------------------
 ;; Includes
-;; - RBIT
 ;; - REVB
 ;; - REVH
 ;; - REVW

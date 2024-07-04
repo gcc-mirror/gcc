@@ -565,12 +565,6 @@ uninitialized value of the type if pragma Initialize_Scalars is used,
 including the ability to modify the value with the binder -Sxx flag and
 relevant environment variables at run time.
 
-Attribute Iterable
-==================
-.. index:: Iterable
-
-Equivalent to Aspect Iterable.
-
 Attribute Large
 ===============
 .. index:: Ada 83 attributes
@@ -1230,30 +1224,6 @@ By construction, the layout of ``T'Stub_Type`` is identical to that of
 type ``RACW_Stub_Type`` declared in the internal implementation-defined
 unit ``System.Partition_Interface``. Use of this attribute will create
 an implicit dependency on this unit.
-
-Attribute Super
-===============
-.. index:: Super
-
-The ``Super`` attribute can be applied to objects of tagged types in order
-to obtain a view conversion to the most immediate specific parent type.
-
-It cannot be applied to objects of types without any ancestors, or types whose
-immediate parent is abstract.
-
-.. code-block:: ada
-
-  type T1 is tagged null record;
-  procedure P (V : T1);
-
-  type T2 is new T1 with null record;
-  procedure P (V : T2);
-
-  procedure Call (V : T2'Class) is
-  begin
-    V'Super.P; --  Equivalent to "P (T1 (V));", a nondispatching call
-               --  to T1's primitive procedure P.
-  end;
 
 Attribute System_Allocator_Alignment
 ====================================

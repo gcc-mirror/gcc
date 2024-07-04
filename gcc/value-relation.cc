@@ -978,8 +978,9 @@ relation_chain_head::find_relation (const_bitmap b1, const_bitmap b2) const
 
 // Instantiate a relation oracle.
 
-dom_oracle::dom_oracle ()
+dom_oracle::dom_oracle (bool do_trans_p)
 {
+  m_do_trans_p = do_trans_p;
   m_relations.create (0);
   m_relations.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
   m_relation_set = BITMAP_ALLOC (&m_bitmaps);
@@ -1179,6 +1180,9 @@ void
 dom_oracle::register_transitives (basic_block root_bb,
 				  const value_relation &relation)
 {
+  // Only register transitives if they are requested.
+  if (!m_do_trans_p)
+    return;
   basic_block bb;
   // Only apply transitives to certain kinds of operations.
   switch (relation.kind ())

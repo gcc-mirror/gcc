@@ -47,6 +47,7 @@ with Exp_Util;       use Exp_Util;
 with Freeze;         use Freeze;
 with Inline;         use Inline;
 with Lib;            use Lib;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
@@ -139,9 +140,10 @@ package body Exp_Ch4 is
    --  case of array type arguments.
 
    procedure Expand_Nonbinary_Modular_Op (N : Node_Id);
-   --  When generating C code, convert nonbinary modular arithmetic operations
-   --  into code that relies on the front-end expansion of operator Mod. No
-   --  expansion is performed if N is not a nonbinary modular operand.
+   --  When generating C code or if restriction No_Implicit_Conditionals is in
+   --  effect, convert most nonbinary modular arithmetic operations into code
+   --  that relies on the expansion of an explicit Mod operator. No expansion
+   --  is performed if N is not a nonbinary modular operation.
 
    procedure Expand_Short_Circuit_Operator (N : Node_Id);
    --  Common expansion processing for short-circuit boolean operators
@@ -1160,9 +1162,6 @@ package body Exp_Ch4 is
 
       Comp : RE_Id;
 
-      Byte_Addressable : constant Boolean := System_Storage_Unit = Byte'Size;
-      --  True for byte addressable target
-
       function Length_Less_Than_4 (Opnd : Node_Id) return Boolean;
       --  Returns True if the length of the given operand is known to be less
       --  than 4. Returns False if this length is known to be four or greater
@@ -1196,11 +1195,12 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Array_Comparison
 
    begin
-      --  Deal first with unpacked case, where we can call a runtime routine
-      --  except that we avoid this for targets for which are not addressable
-      --  by bytes.
+      --  Deal first with unpacked case, where we can call a runtime routine,
+      --  except if the component type is a byte (unsigned) where we can use
+      --  a byte-wise comparison if supported on the target (this is disabled
+      --  for now in Unnest_Subprogram_Mode for LLVM).
 
-      if not Is_Bit_Packed_Array (Typ1) and then Byte_Addressable then
+      if not Is_Bit_Packed_Array (Typ1) then
          --  The call we generate is:
 
          --  Compare_Array_xn[_Unaligned]
@@ -1212,9 +1212,18 @@ package body Exp_Ch4 is
          --  <op> is the standard comparison operator
 
          if Component_Size (Typ1) = 8 then
-            if Length_Less_Than_4 (Op1)
-                 or else
-               Length_Less_Than_4 (Op2)
+            if Is_Unsigned_Type (Ctyp)
+              and then not Is_Possibly_Unaligned_Object (Op1)
+              and then not Is_Possibly_Unaligned_Slice (Op1)
+              and then not Is_Possibly_Unaligned_Object (Op2)
+              and then not Is_Possibly_Unaligned_Slice (Op2)
+              and then Support_Composite_Compare_On_Target
+              and then not Unnest_Subprogram_Mode
+            then
+               return;
+
+            elsif Length_Less_Than_4 (Op1)
+              or else Length_Less_Than_4 (Op2)
             then
                if Is_Unsigned_Type (Ctyp) then
                   Comp := RE_Compare_Array_U8_Unaligned;
@@ -1259,11 +1268,10 @@ package body Exp_Ch4 is
             end if;
          end if;
 
+         --  Expand to a call only if the runtime function is available,
+         --  otherwise fall back to inline code.
+
          if RTE_Available (Comp) then
-
-            --  Expand to a call only if the runtime function is available,
-            --  otherwise fall back to inline code.
-
             Remove_Side_Effects (Op1, Name_Req => True);
             Remove_Side_Effects (Op2, Name_Req => True);
 
@@ -1290,8 +1298,7 @@ package body Exp_Ch4 is
                        Attribute_Name => Name_Length)));
 
                Zero : constant Node_Id :=
-                 Make_Integer_Literal (Loc,
-                   Intval => Uint_0);
+                 Make_Integer_Literal (Loc, Intval => Uint_0);
 
                Comp_Op : Node_Id;
 
@@ -1568,26 +1575,17 @@ package body Exp_Ch4 is
            (Outer_Type => Typ, Nod => Nod, Comp_Type => Component_Type (Typ),
             Lhs => L, Rhs => R);
 
-         --  If some (sub)component is an unchecked_union, the whole operation
-         --  will raise program error.
+         --  This is necessary to give the warning about Program_Error being
+         --  raised when some (sub)component is an unchecked_union.
 
-         if Nkind (Test) = N_Raise_Program_Error then
+         Preserve_Comes_From_Source (Test, Nod);
 
-            --  This node is going to be inserted at a location where a
-            --  statement is expected: clear its Etype so analysis will set
-            --  it to the expected Standard_Void_Type.
-
-            Set_Etype (Test, Empty);
-            return Test;
-
-         else
-            return
-              Make_Implicit_If_Statement (Nod,
-                Condition       => Make_Op_Not (Loc, Right_Opnd => Test),
-                Then_Statements => New_List (
-                  Make_Simple_Return_Statement (Loc,
-                    Expression => New_Occurrence_Of (Standard_False, Loc))));
-         end if;
+         return
+           Make_Implicit_If_Statement (Nod,
+             Condition       => Make_Op_Not (Loc, Right_Opnd => Test),
+             Then_Statements => New_List (
+               Make_Simple_Return_Statement (Loc,
+                 Expression => New_Occurrence_Of (Standard_False, Loc))));
       end Component_Equality;
 
       ------------------
@@ -2336,6 +2334,28 @@ package body Exp_Ch4 is
       --  Case of untagged record types
 
       elsif Is_Record_Type (Full_Type) then
+         --  Equality composes in Ada 2012 for untagged record types. It also
+         --  composes for bounded strings, because they are part of the
+         --  predefined environment (see 4.5.2(32.1/1)). We could make it
+         --  compose for bounded strings by making them tagged, or by making
+         --  sure all subcomponents are set to the same value, even when not
+         --  used. Instead, we have this special case in the compiler, because
+         --  it's more efficient.
+
+         if Ada_Version >= Ada_2012 or else Is_Bounded_String (Comp_Type) then
+            declare
+               Eq_Call : constant Node_Id :=
+                 Build_Eq_Call (Comp_Type, Loc, Lhs, Rhs);
+
+            begin
+               if Present (Eq_Call) then
+                  return Eq_Call;
+               end if;
+            end;
+         end if;
+
+         --  Check whether a TSS has been created for the type
+
          Eq_Op := TSS (Full_Type, TSS_Composite_Equality);
 
          if Present (Eq_Op) then
@@ -2360,34 +2380,6 @@ package body Exp_Ch4 is
                  Make_Function_Call (Loc,
                    Name                   => New_Occurrence_Of (Eq_Op, Loc),
                    Parameter_Associations => New_List (L_Exp, R_Exp));
-            end;
-
-         --  Equality composes in Ada 2012 for untagged record types. It also
-         --  composes for bounded strings, because they are part of the
-         --  predefined environment (see 4.5.2(32.1/1)). We could make it
-         --  compose for bounded strings by making them tagged, or by making
-         --  sure all subcomponents are set to the same value, even when not
-         --  used. Instead, we have this special case in the compiler, because
-         --  it's more efficient.
-
-         elsif Ada_Version >= Ada_2012 or else Is_Bounded_String (Comp_Type)
-         then
-            --  If no TSS has been created for the type, check whether there is
-            --  a primitive equality declared for it.
-
-            declare
-               Op : constant Node_Id :=
-                 Build_Eq_Call (Comp_Type, Loc, Lhs, Rhs);
-
-            begin
-               --  Use user-defined primitive if it exists, otherwise use
-               --  predefined equality.
-
-               if Present (Op) then
-                  return Op;
-               else
-                  return Make_Op_Eq (Loc, Lhs, Rhs);
-               end if;
             end;
 
          else
@@ -2845,13 +2837,32 @@ package body Exp_Ch4 is
             if not Set then
                NN := NN + 1;
 
-               --  Capture operand bounds
+               --  Set low bound of operand and check first the constrained
+               --  case with known bound
 
-               Opnd_Low_Bound (NN) :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix         =>
-                     Duplicate_Subexpr (Opnd, Name_Req => True),
-                   Attribute_Name => Name_First);
+               if Is_Constrained (Opnd_Typ) then
+                  declare
+                     Low_Bound : constant Node_Id
+                       := Type_Low_Bound
+                            (Underlying_Type (Etype (First_Index (Opnd_Typ))));
+
+                  begin
+                     if Compile_Time_Known_Value (Low_Bound) then
+                        Opnd_Low_Bound (NN) := New_Copy_Tree (Low_Bound);
+                        Set := True;
+                     end if;
+                  end;
+               end if;
+
+               --  Otherwise fall back to the general expression
+
+               if not Set then
+                  Opnd_Low_Bound (NN) :=
+                    Make_Attribute_Reference (Loc,
+                      Prefix         =>
+                        Duplicate_Subexpr (Opnd, Name_Req => True),
+                      Attribute_Name => Name_First);
+               end if;
 
                --  Capture last operand bounds if result could be null
 
@@ -3026,6 +3037,8 @@ package body Exp_Ch4 is
       --  take unconditionally whether or not it is null. It's easiest to do
       --  this with a recursive procedure:
 
+      --  We fold the common case where all the low bounds are the same
+
       else
          declare
             function Get_Known_Bound (J : Nat) return Node_Id;
@@ -3041,32 +3054,54 @@ package body Exp_Ch4 is
                   return New_Copy_Tree (Opnd_Low_Bound (J));
 
                else
-                  return
-                    Make_If_Expression (Loc,
-                      Expressions => New_List (
+                  declare
+                     Known_Bound : constant Node_Id := Get_Known_Bound (J + 1);
+                     Comparison  : constant Compare_Result
+                                     := Compile_Time_Compare
+                                          (Opnd_Low_Bound (J),
+                                           Known_Bound,
+                                           Assume_Valid => True);
 
-                        Make_Op_Ne (Loc,
-                          Left_Opnd  =>
-                            New_Occurrence_Of (Var_Length (J), Loc),
-                          Right_Opnd =>
-                            Make_Integer_Literal (Loc, 0)),
+                  begin
+                     if Comparison = EQ then
+                        return Known_Bound;
 
-                        New_Copy_Tree (Opnd_Low_Bound (J)),
-                        Get_Known_Bound (J + 1)));
+                     else
+                        return
+                          Make_If_Expression (Loc,
+                            Expressions => New_List (
+
+                              Make_Op_Ne (Loc,
+                                Left_Opnd  =>
+                                  New_Occurrence_Of (Var_Length (J), Loc),
+                                Right_Opnd =>
+                                  Make_Integer_Literal (Loc, 0)),
+
+                              New_Copy_Tree (Opnd_Low_Bound (J)),
+                              Known_Bound));
+                     end if;
+                  end;
                end if;
             end Get_Known_Bound;
 
+            Known_Bound : constant Node_Id := Get_Known_Bound (1);
+
          begin
-            Ent := Make_Temporary (Loc, 'L');
+            if Nkind (Known_Bound) /= N_If_Expression then
+               Low_Bound := Known_Bound;
 
-            Append_To (Actions,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Ent,
-                Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of (Ityp, Loc),
-                Expression          => Get_Known_Bound (1)));
+            else
+               Ent := Make_Temporary (Loc, 'L');
 
-            Low_Bound := New_Occurrence_Of (Ent, Loc);
+               Append_To (Actions,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Ent,
+                   Constant_Present    => True,
+                   Object_Definition   => New_Occurrence_Of (Ityp, Loc),
+                   Expression          => Known_Bound));
+
+               Low_Bound := New_Occurrence_Of (Ent, Loc);
+            end if;
          end;
       end if;
 
@@ -3899,10 +3934,13 @@ package body Exp_Ch4 is
 
       procedure Expand_Modular_Addition is
       begin
-         --  If this is not the addition of a constant then compute it using
-         --  the general rule: (lhs + rhs) mod Modulus
+         --  If this is not the addition of a constant or else restriction
+         --  No_Implicit_Conditionals is in effect, then compute it using
+         --  the general rule: (lhs + rhs) mod Modulus.
 
-         if Nkind (Right_Opnd (N)) /= N_Integer_Literal then
+         if Nkind (Right_Opnd (N)) /= N_Integer_Literal
+           or else Restriction_Active (No_Implicit_Conditionals)
+         then
             Expand_Modular_Op;
 
          --  If this is an addition of a constant, convert it to a subtraction
@@ -3921,6 +3959,7 @@ package body Exp_Ch4 is
                Cond_Expr : Node_Id;
                Then_Expr : Node_Id;
                Else_Expr : Node_Id;
+
             begin
                --  To prevent spurious visibility issues, convert all
                --  operands to Standard.Unsigned.
@@ -3966,12 +4005,12 @@ package body Exp_Ch4 is
          --   We will convert to another type (not a nonbinary-modulus modular
          --   type), evaluate the op in that representation, reduce the result,
          --   and convert back to the original type. This means that the
-         --   backend does not have to deal with nonbinary-modulus ops.
+         --   back end does not have to deal with nonbinary-modulus ops.
 
-         Op_Expr  : constant Node_Id := New_Op_Node (Nkind (N), Loc);
-         Mod_Expr : Node_Id;
-
+         Mod_Expr    : Node_Id;
+         Op_Expr     : Node_Id;
          Target_Type : Entity_Id;
+
       begin
          --  Select a target type that is large enough to avoid spurious
          --  intermediate overflow on pre-reduction computation (for
@@ -3979,20 +4018,13 @@ package body Exp_Ch4 is
 
          declare
             Required_Size : Uint := RM_Size (Etype (N));
-            Use_Unsigned  : Boolean := True;
+
          begin
             case Nkind (N) is
-               when N_Op_Add =>
+               when N_Op_Add | N_Op_Subtract =>
                   --  For example, if modulus is 255 then RM_Size will be 8
                   --  and the range of possible values (before reduction) will
                   --  be 0 .. 508; that range requires 9 bits.
-                  Required_Size := Required_Size + 1;
-
-               when N_Op_Subtract =>
-                  --  For example, if modulus is 255 then RM_Size will be 8
-                  --  and the range of possible values (before reduction) will
-                  --  be -254 .. 254; that range requires 9 bits, signed.
-                  Use_Unsigned := False;
                   Required_Size := Required_Size + 1;
 
                when N_Op_Multiply =>
@@ -4005,37 +4037,15 @@ package body Exp_Ch4 is
                   null;
             end case;
 
-            if Use_Unsigned then
-               if Required_Size <= Standard_Short_Short_Integer_Size then
-                  Target_Type := Standard_Short_Short_Unsigned;
-               elsif Required_Size <= Standard_Short_Integer_Size then
-                  Target_Type := Standard_Short_Unsigned;
-               elsif Required_Size <= Standard_Integer_Size then
-                  Target_Type := Standard_Unsigned;
-               else
-                  pragma Assert (Required_Size <= 64);
-                  Target_Type := Standard_Unsigned_64;
-               end if;
-            elsif Required_Size <= 8 then
-               Target_Type := Standard_Integer_8;
-            elsif Required_Size <= 16 then
-               Target_Type := Standard_Integer_16;
-            elsif Required_Size <= 32 then
-               Target_Type := Standard_Integer_32;
-            else
-               pragma Assert (Required_Size <= 64);
-               Target_Type := Standard_Integer_64;
-            end if;
-
+            Target_Type := Small_Integer_Type_For (Required_Size, Uns => True);
             pragma Assert (Present (Target_Type));
          end;
 
+         Op_Expr := New_Op_Node (Nkind (N), Loc);
          Set_Left_Opnd (Op_Expr,
-           Unchecked_Convert_To (Target_Type,
-             New_Copy_Tree (Left_Opnd (N))));
+           Unchecked_Convert_To (Target_Type, New_Copy_Tree (Left_Opnd (N))));
          Set_Right_Opnd (Op_Expr,
-           Unchecked_Convert_To (Target_Type,
-             New_Copy_Tree (Right_Opnd (N))));
+           Unchecked_Convert_To (Target_Type, New_Copy_Tree (Right_Opnd (N))));
 
          --  ??? Why do this stuff for some ops and not others?
          if Nkind (N) not in N_Op_And | N_Op_Or | N_Op_Xor then
@@ -4064,13 +4074,24 @@ package body Exp_Ch4 is
             Force_Evaluation (Op_Expr, Mode => Strict);
          end if;
 
+         --  Unconditionally add the modulus to the result for a subtraction,
+         --  this gets rid of all its peculiarities by cancelling out the
+         --  addition of the binary modulus in the case where the subtraction
+         --  wraps around in Target_Type.
+
+         if Nkind (N) = N_Op_Subtract then
+            Op_Expr :=
+               Make_Op_Add (Loc,
+                 Left_Opnd  => Op_Expr,
+                 Right_Opnd => Make_Integer_Literal (Loc, Modulus (Typ)));
+         end if;
+
          Mod_Expr :=
            Make_Op_Mod (Loc,
              Left_Opnd  => Op_Expr,
              Right_Opnd => Make_Integer_Literal (Loc, Modulus (Typ)));
 
-         Rewrite (N,
-           Unchecked_Convert_To (Typ, Mod_Expr));
+         Rewrite (N, Unchecked_Convert_To (Typ, Mod_Expr));
       end Expand_Modular_Op;
 
       --------------------------------
@@ -4079,10 +4100,13 @@ package body Exp_Ch4 is
 
       procedure Expand_Modular_Subtraction is
       begin
-         --  If this is not the addition of a constant then compute it using
-         --  the general rule: (lhs + rhs) mod Modulus
+         --  If this is not the addition of a constant or else restriction
+         --  No_Implicit_Conditionals is in effect, then compute it using
+         --  the general rule: (lhs - rhs) mod Modulus.
 
-         if Nkind (Right_Opnd (N)) /= N_Integer_Literal then
+         if Nkind (Right_Opnd (N)) /= N_Integer_Literal
+           or else Restriction_Active (No_Implicit_Conditionals)
+         then
             Expand_Modular_Op;
 
          --  If this is an addition of a constant, convert it to a subtraction
@@ -4101,6 +4125,7 @@ package body Exp_Ch4 is
                Cond_Expr : Node_Id;
                Then_Expr : Node_Id;
                Else_Expr : Node_Id;
+
             begin
                Cond_Expr :=
                  Make_Op_Lt (Loc,
@@ -4139,23 +4164,46 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Nonbinary_Modular_Op
 
    begin
-      --  No action needed if front-end expansion is not required or if we
-      --  have a binary modular operand.
+      --  No action needed if we have a binary modular operand
 
-      if not Expand_Nonbinary_Modular_Ops
-        or else not Non_Binary_Modulus (Typ)
-      then
+      if not Non_Binary_Modulus (Typ) then
          return;
       end if;
 
       case Nkind (N) is
          when N_Op_Add =>
+            --  No action needed if front-end expansion is not required and
+            --  restriction No_Implicit_Conditionals is not in effect.
+
+            if not Expand_Nonbinary_Modular_Ops
+              and then not Restriction_Active (No_Implicit_Conditionals)
+            then
+               return;
+            end if;
+
             Expand_Modular_Addition;
 
          when N_Op_Subtract =>
+            --  No action needed if front-end expansion is not required and
+            --  restriction No_Implicit_Conditionals is not in effect.
+
+            if not Expand_Nonbinary_Modular_Ops
+              and then not Restriction_Active (No_Implicit_Conditionals)
+            then
+               return;
+            end if;
+
             Expand_Modular_Subtraction;
 
          when N_Op_Minus =>
+            --  No action needed if front-end expansion is not required and
+            --  restriction No_Implicit_Conditionals is not in effect.
+
+            if not Expand_Nonbinary_Modular_Ops
+              and then not Restriction_Active (No_Implicit_Conditionals)
+            then
+               return;
+            end if;
 
             --  Expand -expr into (0 - expr)
 
@@ -4166,6 +4214,14 @@ package body Exp_Ch4 is
             Analyze_And_Resolve (N, Typ);
 
          when others =>
+            --  No action needed only if front-end expansion is not required
+            --  because we assume that logical and multiplicative operations
+            --  do not involve implicit conditionals.
+
+            if not Expand_Nonbinary_Modular_Ops then
+               return;
+            end if;
+
             Expand_Modular_Op;
       end case;
 
@@ -4866,10 +4922,17 @@ package body Exp_Ch4 is
 
             Temp := Make_Temporary (Loc, 'P');
 
-            Init_Stmts :=
-              Build_Default_Initialization (N, Etyp, Temp,
-                For_CW     => Is_Class_Wide_Type (Dtyp),
-                Target_Ref => Target_Ref);
+            if Is_Mutably_Tagged_Type (Dtyp) then
+               Init_Stmts :=
+                 Build_Default_Initialization (N, Etype (Etyp), Temp,
+                   For_CW     => False,
+                   Target_Ref => Target_Ref);
+            else
+               Init_Stmts :=
+                 Build_Default_Initialization (N, Etyp, Temp,
+                   For_CW     => Is_Class_Wide_Type (Dtyp),
+                   Target_Ref => Target_Ref);
+            end if;
 
             if Present (Init_Stmts) then
                --  We set the allocator as analyzed so that when we analyze
@@ -8215,8 +8278,8 @@ package body Exp_Ch4 is
          then
             Expand_Packed_Eq (N);
 
-         --  Where the component type is elementary we can use a block bit
-         --  comparison (if supported on the target) exception in the case
+         --  When the component type is elementary, we can use a byte-wise
+         --  comparison if supported on the target, except in the cases
          --  of floating-point (negative zero issues require element by
          --  element comparison), and full access types (where we must be sure
          --  to load elements independently) and possibly unaligned arrays.
@@ -8512,7 +8575,7 @@ package body Exp_Ch4 is
 
          --  For small negative exponents, we return the reciprocal of
          --  the folding of the exponentiation for the opposite (positive)
-         --  exponent, as required by Ada RM 4.5.6(11/3).
+         --  exponent, as required by RM 4.5.6(11/3).
 
          if abs Expv <= 4 then
 
@@ -12721,6 +12784,9 @@ package body Exp_Ch4 is
             New_Lhs : Node_Id;
             New_Rhs : Node_Id;
             Check   : Node_Id;
+            Lhs_Sel : Node_Id;
+            Rhs_Sel : Node_Id;
+            C_Typ   : Entity_Id := Etype (C);
 
          begin
             if First_Time then
@@ -12731,17 +12797,31 @@ package body Exp_Ch4 is
                New_Rhs := New_Copy_Tree (Rhs);
             end if;
 
+            Lhs_Sel :=
+              Make_Selected_Component (Loc,
+                Prefix        => New_Lhs,
+                Selector_Name => New_Occurrence_Of (C, Loc));
+            Rhs_Sel :=
+               Make_Selected_Component (Loc,
+                 Prefix        => New_Rhs,
+                 Selector_Name => New_Occurrence_Of (C, Loc));
+
+            --  Generate mutably tagged conversions in case we encounter a
+            --  special class-wide equivalent type.
+
+            if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (C)) then
+               C_Typ := Corresponding_Mutably_Tagged_Type (Etype (C));
+               Make_Mutably_Tagged_Conversion (Lhs_Sel, C_Typ);
+               Make_Mutably_Tagged_Conversion (Rhs_Sel, C_Typ);
+            end if;
+
             Check :=
               Expand_Composite_Equality
-                (Outer_Type => Typ, Nod => Nod, Comp_Type => Etype (C),
-                 Lhs =>
-                   Make_Selected_Component (Loc,
-                     Prefix        => New_Lhs,
-                     Selector_Name => New_Occurrence_Of (C, Loc)),
-                 Rhs =>
-                   Make_Selected_Component (Loc,
-                     Prefix        => New_Rhs,
-                     Selector_Name => New_Occurrence_Of (C, Loc)));
+                (Outer_Type => Typ,
+                 Nod        => Nod,
+                 Comp_Type  => C_Typ,
+                 Lhs        => Lhs_Sel,
+                 Rhs        => Rhs_Sel);
 
             --  If some (sub)component is an unchecked_union, the whole
             --  operation will raise program error.
@@ -13566,13 +13646,15 @@ package body Exp_Ch4 is
 
       --  The address manipulation is not performed for access types that are
       --  subject to pragma No_Heap_Finalization because the two pointers do
-      --  not exist in the first place.
+      --  not exist in the first place. Likewise for designated types that are
+      --  subject to relaxed finalization.
 
       if No_Heap_Finalization (Ptr_Typ) then
          null;
 
-      elsif Needs_Finalization (Desig_Typ) then
-
+      elsif Needs_Finalization (Desig_Typ)
+        and then not Has_Relaxed_Finalization (Desig_Typ)
+      then
          --  Adjust the address and size of the dereferenced object. Generate:
          --    Adjust_Controlled_Dereference (Addr, Size, Alig);
 

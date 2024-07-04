@@ -300,12 +300,23 @@ should_colorize (void)
      pp_write_text_to_stream() in pretty-print.cc calls fputs() on
      that stream.  However, the code below for non-Windows doesn't seem
      to care about it either...  */
-  HANDLE h;
-  DWORD m;
+  HANDLE handle;
+  DWORD mode;
+  BOOL isconsole = false;
 
-  h = GetStdHandle (STD_ERROR_HANDLE);
-  return (h != INVALID_HANDLE_VALUE) && (h != NULL)
-	  && GetConsoleMode (h, &m);
+  handle = GetStdHandle (STD_ERROR_HANDLE);
+
+  if ((handle != INVALID_HANDLE_VALUE) && (handle != NULL))
+    isconsole = GetConsoleMode (handle, &mode);
+
+  if (isconsole)
+    {
+      /* Try to enable processing of VT100 escape sequences */
+      mode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+      SetConsoleMode (handle, mode);
+    }
+
+  return isconsole;
 #else
   char const *t = getenv ("TERM");
   /* emacs M-x shell sets TERM="dumb".  */
@@ -373,15 +384,27 @@ parse_env_vars_for_urls ()
 static bool
 auto_enable_urls ()
 {
-#ifdef __MINGW32__
-  return false;
-#else
   const char *term, *colorterm;
 
   /* First check the terminal is capable of printing color escapes,
      if not URLs won't work either.  */
   if (!should_colorize ())
     return false;
+
+#ifdef __MINGW32__
+  HANDLE handle;
+  DWORD mode;
+
+  handle = GetStdHandle (STD_ERROR_HANDLE);
+  if ((handle == INVALID_HANDLE_VALUE) || (handle == NULL))
+    return false;
+
+  /* If ansi escape sequences aren't supported by the console, then URLs will
+     print mangled from mingw_ansi_fputs's console API translation. It wouldn't
+     be useful even if this weren't the case.  */
+  if (GetConsoleMode (handle, &mode) && !(mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING))
+    return false;
+#endif
 
   /* xfce4-terminal is known to not implement URLs at this time.
      Recently new installations (0.8) will safely ignore the URL escape
@@ -417,7 +440,6 @@ auto_enable_urls ()
     return false;
 
   return true;
-#endif
 }
 
 /* Determine if URLs should be enabled, based on RULE,

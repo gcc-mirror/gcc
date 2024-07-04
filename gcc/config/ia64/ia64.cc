@@ -321,6 +321,7 @@ static const char *ia64_invalid_conversion (const_tree, const_tree);
 static const char *ia64_invalid_unary_op (int, const_tree);
 static const char *ia64_invalid_binary_op (int, const_tree, const_tree);
 static machine_mode ia64_c_mode_for_suffix (char);
+static machine_mode ia64_c_mode_for_floating_type (enum tree_index);
 static void ia64_trampoline_init (rtx, tree, rtx);
 static void ia64_override_options_after_change (void);
 static bool ia64_member_type_forces_blk (const_tree, machine_mode);
@@ -636,6 +637,9 @@ static const scoped_attribute_specs *const ia64_attribute_table[] =
 
 #undef TARGET_C_MODE_FOR_SUFFIX
 #define TARGET_C_MODE_FOR_SUFFIX ia64_c_mode_for_suffix
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE ia64_c_mode_for_floating_type
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE ia64_can_eliminate
@@ -11327,6 +11331,20 @@ ia64_c_mode_for_suffix (char suffix)
     return XFmode;
 
   return VOIDmode;
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return DFmode, XFmode
+   or TFmode for TI_LONG_DOUBLE_TYPE which is for long double type,
+   go with the default one for the others.  */
+
+static machine_mode
+ia64_c_mode_for_floating_type (enum tree_index ti)
+{
+  /* long double is XFmode normally, and TFmode for HPUX.  It should be
+     TFmode for VMS as well but we only support up to DFmode now.  */
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TARGET_HPUX ? TFmode : (TARGET_ABI_OPEN_VMS ? DFmode : XFmode);
+  return default_mode_for_floating_type (ti);
 }
 
 static GTY(()) rtx ia64_dconst_0_5_rtx;

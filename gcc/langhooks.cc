@@ -466,8 +466,7 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 
       diagnostic_set_last_function (context, diagnostic);
       pp_newline_and_flush (context->printer);
-      context->printer->prefix = old_prefix;
-      free ((char*) new_prefix);
+      context->printer->set_prefix (old_prefix);
     }
 }
 

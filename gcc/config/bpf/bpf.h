@@ -90,9 +90,6 @@
 #define LONG_TYPE_SIZE        64
 #define LONG_LONG_TYPE_SIZE   64
 #define CHAR_TYPE_SIZE         8
-#define FLOAT_TYPE_SIZE       32
-#define DOUBLE_TYPE_SIZE      64
-#define LONG_DOUBLE_TYPE_SIZE 64
 
 #define INTPTR_TYPE	"long int"
 #define UINTPTR_TYPE	"long unsigned int"

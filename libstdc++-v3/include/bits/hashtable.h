@@ -34,6 +34,7 @@
 
 #include <bits/hashtable_policy.h>
 #include <bits/enable_special_members.h>
+#include <bits/stl_algobase.h> // fill_n
 #include <bits/stl_function.h> // __has_is_transparent_t
 #if __cplusplus > 201402L
 # include <bits/node_handle.h>
@@ -209,6 +210,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_same<typename _Alloc::value_type, _Value>{},
 	  "unordered container must have the same value_type as its allocator");
 #endif
+      static_assert(is_copy_constructible<_Hash>::value,
+	  "hash function must be copy constructible");
 
       using __traits_type = _Traits;
       using __hash_cached = typename __traits_type::__hash_cached;
@@ -1376,8 +1379,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_bucket_count = __ht._M_bucket_count;
 	  }
 	else
-	  __builtin_memset(_M_buckets, 0,
-			   _M_bucket_count * sizeof(__node_base_ptr));
+	  std::fill_n(_M_buckets, _M_bucket_count, nullptr);
 
 	__try
 	  {
@@ -1400,8 +1402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		_M_buckets = __former_buckets;
 		_M_bucket_count = __former_bucket_count;
 	      }
-	    __builtin_memset(_M_buckets, 0,
-			     _M_bucket_count * sizeof(__node_base_ptr));
+	    std::fill_n(_M_buckets, _M_bucket_count, nullptr);
 	    __throw_exception_again;
 	  }
       }
@@ -1664,7 +1665,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    "Cache the hash code or qualify your functors involved"
 		    " in hash code and bucket index computation with noexcept");
 
-      clear();
+      this->_M_deallocate_nodes(_M_begin());
       _M_deallocate_buckets();
     }
 
@@ -2582,8 +2583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     clear() noexcept
     {
       this->_M_deallocate_nodes(_M_begin());
-      __builtin_memset(_M_buckets, 0,
-		       _M_bucket_count * sizeof(__node_base_ptr));
+      std::fill_n(_M_buckets, _M_bucket_count, nullptr);
       _M_element_count = 0;
       _M_before_begin._M_nxt = nullptr;
     }

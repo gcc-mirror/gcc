@@ -104,8 +104,6 @@ along with GCC; see the file COPYING3.  If not see
 /* This file should be included last.  */
 #include "target-def.h"
 
-static rtx legitimize_dllimport_symbol (rtx, bool);
-static rtx legitimize_pe_coff_extern_decl (rtx, bool);
 static void ix86_print_operand_address_as (FILE *, rtx, addr_space_t, bool);
 static void ix86_emit_restore_reg_using_pop (rtx, bool = false);
 
@@ -11244,19 +11242,16 @@ ix86_cannot_force_const_mem (machine_mode mode, rtx x)
   return !ix86_legitimate_constant_p (mode, x);
 }
 
-/*  Nonzero if the symbol is marked as dllimport, or as stub-variable,
-    otherwise zero.  */
+/* Return a unique alias set for the GOT.  */
 
-static bool
-is_imported_p (rtx x)
+alias_set_type
+ix86_GOT_alias_set (void)
 {
-  if (!TARGET_DLLIMPORT_DECL_ATTRIBUTES
-      || GET_CODE (x) != SYMBOL_REF)
-    return false;
-
-  return SYMBOL_REF_DLLIMPORT_P (x) || SYMBOL_REF_STUBVAR_P (x);
+  static alias_set_type set = -1;
+  if (set == -1)
+    set = new_alias_set ();
+  return set;
 }
-
 
 /* Nonzero if the constant value X is a legitimate general operand
    when generating PIC code.  It is given that flag_pic is on and
@@ -11359,8 +11354,10 @@ legitimate_pic_address_disp_p (rtx disp)
 
 	  if (TARGET_PECOFF)
 	    {
+#if TARGET_PECOFF
 	      if (is_imported_p (op0))
 		return true;
+#endif
 
 	      if (SYMBOL_REF_FAR_ADDR_P (op0) || !SYMBOL_REF_LOCAL_P (op0))
 		break;
@@ -11836,16 +11833,6 @@ constant_address_p (rtx x)
   return CONSTANT_P (x) && ix86_legitimate_address_p (Pmode, x, 1);
 }
 
-/* Return a unique alias set for the GOT.  */
-
-alias_set_type
-ix86_GOT_alias_set (void)
-{
-  static alias_set_type set = -1;
-  if (set == -1)
-    set = new_alias_set ();
-  return set;
-}
 
 /* Return a legitimate reference for ORIG (an address) using the
    register REG.  If REG is 0, a new pseudo is generated.
@@ -11883,9 +11870,11 @@ legitimize_pic_address (rtx orig, rtx reg)
 
   if (TARGET_64BIT && TARGET_DLLIMPORT_DECL_ATTRIBUTES)
     {
+#if TARGET_PECOFF
       rtx tmp = legitimize_pe_coff_symbol (addr, true);
       if (tmp)
         return tmp;
+#endif
     }
 
   if (TARGET_64BIT && legitimate_pic_address_disp_p (addr))
@@ -11928,9 +11917,11 @@ legitimize_pic_address (rtx orig, rtx reg)
 	      on VxWorks, see gotoff_operand.  */
 	   || (TARGET_VXWORKS_RTP && GET_CODE (addr) == LABEL_REF))
     {
+#if TARGET_PECOFF
       rtx tmp = legitimize_pe_coff_symbol (addr, true);
       if (tmp)
         return tmp;
+#endif
 
       /* For x64 PE-COFF there is no GOT table,
 	 so we use address directly.  */
@@ -11945,7 +11936,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 				    UNSPEC_GOTPCREL);
 	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
 	  new_rtx = gen_const_mem (Pmode, new_rtx);
-	  set_mem_alias_set (new_rtx, ix86_GOT_alias_set ());
+	  set_mem_alias_set (new_rtx, GOT_ALIAS_SET);
 	}
       else
 	{
@@ -11967,7 +11958,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 	    new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
 
 	  new_rtx = gen_const_mem (Pmode, new_rtx);
-	  set_mem_alias_set (new_rtx, ix86_GOT_alias_set ());
+	  set_mem_alias_set (new_rtx, GOT_ALIAS_SET);
 	}
 
       new_rtx = copy_to_suggested_reg (new_rtx, reg, Pmode);
@@ -12344,7 +12335,7 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
       if (pic)
 	off = gen_rtx_PLUS (tp_mode, pic, off);
       off = gen_const_mem (tp_mode, off);
-      set_mem_alias_set (off, ix86_GOT_alias_set ());
+      set_mem_alias_set (off, GOT_ALIAS_SET);
 
       if (TARGET_64BIT || TARGET_ANY_GNU_TLS)
 	{
@@ -12503,173 +12494,6 @@ ix86_rewrite_tls_address (rtx pattern)
   return pattern;
 }
 
-/* Create or return the unique __imp_DECL dllimport symbol corresponding
-   to symbol DECL if BEIMPORT is true.  Otherwise create or return the
-   unique refptr-DECL symbol corresponding to symbol DECL.  */
-
-struct dllimport_hasher : ggc_cache_ptr_hash<tree_map>
-{
-  static inline hashval_t hash (tree_map *m) { return m->hash; }
-  static inline bool
-  equal (tree_map *a, tree_map *b)
-  {
-    return a->base.from == b->base.from;
-  }
-
-  static int
-  keep_cache_entry (tree_map *&m)
-  {
-    return ggc_marked_p (m->base.from);
-  }
-};
-
-static GTY((cache)) hash_table<dllimport_hasher> *dllimport_map;
-
-static tree
-get_dllimport_decl (tree decl, bool beimport)
-{
-  struct tree_map *h, in;
-  const char *name;
-  const char *prefix;
-  size_t namelen, prefixlen;
-  char *imp_name;
-  tree to;
-  rtx rtl;
-
-  if (!dllimport_map)
-    dllimport_map = hash_table<dllimport_hasher>::create_ggc (512);
-
-  in.hash = htab_hash_pointer (decl);
-  in.base.from = decl;
-  tree_map **loc = dllimport_map->find_slot_with_hash (&in, in.hash, INSERT);
-  h = *loc;
-  if (h)
-    return h->to;
-
-  *loc = h = ggc_alloc<tree_map> ();
-  h->hash = in.hash;
-  h->base.from = decl;
-  h->to = to = build_decl (DECL_SOURCE_LOCATION (decl),
-			   VAR_DECL, NULL, ptr_type_node);
-  DECL_ARTIFICIAL (to) = 1;
-  DECL_IGNORED_P (to) = 1;
-  DECL_EXTERNAL (to) = 1;
-  TREE_READONLY (to) = 1;
-
-  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  name = targetm.strip_name_encoding (name);
-  if (beimport)
-    prefix = name[0] == FASTCALL_PREFIX || user_label_prefix[0] == 0
-      ? "*__imp_" : "*__imp__";
-  else
-    prefix = user_label_prefix[0] == 0 ? "*.refptr." : "*refptr.";
-  namelen = strlen (name);
-  prefixlen = strlen (prefix);
-  imp_name = (char *) alloca (namelen + prefixlen + 1);
-  memcpy (imp_name, prefix, prefixlen);
-  memcpy (imp_name + prefixlen, name, namelen + 1);
-
-  name = ggc_alloc_string (imp_name, namelen + prefixlen);
-  rtl = gen_rtx_SYMBOL_REF (Pmode, name);
-  SET_SYMBOL_REF_DECL (rtl, to);
-  SYMBOL_REF_FLAGS (rtl) = SYMBOL_FLAG_LOCAL | SYMBOL_FLAG_STUBVAR;
-  if (!beimport)
-    {
-      SYMBOL_REF_FLAGS (rtl) |= SYMBOL_FLAG_EXTERNAL;
-#ifdef SUB_TARGET_RECORD_STUB
-      SUB_TARGET_RECORD_STUB (name);
-#endif
-    }      
-
-  rtl = gen_const_mem (Pmode, rtl);
-  set_mem_alias_set (rtl, ix86_GOT_alias_set ());
-
-  SET_DECL_RTL (to, rtl);
-  SET_DECL_ASSEMBLER_NAME (to, get_identifier (name));
-
-  return to;
-}
-
-/* Expand SYMBOL into its corresponding far-address symbol.
-   WANT_REG is true if we require the result be a register.  */
-
-static rtx
-legitimize_pe_coff_extern_decl (rtx symbol, bool want_reg)
-{
-  tree imp_decl;
-  rtx x;
-
-  gcc_assert (SYMBOL_REF_DECL (symbol));
-  imp_decl = get_dllimport_decl (SYMBOL_REF_DECL (symbol), false);
-
-  x = DECL_RTL (imp_decl);
-  if (want_reg)
-    x = force_reg (Pmode, x);
-  return x;
-}
-
-/* Expand SYMBOL into its corresponding dllimport symbol.  WANT_REG is
-   true if we require the result be a register.  */
-
-static rtx
-legitimize_dllimport_symbol (rtx symbol, bool want_reg)
-{
-  tree imp_decl;
-  rtx x;
-
-  gcc_assert (SYMBOL_REF_DECL (symbol));
-  imp_decl = get_dllimport_decl (SYMBOL_REF_DECL (symbol), true);
-
-  x = DECL_RTL (imp_decl);
-  if (want_reg)
-    x = force_reg (Pmode, x);
-  return x;
-}
-
-/* Expand SYMBOL into its corresponding dllimport or refptr symbol.  WANT_REG 
-   is true if we require the result be a register.  */
-
-rtx
-legitimize_pe_coff_symbol (rtx addr, bool inreg)
-{
-  if (!TARGET_PECOFF)
-    return NULL_RTX;
-
-  if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
-    {
-      if (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_DLLIMPORT_P (addr))
-	return legitimize_dllimport_symbol (addr, inreg);
-      if (GET_CODE (addr) == CONST
-	  && GET_CODE (XEXP (addr, 0)) == PLUS
-	  && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
-	  && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (addr, 0), 0)))
-	{
-	  rtx t = legitimize_dllimport_symbol (XEXP (XEXP (addr, 0), 0), inreg);
-	  return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (addr, 0), 1));
-	}
-    }
-
-  if (ix86_cmodel != CM_LARGE_PIC && ix86_cmodel != CM_MEDIUM_PIC)
-    return NULL_RTX;
-  if (GET_CODE (addr) == SYMBOL_REF
-      && !is_imported_p (addr)
-      && SYMBOL_REF_EXTERNAL_P (addr)
-      && SYMBOL_REF_DECL (addr))
-    return legitimize_pe_coff_extern_decl (addr, inreg);
-
-  if (GET_CODE (addr) == CONST
-      && GET_CODE (XEXP (addr, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
-      && !is_imported_p (XEXP (XEXP (addr, 0), 0))
-      && SYMBOL_REF_EXTERNAL_P (XEXP (XEXP (addr, 0), 0))
-      && SYMBOL_REF_DECL (XEXP (XEXP (addr, 0), 0)))
-    {
-      rtx t = legitimize_pe_coff_extern_decl (XEXP (XEXP (addr, 0), 0), inreg);
-      return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (addr, 0), 1));
-    }
-  return NULL_RTX;
-}
-
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
    This macro is used in only one place: `memory_address' in explow.cc.
@@ -12709,9 +12533,11 @@ ix86_legitimize_address (rtx x, rtx, machine_mode mode)
 
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES)
     {
+#if TARGET_PECOFF
       rtx tmp = legitimize_pe_coff_symbol (x, true);
       if (tmp)
         return tmp;
+#endif
     }
 
   if (flag_pic && SYMBOLIC_CONST (x))
@@ -21556,6 +21382,22 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
     }
 }
 
+static int
+ix86_insn_cost (rtx_insn *insn, bool speed)
+{
+  int insn_cost = 0;
+  /* Add extra cost to avoid post_reload late_combine revert
+     the optimization did in pass_rpad.  */
+  if (reload_completed
+      && ix86_rpad_gate ()
+      && recog_memoized (insn) >= 0
+      && get_attr_avx_partial_xmm_update (insn)
+      == AVX_PARTIAL_XMM_UPDATE_TRUE)
+    insn_cost += COSTS_N_INSNS (3);
+
+  return insn_cost + pattern_cost (PATTERN (insn), speed);
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -21570,6 +21412,31 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
   const struct processor_costs *cost
     = speed ? ix86_tune_cost : &ix86_size_cost;
   int src_cost;
+
+  /* Handling different vternlog variants.  */
+  if ((GET_MODE_SIZE (mode) == 64
+       ? (TARGET_AVX512F && TARGET_EVEX512)
+       : (TARGET_AVX512VL
+	  || (TARGET_AVX512F && TARGET_EVEX512 && !TARGET_PREFER_AVX256)))
+      && GET_MODE_SIZE (mode) >= 16
+      && outer_code_i == SET
+      && ternlog_operand (x, mode))
+    {
+      rtx args[3];
+
+      args[0] = NULL_RTX;
+      args[1] = NULL_RTX;
+      args[2] = NULL_RTX;
+      int idx = ix86_ternlog_idx (x, args);
+      gcc_assert (idx >= 0);
+
+      *total = cost->sse_op;
+      for (int i = 0; i != 3; i++)
+	if (args[i])
+	  *total += rtx_cost (args[i], GET_MODE (args[i]), UNSPEC, i, speed);
+      return true;
+    }
+
 
   switch (code)
     {
@@ -22233,6 +22100,9 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else if (XINT (x, 1) == UNSPEC_VTERNLOG)
 	{
 	  *total = cost->sse_op;
+	  *total += rtx_cost (XVECEXP (x, 0, 0), mode, code, 0, speed);
+	  *total += rtx_cost (XVECEXP (x, 0, 1), mode, code, 1, speed);
+	  *total += rtx_cost (XVECEXP (x, 0, 2), mode, code, 2, speed);
 	  return true;
 	}
       else if (XINT (x, 1) == UNSPEC_PTEST)
@@ -22260,12 +22130,21 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
     case VEC_SELECT:
     case VEC_CONCAT:
-    case VEC_DUPLICATE:
       /* ??? Assume all of these vector manipulation patterns are
 	 recognizable.  In which case they all pretty much have the
 	 same cost.  */
      *total = cost->sse_op;
      return true;
+    case VEC_DUPLICATE:
+      *total = rtx_cost (XEXP (x, 0),
+			 GET_MODE (XEXP (x, 0)),
+			 VEC_DUPLICATE, 0, speed);
+      /* It's broadcast instruction, not embedded broadcasting.  */
+      if (outer_code == SET)
+	*total += cost->sse_op;
+
+     return true;
+
     case VEC_MERGE:
       mask = XEXP (x, 2);
       /* This is masked instruction, assume the same cost,
@@ -22302,7 +22181,10 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	     address_cost should be used, but it reduce cost too much.
 	     So current solution is make constant disp as cheap as possible.  */
 	  if (GET_CODE (addr) == PLUS
-	      && x86_64_immediate_operand (XEXP (addr, 1), Pmode))
+	      && x86_64_immediate_operand (XEXP (addr, 1), Pmode)
+	      /* Only hanlde (reg + disp) since other forms of addr are mostly LEA,
+		 there's no additional cost for the plus of disp.  */
+	      && register_operand (XEXP (addr, 0), Pmode))
 	    {
 	      *total += 1;
 	      *total += rtx_cost (XEXP (addr, 0), Pmode, PLUS, 0, speed);
@@ -26072,6 +25954,19 @@ ix86_bitint_type_info (int n, struct bitint_info *info)
   return true;
 }
 
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return DFmode, TFmode
+   or XFmode for TI_LONG_DOUBLE_TYPE which is for long double type,
+   based on long double bits, go with the default one for the others.  */
+
+static machine_mode
+ix86_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return (TARGET_LONG_DOUBLE_64 ? DFmode
+				  : (TARGET_LONG_DOUBLE_128 ? TFmode : XFmode));
+  return default_mode_for_floating_type (ti);
+}
+
 /* Returns modified FUNCTION_TYPE for cdtor callabi.  */
 tree
 ix86_cxx_adjust_cdtor_callabi_fntype (tree fntype)
@@ -26202,6 +26097,13 @@ ix86_memtag_add_tag (rtx base, poly_int64 offset, unsigned char tag_offset)
   emit_move_insn (tagged_addr,
 		  ix86_memtag_set_tag (base_addr, new_tag, NULL_RTX));
   return plus_constant (Pmode, tagged_addr, offset);
+}
+
+/* Implement TARGET_HAVE_CCMP.  */
+static bool
+ix86_have_ccmp ()
+{
+  return (bool) TARGET_APX_CCMP;
 }
 
 /* Target-specific selftests.  */
@@ -26642,6 +26544,8 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #define TARGET_MEMORY_MOVE_COST ix86_memory_move_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ix86_rtx_costs
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST ix86_insn_cost
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ix86_address_cost
 
@@ -26697,6 +26601,8 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #define TARGET_C_EXCESS_PRECISION ix86_get_excess_precision
 #undef TARGET_C_BITINT_TYPE_INFO
 #define TARGET_C_BITINT_TYPE_INFO ix86_bitint_type_info
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE ix86_c_mode_for_floating_type
 #undef TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE
 #define TARGET_CXX_ADJUST_CDTOR_CALLABI_FNTYPE ix86_cxx_adjust_cdtor_callabi_fntype
 #undef TARGET_PROMOTE_PROTOTYPES
@@ -27043,6 +26949,8 @@ ix86_libgcc_floating_mode_supported_p
 #undef TARGET_GEN_CCMP_NEXT
 #define TARGET_GEN_CCMP_NEXT ix86_gen_ccmp_next
 
+#undef TARGET_HAVE_CCMP
+#define TARGET_HAVE_CCMP ix86_have_ccmp
 
 static bool
 ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)

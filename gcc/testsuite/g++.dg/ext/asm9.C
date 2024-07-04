@@ -3,5 +3,6 @@
 
 void foo()
 {
-  asm("" ::: X); // { dg-error "before" }
+  asm("" ::: X); // { dg-error "string-literal" }
+		 // { dg-error "before" "" { target *-*-* } .-1 }
 }

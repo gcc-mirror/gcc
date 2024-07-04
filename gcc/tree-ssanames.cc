@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "tree-pass.h"
 #include "ssa.h"
+#include "gimple-pretty-print.h"
 #include "gimple-iterator.h"
 #include "stor-layout.h"
 #include "tree-into-ssa.h"
@@ -425,23 +426,34 @@ set_range_info (tree name, const vrange &r)
       struct ptr_info_def *pi = get_ptr_info (name);
       // If R is nonnull and pi is not, set nonnull.
       if (r.nonzero_p () && (!pi || pi->pt.null))
-	{
-	  set_ptr_nonnull (name);
-	  return true;
-	}
-      return false;
+	set_ptr_nonnull (name);
+      else
+	return false;
     }
-
-  Value_Range tmp (type);
-  if (range_info_p (name))
-    range_info_get_range (name, tmp);
   else
-    tmp.set_varying (type);
-  // If the result doesn't change, or is undefined, return false.
-  if (!tmp.intersect (r) || tmp.undefined_p ())
-    return false;
-
-  return range_info_set_range (name, tmp);
+    {
+      value_range tmp (type);
+      if (range_info_p (name))
+	range_info_get_range (name, tmp);
+      else
+	tmp.set_varying (type);
+      // If the result doesn't change, or is undefined, return false.
+      if (!tmp.intersect (r) || tmp.undefined_p ())
+	return false;
+      if (!range_info_set_range (name, tmp))
+	return false;
+    }
+  if (dump_file)
+    {
+      value_range tmp (type);
+      fprintf (dump_file, "Global Exported: ");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, " = ");
+      gimple_range_global (tmp, name);
+      tmp.dump (dump_file);
+      fputc ('\n', dump_file);
+    }
+  return true;
 }
 
 /* Set nonnull attribute to pointer NAME.  */
@@ -751,10 +763,32 @@ duplicate_ssa_name_range_info (tree name, tree src)
 
   if (range_info_p (src))
     {
-      Value_Range src_range (TREE_TYPE (src));
+      value_range src_range (TREE_TYPE (src));
       range_info_get_range (src, src_range);
       range_info_set_range (name, src_range);
     }
+}
+
+/* For a SSA copy DEST = SRC duplicate SSA info present on DEST to SRC
+   to preserve it in case DEST is eliminated to SRC.  */
+
+void
+maybe_duplicate_ssa_info_at_copy (tree dest, tree src)
+{
+  /* While points-to info is flow-insensitive we have to avoid copying
+     info from not executed regions invoking UB to dominating defs.  */
+  if (gimple_bb (SSA_NAME_DEF_STMT (src))
+      != gimple_bb (SSA_NAME_DEF_STMT (dest)))
+    return;
+
+  if (POINTER_TYPE_P (TREE_TYPE (dest))
+      && SSA_NAME_PTR_INFO (dest)
+      && ! SSA_NAME_PTR_INFO (src))
+    duplicate_ssa_name_ptr_info (src, SSA_NAME_PTR_INFO (dest));
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
+	   && SSA_NAME_RANGE_INFO (dest)
+	   && ! SSA_NAME_RANGE_INFO (src))
+    duplicate_ssa_name_range_info (src, dest);
 }
 
 

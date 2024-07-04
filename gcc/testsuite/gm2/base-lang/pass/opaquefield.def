@@ -1,0 +1,8 @@
+DEFINITION MODULE opaquefield ;  (*!m2pim*)
+
+TYPE
+   Content ;
+
+PROCEDURE create () : Content ;
+
+END opaquefield.

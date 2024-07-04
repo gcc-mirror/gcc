@@ -642,15 +642,20 @@ package body Exp_Ch6 is
       Master_Formal : Node_Id;
 
    begin
+      pragma Assert (Ekind (Function_Id) in E_Function
+                                          | E_Subprogram_Type);
+
       --  No such extra parameters are needed if there are no tasks
 
       if not Needs_BIP_Task_Actuals (Function_Id) then
 
          --  However we must add dummy extra actuals if the function is
-         --  a dispatching operation that inherited these extra formals.
+         --  a dispatching operation that inherited these extra formals
+         --  or an access-to-subprogram type that requires these extra
+         --  actuals.
 
-         if Is_Dispatching_Operation (Function_Id)
-           and then Has_BIP_Extra_Formal (Function_Id, BIP_Task_Master)
+         if Has_BIP_Extra_Formal (Function_Id, BIP_Task_Master,
+              Must_Be_Frozen => False)
          then
             Master_Formal :=
               Build_In_Place_Formal (Function_Id, BIP_Task_Master);
@@ -2934,8 +2939,8 @@ package body Exp_Ch6 is
             --  If the aspect is inherited, convert the pointer to the
             --  parent type that specifies the contract.
             --  If the original access_to_subprogram has defaults for
-            --  in_parameters, the call may include named associations, so
-            --  we create one for the pointer as well.
+            --  in-mode parameters, the call may include named associations,
+            --  so we create one for the pointer as well.
 
             if Is_Derived_Type (Ptr_Type)
               and then Ptr_Type /= Etype (Last_Formal (Wrapper))
@@ -4219,8 +4224,10 @@ package body Exp_Ch6 is
          --  because the object has underlying discriminants with defaults.
 
          if Present (Extra_Constrained (Formal)) then
-            if Is_Private_Type (Etype (Prev))
-              and then not Has_Discriminants (Base_Type (Etype (Prev)))
+            if Is_Mutably_Tagged_Type (Etype (Actual))
+              or else (Is_Private_Type (Etype (Prev))
+                        and then not Has_Discriminants
+                                       (Base_Type (Etype (Prev))))
             then
                Add_Extra_Actual
                  (Expr => New_Occurrence_Of (Standard_False, Loc),
@@ -5306,10 +5313,11 @@ package body Exp_Ch6 is
          then
             Expand_Inlined_Call (Call_Node, Subp, Orig_Subp);
 
-         --  Back-end inlining either if optimization is enabled or the call is
-         --  required to be inlined.
+         --  Back-end inlining either if optimization is enabled, we're
+         --  generating C, or the call is required to be inlined.
 
          elsif Optimization_Level > 0
+           or else CCG_Mode
            or else Has_Pragma_Inline_Always (Subp)
          then
             Add_Inlined_Body (Subp, Call_Node);
@@ -7635,7 +7643,6 @@ package body Exp_Ch6 is
                        Dynamic_Call_Helper (CW_Subp);
          Actuals   : constant List_Id := New_List;
          A         : Node_Id   := First_Actual (Call_Node);
-         F         : Entity_Id := First_Formal (Helper_Id);
 
       begin
          while Present (A) loop
@@ -7646,7 +7653,7 @@ package body Exp_Ch6 is
             Remove_Side_Effects (A);
 
             Append_To (Actuals, New_Copy_Tree (A));
-            Next_Formal (F);
+
             Next_Actual (A);
          end loop;
 
@@ -7869,6 +7876,7 @@ package body Exp_Ch6 is
                         Present (Controlling_Argument (Call_Node));
       Class_Subp    : Entity_Id;
       Cond          : Node_Id;
+      Fail          : Node_Id;
       Subp          : Entity_Id;
 
    --  Start of processing for Install_Class_Preconditions_Check
@@ -7914,30 +7922,29 @@ package body Exp_Ch6 is
       end if;
 
       if Exception_Locations_Suppressed then
-         Insert_Action (Call_Node,
-           Make_If_Statement (Loc,
-             Condition       => Make_Op_Not (Loc, Cond),
-             Then_Statements => New_List (
-               Make_Raise_Statement (Loc,
-                 Name =>
-                   New_Occurrence_Of
-                     (RTE (RE_Assert_Failure), Loc)))));
+         Fail :=
+           Make_Raise_Statement (Loc,
+             Name =>
+               New_Occurrence_Of
+                 (RTE (RE_Assert_Failure), Loc));
 
       --  Failed check with message indicating the failed precondition and the
       --  call that caused it.
 
       else
-         Insert_Action (Call_Node,
-           Make_If_Statement (Loc,
-             Condition       => Make_Op_Not (Loc, Cond),
-             Then_Statements => New_List (
-               Make_Procedure_Call_Statement (Loc,
-                 Name                   =>
-                   New_Occurrence_Of
-                     (RTE (RE_Raise_Assert_Failure), Loc),
-                 Parameter_Associations =>
-                   New_List (Build_Error_Message (Subp))))));
+         Fail :=
+           Make_Procedure_Call_Statement (Loc,
+             Name                   =>
+               New_Occurrence_Of
+                 (RTE (RE_Raise_Assert_Failure), Loc),
+             Parameter_Associations =>
+               New_List (Build_Error_Message (Subp)));
       end if;
+
+      Insert_Action (Call_Node,
+        Make_If_Statement (Loc,
+          Condition       => Make_Op_Not (Loc, Cond),
+          Then_Statements => New_List (Fail)));
    end Install_Class_Preconditions_Check;
 
    ------------------------------
@@ -9633,7 +9640,9 @@ package body Exp_Ch6 is
       --  such build-in-place functions, primitive or not.
 
       return not Restriction_Active (No_Finalization)
-        and then (Needs_Finalization (Typ) or else Is_Tagged_Type (Typ))
+        and then ((Needs_Finalization (Typ)
+                    and then not Has_Relaxed_Finalization (Typ))
+                  or else Is_Tagged_Type (Typ))
         and then not Has_Foreign_Convention (Typ);
    end Needs_BIP_Collection;
 

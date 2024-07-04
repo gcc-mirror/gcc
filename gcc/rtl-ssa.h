@@ -63,6 +63,7 @@
 #include "rtl-ssa/blocks.h"
 #include "rtl-ssa/changes.h"
 #include "rtl-ssa/functions.h"
+#include "rtl-ssa/predicates.h"
 #include "rtl-ssa/is-a.inl"
 #include "rtl-ssa/access-utils.h"
 #include "rtl-ssa/insn-utils.h"

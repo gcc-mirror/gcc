@@ -38,9 +38,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _SFIO_H
 #define _SFIO_C
 
+#include "GSFIO.h"
 #   include "GASCII.h"
 #   include "GDynamicStrings.h"
 #   include "GFIO.h"
@@ -207,10 +207,10 @@ extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_SFIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SFIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_SFIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SFIO_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

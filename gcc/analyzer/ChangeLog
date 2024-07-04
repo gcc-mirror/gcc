@@ -1,3 +1,99 @@
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.h (checker_event::fndecl): Drop "final" and
+	"override", converting from a vfunc implementation to a plain
+	accessor.
+	* checker-path.cc (checker_path::same_function_p): New.
+	* checker-path.h (checker_path::same_function_p): New decl.
+
+2024-06-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-path.h: Include "simple-diagnostic-path.h".
+
+2024-06-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* constraint-manager.cc (equiv_class::make_dump_widget): Change
+	return type to match return value and do not use std::move on
+	return value.
+	(bounded_ranges_constraint::make_dump_widget): Likewise.
+	(constraint_manager::make_dump_widget): Likewise.
+	* constraint-manager.h (equiv_class::make_dump_widget): Change
+	return type.
+	(bounded_ranges_constraint::make_dump_widget): Likewise.
+	(constraint_manager::make_dump_widget): Likewise.
+	* program-state.cc (sm_state_map::make_dump_widget): Likewise.
+	(program_state::make_dump_widget): Likewise.
+	* program-state.h (sm_state_map::make_dump_widget): Likewise.
+	(program_state::make_dump_widget): Likewise.
+	* region-model.cc (region_to_value_map::make_dump_widget): Likewise.
+	(region_model::make_dump_widget): Likewise.
+	* region-model.h (region_to_value_map::make_dump_widget): Likewise.
+	(region_model::make_dump_widget): Likewise.
+	* region.cc (region::make_dump_widget): Likewise.
+	* region.h (region::make_dump_widget): Likewise.
+	* store.cc (binding_cluster::make_dump_widget): Likewise.
+	(store::make_dump_widget): Likewise.
+	* store.h (binding_cluster::make_dump_widget): Likewise.
+	(store::make_dump_widget): Likewise.
+	* svalue.cc (svalue::make_dump_widget): Likewise.
+	* svalue.h (svalue::make_dump_widget): Likewise.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc (access_range::dump): Update for fields of
+	pretty_printer becoming private.
+	* call-details.cc (call_details::dump): Likewise.
+	* call-summary.cc (call_summary::dump): Likewise.
+	(call_summary_replay::dump): Likewise.
+	* checker-event.cc (checker_event::debug): Likewise.
+	* constraint-manager.cc (range::dump): Likewise.
+	(bounded_range::dump): Likewise.
+	(constraint_manager::dump): Likewise.
+	* engine.cc (exploded_node::dump): Likewise.
+	(exploded_path::dump): Likewise.
+	(exploded_path::dump_to_file): Likewise.
+	* feasible-graph.cc (feasible_graph::dump_feasible_path): Likewise.
+	* program-point.cc (program_point::dump): Likewise.
+	* program-state.cc (extrinsic_state::dump_to_file): Likewise.
+	(sm_state_map::dump): Likewise.
+	(program_state::dump_to_file): Likewise.
+	* ranges.cc (symbolic_byte_offset::dump): Likewise.
+	(symbolic_byte_range::dump): Likewise.
+	* record-layout.cc (record_layout::dump): Likewise.
+	* region-model-reachability.cc (reachable_regions::dump): Likewise.
+	* region-model.cc (region_to_value_map::dump): Likewise.
+	(region_model::dump): Likewise.
+	(model_merger::dump): Likewise.
+	* region-model.h (one_way_id_map<T>::dump): Likewise.
+	* region.cc (region_offset::dump): Likewise.
+	(region::dump): Likewise.
+	* sm-malloc.cc (deallocator_set::dump): Likewise.
+	* store.cc (uncertainty_t::dump): Likewise.
+	(binding_key::dump): Likewise.
+	(bit_range::dump): Likewise.
+	(byte_range::dump): Likewise.
+	(binding_map::dump): Likewise.
+	(binding_cluster::dump): Likewise.
+	(store::dump): Likewise.
+	* supergraph.cc (supergraph::dump_dot_to_file): Likewise.
+	(superedge::dump): Likewise.
+	* svalue.cc (svalue::dump): Likewise.
+
+2024-06-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* constraint-manager.cc (equiv_class::make_dump_widget): Use
+	std::move to return a std::unique_ptr.
+	(bounded_ranges_constraint::make_dump_widget): Likewise.
+	(constraint_manager::make_dump_widget): Likewise.
+	* program-state.cc (sm_state_map::make_dump_widget): Likewise.
+	(program_state::make_dump_widget): Likewise.
+	* region-model.cc (region_to_value_map::make_dump_widget): Likewise.
+	(region_model::make_dump_widget): Likewise.
+	* region.cc (region::make_dump_widget): Likewise.
+	* store.cc (binding_cluster::make_dump_widget): Likewise.
+	(store::make_dump_widget): Likewise.
+	* svalue.cc (svalue::make_dump_widget): Likewise.
+
 2024-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (impl_region_model_context::on_state_leak): Pass nullptr

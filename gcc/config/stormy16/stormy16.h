@@ -101,12 +101,6 @@
 
 #define LONG_LONG_TYPE_SIZE 64
 
-#define FLOAT_TYPE_SIZE 32
-
-#define DOUBLE_TYPE_SIZE 64
-
-#define LONG_DOUBLE_TYPE_SIZE 64
-
 #define DEFAULT_SIGNED_CHAR 0
 
 #define SIZE_TYPE "unsigned int"

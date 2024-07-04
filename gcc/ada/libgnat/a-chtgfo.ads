@@ -30,8 +30,6 @@
 --  Hash_Table_Type is used to implement hashed containers. This package
 --  declares hash-table operations that do not depend on keys.
 
-with Ada.Streams;
-
 generic
    with package HT_Types is
      new Generic_Formal_Hash_Table_Types (<>);
@@ -112,27 +110,5 @@ package Ada.Containers.Hash_Tables.Generic_Formal_Operations is
       with procedure Process (Node : Count_Type);
    procedure Generic_Iteration (HT : Hash_Table_Type);
    --  Calls Process for each node in hash table HT
-
-   generic
-      use Ada.Streams;
-      with procedure Write
-        (Stream : not null access Root_Stream_Type'Class;
-         Node   : Node_Type);
-   procedure Generic_Write
-     (Stream : not null access Root_Stream_Type'Class;
-      HT     : Hash_Table_Type);
-   --  Used to implement the streaming attribute for hashed containers. It
-   --  calls Write for each node to write its value into Stream.
-
-   generic
-      use Ada.Streams;
-      with function New_Node (Stream : not null access Root_Stream_Type'Class)
-         return Count_Type;
-   procedure Generic_Read
-     (Stream : not null access Root_Stream_Type'Class;
-      HT     : out Hash_Table_Type);
-   --  Used to implement the streaming attribute for hashed containers. It
-   --  first clears hash table HT, then populates the hash table by calling
-   --  New_Node for each item in Stream.
 
 end Ada.Containers.Hash_Tables.Generic_Formal_Operations;

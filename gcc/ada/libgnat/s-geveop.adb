@@ -29,8 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Address_Operations; use System.Address_Operations;
-with System.Storage_Elements;   use System.Storage_Elements;
+with System.Storage_Elements; use System.Storage_Elements;
 
 with Ada.Unchecked_Conversion;
 
@@ -49,15 +48,10 @@ package body System.Generic_Vector_Operations is
      (R, X, Y : System.Address;
       Length  : System.Storage_Elements.Storage_Count)
    is
-      RA : Address := R;
-      XA : Address := X;
-      YA : Address := Y;
-      --  Address of next element to process in R, X and Y
-
       VI : constant Integer_Address := Integer_Address (VU);
 
       Unaligned : constant Integer_Address :=
-                    Boolean'Pos (OrA (OrA (RA, XA), YA) mod VU /= 0) - 1;
+        (if R mod VU /= 0 or X mod VU /= 0 or Y mod VU /= 0 then 0 else -1);
       --  Zero iff one or more argument addresses is not aligned, else all 1's
 
       type Vector_Ptr is access all Vectors.Vector;
@@ -74,9 +68,14 @@ package body System.Generic_Vector_Operations is
       --  Vector'Size > Storage_Unit
       --  VI > 0
       SA : constant Address :=
-             XA + Storage_Offset
-                    ((Integer_Address (Length) / VI * VI) and Unaligned);
+             X + Storage_Offset
+                   ((Integer_Address (Length) / VI * VI) and Unaligned);
       --  First address of argument X to start serial processing
+
+      RA : Address := R;
+      XA : Address := X;
+      YA : Address := Y;
+      --  Address of next element to process in R, X and Y
 
    begin
       while XA < SA loop
@@ -102,14 +101,10 @@ package body System.Generic_Vector_Operations is
      (R, X    : System.Address;
       Length  : System.Storage_Elements.Storage_Count)
    is
-      RA : Address := R;
-      XA : Address := X;
-      --  Address of next element to process in R and X
-
       VI : constant Integer_Address := Integer_Address (VU);
 
       Unaligned : constant Integer_Address :=
-                    Boolean'Pos (OrA (RA, XA) mod VU /= 0) - 1;
+        (if R mod VU /= 0 or X mod VU /= 0 then 0 else -1);
       --  Zero iff one or more argument addresses is not aligned, else all 1's
 
       type Vector_Ptr is access all Vectors.Vector;
@@ -126,9 +121,13 @@ package body System.Generic_Vector_Operations is
       --  Vector'Size > Storage_Unit
       --  VI > 0
       SA : constant Address :=
-             XA + Storage_Offset
-                    ((Integer_Address (Length) / VI * VI) and Unaligned);
+             X + Storage_Offset
+                   ((Integer_Address (Length) / VI * VI) and Unaligned);
       --  First address of argument X to start serial processing
+
+      RA : Address := R;
+      XA : Address := X;
+      --  Address of next element to process in R and X
 
    begin
       while XA < SA loop

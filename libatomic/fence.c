@@ -21,6 +21,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_FENCE
 #include "libatomic_i.h"
 
 #include <stdatomic.h>
@@ -43,3 +44,4 @@ void
 {
   atomic_signal_fence (order);
 }
+#undef LAT_FENCE

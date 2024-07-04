@@ -155,6 +155,7 @@ package Snames is
    Name_Disable_Controlled             : constant Name_Id := N + $;
    Name_Dynamic_Predicate              : constant Name_Id := N + $;
    Name_Exclusive_Functions            : constant Name_Id := N + $;
+   Name_Finalizable                    : constant Name_Id := N + $;
    Name_Full_Access_Only               : constant Name_Id := N + $;
    Name_Ghost_Predicate                : constant Name_Id := N + $;
    Name_Integer_Literal                : constant Name_Id := N + $;
@@ -165,7 +166,6 @@ package Snames is
    Name_Relaxed_Initialization         : constant Name_Id := N + $;
    Name_Stable_Properties              : constant Name_Id := N + $;
    Name_Static_Predicate               : constant Name_Id := N + $;
-   Name_Storage_Model                  : constant Name_Id := N + $;
    Name_Storage_Model_Type             : constant Name_Id := N + $;
    Name_String_Literal                 : constant Name_Id := N + $;
    Name_Synchronization                : constant Name_Id := N + $;
@@ -462,6 +462,7 @@ package Snames is
    Name_No_Component_Reordering        : constant Name_Id := N + $; -- GNAT
    Name_No_Heap_Finalization           : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
+   Name_Interrupts_System_By_Default   : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
    Name_Normalize_Scalars              : constant Name_Id := N + $;
    Name_Optimize_Alignment             : constant Name_Id := N + $; -- GNAT
@@ -614,7 +615,6 @@ package Snames is
    Name_Machine_Attribute              : constant Name_Id := N + $; -- GNAT
    Name_Main                           : constant Name_Id := N + $; -- GNAT
    Name_Main_Storage                   : constant Name_Id := N + $; -- GNAT
-   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $; -- GNAT
    Name_Max_Entry_Queue_Length         : constant Name_Id := N + $; -- Ada 12
    Name_Max_Queue_Length               : constant Name_Id := N + $; -- GNAT
    Name_Memory_Size                    : constant Name_Id := N + $; -- Ada 83
@@ -784,6 +784,7 @@ package Snames is
 
    Name_Address_Type                   : constant Name_Id := N + $;
    Name_Aggregate                      : constant Name_Id := N + $;
+   Name_All_Extensions                 : constant Name_Id := N + $;
    Name_Allow                          : constant Name_Id := N + $;
    Name_Amount                         : constant Name_Id := N + $;
    Name_As_Is                          : constant Name_Id := N + $;
@@ -830,6 +831,7 @@ package Snames is
    Name_Link_Name                      : constant Name_Id := N + $;
    Name_Low_Order_First                : constant Name_Id := N + $;
    Name_Lowercase                      : constant Name_Id := N + $;
+   Name_Max_Entry_Queue_Depth          : constant Name_Id := N + $;
    Name_Max_Size                       : constant Name_Id := N + $;
    Name_Mechanism                      : constant Name_Id := N + $;
    Name_Message                        : constant Name_Id := N + $;
@@ -867,6 +869,7 @@ package Snames is
    Name_Proof_In                       : constant Name_Id := N + $;
    Name_Reason                         : constant Name_Id := N + $;
    Name_Reference                      : constant Name_Id := N + $;
+   Name_Relaxed_Finalization           : constant Name_Id := N + $;
    Name_Renamed                        : constant Name_Id := N + $;
    Name_Requires                       : constant Name_Id := N + $;
    Name_Restricted                     : constant Name_Id := N + $;
@@ -903,10 +906,6 @@ package Snames is
    Name_Vector                         : constant Name_Id := N + $;
    Name_Warn                           : constant Name_Id := N + $;
    Name_Working_Storage                : constant Name_Id := N + $;
-
-   --  used by Repinfo JSON I/O
-
-   Name_Present                        : constant Name_Id := N + $;
 
    --  Names of recognized attributes. The entries with the comment "Ada 83"
    --  are attributes that are defined in Ada 83, but not in Ada 95. These
@@ -1373,6 +1372,7 @@ package Snames is
 
    Name_Discriminant                     : constant Name_Id := N + $;
    Name_Operands                         : constant Name_Id := N + $;
+   Name_Present                          : constant Name_Id := N + $;
 
    --  Other miscellaneous names used in front end
    --  Note that the UP_ prefix means use the rest of the name in uppercase,
@@ -1778,6 +1778,7 @@ package Snames is
       Pragma_No_Component_Reordering,
       Pragma_No_Heap_Finalization,
       Pragma_No_Run_Time,
+      Pragma_Interrupts_System_By_Default,
       Pragma_No_Strict_Aliasing,
       Pragma_Normalize_Scalars,
       Pragma_Optimize_Alignment,
@@ -1904,7 +1905,6 @@ package Snames is
       Pragma_Machine_Attribute,
       Pragma_Main,
       Pragma_Main_Storage,
-      Pragma_Max_Entry_Queue_Depth,
       Pragma_Max_Entry_Queue_Length,
       Pragma_Max_Queue_Length,
       Pragma_Memory_Size,

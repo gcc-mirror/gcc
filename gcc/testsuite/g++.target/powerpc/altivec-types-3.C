@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-maltivec -mno-vsx" } */
+/* { dg-require-effective-target powerpc_altivec } */
+/* { dg-require-effective-target lp64 } */
 
 /* These should be rejected for 64-bit code.  */
 

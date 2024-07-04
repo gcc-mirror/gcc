@@ -4,8 +4,8 @@
    This was noticed during debug of PR81317.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

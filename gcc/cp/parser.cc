@@ -2449,7 +2449,7 @@ static void cp_parser_statement_seq_opt
 static tree cp_parser_selection_statement
   (cp_parser *, bool *, vec<tree> *);
 static tree cp_parser_condition
-  (cp_parser *);
+  (cp_parser *, enum rid);
 static tree cp_parser_iteration_statement
   (cp_parser *, bool *, bool, tree, bool);
 static bool cp_parser_init_statement
@@ -2562,7 +2562,7 @@ static void cp_parser_static_assert
 static tree cp_parser_decltype
   (cp_parser *);
 static tree cp_parser_decomposition_declaration
-  (cp_parser *, cp_decl_specifier_seq *, tree *, location_t *);
+  (cp_parser *, cp_decl_specifier_seq *, tree *, location_t *, enum rid);
 
 /* Declarators [gram.dcl.decl] */
 
@@ -3299,7 +3299,8 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
 	   secondary range within the main diagnostic.  */
 	if (matching_location != UNKNOWN_LOCATION)
 	  added_matching_location
-	    = richloc.add_location_if_nearby (matching_location);
+	    = richloc.add_location_if_nearby (*global_dc,
+					      matching_location);
       }
 
   /* If we were parsing a string-literal and there is an unknown name
@@ -7571,7 +7572,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 				  NULL);
 	parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	/* Look for the closing `>'.  */
-	cp_parser_require (parser, CPP_GREATER, RT_GREATER);
+	cp_parser_require_end_of_template_parameter_list (parser);
 	/* Restore the old message.  */
 	parser->type_definition_forbidden_message = saved_message;
 
@@ -13740,7 +13741,7 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	  }
 
 	/* Parse the condition.  */
-	condition = cp_parser_condition (parser);
+	condition = cp_parser_condition (parser, keyword);
 	/* Look for the `)'.  */
 	if (!parens.require_close (parser))
 	  cp_parser_skip_to_closing_parenthesis (parser, true, false,
@@ -13959,6 +13960,7 @@ cp_parser_check_condition_declarator (cp_parser* parser,
      expression
      type-specifier-seq declarator = initializer-clause
      type-specifier-seq declarator braced-init-list
+     structured-binding-declaration initializer (C++26)
 
    GNU Extension:
 
@@ -13969,7 +13971,7 @@ cp_parser_check_condition_declarator (cp_parser* parser,
    Returns the expression that should be tested.  */
 
 static tree
-cp_parser_condition (cp_parser* parser)
+cp_parser_condition (cp_parser* parser, enum rid keyword)
 {
   cp_decl_specifier_seq type_specifiers;
   const char *saved_message;
@@ -14005,6 +14007,26 @@ cp_parser_condition (cp_parser* parser)
       cp_declarator *declarator;
       tree initializer = NULL_TREE;
       location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+
+      /* Look for C++26 structured binding declaration.  */
+      for (size_t n = 1; ; n++)
+	if (cp_lexer_nth_token_is (parser->lexer, n, CPP_AND)
+	    || cp_lexer_nth_token_is (parser->lexer, n, CPP_AND_AND))
+	  continue;
+	else if (cp_lexer_nth_token_is (parser->lexer, n, CPP_OPEN_SQUARE)
+		 && !cp_lexer_nth_token_is (parser->lexer, n + 1,
+					    CPP_OPEN_SQUARE)
+		 && type_specifiers.any_specifiers_p
+		 && cp_parser_parse_definitely (parser))
+	  {
+	    location_t init_loc;
+	    tree decl
+	      = cp_parser_decomposition_declaration (parser, &type_specifiers,
+						     NULL, &init_loc, keyword);
+	    return decl;
+	  }
+	else
+	  break;
 
       /* Parse the declarator.  */
       declarator = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
@@ -14145,7 +14167,7 @@ cp_parser_c_for (cp_parser *parser, tree scope, tree init, bool ivdep,
 
   /* If there's a condition, process it.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
-    condition = cp_parser_condition (parser);
+    condition = cp_parser_condition (parser, RID_FOR);
   else if (ivdep)
     {
       cp_parser_error (parser, "missing loop condition in loop with "
@@ -14710,7 +14732,7 @@ cp_parser_iteration_statement (cp_parser* parser, bool *if_p, bool ivdep,
 	matching_parens parens;
 	parens.require_open (parser);
 	/* Parse the condition.  */
-	condition = cp_parser_condition (parser);
+	condition = cp_parser_condition (parser, RID_WHILE);
 	finish_while_stmt_cond (condition, statement, ivdep, unroll, novector);
 	/* Look for the `)'.  */
 	parens.require_close (parser);
@@ -16016,7 +16038,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	tree decl
 	  = cp_parser_decomposition_declaration (parser, &decl_specifiers,
 						 maybe_range_for_decl,
-						 &init_loc);
+						 &init_loc, RID_MAX);
 
 	/* The next token should be either a `,' or a `;'.  */
 	cp_token *token = cp_lexer_peek_token (parser->lexer);
@@ -16260,7 +16282,7 @@ static tree
 cp_parser_decomposition_declaration (cp_parser *parser,
 				     cp_decl_specifier_seq *decl_specifiers,
 				     tree *maybe_range_for_decl,
-				     location_t *init_loc)
+				     location_t *init_loc, enum rid keyword)
 {
   cp_ref_qualifier ref_qual = cp_parser_ref_qualifier_opt (parser);
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -16319,7 +16341,11 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	}
     }
 
-  if (cxx_dialect < cxx17)
+  if (keyword != RID_MAX && cxx_dialect < cxx26)
+    pedwarn (loc, OPT_Wc__26_extensions,
+	     "structured bindings in conditions only available with "
+	     "%<-std=c++2c%> or %<-std=gnu++2c%>");
+  else if (cxx_dialect < cxx17)
     pedwarn (loc, OPT_Wc__17_extensions,
 	     "structured bindings only available with "
 	     "%<-std=c++17%> or %<-std=gnu++17%>");
@@ -16407,6 +16433,9 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
 			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT),
 			  &decomp);
+	  if (keyword != RID_MAX)
+	    DECL_DECOMP_BASE (decl)
+	      = keyword == RID_SWITCH ? integer_one_node : integer_zero_node;
 	  cp_finish_decomp (decl, &decomp);
 	}
     }
@@ -16702,7 +16731,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 		break;
 	      gcc_rich_location richloc (token->location);
 	      location_t oloc = decl_specs->locations[ds_storage_class];
-	      richloc.add_location_if_nearby (oloc);
+	      richloc.add_location_if_nearby (*global_dc, oloc);
 	      error_at (&richloc,
 			"%<typedef%> specifier conflicts with %qs",
 			cp_storage_class_name[decl_specs->storage_class]);
@@ -22884,6 +22913,42 @@ cp_parser_using_directive (cp_parser* parser)
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 }
 
+/* Parse a string literal or constant expression yielding a string.
+   The constant expression uses extra parens to avoid ambiguity with "x" (expr).
+
+   asm-string-expr:
+     string-literal
+     ( constant-expr ) */
+
+static tree
+cp_parser_asm_string_expression (cp_parser *parser)
+{
+  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+
+  if (tok->type == CPP_OPEN_PAREN)
+    {
+      matching_parens parens;
+      parens.consume_open (parser);
+      tree string = cp_parser_constant_expression (parser);
+      if (string != error_mark_node)
+	string = cxx_constant_value (string, tf_error);
+      cexpr_str cstr (string);
+      if (!cstr.type_check (tok->location))
+	return error_mark_node;
+      if (!cstr.extract (tok->location, string))
+	string = error_mark_node;
+      parens.require_close (parser);
+      return string;
+    }
+  else if (!cp_parser_is_string_literal (tok))
+    {
+      error_at (tok->location,
+		"expected string-literal or constexpr in parentheses");
+      return error_mark_node;
+    }
+  return cp_parser_string_literal (parser, false, false);
+}
+
 /* Parse an asm-definition.
 
   asm-qualifier:
@@ -22896,19 +22961,19 @@ cp_parser_using_directive (cp_parser* parser)
     asm-qualifier-list asm-qualifier
 
    asm-definition:
-     asm ( string-literal ) ;
+     asm ( constant-expr ) ;
 
    GNU Extension:
 
    asm-definition:
-     asm asm-qualifier-list [opt] ( string-literal ) ;
-     asm asm-qualifier-list [opt] ( string-literal : asm-operand-list [opt] ) ;
-     asm asm-qualifier-list [opt] ( string-literal : asm-operand-list [opt]
+     asm asm-qualifier-list [opt] ( asm-string-expr ) ;
+     asm asm-qualifier-list [opt] ( asm-string-expr : asm-operand-list [opt] ) ;
+     asm asm-qualifier-list [opt] ( asm-string-expr : asm-operand-list [opt]
 				    : asm-operand-list [opt] ) ;
-     asm asm-qualifier-list [opt] ( string-literal : asm-operand-list [opt]
+     asm asm-qualifier-list [opt] ( asm-string-expr : asm-operand-list [opt]
 				    : asm-operand-list [opt]
 			  : asm-clobber-list [opt] ) ;
-     asm asm-qualifier-list [opt] ( string-literal : : asm-operand-list [opt]
+     asm asm-qualifier-list [opt] ( asm-string-expr : : asm-operand-list [opt]
 				    : asm-clobber-list [opt]
 				    : asm-goto-list ) ;
 
@@ -23027,8 +23092,7 @@ cp_parser_asm_definition (cp_parser* parser)
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return;
   /* Look for the string.  */
-  tree string = cp_parser_string_literal (parser, /*translate=*/false,
-					  /*wide_ok=*/false);
+  tree string = cp_parser_asm_string_expression (parser);
   if (string == error_mark_node)
     {
       cp_parser_skip_to_closing_parenthesis (parser, true, false,
@@ -29726,7 +29790,7 @@ cp_parser_yield_expression (cp_parser* parser)
 /* Parse an (optional) asm-specification.
 
    asm-specification:
-     asm ( string-literal )
+     asm ( asm-string-expr )
 
    If the asm-specification is present, returns a STRING_CST
    corresponding to the string-literal.  Otherwise, returns
@@ -29749,9 +29813,7 @@ cp_parser_asm_specification_opt (cp_parser* parser)
   parens.require_open (parser);
 
   /* Look for the string-literal.  */
-  tree asm_specification = cp_parser_string_literal (parser,
-						     /*translate=*/false,
-						     /*wide_ok=*/false);
+  tree asm_specification = cp_parser_asm_string_expression (parser);
 
   /* Look for the `)'.  */
   parens.require_close (parser);
@@ -29766,8 +29828,8 @@ cp_parser_asm_specification_opt (cp_parser* parser)
      asm-operand-list , asm-operand
 
    asm-operand:
-     string-literal ( expression )
-     [ string-literal ] string-literal ( expression )
+     asm-string-expr ( expression )
+     [ asm-string-expr ] asm-string-expr ( expression )
 
    Returns a TREE_LIST representing the operands.  The TREE_VALUE of
    each node is the expression.  The TREE_PURPOSE is itself a
@@ -29800,10 +29862,8 @@ cp_parser_asm_operand_list (cp_parser* parser)
 	}
       else
 	name = NULL_TREE;
-      /* Look for the string-literal.  */
-      tree string_literal = cp_parser_string_literal (parser,
-						      /*translate=*/false,
-						      /*wide_ok=*/false);
+      /* Look for the string.  */
+      tree string_literal = cp_parser_asm_string_expression (parser);
 
       /* Look for the `('.  */
       matching_parens parens;
@@ -29836,8 +29896,8 @@ cp_parser_asm_operand_list (cp_parser* parser)
 /* Parse an asm-clobber-list.
 
    asm-clobber-list:
-     string-literal
-     asm-clobber-list , string-literal
+     const-expression
+     asm-clobber-list , const-expression
 
    Returns a TREE_LIST, indicating the clobbers in the order that they
    appeared.  The TREE_VALUE of each node is a STRING_CST.  */
@@ -29850,9 +29910,7 @@ cp_parser_asm_clobber_list (cp_parser* parser)
   while (true)
     {
       /* Look for the string literal.  */
-      tree string_literal = cp_parser_string_literal (parser,
-						      /*translate=*/false,
-						      /*wide_ok=*/false);
+      tree string_literal = cp_parser_asm_string_expression (parser);
       /* Add it to the list.  */
       clobbers = tree_cons (NULL_TREE, string_literal, clobbers);
       /* If the next token is not a `,', then the list is
@@ -31679,6 +31737,8 @@ cp_parser_constraint_primary_expression (cp_parser *parser, bool lambda_p)
     }
   if (pce == pce_ok)
     {
+      if (idk == CP_ID_KIND_UNQUALIFIED && identifier_p (expr))
+	expr = unqualified_name_lookup_error (expr);
       cp_lexer_commit_tokens (parser->lexer);
       return finish_constraint_primary_expr (expr);
     }
@@ -34581,7 +34641,8 @@ cp_parser_set_storage_class (cp_parser *parser,
       if (decl_specs->conflicting_specifiers_p)
 	return;
       gcc_rich_location richloc (token->location);
-      richloc.add_location_if_nearby (decl_specs->locations[ds_storage_class]);
+      richloc.add_location_if_nearby (*global_dc,
+				      decl_specs->locations[ds_storage_class]);
       if (decl_specs->storage_class == storage_class)
 	error_at (&richloc, "duplicate %qD specifier", ridpointers[keyword]);
       else
@@ -34612,7 +34673,8 @@ cp_parser_set_storage_class (cp_parser *parser,
       && !decl_specs->conflicting_specifiers_p)
     {
       gcc_rich_location richloc (token->location);
-      richloc.add_location_if_nearby (decl_specs->locations[ds_typedef]);
+      richloc.add_location_if_nearby (*global_dc,
+				      decl_specs->locations[ds_typedef]);
       error_at (&richloc,
 		"%qD specifier conflicts with %<typedef%>",
 		ridpointers[keyword]);
@@ -45305,8 +45367,8 @@ static tree cp_parser_omp_tile (cp_parser *, cp_token *, bool *);
 static tree
 cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 {
-  tree decl, cond, incr, init;
-  tree orig_init, real_decl, orig_decl;
+  tree decl = NULL_TREE, cond = NULL_TREE, incr = NULL_TREE, init = NULL_TREE;
+  tree orig_init = NULL_TREE, real_decl = NULL_TREE, orig_decl = NULL_TREE;
   tree init_block, body_block;
   tree init_placeholder, body_placeholder;
   tree init_scope;
@@ -45475,8 +45537,6 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
   matching_parens parens;
   if (!parens.require_open (parser))
     return NULL;
-
-  init = orig_init = decl = real_decl = orig_decl = NULL_TREE;
 
   init_placeholder = build_stmt (input_location, EXPR_STMT,
 				 integer_zero_node);
@@ -45653,12 +45713,10 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 	}
     }
 
-  cond = NULL;
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
     cond = cp_parser_omp_for_cond (parser, decl, omp_for_parse_state->code);
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
-  incr = NULL;
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
     {
       /* If decl is an iterator, preserve the operator on decl

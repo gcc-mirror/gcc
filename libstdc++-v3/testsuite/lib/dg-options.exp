@@ -338,6 +338,11 @@ proc atomic_link_flags { paths } {
 }
 
 proc add_options_for_libatomic { flags } {
+    # We don't (need to) build libatomic for vxworks.  Don't try to
+    # link it in, even on arches that support libatomic.
+    if { [istarget *-*-vxworks*] } {
+	return $flags
+    }
     if { [istarget hppa*-*-hpux*]
 	 || ([istarget powerpc*-*-*] && [check_effective_target_ilp32])
 	 || [istarget riscv*-*-*]

@@ -122,6 +122,7 @@ int   __gl_leap_seconds_support          = 0;
 int   __gl_canonical_streams             = 0;
 char *__gl_bind_env_addr                 = NULL;
 int   __gl_xdr_stream                    = 0;
+int   __gl_interrupts_default_to_system  = 0;
 
 /* This value is not used anymore, but kept for bootstrapping purpose.  */
 int   __gl_zero_cost_exceptions          = 0;
@@ -148,20 +149,25 @@ int __gnat_inside_elab_final_code = 0;
 char __gnat_get_interrupt_state (int);
 
 /* This routine is called from the runtime as needed to determine the state
-   of an interrupt, as set by an Interrupt_State pragma appearing anywhere
-   in the current partition.  The input argument is the interrupt number,
-   and the result is one of the following:
+   of an interrupt, as set by an Interrupt_State pragma or an
+   Interrupts_System_By_Default pragma appearing anywhere in the current
+   partition.  The input argument is the interrupt number, and the result
+   is one of the following:
 
-       'n'   this interrupt not set by any Interrupt_State pragma
-       'u'   Interrupt_State pragma set state to User
-       'r'   Interrupt_State pragma set state to Runtime
-       's'   Interrupt_State pragma set state to System  */
+       'u'   if Interrupt_State pragma set to User;
+       'r'   if Interrupt_State pragma set to Runtime;
+       's'   if Interrupt_State pragma set to System or
+             Interrupts_System_By_Default in effect; otherwise
+       'n'   (there is no Interrupt_State pragma and no request for a default).
+
+   See pragma Interrupt_State documentation for a description
+   of the effect and meaning of states User, Runtime, and System.  */
 
 char
 __gnat_get_interrupt_state (int intrup)
 {
   if (intrup >= __gl_num_interrupt_states)
-    return 'n';
+    return (__gl_interrupts_default_to_system ? 's' : 'n');
   else
     return __gl_interrupt_states [intrup];
 }

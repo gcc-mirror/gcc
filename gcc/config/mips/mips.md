@@ -832,11 +832,14 @@
 (define_mode_iterator MOVECC [SI (DI "TARGET_64BIT")
                               (CC "TARGET_HARD_FLOAT
 				   && !TARGET_LOONGSON_2EF
+				   && !TARGET_MIPS5900")
+                              (CCE "TARGET_HARD_FLOAT
+				   && !TARGET_LOONGSON_2EF
 				   && !TARGET_MIPS5900")])
 
 ;; This mode iterator allows :FPCC to be used anywhere that an FP condition
 ;; is needed.
-(define_mode_iterator FPCC [(CC "!ISA_HAS_CCF")
+(define_mode_iterator FPCC [(CC "!ISA_HAS_CCF") (CCE "!ISA_HAS_CCF")
 			    (CCF "ISA_HAS_CCF")])
 
 ;; 32-bit integer moves for which we provide move patterns.
@@ -928,7 +931,7 @@
 
 ;; This attribute gives the best constraint to use for registers of
 ;; a given mode.
-(define_mode_attr reg [(SI "d") (DI "d") (CC "z") (CCF "f")])
+(define_mode_attr reg [(SI "d") (DI "d") (CC "z") (CCE "z") (CCF "f")])
 
 ;; This attribute gives the format suffix for floating-point operations.
 (define_mode_attr fmt [(SF "s") (DF "d") (V2SF "ps")])
@@ -976,7 +979,7 @@
   [(SF "!ISA_MIPS1") (DF "!ISA_MIPS1") (V2SF "TARGET_SB1")])
 
 ;; This attribute provides the correct mnemonic for each FP condition mode.
-(define_mode_attr fpcmp [(CC "c") (CCF "cmp")])
+(define_mode_attr fpcmp [(CC "c") (CCE "c") (CCF "cmp")])
 
 ;; This code iterator allows signed and unsigned widening multiplications
 ;; to use the same template.
@@ -1082,7 +1085,7 @@
 			 (lt "lt")
 			 (le "le")
 			 (ordered "or")
-			 (ltgt "ne")
+			 (ltgt "sne")
 			 (ne "une")])
 
 ;; Similar, but for swapped conditions.
@@ -1242,7 +1245,7 @@
 				 (match_operand:GPR 2 "reg_or_0_operand" "dJ")])
 	    (const_int 0))]
   "ISA_HAS_COND_TRAP && !ISA_HAS_COND_TRAPI"
-  "t%C0\t%z1,%2"
+  "t%C0\t%z1,%z2"
   [(set_attr "type" "trap")])
 
 (define_insn "*conditional_trap<mode>"
@@ -6410,7 +6413,9 @@
 	(fcond:FPCC (match_operand:SCALARF 1 "register_operand" "f")
 		    (match_operand:SCALARF 2 "register_operand" "f")))]
   ""
-  "<fpcmp>.<fcond>.<fmt>\t%Z0%1,%2"
+  {
+    return mips_output_compare ("<fpcmp>", "<fcond>", "<fmt>", "<FPCC:mode>", false);
+  }
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
@@ -6419,7 +6424,9 @@
 	(swapped_fcond:FPCC (match_operand:SCALARF 1 "register_operand" "f")
 			    (match_operand:SCALARF 2 "register_operand" "f")))]
   ""
-  "<fpcmp>.<swapped_fcond>.<fmt>\t%Z0%2,%1"
+  {
+    return mips_output_compare ("<fpcmp>", "<swapped_fcond>", "<fmt>", "<FPCC:mode>", true);
+  }
   [(set_attr "type" "fcmp")
    (set_attr "mode" "FPSW")])
 
@@ -7452,7 +7459,7 @@
 
 ;; MIPS4 Conditional move instructions.
 
-(define_insn "*mov<GPR:mode>_on_<MOVECC:mode>"
+(define_insn "mov<GPR:mode>_on_<MOVECC:mode>"
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
 	(if_then_else:GPR
 	 (match_operator 4 "equality_operator"
@@ -7467,7 +7474,7 @@
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*mov<GPR:mode>_on_<MOVECC:mode>_mips16e2"
+(define_insn "mov<GPR:mode>_on_<MOVECC:mode>_mips16e2"
   [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d")
 	(if_then_else:GPR
 	 (match_operator 4 "equality_operator"
@@ -7485,7 +7492,7 @@
    (set_attr "mode" "<GPR:MODE>")
    (set_attr "extended_mips16" "yes")])
 
-(define_insn "*mov<GPR:mode>_on_<GPR2:mode>_ne"
+(define_insn "mov<GPR:mode>_on_<GPR2:mode>_ne"
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
        (if_then_else:GPR
         (match_operand:GPR2 1 "register_operand" "<GPR2:reg>,<GPR2:reg>")
@@ -7498,7 +7505,7 @@
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn "*mov<GPR:mode>_on_<GPR2:mode>_ne_mips16e2"
+(define_insn "mov<GPR:mode>_on_<GPR2:mode>_ne_mips16e2"
   [(set (match_operand:GPR 0 "register_operand" "=d,d,d,d")
 	   (if_then_else:GPR
 		(match_operand:GPR2 1 "register_operand" "<GPR2:reg>,<GPR2:reg>,t,t")

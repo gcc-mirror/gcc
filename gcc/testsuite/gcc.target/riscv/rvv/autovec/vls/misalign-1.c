@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fno-schedule-insns -fno-schedule-insns2 -mrvv-max-lmul=m4 -fno-tree-loop-distribute-patterns -mno-vector-strict-align" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fno-schedule-insns -fno-schedule-insns2 -mrvv-max-lmul=m4 -fno-tree-loop-distribute-patterns -mno-vector-strict-align -mstringop-strategy=libcall" } */
 
 #include <stdlib.h>
 

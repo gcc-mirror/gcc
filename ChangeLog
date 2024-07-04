@@ -1,3 +1,59 @@
+2024-07-01  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* MAINTAINERS: Update claziss email address.
+
+2024-06-20  Collin Funk  <collin.funk1@gmail.com>
+
+	PR bootstrap/115453
+	* configure.ac: Quote variable result of AC_SEARCH_LIBS.  Fix
+	typo ac_cv_search_pthread_crate.
+	* configure: Regenerate.
+
+2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
+
+	Revert:
+	2024-06-19  Collin Funk  <collin.funk1@gmail.com>
+
+	* configure.ac: Quote variable result of AC_SEARCH_LIBS.
+	* configure: Regenerate.
+
+2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
+
+	Revert:
+	2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR bootstrap/115453
+	* configure.ac: Fix typo ac_cv_search_pthread_crate.
+	* configure: Regnerate.
+
+2024-06-19  YunQiang Su  <syq@gcc.gnu.org>
+
+	PR bootstrap/115453
+	* configure.ac: Fix typo ac_cv_search_pthread_crate.
+	* configure: Regnerate.
+
+2024-06-19  Collin Funk  <collin.funk1@gmail.com>
+
+	* configure.ac: Quote variable result of AC_SEARCH_LIBS.
+	* configure: Regenerate.
+
+2024-06-19  Ramana Radhakrishnan  <ramanara@nvidia.com>
+
+	* MAINTAINERS: Update my email address.
+
+2024-06-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* MAINTAINERS (aarch64 port): Update my email address.
+	(DCO section): Likewise.
+
+2024-06-11  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Makefile.tpl: Add CRAB1_LIBS variable.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check if -ldl and -lpthread are needed, and if so, add
+	them to CRAB1_LIBS.
+
 2024-05-31  Pengxuan Zheng  <quic_pzheng@quicinc.com>
 
 	* MAINTAINERS: Add myself to Write After Approval and DCO.

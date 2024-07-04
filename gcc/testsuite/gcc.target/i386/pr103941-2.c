@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2" } */
+/* { dg-options "-O2 -msse2 -mno-avx512f" } */
 
 void foo (int *c, float *x, float *y)
 {

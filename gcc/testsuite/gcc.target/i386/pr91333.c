@@ -1,6 +1,6 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mavx" } */
-/* { dg-final { scan-assembler-times "vmovapd|vmovsd" 3 } } */
+/* { dg-final { scan-assembler-times "vmovapd|vmovsd" 2 } } */
 
 static inline double g (double x){
   asm volatile ("" : "+x" (x));

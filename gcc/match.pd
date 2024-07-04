@@ -200,6 +200,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match (maybe_bit_not @0)
  (bit_xor_cst@0 @1 @2))
 
+#if GIMPLE
+(match (maybe_truncate @0)
+ (convert @0)
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@0)))))
+#endif
+
 /* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
    ABSU_EXPR returns unsigned absolute value of the operand and the operand
    of the ABSU_EXPR will have the corresponding signed type.  */
@@ -3137,19 +3144,53 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c @0 @1)) integer_zerop)
   integer_minus_onep (usadd_left_part_2 @0 @1)))
 
+/* Unsigned saturation add, case 7 (branch with le):
+   SAT_ADD = x <= (X + Y) ? (X + Y) : -1.  */
+(match (unsigned_integer_sat_add @0 @1)
+ (cond^ (le @0 (usadd_left_part_1@2 @0 @1)) @2 integer_minus_onep))
+
+/* Unsigned saturation add, case 8 (branch with gt):
+   SAT_ADD = x > (X + Y) ? -1 : (X + Y).  */
+(match (unsigned_integer_sat_add @0 @1)
+ (cond^ (gt @0 (usadd_left_part_1@2 @0 @1)) integer_minus_onep @2))
+
+/* Unsigned saturation add, case 9 (one op is imm):
+   SAT_U_ADD = (X + 3) >= x ? (X + 3) : -1.  */
+(match (unsigned_integer_sat_add @0 @1)
+ (plus (min @0 INTEGER_CST@2) INTEGER_CST@1)
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1))
+  (with
+   {
+    unsigned precision = TYPE_PRECISION (type);
+    wide_int cst_1 = wi::to_wide (@1);
+    wide_int cst_2 = wi::to_wide (@2);
+    wide_int max = wi::mask (precision, false, precision);
+    wide_int sum = wi::add (cst_1, cst_2);
+   }
+   (if (wi::eq_p (max, sum))))))
+
+/* Unsigned saturation add, case 10 (one op is imm):
+   SAT_U_ADD = __builtin_add_overflow (X, 3, &ret) == 0 ? ret : -1.  */
+(match (unsigned_integer_sat_add @0 @1)
+ (cond^ (ne (imagpart (IFN_ADD_OVERFLOW@2 @0 INTEGER_CST@1)) integer_zerop)
+  integer_minus_onep (realpart @2))
+  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0))))
+
 /* Unsigned saturation sub, case 1 (branch with gt):
    SAT_U_SUB = X > Y ? X - Y : 0  */
 (match (unsigned_integer_sat_sub @0 @1)
- (cond (gt @0 @1) (minus @0 @1) integer_zerop)
+ (cond^ (gt @0 @1) (minus @0 @1) integer_zerop)
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
 
 /* Unsigned saturation sub, case 2 (branch with ge):
    SAT_U_SUB = X >= Y ? X - Y : 0.  */
 (match (unsigned_integer_sat_sub @0 @1)
- (cond (ge @0 @1) (minus @0 @1) integer_zerop)
+ (cond^ (ge @0 @1) (convert? (minus (convert1? @0) (convert1? @1))) integer_zerop)
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
-      && types_match (type, @0, @1))))
+      && TYPE_UNSIGNED (TREE_TYPE (@0)) && types_match (@0, @1))))
 
 /* Unsigned saturation sub, case 3 (branchless with gt):
    SAT_U_SUB = (X - Y) * (X > Y).  */
@@ -3164,6 +3205,50 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (mult:c (minus @0 @1) (convert (ge @0 @1)))
  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
       && types_match (type, @0, @1))))
+
+/* Unsigned saturation sub, case 5 (branchless bit_and with .SUB_OVERFLOW).  */
+(match (unsigned_integer_sat_sub @0 @1)
+ (bit_and:c (realpart (IFN_SUB_OVERFLOW@2 @0 @1))
+  (plus (imagpart @2) integer_minus_onep))
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1))))
+
+/* Unsigned saturation sub, case 6 (branchless mult with .SUB_OVERFLOW).  */
+(match (unsigned_integer_sat_sub @0 @1)
+ (mult:c (realpart (IFN_SUB_OVERFLOW@2 @0 @1))
+  (bit_xor (imagpart @2) integer_onep))
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1))))
+
+/* Unsigned saturation sub, case 7 (branch eq with .SUB_OVERFLOW).  */
+(match (unsigned_integer_sat_sub @0 @1)
+ (cond^ (eq (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
+  (realpart @2) integer_zerop)
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1))))
+
+/* Unsigned saturation sub, case 8 (branch ne with .SUB_OVERFLOW).  */
+(match (unsigned_integer_sat_sub @0 @1)
+ (cond^ (ne (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
+   integer_zerop (realpart @2))
+ (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1))))
+
+/* Unsigned saturation truncate, case 1 (), sizeof (WT) > sizeof (NT).
+   SAT_U_TRUNC = (NT)x | (NT)(-(X > (WT)(NT)(-1))).  */
+(match (unsigned_integer_sat_trunc @0)
+ (bit_ior:c (negate (convert (gt @0 INTEGER_CST@1)))
+   (convert @0))
+ (with {
+   unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+   unsigned otype_precision = TYPE_PRECISION (type);
+   wide_int trunc_max = wi::mask (itype_precision / 2, false, itype_precision);
+   wide_int int_cst = wi::to_wide (@1, itype_precision);
+  }
+  (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type)
+       && TYPE_UNSIGNED (TREE_TYPE (@0))
+       && otype_precision < itype_precision
+       && wi::eq_p (trunc_max, int_cst)))))
 
 /* x >  y  &&  x != XXX_MIN  -->  x > y
    x >  y  &&  x == XXX_MIN  -->  false . */
@@ -5882,6 +5967,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (VECTOR_INTEGER_TYPE_P (type)
        && target_supports_op_p (type, MINMAX, optab_vector))
     (minmax @0 @1))))
+
+/* Try to optimize x < 0 ? -1 : 0 into (signed) x >> 31
+   and x < 0 ? 1 : 0 into (unsigned) x >> 31.  */
+(simplify
+  (vec_cond (lt @0 integer_zerop) integer_all_onesp integer_zerop)
+   (if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && tree_nop_conversion_p (type, TREE_TYPE (@0))
+       && target_supports_op_p (TREE_TYPE (@0), RSHIFT_EXPR, optab_scalar))
+    (with
+      {
+       unsigned int prec = element_precision (TREE_TYPE (@0));
+      }
+    (view_convert
+      (rshift @0 { build_int_cst (integer_type_node, prec - 1);})))))
+
+(simplify
+  (vec_cond (lt @0 integer_zerop) integer_onep integer_zerop)
+   (if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && tree_nop_conversion_p (type, TREE_TYPE (@0)))
+    (with
+     {
+       unsigned int prec = element_precision (TREE_TYPE (@0));
+       tree utype = unsigned_type_for (TREE_TYPE (@0));
+     }
+     (if (target_supports_op_p (utype, RSHIFT_EXPR, optab_scalar))
+      (view_convert
+	(rshift (view_convert:utype @0)
+		{ build_int_cst (integer_type_node, prec - 1);}))))))
 #endif
 
 (for cnd (cond vec_cond)

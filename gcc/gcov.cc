@@ -117,6 +117,12 @@ struct arc_info
   /* Loop making arc.  */
   unsigned int cycle : 1;
 
+  /* Is a true arc.  */
+  unsigned int true_value : 1;
+
+  /* Is a false arc.  */
+  unsigned int false_value : 1;
+
   /* Links to next arc on src and dst lists.  */
   struct arc_info *succ_next;
   struct arc_info *pred_next;
@@ -973,7 +979,7 @@ print_usage (int error_p)
   fnotice (file, "  -c, --branch-counts             Output counts of branches taken\n\
                                     rather than percentages\n");
   fnotice (file, "  -g, --conditions                Include modified condition/decision\n\
-                                    coverage in output\n");
+                                    coverage (masking MC/DC) in output\n");
   fnotice (file, "  -d, --display-progress          Display progress information\n");
   fnotice (file, "  -D, --debug			    Display debugging dumps\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
@@ -2010,6 +2016,8 @@ read_graph_file (void)
 	      arc->on_tree = !!(flags & GCOV_ARC_ON_TREE);
 	      arc->fake = !!(flags & GCOV_ARC_FAKE);
 	      arc->fall_through = !!(flags & GCOV_ARC_FALLTHROUGH);
+	      arc->true_value = !!(flags & GCOV_ARC_TRUE);
+	      arc->false_value = !!(flags & GCOV_ARC_FALSE);
 
 	      arc->succ_next = src_blk->succ;
 	      src_blk->succ = arc;

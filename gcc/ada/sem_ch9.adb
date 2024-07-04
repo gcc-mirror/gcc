@@ -2011,8 +2011,9 @@ package body Sem_Ch9 is
          else
             Propagate_Concurrent_Flags (Prot_Typ, Etype (Item_Id));
 
-            if Chars (Item_Id) /= Name_uParent
-              and then Needs_Finalization (Etype (Item_Id))
+            if Has_Controlled_Component (Etype (Item_Id))
+              or else (Chars (Item_Id) /= Name_uParent
+                        and then Is_Controlled (Etype (Item_Id)))
             then
                Set_Has_Controlled_Component (Prot_Typ);
             end if;
@@ -2167,7 +2168,7 @@ package body Sem_Ch9 is
             or else Has_Interrupt_Handler (T)
             or else Has_Attach_Handler (T))
       then
-         Set_Has_Controlled_Component (T, True);
+         Set_Has_Controlled_Component (T);
       end if;
 
       --  The Ekind of components is E_Void during analysis for historical

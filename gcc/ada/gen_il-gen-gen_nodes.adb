@@ -915,8 +915,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Generic_Package_Declaration, N_Generic_Declaration,
        (Sy (Specification, Node_Id),
         Sy (Generic_Formal_Declarations, List_Id),
-        Sy (Aspect_Specifications, List_Id, Default_No_List),
-        Sm (Activation_Chain_Entity, Node_Id)));
+        Sy (Aspect_Specifications, List_Id, Default_No_List)));
 
    Cc (N_Generic_Subprogram_Declaration, N_Generic_Declaration,
        (Sy (Specification, Node_Id),

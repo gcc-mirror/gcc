@@ -42,6 +42,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-alignof.c */
+#define create_code create_code_alignof
+#define verify_code verify_code_alignof
+#include "test-alignof.c"
+#undef create_code
+#undef verify_code
+
 /* test-always_inline-attribute.c: This can't be in the testcases array as it needs
    the `-O0` flag.  */
 
@@ -449,6 +456,9 @@ const struct testcase testcases[] = {
   {"accessing_union",
    create_code_accessing_union,
    verify_code_accessing_union},
+  {"alignof",
+   create_code_alignof,
+   verify_code_alignof},
   {"alignment",
    create_code_alignment,
    verify_code_alignment},

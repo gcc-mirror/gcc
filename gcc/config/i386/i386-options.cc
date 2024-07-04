@@ -155,7 +155,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define m_LUJIAZUI (HOST_WIDE_INT_1U<<PROCESSOR_LUJIAZUI)
 #define m_YONGFENG (HOST_WIDE_INT_1U<<PROCESSOR_YONGFENG)
-#define m_ZHAOXIN  (m_LUJIAZUI | m_YONGFENG)
+#define m_SHIJIDADAO (HOST_WIDE_INT_1U<<PROCESSOR_SHIJIDADAO)
+#define m_ZHAOXIN  (m_LUJIAZUI | m_YONGFENG | m_SHIJIDADAO)
 
 #define m_GEODE (HOST_WIDE_INT_1U<<PROCESSOR_GEODE)
 #define m_K6 (HOST_WIDE_INT_1U<<PROCESSOR_K6)
@@ -793,6 +794,7 @@ static const struct processor_costs *processor_cost_table[] =
   &intel_cost,
   &lujiazui_cost,
   &yongfeng_cost,
+  &shijidadao_cost,
   &geode_cost,
   &k6_cost,
   &athlon_cost,
@@ -2113,15 +2115,18 @@ ix86_option_override_internal (bool main_args_p,
       opts->x_ix86_stringop_alg = no_stringop;
     }
 
-  if (TARGET_APX_F && !TARGET_64BIT)
+  if (TARGET_APX_F_P (opts->x_ix86_isa_flags2)
+      && !TARGET_64BIT_P (opts->x_ix86_isa_flags))
     error ("%<-mapxf%> is not supported for 32-bit code");
-  else if (opts->x_ix86_apx_features != apx_none && !TARGET_64BIT)
+  else if (opts->x_ix86_apx_features != apx_none
+	   && !TARGET_64BIT_P (opts->x_ix86_isa_flags))
     error ("%<-mapx-features=%> option is not supported for 32-bit code");
 
-  if (TARGET_UINTR && !TARGET_64BIT)
+  if (TARGET_UINTR_P (opts->x_ix86_isa_flags2)
+      && !TARGET_64BIT_P (opts->x_ix86_isa_flags))
     error ("%<-muintr%> not supported for 32-bit code");
 
-  if (ix86_lam_type && !TARGET_LP64)
+  if (ix86_lam_type && !TARGET_LP64_P (opts->x_ix86_isa_flags))
     error ("%<-mlam=%> option: [u48|u57] not supported for 32-bit code");
 
   if (!opts->x_ix86_arch_string)
@@ -2502,7 +2507,8 @@ ix86_option_override_internal (bool main_args_p,
   init_machine_status = ix86_init_machine_status;
 
   /* Override APX flag here if ISA bit is set.  */
-  if (TARGET_APX_F && !OPTION_SET_P (ix86_apx_features))
+  if (TARGET_APX_F_P (opts->x_ix86_isa_flags2)
+      && !OPTION_SET_P (ix86_apx_features))
     opts->x_ix86_apx_features = apx_all;
 
   /* Validate -mregparm= value.  */

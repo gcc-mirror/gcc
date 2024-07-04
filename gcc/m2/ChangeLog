@@ -1,3 +1,363 @@
+2024-06-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GenGCC.mod (QuadCondition): Remove.
+	(FoldIfEqu): Remove WalkAction parameter.
+	(FoldIfNotEqu): Ditto.
+	(FoldIfGreEqu): Ditto.
+	(FoldIfLessEqu): Ditto.
+	(FoldIfGre): Ditto.
+	(FoldIfLess): Ditto.
+	(FoldIfIn): Ditto.
+	(FoldIfNotIn): Ditto.
+	* gm2-compiler/M2Quads.mod (GenQuadOTypeUniquetok): Remove.
+
+2024-06-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115540
+	* gm2-libs-ch/termios.c (cfmakeraw): Remove return.
+	* mc-boot-ch/Gtermios.cc (cfmakeraw): Remove return.
+	* pge-boot/Gtermios.cc (cfmakeraw): Remove return.
+
+2024-06-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115536
+	* gm2-compiler/M2BasicBlock.def (GetBasicBlockScope): New procedure.
+	(GetBasicBlockStart): Ditto.
+	(GetBasicBlockEnd): Ditto.
+	(IsBasicBlockFirst): New procedure function.
+	* gm2-compiler/M2BasicBlock.mod (ConvertQuads2BasicBlock): Allow
+	conditional boolean quads to be removed.
+	(GetBasicBlockScope): Implement new procedure.
+	(GetBasicBlockStart): Ditto.
+	(GetBasicBlockEnd): Ditto.
+	(IsBasicBlockFirst): Implement new procedure function.
+	* gm2-compiler/M2GCCDeclare.def (FoldConstants): New parameter
+	declaration.
+	* gm2-compiler/M2GCCDeclare.mod (FoldConstants): New parameter
+	declaration.
+	(DeclareTypesConstantsProceduresInRange): Recreate basic blocks
+	after resolving constant expressions.
+	(CodeBecomes): Guard IsVariableSSA with IsVar.
+	* gm2-compiler/M2GenGCC.def (ResolveConstantExpressions): New
+	parameter declaration.
+	* gm2-compiler/M2GenGCC.mod (FoldIfLess): Remove relop pattern
+	detection.
+	(FoldIfGre): Ditto.
+	(FoldIfLessEqu): Ditto.
+	(FoldIfGreEqu): Ditto.
+	(FoldIfIn): Ditto.
+	(FoldIfNotIn): Ditto.
+	(FoldIfEqu): Ditto.
+	(FoldIfNotEqu): Ditto.
+	(FoldBecomes): Add BasicBlock parameter and allow conditional
+	boolean becomes to be folded in the first basic block.
+	(ResolveConstantExpressions): Reimplement.
+	* gm2-compiler/M2Quads.def (IsConstQuad): New procedure function.
+	(IsConditionalBooleanQuad): Ditto.
+	* gm2-compiler/M2Quads.mod (IsConstQuad): Implement new procedure function.
+	(IsConditionalBooleanQuad): Ditto.
+	(MoveWithMode): Use GenQuadOTypetok.
+	(IsInitialisingConst): Rewrite using OpUsesOp1.
+	(OpUsesOp1): New procedure function.
+	(doBuildAssignment): Mark des as a VarConditional.
+	(ConvertBooleanToVariable): Call PutVarConditional.
+	(DumpQuadSummary): New procedure.
+	(BuildRelOpFromBoolean): Updated debugging and improved comments.
+	(BuildRelOp): Only call BuildRelOpFromBoolean if we are in a const
+	expression and both operands are boolean relops.
+	(GenQuadOTypeUniquetok): New procedure.
+	(BackPatch): Correct comment.
+	* gm2-compiler/SymbolTable.def (PutVarConditional): New procedure.
+	(IsVarConditional): New procedure function.
+	* gm2-compiler/SymbolTable.mod (PutVarConditional): Implement new
+	procedure.
+	(IsVarConditional): Implement new procedure function.
+	(SymConstVar): New field IsConditional.
+	(SymVar): New field IsConditional.
+	(MakeVar): Initialize IsConditional field.
+	(MakeConstVar): Initialize IsConditional field.
+	* gm2-compiler/M2Swig.mod (DoBasicBlock): Change parameters to
+	use BasicBlock.
+	* gm2-compiler/M2Code.mod (SecondDeclareAndOptimize): Use iterator
+	to FoldConstants over basic block list.
+	* gm2-compiler/M2SymInit.mod (AppendEntry): Replace parameters
+	with BasicBlock.
+	* gm2-compiler/P3Build.bnf (Relation): Call RecordOp for #, <> and =.
+
+2024-06-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gm2-gcc/m2type.cc (build_m2_short_real_node): Adjust assertion with
+	TYPE_SIZE check.
+	(build_m2_real_node): Likewise.
+	(build_m2_long_real_node): Add assertion with TYPE_SIZE check.
+
+2024-06-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/114529
+	* Make-lang.in (MC_EXTENDED_OPAQUE): Assign to nothing.
+	* Make-maintainer.in (mc-basetest): New rule.
+	(mc-devel-basetest): New rule.
+	(mc-clean): Remove mc.
+	(m2/mc-boot-gen/$(SRC_PREFIX)decl.cc): Replace --extended-opaque
+	with $(EXTENDED_OPAQUE).
+	(PG-SRC): Move define before generic rules.
+	(PGE-DEF): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)%.h): New rule.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)libc.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)mcrts.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)UnixArgs.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)Selective.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)termios.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)SysExceptions.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)ldtoa.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)wrapc.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)SYSTEM.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)errno.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)M2RTS.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)SymbolKey.h): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)SymbolKey.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)NameKey.h): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)NameKey.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)Lists.h): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)Lists.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)Output.h): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)bnflex.h): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)bnflex.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)RTco.h): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)RTentity.h): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)RTco.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)RTentity.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)%.o): Ditto.
+	(m2/ppg$(exeext)): Ditto.
+	(m2/gm2-ppg-boot/main.o): Ditto.
+	(m2/gm2-auto): Ditto.
+	(c-family/m2pp.o): Ditto.
+	(BUILD-BOOT-PG-H): Correct macro definition.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)%.h): New rule.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)NameKey.h): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)NameKey.o): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)Lists.h): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)Lists.o): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)Output.h): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)Output.o): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)bnflex.h): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)bnflex.o): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)RTco.h): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)RTentity.h): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)RTco.o): Ditto.
+	(m2/gm2-pg-boot/$(SRC_PREFIX)RTentity.o): Ditto.
+	(BUILD-BOOT-PGE-H): Correct macro definition.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)SymbolKey.h): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)SymbolKey.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)NameKey.h): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)NameKey.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)Lists.h): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)Lists.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)Output.h): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)Output.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)bnflex.h): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)bnflex.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)RTco.h): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)RTentity.h): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)RTco.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)RTentity.o): Ditto.
+	(mc-basetest): Ditto.
+	(mc-devel-basetest): Ditto.
+	* gm2-compiler/M2Options.def (SetM2Dump): Add BOOLEAN return.
+	* gm2-compiler/M2Quads.def (BuildAlignment): Add tokno parameter.
+	(BuildBitLength): Ditto.
+	* gm2-compiler/P3Build.bnf (ByteAlignment): Move tokpos assignment
+	to the start of the block.
+	* gm2-compiler/PCBuild.bnf (ConstSetOrQualidentOrFunction): Ditto.
+	(SetOrDesignatorOrFunction): Ditto.
+	* gm2-compiler/PHBuild.bnf (ConstSetOrQualidentOrFunction): Ditto.
+	(SetOrDesignatorOrFunction): Ditto.
+	(ByteAlignment): Ditto.
+	* gm2-libs/dtoa.def (dtoa): Change mode to INTEGER.
+	* gm2-libs/ldtoa.def (ldtoa): Ditto.
+	* mc-boot-ch/GSYSTEM.c (_M2_SYSTEM_init): Correct parameter list.
+	(_M2_SYSTEM_fini): Ditto.
+	* mc-boot-ch/Gdtoa.cc (dtoa_calcsign): Return bool.
+	(dtoa_dtoa): Return void * and use bool in the fifth parameter.
+	(_M2_dtoa_init): Correct parameter list.
+	(_M2_dtoa_fini): Ditto.
+	* mc-boot-ch/Gerrno.cc (_M2_errno_init): Ditto.
+	(_M2_errno_fini): Ditto.
+	* mc-boot-ch/Gldtoa.cc (dtoa_calcsign): Return bool.
+	(ldtoa_ldtoa): Return void * and use bool in the fifth parameter.
+	(_M2_ldtoa_init): Correct parameter list.
+	(_M2_ldtoa_fini): Ditto.
+	* mc-boot-ch/Glibc.c (tracedb_zresult): New function.
+	(libc_read): Return size_t and use size_t in parameter three.
+	(libc_write): Return size_t and use size_t in parameter three.
+	(libc_printf): Add const to the format specifier.
+	Change declaration of c to use const.
+	(libc_snprintf): Add const to the format specifier.
+	Change declaration of c to use const.
+	(libc_malloc): Use size_t.
+	(libc_memcpy): Ditto.
+	* mc-boot/GASCII.cc: Regenerate.
+	* mc-boot/GArgs.cc: Ditto.
+	* mc-boot/GAssertion.cc: Ditto.
+	* mc-boot/GBreak.cc: Ditto.
+	* mc-boot/GCmdArgs.cc: Ditto.
+	* mc-boot/GDebug.cc: Ditto.
+	* mc-boot/GDynamicStrings.cc: Ditto.
+	* mc-boot/GEnvironment.cc: Ditto.
+	* mc-boot/GFIO.cc: Ditto.
+	* mc-boot/GFormatStrings.cc: Ditto.
+	* mc-boot/GFpuIO.cc: Ditto.
+	* mc-boot/GIO.cc: Ditto.
+	* mc-boot/GIndexing.cc: Ditto.
+	* mc-boot/GM2Dependent.cc: Ditto.
+	* mc-boot/GM2EXCEPTION.cc: Ditto.
+	* mc-boot/GM2RTS.cc: Ditto.
+	* mc-boot/GMemUtils.cc: Ditto.
+	* mc-boot/GNumberIO.cc: Ditto.
+	* mc-boot/GPushBackInput.cc: Ditto.
+	* mc-boot/GRTExceptions.cc: Ditto.
+	* mc-boot/GRTint.cc: Ditto.
+	* mc-boot/GSArgs.cc: Ditto.
+	* mc-boot/GSFIO.cc: Ditto.
+	* mc-boot/GStdIO.cc: Ditto.
+	* mc-boot/GStorage.cc: Ditto.
+	* mc-boot/GStrCase.cc: Ditto.
+	* mc-boot/GStrIO.cc: Ditto.
+	* mc-boot/GStrLib.cc: Ditto.
+	* mc-boot/GStringConvert.cc: Ditto.
+	* mc-boot/GSysStorage.cc: Ditto.
+	* mc-boot/GTimeString.cc: Ditto.
+	* mc-boot/Galists.cc: Ditto.
+	* mc-boot/Gdecl.cc: Ditto.
+	* mc-boot/Gkeyc.cc: Ditto.
+	* mc-boot/Glists.cc: Ditto.
+	* mc-boot/GmcComment.cc: Ditto.
+	* mc-boot/GmcComp.cc: Ditto.
+	* mc-boot/GmcDebug.cc: Ditto.
+	* mc-boot/GmcError.cc: Ditto.
+	* mc-boot/GmcFileName.cc: Ditto.
+	* mc-boot/GmcLexBuf.cc: Ditto.
+	* mc-boot/GmcMetaError.cc: Ditto.
+	* mc-boot/GmcOptions.cc: Ditto.
+	* mc-boot/GmcPreprocess.cc: Ditto.
+	* mc-boot/GmcPretty.cc: Ditto.
+	* mc-boot/GmcPrintf.cc: Ditto.
+	* mc-boot/GmcQuiet.cc: Ditto.
+	* mc-boot/GmcReserved.cc: Ditto.
+	* mc-boot/GmcSearch.cc: Ditto.
+	* mc-boot/GmcStack.cc: Ditto.
+	* mc-boot/GmcStream.cc: Ditto.
+	* mc-boot/Gmcp1.cc: Ditto.
+	* mc-boot/Gmcp2.cc: Ditto.
+	* mc-boot/Gmcp3.cc: Ditto.
+	* mc-boot/Gmcp4.cc: Ditto.
+	* mc-boot/Gmcp5.cc: Ditto.
+	* mc-boot/GnameKey.cc: Ditto.
+	* mc-boot/GsymbolKey.cc: Ditto.
+	* mc-boot/Gvarargs.cc: Ditto.
+	* mc-boot/Gwlists.cc: Ditto.
+	* mc-boot/Gdecl.h: Ditto.
+	* mc-boot/Gldtoa.h: Ditto.
+	* mc-boot/Glibc.h: Ditto.
+	* mc/decl.def (putTypeOpaque): New procedure.
+	(isTypeOpaque): New procedure function.
+	* mc/decl.mod (debugOpaque): New constant.
+	(nodeT): New enumeration field opaquecast.
+	(node): New record field opaquecastF.
+	(opaqueCastState): New record.
+	(opaquecastT): New record.
+	(typeT): New field isOpaque.
+	(varT): New field opaqueState.
+	(arrayT): Ditto.
+	(varparamT): Ditto.
+	(paramT): Ditto.
+	(pointerT): Ditto.
+	(recordfieldT): Ditto.
+	(componentrefT): Ditto.
+	(pointerrefT): Ditto.
+	(arrayrefT): Ditto.
+	(procedureT): Ditto.
+	(proctypeT): Ditto.
+	(makeType): Initialize field isOpaque.
+	(makeTypeImp): Initialize field isOpaque.
+	(putVar): Call initNodeOpaqueCastState.
+	(putReturnType): Ditto.
+	(makeProcType): Ditto.
+	(putProcTypeReturn): Ditto.
+	(makeVarParameter): Ditto.
+	(makeNonVarParameter): Ditto.
+	(makeFuncCall): Ditto.
+	(putTypeOpaque): New procedure.
+	(isTypeOpaque): New procedure function.
+	(doMakeComponentRef): Call initNodeOpaqueCastState.
+	(makePointerRef): Call initNodeOpaqueCastState.
+	(doGetFuncType): Call initNodeOpaqueCastState.
+	(doBinary): Add FALSE parameter to doExprCup.
+	(doDeRefC): Rewrite.
+	(doComponentRefC): Call flushOpaque.
+	(doPointerRefC): Call flushOpaque.
+	(doArrayRefC): Add const_cast for unbounded array.
+	(doExprCup): Rewrite.
+	(doTypeAliasC): Remove.
+	(isDeclType): New procedure function.
+	(doEnumerationC): New procedure function.
+	(doParamTypeEmit): Ditto.
+	(doParamTypeNameModifier): Ditto.
+	(initOpaqueCastState): Ditto.
+	(initNodeOpaqueCastState): Ditto.
+	(setOpaqueCastState): Ditto.
+	(setNodeOpaqueVoidStar): Ditto.
+	(nodeUsesOpaque): Ditto.
+	(getNodeOpaqueVoidStar): Ditto.
+	(getOpaqueFlushNecessary): Ditto.
+	(makeOpaqueCast): Ditto.
+	(flushOpaque): Ditto.
+	(castOpaque): Ditto.
+	(isTypeOpaqueDefImp): Ditto.
+	(isParamVoidStar): Ditto.
+	(isRefVoidStar): Ditto.
+	(isReturnVoidStar): Ditto.
+	(isVarVoidStar): Ditto.
+	(initNodeOpaqueState): Ditto.
+	(assignNodeOpaqueCastState): Ditto.
+	(assignNodeOpaqueCastFalse): Ditto.
+	(dumpOpaqueState): Ditto.
+	(doProcTypeC): Rewrite.
+	(isDeclInImp): New procedure function.
+	(doTypeNameModifier): Ditto.
+	(doTypeC): Emit typedef if enum is declared in this module.
+	(doCompletePartialProcType): Rewrite.
+	(outputCompletePartialProcType): New procedure.
+	(doOpaqueModifier): Ditto.
+	(doVarC): Ditto.
+	(doProcedureHeadingC): Add opaque modifier to return type if
+	necessary.
+	(doReturnC): Cast opaque type for return if necessary.
+	(forceCastOpaque): New procedure.
+	(forceReintCastOpaque): New procedure.
+	(doUnConstCastUnbounded): New procedure.
+	(doAssignmentC): Cast opaque for both des and expr if necessary.
+	(doAdrExprC): Use static_cast for void * casting.
+	(doFuncVarParam): New procedure.
+	(doFuncParamC): Rewrite.
+	(doAdrArgC): Rewrite.
+	(getFunction): New procedure function.
+	(stop): Rename to ...
+	(localstop): ... this.
+	(dupFunccall): Call assignNodeOpaqueCastState.
+	(dbg): Rewrite.
+	(addDone): Rewrite.
+	(addDoneDef): Do not add opaque types to the doneQ when declared in
+	the definition module.
+	* mc/mc.flex (openSource): Return bool.
+	(_M2_mcflex_init): Correct parameter list.
+	(_M2_mcflex_fini): Ditto.
+	* mc/mcComment.h (stdbool.h): Include.
+	(mcComment_initComment): Change unsigned int to bool.
+	* mc/mcOptions.mod (handleOption): Disable --extended-opaque
+	and issue warning.
+	* mc/mcp1.bnf (DefTypeDeclaration): Call putTypeOpaque.
+
 2024-06-06  Gaius Mulley  <gaiusmod2@gmail.com>
 	    Kewen.Lin   <linkw@linux.ibm.com>
 

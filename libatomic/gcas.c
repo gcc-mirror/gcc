@@ -22,6 +22,7 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#define LAT_GCAS
 #include "libatomic_i.h"
 
 
@@ -118,3 +119,4 @@ libat_compare_exchange (size_t n, void *mptr, void *eptr, void *dptr,
 }
 
 EXPORT_ALIAS (compare_exchange);
+#undef LAT_GCAS

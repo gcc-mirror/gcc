@@ -689,12 +689,6 @@ package body Util is
       pragma Assert (Scope.Last > 0);
       Scope.Decrement_Last;
 
-      if Include_Subprogram_In_Messages
-        and then Scopes (Scope.Last).Labl /= Error
-      then
-         Current_Node := Scopes (Scope.Last).Labl;
-      end if;
-
       if Debug_Flag_P then
          Error_Msg_Uint_1 := UI_From_Int (Scope.Last);
          Error_Msg_SC ("decrement scope stack ptr, new value = ^!");

@@ -4686,7 +4686,13 @@ avr_out_xload (rtx_insn * /*insn*/, rtx *op, int *plen)
   xop[2] = lpm_addr_reg_rtx;
   xop[3] = AVR_HAVE_LPMX ? op[0] : lpm_reg_rtx;
 
-  avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, -1);
+  if (plen)
+    *plen = 0;
+
+  if (reg_overlap_mentioned_p (xop[3], lpm_addr_reg_rtx))
+    avr_asm_len ("sbrs %1,7", xop, plen, 1);
+
+  avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, 1);
 
   avr_asm_len ("sbrc %1,7" CR_TAB
 	       "ld %3,%a2", xop, plen, 2);
@@ -6928,6 +6934,20 @@ avr_canonicalize_comparison (int *icode, rtx *op0, rtx *op1, bool op0_fixed)
 	  return;
 	}
     }
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return SFmode or DFmode
+   for TI_{LONG_,}DOUBLE_TYPE which is for {long,} double type, go with
+   the default one for the others.  */
+
+static machine_mode
+avr_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_DOUBLE_TYPE)
+    return avr_double == 32 ? SFmode : DFmode;
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return avr_long_double == 32 ? SFmode : DFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 
@@ -16410,6 +16430,9 @@ avr_float_lib_compare_returns_bool (machine_mode mode, enum rtx_code)
    against unsafe speculation."  */
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE avr_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

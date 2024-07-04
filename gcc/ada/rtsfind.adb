@@ -605,7 +605,7 @@ package body Rtsfind is
      range Interfaces_C_Strings .. Interfaces_C_Strings;
 
    subtype System_Descendant is RTU_Id
-     range System_Address_Image .. System_Tasking_Stages;
+     range System_Address_To_Access_Conversions .. System_Tasking_Stages;
 
    subtype System_Atomic_Operations_Descendant is System_Descendant
      range System_Atomic_Operations_Test_And_Set ..

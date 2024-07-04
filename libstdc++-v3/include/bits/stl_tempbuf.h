@@ -82,10 +82,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline _Tp*
       __get_temporary_buffer(ptrdiff_t __len) _GLIBCXX_NOTHROW
       {
-	if (__builtin_expect(__len > (size_t(-1) / sizeof(_Tp)), 0))
+	if (__builtin_expect(size_t(__len) > (size_t(-1) / sizeof(_Tp)), 0))
 	  return 0;
 
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
 	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  return (_Tp*) _GLIBCXX_OPERATOR_NEW(__len * sizeof(_Tp),
 					      align_val_t(alignof(_Tp)),
@@ -107,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_SIZED_DEALLOC(T, p, n) (p)
 #endif
 
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
 	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  {
 	    _GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(_Tp, __p, __len),
@@ -168,7 +168,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     return_temporary_buffer(_Tp* __p)
     {
-#if __cpp_aligned_new
+#if __cpp_aligned_new && __cplusplus >= 201103L
       if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	_GLIBCXX_OPERATOR_DELETE(__p, align_val_t(alignof(_Tp)));
       else
@@ -200,6 +200,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type  _M_original_len;
       struct _Impl
       {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 	explicit
 	_Impl(ptrdiff_t __original_len)
 	{
@@ -208,6 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_len = __p.second;
 	  _M_buffer = __p.first;
 	}
+#pragma GCC diagnostic pop
 
 	~_Impl()
 	{ std::__detail::__return_temporary_buffer(_M_buffer, _M_len); }
@@ -315,8 +318,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __ucr(__first, __last, __seed);
     }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   template<typename _ForwardIterator, typename _Tp>
     _Temporary_buffer<_ForwardIterator, _Tp>::
     _Temporary_buffer(_ForwardIterator __seed, size_type __original_len)
@@ -324,7 +325,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       std::__uninitialized_construct_buf(begin(), end(), __seed);
     }
-#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -1,7 +1,7 @@
 /* PR target/39558 */
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -save-temps" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 

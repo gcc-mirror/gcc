@@ -993,11 +993,11 @@ Btype*
 Gcc_backend::float_type(int bits)
 {
   tree type;
-  if (bits == FLOAT_TYPE_SIZE)
+  if (bits == TYPE_PRECISION (float_type_node))
     type = float_type_node;
-  else if (bits == DOUBLE_TYPE_SIZE)
+  else if (bits == TYPE_PRECISION (double_type_node))
     type = double_type_node;
-  else if (bits == LONG_DOUBLE_TYPE_SIZE)
+  else if (bits == TYPE_PRECISION (long_double_type_node))
     type = long_double_type_node;
   else
     {
@@ -1014,11 +1014,11 @@ Btype*
 Gcc_backend::complex_type(int bits)
 {
   tree type;
-  if (bits == FLOAT_TYPE_SIZE * 2)
+  if (bits == TYPE_PRECISION (float_type_node) * 2)
     type = complex_float_type_node;
-  else if (bits == DOUBLE_TYPE_SIZE * 2)
+  else if (bits == TYPE_PRECISION (double_type_node) * 2)
     type = complex_double_type_node;
-  else if (bits == LONG_DOUBLE_TYPE_SIZE * 2)
+  else if (bits == TYPE_PRECISION (long_double_type_node) * 2)
     type = complex_long_double_type_node;
   else
     {

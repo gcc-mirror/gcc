@@ -43,6 +43,7 @@ with Exp_Tss;        use Exp_Tss;
 with Freeze;         use Freeze;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
+with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nmake;          use Nmake;
 with Nlists;         use Nlists;
@@ -154,8 +155,8 @@ package body Exp_Aggr is
    --  case the aggregate must slide, and we must introduce an intermediate
    --  temporary to hold it.
    --
-   --  The same holds in an assignment to one-dimensional array of arrays,
-   --  when a component may be given with bounds that differ from those of the
+   --  The same holds in an assignment to multi-dimensional arrays, when
+   --  components may be given with bounds that differ from those of the
    --  component type.
 
    function Number_Of_Choices (N : Node_Id) return Nat;
@@ -1370,8 +1371,8 @@ package body Exp_Aggr is
          Expr_Q := Unqualify (Expr);
 
          if Present (Etype (N)) and then Etype (N) /= Any_Composite then
-            Comp_Typ := Component_Type (Etype (N));
-            pragma Assert (Comp_Typ = Ctype); --  AI-287
+            Comp_Typ := Get_Corresponding_Mutably_Tagged_Type_If_Present
+                          (Component_Type (Etype (N)));
 
          elsif Present (Next (First (New_Indexes))) then
 
@@ -1485,14 +1486,16 @@ package body Exp_Aggr is
          --  object creation that will invoke it otherwise.
 
          else
-            if Present (Base_Init_Proc (Base_Type (Ctype)))
-              or else Has_Task (Base_Type (Ctype))
-            then
-               Append_List_To (Stmts,
-                 Build_Initialization_Call (N,
-                   Id_Ref            => Indexed_Comp,
-                   Typ               => Ctype,
-                   With_Default_Init => True));
+            if Present (Base_Init_Proc (Ctype)) then
+               Check_Restriction (No_Default_Initialization, N);
+
+               if not Restriction_Active (No_Default_Initialization) then
+                  Append_List_To (Stmts,
+                    Build_Initialization_Call (N,
+                      Id_Ref            => Indexed_Comp,
+                      Typ               => Ctype,
+                      With_Default_Init => True));
+               end if;
 
                --  If the component type has invariants, add an invariant
                --  check after the component is default-initialized. It will
@@ -2476,7 +2479,7 @@ package body Exp_Aggr is
               Make_Procedure_Call_Statement (Loc,
                 Name                   =>
                   New_Occurrence_Of
-                    (Find_Prim_Op (Init_Typ, Name_Initialize), Loc),
+                    (Find_Controlled_Prim_Op (Init_Typ, Name_Initialize), Loc),
                 Parameter_Associations => New_List (New_Copy_Tree (Ref))));
          end if;
       end Generate_Finalization_Actions;
@@ -3184,6 +3187,8 @@ package body Exp_Aggr is
          elsif Box_Present (Comp)
            and then Has_Non_Null_Base_Init_Proc (Etype (Selector))
          then
+            Check_Restriction (No_Default_Initialization, N);
+
             if Ekind (Selector) /= E_Discriminant then
                Generate_Finalization_Actions;
             end if;
@@ -3215,15 +3220,18 @@ package body Exp_Aggr is
                end if;
             end;
 
-            Append_List_To (L,
-              Build_Initialization_Call (N,
-                Id_Ref            => Make_Selected_Component (Loc,
-                                       Prefix        => New_Copy_Tree (Target),
-                                       Selector_Name =>
-                                         New_Occurrence_Of (Selector, Loc)),
-                Typ               => Etype (Selector),
-                Enclos_Type       => Typ,
-                With_Default_Init => True));
+            if not Restriction_Active (No_Default_Initialization) then
+               Append_List_To (L,
+                 Build_Initialization_Call (N,
+                   Id_Ref            => Make_Selected_Component (Loc,
+                                          Prefix        =>
+                                            New_Copy_Tree (Target),
+                                          Selector_Name =>
+                                            New_Occurrence_Of (Selector, Loc)),
+                   Typ               => Etype (Selector),
+                   Enclos_Type       => Typ,
+                   With_Default_Init => True));
+            end if;
 
          --  Prepare for component assignment
 
@@ -4474,7 +4482,8 @@ package body Exp_Aggr is
       Dims                 : constant Nat := Number_Dimensions (Typ);
       Max_Others_Replicate : constant Nat := Max_Aggregate_Size (N);
 
-      Static_Components : Boolean := True;
+      Ctyp              : Entity_Id := Component_Type (Typ);
+      Static_Components : Boolean   := True;
 
       procedure Check_Static_Components;
       --  Check whether all components of the aggregate are compile-time known
@@ -4908,9 +4917,9 @@ package body Exp_Aggr is
          end if;
       end Is_Flat;
 
-      -------------------------
-      --  Is_Static_Element  --
-      -------------------------
+      -----------------------
+      -- Is_Static_Element --
+      -----------------------
 
       function Is_Static_Element (N : Node_Id; Dims : Nat) return Boolean is
          Expr : constant Node_Id := Expression (N);
@@ -4935,7 +4944,7 @@ package body Exp_Aggr is
          --  but only at the innermost level for a multidimensional array.
 
          elsif Dims = 1 then
-            Preanalyze_And_Resolve (Expr, Component_Type (Typ));
+            Preanalyze_And_Resolve (Expr, Ctyp);
             return Compile_Time_Known_Value (Expr);
 
          else
@@ -4985,6 +4994,10 @@ package body Exp_Aggr is
       if Has_Controlled_Component (Typ) then
          return;
       end if;
+
+      --  Special handling for mutably taggeds
+
+      Ctyp := Get_Corresponding_Mutably_Tagged_Type_If_Present (Ctyp);
 
       Check_Static_Components;
 
@@ -5076,9 +5089,10 @@ package body Exp_Aggr is
    procedure Expand_Array_Aggregate (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
 
-      Typ  : constant Entity_Id := Etype (N);
-      Ctyp : constant Entity_Id := Component_Type (Typ);
+      Typ : constant Entity_Id := Etype (N);
       --  Typ is the correct constrained array subtype of the aggregate
+
+      Ctyp : Entity_Id := Component_Type (Typ);
       --  Ctyp is the corresponding component type.
 
       Aggr_Dimension : constant Pos := Number_Dimensions (Typ);
@@ -6026,6 +6040,10 @@ package body Exp_Aggr is
       --  never get here.
 
       pragma Assert (not Raises_Constraint_Error (N));
+
+      --  Special handling for mutably taggeds
+
+      Ctyp := Get_Corresponding_Mutably_Tagged_Type_If_Present (Ctyp);
 
       --  STEP 1a
 
@@ -7931,6 +7949,10 @@ package body Exp_Aggr is
       --  NOTE: This sets the global Static_Components to False in most, but
       --  not all, cases when it returns False.
 
+      function Contains_Mutably_Tagged_Component
+        (Typ : Entity_Id) return Boolean;
+      --  Determine if some component of Typ is mutably tagged
+
       function Has_Per_Object_Constraint (L : List_Id) return Boolean;
       --  Return True if any element of L has Has_Per_Object_Constraint set.
       --  L should be the Choices component of an N_Component_Association.
@@ -8433,6 +8455,30 @@ package body Exp_Aggr is
          return True;
       end Component_OK_For_Backend;
 
+      ---------------------------------------
+      -- Contains_Mutably_Tagged_Component --
+      ---------------------------------------
+
+      function Contains_Mutably_Tagged_Component
+        (Typ : Entity_Id) return Boolean
+      is
+         Comp : Entity_Id;
+      begin
+         --  Move through Typ's components looking for mutably tagged ones
+
+         Comp := First_Component (Typ);
+         while Present (Comp) loop
+            --  When we find one, return True
+
+            if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (Comp)) then
+               return True;
+            end if;
+
+            Next_Component (Comp);
+         end loop;
+         return False;
+      end Contains_Mutably_Tagged_Component;
+
       -------------------------------
       -- Has_Per_Object_Constraint --
       -------------------------------
@@ -8515,7 +8561,8 @@ package body Exp_Aggr is
       end if;
 
       --  If the pragma Aggregate_Individually_Assign is set, always convert to
-      --  assignments.
+      --  assignments so that proper tag assignments and conversions can be
+      --  generated.
 
       if Aggregate_Individually_Assign then
          Convert_To_Assignments (N, Typ);
@@ -8553,6 +8600,12 @@ package body Exp_Aggr is
          else
             Build_Back_End_Aggregate;
          end if;
+
+      --  When we have any components which are mutably tagged types then
+      --  special processing is required.
+
+      elsif Contains_Mutably_Tagged_Component (Typ) then
+         Convert_To_Assignments (N, Typ);
 
       --  Gigi doesn't properly handle temporaries of variable size so we
       --  generate it in the front-end
@@ -9550,32 +9603,44 @@ package body Exp_Aggr is
       elsif Is_Others_Aggregate (Aggr) then
          return False;
 
-      else
-         --  Sliding can only occur along the first dimension
-         --  If any the bounds of non-static sliding is required
-         --  to force potential range checks.
+      --  Check if sliding is required
 
+      else
          declare
-            Bounds1 : constant Range_Nodes :=
-              Get_Index_Bounds (First_Index (Typ));
-            Bounds2 : constant Range_Nodes :=
-              Get_Index_Bounds (First_Index (Obj_Type));
+            Obj_Index  : Node_Id := First_Index (Obj_Type);
+            Obj_Bounds : Range_Nodes;
+            Typ_Index  : Node_Id := First_Index (Typ);
+            Typ_Bounds : Range_Nodes;
 
          begin
-            if not Is_OK_Static_Expression (Bounds1.First) or else
-               not Is_OK_Static_Expression (Bounds2.First) or else
-               not Is_OK_Static_Expression (Bounds1.Last) or else
-               not Is_OK_Static_Expression (Bounds2.Last)
-            then
-               return True;
+            while Present (Typ_Index) loop
+               pragma Assert (Present (Obj_Index));
 
-            else
-               return Expr_Value (Bounds1.First) /= Expr_Value (Bounds2.First)
-                        or else
-                      Expr_Value (Bounds1.Last) /= Expr_Value (Bounds2.Last);
-            end if;
+               Typ_Bounds := Get_Index_Bounds (Typ_Index);
+               Obj_Bounds := Get_Index_Bounds (Obj_Index);
+
+               if not Is_OK_Static_Expression (Typ_Bounds.First) or else
+                 not Is_OK_Static_Expression (Obj_Bounds.First) or else
+                 not Is_OK_Static_Expression (Typ_Bounds.Last) or else
+                 not Is_OK_Static_Expression (Obj_Bounds.Last)
+               then
+                  return True;
+
+               elsif Expr_Value (Typ_Bounds.First)
+                       /= Expr_Value (Obj_Bounds.First)
+                 or else Expr_Value (Typ_Bounds.Last)
+                           /= Expr_Value (Obj_Bounds.Last)
+               then
+                  return True;
+               end if;
+
+               Next_Index (Typ_Index);
+               Next_Index (Obj_Index);
+            end loop;
          end;
       end if;
+
+      return False;
    end Must_Slide;
 
    ---------------------

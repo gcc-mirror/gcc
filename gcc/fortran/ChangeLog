@@ -1,3 +1,100 @@
+2024-07-01  Andrew Stubbs  <ams@baylibre.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.cc (is_predefined_allocator): Update valid ranges to
+	incorporate ompx_gnu_pinned_mem_alloc.
+
+2024-06-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114019
+	* trans-stmt.cc (gfc_trans_allocate): Fix handling of case of
+	scalar character expression being used for SOURCE.
+
+2024-06-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-expr.cc (gfc_class_set_vptr): Add setting of _vptr
+	member.
+	* trans-intrinsic.cc (conv_intrinsic_move_alloc): First use
+	of gfc_class_set_vptr and refactor very similar code.
+	* trans.h (gfc_class_set_vptr): Declare the new function.
+
+2024-06-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans-array.cc (structure_alloc_comps): Use reset_vptr.
+	* trans-decl.cc (gfc_trans_deferred_vars): Same.
+	(gfc_generate_function_code): Same.
+	* trans-expr.cc (gfc_reset_vptr): Allow supplying the class
+	type.
+	(gfc_conv_procedure_call): Use reset_vptr.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_transfer): Same.
+
+2024-06-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/55978
+	* trans-array.cc (gfc_conv_array_parameter): Do not dereference
+	data component of a missing allocatable dummy array argument for
+	passing as actual to optional dummy.  Harden logic of presence
+	check for optional pointer dummy by using TRUTH_ANDIF_EXPR instead
+	of TRUTH_AND_EXPR.
+
+2024-06-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/59104
+	* dependency.cc (dependency_fcn, gfc_function_dependency): New
+	functions to detect dependency in array bounds and character
+	lengths on old style function results.
+	* dependency.h : Add prototype for gfc_function_dependency.
+	* error.cc (error_print): Remove trailing space.
+	* gfortran.h : Remove dummy_order and add fn_result_spec.
+	* symbol.cc : Remove declaration of next_dummy_order..
+	(gfc_set_sym_referenced): remove setting of symbol dummy order.
+	* trans-array.cc (gfc_trans_auto_array_allocation): Detect
+	non-dummy symbols with function dependencies and put the
+	allocation at the end of the initialization code.
+	* trans-decl.cc : Include dependency.h.
+	(decl_order): New function that determines uses the location
+	field of the symbol 'declared_at' to determine the order of two
+	declarations.
+	(gfc_defer_symbol_init): Call gfc_function_dependency to put
+	dependent symbols in the right part of the tlink chain. Use
+	the location field of the symbol declared_at to determine the
+	order of declarations.
+	(gfc_trans_auto_character_variable): Put character length
+	initialization of dependent symbols at the end of the chain.
+	* trans.cc (gfc_add_init_cleanup): Add boolean argument with
+	default false that determines whther an expression is placed at
+	the back or the front of the initialization chain.
+	* trans.h : Update the prototype for gfc_add_init_cleanup.
+
+2024-06-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115390
+	* trans-decl.cc (gfc_conv_cfi_to_gfc): Move derivation of type sizes
+	for character via gfc_trans_vla_type_sizes to after character length
+	has been set.
+
+2024-06-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/90076
+	* trans-decl.cc (gfc_generate_function_code): Set vptr for
+	results to declared class type.
+	* trans-expr.cc (gfc_reset_vptr): Allow to provide the typespec
+	instead of the expression.
+	* trans.h (gfc_reset_vptr): Same.
+
+2024-06-17  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans.cc (gfc_deallocate_with_status): Check that object to deref
+	is an array, before applying array deref.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (gfc_clear_pp_buffer): Likewise.
+	(gfc_warning): Likewise.
+	(gfc_warning_check): Likewise.
+	(gfc_error_opt): Likewise.
+	(gfc_error_check): Likewise.
+
 2024-06-07  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/90068

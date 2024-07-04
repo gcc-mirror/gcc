@@ -8557,6 +8557,18 @@ operand 2, greater than operand 2 or is unordered with operand 2.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{isfinite@var{m}2} instruction pattern
+@item @samp{isfinite@var{m}2}
+Return 1 if operand 1 is a finite floating point number and 0
+otherwise.  @var{m} is a scalar floating point mode.  Operand 0
+has mode @code{SImode}, and operand 1 has mode @var{m}.
+
+@cindex @code{isnormal@var{m}2} instruction pattern
+@item @samp{isnormal@var{m}2}
+Return 1 if operand 1 is a normal floating point number and 0
+otherwise.  @var{m} is a scalar floating point mode.  Operand 0
+has mode @code{SImode}, and operand 1 has mode @var{m}.
+
 @end table
 
 @end ifset

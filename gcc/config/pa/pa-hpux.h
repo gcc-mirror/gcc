@@ -34,7 +34,8 @@ along with GCC; see the file COPYING3.  If not see
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
 
-#define LONG_DOUBLE_TYPE_SIZE 128
+#undef PA_LONG_DOUBLE_TYPE_SIZE
+#define PA_LONG_DOUBLE_TYPE_SIZE 128
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) ((MODE) == TFmode)
 
 /* GCC always defines __STDC__.  HP C++ compilers don't define it.  This

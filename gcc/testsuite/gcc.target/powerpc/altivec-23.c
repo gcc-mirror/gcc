@@ -3,8 +3,8 @@
    initializer of automatic ones.  */
 
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -mabi=altivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 #include <altivec.h>
 

@@ -859,7 +859,14 @@ static const attribute_spec aarch64_gnu_attributes[] =
 			  NULL },
   { "Advanced SIMD type", 1, 1, false, true,  false, true,  NULL, NULL },
   { "SVE type",		  3, 3, false, true,  false, true,  NULL, NULL },
-  { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL }
+  { "SVE sizeless type",  0, 0, false, true,  false, true,  NULL, NULL },
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
+  { "dllimport", 0, 0, false, false, false, false, handle_dll_attribute, NULL },
+  { "dllexport", 0, 0, false, false, false, false, handle_dll_attribute, NULL },
+#endif
+#ifdef SUBTARGET_ATTRIBUTE_TABLE
+  SUBTARGET_ATTRIBUTE_TABLE
+#endif
 };
 
 static const scoped_attribute_specs aarch64_gnu_attribute_table =
@@ -2862,6 +2869,15 @@ static void
 aarch64_load_symref_appropriately (rtx dest, rtx imm,
 				   enum aarch64_symbol_type type)
 {
+#if TARGET_PECOFF
+  rtx tmp = legitimize_pe_coff_symbol (imm, true);
+  if (tmp)
+    {
+      emit_insn (gen_rtx_SET (dest, tmp));
+      return;
+    }
+#endif
+
   switch (type)
     {
     case SYMBOL_SMALL_ABSOLUTE:
@@ -3288,7 +3304,7 @@ aarch64_sve_reinterpret (machine_mode mode, rtx x)
   /* can_change_mode_class must only return true if subregs and svreinterprets
      have the same semantics.  */
   if (targetm.can_change_mode_class (GET_MODE (x), mode, FP_REGS))
-    return lowpart_subreg (mode, x, GET_MODE (x));
+    return force_lowpart_subreg (mode, x, GET_MODE (x));
 
   rtx res = gen_reg_rtx (mode);
   x = force_reg (GET_MODE (x), x);
@@ -11230,6 +11246,13 @@ aarch64_expand_call (rtx result, rtx mem, rtx cookie, bool sibcall)
 
   gcc_assert (MEM_P (mem));
   callee = XEXP (mem, 0);
+
+#if TARGET_PECOFF
+  tmp = legitimize_pe_coff_symbol (callee, false);
+  if (tmp)
+    callee = tmp;
+#endif
+
   mode = GET_MODE (callee);
   gcc_assert (mode == Pmode);
 
@@ -12706,6 +12729,12 @@ aarch64_anchor_offset (HOST_WIDE_INT offset, HOST_WIDE_INT size,
 static rtx
 aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
 {
+#if TARGET_PECOFF
+  rtx tmp = legitimize_pe_coff_symbol (x, true);
+  if (tmp)
+    return tmp;
+#endif
+
   /* Try to split X+CONST into Y=X+(CONST & ~mask), Y+(CONST&mask),
      where mask is selected by alignment and size of the offset.
      We try to pick as large a range for the offset as possible to
@@ -14690,6 +14719,7 @@ cost_plus:
 	return true;
       }
 
+    case BITREVERSE:
     case BSWAP:
       *cost = COSTS_N_INSNS (1);
 
@@ -15336,14 +15366,6 @@ cost_plus:
         {
           if (speed)
             *cost += extra_cost->fp[mode == DFmode].roundint;
-
-          return false;
-        }
-
-      if (XINT (x, 1) == UNSPEC_RBIT)
-        {
-          if (speed)
-            *cost += extra_cost->alu.rev;
 
           return false;
         }
@@ -26877,22 +26899,14 @@ aarch64_addti_scratch_regs (rtx op1, rtx op2, rtx *low_dest,
 			    rtx *high_in2)
 {
   *low_dest = gen_reg_rtx (DImode);
-  *low_in1 = gen_lowpart (DImode, op1);
-  *low_in2 = simplify_gen_subreg (DImode, op2, TImode,
-				  subreg_lowpart_offset (DImode, TImode));
+  *low_in1 = force_lowpart_subreg (DImode, op1, TImode);
+  *low_in2 = force_lowpart_subreg (DImode, op2, TImode);
   *high_dest = gen_reg_rtx (DImode);
-  *high_in1 = gen_highpart (DImode, op1);
-  *high_in2 = simplify_gen_subreg (DImode, op2, TImode,
-				   subreg_highpart_offset (DImode, TImode));
+  *high_in1 = force_highpart_subreg (DImode, op1, TImode);
+  *high_in2 = force_highpart_subreg (DImode, op2, TImode);
 }
 
 /* Generate DImode scratch registers for 128-bit (TImode) subtraction.
-
-   This function differs from 'arch64_addti_scratch_regs' in that
-   OP1 can be an immediate constant (zero). We must call
-   subreg_highpart_offset with DImode and TImode arguments, otherwise
-   VOIDmode will be used for the const_int which generates an internal
-   error from subreg_size_highpart_offset which does not expect a size of zero.
 
    OP1 represents the TImode destination operand 1
    OP2 represents the TImode destination operand 2
@@ -26911,17 +26925,12 @@ aarch64_subvti_scratch_regs (rtx op1, rtx op2, rtx *low_dest,
 			     rtx *high_in2)
 {
   *low_dest = gen_reg_rtx (DImode);
-  *low_in1 = simplify_gen_subreg (DImode, op1, TImode,
-				  subreg_lowpart_offset (DImode, TImode));
-
-  *low_in2 = simplify_gen_subreg (DImode, op2, TImode,
-				  subreg_lowpart_offset (DImode, TImode));
+  *low_in1 = force_lowpart_subreg (DImode, op1, TImode);
+  *low_in2 = force_lowpart_subreg (DImode, op2, TImode);
   *high_dest = gen_reg_rtx (DImode);
 
-  *high_in1 = simplify_gen_subreg (DImode, op1, TImode,
-				   subreg_highpart_offset (DImode, TImode));
-  *high_in2 = simplify_gen_subreg (DImode, op2, TImode,
-				   subreg_highpart_offset (DImode, TImode));
+  *high_in1 = force_highpart_subreg (DImode, op1, TImode);
+  *high_in2 = force_highpart_subreg (DImode, op2, TImode);
 }
 
 /* Generate RTL for 128-bit (TImode) subtraction with overflow.
@@ -28424,6 +28433,18 @@ aarch64_bitint_type_info (int n, struct bitint_info *info)
   info->big_endian = TARGET_BIG_END;
   info->extended = false;
   return true;
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode for
+   TI_LONG_DOUBLE_TYPE which is for long double type, go with the default
+   one for the others.  */
+
+static machine_mode
+aarch64_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TFmode;
+  return default_mode_for_floating_type (ti);
 }
 
 /* Implement TARGET_SCHED_CAN_SPECULATE_INSN.  Return true if INSN can be
@@ -30552,6 +30573,9 @@ aarch64_run_selftests (void)
 
 #undef TARGET_C_BITINT_TYPE_INFO
 #define TARGET_C_BITINT_TYPE_INFO aarch64_bitint_type_info
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE aarch64_c_mode_for_floating_type
 
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN aarch64_expand_builtin

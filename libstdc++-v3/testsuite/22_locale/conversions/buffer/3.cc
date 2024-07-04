@@ -47,6 +47,7 @@ test01()
   // https://gcc.gnu.org/ml/libstdc++/2017-11/msg00022.html
   streambuf sb;
   std::wbuffer_convert<codecvt> conv(&sb);
+  // { dg-warning "deprecated" "" { target c++17 } 49 }
   VERIFY( sb.in_avail() == 0 );
   wchar_t c = conv.sgetc();
   VERIFY( c == L'a' );
@@ -61,6 +62,7 @@ test02()
   // https://gcc.gnu.org/ml/libstdc++/2017-11/msg00022.html
   streambuf sb;
   std::wbuffer_convert<codecvt, char16_t> conv(&sb);
+  // { dg-warning "deprecated" "" { target c++17 } 64 }
   VERIFY( sb.in_avail() == 0 );
   char16_t c = conv.sgetc();
   VERIFY( c == u'a' );

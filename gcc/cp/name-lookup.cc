@@ -827,6 +827,17 @@ name_lookup::process_module_binding (tree new_val, tree new_type,
       marker |= 2;
     }
 
+  /* add_binding_entity wraps decls brought in by 'using' in an OVERLOAD even
+     for non-functions; strip it now.
+     ??? Why isn't it represented with a USING_DECL?  Or do we want to use
+     OVERLOAD for using more widely to address 114683?  */
+  if (new_val && TREE_CODE (new_val) == OVERLOAD
+      && !DECL_DECLARES_FUNCTION_P (OVL_FUNCTION (new_val)))
+    {
+      gcc_checking_assert (OVL_USING_P (new_val) && !OVL_CHAIN (new_val));
+      new_val = OVL_FUNCTION (new_val);
+    }
+
   if (new_type || new_val)
     marker |= process_binding (new_val, new_type);
 
@@ -5305,14 +5316,13 @@ do_nonmember_using_decl (name_lookup &lookup, bool fn_scope_p,
       /* FIXME: Handle exporting declarations from a different scope
 	 without also marking those declarations as exported.
 	 This will require not just binding directly to the underlying
-	 value; see c++/114863 and c++/114865.  We allow this for purview
-	 declarations for now as this doesn't (currently) cause ICEs
+	 value; see c++/114683 and c++/114685.  We allow the extra exports
+	 for now as this doesn't (currently) cause ICEs
 	 later down the line, but this should be revisited.  */
       if (revealing_p)
 	{
 	  if (module_exporting_p ()
 	      && check_can_export_using_decl (lookup.value)
-	      && lookup.value == value
 	      && !DECL_MODULE_EXPORT_P (lookup.value))
 	    {
 	      /* We're redeclaring the same value, but this time as

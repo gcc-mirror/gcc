@@ -1,5 +1,6 @@
-/* { dg-do compile { target { powerpc*-*-linux* && powerpc_altivec_ok } } } */
+/* { dg-do compile { target powerpc*-*-linux* } } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* GNU extension: PowerPC AltiVec Built-in Functions.
    These should be rejected as invalid AltiVec types.  */

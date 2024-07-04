@@ -3127,7 +3127,7 @@ iq2000_print_operand (FILE *file, rtx op, int letter)
     {
       int value;
       if (code != CONST_INT
-	  || (value = exact_log2 (INTVAL (op))) < 0)
+	  || (value = exact_log2 (UINTVAL (op) & 0xffffffff)) < 0)
 	output_operand_lossage ("invalid %%p value");
       else
 	fprintf (file, "%d", value);

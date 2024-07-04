@@ -35,18 +35,35 @@
 #ifdef __vxworks
 #include "vxWorks.h"
 #include "ioLib.h"
-#if ! defined (VTHREADS)
+/* VxWorks 5, 6 and 7 SR0540 expose error codes that need to be handled
+   as ENOENT. On later versions:
+   - either they are defined as ENOENT (vx7r2);
+   - or the corresponding system includes are not provided (Helix Cert).  */
+
+#if __has_include ("dosFsLib.h")
+/* On helix-cert, this include is only provided for RTPs.  */
 #include "dosFsLib.h"
 #endif
-#if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))
+
+#ifndef S_dosFsLib_FILE_NOT_FOUND
+#define S_dosFsLib_FILE_NOT_FOUND ENOENT
+#endif
+
+#if __has_include ("nfsLib.h")
+/* This include is not provided for RTPs or on helix-cert.  */
 # include "nfsLib.h"
 #endif
+
+#ifndef S_nfsLib_NFSERR_NOENT
+#define S_nfsLib_NFSERR_NOENT ENOENT
+#endif
+
 #include "selectLib.h"
 #include "version.h"
 #if defined (__RTP__)
 #  include "vwModNum.h"
 #endif /* __RTP__ */
-#endif
+#endif /* __vxworks */
 
 #ifdef __ANDROID__
 #undef __linux__
@@ -912,14 +929,10 @@ __gnat_is_file_not_found_error (int errno_val)
     /* In the case of VxWorks, we also have to take into account various
      * filesystem-specific variants of this error.
      */
-#if ! defined (VTHREADS) && (_WRS_VXWORKS_MAJOR < 7)
     else if (errno_val == S_dosFsLib_FILE_NOT_FOUND)
       return 1;
-#endif
-#if ! defined (__RTP__) && (! defined (VTHREADS) || defined (__VXWORKSMILS__))
     else if (errno_val ==  S_nfsLib_NFSERR_NOENT)
       return 1;
-#endif
 #if defined (__RTP__)
     /* An RTP can return an NFS file not found, and the NFS bits must
        first be masked on to check the errno.  */

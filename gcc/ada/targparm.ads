@@ -359,11 +359,12 @@ package Targparm is
    --  the flag is set False, and composite assignments are not allowed.
 
    Support_Composite_Compare_On_Target : Boolean := True;
-   --  If this flag is True, then the back end supports bit-wise comparison
-   --  of composite objects for equality, either generating inline code or
-   --  calling appropriate (and available) run-time routines. If this flag
-   --  is False, then the back end does not provide this support, and the
-   --  front end uses component by component comparison for composites.
+   --  If this flag is True, then the back end supports byte-wise comparison
+   --  of arrays for equality operations and lexicographic comparison of 1-
+   --  dimensional arrays of bytes for ordering operations, either by means
+   --  of generating inline code or calling appropriate routines like memcmp.
+   --  If this flag is False, then the back end does not provide this support,
+   --  and the front end uses component by component comparison for arrays.
 
    Support_Long_Shifts_On_Target : Boolean := True;
    --  If True, the back end supports 64-bit shift operations. If False, then

@@ -1,6 +1,6 @@
 /* { dg-do run } */
 
-/* { dg-xfail-run-if "Pinning not implemented on this host" { ! *-*-linux-gnu } } */
+/* { dg-skip-if "Pinning not implemented on this host" { ! *-*-linux-gnu* } } */
 
 /* Test that pinned memory works (pool_size code path).  */
 
@@ -19,7 +19,10 @@
   struct rlimit limit; \
   if (getrlimit (RLIMIT_MEMLOCK, &limit) \
       || limit.rlim_cur <= SIZE) \
-    fprintf (stderr, "unsufficient lockable memory; please increase ulimit\n"); \
+    { \
+      fprintf (stderr, "insufficient lockable memory; please increase ulimit\n"); \
+      abort (); \
+    } \
   }
 
 int
@@ -44,18 +47,7 @@ get_pinned_mem ()
   abort ();
 }
 #else
-#define PAGE_SIZE 1024 /* unknown */
-#define CHECK_SIZE(SIZE) { \
-  fprintf (stderr, "OS unsupported\n"); \
-  abort (); \
-  }
-#define EXPECT_OMP_NULL_ALLOCATOR
-
-int
-get_pinned_mem ()
-{
-  return 0;
-}
+#error "OS unsupported"
 #endif
 
 static void

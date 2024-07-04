@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec -fpreprocessed" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 /* Program to test AltiVec with -fpreprocessed.  */
 int foo(__attribute__((altivec(vector__))) float x,

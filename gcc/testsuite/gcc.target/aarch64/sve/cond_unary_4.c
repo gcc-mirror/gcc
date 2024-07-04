@@ -52,15 +52,10 @@ TEST_ALL (DEF_LOOP)
 /* { dg-final { scan-assembler-times {\tfneg\tz[0-9]+\.s, p[0-7]/m,} 1 } } */
 /* { dg-final { scan-assembler-times {\tfneg\tz[0-9]+\.d, p[0-7]/m,} 1 } } */
 
-/* Really we should be able to use MOVPRFX /z here, but at the moment
-   we're relying on combine to merge a SEL and an arithmetic operation,
-   and the SEL doesn't allow the "false" value to be zero when the "true"
-   value is a register.  */
-/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+, z[0-9]+\n} 7 } } */
-/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.b, p[0-7]/z, z[0-9]+\.b} 1 } } */
-/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.h, p[0-7]/z, z[0-9]+\.h} 2 } } */
-/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.s, p[0-7]/z, z[0-9]+\.s} 2 } } */
-/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.d, p[0-7]/z, z[0-9]+\.d} 2 } } */
+/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.b, p[0-7]/z, z[0-9]+\.b} 2 } } */
+/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.h, p[0-7]/z, z[0-9]+\.h} 4 } } */
+/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.s, p[0-7]/z, z[0-9]+\.s} 4 } } */
+/* { dg-final { scan-assembler-times {\tmovprfx\tz[0-9]+\.d, p[0-7]/z, z[0-9]+\.d} 4 } } */
 
 /* { dg-final { scan-assembler-not {\tmov\tz[^\n]*z} } } */
 /* { dg-final { scan-assembler-not {\tsel\t} } } */

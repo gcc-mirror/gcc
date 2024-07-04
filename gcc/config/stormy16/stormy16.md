@@ -1363,6 +1363,20 @@
   "swpn %0 | and %0,#255"
   [(set_attr "length" "6")])
 
+;; Alternate form when we use PLUS instead of IOR early in the
+;; expanders.
+(define_insn "*swpn_zext"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(zero_extend:HI
+	  (subreg:QI
+	    (any_or_plus:HI
+	      (ashift:HI (match_operand:HI 1 "register_operand" "0")
+			 (const_int 4))
+	      (lshiftrt:HI (match_dup 1) (const_int 4))) 0)))]
+  ""
+  "swpn %0 | and %0,#255"
+  [(set_attr "length" "6")])
+
 (define_insn "*swpn_sext"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(sign_extend:HI

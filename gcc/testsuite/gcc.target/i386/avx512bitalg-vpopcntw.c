@@ -7,10 +7,10 @@
 #include <x86intrin.h>
 
 extern __m512i z, z1;
+extern __mmask16 msk;
 
 int foo ()
 {
-  __mmask16 msk;
   __m512i c = _mm512_popcnt_epi16 (z);
   asm volatile ("" : "+v" (c));
   c = _mm512_mask_popcnt_epi16 (z1, msk, z);

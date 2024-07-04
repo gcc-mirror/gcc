@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-mdejagnu-cpu=power6 -maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 
 vector unsigned char
 foo_char (void)

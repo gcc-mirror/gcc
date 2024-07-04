@@ -312,18 +312,17 @@ package Sem_Ch13 is
    --  Quite an awkward approach, but this is an awkard requirement
 
    procedure Analyze_Aspects_At_Freeze_Point (E : Entity_Id);
-   --  Analyze all the delayed aspects for entity E at freezing point. This
-   --  includes dealing with inheriting delayed aspects from the parent type
-   --  in the case where a derived type is frozen.
+   --  Analyzes all the delayed aspects for entity E at the freeze point. Note
+   --  that this does not include dealing with inheriting delayed aspects from
+   --  the parent or base type in the case where a derived type or a subtype is
+   --  frozen. Callers should check that Has_Delayed_Aspects (E) is True before
+   --  calling this routine.
 
-   procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id);
-   --  Performs the processing described above at the freeze point, ASN is the
-   --  N_Aspect_Specification node for the aspect.
-
-   procedure Check_Aspect_At_End_Of_Declarations (ASN : Node_Id);
+   procedure Check_Aspects_At_End_Of_Declarations (E : Entity_Id);
    --  Performs the processing described above at the freeze all point, and
    --  issues appropriate error messages if the visibility has indeed changed.
-   --  Again, ASN is the N_Aspect_Specification node for the aspect.
+   --  Callers should check that Has_Delayed_Aspects (E) is True before calling
+   --  this routine.
 
    procedure Inherit_Aspects_At_Freeze_Point (Typ : Entity_Id);
    --  Given an entity Typ that denotes a derived type or a subtype, this

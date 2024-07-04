@@ -248,6 +248,7 @@ extern rtx ix86_gen_ccmp_first (rtx_insn **, rtx_insn **, enum rtx_code,
 extern rtx ix86_gen_ccmp_next (rtx_insn **, rtx_insn **, rtx,
 			       enum rtx_code, tree, tree, enum rtx_code);
 extern int ix86_get_flags_cc (enum rtx_code);
+extern void ix86_expand_trunc_with_avx2_noavx512f (rtx, rtx, machine_mode);
 extern rtx ix86_memtag_untagged_pointer (rtx, rtx);
 extern bool ix86_memtag_can_tag_addresses (void);
 
@@ -269,7 +270,6 @@ extern unsigned int ix86_local_alignment (tree, machine_mode,
 extern unsigned int ix86_minimum_alignment (tree, machine_mode,
 					    unsigned int);
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);
-extern tree ix86_handle_selectany_attribute (tree *, tree, tree, int, bool *);
 extern int x86_field_alignment (tree, int);
 extern tree ix86_valid_target_attribute_tree (tree, tree,
 					      struct gcc_options *,
@@ -299,6 +299,8 @@ extern void ix86_expand_sse2_mulvxdi3 (rtx, rtx, rtx);
 extern void ix86_expand_sse2_abs (rtx, rtx);
 extern bool ix86_expand_vector_init_duplicate (bool, machine_mode, rtx,
 					       rtx);
+extern bool ix86_expand_vector_init_one_nonzero (bool, machine_mode, rtx,
+						 rtx, int);
 extern bool ix86_extract_perm_from_pool_constant (int*, rtx);
 
 /* In i386-c.cc  */
@@ -306,21 +308,13 @@ extern void ix86_target_macros (void);
 extern void ix86_register_pragmas (void);
 
 /* In winnt.cc  */
-extern void mingw_pe_unique_section (tree, int);
-extern void mingw_pe_declare_function_type (FILE *, const char *, int);
 extern void i386_pe_record_external_function (tree, const char *);
-extern void mingw_pe_maybe_record_exported_symbol (tree, const char *, int);
-extern void mingw_pe_encode_section_info (tree, rtx, int);
 extern bool i386_pe_binds_local_p (const_tree);
 extern const char *i386_pe_strip_name_encoding_full (const char *);
-extern bool i386_pe_valid_dllimport_attribute_p (const_tree);
-extern unsigned int mingw_pe_section_type_flags (tree, const char *, int);
-extern void mingw_pe_asm_named_section (const char *, unsigned int, tree);
 extern void i386_pe_asm_output_aligned_decl_common (FILE *, tree,
 						    const char *,
 						    HOST_WIDE_INT,
 						    HOST_WIDE_INT);
-extern void i386_pe_file_end (void);
 extern void i386_pe_asm_lto_start (void);
 extern void i386_pe_asm_lto_end (void);
 extern void i386_pe_start_function (FILE *, const char *, tree);
@@ -329,7 +323,6 @@ extern void i386_pe_end_cold_function (FILE *, const char *, tree);
 extern void i386_pe_assemble_visibility (tree, int);
 extern tree i386_pe_mangle_decl_assembler_name (tree, tree);
 extern tree i386_pe_mangle_assembler_name (const char *);
-extern void i386_pe_record_stub (const char *);
 
 extern void i386_pe_seh_init (FILE *);
 extern void i386_pe_seh_end_prologue (FILE *);
@@ -432,6 +425,7 @@ extern rtl_opt_pass *make_pass_remove_partial_avx_dependency
   (gcc::context *);
 
 extern bool ix86_has_no_direct_extern_access;
+extern bool ix86_rpad_gate ();
 
 /* In i386-expand.cc.  */
 bool ix86_check_builtin_isa_match (unsigned int, HOST_WIDE_INT*,

@@ -221,6 +221,11 @@ bpf_option_override (void)
       && !(target_flags_explicit & MASK_BPF_CORE))
     target_flags |= MASK_BPF_CORE;
 
+  /* -gbtf implies -gprune-btf for BPF target.  */
+  if (btf_debuginfo_p ())
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 debug_prune_btf, true);
+
   /* Determine available features from ISA setting (-mcpu=).  */
   if (bpf_has_jmpext == -1)
     bpf_has_jmpext = (bpf_isa >= ISA_V2);

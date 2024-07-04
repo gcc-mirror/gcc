@@ -108,7 +108,7 @@ test_dump_to_dot ()
   g.add_test_edge (a, b);
 
   pretty_printer pp;
-  pp.buffer->stream = NULL;
+  pp.set_output_stream (nullptr);
   test_dump_args_t dump_args;
   g.dump_dot_to_pp (&pp, NULL, dump_args);
 

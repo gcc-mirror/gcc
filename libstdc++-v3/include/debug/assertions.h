@@ -31,12 +31,7 @@
 
 #include <bits/c++config.h>
 
-#ifndef _GLIBCXX_ASSERTIONS
-# define __glibcxx_requires_non_empty_range(_First,_Last)
-# define __glibcxx_requires_nonempty()
-# define __glibcxx_requires_subscript(_N)
-#else
-
+#ifndef _GLIBCXX_DEBUG
 // Verify that [_First, _Last) forms a non-empty iterator range.
 # define __glibcxx_requires_non_empty_range(_First,_Last)	\
   __glibcxx_assert(_First != _Last)
@@ -45,6 +40,13 @@
 // Verify that the container is nonempty
 # define __glibcxx_requires_nonempty()		\
   __glibcxx_assert(!this->empty())
+#else // Use the more verbose Debug Mode checks.
+# define __glibcxx_requires_non_empty_range(_First,_Last) \
+  __glibcxx_check_non_empty_range(_First,_Last)
+# define __glibcxx_requires_nonempty() \
+  __glibcxx_check_nonempty()
+# define __glibcxx_requires_subscript(_N) \
+  __glibcxx_check_subscript(_N)
 #endif
 
 #if defined _GLIBCXX_DEBUG && _GLIBCXX_HOSTED

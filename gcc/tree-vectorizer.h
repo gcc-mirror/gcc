@@ -2169,10 +2169,22 @@ vect_apply_runtime_profitability_check_p (loop_vec_info loop_vinfo)
 	  && th >= vect_vf_for_cost (loop_vinfo));
 }
 
+/* Return true if CODE is a lane-reducing opcode.  */
+
 inline bool
 lane_reducing_op_p (code_helper code)
 {
   return code == DOT_PROD_EXPR || code == WIDEN_SUM_EXPR || code == SAD_EXPR;
+}
+
+/* Return true if STMT is a lane-reducing statement.  */
+
+inline bool
+lane_reducing_stmt_p (gimple *stmt)
+{
+  if (auto *assign = dyn_cast <gassign *> (stmt))
+    return lane_reducing_op_p (gimple_assign_rhs_code (assign));
+  return false;
 }
 
 /* Source location + hotness information. */
@@ -2265,6 +2277,10 @@ extern bool supportable_widening_operation (vec_info*, code_helper,
 extern bool supportable_narrowing_operation (code_helper, tree, tree,
 					     code_helper *, int *,
 					     vec<tree> *);
+extern bool supportable_indirect_convert_operation (code_helper,
+						    tree, tree,
+						    vec<std::pair<tree, tree_code> > *,
+						    tree = NULL_TREE);
 
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 				  enum vect_cost_for_stmt, stmt_vec_info,
@@ -2507,6 +2523,9 @@ extern slp_tree vect_create_new_slp_node (unsigned, tree_code);
 extern void vect_free_slp_tree (slp_tree);
 extern bool compatible_calls_p (gcall *, gcall *);
 extern int vect_slp_child_index_for_operand (const gimple *, int op, bool);
+
+extern tree prepare_vec_mask (loop_vec_info, tree, tree, tree,
+			      gimple_stmt_iterator *);
 
 /* In tree-vect-patterns.cc.  */
 extern void

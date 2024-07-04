@@ -1,7 +1,7 @@
 /* { dg-do run { target { vmx_hw } } } */
 /* { dg-do compile { target { ! vmx_hw } } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* Test the vec_extract VMX intrinsics.  */
 #include <altivec.h>
 

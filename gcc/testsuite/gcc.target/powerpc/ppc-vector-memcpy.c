@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O -maltivec -mno-vsx" } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* { dg-final { scan-assembler "lvx" } } */
 
 #include <string.h>

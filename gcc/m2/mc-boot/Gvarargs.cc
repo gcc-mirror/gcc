@@ -34,9 +34,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   undef NULL
 #   define NULL 0
 #endif
-#define _varargs_H
 #define _varargs_C
 
+#include "Gvarargs.h"
 #   include "GStorage.h"
 #   include "Glibc.h"
 #   include "GSYSTEM.h"
@@ -51,10 +51,10 @@ typedef unsigned char *varargs_ptrToByte;
 
 typedef struct varargs__T7_a varargs__T7;
 
-typedef varargs__T6 *varargs_vararg;
+typedef varargs__T6 *varargs_vararg__opaque;
 
 struct varargs_argDesc_r {
-                           void *ptr;
+                           void * ptr;
                            unsigned int len;
                          };
 
@@ -62,7 +62,7 @@ struct varargs__T7_a { varargs_argDesc array[MaxArg+1]; };
 struct varargs__T6_r {
                        unsigned int nArgs;
                        unsigned int i;
-                       void *contents;
+                       void * contents;
                        unsigned int size;
                        varargs__T7 arg;
                      };
@@ -138,7 +138,7 @@ extern "C" varargs_vararg varargs_start4 (const unsigned char *a_, unsigned int 
 
 extern "C" unsigned int varargs_nargs (varargs_vararg v)
 {
-  return v->nArgs;
+  return static_cast<varargs_vararg__opaque> (v)->nArgs;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -156,20 +156,20 @@ extern "C" void varargs_arg (varargs_vararg v, unsigned char *a, unsigned int _a
   arg__T1 p;
   unsigned int j;
 
-  if (v->i == v->nArgs)
+  if (static_cast<varargs_vararg__opaque> (v)->i == static_cast<varargs_vararg__opaque> (v)->nArgs)
     {
       M2RTS_HALT (-1);  /* too many calls to arg.  */
       __builtin_unreachable ();
     }
   else
     {
-      if ((_a_high+1) == v->arg.array[v->i].len)
+      if ((_a_high+1) == static_cast<varargs_vararg__opaque> (v)->arg.array[static_cast<varargs_vararg__opaque> (v)->i].len)
         {
-          p = static_cast<arg__T1> (v->arg.array[v->i].ptr);
+          p = static_cast<arg__T1> (static_cast<varargs_vararg__opaque> (v)->arg.array[static_cast<varargs_vararg__opaque> (v)->i].ptr);
           j = 0;
           while (j <= _a_high)
             {
-              a[j] = (*p);
+              const_cast<unsigned char *>(a)[j] = (*p);
               p += 1;
               j += 1;
             }
@@ -179,7 +179,7 @@ extern "C" void varargs_arg (varargs_vararg v, unsigned char *a, unsigned int _a
           M2RTS_HALT (-1);  /* parameter mismatch.  */
           __builtin_unreachable ();
         }
-      v->i += 1;
+      static_cast<varargs_vararg__opaque> (v)->i += 1;
     }
 }
 
@@ -190,7 +190,7 @@ extern "C" void varargs_arg (varargs_vararg v, unsigned char *a, unsigned int _a
 
 extern "C" void varargs_next (varargs_vararg v, unsigned int i)
 {
-  v->i = i;
+  static_cast<varargs_vararg__opaque> (v)->i = i;
 }
 
 
@@ -200,24 +200,24 @@ extern "C" void varargs_next (varargs_vararg v, unsigned int i)
 
 extern "C" varargs_vararg varargs_copy (varargs_vararg v)
 {
-  varargs_vararg c;
+  varargs_vararg__opaque c;
   unsigned int j;
   unsigned int offset;
 
   Storage_ALLOCATE ((void **) &c, sizeof (varargs__T6));
-  c->i = v->i;
-  c->nArgs = v->nArgs;
-  c->size = v->size;
+  c->i = static_cast<varargs_vararg__opaque> (v)->i;
+  c->nArgs = static_cast<varargs_vararg__opaque> (v)->nArgs;
+  c->size = static_cast<varargs_vararg__opaque> (v)->size;
   Storage_ALLOCATE (&c->contents, c->size);
-  c->contents = libc_memcpy (c->contents, v->contents, static_cast<size_t> (c->size));
+  c->contents = libc_memcpy (c->contents, static_cast<varargs_vararg__opaque> (v)->contents, static_cast<size_t> (c->size));
   for (j=0; j<=c->nArgs; j++)
     {
-      offset = (unsigned int ) (((varargs_ptrToByte) (v->contents))-((varargs_ptrToByte) (v->arg.array[j].ptr)));
-      c->arg.array[j].ptr = reinterpret_cast<void *> ((varargs_ptrToByte) (c->contents));
+      offset = (unsigned int ) (((varargs_ptrToByte) (static_cast<varargs_vararg__opaque> (v)->contents))-((varargs_ptrToByte) (static_cast<varargs_vararg__opaque> (v)->arg.array[j].ptr)));
+      c->arg.array[j].ptr = static_cast<void *> ((varargs_ptrToByte) (c->contents));
       c->arg.array[j].ptr = reinterpret_cast<void *> (reinterpret_cast<char *> (c->arg.array[j].ptr)+offset);
-      c->arg.array[j].len = v->arg.array[j].len;
+      c->arg.array[j].len = static_cast<varargs_vararg__opaque> (v)->arg.array[j].len;
     }
-  return c;
+  return static_cast<varargs_vararg> (c);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -236,16 +236,16 @@ extern "C" void varargs_replace (varargs_vararg v, unsigned char *a, unsigned in
   replace__T2 p;
   unsigned int j;
 
-  if (v->i == v->nArgs)
+  if (static_cast<varargs_vararg__opaque> (v)->i == static_cast<varargs_vararg__opaque> (v)->nArgs)
     {
       M2RTS_HALT (-1);  /* too many calls to arg.  */
       __builtin_unreachable ();
     }
   else
     {
-      if ((_a_high+1) == v->arg.array[v->i].len)
+      if ((_a_high+1) == static_cast<varargs_vararg__opaque> (v)->arg.array[static_cast<varargs_vararg__opaque> (v)->i].len)
         {
-          p = static_cast<replace__T2> (v->arg.array[v->i].ptr);
+          p = static_cast<replace__T2> (static_cast<varargs_vararg__opaque> (v)->arg.array[static_cast<varargs_vararg__opaque> (v)->i].ptr);
           j = 0;
           while (j <= _a_high)
             {
@@ -271,7 +271,7 @@ extern "C" void varargs_end (varargs_vararg *v)
 {
   if ((*v) != NULL)
     {
-      Storage_DEALLOCATE (&(*v)->contents, sizeof (varargs_vararg));
+      Storage_DEALLOCATE (&static_cast<varargs_vararg__opaque> ((*v))->contents, sizeof (varargs_vararg));
       Storage_DEALLOCATE ((void **) &(*v), sizeof (varargs__T6));
     }
 }
@@ -283,7 +283,7 @@ extern "C" void varargs_end (varargs_vararg *v)
 
 extern "C" varargs_vararg varargs_start1 (const unsigned char *a_, unsigned int _a_high)
 {
-  varargs_vararg v;
+  varargs_vararg__opaque v;
   unsigned char a[_a_high+1];
 
   /* make a local copy of each unbounded array.  */
@@ -294,10 +294,10 @@ extern "C" varargs_vararg varargs_start1 (const unsigned char *a_, unsigned int 
   v->nArgs = 1;
   v->size = _a_high+1;
   Storage_ALLOCATE (&v->contents, v->size);
-  v->contents = libc_memcpy (v->contents, &a, static_cast<size_t> (v->size));
+  v->contents = libc_memcpy (v->contents, const_cast<void*> (static_cast<const void*>(a)), static_cast<size_t> (v->size));
   v->arg.array[0].ptr = v->contents;
   v->arg.array[0].len = v->size;
-  return v;
+  return static_cast<varargs_vararg> (v);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -311,7 +311,7 @@ extern "C" varargs_vararg varargs_start2 (const unsigned char *a_, unsigned int 
 {
   typedef unsigned char *start2__T3;
 
-  varargs_vararg v;
+  varargs_vararg__opaque v;
   start2__T3 p;
   unsigned char a[_a_high+1];
   unsigned char b[_b_high+1];
@@ -325,14 +325,14 @@ extern "C" varargs_vararg varargs_start2 (const unsigned char *a_, unsigned int 
   v->nArgs = 2;
   v->size = (_a_high+_b_high)+2;
   Storage_ALLOCATE (&v->contents, v->size);
-  p = static_cast<start2__T3> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
-  v->arg.array[0].ptr = reinterpret_cast<void *> (p);
+  p = static_cast<start2__T3> (libc_memcpy (v->contents, const_cast<void*> (static_cast<const void*>(a)), static_cast<size_t> (_a_high+1)));
+  v->arg.array[0].ptr = static_cast<void *> (p);
   v->arg.array[0].len = _a_high+1;
   p += v->arg.array[0].len;
-  p = static_cast<start2__T3> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
-  v->arg.array[1].ptr = reinterpret_cast<void *> (p);
+  p = static_cast<start2__T3> (libc_memcpy (reinterpret_cast<void *> (p), const_cast<void*> (static_cast<const void*>(b)), static_cast<size_t> (_b_high+1)));
+  v->arg.array[1].ptr = static_cast<void *> (p);
   v->arg.array[1].len = _b_high+1;
-  return v;
+  return static_cast<varargs_vararg> (v);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -346,7 +346,7 @@ extern "C" varargs_vararg varargs_start3 (const unsigned char *a_, unsigned int 
 {
   typedef unsigned char *start3__T4;
 
-  varargs_vararg v;
+  varargs_vararg__opaque v;
   start3__T4 p;
   unsigned char a[_a_high+1];
   unsigned char b[_b_high+1];
@@ -362,18 +362,18 @@ extern "C" varargs_vararg varargs_start3 (const unsigned char *a_, unsigned int 
   v->nArgs = 3;
   v->size = ((_a_high+_b_high)+_c_high)+3;
   Storage_ALLOCATE (&v->contents, v->size);
-  p = static_cast<start3__T4> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
-  v->arg.array[0].ptr = reinterpret_cast<void *> (p);
+  p = static_cast<start3__T4> (libc_memcpy (v->contents, const_cast<void*> (static_cast<const void*>(a)), static_cast<size_t> (_a_high+1)));
+  v->arg.array[0].ptr = static_cast<void *> (p);
   v->arg.array[0].len = _a_high+1;
   p += v->arg.array[0].len;
-  p = static_cast<start3__T4> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
-  v->arg.array[1].ptr = reinterpret_cast<void *> (p);
+  p = static_cast<start3__T4> (libc_memcpy (reinterpret_cast<void *> (p), const_cast<void*> (static_cast<const void*>(b)), static_cast<size_t> (_b_high+1)));
+  v->arg.array[1].ptr = static_cast<void *> (p);
   v->arg.array[1].len = _b_high+1;
   p += v->arg.array[1].len;
-  p = static_cast<start3__T4> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
-  v->arg.array[2].ptr = reinterpret_cast<void *> (p);
+  p = static_cast<start3__T4> (libc_memcpy (reinterpret_cast<void *> (p), const_cast<void*> (static_cast<const void*>(c)), static_cast<size_t> (_c_high+1)));
+  v->arg.array[2].ptr = static_cast<void *> (p);
   v->arg.array[2].len = _c_high+1;
-  return v;
+  return static_cast<varargs_vararg> (v);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -387,7 +387,7 @@ extern "C" varargs_vararg varargs_start4 (const unsigned char *a_, unsigned int 
 {
   typedef unsigned char *start4__T5;
 
-  varargs_vararg v;
+  varargs_vararg__opaque v;
   start4__T5 p;
   unsigned char a[_a_high+1];
   unsigned char b[_b_high+1];
@@ -405,29 +405,29 @@ extern "C" varargs_vararg varargs_start4 (const unsigned char *a_, unsigned int 
   v->nArgs = 4;
   v->size = (((_a_high+_b_high)+_c_high)+_d_high)+4;
   Storage_ALLOCATE (&v->contents, v->size);
-  p = static_cast<start4__T5> (libc_memcpy (v->contents, &a, static_cast<size_t> (_a_high+1)));
+  p = static_cast<start4__T5> (libc_memcpy (v->contents, const_cast<void*> (static_cast<const void*>(a)), static_cast<size_t> (_a_high+1)));
   v->arg.array[0].len = _a_high+1;
   p += v->arg.array[0].len;
-  p = static_cast<start4__T5> (libc_memcpy (reinterpret_cast<void *> (p), &b, static_cast<size_t> (_b_high+1)));
-  v->arg.array[1].ptr = reinterpret_cast<void *> (p);
+  p = static_cast<start4__T5> (libc_memcpy (reinterpret_cast<void *> (p), const_cast<void*> (static_cast<const void*>(b)), static_cast<size_t> (_b_high+1)));
+  v->arg.array[1].ptr = static_cast<void *> (p);
   v->arg.array[1].len = _b_high+1;
   p += v->arg.array[1].len;
-  p = static_cast<start4__T5> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
-  v->arg.array[2].ptr = reinterpret_cast<void *> (p);
+  p = static_cast<start4__T5> (libc_memcpy (reinterpret_cast<void *> (p), const_cast<void*> (static_cast<const void*>(c)), static_cast<size_t> (_c_high+1)));
+  v->arg.array[2].ptr = static_cast<void *> (p);
   v->arg.array[2].len = _c_high+1;
   p += v->arg.array[2].len;
-  p = static_cast<start4__T5> (libc_memcpy (reinterpret_cast<void *> (p), &c, static_cast<size_t> (_c_high+1)));
-  v->arg.array[3].ptr = reinterpret_cast<void *> (p);
+  p = static_cast<start4__T5> (libc_memcpy (reinterpret_cast<void *> (p), const_cast<void*> (static_cast<const void*>(c)), static_cast<size_t> (_c_high+1)));
+  v->arg.array[3].ptr = static_cast<void *> (p);
   v->arg.array[3].len = _c_high+1;
-  return v;
+  return static_cast<varargs_vararg> (v);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_varargs_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_varargs_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_varargs_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_varargs_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

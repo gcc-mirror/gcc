@@ -67,6 +67,9 @@
 ;; 4-byte integer vector modes
 (define_mode_iterator VI_32 [V4QI V2HI])
 
+;; 8-byte and 4-byte HImode vector modes
+(define_mode_iterator VI2_32_64 [(V4HI "TARGET_MMX_WITH_SSE") V2HI])
+
 ;; 4-byte and 2-byte integer vector modes
 (define_mode_iterator VI_16_32 [V4QI V2QI V2HI])
 
@@ -106,6 +109,15 @@
 (define_mode_attr mmxdoublemode
   [(V8QI "V8HI") (V4HI "V4SI")])
 
+(define_mode_attr mmxhalfmode
+  [(V4HI "V4QI") (V2HI "V2QI")])
+
+(define_mode_attr mmxbytemode
+  [(V4HI "V8QI") (V2HI "V4QI")])
+
+(define_mode_attr mmxhalfmodelower
+  [(V4HI "v4qi") (V2HI "v2qi")])
+
 ;; Mapping of vector float modes to an integer mode of the same size
 (define_mode_attr mmxintvecmode
   [(V2SF "V2SI") (V2SI "V2SI") (V4HI "V4HI") (V8QI "V8QI")
@@ -134,6 +146,14 @@
    (V2HF "hf") (V2BF "bf")
    (V4HI "hi") (V2HI "hi")
    (V8QI "qi")])
+
+(define_mode_attr mmxscalarsize
+  [(V1DI "64")
+   (V2SI "32") (V2SF "32")
+   (V4HF "16") (V4BF "16")
+   (V2HF "16") (V2BF "16")
+   (V4HI "16") (V2HI "16")
+   (V8QI "8")])
 
 (define_mode_attr Yv_Yw
   [(V8QI "Yw") (V4HI "Yw") (V2SI "Yv") (V1DI "Yv") (V2SF "Yv")])
@@ -1157,39 +1177,6 @@
   gcc_assert (ok);
 
   emit_move_insn (operands[0], lowpart_subreg (V2SImode, ops[0], V4SImode));
-  DONE;
-})
-
-(define_expand "vcond<mode>v2sf"
-  [(set (match_operand:V2FI 0 "register_operand")
-	(if_then_else:V2FI
-	  (match_operator 3 ""
-	    [(match_operand:V2SF 4 "nonimmediate_operand")
-	     (match_operand:V2SF 5 "nonimmediate_operand")])
-	  (match_operand:V2FI 1 "general_operand")
-	  (match_operand:V2FI 2 "general_operand")))]
-  "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"
-{
-  rtx ops[6];
-  ops[5] = gen_reg_rtx (V4SFmode);
-  ops[4] = gen_reg_rtx (V4SFmode);
-  ops[3] = gen_rtx_fmt_ee (GET_CODE (operands[3]), VOIDmode, ops[4], ops[5]);
-  ops[2] = lowpart_subreg (<mmxdoublevecmode>mode,
-			   force_reg (<MODE>mode, operands[2]),
-			   <MODE>mode);
-  ops[1] = lowpart_subreg (<mmxdoublevecmode>mode,
-			   force_reg (<MODE>mode, operands[1]),
-			   <MODE>mode);
-  ops[0] = gen_reg_rtx (<mmxdoublevecmode>mode);
-
-  emit_insn (gen_movq_v2sf_to_sse (ops[5], operands[5]));
-  emit_insn (gen_movq_v2sf_to_sse (ops[4], operands[4]));
-
-  bool ok = ix86_expand_fp_vcond (ops);
-  gcc_assert (ok);
-
-  emit_move_insn (operands[0], lowpart_subreg (<MODE>mode, ops[0],
-					       <mmxdoublevecmode>mode));
   DONE;
 })
 
@@ -3608,6 +3595,17 @@
        (const_string "0")))
    (set_attr "mode" "DI,TI,TI")])
 
+(define_insn_and_split "*mmx_ashr<mode>3_1"
+  [(set (match_operand:MMXMODE24 0 "register_operand")
+	(lt:MMXMODE24
+	  (match_operand:MMXMODE24 1 "register_operand")
+	  (match_operand:MMXMODE24 2 "const0_operand")))]
+  "TARGET_MMX_WITH_SSE && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (ashiftrt:MMXMODE24 (match_dup 1) (match_dup 3)))]
+  "operands[3] = gen_int_mode (<mmxscalarsize> - 1, DImode);")
+
 (define_expand "ashr<mode>3"
   [(set (match_operand:MMXMODE24 0 "register_operand")
         (ashiftrt:MMXMODE24
@@ -3633,6 +3631,17 @@
        (const_string "1")
        (const_string "0")))
    (set_attr "mode" "DI,TI,TI")])
+
+(define_split
+  [(set (match_operand:MMXMODE248 0 "register_operand")
+  	(and:MMXMODE248
+	  (lt:MMXMODE248
+	    (match_operand:MMXMODE248 1 "register_operand")
+	    (match_operand:MMXMODE248 2 "const0_operand"))
+	  (match_operand:MMXMODE248 3 "const1_operand")))]
+  "TARGET_MMX_WITH_SSE && ix86_pre_reload_split ()"
+  [(set (match_dup 0) (lshiftrt:MMXMODE248 (match_dup 1) (match_dup 4)))]
+  "operands[4] = gen_int_mode (<mmxscalarsize> - 1, DImode);")
 
 (define_expand "<insn><mode>3"
   [(set (match_operand:MMXMODE24 0 "register_operand")
@@ -3674,6 +3683,28 @@
        (const_string "1")
        (const_string "0")))
    (set_attr "mode" "TI")])
+
+(define_insn_and_split "*mmx_ashrv2hi3_1"
+  [(set (match_operand:V2HI 0 "register_operand")
+	(lt:V2HI
+	  (match_operand:V2HI 1 "register_operand")
+	  (match_operand:V2HI 2 "const0_operand")))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (ashiftrt:V2HI (match_dup 1) (match_dup 3)))]
+  "operands[3] = gen_int_mode (15, DImode);")
+
+(define_split
+  [(set (match_operand:V2HI 0 "register_operand")
+  	(and:V2HI
+	  (lt:V2HI
+	    (match_operand:V2HI 1 "register_operand")
+	    (match_operand:V2HI 2 "const0_operand"))
+	  (match_operand:V2HI 3 "const1_operand")))]
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
+  [(set (match_dup 0) (lshiftrt:V2HI (match_dup 1) (match_dup 4)))]
+  "operands[4] = gen_int_mode (15, DImode);")
 
 (define_expand "<insn>v8qi3"
   [(set (match_operand:V8QI 0 "register_operand")
@@ -3973,70 +4004,6 @@
   "TARGET_SSE2"
 {
   bool ok = ix86_expand_int_vec_cmp (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcond<MMXMODE124:mode><MMXMODEI:mode>"
-  [(set (match_operand:MMXMODE124 0 "register_operand")
-	(if_then_else:MMXMODE124
-	  (match_operator 3 ""
-	    [(match_operand:MMXMODEI 4 "register_operand")
-	     (match_operand:MMXMODEI 5 "register_operand")])
-	  (match_operand:MMXMODE124 1)
-	  (match_operand:MMXMODE124 2)))]
-  "TARGET_MMX_WITH_SSE
-   && (GET_MODE_NUNITS (<MMXMODE124:MODE>mode)
-       == GET_MODE_NUNITS (<MMXMODEI:MODE>mode))"
-{
-  bool ok = ix86_expand_int_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:VI_16_32 0 "register_operand")
-	(if_then_else:VI_16_32
-	  (match_operator 3 ""
-	    [(match_operand:VI_16_32 4 "register_operand")
-	     (match_operand:VI_16_32 5 "register_operand")])
-	  (match_operand:VI_16_32 1)
-	  (match_operand:VI_16_32 2)))]
-  "TARGET_SSE2"
-{
-  bool ok = ix86_expand_int_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcondu<MMXMODE124:mode><MMXMODEI:mode>"
-  [(set (match_operand:MMXMODE124 0 "register_operand")
-	(if_then_else:MMXMODE124
-	  (match_operator 3 ""
-	    [(match_operand:MMXMODEI 4 "register_operand")
-	     (match_operand:MMXMODEI 5 "register_operand")])
-	  (match_operand:MMXMODE124 1)
-	  (match_operand:MMXMODE124 2)))]
-  "TARGET_MMX_WITH_SSE
-   && (GET_MODE_NUNITS (<MMXMODE124:MODE>mode)
-       == GET_MODE_NUNITS (<MMXMODEI:MODE>mode))"
-{
-  bool ok = ix86_expand_int_vcond (operands);
-  gcc_assert (ok);
-  DONE;
-})
-
-(define_expand "vcondu<mode><mode>"
-  [(set (match_operand:VI_16_32 0 "register_operand")
-	(if_then_else:VI_16_32
-	  (match_operator 3 ""
-	    [(match_operand:VI_16_32 4 "register_operand")
-	     (match_operand:VI_16_32 5 "register_operand")])
-	  (match_operand:VI_16_32 1)
-	  (match_operand:VI_16_32 2)))]
-  "TARGET_SSE2"
-{
-  bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
   DONE;
 })
@@ -4880,10 +4847,23 @@
   DONE;
 })
 
-(define_insn "truncv2hiv2qi2"
-  [(set (match_operand:V2QI 0 "register_operand" "=v")
-	(truncate:V2QI
-	  (match_operand:V2HI 1 "register_operand" "v")))]
+(define_expand "trunc<mode><mmxhalfmodelower>2"
+  [(set (match_operand:<mmxhalfmode> 0 "register_operand")
+	(truncate:<mmxhalfmode>
+	  (match_operand:VI2_32_64 1 "register_operand")))]
+  "TARGET_AVX2"
+{
+  if (TARGET_AVX512VL && TARGET_AVX512BW)
+    emit_insn (gen_avx512vl_trunc<mode><mmxhalfmodelower>2 (operands[0], operands[1]));
+  else
+    ix86_expand_trunc_with_avx2_noavx512f (operands[0], operands[1], <mmxbytemode>mode);
+  DONE;
+})
+
+(define_insn "avx512vl_trunc<mode><mmxhalfmodelower>2"
+  [(set (match_operand:<mmxhalfmode> 0 "register_operand" "=v")
+	(truncate:<mmxhalfmode>
+	  (match_operand:VI2_32_64 1 "register_operand" "v")))]
   "TARGET_AVX512VL && TARGET_AVX512BW"
   "vpmovwb\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssemov")
@@ -4891,7 +4871,22 @@
    (set_attr "mode" "TI")])
 
 (define_mode_iterator V2QI_V2HI [V2QI V2HI])
-(define_insn "truncv2si<mode>2"
+(define_mode_attr v2qi_quad_v2hi_double
+  [(V2QI "V8QI") (V2HI "V4HI")])
+(define_expand "truncv2si<mode>2"
+  [(set (match_operand:V2QI_V2HI 0 "register_operand")
+	(truncate:V2QI_V2HI
+	  (match_operand:V2SI 1 "register_operand")))]
+  "TARGET_AVX2 && TARGET_MMX_WITH_SSE"
+{
+  if (TARGET_AVX512VL)
+    emit_insn (gen_avx512vl_truncv2si<mode>2 (operands[0], operands[1]));
+  else
+    ix86_expand_trunc_with_avx2_noavx512f (operands[0], operands[1], <v2qi_quad_v2hi_double>mode);
+  DONE;
+})
+
+(define_insn "avx512vl_truncv2si<mode>2"
   [(set (match_operand:V2QI_V2HI 0 "register_operand" "=v")
 	(truncate:V2QI_V2HI
 	  (match_operand:V2SI 1 "register_operand" "v")))]

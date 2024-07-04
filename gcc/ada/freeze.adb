@@ -222,7 +222,9 @@ package body Freeze is
                       = Scope (Typ)
          then
             return Abandon;
-         elsif Nkind (N) = N_Aggregate
+         elsif Nkind (N) in N_Aggregate
+                          | N_Extension_Aggregate
+                          | N_Delta_Aggregate
            and then Base_Type (Etype (N)) = Base_Type (Typ)
          then
             return Abandon;
@@ -1010,15 +1012,10 @@ package body Freeze is
 
          elsif Is_Record_Type (T) then
 
-            --  A class-wide type is never considered to have a known size
-
-            if Is_Class_Wide_Type (T) then
-               return False;
-
             --  A subtype of a variant record must not have non-static
             --  discriminated components.
 
-            elsif T /= Base_Type (T)
+            if T /= Base_Type (T)
               and then not Static_Discriminated_Components (T)
             then
                return False;
@@ -1518,7 +1515,17 @@ package body Freeze is
       Op_Node        : Elmt_Id;
       Par_Prim       : Entity_Id;
       Prim           : Entity_Id;
-      Wrapper_Needed : Boolean;
+
+      type Wrapper_Kind is (No_Wrapper, LSP_Wrapper, Postcond_Wrapper);
+
+      Wrapper_Needed : Wrapper_Kind;
+      --  Kind of wrapper needed by a given inherited primitive of tagged
+      --  type R:
+      --  * No_Wrapper: No wrapper is needed.
+      --  * LSP_Wrapper: Wrapper that handles inherited class-wide pre/post
+      --    conditions that call overridden primitives.
+      --  * Postcond_Wrapper: Wrapper that handles postconditions of interface
+      --    primitives.
 
       function Build_DTW_Body
         (Loc          : Source_Ptr;
@@ -1534,14 +1541,18 @@ package body Freeze is
       --  Build the spec of the dispatch table wrapper
 
       procedure Build_Inherited_Condition_Pragmas
-        (Subp           : Entity_Id;
-         Wrapper_Needed : out Boolean);
+        (Subp               : Entity_Id;
+         LSP_Wrapper_Needed : out Boolean);
       --  Build corresponding pragmas for an operation whose ancestor has
       --  class-wide pre/postconditions. If the operation is inherited then
       --  Wrapper_Needed is returned True to force the creation of a wrapper
       --  for the inherited operation. If the ancestor is being overridden,
       --  the pragmas are constructed only to verify their legality, in case
       --  they contain calls to other primitives that may have been overridden.
+
+      procedure Check_Interface_Primitives_Strub_Mode;
+      --  Called when R is an interface type to check strub mode compatibility
+      --  all its primitives.
 
       function Needs_Wrapper
         (Class_Cond : Node_Id;
@@ -1636,7 +1647,6 @@ package body Freeze is
          --  Add minimal decoration of fields
 
          Mutate_Ekind (DTW_Id, Ekind (Par_Prim));
-         Set_LSP_Subprogram (DTW_Id, Par_Prim);
          Set_Is_Dispatch_Table_Wrapper (DTW_Id);
          Set_Is_Wrapper (DTW_Id);
 
@@ -1654,8 +1664,8 @@ package body Freeze is
       ---------------------------------------
 
       procedure Build_Inherited_Condition_Pragmas
-        (Subp           : Entity_Id;
-         Wrapper_Needed : out Boolean)
+        (Subp               : Entity_Id;
+         LSP_Wrapper_Needed : out Boolean)
       is
          Class_Pre  : constant Node_Id :=
                         Class_Preconditions (Ultimate_Alias (Subp));
@@ -1664,7 +1674,7 @@ package body Freeze is
          New_Prag   : Node_Id;
 
       begin
-         Wrapper_Needed := False;
+         LSP_Wrapper_Needed := False;
 
          if No (Class_Pre) and then No (Class_Post) then
             return;
@@ -1677,7 +1687,7 @@ package body Freeze is
          if Present (Class_Pre)
            and then Needs_Wrapper (Class_Pre, Subp, Par_Prim)
          then
-            Wrapper_Needed := True;
+            LSP_Wrapper_Needed := True;
          end if;
 
          --  For class-wide postconditions we evaluate whether the wrapper is
@@ -1687,7 +1697,7 @@ package body Freeze is
          if Present (Class_Post)
            and then Needs_Wrapper (Class_Post, Subp, Par_Prim)
          then
-            Wrapper_Needed := True;
+            LSP_Wrapper_Needed := True;
 
             --  Update the class-wide postcondition
 
@@ -1729,6 +1739,101 @@ package body Freeze is
             end if;
          end if;
       end Build_Inherited_Condition_Pragmas;
+
+      -------------------------------------------
+      -- Check_Interface_Primitives_Strub_Mode --
+      -------------------------------------------
+
+      procedure Check_Interface_Primitives_Strub_Mode is
+         Elmt        : Elmt_Id;
+         Iface_Elmt  : Elmt_Id;
+         Iface       : Entity_Id;
+         Iface_Prim  : Entity_Id;
+         Ifaces_List : Elist_Id;
+         Op_Node     : Elmt_Id;
+         Prim        : Entity_Id;
+         Prim_Iface  : Entity_Id;
+
+      begin
+         pragma Assert (Is_Interface (R));
+
+         --  Collect interfaces extended by interface type R
+
+         Collect_Interfaces (R, Ifaces_List);
+
+         Op_Node := First_Elmt (Prim_Ops);
+         while Present (Op_Node) loop
+            Prim       := Node (Op_Node);
+            Prim_Iface := R;
+            Par_Prim   := Overridden_Operation (Prim);
+
+            --  We only need to check entities defined in the sources
+
+            --  Check that overrider and overridden primitives have the same
+            --  strub mode.
+
+            if Present (Par_Prim) then
+               Check_Same_Strub_Mode (Prim, Par_Prim);
+
+            --  No need to check internally added predefined primitives since
+            --  they all have the same strub mode.
+
+            elsif Is_Predefined_Dispatching_Operation (Prim)
+              and then not Comes_From_Source (Prim)
+            then
+               null;
+
+            --  Check strub mode of matching primitives of all the interface
+            --  types, since several interface types may define primitives with
+            --  the same profile that will be implemented by a single primitive
+            --  of tagged types implementing R, and therefore must have the
+            --  same strub mode.
+
+            else
+               --  If this interface primitive has been inherited this is an
+               --  internal entity we rely on its renamed entity (which is the
+               --  entity defined in the sources).
+
+               if Present (Alias (Prim)) then
+                  Prim       := Ultimate_Alias (Prim);
+                  Prim_Iface := Find_Dispatching_Type (Prim);
+               end if;
+
+               --  Search for primitives conformant with this one in the other
+               --  interface types.
+
+               Iface_Elmt := First_Elmt (Ifaces_List);
+               while Present (Iface_Elmt) loop
+                  Iface := Node (Iface_Elmt);
+
+                  if Iface /= Prim_Iface then
+                     Elmt := First_Elmt (Primitive_Operations (Iface));
+                     while Present (Elmt) loop
+                        Iface_Prim := Node (Elmt);
+
+                        if Chars (Iface_Prim) = Chars (Prim)
+                          and then Comes_From_Source (Iface_Prim)
+                          and then Is_Interface_Conformant
+                                     (Prim_Iface, Iface_Prim, Prim)
+                        then
+                           --  Check the strub mode passing the original
+                           --  primitive (instead of its alias); required
+                           --  to report the error at the right location.
+
+                           Check_Same_Strub_Mode (Node (Op_Node), Iface_Prim);
+                        end if;
+
+                        Next_Elmt (Elmt);
+                     end loop;
+                  end if;
+
+                  Next_Elmt (Iface_Elmt);
+               end loop;
+            end if;
+
+            Next_Elmt (Op_Node);
+         end loop;
+      end Check_Interface_Primitives_Strub_Mode;
 
       -------------------
       -- Needs_Wrapper --
@@ -1799,13 +1904,13 @@ package body Freeze is
          return Result;
       end Needs_Wrapper;
 
-      Ifaces_List    : Elist_Id := No_Elist;
-      Ifaces_Listed  : Boolean := False;
-      --  Cache the list of interface operations inherited by R
-
-      Wrappers_List  : Elist_Id := No_Elist;
+      Wrappers_List : Elist_Id := No_Elist;
       --  List containing identifiers of built wrappers. Used to defer building
       --  and analyzing their class-wide precondition subprograms.
+
+      Postcond_Candidates_List : Elist_Id := No_Elist;
+      --  List containing inherited primitives of tagged type R that implement
+      --  interface primitives that have postconditions.
 
    --  Start of processing for Check_Inherited_Conditions
 
@@ -1832,15 +1937,23 @@ package body Freeze is
          end loop;
       end if;
 
+      --  For interface types we only need to check strub mode compatibility
+      --  of their primitives (since they don't have wrappers).
+
+      if Is_Interface (R) then
+         Check_Interface_Primitives_Strub_Mode;
+         return;
+      end if;
+
       --  Perform validity checks on the inherited conditions of overriding
       --  operations, for conformance with LSP, and apply SPARK-specific
       --  restrictions on inherited conditions.
 
       Op_Node := First_Elmt (Prim_Ops);
       while Present (Op_Node) loop
-         Prim := Node (Op_Node);
-
+         Prim     := Node (Op_Node);
          Par_Prim := Overridden_Operation (Prim);
+
          if Present (Par_Prim)
            and then Comes_From_Source (Prim)
          then
@@ -1871,54 +1984,34 @@ package body Freeze is
             if GNATprove_Mode then
                Collect_Inherited_Class_Wide_Conditions (Prim);
             end if;
+
+         --  Check strub mode compatibility of primitives that implement
+         --  interface primitives.
+
+         elsif Present (Interface_Alias (Prim)) then
+            Check_Same_Strub_Mode (Alias (Prim), Interface_Alias (Prim));
          end if;
 
-         --  Go over operations inherited from interfaces and check
-         --  them for strub mode compatibility as well.
+         Next_Elmt (Op_Node);
+      end loop;
 
-         if Has_Interfaces (R)
-           and then Is_Dispatching_Operation (Prim)
-           and then Find_Dispatching_Type (Prim) = R
+      --  Collect inherited primitives that may need a wrapper to handle
+      --  postconditions of interface primitives; done to improve the
+      --  performance when checking if postcondition wrappers are needed.
+
+      Op_Node := First_Elmt (Prim_Ops);
+      while Present (Op_Node) loop
+         Prim := Node (Op_Node);
+
+         if Present (Interface_Alias (Prim))
+           and then not Comes_From_Source (Alias (Prim))
+           and then Present (Class_Postconditions (Interface_Alias (Prim)))
          then
-            declare
-               Elmt        : Elmt_Id;
-               Iface_Elmt  : Elmt_Id;
-               Iface       : Entity_Id;
-               Iface_Prim  : Entity_Id;
+            if No (Postcond_Candidates_List) then
+               Postcond_Candidates_List := New_Elmt_List;
+            end if;
 
-            begin
-               --  Collect the interfaces only once. We haven't
-               --  finished freezing yet, so we can't use the faster
-               --  search from Sem_Disp.Covered_Interface_Primitives.
-
-               if not Ifaces_Listed then
-                  Collect_Interfaces (R, Ifaces_List);
-                  Ifaces_Listed := True;
-               end if;
-
-               Iface_Elmt := First_Elmt (Ifaces_List);
-               while Present (Iface_Elmt) loop
-                  Iface := Node (Iface_Elmt);
-
-                  Elmt := First_Elmt (Primitive_Operations (Iface));
-                  while Present (Elmt) loop
-                     Iface_Prim := Node (Elmt);
-
-                     if Iface_Prim /= Par_Prim
-                       and then Chars (Iface_Prim) = Chars (Prim)
-                       and then Comes_From_Source (Iface_Prim)
-                       and then Is_Interface_Conformant
-                                  (R, Iface_Prim, Prim)
-                     then
-                        Check_Same_Strub_Mode (Prim, Iface_Prim);
-                     end if;
-
-                     Next_Elmt (Elmt);
-                  end loop;
-
-                  Next_Elmt (Iface_Elmt);
-               end loop;
-            end;
+            Append_Unique_Elmt (Alias (Prim), Postcond_Candidates_List);
          end if;
 
          Next_Elmt (Op_Node);
@@ -1933,7 +2026,7 @@ package body Freeze is
       while Present (Op_Node) loop
          Decls          := Empty_List;
          Prim           := Node (Op_Node);
-         Wrapper_Needed := False;
+         Wrapper_Needed := No_Wrapper;
 
          --  Skip internal entities built for mapping interface primitives
 
@@ -1953,16 +2046,80 @@ package body Freeze is
             end if;
 
             --  Analyze the contract items of the parent operation, and
-            --  determine whether a wrapper is needed. This is determined
-            --  when the condition is rewritten in sem_prag, using the
-            --  mapping between overridden and overriding operations built
-            --  in the loop above.
+            --  determine whether this inherited primitive needs a LSP
+            --  wrapper. This is determined when the condition is rewritten
+            --  in sem_prag, using the mapping between overridden and
+            --  overriding operations built in the loop above.
 
-            Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
-            Build_Inherited_Condition_Pragmas (Prim, Wrapper_Needed);
+            declare
+               LSP_Wrapper_Needed : Boolean;
+
+            begin
+               Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
+               Build_Inherited_Condition_Pragmas (Prim, LSP_Wrapper_Needed);
+
+               if LSP_Wrapper_Needed then
+                  Wrapper_Needed := LSP_Wrapper;
+               end if;
+            end;
+
+            --  If the LSP wrapper is not needed but the tagged type R
+            --  implements additional interface types, and this inherited
+            --  primitive covers an interface primitive of these additional
+            --  interface types that has class-wide postconditions, then it
+            --  requires a postconditions wrapper.
+
+            if Wrapper_Needed = No_Wrapper
+              and then Present (Interfaces (R))
+              and then Present (Postcond_Candidates_List)
+              and then Contains (Postcond_Candidates_List, Prim)
+            then
+               declare
+                  Elmt       : Elmt_Id;
+                  Ent        : Entity_Id;
+                  Iface      : Entity_Id;
+                  Iface_Elmt : Elmt_Id;
+
+               begin
+                  Elmt := First_Elmt (Prim_Ops);
+                  while Present (Elmt) loop
+                     Ent := Node (Elmt);
+
+                     --  Perform the search relying on the internal entities
+                     --  that link tagged type primitives with interface
+                     --  primitives.
+
+                     if Present (Interface_Alias (Ent))
+                       and then (Alias (Ent)) = Prim
+                       and then
+                         Present (Class_Postconditions (Interface_Alias (Ent)))
+                     then
+                        Iface := Find_Dispatching_Type (Interface_Alias (Ent));
+
+                        --  We only need to locate primitives of additional
+                        --  interfaces implemented by tagged type R (since
+                        --  inherited primitives of parent types that cover
+                        --  primitives of inherited interface types don't
+                        --  need a wrapper).
+
+                        Iface_Elmt := First_Elmt (Interfaces (R));
+                        while Present (Iface_Elmt) loop
+                           if Node (Iface_Elmt) = Iface then
+                              Wrapper_Needed := Postcond_Wrapper;
+                              exit;
+                           end if;
+
+                           Next_Elmt (Iface_Elmt);
+                        end loop;
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end;
+            end if;
          end if;
 
-         if Wrapper_Needed
+         if Wrapper_Needed /= No_Wrapper
            and then not Is_Abstract_Subprogram (Par_Prim)
            and then Expander_Active
          then
@@ -2001,6 +2158,14 @@ package body Freeze is
                DTW_Id   := Defining_Entity (DTW_Spec);
                DTW_Decl := Make_Subprogram_Declaration (Loc,
                              Specification => DTW_Spec);
+
+               --  LSP wrappers reference the parent primitive that has the
+               --  the class-wide pre/post condition that calls overridden
+               --  primitives.
+
+               if Wrapper_Needed = LSP_Wrapper then
+                  Set_LSP_Subprogram (DTW_Id, Par_Prim);
+               end if;
 
                --  The spec of the wrapper has been built using the source
                --  location of its parent primitive; we must update it now
@@ -2209,18 +2374,24 @@ package body Freeze is
       elsif Is_Array_Type (E) then
          Set_Strict_Alignment (E, Strict_Alignment (Component_Type (E)));
 
-         --  ??? AI12-001: Any component of a packed type that contains an
-         --  aliased part must be aligned according to the alignment of its
-         --  subtype (RM 13.2(7)). This means that the following test:
+         --  RM 13.2(7.1/4): Any component of a packed type that contains an
+         --  aliased part shall be aligned according to the alignment of its
+         --  subtype.
 
-         --    if Has_Aliased_Components (E) then
-         --      Set_Strict_Alignment (E);
-         --    end if;
+         --  Unfortunately this breaks Florist, which has had the bad habit
+         --  of overaligning all the types it declares on 32-bit platforms,
+         --  so make an exception if the component size is the storage unit.
 
-         --  should be implemented here. Unfortunately it would break Florist,
-         --  which has the bad habit of overaligning all the types it declares
-         --  on 32-bit platforms. Other legacy codebases could also be affected
-         --  because this check has historically been missing in GNAT.
+         --  Other legacy codebases could also be affected because this was
+         --  historically not enforced, so -gnatd_l can be used to disable it.
+
+         if Has_Aliased_Components (E)
+           and then not (Known_Component_Size (E)
+                          and then Component_Size (E) = System_Storage_Unit)
+           and then not Debug_Flag_Underscore_L
+         then
+            Set_Strict_Alignment (E);
+         end if;
 
       elsif Is_Record_Type (E) then
          Comp := First_Component (E);
@@ -2475,22 +2646,7 @@ package body Freeze is
             --  for a description of how we handle aspect visibility).
 
             elsif Has_Delayed_Aspects (E) then
-               declare
-                  Ritem : Node_Id;
-
-               begin
-                  Ritem := First_Rep_Item (E);
-                  while Present (Ritem) loop
-                     if Nkind (Ritem) = N_Aspect_Specification
-                       and then Entity (Ritem) = E
-                       and then Is_Delayed_Aspect (Ritem)
-                     then
-                        Check_Aspect_At_End_Of_Declarations (Ritem);
-                     end if;
-
-                     Next_Rep_Item (Ritem);
-                  end loop;
-               end;
+               Check_Aspects_At_End_Of_Declarations (E);
             end if;
 
             --  If an incomplete type is still not frozen, this may be a
@@ -2936,7 +3092,6 @@ package body Freeze is
                when N_Attribute_Reference =>
                   if Attribute_Name (N) in Name_Access | Name_Unchecked_Access
                     and then Is_Entity_Name (Prefix (N))
-                    and then Is_Type (Entity (Prefix (N)))
                     and then Entity (Prefix (N)) = E
                   then
                      if Ada_Version < Ada_2012 then
@@ -3051,9 +3206,7 @@ package body Freeze is
                --  Search through aspects present on the private type
 
                while Present (Curr_Aspect_Spec) loop
-                  if Get_Aspect_Id (Curr_Aspect_Spec)
-                       = Aspect_No_Parts
-                  then
+                  if Get_Aspect_Id (Curr_Aspect_Spec) = Aspect_No_Parts then
                      Aspect_Spec := Curr_Aspect_Spec;
                      exit;
                   end if;
@@ -3481,7 +3634,9 @@ package body Freeze is
       procedure Freeze_Array_Type (Arr : Entity_Id) is
          FS     : constant Entity_Id := First_Subtype (Arr);
          Ctyp   : constant Entity_Id := Component_Type (Arr);
-         Clause : Entity_Id;
+
+         Clause : Node_Id;
+         --  Set to Component_Size clause or Atomic pragma, if any
 
          Non_Standard_Enum : Boolean := False;
          --  Set true if any of the index types is an enumeration type with a
@@ -3511,13 +3666,10 @@ package body Freeze is
 
             Set_SSO_From_Default (Arr);
 
-            --  Propagate flags for component type
+            --  Propagate flags from component type
 
-            if Is_Controlled (Ctyp)
-              or else Has_Controlled_Component (Ctyp)
-            then
-               Set_Has_Controlled_Component (Arr);
-            end if;
+            Propagate_Concurrent_Flags (Arr, Ctyp);
+            Propagate_Controlled_Flags (Arr, Ctyp, Comp => True);
 
             if Has_Unchecked_Union (Ctyp) then
                Set_Has_Unchecked_Union (Arr);
@@ -3560,76 +3712,57 @@ package body Freeze is
                end;
             end if;
 
-            --  Check for Aliased or Atomic_Components or Full Access with
-            --  unsuitable packing or explicit component size clause given.
+            --  Check for Aliased or Atomic or Full Access or Independent
+            --  components with an unsuitable component size clause given.
+            --  The main purpose is to give an error when bit packing would
+            --  be required to honor the component size, because bit packing
+            --  is incompatible with these aspects; when bit packing is not
+            --  required, the final validation of the component size may be
+            --  left to the back end.
 
-            if (Has_Aliased_Components (Arr)
-                 or else Has_Atomic_Components (Arr)
-                 or else Is_Full_Access (Ctyp))
-              and then
-                (Has_Component_Size_Clause (Arr) or else Is_Packed (Arr))
-            then
-               Alias_Atomic_Check : declare
-
-                  procedure Complain_CS (T : String);
-                  --  Outputs error messages for incorrect CS clause or pragma
-                  --  Pack for aliased or full access components (T is either
-                  --  "aliased" or "atomic" or "volatile full access");
+            if Has_Component_Size_Clause (Arr) then
+               CS_Check : declare
+                  procedure Complain_CS (T : String; Min : Boolean := False);
+                  --  Output an error message for an unsuitable component size
+                  --  clause for independent components (T is either "aliased"
+                  --  or "atomic" or "volatile full access" or "independent").
 
                   -----------------
                   -- Complain_CS --
                   -----------------
 
-                  procedure Complain_CS (T : String) is
+                  procedure Complain_CS (T : String; Min : Boolean := False) is
                   begin
-                     if Has_Component_Size_Clause (Arr) then
-                        Clause :=
-                          Get_Attribute_Definition_Clause
-                            (FS, Attribute_Component_Size);
+                     Clause :=
+                       Get_Attribute_Definition_Clause
+                         (FS, Attribute_Component_Size);
 
-                        Error_Msg_N
-                          ("incorrect component size for "
-                           & T & " components", Clause);
+                     Error_Msg_N
+                       ("incorrect component size for " & T & " components",
+                        Clause);
+
+                     if Known_Static_Esize (Ctyp) then
                         Error_Msg_Uint_1 := Esize (Ctyp);
-                        Error_Msg_N
-                          ("\only allowed value is^", Clause);
-
+                        if Min then
+                           Error_Msg_N ("\minimum allowed value is^", Clause);
+                        else
+                           Error_Msg_N ("\only allowed value is^", Clause);
+                        end if;
                      else
                         Error_Msg_N
-                          ("?cannot pack " & T & " components (RM 13.2(7))",
-                           Get_Rep_Pragma (FS, Name_Pack));
-                        Set_Is_Packed (Arr, False);
+                          ("\must be multiple of storage unit", Clause);
                      end if;
                   end Complain_CS;
 
-               --  Start of processing for Alias_Atomic_Check
+               --  Start of processing for CS_Check
 
                begin
-                  --  If object size of component type isn't known, we cannot
-                  --  be sure so we defer to the back end.
+                  --  OK if the component size and object size are equal, or
+                  --  if the component size is a multiple of the storage unit.
 
-                  if not Known_Static_Esize (Ctyp) then
-                     null;
-
-                  --  Case where component size has no effect. First check for
-                  --  object size of component type multiple of the storage
-                  --  unit size.
-
-                  elsif Esize (Ctyp) mod System_Storage_Unit = 0
-
-                    --  OK in both packing case and component size case if RM
-                    --  size is known and static and same as the object size.
-
-                    and then
-                      ((Known_Static_RM_Size (Ctyp)
-                         and then Esize (Ctyp) = RM_Size (Ctyp))
-
-                        --  Or if we have an explicit component size clause and
-                        --  the component size and object size are equal.
-
-                        or else
-                          (Has_Component_Size_Clause (Arr)
-                            and then Component_Size (Arr) = Esize (Ctyp)))
+                  if (if Known_Static_Esize (Ctyp)
+                       then Component_Size (Arr) = Esize (Ctyp)
+                       else Component_Size (Arr) mod System_Storage_Unit = 0)
                   then
                      null;
 
@@ -3643,67 +3776,76 @@ package body Freeze is
 
                   elsif Is_Volatile_Full_Access (Ctyp) then
                      Complain_CS ("volatile full access");
+
+                  --  For Independent a larger size is permitted
+
+                  elsif (Has_Independent_Components (Arr)
+                          or else Is_Independent (Ctyp))
+                    and then (not Known_Static_Esize (Ctyp)
+                               or else Component_Size (Arr) < Esize (Ctyp))
+                  then
+                     Complain_CS ("independent", Min => True);
                   end if;
-               end Alias_Atomic_Check;
-            end if;
+               end CS_Check;
 
-            --  Check for Independent_Components/Independent with unsuitable
-            --  packing or explicit component size clause given.
+            --  Check for Aliased or Atomic or Full Access or Independent
+            --  components with an unsuitable aspect/pragma Pack given.
+            --  The main purpose is to prevent bit packing from occurring,
+            --  because bit packing is incompatible with these aspects; when
+            --  bit packing cannot occur, the final handling of the packing
+            --  may be left to the back end.
 
-            if (Has_Independent_Components (Arr) or else Is_Independent (Ctyp))
-                  and then
-               (Has_Component_Size_Clause  (Arr) or else Is_Packed (Arr))
-            then
+            elsif Is_Packed (Arr) and then Known_Static_RM_Size (Ctyp) then
+               Pack_Check : declare
+
+                  procedure Complain_Pack (T : String);
+                  --  Output a warning message for an unsuitable aspect/pragma
+                  --  Pack for independent components (T is either "aliased" or
+                  --  "atomic" or "volatile full access" or "independent") and
+                  --  reset the Is_Packed flag on the array type.
+
+                  -------------------
+                  -- Complain_Pack --
+                  -------------------
+
+                  procedure Complain_Pack (T : String) is
+                  begin
+                     Error_Msg_N
+                       ("?cannot pack " & T & " components (RM 13.2(7))",
+                        Get_Rep_Pragma (FS, Name_Pack));
+
+                     Set_Is_Packed (Arr, False);
+                  end Complain_Pack;
+
+               --  Start of processing for Pack_Check
+
                begin
-                  --  If object size of component type isn't known, we cannot
-                  --  be sure so we defer to the back end.
+                  --  OK if the component size and object size are equal, or
+                  --  if the component size is a multiple of the storage unit.
 
-                  if not Known_Static_Esize (Ctyp) then
-                     null;
-
-                  --  Case where component size has no effect. First check for
-                  --  object size of component type multiple of the storage
-                  --  unit size.
-
-                  elsif Esize (Ctyp) mod System_Storage_Unit = 0
-
-                    --  OK in both packing case and component size case if RM
-                    --  size is known and multiple of the storage unit size.
-
-                    and then
-                      ((Known_Static_RM_Size (Ctyp)
-                         and then RM_Size (Ctyp) mod System_Storage_Unit = 0)
-
-                        --  Or if we have an explicit component size clause and
-                        --  the component size is larger than the object size.
-
-                        or else
-                          (Has_Component_Size_Clause (Arr)
-                            and then Component_Size (Arr) >= Esize (Ctyp)))
+                  if (if Known_Static_Esize (Ctyp)
+                       then RM_Size (Ctyp) = Esize (Ctyp)
+                       else RM_Size (Ctyp) mod System_Storage_Unit = 0)
                   then
                      null;
 
-                  else
-                     if Has_Component_Size_Clause (Arr) then
-                        Clause :=
-                          Get_Attribute_Definition_Clause
-                            (FS, Attribute_Component_Size);
+                  elsif Has_Aliased_Components (Arr) then
+                     Complain_Pack ("aliased");
 
-                        Error_Msg_N
-                          ("incorrect component size for "
-                           & "independent components", Clause);
-                        Error_Msg_Uint_1 := Esize (Ctyp);
-                        Error_Msg_N
-                          ("\minimum allowed is^", Clause);
+                  elsif Has_Atomic_Components (Arr)
+                    or else Is_Atomic (Ctyp)
+                  then
+                     Complain_Pack ("atomic");
 
-                     else
-                        Error_Msg_N
-                          ("?cannot pack independent components (RM 13.2(7))",
-                           Get_Rep_Pragma (FS, Name_Pack));
-                        Set_Is_Packed (Arr, False);
-                     end if;
+                  elsif Is_Volatile_Full_Access (Ctyp) then
+                     Complain_Pack ("volatile full access");
+
+                  elsif Has_Independent_Components (Arr)
+                    or else Is_Independent (Ctyp)
+                  then
+                     Complain_Pack ("independent");
                   end if;
-               end;
+               end Pack_Check;
             end if;
 
             --  If packing was requested or if the component size was
@@ -4934,10 +5076,16 @@ package body Freeze is
          --  Accumulates total Esize values of all elementary components. Used
          --  for processing of Implicit_Packing.
 
+         Final_Storage_Only : Boolean := True;
+         --  Used to compute the Finalize_Storage_Only flag
+
          Placed_Component : Boolean := False;
          --  Set True if we find at least one component with a component
          --  clause (used to warn about useless Bit_Order pragmas, and also
          --  to detect cases where Implicit_Packing may have an effect).
+
+         Relaxed_Finalization : Boolean := True;
+         --  Used to compute the Has_Relaxed_Finalization flag
 
          Sized_Component_Total_RM_Size : Uint := Uint_0;
          --  Accumulates total RM_Size values of all sized components. Used
@@ -5534,11 +5682,12 @@ package body Freeze is
                Freeze_And_Append (Corresponding_Remote_Type (Rec), N, Result);
             end if;
 
-            --  Check for controlled components, unchecked unions, and type
-            --  invariants.
+            --  Check for tasks, protected and controlled components, unchecked
+            --  unions, and type invariants.
 
             Comp := First_Component (Rec);
             while Present (Comp) loop
+               Propagate_Concurrent_Flags (Rec, Etype (Comp));
 
                --  Do not set Has_Controlled_Component on a class-wide
                --  equivalent type. See Make_CW_Equivalent_Type.
@@ -5558,6 +5707,12 @@ package body Freeze is
                              (Corresponding_Record_Type (Etype (Comp)))))
                then
                   Set_Has_Controlled_Component (Rec);
+                  Final_Storage_Only :=
+                    Final_Storage_Only
+                      and then Finalize_Storage_Only (Etype (Comp));
+                  Relaxed_Finalization :=
+                    Relaxed_Finalization
+                      and then Has_Relaxed_Finalization (Etype (Comp));
                end if;
 
                if Has_Unchecked_Union (Etype (Comp)) then
@@ -5589,6 +5744,17 @@ package body Freeze is
 
                Next_Component (Comp);
             end loop;
+
+            --  For a type that is not directly controlled but has controlled
+            --  components, Finalize_Storage_Only is set if all the controlled
+            --  components are Finalize_Storage_Only. The same processing is
+            --  appled to Has_Relaxed_Finalization.
+
+            if not Is_Controlled (Rec) and then Has_Controlled_Component (Rec)
+            then
+               Set_Finalize_Storage_Only    (Rec, Final_Storage_Only);
+               Set_Has_Relaxed_Finalization (Rec, Relaxed_Finalization);
+            end if;
          end if;
 
          --  Enforce the restriction that access attributes with a current
@@ -5807,13 +5973,6 @@ package body Freeze is
                   Next_Elmt (Elmt);
                end loop;
             end;
-         end if;
-
-         --  For a derived tagged type, check whether inherited primitives
-         --  might require a wrapper to handle class-wide conditions.
-
-         if Is_Tagged_Type (Rec) and then Is_Derived_Type (Rec) then
-            Check_Inherited_Conditions (Rec);
          end if;
       end Freeze_Record_Type;
 
@@ -6963,7 +7122,7 @@ package body Freeze is
                if Is_Type (Comp) then
                   Freeze_And_Append (Comp, N, Result);
 
-               elsif (Ekind (Comp)) /= E_Function then
+               elsif Ekind (Comp) /= E_Function then
 
                   --  The guard on the presence of the Etype seems to be needed
                   --  for some CodePeer (-gnatcC) cases, but not clear why???
@@ -7671,6 +7830,7 @@ package body Freeze is
 
          if (Has_Size_Clause (E) or else Has_Object_Size_Clause (E))
            and then not Size_Known_At_Compile_Time (E)
+           and then not Is_Mutably_Tagged_Type (E)
          then
             --  Suppress this message if errors posted on E, even if we are
             --  in all errors mode, since this is often a junk message
@@ -8712,7 +8872,8 @@ package body Freeze is
             end if;
 
             --  The current scope may be that of a constrained component of
-            --  an enclosing record declaration, or of a loop of an enclosing
+            --  an enclosing record declaration, or a block of an enclosing
+            --  declare expression in Ada 2022, or of a loop of an enclosing
             --  quantified expression or aggregate with an iterated component
             --  in Ada 2022, which is above the current scope in the scope
             --  stack. Indeed in the context of a quantified expression or
@@ -8724,7 +8885,7 @@ package body Freeze is
 
             if not Is_Compilation_Unit (Current_Scope)
               and then (Is_Record_Type (Scope (Current_Scope))
-                         or else (Ekind (Current_Scope) = E_Loop
+                         or else (Ekind (Current_Scope) in E_Block | E_Loop
                                    and then Is_Internal (Current_Scope)))
             then
                Pos := Pos - 1;
@@ -8759,8 +8920,8 @@ package body Freeze is
       --  Now we have the right place to do the freezing. First, a special
       --  adjustment, if we are in spec-expression analysis mode, these freeze
       --  actions must not be thrown away (normally all inserted actions are
-      --  thrown away in this mode. However, the freeze actions are from static
-      --  expressions and one of the important reasons we are doing this
+      --  thrown away in this mode). However, the freeze actions are from
+      --  static expressions and one of the important reasons we are doing this
       --  special analysis is to get these freeze actions. Therefore we turn
       --  off the In_Spec_Expression mode to propagate these freeze actions.
       --  This also means they get properly analyzed and expanded.
@@ -8976,6 +9137,7 @@ package body Freeze is
          --  that type is not attached to an entity in the construct.
 
          elsif Nkind (Node) in N_Has_Etype
+           and then Present (Etype (Node))
            and then Nkind (Parent (Node)) = N_Iterator_Specification
            and then Node = Name (Parent (Node))
          then

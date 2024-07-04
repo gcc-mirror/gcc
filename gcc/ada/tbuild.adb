@@ -918,11 +918,17 @@ package body Tbuild is
       Result : Node_Id;
 
    begin
-      --  If the expression is already of the correct type, then nothing
-      --  to do, except for relocating the node
+      --  If the expression is already of the correct type, then nothing to do,
+      --  except for relocating the node. If Typ is an array type with fixed
+      --  lower bound, the expression might be of a subtype that does not
+      --  have this lower bound (on a slice), hence the conversion needs to
+      --  be preserved for sliding.
 
       if Present (Etype (Expr))
-        and then (Base_Type (Etype (Expr)) = Typ or else Etype (Expr) = Typ)
+        and then
+          ((Base_Type (Etype (Expr)) = Typ
+             and then not Is_Fixed_Lower_Bound_Array_Subtype (Typ))
+           or else Etype (Expr) = Typ)
       then
          return Relocate_Node (Expr);
 

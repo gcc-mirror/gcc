@@ -1574,9 +1574,15 @@
 
 (define_mode_iterator VLS [VLSI VLSF_ZVFHMIN])
 
+(define_mode_iterator VLS_ZVFH [VLSI VLSF])
+
 (define_mode_iterator V [VI VF_ZVFHMIN])
 
+(define_mode_iterator V_ZVFH [VI VF])
+
 (define_mode_iterator V_VLS [V VLS])
+
+(define_mode_iterator V_VLS_ZVFH [V_ZVFH VLS_ZVFH])
 
 (define_mode_iterator V_VLSI [VI VLSI])
 

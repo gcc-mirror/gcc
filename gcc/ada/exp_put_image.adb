@@ -580,6 +580,18 @@ package body Exp_Put_Image is
       function Make_Component_Name (C : Entity_Id) return Node_Id;
       --  Create a call that prints "Comp_Name => "
 
+      function Null_Record_Default_Implementation_OK
+        (Null_Record_Type : Entity_Id) return Boolean
+      is
+        (if Has_Aspect (Null_Record_Type, Aspect_Put_Image)
+           then False
+         elsif not Is_Derived_Type
+                     (Implementation_Base_Type (Null_Record_Type))
+           then True
+         else Null_Record_Default_Implementation_OK
+                (Implementation_Base_Type (Etype (Null_Record_Type))));
+      --  return True iff ok to emit "(NULL RECORD)" for given null record type
+
       ------------------------------------
       -- Make_Component_List_Attributes --
       ------------------------------------
@@ -852,7 +864,10 @@ package body Exp_Put_Image is
                           Type_Name))));
             end;
          end if;
-      elsif Is_Null_Record_Type (Btyp, Ignore_Privacy => True) then
+
+      elsif Is_Null_Record_Type (Btyp, Ignore_Privacy => True)
+        and then Null_Record_Default_Implementation_OK (Btyp)
+      then
 
          --  Interface types take this path.
 

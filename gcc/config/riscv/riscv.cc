@@ -2720,7 +2720,7 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value,
   struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS];
   machine_mode mode;
   int i, num_ops;
-  rtx x;
+  rtx x = NULL_RTX;
 
   mode = GET_MODE (dest);
   /* We use the original mode for the riscv_build_integer call, because HImode
@@ -5111,8 +5111,9 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
       /* reg, reg  */
       else if (REG_P (cons) && REG_P (alt))
 	{
-	  if ((code == EQ && rtx_equal_p (cons, op0))
+	  if (((code == EQ && rtx_equal_p (cons, op0))
 	       || (code == NE && rtx_equal_p (alt, op0)))
+	      && op1 == CONST0_RTX (mode))
 	    {
 	      rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
 	      alt = force_reg (mode, alt);
@@ -9242,6 +9243,7 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && XINT (SET_SRC (prev_set), 1) == UNSPEC_AUIPC
 	  && (GET_CODE (SET_SRC (curr_set)) == LO_SUM
 	      || (GET_CODE (SET_SRC (curr_set)) == PLUS
+		  && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
 		  && SMALL_OPERAND (INTVAL (XEXP (SET_SRC (curr_set), 1))))))
 
 	return true;
@@ -11612,6 +11614,53 @@ riscv_expand_usadd (rtx dest, rtx x, rtx y)
   emit_move_insn (dest, gen_lowpart (mode, xmode_dest));
 }
 
+/* Implements the unsigned saturation sub standard name usadd for int mode.
+
+   z = SAT_SUB(x, y).
+   =>
+   1. minus = x - y.
+   2. lt = x < y.
+   3. lt = lt - 1.
+   4. z = minus & lt.  */
+
+void
+riscv_expand_ussub (rtx dest, rtx x, rtx y)
+{
+  machine_mode mode = GET_MODE (dest);
+  rtx pmode_x = gen_lowpart (Pmode, x);
+  rtx pmode_y = gen_lowpart (Pmode, y);
+  rtx pmode_lt = gen_reg_rtx (Pmode);
+  rtx pmode_minus = gen_reg_rtx (Pmode);
+  rtx pmode_dest = gen_reg_rtx (Pmode);
+
+  /* Step-1: minus = x - y  */
+  riscv_emit_binary (MINUS, pmode_minus, pmode_x, pmode_y);
+
+  /* Step-2: lt = x < y  */
+  riscv_emit_binary (LTU, pmode_lt, pmode_x, pmode_y);
+
+  /* Step-3: lt = lt - 1 (lt + (-1))  */
+  riscv_emit_binary (PLUS, pmode_lt, pmode_lt, CONSTM1_RTX (Pmode));
+
+  /* Step-4: pmode_dest = minus & lt  */
+  riscv_emit_binary (AND, pmode_dest, pmode_lt, pmode_minus);
+
+  /* Step-5: dest = pmode_dest  */
+  emit_move_insn (dest, gen_lowpart (mode, pmode_dest));
+}
+
+/* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode for
+   TI_LONG_DOUBLE_TYPE which is for long double type, go with the
+   default one for the others.  */
+
+static machine_mode
+riscv_c_mode_for_floating_type (enum tree_index ti)
+{
+  if (ti == TI_LONG_DOUBLE_TYPE)
+    return TFmode;
+  return default_mode_for_floating_type (ti);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -11966,6 +12015,9 @@ riscv_expand_usadd (rtx dest, rtx x, rtx y)
 
 #undef TARGET_GET_RAW_RESULT_MODE
 #define TARGET_GET_RAW_RESULT_MODE riscv_get_raw_result_mode
+
+#undef TARGET_C_MODE_FOR_FLOATING_TYPE
+#define TARGET_C_MODE_FOR_FLOATING_TYPE riscv_c_mode_for_floating_type
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

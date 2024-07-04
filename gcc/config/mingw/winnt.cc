@@ -71,8 +71,8 @@ ix86_handle_shared_attribute (tree *node, tree name, tree, int,
 /* Handle a "selectany" attribute;
    arguments as in struct attribute_spec.handler.  */
 tree
-ix86_handle_selectany_attribute (tree *node, tree name, tree, int,
-				 bool *no_add_attrs)
+mingw_handle_selectany_attribute (tree *node, tree name, tree, int,
+				  bool *no_add_attrs)
 {
   tree decl = *node;
   /* The attribute applies only to objects that are initialized and have
@@ -162,7 +162,7 @@ i386_pe_determine_dllimport_p (tree decl)
 /* Handle the -mno-fun-dllimport target switch.  */
 
 bool
-i386_pe_valid_dllimport_attribute_p (const_tree decl)
+mingw_pe_valid_dllimport_attribute_p (const_tree decl)
 {
    if (TARGET_NOP_FUN_DLLIMPORT && TREE_CODE (decl) == FUNCTION_DECL)
      return false;
@@ -672,7 +672,7 @@ mingw_pe_maybe_record_exported_symbol (tree decl, const char *name, int is_data)
 }
 
 void
-i386_pe_record_stub (const char *name)
+mingw_pe_record_stub (const char *name)
 {
   struct stub_list *p;
 
@@ -749,7 +749,7 @@ i386_find_on_wrapper_list (const char *target)
    output the .drectve section.  */
 
 void
-i386_pe_file_end (void)
+mingw_pe_file_end (void)
 {
   struct extern_list *p;
 

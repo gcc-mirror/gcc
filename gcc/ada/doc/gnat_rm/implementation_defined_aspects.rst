@@ -574,19 +574,18 @@ Aspect Remote_Access_Type
 
 This aspect is equivalent to :ref:`pragma Remote_Access_Type<Pragma-Remote_Access_Type>`.
 
+Aspect Scalar_Storage_Order
+===========================
+.. index:: Scalar_Storage_Order
+
+This aspect is equivalent to a :ref:`attribute Scalar_Storage_Order<Attribute-Scalar_Storage_Order>`.
+
 Aspect Secondary_Stack_Size
 ===========================
 
 .. index:: Secondary_Stack_Size
 
 This aspect is equivalent to :ref:`pragma Secondary_Stack_Size<Pragma-Secondary_Stack_Size>`.
-
-
-Aspect Scalar_Storage_Order
-===========================
-.. index:: Scalar_Storage_Order
-
-This aspect is equivalent to a :ref:`attribute Scalar_Storage_Order<Attribute-Scalar_Storage_Order>`.
 
 Aspect Shared
 =============
@@ -620,6 +619,13 @@ Aspect SPARK_Mode
 This aspect is equivalent to :ref:`pragma SPARK_Mode<Pragma-SPARK_Mode>` and
 may be specified for either or both of the specification and body
 of a subprogram or package.
+
+Aspect Subprogram_Variant
+=========================
+.. index:: Subprogram_Variant
+
+For the syntax and semantics of this aspect, see the SPARK 2014 Reference
+Manual, section 6.1.8.
 
 Aspect Suppress_Debug_Info
 ==========================

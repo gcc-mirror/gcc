@@ -298,8 +298,7 @@ package body Lib.Writ is
          function Is_Implicit_With_Clause (Clause : Node_Id) return Boolean is
          begin
             --  With clauses created for ancestor units are marked as internal,
-            --  however, they emulate the semantics in Ada RM 10.1.2 (6/2),
-            --  where
+            --  however, they emulate the semantics in RM 10.1.2 (6/2), where
             --
             --    with A.B;
             --
@@ -1265,6 +1264,10 @@ package body Lib.Writ is
       if Partition_Elaboration_Policy /= ' ' then
          Write_Info_Str  (" E");
          Write_Info_Char (Partition_Elaboration_Policy);
+      end if;
+
+      if Opt.Interrupts_System_By_Default then
+         Write_Info_Str (" ID");
       end if;
 
       if No_Component_Reordering_Config then

@@ -514,6 +514,8 @@ class rich_location
 
   const line_maps *get_line_table () const { return m_line_table; }
 
+  int get_column_override () const { return m_column_override; }
+
 private:
   bool reject_impossible_fixit (location_t where);
   void stop_supporting_fixits ();

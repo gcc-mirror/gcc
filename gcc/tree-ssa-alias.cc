@@ -3704,6 +3704,25 @@ stmt_kills_ref_p (gimple *stmt, tree ref)
   return stmt_kills_ref_p (stmt, &r);
 }
 
+/* Return whether REF can be subject to store data races.  */
+
+bool
+ref_can_have_store_data_races (tree ref)
+{
+  /* With -fallow-store-data-races do not care about them.  */
+  if (flag_store_data_races)
+    return false;
+
+  tree base = get_base_address (ref);
+  if (auto_var_p (base)
+      && ! may_be_aliased (base))
+    /* Automatic variables not aliased are not subject to
+       data races.  */
+    return false;
+
+  return true;
+}
+
 
 /* Walk the virtual use-def chain of VUSE until hitting the virtual operand
    TARGET or a statement clobbering the memory reference REF in which

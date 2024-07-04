@@ -1326,7 +1326,7 @@ whose size is @code{BITS_PER_WORD}, @code{SImode} on 32-bit machines.
 
 The only modes which a machine description @i{must} support are
 @code{QImode}, and the modes corresponding to @code{BITS_PER_WORD},
-@code{FLOAT_TYPE_SIZE} and @code{DOUBLE_TYPE_SIZE}.
+C type @code{float} and C type @code{double}.
 The compiler will attempt to use @code{DImode} for 8-byte structures and
 unions, but this can be prevented by overriding the definition of
 @code{MAX_FIXED_MODE_SIZE}.  Alternatively, you can have the compiler
@@ -3872,8 +3872,8 @@ To set the kind of a label, use the @code{SET_LABEL_KIND} macro.
 @item jump_table_data
 A @code{jump_table_data} insn is a placeholder for the jump-table data
 of a @code{casesi} or @code{tablejump} insn.  They are placed after
-a @code{tablejump_p} insn.  A @code{jump_table_data} insn is not part o
-a basic blockm but it is associated with the basic block that ends with
+a @code{tablejump_p} insn.  A @code{jump_table_data} insn is not part of
+a basic block but it is associated with the basic block that ends with
 the @code{tablejump_p} insn.  The @code{PATTERN} of a @code{jump_table_data}
 is always either an @code{addr_vec} or an @code{addr_diff_vec}, and a
 @code{jump_table_data} insn is always preceded by a @code{code_label}.
@@ -5073,7 +5073,7 @@ in the correct order with respect to each other.
 The way to do this is:
 
 @smallexample
-if (!rtl_ssa::restrict_movement_ignoring (change, insn_is_changing (changes)))
+if (!rtl_ssa::restrict_movement (change, ignore_changing_insns (changes)))
   return false;
 @end smallexample
 
@@ -5085,7 +5085,7 @@ changing instructions (which might, for example, no longer need
 to clobber the flags register).  The way to do this is:
 
 @smallexample
-if (!rtl_ssa::recog_ignoring (attempt, change, insn_is_changing (changes)))
+if (!rtl_ssa::recog (attempt, change, ignore_changing_insns (changes)))
   return false;
 @end smallexample
 
@@ -5137,16 +5137,16 @@ change2.move_range = @dots{};
 
 rtl_ssa::insn_change *changes[] = @{ &change1, &change2 @};
 
-auto is_changing = insn_is_changing (changes);
-if (!rtl_ssa::restrict_movement_ignoring (change1, is_changing)
-    || !rtl_ssa::restrict_movement_ignoring (change2, is_changing))
+auto ignore = ignore_changing_insns (changes);
+if (!rtl_ssa::restrict_movement (change1, ignore)
+    || !rtl_ssa::restrict_movement (change2, ignore))
   return false;
 
 insn_change_watermark watermark;
 // Use validate_change etc. to change INSN1's and INSN2's patterns.
 @dots{}
-if (!rtl_ssa::recog_ignoring (attempt, change1, is_changing)
-    || !rtl_ssa::recog_ignoring (attempt, change2, is_changing)
+if (!rtl_ssa::recog (attempt, change1, ignore)
+    || !rtl_ssa::recog (attempt, change2, ignore)
     || !rtl_ssa::changes_are_worthwhile (changes)
     || !crtl->ssa->verify_insn_changes (changes))
   return false;

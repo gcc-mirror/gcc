@@ -882,7 +882,8 @@ package body Sem_Aux is
          return True;
 
       elsif Is_Record_Type (Btype) then
-         if Is_Limited_Record (Btype)
+         if Is_Controlled (Btype)
+           or else Is_Limited_Record (Btype)
            or else Is_Tagged_Type (Btype)
            or else Is_Volatile (Btype)
          then

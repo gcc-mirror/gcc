@@ -61,6 +61,6 @@ contains
     end function newContainer
 end program returned_memory_leak
 
-! { dg-final { scan-tree-dump-times "newabstract" 14 "original" } }
+! { dg-final { scan-tree-dump-times "newabstract" 15 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_free" 8 "original" } }
 

@@ -29,44 +29,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Unchecked_Conversion;
+with System.Img_Address_32;
+with System.Img_Address_64;
 
 function System.Address_Image (A : Address) return String is
-
-   Result  : String (1 .. 2 * Address'Size / Storage_Unit);
-
-   type Byte is mod 2 ** 8;
-   for Byte'Size use 8;
-
-   Hexdigs :
-     constant array (Byte range 0 .. 15) of Character := "0123456789ABCDEF";
-
-   type Bytes is array (1 .. Address'Size / Storage_Unit) of Byte;
-   for Bytes'Size use Address'Size;
-
-   function To_Bytes is new Ada.Unchecked_Conversion (Address, Bytes);
-
-   Byte_Sequence : constant Bytes := To_Bytes (A);
-
-   LE : constant := Standard'Default_Bit_Order;
-   BE : constant := 1 - LE;
-   --  Set to 1/0 for True/False for Little-Endian/Big-Endian
-
-   Start : constant Natural := BE * (1) + LE * (Bytes'Length);
-   Incr  : constant Integer := BE * (1) + LE * (-1);
-   --  Start and increment for accessing characters of address string
-
-   Ptr : Natural;
-   --  Scan address string
-
 begin
-   Ptr := Start;
-   for N in Bytes'Range loop
-      Result (2 * N - 1) := Hexdigs (Byte_Sequence (Ptr) / 16);
-      Result (2 * N)     := Hexdigs (Byte_Sequence (Ptr) mod 16);
-      Ptr := Ptr + Incr;
-   end loop;
+   --  We use Address_Image64 for Morello because Integer_Address is 64-bit
+   --  large even though Address is 128-bit large.
 
-   return Result;
-
+   case Address'Size is
+      when 32     => return String (System.Img_Address_32.Address_Image32 (A));
+      when 64     => return String (System.Img_Address_64.Address_Image64 (A));
+      when 128    => return String (System.Img_Address_64.Address_Image64 (A));
+      when others => raise Program_Error;
+   end case;
 end System.Address_Image;

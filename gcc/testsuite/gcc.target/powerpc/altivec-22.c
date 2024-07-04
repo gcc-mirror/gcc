@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* && ilp32 } } } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
 /* { dg-options "-O3 -maltivec" } */
+/* { dg-require-effective-target powerpc_altivec } */
 /* { dg-final { scan-assembler-not "mfcr" } } */
 
 #include <altivec.h>

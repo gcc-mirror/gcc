@@ -3440,6 +3440,7 @@ value.
 @item omp_cgroup_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
 @item omp_pteam_mem_alloc       @tab omp_low_lat_mem_space (implementation defined)
 @item omp_thread_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
+@item ompx_gnu_pinned_mem_alloc @tab omp_default_mem_space (GNU extension)
 @end multitable
 
 The predefined allocators use the default values for the traits,
@@ -3465,7 +3466,7 @@ as listed below.  Except that the last three allocators have the
 @item @code{fb_data}   @tab @emph{unsupported as it needs an allocator handle}
                        @tab (none)
 @item @code{pinned}    @tab @code{true}, @code{false}
-                       @tab @code{false}
+                       @tab See below
 @item @code{partition} @tab @code{environment}, @code{nearest},
                             @code{blocked}, @code{interleaved}
                        @tab @code{environment}
@@ -3475,6 +3476,10 @@ For the @code{fallback} trait, the default value is @code{null_fb} for the
 @code{omp_default_mem_alloc} allocator and any allocator that is associated
 with device memory; for all other allocators, it is @code{default_mem_fb}
 by default.
+
+For the @code{pinned} trait, the default value is @code{true} for
+predefined allocator @code{ompx_gnu_pinned_mem_alloc} (a GNU extension), and
+@code{false} for all others.
 
 Examples:
 @smallexample

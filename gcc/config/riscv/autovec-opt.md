@@ -1517,8 +1517,7 @@
   "&& 1"
   [(const_int 0)]
   {
-    if (GET_CODE (operands[2]) == SUBREG)
-      operands[2] = SUBREG_REG (operands[2]);
+    operands[2] = gen_lowpart (Pmode, operands[2]);
     insn_code icode = code_for_pred_vwsll_scalar (<MODE>mode);
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
     DONE;
@@ -1584,8 +1583,7 @@
   "&& 1"
   [(const_int 0)]
   {
-    if (GET_CODE (operands[2]) == SUBREG)
-      operands[2] = SUBREG_REG (operands[2]);
+    operands[2] = gen_lowpart (Pmode, operands[2]);
     insn_code icode = code_for_pred_vwsll_scalar (<V_DOUBLE_TRUNC>mode);
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
     DONE;

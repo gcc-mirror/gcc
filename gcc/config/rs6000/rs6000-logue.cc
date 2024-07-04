@@ -591,21 +591,21 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		+---------------------------------------+
 		| Parameter save area (+padding*) (P)	|  32
 		+---------------------------------------+
-		| Optional ROP hash slot (R)		|  32+P
+		| Alloca space (A)			|  32+P
 		+---------------------------------------+
-		| Alloca space (A)			|  32+P+R
+		| Local variable space (L)		|  32+P+A
 		+---------------------------------------+
-		| Local variable space (L)		|  32+P+R+A
+		| Optional ROP hash slot (R)		|  32+P+A+L
 		+---------------------------------------+
-		| Save area for AltiVec registers (W)	|  32+P+R+A+L
+		| Save area for AltiVec registers (W)	|  32+P+A+L+R
 		+---------------------------------------+
-		| AltiVec alignment padding (Y)		|  32+P+R+A+L+W
+		| AltiVec alignment padding (Y)		|  32+P+A+L+R+W
 		+---------------------------------------+
-		| Save area for GP registers (G)	|  32+P+R+A+L+W+Y
+		| Save area for GP registers (G)	|  32+P+A+L+R+W+Y
 		+---------------------------------------+
-		| Save area for FP registers (F)	|  32+P+R+A+L+W+Y+G
+		| Save area for FP registers (F)	|  32+P+A+L+R+W+Y+G
 		+---------------------------------------+
-	old SP->| back chain to caller's caller		|  32+P+R+A+L+W+Y+G+F
+	old SP->| back chain to caller's caller		|  32+P+A+L+R+W+Y+G+F
 		+---------------------------------------+
 
      * If the alloca area is present, the parameter save area is
@@ -817,17 +817,16 @@ rs6000_stack_info (void)
 	  gcc_assert (info->altivec_size == 0
 		      || info->altivec_save_offset % 16 == 0);
 
-	  /* Adjust for AltiVec case.  */
-	  info->ehrd_offset = info->altivec_save_offset - ehrd_size;
-
 	  /* Adjust for ROP protection.  */
 	  info->rop_hash_save_offset
 	    = info->altivec_save_offset - info->rop_hash_size;
-	  info->ehrd_offset -= info->rop_hash_size;
 	}
       else
-	info->ehrd_offset = info->gp_save_offset - ehrd_size;
+	  /* Adjust for ROP protection.  */
+	  info->rop_hash_save_offset
+	    = info->gp_save_offset - info->rop_hash_size;
 
+      info->ehrd_offset = info->rop_hash_save_offset - ehrd_size;
       info->ehcr_offset = info->ehrd_offset - ehcr_size;
       info->cr_save_offset = reg_size; /* first word when 64-bit.  */
       info->lr_save_offset = 2*reg_size;

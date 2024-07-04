@@ -179,7 +179,6 @@ package body Exp_Attr is
    --    * Rec_Typ - the record type whose internals are to be validated
 
    function Default_Streaming_Unavailable (Typ : Entity_Id) return Boolean;
-   --
    --  In most cases, references to unavailable streaming attributes
    --  are rejected at compile time. In some obscure cases involving
    --  generics and formal derived types, the problem is dealt with at runtime.
@@ -1781,14 +1780,25 @@ package body Exp_Attr is
          begin
             Aux_Decl := Empty;
 
-            --  Generate a nominal type for the constant when the prefix is of
-            --  a constrained type. This is achieved by setting the Etype of
-            --  the relocated prefix to its base type. Since the prefix is now
-            --  the initialization expression of the constant, its freezing
-            --  will produce a proper nominal type.
-
             Temp_Expr := Relocate_Node (Pref);
-            Set_Etype (Temp_Expr, Base_Typ);
+
+            --  For Etype (Temp_Expr) in some cases we cannot use either
+            --  Etype (Pref) or Base_Typ. So we set Etype (Temp_Expr) to null
+            --  and mark Temp_Expr as requiring analysis. Rather than trying
+            --  to sort out exactly when this is needed, we do it
+            --  unconditionally.
+            --  One case where this is needed is when
+            --     1) Pref is an N_Selected_Component name that
+            --        refers to a component which is subject to a
+            --        discriminant-dependent constraint; and
+            --     2) The prefix of that N_Selected_Component refers to a
+            --        formal parameter with an unconstrained subtype; and
+            --     3) Pref has only been preanalyzed (so that
+            --        Build_Actual_Subtype_Of_Component has not been called
+            --        and Etype (Pref) equals the Etype of the component).
+
+            Set_Etype (Temp_Expr, Empty);
+            Set_Analyzed (Temp_Expr, False);
 
             --  Generate:
             --    Temp : constant Base_Typ := Pref;
@@ -2174,8 +2184,8 @@ package body Exp_Attr is
       --  for the arguments of a 'Read attribute reference (since the
       --  scalar argument is an OUT scalar) and for the arguments of a
       --  'Has_Same_Storage or 'Overlaps_Storage attribute reference (which not
-      --  considered to be reads of their prefixes and expressions, see Ada RM
-      --  13.3(73.10/3)).
+      --  considered to be reads of their prefixes and expressions, see
+      --  RM 13.3(73.10/3)).
 
       if Validity_Checks_On and then Validity_Check_Operands
         and then Id /= Attribute_Asm_Output
@@ -3747,10 +3757,13 @@ package body Exp_Attr is
 
             Rewrite (N, New_Occurrence_Of (Size, Loc));
 
-         --  The prefix is known to be controlled at compile time. Calculate
-         --  Finalization_Size by calling function Header_Size_With_Padding.
+         --  The prefix is known to be controlled at compile time and to
+         --  require strict finalization. Calculate Finalization_Size by
+         --  calling function Header_Size_With_Padding.
 
-         elsif Needs_Finalization (Ptyp) then
+         elsif Needs_Finalization (Ptyp)
+           and then not Has_Relaxed_Finalization (Ptyp)
+         then
             Rewrite (N, Calculate_Header_Size);
 
          --  The prefix is not an object with controlled parts, so its
@@ -4091,10 +4104,8 @@ package body Exp_Attr is
       ----------------------
 
       when Attribute_Has_Same_Storage => Has_Same_Storage : declare
-         Loc : constant Source_Ptr := Sloc (N);
-
-         X   : constant Node_Id := Prefix (N);
-         Y   : constant Node_Id := First (Expressions (N));
+         X : constant Node_Id := Pref;
+         Y : constant Node_Id := First (Exprs);
          --  The arguments
 
          X_Addr : Node_Id;
@@ -4363,7 +4374,7 @@ package body Exp_Attr is
 
          if Restriction_Active (No_Streams) then
             Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
+              Make_Raise_Program_Error (Loc,
                 Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, B_Type);
             return;
@@ -4415,7 +4426,7 @@ package body Exp_Attr is
                --  case where a No_Streams restriction is active.
 
                Rewrite (N,
-                 Make_Raise_Program_Error (Sloc (N),
+                 Make_Raise_Program_Error (Loc,
                    Reason => PE_Stream_Operation_Not_Allowed));
                Set_Etype (N, B_Type);
                return;
@@ -5295,10 +5306,8 @@ package body Exp_Attr is
       ----------------------
 
       when Attribute_Overlaps_Storage => Overlaps_Storage : declare
-         Loc : constant Source_Ptr := Sloc (N);
-         X   : constant Node_Id    := Prefix (N);
-         Y   : constant Node_Id    := First (Expressions (N));
-
+         X : constant Node_Id := Pref;
+         Y : constant Node_Id := First (Exprs);
          --  The arguments
 
          X_Addr, Y_Addr : Node_Id;
@@ -5451,7 +5460,7 @@ package body Exp_Attr is
 
          if Restriction_Active (No_Streams) then
             Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
+              Make_Raise_Program_Error (Loc,
                 Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, Standard_Void_Type);
             return;
@@ -5505,7 +5514,7 @@ package body Exp_Attr is
                --  case where a No_Streams restriction is active.
 
                Rewrite (N,
-                 Make_Raise_Program_Error (Sloc (N),
+                 Make_Raise_Program_Error (Loc,
                    Reason => PE_Stream_Operation_Not_Allowed));
                Set_Etype (N, Standard_Void_Type);
                return;
@@ -6180,10 +6189,9 @@ package body Exp_Attr is
 
       when Attribute_Reduce =>
          declare
-            Loc : constant Source_Ptr := Sloc (N);
-            E1  : constant Node_Id    := First (Expressions (N));
-            E2  : constant Node_Id    := Next (E1);
-            Bnn : constant Entity_Id  := Make_Temporary (Loc, 'B', N);
+            E1  : constant Node_Id   := First (Exprs);
+            E2  : constant Node_Id   := Next (E1);
+            Bnn : constant Entity_Id := Make_Temporary (Loc, 'B', N);
 
             Accum_Typ : Entity_Id := Empty;
             New_Loop  : Node_Id;
@@ -6381,7 +6389,7 @@ package body Exp_Attr is
 
          if Restriction_Active (No_Streams) then
             Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
+              Make_Raise_Program_Error (Loc,
                 Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, B_Type);
             return;
@@ -6453,7 +6461,7 @@ package body Exp_Attr is
                --  case where a No_Streams restriction is active.
 
                Rewrite (N,
-                 Make_Raise_Program_Error (Sloc (N),
+                 Make_Raise_Program_Error (Loc,
                    Reason => PE_Stream_Operation_Not_Allowed));
                Set_Etype (N, B_Type);
                return;
@@ -8096,7 +8104,7 @@ package body Exp_Attr is
 
          if Restriction_Active (No_Streams) then
             Rewrite (N,
-              Make_Raise_Program_Error (Sloc (N),
+              Make_Raise_Program_Error (Loc,
                 Reason => PE_Stream_Operation_Not_Allowed));
             Set_Etype (N, U_Type);
             return;
@@ -8150,7 +8158,7 @@ package body Exp_Attr is
                --  case where a No_Streams restriction is active.
 
                Rewrite (N,
-                 Make_Raise_Program_Error (Sloc (N),
+                 Make_Raise_Program_Error (Loc,
                    Reason => PE_Stream_Operation_Not_Allowed));
                Set_Etype (N, U_Type);
                return;

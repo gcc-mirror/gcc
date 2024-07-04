@@ -96,13 +96,13 @@ gimple_infer_range::check_assume_func (gcall *call)
     {
       tree op = gimple_call_arg (call, i);
       tree type = TREE_TYPE (op);
-      if (gimple_range_ssa_p (op) && Value_Range::supports_type_p (type))
+      if (gimple_range_ssa_p (op) && value_range::supports_type_p (type))
 	{
 	  tree default_def = ssa_default_def (fun, arg);
 	  if (!default_def || type != TREE_TYPE (default_def))
 	    continue;
 	  // Query the global range of the default def in the assume function.
-	  Value_Range assume_range (type);
+	  value_range assume_range (type);
 	  gimple_range_global (assume_range, default_def, fun);
 	  // If there is a non-varying result, add it as an inferred range.
 	  if (!assume_range.varying_p ())
@@ -218,14 +218,14 @@ gimple_infer_range::gimple_infer_range (gimple *s, bool use_rangeops)
   // query to pick up any other values.
   if (ssa1)
     {
-      Value_Range op1 (TREE_TYPE (ssa1));
+      value_range op1 (TREE_TYPE (ssa1));
       if (op1_range (op1, s, get_global_range_query ()) && !op1.varying_p ())
 	add_range (ssa1, op1);
     }
   else
     {
       gcc_checking_assert (ssa2);
-      Value_Range op2 (TREE_TYPE (ssa2));
+      value_range op2 (TREE_TYPE (ssa2));
       if (op2_range (op2, s, get_global_range_query ()) && !op2.varying_p ())
 	add_range (ssa2, op2);
     }
@@ -355,7 +355,7 @@ infer_range_manager::maybe_adjust_range (vrange &r, tree name, basic_block bb)
   gcc_checking_assert (ptr);
   // Return true if this exit range changes R, otherwise false.
   tree type = TREE_TYPE (name);
-  Value_Range tmp (type);
+  value_range tmp (type);
   ptr->range->get_vrange (tmp, type);
   return r.intersect (tmp);
 }
@@ -398,7 +398,7 @@ infer_range_manager::add_range (tree name, gimple *s, const vrange &r)
   if (ptr)
     {
       tree type = TREE_TYPE (name);
-      Value_Range cur (r), name_range (type);
+      value_range cur (r), name_range (type);
       ptr->range->get_vrange (name_range, type);
       // If no new info is added, just return.
       if (!cur.intersect (name_range))

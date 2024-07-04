@@ -2208,19 +2208,19 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Extensions_Allowed (On | Off | All);
+  pragma Extensions_Allowed (On | Off | All_Extensions);
 
 
-This configuration pragma enables (via the "On" or "All" argument) or disables
-(via the "Off" argument) the implementation extension mode; the pragma takes
-precedence over the ``-gnatX`` and ``-gnatX0`` command switches.
+This configuration pragma enables (via the "On" or "All_Extensions" argument)
+or disables (via the "Off" argument) the implementation extension mode; the
+pragma takes precedence over the ``-gnatX`` and ``-gnatX0`` command switches.
 
 If an argument of ``"On"`` is specified, the latest version of the Ada language
 is implemented (currently Ada 2022) and, in addition, a curated set of GNAT
 specific extensions are recognized. (See the list here
 :ref:`here<Curated_Language_Extensions>`)
 
-An argument of ``"All"`` has the same effect except that some extra
+An argument of ``"All_Extensions"`` has the same effect except that some extra
 experimental extensions are enabled (See the list here
 :ref:`here<Experimental_Language_Extensions>`)
 
@@ -3185,6 +3185,19 @@ Overriding the default state of signals used by the Ada runtime may interfere
 with an application's runtime behavior in the cases of the synchronous signals,
 and in the case of the signal used to implement the ``abort`` statement.
 
+Pragma Interrupts_System_By_Default
+===================================
+
+Syntax:
+
+
+::
+
+  pragma Interrupts_System_By_Default;
+
+Default all interrupts to the System state as defined above in pragma
+``Interrupt_State``. This is a configuration pragma.
+
 .. _Pragma-Invariant:
 
 Pragma Invariant
@@ -3999,12 +4012,6 @@ When pragmas ``Discard_Names`` and ``No_Tagged_Streams`` are simultaneously
 applied to a tagged type its Expanded_Name and External_Tag are initialized
 with empty strings. This is useful to avoid exposing entity names at binary
 level but has a negative impact on the debuggability of tagged types.
-
-Alternatively, when pragmas ``Discard_Names`` and ``Restrictions (No_Streams)``
-simultanously apply to a tagged type, its Expanded_Name and External_Tag are
-also initialized with empty strings. In particular, both these pragmas can be
-applied as configuration pragmas to avoid exposing entity names at binary
-level for the entire parition.
 
 Pragma Normalize_Scalars
 ========================
@@ -6352,6 +6359,36 @@ for the specified entity, as shown in the following example:
   Rf1 : Integer := ARG;      -- incorrect, wrong case
   pragma Style_Checks (Off, Arg);
   Rf2 : Integer := ARG;      -- OK, no error
+
+Pragma Subprogram_Variant
+=========================
+.. index:: Subprogram_Variant
+
+Syntax:
+
+
+::
+
+  pragma Subprogram_Variant (SUBPROGRAM_VARIANT_LIST);
+
+  SUBPROGRAM_VARIANT_LIST ::=
+    STRUCTURAL_SUBPROGRAM_VARIANT_ITEM
+  | NUMERIC_SUBPROGRAM_VARIANT_ITEMS
+
+  NUMERIC_SUBPROGRAM_VARIANT_ITEMS ::=
+    NUMERIC_SUBPROGRAM_VARIANT_ITEM {, NUMERIC_SUBPROGRAM_VARIANT_ITEM}
+
+  NUMERIC_SUBPROGRAM_VARIANT_ITEM ::=
+    CHANGE_DIRECTION => EXPRESSION
+
+  STRUCTURAL_SUBPROGRAM_VARIANT_ITEM ::=
+    STRUCTURAL => EXPRESSION
+
+  CHANGE_DIRECTION ::= Increases | Decreases
+
+The ``Subprogram_Variant`` pragma is intended to be an exact replacement for
+the implementation-defined ``Subprogram_Variant`` aspect, and shares its
+restrictions and semantics.
 
 
 Pragma Subtitle

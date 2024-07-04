@@ -3934,6 +3934,12 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   if (Is_Generic_Subprogram (gnat_subprog) || Is_Eliminated (gnat_subprog))
     return;
 
+  /* Likewise if this is a protected subprogram and we are only annotating
+     types, as the required expansion of references did not take place.  */
+  if (Convention (gnat_subprog) == Convention_Protected
+      && type_annotate_only)
+    return;
+
   /* If this subprogram acts as its own spec, define it.  Otherwise, just get
      the already-elaborated tree node.  However, if this subprogram had its
      elaboration deferred, we will already have made a tree node for it.  So
@@ -7317,6 +7323,23 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_result
 	    = build_binary_op_trapv (code, gnu_type, gnu_lhs, gnu_rhs,
 				     gnat_node);
+
+	  /* For an unsigned modulo operation with nonbinary constant modulus,
+	     we first try to do a reduction by means of a (multiplier, shifter)
+	     pair in the needed precision up to the word size.  But not when
+	     optimizing for size, because it will be longer than a div+mul+sub
+	     sequence.  */
+	else if (!optimize_size
+		 && (code == FLOOR_MOD_EXPR || code == TRUNC_MOD_EXPR)
+		 && TYPE_UNSIGNED (gnu_type)
+		 && TYPE_PRECISION (gnu_type) <= BITS_PER_WORD
+		 && TREE_CODE (gnu_rhs) == INTEGER_CST
+		 && !integer_pow2p (gnu_rhs)
+		 && (gnu_expr
+		     = fast_modulo_reduction (gnu_lhs, gnu_rhs,
+					      TYPE_PRECISION (gnu_type))))
+	  gnu_result = gnu_expr;
+
 	else
 	  {
 	    /* Some operations, e.g. comparisons of arrays, generate complex
@@ -9321,6 +9344,10 @@ elaborate_all_entities_for_package (Entity_Id gnat_package)
       if (kind == E_Package_Body)
 	continue;
 
+      /* Skip subprogram bodies.  */
+      if (kind == E_Subprogram_Body)
+	continue;
+
       /* Skip limited views that point back to the main unit.  */
       if (IN (kind, Incomplete_Kind)
 	  && From_Limited_With (gnat_entity)
@@ -9425,6 +9452,10 @@ process_freeze_entity (Node_Id gnat_node)
   /* Likewise for the entities internally used by the front-end to register
      primitives covering abstract interfaces, see Expand_N_Freeze_Entity.  */
   if (Is_Subprogram (gnat_entity) && Present (Interface_Alias (gnat_entity)))
+    return;
+
+  /* Skip subprogram bodies.  */
+  if (kind == E_Subprogram_Body)
     return;
 
   /* Check for an old definition if this isn't an object with address clause,
@@ -11093,6 +11124,16 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
   tree gnu_interface_offset
     = gnu_interface_tag ? byte_position (gnu_interface_tag) : NULL_TREE;
 
+  /* But we generate a call to the Thunk_Entity in the thunk.  */
+  tree gnu_target
+    = gnat_to_gnu_entity (Thunk_Entity (gnat_thunk), NULL_TREE, false);
+
+  /* If the target is local, then thunk and target must have the same context
+     because cgraph_node::expand_thunk can only forward the static chain.  */
+  if (DECL_STATIC_CHAIN (gnu_target)
+      && DECL_CONTEXT (gnu_thunk) != DECL_CONTEXT (gnu_target))
+    return false;
+
   /* There are three ways to retrieve the offset between the interface view
      and the base object.  Either the controlling type covers the interface
      type and the offset of the corresponding tag is fixed, in which case it
@@ -11111,6 +11152,15 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
       virtual_value = 0;
       virtual_offset = NULL_TREE;
       indirect_offset = 0;
+
+      /* Do not create a null thunk, instead make it an alias.  */
+      if (fixed_offset == 0)
+	{
+	  SET_DECL_ASSEMBLER_NAME (gnu_thunk, DECL_ASSEMBLER_NAME (gnu_target));
+	  (void) cgraph_node::get_create (gnu_target);
+	  (void) cgraph_node::create_alias (gnu_thunk, gnu_target);
+	  return true;
+	}
     }
   else if (!gnu_interface_offset
 	   && !Is_Variable_Size_Record (gnat_controlling_type))
@@ -11131,16 +11181,6 @@ maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
       virtual_offset = NULL_TREE;
       indirect_offset = (HOST_WIDE_INT) (POINTER_SIZE / BITS_PER_UNIT);
     }
-
-  /* But we generate a call to the Thunk_Entity in the thunk.  */
-  tree gnu_target
-    = gnat_to_gnu_entity (Thunk_Entity (gnat_thunk), NULL_TREE, false);
-
-  /* If the target is local, then thunk and target must have the same context
-     because cgraph_node::expand_thunk can only forward the static chain.  */
-  if (DECL_STATIC_CHAIN (gnu_target)
-      && DECL_CONTEXT (gnu_thunk) != DECL_CONTEXT (gnu_target))
-    return false;
 
   /* If the target returns by invisible reference and is external, apply the
      same transformation as Subprogram_Body_to_gnu here.  */

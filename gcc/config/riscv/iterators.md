@@ -275,6 +275,9 @@
 			 (fix "fix_trunc")
 			 (unsigned_fix "fixuns_trunc")])
 
+(define_code_attr bit_optab [(ior "bset")
+			     (xor "binv")])
+
 ;; <or_optab> code attributes
 (define_code_attr or_optab [(ior "ior")
 			    (xor "xor")])

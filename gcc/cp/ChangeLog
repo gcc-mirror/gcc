@@ -1,3 +1,255 @@
+2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/115754
+	* constexpr.cc (cxx_eval_constant_expression) <case CONVERT_EXPR>:
+	For conversions to void, pass vc_discard to the recursive call
+	and otherwise for tcode other than VIEW_CONVERT_EXPR pass vc_prvalue.
+
+2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/115747
+	* init.cc: Implement C++26 P3144R2 - Deleting a Pointer to an
+	Incomplete Type Should be Ill-formed.
+	(build_vec_delete_1): Emit permerror_at and return error_mark_node
+	for delete [] on incomplete type.
+	(build_delete): Similarly for delete.
+
+2024-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115745
+	* cp-tree.h: Implement C++26 P0963R3 - Structured binding declaration
+	as a condition.
+	(DECL_DECOMP_BASE): Adjust comment.
+	(DECL_DECOMP_IS_BASE): Define.
+	* parser.cc (cp_parser_selection_statement): Adjust
+	cp_parser_condition caller.
+	(cp_parser_condition): Add KEYWORD argument.  Parse
+	C++26 structured bindings in conditions.
+	(cp_parser_c_for, cp_parser_iteration_statement): Adjust
+	cp_parser_condition callers.
+	(cp_parser_simple_declaration): Adjust
+	cp_parser_decomposition_declaration caller.
+	(cp_parser_decomposition_declaration): Add KEYWORD argument.
+	If it is not RID_MAX, diagnose for C++23 and older rather than C++14
+	and older.  Set DECL_DECOMP_BASE to integer_zero_node for structured
+	bindings used in if/while/for conditions or integer_one_node for
+	those used in switch conditions.
+	* decl.cc (poplevel, check_array_initializer): Use DECL_DECOMP_IS_BASE
+	instead of !DECL_DECOMP_BASE.
+	(cp_finish_decomp): Diagnose array initializer for structured bindings
+	used in conditions.  If using std::tuple_{size,element}, emit
+	conversion to bool or integer/enumeration of e into a TARGET_EXPR
+	before emitting get method calls.
+	* decl2.cc (mark_used): Use DECL_DECOMP_IS_BASE instead of
+	!DECL_DECOMP_BASE.
+	* module.cc (trees_in::tree_node): Likewise.
+	* typeck.cc (maybe_warn_about_returning_address_of_local): Likewise.
+	* semantics.cc (maybe_convert_cond): For structured bindings with
+	TARGET_EXPR DECL_DECOMP_BASE use that as condition.
+	(finish_switch_cond): Likewise.
+
+2024-07-02  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* Make-lang.in: Remove redundant slash.
+
+2024-07-02  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/111160
+	* tree.cc (stabilize_expr): Stabilized expressions can have
+	TREE_SIDE_EFFECTS if they're volatile.
+
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115469
+	* decl.cc (automatic_var_with_nontrivial_dtor_p): New.
+	(poplevel_named_label_1): Use it.
+	(check_goto_1): Likewise.
+
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115430
+	* typeck.cc (cp_build_compound_expr): Call resolve_nondeduced_context
+	on RHS.
+
+2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	DR 2627
+	PR c++/94058
+	PR c++/104392
+	* typeck2.cc (check_narrowing): Don't warn if the conversion isn't
+	narrowing as per DR 2627.
+
+2024-06-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106760
+	* call.cc (add_candidates): Relax test for adding a candidate
+	to 'bad_cands' to also accept an uninstantiated template candidate
+	that has no missing conversions.
+
+2024-06-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.cc (cp_parser_error_1): Pass *global_dc to
+	gcc_rich_location::add_location_if_nearby.
+	(cp_parser_decl_specifier_seq): Likewise.
+	(cp_parser_set_storage_class): Likewise.
+	(cp_parser_set_storage_class): Likewise.
+
+2024-06-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115504
+	* semantics.cc (finish_decltype_type): Don't strip the reference
+	type (if any) of a capture proxy's captured variable.
+
+2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115476
+	* semantics.cc (finish_trait_expr)
+	<case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS>: Move below to call
+	check_trait_type with kind==2.
+
+2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115425
+	* pt.cc (tsubst_pack_expansion): Return error_mark_node if
+	make_pack_expansion doesn't work out.
+
+2024-06-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115501
+	* rtti.cc (build_dynamic_cast_1): Return if dcast_fn is erroneous.
+
+2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115198
+	* pt.cc (alias_ctad_tweaks): Update DECL_NAME of the transformed
+	guides.
+
+2024-06-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115358
+	* decl2.cc (mark_used): Call maybe_instantiate_decl for an array
+	variable with unknown bound.
+	* semantics.cc (finish_decltype_type): Remove now redundant
+	handling of array variables with unknown bound.
+	* typeck.cc (cxx_sizeof_expr): Likewise.
+
+2024-06-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/115587
+	* parser.cc (cp_parser_omp_loop_nest): Move initializations to
+	point of declaration.
+
+2024-06-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/111343
+	PR c++/115511
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): If an
+	extended floating point type mv1 has same set of values as more
+	than one standard floating point type and mv2 is float, return 2.
+
+2024-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114683
+	* name-lookup.cc (do_nonmember_using_decl): Allow exporting
+	a newly inserted decl.
+
+2024-06-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115194
+	* name-lookup.cc (name_lookup::process_module_binding): Strip an
+	OVERLOAD from a non-function.
+
+2024-06-13  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (depset::hash::add_binding_entity): Adjust comment.
+
+2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99678
+	* parser.cc (cp_parser_constraint_primary_expression): Diagnose
+	a bare unresolved unqualified-id.
+
+2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115239
+	* call.cc (tourney): Don't consider a non-strictly viable
+	candidate as the champ if there was ambiguity between two
+	strictly viable candidates.
+
+2024-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* parser.cc (cp_parser_asm_string_expression): Use correct error
+	message.
+
+2024-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* parser.cc (cp_parser_asm_string_expression): Parse close
+	parent when constexpr extraction fails.
+
+2024-06-13  Andi Kleen  <ak@linux.intel.com>
+
+	* parser.cc (cp_parser_asm_string_expression): Remove support
+	for const char * for asm constexpr.
+
+2024-06-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115283
+	* decl2.cc (min_vis_expr_r) <case TEMPLATE_DECL>: Ignore
+	concepts.
+
+2024-06-12  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (lookup_maybe_add): Use ovl_make when setting OVL_USING_P.
+
+2024-06-12  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (depset::hash::add_binding_entity): Set
+	DECL_MODULE_PURVIEW_P instead of asserting.
+
+2024-06-12  Andi Kleen  <ak@linux.intel.com>
+
+	* cp-tree.h (extract): Add new overload to return tree.
+	* parser.cc (cp_parser_asm_string_expression): Use tree extract.
+	* semantics.cc (cexpr_str::extract): Add new overload to return
+	tree.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc (append_formatted_chunk): Move part of body into
+	chunk_info::append_formatted_chunk.
+
+2024-06-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* cxx-pretty-print.cc: Update throughout for fields of
+	pretty_printer becoming private.
+	* error.cc: Likewise.
+
+2024-06-11  Andi Kleen  <ak@linux.intel.com>
+
+	* parser.cc (cp_parser_asm_string_expression): New function
+	to handle constexpr strings for asm.
+	(cp_parser_asm_definition): Use cp_parser_asm_string_expression.
+	(cp_parser_yield_expression): Dito.
+	(cp_parser_asm_specification_opt): Dito.
+	(cp_parser_asm_operand_list): Dito.
+	(cp_parser_asm_clobber_list): Dito.
+
+2024-06-11  Andi Kleen  <ak@linux.intel.com>
+
+	* cp-tree.h (class cexpr_str): Add.
+	* semantics.cc (finish_static_assert): Convert to use cexpr_str.
+	(cexpr_str::type_check): Extract constexpr string code to here.
+	(cexpr_str::extract): ... and here.
+
+2024-06-08  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/108438
+	* parser.cc (cp_parser_postfix_expression): Use
+	cp_parser_require_end_of_template_parameter_list to skip to the closing
+	'>' upon error parsing the target type of *_cast<*> expressions.
+
 2024-06-07  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/107575

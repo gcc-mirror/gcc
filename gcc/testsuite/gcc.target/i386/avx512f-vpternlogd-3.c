@@ -952,4 +952,4 @@ V foo_254_3(V a, V b, V c) { return (c|b)|a; }
 
 V foo_255_1(V a, V b, V c) { return (V){~0,~0,~0,~0}; }
 
-/* { dg-final { scan-assembler-times "vpternlogd\[ \\t\]" 694 } } */
+/* { dg-final { scan-assembler-times "vpternlogd\[ \\t\]" 673 } } */

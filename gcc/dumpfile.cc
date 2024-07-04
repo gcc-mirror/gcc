@@ -819,8 +819,8 @@ void
 dump_pretty_printer::emit_items (optinfo *dest)
 {
   output_buffer *buffer = pp_buffer (this);
-  struct chunk_info *chunk_array = buffer->cur_chunk_array;
-  const char **args = chunk_array->args;
+  chunk_info *chunk_array = buffer->cur_chunk_array;
+  const char * const *args = chunk_array->get_args ();
 
   gcc_assert (buffer->obstack == &buffer->formatted_obstack);
   gcc_assert (buffer->line_length == 0);
@@ -847,10 +847,7 @@ dump_pretty_printer::emit_items (optinfo *dest)
   /* Ensure that we consumed all of stashed_items.  */
   gcc_assert (stashed_item_idx == m_stashed_items.length ());
 
-  /* Deallocate the chunk structure and everything after it (i.e. the
-     associated series of formatted strings).  */
-  buffer->cur_chunk_array = chunk_array->prev;
-  obstack_free (&buffer->chunk_obstack, chunk_array);
+  chunk_array->pop_from_output_buffer (*buffer);
 }
 
 /* Subroutine of dump_pretty_printer::emit_items
@@ -860,6 +857,7 @@ dump_pretty_printer::emit_items (optinfo *dest)
 void
 dump_pretty_printer::emit_any_pending_textual_chunks (optinfo *dest)
 {
+  output_buffer *const buffer = pp_buffer (this);
   gcc_assert (buffer->obstack == &buffer->formatted_obstack);
 
   /* Don't emit an item if the pending text is empty.  */

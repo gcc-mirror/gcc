@@ -30,7 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This is the GNU/Linux specific version of this package
-with Interfaces.C;              use Interfaces.C;
+
+with Interfaces.C; use Interfaces.C;
 
 separate (System.Traceback.Symbolic)
 
@@ -40,18 +41,6 @@ package body Module_Name is
 
    function Is_Shared_Lib (Base : Address) return Boolean;
    --  Returns True if a shared library
-
-   --  The principle is:
-
-   --  1. We get information about the module containing the address.
-
-   --  2. We check that the full pathname is pointing to a shared library.
-
-   --  3. for shared libraries, we return the non relocated address (so
-   --     the absolute address in the shared library).
-
-   --  4. we also return the full pathname of the module containing this
-   --     address.
 
    -------------------
    -- Is_Shared_Lib --
@@ -139,11 +128,22 @@ package body Module_Name is
    -- Get --
    ---------
 
-   function Get (Addr : System.Address;
-                 Load_Addr : access System.Address)
-     return String
-   is
+   --  The principle is:
 
+   --  1. We get information about the module containing the address.
+
+   --  2. We check whether the module is a shared library.
+
+   --  3. For shared libraries, we return the non-relocated address (so
+   --     the absolute address in the shared library).
+
+   --  4. We also return the full pathname of the module containing this
+   --     address.
+
+   function Get
+     (Addr      : System.Address;
+      Load_Addr : access System.Address) return String
+   is
       --  Dl_info record for Linux, used to get sym reloc offset
 
       type Dl_info is record

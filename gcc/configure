@@ -9066,7 +9066,7 @@ fi
 # NM
 if test x${build} = x${host} && test -f $srcdir/../binutils/nm.c \
   && test -d ../binutils ; then
-  NM='${objdir}/../binutils/nm-new'
+  NM='../binutils/nm-new'
 else
   # Extract the first word of "nm", so it can be a program name with args.
 set dummy nm; ac_word=$2
@@ -9111,7 +9111,7 @@ fi
 # AR
 if test x${build} = x${host} && test -f $srcdir/../binutils/ar.c \
   && test -d ../binutils ; then
-  AR='${objdir}/../binutils/ar'
+  AR='../binutils/ar'
 else
   # Extract the first word of "ar", so it can be a program name with args.
 set dummy ar; ac_word=$2
@@ -25919,8 +25919,8 @@ _ACEOF
 
 
 
+ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`
 if test $in_tree_ld != yes ; then
-  ld_ver=`$gcc_cv_ld --version 2>/dev/null | sed 1q`
   if echo "$ld_ver" | grep GNU > /dev/null; then
     if test x"$ld_is_gold" = xyes; then
       # GNU gold --version looks like this:
@@ -30278,6 +30278,8 @@ $as_echo "#define MIPS_EXPLICIT_RELOCS MIPS_EXPLICIT_RELOCS_BASE" >>confdefs.h
 
 fi
 
+    else
+      gcc_cv_as_mips_explicit_relocs=yes
     fi
 
     if test x$gcc_cv_as_mips_explicit_relocs = xno; then \
@@ -30819,6 +30821,37 @@ $as_echo "$gcc_cv_as_riscv_march_zifencei" >&6; }
 if test $gcc_cv_as_riscv_march_zifencei = yes; then
 
 $as_echo "#define HAVE_AS_MARCH_ZIFENCEI 1" >>confdefs.h
+
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -march=rv32i_zaamo_zalrsc support" >&5
+$as_echo_n "checking assembler for -march=rv32i_zaamo_zalrsc support... " >&6; }
+if ${gcc_cv_as_riscv_march_zaamo_zalrsc+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_riscv_march_zaamo_zalrsc=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -march=rv32i_zaamo_zalrsc -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_riscv_march_zaamo_zalrsc=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_riscv_march_zaamo_zalrsc" >&5
+$as_echo "$gcc_cv_as_riscv_march_zaamo_zalrsc" >&6; }
+if test $gcc_cv_as_riscv_march_zaamo_zalrsc = yes; then
+
+$as_echo "#define HAVE_AS_MARCH_ZAAMO_ZALRSC 1" >>confdefs.h
 
 fi
 

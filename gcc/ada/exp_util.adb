@@ -60,7 +60,6 @@ with Sem_Res;        use Sem_Res;
 with Sem_Type;       use Sem_Type;
 with Sem_Util;       use Sem_Util;
 with Sinfo.Utils;    use Sinfo.Utils;
-with Snames;         use Snames;
 with Stand;          use Stand;
 with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
@@ -181,22 +180,6 @@ package body Exp_Util is
    --  Determine whether pragma Default_Initial_Condition denoted by Prag has
    --  an assertion expression that should be verified at run time.
 
-   function Make_CW_Equivalent_Type
-     (T : Entity_Id;
-      E : Node_Id) return Entity_Id;
-   --  T is a class-wide type entity, E is the initial expression node that
-   --  constrains T in case such as: " X: T := E" or "new T'(E)". This function
-   --  returns the entity of the Equivalent type and inserts on the fly the
-   --  necessary declaration such as:
-   --
-   --    type anon is record
-   --       _parent : Root_Type (T); constrained with E discriminants (if any)
-   --       Extension : String (1 .. expr to match size of E);
-   --    end record;
-   --
-   --  This record is compatible with any object of the class of T thanks to
-   --  the first field and has the same size as E thanks to the second.
-
    function Make_Literal_Range
      (Loc         : Source_Ptr;
       Literal_Typ : Entity_Id) return Node_Id;
@@ -315,10 +298,10 @@ package body Exp_Util is
 
          if Present (Msg_Node) then
             Error_Msg_N
-              ("info: atomic synchronization set for &?.n?", Msg_Node);
+              ("atomic synchronization set for &?.n?", Msg_Node);
          else
             Error_Msg_N
-              ("info: atomic synchronization set?.n?", N);
+              ("atomic synchronization set?.n?", N);
          end if;
       end if;
    end Activate_Atomic_Synchronization;
@@ -945,6 +928,7 @@ package body Exp_Util is
 
       Needs_Fin :=
         Needs_Finalization (Desig_Typ)
+          and then not Has_Relaxed_Finalization (Desig_Typ)
           and then not No_Heap_Finalization (Ptr_Typ);
 
       --  The allocation/deallocation of a controlled object must be associated
@@ -6072,6 +6056,23 @@ package body Exp_Util is
       return TSS (Utyp, TSS_Finalize_Address);
    end Finalize_Address;
 
+   -----------------------------
+   -- Find_Controlled_Prim_Op --
+   -----------------------------
+
+   function Find_Controlled_Prim_Op
+     (T : Entity_Id; Name : Name_Id) return Entity_Id
+   is
+      Op_Name : constant Name_Id := Name_Of_Controlled_Prim_Op (T, Name);
+
+   begin
+      if Op_Name = No_Name then
+         return Empty;
+      end if;
+
+      return Find_Optional_Prim_Op (T, Op_Name);
+   end Find_Controlled_Prim_Op;
+
    ------------------------
    -- Find_Interface_ADT --
    ------------------------
@@ -6339,7 +6340,7 @@ package body Exp_Util is
             --  Primitive Initialize
 
             if Is_Controlled (Typ) then
-               Prim_Init := Find_Optional_Prim_Op (Typ, Name_Initialize);
+               Prim_Init := Find_Controlled_Prim_Op (Typ, Name_Initialize);
 
                if Present (Prim_Init) then
                   Prim_Init := Ultimate_Alias (Prim_Init);
@@ -6433,7 +6434,7 @@ package body Exp_Util is
       Obj_Typ := Base_Type (Etype (Obj_Id));
 
       if Is_Access_Type (Obj_Typ) then
-         Obj_Typ := Available_View (Designated_Type (Obj_Typ));
+         Obj_Typ := Base_Type (Available_View (Designated_Type (Obj_Typ)));
       end if;
 
       --  Handle the initialization type of the object declaration
@@ -8101,6 +8102,10 @@ package body Exp_Util is
                | N_Task_Body
                | N_Task_Body_Stub
 
+               --  Other things that can occur in stmt or decl lists
+
+               | N_Itype_Reference
+
                --  Use clauses can appear in lists of declarations
 
                | N_Use_Package_Clause
@@ -8370,7 +8375,6 @@ package body Exp_Util is
                | N_Integer_Literal
                | N_Iterator_Specification
                | N_Interpolated_String_Literal
-               | N_Itype_Reference
                | N_Label
                | N_Loop_Parameter_Specification
                | N_Mod_Clause
@@ -8646,8 +8650,8 @@ package body Exp_Util is
    ------------------------------
 
    function Is_Finalizable_Transient
-     (Decl     : Node_Id;
-      Rel_Node : Node_Id) return Boolean
+     (Decl : Node_Id;
+      N    : Node_Id) return Boolean
    is
       Obj_Id  : constant Entity_Id := Defining_Identifier (Decl);
       Obj_Typ : constant Entity_Id := Base_Type (Etype (Obj_Id));
@@ -8808,9 +8812,10 @@ package body Exp_Util is
          First_Stmt : Node_Id) return Boolean
       is
          function Find_Renamed_Object (Ren_Decl : Node_Id) return Entity_Id;
-         --  Given an object renaming declaration, retrieve the entity of the
-         --  renamed name. Return Empty if the renamed name is anything other
-         --  than a variable or a constant.
+         --  Given an object renaming declaration, retrieve the entity within
+         --  the renamed name, recursively if this entity is itself a renaming.
+         --  Return Empty if the renamed name contains anything other than a
+         --  variable or a constant.
 
          -------------------------
          -- Find_Renamed_Object --
@@ -8877,7 +8882,16 @@ package body Exp_Util is
                Search (Constant_Value (Ren_Obj));
             end if;
 
-            return Ren_Obj;
+            --  Recurse if Ren_Obj is itself a renaming
+
+            if Present (Ren_Obj)
+              and then Ekind (Ren_Obj) in E_Constant | E_Variable
+              and then Present (Renamed_Object (Ren_Obj))
+            then
+               return Find_Renamed_Object (Declaration_Node (Ren_Obj));
+            else
+               return Ren_Obj;
+            end if;
          end Find_Renamed_Object;
 
          --  Local variables
@@ -8889,61 +8903,53 @@ package body Exp_Util is
       --  Start of processing for Is_Aliased
 
       begin
-         --  A controlled transient object is not considered aliased when it
-         --  appears inside an expression_with_actions node even when there are
-         --  explicit aliases of it:
+         --  Examine the statements following the controlled object and look
+         --  for various forms of aliasing.
 
-         --    do
-         --       Trans_Id : Ctrl_Typ ...;  --  transient object
-         --       Alias : ... := Trans_Id;  --  object is aliased
-         --       Val : constant Boolean :=
-         --               ... Alias ...;    --  aliasing ends
-         --       <finalize Trans_Id>       --  object safe to finalize
-         --    in Val end;
+         Stmt := First_Stmt;
+         while Present (Stmt) loop
+            --  Transient objects initialized by a reference are finalized
+            --  (see Initialized_By_Reference above), so we must make sure
+            --  not to finalize the referenced object twice. And we cannot
+            --  finalize it at all if it is referenced by the nontransient
+            --  object serviced by the transient scope.
 
-         --  Expansion ensures that all aliases are encapsulated in the actions
-         --  list and do not leak to the expression by forcing the evaluation
-         --  of the expression.
+            if Nkind (Stmt) = N_Object_Declaration then
+               Expr := Expression (Stmt);
 
-         if Nkind (Rel_Node) = N_Expression_With_Actions then
-            return False;
+               --  Aliasing of the form:
+               --    Obj : ... := Trans_Id'reference;
 
-         --  Otherwise examine the statements after the controlled transient
-         --  object and look for various forms of aliasing.
-
-         else
-            Stmt := First_Stmt;
-            while Present (Stmt) loop
-               if Nkind (Stmt) = N_Object_Declaration then
-                  Expr := Expression (Stmt);
-
-                  --  Aliasing of the form:
-                  --    Obj : ... := Trans_Id'reference;
-
-                  if Present (Expr)
-                    and then Nkind (Expr) = N_Reference
-                    and then Nkind (Prefix (Expr)) = N_Identifier
-                    and then Entity (Prefix (Expr)) = Trans_Id
-                  then
-                     return True;
-                  end if;
-
-               elsif Nkind (Stmt) = N_Object_Renaming_Declaration then
-                  Ren_Obj := Find_Renamed_Object (Stmt);
-
-                  --  Aliasing of the form:
-                  --    Obj : ... renames ... Trans_Id ...;
-
-                  if Present (Ren_Obj) and then Ren_Obj = Trans_Id then
-                     return True;
-                  end if;
+               if Present (Expr)
+                 and then Nkind (Expr) = N_Reference
+                 and then Is_Entity_Name (Prefix (Expr))
+                 and then Entity (Prefix (Expr)) = Trans_Id
+               then
+                  return True;
                end if;
 
-               Next (Stmt);
-            end loop;
+            --  (Transient) renamings are never finalized so we need not bother
+            --  about finalizing transient renamed objects twice. Therefore, we
+            --  we only need to look at the nontransient object serviced by the
+            --  transient scope, if it exists and is declared as a renaming.
 
-            return False;
-         end if;
+            elsif Nkind (Stmt) = N_Object_Renaming_Declaration
+              and then Stmt = N
+            then
+               Ren_Obj := Find_Renamed_Object (Stmt);
+
+               --  Aliasing of the form:
+               --    Obj : ... renames ... Trans_Id ...;
+
+               if Present (Ren_Obj) and then Ren_Obj = Trans_Id then
+                  return True;
+               end if;
+            end if;
+
+            Next (Stmt);
+         end loop;
+
+         return False;
       end Is_Aliased;
 
       --------------------------
@@ -9161,8 +9167,8 @@ package body Exp_Util is
       return
         Ekind (Obj_Id) in E_Constant | E_Variable
           and then Needs_Finalization (Desig)
-          and then Nkind (Rel_Node) /= N_Simple_Return_Statement
-          and then not Is_Part_Of_BIP_Return_Statement (Rel_Node)
+          and then Nkind (N) /= N_Simple_Return_Statement
+          and then not Is_Part_Of_BIP_Return_Statement (N)
 
           --  Do not consider a transient object that was already processed
 
@@ -10155,13 +10161,13 @@ package body Exp_Util is
    --  representation of the extension part.)
 
    function Make_CW_Equivalent_Type
-     (T : Entity_Id;
-      E : Node_Id) return Entity_Id
+     (T        : Entity_Id;
+      E        : Node_Id;
+      List_Def : out List_Id) return Entity_Id
    is
       Loc         : constant Source_Ptr := Sloc (E);
       Root_Typ    : constant Entity_Id  := Root_Type (T);
       Root_Utyp   : constant Entity_Id  := Underlying_Type (Root_Typ);
-      List_Def    : constant List_Id    := Empty_List;
       Comp_List   : constant List_Id    := New_List;
 
       Equiv_Type  : Entity_Id;
@@ -10172,6 +10178,8 @@ package body Exp_Util is
       Size_Expr   : Node_Id;
 
    begin
+      List_Def := New_List;
+
       --  If the root type is already constrained, there are no discriminants
       --  in the expression.
 
@@ -10209,7 +10217,10 @@ package body Exp_Util is
       --  need to convert it first to the class-wide type to force a call to
       --  the _Size primitive operation.
 
-      if Has_Tag_Of_Type (E) then
+      if No (E) then
+         Size_Attr := Make_Integer_Literal (Loc, RM_Size (T));
+
+      elsif Has_Tag_Of_Type (E) then
          if not Has_Discriminants (Etype (E))
            or else Is_Constrained (Etype (E))
          then
@@ -10232,7 +10243,7 @@ package body Exp_Util is
              Attribute_Name => Name_Size);
       end if;
 
-      if not Is_Interface (Root_Typ) then
+      if not Is_Interface (Root_Typ) and then Present (E) then
 
          --  subtype rg__xx is
          --    Storage_Offset range 1 .. (Exp'size - Typ'object_size)
@@ -10312,11 +10323,15 @@ package body Exp_Util is
 
       Set_Is_Class_Wide_Equivalent_Type (Equiv_Type);
 
-      --  A class-wide equivalent type does not require initialization
+      --  A class-wide equivalent type does not require initialization unless
+      --  no expression is present - in which case initialization gets
+      --  generated as part of the mutably tagged type machinery.
 
-      Set_Suppress_Initialization (Equiv_Type);
+      if Present (E) then
+         Set_Suppress_Initialization (Equiv_Type);
+      end if;
 
-      if not Is_Interface (Root_Typ) then
+      if not Is_Interface (Root_Typ) and Present (E) then
          Append_To (Comp_List,
            Make_Component_Declaration (Loc,
              Defining_Identifier  =>
@@ -10341,6 +10356,8 @@ package body Exp_Util is
                  Aliased_Present    => False,
                  Subtype_Indication =>
                    New_Occurrence_Of (RTE (RE_Tag), Loc))));
+
+         Set_Is_Tag (Defining_Identifier (Last (Comp_List)));
       end if;
 
       Append_To (Comp_List,
@@ -10360,17 +10377,6 @@ package body Exp_Util is
                 Make_Component_List (Loc,
                   Component_Items => Comp_List,
                   Variant_Part    => Empty))));
-
-      --  Suppress all checks during the analysis of the expanded code to avoid
-      --  the generation of spurious warnings under ZFP run-time.
-
-      Insert_Actions (E, List_Def, Suppress => All_Checks);
-
-      --  In the case of an interface type mark the tag for First_Tag_Component
-
-      if Is_Interface (Root_Typ) then
-         Set_Is_Tag (First_Entity (Equiv_Type));
-      end if;
 
       return Equiv_Type;
    end Make_CW_Equivalent_Type;
@@ -10682,12 +10688,8 @@ package body Exp_Util is
          Set_Is_Itype       (Priv_Subtyp);
          Set_Associated_Node_For_Itype (Priv_Subtyp, E);
 
-         if Is_Tagged_Type  (Priv_Subtyp) then
-            Set_Class_Wide_Type
-              (Base_Type (Priv_Subtyp), Class_Wide_Type (Unc_Typ));
-            Set_Direct_Primitive_Operations (Priv_Subtyp,
-              Direct_Primitive_Operations (Unc_Typ));
-         end if;
+         Set_Direct_Primitive_Operations
+           (Priv_Subtyp, Direct_Primitive_Operations (Unc_Typ));
 
          Set_Full_View (Priv_Subtyp, Full_Subtyp);
 
@@ -10760,6 +10762,7 @@ package body Exp_Util is
          declare
             CW_Subtype : constant Entity_Id :=
                            New_Class_Wide_Subtype (Unc_Typ, E);
+            Equiv_Def : List_Id;
 
          begin
             --  A class-wide equivalent type is not needed on VM targets
@@ -10783,7 +10786,14 @@ package body Exp_Util is
                end if;
 
                Set_Equivalent_Type
-                 (CW_Subtype, Make_CW_Equivalent_Type (Unc_Typ, E));
+                 (CW_Subtype, Make_CW_Equivalent_Type (Unc_Typ, E, Equiv_Def));
+
+                --  Suppress all checks during the analysis of the expanded
+                --  code to avoid the generation of spurious warnings under
+                --  ZFP run-time.
+
+               Insert_Actions
+                 (E, Equiv_Def, Suppress => All_Checks);
             end if;
 
             Set_Cloned_Subtype (CW_Subtype, Base_Type (Unc_Typ));
@@ -11609,6 +11619,46 @@ package body Exp_Util is
 
       return True;
    end May_Generate_Large_Temp;
+
+   --------------------------------
+   -- Name_Of_Controlled_Prim_Op --
+   --------------------------------
+
+   function Name_Of_Controlled_Prim_Op
+     (Typ : Entity_Id;
+      Nam : Name_Id) return Name_Id
+   is
+   begin
+      pragma Assert (Is_Controlled (Typ));
+
+      --  The aspect Finalizable may change the name of the primitives when
+      --  present, but it's a GNAT extension.
+
+      if All_Extensions_Allowed then
+         declare
+            Rep : constant Node_Id
+              := Get_Rep_Item (Typ, Name_Finalizable, Check_Parents => True);
+
+            Assoc : Node_Id;
+
+         begin
+            if Present (Rep) then
+               Assoc := First (Component_Associations (Expression (Rep)));
+               while Present (Assoc) loop
+                  if Chars (First (Choices (Assoc))) = Nam then
+                     return Chars (Expression (Assoc));
+                  end if;
+
+                  Next (Assoc);
+               end loop;
+
+               return No_Name;
+            end if;
+         end;
+      end if;
+
+      return Nam;
+   end Name_Of_Controlled_Prim_Op;
 
    --------------------------------------------
    -- Needs_Conditional_Null_Excluding_Check --
@@ -13486,26 +13536,6 @@ package body Exp_Util is
               and then not Restricted_Profile
             then
                return True;
-            end if;
-
-         --  Specific cases of object renamings
-
-         elsif Nkind (Decl) = N_Object_Renaming_Declaration then
-            Obj_Id  := Defining_Identifier (Decl);
-            Obj_Typ := Base_Type (Etype (Obj_Id));
-
-            --  Bypass any form of processing for objects which have their
-            --  finalization disabled. This applies only to objects at the
-            --  library level.
-
-            if Lib_Level and then Finalize_Storage_Only (Obj_Typ) then
-               null;
-
-            --  Ignored Ghost object renamings do not need any cleanup actions
-            --  because they will not appear in the final tree.
-
-            elsif Is_Ignored_Ghost_Entity (Obj_Id) then
-               null;
             end if;
 
          --  Inspect the freeze node of an access-to-controlled type and look

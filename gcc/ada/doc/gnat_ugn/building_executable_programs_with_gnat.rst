@@ -3495,20 +3495,20 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: Atomic Synchronization, warnings
 
 :switch:`-gnatw.n`
-  *Activate info messages on atomic synchronization.*
+  *Activate warnings on atomic synchronization.*
 
-  This switch activates info messages when an access to an atomic variable
+  This switch activates warnings when an access to an atomic variable
   requires the generation of atomic synchronization code. These
-  info messages are off by default.
+  warnings are off by default.
 
 .. index:: -gnatw.N  (gcc)
 
 :switch:`-gnatw.N`
-  *Suppress info messages on atomic synchronization.*
+  *Suppress warnings on atomic synchronization.*
 
   .. index:: Atomic Synchronization, warnings
 
-  This switch suppresses info messages when an access to an atomic variable
+  This switch suppresses warnings when an access to an atomic variable
   requires the generation of atomic synchronization code.
 
 
@@ -3997,22 +3997,21 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 .. index:: bit order warnings
 
 :switch:`-gnatw.v`
-  *Activate info messages for non-default bit order.*
+  *Activate warnings for non-default bit order.*
 
-  This switch activates messages (labeled "info", they are not warnings,
-  just informational messages) about the effects of non-default bit-order
-  on records to which a component clause is applied. The effect of specifying
-  non-default bit ordering is a bit subtle (and changed with Ada 2005), so
-  these messages, which are given by default, are useful in understanding the
-  exact consequences of using this feature.
+  This switch activates warning messages about the effects of non-default
+  bit-order on records to which a component clause is applied. The effect of
+  specifying non-default bit ordering is a bit subtle
+  (and changed with Ada 2005), so these messages, which are given by default,
+  are useful in understanding the exact consequences of using this feature.
 
 
 .. index:: -gnatw.V  (gcc)
 
 :switch:`-gnatw.V`
-  *Suppress info messages for non-default bit order.*
+  *Suppress warnings for non-default bit order.*
 
-  This switch suppresses information messages for the effects of specifying
+  This switch suppresses warnings for the effects of specifying
   non-default bit order on record components with component clauses.
 
 
@@ -4371,6 +4370,23 @@ When no switch :switch:`-gnatw` is used, this is equivalent to:
   * :switch:`-gnatw.z`
 
 .. _Debugging_and_Assertion_Control:
+
+
+
+Info message Control
+--------------------
+
+In addition to the warning messages, the compiler can also generate info
+messages. In order to control the generation of these messages, the following
+switch is provided:
+
+:switch:`-gnatis`
+  *Suppress all info messages.*
+
+  This switch completely suppresses the output of all info messages from the
+  GNAT front end.
+
+
 
 Debugging and Assertion Control
 -------------------------------

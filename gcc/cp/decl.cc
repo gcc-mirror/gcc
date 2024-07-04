@@ -514,6 +514,20 @@ level_for_consteval_if (cp_binding_level *b)
 	  && IF_STMT_CONSTEVAL_P (b->this_entity));
 }
 
+/* True if T is a non-static VAR_DECL that has a non-trivial destructor.
+   See [stmt.dcl]/2.  */
+
+static bool
+automatic_var_with_nontrivial_dtor_p (const_tree t)
+{
+  if (error_operand_p (t))
+    return false;
+
+  return (VAR_P (t)
+	  && decl_storage_duration (CONST_CAST_TREE (t)) == dk_auto
+	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (t)));
+}
+
 /* Update data for defined and undefined labels when leaving a scope.  */
 
 int
@@ -575,8 +589,7 @@ poplevel_named_label_1 (named_label_entry **slot, cp_binding_level *bl)
 		if (bl->kind == sk_catch)
 		  vec_safe_push (cg, get_identifier ("catch"));
 		for (tree d = use->names_in_scope; d; d = DECL_CHAIN (d))
-		  if (TREE_CODE (d) == VAR_DECL && !TREE_STATIC (d)
-		      && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (d)))
+		  if (automatic_var_with_nontrivial_dtor_p (d))
 		    vec_safe_push (cg, d);
 	      }
 
@@ -697,7 +710,7 @@ poplevel (int keep, int reverse, int functionbody)
 	    && ! DECL_IN_SYSTEM_HEADER (decl)
 	    /* For structured bindings, consider only real variables, not
 	       subobjects.  */
-	    && (DECL_DECOMPOSITION_P (decl) ? !DECL_DECOMP_BASE (decl)
+	    && (DECL_DECOMPOSITION_P (decl) ? DECL_DECOMP_IS_BASE (decl)
 		: (DECL_NAME (decl) && !DECL_ARTIFICIAL (decl)))
 	    /* Don't warn about name-independent declarations.  */
 	    && !name_independent_decl_p (decl)
@@ -4003,8 +4016,7 @@ check_goto_1 (named_label_entry *ent, bool computed)
 	  tree end = b == level ? names : NULL_TREE;
 	  for (tree d = b->names; d != end; d = DECL_CHAIN (d))
 	    {
-	      if (TREE_CODE (d) == VAR_DECL && !TREE_STATIC (d)
-		  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (d)))
+	      if (automatic_var_with_nontrivial_dtor_p (d))
 		{
 		  if (!identified)
 		    {
@@ -7561,7 +7573,7 @@ check_array_initializer (tree decl, tree type, tree init)
      to have complete type.  */
   if (decl
       && DECL_DECOMPOSITION_P (decl)
-      && !DECL_DECOMP_BASE (decl)
+      && DECL_DECOMP_IS_BASE (decl)
       && !COMPLETE_TYPE_P (type))
     {
       error_at (DECL_SOURCE_LOCATION (decl),
@@ -9426,6 +9438,12 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
       nelts = array_type_nelts_top (type);
       if (nelts == error_mark_node)
 	goto error_out;
+      if (DECL_DECOMP_BASE (decl))
+	{
+	  error_at (loc, "array initializer for structured binding "
+		    "declaration in condition");
+	  goto error_out;
+	}
       if (!tree_fits_uhwi_p (nelts))
 	{
 	  error_at (loc, "cannot decompose variable length array %qT", type);
@@ -9525,6 +9543,30 @@ cp_finish_decomp (tree decl, cp_decomp *decomp)
       eltscnt = tree_to_uhwi (tsize);
       if (count != eltscnt)
 	goto cnt_mismatch;
+      if (!processing_template_decl && DECL_DECOMP_BASE (decl))
+	{
+	  /* For structured bindings used in conditions we need to evaluate
+	     the conversion of decl (aka e in the standard) to bool or
+	     integral/enumeral type (the latter for switch conditions)
+	     before the get methods.  */
+	  tree cond = convert_from_reference (decl);
+	  if (integer_onep (DECL_DECOMP_BASE (decl)))
+	    /* switch condition.  */
+	    cond = build_expr_type_conversion (WANT_INT | WANT_ENUM,
+					       cond, true);
+	  else
+	    /* if/while/for condition.  */
+	    cond = contextual_conv_bool (cond, tf_warning_or_error);
+	  if (cond && !error_operand_p (cond))
+	    {
+	      /* Wrap that value into a TARGET_EXPR, emit it right
+		 away and save for later uses in the cp_parse_condition
+		 or its instantiation.  */
+	      cond = get_target_expr (cond);
+	      add_stmt (cond);
+	      DECL_DECOMP_BASE (decl) = cond;
+	    }
+	}
       int save_read = DECL_READ_P (decl);	
       for (unsigned i = 0; i < count; ++i)
 	{

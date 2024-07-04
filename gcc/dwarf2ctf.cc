@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Forward declarations for some routines defined in this file.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_type (ctf_container_ref, dw_die_ref);
 
 /* All the DIE structures we handle come from the DWARF information
@@ -156,7 +156,7 @@ ctf_get_die_loc_col (dw_die_ref die)
 
 /* Generate CTF for the void type.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_void_type (ctf_container_ref ctfc)
 {
   ctf_encoding_t ctf_encoding = {0, 0, 0};
@@ -174,10 +174,10 @@ gen_ctf_void_type (ctf_container_ref ctfc)
 
 /* Generate CTF type of unknown kind.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_unknown_type (ctf_container_ref ctfc)
 {
-  ctf_id_t unknown_type_id;
+  ctf_dtdef_ref dtd;
 
   /* In CTF, the unknown type is encoded as a 0 byte sized type with kind
      CTF_K_UNKNOWN.  Create an encoding object merely to reuse the underlying
@@ -187,11 +187,11 @@ gen_ctf_unknown_type (ctf_container_ref ctfc)
 
   gcc_assert (ctf_unknown_die != NULL);
   /* Type de-duplication.  */
-  if (!ctf_type_exists (ctfc, ctf_unknown_die, &unknown_type_id))
-    unknown_type_id = ctf_add_unknown (ctfc, CTF_ADD_ROOT, "unknown",
-				       &ctf_encoding, ctf_unknown_die);
+  if (!ctf_type_exists (ctfc, ctf_unknown_die, &dtd))
+    dtd = ctf_add_unknown (ctfc, CTF_ADD_ROOT, "unknown",
+			   &ctf_encoding, ctf_unknown_die);
 
-  return unknown_type_id;
+  return dtd;
 }
 
 /* Sizes of entities can be given in bytes or bits.  This function
@@ -217,10 +217,10 @@ ctf_die_bitsize (dw_die_ref die)
    Important: the caller of this API must make sure that duplicate types are
    not added.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_base_type (ctf_container_ref ctfc, dw_die_ref type)
 {
-  ctf_id_t type_id = CTF_NULL_TYPEID;
+  ctf_dtdef_ref dtd = NULL;
 
   ctf_encoding_t ctf_encoding = {0, 0, 0};
 
@@ -236,8 +236,8 @@ gen_ctf_base_type (ctf_container_ref ctfc, dw_die_ref type)
       ctf_encoding.cte_bits = 0;
 
       gcc_assert (name_string);
-      type_id = ctf_add_integer (ctfc, CTF_ADD_ROOT, name_string,
-				 &ctf_encoding, type);
+      dtd = ctf_add_integer (ctfc, CTF_ADD_ROOT, name_string,
+			     &ctf_encoding, type);
 
       break;
     case DW_ATE_boolean:
@@ -246,8 +246,8 @@ gen_ctf_base_type (ctf_container_ref ctfc, dw_die_ref type)
       ctf_encoding.cte_bits = bit_size;
 
       gcc_assert (name_string);
-      type_id = ctf_add_integer (ctfc, CTF_ADD_ROOT, name_string,
-				 &ctf_encoding, type);
+      dtd = ctf_add_integer (ctfc, CTF_ADD_ROOT, name_string,
+			     &ctf_encoding, type);
       break;
     case DW_ATE_float:
       {
@@ -269,7 +269,7 @@ gen_ctf_base_type (ctf_container_ref ctfc, dw_die_ref type)
 	  break;
 
 	ctf_encoding.cte_bits = bit_size;
-	type_id = ctf_add_float (ctfc, CTF_ADD_ROOT, name_string,
+	dtd = ctf_add_float (ctfc, CTF_ADD_ROOT, name_string,
 				 &ctf_encoding, type);
 
 	break;
@@ -291,7 +291,7 @@ gen_ctf_base_type (ctf_container_ref ctfc, dw_die_ref type)
 	ctf_encoding.cte_format |= CTF_INT_SIGNED;
 
       ctf_encoding.cte_bits = bit_size;
-      type_id = ctf_add_integer (ctfc, CTF_ADD_ROOT, name_string,
+      dtd = ctf_add_integer (ctfc, CTF_ADD_ROOT, name_string,
 				 &ctf_encoding, type);
       break;
 
@@ -315,7 +315,7 @@ gen_ctf_base_type (ctf_container_ref ctfc, dw_die_ref type)
 	  break;
 
 	ctf_encoding.cte_bits = bit_size;
-	type_id = ctf_add_float (ctfc, CTF_ADD_ROOT, name_string,
+	dtd = ctf_add_float (ctfc, CTF_ADD_ROOT, name_string,
 				 &ctf_encoding, type);
 	break;
       }
@@ -324,41 +324,40 @@ gen_ctf_base_type (ctf_container_ref ctfc, dw_die_ref type)
       break;
     }
 
-  return type_id;
+  return dtd;
 }
 
 /* Generate CTF for a pointer type.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_pointer_type (ctf_container_ref ctfc, dw_die_ref ptr_type)
 {
-  ctf_id_t type_id = CTF_NULL_TYPEID;
-  ctf_id_t ptr_type_id = CTF_NULL_TYPEID;
+  ctf_dtdef_ref pointed_dtd, pointer_dtd;
   dw_die_ref pointed_type_die = ctf_get_AT_type (ptr_type);
 
-  type_id = gen_ctf_type (ctfc, pointed_type_die);
+  pointed_dtd = gen_ctf_type (ctfc, pointed_type_die);
 
   /* Type de-duplication.
      Consult the ctfc_types hash again before adding the CTF pointer type
      because there can be cases where a pointer type may have been added by
      the gen_ctf_type call above.  */
-  if (ctf_type_exists (ctfc, ptr_type, &ptr_type_id))
-    return ptr_type_id;
+  if (!ctf_type_exists (ctfc, ptr_type, &pointer_dtd))
+    pointer_dtd = ctf_add_pointer (ctfc, CTF_ADD_ROOT, pointed_dtd, ptr_type);
 
-  ptr_type_id = ctf_add_pointer (ctfc, CTF_ADD_ROOT, type_id, ptr_type);
-  return ptr_type_id;
+  return pointer_dtd;
 }
 
 /* Recursively generate CTF for array dimensions starting at DIE C (of type
    DW_TAG_subrange_type) until DIE LAST (of type DW_TAG_subrange_type) is
-   reached.  ARRAY_ELEMS_TYPE_ID is base type for the array.  */
+   reached.  ARRAY_ELEMS_TYPE is the CTF type object for the type of the
+   array elements.  */
 
-static ctf_id_t
-gen_ctf_subrange_type (ctf_container_ref ctfc, ctf_id_t array_elems_type_id,
+static ctf_dtdef_ref
+gen_ctf_subrange_type (ctf_container_ref ctfc, ctf_dtdef_ref array_elems_type,
 		       dw_die_ref c, dw_die_ref last)
 {
   ctf_arinfo_t arinfo;
-  ctf_id_t array_node_type_id = CTF_NULL_TYPEID;
+  ctf_dtdef_ref array_dtd;
 
   dw_attr_node *upper_bound_at;
   dw_die_ref array_index_type;
@@ -398,30 +397,29 @@ gen_ctf_subrange_type (ctf_container_ref ctfc, ctf_id_t array_elems_type_id,
   arinfo.ctr_index = gen_ctf_type (ctfc, array_index_type);
 
   if (c == last)
-    arinfo.ctr_contents = array_elems_type_id;
+    arinfo.ctr_contents = array_elems_type;
   else
-    arinfo.ctr_contents = gen_ctf_subrange_type (ctfc, array_elems_type_id,
+    arinfo.ctr_contents = gen_ctf_subrange_type (ctfc, array_elems_type,
 						 dw_get_die_sib (c), last);
 
-  if (!ctf_type_exists (ctfc, c, &array_node_type_id))
-    array_node_type_id = ctf_add_array (ctfc, CTF_ADD_ROOT, &arinfo, c);
+  if (!ctf_type_exists (ctfc, c, &array_dtd))
+    array_dtd = ctf_add_array (ctfc, CTF_ADD_ROOT, &arinfo, c);
 
-  return array_node_type_id;
+  return array_dtd;
 }
 
 /* Generate CTF for an ARRAY_TYPE.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_array_type (ctf_container_ref ctfc,
 		    dw_die_ref array_type)
 {
   dw_die_ref first, last, array_elems_type;
-  ctf_id_t array_elems_type_id = CTF_NULL_TYPEID;
-  ctf_id_t array_type_id = CTF_NULL_TYPEID;
+  ctf_dtdef_ref array_dtd, elem_dtd;
 
   int vector_type_p = get_AT_flag (array_type, DW_AT_GNU_vector);
   if (vector_type_p)
-    return array_elems_type_id;
+    return NULL;
 
   /* Find the first and last array dimension DIEs.  */
   last = dw_get_die_child (array_type);
@@ -429,41 +427,36 @@ gen_ctf_array_type (ctf_container_ref ctfc,
 
   /* Type de-duplication.
      Consult the ctfc_types before adding CTF type for the first dimension.  */
-  if (!ctf_type_exists (ctfc, first, &array_type_id))
+  if (!ctf_type_exists (ctfc, first, &array_dtd))
     {
       array_elems_type = ctf_get_AT_type (array_type);
       /* First, register the type of the array elements if needed.  */
-      array_elems_type_id = gen_ctf_type (ctfc, array_elems_type);
+      elem_dtd = gen_ctf_type (ctfc, array_elems_type);
 
-      array_type_id = gen_ctf_subrange_type (ctfc, array_elems_type_id, first,
-					     last);
+      array_dtd = gen_ctf_subrange_type (ctfc, elem_dtd, first, last);
     }
 
-  return array_type_id;
+  return array_dtd;
 }
 
 /* Generate CTF for a typedef.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_typedef (ctf_container_ref ctfc, dw_die_ref tdef)
 {
-  ctf_id_t tdef_type_id, tid;
+  ctf_dtdef_ref tdef_dtd, dtd;
   const char *tdef_name = get_AT_string (tdef, DW_AT_name);
   dw_die_ref tdef_type = ctf_get_AT_type (tdef);
 
-  tid = gen_ctf_type (ctfc, tdef_type);
+  dtd = gen_ctf_type (ctfc, tdef_type);
 
   /* Type de-duplication.
      This is necessary because the ctf for the typedef may have been already
      added due to the gen_ctf_type call above.  */
-  if (!ctf_type_exists (ctfc, tdef, &tdef_type_id))
-  {
-    tdef_type_id = ctf_add_typedef (ctfc, CTF_ADD_ROOT,
-				    tdef_name,
-				    tid,
-				    tdef);
-  }
-  return tdef_type_id;
+  if (!ctf_type_exists (ctfc, tdef, &tdef_dtd))
+    tdef_dtd = ctf_add_typedef (ctfc, CTF_ADD_ROOT, tdef_name, dtd, tdef);
+
+  return tdef_dtd;
 }
 
 /* Generate CTF for a type modifier.
@@ -472,14 +465,16 @@ gen_ctf_typedef (ctf_container_ref ctfc, dw_die_ref tdef)
    supported by CTF, then this function skips the modifier die and continues
    with the underlying type.
 
-   For all other cases, this function returns a CTF_NULL_TYPEID;
-*/
+   If the modifier is supported by CTF, then this function constructs and
+   returns an appropate CTF type representing the modifier.
 
-static ctf_id_t
+   For all other cases, this function returns NULL.  */
+
+static ctf_dtdef_ref
 gen_ctf_modifier_type (ctf_container_ref ctfc, dw_die_ref modifier)
 {
   uint32_t kind = CTF_K_MAX;
-  ctf_id_t modifier_type_id, qual_type_id;
+  ctf_dtdef_ref dtd, modifier_dtd;
   dw_die_ref qual_type = ctf_get_AT_type (modifier);
 
   switch (dw_get_die_tag (modifier))
@@ -489,37 +484,35 @@ gen_ctf_modifier_type (ctf_container_ref ctfc, dw_die_ref modifier)
     case DW_TAG_restrict_type: kind = CTF_K_RESTRICT; break;
     case DW_TAG_atomic_type: break;
     default:
-      return CTF_NULL_TYPEID;
+      return NULL;
     }
 
   /* Register the type for which this modifier applies.  */
-  qual_type_id = gen_ctf_type (ctfc, qual_type);
+  dtd = gen_ctf_type (ctfc, qual_type);
 
   /* Skip generating a CTF modifier record for _Atomic as there is no
      representation for it.  */
   if (dw_get_die_tag (modifier) == DW_TAG_atomic_type)
-    return qual_type_id;
+    return dtd;
 
   gcc_assert (kind != CTF_K_MAX);
   /* Now register the modifier itself.  */
-  if (!ctf_type_exists (ctfc, modifier, &modifier_type_id))
-    modifier_type_id = ctf_add_reftype (ctfc, CTF_ADD_ROOT,
-					qual_type_id, kind,
-					modifier);
+  if (!ctf_type_exists (ctfc, modifier, &modifier_dtd))
+    modifier_dtd = ctf_add_reftype (ctfc, CTF_ADD_ROOT, dtd, kind, modifier);
 
-  return modifier_type_id;
+  return modifier_dtd;
 }
 
 /* Generate CTF for a struct type.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 {
   uint32_t bit_size = ctf_die_bitsize (sou);
   int declaration_p = get_AT_flag (sou, DW_AT_declaration);
   const char *sou_name = get_AT_string (sou, DW_AT_name);
 
-  ctf_id_t sou_type_id;
+  ctf_dtdef_ref sou_dtd;
 
   /* An incomplete structure or union type is represented in DWARF by
      a structure or union DIE that does not have a size attribute and
@@ -531,10 +524,10 @@ gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 
   /* This is a complete struct or union type.  Generate a CTF type for
      it if it doesn't exist already.  */
-  if (!ctf_type_exists (ctfc, sou, &sou_type_id))
-    sou_type_id = ctf_add_sou (ctfc, CTF_ADD_ROOT,
-			       sou_name, kind, bit_size / 8,
-			       sou);
+  if (!ctf_type_exists (ctfc, sou, &sou_dtd))
+    sou_dtd = ctf_add_sou (ctfc, CTF_ADD_ROOT,
+			   sou_name, kind, bit_size / 8,
+			   sou);
 
   /* Now process the struct members.  */
   {
@@ -547,7 +540,7 @@ gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 	  const char *field_name;
 	  dw_die_ref field_type;
 	  HOST_WIDE_INT field_location;
-	  ctf_id_t field_type_id;
+	  ctf_dtdef_ref field_dtd;
 
 	  c = dw_get_die_sib (c);
 
@@ -556,7 +549,7 @@ gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 	  field_location = ctf_get_AT_data_member_location (c);
 
 	  /* Generate the field type.  */
-	  field_type_id = gen_ctf_type (ctfc, field_type);
+	  field_dtd = gen_ctf_type (ctfc, field_type);
 
 	  /* If this is a bit-field, then wrap the field type
 	     generated above with a CTF slice.  */
@@ -610,29 +603,29 @@ gen_ctf_sou_type (ctf_container_ref ctfc, dw_die_ref sou, uint32_t kind)
 		 surely something to look at for the next format version bump
 		 for CTF.  */
 	      if (bitsize <= 255 && (bitpos - field_location) <= 255)
-		field_type_id = ctf_add_slice (ctfc, CTF_ADD_NONROOT,
-					       field_type_id,
+		field_dtd = ctf_add_slice (ctfc, CTF_ADD_NONROOT,
+					       field_dtd,
 					       bitpos - field_location,
 					       bitsize, c);
 	      else
-		field_type_id = gen_ctf_unknown_type (ctfc);
+		field_dtd = gen_ctf_unknown_type (ctfc);
 	    }
 
 	  /* Add the field type to the struct or union type.  */
 	  ctf_add_member_offset (ctfc, sou,
 				 field_name,
-				 field_type_id,
+				 field_dtd,
 				 field_location);
 	}
       while (c != dw_get_die_child (sou));
   }
 
-  return sou_type_id;
+  return sou_dtd;
 }
 
 /* Generate CTF for a function type.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_function_type (ctf_container_ref ctfc, dw_die_ref function,
 		       bool from_global_func)
 {
@@ -643,17 +636,16 @@ gen_ctf_function_type (ctf_container_ref ctfc, dw_die_ref function,
   uint32_t num_args = 0;
   int linkage = get_AT_flag (function, DW_AT_external);
 
-  ctf_id_t return_type_id;
-  ctf_id_t function_type_id;
+  ctf_dtdef_ref return_dtd, function_dtd;
 
   /* First, add the return type.  */
-  return_type_id = gen_ctf_type (ctfc, return_type);
-  func_info.ctc_return = return_type_id;
+  return_dtd = gen_ctf_type (ctfc, return_type);
+  func_info.ctc_return = return_dtd;
 
   /* Type de-duplication.
      Consult the ctfc_types hash before adding the CTF function type.  */
-  if (ctf_type_exists (ctfc, function, &function_type_id))
-    return function_type_id;
+  if (ctf_type_exists (ctfc, function, &function_dtd))
+    return function_dtd;
 
   /* Do a first pass on the formals to determine the number of
      arguments, and whether the function type gets a varargs.  */
@@ -681,12 +673,12 @@ gen_ctf_function_type (ctf_container_ref ctfc, dw_die_ref function,
   func_info.ctc_argc = num_args;
 
   /* Type de-duplication has already been performed by now.  */
-  function_type_id = ctf_add_function (ctfc, CTF_ADD_ROOT,
-				       function_name,
-				       (const ctf_funcinfo_t *)&func_info,
-				       function,
-				       from_global_func,
-                                       linkage);
+  function_dtd = ctf_add_function (ctfc, CTF_ADD_ROOT,
+				   function_name,
+				   (const ctf_funcinfo_t *)&func_info,
+				   function,
+				   from_global_func,
+				   linkage);
 
   /* Second pass on formals: generate the CTF types corresponding to
      them and add them as CTF function args.  */
@@ -694,7 +686,7 @@ gen_ctf_function_type (ctf_container_ref ctfc, dw_die_ref function,
     dw_die_ref c;
     unsigned int i = 0;
     const char *arg_name;
-    ctf_id_t arg_type;
+    ctf_dtdef_ref arg_type;
 
     c = dw_get_die_child (function);
     if (c)
@@ -706,7 +698,7 @@ gen_ctf_function_type (ctf_container_ref ctfc, dw_die_ref function,
 	    {
 	      gcc_assert (i == num_args - 1);
 	      /* Add an argument with type 0 and no name.  */
-	      ctf_add_function_arg (ctfc, function, "", 0);
+	      ctf_add_function_arg (ctfc, function, "", NULL);
 	    }
 	  else if (dw_get_die_tag (c) == DW_TAG_formal_parameter)
 	    {
@@ -723,12 +715,12 @@ gen_ctf_function_type (ctf_container_ref ctfc, dw_die_ref function,
       while (c != dw_get_die_child (function));
   }
 
-  return function_type_id;
+  return function_dtd;
 }
 
 /* Generate CTF for an enumeration type.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_enumeration_type (ctf_container_ref ctfc, dw_die_ref enumeration)
 {
   const char *enum_name = get_AT_string (enumeration, DW_AT_name);
@@ -736,7 +728,7 @@ gen_ctf_enumeration_type (ctf_container_ref ctfc, dw_die_ref enumeration)
   unsigned int signedness = get_AT_unsigned (enumeration, DW_AT_encoding);
   int declaration_p = get_AT_flag (enumeration, DW_AT_declaration);
 
-  ctf_id_t enumeration_type_id;
+  ctf_dtdef_ref enum_dtd;
 
   /* If this is an incomplete enum, generate a CTF forward for it and
      be done.  */
@@ -756,10 +748,10 @@ gen_ctf_enumeration_type (ctf_container_ref ctfc, dw_die_ref enumeration)
     }
 
   /* Generate a CTF type for the enumeration.  */
-  enumeration_type_id = ctf_add_enum (ctfc, CTF_ADD_ROOT,
-				      enum_name, bit_size / 8,
-				      (signedness == DW_ATE_unsigned),
-				      enumeration);
+  enum_dtd = ctf_add_enum (ctfc, CTF_ADD_ROOT,
+			   enum_name, bit_size / 8,
+			   (signedness == DW_ATE_unsigned),
+			   enumeration);
 
   /* Process the enumerators.  */
   {
@@ -787,13 +779,13 @@ gen_ctf_enumeration_type (ctf_container_ref ctfc, dw_die_ref enumeration)
 	  else
 	    value_wide_int = AT_int (enumerator_value);
 
-	  ctf_add_enumerator (ctfc, enumeration_type_id,
+	  ctf_add_enumerator (ctfc, enum_dtd,
 			      enumerator_name, value_wide_int, enumeration);
 	}
       while (c != dw_get_die_child (enumeration));
   }
 
-  return enumeration_type_id;
+  return enum_dtd;
 }
 
 /* Add a CTF variable record for the given input DWARF DIE.  */
@@ -804,7 +796,7 @@ gen_ctf_variable (ctf_container_ref ctfc, dw_die_ref die)
   const char *var_name = get_AT_string (die, DW_AT_name);
   dw_die_ref var_type = ctf_get_AT_type (die);
   unsigned int external_vis = get_AT_flag (die, DW_AT_external);
-  ctf_id_t var_type_id;
+  ctf_dtdef_ref var_dtd;
 
   /* Avoid duplicates.  */
   if (ctf_dvd_lookup (ctfc, die))
@@ -822,11 +814,10 @@ gen_ctf_variable (ctf_container_ref ctfc, dw_die_ref die)
   dw_die_ref decl = get_AT_ref (die, DW_AT_specification);
 
   /* Add the type of the variable.  */
-  var_type_id = gen_ctf_type (ctfc, var_type);
+  var_dtd = gen_ctf_type (ctfc, var_type);
 
   /* Generate the new CTF variable and update global counter.  */
-  (void) ctf_add_variable (ctfc, var_name, var_type_id, die, external_vis,
-			   decl);
+  (void) ctf_add_variable (ctfc, var_name, var_dtd, die, external_vis, decl);
   /* Skip updating the number of global objects at this time.  This is updated
      later after pre-processing as some CTF variable records although
      generated now, will not be emitted later.  [PR105089].  */
@@ -837,10 +828,10 @@ gen_ctf_variable (ctf_container_ref ctfc, dw_die_ref die)
 static void
 gen_ctf_function (ctf_container_ref ctfc, dw_die_ref die)
 {
-  ctf_id_t function_type_id;
+  ctf_dtdef_ref function_dtd;
   /* Type de-duplication.
      Consult the ctfc_types hash before adding the CTF function type.  */
-  if (ctf_type_exists (ctfc, die, &function_type_id))
+  if (ctf_type_exists (ctfc, die, &function_dtd))
     return;
 
   /* Add the type of the function and update the global functions
@@ -857,43 +848,43 @@ gen_ctf_function (ctf_container_ref ctfc, dw_die_ref die)
    this function returns the type id of the existing type.
 
    If the given DIE is not recognized as a type, then this function
-   returns CTF_NULL_TYPEID.  */
+   returns NULL.  */
 
-static ctf_id_t
+static ctf_dtdef_ref
 gen_ctf_type (ctf_container_ref ctfc, dw_die_ref die)
 {
-  ctf_id_t type_id;
+  ctf_dtdef_ref dtd = NULL;
   int unrecog_die = false;
 
-  if (ctf_type_exists (ctfc, die, &type_id))
-    return type_id;
+  if (ctf_type_exists (ctfc, die, &dtd))
+    return dtd;
 
   switch (dw_get_die_tag (die))
     {
     case DW_TAG_base_type:
-      type_id = gen_ctf_base_type (ctfc, die);
+      dtd = gen_ctf_base_type (ctfc, die);
       break;
     case DW_TAG_pointer_type:
-      type_id = gen_ctf_pointer_type (ctfc, die);
+      dtd = gen_ctf_pointer_type (ctfc, die);
       break;
     case DW_TAG_typedef:
-      type_id = gen_ctf_typedef (ctfc, die);
+      dtd = gen_ctf_typedef (ctfc, die);
       break;
     case DW_TAG_array_type:
-      type_id = gen_ctf_array_type (ctfc, die);
+      dtd = gen_ctf_array_type (ctfc, die);
       break;
     case DW_TAG_structure_type:
-      type_id = gen_ctf_sou_type (ctfc, die, CTF_K_STRUCT);
+      dtd = gen_ctf_sou_type (ctfc, die, CTF_K_STRUCT);
       break;
     case DW_TAG_union_type:
-      type_id = gen_ctf_sou_type (ctfc, die, CTF_K_UNION);
+      dtd = gen_ctf_sou_type (ctfc, die, CTF_K_UNION);
       break;
     case DW_TAG_subroutine_type:
-      type_id = gen_ctf_function_type (ctfc, die,
-				       false /* from_global_func */);
+      dtd = gen_ctf_function_type (ctfc, die,
+				   false /* from_global_func */);
       break;
     case DW_TAG_enumeration_type:
-      type_id = gen_ctf_enumeration_type (ctfc, die);
+      dtd = gen_ctf_enumeration_type (ctfc, die);
       break;
     case DW_TAG_atomic_type:
       /* FALLTHROUGH */
@@ -902,59 +893,35 @@ gen_ctf_type (ctf_container_ref ctfc, dw_die_ref die)
     case DW_TAG_restrict_type:
       /* FALLTHROUGH */
     case DW_TAG_volatile_type:
-      type_id = gen_ctf_modifier_type (ctfc, die);
+      dtd = gen_ctf_modifier_type (ctfc, die);
       break;
     case DW_TAG_unspecified_type:
       {
 	const char *name = get_AT_string (die, DW_AT_name);
 
 	if (name && strcmp (name, "void") == 0)
-	  type_id = gen_ctf_void_type (ctfc);
+	  dtd = gen_ctf_void_type (ctfc);
 	else
-	  type_id = CTF_NULL_TYPEID;
+	  dtd = NULL;
 
 	break;
       }
     case DW_TAG_reference_type:
-      type_id = CTF_NULL_TYPEID;
+      dtd = NULL;
       break;
     default:
       /* Unrecognized DIE.  */
       unrecog_die = true;
-      type_id = CTF_NULL_TYPEID;
+      dtd = NULL;
       break;
     }
 
   /* For all types unrepresented in CTF, use an explicit CTF type of kind
      CTF_K_UNKNOWN.  */
-  if ((type_id == CTF_NULL_TYPEID) && (!unrecog_die))
-    type_id = gen_ctf_unknown_type (ctfc);
+  if ((dtd == NULL) && (!unrecog_die))
+    dtd = gen_ctf_unknown_type (ctfc);
 
-  return type_id;
-}
-
-/* Prepare for output and write out the CTF debug information.  */
-
-static void
-ctf_debug_finalize (const char *filename, bool btf)
-{
-  if (btf)
-    {
-      btf_output (filename);
-      /* btf_finalize when compiling BPF applciations gets deallocated by the
-	 BPF target in bpf_file_end.  */
-      if (btf_debuginfo_p () && !btf_with_core_debuginfo_p ())
-	btf_finalize ();
-    }
-
-  else
-    {
-      /* Emit the collected CTF information.  */
-      ctf_output (filename);
-
-      /* Reset the CTF state.  */
-      ctf_finalize ();
-    }
+  return dtd;
 }
 
 bool
@@ -975,7 +942,7 @@ ctf_do_die (dw_die_ref die)
       return false;
     }
   else
-    return gen_ctf_type (tu_ctfc, die) == CTF_NULL_TYPEID;
+    return (gen_ctf_type (tu_ctfc, die) == NULL);
 }
 
 /* Initialize CTF subsystem for CTF debug info generation.  */
@@ -996,39 +963,38 @@ ctf_debug_init (void)
   add_name_attribute (ctf_unknown_die, "unknown");
 }
 
-/* Preprocess the CTF debug information after initialization.  */
-
-void
-ctf_debug_init_postprocess (bool btf)
-{
-  /* Only BTF requires postprocessing right after init.  */
-  if (btf)
-    btf_init_postprocess ();
-}
-
 /* Early finish CTF/BTF debug info.  */
 
 void
 ctf_debug_early_finish (const char * filename)
 {
-  /* Emit CTF debug info early always.  */
-  if (ctf_debug_info_level > CTFINFO_LEVEL_NONE
-      /* Emit BTF debug info early if CO-RE relocations are not
-	 required.  */
-      || (btf_debuginfo_p () && !btf_with_core_debuginfo_p ()))
-    ctf_debug_finalize (filename, btf_debuginfo_p ());
+  /* Emit the collected CTF information.  */
+  if (ctf_debug_info_level > CTFINFO_LEVEL_NONE)
+    ctf_output (filename);
+
+  /* If emitting BTF, start translation to BTF.  */
+  if (btf_debuginfo_p ())
+    {
+      btf_early_finish ();
+
+      /* For LTO builds, also emit BTF now.  */
+      if (flag_lto && !in_lto_p)
+	btf_finish ();
+    }
+  else
+    /* Otherwise, done with the CTF container.  */
+    ctf_finalize ();
 }
 
 /* Finish CTF/BTF debug info emission.  */
 
 void
-ctf_debug_finish (const char * filename)
+ctf_debug_finish ()
 {
-  /* Emit BTF debug info here when CO-RE relocations need to be generated.
-     BTF with CO-RE relocations needs to be generated when CO-RE is in effect
-     for the BPF target.  */
-  if (btf_debuginfo_p () && btf_with_core_debuginfo_p ())
-    ctf_debug_finalize (filename, btf_debuginfo_p ());
+  /* Emit BTF late, unless this is an LTO build in which case it was
+     already done early.  */
+  if (btf_debuginfo_p () && !flag_lto)
+    btf_finish ();
 }
 
 #include "gt-dwarf2ctf.h"

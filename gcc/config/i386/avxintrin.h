@@ -72,22 +72,6 @@ typedef double __m256d_u __attribute__ ((__vector_size__ (32),
 
 /* Compare predicates for scalar and packed compare intrinsics.  */
 
-/* Equal (ordered, non-signaling)  */
-#define _CMP_EQ_OQ	0x00
-/* Less-than (ordered, signaling)  */
-#define _CMP_LT_OS	0x01
-/* Less-than-or-equal (ordered, signaling)  */
-#define _CMP_LE_OS	0x02
-/* Unordered (non-signaling)  */
-#define _CMP_UNORD_Q	0x03
-/* Not-equal (unordered, non-signaling)  */
-#define _CMP_NEQ_UQ	0x04
-/* Not-less-than (unordered, signaling)  */
-#define _CMP_NLT_US	0x05
-/* Not-less-than-or-equal (unordered, signaling)  */
-#define _CMP_NLE_US	0x06
-/* Ordered (nonsignaling)   */
-#define _CMP_ORD_Q	0x07
 /* Equal (unordered, non-signaling)  */
 #define _CMP_EQ_UQ	0x08
 /* Not-greater-than-or-equal (unordered, signaling)  */
@@ -381,18 +365,6 @@ _mm256_xor_ps (__m256 __A, __m256 __B)
 }
 
 #ifdef __OPTIMIZE__
-extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cmp_pd (__m128d __X, __m128d __Y, const int __P)
-{
-  return (__m128d) __builtin_ia32_cmppd ((__v2df)__X, (__v2df)__Y, __P);
-}
-
-extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cmp_ps (__m128 __X, __m128 __Y, const int __P)
-{
-  return (__m128) __builtin_ia32_cmpps ((__v4sf)__X, (__v4sf)__Y, __P);
-}
-
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_cmp_pd (__m256d __X, __m256d __Y, const int __P)
 {
@@ -406,27 +378,7 @@ _mm256_cmp_ps (__m256 __X, __m256 __Y, const int __P)
   return (__m256) __builtin_ia32_cmpps256 ((__v8sf)__X, (__v8sf)__Y,
 					   __P);
 }
-
-extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cmp_sd (__m128d __X, __m128d __Y, const int __P)
-{
-  return (__m128d) __builtin_ia32_cmpsd ((__v2df)__X, (__v2df)__Y, __P);
-}
-
-extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cmp_ss (__m128 __X, __m128 __Y, const int __P)
-{
-  return (__m128) __builtin_ia32_cmpss ((__v4sf)__X, (__v4sf)__Y, __P);
-}
 #else
-#define _mm_cmp_pd(X, Y, P)						\
-  ((__m128d) __builtin_ia32_cmppd ((__v2df)(__m128d)(X),		\
-				   (__v2df)(__m128d)(Y), (int)(P)))
-
-#define _mm_cmp_ps(X, Y, P)						\
-  ((__m128) __builtin_ia32_cmpps ((__v4sf)(__m128)(X),			\
-				  (__v4sf)(__m128)(Y), (int)(P)))
-
 #define _mm256_cmp_pd(X, Y, P)						\
   ((__m256d) __builtin_ia32_cmppd256 ((__v4df)(__m256d)(X),		\
 				      (__v4df)(__m256d)(Y), (int)(P)))
@@ -434,14 +386,6 @@ _mm_cmp_ss (__m128 __X, __m128 __Y, const int __P)
 #define _mm256_cmp_ps(X, Y, P)						\
   ((__m256) __builtin_ia32_cmpps256 ((__v8sf)(__m256)(X),		\
 				     (__v8sf)(__m256)(Y), (int)(P)))
-
-#define _mm_cmp_sd(X, Y, P)						\
-  ((__m128d) __builtin_ia32_cmpsd ((__v2df)(__m128d)(X),		\
-				   (__v2df)(__m128d)(Y), (int)(P)))
-
-#define _mm_cmp_ss(X, Y, P)						\
-  ((__m128) __builtin_ia32_cmpss ((__v4sf)(__m128)(X),			\
-				  (__v4sf)(__m128)(Y), (int)(P)))
 #endif
 
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))

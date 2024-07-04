@@ -70,16 +70,38 @@ enum diagnostic_prefixing_rule_t
 };
 
 class quoting_info;
+class output_buffer;
+class urlifier;
 
 /* The chunk_info data structure forms a stack of the results from the
    first phase of formatting (pp_format) which have not yet been
    output (pp_output_formatted_text).  A stack is necessary because
    the diagnostic starter may decide to generate its own output by way
    of the formatter.  */
-struct chunk_info
+class chunk_info
 {
+  friend class pretty_printer;
+
+public:
+  const char * const *get_args () const { return m_args; }
+  quoting_info *get_quoting_info () const { return m_quotes; }
+
+  void append_formatted_chunk (const char *content);
+
+  void pop_from_output_buffer (output_buffer &buf);
+
+private:
+  void on_begin_quote (const output_buffer &buf,
+		       unsigned chunk_idx,
+		       const urlifier *urlifier);
+
+  void on_end_quote (pretty_printer *pp,
+		     output_buffer &buf,
+		     unsigned chunk_idx,
+		     const urlifier *urlifier);
+
   /* Pointer to previous chunk on the stack.  */
-  struct chunk_info *prev;
+  chunk_info *m_prev;
 
   /* Array of chunks to output.  Each chunk is a NUL-terminated string.
      In the first phase of formatting, even-numbered chunks are
@@ -87,7 +109,7 @@ struct chunk_info
      The second phase replaces all odd-numbered chunks with formatted
      text, and the third phase simply emits all the chunks in sequence
      with appropriate line-wrapping.  */
-  const char *args[PP_NL_ARGMAX * 2];
+  const char *m_args[PP_NL_ARGMAX * 2];
 
   /* If non-null, information on quoted text runs within the chunks
      for use by a urlifier.  */
@@ -114,7 +136,7 @@ public:
   struct obstack *obstack;
 
   /* Stack of chunk arrays.  These come from the chunk_obstack.  */
-  struct chunk_info *cur_chunk_array;
+  chunk_info *cur_chunk_array;
 
   /* Where to output formatted text.  */
   FILE *stream;
@@ -189,24 +211,11 @@ struct pp_wrapping_mode_t
   int line_cutoff;
 };
 
-/* Maximum characters per line in automatic line wrapping mode.
-   Zero means don't wrap lines.  */
-#define pp_line_cutoff(PP)  (PP)->wrapping.line_cutoff
-
-/* Prefixing rule used in formatting a diagnostic message.  */
-#define pp_prefixing_rule(PP)  (PP)->wrapping.rule
-
-/* Get or set the wrapping mode as a single entity.  */
-#define pp_wrapping_mode(PP) (PP)->wrapping
-
 /* The type of a hook that formats client-specific data onto a pretty_printer.
    A client-supplied formatter returns true if everything goes well,
    otherwise it returns false.  */
 typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool, bool *, const char **);
-
-/* Client supplied function used to decode formats.  */
-#define pp_format_decoder(PP) (PP)->format_decoder
 
 /* Base class for an optional client-supplied object for doing additional
    processing between stages 2 and 3 of formatted printing.  */
@@ -218,31 +227,51 @@ class format_postprocessor
   virtual void handle (pretty_printer *) = 0;
 };
 
-/* TRUE if a newline character needs to be added before further
-   formatting.  */
-#define pp_needs_newline(PP)  (PP)->need_newline
+inline bool & pp_needs_newline (pretty_printer *pp);
 
 /* True if PRETTY-PRINTER is in line-wrapping mode.  */
 #define pp_is_wrapping_line(PP) (pp_line_cutoff (PP) > 0)
 
-/* The amount of whitespace to be emitted when starting a new line.  */
-#define pp_indentation(PP) (PP)->indent_skip
-
-/* True if identifiers are translated to the locale character set on
-   output.  */
-#define pp_translate_identifiers(PP) (PP)->translate_identifiers
-
-/* True if colors should be shown.  */
-#define pp_show_color(PP) (PP)->show_color
+inline output_buffer *&pp_buffer (pretty_printer *pp);
+inline output_buffer *pp_buffer (const pretty_printer *pp);
+inline const char *pp_get_prefix (const pretty_printer *pp);
+extern char *pp_take_prefix (pretty_printer *);
+extern void pp_destroy_prefix (pretty_printer *);
+inline int &pp_line_cutoff (pretty_printer *pp);
+inline diagnostic_prefixing_rule_t &pp_prefixing_rule (pretty_printer *pp);
+inline pp_wrapping_mode_t &pp_wrapping_mode (pretty_printer *pp);
+inline int & pp_indentation (pretty_printer *pp);
+inline bool & pp_translate_identifiers (pretty_printer *pp);
+inline bool & pp_show_color (pretty_printer *pp);
+inline printer_fn &pp_format_decoder (pretty_printer *pp);
+inline format_postprocessor *& pp_format_postprocessor (pretty_printer *pp);
 
 class urlifier;
 
 /* The data structure that contains the bare minimum required to do
-   proper pretty-printing.  Clients may derived from this structure
+   proper pretty-printing.  Clients may derive from this structure
    and add additional fields they need.  */
 class pretty_printer
 {
 public:
+  friend inline output_buffer *&pp_buffer (pretty_printer *pp);
+  friend inline output_buffer *pp_buffer (const pretty_printer *pp);
+  friend inline const char *pp_get_prefix (const pretty_printer *pp);
+  friend char *pp_take_prefix (pretty_printer *);
+  friend void pp_destroy_prefix (pretty_printer *);
+  friend inline int &pp_line_cutoff (pretty_printer *pp);
+  friend inline diagnostic_prefixing_rule_t &
+  pp_prefixing_rule (pretty_printer *pp);
+  friend inline const diagnostic_prefixing_rule_t &
+  pp_prefixing_rule (const pretty_printer *pp);
+  friend inline pp_wrapping_mode_t &pp_wrapping_mode (pretty_printer *pp);
+  friend bool & pp_needs_newline (pretty_printer *pp);
+  friend int & pp_indentation (pretty_printer *pp);
+  friend bool & pp_translate_identifiers (pretty_printer *pp);
+  friend bool & pp_show_color (pretty_printer *pp);
+  friend printer_fn &pp_format_decoder (pretty_printer *pp);
+  friend format_postprocessor *& pp_format_postprocessor (pretty_printer *pp);
+
   /* Default construct a pretty printer with specified
      maximum line length cut off limit.  */
   explicit pretty_printer (int = 0);
@@ -252,25 +281,67 @@ public:
 
   virtual pretty_printer *clone () const;
 
+  void set_output_stream (FILE *outfile)
+  {
+    m_buffer->stream = outfile;
+  }
+
+  void set_prefix (char *prefix);
+
+  void emit_prefix ();
+
+  void format (text_info *text,
+	       const urlifier *urlifier);
+
+  void maybe_space ();
+
+  bool supports_urls_p () const { return m_url_format != URL_FORMAT_NONE; }
+  diagnostic_url_format get_url_format () const { return m_url_format; }
+  void set_url_format (diagnostic_url_format url_format)
+  {
+    m_url_format = url_format;
+  }
+
+  void begin_url (const char *url);
+  void end_url ();
+
+  /* Switch into verbatim mode and return the old mode.  */
+  pp_wrapping_mode_t
+  set_verbatim_wrapping ()
+  {
+    const pp_wrapping_mode_t oldmode = pp_wrapping_mode (this);
+    pp_line_cutoff (this) = 0;
+    pp_prefixing_rule (this) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
+    return oldmode;
+  }
+
+  void set_padding (pp_padding padding) { m_padding = padding; }
+  pp_padding get_padding () const { return m_padding; }
+
+  void clear_state ();
+  void set_real_maximum_length ();
+  int remaining_character_count_for_line ();
+
+private:
   /* Where we print external representation of ENTITY.  */
-  output_buffer *buffer;
+  output_buffer *m_buffer;
 
   /* The prefix for each new line.  If non-NULL, this is "owned" by the
      pretty_printer, and will eventually be free-ed.  */
-  char *prefix;
+  char *m_prefix;
 
   /* Where to put whitespace around the entity being formatted.  */
-  pp_padding padding;
+  pp_padding m_padding;
 
   /* The real upper bound of number of characters per line, taking into
      account the case of a very very looong prefix.  */
-  int maximum_length;
+  int m_maximum_length;
 
   /* Indentation count.  */
-  int indent_skip;
+  int m_indent_skip;
 
   /* Current wrapping mode.  */
-  pp_wrapping_mode_t wrapping;
+  pp_wrapping_mode_t m_wrapping;
 
   /* If non-NULL, this function formats a TEXT into the BUFFER.  When called,
      TEXT->format_spec points to a format code.  FORMAT_DECODER should call
@@ -281,7 +352,7 @@ public:
      returns, TEXT->format_spec should point to the last character processed.
      The QUOTE and BUFFER_PTR are passed in, to allow for deferring-handling
      of format codes (e.g. %H and %I in the C++ frontend).  */
-  printer_fn format_decoder;
+  printer_fn m_format_decoder;
 
   /* If non-NULL, this is called by pp_format once after all format codes
      have been processed, to allow for client-specific postprocessing.
@@ -290,28 +361,112 @@ public:
   format_postprocessor *m_format_postprocessor;
 
   /* Nonzero if current PREFIX was emitted at least once.  */
-  bool emitted_prefix;
+  bool m_emitted_prefix;
 
   /* Nonzero means one should emit a newline before outputting anything.  */
-  bool need_newline;
+  bool m_need_newline;
 
   /* Nonzero means identifiers are translated to the locale character
      set on output.  */
-  bool translate_identifiers;
+  bool m_translate_identifiers;
 
   /* Nonzero means that text should be colorized.  */
-  bool show_color;
+  bool m_show_color;
 
   /* Whether URLs should be emitted, and which terminator to use.  */
-  diagnostic_url_format url_format;
+  diagnostic_url_format m_url_format;
 
-  /* If true, then we've had a pp_begin_url (nullptr), and so the
-     next pp_end_url should be a no-op.  */
+  /* If true, then we've had a begin_url (nullptr), and so the
+     next end_url should be a no-op.  */
   bool m_skipping_null_url;
 };
 
+inline output_buffer *&
+pp_buffer (pretty_printer *pp)
+{
+  return pp->m_buffer;
+}
+
+inline output_buffer *
+pp_buffer (const pretty_printer *pp)
+{
+  return pp->m_buffer;
+}
+
 inline const char *
-pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
+pp_get_prefix (const pretty_printer *pp)
+{
+  return pp->m_prefix;
+}
+
+/* TRUE if a newline character needs to be added before further
+   formatting.  */
+inline bool &
+pp_needs_newline (pretty_printer *pp)
+{
+  return pp->m_need_newline;
+}
+
+/* The amount of whitespace to be emitted when starting a new line.  */
+inline int &
+pp_indentation (pretty_printer *pp)
+{
+  return pp->m_indent_skip;
+}
+
+/* True if identifiers are translated to the locale character set on
+   output.  */
+inline bool &
+pp_translate_identifiers (pretty_printer *pp)
+{
+  return pp->m_translate_identifiers;
+}
+
+/* True if colors should be shown.  */
+inline bool &
+pp_show_color (pretty_printer *pp)
+{
+  return pp->m_show_color;
+}
+
+inline printer_fn &
+pp_format_decoder (pretty_printer *pp)
+{
+  return pp->m_format_decoder;
+}
+
+inline format_postprocessor *&
+pp_format_postprocessor (pretty_printer *pp)
+{
+  return pp->m_format_postprocessor;
+}
+
+/* Maximum characters per line in automatic line wrapping mode.
+   Zero means don't wrap lines.  */
+inline int &
+pp_line_cutoff (pretty_printer *pp)
+{
+  return pp->m_wrapping.line_cutoff;
+}
+
+/* Prefixing rule used in formatting a diagnostic message.  */
+inline diagnostic_prefixing_rule_t &
+pp_prefixing_rule (pretty_printer *pp)
+{
+  return pp->m_wrapping.rule;
+}
+inline const diagnostic_prefixing_rule_t &
+pp_prefixing_rule (const pretty_printer *pp)
+{
+  return pp->m_wrapping.rule;
+}
+
+/* Get or set the wrapping mode as a single entity.  */
+inline pp_wrapping_mode_t &
+pp_wrapping_mode (pretty_printer *pp)
+{
+  return pp->m_wrapping;
+}
 
 #define pp_space(PP)            pp_character (PP, ' ')
 #define pp_left_paren(PP)       pp_character (PP, '(')
@@ -375,17 +530,18 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 					  : (ID)))
 
 
-#define pp_buffer(PP) (PP)->buffer
-
 extern void pp_set_line_maximum_length (pretty_printer *, int);
-extern void pp_set_prefix (pretty_printer *, char *);
-extern char *pp_take_prefix (pretty_printer *);
-extern void pp_destroy_prefix (pretty_printer *);
-extern int pp_remaining_character_count_for_line (pretty_printer *);
+inline void pp_set_prefix (pretty_printer *pp, char *prefix)
+{
+  pp->set_prefix (prefix);
+}
 extern void pp_clear_output_area (pretty_printer *);
 extern const char *pp_formatted_text (pretty_printer *);
 extern const char *pp_last_position_in_text (const pretty_printer *);
-extern void pp_emit_prefix (pretty_printer *);
+inline void pp_emit_prefix (pretty_printer *pp)
+{
+  pp->emit_prefix ();
+}
 extern void pp_append_text (pretty_printer *, const char *, const char *);
 extern void pp_newline_and_flush (pretty_printer *);
 extern void pp_newline_and_indent (pretty_printer *, int);
@@ -413,8 +569,11 @@ extern void pp_verbatim (pretty_printer *, const char *, ...)
      ATTRIBUTE_GCC_PPDIAG(2,3);
 extern void pp_flush (pretty_printer *);
 extern void pp_really_flush (pretty_printer *);
-extern void pp_format (pretty_printer *, text_info *,
-		       const urlifier * = nullptr);
+inline void pp_format (pretty_printer *pp, text_info *text,
+		       const urlifier *urlifier = nullptr)
+{
+  pp->format (text, urlifier);
+}
 extern void pp_output_formatted_text (pretty_printer *,
 				      const urlifier * = nullptr);
 extern void pp_format_verbatim (pretty_printer *, text_info *);
@@ -429,24 +588,32 @@ extern void pp_write_text_to_stream (pretty_printer *);
 extern void pp_write_text_as_dot_label_to_stream (pretty_printer *, bool);
 extern void pp_write_text_as_html_like_dot_to_stream (pretty_printer *pp);
 
-extern void pp_maybe_space (pretty_printer *);
+inline void pp_maybe_space (pretty_printer *pp)
+{
+  pp->maybe_space ();
+}
 
 extern void pp_begin_quote (pretty_printer *, bool);
 extern void pp_end_quote (pretty_printer *, bool);
 
-extern void pp_begin_url (pretty_printer *pp, const char *url);
-extern void pp_end_url (pretty_printer *pp);
+inline void
+pp_begin_url (pretty_printer *pp, const char *url)
+{
+  pp->begin_url (url);
+}
+
+inline void
+pp_end_url (pretty_printer *pp)
+{
+  pp->end_url ();
+}
 
 /* Switch into verbatim mode and return the old mode.  */
 inline pp_wrapping_mode_t
-pp_set_verbatim_wrapping_ (pretty_printer *pp)
+pp_set_verbatim_wrapping (pretty_printer *pp)
 {
-  pp_wrapping_mode_t oldmode = pp_wrapping_mode (pp);
-  pp_line_cutoff (pp) = 0;
-  pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
-  return oldmode;
+  return pp->set_verbatim_wrapping ();
 }
-#define pp_set_verbatim_wrapping(PP) pp_set_verbatim_wrapping_ (PP)
 
 extern const char *identifier_to_locale (const char *);
 extern void *(*identifier_to_locale_alloc) (size_t);

@@ -99,6 +99,8 @@ GOMP_is_alloc (void *ptr)
 
 
 #define omp_max_predefined_alloc omp_thread_mem_alloc
+#define ompx_gnu_min_predefined_alloc ompx_gnu_pinned_mem_alloc
+#define ompx_gnu_max_predefined_alloc ompx_gnu_pinned_mem_alloc
 
 /* These macros may be overridden in config/<target>/allocator.c.
    The defaults (no override) are to return NULL for pinned memory requests
@@ -131,7 +133,7 @@ GOMP_is_alloc (void *ptr)
    The index to this table is the omp_allocator_handle_t enum value.
    When the user calls omp_alloc with a predefined allocator this
    table determines what memory they get.  */
-static const omp_memspace_handle_t predefined_alloc_mapping[] = {
+static const omp_memspace_handle_t predefined_omp_alloc_mapping[] = {
   omp_default_mem_space,   /* omp_null_allocator doesn't actually use this. */
   omp_default_mem_space,   /* omp_default_mem_alloc. */
   omp_large_cap_mem_space, /* omp_large_cap_mem_alloc. */
@@ -142,11 +144,41 @@ static const omp_memspace_handle_t predefined_alloc_mapping[] = {
   omp_low_lat_mem_space,   /* omp_pteam_mem_alloc (implementation defined). */
   omp_low_lat_mem_space,   /* omp_thread_mem_alloc (implementation defined). */
 };
+static const omp_memspace_handle_t predefined_ompx_gnu_alloc_mapping[] = {
+  omp_default_mem_space,   /* ompx_gnu_pinned_mem_alloc. */
+};
 
 #define ARRAY_SIZE(A) (sizeof (A) / sizeof ((A)[0]))
-_Static_assert (ARRAY_SIZE (predefined_alloc_mapping)
+_Static_assert (ARRAY_SIZE (predefined_omp_alloc_mapping)
 		== omp_max_predefined_alloc + 1,
-		"predefined_alloc_mapping must match omp_memspace_handle_t");
+		"predefined_omp_alloc_mapping must match omp_memspace_handle_t");
+_Static_assert (ARRAY_SIZE (predefined_ompx_gnu_alloc_mapping)
+		== (ompx_gnu_max_predefined_alloc
+		    - ompx_gnu_min_predefined_alloc) + 1,
+		"predefined_ompx_gnu_alloc_mapping must match"
+		" omp_memspace_handle_t");
+
+static inline bool
+predefined_allocator_p (omp_allocator_handle_t allocator)
+{
+  return allocator <= ompx_gnu_max_predefined_alloc;
+}
+
+static inline omp_memspace_handle_t
+predefined_alloc_mapping (omp_allocator_handle_t allocator)
+{
+  if (allocator <= omp_max_predefined_alloc)
+    return predefined_omp_alloc_mapping[allocator];
+  else if (allocator >= ompx_gnu_min_predefined_alloc
+	   && allocator <= ompx_gnu_max_predefined_alloc)
+    {
+      int index = allocator - ompx_gnu_min_predefined_alloc;
+      return predefined_ompx_gnu_alloc_mapping[index];
+    }
+  else
+    /* This should never happen.  */
+    return omp_default_mem_space;
+}
 
 enum gomp_numa_memkind_kind
 {
@@ -556,7 +588,7 @@ retry:
       allocator = (omp_allocator_handle_t) thr->ts.def_allocator;
     }
 
-  if (allocator > omp_max_predefined_alloc)
+  if (!predefined_allocator_p (allocator))
     {
       allocator_data = (struct omp_allocator_data *) allocator;
       if (new_alignment < allocator_data->alignment)
@@ -685,9 +717,11 @@ retry:
 	  omp_memspace_handle_t memspace;
 	  memspace = (allocator_data
 		      ? allocator_data->memspace
-		      : predefined_alloc_mapping[allocator]);
-	  ptr = MEMSPACE_ALLOC (memspace, new_size,
-				allocator_data && allocator_data->pinned);
+		      : predefined_alloc_mapping (allocator));
+	  int pinned = (allocator_data
+			? allocator_data->pinned
+			: allocator == ompx_gnu_pinned_mem_alloc);
+	  ptr = MEMSPACE_ALLOC (memspace, new_size, pinned);
 	}
       if (ptr == NULL)
 	goto fail;
@@ -708,7 +742,8 @@ retry:
 fail:;
   int fallback = (allocator_data
 		  ? allocator_data->fallback
-		  : allocator == omp_default_mem_alloc
+		  : (allocator == omp_default_mem_alloc
+		     || allocator == ompx_gnu_pinned_mem_alloc)
 		  ? omp_atv_null_fb
 		  : omp_atv_default_mem_fb);
   switch (fallback)
@@ -764,7 +799,7 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
     return;
   (void) allocator;
   data = &((struct omp_mem_header *) ptr)[-1];
-  if (data->allocator > omp_max_predefined_alloc)
+  if (!predefined_allocator_p (data->allocator))
     {
       struct omp_allocator_data *allocator_data
 	= (struct omp_allocator_data *) (data->allocator);
@@ -822,7 +857,8 @@ omp_free (void *ptr, omp_allocator_handle_t allocator)
 	}
 #endif
 
-      memspace = predefined_alloc_mapping[data->allocator];
+      memspace = predefined_alloc_mapping (data->allocator);
+      pinned = (data->allocator == ompx_gnu_pinned_mem_alloc);
     }
 
   MEMSPACE_FREE (memspace, data->ptr, data->size, pinned);
@@ -860,7 +896,7 @@ retry:
       allocator = (omp_allocator_handle_t) thr->ts.def_allocator;
     }
 
-  if (allocator > omp_max_predefined_alloc)
+  if (!predefined_allocator_p (allocator))
     {
       allocator_data = (struct omp_allocator_data *) allocator;
       if (new_alignment < allocator_data->alignment)
@@ -995,9 +1031,11 @@ retry:
 	  omp_memspace_handle_t memspace;
 	  memspace = (allocator_data
 		      ? allocator_data->memspace
-		      : predefined_alloc_mapping[allocator]);
-	  ptr = MEMSPACE_CALLOC (memspace, new_size,
-				 allocator_data && allocator_data->pinned);
+		      : predefined_alloc_mapping (allocator));
+	  int pinned = (allocator_data
+			? allocator_data->pinned
+			: allocator == ompx_gnu_pinned_mem_alloc);
+	  ptr = MEMSPACE_CALLOC (memspace, new_size, pinned);
 	}
       if (ptr == NULL)
 	goto fail;
@@ -1018,7 +1056,8 @@ retry:
 fail:;
   int fallback = (allocator_data
 		  ? allocator_data->fallback
-		  : allocator == omp_default_mem_alloc
+		  : (allocator == omp_default_mem_alloc
+		     || allocator == ompx_gnu_pinned_mem_alloc)
 		  ? omp_atv_null_fb
 		  : omp_atv_default_mem_fb);
   switch (fallback)
@@ -1076,7 +1115,7 @@ retry:
   if (allocator == omp_null_allocator)
     allocator = free_allocator;
 
-  if (allocator > omp_max_predefined_alloc)
+  if (!predefined_allocator_p (allocator))
     {
       allocator_data = (struct omp_allocator_data *) allocator;
       if (new_alignment < allocator_data->alignment)
@@ -1104,7 +1143,7 @@ retry:
 	}
 #endif
     }
-  if (free_allocator > omp_max_predefined_alloc)
+  if (!predefined_allocator_p (free_allocator))
     {
       free_allocator_data = (struct omp_allocator_data *) free_allocator;
 #if defined(LIBGOMP_USE_MEMKIND) || defined(LIBGOMP_USE_LIBNUMA)
@@ -1228,11 +1267,14 @@ retry:
       else
 #endif
       if (prev_size)
-	new_ptr = MEMSPACE_REALLOC (allocator_data->memspace, data->ptr,
-				    data->size, new_size,
-				    (free_allocator_data
-				     && free_allocator_data->pinned),
-				    allocator_data->pinned);
+	{
+	  int was_pinned = (free_allocator_data
+			    ? free_allocator_data->pinned
+			    : free_allocator == ompx_gnu_pinned_mem_alloc);
+	  new_ptr = MEMSPACE_REALLOC (allocator_data->memspace, data->ptr,
+				      data->size, new_size, was_pinned,
+				      allocator_data->pinned);
+	}
       else
 	new_ptr = MEMSPACE_ALLOC (allocator_data->memspace, new_size,
 				  allocator_data->pinned);
@@ -1287,11 +1329,15 @@ retry:
 	  omp_memspace_handle_t memspace;
 	  memspace = (allocator_data
 		      ? allocator_data->memspace
-		      : predefined_alloc_mapping[allocator]);
+		      : predefined_alloc_mapping (allocator));
+	  int was_pinned = (free_allocator_data
+			    ? free_allocator_data->pinned
+			    : free_allocator == ompx_gnu_pinned_mem_alloc);
+	  int pinned = (allocator_data
+			? allocator_data->pinned
+			: allocator == ompx_gnu_pinned_mem_alloc);
 	  new_ptr = MEMSPACE_REALLOC (memspace, data->ptr, data->size, new_size,
-				      (free_allocator_data
-				       && free_allocator_data->pinned),
-				      allocator_data && allocator_data->pinned);
+				      was_pinned, pinned);
 	}
       if (new_ptr == NULL)
 	goto fail;
@@ -1324,9 +1370,11 @@ retry:
 	  omp_memspace_handle_t memspace;
 	  memspace = (allocator_data
 		      ? allocator_data->memspace
-		      : predefined_alloc_mapping[allocator]);
-	  new_ptr = MEMSPACE_ALLOC (memspace, new_size,
-				    allocator_data && allocator_data->pinned);
+		      : predefined_alloc_mapping (allocator));
+	  int pinned = (allocator_data
+			? allocator_data->pinned
+			: allocator == ompx_gnu_pinned_mem_alloc);
+	  new_ptr = MEMSPACE_ALLOC (memspace, new_size, pinned);
 	}
       if (new_ptr == NULL)
 	goto fail;
@@ -1380,8 +1428,10 @@ retry:
     omp_memspace_handle_t was_memspace;
     was_memspace = (free_allocator_data
 		    ? free_allocator_data->memspace
-		    : predefined_alloc_mapping[free_allocator]);
-    int was_pinned = (free_allocator_data && free_allocator_data->pinned);
+		    : predefined_alloc_mapping (free_allocator));
+    int was_pinned = (free_allocator_data
+		      ? free_allocator_data->pinned
+		      : free_allocator == ompx_gnu_pinned_mem_alloc);
     MEMSPACE_FREE (was_memspace, data->ptr, data->size, was_pinned);
   }
   return ret;
@@ -1389,7 +1439,8 @@ retry:
 fail:;
   int fallback = (allocator_data
 		  ? allocator_data->fallback
-		  : allocator == omp_default_mem_alloc
+		  : (allocator == omp_default_mem_alloc
+		     || allocator == ompx_gnu_pinned_mem_alloc)
 		  ? omp_atv_null_fb
 		  : omp_atv_default_mem_fb);
   switch (fallback)

@@ -42,9 +42,9 @@ Boston, MA 02110-1301, USA.  */
 #   undef NULL
 #   define NULL 0
 #endif
-#define _keyc_H
 #define _keyc_C
 
+#include "Gkeyc.h"
 #   include "GmcPretty.h"
 #   include "GStorage.h"
 #   include "GDynamicStrings.h"
@@ -1630,11 +1630,11 @@ extern "C" void keyc_cp (void)
     }
 }
 
-extern "C" void _M2_keyc_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_keyc_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   init ();
 }
 
-extern "C" void _M2_keyc_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_keyc_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

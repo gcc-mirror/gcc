@@ -177,15 +177,27 @@ rtl_ssa::changes_are_worthwhile (array_slice<insn_change *const> changes,
   auto entry_count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count;
   for (insn_change *change : changes)
     {
+      // Count zero for the old cost if the old instruction was a no-op
+      // move or had an unknown cost.  This should reduce the chances of
+      // making an unprofitable change.
       old_cost += change->old_cost ();
       basic_block cfg_bb = change->bb ()->cfg_bb ();
       bool for_speed = optimize_bb_for_speed_p (cfg_bb);
       if (for_speed)
 	weighted_old_cost += (cfg_bb->count.to_sreal_scale (entry_count)
 			      * change->old_cost ());
-      if (!change->is_deletion ())
+      if (!change->is_deletion ()
+	  && INSN_CODE (change->rtl ()) != NOOP_MOVE_INSN_CODE)
 	{
 	  change->new_cost = insn_cost (change->rtl (), for_speed);
+	  /* If the cost is unknown, replacement is not worthwhile.  */
+	  if (!change->new_cost)
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "Reject replacement due to unknown insn cost.\n");
+	      return false;
+	    }
 	  new_cost += change->new_cost;
 	  if (for_speed)
 	    weighted_new_cost += (cfg_bb->count.to_sreal_scale (entry_count)

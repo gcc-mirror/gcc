@@ -330,33 +330,16 @@
    it is rounded up to one unit.) */
 #define CHAR_TYPE_SIZE  8
 
-/* `FLOAT_TYPE_SIZE'
-
-   A C expression for the size in bits of the type `float' on the
-   target machine.  If you don't define this, the default is one word. */
-#define FLOAT_TYPE_SIZE  32
-
-/* `DOUBLE_TYPE_SIZE'
-
-   A C expression for the size in bits of the type `double' on the
-   target machine.  If you don't define this, the default is two
-   words. */
-#define DOUBLE_TYPE_SIZE  64
-
-/* `LONG_DOUBLE_TYPE_SIZE'
-
-   A C expression for the size in bits of the type `long double' on
-   the target machine.  If you don't define this, the default is two
-   words. */
-#define LONG_DOUBLE_TYPE_SIZE   DOUBLE_TYPE_SIZE
-
 /* `WIDEST_HARDWARE_FP_SIZE'
 
    A C expression for the size in bits of the widest floating-point
    format supported by the hardware.  If you define this macro, you
-   must specify a value less than or equal to the value of
-   `LONG_DOUBLE_TYPE_SIZE'.  If you do not define this macro, the
-   value of `LONG_DOUBLE_TYPE_SIZE' is the default. */
+   must specify a value less than or equal to mode precision of the
+   mode used for C type long double (from hook
+   targetm.c.mode_for_floating_type with tree_index
+   TI_LONG_DOUBLE_TYPE).  If you do not define this macro, mode
+   precision of the mode used for C type long double is the
+   default.  */
 
 /* `DEFAULT_SIGNED_CHAR'
 

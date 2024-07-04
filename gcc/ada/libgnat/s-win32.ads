@@ -157,7 +157,8 @@ package System.Win32 is
    FILE_ATTRIBUTE_VALID_FLAGS         : constant := 16#00007fb7#;
    FILE_ATTRIBUTE_VALID_SET_FLAGS     : constant := 16#000031a7#;
 
-   GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS : constant := 16#00000004#;
+   GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS       : constant := 16#04#;
+   GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT : constant := 16#02#;
 
    type OVERLAPPED is record
       Internal     : access ULONG;

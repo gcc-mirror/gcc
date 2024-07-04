@@ -2304,6 +2304,10 @@ package Sinfo is
    --    scope all use this field to reference the corresponding scope entity.
    --    See Einfo for further details.
 
+   --  Selector_Name
+   --    Present in N_Expanded_Name N_Selected_Component,
+   --    N_Generic_Association, and N_Parameter_Association nodes.
+
    --  Shift_Count_OK
    --    A flag present in shift nodes to indicate that the shift count is
    --    known to be in range, i.e. is in the range from zero to word length
@@ -7013,7 +7017,7 @@ package Sinfo is
       --    GENERIC_FORMAL_PART SUBPROGRAM_SPECIFICATION
       --      [ASPECT_SPECIFICATIONS];
 
-      --  Note: Generic_Formal_Declarations can include pragmas
+      --  Note: Generic_Formal_Declarations can include pragmas and use clauses
 
       --  N_Generic_Subprogram_Declaration
       --  Sloc points to GENERIC
@@ -7030,11 +7034,7 @@ package Sinfo is
       --    GENERIC_FORMAL_PART PACKAGE_SPECIFICATION
       --      [ASPECT_SPECIFICATIONS];
 
-      --  Note: when we do generics right, the Activation_Chain_Entity entry
-      --  for this node can be removed (since the expander won't see generic
-      --  units any more)???.
-
-      --  Note: Generic_Formal_Declarations can include pragmas
+      --  Note: Generic_Formal_Declarations can include pragmas and use clauses
 
       --  N_Generic_Package_Declaration
       --  Sloc points to GENERIC
@@ -7042,7 +7042,6 @@ package Sinfo is
       --  Corresponding_Body
       --  Generic_Formal_Declarations from generic formal part
       --  Parent_Spec
-      --  Activation_Chain_Entity
 
       -------------------------------
       -- 12.1  Generic Formal Part --
@@ -7143,15 +7142,18 @@ package Sinfo is
 
       --  Note: unlike the procedure call case, a generic association node
       --  is generated for every association, even if no formal parameter
-      --  selector name is present. In this case the parser will leave the
-      --  Selector_Name field set to Empty, to be filled in later by the
-      --  semantic pass.
+      --  selector name is present, in which case Selector_Name is Empty.
 
       --  In Ada 2005, a formal may be associated with a box, if the
       --  association is part of the list of actuals for a formal package.
-      --  If the association is given by  OTHERS => <>, the association is
+      --  If the association is given by OTHERS => <>, the association is
       --  an N_Others_Choice (not an N_Generic_Association whose Selector_Name
       --  is an N_Others_Choice).
+
+      --  In source nodes, either Explicit_Generic_Actual_Parameter is present,
+      --  or Box_Present is True. However, Sem_Ch12 generates "dummy" nodes
+      --  with Explicit_Generic_Actual_Parameter = Empty and Box_Present =
+      --  False.
 
       --  N_Generic_Association
       --  Sloc points to first token of generic association
@@ -7382,13 +7384,15 @@ package Sinfo is
       --  Default_Name (set to Empty if no subprogram default)
       --  Box_Present
       --  Expression (set to Empty if no expression present)
+      --  If the default is "is null", then Null_Present is set
+      --  on the Specification of this node.
 
       --  Note: If no subprogram default is present, then Name is set
       --  to Empty, and Box_Present is False.
 
-      --  Note: The Expression field is only used for the GNAT extension
-      --  that allows a FORMAL_CONCRETE_SUBPROGRAM_DECLARATION to specify
-      --  an expression default for generic formal functions.
+      --  Note: The Expression field is for the GNAT extension that allows a
+      --  FORMAL_CONCRETE_SUBPROGRAM_DECLARATION to specify an expression
+      --  default for generic formal functions.
 
       --------------------------------------------------
       -- 12.6  Formal Abstract Subprogram Declaration --

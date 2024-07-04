@@ -108,6 +108,25 @@ typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 #define _MM_FLUSH_ZERO_ON     0x8000
 #define _MM_FLUSH_ZERO_OFF    0x0000
 
+/* Compare predicates for scalar and packed compare intrinsics.  */
+
+/* Equal (ordered, non-signaling)  */
+#define _CMP_EQ_OQ	0x00
+/* Less-than (ordered, signaling)  */
+#define _CMP_LT_OS	0x01
+/* Less-than-or-equal (ordered, signaling)  */
+#define _CMP_LE_OS	0x02
+/* Unordered (non-signaling)  */
+#define _CMP_UNORD_Q	0x03
+/* Not-equal (unordered, non-signaling)  */
+#define _CMP_NEQ_UQ	0x04
+/* Not-less-than (unordered, signaling)  */
+#define _CMP_NLT_US	0x05
+/* Not-less-than-or-equal (unordered, signaling)  */
+#define _CMP_NLE_US	0x06
+/* Ordered (nonsignaling)   */
+#define _CMP_ORD_Q	0x07
+
 /* Create an undefined vector.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_undefined_ps (void)
@@ -433,6 +452,28 @@ _mm_cmpunord_ps (__m128 __A, __m128 __B)
 {
   return (__m128) __builtin_ia32_cmpunordps ((__v4sf)__A, (__v4sf)__B);
 }
+
+#ifdef __OPTIMIZE__
+extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmp_ps (__m128 __X, __m128 __Y, const int __P)
+{
+  return (__m128) __builtin_ia32_cmpps ((__v4sf)__X, (__v4sf)__Y, __P);
+}
+
+extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cmp_ss (__m128 __X, __m128 __Y, const int __P)
+{
+  return (__m128) __builtin_ia32_cmpss ((__v4sf)__X, (__v4sf)__Y, __P);
+}
+#else
+#define _mm_cmp_ps(X, Y, P)						\
+  ((__m128) __builtin_ia32_cmpps ((__v4sf)(__m128)(X),			\
+				  (__v4sf)(__m128)(Y), (int)(P)))
+
+#define _mm_cmp_ss(X, Y, P)						\
+  ((__m128) __builtin_ia32_cmpss ((__v4sf)(__m128)(X),			\
+				  (__v4sf)(__m128)(Y), (int)(P)))
+#endif
 
 /* Compare the lower SPFP values of A and B and return 1 if true
    and 0 if false.  */

@@ -82,7 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #undef SUB_LINK_ENTRY
-#if TARGET_64BIT_DEFAULT
+#if HAVE_64BIT_POINTERS
 #define SUB_LINK_ENTRY SUB_LINK_ENTRY64
 #else
 #define SUB_LINK_ENTRY SUB_LINK_ENTRY32
@@ -99,6 +99,8 @@ along with GCC; see the file COPYING3.  If not see
 		 "%{mcrtdll=msvcrt10*:-D__MSVCRT_VERSION__=0x100} " \
 		 "%{mcrtdll=msvcrt20*:-D__MSVCRT_VERSION__=0x200} " \
 		 "%{mcrtdll=msvcrt40*:-D__MSVCRT_VERSION__=0x400} " \
+		 "%{mcrtdll=msvcr40*:-D__MSVCRT_VERSION__=0x400} " \
+		 "%{mcrtdll=msvcrtd*:-D__MSVCRT_VERSION__=0x600} " \
 		 "%{mcrtdll=msvcrt-os*:-D__MSVCRT_VERSION__=0x700} " \
 		 "%{mcrtdll=msvcr70*:-D__MSVCRT_VERSION__=0x700} " \
 		 "%{mcrtdll=msvcr71*:-D__MSVCRT_VERSION__=0x701} " \

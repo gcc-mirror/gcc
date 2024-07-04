@@ -639,9 +639,9 @@ public:
       {
 	machine_mode elt_mode = e.vector_mode (0);
 	rtx arg = e.args[0];
-	e.args[0] = simplify_gen_subreg (elt_mode, arg, GET_MODE (arg), 0);
-	e.args.safe_push (simplify_gen_subreg (elt_mode, arg, GET_MODE (arg),
-					       GET_MODE_SIZE (elt_mode)));
+	e.args[0] = force_subreg (elt_mode, arg, GET_MODE (arg), 0);
+	e.args.safe_push (force_subreg (elt_mode, arg, GET_MODE (arg),
+					GET_MODE_SIZE (elt_mode)));
       }
     return e.use_exact_insn (icode);
   }

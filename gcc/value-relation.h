@@ -216,7 +216,7 @@ public:
 class dom_oracle : public equiv_oracle
 {
 public:
-  dom_oracle ();
+  dom_oracle (bool do_trans_p = true);
   ~dom_oracle ();
 
   void record (basic_block bb, relation_kind k, tree op1, tree op2)
@@ -229,6 +229,7 @@ public:
   void dump (FILE *f, basic_block bb) const final override;
   void dump (FILE *f) const final override;
 private:
+  bool m_do_trans_p;
   bitmap m_tmp, m_tmp2;
   bitmap m_relation_set;  // Index by ssa-name. True if a relation exists
   vec <relation_chain_head> m_relations;  // Index by BB, list of relations.

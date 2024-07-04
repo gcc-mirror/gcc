@@ -23,6 +23,72 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"
 #include "flags.h"
 
+/* Constants for in-built types.  */
+
+#define T_VOID			0x0003
+#define T_CHAR			0x0010
+#define T_SHORT			0x0011
+#define T_LONG			0x0012
+#define T_QUAD			0x0013
+#define T_UCHAR			0x0020
+#define T_USHORT		0x0021
+#define T_ULONG			0x0022
+#define T_UQUAD			0x0023
+#define T_BOOL08		0x0030
+#define T_REAL32		0x0040
+#define T_REAL64		0x0041
+#define T_REAL80		0x0042
+#define T_REAL128		0x0043
+#define T_RCHAR			0x0070
+#define T_WCHAR			0x0071
+#define T_INT4			0x0074
+#define T_UINT4			0x0075
+#define T_CHAR16		0x007a
+#define T_CHAR32		0x007b
+#define T_CHAR8			0x007c
+
+#define CV_POINTER_32		0x0400
+#define CV_POINTER_64		0x0600
+#define T_32PVOID		(T_VOID | CV_POINTER_32)
+#define T_64PVOID		(T_VOID | CV_POINTER_64)
+
+/* LF_POINTER attributes.  */
+#define CV_PTR_NEAR32		0x0a
+#define CV_PTR_64		0x0c
+
+/* LF_MODIFIER values.  */
+#define MOD_const		0x1
+#define MOD_volatile		0x2
+
+/* Constants for type definitions.  */
+#define LF_MODIFIER		0x1001
+#define LF_POINTER		0x1002
+#define LF_PROCEDURE		0x1008
+#define LF_ARGLIST		0x1201
+#define LF_FIELDLIST		0x1203
+#define LF_BITFIELD		0x1205
+#define LF_INDEX		0x1404
+#define LF_ENUMERATE		0x1502
+#define LF_ARRAY		0x1503
+#define LF_CLASS		0x1504
+#define LF_STRUCTURE		0x1505
+#define LF_UNION		0x1506
+#define LF_ENUM			0x1507
+#define LF_MEMBER		0x150d
+#define LF_CHAR			0x8000
+#define LF_SHORT		0x8001
+#define LF_USHORT		0x8002
+#define LF_LONG			0x8003
+#define LF_ULONG		0x8004
+#define LF_QUADWORD		0x8009
+#define LF_UQUADWORD		0x800a
+
+#define CV_ACCESS_PRIVATE	1
+#define CV_ACCESS_PROTECTED	2
+#define CV_ACCESS_PUBLIC	3
+
+#define CV_PROP_FWDREF		0x80
+
 /* Debug Format Interface.  Used in dwarf2out.cc.  */
 
 extern void codeview_debug_finish (void);
@@ -30,5 +96,6 @@ extern void codeview_source_line (unsigned int, const char *);
 extern void codeview_start_source_file (const char *);
 extern void codeview_switch_text_section ();
 extern void codeview_end_epilogue (void);
+extern void codeview_debug_early_finish (dw_die_ref die);
 
 #endif /* GCC_DWARF2CODEVIEW_H */

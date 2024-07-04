@@ -51,16 +51,6 @@
      && REGNO (op) <= 7);
 })
 
-;; Returns true if OP is suitable for use in a CALL insn.
-
-(define_predicate "call_operand"
-  (match_code "mem")
-{
-  return (GET_CODE (op) == MEM
-	  && (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
-	      || GET_CODE (XEXP (op, 0)) == REG));
-})
-
 ;; Returns TRUE if OP is a valid operand of a DImode operation.
 
 (define_predicate "di_operand"

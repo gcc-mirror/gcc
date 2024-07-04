@@ -2925,6 +2925,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   const leap_second& __y) noexcept
 	{ return !(__x < __y.date()); }
 
+      // This is a simplified form of the constraint specified in the standard,
+      // three_way_comparable_with<sys_seconds, sys_time<_Duration>>.
       template<three_way_comparable_with<seconds> _Duration>
 	[[nodiscard]] friend constexpr auto
 	operator<=>(const leap_second& __x,

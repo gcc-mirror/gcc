@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target powerpc_altivec_ok } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-mdejagnu-cpu=power6 -maltivec -O2" } */
+/* { dg-require-effective-target powerpc_altivec } */
+/* { dg-require-effective-target lp64 } */
 
 #include <altivec.h>
 

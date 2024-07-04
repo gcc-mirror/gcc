@@ -25281,6 +25281,8 @@ highest_c_language (const char *lang1, const char *lang2)
   if (strcmp ("GNU C++98", lang1) == 0 || strcmp ("GNU C++98", lang2) == 0)
     return "GNU C++98";
 
+  if (strcmp ("GNU C2Y", lang1) == 0 || strcmp ("GNU C2Y", lang2) == 0)
+    return "GNU C2Y";
   if (strcmp ("GNU C23", lang1) == 0 || strcmp ("GNU C23", lang2) == 0)
     return "GNU C23";
   if (strcmp ("GNU C17", lang1) == 0 || strcmp ("GNU C17", lang2) == 0)
@@ -25363,7 +25365,8 @@ gen_compile_unit_die (const char *filename)
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
 	    if (strcmp (language_string, "GNU C11") == 0
 		|| strcmp (language_string, "GNU C17") == 0
-		|| strcmp (language_string, "GNU C23") == 0)
+		|| strcmp (language_string, "GNU C23") == 0
+		|| strcmp (language_string, "GNU C2Y") == 0)
 	      language = DW_LANG_C11;
 	}
     }
@@ -32345,7 +32348,7 @@ dwarf2out_finish (const char *filename)
   /* Generate CTF/BTF debug info.  */
   if ((ctf_debug_info_level > CTFINFO_LEVEL_NONE
        || btf_debuginfo_p ()) && lang_GNU_C ())
-    ctf_debug_finish (filename);
+    ctf_debug_finish ();
 
 #ifdef CODEVIEW_DEBUGGING_INFO
   if (codeview_debuginfo_p ())
@@ -33242,11 +33245,14 @@ dwarf2out_early_finish (const char *filename)
       ctf_debug_do_cu (comp_unit_die ());
       for (limbo_die_node *node = limbo_die_list; node; node = node->next)
 	ctf_debug_do_cu (node->die);
-      /* Post process the debug data in the CTF container if necessary.  */
-      ctf_debug_init_postprocess (btf_debuginfo_p ());
 
       ctf_debug_early_finish (filename);
     }
+
+#ifdef CODEVIEW_DEBUGGING_INFO
+  if (codeview_debuginfo_p ())
+    codeview_debug_early_finish (comp_unit_die ());
+#endif
 
   /* Do not generate DWARF assembler now when not producing LTO bytecode.  */
   if ((!flag_generate_lto && !flag_generate_offload)

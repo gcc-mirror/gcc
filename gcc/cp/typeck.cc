@@ -393,6 +393,9 @@ cp_compare_floating_point_conversion_ranks (tree t1, tree t2)
      has higher rank.  */
   if (cnt > 1 && mv2 == long_double_type_node)
     return -2;
+  /* And similarly if t2 is float, t2 has lower rank.  */
+  if (cnt > 1 && mv2 == float_type_node)
+    return 2;
   /* Otherwise, they have equal rank, but extended types
      (other than std::bfloat16_t) have higher subrank.
      std::bfloat16_t shouldn't have equal rank to any standard
@@ -2126,13 +2129,6 @@ cxx_sizeof_expr (location_t loc, tree e, tsubst_flags_t complain)
 
   location_t e_loc = cp_expr_loc_or_loc (e, loc);
   STRIP_ANY_LOCATION_WRAPPER (e);
-
-  /* To get the size of a static data member declared as an array of
-     unknown bound, we need to instantiate it.  */
-  if (VAR_P (e)
-      && VAR_HAD_UNKNOWN_BOUND (e)
-      && DECL_TEMPLATE_INSTANTIATION (e))
-    instantiate_decl (e, /*defer_ok*/true, /*expl_inst_mem*/false);
 
   if (TREE_CODE (e) == PARM_DECL
       && DECL_ARRAY_PARAMETER_P (e)
@@ -8161,6 +8157,8 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
       return rhs;
     }
 
+  rhs = resolve_nondeduced_context (rhs, complain);
+
   if (type_unknown_p (rhs))
     {
       if (complain & tf_error)
@@ -8168,7 +8166,7 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
 		  "no context to resolve type of %qE", rhs);
       return error_mark_node;
     }
-  
+
   tree ret = build2 (COMPOUND_EXPR, TREE_TYPE (rhs), lhs, rhs);
   if (eptype)
     ret = build1 (EXCESS_PRECISION_EXPR, eptype, ret);
@@ -10663,7 +10661,7 @@ maybe_warn_about_returning_address_of_local (tree retval, location_t loc)
 	   || TREE_PUBLIC (whats_returned)))
     {
       if (DECL_DECOMPOSITION_P (whats_returned)
-	  && DECL_DECOMP_BASE (whats_returned)
+	  && !DECL_DECOMP_IS_BASE (whats_returned)
 	  && DECL_HAS_VALUE_EXPR_P (whats_returned))
 	{
 	  /* When returning address of a structured binding, if the structured
