@@ -2325,6 +2325,10 @@ register_known_functions (known_function_manager &kfm,
     kfm.add ("__errno_location", make_unique<kf_errno_location> ());
     kfm.add ("error", make_unique<kf_error> (3));
     kfm.add ("error_at_line", make_unique<kf_error> (5));
+    /* Variants of "error" and "error_at_line" seen by the
+       analyzer at -O0 (PR analyzer/115724).  */
+    kfm.add ("__error_alias", make_unique<kf_error> (3));
+    kfm.add ("__error_at_line_alias", make_unique<kf_error> (5));
   }
 
   /* Other implementations of C standard library.  */
