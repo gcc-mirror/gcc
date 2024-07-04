@@ -3967,7 +3967,7 @@ package body Sem_Ch5 is
       Push_Scope (Ent);
       Analyze_Iteration_Scheme (Iter);
 
-      --  Check for following case which merits a warning if the type E of is
+      --  Check for following case which merits a warning if the type of E is
       --  a multi-dimensional array (and no explicit subscript ranges present).
 
       --      for J in E'Range
@@ -3992,6 +3992,10 @@ package body Sem_Ch5 is
                     and then Number_Dimensions (Typ) > 1
                     and then Nkind (Parent (N)) = N_Loop_Statement
                     and then Present (Iteration_Scheme (Parent (N)))
+                  --  The next conjunct tests that the enclosing loop is
+                  --  a for loop and not a while loop.
+                    and then Present (Loop_Parameter_Specification
+                      (Iteration_Scheme (Parent (N))))
                   then
                      declare
                         OIter : constant Node_Id :=
