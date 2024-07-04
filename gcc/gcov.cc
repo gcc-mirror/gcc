@@ -551,6 +551,11 @@ static vector<name_map> names;
    a file being read multiple times.  */
 static vector<char *> processed_files;
 
+/* The contents of a source file.  The nth SOURCE_LINES entry is the
+   contents of the nth SOURCES, or empty if it has not or could not be
+   read.  */
+static vector<vector<const char *>*> source_lines;
+
 /* This holds data summary information.  */
 
 static unsigned object_runs;
@@ -763,6 +768,8 @@ static string make_gcov_file_name (const char *, const char *);
 static char *mangle_name (const char *);
 static void release_structures (void);
 extern int main (int, char **);
+static const vector<const char *>&
+slurp (const source_info &src, FILE *gcov_file, const char *line_start);
 
 function_info::function_info (): m_name (NULL), m_demangled_name (NULL),
   ident (0), lineno_checksum (0), cfg_checksum (0), has_catch (0),
@@ -1804,6 +1811,15 @@ release_structures (void)
   for (vector<function_info *>::iterator it = functions.begin ();
        it != functions.end (); it++)
     delete (*it);
+
+  for (vector<const char *> *lines : source_lines)
+    {
+      if (lines)
+	for (const char *line : *lines)
+	  free (const_cast <char*> (line));
+      delete (lines);
+    }
+  source_lines.resize (0);
 
   for (fnfilter &filter : filters)
     regfree (&filter.regex);
@@ -3247,6 +3263,41 @@ read_line (FILE *file)
   return pos ? string : NULL;
 }
 
+/* Get the vector with the contents SRC, possibly from a cache.  If
+   the reading fails, a message prefixed with LINE_START is written to
+   GCOV_FILE.  */
+static const vector<const char *>&
+slurp (const source_info &src, FILE *gcov_file,
+       const char *line_start)
+{
+  if (source_lines.size () <= src.index)
+    source_lines.resize (src.index + 1);
+
+  /* Store vector pointers so that the returned references remain
+     stable and won't be broken by successive calls to slurp.  */
+  if (!source_lines[src.index])
+    source_lines[src.index] = new vector<const char *> ();
+
+  if (!source_lines[src.index]->empty ())
+    return *source_lines[src.index];
+
+  FILE *source_file = fopen (src.name, "r");
+  if (!source_file)
+    fnotice (stderr, "Cannot open source file %s\n", src.name);
+  else if (src.file_time == 0)
+    fprintf (gcov_file, "%sSource is newer than graph\n", line_start);
+
+  const char *retval;
+  vector<const char *> &lines = *source_lines[src.index];
+  if (source_file)
+    while ((retval = read_line (source_file)))
+      lines.push_back (xstrdup (retval));
+
+  if (source_file)
+    fclose (source_file);
+  return lines;
+}
+
 /* Pad string S with spaces from left to have total width equal to 9.  */
 
 static void
@@ -3436,9 +3487,6 @@ output_lines (FILE *gcov_file, const source_info *src)
 #define  DEFAULT_LINE_START "        -:    0:"
 #define FN_SEPARATOR "------------------\n"
 
-  FILE *source_file;
-  const char *retval;
-
   /* Print colorization legend.  */
   if (flag_use_colors)
     fprintf (gcov_file, "%s",
@@ -3465,17 +3513,8 @@ output_lines (FILE *gcov_file, const source_info *src)
       fprintf (gcov_file, DEFAULT_LINE_START "Runs:%u\n", object_runs);
     }
 
-  source_file = fopen (src->name, "r");
-  if (!source_file)
-    fnotice (stderr, "Cannot open source file %s\n", src->name);
-  else if (src->file_time == 0)
-    fprintf (gcov_file, DEFAULT_LINE_START "Source is newer than graph\n");
-
-  vector<const char *> source_lines;
-  if (source_file)
-    while ((retval = read_line (source_file)) != NULL)
-      source_lines.push_back (xstrdup (retval));
-
+  const vector<const char *> &source_lines = slurp (*src, gcov_file,
+						    DEFAULT_LINE_START);
   unsigned line_start_group = 0;
   vector<function_info *> *fns;
   unsigned filtered_line_end = !filters.empty () ? 0 : source_lines.size ();
@@ -3597,7 +3636,4 @@ output_lines (FILE *gcov_file, const source_info *src)
 	  line_start_group = 0;
 	}
     }
-
-  if (source_file)
-    fclose (source_file);
 }
