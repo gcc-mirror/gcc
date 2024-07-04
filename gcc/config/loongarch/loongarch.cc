@@ -6705,7 +6705,7 @@ loongarch_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
       if (mclass == MODE_FLOAT
 	  || mclass == MODE_COMPLEX_FLOAT
 	  || mclass == MODE_VECTOR_FLOAT)
-	return size <= UNITS_PER_FPVALUE;
+	return size <= UNITS_PER_HWFPVALUE;
 
       /* Allow integer modes that fit into a single register.  We need
 	 to put integers into FPRs when using instructions like CVT
