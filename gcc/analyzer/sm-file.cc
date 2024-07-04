@@ -70,11 +70,11 @@ public:
     return m_start;
   }
 
-  bool on_stmt (sm_context *sm_ctxt,
+  bool on_stmt (sm_context &sm_ctxt,
 		const supernode *node,
 		const gimple *stmt) const final override;
 
-  void on_condition (sm_context *sm_ctxt,
+  void on_condition (sm_context &sm_ctxt,
 		     const supernode *node,
 		     const gimple *stmt,
 		     const svalue *lhs,
@@ -366,18 +366,18 @@ is_file_using_fn_p (tree fndecl)
 /* Implementation of state_machine::on_stmt vfunc for fileptr_state_machine.  */
 
 bool
-fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
+fileptr_state_machine::on_stmt (sm_context &sm_ctxt,
 				const supernode *node,
 				const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
+    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
       {
 	if (is_named_call_p (callee_fndecl, "fopen", call, 2))
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
-	      sm_ctxt->on_transition (node, stmt, lhs, m_start, m_unchecked);
+	      sm_ctxt.on_transition (node, stmt, lhs, m_start, m_unchecked);
 	    else
 	      {
 		/* TODO: report leak.  */
@@ -389,20 +389,20 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
 	  {
 	    tree arg = gimple_call_arg (call, 0);
 
-	    sm_ctxt->on_transition (node, stmt, arg, m_start, m_closed);
+	    sm_ctxt.on_transition (node, stmt, arg, m_start, m_closed);
 
 	    // TODO: is it safe to call fclose (NULL) ?
-	    sm_ctxt->on_transition (node, stmt, arg, m_unchecked, m_closed);
-	    sm_ctxt->on_transition (node, stmt, arg, m_null, m_closed);
+	    sm_ctxt.on_transition (node, stmt, arg, m_unchecked, m_closed);
+	    sm_ctxt.on_transition (node, stmt, arg, m_null, m_closed);
 
-	    sm_ctxt->on_transition (node, stmt , arg, m_nonnull, m_closed);
+	    sm_ctxt.on_transition (node, stmt , arg, m_nonnull, m_closed);
 
-	    if (sm_ctxt->get_state (stmt, arg) == m_closed)
+	    if (sm_ctxt.get_state (stmt, arg) == m_closed)
 	      {
-		tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
-		sm_ctxt->warn (node, stmt, arg,
-			       make_unique<double_fclose> (*this, diag_arg));
-		sm_ctxt->set_next_state (stmt, arg, m_stop);
+		tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
+		sm_ctxt.warn (node, stmt, arg,
+			      make_unique<double_fclose> (*this, diag_arg));
+		sm_ctxt.set_next_state (stmt, arg, m_stop);
 	      }
 	    return true;
 	  }
@@ -423,7 +423,7 @@ fileptr_state_machine::on_stmt (sm_context *sm_ctxt,
    Potentially transition state 'unchecked' to 'nonnull' or to 'null'.  */
 
 void
-fileptr_state_machine::on_condition (sm_context *sm_ctxt,
+fileptr_state_machine::on_condition (sm_context &sm_ctxt,
 				     const supernode *node,
 				     const gimple *stmt,
 				     const svalue *lhs,
@@ -443,14 +443,14 @@ fileptr_state_machine::on_condition (sm_context *sm_ctxt,
   if (op == NE_EXPR)
     {
       log ("got 'ARG != 0' match");
-      sm_ctxt->on_transition (node, stmt,
-			      lhs, m_unchecked, m_nonnull);
+      sm_ctxt.on_transition (node, stmt,
+			     lhs, m_unchecked, m_nonnull);
     }
   else if (op == EQ_EXPR)
     {
       log ("got 'ARG == 0' match");
-      sm_ctxt->on_transition (node, stmt,
-			      lhs, m_unchecked, m_null);
+      sm_ctxt.on_transition (node, stmt,
+			     lhs, m_unchecked, m_null);
     }
 }
 

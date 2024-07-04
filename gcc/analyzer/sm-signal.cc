@@ -73,7 +73,7 @@ public:
 
   bool inherited_state_p () const final override { return false; }
 
-  bool on_stmt (sm_context *sm_ctxt,
+  bool  on_stmt (sm_context &sm_ctxt,
 		const supernode *node,
 		const gimple *stmt) const final override;
 
@@ -333,15 +333,15 @@ signal_unsafe_p (tree fndecl)
 /* Implementation of state_machine::on_stmt vfunc for signal_state_machine.  */
 
 bool
-signal_state_machine::on_stmt (sm_context *sm_ctxt,
+signal_state_machine::on_stmt (sm_context &sm_ctxt,
 			       const supernode *node,
 			       const gimple *stmt) const
 {
-  const state_t global_state = sm_ctxt->get_global_state ();
+  const state_t global_state = sm_ctxt.get_global_state ();
   if (global_state == m_start)
     {
       if (const gcall *call = dyn_cast <const gcall *> (stmt))
-	if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
+	if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
 	  if (is_named_call_p (callee_fndecl, "signal", call, 2)
 	      || is_std_named_call_p (callee_fndecl, "signal", call, 2))
 	    {
@@ -351,19 +351,19 @@ signal_state_machine::on_stmt (sm_context *sm_ctxt,
 		{
 		  tree fndecl = TREE_OPERAND (handler, 0);
 		  register_signal_handler rsh (*this, fndecl);
-		  sm_ctxt->on_custom_transition (&rsh);
+		  sm_ctxt.on_custom_transition (&rsh);
 		}
 	    }
     }
   else if (global_state == m_in_signal_handler)
     {
       if (const gcall *call = dyn_cast <const gcall *> (stmt))
-	if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
+	if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
 	  if (signal_unsafe_p (callee_fndecl))
-	    if (sm_ctxt->get_global_state () == m_in_signal_handler)
-	      sm_ctxt->warn (node, stmt, NULL_TREE,
-			     make_unique<signal_unsafe_call>
-			       (*this, call, callee_fndecl));
+	    if (sm_ctxt.get_global_state () == m_in_signal_handler)
+	      sm_ctxt.warn (node, stmt, NULL_TREE,
+			    make_unique<signal_unsafe_call>
+			     (*this, call, callee_fndecl));
     }
 
   return false;

@@ -2239,7 +2239,7 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 							    &iter_point,
 							    emission_path,
 							    pb.get_ext_state ());
-			sm.on_stmt (&sm_ctxt, dst_point.get_supernode (), stmt);
+			sm.on_stmt (sm_ctxt, dst_point.get_supernode (), stmt);
 			// TODO: what about phi nodes?
 		      }
 		  }

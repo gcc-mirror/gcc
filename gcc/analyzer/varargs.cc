@@ -207,7 +207,7 @@ public:
 
   bool inherited_state_p () const final override { return false; }
 
-  bool on_stmt (sm_context *sm_ctxt,
+  bool on_stmt (sm_context &sm_ctxt,
 		const supernode *node,
 		const gimple *stmt) const final override;
 
@@ -224,15 +224,15 @@ public:
   state_t m_ended;
 
 private:
-  void on_va_start (sm_context *sm_ctxt, const supernode *node,
+  void on_va_start (sm_context &sm_ctxt, const supernode *node,
 		    const gcall *call) const;
-  void on_va_copy (sm_context *sm_ctxt, const supernode *node,
+  void on_va_copy (sm_context &sm_ctxt, const supernode *node,
 		   const gcall *call) const;
-  void on_va_arg (sm_context *sm_ctxt, const supernode *node,
+  void on_va_arg (sm_context &sm_ctxt, const supernode *node,
 		  const gcall *call) const;
-  void on_va_end (sm_context *sm_ctxt, const supernode *node,
+  void on_va_end (sm_context &sm_ctxt, const supernode *node,
 		  const gcall *call) const;
-  void check_for_ended_va_list (sm_context *sm_ctxt,
+  void check_for_ended_va_list (sm_context &sm_ctxt,
 				const supernode *node,
 				const gcall *call,
 				const svalue *arg,
@@ -252,7 +252,7 @@ va_list_state_machine::va_list_state_machine (logger *logger)
    va_list_state_machine.  */
 
 bool
-va_list_state_machine::on_stmt (sm_context *sm_ctxt,
+va_list_state_machine::on_stmt (sm_context &sm_ctxt,
 				const supernode *node,
 				const gimple *stmt) const
 {
@@ -265,7 +265,7 @@ va_list_state_machine::on_stmt (sm_context *sm_ctxt,
 	  return false;
 	}
 
-      if (tree callee_fndecl = sm_ctxt->get_fndecl_for_call (call))
+      if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
 	if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
 	    && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
 	  switch (DECL_UNCHECKED_FUNCTION_CODE (callee_fndecl))
@@ -293,13 +293,13 @@ va_list_state_machine::on_stmt (sm_context *sm_ctxt,
    IDX to CALL.  */
 
 static const svalue *
-get_stateful_arg (sm_context *sm_ctxt, const gcall *call, unsigned arg_idx)
+get_stateful_arg (sm_context &sm_ctxt, const gcall *call, unsigned arg_idx)
 {
   tree ap = gimple_call_arg (call, arg_idx);
   if (ap
       && POINTER_TYPE_P (TREE_TYPE (ap)))
     {
-      if (const program_state *new_state = sm_ctxt->get_new_program_state ())
+      if (const program_state *new_state = sm_ctxt.get_new_program_state ())
 	{
 	  const region_model *new_model = new_state->m_region_model;
 	  const svalue *ptr_sval = new_model->get_rvalue (ap, NULL);
@@ -528,7 +528,7 @@ private:
 /* Update state machine for a "va_start" call.  */
 
 void
-va_list_state_machine::on_va_start (sm_context *sm_ctxt,
+va_list_state_machine::on_va_start (sm_context &sm_ctxt,
 				    const supernode *,
 				    const gcall *call) const
 {
@@ -536,24 +536,24 @@ va_list_state_machine::on_va_start (sm_context *sm_ctxt,
   if (arg)
     {
       /* Transition from start state to "started".  */
-      if (sm_ctxt->get_state (call, arg) == m_start)
-	sm_ctxt->set_next_state (call, arg, m_started);
+      if (sm_ctxt.get_state (call, arg) == m_start)
+	sm_ctxt.set_next_state (call, arg, m_started);
     }
 }
 
 /* Complain if ARG is in the "ended" state.  */
 
 void
-va_list_state_machine::check_for_ended_va_list (sm_context *sm_ctxt,
+va_list_state_machine::check_for_ended_va_list (sm_context &sm_ctxt,
 						const supernode *node,
 						const gcall *call,
 						const svalue *arg,
 						const char *usage_fnname) const
 {
-  if (sm_ctxt->get_state (call, arg) == m_ended)
-    sm_ctxt->warn (node, call, arg,
-		   make_unique<va_list_use_after_va_end>
-		     (*this, arg, NULL_TREE, usage_fnname));
+  if (sm_ctxt.get_state (call, arg) == m_ended)
+    sm_ctxt.warn (node, call, arg,
+		  make_unique<va_list_use_after_va_end>
+		    (*this, arg, NULL_TREE, usage_fnname));
 }
 
 /* Get the svalue with associated va_list_state_machine state for
@@ -561,11 +561,11 @@ va_list_state_machine::check_for_ended_va_list (sm_context *sm_ctxt,
    or NULL otherwise.  */
 
 static const svalue *
-get_stateful_va_copy_arg (sm_context *sm_ctxt,
+get_stateful_va_copy_arg (sm_context &sm_ctxt,
 			  const gcall *call,
 			  unsigned arg_idx)
 {
-  if (const program_state *new_state = sm_ctxt->get_new_program_state ())
+  if (const program_state *new_state = sm_ctxt.get_new_program_state ())
     {
       const region_model *new_model = new_state->m_region_model;
       const svalue *arg = get_va_copy_arg (new_model, NULL, call, arg_idx);
@@ -577,7 +577,7 @@ get_stateful_va_copy_arg (sm_context *sm_ctxt,
 /* Update state machine for a "va_copy" call.  */
 
 void
-va_list_state_machine::on_va_copy (sm_context *sm_ctxt,
+va_list_state_machine::on_va_copy (sm_context &sm_ctxt,
 				   const supernode *node,
 				   const gcall *call) const
 {
@@ -589,15 +589,15 @@ va_list_state_machine::on_va_copy (sm_context *sm_ctxt,
   if (dst_arg)
     {
       /* Transition from start state to "started".  */
-      if (sm_ctxt->get_state (call, dst_arg) == m_start)
-	sm_ctxt->set_next_state (call, dst_arg, m_started);
+      if (sm_ctxt.get_state (call, dst_arg) == m_start)
+	sm_ctxt.set_next_state (call, dst_arg, m_started);
     }
 }
 
 /* Update state machine for a "va_arg" call.  */
 
 void
-va_list_state_machine::on_va_arg (sm_context *sm_ctxt,
+va_list_state_machine::on_va_arg (sm_context &sm_ctxt,
 				  const supernode *node,
 				  const gcall *call) const
 {
@@ -609,17 +609,17 @@ va_list_state_machine::on_va_arg (sm_context *sm_ctxt,
 /* Update state machine for a "va_end" call.  */
 
 void
-va_list_state_machine::on_va_end (sm_context *sm_ctxt,
+va_list_state_machine::on_va_end (sm_context &sm_ctxt,
 				  const supernode *node,
 				  const gcall *call) const
 {
   const svalue *arg = get_stateful_arg (sm_ctxt, call, 0);
   if (arg)
     {
-      state_t s = sm_ctxt->get_state (call, arg);
+      state_t s = sm_ctxt.get_state (call, arg);
       /* Transition from "started" to "ended".  */
       if (s == m_started)
-	sm_ctxt->set_next_state (call, arg, m_ended);
+	sm_ctxt.set_next_state (call, arg, m_ended);
       else if (s == m_ended)
 	check_for_ended_va_list (sm_ctxt, node, call, arg, "va_end");
     }

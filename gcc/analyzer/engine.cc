@@ -969,7 +969,7 @@ impl_region_model_context::on_condition (const svalue *lhs,
 			       m_old_state->m_checker_states[sm_idx],
 			       m_new_state->m_checker_states[sm_idx],
 			       m_path_ctxt);
-      sm.on_condition (&sm_ctxt,
+      sm.on_condition (sm_ctxt,
 		       (m_enode_for_diag
 			? m_enode_for_diag->get_supernode ()
 			: NULL),
@@ -996,7 +996,7 @@ impl_region_model_context::on_bounded_ranges (const svalue &sval,
 			       m_old_state->m_checker_states[sm_idx],
 			       m_new_state->m_checker_states[sm_idx],
 			       m_path_ctxt);
-      sm.on_bounded_ranges (&sm_ctxt,
+      sm.on_bounded_ranges (sm_ctxt,
 			    (m_enode_for_diag
 			     ? m_enode_for_diag->get_supernode ()
 			     : NULL),
@@ -1037,7 +1037,7 @@ impl_region_model_context::on_phi (const gphi *phi, tree rhs)
 			       m_old_state->m_checker_states[sm_idx],
 			       m_new_state->m_checker_states[sm_idx],
 			       m_path_ctxt);
-      sm.on_phi (&sm_ctxt, m_enode_for_diag->get_supernode (), phi, rhs);
+      sm.on_phi (sm_ctxt, m_enode_for_diag->get_supernode (), phi, rhs);
     }
 }
 
@@ -1559,7 +1559,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 			       unknown_side_effects);
 
       /* Allow the state_machine to handle the stmt.  */
-      if (sm.on_stmt (&sm_ctxt, snode, stmt))
+      if (sm.on_stmt (sm_ctxt, snode, stmt))
 	unknown_side_effects = false;
     }
 
