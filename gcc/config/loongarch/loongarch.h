@@ -202,13 +202,6 @@ along with GCC; see the file COPYING3.  If not see
 #define UNITS_PER_HWFPVALUE \
   (TARGET_SOFT_FLOAT ? 0 : UNITS_PER_FPREG)
 
-/* The largest size of value that can be held in floating-point
-   registers.  */
-#define UNITS_PER_FPVALUE \
-  (TARGET_SOFT_FLOAT ? 0 \
-   : TARGET_SINGLE_FLOAT ? UNITS_PER_FPREG \
-			 : LONG_DOUBLE_TYPE_SIZE / BITS_PER_UNIT)
-
 /* The number of bytes in a double.  */
 #define UNITS_PER_DOUBLE (TYPE_PRECISION (double_type_node) / BITS_PER_UNIT)
 
