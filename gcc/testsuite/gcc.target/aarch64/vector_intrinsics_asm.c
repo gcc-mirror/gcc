@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-final { check-function-bodies "**" "" "" { xfail be } } } */
+/* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include "arm_neon.h"
 
