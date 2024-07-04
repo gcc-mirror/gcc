@@ -4462,42 +4462,13 @@ loongarch_split_move_p (rtx dest, rtx src)
 void
 loongarch_split_move (rtx dest, rtx src)
 {
-  rtx low_dest;
-
   gcc_checking_assert (loongarch_split_move_p (dest, src));
   if (LSX_SUPPORTED_MODE_P (GET_MODE (dest)))
     loongarch_split_128bit_move (dest, src);
   else if (LASX_SUPPORTED_MODE_P (GET_MODE (dest)))
     loongarch_split_256bit_move (dest, src);
-  else if (FP_REG_RTX_P (dest) || FP_REG_RTX_P (src))
-    {
-      if (!TARGET_64BIT && GET_MODE (dest) == DImode)
-	emit_insn (gen_move_doubleword_fprdi (dest, src));
-      else if (!TARGET_64BIT && GET_MODE (dest) == DFmode)
-	emit_insn (gen_move_doubleword_fprdf (dest, src));
-      else if (TARGET_64BIT && GET_MODE (dest) == TFmode)
-	emit_insn (gen_move_doubleword_fprtf (dest, src));
-      else
-	gcc_unreachable ();
-    }
   else
-    {
-      /* The operation can be split into two normal moves.  Decide in
-	 which order to do them.  */
-      low_dest = loongarch_subword (dest, false);
-      if (REG_P (low_dest) && reg_overlap_mentioned_p (low_dest, src))
-	{
-	  loongarch_emit_move (loongarch_subword (dest, true),
-			       loongarch_subword (src, true));
-	  loongarch_emit_move (low_dest, loongarch_subword (src, false));
-	}
-      else
-	{
-	  loongarch_emit_move (low_dest, loongarch_subword (src, false));
-	  loongarch_emit_move (loongarch_subword (dest, true),
-			       loongarch_subword (src, true));
-	}
-    }
+    gcc_unreachable ();
 }
 
 /* Check if adding an integer constant value for a specific mode can be
@@ -6746,20 +6717,18 @@ loongarch_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
   size = GET_MODE_SIZE (mode);
   mclass = GET_MODE_CLASS (mode);
 
-  if (GP_REG_P (regno) && !LSX_SUPPORTED_MODE_P (mode)
+  if (GP_REG_P (regno)
+      && !LSX_SUPPORTED_MODE_P (mode)
       && !LASX_SUPPORTED_MODE_P (mode))
     return ((regno - GP_REG_FIRST) & 1) == 0 || size <= UNITS_PER_WORD;
 
-  /* For LSX, allow TImode and 128-bit vector modes in all FPR.  */
-  if (FP_REG_P (regno) && LSX_SUPPORTED_MODE_P (mode))
-    return true;
-
-  /* FIXED ME: For LASX, allow TImode and 256-bit vector modes in all FPR.  */
-  if (FP_REG_P (regno) && LASX_SUPPORTED_MODE_P (mode))
-    return true;
-
   if (FP_REG_P (regno))
     {
+      /* Allow 128-bit or 256-bit vector modes in all FPR.  */
+      if (LSX_SUPPORTED_MODE_P (mode)
+	  || LASX_SUPPORTED_MODE_P (mode))
+	return true;
+
       if (mclass == MODE_FLOAT
 	  || mclass == MODE_COMPLEX_FLOAT
 	  || mclass == MODE_VECTOR_FLOAT)
