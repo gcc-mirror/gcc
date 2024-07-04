@@ -808,13 +808,12 @@
    (V8HI "v8si")   (V16HI "v16si") (V32HI "v32si")
    (V4SI "v4di")   (V8SI "v8di")   (V16SI "v16di")])
 
+;; Map vector mode to the same number of double sized elements.
 (define_mode_attr ssedoublemode
-  [(V4SF "V8SF") (V8SF "V16SF") (V16SF "V32SF")
-   (V2DF "V4DF") (V4DF "V8DF") (V8DF "V16DF")
+  [(V4SF "V4DF") (V8SF "V8DF") (V16SF "V16DF")
    (V16QI "V16HI") (V32QI "V32HI") (V64QI "V64HI")
    (V8HI "V8SI") (V16HI "V16SI") (V32HI "V32SI")
-   (V4SI "V4DI") (V8SI "V16SI") (V16SI "V32SI")
-   (V4DI "V8DI") (V8DI "V16DI")])
+   (V4SI "V4DI") (V8SI "V8DI") (V16SI "V16DI")])
 
 (define_mode_attr ssebytemode
   [(V8DI "V64QI") (V4DI "V32QI") (V2DI "V16QI")
@@ -3319,7 +3318,7 @@
 (define_split
   [(set (match_operand:VF_128_256 0 "register_operand")
 	(match_operator:VF_128_256 7 "addsub_vs_operator"
-	  [(vec_concat:<ssedoublemode>
+	  [(vec_concat:<ssedoublevecmode>
 	     (minus:VF_128_256
 	       (match_operand:VF_128_256 1 "register_operand")
 	       (match_operand:VF_128_256 2 "vector_operand"))
@@ -3353,7 +3352,7 @@
 (define_split
   [(set (match_operand:VF_128_256 0 "register_operand")
 	(match_operator:VF_128_256 7 "addsub_vs_operator"
-	  [(vec_concat:<ssedoublemode>
+	  [(vec_concat:<ssedoublevecmode>
 	     (plus:VF_128_256
 	       (match_operand:VF_128_256 1 "vector_operand")
 	       (match_operand:VF_128_256 2 "vector_operand"))
@@ -19869,7 +19868,7 @@
 (define_insn "<mask_codefor>avx512dq_shuf_<shuffletype>64x2_1<mask_name>"
   [(set (match_operand:VI8F_256 0 "register_operand" "=x,v")
 	(vec_select:VI8F_256
-	  (vec_concat:<ssedoublemode>
+	  (vec_concat:<ssedoublevecmode>
 	    (match_operand:VI8F_256 1 "register_operand" "x,v")
 	    (match_operand:VI8F_256 2 "nonimmediate_operand" "xjm,vm"))
 	  (parallel [(match_operand 3 "const_0_to_3_operand")
@@ -19922,7 +19921,7 @@
 (define_insn "avx512f_shuf_<shuffletype>64x2_1<mask_name>"
   [(set (match_operand:V8FI 0 "register_operand" "=v")
 	(vec_select:V8FI
-	  (vec_concat:<ssedoublemode>
+	  (vec_concat:<ssedoublevecmode>
 	    (match_operand:V8FI 1 "register_operand" "v")
 	    (match_operand:V8FI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(match_operand 3 "const_0_to_7_operand")
@@ -20020,7 +20019,7 @@
 (define_insn "avx512vl_shuf_<shuffletype>32x4_1<mask_name>"
   [(set (match_operand:VI4F_256 0 "register_operand" "=x,v")
 	(vec_select:VI4F_256
-	  (vec_concat:<ssedoublemode>
+	  (vec_concat:<ssedoublevecmode>
 	    (match_operand:VI4F_256 1 "register_operand" "x,v")
 	    (match_operand:VI4F_256 2 "nonimmediate_operand" "xjm,vm"))
 	  (parallel [(match_operand 3 "const_0_to_7_operand")
@@ -20091,7 +20090,7 @@
 (define_insn "avx512f_shuf_<shuffletype>32x4_1<mask_name>"
   [(set (match_operand:V16FI 0 "register_operand" "=v")
 	(vec_select:V16FI
-	  (vec_concat:<ssedoublemode>
+	  (vec_concat:<ssedoublevecmode>
 	    (match_operand:V16FI 1 "register_operand" "v")
 	    (match_operand:V16FI 2 "nonimmediate_operand" "vm"))
 	  (parallel [(match_operand 3 "const_0_to_15_operand")
