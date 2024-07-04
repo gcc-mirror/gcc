@@ -1845,8 +1845,7 @@ rx_expand_prologue (void)
 	gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
 		      GEN_INT (- (HOST_WIDE_INT) frame_size), true);
       else
-	gen_safe_add (stack_pointer_rtx, frame_pointer_rtx, NULL_RTX,
-		      false /* False because the epilogue will use the FP not the SP.  */);
+	gen_safe_add (stack_pointer_rtx, frame_pointer_rtx, NULL_RTX, true);
     }
 }
 
@@ -2119,7 +2118,7 @@ rx_expand_epilogue (bool is_sibcall)
       /* Cannot use the special instructions - deconstruct by hand.  */
       if (total_size)
 	gen_safe_add (stack_pointer_rtx, stack_pointer_rtx,
-		      GEN_INT (total_size), false);
+		      GEN_INT (total_size), true);
 
       if (MUST_SAVE_ACC_REGISTER)
 	{
