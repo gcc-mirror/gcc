@@ -769,6 +769,10 @@ package Exp_Util is
    --    Rnn : constant Ann := Func (...)'reference;
    --    Rnn.all
 
+   function Is_Conversion_Or_Reference_To_Formal (N : Node_Id) return Boolean;
+   --  Return True if N is a type conversion, or a dereference thereof, or a
+   --  reference to a formal parameter.
+
    function Is_Finalizable_Transient
      (Decl : Node_Id;
       N    : Node_Id) return Boolean;

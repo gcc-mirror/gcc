@@ -6989,14 +6989,7 @@ package body Exp_Ch6 is
       if Present (Utyp)
         and then Is_Tagged_Type (Utyp)
         and then not Is_Class_Wide_Type (Utyp)
-        and then (Nkind (Exp) in
-                      N_Type_Conversion | N_Unchecked_Type_Conversion
-                    or else (Nkind (Exp) = N_Explicit_Dereference
-                               and then Nkind (Prefix (Exp)) in
-                                          N_Type_Conversion |
-                                          N_Unchecked_Type_Conversion)
-                    or else (Is_Entity_Name (Exp)
-                               and then Is_Formal (Entity (Exp))))
+        and then Is_Conversion_Or_Reference_To_Formal (Exp)
       then
          --  When the return type is limited, perform a check that the tag of
          --  the result is the same as the tag of the return type.

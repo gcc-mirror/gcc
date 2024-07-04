@@ -8560,6 +8560,22 @@ package body Exp_Util is
       end if;
    end Is_Captured_Function_Call;
 
+   ------------------------------------------
+   -- Is_Conversion_Or_Reference_To_Formal --
+   ------------------------------------------
+
+   function Is_Conversion_Or_Reference_To_Formal (N : Node_Id) return Boolean
+   is
+   begin
+      return Nkind (N) in N_Type_Conversion | N_Unchecked_Type_Conversion
+        or else (Nkind (N) = N_Explicit_Dereference
+                  and then Nkind (Prefix (N)) in N_Type_Conversion
+                                              |  N_Unchecked_Type_Conversion)
+        or else (Is_Entity_Name (N)
+                  and then Present (Entity (N))
+                  and then Is_Formal (Entity (N)));
+   end Is_Conversion_Or_Reference_To_Formal;
+
    ------------------------------
    -- Is_Finalizable_Transient --
    ------------------------------
