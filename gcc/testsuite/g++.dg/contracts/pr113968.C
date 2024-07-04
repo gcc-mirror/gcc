@@ -2,6 +2,7 @@
 // { dg-do compile }
 // { dg-options "-std=c++2a -fcontracts " }
 
+
 struct A {
   A(A &);
 };
