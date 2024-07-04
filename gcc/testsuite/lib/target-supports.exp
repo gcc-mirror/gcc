@@ -2140,7 +2140,7 @@ proc check_effective_target_riscv_v_misalign_ok { } {
 proc riscv_get_arch { } {
     set gcc_march ""
     # ??? do we neeed to add more extensions to the list below?
-    foreach ext { i m a f d q c v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso zaamo zalrsc zabha } {
+    foreach ext { i m a f d q c b v zicsr zifencei zfh zba zbb zbc zbs zvbb zvfh ztso zaamo zalrsc zabha } {
 	if { [check_no_compiler_messages  riscv_ext_$ext assembly [string map [list DEF __riscv_$ext] {
 		#ifndef DEF
 		#error "Not DEF"

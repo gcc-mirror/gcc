@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc_zba_zbb_zbs -mabi=lp64d" { target { rv64 } } } */
-/* { dg-options "-march=rv32gc_zba_zbb_zbs -mabi=ilp32" { target { rv32 } } } */
+/* { dg-options "-march=rv64gcb -mabi=lp64d" { target { rv64 } } } */
+/* { dg-options "-march=rv32gcb -mabi=ilp32" { target { rv32 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } } */
 
 /* We need to adjust the constant so this works for rv32 and rv64.  */
