@@ -19,6 +19,7 @@
 // { dg-do run { target c++11 } }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-gthreads "" }
+// { dg-skip-if "no high resolution timer support" { hppa*-*-linux* } }
 
 #include <future>
 #include <chrono>
