@@ -1,3 +1,8 @@
+2024-07-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/115691
+	* config/pa/pa.md: Remove incorrect xmpyu patterns.
+
 2024-06-29  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 
 	Backported from master:
