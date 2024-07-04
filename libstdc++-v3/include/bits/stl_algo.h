@@ -110,8 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  _Predicate __pred)
     {
       return std::__find_if(__first, __last,
-			    __gnu_cxx::__ops::__negate(__pred),
-			    std::__iterator_category(__first));
+			    __gnu_cxx::__ops::__negate(__pred));
     }
 
   /// Like find_if_not(), but uses and updates a count of the
