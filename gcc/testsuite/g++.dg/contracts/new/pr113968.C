@@ -21,7 +21,3 @@ void f(A a) pre(a) // { dg-error "could not convert" }
 int main()
 {
 }
-
-
-
-
