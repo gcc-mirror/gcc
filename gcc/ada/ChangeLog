@@ -1,3 +1,28 @@
+2024-07-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/misc.cc (gnat_get_array_descr_info): Only follow
+	TYPE_DEBUG_TYPE if TYPE_CAN_HAVE_DEBUG_TYPE_P.
+	* gcc-interface/utils.cc (sized_type_hash): New struct.
+	(sized_type_hasher): New struct.
+	(sized_type_hash_table): New variable.
+	(init_gnat_utils): Allocate it.
+	(destroy_gnat_utils): Release it.
+	(sized_type_hasher::equal): New.
+	(hash_sized_type): New.
+	(canonicalize_sized_type): New.
+	(make_type_from_size): Use it to cache packed variants.  Fix
+	type reuse by combining biased_p and for_biased earlier.  Hold
+	the combination in for_biased, adjusting later uses.
+
+2024-07-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/cuintp.cc (UI_To_gnu): Add mode that selects a
+	wide enough unsigned type.  Fail if the constant exceeds the
+	representable numbers.
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Use it for
+	numerator and denominator of fixed-point types.  In case of
+	failure, fall back to an indeterminate fraction.
+
 2024-07-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_Concatenate): In the case where an operand

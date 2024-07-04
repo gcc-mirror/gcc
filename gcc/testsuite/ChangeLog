@@ -1,3 +1,97 @@
+2024-07-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115700
+	* gfortran.dg/associate_69.f90: New test.
+
+2024-07-03  Gianluca Guida  <gianluca@rivosinc.com>
+	    Patrick O'Neill  <patrick@rivosinc.com>
+
+	* lib/target-supports.exp: Add zabha testsuite infra support.
+	* gcc.target/riscv/amo/inline-atomics-1.c: Remove zabha to continue to
+	test the lr/sc subword patterns.
+	* gcc.target/riscv/amo/inline-atomics-2.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-subword-amo-add-char-acq-rel.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-subword-amo-add-char-acquire.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-subword-amo-add-char-relaxed.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-subword-amo-add-char-release.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-rvwmo-subword-amo-add-char-seq-cst.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-subword-amo-add-char-acq-rel.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-subword-amo-add-char-acquire.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-subword-amo-add-char-relaxed.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-subword-amo-add-char-release.c: Ditto.
+	* gcc.target/riscv/amo/zalrsc-ztso-subword-amo-add-char-seq-cst.c: Ditto.
+	* gcc.target/riscv/amo/zabha-all-amo-ops-char-run.c: New test.
+	* gcc.target/riscv/amo/zabha-all-amo-ops-short-run.c: New test.
+	* gcc.target/riscv/amo/zabha-rvwmo-all-amo-ops-char.c: New test.
+	* gcc.target/riscv/amo/zabha-rvwmo-all-amo-ops-short.c: New test.
+	* gcc.target/riscv/amo/zabha-rvwmo-amo-add-char.c: New test.
+	* gcc.target/riscv/amo/zabha-rvwmo-amo-add-short.c: New test.
+	* gcc.target/riscv/amo/zabha-ztso-amo-add-char.c: New test.
+	* gcc.target/riscv/amo/zabha-ztso-amo-add-short.c: New test.
+
+2024-07-03  Luis Silva  <Luis.Silva1@synopsys.com>
+
+	* gcc.target/arc/pr9001184797.c: Fix compiler warnings.
+
+2024-07-03  Pan Li  <pan2.li@intel.com>
+
+	PR target/115763
+	* gcc.target/riscv/rvv/base/scalar_move-5.c: Adjust asm check.
+	* gcc.target/riscv/rvv/base/scalar_move-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar_move-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/scalar_move-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr115763-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr115763-2.c: New test.
+
+2024-07-03  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.dg/tree-ssa/sqrt_div.c: New test.
+
+2024-07-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gnat.dg/bias1.adb: Count occurrences of -7.*DW_AT_GNU_bias.
+
+2024-07-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/115475
+	* gcc.target/aarch64/acle/bf16_sve_feature.c: New test.
+
+2024-07-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/115457
+	* gcc.target/aarch64/acle/bf16_feature.c: New test.
+
+2024-07-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/98762
+	* gcc.target/avr/torture/pr98762.c: New test.
+
+2024-07-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/115748
+	* gcc.target/i386/avx512-check.h: Move runtime check into a
+	separate function and guard it with target ("no-avx").
+
+2024-07-03  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_trunc-1.c:
+	Update vssubu check from vv to vx.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_trunc-2.c:
+	Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vec_sat_u_sub_trunc-3.c:
+	Ditto.
+
+2024-07-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115764
+	* gcc.dg/vect/bb-slp-76.c: New testcase.
+
+2024-07-03  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR pch/115312
+	* g++.dg/pch/pr115312.C: New test.
+	* g++.dg/pch/pr115312.Hs: New test.
+
 2024-07-02  Pengxuan Zheng  <quic_pzheng@quicinc.com>
 
 	PR target/113859
