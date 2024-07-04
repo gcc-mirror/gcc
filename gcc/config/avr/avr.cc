@@ -9434,6 +9434,12 @@ avr_out_plus_symbol (rtx *xop, enum rtx_code code, int *plen)
 
   gcc_assert (mode == HImode || mode == PSImode);
 
+  if (mode == HImode
+      && const_0mod256_operand (xop[2], HImode))
+    return avr_asm_len (PLUS == code
+			? "subi %B0,hi8(-(%2))"
+			: "subi %B0,hi8(%2)", xop, plen, -1);
+
   avr_asm_len (PLUS == code
 	       ? "subi %A0,lo8(-(%2))" CR_TAB "sbci %B0,hi8(-(%2))"
 	       : "subi %A0,lo8(%2)"    CR_TAB "sbci %B0,hi8(%2)",
@@ -12757,6 +12763,14 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND)
 	{
 	  *total = COSTS_N_INSNS (3);
+	  return true;
+	}
+      // *aligned_add_symbol
+      if (mode == HImode
+	  && GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && const_0mod256_operand (XEXP (x, 1), HImode))
+	{
+	  *total = COSTS_N_INSNS (1.5);
 	  return true;
 	}
 

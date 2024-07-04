@@ -171,6 +171,20 @@
 (define_predicate "symbol_ref_operand"
   (match_code "symbol_ref"))
 
+;; Returns true when OP is a SYMBOL_REF, CONST or CONST_INT that is
+;; a multiple of 256, i.e. lo8(OP) = 0.
+(define_predicate "const_0mod256_operand"
+  (ior (and (match_code "symbol_ref")
+            (match_test "SYMBOL_REF_DECL (op)
+                         && DECL_P (SYMBOL_REF_DECL (op))
+                         && DECL_ALIGN (SYMBOL_REF_DECL (op)) >= 8 * 256"))
+       (and (match_code "const")
+            (match_test "GET_CODE (XEXP (op, 0)) == PLUS")
+            (match_test "const_0mod256_operand (XEXP (XEXP (op, 0), 0), HImode)")
+            (match_test "const_0mod256_operand (XEXP (XEXP (op, 0), 1), HImode)"))
+       (and (match_code "const_int")
+            (match_test "INTVAL (op) % 256 == 0"))))
+
 ;; Return true if OP is a text segment reference.
 ;; This is needed for program memory address expressions.
 (define_predicate "text_segment_operand"

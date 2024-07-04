@@ -1617,6 +1617,20 @@
   "subi %A0,%n2\;sbc %B0,%B0"
   [(set_attr "length" "2")])
 
+;; PR90616: Adding symbols that are aligned to 256 bytes can
+;; save up to two instructions.
+(define_insn "*aligned_add_symbol"
+  [(set (match_operand:HI 0 "register_operand"                         "=d")
+        (plus:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
+                 (match_operand:HI 2 "const_0mod256_operand"            "Cp8")))]
+  ""
+  {
+    return REGNO (operands[0]) == REGNO (operands[1])
+      ? "ldi %B0,hi8(%2)"
+      : "mov %A0,%1\;ldi %B0,hi8(%2)";
+  }
+  [(set (attr "length")
+        (symbol_ref ("2 - (REGNO (operands[0]) == REGNO (operands[1]))")))])
 
 ;; Occurs when computing offsets into 16-bit arrays.
 ;; Saves up to 2 instructions.

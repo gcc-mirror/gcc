@@ -253,6 +253,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, -255, -1)")))
 
+(define_constraint "Cp8"
+  "A constant integer or symbolic operand that is at least .p2align 8."
+  (and (match_code "const_int,symbol_ref,const")
+       (match_test "const_0mod256_operand (op, HImode)")))
+
 ;; CONST_FIXED is no element of 'n' so cook our own.
 ;; "i" or "s" would match but because the insn uses iterators that cover
 ;; INT_MODE, "i" or "s" is not always possible.
